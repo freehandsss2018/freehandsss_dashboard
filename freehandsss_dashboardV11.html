@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Freehandsss 訂單控制台 (Final)</title>
+    <style>
+        :root { --primary: #D4A373; --secondary: #FAEDCD; --dark: #4A4E69; --bg: #F5F5F7; --white: #FFFFFF; --danger: #E63946; --border-radius: 12px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang HK', sans-serif; background-color: var(--bg); color: var(--dark); margin: 0; padding: 15px; padding-bottom: 100px; }
+        
+        .card { background: var(--white); padding: 20px; border-radius: var(--border-radius); box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 20px; }
+        .card-info { background-color: #F4F8FB; border-top: 5px solid #457B9D; }
+        .card-product { background-color: #FCF8F2; border-top: 5px solid #D4A373; }
+        .card-finance { background-color: #F4FAF5; border-top: 5px solid #52B788; }
+        
+        h2 { margin-top: 0; padding-bottom: 10px; font-size: 18px; }
+        .form-group { margin-bottom: 15px; width: 100%; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #555; }
+        
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #D1D1D1; border-radius: 8px; font-size: 16px; box-sizing: border-box; background-color: #FFFFFF; -webkit-appearance: none; }
+        select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 1em; padding-right: 40px; }
+        select:disabled { background-color: #EFEFEF; color: #777; opacity: 1; }
+        
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .product-block { background: rgba(255,255,255,0.6); border: 1px solid #E8D8C8; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
+        .remove-btn { position: absolute; top: 10px; right: 10px; background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; }
+        .add-btn { background: var(--white); color: var(--dark); border: 2px dashed #D4A373; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; margin-bottom: 10px; }
+        
+        .limb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #fff; padding: 12px; border-radius: 8px; border: 1px dashed #ccc; margin-bottom: 15px; }
+        .limb-title { grid-column: 1 / -1; font-weight: bold; color: #B07D4C; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .preview-card { background: var(--dark); color: var(--white); border-top: 5px solid #2A2D43;}
+        textarea#output-preview { min-height: 520px; background: #2A2D43; color: #FFF; border: none; line-height: 1.6; resize: none; font-family: monospace; font-size: 14px; }
+        
+        .bottom-action-bar { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px; background: rgba(245, 245, 247, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 1000; display: flex; justify-content: center; }
+        .copy-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; width: 100%; max-width: 500px; box-shadow: 0 4px 10px rgba(212, 163, 115, 0.3); }
+    </style>
+</head>
+<body>
+
+<div class="card card-info">
+    <h2>📝 基本資訊</h2>
+    <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="例如：Christy" oninput="safeGenerateOutput()"></div>
+    <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="safeGenerateOutput()"></div>
+    <div class="form-group"><label>取模時間</label>
+        <div class="grid-2-col">
+            <select id="appTimeHour" onchange="safeGenerateOutput()"></select>
+            <select id="appTimeAmPm" onchange="updateTimeOptions()">
+                <option value="AM">AM</option><option value="PM" selected>PM</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="card card-product">
+    <h2>🛍️ 產品與加購細項</h2>
+    <div id="productList"></div>
+    <button class="add-btn" onclick="safeAddProductBlock()">➕ 新增金屬加購項目</button>
+</div>
+
+<div class="card card-finance">
+    <h2>💰 財務結算</h2>
+    <div class="form-group">
+        <label>已付訂金/全數 ($)</label>
+        <input type="number" pattern="[0-9]*" id="deposit" value="0" onfocus="clearIfZero(this)" onblur="resetIfEmpty(this)" oninput="safeGenerateOutput()">
+    </div>
+    <div class="grid-2-col">
+        <div class="form-group">
+            <label>未付產品尾數 ($)</label>
+            <input type="number" pattern="[0-9]*" id="balance" value="0" onfocus="clearIfZero(this)" onblur="resetIfEmpty(this)" oninput="safeGenerateOutput()">
+        </div>
+        <div class="form-group">
+            <label>附加費用 ($)</label>
+            <input type="number" pattern="[0-9]*" id="additional" value="0" onfocus="clearIfZero(this)" onblur="resetIfEmpty(this)" oninput="safeGenerateOutput()">
+        </div>
+    </div>
+</div>
+
+<div class="card preview-card">
+    <h2>📱 IG 訊息預覽區</h2>
+    <textarea id="output-preview" readonly></textarea>
+</div>
+
+<div class="bottom-action-bar">
+    <button class="copy-btn" onclick="copyToClipboard()">📋 一鍵複製 IG 訊息</button>
+</div>
+
+<script>
+    function clearIfZero(input) { if (input.value === "0") { input.value = ""; } }
+    function resetIfEmpty(input) { if (input.value === "" || isNaN(input.value)) { input.value = "0"; safeGenerateOutput(); } }
+
+    const colorOptions = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
+    const woodFrameStyles = ["粉紅款式", "草原款式", "其他/待定"];
+    const subCats = { "立體擺設": ["木框款式", "玻璃瓶款式"], "金屬飾品": ["鎖匙扣", "頸鏈吊飾", "兩者皆有"] };
+    let blockCounter = 0;
+    
+    const d = new Date();
+    const currentOrderID = "FHS-" + String(d.getFullYear()).slice(-2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + "-" + Math.floor(Math.random()*900000+100000);
+
+    document.addEventListener("DOMContentLoaded", function() { safeAddProductBlock(); updateTimeOptions(); });
+
+    function updateTimeOptions() {
+        const hourSelect = document.getElementById("appTimeHour");
+        const ampmSelect = document.getElementById("appTimeAmPm").value;
+        const currentVal = hourSelect.value || "待定";
+        hourSelect.innerHTML = '<option value="待定">待定</option>';
+        if (ampmSelect === "AM") {
+            for(let h=8; h<=11; h++) { hourSelect.innerHTML += `<option value="${h}:00">${h}:00</option><option value="${h}:30">${h}:30</option>`; }
+        } else {
+            hourSelect.innerHTML += `<option value="12:00">12:00</option><option value="12:30">12:30</option>`;
+            for(let h=1; h<=8; h++) { hourSelect.innerHTML += `<option value="${h}:00">${h}:00</option><option value="${h}:30">${h}:30</option>`; }
+        }
+        hourSelect.value = [...hourSelect.options].some(o => o.value === currentVal) ? currentVal : "待定";
+        safeGenerateOutput();
+    }
+
+    function createColorSelect(id, label, groupClass) {
+        let opts = colorOptions.map(c => `<option value="${c}" ${c === "待定" ? "selected" : ""}>${c}</option>`).join('');
+        return `<div class="form-group"><label>${label}</label><select class="limb-select ${groupClass}" data-label="${label}" onchange="safeGenerateOutput()">${opts}</select></div>`;
+    }
+
+    function safeAddProductBlock() {
+        blockCounter++;
+        const isCore = (blockCounter === 1);
+        const div = document.createElement("div");
+        div.className = "product-block";
+        div.id = "block-" + blockCounter;
+        div.innerHTML = (isCore ? "" : `<button class="remove-btn" onclick="document.getElementById('${div.id}').remove(); safeGenerateOutput();">✖</button>`) +
+            `<div class="grid-2-col"><div class="form-group"><label>${isCore?'主要產品':'加購項目'}</label><select class="main-cat" onchange="renderDynamicFields('${div.id}', true)" ${isCore?'':'disabled'}>${isCore?'<option value="立體擺設">立體擺設</option><option value="金屬飾品">金屬飾品</option>':'<option value="金屬飾品">金屬飾品</option>'}</select></div><div class="form-group"><label>款式細項</label><select class="sub-cat" onchange="renderDynamicFields('${div.id}', false)"></select></div></div><div class="dynamic-area"></div><div class="form-group"><label>客製化刻字</label><input type="text" class="item-engraving" placeholder="例：倒模當天填寫" oninput="safeGenerateOutput()"></div>`;
+        document.getElementById("productList").appendChild(div);
+        updateSubCats(div.querySelector('.main-cat'), div.querySelector('.sub-cat'));
+        renderDynamicFields(div.id, false);
+    }
+
+    function updateSubCats(main, sub) { sub.innerHTML = subCats[main.value].map(s => `<option value="${s}">${s}</option>`).join(''); }
+
+    function renderDynamicFields(blockId, changed) {
+        const block = document.getElementById(blockId);
+        const main = block.querySelector('.main-cat');
+        const sub = block.querySelector('.sub-cat');
+        if(changed) updateSubCats(main, sub);
+        const area = block.querySelector('.dynamic-area');
+        let html = "";
+        if (main.value === "立體擺設") {
+            if (sub.value === "木框款式") {
+                html += `<div class="form-group"><label>木框款式</label><select class="wood-style" onchange="safeGenerateOutput()">${woodFrameStyles.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></div><div class="limb-grid"><div class="limb-title">🍼 嬰兒</div>${createColorSelect(blockId,'嬰兒左手','baby')}${createColorSelect(blockId,'嬰兒右手','baby')}${createColorSelect(blockId,'嬰兒左腳','baby')}${createColorSelect(blockId,'嬰兒右腳','baby')}</div>`;
+            } else {
+                html += `<div class="limb-grid"><div class="limb-title">🍼 嬰兒</div>${createColorSelect(blockId,'嬰兒左手','baby')}${createColorSelect(blockId,'嬰兒右手','baby')}${createColorSelect(blockId,'嬰兒左腳','baby')}${createColorSelect(blockId,'嬰兒右腳','baby')}</div><div class="limb-grid"><div class="limb-title">💑 父母</div>${createColorSelect(blockId,'父母左手','parent')}${createColorSelect(blockId,'父母右手','parent')}</div><div class="limb-grid"><div class="limb-title">🧸 大寶</div>${createColorSelect(blockId,'大寶左手','elder')}${createColorSelect(blockId,'大寶右手','elder')}${createColorSelect(blockId,'大寶左腳','elder')}${createColorSelect(blockId,'大寶右腳','elder')}</div>`;
+            }
+        } else {
+            html += `<div class="grid-2-col"><div class="form-group"><label>數量</label><input type="text" class="metal-qty" placeholder="例：共4隻" oninput="safeGenerateOutput()"></div><div class="form-group"><label>材質</label><input type="text" class="metal-style" placeholder="例：925純銀" oninput="safeGenerateOutput()"></div></div>`;
+        }
+        area.innerHTML = html;
+        safeGenerateOutput();
+    }
+
+    function getLimbSummary(block, groupClass, groupPrefix, displayName) {
+        let selectedLimbs = [], handCount = 0, footCount = 0, allPending = true, hasAny = false;
+        
+        block.querySelectorAll('.' + groupClass).forEach(sel => {
+            if (sel.value !== "無") {
+                hasAny = true;
+                if (sel.value !== "待定") allPending = false;
+                if (sel.getAttribute('data-label').includes('手')) handCount++; else footCount++;
+                selectedLimbs.push(`${sel.getAttribute('data-label').replace(groupPrefix,'')}(${sel.value})`);
+            }
+        });
+        
+        if (!hasAny) return "";
+        
+        let output = displayName + "：\n";
+        
+        if (allPending) {
+            let summary = "";
+            if (handCount > 0) summary += handCount + "手";
+            if (footCount > 0) summary += footCount + "腳";
+            output += " - " + summary + " (顏色待定)\n";
+        } else {
+            for (let i = 0; i < selectedLimbs.length; i += 2) {
+                let pair = selectedLimbs.slice(i, i + 2);
+                output += " - " + pair.join('、') + "\n";
+            }
+        }
+        return output;
+    }
+
+    function safeGenerateOutput() {
+        const mom = document.getElementById("momName").value || "[請填寫]";
+        const rawDate = document.getElementById("appDate").value;
+        const date = rawDate ? rawDate.replace(/-/g,'/') : "待定";
+        const hour = document.getElementById("appTimeHour").value;
+        const ampm = document.getElementById("appTimeAmPm").value;
+        let productText = "";
+        let hasP = false, hasM = false;
+
+        document.querySelectorAll('.product-block').forEach((block, i) => {
+            const main = block.querySelector('.main-cat').value;
+            const sub = block.querySelector('.sub-cat').value;
+            const eng = block.querySelector('.item-engraving').value || "倒模當天填寫";
+            let detail = "";
+            
+            if (main === "立體擺設") {
+                hasP = true;
+                if(sub === "木框款式") {
+                    detail += `木框色款：${block.querySelector('.wood-style').value}\n` + getLimbSummary(block, 'baby', '嬰兒', '🍼 嬰兒');
+                } else {
+                    detail += getLimbSummary(block, 'baby', '嬰兒', '🍼 嬰兒') + getLimbSummary(block, 'parent', '父母', '💑 父母') + getLimbSummary(block, 'elder', '大寶', '🧸 大寶');
+                }
+            } else {
+                hasM = true;
+                detail += `項目數量：${block.querySelector('.metal-qty').value || "[未填]"}\n材質顏色：${block.querySelector('.metal-style').value || "[未填]"}\n`;
+            }
+            productText += `${i===0?'':'【加購項目】\n'}產品類別：${main} (${sub})\n${detail}客製化刻字：${eng}\n\n`;
+        });
+
+        const dep = document.getElementById("deposit").value || "0";
+        const bal = document.getElementById("balance").value || "0";
+        const add = document.getElementById("additional").value || "0";
+
+        document.getElementById("output-preview").value = `📝 freehandsss 訂單核對表\n(編號：${currentOrderID})\n\n【排程資訊】\n聯絡人：${mom}\n取模時間：${date} ${hour==='待定'?'':hour+' '+ampm}\n\n【產品資訊】\n${productText}【財務結算】\n已付訂金/全數：$ ${dep}\n未付產品尾數：$ ${bal}\n附加費用(車費/其它)：$ ${add}\n\n—— 以下為免責聲明 ——\n${hasP?"手模會因BB郁動而有所瑕疵，需否再次倒模取決於倒模師(額外+$150)。作品不包照片且全人手製作未能十全十美，完美主義者請慎重考慮。\n\n":""}${hasM?"手工金屬因鑄造及體積縮減不能呈現完美紋理，金屬微細刮痕凹凸點屬正常現象，非瑕疵範圍。製成品最少預三個月。\n":""}`;
+    }
+
+    function copyToClipboard() {
+        const preview = document.getElementById("output-preview");
+        preview.select();
+        preview.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+        const btn = document.querySelector(".copy-btn");
+        const oldText = btn.innerText;
+        btn.innerText = "✅ 已成功複製！可前往 IG 貼上";
+        btn.style.background = "#2a9d8f";
+        setTimeout(() => { btn.innerText = oldText; btn.style.background = "var(--primary)"; }, 2500);
+    }
+</script>
+</body>
+</html>

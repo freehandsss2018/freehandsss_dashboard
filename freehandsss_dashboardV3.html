@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freehandsss 訂單控制台</title>
+    <style>
+        :root { --primary: #D4A373; --secondary: #FAEDCD; --dark: #4A4E69; --bg: #FEFAE0; --white: #FFFFFF; --danger: #E63946; }
+        body { font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); color: var(--dark); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { display: flex; gap: 30px; max-width: 1400px; width: 100%; align-items: flex-start; }
+        .form-section { flex: 1.2; background: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-height: 90vh; overflow-y: auto;}
+        .form-section h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--secondary); padding-bottom: 10px;}
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #555;}
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row .form-group { flex: 1; min-width: 120px;}
+        
+        .product-block { background: #fdfbf7; border: 2px solid #eaddcc; padding: 20px; border-radius: 8px; margin-bottom: 20px; position: relative; }
+        .remove-btn { position: absolute; top: 10px; right: 10px; background: var(--danger); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .add-btn { background: var(--secondary); color: var(--dark); border: 2px solid var(--primary); padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 20px; }
+        .add-btn:hover { background: var(--primary); color: white; }
+
+        .limb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #fff; padding: 15px; border-radius: 6px; border: 1px dashed #ccc; margin-bottom: 15px;}
+        .limb-title { grid-column: 1 / -1; font-weight: bold; color: var(--primary); font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px;}
+        
+        .preview-section { flex: 0.8; background: var(--dark); color: var(--white); padding: 30px; border-radius: 12px; position: sticky; top: 20px; }
+        .preview-section h2 { margin-top: 0; color: var(--secondary); border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;}
+        textarea#output-preview { width: 100%; min-height: 550px; background: #2A2D43; color: #FFF; border: none; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.6; resize: none; margin-bottom: 15px; box-sizing: border-box; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-section">
+        <h2>📝 Freehandsss 建檔中心 (極致防呆版)</h2>
+        
+        <div class="row">
+            <div class="form-group" style="flex: 2;">
+                <label>聯絡人稱呼</label>
+                <input type="text" id="momName" placeholder="例如：Christy" oninput="generateOutput()">
+            </div>
+            <div class="form-group">
+                <label>約定取模日期</label>
+                <input type="date" id="appDate" onchange="generateOutput()">
+            </div>
+            <div class="form-group">
+                <label>取模時間</label>
+                <select id="appTime" onchange="generateOutput()">
+                    <option value="待定">待定</option>
+                    </select>
+            </div>
+        </div>
+
+        <hr style="border:1px solid #eee; margin:20px 0;">
+
+        <div id="productList"></div>
+        <button class="add-btn" onclick="addProductBlock()">➕ 新增產品項目</button>
+
+        <hr style="border:1px solid #eee; margin:20px 0;">
+
+        <div class="row">
+            <div class="form-group"><label>已付訂金/全數 ($)</label><input type="number" id="deposit" value="0" oninput="generateOutput()"></div>
+            <div class="form-group"><label>未付產品尾數 ($)</label><input type="number" id="balance" value="0" oninput="generateOutput()"></div>
+            <div class="form-group"><label>附加費用 ($)</label><input type="number" id="additional" value="0" oninput="generateOutput()"></div>
+        </div>
+    </div>
+
+    <div class="preview-section">
+        <h2>📱 IG 訊息生成區</h2>
+        <textarea id="output-preview" readonly></textarea>
+        <button class="btn" onclick="copyToClipboard()">📋 一鍵複製 IG 確認訊息</button>
+    </div>
+</div>
+
+<script>
+    const colorOptions = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
+    const woodFrameStyles = ["粉紅款式", "草原款式", "其他/待定"];
+    const subCats = { "立體擺設": ["木框款式", "玻璃瓶款式"], "金屬飾品": ["鎖匙扣", "頸鏈吊飾", "兩者皆有"] };
+    let blockCounter = 0;
+    let currentOrderID = `FHS-${String(new Date().getFullYear()).slice(-2)}${String(new Date().getMonth()+1).padStart(2,'0')}${String(new Date().getDate()).padStart(2,'0')}-${Math.floor(Math.random()*900000+100000)}`;
+
+    window.onload = function() {
+        generateTimeOptions();
+        addProductBlock();
+    };
+
+    function generateTimeOptions() {
+        const timeSelect = document.getElementById("appTime");
+        const periods = ["上午", "下午"];
+        for(let p=0; p<2; p++) {
+            for(let h=1; h<=12; h++) {
+                if(p===0 && (h<9 || h===12)) continue; // 早上9點前不顯示
+                if(p===1 && h>8 && h!==12) continue; // 晚上8點後不顯示
+                let hourStr = h.toString().padStart(2, '0');
+                timeSelect.innerHTML += `<option value="${periods[p]} ${hourStr}:00">${periods[p]} ${hourStr}:00</option>`;
+                timeSelect.innerHTML += `<option value="${periods[p]} ${hourStr}:30">${periods[p]} ${hourStr}:30</option>`;
+            }
+        }
+    }
+
+    function createColorSelect(id, label) {
+        let opts = colorOptions.map(c => `<option value="${c}">${c}</option>`).join('');
+        return `<div class="form-group"><label>${label}</label><select class="limb-select" data-label="${label}" onchange="generateOutput()">${opts}</select></div>`;
+    }
+
+    function addProductBlock() {
+        blockCounter++;
+        const div = document.createElement("div");
+        div.className = "product-block";
+        div.id = `block-${blockCounter}`;
+        
+        div.innerHTML = `
+            ${blockCounter > 1 ? `<button class="remove-btn" onclick="document.getElementById('${div.id}').remove(); generateOutput();">✖ 刪除</button>` : ''}
+            <div class="row">
+                <div class="form-group">
+                    <label>大類別</label>
+                    <select class="main-cat" onchange="renderDynamicFields('${div.id}')">
+                        <option value="立體擺設">立體擺設</option><option value="金屬飾品">金屬飾品</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>款式細項</label>
+                    <select class="sub-cat" onchange="renderDynamicFields('${div.id}')"></select>
+                </div>
+            </div>
+            <div class="dynamic-area"></div>
+            <div class="form-group"><label>客製化刻字</label><input type="text" class="item-engraving" placeholder="例：倒模當天填寫" oninput="generateOutput()"></div>
+        `;
+        document.getElementById("productList").appendChild(div);
+        
+        const mainCatSelect = div.querySelector('.main-cat');
+        updateSubCats(mainCatSelect, div.querySelector('.sub-cat'));
+        renderDynamicFields(div.id);
+    }
+
+    function updateSubCats(mainSelect, subSelect) {
+        subSelect.innerHTML = subCats[mainSelect.value].map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+
+    function renderDynamicFields(blockId) {
+        const block = document.getElementById(blockId);
+        const mainCat = block.querySelector('.main-cat');
+        const subCat = block.querySelector('.sub-cat');
+        
+        // 如果切換大類別，需要重置次目錄
+        if(event && event.target === mainCat) updateSubCats(mainCat, subCat);
+
+        const area = block.querySelector('.dynamic-area');
+        area.innerHTML = "";
+
+        if (mainCat.value === "立體擺設") {
+            if (subCat.value === "木框款式") {
+                let frameOpts = woodFrameStyles.map(s => `<option value="${s}">${s}</option>`).join('');
+                area.innerHTML += `<div class="form-group"><label>選擇木框款式</label><select class="wood-style" onchange="generateOutput()">${frameOpts}</select></div>`;
+                area.innerHTML += `<div class="limb-grid"><div class="limb-title">嬰兒倒模部位 (預設為無)</div>` + 
+                    createColorSelect(blockId, '嬰兒左手') + createColorSelect(blockId, '嬰兒右手') + 
+                    createColorSelect(blockId, '嬰兒左腳') + createColorSelect(blockId, '嬰兒右腳') + `</div>`;
+            } else if (subCat.value === "玻璃瓶款式") {
+                area.innerHTML += `<div class="limb-grid"><div class="limb-title">嬰兒倒模部位</div>` + 
+                    createColorSelect(blockId, '嬰兒左手') + createColorSelect(blockId, '嬰兒右手') + 
+                    createColorSelect(blockId, '嬰兒左腳') + createColorSelect(blockId, '嬰兒右腳') + `</div>`;
+                area.innerHTML += `<div class="limb-grid"><div class="limb-title">父母倒模部位</div>` + 
+                    createColorSelect(blockId, '父母左手') + createColorSelect(blockId, '父母右手') + `</div>`;
+                area.innerHTML += `<div class="limb-grid"><div class="limb-title">兄弟倒模部位</div>` + 
+                    createColorSelect(blockId, '兄弟左手') + createColorSelect(blockId, '兄弟右手') + 
+                    createColorSelect(blockId, '兄弟左腳') + createColorSelect(blockId, '兄弟右腳') + `</div>`;
+            }
+        } else {
+            // 金屬飾品
+            area.innerHTML += `
+                <div class="row">
+                    <div class="form-group"><label>金屬項目數量</label><input type="text" class="metal-qty" placeholder="例：各1共4隻" oninput="generateOutput()"></div>
+                    <div class="form-group"><label>金屬材質/顏色</label><input type="text" class="metal-style" placeholder="例：925純銀" oninput="generateOutput()"></div>
+                </div>`;
+        }
+        generateOutput();
+    }
+
+    function generateOutput() {
+        const momName = document.getElementById("momName").value || "[請填寫]";
+        const rawDate = document.getElementById("appDate").value;
+        const formattedDate = rawDate ? rawDate.replace(/-/g, '/') : "待定";
+        const appTime = document.getElementById("appTime").value;
+        
+        let productText = "";
+        let hasPlaster = false; let hasMetal = false;
+
+        document.querySelectorAll('.product-block').forEach((block, index) => {
+            const main = block.querySelector('.main-cat').value;
+            const sub = block.querySelector('.sub-cat').value;
+            const eng = block.querySelector('.item-engraving').value || "倒模當天填寫";
+            let detailText = "";
+
+            if (main === "立體擺設") {
+                hasPlaster = true;
+                if(sub === "木框款式") detailText += `木框色款：${block.querySelector('.wood-style').value}\n`;
+                
+                // 掃描所有肢體選項，自動過濾掉「無」
+                let limbData = [];
+                block.querySelectorAll('.limb-select').forEach(sel => {
+                    if(sel.value !== "無") limbData.push(`${sel.getAttribute('data-label')}(${sel.value})`);
+                });
+                detailText += limbData.length > 0 ? `倒模項目：${limbData.join('、')}\n` : `倒模項目：尚未選擇\n`;
+
+            } else {
+                hasMetal = true;
+                const qty = block.querySelector('.metal-qty').value || "[未填數量]";
+                const style = block.querySelector('.metal-style').value || "[未填材質]";
+                detailText += `項目數量：${qty}\n材質顏色：${style}\n`;
+            }
+
+            productText += `【項目 ${index + 1}】\n產品類別：${main} (${sub})\n${detailText}客製化刻字：${eng}\n\n`;
+        });
+
+        const deposit = document.getElementById("deposit").value || "0";
+        const balance = document.getElementById("balance").value || "0";
+        const additional = document.getElementById("additional").value || "0";
+        
+        let disclaimer = "";
+        if(hasPlaster) disclaimer += "手模會因BB郁動而有所瑕疵，需否再次倒模取決於倒模師(額外+$150)。作品不包照片且全人手製作未能十全十美，完美主義者請慎重考慮。\n\n";
+        if(hasMetal) disclaimer += "手工金屬因鑄造及體積縮減不能呈現完美紋理，金屬微細刮痕凹凸點屬正常現象，非瑕疵範圍。製成品最少預三個月。\n";
+
+        document.getElementById("output-preview").value = 
+`📝 freehandsss 訂單核對表
+(編號：${currentOrderID})
+
+【排程資訊】
+聯絡人：${momName}
+取模時間：${formattedDate} ${appTime === '待定' ? '' : appTime}
+
+【產品資訊】
+${productText}【財務結算】
+已付訂金/全數：$ ${deposit}
+未付產品尾數：$ ${balance}
+附加費用(車費/加大)：$ ${additional}
+
+—— 以下為免責聲明 ——
+${disclaimer}`;
+    }
+
+    function copyToClipboard() {
+        document.getElementById("output-preview").select();
+        document.execCommand("copy");
+        alert("✅ 已複製！");
+    }
+</script>
+
+</body>
+</html>
