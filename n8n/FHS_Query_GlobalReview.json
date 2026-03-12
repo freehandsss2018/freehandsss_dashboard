@@ -1,0 +1,236 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 📊 【全域核對中心 - 數據抓取引擎】\n\n**核心用途：** 支援 V27 全域核對中心的後端數據檢索。\n\n**主要功能：**\n1. **動態過濾：** 接收年度、月份、狀態、單號、姓名或批次等過濾條件。\n2. **合併查詢：** 同時檢索 `Main_Orders` 與關聯的 `Order_Items` 子項目。\n3. **格式化輸出：** 整理成 Excel 風格的 JSON 數據供給前端 Grid 顯示。\n4. **深度稽核支援：** [V45.2 新增] 讀取 `Raw_Form_State` 欄位，支援沙盒模式下的歷史訂單還原稽核。",
+        "height": 300,
+        "width": 550
+      },
+      "id": "10a9c930-bb6e-456a-bb85-20b25ca2c447",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        14896,
+        4560
+      ]
+    },
+    {
+      "parameters": {
+        "path": "fetch-global-review",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "4a6b2e75-a5a1-4571-9b6d-b9962df5e20f",
+      "name": "Webhook (Fetch Review)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        15456,
+        5216
+      ],
+      "webhookId": "fhs-fetch-global-review-v27"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $input.item.json.query || {};\nlet formulas = [];\n\nif (query.year && query.month) {\n    formulas.push(`DATETIME_FORMAT(CREATED_TIME(), 'YYYY-MM') = '${query.year}-${query.month}'`);\n} else if (query.year) {\n    formulas.push(`DATETIME_FORMAT(CREATED_TIME(), 'YYYY') = '${query.year}'`);\n} else if (query.month) {\n    formulas.push(`DATETIME_FORMAT(CREATED_TIME(), 'MM') = '${query.month}'`);\n}\n\nif (query.status) {\n    formulas.push(`{Process_Status} = '${query.status}'`);\n}\nif (query.batch) {\n    formulas.push(`FIND('${query.batch}', {Batch_Number}) > 0`);\n}\nif (query.search) {\n    formulas.push(`OR(FIND('${query.search}', {Customer_Name}) > 0, FIND('${query.search}', {Order_ID}) > 0)`);\n}\n\nlet finalFormula = \"\";\nif (formulas.length > 0) {\n    finalFormula = `AND(${formulas.join(', ')})`;\n}\n\nreturn { json: { formula: finalFormula } };"
+      },
+      "id": "80607e54-e167-49f3-839e-2418cf996eb1",
+      "name": "Build Formula",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        15648,
+        5216
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ $json.formula }}",
+        "options": {}
+      },
+      "id": "4786c65e-b00f-4b09-8125-d1cd0ba96b93",
+      "name": "Search Main_Orders",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        15856,
+        5216
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nif (items.length === 0 || !items[0].json.id) return { json: { success: true, count: 0, mainOrders: [] } };\n\nconst mainOrders = items.map(item => {\n    const data = item.json;\n    return {\n        id: data.id,\n        Order_ID: data.Order_ID || 'N/A',\n        Date: data.createdTime,\n        Customer: data.Customer_Name || '-',\n        Batch: data.Batch_Number || '',\n        Status: data.Process_Status || '0 什麼都未做',\n        Admin_Notes: data.Admin_Notes || '',\n        Sales: data.Final_Sale_Price || 0,\n        Cost: data.Total_Cost || 0,\n        Net_Profit: data.Net_Profit || 0,\n        Raw_Form_State: data.Raw_Form_State || '',\n        Order_Items_Links: data.Order_Items || []\n    };\n});\nreturn { json: { mainOrders } };"
+      },
+      "id": "a942af97-633c-4d9a-abc9-955779d69c86",
+      "name": "Format Main Orders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16048,
+        5216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const mainOrders = $input.item.json.mainOrders || [];\nlet allSubItemIds = [];\nmainOrders.forEach(mo => {\n    if (mo.Order_Items_Links && mo.Order_Items_Links.length > 0) {\n        allSubItemIds = allSubItemIds.concat(mo.Order_Items_Links);\n    }\n});\n\nif (allSubItemIds.length === 0) {\n    return { json: { formula: \"RECORD_ID()='INVALID'\", mainOrders } };\n}\n\n// We batch them if > 100, but usually for one view it's < 100 items.\nconst uniqueIds = [...new Set(allSubItemIds)];\nconst formulaParts = uniqueIds.map(id => `RECORD_ID()='${id}'`);\nlet chunks = [];\nfor (let i = 0; i < formulaParts.length; i+=50) {\n   chunks.push(`OR(${formulaParts.slice(i, i+50).join(',')})`);\n}\nlet finalFormula = chunks.length > 1 ? `OR(${chunks.join(',')})` : chunks[0];\nreturn { json: { formula: finalFormula, mainOrders } };"
+      },
+      "id": "d7ac4405-e4c4-40f3-ac29-bfa8cdbb9982",
+      "name": "Build SubItems Formula",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16256,
+        5216
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbljkptnNcUEyDRFH",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ $json.formula }}",
+        "options": {}
+      },
+      "id": "7104e389-59f3-460a-a53c-1f8b956a2586",
+      "name": "Search Order_Items",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        16448,
+        5216
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "ed6e6f4a-18a9-4527-b113-b699189531bf",
+      "name": "Read Product Cache",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        16448,
+        5424
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const subItemsData = $(\"Search Order_Items\").all();\nconst buildFormulaNode = $(\"Build SubItems Formula\").first();\nconst mainOrdersContext = (buildFormulaNode && buildFormulaNode.json) ? buildFormulaNode.json.mainOrders : [];\n\n// 🟡 API V40.2 協議：優先讀取本地緩存\nlet productsCache = [];\ntry {\n    const cacheBinary = $(\"Read Product Cache\").first().binary.data;\n    if (cacheBinary) {\n        productsCache = JSON.parse(Buffer.from(cacheBinary.data, 'base64').toString());\n    }\n} catch (e) { }\n\nconst productMap = {};\nproductsCache.forEach(p => { productMap[p.id] = p.fields; });\n\n// Map subitems by ID\nconst subItemsMap = {};\nif (subItemsData.length > 0 && subItemsData[0].json.id) {\n    subItemsData.forEach(item => {\n        const data = item.json;\n        const pid = data.Product_Link && data.Product_Link.length > 0 ? data.Product_Link[0] : '';\n        \n        // 如果有緩存，優先從緩存補齊細節 (雖然目前 Lookup 已經帶入大部分)\n        const cachedProduct = productMap[pid] || {};\n        \n        subItemsMap[data.id] = {\n            id: data.id,\n            Item_ID: data.Item_ID,\n            Product: cachedProduct.Product_Name || pid,\n            Category: cachedProduct.Main_Category || (data.Item_Category && data.Item_Category.length > 0 ? data.Item_Category[0] : ''),\n            Qty: data.Quantity || 0,\n            BaseCost: cachedProduct.Total_Base_Cost || (data.Item_BaseCost && data.Item_BaseCost.length > 0 ? data.Item_BaseCost[0] : 0),\n            Engraving: data.Engraving_Text || '',\n            Specification: data.Specification || '',\n            OrderKey: data.Order_Item_Key || '',\n            Batch: data.Batch_Number || '',\n            Status: data.Process_Status || ''\n        };\n    });\n}\n\n// Attach to main orders\nif (Array.isArray(mainOrdersContext)) {\n    mainOrdersContext.forEach(mo => {\n        mo.items = [];\n        if (mo.Order_Items_Links && Array.isArray(mo.Order_Items_Links)) {\n            mo.Order_Items_Links.forEach(linkId => {\n                if (subItemsMap[linkId]) {\n                    mo.items.push(subItemsMap[linkId]);\n                }\n            });\n        }\n    });\n}\n\nreturn { \n  json: { \n    success: true, \n    count: mainOrdersContext ? mainOrdersContext.length : 0, \n    orders: mainOrdersContext \n  }\n};"
+      },
+      "id": "81cd2405-604c-4393-a4b7-675a8be7894a",
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16656,
+        5216
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (Fetch Review)": {
+      "main": [
+        [
+          {
+            "node": "Build Formula",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Formula": {
+      "main": [
+        [
+          {
+            "node": "Search Main_Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Main_Orders": {
+      "main": [
+        [
+          {
+            "node": "Format Main Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Main Orders": {
+      "main": [
+        [
+          {
+            "node": "Build SubItems Formula",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build SubItems Formula": {
+      "main": [
+        [
+          {
+            "node": "Search Order_Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Order_Items": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "32757ae79ea0dadd1f6ecd35f1438ee9954d79400ae4830b88eb9428692bddea"
+  }
+}

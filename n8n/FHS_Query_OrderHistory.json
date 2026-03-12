@@ -1,0 +1,118 @@
+{
+  "name": "FHS_Query_OrderHistory",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🔄 【舊單還原 - 數據讀取引擎】\n\n**核心用途：** 支援 Dashboard 的「修改舊單」功能。\n\n**主要功能：**\n1. **精準検索：** 根據 `Order_ID` 從 Airtable 抓取最原始的紀錄。\n2. **狀態還原：** 提取並回傳 `Raw_Form_State` (JSON)，讓前端能在 0.1 秒內復原當時的表單點選狀態。",
+        "height": 280,
+        "width": 550
+      },
+      "id": "doc-Fetch_V25_Order_(讀取舊單).json",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -350,
+        -350
+      ]
+    },
+    {
+      "parameters": {
+        "path": "fetch-fhs-order",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "96b092cd-a4d6-4392-ade5-30cddac66abb",
+      "name": "Webhook (Fetch Order)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -608
+      ],
+      "webhookId": "fhs-fetch-order-v25"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Main_Orders",
+          "mode": "name"
+        },
+        "filterByFormula": "=TRIM({Order_ID}) = '{{ $json.query.orderId }}'",
+        "options": {}
+      },
+      "id": "e6eaeb67-77d3-49a9-b630-b98ab0084842",
+      "name": "search Airtable Main_Orders",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1584,
+        -608
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nif (items.length > 0) {\n  // 自動偵測：優先看 fields，沒有就看最外層\n  const rawData = items[0].json;\n  const data = rawData.fields || rawData;\n  \n  // 只要裡面有單號或是儲存狀態，就代表抓到了\n  if (data.Order_ID || data.Raw_Form_State) {\n    return {\n      json: {\n        found: true,\n        Deposit: data.Deposit || 0,\n        Balance: data.Balance || 0,\n        Additional_Fee: data.Additional_Fee || 0,\n        Raw_Form_State: data.Raw_Form_State || \"\"\n      }\n    };\n  }\n}\n\nreturn {\n  json: {\n    found: false\n  }\n};\n"
+      },
+      "id": "b0a78d16-a797-481b-b456-ccddbd4040dd",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        -608
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (Fetch Order)": {
+      "main": [
+        [
+          {
+            "node": "search Airtable Main_Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search Airtable Main_Orders": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "918a2f85-08ee-4c79-988d-a80dab4b001e",
+  "meta": {
+    "instanceId": "32757ae79ea0dadd1f6ecd35f1438ee9954d79400ae4830b88eb9428692bddea"
+  },
+  "id": "xad2hBCcKoEhHSRY",
+  "tags": []
+}

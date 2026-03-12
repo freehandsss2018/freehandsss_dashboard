@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>freehandsss_dashboard V26 PRO 1.1</title>
+    <style>
+        :root {
+            --primary: #D4A373;
+            --secondary: #FAEDCD;
+            --dark: #4A4E69;
+            --bg: #F5F5F7;
+            --white: #FFFFFF;
+            --danger: #E63946;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang HK', sans-serif;
+            background-color: var(--bg);
+            color: var(--dark);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 100px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .card-info {
+            border-top: 5px solid #457B9D;
+        }
+
+        .card-product {
+            border-top: 5px solid #D4A373;
+        }
+
+        .card-finance {
+            border-top: 5px solid #52B788;
+        }
+
+        h2 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #D1D1D1;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #FFFFFF;
+            -webkit-appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 1em;
+            padding-right: 40px;
+        }
+
+        input:disabled {
+            background-color: #f9f9f9;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .grid-2-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
+
+        .addon-content {
+            display: none;
+            background: #fcfcfc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed #D4A373;
+            margin-bottom: 20px;
+        }
+
+        .addon-content.active {
+            display: block;
+        }
+
+        .limb-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px dashed #ccc;
+            margin-bottom: 15px;
+        }
+
+        .sec-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 5px;
+        }
+
+        .limb-title {
+            font-weight: bold;
+            color: #B07D4C;
+            font-size: 15px;
+            margin: 0;
+        }
+
+        .part-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .part-details {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #eee;
+            width: 100%;
+        }
+
+        .part-details.active {
+            display: block;
+        }
+
+        .mini-col {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .mini-col label {
+            font-size: 12px;
+            color: #888;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .mini-col input,
+        .mini-col select {
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+
+        .grid-3-col {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1.5fr;
+            gap: 8px;
+        }
+
+        .preview-card {
+            background: var(--dark);
+            color: var(--white);
+            border-top: 5px solid #2A2D43;
+        }
+
+        textarea#output-preview {
+            min-height: 520px;
+            background: #2A2D43;
+            color: #FFF;
+            border: none;
+            line-height: 1.6;
+            resize: none;
+            font-family: monospace;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .verification-list {
+            border: 3px solid #457B9D;
+            display: none;
+        }
+
+        .fat-mo-mode .verification-list {
+            display: block;
+        }
+
+        .role-bar {
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .role-btn {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .role-btn.active {
+            background: #2A2D43;
+            color: white;
+        }
+
+        .ling-au-mode .fat-only {
+            display: none !important;
+        }
+
+        .v-item {
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .suggestions-box {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            margin-top: 5px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .suggestion-item:hover {
+            background: #f0f7ff;
+        }
+
+        .bottom-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            background: rgba(245, 245, 247, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .copy-same-btn {
+            font-size: 12px;
+            padding: 4px 8px;
+            background-color: #E2E8F0;
+            border: 1px solid #CBD5E1;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #475569;
+            margin-left: 10px;
+        }
+
+        .copy-same-btn:hover {
+            background-color: #CBD5E1;
+        }
+    </style>
+</head>
+
+<body class="ling-au-mode">
+
+    <div class="role-bar">
+        <button id="roleLingBtn" class="role-btn active" onclick="setRole('ling')">👧 Ling Au 模式</button>
+        <button id="roleFatBtn" class="role-btn" onclick="setRole('fat')">👦 Fat Mo 模式</button>
+    </div>
+
+    <div class="card card-info">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <h2 style="margin:0; padding:0;">🕹️ 系統模式</h2>
+            <div style="display:flex; gap:10px;">
+                                <button id="modeCreateBtn" onclick="switchMode('create')"
+                    style="padding:8px 15px; border-radius:8px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">新增訂單</button>
+                <button id="modeEditBtn" onclick="switchMode('edit')"
+                    style="padding:8px 15px; border-radius:8px; border:1px solid #ccc; background:#eee; color:#666; font-weight:bold; cursor:pointer;">修改舊單</button>
+                <button id="modeReviewBtn" onclick="switchMode('review')"
+                    style="padding:8px 15px; border-radius:8px; border:1px solid #ccc; background:#eee; color:#666; font-weight:bold; cursor:pointer;">📊 全域核對</button>
+            </div>
+        </div>
+
+        <div id="editModeContainer"
+            style="display:none; background:#fcfcfc; padding:15px; border-radius:8px; border:1px dashed #457B9D; margin-bottom:15px;">
+            <label>🔍 輸入舊單 ID (Order_ID) / 快速搜尋</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="searchOrderId" oninput="handleFuzzySearch()"
+                    placeholder="例如：FHS-ABC123XYZ 或 06001" style="flex:1;">
+                <button onclick="fetchOldOrder()"
+                    style="padding:0 20px; border-radius:8px; border:none; background:#457B9D; color:white; font-weight:bold; cursor:pointer; white-space:nowrap;">讀取資料</button>
+            </div>
+            <p id="fetchStatus" style="font-size:12px; color:#666; margin:8px 0 0 0;">請輸入單號並點擊讀取，系統將自動覆蓋下方表單。</p>
+            <div id="searchSuggestions" class="suggestions-box"></div>
+        </div>
+    </div>
+    
+    <!-- 全域核對中心 (Excel Style) -->
+    <div id="reviewModeContainer" style="display:none; width:100%;">
+        <div class="card" style="border-top: 5px solid #D4A373;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin:0; padding:0;">📊 全域核對中心 (Global Review)</h2>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
+                    <select id="reviewYear" style="width:100px; padding:8px;" onchange="fetchGlobalReview()"></select>
+                    <select id="reviewMonth" style="width:100px; padding:8px;" onchange="fetchGlobalReview()">
+                        <option value="">全部月份</option>
+                        <option value="01">1月</option><option value="02">2月</option><option value="03">3月</option>
+                        <option value="04">4月</option><option value="05">5月</option><option value="06">6月</option>
+                        <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
+                        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                    </select>
+                    <select id="reviewStatus" style="width:200px; padding:8px;" onchange="fetchGlobalReview()">
+                        <option value="">全部狀態</option>
+                        <option value="0 什麼都未做">0 什麼都未做</option>
+                        <option value="1 已繪圖 或 已取相">1 已繪圖 或 已取相</option>
+                        <option value="1.5 已交付建模師, 等3D圖中">1.5 已交付建模師, 等3D圖中</option>
+                        <option value="2 已修3D圖, 但未核對">2 已修3D圖, 但未核對</option>
+                        <option value="2.5 已核對3D圖, 準備打印">2.5 已核對3D圖, 準備打印</option>
+                        <option value="3 已交付廠家, 打印中">3 已交付廠家, 打印中</option>
+                        <option value="Done 已完成">Done 已完成</option>
+                    </select>
+                    <input type="text" id="reviewBatch" placeholder="批次 (e.g. 第31批)" style="width:120px; padding:8px;" oninput="debounceFetchGlobalReview()">
+                    <input type="text" id="reviewSearch" placeholder="搜尋姓名/單號" style="width:150px; padding:8px;" oninput="debounceFetchGlobalReview()">
+                    <button onclick="fetchGlobalReview()" style="padding:8px 15px; border-radius:8px; border:none; background:#2A9D8F; color:white; font-weight:bold; cursor:pointer;">更新</button>
+                    <span id="reviewLoading" style="display:none; color:#E76F51; font-weight:bold; font-size: 14px;">🔄 載入中...</span>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #ddd; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;" id="reviewTable">
+                    <thead style="position: sticky; top: 0; background: #2A2D43; color: white; z-index: 10;">
+                        <tr>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:80px;">S/N</th>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:90px;">Date</th>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:80px;">Customer</th>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:140px;">Admin Notes</th>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:140px;">Engraving</th>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:160px;">Product Items</th>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:90px;">Batch</th>
+                            <th style="padding: 10px; border: 1px solid #444; min-width:140px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reviewTableBody">
+                        <tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">請選擇上方條件載入資料</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 原有表單區域 -->
+    <div id="formContainer">
+        <div class="verification-list card">
+        <h2 style="color: #457B9D;">📋 本單產品核對清單 (生產專用)</h2>
+        <div id="v-list-container">
+            <p style="color:#888; text-align:center;">(尚未選擇產品)</p>
+        </div>
+    </div>
+
+    <div class="card card-info">
+        <h2>📝 基本資訊</h2>
+        <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
+                oninput="generate()"></div>
+        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
+        <div class="form-group"><label>取模時間</label>
+            <div class="grid-2-col">
+                <select id="appTimeHour" onchange="generate()"></select>
+                <select id="appTimeAmPm" onchange="updateTimeOptions()">
+                    <option value="AM">AM</option>
+                    <option value="PM" selected>PM</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-product">
+        <h2>🛍️ 產品選購</h2>
+
+        <div class="toggle-row">
+            <strong>🎨 立體擺設款式</strong>
+            <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this)"> <span
+                    class="slider"></span></label>
+        </div>
+        <div id="contentP" class="addon-content">
+            <div class="form-group">
+                <label>款式類型</label>
+                <select id="pSubCat" onchange="renderLimbGrid(); generate();">
+                    <option value="木框款式">木框款式</option>
+                    <option value="玻璃瓶款式">玻璃瓶款式</option>
+                </select>
+            </div>
+            <div id="limbContainer"></div>
+            <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
+                    oninput="generate()"></div>
+        </div>
+
+        <div class="toggle-row">
+            <strong>🔑 金屬鎖匙扣</strong>
+            <label class="switch"><input type="checkbox" id="enableK" onchange="toggleAddon('contentK', this)"> <span
+                    class="slider"></span></label>
+        </div>
+        <div id="contentK" class="addon-content">
+            <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
+
+            <div class="limb-grid">
+                <div class="sec-title-row">
+                    <span class="limb-title">👶 【嬰兒單一部位】</span>
+                    <label class="switch"><input type="checkbox" id="k_baby_sec_en" checked
+                            onchange="togglePart('k_baby_sec_box', this); generate();"><span
+                            class="slider"></span></label>
+                </div>
+                <div id="k_baby_sec_box" class="part-details active" style="border:none; padding:0; margin:0;">
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🖐️ 左手</span><button
+                                    class="copy-same-btn" onclick="copyToOthers('k_lh')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_lh_en"
+                                    onchange="togglePart('k_lh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_lh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_lh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_lh_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_lh_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🖐️ 右手</span><button
+                                    class="copy-same-btn" onclick="copyToOthers('k_rh')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_rh_en"
+                                    onchange="togglePart('k_rh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_rh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_rh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_rh_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_rh_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🦶 左腳</span><button class="copy-same-btn"
+                                    onclick="copyToOthers('k_lf')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_lf_en"
+                                    onchange="togglePart('k_lf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_lf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_lf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_lf_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_lf_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🦶 右腳</span><button class="copy-same-btn"
+                                    onclick="copyToOthers('k_rf')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_rf_en"
+                                    onchange="togglePart('k_rf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_rf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_rf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_rf_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_rf_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="limb-grid">
+                <div class="sec-title-row">
+                    <span class="limb-title">🧒 【大寶單一部位】</span>
+                    <label class="switch"><input type="checkbox" id="k_elder_sec_en"
+                            onchange="togglePart('k_elder_sec_box', this); generate();"><span
+                            class="slider"></span></label>
+                </div>
+                <div id="k_elder_sec_box" class="part-details" style="border:none; padding:0; margin:0;">
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🖐️ 大寶左手</span><button
+                                    class="copy-same-btn" onclick="copyToOthers('k_e_lh')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_e_lh_en"
+                                    onchange="togglePart('k_e_lh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_e_lh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_lh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_lh_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_lh_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🖐️ 大寶右手</span><button
+                                    class="copy-same-btn" onclick="copyToOthers('k_e_rh')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_e_rh_en"
+                                    onchange="togglePart('k_e_rh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_e_rh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_rh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_rh_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_rh_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🦶 大寶左腳</span><button
+                                    class="copy-same-btn" onclick="copyToOthers('k_e_lf')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_e_lf_en"
+                                    onchange="togglePart('k_e_lf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_e_lf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_lf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_lf_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_lf_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><span style="font-weight: bold; color: #444;">🦶 大寶右腳</span><button
+                                    class="copy-same-btn" onclick="copyToOthers('k_e_rf')">套用至其他</button></div>
+                            <label class="switch"><input type="checkbox" id="k_e_rf_en"
+                                    onchange="togglePart('k_e_rf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="k_e_rf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_rf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_rf_top"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_rf_bot"
+                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="limb-grid" style="border: 2px solid #D4A373; background-color: #fffaf0;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="limb-title" style="border:none;">👨‍👩‍👧‍👦 【家庭合成鎖匙扣】</span>
+                    <label class="switch"><input type="checkbox" id="k_family_en"
+                            onchange="togglePart('k_family_box', this); generate();"><span
+                            class="slider"></span></label>
+                </div>
+                <div id="k_family_box" class="part-details">
+                    <div class="grid-3-col">
+                        <div class="mini-col" style="grid-column: span 3; margin-bottom: 5px;">
+                            <label style="color: #D4A373; font-weight: bold;">選擇合成款式 (已包含父母手)</label>
+                            <select id="k_family_combo" onchange="updateFamilyParts(); generate();">
+                                <option value="S1_B">S1：父母 ➕ 嬰兒 (單一部位)</option>
+                                <option value="S2_BB">S2：父母 ➕ 嬰兒 (一手一腳)</option>
+                                <option value="S2_BE">S2：父母 ➕ 嬰兒 (1部位) ➕ 大寶 (1部位)</option>
+                            </select>
+                        </div>
+
+                        <div style="grid-column: span 3; display: flex; gap: 8px; width: 100%;">
+                            <div class="mini-col" id="fam_p1_wrap"
+                                style="flex: 1; display: flex; flex-direction: column;">
+                                <label id="fam_p1_lbl">👶嬰兒部位</label>
+                                <select id="fam_p1_sel" onchange="generate()"></select>
+                            </div>
+                            <div class="mini-col" id="fam_p2_wrap"
+                                style="flex: 1; display: none; flex-direction: column;">
+                                <label id="fam_p2_lbl">部位2</label>
+                                <select id="fam_p2_sel" onchange="generate()"></select>
+                            </div>
+                            <div class="mini-col"
+                                style="width: 65px; flex-shrink: 0; display: flex; flex-direction: column;">
+                                <label>數量</label>
+                                <input type="number" id="k_family_qty" value="1" min="1" oninput="generate()">
+                            </div>
+                        </div>
+
+                        <div class="mini-col" style="grid-column: span 1; margin-top: 5px;">
+                            <label>上排(最多6字)</label><input type="text" id="k_family_top" maxlength="8" placeholder="待定"
+                                oninput="generate()">
+                        </div>
+                        <div class="mini-col" style="grid-column: span 2; margin-top: 5px;">
+                            <label>下排(最多8字)</label><input type="text" id="k_family_bot" maxlength="8" placeholder="待定"
+                                oninput="generate()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toggle-row">
+            <strong>✨ 純銀頸鏈吊飾</strong>
+            <label class="switch"><input type="checkbox" id="enableM" onchange="toggleAddon('contentM', this)"> <span
+                    class="slider"></span></label>
+        </div>
+        <div id="contentM" class="addon-content">
+            <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
+
+            <div class="limb-grid">
+                <div class="sec-title-row">
+                    <span class="limb-title">👶 【嬰兒部位】</span>
+                    <label class="switch"><input type="checkbox" id="m_baby_sec_en" checked
+                            onchange="togglePart('m_baby_sec_box', this); generate();"><span
+                            class="slider"></span></label>
+                </div>
+                <div id="m_baby_sec_box" class="part-details active" style="border:none; padding:0; margin:0;">
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🖐️ 左手</span>
+                            <label class="switch"><input type="checkbox" id="m_lh_en"
+                                    onchange="togglePart('m_lh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_lh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_lh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_lh_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>手部刻字</label><input type="text" disabled value="不適用"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🖐️ 右手</span>
+                            <label class="switch"><input type="checkbox" id="m_rh_en"
+                                    onchange="togglePart('m_rh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_rh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_rh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_rh_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>手部刻字</label><input type="text" disabled value="不適用"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🦶 左腳</span>
+                            <label class="switch"><input type="checkbox" id="m_lf_en"
+                                    onchange="togglePart('m_lf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_lf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_lf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_lf_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>單字刻字</label><input type="text" id="m_lf_eng" maxlength="1"
+                                        placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🦶 右腳</span>
+                            <label class="switch"><input type="checkbox" id="m_rf_en"
+                                    onchange="togglePart('m_rf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_rf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_rf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_rf_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>單字刻字</label><input type="text" id="m_rf_eng" maxlength="1"
+                                        placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="limb-grid">
+                <div class="sec-title-row">
+                    <span class="limb-title">🧒 【大寶部位】</span>
+                    <label class="switch"><input type="checkbox" id="m_elder_sec_en"
+                            onchange="togglePart('m_elder_sec_box', this); generate();"><span
+                            class="slider"></span></label>
+                </div>
+                <div id="m_elder_sec_box" class="part-details" style="border:none; padding:0; margin:0;">
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🖐️ 大寶左手</span>
+                            <label class="switch"><input type="checkbox" id="m_e_lh_en"
+                                    onchange="togglePart('m_e_lh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_e_lh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_e_lh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_e_lh_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>手部刻字</label><input type="text" disabled value="不適用"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🖐️ 大寶右手</span>
+                            <label class="switch"><input type="checkbox" id="m_e_rh_en"
+                                    onchange="togglePart('m_e_rh_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_e_rh_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_e_rh_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_e_rh_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>手部刻字</label><input type="text" disabled value="不適用"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🦶 大寶左腳</span>
+                            <label class="switch"><input type="checkbox" id="m_e_lf_en"
+                                    onchange="togglePart('m_e_lf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_e_lf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_e_lf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_e_lf_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>單字刻字</label><input type="text" id="m_e_lf_eng"
+                                        maxlength="1" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold; color: #444;">🦶 大寶右腳</span>
+                            <label class="switch"><input type="checkbox" id="m_e_rf_en"
+                                    onchange="togglePart('m_e_rf_box', this)"><span class="slider"></span></label>
+                        </div>
+                        <div id="m_e_rf_box" class="part-details">
+                            <div class="grid-3-col">
+                                <div class="mini-col"><label>數量</label><input type="number" id="m_e_rf_qty" value="1"
+                                        min="1" oninput="generate()"></div>
+                                <div class="mini-col"><label>顏色</label><select id="m_e_rf_color" onchange="generate()">
+                                        <option value="待定">待定</option>
+                                        <option value="925金">925金</option>
+                                        <option value="925銀">925銀</option>
+                                    </select></div>
+                                <div class="mini-col"><label>單字刻字</label><input type="text" id="m_e_rf_eng"
+                                        maxlength="1" placeholder="待定" oninput="generate()"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card card-finance">
+        <h2>💰 財務結算</h2>
+        <div class="form-group"><label>已付訂金/全數 ($)</label><input type="number" id="deposit" placeholder="0"
+                oninput="generate()"></div>
+        <div class="grid-2-col">
+            <div class="form-group"><label>產品尾數 ($)</label><input type="number" id="balance" placeholder="0"
+                    oninput="generate()"></div>
+            <div class="form-group"><label>附加費 ($)</label><input type="number" id="additional" placeholder="0"
+                    oninput="generate()"></div>
+        </div>
+    </div>
+
+    <div class="card preview-card">
+        <h2>📱 IG 訊息預覽</h2>
+        <textarea id="output-preview" readonly></textarea>
+    </div>
+
+    </div> <!-- End formContainer -->
+    <div class="bottom-action-bar" id="bottomActionBar">
+        <button class="copy-btn" onclick="copyText()">📋 複製 IG 訊息</button>
+        <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D;">🚀
+            同步至後台</button>
+    </div>
+
+    <script>
+        const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
+        function generateOrderID() {
+            const date = new Date();
+            const yearStr = date.getFullYear().toString().substr(-2);
+            const displayYear = (parseInt(yearStr) - 20).toString().padStart(2, '0');
+            const randomID = Math.floor(Math.random() * 90000) + 10000;
+            return displayYear + randomID;
+        }
+        let orderID = generateOrderID();
+        let currentRole = 'ling';
+
+        function setRole(role) {
+            currentRole = role; document.body.className = (role === 'fat' ? 'fat-mo-mode' : 'ling-au-mode');
+            document.getElementById('roleLingBtn').classList.toggle('active', role === 'ling');
+            document.getElementById('roleFatBtn').classList.toggle('active', role === 'fat');
+            updateVerificationList();
+            generate();
+        }
+
+        function resetForm() {
+            // 1. 清空所有基本輸入框
+            const inputs = document.querySelectorAll('input:not([type="button"]):not([type="submit"])');
+            inputs.forEach(el => {
+                if (el.id === 'searchOrderId') return; // 不清空搜索框
+                if (el.type === 'checkbox' || el.type === 'radio') {
+                    el.checked = false;
+                } else if (el.type === 'number') {
+                    el.value = "";
+                } else {
+                    el.value = "";
+                }
+            });
+
+            // 2. 清空下拉選單
+            const selects = document.querySelectorAll('select');
+            selects.forEach(el => {
+                el.selectedIndex = 0;
+            });
+
+            // 3. 隱藏所有活動區塊
+            ['contentP', 'contentK', 'contentM', 'k_baby_sec_box', 'k_elder_sec_box', 'm_baby_sec_box', 'm_elder_sec_box', 'box_parent', 'box_elder'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+
+            // 4. 重設 ID 與預覽
+            orderID = generateOrderID();
+            editTargetOrderId = null;
+            lastFetchedState = null; // 🚨 清除讀取紀錄
+            document.getElementById('output-preview').value = "";
+            const fetchStatus = document.getElementById('fetchStatus');
+            if (fetchStatus) {
+                fetchStatus.innerText = "請輸入單號並點擊讀取，系統將自動覆蓋下方表單。";
+                fetchStatus.style.color = "#666";
+            }
+
+            // 5. 重新渲染動態部分
+            updateTimeOptions();
+            renderLimbGrid();
+            updateFamilyParts();
+            generate();
+        }
+
+        let currentMode = 'create';
+        let editTargetOrderId = null;
+        let lastFetchedState = null; // 紀錄讀取時的狀態，用於比對差異
+
+        function switchMode(mode) {
+            if (currentMode !== mode) {
+                resetForm(); // 只要模式改變，就清空表單
+            }
+            currentMode = mode;
+            if (mode === 'create') {
+                document.getElementById('editModeContainer').style.display = 'none';
+                if(document.getElementById('reviewModeContainer')) document.getElementById('reviewModeContainer').style.display = 'none';
+                if(document.getElementById('formContainer')) document.getElementById('formContainer').style.display = 'block';
+
+                document.getElementById('modeCreateBtn').style.background = 'var(--primary)';
+                document.getElementById('modeCreateBtn').style.color = 'white';
+                document.getElementById('modeCreateBtn').style.border = 'none';
+                
+                document.getElementById('modeEditBtn').style.background = '#eee';
+                document.getElementById('modeEditBtn').style.color = '#666';
+                document.getElementById('modeEditBtn').style.border = '1px solid #ccc';
+                
+                if (document.getElementById('modeReviewBtn')) {
+                    document.getElementById('modeReviewBtn').style.background = '#eee';
+                    document.getElementById('modeReviewBtn').style.color = '#666';
+                    document.getElementById('modeReviewBtn').style.border = '1px solid #ccc';
+                }
+
+                const syncBtn = document.getElementById('syncBtn');
+                if (syncBtn) {
+                    syncBtn.innerText = '🚀 建立新單並同步至後台';
+                    syncBtn.style.backgroundColor = '#457B9D';
+                    syncBtn.style.opacity = '1';
+                    syncBtn.style.pointerEvents = 'auto';
+                }
+                const bbar = document.getElementById('bottomActionBar');
+                if(bbar) bbar.style.display = 'flex';
+                
+            } else if (mode === 'edit') {
+                document.getElementById('editModeContainer').style.display = 'block';
+                if(document.getElementById('reviewModeContainer')) document.getElementById('reviewModeContainer').style.display = 'none';
+                if(document.getElementById('formContainer')) document.getElementById('formContainer').style.display = 'block';
+
+                document.getElementById('modeCreateBtn').style.background = '#eee';
+                document.getElementById('modeCreateBtn').style.color = '#666';
+                document.getElementById('modeCreateBtn').style.border = '1px solid #ccc';
+                
+                document.getElementById('modeEditBtn').style.background = 'var(--primary)';
+                document.getElementById('modeEditBtn').style.color = 'white';
+                document.getElementById('modeEditBtn').style.border = 'none';
+
+                if (document.getElementById('modeReviewBtn')) {
+                    document.getElementById('modeReviewBtn').style.background = '#eee';
+                    document.getElementById('modeReviewBtn').style.color = '#666';
+                    document.getElementById('modeReviewBtn').style.border = '1px solid #ccc';
+                }
+
+                const syncBtn = document.getElementById('syncBtn');
+                if (syncBtn) {
+                    syncBtn.innerText = '📝 更新舊單並同步至後台';
+                    syncBtn.style.backgroundColor = '#D4A373';
+                    syncBtn.style.opacity = '1';
+                    syncBtn.style.pointerEvents = 'auto';
+                }
+                const bbar = document.getElementById('bottomActionBar');
+                if(bbar) bbar.style.display = 'flex';
+                
+            } else if (mode === 'review') {
+                document.getElementById('editModeContainer').style.display = 'none';
+                if(document.getElementById('formContainer')) document.getElementById('formContainer').style.display = 'none';
+                if(document.getElementById('reviewModeContainer')) document.getElementById('reviewModeContainer').style.display = 'block';
+
+                document.getElementById('modeCreateBtn').style.background = '#eee';
+                document.getElementById('modeCreateBtn').style.color = '#666';
+                document.getElementById('modeCreateBtn').style.border = '1px solid #ccc';
+                
+                document.getElementById('modeEditBtn').style.background = '#eee';
+                document.getElementById('modeEditBtn').style.color = '#666';
+                document.getElementById('modeEditBtn').style.border = '1px solid #ccc';
+
+                if (document.getElementById('modeReviewBtn')) {
+                    document.getElementById('modeReviewBtn').style.background = 'var(--primary)';
+                    document.getElementById('modeReviewBtn').style.color = 'white';
+                    document.getElementById('modeReviewBtn').style.border = 'none';
+                }
+
+                const bbar = document.getElementById('bottomActionBar');
+                if(bbar) bbar.style.display = 'none'; // Hide bottom bar
+                
+                initReviewYears();
+                fetchGlobalReview();
+            }
+        }
+
+        function toggleAddon(id, cb) {
+            document.getElementById(id).classList.toggle('active', cb.checked);
+            generate();
+        }
+
+        function togglePart(boxId, cb) {
+            document.getElementById(boxId).classList.toggle('active', cb.checked);
+            generate();
+        }
+
+        // 智能複製刻字：只限嬰兒與大寶單一部位互抄
+        function copyToOthers(sourcePrefix) {
+            const topText = document.getElementById(`${sourcePrefix}_top`).value;
+            const botText = document.getElementById(`${sourcePrefix}_bot`).value;
+            const parts = ['k_lh', 'k_rh', 'k_lf', 'k_rf', 'k_e_lh', 'k_e_rh', 'k_e_lf', 'k_e_rf'];
+
+            let copiedCount = 0;
+
+            parts.forEach(targetPrefix => {
+                if (targetPrefix !== sourcePrefix) {
+                    const targetCb = document.getElementById(`${targetPrefix}_en`);
+                    if (targetCb && targetCb.checked) {
+                        document.getElementById(`${targetPrefix}_top`).value = topText;
+                        document.getElementById(`${targetPrefix}_bot`).value = botText;
+                        copiedCount++;
+                    }
+                }
+            });
+
+            if (copiedCount === 0) {
+                alert("⚠️ 請先打開其他單一部位的開關，才能將刻字套用過去喔！");
+            }
+
+            generate();
+        }
+
+        // 動態更新家庭合成下拉選單
+        function updateFamilyParts() {
+            const combo = document.getElementById("k_family_combo").value;
+            const p1Wrap = document.getElementById("fam_p1_wrap");
+            const p1Lbl = document.getElementById("fam_p1_lbl");
+            const p1Sel = document.getElementById("fam_p1_sel");
+
+            const p2Wrap = document.getElementById("fam_p2_wrap");
+            const p2Lbl = document.getElementById("fam_p2_lbl");
+            const p2Sel = document.getElementById("fam_p2_sel");
+
+            const allParts = `<option value="左手">左手</option><option value="右手">右手</option><option value="左腳">左腳</option><option value="右腳">右腳</option>`;
+            const handParts = `<option value="左手">左手</option><option value="右手">右手</option>`;
+            const footParts = `<option value="左腳">左腳</option><option value="右腳">右腳</option>`;
+
+            if (combo === "S1_B") {
+                p1Lbl.innerText = "👶嬰兒部位";
+                p1Sel.innerHTML = allParts;
+                p2Wrap.style.display = "none";
+            } else if (combo === "S2_BB") {
+                p1Lbl.innerText = "👶嬰兒手";
+                p1Sel.innerHTML = handParts;
+                p2Wrap.style.display = "flex";
+                p2Lbl.innerText = "👶嬰兒腳";
+                p2Sel.innerHTML = footParts;
+            } else if (combo === "S2_BE") {
+                p1Lbl.innerText = "👶嬰兒部位";
+                p1Sel.innerHTML = allParts;
+                p2Wrap.style.display = "flex";
+                p2Lbl.innerText = "🧒大寶部位";
+                p2Sel.innerHTML = allParts;
+            }
+        }
+
+        function renderLimbGrid() {
+            const sub = document.getElementById("pSubCat").value;
+            const container = document.getElementById("limbContainer");
+            let html = '';
+
+            if (sub === "木框款式") {
+                html += `<div class="form-group"><label>木框色款</label><select id="woodStyle" onchange="generate()"><option value="待定">待定</option><option value="粉紅款式">粉紅款式</option><option value="草原款式">草原款式</option></select></div>`;
+            } else {
+                html += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
+            }
+
+            html += `<div class="limb-grid"><div class="limb-title" style="border-bottom: 1px solid #eee; padding-bottom: 5px;">【嬰兒】</div><div class="grid-2-col">`;
+            ["左手", "右手", "左腳", "右腳"].forEach(l => {
+                html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="嬰兒" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+            });
+            html += `</div></div>`;
+
+            if (sub === "玻璃瓶款式") {
+                html += `
+            <div class="limb-grid">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    <span class="limb-title" style="margin:0; border:none;">【父母】</span>
+                    <label class="switch"><input type="checkbox" id="en_parent" onchange="togglePart('box_parent', this)"><span class="slider"></span></label>
+                </div>
+                <div id="box_parent" class="part-details">
+                    <div class="grid-2-col">`;
+                ["左手", "右手"].forEach(l => {
+                    html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="父母" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+                });
+                html += `       </div>
+                </div>
+            </div>`;
+
+                html += `
+            <div class="limb-grid">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    <span class="limb-title" style="margin:0; border:none;">【大寶】</span>
+                    <label class="switch"><input type="checkbox" id="en_elder" onchange="togglePart('box_elder', this)"><span class="slider"></span></label>
+                </div>
+                <div id="box_elder" class="part-details">
+                    <div class="grid-2-col">`;
+                ["左手", "右手", "左腳", "右腳"].forEach(l => {
+                    html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="大寶" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+                });
+                html += `       </div>
+                </div>
+            </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function updateTimeOptions() {
+            const hourSelect = document.getElementById("appTimeHour");
+            const ampmSelect = document.getElementById("appTimeAmPm").value;
+            const currentVal = hourSelect.value || "待定";
+            hourSelect.innerHTML = '<option value="待定">待定時間</option>';
+
+            if (ampmSelect === "AM") {
+                for (let h = 8; h <= 11; h++) { hourSelect.innerHTML += `<option value="${h}:00">${h}:00</option><option value="${h}:30">${h}:30</option>`; }
+            } else {
+                hourSelect.innerHTML += `<option value="12:00">12:00</option><option value="12:30">12:30</option>`;
+                for (let h = 1; h <= 8; h++) { hourSelect.innerHTML += `<option value="${h}:00">${h}:00</option><option value="${h}:30">${h}:30</option>`; }
+            }
+            hourSelect.value = [...hourSelect.options].some(o => o.value === currentVal) ? currentVal : "待定";
+            generate();
+        }
+
+        function formatLimbs(who) {
+            let lh = document.querySelector(`.limb-sel[data-who="${who}"][data-part="左手"]`)?.value;
+            let rh = document.querySelector(`.limb-sel[data-who="${who}"][data-part="右手"]`)?.value;
+            let lf = document.querySelector(`.limb-sel[data-who="${who}"][data-part="左腳"]`)?.value;
+            let rf = document.querySelector(`.limb-sel[data-who="${who}"][data-part="右腳"]`)?.value;
+
+            let text = "";
+            let hasHand = (lh && lh !== "無") || (rh && rh !== "無");
+            let hasFoot = (lf && lf !== "無") || (rf && rf !== "無");
+
+            if (!hasHand && !hasFoot) return "";
+
+            text += `【${who}】\n`;
+
+            if (hasHand) {
+                let hStr = [];
+                if (lh && lh !== "無") hStr.push(`左手(${lh})`);
+                if (rh && rh !== "無") hStr.push(`右手(${rh})`);
+                text += ` - ${hStr.join('、')}\n`;
+            }
+            if (hasFoot) {
+                let fStr = [];
+                if (lf && lf !== "無") fStr.push(`左腳(${lf})`);
+                if (rf && rf !== "無") fStr.push(`右腳(${rf})`);
+                text += ` - ${fStr.join('、')}\n`;
+            }
+            return text;
+        }
+
+        function getFamilyComboDetails() {
+            const combo = document.getElementById("k_family_combo").value;
+            const p1 = document.getElementById("fam_p1_sel").value;
+            let note = "";
+            let sType = "";
+
+            if (combo === "S1_B") {
+                note = `父母手 + 嬰兒${p1}`;
+                sType = "家庭(S1)";
+            } else if (combo === "S2_BB") {
+                const p2 = document.getElementById("fam_p2_sel").value;
+                note = `父母手 + 嬰兒${p1} + 嬰兒${p2}`;
+                sType = "家庭(S2)";
+            } else if (combo === "S2_BE") {
+                const p2 = document.getElementById("fam_p2_sel").value;
+                note = `父母手 + 嬰兒${p1} + 大寶${p2}`;
+                sType = "家庭(S2)";
+            }
+            return { note, sType };
+        }
+
+        function generate() {
+            const mom = document.getElementById("momName").value || "待定";
+            const dateStr = document.getElementById("appDate").value;
+            const date = dateStr ? dateStr.replace(/-/g, '/') : "待定";
+            const hour = document.getElementById("appTimeHour").value;
+            const ampm = document.getElementById("appTimeAmPm").value;
+            const timeStr = hour === '待定' ? '待定' : `${hour} ${ampm}`;
+
+            let pText = "";
+            let hasP = document.getElementById("enableP").checked;
+            let hasK = document.getElementById("enableK").checked;
+            let hasM = document.getElementById("enableM").checked;
+
+            if (hasP) {
+                const sub = document.getElementById("pSubCat").value;
+                pText += `產品類別：立體擺設 (${sub})\n`;
+                if (sub === "木框款式") pText += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}\n`;
+                if (sub === "玻璃瓶款式") pText += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}\n`;
+
+                pText += formatLimbs("嬰兒");
+                if (document.getElementById("en_parent")?.checked) pText += formatLimbs("父母");
+                if (document.getElementById("en_elder")?.checked) pText += formatLimbs("大寶");
+
+                pText += `客製化刻字：${document.getElementById("pEngraving").value || "待定"}\n\n`;
+            }
+
+            if (hasK) {
+                let kDetails = "";
+                const kBabyParts = [{ id: "lh", name: "嬰兒左手" }, { id: "rh", name: "嬰兒右手" }, { id: "lf", name: "嬰兒左腳" }, { id: "rf", name: "嬰兒右腳" }];
+                const kElderParts = [{ id: "e_lh", name: "大寶左手" }, { id: "e_rh", name: "大寶右手" }, { id: "e_lf", name: "大寶左腳" }, { id: "e_rf", name: "大寶右腳" }];
+
+                // 1. 嬰兒區塊
+                if (document.getElementById('k_baby_sec_en').checked) {
+                    kBabyParts.forEach(p => {
+                        if (document.getElementById(`k_${p.id}_en`).checked) {
+                            let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
+                            let top = document.getElementById(`k_${p.id}_top`).value || "待定";
+                            let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
+                            kDetails += ` - ${p.name}(共${qty}隻)\n   上排：${top} | 下排：${bot}\n`;
+                        }
+                    });
+                }
+
+                // 2. 大寶區塊
+                if (document.getElementById('k_elder_sec_en').checked) {
+                    kElderParts.forEach(p => {
+                        if (document.getElementById(`k_${p.id}_en`).checked) {
+                            let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
+                            let top = document.getElementById(`k_${p.id}_top`).value || "待定";
+                            let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
+                            kDetails += ` - ${p.name}(共${qty}隻)\n   上排：${top} | 下排：${bot}\n`;
+                        }
+                    });
+                }
+
+                // 3. 家庭合成鎖匙扣 (動態獲取)
+                if (document.getElementById('k_family_en') && document.getElementById('k_family_en').checked) {
+                    let qty = document.getElementById(`k_family_qty`).value || "1";
+                    let top = document.getElementById(`k_family_top`).value || "待定";
+                    let bot = document.getElementById(`k_family_bot`).value || "待定";
+
+                    let comboInfo = getFamilyComboDetails();
+
+                    kDetails += ` - 👨‍👩‍👧‍👦 家庭合成鎖匙扣 [${comboInfo.sType}](共${qty}隻)\n   包含部位：${comboInfo.note}\n   上排：${top} | 下排：${bot}\n`;
+                }
+
+                pText += `【選購/加購項目】\n產品類別：金屬鎖匙扣 (不鏽鋼)\n${kDetails || " - (未選擇部位)\n"}\n`;
+            }
+
+            if (hasM) {
+                let mDetails = "";
+                const mBabyParts = [{ id: "lh", name: "嬰兒左手", isFoot: false }, { id: "rh", name: "嬰兒右手", isFoot: false }, { id: "lf", name: "嬰兒左腳", isFoot: true }, { id: "rf", name: "嬰兒右腳", isFoot: true }];
+                const mElderParts = [{ id: "e_lh", name: "大寶左手", isFoot: false }, { id: "e_rh", name: "大寶右手", isFoot: false }, { id: "e_lf", name: "大寶左腳", isFoot: true }, { id: "e_rf", name: "大寶右腳", isFoot: true }];
+
+                if (document.getElementById('m_baby_sec_en').checked) {
+                    mBabyParts.forEach(p => {
+                        if (document.getElementById(`m_${p.id}_en`).checked) {
+                            let qty = document.getElementById(`m_${p.id}_qty`).value || "1";
+                            let color = document.getElementById(`m_${p.id}_color`).value;
+                            let eng = p.isFoot ? (document.getElementById(`m_${p.id}_eng`).value || "待定") : "不適用";
+                            mDetails += ` - ${p.name}(共${qty}條) | 顏色：${color}\n   刻字：${eng}\n`;
+                        }
+                    });
+                }
+                if (document.getElementById('m_elder_sec_en').checked) {
+                    mElderParts.forEach(p => {
+                        if (document.getElementById(`m_${p.id}_en`).checked) {
+                            let qty = document.getElementById(`m_${p.id}_qty`).value || "1";
+                            let color = document.getElementById(`m_${p.id}_color`).value;
+                            let eng = p.isFoot ? (document.getElementById(`m_${p.id}_eng`).value || "待定") : "不適用";
+                            mDetails += ` - ${p.name}(共${qty}條) | 顏色：${color}\n   刻字：${eng}\n`;
+                        }
+                    });
+                }
+                pText += `【選購/加購項目】\n產品類別：純銀頸鏈吊飾\n${mDetails || " - (未選擇部位)\n"}\n`;
+            }
+
+            let disclaimer = "";
+            const hasMetal = (document.getElementById("enableK") && document.getElementById("enableK").checked) || (document.getElementById("enableM") && document.getElementById("enableM").checked);
+
+            if (hasP && hasMetal) {
+                const subCatHY = document.getElementById("pSubCat") ? document.getElementById("pSubCat").value : "";
+                let plasterClauseHY = `⭐️手模會因BB郁動而有所瑕疵
+需否再次倒模，取決於倒模師
+如而額外取模：另+$150
+⭐️立體擺設於十五至十八星期完成
+⭐️製成品不包後期照片
+⭐️由於後期製作全都是全人手製作，
+所以未能十全十美，
+完美主義者請慎重考慮`;
+                if (subCatHY === "玻璃瓶款式") {
+                    plasterClauseHY += `
+
+⭐️⭐️如手腳太大，超出所包
+玻璃瓶的尺寸，需加$100，
+訂購合適玻璃瓶尺寸⭐️⭐️`;
+                }
+
+                disclaimer = `⭐️ - 金屬飾品最少需預三個月
+${plasterClauseHY}
+
+⭐️ 【金屬飾品注意事項】
+本店金屬產品為手工飾品，
+由於鑄造技巧及素材因素，
+每一件產品也是獨一無二，
+未必每次一模一樣。
+因體積縮減影響，
+不能完全呈現完美的紋理，
+不會因此而退貨，
+本店以不影響使用為大前提。
+宣傳圖片已盡量呈現產品
+最真實的外表和顔色，
+如有任何更改，
+以本店不定時更新為準確。
+
+🔹 非瑕疵範圍說明 
+1️⃣ 色差：
+商品會因螢幕顯示器顯色
+而有些微色差，屬正常現象。
+
+2️⃣ 金屬刮痕：
+因運送過程會有重疊擺放或摩擦，
+故商品產生細小刮痕、
+小凹凸點、微掉漆屬正常現象，
+非瑕疵範圍。
+
+📌 本店保留對上述條款解釋的權利`;
+            } else if (hasMetal) {
+                disclaimer = `⭐️ - 製成品最少需預三個月
+
+⭐️ 【手工作品聲明】
+本店產品為手工金屬飾品，
+由於鑄造技巧及素材因素，
+所以每一件產品，也是獨一無二，
+未必每次一模一樣。
+而也會因體積縮減影響，
+不能完全呈現完美的紋理，
+所以不會因此而退貨。
+本店以不影響使用為大前提，
+宣傳圖片已盡量呈現產品
+最真實的外表和顔色，
+如有任何更改，
+以本店不定時的更新為準確。
+
+🔹 非瑕疵範圍說明 
+1️⃣ 色差：
+商品會因個人銀幕顯示器顯色
+而有些微色差，
+故部分色差屬正常現象。
+
+2️⃣ 金屬刮痕：
+因運送過程會有重疊擺放、摩擦等，
+故商品產生細小刮痕、
+小凹凸點、微掉漆屬正常現象，
+非瑕疵範圍。
+
+📌 本店保留對上述條款解釋的權利`;
+            } else if (hasP) {
+                const subCat = document.getElementById("pSubCat") ? document.getElementById("pSubCat").value : "";
+                if (subCat === "玻璃瓶款式") {
+                    disclaimer = `⭐️ 手模會因BB郁動而有所瑕疵
+⭐️ 需否再次倒模，取決於倒模師
+⭐️ 如而額外取模：另＋$150
+⭐️ 製成品於十五至十八星期完成
+⭐️ 製成品不包後期照片
+⭐️ 由於後期製作全都是全人手製作，
+所以未能十全十美，
+完美主義者請慎重考慮
+
+⚠️ 如手腳太大，超出所包
+玻璃瓶的尺寸，需加$100，
+訂購合適玻璃瓶尺寸 ⚠️`;
+                } else {
+                    disclaimer = `⭐️ 手模會因BB郁動而有所瑕疵
+⭐️ 需否再次倒模，取決於倒模師
+⭐️ 如而額外取模：另＋$150
+⭐️ 製成品於十五至十八星期完成
+⭐️ 製成品不包後期照片
+⭐️ 由於後期製作全都是全人手製作，
+所以未能十全十美，
+完美主義者請慎重考慮`;
+                }
+            } else {
+                disclaimer = `【聲明】
+本店保留條款最終解釋權。
+
+⚠️ 完成付款即代表您已閱讀並同意相關條款`;
+            }
+
+            document.getElementById("output-preview").value = `📝 *freehandsss 訂單*
+*(訂單編號#${orderID}手模擺設)*
+
+【排程資訊】
+聯絡人：${mom}
+取模時間：${date} ${timeStr}
+
+【產品資訊】
+${pText || "待定\n\n"}
+【財務結算】
+已付訂金/全數：$ ${document.getElementById("deposit").value || "0"}
+未付產品尾數：$ ${document.getElementById("balance").value || "0"}
+附加費用(車費/其它)：$ ${document.getElementById("additional").value || "0"}
+
+*【免責聲明】*
+----------------------------
+${disclaimer}`;
+            updateVerificationList();
+        }
+
+        function updateVerificationList() {
+            if (currentRole !== 'fat') return;
+            const container = document.getElementById('v-list-container');
+            let html = "";
+            if (document.getElementById('enableP').checked) {
+                html += `<div class="v-item" style="border-left:5px solid #D4A373;"><b>🎨 3D擺設:</b><br>`;
+                document.querySelectorAll('.limb-sel').forEach(sel => {
+                    if (sel.value !== '無' && sel.value !== '待定' && sel.value !== '') html += ` ▪️ ${sel.dataset.who}${sel.dataset.part}: ${sel.value}<br>`;
+                });
+                html += `</div>`;
+            }
+            if (document.getElementById('enableK').checked) {
+                let kHtml = "";
+                ['lh', 'rh', 'lf', 'rf'].forEach(id => {
+                    if (document.getElementById(`k_${id}_en`)?.checked) {
+                        kHtml += ` ▪️ 嬰兒${id.toUpperCase()} x ${document.getElementById(`k_${id}_qty`).value} [${document.getElementById(`k_${id}_top`).value || '-'}]<br>`;
+                    }
+                });
+                ['e_lh', 'e_rh', 'e_lf', 'e_rf'].forEach(id => {
+                    if (document.getElementById(`k_${id}_en`)?.checked) {
+                        kHtml += ` ▪️ 大寶${id.replace('e_', '').toUpperCase()} x ${document.getElementById(`k_${id}_qty`).value} [${document.getElementById(`k_${id}_top`).value || '-'}]<br>`;
+                    }
+                });
+                if (document.getElementById('k_family_en')?.checked) {
+                    kHtml += ` ▪️ 家庭合成 x ${document.getElementById('k_family_qty').value} [${document.getElementById('k_family_top').value || '-'}]<br>`;
+                }
+                if (kHtml) html += `<div class="v-item" style="border-left:5px solid #2A2D43;"><b>🔑 鎖匙扣:</b><br>${kHtml}</div>`;
+            }
+            container.innerHTML = html || `<p style="color:#888; text-align:center;">(尚未選擇產品)</p>`;
+        }
+
+        function copyText() {
+            const t = document.getElementById("output-preview");
+            t.select();
+            document.execCommand("copy");
+            alert("✅ 已成功複製！可前往 IG 貼上");
+        }
+
+        // ==========================================
+        // V25 狀態保存與讀取 (Form State Preservation)
+        // ==========================================
+        function captureFormState() {
+            const state = {};
+            document.querySelectorAll('input, select').forEach(el => {
+                let key = el.id;
+                // 若沒有 ID 但屬於動態生成的肢體選單，賦予特製 Key
+                if (!key && el.classList.contains('limb-sel')) {
+                    key = `limb_sel_${el.getAttribute('data-who')}_${el.getAttribute('data-part')}`;
+                }
+
+                if (key) {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        state[key] = el.checked;
+                    } else {
+                        state[key] = el.value;
+                    }
+                }
+            });
+            return JSON.stringify(state);
+        }
+
+        function restoreFormState(data) {
+            try {
+                let state = data;
+                if (typeof data === 'string') {
+                    let cleanData = data.trim();
+                    // 🚨 防呆 1：如果字串帶有 "=" (n8n 常見錯誤)，砍掉它
+                    if (cleanData.startsWith('=')) {
+                        cleanData = cleanData.substring(1).trim();
+                    }
+                    // 🚨 防呆 2：如果字串被多餘的引號包住 (例如 "\"{\...}\"")，解開它
+                    if (cleanData.startsWith('"') && cleanData.endsWith('"')) {
+                        try {
+                            const secondTry = JSON.parse(cleanData);
+                            if (typeof secondTry === 'string') cleanData = secondTry;
+                            else if (typeof secondTry === 'object') {
+                                state = secondTry;
+                                cleanData = null;
+                            }
+                        } catch (e) { }
+                    }
+                    if (cleanData) state = JSON.parse(cleanData);
+                }
+
+                console.log("Restoring form state:", state);
+
+                if (!state || typeof state !== 'object') {
+                    console.warn("Invalid state data received:", state);
+                    return;
+                }
+
+                // 🚨 步驟 1：先還原基本欄位 (有 ID 的靜態元素，例如開關、pSubCat)
+                for (let key in state) {
+                    if (!key.startsWith('limb_sel_')) {
+                        const el = document.getElementById(key);
+                        if (el) {
+                            if (el.type === 'checkbox' || el.type === 'radio') {
+                                el.checked = state[key];
+                            } else {
+                                el.value = state[key];
+                            }
+                            // 觸發 UI 聯動事件，讓其他區塊展開
+                            el.dispatchEvent(new Event('change'));
+                            el.dispatchEvent(new Event('input'));
+                        }
+                    }
+                }
+
+                // 🚨 步驟 2：確保 V25 大區塊依照恢復後的開關正常顯示
+                ['enableP', 'enableK', 'enableM'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        const contentId = id === 'enableP' ? 'contentP' : (id === 'enableK' ? 'contentK' : 'contentM');
+                        const content = document.getElementById(contentId);
+                        if (content) {
+                            if (el.checked) content.classList.add('active');
+                            else content.classList.remove('active');
+                        }
+                    }
+                });
+
+                // 重新渲染時間選單
+                if (document.getElementById("appTimeAmPm")) updateTimeOptions();
+                if (state['appTimeHour']) {
+                    const hr = document.getElementById("appTimeHour");
+                    if (hr) hr.value = state['appTimeHour'];
+                }
+
+                // 🚨 重新渲染動態 DOM (此時 pSubCat 等控制項的數值已就位)
+                if (document.getElementById("pSubCat")) renderLimbGrid();
+                if (document.getElementById("k_family_combo")) updateFamilyParts();
+                if (document.getElementById("m_family_combo")) updateFamilyParts();
+
+                // 🚨 儲存目前狀態供後續比對差異
+                lastFetchedState = JSON.parse(captureFormState());
+
+                // 🚨 步驟 3：還原剛剛重新渲染的動態欄位 (limb_sel_)
+                for (let key in state) {
+                    if (key.startsWith('limb_sel_')) {
+                        const parts = key.split('_');
+                        const who = parts[2];
+                        const part = parts[3];
+                        const el = document.querySelector(`.limb-sel[data-who="${who}"][data-part="${part}"]`);
+                        if (el) {
+                            el.value = state[key];
+                        }
+                    }
+                }
+
+                generate(); // 最後刷新文字預覽
+                console.log("✅ Form state restoration complete.");
+            } catch (e) {
+                console.error("❌ restoreFormState Error:", e);
+                alert("還原表單時發生錯誤: " + e.message);
+            }
+        }
+
+        async function fetchOldOrder() {
+            const oId = document.getElementById('searchOrderId').value.trim();
+            const fetchStatus = document.getElementById('fetchStatus');
+            if (!oId) {
+                alert("請先輸入 Order_ID！");
+                return;
+            }
+
+            fetchStatus.style.color = '#666';
+            fetchStatus.innerText = "⏳ 讀取中，請稍候...";
+            const fetchUrl = `https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=${oId}`;
+
+            try {
+                const res = await fetch(fetchUrl);
+                const responseData = await res.json();
+                const data = Array.isArray(responseData) ? responseData[0] : responseData;
+
+                if (!data || data.found === false) {
+                    fetchStatus.style.color = 'red';
+                    fetchStatus.innerText = "⚠️ 找不到該訂單，請確認單號正確。";
+                    return;
+                }
+
+                // Restore figures
+                if (data.Deposit !== undefined) document.getElementById('deposit').value = data.Deposit;
+                if (data.Balance !== undefined) document.getElementById('balance').value = data.Balance;
+                if (data.Additional_Fee !== undefined) document.getElementById('additional').value = data.Additional_Fee;
+
+                // Restore form
+                editTargetOrderId = oId; // 🚨 只要找到單，就標註為當前編輯對象，防止更新時變成新增
+
+                if (data.Raw_Form_State) {
+                    restoreFormState(data.Raw_Form_State);
+                    fetchStatus.style.color = 'green';
+                    fetchStatus.innerText = "✅ 讀取成功！畫面已還原。";
+                } else {
+                    fetchStatus.style.color = 'orange';
+                    fetchStatus.innerText = "⚠️ 讀取成功，但該舊單無儲存狀態紀錄。";
+                }
+            } catch (err) {
+                fetchStatus.style.color = 'red';
+                fetchStatus.innerText = "❌ 網路錯誤，無法連接至 n8n 讀取資料。";
+                console.error(err);
+            }
+        }
+
+        function handleFuzzySearch() {
+            const input = document.getElementById('searchOrderId').value.trim();
+            const sugg = document.getElementById('fetchStatus'); // Re-using fetchStatus area for simplicity, or create a specific div if needed
+            if (input.length < 2) {
+                sugg.innerHTML = '請輸入單號並點擊讀取，系統將自動覆蓋下方表單。';
+                sugg.style.color = '#666';
+                return;
+            }
+            // For V26 fuzzy dummy logic, typically you would fetch local array. 
+            // In this merged version, we keep the original fetchOldOrder button functional.
+            // If the user types "06001", we can show a hint.
+            sugg.style.color = '#457B9D';
+            sugg.innerHTML = `正在輸入: ${input}... (輸入完整ID後點擊「讀取資料」)`;
+        }
+
+        // 🚨 全域防呆工具函式：安全地獲取元素值
+        function getValSafe(id, defaultValue = "") {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.type === 'checkbox' || el.type === 'radio') {
+                    return el.checked;
+                }
+                return el.value;
+            }
+            return defaultValue;
+        }
+
+        // ==========================================
+        // 🚀 Dashboard V22 隱藏雙核發射引擎 (Fat Mo 智能判斷版)
+        // ==========================================
+        async function syncToAirtable() {
+            const btn = document.getElementById("syncBtn");
+            const originalText = btn.innerText;
+            btn.innerText = "🔄 數據發射中...";
+            btn.disabled = true;
+
+            const rawDate = getValSafe("appDate", null);
+
+            let orderItemsArray = [];
+
+            try {
+                const enableP = getValSafe("enableP", false);
+                const hasMainProduct = enableP;
+                const modeTag = hasMainProduct ? "(加購)" : "(單購)";
+
+                if (hasMainProduct) {
+                    let subCat = getValSafe("pSubCat", "");
+                    let lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]');
+                    let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
+                    let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
+                    let type = hasFoot ? "4肢" : "2肢";
+                    let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+                    orderItemsArray.push({
+                        "Order_Item_Key": `${currentMode === 'edit' ? editTargetOrderId : orderID}_P_MAIN`,
+                        "Product_Name": pName,
+                        "Quantity": 1
+                    });
+                }
+
+                // 金屬鎖匙扣 擷取邏輯
+                const enableK = document.getElementById("enableK");
+                if (enableK && enableK.checked) {
+
+                    // 1. 嬰兒區塊
+                    if (document.getElementById('k_baby_sec_en').checked) {
+                        const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+                        babyParts.forEach(p => {
+                            let enCb = document.getElementById(`k_${p.id}_en`);
+                            if (enCb && enCb.checked) {
+                                let qty = Number(document.getElementById(`k_${p.id}_qty`).value) || 1;
+                                let finalObj = p.type;
+                                if (!hasMainProduct) finalObj = "嬰兒(P)";
+                                orderItemsArray.push({
+                                    "Order_Item_Key": `${currentMode === 'edit' ? editTargetOrderId : orderID}_K_${p.id.toUpperCase()}`,
+                                    "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`,
+                                    "Mode": modeTag,
+                                    "Quantity": qty
+                                });
+                            }
+                        });
+                    }
+
+                    // 2. 大寶區塊
+                    if (document.getElementById('k_elder_sec_en').checked) {
+                        const elderParts = [{ id: "e_lh", type: "家庭(S1)" }, { id: "e_rh", type: "家庭(S1)" }, { id: "e_lf", type: "家庭(S1)" }, { id: "e_rf", type: "家庭(S1)" }];
+                        elderParts.forEach(p => {
+                            let enCb = document.getElementById(`k_${p.id}_en`);
+                            if (enCb && enCb.checked) {
+                                let qty = Number(document.getElementById(`k_${p.id}_qty`).value) || 1;
+                                let finalObj = p.type;
+                                if (!hasMainProduct) finalObj = "家庭(P1)";
+                                orderItemsArray.push({
+                                    "Order_Item_Key": `${currentMode === 'edit' ? editTargetOrderId : orderID}_K_${p.id.toUpperCase()}`,
+                                    "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`,
+                                    "Mode": modeTag,
+                                    "Quantity": qty
+                                });
+                            }
+                        });
+                    }
+
+                    // 3. 處理家庭合成鎖匙扣 (動態獲取)
+                    let famEnCb = document.getElementById('k_family_en');
+                    if (famEnCb && famEnCb.checked) {
+                        let qty = Number(document.getElementById('k_family_qty').value) || 1;
+
+                        let comboInfo = getFamilyComboDetails();
+                        let finalObj = comboInfo.sType;
+
+                        // S1 沒買倒模 = P1, S2 沒買倒模 = P2
+                        if (!hasMainProduct) {
+                            if (finalObj === "家庭(S1)") finalObj = "家庭(P1)";
+                            if (finalObj === "家庭(S2)") finalObj = "家庭(P2)";
+                        }
+
+                        orderItemsArray.push({
+                            "Order_Item_Key": `${currentMode === 'edit' ? editTargetOrderId : orderID}_K_FAM_COMBO`,
+                            "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`,
+                            "Mode": modeTag,
+                            "Quantity": qty,
+                            "Notes": `合成: ${comboInfo.note}`
+                        });
+                    }
+                }
+
+                // 純銀吊飾 擷取邏輯
+                const enableM = document.getElementById("enableM");
+                if (enableM && enableM.checked) {
+                    // 1. 嬰兒區塊
+                    if (document.getElementById('m_baby_sec_en').checked) {
+                        const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+                        babyParts.forEach(p => {
+                            let enCb = document.getElementById(`m_${p.id}_en`);
+                            if (enCb && enCb.checked) {
+                                let qty = Number(document.getElementById(`m_${p.id}_qty`).value) || 1;
+                                let colorElem = document.getElementById(`m_${p.id}_color`);
+                                let color = (colorElem && colorElem.value !== "待定" && colorElem.value !== "") ? colorElem.value : "925銀";
+                                let finalObj = p.type;
+                                if (!hasMainProduct) finalObj = "嬰兒(P)";
+                                orderItemsArray.push({
+                                    "Order_Item_Key": `${currentMode === 'edit' ? editTargetOrderId : orderID}_M_${p.id.toUpperCase()}`,
+                                    "Product_Name": `${finalObj}吊飾 - ${color}`,
+                                    "Mode": modeTag,
+                                    "Quantity": qty
+                                });
+                            }
+                        });
+                    }
+                    // 2. 大寶區塊
+                    if (document.getElementById('m_elder_sec_en').checked) {
+                        const elderParts = [{ id: "e_lh", type: "家庭(S1)" }, { id: "e_rh", type: "家庭(S1)" }, { id: "e_lf", type: "家庭(S1)" }, { id: "e_rf", type: "家庭(S1)" }];
+                        elderParts.forEach(p => {
+                            let enCb = document.getElementById(`m_${p.id}_en`);
+                            if (enCb && enCb.checked) {
+                                let qty = Number(document.getElementById(`m_${p.id}_qty`).value) || 1;
+                                let colorElem = document.getElementById(`m_${p.id}_color`);
+                                let color = (colorElem && colorElem.value !== "待定" && colorElem.value !== "") ? colorElem.value : "925銀";
+                                let finalObj = p.type;
+                                if (!hasMainProduct) finalObj = "家庭(P1)"; // 吊飾的大寶沒買主產品時為P1
+                                orderItemsArray.push({ "Product_Name": `${finalObj}吊飾 - ${color}`, "Mode": modeTag, "Quantity": qty });
+                            }
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn("商品擷取遇到小問題，但仍會繼續送出訂單:", err);
+            }
+
+            const payload = {
+                "action": currentMode, // "create" or "edit"
+                "Order_ID": currentMode === 'edit' ? editTargetOrderId : (typeof orderID !== 'undefined' ? orderID : "待定"),
+                "Customer_Name": document.getElementById("momName") ? document.getElementById("momName").value || "待定" : "待定",
+                "Appointment_Date": rawDate ? rawDate : null,
+                "Deposit": document.getElementById("deposit") ? Number(document.getElementById("deposit").value) || 0 : 0,
+                "Balance": document.getElementById("balance") ? Number(document.getElementById("balance").value) || 0 : 0,
+                "Additional_Fee": document.getElementById("additional") ? Number(document.getElementById("additional").value) || 0 : 0,
+                "Full_Order_Text": document.getElementById("output-preview") ? document.getElementById("output-preview").value : "",
+                "Clean_Order_Text": document.getElementById("output-preview") ? document.getElementById("output-preview").value.split('*【免責聲明】*')[0].trim() : "",
+                "Raw_Form_State": captureFormState(),
+                "Update_Note": (function () {
+                    if (currentMode !== 'edit' || !lastFetchedState) return "";
+                    const currentState = JSON.parse(captureFormState());
+                    const changes = [];
+                    const labelMap = {
+                        'momName': '聯絡人', 'appDate': '日期', 'appTimeHour': '時', 'appTimeAmPm': '上午/下午',
+                        'deposit': '訂金', 'balance': '尾數', 'additional': '附加費',
+                        'enableP': '石膏開關', 'enableK': '金屬開關', 'enableM': '銀飾開關'
+                    };
+                    for (let k in currentState) {
+                        if (currentState[k] !== lastFetchedState[k]) {
+                            const label = labelMap[k] || k.replace('limb_sel_', '部位:');
+                            changes.push(label);
+                        }
+                    }
+                    return changes.length > 0 ? "🔄 更新項目: " + changes.join(', ') : "ℹ️ 無明顯內容變動";
+                })(),
+
+                "Order_Items_List": orderItemsArray
+            };
+
+            const webhookUrl = "https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b";
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("✅ 同步成功！訂單數據與商品明細已完美射入 NAS。");
+                    // 🚨 關鍵：同步成功後，如果是新單，自動切換為「編輯模式」並鎖定該 ID
+                    if (currentMode === 'create') {
+                        editTargetOrderId = orderID;
+                        document.getElementById('searchOrderId').value = orderID;
+                        switchMode('edit');
+                        const fetchStatus = document.getElementById('fetchStatus');
+                        if (fetchStatus) fetchStatus.innerText = "✨ 新單已建立，現在處於「更新模式」。";
+                    }
+                } else {
+                    alert("❌ 同步失敗，請檢查 NAS 上的 n8n 節點是否運作正常。");
+                }
+            } catch (error) {
+                console.error("Webhook 錯誤:", error);
+                alert("❌ 網路連線錯誤，無法連接至 NAS。請確認網路環境或 Port 8443 的對外連線。");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // 初始化下拉選單
+        window.onload = () => {
+            switchMode('create');
+            updateTimeOptions();
+            renderLimbGrid();
+            updateFamilyParts(); // 初始化家庭合成選單
+            generate();
+        };
+
+        // ==========================================
+        // V27 Global Review System
+        // ==========================================
+        let reviewFetchTimeout = null;
+        let globalOrders = [];
+
+        function getProductDimensions(item) {
+            let rawID = item.Item_ID || '';
+            let rawDesc = item.Product || '';
+            
+            let target = "嬰兒";
+            if (rawID.includes('_E_') || rawDesc.includes('大寶')) target = "大寶";
+            else if (rawID.includes('_F_') || rawDesc.includes('家庭') || rawDesc.includes('父母')) target = "家庭";
+
+            let part = "";
+            if (rawID.includes('_LH') || rawDesc.includes('左手')) part = "✋ 左手";
+            else if (rawID.includes('_RH') || rawDesc.includes('右手')) part = "✋ 右手";
+            else if (rawID.includes('_LF') || rawDesc.includes('左腳')) part = "🦶 左腳";
+            else if (rawID.includes('_RF') || rawDesc.includes('右腳')) part = "🦶 右腳";
+            else if (target === "家庭") part = "👨‍👩‍👧‍👦 家庭合成";
+
+            let category = "📦 其他";
+            let emoji = "📦";
+            if (rawID.includes('_K_') || rawDesc.includes('鎖匙')) { category = "鎖匙扣"; emoji = "🔑"; }
+            else if (rawID.includes('_M_') || rawDesc.includes('頸鏈') || rawDesc.includes('銀')) { category = "純銀吊飾"; emoji = "✨"; }
+            else if (rawID.includes('_P_') || rawDesc.includes('相框') || rawDesc.includes('擺設')) { category = "立體擺設"; emoji = "🎨"; }
+            
+            let material = "";
+            if (rawDesc.includes('不銹鋼')) material = "⚙️ 不銹鋼";
+            else if (rawDesc.includes('925金')) material = "🌟 925金";
+            else if (rawDesc.includes('925銀')) material = "💍 925銀";
+            
+            return { target, part, category, emoji, material };
+        }
+
+        
+        const BATCH_COLORS = [
+            "#fdf6e3", "#f4f1de", "#e9edc9", "#fefae0", "#faedcd", "#d4a373", 
+            "#e2ece9", "#dfe7fd", "#f8ad9d", "#fbc4ab", "#ffdab9"
+        ];
+        
+        function getBatchColor(batch) {
+            if (!batch || batch.trim() === '') return '#ffffff';
+            let hash = 0;
+            for (let i = 0; i < batch.length; i++) {
+                hash = batch.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % BATCH_COLORS.length;
+            return BATCH_COLORS[index];
+        }
+
+        function initReviewYears() {
+            const yearSel = document.getElementById("reviewYear");
+            if (yearSel.options.length > 0) return;
+            const currentYear = new Date().getFullYear();
+            yearSel.innerHTML = '<option value="">全部年份</option>';
+            for(let y = currentYear; y >= currentYear - 3; y--) {
+                yearSel.innerHTML += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+            }
+        }
+
+        function debounceFetchGlobalReview() {
+            clearTimeout(reviewFetchTimeout);
+            reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
+        }
+
+        async function fetchGlobalReview() {
+            const year = document.getElementById("reviewYear").value;
+            const month = document.getElementById("reviewMonth").value;
+            const status = document.getElementById("reviewStatus").value;
+            const batch = document.getElementById("reviewBatch").value.trim();
+            const search = document.getElementById("reviewSearch").value.trim();
+            
+            const tbody = document.getElementById("reviewTableBody");
+            const loading = document.getElementById("reviewLoading");
+            
+            loading.style.display = "inline";
+            tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
+
+            const url = new URL("https://yanhei.synology.me:8443/webhook/fetch-global-review");
+            if(year) url.searchParams.append("year", year);
+            if(month) url.searchParams.append("month", month);
+            if(status) url.searchParams.append("status", status);
+            if(batch) url.searchParams.append("batch", batch);
+            if(search) url.searchParams.append("search", search);
+
+            try {
+                const res = await fetch(url.toString(), { method: 'GET' });
+                const data = await res.json();
+                
+                loading.style.display = "none";
+                
+                if (data && data.orders) {
+                    globalOrders = data.orders;
+                    renderReviewTable(globalOrders);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+                }
+            } catch (err) {
+                console.error(err);
+                loading.style.display = "none";
+                tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">❌ 網路連線錯誤，無法載入資料。請檢查 n8n Webhook。</td></tr>';
+            }
+        }
+
+        function renderReviewTable(orders) {
+            const tbody = document.getElementById("reviewTableBody");
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">沒有符合條件的項目</td></tr>';
+                return;
+            }
+
+            let html = "";
+            orders.forEach((o, index) => {
+                const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
+                const batchCol = getBatchColor(o.Batch);
+                
+                let prodHtml = "";
+                let engText = "";
+                if(o.items && o.items.length > 0) {
+                    o.items.forEach(i => {
+                        let dims = getProductDimensions(i);
+                        let badges = `
+                            <span style="display:inline-block; padding:2px 6px; background:#e0f7fa; color:#006064; border-radius:12px; margin-right:4px;">[${dims.target}]</span>
+                            ${dims.part ? `<span style="display:inline-block; padding:2px 6px; background:#fff3e0; color:#e65100; border-radius:12px; margin-right:4px;">[${dims.part}]</span>` : ''}
+                            <span style="display:inline-block; padding:2px 6px; background:#f3e5f5; color:#4a148c; border-radius:12px; margin-right:4px;">[${dims.emoji} ${dims.category}]</span>
+                            ${dims.material ? `<span style="display:inline-block; padding:2px 6px; background:#eceff1; color:#37474f; border-radius:12px; margin-right:4px;">[${dims.material}]</span>` : ''}
+                        `;
+                        let qtyDisplay = Number(i.Qty) > 1 ? `<span style="display:inline-block; padding:2px 6px; background:#ffebee; color:#c62828; border-radius:12px; font-weight:bold;">x${i.Qty}</span>` : '';
+                        
+                        prodHtml += `<div style="margin-bottom:6px; font-size:12px; padding:6px; background:#ffffff; border-radius:6px; border:1px solid #ddd; box-shadow:0 1px 2px rgba(0,0,0,0.05); line-height:1.4;">
+                            <div style="font-size:10px; color:#aaa; margin-bottom:2px;">${i.Item_ID || 'ID 未知'} ${qtyDisplay}</div>
+                            <div>${badges}</div>
+                        </div>`;
+                        
+                        if(i.Engraving && i.Engraving !== '待定' && i.Engraving !== '不適用') {
+                            engText += `<div style="font-size:12px; background:#fcfcfc; padding:4px; border-radius:4px; border-left:3px solid #457B9D; margin-bottom:4px; display: flex; align-items: center; gap: 8px;">
+                                <strong style="color:#B07D4C; font-size:10px; min-width: 60px;">${i.Item_ID}:</strong>
+                                <span style="white-space:nowrap; display: flex; gap: 10px;">${i.Engraving.replace('[上排]', '<span style="color:#666; background:#e0e0e0; padding:2px 4px; border-radius:4px;">上排</span>').replace('[下排]', '<span style="color:#666; background:#e0e0e0; padding:2px 4px; border-radius:4px;">下排</span>')}</span>
+                            </div>`;
+                        }
+                    });
+                } else {
+                    prodHtml = '<span style="color:#aaa;">無子項目</span>';
+                }
+
+                html += `
+                <tr style="border-bottom: 1px solid #eee; background-color: ${batchCol}; transition: background 0.3s;" id="row-${o.id}">
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight:bold; color:#B07D4C;">${o.Order_ID || 'N/A'}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-size:12px;">${cDate}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${o.Customer || '-'}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <textarea style="width:100%; height:50px; font-size:12px; padding:4px;" 
+                                  onblur="saveInlineEdit('${o.id}', 'Admin_Notes', this.value)" 
+                                  placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; color:#457B9D; font-size:12px;">
+                        ${engText || '-'}
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <div style="max-height: 80px; overflow-y:auto; padding-right:5px;">${prodHtml}</div>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; vertical-align: top;">
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <div style="font-size:10px; color:#666; font-weight:bold; text-transform:uppercase;">🏷️ Batch (批次)</div>
+                            <input type="text" style="width:100%; font-size:12px; padding:6px 8px; border-radius:12px; border:1px solid #ccc; background:#fff; font-weight:bold; color:#B07D4C; text-align:center;" 
+                                   value="${o.Batch || ''}" 
+                                   onblur="saveInlineEdit('${o.id}', 'Batch_Number', this.value)" 
+                                   placeholder="第X批">
+                        </div>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd; vertical-align: top;">
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <div style="font-size:10px; color:#666; font-weight:bold; text-transform:uppercase;">🚥 Status (進度)</div>
+                            <select style="width:100%; font-size:12px; padding:6px 8px; border-radius:12px; border:1px solid #ccc; background:#f9f9f9; color:#333; font-weight:bold;" 
+                                    onchange="saveInlineEdit('${o.id}', 'Process_Status', this.value)">
+                                <option value="0 什麼都未做" ${o.Status === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
+                                <option value="1 已繪圖 或 已取相" ${o.Status === '1 已繪圖 或 已取相' ? 'selected' : ''}>1 已繪圖 或 已取相</option>
+                                <option value="1.5 已交付建模師, 等3D圖中" ${o.Status === '1.5 已交付建模師, 等3D圖中' ? 'selected' : ''}>1.5 等3D圖中</option>
+                                <option value="2 已修3D圖, 但未核對" ${o.Status === '2 已修3D圖, 但未核對' ? 'selected' : ''}>2 已修3D圖</option>
+                                <option value="2.5 已核對3D圖, 準備打印" ${o.Status === '2.5 已核對3D圖, 準備打印' ? 'selected' : ''}>2.5 準備打印</option>
+                                <option value="3 已交付廠家, 打印中" ${o.Status === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
+                                <option value="Done 已完成" ${o.Status === 'Done 已完成' ? 'selected' : ''}>Done 已完成</option>
+                            </select>
+                            <div id="save-indicator-${o.id}" style="font-size:10px; color:#2A9D8F; text-align:right; min-height:12px;"></div>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        async function saveInlineEdit(recordId, field, value) {
+            const ind = document.getElementById(`save-indicator-${recordId}`);
+            if (ind) {
+                ind.innerText = "儲存中...";
+                ind.style.color = "#E76F51";
+            }
+            
+            // Find order to keep other fields unchanged
+            const orderIndex = globalOrders.findIndex(o => o.id === recordId);
+            if (orderIndex > -1) {
+                if (field === 'Admin_Notes') globalOrders[orderIndex].Admin_Notes = value;
+                else if (field === 'Batch_Number') {
+                    globalOrders[orderIndex].Batch = value;
+                    // update background colour immediately
+                    const row = document.getElementById(`row-${recordId}`);
+                    if(row) row.style.backgroundColor = getBatchColor(value);
+                }
+                else if (field === 'Process_Status') globalOrders[orderIndex].Status = value;
+                
+                const o = globalOrders[orderIndex];
+                
+                const payload = {
+                    Record_ID: recordId,
+                    Batch_Number: o.Batch || '',
+                    Process_Status: o.Status || '0 什麼都未做',
+                    Admin_Notes: o.Admin_Notes || ''
+                };
+
+                try {
+                    const url = "https://yanhei.synology.me:8443/webhook/update-order-meta";
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if(res.ok) {
+                        if (ind) {
+                            ind.innerText = "✔ 已儲存";
+                            ind.style.color = "#2A9D8F";
+                            setTimeout(() => { if(ind.innerText === "✔ 已儲存") ind.innerText = ""; }, 2000);
+                        }
+                    } else {
+                        if (ind) {
+                            ind.innerText = "❌ 儲存失敗";
+                            ind.style.color = "red";
+                        }
+                    }
+                } catch(e) {
+                    console.error(e);
+                    if (ind) {
+                        ind.innerText = "❌ 網路錯誤";
+                        ind.style.color = "red";
+                    }
+                }
+            }
+        }
+        
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,507 @@
+{
+  "name": "FHS_Core_OrderProcessor",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🚀 【訂單核心處理引擎】\n\n**核心用途：** 接收並處理前端 Dashboard 送出的所有新訂單與修改請求。\n\n**主要功能：**\n1. **自主利潤稽核 (Profit Auditor)：** [V45 新增] 自動比對前台與後台財務定律，異常時觸發紅燈警報。\n2. **拆解子項目：** 將合併的訂單資料拆解為個別的品項紀錄。\n3. **成本匹配：** 根據「五維度邏輯」自動從資料庫匹配畫圖、取模與物流成本。\n4. **雙向同步：** 將資料精準寫入 Airtable (主表與子表)，支援 Upsert 避免重複。\n5. **Telegram 戰報：** 自動計算淨利潤並發送至老闆的手機。",
+        "height": 280,
+        "width": 550
+      },
+      "id": "doc-FHS_Order_Processor.json",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -350,
+        -350
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "=✅ 【新訂單成立通知】\n------------------------\n🏷️ 訂單編號：{{ $json.fields.Order_ID }}\n👤 聯絡人：{{ $json.fields.Customer_Name }}\n📅 取模日：{{ $json.fields.Appointment_Date || '待定' }}\n\n💰 財務摘要 (系統已自動結算)：\n已付訂金：${{ $json.fields.Deposit }}\n未付尾數：${{ $json.fields.Balance }}\n附加費用：${{ $json.fields.Additional_Fee }}\n💵 總銷售額：${{ $json.fields.Final_Sale_Price }} \n\n------------------------\n🤖 系統狀態：已成功寫入 Synology NAS & Airtable (Orders_V22)。",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        96
+      ],
+      "id": "05e50880-542b-47ab-9d46-e5daf80796fe",
+      "name": "Notify Owner via Telegram",
+      "webhookId": "a53f87ee-99c3-42e1-b4e5-f98060758559",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.Order_Items_List",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        80
+      ],
+      "id": "9e31f92f-5ee2-4ee3-973e-6ae7cc50896e",
+      "name": "Find Product ID"
+    },
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "=✅ 【Freehandsss {{ $('Calculate Profit & Pack Items').first().json.Action === 'edit' ? '修正訂單' : '新訂單' }} 成功】\n------------------------\n👤 客人：{{ $('Calculate Profit & Pack Items').first().json.Customer_Name }}\n📝 單號：{{ $('Calculate Profit & Pack Items').first().json.Order_ID }}\n{{ $('Calculate Profit & Pack Items').first().json.Update_Note ? '\\n🔄 更新摘要：' + $('Calculate Profit & Pack Items').first().json.Update_Note + '\\n' : '' }}\n\n🛍️ 【訂單商品詳情】\n{{ $('Calculate Profit & Pack Items').first().json.Order_Text }}\n\n💰 【財務核算】\n總入帳：${{ $('Calculate Profit & Pack Items').first().json.Total_Revenue }}\n總成本：${{ $('Calculate Profit & Pack Items').first().json.Total_Cost }}\n🏆 淨利潤：${{ $('Calculate Profit & Pack Items').first().json.Final_Profit }}\n\n💡 系統提示：子項目已完美拆解並精準 Upsert 至 Airtable！",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        -144
+      ],
+      "id": "4fb9f5e6-a2b4-43ba-a261-8996cbab3ffb",
+      "name": "Send Profit Report",
+      "webhookId": "a53f87ee-99c3-42e1-b4e5-f98060758559",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbljkptnNcUEyDRFH",
+          "mode": "list",
+          "cachedResultName": "Order_Items",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tbljkptnNcUEyDRFH"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product_Link": "={{ [$json.Product_ID] }}",
+            "Quantity": "={{ Number($json.Quantity) }}",
+            "Engraving_Text": "={{ $json.Notes }}",
+            "Order_Link": "={{ [$json.Main_Order_ID] }}",
+            "Order_Item_Key": "={{ $json.Order_Item_Key }}"
+          },
+          "matchingColumns": [
+            "Order_Item_Key"
+          ]
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        192,
+        -144
+      ],
+      "id": "fddacd64-a9ee-4d9e-81e1-b6a60b87173a",
+      "name": "Create Sub Items",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 抓取剛剛建好的「主訂單 ID」\nconst recordId = $input.first().json.id;\n\n// 2. 獲取打包好的子項目清單\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. 轉換為 n8n 資料格式\nreturn subItems.map(item => ({\n  json: {\n    Product_ID: item.Product_Record_ID,\n    Quantity: item.Quantity,\n    Notes: item.Notes,\n    Main_Order_ID: recordId,\n    Order_Item_Key: item.Order_Item_Key\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -144
+      ],
+      "id": "93ab9cf3-4c74-459e-9f55-bac3c2d1bd36",
+      "name": "Bind Main Order ID"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "list",
+          "cachedResultName": "Main_Orders",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tbltCH0I9fknVCtmV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order_ID": "={{ $json.Order_ID }}",
+            "Customer_Name": "={{ $json.Customer_Name }}",
+            "Deposit": "={{ $json.Deposit }}",
+            "Balance": "={{ $json.Balance }}",
+            "Additional_Fee": "={{ $json.Additional_Fee }}",
+            "Final_Sale_Price": "={{ $json.Total_Revenue }}",
+            "Total_Cost": "={{ $json.Total_Cost }}",
+            "Net_Profit": "={{ $json.Final_Profit }}",
+            "Full_Order_Text": "={{ $json.Order_Text }}",
+            "Raw_Form_State": "={{ $json.Raw_Form_State }}",
+            "Appointment_Date": "={{ $json.Appointment_Date }}"
+          },
+          "matchingColumns": [
+            "Order_ID"
+          ]
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        -144
+      ],
+      "id": "2379826a-f1d2-4b6b-b934-df99879a4874",
+      "name": "Create Main Order",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// API V40.2 協議：批量收集 SKU\nconst items = $input.all();\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"無商品\"))];\n\nif (skus.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", hasItems: false } };\n}\n\nconst formulaParts = skus.map(s => `{Product_Name} = '${s}'`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : formulaParts[0];\n\nreturn { json: { batchFormula: finalFormula, hasItems: true } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        -368
+      ],
+      "id": "batch-sku-collector",
+      "name": "Batch SKU Collector"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblC3HDJAz9W0OF6R",
+          "mode": "list",
+          "cachedResultName": "Product_Database",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tblC3HDJAz9W0OF6R"
+        },
+        "filterByFormula": "={{ $json.batchFormula }}",
+        "options": {
+          "alwaysOutputData": true
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        -368
+      ],
+      "id": "fa34442a-fe9a-429a-b7cd-68fafde34d32",
+      "name": "Fetch Exact Base Cost",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// API V40.2 協議：本地數據映射 Mapping\nconst costResults = $(\"Fetch Exact Base Cost\").all();\nconst originalItems = $(\"Parse Items & Generate SKU\").all();\n\nconst costMap = {};\ncostResults.forEach(r => {\n    if (r.json.id) {\n        costMap[r.json.Product_Name] = {\n            id: r.json.id,\n            Product_Name: r.json.Product_Name,\n            Total_Base_Cost: r.json.Total_Base_Cost || 0\n        };\n    }\n});\n\nreturn originalItems.map(item => {\n    const sku = item.json.Search_SKU;\n    const costData = costMap[sku] || { id: null, Product_Name: sku, Total_Base_Cost: 0 };\n    return {\n        json: {\n            ...item.json,\n            ...costData\n        }\n    };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        -368
+      ],
+      "id": "local-data-mapper",
+      "name": "Local Data Mapper"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Freehandsss V40.2 (V45.4 防呆加強版): 大腦 2 號(利潤精算 - 並將子項目打包) ===\n\nconst parseNodeItems = $('Parse Items & Generate SKU').all();\nconst firstNodeData = parseNodeItems[0].json;\nconst totalRevenue = firstNodeData.Total_Revenue || 0;\nconst rawFormState = firstNodeData.Raw_Form_State || \"\";\n\nlet deposit = 0;\nlet balance = 0;\nlet additionalFee = 0;\n\ntry {\n    const triggerBody = $('Receive Dashboard Order').first().json.body || $('Receive Dashboard Order').first().json;\n    deposit = triggerBody.Deposit || 0;\n    balance = triggerBody.Balance || 0;\n    additionalFee = triggerBody.Additional_Fee || 0;\n} catch (error) { }\n\nlet totalBaseCost = 0;\nlet packedItems = [];\n\nconst items = $input.all(); \nfor (let i = 0; i < parseNodeItems.length; i++) {\n    // 終極防禦機制：當 $input 找不到對應 item 時安全回退，避免 Cannot read properties of undefined\n    let originalItemData = parseNodeItems[i].json || {};\n    let itemData = items[i] ? items[i].json : originalItemData;\n\n    let itemCost = itemData.Total_Base_Cost || 0;\n    totalBaseCost += itemCost;\n\n    packedItems.push({\n        Product_Record_ID: itemData.id || null, \n        Product_Name: itemData.Product_Name || originalItemData.Search_SKU || \"Unknown SKU\",\n        Total_Base_Cost: itemCost,\n        Quantity: originalItemData.Original_Qty || 1,\n        Notes: originalItemData.Item_Notes || \"\",\n        Order_Item_Key: originalItemData.Order_Item_Key || \"\"\n    });\n}\n\nconst finalProfit = totalRevenue - totalBaseCost;\n\nreturn [{\n    json: {\n        ...firstNodeData,              \n        Total_Revenue: totalRevenue,   \n        Total_Cost: totalBaseCost,     \n        Final_Profit: finalProfit,     \n        Deposit: deposit,              \n        Balance: balance,              \n        Additional_Fee: additionalFee, \n        Raw_Form_State: rawFormState,\n        Sub_Items: packedItems         \n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -368
+      ],
+      "id": "186cc6e8-d119-45a8-8d5c-9bebdff4547b",
+      "name": "Calculate Profit & Pack Items"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1444800b-1397-4154-b2da-a4d328c6c51b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -368
+      ],
+      "id": "f818b6ba-033d-4d85-9c3f-0079e232e02f",
+      "name": "Receive Dashboard Order",
+      "webhookId": "1444800b-1397-4154-b2da-a4d328c6c51b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst orderId = body.Order_ID || \"未命名\";\nconst customer = body.Customer_Name || \"未命名\";\nconst appDate = body.Appointment_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\nif (body.Order_Items_List && Array.isArray(body.Order_Items_List)) {\n    for (const item of body.Order_Items_List) {\n        let sku = item.Product_Name;\n        if (item.Mode) sku = `${item.Product_Name} - ${item.Quantity}飾 ${item.Mode}`;\n\n        let shipping_saved = (sku.includes(\"鎖匙扣\") && item.Quantity > 1) ? (item.Quantity - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"吊飾\")) ? Math.floor(item.Quantity / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: item.Quantity,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key,\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"無商品\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        -368
+      ],
+      "id": "0f9959a5-2898-46e3-9985-3ba8f9464779",
+      "name": "Parse Items & Generate SKU"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst rawFormState = body.Raw_Form_State;\n\nlet auditResults = {\n    auditPassed: true,\n    theoreticalCost: 0,\n    discrepancy: 0,\n    reasons: [],\n    orderId: body.Order_ID || \"Unknown\",\n    customer: body.Customer_Name || \"Unknown\",\n    role: body.Role || \"ling\"\n};\n\nif (!rawFormState) {\n    return auditResults;\n}\n\ntry {\n    let state = rawFormState;\n    if (typeof rawFormState === 'string') {\n        state = JSON.parse(rawFormState);\n    }\n\n    let keychainCount = 0;\n    if (state.enableK) {\n        if (state.k_lh_en) keychainCount++;\n        if (state.k_rh_en) keychainCount++;\n        if (state.k_lf_en) keychainCount++;\n        if (state.k_rf_en) keychainCount++;\n    }\n} catch (e) {\n    auditResults.auditPassed = false;\n    auditResults.reasons.push(\"數據格式錯誤: \" + e.message);\n}\n\nreturn auditResults;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        -576
+      ],
+      "id": "auditor-001",
+      "name": "Profit Auditor"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeCast": false
+          },
+          "conditions": [
+            {
+              "id": "90962ae5-9bb0-4384-972a-609c1f61884b",
+              "leftValue": "={{ $json.auditPassed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        -576
+      ],
+      "id": "auditor-if-001",
+      "name": "Auditor Logic If"
+    },
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "=🚨 【財務稽核異常警報】 🚨\n系統偵測到前台計算與後台稽核不符！\n\n單號：{{ $node[\"Profit Auditor\"].json.orderId }}\n原因：{{ $node[\"Profit Auditor\"].json.reasons.join(\", \") }}\n\n請立即核對！",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -200,
+        -576
+      ],
+      "id": "auditor-alert-001",
+      "name": "Auditor Alert",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive Dashboard Order": {
+      "main": [
+        [
+          {
+            "node": "Profit Auditor",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Parse Items & Generate SKU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profit Auditor": {
+      "main": [
+        [
+          {
+            "node": "Auditor Logic If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auditor Logic If": {
+      "main": [
+        [
+          {
+            "node": "Auditor Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Items & Generate SKU": {
+      "main": [
+        [
+          {
+            "node": "Batch SKU Collector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch SKU Collector": {
+      "main": [
+        [
+          {
+            "node": "Fetch Exact Base Cost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Exact Base Cost": {
+      "main": [
+        [
+          {
+            "node": "Local Data Mapper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Data Mapper": {
+      "main": [
+        [
+          {
+            "node": "Calculate Profit & Pack Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Profit & Pack Items": {
+      "main": [
+        [
+          {
+            "node": "Create Main Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Main Order": {
+      "main": [
+        [
+          {
+            "node": "Bind Main Order ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bind Main Order ID": {
+      "main": [
+        [
+          {
+            "node": "Create Sub Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Sub Items": {
+      "main": [
+        [
+          {
+            "node": "Send Profit Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "id": "gYiFsE3J4JmCCKiA",
+  "tags": []
+}

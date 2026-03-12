@@ -1,0 +1,237 @@
+{
+  "name": "FHS_System_ErrorMonitor",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 👁️ 【雲端之眼 - 錯誤監測系統】\n\n**核心用途：** 負責全系統的健全狀況監測。\n\n**主要功能：**\n1. **異常攔截：** 當其他工作流報錯時自動觸發。\n2. **資料彙整：** 捕捉錯誤訊息、發生時間、哪一個工作流及哪一個節點崩潰。\n3. **雲端日誌：** 將錯誤詳細資訊寫入 Airtable `Error_Logs`，避開本地 Docker 權限問題。\n4. **AI 醫療診斷：** 提供資料供智能中樞進行線上自動修復建議。",
+        "height": 280,
+        "width": 550
+      },
+      "id": "doc-FHS_Error_Monitor.json",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -350,
+        -350
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5d5344d9-96f5-401d-86db-1eb065818b32",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得當下時間\nconst now = new Date().toISOString();\n\n// 取得前面節點傳過來的各種錯誤訊息\nconst workflowName = $node[\"Error Trigger\"].json.workflow.name || \"Unknown Workflow\";\nconst errorMessage = $node[\"Error Trigger\"].json.execution.error.message || \"Unknown Error\";\nconst errorNode = $node[\"Error Trigger\"].json.execution.lastNodeExecuted || \"Unknown Node\";\n\n// 組合出我們要寫入的文字格式\nconst logText = `--- [${now}] ---\\nWorkflow: ${workflowName}\\nError: ${errorMessage}\\nNode: ${errorNode}\\n\\n`;\n\n// 最關鍵的一步：把這段字串，強行轉化成名叫 \"data\" 的 Binary 檔案 (Base64格式)\nconst buf = Buffer.from(logText, 'utf8');\n\nreturn {\n  json: {\n     workflowName,\n     errorMessage,\n     errorNode\n  },\n  binary: {\n    data: {  // 這個 data 就是 Write File 節點要找的東西\n      data: buf.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: 'debug.log'\n    }\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ],
+      "id": "8bdd6aa5-a687-421a-ad72-740cff8f2ae1",
+      "name": "Format Error"
+    },
+    {
+      "parameters": {
+        "jsCode": "// API V40.2 協議：錯誤循環盾牌 (Error Loop Shield)\nconst staticData = $getWorkflowStaticData('global');\nconst now = Date.now();\nconst errorNode = $node[\"Format Error\"].json.errorNode || \"Unknown Node\";\n\n// 5 分鐘冷卻 (300,000 ms)\nconst COOLDOWN_MS = 300000;\n\nif (staticData.lastErrorNode === errorNode && (now - staticData.lastErrorTime < COOLDOWN_MS)) {\n    return { json: { skip: true, reason: \"Cooldown Active\" } };\n}\n\n// 更新冷卻狀態\nstaticData.lastErrorNode = errorNode;\nstaticData.lastErrorTime = now;\n\nreturn { json: { skip: false } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "error-loop-shield",
+      "name": "Error Loop Shield"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeCast": false
+          },
+          "conditions": [
+            {
+              "id": "check-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        600,
+        0
+      ],
+      "id": "shield-check-if",
+      "name": "Should Log?"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLeQv831Oc2hgNt",
+          "mode": "list",
+          "cachedResultName": "Error_Logs",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tblLeQv831Oc2hgNt"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Time": "={{ $now }}",
+            "Workflow_Name": "={{ $(\"Format Error\").json.workflowName }}",
+            "Error_Message": "={{ $(\"Format Error\").json.errorMessage }}",
+            "Node": "={{ $(\"Format Error\").json.errorNode }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow_Name",
+              "displayName": "Workflow_Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error_Message",
+              "displayName": "Error_Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Node",
+              "displayName": "Node",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "5571fad0-4dcd-4b88-a723-4f8817e860d9",
+      "name": "Log to Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error": {
+      "main": [
+        [
+          {
+            "node": "Error Loop Shield",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Loop Shield": {
+      "main": [
+        [
+          {
+            "node": "Should Log?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Log?": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "id": "psg4Itj9ya3MGll9",
+  "tags": []
+}

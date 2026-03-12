@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.log
+diff.txt
+excel_dump.json
+v26_v27_diff.txt
+.gemini/
+/tmp/

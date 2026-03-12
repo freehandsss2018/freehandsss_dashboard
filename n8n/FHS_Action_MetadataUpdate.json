@@ -1,0 +1,205 @@
+{
+  "name": "FHS_Action_MetadataUpdate",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 📝 【全域核對 - 原地更新引擎 (V2)】\n\n**核心用途：** 專用於 V27 全域核對中心的「原地修改」功能。\n\n**主要功能：**\n1. **路由更新：** 自動判斷更新目標是「主訂單」還是「細項商品」。\n2. **細項更新：** 若提供 `Item_Record_ID`，則更新 `Order_Items` 的批次與狀態。\n3. **主單更新：** 若為 `Admin_Notes` 或未提供分項 ID，則更新 `Main_Orders`。",
+        "height": 280,
+        "width": 550
+      },
+      "id": "doc-Update_Order_Meta.json",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -350,
+        -350
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "update-order-meta",
+        "responseMode": "responseNode",
+        "responseNode": "Format Success",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook (Update Meta)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "fhs-update-order-meta-v27"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body?.Item_Record_ID }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "rec"
+            }
+          ]
+        }
+      },
+      "id": "router-item-vs-main",
+      "name": "If Item Update?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbljkptnNcUEyDRFH",
+          "mode": "id"
+        },
+        "id": "={{ $(\"Webhook (Update Meta)\").item.json.body.Item_Record_ID }}",
+        "options": {},
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Batch_Number": "={{ $(\"Webhook (Update Meta)\").item.json.body.Batch_Number }}",
+            "Process_Status": "={{ $(\"Webhook (Update Meta)\").item.json.body.Process_Status }}"
+          }
+        }
+      },
+      "id": "update-item",
+      "name": "Update Order_Items",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        700,
+        200
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "id": "={{ $(\"Webhook (Update Meta)\").item.json.body.Record_ID }}",
+        "options": {},
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Admin_Notes": "={{ $(\"Webhook (Update Meta)\").item.json.body.Admin_Notes }}",
+            "Batch_Number": "={{ $(\"Webhook (Update Meta)\").item.json.body.Batch_Number }}",
+            "Process_Status": "={{ $(\"Webhook (Update Meta)\").item.json.body.Process_Status }}"
+          }
+        }
+      },
+      "id": "update-main",
+      "name": "Update Main_Orders",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        700,
+        400
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return { json: { success: true, message: 'Metadata updated' } };"
+      },
+      "id": "success-node",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        950,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (Update Meta)": {
+      "main": [
+        [
+          {
+            "node": "If Item Update?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Item Update?": {
+      "main": [
+        [
+          {
+            "node": "Update Order_Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Main_Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order_Items": {
+      "main": [
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Main_Orders": {
+      "main": [
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {}
+}
