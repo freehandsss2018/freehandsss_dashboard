@@ -2277,8 +2277,30 @@ ${disclaimer}`;
             else if (combinedSearch.includes('925金')) material = "👑 925金";
             else if (combinedSearch.includes('925銀') || combinedSearch.includes('銀')) material = "✨ 925銀";
             else if (combinedSearch.includes('鋁合金')) material = "⚙️ 鋁合金";
+
+            // === 5. V29 擴展：立體擺設款式、主題與肢數 (Styles, Themes, Counts) ===
+            let style = "";
+            let theme = "";
+            let count = "";
+
+            if (category === "立體擺設") {
+                // 款式解析
+                if (combinedSearch.includes('木框')) style = "🖼️ 木框裝";
+                else if (combinedSearch.includes('玻璃瓶') || combinedSearch.includes('玻璃罩') || combinedSearch.includes('瓶')) style = "🧴 玻璃瓶款式";
+
+                // 主題/色款解析
+                if (combinedSearch.includes('粉紅')) theme = "🌸 粉紅款式";
+                else if (combinedSearch.includes('草原')) theme = "🌿 草原款式";
+                else if (combinedSearch.includes('仿古')) theme = "🕰️ 仿古式";
+                else if (combinedSearch.includes('淺木')) theme = "🪵 淺木色";
+                else if (combinedSearch.includes('海洋')) theme = "🌊 海洋款式";
+
+                // 肢體數解析
+                if (combinedSearch.includes('4肢')) count = "✋🦶 4肢套裝";
+                else if (combinedSearch.includes('2肢') || combinedSearch.includes('1對') || combinedSearch.includes('手足')) count = "✋🦶 2肢/一對";
+            }
             
-            return { target, part, category, emoji, material };
+            return { target, part, category, emoji, material, style, theme, count };
         }
 
         const BATCH_COLORS = [
@@ -2436,8 +2458,19 @@ ${disclaimer}`;
                             badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
                         }
 
-                        // 數量標籤 (放在最後)
-                        if (qty > 1) {
+                        // V29 擴展：款式、主題標籤 (僅限立體擺設)
+                        if (dimensions.style) {
+                            badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`;
+                        }
+                        if (dimensions.theme) {
+                            badgeHtml += `<span class="review-badge badge-part" style="border-color:#B07D4C; color:#B07D4C;">${dimensions.theme}</span>`;
+                        }
+                        if (dimensions.count) {
+                            badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
+                        }
+
+                        // 數量標籤 (放在最後) - V29 修改：強制顯示 x1
+                        if (qty >= 1) {
                             badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
                         }
                         
