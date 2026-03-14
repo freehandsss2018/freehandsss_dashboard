@@ -2304,15 +2304,31 @@ ${disclaimer}`;
         }
 
         const BATCH_COLORS = [
-            "#fdf6e3", "#f4f1de", "#e9edc9", "#fefae0", "#faedcd", "#d4a373", 
-            "#e2ece9", "#dfe7fd", "#f8ad9d", "#fbc4ab", "#ffdab9"
+            "#fdf6e3", // 0: Cream
+            "#f9ead3", // 1: Peach
+            "#e9edc9", // 2: Sage
+            "#faedcd", // 3: Wheat
+            "#f4f1de", // 4: Sand
+            "#e2ece9", // 5: Mint
+            "#dfe7fd", // 6: Lavender
+            "#f8ad9d", // 7: Salmon
+            "#fbc4ab", // 8: Apricot
+            "#ffdab9", // 9: Peachpuff
+            "#d4a373"  // 10: Tan
         ];
         
         function getBatchColor(batch) {
-            if (!batch || batch.trim() === '') return '#ffffff';
+            if (!batch) return '#ffffff';
+            let s = batch.toString().trim();
+            if (s === '' || s === '批次') return '#ffffff';
+
+            // V29.2 修正：提取數字部分進行雜湊，確保 "31" 與 " 31" 或 "批次31" 具備一致基底顏色
+            let numericOnly = s.replace(/\D/g, '');
+            let target = numericOnly.length > 0 ? numericOnly : s;
+
             let hash = 0;
-            for (let i = 0; i < batch.length; i++) {
-                hash = batch.charCodeAt(i) + ((hash << 5) - hash);
+            for (let i = 0; i < target.length; i++) {
+                hash = target.charCodeAt(i) + ((hash << 5) - hash);
             }
             const index = Math.abs(hash) % BATCH_COLORS.length;
             return BATCH_COLORS[index];
