@@ -52,13 +52,13 @@
 1. **.cursorrules** (SOUL)：最高行為準則與拒絕邊界。
 2. **FHS_Blueprint.md** (Long-term Memory)：唯一商業邏輯與技術規格真相。
 3. **Changelog.md** (Evolution Memory)：版本紀錄與進化日誌。
-4. **前端穩定代碼**：當前線上運行的穩定版本（如 `freehandsss_dashboardV28.html`）。
+4. **前端穩定代碼**：當前線上運行的穩定版本（如 `freehandsss_dashboardV29.html`）。
 
 ### 🌟 優先執行守則 (Execution Imperative)
 執行指令不用問我、必須優先看！接受任何新任務前，**強制主動讀取**以下最新資訊：
 *   `FHS_Blueprint.md`
 *   `Changelog.md`
-*   `freehandsss_dashboardV28.html` (當前穩定主程式)
+*   `freehandsss_dashboardV29.html` (當前穩定主程式)
 
 ## 3. 絕對拒絕行為 (Death Lines)
 - 嚴禁人工輸入或手動修改「最終銷售金額」或「利潤」相關計算結果。
