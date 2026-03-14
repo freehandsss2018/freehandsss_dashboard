@@ -2317,18 +2317,21 @@ ${disclaimer}`;
             "#d4a373"  // 10: Tan
         ];
         
-        function getBatchColor(batch) {
+                function getBatchColor(batch) {
             if (!batch) return '#ffffff';
             let s = batch.toString().trim();
             if (s === '' || s === '批次') return '#ffffff';
 
-            // V29.2 修正：提取數字部分進行雜湊，確保 "31" 與 " 31" 或 "批次31" 具備一致基底顏色
+            // V29.2 修正：提取數字部分進行雜湊。確保 "31" 與 "批 31" 具備一致顏色。
             let numericOnly = s.replace(/\D/g, '');
-            let target = numericOnly.length > 0 ? numericOnly : s;
+            // 如果完全沒有數字，則保持白色 (例如 "待定" 或 "批次")
+            if (numericOnly.length === 0) return '#ffffff';
 
             let hash = 0;
-            for (let i = 0; i < target.length; i++) {
-                hash = target.charCodeAt(i) + ((hash << 5) - hash);
+            for (let i = 0; i < numericOnly.length; i++) {
+                // 使用更大質數進行雜湊分散，避免 31, 32 顏色過於接近
+                hash = (hash * 31) + numericOnly.charCodeAt(i);
+                hash = hash & hash; // Convert to 32bit integer
             }
             const index = Math.abs(hash) % BATCH_COLORS.length;
             return BATCH_COLORS[index];
@@ -2491,7 +2494,7 @@ ${disclaimer}`;
                         }
                         
                         // 區塊級批次填色
-                        let itemBatchCol = getBatchColor(item.Batch || o.Batch);
+                        let itemBatchCol = getBatchColor(item.Batch);
                         let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height: 42px;">
                             <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:13px; padding: 2px 4px;">${badgeHtml}</div>
                         </div>`;
@@ -2529,34 +2532,37 @@ ${disclaimer}`;
                             </div>`;
                         }
 
+                        const rowBatch = item.Batch;
+                        const rowBatchCol = getBatchColor(rowBatch);
+
                         // 繪製表格列 (TR)
                         html += `
                         <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${batchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${rowBatchCol};">
                                 ${engHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${batchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
                                 ${prodHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${batchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${rowBatchCol};">
                                 <input type="text" class="review-batch-input" 
-                                       value="${o.Batch || ''}" 
+                                       value="${rowBatch || ''}" 
                                        style="width:80%; max-width:80px; text-align:center; margin:0 auto; font-size:13px;"
-                                       onblur="saveInlineEdit('${o.id}', 'Batch_Number', this.value)" 
+                                       onblur="saveInlineEdit('${o.id}', 'Batch_Number', this.value, ${index})" 
                                        placeholder="批次">
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; background-color:${batchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; background-color:${rowBatchCol};">
                                 <select class="review-status-select" 
                                         style="width:90%; font-size:13px; margin:0 auto;"
-                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', this.value)">
-                                    <option value="0 什麼都未做" ${o.Status === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
-                                    <option value="1 已繪圖 或 已取相" ${o.Status === '1 已繪圖 或 已取相' ? 'selected' : ''}>1 已繪圖/取相</option>
-                                    <option value="1.5 已交付建模師, 等3D圖中" ${o.Status === '1.5 已交付建模師, 等3D圖中' ? 'selected' : ''}>1.5 等3D圖</option>
-                                    <option value="2 已修3D圖, 但未核對" ${o.Status === '2 已修3D圖, 但未核對' ? 'selected' : ''}>2 已修3D圖</option>
-                                    <option value="2.5 已核對3D圖, 準備打印" ${o.Status === '2.5 已核對3D圖, 準備打印' ? 'selected' : ''}>2.5 準備打印</option>
-                                    <option value="3 已交付廠家, 打印中" ${o.Status === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
-                                    <option value="Done 已完成" ${o.Status === 'Done 已完成' ? 'selected' : ''}>Done ✅</option>
+                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', this.value, ${index})">
+                                    <option value="0 什麼都未做" ${(item.Status || o.Status) === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
+                                    <option value="1 已繪圖 或 已取相" ${(item.Status || o.Status) === '1 已繪圖 或 已取相' ? 'selected' : ''}>1 已繪圖/取相</option>
+                                    <option value="1.5 已交付建模師, 等3D圖中" ${(item.Status || o.Status) === '1.5 已交付建模師, 等3D圖中' ? 'selected' : ''}>1.5 等3D圖</option>
+                                    <option value="2 已修3D圖, 但未核對" ${(item.Status || o.Status) === '2 已修3D圖, 但未核對' ? 'selected' : ''}>2 已修3D圖</option>
+                                    <option value="2.5 已核對3D圖, 準備打印" ${(item.Status || o.Status) === '2.5 已核對3D圖, 準備打印' ? 'selected' : ''}>2.5 準備打印</option>
+                                    <option value="3 已交付廠家, 打印中" ${(item.Status || o.Status) === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
+                                    <option value="Done 已完成" ${(item.Status || o.Status) === 'Done 已完成' ? 'selected' : ''}>Done ✅</option>
                                 </select>
                                 <div id="save-indicator-${o.id}" class="review-save-indicator" style="font-size:10px;"></div>
                             </td>
@@ -2566,7 +2572,7 @@ ${disclaimer}`;
                     html += `
                     <tr class="order-group-${o.id}" id="row-${o.id}">
                         ${orderLeftColsHtml}
-                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${batchCol};">
+                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${rowBatchCol};">
                             無子項目
                         </td>
                     </tr>`;
@@ -2576,10 +2582,10 @@ ${disclaimer}`;
             tbody.innerHTML = html;
         }
 
-        async function saveInlineEdit(recordId, field, value) {
+        async function saveInlineEdit(recordId, field, value, itemIndex) {
             const ind = document.getElementById(`save-indicator-${recordId}`);
             if (ind) {
-                ind.innerText = "儲存中...";
+                ind.innerText = "\xe5\x84\xb2\xe5\xad\x98\xe4\xb8\xad...";
                 ind.style.color = "#E76F51";
             }
             
@@ -2588,15 +2594,33 @@ ${disclaimer}`;
             if (orderIndex > -1) {
                 if (field === 'Admin_Notes') globalOrders[orderIndex].Admin_Notes = value;
                 else if (field === 'Batch_Number') {
-                    globalOrders[orderIndex].Batch = value;
-                    // 同步更新屬於該訂單的所有特定欄位背景色 (V29.2 限定範圍)
-                    const batchCells = document.querySelectorAll(`.order-group-${recordId} .batch-cell`);
-                    const newColor = getBatchColor(value);
-                    batchCells.forEach(cell => {
-                        cell.style.backgroundColor = newColor;
-                    });
+                    if (itemIndex !== undefined && globalOrders[orderIndex].items && globalOrders[orderIndex].items[itemIndex]) {
+                        globalOrders[orderIndex].items[itemIndex].Batch = value;
+                    } else {
+                        globalOrders[orderIndex].Batch = value;
+                    }
+                    
+                    let targetRow;
+                    if (itemIndex !== undefined) {
+                        targetRow = document.getElementById(`row-${recordId}-item-${itemIndex}`);
+                    } else {
+                        targetRow = document.getElementById(`row-${recordId}`);
+                    }
+                    if (targetRow) {
+                        const batchCells = targetRow.querySelectorAll('.batch-cell');
+                        const newColor = getBatchColor(value);
+                        batchCells.forEach(cell => {
+                            cell.style.backgroundColor = newColor;
+                        });
+                    }
                 }
-                else if (field === 'Process_Status') globalOrders[orderIndex].Status = value;
+                else if (field === 'Process_Status') {
+                    if (itemIndex !== undefined && globalOrders[orderIndex].items && globalOrders[orderIndex].items[itemIndex]) {
+                        globalOrders[orderIndex].items[itemIndex].Status = value;
+                    } else {
+                        globalOrders[orderIndex].Status = value;
+                    }
+                }
                 
                 const o = globalOrders[orderIndex];
                 
