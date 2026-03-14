@@ -2515,22 +2515,22 @@ ${disclaimer}`;
 
                         // 繪製表格列 (TR)
                         html += `
-                        <tr style="background-color:${batchCol};" class="order-group-${o.id}" id="row-${o.id}-item-${index}">
+                        <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
-                            <td style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px;">
+                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${batchCol};">
                                 ${engHtml}
                             </td>
-                            <td style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px;">
+                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${batchCol};">
                                 ${prodHtml}
                             </td>
-                            <td style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 90px;">
+                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${batchCol};">
                                 <input type="text" class="review-batch-input" 
                                        value="${o.Batch || ''}" 
                                        style="width:80%; max-width:80px; text-align:center; margin:0 auto; font-size:13px;"
                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', this.value)" 
                                        placeholder="批次">
                             </td>
-                            <td style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb;">
+                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; background-color:${batchCol};">
                                 <select class="review-status-select" 
                                         style="width:90%; font-size:13px; margin:0 auto;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', this.value)">
@@ -2548,9 +2548,9 @@ ${disclaimer}`;
                     });
                 } else {
                     html += `
-                    <tr style="background-color:${batchCol}; transition:background 0.2s;" class="order-group-${o.id}" id="row-${o.id}">
+                    <tr class="order-group-${o.id}" id="row-${o.id}">
                         ${orderLeftColsHtml}
-                        <td colspan="4" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px;">
+                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${batchCol};">
                             無子項目
                         </td>
                     </tr>`;
@@ -2573,11 +2573,11 @@ ${disclaimer}`;
                 if (field === 'Admin_Notes') globalOrders[orderIndex].Admin_Notes = value;
                 else if (field === 'Batch_Number') {
                     globalOrders[orderIndex].Batch = value;
-                    // 同步更新屬於該訂單的所有 rowspan 行背景色
-                    const rows = document.querySelectorAll(`.order-group-${recordId}`);
+                    // 同步更新屬於該訂單的所有特定欄位背景色 (V29.2 限定範圍)
+                    const batchCells = document.querySelectorAll(`.order-group-${recordId} .batch-cell`);
                     const newColor = getBatchColor(value);
-                    rows.forEach(r => {
-                        r.style.backgroundColor = newColor;
+                    batchCells.forEach(cell => {
+                        cell.style.backgroundColor = newColor;
                     });
                 }
                 else if (field === 'Process_Status') globalOrders[orderIndex].Status = value;
