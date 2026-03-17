@@ -195,7 +195,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// API V40.2 協議：批量收集 SKU\nconst items = $input.all();\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"無商品\"))];\n\nif (skus.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", hasItems: false } };\n}\n\nconst formulaParts = skus.map(s => `{Product_Name} = '${s}'`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : formulaParts[0];\n\nreturn { json: { batchFormula: finalFormula, hasItems: true } };"
+        "jsCode": "// API V40.5 協議：批量收集 SKU (安全重生版)\nconst items = $input.all();\n\n// 強制數組檢查與防禦\nif (!Array.isArray(items) || items.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", hasItems: false } };\n}\n\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"無商品\"))];\n\nif (skus.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", hasItems: false } };\n}\n\nconst formulaParts = skus.map(s => `{Product_Name} = '${s}'`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : formulaParts[0];\n\nreturn { json: { batchFormula: finalFormula, hasItems: true } };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -246,7 +246,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// API V40.2 協議：本地數據映射 Mapping\nconst costResults = $(\"Fetch Exact Base Cost\").all();\nconst originalItems = $(\"Parse Items & Generate SKU\").all();\n\nconst costMap = {};\ncostResults.forEach(r => {\n    if (r.json.id) {\n        costMap[r.json.Product_Name] = {\n            id: r.json.id,\n            Product_Name: r.json.Product_Name,\n            Total_Base_Cost: r.json.Total_Base_Cost || 0\n        };\n    }\n});\n\nreturn originalItems.map(item => {\n    const sku = item.json.Search_SKU;\n    const costData = costMap[sku] || { id: null, Product_Name: sku, Total_Base_Cost: 0 };\n    return {\n        json: {\n            ...item.json,\n            ...costData\n        }\n    };\n});"
+        "jsCode": "// API V40.5 協議：本地數據映射 Mapping (存活定律版)\nconst costNode = $(\"Fetch Exact Base Cost\");\nconst originalItemsNode = $(\"Parse Items & Generate SKU\");\n\n// 確保節點存在且有資料，否則安全回退\nconst costResults = costNode ? costNode.all() : [];\nconst originalItems = originalItemsNode ? originalItemsNode.all() : [];\n\nconst costMap = {};\ncostResults.forEach(r => {\n    if (r.json && r.json.id) {\n        costMap[r.json.Product_Name] = {\n            id: r.json.id,\n            Product_Name: r.json.Product_Name,\n            Total_Base_Cost: Number(r.json.Total_Base_Cost) || 0\n        };\n    }\n});\n\nreturn originalItems.map(item => {\n    const sku = item.json.Search_SKU;\n    // 實裝 Section 14.5 數據映射存活定律：找不到成本則預設為 0\n    const costData = costMap[sku] || { id: null, Product_Name: sku, Total_Base_Cost: 0 };\n    return {\n        json: {\n            ...item.json,\n            ...costData\n        }\n    };\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -259,7 +259,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// === Freehandsss V40.2 (V45.4 防呆加強版): 大腦 2 號(利潤精算 - 並將子項目打包) ===\n\nconst parseNodeItems = $('Parse Items & Generate SKU').all();\nconst firstNodeData = parseNodeItems[0].json;\nconst totalRevenue = firstNodeData.Total_Revenue || 0;\nconst rawFormState = firstNodeData.Raw_Form_State || \"\";\n\nlet deposit = 0;\nlet balance = 0;\nlet additionalFee = 0;\n\ntry {\n    const triggerBody = $('Receive Dashboard Order').first().json.body || $('Receive Dashboard Order').first().json;\n    deposit = triggerBody.Deposit || 0;\n    balance = triggerBody.Balance || 0;\n    additionalFee = triggerBody.Additional_Fee || 0;\n} catch (error) { }\n\nlet totalBaseCost = 0;\nlet packedItems = [];\n\nconst items = $input.all(); \nfor (let i = 0; i < parseNodeItems.length; i++) {\n    // 終極防禦機制：當 $input 找不到對應 item 時安全回退，避免 Cannot read properties of undefined\n    let originalItemData = parseNodeItems[i].json || {};\n    let itemData = items[i] ? items[i].json : originalItemData;\n\n    let itemCost = itemData.Total_Base_Cost || 0;\n    totalBaseCost += itemCost;\n\n    packedItems.push({\n        Product_Record_ID: itemData.id || null, \n        Product_Name: itemData.Product_Name || originalItemData.Search_SKU || \"Unknown SKU\",\n        Total_Base_Cost: itemCost,\n        Quantity: originalItemData.Original_Qty || 1,\n        Notes: originalItemData.Item_Notes || \"\",\n        Order_Item_Key: originalItemData.Order_Item_Key || \"\"\n    });\n}\n\nconst finalProfit = totalRevenue - totalBaseCost;\n\nreturn [{\n    json: {\n        ...firstNodeData,              \n        Total_Revenue: totalRevenue,   \n        Total_Cost: totalBaseCost,     \n        Final_Profit: finalProfit,     \n        Deposit: deposit,              \n        Balance: balance,              \n        Additional_Fee: additionalFee, \n        Raw_Form_State: rawFormState,\n        Sub_Items: packedItems         \n    }\n}];"
+        "jsCode": "// === Freehandsss V40.5 (安全重生版): 大腦 2 號 (利潤精算 - 並將子項目打包) ===\n\nconst parseNode = $('Parse Items & Generate SKU');\nconst parseNodeItems = parseNode ? parseNode.all() : [];\n\nif (parseNodeItems.length === 0) {\n    // 根本性防禦：如果連初始解析都沒有，傳回基本的空 payload 避免當機\n    return [{ json: { Total_Revenue: 0, Total_Cost: 0, Final_Profit: 0, Sub_Items: [] } }];\n}\n\nconst firstNodeData = parseNodeItems[0].json || {};\nconst totalRevenue = Number(firstNodeData.Total_Revenue) || 0;\nconst rawFormState = firstNodeData.Raw_Form_State || \"\";\n\nlet deposit = 0;\nlet balance = 0;\nlet additionalFee = 0;\n\ntry {\n    const triggerNode = $('Receive Dashboard Order');\n    const triggerBody = (triggerNode && triggerNode.first()) ? (triggerNode.first().json.body || triggerNode.first().json) : {};\n    deposit = Number(triggerBody.Deposit) || 0;\n    balance = Number(triggerBody.Balance) || 0;\n    additionalFee = Number(triggerBody.Additional_Fee) || 0;\n} catch (error) { }\n\nlet totalBaseCost = 0;\nlet packedItems = [];\n\nconst items = $input.all(); \nfor (let i = 0; i < parseNodeItems.length; i++) {\n    // 終極防禦機制：當 $input 找不到對應 item 時安全回退，避免 Cannot read properties of undefined\n    let originalItemData = parseNodeItems[i].json || {};\n    let itemData = (items[i] && items[i].json) ? items[i].json : originalItemData;\n\n    let itemCost = Number(itemData.Total_Base_Cost) || 0;\n    totalBaseCost += itemCost;\n\n    packedItems.push({\n        Product_Record_ID: itemData.id || null, \n        Product_Name: itemData.Product_Name || originalItemData.Search_SKU || \"Unknown SKU\",\n        Total_Base_Cost: itemCost,\n        Quantity: Number(originalItemData.Original_Qty) || 1,\n        Notes: originalItemData.Item_Notes || \"\",\n        Order_Item_Key: originalItemData.Order_Item_Key || \"\"\n    });\n}\n\nconst finalProfit = totalRevenue - totalBaseCost;\n\nreturn [{\n    json: {\n        ...firstNodeData,              \n        Total_Revenue: totalRevenue,   \n        Total_Cost: totalBaseCost,     \n        Final_Profit: finalProfit,     \n        Deposit: deposit,              \n        Balance: balance,              \n        Additional_Fee: additionalFee, \n        Raw_Form_State: rawFormState,\n        Sub_Items: packedItems         \n    }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -365,6 +365,67 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "fileName": ".n8n/data/products.json",
+        "dataPropertyName": "data"
+      },
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        300,
+        -550
+      ],
+      "id": "read-cache-file",
+      "name": "Read Cache File",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const batchItems = $(\"Batch SKU Collector\").all();\nlet useCache = false;\nlet productMap = {};\n\ntry {\n    const binaryData = $node[\"Read Cache File\"].binary?.data;\n    if (binaryData) {\n        const jsonContent = Buffer.from(binaryData.data, 'base64').toString('utf8');\n        const simplifiedProducts = JSON.parse(jsonContent);\n        \n        simplifiedProducts.forEach(p => {\n            productMap[p.fields.Product_Name] = p.fields.Total_Base_Cost;\n        });\n\n        const missingSkus = batchItems.filter(item => productMap[item.json.Search_SKU] === undefined);\n        \n        if (missingSkus.length === 0) {\n            useCache = true;\n            batchItems.forEach(item => {\n                item.json.Total_Base_Cost = productMap[item.json.Search_SKU] || 0;\n                item.json.Base_Cost_Source = 'Cache';\n            });\n        }\n    }\n} catch (e) {\n    useCache = false;\n}\n\nreturn batchItems.map(item => ({\n    json: { ...item.json, useCache: useCache }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        -550
+      ],
+      "id": "smart-cache-strategist",
+      "name": "Smart Cache Strategist"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeCast": false
+          },
+          "conditions": [
+            {
+              "id": "cache-hit-id",
+              "leftValue": "={{ $json.useCache }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        700,
+        -550
+      ],
+      "id": "cache-hit-if",
+      "name": "Cache Hit?"
     }
   ],
   "pinData": {},
@@ -422,7 +483,7 @@
       "main": [
         [
           {
-            "node": "Fetch Exact Base Cost",
+            "node": "Read Cache File",
             "type": "main",
             "index": 0
           }
@@ -489,6 +550,46 @@
         [
           {
             "node": "Send Profit Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Cache File": {
+      "main": [
+        [
+          {
+            "node": "Smart Cache Strategist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Smart Cache Strategist": {
+      "main": [
+        [
+          {
+            "node": "Cache Hit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cache Hit?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Exact Base Cost",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculate Profit & Pack Items",
             "type": "main",
             "index": 0
           }

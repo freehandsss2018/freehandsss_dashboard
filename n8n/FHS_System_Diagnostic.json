@@ -1,0 +1,64 @@
+{
+  "name": "FHS_System_Diagnostic_V2",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🔍 【系統診斷工具 V2 - 腳本版】\n\n**核心用途：** 由於 `Execute Command` 被停用，我們改用 JavaScript 來檢查路徑。\n\n**執行步驟：**\n1. 點擊「Execute Workflow」。\n2. 點開「Path Tester」節點看 Output。\n\n這會測試多個可能的路徑，直接告訴我們哪一個是可以寫入產品緩存的。",
+        "height": 280,
+        "width": 500
+      },
+      "id": "doc-Diagnostic-V2.json",
+      "name": "Diagnostic Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        -100
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ],
+      "id": "manual-trigger",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst pathsToTest = [\n  './products.json',\n  './data/products.json',\n  './files/products.json',\n  './.n8n/products.json',\n  '/home/node/.n8n/products.json'\n];\n\nconst results = [];\n\nfor (const p of pathsToTest) {\n  let writable = false;\n  let error = null;\n  try {\n    const absPath = path.resolve(p);\n    const dir = path.dirname(absPath);\n    // Check if directory exists and is writable\n    fs.accessSync(dir, fs.constants.W_OK);\n    writable = true;\n  } catch (e) {\n    error = e.message;\n  }\n  results.push({ path: p, absPath: path.resolve(p), writable, error });\n}\n\nreturn { \n  whoami: process.env.USER || 'unknown', \n  cwd: process.cwd(),\n  results \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        650,
+        300
+      ],
+      "id": "path-tester",
+      "name": "Path Tester"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Path Tester",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "diagnostic-workflow-v2",
+  "tags": []
+}

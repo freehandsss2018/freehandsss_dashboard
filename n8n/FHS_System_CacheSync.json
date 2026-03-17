@@ -1,0 +1,138 @@
+{
+  "name": "FHS_System_CacheSync",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🔄 【緩存同步服務 - v40.14 最終修正版】\n\n**核心用途：** 定期同步 Airtable `Product_Database` 至 NAS 本地 `products.json`。\n\n**重要動作 (必做)：**\n1. **重新選取憑證**：導入後，請點開「Fetch Product Database」節點，重新選擇您的 **Airtable 憑證**。\n2. **存儲路徑校準**：此版本將檔案寫入 `.n8n/data/products.json` (對應 NAS 的 `docker/n8n/data` 資料夾)。\n3. **權限必備**：請確保已在 NAS 執行過 `chmod -R 777 /volume1/docker/n8n`。\n\n**執行驗證**：\n點擊下方「Execute Workflow」，若看到綠色 Success 即代表大功告成！",
+        "height": 300,
+        "width": 550
+      },
+      "id": "doc-Cache_Sync.json",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -350,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hour"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        300
+      ],
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblC3HDJAz9W0OF6R",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "options": {
+          "retryOnFail": true,
+          "maxRetries": 3,
+          "waitBetweenRetries": 5000
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        300
+      ],
+      "id": "fetch-all-products",
+      "name": "Fetch Product Database"
+    },
+    {
+      "parameters": {
+        "jsCode": "const products = $input.all();\nconst simplified = products.map(p => ({\n  id: p.json.id,\n  fields: {\n    Product_Name: p.json.Product_Name,\n    Main_Category: p.json.Main_Category,\n    Total_Base_Cost: p.json.Total_Base_Cost || 0\n  }\n}));\n\nreturn {\n  json: { simplified },\n  binary: {\n    data: {\n        data: Buffer.from(JSON.stringify(simplified, null, 2)).toString('base64'),\n        mimeType: \"application/json\",\n        fileName: \"products.json\"\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        300
+      ],
+      "id": "format-to-json",
+      "name": "Format to JSON"
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "data",
+        "fileName": ".n8n/data/products.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ],
+      "id": "write-to-disk",
+      "name": "Write to NAS Disk"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Product Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Product Database": {
+      "main": [
+        [
+          {
+            "node": "Format to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format to JSON": {
+      "main": [
+        [
+          {
+            "node": "Write to NAS Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "cache-sync-workflow",
+  "tags": []
+}

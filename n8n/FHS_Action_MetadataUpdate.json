@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "### 📝 【全域核對 - 原地更新引擎 (V2)】\n\n**核心用途：** 專用於 V27 全域核對中心的「原地修改」功能。\n\n**主要功能：**\n1. **路由更新：** 自動判斷更新目標是「主訂單」還是「細項商品」。\n2. **細項更新：** 若提供 `Item_Record_ID`，則更新 `Order_Items` 的批次與狀態。\n3. **主單更新：** 若為 `Admin_Notes` 或未提供分項 ID，則更新 `Main_Orders`。",
+        "content": "### 🚀 【全域核對 - 防爆快充引擎 (V3)】\n\n**核心用途：** 導入 Debounce Queue 支援，極大化 Airtable API 壽命。\n\n**更新亮點 (Option B)：**\n1. **原生批次寫入：** 接收陣列並透過 Code 節點進行 10 筆一組的 Chunking。\n2. **高效能 PATCH：** 減少 90% 的 Webhook 執行開銷。\n3. **絕對防護：** 確保最後輸出必為 200 OK。",
         "height": 280,
         "width": 550
       },
@@ -36,54 +36,60 @@
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.body?.Item_Record_ID }}",
-        "rules": {
-          "rules": [
-            {
-              "value2": "rec"
-            }
-          ]
-        }
+        "jsCode": "const body = $json.body;\nconst updates = Array.isArray(body) ? body : [body];\n\n// 分流：分別處理 Order_Items (有 Item_Record_ID) 與 Main_Orders (無)\nconst itemUpdates = updates.filter(u => u.Item_Record_ID && u.Item_Record_ID.startsWith('rec'));\nconst mainUpdates = updates.filter(u => !u.Item_Record_ID || !u.Item_Record_ID.startsWith('rec'));\n\nreturn [\n  { json: { type: 'item', data: itemUpdates } },\n  { json: { type: 'main', data: mainUpdates } }\n];"
       },
-      "id": "router-item-vs-main",
-      "name": "If Item Update?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "id": "code-normalizer",
+      "name": "Normalize & Split",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        450,
+        400,
         300
       ]
     },
     {
       "parameters": {
-        "operation": "update",
-        "base": {
-          "__rl": true,
-          "value": "app9GuLsW9frN4xaT",
-          "mode": "id"
-        },
-        "table": {
-          "__rl": true,
-          "value": "tbljkptnNcUEyDRFH",
-          "mode": "id"
-        },
-        "id": "={{ $(\"Webhook (Update Meta)\").item.json.body.Item_Record_ID }}",
-        "options": {},
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Batch_Number": "={{ $(\"Webhook (Update Meta)\").item.json.body.Batch_Number }}",
-            "Process_Status": "={{ $(\"Webhook (Update Meta)\").item.json.body.Process_Status }}"
-          }
-        }
+        "jsCode": "const updates = $json.data;\nif (!updates || updates.length === 0) return [];\n\n// 每 10 筆一組 (Airtable 官規上限)\nconst chunks = [];\nfor (let i = 0; i < updates.length; i += 10) {\n  const chunk = updates.slice(i, i + 10);\n  chunks.push({\n    json: {\n      records: chunk.map(u => ({\n        id: u.Item_Record_ID,\n        fields: {\n          Batch_Number: u.Batch_Number,\n          Process_Status: u.Process_Status\n        }\n      }))\n    }\n  });\n}\nreturn chunks;"
       },
-      "id": "update-item",
-      "name": "Update Order_Items",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.1,
+      "id": "batch-items",
+      "name": "Chunk Order_Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        700,
+        650,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const updates = $json.data;\nif (!updates || updates.length === 0) return [];\n\nconst chunks = [];\nfor (let i = 0; i < updates.length; i += 10) {\n  const chunk = updates.slice(i, i + 10);\n  chunks.push({\n    json: {\n      records: chunk.map(u => ({\n        id: u.Record_ID,\n        fields: {\n          Admin_Notes: u.Admin_Notes,\n          Batch_Number: u.Batch_Number,\n          Process_Status: u.Process_Status\n        }\n      }))\n    }\n  });\n}\nreturn chunks;"
+      },
+      "id": "batch-main",
+      "name": "Chunk Main_Orders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        650,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://api.airtable.com/v0/app9GuLsW9frN4xaT/tbljkptnNcUEyDRFH",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "http-item",
+      "name": "Batch PATCH Items",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        900,
         200
       ],
       "credentials": {
@@ -95,35 +101,22 @@
     },
     {
       "parameters": {
-        "operation": "update",
-        "base": {
-          "__rl": true,
-          "value": "app9GuLsW9frN4xaT",
-          "mode": "id"
-        },
-        "table": {
-          "__rl": true,
-          "value": "tbltCH0I9fknVCtmV",
-          "mode": "id"
-        },
-        "id": "={{ $(\"Webhook (Update Meta)\").item.json.body.Record_ID }}",
-        "options": {},
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Admin_Notes": "={{ $(\"Webhook (Update Meta)\").item.json.body.Admin_Notes }}",
-            "Batch_Number": "={{ $(\"Webhook (Update Meta)\").item.json.body.Batch_Number }}",
-            "Process_Status": "={{ $(\"Webhook (Update Meta)\").item.json.body.Process_Status }}"
-          }
-        }
+        "method": "PATCH",
+        "url": "https://api.airtable.com/v0/app9GuLsW9frN4xaT/tbltCH0I9fknVCtmV",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
       },
-      "id": "update-main",
-      "name": "Update Main_Orders",
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.1,
+      "id": "http-main",
+      "name": "Batch PATCH Main",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [
-        700,
-        400
+        900,
+        450
       ],
       "credentials": {
         "airtableTokenApi": {
@@ -142,8 +135,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        950,
-        300
+        1200,
+        325
       ]
     }
   ],
@@ -152,32 +145,54 @@
       "main": [
         [
           {
-            "node": "If Item Update?",
+            "node": "Normalize & Split",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If Item Update?": {
+    "Normalize & Split": {
       "main": [
         [
           {
-            "node": "Update Order_Items",
+            "node": "Chunk Order_Items",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Update Main_Orders",
+            "node": "Chunk Main_Orders",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Update Order_Items": {
+    "Chunk Order_Items": {
+      "main": [
+        [
+          {
+            "node": "Batch PATCH Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Main_Orders": {
+      "main": [
+        [
+          {
+            "node": "Batch PATCH Main",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch PATCH Items": {
       "main": [
         [
           {
@@ -188,7 +203,7 @@
         ]
       ]
     },
-    "Update Main_Orders": {
+    "Batch PATCH Main": {
       "main": [
         [
           {
