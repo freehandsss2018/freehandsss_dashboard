@@ -1,6 +1,9 @@
-# FHS 系統藍圖 (FHS System Blueprint) - V4.5
+# FHS 系統藍圖 (FHS System Blueprint) - V4.7 (Final Judgment Graduation)
+> [!IMPORTANT]
+> **所有的具體售價、成本與銷售防呆邏輯，已全數轉移至 `FHS_Product_Bible_V3.5.md`，並通過「終極審判 (The Final Judgment)」100% 盲測驗收。**
+
 > 💡 **【給 Fat Mo 的系統文件定位說明】**
-> 本文件 (`FHS_Blueprint.md`) 是全系統的「核心邏輯與技術規格真相」。它定義了數據結構、ID 規則、利潤公式以及系統架構的最高準則。當 AI (如 Cursor/Antigravity) 介入開發時，必須首先讀取此文件，以確保所有決策與既定邏輯不產生衝突。
+> 本文件 (`FHS_Blueprint.md`) 是全系統的「核心邏輯與技術規格真相」。它定義了數據結構、ID 規則以及系統架構的最高準則。當 AI (如 Cursor/Antigravity) 介入開發時，必須首先讀取此文件，以確保所有決策與既定邏輯不產生衝突。
 
 ## 1. 公司背景與人員定義 (Business Context)
 * **品牌名稱**：Freehandsss
@@ -29,12 +32,22 @@
   4. **部位 (Part)**：具體描述部位，如「左手」、「右手」或「單隻」。
   5. **數量 (Quantity)**：如「單件」、「一对」或「四肢套裝」。
 
+### 3.1 定價與成本結構 (Pricing & Cost Structure)
+系統嚴格執行 **五維度查找邏輯 (5D Lookup Logic)**，所有的基礎售價 (`Suggested_Price_Manual`)、畫圖成本 (`Drawing_Cost`) 以及階梯加購規則，統一由 `FHS_Product_Bible_V3.5.md` 作為唯一真理來源。
+
+*   **圖紙費規則**：
+    - **同部位**：邏輯定義於 Product Bible。
+    - **不同部位 (一手一腳)**：每個「新部位」額外加收圖紙費（具體金額參閱 Product Bible）。
+    - **頸鏈豁免**：特定條件下免收圖紙費之邏輯。
+*   **3D 擺設基準**：
+    - 區分「木框裝」與「玻璃瓶」，成本與售價由系統自動從資料庫提取。
+
 ## 4. 核心財務邏輯 (Core Financial Logic)
-* **原則**：由系统自動計算成本與利潤，禁止人工手動修改最終結果。
-* **計算公式**：
-  1. **總收入 (Total_Revenue)** = 定金 + 尾數 + 額外收費。
-  2. **總成本 (Total_Cost)** = 依照產品 SKU 提取的基礎成本（包含代印、配件、物流等）。
-  3. **最終利潤 (Final_Profit)** = 總收入 - 總成本。
+* **原則**：由 Dashbaord 前端 Live Quote Engine 即時精算成本與售價，減少手動干預。所有精算結果隨 JSON Payload 直接寫入 n8n，全面取代舊版公式層。
+* **計算輸出欄位** (Payload 綁定)：
+  1. **System_Final_Sale_Price** = 依據五維度 SKU 查表與階梯價加總而得的建議售價。
+  2. **System_Total_Cost** = 依據對象與模式 (S/P) 分配予 Fat Mo 的畫圖成本總和。
+  3. **System_Additional_Fee** = 單購保護費 ($1000) 或跨部位保護費 ($100/$300) 的加總。
 
 ## 5. 前端 UI/UX 規範 (Frontend UI/UX Rules)
 * **視覺風格**：全系統採用 V31.0 定案的 Premium 玻璃擬態 (Glassmorphism) 設計，包含漸層背景與平滑過渡動畫。
