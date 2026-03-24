@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>freehandsss_dashboard V31.9 - 全域跳轉優化版 (正式版)</title>
+    <title>freehandsss_dashboard V35.4 - RESCUE STABILITY VERSION</title>
+    <!-- Tailwind CSS injected for V33 Review Center Premium Redesign -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
     <style>
         :root {
             --primary: #D4A373;
@@ -851,6 +854,123 @@
             font-size: 16px;
         }
     </style>
+
+    <!-- Impeccable V34 Glassmorphism Overrides -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+            color: #1e293b !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border-radius: 16px !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05) !important;
+            padding: 24px !important;
+            margin-bottom: 24px !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        }
+
+        .card:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .card-info {
+            border-top: 6px solid #457B9D !important;
+        }
+
+        .card-product {
+            border-top: 6px solid #D4A373 !important;
+        }
+
+        .card-finance {
+            border-top: 6px solid #52B788 !important;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            color: #0f172a !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #D4A373 !important;
+            box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.2) !important;
+            background-color: #ffffff !important;
+            outline: none !important;
+        }
+
+        .role-bar {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 16px 24px !important;
+        }
+
+        .role-btn {
+            background: #f1f5f9 !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 9999px !important;
+            color: #475569 !important;
+            padding: 10px 24px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .role-btn.active {
+            background: #0f172a !important;
+            color: #ffffff !important;
+            border-color: #0f172a !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .bottom-action-bar {
+            background: rgba(248, 250, 252, 0.85) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+            border-top: 1px solid #e2e8f0 !important;
+            padding: 20px !important;
+        }
+
+        .review-table-wrap {
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+            background: #ffffff !important;
+        }
+
+        .review-table thead th {
+            background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+            color: #ffffff !important;
+            padding: 16px 16px !important;
+            border-radius: 0 !important;
+        }
+
+        .review-table tbody td {
+            padding: 16px !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            border-right: 1px solid #f8fafc !important;
+            vertical-align: top !important;
+            color: #334155 !important;
+        }
+    </style>
+
 </head>
 
 <body class="ling-au-mode">
@@ -892,37 +1012,80 @@
             <div id="searchSuggestions" class="suggestions-box"></div>
         </div>
     </div>
-    
-    <!-- 全域核對中心 (V28 優化版) -->
-    <div id="reviewModeContainer" class="review-container" style="display:none; width:100%;">
-        <div class="card" style="border-top: 5px solid #D4A373; padding:20px;">
-            <div class="review-header">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <h2 class="review-title">📊 全域核對中心</h2>
-                    <span id="reviewCountBadge" class="review-count-badge" style="display:none;">0 筆</span>
+
+    <!-- 全域核對中心 (V28 優化版 + V33 Polish Glassmorphism) -->
+    <div id="reviewModeContainer"
+        class="review-container flex flex-col items-center max-w-[1600px] mx-auto px-2 sm:px-4"
+        style="display:none; width:100%;">
+        <div class="card relative overflow-hidden backdrop-blur-xl bg-white/70 border border-white/40 rounded-3xl shadow-2xl transition-all duration-300"
+            style="padding:24px; width: 100%;">
+            <!-- Glass reflection effect -->
+            <div class="absolute inset-0 pointer-events-none rounded-3xl border border-white/60"></div>
+
+            <div class="review-header flex justify-between items-center mb-6 flex-wrap gap-4 relative z-10">
+                <div class="flex items-center gap-3">
+                    <h2
+                        class="review-title text-2xl font-bold text-gray-800 m-0 p-0 flex items-center gap-2 tracking-tight">
+                        <span class="text-3xl">📊</span> 全域核對中心
+                    </h2>
+                    <span id="reviewCountBadge"
+                        class="review-count-badge inline-flex items-center px-4 py-1.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-full text-xs font-bold shadow-md shadow-teal-500/20"
+                        style="display:none;">0 筆</span>
                 </div>
-                <span id="reviewLoading" style="display:none; color:#E76F51; font-weight:bold; font-size:14px;">🔄 載入中...</span>
+                <span id="reviewLoading"
+                    class="text-orange-600 font-bold text-sm bg-orange-50 px-4 py-1.5 rounded-full shadow-inner animate-pulse flex items-center gap-2 border border-orange-100"
+                    style="display:none;">
+                    <svg class="animate-spin h-4 w-4 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    載入中...
+                </span>
             </div>
-            
-            <div class="review-filters">
-                <div class="filter-group">
-                    <label>📅 年度</label>
-                    <select id="reviewYear" onchange="fetchGlobalReview()"></select>
+
+            <div
+                class="review-filters flex flex-wrap gap-4 items-center p-5 bg-gradient-to-br from-gray-50/80 to-white/60 rounded-2xl mb-6 shadow-sm border border-gray-200/60 backdrop-blur-md relative z-10 w-full transition-all hover:bg-white/80">
+                <div class="filter-group flex items-center gap-2">
+                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">📅
+                        年度</label>
+                    <select id="reviewYear"
+                        class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300"
+                        onchange="fetchGlobalReview()"></select>
                 </div>
-                <div class="filter-group">
-                    <label>📆 月份</label>
-                    <select id="reviewMonth" onchange="fetchGlobalReview()">
+                <div class="filter-group flex items-center gap-2">
+                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">📆
+                        月份</label>
+                    <select id="reviewMonth"
+                        class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300"
+                        onchange="fetchGlobalReview()">
                         <option value="">全部</option>
-                        <option value="01">1月</option><option value="02">2月</option><option value="03">3月</option>
-                        <option value="04">4月</option><option value="05">5月</option><option value="06">6月</option>
-                        <option value="07">7月</option><option value="08">8月</option><option value="09">9月</option>
-                        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                        <option value="01">1月</option>
+                        <option value="02">2月</option>
+                        <option value="03">3月</option>
+                        <option value="04">4月</option>
+                        <option value="05">5月</option>
+                        <option value="06">6月</option>
+                        <option value="07">7月</option>
+                        <option value="08">8月</option>
+                        <option value="09">9月</option>
+                        <option value="10">10月</option>
+                        <option value="11">11月</option>
+                        <option value="12">12月</option>
                     </select>
                 </div>
-                <div class="filter-divider"></div>
-                <div class="filter-group">
-                    <label>🚥 狀態</label>
-                    <select id="reviewStatus" style="min-width:160px;" onchange="fetchGlobalReview()">
+                <div
+                    class="filter-divider hidden md:block w-px h-8 bg-gradient-to-b from-transparent via-gray-300 to-transparent mx-2">
+                </div>
+                <div class="filter-group flex items-center gap-2">
+                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">🚥
+                        狀態</label>
+                    <select id="reviewStatus"
+                        class="px-3 py-2 min-w-[160px] rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300"
+                        onchange="fetchGlobalReview()">
                         <option value="">全部狀態</option>
                         <option value="0 什麼都未做">0 什麼都未做</option>
                         <option value="1 已繪圖 或 已取相">1 已繪圖/取相</option>
@@ -933,34 +1096,70 @@
                         <option value="Done 已完成">Done ✅</option>
                     </select>
                 </div>
-                <div class="filter-divider"></div>
-                <div class="filter-group">
-                    <label>🏷️ 批次</label>
-                    <input type="text" id="reviewBatch" placeholder="第X批" style="width:80px;" oninput="debounceFetchGlobalReview()">
+                <div
+                    class="filter-divider hidden md:block w-px h-8 bg-gradient-to-b from-transparent via-gray-300 to-transparent mx-2">
                 </div>
-                <div class="filter-group">
-                    <label>🔍 搜尋</label>
-                    <input type="text" id="reviewSearch" placeholder="姓名/單號" style="width:120px;" oninput="debounceFetchGlobalReview()">
+                <div class="filter-group flex items-center gap-2">
+                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">🏷️
+                        批次</label>
+                    <input type="text" id="reviewBatch" placeholder="第X批"
+                        class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300 placeholder-gray-400"
+                        oninput="debounceFetchGlobalReview()">
                 </div>
-                <button class="review-btn-refresh" onclick="fetchGlobalReview()">⚡ 重新載入</button>
+                <div class="filter-group flex items-center gap-2">
+                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">🔍
+                        搜尋</label>
+                    <input type="text" id="reviewSearch" placeholder="姓名/單號"
+                        class="w-36 px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300 placeholder-gray-400"
+                        oninput="debounceFetchGlobalReview()">
+                </div>
+                <button
+                    class="review-btn-refresh px-5 py-2.5 ml-auto rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 focus:ring-4 focus:ring-teal-500/20 text-white font-bold text-sm shadow-md hover:shadow-lg hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all transform active:scale-95 border border-teal-400/50 cursor-pointer flex items-center gap-2"
+                    onclick="fetchGlobalReview()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    重新載入
+                </button>
             </div>
-            
-            <div class="review-table-wrap">
-                <table class="review-table" id="reviewTable">
-                    <thead>
+
+            <div
+                class="review-table-wrap overflow-x-auto max-h-[72vh] border border-gray-200/60 rounded-2xl shadow-inner bg-white/80 backdrop-blur-xl relative z-10 w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                <table class="review-table w-full border-collapse text-left text-sm" id="reviewTable">
+                    <thead class="sticky top-0 z-20 backdrop-blur-xl bg-white/80 shadow-sm border-b border-gray-200/80">
                         <tr>
-                            <th style="min-width:75px;">📝 單號</th>
-                            <th style="min-width:85px;">📅 日期</th>
-                            <th style="min-width:75px;">👤 客人</th>
-                            <th style="min-width:130px;">📝 備註</th>
-                            <th style="min-width:140px;">✂️ 刻字</th>
-                            <th style="min-width:180px;">📦 產品明細</th>
-                            <th style="min-width:90px;">🏷️ 批次</th>
-                            <th style="min-width:130px;">🚥 進度</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[90px]">
+                                📝 單號</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[95px]">
+                                📅 日期</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[85px]">
+                                👤 客人</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[140px]">
+                                📝 備註</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[160px]">
+                                ✂️ 刻字</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[200px]">
+                                📦 產品明細</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[100px]">
+                                🏷️ 批次</th>
+                            <th
+                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[140px]">
+                                🚥 進度</th>
                         </tr>
                     </thead>
-                    <tbody id="reviewTableBody">
-                        <tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">請選擇上方條件載入資料</td></tr>
+                    <tbody id="reviewTableBody" class="divide-y divide-gray-100/60">
+                        <tr>
+                            <td colspan="8" class="p-12 text-center text-gray-400 font-medium text-sm">請選擇上方條件載入資料</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -1011,7 +1210,16 @@
 
         <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
                 oninput="generate()"></div>
-        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
+        <div class="grid-2-col" style="margin-bottom: 10px;">
+            <div class="form-group" style="margin-bottom: 0;"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>👶 嬰兒月齡 (選填)</label>
+                <input type="number" id="babyAgeMonths" placeholder="例如：4" min="0" oninput="generate()">
+            </div>
+        </div>
+        <div id="babyAgeWarning" style="color: #E63946; font-size: 12px; margin-bottom: 15px; display: none; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 8px; border: 1px solid #ffcdd2;">
+            ⚠️ 寶寶已超過 3 個月，建議主推「玻璃瓶套裝」以獲得最佳展示空間！
+        </div>
         <div class="form-group"><label>取模時間</label>
             <div class="grid-2-col">
                 <select id="appTimeHour" onchange="generate()"></select>
@@ -1454,23 +1662,48 @@
                 </div>
             </div>
 
+            <!-- Category C: Accessories -->
+            <div class="toggle-row" style="border-top: 1px solid #eee; padding-top: 15px;">
+                <span style="font-weight: bold; color: #444;">🎀 配件加購 (Category C)</span>
+                <label class="switch"><input type="checkbox" id="enableW"
+                        onchange="toggleAddon('contentW', this)"><span class="slider"></span></label>
+            </div>
+            <div id="contentW" class="addon-content">
+                <div class="part-item">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight: bold; color: #444;">🧸 羊毛氈公仔 ($680)</span>
+                        <label class="switch"><input type="checkbox" id="w_wool_en"
+                                onchange="generate()"><span class="slider"></span></label>
+                    </div>
+                    <div class="grid-3-col" style="margin-top:10px;">
+                        <div class="mini-col"><label>數量</label><input type="number" id="w_wool_qty" value="1"
+                                min="1" oninput="generate()"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <div class="card card-finance">
         <h2>💰 財務結算</h2>
+        
+        <!-- V32 Ling Au Quote Engine UI -->
+        <div id="pricingEngineUI" style="margin-bottom: 20px; padding: 15px; background: rgba(82, 183, 136, 0.1); border: 2px dashed #52B788; border-radius: 12px; transition: all 0.3s ease;">
+            <div style="font-size: 18px; font-weight: bold; color: #2D6A4F; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                <span>💡 系統精算建議報價：$<span id="suggestedPrice">0</span></span>
+                <span style="font-size: 12px; font-weight: normal; color: #666; background: white; padding: 2px 8px; border-radius: 12px; border: 1px solid #ddd;" class="fat-only">畫圖成本: $<span id="drawingCost">0</span></span>
+            </div>
+            <!-- Scenario O: Adult Wood Force Hint -->
+            <div id="adultWoodForceHint" style="display:none; font-size:11px; color:#D32F2F; margin-bottom:5px; font-weight:bold;">🛡️ 成人+木框：系統已強制鎖定為 P (照片建模) 模式</div>
+            <div style="font-size: 12px; color: #555; line-height: 1.6; max-height: 100px; overflow-y: auto; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
+        </div>
+
         <div class="form-group"><label>已付訂金/全數 ($)</label><input type="number" id="deposit" placeholder="0"
                 oninput="generate()"></div>
         <div class="grid-2-col">
-            <div class="form-group">
-                <label>產品尾數 ($)</label>
-                <div style="position: relative;">
-                    <input type="number" id="balance" placeholder="0" oninput="generate()">
-                    <div id="price-suggest-hint" style="font-size: 11px; color: #457B9D; margin-top: 4px; display: none; cursor: pointer;" onclick="applySuggestion()">
-                        💡 建議金額: <span id="suggest-val">0</span> (點擊採用)
-                    </div>
-                </div>
-            </div>
+            <div class="form-group"><label>產品尾數 ($)</label><input type="number" id="balance" placeholder="0"
+                    oninput="generate()"></div>
             <div class="form-group"><label>附加費 ($)</label><input type="number" id="additional" placeholder="0"
                     oninput="generate()"></div>
         </div>
@@ -1504,9 +1737,10 @@
     </div>
 
     <script>
+        console.log("V35.2 Dashboard Main Script Loading...");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
         
-        // --- System Global Config State - V31.2 ---
+        // --- System Global Config V35.0 State - V31.2 ---
         let systemConfig = {
             last_id: "06000",
             mode: "random",
@@ -1776,95 +2010,67 @@
         let lastFetchedState = null; // 紀錄讀取時的狀態，用於比對差異
 
         async function switchMode(mode) {
+            console.log("[DEBUG] switchMode triggered:", mode);
             if (currentMode !== mode) {
                 const skipId = (mode === 'edit');
                 await resetForm(skipId); // 只要模式改變，就清空表單
-            }
-            currentMode = mode;
-            if (mode === 'create') {
-                document.getElementById('editModeContainer').style.display = 'none';
-                if(document.getElementById('reviewModeContainer')) document.getElementById('reviewModeContainer').style.display = 'none';
-                if(document.getElementById('formContainer')) document.getElementById('formContainer').style.display = 'block';
+                currentMode = mode;
 
-                document.getElementById('modeCreateBtn').style.background = 'var(--primary)';
-                document.getElementById('modeCreateBtn').style.color = 'white';
-                document.getElementById('modeCreateBtn').style.border = 'none';
-                
-                document.getElementById('modeEditBtn').style.background = '#eee';
-                document.getElementById('modeEditBtn').style.color = '#666';
-                document.getElementById('modeEditBtn').style.border = '1px solid #ccc';
-                
-                if (document.getElementById('modeReviewBtn')) {
-                    document.getElementById('modeReviewBtn').style.background = '#eee';
-                    document.getElementById('modeReviewBtn').style.color = '#666';
-                    document.getElementById('modeReviewBtn').style.border = '1px solid #ccc';
+                // 😱 核心防禦：找出所有可能叫 formContainer 的東西 (處理 V35.1 殘留雙 ID 狀況)
+                const forms = document.querySelectorAll('#formContainer');
+                const reviews = document.querySelectorAll('#reviewModeContainer');
+                const editP = document.querySelectorAll('#editModeContainer');
+
+                // 🎯 隱藏所有
+                forms.forEach(f => f.style.display = 'none');
+                reviews.forEach(r => r.style.display = 'none');
+                editP.forEach(e => e.style.display = 'none');
+
+                console.log(`[DEBUG] Found ${forms.length} formContainers, ${reviews.length} reviewContainers`);
+
+                if (mode === 'create') {
+                    forms.forEach(f => f.style.display = 'block');
+                } else if (mode === 'edit') {
+                    forms.forEach(f => f.style.display = 'block');
+                    editP.forEach(e => e.style.display = 'block');
+                } else if (mode === 'review') {
+                    reviews.forEach(r => r.style.display = 'block');
+                    // 🚨 徹底隱藏表單 (Review 模式不應看到表單)
+                    forms.forEach(f => f.style.display = 'none');
                 }
 
-                const syncBtn = document.getElementById('syncBtn');
-                if (syncBtn) {
-                    syncBtn.innerText = '🚀 建立新單並同步至後台';
-                    syncBtn.style.backgroundColor = '#457B9D';
-                    updateSyncButtonState(); // 切換模式時重新評估按鈕狀態 [V31.1]
+                // 更新按鈕樣式
+                const btnCreate = document.getElementById('modeCreateBtn');
+                const btnEdit = document.getElementById('modeEditBtn');
+                const btnReview = document.getElementById('modeReviewBtn');
+
+                if (btnCreate) {
+                    btnCreate.style.background = (mode === 'create') ? 'var(--primary)' : '#eee';
+                    btnCreate.style.color = (mode === 'create') ? 'white' : '#666';
+                    btnCreate.style.border = (mode === 'create') ? 'none' : '1px solid #ccc';
                 }
+                if (btnEdit) {
+                    btnEdit.style.background = (mode === 'edit') ? 'var(--primary)' : '#eee';
+                    btnEdit.style.color = (mode === 'edit') ? 'white' : '#666';
+                    btnEdit.style.border = (mode === 'edit') ? 'none' : '1px solid #ccc';
+                }
+                if (btnReview) {
+                    btnReview.style.background = (mode === 'review') ? 'var(--primary)' : '#eee';
+                    btnReview.style.color = (mode === 'review') ? 'white' : '#666';
+                    btnReview.style.border = (mode === 'review') ? 'none' : '1px solid #ccc';
+                }
+                
+                // --- V35.4 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
-                if(bbar) bbar.style.display = 'flex';
-                
-            } else if (mode === 'edit') {
-                document.getElementById('editModeContainer').style.display = 'block';
-                if(document.getElementById('reviewModeContainer')) document.getElementById('reviewModeContainer').style.display = 'none';
-                if(document.getElementById('formContainer')) document.getElementById('formContainer').style.display = 'block';
+                if (bbar) bbar.style.display = (mode === 'review') ? 'none' : 'flex';
 
-                document.getElementById('modeCreateBtn').style.background = '#eee';
-                document.getElementById('modeCreateBtn').style.color = '#666';
-                document.getElementById('modeCreateBtn').style.border = '1px solid #ccc';
-                
-                document.getElementById('modeEditBtn').style.background = 'var(--primary)';
-                document.getElementById('modeEditBtn').style.color = 'white';
-                document.getElementById('modeEditBtn').style.border = 'none';
-
-                if (document.getElementById('modeReviewBtn')) {
-                    document.getElementById('modeReviewBtn').style.background = '#eee';
-                    document.getElementById('modeReviewBtn').style.color = '#666';
-                    document.getElementById('modeReviewBtn').style.border = '1px solid #ccc';
+                if (mode === 'review') {
+                    initReviewYears();
+                    fetchGlobalReview();
                 }
-
-                const syncBtn = document.getElementById('syncBtn');
-                if (syncBtn) {
-                    syncBtn.innerText = '📝 更新舊單並同步至後台';
-                    syncBtn.style.backgroundColor = '#D4A373';
-                    isIdValid = true; // 修改模式下不強制查重 [V31.1]
-                    updateSyncButtonState();
-                    updateIdStatus('available', '目前為「修改」模式，允許使用原單號。');
-                }
-                const bbar = document.getElementById('bottomActionBar');
-                if(bbar) bbar.style.display = 'flex';
-                
-            } else if (mode === 'review') {
-                document.getElementById('editModeContainer').style.display = 'none';
-                if(document.getElementById('formContainer')) document.getElementById('formContainer').style.display = 'none';
-                if(document.getElementById('reviewModeContainer')) document.getElementById('reviewModeContainer').style.display = 'block';
-
-                document.getElementById('modeCreateBtn').style.background = '#eee';
-                document.getElementById('modeCreateBtn').style.color = '#666';
-                document.getElementById('modeCreateBtn').style.border = '1px solid #ccc';
-                
-                document.getElementById('modeEditBtn').style.background = '#eee';
-                document.getElementById('modeEditBtn').style.color = '#666';
-                document.getElementById('modeEditBtn').style.border = '1px solid #ccc';
-
-                if (document.getElementById('modeReviewBtn')) {
-                    document.getElementById('modeReviewBtn').style.background = 'var(--primary)';
-                    document.getElementById('modeReviewBtn').style.color = 'white';
-                    document.getElementById('modeReviewBtn').style.border = 'none';
-                }
-
-                const bbar = document.getElementById('bottomActionBar');
-                if(bbar) bbar.style.display = 'none'; // Hide bottom bar
-                
-                initReviewYears();
-                fetchGlobalReview();
             }
         }
+        window.switchMode = switchMode; // 強制全局掛載
 
         function toggleAddon(id, cb) {
             document.getElementById(id).classList.toggle('active', cb.checked);
@@ -2066,6 +2272,18 @@
             let hasK = document.getElementById("enableK").checked;
             let hasM = document.getElementById("enableM").checked;
 
+            // --- Scenario L: Baby Age Warning & Logic Trap ---
+            const babyAgeArr = (document.getElementById("custBabyAge")?.value || "").split(/[個月]+/);
+            const babyMonth = parseInt(babyAgeArr[0] || "0");
+            const ageWarning = document.getElementById("babyAgeWarning");
+            if (ageWarning) {
+                if (hasP && document.getElementById("pSubCat").value === "木框款式" && babyMonth >= 3) {
+                    ageWarning.style.display = "block";
+                } else {
+                    ageWarning.style.display = "none";
+                }
+            }
+
             const custInfo = `【客人資料】
 聯絡人：${mom}
 取模時間：${date} ${timeStr}\n\n`;
@@ -2115,7 +2333,15 @@
                 document.getElementById("btnCopyA").style.display = "none";
             }
 
-            // --- Generation Category B: 金屬工藝產品 ---
+            // --- Scenario O: Adult Wood Force Display logic ---
+            const adultPForce = (hasP && document.getElementById("pSubCat").value === "木框款式");
+            const forceHint = document.getElementById("adultWoodForceHint");
+            if (forceHint) {
+                let items = buildOrderItemsForPricing();
+                // 如果有勾選 K (Keychain) 或 M (Jewelry) 且內含成人對象
+                let hasAdultInOrder = items.some(i => i.Product_Name.includes("成人") || (i.comboNote && (i.comboNote.includes("父母") || i.comboNote.includes("成人"))));
+                forceHint.style.display = (adultPForce && hasAdultInOrder) ? "block" : "none";
+            }
             if (hasK || hasM) {
                 let detailsB = "【選購/加購項目】\n";
                 if (hasK) {
@@ -2181,66 +2407,338 @@
             }
 
             document.getElementById("no-preview-msg").style.display = (!hasP && !hasK && !hasM) ? "block" : "none";
-            
-            // --- Price Suggestion Engine [V31.9] ---
-            updatePriceSuggestion(hasP, hasM);
-
             updateVerificationList();
+            calculatePricing();
         }
 
-        function updatePriceSuggestion(isAddon, hasNecklace) {
-            const hint = document.getElementById("price-suggest-hint");
-            const suggestVal = document.getElementById("suggest-val");
+        
+        // ==========================================
+        // 🚀 V32 Ling Au Quote Engine (Frontend Pricing & Anti-Fool)
+        // ==========================================
+        function buildOrderItemsForPricing() {
+            const enableP = getValSafe("enableP", false);
+            const hasMainProduct = enableP;
+            const modeTag = hasMainProduct ? "(加購)" : "(單購)";
+            let orderItemsArray = [];
             
-            if (!hasNecklace) {
-                hint.style.display = "none";
-                return;
+            // 擷取立體擺設
+            if (hasMainProduct) {
+                let subCat = getValSafe("pSubCat", "");
+                let lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]');
+                let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
+                let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
+                let type = hasFoot ? "4肢" : "2肢";
+                let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+                orderItemsArray.push({
+                    "Order_Item_Key": "TEMP_P_MAIN",
+                    "Product_Name": pName,
+                    "Quantity": 1
+                });
             }
 
-            let totalCharmQty = 0;
-            // Count Infant Charms
-            const mBabyParts = ["m_lh", "m_rh", "m_lf", "m_rf"];
-            mBabyParts.forEach(id => {
-                if (document.getElementById(id + "_en")?.checked) {
-                    totalCharmQty += parseInt(document.getElementById(id + "_qty")?.value || 0);
+            // 金屬鎖匙扣 擷取邏輯
+            const enableK = getValSafe("enableK", false);
+            if (enableK) {
+                if (getValSafe('k_baby_sec_en', false)) {
+                    const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+                    babyParts.forEach(p => {
+                        if (getValSafe(`k_${p.id}_en`, false)) {
+                            let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
+                            let finalObj = p.type;
+                            if (!hasMainProduct) finalObj = "嬰兒(P)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+                        }
+                    });
                 }
-            });
-            // Count Elder Charms
-            const mElderParts = ["m_e_lh", "m_e_rh", "m_e_lf", "m_e_rf"];
-            mElderParts.forEach(id => {
-                if (document.getElementById(id + "_en")?.checked) {
-                    totalCharmQty += parseInt(document.getElementById(id + "_qty")?.value || 0);
+                if (getValSafe('k_elder_sec_en', false)) {
+                    const elderParts = [{ id: "e_lh", type: "大寶" }, { id: "e_rh", type: "大寶" }, { id: "e_lf", type: "大寶" }, { id: "e_rf", type: "大寶" }];
+                    elderParts.forEach(p => {
+                        if (getValSafe(`k_${p.id}_en`, false)) {
+                            let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
+                            let finalObj = p.type;
+                            if (!hasMainProduct) finalObj = "家庭(P1)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Quantity": qty, "part_id": p.id, "target": "大寶" });
+                        }
+                    });
                 }
-            });
-
-            if (totalCharmQty === 0) {
-                hint.style.display = "none";
-                return;
+                if (getValSafe('k_family_en', false)) {
+                    let qty = Math.max(1, Math.floor(Number(getValSafe('k_family_qty', '1')) || 1));
+                    let comboInfo = getFamilyComboDetails();
+                    let finalObj = comboInfo.sType;
+                    if (!hasMainProduct) {
+                        if (finalObj === "家庭(S1)") finalObj = "家庭(P1)";
+                        if (finalObj === "家庭(S2)") finalObj = "家庭(P2)";
+                    }
+                    orderItemsArray.push({ "Order_Item_Key": `TEMP_K_FAM`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Quantity": qty, "isFamily": true, "comboNote": comboInfo.note });
+                }
             }
 
-            let suggestedTotal = 0;
-            if (!isAddon) { // 訂造價 (Standalone)
-                if (totalCharmQty === 1) suggestedTotal = 2280;
-                else suggestedTotal = 3080 + (totalCharmQty - 2) * 800;
-            } else { // 倒模加購價 (Add-on)
-                if (totalCharmQty === 1) suggestedTotal = 1980;
-                else suggestedTotal = 2980 + (totalCharmQty - 2) * 800;
+            // 純銀吊飾擷取
+            if (getValSafe('enableM', false)) {
+                if (getValSafe('m_baby_sec_en', false)) {
+                    const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+                    babyParts.forEach(p => {
+                        if (getValSafe(`m_${p.id}_en`, false)) {
+                            let qtyRaw = getValSafe(`m_${p.id}_qty`, "1");
+                            let qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
+                            let color = getValSafe(`m_${p.id}_color`, "925銀") || "925銀";
+                            if (color === "待定") color = "925銀";
+                            let finalObj = p.type;
+                            if (!hasMainProduct) finalObj = "嬰兒(P)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+                        }
+                    });
+                }
+                if (getValSafe('m_elder_sec_en', false)) {
+                    const elderParts = [{ id: "e_lh", type: "大寶" }, { id: "e_rh", type: "大寶" }, { id: "e_lf", type: "大寶" }, { id: "e_rf", type: "大寶" }];
+                    elderParts.forEach(p => {
+                        if (getValSafe(`m_${p.id}_en`, false)) {
+                            let qtyRaw = getValSafe(`m_${p.id}_qty`, "1");
+                            let qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
+                            let color = getValSafe(`m_${p.id}_color`, "925銀") || "925銀";
+                            if (color === "待定") color = "925銀";
+                            let finalObj = p.type;
+                            if (!hasMainProduct) finalObj = "家庭(P1)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "Quantity": qty, "part_id": p.id, "target": "大寶" });
+                        }
+                    });
+                }
             }
 
-            const deposit = parseInt(document.getElementById("deposit").value || 0);
-            const suggestedBalance = suggestedTotal - deposit;
-
-            suggestVal.innerText = `$${suggestedBalance}`;
-            suggestVal.dataset.value = suggestedBalance;
-            hint.style.display = "block";
+            // Category C: Accessories
+            if (getValSafe('enableW', false)) {
+                if (getValSafe('w_wool_en', false)) {
+                    let qty = Math.max(1, Math.floor(Number(getValSafe('w_wool_qty', '1')) || 1));
+                    orderItemsArray.push({
+                        "Order_Item_Key": "TEMP_W_WOOL",
+                        "Product_Name": "羊毛氈公仔 - 加購",
+                        "Quantity": qty,
+                        "isAccessory": true
+                    });
+                }
+            }
+            return orderItemsArray;
         }
 
-        function applySuggestion() {
-            const val = document.getElementById("suggest-val").dataset.value;
-            if (val !== undefined) {
-                document.getElementById("balance").value = val;
-                generate();
-                showToast("已採用建議金額！");
+        function calculatePricing() {
+            let items = buildOrderItemsForPricing();
+            let totalSuggestedPrice = 0;
+            let totalDrawingCost = 0;
+            
+            const uiPrice = document.getElementById("suggestedPrice");
+            const uiCost = document.getElementById("drawingCost");
+            const uiDetails = document.getElementById("pricingLogicDetails");
+            
+            if (!items || items.length === 0) {
+                if (uiPrice) uiPrice.innerText = "0";
+                if (uiCost) uiCost.innerText = "0";
+                if (uiDetails) uiDetails.innerHTML = "請選擇對象、產品與數量以計算報價。";
+                return;
+            }
+
+            let logs = [];
+            const enableP = getValSafe("enableP", false);
+            const pSubCat = getValSafe("pSubCat", "");
+            const hasMainProduct = enableP;
+            const pModeState = hasMainProduct ? "S" : "P";
+            
+            // 檢查 木框 + 成人 衝突 & 純成人防呆
+            let hasAdult = items.some(i => i.Product_Name.includes("成人") || (i.comboNote && (i.comboNote.includes("父母") || i.comboNote.includes("成人"))));
+            let hasBaby = items.some(i => i.Product_Name.includes("嬰兒") || i.Product_Name.includes("大寶") || i.Product_Name.includes("家庭"));
+            let hasMainItem = items.some(i => !i.isAccessory);
+            let hasAccessory = items.some(i => i.isAccessory);
+
+            if (hasAccessory && !hasMainItem) {
+                logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 核心產品缺失：配件不可單獨購買，必須至少包含一個手模/鎖匙扣/首飾主項。系統拒絕報價。</div>`);
+                if (uiPrice) uiPrice.innerText = "0";
+                if (uiCost) uiCost.innerText = "0";
+                if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+                return;
+            }
+            
+            if (hasAdult && !hasBaby) {
+                logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 核心產品缺失：禁止單獨購買成人產品，必須包含嬰兒核心項目。系統拒絕報價。</div>`);
+                if (uiPrice) uiPrice.innerText = "0";
+                if (uiCost) uiCost.innerText = "0";
+                if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+                return;
+            }
+
+            if (enableP && pSubCat === "木框款式" && hasAdult) {
+                logs.push(`<div style="color:#D32F2F; font-weight:bold; background:#FFEBEE; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆鎖死] 木框不支援成人實體倒模！系統已強制判定為成人的「照片(P)」模式，適用高階報價基礎。</div>`);
+            }
+
+            let hasMetal = items.some(i => i.Order_Item_Key.includes("_K_"));
+            let hasSilver = items.some(i => i.Order_Item_Key.includes("_M_"));
+            let standaloneSurchargePaid = false;
+            let metalItems = items.filter(i => i.Order_Item_Key.includes("_K_"));
+            let silverItems = items.filter(i => i.Order_Item_Key.includes("_M_"));
+
+            let totalSystemAdditionalFee = 0;
+
+            // --- 處理首飾單購保護費 ($1000) ---
+            if (!hasMainProduct && silverItems.length > 0) {
+                standaloneSurchargePaid = true;
+                totalSuggestedPrice += 1000;
+                totalSystemAdditionalFee += 1000;
+                logs.push(`<div style="color:#E65100; font-weight:bold;">🌟首飾單購圖紙費: +$1000 (已解鎖異部位附加費豁免)</div>`);
+            }
+
+            items.forEach((item, globalIndex) => {
+                let cost = 0;
+                let name = item.Product_Name;
+                let qty = item.Quantity;
+                
+                // --- 1. FatMo 畫圖成本 (Base Cost) ---
+                let isPModeForce = (!hasMainProduct) || (enableP && pSubCat === "木框款式" && (name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")))));
+
+                if (item.isFamily) {
+                    let parts = (item.comboNote || "").split(/[+、,， ]+/).filter(x => x.trim().length > 0);
+                    parts.forEach(p => {
+                        let isAdult = p.includes("父母") || p.includes("成人");
+                        if (isAdult) {
+                            cost += isPModeForce ? 240 : 110;
+                        } else {
+                            if (p.includes("(P)") || name.includes("(P)")) cost += 110;
+                            else if (p.includes("(S)") || name.includes("(S)")) cost += 60;
+                            else cost += (!hasMainProduct) ? 110 : 60;
+                        }
+                    });
+                } else {
+                    let isAdultItem = name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
+                    if (name.includes("(P)")) {
+                        cost = isAdultItem ? 240 : 110;
+                    } else if (name.includes("(S)")) {
+                        cost = isAdultItem ? 110 : 60;
+                    } else {
+                        cost = isPModeForce ? (isAdultItem ? 240 : 110) : (isAdultItem ? 110 : 60);
+                    }
+                }
+                item.FatMoCost = cost * qty;
+
+                // --- 2. 主商品報價 ---
+                if (item.Order_Item_Key === "TEMP_P_MAIN") {
+                    let price = 0;
+                    if (name.includes("木框")) price = name.includes("4肢") ? 2380 : 2080;
+                    else if (name.includes("玻璃")) price = name.includes("4肢") ? 1680 : 1380;
+                    
+                    totalSuggestedPrice += price;
+                    totalDrawingCost += item.FatMoCost;
+                    item.CalculatedPrice = price;
+                    logs.push(`🎨 <b>${name}</b>: $${price}`);
+
+                    let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
+                    let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
+                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無" && s.value !== "待定");
+
+                    if (hasAdultInSet && hasBabyInSet) {
+                        totalSuggestedPrice += 300;
+                        totalSystemAdditionalFee += 300;
+                        logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$300</div>`);
+                    }
+                }
+
+                if (item.isAccessory) {
+                    let price = name.includes("羊毛氈") ? 680 : 0;
+                    price *= qty;
+                    totalSuggestedPrice += price;
+                    item.CalculatedPrice = price;
+                    logs.push(`🧸 <b>${name}</b> x${qty}: $${price}`);
+                    totalDrawingCost += item.FatMoCost;
+                }
+            });
+
+            // --- 計算階梯價與重置邏輯 ---
+            function processTierPricing(groupItems, productType) {
+                groupItems.forEach((item, index) => {
+                    let qty = item.Quantity;
+                    let price = 0;
+                    let surcharge = 0;
+                    let isAdultItem = item.Product_Name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
+
+                    if (item.isFamily) {
+                        let tempPrice = 0;
+                        if (qty === 1) tempPrice = 1080;
+                        else if (qty === 2) tempPrice = 1720;
+                        else if (qty === 3) tempPrice = 2280;
+                        else if (qty === 4) tempPrice = 2640;
+                        else tempPrice = 2640 + (qty - 4) * 660;
+                        
+                        if (item.Product_Name.includes("S2")) surcharge = 100;
+                        if (item.Product_Name.includes("P1") || item.Product_Name.includes("P2") || isAdultItem || pModeState === "P") surcharge = 300;
+                        
+                        price = tempPrice + surcharge;
+                    } else if (productType === '純銀') {
+                        if (hasMainProduct) {
+                            if (qty === 1) price = 1980;
+                            else if (qty === 2) price = 2980;
+                            else price = 2980 + (qty - 2) * 800;
+                        } else {
+                            if (qty === 1) price = 2280;
+                            else if (qty === 2) price = 3080;
+                            else price = 3080 + (qty - 2) * 800;
+                        }
+                    } else {
+                        if (pModeState === "S" && !item.Product_Name.includes("(P)")) {
+                            if (qty === 1) price = 860;
+                            else if (qty === 2) price = 1200;
+                            else if (qty === 3) price = 1680;
+                            else if (qty === 4) price = 2000;
+                            else price = 2000 + (qty - 4) * 500;
+                        } else {
+                            if (qty === 1) price = 1580;
+                            else if (qty === 2) price = 2160;
+                            else if (qty === 3) price = 2940;
+                            else if (qty === 4) price = 3520;
+                            else price = 3520 + (qty - 4) * 880;
+                        }
+
+                        if (index === 1) {
+                            if (!standaloneSurchargePaid) {
+                                let crossFee = pModeState === "S" ? 100 : 300;
+                                totalSuggestedPrice += crossFee;
+                                totalSystemAdditionalFee += crossFee;
+                                logs.push(`<div style="color:#D32F2F; font-size:11px;">⚠️ 異部位建模費: +$${crossFee}</div>`);
+                            }
+                        }
+                    }
+                    let metalLogo = (productType === '純銀') ? '💍' : '🔑';
+                    logs.push(`${metalLogo} <b>${item.Product_Name}</b> x${qty}: $${price}`);
+                    
+                    item.CalculatedPrice = price;
+                    totalSuggestedPrice += price;
+                    totalDrawingCost += item.FatMoCost;
+                });
+            }
+
+            processTierPricing(metalItems, '金屬');
+            processTierPricing(silverItems, '純銀');
+
+            if (silverItems.length > 0) {
+                let totalSilverCharms = silverItems.reduce((acc, i) => acc + i.Quantity, 0);
+                let necklaces = Math.ceil(totalSilverCharms / 2);
+                logs.push(`<span style="color:#F9A826; font-weight:bold;">🎁 系統自動配給 ${necklaces} 條頸鏈</span>`);
+            }
+            
+            window.fhsCurrentPricingItems = items;
+            window.fhsCurrentPricingMeta = {
+                System_Final_Sale_Price: totalSuggestedPrice,
+                System_Total_Cost: totalDrawingCost,
+                System_Additional_Fee: totalSystemAdditionalFee
+            };
+
+            if (uiPrice) uiPrice.innerText = totalSuggestedPrice;
+            if (uiCost) uiCost.innerText = totalDrawingCost;
+            if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+            
+            const engineUI = document.getElementById("pricingEngineUI");
+            if (engineUI) {
+                engineUI.style.transform = 'scale(1.02)';
+                engineUI.style.boxShadow = '0 4px 15px rgba(82,183,136,0.3)';
+                setTimeout(() => {
+                    engineUI.style.transform = 'scale(1)';
+                    engineUI.style.boxShadow = 'none';
+                }, 300);
             }
         }
 
@@ -2639,7 +3137,8 @@
                         const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
                         babyParts.forEach(p => {
                             if (getValSafe(`m_${p.id}_en`, false)) {
-                                let qty = Number(getValSafe(`m_${p.id}_qty`, "1")) || 1;
+                                let qtyRaw = getValSafe(`m_${p.id}_qty`, "1");
+                            let qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
                                 let color = getValSafe(`m_${p.id}_color`, "925銀");
                                 if (color === "待定" || color === "") color = "925銀";
                                 let engText = getValSafe(`m_${p.id}_eng`, "");
@@ -2660,7 +3159,8 @@
                         const elderParts = [{ id: "e_lh", type: "大寶" }, { id: "e_rh", type: "大寶" }, { id: "e_lf", type: "大寶" }, { id: "e_rf", type: "大寶" }];
                         elderParts.forEach(p => {
                             if (getValSafe(`m_${p.id}_en`, false)) {
-                                let qty = Number(getValSafe(`m_${p.id}_qty`, "1")) || 1;
+                                let qtyRaw = getValSafe(`m_${p.id}_qty`, "1");
+                            let qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
                                 let color = getValSafe(`m_${p.id}_color`, "925銀");
                                 if (color === "待定" || color === "") color = "925銀";
                                 let engText = getValSafe(`m_${p.id}_eng`, "");
@@ -2681,6 +3181,20 @@
                 console.warn("商品擷取遇到小問題，但仍會繼續送出訂單:", err);
             }
 
+            // --- V32 附加定價邏輯 ---
+            if (window.fhsCurrentPricingItems && window.fhsCurrentPricingItems.length === orderItemsArray.length) {
+                // 同步寫入定價與畫圖成本
+                orderItemsArray.forEach((oItem, idx) => {
+                    let pItem = window.fhsCurrentPricingItems[idx];
+                    if (pItem) {
+                        oItem.Suggested_Price_Manual = pItem.CalculatedPrice;
+                        oItem.Drawing_Cost = pItem.FatMoCost;
+                    }
+                });
+            } else {
+                console.warn("⚠️ 報價陣列與擷取陣列長度不符，跳過注入 Payload", window.fhsCurrentPricingItems, orderItemsArray);
+            }
+
             // 數據最終確認 [V31.1]
             const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
 
@@ -2692,9 +3206,28 @@
                 "Deposit": document.getElementById("deposit") ? Number(document.getElementById("deposit").value) || 0 : 0,
                 "Balance": document.getElementById("balance") ? Number(document.getElementById("balance").value) || 0 : 0,
                 "Additional_Fee": document.getElementById("additional") ? Number(document.getElementById("additional").value) || 0 : 0,
+                "System_Total_Cost": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Total_Cost : 0,
+                "System_Final_Sale_Price": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Final_Sale_Price : 0,
+                "System_Additional_Fee": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Additional_Fee : 0,
                 "Full_Order_Text": ((document.getElementById("output-preview-a")?.value || "") + "\n\n" + (document.getElementById("output-preview-b")?.value || "")).trim(),
                 "Clean_Order_Text": ((document.getElementById("output-preview-a")?.value || "").split('🖼️')[0] + "\n" + (document.getElementById("output-preview-b")?.value || "").split('⚙️')[0]).trim(),
-                "Raw_Form_State": captureFormState(),
+                "Raw_Form_State": (function() {
+                    let rawStateStr = captureFormState();
+                    try {
+                        let rawStateObj = JSON.parse(rawStateStr);
+                        if (window.fhsCurrentPricingMeta) {
+                            rawStateObj['__FHS_Quote_Mode'] = modeTag;
+                            let hasAdult = window.fhsCurrentPricingItems && window.fhsCurrentPricingItems.some(i => i.Product_Name.includes("成人") || (i.comboNote && i.comboNote.includes("父母")));
+                            rawStateObj['__FHS_Quote_HasAdult'] = hasAdult ? "Yes" : "No";
+                            rawStateObj['__System_Total_Cost'] = window.fhsCurrentPricingMeta.System_Total_Cost;
+                            rawStateObj['__System_Final_Sale_Price'] = window.fhsCurrentPricingMeta.System_Final_Sale_Price;
+                            rawStateObj['__System_Additional_Fee'] = window.fhsCurrentPricingMeta.System_Additional_Fee;
+                        }
+                        return JSON.stringify(rawStateObj);
+                    } catch (e) {
+                        return rawStateStr;
+                    }
+                })(),
                 "Update_Note": (function () {
                     if (currentMode !== 'edit' || !lastFetchedState) return "";
                     const currentState = JSON.parse(captureFormState());
@@ -3030,6 +3563,10 @@
                         <div class="review-jump-pill" onclick="jumpToEditOrder('${o.Order_ID}')">
                             ${o.Order_ID || 'N/A'} ➜
                         </div>
+                        <button onclick="openDeleteModal('${o.id}', '${o.Order_ID}')" title="刪除此訂單"
+                                style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffcccc; border-radius:4px; color:#cc4444; font-size:11px; cursor:pointer; display:block;">
+                            🗑️ 刪除
+                        </button>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${cDate}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${o.Customer || '-'}</td>
@@ -3320,6 +3857,70 @@
                 }, 800);
         }
 
+        // === V34.5 Premium Delete Order Modal System ===
+        let currentDeleteId = null;
+        let currentDeleteOrderId = null;
+
+        function openDeleteModal(recordId, orderId) {
+            currentDeleteId = recordId;
+            currentDeleteOrderId = orderId;
+            document.getElementById('deleteModalOrderId').innerText = orderId;
+            const modal = document.getElementById('deleteConfirmModal');
+            modal.style.display = 'flex';
+            // Trigger animation
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteConfirmModal');
+            modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        async function executeDeleteOrder() {
+            if (!currentDeleteId) return;
+
+            // V34.4 Safety Guard: Force block deletion of system config record
+            const order = globalOrders.find(o => o.id === currentDeleteId);
+            if (order && order.Order_ID === 'FHS-SYSTEM-CONFIG') {
+                alert("⛔ 拒絕執行：FHS-SYSTEM-CONFIG 是系統核心紀錄，不可刪除！\n若需調整設定請使用『系統設定』介面。");
+                closeDeleteModal();
+                return;
+            }
+
+            const btn = document.getElementById('confirmDeleteBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ 正在強力刪除...";
+            btn.disabled = true;
+
+            try {
+                showLoader("正在從系統中徹底刪除訂單...");
+
+                const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta");
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify([{ Record_ID: currentDeleteId, Order_ID: currentDeleteOrderId, action: 'delete' }])
+                });
+
+                if (res.ok) {
+                    globalOrders = globalOrders.filter(o => o.id !== currentDeleteId);
+                    renderReviewTable(globalOrders);
+                    closeDeleteModal();
+                    alert("🗑️ 訂單已成功從資料庫中刪除。");
+                } else {
+                    throw new Error("同步伺服器回報錯誤。");
+                }
+            } catch (err) {
+                console.error("Delete Error:", err);
+                alert("❌ 刪除失敗，請確認與 NAS 的連線或檢查 Webhook 權限。");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                hideLoader();
+            }
+        }
+
         // ==========================================
         // V28 自動化測試體系 (Automated Testing System)
         // 僅於沙盒模式下可見
@@ -3535,6 +4136,45 @@
         </div>
         <div id="qaLog" class="qa-log">檢驗日誌將顯示在此處...</div>
     </div>
+
+    <!-- V34.5 Premium Delete Order Modal -->
+    <div id="deleteConfirmModal"
+        class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300"
+        style="display:none;">
+        <div
+            class="bg-white/95 backdrop-blur-xl w-full max-w-sm rounded-[24px] shadow-2xl overflow-hidden border border-white/20 transform scale-95 transition-all duration-300">
+            <div class="px-6 py-8 text-center">
+                <div
+                    class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">確定要徹底刪除嗎？</h3>
+                <p class="text-sm text-gray-500 leading-relaxed mb-1">訂單號碼：<span id="deleteModalOrderId"
+                        class="font-mono font-bold text-gray-800"></span></p>
+                <p class="text-xs text-red-500 font-medium">⚠️ 此動作將從 Database 永久移除，無法復原。</p>
+            </div>
+            <div class="flex border-t border-gray-100">
+                <button onclick="closeDeleteModal()"
+                    class="flex-1 px-6 py-4 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors">取消</button>
+                <button id="confirmDeleteBtn" onclick="executeDeleteOrder()"
+                    class="flex-1 px-6 py-4 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors border-l border-gray-100">確定刪除</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        #deleteConfirmModal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #deleteConfirmModal.active>div {
+            transform: scale(1);
+        }
+    </style>
 
     <!-- Global Loading Overlay -->
     <div id="globalLoader">

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Read(//c/Users/Edwin/.claude/**)",
+      "Bash(python -c \":*)"
+    ]
+  }
+}

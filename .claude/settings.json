@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Notion__notion-fetch",
+      "Bash(start \"\" \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\freehandsss_dashboardV35.html\")",
+      "Bash(python3 -c \":*)",
+      "Bash(python -c \":*)",
+      "Bash(\"C:/Users/Edwin/AppData/Local/Temp/wf_params.txt\")",
+      "Bash(\"C:/Users/Edwin/AppData/Local/Temp/wf_conns.txt\")",
+      "Bash(\"C:/Users/Edwin/AppData/Local/Temp/wf_js.txt\")",
+      "Bash(\"C:/Users/Edwin/AppData/Local/Temp/calc.txt\")",
+      "Bash(python \"C:/Users/Edwin/AppData/Local/Temp/fix_wf_final.py\")",
+      "Bash(python \"C:/Users/Edwin/AppData/Local/Temp/read_calc.py\")",
+      "Bash(python \"C:/Users/Edwin/AppData/Local/Temp/final_verify.py\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Edwin\\AppData\\Local\\Temp"
+    ]
+  }
+}

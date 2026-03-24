@@ -1,6 +1,6 @@
 # FHS 系統藍圖 (FHS System Blueprint) - V4.7 (Final Judgment Graduation)
 > [!IMPORTANT]
-> **所有的具體售價、成本與銷售防呆邏輯，已全數轉移至 `FHS_Product_Bible_V3.5.md`，並通過「終極審判 (The Final Judgment)」100% 盲測驗收。**
+> **所有的具體售價、成本與銷售防呆邏輯，已全數轉移至 `FHS_Product_Bible_V3.7.md`，並通過「終極審判 (The Final Judgment)」100% 盲測驗收。**
 
 > 💡 **【給 Fat Mo 的系統文件定位說明】**
 > 本文件 (`FHS_Blueprint.md`) 是全系統的「核心邏輯與技術規格真相」。它定義了數據結構、ID 規則以及系統架構的最高準則。當 AI (如 Cursor/Antigravity) 介入開發時，必須首先讀取此文件，以確保所有決策與既定邏輯不產生衝突。
@@ -14,7 +14,7 @@
   * **Fat Mo (後台/總架構師)**：負責技術架構、工作流維護、財務數據精算與系統除錯。
 
 ## 2. 系統架構 (Technical Architecture)
-* **智能中樞 (The Heart)**：**Freehandsss 智能中樞 (AI Smart Hub)**
+* **Dashboard (The Heart)**：**Freehandsss 智能中樞 (AI Smart Hub)**
   * **角色**：系統的「中央神經系統」與「財務自動化中樞」。
   * **功能**：
     * **守護者**：強制所有邏輯變更符合 `FHS_Blueprint.md` 準則。
@@ -33,7 +33,7 @@
   5. **數量 (Quantity)**：如「單件」、「一对」或「四肢套裝」。
 
 ### 3.1 定價與成本結構 (Pricing & Cost Structure)
-系統嚴格執行 **五維度查找邏輯 (5D Lookup Logic)**，所有的基礎售價 (`Suggested_Price_Manual`)、畫圖成本 (`Drawing_Cost`) 以及階梯加購規則，統一由 `FHS_Product_Bible_V3.5.md` 作為唯一真理來源。
+系統嚴格執行 **五維度查找邏輯 (5D Lookup Logic)**，所有的基礎售價 (`Suggested_Price_Manual`)、畫圖成本 (`Drawing_Cost`) 以及階梯加購規則，統一由 `FHS_Product_Bible_V3.7.md` 作為唯一真理來源。
 
 *   **圖紙費規則**：
     - **同部位**：邏輯定義於 Product Bible。
@@ -43,7 +43,7 @@
     - 區分「木框裝」與「玻璃瓶」，成本與售價由系統自動從資料庫提取。
 
 ## 4. 核心財務邏輯 (Core Financial Logic)
-* **原則**：由 Dashbaord 前端 Live Quote Engine 即時精算成本與售價，減少手動干預。所有精算結果隨 JSON Payload 直接寫入 n8n，全面取代舊版公式層。
+* **原則**：由 Dashboard 前端 Live Quote Engine 即時精算成本與售價，減少手動干預。所有精算結果隨 JSON Payload 直接寫入 n8n，全面取代舊版公式層。
 * **計算輸出欄位** (Payload 綁定)：
   1. **System_Final_Sale_Price** = 依據五維度 SKU 查表與階梯價加總而得的建議售價。
   2. **System_Total_Cost** = 依據對象與模式 (S/P) 分配予 Fat Mo 的畫圖成本總和。
@@ -51,12 +51,19 @@
 
 ## 5. 前端 UI/UX 規範 (Frontend UI/UX Rules)
 * **視覺風格**：全系統採用 V31.0 定案的 Premium 玻璃擬態 (Glassmorphism) 設計，包含漸層背景與平滑過渡動畫。
+* **雙端分流架構 (Dual-Experience UI)**：
+  - **👧 Ling Au 模式 (行動端 < 768px)**：定位為「Point-of-Sale 點餐機」。必須實作固定底部導覽列 (Bottom Navigation)、卡片式步進引導 (Wizard flow)、加大觸控區域 (大於 44px)，並強制隱藏複雜的財務數據網格。
+  - **👦 Fat Mo 模式 (桌面端 > 1200px)**：定位為「Data Cockpit 決策座艙」。必須實作側邊導覽列 (Sidebar)、最大化全域核對中心的螢幕寬度（嚴格遵守 td rowspan 對齊定律），並於頂部新增「動態財務看板」(自動結算總收入、總成本與最終利潤)。
+* **UI 開發與邏輯防護守則 (Stitch MCP Protocol)**：
+  - 任何 UI 外殼的翻新，必須透過 Stitch MCP 或類似 AI 工具生成，但絕對嚴禁修改既有的 Element IDs (如 `momName`, `syncBtn`, `reviewTableBody`)。
+  - 必須 100% 保留 `captureFormState()` 的數據擷取結構與現有的 `onclick`/`onchange` 綁定，以確保 n8n 與 Airtable 寫入鏈路不被破壞。
 * **排版守則**：
   - **全域核對中心**：強制使用 HTML `<td rowspan>` 結構進行多品項排列。
   - **字體標準**：數據網格內容統一 13px，Header 12px 加粗。
   - **對齊定律**：所有主屬性（單號、日期）必須設定 `vertical-align: top;`。
   - **全域載入指示器 (Global Loader)**：任何涉及 API 呼叫的動作必須包裹在 `showLoader()` / `hideLoader()` 中，並提供對應的動態文字提示。
   - **單號快跳 (Quick-Jump)**：核對中心單號必須使用 `.review-jump-pill` 樣式並具備一鍵切換模式並讀取的功能。
+
 
 ## 6. Dashboard CRUD 與狀態保持 (Form State Preservation)
 * **Raw_Form_State**：系統將前端表單的所有選項序列化為 JSON 並存入 Airtable，實現 0.1 秒極速還原舊單。
@@ -79,6 +86,11 @@
 * **腳本自理**：臨時測試腳本必須包含自刪邏輯。
 * **自我測試閉環**：代碼修改後必須在沙盒模式執行 `runAllAudits()`。
 * **部署與同步授權**：正式環境檔案 `Freehandsss_dashboard_current.html` 被嚴格保護。任何新功能的開發、Bug 修復或 UI 微調，初始僅能實施於開發版本文件。在未獲得 Fat Mo 明確指令（如「完成，更新套用至 current 版本中」）之前，AI 禁止執行 `cp` 或覆寫 `current` 端的動作。
+
+## 10. 全端變更控制與除錯憲法 (Change Control & Debugging Constitution)
+* **防隧道視野 (Anti-Tunnel Vision)**：處理任何 Bug 或新增功能時，AI 必須從「系統全局」視角思考。修好的 A 功能（如 Telegram 顯示）的同時，若破壞了 B 功能（如表單讀取），視為「嚴重失職」。
+* **三端對齊稽核 (Triple-Sync Audit)**：前端 (Dashboard Payload) -> 中介層 (n8n JSON) -> 儲存端 (Airtable Schema) 必須維持絕對的 1:1 映射。任何一端的增刪改，必須同步審計另外兩端，確保牽一髮動全身的數據不遺失。
+* **經驗傳承鐵律 (Mandatory Memory Retrieval)**：發生問題時，必須優先檢索 `.fhs/memory/lessons/`，確認是否犯過類似錯誤。絕對禁止憑空盲目試錯，無視過往已建立的穩定版基石。
 
 ---
 **版本紀錄與日誌同步**：每次修改核心代碼後，必須同步更新 `Changelog.md`。
