@@ -1,4 +1,7 @@
-### FHS V45.7.4 SOP Wake-up Hook
+### FHS V45.7.4 SOP Wake-up Hook (Auto & Manual)
+
+- **自動喚醒**：啟動時讀取此檔案即生效。
+- **手動喚醒**：若用戶呼叫 `SOP_NOW` 或 `@SOP_NOW`，請立即執行完整初始化。
 
 Whenever you are initialized in this repository:
 1.  **Read `CLAUDE_SESSION_INIT.md`** as your first priority.
