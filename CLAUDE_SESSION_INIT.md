@@ -1,6 +1,11 @@
 # 🤖 CLAUDE_SESSION_INIT: FHS Session Data Logic (V1.0)
 
 > [!IMPORTANT]
+> **喚醒 Claude Code 的唯一指令 (Wake-up Command)：**
+> 請直接複製並貼上以下這句給 Claude：
+> `Please read CLAUDE_SESSION_INIT.md first to synchronize with the FHS system memory and V45.7.4 SOPs.`
+
+> [!IMPORTANT]
 > **每次開啟新 Session 時，請務必先全文讀取此文件！**
 > 此文件定義了 Claude 在 Freehandsss 系統開發中的協作協議，確保與本地 Antigravity (Gemini) 保持同步，避免邏輯斷層或代碼覆蓋。
 
