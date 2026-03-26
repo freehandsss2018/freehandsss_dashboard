@@ -1,3 +1,14 @@
+## [V45.7.5] - 2026-03-26
+### 🔧 Dashboard TDZ Bug + Telegram 標題修復
+- **Bug 1 — TDZ 空陣列**：`syncToAirtable()` 中 `const currentOrderId` 宣告在 try-catch block 之後，但 try 內部已使用。JavaScript TDZ 導致 `ReferenceError` 被 catch 靜默吞掉，`orderItemsArray` 永遠為空。
+  - **修復**：將 `const currentOrderId = ...` 移至 try 之前。同步修復 V35、V31、current.html。
+- **Bug 2 — Telegram 標題永遠顯示「新訂單」**：`Pack Telegram Data` 節點讀 `calc.Action`，但 `Calculate Profit` 從未傳遞 `action` 欄位，fallback 永遠為 `'create'`。
+  - **修復**：`Pack Telegram Data` 改為直接從 `Receive Dashboard Order` webhook body 讀取 `action` 和 `Update_Note`。
+  - **部署**：透過 n8n API PUT 更新生產工作流。
+- **驗證**：
+  - 新建訂單 #2004：17 節點全通過，Profit=$2,845，Telegram ✅
+  - 修改訂單 #2011：Action=edit，標題「修正訂單 成功」✅，Update_Note ✅，無假警報 ✅
+
 ## [V45.7.4] - 2026-03-26
 ### 🧬 靈魂重啟與三端真理地圖同步 (Soul Restoration & Triple-Sync Blueprint)
 - **n8n 生產環境物理恢復**：

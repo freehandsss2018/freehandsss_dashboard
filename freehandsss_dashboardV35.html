@@ -3050,6 +3050,7 @@
             const modeTag = hasMainProduct ? "(加購)" : "(單購)";
 
             let orderItemsArray = [];
+            const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
 
             try {
                 if (hasMainProduct) {
@@ -3195,8 +3196,7 @@
                 console.warn("⚠️ 報價陣列與擷取陣列長度不符，跳過注入 Payload", window.fhsCurrentPricingItems, orderItemsArray);
             }
 
-            // 數據最終確認 [V31.1]
-            const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
+            // 數據最終確認 [V31.1] — currentOrderId 已在 try 前宣告
 
             const payload = {
                 "action": currentMode,
