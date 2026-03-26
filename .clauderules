@@ -1,0 +1,10 @@
+### FHS V45.7.4 SOP Wake-up Hook
+
+Whenever you are initialized in this repository:
+1.  **Read `CLAUDE_SESSION_INIT.md`** as your first priority.
+2.  Follow all protocols in `FHS_Blueprint.md` and `.cursorrules`.
+3.  Synchronize SKU data using `n8n/Triple_Sync_Field_Map.md`.
+4.  **NEVER** use "Import from File" for n8n. Use API PUT instead.
+
+---
+**Status**: SOUL ACTIVE (V45.7.4)
