@@ -1,4 +1,4 @@
-# FHS 系統藍圖 (FHS System Blueprint) - V4.7 (Final Judgment Graduation)
+# FHS 系統藍圖 (FHS System Blueprint) - V4.8 (n8n Soul Restoration)
 > [!IMPORTANT]
 > **所有的具體售價、成本與銷售防呆邏輯，已全數轉移至 `FHS_Product_Bible_V3.7.md`，並通過「終極審判 (The Final Judgment)」100% 盲測驗收。**
 
@@ -21,6 +21,7 @@
     * **財務執行**：系統唯一的財務計算核心，減少人工干預利潤計算。
     * **引導導購**：確保 UI 始終維持對 Ling Au 的「智能菜單」防呆水平。
     * **持續記憶**：透過 `.cursorrules` 與 `Changelog.md` 實現自我修復與持續進化。
+    * **n8n 靈魂守護**：強制生產環境運行 24 節點 Gold Master 版本，並實施「三端對齊稽核」。
 
 ## 3. 下單與產品 SKU 定義 (SKU & Ordering)
 * **五維度產品查找邏輯 (The 5-Dimension Lookup Logic)**：
@@ -85,12 +86,19 @@
 * **執行權限解封**：執行指令時加入 `-y` 或 `-f` 參數。
 * **腳本自理**：臨時測試腳本必須包含自刪邏輯。
 * **自我測試閉環**：代碼修改後必須在沙盒模式執行 `runAllAudits()`。
-* **部署與同步授權**：正式環境檔案 `Freehandsss_dashboard_current.html` 被嚴格保護。任何新功能的開發、Bug 修復或 UI 微調，初始僅能實施於開發版本文件。在未獲得 Fat Mo 明確指令（如「完成，更新套用至 current 版本中」）之前，AI 禁止執行 `cp` 或覆寫 `current` 端的動作。
+* **部署與同步授權**：正式環境檔案 `Freehandsss_dashboard_current.html` 被嚴格保護。任何新功能的開發、Bug 修復或 UI 微調，初始僅能實施於開發版本文件。在未獲得 Fat Mo 明明確指令（如「完成，更新套用至 current 版本中」）之前，AI 禁止執行 `cp` 或覆寫 `current` 端的動作。
 
 ## 10. 全端變更控制與除錯憲法 (Change Control & Debugging Constitution)
 * **防隧道視野 (Anti-Tunnel Vision)**：處理任何 Bug 或新增功能時，AI 必須從「系統全局」視角思考。修好的 A 功能（如 Telegram 顯示）的同時，若破壞了 B 功能（如表單讀取），視為「嚴重失職」。
 * **三端對齊稽核 (Triple-Sync Audit)**：前端 (Dashboard Payload) -> 中介層 (n8n JSON) -> 儲存端 (Airtable Schema) 必須維持絕對的 1:1 映射。任何一端的增刪改，必須同步審計另外兩端，確保牽一髮動全身的數據不遺失。
 * **經驗傳承鐵律 (Mandatory Memory Retrieval)**：發生問題時，必須優先檢索 `.fhs/memory/lessons/`，確認是否犯過類似錯誤。絕對禁止憑空盲目試錯，無視過往已建立的穩定版基石。
+
+## 11. SKU 正規化與補丁守則 (SKU Normalization)
+* **規則優先**：任何與 Bible 不符之前端輸入，必須在 n8n `Parse Items` 節點進行「收斂」。
+* **典型補丁**：
+  - `3肢` -> `4肢` (計價與成本對齊)。
+  - `款式` -> `套裝` (SKU 字符標準化)。
+* **API 唯一路徑**：生產環境修改僅限 `curl -X PUT`，嚴禁 `Import From File`。
 
 ---
 **版本紀錄與日誌同步**：每次修改核心代碼後，必須同步更新 `Changelog.md`。

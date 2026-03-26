@@ -1,4 +1,4 @@
-# FHS 角色提示詞 (Prompts Library) - V41.0
+# FHS 角色提示詞 (Prompts Library) - V41.1
 > **使命**：確保 AI 助理在任何動作下都能「帶腦執行」，而非盲目修改。
 
 ---
@@ -23,6 +23,8 @@
 ## 【情境五：財務數據審計 (Financial Audit)】
 處理 `System_Total_Cost` 與利潤結算。
 - **死線**：前端利潤結算為最高真理，n8n 不得擅自重算（除非前端為 0）。
+- **n8n 代碼輸出規範**：強制執行 `[{json: {auditPassed: true...}}]` 格式，嚴禁回傳裸物件。
+- **SKU 對齊**：執行審計前，必須調用 `Parse Items` 正規化地圖。
 
 ## 【情境六：產品定價與商業邏輯更新 (Bible Sync)】
 **真理來源**：強制讀取 `FHS_Product_Bible_V3.7.md`。

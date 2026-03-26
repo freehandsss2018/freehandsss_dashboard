@@ -14,11 +14,13 @@
 1. **`CLAUDE_SESSION_INIT.md`** (即本文件)：確保當前協作協議最新。
 2. **`FHS_Blueprint.md`**：唯一的架構真理，包含 ID 命名與數據流邏輯。
 3. **`FHS_Product_Bible_V3.7.md`**：業務計價與產品規則的唯一真理。
-4. **`.fhs/memory/handoff.md`**：**最重要！** 讀取 ## 🤖 AI接入狀態 區塊，確認當前任務與 Antigravity 的分工。
+4. **`n8n/Triple_Sync_Field_Map.md`**：**【新】** 數據流映射清單，防止 Payload 斷鍊。
+5. **`n8n/V45.7.4_Incident_Report.md`**：**【新】** 事故專題複盤，包含 n8n API 部署腳本與編碼修正。
+6. **`.fhs/memory/handoff.md`**：**最重要！** 讀取 ## 🤖 AI接入狀態 區塊。
 
 ## 3. 系統當前狀態 (Current System State)
-*   **當前穩定版本**: `V35.4.1`
-*   **代碼庫同步狀態**: 已執行 Git Full Sync (2026-03-24)，GitHub 雲端與本地一致。
+*   **當前穩定版本**: `V45.7.4 (n8n Soul Restored)`
+*   **代碼庫同步狀態**: 已執行 GitHub Full Sync (2026-03-26)。
 *   **核心 UI 檔案**: `freehandsss_dashboardV35.html`
 
 ## 4. 寫作與修改協議 (Protocol)

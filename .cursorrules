@@ -47,5 +47,12 @@
 - **語言標準**：使用繁體中文，夾雜專業英文術語（如 Payload, Upsert, Mapping）。
 - **宣告制度**：新 Session 開始後，必須主動讀取 `handoff.md` 並宣告當前版本（如 V35.0）與當前任務狀態。
 
+## 8. n8n 靈魂守護與部署協定 (n8n Soul Protection) 🚨
+若涉及 `FHS_Core_OrderProcessor` 工作流修改，必須遵循：
+- **禁止 Import From File**：嚴禁使用 n8n UI 的「導入」功能，這會建立新 ID 並破壞 Dashboard Webhook 連結。
+- **真理地圖先行**：修改前必須讀取 `n8n/Triple_Sync_Field_Map.md`，確保對齊「Dashboard -> n8n -> Airtable」的三端映射。
+- **Code Node v2 格式強制化**：所有 JavaScript 代碼節點必須回傳 `[{json: {...}}]` 陣列格式，禁止回傳裸物件，防止財務稽核靜默失敗。
+- **SKU 正規化優先**：任何新產品接入必須在 `Parse Items` 節點實裝正規化邏輯（如 3肢->4肢），禁止在 downstream 節點進行 ad-hoc 字串修補。
+
 ---
-**SOUL Active. 系統靈魂已啟動。**
+**SOUL Active. 系統靈魂已啟動 (V45.7.4 Updated).**

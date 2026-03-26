@@ -1,3 +1,13 @@
+## [V45.7.4] - 2026-03-26
+### 🧬 靈魂重啟與三端真理地圖同步 (Soul Restoration & Triple-Sync Blueprint)
+- **n8n 生產環境物理恢復**：
+    - **外科手術式 SQLite 更新**：通過 SSH 工具進入 Synology NAS，手動更新 `workflow_entity` 將 `activeVersionId` 強制同步至 24 節點的 Gold Master 版本。
+    - **解決「靈魂丟失」問題**：根治了因手動導入 JSON 導致工作流降級為 23 節點、Telegram 報戰失效的重大系統斷層。
+- **SKU 正規化與成本修復**：
+    - **標準化地圖實裝**：於 `Parse Items` 節點新增正規化層，自動處理「3肢->4肢」及「版本款式」變體，確保 100% 命中 Airtable 成本資料庫。
+    - **財務稽核格式修正**：修正 `Profit Auditor` 回傳格式為 `[{json: ...}]`，徹底消滅每筆訂單均觸發🚨 財務異常警報的 Bug。
+- **地圖化記錄**：建立 `Triple_Sync_Field_Map.md`，將 Dashboard、n8n、Airtable 三端欄位映射永久記錄於代碼庫，防範未來的數據斷鏈。
+
 ## [V35.4.1] - 2026-03-24
 ### ✨ 核對中心 UI 強化與 n8n 「四層洋蔥」終極穩定化
 - **核對中心 (Review Center)**：
