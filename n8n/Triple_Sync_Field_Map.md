@@ -839,7 +839,7 @@ id                (Record ID, 用於 Linked Record)
 {
   "commit_message": "feat: [方案ID] dashboard優化",
   "n8n_workflow_trigger": {
-    "webhook_url": "[真實n8n webhook URL]",
+    "webhook_url": "https://yanhei.synology.me:8443/webhook/[DEPLOY_PATH_待建立]",
     "payload": {
       "action": "deploy_staging",
       "repo": "freehandsss",
@@ -848,8 +848,8 @@ id                (Record ID, 用於 Linked Record)
   },
   "rollback_plan": "git revert HEAD if error_rate>5%",
   "monitoring_endpoints": [
-    "[staging metrics URL]",
-    "[n8n logs URL]"
+    "https://yanhei.synology.me:8443/api/v1/executions?workflowId=6Ljih0hSKr9RpYNm&limit=5",
+    "https://yanhei.synology.me:8443/api/v1/workflows/6Ljih0hSKr9RpYNm"
   ]
 }
 ```
