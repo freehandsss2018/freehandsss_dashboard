@@ -800,3 +800,62 @@ id                (Record ID, 用於 Linked Record)
 
 *文件撰寫：Claude (2026-03-26)*
 *供 Claude / Antigravity / Cursor / Fat Mo 在修改系統時確認三端對齊*
+
+---
+
+## 10. MCP Agent Handoff Schema v1.0
+
+> **新增日期:** 2026-03-27
+> **用途:** Perplexity → Claude Code → Gemini 三段 AI pipeline 的標準交接格式
+
+### Phase 1→2 (Perplexity → Claude Code)
+
+```json
+{
+  "target_file": "freehandsss_dashboardV36.html",
+  "change_type": "feature",
+  "spec": [
+    "具體變更描述1 (max 100字)",
+    "具體變更描述2"
+  ],
+  "constraints": [
+    "保持現有UI框架",
+    "UTF-8 Windows curl compatible",
+    "不改 business logic"
+  ],
+  "test_criteria": [
+    "載入時間 <2s",
+    "合規檢查通過",
+    "無 console error"
+  ]
+}
+```
+
+> `change_type` 允許值：`feature` / `bugfix` / `refactor` / `compliance`
+
+### Phase 2→3 (Claude Code → Gemini)
+
+```json
+{
+  "commit_message": "feat: [方案ID] dashboard優化",
+  "n8n_workflow_trigger": {
+    "webhook_url": "[真實n8n webhook URL]",
+    "payload": {
+      "action": "deploy_staging",
+      "repo": "freehandsss",
+      "credentials": "windows_curl_utf8_fix_applied"
+    }
+  },
+  "rollback_plan": "git revert HEAD if error_rate>5%",
+  "monitoring_endpoints": [
+    "[staging metrics URL]",
+    "[n8n logs URL]"
+  ]
+}
+```
+
+### 監控 + 回滾流程
+
+1. Deploy 後 5min 查 metrics
+2. `error_rate > 5%` → n8n rollback + Slack `@edwin`
+3. 回報頻道：`#freehandsss-ops`
