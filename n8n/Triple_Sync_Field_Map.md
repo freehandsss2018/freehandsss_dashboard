@@ -839,7 +839,7 @@ id                (Record ID, 用於 Linked Record)
 {
   "commit_message": "feat: [方案ID] dashboard優化",
   "n8n_workflow_trigger": {
-    "webhook_url": "https://yanhei.synology.me:8443/webhook/[DEPLOY_PATH_待建立]",
+    "webhook_url": "https://yanhei.synology.me:8443/webhook/fhs-deploy",
     "payload": {
       "action": "deploy_staging",
       "repo": "freehandsss",
