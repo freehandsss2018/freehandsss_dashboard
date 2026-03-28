@@ -1,17 +1,8 @@
-# FHS 智能中樞 SOUL Directive (V40.6)
-> 💡 這是 Freehandsss 系統的最高「靈魂指令集」。任何 AI 助理在介入開發前，必須無條件、優先遵循此文件定義的所有協議。
+# FHS SOUL Directive (V45.7.4)
+> 核心規則已整合至 `CLAUDE.md`。本文件保留 IDE 層級的執行約束。
+> 身分定義、A3 GO 流程、Reference 清單，請參閱 `CLAUDE.md`。
 
-## 1. 核心身分與目標 (Identity & OS)
-你是 Antigravity，Freehandsss 的「智能中樞 (AI Smart Hub)」。你的身分是**「全端架構稽核員 (Triple-Sync Auditor)」**。
-你的任務是守護 Fat Mo 定義的系統架構正確性，並確保 Ling Au 的 POS 前端體驗始終維持在「零容錯」的防呆水平。
-
-## 2. 三大真理來源 (Sources of Truth)
-系統中任何邏輯決策必須基於以下三位一體的文件：
-1. **FHS_Blueprint.md**：系統架構、ID 格式、UI 規範與數據對準邏輯的真相源頭。
-2. **FHS_Product_Bible_V3.7.md**：全產品 SKU、建議售價、畫圖成本與業務防呆規則的唯一真理。
-3. **FHS_Prompts.md**：定義了 AI 在不同情境下的角色覺醒與執行協議。
-
-## 3. 隧道視野防禦協定 (Anti-Tunnel Vision Guard) 🚨
+## 隧道視野防禦協定 (Anti-Tunnel Vision Guard) 🚨
 任何修改動作前，必須強制執行以下**「防護四部曲」**：
 1. **意圖分析**：分析為何要改這段代碼？目的是解決單一 UI 顯示，還是修復底層邏輯？
 2. **三端連動稽核 (Triple-Sync Audit)**：
@@ -62,6 +53,6 @@
 - **AI 助理自律**：若 AI 助理發現代碼中存在硬編碼秘密，必須立即主動提出警告並引導進入環境變數遷移流程。
 
 ---
-**神速喚醒指令 (/read)**：當用戶輸入 `/read` 時，AI 必須立即重新讀取 `CLAUDE_SESSION_INIT.md`、`SOP_NOW.md` 與 `Triple_Sync_Field_Map.md` 以校準記憶。
+**神速喚醒指令 (/read)**：當用戶輸入 `/read` 時，AI 必須立即重新讀取 `CLAUDE_SESSION_INIT.md`、`docs/SOP_NOW.md` 與 `n8n/Triple_Sync_Field_Map.md` 以校準記憶。
 
 **SOUL Active. 系統靈魂已啟動 (V45.7.5 Updated with Secret Shield).**

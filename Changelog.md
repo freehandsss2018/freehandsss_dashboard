@@ -1,4 +1,10 @@
-## [V45.7.5] - 2026-03-26
+## [V36.1] - 2026-03-28
+### ✨ 系統同步與審計修復 (System Sync & Audit Fix)
+- **GitHub 同步**: 提交並推送本地最新狀態至 `main` 分支，確保 Perplexity (`/px audit`) 能抓取到最新的系統邏輯。
+- **存取驗證**: 通過瀏覽器確認 GitHub 儲存庫為 Public 狀態且 `CLAUDE_SESSION_INIT.md` 可正常抓取。
+- **安全性**: 確認 `.env` 與敏感設定已妥善過濾，未上傳至 GitHub。
+
+## [V45.7.5] - 2026-03-28
 ### 🔧 Dashboard TDZ Bug + Telegram 標題修復
 - **Bug 1 — TDZ 空陣列**：`syncToAirtable()` 中 `const currentOrderId` 宣告在 try-catch block 之後，但 try 內部已使用。JavaScript TDZ 導致 `ReferenceError` 被 catch 靜默吞掉，`orderItemsArray` 永遠為空。
   - **修復**：將 `const currentOrderId = ...` 移至 try 之前。同步修復 V35、V31、current.html。
