@@ -11,7 +11,7 @@ description: freehandsss-optimizer-v2 Agent Chain
 1. **Agent 1 — Perplexity (外部研究與審查)**
    - **觸發指令**: `/px audit` 或 `/px 審查`
    - **動作**: 
-     - 讀取 [CLAUDE_SESSION_INIT.md](file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/CLAUDE_SESSION_INIT.md) 與 [Triple_Sync_Field_Map.md](file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/n8n/Triple_Sync_Field_Map.md)。
+     - 讀取 [CLAUDE.md](file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/CLAUDE.md) 與 [Triple_Sync_Field_Map.md](file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/n8n/Triple_Sync_Field_Map.md)。
      - 根據文件所述現況，搜尋外部最佳路徑 (n8n workflow 效率、Airtable 結構、前端效能)。
      - 輸出優化摘要、對標分析與實施建議。
 

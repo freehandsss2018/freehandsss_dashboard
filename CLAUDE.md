@@ -26,6 +26,10 @@
 - 提交前確認 `.gitignore` 包含 `.env`、`*.xlsx`、`logs/`
 - 發現硬編碼 Secret 須立即警告並引導遷移
 
+### 語言 & 自癒
+- **輸出語言**：繁體中文，夾雜必要英文術語（Payload、Upsert、Mapping）
+- **亂碼自癒**：發現編碼問題（NEL / U+0085）→ 立即參考 `docs/FHS_Blueprint.md` 字元潔淨度規範修復
+
 ## A3 GO 執行流程
 
 1. `ls -lt C:/Users/Edwin/.gemini/antigravity/brain/` → 取第一行為最新 session
@@ -48,4 +52,6 @@
 | `docs/FHS_Product_Bible_V3.7.md` | SKU、售價、業務規則 |
 | `n8n/Triple_Sync_Field_Map.md` | 三端欄位映射 |
 | `docs/GLOBAL_AI_SOP.md` | 3-Step 多 AI 協作協議 |
+| `docs/FHS_System_Health_Check_SOP.md` | 系統健康檢查標準 |
+| `n8n/V45.7.4_Incident_Report.md` | n8n 事故複盤 + API 部署腳本 |
 | `.fhs/memory/handoff.md` | 當前任務狀態 |

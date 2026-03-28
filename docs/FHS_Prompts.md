@@ -48,7 +48,7 @@
 
 ## 【情境十一：外部研究與系統審查 (Perplexity Audit)】
 **觸發指令**：`/px audit` 或 `/px 審查`
-- **第一步**：fetch GitHub 取得系統現況（`CLAUDE_SESSION_INIT.md` + `Triple_Sync_Field_Map.md`）
+- **第一步**：fetch GitHub 取得系統現況（`CLAUDE.md` + `Triple_Sync_Field_Map.md`）
 - **第二步**：根據現況搜尋外部最佳實踐，重點關注：n8n workflow 效率、Airtable 結構、前端效能。
 - **輸出格式**：現況摘要 → 外部對標 → 優化建議 → 風險提示
 - **角色定位**：第三方審計員，提供 Claude Code 和 Antigravity 的獨立第二意見。
