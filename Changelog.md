@@ -140,3 +140,9 @@
 ## [V25 - V26] - 2026-03-03
 - **雙向系統奠基**：Dashboard 從「單向新增」升級為「雙向讀寫」。
 - **Raw_Form_State**：確立透過序列化 JSON 完整記錄表單狀態的架構核心。
+
+## [V45.7.5] - 2026-03-28 (Emergency Security Fix)
+### 已更新 (Updated)
+- **n8n API Key**: 完成 API Key 安全輪轉，更換為 `freehandsss_Dashboard` (JWT 版)。
+- **MCP Config**: 在全域 `mcp_config.json` 中添加 `Antigravity_Smart_Hub_MCP` 的連線設定，已驗證 NAS 連通性。
+- **Agent Chain**: 建立 `freehandsss-optimizer-v2` 協作協議 (Perplexity Audit -> Claude Code Implementation)。
