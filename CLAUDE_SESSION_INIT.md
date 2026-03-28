@@ -26,7 +26,7 @@
 ## 3. 系統當前狀態 (Current System State)
 *   **當前穩定版本**: `V45.7.4 (n8n Soul Restored)`
 *   **代碼庫同步狀態**: 已執行 GitHub Full Sync (2026-03-26)。
-*   **核心 UI 檔案**: `freehandsss_dashboardV35.html`
+*   **核心 UI 檔案**: `freehandsss_dashboardV36.html`
 
 ## 4. 寫作與修改協議 (Protocol)
 *   **禁止破壞 HTML IDs**: 表單與按鈕 ID 嚴禁變更。
