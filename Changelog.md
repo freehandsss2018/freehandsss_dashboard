@@ -1,3 +1,9 @@
+## [V36.2] - 2026-03-28
+### ✨ 全域核對中心財務透明化 (Financial Transparency in Review Center)
+- **新功能**: 在全域核對中心表格中新增「💰 成本」與「🏆 利潤」欄位，供 Fat mo 直接查閱每位客人的財務貢獻。
+- **UI 優化**: 實現利潤動態著色（綠色代表獲利，紅色代表損益臨界），並調整表格佈局以相容新欄位。
+- **數據準確性**: 欄位直接對接 Airtable `Total_Cost` 與 `Net_Profit` 實時算分結果。
+
 ## [V36.1] - 2026-03-28
 ### ✨ 系統同步與審計修復 (System Sync & Audit Fix)
 - **GitHub 同步**: 提交並推送本地最新狀態至 `main` 分支，確保 Perplexity (`/px audit`) 能抓取到最新的系統邏輯。

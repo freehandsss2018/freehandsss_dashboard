@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>freehandsss_dashboard V36.1</title>
+    <title>Freehandsss Dashboard V36.2 - UI Polishing by Antigravity</title>
     <!-- Tailwind CSS injected for V33 Review Center Premium Redesign -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
@@ -1143,6 +1143,12 @@
                                 class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[140px]">
                                 📝 備註</th>
                             <th
+                                class="px-3 py-3 text-red-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[80px]">
+                                💰 成本</th>
+                            <th
+                                class="px-3 py-3 text-teal-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[80px]">
+                                🏆 利潤</th>
+                            <th
                                 class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[160px]">
                                 ✂️ 刻字</th>
                             <th
@@ -1158,7 +1164,7 @@
                     </thead>
                     <tbody id="reviewTableBody" class="divide-y divide-gray-100/60">
                         <tr>
-                            <td colspan="8" class="p-12 text-center text-gray-400 font-medium text-sm">請選擇上方條件載入資料</td>
+                            <td colspan="10" class="p-12 text-center text-gray-400 font-medium text-sm">請選擇上方條件載入資料</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1737,7 +1743,7 @@
     </div>
 
     <script>
-        console.log("V36.1 Dashboard Main Script Loading...");
+        console.log("FHS Dashboard V36.2 Initialized");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
         
         // --- System Global Config V35.0 State - V31.2 ---
@@ -3350,7 +3356,7 @@
 
         // 初始化下拉選單
         window.onload = async () => {
-            console.log("🚀 V30 Dashboard Initializing...");
+            console.log("FHS Dashboard V36.2 Initialized");
             try {
                 initSandboxMode();
                 await switchMode('create');
@@ -3537,7 +3543,7 @@
         function renderReviewTable(orders) {
             const tbody = document.getElementById("reviewTableBody");
             if (!orders || orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
                 const badge = document.getElementById('reviewCountBadge');
                 if (badge) { badge.style.display = 'none'; }
                 return;
@@ -3575,6 +3581,12 @@
                                   style="font-size:13px;"
                                   onblur="saveInlineEdit('${o.id}', 'Admin_Notes', this.value)" 
                                   placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                    </td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
+                        $${o.Total_Cost || 0}
+                    </td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
+                        $${o.Net_Profit || 0}
                     </td>
                 `;
 
@@ -3725,7 +3737,7 @@
                     html += `
                     <tr class="order-group-${o.id}" id="row-${o.id}">
                         ${orderLeftColsHtml}
-                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
+                        <td colspan="6" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
                         </td>
                     </tr>`;

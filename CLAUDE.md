@@ -30,6 +30,12 @@
 - **輸出語言**：繁體中文，夾雜必要英文術語（Payload、Upsert、Mapping）
 - **亂碼自癒**：發現編碼問題（NEL / U+0085）→ 立即參考 `docs/FHS_Blueprint.md` 字元潔淨度規範修復
 
+## 快捷指令
+
+| 指令 | 實際動作 |
+|------|----------|
+| `/fhs-check` | `python Maintenance_Tools/run_all.py` — 依序執行 LOCAL_AUDIT → LIFECYCLE → STRESS → ACCEPTANCE，輸出 Health Report，標記 Red Flags |
+
 ## A3 GO 執行流程
 
 1. `ls -lt C:/Users/Edwin/.gemini/antigravity/brain/` → 取第一行為最新 session
@@ -37,6 +43,7 @@
 3. 讀取 `{latest_session}/implementation_plan.md.resolved`（A2）
 4. 回報：「已讀取 A1：[路徑] ✅  已讀取 A2：[路徑] ✅」
 5. 執行技術可行性評估，聚焦：Maintenance、Simplicity、Zero Conflict
+6. **宣告 task success 前必須通過 `/fhs-check`**（Health Report 無 Red Flags 才可結案）
 
 ## 三端同步稽核（任何修改前）
 
