@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Freehandsss Dashboard V36.2 - UI Polishing by Antigravity</title>
+    <title>Freehandsss Dashboard V36.2.2 - UI Polishing by Antigravity</title>
     <!-- Tailwind CSS injected for V33 Review Center Premium Redesign -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
@@ -1743,7 +1743,7 @@
     </div>
 
     <script>
-        console.log("FHS Dashboard V36.2 Initialized");
+        console.log("FHS Dashboard V36.2.2 Initialized");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
         
         // --- System Global Config V35.0 State - V31.2 ---
@@ -2422,6 +2422,7 @@
         // 🚀 V32 Ling Au Quote Engine (Frontend Pricing & Anti-Fool)
         // ==========================================
         function buildOrderItemsForPricing() {
+            const partMap = { 'lh': '🖐️ 左手', 'rh': '🖐️ 右手', 'lf': '🦶 左腳', 'rf': '🦶 右腳', 'e_lh': '🖐️ 左手', 'e_rh': '🖐️ 右手', 'e_lf': '🦶 左腳', 'e_rf': '🦶 右腳' };
             const enableP = getValSafe("enableP", false);
             const hasMainProduct = enableP;
             const modeTag = hasMainProduct ? "(加購)" : "(單購)";
@@ -2452,7 +2453,7 @@
                             let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
                             let finalObj = p.type;
                             if (!hasMainProduct) finalObj = "嬰兒(P)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
                         }
                     });
                 }
@@ -2463,7 +2464,7 @@
                             let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
                             let finalObj = p.type;
                             if (!hasMainProduct) finalObj = "家庭(P1)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Quantity": qty, "part_id": p.id, "target": "大寶" });
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
                         }
                     });
                 }
@@ -2491,7 +2492,7 @@
                             if (color === "待定") color = "925銀";
                             let finalObj = p.type;
                             if (!hasMainProduct) finalObj = "嬰兒(P)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
                         }
                     });
                 }
@@ -2505,7 +2506,7 @@
                             if (color === "待定") color = "925銀";
                             let finalObj = p.type;
                             if (!hasMainProduct) finalObj = "家庭(P1)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "Quantity": qty, "part_id": p.id, "target": "大寶" });
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
                         }
                     });
                 }
@@ -2709,7 +2710,9 @@
                         }
                     }
                     let metalLogo = (productType === '純銀') ? '💍' : '🔑';
-                    logs.push(`${metalLogo} <b>${item.Product_Name}</b> x${qty}: $${price}`);
+                    let dispName = item.Product_Name;
+                    if (item.PartDesc) dispName += ` (${item.PartDesc})`;
+                    logs.push(`${metalLogo} <b>${dispName}</b> x${qty}: $${price}`);
                     
                     item.CalculatedPrice = price;
                     totalSuggestedPrice += price;
@@ -2736,6 +2739,15 @@
             if (uiPrice) uiPrice.innerText = totalSuggestedPrice;
             if (uiCost) uiCost.innerText = totalDrawingCost;
             if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+
+            // --- V36.2 Ling Au Finance UX Optimization ---
+            const depositVal = Number(document.getElementById('deposit')?.value) || 0;
+            const additionalVal = Number(document.getElementById('additional')?.value) || 0;
+            const expectedBal = totalSuggestedPrice - depositVal + additionalVal;
+            const balanceEl = document.getElementById('balance');
+            if (balanceEl) {
+                balanceEl.placeholder = expectedBal <= 0 ? "0 (已付清)" : expectedBal;
+            }
             
             const engineUI = document.getElementById("pricingEngineUI");
             if (engineUI) {
