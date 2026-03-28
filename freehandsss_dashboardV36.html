@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>freehandsss_dashboard V36</title>
-    <!-- Tailwind CSS -->
+    <title>freehandsss_dashboard V36.1</title>
+    <!-- Tailwind CSS injected for V33 Review Center Premium Redesign -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
     <style>
@@ -1737,7 +1737,7 @@
     </div>
 
     <script>
-        console.log("V35.2 Dashboard Main Script Loading...");
+        console.log("V36.1 Dashboard Main Script Loading...");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
         
         // --- System Global Config V35.0 State - V31.2 ---
@@ -2060,7 +2060,7 @@
                     btnReview.style.border = (mode === 'review') ? 'none' : '1px solid #ccc';
                 }
                 
-                // --- V35.4 Extra Polishing ---
+                // --- V36.1 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
                 if (bbar) bbar.style.display = (mode === 'review') ? 'none' : 'flex';
 
@@ -3533,31 +3533,6 @@
             }
         }
 
-        // === V36.2 輔助函式：刻字 HTML 格式化 ===
-        function formatEngravingHtml(item) {
-            if (!item.Engraving || item.Engraving === '待定' || item.Engraving === '不適用') {
-                return '<span style="color:#ddd; font-size:13px;">—</span>';
-            }
-            let top = "", bot = "";
-            const raw = item.Engraving;
-            const topMatch = raw.match(/\[上排\](.*?)(\[下排\]|$)/);
-            const botMatch = raw.match(/\[下排\](.*?)$/);
-            if (topMatch) top = topMatch[1].replace(/[\(\)\[\]（）]/g, '').trim();
-            if (botMatch) bot = botMatch[1].replace(/[\(\)\[\]（）]/g, '').trim();
-            if (!top && !bot && raw.includes('|')) {
-                const parts = raw.split('|');
-                top = parts[0].trim();
-                bot = parts[1].trim();
-            }
-            if (!top && !bot) {
-                top = raw.replace(/[\(\)\[\]（）]/g, '').trim();
-            }
-            return `<div class="review-eng-container">
-                ${top ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-top">TOP</span><span class="review-eng-text">${top}</span></div>` : ''}
-                ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${bot}</span></div>` : ''}
-            </div>`;
-        }
-
         // === V28.3 全域核對中心渲染引擎：Rowspan 完美對齊 + 置頂垂直對齊 ===
         function renderReviewTable(orders) {
             const tbody = document.getElementById("reviewTableBody");
@@ -3588,7 +3563,7 @@
                         <div class="review-jump-pill" onclick="jumpToEditOrder('${o.Order_ID}')">
                             ${o.Order_ID || 'N/A'} ➜
                         </div>
-                        <button onclick="openDeleteModal('${o.id}', '${o.Order_ID}', '${o.Customer || ''}')" title="刪除此訂單"
+                        <button onclick="openDeleteModal('${o.id}', '${o.Order_ID}')" title="刪除此訂單"
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffcccc; border-radius:4px; color:#cc4444; font-size:11px; cursor:pointer; display:block;">
                             🗑️ 刪除
                         </button>
@@ -3674,8 +3649,38 @@
                             <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:13px; padding: 2px 4px;">${badgeHtml}</div>
                         </div>`;
                         
-                        // 刻字水平佈局 (V36.2) — 抽離至 formatEngravingHtml()
-                        const engHtml = formatEngravingHtml(item);
+                        // 刻字水平佈局 (V29) — 移除括號與文字輔助
+                        let engHtml = '<span style="color:#ddd; font-size:13px;">—</span>';
+                        if(item.Engraving && item.Engraving !== '待定' && item.Engraving !== '不適用') {
+                            // 擷取上排與下排
+                            let top = "";
+                            let bot = "";
+                            const raw = item.Engraving;
+                            
+                            // 兼容 [上排]xxx [下排]yyy 格式
+                            const topMatch = raw.match(/\[上排\](.*?)(\[下排\]|$)/);
+                            const botMatch = raw.match(/\[下排\](.*?)$/);
+                            
+                            if (topMatch) top = topMatch[1].replace(/[\(\)\[\]（）]/g, '').trim();
+                            if (botMatch) bot = botMatch[1].replace(/[\(\)\[\]（）]/g, '').trim();
+                            
+                            // 如果沒匹配到標籤，嘗試用 | 分隔
+                            if (!top && !bot && raw.includes('|')) {
+                                let parts = raw.split('|');
+                                top = parts[0].trim();
+                                bot = parts[1].trim();
+                            }
+                            
+                            // 如果還是空，直接顯示整段 (但移除括號)
+                            if (!top && !bot) {
+                                top = raw.replace(/[\(\)\[\]（）]/g, '').trim();
+                            }
+
+                            engHtml = `<div class="review-eng-container">
+                                ${top ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-top">TOP</span><span class="review-eng-text">${top}</span></div>` : ''}
+                                ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${bot}</span></div>` : ''}
+                            </div>`;
+                        }
 
                         // 為單一項目定義批次顏色 (V31.83 修正)
                         const rowBatch = item.Batch;
@@ -3855,12 +3860,10 @@
         // === V34.5 Premium Delete Order Modal System ===
         let currentDeleteId = null;
         let currentDeleteOrderId = null;
-        let currentDeleteCustomer = null;
 
-        function openDeleteModal(recordId, orderId, customerName) {
+        function openDeleteModal(recordId, orderId) {
             currentDeleteId = recordId;
             currentDeleteOrderId = orderId;
-            currentDeleteCustomer = customerName;
             document.getElementById('deleteModalOrderId').innerText = orderId;
             const modal = document.getElementById('deleteConfirmModal');
             modal.style.display = 'flex';
@@ -3893,17 +3896,11 @@
             try {
                 showLoader("正在從系統中徹底刪除訂單...");
 
-                // V47.2 FIX: Redirect delete action to production webhook (which handles actual DELETE)
-                const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b");
+                const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta");
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify([{ 
-                        Record_ID: currentDeleteId, 
-                        Order_ID: currentDeleteOrderId, 
-                        Customer_Name: currentDeleteCustomer, 
-                        action: 'delete' 
-                    }])
+                    body: JSON.stringify([{ Record_ID: currentDeleteId, Order_ID: currentDeleteOrderId, action: 'delete' }])
                 });
 
                 if (res.ok) {
