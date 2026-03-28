@@ -26,9 +26,17 @@
 - 修改 n8n workflow 前必須先讀 `Triple_Sync_Field_Map.md`
 - 不得同時修改 n8n 和 dashboard（payload 一致性風險）
 
+## 🔐 安全事件記錄 (2026-03-28)
+- ✅ n8n API Key revoked + 換新（`freehandsss_Dashboard`）
+- ✅ Notion API Key auto-rotated by Notion + 換新
+- ✅ `Sync_Notion_Brain.js` 改用 `process.env.NOTION_API_KEY`
+- ✅ `.env` 本地建立（gitignored），含 Notion + n8n keys
+- ✅ `.env.example` 模板建立
+- ✅ `.gitignore` 加固（`.env`, `*.xlsx`, `logs/`）
+
 ## 📅 待辦事項 (Pending)
 - [ ] Fat Mo 確認 V36 穩定後刪除 V35
-- [ ] 處理 `.claude/settings.json` API Key 明文問題
+- [x] ~~處理 `.claude/settings.json` API Key 明文問題~~ — 已完成，改用 `$N8N_KEY`
 
 ---
-*Updated by Claude Code at 2026-03-28 (V36 Sync)*
+*Updated by Claude Code + Antigravity at 2026-03-28 (Security Hardening Complete)*
