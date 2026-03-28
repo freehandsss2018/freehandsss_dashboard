@@ -9,3 +9,11 @@ v26_v27_diff.txt
 .claude/settings.local.json
 perplexity-mcp-server/.env
 perplexity-mcp-server/logs/
+
+# 🔐 Security
+.env
+.env.local
+*.xlsx
+/tmp/
+.DS_Store
+*.log

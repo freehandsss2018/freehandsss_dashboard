@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "jsdom": "^28.1.0"
+    "jsdom": "^28.1.0",
+    "dotenv": "^16.4.7"
   }
 }

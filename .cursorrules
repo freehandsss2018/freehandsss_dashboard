@@ -54,7 +54,14 @@
 - **Code Node v2 格式強制化**：所有 JavaScript 代碼節點必須回傳 `[{json: {...}}]` 陣列格式，禁止回傳裸物件，防止財務稽核靜默失敗。
 - **SKU 正規化優先**：任何新產品接入必須在 `Parse Items` 節點實裝正規化邏輯（如 3肢->4肢），禁止在 downstream 節點進行 ad-hoc 字串修補。
 
+## 9. 密鑰保護與防洩漏協定 (Secret Protection Protocol) 🚨
+為了防止 API Key 再次外洩（如 Notion 自動旋轉事件），必須嚴格遵守：
+- **禁止硬編碼 (No Hardcoding)**：嚴禁在任何代碼檔案 (JS, PY, HTML) 中直接寫入 API Key、Token 或 Password。
+- **環境變數強制化**：所有敏感憑證必須存放在根目錄的 `.env` 檔案中，並透過 `process.env` 或 `dotenv` 讀取。
+- **.gitignore 預先校驗**：在提交任何新檔案或建立新錄目前，必須確認 `.gitignore` 已包含 `.env` 與其他敏感副檔名。
+- **AI 助理自律**：若 AI 助理發現代碼中存在硬編碼秘密，必須立即主動提出警告並引導進入環境變數遷移流程。
+
 ---
 **神速喚醒指令 (/read)**：當用戶輸入 `/read` 時，AI 必須立即重新讀取 `CLAUDE_SESSION_INIT.md`、`SOP_NOW.md` 與 `Triple_Sync_Field_Map.md` 以校準記憶。
 
-**SOUL Active. 系統靈魂已啟動 (V45.7.4 Updated).**
+**SOUL Active. 系統靈魂已啟動 (V45.7.5 Updated with Secret Shield).**
