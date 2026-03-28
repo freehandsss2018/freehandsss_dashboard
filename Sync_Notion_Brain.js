@@ -5,10 +5,11 @@
 
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
-const NOTION_TOKEN = "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";
-const DATABASE_ID = "329574ef-3b8b-8135-80be-f248aedb9d46";
-const BRAIN_ROOT = "C:\\Users\\Edwin\\.gemini\antigravity\\brain";
+const NOTION_TOKEN = process.env.NOTION_API_KEY;
+const DATABASE_ID = process.env.NOTION_DATABASE_ID || "329574ef-3b8b-8135-80be-f248aedb9d46";
+const BRAIN_ROOT = process.env.BRAIN_ROOT || "C:\\Users\\Edwin\\.gemini\\antigravity\\brain";
 const LESSONS_DIR = path.join(__dirname, '.fhs', 'memory', 'lessons');
 
 async function runPruneAndSync() {
