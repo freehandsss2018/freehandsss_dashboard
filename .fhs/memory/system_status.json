@@ -1,0 +1,34 @@
+{
+  "last_updated": "2026-03-28",
+  "updated_by": "Claude Code",
+  "dashboard": {
+    "active_version": "V36",
+    "file": "freehandsss_dashboardV36.html",
+    "previous_version": "V35",
+    "v35_status": "pending_deletion"
+  },
+  "n8n": {
+    "main_workflow": "FHS_Core_OrderProcessor",
+    "workflow_id": "6Ljih0hSKr9RpYNm",
+    "node_count": 24,
+    "status": "active",
+    "instance": "https://yanhei.synology.me:8443"
+  },
+  "git": {
+    "branch": "main",
+    "last_commit": "fa33ac0",
+    "last_commit_msg": "feat: add situation 11 Perplexity audit role",
+    "repo": "https://github.com/freehandsss2018/freehandsss_dashboard"
+  },
+  "ai_roles": {
+    "claude_code": "深度工作 — code 修改、n8n JSON、批次處理",
+    "antigravity": "即時工作 — UI 調整、宏觀審查、快速迭代",
+    "perplexity": "外部研究 — /px audit 系統審查 + 外部對標"
+  },
+  "key_files": {
+    "field_map": "n8n/Triple_Sync_Field_Map.md",
+    "session_init": "CLAUDE_SESSION_INIT.md",
+    "prompts": "FHS_Prompts.md",
+    "handoff": ".fhs/memory/handoff.md"
+  }
+}
