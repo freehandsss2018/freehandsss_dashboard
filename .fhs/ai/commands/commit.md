@@ -9,7 +9,27 @@
 
 【第一階段：Memory Engine 同步】
 1. 將本次教訓整理，寫入 .fhs/memory/lessons/YYYY-MM-DD_主題.md
-2. 更新 .fhs/memory/handoff.md（核心狀態快照）
+2. 更新 .fhs/memory/handoff.md（核心狀態快照）—— 格式強制如下：
+
+   # FHS Handoff - YYYY-MM-DD HH:MM
+   當前版本：vX.Y.Z（憲法層）/ VXX.X.X（UI層）
+
+   ## 狀態摘要
+   [本次任務完成事項，如實描述，禁止虛報「100% 潔淨」]
+
+   ## 未解決 🔴 項目
+   [列出所有待處理紅色項目；若無，寫「無」]
+
+   ## 下個 Session 三項待辦
+   - [ ] 待辦一
+   - [ ] 待辦二
+   - [ ] 待辦三
+
+   ## 核心配置
+   [系統關鍵路徑與配置摘要]
+
+   ⚠️ 缺少上述格式任一區段 → /commit 視為未完成，禁止繼續
+
 3. 檢查 .fhs/memory/lessons/ 是否有 _temp / _draft 臨時日誌
    若有：提示 Fat Mo 確認是否刪除，不得自動刪除
 4. 執行 node scripts/Sync_Notion_Brain.js（V2.0 Auto-Discovery）
@@ -41,7 +61,7 @@ git add               ✅
 git commit            ✅
 git push              ✅
 ========================================
-雲端大腦 + GitHub 雙備份完成。收工！🏁
+雲端大腦 + GitHub 雙備份完成。收工！
 
 異常處理：
 - .env 出現在 staging → 立即 reset，警告 Fat Mo，暫停 git push

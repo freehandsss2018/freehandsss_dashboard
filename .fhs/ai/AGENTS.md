@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.2.1
-> Last updated: 2026-03-30
+> Version: v1.3.0
+> Last updated: 2026-03-31
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.2.1
+- **版本**：v1.3.0
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`（24 nodes）
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV36.html`
@@ -56,7 +56,7 @@
 
 ### 記憶同步強制
 - **Notion 雲端同步**：凡完成以下任一項，必須執行 `/commit` 指令（及 `node scripts/Sync_Notion_Brain.js`）：重大架構變更 / 新增 Lesson Learned / 版本迭代完成。嚴禁在未同步情況下宣告任務結束。
-- **Mid-Session 自動脈衝**：每進行 10 則對話，執行一次核心狀態保存至 `.fhs/memory/handoff.md`。
+- **Mid-Session 脈衝（重定義）**：廢止「每 10 則對話自動存檔」（LLM 無法可靠計數，空規則製造虛假安全感）。新機制：Fat Mo 輸入「checkpoint」或「存檔」→ 只更新 handoff.md（無 git push）。AI 不得在此兩種情況以外單獨寫入 handoff.md。
 
 ### 文件同步強制律
 - 凡任何操作涉及以下任一情況，必須在同一次任務內同步更新 docs/repo-map.md 與對應層級的 README.md，不得事後補做：
