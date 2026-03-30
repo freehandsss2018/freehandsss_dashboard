@@ -1,5 +1,5 @@
 # AGENTS — 憲法層
-> Version: v1.3.0
+> Version: v1.3.1
 > Last updated: 2026-03-31
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.3.0
+- **版本**：v1.3.1
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`（24 nodes）
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV36.html`
@@ -69,6 +69,15 @@
   - docs/ 變動 → 更新 docs/repo-map.md
   - .fhs/ 任何變動 → 更新 docs/repo-map.md
 - 違反此律視為任務未完成，Fat Mo 有權要求重做。
+
+### 檔案寫入安全守護（適用所有 AI：Claude、ag 及其他工具）
+- **檔案寫入優先級**（按安全性降序）：
+  1. **Write tool**（Recommended）：官方檔案寫入工具，最穩健，但易被 linter 回退
+  2. **Python 腳本**（Safe）：穩定處理 CJK、特殊字元、多行文本；適合複雜內容
+  3. **Bash + cat heredoc**（Safe for simple text）：適合簡單純文本，無特殊字元
+  4. **❌ Node.js 內聯寫入**（FORBIDDEN）：轉義複雜，易導致 CJK 字元截斷與引號衝突
+- **強制規則**：凡涉及中文、特殊字元（emoji、markdown code block）、引號、跳脫字元或多行文本時，嚴禁為求快速而降級至低安全性寫入方式。已驗證可用的穩健寫入方案，不得因追求速度而替換；違反視為流程錯誤，而非單純工具失敗。
+- **適用**：所有 Agent，無例外。
 
 ### 衝突優先級聲明
 - 若本文件（AGENTS.md）與 `.cursorrules` 有任何規則衝突，以本文件為最終準則。
