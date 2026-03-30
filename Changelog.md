@@ -1,3 +1,7 @@
+## [v1.2.1] - 2026-03-30
+### 🛡️ 憲法層：文件同步強制律 (Mandatory Doc Sync Policy)
+- **AGENTS.md**: 新增「文件同步強制律」，強制要求任何檔案變動必須同步更新 `repo-map.md` 與對應的 `README.md`。此為 Atomic Update 之核心要求。
+
 ## [V36.2.2] - 2026-03-28
 ### ✨ 財務結算與報價明細深度優化 (Finance & Quote Refinement)
 - **財務介面**: 在「產品尾數 ($)」輸入框實作動態 Placeholder。隨「建議總價」、「訂金」與「附加費」即時連動，提供 Ling Au 快速參考。

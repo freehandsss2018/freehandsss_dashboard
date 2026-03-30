@@ -1,4 +1,4 @@
-# FHS Dashboard — Claude Code 入口
+# FHS Dashboard — Antigravity 入口
 
 1. 啟動時先讀 `/.fhs/ai/AGENTS.md`（憲法層）與 `/.fhs/ai/commands/`（指令層），並回報版本號。
 2. 任何架構改動先提出方案，等待 Fat Mo 確認後才動手。

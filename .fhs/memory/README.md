@@ -1,16 +1,16 @@
-# FHS Memory Engine 3.0 Local Storage
+# FHS 記憶層
 
-This directory stores the local high-fidelity memory for the FHS CTO Intelligence Center.
+## 目錄說明
+| 路徑 | 用途 |
+|---|---|
+| handoff.md | 跨 Session 核心狀態快照，每次 /reflect 更新 |
+| lessons/ | AI 教訓庫，所有學習記錄存放於此 |
 
-## Directory Structure
+## 同步機制
+lessons/ 下所有 .md 檔案由 scripts/Sync_Notion_Brain.js V2.0
+Auto-Discovery 自動掃描並同步至 Notion 雲端大腦。
+新增教訓無需手動登記，系統自動偵測。
 
-- **lessons/**: Stores atomic `.md` files for specific lessons, pitfalls, and "wrong questions" (errors).
-  - Format: `YYYYMMDD_Subject.md`
-- **context/**: Stores project-specific context and persistent rules that are loaded into every session.
-- **handoff.md**: (Temporary) Stores the transfer state between different Claude/Cursor sessions. This file is consumed and deleted upon startup of a new session.
-
-## Learning Cycle
-1. **Detect**: Automatically identifies pitfalls or manual user corrections.
-2. **Record**: Atomically writes to `lessons/`.
-3. **Refine**: Applies the 4-Question decision tree during `/reflect`.
-4. **Sync**: Pushes refined knowledge to the Notion Cloud Brain.
+## 命名規範
+lessons/ 下的檔案命名格式：YYYY-MM-DD_主題描述.md
+臨時草稿請加後綴：_temp 或 _draft（90天後會被 /reflect 提示清理）

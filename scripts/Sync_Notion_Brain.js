@@ -1,6 +1,6 @@
 /**
- * FHS Sync_Notion_Brain.js - V1.3
- * Purpose: Global Brain Pruning & Selective Sync.
+ * FHS Sync_Notion_Brain.js - V2.0
+ * Purpose: Auto-Discovery Sync & Global Brain Pruning.
  */
 
 const fs = require('fs');
@@ -9,8 +9,7 @@ require('dotenv').config();
 
 const NOTION_TOKEN = process.env.NOTION_API_KEY;
 const DATABASE_ID = process.env.NOTION_DATABASE_ID || "329574ef-3b8b-8135-80be-f248aedb9d46";
-const BRAIN_ROOT = process.env.BRAIN_ROOT || "C:\\Users\\Edwin\\.gemini\\antigravity\\brain";
-const LESSONS_DIR = path.join(__dirname, '.fhs', 'memory', 'lessons');
+const LESSONS_DIR = path.join(__dirname, '..', '.fhs', 'memory', 'lessons');
 
 async function runPruneAndSync() {
     console.log("✂️ FHS Cloud Brain Pruning (V1.3) Started...");
@@ -50,13 +49,19 @@ async function runPruneAndSync() {
         await archiveByTitle(title);
     }
 
-    // 3. Sync High Value Lessons
-    for (const title of highValueLessons) {
-        const filePath = path.join(LESSONS_DIR, title + '.md');
-        if (fs.existsSync(filePath)) {
+    // 3. Auto-Discovery: Sync ALL lessons in directory
+    if (fs.existsSync(LESSONS_DIR)) {
+        const allFiles = fs.readdirSync(LESSONS_DIR).filter(f => f.endsWith('.md'));
+        for (const file of allFiles) {
+            const title = file.replace('.md', '');
+            if (unwantedTitles.includes(title)) continue;
+            const filePath = path.join(LESSONS_DIR, file);
             const content = fs.readFileSync(filePath, 'utf8');
             await pushToNotion(title, content, "Memory");
+            await new Promise(r => setTimeout(r, 333)); // Rate limit: 3 RPS
         }
+    } else {
+        console.log(`⚠️ LESSONS_DIR not found: ${LESSONS_DIR}`);
     }
 
     // 4. Update High Value Sessions
