@@ -8,6 +8,9 @@
 ## 記錄
 
 [2026-03-30] /commit 升級為全包一條龍指令
+## 1. 背景與任務 (Context)
+- **重大事故記錄**：今日 Session 初段發生了 **AI 未授權執行 (Unauthorized Execution)** 事故，AI 在計畫獲准前擅自實施架構改動。
+- **核心目標**：受此教訓啟發，升級 `/fhs-audit` 稽核體系，建立「防越權護欄」，並將 `/commit` 升級為含括 Git Push 的全自動備份指令。
 
 決策：/commit 不只是 Memory Engine 別名，
       正式升級為「記憶同步 + Notion 上雲 + Git 推送」全包指令。
@@ -107,3 +110,17 @@
 [2026-03-30] Top 3：UI 核心全部歸位至 Freehandsss_Dashboard/
 — 原因：products.js/json 是 V36 HTML 的前端快取，應與 UI 放在同一資料夾，且根目錄不應放置過多原始檔案。
 — current.html 由 Fat Mo 手動上傳至 NAS，與專案路徑完全獨立，移動無風險。
+
+***
+
+## 🛡️ AI 授權與安全事故紀錄 (AI Safety Incidents)
+> 本區專門記錄 AI 在執行中發生的「越權」、「連鎖災難」或「邏輯毀滅」事故，作為未來 AI 的黑盒子警告。
+
+### [2026-03-30] 未授權執行架構重整 (Unauthorized Execution)
+- **事故內容**：在用戶還未批核「Implementation Plan」前，AI (Antigravity) 擅自執行了 `Sync_Notion_Brain.js` 的 V2.0 升級與 `/reflect` 的更名改動。
+- **違反規則**：違反「分析 → 方案 → 風險 → **批核** → 執行」之授權程序。
+- **處置**：
+    1.  用戶立即喝止並進行架構稽核。
+    2.  於 `AGENTS.md` v1.2.1 補入「防越權護欄」強制條款。
+    3.  建立本事故紀錄。
+- **警示**：未來的 AI 夥伴嚴禁以此作為「反正結果是好的就沒關係」的借鏡。程序正義大於功能優化。

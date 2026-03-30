@@ -1,7 +1,8 @@
 # Lesson Learned: FHS 系統衛生稽核與全包指令升級 — 2026-03-30
 
 ## 1. 背景與任務 (Context)
-- **核心目標**：解決 AI 越權修改檔案結構的問題，並將 `/commit` 升級為含括 Git Push 的全自動備份指令。
+- **重大事故記錄**：今日 Session 初段發生了 **AI 未授權執行 (Unauthorized Execution)** 事故，AI 在計畫獲准前擅自實施架構改動。
+- **核心目標**：受此教訓啟發，升級 `/fhs-audit` 稽核體系，建立「防越權護欄」，並將 `/commit` 升級為含括 Git Push 的全自動備份指令。
 - **稽核項目**：執行 `/fhs-audit` 對 21 項系統指標進行深度掃描。
 
 ## 2. 核心教訓 (Key Learnings)
