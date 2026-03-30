@@ -20,7 +20,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 幕後系統總綱
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
-│   │   ├── AGENTS.md                   ← 憲法層 v1.2.1
+│   │   ├── AGENTS.md                   ← 憲法層 v1.3.1
 │   │   └── commands/
 │   │       ├── README.md               ← 指令索引
 │   │       ├── read.md
@@ -53,7 +53,7 @@ freehandsss_dashboard/
 │   ├── FHS_Blueprint.md
 │   ├── FHS_Product_Bible_V3.7.md
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）
-│   ├── GLOBAL_AI_SOP.md
+│   ├── GLOBAL_AI_SOP.md                ← v2.0 跨環境與多代理協作協議
 │   └── archive/
 │       ├── README.md                    ← 歸檔政策
 │       └── pre-v1.0-backup/

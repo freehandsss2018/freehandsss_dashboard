@@ -1,5 +1,7 @@
 # Freehandsss Dashboard (FHS)
 
+> 本專案已升級並遵循 `docs/GLOBAL_AI_SOP.md` v2.0 架構。新進代理請優先閱讀。
+
 一套為 Freehandsss 手工嬰兒紀念品業務設計的全端同步管理系統。
 主要架構：Dashboard UI ↔ n8n Workflow ↔ Airtable Database
 
@@ -17,9 +19,12 @@
 
 ## 給 AI 助理的話
 > 如果你是 Claude Code 或 Antigravity，請立即執行：
-> 1. 讀取 `/.fhs/ai/AGENTS.md`（憲法層，系統最高準則）
-> 2. 讀取 `/.fhs/ai/commands/`（可用指令集）
-> 3. 輸入 `/read` 完成記憶同步
+> 1. 讀取 `docs/GLOBAL_AI_SOP.md`（v2.0 多代理協作協議）
+> 2. 讀取 `/.fhs/ai/AGENTS.md`（憲法層，系統最高準則）
+> 3. 讀取 `/.fhs/ai/commands/`（可用指令集）
+> 4. 輸入 `/read` 完成記憶同步
+>
+> `/a3go` 是最終技術把關觸發器（非自動覆寫令），需雙重授權後才執行寫入。
 
 ---
 
@@ -59,5 +64,6 @@ V36 = 開發檔案實體檔名（固定）
 ***
 
 ## 版本
-- **系統版本**：v1.2.1（見 `.fhs/ai/AGENTS.md`）
-- **最後更新**：2026-03-30
+- **系統版本**：v1.3.1（見 `.fhs/ai/AGENTS.md`）
+- **SOP 版本**：v2.0（見 `docs/GLOBAL_AI_SOP.md`）
+- **最後更新**：2026-03-31
