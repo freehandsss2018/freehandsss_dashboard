@@ -2,25 +2,25 @@
 
 ## 概覽
 
-系統初始化檢查點，驗證 AGENTS.md v1.3.1 版本與所有核心配置，同步 handoff.md 至最新版本。
+雙任務 Session：(1) 系統初始化 v1.3.1 驗證 (2) GLOBAL_AI_SOP v2.0 升級 + /a3go 雙重授權重構。
 
 ## 關鍵進度
 
-1. **版本驗證**：AGENTS.md v1.3.1（憲法層最新版）確認無誤，三項新硬規則納入理解
-2. **三端映射確認**：n8n Triple_Sync_Field_Map V45.7.4+ 驗證，Dashboard-n8n-Airtable 完整鏈路清晰
-3. **handoff.md 同步**：從 v1.3.0 升級至 v1.3.1，新規則項目納入下次待辦
-4. **指令系統驗證**：.fhs/ai/commands/ 10 條指令全數可用
+1. **系統初始化**：AGENTS.md v1.3.1 驗證，三端映射 V45.7.4+ 確認，handoff.md 同步
+2. **SOP v2.0 升級（原子更新）**：
+   - GLOBAL_AI_SOP.md v1.0 → v2.0（Fat Mo 橋接者角色、雙重授權、命名規範）
+   - /a3go 重構（新命名規範、強制停止異常處理、清單授權機制）
+   - repo-map.md 版本同步（AGENTS v1.3.1 + SOP v2.0）
+   - README.md 聲明更新（SOP v2.0 入口 + /a3go 語意說明）
+3. **a3_execution_verdict.md 首次建立**：裁決報告標準存放路徑確立
 
 ## 資源狀態
 
-- **AGENTS.md**: v1.3.1 ✅
-- **Dashboard UI**: V36.2.2 ✅
-- **Workflow**: 6Ljih0hSKr9RpYNm (24 nodes) ✅
-- **Airtable Base**: app9GuLsW9frN4xaT ✅
-- **Notion**: 準備同步 ✅
-- **GitHub**: 準備推送 ✅
+- **Notion**: 準備同步（本次 commit 後執行）✅
+- **GitHub**: Push 86cbc8d SUCCESS ✅
+- **SOP**: v2.0 LIVE ✅
 
 ## 待追蹤項目
 
-- [ ] Sync_Notion_Brain.js V2.0 Auto-Discovery 運作確認
-- [ ] ai_reports/a2_implementation_plan.md 歸檔決策
+- [ ] Antigravity A2 輸出命名更新（Fat Mo 通知）
+- [ ] 下次 /a3go 完整流程測試
