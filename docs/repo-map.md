@@ -24,7 +24,8 @@ freehandsss_dashboard/
 │   │   └── commands/
 │   │       ├── README.md               ← 指令索引
 │   │       ├── read.md
-│   │       ├── a3go.md
+│   │       ├── a3go.md                  ← /cl-flow 最終報告（verdict only，NO-TOUCH）
+│   │       ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
 │   │       ├── fhs-check.md
 │   │       ├── commit.md                ← 宣告結束與記憶同步（Commit 記憶引擎）
 │   │       ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
@@ -53,7 +54,7 @@ freehandsss_dashboard/
 │   ├── FHS_Blueprint.md
 │   ├── FHS_Product_Bible_V3.7.md
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）
-│   ├── GLOBAL_AI_SOP.md                ← v2.0 跨環境與多代理協作協議
+│   ├── GLOBAL_AI_SOP.md                ← v2.1 跨環境與多代理協作協議（新指令系統 + NO-TOUCH GUARDRAIL）
 │   └── archive/
 │       ├── README.md                    ← 歸檔政策
 │       └── pre-v1.0-backup/

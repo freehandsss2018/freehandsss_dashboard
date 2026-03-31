@@ -1,47 +1,70 @@
-# GLOBAL_AI_SOP v2.0 升級實施計畫 (A2 本地視角)
+# A2 本輪實施審視計畫
 
-將目前「Fat Mo 手動橋接 Web / AG / Claude 多環境」的真實工作模式正式寫入 GLOBAL_AI_SOP，並且重構 `/a3go` 邏輯，避免越權與文件衝突。
+> Derived from a2_review_optimization_plan_v2.md
+> 報告者：A2 (Antigravity)
+> 日期：2026-03-31
+> 針對目標：A3 工作流優化 — Implementation Plan v2.1
 
-## Proposed Changes
+---
 
-### 核心協作協議升級
-更新全局 SOP 檔案以涵蓋多環境與授權條款：
+## 核心問題回覆（6 項）
 
-#### [MODIFY] [GLOBAL_AI_SOP.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/docs/GLOBAL_AI_SOP.md)
-- 升級標題與文件頭為 v2.0。
-- 重寫第一部分的 A1、A2、A3 角色定義與分工，明確加入 **Fat Mo 做為唯一上下文橋接者**。
-- 新增「報告命名規範」（`a1_audit_report.md`, `a1_implementation_plan.md`, `a2_implementation_plan.md`, `a3_execution_verdict.md`）嚴防同名碰撞。
-- 規定 A3 產出之 `a3_execution_verdict.md` 應統一存放於 `.fhs/notes/ai_reports/` 目錄中。
-- 新增「跨環境上下文條款」（接收轉述資訊時視為草案、須交叉比對）。
-- 新增「雙重授權條款」（第一層啟動審核，第二層列出檔案清單並獲取明確同意）。
+### 1. 本地環境是否可穩定產出所需檔名與路徑？
+**【結論：絕對可以，但需提防「Artifacts 陷阱」】**
 
-### 指令重構
-將 a3go 指令邏輯與新 SOP 的「雙重授權機制」徹底綁定：
+A2 在本地環境產出穩定檔名無技術障礙，但必須在 COMMANDS 或是提示詞中強制硬性規定：**「必須直接透過絕對路徑將檔案寫入 `.fhs/notes/ai_reports/...`」**。
 
-#### [MODIFY] [a3go.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/a3go.md)
-- **更改預期行為**：不再固定讀取單一計畫，而是改為嘗試讀取 `a1_...` 與 `a2_...` 新命名規範的檔案群。
-- **異常處理強化**：新增規則「若找不到任何符合上述命名的報告時，強制停止執行並主動提示 Fat Mo 提供路徑或檔案」。
-- **更改 A3 任務**：強制要求 A3 審核後，**必須**使用 `[MODIFY] / [NEW] / [DELETE]` 的格式輸出明確的「變更檔案清單及絕對路徑」。未列在此清單上的檔案嚴禁修改。
-- **釐清語意指令**：明確宣告「/a3go 是進入最終技術把關的觸發器，並非自動覆寫令」。
+*隱患*：如果不強調路徑，A2 預設會將報告作為「Artifact」存放在自己隱藏的 `.gemini/antigravity/brain/` 目錄中，這會導致 A3 找不到檔。明確的路徑指定是成功的關鍵。
 
-### 文件索引與 README 同步
-根據修訂的「文件同步強制律」，核心 SOP 改版必須同步擴及周邊的 Map 與 README 檔案，確保其他 AI 看見的規則一致：
+---
 
-#### [MODIFY] [repo-map.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/docs/repo-map.md)
-- 確保指向 `GLOBAL_AI_SOP.md` 的節點說明已修改為「v2.0 跨環境與多代理協作協議」。
+### 2. Antigravity 原生 model 與 Claude extension 的互動上，是否有隱性權限或讀檔問題？
+**【結論：無系統權限問題，但有「時間差」風險】**
 
-#### [MODIFY] [README.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/README.md)
-- 更新關於 `/a3go` 的功能簡述與代理間的角色定位，確保它符合 v2.0 的精神。
+因為我們在同一個開發資料夾下運作，A2 寫入檔案後，A3 (Claude) 可以立即讀取。不存在讀取權限衝突。
 
-#### [MODIFY] [README.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/README.md)
-- 於專案根目錄的 README 開頭增加指示：「本專案已升級並遵循 `docs/GLOBAL_AI_SOP.md v2.0` 架構，新進代理請優先閱讀」。
+*隱患*：唯一的問題是 I/O 快取延遲。如果 A2 剛宣告完成，Fat Mo 就瞬間敲下 `/cl-flow`，A3 可能會讀到一個寫入不完整的空檔案（尤其是檔案較大時）。
 
-## Verification Plan
+建議 `/cl-flow` 指令內附帶：「如讀取失敗或檔案為空，請回報並等待 5 秒後重試一次」。
 
-### Manual Verification
-- **Dry-run 測試驗證**：
-  A3 在未來執行任何寫入前，必須先執行一次「Dry-run」，模擬輸出預計會變更的檔案清單，確認雙重授權的安全鎖確實發揮作用，等 Fat Mo 批准後才真的寫入檔案。
-- **異常防呆驗證**：
-  Fat Mo 清空或隱藏先前的報告檔案，故意觸發 `/a3go`，測試 A3 是否會依規定「強制停止執行並提示路徑錯誤」。
-- **正確路徑驗證**：
-  檢查產生的裁決結果，是否能自動存放至正確的相對路徑 `.fhs/notes/ai_reports/a3_execution_verdict.md`。
+---
+
+### 3. `/cl-flow` 是否應內部包 sub-commands，還是保持宏指令較好？
+**【結論：保持單一宏指令最好】**
+
+對於 Agent 來說，「一條線直通」的指令成功率遠高於「套疊指令」。
+
+`/cl-flow` 的定義：「讀 A1/A2 → 產出 verdict → 停機」非常清晰具體，是目前最能避免認知錯誤的架構。
+
+---
+
+### 4. 在同一個 Antigravity 原生操場中，是否仍存在實作層灰區？
+**【結論：存在，最大灰區是「過度熱心的隱性改寫」】**
+
+因為我們同處一個環境，A2 或 A3 在做「純審查」時，如果看到程式碼有 bug 或是語法錯誤，很容易產生一種「我順手幫你修好」的 AI 衝動。
+
+解法：`/cl-flow` 的定義中，必須加入 NO-TOUCH GUARDRAIL：「在此步驟絕對禁止使用修改檔案的 tool，若違反即視為嚴重出錯」。
+
+---
+
+### 5. 命名切換在本地落地上有無障礙？
+**【結論：無障礙，強烈建議「直接硬切 (Hard Switch)」】**
+
+讓 AI 處理 Fallback 邏輯是一場災難。AI 有時會為了省略麻煩而直接生造內容，或者只看了一半就放棄。
+
+建議：只要 Fat Mo 決定了新路徑，舊路徑就在規則中直接「除役」。A3 讀不到新路徑就應該報錯，讓 Fat Mo 介入，而不是讓 AI 瞎猜。
+
+---
+
+### 6. 還有沒有其他實作層問題？
+**【結論：上下文污染 (Context Pollution) 的防範】**
+
+由於在同一個工具（Antigravity）中操作，如果在**同一個 Chat Session** 中呼叫 A2 產出 Plan，接著又原地呼叫 A3 進行 verdict，A3 有極大機率會被 A2 前期「草稿或錯誤嘗試」的歷史對話給污染。
+
+解法：A2 寫出檔案後，Fat Mo 在一個**全新的清淨 Session** 或是透過獨立的擴充視窗喚起 A3，讓 A3「只看檔案，不看對話歷史」。
+
+---
+
+## A2 最終意見
+
+**完全贊同此優化計畫，並建議採取「硬性切換命名」及「獨立執行入口 `/execute`」。本計畫的落地能有效斷絕過度熱心帶來的風險。本地端已準備好執行。**

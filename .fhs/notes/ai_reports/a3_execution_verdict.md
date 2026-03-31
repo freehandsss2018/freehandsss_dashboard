@@ -1,8 +1,8 @@
-# A3 Execution Verdict — GLOBAL_AI_SOP v2.0 升級
+# A3 Execution Verdict — Implementation Plan v2.1 執行完成
 
 **日期**：2026-03-31
-**任務**：GLOBAL_AI_SOP v2.0 升級 + /a3go 重構
-**A3 授權來源**：Fat Mo（px 橋接確認 + 明確「執行」指令）
+**任務**：A3 工作流優化 v2.1 — 指令系統重構 + SOP 升級
+**A3 授權來源**：Fat Mo（`/execute` 明確輸入）
 
 ---
 
@@ -10,9 +10,9 @@
 
 | 評分維度 | 評分 | 說明 |
 |---------|------|------|
-| Maintenance | ✅ 高 | 命名規範統一，減少同名碰撞風險 |
-| Simplicity | ✅ 高 | 角色職責清晰，雙重授權邏輯直線 |
-| Zero Conflict | ✅ 通過 | 原子更新，4 個文件同批完成，無中間狀態殘留 |
+| Maintenance | ✅ 高 | 新指令命名短且直觀，長期易維護 |
+| Simplicity | ✅ 高 | /cl-flow = verdict only；/execute = 唯一執行入口，邊界清晰 |
+| Zero Conflict | ✅ 通過 | 各文件原子更新，無中間狀態殘留 |
 
 ---
 
@@ -20,24 +20,43 @@
 
 | 操作 | 文件路徑 | 變更摘要 |
 |------|---------|---------|
-| [MODIFY] | `docs/GLOBAL_AI_SOP.md` | v1.0 → v2.0，重寫角色定義、新增命名規範、雙重授權、跨環境上下文、Fat Mo 橋接者角色 |
-| [MODIFY] | `.fhs/ai/commands/a3go.md` | 讀取目標改為新命名規範，新增強制停止異常處理，輸出 [MODIFY]/[NEW]/[DELETE] 清單，明確語意聲明 |
-| [MODIFY] | `docs/repo-map.md` | GLOBAL_AI_SOP 描述更新至 v2.0，AGENTS.md 版本號修正至 v1.3.1 |
-| [MODIFY] | `README.md`（根目錄） | 版本號 v1.2.1→v1.3.1，加入 SOP v2.0 遵循聲明，AI 初始化順序加入 GLOBAL_AI_SOP，更新 /a3go 語意描述 |
+| [NEW] | `.fhs/notes/ai_reports/a1_implementation_plan.md` | 本輪正式主 plan 基準文件落盤 |
+| [MODIFY] | `.fhs/notes/ai_reports/a2_implementation_plan.md` | 更新為本輪 A2 審視內容（derived from a2_review_optimization_plan_v2.md）|
+| [MODIFY] | `.fhs/ai/commands/a3go.md` | 移除執行階段、讀取路徑改為 `.fhs/notes/ai_reports/`、加入 NO-TOUCH GUARDRAIL、加入 5 秒重試機制、語義凍結為 verdict only |
+| [NEW] | `.fhs/ai/commands/execute.md` | 建立唯一正式執行入口 `/execute` |
+| [MODIFY] | `docs/GLOBAL_AI_SOP.md` | v2.0 → v2.1，補入新指令命名系統、NO-TOUCH GUARDRAIL、Artifacts 陷阱警告、落盤強制規則、執行流程圖 |
+
+---
+
+## 本輪核心制度變更
+
+### 新指令命名系統
+| 指令 | 說明 |
+|------|------|
+| `/px-plan` | px 出 plan |
+| `/ag-plan` | ag 出 plan |
+| `/cl-plan` | cl 出 plan |
+| `/cl-review` | cl 給我審視報告 |
+| `/cl-flow` | cl 給我最終報告 |
+| `/execute` | 同意執行 / 可以執行 |
+
+### 已退役
+- `/a3exec` 命名（由 `/execute` 取代）
+
+### 安全制度新增
+- NO-TOUCH GUARDRAIL（審查期禁止寫入）
+- Artifacts 陷阱警告（A2 必須直接落盤到 `.fhs/notes/ai_reports/`）
+- 空檔 5 秒重試機制（存在但為空 → 等待 5 秒 → 重試一次）
+- Hard Switch（讀不到新命名即停止，不猜測、不 fallback）
 
 ---
 
 ## 後效注意事項
 
-1. **Antigravity (A2) 需同步更新輸出命名**
-   - 舊格式 `audit_report.md.resolved` / `implementation_plan.md.resolved` 已退役
-   - 新格式：`a1_audit_report.md`、`a2_implementation_plan.md`
-   - 此為 A2 端的工作，由 Fat Mo 通知 Antigravity 執行
-
-2. **下次 /a3go 觸發條件**
-   - Fat Mo 提供符合新命名規範的報告後，/a3go 流程方可正常執行
-   - 若使用舊格式報告，A3 將強制停止並回報命名錯誤
+1. **AGENTS.md 尚未同步**：本輪未修改 AGENTS.md，建議下一輪在 Section 3 或單獨 commands 清單中同步加入新指令命名
+2. **repo-map.md 尚未同步**：GLOBAL_AI_SOP.md 已升至 v2.1，建議下一輪同步更新 repo-map.md
+3. **A2 (Antigravity) 需確認**：已更新 `a2_implementation_plan.md`，但 Antigravity COMMANDS 側需 Fat Mo 另行通知 A2 強制落盤到正式路徑
 
 ---
 
-**A3 裁決**：✅ 執行完成，原子更新成功，無殘留中間狀態。
+**A3 裁決**：✅ 執行完成。5 份文件原子更新成功，無殘留中間狀態。

@@ -113,3 +113,25 @@
 | `decisions.md` | 人類 + AI 參考 | 記錄「為什麼這樣設計」，不是規則 |
 | `todo.md` | 人類 + AI 參考 | 待辦事項清單 |
 | `session-log.md` | AI 寫入 | 每次 session 結束的摘要 |
+
+***
+
+## 7. 正式指令系統 (Command System — v2.1)
+
+> 以下為 GLOBAL_AI_SOP v2.1 正式採用的指令命名系統。任何 AI 均應以此為唯一有效命名。
+
+| 指令 | 中文說明 | 執行方 | 備註 |
+|------|---------|-------|------|
+| `/px-plan` | px 出 plan | Perplexity | 產出 `a1_implementation_plan.md` 到 `.fhs/notes/ai_reports/` |
+| `/ag-plan` | ag 出 plan | Antigravity | 產出 `a2_implementation_plan.md` 到 `.fhs/notes/ai_reports/` |
+| `/cl-plan` | cl 出 plan | Claude | Claude 產出計畫 |
+| `/cl-review` | cl 給我審視報告 | Claude | 技術審視，不執行寫入 |
+| `/cl-flow` | cl 給我最終報告 | Claude | 讀取 A1/A2 → 產出 verdict → 停止等待（對應 `/a3go`）|
+| `/execute` | 同意執行 / 可以執行 | Fat Mo 下達，Claude 執行 | **唯一正式執行入口** |
+
+### 關鍵語義邊界（不得違反）
+
+- **`/cl-flow` ≠ 執行授權**：`/cl-flow` 只產出最終報告（verdict），禁止任何實際寫入業務檔案。
+- **`/execute` = 唯一執行入口**：沒有 Fat Mo 明確輸入 `/execute`，任何 AI 不得寫入業務檔案。
+- **NO-TOUCH GUARDRAIL**：在 `/cl-flow` 全程，絕對禁止使用任何寫入、修改、建立、刪除工具。
+- **Fat Mo 最終承認者**：任一 agent 的結論，不得自動視為 Fat Mo 已確認。`/execute` 是唯一有效授權信號。
