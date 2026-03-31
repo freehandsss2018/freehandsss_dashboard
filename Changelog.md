@@ -1,3 +1,14 @@
+## [AGENTS.md v1.4.0 / SOP v2.2] - 2026-03-31
+### 🎯 制度任務完成記錄規則提升 (Completion Report Framework v1.0)
+- **AGENTS.md 升級至 v1.4.0**：新增「制度任務完成記錄強制律」。凡任何制度層、協議層、指令層變更完成後，必須同步產出正式完成記錄。
+- **GLOBAL_AI_SOP.md 升級至 v2.2**：新增「第五部分：Completion Report 規範」，明確規範觸發條件、存放位置、命名格式、最低內容要求。
+- **`.fhs/notes/completion_reports/` 啟用**：建立專用目錄存放所有制度任務完成記錄，採命名格式 `YYYY-MM-DD_<task_slug>_completion_report.md`。
+- **本輪完成記錄**：補建 `2026-03-31_a3_workflow_optimization_completion_report.md`，詳記本輪 A3 工作流優化 v2.1 的完成狀態。
+- **驗收狀態**：
+  - `/cl-flow` Phase 3 驗收 ✅ —— 讀檔成功、verdict only、無寫入、停止等待 `/execute`
+  - A3 技術評估 ✅ —— 無邏輯衝突、落地一致、制度收尾規則符合系統架構
+  - 後效同步 ✅ —— repo-map.md + CHANGELOG.md 同步完成
+
 ## [v1.2.1] - 2026-03-30
 ### 🛡️ 憲法層：文件同步強制律 (Mandatory Doc Sync Policy)
 - **AGENTS.md**: 新增「文件同步強制律」，強制要求任何檔案變動必須同步更新 `repo-map.md` 與對應的 `README.md`。此為 Atomic Update 之核心要求。

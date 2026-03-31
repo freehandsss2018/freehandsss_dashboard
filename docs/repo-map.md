@@ -20,7 +20,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 幕後系統總綱
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
-│   │   ├── AGENTS.md                   ← 憲法層 v1.3.1
+│   │   ├── AGENTS.md                   ← 憲法層 v1.4.0
 │   │   └── commands/
 │   │       ├── README.md               ← 指令索引
 │   │       ├── read.md
@@ -38,7 +38,8 @@ freehandsss_dashboard/
 │   │   ├── todo.md
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
-│   │   └── ai_reports/                  ← AI 協作報告區（活躍）
+│   │   ├── ai_reports/                  ← AI 協作報告區（活躍）
+│   │   └── completion_reports/          ← 制度任務完成記錄（v1.4.0 新增）
 │   └── memory/
 │       ├── README.md                   ← 記憶層與同步規範
 │       └── handoff.md
@@ -54,7 +55,7 @@ freehandsss_dashboard/
 │   ├── FHS_Blueprint.md
 │   ├── FHS_Product_Bible_V3.7.md
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）
-│   ├── GLOBAL_AI_SOP.md                ← v2.1 跨環境與多代理協作協議（新指令系統 + NO-TOUCH GUARDRAIL）
+│   ├── GLOBAL_AI_SOP.md                ← v2.2 跨環境與多代理協作協議（+ Completion Report 規範）
 │   └── archive/
 │       ├── README.md                    ← 歸檔政策
 │       └── pre-v1.0-backup/

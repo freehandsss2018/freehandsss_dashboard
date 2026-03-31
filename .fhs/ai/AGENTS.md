@@ -1,5 +1,5 @@
 # AGENTS — 憲法層
-> Version: v1.3.1
+> Version: v1.4.0
 > Last updated: 2026-03-31
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.3.1
+- **版本**：v1.4.0
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`（24 nodes）
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV36.html`
@@ -69,6 +69,22 @@
   - docs/ 變動 → 更新 docs/repo-map.md
   - .fhs/ 任何變動 → 更新 docs/repo-map.md
 - 違反此律視為任務未完成，Fat Mo 有權要求重做。
+
+### 制度任務完成記錄強制律
+凡任何任務涉及以下任一情況：
+- 新增或修改規則
+- 修改 `AGENTS.md` / `GLOBAL_AI_SOP.md`
+- 新增或修改 `.fhs/ai/commands/` 內指令檔
+- 更新 `README.md` / `repo-map.md` / workflow 文件
+- 任何制度層、協議層、指令層之變更
+
+則任務完成後，必須同步產出一份正式完成記錄。
+
+存放位置：`.fhs/notes/completion_reports/`
+命名格式：`YYYY-MM-DD_<task_slug>_completion_report.md`
+
+若未產出正式完成記錄，該任務視為未正式收尾。
+此規則適用於所有 AI / agents，無例外。
 
 ### 檔案寫入安全守護（適用所有 AI：Claude、ag 及其他工具）
 - **檔案寫入優先級**（按安全性降序）：

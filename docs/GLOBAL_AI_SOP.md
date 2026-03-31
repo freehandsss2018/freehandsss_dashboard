@@ -1,9 +1,9 @@
-# GLOBAL AI COLLABORATION SOP v2.1
+# GLOBAL AI COLLABORATION SOP v2.2
 ## 跨環境多代理協作與安全協議 (Universal Edition)
 
-> **版本：** v2.1
+> **版本：** v2.2
 > **升級日期：** 2026-03-31
-> **前版：** v2.0（2026-03-31）
+> **前版：** v2.1（2026-03-31）
 
 本協議整合 **Perplexity (外部分析)**、**Gemini/Antigravity (本地規劃)** 與 **Claude Code (精準執行)** 的優勢，
 並明確定義 **Fat Mo 作為唯一上下文橋接者** 的協作模式，建立安全、高效的跨環境開發協議。
@@ -139,11 +139,51 @@ A3 重新列出所有執行項目
 
 ---
 
-## 🏁 第五部分：實施聲明
+## 📋 第五部分：Completion Report 規範
+
+### 適用觸發條件
+
+當任務屬於以下任一類型時，完成後必須建立 completion report：
+- 制度變更（規則新增、規則修改）
+- AGENTS.md 或 GLOBAL_AI_SOP.md 更新
+- `.fhs/ai/commands/` 指令檔新增或修改
+- SOP 更新（本文件版本升級）
+- README / repo-map.md 同步更新
+
+### 存放位置與命名格式
+
+| 項目 | 規範 |
+|------|------|
+| **存放路徑** | `.fhs/notes/completion_reports/` |
+| **命名格式** | `YYYY-MM-DD_<task_slug>_completion_report.md` |
+| **命名範例** | `2026-03-31_a3_workflow_optimization_completion_report.md` |
+
+### 最低內容要求
+
+每份 completion report 必須包含以下欄位：
+
+1. **任務名稱**
+2. **日期**
+3. **發起方**
+4. **執行方**
+5. **任務目的**
+6. **修改 / 新增檔案清單**（含操作類型：[MODIFY] / [NEW] / [DELETE]）
+7. **驗收結果**
+8. **未完成事項**（若無則寫「無」）
+9. **最終狀態**：`DONE` / `PARTIAL` / `FAILED`
+
+### 強制性聲明
+
+若未產出正式 completion report，該任務視為未正式收尾，Fat Mo 有權要求重做。
+此規範適用於所有 AI / agents，無例外。
+
+---
+
+## 🏁 第六部分：實施聲明
 
 本協議為全域標準，適用於所有 AI 代理（Claude Code、Antigravity、Perplexity）。
 
 部署方式：放置於 `docs/GLOBAL_AI_SOP.md`，並於各 Agent 初始化 Context 中載入。
 
 > **新進代理請優先閱讀本協議。**
-> **本專案遵循 GLOBAL_AI_SOP v2.1，所有 Agent 協作均受本協議約束。**
+> **本專案遵循 GLOBAL_AI_SOP v2.2，所有 Agent 協作均受本協議約束。**
