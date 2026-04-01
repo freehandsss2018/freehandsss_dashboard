@@ -21,6 +21,12 @@ import os
 import sys
 from datetime import datetime
 
+# ── 強制 UTF-8 輸出以防 Windows CP950 崩潰 ─────────────────────────────────────
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 # ── 常數 ───────────────────────────────────────────────────────────────────
 BASE_ID = "app9GuLsW9frN4xaT"
 TABLE_ID = "tblC3HDJAz9W0OF6R"  # Product_Database

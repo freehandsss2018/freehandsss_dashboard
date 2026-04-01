@@ -13,6 +13,12 @@ from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# ── 強制 UTF-8 輸出以防 Windows CP950 崩潰 ─────────────────────────────────────
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 # ── 執行清單 ─────────────────────────────────────────────────────────────
 # (label, filename, requires_network, description)
 CHECKS = [

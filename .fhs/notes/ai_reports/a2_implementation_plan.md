@@ -1,70 +1,54 @@
-# A2 本輪實施審視計畫
+# FHS 系統優化實作計畫 (A2) — ag-plan
 
-> Derived from a2_review_optimization_plan_v2.md
-> 報告者：A2 (Antigravity)
-> 日期：2026-03-31
-> 針對目標：A3 工作流優化 — Implementation Plan v2.1
-
----
-
-## 核心問題回覆（6 項）
-
-### 1. 本地環境是否可穩定產出所需檔名與路徑？
-**【結論：絕對可以，但需提防「Artifacts 陷阱」】**
-
-A2 在本地環境產出穩定檔名無技術障礙，但必須在 COMMANDS 或是提示詞中強制硬性規定：**「必須直接透過絕對路徑將檔案寫入 `.fhs/notes/ai_reports/...`」**。
-
-*隱患*：如果不強調路徑，A2 預設會將報告作為「Artifact」存放在自己隱藏的 `.gemini/antigravity/brain/` 目錄中，這會導致 A3 找不到檔。明確的路徑指定是成功的關鍵。
+**目標**：針對產品數據同步（products.js）與 Dashboard 定價硬編碼問題進行清理與優化。
+**日期**：2026-04-01
+**狀態**：等待批准 (Awaiting Approval)
 
 ---
 
-### 2. Antigravity 原生 model 與 Claude extension 的互動上，是否有隱性權限或讀檔問題？
-**【結論：無系統權限問題，但有「時間差」風險】**
+## 1. 審計發現與風險 (Findings & Risks)
 
-因為我們在同一個開發資料夾下運作，A2 寫入檔案後，A3 (Claude) 可以立即讀取。不存在讀取權限衝突。
+基於本地環境分析，目前系統存在以下問題：
 
-*隱患*：唯一的問題是 I/O 快取延遲。如果 A2 剛宣告完成，Fat Mo 就瞬間敲下 `/cl-flow`，A3 可能會讀到一個寫入不完整的空檔案（尤其是檔案較大時）。
+### 1.1 定價邏輯硬編碼 (Hardcoded Pricing)
+- **發現**：`Freehandsss_dashboard_current.html` 中的 `processTierPricing` 函數直接寫死了產品單價。
+- **風險**：與手動維護的 `FHS_Product_Bible_V3.7.md` 存在脫節風險。若聖經更新但代碼未改，POS 將報出錯誤價格。
 
-建議 `/cl-flow` 指令內附帶：「如讀取失敗或檔案為空，請回報並等待 5 秒後重試一次」。
+### 1.2 沉積資產 (Legacy Sediment)
+- **發現**：`products.js` 與 `products.json` 為早期緩存機制，目前 HTML 程式碼完全沒有引用這兩個檔案。
+- **風險**：虛假的存在感會誤導開發者或 AI Agent，導致維護錯誤。
 
----
-
-### 3. `/cl-flow` 是否應內部包 sub-commands，還是保持宏指令較好？
-**【結論：保持單一宏指令最好】**
-
-對於 Agent 來說，「一條線直通」的指令成功率遠高於「套疊指令」。
-
-`/cl-flow` 的定義：「讀 A1/A2 → 產出 verdict → 停機」非常清晰具體，是目前最能避免認知錯誤的架構。
+### 1.3 檔案命名混亂
+- **發現**：存在 `freehandsss_dashboardV36.html` 與 `Freehandsss_dashboard_current.html` 兩個內容相同的檔案。
+- **風險**：增加覆蓋錯檔案的機率。
 
 ---
 
-### 4. 在同一個 Antigravity 原生操場中，是否仍存在實作層灰區？
-**【結論：存在，最大灰區是「過度熱心的隱性改寫」】**
+## 2. 擬議修改檔案清單 (Proposed Changes)
 
-因為我們同處一個環境，A2 或 A3 在做「純審查」時，如果看到程式碼有 bug 或是語法錯誤，很容易產生一種「我順手幫你修好」的 AI 衝動。
+### 2.1 儲存庫清理
+#### [DELETE] [products.js](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/products.js)
+#### [DELETE] [products.json](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/products.json)
+#### [DELETE] [freehandsss_dashboardV36.html](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/freehandsss_dashboardV36.html)
 
-解法：`/cl-flow` 的定義中，必須加入 NO-TOUCH GUARDRAIL：「在此步驟絕對禁止使用修改檔案的 tool，若違反即視為嚴重出錯」。
+### 2.2 基礎設施補強
+#### [MODIFY] [package.json](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/package.json)
+- 新增 `scripts` 區塊，加入 `sync-check` 佔位符，提醒未來開發者執行自動化校驗。
 
----
-
-### 5. 命名切換在本地落地上有無障礙？
-**【結論：無障礙，強烈建議「直接硬切 (Hard Switch)」】**
-
-讓 AI 處理 Fallback 邏輯是一場災難。AI 有時會為了省略麻煩而直接生造內容，或者只看了一半就放棄。
-
-建議：只要 Fat Mo 決定了新路徑，舊路徑就在規則中直接「除役」。A3 讀不到新路徑就應該報錯，讓 Fat Mo 介入，而不是讓 AI 瞎猜。
-
----
-
-### 6. 還有沒有其他實作層問題？
-**【結論：上下文污染 (Context Pollution) 的防範】**
-
-由於在同一個工具（Antigravity）中操作，如果在**同一個 Chat Session** 中呼叫 A2 產出 Plan，接著又原地呼叫 A3 進行 verdict，A3 有極大機率會被 A2 前期「草稿或錯誤嘗試」的歷史對話給污染。
-
-解法：A2 寫出檔案後，Fat Mo 在一個**全新的清淨 Session** 或是透過獨立的擴充視窗喚起 A3，讓 A3「只看檔案，不看對話歷史」。
+### 2.3 文件地圖同步
+#### [MODIFY] [repo-map.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/docs/repo-map.md)
+- 更新檔案地圖以移除已刪除的檔案。
 
 ---
 
-## A2 最終意見
+## 3. 驗證計畫 (Verification Plan)
 
-**完全贊同此優化計畫，並建議採取「硬性切換命名」及「獨立執行入口 `/execute`」。本計畫的落地能有效斷絕過度熱心帶來的風險。本地端已準備好執行。**
+1. **核心功能檢測**：移除檔案後，手動觸發 Dashboard 的 `generate()` 函數，確保定價運算依然正常。
+2. **三端比對**：隨機抽取產品，確認 HTML 硬編碼價格與聖經一致。
+3. **系統完整性**：執行 `/fhs-check` 指令，確保無破損路徑。
+
+---
+
+> [!IMPORTANT]
+> **NO-TOUCH GUARDRAIL**
+> 本文件僅為計畫書。在獲得 `/execute` 授權前，Antigravity 不會對以上提及的任何程式碼執行實際寫入操作。

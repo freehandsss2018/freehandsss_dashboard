@@ -1,3 +1,14 @@
+## [/execute v2.1] - 2026-03-31
+### ⚙️ 指令層：`/execute` 後效同步稽核內建化
+- **`/execute` 升級至 v2.1**：新增步驟 4「後效同步稽核 (Post-Execution Sync Audit)」。
+- **三條觸發分支**：
+  - [A] 結構變動（新增/刪除/移動檔案）→ 強制同步 `repo-map.md` + 對應 `README.md`
+  - [B] 制度層變動（AGENTS.md / SOP / commands/ 等）→ 強制產出 completion report
+  - [C] 行為邏輯變更（版本號 / 語義 / command 邏輯）→ 強制更新 `CHANGELOG.md`
+- **收尾規則**：每次 `/execute` 均稽核，條件成立才強制同步；三條均不觸發時輸出簡短宣告。
+- **失敗處理**：同步失敗立即暫停提示 Fat Mo，不得靜默跳過。
+- **動機**：解決過往後效同步依賴人腦記憶的問題，落地 AGENTS.md 強制律至指令執行層。
+
 ## [AGENTS.md v1.4.0 / SOP v2.2] - 2026-03-31
 ### 🎯 制度任務完成記錄規則提升 (Completion Report Framework v1.0)
 - **AGENTS.md 升級至 v1.4.0**：新增「制度任務完成記錄強制律」。凡任何制度層、協議層、指令層變更完成後，必須同步產出正式完成記錄。
