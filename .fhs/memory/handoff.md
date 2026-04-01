@@ -1,36 +1,36 @@
-# FHS Handoff - 2026-04-02 02:15 [完成]
+# FHS Handoff - 2026-04-02 [完成 — 第二次 Session]
 
-當前版本：v1.4.0（憲法層）/ V36.2.2（UI層）/ `/fhs-check` V45.7.4
+當前版本：v1.4.0（憲法層）/ V36.2.2（UI層）
 
 ## 本次 Session 摘要
 
-執行 `/fhs-check` 全系統健康檢查：
-1. **核心測試通過**：`LOCAL_AUDIT`、`LIFECYCLE`、`STRESS`、`ACCEPTANCE` 全數通過 ✅。
-2. **修復編碼崩潰**：修復了 `run_all.py` 與 `generate_fix_payload.py` 在 Windows (CP950) 環境下的 `UnicodeEncodeError` 崩潰問題。
-3. **發現紅旗**：`PRICE_AUDIT` 因 `.env` 缺少 `AIRTABLE_API_KEY` 而失敗。
+**任務一：Perplexity 預設模型升級**
+- 測試 `openai/gpt-5.4-thinking` → API 回傳 400（不可用）
+- 改為 `sonar-reasoning-pro`，API 驗證通過 ✅
+- 修改：`perplexity-mcp-server/.env`
 
-**核心成果**：
-- 驗證了當前系統功能完整，資料庫定價現況完整（經 MCP 手動稽核 0 空值）。
-- 增強了維護腳本在 Windows 平台的穩定性。
-
-**Commit**：待提交 (Processing /commit)
+**任務二：FHS 指令層同步 — Claude Code Skill 登錄**
+- 根因：`.fhs/ai/commands/` 未橋接至 `.claude/commands/`，`/execute` 等在 CLI 無法識別
+- 新增 8 個 skill 檔至 `.claude/commands/`（execute, cl-flow, commit, guardian, fhs-check, fhs-audit, error-eye, px-audit）
+- 所有 FHS 主要指令現可作為 Claude Code slash command 使用 ✅
 
 ## 未解決 🔴 項目
 
-- **Red Flag**: `PRICE_AUDIT` 腳本目前無法自動執行，因為 `.env` 缺少 API KEY。
+- **Red Flag（延續）**: `PRICE_AUDIT` 腳本因 `.env` 缺少 `AIRTABLE_API_KEY` 無法自動執行
+- **後效同步待完成**：docs/repo-map.md 尚未更新（新增 .claude/commands/ 8 個檔案）
+- **後效同步待完成**：completion_report 尚未產出（指令層變更）
 
-## 下個 Session 待辦
+## 下個 Session 三項待辦
 
-- [ ] 在 `.env` 中補上 `AIRTABLE_API_KEY` 以恢復全自動定價監控。
-- [ ] 觀察修正後的 `run_all.py` 在不同終端機下的顯示效果。
-- [ ] 繼續推進 A2 計畫中的架構重組（若有續集）。
+- [ ] 更新 docs/repo-map.md（補入 .claude/commands/ 新增的 8 個 skill 檔）
+- [ ] 產出 completion_report：`.fhs/notes/completion_reports/2026-04-02_command-layer-sync_completion_report.md`
+- [ ] 在 `.env` 補上 `AIRTABLE_API_KEY` 以恢復全自動定價監控
 
 ## 核心配置
 
 - 憲法層：.fhs/ai/AGENTS.md（v1.4.0）
 - 協作協議：docs/GLOBAL_AI_SOP.md（v2.2）
-- 指令層：.fhs/ai/commands/commit.md（v2.1）
-- 指令集：.fhs/ai/commands/（fhs-check / commit / execute / ...)
-- 最新 Lesson: `.fhs/memory/lessons/2026-04-02_windows_encoding_fix.md`
+- 指令層：.fhs/ai/commands/（11 個）+ .claude/commands/（9 個，含 read）
+- Perplexity 模型：`sonar-reasoning-pro`（已驗證）
 - Workflow：FHS_Core_OrderProcessor `6Ljih0hSKr9RpYNm`（24 nodes）
 - Airtable Base：`app9GuLsW9frN4xaT`

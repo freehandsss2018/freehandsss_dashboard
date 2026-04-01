@@ -1,3 +1,10 @@
+## [v1.4.1 / V45.7.4] - 2026-04-02
+### 🔧 系統健康檢查與 Windows 編碼優化 (Health Check & Encoding Fix)
+- **`/fhs-check` 執行完畢**：全系統核心功能測試（Local, Lifecycle, Stress, Acceptance）全數通過 ✅。
+- **Windows 編碼修復**：修復 `run_all.py` 與 `generate_fix_payload.py` 在 Windows (CP950) 環境下的 `UnicodeEncodeError` 崩潰問題，全面支援 UTF-8 圖示輸出。
+- **配置紅旗 (Red Flag)**：識別並報告了 `PRICE_AUDIT` 因 `.env` 缺少 `AIRTABLE_API_KEY` 而失敗的問題（已手動驗證資料庫定價完整）。
+- **Memory Sync**：同步更新 `handoff.md` 並產出 Windows 編碼優化 Lesson。
+
 ## [/execute v2.1] - 2026-03-31
 ### ⚙️ 指令層：`/execute` 後效同步稽核內建化
 - **`/execute` 升級至 v2.1**：新增步驟 4「後效同步稽核 (Post-Execution Sync Audit)」。

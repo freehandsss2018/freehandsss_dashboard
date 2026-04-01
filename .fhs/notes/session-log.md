@@ -1,3 +1,15 @@
+# Session Log — 2026-04-02（第二次）
+
+## 概覽
+雙任務 Session：(1) Perplexity 預設模型升級 sonar-reasoning-pro (2) FHS 指令層同步，8 個 skill 登錄至 .claude/commands/
+
+## 關鍵進度
+1. **模型測試**：`openai/gpt-5.4-thinking` API 測試失敗（400），改用 `sonar-reasoning-pro` 驗證通過
+2. **指令層橋接**：新增 execute / cl-flow / commit / guardian / fhs-check / fhs-audit / error-eye / px-audit 至 `.claude/commands/`
+3. **Lesson 記錄**：`.fhs/memory/lessons/2026-04-02_command_layer_sync.md`
+
+---
+
 # Session Log — 2026-03-31
 
 ## 概覽
