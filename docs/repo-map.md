@@ -67,6 +67,17 @@ freehandsss_dashboard/
 │   └── run_all.py
 ├── perplexity-mcp-server/               ← Perplexity MCP 整合伺服器
 ├── scripts/                             ← 輔助腳本
+│   ├── README.md                        ← 腳本說明索引
+│   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
+│   ├── rebuild_index.py                 ← 本地索引重建
+│   └── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner）
+├── artifacts/                           ← /cl-flow 執行時生成（已納入 .gitignore，不版控）
+│   └── {flow_id}/                       ← 每次 /cl-flow 產生獨立資料夾
+│       ├── task-brief.md
+│       ├── state.json
+│       ├── px-report.md
+│       ├── ag-plan.md
+│       └── cl-final-plan.md
 ├── archive/                             ← 專案層級舊版備份
 │   └── README.md                        ← 備份與歸檔政策
 └── tmp/                                 ← 臨時檔案（不納入 git）

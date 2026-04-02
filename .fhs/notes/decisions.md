@@ -7,6 +7,21 @@
 
 ## 記錄
 
+[2026-04-02] /cl-flow 升級至 v2.1.0 — 真正一鍵協調器實作
+
+決策：
+- 舊 /cl-flow v2.0 只讀取靜態 a1/a2 檔案，Claude 可能假裝審閱（無真實 artifact 生成）
+- 採 Node.js headless runner（`scripts/cl-flow-runner.js`）並行調用 Perplexity + Gemini API
+- 檔案寫入採 Option B（`fs.writeFile('utf8')`）：Fat Mo 裁決，單一語言，無額外依賴
+
+核心變更：
+- `/cl-flow` 從「讀靜態檔→審閱」改為「執行腳本→生成真實 artifact→審閱→cl-final-plan.md」
+- 新增 Deterministic Gate：artifact 缺失即阻擋，不允許空手審閱
+- 輸出路徑改為 `artifacts/{flow_id}/`，每次執行獨立追蹤
+- `/execute` 新增 cl-final-plan.md 閘道驗證
+
+---
+
 [2026-03-31] GLOBAL_AI_SOP 升級至 v2.0，/a3go 重構為雙重授權機制
 
 決策：

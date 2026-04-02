@@ -17,3 +17,6 @@ perplexity-mcp-server/logs/
 /tmp/
 .DS_Store
 *.log
+
+# /cl-flow runtime artifacts (generated per-run, not version controlled)
+artifacts/

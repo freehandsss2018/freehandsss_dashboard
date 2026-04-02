@@ -9,8 +9,14 @@
 ## 預期行為 (Expected Behavior)
 
 1. **執行前確認**：
-   - 確認 `.fhs/notes/ai_reports/a3_execution_verdict.md` 存在且非空。
-   - 確認是 Fat Mo 明確發出 `/execute` 指令（不可由 AI 自行串接調用）。
+   - 確認 Fat Mo 明確發出 `/execute` 指令（不可由 AI 自行串接調用）。
+   - **若前序為 `/cl-flow` 流程**（有 `artifacts/` 資料夾）：
+     - 找出最新的 `artifacts/{flow_id}/cl-final-plan.md`
+     - 確認 `state.json` 中 `execution_status: "locked"` 已就位
+     - 確認 `cl-final-plan.md` 中 Verdict 為 `APPROVED_READY` 或 Fat Mo 明確口頭批准
+     - 不得重新規劃，不得重跑 PX 或 AG
+   - **若前序為舊版 `/cl-flow` 流程**（無 artifacts/）：
+     - 確認 `.fhs/notes/ai_reports/a3_execution_verdict.md` 存在且非空。
 
 2. **執行約束 (Strict Execution)**：
    - 重新列出準備修改的檔案。
