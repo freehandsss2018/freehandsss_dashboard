@@ -18,14 +18,14 @@
 
 ## 未解決 🔴 項目
 
-- **Red Flag (延續)**：`PRICE_AUDIT` 執行受阻（缺少 Airtable API Key），手動確認定價資料完整。
-- **Dashboard Optimization 待執行**：計畫已就緒（artifacts/2026-04-02-2355/），等待 `/execute` 啟動 Phase 1。
+- **Red Flag**：`PRICE_AUDIT` 執行受阻（缺少 Airtable API Key），手動確認定價資料完整。
+- **Dashboard Optimization 已取消**：Fat Mo 2026-04-03 決定取消，artifacts/2026-04-02-2355/ 保留作歷史參考。
 
 ## 下個 Session 三項待辦
 
-- [ ] 執行 `/execute` 啟動 Dashboard Optimization Phase 1
-- [ ] 修復 `.env` 中的 `AIRTABLE_API_KEY`
+- [ ] 修復 `.env` 中的 `AIRTABLE_API_KEY`（進行中）
 - [ ] 執行 `/fhs-audit` 再次驗證（預期達到 21/21 通過）
+- [ ] 確認下一個功能方向
 
 ## 核心配置
 
