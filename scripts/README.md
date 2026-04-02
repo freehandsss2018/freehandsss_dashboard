@@ -6,7 +6,6 @@
 |---|---|
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
 | `rebuild_index.py` | 重建本地索引或快取的排錯腳本 |
-| `test_audit_0695346.py` | 針對單一訂單號所建立的獨立測試／稽核腳本 |
 | `cl-flow-runner.js` | `/cl-flow` 協調器核心 — 並行調用 Perplexity + Gemini API，生成真實 artifact 到 `artifacts/{flow_id}/`，供 Claude 審閱後產出最終計劃 |
 
 ## cl-flow-runner.js 使用說明

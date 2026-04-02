@@ -9,6 +9,7 @@ freehandsss_dashboard/
 ├── .gitignore                           ← Git 忽略規則
 ├── Changelog.md                         ← 系統版本變更記錄
 ├── package.json / package-lock.json     ← Node.js 依賴
+├── .claude/                             ← Claude Code 專屬配置（含橋接指令）
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（手動上傳 NAS，禁止程式覆蓋）
@@ -24,7 +25,9 @@ freehandsss_dashboard/
 │   │   └── commands/
 │   │       ├── README.md               ← 指令索引
 │   │       ├── read.md
-│   │       ├── a3go.md                  ← /cl-flow 最終報告（verdict only，NO-TOUCH）
+│   │       ├── cl-flow.md               ← /cl-flow 全自動規劃協調（v2.1.0 重心）
+│   │       ├── ag-plan.md               ← /ag-plan 本地實施計畫（A2 專用）
+│   │       ├── px-plan.md               ← /px-plan 外部視角計畫（A1 專用）
 │   │       ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
 │   │       ├── fhs-check.md
 │   │       ├── commit.md                ← 宣告結束與記憶同步（Commit 記憶引擎）

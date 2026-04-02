@@ -1,34 +1,28 @@
-# A1 Implementation Plan (PX Report): True 1-Click `/cl-flow` Coordinator
+# A1 Implementation Plan: Architecture Hygiene & Command Consistency (PX-Plan)
+**Date:** 2026-04-03
+**Agent:** A1 (Outer Brain / Perplexity Perspective)
 
-**Target Document**: `d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\notes\ai_reports\a1_implementation_plan.md`
-**Author**: Perplexity (A1) - Simulated
-**Topic**: External Architecture Research for 1-Click LLM Orchestration
+## 1. 外部最佳實踐審視 (External Best Practices)
+
+根據對多代理 (Multi-agent) 協作與 AI 優化代碼庫的研究，本計畫旨在強化系統的「機器可讀性」與「操作一致性」。
+
+### 1.1 核心原則：單一真理來源 (Single Source of Truth)
+*   **建議**：所有 Agent (CL, AG, PX) 必須共享同一套憲法 (`AGENTS.md`) 與路由表 (`FHS_Prompts.md`)。
+*   **優化**：更新路由表至 v1.3，將 v2.1.0 的規劃指令正式標準化，避免 Agent 在不清楚流程的情況下進行「盲目規劃」。
+
+### 1.2 資源清理與雜訊抑制 (Noise Reduction)
+*   **建議**：刪除根目錄中的 `repomix-output.txt`。
+*   **理由**：大型文字檔會干預 AI 的全域搜尋 (grep) 結果，產生大量無關的上下文雜訊，降低決策效率。
+
+### 1.3 指令生命週期管理 (Command Lifecycle)
+*   **建議**：對已退役指令 (`a3go`, `reflect`) 執行「封存」而非「保留」。
+*   **理由**：保留別名雖具備向下相容性，但在強大的 LLM 环境下，容易引發「指令過載 (Command Overload)」，使 AI 選擇低效的路徑。
+
+## 2. 規劃建議 (Proposed Actions)
+
+1.  **結構同步**：確保 `repo-map.md` 反映 `.fhs/` 與 `.claude/` 的雙層架構，這有助於新加入的 Agent 快速理解協作協議。
+2.  **文件修復**：修正 `scripts/README.md` 中的過時引用，維持文檔的誠實性。
+3.  **路由升級**：正式在 `FHS_Prompts.md` 中定義【情境十二：全自動規劃流 (v2.1.0 /cl-flow)】。
 
 ---
-
-## 1. 目標 (Objective)
-建立一個真正的一鍵協調流程，徹底消除目前需要人工手動依序觸發 `/px`, `/ag` 並等待的人為中斷。系統將於執行 `/cl-flow` 時自動生成 PX 與 AG 的獨立報告，最終再由 Claude 進行交叉審查。
-
-## 2. 限制 (Constraints)
-- **環境差異**：Claude Code 與 Antigravity(VS Code Extension) 及 Perplexity 分屬不同的執行環境與前端介面。
-- **無縫接軌**：不可依賴 Claude Code 捏造審閱過程，必須要有真實的檔案 (`px-report.md`, `ag-plan.md`) 落在實體目錄下才能繼續流程。
-- **安全護欄**：在未取得使用者 `/execute` 指令批准前，純處於「Planning」狀態，禁止任何改寫專案核心業務邏輯的行為 (FR-6)。
-
-## 3. 風險 (Risks)
-- **API 依賴與成本**：完全自動化依賴於 API Keys (Perplexity API, Gemini API) 以及對應的 Token 消費。若設計不當，打包 codebase (${repomix}) 的內容過大可能造成 context window limit 錯誤或超額扣款。
-- **時序延遲 (Race Conditions)**：Claude Code 執行腳本時若未正確 await，可能在 `px-report.md` 或 `ag-plan.md` 還未寫入硬碟前就開始讀取，導致最終審閱抓不到資料。
-- **錯誤隱匿 (Silent Failures)**：若調度腳本（runner）崩潰，可能沒有適當的方法讓 Claude 知道，而導致進入錯誤狀態迴圈。
-
-## 4. 假設 (Assumptions)
-- `npm` 與 Node.js 環境在本地已穩定配置。
-- 專案內部備有可用於調用 Gemini 的 API Key，且 Perplexity 的 MCP server 設定已包含有效的 Perplexity API Key。
-- Claude Code 有權限在專案目錄執行 shell command（如 `node scripts/cl-flow-runner.js`）。
-
-## 5. 成功標準 (Success Criteria)
-- 使用者只需在 Claude Code 給予 `/cl-flow [指令]`，接著只需等待最終的 `cl-final-plan.md` 生成，中間無需任何人工介面切換或輸入。
-- 觀察 `artifacts/{flow_id}/`，裡面有包含具體且獨立的 `px-report.md` 與 `ag-plan.md`。
-- Claude 產出的 `cl-final-plan.md` 能精準反映上述兩份文件的重點並合併結論。
-
-## 6. 範圍外項目 (Out of Scope)
-- 不涵蓋更換或升級現有 n8n webhook 工作流邏輯（僅做純開發環境的協調器增強）。
-- 不涵蓋建立網頁版 GUI 按鈕來觸發此流程；流程完全限定於 CLI (Claude Code) 內使用。
+**Status:** `DRAFT_READY`

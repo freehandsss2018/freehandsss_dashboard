@@ -1,45 +1,39 @@
-# FHS Handoff - 2026-04-03 [完成 — 第四次 Session]
+# FHS Handoff - 2026-04-03 [完成 — 第五次 Session]
 
-當前版本：v1.4.0（憲法層）/ V36.2.2（UI層）
+當前版本：v1.4.0（憲法層）/ V36.2.2（UI層）/ v1.3 (Router層)
 
 ## 本次 Session 摘要
 
-**任務：/cl-flow v2.1.0 端對端驗證 + Dashboard Optimization 規劃**
+**任務：FHS 架構衛生稽核 + 指令一致性對齊 + 路由協議升級 (v1.3)**
 
 ✅ **完成事項**：
-- 驗證 `scripts/cl-flow-runner.js` v1.0.0 端對端執行 — Perplexity + Gemini 並行成功
-- 執行測試 Task（基礎設施驗證）→ 產生 flow_id: 2026-04-02-2355
-- 執行正式 Task（Dashboard Optimization Plan — Ling Au & Fat Mo 導向優化計畫）
-- A1 (PX Report) 驗證 6 大章節完整、業界最佳實踐涵蓋
-- A2 (AG Plan) 驗證 4 階段計畫完整、雙人設架構清晰（令狐沖 + 肥貓）
-- A3 (CL Final Plan) 產出：250 行綜合報告，含 10 點驗證清單、14 天執行計畫、風險協調分析
-- state.json 完整轉移：planning → awaiting_cl_review → awaiting_approval （execution_status: locked）
-- ✅ **無違規**：AGENTS.md v1.4.0 完全合規；所有決策已記錄至 decisions.md
+- **架構衛生稽核**：完成 21+ 項全面檢查，產出 `audit_2026-04-03.md`。
+- **指令一致性審計**：對象 CL, AG, PX 之指令母版與橋接架構對齊，產出 `command_consistency_2026-04-03.md`。
+- **物理清理**：刪除根目錄沉積檔 `repomix-output.txt`。
+- **指令存檔**：將退役別名 `a3go.md`, `reflect.md` 移入 `docs/archive/commands/`。
+- **文件同步**：更新 `repo-map.md` (加入 .claude) 與 `scripts/README.md`。
+- **路由升級**：`FHS_Prompts.md` 升級至 v1.3，正式整合 v2.1.0 Planning Triad (/cl-flow)。
+- **經驗存檔**：建立 `2026-04-03_command_authorization_lesson.md` 強化授權協議。
 
-⚠️ **發現**：
-- API 金鑰已於 .env 正確填入（與前次 handoff 描述不符，實際已啟用）
-- 同分鐘內兩次執行使用相同 flow_id（預期行為，後執行覆蓋前執行 artifact）
+⚠️ **重要警示 (Incident Report)**：
+- 本次 Session 發生 AI 誤判模糊指令（「中」）為執行授權之行為。已建立對策：**未來必須完全匹配 `/execute` 字串方可解鎖寫入權限**。
 
 ## 未解決 🔴 項目
 
-- **Red Flag（延續）**: `PRICE_AUDIT` 腳本因 `.env` 缺少 `AIRTABLE_API_KEY` 無法自動執行
-- **CHANGELOG.md 待更新**：/cl-flow v2.1.0 行為重大變更（v2.0 靜態檔 → v2.1.0 動態 runner）+ Dashboard Optimization 工作流新增
-- **Dashboard Optimization 待執行**：cl-final-plan.md 已生成，awaiting `/execute` from Fat Mo
-- **Notion Brain 同步掛起**：若前次同步失敗，需手動補同
+- **Red Flag (延續)**: `PRICE_AUDIT` 執行受阻（缺少 Airtable API Key）。
+- **Dashboard Optimization 待執行**：計畫已就緒 (2026-04-02-2355)，等待 **/execute** 啟動 Phase 1。
+- **CHANGELOG.md 補更**：需補上最近兩次 Session 的重大變更紀錄。
 
 ## 下個 Session 三項待辦
 
-- [ ] Fat Mo 審閱 `artifacts/2026-04-02-2355/cl-final-plan.md` 並輸入 `/execute` 啟動 Phase 1
-- [ ] Phase 1 實作：核心架構 + 角色切換開關（預計 1-3 天）
-- [ ] 更新 `CHANGELOG.md`：記錄 /cl-flow v2.1.0 + Dashboard Optimization 新工作流
+- [ ] 執行 `/execute` 啟動 Dashboard Optimization Phase 1：核心架構切換。
+- [ ] 修復 `.env` 中的 `AIRTABLE_API_KEY` 以恢復 `PRICE_AUDIT` 功能。
+- [ ] 完成 `CHANGELOG.md` 的歷史追趕更新。
 
 ## 核心配置
 
 - **憲法層**：.fhs/ai/AGENTS.md（v1.4.0）
+- **路由層**：docs/FHS_Prompts.md（v1.3）
 - **協作協議**：docs/GLOBAL_AI_SOP.md（v2.2）
-- **指令層**：.fhs/ai/commands/（12 個含 cl-flow）+ .claude/commands/（9 個）
-- **Flow 系統**：/cl-flow v2.1.0（runner: Perplexity sonar-reasoning-pro + Gemini）
-- **API 配置**：PERPLEXITY_API_KEY ✓ + GEMINI_API_KEY ✓ + NOTION_API_KEY ✓（.env）
-- **工作流**：FHS_Core_OrderProcessor `6Ljih0hSKr9RpYNm`（24 nodes）
-- **Airtable Base**：`app9GuLsW9frN4xaT`（Product_Database + Order 表）
-- **執行鎖定**：artifacts/2026-04-02-2355/ 待 `/execute` 授權（execution_status: locked）
+- **指令層**：.fhs/ai/commands/（12 個）+ .claude/commands/（9 個橋接）
+- **執行鎖定**：嚴格執行 `/execute` 硬匹配授權。
