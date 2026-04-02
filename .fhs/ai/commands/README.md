@@ -18,7 +18,6 @@
 | read.md | /read | 讀取系統文件，執行系統初始化 |
 | fhs-check.md | /fhs-check | 快速系統檢查 |
 | commit.md | /commit | 全包一條龍：Memory Engine + Notion 同步 + git push |
-| reflect.md | /reflect | 指令別名（指向 /commit） |
 | error-eye.md | /error-eye | 錯誤監控（Catch-Push-Diagnose） |
 | guardian.md | /guardian | 全端守護稽核（Anti-Tunnel Vision） |
 | px-audit.md | /px audit | 外部審查（第三方審計員） |
@@ -29,5 +28,6 @@
 | 檔案 | 舊指令 | 退役原因 |
 |---|---|---|
 | a3go.md | /a3go | 已由 /cl-flow 取代（v2.1） |
+| reflect.md | /reflect | 已更名為 /commit 且架構整合（v2.1） |
 
 > ⚠️ 修改指令邏輯時，必須同步更新 [AGENTS.md](../AGENTS.md) 的 Version。

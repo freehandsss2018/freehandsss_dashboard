@@ -18,7 +18,7 @@ Do not add new rules here. This file will be removed in a future cleanup.
 
 ## 4. Stitch MCP 執行協議 (UI Refactor Shield)
 當涉及 UI/UX 外殼翻新時，必須遵循以下禁令：
-- **禁止修改 Element IDs**：所有表單 Input、Button、Table Body 的 ID 是 n8n 抓取資料的掛鉤，絕對嚴禁更改（除非經 Fat Mo 授權同步更新全鏈路）。
+- **禁止變更 HTML ID（包含 Element IDs）**：所有表單 Input、Button、Table Body 的 ID 是 n8n 抓取資料的掛鉤，絕對嚴禁更改（除非經 Fat Mo 授權同步更新全鏈路）。請參閱 `.fhs/ai/AGENTS.md` 全域硬規則。
 - **保留 captureFormState()**：這是系統的數據擷取引擎，任何視覺美化不得破壞其序列化邏輯。
 - **UI 零容錯規範**：為 Ling Au 設計的介面必須具備：
   - 加大觸控區 (>44px)

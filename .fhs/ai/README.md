@@ -20,7 +20,8 @@
 | /cl-flow | commands/cl-flow.md | A3 最終審核與判定報告（舊 a3go） |
 | /execute | commands/execute.md | 唯一准許修改檔案的執行入口 |
 | /fhs-check | commands/fhs-check.md | 快速系統檢查 |
-| /reflect | commands/reflect.md | 記憶引擎（自動脈衝 + Notion同步）|
+| /commit | commands/commit.md | 記憶引擎（自動脈衝 + Notion同步 + git push）|
+| /reflect | docs/archive/commands/ | 指令別名（已由 /commit 取代並存檔）|
 | /error-eye | commands/error-eye.md | 錯誤監控（Catch-Push-Diagnose）|
 | /guardian | commands/guardian.md | 全端守護稽核（動工前防護）|
 | /px audit | commands/px-audit.md | 外部審查（第三方審計員）|

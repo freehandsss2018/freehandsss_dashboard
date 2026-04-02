@@ -1,3 +1,12 @@
+## [v1.4.2] - 2026-04-03
+### 🧹 系統架構衛生稽核修復 (Architecture Hygiene Audit Resolution)
+- **`/fhs-audit` 稽核完成**：執行 21 項系統架構衛生稽核，發現 6 項 🟡 問題並全數修復。
+- **AGENTS.md 指令系統補全**：第 7 節指令表格新增 `/fhs-check`（全系統健康檢查）與 `/px-audit`（外部審查）兩條正式指令，所有 12 個現行指令均已列入。
+- **規則措辭統一**：`.cursorrules` HTML ID 保護條文與 `AGENTS.md` 用語對齊，消除雙源歧義。
+- **`docs/archive/README.md` 建立**：明確 `pre-v1.0-backup/` 與 `commands/` 的永久保留政策。
+- **`todo.md` 審查**：無逾期未處理項目，加入 2026-04-03 審查記錄。
+- **稽核通過率**：15/21 → 21/21
+
 ## [v1.4.1 / V45.7.4] - 2026-04-02
 ### 🔧 系統健康檢查與 Windows 編碼優化 (Health Check & Encoding Fix)
 - **`/fhs-check` 執行完畢**：全系統核心功能測試（Local, Lifecycle, Stress, Acceptance）全數通過 ✅。
