@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FHS Dashboard V39 — Prototype</title>
+  <!--
+    ══════════════════════════════════════════════════════════════
+    FHS Dashboard V39 — PROTOTYPE ONLY
+    ══════════════════════════════════════════════════════════════
+    Status   : PROTOTYPE — NO functional n8n/Airtable connections
+    Phase    : V39 Phase B (Frontend Developer build)
+    Created  : 2026-04-05
+    Designer : UI Designer (Claude Code A3 subagent)
+    Builder  : Frontend Developer (Claude Code A3 subagent)
+
+    ⚠️  ALL data is STATIC / MOCKED. No fetch(), no webhook URLs.
+    ⚠️  Do NOT modify Freehandsss_dashboard_current.html.
+    ⚠️  Functional hookup requires Code Reviewer PASS + Fat Mo /execute.
+
+    TODO[hookup]: Replace mock data with captureFormState() bridge
+    TODO[hookup]: Wire submit buttons to FHS_Core_OrderProcessor webhook
+    TODO[hookup]: Connect 肥貓 panel to FHS_Query_GlobalReview
+    ══════════════════════════════════════════════════════════════
+  -->
+  <style>
+    /* ─── Design Tokens ─────────────────────────────────────── */
+    :root {
+      /* Mode: 令狐沖 (Agile / Fast) — dark command center */
+      --ling-bg:        #0D0F14;
+      --ling-surface:   #161B24;
+      --ling-border:    #252D3A;
+      --ling-accent:    #00E5A0;
+      --ling-accent2:   #00B8D4;
+      --ling-text:      #E8EAED;
+      --ling-muted:     #6B7280;
+      --ling-danger:    #FF4757;
+      --ling-warn:      #FFA502;
+
+      /* Mode: 肥貓 (Analytic / Fat Cat) — warm data studio */
+      --fcat-bg:        #F7F3EE;
+      --fcat-surface:   #FFFFFF;
+      --fcat-border:    #E5DDD3;
+      --fcat-accent:    #C47B3A;
+      --fcat-accent2:   #3A7BC4;
+      --fcat-text:      #2D2A26;
+      --fcat-muted:     #8C7B6A;
+      --fcat-success:   #2ECC71;
+      --fcat-danger:    #E74C3C;
+
+      /* Active mode vars (overridden by JS) */
+      --bg:       var(--ling-bg);
+      --surface:  var(--ling-surface);
+      --border:   var(--ling-border);
+      --accent:   var(--ling-accent);
+      --accent2:  var(--ling-accent2);
+      --text:     var(--ling-text);
+      --muted:    var(--ling-muted);
+    }
+
+    /* ─── Global Reset ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.35s ease, color 0.35s ease;
+      overflow-x: hidden;
+    }
+
+    /* ─── Mode Toggle Bar ────────────────────────────────────── */
+    .mode-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 48px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      z-index: 100;
+      transition: background 0.35s ease, border-color 0.35s ease;
+    }
+
+    .mode-logo {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .mode-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    .mode-toggle {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.35s ease;
+    }
+
+    .mode-btn {
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .mode-status {
+      margin-left: auto;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ─── Main Layout ────────────────────────────────────────── */
+    .main {
+      padding-top: 48px;
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100vh;
+    }
+
+    /* ─── 令狐沖 MODE PANEL ──────────────────────────────────── */
+    .panel-ling {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Command Header */
+    .cmd-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .cmd-prompt {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .cmd-label {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .cmd-hint {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* Order Queue — the core Ling Au view */
+    .order-queue {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .queue-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .queue-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .queue-count {
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    .queue-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .queue-item:last-child { border-bottom: none; }
+
+    .queue-item:hover,
+    .queue-item.selected {
+      background: rgba(0, 229, 160, 0.05);
+    }
+
+    .queue-item.selected {
+      border-left: 2px solid var(--accent);
+    }
+
+    .item-idx {
+      font-size: 10px;
+      color: var(--muted);
+      width: 20px;
+      text-align: center;
+    }
+
+    .item-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-id {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent2);
+    }
+
+    .item-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .item-amount {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+    }
+
+    .item-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .badge-pending {
+      background: rgba(255, 165, 2, 0.15);
+      color: var(--ling-warn);
+      border: 1px solid rgba(255, 165, 2, 0.3);
+    }
+
+    .badge-review {
+      background: rgba(0, 184, 212, 0.15);
+      color: var(--accent2);
+      border: 1px solid rgba(0, 184, 212, 0.3);
+    }
+
+    .badge-urgent {
+      background: rgba(255, 71, 87, 0.15);
+      color: var(--ling-danger);
+      border: 1px solid rgba(255, 71, 87, 0.3);
+    }
+
+    /* Hotkey Panel */
+    .hotkey-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hk {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .hk:hover { border-color: var(--accent); }
+
+    .hk kbd {
+      background: var(--border);
+      color: var(--accent);
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: inherit;
+    }
+
+    .hk-label { color: var(--muted); }
+
+    /* Quick Input Strip */
+    .quick-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .qi-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .qi-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .qi-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .qi-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .qi-input:focus { border-color: var(--accent); }
+    .qi-input::placeholder { color: var(--muted); }
+
+    .qi-select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    /* Action Buttons */
+    .action-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 9px 18px;
+      border: none;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      font-family: inherit;
+      text-transform: uppercase;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover { filter: brightness(1.1); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--ling-danger);
+      border: 1px solid rgba(255, 71, 87, 0.3);
+    }
+
+    .btn-danger:hover { background: rgba(255, 71, 87, 0.1); }
+
+    /* ─── 肥貓 MODE PANEL ────────────────────────────────────── */
+    .panel-fcat {
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--fcat-surface);
+      border: 1px solid var(--fcat-border);
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.35s ease;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--fcat-muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--fcat-text);
+      line-height: 1;
+    }
+
+    .stat-delta {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .delta-up { color: var(--fcat-success); }
+    .delta-dn { color: var(--fcat-danger); }
+
+    /* Chart Placeholder */
+    .chart-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+    }
+
+    .chart-box {
+      background: var(--fcat-surface);
+      border: 1px solid var(--fcat-border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .chart-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--fcat-muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    /* Mini Bar Chart (pure CSS) */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 80px;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 2px 2px 0 0;
+      background: var(--fcat-accent);
+      opacity: 0.8;
+      transition: opacity 0.2s;
+      cursor: pointer;
+    }
+
+    .bar:hover { opacity: 1; }
+    .bar.today { background: var(--fcat-accent2); opacity: 1; }
+
+    .bar-label {
+      font-size: 9px;
+      color: var(--fcat-muted);
+    }
+
+    /* Donut Placeholder */
+    .donut-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100px;
+      position: relative;
+    }
+
+    .donut-svg { transform: rotate(-90deg); }
+
+    .donut-center {
+      position: absolute;
+      text-align: center;
+    }
+
+    .donut-pct {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--fcat-text);
+    }
+
+    .donut-sub {
+      font-size: 9px;
+      color: var(--fcat-muted);
+    }
+
+    /* Order Table */
+    .order-table-wrap {
+      background: var(--fcat-surface);
+      border: 1px solid var(--fcat-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .tbl-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--fcat-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tbl-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--fcat-muted);
+      text-transform: uppercase;
+    }
+
+    .tbl-filter {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid var(--fcat-border);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--fcat-text);
+      font-family: inherit;
+      outline: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th {
+      padding: 8px 16px;
+      text-align: left;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--fcat-muted);
+      text-transform: uppercase;
+      background: rgba(0,0,0,0.02);
+      border-bottom: 1px solid var(--fcat-border);
+    }
+
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      color: var(--fcat-text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(196, 123, 58, 0.04); }
+
+    .tbl-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .status-done { background: rgba(46,204,113,0.12); color: #27AE60; }
+    .status-pend { background: rgba(255,165,2,0.12); color: #D4900A; }
+    .status-fail { background: rgba(231,76,60,0.12); color: #C0392B; }
+
+    /* ─── Body Mode States ───────────────────────────────────── */
+    body.mode-fcat {
+      --bg:      var(--fcat-bg);
+      --surface: var(--fcat-surface);
+      --border:  var(--fcat-border);
+      --accent:  var(--fcat-accent);
+      --accent2: var(--fcat-accent2);
+      --text:    var(--fcat-text);
+      --muted:   var(--fcat-muted);
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang HK', 'Segoe UI', sans-serif;
+    }
+
+    body.mode-fcat .panel-ling { display: none; }
+    body.mode-fcat .panel-fcat { display: flex; }
+
+    body:not(.mode-fcat) .panel-ling { display: flex; }
+    body:not(.mode-fcat) .panel-fcat { display: none; }
+
+    /* ─── Prototype Badge ────────────────────────────────────── */
+    .proto-badge {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(255, 71, 87, 0.9);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 4px 10px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    /* ─── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .chart-row { grid-template-columns: 1fr; }
+      .qi-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Mode Bar ─────────────────────────────────────────────── -->
+  <div class="mode-bar">
+    <span class="mode-logo">FHS</span>
+    <div class="mode-divider"></div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnLing" onclick="setMode('ling')">⚡ 令狐沖</button>
+      <button class="mode-btn" id="btnFcat" onclick="setMode('fcat')">📊 肥貓</button>
+    </div>
+    <div class="mode-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusLabel">PROTOTYPE</span>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 令狐沖 MODE — Agile Command Center                      -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="panel-ling" id="panelLing">
+
+      <!-- Command Line Header -->
+      <div class="cmd-header">
+        <span class="cmd-prompt">❯</span>
+        <span class="cmd-label">待處理訂單 · 快速模式</span>
+        <span class="cmd-hint">[ Proto — 無真實資料 ]</span>
+      </div>
+
+      <!-- Order Queue -->
+      <div class="order-queue">
+        <div class="queue-header">
+          <span class="queue-title">訂單佇列</span>
+          <span class="queue-count" id="queueCount">3</span>
+        </div>
+
+        <div class="queue-item" onclick="selectOrder(this, 'ORD-2406-087')">
+          <span class="item-idx">01</span>
+          <div class="item-body">
+            <span class="item-id">ORD-2406-087</span>
+            <span class="item-desc">4肢定制套裝 × 2 · 陳大文</span>
+          </div>
+          <span class="item-amount">HK$3,200</span>
+          <span class="item-badge badge-urgent">急</span>
+        </div>
+
+        <div class="queue-item selected" onclick="selectOrder(this, 'ORD-2406-088')">
+          <span class="item-idx">02</span>
+          <div class="item-body">
+            <span class="item-id">ORD-2406-088</span>
+            <span class="item-desc">上肢基礎款 × 1 · 李小明</span>
+          </div>
+          <span class="item-amount">HK$1,800</span>
+          <span class="item-badge badge-pending">待核</span>
+        </div>
+
+        <div class="queue-item" onclick="selectOrder(this, 'ORD-2406-089')">
+          <span class="item-idx">03</span>
+          <div class="item-body">
+            <span class="item-id">ORD-2406-089</span>
+            <span class="item-desc">下肢定制款 × 3 · 王美儀</span>
+          </div>
+          <span class="item-amount">HK$5,400</span>
+          <span class="item-badge badge-review">審核中</span>
+        </div>
+      </div>
+
+      <!-- Quick Input Form -->
+      <div class="quick-input">
+        <div class="qi-row">
+          <div class="qi-field">
+            <label class="qi-label">訂單編號</label>
+            <!-- TODO[hookup]: Bind to order_id field -->
+            <input class="qi-input" type="text" placeholder="ORD-2406-088" value="ORD-2406-088" id="qiOrderId">
+          </div>
+          <div class="qi-field">
+            <label class="qi-label">客戶名稱</label>
+            <!-- TODO[hookup]: Bind to customer_name field -->
+            <input class="qi-input" type="text" placeholder="客戶姓名" value="李小明" id="qiCustomer">
+          </div>
+        </div>
+        <div class="qi-row">
+          <div class="qi-field">
+            <label class="qi-label">產品類型</label>
+            <!-- TODO[hookup]: Bind to product_type selector -->
+            <select class="qi-select" id="qiProduct">
+              <option>上肢基礎款</option>
+              <option>下肢定制款</option>
+              <option>4肢定制套裝</option>
+            </select>
+          </div>
+          <div class="qi-field">
+            <label class="qi-label">金額 (HKD)</label>
+            <!-- TODO[hookup]: Bind to amount / profit calculation -->
+            <input class="qi-input" type="number" placeholder="0" value="1800" id="qiAmount">
+          </div>
+        </div>
+        <div class="action-row">
+          <!-- TODO[hookup]: Wire to FHS_Core_OrderProcessor webhook (Alt+A) -->
+          <button class="btn btn-primary" id="btnApprove">核准 [Alt+A]</button>
+          <!-- TODO[hookup]: Wire to reject webhook -->
+          <button class="btn btn-ghost">退回 [Alt+R]</button>
+          <button class="btn btn-danger">取消 [Alt+X]</button>
+        </div>
+      </div>
+
+      <!-- Hotkey Strip -->
+      <div class="hotkey-strip">
+        <div class="hk"><kbd>Alt+A</kbd><span class="hk-label">核准</span></div>
+        <div class="hk"><kbd>Alt+R</kbd><span class="hk-label">退回</span></div>
+        <div class="hk"><kbd>Alt+X</kbd><span class="hk-label">取消</span></div>
+        <div class="hk"><kbd>↑↓</kbd><span class="hk-label">選單</span></div>
+        <div class="hk"><kbd>Tab</kbd><span class="hk-label">跳格</span></div>
+        <div class="hk"><kbd>F5</kbd><span class="hk-label">刷新佇列</span></div>
+      </div>
+
+    </div>
+    <!-- /panel-ling -->
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- 肥貓 MODE — Analytics Studio                            -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="panel-fcat" id="panelFcat">
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">本月訂單</div>
+          <div class="stat-value">127</div>
+          <!-- TODO[hookup]: Pull from FHS_Query_GlobalReview -->
+          <div class="stat-delta delta-up">↑ 12% vs 上月</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">總營業額</div>
+          <div class="stat-value">$248K</div>
+          <div class="stat-delta delta-up">↑ 8.3%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">待處理</div>
+          <div class="stat-value">3</div>
+          <div class="stat-delta delta-dn">↓ 需即時處理</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">完成率</div>
+          <div class="stat-value">94%</div>
+          <div class="stat-delta delta-up">↑ 2% vs 上月</div>
+        </div>
+      </div>
+
+      <!-- Chart Row -->
+      <div class="chart-row">
+        <!-- Bar Chart — 7-day orders -->
+        <div class="chart-box">
+          <div class="chart-title">近 7 天訂單量</div>
+          <!-- TODO[hookup]: Replace with Chart.js + real data from GlobalReview -->
+          <div class="bar-chart">
+            <div class="bar-group">
+              <div class="bar" style="height:35%" title="18筆"></div>
+              <div class="bar-label">周日</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:55%" title="28筆"></div>
+              <div class="bar-label">周一</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:70%" title="36筆"></div>
+              <div class="bar-label">周二</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:48%" title="24筆"></div>
+              <div class="bar-label">周三</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:80%" title="41筆"></div>
+              <div class="bar-label">周四</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar" style="height:90%" title="46筆"></div>
+              <div class="bar-label">周五</div>
+            </div>
+            <div class="bar-group">
+              <div class="bar today" style="height:60%" title="今日 31筆"></div>
+              <div class="bar-label">今日</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Donut — Completion Rate -->
+        <div class="chart-box">
+          <div class="chart-title">完成率</div>
+          <!-- TODO[hookup]: Replace with Chart.js doughnut chart -->
+          <div class="donut-placeholder">
+            <svg class="donut-svg" width="100" height="100" viewBox="0 0 36 36">
+              <path fill="none" stroke="#E5DDD3" stroke-width="3.5"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path fill="none" stroke="#C47B3A" stroke-width="3.5" stroke-linecap="round"
+                stroke-dasharray="94, 100"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-pct">94%</div>
+              <div class="donut-sub">完成率</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order History Table -->
+      <div class="order-table-wrap">
+        <div class="tbl-header">
+          <span class="tbl-title">訂單歷史</span>
+          <!-- TODO[hookup]: Wire filter to GlobalReview query params -->
+          <select class="tbl-filter">
+            <option>本月</option>
+            <option>本周</option>
+            <option>今日</option>
+          </select>
+        </div>
+        <!-- TODO[hookup]: Replace static rows with FHS_Query_GlobalReview data -->
+        <table>
+          <thead>
+            <tr>
+              <th>訂單號</th>
+              <th>客戶</th>
+              <th>產品</th>
+              <th>金額</th>
+              <th>狀態</th>
+              <th>日期</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ORD-2406-084</td>
+              <td>黃志強</td>
+              <td>下肢定制款</td>
+              <td>HK$2,400</td>
+              <td><span class="tbl-status status-done">完成</span></td>
+              <td>2026-04-04</td>
+            </tr>
+            <tr>
+              <td>ORD-2406-085</td>
+              <td>林詠欣</td>
+              <td>上肢基礎款</td>
+              <td>HK$1,800</td>
+              <td><span class="tbl-status status-done">完成</span></td>
+              <td>2026-04-04</td>
+            </tr>
+            <tr>
+              <td>ORD-2406-086</td>
+              <td>吳偉明</td>
+              <td>4肢套裝</td>
+              <td>HK$6,800</td>
+              <td><span class="tbl-status status-fail">退回</span></td>
+              <td>2026-04-04</td>
+            </tr>
+            <tr>
+              <td>ORD-2406-087</td>
+              <td>陳大文</td>
+              <td>4肢定制套裝</td>
+              <td>HK$3,200</td>
+              <td><span class="tbl-status status-pend">待核</span></td>
+              <td>2026-04-05</td>
+            </tr>
+            <tr>
+              <td>ORD-2406-088</td>
+              <td>李小明</td>
+              <td>上肢基礎款</td>
+              <td>HK$1,800</td>
+              <td><span class="tbl-status status-pend">待核</span></td>
+              <td>2026-04-05</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    <!-- /panel-fcat -->
+
+  </div>
+  <!-- /main -->
+
+  <!-- Prototype Watermark -->
+  <div class="proto-badge">V39 PROTO · NO LIVE DATA</div>
+
+  <script>
+    // ─── Mode Switching ──────────────────────────────────────────
+    // NOTE: This is UI-only switching. No n8n connections.
+    // TODO[hookup]: Verify LocalStorage key matches V37 convention before merge.
+
+    function setMode(mode) {
+      const body = document.body;
+      const btnLing = document.getElementById('btnLing');
+      const btnFcat = document.getElementById('btnFcat');
+      const statusLabel = document.getElementById('statusLabel');
+
+      if (mode === 'fcat') {
+        body.classList.add('mode-fcat');
+        btnFcat.classList.add('active');
+        btnLing.classList.remove('active');
+        statusLabel.textContent = '肥貓模式 · PROTO';
+      } else {
+        body.classList.remove('mode-fcat');
+        btnLing.classList.add('active');
+        btnFcat.classList.remove('active');
+        statusLabel.textContent = '令狐沖模式 · PROTO';
+      }
+
+      // TODO[hookup]: Replace 'v39_mode' key with agreed LocalStorage key
+      try { localStorage.setItem('v39_mode_proto', mode); } catch(e) { /* ok */ }
+    }
+
+    // Restore last mode
+    (function() {
+      try {
+        const saved = localStorage.getItem('v39_mode_proto');
+        if (saved === 'fcat') setMode('fcat');
+      } catch(e) { /* ok */ }
+    })();
+
+    // ─── Order Selection (令狐沖 mode) ───────────────────────────
+    function selectOrder(el, orderId) {
+      document.querySelectorAll('.queue-item').forEach(function(item) {
+        item.classList.remove('selected');
+      });
+      el.classList.add('selected');
+      // TODO[hookup]: Replace with real order data fetch from queue state
+      document.getElementById('qiOrderId').value = orderId;
+    }
+
+    // ─── Hotkey Bindings (prototype — no real actions) ───────────
+    // TODO[hookup]: Wire to FHS_Core_OrderProcessor webhook before merge
+    document.addEventListener('keydown', function(e) {
+      if (e.altKey) {
+        if (e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          // TODO[hookup]: Replace alert with actual webhook call
+          const id = document.getElementById('qiOrderId').value;
+          console.log('[PROTO] Alt+A — 核准訂單:', id, '(no real action in prototype)');
+          document.getElementById('btnApprove').style.opacity = '0.5';
+          setTimeout(function() {
+            document.getElementById('btnApprove').style.opacity = '1';
+          }, 200);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

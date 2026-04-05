@@ -1,3 +1,194 @@
+## [V39.1.0 / Subagent Engineering] - 2026-04-05
+### 🤖 FHS Subagent Engineering — 安裝三 Agent 組合
+
+**來源**：lst97/claude-code-sub-agents（FHS 重寫版，移除 React/TS/Tailwind 依賴）
+
+**新增文件**：
+- `.fhs/ai/subagents/vendor/` — lst97 原始副本（ui-designer / frontend-developer / code-reviewer）
+- `.fhs/ai/subagents/freehandsss/` — FHS 重寫版 agent 文件（三個）
+- `.fhs/ai/subagents/OPERATING_MODEL.md` — FHS Subagent 運作模型（長期制度文件）
+- `~/.claude/agents/freehandsss/` — Runtime 鏡像（Claude Code 執行時偵測）
+
+**修改文件**：
+- `.fhs/ai/commands/v39-aom.md` — 加入遷移注記（內容已移至 OPERATING_MODEL.md，未 stub 化）
+
+**架構守護**：
+- AGENTS.md / CLAUDE.md / ANTIGRAVITY.md 均未修改
+- commands/README.md 未新增平行指令系統
+- 技術棧約束：純 HTML5 + CSS3 + Vanilla JS（零框架）
+
+---
+
+## [V39.0.0-proto / Phase A+B+C] - 2026-04-05
+### 🧪 V39 Prototype-First Rebuild
+
+**策略轉向**：V38 仍落入「舊版介面微調」路線，V39 採全新 prototype-first 策略。
+
+**Phase A — Design Sprint（UI Designer）**
+- 雙模式視覺語言確立：令狐沖（黑底終端命令中心）/ 肥貓（暖白數據工作室）
+- 脫離 V36/V37/V38 卡片表單 DOM 思維慣性
+- 新 CSS Variables 雙主題系統（`--ling-*` / `--fcat-*`）
+
+**Phase B — Prototype Build（Frontend Developer）**
+- 新增 `Freehandsss_Dashboard/freehandsss_dashboardV39_proto.html`
+- 純靜態原型，零 n8n / Airtable 連接
+- 所有功能接回點以 `TODO[hookup]` 標記（7 處）
+- 令狐沖模式：訂單佇列 + 快速輸入 + 熱鍵條（Alt+A/R/X）
+- 肥貓模式：Stats Row + CSS 純柱狀圖 + SVG 環形圖 + 訂單歷史表
+
+**Phase C — Code Reviewer Gate**
+- 稽核結果：**✅ PASS**
+- 零 API 呼叫、零 ID 衝突、零 XSS 風險
+- V38 vs V39 結構相似度 < 5%（遠低於 40% 警戒線）
+- 原型可進入功能接回審議階段（需 Fat Mo /execute）
+
+**新增 AOM 文件**：`.fhs/ai/commands/v39-aom.md`（三 subagent 分工 + 防線守則）
+
+---
+
+## [V38.1.0 / Phase 6 QA] - 2026-04-04
+### ✅ QA + Code-Reviewer Gate (Phase 6)
+
+**最終指標：**
+- 總行數：6,929 行
+- `!important` 總計：260（Block 1 legacy ~147 + v38-system 34 + v38-components 79）
+- Style blocks：3 主要（v38-legacy / v38-system / v38-components）+ 2 inline（qaDocPanel / deleteConfirmModal）
+- Script blocks：5（V36 core / V36 window.onload / V37 extensions / V38 shell / V37 DOMContentLoaded）
+- HTML IDs：228 個（全部保留，無變更）
+- `captureFormState` 引用：6 次（全部正確）
+
+**QA 發現與處理：**
+1. **Q3 `:has()` 瀏覽器相容性（修復）**：Phase 5 追加的 `.v38-page .card.card-info:first-child:has(#modeCreateBtn)` 使用 `:has()` pseudo-class，舊版 Safari 不支援。已移除，改以 comment 說明由 v38-system 既有規則 `.card.card-info:first-of-type` 覆蓋。
+2. **Q4 重複 `#v38PageEdit .v38-search-bar` 定義（修復）**：v38-system(1923) 定義非 sticky 版本，v38-components(2590) 定義 sticky 版本。前者 `background`/`border-bottom`/`padding` 屬性已移除（避免混淆），只保留 `.v38-search-row` 定義。
+3. **Q1 `--dark`/`--border-radius`/`--primary` legacy tokens**：只在 Block 1 `:root` 定義，被 v38-system `body { color: var(--t1) }` 正確覆蓋。Block 1 內部自洽，無影響。
+4. **Q2 模式切換卡隱藏**：`.card.card-info:first-of-type { display: none !important }` 正確命中 `#modeCreateBtn` 所在卡片，確認有效。
+5. **Q5 函數覆蓋鏈**：V36 `setRole` → V37 patch → V38 `v38SetRole` 三層完整，`toggleSandbox` 同樣三層（V36 → V37 → V38 Phase 4.5 patch）。
+6. **Q6 V37 REMOVED_BLOCK**：`--v37-*` tokens 全在 HTML comment 內，不影響渲染。
+
+**版本正式升為 V38.1.0（Phase 0~6 完整執行）**
+
+## [V38.0.7 / Phase 5] - 2026-04-04
+### 👥 Role Differentiation (Phase 5)
+- **Role transition CSS**：`body.v38-role-switching` 過渡 class，切換時 pages opacity 0.6 → 1（120ms）；JS `v38SetRole()` 加 `setTimeout` 移除 class。
+- **Ling Au 視覺精簡**：
+  - `.ling-au-mode #v38TabSystem { display: none !important }` — 系統 tab 強制隱藏（補強 Block 1）
+  - Action bar: copy-btn 縮為 48px icon-only，syncBtn flex: 1 全寬
+  - `.v38-page-subtitle` 隱藏（節省垂直空間）
+  - `.v38-page-title` 縮小至 `--fs-xl`
+  - Review 頁副標題追加「— 輕觸訂單可展開詳情」提示
+- **Fat Mo 增強**：
+  - `.fat-mo-mode .fat-only { display: block }` — 顯示所有 fat-only 元素
+  - `#v38SysToolsSlot .qa-center` V38 dark skin（`--s0` 底 + `--info` border/title）
+  - Header logo `span` 顏色切換：Fat Mo → `--info`（藍），Ling Au → `--brand`（金）
+  - Review table max-height：Fat Mo 多顯示 20px
+- **Progressive disclosure**：`.card-finance .fat-only` 在 Ling Au 隱藏（進階財務欄位）
+- **QA Panel 整合至 System slot**：`v38PopulateSystem()` 新增 `[B]` 邏輯，將 `#qaCenter` 移入 `#v38SysToolsSlot`（Fat Mo 系統頁統一管理）
+- **drawingCost badge 樣式**：`.fat-only span` token override（`--s3` 背景 + `--s4` border）
+
+## [V38.0.6 / Phase 4.5] - 2026-04-04
+### 🔬 Function Rebinding Audit (Phase 4.5) — 12-item checklist
+
+**審計結果：8 ✅ 安全 / 1 🟡 低風險 / 3 🔴 已修復**
+
+**Bug #1 — Sandbox dual-track（🔴 → ✅）**
+- 根因：V36 `activateSandboxUI()` 只操作 `sandboxBanner.classList.add('active')`，從不寫 `body.sandbox-mode`。V38 MutationObserver 監聽 `body.classList` 中的 `sandbox-mode`，導致永遠偵測不到沙盒啟動。
+- 修復：IIFE `_v38PatchSandbox()` 包裝 `activateSandboxUI`/`deactivateSandboxUI`，在原函數執行後追加 `body.classList.add/remove('sandbox-mode')`。
+- 效果：`body.sandbox-active` CSS layout offset 規則（header/page-header top 偏移）現在正確觸發。
+
+**Bug #2 — `v38PopulateSystem()` 使用未定義的 `isSandboxMode`（🔴 → ✅）**
+- 根因：V36 使用 `isDevMode` 變數，V37/V38 查詢 `isSandboxMode`（undefined），導致系統頁環境標籤永遠顯示「正式」。
+- 修復：改為 `(typeof isDevMode !== 'undefined' && isDevMode === true)`。
+
+**Bug #3 — `v38PopulateSystem()` hardcoded inline style（🟡 → ✅）**
+- 修復：`wrap.style.cssText = 'background:#fff...'` 替換為 `wrap.className = 'v38-sys-card'`，使用 token-based CSS class。
+
+**Bug #4 — `window.onload` vs `DOMContentLoaded` 競爭（🟡 → ✅）**
+- 根因：V36 用 `window.onload`（資源載入後），V38 用 `DOMContentLoaded`（DOM 就緒即觸發）。V38 shell 有機會在 V36 初始化前執行，造成 `generate()` / 產品資料尚未就緒。
+- 修復：`_v38DomReady` + `_v38WindowReady` 雙旗標，`_v38TryInit()` 同時等待兩個事件後才執行 `v38GoTab` / `v38SetRole`。
+
+**安全確認（8項）**：`captureFormState()` / `v38MirrorEditSearch` / `fetchOldOrder` / Review DOM move / `v38SetRole→setRole` 三層鏈 / `v38SyncFetchStatus` / `v38AttachInteractions` 綁定 / `handleFuzzySearch` 呼叫。
+
+## [V38.0.5 / Phase 4] - 2026-04-04
+### ✨ Interaction & Animation Layer (Phase 4)
+- **Tab icon active pop**：`.v38-tab.active .v38-tab-icon` 觸發 `v38TabPop` spring keyframe（scale 0.82 → 1）。
+- **Review page slide-up**：`#v38PageReview.active` 獨立 `v38SlideUp` 動畫，與其他頁面 `v38FadeIn` 區分。
+- **Bottom action bar slide**：`.bottom-action-bar` 加 `transition transform/opacity`；scroll-down 隱藏（`.v38-hidden`），scroll-up 恢復，純 CSS + passive scroll listener。
+- **Input focus ring pulse**：`v38FocusPulse` keyframe — focus 瞬間 0→5px→3px brand-soft glow。
+- **Sync button loading spinner**：`#syncBtn.v38-loading` — `color: transparent` + `::after` 旋轉圓環；掛鉤 globalLoader 消失事件自動移除，15s 安全超時。
+- **Fetch button loading**：`.v38-fetch-btn.v38-loading` — 同上機制，3s 自動移除。
+- **Review table skeleton loader**：`v38ShowReviewSkeleton()` — 插入 5 行 `.v38-skeleton-row`，各欄 `.v38-skeleton-cell` shimmer 動畫；掛鉤 `.review-btn-refresh` click，偵測真實 rows 後自動移除，8s 安全超時。
+- **Toast 動畫升級**：`v38ToastIn` spring + `v38ToastOut` 淡出，取代 V36 時代 `fadein/fadeout`。
+- **Role pill tap ripple**：`::after` overlay `opacity: 0→1` on `:active`。
+- **Card stagger delay**：Page 1 cards `nth-child(1-6)` 各相差 30ms delay。
+- **JS 函數**：`v38AttachInteractions()` 統一掛鉤所有互動；`v38ShowReviewSkeleton()` skeleton 渲染器。無修改任何現有函數簽名。
+
+## [V38.0.4 / Phase 3] - 2026-04-04
+### 📐 Page-by-Page Layout Redesign (Phase 3)
+- **Page 1 (新增訂單)**：formContainer 注入區 card flow 統一（`card + card` border-top）；output preview 全寬 flush；bottom clearance for action bar。
+- **Page 2 (修改舊單)**：search bar sticky 定位（page-header + 56px offset）；`#v38FetchStatus` inline style 移除改由 CSS 管理；suggestions box margin token 化。
+- **Page 3 (核對清單)**：`#reviewModeContainer` padding + bottom clearance；review table 最大高度 `calc(100vh - shell)`；新增 `.review-jump-row`、`.review-pagination` 通用 layout 類。
+- **Page 4 (系統)**：`#v38SysToolsSlot` 注入區 card border-left identity；`.v38-sys-divider` 分隔線；`.v38-sys-version` 版號條。
+- **Shared**：sandbox-active 狀態下各頁 sticky 元素正確偏移；`.v38-empty-state` 通用空狀態元件（icon + title + sub）。
+- **HTML 改動**：僅移除 `#v38FetchStatus` 的 inline style（改由 CSS）；Page 4 底部新增 version tag div。無 ID 變更。
+
+## [V38.0.3 / Phase 2] - 2026-04-04
+### 🧩 Core Component Reskin (Phase 2)
+- **Button system 建立**：`.v38-btn` base class + `.v38-btn-primary/dark/ghost/danger/ok` variants + `.v38-btn-sm/lg/full` size modifiers，統一 `:active` / `:disabled` / `:focus-visible` 狀態。
+- **現有 button ID 對接**：`#syncBtn`, `.v38-fetch-btn`, `.review-btn-refresh` 重新對齊至 token 系統，移除 legacy gradient/transform hover。
+- **Form Group system**：`.form-group`, `.form-row`, `.form-row-2/3`, `.form-helper` — 統一 4px grid 間距，responsive 單欄折行。
+- **Card variants 補全**：`card-warn`, `card-danger`, `preview-card` dark skin（含 input/label/h2 深色適配），`card-product/finance/info` 強化。
+- **Review Center 全面覆蓋 Block 1 legacy styles**：移除所有 gradient background（`linear-gradient(135deg, #2A2D43...)`）、hardcoded 顏色、V28 時代 box-shadow，統一至 V38 token。
+- **Review inline components 升級**：`.review-batch-input`, `.review-status-select`, `.review-notes-textarea`, `.review-jump-pill` 全面使用 token。
+- **QA Panel reskin**：`--s0` 底 + token 顏色語義（pass/fail/info/warn）。
+- **寫入位置**：`<style id="v38-components">`（不修改 v38-system 或 v38-legacy）。
+
+## [V38.0.2 / Phase 1] - 2026-04-04
+### 🎨 Design Token System Complete (Phase 1)
+- **Typography scale 完整建立**：`--fs-xs` (11px) → `--fs-2xl` (32px)；`--fw-reg/med/semi/bold/xbold`；`--lh-tight/snug/base`。
+- **Spacing scale (4px grid)**：`--sp-1` (4px) → `--sp-12` (48px)，全面取代 v38-system 中的硬碼 padding/margin/gap 值。
+- **Semantic soft surfaces**：`--ok-soft`, `--warn-soft`, `--err-soft`, `--info-soft` — 取代 rgba() 硬碼。
+- **Elevation tokens**：`--shadow-sm/md/lg/xl` — 統一所有 box-shadow。
+- **Animation tokens**：`--dur-fast/base/slow`, `--ease-out`, `--ease-spring` — 取代 `0.15s ease` 等硬碼。
+- **Z-index scale**：`--z-dropdown/sticky/bottom-bar/tabbar/header/banner` — 消除 hardcoded z-index。
+- **回掃完成**：v38-system block 中所有 font-size/weight、spacing、shadow、transition 均已使用 token；重複的 `#babyAgeWarning` 定義合併為一。
+- **指標**：active `!important` 維持 34 個（未增加）；style blocks 維持 3 個。
+
+## [V38.0.1 / Phase 0B] - 2026-04-04
+### 🧹 CSS Architecture Consolidation (Phase 0B)
+- **8 → 3 style blocks**：Block 2 (Glassmorphism Overrides) 完全移除；Block 3 (V37 Design System) 以 HTML comment wrapper 停用；Blocks 4+5 合併為單一 `<style id="v38-system">`；Block 1 標記為 `id="v38-legacy"`；新增 `<style id="v38-components">` 佔位（Phase 2+ 備用）。
+- **671 → ~41 active `!important`**：v38-system 保留 ~34 必要覆蓋（inputs appearance, toggle slider, review-count-badge, mini-col, id-display 等）；V37 block 已停用（其中 ~147 `!important` 隨之失效）。
+- **App Shell tokens 統一**：`--header-h`, `--tabbar-h`, `--shell-bg`, `--shell-border` 合入 v38-system `:root`，消除 Block 4/5 雙源衝突。
+- **`bottom-action-bar` position 修正**：`bottom: 0` → `calc(var(--tabbar-h) + env(safe-area-inset-bottom))`，與 tab bar 正確對齊。
+- **死 CSS 清除**：移除 `.ling-au-hero`, `.v37-back-btn`, `.fat-mo-status-panel`, `.fms-*`, `.role-bar`, mode switcher button rules 等已下架 UI 的 CSS 規則（約 200 行）。
+- **執行依據**：V38 Final Execution Plan v1.1 Phase 0B，Fat Mo 口頭確認授權。
+
+## [V38.0.0 / UI] - 2026-04-03
+### 🎨 Dashboard Next-Gen Full Redesign
+- **新建 `freehandsss_dashboardV38.html`**：基於 V37 功能規格，視覺層全面重設計。
+- **設計語言**：Linear / Vercel / AI control panel 風格。Near-black, 扁平卡片, 強型別層次, 極簡陰影。
+- **Design Token 系統**：`--s0～s4` surface 層次、`--brand/ok/warn/err/info` 語義色、`--r-xs～xl` 幾何、`--tap` 觸控標準。
+- **Card → Section Strip**：取消圓角卡片框架，改為左邊色條 + 頂部分隔線的 section identity 語言。
+- **Fat Mo Status Panel**：深色（`--s0`）底板，4-column grid 系統指示燈，完整黑色控制台感。
+- **Ling Au Hero**：全寬 tile 式 CTA，無圓角無陰影，chevron 導引，primary/secondary/tertiary 三層視覺權重。
+- **Role Bar**：Pill 式切換（34px 高），active 為純黑底，移除 sticky backdrop blur。
+- **Inputs**：`--s3` 背景 + 透明邊框，focus 時 `--brand` 邊框 + soft glow。全面 font-size: 16px（iOS zoom 防護）。
+- **Bottom Bar**：白底 + 頂部線，無 blur，Ling Au 模式主按鈕全寬。
+- **Review Center**：深色 table header，section-consistent filter bar。
+- **所有 HTML id / handler / captureFormState() 完全保留**。
+
+## [V37.0.0 / UI] - 2026-04-03
+### 📱 Dashboard iPhone-First Redesign
+- **新建 `freehandsss_dashboardV37.html`**：基於 V36 複製，進行全面 iPhone-First UX 重構。
+- **V37 Design System**：新增獨立 CSS block，iOS system grey 背景、白卡片、20px 圓角、SF Pro 字體、所有 input min-height 48px / font-size 16px（防 iOS auto-zoom）。
+- **Role Bar 重設計**：升高至 44px，雙按鈕等寬全寬，active 狀態品牌色高亮。
+- **Ling Au Hero CTA**：ling-au-mode 首頁顯示三個全寬大按鈕（新增訂單 / 修改舊單 / 核對清單），min-height 72px，點擊後進入 form-active 模式，返回按鈕可回 hero。
+- **Fat Mo 系統狀態卡**：fat-mo-mode 顯示 n8n / Airtable / 同步時間 / 環境 四項狀態指示燈，自動連動 sandbox 狀態。
+- **Bottom Bar 優化**：Ling Au 模式主按鈕全寬（52px），次要按鈕縮為圖示方塊。
+- **Sandbox Banner**：Ling Au 模式縮小為細條，不干擾客戶面前操作。
+- **Toast 位置修正**：移至 bottom-bar 上方，避免遮蓋。
+- **Mobile breakpoint**：`@media (max-width: 520px)` 強制單欄 grid。
+- **硬規則遵守**：所有 HTML id 保持不變，`captureFormState()` 未改動，V36 未修改。
+
 ## [v1.4.2] - 2026-04-03
 ### 🧹 系統架構衛生稽核修復 (Architecture Hygiene Audit Resolution)
 - **`/fhs-audit` 稽核完成**：執行 21 項系統架構衛生稽核，發現 6 項 🟡 問題並全數修復。

@@ -13,7 +13,10 @@ freehandsss_dashboard/
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（手動上傳 NAS，禁止程式覆蓋）
-│   ├── freehandsss_dashboardV36.html       ← 當前開發版本
+│   ├── freehandsss_dashboardV36.html       ← V36 穩定備份版本（勿修改）
+│   ├── freehandsss_dashboardV37.html       ← V37 穩定版（iPhone-First Redesign）
+│   ├── freehandsss_dashboardV38.html       ← V38 開發版本（Next-Gen Full Redesign）
+│   ├── freehandsss_dashboardV39_proto.html ← V39 原型（Prototype-First Rebuild，無功能接回）
 │   ├── products.js                         ← 前端產品快取
 │   └── products.json                       ← 前端產品快取（JSON 格式）
 │
@@ -22,19 +25,30 @@ freehandsss_dashboard/
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
 │   │   ├── AGENTS.md                   ← 憲法層 v1.4.0
-│   │   └── commands/
-│   │       ├── README.md               ← 指令索引
-│   │       ├── read.md
-│   │       ├── cl-flow.md               ← /cl-flow 全自動規劃協調（v2.1.0 重心）
-│   │       ├── ag-plan.md               ← /ag-plan 本地實施計畫（A2 專用）
-│   │       ├── px-plan.md               ← /px-plan 外部視角計畫（A1 專用）
-│   │       ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
-│   │       ├── fhs-check.md
-│   │       ├── commit.md                ← 宣告結束與記憶同步（Commit 記憶引擎）
-│   │       ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
-│   │       ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
-│   │       ├── px-audit.md              ← 外部審查（第三方審計員）
-│   │       └── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
+│   │   ├── commands/
+│   │   │   ├── README.md               ← 指令索引
+│   │   │   ├── read.md
+│   │   │   ├── cl-flow.md               ← /cl-flow 全自動規劃協調（v2.1.0 重心）
+│   │   │   ├── ag-plan.md               ← /ag-plan 本地實施計畫（A2 專用）
+│   │   │   ├── px-plan.md               ← /px-plan 外部視角計畫（A1 專用）
+│   │   │   ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
+│   │   │   ├── fhs-check.md
+│   │   │   ├── commit.md                ← 宣告結束與記憶同步（Commit 記憶引擎）
+│   │   │   ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
+│   │   │   ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
+│   │   │   ├── px-audit.md              ← 外部審查（第三方審計員）
+│   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
+│   │   │   └── v39-aom.md               ← V39 AOM（遷移中→ subagents/OPERATING_MODEL.md）
+│   │   └── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
+│   │       ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型（長期制度文件）
+│   │       ├── vendor/                  ← lst97 原始副本（未修改，供 rollback 與比對）
+│   │       │   ├── ui-designer.md
+│   │       │   ├── frontend-developer.md
+│   │       │   └── code-reviewer.md
+│   │       └── freehandsss/             ← FHS 重寫版（實際使用版本）
+│   │           ├── ui-designer.md       ← Phase A 設計衝刺 agent
+│   │           ├── frontend-developer.md ← Phase B 原型建構 agent
+│   │           └── code-reviewer.md     ← Phase C 品質稽核 agent
 │   ├── notes/
 │   │   ├── README.md                    ← 筆記層總綱
 │   │   ├── decisions.md

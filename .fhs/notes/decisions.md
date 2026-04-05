@@ -7,6 +7,40 @@
 
 ## 記錄
 
+[2026-04-05] Subagent Engineering — 安裝 FHS 重寫版 Subagent 組合
+
+決策：
+- 採用 lst97/claude-code-sub-agents 三個 agent（ui-designer / frontend-developer / code-reviewer）作為基礎
+- 不安裝 lst97 的 CLAUDE.md 或 agent-organizer.md（避免與 FHS 架構衝突）
+- 雙層文件架構：`.fhs/ai/subagents/vendor/`（原始備存）+ `.fhs/ai/subagents/freehandsss/`（FHS 重寫版）
+- Runtime 鏡像：`~/.claude/agents/freehandsss/`（Claude Code 執行時偵測）
+- v39-aom.md 內容遷移至 `OPERATING_MODEL.md`（長期制度文件），v39-aom.md 加入遷移注記（未 stub 化）
+
+核心原則：
+- AGENTS.md 憲法層不動（無需追加 Section 8）
+- CLAUDE.md / ANTIGRAVITY.md 入口層不動
+- commands/README.md 不新增平行指令系統
+- FHS 重寫版完全移除 React/TypeScript/Tailwind，改為純 HTML/CSS/Vanilla JS 約束
+
+---
+
+[2026-04-05] V39 Prototype-First Rebuild — 建立 Agent Operating Model + 原型檔案
+
+決策：
+- V38 仍落入「舊版介面微調」路線（沿用 V36/V37 表單卡片 DOM 結構）
+- 採 prototype-first 策略：先建全新視覺語言原型，功能接回留後階段
+- 新增最小 subagent 組合（UI Designer / Frontend Developer / Code Reviewer）防止路線滑回
+- V39 原型採雙語言視覺系統：令狐沖（黑底命令行風）vs 肥貓（暖白數據工作室風）
+- 原型檔案：`freehandsss_dashboardV39_proto.html`（純靜態，無 n8n 連接）
+- AOM 文件：`.fhs/ai/commands/v39-aom.md`（定義三 subagent 分工與防線守則）
+
+核心原則：
+- 功能接回必須等 Code Reviewer PASS + Fat Mo /execute 授權
+- 禁止在原型中混入 fetch() / webhook URL
+- V39 與 V38 DOM 結構相似度超過 40% 視為設計衝刺失敗
+
+---
+
 [2026-04-02] /cl-flow 升級至 v2.1.0 — 真正一鍵協調器實作
 
 決策：
