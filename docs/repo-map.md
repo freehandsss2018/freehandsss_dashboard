@@ -39,16 +39,25 @@ freehandsss_dashboard/
 │   │   │   ├── px-audit.md              ← 外部審查（第三方審計員）
 │   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
 │   │   │   └── v39-aom.md               ← V39 AOM（遷移中→ subagents/OPERATING_MODEL.md）
-│   │   └── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
-│   │       ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型（長期制度文件）
-│   │       ├── vendor/                  ← lst97 原始副本（未修改，供 rollback 與比對）
-│   │       │   ├── ui-designer.md
-│   │       │   ├── frontend-developer.md
-│   │       │   └── code-reviewer.md
-│   │       └── freehandsss/             ← FHS 重寫版（實際使用版本）
-│   │           ├── ui-designer.md       ← Phase A 設計衝刺 agent
-│   │           ├── frontend-developer.md ← Phase B 原型建構 agent
-│   │           └── code-reviewer.md     ← Phase C 品質稽核 agent
+│   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
+│   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）
+│   │   │   ├── README.md                ← subagents 目錄說明與雙層架構
+│   │   │   ├── MANIFEST.md              ← 機器可讀 agent 清單（版本追蹤）
+│   │   │   ├── install-log.md           ← 安裝歷史記錄
+│   │   │   ├── vendor/                  ← lst97 原始副本（未修改，供 rollback 與比對）
+│   │   │   │   ├── ui-designer.md
+│   │   │   │   ├── frontend-developer.md
+│   │   │   │   └── code-reviewer.md
+│   │   │   └── freehandsss/             ← FHS 重寫版 v1.1.0（實際使用版本）
+│   │   │       ├── ui-designer.md       ← Phase A 設計衝刺 agent（5-layer workflow）
+│   │   │       ├── frontend-developer.md ← Phase B 原型建構 agent（Input Contract）
+│   │   │       └── code-reviewer.md     ← Phase C 品質稽核 agent（UX checklist）
+│   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
+│   │       └── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer
+│   │           ├── FHS_INTEGRATION.md   ← 核心整合指引（Style Library + UX Checklist + 閘門）
+│   │           ├── README.md            ← 用途、角色邊界、使用場景
+│   │           └── vendor/
+│   │               └── SKILL.md        ← 來源說明與角色邊界聲明
 │   ├── notes/
 │   │   ├── README.md                    ← 筆記層總綱
 │   │   ├── decisions.md

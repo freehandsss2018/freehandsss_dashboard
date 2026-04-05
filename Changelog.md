@@ -1,3 +1,23 @@
+## [V39.2.0 / UI/UX Intelligence Integration] - 2026-04-05
+### 🎨 FHS UI/UX Intelligence Layer — 5-Layer Workflow
+
+**新增 skills/ 層**：
+- `.fhs/ai/skills/ui-ux-pro-max/` — FHS-curated UI/UX intelligence layer（FHS 原生，非外部安裝）
+- `FHS_INTEGRATION.md`：Style Library（雙模式 CSS token）+ UX Heuristics + 品質閘門 + Impeccable 路徑索引
+
+**Agent v1.1.0 更新**：
+- `ui-designer`：加入 5-layer workflow（Stitch → Impeccable → UI/UX Pro Max Spec）
+- `frontend-developer`：加入 FHS Design Spec Input Contract（拒絕 Stitch 原稿直接實作）
+- `code-reviewer`：新增 UX/Visual Quality Checklist 4 項（CSS Variables、touch target、WCAG、反模式）
+
+**制度更新**：
+- `OPERATING_MODEL.md` v2.0.0：加入 5-Layer Stack 與工具路由表
+- `subagents/` 補充管理文件（README / MANIFEST / install-log）
+
+**Impeccable 橋接**：方案 A 確認（Claude Code 直接 Read `.gemini/skills/` ✅）
+
+---
+
 ## [V39.1.0 / Subagent Engineering] - 2026-04-05
 ### 🤖 FHS Subagent Engineering — 安裝三 Agent 組合
 

@@ -1,7 +1,8 @@
 ---
 name: FHS Subagent Operating Model
-version: 1.0.0
+version: 2.0.0
 created: 2026-04-05
+updated: 2026-04-05
 migrated_from: .fhs/ai/commands/v39-aom.md
 scope: V39+ Prototype-First Rebuild（長期制度文件）
 ---
@@ -11,6 +12,8 @@ scope: V39+ Prototype-First Rebuild（長期制度文件）
 > 本文件定義 FHS 系統的 Subagent 組合、分工邊界與工作流程。
 > 從 V39 起生效，適用於所有後續版本迭代。
 > 所有 agents 仍須遵守 AGENTS.md 全域硬規則，本文件不得凌駕憲法層。
+>
+> **v2.0.0 更新**：加入 5-Layer Intelligence Stack 定義與工具路由表。
 
 ---
 
@@ -22,17 +25,58 @@ V39 的核心轉變：**原型先行，功能後接**。介面設計必須脫離
 
 ---
 
+## 5-Layer Intelligence Stack
+
+```
+Layer 1: IDEATION — Stitch (magic MCP)
+  工具：mcp__magic__21st_magic_component_builder
+  由誰執行：ui-designer（Phase A 開始時）
+  輸出：3-5 個 layout candidates（HTML/CSS snippets，含 DOM 結構說明）
+
+Layer 2: REFINEMENT — Impeccable
+  工具：Read .gemini/skills/frontend-design/reference/*.md（方案 A，已驗證）
+  由誰執行：ui-designer（Stitch 輸出後）
+  輸出：設計批評摘要 + 最優方向篩選
+
+Layer 3: SPEC — FHS-Curated UI/UX Intelligence Layer
+  工具：Read .fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md
+  由誰執行：ui-designer（Refinement 後）
+  輸出：FHS Design Spec（正式交接文件）
+
+Layer 4: IMPLEMENTATION — frontend-developer
+  輸入：Layer 3 的 FHS Design Spec（非 Stitch 原稿）
+  輸出：freehandsss_dashboardV[N]_proto.html
+
+Layer 5: QUALITY GATE — code-reviewer
+  稽核：FHS Audit Checklist + UX/Visual Quality Checklist
+  輸出：PASS/FAIL + 稽核報告
+```
+
+## 工具路由表
+
+| Phase | Layer | 工具/資源 | 執行 agent |
+|-------|-------|---------|-----------|
+| A — Design Sprint | 1 Ideation | magic MCP（Stitch） | ui-designer |
+| A — Design Sprint | 2 Refinement | `.gemini/skills/frontend-design/reference/` | ui-designer |
+| A — Design Sprint | 3 Spec | `.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` | ui-designer |
+| B — Prototype Build | 4 Implementation | Write/Edit 工具 | frontend-developer |
+| C — Quality Gate | 5 Quality Gate | FHS Audit + UX Checklist | code-reviewer |
+
 ## 標準三階段工作流（Prototype-First）
 
 ```
 Phase A: Design Sprint (ui-designer)
-  → 確立視覺語言、模式切換概念、核心 UX 流程
+  → Layer 1-3 依序執行
+  → 輸出：FHS Design Spec（交接給 frontend-developer）
 
 Phase B: Prototype Build (frontend-developer)
-  → 純 HTML/CSS/JS 原型，無 n8n 連接，靜態資料模擬
+  → Layer 4 執行
+  → 輸入：FHS Design Spec（必須）
+  → 輸出：純 HTML/CSS/JS 原型，無 n8n 連接，靜態資料模擬
 
 Phase C: Quality Gate (code-reviewer)
-  → 稽核原型品質、AGENTS.md 合規、技術債風險
+  → Layer 5 執行
+  → 稽核原型品質、AGENTS.md 合規、UX/Visual 品質
   → 通過後，Fat Mo 授權進入「功能接回」階段
 ```
 
@@ -150,6 +194,7 @@ Claude Code Runtime 位置：`~/.claude/agents/freehandsss/`
 | 版本 | 日期 | 說明 |
 |------|------|------|
 | 1.0.0 | 2026-04-05 | 初版，從 v39-aom.md 遷移，擴充為長期制度文件 |
+| 2.0.0 | 2026-04-05 | 加入 5-Layer Intelligence Stack、工具路由表；整合 Stitch/Impeccable/UI/UX Pro Max |
 
 ---
 

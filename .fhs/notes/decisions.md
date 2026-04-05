@@ -7,6 +7,23 @@
 
 ## 記錄
 
+[2026-04-05] UI/UX Intelligence Integration — 整合 Stitch + Impeccable + FHS-curated UI/UX layer
+
+決策：
+- 採用 5-Layer Intelligence Stack（Ideation/Refinement/Spec/Implementation/Quality Gate）
+- Impeccable 橋接方案 A：Claude Code 直接 Read `.gemini/skills/frontend-design/reference/`（已驗證可行）
+- UI/UX Pro Max 改為 FHS-native 建立（非外部 repo mirror），命名為「FHS-curated UI/UX intelligence layer, inspired by UI/UX Pro Max principles」
+- skills/ 層設計為 reference layer（不安裝至 `~/.claude/agents/`，不含 YAML frontmatter）
+- OPERATING_MODEL.md 更新至 v2.0.0，加入 5-layer stack 與工具路由表
+- 3 個 FHS agent 更新至 v1.1.0（加入 5-layer workflow / Input Contract / UX checklist）
+
+核心原則：
+- 不修改 AGENTS.md / CLAUDE.md / ANTIGRAVITY.md
+- 不新增平行指令系統
+- skills/ 層可獨立 rollback（不影響 subagents/）
+
+---
+
 [2026-04-05] Subagent Engineering — 安裝 FHS 重寫版 Subagent 組合
 
 決策：
