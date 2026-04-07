@@ -9,8 +9,8 @@
 |---|---|
 | `Freehandsss_dashboard_current.html` | **正式生產環境**（禁止未授權覆蓋） |
 | `freehandsss_dashboardV36.html` | 當前開發版本（V36.2.2） |
-| `products.js` | 產品快取 JS 模組 |
-| `products.json` | 產品資料快取 |
+| `products.js` | 產品快取 JS 模組（舊版 window.productCache 格式，無活躍引用，待封存） |
+| `products.json` | 產品資料靜態副本（開發查閱用，非 live 資料；NAS 真正運作快取在 `.n8n/data/products.json`） |
 
 ## 重要規則
 
@@ -19,8 +19,8 @@
 - **禁止改動 `captureFormState()`**：這是整個 POS 系統的數據根基
 
 ## 當前版本
-- UI 層：V36.2.2
-- 憲法層：v1.3.0（AGENTS.md）
+- UI 層：V36 (Stable Baseline) / V37 (開發中)
+- 憲法層：v1.4.0（AGENTS.md）
 
 ## 相關文件
 - 三端欄位映射：`/n8n/Triple_Sync_Field_Map.md`

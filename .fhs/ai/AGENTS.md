@@ -143,9 +143,11 @@
 | `/cl-plan` | cl 出 plan | Claude | Claude 產出計畫 |
 | `/cl-review` | cl 給我審視報告 | Claude | 技術審視，不執行寫入 |
 | `/cl-flow` | cl 給我最終報告 | Claude | 讀取 A1/A2 → 產出 verdict → 停止等待（對應 `/a3go`）|
-| `/execute` | 同意執行 / 可以執行 | Fat Mo 下達，Claude 執行 | **唯一正式執行入口** |
-| `/fhs-check` | fhs 給我全系統檢查 | Claude | 全系統健康檢查與壓力測試（對應 `fhs-check.md`）|
-| `/px-audit` | px 審查現況 | Perplexity | 外部研究與系統審查，提供獨立第二意見（對應 `px-audit.md`）|
+| `/execute` | 唯一正式授權執行入口（修改磁碟） | Fat Mo / Claude | `.fhs/ai/commands/execute.md` |
+| `/fhs-check` | 全系統健康檢查（核心功能、壓力、驗收） | Claude | `.fhs/ai/commands/fhs-check.md` |
+| `/fhs-audit` | 內部巡邏、架構衛生稽核、版本噪音清理 | Claude | `.fhs/ai/commands/fhs-audit.md` |
+| `/px-audit` | 外部研究與全域架構審查（Perplexity） | Perplexity Pro | `.fhs/ai/commands/px-audit.md` |
+| `v39-aom.md` | 已遷移至 `archive/v39-aom.md`，內容見 subagents/OPERATING_MODEL.md | N/A | Archived |
 
 ### 關鍵語義邊界（不得違反）
 

@@ -1,0 +1,29 @@
+{
+  "action": "create",
+  "Order_ID": "FHS-TEST-001",
+  "Customer_Name": "Test Customer",
+  "Appointment_Date": "2026-05-01",
+  "Deposit": 1000,
+  "Balance": 2240,
+  "Additional_Fee": 0,
+  "System_Total_Cost": 395,
+  "System_Final_Sale_Price": 3240,
+  "System_Additional_Fee": 0,
+  "Full_Order_Text": "TEST 木框套裝 (4肢) x1 (加購)",
+  "Clean_Order_Text": "木框套裝 (4肢) x1 (加購)",
+  "Raw_Form_State": "{\"momName\":\"Test\",\"appDate\":\"2026-05-01\",\"deposit\":\"1000\",\"balance\":\"2240\",\"enableP\":true,\"pSubCat\":\"木框款式\"}",
+  "Role": "fat",
+  "Order_Items_List": [
+    {
+      "Product_Name": "木框套裝 (4肢)",
+      "Quantity": 1,
+      "Mode": "(加購)",
+      "Notes": "[上排]TEST [下排]2026",
+      "Order_Item_Key": "FHS-TEST-001_P_MAIN",
+      "part_id": "lh",
+      "target": "嬰兒",
+      "Suggested_Price_Manual": 2380,
+      "Drawing_Cost": 60
+    }
+  ]
+}

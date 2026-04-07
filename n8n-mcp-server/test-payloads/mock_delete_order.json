@@ -1,0 +1,7 @@
+{
+  "action": "delete",
+  "Order_ID": "FHS-TEST-001",
+  "Customer_Name": "Test Customer",
+  "Role": "fat",
+  "Record_ID": "recTEST123456"
+}

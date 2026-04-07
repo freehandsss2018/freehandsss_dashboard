@@ -7,6 +7,58 @@
 
 ## 記錄
 
+[2026-04-06] /fhs-audit 稽核修復 — 文件衛生清理
+
+決策：
+- v39-aom.md 從 commands/ 移至 archive/（已 Deprecated，避免孤獨檔案殘留）
+- repo-map.md 補全 Maintenance_Tools/ 完整檔案清單（原先僅列 run_all.py）
+- README.md 版本號同步至 v1.4.0（原為 v1.3.1，與 AGENTS.md 不一致）
+原因：/fhs-audit 21 項稽核發現 6 項待修，Fat Mo 授權全部執行。
+
+---
+
+[2026-04-06] Dashboard 版本治理與重置 — 恢復 V36 為 Stable Baseline
+
+決策：
+- 正式宣佈 V37、V38、V39 (舊版) 為不合格版本，存在功能缺失與介面品質不達標問題。
+- 處置：將上述失效版本全部移入 `Freehandsss_Dashboard/archive/`，不再作為開發或生產基準。
+- 恢復 V36 為目前最新穩定版本 (Stable Baseline)，作為所有後續開發的基準。
+- 建立新的 V37 (由 V36 複製產生)，定義為唯一的活躍開發版本 (Development Version)。
+- 所有新功能、修正與實驗性改動必須基於此新 V37 進行。
+
+核心原則：
+- 嚴格遵守版本遞增邏輯，非經批准不得跳版或混用失效版本。
+- 保持 `Freehandsss_dashboard_current.html` 與 Stable Baseline (V36) 的同步。
+
+批准：Fat Mo ✅（2026-04-06）
+
+---
+
+[2026-04-06] n8n MCP Server — 建立 AI 控制層（Phase 1）
+
+決策：
+- 新建 `n8n-mcp-server/` 作為 AI 與 n8n 之間的專屬控制層
+- Phase 1 僅支援 FHS_Core_OrderProcessor（Workflow ID: 6Ljih0hSKr9RpYNm）
+- 放在 dashboard repo 內作為子目錄，不獨立 repo
+- n8n API key 共用根目錄 `.env`（變數名 N8N_KEY / N8N_INSTANCE）
+- 備份路徑：`.fhs/notes/aireports/n8n-mcp-backups/{date}/{workflowId}/{nodeName}.json`
+- `update_node_code` 預設 dry-run，需 `/execute` 授權才真正 PUT
+- 寫入前自動備份 + `rollback_node_code` 回滾機制
+- 測試執行僅接受 mock payload（mock_create/edit/delete_order.json）
+- workflow allowlist 硬編碼於 config.js，Phase 1 僅允許 `6Ljih0hSKr9RpYNm`
+- **狀態更新 (2026-04-06)**: 環境初始化完成，`zod` 驗證層已整合，`get_workflow` 通過遠端連通性測試。工具集正式進入可用狀態。
+- **MCP 註冊 (2026-04-06)**: 建立根目錄 `.mcp.json`，將 n8n-mcp-server 註冊為 Claude Code MCP server（command: `node src/index.js`, cwd: `n8n-mcp-server`）。重啟 session 後即可在對話中直接呼叫 7 個工具。
+
+核心原則：
+- 不取代既有 Dashboard Webhook 主流程
+- 不改寫利潤計算主邏輯
+- 三端同步驗證（verify_triple_sync）制度化
+- 所有里程碑須通過 CL-FLOW
+
+批准：Fat Mo ✅（2026-04-06 /execute）
+
+---
+
 [2026-04-05] UI/UX Intelligence Integration — 整合 Stitch + Impeccable + FHS-curated UI/UX layer
 
 決策：

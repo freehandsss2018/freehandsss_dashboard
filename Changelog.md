@@ -1,3 +1,68 @@
+## [Architecture Hygiene v1.4.0] - 2026-04-07
+### 🧹 架構衛生稽核清理（/cl-flow + /execute）
+
+**執行依據**：PX + AG 四份稽核報告（2026-04-03 + 2026-04-07）→ cl-flow Verdict → Fat Mo /execute 授權
+
+**沉積清理**：
+- `Maintenance_Tools/test_audit_0695346.py` — 已刪除（archive/ 有副本保留）
+- `Maintenance_Tools/v33_original_script.js` → 移至 `archive/`（歷史參考封存）
+
+**安全加固**：
+- `.gitignore` — 加入 `.mcp.json`（MCP server config 含敏感憑證，禁止版控）
+
+**文件同步**：
+- `docs/repo-map.md` — Maintenance_Tools/ 移除已清理檔案，archive/ 加入新封存條目
+- `Freehandsss_Dashboard/README.md` — products.js/json 角色說明補全，版本號更新至 v1.4.0
+
+**產品快取分析結論**：
+- `products.js`：無任何 `<script>` 引用，舊版 window.productCache 格式，待下次 session 封存
+- `products.json`：本地開發靜態副本（非 live），NAS `.n8n/data/products.json` 才是 n8n 真正讀取來源
+- 生產環境無影響，報價邏輯 100% hardcoded 於 V36.html
+
+---
+
+## [GOVERNANCE RESET] - 2026-04-06
+### ⚠️ Dashboard 版本治理重置與基線恢復
+
+**決策背景**：
+- 正式宣告 V37、V38、V39 (Prototype) 分支不合格，因其介面品質、功能完整度未達標且存在架構噪音。
+- 以上版本已全數由 `Freehandsss_Dashboard/` 移除並封存至 `archive/` 目錄，**不得視為主線有效版本**。
+
+**基線狀態**：
+- **V36 (V36.2.2)**：恢復為當前唯一的 **Stable Baseline**。
+- **新 V37**：基於 V36 複製建立，作為後續開發的唯一活躍主線。所有新功能（如 Phase D）必須基於此新 V37 進行。
+
+---
+
+## [V39.3.0 / n8n MCP Server Phase 1] - 2026-04-06
+### 🔧 n8n MCP Server — AI 控制層
+
+**新增 n8n-mcp-server/**：
+- MCP Server 入口（`src/index.js`）+ 認證層（`src/config.js`）+ API client（`src/n8n-client.js`）
+- 7 個 MCP tools：`get_workflow` / `get_node` / `update_node_code` / `rollback_node_code` / `trigger_test_execution` / `get_execution_log` / `verify_triple_sync`
+- Workflow allowlist：僅 `6Ljih0hSKr9RpYNm`（FHS_Core_OrderProcessor）
+- `update_node_code` 預設 dry-run，需 `/execute` 授權才真正寫入
+- 寫入前自動備份至 `.fhs/notes/aireports/n8n-mcp-backups/`
+- `rollback_node_code` 可從備份完整回復
+- 3 組 mock test payload（create / edit / delete）
+
+**安全設計**：
+- API key 讀取根目錄 `.env`（N8N_KEY / N8N_INSTANCE）
+- 所有 tool 入口做 workflow ID allowlist 校驗
+- 不取代 Dashboard Webhook 主流程、不改利潤計算邏輯
+
+**MCP 註冊**：
+- `.mcp.json` — 將 n8n-mcp-server 註冊為 Claude Code MCP server
+- 重啟 session 後可直接在對話中使用 7 個工具
+
+**文件同步**：
+- `docs/repo-map.md` — 加入 n8n-mcp-server/ 完整樹狀結構 + `.mcp.json` 條目
+- `README.md` — 加入 n8n-mcp-server/ 條目
+- `.fhs/notes/decisions.md` — 記錄架構決策與 Fat Mo 批准
+- `.fhs/memory/handoff.md` — 更新任務狀態
+
+---
+
 ## [V39.2.0 / UI/UX Intelligence Integration] - 2026-04-05
 ### 🎨 FHS UI/UX Intelligence Layer — 5-Layer Workflow
 
@@ -390,7 +455,7 @@
 - **高壓連擊測試**：實作 `fetch` 攔截機制，驗證 800ms 防抖打包成功率。
 - **智慧緩存**：導入 `products.json` 本地緩存讀取機制。
 
-## [V31.0] - 2026-03-16
+## [V31.0 (Historical Reference)] - 2026-03-16
 ### ✨ UI/UX 訂單介面及訊息格式優化 (Au Ling 模式升級)
 - **訊息格式精準化**：將「排程資訊」更名為「客人資料」。
 - **Premium 視覺**：全向導入 Glassmorphism 漸層背景。

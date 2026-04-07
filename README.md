@@ -31,10 +31,12 @@
 ## UI 檔案說明
 | 檔案 | 用途 |
 |---|---|
-| Freehandsss_dashboard_current.html | 正式環境（禁止未授權覆寫） |
-| freehandsss_dashboardV36.html | 當前開發版（所有新功能在此測試）|
+| Freehandsss_dashboard_current.html | 正式環境 (Synced with V36, 禁止未授權覆寫) |
+| freehandsss_dashboardV36.html | 當前穩定版本 (Stable Baseline) |
+| freehandsss_dashboardV37.html | 當前開發版本 (Development / Active) |
 
-V36 = 開發檔案實體檔名（固定）
+V36 = 穩定基準實體檔名
+V37 = 後續新功能與實驗實作路徑
 功能版本號 = 參閱 Changelog.md 最新記錄
 
 ## 備份與歸檔政策
@@ -56,6 +58,7 @@ V36 = 開發檔案實體檔名（固定）
 | `Maintenance_Tools/` | 系統健康檢查腳本 |
 | `scripts/` | 輔助維護腳本 |
 | `archive/` | 舊版備份 |
+| `n8n-mcp-server/` | n8n MCP Server — AI 控制層（Phase 1: FHS_Core_OrderProcessor）|
 | `perplexity-mcp-server/` | Perplexity MCP 整合伺服器 |
 
 > 詳細資料夾地圖請參閱 `docs/repo-map.md`
@@ -64,6 +67,6 @@ V36 = 開發檔案實體檔名（固定）
 ***
 
 ## 版本
-- **系統版本**：v1.3.1（見 `.fhs/ai/AGENTS.md`）
+- **系統版本**：v1.4.0（見 `.fhs/ai/AGENTS.md`）
 - **SOP 版本**：v2.0（見 `docs/GLOBAL_AI_SOP.md`）
-- **最後更新**：2026-03-31
+- **最後更新**：2026-04-06

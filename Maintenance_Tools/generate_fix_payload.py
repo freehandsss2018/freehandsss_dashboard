@@ -47,7 +47,7 @@ def load_env():
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, _, val = line.partition("=")
-            os.environ.setdefault(key.strip(), val.strip())
+            os.environ[key.strip()] = val.strip()
 
 
 # ── Airtable 分頁查詢 ──────────────────────────────────────────────────────

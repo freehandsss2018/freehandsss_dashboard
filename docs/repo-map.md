@@ -7,18 +7,22 @@ freehandsss_dashboard/
 ├── .env                                 ← 環境變數（禁止 commit）
 ├── .env.example                         ← 環境變數範例
 ├── .gitignore                           ← Git 忽略規則
+├── .mcp.json                            ← Claude Code MCP server 註冊（n8n-mcp-server）
 ├── Changelog.md                         ← 系統版本變更記錄
 ├── package.json / package-lock.json     ← Node.js 依賴
 ├── .claude/                             ← Claude Code 專屬配置（含橋接指令）
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
+│   ├── README.md                           ← Dashboard 目錄說明
 │   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（手動上傳 NAS，禁止程式覆蓋）
-│   ├── freehandsss_dashboardV36.html       ← V36 穩定備份版本（勿修改）
-│   ├── freehandsss_dashboardV37.html       ← V37 穩定版（iPhone-First Redesign）
-│   ├── freehandsss_dashboardV38.html       ← V38 開發版本（Next-Gen Full Redesign）
-│   ├── freehandsss_dashboardV39_proto.html ← V39 原型（Prototype-First Rebuild，無功能接回）
+│   ├── freehandsss_dashboardV36.html       ← V36 穩定基準版本 (Stable Baseline)
+│   ├── freehandsss_dashboardV37.html       ← V37 開發版本 (後續唯一活躍開發版)
 │   ├── products.js                         ← 前端產品快取
-│   └── products.json                       ← 前端產品快取（JSON 格式）
+│   ├── products.json                       ← 前端產品快取（JSON 格式）
+│   └── archive/                            ← 失效版本封存區
+│       ├── freehandsss_dashboardV37_OLD.html
+│       ├── freehandsss_dashboardV38_OLD.html
+│       └── freehandsss_dashboardV39_proto_OLD.html
 │
 ├── .fhs/                                ← FHS 專案幕後系統（隱藏）
 │   ├── README.md                        ← 幕後系統總綱
@@ -37,8 +41,7 @@ freehandsss_dashboard/
 │   │   │   ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
 │   │   │   ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
 │   │   │   ├── px-audit.md              ← 外部審查（第三方審計員）
-│   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
-│   │   │   └── v39-aom.md               ← V39 AOM（遷移中→ subagents/OPERATING_MODEL.md）
+│   │   │   └── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）
 │   │   │   ├── README.md                ← subagents 目錄說明與雙層架構
@@ -89,8 +92,37 @@ freehandsss_dashboard/
 ├── n8n/                                 ← n8n Workflow 配置區
 │   ├── README.md                        ← n8n 配置說明
 │   └── Triple_Sync_Field_Map.md         ← 三端對齊欄位地圖 V45.7.4+
-├── Maintenance_Tools/
-│   └── run_all.py
+├── Maintenance_Tools/                   ← 系統健康檢查與維護腳本
+│   ├── README.md                        ← 維護工具說明
+│   ├── run_all.py                       ← 全部測試執行器
+│   ├── generate_fix_payload.py          ← 修復 Payload 產生器
+│   ├── rebuild_index.py                 ← 索引重建腳本
+│   ├── FHS_Comprehensive_Test.py        ← 綜合測試
+│   ├── FHS_Full_System_Test.py          ← 全系統測試
+│   ├── FHS_System_StressTester.py       ← 壓力測試
+│   ├── analyze_empty_prices.py          ← 空價格分析
+│   ├── final_audit_check_v2.py          ← 最終審計檢查 v2
+│   └── update_profit_auditor.py         ← 利潤審計器更新
+├── n8n-mcp-server/                      ← n8n MCP Server — AI 控制層（Phase 1: FHS_Core_OrderProcessor）
+│   ├── README.md                        ← 專案說明
+│   ├── .env.example                     ← 環境變數範例（正式值在根目錄 .env）
+│   ├── package.json                     ← Node.js 依賴
+│   ├── src/
+│   │   ├── index.js                     ← MCP server 入口
+│   │   ├── config.js                    ← 認證 + workflow allowlist
+│   │   ├── n8n-client.js                ← n8n REST API 連線層
+│   │   └── tools/                       ← MCP tool 定義
+│   │       ├── get-workflow.js          ← 讀取 workflow 定義
+│   │       ├── get-node.js              ← 讀取指定節點
+│   │       ├── update-node-code.js      ← 更新 node code（預設 dry-run）
+│   │       ├── rollback-node-code.js    ← 從備份回復節點
+│   │       ├── trigger-test.js          ← 觸發測試執行
+│   │       ├── get-execution-log.js     ← 讀取 execution log
+│   │       └── verify-triple-sync.js    ← 三端同步驗證
+│   └── test-payloads/                   ← 測試用 mock payload
+│       ├── mock_create_order.json
+│       ├── mock_edit_order.json
+│       └── mock_delete_order.json
 ├── perplexity-mcp-server/               ← Perplexity MCP 整合伺服器
 ├── scripts/                             ← 輔助腳本
 │   ├── README.md                        ← 腳本說明索引
@@ -105,7 +137,10 @@ freehandsss_dashboard/
 │       ├── ag-plan.md
 │       └── cl-final-plan.md
 ├── archive/                             ← 專案層級舊版備份
-│   └── README.md                        ← 備份與歸檔政策
+│   ├── README.md                        ← 備份與歸檔政策
+│   ├── v39-aom.md                       ← 已廢棄的 V39 AOM 指令（原 .fhs/ai/commands/）
+│   ├── v33_original_script.js           ← V33 原始腳本（歷史參考，從 Maintenance_Tools 封存）
+│   └── test_audit_0695346.py            ← 訂單審計一次性測試腳本（封存）
 └── tmp/                                 ← 臨時檔案（不納入 git）
 
 註：node_modules/、tmp/ 與 .* 開頭之隱藏檔案為系統環境自動生成，禁止 AI 任意修改或刪除。

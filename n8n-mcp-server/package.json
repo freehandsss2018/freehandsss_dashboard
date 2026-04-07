@@ -1,0 +1,17 @@
+{
+  "name": "n8n-mcp-server",
+  "version": "1.0.0",
+  "description": "FHS n8n MCP Server — AI control layer for FHS_Core_OrderProcessor",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

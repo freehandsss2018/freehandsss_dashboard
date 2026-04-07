@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Freehandsss Dashboard V36.2.2 - UI Polishing by Antigravity</title>
+    <title>Freehandsss Dashboard V37.0.0 - iPhone-First Redesign</title>
     <!-- Tailwind CSS injected for V33 Review Center Premium Redesign -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { corePlugins: { preflight: false } }</script>
@@ -971,6 +971,377 @@
         }
     </style>
 
+    <!-- ============================================================
+         V37 Design System — iPhone-First (DO NOT EDIT ABOVE THIS)
+         All V37 overrides are contained in this single block.
+         ============================================================ -->
+    <style>
+        /* --- V37 Design Variables --- */
+        :root {
+            --v37-primary: #D4A373;
+            --v37-primary-dark: #B8895A;
+            --v37-primary-light: rgba(212, 163, 115, 0.15);
+            --v37-success: #34C759;
+            --v37-danger:  #FF3B30;
+            --v37-warning: #FF9500;
+            --v37-info:    #007AFF;
+            --v37-bg-base:    #F2F2F7;
+            --v37-bg-card:    #FFFFFF;
+            --v37-bg-input:   #F2F2F7;
+            --v37-text-primary:   #1C1C1E;
+            --v37-text-secondary: #6C6C70;
+            --v37-text-caption:   #AEAEB2;
+            --v37-radius-sm: 10px;
+            --v37-radius-md: 14px;
+            --v37-radius-lg: 20px;
+            --v37-tap-min: 48px;
+        }
+
+        /* --- Global Body --- */
+        body {
+            background: var(--v37-bg-base) !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+                         'PingFang HK', 'Helvetica Neue', sans-serif !important;
+            color: var(--v37-text-primary) !important;
+            padding: 0 0 120px 0 !important;
+            margin: 0 !important;
+        }
+
+        /* --- Card Reset --- */
+        .card {
+            background: var(--v37-bg-card) !important;
+            border-radius: var(--v37-radius-lg) !important;
+            border: none !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 20px !important;
+            margin: 0 16px 16px 16px !important;
+            width: auto !important;
+            transition: none !important;
+        }
+        .card:hover {
+            transform: none !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+        }
+        .card-info    { border-top: 4px solid #007AFF !important; }
+        .card-product { border-top: 4px solid var(--v37-primary) !important; }
+        .card-finance { border-top: 4px solid var(--v37-success) !important; }
+        .preview-card { border-top: 4px solid #6C6C70 !important; background: #1C1C1E !important; }
+
+        /* --- Headings --- */
+        h2 {
+            font-size: 17px !important;
+            font-weight: 700 !important;
+            color: var(--v37-text-primary) !important;
+            letter-spacing: -0.3px !important;
+            padding-bottom: 14px !important;
+            margin-bottom: 16px !important;
+        }
+        .preview-card h2 { color: #FFFFFF !important; }
+
+        /* --- Inputs (iOS-safe: font-size >= 16px prevents auto-zoom) --- */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100% !important;
+            min-height: var(--v37-tap-min) !important;
+            padding: 13px 14px !important;
+            font-size: 16px !important;
+            border: 1.5px solid #E5E5EA !important;
+            border-radius: var(--v37-radius-sm) !important;
+            background: var(--v37-bg-input) !important;
+            color: var(--v37-text-primary) !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            transition: border-color 0.2s !important;
+            box-shadow: none !important;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--v37-primary) !important;
+            background: #FFFFFF !important;
+            box-shadow: 0 0 0 3px var(--v37-primary-light) !important;
+            outline: none !important;
+        }
+        input:disabled {
+            background: #F9F9F9 !important;
+            color: #AEAEB2 !important;
+        }
+        label {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: var(--v37-text-secondary) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 8px !important;
+        }
+
+        /* --- Mobile single-column grid --- */
+        @media (max-width: 520px) {
+            .grid-2-col { grid-template-columns: 1fr !important; }
+            .grid-3-col { grid-template-columns: 1fr 1fr !important; }
+            .card { margin: 0 10px 12px 10px !important; }
+        }
+
+        /* --- Role Bar --- */
+        .role-bar {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 2000 !important;
+            background: rgba(242, 242, 247, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            padding: 10px 16px !important;
+            display: flex !important;
+            gap: 8px !important;
+            justify-content: stretch !important;
+            border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+            box-shadow: none !important;
+        }
+        .role-btn {
+            flex: 1 !important;
+            min-height: 44px !important;
+            padding: 10px 8px !important;
+            border-radius: 10px !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            border: none !important;
+            background: rgba(0,0,0,0.06) !important;
+            color: var(--v37-text-secondary) !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            box-shadow: none !important;
+            letter-spacing: -0.2px !important;
+        }
+        .role-btn.active {
+            background: var(--v37-primary) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 2px 8px rgba(212, 163, 115, 0.35) !important;
+        }
+        .sandbox-toggle-btn {
+            min-height: 44px !important;
+            padding: 10px 14px !important;
+            border-radius: 10px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            flex: 0 0 auto !important;
+            border: 1.5px solid #E5E5EA !important;
+            background: #FFFFFF !important;
+            color: var(--v37-text-secondary) !important;
+            cursor: pointer !important;
+        }
+
+        /* --- Sandbox Banner --- */
+        .sandbox-banner {
+            font-size: 12px !important;
+            padding: 8px 16px !important;
+            text-align: center !important;
+            background: #FF9500 !important;
+            color: white !important;
+            font-weight: 600 !important;
+        }
+        .ling-au-mode .sandbox-banner {
+            font-size: 11px !important;
+            padding: 4px 16px !important;
+        }
+
+        /* --- Ling Au Hero CTA --- */
+        .ling-au-hero {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px 16px 8px 16px;
+        }
+        .ling-au-mode .ling-au-hero {
+            display: flex;
+        }
+        .ling-au-mode.form-active .ling-au-hero {
+            display: none;
+        }
+        .lau-cta-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            min-height: 72px;
+            padding: 16px 20px;
+            border-radius: var(--v37-radius-lg);
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.1s ease;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        .lau-cta-btn:active { transform: scale(0.97); }
+        .lau-cta-primary {
+            background: linear-gradient(135deg, var(--v37-primary), var(--v37-primary-dark));
+            color: #FFFFFF;
+            box-shadow: 0 4px 16px rgba(212, 163, 115, 0.4);
+        }
+        .lau-cta-secondary {
+            background: linear-gradient(135deg, #007AFF, #0055CC);
+            color: #FFFFFF;
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+        }
+        .lau-cta-tertiary {
+            background: linear-gradient(135deg, #34C759, #28A745);
+            color: #FFFFFF;
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3);
+        }
+        .lau-cta-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+            width: 40px;
+            text-align: center;
+        }
+        .lau-cta-text { display: flex; flex-direction: column; }
+        .lau-cta-label {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            display: block !important;
+            letter-spacing: -0.3px !important;
+            color: inherit !important;
+            text-transform: none !important;
+            margin-bottom: 0 !important;
+        }
+        .lau-cta-sub {
+            font-size: 13px !important;
+            opacity: 0.8;
+            display: block !important;
+            margin-top: 2px !important;
+            font-weight: 400 !important;
+            text-transform: none !important;
+            color: inherit !important;
+            letter-spacing: 0 !important;
+        }
+
+        /* --- Back button (shown when form-active in Ling Au mode) --- */
+        .v37-back-btn {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: var(--v37-info);
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px 16px 4px 16px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ling-au-mode.form-active .v37-back-btn { display: flex; }
+
+        /* --- Fat Mo Status Panel --- */
+        .fat-mo-status-panel {
+            background: var(--v37-bg-card);
+            border-radius: var(--v37-radius-lg);
+            margin: 16px 16px 0 16px;
+            padding: 18px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: none;
+        }
+        .fat-mo-mode .fat-mo-status-panel { display: block; }
+        .fms-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .fms-title { font-size: 15px; font-weight: 700; color: var(--v37-text-primary); }
+        .fms-updated { font-size: 12px; color: var(--v37-text-caption); }
+        .fms-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 380px) { .fms-grid { grid-template-columns: 1fr; } }
+        .fms-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--v37-bg-base);
+            padding: 10px 12px;
+            border-radius: var(--v37-radius-sm);
+        }
+        .fms-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%; flex-shrink: 0;
+        }
+        .fms-dot-green  { background: var(--v37-success); box-shadow: 0 0 0 3px rgba(52,199,89,0.2); }
+        .fms-dot-blue   { background: var(--v37-info);    box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
+        .fms-dot-orange { background: var(--v37-warning);  box-shadow: 0 0 0 3px rgba(255,149,0,0.2); }
+        .fms-dot-red    { background: var(--v37-danger);   box-shadow: 0 0 0 3px rgba(255,59,48,0.2); }
+        .fms-label {
+            font-size: 11px; color: var(--v37-text-caption);
+            text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600;
+        }
+        .fms-value {
+            font-size: 13px; font-weight: 600;
+            color: var(--v37-text-primary); margin-top: 2px;
+        }
+
+        /* --- Bottom Action Bar --- */
+        .bottom-action-bar {
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px !important;
+            background: rgba(242, 242, 247, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-top: 1px solid rgba(0,0,0,0.08) !important;
+            gap: 10px !important;
+            justify-content: stretch !important;
+        }
+        .copy-btn {
+            min-height: 52px !important;
+            border-radius: 14px !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.3px !important;
+            flex: 1 !important;
+            max-width: none !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+            transition: transform 0.1s ease !important;
+        }
+        .copy-btn:active { transform: scale(0.97) !important; }
+        /* Ling Au: non-primary buttons become icon squares */
+        .ling-au-mode .copy-btn:not(#syncBtn) {
+            flex: 0 0 52px !important;
+            min-width: 52px !important;
+            max-width: 52px !important;
+            font-size: 18px !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+        /* Hide the text, keep emoji for icon buttons */
+        .ling-au-mode #btnCopyA { font-size: 0 !important; }
+        .ling-au-mode #btnCopyA::before { content: "📋"; font-size: 20px; }
+        .ling-au-mode #btnCopyB { font-size: 0 !important; }
+        .ling-au-mode #btnCopyB::before { content: "📄"; font-size: 20px; }
+        /* Main sync button full-width in Ling Au */
+        .ling-au-mode #syncBtn {
+            flex: 1 !important;
+            font-size: 17px !important;
+        }
+
+        /* --- Toast position fix --- */
+        #toast {
+            bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+            font-size: 15px !important;
+            padding: 14px 28px !important;
+            border-radius: 30px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+        }
+
+        /* --- System mode card top spacing --- */
+        .card.card-info:first-of-type {
+            margin-top: 16px !important;
+        }
+
+        /* --- console version tag update --- */
+    </style>
+
 </head>
 
 <body class="ling-au-mode">
@@ -984,6 +1355,72 @@
         <button id="roleLingBtn" class="role-btn active" onclick="setRole('ling')">👧 Ling Au 模式</button>
         <button id="roleFatBtn" class="role-btn" onclick="setRole('fat')">👦 Fat Mo 模式</button>
         <button id="sandboxToggleBtn" class="sandbox-toggle-btn" onclick="toggleSandbox()">🛠️ 進入沙盒模式</button>
+    </div>
+
+    <!-- V37: Ling Au Hero — iPhone home screen CTA (only shown in ling-au-mode when NOT form-active) -->
+    <div class="ling-au-hero" id="lingAuHero">
+        <button class="lau-cta-btn lau-cta-primary" onclick="v37EnterMode('create')">
+            <span class="lau-cta-icon">📝</span>
+            <span class="lau-cta-text">
+                <span class="lau-cta-label">新增訂單</span>
+                <span class="lau-cta-sub">建立新客戶訂單</span>
+            </span>
+        </button>
+        <button class="lau-cta-btn lau-cta-secondary" onclick="v37EnterMode('edit')">
+            <span class="lau-cta-icon">🔍</span>
+            <span class="lau-cta-text">
+                <span class="lau-cta-label">修改舊單</span>
+                <span class="lau-cta-sub">搜尋並修改現有訂單</span>
+            </span>
+        </button>
+        <button class="lau-cta-btn lau-cta-tertiary" onclick="v37EnterMode('review')">
+            <span class="lau-cta-icon">📊</span>
+            <span class="lau-cta-text">
+                <span class="lau-cta-label">核對清單</span>
+                <span class="lau-cta-sub">查看所有訂單狀態</span>
+            </span>
+        </button>
+    </div>
+
+    <!-- V37: Back button (shown in Ling Au form-active mode) -->
+    <button class="v37-back-btn" onclick="v37BackToHome()">‹ 返回</button>
+
+    <!-- V37: Fat Mo System Status Panel (only shown in fat-mo-mode) -->
+    <div class="fat-mo-status-panel fat-only" id="fatMoStatusPanel">
+        <div class="fms-header">
+            <span class="fms-title">⚙️ 系統狀態</span>
+            <span class="fms-updated" id="fmsUpdatedTime">—</span>
+        </div>
+        <div class="fms-grid">
+            <div class="fms-item">
+                <span class="fms-dot fms-dot-green" id="fmsN8nDot"></span>
+                <div>
+                    <div class="fms-label">n8n Workflow</div>
+                    <div class="fms-value" id="fmsN8nStatus">正常運行</div>
+                </div>
+            </div>
+            <div class="fms-item">
+                <span class="fms-dot fms-dot-green" id="fmsAirtableDot"></span>
+                <div>
+                    <div class="fms-label">Airtable</div>
+                    <div class="fms-value" id="fmsAirtableStatus">已連接</div>
+                </div>
+            </div>
+            <div class="fms-item">
+                <span class="fms-dot fms-dot-blue" id="fmsSyncDot"></span>
+                <div>
+                    <div class="fms-label">上次同步</div>
+                    <div class="fms-value" id="fmsSyncTime">—</div>
+                </div>
+            </div>
+            <div class="fms-item">
+                <span class="fms-dot fms-dot-green" id="fmsSandboxDot"></span>
+                <div>
+                    <div class="fms-label">環境</div>
+                    <div class="fms-value" id="fmsEnvStatus">正式環境</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card card-info">
@@ -1743,7 +2180,7 @@
     </div>
 
     <script>
-        console.log("FHS Dashboard V36.2.2 Initialized");
+        console.log("FHS Dashboard V37.0.0 Initialized");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
         
         // --- System Global Config V35.0 State - V31.2 ---
@@ -4207,6 +4644,99 @@
             <div id="loaderText" class="loader-text">FHS 智能中樞正在工作中...</div>
         </div>
     </div>
+
+    <!-- ============================================================
+         V37 JS Extensions — appended, does not modify existing logic
+         ============================================================ -->
+    <script>
+        // V37: Hero ↔ Form toggle helpers
+        function v37EnterMode(mode) {
+            // Show form, hide hero
+            document.body.classList.add('form-active');
+            switchMode(mode);
+        }
+
+        function v37BackToHome() {
+            // Return to hero, hide form
+            document.body.classList.remove('form-active');
+            // Hide form and review containers
+            const forms = document.querySelectorAll('#formContainer');
+            const reviews = document.querySelectorAll('#reviewModeContainer');
+            const editP = document.querySelectorAll('#editModeContainer');
+            forms.forEach(f => f.style.display = 'none');
+            reviews.forEach(r => r.style.display = 'none');
+            editP.forEach(e => e.style.display = 'none');
+            // Hide bottom bar
+            const bbar = document.getElementById('bottomActionBar');
+            if (bbar) bbar.style.display = 'none';
+        }
+
+        // V37: Override setRole to also update Fat Mo status panel
+        const _v36SetRole = setRole;
+        function setRole(role) {
+            _v36SetRole(role);
+            if (role === 'fat') {
+                v37UpdateFatMoPanel();
+            }
+            // Reset hero state on role switch
+            if (role === 'ling') {
+                document.body.classList.remove('form-active');
+            }
+        }
+
+        // V37: Fat Mo Status Panel updater
+        function v37UpdateFatMoPanel() {
+            const now = new Date();
+            const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+            const el = document.getElementById('fmsUpdatedTime');
+            if (el) el.textContent = '更新於 ' + timeStr;
+
+            // Sync time: read from last Airtable sync if available
+            const syncEl = document.getElementById('fmsSyncTime');
+            if (syncEl) syncEl.textContent = timeStr;
+
+            // Environment: detect sandbox mode
+            const isSandbox = (typeof isSandboxMode !== 'undefined' && isSandboxMode === true) ||
+                              document.body.classList.contains('sandbox-mode');
+            const envEl = document.getElementById('fmsEnvStatus');
+            const envDot = document.getElementById('fmsSandboxDot');
+            if (envEl && envDot) {
+                if (isSandbox) {
+                    envEl.textContent = '⚠️ 沙盒模式';
+                    envDot.className = 'fms-dot fms-dot-orange';
+                } else {
+                    envEl.textContent = '正式環境';
+                    envDot.className = 'fms-dot fms-dot-green';
+                }
+            }
+        }
+
+        // V37: Also update panel when sandbox is toggled
+        const _v36ToggleSandbox = (typeof toggleSandbox === 'function') ? toggleSandbox : null;
+        if (_v36ToggleSandbox) {
+            toggleSandbox = function() {
+                _v36ToggleSandbox();
+                // Re-read env state after toggle
+                setTimeout(v37UpdateFatMoPanel, 50);
+            };
+        }
+
+        // V37: Initial state — hide form containers, show hero in Ling Au mode
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLingAu = document.body.classList.contains('ling-au-mode');
+            if (isLingAu) {
+                // Ensure form is hidden at start, hero is visible
+                const forms = document.querySelectorAll('#formContainer');
+                const reviews = document.querySelectorAll('#reviewModeContainer');
+                forms.forEach(f => f.style.display = 'none');
+                reviews.forEach(r => r.style.display = 'none');
+                const bbar = document.getElementById('bottomActionBar');
+                if (bbar) bbar.style.display = 'none';
+            }
+        });
+
+        console.log("V37 extensions loaded.");
+    </script>
 
 </body>
 

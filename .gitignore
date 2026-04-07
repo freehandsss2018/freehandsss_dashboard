@@ -20,3 +20,6 @@ perplexity-mcp-server/logs/
 
 # /cl-flow runtime artifacts (generated per-run, not version controlled)
 artifacts/
+
+# MCP server config (contains sensitive credentials)
+.mcp.json

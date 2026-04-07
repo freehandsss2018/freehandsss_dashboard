@@ -51,7 +51,7 @@
   3. **System_Additional_Fee** = 單購保護費 ($1000) 或跨部位保護費 ($100/$300) 的加總。
 
 ## 5. 前端 UI/UX 規範 (Frontend UI/UX Rules)
-* **視覺風格**：全系統採用 V31.0 定案的 Premium 玻璃擬態 (Glassmorphism) 設計，包含漸層背景與平滑過渡動畫。
+* **視覺風格**：全系統採用 V31.0 (Historical Reference) 定案的 Premium 玻璃擬態 (Glassmorphism) 設計，包含漸層背景與平滑過渡動畫。
 * **雙端分流架構 (Dual-Experience UI)**：
   - **👧 Ling Au 模式 (行動端 < 768px)**：定位為「Point-of-Sale 點餐機」。必須實作固定底部導覽列 (Bottom Navigation)、卡片式步進引導 (Wizard flow)、加大觸控區域 (大於 44px)，並強制隱藏複雜的財務數據網格。
   - **👦 Fat Mo 模式 (桌面端 > 1200px)**：定位為「Data Cockpit 決策座艙」。必須實作側邊導覽列 (Sidebar)、最大化全域核對中心的螢幕寬度（嚴格遵守 td rowspan 對齊定律），並於頂部新增「動態財務看板」(自動結算總收入、總成本與最終利潤)。
