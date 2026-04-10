@@ -52,11 +52,11 @@ freehandsss_dashboard/
 │   │   │   │   ├── frontend-developer.md
 │   │   │   │   └── code-reviewer.md
 │   │   │   └── freehandsss/             ← FHS 重寫版 v1.1.0（實際使用版本）
-│   │   │       ├── ui-designer.md       ← Phase A 設計衝刺 agent（5-layer workflow）
-│   │   │       ├── frontend-developer.md ← Phase B 原型建構 agent（Input Contract）
-│   │   │       └── code-reviewer.md     ← Phase C 品質稽核 agent（UX checklist）
+│   │   │       ├── ui-designer.md       ← Phase A 設計（使用 ui-ux-pro-max & .gemini/skills）
+│   │   │       ├── frontend-developer.md ← Phase B 原型（使用 Input Contract）
+│   │   │       └── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
-│   │       └── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer
+│   │       └── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
 │   │           ├── FHS_INTEGRATION.md   ← 核心整合指引（Style Library + UX Checklist + 閘門）
 │   │           ├── README.md            ← 用途、角色邊界、使用場景
 │   │           └── vendor/
@@ -75,7 +75,7 @@ freehandsss_dashboard/
 │
 │
 ├── .agents/                             ← IDE 專屬：Slash 指令與自動化工作流
-├── .gemini/                             ← Gemini CLI + Impeccable Skills（勿修改）
+├── .gemini/                             ← Gemini CLI + Skills (Ref: skills/frontend-design/reference/)
 ├── .vscode/                             ← VS Code 設定
 │
 ├── docs/                                ← 技術文件

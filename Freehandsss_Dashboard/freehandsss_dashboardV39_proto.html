@@ -1,0 +1,3092 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FAF7F4">
+  <title>FHS Dashboard V39 Proto</title>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --fhs-primary:         #C9714A;
+  --fhs-primary-light:   #F0D4C4;
+  --fhs-primary-dark:    #A0512E;
+  --fhs-bg:              #FAF7F4;
+  --fhs-surface:         #FFFFFF;
+  --fhs-surface-raised:  #F5F0EB;
+  --fhs-surface-sunken:  #EDE8E2;
+  --fhs-border:          #DDD5CC;
+  --fhs-border-focus:    #C9714A;
+  --fhs-border-subtle:   #EDE8E2;
+  --fhs-accent:          #7B6FA0;
+  --fhs-accent-light:    #E8E4F4;
+  --fhs-warning:         #D4A017;
+  --fhs-warning-light:   #FDF3D0;
+  --fhs-success:         #4A9E7B;
+  --fhs-success-light:   #D4EDE4;
+  --fhs-danger:          #B94040;
+  --fhs-danger-light:    #F5DADA;
+  --fhs-text-primary:    #1A1614;
+  --fhs-text-secondary:  #5C504A;
+  --fhs-text-muted:      #9C8E86;
+  --fhs-text-inverse:    #FFFFFF;
+  --fhs-text-accent:     #C9714A;
+  --fhs-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --fhs-font-mono: "SF Mono", "Fira Code", Consolas, monospace;
+  --fhs-text-xs:   0.6875rem;
+  --fhs-text-sm:   0.8125rem;
+  --fhs-text-base: 1rem;
+  --fhs-text-lg:   1.125rem;
+  --fhs-text-xl:   1.25rem;
+  --fhs-text-2xl:  1.5rem;
+  --fhs-text-3xl:  2rem;
+  --fhs-weight-normal:   400;
+  --fhs-weight-medium:   500;
+  --fhs-weight-semibold: 600;
+  --fhs-weight-bold:     700;
+  --fhs-leading-tight:   1.25;
+  --fhs-leading-snug:    1.375;
+  --fhs-leading-normal:  1.5;
+  --fhs-leading-relaxed: 1.625;
+  --fhs-space-1:   0.25rem;
+  --fhs-space-2:   0.5rem;
+  --fhs-space-3:   0.75rem;
+  --fhs-space-4:   1rem;
+  --fhs-space-5:   1.25rem;
+  --fhs-space-6:   1.5rem;
+  --fhs-space-8:   2rem;
+  --fhs-space-10:  2.5rem;
+  --fhs-space-12:  3rem;
+  --fhs-space-16:  4rem;
+  --fhs-radius-sm:   0.25rem;
+  --fhs-radius-md:   0.5rem;
+  --fhs-radius-lg:   0.875rem;
+  --fhs-radius-xl:   1.25rem;
+  --fhs-radius-full: 9999px;
+  --fhs-shadow-card:     0 1px 3px rgba(26,22,20,0.08), 0 1px 2px rgba(26,22,20,0.06);
+  --fhs-shadow-elevated: 0 4px 12px rgba(26,22,20,0.10), 0 2px 4px rgba(26,22,20,0.06);
+  --fhs-shadow-drawer:   4px 0 24px rgba(26,22,20,0.18);
+  --fhs-shadow-modal:    0 8px 32px rgba(26,22,20,0.22);
+  --fhs-shadow-toast:    0 4px 16px rgba(26,22,20,0.14);
+  --fhs-ease-out:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --fhs-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --fhs-duration-fast:   150ms;
+  --fhs-duration-normal: 250ms;
+  --fhs-duration-slow:   350ms;
+  --fhs-transition-fast:   all 150ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --fhs-transition-normal: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --fhs-transition-slow:   all 350ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --fhs-header-height:     56px;
+  --fhs-bottom-bar-height: 72px;
+  --fhs-drawer-width:      min(88vw, 360px);
+  --fhs-content-padding:   1rem;
+  --fhs-card-gap:          1rem;
+  --fhs-safe-top:    env(safe-area-inset-top, 0px);
+  --fhs-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --fhs-safe-left:   env(safe-area-inset-left, 0px);
+  --fhs-safe-right:  env(safe-area-inset-right, 0px);
+}
+
+body.sandbox-mode {
+  --fhs-primary:       #D4A017;
+  --fhs-primary-light: #FDF3D0;
+  --fhs-primary-dark:  #A07A10;
+  --fhs-border-focus:  #D4A017;
+}
+
+body.role-fat {
+  --fhs-accent:       #4A7B9E;
+  --fhs-accent-light: #D4E4F0;
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--fhs-font-sans);
+  background: var(--fhs-bg);
+  color: var(--fhs-text-primary);
+  font-size: var(--fhs-text-base);
+  line-height: var(--fhs-leading-normal);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* body scroll lock when drawer open */
+body.fhs-drawer-open { overflow: hidden; }
+
+/* ===== DRAWER ===== */
+.fhs-drawer {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--fhs-drawer-width);
+  z-index: 200;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  background: var(--fhs-surface);
+  border-radius: 0 var(--fhs-radius-xl) var(--fhs-radius-xl) 0;
+  box-shadow: var(--fhs-shadow-drawer);
+  padding-top: calc(var(--fhs-safe-top) + var(--fhs-space-4));
+  padding-bottom: calc(var(--fhs-safe-bottom) + var(--fhs-space-8));
+  padding-inline: var(--fhs-space-5);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 350ms cubic-bezier(0.4,0,0.2,1), visibility 0ms 350ms;
+}
+
+body.fhs-drawer-open .fhs-drawer {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 280ms cubic-bezier(0.4,0,0.2,1), visibility 0ms 0ms;
+}
+
+.fhs-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: rgba(26,22,20,0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms var(--fhs-ease-out);
+}
+
+body.fhs-drawer-open .fhs-drawer-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fhs-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--fhs-space-5);
+}
+
+.fhs-drawer-title {
+  font-size: var(--fhs-text-lg);
+  font-weight: var(--fhs-weight-bold);
+  color: var(--fhs-text-primary);
+  letter-spacing: 0.04em;
+}
+
+.fhs-drawer-close {
+  width: 32px; height: 32px;
+  border-radius: var(--fhs-radius-full);
+  border: none;
+  background: var(--fhs-surface-sunken);
+  color: var(--fhs-text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.fhs-drawer-section {
+  border-top: 1px solid var(--fhs-border-subtle);
+  padding-top: var(--fhs-space-5);
+  margin-top: var(--fhs-space-5);
+}
+
+.fhs-drawer-section-title {
+  font-size: var(--fhs-text-xs);
+  font-weight: var(--fhs-weight-bold);
+  color: var(--fhs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--fhs-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--fhs-space-2);
+}
+
+.fhs-sandbox-banner {
+  background: var(--fhs-warning-light);
+  color: var(--fhs-warning);
+  border: 1px solid var(--fhs-warning);
+  border-radius: var(--fhs-radius-md);
+  padding: var(--fhs-space-2) var(--fhs-space-3);
+  font-size: var(--fhs-text-xs);
+  font-weight: var(--fhs-weight-bold);
+  text-align: center;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--fhs-space-3);
+}
+
+.fhs-role-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--fhs-space-2);
+  margin-bottom: var(--fhs-space-3);
+}
+
+.fhs-role-btn {
+  height: 44px;
+  border-radius: var(--fhs-radius-md);
+  border: 1.5px solid var(--fhs-border);
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-medium);
+  cursor: pointer;
+  background: var(--fhs-surface-sunken);
+  color: var(--fhs-text-muted);
+  transition: var(--fhs-transition-fast);
+}
+
+body.role-ling #roleLingBtn {
+  background: var(--fhs-primary-light);
+  color: var(--fhs-primary-dark);
+  border-color: var(--fhs-primary);
+}
+
+body.role-fat #roleFatBtn {
+  background: var(--fhs-accent-light);
+  color: var(--fhs-accent);
+  border-color: var(--fhs-accent);
+}
+
+/* fatmoConfigPanel visibility */
+body.role-ling #fatmoConfigPanel { display: none; }
+body.role-fat  #fatmoConfigPanel { display: block; }
+body.role-ling #qaCenter { display: none; }
+body.role-fat  #qaCenter { display: block; }
+
+/* fat-only elements */
+.fat-only { display: none; }
+body.role-fat .fat-only { display: block; }
+
+#sandboxToggleBtn, #btnIdModeRandom, #btnIdModeSeq {
+  padding: var(--fhs-space-2) var(--fhs-space-3);
+  border-radius: var(--fhs-radius-md);
+  border: 1.5px solid var(--fhs-border);
+  background: var(--fhs-surface-sunken);
+  color: var(--fhs-text-secondary);
+  font-size: var(--fhs-text-sm);
+  cursor: pointer;
+  margin-right: var(--fhs-space-2);
+  margin-bottom: var(--fhs-space-2);
+}
+
+#btnIdModeRandom.active, #btnIdModeSeq.active {
+  background: var(--fhs-accent-light);
+  color: var(--fhs-accent);
+  border-color: var(--fhs-accent);
+}
+
+#configSyncStatus {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-text-muted);
+  margin-top: var(--fhs-space-2);
+}
+
+#seqSetRow {
+  display: flex;
+  align-items: center;
+  gap: var(--fhs-space-2);
+  margin-top: var(--fhs-space-2);
+  margin-bottom: var(--fhs-space-2);
+}
+
+/* Review center in drawer */
+#reviewModeContainer select,
+#reviewModeContainer input {
+  margin-bottom: var(--fhs-space-2);
+}
+
+#reviewLoading { font-size: var(--fhs-text-sm); color: var(--fhs-text-muted); }
+
+#reviewTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fhs-text-xs);
+  overflow-x: auto;
+  display: block;
+}
+
+#reviewTable th, #reviewTable td {
+  padding: var(--fhs-space-2) var(--fhs-space-2);
+  border-bottom: 1px solid var(--fhs-border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+
+.fhs-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--fhs-accent-light);
+  color: var(--fhs-accent);
+  border-radius: var(--fhs-radius-full);
+  font-size: var(--fhs-text-xs);
+  font-weight: var(--fhs-weight-semibold);
+  padding: 2px 8px;
+}
+
+/* ===== HEADER ===== */
+.fhs-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: calc(var(--fhs-header-height) + var(--fhs-safe-top));
+  padding-top: var(--fhs-safe-top);
+  padding-inline: var(--fhs-space-4);
+  background: rgba(250,247,244,0.92);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border-bottom: 1px solid var(--fhs-border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--fhs-space-3);
+}
+
+.fhs-menu-btn {
+  width: 40px; height: 40px;
+  border-radius: var(--fhs-radius-md);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.fhs-hamburger {
+  display: block;
+  width: 20px; height: 2px;
+  background: var(--fhs-text-primary);
+  border-radius: 2px;
+  position: relative;
+}
+
+.fhs-hamburger::before, .fhs-hamburger::after {
+  content: '';
+  display: block;
+  width: 20px; height: 2px;
+  background: var(--fhs-text-primary);
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+}
+
+.fhs-hamburger::before { top: -6px; }
+.fhs-hamburger::after  { top:  6px; }
+
+/* Mode tabs */
+.fhs-mode-tabs {
+  display: flex;
+  flex: 1;
+  background: var(--fhs-surface-sunken);
+  border-radius: var(--fhs-radius-full);
+  padding: 3px;
+  gap: 2px;
+}
+
+.fhs-mode-tab {
+  flex: 1;
+  height: 36px;
+  border-radius: var(--fhs-radius-full);
+  border: none;
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-medium);
+  cursor: pointer;
+  transition: var(--fhs-transition-normal);
+  background: transparent;
+  color: var(--fhs-text-secondary);
+}
+
+.fhs-mode-tab.active {
+  background: var(--fhs-surface);
+  color: var(--fhs-text-primary);
+  font-weight: var(--fhs-weight-semibold);
+  box-shadow: var(--fhs-shadow-card);
+}
+
+/* Header role dots */
+.fhs-header-role {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.fhs-role-dot {
+  width: 28px; height: 28px;
+  border-radius: var(--fhs-radius-full);
+  border: 1.5px solid var(--fhs-border);
+  background: var(--fhs-surface-sunken);
+  color: var(--fhs-text-muted);
+  font-size: var(--fhs-text-xs);
+  font-weight: var(--fhs-weight-bold);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+body.role-ling .fhs-role-dot:first-child {
+  background: var(--fhs-primary-light);
+  color: var(--fhs-primary-dark);
+  border-color: var(--fhs-primary);
+}
+
+body.role-fat .fhs-role-dot:last-child {
+  background: var(--fhs-accent-light);
+  color: var(--fhs-accent);
+  border-color: var(--fhs-accent);
+}
+
+/* ===== EDIT MODE SEARCH BAR ===== */
+.fhs-edit-search-bar {
+  display: none;
+  padding: var(--fhs-space-3) var(--fhs-content-padding);
+  background: var(--fhs-surface);
+  border-bottom: 1px solid var(--fhs-border-subtle);
+  position: sticky;
+  top: calc(var(--fhs-header-height) + var(--fhs-safe-top));
+  z-index: 40;
+  gap: var(--fhs-space-2);
+  flex-direction: column;
+}
+
+body.mode-edit .fhs-edit-search-bar {
+  display: flex;
+}
+
+.fhs-edit-search-row {
+  display: flex;
+  gap: var(--fhs-space-2);
+  align-items: center;
+}
+
+.fhs-btn-sm {
+  height: 44px;
+  padding: 0 var(--fhs-space-4);
+  border-radius: var(--fhs-radius-md);
+  border: 1.5px solid var(--fhs-primary);
+  background: var(--fhs-primary);
+  color: var(--fhs-text-inverse);
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fhs-status-text {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-text-muted);
+  margin-top: var(--fhs-space-1);
+}
+
+.fhs-suggestions {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-text-secondary);
+}
+
+/* ===== MAIN ===== */
+.fhs-main {
+  padding: var(--fhs-space-4) var(--fhs-content-padding);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* mode visibility */
+body.mode-review #formContainer { display: none; }
+body.mode-create .fhs-edit-search-bar,
+body.mode-review .fhs-edit-search-bar { display: none; }
+body.mode-edit   .fhs-edit-search-bar { display: flex; }
+
+/* ===== CARD ===== */
+.fhs-card {
+  background: var(--fhs-surface);
+  border-radius: var(--fhs-radius-lg);
+  box-shadow: var(--fhs-shadow-card);
+  padding: var(--fhs-space-5);
+  margin-bottom: var(--fhs-card-gap);
+  border: 1px solid var(--fhs-border-subtle);
+}
+
+.fhs-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--fhs-space-3);
+  margin-bottom: var(--fhs-space-4);
+  padding-bottom: var(--fhs-space-3);
+  border-bottom: 1px solid var(--fhs-border-subtle);
+}
+
+.fhs-card-icon { font-size: 1.125rem; }
+
+.fhs-card-title {
+  font-size: var(--fhs-text-lg);
+  font-weight: var(--fhs-weight-semibold);
+  color: var(--fhs-text-primary);
+}
+
+/* ===== INPUT ===== */
+.fhs-field { margin-bottom: var(--fhs-space-4); }
+.fhs-field-group { margin-bottom: var(--fhs-space-4); width: 100%; }
+
+.fhs-field-row {
+  display: flex;
+  gap: var(--fhs-space-3);
+  margin-bottom: var(--fhs-space-4);
+}
+
+.fhs-field-grow { flex: 1; }
+
+.fhs-label {
+  display: block;
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-medium);
+  color: var(--fhs-text-secondary);
+  margin-bottom: var(--fhs-space-1);
+}
+
+.fhs-input, .fhs-select {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--fhs-space-4);
+  background: var(--fhs-surface-sunken);
+  border: 1.5px solid var(--fhs-border);
+  border-radius: var(--fhs-radius-md);
+  font-size: 1rem;
+  font-family: var(--fhs-font-sans);
+  color: var(--fhs-text-primary);
+  caret-color: var(--fhs-primary);
+  transition: var(--fhs-transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fhs-input:focus, .fhs-select:focus {
+  border-color: var(--fhs-border-focus);
+  background: var(--fhs-surface);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--fhs-primary-light);
+}
+
+.fhs-input::placeholder { color: var(--fhs-text-muted); }
+.fhs-input:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.fhs-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239C8E86' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--fhs-space-4) center;
+  padding-right: var(--fhs-space-10);
+}
+
+.fhs-input-mono { font-family: var(--fhs-font-mono); }
+.fhs-input-currency { text-align: right; }
+
+/* ID row */
+.fhs-id-row {
+  display: flex;
+  align-items: center;
+  gap: var(--fhs-space-2);
+  margin-bottom: var(--fhs-space-1);
+}
+
+.fhs-id-dot {
+  width: 10px; height: 10px;
+  border-radius: var(--fhs-radius-full);
+  background: var(--fhs-border);
+  flex-shrink: 0;
+  transition: background var(--fhs-duration-fast);
+}
+
+.fhs-id-dot.available { background: var(--fhs-success); }
+.fhs-id-dot.checking  { background: var(--fhs-warning); }
+.fhs-id-dot.duplicate { background: var(--fhs-danger); }
+
+.fhs-id-display { font-family: var(--fhs-font-mono); }
+
+.fhs-id-status-text {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-text-muted);
+  margin-bottom: var(--fhs-space-4);
+}
+
+.fhs-warning-banner {
+  background: var(--fhs-warning-light);
+  color: var(--fhs-warning);
+  border: 1px solid var(--fhs-warning);
+  border-radius: var(--fhs-radius-md);
+  padding: var(--fhs-space-2) var(--fhs-space-3);
+  font-size: var(--fhs-text-sm);
+  margin-bottom: var(--fhs-space-3);
+}
+
+/* ===== TOGGLE ===== */
+.fhs-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--fhs-space-3);
+  min-height: 44px;
+  margin-bottom: var(--fhs-space-2);
+}
+
+.fhs-toggle-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.fhs-toggle-input {
+  opacity: 0;
+  position: absolute;
+  width: 0; height: 0;
+}
+
+.fhs-toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px; height: 28px;
+  background: var(--fhs-surface-sunken);
+  border: 1.5px solid var(--fhs-border);
+  border-radius: var(--fhs-radius-full);
+  transition: background var(--fhs-duration-normal) var(--fhs-ease-out);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.fhs-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: left var(--fhs-duration-normal) var(--fhs-ease-spring);
+}
+
+.fhs-toggle-input:checked ~ .fhs-toggle {
+  background: var(--fhs-primary);
+  border-color: var(--fhs-primary);
+}
+
+.fhs-toggle-input:checked ~ .fhs-toggle::after { left: 23px; }
+
+/* Small toggle */
+.fhs-toggle-sm { width: 40px; height: 24px; }
+.fhs-toggle-sm::after { width: 18px; height: 18px; top: 2px; left: 2px; }
+.fhs-toggle-input:checked ~ .fhs-toggle-sm::after { left: 18px; }
+.fhs-toggle-wrap.fhs-toggle-sm { min-height: 40px; }
+.fhs-toggle-input-sm { }
+
+/* XS toggle */
+.fhs-toggle-xs { width: 32px; height: 20px; }
+.fhs-toggle-xs::after { width: 14px; height: 14px; top: 2px; left: 2px; }
+.fhs-toggle-input:checked ~ .fhs-toggle-xs::after { left: 14px; }
+.fhs-toggle-wrap.fhs-toggle-xs { min-height: 36px; }
+
+.fhs-category-label {
+  font-size: var(--fhs-text-base);
+  font-weight: var(--fhs-weight-medium);
+  color: var(--fhs-text-primary);
+}
+
+.fhs-section-label {
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-medium);
+  color: var(--fhs-text-secondary);
+}
+
+.fhs-limb-label {
+  font-size: var(--fhs-text-sm);
+  color: var(--fhs-text-muted);
+}
+
+/* ===== ACCORDION ===== */
+.fhs-accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: max-height 350ms var(--fhs-ease-out),
+              opacity 250ms var(--fhs-ease-out),
+              transform 250ms var(--fhs-ease-out);
+  background: var(--fhs-surface-raised);
+  border-radius: var(--fhs-radius-md);
+  margin-top: 0;
+}
+
+.fhs-accordion-body.active {
+  max-height: 3000px;
+  opacity: 1;
+  transform: translateY(0);
+  padding: var(--fhs-space-4);
+  margin-top: var(--fhs-space-3);
+  border: 1px solid var(--fhs-border);
+}
+
+/* Part details (nested accordion) */
+.fhs-part-details {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 250ms var(--fhs-ease-out),
+              opacity 150ms var(--fhs-ease-out);
+  margin-left: var(--fhs-space-4);
+  border-left: 2px solid var(--fhs-border);
+  padding-left: var(--fhs-space-4);
+  background: var(--fhs-surface);
+  border-radius: 0 var(--fhs-radius-md) var(--fhs-radius-md) 0;
+  margin-top: 0;
+}
+
+.fhs-part-details.active {
+  max-height: 1200px;
+  opacity: 1;
+  padding: var(--fhs-space-3);
+  padding-left: var(--fhs-space-4);
+  margin-top: var(--fhs-space-2);
+  margin-bottom: var(--fhs-space-2);
+}
+
+/* ===== MINI-COL ===== */
+.fhs-mini-col {
+  display: grid;
+  grid-template-columns: 64px 1fr 1fr;
+  gap: var(--fhs-space-2);
+  align-items: end;
+  margin-bottom: var(--fhs-space-2);
+}
+
+.fhs-mini-col-2 {
+  grid-template-columns: 64px 1fr;
+}
+
+.fhs-mini-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fhs-space-2);
+}
+
+.fhs-mini-cols .fhs-mini-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fhs-space-1);
+  min-width: 60px;
+  margin-bottom: 0;
+}
+
+.fhs-mini-cols .fhs-mini-col label {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.fhs-mini-cols .fhs-mini-col .fhs-input {
+  height: 44px;
+  text-align: center;
+  font-size: var(--fhs-text-sm);
+  padding: 0 var(--fhs-space-2);
+}
+
+.fhs-mini-label {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+  display: block;
+  margin-bottom: var(--fhs-space-1);
+}
+
+/* limb grid for product selector */
+.fhs-limb-grid {
+  margin-bottom: var(--fhs-space-3);
+}
+
+/* ===== PRICING CARD ===== */
+.fhs-pricing-engine { }
+
+.fhs-pricing-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--fhs-space-3) 0;
+  margin-bottom: var(--fhs-space-2);
+}
+
+.fhs-pricing-cost {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--fhs-space-2) 0;
+  border-top: 1px solid var(--fhs-border-subtle);
+  margin-bottom: var(--fhs-space-2);
+}
+
+.fhs-pricing-label {
+  font-size: var(--fhs-text-sm);
+  color: var(--fhs-text-secondary);
+}
+
+.fhs-pricing-value {
+  font-size: var(--fhs-text-2xl);
+  font-weight: var(--fhs-weight-bold);
+  color: var(--fhs-primary);
+}
+
+.fhs-pricing-value-sm {
+  font-size: var(--fhs-text-lg);
+  font-weight: var(--fhs-weight-semibold);
+  color: var(--fhs-text-secondary);
+}
+
+.fhs-pricing-log {
+  font-size: var(--fhs-text-xs);
+  font-family: var(--fhs-font-mono);
+  color: var(--fhs-text-secondary);
+  background: var(--fhs-surface-raised);
+  border-radius: var(--fhs-radius-md);
+  padding: var(--fhs-space-2) var(--fhs-space-3);
+  max-height: 100px;
+  overflow-y: auto;
+  line-height: var(--fhs-leading-relaxed);
+}
+
+.fhs-force-hint {
+  background: var(--fhs-danger-light);
+  color: var(--fhs-danger);
+  border-radius: var(--fhs-radius-md);
+  padding: var(--fhs-space-2) var(--fhs-space-3);
+  font-size: var(--fhs-text-xs);
+  font-weight: var(--fhs-weight-medium);
+  margin-top: var(--fhs-space-2);
+}
+
+/* ===== PREVIEW ===== */
+.fhs-empty-state {
+  text-align: center;
+  color: var(--fhs-text-muted);
+  font-size: var(--fhs-text-sm);
+  padding: var(--fhs-space-8) 0;
+}
+
+.fhs-preview-box {
+  margin-bottom: var(--fhs-space-4);
+}
+
+.fhs-preview-label {
+  font-size: var(--fhs-text-xs);
+  font-weight: var(--fhs-weight-semibold);
+  color: var(--fhs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--fhs-space-2);
+}
+
+.fhs-preview-textarea {
+  display: block;
+  width: 100%;
+  min-height: 120px;
+  padding: var(--fhs-space-3);
+  background: var(--fhs-surface-raised);
+  border: 1px solid var(--fhs-border);
+  border-radius: var(--fhs-radius-md);
+  font-size: var(--fhs-text-sm);
+  font-family: var(--fhs-font-sans);
+  color: var(--fhs-text-primary);
+  resize: vertical;
+  line-height: var(--fhs-leading-relaxed);
+}
+
+.fhs-copy-btn {
+  width: 100%;
+  height: 44px;
+  margin-top: var(--fhs-space-2);
+  border-radius: var(--fhs-radius-md);
+  border: 1.5px solid var(--fhs-primary);
+  background: var(--fhs-surface);
+  color: var(--fhs-primary);
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-semibold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fhs-space-2);
+  transition: var(--fhs-transition-fast);
+}
+
+.fhs-copy-btn:active {
+  background: var(--fhs-primary-light);
+}
+
+/* ===== BOTTOM ACTION BAR ===== */
+.fhs-bottom-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0; right: 0;
+  z-index: 100;
+  padding: var(--fhs-space-3) var(--fhs-space-4);
+  padding-bottom: calc(var(--fhs-space-3) + var(--fhs-safe-bottom));
+  display: flex;
+  align-items: center;
+  gap: var(--fhs-space-3);
+  background: rgba(250,247,244,0.92);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border-top: 1px solid var(--fhs-border-subtle);
+}
+
+body.mode-review .fhs-bottom-bar { display: none; }
+
+.fhs-bottom-summary {
+  display: flex;
+  gap: var(--fhs-space-4);
+  flex: 1;
+  overflow: hidden;
+}
+
+.fhs-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fhs-summary-label {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-text-muted);
+  white-space: nowrap;
+}
+
+.fhs-summary-value {
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-semibold);
+  color: var(--fhs-text-primary);
+}
+
+.fhs-sync-btn {
+  height: 52px;
+  padding: 0 var(--fhs-space-5);
+  flex-shrink: 0;
+  background: var(--fhs-primary);
+  color: var(--fhs-text-inverse);
+  border: none;
+  border-radius: var(--fhs-radius-lg);
+  font-size: var(--fhs-text-base);
+  font-weight: var(--fhs-weight-semibold);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: var(--fhs-transition-fast);
+}
+
+.fhs-sync-btn:active {
+  background: var(--fhs-primary-dark);
+  transform: scale(0.97);
+}
+
+.fhs-sync-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fhs-btn-delete {
+  width: 52px; height: 52px;
+  flex-shrink: 0;
+  background: var(--fhs-danger-light);
+  color: var(--fhs-danger);
+  border: none;
+  border-radius: var(--fhs-radius-md);
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+body.mode-edit .fhs-btn-delete {
+  display: flex;
+}
+
+/* ===== TOAST ===== */
+.fhs-toast {
+  position: fixed;
+  bottom: calc(var(--fhs-bottom-bar-height) + var(--fhs-safe-bottom) + var(--fhs-space-4));
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  z-index: 300;
+  min-width: 220px;
+  max-width: calc(100vw - 32px);
+  padding: var(--fhs-space-3) var(--fhs-space-5);
+  background: var(--fhs-text-primary);
+  color: white;
+  border-radius: var(--fhs-radius-full);
+  font-size: var(--fhs-text-sm);
+  font-weight: var(--fhs-weight-medium);
+  text-align: center;
+  box-shadow: var(--fhs-shadow-toast);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms var(--fhs-ease-spring), transform 250ms var(--fhs-ease-spring);
+}
+
+.fhs-toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.fhs-toast--success { background: var(--fhs-success); }
+.fhs-toast--error   { background: var(--fhs-danger); }
+
+/* ===== MODAL ===== */
+.fhs-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: rgba(26,22,20,0.55);
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms var(--fhs-ease-out);
+}
+
+.fhs-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fhs-modal-sheet {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--fhs-surface);
+  border-radius: var(--fhs-radius-xl) var(--fhs-radius-xl) 0 0;
+  padding: var(--fhs-space-6) var(--fhs-space-5);
+  padding-bottom: calc(var(--fhs-space-6) + var(--fhs-safe-bottom));
+  box-shadow: var(--fhs-shadow-modal);
+  transform: translateY(100%);
+  transition: transform 350ms var(--fhs-ease-spring);
+}
+
+.fhs-modal-backdrop.active .fhs-modal-sheet {
+  transform: translateY(0);
+}
+
+.fhs-modal-handle {
+  width: 36px; height: 4px;
+  background: var(--fhs-border);
+  border-radius: var(--fhs-radius-full);
+  margin: 0 auto var(--fhs-space-5);
+}
+
+.fhs-modal-title {
+  font-size: var(--fhs-text-xl);
+  font-weight: var(--fhs-weight-semibold);
+  color: var(--fhs-danger);
+  margin-bottom: var(--fhs-space-2);
+  text-align: center;
+}
+
+.fhs-modal-body {
+  font-size: var(--fhs-text-sm);
+  color: var(--fhs-text-secondary);
+  text-align: center;
+  margin-bottom: var(--fhs-space-6);
+}
+
+.fhs-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fhs-space-3);
+}
+
+#confirmDeleteBtn {
+  height: 52px;
+  width: 100%;
+  background: var(--fhs-danger);
+  color: white;
+  border: none;
+  border-radius: var(--fhs-radius-lg);
+  font-size: var(--fhs-text-base);
+  font-weight: var(--fhs-weight-semibold);
+  cursor: pointer;
+}
+
+.fhs-btn-ghost {
+  height: 52px;
+  width: 100%;
+  background: var(--fhs-surface-sunken);
+  color: var(--fhs-text-secondary);
+  border: none;
+  border-radius: var(--fhs-radius-lg);
+  font-size: var(--fhs-text-base);
+  cursor: pointer;
+}
+
+/* ===== LOADER ===== */
+.fhs-loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(250,247,244,0.85);
+  backdrop-filter: blur(4px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fhs-space-4);
+}
+
+.fhs-loader-overlay.active {
+  display: flex;
+}
+
+.fhs-loader-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--fhs-border);
+  border-top-color: var(--fhs-primary);
+  border-radius: 50%;
+  animation: fhs-spin 0.8s linear infinite;
+}
+
+@keyframes fhs-spin { to { transform: rotate(360deg); } }
+
+.fhs-loader-text {
+  font-size: var(--fhs-text-sm);
+  color: var(--fhs-text-secondary);
+  font-weight: var(--fhs-weight-medium);
+}
+
+/* ===== QA CENTER ===== */
+.fhs-qa-center {
+  padding: var(--fhs-space-4);
+}
+
+.fhs-qa-log {
+  background: var(--fhs-surface-raised);
+  border-radius: var(--fhs-radius-md);
+  padding: var(--fhs-space-3);
+  font-size: var(--fhs-text-xs);
+  font-family: var(--fhs-font-mono);
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--fhs-text-secondary);
+}
+
+/* ===== REVIEW TABLE (in drawer) ===== */
+.review-jump-pill {
+  cursor: pointer;
+  color: var(--fhs-primary);
+  text-decoration: underline;
+  font-size: var(--fhs-text-xs);
+}
+
+.review-notes-textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--fhs-border);
+  border-radius: var(--fhs-radius-md);
+  padding: var(--fhs-space-2);
+  font-size: var(--fhs-text-xs);
+  font-family: var(--fhs-font-sans);
+  background: var(--fhs-surface-raised);
+  resize: none;
+}
+
+.review-batch-input {
+  border: 1px solid var(--fhs-border);
+  border-radius: var(--fhs-radius-sm);
+  padding: 4px;
+  font-size: var(--fhs-text-xs);
+  text-align: center;
+  background: var(--fhs-surface);
+}
+
+.review-status-select {
+  border: 1px solid var(--fhs-border);
+  border-radius: var(--fhs-radius-sm);
+  padding: 4px;
+  font-size: var(--fhs-text-xs);
+  background: var(--fhs-surface);
+  width: 100%;
+}
+
+.review-save-indicator {
+  font-size: var(--fhs-text-xs);
+  color: var(--fhs-success);
+  margin-top: 2px;
+}
+
+.review-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--fhs-radius-full);
+  font-size: 11px;
+  padding: 2px 6px;
+  margin: 1px;
+  border: 1px solid var(--fhs-border);
+  background: var(--fhs-surface-raised);
+  color: var(--fhs-text-secondary);
+}
+
+.review-badge-qty {
+  background: var(--fhs-accent-light);
+  color: var(--fhs-accent);
+  border-color: var(--fhs-accent);
+  font-weight: var(--fhs-weight-bold);
+}
+
+.badge-cat-鎖匙扣 { background: #FFF3E0; color: #E65100; border-color: #FFCC80; }
+.badge-cat-純銀吊飾 { background: #F3E5F5; color: #6A1B9A; border-color: #CE93D8; }
+.badge-cat-立體擺設 { background: #E8F5E9; color: #1B5E20; border-color: #A5D6A7; }
+.badge-mat-不銹鋼 { background: #ECEFF1; color: #37474F; border-color: #B0BEC5; }
+.badge-mat-銀 { background: #F5F5F5; color: #424242; border-color: #BDBDBD; }
+.badge-mat-金 { background: #FFF8E1; color: #F57F17; border-color: #FFE082; }
+.badge-target-嬰兒 { background: #E3F2FD; color: #0D47A1; border-color: #90CAF9; }
+.badge-target-大寶 { background: #F9FBE7; color: #558B2F; border-color: #C5E1A5; }
+.badge-target-家庭 { background: #FFF3E0; color: #BF360C; border-color: #FFAB91; }
+.badge-part { background: var(--fhs-surface-raised); color: var(--fhs-text-muted); }
+
+.review-eng-container { display: flex; flex-direction: column; gap: 2px; }
+.review-eng-line { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.review-eng-label { font-size: 9px; font-weight: bold; padding: 1px 4px; border-radius: 2px; }
+.review-eng-label-top { background: #E3F2FD; color: #1565C0; }
+.review-eng-label-bot { background: #E8F5E9; color: #2E7D32; }
+.review-eng-text { font-size: 12px; font-weight: 600; color: var(--fhs-text-primary); }
+
+.review-item-card { padding: 4px; }
+
+/* ===== SCROLL PAD ===== */
+.fhs-scroll-pad {
+  height: calc(var(--fhs-bottom-bar-height) + var(--fhs-safe-bottom) + 16px);
+}
+
+/* ===== QA DOC PANEL ===== */
+#qaDocPanel[hidden] { display: none; }
+</style>
+</head>
+<body class="role-ling mode-create">
+
+<!-- === DRAWER (z-index 200) === -->
+<aside id="fhs-drawer" class="fhs-drawer" aria-hidden="true">
+  <div class="fhs-drawer-header">
+    <span class="fhs-drawer-title">FHS</span>
+    <button class="fhs-drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <div id="sandboxBanner" class="fhs-sandbox-banner" hidden>⚠️ SANDBOX MODE</div>
+
+  <div class="fhs-drawer-section" style="margin-top:0; border-top:none; padding-top:0;">
+    <p class="fhs-drawer-section-title">操作角色</p>
+    <div class="fhs-role-row">
+      <button id="roleLingBtn" class="fhs-role-btn" onclick="setRole('ling')">L 令狐</button>
+      <button id="roleFatBtn"  class="fhs-role-btn" onclick="setRole('fat')">F 肥貓</button>
+    </div>
+  </div>
+
+  <div id="fatmoConfigPanel" class="fhs-drawer-section">
+    <p class="fhs-drawer-section-title">Fat Mo 配置</p>
+    <button id="btnIdModeRandom" onclick="setIdMode('random')">亂數</button>
+    <button id="btnIdModeSeq"    onclick="setIdMode('sequential')">序號</button>
+    <div id="seqSetRow" hidden>
+      <label class="fhs-label" for="nextSeqIdInput">下一序號</label>
+      <input id="nextSeqIdInput" class="fhs-input" type="number" style="height:40px;">
+    </div>
+    <p id="configSyncStatus"></p>
+    <button id="sandboxToggleBtn" onclick="toggleSandbox()">🛠️ 進入沙盒模式</button>
+  </div>
+
+  <div id="reviewModeContainer" class="fhs-drawer-section">
+    <p class="fhs-drawer-section-title">全域核對
+      <span id="reviewCountBadge" class="fhs-badge" style="display:none;"></span>
+    </p>
+    <select id="reviewYear"   class="fhs-input" onchange="fetchGlobalReview()" style="margin-bottom:8px;"></select>
+    <select id="reviewMonth"  class="fhs-input" onchange="fetchGlobalReview()" style="margin-bottom:8px;">
+      <option value="">全部月份</option>
+      <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+      <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+      <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+      <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+    </select>
+    <select id="reviewStatus" class="fhs-input" onchange="fetchGlobalReview()" style="margin-bottom:8px;">
+      <option value="">全部狀態</option>
+      <option value="0 什麼都未做">0 什麼都未做</option>
+      <option value="1 已繪圖 或 已取相">1 已繪圖</option>
+      <option value="Done 已完成">Done ✅</option>
+    </select>
+    <input  id="reviewBatch"  class="fhs-input" oninput="fetchGlobalReview()" placeholder="批次篩選" style="margin-bottom:8px;">
+    <input  id="reviewSearch" class="fhs-input" type="search" oninput="fetchGlobalReview()" placeholder="搜尋訂單" style="margin-bottom:8px;">
+    <p id="reviewLoading" hidden style="font-size:0.8125rem; color:#9C8E86; margin-bottom:8px;">載入中...</p>
+    <div style="overflow-x:auto;">
+      <table id="reviewTable" style="min-width:600px;"><tbody id="reviewTableBody"></tbody></table>
+    </div>
+  </div>
+
+  <div id="qaCenter" class="fhs-drawer-section fhs-qa-center">
+    <p class="fhs-drawer-section-title">QA 中心</p>
+    <button id="toggleDocBtn" onclick="toggleDoc()" style="padding:6px 12px; border-radius:6px; border:1px solid var(--fhs-border); background:var(--fhs-surface-raised); font-size:0.8125rem; cursor:pointer; margin-bottom:8px;">📖 文件</button>
+    <div id="qaDocPanel" hidden style="background:var(--fhs-surface-raised); padding:12px; border-radius:8px; border:1px solid var(--fhs-border); font-size:0.8125rem; line-height:1.6; color:var(--fhs-text-secondary); margin-bottom:12px;">
+      <b>1. 數據精確度檢核</b> — 驗證維度解析引擎。<br>
+      <b>2. 介面穩定性</b> — 狀態捕捉→重置→還原。<br>
+      <b>3. 歷史注入測試</b> — 時光機還原歷史訂單。
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+      <button onclick="runAllAudits()" style="padding:8px 12px; border-radius:6px; border:none; background:var(--fhs-accent); color:white; font-size:0.8125rem; cursor:pointer;">🚀 全方位</button>
+      <button onclick="clearQALog(); runDataAccuracyCheck()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--fhs-accent); background:var(--fhs-accent-light); color:var(--fhs-accent); font-size:0.8125rem; cursor:pointer;">🧪 數據</button>
+      <button onclick="clearQALog(); runInterfaceStabilityTest()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--fhs-border); background:var(--fhs-surface-raised); color:var(--fhs-text-secondary); font-size:0.8125rem; cursor:pointer;">🖥️ 介面</button>
+      <button onclick="clearQALog(); timemachineTest()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--fhs-border); background:var(--fhs-surface-raised); color:var(--fhs-text-secondary); font-size:0.8125rem; cursor:pointer;">🕐 歷史</button>
+      <button onclick="clearQALog()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--fhs-border); background:var(--fhs-surface-raised); color:var(--fhs-text-muted); font-size:0.8125rem; cursor:pointer;">🗑️</button>
+    </div>
+    <div id="qaLog" class="fhs-qa-log">檢驗日誌...</div>
+  </div>
+
+</aside>
+
+<div id="fhs-drawer-backdrop" class="fhs-drawer-backdrop" onclick="closeDrawer()"></div>
+
+<!-- === HEADER (z-index 50) === -->
+<header id="fhs-header" class="fhs-header">
+  <button id="fhs-drawer-trigger" class="fhs-menu-btn" aria-label="選單" onclick="openDrawer()">
+    <span class="fhs-hamburger"></span>
+  </button>
+  <div class="fhs-mode-tabs">
+    <button id="modeCreateBtn" class="fhs-mode-tab active" onclick="switchMode('create')">新單</button>
+    <button id="modeEditBtn"   class="fhs-mode-tab"        onclick="switchMode('edit')">更新</button>
+    <button id="modeReviewBtn" class="fhs-mode-tab"        onclick="switchMode('review')">核對</button>
+  </div>
+  <div class="fhs-header-role">
+    <button class="fhs-role-dot" onclick="setRole('ling')" title="令狐">L</button>
+    <button class="fhs-role-dot" onclick="setRole('fat')"  title="肥貓">F</button>
+  </div>
+</header>
+
+<!-- === EDIT MODE SEARCH BAR (z-index 40) === -->
+<div id="editModeContainer" class="fhs-edit-search-bar">
+  <div class="fhs-edit-search-row">
+    <input id="searchOrderId" class="fhs-input" placeholder="輸入訂單號 FHS-XXXX"
+           oninput="handleFuzzySearch()" style="flex:1;">
+    <button class="fhs-btn-sm" onclick="fetchOldOrder()">讀取</button>
+  </div>
+  <p id="fetchStatus" class="fhs-status-text">請輸入單號並點擊讀取。</p>
+  <div id="searchSuggestions" class="fhs-suggestions"></div>
+</div>
+
+<!-- === MAIN SCROLL === -->
+<main class="fhs-main">
+  <div id="formContainer">
+
+    <!-- CARD 1: 客戶資訊 -->
+    <section class="fhs-card" data-card="customer">
+      <div class="fhs-card-header">
+        <span class="fhs-card-icon">👤</span>
+        <span class="fhs-card-title">客戶資訊</span>
+      </div>
+      <div class="fhs-id-row" id="idInputGroup">
+        <span id="idStatusDot" class="fhs-id-dot"></span>
+        <input id="orderIdDisplay" class="fhs-input fhs-id-display fhs-input-mono" disabled onblur="onIdInputBlur()">
+      </div>
+      <p id="idStatusText" class="fhs-id-status-text">系統自動生成</p>
+      <div class="fhs-field-group">
+        <label class="fhs-label" for="momName">聯絡人稱呼</label>
+        <input id="momName" class="fhs-input" type="text" placeholder="待定" oninput="generate()">
+      </div>
+      <div class="fhs-field-group">
+        <label class="fhs-label" for="appDate">約定日期</label>
+        <input id="appDate" class="fhs-input" type="date" onchange="generate()">
+      </div>
+      <div class="fhs-field-group">
+        <label class="fhs-label" for="babyAgeMonths">嬰兒月齡</label>
+        <input id="babyAgeMonths" class="fhs-input" type="number" placeholder="例如：4" min="0" oninput="generate()">
+      </div>
+      <div id="babyAgeWarning" class="fhs-warning-banner" hidden>⚠️ 月齡超過建議範圍，請注意</div>
+      <div class="fhs-field-row">
+        <div class="fhs-field-group fhs-field-grow">
+          <label class="fhs-label">預約時間</label>
+          <select id="appTimeHour" class="fhs-select" onchange="generate()"></select>
+        </div>
+        <div class="fhs-field-group">
+          <label class="fhs-label">&nbsp;</label>
+          <select id="appTimeAmPm" class="fhs-select" onchange="updateTimeOptions()">
+            <option value="上午">上午</option>
+            <option value="下午" selected>下午</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARD 2: 產品選擇 -->
+    <section class="fhs-card" data-card="products">
+      <div class="fhs-card-header">
+        <span class="fhs-card-icon">🎨</span>
+        <span class="fhs-card-title">產品選擇</span>
+      </div>
+
+      <!-- Category P -->
+      <div class="fhs-toggle-wrap">
+        <label class="fhs-toggle-input-wrap">
+          <input type="checkbox" id="enableP" class="fhs-toggle-input" onchange="toggleAddon('contentP', this)">
+          <span class="fhs-toggle"></span>
+        </label>
+        <span class="fhs-category-label">🖼️ 立體擺設</span>
+      </div>
+      <div id="contentP" class="fhs-accordion-body">
+        <div class="fhs-field-group">
+          <label class="fhs-label">款式</label>
+          <select id="pSubCat" class="fhs-select" onchange="renderLimbGrid(); generate();">
+            <option value="木框款式">木框款式</option>
+            <option value="玻璃瓶款式">玻璃瓶款式</option>
+          </select>
+        </div>
+        <div id="limbContainer" class="fhs-limb-grid"></div>
+        <div class="fhs-field-group">
+          <label class="fhs-label">底板刻字</label>
+          <input id="pEngraving" class="fhs-input" placeholder="待定" oninput="generate()">
+        </div>
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="en_parent" class="fhs-toggle-input fhs-toggle-input-sm" onchange="togglePart('box_parent', this)">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">成人部位</span>
+        </div>
+        <div id="box_parent" class="fhs-part-details"></div>
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="en_elder" class="fhs-toggle-input fhs-toggle-input-sm" onchange="togglePart('box_elder', this)">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">大寶部位</span>
+        </div>
+        <div id="box_elder" class="fhs-part-details"></div>
+        <div id="adultWoodForceHint" class="fhs-force-hint" hidden></div>
+      </div>
+
+      <!-- Category K -->
+      <div class="fhs-toggle-wrap" style="margin-top:var(--fhs-space-3); padding-top:var(--fhs-space-3); border-top:1px solid var(--fhs-border-subtle);">
+        <label class="fhs-toggle-input-wrap">
+          <input type="checkbox" id="enableK" class="fhs-toggle-input" onchange="toggleAddon('contentK', this)">
+          <span class="fhs-toggle"></span>
+        </label>
+        <span class="fhs-category-label">🔑 鎖匙扣</span>
+      </div>
+      <div id="contentK" class="fhs-accordion-body">
+        <!-- Baby section -->
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="k_baby_sec_en" class="fhs-toggle-input fhs-toggle-input-sm" checked onchange="toggleAddon('k_baby_sec_box', this)">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">嬰兒</span>
+        </div>
+        <div id="k_baby_sec_box" class="fhs-part-details active">
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_lh_en" class="fhs-toggle-input" onchange="togglePart('k_lh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左手</span></div>
+          <div id="k_lh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_lh_qty" class="fhs-input" type="number" value="1" min="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_lh_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_lh_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_rh_en" class="fhs-toggle-input" onchange="togglePart('k_rh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右手</span></div>
+          <div id="k_rh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_rh_qty" class="fhs-input" type="number" value="1" min="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_rh_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_rh_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_lf_en" class="fhs-toggle-input" onchange="togglePart('k_lf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左腳</span></div>
+          <div id="k_lf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_lf_qty" class="fhs-input" type="number" value="1" min="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_lf_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_lf_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_rf_en" class="fhs-toggle-input" onchange="togglePart('k_rf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右腳</span></div>
+          <div id="k_rf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_rf_qty" class="fhs-input" type="number" value="1" min="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_rf_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_rf_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+        </div>
+        <!-- Elder section -->
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="k_elder_sec_en" class="fhs-toggle-input fhs-toggle-input-sm" onchange="toggleAddon('k_elder_sec_box', this)">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">大寶</span>
+        </div>
+        <div id="k_elder_sec_box" class="fhs-part-details">
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_e_lh_en" class="fhs-toggle-input" onchange="togglePart('k_e_lh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左手</span></div>
+          <div id="k_e_lh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_e_lh_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_e_lh_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_e_lh_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_e_rh_en" class="fhs-toggle-input" onchange="togglePart('k_e_rh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右手</span></div>
+          <div id="k_e_rh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_e_rh_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_e_rh_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_e_rh_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_e_lf_en" class="fhs-toggle-input" onchange="togglePart('k_e_lf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左腳</span></div>
+          <div id="k_e_lf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_e_lf_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_e_lf_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_e_lf_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="k_e_rf_en" class="fhs-toggle-input" onchange="togglePart('k_e_rf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右腳</span></div>
+          <div id="k_e_rf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="k_e_rf_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>上排</label><input id="k_e_rf_top" class="fhs-input" maxlength="6" oninput="generate()"></div><div class="fhs-mini-col"><label>下排</label><input id="k_e_rf_bot" class="fhs-input" maxlength="8" oninput="generate()"></div></div>
+        </div>
+        <!-- Family combo -->
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="k_family_en" class="fhs-toggle-input fhs-toggle-input-sm" onchange="toggleAddon('k_family_box', this)">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">家庭套裝</span>
+        </div>
+        <div id="k_family_box" class="fhs-part-details">
+          <div class="fhs-field-group">
+            <select id="k_family_combo" class="fhs-select" onchange="updateFamilyParts(); generate();">
+              <option value="S1_B">S1 (嬰兒)</option>
+              <option value="S2_BB">S2 (嬰兒+嬰兒)</option>
+              <option value="S2_BE">S2 (嬰兒+大寶)</option>
+            </select>
+          </div>
+          <div id="fam_p1_wrap" class="fhs-field-group">
+            <label id="fam_p1_lbl" class="fhs-label">部位1</label>
+            <select id="fam_p1_sel" class="fhs-select" onchange="generate()"></select>
+          </div>
+          <div id="fam_p2_wrap" class="fhs-field-group">
+            <label id="fam_p2_lbl" class="fhs-label">部位2</label>
+            <select id="fam_p2_sel" class="fhs-select" onchange="generate()"></select>
+          </div>
+          <div class="fhs-mini-cols">
+            <div class="fhs-mini-col"><label>數量</label><input id="k_family_qty" class="fhs-input" type="number" value="1" min="1" oninput="generate()"></div>
+            <div class="fhs-mini-col"><label>上排</label><input id="k_family_top" class="fhs-input" maxlength="8" oninput="generate()"></div>
+            <div class="fhs-mini-col"><label>下排</label><input id="k_family_bot" class="fhs-input" maxlength="8" oninput="generate()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category M -->
+      <div class="fhs-toggle-wrap" style="margin-top:var(--fhs-space-3); padding-top:var(--fhs-space-3); border-top:1px solid var(--fhs-border-subtle);">
+        <label class="fhs-toggle-input-wrap">
+          <input type="checkbox" id="enableM" class="fhs-toggle-input" onchange="toggleAddon('contentM', this)">
+          <span class="fhs-toggle"></span>
+        </label>
+        <span class="fhs-category-label">💎 吊飾</span>
+      </div>
+      <div id="contentM" class="fhs-accordion-body">
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="m_baby_sec_en" class="fhs-toggle-input fhs-toggle-input-sm" checked onchange="toggleAddon('m_baby_sec_box', this)">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">嬰兒</span>
+        </div>
+        <div id="m_baby_sec_box" class="fhs-part-details active">
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_lh_en" class="fhs-toggle-input" onchange="togglePart('m_lh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左手</span></div>
+          <div id="m_lh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_lh_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_lh_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_rh_en" class="fhs-toggle-input" onchange="togglePart('m_rh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右手</span></div>
+          <div id="m_rh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_rh_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_rh_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_lf_en" class="fhs-toggle-input" onchange="togglePart('m_lf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左腳</span></div>
+          <div id="m_lf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_lf_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_lf_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div><div class="fhs-mini-col"><label>刻字</label><input id="m_lf_eng" class="fhs-input" maxlength="1" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_rf_en" class="fhs-toggle-input" onchange="togglePart('m_rf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右腳</span></div>
+          <div id="m_rf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_rf_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_rf_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div><div class="fhs-mini-col"><label>刻字</label><input id="m_rf_eng" class="fhs-input" maxlength="1" oninput="generate()"></div></div>
+        </div>
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="m_elder_sec_en" class="fhs-toggle-input fhs-toggle-input-sm" onchange="toggleAddon('m_elder_sec_box', this)">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">大寶</span>
+        </div>
+        <div id="m_elder_sec_box" class="fhs-part-details">
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_e_lh_en" class="fhs-toggle-input" onchange="togglePart('m_e_lh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左手</span></div>
+          <div id="m_e_lh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_e_lh_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_e_lh_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_e_rh_en" class="fhs-toggle-input" onchange="togglePart('m_e_rh_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右手</span></div>
+          <div id="m_e_rh_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_e_rh_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_e_rh_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_e_lf_en" class="fhs-toggle-input" onchange="togglePart('m_e_lf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">左腳</span></div>
+          <div id="m_e_lf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_e_lf_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_e_lf_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div><div class="fhs-mini-col"><label>刻字</label><input id="m_e_lf_eng" class="fhs-input" maxlength="1" oninput="generate()"></div></div>
+          <div class="fhs-toggle-wrap fhs-toggle-xs"><label class="fhs-toggle-input-wrap"><input type="checkbox" id="m_e_rf_en" class="fhs-toggle-input" onchange="togglePart('m_e_rf_box',this)"><span class="fhs-toggle fhs-toggle-xs"></span></label><span class="fhs-limb-label">右腳</span></div>
+          <div id="m_e_rf_box" class="fhs-part-details fhs-mini-cols"><div class="fhs-mini-col"><label>數量</label><input id="m_e_rf_qty" class="fhs-input" type="number" value="1" oninput="generate()"></div><div class="fhs-mini-col"><label>顏色</label><select id="m_e_rf_color" class="fhs-select" onchange="generate()"><option value="銀色">銀色</option><option value="金色">金色</option><option value="玫瑰金">玫瑰金</option></select></div><div class="fhs-mini-col"><label>刻字</label><input id="m_e_rf_eng" class="fhs-input" maxlength="1" oninput="generate()"></div></div>
+        </div>
+      </div>
+
+      <!-- Category W -->
+      <div class="fhs-toggle-wrap" style="margin-top:var(--fhs-space-3); padding-top:var(--fhs-space-3); border-top:1px solid var(--fhs-border-subtle);">
+        <label class="fhs-toggle-input-wrap">
+          <input type="checkbox" id="enableW" class="fhs-toggle-input" onchange="toggleAddon('contentW', this)">
+          <span class="fhs-toggle"></span>
+        </label>
+        <span class="fhs-category-label">🧸 配件</span>
+      </div>
+      <div id="contentW" class="fhs-accordion-body">
+        <div class="fhs-toggle-wrap fhs-toggle-sm">
+          <label class="fhs-toggle-input-wrap">
+            <input type="checkbox" id="w_wool_en" class="fhs-toggle-input fhs-toggle-input-sm" onchange="generate()">
+            <span class="fhs-toggle fhs-toggle-sm"></span>
+          </label>
+          <span class="fhs-section-label">羊毛氈公仔</span>
+        </div>
+        <div class="fhs-mini-cols">
+          <div class="fhs-mini-col"><label>數量</label><input id="w_wool_qty" class="fhs-input" type="number" value="1" min="1" oninput="generate()"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARD 3: 即時報價 -->
+    <section class="fhs-card" data-card="pricing">
+      <div class="fhs-card-header">
+        <span class="fhs-card-icon">💡</span>
+        <span class="fhs-card-title">系統建議報價</span>
+      </div>
+      <div id="pricingEngineUI" class="fhs-pricing-engine">
+        <div class="fhs-pricing-main">
+          <span class="fhs-pricing-label">建議售價</span>
+          <span class="fhs-pricing-value">$<span id="suggestedPrice">0</span></span>
+        </div>
+        <div class="fhs-pricing-cost fat-only">
+          <span class="fhs-pricing-label">畫圖成本</span>
+          <span class="fhs-pricing-value-sm">$<span id="drawingCost">0</span></span>
+        </div>
+        <div id="pricingLogicDetails" class="fhs-pricing-log">請選擇對象、產品與數量以計算報價。</div>
+      </div>
+    </section>
+
+    <!-- CARD 4: 金額 -->
+    <section class="fhs-card" data-card="financials">
+      <div class="fhs-card-header">
+        <span class="fhs-card-icon">💰</span>
+        <span class="fhs-card-title">金額</span>
+      </div>
+      <div class="fhs-field-row">
+        <div class="fhs-field-group fhs-field-grow">
+          <label class="fhs-label" for="deposit">已付訂金 ($)</label>
+          <input id="deposit" class="fhs-input fhs-input-currency" type="number" placeholder="0" oninput="generate()">
+        </div>
+        <div class="fhs-field-group fhs-field-grow">
+          <label class="fhs-label" for="balance">產品尾數 ($)</label>
+          <input id="balance" class="fhs-input fhs-input-currency" type="number" placeholder="0" oninput="generate()">
+        </div>
+      </div>
+      <div class="fhs-field-group">
+        <label class="fhs-label" for="additional">附加費 ($)</label>
+        <input id="additional" class="fhs-input fhs-input-currency" type="number" placeholder="0" oninput="generate()">
+      </div>
+    </section>
+
+    <!-- CARD 5: 訊息預覽 -->
+    <section class="fhs-card" data-card="preview">
+      <div class="fhs-card-header">
+        <span class="fhs-card-icon">📱</span>
+        <span class="fhs-card-title">IG 訊息預覽</span>
+      </div>
+      <div id="no-preview-msg" class="fhs-empty-state">💬 請先選擇產品以生成訊息</div>
+      <div id="preview-box-a" class="fhs-preview-box" hidden>
+        <div class="fhs-preview-label">🖼️ 手模擺設</div>
+        <textarea id="output-preview-a" class="fhs-preview-textarea" readonly></textarea>
+        <button id="btnCopyA" class="fhs-copy-btn" onclick="copyMessageA()">📋 複製</button>
+      </div>
+      <div id="preview-box-b" class="fhs-preview-box" hidden>
+        <div class="fhs-preview-label">⚙️ 金屬產品</div>
+        <textarea id="output-preview-b" class="fhs-preview-textarea" readonly></textarea>
+        <button id="btnCopyB" class="fhs-copy-btn" onclick="copyMessageB()">📋 複製</button>
+      </div>
+    </section>
+
+    <div class="fhs-scroll-pad"></div>
+  </div><!-- end formContainer -->
+</main>
+
+<!-- === BOTTOM ACTION BAR === -->
+<div id="bottomActionBar" class="fhs-bottom-bar">
+  <div class="fhs-bottom-summary">
+    <div class="fhs-summary-item">
+      <span class="fhs-summary-label">建議售價</span>
+      <span class="fhs-summary-value" id="barSuggestedPrice">$0</span>
+    </div>
+    <div class="fhs-summary-item fat-only">
+      <span class="fhs-summary-label">成本</span>
+      <span class="fhs-summary-value" id="barDrawingCost">$0</span>
+    </div>
+    <div class="fhs-summary-item">
+      <span class="fhs-summary-label">附加費</span>
+      <span class="fhs-summary-value" id="barAdditional">$0</span>
+    </div>
+  </div>
+  <button class="fhs-btn-delete" onclick="openDeleteModal(editTargetRecordId, editTargetOrderId)">🗑️</button>
+  <button id="syncBtn" class="fhs-sync-btn" onclick="syncToAirtable()">🚀 同步 Airtable</button>
+</div>
+
+<!-- === DELETE CONFIRM MODAL === -->
+<div id="deleteConfirmModal" class="fhs-modal-backdrop">
+  <div class="fhs-modal-sheet">
+    <div class="fhs-modal-handle"></div>
+    <p class="fhs-modal-title">確認刪除？</p>
+    <p class="fhs-modal-body">訂單：<strong id="deleteModalOrderId" style="font-family:var(--fhs-font-mono);"></strong><br><span style="font-size:var(--fhs-text-xs); color:var(--fhs-danger);">⚠️ 此動作無法復原</span></p>
+    <div class="fhs-modal-actions">
+      <button id="confirmDeleteBtn" onclick="executeDeleteOrder()">確認刪除</button>
+      <button class="fhs-btn-ghost" onclick="closeDeleteModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- === LOADER === -->
+<div id="globalLoader" class="fhs-loader-overlay">
+  <div class="fhs-loader-spinner"></div>
+  <p id="loaderText" class="fhs-loader-text">FHS 智能中樞正在工作中...</p>
+</div>
+
+<!-- === TOAST === -->
+<div id="toast" class="fhs-toast">已複製！</div>
+
+<script>
+// ===== DRAWER =====
+function openDrawer() {
+  document.body.classList.add('fhs-drawer-open');
+  document.getElementById('fhs-drawer').setAttribute('aria-hidden', 'false');
+}
+function closeDrawer() {
+  document.body.classList.remove('fhs-drawer-open');
+  document.getElementById('fhs-drawer').setAttribute('aria-hidden', 'true');
+}
+
+// Touch swipe for drawer
+(function() {
+  let startX = 0, startY = 0;
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (!document.body.classList.contains('fhs-drawer-open') && startX < 20 && dx > 60) openDrawer();
+    if (document.body.classList.contains('fhs-drawer-open') && dx < -60) closeDrawer();
+  }, { passive: true });
+})();
+
+// ===== CONSTANTS (verbatim from V36) =====
+const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
+
+let systemConfig = {
+  last_id: "06000",
+  mode: "random",
+  recordId: "recveOK58K3aISUrD"
+};
+
+// ===== LOADER (V39 adaptation: uses .active class) =====
+function showLoader(msg = "FHS 智能中樞正在工作中...") {
+  const loader = document.getElementById('globalLoader');
+  const text = document.getElementById('loaderText');
+  if (loader && text) {
+    text.innerText = msg;
+    loader.classList.add('active');
+  }
+}
+function hideLoader() {
+  const loader = document.getElementById('globalLoader');
+  if (loader) loader.classList.remove('active');
+}
+
+// ===== TOAST (V39 adaptation: uses .fhs-toast-visible) =====
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.classList.add('fhs-toast-visible');
+  setTimeout(() => t.classList.remove('fhs-toast-visible'), 2500);
+}
+
+// ===== ID STATUS (V39 adaptation: uses fhs-id-dot) =====
+function updateIdStatus(status, text) {
+  const dot = document.getElementById('idStatusDot');
+  const txt = document.getElementById('idStatusText');
+  if (!dot || !txt) return;
+  dot.className = 'fhs-id-dot ' + status;
+  txt.innerText = text;
+  txt.style.color = status === 'duplicate' ? 'var(--fhs-danger)' :
+                   status === 'available' ? 'var(--fhs-success)' : 'var(--fhs-text-muted)';
+}
+
+// ===== getValSafe (verbatim from V36) =====
+function getValSafe(id, defaultValue = "") {
+  const el = document.getElementById(id);
+  if (el) {
+    if (el.type === 'checkbox' || el.type === 'radio') return el.checked;
+    return el.value;
+  }
+  return defaultValue;
+}
+
+// ===== SYSTEM CONFIG =====
+async function loadSystemConfig() {
+  showLoader("正在讀取系統配置...");
+  try {
+    const url = getWebhookUrl('https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=FHS-SYSTEM-CONFIG');
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data && data.found && data.data && data.data.Admin_Notes) {
+      systemConfig = JSON.parse(data.data.Admin_Notes);
+      systemConfig.recordId = data.data.Record_ID || data.id || systemConfig.recordId;
+    }
+    syncConfigUI();
+  } catch (error) {
+    console.error("Load Config Error:", error);
+    syncConfigUI();
+  } finally {
+    hideLoader();
+  }
+}
+
+function syncConfigUI() {
+  const isSeq = systemConfig.mode === 'sequential';
+  document.getElementById('btnIdModeRandom').classList.toggle('active', !isSeq);
+  document.getElementById('btnIdModeSeq').classList.toggle('active', isSeq);
+  document.getElementById('seqSetRow').style.display = isSeq ? 'flex' : 'none';
+  document.getElementById('nextSeqIdInput').value = systemConfig.last_id;
+}
+
+async function setIdMode(mode) {
+  systemConfig.mode = mode;
+  syncConfigUI();
+  saveSeqSettings('silent');
+}
+
+async function saveSeqSettings(type = 'normal') {
+  const nextId = document.getElementById('nextSeqIdInput').value.trim();
+  if (nextId) systemConfig.last_id = nextId;
+  const statusEl = document.getElementById('configSyncStatus');
+  statusEl.innerText = "正在儲存設定...";
+  if (type === 'normal') showLoader("正在儲存系統設定...");
+  try {
+    const payload = [{ Record_ID: systemConfig.recordId, Admin_Notes: JSON.stringify({ last_id: systemConfig.last_id, mode: systemConfig.mode }) }];
+    const url = getWebhookUrl('https://yanhei.synology.me:8443/webhook/update-order-meta');
+    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (response.ok) { statusEl.innerText = "同步狀態：設定已儲存至雲端"; if (type === 'normal') showToast("設定已生效！"); }
+    else { statusEl.innerText = "同步狀態：儲存失敗 (HTTP " + response.status + ")"; }
+  } catch (error) {
+    statusEl.innerText = "同步狀態：儲存失敗";
+    console.error("Save Config Error:", error);
+  } finally {
+    if (type === 'normal') hideLoader();
+  }
+}
+
+// ===== ORDER ID =====
+let orderID = "";
+let isIdEditing = false;
+let isIdValid = true;
+
+async function generateOrderID() {
+  await loadSystemConfig();
+  let newId;
+  if (systemConfig.mode === 'sequential') {
+    const prefix = systemConfig.last_id.substring(0, 2);
+    const nextNum = (parseInt(systemConfig.last_id.substring(2)) + 1).toString().padStart(5, '0');
+    newId = prefix + nextNum;
+  } else {
+    const date = new Date();
+    const yearStr = date.getFullYear().toString().substr(-2);
+    const displayYear = (parseInt(yearStr) - 20).toString().padStart(2, '0');
+    const randomID = Math.floor(Math.random() * 90000) + 10000;
+    newId = displayYear + randomID;
+  }
+  const el = document.getElementById('orderIdDisplay');
+  if (el) {
+    el.value = newId;
+    updateIdStatus('available', '系統自動生成 (待檢查)');
+    checkOrderIDDuplicate(newId);
+  }
+  return newId;
+}
+
+async function checkOrderIDDuplicate(id) {
+  if (!id || currentMode !== 'create') return;
+  updateIdStatus('checking', '正在檢查單號是否重複...');
+  showLoader("正在驗證單號是否重複...");
+  try {
+    const url = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=${id}`);
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data && data.found) { updateIdStatus('duplicate', '🔴 重複：此單號已被其他客人使用，請修改！'); isIdValid = false; }
+    else { updateIdStatus('available', '🟢 可用：此單號目前唯一，可以使用。'); isIdValid = true; }
+  } catch (error) {
+    console.error('Check ID Error:', error);
+    updateIdStatus('available', '⚠️ 無法連接審核伺服器，請手動確認。');
+    isIdValid = true;
+  } finally {
+    hideLoader();
+  }
+  updateSyncButtonState();
+}
+
+function onIdInputBlur() {
+  const id = document.getElementById('orderIdDisplay').value.trim();
+  if (id !== orderID) {
+    orderID = id;
+    checkOrderIDDuplicate(id);
+  }
+}
+
+function updateSyncButtonState() {
+  const syncBtn = document.getElementById('syncBtn');
+  if (!syncBtn) return;
+  if (currentMode === 'create' && !isIdValid) {
+    syncBtn.disabled = true;
+    syncBtn.style.opacity = '0.5';
+    syncBtn.style.cursor = 'not-allowed';
+    syncBtn.title = '單號重複，請修正後再同步';
+  } else {
+    syncBtn.disabled = false;
+    syncBtn.style.opacity = '1';
+    syncBtn.style.cursor = 'pointer';
+    syncBtn.title = '';
+  }
+}
+
+// ===== ROLE (V39 adaptation: uses classList instead of body.className) =====
+let currentRole = 'ling';
+function setRole(role) {
+  currentRole = role;
+  // V39: preserve other body classes (mode-*, sandbox-mode, fhs-drawer-open)
+  document.body.classList.remove('role-ling', 'role-fat');
+  document.body.classList.add(role === 'fat' ? 'role-fat' : 'role-ling');
+  document.getElementById('roleLingBtn').classList.toggle('active', role === 'ling');
+  document.getElementById('roleFatBtn').classList.toggle('active', role === 'fat');
+  updateVerificationList();
+  generate();
+}
+
+// ===== MODE SWITCH (V39 adaptation: uses body classList for mode) =====
+let currentMode = null;
+let editTargetOrderId = null;
+let editTargetRecordId = null;
+let lastFetchedState = null;
+
+async function switchMode(mode) {
+  console.log("[DEBUG] switchMode triggered:", mode);
+  if (currentMode !== mode) {
+    const skipId = (mode === 'edit');
+    await resetForm(skipId);
+    currentMode = mode;
+
+    // V39: use body classList for mode
+    document.body.classList.remove('mode-create', 'mode-edit', 'mode-review');
+    document.body.classList.add('mode-' + mode);
+
+    // Update active tab
+    ['modeCreateBtn', 'modeEditBtn', 'modeReviewBtn'].forEach(btnId => {
+      const btn = document.getElementById(btnId);
+      if (btn) btn.classList.remove('active');
+    });
+    const activeMap = { create: 'modeCreateBtn', edit: 'modeEditBtn', review: 'modeReviewBtn' };
+    const activeBtn = document.getElementById(activeMap[mode]);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    if (mode === 'review') {
+      initReviewYears();
+      fetchGlobalReview();
+      openDrawer();
+    }
+  }
+}
+window.switchMode = switchMode;
+
+// ===== TOGGLES (verbatim from V36) =====
+function toggleAddon(id, cb) {
+  document.getElementById(id).classList.toggle('active', cb.checked);
+  generate();
+}
+
+function togglePart(boxId, cb) {
+  document.getElementById(boxId).classList.toggle('active', cb.checked);
+  generate();
+}
+
+// ===== RESET FORM (verbatim from V36) =====
+async function resetForm(skipId = false) {
+  const inputs = document.querySelectorAll('input:not([type="button"]):not([type="submit"])');
+  inputs.forEach(el => {
+    if (el.id === 'searchOrderId') return;
+    if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+    else if (el.type === 'number') el.value = "";
+    else el.value = "";
+  });
+  const selects = document.querySelectorAll('select');
+  selects.forEach(el => { el.selectedIndex = 0; });
+  ['contentP','contentK','contentM','contentW','k_baby_sec_box','k_elder_sec_box','k_family_box','m_baby_sec_box','m_elder_sec_box','box_parent','box_elder'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  if (!skipId) {
+    orderID = await generateOrderID();
+  } else {
+    orderID = "";
+  }
+  editTargetOrderId = null;
+  editTargetRecordId = null;
+  lastFetchedState = null;
+  document.getElementById('output-preview-a').value = "";
+  document.getElementById('output-preview-b').value = "";
+  const fetchStatus = document.getElementById('fetchStatus');
+  if (fetchStatus) {
+    fetchStatus.innerText = "請輸入單號並點擊讀取，系統將自動覆蓋下方表單。";
+    fetchStatus.style.color = "var(--fhs-text-muted)";
+  }
+  const idInput = document.getElementById('orderIdDisplay');
+  if (idInput) {
+    idInput.value = orderID;
+    idInput.disabled = true;
+    isIdEditing = false;
+    if (orderID) {
+      updateIdStatus('available', '系統自動生成 (待檢查)');
+      checkOrderIDDuplicate(orderID);
+    } else {
+      updateIdStatus('checking', '請先讀取舊單號...');
+    }
+  }
+  updateTimeOptions();
+  renderLimbGrid();
+  updateFamilyParts();
+  generate();
+}
+
+// ===== RENDER LIMB GRID (V39 adaptation: fhs- classes) =====
+function renderLimbGrid() {
+  const sub = document.getElementById("pSubCat").value;
+  const container = document.getElementById("limbContainer");
+  let html = '';
+  if (sub === "木框款式") {
+    html += `<div class="fhs-field-group"><label class="fhs-label">木框色款</label><select id="woodStyle" class="fhs-select" onchange="generate()"><option value="待定">待定</option><option value="粉紅款式">粉紅款式</option><option value="草原款式">草原款式</option></select></div>`;
+  } else {
+    html += `<div class="fhs-field-group"><label class="fhs-label">底座顏色</label><select id="baseColor" class="fhs-select" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
+  }
+  html += `<div style="margin-bottom:var(--fhs-space-3);"><div style="font-size:var(--fhs-text-sm); font-weight:var(--fhs-weight-semibold); color:var(--fhs-text-secondary); margin-bottom:var(--fhs-space-2);">【嬰兒】</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--fhs-space-2);">`;
+  ["左手","右手","左腳","右腳"].forEach(l => {
+    html += `<div><label class="fhs-mini-label">${l}</label><select class="limb-sel fhs-select" data-who="嬰兒" data-part="${l}" onchange="generate()" style="height:44px;">${colors.map(c => `<option value="${c}" ${c==='待定'?'selected':''}>${c}</option>`).join('')}</select></div>`;
+  });
+  html += `</div></div>`;
+  if (sub === "玻璃瓶款式") {
+    html += `<div style="margin-bottom:var(--fhs-space-3);"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--fhs-space-2);"><span style="font-size:var(--fhs-text-sm); font-weight:var(--fhs-weight-semibold); color:var(--fhs-text-secondary);">【父母】</span><label class="fhs-toggle-input-wrap"><input type="checkbox" id="en_parent" class="fhs-toggle-input" onchange="togglePart('box_parent',this)"><span class="fhs-toggle fhs-toggle-sm"></span></label></div><div id="box_parent" class="fhs-part-details"><div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--fhs-space-2);">`;
+    ["左手","右手"].forEach(l => {
+      html += `<div><label class="fhs-mini-label">${l}</label><select class="limb-sel fhs-select" data-who="父母" data-part="${l}" onchange="generate()" style="height:44px;">${colors.map(c => `<option value="${c}" ${c==='待定'?'selected':''}>${c}</option>`).join('')}</select></div>`;
+    });
+    html += `</div></div></div>`;
+    html += `<div style="margin-bottom:var(--fhs-space-3);"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--fhs-space-2);"><span style="font-size:var(--fhs-text-sm); font-weight:var(--fhs-weight-semibold); color:var(--fhs-text-secondary);">【大寶】</span><label class="fhs-toggle-input-wrap"><input type="checkbox" id="en_elder" class="fhs-toggle-input" onchange="togglePart('box_elder',this)"><span class="fhs-toggle fhs-toggle-sm"></span></label></div><div id="box_elder" class="fhs-part-details"><div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--fhs-space-2);">`;
+    ["左手","右手","左腳","右腳"].forEach(l => {
+      html += `<div><label class="fhs-mini-label">${l}</label><select class="limb-sel fhs-select" data-who="大寶" data-part="${l}" onchange="generate()" style="height:44px;">${colors.map(c => `<option value="${c}" ${c==='待定'?'selected':''}>${c}</option>`).join('')}</select></div>`;
+    });
+    html += `</div></div></div>`;
+  }
+  container.innerHTML = html;
+}
+
+// ===== UPDATE TIME OPTIONS (verbatim from V36) =====
+function updateTimeOptions() {
+  const hourSelect = document.getElementById("appTimeHour");
+  const ampmSelect = document.getElementById("appTimeAmPm").value;
+  const currentVal = hourSelect.value || "待定";
+  hourSelect.innerHTML = '<option value="待定">待定時間</option>';
+  if (ampmSelect === "上午" || ampmSelect === "AM") {
+    for (let h = 8; h <= 11; h++) { hourSelect.innerHTML += `<option value="${h}:00">${h}:00</option><option value="${h}:30">${h}:30</option>`; }
+  } else {
+    hourSelect.innerHTML += `<option value="12:00">12:00</option><option value="12:30">12:30</option>`;
+    for (let h = 1; h <= 8; h++) { hourSelect.innerHTML += `<option value="${h}:00">${h}:00</option><option value="${h}:30">${h}:30</option>`; }
+  }
+  hourSelect.value = [...hourSelect.options].some(o => o.value === currentVal) ? currentVal : "待定";
+  generate();
+}
+
+// ===== UPDATE FAMILY PARTS (verbatim from V36) =====
+function updateFamilyParts() {
+  const comboEl = document.getElementById("k_family_combo");
+  if (!comboEl) return;
+  const combo = comboEl.value;
+  const p1Wrap = document.getElementById("fam_p1_wrap");
+  const p1Lbl = document.getElementById("fam_p1_lbl");
+  const p1Sel = document.getElementById("fam_p1_sel");
+  const p2Wrap = document.getElementById("fam_p2_wrap");
+  const p2Lbl = document.getElementById("fam_p2_lbl");
+  const p2Sel = document.getElementById("fam_p2_sel");
+  const allParts = `<option value="左手">左手</option><option value="右手">右手</option><option value="左腳">左腳</option><option value="右腳">右腳</option>`;
+  const handParts = `<option value="左手">左手</option><option value="右手">右手</option>`;
+  const footParts = `<option value="左腳">左腳</option><option value="右腳">右腳</option>`;
+  if (combo === "S1_B") {
+    if (p1Lbl) p1Lbl.innerText = "👶嬰兒部位";
+    if (p1Sel) p1Sel.innerHTML = allParts;
+    if (p2Wrap) p2Wrap.style.display = "none";
+  } else if (combo === "S2_BB") {
+    if (p1Lbl) p1Lbl.innerText = "👶嬰兒手";
+    if (p1Sel) p1Sel.innerHTML = handParts;
+    if (p2Wrap) p2Wrap.style.display = "flex";
+    if (p2Lbl) p2Lbl.innerText = "👶嬰兒腳";
+    if (p2Sel) p2Sel.innerHTML = footParts;
+  } else if (combo === "S2_BE") {
+    if (p1Lbl) p1Lbl.innerText = "👶嬰兒部位";
+    if (p1Sel) p1Sel.innerHTML = allParts;
+    if (p2Wrap) p2Wrap.style.display = "flex";
+    if (p2Lbl) p2Lbl.innerText = "🧒大寶部位";
+    if (p2Sel) p2Sel.innerHTML = allParts;
+  }
+}
+
+// ===== FORMAT LIMBS (verbatim from V36) =====
+function formatLimbs(who) {
+  let lh = document.querySelector(`.limb-sel[data-who="${who}"][data-part="左手"]`)?.value;
+  let rh = document.querySelector(`.limb-sel[data-who="${who}"][data-part="右手"]`)?.value;
+  let lf = document.querySelector(`.limb-sel[data-who="${who}"][data-part="左腳"]`)?.value;
+  let rf = document.querySelector(`.limb-sel[data-who="${who}"][data-part="右腳"]`)?.value;
+  const hands = [];
+  if (lh && lh !== "無" && lh !== "待定") hands.push(`左手(${lh})`);
+  if (rh && rh !== "無" && rh !== "待定") hands.push(`右手(${rh})`);
+  const feet = [];
+  if (lf && lf !== "無" && lf !== "待定") feet.push(`左腳(${lf})`);
+  if (rf && rf !== "無" && rf !== "待定") feet.push(`右腳(${rf})`);
+  if (hands.length === 0 && feet.length === 0) return "";
+  let text = `【${who}】\n`;
+  if (hands.length > 0) text += ` - ${hands.join('、')}\n`;
+  if (feet.length > 0) text += ` - ${feet.join('、')}\n`;
+  return text;
+}
+
+// ===== GET FAMILY COMBO DETAILS (verbatim from V36) =====
+function getFamilyComboDetails() {
+  const combo = document.getElementById("k_family_combo")?.value;
+  const p1 = document.getElementById("fam_p1_sel")?.value;
+  let note = ""; let sType = "";
+  if (combo === "S1_B") { note = `父母手 + 嬰兒${p1}`; sType = "家庭(S1)"; }
+  else if (combo === "S2_BB") { const p2 = document.getElementById("fam_p2_sel")?.value; note = `父母手 + 嬰兒${p1} + 嬰兒${p2}`; sType = "家庭(S2)"; }
+  else if (combo === "S2_BE") { const p2 = document.getElementById("fam_p2_sel")?.value; note = `父母手 + 嬰兒${p1} + 大寶${p2}`; sType = "家庭(S2)"; }
+  return { note, sType };
+}
+
+// ===== GENERATE (verbatim from V36) =====
+function generate() {
+  const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
+  const mom = document.getElementById("momName").value || "待定";
+  const dateStr = document.getElementById("appDate").value;
+  const date = dateStr ? dateStr.replace(/-/g, '/') : "待定";
+  const hour = document.getElementById("appTimeHour").value;
+  const ampm = document.getElementById("appTimeAmPm").value;
+  const timeStr = hour === '待定' ? '待定' : `${hour} ${ampm}`;
+  const deposit = document.getElementById("deposit").value || "0";
+  const balance = document.getElementById("balance").value || "0";
+  const additional = document.getElementById("additional").value || "0";
+  let hasP = document.getElementById("enableP").checked;
+  let hasK = document.getElementById("enableK").checked;
+  let hasM = document.getElementById("enableM").checked;
+
+  const babyAgeArr = (document.getElementById("babyAgeMonths")?.value || "").split(/[個月]+/);
+  const babyMonth = parseInt(babyAgeArr[0] || "0");
+  const ageWarning = document.getElementById("babyAgeWarning");
+  if (ageWarning) {
+    ageWarning.hidden = !(hasP && document.getElementById("pSubCat").value === "木框款式" && babyMonth >= 3);
+  }
+
+  const custInfo = `【客人資料】\n聯絡人：${mom}\n取模時間：${date} ${timeStr}\n\n`;
+  const finInfo = `【財務結算】\n已付訂金/全數：$ ${deposit}\n未付產品尾數：$ ${balance}\n附加費用(車費/其它)：$ ${additional}\n\n`;
+  const disclaimer = `【免責聲明】\n-------------------\n`;
+  const noticeA = `🖼️ 【freehandsss 手模/擺設須知】\n⭐️ 手模會因BB郁動而有所瑕疵 (如氣泡、細紋)\n⭐️ 需否再次倒模，取決於倒模師 (如需額外取模：另+$150)\n⭐️ 木框/玻璃產品請保持乾燥，避免潮濕\n⭐️ 製成品需時約 3-5 個月 (十五至十八星期)\n⭐️ 由於後期製作全都是全人手製作，未能十全十美，完美主義者請慎重考慮\n感謝您的支持與配合！`;
+  const noticeB = `⚙️ 【freehandsss 金屬產品/吊飾須知】\n⭐️ - 製成品最少需預三個月\n⭐️ 本店金屬產品為手工飾品，每一件產品也是獨一無二\n⭐️ 3D掃描及鑄造過程可能產生微細成像誤差或紋理縮減\n⭐️ 銀飾產品會隨時間及環境因素自然氧化，屬正常現象\n⭐️ 因運送或製作過程產生之細小刮痕、小凹凸點屬非瑕疵範圍\n⭐️ 金屬製品不設預覽，成品未必能與照片100%相同\n📌 本店保留對上述條款及產品規格之最終解釋權`;
+
+  if (hasP) {
+    const sub = document.getElementById("pSubCat").value;
+    let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
+    if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}\n`;
+    if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}\n`;
+    detailsA += formatLimbs("嬰兒");
+    if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
+    if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
+    detailsA += `\n- 客製化刻字：${document.getElementById("pEngraving")?.value || "待定"}\n\n`;
+    let combinedA = `✨ Freehandsss 訂單確認\n（訂單編號#${currentOrderId}手模擺設）\n\n${custInfo}${detailsA}${finInfo}${disclaimer}${noticeA}`;
+    document.getElementById("output-preview-a").value = combinedA;
+    document.getElementById("preview-box-a").hidden = false;
+    document.getElementById("btnCopyA").style.display = "flex";
+  } else {
+    document.getElementById("preview-box-a").hidden = true;
+    document.getElementById("btnCopyA").style.display = "none";
+  }
+
+  const adultPForce = (hasP && document.getElementById("pSubCat").value === "木框款式");
+  const forceHint = document.getElementById("adultWoodForceHint");
+  if (forceHint) {
+    let items = buildOrderItemsForPricing();
+    let hasAdultInOrder = items.some(i => i.Product_Name.includes("成人") || (i.comboNote && (i.comboNote.includes("父母") || i.comboNote.includes("成人"))));
+    forceHint.hidden = !(adultPForce && hasAdultInOrder);
+  }
+
+  if (hasK || hasM) {
+    let detailsB = "【選購/加購項目】\n";
+    if (hasK) {
+      let kDetails = "";
+      const kBabyParts = [{ id: "lh", name: "嬰兒左手" }, { id: "rh", name: "嬰兒右手" }, { id: "lf", name: "嬰兒左腳" }, { id: "rf", name: "嬰兒右腳" }];
+      const kElderParts = [{ id: "e_lh", name: "大寶左手" }, { id: "e_rh", name: "大寶右手" }, { id: "e_lf", name: "大寶左腳" }, { id: "e_rf", name: "大寶右腳" }];
+      if (document.getElementById('k_baby_sec_en')?.checked) {
+        kBabyParts.forEach(p => { if (document.getElementById(`k_${p.id}_en`)?.checked) {
+          let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
+          let top = document.getElementById(`k_${p.id}_top`).value || "待定";
+          let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
+          kDetails += ` - ${p.name}(x${qty})\n   上排：${top} | 下排：${bot}\n`;
+        }});
+      }
+      if (document.getElementById('k_elder_sec_en')?.checked) {
+        kElderParts.forEach(p => { if (document.getElementById(`k_${p.id}_en`)?.checked) {
+          let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
+          let top = document.getElementById(`k_${p.id}_top`).value || "待定";
+          let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
+          kDetails += ` - ${p.name}(x${qty})\n   上排：${top} | 下排：${bot}\n`;
+        }});
+      }
+      if (document.getElementById('k_family_en')?.checked) {
+        let qty = document.getElementById(`k_family_qty`).value || "1";
+        let top = document.getElementById(`k_family_top`).value || "待定";
+        let bot = document.getElementById(`k_family_bot`).value || "待定";
+        let comboInfo = getFamilyComboDetails();
+        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻名：${top} | ${bot}\n`;
+      }
+      detailsB += `產品類別：鎖匙扣 (不鏽鋼)\n${kDetails || " - (未選擇)\n"}`;
+    }
+    if (hasM) {
+      let mDetails = "";
+      const mBabyParts = [{ id: "lh", name: "嬰兒左手", isFoot: false }, { id: "rh", name: "嬰兒右手", isFoot: false }, { id: "lf", name: "嬰兒左腳", isFoot: true }, { id: "rf", name: "嬰兒右腳", isFoot: true }];
+      const mElderParts = [{ id: "e_lh", name: "大寶左手", isFoot: false }, { id: "e_rh", name: "大寶右手", isFoot: false }, { id: "e_lf", name: "大寶左腳", isFoot: true }, { id: "e_rf", name: "大寶右腳", isFoot: true }];
+      if (document.getElementById('m_baby_sec_en')?.checked) {
+        mBabyParts.forEach(p => { if (document.getElementById(`m_${p.id}_en`)?.checked) {
+          let qty = document.getElementById(`m_${p.id}_qty`).value || "1";
+          let color = document.getElementById(`m_${p.id}_color`).value;
+          let eng = p.isFoot ? (document.getElementById(`m_${p.id}_eng`).value || "待定") : "不適用";
+          mDetails += ` - ${p.name}(x${qty}) | 用料：${color}\n   刻字：${eng}\n`;
+        }});
+      }
+      if (document.getElementById('m_elder_sec_en')?.checked) {
+        mElderParts.forEach(p => { if (document.getElementById(`m_${p.id}_en`)?.checked) {
+          let qty = document.getElementById(`m_${p.id}_qty`).value || "1";
+          let color = document.getElementById(`m_${p.id}_color`).value;
+          let eng = p.isFoot ? (document.getElementById(`m_${p.id}_eng`).value || "待定") : "不適用";
+          mDetails += ` - ${p.name}(x${qty}) | 用料：${color}\n   刻字：${eng}\n`;
+        }});
+      }
+      detailsB += `產品類別：頸鏈吊飾\n${mDetails || " - (未選擇)\n"}-頸鏈：金色/銀色 (二選一)\n\n`;
+    }
+    let combinedB = `✨ Freehandsss 訂單確認\n（訂單編號#${currentOrderId}金屬產品）\n\n${custInfo}${detailsB}${finInfo}${disclaimer}${noticeB}`;
+    document.getElementById("output-preview-b").value = combinedB;
+    document.getElementById("preview-box-b").hidden = false;
+    document.getElementById("btnCopyB").style.display = "flex";
+  } else {
+    document.getElementById("preview-box-b").hidden = true;
+    document.getElementById("btnCopyB").style.display = "none";
+  }
+
+  document.getElementById("no-preview-msg").style.display = (!hasP && !hasK && !hasM) ? "block" : "none";
+  updateVerificationList();
+  calculatePricing();
+}
+
+// ===== BUILD ORDER ITEMS (verbatim from V36) =====
+function buildOrderItemsForPricing() {
+  const partMap = { 'lh': '🖐️ 左手', 'rh': '🖐️ 右手', 'lf': '🦶 左腳', 'rf': '🦶 右腳', 'e_lh': '🖐️ 左手', 'e_rh': '🖐️ 右手', 'e_lf': '🦶 左腳', 'e_rf': '🦶 右腳' };
+  const enableP = getValSafe("enableP", false);
+  const hasMainProduct = enableP;
+  const modeTag = hasMainProduct ? "(加購)" : "(單購)";
+  let orderItemsArray = [];
+  if (hasMainProduct) {
+    let subCat = getValSafe("pSubCat", "");
+    let lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]');
+    let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
+    let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
+    let type = hasFoot ? "4肢" : "2肢";
+    let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+    orderItemsArray.push({ "Order_Item_Key": "TEMP_P_MAIN", "Product_Name": pName, "Quantity": 1 });
+  }
+  const enableK = getValSafe("enableK", false);
+  if (enableK) {
+    if (getValSafe('k_baby_sec_en', false)) {
+      const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+      babyParts.forEach(p => {
+        if (getValSafe(`k_${p.id}_en`, false)) {
+          let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
+          let finalObj = p.type; if (!hasMainProduct) finalObj = "嬰兒(P)";
+          orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+        }
+      });
+    }
+    if (getValSafe('k_elder_sec_en', false)) {
+      const elderParts = [{ id: "e_lh", type: "大寶" }, { id: "e_rh", type: "大寶" }, { id: "e_lf", type: "大寶" }, { id: "e_rf", type: "大寶" }];
+      elderParts.forEach(p => {
+        if (getValSafe(`k_${p.id}_en`, false)) {
+          let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
+          let finalObj = p.type; if (!hasMainProduct) finalObj = "家庭(P1)";
+          orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
+        }
+      });
+    }
+    if (getValSafe('k_family_en', false)) {
+      let qty = Math.max(1, Math.floor(Number(getValSafe('k_family_qty', '1')) || 1));
+      let comboInfo = getFamilyComboDetails();
+      let finalObj = comboInfo.sType;
+      if (!hasMainProduct) { if (finalObj === "家庭(S1)") finalObj = "家庭(P1)"; if (finalObj === "家庭(S2)") finalObj = "家庭(P2)"; }
+      orderItemsArray.push({ "Order_Item_Key": `TEMP_K_FAM`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Quantity": qty, "isFamily": true, "comboNote": comboInfo.note });
+    }
+  }
+  if (getValSafe('enableM', false)) {
+    if (getValSafe('m_baby_sec_en', false)) {
+      const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+      babyParts.forEach(p => {
+        if (getValSafe(`m_${p.id}_en`, false)) {
+          let qty = Math.max(1, Math.floor(Number(getValSafe(`m_${p.id}_qty`, "1")) || 1));
+          let color = getValSafe(`m_${p.id}_color`, "925銀") || "925銀"; if (color === "待定") color = "925銀";
+          let finalObj = p.type; if (!hasMainProduct) finalObj = "嬰兒(P)";
+          orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+        }
+      });
+    }
+    if (getValSafe('m_elder_sec_en', false)) {
+      const elderParts = [{ id: "e_lh", type: "大寶" }, { id: "e_rh", type: "大寶" }, { id: "e_lf", type: "大寶" }, { id: "e_rf", type: "大寶" }];
+      elderParts.forEach(p => {
+        if (getValSafe(`m_${p.id}_en`, false)) {
+          let qty = Math.max(1, Math.floor(Number(getValSafe(`m_${p.id}_qty`, "1")) || 1));
+          let color = getValSafe(`m_${p.id}_color`, "925銀") || "925銀"; if (color === "待定") color = "925銀";
+          let finalObj = p.type; if (!hasMainProduct) finalObj = "家庭(P1)";
+          orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
+        }
+      });
+    }
+  }
+  if (getValSafe('enableW', false)) {
+    if (getValSafe('w_wool_en', false)) {
+      let qty = Math.max(1, Math.floor(Number(getValSafe('w_wool_qty', '1')) || 1));
+      orderItemsArray.push({ "Order_Item_Key": "TEMP_W_WOOL", "Product_Name": "羊毛氈公仔 - 加購", "Quantity": qty, "isAccessory": true });
+    }
+  }
+  return orderItemsArray;
+}
+
+// ===== CALCULATE PRICING (verbatim from V36) =====
+function calculatePricing() {
+  let items = buildOrderItemsForPricing();
+  let totalSuggestedPrice = 0;
+  let totalDrawingCost = 0;
+  const uiPrice = document.getElementById("suggestedPrice");
+  const uiCost = document.getElementById("drawingCost");
+  const uiDetails = document.getElementById("pricingLogicDetails");
+  if (!items || items.length === 0) {
+    if (uiPrice) uiPrice.innerText = "0";
+    if (uiCost) uiCost.innerText = "0";
+    if (uiDetails) uiDetails.innerHTML = "請選擇對象、產品與數量以計算報價。";
+    document.getElementById('barSuggestedPrice').innerText = "$0";
+    document.getElementById('barDrawingCost').innerText = "$0";
+    document.getElementById('barAdditional').innerText = "$" + (document.getElementById('additional')?.value || "0");
+    return;
+  }
+  let logs = [];
+  const enableP = getValSafe("enableP", false);
+  const pSubCat = getValSafe("pSubCat", "");
+  const hasMainProduct = enableP;
+  const pModeState = hasMainProduct ? "S" : "P";
+  let hasAdult = items.some(i => i.Product_Name.includes("成人") || (i.comboNote && (i.comboNote.includes("父母") || i.comboNote.includes("成人"))));
+  let hasBaby = items.some(i => i.Product_Name.includes("嬰兒") || i.Product_Name.includes("大寶") || i.Product_Name.includes("家庭"));
+  let hasMainItem = items.some(i => !i.isAccessory);
+  let hasAccessory = items.some(i => i.isAccessory);
+  if (hasAccessory && !hasMainItem) {
+    logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 核心產品缺失：配件不可單獨購買。系統拒絕報價。</div>`);
+    if (uiPrice) uiPrice.innerText = "0"; if (uiCost) uiCost.innerText = "0";
+    if (uiDetails) uiDetails.innerHTML = logs.join('<br>'); return;
+  }
+  if (hasAdult && !hasBaby) {
+    logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 禁止單獨購買成人產品。系統拒絕報價。</div>`);
+    if (uiPrice) uiPrice.innerText = "0"; if (uiCost) uiCost.innerText = "0";
+    if (uiDetails) uiDetails.innerHTML = logs.join('<br>'); return;
+  }
+  if (enableP && pSubCat === "木框款式" && hasAdult) {
+    logs.push(`<div style="color:#D32F2F; font-weight:bold; background:#FFEBEE; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆鎖死] 木框不支援成人實體倒模！系統已強制判定為成人的「照片(P)」模式。</div>`);
+  }
+  let hasMetal = items.some(i => i.Order_Item_Key.includes("_K_"));
+  let hasSilver = items.some(i => i.Order_Item_Key.includes("_M_"));
+  let standaloneSurchargePaid = false;
+  let metalItems = items.filter(i => i.Order_Item_Key.includes("_K_"));
+  let silverItems = items.filter(i => i.Order_Item_Key.includes("_M_"));
+  let totalSystemAdditionalFee = 0;
+  if (!hasMainProduct && silverItems.length > 0) {
+    standaloneSurchargePaid = true; totalSuggestedPrice += 1000; totalSystemAdditionalFee += 1000;
+    logs.push(`<div style="color:#E65100; font-weight:bold;">🌟首飾單購圖紙費: +$1000 (已解鎖異部位附加費豁免)</div>`);
+  }
+  items.forEach((item) => {
+    let cost = 0; let name = item.Product_Name; let qty = item.Quantity;
+    let isPModeForce = (!hasMainProduct) || (enableP && pSubCat === "木框款式" && (name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")))));
+    if (item.isFamily) {
+      let parts = (item.comboNote || "").split(/[+、,， ]+/).filter(x => x.trim().length > 0);
+      parts.forEach(p => {
+        let isAdult = p.includes("父母") || p.includes("成人");
+        if (isAdult) { cost += isPModeForce ? 240 : 110; }
+        else { if (p.includes("(P)") || name.includes("(P)")) cost += 110; else if (p.includes("(S)") || name.includes("(S)")) cost += 60; else cost += (!hasMainProduct) ? 110 : 60; }
+      });
+    } else {
+      let isAdultItem = name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
+      if (name.includes("(P)")) { cost = isAdultItem ? 240 : 110; }
+      else if (name.includes("(S)")) { cost = isAdultItem ? 110 : 60; }
+      else { cost = isPModeForce ? (isAdultItem ? 240 : 110) : (isAdultItem ? 110 : 60); }
+    }
+    item.FatMoCost = cost * qty;
+    if (item.Order_Item_Key === "TEMP_P_MAIN") {
+      let price = 0;
+      if (name.includes("木框")) price = name.includes("4肢") ? 2380 : 2080;
+      else if (name.includes("玻璃")) price = name.includes("4肢") ? 1680 : 1380;
+      totalSuggestedPrice += price; totalDrawingCost += item.FatMoCost; item.CalculatedPrice = price;
+      logs.push(`🎨 <b>${name}</b>: $${price}`);
+      let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
+      let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
+      let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無" && s.value !== "待定");
+      if (hasAdultInSet && hasBabyInSet) { totalSuggestedPrice += 300; totalSystemAdditionalFee += 300; logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$300</div>`); }
+    }
+    if (item.isAccessory) {
+      let price = name.includes("羊毛氈") ? 680 : 0; price *= qty;
+      totalSuggestedPrice += price; item.CalculatedPrice = price;
+      logs.push(`🧸 <b>${name}</b> x${qty}: $${price}`); totalDrawingCost += item.FatMoCost;
+    }
+  });
+  function processTierPricing(groupItems, productType) {
+    groupItems.forEach((item, index) => {
+      let qty = item.Quantity; let price = 0; let surcharge = 0;
+      let isAdultItem = item.Product_Name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
+      if (item.isFamily) {
+        let tempPrice = 0;
+        if (qty === 1) tempPrice = 1080; else if (qty === 2) tempPrice = 1720; else if (qty === 3) tempPrice = 2280; else if (qty === 4) tempPrice = 2640; else tempPrice = 2640 + (qty - 4) * 660;
+        if (item.Product_Name.includes("S2")) surcharge = 100;
+        if (item.Product_Name.includes("P1") || item.Product_Name.includes("P2") || isAdultItem || pModeState === "P") surcharge = 300;
+        price = tempPrice + surcharge;
+      } else if (productType === '純銀') {
+        if (hasMainProduct) { if (qty === 1) price = 1980; else if (qty === 2) price = 2980; else price = 2980 + (qty - 2) * 800; }
+        else { if (qty === 1) price = 2280; else if (qty === 2) price = 3080; else price = 3080 + (qty - 2) * 800; }
+      } else {
+        if (pModeState === "S" && !item.Product_Name.includes("(P)")) {
+          if (qty === 1) price = 860; else if (qty === 2) price = 1200; else if (qty === 3) price = 1680; else if (qty === 4) price = 2000; else price = 2000 + (qty - 4) * 500;
+        } else {
+          if (qty === 1) price = 1580; else if (qty === 2) price = 2160; else if (qty === 3) price = 2940; else if (qty === 4) price = 3520; else price = 3520 + (qty - 4) * 880;
+        }
+        if (index === 1) {
+          if (!standaloneSurchargePaid) {
+            let crossFee = pModeState === "S" ? 100 : 300;
+            totalSuggestedPrice += crossFee; totalSystemAdditionalFee += crossFee;
+            logs.push(`<div style="color:#D32F2F; font-size:11px;">⚠️ 異部位建模費: +$${crossFee}</div>`);
+          }
+        }
+      }
+      let metalLogo = (productType === '純銀') ? '💍' : '🔑';
+      let dispName = item.Product_Name; if (item.PartDesc) dispName += ` (${item.PartDesc})`;
+      logs.push(`${metalLogo} <b>${dispName}</b> x${qty}: $${price}`);
+      item.CalculatedPrice = price; totalSuggestedPrice += price; totalDrawingCost += item.FatMoCost;
+    });
+  }
+  processTierPricing(metalItems, '金屬');
+  processTierPricing(silverItems, '純銀');
+  if (silverItems.length > 0) {
+    let totalSilverCharms = silverItems.reduce((acc, i) => acc + i.Quantity, 0);
+    let necklaces = Math.ceil(totalSilverCharms / 2);
+    logs.push(`<span style="color:#F9A826; font-weight:bold;">🎁 系統自動配給 ${necklaces} 條頸鏈</span>`);
+  }
+  window.fhsCurrentPricingItems = items;
+  window.fhsCurrentPricingMeta = { System_Final_Sale_Price: totalSuggestedPrice, System_Total_Cost: totalDrawingCost, System_Additional_Fee: totalSystemAdditionalFee };
+  if (uiPrice) uiPrice.innerText = totalSuggestedPrice;
+  if (uiCost) uiCost.innerText = totalDrawingCost;
+  if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+  // V36.2 balance placeholder
+  const depositVal = Number(document.getElementById('deposit')?.value) || 0;
+  const additionalVal = Number(document.getElementById('additional')?.value) || 0;
+  const expectedBal = totalSuggestedPrice - depositVal + additionalVal;
+  const balanceEl = document.getElementById('balance');
+  if (balanceEl) balanceEl.placeholder = expectedBal <= 0 ? "0 (已付清)" : expectedBal;
+  // Bottom bar update
+  document.getElementById('barSuggestedPrice').innerText = "$" + totalSuggestedPrice;
+  document.getElementById('barDrawingCost').innerText = "$" + totalDrawingCost;
+  document.getElementById('barAdditional').innerText = "$" + (document.getElementById('additional')?.value || "0");
+}
+
+// ===== COPY =====
+function copyMessageA() { const v = document.getElementById("output-preview-a"); v.select(); document.execCommand("copy"); showToast("已複製 Message A (手模擺設)！"); }
+function copyMessageB() { const v = document.getElementById("output-preview-b"); v.select(); document.execCommand("copy"); showToast("已複製 Message B (金屬產品)！"); }
+
+// ===== CAPTURE / RESTORE FORM STATE (verbatim from V36) =====
+function captureFormState() {
+  const state = {};
+  const container = document.getElementById('formContainer');
+  if (!container) return JSON.stringify({});
+  container.querySelectorAll('input, select').forEach(el => {
+    let key = el.id;
+    if (!key && el.classList.contains('limb-sel')) key = `limb_sel_${el.getAttribute('data-who')}_${el.getAttribute('data-part')}`;
+    if (key) {
+      if (key === 'nextSeqIdInput') return;
+      if (el.type === 'checkbox' || el.type === 'radio') state[key] = el.checked;
+      else state[key] = el.value;
+    }
+  });
+  return JSON.stringify(state);
+}
+
+function restoreFormState(data) {
+  try {
+    let state = data;
+    if (typeof data === 'string') {
+      let cleanData = data.trim();
+      if (cleanData.startsWith('=')) cleanData = cleanData.substring(1).trim();
+      if (cleanData.startsWith('"') && cleanData.endsWith('"')) {
+        try { const secondTry = JSON.parse(cleanData); if (typeof secondTry === 'string') cleanData = secondTry; else if (typeof secondTry === 'object') { state = secondTry; cleanData = null; } } catch (e) { }
+      }
+      if (cleanData) state = JSON.parse(cleanData);
+    }
+    if (!state || typeof state !== 'object') { console.warn("Invalid state data:", state); return; }
+    for (let key in state) {
+      if (!key.startsWith('limb_sel_')) {
+        if (key === 'searchOrderId') continue;
+        const el = document.getElementById(key);
+        if (el) {
+          if (el.type === 'checkbox' || el.type === 'radio') el.checked = state[key];
+          else el.value = state[key];
+          try { el.dispatchEvent(new Event('change', {bubbles:true})); el.dispatchEvent(new Event('input', {bubbles:true})); } catch (err) { }
+        }
+      }
+    }
+    ['enableP', 'enableK', 'enableM'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const contentId = id === 'enableP' ? 'contentP' : (id === 'enableK' ? 'contentK' : 'contentM');
+        const content = document.getElementById(contentId);
+        if (content) { if (el.checked) content.classList.add('active'); else content.classList.remove('active'); }
+      }
+    });
+    if (document.getElementById("appTimeAmPm")) updateTimeOptions();
+    if (state['appTimeHour']) { const hr = document.getElementById("appTimeHour"); if (hr) hr.value = state['appTimeHour']; }
+    if (document.getElementById("pSubCat")) renderLimbGrid();
+    if (document.getElementById("k_family_combo")) updateFamilyParts();
+    lastFetchedState = JSON.parse(captureFormState());
+    for (let key in state) {
+      if (key.startsWith('limb_sel_')) {
+        const parts = key.split('_'); const who = parts[2]; const part = parts[3];
+        const el = document.querySelector(`.limb-sel[data-who="${who}"][data-part="${part}"]`);
+        if (el) el.value = state[key];
+      }
+    }
+    generate();
+    console.log("✅ Form state restoration complete.");
+  } catch (e) { console.error("❌ restoreFormState Error:", e); alert("還原表單時發生錯誤: " + e.message); }
+}
+
+// ===== VERIFICATION LIST (verbatim from V36) =====
+function updateVerificationList() {
+  if (currentRole !== 'fat') return;
+  // No separate v-list-container in V39 — integrated into QA center
+}
+
+// ===== FETCH OLD ORDER =====
+async function fetchOldOrder() {
+  const oId = document.getElementById('searchOrderId').value.trim();
+  const fetchStatus = document.getElementById('fetchStatus');
+  if (!oId) { alert("請先輸入 Order_ID！"); return; }
+  showLoader(`正在從 n8n 尋找訂單 #${oId}...`);
+  fetchStatus.style.color = 'var(--fhs-text-muted)';
+  fetchStatus.innerText = "⏳ 讀取中，請稍候...";
+  try {
+    const fetchUrl = `${getWebhookUrl('https://yanhei.synology.me:8443/webhook/fetch-fhs-order')}?orderId=${oId}`;
+    const res = await fetch(fetchUrl);
+    const responseData = await res.json();
+    const data = Array.isArray(responseData) ? responseData[0] : responseData;
+    if (!data || data.found === false) {
+      fetchStatus.style.color = 'red';
+      fetchStatus.innerText = "⚠️ 找不到該訂單，請確認單號正確。";
+      return;
+    }
+    if (data.Deposit !== undefined) document.getElementById('deposit').value = data.Deposit;
+    if (data.Balance !== undefined) document.getElementById('balance').value = data.Balance;
+    if (data.Additional_Fee !== undefined) document.getElementById('additional').value = data.Additional_Fee;
+    editTargetOrderId = oId;
+    orderID = oId;
+    const idDisp = document.getElementById('orderIdDisplay');
+    if (idDisp) idDisp.value = oId;
+    updateIdStatus('available', '✅ 讀取成功！目前為「修改」模式。');
+    isIdValid = true;
+    if (data.Raw_Form_State) {
+      restoreFormState(data.Raw_Form_State);
+      fetchStatus.style.color = 'green';
+      fetchStatus.innerText = "✅ 讀取成功！畫面已還原。";
+    } else {
+      fetchStatus.style.color = 'orange';
+      fetchStatus.innerText = "⚠️ 讀取成功，但該舊單無儲存狀態紀錄。";
+    }
+  } catch (err) {
+    fetchStatus.style.color = 'var(--fhs-danger)';
+    fetchStatus.innerText = "❌ 網路錯誤，無法連接至 n8n 讀取資料。";
+    console.error(err);
+  } finally {
+    hideLoader();
+  }
+}
+
+function handleFuzzySearch() {
+  const input = document.getElementById('searchOrderId').value.trim();
+  const sugg = document.getElementById('fetchStatus');
+  if (input.length < 2) { sugg.innerHTML = '請輸入單號並點擊讀取。'; sugg.style.color = 'var(--fhs-text-muted)'; return; }
+  sugg.style.color = 'var(--fhs-accent)';
+  sugg.innerHTML = `正在輸入: ${input}... (輸入完整ID後點擊「讀取」)`;
+}
+
+async function jumpToEditOrder(oId) {
+  if (!oId) return;
+  await switchMode('edit');
+  const searchInput = document.getElementById('searchOrderId');
+  if (searchInput) { searchInput.value = oId; fetchOldOrder(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+}
+
+// ===== SANDBOX =====
+let isDevMode = false;
+
+function initSandboxMode() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'dev') { isDevMode = true; activateSandboxUI(); }
+}
+
+function activateSandboxUI() {
+  isDevMode = true;
+  const banner = document.getElementById('sandboxBanner');
+  const btn = document.getElementById('sandboxToggleBtn');
+  document.body.classList.add('sandbox-mode');
+  if (banner) banner.hidden = false;
+  if (btn) btn.innerText = '🛠️ 沙盒模式 ON';
+  console.log('🛠️ [SANDBOX] 已啟動沙盒模式');
+}
+
+function deactivateSandboxUI() {
+  isDevMode = false;
+  const banner = document.getElementById('sandboxBanner');
+  const btn = document.getElementById('sandboxToggleBtn');
+  document.body.classList.remove('sandbox-mode');
+  if (banner) banner.hidden = true;
+  if (btn) btn.innerText = '🛠️ 進入沙盒模式';
+  console.log('🏭 [PRODUCTION] 已切換回生產模式');
+}
+
+function toggleSandbox() {
+  if (isDevMode) { if (confirm('確定要切換回生產模式嗎？所有操作將直接寫入 Airtable 正式資料庫。')) deactivateSandboxUI(); }
+  else activateSandboxUI();
+}
+
+function getWebhookUrl(originalUrl) {
+  if (isDevMode && !originalUrl.includes('fetch-global-review')) return originalUrl.replace('/webhook/', '/webhook-test/');
+  return originalUrl;
+}
+
+// ===== SYNC TO AIRTABLE =====
+async function syncToAirtable() {
+  const btn = document.getElementById("syncBtn");
+  if (!btn) return;
+  const originalText = btn.innerText;
+  btn.innerText = "🔄 數據發射中...";
+  btn.disabled = true;
+  showLoader("🚀 正在同步數據至 Airtable...");
+
+  const rawDate = getValSafe("appDate", null);
+  const enableP = getValSafe("enableP", false);
+  const hasMainProduct = enableP;
+  const modeTag = hasMainProduct ? "(加購)" : "(單購)";
+  let orderItemsArray = [];
+  const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
+
+  try {
+    if (hasMainProduct) {
+      let subCat = getValSafe("pSubCat", "");
+      let lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]');
+      let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
+      let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
+      let type = hasFoot ? "4肢" : "2肢";
+      let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+      orderItemsArray.push({ "Order_Item_Key": `${currentOrderId}_P_MAIN`, "Product_Name": pName, "Quantity": 1 });
+    }
+
+    const enableK = document.getElementById("enableK");
+    if (enableK && enableK.checked) {
+      if (getValSafe('k_baby_sec_en', false)) {
+        const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+        babyParts.forEach(p => {
+          if (getValSafe(`k_${p.id}_en`, false)) {
+            let qty = Number(getValSafe(`k_${p.id}_qty`, "1")) || 1;
+            let topEng = getValSafe(`k_${p.id}_top`, ""); let botEng = getValSafe(`k_${p.id}_bot`, "");
+            let engNotes = (topEng || botEng) ? `[上排]${topEng || '待定'} [下排]${botEng || '待定'}` : '';
+            let finalObj = hasMainProduct ? p.type : "嬰兒(P)";
+            orderItemsArray.push({ "Order_Item_Key": `${currentOrderId}_K_${p.id.toUpperCase()}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Mode": modeTag, "Quantity": qty, "Notes": engNotes });
+          }
+        });
+      }
+      if (getValSafe('k_elder_sec_en', false)) {
+        const elderParts = [{ id: "e_lh", type: "大寶" }, { id: "e_rh", type: "大寶" }, { id: "e_lf", type: "大寶" }, { id: "e_rf", type: "大寶" }];
+        elderParts.forEach(p => {
+          if (getValSafe(`k_${p.id}_en`, false)) {
+            let qty = Number(getValSafe(`k_${p.id}_qty`, "1")) || 1;
+            let topEng = getValSafe(`k_${p.id}_top`, ""); let botEng = getValSafe(`k_${p.id}_bot`, "");
+            let engNotes = (topEng || botEng) ? `[上排]${topEng || '待定'} [下排]${botEng || '待定'}` : '';
+            let finalObj = hasMainProduct ? p.type : "家庭(P1)";
+            orderItemsArray.push({ "Order_Item_Key": `${currentOrderId}_K_E_${p.id.replace('e_','').toUpperCase()}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Mode": modeTag, "Quantity": qty, "Notes": engNotes });
+          }
+        });
+      }
+      if (getValSafe('k_family_en', false)) {
+        let qty = Number(getValSafe('k_family_qty', '1')) || 1;
+        let topEng = getValSafe('k_family_top', ''); let botEng = getValSafe('k_family_bot', '');
+        let engNotes = (topEng || botEng) ? `[上排]${topEng || '待定'} [下排]${botEng || '待定'}` : '';
+        let comboInfo = getFamilyComboDetails();
+        let finalObj = comboInfo.sType;
+        if (!hasMainProduct) { if (finalObj === "家庭(S1)") finalObj = "家庭(P1)"; if (finalObj === "家庭(S2)") finalObj = "家庭(P2)"; }
+        orderItemsArray.push({ "Order_Item_Key": `${currentOrderId}_K_FAM_COMBO`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Mode": modeTag, "Quantity": qty, "Notes": engNotes ? engNotes + ` | 合成: ${comboInfo.note}` : `合成: ${comboInfo.note}` });
+      }
+    }
+
+    if (getValSafe('enableM', false)) {
+      if (getValSafe('m_baby_sec_en', false)) {
+        const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
+        babyParts.forEach(p => {
+          if (getValSafe(`m_${p.id}_en`, false)) {
+            let qty = Math.max(1, Math.floor(Number(getValSafe(`m_${p.id}_qty`, "1")) || 1));
+            let color = getValSafe(`m_${p.id}_color`, "925銀"); if (color === "待定" || color === "") color = "925銀";
+            let engText = getValSafe(`m_${p.id}_eng`, "");
+            let finalObj = hasMainProduct ? p.type : "嬰兒(P)";
+            orderItemsArray.push({ "Order_Item_Key": `${currentOrderId}_M_${p.id.toUpperCase()}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "Mode": modeTag, "Quantity": qty, "Notes": engText || '' });
+          }
+        });
+      }
+      if (getValSafe('m_elder_sec_en', false)) {
+        const elderParts = [{ id: "e_lh", type: "大寶" }, { id: "e_rh", type: "大寶" }, { id: "e_lf", type: "大寶" }, { id: "e_rf", type: "大寶" }];
+        elderParts.forEach(p => {
+          if (getValSafe(`m_${p.id}_en`, false)) {
+            let qty = Math.max(1, Math.floor(Number(getValSafe(`m_${p.id}_qty`, "1")) || 1));
+            let color = getValSafe(`m_${p.id}_color`, "925銀"); if (color === "待定" || color === "") color = "925銀";
+            let engText = getValSafe(`m_${p.id}_eng`, "");
+            let finalObj = hasMainProduct ? p.type : "家庭(P1)";
+            orderItemsArray.push({ "Order_Item_Key": `${currentOrderId}_M_E_${p.id.replace('e_','').toUpperCase()}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "Mode": modeTag, "Quantity": qty, "Notes": engText || '' });
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("商品擷取遇到小問題，但仍會繼續送出訂單:", err);
+  }
+
+  if (window.fhsCurrentPricingItems && window.fhsCurrentPricingItems.length === orderItemsArray.length) {
+    orderItemsArray.forEach((oItem, idx) => {
+      let pItem = window.fhsCurrentPricingItems[idx];
+      if (pItem) { oItem.Suggested_Price_Manual = pItem.CalculatedPrice; oItem.Drawing_Cost = pItem.FatMoCost; }
+    });
+  } else {
+    console.warn("⚠️ 報價陣列與擷取陣列長度不符，跳過注入 Payload", window.fhsCurrentPricingItems, orderItemsArray);
+  }
+
+  const payload = {
+    "action": currentMode,
+    "Order_ID": currentMode === 'edit' ? editTargetOrderId : currentOrderId,
+    "Customer_Name": document.getElementById("momName") ? document.getElementById("momName").value || "待定" : "待定",
+    "Appointment_Date": rawDate ? rawDate : null,
+    "Deposit": document.getElementById("deposit") ? Number(document.getElementById("deposit").value) || 0 : 0,
+    "Balance": document.getElementById("balance") ? Number(document.getElementById("balance").value) || 0 : 0,
+    "Additional_Fee": document.getElementById("additional") ? Number(document.getElementById("additional").value) || 0 : 0,
+    "System_Total_Cost": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Total_Cost : 0,
+    "System_Final_Sale_Price": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Final_Sale_Price : 0,
+    "System_Additional_Fee": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Additional_Fee : 0,
+    "Full_Order_Text": ((document.getElementById("output-preview-a")?.value || "") + "\n\n" + (document.getElementById("output-preview-b")?.value || "")).trim(),
+    "Clean_Order_Text": ((document.getElementById("output-preview-a")?.value || "").split('🖼️')[0] + "\n" + (document.getElementById("output-preview-b")?.value || "").split('⚙️')[0]).trim(),
+    "Raw_Form_State": (function() {
+      let rawStateStr = captureFormState();
+      try {
+        let rawStateObj = JSON.parse(rawStateStr);
+        if (window.fhsCurrentPricingMeta) {
+          rawStateObj['__FHS_Quote_Mode'] = modeTag;
+          let hasAdult = window.fhsCurrentPricingItems && window.fhsCurrentPricingItems.some(i => i.Product_Name.includes("成人") || (i.comboNote && i.comboNote.includes("父母")));
+          rawStateObj['__FHS_Quote_HasAdult'] = hasAdult ? "Yes" : "No";
+          rawStateObj['__System_Total_Cost'] = window.fhsCurrentPricingMeta.System_Total_Cost;
+          rawStateObj['__System_Final_Sale_Price'] = window.fhsCurrentPricingMeta.System_Final_Sale_Price;
+          rawStateObj['__System_Additional_Fee'] = window.fhsCurrentPricingMeta.System_Additional_Fee;
+        }
+        return JSON.stringify(rawStateObj);
+      } catch (e) { return rawStateStr; }
+    })(),
+    "Update_Note": (function() {
+      if (currentMode !== 'edit' || !lastFetchedState) return "";
+      const currentState = JSON.parse(captureFormState());
+      const changes = [];
+      const labelMap = { 'momName': '聯絡人', 'appDate': '日期', 'appTimeHour': '時', 'appTimeAmPm': '上午/下午', 'deposit': '訂金', 'balance': '尾數', 'additional': '附加費', 'enableP': '石膏開關', 'enableK': '金屬開關', 'enableM': '銀飾開關' };
+      for (let k in currentState) { if (currentState[k] !== lastFetchedState[k]) { const label = labelMap[k] || k.replace('limb_sel_', '部位:'); changes.push(label); } }
+      return changes.length > 0 ? "🔄 更新項目: " + changes.join(', ') : "ℹ️ 無明顯內容變動";
+    })(),
+    "Order_Items_List": orderItemsArray
+  };
+
+  const webhookUrl = getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b");
+  try {
+    const response = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (response.ok) {
+      alert("✅ 同步成功！訂單數據與商品明細已完美射入 NAS。");
+      if (currentMode === 'create' && systemConfig.mode === 'sequential') { systemConfig.last_id = currentOrderId; saveSeqSettings('silent'); }
+      if (currentMode === 'create') {
+        editTargetOrderId = currentOrderId;
+        document.getElementById('searchOrderId').value = currentOrderId;
+        await switchMode('edit');
+        const fetchStatus = document.getElementById('fetchStatus');
+        if (fetchStatus) fetchStatus.innerText = "✨ 新單已建立，現在處於「更新模式」。";
+      }
+    } else {
+      alert("❌ 同步失敗，請檢查 NAS 上的 n8n 節點是否運作正常。");
+    }
+  } catch (error) {
+    console.error("Webhook 錯誤:", error);
+    alert("❌ 網路連線錯誤，無法連接至 NAS。請確認網路環境或 Port 8443 的對外連線。");
+  } finally {
+    btn.innerText = originalText;
+    btn.disabled = false;
+    hideLoader();
+  }
+}
+
+// ===== DELETE MODAL (V39 adaptation) =====
+let currentDeleteId = null;
+let currentDeleteOrderId = null;
+
+function openDeleteModal(recordId, orderId) {
+  currentDeleteId = recordId;
+  currentDeleteOrderId = orderId;
+  document.getElementById('deleteModalOrderId').innerText = orderId || '(未知)';
+  document.getElementById('deleteConfirmModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteConfirmModal').classList.remove('active');
+  currentDeleteId = null; currentDeleteOrderId = null;
+}
+
+async function executeDeleteOrder() {
+  if (!currentDeleteId) return;
+  const order = globalOrders.find(o => o.id === currentDeleteId);
+  if (order && order.Order_ID === 'FHS-SYSTEM-CONFIG') {
+    alert("⛔ 拒絕執行：FHS-SYSTEM-CONFIG 是系統核心紀錄，不可刪除！");
+    closeDeleteModal(); return;
+  }
+  const btn = document.getElementById('confirmDeleteBtn');
+  const originalText = btn.innerText;
+  btn.innerText = "⏳ 正在強力刪除..."; btn.disabled = true;
+  try {
+    showLoader("正在從系統中徹底刪除訂單...");
+    const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta");
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify([{ Record_ID: currentDeleteId, Order_ID: currentDeleteOrderId, action: 'delete' }]) });
+    if (res.ok) {
+      globalOrders = globalOrders.filter(o => o.id !== currentDeleteId);
+      renderReviewTable(globalOrders);
+      closeDeleteModal();
+      showToast("🗑️ 訂單已成功刪除。");
+    } else {
+      alert("❌ 刪除失敗，請檢查 n8n 節點是否正常。");
+    }
+  } catch (err) {
+    console.error("Delete Error:", err);
+    alert("❌ 刪除失敗：網路連線錯誤。");
+  } finally {
+    btn.innerText = originalText; btn.disabled = false; hideLoader();
+  }
+}
+
+// ===== GLOBAL REVIEW =====
+let reviewFetchTimeout = null;
+let globalOrders = [];
+let metadataUpdateQueue = [];
+let metadataUpdateTimer = null;
+
+function initReviewYears() {
+  const yearSel = document.getElementById("reviewYear");
+  if (yearSel.options.length > 0) return;
+  const currentYear = new Date().getFullYear();
+  yearSel.innerHTML = '<option value="">全部年份</option>';
+  for (let y = currentYear; y >= currentYear - 3; y--) yearSel.innerHTML += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+}
+
+async function fetchGlobalReview() {
+  const year = document.getElementById("reviewYear").value;
+  const month = document.getElementById("reviewMonth").value;
+  const status = document.getElementById("reviewStatus").value;
+  const batch = document.getElementById("reviewBatch").value.trim();
+  const search = document.getElementById("reviewSearch").value.trim();
+  const tbody = document.getElementById("reviewTableBody");
+  const loading = document.getElementById("reviewLoading");
+  showLoader("正在載入全域核對資料...");
+  loading.hidden = false;
+  tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中...</td></tr>';
+  let fetchUrl = getWebhookUrl("https://yanhei.synology.me:8443/webhook/fetch-global-review");
+  const params = [];
+  if (year) params.push(`year=${year}`);
+  if (month) params.push(`month=${month}`);
+  if (status) params.push(`status=${encodeURIComponent(status)}`);
+  if (batch) params.push(`batch=${encodeURIComponent(batch)}`);
+  if (search) params.push(`search=${encodeURIComponent(search)}`);
+  if (params.length > 0) fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + params.join('&');
+  try {
+    const res = await fetch(fetchUrl, { method: 'GET' });
+    const data = await res.json();
+    loading.hidden = true;
+    if (data && data.orders) {
+      globalOrders = data.orders;
+      renderReviewTable(globalOrders);
+    } else {
+      tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:var(--fhs-danger);">⚠️ 未找到符合條件的訂單</td></tr>';
+    }
+  } catch (err) {
+    console.error(err);
+    loading.hidden = true;
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:var(--fhs-danger);">❌ 網路連線錯誤，無法載入資料。請檢查 n8n Webhook。</td></tr>';
+  } finally {
+    hideLoader();
+  }
+}
+
+function renderReviewTable(orders) {
+  const tbody = document.getElementById("reviewTableBody");
+  if (!orders || orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">📩 沒有符合條件的訂單</td></tr>';
+    const badge = document.getElementById('reviewCountBadge');
+    if (badge) badge.style.display = 'none';
+    return;
+  }
+  const badge = document.getElementById('reviewCountBadge');
+  if (badge) { badge.textContent = `${orders.length} 筆`; badge.style.display = 'inline-flex'; }
+  // Basic render
+  let html = "";
+  orders.forEach(o => {
+    const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
+    html += `<tr><td><div class="review-jump-pill" onclick="jumpToEditOrder('${o.Order_ID}')">${o.Order_ID || 'N/A'} ➜</div></td><td>${cDate}</td><td>${o.Customer || '-'}</td></tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+async function saveInlineEdit(recordId, field, elementId, itemIndex) {
+  const el = document.getElementById(elementId);
+  const value = el ? el.value : '';
+  const ind = document.getElementById(`save-indicator-${recordId}`);
+  if (ind) { ind.innerText = "⏳..."; ind.style.color = "#888"; }
+  const orderIndex = globalOrders.findIndex(o => o.id === recordId);
+  if (orderIndex === -1) return;
+  const o = globalOrders[orderIndex];
+  if (field === 'Admin_Notes') o.Admin_Notes = value;
+  const updateEntry = { Record_ID: recordId, Item_Record_ID: null, Batch_Number: '', Process_Status: '0 什麼都未做', Admin_Notes: o.Admin_Notes || '' };
+  const existingIdx = metadataUpdateQueue.findIndex(e => e.Record_ID === updateEntry.Record_ID);
+  if (existingIdx > -1) metadataUpdateQueue[existingIdx] = updateEntry; else metadataUpdateQueue.push(updateEntry);
+  clearTimeout(metadataUpdateTimer);
+  metadataUpdateTimer = setTimeout(async () => {
+    const queueToSubmit = [...metadataUpdateQueue]; metadataUpdateQueue = [];
+    try {
+      showLoader("正在更新資料...");
+      const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta");
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(queueToSubmit) });
+      if (res.ok) {
+        queueToSubmit.forEach(e => { const indicator = document.getElementById(`save-indicator-${e.Record_ID}`); if (indicator) { indicator.innerText = "✔ 已儲存"; indicator.style.color = "var(--fhs-success)"; setTimeout(() => { if (indicator.innerText === "✔ 已儲存") indicator.innerText = ""; }, 2000); } });
+      } else {
+        queueToSubmit.forEach(e => { const indicator = document.getElementById(`save-indicator-${e.Record_ID}`); if (indicator) { indicator.innerText = "❌ 失敗"; indicator.style.color = "red"; } });
+      }
+    } catch(e) {
+      queueToSubmit.forEach(e => { const indicator = document.getElementById(`save-indicator-${e.Record_ID}`); if (indicator) { indicator.innerText = "❌ 失敗"; indicator.style.color = "red"; } });
+    } finally { hideLoader(); }
+  }, 800);
+}
+
+// ===== QA FUNCTIONS (verbatim from V36) =====
+function getProductDimensions(item) {
+  let itemIDStr = (item.Item_ID || '').toUpperCase();
+  let rawID = (item.OrderKey || item.Order_Item_Key || '').toUpperCase();
+  let rawDesc = (item.Product || item.Product_Name || '').trim();
+  let spec = (item.Specification || '').trim();
+  let combinedSearch = (itemIDStr + " " + rawDesc + " " + spec).toUpperCase();
+  if (rawDesc) rawDesc = rawDesc.replace(/(📦|✋|🦶|🔑|💍|🎨|⚙️|✨|👑)/g, '').trim();
+  let target = "👶 嬰兒";
+  if (rawID.includes('_E_') || combinedSearch.includes('大寶')) target = "👦 大寶";
+  else if (rawID.includes('_FAM_') || rawID.includes('_F_') || combinedSearch.includes('家庭')) target = "👨‍👩‍👧‍👦 家庭";
+  else if (combinedSearch.includes('成人')) target = "👤 成人";
+  let part = "";
+  if (rawID.includes('_LH') || combinedSearch.includes('左手')) part = "✋ 左手";
+  else if (rawID.includes('_RH') || combinedSearch.includes('右手')) part = "✋ 右手";
+  else if (rawID.includes('_LF') || combinedSearch.includes('左腳')) part = "🦶 左腳";
+  else if (rawID.includes('_RF') || combinedSearch.includes('右腳')) part = "🦶 右腳";
+  else if (target.includes('家庭')) part = "👨‍👩‍👧‍👦 合成";
+  let category = "📦 其他"; let emoji = "📦";
+  if (rawID.includes('_K_') || combinedSearch.includes('鎖匙扣')) { category = "🔑 鎖匙扣"; emoji = "🔑"; }
+  else if (rawID.includes('_M_') || combinedSearch.search(/吊飾|頸鏈/) > -1) { category = "💍 純銀吊飾"; emoji = "💍"; }
+  else if (rawID.includes('_P_') || combinedSearch.search(/擺設|木框|玻璃/) > -1) { category = "🎨 立體擺設"; emoji = "🎨"; }
+  let material = "";
+  if (combinedSearch.search(/不[銹鏽]鋼/) > -1) material = "⚙️ 不銹鋼";
+  else if (combinedSearch.includes('925金')) material = "👑 925金";
+  else if (combinedSearch.search(/925銀|銀/) > -1) material = "✨ 925銀";
+  let style = ""; let theme = ""; let count = "";
+  if (category.includes('立體擺設')) {
+    if (combinedSearch.includes('木框')) style = "🖼️ 木框";
+    else if (combinedSearch.search(/玻璃[瓶罩]|瓶/) > -1) style = "🧴 玻璃瓶";
+    if (combinedSearch.includes('粉紅')) theme = "🌸 粉紅";
+    if (combinedSearch.search(/4肢|四肢/) > -1) count = "✋🦶 4肢";
+    else if (combinedSearch.search(/2肢|兩肢/) > -1) count = "✋🦶 2肢";
+  }
+  return { target, part, category, emoji, material, style, theme, count };
+}
+
+function appendQALog(msg, type = 'info') {
+  const log = document.getElementById('qaLog');
+  if (!log) return;
+  const span = document.createElement('span');
+  const ts = new Date().toLocaleTimeString('zh-HK');
+  span.textContent = `[${ts}] ${msg}\n`;
+  span.style.color = type === 'pass' ? 'var(--fhs-success)' : type === 'fail' ? 'var(--fhs-danger)' : 'var(--fhs-text-secondary)';
+  span.style.display = 'block';
+  log.appendChild(span);
+  log.scrollTop = log.scrollHeight;
+}
+function clearQALog() { const log = document.getElementById('qaLog'); if (log) log.innerHTML = ''; }
+
+function runDataAccuracyCheck() {
+  appendQALog('========== 🧪 數據精確度檢核開始 ==========');
+  let passed = 0, failed = 0;
+  const samples = [
+    { i: { Item_ID: 'FHS-K_LH', Product: '嬰兒鎖匙扣' }, e: '👶 嬰兒 / 🔑 鎖匙扣' },
+    { i: { Item_ID: 'FHS-K_E_RH', Product: '大寶鎖匙扣' }, e: '👦 大寶 / ✋ 右手' },
+    { i: { Item_ID: 'FHS-M_LH', Product: '嬰兒吊飾-925銀' }, e: '✨ 925銀 / 💍 純銀吊飾' },
+    { i: { Item_ID: 'FHS-P_WOOD', Product: '木框套裝(4肢)' }, e: '🎨 立體擺設 / ✋🦶 4肢' }
+  ];
+  samples.forEach(s => {
+    const res = getProductDimensions(s.i);
+    const actual = `${res.target} / ${res.category}${res.part ? ' / ' + res.part : ''}${res.count ? ' / ' + res.count : ''}`;
+    if (actual.includes(s.e.split(' / ')[0]) && actual.includes(s.e.split(' / ')[1])) { appendQALog(`✅ [通過] ${actual}`, 'pass'); passed++; }
+    else { appendQALog(`❌ [失敗] 預期: ${s.e}, 實際: ${actual}`, 'fail'); failed++; }
+  });
+  appendQALog(`========== 📊 ${passed} 通過 / ${failed} 失敗 ==========`, failed > 0 ? 'fail' : 'pass');
+}
+
+async function runInterfaceStabilityTest() {
+  appendQALog('========== 🖥️ 介面穩定性檢驗開始 ==========');
+  try {
+    const originalState = captureFormState();
+    appendQALog('📸 步驟1：已捕捉當前表單狀態');
+    if (document.getElementById('momName')) document.getElementById('momName').value = '__UI_TEST__';
+    if (document.getElementById('deposit')) document.getElementById('deposit').value = '9999';
+    appendQALog('🔄 步驟2：已注入測試數據');
+    restoreFormState(originalState);
+    appendQALog('⏳ 步驟3：已呼叫 restoreFormState，等待 DOM 緩衝...');
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const restoredState = JSON.parse(captureFormState());
+    const origParsed = JSON.parse(originalState);
+    let mismatches = [];
+    const criticalFields = ['momName', 'appDate', 'enableP', 'enableK', 'enableM', 'deposit', 'balance'];
+    criticalFields.forEach(key => { if (String(restoredState[key]) !== String(origParsed[key])) mismatches.push(`${key}: '${origParsed[key]}' → '${restoredState[key]}'`); });
+    if (mismatches.length === 0) appendQALog('✅ [PASS] 所有關鍵欄位還原成功', 'pass');
+    else mismatches.forEach(m => appendQALog(`❌ [FAIL] ${m}`, 'fail'));
+    appendQALog('========== 🖥️ UI 完整性稽核完成 ==========', mismatches.length > 0 ? 'fail' : 'pass');
+  } catch (e) { appendQALog(`❌ [ERROR] ${e.message}`, 'fail'); }
+}
+
+function timemachineTest() {
+  appendQALog('========== 🕐 歷史資料深度注入測試 ==========');
+  if (!globalOrders || globalOrders.length === 0) { appendQALog('⚠️ [WARN] 全域核對中心無資料', 'fail'); return; }
+  const candidate = globalOrders.find(o => o.Raw_Form_State && o.Raw_Form_State !== '{}' && o.Raw_Form_State !== '');
+  if (!candidate) { appendQALog('⚠️ [WARN] 找不到具有歷史狀態記錄的訂單', 'fail'); return; }
+  appendQALog(`📦 選取測試樣本: ${candidate.Order_ID || candidate.id}`);
+  try { restoreFormState(candidate.Raw_Form_State); appendQALog('✅ [PASS] 歷史狀態資料已成功注入 UI', 'pass'); }
+  catch (e) { appendQALog(`❌ [FAIL] ${e.message}`, 'fail'); }
+  appendQALog('========== 🕐 歷史注入測試完成 ==========');
+}
+
+async function runAllAudits() {
+  clearQALog(); appendQALog('🚀 V39 系統自動化品質檢驗引擎啟動...');
+  appendQALog(`📌 當前模式: ${isDevMode ? '🛠️ 沙盒模式' : '🏭 生產模式'}`);
+  runDataAccuracyCheck(); appendQALog('');
+  await runInterfaceStabilityTest(); appendQALog('');
+  timemachineTest();
+}
+
+function toggleDoc() {
+  const panel = document.getElementById('qaDocPanel');
+  const btn = document.getElementById('toggleDocBtn');
+  if (panel.hidden) { panel.hidden = false; btn.innerText = '📕 隱藏說明'; }
+  else { panel.hidden = true; btn.innerText = '📖 文件'; }
+}
+
+// ===== INIT =====
+window.onload = async () => {
+  console.log("FHS Dashboard V39 Proto Initialized");
+  try {
+    initSandboxMode();
+    await switchMode('create');
+    updateTimeOptions();
+    renderLimbGrid();
+    updateFamilyParts();
+    generate();
+    console.log("✅ V39 Proto Ready.");
+  } catch (e) {
+    console.error("❌ V39 Init Failed:", e);
+    alert("系統初始化失敗：" + e.message);
+  }
+};
+</script>
+</body>
+</html>

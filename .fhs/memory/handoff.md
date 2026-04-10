@@ -1,34 +1,33 @@
-# FHS Handoff - 2026-04-07
-當前版本：v1.4.0（憲法層）/ V36 (Stable) / V37 (Development)
+# FHS Handoff - 2026-04-10
+當前版本：v1.4.0（憲法層）/ V39 (Production-Ready Prototype)
 
 ## 狀態摘要
 
-**任務：架構衛生稽核清理（PX + AG 四報告 /cl-flow Verdict 執行）**
+**任務：V39 Dashboard Rebuild — Phase 3 & 4 完成**
 
 ✅ **完成事項**：
-- **[2026-04-07] /cl-flow 四報告 Verdict 完成**：PX(2026-04-03) + AG(2026-04-03) + PX(2026-04-07) + AG(2026-04-07) 合併分析，去重後 5 項有效問題全部處理。
-- **[2026-04-07] 沉積清理**：`Maintenance_Tools/test_audit_0695346.py` 刪除（archive/ 有副本）；`v33_original_script.js` → `archive/`。
-- **[2026-04-07] 安全加固**：`.gitignore` 加入 `.mcp.json`（MCP 憑證防止版控）。
-- **[2026-04-07] 文件同步**：`repo-map.md` / `Freehandsss_Dashboard/README.md` / `Changelog.md` 全部更新。
-- **[2026-04-07] products 架構澄清**：確認 products.js 無任何 HTML 引用（廢棄），products.json 為開發靜態副本，n8n 讀取 NAS `.n8n/data/products.json`。
+- **[2026-04-10] Phase 3 Code Review**：code-reviewer 稽核 PASS — 180+ CONTRACT IDs 全數存在，零 V36 舊 class 殘留，零外部依賴，8 個 TODOhookup 點 100% 標記。
+- **[2026-04-10] Phase 4 Hookup**：8 個 TODOhookup 全數接回真實 n8n webhook（loadSystemConfig, saveSeqSettings, checkOrderIDDuplicate, fetchOldOrder, syncToAirtable, executeDeleteOrder, fetchGlobalReview, saveInlineEdit）。
+- **[2026-04-10] syncToAirtable 完整補回**：K/M items payload、Update_Note 計算、Raw_Form_State 注入從 V36 完整移植。
+- **[2026-04-10] CHANGELOG.md 建立**：`docs/CHANGELOG.md` 新增，記錄 V39 各 Phase 完成紀錄。
 
 ## 未解決 🔴 項目
 
-無。
+- **[A2-PENDING] 治理層更新**：`AGENTS.md` (規則補強), `COMMANDS.md` (指令登錄), `ANTIGRAVITY.md` (入口同步) 待解鎖（A2 計畫遺留）。
 
 ## 下個 Session 三項待辦
 
-- [ ] `products.js` 封存至 `archive/`（一行指令，低優先，無生產風險）
-- [ ] 在「新 V37」中重新實作 `captureFormState()` 與 Webhook 提交邏輯（Phase D 前置）
-- [ ] 執行 `verify_triple_sync` 驗證 V36/V37 連通性
+- [ ] **[V39 部署測試]** 在瀏覽器開啟 `freehandsss_dashboardV39_proto.html`，測試 sandbox 模式 + 8 個 webhook 端點是否正常回應。
+- [ ] **[V39 命名升級]** 若測試通過，將 `_proto` 改名為正式版 `freehandsss_dashboardV39.html` 並更新 repo-map。
+- [ ] **[A2 治理層]** 解鎖 A2 計畫 Phase B：更新 AGENTS.md 規則補強與 COMMANDS.md 指令登錄。
 
 ## 核心配置
 
-- **Stable Baseline**: `Freehandsss_Dashboard/freehandsss_dashboardV36.html`
-- **Current DEV**: `Freehandsss_Dashboard/freehandsss_dashboardV37.html`
+- **V39 Production-Ready File**: `Freehandsss_Dashboard/freehandsss_dashboardV39_proto.html`
+- **V36 Stable Baseline**: `Freehandsss_Dashboard/freehandsss_dashboardV36.html`
 - **憲法層**：`.fhs/ai/AGENTS.md` v1.4.0
-- **n8n Workflow**：`FHS_Core_OrderProcessor` (`6Ljih0hSKr9RpYNm`, 24 nodes)
-- **Airtable Base**：`app9GuLsW9frN4xaT`
-- **n8n MCP Server**：`n8n-mcp-server/`（已連通，7 tools，.mcp.json 已加 .gitignore）
-- **三端映射**：`n8n/Triple_Sync_Field_Map.md`
-- **products 快取**：NAS `.n8n/data/products.json`（由 FHS_System_CacheSync 維護，非 Freehandsss_Dashboard/ 下的靜態副本）
+- **數據地圖**：`n8n/Triple_Sync_Field_Map.md` V45.7.4
+- **Webhook 主機**：`yanhei.synology.me:8443`
+- **Sync Endpoint**: `/webhook/1444800b-1397-4154-b2da-a4d328c6c51b`
+- **CHANGELOG**: `docs/CHANGELOG.md`
+- **A2 Plan**: `.fhs/notes/ai_reports/a2_implementation_plan.md`
