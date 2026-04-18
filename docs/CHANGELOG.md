@@ -1,6 +1,15 @@
 # FHS Dashboard Changelog
 
+## [V1.4.1] — 2026-04-18
+### System: Versioning Alignment
+- **Stable Baseline**: Confirmed **V37** as the stable development foundation.
+- **Production**: `current` version is now strictly synced with V37.
+- **Interface Dev**: **V39** designated as the primary interface development branch.
+- **Documentation**: Updated `AGENTS.md`, `repo-map.md`, and `SOP_NOW.md` to reflect this alignment.
+- **UI Text**: Updated IG preview segments (changed `【財務結算】` to `【付款資料】`, replaced `金屬產品` with `吊飾產品` in headers, removed `✨` and `⚙️` emojis, replaced leading emojis in notice items with `-`, and adjusted order ID format to `(訂單編號# 0000000 產品)`).
+
 ## [V39] — 2026-04-10
+
 
 ### Phase 4 Complete: Webhook Hookup
 

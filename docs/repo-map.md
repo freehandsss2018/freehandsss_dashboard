@@ -14,15 +14,17 @@ freehandsss_dashboard/
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── README.md                           ← Dashboard 目錄說明
-│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（手動上傳 NAS，禁止程式覆蓋）
-│   ├── freehandsss_dashboardV36.html       ← V36 穩定基準版本 (Stable Baseline)
-│   ├── freehandsss_dashboardV37.html       ← V37 開發版本 (後續唯一活躍開發版)
+│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V37 一致）
+│   ├── freehandsss_dashboardV37.html       # Stable Baseline (基礎開發版，對應 current)
+│   ├── freehandsss_dashboardV39_proto.html # Interface Development (介面開發版)
+│   ├── freehandsss_dashboardV40.html       # Experimental (Atelier & Neon 實驗型原型)
 │   ├── products.js                         ← 前端產品快取
 │   ├── products.json                       ← 前端產品快取（JSON 格式）
 │   └── archive/                            ← 失效版本封存區
-│       ├── freehandsss_dashboardV37_OLD.html
+│       ├── freehandsss_dashboardV36.html
 │       ├── freehandsss_dashboardV38_OLD.html
 │       └── freehandsss_dashboardV39_proto_OLD.html
+
 │
 ├── .fhs/                                ← FHS 專案幕後系統（隱藏）
 │   ├── README.md                        ← 幕後系統總綱

@@ -2151,10 +2151,10 @@ function generate() {
   }
 
   const custInfo = `【客人資料】\n聯絡人：${mom}\n取模時間：${date} ${timeStr}\n\n`;
-  const finInfo = `【財務結算】\n已付訂金/全數：$ ${deposit}\n未付產品尾數：$ ${balance}\n附加費用(車費/其它)：$ ${additional}\n\n`;
+  const finInfo = `【付款資料】\n已付訂金/全數：$ ${deposit}\n未付產品尾數：$ ${balance}\n附加費用(車費/其它)：$ ${additional}\n\n`;
   const disclaimer = `【免責聲明】\n-------------------\n`;
-  const noticeA = `🖼️ 【freehandsss 手模/擺設須知】\n⭐️ 手模會因BB郁動而有所瑕疵 (如氣泡、細紋)\n⭐️ 需否再次倒模，取決於倒模師 (如需額外取模：另+$150)\n⭐️ 木框/玻璃產品請保持乾燥，避免潮濕\n⭐️ 製成品需時約 3-5 個月 (十五至十八星期)\n⭐️ 由於後期製作全都是全人手製作，未能十全十美，完美主義者請慎重考慮\n感謝您的支持與配合！`;
-  const noticeB = `⚙️ 【freehandsss 金屬產品/吊飾須知】\n⭐️ - 製成品最少需預三個月\n⭐️ 本店金屬產品為手工飾品，每一件產品也是獨一無二\n⭐️ 3D掃描及鑄造過程可能產生微細成像誤差或紋理縮減\n⭐️ 銀飾產品會隨時間及環境因素自然氧化，屬正常現象\n⭐️ 因運送或製作過程產生之細小刮痕、小凹凸點屬非瑕疵範圍\n⭐️ 金屬製品不設預覽，成品未必能與照片100%相同\n📌 本店保留對上述條款及產品規格之最終解釋權`;
+  const noticeA = `【freehandsss 手模/擺設須知】\n- 手模會因BB郁動而有所瑕疵 (如氣泡、細紋)\n- 需否再次倒模，取決於倒模師 (如需額外取模：另+$150)\n- 木框/玻璃產品請保持乾燥，避免潮濕\n- 製成品需時約 3-5 個月 (十五至十八星期)\n- 由於後期製作全都是全人手製作，未能十全十美，完美主義者請慎重考慮\n感謝您的支持與配合！`;
+  const noticeB = `【freehandsss 金屬產品/吊飾須知】\n- 製成品最少需預三個月\n- 本店金屬產品為手工飾品，每一件產品也是獨一無二\n- 3D掃描及鑄造過程可能產生微細成像誤差或紋理縮減\n- 銀飾產品會隨時間及環境因素自然氧化，屬正常現象\n- 因運送或製作過程產生之細小刮痕、小凹凸點屬非瑕疵範圍\n- 金屬製品不設預覽，成品未必能與照片100%相同\n- 本店保留對上述條款及產品規格之最終解釋權`;
 
   if (hasP) {
     const sub = document.getElementById("pSubCat").value;
@@ -2165,7 +2165,7 @@ function generate() {
     if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
     if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
     detailsA += `\n- 客製化刻字：${document.getElementById("pEngraving")?.value || "待定"}\n\n`;
-    let combinedA = `✨ Freehandsss 訂單確認\n（訂單編號#${currentOrderId}手模擺設）\n\n${custInfo}${detailsA}${finInfo}${disclaimer}${noticeA}`;
+    let combinedA = `Freehandsss 訂單確認\n(訂單編號# ${currentOrderId} 手模擺設)\n\n${custInfo}${detailsA}${finInfo}${disclaimer}${noticeA}`;
     document.getElementById("output-preview-a").value = combinedA;
     document.getElementById("preview-box-a").hidden = false;
     document.getElementById("btnCopyA").style.display = "flex";
@@ -2235,7 +2235,7 @@ function generate() {
       }
       detailsB += `產品類別：頸鏈吊飾\n${mDetails || " - (未選擇)\n"}-頸鏈：金色/銀色 (二選一)\n\n`;
     }
-    let combinedB = `✨ Freehandsss 訂單確認\n（訂單編號#${currentOrderId}金屬產品）\n\n${custInfo}${detailsB}${finInfo}${disclaimer}${noticeB}`;
+    let combinedB = `Freehandsss 訂單確認\n(訂單編號# ${currentOrderId} 吊飾產品)\n\n${custInfo}${detailsB}${finInfo}${disclaimer}${noticeB}`;
     document.getElementById("output-preview-b").value = combinedB;
     document.getElementById("preview-box-b").hidden = false;
     document.getElementById("btnCopyB").style.display = "flex";

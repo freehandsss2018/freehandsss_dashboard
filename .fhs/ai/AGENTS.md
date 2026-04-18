@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.0
-> Last updated: 2026-03-31
+> Version: v1.4.1
+> Last updated: 2026-04-18
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,10 +18,11 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.0
+- **版本**：v1.4.1
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`（24 nodes）
 - **Airtable Base**：`app9GuLsW9frN4xaT`
-- **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV36.html`
+- **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV37.html` (穩定開發版 = current)
+
 
 ***
 
