@@ -1,3 +1,25 @@
+# Session Log — 2026-04-22（第十五次）
+
+## 概覽
+V40.1 — 全域核對中心 iPhone Accordion 重設計。透過完整 cl-flow 流水線（Runner → PX → AG → Verdict → /execute）完成。
+
+## 主要完成事項
+1. **cl-flow 流水線執行**：flow_id `2026-04-22-2241`，PX + AG artifact 生成，Verdict `CONDITIONAL_READY`，AG 策略偏差修正。
+2. **iPhone Accordion 實作**：
+   - Phase A CSS：`@media (max-width: 767px)` 切換，純 CSS `max-height` 動畫（不觸發 layout reflow）
+   - Phase B HTML：`#reviewAccordionContainer` 容器
+   - Phase C JS：`renderReviewAccordion()` + `toggleAccordion()` 新增；`renderReviewTable()` 頂部加 `< 768px` 分支
+3. **Design decision**：AG 建議「遍歷 `<tr>` DOM」被否決，改為「資料驅動分支渲染」（在 `renderReviewTable()` 頂部分支）
+4. **ID 命名規則**：Accordion 中互動元素使用 `acc-` 前綴（`acc-batch-*`、`acc-status-*`、`acc-notes-*`），避免與 Desktop Table 元素衝突
+5. **Changelog + Memory 同步**：Changelog 新增 `[V40.1]` 條目，lessons 記錄 Accordion 實作要點
+
+## 關鍵決策
+- Accordion 動畫用純 CSS `max-height` transition，不用 JS 控高度（避免 iOS 掉幀）
+- `saveInlineEdit()` 在 Accordion 中使用 `acc-` 前綴 ID，避免與 Desktop Table ID 衝突
+- Desktop（≥ 768px）完全不受影響，維持原有橫向表格
+
+---
+
 # Session Log — 2026-04-22（第十四次）
 
 ## 概覽

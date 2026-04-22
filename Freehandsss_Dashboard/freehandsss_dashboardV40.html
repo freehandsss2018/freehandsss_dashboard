@@ -883,6 +883,204 @@
             opacity: 0.8;
         }
 
+        /* ===== V40 iPhone Accordion — 全域核對中心 ===== */
+        @media (max-width: 767px) {
+            .review-table-wrap { display: none !important; }
+            #reviewAccordionContainer { display: block !important; }
+        }
+        @media (min-width: 768px) {
+            #reviewAccordionContainer { display: none !important; }
+        }
+
+        #reviewAccordionContainer {
+            display: none;
+            width: 100%;
+        }
+
+        .acc-order {
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 10px;
+            background: var(--fhs-bg-card);
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .acc-order-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            cursor: pointer;
+            user-select: none;
+            gap: 8px;
+            min-height: 56px;
+            background: var(--fhs-bg-elevated);
+            border-bottom: 1px solid transparent;
+            transition: background 0.15s;
+        }
+        .acc-order-header:active { background: var(--fhs-bg); }
+
+        .acc-order-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .acc-order-id {
+            font-weight: 700;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-accent);
+        }
+
+        .acc-order-meta {
+            font-size: 11px;
+            color: var(--fhs-text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .acc-order-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .acc-profit {
+            font-size: var(--fhs-text-sm);
+            font-weight: 800;
+        }
+
+        .acc-chevron {
+            font-size: 14px;
+            color: var(--fhs-text-muted);
+            transition: transform 0.25s ease;
+            display: inline-block;
+        }
+
+        .acc-order.open .acc-chevron { transform: rotate(180deg); }
+        .acc-order.open .acc-order-header { border-bottom-color: var(--fhs-border); }
+
+        .acc-order-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .acc-order.open .acc-order-body { max-height: 2000px; }
+
+        .acc-order-body-inner {
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-field-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .acc-field-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--fhs-text-muted);
+            letter-spacing: 0.05em;
+        }
+        .acc-field-value {
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+        }
+
+        .acc-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .acc-item-card {
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-md);
+            padding: 8px 10px;
+            background: var(--fhs-bg);
+        }
+
+        .acc-item-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .acc-item-controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .acc-notes-textarea {
+            width: 100%;
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-sm);
+            padding: 6px 8px;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+            background: var(--fhs-bg);
+            resize: vertical;
+            min-height: 52px;
+            box-sizing: border-box;
+        }
+
+        .acc-action-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .acc-jump-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--fhs-accent);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--fhs-accent);
+            font-weight: 700;
+            font-size: var(--fhs-text-sm);
+            cursor: pointer;
+            text-align: center;
+            min-height: 44px;
+        }
+        .acc-jump-btn:active { background: var(--fhs-accent); color: #fff; }
+
+        .acc-delete-btn {
+            padding: 10px 14px;
+            border: 1px solid var(--fhs-danger);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--fhs-danger);
+            font-weight: 700;
+            font-size: var(--fhs-text-sm);
+            cursor: pointer;
+            min-height: 44px;
+        }
+        .acc-delete-btn:active { background: var(--fhs-danger); color: #fff; }
+
+        .acc-empty {
+            padding: 32px;
+            text-align: center;
+            color: var(--fhs-text-muted);
+            font-size: var(--fhs-text-sm);
+        }
+        /* ===== END V40 iPhone Accordion ===== */
+
         #globalLoader {
             position: fixed;
             top: 0;
@@ -1393,6 +1591,12 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- V40 iPhone Accordion 容器（< 768px 顯示，Desktop 隱藏） -->
+            <div id="reviewAccordionContainer" style="display:none;">
+                <p class="acc-empty">請選擇上方條件載入資料</p>
+            </div>
+
         </div>
     </div>
 
@@ -3908,8 +4112,163 @@
             }
         }
 
+        // === V40 iPhone Accordion 渲染引擎 ===
+        function renderReviewAccordion(orders) {
+            const container = document.getElementById('reviewAccordionContainer');
+            if (!container) return;
+
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<p class="acc-empty">📩 沒有符合條件的訂單</p>';
+                return;
+            }
+
+            let html = '';
+            orders.forEach((o) => {
+                const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
+                const profit = Number(o.Net_Profit || 0);
+                const profitColor = profit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
+                const itemCount = o.items && o.items.length > 0 ? o.items.length : 0;
+
+                // Build items badges HTML
+                let itemsHtml = '';
+                if (o.items && o.items.length > 0) {
+                    o.items.forEach((item, idx) => {
+                        const getSafeText = (val) => {
+                            if (!val) return "";
+                            if (Array.isArray(val)) return val[0] || "";
+                            if (typeof val === 'string' && val.startsWith('rec')) return "";
+                            return String(val);
+                        };
+                        const dimensions = getProductDimensions(item);
+                        const qty = Number(item.Qty) || 1;
+                        const rowBatch = item.Batch || o.Batch || '';
+                        const rowBatchCol = getBatchColor(rowBatch);
+
+                        let catClass = 'badge-cat-default';
+                        const cat = getSafeText(item.Category) || '';
+                        if (cat.includes('立體擺設')) catClass = 'badge-cat-立體擺設';
+                        else if (cat.includes('鎖匙扣')) catClass = 'badge-cat-鎖匙扣';
+                        else if (cat.includes('吊飾') || cat.includes('頸鏈')) catClass = 'badge-cat-純銀吊飾';
+
+                        let badgeHtml = `<span class="review-badge ${catClass}">${dimensions.emoji} ${dimensions.category}</span>`;
+                        if (dimensions.material) {
+                            let matClass = 'badge-mat-default';
+                            if (dimensions.material.includes('不銹鋼')) matClass = 'badge-mat-不銹鋼';
+                            else if (dimensions.material.includes('銀')) matClass = 'badge-mat-銀';
+                            else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
+                            badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
+                        }
+                        if (dimensions.target) {
+                            let tarClass = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
+                            if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
+                            if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
+                            badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
+                        }
+                        if (dimensions.part) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (qty >= 1) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
+
+                        // Engraving
+                        let engText = '';
+                        if (item.Engraving && item.Engraving !== '待定' && item.Engraving !== '不適用') {
+                            engText = `<div class="acc-field-row" style="margin-top:4px;">
+                                <span class="acc-field-label">✂️ 刻字</span>
+                                <span class="acc-field-value">${item.Engraving}</span>
+                            </div>`;
+                        }
+
+                        itemsHtml += `
+                        <div class="acc-item-card" style="border-left: 3px solid ${rowBatchCol};">
+                            <div class="acc-item-badges">${badgeHtml}</div>
+                            ${engText}
+                            <div class="acc-item-controls">
+                                <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
+                                    <span class="acc-field-label">🏷️ 批次</span>
+                                    <input type="text"
+                                        id="acc-batch-${o.id}-${idx}"
+                                        value="${rowBatch}"
+                                        placeholder="批次"
+                                        style="width:80px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); font-size:12px; text-align:center;"
+                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'acc-batch-${o.id}-${idx}', ${idx})">
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:2px; flex:2;">
+                                    <span class="acc-field-label">🚥 進度</span>
+                                    <select id="acc-status-${o.id}-${idx}"
+                                        style="font-size:12px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); width:100%;"
+                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx})">
+                                        <option value="0 什麼都未做" ${(item.Status || o.Status) === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
+                                        <option value="1 已繪圖 或 已取相" ${(item.Status || o.Status) === '1 已繪圖 或 已取相' ? 'selected' : ''}>1 已繪圖/取相</option>
+                                        <option value="1.5 已交付建模師, 等3D圖中" ${(item.Status || o.Status) === '1.5 已交付建模師, 等3D圖中' ? 'selected' : ''}>1.5 等3D圖</option>
+                                        <option value="2 已修3D圖, 但未核對" ${(item.Status || o.Status) === '2 已修3D圖, 但未核對' ? 'selected' : ''}>2 已修3D圖</option>
+                                        <option value="2.5 已核對3D圖, 準備打印" ${(item.Status || o.Status) === '2.5 已核對3D圖, 準備打印' ? 'selected' : ''}>2.5 準備打印</option>
+                                        <option value="3 已交付廠家, 打印中" ${(item.Status || o.Status) === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
+                                        <option value="Done 已完成" ${(item.Status || o.Status) === 'Done 已完成' ? 'selected' : ''}>Done ✅</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="acc-save-${o.id}-${idx}" style="font-size:10px; color:#888; min-height:14px; margin-top:2px;"></div>
+                        </div>`;
+                    });
+                } else {
+                    itemsHtml = '<p style="font-size:12px; color:var(--fhs-text-muted); margin:0;">無子項目</p>';
+                }
+
+                html += `
+                <div class="acc-order" id="acc-order-${o.id}">
+                    <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
+                        <div class="acc-order-header-left">
+                            <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
+                            <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
+                        </div>
+                        <div class="acc-order-header-right">
+                            <span class="acc-profit" style="color:${profitColor};">$${profit}</span>
+                            <span class="acc-chevron">▼</span>
+                        </div>
+                    </div>
+                    <div class="acc-order-body">
+                        <div class="acc-order-body-inner">
+                            <div class="acc-field-row">
+                                <span class="acc-field-label">📝 備註</span>
+                                <textarea class="acc-notes-textarea"
+                                    id="acc-notes-${o.id}"
+                                    onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'acc-notes-${o.id}')"
+                                    placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                            </div>
+                            <div class="acc-field-row">
+                                <span class="acc-field-label">📦 產品明細</span>
+                                <div class="acc-items-list">${itemsHtml}</div>
+                            </div>
+                            <div class="acc-action-row">
+                                <button class="acc-jump-btn" onclick="jumpToEditOrder('${o.Order_ID}')">✏️ 快跳修改</button>
+                                <button class="acc-delete-btn" onclick="openDeleteModal('${o.id}', '${o.Order_ID}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleAccordion(orderId) {
+            const el = document.getElementById('acc-order-' + orderId);
+            if (!el) return;
+            el.classList.toggle('open');
+        }
+
         // === V28.3 全域核對中心渲染引擎：Rowspan 完美對齊 + 置頂垂直對齊 ===
         function renderReviewTable(orders) {
+            // V40: iPhone → Accordion，Desktop → Table
+            if (window.innerWidth < 768) {
+                renderReviewAccordion(orders);
+                // Still update badge count
+                const badge = document.getElementById('reviewCountBadge');
+                if (badge) {
+                    if (!orders || orders.length === 0) { badge.style.display = 'none'; }
+                    else { badge.textContent = `${orders.length} 筆`; badge.style.display = 'inline-flex'; }
+                }
+                return;
+            }
+
             const tbody = document.getElementById("reviewTableBody");
             if (!orders || orders.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="10" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';

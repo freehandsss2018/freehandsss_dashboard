@@ -1,3 +1,22 @@
+## [V40.1 iPhone Accordion Audit Center] - 2026-04-22
+### 📱 全域核對中心 iPhone Accordion 重設計
+
+**執行依據**：Fat Mo `/execute` 授權，cl-flow `CONDITIONAL_READY` Verdict (flow_id: 2026-04-22-2241)
+
+**改動**：
+- **iPhone（< 768px）**：全域核對中心改為 Accordion List 展開模式，取代橫向表格
+  - 每張訂單為一個 Accordion Card（Header：訂單號 + 日期 + 客人 + 件數 + 利潤）
+  - 展開後顯示：備註(可編輯) + 產品明細（含批次/進度內嵌操作）+ 快跳修改 + 刪除按鈕
+  - 純 CSS `max-height` 動畫（無 JS reflow）
+  - 觸控目標 ≥ 44px（Apple HIG 合規）
+- **Desktop（≥ 768px）**：維持原有橫向表格，不受影響
+- **渲染策略**：在 `renderReviewTable()` 頂部加入 `window.innerWidth < 768` 分支，呼叫 `renderReviewAccordion()`
+- **所有 Contract-Critical ID 保留**：`reviewTableBody`、`reviewYear`、`reviewMonth`、`reviewStatus`、`reviewBatch`、`reviewSearch` 完整保留
+
+**影響檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV40.html`
+
+---
+
 ## [V40 Responsive Redesign] - 2026-04-22
 ### 📱 雙模式廢除 → iPhone / Desktop 純響應式設計
 
