@@ -1,11 +1,18 @@
-# V39 Prototype-First Rebuild — Phase 0 Contract Freeze
-**日期**：2026-04-07
+# V40 Rebuild — Phase 0 Contract Freeze（V39 更新版）
+**原始日期**：2026-04-07
+**更新日期**：2026-04-21（V40 改版，廢除雙模式）
 **階段**：PHASE 0（純分析，NO-TOUCH）
-**來源**：Freehandsss_Dashboard/freehandsss_dashboardV36.html（4213 lines）+ Triple_Sync_Field_Map.md V45.7.4
-**授權狀態**：等待 Fat Mo 核准後進入 Phase 1 (ui-designer)
+**來源**：Freehandsss_Dashboard/freehandsss_dashboardV37.html（穩定生產版）+ Triple_Sync_Field_Map.md V45.7.4
+**授權狀態**：V40 Phase 1 已授權（Fat Mo /execute 2026-04-21）
 
-> 本文件是 V39 重建的**契約底線**。Phase 1-3 所有輸出必須逐條符合。
+> 本文件是 V40 重建的**契約底線**。Phase 1-3 所有輸出必須逐條符合。
 > 任何違反者 = 直接 FAIL，不得進入 hookup。
+>
+> ⚠️ **V40 重要變更**：雙模式（令狐沖/肥貓）已廢除。
+> - `--ling-*` / `--fcat-*` CSS token 禁止使用
+> - `.mode-ling` / `.mode-fcat` CSS class 禁止使用
+> - `roleLingBtn` / `roleFatBtn` ID **保留**（webhook contract），但不得驅動視覺主題
+> - 唯一設計軸：iPhone（< 768px）vs Desktop（≥ 768px）響應式
 
 ---
 

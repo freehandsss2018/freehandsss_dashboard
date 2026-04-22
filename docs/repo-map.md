@@ -16,8 +16,8 @@ freehandsss_dashboard/
 │   ├── README.md                           ← Dashboard 目錄說明
 │   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V37 一致）
 │   ├── freehandsss_dashboardV37.html       # Stable Baseline (基礎開發版，對應 current)
-│   ├── freehandsss_dashboardV39_proto.html # Interface Development (介面開發版)
-│   ├── freehandsss_dashboardV40.html       # Experimental (Atelier & Neon 實驗型原型)
+│   ├── freehandsss_dashboardV39_proto.html # DEPRECATED (設計概念已廢除，保留備份)
+│   ├── freehandsss_dashboardV40.html       # Interface Dev v40 (iPhone/Desktop 響應式，Code Reviewer PASS)
 │   ├── products.js                         ← 前端產品快取
 │   ├── products.json                       ← 前端產品快取（JSON 格式）
 │   └── archive/                            ← 失效版本封存區
@@ -53,13 +53,13 @@ freehandsss_dashboard/
 │   │   │   │   ├── ui-designer.md
 │   │   │   │   ├── frontend-developer.md
 │   │   │   │   └── code-reviewer.md
-│   │   │   └── freehandsss/             ← FHS 重寫版 v1.1.0（實際使用版本）
-│   │   │       ├── ui-designer.md       ← Phase A 設計（使用 ui-ux-pro-max & .gemini/skills）
+│   │   │   └── freehandsss/             ← FHS 重寫版（實際使用版本）
+│   │   │       ├── ui-designer.md       ← v2.0.0 Phase A 設計（iPhone/Desktop 響應式，廢除雙模式）
 │   │   │       ├── frontend-developer.md ← Phase B 原型（使用 Input Contract）
 │   │   │       └── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
 │   │       └── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
-│   │           ├── FHS_INTEGRATION.md   ← 核心整合指引（Style Library + UX Checklist + 閘門）
+│   │           ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）
 │   │           ├── README.md            ← 用途、角色邊界、使用場景
 │   │           └── vendor/
 │   │               └── SKILL.md        ← 來源說明與角色邊界聲明
@@ -70,6 +70,8 @@ freehandsss_dashboard/
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
 │   │   ├── ai_reports/                  ← AI 協作報告區（活躍）
+│   │   │   ├── v39-rebuild_phase0_contract_freeze.md  ← Contract-Critical ID 清單（V40 更新版）
+│   │   │   └── v40-phase1_design_spec.md              ← V40 響應式設計規格（取代 v39 spec）
 │   │   └── completion_reports/          ← 制度任務完成記錄（v1.4.0 新增）
 │   └── memory/
 │       ├── README.md                   ← 記憶層與同步規範

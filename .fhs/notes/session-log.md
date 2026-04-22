@@ -1,3 +1,26 @@
+# Session Log — 2026-04-22（第十四次）
+
+## 概覽
+V40 完整交付：雙模式廢除 → 響應式重設計 → Phase B 原型建立 → Code Review PASS → Phase D 功能接回 → 全面功能測試 → Bug 修復。
+
+## 主要完成事項
+1. **雙模式廢除**：永久移除 `--ling-*`/`--fcat-*` token、`.mode-ling`/`.mode-fcat`、`.fat-mo-mode`/`.ling-au-mode`，改為純 iPhone/Desktop 響應式設計軸。
+2. **4 個設計約束檔改寫**：FHS_INTEGRATION.md v2.0.0、ui-designer.md v2.0.0、v40-phase1_design_spec.md 新建、v39-rebuild_phase0_contract_freeze.md 更新。
+3. **V40 Prototype 建立**：`freehandsss_dashboardV40.html`（4,815+ 行），基於 V37，加入 FHS token 系統、Bottom Bar、Drawer 三 Tab、Desktop 兩欄佈局。Code Reviewer 兩輪後 PASS。
+4. **Phase D 功能接回**：所有 TODO[hookup] 清除，Drawer 鏡像 JS、generate()/fetchGlobalReview() 攔截、switchMode() 覆寫全部接回。
+5. **Bug 修復（全面測試後）**：
+   - Delete Modal 失效 → CSS specificity trap 修復
+   - Admin_Notes 永遠存空字串 → V37 legacy bug（saveInlineEdit 收到 value 而非 ID）修復
+   - Drawer QA Tab 空白 → cloneNode 父元素錯誤修復
+   - switchMode TypeError → typeof guard 加入
+
+## 關鍵決策
+- V40 設計軸確立為唯一 iPhone vs Desktop 響應式，雙模式概念永久廢除。
+- Admin_Notes bug 在 V37/current.html 仍存在，Phase E 前可考慮回補。
+- Subagent static analysis 對大型檔案有 false positive 風險，需 grep 直接驗證。
+
+---
+
 # Session Log — 2026-04-18（第十三次）
 
 ## 概覽

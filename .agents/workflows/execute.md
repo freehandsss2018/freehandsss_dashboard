@@ -4,9 +4,9 @@ description: 唯一正式執行入口：獲得授權後執行代碼修改
 
 # /execute (Antigravity Bridge)
 
-**執行步驟**：
-請立即讀取並遵循以下 Master 指令定義：
-[/.fhs/ai/commands/execute.md](file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/execute.md)
+> ⚠️ 本指令為橋接版。完整邏輯由 Master 定義，此處不得硬編碼步驟。
+> Master 路徑：`/.fhs/ai/commands/execute.md`
+> 更新規則：只更新 Master，此橋接版自動對齊，無需修改。
 
-1. 確認 Verdict 或 Plan 已就緒。
-2. 執行檔案 [MODIFY]/[NEW]/[DELETE]。
+請立即讀取並完整遵循：
+`/.fhs/ai/commands/execute.md`

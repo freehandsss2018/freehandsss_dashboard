@@ -1,3 +1,46 @@
+## [V40 Responsive Redesign] - 2026-04-22
+### 📱 雙模式廢除 → iPhone / Desktop 純響應式設計
+
+**執行依據**：Fat Mo 明確授權（「角色差異也可以刪除，直接作 iPhone 及 Desktop 介面最優先優化」）→ /execute 2026-04-22
+
+**設計系統重設**：
+- **廢除雙模式**：令狐沖模式（ling）/ 肥貓模式（fcat）完全廢除，不可復活
+- **廢除 token**：`--ling-*` / `--fcat-*` CSS 變數全數移除
+- **廢除 class**：`.mode-ling` / `.mode-fcat` / `.fat-mo-mode` / `.ling-au-mode` 全數移除
+- **新設計軸**：唯一維度 = 裝置（iPhone < 768px / Desktop ≥ 768px）
+- **新 token 系統**：統一 `--fhs-*` CSS Variables（70+ 個）
+
+**制度層更新**：
+- `FHS_INTEGRATION.md` → v2.0.0（響應式規則，廢除雙模式）
+- `ui-designer.md` → v2.0.0（iPhone/Desktop 設計軸）
+- `v40-phase1_design_spec.md`（新建，取代 v39 spec）
+- `v39-rebuild_phase0_contract_freeze.md`（更新，加入 V40 廢除聲明）
+
+**V40 Prototype**（Code Reviewer PASS）：
+- iPhone：Bottom Bar（固定底部）+ Drawer（三 Tab：設定/QA/核對）
+- Desktop：兩欄佈局 + 側欄（Fat Mo 設定、QA、全域核對摘要）
+- 全域核對中心：iPhone Accordion / Desktop 多欄表格
+- 業務邏輯（captureFormState / syncToAirtable 等）完整保留
+- 120+ Contract-Critical ID 全數保留
+
+---
+
+## [Alignment & Optimization v1.4.1] - 2026-04-18
+### 🔄 版本對齊與 IG 預覽格式優化
+
+**執行背景**：穩定 V37 生產基準，解鎖 V39 介面開發，並根據最新業務需求優化 IG 訊息格式。
+
+**版本治理**：
+- **基線確立**：升級為 v1.4.1。V37 正式宣告為 Stable Baseline 並與 `current` 100% 同步。
+- **分支定義**：V39 專注於 iPhone-First 介面原型開發。
+
+**UI 預覽優化**：
+- **內容修正**：`【財務結算】` 更名為 `【付款資料】`；全系統移除裝飾性 Emoji，條款內容改用 `-` 開頭。
+- **格式對齊**：修正單號括號與空格格式（`(訂單編號# 0000000 產品名稱)`）。
+- **同步實裝**：V37, current, V39 三端邏輯同步更新。
+
+---
+
 ## [Architecture Hygiene v1.4.0] - 2026-04-07
 ### 🧹 架構衛生稽核清理（/cl-flow + /execute）
 
