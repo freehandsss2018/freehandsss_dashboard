@@ -1,0 +1,103 @@
+{
+  "name": "FHS_Financial_Overview",
+  "_comment": "匯入步驟: n8n UI → Import from JSON → 選此檔案 → 儲存 → 啟用。匯入後需在兩個 Airtable 節點設定 Credential（與 FHS_Core_OrderProcessor 相同帳號）。",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "financial-overview",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "FO Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "list",
+        "application": "app9GuLsW9frN4xaT",
+        "table": "tbltCH0I9fknVCtmV",
+        "additionalOptions": {
+          "fields": ["Order_ID", "Appointment_Date", "Final_Sale_Price", "Total_Cost", "Net_Profit"]
+        }
+      },
+      "name": "Fetch All Main Orders",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "airtableApi": {
+          "_comment": "請在此選擇與 FHS_Core_OrderProcessor 相同的 Airtable Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "list",
+        "application": "app9GuLsW9frN4xaT",
+        "table": "tbljkptnNcUEyDRFH",
+        "additionalOptions": {
+          "fields": ["Order_Item_Key", "Product_Link", "Quantity", "Order_Link"]
+        }
+      },
+      "name": "Fetch All Order Items",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 1,
+      "position": [460, 480],
+      "credentials": {
+        "airtableApi": {
+          "_comment": "請在此選擇與 FHS_Core_OrderProcessor 相同的 Airtable Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// =====================================================\n// FHS Financial Overview — Financial Aggregator\n// 從 Main_Orders + Order_Items 聚合財務數據\n// 回傳格式供 freehandsss_financial_overview.html 使用\n// =====================================================\n\nconst orders = $('Fetch All Main Orders').all().map(i => i.json);\nconst orderItems = $('Fetch All Order Items').all().map(i => i.json);\n\nconst now = new Date();\nconst currentYear = now.getFullYear();\nconst currentMonth = now.getMonth(); // 0-indexed\n\n// Helper: parse Airtable date (YYYY-MM-DD)\nfunction parseDate(str) {\n  if (!str) return null;\n  const d = new Date(str);\n  return isNaN(d.getTime()) ? null : d;\n}\n\n// Sum a field across an array of records\nfunction sum(arr, field) {\n  return arr.reduce((s, o) => s + (Number(o[field]) || 0), 0);\n}\n\n// Percentage change vs prior period\nfunction pct(cur, prev) {\n  if (!prev) return 0;\n  return Math.round(((cur - prev) / Math.abs(prev)) * 1000) / 10;\n}\n\n// Month abbreviations\nconst MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];\nconst MONTH_ZH   = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];\n\n// Filter helpers\nfunction ordersInMonth(y, m) {\n  return orders.filter(o => {\n    const d = parseDate(o.Appointment_Date);\n    if (!d) return false;\n    return d.getFullYear() === y && d.getMonth() === m;\n  });\n}\nfunction ordersInYear(y) {\n  return orders.filter(o => {\n    const d = parseDate(o.Appointment_Date);\n    if (!d) return false;\n    return d.getFullYear() === y;\n  });\n}\n\n// === Current month ===\nconst curOrders  = ordersInMonth(currentYear, currentMonth);\nconst prevM      = currentMonth === 0 ? 11 : currentMonth - 1;\nconst prevMY     = currentMonth === 0 ? currentYear - 1 : currentYear;\nconst prevMOrders = ordersInMonth(prevMY, prevM);\n\nconst curRevenue  = sum(curOrders, 'Final_Sale_Price');\nconst curCost     = sum(curOrders, 'Total_Cost');\nconst curProfit   = sum(curOrders, 'Net_Profit');\nconst curCount    = curOrders.length;\n\n// === Monthly trend (last 8 months) ===\nconst monthLabelsZH = [];\nconst monthRevenues = [];\nconst monthProfits  = [];\nfor (let i = 7; i >= 0; i--) {\n  let m = currentMonth - i;\n  let y = currentYear;\n  while (m < 0) { m += 12; y--; }\n  const mo = ordersInMonth(y, m);\n  monthLabelsZH.push(MONTH_ZH[m]);\n  monthRevenues.push(sum(mo, 'Final_Sale_Price'));\n  monthProfits.push(sum(mo, 'Net_Profit'));\n}\n\n// === Yearly trend (last 8 years) ===\nconst yearLabels   = [];\nconst yearRevenues = [];\nconst yearProfits  = [];\nfor (let y = currentYear - 7; y <= currentYear; y++) {\n  const yo = ordersInYear(y);\n  yearLabels.push(String(y));\n  yearRevenues.push(sum(yo, 'Final_Sale_Price'));\n  yearProfits.push(sum(yo, 'Net_Profit'));\n}\n\n// === Year totals ===\nconst yearOrders     = ordersInYear(currentYear);\nconst prevYearOrders = ordersInYear(currentYear - 1);\nconst allYearRevenue = sum(yearOrders, 'Final_Sale_Price');\nconst allYearCost    = sum(yearOrders, 'Total_Cost');\nconst allYearProfit  = sum(yearOrders, 'Net_Profit');\n\n// === Product category breakdown ===\n// Order_Items.Product_Link 為 Linked Record，Airtable 回傳 primary field 陣列\nconst CATEGORIES = ['木框套裝','玻璃瓶套裝','鎖匙扣','吊飾','配件'];\nconst catQty = { '木框套裝': 0, '玻璃瓶套裝': 0, '鎖匙扣': 0, '吊飾': 0, '配件': 0 };\n\norderItems.forEach(item => {\n  const links = item.Product_Link || [];\n  const name = (Array.isArray(links) ? links[0] : links) || '';\n  const qty  = Number(item.Quantity) || 1;\n  if      (name.includes('木框'))  catQty['木框套裝']   += qty;\n  else if (name.includes('玻璃'))  catQty['玻璃瓶套裝'] += qty;\n  else if (name.includes('鎖匙'))  catQty['鎖匙扣']     += qty;\n  else if (name.includes('吊飾'))  catQty['吊飾']       += qty;\n  else                             catQty['配件']       += qty;\n});\n\nconst totalQty = Object.values(catQty).reduce((s, v) => s + v, 0) || 1;\n\nfunction catValues(baseRevenue) {\n  return CATEGORIES.map(c => Math.round((catQty[c] / totalQty) * baseRevenue));\n}\n\n// === Pie (cost breakdown — estimated ratios) ===\nconst PIE_LABELS  = ['原材料','包裝','人工','運費','雜項'];\nconst PIE_RATIOS  = [0.50, 0.17, 0.23, 0.07, 0.03];\nconst PIE_COLORS  = ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090'];\n\nfunction pieValues(totalCost) {\n  return PIE_RATIOS.map(r => Math.round(totalCost * r));\n}\n\n// === Build response ===\nconst result = {\n  current: {\n    revenue:       curRevenue,\n    cost:          curCost,\n    profit:        curProfit,\n    orders:        curCount,\n    revenueChange: pct(curRevenue, sum(prevMOrders, 'Final_Sale_Price')),\n    costChange:    pct(curCost,    sum(prevMOrders, 'Total_Cost')),\n    profitChange:  pct(curProfit,  sum(prevMOrders, 'Net_Profit')),\n    ordersChange:  curCount - prevMOrders.length,\n    lineChart:  { labels: monthLabelsZH, revenue: monthRevenues, profit: monthProfits },\n    barChart:   { labels: CATEGORIES, values: catValues(curRevenue) },\n    pieChart:   { labels: PIE_LABELS,  values: pieValues(curCost),  colors: PIE_COLORS }\n  },\n  monthly: {\n    revenue:       allYearRevenue,\n    cost:          allYearCost,\n    profit:        allYearProfit,\n    orders:        yearOrders.length,\n    revenueChange: pct(allYearRevenue, sum(prevYearOrders, 'Final_Sale_Price')),\n    costChange:    pct(allYearCost,    sum(prevYearOrders, 'Total_Cost')),\n    profitChange:  pct(allYearProfit,  sum(prevYearOrders, 'Net_Profit')),\n    ordersChange:  yearOrders.length - prevYearOrders.length,\n    lineChart:  { labels: monthLabelsZH, revenue: monthRevenues, profit: monthProfits },\n    barChart:   { labels: CATEGORIES, values: catValues(allYearRevenue) },\n    pieChart:   { labels: PIE_LABELS,  values: pieValues(allYearCost),  colors: PIE_COLORS }\n  },\n  yearly: {\n    revenue:       sum(orders, 'Final_Sale_Price'),\n    cost:          sum(orders, 'Total_Cost'),\n    profit:        sum(orders, 'Net_Profit'),\n    orders:        orders.length,\n    revenueChange: pct(allYearRevenue, sum(prevYearOrders, 'Final_Sale_Price')),\n    costChange:    pct(allYearCost,    sum(prevYearOrders, 'Total_Cost')),\n    profitChange:  pct(allYearProfit,  sum(prevYearOrders, 'Net_Profit')),\n    ordersChange:  yearOrders.length - prevYearOrders.length,\n    lineChart:  { labels: yearLabels,  revenue: yearRevenues, profit: yearProfits },\n    barChart:   { labels: CATEGORIES, values: catValues(sum(orders, 'Final_Sale_Price')) },\n    pieChart:   { labels: PIE_LABELS,  values: pieValues(sum(orders, 'Total_Cost')),  colors: PIE_COLORS }\n  }\n};\n\nreturn [{ json: result }];\n"
+      },
+      "name": "Financial Aggregator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 380]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "name": "Respond with JSON",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [940, 380]
+    }
+  ],
+  "connections": {
+    "FO Webhook": {
+      "main": [[
+        { "node": "Fetch All Main Orders", "type": "main", "index": 0 },
+        { "node": "Fetch All Order Items", "type": "main", "index": 0 }
+      ]]
+    },
+    "Fetch All Main Orders": {
+      "main": [[{ "node": "Financial Aggregator", "type": "main", "index": 0 }]]
+    },
+    "Fetch All Order Items": {
+      "main": [[{ "node": "Financial Aggregator", "type": "main", "index": 0 }]]
+    },
+    "Financial Aggregator": {
+      "main": [[{ "node": "Respond with JSON", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

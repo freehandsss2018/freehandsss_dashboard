@@ -18,6 +18,7 @@ freehandsss_dashboard/
 │   ├── freehandsss_dashboardV37.html       # Stable Baseline (基礎開發版，對應 current)
 │   ├── freehandsss_dashboardV39_proto.html # DEPRECATED (設計概念已廢除，保留備份)
 │   ├── freehandsss_dashboardV40.html       # Interface Dev v40 (iPhone/Desktop 響應式，Code Reviewer PASS)
+│   ├── freehandsss_financial_overview.html ← Financial Overview 頁面 (Current/Monthly/Yearly 財務圖表，Canvas 2D，Phase D n8n hookup 待接)
 │   ├── products.js                         ← 前端產品快取
 │   ├── products.json                       ← 前端產品快取（JSON 格式）
 │   └── archive/                            ← 失效版本封存區
@@ -95,7 +96,8 @@ freehandsss_dashboard/
 │
 ├── n8n/                                 ← n8n Workflow 配置區
 │   ├── README.md                        ← n8n 配置說明
-│   └── Triple_Sync_Field_Map.md         ← 三端對齊欄位地圖 V45.7.4+
+│   ├── Triple_Sync_Field_Map.md         ← 三端對齊欄位地圖 V45.7.4+
+│   └── FHS_Financial_Overview_workflow.json ← Financial Overview 聚合 webhook workflow（需匯入 n8n 並設定 Airtable credential）
 ├── Maintenance_Tools/                   ← 系統健康檢查與維護腳本
 │   ├── README.md                        ← 維護工具說明
 │   ├── run_all.py                       ← 全部測試執行器

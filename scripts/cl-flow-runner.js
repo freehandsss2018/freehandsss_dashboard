@@ -46,7 +46,7 @@ function callPerplexity(prompt) {
     const body = JSON.stringify({
       model: 'sonar-reasoning-pro',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 4000
+      max_tokens: 8192
     });
 
     const options = {
@@ -85,7 +85,7 @@ function callGemini(prompt) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 4000 }
+      generationConfig: { maxOutputTokens: 8192 }
     });
 
     const options = {

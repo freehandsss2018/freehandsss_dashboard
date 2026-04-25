@@ -1,3 +1,27 @@
+# Session Log — 2026-04-25（第十六次）
+
+## 概覽
+Financial Overview 全流程（Phase A–F）完成後，合併入 V40 成為第 4 個模式（V40.2），並校正 Mock Data 為 Airtable 真實數據。
+
+## 主要完成事項
+1. **Financial Overview V40.2 整合**：
+   - 6 項 Edit 操作：CSS tokens、fo-* 樣式、Top Bar 按鈕、HTML Container、switchMode() 擴充、FO JS 注入
+   - `#financeModeContainer` 加入 v40-main-col，預設 `display:none`
+   - `switchMode('finance')` 新分支：顯示容器、切換 body class、50ms 延遲觸發 `foInitAll()`
+   - Bottom Bar 在 finance 模式自動隱藏
+2. **Airtable 真實數據校正**：
+   - 直接 MCP 查詢 Main_Orders + Order_Items
+   - 真實 Current：HK$20,520 / HK$9,953 / HK$10,567 / 7 單
+   - Mock Data 更新：Monthly（4月）$6,240，Yearly 累計同 Current
+   - 產品分類改為：吊飾 > 鎖匙扣 > 立體擺設
+
+## 關鍵決策
+- Canvas sticky tab-bar 對齊 V40 top-bar 高度 56px（非 FA 獨立頁的 64px）
+- `setTimeout(foInitAll, 50)` 解決 `display:none → block` canvas clientWidth=0 問題
+- fo* 函式前綴隔離，避免與 V40 既有全域衝突
+
+---
+
 # Session Log — 2026-04-22（第十五次）
 
 ## 概覽

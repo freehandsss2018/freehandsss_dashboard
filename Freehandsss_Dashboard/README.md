@@ -8,7 +8,9 @@
 | 檔案 | 用途 |
 |---|---|
 | `Freehandsss_dashboard_current.html` | **正式生產環境**（禁止未授權覆蓋） |
-| `freehandsss_dashboardV36.html` | 當前開發版本（V36.2.2） |
+| `freehandsss_dashboardV37.html` | 穩定基準版（Stable Baseline，對應 current） |
+| `freehandsss_dashboardV40.html` | 響應式開發版（iPhone/Desktop 雙模式，Code Reviewer PASS） |
+| `freehandsss_financial_overview.html` | **Financial Overview 頁面**（Current/Monthly/Yearly 財務圖表，Canvas 2D；Phase D n8n hookup 待接） |
 | `products.js` | 產品快取 JS 模組（舊版 window.productCache 格式，無活躍引用，待封存） |
 | `products.json` | 產品資料靜態副本（開發查閱用，非 live 資料；NAS 真正運作快取在 `.n8n/data/products.json`） |
 

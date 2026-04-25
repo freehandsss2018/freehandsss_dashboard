@@ -97,6 +97,21 @@
             --white: #FFFFFF;
             --danger: #C62828;
             --border-radius: 12px;
+
+            /* === Financial Overview Chart Palette === */
+            --fhs-chart-revenue: #C9714A;
+            --fhs-chart-profit: #2E7D32;
+            --fhs-chart-cost: #B5603B;
+            --fhs-chart-bar-1: #C9714A;
+            --fhs-chart-bar-2: #D4956E;
+            --fhs-chart-bar-3: #7A6A55;
+            --fhs-chart-bar-4: #B0A090;
+            --fhs-chart-bar-5: #E0D8CC;
+            /* === Financial Overview KPI Accents === */
+            --fhs-kpi-revenue: #C9714A;
+            --fhs-kpi-cost: #F57F17;
+            --fhs-kpi-profit: #2E7D32;
+            --fhs-kpi-orders: #1565C0;
         }
 
         * {
@@ -1377,6 +1392,213 @@
             grid-template-columns: 1fr;
         }
 
+        /* Finance mode: full-width layout, hide side panel */
+        .v40-finance-active .v40-side-panel {
+            display: none !important;
+        }
+        .v40-finance-active .v40-layout {
+            grid-template-columns: 1fr;
+        }
+
+        /* =====================================================
+           Financial Overview — Integrated Styles
+        ===================================================== */
+        #fo-tab-bar {
+            position: sticky;
+            top: 56px;
+            z-index: 90;
+            background: var(--fhs-bg-surface);
+            border-bottom: 1px solid var(--fhs-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 0;
+        }
+        .fo-tab-btn {
+            position: relative;
+            padding: 14px 22px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--fhs-text-secondary);
+            transition: color 0.18s;
+            letter-spacing: 0.02em;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
+        }
+        .fo-tab-btn:hover { color: var(--fhs-accent); }
+        .fo-tab-btn.fo-tab-active {
+            color: var(--fhs-accent);
+            border-bottom-color: var(--fhs-accent);
+        }
+        #fo-main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 20px 48px;
+        }
+        #fo-kpi-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .fo-kpi-card {
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.15s;
+        }
+        .fo-kpi-card:hover { box-shadow: 0 4px 16px rgba(44, 36, 22, 0.08); }
+        .fo-kpi-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            border-radius: 0 2px 2px 0;
+        }
+        .fo-kpi-card[data-type="revenue"]::before { background: var(--fhs-kpi-revenue); }
+        .fo-kpi-card[data-type="cost"]::before    { background: var(--fhs-kpi-cost); }
+        .fo-kpi-card[data-type="profit"]::before  { background: var(--fhs-kpi-profit); }
+        .fo-kpi-card[data-type="orders"]::before  { background: var(--fhs-kpi-orders); }
+        .fo-kpi-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .fo-kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fhs-text-muted);
+        }
+        .fo-kpi-icon { font-size: 18px; line-height: 1; }
+        .fo-kpi-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--fhs-text-primary);
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+        .fo-kpi-change {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .fo-kpi-change.fo-up   { color: var(--fhs-success); }
+        .fo-kpi-change.fo-down { color: var(--fhs-danger); }
+        .fo-charts-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .fo-chart-card {
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            min-width: 0;
+        }
+        .fo-chart-card:hover { box-shadow: 0 4px 16px rgba(44, 36, 22, 0.08); }
+        #fo-pie-card { flex-shrink: 0; }
+        .fo-chart-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--fhs-text-primary);
+            margin-bottom: 16px;
+            letter-spacing: 0.01em;
+        }
+        #fo-line-legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .fo-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--fhs-text-secondary);
+            font-weight: 500;
+        }
+        .fo-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .fo-canvas-wrap { width: 100%; position: relative; }
+        #fo-line-canvas, #fo-bar-canvas, #fo-pie-canvas { display: block; width: 100% !important; }
+        #fo-pie-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        #fo-pie-canvas-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #fo-pie-center-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--fhs-text-secondary);
+            text-align: center;
+            pointer-events: none;
+            line-height: 1.3;
+        }
+        #fo-pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+        .fo-pie-legend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .fo-pie-legend-left { display: flex; align-items: center; gap: 8px; }
+        .fo-pie-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .fo-pie-legend-name { font-size: 12px; color: var(--fhs-text-secondary); }
+        .fo-pie-legend-pct { font-size: 12px; font-weight: 700; color: var(--fhs-text-primary); }
+
+        @media (max-width: 767px) {
+            #fo-tab-bar { top: 56px; }
+            .fo-tab-btn { padding: 12px 14px; font-size: 13px; }
+            #fo-main { padding: 16px 14px 80px; }
+            #fo-kpi-grid { grid-template-columns: 1fr; }
+            .fo-kpi-value { font-size: 22px; }
+            .fo-charts-row { flex-direction: column; }
+            #fo-pie-card { width: 100%; }
+            .fo-chart-title { font-size: 13px; }
+        }
+        @media (min-width: 768px) {
+            #fo-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+            .fo-charts-row { flex-direction: row; }
+            #fo-pie-card { width: 320px; }
+        }
+
         /* Desktop: two-column layout, Side Panel visible */
         @media (min-width: 768px) {
             .fhs-bottom-bar {
@@ -1446,6 +1668,9 @@
                 style="padding:6px 12px; border-radius:var(--radius-md); border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-weight:bold; cursor:pointer; font-size:var(--fhs-text-sm);">修改</button>
             <button id="modeReviewBtn" onclick="switchMode('review')"
                 style="padding:6px 12px; border-radius:var(--radius-md); border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-weight:bold; cursor:pointer; font-size:var(--fhs-text-sm);">核對</button>
+            <!-- Financial Overview 模式按鈕（V40.2 整合版） -->
+            <button id="modeFinanceBtn" onclick="switchMode('finance')"
+                style="padding:6px 12px; border-radius:var(--radius-md); border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-weight:bold; cursor:pointer; font-size:var(--fhs-text-sm);">📈 財務</button>
             <!-- 沙盒按鈕 -->
             <button id="sandboxToggleBtn" class="sandbox-toggle-btn" onclick="toggleSandbox()" style="font-size:12px;">🛠️ 沙盒</button>
             <!-- Desktop 設定入口：在 iPhone 由 v40-bottom-bar 的設定按鈕 + Drawer 取代 -->
@@ -2163,6 +2388,110 @@
 
     </div> <!-- End formContainer -->
 
+    <!-- =====================================================
+         Financial Overview 模式容器（V40.2 整合）
+    ===================================================== -->
+    <div id="financeModeContainer" style="display:none; width:100%;">
+
+        <!-- Tab Bar -->
+        <nav id="fo-tab-bar" role="tablist" aria-label="時間維度切換">
+            <button id="fo-tab-current" class="fo-tab-btn fo-tab-active" role="tab" aria-selected="true" onclick="switchTab('current')">Current</button>
+            <button id="fo-tab-monthly" class="fo-tab-btn" role="tab" aria-selected="false" onclick="switchTab('monthly')">Monthly</button>
+            <button id="fo-tab-yearly" class="fo-tab-btn" role="tab" aria-selected="false" onclick="switchTab('yearly')">Yearly</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main id="fo-main">
+
+            <!-- KPI Cards -->
+            <div id="fo-kpi-grid">
+                <div class="fo-kpi-card" data-type="revenue">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">Revenue</span>
+                        <span class="fo-kpi-icon" aria-hidden="true">&#8593;</span>
+                    </div>
+                    <div id="fo-kpi-revenue-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-revenue-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-revenue-pct">+0%</span>
+                    </div>
+                </div>
+                <div class="fo-kpi-card" data-type="cost">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">Cost</span>
+                        <span class="fo-kpi-icon" aria-hidden="true">&#9660;</span>
+                    </div>
+                    <div id="fo-kpi-cost-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-cost-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-cost-pct">+0%</span>
+                    </div>
+                </div>
+                <div class="fo-kpi-card" data-type="profit">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">Net Profit</span>
+                        <span class="fo-kpi-icon" aria-hidden="true">&#10022;</span>
+                    </div>
+                    <div id="fo-kpi-profit-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-profit-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-profit-pct">+0%</span>
+                    </div>
+                </div>
+                <div class="fo-kpi-card" data-type="orders">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">Orders</span>
+                        <span class="fo-kpi-icon" aria-hidden="true">&#8801;</span>
+                    </div>
+                    <div id="fo-kpi-orders-value" class="fo-kpi-value">0</div>
+                    <div id="fo-kpi-orders-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-orders-pct">+0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line + Bar Charts Row -->
+            <div class="fo-charts-row">
+                <div class="fo-chart-card" id="fo-line-card">
+                    <div class="fo-chart-title">收入 vs 利潤趨勢</div>
+                    <div id="fo-line-legend">
+                        <div class="fo-legend-item">
+                            <div class="fo-legend-dot" style="background:#C9714A;"></div>
+                            <span>收入</span>
+                        </div>
+                        <div class="fo-legend-item">
+                            <div class="fo-legend-dot" style="background:#2E7D32;"></div>
+                            <span>淨利潤</span>
+                        </div>
+                    </div>
+                    <div class="fo-canvas-wrap" id="fo-line-canvas-wrap">
+                        <canvas id="fo-line-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="fo-chart-card" id="fo-bar-card">
+                    <div class="fo-chart-title">產品類別銷售</div>
+                    <div class="fo-canvas-wrap" id="fo-bar-canvas-wrap">
+                        <canvas id="fo-bar-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie Chart Row -->
+            <div class="fo-charts-row">
+                <div class="fo-chart-card" id="fo-pie-card">
+                    <div class="fo-chart-title">成本構成</div>
+                    <div id="fo-pie-inner">
+                        <div id="fo-pie-canvas-wrap">
+                            <canvas id="fo-pie-canvas"></canvas>
+                            <div id="fo-pie-center-label">成本<br>構成</div>
+                        </div>
+                        <div id="fo-pie-legend"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+    <!-- End financeModeContainer -->
+
     </div> <!-- End v40-main-col -->
 
     <!-- 右欄：Desktop Side Panel -->
@@ -2587,11 +2916,16 @@
                 const forms = document.querySelectorAll('#formContainer');
                 const reviews = document.querySelectorAll('#reviewModeContainer');
                 const editP = document.querySelectorAll('#editModeContainer');
+                const finances = document.querySelectorAll('#financeModeContainer');
 
                 // 🎯 隱藏所有
                 forms.forEach(f => f.style.display = 'none');
                 reviews.forEach(r => r.style.display = 'none');
                 editP.forEach(e => e.style.display = 'none');
+                finances.forEach(fi => fi.style.display = 'none');
+
+                // Finance mode body class
+                document.body.classList.toggle('v40-finance-active', mode === 'finance');
 
                 console.log(`[DEBUG] Found ${forms.length} formContainers, ${reviews.length} reviewContainers`);
 
@@ -2604,12 +2938,16 @@
                     reviews.forEach(r => r.style.display = 'block');
                     // 🚨 徹底隱藏表單 (Review 模式不應看到表單)
                     forms.forEach(f => f.style.display = 'none');
+                } else if (mode === 'finance') {
+                    finances.forEach(fi => fi.style.display = 'block');
+                    forms.forEach(f => f.style.display = 'none');
                 }
 
                 // 更新按鈕樣式
                 const btnCreate = document.getElementById('modeCreateBtn');
                 const btnEdit = document.getElementById('modeEditBtn');
                 const btnReview = document.getElementById('modeReviewBtn');
+                const btnFinance = document.getElementById('modeFinanceBtn');
 
                 if (btnCreate) {
                     btnCreate.style.background = (mode === 'create') ? 'var(--primary)' : '#eee';
@@ -2626,14 +2964,27 @@
                     btnReview.style.color = (mode === 'review') ? 'white' : '#666';
                     btnReview.style.border = (mode === 'review') ? 'none' : '1px solid #ccc';
                 }
-                
+                if (btnFinance) {
+                    btnFinance.style.background = (mode === 'finance') ? 'var(--primary)' : '#eee';
+                    btnFinance.style.color = (mode === 'finance') ? 'white' : '#666';
+                    btnFinance.style.border = (mode === 'finance') ? 'none' : '1px solid #ccc';
+                }
+
                 // --- V36.1 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
-                if (bbar) bbar.style.display = (mode === 'review') ? 'none' : 'flex';
+                if (bbar) bbar.style.display = (mode === 'review' || mode === 'finance') ? 'none' : 'flex';
+
+                // V40 Bottom Bar: hide order actions in finance mode
+                const v40bbar = document.getElementById('v40-bottom-bar');
+                if (v40bbar) v40bbar.style.display = (mode === 'finance') ? 'none' : '';
 
                 if (mode === 'review') {
                     initReviewYears();
                     fetchGlobalReview();
+                }
+                if (mode === 'finance') {
+                    // Small delay to ensure container is visible before canvas rendering
+                    setTimeout(foInitAll, 50);
                 }
             }
         }
@@ -5076,6 +5427,370 @@
             <div id="loaderText" class="loader-text">FHS 智能中樞正在工作中...</div>
         </div>
     </div>
+
+    <!-- =====================================================
+         Financial Overview — Integrated JS (V40.2)
+         Prefixed: fo* to avoid collision with V40 globals
+    ===================================================== -->
+    <script>
+        /* === CONFIG === */
+        var FINANCIAL_WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/financial-overview';
+        var FO_LIVE_DATA = null;
+        var FO_DATA_LOADING = false;
+
+        /* === MOCK DATA (2026-04-25 同步自 Airtable 真實數據) ===
+           Current  = 累計至今 (全部 7 單，Revenue=20520, Cost=9953, Profit=10567)
+           Monthly  = 4月 2026 (Revenue=6240, Cost=1865, Profit=4375, Orders=3)
+           Yearly   = 2026 全年累計 (同 Current，業務剛起步)
+           產品類別 = 依 Order_Items 推算：吊飾 > 鎖匙扣 > 玻璃瓶套裝
+        ============================================================ */
+        var FO_MOCK_DATA = {
+            current: {
+                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
+                revenueChange: 43.8, costChange: -76.9, profitChange: -29.3, ordersChange: 3,
+                lineChart: {
+                    labels: ['1月','2月','3月','4月'],
+                    revenue: [0, 0, 14280, 6240],
+                    profit:  [0, 0, 6192,  4375]
+                },
+                barChart: {
+                    labels: ['吊飾','鎖匙扣','玻璃瓶套裝','木框套裝','配件'],
+                    values: [11250, 8570, 700, 0, 0]
+                },
+                pieChart: {
+                    labels: ['純銀頸鏈吊飾','金屬鎖匙扣','立體擺設','包裝','雜項'],
+                    values: [4977, 4479, 420, 57, 20],
+                    colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
+                }
+            },
+            monthly: {
+                revenue: 6240, cost: 1865, profit: 4375, orders: 3,
+                revenueChange: -56.3, costChange: -76.9, profitChange: -29.3, ordersChange: -1,
+                lineChart: {
+                    labels: ['3月','4月'],
+                    revenue: [14280, 6240],
+                    profit:  [6192,  4375]
+                },
+                barChart: {
+                    labels: ['吊飾','鎖匙扣','玻璃瓶套裝','木框套裝','配件'],
+                    values: [3072, 3168, 0, 0, 0]
+                },
+                pieChart: {
+                    labels: ['純銀頸鏈吊飾','金屬鎖匙扣','立體擺設','包裝','雜項'],
+                    values: [950, 915, 0, 0, 0],
+                    colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
+                }
+            },
+            yearly: {
+                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
+                revenueChange: 0, costChange: 0, profitChange: 0, ordersChange: 7,
+                lineChart: {
+                    labels: ['1月','2月','3月','4月'],
+                    revenue: [0, 0, 14280, 20520],
+                    profit:  [0, 0, 6192,  10567]
+                },
+                barChart: {
+                    labels: ['吊飾','鎖匙扣','玻璃瓶套裝','木框套裝','配件'],
+                    values: [11250, 8570, 700, 0, 0]
+                },
+                pieChart: {
+                    labels: ['純銀頸鏈吊飾','金屬鎖匙扣','立體擺設','包裝','雜項'],
+                    values: [4977, 4479, 420, 57, 20],
+                    colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
+                }
+            }
+        };
+
+        /* === STATE === */
+        var foCurrentTab = 'current';
+        var foResizeTimer = null;
+        var foInitialized = false;
+
+        /* === DATA LAYER === */
+        function foGetTabData(tab) {
+            var src = FO_LIVE_DATA || FO_MOCK_DATA;
+            return src[tab] || src.current;
+        }
+
+        /* === HELPERS === */
+        function isMobile() { return window.innerWidth < 768; }
+
+        function fmtHKD(val) {
+            if (val >= 1000000) return 'HK$' + (val / 1000000).toFixed(1) + 'M';
+            if (val >= 10000)   return 'HK$' + Math.round(val / 1000) + 'K';
+            return 'HK$' + val.toLocaleString();
+        }
+        function fmtHKDFull(val) { return 'HK$' + val.toLocaleString(); }
+        function fmtYAxis(val) {
+            if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+            if (val >= 1000)    return Math.round(val / 1000) + 'K';
+            return String(val);
+        }
+
+        /* === KPI UPDATE === */
+        function foUpdateKPI(tab) {
+            var d = foGetTabData(tab);
+            document.getElementById('fo-kpi-revenue-value').textContent = fmtHKDFull(d.revenue);
+            document.getElementById('fo-kpi-cost-value').textContent    = fmtHKDFull(d.cost);
+            document.getElementById('fo-kpi-profit-value').textContent  = fmtHKDFull(d.profit);
+            document.getElementById('fo-kpi-orders-value').textContent  = d.orders;
+            foSetChange('fo-kpi-revenue-change', 'fo-kpi-revenue-pct', d.revenueChange, false);
+            foSetChange('fo-kpi-cost-change',    'fo-kpi-cost-pct',    d.costChange,    false);
+            foSetChange('fo-kpi-profit-change',  'fo-kpi-profit-pct',  d.profitChange,  false);
+            foSetChange('fo-kpi-orders-change',  'fo-kpi-orders-pct',  d.ordersChange,  true);
+        }
+
+        function foSetChange(wrapId, pctId, value, isInt) {
+            var wrap  = document.getElementById(wrapId);
+            var pctEl = document.getElementById(pctId);
+            var isUp  = value >= 0;
+            wrap.className = 'fo-kpi-change ' + (isUp ? 'fo-up' : 'fo-down');
+            var arrow = wrap.querySelector('span:first-child');
+            arrow.textContent = isUp ? '\u25B2' : '\u25BC';
+            pctEl.textContent = isInt
+                ? ((isUp ? '+' : '') + Math.round(value))
+                : ((isUp ? '+' : '') + value.toFixed(1) + '%');
+        }
+
+        /* === LINE CHART === */
+        function foDrawLine(tab) {
+            var canvas = document.getElementById('fo-line-canvas');
+            var wrap   = document.getElementById('fo-line-canvas-wrap');
+            var d      = foGetTabData(tab).lineChart;
+            var mobile = isMobile();
+            var W = wrap.clientWidth;
+            var H = mobile ? 200 : 260;
+            canvas.width  = W * window.devicePixelRatio;
+            canvas.height = H * window.devicePixelRatio;
+            canvas.style.height = H + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, W, H);
+            var padLeft = mobile ? 42 : 52, padRight = 16, padTop = 16, padBottom = mobile ? 30 : 36;
+            var plotW = W - padLeft - padRight;
+            var plotH = H - padTop - padBottom;
+            var allVals = d.revenue.concat(d.profit);
+            var dataMax = Math.max.apply(null, allVals);
+            var range   = dataMax || 1;
+            ctx.strokeStyle = '#E0D8CC'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+            for (var i = 0; i <= 5; i++) {
+                var y = padTop + plotH - (i / 5) * plotH;
+                ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(padLeft + plotW, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#B0A090';
+                ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                ctx.fillText(fmtYAxis(Math.round((i / 5) * dataMax)), padLeft - 4, y);
+                ctx.setLineDash([4,4]);
+            }
+            ctx.setLineDash([]);
+            var n = d.labels.length;
+            ctx.fillStyle = '#B0A090';
+            ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            for (var i = 0; i < n; i++) {
+                var xLbl = padLeft + (i / (n > 1 ? n - 1 : 1)) * plotW;
+                ctx.fillText(d.labels[i], xLbl, padTop + plotH + (mobile ? 6 : 8));
+            }
+            var xDiv = n > 1 ? n - 1 : 1;
+            function toX(i)   { return padLeft + (i / xDiv) * plotW; }
+            function toY(val) { return padTop + plotH - (val / range) * plotH; }
+            function drawSeries(data, color) {
+                ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = mobile ? 2 : 2.5;
+                ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                for (var j = 0; j < data.length; j++) {
+                    if (j === 0) ctx.moveTo(toX(j), toY(data[j]));
+                    else         ctx.lineTo(toX(j), toY(data[j]));
+                }
+                ctx.stroke();
+                for (var j = 0; j < data.length; j++) {
+                    ctx.beginPath();
+                    ctx.arc(toX(j), toY(data[j]), mobile ? 3 : 4, 0, Math.PI * 2);
+                    ctx.fillStyle = color; ctx.fill();
+                    ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = mobile ? 1.5 : 2; ctx.stroke();
+                }
+            }
+            drawSeries(d.revenue, '#C9714A');
+            drawSeries(d.profit,  '#2E7D32');
+        }
+
+        /* === BAR CHART === */
+        function foDrawBar(tab) {
+            var canvas = document.getElementById('fo-bar-canvas');
+            var wrap   = document.getElementById('fo-bar-canvas-wrap');
+            var d      = foGetTabData(tab).barChart;
+            var mobile = isMobile();
+            var BAR_COLORS = ['#C9714A','#D4956E','#7A6A55','#B0A090','#E0D8CC'];
+            var W = wrap.clientWidth;
+            var H = mobile ? 200 : 260;
+            canvas.width  = W * window.devicePixelRatio;
+            canvas.height = H * window.devicePixelRatio;
+            canvas.style.height = H + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, W, H);
+            var padLeft = mobile ? 38 : 50, padRight = 12, padTop = 16, padBottom = mobile ? 40 : 48;
+            var plotW = W - padLeft - padRight;
+            var plotH = H - padTop - padBottom;
+            var dataMax = Math.max.apply(null, d.values);
+            var range   = dataMax || 1;
+            var n       = d.values.length;
+            ctx.setLineDash([4,4]); ctx.strokeStyle = '#E0D8CC'; ctx.lineWidth = 1;
+            for (var i = 0; i <= 4; i++) {
+                var y = padTop + plotH - (i / 4) * plotH;
+                ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(padLeft + plotW, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#B0A090';
+                ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                ctx.fillText(fmtYAxis(Math.round((i / 4) * dataMax)), padLeft - 4, y);
+                ctx.setLineDash([4,4]);
+            }
+            ctx.setLineDash([]);
+            var groupW = plotW / n, barPad = mobile ? 8 : 12, barW = groupW - barPad * 2, radius = mobile ? 3 : 5;
+            for (var i = 0; i < n; i++) {
+                var barH = (d.values[i] / range) * plotH;
+                var x    = padLeft + i * groupW + barPad;
+                var y    = padTop + plotH - barH;
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + barW - radius, y);
+                ctx.arcTo(x + barW, y, x + barW, y + radius, radius);
+                ctx.lineTo(x + barW, y + barH);
+                ctx.lineTo(x, y + barH);
+                ctx.lineTo(x, y + radius);
+                ctx.arcTo(x, y, x + radius, y, radius);
+                ctx.closePath();
+                ctx.fillStyle = BAR_COLORS[i % BAR_COLORS.length];
+                ctx.fill();
+                var labelX = x + barW / 2, labelY = padTop + plotH + (mobile ? 6 : 8);
+                ctx.fillStyle = '#7A6A55'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                if (mobile) {
+                    var short = d.labels[i].length > 3 ? d.labels[i].slice(0, 3) + '…' : d.labels[i];
+                    ctx.font = '9px -apple-system, sans-serif';
+                    ctx.fillText(short, labelX, labelY);
+                } else {
+                    ctx.font = '10px -apple-system, sans-serif';
+                    var label = d.labels[i];
+                    if (label.length > 4) {
+                        ctx.fillText(label.slice(0,3), labelX, labelY);
+                        ctx.fillText(label.slice(3),   labelX, labelY + 13);
+                    } else {
+                        ctx.fillText(label, labelX, labelY);
+                    }
+                }
+            }
+        }
+
+        /* === DONUT CHART === */
+        function foDrawPie(tab) {
+            var canvas = document.getElementById('fo-pie-canvas');
+            var d      = foGetTabData(tab).pieChart;
+            var mobile = isMobile();
+            var size = mobile ? 160 : 200;
+            canvas.width  = size * window.devicePixelRatio;
+            canvas.height = size * window.devicePixelRatio;
+            canvas.style.width  = size + 'px';
+            canvas.style.height = size + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, size, size);
+            var cx = size / 2, cy = size / 2, outer = size / 2 - 4, inner = outer * 0.60;
+            var total = d.values.reduce(function(a,b){ return a+b; }, 0);
+            var startAng = -Math.PI / 2;
+            for (var i = 0; i < d.values.length; i++) {
+                var slice  = (d.values[i] / total) * Math.PI * 2;
+                var endAng = startAng + slice;
+                ctx.beginPath(); ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, outer, startAng, endAng);
+                ctx.closePath(); ctx.fillStyle = d.colors[i]; ctx.fill();
+                startAng = endAng;
+            }
+            ctx.beginPath(); ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF'; ctx.fill();
+            foBuildPieLegend(d, total);
+        }
+
+        function foBuildPieLegend(d, total) {
+            var legendEl = document.getElementById('fo-pie-legend');
+            legendEl.innerHTML = '';
+            for (var i = 0; i < d.labels.length; i++) {
+                var pct = ((d.values[i] / total) * 100).toFixed(1);
+                var row = document.createElement('div');
+                row.className = 'fo-pie-legend-row';
+                row.innerHTML =
+                    '<div class="fo-pie-legend-left">' +
+                        '<div class="fo-pie-legend-dot" style="background:' + d.colors[i] + ';"></div>' +
+                        '<span class="fo-pie-legend-name">' + d.labels[i] + '</span>' +
+                    '</div>' +
+                    '<span class="fo-pie-legend-pct">' + pct + '%</span>';
+                legendEl.appendChild(row);
+            }
+        }
+
+        /* === TAB SWITCH === */
+        function switchTab(tab) {
+            if (tab === foCurrentTab) return;
+            foCurrentTab = tab;
+            ['current','monthly','yearly'].forEach(function(t) {
+                var btn = document.getElementById('fo-tab-' + t);
+                if (!btn) return;
+                btn.classList.toggle('fo-tab-active', t === tab);
+                btn.setAttribute('aria-selected', String(t === tab));
+            });
+            foRenderAll(tab);
+        }
+
+        /* === RENDER ALL === */
+        function foRenderAll(tab) {
+            foUpdateKPI(tab);
+            foDrawLine(tab);
+            foDrawBar(tab);
+            foDrawPie(tab);
+        }
+
+        /* === FETCH LIVE DATA === */
+        function foFetchLive() {
+            if (FO_DATA_LOADING) return;
+            FO_DATA_LOADING = true;
+            fetch(FINANCIAL_WEBHOOK_URL, { method: 'GET', headers: { 'Accept': 'application/json' } })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (data && data.current && data.monthly && data.yearly) {
+                        FO_LIVE_DATA = data;
+                        foRenderAll(foCurrentTab);
+                    } else {
+                        throw new Error('Invalid data structure');
+                    }
+                })
+                .catch(function(err) {
+                    console.warn('[FHS Financial] Webhook unavailable, using mock data. Reason:', err.message);
+                })
+                .finally(function() { FO_DATA_LOADING = false; });
+        }
+
+        /* === INIT === */
+        function foInitAll() {
+            foRenderAll(foCurrentTab);
+            foFetchLive();
+        }
+
+        /* === RESIZE HANDLER === */
+        window.addEventListener('resize', function() {
+            clearTimeout(foResizeTimer);
+            foResizeTimer = setTimeout(function() {
+                var financeEl = document.getElementById('financeModeContainer');
+                if (financeEl && financeEl.style.display !== 'none') {
+                    foDrawLine(foCurrentTab);
+                    foDrawBar(foCurrentTab);
+                    foDrawPie(foCurrentTab);
+                }
+            }, 150);
+        });
+    </script>
 
 </body>
 

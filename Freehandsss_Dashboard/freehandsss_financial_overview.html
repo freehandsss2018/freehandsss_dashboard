@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Overview — Freehandsss</title>
+  <style>
+    /* =====================================================
+       FHS Design Tokens
+    ===================================================== */
+    :root {
+      --fhs-bg-base: #FAF7F4;
+      --fhs-bg-surface: #FFFFFF;
+      --fhs-bg-elevated: #F0EBE4;
+      --fhs-accent: #C9714A;
+      --fhs-accent-hover: #B5603B;
+      --fhs-accent-light: #F5E8E0;
+      --fhs-text-primary: #2C2416;
+      --fhs-text-secondary: #7A6A55;
+      --fhs-text-muted: #B0A090;
+      --fhs-border: #E0D8CC;
+      --fhs-border-focus: #C9714A;
+      --fhs-success: #2E7D32;
+      --fhs-success-bg: #E8F5E9;
+      --fhs-warning: #F57F17;
+      --fhs-warning-bg: #FFF8E1;
+      --fhs-danger: #C62828;
+      --fhs-danger-bg: #FFEBEE;
+      --fhs-info: #1565C0;
+      --fhs-info-bg: #E3F2FD;
+      /* Chart Palette */
+      --fhs-chart-revenue: #C9714A;
+      --fhs-chart-profit: #2E7D32;
+      --fhs-chart-cost: #B5603B;
+      --fhs-chart-bar-1: #C9714A;
+      --fhs-chart-bar-2: #D4956E;
+      --fhs-chart-bar-3: #7A6A55;
+      --fhs-chart-bar-4: #B0A090;
+      --fhs-chart-bar-5: #E0D8CC;
+      /* KPI Accents */
+      --fhs-kpi-revenue: #C9714A;
+      --fhs-kpi-cost: #F57F17;
+      --fhs-kpi-profit: #2E7D32;
+      --fhs-kpi-orders: #1565C0;
+    }
+
+    /* =====================================================
+       Reset & Base
+    ===================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background-color: var(--fhs-bg-base);
+      color: var(--fhs-text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang HK', 'Microsoft JhengHei', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* =====================================================
+       Header Bar
+    ===================================================== */
+    #fo-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 64px;
+      background: var(--fhs-bg-surface);
+      border-bottom: 1px solid var(--fhs-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 1px 4px rgba(44, 36, 22, 0.06);
+    }
+
+    #fo-header-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--fhs-accent);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+
+    #fo-header-back:hover {
+      color: var(--fhs-accent-hover);
+    }
+
+    #fo-header-back .fo-back-arrow {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    #fo-header-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--fhs-text-primary);
+      letter-spacing: 0.02em;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #fo-header-meta {
+      font-size: 13px;
+      color: var(--fhs-text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* =====================================================
+       Tab Switcher
+    ===================================================== */
+    #fo-tab-bar {
+      position: sticky;
+      top: 64px;
+      z-index: 90;
+      background: var(--fhs-bg-surface);
+      border-bottom: 1px solid var(--fhs-border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 0;
+    }
+
+    .fo-tab-btn {
+      position: relative;
+      padding: 14px 22px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fhs-text-secondary);
+      transition: color 0.18s;
+      letter-spacing: 0.02em;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .fo-tab-btn:hover {
+      color: var(--fhs-accent);
+    }
+
+    .fo-tab-btn.fo-tab-active {
+      color: var(--fhs-accent);
+      border-bottom-color: var(--fhs-accent);
+    }
+
+    /* =====================================================
+       Main Content
+    ===================================================== */
+    #fo-main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    /* =====================================================
+       KPI Grid
+    ===================================================== */
+    #fo-kpi-grid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .fo-kpi-card {
+      background: var(--fhs-bg-surface);
+      border: 1px solid var(--fhs-border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+
+    .fo-kpi-card:hover {
+      box-shadow: 0 4px 16px rgba(44, 36, 22, 0.08);
+    }
+
+    .fo-kpi-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 0 2px 2px 0;
+    }
+
+    .fo-kpi-card[data-type="revenue"]::before { background: var(--fhs-kpi-revenue); }
+    .fo-kpi-card[data-type="cost"]::before    { background: var(--fhs-kpi-cost); }
+    .fo-kpi-card[data-type="profit"]::before  { background: var(--fhs-kpi-profit); }
+    .fo-kpi-card[data-type="orders"]::before  { background: var(--fhs-kpi-orders); }
+
+    .fo-kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .fo-kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fhs-text-muted);
+    }
+
+    .fo-kpi-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .fo-kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--fhs-text-primary);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+
+    .fo-kpi-change {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .fo-kpi-change.fo-up   { color: var(--fhs-success); }
+    .fo-kpi-change.fo-down { color: var(--fhs-danger); }
+
+    /* =====================================================
+       Charts Row
+    ===================================================== */
+    .fo-charts-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .fo-chart-card {
+      background: var(--fhs-bg-surface);
+      border: 1px solid var(--fhs-border);
+      border-radius: 12px;
+      padding: 20px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .fo-chart-card:hover {
+      box-shadow: 0 4px 16px rgba(44, 36, 22, 0.08);
+    }
+
+    #fo-pie-card {
+      flex-shrink: 0;
+    }
+
+    .fo-chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fhs-text-primary);
+      margin-bottom: 16px;
+      letter-spacing: 0.01em;
+    }
+
+    /* Line chart legend */
+    #fo-line-legend {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .fo-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--fhs-text-secondary);
+      font-weight: 500;
+    }
+
+    .fo-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Canvas wrappers */
+    .fo-canvas-wrap {
+      width: 100%;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100% !important;
+    }
+
+    /* Pie chart layout */
+    #fo-pie-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #fo-pie-canvas-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #fo-pie-center-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--fhs-text-secondary);
+      text-align: center;
+      pointer-events: none;
+      line-height: 1.3;
+    }
+
+    #fo-pie-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .fo-pie-legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .fo-pie-legend-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .fo-pie-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .fo-pie-legend-name {
+      font-size: 12px;
+      color: var(--fhs-text-secondary);
+    }
+
+    .fo-pie-legend-pct {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--fhs-text-primary);
+    }
+
+    /* =====================================================
+       Responsive — iPhone < 768px
+    ===================================================== */
+    @media (max-width: 767px) {
+      #fo-header {
+        height: 56px;
+      }
+
+      #fo-header-back {
+        font-size: 13px;
+      }
+
+      #fo-header-title {
+        font-size: 15px;
+      }
+
+      #fo-header-meta {
+        display: none;
+      }
+
+      #fo-tab-bar {
+        top: 56px;
+      }
+
+      .fo-tab-btn {
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+
+      #fo-main {
+        padding: 16px 14px 40px;
+      }
+
+      #fo-kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fo-kpi-value {
+        font-size: 22px;
+      }
+
+      .fo-charts-row {
+        flex-direction: column;
+      }
+
+      #fo-pie-card {
+        width: 100%;
+      }
+
+      .fo-chart-title {
+        font-size: 13px;
+      }
+    }
+
+    /* =====================================================
+       Responsive — Desktop >= 768px
+    ===================================================== */
+    @media (min-width: 768px) {
+      #fo-kpi-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .fo-charts-row {
+        flex-direction: row;
+      }
+
+      #fo-pie-card {
+        width: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================
+       HEADER BAR
+  =================================================== -->
+  <header id="fo-header">
+    <!-- TODO[hookup]: 連結回正式 Dashboard URL，目前為 V40 proto 路徑 -->
+    <a id="fo-back-link" href="freehandsss_dashboardV40.html">
+      <span class="fo-back-arrow">&#8592;</span>
+      <span>返回 Dashboard</span>
+    </a>
+    <h1 id="fo-header-title">Financial Overview</h1>
+    <div id="fo-header-meta"></div>
+  </header>
+
+  <!-- ===================================================
+       TAB SWITCHER
+  =================================================== -->
+  <nav id="fo-tab-bar" role="tablist" aria-label="時間維度切換">
+    <button
+      id="fo-tab-current"
+      class="fo-tab-btn fo-tab-active"
+      role="tab"
+      aria-selected="true"
+      onclick="switchTab('current')"
+    >Current</button>
+    <button
+      id="fo-tab-monthly"
+      class="fo-tab-btn"
+      role="tab"
+      aria-selected="false"
+      onclick="switchTab('monthly')"
+    >Monthly</button>
+    <button
+      id="fo-tab-yearly"
+      class="fo-tab-btn"
+      role="tab"
+      aria-selected="false"
+      onclick="switchTab('yearly')"
+    >Yearly</button>
+  </nav>
+
+  <!-- ===================================================
+       MAIN CONTENT
+  =================================================== -->
+  <main id="fo-main">
+
+    <!-- KPI Cards -->
+    <div id="fo-kpi-grid">
+
+      <div class="fo-kpi-card" data-type="revenue">
+        <div class="fo-kpi-top">
+          <span class="fo-kpi-label">Revenue</span>
+          <span class="fo-kpi-icon" aria-hidden="true">&#8593;</span>
+        </div>
+        <div id="fo-kpi-revenue-value" class="fo-kpi-value">HK$0</div>
+        <div id="fo-kpi-revenue-change" class="fo-kpi-change fo-up">
+          <span>&#9650;</span><span id="fo-kpi-revenue-pct">+0%</span>
+        </div>
+      </div>
+
+      <div class="fo-kpi-card" data-type="cost">
+        <div class="fo-kpi-top">
+          <span class="fo-kpi-label">Cost</span>
+          <span class="fo-kpi-icon" aria-hidden="true">&#9660;</span>
+        </div>
+        <div id="fo-kpi-cost-value" class="fo-kpi-value">HK$0</div>
+        <div id="fo-kpi-cost-change" class="fo-kpi-change fo-up">
+          <span>&#9650;</span><span id="fo-kpi-cost-pct">+0%</span>
+        </div>
+      </div>
+
+      <div class="fo-kpi-card" data-type="profit">
+        <div class="fo-kpi-top">
+          <span class="fo-kpi-label">Net Profit</span>
+          <span class="fo-kpi-icon" aria-hidden="true">&#10022;</span>
+        </div>
+        <div id="fo-kpi-profit-value" class="fo-kpi-value">HK$0</div>
+        <div id="fo-kpi-profit-change" class="fo-kpi-change fo-up">
+          <span>&#9650;</span><span id="fo-kpi-profit-pct">+0%</span>
+        </div>
+      </div>
+
+      <div class="fo-kpi-card" data-type="orders">
+        <div class="fo-kpi-top">
+          <span class="fo-kpi-label">Orders</span>
+          <span class="fo-kpi-icon" aria-hidden="true">&#8801;</span>
+        </div>
+        <div id="fo-kpi-orders-value" class="fo-kpi-value">0</div>
+        <div id="fo-kpi-orders-change" class="fo-kpi-change fo-up">
+          <span>&#9650;</span><span id="fo-kpi-orders-pct">+0</span>
+        </div>
+      </div>
+
+    </div>
+    <!-- /KPI Cards -->
+
+    <!-- Line + Bar Charts Row -->
+    <div class="fo-charts-row">
+
+      <!-- Line Chart Card -->
+      <div class="fo-chart-card" id="fo-line-card">
+        <div class="fo-chart-title">收入 vs 利潤趨勢</div>
+        <div id="fo-line-legend">
+          <div class="fo-legend-item">
+            <div class="fo-legend-dot" style="background:#C9714A;"></div>
+            <span>收入</span>
+          </div>
+          <div class="fo-legend-item">
+            <div class="fo-legend-dot" style="background:#2E7D32;"></div>
+            <span>淨利潤</span>
+          </div>
+        </div>
+        <div class="fo-canvas-wrap" id="fo-line-canvas-wrap">
+          <canvas id="fo-line-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar Chart Card -->
+      <div class="fo-chart-card" id="fo-bar-card">
+        <div class="fo-chart-title">產品類別銷售</div>
+        <div class="fo-canvas-wrap" id="fo-bar-canvas-wrap">
+          <canvas id="fo-bar-canvas"></canvas>
+        </div>
+      </div>
+
+    </div>
+    <!-- /Line + Bar Charts Row -->
+
+    <!-- Pie Chart Row -->
+    <div class="fo-charts-row">
+
+      <div class="fo-chart-card" id="fo-pie-card">
+        <div class="fo-chart-title">成本構成</div>
+        <div id="fo-pie-inner">
+          <div id="fo-pie-canvas-wrap">
+            <canvas id="fo-pie-canvas"></canvas>
+            <div id="fo-pie-center-label">成本<br>構成</div>
+          </div>
+          <div id="fo-pie-legend"></div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /Pie Chart Row -->
+
+  </main>
+
+  <script>
+    /* =====================================================
+       WEBHOOK CONFIG
+       Phase D: 設定 n8n 財務聚合 webhook URL
+       workflow: FHS_Financial_Overview (需在 n8n 匯入並啟用)
+    ===================================================== */
+    var FINANCIAL_WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/financial-overview';
+    var LIVE_DATA = null;        // 成功取得真實數據後快取於此
+    var DATA_LOADING = false;    // 防止重複請求
+
+    /* =====================================================
+       MOCK DATA (Fallback — webhook 不可用時使用)
+    ===================================================== */
+    const MOCK_DATA = {
+      current: {
+        revenue: 38090,
+        cost: 12450,
+        profit: 25640,
+        orders: 33,
+        revenueChange: +8.3,
+        costChange: +2.1,
+        profitChange: +11.7,
+        ordersChange: +5,
+        lineChart: {
+          labels: ['1月','2月','3月','4月','5月','6月','7月','8月'],
+          revenue: [28000, 32000, 29000, 35000, 31000, 38090, 36000, 38090],
+          profit:  [16000, 19000, 17000, 22000, 19500, 25640, 23000, 25640]
+        },
+        barChart: {
+          labels: ['木框套裝','玻璃瓶套裝','鎖匙扣','吊飾','配件'],
+          values: [18000, 9500, 5800, 3200, 1590]
+        },
+        pieChart: {
+          labels: ['原材料','包裝','人工','運費','雜項'],
+          values: [6200, 2100, 2800, 900, 450],
+          colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
+        }
+      },
+      monthly: {
+        revenue: 156800,
+        cost: 48200,
+        profit: 108600,
+        orders: 142,
+        revenueChange: +12.4,
+        costChange: -1.8,
+        profitChange: +18.2,
+        ordersChange: +9,
+        lineChart: {
+          labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'],
+          revenue: [110000,125000,118000,142000,138000,156800,148000,156800],
+          profit:  [72000, 85000, 79000, 98000, 95000,108600,102000,108600]
+        },
+        barChart: {
+          labels: ['木框套裝','玻璃瓶套裝','鎖匙扣','吊飾','配件'],
+          values: [72000, 38500, 23800, 14200, 8300]
+        },
+        pieChart: {
+          labels: ['原材料','包裝','人工','運費','雜項'],
+          values: [24000, 8400, 10800, 3600, 1400],
+          colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
+        }
+      },
+      yearly: {
+        revenue: 892500,
+        cost: 276800,
+        profit: 615700,
+        orders: 847,
+        revenueChange: +23.6,
+        costChange: +8.2,
+        profitChange: +31.4,
+        ordersChange: +18,
+        lineChart: {
+          labels: ['2019','2020','2021','2022','2023','2024','2025','2026'],
+          revenue: [280000,320000,410000,520000,650000,740000,810000,892500],
+          profit:  [140000,168000,228000,312000,420000,498000,550000,615700]
+        },
+        barChart: {
+          labels: ['木框套裝','玻璃瓶套裝','鎖匙扣','吊飾','配件'],
+          values: [420000,218000,135000,82000,37500]
+        },
+        pieChart: {
+          labels: ['原材料','包裝','人工','運費','雜項'],
+          values: [138000,48000,62000,20000,8800],
+          colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
+        }
+      }
+    };
+
+    /* =====================================================
+       STATE
+    ===================================================== */
+    let currentTab = 'current';
+
+    /* =====================================================
+       DATA LAYER — getTabData(tab)
+       優先使用 LIVE_DATA，fallback 到 MOCK_DATA
+    ===================================================== */
+    function getTabData(tab) {
+      var src = LIVE_DATA || MOCK_DATA;
+      return src[tab] || src.current;
+    }
+
+    /* =====================================================
+       HELPERS
+    ===================================================== */
+    function isMobile() {
+      return window.innerWidth < 768;
+    }
+
+    function formatHKD(val) {
+      if (val >= 1000000) return 'HK$' + (val / 1000000).toFixed(1) + 'M';
+      if (val >= 10000)   return 'HK$' + Math.round(val / 1000) + 'K';
+      return 'HK$' + val.toLocaleString();
+    }
+
+    function formatHKDFull(val) {
+      return 'HK$' + val.toLocaleString();
+    }
+
+    function formatYAxisLabel(val) {
+      if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+      if (val >= 1000)    return Math.round(val / 1000) + 'K';
+      return String(val);
+    }
+
+    /* =====================================================
+       KPI UPDATE
+    ===================================================== */
+    function updateKPI(tab) {
+      const d = getTabData(tab);
+
+      document.getElementById('fo-kpi-revenue-value').textContent = formatHKDFull(d.revenue);
+      document.getElementById('fo-kpi-cost-value').textContent    = formatHKDFull(d.cost);
+      document.getElementById('fo-kpi-profit-value').textContent  = formatHKDFull(d.profit);
+      document.getElementById('fo-kpi-orders-value').textContent  = d.orders;
+
+      // Revenue change
+      setChangeEl('fo-kpi-revenue-change', 'fo-kpi-revenue-pct', d.revenueChange, false);
+      // Cost change
+      setChangeEl('fo-kpi-cost-change', 'fo-kpi-cost-pct', d.costChange, false);
+      // Profit change
+      setChangeEl('fo-kpi-profit-change', 'fo-kpi-profit-pct', d.profitChange, false);
+      // Orders change (integer)
+      setChangeEl('fo-kpi-orders-change', 'fo-kpi-orders-pct', d.ordersChange, true);
+    }
+
+    function setChangeEl(wrapId, pctId, value, isInt) {
+      const wrap = document.getElementById(wrapId);
+      const pctEl = document.getElementById(pctId);
+      const isUp = value >= 0;
+      wrap.className = 'fo-kpi-change ' + (isUp ? 'fo-up' : 'fo-down');
+      // Arrow symbol
+      const arrow = wrap.querySelector('span:first-child');
+      arrow.textContent = isUp ? '\u25B2' : '\u25BC';
+      // Value text
+      if (isInt) {
+        pctEl.textContent = (isUp ? '+' : '') + Math.round(value);
+      } else {
+        pctEl.textContent = (isUp ? '+' : '') + value.toFixed(1) + '%';
+      }
+    }
+
+    /* =====================================================
+       LINE CHART
+    ===================================================== */
+    function drawLineChart(tab) {
+      const canvas = document.getElementById('fo-line-canvas');
+      const wrap   = document.getElementById('fo-line-canvas-wrap');
+      const d      = getTabData(tab).lineChart;
+      const mobile = isMobile();
+
+      // Physical size
+      const W = wrap.clientWidth;
+      const H = mobile ? 200 : 260;
+      canvas.width  = W * window.devicePixelRatio;
+      canvas.height = H * window.devicePixelRatio;
+      canvas.style.height = H + 'px';
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.clearRect(0, 0, W, H);
+
+      // Padding
+      const padLeft   = mobile ? 42 : 52;
+      const padRight  = 16;
+      const padTop    = 16;
+      const padBottom = mobile ? 30 : 36;
+
+      const plotW = W - padLeft - padRight;
+      const plotH = H - padTop - padBottom;
+
+      // Data range
+      const allVals = d.revenue.concat(d.profit);
+      const dataMax = Math.max(...allVals);
+      const dataMin = 0;
+      const range   = dataMax - dataMin || 1;
+
+      // Grid lines (5)
+      const gridCount = 5;
+      ctx.strokeStyle = '#E0D8CC';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash([4, 4]);
+      for (let i = 0; i <= gridCount; i++) {
+        const y = padTop + plotH - (i / gridCount) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + plotW, y);
+        ctx.stroke();
+
+        // Y axis labels
+        const labelVal = dataMin + (i / gridCount) * range;
+        ctx.setLineDash([]);
+        ctx.fillStyle  = '#B0A090';
+        ctx.font       = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+        ctx.textAlign  = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(formatYAxisLabel(Math.round(labelVal)), padLeft - 4, y);
+        ctx.setLineDash([4, 4]);
+      }
+      ctx.setLineDash([]);
+
+      // X axis labels
+      const n = d.labels.length;
+      ctx.fillStyle    = '#B0A090';
+      ctx.font         = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'top';
+      for (let i = 0; i < n; i++) {
+        const x = padLeft + (i / (n - 1)) * plotW;
+        ctx.fillText(d.labels[i], x, padTop + plotH + (mobile ? 6 : 8));
+      }
+
+      // Helper: map data point to canvas coords (guard n=1 divide-by-zero)
+      const xDivider = n > 1 ? (n - 1) : 1;
+      function toX(i)   { return padLeft + (i / xDivider) * plotW; }
+      function toY(val) { return padTop + plotH - ((val - dataMin) / range) * plotH; }
+
+      // Draw line function
+      function drawLine(data, color) {
+        // Stroke
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth   = mobile ? 2 : 2.5;
+        ctx.lineJoin    = 'round';
+        ctx.lineCap     = 'round';
+        for (let i = 0; i < data.length; i++) {
+          const x = toX(i);
+          const y = toY(data[i]);
+          if (i === 0) ctx.moveTo(x, y);
+          else         ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Dots
+        for (let i = 0; i < data.length; i++) {
+          const x = toX(i);
+          const y = toY(data[i]);
+          ctx.beginPath();
+          ctx.arc(x, y, mobile ? 3 : 4, 0, Math.PI * 2);
+          ctx.fillStyle   = color;
+          ctx.fill();
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth   = mobile ? 1.5 : 2;
+          ctx.stroke();
+        }
+      }
+
+      drawLine(d.revenue, '#C9714A');
+      drawLine(d.profit,  '#2E7D32');
+    }
+
+    /* =====================================================
+       BAR CHART
+    ===================================================== */
+    function drawBarChart(tab) {
+      const canvas = document.getElementById('fo-bar-canvas');
+      const wrap   = document.getElementById('fo-bar-canvas-wrap');
+      const d      = getTabData(tab).barChart;
+      const mobile = isMobile();
+      const BAR_COLORS = ['#C9714A','#D4956E','#7A6A55','#B0A090','#E0D8CC'];
+
+      const W = wrap.clientWidth;
+      const H = mobile ? 200 : 260;
+      canvas.width  = W * window.devicePixelRatio;
+      canvas.height = H * window.devicePixelRatio;
+      canvas.style.height = H + 'px';
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.clearRect(0, 0, W, H);
+
+      const padLeft   = mobile ? 38 : 50;
+      const padRight  = 12;
+      const padTop    = 16;
+      const padBottom = mobile ? 40 : 48;
+
+      const plotW = W - padLeft - padRight;
+      const plotH = H - padTop - padBottom;
+
+      const dataMax = Math.max(...d.values);
+      const range   = dataMax || 1;
+      const n       = d.values.length;
+
+      // Grid lines (4)
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#E0D8CC';
+      ctx.lineWidth   = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padTop + plotH - (i / 4) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + plotW, y);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle    = '#B0A090';
+        ctx.font         = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+        ctx.textAlign    = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(formatYAxisLabel(Math.round((i / 4) * dataMax)), padLeft - 4, y);
+        ctx.setLineDash([4, 4]);
+      }
+      ctx.setLineDash([]);
+
+      // Bars
+      const groupW  = plotW / n;
+      const barPad  = mobile ? 8 : 12;
+      const barW    = groupW - barPad * 2;
+      const radius  = mobile ? 3 : 5;
+
+      for (let i = 0; i < n; i++) {
+        const barH = (d.values[i] / range) * plotH;
+        const x    = padLeft + i * groupW + barPad;
+        const y    = padTop + plotH - barH;
+
+        // Rounded top corners using arcTo path
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + barW - radius, y);
+        ctx.arcTo(x + barW, y, x + barW, y + radius, radius);
+        ctx.lineTo(x + barW, y + barH);
+        ctx.lineTo(x, y + barH);
+        ctx.lineTo(x, y + radius);
+        ctx.arcTo(x, y, x + radius, y, radius);
+        ctx.closePath();
+        ctx.fillStyle = BAR_COLORS[i % BAR_COLORS.length];
+        ctx.fill();
+
+        // X label (multi-line on mobile)
+        const labelX = x + barW / 2;
+        const labelY = padTop + plotH + (mobile ? 6 : 8);
+        ctx.fillStyle    = '#7A6A55';
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'top';
+
+        if (mobile) {
+          // Shorten label for mobile
+          const short = d.labels[i].length > 3 ? d.labels[i].slice(0, 3) + '…' : d.labels[i];
+          ctx.font = '9px -apple-system, sans-serif';
+          ctx.fillText(short, labelX, labelY);
+        } else {
+          ctx.font = '10px -apple-system, sans-serif';
+          // Wrap label: 4 chars per line
+          const label = d.labels[i];
+          if (label.length > 4) {
+            ctx.fillText(label.slice(0, 3), labelX, labelY);
+            ctx.fillText(label.slice(3),    labelX, labelY + 13);
+          } else {
+            ctx.fillText(label, labelX, labelY);
+          }
+        }
+      }
+    }
+
+    /* =====================================================
+       DONUT CHART
+    ===================================================== */
+    function drawPieChart(tab) {
+      const canvas = document.getElementById('fo-pie-canvas');
+      const wrap   = document.getElementById('fo-pie-canvas-wrap');
+      const d      = getTabData(tab).pieChart;
+      const mobile = isMobile();
+
+      const size = mobile ? 160 : 200;
+      canvas.width  = size * window.devicePixelRatio;
+      canvas.height = size * window.devicePixelRatio;
+      canvas.style.width  = size + 'px';
+      canvas.style.height = size + 'px';
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.clearRect(0, 0, size, size);
+
+      const cx      = size / 2;
+      const cy      = size / 2;
+      const outer   = size / 2 - 4;
+      const inner   = outer * 0.60;
+
+      const total   = d.values.reduce((a, b) => a + b, 0);
+      let   startAng = -Math.PI / 2;
+
+      for (let i = 0; i < d.values.length; i++) {
+        const slice    = (d.values[i] / total) * Math.PI * 2;
+        const endAng   = startAng + slice;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, outer, startAng, endAng);
+        ctx.closePath();
+        ctx.fillStyle = d.colors[i];
+        ctx.fill();
+
+        startAng = endAng;
+      }
+
+      // Donut hole
+      ctx.beginPath();
+      ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+
+      // Update pie legend
+      buildPieLegend(d, total);
+    }
+
+    function buildPieLegend(d, total) {
+      const legendEl = document.getElementById('fo-pie-legend');
+      legendEl.innerHTML = '';
+      for (let i = 0; i < d.labels.length; i++) {
+        const pct = ((d.values[i] / total) * 100).toFixed(1);
+        const row = document.createElement('div');
+        row.className = 'fo-pie-legend-row';
+        row.innerHTML =
+          '<div class="fo-pie-legend-left">' +
+            '<div class="fo-pie-legend-dot" style="background:' + d.colors[i] + ';"></div>' +
+            '<span class="fo-pie-legend-name">' + d.labels[i] + '</span>' +
+          '</div>' +
+          '<span class="fo-pie-legend-pct">' + pct + '%</span>';
+        legendEl.appendChild(row);
+      }
+    }
+
+    /* =====================================================
+       TAB SWITCH
+    ===================================================== */
+    function switchTab(tab) {
+      if (tab === currentTab) return;
+      currentTab = tab;
+
+      // Update button states
+      ['current','monthly','yearly'].forEach(function(t) {
+        const btn = document.getElementById('fo-tab-' + t);
+        btn.classList.toggle('fo-tab-active', t === tab);
+        btn.setAttribute('aria-selected', String(t === tab));
+      });
+
+      // Update all data
+      updateKPI(tab);
+      drawLineChart(tab);
+      drawBarChart(tab);
+      drawPieChart(tab);
+    }
+
+    /* =====================================================
+       RENDER — 渲染當前 tab 所有圖表
+    ===================================================== */
+    function renderAll(tab) {
+      updateKPI(tab);
+      drawLineChart(tab);
+      drawBarChart(tab);
+      drawPieChart(tab);
+    }
+
+    /* =====================================================
+       FETCH LIVE DATA — 從 n8n webhook 取得真實財務數據
+       成功: 快取至 LIVE_DATA，重新渲染
+       失敗: 靜默 fallback 到 MOCK_DATA，console.warn 提示
+    ===================================================== */
+    function fetchLiveData() {
+      if (DATA_LOADING) return;
+      DATA_LOADING = true;
+
+      fetch(FINANCIAL_WEBHOOK_URL, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(data) {
+          if (data && data.current && data.monthly && data.yearly) {
+            LIVE_DATA = data;
+            renderAll(currentTab);
+          } else {
+            throw new Error('Invalid data structure from webhook');
+          }
+        })
+        .catch(function(err) {
+          console.warn('[FHS Financial] Webhook unavailable, using mock data. Reason:', err.message);
+          // MOCK_DATA fallback — UI 已初始化，不需重渲
+        })
+        .finally(function() {
+          DATA_LOADING = false;
+        });
+    }
+
+    /* =====================================================
+       INIT + RESIZE
+    ===================================================== */
+    function initAll() {
+      // 動態注入當前月份標示
+      var now = new Date();
+      var metaEl = document.getElementById('fo-header-meta');
+      if (metaEl) {
+        metaEl.textContent = now.getFullYear() + '-'
+          + String(now.getMonth() + 1).padStart(2, '0') + ' 資料';
+      }
+      // Step 1: 立即用 MOCK_DATA 渲染（零延遲）
+      renderAll(currentTab);
+      // Step 2: 背景嘗試取得真實數據（若成功會覆蓋畫面）
+      fetchLiveData();
+    }
+
+    // Debounced resize handler
+    let resizeTimer = null;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+        drawLineChart(currentTab);
+        drawBarChart(currentTab);
+        drawPieChart(currentTab);
+      }, 150);
+    });
+
+    // Wait for layout to settle before first draw
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        requestAnimationFrame(function() {
+          requestAnimationFrame(initAll);
+        });
+      });
+    } else {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(initAll);
+      });
+    }
+  </script>
+
+</body>
+</html>

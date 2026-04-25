@@ -1,3 +1,66 @@
+## [Financial Overview Page — Phase F] - 2026-04-25
+### 人工模擬測試 + Bug 修補（靜態分析）
+
+**執行依據**：Fat Mo 第三次 `/execute` 授權（Phase F）
+
+**改動**（`Freehandsss_Dashboard/freehandsss_financial_overview.html`）：
+- **Bug 1 [Critical]** 移除 `<a>` 標籤重複 `id` 屬性（`id="fo-header-back"` 多餘）
+- **Bug 2 [Major]** Header 日期由硬編碼「2026-04 資料」改為 JS 動態產生（`initAll()` 注入當月年月）
+- **Bug 3 [Major]** 折線圖 `toX()` 加入 `n=1` 除以零防護（`xDivider = n > 1 ? (n-1) : 1`）
+
+**12 個測試情境靜態審查**：全部 PASS（Playwright MCP 不可用，改以代碼分析模擬）
+
+**待 Fat Mo 實機確認**（Phase F3 人工清單）
+
+---
+
+## [Financial Overview Page — Phase D-E] - 2026-04-25
+### n8n Webhook 接入 + V40 導航連結
+
+**執行依據**：Fat Mo 第二次 `/execute` 授權（Phase D-E）
+
+**改動**：
+- **[MODIFY]** `Freehandsss_Dashboard/freehandsss_financial_overview.html`
+  - 加入 `FINANCIAL_WEBHOOK_URL` 常數（指向 n8n `GET /webhook/financial-overview`）
+  - `getTabData(tab)` 統一資料取用層（優先 LIVE_DATA，fallback MOCK_DATA）
+  - `fetchLiveData()` 非同步 fetch（成功更新畫面，失敗靜默降級）
+  - `initAll()` 改為：立即渲染 MOCK_DATA → 背景 fetch 真實數據
+- **[NEW]** `n8n/FHS_Financial_Overview_workflow.json`
+  - 完整 n8n workflow JSON，含 Webhook / Fetch All Main Orders / Fetch All Order Items / Financial Aggregator / Respond with JSON
+  - 匯入步驟記錄於 JSON 頂部 `_comment`
+- **[MODIFY]** `Freehandsss_Dashboard/freehandsss_dashboardV40.html`
+  - Top Bar 新增「📈 財務」連結按鈕，連至 `freehandsss_financial_overview.html`
+
+**待完成**：
+- Phase F：Playwright 自動化測試 + Fat Mo 實機確認
+- Fat Mo 手動操作：匯入 `n8n/FHS_Financial_Overview_workflow.json`，設定 Airtable Credential，啟用 workflow
+
+---
+
+## [Financial Overview Page — Phase A-C] - 2026-04-25
+### 新增 Financial Overview 獨立頁面（原型階段）
+
+**執行依據**：Fat Mo `/execute` 授權，cl-flow `CONDITIONAL_READY` Verdict (flow_id: 2026-04-25-0015)
+
+**改動**：
+- **新增** `Freehandsss_Dashboard/freehandsss_financial_overview.html`
+  - 獨立頁面（非主 Dashboard 版本迭代），命名空間 `fo-*`
+  - Current / Monthly / Yearly 三個 Tab 財務總覽
+  - 4 張 KPI 卡片：REVENUE / COST / NET PROFIT / ORDERS（含變化百分比、Accent Bar）
+  - 3 種 Canvas 2D 圖表：折線圖（收入+利潤趨勢）、柱狀圖（5 品類）、環形圖（成本構成）
+  - 響應式：iPhone (< 768px) 單欄 / Desktop (≥ 768px) 2欄 Grid
+  - 零外部依賴，零 CDN，純 Canvas 2D API，Code Reviewer PASS
+  - 使用 Mock Data，Phase D 需接入 n8n webhook
+
+**待完成**：
+- Phase D：建立 n8n Financial Overview webhook，接入真實 Airtable 聚合數據
+- Phase E：在 V40 加入導航連結
+- Phase F：Playwright 自動化測試 + Fat Mo 實機確認
+
+**影響檔案**：`Freehandsss_Dashboard/freehandsss_financial_overview.html` (NEW)
+
+---
+
 ## [V40.1 iPhone Accordion Audit Center] - 2026-04-22
 ### 📱 全域核對中心 iPhone Accordion 重設計
 
