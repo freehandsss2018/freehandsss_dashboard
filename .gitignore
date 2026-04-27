@@ -23,3 +23,6 @@ artifacts/
 
 # MCP server config (contains sensitive credentials)
 .mcp.json
+
+# Generated code snapshot (repomix tool output)
+repomix-output.txt

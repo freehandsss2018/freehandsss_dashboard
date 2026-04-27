@@ -3221,6 +3221,7 @@
                 "Order_ID": currentMode === 'edit' ? editTargetOrderId : currentOrderId,
                 "Customer_Name": document.getElementById("momName") ? document.getElementById("momName").value || "待定" : "待定",
                 "Appointment_Date": rawDate ? rawDate : null,
+                "Order_Confirm_Date": currentMode === 'create' ? new Date().toISOString().slice(0, 10) : undefined,
                 "Deposit": document.getElementById("deposit") ? Number(document.getElementById("deposit").value) || 0 : 0,
                 "Balance": document.getElementById("balance") ? Number(document.getElementById("balance").value) || 0 : 0,
                 "Additional_Fee": document.getElementById("additional") ? Number(document.getElementById("additional").value) || 0 : 0,

@@ -606,7 +606,7 @@
        Phase D: 設定 n8n 財務聚合 webhook URL
        workflow: FHS_Financial_Overview (需在 n8n 匯入並啟用)
     ===================================================== */
-    var FINANCIAL_WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/financial-overview';
+    var FINANCIAL_WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/financial-overview-fhs';
     var LIVE_DATA = null;        // 成功取得真實數據後快取於此
     var DATA_LOADING = false;    // 防止重複請求
 

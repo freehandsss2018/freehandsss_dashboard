@@ -154,7 +154,8 @@
             "Net_Profit": "={{ $json.Final_Profit }}",
             "Full_Order_Text": "={{ $json.Order_Text }}",
             "Raw_Form_State": "={{ $json.Raw_Form_State }}",
-            "Appointment_Date": "={{ $json.Appointment_Date }}"
+            "Appointment_Date": "={{ $json.Appointment_Date }}",
+            "Order_Confirm_Date": "={{ $json.Order_Confirm_Date || null }}"
           },
           "matchingColumns": [
             "Order_ID"
@@ -1038,7 +1039,8 @@
               "Net_Profit": "={{ $json.Final_Profit }}",
               "Full_Order_Text": "={{ $json.Order_Text }}",
               "Raw_Form_State": "={{ $json.Raw_Form_State }}",
-              "Appointment_Date": "={{ $json.Appointment_Date }}"
+              "Appointment_Date": "={{ $json.Appointment_Date }}",
+              "Order_Confirm_Date": "={{ $json.Order_Confirm_Date || null }}"
             },
             "matchingColumns": [
               "Order_ID"

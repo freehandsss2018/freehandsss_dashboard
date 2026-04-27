@@ -7,6 +7,76 @@
 
 ## 記錄
 
+[2026-04-28] 新增 3 subagents + 1 skill — FHS 後端/診斷/財務執行能力強化
+
+決策：
+- 從三個 GitHub 來源（agency-agents ~150個、andrej-karpathy-skills 4原則、everything-claude-code ~36 agents）中精選 5 個模組
+- 安裝 database-reviewer（Sonnet）、tdd-guide（Sonnet）、build-error-resolver（Haiku）三個 subagent
+- 安裝 finance-calculator skill（≤ 30 行精簡版）
+- karpathy-principles 不建獨立 skill — 唯一新概念「Goal-Driven Execution」合併進 AGENTS.md，避免重複 context 消耗
+原因：
+- FHS 系統缺乏 Airtable schema 審查、測試驅動、自動化 debug 能力
+- 選擇 on-demand subagent 模式（非 hook 模式）以確保零 baseline token 成本
+- 排除 ECC hooks/rules/commands 系統（與雙系統 bridge pattern 不相容）
+- 排除 150+ 不相關 agent（marketing/sales/語言特定）
+
+[2026-04-26] 新增 Order_Confirm_Date 欄位 — 記錄每月銷售統計
+
+決策：
+- 在 Airtable Main_Orders 新增 `Order_Confirm_Date`（date, ISO 格式）欄位
+- 17 筆舊訂單以 Excel 日期欄填入；4 筆已有訂單以 Appointment_Date 填入
+- Dashboard（current + V40）同步按鈕 payload 加入 `Order_Confirm_Date = 當日日期`，僅 `create` 模式送出，`edit` 模式不覆寫
+- n8n FHS_Core_OrderProcessor 兩個 Create Main Order upsert 節點加入欄位映射 `={{ $json.Order_Confirm_Date || null }}`
+原因：Fat Mo 需要按月份統計銷售，Appointment_Date 是取模日（未來），不適合作收入確認日；改用 confirm 日（訂單建立當日）更準確。
+
+[2026-04-25] 系統檔案衛生清理 — 刪除孤立/過期/冗餘檔案
+
+決策：
+- 刪除 `repomix-output.txt`（4.9 MB 生成物，非版本控制對象）並加入 .gitignore
+- 刪除 `.fhs/memory/system_status.json`（2026-03-28 凍結，handoff.md 已完全取代）
+- 刪除廢棄 worktree `.claude/worktrees/wizardly-mendel/`（最後活動 2026-04-05，無進行中工作）
+- 刪除孤立工作流 `.agents/workflows/freehandsss-optimizer-v2.md`（未被任何系統引用）
+- 歸檔 `n8n/create_fo_workflow.js` 與 `create_fo_workflow_v2.js` 至 `archive/n8n_scripts/`，只保留最新 v3
+- 清理 `artifacts/` 舊運行記錄（保留最近 5 次，刪除 2026-04-02 的 4 個目錄）
+原因：深度健康稽核（4 並行 Agent）發現上述冗餘，Fat Mo 授權全部執行。回收空間 ~7.5 MB。
+
+---
+
+[2026-04-25] Financial Overview V40.2 整合完成
+
+決策：
+- `freehandsss_dashboardV40.html` 新增財務模式（`switchMode('finance')`），通過 Top Bar 📈 按鈕進入
+- 獨立財務頁 `freehandsss_financial_overview.html` 標記 DEPRECATED，移入 archive/
+- n8n Financial Overview Workflow 部署：Webhook → Fetch Orders → Collect → Fetch Items → Merge → Aggregator → JSON（順序管道）
+- Webhook URL：`https://yanhei.synology.me:8443/webhook/financial-overview-fhs`
+- 版本定義為 V40.2（V40 = 響應式重構，V40.1 = Accordion Audit Center，V40.2 = Financial Overview 整合）
+原因：財務數據需直接嵌入主 Dashboard，獨立頁面造成導航割裂。Live 驗證通過（4月真實數據）。
+
+---
+
+[2026-04-22] V40 iPhone Accordion Audit Center（V40.1）
+
+決策：
+- Audit Center 採用 iPhone Accordion 設計（展開/收合），44px touch targets
+- 使用 `data-accordion-group` 屬性做 ID 命名空間隔離（避免與 V37 遺留 ID 衝突）
+- CSS animation 使用 `max-height` + `overflow: hidden` 方案（原生 details/summary 無法精確控制動畫）
+- Code Reviewer PASS 確認，定義為 V40.1 milestone
+原因：iPhone 使用者需要更緊湊的 Audit Center，原 V40 全展開佈局在小螢幕佔用過多空間。
+
+---
+
+[2026-04-22] V40 響應式重構完成 — 廢除雙模式設計
+
+決策：
+- 廢除 V39 的「Ling Au / Fat Mo 雙模式」設計概念（角色切換器），改為純響應式系統
+- 設計軸：`< 768px` → iPhone 優先佈局，`≥ 768px` → Desktop 佈局，一套 HTML 自動適配
+- ui-designer.md 升級至 v2.0.0，FHS_INTEGRATION.md 升級至 v2.0.0，移除所有雙模式參照
+- V39 proto 標記 DEPRECATED，移入 `Freehandsss_Dashboard/archive/`
+- V40 Code Reviewer PASS，正式成為活躍開發版本
+原因：雙模式增加維護複雜度，且 Fat Mo 確認無需 Ling Au 專屬 UI。響應式設計更具可擴展性。
+
+---
+
 [2026-04-06] /fhs-audit 稽核修復 — 文件衛生清理
 
 決策：

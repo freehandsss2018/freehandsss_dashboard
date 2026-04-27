@@ -26,7 +26,7 @@ def api_call(name, payload):
 def run_all_tests():
     # Test A: 混合品項 (驗證 GODMODE 透傳)
     api_call("A. Mixed Items (Wood Frame & Keychain)", {
-        "Order_ID": "F-V419-A",
+        "Order_ID": "test2001", # 符合 test+數字 規範
         "Customer_Name": "Final_Tester_A",
         "Deposit": 500, "Balance": 1000, "Additional_Fee": 0,
         "Full_Order_Text": "【V41.9 終極測試】混合單",
@@ -38,10 +38,15 @@ def run_all_tests():
 
     # Test B: 缺失 SKU (驗證安全回退)
     api_call("B. Unknown SKU (Verify Failsafe)", {
-        "Order_ID": "F-V419-B",
+        "Order_ID": "test2002",
         "Customer_Name": "Final_Tester_B",
         "Order_Items_List": [{"Product_Name": "Alien_Artifact", "Quantity": 1}]
     })
+
+    # --- 數據清理任務 (Cleanup) ---
+    print("\n[CLEANUP] Removing test data...")
+    api_call("Cleanup A", {"action": "delete", "Order_ID": "test2001"})
+    api_call("Cleanup B", {"action": "delete", "Order_ID": "test2002"})
 
 if __name__ == "__main__":
     print("=== [V41.9c] Final Production Stress Test ===")

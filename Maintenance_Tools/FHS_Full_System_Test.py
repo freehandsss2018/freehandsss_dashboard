@@ -6,7 +6,7 @@ import ssl
 # === Freehandsss V41.11: 完整週期循環測試腳本 (對齊金額欄位) ===
 
 WEBHOOK_URL = "https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b"
-TEST_ID = "9999003" # 換一個新 ID 測試
+TEST_ID = "test9999003" # 必須以 test+數字 開頭
 
 def api_call(name, payload):
     print(f"\n[PHASE] {name}...")

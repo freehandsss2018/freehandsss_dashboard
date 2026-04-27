@@ -2,6 +2,8 @@
 > **⚠️ 系統最高指導原則 (System Absolute Truth)**
 > 此文件是 FHS 全產品線「成本結算」、「參考售價推演」與「商業防呆邏輯」的唯一真理。Dashboard 前端引擎與 Airtable 寫入邏輯必須 100% 遵從此文件。
 > **核心定律**：FatMo 的「畫圖成本 (Drawing Cost)」絕對不可妥協；Ling Au 的「前端售價」為最新銷售準則。
+>
+> 📦 **舊資料遷移（Excel → Airtable）**：請同時閱讀 `docs/FHS_Legacy_Migration_Notes.md`，內含 Excel 缺失問題、欄位對照表與標準遷移流程。
 
 ## 0. 品牌核心定位：嬰兒核心原則 (Baby-Centric)
 * **靈魂所在**：Freehandsss 的價值在於「嬰兒立體倒模」，所有產品必須圍繞嬰兒展開。

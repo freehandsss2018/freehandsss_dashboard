@@ -25,6 +25,12 @@
 
 ## 【新路】預期行為 — Runner 模式
 
+### Step 0 — 前置檢查（僅當本 session 未執行 /read 時）
+
+若本 session 尚未執行 `/read` 初始化，執行前必須確認以下文件已知悉：
+- `docs/repo-map.md` — 確認相關文件位置，避免重複搜索或漏查
+- 若已執行 `/read`，跳過此步驟，直接進入 Step 1。
+
 ### Step 1 — 執行 Runner 腳本
 
 當收到 `/cl-flow [任務]` 時，Claude 必須先執行：
@@ -98,9 +104,12 @@ Claude 必須生成以下檔案：
 
 ---
 
-## 【舊路】預期行為 — 靜態檔案模式
+## 【備援模式】靜態檔案模式（API 故障 / AG 手動規劃時啟用）
 
-當未傳入任務描述，但 `.fhs/notes/ai_reports/` 下存在以下兩個檔案時啟動：
+> ⚠️ 此模式為緊急備援，正常情況請使用【新路】Runner 模式。
+> 適用場景：Perplexity/Gemini API 全掛、或 Antigravity 已在外部手動撰寫計劃。
+
+當未傳入任務描述，且 `.fhs/notes/ai_reports/` 下存在以下兩個檔案時啟動：
 
 - `a1_implementation_plan.md`
 - `a2_implementation_plan.md`

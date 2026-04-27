@@ -32,7 +32,7 @@ test_cases = [
         "name": "TC-01: Normal Order",
         "payload": {
             "action": "create",
-            "Order_ID": f"STRESS-01-{uuid.uuid4().hex[:4]}",
+            "Order_ID": f"test1001", # 符合 test+數字 規範
             "Customer_Name": "STRESS_TESTER_NORM",
             "Appointment_Date": "2026-04-01",
             "Deposit": 500,
@@ -48,7 +48,7 @@ test_cases = [
         "name": "TC-02: Empty Items (Crash Defense)",
         "payload": {
             "action": "create",
-            "Order_ID": f"STRESS-02-{uuid.uuid4().hex[:4]}",
+            "Order_ID": f"test1002",
             "Customer_Name": "STRESS_TESTER_EMPTY",
             "Order_Items_List": []  # 空陣列
         }
@@ -57,7 +57,7 @@ test_cases = [
         "name": "TC-03: Unknown SKU (Survival Law)",
         "payload": {
             "action": "create",
-            "Order_ID": f"STRESS-03-{uuid.uuid4().hex[:4]}",
+            "Order_ID": f"test1003",
             "Customer_Name": "STRESS_TESTER_UNKNOWN_SKU",
             "Order_Items_List": [
                 {"Product_Name": "Unknown_SKU_Item", "Quantity": 1, "Order_Item_Key": "TEST_U_01"}
@@ -68,7 +68,7 @@ test_cases = [
         "name": "TC-04: Polluted Data Types",
         "payload": {
             "action": "create",
-            "Order_ID": f"STRESS-04-{uuid.uuid4().hex[:4]}",
+            "Order_ID": f"test1004",
             "Customer_Name": "STRESS_TESTER_POLLUTED",
             "Deposit": "888",
             "Balance": "100.5",
@@ -94,6 +94,15 @@ def main():
     for tc in test_cases:
         res = run_test_case(tc["name"], tc["payload"])
         results[tc["name"]] = res
+        
+        # 數據清理任務 (Cleanup)
+        if "Order_ID" in tc["payload"]:
+            print(f"   [CLEANUP] Deleting {tc['payload']['Order_ID']}...")
+            run_test_case(f"Cleanup {tc['payload']['Order_ID']}", {
+                "action": "delete",
+                "Order_ID": tc["payload"]["Order_ID"]
+            })
+        
         time.sleep(1)
 
     print("\n" + "="*50)

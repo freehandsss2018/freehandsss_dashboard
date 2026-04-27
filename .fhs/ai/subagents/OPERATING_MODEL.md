@@ -148,6 +148,68 @@ Phase C: Quality Gate (code-reviewer)
 
 ---
 
+### database-reviewer
+**角色定位**：FHS Airtable Schema 審查員與 n8n 資料流驗證員
+**文件位置**：`.fhs/ai/subagents/freehandsss/database-reviewer.md`
+**Runtime**：`~/.claude/agents/freehandsss/database-reviewer.md`
+**Model**：claude-sonnet-4-6
+
+**職責範圍**：
+- Airtable 欄位類型、命名規範稽核
+- n8n Code Node `[{json:{}}]` 格式驗證
+- SKU 正規化一致性審查
+- Triple_Sync 三端欄位映射正確性確認
+- 財務欄位守護（遵守 AGENTS.md §財務真理守護）
+
+**使用時機**：修改 Airtable schema、審查 n8n Code Node、財務審計前
+
+**禁止範圍**：
+- 不直接修改任何業務代碼（唯讀稽核）
+- 不自行宣告「同步已完成」
+
+---
+
+### tdd-guide
+**角色定位**：FHS 測試驅動開發專家
+**文件位置**：`.fhs/ai/subagents/freehandsss/tdd-guide.md`
+**Runtime**：`~/.claude/agents/freehandsss/tdd-guide.md`
+**Model**：claude-sonnet-4-6
+
+**職責範圍**：
+- 引導 Red-Green-Refactor 測試循環
+- `Maintenance_Tools/` Python 測試腳本規劃
+- n8n Code Node 測試用例設計
+- 財務計算邊界情況測試（profit=0 例外情況）
+
+**使用時機**：新增 Maintenance_Tools 腳本、修復 Python 測試、規劃 n8n 測試策略
+
+**禁止範圍**：
+- 不修改 `captureFormState()`
+- 不在測試中 mock Airtable 回傳值
+
+---
+
+### build-error-resolver
+**角色定位**：FHS 錯誤診斷專家（外科手術式修復）
+**文件位置**：`.fhs/ai/subagents/freehandsss/build-error-resolver.md`
+**Runtime**：`~/.claude/agents/freehandsss/build-error-resolver.md`
+**Model**：claude-haiku-4-5-20251001（快速診斷，低成本）
+
+**職責範圍**：
+- n8n workflow execution 錯誤診斷
+- Dashboard JavaScript TDZ/runtime 錯誤定位
+- Python 測試腳本崩潰分析
+- 最小修復方案建議（不超範圍修改）
+
+**使用時機**：任何 workflow 失敗、JS 錯誤、Python crash
+
+**禁止範圍**：
+- 不修改 `captureFormState()` 或 `Raw_Form_State`
+- 不變更 HTML Input/Button ID
+- 不借錯誤修復名義重構相鄰代碼
+
+---
+
 ## 其他協作角色
 
 ### Stitch（視覺原型生成器）
@@ -195,6 +257,7 @@ Claude Code Runtime 位置：`~/.claude/agents/freehandsss/`
 |------|------|------|
 | 1.0.0 | 2026-04-05 | 初版，從 v39-aom.md 遷移，擴充為長期制度文件 |
 | 2.0.0 | 2026-04-05 | 加入 5-Layer Intelligence Stack、工具路由表；整合 Stitch/Impeccable/UI/UX Pro Max |
+| 2.1.0 | 2026-04-28 | 新增 3 個後端/診斷 agents：database-reviewer、tdd-guide、build-error-resolver（Flow 2026-04-28-0116）|
 
 ---
 

@@ -1,43 +1,50 @@
-# FHS Handoff - 2026-04-25 15:30
-當前版本：v1.4.1（憲法層）/ V40.2（UI層）
+# FHS Handoff - 2026-04-28 02:20
+當前版本：v1.4.1（憲法層 + Goal-Driven Execution）/ V40.2（UI層）/ 6 Agents + 2 Skills
 
-## 狀態摘要
+## 本次 Session 完成事項（2026-04-28）
 
-**本次 Session 完成事項：**
+✅ **Subagent & Skill 擴充安裝完成**
+- 新增 3 個 Subagent：
+  * `database-reviewer.md` (v1.0.0) — Airtable schema + n8n 資料流審查（Sonnet）
+  * `tdd-guide.md` (v1.0.0) — TDD 測試驅動開發（Python + n8n）
+  * `build-error-resolver.md` (v1.0.0) — 錯誤診斷專家（Haiku，成本優化）
+- 新增 1 個 Skill：`finance-calculator/SKILL.md` (v1.0.0) — 利潤/毛利率/AOV 核心公式（≤30行）
+- 所有 agents 已複製至 `~/.claude/agents/freehandsss/` 運行時副本 ✓
+- Token 優化設計：5 項節省機制已驗證（on-demand 零基線成本、Haiku 模型、skills ≤30行）
 
-1. **Financial Overview 整合入 V40（V40.2）**
-   - `freehandsss_dashboardV40.html` 新增第 4 模式 `finance`
-   - 模式切換：`switchMode('finance')` → 顯示 `#financeModeContainer`，隱藏 Bottom Bar
-   - Top Bar：`<a>` 連結升級為 `<button id="modeFinanceBtn">`
-   - CSS：全部 `fo-*` 樣式 + `.v40-finance-active` 全寬佈局整合進 `<style>` 塊
-   - JS：`foInitAll()` / `foDrawLine()` / `foDrawBar()` / `foDrawPie()` 等 fo 前綴函式注入
-   - Tab Bar sticky 對齊 V40 top bar（56px）
+✅ **系統更新同步**
+- AGENTS.md：新增 §Goal-Driven Execution（驗證標準 + 停止條件）
+- MANIFEST.md：已記錄 3 agents + 1 skill
+- OPERATING_MODEL.md：v2.0.0 → v2.1.0
+- docs/repo-map.md、Changelog.md、decisions.md：已更新
+- 完成記錄：`.fhs/notes/completion_reports/2026-04-28_skill_subagent_install_completion_report.md` ✓
 
-2. **Mock Data 校正為 Airtable 真實數據（2026-04-25）**
-   - Current：Revenue HK$20,520 / Cost HK$9,953 / Profit HK$10,567 / 7 單
-   - Monthly（4月）：HK$6,240 / HK$1,865 / HK$4,375 / 3 單
-   - Yearly：累計同 Current（業務剛起步，歷史年份填 0）
-   - 產品分類改為真實類別：吊飾 > 鎖匙扣 > 立體擺設
+## 待辦 ⏳ 項目
 
-## 未解決 🔴 項目
+0. **[LOCKED] Stitch → Antigravity 整合** — 鎖定狀態（已待 20 天）：
+   - 規格文件：`.fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md`
+   - 鎖定原因：等待 V40 前端穩定 + Fat Mo 明確解鎖授權
+   - **解鎖條件：Fat Mo 說「Stitch 可以繼續了」**
 
-1. **n8n workflow 尚未匯入** — Fat Mo 需手動操作：
-   - n8n UI → New Workflow → Import from JSON → 選 `n8n/FHS_Financial_Overview_workflow.json`
-   - 在「Fetch All Main Orders」和「Fetch All Order Items」節點設 Airtable Credential（同 FHS_Core_OrderProcessor）
-   - 儲存並啟用，Webhook URL：`https://yanhei.synology.me:8443/webhook/financial-overview`
+1. **Tier 2 Subagent 評估** — 架構延伸：
+   - 後續若需增強 Airtable 查詢最佳化、API 批量操作、報表生成等能力，可從 agency-agents 挑選
+   - 當前 3 agents 已涵蓋診斷/測試/審查核心需求
 
-2. **iPhone 實機測試未完成** — Fat Mo 需確認：
-   - 點「📈 財務」按鈕進入財務模式，KPI + 三圖表是否正常顯示
-   - Tab 切換（Current/Monthly/Yearly）觸控回應
-   - 返回其他模式（新增/修改/核對）無殘留
+2. **Subagent 運行時測試** — 執行驗證：
+   - 在實際工作流中觸發 database-reviewer、tdd-guide、build-error-resolver
+   - 驗證 MCP tools 綁定、context injection、輸出品質
 
-3. **Yearly tab 歷史數據稀少** — 僅有 2026 年 3–4 月真實數據，2019–2025 填 0，視覺略顯空洞。待業務數據積累後補充。
+3. **Finance-Calculator 整合測試** — 公式驗證：
+   - 前端利潤計算與 n8n Profit Auditor 對齐度檢驗
+   - SKU 正規化流程中公式套用一致性
 
-## 下個 Session 三項待辦
+4. **iPhone 實機測試** — V40.2 財務模式：
+   - 點「📈 財務」按鈕進入財務模式
+   - KPI + 三圖表正常顯示？
+   - Tab 切換（Current/Monthly/Yearly）觸控回應？
 
-- [ ] Fat Mo 完成 n8n 匯入 + 實機確認後，確認財務 Dashboard 使用 live 數據正常
-- [ ] 若獨立頁面 `freehandsss_financial_overview.html` 確認無用，標記 DEPRECATED 並移入 `archive/`
-- [ ] 評估是否需要將 Financial Overview 連結加入 `Freehandsss_dashboard_current.html`（生產版）
+5. **生產版整合評估** — 待決策：
+   - 是否在 `Freehandsss_dashboard_current.html` 新增財務模式入口？
 
 ## 核心配置
 

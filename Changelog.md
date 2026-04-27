@@ -1,3 +1,72 @@
+## [Subagent & Skill 擴充 — 後端/診斷/財務能力強化] - 2026-04-28
+
+**執行依據**：Fat Mo `/execute` 授權（flow_id: 2026-04-28-0116）
+
+**新增 Subagents（3 個）**：
+- `database-reviewer` v1.0.0 — Airtable schema 審查 + n8n Code Node 資料流驗證（Sonnet）
+- `tdd-guide` v1.0.0 — FHS Python + n8n 測試驅動開發引導（Sonnet）
+- `build-error-resolver` v1.0.0 — n8n/JS/Python 錯誤診斷，外科手術式修復（Haiku）
+
+**新增 Skills（1 個）**：
+- `finance-calculator` v1.0.0 — FHS 財務核心公式、前端/n8n 利潤優先規則（≤ 30 行，精簡 reference）
+
+**修改 AGENTS.md**：
+- 新增 `§Goal-Driven Execution`（目標驅動執行）— karpathy-principles 唯一新概念，合併進憲法層
+
+**修改文件**：
+- `MANIFEST.md` — 新增 3 agent + 1 skill 記錄
+- `OPERATING_MODEL.md` — v2.0.0 → v2.1.0，新增 3 個 agent 角色定義
+- `docs/repo-map.md` — 更新路徑
+
+**語義變更**：
+- `/cl-flow` 後新增三個可調用 subagent，覆蓋 Goals 1/3（Airtable）、4（debug/testing）、5（財務）
+- Token 設計：3 個 subagent 全為 on-demand（零 baseline 成本）；finance-calculator skill ≤ 30 行精簡
+
+---
+
+## [Financial Overview V40.3 — 全面優化] - 2026-04-26
+
+**執行依據**：Fat Mo `/execute` 授權（flow_id: 2026-04-26-2130）
+
+**改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV40.html`
+
+**新增功能**：
+- **高對比色彩 Palette**：Revenue=#0288D1（藍）、Cost=#E64A19（橙紅）、Profit=#2E7D32（綠），對比度大幅提升
+- **KPI 卡說明強化**：每張卡新增中文名稱、比較基準 subtitle（vs 去年同期 / vs 上個月 / vs 上一年全年）、計算公式說明
+- **新增 Gross Margin % 卡**：顯示毛利率 = (Revenue − Cost) / Revenue × 100
+- **新增 AOV 平均訂單額卡**：顯示 Revenue ÷ Orders
+- **產品分類篩選器**：全部 / 手模擺設 / 金屬產品，切換後 Bar Chart + Donut Chart 即時更新
+- **數據來源標籤**：顯示「Airtable Orders」及最後同步時間（即時 or 快取）
+- **折線圖加入成本線**：三條線（收入/成本/毛利）對比更清晰
+- **Mock data 修正**：Monthly 正確計算 MoM（vs 3月），Current/Yearly 標記新業務 → 顯示「—新業務」而非錯誤 %
+- **KPI 格線**：響應式由原 4 欄 → 小屏 2 欄 / 中屏 3 欄 / 大屏 6 欄
+
+**語義變更**：
+- Monthly `-56.3%` 現在有明確 subtitle「vs 上個月 (3月)」說明，不再歧義
+- Cost「-75.9%」顯示為綠色（成本下降 = 好事），邏輯修正
+
+---
+
+## [/cl-flow-fast — 輕量規劃指令] - 2026-04-26
+
+**變更類型**：新增指令（command layer）
+
+**新增**：
+- `.fhs/ai/commands/cl-flow-fast.md`（Master）— 輕量版規劃協調器，跳過 PX，只跑 AG + Claude 精簡 Verdict
+- `.claude/commands/cl-flow-fast.md`（Claude Code 橋接）
+- `.agents/workflows/cl-flow-fast.md`（Antigravity 橋接）
+
+**修改**：
+- `scripts/cl-flow-runner.js` — 新增 `--quick` flag 支援（`/cl-flow-fast` 調用）；full/quick 模式分支邏輯
+- `.fhs/ai/commands/cl-flow.md` — 「舊路」章節標題改為「備援模式」，加入使用說明
+- `.fhs/ai/AGENTS.md` — 指令對照表新增 `/cl-flow-fast` 條目
+
+**語義變更**：
+- `/cl-flow` = 完整版（PX + AG），適合架構決策、新系統引入，~30,000–40,000 tokens
+- `/cl-flow-fast` = 輕量版（AG only），適合功能實作、UI 修改、Bug 修復，~15,000–20,000 tokens
+
+---
+
 ## [Financial Overview Page — Phase F] - 2026-04-25
 ### 人工模擬測試 + Bug 修補（靜態分析）
 

@@ -27,7 +27,9 @@ if (!PERPLEXITY_API_KEY || !GEMINI_API_KEY) {
 }
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-const task = process.argv[2] || 'No task specified';
+const args = process.argv.slice(2);
+const quickMode = args[0] === '--quick';
+const task = (quickMode ? args[1] : args[0]) || 'No task specified';
 const now = new Date();
 const pad = n => String(n).padStart(2, '0');
 const flow_id = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
@@ -151,6 +153,7 @@ function getCodebaseContext() {
 async function main() {
   console.log(`[cl-flow-runner] ═══════════════════════════════════`);
   console.log(`[cl-flow-runner] Flow ID : ${flow_id}`);
+  console.log(`[cl-flow-runner] Mode    : ${quickMode ? 'QUICK (AG only, no PX)' : 'FULL (PX + AG)'}`);
   console.log(`[cl-flow-runner] Task    : ${task}`);
   console.log(`[cl-flow-runner] ═══════════════════════════════════`);
 
@@ -174,8 +177,12 @@ async function main() {
 
   console.log(`[cl-flow-runner] Phase 0 complete — artifacts/${flow_id}/ initialized`);
 
-  // ── Phase 1: Parallel PX + AG ─────────────────────────────────────────────
-  console.log('[cl-flow-runner] Phase 1 — launching PX + AG in parallel...');
+  // ── Phase 1: PX + AG (or AG-only in quick mode) ──────────────────────────
+  if (quickMode) {
+    console.log('[cl-flow-runner] Phase 1 — QUICK MODE: launching AG only (PX skipped)...');
+  } else {
+    console.log('[cl-flow-runner] Phase 1 — FULL MODE: launching PX + AG in parallel...');
+  }
 
   const pxPrompt =
 `你是一位外部技術研究員，專門研究業界最佳實踐、技術風險與類似系統案例。
@@ -221,35 +228,47 @@ ${task}
 請以繁體中文回答，結構清晰，內容精準可執行。`;
 
   try {
-    const [pxResult, agResult] = await Promise.all([
-      withRetry(() => callPerplexity(pxPrompt), 'Perplexity'),
-      withRetry(() => callGemini(agPrompt), 'Gemini')
-    ]);
+    let pxResult = null;
+    let agResult;
 
-    // ── Write Artifacts ────────────────────────────────────────────────────
-    writeFile(
-      path.join(ARTIFACTS_DIR, 'px-report.md'),
-      `# PX Report (A1)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: sonar-reasoning-pro\n\n---\n\n${pxResult}\n`
-    );
+    if (quickMode) {
+      // Quick mode: AG only
+      agResult = await withRetry(() => callGemini(agPrompt), 'Gemini');
+      state.px_status = 'skipped';
+    } else {
+      // Full mode: PX + AG in parallel
+      const [px, ag] = await Promise.all([
+        withRetry(() => callPerplexity(pxPrompt), 'Perplexity'),
+        withRetry(() => callGemini(agPrompt), 'Gemini')
+      ]);
+      pxResult = px;
+      agResult = ag;
+      state.px_status = 'done';
 
+      writeFile(
+        path.join(ARTIFACTS_DIR, 'px-report.md'),
+        `# PX Report (A1)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: sonar-reasoning-pro\n\n---\n\n${pxResult}\n`
+      );
+    }
+
+    // ── Write AG Artifact ──────────────────────────────────────────────────
     writeFile(
       path.join(ARTIFACTS_DIR, 'ag-plan.md'),
-      `# AG Plan (A2)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: Gemini\n\n---\n\n${agResult}\n`
+      `# AG Plan (A2)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: Gemini\n**Mode**: ${quickMode ? 'quick (no PX)' : 'full'}\n\n---\n\n${agResult}\n`
     );
 
     // ── Update State ───────────────────────────────────────────────────────
-    state.px_status = 'done';
     state.ag_status = 'done';
     state.status = 'awaiting_cl_review';
     writeFile(path.join(ARTIFACTS_DIR, 'state.json'), JSON.stringify(state, null, 2));
 
     console.log('[cl-flow-runner] Phase 1 complete.');
-    console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/px-report.md`);
+    if (!quickMode) console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/px-report.md`);
     console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/ag-plan.md`);
     console.log('[cl-flow-runner] ═══════════════════════════════════');
     console.log('[cl-flow-runner] READY FOR CLAUDE REVIEW');
     console.log(`[cl-flow-runner] Read: artifacts/${flow_id}/task-brief.md`);
-    console.log(`[cl-flow-runner] Read: artifacts/${flow_id}/px-report.md`);
+    if (!quickMode) console.log(`[cl-flow-runner] Read: artifacts/${flow_id}/px-report.md`);
     console.log(`[cl-flow-runner] Read: artifacts/${flow_id}/ag-plan.md`);
     console.log(`[cl-flow-runner] Output: artifacts/${flow_id}/cl-final-plan.md`);
     console.log('[cl-flow-runner] ═══════════════════════════════════');

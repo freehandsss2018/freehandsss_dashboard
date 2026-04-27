@@ -98,20 +98,22 @@
             --danger: #C62828;
             --border-radius: 12px;
 
-            /* === Financial Overview Chart Palette === */
-            --fhs-chart-revenue: #C9714A;
+            /* === Financial Overview Chart Palette (V40.3 高對比版) === */
+            --fhs-chart-revenue: #0288D1;
             --fhs-chart-profit: #2E7D32;
-            --fhs-chart-cost: #B5603B;
-            --fhs-chart-bar-1: #C9714A;
-            --fhs-chart-bar-2: #D4956E;
-            --fhs-chart-bar-3: #7A6A55;
-            --fhs-chart-bar-4: #B0A090;
-            --fhs-chart-bar-5: #E0D8CC;
+            --fhs-chart-cost: #E64A19;
+            --fhs-chart-bar-1: #0288D1;
+            --fhs-chart-bar-2: #26C6DA;
+            --fhs-chart-bar-3: #7B1FA2;
+            --fhs-chart-bar-4: #F9A825;
+            --fhs-chart-bar-5: #546E7A;
             /* === Financial Overview KPI Accents === */
-            --fhs-kpi-revenue: #C9714A;
-            --fhs-kpi-cost: #F57F17;
+            --fhs-kpi-revenue: #0288D1;
+            --fhs-kpi-cost: #E64A19;
             --fhs-kpi-profit: #2E7D32;
-            --fhs-kpi-orders: #1565C0;
+            --fhs-kpi-orders: #7B1FA2;
+            --fhs-kpi-margin: #F9A825;
+            --fhs-kpi-aov: #00838F;
         }
 
         * {
@@ -559,7 +561,7 @@
             background-color: #CBD5E1;
         }
 
-        /* === V28 全域核對中心 (Global Review Center) — 統一視覺系統 === */
+        /* === V28 訂單總覽 (Global Review Center) — 統一視覺系統 === */
         /* 全域字體統一 */
         .review-container,
         .review-container * {
@@ -685,30 +687,7 @@
         /* 隱藏舊標題 */
         .review-col-label { display:none; }
 
-        /* === V28 沙盒模式 (Development Sandbox Mode) === */
-        .sandbox-banner {
-            display: none;
-            background: linear-gradient(135deg, #FF8C00, #FF6600);
-            color: white;
-            text-align: center;
-            padding: 10px;
-            font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 1px;
-            position: sticky;
-            top: 0;
-            z-index: 3000;
-            box-shadow: 0 2px 8px rgba(255,102,0,0.3);
-        }
-        .sandbox-banner.active { display: block; }
-        .sandbox-toggle-btn {
-            padding: 6px 12px; border-radius: 8px; border: 1px solid #FF8C00;
-            background: #fff3e0; color: #e65100; font-weight: bold;
-            cursor: pointer; font-size: 12px; margin-left: 10px;
-        }
-        .sandbox-toggle-btn.active { background: #FF8C00; color: white; }
-        .qa-center { display: none; margin-top: 20px; }
-        .qa-center.active { display: block; }
+        .qa-center { display: none; }
         .qa-log {
             background: #1e1e2e; color: #c0c0c0; padding: 15px;
             border-radius: 8px; font-family: monospace; font-size: 12px;
@@ -870,7 +849,7 @@
         }
 
         /* === Global Loading Indicator (V31.6) === */
-        /* V31.9 全域核對中心：快跳修改膠囊 */
+        /* V31.9 訂單總覽：快跳修改膠囊 */
         .review-jump-pill {
             display: inline-flex;
             align-items: center;
@@ -898,7 +877,7 @@
             opacity: 0.8;
         }
 
-        /* ===== V40 iPhone Accordion — 全域核對中心 ===== */
+        /* ===== V40 iPhone Accordion — 訂單總覽 ===== */
         @media (max-width: 767px) {
             .review-table-wrap { display: none !important; }
             #reviewAccordionContainer { display: block !important; }
@@ -1154,31 +1133,62 @@
             position: sticky;
             top: 0;
             z-index: 2000;
-            height: 56px;
+            height: 48px;
             background: var(--fhs-bg-surface);
             border-bottom: 1px solid var(--fhs-border);
             display: flex;
             align-items: center;
-            padding: 0 var(--space-4);
-            gap: var(--space-3);
+            padding: 0 12px;
+            gap: 8px;
             box-shadow: var(--shadow-sm);
+            overflow: hidden;
         }
         .fhs-top-bar__logo {
             font-weight: 800;
-            font-size: var(--fhs-text-base);
+            font-size: 15px;
             color: var(--fhs-accent);
             letter-spacing: 0.5px;
+            flex-shrink: 0;
         }
         .fhs-top-bar__order-id {
             font-family: 'Courier New', monospace;
-            font-size: var(--fhs-text-sm);
+            font-size: 11px;
             color: var(--fhs-text-secondary);
             flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .fhs-top-bar__actions {
             display: flex;
             align-items: center;
-            gap: var(--space-2);
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .fhs-top-bar__actions button {
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 6px 10px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--fhs-border);
+            background: var(--fhs-bg-elevated);
+            color: var(--fhs-text-secondary);
+            transition: background 0.15s, color 0.15s;
+        }
+        .fhs-top-bar__actions button.active {
+            background: var(--fhs-accent);
+            color: #fff;
+            border-color: var(--fhs-accent);
+        }
+        @media (max-width: 400px) {
+            .fhs-top-bar__actions button {
+                padding: 5px 7px;
+                font-size: 12px;
+            }
         }
 
         /* --- FHS Card --- */
@@ -1469,6 +1479,8 @@
         .fo-kpi-card[data-type="cost"]::before    { background: var(--fhs-kpi-cost); }
         .fo-kpi-card[data-type="profit"]::before  { background: var(--fhs-kpi-profit); }
         .fo-kpi-card[data-type="orders"]::before  { background: var(--fhs-kpi-orders); }
+        .fo-kpi-card[data-type="margin"]::before  { background: var(--fhs-kpi-margin); }
+        .fo-kpi-card[data-type="aov"]::before     { background: var(--fhs-kpi-aov); }
         .fo-kpi-top {
             display: flex;
             align-items: center;
@@ -1481,7 +1493,12 @@
             text-transform: uppercase;
             color: var(--fhs-text-muted);
         }
-        .fo-kpi-icon { font-size: 18px; line-height: 1; }
+        .fo-kpi-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            opacity: 0.7;
+        }
         .fo-kpi-value {
             font-size: 26px;
             font-weight: 800;
@@ -1498,6 +1515,47 @@
         }
         .fo-kpi-change.fo-up   { color: var(--fhs-success); }
         .fo-kpi-change.fo-down { color: var(--fhs-danger); }
+        .fo-kpi-subtitle {
+            font-size: 10px;
+            color: var(--fhs-text-muted);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            margin-top: 2px;
+        }
+        /* Category Filter */
+        #fo-category-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 0 2px;
+        }
+        .fo-cat-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--fhs-border);
+            background: var(--fhs-bg-surface);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--fhs-text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .fo-cat-btn:hover { border-color: var(--fhs-accent); color: var(--fhs-accent); }
+        .fo-cat-btn.fo-cat-active {
+            background: var(--fhs-accent);
+            border-color: var(--fhs-accent);
+            color: #fff;
+        }
+        /* Data source tag */
+        #fo-data-source {
+            font-size: 11px;
+            color: var(--fhs-text-muted);
+            text-align: right;
+            margin-bottom: 16px;
+            letter-spacing: 0.01em;
+        }
+        #fo-data-source span { font-weight: 600; }
         .fo-charts-row {
             display: flex;
             gap: 16px;
@@ -1587,16 +1645,19 @@
             #fo-tab-bar { top: 56px; }
             .fo-tab-btn { padding: 12px 14px; font-size: 13px; }
             #fo-main { padding: 16px 14px 80px; }
-            #fo-kpi-grid { grid-template-columns: 1fr; }
-            .fo-kpi-value { font-size: 22px; }
+            #fo-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .fo-kpi-value { font-size: 20px; }
             .fo-charts-row { flex-direction: column; }
             #fo-pie-card { width: 100%; }
             .fo-chart-title { font-size: 13px; }
         }
         @media (min-width: 768px) {
-            #fo-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+            #fo-kpi-grid { grid-template-columns: repeat(3, 1fr); }
             .fo-charts-row { flex-direction: row; }
             #fo-pie-card { width: 320px; }
+        }
+        @media (min-width: 1100px) {
+            #fo-kpi-grid { grid-template-columns: repeat(6, 1fr); }
         }
 
         /* Desktop: two-column layout, Side Panel visible */
@@ -1651,29 +1712,17 @@
 
 <body class="fhs-body">
 
-    <!-- V28 沙盒模式橫幅 -->
-    <div id="sandboxBanner" class="sandbox-banner">
-        🛠️ SANDBOX MODE — 所有 API 已重導至 /webhook-test/，資料不會寫入生產環境
-    </div>
-
     <!-- V40 Top Bar（替換舊 role-bar，保留所有原有 ID） -->
     <div class="fhs-top-bar" id="v40-top-bar">
         <span class="fhs-top-bar__logo">FHS</span>
         <span class="fhs-top-bar__order-id" id="v40-top-order-id">訂單 #—</span>
         <div class="fhs-top-bar__actions">
             <!-- 模式切換按鈕：contract-critical IDs 保留 -->
-            <button id="modeCreateBtn" onclick="switchMode('create')"
-                style="padding:6px 12px; border-radius:var(--radius-md); border:none; background:var(--fhs-accent); color:white; font-weight:bold; cursor:pointer; font-size:var(--fhs-text-sm);">新增</button>
-            <button id="modeEditBtn" onclick="switchMode('edit')"
-                style="padding:6px 12px; border-radius:var(--radius-md); border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-weight:bold; cursor:pointer; font-size:var(--fhs-text-sm);">修改</button>
-            <button id="modeReviewBtn" onclick="switchMode('review')"
-                style="padding:6px 12px; border-radius:var(--radius-md); border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-weight:bold; cursor:pointer; font-size:var(--fhs-text-sm);">核對</button>
+            <button id="modeCreateBtn" onclick="switchMode('create')">新增</button>
+            <button id="modeEditBtn" onclick="switchMode('edit')">修改</button>
+            <button id="modeReviewBtn" onclick="switchMode('review')">訂單</button>
             <!-- Financial Overview 模式按鈕（V40.2 整合版） -->
-            <button id="modeFinanceBtn" onclick="switchMode('finance')"
-                style="padding:6px 12px; border-radius:var(--radius-md); border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-weight:bold; cursor:pointer; font-size:var(--fhs-text-sm);">📈 財務</button>
-            <!-- 沙盒按鈕 -->
-            <button id="sandboxToggleBtn" class="sandbox-toggle-btn" onclick="toggleSandbox()" style="font-size:12px;">🛠️ 沙盒</button>
-            <!-- Desktop 設定入口：在 iPhone 由 v40-bottom-bar 的設定按鈕 + Drawer 取代 -->
+            <button id="modeFinanceBtn" onclick="switchMode('finance')">財務</button>
         </div>
     </div>
 
@@ -1705,7 +1754,7 @@
         </div>
     </div>
 
-    <!-- 全域核對中心 (V28 優化版 + V40 fix: Tailwind classes removed) -->
+    <!-- 訂單總覽 (V28 優化版 + V40 fix: Tailwind classes removed) -->
     <div id="reviewModeContainer"
         class="review-container"
         style="display:none; width:100%; max-width:1600px; margin:0 auto; padding:0 8px;">
@@ -1714,7 +1763,7 @@
             <div class="review-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <h2 class="review-title" style="margin:0; padding:0; display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:1.875rem;">📊</span> 全域核對中心
+                        <span style="font-size:1.875rem;">📊</span> 訂單總覽
                     </h2>
                     <span id="reviewCountBadge"
                         class="review-count-badge"
@@ -2389,7 +2438,7 @@
     </div> <!-- End formContainer -->
 
     <!-- =====================================================
-         Financial Overview 模式容器（V40.2 整合）
+         Financial Overview 模式容器（V40.3 全面優化）
     ===================================================== -->
     <div id="financeModeContainer" style="display:none; width:100%;">
 
@@ -2403,62 +2452,106 @@
         <!-- Main Content -->
         <main id="fo-main">
 
-            <!-- KPI Cards -->
+            <!-- 數據來源 + 對比基準說明 -->
+            <div id="fo-data-source">
+                數據來源：<span>Airtable Orders</span>
+                &nbsp;|&nbsp; 最後同步：<span id="fo-last-sync">—</span>
+                &nbsp;|&nbsp; <span id="fo-compare-note" style="color:var(--fhs-text-muted);"></span>
+            </div>
+
+            <!-- Category Filter -->
+            <div id="fo-category-bar" role="group" aria-label="產品分類篩選">
+                <button class="fo-cat-btn fo-cat-active" onclick="foSetCategory('all')">全部</button>
+                <button class="fo-cat-btn" onclick="foSetCategory('handmodel')">手模擺設</button>
+                <button class="fo-cat-btn" onclick="foSetCategory('metal')">金屬產品</button>
+            </div>
+
+            <!-- KPI Cards (6 cards) -->
             <div id="fo-kpi-grid">
-                <div class="fo-kpi-card" data-type="revenue">
+                <div class="fo-kpi-card" data-type="revenue" title="收入：客戶實付總金額（含所有已確認訂單）">
                     <div class="fo-kpi-top">
-                        <span class="fo-kpi-label">Revenue</span>
-                        <span class="fo-kpi-icon" aria-hidden="true">&#8593;</span>
+                        <span class="fo-kpi-label">收入</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-revenue);">Revenue</span>
                     </div>
                     <div id="fo-kpi-revenue-value" class="fo-kpi-value">HK$0</div>
                     <div id="fo-kpi-revenue-change" class="fo-kpi-change fo-up">
                         <span>&#9650;</span><span id="fo-kpi-revenue-pct">+0%</span>
                     </div>
+                    <div id="fo-kpi-revenue-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
                 </div>
-                <div class="fo-kpi-card" data-type="cost">
+                <div class="fo-kpi-card" data-type="cost" title="成本：材料費 + 工費 + 包裝費">
                     <div class="fo-kpi-top">
-                        <span class="fo-kpi-label">Cost</span>
-                        <span class="fo-kpi-icon" aria-hidden="true">&#9660;</span>
+                        <span class="fo-kpi-label">成本</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-cost);">Cost</span>
                     </div>
                     <div id="fo-kpi-cost-value" class="fo-kpi-value">HK$0</div>
                     <div id="fo-kpi-cost-change" class="fo-kpi-change fo-up">
                         <span>&#9650;</span><span id="fo-kpi-cost-pct">+0%</span>
                     </div>
+                    <div id="fo-kpi-cost-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
                 </div>
-                <div class="fo-kpi-card" data-type="profit">
+                <div class="fo-kpi-card" data-type="profit" title="毛利：收入 − 成本">
                     <div class="fo-kpi-top">
-                        <span class="fo-kpi-label">Net Profit</span>
-                        <span class="fo-kpi-icon" aria-hidden="true">&#10022;</span>
+                        <span class="fo-kpi-label">毛利</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-profit);">Profit</span>
                     </div>
                     <div id="fo-kpi-profit-value" class="fo-kpi-value">HK$0</div>
                     <div id="fo-kpi-profit-change" class="fo-kpi-change fo-up">
                         <span>&#9650;</span><span id="fo-kpi-profit-pct">+0%</span>
                     </div>
+                    <div id="fo-kpi-profit-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
                 </div>
-                <div class="fo-kpi-card" data-type="orders">
+                <div class="fo-kpi-card" data-type="orders" title="訂單數：期間內已確認的訂單總數">
                     <div class="fo-kpi-top">
-                        <span class="fo-kpi-label">Orders</span>
-                        <span class="fo-kpi-icon" aria-hidden="true">&#8801;</span>
+                        <span class="fo-kpi-label">訂單數</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-orders);">Orders</span>
                     </div>
                     <div id="fo-kpi-orders-value" class="fo-kpi-value">0</div>
                     <div id="fo-kpi-orders-change" class="fo-kpi-change fo-up">
                         <span>&#9650;</span><span id="fo-kpi-orders-pct">+0</span>
                     </div>
+                    <div id="fo-kpi-orders-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+                <div class="fo-kpi-card" data-type="margin" title="毛利率：(收入 − 成本) ÷ 收入 × 100%">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">毛利率</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-margin);">Margin</span>
+                    </div>
+                    <div id="fo-kpi-margin-value" class="fo-kpi-value">0%</div>
+                    <div id="fo-kpi-margin-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-margin-pct">+0pp</span>
+                    </div>
+                    <div id="fo-kpi-margin-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+                <div class="fo-kpi-card" data-type="aov" title="平均訂單金額：收入 ÷ 訂單數">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">平均訂單額</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-aov);">AOV</span>
+                    </div>
+                    <div id="fo-kpi-aov-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-aov-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-aov-pct">+0%</span>
+                    </div>
+                    <div id="fo-kpi-aov-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
                 </div>
             </div>
 
             <!-- Line + Bar Charts Row -->
             <div class="fo-charts-row">
                 <div class="fo-chart-card" id="fo-line-card">
-                    <div class="fo-chart-title">收入 vs 利潤趨勢</div>
+                    <div class="fo-chart-title">收入 vs 毛利趨勢</div>
                     <div id="fo-line-legend">
                         <div class="fo-legend-item">
-                            <div class="fo-legend-dot" style="background:#C9714A;"></div>
+                            <div class="fo-legend-dot" style="background:#0288D1;"></div>
                             <span>收入</span>
                         </div>
                         <div class="fo-legend-item">
                             <div class="fo-legend-dot" style="background:#2E7D32;"></div>
-                            <span>淨利潤</span>
+                            <span>毛利</span>
+                        </div>
+                        <div class="fo-legend-item">
+                            <div class="fo-legend-dot" style="background:#E64A19;"></div>
+                            <span>成本</span>
                         </div>
                     </div>
                     <div class="fo-canvas-wrap" id="fo-line-canvas-wrap">
@@ -2466,7 +2559,7 @@
                     </div>
                 </div>
                 <div class="fo-chart-card" id="fo-bar-card">
-                    <div class="fo-chart-title">產品類別銷售</div>
+                    <div class="fo-chart-title" id="fo-bar-title">產品類別銷售收入</div>
                     <div class="fo-canvas-wrap" id="fo-bar-canvas-wrap">
                         <canvas id="fo-bar-canvas"></canvas>
                     </div>
@@ -2517,10 +2610,10 @@
             </p>
         </div>
 
-        <!-- Desktop 全域核對中心摘要 -->
+        <!-- Desktop 訂單總覽摘要 -->
         <div class="fhs-card" id="v40-audit-summary">
             <div class="fhs-card__header">
-                <span style="font-weight:700; color: var(--fhs-text-primary);">📊 全域核對中心</span>
+                <span style="font-weight:700; color: var(--fhs-text-primary);">📊 訂單總覽</span>
             </div>
             <table class="audit-table" id="v40-audit-summary-table" style="margin-top: var(--space-3);">
                 <thead>
@@ -2533,13 +2626,13 @@
                 <tbody id="v40-audit-summary-tbody">
                     <tr>
                         <td colspan="3" style="text-align:center; color: var(--fhs-text-muted); padding: var(--space-4);">
-                            切換至「核對」模式查看完整資料
+                            切換至「訂單」模式查看完整資料
                         </td>
                     </tr>
                 </tbody>
             </table>
             <button onclick="switchMode('review')" class="fhs-btn-secondary" style="width:100%; margin-top:var(--space-3);">
-                開啟完整核對中心
+                開啟訂單總覽
             </button>
         </div>
     </aside>
@@ -2581,12 +2674,10 @@
         <div class="fhs-drawer__tabs">
             <button class="fhs-drawer__tab is-active" onclick="showDrawerTab('settings', event)">⚙️ 設定</button>
             <button class="fhs-drawer__tab" onclick="showDrawerTab('qa', event)">🧪 QA</button>
-            <button class="fhs-drawer__tab" onclick="showDrawerTab('audit', event)">📊 核對</button>
+            <button class="fhs-drawer__tab" onclick="showDrawerTab('audit', event)">📊 訂單</button>
         </div>
         <div id="v40-drawer-settings" class="fhs-drawer__content is-active">
-            <!-- 沙盒快捷按鈕 -->
             <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-3);">
-                <button class="fhs-btn-secondary" onclick="toggleSandbox(); closeDrawer();">🛠️ 切換沙盒模式</button>
                 <button class="fhs-btn-secondary" onclick="switchMode('create'); closeDrawer();">✏️ 新增訂單</button>
                 <button class="fhs-btn-secondary" onclick="switchMode('edit'); closeDrawer();">📝 修改舊單</button>
             </div>
@@ -2599,7 +2690,7 @@
         </div>
         <div id="v40-drawer-audit" class="fhs-drawer__content">
             <p style="font-size: var(--fhs-text-sm); color: var(--fhs-text-secondary); margin-bottom: var(--space-3);">
-                全域核對中心（iPhone 版）
+                訂單總覽（iPhone 版）
             </p>
             <div id="v40-audit-accordion-container">
                 <div class="audit-accordion">
@@ -2608,13 +2699,13 @@
                         <span>▼</span>
                     </div>
                     <div class="audit-accordion__body">
-                        <p style="color: var(--fhs-text-muted);">點擊「核對」模式按鈕以載入訂單。</p>
+                        <p style="color: var(--fhs-text-muted);">點擊「訂單」按鈕以載入訂單總覽。</p>
                     </div>
                 </div>
             </div>
             <button class="fhs-btn-primary" style="width:100%; margin-top:var(--space-3);"
                 onclick="closeDrawer(); switchMode('review');">
-                開啟完整核對中心
+                開啟訂單總覽
             </button>
         </div>
     </div>
@@ -2636,6 +2727,22 @@
         };
 
         async function loadSystemConfig() {
+            // Session cache: avoid repeated Airtable calls on page refresh
+            const CACHE_KEY = 'fhs_sysconfig_cache';
+            const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+            try {
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const { data: cachedData, ts } = JSON.parse(cached);
+                    if (Date.now() - ts < CACHE_TTL) {
+                        systemConfig = cachedData;
+                        console.log("System Config (cached):", systemConfig);
+                        syncConfigUI();
+                        return;
+                    }
+                }
+            } catch(e) {}
+
             showLoader("正在讀取系統配置...");
             try {
                 const url = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=FHS-SYSTEM-CONFIG`);
@@ -2645,6 +2752,7 @@
                     systemConfig = JSON.parse(data.data.Admin_Notes);
                     systemConfig.recordId = data.data.Record_ID || data.id || systemConfig.recordId;
                     console.log("System Config Loaded:", systemConfig);
+                    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({data: systemConfig, ts: Date.now()})); } catch(e) {}
                     syncConfigUI();
                 }
             } catch (error) {
@@ -2944,31 +3052,13 @@
                 }
 
                 // 更新按鈕樣式
-                const btnCreate = document.getElementById('modeCreateBtn');
-                const btnEdit = document.getElementById('modeEditBtn');
-                const btnReview = document.getElementById('modeReviewBtn');
-                const btnFinance = document.getElementById('modeFinanceBtn');
-
-                if (btnCreate) {
-                    btnCreate.style.background = (mode === 'create') ? 'var(--primary)' : '#eee';
-                    btnCreate.style.color = (mode === 'create') ? 'white' : '#666';
-                    btnCreate.style.border = (mode === 'create') ? 'none' : '1px solid #ccc';
-                }
-                if (btnEdit) {
-                    btnEdit.style.background = (mode === 'edit') ? 'var(--primary)' : '#eee';
-                    btnEdit.style.color = (mode === 'edit') ? 'white' : '#666';
-                    btnEdit.style.border = (mode === 'edit') ? 'none' : '1px solid #ccc';
-                }
-                if (btnReview) {
-                    btnReview.style.background = (mode === 'review') ? 'var(--primary)' : '#eee';
-                    btnReview.style.color = (mode === 'review') ? 'white' : '#666';
-                    btnReview.style.border = (mode === 'review') ? 'none' : '1px solid #ccc';
-                }
-                if (btnFinance) {
-                    btnFinance.style.background = (mode === 'finance') ? 'var(--primary)' : '#eee';
-                    btnFinance.style.color = (mode === 'finance') ? 'white' : '#666';
-                    btnFinance.style.border = (mode === 'finance') ? 'none' : '1px solid #ccc';
-                }
+                ['modeCreateBtn','modeEditBtn','modeReviewBtn','modeFinanceBtn'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) { btn.classList.remove('active'); btn.style.cssText = ''; }
+                });
+                const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn' };
+                const activeBtn = document.getElementById(activeMap[mode]);
+                if (activeBtn) activeBtn.classList.add('active');
 
                 // --- V36.1 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
@@ -2978,14 +3068,15 @@
                 const v40bbar = document.getElementById('v40-bottom-bar');
                 if (v40bbar) v40bbar.style.display = (mode === 'finance') ? 'none' : '';
 
-                if (mode === 'review') {
-                    initReviewYears();
-                    fetchGlobalReview();
-                }
                 if (mode === 'finance') {
                     // Small delay to ensure container is visible before canvas rendering
                     setTimeout(foInitAll, 50);
                 }
+            }
+            /* review fetch: 每次切入均重新載入，不受 currentMode 保護限制 */
+            if (mode === 'review') {
+                initReviewYears();
+                (window.fetchGlobalReview || fetchGlobalReview)();
             }
         }
         window.switchMode = switchMode; // 強制全局掛載
@@ -3845,7 +3936,7 @@
         }
 
         /**
-         * jumpToEditOrder - 全域核對中心快跳引擎
+         * jumpToEditOrder - 訂單總覽快跳引擎
          * 自動切換至修改模式並載入單號
          */
         async function jumpToEditOrder(oId) {
@@ -4133,6 +4224,7 @@
                 "Order_ID": currentMode === 'edit' ? editTargetOrderId : currentOrderId,
                 "Customer_Name": document.getElementById("momName") ? document.getElementById("momName").value || "待定" : "待定",
                 "Appointment_Date": rawDate ? rawDate : null,
+                "Order_Confirm_Date": currentMode === 'create' ? new Date().toISOString().slice(0, 10) : undefined,
                 "Deposit": document.getElementById("deposit") ? Number(document.getElementById("deposit").value) || 0 : 0,
                 "Balance": document.getElementById("balance") ? Number(document.getElementById("balance").value) || 0 : 0,
                 "Additional_Fee": document.getElementById("additional") ? Number(document.getElementById("additional").value) || 0 : 0,
@@ -4215,74 +4307,14 @@
             }
         }
 
-        // ==========================================
-        // V28 開發沙盒模式 (Development Sandbox Mode)
-        // ==========================================
-        let isDevMode = false;
-
-        function initSandboxMode() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('mode') === 'dev') {
-                isDevMode = true;
-                activateSandboxUI();
-            }
-        }
-
-        function activateSandboxUI() {
-            isDevMode = true;
-            const banner = document.getElementById('sandboxBanner');
-            const btn = document.getElementById('sandboxToggleBtn');
-            const qaCenter = document.getElementById('qaCenter');
-            if (banner) banner.classList.add('active');
-            if (btn) {
-                btn.classList.add('active');
-                btn.innerText = '🛠️ 沙盒模式 ON';
-            }
-            if (qaCenter) qaCenter.classList.add('active');
-            console.log('🛠️ [SANDBOX] 已啟動沙盒模式，所有 API 將重導至 /webhook-test/');
-        }
-
-        function deactivateSandboxUI() {
-            isDevMode = false;
-            const banner = document.getElementById('sandboxBanner');
-            const btn = document.getElementById('sandboxToggleBtn');
-            const qaCenter = document.getElementById('qaCenter');
-            if (banner) banner.classList.remove('active');
-            if (btn) {
-                btn.classList.remove('active');
-                btn.innerText = '🛠️ 進入沙盒模式';
-            }
-            if (qaCenter) qaCenter.classList.remove('active');
-            console.log('🏭 [PRODUCTION] 已切換回生產模式');
-        }
-
-        function toggleSandbox() {
-            if (isDevMode) {
-                if (confirm('確定要切換回生產模式嗎？所有操作將直接寫入 Airtable 正式資料庫。')) {
-                    deactivateSandboxUI();
-                }
-            } else {
-                activateSandboxUI();
-            }
-        }
-
-        /**
-         * getWebhookUrl - 沙盒模式 API 重導引擎
-         * 當 isDevMode = true 時，自動將 /webhook/ 替換為 /webhook-test/
-         * 例外：fetch-global-review 仍需讀取真實資料以供 UI 測試與時光機使用
-         */
-        function getWebhookUrl(originalUrl) {
-            if (isDevMode && !originalUrl.includes('fetch-global-review')) {
-                return originalUrl.replace('/webhook/', '/webhook-test/');
-            }
-            return originalUrl;
-        }
+        // getWebhookUrl — 直接返回原始 URL（沙盒模式已移除）
+        const isDevMode = false;
+        function getWebhookUrl(originalUrl) { return originalUrl; }
 
         // 初始化下拉選單
         window.onload = async () => {
             console.log("FHS Dashboard V36.2 Initialized");
             try {
-                initSandboxMode();
                 await switchMode('create');
                 updateTimeOptions();
                 renderLimbGrid();
@@ -4411,6 +4443,8 @@
             }
         }
 
+        window.fetchGlobalReview = fetchGlobalReview;
+
         function debounceFetchGlobalReview() {
             clearTimeout(reviewFetchTimeout);
             reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
@@ -4442,25 +4476,39 @@
                 fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + params.join('&');
             }
 
-            try {
-                const res = await fetch(fetchUrl, { method: 'GET' });
-                const data = await res.json();
-                
-                loading.style.display = "none";
-                
-                if (data && data.orders) {
-                    globalOrders = data.orders;
-                    renderReviewTable(globalOrders);
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+            // Retry up to 3 times with backoff (handles Airtable rate limit)
+            let lastErr = null;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    if (attempt > 1) {
+                        tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ Airtable 流量限制，第 ${attempt} 次重試中...</td></tr>`;
+                        await new Promise(r => setTimeout(r, attempt * 2000));
+                    }
+                    const res = await fetch(fetchUrl, { method: 'GET' });
+                    const data = await res.json();
+                    loading.style.display = "none";
+                    if (data && data.orders) {
+                        globalOrders = data.orders;
+                        renderReviewTable(globalOrders);
+                        hideLoader();
+                        return;
+                    } else if (data && data.message && data.message.includes('Error in workflow')) {
+                        lastErr = 'Airtable API 超出限制 (BILLING_LIMIT_EXCEEDED)，請稍後再試或明天重置後再查詢。';
+                        if (attempt < 3) continue;
+                    } else {
+                        loading.style.display = "none";
+                        tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+                        hideLoader();
+                        return;
+                    }
+                } catch (err) {
+                    lastErr = '網路連線錯誤：' + err.message;
+                    if (attempt < 3) continue;
                 }
-            } catch (err) {
-                console.error(err);
-                loading.style.display = "none";
-                tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">❌ 網路連線錯誤，無法載入資料。請檢查 n8n Webhook。</td></tr>';
-            } finally {
-                hideLoader();
             }
+            loading.style.display = "none";
+            tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
+            hideLoader();
         }
 
         // === V40 iPhone Accordion 渲染引擎 ===
@@ -4571,7 +4619,10 @@
                             <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
                         </div>
                         <div class="acc-order-header-right">
-                            <span class="acc-profit" style="color:${profitColor};">$${profit}</span>
+                            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                <span class="acc-profit" style="color:${profitColor};">$${profit}</span>
+                                <span style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${o.Total_Cost || o.Cost || 0}</span>
+                            </div>
                             <span class="acc-chevron">▼</span>
                         </div>
                     </div>
@@ -4606,7 +4657,7 @@
             el.classList.toggle('open');
         }
 
-        // === V28.3 全域核對中心渲染引擎：Rowspan 完美對齊 + 置頂垂直對齊 ===
+        // === V28.3 訂單總覽渲染引擎：Rowspan 完美對齊 + 置頂垂直對齊 ===
         function renderReviewTable(orders) {
             // V40: iPhone → Accordion，Desktop → Table
             if (window.innerWidth < 768) {
@@ -4663,7 +4714,7 @@
                                   placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
-                        $${o.Total_Cost || 0}
+                        $${o.Total_Cost || o.Cost || 0}
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
                         $${o.Net_Profit || 0}
@@ -5118,13 +5169,13 @@
 
         /**
          * timemachineTest - 歷史資料深度注入測試 (原: 歷史稽核)
-         * 從全域核對中心選取訂單的 Raw_Form_State 反向注入 UI
+         * 從訂單總覽選取訂單的 Raw_Form_State 反向注入 UI
          */
         function timemachineTest() {
             appendQALog('========== 🕐 歷史資料深度注入測試 ==========', 'info');
 
             if (!globalOrders || globalOrders.length === 0) {
-                appendQALog('⚠️ [WARN] 全域核對中心無資料，請先載入訂單資料', 'warn');
+                appendQALog('⚠️ [WARN] 訂單總覽無資料，請先載入訂單資料', 'warn');
                 return;
             }
 
@@ -5212,9 +5263,20 @@
         // V40 Top Bar 訂單 ID 同步（每次 generate() 觸發後更新顯示）
         // TODO[hookup]: 此函式可在 generate() 末尾呼叫，或透過 MutationObserver 監聽 orderIdDisplay
         function syncTopBarOrderId() {
-            const idEl = document.getElementById('orderIdDisplay');
             const topEl = document.getElementById('v40-top-order-id');
-            if (idEl && topEl) {
+            if (!topEl) return;
+            
+            // Check current mode (v40-main-layout class indicates mode)
+            const layout = document.getElementById('v40-main-layout');
+            const isReview = layout && layout.classList.contains('v40-review-active');
+            
+            if (isReview) {
+                topEl.textContent = '📊 財務核對中心';
+                return;
+            }
+
+            const idEl = document.getElementById('orderIdDisplay');
+            if (idEl) {
                 const val = idEl.value;
                 topEl.textContent = val ? '訂單 #' + val : '訂單 #—';
             }
@@ -5258,6 +5320,18 @@
                 btn.style.color = isActive ? 'white' : 'var(--fhs-text-secondary)';
                 btn.style.border = isActive ? 'none' : '1px solid var(--fhs-border)';
             });
+
+            // V40.4: Finance Mode Header Optimization
+            const topEl = document.getElementById('v40-top-order-id');
+            if (topEl) {
+                if (mode === 'review') {
+                    topEl.textContent = '📊 財務核對中心';
+                    topEl.style.color = 'var(--fhs-accent)';
+                } else {
+                    topEl.style.color = 'inherit';
+                    syncTopBarOrderId();
+                }
+            }
         };
 
         // ─── V40 Drawer 鏡像初始化 ───────────────────────────────
@@ -5361,7 +5435,7 @@
             <div>
                 <b style="color:#9c27b0;">3. 歷史資料深度注入測試 (Time Machine)</b><br>
                 <b>【背景/目的】</b> 測試舊狀態還原功能。<br>
-                <b>【用法/檢驗結果】</b> 從全域核對中心選取一筆具備歷史狀態的訂單，驗證 UI 是否能成功重現該筆訂單在下單時的選框狀態。
+                <b>【用法/檢驗結果】</b> 從訂單總覽選取一筆具備歷史狀態的訂單，驗證 UI 是否能成功重現該筆訂單在下單時的選框狀態。
             </div>
         </div>
         <style>#qaDocPanel.active { display: block !important; }</style>
@@ -5429,74 +5503,126 @@
     </div>
 
     <!-- =====================================================
-         Financial Overview — Integrated JS (V40.2)
+         Financial Overview — Integrated JS (V40.3)
          Prefixed: fo* to avoid collision with V40 globals
     ===================================================== -->
     <script>
         /* === CONFIG === */
-        var FINANCIAL_WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/financial-overview';
+        var FINANCIAL_WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/financial-overview-fhs';
         var FO_LIVE_DATA = null;
         var FO_DATA_LOADING = false;
+        var foCurrentCategory = 'all'; /* 'all' | 'handmodel' | 'metal' */
 
-        /* === MOCK DATA (2026-04-25 同步自 Airtable 真實數據) ===
-           Current  = 累計至今 (全部 7 單，Revenue=20520, Cost=9953, Profit=10567)
-           Monthly  = 4月 2026 (Revenue=6240, Cost=1865, Profit=4375, Orders=3)
-           Yearly   = 2026 全年累計 (同 Current，業務剛起步)
-           產品類別 = 依 Order_Items 推算：吊飾 > 鎖匙扣 > 玻璃瓶套裝
-        ============================================================ */
+        /* =====================================================
+           MOCK DATA (V40.3 — 2026-04-26 同步自 Airtable 真實數據)
+           ─────────────────────────────────────────────────────
+           current  = 累計至今 (全部 7 單)
+             Revenue=20520, Cost=9953, Profit=10567, Orders=7
+             比較基準：vs 去年同期 (2025 年同期無數據 → 基準=0, 以「新業務」顯示)
+           monthly  = 4月 2026
+             Revenue=6240, Cost=1865, Profit=4375, Orders=3
+             比較基準：vs 上個月 (3月 Revenue=14280, Cost=7738, Profit=6542, Orders=4)
+           yearly   = 2026 全年累計 (同 current)
+             比較基準：vs 上一年全年 (2025 無訂單 → 基準=0)
+           ─────────────────────────────────────────────────────
+           產品分類：
+             手模擺設 = 玻璃瓶套裝、木框套裝、立體擺設、訂製擺設
+             金屬產品 = 純銀頸鏈吊飾、金屬鎖匙扣、吊飾、配件
+        ===================================================== */
+        /* ─────────────────────────────────────────────────────
+           FO_MOCK_DATA  (V40.4 — 2026-04-27 同步自 Airtable)
+           ─────────────────────────────────────────────────────
+           產品三大類（全部模式 bar chart）：
+             手模擺設  = 玻璃瓶套裝、木框套裝、立體擺設      (Revenue HK$700)
+             吊飾      = 純銀頸鏈吊飾                        (Revenue HK$11,250)
+             鎖匙扣    = 金屬鎖匙扣                          (Revenue HK$8,570)
+
+           手模擺設 細分 bar：玻璃瓶套裝 / 木框套裝 / 立體擺設
+           金屬產品 細分 bar：純銀頸鏈吊飾 / 金屬鎖匙扣
+           ───────────────────────────────────────────────── */
         var FO_MOCK_DATA = {
             current: {
+                subtitle: 'vs 去年同期',
                 revenue: 20520, cost: 9953, profit: 10567, orders: 7,
-                revenueChange: 43.8, costChange: -76.9, profitChange: -29.3, ordersChange: 3,
-                lineChart: {
-                    labels: ['1月','2月','3月','4月'],
-                    revenue: [0, 0, 14280, 6240],
-                    profit:  [0, 0, 6192,  4375]
+                revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
+                isNewBusiness: true,
+                groups: {
+                    all:       { revenue: 20520, cost: 9953, orders: 7 },
+                    handmodel: { revenue: 700,   cost: 420,  orders: 1 },
+                    metal:     { revenue: 19820, cost: 9533, orders: 6 }
                 },
-                barChart: {
-                    labels: ['吊飾','鎖匙扣','玻璃瓶套裝','木框套裝','配件'],
-                    values: [11250, 8570, 700, 0, 0]
-                },
-                pieChart: {
-                    labels: ['純銀頸鏈吊飾','金屬鎖匙扣','立體擺設','包裝','雜項'],
-                    values: [4977, 4479, 420, 57, 20],
-                    colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
-                }
-            },
-            monthly: {
-                revenue: 6240, cost: 1865, profit: 4375, orders: 3,
-                revenueChange: -56.3, costChange: -76.9, profitChange: -29.3, ordersChange: -1,
-                lineChart: {
-                    labels: ['3月','4月'],
-                    revenue: [14280, 6240],
-                    profit:  [6192,  4375]
-                },
-                barChart: {
-                    labels: ['吊飾','鎖匙扣','玻璃瓶套裝','木框套裝','配件'],
-                    values: [3072, 3168, 0, 0, 0]
-                },
-                pieChart: {
-                    labels: ['純銀頸鏈吊飾','金屬鎖匙扣','立體擺設','包裝','雜項'],
-                    values: [950, 915, 0, 0, 0],
-                    colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
-                }
-            },
-            yearly: {
-                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
-                revenueChange: 0, costChange: 0, profitChange: 0, ordersChange: 7,
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
                     revenue: [0, 0, 14280, 20520],
+                    cost:    [0, 0, 7738,  9953],
                     profit:  [0, 0, 6192,  10567]
                 },
                 barChart: {
-                    labels: ['吊飾','鎖匙扣','玻璃瓶套裝','木框套裝','配件'],
-                    values: [11250, 8570, 700, 0, 0]
+                    /* 全部：三大類 */
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [700, 11250, 8570] },
+                    /* 手模擺設細分 */
+                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [700, 0, 0] },
+                    /* 金屬產品細分 */
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [11250, 8570] }
                 },
                 pieChart: {
-                    labels: ['純銀頸鏈吊飾','金屬鎖匙扣','立體擺設','包裝','雜項'],
-                    values: [4977, 4479, 420, 57, 20],
-                    colors: ['#C9714A','#D4956E','#7A6A55','#2E7D32','#B0A090']
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [420, 4977, 4479], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['包裝','材料'], values: [57, 363], colors: ['#F9A825','#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4977, 4479], colors: ['#0288D1','#26C6DA'] }
+                }
+            },
+            monthly: {
+                subtitle: 'vs 上個月 (3月)',
+                revenue: 6240, cost: 1865, profit: 4375, orders: 3,
+                revenueChange: -56.3, costChange: -75.9, profitChange: -33.1, ordersChange: -1,
+                isNewBusiness: false,
+                groups: {
+                    all:       { revenue: 6240, cost: 1865, orders: 3 },
+                    handmodel: { revenue: 0,    cost: 0,    orders: 0 },
+                    metal:     { revenue: 6240, cost: 1865, orders: 3 }
+                },
+                lineChart: {
+                    labels: ['1月','2月','3月','4月'],
+                    revenue: [0, 0, 14280, 6240],
+                    cost:    [0, 0, 7738,  1865],
+                    profit:  [0, 0, 6192,  4375]
+                },
+                barChart: {
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [0, 3072, 3168] },
+                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [0, 0, 0] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [3072, 3168] }
+                },
+                pieChart: {
+                    all:       { labels: ['吊飾','鎖匙扣'], values: [950, 915], colors: ['#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['手模擺設'], values: [0], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [950, 915], colors: ['#0288D1','#26C6DA'] }
+                }
+            },
+            yearly: {
+                subtitle: 'vs 上一年全年',
+                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
+                revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
+                isNewBusiness: true,
+                groups: {
+                    all:       { revenue: 20520, cost: 9953, orders: 7 },
+                    handmodel: { revenue: 700,   cost: 420,  orders: 1 },
+                    metal:     { revenue: 19820, cost: 9533, orders: 6 }
+                },
+                lineChart: {
+                    labels: ['1月','2月','3月','4月'],
+                    revenue: [0, 0, 14280, 20520],
+                    cost:    [0, 0, 7738,  9953],
+                    profit:  [0, 0, 6192,  10567]
+                },
+                barChart: {
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [700, 11250, 8570] },
+                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [700, 0, 0] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [11250, 8570] }
+                },
+                pieChart: {
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [420, 4977, 4479], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['包裝','材料'], values: [57, 363], colors: ['#F9A825','#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4977, 4479], colors: ['#0288D1','#26C6DA'] }
                 }
             }
         };
@@ -5530,26 +5656,110 @@
         /* === KPI UPDATE === */
         function foUpdateKPI(tab) {
             var d = foGetTabData(tab);
-            document.getElementById('fo-kpi-revenue-value').textContent = fmtHKDFull(d.revenue);
-            document.getElementById('fo-kpi-cost-value').textContent    = fmtHKDFull(d.cost);
-            document.getElementById('fo-kpi-profit-value').textContent  = fmtHKDFull(d.profit);
-            document.getElementById('fo-kpi-orders-value').textContent  = d.orders;
-            foSetChange('fo-kpi-revenue-change', 'fo-kpi-revenue-pct', d.revenueChange, false);
-            foSetChange('fo-kpi-cost-change',    'fo-kpi-cost-pct',    d.costChange,    false);
-            foSetChange('fo-kpi-profit-change',  'fo-kpi-profit-pct',  d.profitChange,  false);
-            foSetChange('fo-kpi-orders-change',  'fo-kpi-orders-pct',  d.ordersChange,  true);
+            var subtitle = d.subtitle || 'vs 去年同期';
+
+            /* V40.4: Category Filter Application */
+            var stats = (d.groups && d.groups[foCurrentCategory]) ? d.groups[foCurrentCategory] : d;
+            
+            document.getElementById('fo-kpi-revenue-value').textContent = fmtHKDFull(stats.revenue);
+            document.getElementById('fo-kpi-cost-value').textContent    = fmtHKDFull(stats.cost);
+            document.getElementById('fo-kpi-profit-value').textContent  = fmtHKDFull(stats.revenue - stats.cost);
+            document.getElementById('fo-kpi-orders-value').textContent  = stats.orders;
+            
+            var margin = stats.revenue > 0 ? (((stats.revenue - stats.cost) / stats.revenue) * 100) : 0;
+            var aov    = stats.orders > 0  ? Math.round(stats.revenue / stats.orders) : 0;
+            
+            document.getElementById('fo-kpi-margin-value').textContent  = margin.toFixed(1) + '%';
+            document.getElementById('fo-kpi-aov-value').textContent     = fmtHKDFull(aov);
+
+            /* subtitle */
+            ['revenue','cost','profit','orders','margin','aov'].forEach(function(k) {
+                var el = document.getElementById('fo-kpi-' + k + '-subtitle');
+                if (el) el.textContent = subtitle + (foCurrentCategory !== 'all' ? ' (' + (foCurrentCategory==='handmodel' ? '手模' : '金屬') + ')' : '');
+            });
+
+            /* 對比基準說明行 */
+            var compareNote = document.getElementById('fo-compare-note');
+            if (compareNote) {
+                if (d.isNewBusiness) {
+                    compareNote.textContent = subtitle + '：暫無對比數據（業務首年）';
+                } else {
+                    compareNote.textContent = '比較基準：' + subtitle;
+                }
+            }
+
+            /* 比較指示器 */
+            if (d.isNewBusiness) {
+                ['revenue','cost','profit','orders','margin','aov'].forEach(function(k) {
+                    var wrap = document.getElementById('fo-kpi-' + k + '-change');
+                    var pct  = document.getElementById('fo-kpi-' + k + '-pct');
+                    if (wrap) wrap.className = 'fo-kpi-change';
+                    if (wrap) wrap.querySelector('span:first-child').textContent = '';
+                    if (pct)  pct.textContent = '—';
+                });
+            } else {
+                foSetChange('fo-kpi-revenue-change', 'fo-kpi-revenue-pct', d.revenueChange, false, false);
+                foSetChange('fo-kpi-cost-change',    'fo-kpi-cost-pct',    d.costChange,    false, true);
+                foSetChange('fo-kpi-profit-change',  'fo-kpi-profit-pct',  d.profitChange,  false, false);
+                foSetChange('fo-kpi-orders-change',  'fo-kpi-orders-pct',  d.ordersChange,  true,  false);
+                /* margin/aov 變化：若有前期數據則顯示，否則顯示 N/A */
+                if (d.marginChange !== undefined && d.marginChange !== null) {
+                    foSetChange('fo-kpi-margin-change', 'fo-kpi-margin-pct', d.marginChange, false, false, 'pp');
+                } else {
+                    var mWrap = document.getElementById('fo-kpi-margin-change');
+                    if (mWrap) { mWrap.className = 'fo-kpi-change'; mWrap.querySelector('span:first-child').textContent = '—'; document.getElementById('fo-kpi-margin-pct').textContent = 'N/A'; }
+                }
+                if (d.aovChange !== undefined && d.aovChange !== null) {
+                    foSetChange('fo-kpi-aov-change', 'fo-kpi-aov-pct', d.aovChange, false, false);
+                } else {
+                    var aWrap = document.getElementById('fo-kpi-aov-change');
+                    if (aWrap) { aWrap.className = 'fo-kpi-change'; aWrap.querySelector('span:first-child').textContent = '—'; document.getElementById('fo-kpi-aov-pct').textContent = 'N/A'; }
+                }
+            }
+
+            /* 數據來源同步時間 */
+            var syncEl = document.getElementById('fo-last-sync');
+            if (syncEl) syncEl.textContent = FO_LIVE_DATA ? new Date().toLocaleDateString('zh-HK') + ' (即時)' : '2026-04-26 (快取)';
         }
 
-        function foSetChange(wrapId, pctId, value, isInt) {
+        function foSetChange(wrapId, pctId, value, isInt, costMode, unit) {
             var wrap  = document.getElementById(wrapId);
             var pctEl = document.getElementById(pctId);
-            var isUp  = value >= 0;
-            wrap.className = 'fo-kpi-change ' + (isUp ? 'fo-up' : 'fo-down');
+            if (!wrap || !pctEl) return;
+            if (value === null || value === undefined) {
+                wrap.className = 'fo-kpi-change';
+                wrap.querySelector('span:first-child').textContent = '—';
+                pctEl.textContent = 'N/A';
+                return;
+            }
+            /* costMode: 成本下降是好事 (顯示綠色) */
+            var isGood = costMode ? (value <= 0) : (value >= 0);
+            wrap.className = 'fo-kpi-change ' + (isGood ? 'fo-up' : 'fo-down');
             var arrow = wrap.querySelector('span:first-child');
-            arrow.textContent = isUp ? '\u25B2' : '\u25BC';
-            pctEl.textContent = isInt
-                ? ((isUp ? '+' : '') + Math.round(value))
-                : ((isUp ? '+' : '') + value.toFixed(1) + '%');
+            arrow.textContent = value >= 0 ? '\u25B2' : '\u25BC';
+            var suffix = unit || (isInt ? '' : '%');
+            pctEl.textContent = (value >= 0 ? '+' : '') + (isInt ? Math.round(value) : value.toFixed(1)) + suffix;
+        }
+
+        /* === CATEGORY FILTER === */
+        function foSetCategory(cat) {
+            foCurrentCategory = cat;
+            /* update button states */
+            document.querySelectorAll('.fo-cat-btn').forEach(function(btn) {
+                btn.classList.remove('fo-cat-active');
+                var btnCat = btn.getAttribute('onclick').match(/foSetCategory\('(.+?)'\)/);
+                if (btnCat && btnCat[1] === cat) btn.classList.add('fo-cat-active');
+            });
+            /* update bar chart title */
+            var titleEl = document.getElementById('fo-bar-title');
+            if (titleEl) {
+                if (cat === 'handmodel') titleEl.textContent = '手模擺設 — 各產品銷售收入';
+                else if (cat === 'metal') titleEl.textContent = '金屬產品 — 各產品銷售收入';
+                else titleEl.textContent = '全部產品 — 銷售收入';
+            }
+            foDrawBar(foCurrentTab);
+            foDrawPie(foCurrentTab);
+            foUpdateKPI(foCurrentTab);
         }
 
         /* === LINE CHART === */
@@ -5569,7 +5779,7 @@
             var padLeft = mobile ? 42 : 52, padRight = 16, padTop = 16, padBottom = mobile ? 30 : 36;
             var plotW = W - padLeft - padRight;
             var plotH = H - padTop - padBottom;
-            var allVals = d.revenue.concat(d.profit);
+            var allVals = d.revenue.concat(d.profit).concat(d.cost || []);
             var dataMax = Math.max.apply(null, allVals);
             var range   = dataMax || 1;
             ctx.strokeStyle = '#E0D8CC'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
@@ -5610,7 +5820,8 @@
                     ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = mobile ? 1.5 : 2; ctx.stroke();
                 }
             }
-            drawSeries(d.revenue, '#C9714A');
+            drawSeries(d.revenue, '#0288D1');
+            if (d.cost) drawSeries(d.cost, '#E64A19');
             drawSeries(d.profit,  '#2E7D32');
         }
 
@@ -5618,9 +5829,11 @@
         function foDrawBar(tab) {
             var canvas = document.getElementById('fo-bar-canvas');
             var wrap   = document.getElementById('fo-bar-canvas-wrap');
-            var d      = foGetTabData(tab).barChart;
+            var tabData = foGetTabData(tab);
+            var barSets = tabData.barChart;
+            var d = (barSets && barSets[foCurrentCategory]) ? barSets[foCurrentCategory] : (barSets.all || barSets);
             var mobile = isMobile();
-            var BAR_COLORS = ['#C9714A','#D4956E','#7A6A55','#B0A090','#E0D8CC'];
+            var BAR_COLORS = ['#0288D1','#26C6DA','#7B1FA2','#F9A825','#546E7A'];
             var W = wrap.clientWidth;
             var H = mobile ? 200 : 260;
             canvas.width  = W * window.devicePixelRatio;
@@ -5629,6 +5842,15 @@
             var ctx = canvas.getContext('2d');
             ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
             ctx.clearRect(0, 0, W, H);
+            /* 空數據提示 */
+            var hasData = d.values.some(function(v){ return v > 0; });
+            if (!hasData) {
+                ctx.fillStyle = '#B0A090';
+                ctx.font = (mobile ? '12px' : '14px') + ' -apple-system, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('本期無數據', W / 2, H / 2);
+                return;
+            }
             var padLeft = mobile ? 38 : 50, padRight = 12, padTop = 16, padBottom = mobile ? 40 : 48;
             var plotW = W - padLeft - padRight;
             var plotH = H - padTop - padBottom;
@@ -5663,6 +5885,13 @@
                 ctx.closePath();
                 ctx.fillStyle = BAR_COLORS[i % BAR_COLORS.length];
                 ctx.fill();
+                /* value label above bar */
+                if (d.values[i] > 0) {
+                    ctx.fillStyle = '#555';
+                    ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+                    ctx.fillText(fmtYAxis(d.values[i]), x + barW / 2, y - 2);
+                }
                 var labelX = x + barW / 2, labelY = padTop + plotH + (mobile ? 6 : 8);
                 ctx.fillStyle = '#7A6A55'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
                 if (mobile) {
@@ -5685,7 +5914,18 @@
         /* === DONUT CHART === */
         function foDrawPie(tab) {
             var canvas = document.getElementById('fo-pie-canvas');
-            var d      = foGetTabData(tab).pieChart;
+            var tabData = foGetTabData(tab);
+            /* category-aware: use pieChart[category] if available */
+            var pieSet = tabData.pieChart;
+            var d = (pieSet && pieSet[foCurrentCategory]) ? pieSet[foCurrentCategory] : (pieSet.all || pieSet);
+            if (!d || !d.values || d.values.length === 0) return;
+            /* filter out zero values */
+            var labels = [], values = [], colors = [];
+            for (var fi = 0; fi < d.values.length; fi++) {
+                if (d.values[fi] > 0) { labels.push(d.labels[fi]); values.push(d.values[fi]); colors.push(d.colors[fi]); }
+            }
+            if (values.length === 0) return;
+            d = { labels: labels, values: values, colors: colors };
             var mobile = isMobile();
             var size = mobile ? 160 : 200;
             canvas.width  = size * window.devicePixelRatio;

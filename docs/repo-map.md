@@ -31,7 +31,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 幕後系統總綱
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
-│   │   ├── AGENTS.md                   ← 憲法層 v1.4.0
+│   │   ├── AGENTS.md                   ← 憲法層 v1.4.1（2026-04-28 新增 §Goal-Driven Execution）
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
@@ -57,13 +57,18 @@ freehandsss_dashboard/
 │   │   │   └── freehandsss/             ← FHS 重寫版（實際使用版本）
 │   │   │       ├── ui-designer.md       ← v2.0.0 Phase A 設計（iPhone/Desktop 響應式，廢除雙模式）
 │   │   │       ├── frontend-developer.md ← Phase B 原型（使用 Input Contract）
-│   │   │       └── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
+│   │   │       ├── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
+│   │   │       ├── database-reviewer.md ← v1.0.0 Airtable schema + n8n 資料流審查（2026-04-28 新增）
+│   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
+│   │   │       └── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
-│   │       └── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
-│   │           ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）
-│   │           ├── README.md            ← 用途、角色邊界、使用場景
-│   │           └── vendor/
-│   │               └── SKILL.md        ← 來源說明與角色邊界聲明
+│   │       ├── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
+│   │       │   ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）
+│   │       │   ├── README.md            ← 用途、角色邊界、使用場景
+│   │       │   └── vendor/
+│   │       │       └── SKILL.md        ← 來源說明與角色邊界聲明
+│   │       └── finance-calculator/      ← FHS 財務計算核心公式（2026-04-28 新增）
+│   │           └── SKILL.md            ← 利潤公式、前端/n8n 優先規則、欄位類型規範
 │   ├── notes/
 │   │   ├── README.md                    ← 筆記層總綱
 │   │   ├── decisions.md
@@ -87,7 +92,8 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 技術文件索引
 │   ├── repo-map.md                      ← 本文件
 │   ├── FHS_Blueprint.md
-│   ├── FHS_Product_Bible_V3.7.md
+│   ├── FHS_Product_Bible_V3.7.md        ← 產品定價聖經（成本/售價/折扣邏輯唯一真理）
+│   ├── FHS_Legacy_Migration_Notes.md    ← Excel 舊訂單遷移注意事項（缺失問題與處理方法）
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）
 │   ├── GLOBAL_AI_SOP.md                ← v2.2 跨環境與多代理協作協議（+ Completion Report 規範）
 │   └── archive/

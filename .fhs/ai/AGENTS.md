@@ -96,6 +96,11 @@
 - **強制規則**：凡涉及中文、特殊字元（emoji、markdown code block）、引號、跳脫字元或多行文本時，嚴禁為求快速而降級至低安全性寫入方式。已驗證可用的穩健寫入方案，不得因追求速度而替換；違反視為流程錯誤，而非單純工具失敗。
 - **適用**：所有 Agent，無例外。
 
+### 目標驅動執行（Goal-Driven Execution）
+- **先定義成功標準**：任何非瑣碎任務開始前，先聲明可驗證的完成條件（如「完成後 X 檔案存在且非空」）
+- **驗證循環**：實作完成後必須對照成功標準逐項確認，不得靜默宣告完成
+- **不確定時停止**：若 AI 無法確認某步驟結果，必須停下詢問 Fat Mo，禁止猜測繼續
+
 ### 衝突優先級聲明
 - 若本文件（AGENTS.md）與 `.cursorrules` 有任何規則衝突，以本文件為最終準則。
 
@@ -143,7 +148,8 @@
 | `/ag-plan` | ag 出 plan | Antigravity | 產出 `a2_implementation_plan.md` 到 `.fhs/notes/ai_reports/` |
 | `/cl-plan` | cl 出 plan | Claude | Claude 產出計畫 |
 | `/cl-review` | cl 給我審視報告 | Claude | 技術審視，不執行寫入 |
-| `/cl-flow` | cl 給我最終報告 | Claude | 讀取 A1/A2 → 產出 verdict → 停止等待（對應 `/a3go`）|
+| `/cl-flow` | cl 給我最終報告（完整版） | Claude | PX + AG → 產出 verdict → 停止等待。適合架構決策、新系統引入 |
+| `/cl-flow-fast` | cl 給我最終報告（輕量版） | Claude | 跳過 PX，只跑 AG → 精簡 Verdict → 停止等待。適合功能實作、UI 修改、Bug 修復 |
 | `/execute` | 唯一正式授權執行入口（修改磁碟） | Fat Mo / Claude | `.fhs/ai/commands/execute.md` |
 | `/fhs-check` | 全系統健康檢查（核心功能、壓力、驗收） | Claude | `.fhs/ai/commands/fhs-check.md` |
 | `/fhs-audit` | 內部巡邏、架構衛生稽核、版本噪音清理 | Claude | `.fhs/ai/commands/fhs-audit.md` |

@@ -12,6 +12,9 @@
 | ui-designer | 1.1.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/ui-designer.md` | lst97 (FHS rewrite) |
 | frontend-developer | 1.1.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/frontend-developer.md` | lst97 (FHS rewrite) |
 | code-reviewer | 1.1.0 | claude-haiku-4-5 | active | `~/.claude/agents/freehandsss/code-reviewer.md` | lst97 (FHS rewrite) |
+| database-reviewer | 1.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/database-reviewer.md` | FHS native (ECC concept rewrite) |
+| tdd-guide | 1.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/tdd-guide.md` | FHS native (ECC concept rewrite) |
+| build-error-resolver | 1.0.0 | claude-haiku-4-5-20251001 | active | `~/.claude/agents/freehandsss/build-error-resolver.md` | FHS native (ECC concept rewrite) |
 
 ---
 
@@ -28,10 +31,19 @@
 
 ---
 
+## 版本歷史（新增條目）
+
+| agent | version | date | changes |
+|-------|---------|------|---------|
+| database-reviewer | 1.0.0 | 2026-04-28 | 初次安裝（ECC concept，重寫為 Airtable + n8n 專用）|
+| tdd-guide | 1.0.0 | 2026-04-28 | 初次安裝（ECC concept，重寫為 FHS Python + n8n 專用）|
+| build-error-resolver | 1.0.0 | 2026-04-28 | 初次安裝（ECC concept，Haiku model，n8n + JS + Python 專用）|
+
 ## Skills（非 subagent）
 
 | skill | type | version | path |
 |-------|------|---------|------|
 | ui-ux-pro-max | fhs-native | 1.0.0 | `.fhs/ai/skills/ui-ux-pro-max/` |
+| finance-calculator | fhs-native | 1.0.0 | `.fhs/ai/skills/finance-calculator/` |
 
 *Skills 不安裝至 `~/.claude/agents/`，僅作 reference layer 使用。*

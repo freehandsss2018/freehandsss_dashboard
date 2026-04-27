@@ -1,3 +1,52 @@
+# Session Log — 2026-04-28（第十七次）
+
+## 概覽
+Subagent & Skill 擴充安裝完成：從 3 個 GitHub 來源（agency-agents, andrej-karpathy-skills, everything-claude-code）篩選 3 個 subagent + 1 個 skill，強化後端審查、TDD 測試、錯誤診斷與財務計算能力。全程實施 token 優化設計（零基線成本、Haiku 模型、≤30行 skills）。
+
+## 主要完成事項
+1. **Subagent 安裝**（3 個，版本 v1.0.0）：
+   - `database-reviewer.md`：Airtable schema + n8n 資料流審查專家（Sonnet）
+   - `tdd-guide.md`：Python/n8n 測試驅動開發指南（Red-Green-Refactor）
+   - `build-error-resolver.md`：TDZ/runtime 錯誤診斷（Haiku，成本 50% 優化）
+2. **Skill 安裝**（1 個，版本 v1.0.0）：
+   - `finance-calculator/SKILL.md`：Profit = Sale_Price - Cost、Gross_Margin% 等核心公式（≤30行參考層）
+3. **Runtime 部署**：所有 3 agents 複製至 `~/.claude/agents/freehandsss/`（共 6 agents）
+4. **系統同步**：
+   - AGENTS.md v1.4.1：新增 §Goal-Driven Execution（驗證標準 + 停止條件）
+   - MANIFEST.md：新增 4 個模組記錄 + 版本歷史
+   - OPERATING_MODEL.md v2.0.0 → v2.1.0：新增 3 agent 角色定義
+   - docs/repo-map.md、Changelog.md、decisions.md：已更新
+   - 完成記錄：`.fhs/notes/completion_reports/2026-04-28_skill_subagent_install_completion_report.md`
+
+## 關鍵決策
+- **On-demand 架構**：所有 subagent 均為呼叫型（無 hook），零基線成本
+- **Token 節省設計驗證**（5 項）：
+  * ✅ 3 subagent on-demand（非 hook 觸發）
+  * ✅ build-error-resolver Haiku model（Sonnet 的 50% 成本）
+  * ✅ finance-calculator ≤30行（實際 20 行）
+  * ✅ karpathy-principles 合併進 AGENTS.md（非獨立 skill）
+  * ✅ 無 ECC hooks/rules/commands（避免 per-action 成本）
+- **FHS 整合**：所有 agents 包含 FHS context injection（Airtable IDs、n8n workflow IDs、MCP tools binding）
+- **模組篩選**：230+ 候選模組中篩選 5 個：
+  * 拒絕 hook 架構（agency-agents 內含 ECC hooks → 連續成本）
+  * 拒絕非相關技棧（Go/Rust/Java agents，FHS 無需）
+  * 拒絕重複原則（karpathy 與 AGENTS.md 衝突 → 合併而非並存）
+
+## 架構驗證
+- ✅ 3 個新 subagent 檔案在 `.fhs/ai/subagents/freehandsss/`
+- ✅ 3 個 runtime 副本在 `~/.claude/agents/freehandsss/`
+- ✅ 1 個新 skill 在 `.fhs/ai/skills/finance-calculator/`
+- ✅ AGENTS.md §Goal-Driven Execution 新增
+- ✅ 所有元資料檔案（MANIFEST.md、repo-map.md、Changelog.md、decisions.md）已同步
+- ✅ 無 AGENTS.md 硬規則違規
+
+## 後效同步稽核
+- **[A] 結構變動** ✅：docs/repo-map.md 已更新
+- **[B] 制度層變動** ✅：AGENTS.md 修改 → completion report 已產出
+- **[C] CHANGELOG** ✅：Changelog.md 已記錄新增模組
+
+---
+
 # Session Log — 2026-04-25（第十六次）
 
 ## 概覽
