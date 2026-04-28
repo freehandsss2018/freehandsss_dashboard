@@ -21,9 +21,7 @@
 | /execute | commands/execute.md | 唯一准許修改檔案的執行入口 |
 | /fhs-check | commands/fhs-check.md | 快速系統檢查 |
 | /commit | commands/commit.md | 記憶引擎（自動脈衝 + Notion同步 + git push）|
-| /reflect | docs/archive/commands/ | 指令別名（已由 /commit 取代並存檔）|
 | /error-eye | commands/error-eye.md | 錯誤監控（Catch-Push-Diagnose）|
 | /guardian | commands/guardian.md | 全端守護稽核（動工前防護）|
 | /px audit | commands/px-audit.md | 外部審查（第三方審計員）|
-| /fhs-health | commands/fhs-health.md | 全系統功能迴路測驗（28項）|
 | /fhs-audit | commands/fhs-audit.md | 系統架構衛生稽核（21項）|

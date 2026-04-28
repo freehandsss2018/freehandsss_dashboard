@@ -36,7 +36,7 @@ FHS n8n MCP Server — AI 與 n8n 之間的專屬控制層。
 
 - Workflow allowlist：僅 `6Ljih0hSKr9RpYNm`
 - `update_node_code` 預設 dry-run，需 `/execute` 授權才寫入
-- 寫入前自動備份至 `.fhs/notes/aireports/n8n-mcp-backups/`
+- 寫入前自動備份至 `.fhs/notes/ai_reports/n8n-mcp-backups/`
 - `rollback_node_code` 可從備份完整回復
 
 ## 啟動

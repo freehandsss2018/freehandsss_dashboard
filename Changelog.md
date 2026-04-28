@@ -1,3 +1,44 @@
+## [FHS Hook 自動化系統 v1.0.0 上線] - 2026-04-28
+
+**執行依據**：Fat Mo `/execute` 授權（flow_id: 2026-04-28-1844）
+
+**新增 Hook 執行層（3 個腳本）**：
+- `scripts/hooks/session-start-sop.sh` — SessionStart hook：自動注入 SOP_NOW + handoff 摘要，取代手動 `/read`
+- `scripts/hooks/prompt-router.js` — UserPromptSubmit hook：任務路由器，偵測 9 種任務類型並建議對應 subagent/skill/model
+- `scripts/hooks/pre-tool-guard.js` — PreToolUse hook：AGENTS.md 硬規則守護，阻止 8 類違規操作
+
+**Hook 配置**：
+- `.claude/settings.json`（project-level）：新增 SessionStart + UserPromptSubmit + PreToolUse 三層 hooks
+
+**沉積清理**：
+- `C:\Users\Edwin\.claude\settings.json`（global）：~90 條一次性歷史許可 → 38 條 pattern-based 許可（減少 58%）
+
+**文件同步**：
+- `docs/repo-map.md`：新增 `scripts/hooks/` 目錄條目
+- `scripts/README.md`：新增 hooks/ 子目錄說明與回滾方法
+
+---
+
+## [系統文檔一致性大掃除 — Deep Audit & Resync] - 2026-04-28
+
+**執行依據**：Fat Mo `/execute` 授權（flow_id: 2026-04-28-0232）
+
+**全域一致性修復**：
+- **版本對齊**：根目錄 README 正式升級至 `V40` 開發主流，`AGENTS.md` 引用更正為 `v1.4.1`。
+- **幽靈清理**：移除全域 README 中對已刪除指令 `/fhs-health` 與廢棄指令 `/reflect` 的所有參照。
+- **錯字修正**：修正 `n8n-mcp-server` 備份路徑 `aireports` → `ai_reports` 拼寫錯誤。
+
+**文檔補全**：
+- **.fhs/notes**：補齊 `completion_reports/` 與 `pending_tasks/` 目錄說明。
+- **.fhs/ai/subagents**：補齊 6 個現役 Subagent 清單（含 database-reviewer 等）。
+- **n8n**：補齊核心 JSON 工作流導覽（OrderProcessor, Financial_Overview, ErrorMonitor）。
+- **repo-map**：同步最新目錄結構，將 V40 標註為當前開發穩定版。
+
+**語義變更**：
+- 確立「文件即代碼」同步標準：任何版本或架構變動必須同步更新對應的 README 與 `docs/repo-map.md`。
+
+---
+
 ## [Subagent & Skill 擴充 — 後端/診斷/財務能力強化] - 2026-04-28
 
 **執行依據**：Fat Mo `/execute` 授權（flow_id: 2026-04-28-0116）

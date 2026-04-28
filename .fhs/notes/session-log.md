@@ -1,3 +1,42 @@
+# Session Log — 2026-04-28（第十八次）
+
+## 概覽
+/commit 指令最佳化至 v2.0.0，新增 Phase 0 Pre-Commit Sweep（5 項健全掃描）確保系統接通、文件同步、無沉積、無幽靈、無衝突，防禦 commit 時的系統不一致問題。並驗證 FHS Hook Automation System v1.0.0 完整運行（3 個 hook 腳本 + 守護規則）。
+
+## 主要完成事項
+1. **/commit v2.0.0 最佳化**：
+   - Phase 0 Pre-Commit Sweep（P0.1–P0.5）：系統接通 + 文件同步 + 沉積掃描 + 幽靈偵測 + 衝突確認
+   - 🟡 發現 4 個 legacy scripts 未文件化（deploy-order-confirm-date.js 等），決策待確認
+   - 所有 P0 檢查 ✅ PASS（除 P0.4 提示需要文件化決策）
+
+2. **Hook System 完整驗證**（Phase 0.1 系統接通確認）：
+   - ✅ 3 個 hook 腳本存在（session-start-sop.sh、prompt-router.js、pre-tool-guard.js）
+   - ✅ 6 個 subagent 文件完整（ui-designer、frontend-developer、code-reviewer、database-reviewer、tdd-guide、build-error-resolver）
+   - ✅ .claude/settings.json hooks 配置正確
+   - ✅ no sediment files（tmp/ 空、無 temp/draft 日誌）
+   - ✅ no .env in staging + Changelog/handoff 已同步
+
+3. **文件同步更新**：
+   - `.claude/commands/commit.md` → 重寫為 v2.0.0 參考版
+   - `.fhs/ai/commands/README.md` → 更新 commit 描述含 v2.0.0 + Pre-Commit Sweep
+   - `.fhs/memory/handoff.md` → 新增 Hook System 完成事項、legacy scripts 待決策
+
+## 關鍵發現
+- **P0.4 幽靈偵測結果**：4 個有用的維護腳本未在 scripts/README.md 記錄：
+  * deploy-order-confirm-date.js（n8n 欄位部署）
+  * sync-legacy-orders.js（一次性訂單匯入 2026-01~04）
+  * update-legacy-profit.js（舊訂單利潤回填）
+  * update-legacy-sale-price.js（舊訂單價格更新）
+  * **決策**：是否新增 scripts/README.md 的 Legacy Data Migration Tools 區段？
+
+## 系統狀態
+- ✅ /commit v2.0.0 已部署，Phase 0 五項掃描全數接通
+- ✅ Hook System (v1.0.0) 完全就位，3 個 lifecycle hook + 8 條守護規則運行
+- 🟡 Legacy scripts 文件化決策待 Fat Mo 確認
+- ✅ Memory Engine 同步完成（Notion 雲端備份 + session-log 記錄）
+
+---
+
 # Session Log — 2026-04-28（第十七次）
 
 ## 概覽

@@ -7,6 +7,25 @@
 
 ## 記錄
 
+[2026-04-28] V40.4 同步至 current（生產環境正式切換）
+
+決策：
+- 將 `freehandsss_dashboardV40.html` 複製至 `Freehandsss_dashboard_current.html`
+- 更新 `README.md` 與 `Freehandsss_Dashboard/README.md` 版本標記
+- 當前生產版本 = V40.4（響應式設計 + API 快取）
+- V36 降級為「舊版穩定基準」（備份參考用）
+原因：V40.4 已完成響應式重設計、財務模式整合、API 優化等全部功能。經過充分測試，已達生產就緒。
+
+[2026-04-28] Airtable API 配額優化 — 5分鐘快取層 + sessionStorage
+
+決策：
+- 在 `fetchGlobalReview()` 加入 client-side 5分鐘 sessionStorage 快取
+- 同一查詢條件（year/month/status/batch/search）5 分鐘內不重複呼叫 n8n/Airtable
+- 在 `loadSystemConfig()` 加入 30分鐘 sessionStorage 快取
+- 保留 `forceRefresh` 參數供手動刷新
+- n8n 端快取（FHS_Query_GlobalReview_cached.json）已設計但暫緩部署，client-side 方案已足夠
+原因：April 2026 Airtable API 用量 ~1138 次，超出免費配額 1000 次。根因是開發期間每次頁面加載都觸發 API 呼叫。Client-side 快取可即時生效且不需修改後端工作流。
+
 [2026-04-28] 新增 3 subagents + 1 skill — FHS 後端/診斷/財務執行能力強化
 
 決策：

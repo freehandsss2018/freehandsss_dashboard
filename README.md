@@ -23,21 +23,21 @@
 > 2. 讀取 `/.fhs/ai/AGENTS.md`（憲法層，系統最高準則）
 > 3. 讀取 `/.fhs/ai/commands/`（可用指令集）
 > 4. 輸入 `/read` 完成記憶同步
->
-> `/a3go` 是最終技術把關觸發器（非自動覆寫令），需雙重授權後才執行寫入。
 
 ---
 
 ## UI 檔案說明
 | 檔案 | 用途 |
 |---|---|
-| Freehandsss_dashboard_current.html | 正式環境 (Synced with V36, 禁止未授權覆寫) |
-| freehandsss_dashboardV36.html | 當前穩定版本 (Stable Baseline) |
-| freehandsss_dashboardV37.html | 當前開發版本 (Development / Active) |
+| Freehandsss_dashboard_current.html | **正式環境** = V40.4 (2026-04-28 同步) |
+| freehandsss_dashboardV36.html | 舊版穩定基準 (Legacy Stable Baseline) |
+| freehandsss_dashboardV37.html | 展示/試用版本 (Trial / Legacy) |
+| freehandsss_dashboardV40.html | **當前開發穩定版** (Active Development) |
 
-V36 = 穩定基準實體檔名
-V37 = 後續新功能與實驗實作路徑
-功能版本號 = 參閱 Changelog.md 最新記錄
+**版本說明：**
+- V36 = 舊版穩定基準（2026-04前）
+- V40.4 = 當前生產版本（響應式設計 + API 快取優化）
+- 功能版本號 = 參閱 Changelog.md 最新記錄
 
 ## 備份與歸檔政策
 - docs/archive/pre-v1.0-backup/ — v1.0 架構重組前的舊版備份
@@ -67,6 +67,10 @@ V37 = 後續新功能與實驗實作路徑
 ***
 
 ## 版本
-- **系統版本**：v1.4.0（見 `.fhs/ai/AGENTS.md`）
+- **系統版本**：v1.4.1（見 `.fhs/ai/AGENTS.md`）
 - **SOP 版本**：v2.0（見 `docs/GLOBAL_AI_SOP.md`）
-- **最後更新**：2026-04-06
+- **Dashboard UI 版本**：V40.4 (Active Production)
+  - 響應式設計（iPhone <768px / Desktop ≥768px）
+  - Airtable API 快取優化（5分鐘 sessionStorage）
+  - Financial Overview 內嵌模式
+- **最後更新**：2026-04-28（V40 同步至 current）

@@ -14,11 +14,11 @@ freehandsss_dashboard/
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── README.md                           ← Dashboard 目錄說明
-│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V37 一致）
-│   ├── freehandsss_dashboardV37.html       # Stable Baseline (基礎開發版，對應 current)
-│   ├── freehandsss_dashboardV39_proto.html # DEPRECATED (設計概念已廢除，保留備份)
-│   ├── freehandsss_dashboardV40.html       # Interface Dev v40 (iPhone/Desktop 響應式，Code Reviewer PASS)
-│   ├── freehandsss_financial_overview.html ← Financial Overview 頁面 (Current/Monthly/Yearly 財務圖表，Canvas 2D，Phase D n8n hookup 待接)
+│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V36 一致）
+│   ├── freehandsss_dashboardV36.html       # 舊版穩定基準 (Legacy Stable)
+│   ├── freehandsss_dashboardV37.html       # 展示/試用版本 (Trial / Legacy)
+│   ├── freehandsss_dashboardV40.html       # **當前開發穩定版** (iPhone/Desktop 雙模式，v40.4 財務優化完成)
+│   ├── freehandsss_financial_overview.html ← Financial Overview 頁面 (財務圖表中樞)
 │   ├── products.js                         ← 前端產品快取
 │   ├── products.json                       ← 前端產品快取（JSON 格式）
 │   └── archive/                            ← 失效版本封存區
@@ -40,7 +40,7 @@ freehandsss_dashboard/
 │   │   │   ├── px-plan.md               ← /px-plan 外部視角計畫（A1 專用）
 │   │   │   ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
 │   │   │   ├── fhs-check.md
-│   │   │   ├── commit.md                ← 宣告結束與記憶同步（Commit 記憶引擎）
+│   │   │   ├── commit.md                ← 宣告結束與記憶同步（Memory Engine，取代 /reflect）
 │   │   │   ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
 │   │   │   ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
 │   │   │   ├── px-audit.md              ← 外部審查（第三方審計員）
@@ -100,10 +100,11 @@ freehandsss_dashboard/
 │       ├── README.md                    ← 歸檔政策
 │       └── pre-v1.0-backup/
 │
-├── n8n/                                 ← n8n Workflow 配置區
+│   ├── n8n/                                 ← n8n Workflow 配置區
 │   ├── README.md                        ← n8n 配置說明
 │   ├── Triple_Sync_Field_Map.md         ← 三端對齊欄位地圖 V45.7.4+
-│   └── FHS_Financial_Overview_workflow.json ← Financial Overview 聚合 webhook workflow（需匯入 n8n 並設定 Airtable credential）
+│   ├── FHS_Core_OrderProcessor.json     ← 核心訂單處理機
+│   └── FHS_Financial_Overview_workflow.json ← 財務聚合機
 ├── Maintenance_Tools/                   ← 系統健康檢查與維護腳本
 │   ├── README.md                        ← 維護工具說明
 │   ├── run_all.py                       ← 全部測試執行器
@@ -140,7 +141,11 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 腳本說明索引
 │   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
 │   ├── rebuild_index.py                 ← 本地索引重建
-│   └── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner）
+│   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner）
+│   └── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
+│       ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
+│       ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）
+│       └── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/Bash）
 ├── artifacts/                           ← /cl-flow 執行時生成（已納入 .gitignore，不版控）
 │   └── {flow_id}/                       ← 每次 /cl-flow 產生獨立資料夾
 │       ├── task-brief.md

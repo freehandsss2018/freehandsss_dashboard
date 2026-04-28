@@ -1,18 +1,20 @@
-讀取 `.fhs/ai/commands/commit.md` 並執行全包一條龍任務收尾。
+# /commit（Claude Code Bridge）
 
-執行步驟：
+> **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
 
-【第一階段：Memory Engine 同步】
-1. 整理本次教訓，寫入 .fhs/memory/lessons/YYYY-MM-DD_主題.md
-2. 更新 .fhs/memory/handoff.md（格式：版本、狀態摘要、未解決項目、下個 Session 待辦、核心配置）
-3. 檢查 .fhs/memory/lessons/ 是否有 _temp/_draft 臨時日誌，若有提示 Fat Mo 確認
-4. 執行 node scripts/Sync_Notion_Brain.js
-5. 更新 .fhs/notes/session-log.md
+**執行步驟**：
+請立即讀取並嚴格遵循以下 Master 指令定義：
+[/.fhs/ai/commands/commit.md](/.fhs/ai/commands/commit.md)
 
-【第二階段：Git 推送】
-6. 執行 git add .
-7. 執行 git status，安全檢查：.env 出現立即 reset 並警告；大型檔案 >10MB 暫停提示
-8. git commit -m "chore: Memory Engine sync + session checkpoint [YYYY-MM-DD]"
-9. git push
+### 流程摘要（v2.0.0）：
+0. **Phase 0 — Pre-Commit Sweep**（5 項健全掃描，任一 🔴 立即停止）
+   - P0.1 系統接通確認（hooks 腳本 + subagent 文件）
+   - P0.2 README & repo-map 同步確認
+   - P0.3 沉積快速掃描（temp/draft 殘留）
+   - P0.4 幽靈偵測（Bridge vs Master 指令、腳本 vs README）
+   - P0.5 衝突與遺漏確認（Changelog、handoff、.env 安全）
+1. **Phase 1 — Memory Engine 同步**（lessons + handoff + Notion + session-log）
+2. **Phase 2 — Git 推送**（add → status 安全確認 → commit → push）
+3. **Phase 3 — 完成回報**（格式化輸出）
 
-異常處理：.env 出現 → 立即 reset，暫停 git push；Notion API 失敗 → 繼續 git push 後提示補同步。
+異常處理：🔴 停止修復 → 🟡 詢問 Fat Mo → ✅ 繼續執行

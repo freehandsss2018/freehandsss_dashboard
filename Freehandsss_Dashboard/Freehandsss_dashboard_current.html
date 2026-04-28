@@ -4,19 +4,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Freehandsss Dashboard V36.2.2 - UI Polishing by Antigravity</title>
-    <!-- Tailwind CSS injected for V33 Review Center Premium Redesign -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { corePlugins: { preflight: false } }</script>
+    <title>Freehandsss Dashboard V40 - Responsive Prototype</title>
+    <!-- V40: Zero external dependencies. Tailwind removed. Pure HTML5+CSS3+VanillaJS -->
     <style>
+        /* =====================================================
+           V40 FHS Design Token System
+           Source: v40-phase1_design_spec.md Section 1
+        ===================================================== */
         :root {
-            --primary: #D4A373;
-            --secondary: #FAEDCD;
-            --dark: #4A4E69;
-            --bg: #F5F5F7;
+            /* === 背景層 === */
+            --fhs-bg-base: #FAF7F4;
+            --fhs-bg-surface: #FFFFFF;
+            --fhs-bg-elevated: #F0EBE4;
+            --fhs-bg-overlay: rgba(0, 0, 0, 0.4);
+
+            /* === 文字層 === */
+            --fhs-text-primary: #2C2416;
+            --fhs-text-secondary: #7A6A55;
+            --fhs-text-muted: #B0A090;
+            --fhs-text-on-accent: #FFFFFF;
+
+            /* === 品牌色 === */
+            --fhs-accent: #C9714A;
+            --fhs-accent-hover: #B5603B;
+            --fhs-accent-light: #F5E8E0;
+
+            /* === 邊界與分隔 === */
+            --fhs-border: #E0D8CC;
+            --fhs-border-focus: #C9714A;
+            --fhs-border-strong: #C4B8A8;
+
+            /* === 狀態色 === */
+            --fhs-success: #2E7D32;
+            --fhs-success-bg: #E8F5E9;
+            --fhs-warning: #F57F17;
+            --fhs-warning-bg: #FFF8E1;
+            --fhs-danger: #C62828;
+            --fhs-danger-bg: #FFEBEE;
+            --fhs-info: #1565C0;
+            --fhs-info-bg: #E3F2FD;
+
+            /* === 字號 Scale === */
+            --fhs-text-xs: 12px;
+            --fhs-text-sm: 14px;
+            --fhs-text-base: 16px;
+            --fhs-text-lg: 18px;
+            --fhs-text-xl: 22px;
+            --fhs-text-2xl: 28px;
+
+            /* === 間距系統（8px grid）=== */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-8: 48px;
+            --space-10: 64px;
+
+            /* === Touch Target === */
+            --touch-target-min: 44px;
+
+            /* === Desktop 密度 === */
+            --table-row-height: 36px;
+            --table-cell-padding: 8px 12px;
+
+            /* === 圓角系統 === */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-pill: 999px;
+
+            /* === 陰影 === */
+            --shadow-sm: 0 1px 3px rgba(44, 36, 22, 0.08);
+            --shadow-md: 0 4px 12px rgba(44, 36, 22, 0.12);
+            --shadow-lg: 0 8px 24px rgba(44, 36, 22, 0.16);
+
+            /* === 過渡 === */
+            --transition-fast: 150ms ease-out;
+            --transition-base: 250ms ease-out;
+            --transition-slow: 400ms ease-out;
+
+            /* === Bottom Bar 高度（iPhone 專用）=== */
+            --bottom-bar-height: 64px;
+
+            /* === V37 Legacy tokens (kept for backward compat with existing CSS) === */
+            --primary: #C9714A;
+            --secondary: #F5E8E0;
+            --dark: #2C2416;
+            --bg: #FAF7F4;
             --white: #FFFFFF;
-            --danger: #E63946;
+            --danger: #C62828;
             --border-radius: 12px;
+
+            /* === Financial Overview Chart Palette (V40.3 高對比版) === */
+            --fhs-chart-revenue: #0288D1;
+            --fhs-chart-profit: #2E7D32;
+            --fhs-chart-cost: #E64A19;
+            --fhs-chart-bar-1: #0288D1;
+            --fhs-chart-bar-2: #26C6DA;
+            --fhs-chart-bar-3: #7B1FA2;
+            --fhs-chart-bar-4: #F9A825;
+            --fhs-chart-bar-5: #546E7A;
+            /* === Financial Overview KPI Accents === */
+            --fhs-kpi-revenue: #0288D1;
+            --fhs-kpi-cost: #E64A19;
+            --fhs-kpi-profit: #2E7D32;
+            --fhs-kpi-orders: #7B1FA2;
+            --fhs-kpi-margin: #F9A825;
+            --fhs-kpi-aov: #00838F;
         }
 
         * {
@@ -295,9 +392,7 @@
             display: none;
         }
 
-        .fat-mo-mode .verification-list {
-            display: block;
-        }
+        /* fat-mo-mode .verification-list removed — visibility now JS-driven in setRole() */
 
         .role-bar {
             position: sticky;
@@ -325,8 +420,9 @@
             color: white;
         }
 
-        .ling-au-mode .fat-only {
-            display: none !important;
+        /* ling-au-mode .fat-only removed — fat-only visibility now JS-driven in setRole() */
+        .fat-only {
+            display: none;
         }
 
         .v-item {
@@ -400,8 +496,8 @@
             transform: scale(0.98);
         }
 
-        .btn-category-a { background: #FF9800 !important; cursor: pointer; }
-        .btn-category-b { background: #607D8B !important; cursor: pointer; }
+        .btn-category-a { background: #FF9800; cursor: pointer; }
+        .btn-category-b { background: #607D8B; cursor: pointer; }
 
         /* Toast Notification */
         #toast {
@@ -465,7 +561,7 @@
             background-color: #CBD5E1;
         }
 
-        /* === V28 全域核對中心 (Global Review Center) — 統一視覺系統 === */
+        /* === V28 訂單總覽 (Global Review Center) — 統一視覺系統 === */
         /* 全域字體統一 */
         .review-container,
         .review-container * {
@@ -591,30 +687,7 @@
         /* 隱藏舊標題 */
         .review-col-label { display:none; }
 
-        /* === V28 沙盒模式 (Development Sandbox Mode) === */
-        .sandbox-banner {
-            display: none;
-            background: linear-gradient(135deg, #FF8C00, #FF6600);
-            color: white;
-            text-align: center;
-            padding: 10px;
-            font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 1px;
-            position: sticky;
-            top: 0;
-            z-index: 3000;
-            box-shadow: 0 2px 8px rgba(255,102,0,0.3);
-        }
-        .sandbox-banner.active { display: block; }
-        .sandbox-toggle-btn {
-            padding: 6px 12px; border-radius: 8px; border: 1px solid #FF8C00;
-            background: #fff3e0; color: #e65100; font-weight: bold;
-            cursor: pointer; font-size: 12px; margin-left: 10px;
-        }
-        .sandbox-toggle-btn.active { background: #FF8C00; color: white; }
-        .qa-center { display: none; margin-top: 20px; }
-        .qa-center.active { display: block; }
+        .qa-center { display: none; }
         .qa-log {
             background: #1e1e2e; color: #c0c0c0; padding: 15px;
             border-radius: 8px; font-family: monospace; font-size: 12px;
@@ -723,9 +796,7 @@
             animation: fadeIn 0.3s ease;
         }
         
-        .fat-mo-mode .fatmo-config-panel {
-            display: block;
-        }
+        /* fat-mo-mode .fatmo-config-panel removed — visibility now JS-driven in setRole() */
 
         .config-row {
             display: flex;
@@ -778,7 +849,7 @@
         }
 
         /* === Global Loading Indicator (V31.6) === */
-        /* V31.9 全域核對中心：快跳修改膠囊 */
+        /* V31.9 訂單總覽：快跳修改膠囊 */
         .review-jump-pill {
             display: inline-flex;
             align-items: center;
@@ -805,6 +876,204 @@
             font-size: 10px;
             opacity: 0.8;
         }
+
+        /* ===== V40 iPhone Accordion — 訂單總覽 ===== */
+        @media (max-width: 767px) {
+            .review-table-wrap { display: none !important; }
+            #reviewAccordionContainer { display: block !important; }
+        }
+        @media (min-width: 768px) {
+            #reviewAccordionContainer { display: none !important; }
+        }
+
+        #reviewAccordionContainer {
+            display: none;
+            width: 100%;
+        }
+
+        .acc-order {
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 10px;
+            background: var(--fhs-bg-card);
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .acc-order-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            cursor: pointer;
+            user-select: none;
+            gap: 8px;
+            min-height: 56px;
+            background: var(--fhs-bg-elevated);
+            border-bottom: 1px solid transparent;
+            transition: background 0.15s;
+        }
+        .acc-order-header:active { background: var(--fhs-bg); }
+
+        .acc-order-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .acc-order-id {
+            font-weight: 700;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-accent);
+        }
+
+        .acc-order-meta {
+            font-size: 11px;
+            color: var(--fhs-text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .acc-order-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .acc-profit {
+            font-size: var(--fhs-text-sm);
+            font-weight: 800;
+        }
+
+        .acc-chevron {
+            font-size: 14px;
+            color: var(--fhs-text-muted);
+            transition: transform 0.25s ease;
+            display: inline-block;
+        }
+
+        .acc-order.open .acc-chevron { transform: rotate(180deg); }
+        .acc-order.open .acc-order-header { border-bottom-color: var(--fhs-border); }
+
+        .acc-order-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .acc-order.open .acc-order-body { max-height: 2000px; }
+
+        .acc-order-body-inner {
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-field-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .acc-field-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--fhs-text-muted);
+            letter-spacing: 0.05em;
+        }
+        .acc-field-value {
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+        }
+
+        .acc-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .acc-item-card {
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-md);
+            padding: 8px 10px;
+            background: var(--fhs-bg);
+        }
+
+        .acc-item-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .acc-item-controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .acc-notes-textarea {
+            width: 100%;
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-sm);
+            padding: 6px 8px;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+            background: var(--fhs-bg);
+            resize: vertical;
+            min-height: 52px;
+            box-sizing: border-box;
+        }
+
+        .acc-action-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .acc-jump-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--fhs-accent);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--fhs-accent);
+            font-weight: 700;
+            font-size: var(--fhs-text-sm);
+            cursor: pointer;
+            text-align: center;
+            min-height: 44px;
+        }
+        .acc-jump-btn:active { background: var(--fhs-accent); color: #fff; }
+
+        .acc-delete-btn {
+            padding: 10px 14px;
+            border: 1px solid var(--fhs-danger);
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--fhs-danger);
+            font-weight: 700;
+            font-size: var(--fhs-text-sm);
+            cursor: pointer;
+            min-height: 44px;
+        }
+        .acc-delete-btn:active { background: var(--fhs-danger); color: #fff; }
+
+        .acc-empty {
+            padding: 32px;
+            text-align: center;
+            color: var(--fhs-text-muted);
+            font-size: var(--fhs-text-sm);
+        }
+        /* ===== END V40 iPhone Accordion ===== */
 
         #globalLoader {
             position: fixed;
@@ -853,152 +1122,624 @@
             color: var(--dark);
             font-size: 16px;
         }
+
+        /* =====================================================
+           V40 FHS Component System
+           Source: v40-phase1_design_spec.md Sections 3-6
+        ===================================================== */
+
+        /* --- Top Bar --- */
+        .fhs-top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            height: 48px;
+            background: var(--fhs-bg-surface);
+            border-bottom: 1px solid var(--fhs-border);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .fhs-top-bar__logo {
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--fhs-accent);
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .fhs-top-bar__order-id {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--fhs-text-secondary);
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .fhs-top-bar__actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .fhs-top-bar__actions button {
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 6px 10px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--fhs-border);
+            background: var(--fhs-bg-elevated);
+            color: var(--fhs-text-secondary);
+            transition: background 0.15s, color 0.15s;
+        }
+        .fhs-top-bar__actions button.active {
+            background: var(--fhs-accent);
+            color: #fff;
+            border-color: var(--fhs-accent);
+        }
+        @media (max-width: 400px) {
+            .fhs-top-bar__actions button {
+                padding: 5px 7px;
+                font-size: 12px;
+            }
+        }
+
+        /* --- FHS Card --- */
+        .fhs-card {
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            box-shadow: var(--shadow-sm);
+        }
+        .fhs-card__header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            min-height: var(--touch-target-min);
+        }
+
+        /* --- FHS Buttons --- */
+        .fhs-btn-primary {
+            background: var(--fhs-accent);
+            color: var(--fhs-text-on-accent);
+            border: none;
+            border-radius: var(--radius-md);
+            min-height: var(--touch-target-min);
+            padding: 0 var(--space-5);
+            font-size: var(--fhs-text-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+            white-space: nowrap;
+        }
+        .fhs-btn-primary:hover { background: var(--fhs-accent-hover); }
+
+        .fhs-btn-secondary {
+            background: var(--fhs-bg-elevated);
+            color: var(--fhs-text-primary);
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-md);
+            min-height: var(--touch-target-min);
+            padding: 0 var(--space-4);
+            font-size: var(--fhs-text-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+            white-space: nowrap;
+        }
+        .fhs-btn-secondary:hover { background: var(--fhs-border); }
+
+        /* --- Bottom Bar (iPhone only, Desktop: display:none) --- */
+        .fhs-bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-bar-height);
+            background: var(--fhs-bg-surface);
+            border-top: 1px solid var(--fhs-border);
+            display: none; /* shown by media query */
+            align-items: center;
+            padding: 0 var(--space-4);
+            gap: var(--space-3);
+            z-index: 100;
+            box-shadow: 0 -2px 8px rgba(44, 36, 22, 0.08);
+        }
+
+        /* --- Drawer (iPhone only) --- */
+        .fhs-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--fhs-bg-surface);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(100%);
+            transition: transform var(--transition-base);
+            z-index: 200;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: none; /* shown by media query */
+            flex-direction: column;
+        }
+        .fhs-drawer.is-open { transform: translateY(0); }
+        .fhs-drawer__handle {
+            width: 36px;
+            height: 4px;
+            background: var(--fhs-border-strong);
+            border-radius: var(--radius-pill);
+            margin: var(--space-3) auto var(--space-2);
+            flex-shrink: 0;
+        }
+        .fhs-drawer__tabs {
+            display: flex;
+            border-bottom: 1px solid var(--fhs-border);
+            padding: 0 var(--space-4);
+            gap: var(--space-1);
+            flex-shrink: 0;
+        }
+        .fhs-drawer__tab {
+            padding: var(--space-2) var(--space-4);
+            border: none;
+            background: none;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            font-weight: 500;
+            min-height: var(--touch-target-min);
+        }
+        .fhs-drawer__tab.is-active {
+            color: var(--fhs-accent);
+            border-bottom-color: var(--fhs-accent);
+            font-weight: 700;
+        }
+        .fhs-drawer__content {
+            display: none;
+            padding: var(--space-4);
+            flex: 1;
+        }
+        .fhs-drawer__content.is-active { display: block; }
+
+        /* --- Drawer Overlay --- */
+        .fhs-drawer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--fhs-bg-overlay);
+            z-index: 150;
+        }
+        .fhs-drawer-overlay.is-visible { display: block; }
+
+        /* --- Desktop Side Panel (shown at ≥768px) --- */
+        .v40-side-panel {
+            display: none; /* shown by media query */
+        }
+
+        /* --- Audit Accordion (iPhone) --- */
+        .audit-accordion {
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-2);
+        }
+        .audit-accordion__header {
+            min-height: var(--touch-target-min);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 var(--space-3);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+        }
+        .audit-accordion__body {
+            display: none;
+            padding: var(--space-3);
+            border-top: 1px solid var(--fhs-border);
+            font-size: var(--fhs-text-sm);
+        }
+        .audit-accordion.is-open .audit-accordion__body { display: block; }
+
+        /* --- Toast --- */
+        .fhs-toast-container {
+            position: fixed;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        /* =====================================================
+           V40 Responsive Layout
+        ===================================================== */
+
+        /* iPhone: single column, Bottom Bar visible, Drawer active */
+        @media (max-width: 767px) {
+            body {
+                padding-bottom: var(--bottom-bar-height) !important;
+            }
+            .fhs-bottom-bar {
+                display: flex;
+            }
+            .fhs-drawer {
+                display: flex;
+            }
+            /* Hide desktop-only panels on mobile */
+            #fatmoConfigPanel {
+                display: none !important;
+            }
+            #qaCenter {
+                display: none !important;
+            }
+            /* Role bar: keep for contract IDs, compact on mobile */
+            .role-bar {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 8px 12px !important;
+            }
+            /* Review table: scroll horizontally */
+            .review-table-wrap {
+                max-height: 60vh;
+            }
+        }
+
+        /* Review mode: reviewModeContainer spans full width, hide side panel */
+        #reviewModeContainer[style*="block"] ~ * .v40-side-panel,
+        .v40-review-active .v40-side-panel {
+            display: none;
+        }
+        .v40-review-active .v40-layout {
+            grid-template-columns: 1fr;
+        }
+
+        /* Finance mode: full-width layout, hide side panel */
+        .v40-finance-active .v40-side-panel {
+            display: none !important;
+        }
+        .v40-finance-active .v40-layout {
+            grid-template-columns: 1fr;
+        }
+
+        /* =====================================================
+           Financial Overview — Integrated Styles
+        ===================================================== */
+        #fo-tab-bar {
+            position: sticky;
+            top: 56px;
+            z-index: 90;
+            background: var(--fhs-bg-surface);
+            border-bottom: 1px solid var(--fhs-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 0;
+        }
+        .fo-tab-btn {
+            position: relative;
+            padding: 14px 22px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--fhs-text-secondary);
+            transition: color 0.18s;
+            letter-spacing: 0.02em;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
+        }
+        .fo-tab-btn:hover { color: var(--fhs-accent); }
+        .fo-tab-btn.fo-tab-active {
+            color: var(--fhs-accent);
+            border-bottom-color: var(--fhs-accent);
+        }
+        #fo-main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 20px 48px;
+        }
+        #fo-kpi-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .fo-kpi-card {
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.15s;
+        }
+        .fo-kpi-card:hover { box-shadow: 0 4px 16px rgba(44, 36, 22, 0.08); }
+        .fo-kpi-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            border-radius: 0 2px 2px 0;
+        }
+        .fo-kpi-card[data-type="revenue"]::before { background: var(--fhs-kpi-revenue); }
+        .fo-kpi-card[data-type="cost"]::before    { background: var(--fhs-kpi-cost); }
+        .fo-kpi-card[data-type="profit"]::before  { background: var(--fhs-kpi-profit); }
+        .fo-kpi-card[data-type="orders"]::before  { background: var(--fhs-kpi-orders); }
+        .fo-kpi-card[data-type="margin"]::before  { background: var(--fhs-kpi-margin); }
+        .fo-kpi-card[data-type="aov"]::before     { background: var(--fhs-kpi-aov); }
+        .fo-kpi-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .fo-kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--fhs-text-muted);
+        }
+        .fo-kpi-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            opacity: 0.7;
+        }
+        .fo-kpi-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--fhs-text-primary);
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+        .fo-kpi-change {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .fo-kpi-change.fo-up   { color: var(--fhs-success); }
+        .fo-kpi-change.fo-down { color: var(--fhs-danger); }
+        .fo-kpi-subtitle {
+            font-size: 10px;
+            color: var(--fhs-text-muted);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            margin-top: 2px;
+        }
+        /* Category Filter */
+        #fo-category-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 0 2px;
+        }
+        .fo-cat-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--fhs-border);
+            background: var(--fhs-bg-surface);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--fhs-text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .fo-cat-btn:hover { border-color: var(--fhs-accent); color: var(--fhs-accent); }
+        .fo-cat-btn.fo-cat-active {
+            background: var(--fhs-accent);
+            border-color: var(--fhs-accent);
+            color: #fff;
+        }
+        /* Data source tag */
+        #fo-data-source {
+            font-size: 11px;
+            color: var(--fhs-text-muted);
+            text-align: right;
+            margin-bottom: 16px;
+            letter-spacing: 0.01em;
+        }
+        #fo-data-source span { font-weight: 600; }
+        .fo-charts-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .fo-chart-card {
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            min-width: 0;
+        }
+        .fo-chart-card:hover { box-shadow: 0 4px 16px rgba(44, 36, 22, 0.08); }
+        #fo-pie-card { flex-shrink: 0; }
+        .fo-chart-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--fhs-text-primary);
+            margin-bottom: 16px;
+            letter-spacing: 0.01em;
+        }
+        #fo-line-legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .fo-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--fhs-text-secondary);
+            font-weight: 500;
+        }
+        .fo-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .fo-canvas-wrap { width: 100%; position: relative; }
+        #fo-line-canvas, #fo-bar-canvas, #fo-pie-canvas { display: block; width: 100% !important; }
+        #fo-pie-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        #fo-pie-canvas-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #fo-pie-center-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--fhs-text-secondary);
+            text-align: center;
+            pointer-events: none;
+            line-height: 1.3;
+        }
+        #fo-pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+        .fo-pie-legend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .fo-pie-legend-left { display: flex; align-items: center; gap: 8px; }
+        .fo-pie-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .fo-pie-legend-name { font-size: 12px; color: var(--fhs-text-secondary); }
+        .fo-pie-legend-pct { font-size: 12px; font-weight: 700; color: var(--fhs-text-primary); }
+
+        @media (max-width: 767px) {
+            #fo-tab-bar { top: 56px; }
+            .fo-tab-btn { padding: 12px 14px; font-size: 13px; }
+            #fo-main { padding: 16px 14px 80px; }
+            #fo-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .fo-kpi-value { font-size: 20px; }
+            .fo-charts-row { flex-direction: column; }
+            #fo-pie-card { width: 100%; }
+            .fo-chart-title { font-size: 13px; }
+        }
+        @media (min-width: 768px) {
+            #fo-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .fo-charts-row { flex-direction: row; }
+            #fo-pie-card { width: 320px; }
+        }
+        @media (min-width: 1100px) {
+            #fo-kpi-grid { grid-template-columns: repeat(6, 1fr); }
+        }
+
+        /* Desktop: two-column layout, Side Panel visible */
+        @media (min-width: 768px) {
+            .fhs-bottom-bar {
+                display: none !important;
+            }
+            .fhs-drawer {
+                display: none !important;
+            }
+            .fhs-drawer-overlay {
+                display: none !important;
+            }
+            /* Show fatmo panel and QA center in original positions */
+            #fatmoConfigPanel {
+                display: block;
+            }
+            #qaCenter {
+                display: block;
+            }
+            /* Two-column layout wrapper */
+            .v40-layout {
+                display: grid;
+                grid-template-columns: 1fr 320px;
+                gap: var(--space-5);
+                align-items: start;
+            }
+            .v40-side-panel {
+                display: block;
+                position: sticky;
+                top: 72px; /* below top bar */
+            }
+            /* Audit table on desktop */
+            .audit-table {
+                width: 100%;
+                font-size: var(--fhs-text-sm);
+                border-collapse: collapse;
+            }
+            .audit-table tr:nth-child(even) {
+                background: var(--fhs-bg-elevated);
+            }
+            .audit-table td, .audit-table th {
+                padding: var(--table-cell-padding);
+                border-bottom: 1px solid var(--fhs-border);
+            }
+        }
     </style>
 
-    <!-- Impeccable V34 Glassmorphism Overrides -->
-    <style>
-        body {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
-            color: #1e293b !important;
-            font-family: 'Inter', system-ui, sans-serif !important;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.7) !important;
-            backdrop-filter: blur(16px) !important;
-            -webkit-backdrop-filter: blur(16px) !important;
-            border-radius: 16px !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05) !important;
-            padding: 24px !important;
-            margin-bottom: 24px !important;
-            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-        }
-
-        .card:hover {
-            transform: translateY(-4px) !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .card-info {
-            border-top: 6px solid #457B9D !important;
-        }
-
-        .card-product {
-            border-top: 6px solid #D4A373 !important;
-        }
-
-        .card-finance {
-            border-top: 6px solid #52B788 !important;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        select,
-        textarea {
-            background-color: rgba(255, 255, 255, 0.9) !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 12px !important;
-            padding: 12px 16px !important;
-            color: #0f172a !important;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-            transition: all 0.2s ease !important;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: #D4A373 !important;
-            box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.2) !important;
-            background-color: #ffffff !important;
-            outline: none !important;
-        }
-
-        .role-bar {
-            background: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border-bottom: 1px solid #e2e8f0 !important;
-            padding: 16px 24px !important;
-        }
-
-        .role-btn {
-            background: #f1f5f9 !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 9999px !important;
-            color: #475569 !important;
-            padding: 10px 24px !important;
-            font-weight: 700 !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-        }
-
-        .role-btn.active {
-            background: #0f172a !important;
-            color: #ffffff !important;
-            border-color: #0f172a !important;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .bottom-action-bar {
-            background: rgba(248, 250, 252, 0.85) !important;
-            backdrop-filter: blur(24px) !important;
-            -webkit-backdrop-filter: blur(24px) !important;
-            border-top: 1px solid #e2e8f0 !important;
-            padding: 20px !important;
-        }
-
-        .review-table-wrap {
-            border-radius: 12px !important;
-            border: 1px solid #e2e8f0 !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-            background: #ffffff !important;
-        }
-
-        .review-table thead th {
-            background: linear-gradient(135deg, #1e293b, #0f172a) !important;
-            color: #ffffff !important;
-            padding: 16px 16px !important;
-            border-radius: 0 !important;
-        }
-
-        .review-table tbody td {
-            padding: 16px !important;
-            border-bottom: 1px solid #f1f5f9 !important;
-            border-right: 1px solid #f8fafc !important;
-            vertical-align: top !important;
-            color: #334155 !important;
-        }
-    </style>
+    <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
 
 </head>
 
-<body class="ling-au-mode">
+<body class="fhs-body">
 
-    <!-- V28 沙盒模式橫幅 -->
-    <div id="sandboxBanner" class="sandbox-banner">
-        🛠️ SANDBOX MODE — 所有 API 已重導至 /webhook-test/，資料不會寫入生產環境
-    </div>
-
-    <div class="role-bar">
-        <button id="roleLingBtn" class="role-btn active" onclick="setRole('ling')">👧 Ling Au 模式</button>
-        <button id="roleFatBtn" class="role-btn" onclick="setRole('fat')">👦 Fat Mo 模式</button>
-        <button id="sandboxToggleBtn" class="sandbox-toggle-btn" onclick="toggleSandbox()">🛠️ 進入沙盒模式</button>
-    </div>
-
-    <div class="card card-info">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-            <h2 style="margin:0; padding:0;">🕹️ 系統模式</h2>
-            <div style="display:flex; gap:10px;">
-                                <button id="modeCreateBtn" onclick="switchMode('create')"
-                    style="padding:8px 15px; border-radius:8px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;">新增訂單</button>
-                <button id="modeEditBtn" onclick="switchMode('edit')"
-                    style="padding:8px 15px; border-radius:8px; border:1px solid #ccc; background:#eee; color:#666; font-weight:bold; cursor:pointer;">修改舊單</button>
-                <button id="modeReviewBtn" onclick="switchMode('review')"
-                    style="padding:8px 15px; border-radius:8px; border:1px solid #ccc; background:#eee; color:#666; font-weight:bold; cursor:pointer;">📊 全域核對</button>
-            </div>
+    <!-- V40 Top Bar（替換舊 role-bar，保留所有原有 ID） -->
+    <div class="fhs-top-bar" id="v40-top-bar">
+        <span class="fhs-top-bar__logo">FHS</span>
+        <span class="fhs-top-bar__order-id" id="v40-top-order-id">訂單 #—</span>
+        <div class="fhs-top-bar__actions">
+            <!-- 模式切換按鈕：contract-critical IDs 保留 -->
+            <button id="modeCreateBtn" onclick="switchMode('create')">新增</button>
+            <button id="modeEditBtn" onclick="switchMode('edit')">修改</button>
+            <button id="modeReviewBtn" onclick="switchMode('review')">訂單</button>
+            <!-- Financial Overview 模式按鈕（V40.2 整合版） -->
+            <button id="modeFinanceBtn" onclick="switchMode('finance')">財務</button>
         </div>
+    </div>
 
+    <!-- V37 原有 role-bar 保留（隱藏，保持 ID 合約） -->
+    <!-- NOTE: roleLingBtn / roleFatBtn 保留 ID，但不驅動視覺主題（V40 廢除雙模式） -->
+    <div class="role-bar" style="display:none;">
+        <button id="roleLingBtn" class="role-btn active" onclick="setRole('ling')">Ling Au</button>
+        <button id="roleFatBtn" class="role-btn" onclick="setRole('fat')">Fat Mo</button>
+    </div>
+
+    <!-- V40 主體兩欄佈局容器（Desktop: grid 2 col / iPhone: single col） -->
+    <div class="v40-layout" id="v40-main-layout">
+    <!-- 左欄：主表單區域 -->
+    <div class="v40-main-col" id="v40-main-col">
+
+    <!-- 模式選擇說明卡片（精簡版，模式按鈕已移至 Top Bar） -->
+    <div class="card card-info">
         <div id="editModeContainer"
             style="display:none; background:#fcfcfc; padding:15px; border-radius:8px; border:1px dashed #457B9D; margin-bottom:15px;">
             <label>🔍 輸入舊單 ID (Order_ID) / 快速搜尋</label>
@@ -1013,33 +1754,26 @@
         </div>
     </div>
 
-    <!-- 全域核對中心 (V28 優化版 + V33 Polish Glassmorphism) -->
+    <!-- 訂單總覽 (V28 優化版 + V40 fix: Tailwind classes removed) -->
     <div id="reviewModeContainer"
-        class="review-container flex flex-col items-center max-w-[1600px] mx-auto px-2 sm:px-4"
-        style="display:none; width:100%;">
-        <div class="card relative overflow-hidden backdrop-blur-xl bg-white/70 border border-white/40 rounded-3xl shadow-2xl transition-all duration-300"
-            style="padding:24px; width: 100%;">
-            <!-- Glass reflection effect -->
-            <div class="absolute inset-0 pointer-events-none rounded-3xl border border-white/60"></div>
+        class="review-container"
+        style="display:none; width:100%; max-width:1600px; margin:0 auto; padding:0 8px;">
+        <div class="card" style="padding:24px; width:100%; overflow:hidden;">
 
-            <div class="review-header flex justify-between items-center mb-6 flex-wrap gap-4 relative z-10">
-                <div class="flex items-center gap-3">
-                    <h2
-                        class="review-title text-2xl font-bold text-gray-800 m-0 p-0 flex items-center gap-2 tracking-tight">
-                        <span class="text-3xl">📊</span> 全域核對中心
+            <div class="review-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <h2 class="review-title" style="margin:0; padding:0; display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.875rem;">📊</span> 訂單總覽
                     </h2>
                     <span id="reviewCountBadge"
-                        class="review-count-badge inline-flex items-center px-4 py-1.5 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-full text-xs font-bold shadow-md shadow-teal-500/20"
-                        style="display:none;">0 筆</span>
+                        class="review-count-badge"
+                        style="display:none; padding:4px 16px; background:var(--fhs-success); color:#fff; border-radius:var(--radius-pill); font-size:var(--fhs-text-xs); font-weight:700;">0 筆</span>
                 </div>
                 <span id="reviewLoading"
-                    class="text-orange-600 font-bold text-sm bg-orange-50 px-4 py-1.5 rounded-full shadow-inner animate-pulse flex items-center gap-2 border border-orange-100"
-                    style="display:none;">
-                    <svg class="animate-spin h-4 w-4 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
+                    style="display:none; color:var(--fhs-warning); font-weight:700; font-size:var(--fhs-text-sm); background:var(--fhs-warning-bg); padding:4px 16px; border-radius:var(--radius-pill); border:1px solid var(--fhs-border);">
+                    <svg style="width:16px; height:16px; display:inline; vertical-align:middle;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25;"></circle>
+                        <path fill="currentColor" style="opacity:0.75;"
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                         </path>
                     </svg>
@@ -1047,21 +1781,14 @@
                 </span>
             </div>
 
-            <div
-                class="review-filters flex flex-wrap gap-4 items-center p-5 bg-gradient-to-br from-gray-50/80 to-white/60 rounded-2xl mb-6 shadow-sm border border-gray-200/60 backdrop-blur-md relative z-10 w-full transition-all hover:bg-white/80">
-                <div class="filter-group flex items-center gap-2">
-                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">📅
-                        年度</label>
-                    <select id="reviewYear"
-                        class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300"
-                        onchange="fetchGlobalReview()"></select>
+            <div class="review-filters" style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:20px; background:var(--fhs-bg-elevated); border-radius:var(--radius-lg); margin-bottom:24px; border:1px solid var(--fhs-border); width:100%;">
+                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">📅 年度</label>
+                    <select id="reviewYear" style="min-width:80px;" onchange="fetchGlobalReview()"></select>
                 </div>
-                <div class="filter-group flex items-center gap-2">
-                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">📆
-                        月份</label>
-                    <select id="reviewMonth"
-                        class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300"
-                        onchange="fetchGlobalReview()">
+                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">📆 月份</label>
+                    <select id="reviewMonth" style="min-width:80px;" onchange="fetchGlobalReview()">
                         <option value="">全部</option>
                         <option value="01">1月</option>
                         <option value="02">2月</option>
@@ -1077,15 +1804,10 @@
                         <option value="12">12月</option>
                     </select>
                 </div>
-                <div
-                    class="filter-divider hidden md:block w-px h-8 bg-gradient-to-b from-transparent via-gray-300 to-transparent mx-2">
-                </div>
-                <div class="filter-group flex items-center gap-2">
-                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">🚥
-                        狀態</label>
-                    <select id="reviewStatus"
-                        class="px-3 py-2 min-w-[160px] rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300"
-                        onchange="fetchGlobalReview()">
+                <div class="filter-divider" style="width:1px; height:32px; background:var(--fhs-border);"></div>
+                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">🚥 狀態</label>
+                    <select id="reviewStatus" style="min-width:160px;" onchange="fetchGlobalReview()">
                         <option value="">全部狀態</option>
                         <option value="0 什麼都未做">0 什麼都未做</option>
                         <option value="1 已繪圖 或 已取相">1 已繪圖/取相</option>
@@ -1096,27 +1818,22 @@
                         <option value="Done 已完成">Done ✅</option>
                     </select>
                 </div>
-                <div
-                    class="filter-divider hidden md:block w-px h-8 bg-gradient-to-b from-transparent via-gray-300 to-transparent mx-2">
-                </div>
-                <div class="filter-group flex items-center gap-2">
-                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">🏷️
-                        批次</label>
-                    <input type="text" id="reviewBatch" placeholder="第X批"
-                        class="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300 placeholder-gray-400"
+                <div class="filter-divider" style="width:1px; height:32px; background:var(--fhs-border);"></div>
+                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">🏷️ 批次</label>
+                    <input type="text" id="reviewBatch" placeholder="第X批" style="width:96px;"
                         oninput="debounceFetchGlobalReview()">
                 </div>
-                <div class="filter-group flex items-center gap-2">
-                    <label class="text-xs text-gray-500 font-bold uppercase tracking-wider whitespace-nowrap">🔍
-                        搜尋</label>
-                    <input type="text" id="reviewSearch" placeholder="姓名/單號"
-                        class="w-36 px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white/90 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none text-gray-700 font-medium shadow-sm hover:border-gray-300 placeholder-gray-400"
+                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
+                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">🔍 搜尋</label>
+                    <input type="text" id="reviewSearch" placeholder="姓名/單號" style="width:144px;"
                         oninput="debounceFetchGlobalReview()">
                 </div>
                 <button
-                    class="review-btn-refresh px-5 py-2.5 ml-auto rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 focus:ring-4 focus:ring-teal-500/20 text-white font-bold text-sm shadow-md hover:shadow-lg hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all transform active:scale-95 border border-teal-400/50 cursor-pointer flex items-center gap-2"
+                    class="review-btn-refresh"
+                    style="margin-left:auto; padding:10px 20px; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-weight:700; font-size:var(--fhs-text-sm); border:none; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background var(--transition-fast);"
                     onclick="fetchGlobalReview()">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1125,50 +1842,35 @@
                 </button>
             </div>
 
-            <div
-                class="review-table-wrap overflow-x-auto max-h-[72vh] border border-gray-200/60 rounded-2xl shadow-inner bg-white/80 backdrop-blur-xl relative z-10 w-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-                <table class="review-table w-full border-collapse text-left text-sm" id="reviewTable">
-                    <thead class="sticky top-0 z-20 backdrop-blur-xl bg-white/80 shadow-sm border-b border-gray-200/80">
+            <div class="review-table-wrap" style="overflow-x:auto; max-height:72vh; width:100%; border-radius:var(--radius-lg); background:#fff; border:1px solid var(--fhs-border);">
+                <table class="review-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:var(--fhs-text-sm);" id="reviewTable">
+                    <thead style="position:sticky; top:0; z-index:20; background:#fff; box-shadow:0 1px 0 var(--fhs-border);">
                         <tr>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[90px]">
-                                📝 單號</th>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[95px]">
-                                📅 日期</th>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[85px]">
-                                👤 客人</th>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[140px]">
-                                📝 備註</th>
-                            <th
-                                class="px-3 py-3 text-red-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[80px]">
-                                💰 成本</th>
-                            <th
-                                class="px-3 py-3 text-teal-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[80px]">
-                                🏆 利潤</th>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[160px]">
-                                ✂️ 刻字</th>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[200px]">
-                                📦 產品明細</th>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[100px]">
-                                🏷️ 批次</th>
-                            <th
-                                class="px-4 py-3 text-gray-600 font-black text-[11px] uppercase tracking-widest whitespace-nowrap border-none min-w-[140px]">
-                                🚥 進度</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:90px;">📝 單號</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;">📅 日期</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;">👤 客人</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">📝 備註</th>
+                            <th style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">💰 成本</th>
+                            <th style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">🏆 利潤</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:160px;">✂️ 刻字</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:200px;">📦 產品明細</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;">🏷️ 批次</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">🚥 進度</th>
                         </tr>
                     </thead>
-                    <tbody id="reviewTableBody" class="divide-y divide-gray-100/60">
+                    <tbody id="reviewTableBody">
                         <tr>
-                            <td colspan="10" class="p-12 text-center text-gray-400 font-medium text-sm">請選擇上方條件載入資料</td>
+                            <td colspan="10" style="padding:48px; text-align:center; color:var(--fhs-text-muted); font-size:var(--fhs-text-sm);">請選擇上方條件載入資料</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+
+            <!-- V40 iPhone Accordion 容器（< 768px 顯示，Desktop 隱藏） -->
+            <div id="reviewAccordionContainer" style="display:none;">
+                <p class="acc-empty">請選擇上方條件載入資料</p>
+            </div>
+
         </div>
     </div>
 
@@ -1734,12 +2436,283 @@
     </div>
 
     </div> <!-- End formContainer -->
+
+    <!-- =====================================================
+         Financial Overview 模式容器（V40.3 全面優化）
+    ===================================================== -->
+    <div id="financeModeContainer" style="display:none; width:100%;">
+
+        <!-- Tab Bar -->
+        <nav id="fo-tab-bar" role="tablist" aria-label="時間維度切換">
+            <button id="fo-tab-current" class="fo-tab-btn fo-tab-active" role="tab" aria-selected="true" onclick="switchTab('current')">Current</button>
+            <button id="fo-tab-monthly" class="fo-tab-btn" role="tab" aria-selected="false" onclick="switchTab('monthly')">Monthly</button>
+            <button id="fo-tab-yearly" class="fo-tab-btn" role="tab" aria-selected="false" onclick="switchTab('yearly')">Yearly</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main id="fo-main">
+
+            <!-- 數據來源 + 對比基準說明 -->
+            <div id="fo-data-source">
+                數據來源：<span>Airtable Orders</span>
+                &nbsp;|&nbsp; 最後同步：<span id="fo-last-sync">—</span>
+                &nbsp;|&nbsp; <span id="fo-compare-note" style="color:var(--fhs-text-muted);"></span>
+            </div>
+
+            <!-- Category Filter -->
+            <div id="fo-category-bar" role="group" aria-label="產品分類篩選">
+                <button class="fo-cat-btn fo-cat-active" onclick="foSetCategory('all')">全部</button>
+                <button class="fo-cat-btn" onclick="foSetCategory('handmodel')">手模擺設</button>
+                <button class="fo-cat-btn" onclick="foSetCategory('metal')">金屬產品</button>
+            </div>
+
+            <!-- KPI Cards (6 cards) -->
+            <div id="fo-kpi-grid">
+                <div class="fo-kpi-card" data-type="revenue" title="收入：客戶實付總金額（含所有已確認訂單）">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">收入</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-revenue);">Revenue</span>
+                    </div>
+                    <div id="fo-kpi-revenue-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-revenue-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-revenue-pct">+0%</span>
+                    </div>
+                    <div id="fo-kpi-revenue-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+                <div class="fo-kpi-card" data-type="cost" title="成本：材料費 + 工費 + 包裝費">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">成本</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-cost);">Cost</span>
+                    </div>
+                    <div id="fo-kpi-cost-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-cost-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-cost-pct">+0%</span>
+                    </div>
+                    <div id="fo-kpi-cost-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+                <div class="fo-kpi-card" data-type="profit" title="毛利：收入 − 成本">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">毛利</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-profit);">Profit</span>
+                    </div>
+                    <div id="fo-kpi-profit-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-profit-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-profit-pct">+0%</span>
+                    </div>
+                    <div id="fo-kpi-profit-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+                <div class="fo-kpi-card" data-type="orders" title="訂單數：期間內已確認的訂單總數">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">訂單數</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-orders);">Orders</span>
+                    </div>
+                    <div id="fo-kpi-orders-value" class="fo-kpi-value">0</div>
+                    <div id="fo-kpi-orders-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-orders-pct">+0</span>
+                    </div>
+                    <div id="fo-kpi-orders-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+                <div class="fo-kpi-card" data-type="margin" title="毛利率：(收入 − 成本) ÷ 收入 × 100%">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">毛利率</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-margin);">Margin</span>
+                    </div>
+                    <div id="fo-kpi-margin-value" class="fo-kpi-value">0%</div>
+                    <div id="fo-kpi-margin-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-margin-pct">+0pp</span>
+                    </div>
+                    <div id="fo-kpi-margin-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+                <div class="fo-kpi-card" data-type="aov" title="平均訂單金額：收入 ÷ 訂單數">
+                    <div class="fo-kpi-top">
+                        <span class="fo-kpi-label">平均訂單額</span>
+                        <span class="fo-kpi-badge" style="color:var(--fhs-kpi-aov);">AOV</span>
+                    </div>
+                    <div id="fo-kpi-aov-value" class="fo-kpi-value">HK$0</div>
+                    <div id="fo-kpi-aov-change" class="fo-kpi-change fo-up">
+                        <span>&#9650;</span><span id="fo-kpi-aov-pct">+0%</span>
+                    </div>
+                    <div id="fo-kpi-aov-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+            </div>
+
+            <!-- Line + Bar Charts Row -->
+            <div class="fo-charts-row">
+                <div class="fo-chart-card" id="fo-line-card">
+                    <div class="fo-chart-title">收入 vs 毛利趨勢</div>
+                    <div id="fo-line-legend">
+                        <div class="fo-legend-item">
+                            <div class="fo-legend-dot" style="background:#0288D1;"></div>
+                            <span>收入</span>
+                        </div>
+                        <div class="fo-legend-item">
+                            <div class="fo-legend-dot" style="background:#2E7D32;"></div>
+                            <span>毛利</span>
+                        </div>
+                        <div class="fo-legend-item">
+                            <div class="fo-legend-dot" style="background:#E64A19;"></div>
+                            <span>成本</span>
+                        </div>
+                    </div>
+                    <div class="fo-canvas-wrap" id="fo-line-canvas-wrap">
+                        <canvas id="fo-line-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="fo-chart-card" id="fo-bar-card">
+                    <div class="fo-chart-title" id="fo-bar-title">產品類別銷售收入</div>
+                    <div class="fo-canvas-wrap" id="fo-bar-canvas-wrap">
+                        <canvas id="fo-bar-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie Chart Row -->
+            <div class="fo-charts-row">
+                <div class="fo-chart-card" id="fo-pie-card">
+                    <div class="fo-chart-title">成本構成</div>
+                    <div id="fo-pie-inner">
+                        <div id="fo-pie-canvas-wrap">
+                            <canvas id="fo-pie-canvas"></canvas>
+                            <div id="fo-pie-center-label">成本<br>構成</div>
+                        </div>
+                        <div id="fo-pie-legend"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+    <!-- End financeModeContainer -->
+
+    </div> <!-- End v40-main-col -->
+
+    <!-- 右欄：Desktop Side Panel -->
+    <aside class="v40-side-panel" id="v40-side-panel">
+        <!-- Fat Mo 設定面板（Desktop：此處顯示；iPhone：移入 Drawer Tab 1） -->
+        <!-- NOTE: fatmoConfigPanel ID 保留在原位（formContainer 內），此處為 Desktop side panel 入口 -->
+        <div class="fhs-card" style="margin-bottom: var(--space-3);">
+            <div class="fhs-card__header">
+                <span style="font-weight:700; color: var(--fhs-text-primary);">⚙️ Fat Mo 設定</span>
+            </div>
+            <p style="font-size: var(--fhs-text-sm); color: var(--fhs-text-secondary); margin:0;">
+                設定面板位於上方訂單區內。
+            </p>
+        </div>
+
+        <!-- QA Center 入口（Desktop） -->
+        <div class="fhs-card" style="margin-bottom: var(--space-3);">
+            <div class="fhs-card__header">
+                <span style="font-weight:700; color: var(--fhs-text-primary);">🧪 QA Center</span>
+            </div>
+            <p style="font-size: var(--fhs-text-sm); color: var(--fhs-text-secondary); margin:0;">
+                QA 面板位於頁面底部（沙盒模式開啟後可見）。
+            </p>
+        </div>
+
+        <!-- Desktop 訂單總覽摘要 -->
+        <div class="fhs-card" id="v40-audit-summary">
+            <div class="fhs-card__header">
+                <span style="font-weight:700; color: var(--fhs-text-primary);">📊 訂單總覽</span>
+            </div>
+            <table class="audit-table" id="v40-audit-summary-table" style="margin-top: var(--space-3);">
+                <thead>
+                    <tr>
+                        <th>訂單</th>
+                        <th>客人</th>
+                        <th>進度</th>
+                    </tr>
+                </thead>
+                <tbody id="v40-audit-summary-tbody">
+                    <tr>
+                        <td colspan="3" style="text-align:center; color: var(--fhs-text-muted); padding: var(--space-4);">
+                            切換至「訂單」模式查看完整資料
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button onclick="switchMode('review')" class="fhs-btn-secondary" style="width:100%; margin-top:var(--space-3);">
+                開啟訂單總覽
+            </button>
+        </div>
+    </aside>
+
+    </div> <!-- End v40-layout -->
+
     <div id="toast">已複製！</div>
-    <div class="bottom-action-bar" id="bottomActionBar">
+
+    <!-- V37 原有底部按鈕列（Desktop 保留，iPhone 隱藏） -->
+    <div class="bottom-action-bar" id="bottomActionBar" style="display:none;">
         <button id="btnCopyA" class="copy-btn btn-category-a" style="display:none;" onclick="copyMessageA()">📋 複製：手模擺設訊息</button>
         <button id="btnCopyB" class="copy-btn btn-category-b" style="display:none;" onclick="copyMessageB()">📋 複製：金屬產品訊息</button>
-        <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D;">🚀
-            同步至後台</button>
+        <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D;">🚀 同步至後台</button>
+    </div>
+
+    <!-- =====================================================
+         V40 Bottom Bar（iPhone 專用，Desktop display:none）
+    ===================================================== -->
+    <div id="v40-bottom-bar" class="fhs-bottom-bar">
+        <button class="fhs-btn-secondary" style="min-width:64px;"
+            onclick="openDrawer(); document.getElementById('v40-drawer').classList.add('is-open'); document.getElementById('v40-drawer-overlay').classList.add('is-visible');">
+            ⚙️ 設定
+        </button>
+        <button class="fhs-btn-secondary" style="min-width:64px;"
+            onclick="copyMessageA(); copyMessageB();">
+            📋 複製
+        </button>
+        <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
+            onclick="syncToAirtable()">
+            🚀 提交訂單
+        </button>
+    </div>
+
+    <!-- =====================================================
+         V40 Drawer（iPhone 次要面板，底部向上滑出）
+    ===================================================== -->
+    <div id="v40-drawer" class="fhs-drawer">
+        <div class="fhs-drawer__handle"></div>
+        <div class="fhs-drawer__tabs">
+            <button class="fhs-drawer__tab is-active" onclick="showDrawerTab('settings', event)">⚙️ 設定</button>
+            <button class="fhs-drawer__tab" onclick="showDrawerTab('qa', event)">🧪 QA</button>
+            <button class="fhs-drawer__tab" onclick="showDrawerTab('audit', event)">📊 訂單</button>
+        </div>
+        <div id="v40-drawer-settings" class="fhs-drawer__content is-active">
+            <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-3);">
+                <button class="fhs-btn-secondary" onclick="switchMode('create'); closeDrawer();">✏️ 新增訂單</button>
+                <button class="fhs-btn-secondary" onclick="switchMode('edit'); closeDrawer();">📝 修改舊單</button>
+            </div>
+            <!-- fatmoConfigPanel 鏡像容器（由 JS 動態複製） -->
+            <div id="v40-drawer-settings-mirror"></div>
+        </div>
+        <div id="v40-drawer-qa" class="fhs-drawer__content">
+            <!-- qaCenter 鏡像容器（由 JS 動態複製） -->
+            <div id="v40-drawer-qa-mirror"></div>
+        </div>
+        <div id="v40-drawer-audit" class="fhs-drawer__content">
+            <p style="font-size: var(--fhs-text-sm); color: var(--fhs-text-secondary); margin-bottom: var(--space-3);">
+                訂單總覽（iPhone 版）
+            </p>
+            <div id="v40-audit-accordion-container">
+                <div class="audit-accordion">
+                    <div class="audit-accordion__header" onclick="this.parentElement.classList.toggle('is-open')">
+                        <span>請先載入訂單資料</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="audit-accordion__body">
+                        <p style="color: var(--fhs-text-muted);">點擊「訂單」按鈕以載入訂單總覽。</p>
+                    </div>
+                </div>
+            </div>
+            <button class="fhs-btn-primary" style="width:100%; margin-top:var(--space-3);"
+                onclick="closeDrawer(); switchMode('review');">
+                開啟訂單總覽
+            </button>
+        </div>
+    </div>
+
+    <!-- Drawer Overlay -->
+    <div id="v40-drawer-overlay" class="fhs-drawer-overlay"
+        onclick="closeDrawer()">
     </div>
 
     <script>
@@ -1754,6 +2727,22 @@
         };
 
         async function loadSystemConfig() {
+            // Session cache: avoid repeated Airtable calls on page refresh
+            const CACHE_KEY = 'fhs_sysconfig_cache';
+            const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+            try {
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const { data: cachedData, ts } = JSON.parse(cached);
+                    if (Date.now() - ts < CACHE_TTL) {
+                        systemConfig = cachedData;
+                        console.log("System Config (cached):", systemConfig);
+                        syncConfigUI();
+                        return;
+                    }
+                }
+            } catch(e) {}
+
             showLoader("正在讀取系統配置...");
             try {
                 const url = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=FHS-SYSTEM-CONFIG`);
@@ -1763,6 +2752,7 @@
                     systemConfig = JSON.parse(data.data.Admin_Notes);
                     systemConfig.recordId = data.data.Record_ID || data.id || systemConfig.recordId;
                     console.log("System Config Loaded:", systemConfig);
+                    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({data: systemConfig, ts: Date.now()})); } catch(e) {}
                     syncConfigUI();
                 }
             } catch (error) {
@@ -1938,9 +2928,17 @@
         let currentRole = 'ling';
 
         function setRole(role) {
-            currentRole = role; document.body.className = (role === 'fat' ? 'fat-mo-mode' : 'ling-au-mode');
+            currentRole = role;
+            // body.className visual theme removed per V40 fix — no more fat-mo-mode / ling-au-mode classes
             document.getElementById('roleLingBtn').classList.toggle('active', role === 'ling');
             document.getElementById('roleFatBtn').classList.toggle('active', role === 'fat');
+            // JS-driven visibility for elements previously controlled by body class CSS
+            const isFat = (role === 'fat');
+            document.querySelectorAll('.fat-only').forEach(el => { el.style.display = isFat ? '' : 'none'; });
+            const vList = document.querySelector('.verification-list');
+            if (vList) vList.style.display = isFat ? '' : 'none';
+            const configPanel = document.getElementById('fatmoConfigPanel');
+            if (configPanel) configPanel.style.display = isFat ? '' : 'none';
             updateVerificationList();
             generate();
         }
@@ -2026,11 +3024,16 @@
                 const forms = document.querySelectorAll('#formContainer');
                 const reviews = document.querySelectorAll('#reviewModeContainer');
                 const editP = document.querySelectorAll('#editModeContainer');
+                const finances = document.querySelectorAll('#financeModeContainer');
 
                 // 🎯 隱藏所有
                 forms.forEach(f => f.style.display = 'none');
                 reviews.forEach(r => r.style.display = 'none');
                 editP.forEach(e => e.style.display = 'none');
+                finances.forEach(fi => fi.style.display = 'none');
+
+                // Finance mode body class
+                document.body.classList.toggle('v40-finance-active', mode === 'finance');
 
                 console.log(`[DEBUG] Found ${forms.length} formContainers, ${reviews.length} reviewContainers`);
 
@@ -2043,37 +3046,37 @@
                     reviews.forEach(r => r.style.display = 'block');
                     // 🚨 徹底隱藏表單 (Review 模式不應看到表單)
                     forms.forEach(f => f.style.display = 'none');
+                } else if (mode === 'finance') {
+                    finances.forEach(fi => fi.style.display = 'block');
+                    forms.forEach(f => f.style.display = 'none');
                 }
 
                 // 更新按鈕樣式
-                const btnCreate = document.getElementById('modeCreateBtn');
-                const btnEdit = document.getElementById('modeEditBtn');
-                const btnReview = document.getElementById('modeReviewBtn');
+                ['modeCreateBtn','modeEditBtn','modeReviewBtn','modeFinanceBtn'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) { btn.classList.remove('active'); btn.style.cssText = ''; }
+                });
+                const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn' };
+                const activeBtn = document.getElementById(activeMap[mode]);
+                if (activeBtn) activeBtn.classList.add('active');
 
-                if (btnCreate) {
-                    btnCreate.style.background = (mode === 'create') ? 'var(--primary)' : '#eee';
-                    btnCreate.style.color = (mode === 'create') ? 'white' : '#666';
-                    btnCreate.style.border = (mode === 'create') ? 'none' : '1px solid #ccc';
-                }
-                if (btnEdit) {
-                    btnEdit.style.background = (mode === 'edit') ? 'var(--primary)' : '#eee';
-                    btnEdit.style.color = (mode === 'edit') ? 'white' : '#666';
-                    btnEdit.style.border = (mode === 'edit') ? 'none' : '1px solid #ccc';
-                }
-                if (btnReview) {
-                    btnReview.style.background = (mode === 'review') ? 'var(--primary)' : '#eee';
-                    btnReview.style.color = (mode === 'review') ? 'white' : '#666';
-                    btnReview.style.border = (mode === 'review') ? 'none' : '1px solid #ccc';
-                }
-                
                 // --- V36.1 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
-                if (bbar) bbar.style.display = (mode === 'review') ? 'none' : 'flex';
+                if (bbar) bbar.style.display = (mode === 'review' || mode === 'finance') ? 'none' : 'flex';
 
-                if (mode === 'review') {
-                    initReviewYears();
-                    fetchGlobalReview();
+                // V40 Bottom Bar: hide order actions in finance mode
+                const v40bbar = document.getElementById('v40-bottom-bar');
+                if (v40bbar) v40bbar.style.display = (mode === 'finance') ? 'none' : '';
+
+                if (mode === 'finance') {
+                    // Small delay to ensure container is visible before canvas rendering
+                    setTimeout(foInitAll, 50);
                 }
+            }
+            /* review fetch: 每次切入均重新載入，不受 currentMode 保護限制 */
+            if (mode === 'review') {
+                initReviewYears();
+                (window.fetchGlobalReview || fetchGlobalReview)();
             }
         }
         window.switchMode = switchMode; // 強制全局掛載
@@ -2933,7 +3936,7 @@
         }
 
         /**
-         * jumpToEditOrder - 全域核對中心快跳引擎
+         * jumpToEditOrder - 訂單總覽快跳引擎
          * 自動切換至修改模式並載入單號
          */
         async function jumpToEditOrder(oId) {
@@ -3304,74 +4307,14 @@
             }
         }
 
-        // ==========================================
-        // V28 開發沙盒模式 (Development Sandbox Mode)
-        // ==========================================
-        let isDevMode = false;
-
-        function initSandboxMode() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('mode') === 'dev') {
-                isDevMode = true;
-                activateSandboxUI();
-            }
-        }
-
-        function activateSandboxUI() {
-            isDevMode = true;
-            const banner = document.getElementById('sandboxBanner');
-            const btn = document.getElementById('sandboxToggleBtn');
-            const qaCenter = document.getElementById('qaCenter');
-            if (banner) banner.classList.add('active');
-            if (btn) {
-                btn.classList.add('active');
-                btn.innerText = '🛠️ 沙盒模式 ON';
-            }
-            if (qaCenter) qaCenter.classList.add('active');
-            console.log('🛠️ [SANDBOX] 已啟動沙盒模式，所有 API 將重導至 /webhook-test/');
-        }
-
-        function deactivateSandboxUI() {
-            isDevMode = false;
-            const banner = document.getElementById('sandboxBanner');
-            const btn = document.getElementById('sandboxToggleBtn');
-            const qaCenter = document.getElementById('qaCenter');
-            if (banner) banner.classList.remove('active');
-            if (btn) {
-                btn.classList.remove('active');
-                btn.innerText = '🛠️ 進入沙盒模式';
-            }
-            if (qaCenter) qaCenter.classList.remove('active');
-            console.log('🏭 [PRODUCTION] 已切換回生產模式');
-        }
-
-        function toggleSandbox() {
-            if (isDevMode) {
-                if (confirm('確定要切換回生產模式嗎？所有操作將直接寫入 Airtable 正式資料庫。')) {
-                    deactivateSandboxUI();
-                }
-            } else {
-                activateSandboxUI();
-            }
-        }
-
-        /**
-         * getWebhookUrl - 沙盒模式 API 重導引擎
-         * 當 isDevMode = true 時，自動將 /webhook/ 替換為 /webhook-test/
-         * 例外：fetch-global-review 仍需讀取真實資料以供 UI 測試與時光機使用
-         */
-        function getWebhookUrl(originalUrl) {
-            if (isDevMode && !originalUrl.includes('fetch-global-review')) {
-                return originalUrl.replace('/webhook/', '/webhook-test/');
-            }
-            return originalUrl;
-        }
+        // getWebhookUrl — 直接返回原始 URL（沙盒模式已移除）
+        const isDevMode = false;
+        function getWebhookUrl(originalUrl) { return originalUrl; }
 
         // 初始化下拉選單
         window.onload = async () => {
             console.log("FHS Dashboard V36.2 Initialized");
             try {
-                initSandboxMode();
                 await switchMode('create');
                 updateTimeOptions();
                 renderLimbGrid();
@@ -3500,21 +4443,58 @@
             }
         }
 
+        window.fetchGlobalReview = fetchGlobalReview;
+
         function debounceFetchGlobalReview() {
             clearTimeout(reviewFetchTimeout);
             reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
         }
 
-        async function fetchGlobalReview() {
+        // 【V46.0】GlobalReview 5分鐘快取層 — 減少 Airtable API 呼叫
+        const REVIEW_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+        function getReviewCacheKey(year, month, status, batch, search) {
+            return `fhs_review_${year||''}_${month||''}_${status||''}_${batch||''}_${search||''}`;
+        }
+
+        function getReviewCache(cacheKey) {
+            try {
+                const raw = sessionStorage.getItem(cacheKey);
+                if (!raw) return null;
+                const cached = JSON.parse(raw);
+                if (Date.now() - cached.ts < REVIEW_CACHE_TTL) return cached.data;
+                sessionStorage.removeItem(cacheKey);
+            } catch(e) {}
+            return null;
+        }
+
+        function setReviewCache(cacheKey, data) {
+            try {
+                sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
+            } catch(e) {}
+        }
+
+        async function fetchGlobalReview(forceRefresh) {
             const year = document.getElementById("reviewYear").value;
             const month = document.getElementById("reviewMonth").value;
             const status = document.getElementById("reviewStatus").value;
             const batch = document.getElementById("reviewBatch").value.trim();
             const search = document.getElementById("reviewSearch").value.trim();
-            
+
             const tbody = document.getElementById("reviewTableBody");
             const loading = document.getElementById("reviewLoading");
-            
+
+            // 【V46.0 快取檢查】同一查詢 5 分鐘內不重複呼叫 Airtable
+            const cacheKey = getReviewCacheKey(year, month, status, batch, search);
+            if (!forceRefresh) {
+                const cached = getReviewCache(cacheKey);
+                if (cached) {
+                    globalOrders = cached;
+                    renderReviewTable(globalOrders);
+                    return;
+                }
+            }
+
             showLoader("正在載入全域核對資料...");
             loading.style.display = "inline";
             tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
@@ -3526,34 +4506,207 @@
             if(status) params.push(`status=${encodeURIComponent(status)}`);
             if(batch) params.push(`batch=${encodeURIComponent(batch)}`);
             if(search) params.push(`search=${encodeURIComponent(search)}`);
-            
+
             if(params.length > 0) {
                 fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + params.join('&');
             }
 
-            try {
-                const res = await fetch(fetchUrl, { method: 'GET' });
-                const data = await res.json();
-                
-                loading.style.display = "none";
-                
-                if (data && data.orders) {
-                    globalOrders = data.orders;
-                    renderReviewTable(globalOrders);
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+            // Retry up to 3 times with backoff (handles Airtable rate limit)
+            let lastErr = null;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    if (attempt > 1) {
+                        tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ Airtable 流量限制，第 ${attempt} 次重試中...</td></tr>`;
+                        await new Promise(r => setTimeout(r, attempt * 2000));
+                    }
+                    const res = await fetch(fetchUrl, { method: 'GET' });
+                    const data = await res.json();
+                    loading.style.display = "none";
+                    if (data && data.orders) {
+                        globalOrders = data.orders;
+                        setReviewCache(cacheKey, data.orders);
+                        renderReviewTable(globalOrders);
+                        hideLoader();
+                        return;
+                    } else if (data && data.message && data.message.includes('Error in workflow')) {
+                        lastErr = 'Airtable API 超出限制 (BILLING_LIMIT_EXCEEDED)，請稍後再試或明天重置後再查詢。';
+                        if (attempt < 3) continue;
+                    } else {
+                        loading.style.display = "none";
+                        tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+                        hideLoader();
+                        return;
+                    }
+                } catch (err) {
+                    lastErr = '網路連線錯誤：' + err.message;
+                    if (attempt < 3) continue;
                 }
-            } catch (err) {
-                console.error(err);
-                loading.style.display = "none";
-                tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">❌ 網路連線錯誤，無法載入資料。請檢查 n8n Webhook。</td></tr>';
-            } finally {
-                hideLoader();
             }
+            loading.style.display = "none";
+            tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
+            hideLoader();
         }
 
-        // === V28.3 全域核對中心渲染引擎：Rowspan 完美對齊 + 置頂垂直對齊 ===
+        // === V40 iPhone Accordion 渲染引擎 ===
+        function renderReviewAccordion(orders) {
+            const container = document.getElementById('reviewAccordionContainer');
+            if (!container) return;
+
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<p class="acc-empty">📩 沒有符合條件的訂單</p>';
+                return;
+            }
+
+            let html = '';
+            orders.forEach((o) => {
+                const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
+                const profit = Number(o.Net_Profit || 0);
+                const profitColor = profit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
+                const itemCount = o.items && o.items.length > 0 ? o.items.length : 0;
+
+                // Build items badges HTML
+                let itemsHtml = '';
+                if (o.items && o.items.length > 0) {
+                    o.items.forEach((item, idx) => {
+                        const getSafeText = (val) => {
+                            if (!val) return "";
+                            if (Array.isArray(val)) return val[0] || "";
+                            if (typeof val === 'string' && val.startsWith('rec')) return "";
+                            return String(val);
+                        };
+                        const dimensions = getProductDimensions(item);
+                        const qty = Number(item.Qty) || 1;
+                        const rowBatch = item.Batch || o.Batch || '';
+                        const rowBatchCol = getBatchColor(rowBatch);
+
+                        let catClass = 'badge-cat-default';
+                        const cat = getSafeText(item.Category) || '';
+                        if (cat.includes('立體擺設')) catClass = 'badge-cat-立體擺設';
+                        else if (cat.includes('鎖匙扣')) catClass = 'badge-cat-鎖匙扣';
+                        else if (cat.includes('吊飾') || cat.includes('頸鏈')) catClass = 'badge-cat-純銀吊飾';
+
+                        let badgeHtml = `<span class="review-badge ${catClass}">${dimensions.emoji} ${dimensions.category}</span>`;
+                        if (dimensions.material) {
+                            let matClass = 'badge-mat-default';
+                            if (dimensions.material.includes('不銹鋼')) matClass = 'badge-mat-不銹鋼';
+                            else if (dimensions.material.includes('銀')) matClass = 'badge-mat-銀';
+                            else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
+                            badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
+                        }
+                        if (dimensions.target) {
+                            let tarClass = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
+                            if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
+                            if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
+                            badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
+                        }
+                        if (dimensions.part) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (qty >= 1) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
+
+                        // Engraving
+                        let engText = '';
+                        if (item.Engraving && item.Engraving !== '待定' && item.Engraving !== '不適用') {
+                            engText = `<div class="acc-field-row" style="margin-top:4px;">
+                                <span class="acc-field-label">✂️ 刻字</span>
+                                <span class="acc-field-value">${item.Engraving}</span>
+                            </div>`;
+                        }
+
+                        itemsHtml += `
+                        <div class="acc-item-card" style="border-left: 3px solid ${rowBatchCol};">
+                            <div class="acc-item-badges">${badgeHtml}</div>
+                            ${engText}
+                            <div class="acc-item-controls">
+                                <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
+                                    <span class="acc-field-label">🏷️ 批次</span>
+                                    <input type="text"
+                                        id="acc-batch-${o.id}-${idx}"
+                                        value="${rowBatch}"
+                                        placeholder="批次"
+                                        style="width:80px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); font-size:12px; text-align:center;"
+                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'acc-batch-${o.id}-${idx}', ${idx})">
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:2px; flex:2;">
+                                    <span class="acc-field-label">🚥 進度</span>
+                                    <select id="acc-status-${o.id}-${idx}"
+                                        style="font-size:12px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); width:100%;"
+                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx})">
+                                        <option value="0 什麼都未做" ${(item.Status || o.Status) === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
+                                        <option value="1 已繪圖 或 已取相" ${(item.Status || o.Status) === '1 已繪圖 或 已取相' ? 'selected' : ''}>1 已繪圖/取相</option>
+                                        <option value="1.5 已交付建模師, 等3D圖中" ${(item.Status || o.Status) === '1.5 已交付建模師, 等3D圖中' ? 'selected' : ''}>1.5 等3D圖</option>
+                                        <option value="2 已修3D圖, 但未核對" ${(item.Status || o.Status) === '2 已修3D圖, 但未核對' ? 'selected' : ''}>2 已修3D圖</option>
+                                        <option value="2.5 已核對3D圖, 準備打印" ${(item.Status || o.Status) === '2.5 已核對3D圖, 準備打印' ? 'selected' : ''}>2.5 準備打印</option>
+                                        <option value="3 已交付廠家, 打印中" ${(item.Status || o.Status) === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
+                                        <option value="Done 已完成" ${(item.Status || o.Status) === 'Done 已完成' ? 'selected' : ''}>Done ✅</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="acc-save-${o.id}-${idx}" style="font-size:10px; color:#888; min-height:14px; margin-top:2px;"></div>
+                        </div>`;
+                    });
+                } else {
+                    itemsHtml = '<p style="font-size:12px; color:var(--fhs-text-muted); margin:0;">無子項目</p>';
+                }
+
+                html += `
+                <div class="acc-order" id="acc-order-${o.id}">
+                    <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
+                        <div class="acc-order-header-left">
+                            <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
+                            <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
+                        </div>
+                        <div class="acc-order-header-right">
+                            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                                <span class="acc-profit" style="color:${profitColor};">$${profit}</span>
+                                <span style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${o.Total_Cost || o.Cost || 0}</span>
+                            </div>
+                            <span class="acc-chevron">▼</span>
+                        </div>
+                    </div>
+                    <div class="acc-order-body">
+                        <div class="acc-order-body-inner">
+                            <div class="acc-field-row">
+                                <span class="acc-field-label">📝 備註</span>
+                                <textarea class="acc-notes-textarea"
+                                    id="acc-notes-${o.id}"
+                                    onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'acc-notes-${o.id}')"
+                                    placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                            </div>
+                            <div class="acc-field-row">
+                                <span class="acc-field-label">📦 產品明細</span>
+                                <div class="acc-items-list">${itemsHtml}</div>
+                            </div>
+                            <div class="acc-action-row">
+                                <button class="acc-jump-btn" onclick="jumpToEditOrder('${o.Order_ID}')">✏️ 快跳修改</button>
+                                <button class="acc-delete-btn" onclick="openDeleteModal('${o.id}', '${o.Order_ID}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleAccordion(orderId) {
+            const el = document.getElementById('acc-order-' + orderId);
+            if (!el) return;
+            el.classList.toggle('open');
+        }
+
+        // === V28.3 訂單總覽渲染引擎：Rowspan 完美對齊 + 置頂垂直對齊 ===
         function renderReviewTable(orders) {
+            // V40: iPhone → Accordion，Desktop → Table
+            if (window.innerWidth < 768) {
+                renderReviewAccordion(orders);
+                // Still update badge count
+                const badge = document.getElementById('reviewCountBadge');
+                if (badge) {
+                    if (!orders || orders.length === 0) { badge.style.display = 'none'; }
+                    else { badge.textContent = `${orders.length} 筆`; badge.style.display = 'inline-flex'; }
+                }
+                return;
+            }
+
             const tbody = document.getElementById("reviewTableBody");
             if (!orders || orders.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="10" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
@@ -3590,13 +4743,14 @@
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${cDate}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${o.Customer || '-'}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px;">
-                        <textarea class="review-notes-textarea" 
+                        <textarea class="review-notes-textarea"
+                                  id="notes-input-${o.id}"
                                   style="font-size:13px;"
-                                  onblur="saveInlineEdit('${o.id}', 'Admin_Notes', this.value)" 
+                                  onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
                                   placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
-                        $${o.Total_Cost || 0}
+                        $${o.Total_Cost || o.Cost || 0}
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
                         $${o.Net_Profit || 0}
@@ -3921,11 +5075,11 @@
             try {
                 showLoader("正在從系統中徹底刪除訂單...");
 
-                const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta");
+                const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b");
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify([{ Record_ID: currentDeleteId, Order_ID: currentDeleteOrderId, action: 'delete' }])
+                    body: JSON.stringify({ Record_ID: currentDeleteId, Order_ID: currentDeleteOrderId, action: 'delete' })
                 });
 
                 if (res.ok) {
@@ -4051,13 +5205,13 @@
 
         /**
          * timemachineTest - 歷史資料深度注入測試 (原: 歷史稽核)
-         * 從全域核對中心選取訂單的 Raw_Form_State 反向注入 UI
+         * 從訂單總覽選取訂單的 Raw_Form_State 反向注入 UI
          */
         function timemachineTest() {
             appendQALog('========== 🕐 歷史資料深度注入測試 ==========', 'info');
 
             if (!globalOrders || globalOrders.length === 0) {
-                appendQALog('⚠️ [WARN] 全域核對中心無資料，請先載入訂單資料', 'warn');
+                appendQALog('⚠️ [WARN] 訂單總覽無資料，請先載入訂單資料', 'warn');
                 return;
             }
 
@@ -4120,7 +5274,179 @@
             const log = document.getElementById('qaLog');
             if (log) log.innerHTML = '';
         }
-        
+
+        // =====================================================
+        // V40 Drawer 控制（純 UI，不影響業務邏輯）
+        // =====================================================
+        function showDrawerTab(tab, event) {
+            document.querySelectorAll('.fhs-drawer__content').forEach(el => el.classList.remove('is-active'));
+            document.querySelectorAll('.fhs-drawer__tab').forEach(el => el.classList.remove('is-active'));
+            const content = document.getElementById('v40-drawer-' + tab);
+            if (content) content.classList.add('is-active');
+            if (event && event.target) event.target.classList.add('is-active');
+        }
+
+        function openDrawer() {
+            document.getElementById('v40-drawer').classList.add('is-open');
+            document.getElementById('v40-drawer-overlay').classList.add('is-visible');
+        }
+
+        function closeDrawer() {
+            document.getElementById('v40-drawer').classList.remove('is-open');
+            document.getElementById('v40-drawer-overlay').classList.remove('is-visible');
+        }
+
+        // V40 Top Bar 訂單 ID 同步（每次 generate() 觸發後更新顯示）
+        // TODO[hookup]: 此函式可在 generate() 末尾呼叫，或透過 MutationObserver 監聽 orderIdDisplay
+        function syncTopBarOrderId() {
+            const topEl = document.getElementById('v40-top-order-id');
+            if (!topEl) return;
+            
+            // Check current mode (v40-main-layout class indicates mode)
+            const layout = document.getElementById('v40-main-layout');
+            const isReview = layout && layout.classList.contains('v40-review-active');
+            
+            if (isReview) {
+                topEl.textContent = '📊 財務核對中心';
+                return;
+            }
+
+            const idEl = document.getElementById('orderIdDisplay');
+            if (idEl) {
+                const val = idEl.value;
+                topEl.textContent = val ? '訂單 #' + val : '訂單 #—';
+            }
+        }
+
+        // V40 Desktop bottom-action-bar 響應式切換
+        // 在 Desktop(≥768px) 恢復顯示原有底部按鈕列，iPhone 使用 v40-bottom-bar
+        function v40SyncActionBars() {
+            const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+            const legacyBar = document.getElementById('bottomActionBar');
+            if (legacyBar) {
+                // Desktop: 讓 switchMode 控制 display；iPhone: 強制隱藏
+                if (!isDesktop) {
+                    legacyBar.style.display = 'none';
+                }
+                // NOTE: switchMode() 已有邏輯控制 bbar display，此處不覆蓋 Desktop 行為
+            }
+        }
+
+        // 覆寫 switchMode 的 bbar 邏輯，使其在 iPhone 下永遠隱藏 legacy bar
+        const _origSwitchMode = window.switchMode;
+        window.switchMode = async function(mode) {
+            if (typeof _origSwitchMode === 'function') await _origSwitchMode(mode);
+            v40SyncActionBars();
+            syncTopBarOrderId();
+            // V40: 在 review 模式下，layout 改為單欄（hide side panel）
+            const layout = document.getElementById('v40-main-layout');
+            if (layout) {
+                layout.classList.toggle('v40-review-active', mode === 'review');
+            }
+            // V40: Top Bar 模式按鈕高亮
+            ['modeCreateBtn','modeEditBtn','modeReviewBtn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                const isActive = (
+                    (id === 'modeCreateBtn' && mode === 'create') ||
+                    (id === 'modeEditBtn' && mode === 'edit') ||
+                    (id === 'modeReviewBtn' && mode === 'review')
+                );
+                btn.style.background = isActive ? 'var(--fhs-accent)' : 'var(--fhs-bg-elevated)';
+                btn.style.color = isActive ? 'white' : 'var(--fhs-text-secondary)';
+                btn.style.border = isActive ? 'none' : '1px solid var(--fhs-border)';
+            });
+
+            // V40.4: Finance Mode Header Optimization
+            const topEl = document.getElementById('v40-top-order-id');
+            if (topEl) {
+                if (mode === 'review') {
+                    topEl.textContent = '📊 財務核對中心';
+                    topEl.style.color = 'var(--fhs-accent)';
+                } else {
+                    topEl.style.color = 'inherit';
+                    syncTopBarOrderId();
+                }
+            }
+        };
+
+        // ─── V40 Drawer 鏡像初始化 ───────────────────────────────
+        // iPhone Drawer 設定 Tab：複製 fatmoConfigPanel 內容
+        // iPhone Drawer QA Tab：複製 qaCenter 內容
+        function v40InitDrawerMirrors() {
+            const settingsSrc = document.getElementById('fatmoConfigPanel');
+            const settingsDst = document.getElementById('v40-drawer-settings-mirror');
+            if (settingsSrc && settingsDst && settingsDst.childElementCount === 0) {
+                const clone = settingsSrc.cloneNode(true);
+                clone.id = 'v40-fatmo-mirror';
+                clone.style.display = 'block';
+                settingsDst.appendChild(clone);
+            }
+
+            const qaSrc = document.getElementById('qaCenter');
+            const qaDst = document.getElementById('v40-drawer-qa-mirror');
+            if (qaSrc && qaDst && qaDst.childElementCount === 0) {
+                const clone = qaSrc.cloneNode(true);
+                clone.id = 'v40-qa-mirror';
+                clone.style.display = 'block';
+                qaDst.appendChild(clone);
+            }
+        }
+
+        // ─── V40 Side Panel 全域核對摘要更新 ─────────────────────
+        // 接回 reviewTableBody 資料，顯示最近 5 筆於 Desktop Side Panel
+        function v40UpdateAuditSummary() {
+            const srcBody = document.getElementById('reviewTableBody');
+            const dstBody = document.getElementById('v40-audit-summary-tbody');
+            if (!srcBody || !dstBody) return;
+            const rows = srcBody.querySelectorAll('tr');
+            if (rows.length === 0) return;
+            dstBody.innerHTML = '';
+            // 最多顯示 5 筆
+            const limit = Math.min(rows.length, 5);
+            for (let i = 0; i < limit; i++) {
+                const srcRow = rows[i];
+                const cells = srcRow.querySelectorAll('td');
+                if (cells.length < 3) continue;
+                const tr = document.createElement('tr');
+                // 訂單號（第1欄）/ 客人（第2欄）/ 進度（第4欄）
+                [0, 1, 3].forEach(idx => {
+                    const td = document.createElement('td');
+                    td.textContent = cells[idx] ? cells[idx].textContent.trim() : '—';
+                    tr.appendChild(td);
+                });
+                dstBody.appendChild(tr);
+            }
+        }
+
+        // ─── 攔截 fetchGlobalReview 完成後更新 Side Panel ────────
+        const _origFetchGlobalReview = window.fetchGlobalReview;
+        if (typeof _origFetchGlobalReview === 'function') {
+            window.fetchGlobalReview = async function(...args) {
+                await _origFetchGlobalReview.apply(this, args);
+                v40UpdateAuditSummary();
+            };
+        }
+
+        // ─── 攔截 generate() 完成後同步 Top Bar ──────────────────
+        const _origGenerate = window.generate;
+        if (typeof _origGenerate === 'function') {
+            window.generate = function(...args) {
+                const result = _origGenerate.apply(this, args);
+                syncTopBarOrderId();
+                return result;
+            };
+        }
+
+        // 初始化時同步
+        window.addEventListener('load', () => {
+            v40SyncActionBars();
+            v40InitDrawerMirrors();
+            syncTopBarOrderId();
+            // 定時同步 Top Bar 訂單 ID（備用，防止非同步更新遺漏）
+            setInterval(syncTopBarOrderId, 1000);
+        });
+
     </script>
 
     <!-- V30.1 系統自動化品質檢驗中心 (僅沙盒模式可見) -->
@@ -4145,7 +5471,7 @@
             <div>
                 <b style="color:#9c27b0;">3. 歷史資料深度注入測試 (Time Machine)</b><br>
                 <b>【背景/目的】</b> 測試舊狀態還原功能。<br>
-                <b>【用法/檢驗結果】</b> 從全域核對中心選取一筆具備歷史狀態的訂單，驗證 UI 是否能成功重現該筆訂單在下單時的選框狀態。
+                <b>【用法/檢驗結果】</b> 從訂單總覽選取一筆具備歷史狀態的訂單，驗證 UI 是否能成功重現該筆訂單在下單時的選框狀態。
             </div>
         </div>
         <style>#qaDocPanel.active { display: block !important; }</style>
@@ -4162,40 +5488,43 @@
         <div id="qaLog" class="qa-log">檢驗日誌將顯示在此處...</div>
     </div>
 
-    <!-- V34.5 Premium Delete Order Modal -->
+    <!-- V34.5 Premium Delete Order Modal (V40 fix: opacity/pointer-events moved to CSS class) -->
     <div id="deleteConfirmModal"
-        class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300"
-        style="display:none;">
-        <div
-            class="bg-white/95 backdrop-blur-xl w-full max-w-sm rounded-[24px] shadow-2xl overflow-hidden border border-white/20 transform scale-95 transition-all duration-300">
-            <div class="px-6 py-8 text-center">
-                <div
-                    class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+        style="display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,0.4); transition:opacity 0.3s ease;">
+        <div style="background:#fff; width:100%; max-width:384px; border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); overflow:hidden;">
+            <div style="padding:24px 24px 16px; text-align:center;">
+                <div style="width:64px; height:64px; background:var(--fhs-danger-bg); color:var(--fhs-danger); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; border:1px solid #FFCDD2;">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="width:32px; height:32px;" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">確定要徹底刪除嗎？</h3>
-                <p class="text-sm text-gray-500 leading-relaxed mb-1">訂單號碼：<span id="deleteModalOrderId"
-                        class="font-mono font-bold text-gray-800"></span></p>
-                <p class="text-xs text-red-500 font-medium">⚠️ 此動作將從 Database 永久移除，無法復原。</p>
+                <h3 style="font-size:var(--fhs-text-xl); font-weight:700; color:var(--fhs-text-primary); margin:0 0 8px;">確定要徹底刪除嗎？</h3>
+                <p style="font-size:var(--fhs-text-sm); color:var(--fhs-text-secondary); margin:0 0 4px;">訂單號碼：<span id="deleteModalOrderId" style="font-family:monospace; font-weight:700; color:var(--fhs-text-primary);"></span></p>
+                <p style="font-size:var(--fhs-text-xs); color:var(--fhs-danger); font-weight:600;">⚠️ 此動作將從 Database 永久移除，無法復原。</p>
             </div>
-            <div class="flex border-t border-gray-100">
+            <div style="display:flex; border-top:1px solid var(--fhs-border);">
                 <button onclick="closeDeleteModal()"
-                    class="flex-1 px-6 py-4 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors">取消</button>
+                    style="flex:1; padding:16px; font-size:var(--fhs-text-sm); font-weight:600; color:var(--fhs-text-secondary); background:none; border:none; cursor:pointer; transition:background var(--transition-fast);">取消</button>
                 <button id="confirmDeleteBtn" onclick="executeDeleteOrder()"
-                    class="flex-1 px-6 py-4 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors border-l border-gray-100">確定刪除</button>
+                    style="flex:1; padding:16px; font-size:var(--fhs-text-sm); font-weight:700; color:var(--fhs-danger); background:none; border:none; border-left:1px solid var(--fhs-border); cursor:pointer; transition:background var(--transition-fast);">確定刪除</button>
             </div>
         </div>
     </div>
     <style>
+        #deleteConfirmModal {
+            opacity: 0;
+            pointer-events: none;
+        }
         #deleteConfirmModal.active {
             opacity: 1;
             pointer-events: auto;
         }
-
+        #deleteConfirmModal>div {
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
         #deleteConfirmModal.active>div {
             transform: scale(1);
         }
@@ -4208,6 +5537,536 @@
             <div id="loaderText" class="loader-text">FHS 智能中樞正在工作中...</div>
         </div>
     </div>
+
+    <!-- =====================================================
+         Financial Overview — Integrated JS (V40.3)
+         Prefixed: fo* to avoid collision with V40 globals
+    ===================================================== -->
+    <script>
+        /* === CONFIG === */
+        var FINANCIAL_WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/financial-overview-fhs';
+        var FO_LIVE_DATA = null;
+        var FO_DATA_LOADING = false;
+        var foCurrentCategory = 'all'; /* 'all' | 'handmodel' | 'metal' */
+
+        /* =====================================================
+           MOCK DATA (V40.3 — 2026-04-26 同步自 Airtable 真實數據)
+           ─────────────────────────────────────────────────────
+           current  = 累計至今 (全部 7 單)
+             Revenue=20520, Cost=9953, Profit=10567, Orders=7
+             比較基準：vs 去年同期 (2025 年同期無數據 → 基準=0, 以「新業務」顯示)
+           monthly  = 4月 2026
+             Revenue=6240, Cost=1865, Profit=4375, Orders=3
+             比較基準：vs 上個月 (3月 Revenue=14280, Cost=7738, Profit=6542, Orders=4)
+           yearly   = 2026 全年累計 (同 current)
+             比較基準：vs 上一年全年 (2025 無訂單 → 基準=0)
+           ─────────────────────────────────────────────────────
+           產品分類：
+             手模擺設 = 玻璃瓶套裝、木框套裝、立體擺設、訂製擺設
+             金屬產品 = 純銀頸鏈吊飾、金屬鎖匙扣、吊飾、配件
+        ===================================================== */
+        /* ─────────────────────────────────────────────────────
+           FO_MOCK_DATA  (V40.4 — 2026-04-27 同步自 Airtable)
+           ─────────────────────────────────────────────────────
+           產品三大類（全部模式 bar chart）：
+             手模擺設  = 玻璃瓶套裝、木框套裝、立體擺設      (Revenue HK$700)
+             吊飾      = 純銀頸鏈吊飾                        (Revenue HK$11,250)
+             鎖匙扣    = 金屬鎖匙扣                          (Revenue HK$8,570)
+
+           手模擺設 細分 bar：玻璃瓶套裝 / 木框套裝 / 立體擺設
+           金屬產品 細分 bar：純銀頸鏈吊飾 / 金屬鎖匙扣
+           ───────────────────────────────────────────────── */
+        var FO_MOCK_DATA = {
+            current: {
+                subtitle: 'vs 去年同期',
+                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
+                revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
+                isNewBusiness: true,
+                groups: {
+                    all:       { revenue: 20520, cost: 9953, orders: 7 },
+                    handmodel: { revenue: 700,   cost: 420,  orders: 1 },
+                    metal:     { revenue: 19820, cost: 9533, orders: 6 }
+                },
+                lineChart: {
+                    labels: ['1月','2月','3月','4月'],
+                    revenue: [0, 0, 14280, 20520],
+                    cost:    [0, 0, 7738,  9953],
+                    profit:  [0, 0, 6192,  10567]
+                },
+                barChart: {
+                    /* 全部：三大類 */
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [700, 11250, 8570] },
+                    /* 手模擺設細分 */
+                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [700, 0, 0] },
+                    /* 金屬產品細分 */
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [11250, 8570] }
+                },
+                pieChart: {
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [420, 4977, 4479], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['包裝','材料'], values: [57, 363], colors: ['#F9A825','#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4977, 4479], colors: ['#0288D1','#26C6DA'] }
+                }
+            },
+            monthly: {
+                subtitle: 'vs 上個月 (3月)',
+                revenue: 6240, cost: 1865, profit: 4375, orders: 3,
+                revenueChange: -56.3, costChange: -75.9, profitChange: -33.1, ordersChange: -1,
+                isNewBusiness: false,
+                groups: {
+                    all:       { revenue: 6240, cost: 1865, orders: 3 },
+                    handmodel: { revenue: 0,    cost: 0,    orders: 0 },
+                    metal:     { revenue: 6240, cost: 1865, orders: 3 }
+                },
+                lineChart: {
+                    labels: ['1月','2月','3月','4月'],
+                    revenue: [0, 0, 14280, 6240],
+                    cost:    [0, 0, 7738,  1865],
+                    profit:  [0, 0, 6192,  4375]
+                },
+                barChart: {
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [0, 3072, 3168] },
+                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [0, 0, 0] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [3072, 3168] }
+                },
+                pieChart: {
+                    all:       { labels: ['吊飾','鎖匙扣'], values: [950, 915], colors: ['#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['手模擺設'], values: [0], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [950, 915], colors: ['#0288D1','#26C6DA'] }
+                }
+            },
+            yearly: {
+                subtitle: 'vs 上一年全年',
+                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
+                revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
+                isNewBusiness: true,
+                groups: {
+                    all:       { revenue: 20520, cost: 9953, orders: 7 },
+                    handmodel: { revenue: 700,   cost: 420,  orders: 1 },
+                    metal:     { revenue: 19820, cost: 9533, orders: 6 }
+                },
+                lineChart: {
+                    labels: ['1月','2月','3月','4月'],
+                    revenue: [0, 0, 14280, 20520],
+                    cost:    [0, 0, 7738,  9953],
+                    profit:  [0, 0, 6192,  10567]
+                },
+                barChart: {
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [700, 11250, 8570] },
+                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [700, 0, 0] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [11250, 8570] }
+                },
+                pieChart: {
+                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [420, 4977, 4479], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['包裝','材料'], values: [57, 363], colors: ['#F9A825','#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4977, 4479], colors: ['#0288D1','#26C6DA'] }
+                }
+            }
+        };
+
+        /* === STATE === */
+        var foCurrentTab = 'current';
+        var foResizeTimer = null;
+        var foInitialized = false;
+
+        /* === DATA LAYER === */
+        function foGetTabData(tab) {
+            var src = FO_LIVE_DATA || FO_MOCK_DATA;
+            return src[tab] || src.current;
+        }
+
+        /* === HELPERS === */
+        function isMobile() { return window.innerWidth < 768; }
+
+        function fmtHKD(val) {
+            if (val >= 1000000) return 'HK$' + (val / 1000000).toFixed(1) + 'M';
+            if (val >= 10000)   return 'HK$' + Math.round(val / 1000) + 'K';
+            return 'HK$' + val.toLocaleString();
+        }
+        function fmtHKDFull(val) { return 'HK$' + val.toLocaleString(); }
+        function fmtYAxis(val) {
+            if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+            if (val >= 1000)    return Math.round(val / 1000) + 'K';
+            return String(val);
+        }
+
+        /* === KPI UPDATE === */
+        function foUpdateKPI(tab) {
+            var d = foGetTabData(tab);
+            var subtitle = d.subtitle || 'vs 去年同期';
+
+            /* V40.4: Category Filter Application */
+            var stats = (d.groups && d.groups[foCurrentCategory]) ? d.groups[foCurrentCategory] : d;
+            
+            document.getElementById('fo-kpi-revenue-value').textContent = fmtHKDFull(stats.revenue);
+            document.getElementById('fo-kpi-cost-value').textContent    = fmtHKDFull(stats.cost);
+            document.getElementById('fo-kpi-profit-value').textContent  = fmtHKDFull(stats.revenue - stats.cost);
+            document.getElementById('fo-kpi-orders-value').textContent  = stats.orders;
+            
+            var margin = stats.revenue > 0 ? (((stats.revenue - stats.cost) / stats.revenue) * 100) : 0;
+            var aov    = stats.orders > 0  ? Math.round(stats.revenue / stats.orders) : 0;
+            
+            document.getElementById('fo-kpi-margin-value').textContent  = margin.toFixed(1) + '%';
+            document.getElementById('fo-kpi-aov-value').textContent     = fmtHKDFull(aov);
+
+            /* subtitle */
+            ['revenue','cost','profit','orders','margin','aov'].forEach(function(k) {
+                var el = document.getElementById('fo-kpi-' + k + '-subtitle');
+                if (el) el.textContent = subtitle + (foCurrentCategory !== 'all' ? ' (' + (foCurrentCategory==='handmodel' ? '手模' : '金屬') + ')' : '');
+            });
+
+            /* 對比基準說明行 */
+            var compareNote = document.getElementById('fo-compare-note');
+            if (compareNote) {
+                if (d.isNewBusiness) {
+                    compareNote.textContent = subtitle + '：暫無對比數據（業務首年）';
+                } else {
+                    compareNote.textContent = '比較基準：' + subtitle;
+                }
+            }
+
+            /* 比較指示器 */
+            if (d.isNewBusiness) {
+                ['revenue','cost','profit','orders','margin','aov'].forEach(function(k) {
+                    var wrap = document.getElementById('fo-kpi-' + k + '-change');
+                    var pct  = document.getElementById('fo-kpi-' + k + '-pct');
+                    if (wrap) wrap.className = 'fo-kpi-change';
+                    if (wrap) wrap.querySelector('span:first-child').textContent = '';
+                    if (pct)  pct.textContent = '—';
+                });
+            } else {
+                foSetChange('fo-kpi-revenue-change', 'fo-kpi-revenue-pct', d.revenueChange, false, false);
+                foSetChange('fo-kpi-cost-change',    'fo-kpi-cost-pct',    d.costChange,    false, true);
+                foSetChange('fo-kpi-profit-change',  'fo-kpi-profit-pct',  d.profitChange,  false, false);
+                foSetChange('fo-kpi-orders-change',  'fo-kpi-orders-pct',  d.ordersChange,  true,  false);
+                /* margin/aov 變化：若有前期數據則顯示，否則顯示 N/A */
+                if (d.marginChange !== undefined && d.marginChange !== null) {
+                    foSetChange('fo-kpi-margin-change', 'fo-kpi-margin-pct', d.marginChange, false, false, 'pp');
+                } else {
+                    var mWrap = document.getElementById('fo-kpi-margin-change');
+                    if (mWrap) { mWrap.className = 'fo-kpi-change'; mWrap.querySelector('span:first-child').textContent = '—'; document.getElementById('fo-kpi-margin-pct').textContent = 'N/A'; }
+                }
+                if (d.aovChange !== undefined && d.aovChange !== null) {
+                    foSetChange('fo-kpi-aov-change', 'fo-kpi-aov-pct', d.aovChange, false, false);
+                } else {
+                    var aWrap = document.getElementById('fo-kpi-aov-change');
+                    if (aWrap) { aWrap.className = 'fo-kpi-change'; aWrap.querySelector('span:first-child').textContent = '—'; document.getElementById('fo-kpi-aov-pct').textContent = 'N/A'; }
+                }
+            }
+
+            /* 數據來源同步時間 */
+            var syncEl = document.getElementById('fo-last-sync');
+            if (syncEl) syncEl.textContent = FO_LIVE_DATA ? new Date().toLocaleDateString('zh-HK') + ' (即時)' : '2026-04-26 (快取)';
+        }
+
+        function foSetChange(wrapId, pctId, value, isInt, costMode, unit) {
+            var wrap  = document.getElementById(wrapId);
+            var pctEl = document.getElementById(pctId);
+            if (!wrap || !pctEl) return;
+            if (value === null || value === undefined) {
+                wrap.className = 'fo-kpi-change';
+                wrap.querySelector('span:first-child').textContent = '—';
+                pctEl.textContent = 'N/A';
+                return;
+            }
+            /* costMode: 成本下降是好事 (顯示綠色) */
+            var isGood = costMode ? (value <= 0) : (value >= 0);
+            wrap.className = 'fo-kpi-change ' + (isGood ? 'fo-up' : 'fo-down');
+            var arrow = wrap.querySelector('span:first-child');
+            arrow.textContent = value >= 0 ? '\u25B2' : '\u25BC';
+            var suffix = unit || (isInt ? '' : '%');
+            pctEl.textContent = (value >= 0 ? '+' : '') + (isInt ? Math.round(value) : value.toFixed(1)) + suffix;
+        }
+
+        /* === CATEGORY FILTER === */
+        function foSetCategory(cat) {
+            foCurrentCategory = cat;
+            /* update button states */
+            document.querySelectorAll('.fo-cat-btn').forEach(function(btn) {
+                btn.classList.remove('fo-cat-active');
+                var btnCat = btn.getAttribute('onclick').match(/foSetCategory\('(.+?)'\)/);
+                if (btnCat && btnCat[1] === cat) btn.classList.add('fo-cat-active');
+            });
+            /* update bar chart title */
+            var titleEl = document.getElementById('fo-bar-title');
+            if (titleEl) {
+                if (cat === 'handmodel') titleEl.textContent = '手模擺設 — 各產品銷售收入';
+                else if (cat === 'metal') titleEl.textContent = '金屬產品 — 各產品銷售收入';
+                else titleEl.textContent = '全部產品 — 銷售收入';
+            }
+            foDrawBar(foCurrentTab);
+            foDrawPie(foCurrentTab);
+            foUpdateKPI(foCurrentTab);
+        }
+
+        /* === LINE CHART === */
+        function foDrawLine(tab) {
+            var canvas = document.getElementById('fo-line-canvas');
+            var wrap   = document.getElementById('fo-line-canvas-wrap');
+            var d      = foGetTabData(tab).lineChart;
+            var mobile = isMobile();
+            var W = wrap.clientWidth;
+            var H = mobile ? 200 : 260;
+            canvas.width  = W * window.devicePixelRatio;
+            canvas.height = H * window.devicePixelRatio;
+            canvas.style.height = H + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, W, H);
+            var padLeft = mobile ? 42 : 52, padRight = 16, padTop = 16, padBottom = mobile ? 30 : 36;
+            var plotW = W - padLeft - padRight;
+            var plotH = H - padTop - padBottom;
+            var allVals = d.revenue.concat(d.profit).concat(d.cost || []);
+            var dataMax = Math.max.apply(null, allVals);
+            var range   = dataMax || 1;
+            ctx.strokeStyle = '#E0D8CC'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+            for (var i = 0; i <= 5; i++) {
+                var y = padTop + plotH - (i / 5) * plotH;
+                ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(padLeft + plotW, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#B0A090';
+                ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                ctx.fillText(fmtYAxis(Math.round((i / 5) * dataMax)), padLeft - 4, y);
+                ctx.setLineDash([4,4]);
+            }
+            ctx.setLineDash([]);
+            var n = d.labels.length;
+            ctx.fillStyle = '#B0A090';
+            ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            for (var i = 0; i < n; i++) {
+                var xLbl = padLeft + (i / (n > 1 ? n - 1 : 1)) * plotW;
+                ctx.fillText(d.labels[i], xLbl, padTop + plotH + (mobile ? 6 : 8));
+            }
+            var xDiv = n > 1 ? n - 1 : 1;
+            function toX(i)   { return padLeft + (i / xDiv) * plotW; }
+            function toY(val) { return padTop + plotH - (val / range) * plotH; }
+            function drawSeries(data, color) {
+                ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = mobile ? 2 : 2.5;
+                ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                for (var j = 0; j < data.length; j++) {
+                    if (j === 0) ctx.moveTo(toX(j), toY(data[j]));
+                    else         ctx.lineTo(toX(j), toY(data[j]));
+                }
+                ctx.stroke();
+                for (var j = 0; j < data.length; j++) {
+                    ctx.beginPath();
+                    ctx.arc(toX(j), toY(data[j]), mobile ? 3 : 4, 0, Math.PI * 2);
+                    ctx.fillStyle = color; ctx.fill();
+                    ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = mobile ? 1.5 : 2; ctx.stroke();
+                }
+            }
+            drawSeries(d.revenue, '#0288D1');
+            if (d.cost) drawSeries(d.cost, '#E64A19');
+            drawSeries(d.profit,  '#2E7D32');
+        }
+
+        /* === BAR CHART === */
+        function foDrawBar(tab) {
+            var canvas = document.getElementById('fo-bar-canvas');
+            var wrap   = document.getElementById('fo-bar-canvas-wrap');
+            var tabData = foGetTabData(tab);
+            var barSets = tabData.barChart;
+            var d = (barSets && barSets[foCurrentCategory]) ? barSets[foCurrentCategory] : (barSets.all || barSets);
+            var mobile = isMobile();
+            var BAR_COLORS = ['#0288D1','#26C6DA','#7B1FA2','#F9A825','#546E7A'];
+            var W = wrap.clientWidth;
+            var H = mobile ? 200 : 260;
+            canvas.width  = W * window.devicePixelRatio;
+            canvas.height = H * window.devicePixelRatio;
+            canvas.style.height = H + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, W, H);
+            /* 空數據提示 */
+            var hasData = d.values.some(function(v){ return v > 0; });
+            if (!hasData) {
+                ctx.fillStyle = '#B0A090';
+                ctx.font = (mobile ? '12px' : '14px') + ' -apple-system, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('本期無數據', W / 2, H / 2);
+                return;
+            }
+            var padLeft = mobile ? 38 : 50, padRight = 12, padTop = 16, padBottom = mobile ? 40 : 48;
+            var plotW = W - padLeft - padRight;
+            var plotH = H - padTop - padBottom;
+            var dataMax = Math.max.apply(null, d.values);
+            var range   = dataMax || 1;
+            var n       = d.values.length;
+            ctx.setLineDash([4,4]); ctx.strokeStyle = '#E0D8CC'; ctx.lineWidth = 1;
+            for (var i = 0; i <= 4; i++) {
+                var y = padTop + plotH - (i / 4) * plotH;
+                ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(padLeft + plotW, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#B0A090';
+                ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                ctx.fillText(fmtYAxis(Math.round((i / 4) * dataMax)), padLeft - 4, y);
+                ctx.setLineDash([4,4]);
+            }
+            ctx.setLineDash([]);
+            var groupW = plotW / n, barPad = mobile ? 8 : 12, barW = groupW - barPad * 2, radius = mobile ? 3 : 5;
+            for (var i = 0; i < n; i++) {
+                var barH = (d.values[i] / range) * plotH;
+                var x    = padLeft + i * groupW + barPad;
+                var y    = padTop + plotH - barH;
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + barW - radius, y);
+                ctx.arcTo(x + barW, y, x + barW, y + radius, radius);
+                ctx.lineTo(x + barW, y + barH);
+                ctx.lineTo(x, y + barH);
+                ctx.lineTo(x, y + radius);
+                ctx.arcTo(x, y, x + radius, y, radius);
+                ctx.closePath();
+                ctx.fillStyle = BAR_COLORS[i % BAR_COLORS.length];
+                ctx.fill();
+                /* value label above bar */
+                if (d.values[i] > 0) {
+                    ctx.fillStyle = '#555';
+                    ctx.font = (mobile ? '9px' : '10px') + ' -apple-system, sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+                    ctx.fillText(fmtYAxis(d.values[i]), x + barW / 2, y - 2);
+                }
+                var labelX = x + barW / 2, labelY = padTop + plotH + (mobile ? 6 : 8);
+                ctx.fillStyle = '#7A6A55'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                if (mobile) {
+                    var short = d.labels[i].length > 3 ? d.labels[i].slice(0, 3) + '…' : d.labels[i];
+                    ctx.font = '9px -apple-system, sans-serif';
+                    ctx.fillText(short, labelX, labelY);
+                } else {
+                    ctx.font = '10px -apple-system, sans-serif';
+                    var label = d.labels[i];
+                    if (label.length > 4) {
+                        ctx.fillText(label.slice(0,3), labelX, labelY);
+                        ctx.fillText(label.slice(3),   labelX, labelY + 13);
+                    } else {
+                        ctx.fillText(label, labelX, labelY);
+                    }
+                }
+            }
+        }
+
+        /* === DONUT CHART === */
+        function foDrawPie(tab) {
+            var canvas = document.getElementById('fo-pie-canvas');
+            var tabData = foGetTabData(tab);
+            /* category-aware: use pieChart[category] if available */
+            var pieSet = tabData.pieChart;
+            var d = (pieSet && pieSet[foCurrentCategory]) ? pieSet[foCurrentCategory] : (pieSet.all || pieSet);
+            if (!d || !d.values || d.values.length === 0) return;
+            /* filter out zero values */
+            var labels = [], values = [], colors = [];
+            for (var fi = 0; fi < d.values.length; fi++) {
+                if (d.values[fi] > 0) { labels.push(d.labels[fi]); values.push(d.values[fi]); colors.push(d.colors[fi]); }
+            }
+            if (values.length === 0) return;
+            d = { labels: labels, values: values, colors: colors };
+            var mobile = isMobile();
+            var size = mobile ? 160 : 200;
+            canvas.width  = size * window.devicePixelRatio;
+            canvas.height = size * window.devicePixelRatio;
+            canvas.style.width  = size + 'px';
+            canvas.style.height = size + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, size, size);
+            var cx = size / 2, cy = size / 2, outer = size / 2 - 4, inner = outer * 0.60;
+            var total = d.values.reduce(function(a,b){ return a+b; }, 0);
+            var startAng = -Math.PI / 2;
+            for (var i = 0; i < d.values.length; i++) {
+                var slice  = (d.values[i] / total) * Math.PI * 2;
+                var endAng = startAng + slice;
+                ctx.beginPath(); ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, outer, startAng, endAng);
+                ctx.closePath(); ctx.fillStyle = d.colors[i]; ctx.fill();
+                startAng = endAng;
+            }
+            ctx.beginPath(); ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF'; ctx.fill();
+            foBuildPieLegend(d, total);
+        }
+
+        function foBuildPieLegend(d, total) {
+            var legendEl = document.getElementById('fo-pie-legend');
+            legendEl.innerHTML = '';
+            for (var i = 0; i < d.labels.length; i++) {
+                var pct = ((d.values[i] / total) * 100).toFixed(1);
+                var row = document.createElement('div');
+                row.className = 'fo-pie-legend-row';
+                row.innerHTML =
+                    '<div class="fo-pie-legend-left">' +
+                        '<div class="fo-pie-legend-dot" style="background:' + d.colors[i] + ';"></div>' +
+                        '<span class="fo-pie-legend-name">' + d.labels[i] + '</span>' +
+                    '</div>' +
+                    '<span class="fo-pie-legend-pct">' + pct + '%</span>';
+                legendEl.appendChild(row);
+            }
+        }
+
+        /* === TAB SWITCH === */
+        function switchTab(tab) {
+            if (tab === foCurrentTab) return;
+            foCurrentTab = tab;
+            ['current','monthly','yearly'].forEach(function(t) {
+                var btn = document.getElementById('fo-tab-' + t);
+                if (!btn) return;
+                btn.classList.toggle('fo-tab-active', t === tab);
+                btn.setAttribute('aria-selected', String(t === tab));
+            });
+            foRenderAll(tab);
+        }
+
+        /* === RENDER ALL === */
+        function foRenderAll(tab) {
+            foUpdateKPI(tab);
+            foDrawLine(tab);
+            foDrawBar(tab);
+            foDrawPie(tab);
+        }
+
+        /* === FETCH LIVE DATA === */
+        function foFetchLive() {
+            if (FO_DATA_LOADING) return;
+            FO_DATA_LOADING = true;
+            fetch(FINANCIAL_WEBHOOK_URL, { method: 'GET', headers: { 'Accept': 'application/json' } })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (data && data.current && data.monthly && data.yearly) {
+                        FO_LIVE_DATA = data;
+                        foRenderAll(foCurrentTab);
+                    } else {
+                        throw new Error('Invalid data structure');
+                    }
+                })
+                .catch(function(err) {
+                    console.warn('[FHS Financial] Webhook unavailable, using mock data. Reason:', err.message);
+                })
+                .finally(function() { FO_DATA_LOADING = false; });
+        }
+
+        /* === INIT === */
+        function foInitAll() {
+            foRenderAll(foCurrentTab);
+            foFetchLive();
+        }
+
+        /* === RESIZE HANDLER === */
+        window.addEventListener('resize', function() {
+            clearTimeout(foResizeTimer);
+            foResizeTimer = setTimeout(function() {
+                var financeEl = document.getElementById('financeModeContainer');
+                if (financeEl && financeEl.style.display !== 'none') {
+                    foDrawLine(foCurrentTab);
+                    foDrawBar(foCurrentTab);
+                    foDrawPie(foCurrentTab);
+                }
+            }, 150);
+        });
+    </script>
 
 </body>
 

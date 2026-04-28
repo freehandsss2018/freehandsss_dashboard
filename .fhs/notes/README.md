@@ -9,5 +9,7 @@
 | `todo.md` | **任務清單**：當前 Pending 任務與未來計畫 |
 | `session-log.md` | **對話日誌**：記錄每次 session 的達成事項與交接點 |
 | `ai_reports/` | **AI 分析報告區**：存放長篇深度分析或優化提案 |
+| `completion_reports/` | **任務完工記錄**：`/execute` 成功後的正式結案報告 |
+| `pending_tasks/` | **掛起任務**：待續行或需跨 Session 追蹤的任務細節 |
 
 > ⚠️ 修改任何業務規則或架構前，必須同步更新 `decisions.md`。

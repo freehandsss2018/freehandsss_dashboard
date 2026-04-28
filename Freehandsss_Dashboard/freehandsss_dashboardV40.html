@@ -4450,16 +4450,51 @@
             reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
         }
 
-        async function fetchGlobalReview() {
+        // 【V46.0】GlobalReview 5分鐘快取層 — 減少 Airtable API 呼叫
+        const REVIEW_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+        function getReviewCacheKey(year, month, status, batch, search) {
+            return `fhs_review_${year||''}_${month||''}_${status||''}_${batch||''}_${search||''}`;
+        }
+
+        function getReviewCache(cacheKey) {
+            try {
+                const raw = sessionStorage.getItem(cacheKey);
+                if (!raw) return null;
+                const cached = JSON.parse(raw);
+                if (Date.now() - cached.ts < REVIEW_CACHE_TTL) return cached.data;
+                sessionStorage.removeItem(cacheKey);
+            } catch(e) {}
+            return null;
+        }
+
+        function setReviewCache(cacheKey, data) {
+            try {
+                sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
+            } catch(e) {}
+        }
+
+        async function fetchGlobalReview(forceRefresh) {
             const year = document.getElementById("reviewYear").value;
             const month = document.getElementById("reviewMonth").value;
             const status = document.getElementById("reviewStatus").value;
             const batch = document.getElementById("reviewBatch").value.trim();
             const search = document.getElementById("reviewSearch").value.trim();
-            
+
             const tbody = document.getElementById("reviewTableBody");
             const loading = document.getElementById("reviewLoading");
-            
+
+            // 【V46.0 快取檢查】同一查詢 5 分鐘內不重複呼叫 Airtable
+            const cacheKey = getReviewCacheKey(year, month, status, batch, search);
+            if (!forceRefresh) {
+                const cached = getReviewCache(cacheKey);
+                if (cached) {
+                    globalOrders = cached;
+                    renderReviewTable(globalOrders);
+                    return;
+                }
+            }
+
             showLoader("正在載入全域核對資料...");
             loading.style.display = "inline";
             tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
@@ -4471,7 +4506,7 @@
             if(status) params.push(`status=${encodeURIComponent(status)}`);
             if(batch) params.push(`batch=${encodeURIComponent(batch)}`);
             if(search) params.push(`search=${encodeURIComponent(search)}`);
-            
+
             if(params.length > 0) {
                 fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + params.join('&');
             }
@@ -4489,6 +4524,7 @@
                     loading.style.display = "none";
                     if (data && data.orders) {
                         globalOrders = data.orders;
+                        setReviewCache(cacheKey, data.orders);
                         renderReviewTable(globalOrders);
                         hideLoader();
                         return;

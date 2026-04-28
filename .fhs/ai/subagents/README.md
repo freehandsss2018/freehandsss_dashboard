@@ -27,6 +27,15 @@ subagents/
 | 原始碼層 | `.fhs/ai/subagents/freehandsss/` | 版本控制、變更追蹤、rollback 依據 |
 | Runtime 層 | `~/.claude/agents/freehandsss/` | Claude Code 執行時偵測，每次 `/execute` 同步 |
 
+## 現有 Agent 清單 (Subagents)
+
+- **ui-designer**: 負責 UI/UX 產出與 HTML 結構設計
+- **frontend-developer**: 負責 JS 邏輯與 CSS 實作
+- **code-reviewer**: 負責品質稽核與代碼審查
+- **database-reviewer**: 專攻 Airtable 與數據結構一致性
+- **tdd-guide**: 驅動測試驅動開發流程 (Test-Driven Development)
+- **build-error-resolver**: 自動化修復構建與運行錯誤
+
 ## Rollback 規則
 
 還原任一 agent：
