@@ -1,0 +1,29 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "script"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-undef": "warn",
+    "no-console": "off",
+    "eqeqeq": ["warn", "always"],
+    "no-var": "warn",
+    "prefer-const": "warn",
+    "semi": ["warn", "always"],
+    "no-unreachable": "error",
+    "no-duplicate-case": "error",
+    "no-empty": "warn"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "perplexity-mcp-server/",
+    "n8n-mcp-server/",
+    "archive/",
+    "tmp/"
+  ]
+}

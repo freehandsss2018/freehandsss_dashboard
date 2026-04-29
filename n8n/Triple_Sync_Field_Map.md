@@ -1,5 +1,6 @@
 # 三端對齊欄位地圖 (Triple-Sync Field Map)
-# Dashboard ↔ n8n ↔ Airtable 完整欄位映射
+
+## Dashboard ↔ n8n ↔ Airtable 完整欄位映射
 
 > **版本:** V45.7.4+
 > **日期:** 2026-03-26
@@ -9,10 +10,11 @@
 ---
 
 ## 目錄
+
 1. [系統總覽圖](#1-系統總覽圖)
 2. [Dashboard → n8n Webhook 完整 Payload](#2-dashboard--n8n-webhook-payload)
 3. [n8n 節點鏈 — 逐節點欄位追蹤](#3-n8n-節點鏈--逐節點欄位追蹤)
-4. [n8n → Airtable 寫入映射](#4-n8n--airtable-寫入映射)
+4. [n8n → Airtable 寫入映射](#4-n8n--airtable-寫入映射-完整對照)
 5. [Airtable → n8n 讀取映射](#5-airtable--n8n-讀取映射)
 6. [完整欄位生命週期表](#6-完整欄位生命週期表)
 7. [SKU 轉換對照表](#7-sku-轉換對照表)
@@ -23,7 +25,7 @@
 
 ## 1. 系統總覽圖
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    DASHBOARD (前端)                              │
 │  Freehandsss_dashboard_current.html                             │
@@ -63,6 +65,7 @@
 ## 2. Dashboard → n8n Webhook Payload
 
 ### Webhook URL
+
 - **生產:** `https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b`
 - **測試:** `https://yanhei.synology.me:8443/webhook-test/fetch-fhs-order`
 - **Metadata:** `https://yanhei.synology.me:8443/webhook/update-order-meta`
@@ -111,6 +114,7 @@
 <summary>展開 Raw_Form_State 完整欄位列表</summary>
 
 **基本資料:**
+
 | 欄位 | 說明 |
 |------|------|
 | `momName` | 聯絡人名稱 |
@@ -123,6 +127,7 @@
 | `additional` | 附加費 (字串) |
 
 **Category P (立體擺設):**
+
 | 欄位 | 說明 |
 |------|------|
 | `enableP` | 立體擺設啟用 |
@@ -130,6 +135,7 @@
 | `pEngraving` | 底板刻字 |
 
 **Category K (鎖匙扣):**
+
 | 欄位 | 說明 |
 |------|------|
 | `enableK` | 鎖匙扣主開關 |
@@ -146,6 +152,7 @@
 | `fam_p1_sel` / `fam_p2_sel` | 家庭部位選擇 |
 
 **Category M (吊飾):**
+
 | 欄位 | 說明 |
 |------|------|
 | `enableM` | 吊飾主開關 |
@@ -155,6 +162,7 @@
 | `m_e_{part}_en/qty/color` | 大寶各部位欄位 |
 
 **Category W (配件):**
+
 | 欄位 | 說明 |
 |------|------|
 | `enableW` | 配件區段啟用 |
@@ -162,11 +170,13 @@
 | `w_wool_qty` | 羊毛氈數量 |
 
 **動態部位選擇:**
+
 | 欄位 | 說明 |
 |------|------|
 | `limb_sel_{who}_{part}` | 部位選擇值 (如 `limb_sel_嬰兒_左手`) |
 
 **系統注入 (以 __ 前綴):**
+
 | 欄位 | 說明 |
 |------|------|
 | `__FHS_Quote_Mode` | `"(加購)"` / `"(單購)"` |
@@ -210,7 +220,7 @@
 
 ### 3.1 Node 1: Receive Dashboard Order (Webhook)
 
-```
+```text
 輸入: HTTP POST body (JSON)
 輸出: $json.body.{所有 Dashboard 欄位}
 ```
@@ -223,7 +233,7 @@
 
 ### 3.2 Node 2: Input Normalizer (Code)
 
-```
+```text
 輸入: Receive Dashboard Order
 輸出: 標準化後的動作 + 原始資料
 ```
@@ -241,7 +251,7 @@
 
 ### 3.3 Node 3: Switch Action (Switch)
 
-```
+```text
 條件: $json.action === 'delete'
 Output 0 → DELETE 路線 (Search → Delete → Telegram)
 Output 1 → CREATE/EDIT 路線 (Profit Auditor + Parse Items)
@@ -251,7 +261,7 @@ Output 1 → CREATE/EDIT 路線 (Profit Auditor + Parse Items)
 
 ### 3.4 Node 4: Profit Auditor (Code) ⚠️ V45.7.4 修復
 
-```
+```text
 輸入: Receive Dashboard Order (直接讀取 webhook body)
 輸出: [{json: auditResults}]  ← 必須是此格式！
 ```
@@ -284,7 +294,7 @@ Output 1 → CREATE/EDIT 路線 (Profit Auditor + Parse Items)
 
 ### 3.5 Node 5: Auditor Logic Switch (Switch)
 
-```
+```text
 條件: $json.auditPassed === false (boolean comparison)
 Output 0 → Auditor Alert (auditPassed = false)
 Output 1 → Fallback/dead end (auditPassed = true, 無連接)
@@ -296,13 +306,14 @@ Output 1 → Fallback/dead end (auditPassed = true, 無連接)
 
 ### 3.6 Node 6: Auditor Alert (Telegram)
 
-```
+```text
 輸入: Auditor Logic Switch Output 0
 動作: 發送 Telegram 訊息到 Chat ID 7620524971
 ```
 
 訊息模板:
-```
+
+```text
 🚨 【財務稽核異常警報】 🚨
 單號：{{ $json.orderId }}
 原因：稽核未通過！
@@ -312,7 +323,7 @@ Output 1 → Fallback/dead end (auditPassed = true, 無連接)
 
 ### 3.7 Node 7: Parse Items & Generate SKU (Code) ⚠️ V45.7.4 修復
 
-```
+```text
 輸入: Receive Dashboard Order (直接讀取 webhook body)
 輸出: [{json: {...}}, {json: {...}}, ...]  每個商品一個 item
 ```
@@ -328,6 +339,7 @@ Output 1 → Fallback/dead end (auditPassed = true, 無連接)
 | `body.Order_Items_List` / `body.Items` | Dashboard 商品陣列 |
 
 **每個商品的讀取欄位:**
+
 | Item 欄位 | 用途 |
 |-----------|------|
 | `item.Product_Name` | SKU 正規化的輸入 |
@@ -337,6 +349,7 @@ Output 1 → Fallback/dead end (auditPassed = true, 無連接)
 | `item.Order_Item_Key` | 唯一鍵 (Airtable upsert 用) |
 
 **每個商品的輸出欄位:**
+
 | 輸出欄位 | 型別 | 說明 |
 |----------|------|------|
 | `Order_ID` | String | 訂單編號 |
@@ -356,7 +369,7 @@ Output 1 → Fallback/dead end (auditPassed = true, 無連接)
 
 ### 3.8 Node 8: Batch SKU Collector (Code)
 
-```
+```text
 輸入: Parse Items 的所有 items
 輸出: 單一物件 {batchFormula, hasItems}
 ```
@@ -370,7 +383,7 @@ Output 1 → Fallback/dead end (auditPassed = true, 無連接)
 
 ### 3.9 Node 9–11: Cache 路線 (Read Cache → Smart Cache Strategist → Cache Hit?)
 
-```
+```text
 Read Cache File: 讀取 .n8n/data/products.json (本地快取)
 Smart Cache Strategist: V47.1 起強制 useCache=false (永遠走 Fetch)
 Cache Hit?: 已斷開連接 (dead node)，不影響運行
@@ -382,7 +395,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.10 Node 12: Fetch Exact Base Cost (Airtable READ)
 
-```
+```text
 操作: Search
 表: Product_Database (tblC3HDJAz9W0OF6R)
 篩選: batchFormula (動態 OR 公式)
@@ -398,7 +411,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.11 Node 13: Local Data Mapper (Code)
 
-```
+```text
 輸入源1: Fetch Exact Base Cost (成本資料)
 輸入源2: Parse Items & Generate SKU (原始商品列表)
 輸出: 合併後的商品陣列 (每項附帶成本)
@@ -414,7 +427,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.12 Node 14: Calculate Profit & Pack Items (Code)
 
-```
+```text
 輸入源1: Receive Dashboard Order (直接讀取 Deposit/Balance/Additional_Fee)
 輸入源2: Local Data Mapper (商品 + 成本)
 輸出: 單一物件 (訂單總覽 + Sub_Items 陣列)
@@ -436,6 +449,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 | `Sub_Items[]` | 打包的商品陣列 (見下) |
 
 **Sub_Items 每項結構:**
+
 | 欄位 | 來源 |
 |------|------|
 | `Product_Record_ID` | Fetch Exact Base Cost 的 `id` |
@@ -449,7 +463,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.13 Node 15: Create Main Order (Airtable WRITE — UPSERT)
 
-```
+```text
 操作: Upsert
 表: Main_Orders (tbltCH0I9fknVCtmV)
 匹配鍵: Order_ID
@@ -472,6 +486,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 | `$json.Appointment_Date` | → | `Appointment_Date` | Date |
 
 > ⚠️ **注意命名差異：**
+>
 > - Dashboard 的 `Deposit + Balance + Additional_Fee` 合計 = n8n 的 `Total_Revenue` = Airtable 的 `Final_Sale_Price`
 > - n8n 的 `Final_Profit` = Airtable 的 `Net_Profit`
 > - n8n 的 `Order_Text` = Airtable 的 `Full_Order_Text`
@@ -480,7 +495,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.14 Node 16: Bind Main Order ID (Code)
 
-```
+```text
 輸入源1: Create Main Order 的回傳 (含 Airtable Record ID)
 輸入源2: Calculate Profit & Pack Items 的 Sub_Items
 輸出: 每個 sub item 附帶 Main_Order_ID
@@ -498,7 +513,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.15 Node 17: Create Sub Items (Airtable WRITE — UPSERT)
 
-```
+```text
 操作: Upsert
 表: Order_Items (tbljkptnNcUEyDRFH)
 匹配鍵: Order_Item_Key
@@ -520,7 +535,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.16 Node 18: Pack Telegram Data (Code)
 
-```
+```text
 輸入: Calculate Profit & Pack Items
 輸出: Telegram 訊息所需的欄位
 ```
@@ -540,12 +555,13 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 
 ### 3.17 Node 19: Send Profit Report (Telegram)
 
-```
+```text
 Chat ID: 7620524971
 ```
 
 訊息模板:
-```
+
+```text
 ✅ 【Freehandsss {新訂單/修正訂單} 成功】
 👤 客人：{{ $json.Customer_Name }}
 📝 單號：{{ $json.Order_ID }}
@@ -563,7 +579,8 @@ Chat ID: 7620524971
 ### 3.18 DELETE 路線 (Nodes 20–22)
 
 **Node 20: Search Record to Delete (Airtable)**
-```
+
+```text
 操作: Search
 表: Main_Orders (tbltCH0I9fknVCtmV)
 篩選: TRIM({Order_ID}) = '{Order_ID}'
@@ -571,14 +588,16 @@ Chat ID: 7620524971
 ```
 
 **Node 21: Delete Record (Airtable)**
-```
+
+```text
 操作: Delete
 表: Main_Orders (tbltCH0I9fknVCtmV)
 Record ID: $json.id (from Search)
 ```
 
 **Node 22: Notify Telegram (Delete)**
-```
+
+```text
 Chat ID: 7620524971
 訊息:
 🗑️ 【訂單已徹底刪除】
@@ -640,7 +659,8 @@ Chat ID: 7620524971
 追蹤一個欄位從 Dashboard 出發，經過 n8n 每個節點，最終寫入 Airtable 的完整路徑。
 
 ### `Order_ID` 的生命週期
-```
+
+```text
 Dashboard (buildPayload)
   → body.Order_ID
     → [Node 2: Input Normalizer] $json.Order_ID
@@ -652,7 +672,8 @@ Dashboard (buildPayload)
 ```
 
 ### `Product_Name` → `Search_SKU` → `Product_Link` 的生命週期
-```
+
+```text
 Dashboard (Order_Items_List[].Product_Name)
   → body.Order_Items_List[].Product_Name (如 "木框款式 (4肢)")
     → [Node 7: Parse Items] SKU 正規化 → Search_SKU (如 "木框套裝 (4肢)")
@@ -666,7 +687,8 @@ Dashboard (Order_Items_List[].Product_Name)
 ```
 
 ### `Deposit` → `Total_Revenue` → `Final_Sale_Price` 的生命週期
-```
+
+```text
 Dashboard (deposit input field)
   → body.Deposit
     → [Node 4: Profit Auditor] actualTotal = Deposit + Balance + Additional_Fee
@@ -678,7 +700,8 @@ Dashboard (deposit input field)
 ```
 
 ### 成本 (`Total_Base_Cost`) → `Total_Cost` → `Net_Profit` 的生命週期
-```
+
+```text
 Airtable Product_Database.Total_Base_Cost (每 SKU 的成本)
   → [Node 12: Fetch Exact Base Cost] 讀取
     → [Node 13: Local Data Mapper] 附加到每個 item
@@ -713,7 +736,7 @@ Airtable Product_Database.Total_Base_Cost (每 SKU 的成本)
 
 ### 正規化規則摘要
 
-```
+```text
 Rule 1: includes("木框")     → sku = "木框套裝 (N肢)"     // N = 4肢 if 3肢 or 4肢, else 2肢
 Rule 2: includes("玻璃瓶")   → sku = "玻璃瓶套裝 (N肢)"   // 同上
 Rule 3: includes("鎖匙扣") + Mode → sku = "{sku} - {qty}飾 {mode}"
@@ -766,7 +789,8 @@ Rule 4: includes("吊飾") + Mode   → sku = "{sku} - {qty}飾 {mode}"
 ## 10. Airtable 表結構速查
 
 ### Main_Orders (tbltCH0I9fknVCtmV)
-```
+
+```text
 Order_ID          (String, Upsert Key)
 Customer_Name     (String)
 Appointment_Date  (Date)
@@ -781,7 +805,8 @@ Raw_Form_State    (Long Text, JSON)
 ```
 
 ### Order_Items (tbljkptnNcUEyDRFH)
-```
+
+```text
 Order_Item_Key    (String, Upsert Key)
 Product_Link      (Linked Record → Product_Database)
 Quantity          (Number)
@@ -790,7 +815,8 @@ Order_Link        (Linked Record → Main_Orders)
 ```
 
 ### Product_Database (tblC3HDJAz9W0OF6R) — 唯讀
-```
+
+```text
 Product_Name      (String, SKU 唯一鍵)
 Total_Base_Cost   (Number)
 id                (Record ID, 用於 Linked Record)
@@ -802,4 +828,3 @@ id                (Record ID, 用於 Linked Record)
 *供 Claude / Antigravity / Cursor / Fat Mo 在修改系統時確認三端對齊*
 
 ---
-

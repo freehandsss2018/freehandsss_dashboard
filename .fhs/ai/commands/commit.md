@@ -1,88 +1,64 @@
-# /commit（任務完成 · 全包一條龍）
-> Version: v2.0.0 (2026-04-28) — 新增 Phase 0 Pre-Commit Sweep
+# /commit (任務完成 · 全包一條龍)
+> Version: v2.1.0 (2026-04-28) | Optimized for Token Efficiency
+> 本指令為任務完成之單一入口：包含掃描、同步、備份與推送。
 
-用途：任務完成時一鍵執行——提交前健全掃描 + 記憶同步 + 雲端備份 + Git 推送。
-
-觸發關鍵字（自動偵測）：
-「commit」「收工」「任務完成」「同步記憶」「備份大腦」
-
----
-
-執行步驟：
-
-【第零階段：Pre-Commit Sweep（提交前健全掃描）】
-
-> 目標：在任何 git 操作前，確保系統接通、文件同步、無沉積幽靈、無衝突。
-> 若 🔴 項目出現 → 立即停止，修復後才能繼續。
-> 若 🟡 項目出現 → 列出，詢問 Fat Mo 確認後繼續。
-
-**P0.1 系統接通確認（Hook + Subagent）**
-執行以下檢查（使用 Glob/Bash，不修改任何檔案）：
-
-Hook 腳本接通：
-- scripts/hooks/session-start-sop.sh 是否存在？
-- scripts/hooks/prompt-router.js 是否存在？
-- scripts/hooks/pre-tool-guard.js 是否存在？
-- .claude/settings.json 是否含 `hooks` 區段？
-
-Subagent Runtime 接通：
-- ~/.claude/agents/freehandsss/ 是否有以下全部 6 個 agent？
-  ui-designer.md / frontend-developer.md / code-reviewer.md /
-  database-reviewer.md / tdd-guide.md / build-error-resolver.md
-- 每個 agent 文件大小是否 > 0？
-
-🔴 任一缺失 → 立即停止，輸出「❌ 系統接通失敗：[缺失項]，請修復後再 commit」
-✅ 全部通過 → 繼續 P0.2
-
-**P0.2 README & repo-map 同步確認**
-執行：`git status --short`，分析本次 staged + modified 的檔案清單
-
-- 若有新增或刪除任何目錄/檔案 → 確認 docs/repo-map.md 已在本 session 更新
-- 若有修改 scripts/ 下任何腳本 → 確認 scripts/README.md 反映此變更
-- 若有修改 .fhs/ai/commands/ → 確認 docs/repo-map.md 已反映
-- 若有修改 Freehandsss_Dashboard/ HTML → 確認 Freehandsss_Dashboard/README.md 已反映
-
-🟡 發現未同步 → 列出差距，詢問 Fat Mo：「以下文件可能需要更新，是否補做？[清單]」
-✅ 全部同步 → 繼續 P0.3
-
-**P0.3 沉積快速掃描**
-執行掃描（使用 Glob，不修改）：
-
-- 根目錄：偵測 test_*.js/py/html、fix_*.js/py、clean_*.js、*_temp.*、*_draft.*
-- tmp/：列出所有存在的檔案（應為空）
-- .fhs/memory/lessons/：檔名含 `_temp` 或 `_draft` 的日誌
-
-🟡 發現沉積 → 列出所有發現項，詢問 Fat Mo：「以下疑似沉積檔案，是否清除？[清單]」
-   ⚠️ 不得自動刪除，必須等 Fat Mo 確認
-✅ 無沉積 → 繼續 P0.4
-
-**P0.4 幽靈偵測**
-- 比對 .fhs/ai/commands/ 所有 .md 指令 vs .claude/commands/ 橋接版
-  → 若 Master 有但 Bridge 無：列為幽靈指令（執行不到）
-- 比對 scripts/ 所有腳本 vs scripts/README.md 中的記錄
-  → 若腳本存在但 README 未記錄：列為幽靈腳本
-- 確認 .fhs/ai/subagents/freehandsss/ 中每個 agent 都在 MANIFEST.md 有記錄
-
-🟡 發現幽靈 → 列出，詢問 Fat Mo 是否補文件或刪除
-✅ 無幽靈 → 繼續 P0.5
-
-**P0.5 衝突與遺漏確認**
-- Changelog.md 最後記錄是否為今日（若本 session 有代碼/制度改動）
-- .fhs/memory/handoff.md 是否已在本 session 更新（時間戳確認）
-- .fhs/notes/decisions.md 是否需要更新（若本次有架構改動）
-- 確認 git staging 中無 .env 真實值（雙重保護，Phase 2 也會再查）
-
-🔴 Changelog/handoff 完全未更新但有實質改動 → 阻止，必須先補寫再 commit
-🟡 decisions.md 可能需更新 → 詢問確認
-✅ 全部確認 → 輸出 Pre-Commit Sweep 結果摘要，進入 Phase 1
+## 🧩 執行標準 (General Rules)
+- **🔴 項目失敗**：立即中斷任務，輸出錯誤並等待修復。
+- **🟡 項目警告**：列出清單，詢問 Fat Mo 確認後方可繼續。
+- **✅ 項目成功**：靜默通過，記錄於最後報告。
 
 ---
 
-**P0 輸出格式（掃描結果摘要）**：
+## 【Phase 0: Pre-Commit Sweep (健全掃描)】
+
+### P0.1 系統接通確認
+- **Hooks**: 確認 `scripts/hooks/` (session-start-sop.sh, prompt-router.js, pre-tool-guard.js) 與 `.claude/settings.json` 存在。
+- **Subagents**: 確認 `~/.claude/agents/freehandsss/` 下 6 個主要 agent 存在且非空。
+- **🔴 失敗處理**：輸出「❌ 系統接通失敗」，指明缺失項並停止。
+
+### P0.2 文件同步映射
+若發生變更，須確認以下對應文件已同步更新：
+- `scripts/**` ↔ `scripts/README.md`
+- `.fhs/ai/commands/**` ↔ `docs/repo-map.md`
+- `Freehandsss_Dashboard/**` ↔ `Freehandsss_Dashboard/README.md`
+- 新增/刪除目錄 ↔ `docs/repo-map.md`
+- **🟡 警告**：列出未同步清單並確認。
+
+### P0.3 沉積與幽靈偵測
+- **Git Check**: 執行 `git status` 辨識疑似臨時檔 (test_*, fix_*, *_temp, *_draft)。
+- **Ghost Check**: 比對 `.fhs/ai/commands/` (Master) vs `.claude/commands/` (Bridge)。
+- **🟡 警告**：列出發現項，確認是否清除或補全。
+
+### P0.4 狀態一致性
+- **Changelog.md** & **handoff.md**: 確保在本 session 已更新（若有代碼改動）。
+- **.env**: 嚴禁 Staging 包含真實 API Keys。
+- **🔴 失敗**：手動改動後未更 Changelog/Handoff 則禁止 commit。
+
+---
+
+## 【Phase 1: Memory Engine 同步】
+1. **Lessons**: 寫入 `.fhs/memory/lessons/YYYY-MM-DD_主題.md`。
+2. **Handoff**: 更新 `.fhs/memory/handoff.md` (強制包含：版本、完成事項、待辦、核心配置)。
+3. **Notion**: 執行 `node scripts/Sync_Notion_Brain.js`。
+4. **Logs**: 更新 `.fhs/notes/session-log.md`。
+
+## 【Phase 2: Git 推送與安全】
+1. **Staging**: `git add .` -> `git status`。
+2. **Safety**: 若出現 `.env` 則立即 `git reset HEAD .env` 並警告。
+3. **Push**: `git commit -m "chore: sync [YYYY-MM-DD]"` -> `git push`。
+
+---
+
+## 【Phase 3: 完成回報】
+輸出格式如下：
+```text
+✅ /commit 全包完成 [YYYY-MM-DD HH:MM]
+- Pre-Commit Sweep: ✅
+- Memory Engine: ✅ (Notion + Handoff)
+- Git Operation: ✅ (Commit + Push)
+雲端大腦 + GitHub 雙備份完成。收工！
 ```
-═══ Pre-Commit Sweep 結果 ═══
-P0.1 系統接通    ✅ / 🔴 [問題]
-P0.2 文件同步    ✅ / 🟡 [差距清單]
+✅ / 🟡 [差距清單]
 P0.3 沉積掃描    ✅ / 🟡 [發現清單]
 P0.4 幽靈偵測    ✅ / 🟡 [孤獨清單]
 P0.5 衝突確認    ✅ / 🔴🟡 [問題]

@@ -1,3 +1,26 @@
+# Session Log — 2026-04-30（第十九次）
+
+## 概覽
+Antigravity v1.21.6 MCP 全修復（`extensions.worktreeConfig` crash + OAuth 沙盒問題），VSCode 工具鏈整合（markdownlint/ESLint），1011 個 markdownlint 錯誤修復，Claude Code 全域 `bypassPermissions` 設定。
+
+## 主要完成事項
+1. **Antigravity MCP 修復**：
+   - 根本原因：`.git/config` `extensions.worktreeConfig = true` → Go crash
+   - 修復：`git config --unset extensions.worktreeConfig`
+   - GitHub MCP：改用 node 直執行（OAuth 沙盒不兼容）
+   - 有效 MCP：airtable-fhs, StitchMCP, github, notion
+
+2. **VSCode 工具鏈**：
+   - 新增 `.vscode/extensions.json`、`.eslintrc.json`、`.markdownlint.json`
+   - `.vscode/settings.json` 整合 ESLint + markdownlint on save
+   - Markdownlint 1011 錯誤全數修復
+
+3. **Claude Code 全域授權**：
+   - `~/.claude/settings.json` → `"defaultMode": "bypassPermissions"`
+   - /commit, /read, /execute 無需 YES/NO 確認
+
+---
+
 # Session Log — 2026-04-28（第十八次）
 
 ## 概覽

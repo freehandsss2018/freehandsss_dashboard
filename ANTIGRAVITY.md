@@ -46,6 +46,7 @@
 ## Skills（Antigravity 專用）
 
 `.gemini/skills/` 內 22 個設計工具，直接使用：
+
 - `frontend-design`（含 7 個 reference）— UI 設計
 - `audit`、`critique`、`optimize` — 審閱與分析
 - `adapt`、`polish`、`clarify` 等 — 輕量寫作工具

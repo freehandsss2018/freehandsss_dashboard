@@ -5,6 +5,7 @@
 ## 🖥️ 第一階段：前端 Dashboard UI 檢查
 
 ### 1. 互動組件驗證 (Button & Inputs)
+
 - [ ] **建立模式 (Create Mode)**：輸入隨機測試單號，確認 `syncBtn` 是否顯示 "🔄 數據發射中..."。
 - [ ] **編輯模式 (Edit Mode)**：在「全域核對中心」點擊 `Order_ID` 膠囊，確認是否成功跳轉並回填數據。
 - [ ] **渲染性能**：載入超過 100 筆訂單，確認 `DocumentFragment` 是否解決了 V36 之前的 DOM 渲染卡頓。
@@ -15,11 +16,13 @@
 ## 🔗 第二階段：數據同步與 Airtable 驗證
 
 ### 1. 同步鏈路檢查 (n8n Webhook)
+
 - **測試終端**: `https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b`
 - [ ] **Payload 完整性**：確認 `Raw_Form_State` 是否包含所有欄位快照。
 - [ ] **Airtable 寫入**：檢查 Airtable `Order_Table` 是否出現對應單號，且 `Total_Base_Cost` 非為 0。
 
 ### 2. 智慧緩存穿透 (Smart Cache Leak Check)
+
 - [ ] **模擬故障**：人工將某 SKU 的緩存成本設為 0，觸發同步，確認 n8n 是否自動穿透緩存並從 Airtable 重新取得正確數值。
 
 ---
@@ -38,6 +41,7 @@
 ---
 
 ## 💾 持久化維護
+
 本文件已存儲於 `FHS_System_Health_Check_SOP.md`。
 **建議檢查週期**：每次主要版本更新（如 V37）或 n8n 工作流重構後執行。
 

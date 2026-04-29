@@ -1,5 +1,24 @@
-# FHS Handoff - 2026-04-28 19:30
+# FHS Handoff - 2026-04-30 10:00
 當前版本：v1.4.1（憲法層 + Goal-Driven Execution）/ V40.2（UI層）/ 6 Agents + 2 Skills + Hook System v1.0.0
+
+## 本次 Session 完成事項（2026-04-30）
+
+✅ **Antigravity v1.21.6 MCP 全修復**
+- 根本原因：`.git/config` 含 `extensions.worktreeConfig = true` → Go server crash
+- 修復：`git config --unset extensions.worktreeConfig`
+- OAuth MCP 沙盒問題：GitHub 改 `node` 直執行，Figma/Perplexity 移除
+- 有效 MCP：airtable-fhs, StitchMCP, github, notion
+
+✅ **VSCode 工具鏈整合**
+- `.vscode/extensions.json`（markdownlint, ESLint, GitHistory, GitLens）
+- `.eslintrc.json`（browser + ES2021）
+- `.markdownlint.json`（MD013/MD033/MD036/MD060 豁免）
+- `.vscode/settings.json` 更新（ESLint + markdownlint on save）
+- Markdownlint 1011 個錯誤修復完成
+
+✅ **Claude Code 全域權限自動化**
+- `~/.claude/settings.json` 加入 `"defaultMode": "bypassPermissions"`
+- /commit, /read, /execute 不再詢問 YES/NO
 
 ## 本次 Session 完成事項（2026-04-28）
 

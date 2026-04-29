@@ -23,17 +23,20 @@
 ## cl-flow-runner.js 使用說明
 
 **直接使用**（Claude 會自動觸發，通常不需手動執行）：
+
 ```bash
 node scripts/cl-flow-runner.js "你的任務描述"
 ```
 
 **環境需求**：
+
 - Node.js 16+
 - `.env` 含 `PERPLEXITY_API_KEY` + `GEMINI_API_KEY`
 - （選用）`repomix` 已安裝，可提升 AG 代碼上下文質量
 
 **輸出**：
-```
+
+```text
 artifacts/{flow_id}/
   ├── task-brief.md   ← 任務說明
   ├── state.json      ← 流程狀態

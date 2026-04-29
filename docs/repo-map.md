@@ -1,3 +1,5 @@
+# Repo Map
+
 freehandsss_dashboard/
 ├── README.md                            ← 專案總覽
 ├── CLAUDE.md                            ← Claude Code 入口

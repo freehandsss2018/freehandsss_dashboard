@@ -10,7 +10,7 @@
 ## 系統概覽
 
 | 組件 | 說明 |
-|---|---|
+|***|***|
 | **Dashboard UI** | 銷售前台（iPad/iPhone）及 管理後台（Desktop）|
 | **n8n Workflow** | 業務邏輯處理中樞，包含訂單回傳、統計 |
 | **Airtable** | 主資料庫，存儲產品、成本、客戶紀錄 |
@@ -18,37 +18,43 @@
 ***
 
 ## 給 AI 助理的話
+>
 > 如果你是 Claude Code 或 Antigravity，請立即執行：
+>
 > 1. 讀取 `docs/GLOBAL_AI_SOP.md`（v2.0 多代理協作協議）
 > 2. 讀取 `/.fhs/ai/AGENTS.md`（憲法層，系統最高準則）
 > 3. 讀取 `/.fhs/ai/commands/`（可用指令集）
 > 4. 輸入 `/read` 完成記憶同步
 
----
+***
 
 ## UI 檔案說明
+
 | 檔案 | 用途 |
-|---|---|
+|***|***|
 | Freehandsss_dashboard_current.html | **正式環境** = V40.4 (2026-04-28 同步) |
 | freehandsss_dashboardV36.html | 舊版穩定基準 (Legacy Stable Baseline) |
 | freehandsss_dashboardV37.html | 展示/試用版本 (Trial / Legacy) |
 | freehandsss_dashboardV40.html | **當前開發穩定版** (Active Development) |
 
 **版本說明：**
+
 - V36 = 舊版穩定基準（2026-04前）
 - V40.4 = 當前生產版本（響應式設計 + API 快取優化）
 - 功能版本號 = 參閱 Changelog.md 最新記錄
 
 ## 備份與歸檔政策
+
 - docs/archive/pre-v1.0-backup/ — v1.0 架構重組前的舊版備份
 - archive/ — 專案層級舊版檔案備份
 - 所有備份檔案只讀，不得修改，不得直接引用為執行來源
 
----
+***
 
 ## 資料夾結構
+
 | 資料夾 | 用途 |
-|---|---|
+|***|***|
 | `.fhs/ai/` | AI 共用配置（憲法 + 指令）|
 | `.fhs/memory/` | AI session 交接記憶 |
 | `.fhs/notes/` | 決策記錄、待辦、工作日誌、AI 報告 |
@@ -67,6 +73,7 @@
 ***
 
 ## 版本
+
 - **系統版本**：v1.4.1（見 `.fhs/ai/AGENTS.md`）
 - **SOP 版本**：v2.0（見 `docs/GLOBAL_AI_SOP.md`）
 - **Dashboard UI 版本**：V40.4 (Active Production)

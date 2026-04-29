@@ -1,4 +1,5 @@
 # GLOBAL AI COLLABORATION SOP v2.2
+
 ## 跨環境多代理協作與安全協議 (Universal Edition)
 
 > **版本：** v2.2
@@ -13,6 +14,7 @@
 ## 🏛️ 第一部分：核心角色定義 (Agent Roles)
 
 ### 1. Agent 1 (A1): The Outer Brain (Perplexity)
+
 - **職能**：外部分析與技術趨勢審計
 - **邊界**：僅能存取 GitHub 上的「已同步代碼」及外部技術資料庫
 - **產出命名**：
@@ -22,6 +24,7 @@
 - **價值**：跨專案的客觀視角，防止開發者陷入局部細節
 
 ### 2. Agent 2 (A2): The Core Planner (Gemini / Antigravity)
+
 - **職能**：本地優化與實施規劃
 - **邊界**：具備本地全方位的讀取權限（.env、歷史日誌、私有腳本、NAS 數據）
 - **產出命名**：
@@ -33,6 +36,7 @@
 > **A2 的每份正式報告，必須透過絕對路徑直接寫入 `.fhs/notes/ai_reports/`，不得以 artifact 代替。**
 
 ### 3. Fat Mo: The Bridge（唯一上下文橋接者）
+
 - **職能**：跨環境信息橋接與最終授權者
 - **職責**：
   - 將 A1/A2 的報告傳遞給 A3
@@ -42,6 +46,7 @@
 - **最終承認者**：任一 agent 的結論，不得自動視為 Fat Mo 已確認。只有 Fat Mo 明確輸入 `/execute`，才視為正式授權執行。
 
 ### 4. Agent 3 (A3): The Executor (Claude Code)
+
 - **職能**：技術把關與精準執行
 - **邊界**：具備最高權限的腳本執行與代碼寫入能力
 - **產出命名**：
@@ -53,10 +58,12 @@
 ## 🛡️ 第二部分：安全鎖與權限邊界 (Security Locks)
 
 ### 1. 執行權限鎖 (Execution Lock)
+
 - **A2 禁令**：嚴禁直接修改專案主檔案。所有變更必須先產出 Markdown 提案
 - **解鎖條件**：除非 Fat Mo 明確輸入 `/execute`，否則任何 Agent 不得調用寫入工具
 
 ### 2. 雙重授權條款 (Dual Authorization)
+
 - **第一層（審查報告）**：A3 讀取 A1/A2 報告後，輸出技術可行性評估與完整 verdict，暫停等待 Fat Mo
 - **第二層（執行授權）**：Fat Mo 明確輸入 `/execute`，A3 才可根據 verdict 清單執行寫入
 - **未列入清單的文件嚴禁修改**
@@ -67,11 +74,13 @@
 > 若 A3 在此階段發生任何實際寫入行為，應視為嚴重違規，必須立即停止並回報 Fat Mo。
 
 ### 4. 跨環境上下文條款 (Cross-Environment Context)
+
 - A3 接收來自 Fat Mo 橋接的 A1/A2 報告時，視為**草案資訊**
 - A3 必須交叉比對本地代碼庫的實際狀態，不得僅憑轉述內容執行
 - 若報告描述與本地實際不符，A3 必須回報差異，等待 Fat Mo 裁決
 
 ### 5. 優化校驗鎖 (Optimization Audit Lock)
+
 - A3 執行前必須對 A2 提案進行技術可行性評估（效能、衝撞、維護性）
 - 若發現誤診或低效，A3 有權在執行前回報修正建議
 
@@ -108,7 +117,7 @@
 
 ### `/cl-flow` 觸發流程
 
-```
+```text
 Fat Mo 輸入 /cl-flow（或 /a3go）
     ↓
 A3 檢查 .fhs/notes/ai_reports/a1_implementation_plan.md
@@ -125,7 +134,7 @@ A3 產出 a3_execution_verdict.md（含 [MODIFY]/[NEW]/[DELETE] 清單）
 
 ### `/execute` 觸發流程
 
-```
+```text
 Fat Mo 輸入 /execute
     ↓
 A3 讀取 a3_execution_verdict.md
@@ -144,6 +153,7 @@ A3 重新列出所有執行項目
 ### 適用觸發條件
 
 當任務屬於以下任一類型時，完成後必須建立 completion report：
+
 - 制度變更（規則新增、規則修改）
 - AGENTS.md 或 GLOBAL_AI_SOP.md 更新
 - `.fhs/ai/commands/` 指令檔新增或修改

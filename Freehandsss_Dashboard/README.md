@@ -1,6 +1,7 @@
 # Freehandsss_Dashboard — Dashboard UI 核心區
 
 ## 用途
+
 本資料夾存放 FHS POS 系統的前端 Dashboard UI。
 
 ## 檔案說明
@@ -20,6 +21,7 @@
 - **禁止改動 `captureFormState()`**：這是整個 POS 系統的數據根基
 
 ## 當前版本
+
 - UI 層：**V40.4** (Active Production)
   - 響應式設計（iPhone <768px / Desktop ≥768px）
   - 訂單總覽 5分鐘 API 快取（sessionStorage）
@@ -27,5 +29,6 @@
 - 憲法層：v1.4.1（AGENTS.md）
 
 ## 相關文件
+
 - 三端欄位映射：`/n8n/Triple_Sync_Field_Map.md`
 - 架構說明：`/docs/FHS_Blueprint.md`
