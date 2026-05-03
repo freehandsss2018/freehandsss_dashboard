@@ -58,10 +58,24 @@ export async function updateNodeCode(workflowId, nodeName, newCode) {
   // 更新 jsCode
   wf.nodes[nodeIdx].parameters.jsCode = newCode;
 
+  // 清理 GET 回傳的額外欄位，避免 n8n PUT additionalProperties 驗證失敗
+  const cleanedWf = {
+    name: wf.name,
+    nodes: wf.nodes.map(({ issues, ...cleanNode }) => cleanNode),
+    connections: wf.connections,
+    settings: Object.fromEntries(
+      Object.entries(wf.settings || {}).filter(
+        ([key]) => !['availableInMCP', 'binaryMode'].includes(key)
+      )
+    ),
+    ...(wf.staticData != null && { staticData: wf.staticData }),
+    ...(wf.pinData && Object.keys(wf.pinData).length > 0 && { pinData: wf.pinData }),
+  };
+
   // PUT 回 n8n
   const result = await n8nFetch(`/workflows/${workflowId}`, {
     method: 'PUT',
-    body: JSON.stringify(wf),
+    body: JSON.stringify(cleanedWf),
   });
 
   return { updated: true, nodeName, workflowId, versionId: result.versionId };

@@ -1,7 +1,29 @@
-# FHS Handoff - 2026-05-03
-當前版本：v1.4.2（憲法層）/ V40.7（UI層）/ 6 Agents + 2 Skills + Hook System v1.0.0
+# FHS Handoff - 2026-05-04
+當前版本：v1.4.2（憲法層）/ V40.6（n8n Node 14）/ V40.7（UI層）/ 6 Agents + 2 Skills + Hook System v1.0.0
 
-## 本次 Session 完成事項（2026-05-03）
+## 本次 Session 完成事項（2026-05-04）
+
+✅ **n8n Node 14 → V40.6（跨部位運費扣減）**
+- 加入 `keychainItemCount` 訂單層計算邏輯
+- 規則：`(鎖匙扣 Order_Items 件數 − 1) × $20`
+- 規則記錄於 `docs/FHS_Product_Bible_V3.7.md` §2.5
+
+✅ **11 筆 Airtable Main_Orders 歷史記錄修正**
+- Total_Cost & Net_Profit 各別更正，合計修正 −$260
+- 受影響訂單：Akira(−$60)、SalinaLai/Amen/WingLee/Ivy/KaLeiChan/Gaeac/Kathleen/Angel/PrinceCheng/Kathy（各 −$20）
+
+✅ **n8n-mcp-server PUT sanitization 修正**
+- `n8n-client.js` `updateNodeCode()` 現改為最小化 PUT body，修正 HTTP 400 錯誤
+
+✅ **文件同步**
+- `Triple_Sync_Field_Map.md`：Shipping_Deduction 說明 + Node 14 Total_Cost 公式更新
+- `decisions.md`：新增 [2026-05-04] 條目
+- `todo.md`：n8n 安全網任務標記完成
+
+✅ **FatMo 人手核對清單生成**
+- 檔案：`.fhs/notes/2026-05-04_cost_audit_keychain_shipping.md`
+
+## 上次 Session 完成事項（2026-05-03）
 
 ✅ **Stitch → Antigravity 整合（Phase A–D）**
 - 新增 `ag-stitch-sync.md`、`ag-ui-import.md` 指令
@@ -33,12 +55,20 @@
    - 節點現有欄位：Product_Link、Quantity、Engraving_Text、Order_Link、Order_Item_Key
    - 需加入：Handmodel_Cost、Keychain_Cost、Necklace_Cost（依 item 類別判斷）
 
-3. **[PENDING] preview_product_distinction_v40.html**
+3. **[P-MED] n8n-mcp-server 重啟**
+   - n8n-client.js PUT sanitization 已修正，但 MCP server 進程需重啟才能載入新程式碼
+   - 重啟後 `update_node_code` MCP tool 可正常使用，無需繞道 bash script
+
+4. **[PENDING] Fat Mo 人手核對**
+   - 核對清單：`.fhs/notes/2026-05-04_cost_audit_keychain_shipping.md`
+   - 重點：確認 0600721 Akira 是否確為 4 件鎖匙扣（扣 $60）
+
+5. **[PENDING] preview_product_distinction_v40.html**
    - 未追蹤檔案，確認是否納入 git 或加入 .gitignore
 
-4. **🟡 Legacy Scripts 文件化決策**（4 個腳本未在 scripts/README.md 記錄）
+6. **🟡 Legacy Scripts 文件化決策**（4 個腳本未在 scripts/README.md 記錄）
 
-5. **iPhone 實機測試** — V40 財務模式
+7. **iPhone 實機測試** — V40 財務模式
 
 ## 核心配置
 

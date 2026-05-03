@@ -147,6 +147,10 @@ engraving  (刻字)
 
 ### Step 4 — 執行腳本
 
+> ⚠️ **重要警告（2026-05-04 更新）**：`update-legacy-profit.js` 目前**不包含跨部位鎖匙扣運費扣減邏輯**（Product Bible §2.5）。
+> 執行後會用原始 Item_BaseCost 總和覆蓋 Total_Cost，**抹除**已人工修正的跨件運費扣減。
+> 執行前必須先更新腳本，或在執行後重新套用 §2.5 扣減規則。
+
 ```bash
 # 1. 試跑確認無誤
 node scripts/sync-legacy-orders.js --dry-run
@@ -155,6 +159,7 @@ node scripts/sync-legacy-orders.js --dry-run
 node scripts/sync-legacy-orders.js
 
 # 3. 計算成本與利潤（從 Product_Database 重算）
+#    ⚠️ 執行前請確認腳本已包含跨部位鎖匙扣運費扣減（§2.5）
 node scripts/update-legacy-profit.js --dry-run
 node scripts/update-legacy-profit.js
 ```

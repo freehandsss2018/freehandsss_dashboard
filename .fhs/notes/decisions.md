@@ -7,6 +7,19 @@
 
 ## 記錄
 
+[2026-05-04] 鎖匙扣跨部位運費扣減規則建立 + Node 14 V40.6 部署
+
+決策：
+- Node 14 "Calculate Profit & Pack Items" 更新至 V40.6：加入 `keychainItemCount` 訂單層計算邏輯
+- 訂單層扣減規則：`(鎖匙扣 Order_Items 件數 − 1) × $20`，僅在件數 > 1 時生效
+- 規則記錄於 `docs/FHS_Product_Bible_V3.7.md` §2.5
+- 11 筆 Airtable Main_Orders 歷史記錄修正（Total_Cost & Net_Profit，合計差異 −$260）
+- `n8n-mcp-server/src/n8n-client.js` PUT sanitization 修正（解決 HTTP 400 錯誤）
+原因：不同部位的鎖匙扣（如 LH + RH）在同一訂單共用同一批次運費，舊 Node 7 只計算同 SKU qty>1 的 item 層扣減，跨 item 的訂單層扣減從未實作，導致 11 筆歷史訂單 Total_Cost 低估共 $260。
+批准：Fat Mo ✅（2026-05-04）
+
+---
+
 [2026-05-03] Airtable 成本分拆欄位建立 + n8n 財務計算職責確立
 
 決策：

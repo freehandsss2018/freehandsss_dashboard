@@ -1,3 +1,23 @@
+# Session Log — 2026-05-04（第二十次）
+
+## 概覽
+鎖匙扣跨部位運費扣減規則建立：n8n Node 14 V40.6 部署，12 筆 Airtable 歷史訂單修正（−$280），n8n-client.js HTTP 400 修正，全 22 單成本核對清單生成，4 份文件同步更新。
+
+## 主要完成事項
+1. **Product Bible §2.5 新增**：跨部位鎖匙扣運費共享規則 (keychainItemCount−1)×$20
+2. **n8n Node 14 → V40.6**：加入 keychainItemCount 訂單層扣減邏輯
+3. **n8n-client.js 修正**：PUT body 最小化，修復 HTTP 400 錯誤
+4. **12 筆 Main_Orders 修正**：Total_Cost & Net_Profit 更正，合計 −$280
+5. **文件同步**：Triple_Sync_Field_Map / decisions / todo / handoff / Legacy_Migration_Notes
+6. **全 22 單核對清單**：`.fhs/notes/2026-05-04_cost_audit_all_orders.md`
+
+## 待辦（承接至下次）
+- scripts/update-legacy-profit.js 需更新，加入 §2.5 扣減邏輯
+- n8n-mcp-server 重啟（載入新 n8n-client.js）
+- Fat Mo 確認 0600721 Akira 是否確為 4 件鎖匙扣
+
+---
+
 # Session Log — 2026-04-30（第十九次）
 
 ## 概覽

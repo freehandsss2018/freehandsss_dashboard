@@ -362,7 +362,7 @@ Output 1 → Fallback/dead end (auditPassed = true, 無連接)
 | `Original_Qty` | Number | 原始數量 |
 | `Item_Notes` | String | 刻字備註 |
 | `Order_Item_Key` | String | 唯一鍵 |
-| `Shipping_Deduction` | Number | 運費扣減 (鎖匙扣 qty>1: (qty-1)×20) |
+| `Shipping_Deduction` | Number | 運費扣減（Item 層：同 SKU qty>1 時 (qty-1)×20；**訂單層跨部位扣減見 Node 14**） |
 | `Necklace_Deduction` | Number | 頸鏈扣減 (吊飾: floor(qty/2)×220) |
 
 ---
@@ -436,7 +436,7 @@ Cache Hit?: 已斷開連接 (dead node)，不影響運行
 | 輸出欄位 | 計算方式 |
 |----------|---------|
 | `Total_Revenue` | Deposit + Balance + Additional_Fee |
-| `Total_Cost` | Σ 所有 items 的 Total_Base_Cost |
+| `Total_Cost` | Σ 所有 items 的 Total_Base_Cost − (鎖匙扣 Order_Items 件數 − 1) × $20（跨部位運費扣減，V40.6，見 Product Bible §2.5） |
 | `Final_Profit` | Total_Revenue − Total_Cost |
 | `Order_ID` | 直接傳遞 |
 | `Customer_Name` | 直接傳遞 |
