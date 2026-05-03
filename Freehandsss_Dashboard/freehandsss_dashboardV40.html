@@ -296,6 +296,63 @@
             display: block;
         }
 
+        /* ── 方案B：訂單類型確認區塊 ── */
+        .order-type-confirm {
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+            transition: border-color .25s, background .25s;
+        }
+        .order-type-confirm.state-yes { border-color: #7B1FA2; background: #F3E5F5; }
+        .order-type-confirm .confirm-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .order-type-confirm .confirm-desc  { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.5; }
+        .confirm-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .confirm-option {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 12px; border-radius: 8px;
+            border: 1.5px solid #eee; background: #fff;
+            cursor: pointer; transition: border-color .25s, background .25s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .confirm-option.selected-yes { border-color: #7B1FA2; background: rgba(123,31,162,0.06); }
+        .radio-circle {
+            flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid #ccc; background: #fff; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color .25s;
+        }
+        .confirm-option.selected-yes .radio-circle { border-color: #7B1FA2; background: #7B1FA2; }
+        .confirm-option.selected-yes .radio-circle::after {
+            content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff;
+        }
+        .confirm-option .option-label { font-size: 13px; font-weight: 600; line-height: 1.3; }
+        .confirm-option.selected-yes .option-label { color: #4A148C; }
+        .confirm-option .option-sub { font-size: 11px; color: #888; margin-top: 2px; }
+        .confirm-warning {
+            display: flex; align-items: flex-start; gap: 6px;
+            background: #FFF3E0; border: 1px solid #FFCC80; border-radius: 4px;
+            padding: 7px 10px; font-size: 11px; color: #BF360C; line-height: 1.45;
+        }
+        .cost-included-badge {
+            align-items: center; gap: 6px;
+            background: #E8F5E9; border: 1px solid #A5D6A7; border-radius: 4px;
+            padding: 7px 12px; margin-bottom: 12px;
+            font-size: 12px; font-weight: 600; color: #2E7D32;
+            animation: fadeSlideIn .3s ease-out;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .toggle-row.highlight-p {
+            background: #F3E5F5; border-radius: 6px;
+            padding: 10px 10px; border-bottom: none; margin-bottom: 1px;
+        }
+        .toggle-row.highlight-p strong { color: #4A148C; }
+        .toggle-row.highlight-p input:checked + .slider { background: #7B1FA2; }
+
         .limb-grid {
             display: flex;
             flex-direction: column;
@@ -1704,6 +1761,55 @@
                 border-bottom: 1px solid var(--fhs-border);
             }
         }
+
+        /* ── System Panel (V46.1) ─────────────────────────────── */
+        .sys-card {
+            background: var(--fhs-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+        }
+        .sys-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: var(--space-2);
+        }
+        .sys-icon { font-size: 18px; }
+        .sys-title { font-weight: 600; font-size: var(--fhs-text-sm); color: var(--fhs-text-primary); flex: 1; }
+        .sys-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+        .sys-badge-ok      { background: #d1fae5; color: #065f46; }
+        .sys-badge-warn    { background: #fef3c7; color: #92400e; }
+        .sys-badge-error   { background: #fee2e2; color: #991b1b; }
+        .sys-badge-checking{ background: #e0e7ff; color: #3730a3; }
+        .sys-metric { font-size: 28px; font-weight: 800; color: var(--fhs-text-primary); line-height: 1.2; margin-bottom: 4px; }
+        .sys-sub { font-size: 12px; color: var(--fhs-text-secondary); margin-bottom: var(--space-2); }
+        .sys-hint { font-size: 11px; color: #9ca3af; margin-top: var(--space-2); }
+        .sys-progress-bar { height: 6px; background: var(--fhs-border); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
+        .sys-progress-fill { height: 100%; border-radius: 3px; background: var(--fhs-success); transition: width 0.4s ease, background 0.4s ease; }
+        #sysActivityLog .sys-activity-row { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom: 1px solid var(--fhs-border); }
+        #sysActivityLog .sys-activity-row:last-child { border-bottom: none; }
+        /* KPI Breakdown rows */
+        .fo-kpi-bkd { margin-top:8px; border-top:1px solid var(--fhs-border); padding-top:7px; display:none; }
+        .fo-kpi-bkd-row { display:flex; align-items:center; margin-bottom:4px; gap:4px; }
+        .fo-kpi-bkd-row:last-child { margin-bottom:0; }
+        .fo-kpi-bkd-label { font-size:10px; color:var(--fhs-text-secondary); width:60px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .fo-kpi-bkd-bar-wrap { flex:1; height:4px; background:var(--fhs-border); border-radius:2px; overflow:hidden; min-width:20px; }
+        .fo-kpi-bkd-bar-fill { height:100%; border-radius:2px; transition:width 0.3s ease; }
+        .fo-kpi-bkd-val { font-size:10px; font-weight:600; color:var(--fhs-text-primary); width:52px; text-align:right; flex-shrink:0; }
+        /* Tooltip for sys-icon */
+        .sys-icon[data-tooltip] { position:relative; cursor:help; }
+        .sys-icon[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute; left: 50%; transform: translateX(-50%);
+            bottom: calc(100% + 6px);
+            background: #1e293b; color: #f1f5f9;
+            font-size: 11px; line-height: 1.4; white-space: nowrap;
+            padding: 5px 8px; border-radius: 6px;
+            pointer-events: none; opacity: 0; transition: opacity 0.15s ease;
+            z-index: 999; max-width: 220px; white-space: normal; text-align: center;
+        }
+        .sys-icon[data-tooltip]:hover::after { opacity: 1; }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -1723,6 +1829,8 @@
             <button id="modeReviewBtn" onclick="switchMode('review')">訂單</button>
             <!-- Financial Overview 模式按鈕（V40.2 整合版） -->
             <button id="modeFinanceBtn" onclick="switchMode('finance')">財務</button>
+            <!-- 系統監控按鈕（V46.1） -->
+            <button id="modeSystemBtn" onclick="switchMode('system')" title="系統狀態監控">⚙️</button>
         </div>
     </div>
 
@@ -1832,7 +1940,7 @@
                 <button
                     class="review-btn-refresh"
                     style="margin-left:auto; padding:10px 20px; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-weight:700; font-size:var(--fhs-text-sm); border:none; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background var(--transition-fast);"
-                    onclick="fetchGlobalReview()">
+                    onclick="(window.fetchGlobalReview || fetchGlobalReview)(true)">
                     <svg xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1942,7 +2050,37 @@
     <div class="card card-product">
         <h2>🛍️ 產品選購</h2>
 
-        <div class="toggle-row">
+        <!-- ── 方案B：訂單類型確認區塊 ── -->
+        <div class="order-type-confirm" id="orderTypeConfirm">
+            <div class="confirm-title">📋 訂單類型確認</div>
+            <div class="confirm-desc">此訂單是否包含「立體擺設」取模服務？</div>
+            <div class="confirm-options">
+                <div class="confirm-option selected-yes" id="confirmOptNo" onclick="selectOrderType('no')">
+                    <div class="radio-circle" id="rcNo">
+                        <div style="width:7px;height:7px;border-radius:50%;background:#B0A090;" id="dotNo"></div>
+                    </div>
+                    <div>
+                        <div class="option-label">否（純金屬／吊飾訂單）</div>
+                    </div>
+                </div>
+                <div class="confirm-option" id="confirmOptYes" onclick="selectOrderType('yes')">
+                    <div class="radio-circle" id="rcYes"></div>
+                    <div>
+                        <div class="option-label">是 — 含取模服務</div>
+                        <div class="option-sub">+$210 木框套裝自動計入</div>
+                    </div>
+                </div>
+            </div>
+            <div class="confirm-warning">
+                <span>⚠️</span>
+                <span>若客人有預約取模，請必須選「是」</span>
+            </div>
+        </div>
+        <div class="cost-included-badge" id="costIncludedBadge" style="display:none;">
+            <span>✓</span><span>立體擺設成本 $210 已計入</span>
+        </div>
+
+        <div class="toggle-row" id="toggleRowP">
             <strong>🎨 立體擺設款式</strong>
             <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this)"> <span
                     class="slider"></span></label>
@@ -2464,6 +2602,7 @@
                 <button class="fo-cat-btn fo-cat-active" onclick="foSetCategory('all')">全部</button>
                 <button class="fo-cat-btn" onclick="foSetCategory('handmodel')">手模擺設</button>
                 <button class="fo-cat-btn" onclick="foSetCategory('metal')">金屬產品</button>
+                <span style="font-size:11px; color:var(--fhs-text-muted); margin-left:8px; align-self:center;">※ 配件為附加產品，不獨立計算收入</span>
             </div>
 
             <!-- KPI Cards (6 cards) -->
@@ -2478,6 +2617,7 @@
                         <span>&#9650;</span><span id="fo-kpi-revenue-pct">+0%</span>
                     </div>
                     <div id="fo-kpi-revenue-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                    <div id="fo-kpi-revenue-bkd" class="fo-kpi-bkd"></div>
                 </div>
                 <div class="fo-kpi-card" data-type="cost" title="成本：材料費 + 工費 + 包裝費">
                     <div class="fo-kpi-top">
@@ -2489,6 +2629,7 @@
                         <span>&#9650;</span><span id="fo-kpi-cost-pct">+0%</span>
                     </div>
                     <div id="fo-kpi-cost-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                    <div id="fo-kpi-cost-bkd" class="fo-kpi-bkd"></div>
                 </div>
                 <div class="fo-kpi-card" data-type="profit" title="毛利：收入 − 成本">
                     <div class="fo-kpi-top">
@@ -2500,6 +2641,7 @@
                         <span>&#9650;</span><span id="fo-kpi-profit-pct">+0%</span>
                     </div>
                     <div id="fo-kpi-profit-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                    <div id="fo-kpi-profit-bkd" class="fo-kpi-bkd"></div>
                 </div>
                 <div class="fo-kpi-card" data-type="orders" title="訂單數：期間內已確認的訂單總數">
                     <div class="fo-kpi-top">
@@ -2511,6 +2653,7 @@
                         <span>&#9650;</span><span id="fo-kpi-orders-pct">+0</span>
                     </div>
                     <div id="fo-kpi-orders-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                    <div id="fo-kpi-orders-bkd" class="fo-kpi-bkd"></div>
                 </div>
                 <div class="fo-kpi-card" data-type="margin" title="毛利率：(收入 − 成本) ÷ 收入 × 100%">
                     <div class="fo-kpi-top">
@@ -2585,6 +2728,151 @@
     </div>
     <!-- End financeModeContainer -->
 
+    <!-- ══════════════════════════════════════════════════════
+         系統監控面板 (V46.1) — System Mode Container
+         ══════════════════════════════════════════════════════ -->
+    <div id="systemModeContainer" style="display:none; width:100%; padding: var(--space-4); box-sizing:border-box;">
+
+        <!-- ══ 系統監控卡片區 ══ -->
+
+        <!-- Row 0: Airtable Records 上限監察 (full-width) -->
+        <div class="card" style="margin:0 0 12px 0; padding:16px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span class="sys-icon" data-tooltip="每個 Airtable Base 的記錄筆數上限。免費方案每個 Base 上限 1,000 筆。超限後將無法新增訂單。">📁</span>
+                <span class="sys-title">Airtable Records 用量</span>
+                <span id="sysRecordsStatus" class="sys-badge sys-badge-warn">注意</span>
+                <span style="margin-left:auto; font-size:11px; color:var(--fhs-text-secondary);">上次更新：<span id="sysRecordsDate">2026-05-01</span></span>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:6px;">
+                <span id="sysRecordsUsage" class="sys-metric">594 筆</span>
+                <span style="font-size:14px; color:var(--fhs-text-secondary);">/ 1,000</span>
+            </div>
+            <div class="sys-progress-bar" style="margin-bottom:4px;"><div id="sysRecordsBar" class="sys-progress-fill" style="width:59.4%; background:#f59e0b;"></div></div>
+            <div id="sysRecordsDetails" class="sys-sub">每個 Base 上限 1,000 筆（免費方案）· 距上限還剩 406 筆</div>
+            <div class="sys-hint">⚠️ 建議於達 900 筆（90%）前聯繫 Fat Mo 清理舊記錄或升級方案</div>
+        </div>
+
+        <!-- Row 1: API 配額 + 快取狀態 -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+
+            <!-- Airtable API 配額 -->
+            <div class="card" style="margin:0; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span class="sys-icon" data-tooltip="本月 Session 內向 Airtable 發出的 API 請求次數。免費方案每月上限 1,000 次。">📡</span>
+                    <span class="sys-title">Airtable API 配額</span>
+                    <span id="sysAirtableStatus" class="sys-badge sys-badge-ok">正常</span>
+                </div>
+                <div id="sysAirtableUsage" class="sys-metric">0 次</div>
+                <div class="sys-progress-bar"><div id="sysAirtableBar" class="sys-progress-fill" style="width:0%"></div></div>
+                <div id="sysAirtableDetails" class="sys-sub">本月 · Session 累計（估算）</div>
+                <div class="sys-hint">每月免費配額：1,000 次</div>
+            </div>
+
+            <!-- 快取狀態 -->
+            <div class="card" style="margin:0; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span class="sys-icon" data-tooltip="已快取的 GlobalReview 查詢結果數量。快取有效期 5 分鐘，命中時不消耗 API 配額。">⚡</span>
+                    <span class="sys-title">快取狀態</span>
+                    <button onclick="window.sysFlushCache()" style="margin-left:auto; padding:2px 10px; border-radius:12px; border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); font-size:11px; cursor:pointer; color:var(--fhs-text-secondary);">清除</button>
+                </div>
+                <div id="sysCacheHits" class="sys-metric">0 筆</div>
+                <div id="sysCacheDetails" class="sys-sub">快取為空</div>
+                <div class="sys-hint">GlobalReview 快取 TTL：5 分鐘</div>
+            </div>
+        </div>
+
+        <!-- Row 2: n8n 連線 + 版本資訊 -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+
+            <!-- n8n 連線狀態 -->
+            <div class="card" style="margin:0; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span class="sys-icon" data-tooltip="透過發送測試請求至 GlobalReview Webhook 量測 n8n 伺服器回應延遲（ms）。">🔗</span>
+                    <span class="sys-title">n8n 連線</span>
+                    <span id="sysN8nStatus" class="sys-badge sys-badge-checking">檢查中</span>
+                    <button onclick="window.sysCheckN8n()" style="margin-left:auto; padding:2px 10px; border-radius:12px; border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); font-size:11px; cursor:pointer; color:var(--fhs-text-secondary);">重測</button>
+                </div>
+                <div id="sysN8nPing" class="sys-metric">— ms</div>
+                <div id="sysN8nDetails" class="sys-sub">等待測試</div>
+                <div class="sys-hint">GlobalReview webhook 延遲測試</div>
+            </div>
+
+            <!-- 版本 / 同步時間 -->
+            <div class="card" style="margin:0; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span class="sys-icon" data-tooltip="Dashboard 版本號及 Airtable 系統設定的最後同步時間。">🏷️</span>
+                    <span class="sys-title">版本資訊</span>
+                </div>
+                <div class="sys-metric" style="font-size:18px;">V40.4</div>
+                <div class="sys-sub">最後設定同步：<span id="sysVerSyncTime">尚未同步</span></div>
+                <div class="sys-hint">Webhook 模式：<span id="sysWebhookMode" class="sys-badge sys-badge-ok">Production</span></div>
+            </div>
+        </div>
+
+        <!-- Row 3: 活動記錄 + Webhook URLs -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+
+            <!-- API 活動記錄 -->
+            <div class="card" style="margin:0; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                    <span class="sys-icon" data-tooltip="本 Session 內所有向 Airtable 發出的 API 請求時間軸記錄（最多保留 20 筆）。">📋</span>
+                    <span class="sys-title">API 活動記錄</span>
+                </div>
+                <div id="sysActivityLog" style="min-height:80px;">
+                    <div style="color:var(--fhs-text-secondary); font-size:12px;">本 Session 尚無 API 活動</div>
+                </div>
+            </div>
+
+            <!-- Webhook URLs -->
+            <div class="card" style="margin:0; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                    <span class="sys-icon" data-tooltip="n8n Webhook 端點 URL 及當前運行模式（Production / Test）。">🌐</span>
+                    <span class="sys-title">Webhook 端點</span>
+                </div>
+                <div id="sysWebhookOrderUrl" style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:6px; word-break:break-all;">訂單: 載入中…</div>
+                <div id="sysWebhookReviewUrl" style="font-size:11px; color:var(--fhs-text-secondary); word-break:break-all;">查詢: 載入中…</div>
+            </div>
+        </div>
+
+
+        <!-- 🛠️ QA 中心（系統模式面板） -->
+        <div class="card" style="border-top: 5px solid #457B9D; margin: 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h2 style="color: #457B9D; margin:0;">🛠️ 系統品質自動化檢驗中心 (Quality Assurance)</h2>
+                <button id="toggleDocBtn" onclick="toggleDocPanel()" style="padding: 5px 12px; border-radius: 6px; border: 1px solid #457B9D; background: #f0f7ff; color: #457B9D; font-size: 12px; cursor: pointer;">📖 顯示測試功能說明</button>
+            </div>
+            <div id="qaDocPanel" style="display:none; background:#f9f9fb; padding:15px; border-radius:8px; border:1px solid #e1e4e8; margin-bottom:15px; font-size:13px; line-height:1.6; color:#444;">
+                <div style="margin-bottom:12px;">
+                    <b style="color:#457B9D;">1. 數據精確度檢核 (Data Precision)</b><br>
+                    <b>【背景/目的】</b> Dashboard 需處理複雜的產品規格與代碼，此測試模擬過百種產品組合。<br>
+                    <b>【用法/檢驗結果】</b> 驗證「維度解析引擎」是否能從 Item_ID 與 Product 中精準提取出膠囊標籤（嬰兒、鎖匙扣、不銹鋼等）。
+                </div>
+                <div style="margin-bottom:12px;">
+                    <b style="color:#2196f3;">2. 介面操作穩定性檢驗 (UI Stability)</b><br>
+                    <b>【背景/目的】</b> 用戶在頻繁切換選單或角色時，表單狀態可能發生衝突。<br>
+                    <b>【用法/檢驗結果】</b> 執行「全狀態捕捉 -> 重置 -> 還原」，確保系統在 0.3 秒內能 100% 恢復用戶正在輸入的所有資料。
+                </div>
+                <div>
+                    <b style="color:#9c27b0;">3. 歷史資料深度注入測試 (Time Machine)</b><br>
+                    <b>【背景/目的】</b> 測試舊狀態還原功能。<br>
+                    <b>【用法/檢驗結果】</b> 從訂單總覽選取一筆具備歷史狀態的訂單，驗證 UI 是否能成功重現該筆訂單在下單時的選框狀態。
+                </div>
+            </div>
+            <style>#qaDocPanel.active { display: block !important; }</style>
+            <p style="font-size: 13px; color: #888; margin-bottom: 15px;">※ 檢驗功能僅於「沙盒模式」開啟。所有測試資料將不會污染正式資料庫。</p>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <button onclick="runAllAudits()" style="padding: 10px 20px; border-radius: 8px; border: none; background: #457B9D; color: white; font-weight: bold; cursor: pointer; font-size: 14px;">🚀 啟動全方位檢驗</button>
+                <button onclick="clearQALog(); runDataAccuracyCheck()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #457B9D; background: #f0f7ff; color: #457B9D; font-weight: bold; cursor: pointer;">🧪 數據精確度</button>
+                <button onclick="clearQALog(); runInterfaceStabilityTest()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #2196f3; background: #e3f2fd; color: #1565c0; font-weight: bold; cursor: pointer;">🖥️ 介面穩定度</button>
+                <button onclick="clearQALog(); timemachineTest()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #9c27b0; background: #f3e5f5; color: #6a1b9a; font-weight: bold; cursor: pointer;">🕐 歷史還原測試</button>
+                <button onclick="clearQALog()" style="padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; background: #f5f5f5; color: #666; cursor: pointer;">🗑️ 清除日誌</button>
+            </div>
+            <div id="qaLog" class="qa-log">檢驗日誌將顯示在此處...</div>
+        </div>
+
+    </div>
+    <!-- End systemModeContainer -->
+
     </div> <!-- End v40-main-col -->
 
     <!-- 右欄：Desktop Side Panel -->
@@ -2606,7 +2894,7 @@
                 <span style="font-weight:700; color: var(--fhs-text-primary);">🧪 QA Center</span>
             </div>
             <p style="font-size: var(--fhs-text-sm); color: var(--fhs-text-secondary); margin:0;">
-                QA 面板位於頁面底部（沙盒模式開啟後可見）。
+                點擊頂部 ⚙️ 切換至系統模式查看 QA 中心。
             </p>
         </div>
 
@@ -2752,7 +3040,11 @@
                     systemConfig = JSON.parse(data.data.Admin_Notes);
                     systemConfig.recordId = data.data.Record_ID || data.id || systemConfig.recordId;
                     console.log("System Config Loaded:", systemConfig);
-                    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({data: systemConfig, ts: Date.now()})); } catch(e) {}
+                    try {
+                        sessionStorage.setItem(CACHE_KEY, JSON.stringify({data: systemConfig, ts: Date.now()}));
+                        sessionStorage.setItem('fhs_config_ts', String(Date.now()));
+                        if (window.sysTrackAtCall) window.sysTrackAtCall('SystemConfig → Airtable (+1)');
+                    } catch(e) {}
                     syncConfigUI();
                 }
             } catch (error) {
@@ -3025,12 +3317,14 @@
                 const reviews = document.querySelectorAll('#reviewModeContainer');
                 const editP = document.querySelectorAll('#editModeContainer');
                 const finances = document.querySelectorAll('#financeModeContainer');
+                const systems = document.querySelectorAll('#systemModeContainer');
 
                 // 🎯 隱藏所有
                 forms.forEach(f => f.style.display = 'none');
                 reviews.forEach(r => r.style.display = 'none');
                 editP.forEach(e => e.style.display = 'none');
                 finances.forEach(fi => fi.style.display = 'none');
+                systems.forEach(s => s.style.display = 'none');
 
                 // Finance mode body class
                 document.body.classList.toggle('v40-finance-active', mode === 'finance');
@@ -3044,33 +3338,36 @@
                     editP.forEach(e => e.style.display = 'block');
                 } else if (mode === 'review') {
                     reviews.forEach(r => r.style.display = 'block');
-                    // 🚨 徹底隱藏表單 (Review 模式不應看到表單)
                     forms.forEach(f => f.style.display = 'none');
                 } else if (mode === 'finance') {
                     finances.forEach(fi => fi.style.display = 'block');
                     forms.forEach(f => f.style.display = 'none');
+                } else if (mode === 'system') {
+                    systems.forEach(s => s.style.display = 'block');
+                    forms.forEach(f => f.style.display = 'none');
                 }
 
                 // 更新按鈕樣式
-                ['modeCreateBtn','modeEditBtn','modeReviewBtn','modeFinanceBtn'].forEach(id => {
+                ['modeCreateBtn','modeEditBtn','modeReviewBtn','modeFinanceBtn','modeSystemBtn'].forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) { btn.classList.remove('active'); btn.style.cssText = ''; }
                 });
-                const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn' };
+                const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn', system:'modeSystemBtn' };
                 const activeBtn = document.getElementById(activeMap[mode]);
                 if (activeBtn) activeBtn.classList.add('active');
 
                 // --- V36.1 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
-                if (bbar) bbar.style.display = (mode === 'review' || mode === 'finance') ? 'none' : 'flex';
+                if (bbar) bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system') ? 'none' : 'flex';
 
-                // V40 Bottom Bar: hide order actions in finance mode
+                // V40 Bottom Bar: hide order actions in finance/system mode
                 const v40bbar = document.getElementById('v40-bottom-bar');
-                if (v40bbar) v40bbar.style.display = (mode === 'finance') ? 'none' : '';
+                if (v40bbar) v40bbar.style.display = (mode === 'finance' || mode === 'system') ? 'none' : '';
 
                 if (mode === 'finance') {
-                    // Small delay to ensure container is visible before canvas rendering
                     setTimeout(foInitAll, 50);
+                } else if (mode === 'system') {
+                    setTimeout(sysRefreshPanel, 50);
                 }
             }
             /* review fetch: 每次切入均重新載入，不受 currentMode 保護限制 */
@@ -3084,6 +3381,42 @@
         function toggleAddon(id, cb) {
             document.getElementById(id).classList.toggle('active', cb.checked);
             generate();
+        }
+
+        function selectOrderType(type) {
+            var confirmBlock = document.getElementById('orderTypeConfirm');
+            var badge        = document.getElementById('costIncludedBadge');
+            var enablePChk   = document.getElementById('enableP');
+            var optNo        = document.getElementById('confirmOptNo');
+            var optYes       = document.getElementById('confirmOptYes');
+            var rcNo         = document.getElementById('rcNo');
+            var dotNo        = document.getElementById('dotNo');
+            var rowP         = document.getElementById('toggleRowP');
+            if (type === 'yes') {
+                confirmBlock.classList.add('state-yes');
+                optNo.classList.remove('selected-yes');
+                optYes.classList.add('selected-yes');
+                if (dotNo) dotNo.style.background = '#D1D1D6';
+                if (rcNo)  rcNo.style.borderColor  = '#D1D1D6';
+                badge.style.display = 'flex';
+                if (rowP) rowP.classList.add('highlight-p');
+                if (enablePChk && !enablePChk.checked) {
+                    enablePChk.checked = true;
+                    toggleAddon('contentP', enablePChk);
+                }
+            } else {
+                confirmBlock.classList.remove('state-yes');
+                optNo.classList.add('selected-yes');
+                optYes.classList.remove('selected-yes');
+                if (dotNo) dotNo.style.background = '#B0A090';
+                if (rcNo)  rcNo.style.borderColor  = '#ccc';
+                badge.style.display = 'none';
+                if (rowP) rowP.classList.remove('highlight-p');
+                if (enablePChk && enablePChk.checked) {
+                    enablePChk.checked = false;
+                    toggleAddon('contentP', enablePChk);
+                }
+            }
         }
 
         function togglePart(boxId, cb) {
@@ -3447,8 +3780,9 @@
             }
 
             // 金屬鎖匙扣 擷取邏輯
+            // 安全網：section toggle 關閉但子項目已勾選時仍納入 payload（防 0601100 類問題）
             const enableK = getValSafe("enableK", false);
-            if (enableK) {
+            if (enableK || getValSafe('k_baby_sec_en', false) || getValSafe('k_elder_sec_en', false) || getValSafe('k_family_en', false)) {
                 if (getValSafe('k_baby_sec_en', false)) {
                     const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
                     babyParts.forEach(p => {
@@ -3483,8 +3817,8 @@
                 }
             }
 
-            // 純銀吊飾擷取
-            if (getValSafe('enableM', false)) {
+            // 純銀吊飾擷取（同上安全網邏輯）
+            if (getValSafe('enableM', false) || getValSafe('m_baby_sec_en', false) || getValSafe('m_elder_sec_en', false)) {
                 if (getValSafe('m_baby_sec_en', false)) {
                     const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
                     babyParts.forEach(p => {
@@ -4445,6 +4779,152 @@
 
         window.fetchGlobalReview = fetchGlobalReview;
 
+        // ══════════════════════════════════════════════════════════
+        // 【V46.1】System Panel Logic — 系統監控面板
+        // ══════════════════════════════════════════════════════════
+        const SYS_ACTIVITY_KEY = 'fhs_sys_activity';
+        const SYS_AT_CALLS_KEY = 'fhs_at_calls_' + new Date().toISOString().slice(0,7); // per-month key
+
+        // Track an Airtable API call (called from cache layer hooks)
+        function sysTrackAtCall(source) {
+            try {
+                const count = parseInt(sessionStorage.getItem(SYS_AT_CALLS_KEY) || '0') + 1;
+                sessionStorage.setItem(SYS_AT_CALLS_KEY, String(count));
+                const log = JSON.parse(sessionStorage.getItem(SYS_ACTIVITY_KEY) || '[]');
+                log.unshift({ ts: Date.now(), src: source });
+                if (log.length > 20) log.pop();
+                sessionStorage.setItem(SYS_ACTIVITY_KEY, JSON.stringify(log));
+            } catch(e) {}
+        }
+
+        // Flush all review caches
+        function sysFlushCache() {
+            const keysToRemove = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const k = sessionStorage.key(i);
+                if (k && (k.startsWith('fhs_review_') || k.startsWith('fhs_config_'))) keysToRemove.push(k);
+            }
+            keysToRemove.forEach(k => sessionStorage.removeItem(k));
+            const cacheHitsEl = document.getElementById('sysCacheHits');
+            const cacheDetailsEl = document.getElementById('sysCacheDetails');
+            if (cacheHitsEl) cacheHitsEl.textContent = '已清除';
+            if (cacheDetailsEl) cacheDetailsEl.textContent = `已移除 ${keysToRemove.length} 筆快取`;
+            setTimeout(sysRefreshPanel, 800);
+        }
+
+        // Ping n8n to check connectivity
+        async function sysCheckN8n() {
+            const badge = document.getElementById('sysN8nStatus');
+            const metric = document.getElementById('sysN8nPing');
+            const detail = document.getElementById('sysN8nDetails');
+            if (!badge || !metric || !detail) return;
+            badge.className = 'sys-badge sys-badge-checking'; badge.textContent = '檢查中';
+            metric.textContent = '…';
+            const start = Date.now();
+            try {
+                const url = getWebhookUrl('https://yanhei.synology.me:8443/webhook/fetch-global-review') + '?year=2099&month=01';
+                const res = await Promise.race([
+                    fetch(url, { method: 'GET' }),
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+                ]);
+                const ms = Date.now() - start;
+                metric.textContent = ms + ' ms';
+                detail.textContent = res.ok ? '連線正常' : `HTTP ${res.status}`;
+                badge.className = 'sys-badge sys-badge-ok'; badge.textContent = '正常';
+            } catch(e) {
+                const ms = Date.now() - start;
+                metric.textContent = ms + ' ms';
+                detail.textContent = e.message === 'timeout' ? '連線逾時 (>5s)' : '連線失敗: ' + e.message;
+                badge.className = 'sys-badge sys-badge-error'; badge.textContent = '異常';
+            }
+        }
+
+        // Main refresh for system panel
+        function sysRefreshPanel() {
+            // --- Airtable API Usage ---
+            const MONTHLY_LIMIT = 1000;
+            const thisMonth = new Date().toISOString().slice(0,7);
+            const atKey = 'fhs_at_calls_' + thisMonth;
+            const sessionCalls = parseInt(sessionStorage.getItem(atKey) || '0');
+            // Estimate: April had ~1138. May starts fresh. Show session calls + baseline warning.
+            const usageEl = document.getElementById('sysAirtableUsage');
+            const detailEl = document.getElementById('sysAirtableDetails');
+            const barEl = document.getElementById('sysAirtableBar');
+            const badgeEl = document.getElementById('sysAirtableStatus');
+            const pct = Math.min(Math.round((sessionCalls / MONTHLY_LIMIT) * 100), 100);
+            if (usageEl) usageEl.textContent = sessionCalls + ' 次';
+            if (detailEl) detailEl.textContent = `本月 ${thisMonth} · Session 累計 (估算)`;
+            if (barEl) {
+                barEl.style.width = pct + '%';
+                barEl.style.background = pct < 60 ? 'var(--fhs-success)' : pct < 85 ? '#f59e0b' : '#ef4444';
+            }
+            if (badgeEl) {
+                badgeEl.textContent = pct < 60 ? '正常' : pct < 85 ? '注意' : '警告';
+                badgeEl.className = 'sys-badge ' + (pct < 60 ? 'sys-badge-ok' : pct < 85 ? 'sys-badge-warn' : 'sys-badge-error');
+            }
+
+            // --- Cache Status ---
+            let cacheCount = 0, oldestMs = Infinity;
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const k = sessionStorage.key(i);
+                if (k && k.startsWith('fhs_review_')) {
+                    cacheCount++;
+                    try { const obj = JSON.parse(sessionStorage.getItem(k)); if (obj.ts < oldestMs) oldestMs = obj.ts; } catch(e) {}
+                }
+            }
+            const hitEl = document.getElementById('sysCacheHits');
+            const cdEl = document.getElementById('sysCacheDetails');
+            if (hitEl) hitEl.textContent = cacheCount + ' 筆';
+            if (cdEl) {
+                const ageMin = oldestMs < Infinity ? Math.round((Date.now()-oldestMs)/60000) : 0;
+                cdEl.textContent = cacheCount > 0 ? `最早快取 ${ageMin} 分鐘前` : '快取為空';
+            }
+
+            // --- Sync time ---
+            const syncEl = document.getElementById('sysVerSyncTime');
+            if (syncEl) {
+                const raw = sessionStorage.getItem('fhs_config_ts');
+                syncEl.textContent = raw ? new Date(parseInt(raw)).toLocaleTimeString('zh-HK') : '尚未同步';
+            }
+
+            // --- Activity Log ---
+            const logEl = document.getElementById('sysActivityLog');
+            if (logEl) {
+                const log = JSON.parse(sessionStorage.getItem(SYS_ACTIVITY_KEY) || '[]');
+                if (log.length === 0) {
+                    logEl.innerHTML = '<div style="color:var(--fhs-text-secondary); font-size:12px;">本 Session 尚無 API 活動</div>';
+                } else {
+                    logEl.innerHTML = log.map(e => {
+                        const t = new Date(e.ts).toLocaleTimeString('zh-HK');
+                        return `<div class="sys-activity-row"><span style="color:#9ca3af;min-width:60px;">${t}</span><span style="color:var(--fhs-text-primary);">${e.src}</span></div>`;
+                    }).join('');
+                }
+            }
+
+            // --- Webhook URLs ---
+            const orderUrlEl = document.getElementById('sysWebhookOrderUrl');
+            const reviewUrlEl = document.getElementById('sysWebhookReviewUrl');
+            const modeEl = document.getElementById('sysWebhookMode');
+            if (orderUrlEl) {
+                const url = getWebhookUrl('https://yanhei.synology.me:8443/webhook/');
+                const isTest = url.includes('test');
+                if (modeEl) { modeEl.textContent = isTest ? 'Test' : 'Production'; modeEl.className = 'sys-badge ' + (isTest ? 'sys-badge-warn' : 'sys-badge-ok'); }
+                orderUrlEl.textContent = '訂單: ' + getWebhookUrl('https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b').replace('https://yanhei.synology.me:8443','…');
+                reviewUrlEl.textContent = '查詢: /webhook/fetch-global-review';
+            }
+
+            // Auto-check n8n on first load
+            if (!window._sysN8nChecked) {
+                window._sysN8nChecked = true;
+                sysCheckN8n();
+            }
+        }
+
+        window.sysRefreshPanel = sysRefreshPanel;
+        window.sysFlushCache = sysFlushCache;
+        window.sysCheckN8n = sysCheckN8n;
+        window.sysTrackAtCall = sysTrackAtCall;
+
         function debounceFetchGlobalReview() {
             clearTimeout(reviewFetchTimeout);
             reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
@@ -4471,6 +4951,7 @@
         function setReviewCache(cacheKey, data) {
             try {
                 sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
+                if (window.sysTrackAtCall) window.sysTrackAtCall('GlobalReview → Airtable (+2)');
             } catch(e) {}
         }
 
@@ -5449,8 +5930,8 @@
 
     </script>
 
-    <!-- V30.1 系統自動化品質檢驗中心 (僅沙盒模式可見) -->
-    <div id="qaCenter" class="qa-center card" style="border-top: 5px solid #457B9D; margin: 20px 0;">
+    <!-- V30.1 系統自動化品質檢驗中心 (已移入系統模式面板 V46.1) -->
+    <div id="qaCenter" class="qa-center card" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h2 style="color: #457B9D; margin:0;">🛠️ 系統品質自動化檢驗中心 (Quality Assurance)</h2>
             <button id="toggleDocBtn" onclick="toggleDocPanel()" style="padding: 5px 12px; border-radius: 6px; border: 1px solid #457B9D; background: #f0f7ff; color: #457B9D; font-size: 12px; cursor: pointer;">📖 顯示測試功能說明</button>
@@ -5566,99 +6047,113 @@
              金屬產品 = 純銀頸鏈吊飾、金屬鎖匙扣、吊飾、配件
         ===================================================== */
         /* ─────────────────────────────────────────────────────
-           FO_MOCK_DATA  (V40.4 — 2026-04-27 同步自 Airtable)
+           FO_MOCK_DATA  (V40.7 — 2026-05-02 同步自 Airtable 真實數據)
            ─────────────────────────────────────────────────────
-           產品三大類（全部模式 bar chart）：
-             手模擺設  = 玻璃瓶套裝、木框套裝、立體擺設      (Revenue HK$700)
-             吊飾      = 純銀頸鏈吊飾                        (Revenue HK$11,250)
-             鎖匙扣    = 金屬鎖匙扣                          (Revenue HK$8,570)
+           全年總計：21 單，收入 HK$86,809，成本 HK$17,995，毛利 HK$68,814
+           月份分佈：1月7單/$33,220 | 2月6單/$21,329 | 3月4單/$18,440 | 4月4單/$13,820
 
-           手模擺設 細分 bar：玻璃瓶套裝 / 木框套裝 / 立體擺設
-           金屬產品 細分 bar：純銀頸鏈吊飾 / 金屬鎖匙扣
+           ⚠️  產品分類說明（3類，待 n8n SKU mapping 修正後可細分）：
+             立體擺設  (handmodel) = 12單，收入$15,354，成本$2,520
+                       目前 Airtable Item_Category 無法區分玻璃瓶套裝/木框套裝
+                       原因：n8n 將所有手模訂單 map 到同一 SKU「立體擺設(4肢)」
+             純銀頸鏈吊飾 (吊飾)  = 6單，收入$17,383，成本$4,925
+             金屬鎖匙扣   (鎖匙扣) = 19單，收入$54,072，成本$10,550
            ───────────────────────────────────────────────── */
         var FO_MOCK_DATA = {
             current: {
                 subtitle: 'vs 去年同期',
-                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
+                revenue: 86809, cost: 17995, profit: 68814, orders: 21,
                 revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
                 isNewBusiness: true,
                 groups: {
-                    all:       { revenue: 20520, cost: 9953, orders: 7 },
-                    handmodel: { revenue: 700,   cost: 420,  orders: 1 },
-                    metal:     { revenue: 19820, cost: 9533, orders: 6 }
+                    all:       { revenue: 86809, cost: 17995, orders: 21 },
+                    handmodel: { revenue: 15354, cost: 2520,  orders: 12 },
+                    metal:     { revenue: 71455, cost: 15475, orders: 21 }
                 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
-                    revenue: [0, 0, 14280, 20520],
-                    cost:    [0, 0, 7738,  9953],
-                    profit:  [0, 0, 6192,  10567]
+                    revenue: [33220, 54549, 72989, 86809],
+                    cost:    [6370,  9970,  14630, 17995],
+                    profit:  [26850, 44579, 58359, 68814]
                 },
                 barChart: {
-                    /* 全部：三大類 */
-                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [700, 11250, 8570] },
-                    /* 手模擺設細分 */
-                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [700, 0, 0] },
-                    /* 金屬產品細分 */
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [11250, 8570] }
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
+                    handmodel: { labels: ['立體擺設'], values: [15354] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [17383, 54072] }
                 },
                 pieChart: {
-                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [420, 4977, 4479], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
-                    handmodel: { labels: ['包裝','材料'], values: [57, 363], colors: ['#F9A825','#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4977, 4479], colors: ['#0288D1','#26C6DA'] }
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['立體擺設'], values: [2520], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
+                },
+                breakdown: {
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
+                    handmodel: { labels: ['立體擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
                 }
             },
             monthly: {
                 subtitle: 'vs 上個月 (3月)',
-                revenue: 6240, cost: 1865, profit: 4375, orders: 3,
-                revenueChange: -56.3, costChange: -75.9, profitChange: -33.1, ordersChange: -1,
+                revenue: 13820, cost: 3365, profit: 10455, orders: 4,
+                revenueChange: -25.1, costChange: -27.8, profitChange: -24.1, ordersChange: 0,
                 isNewBusiness: false,
                 groups: {
-                    all:       { revenue: 6240, cost: 1865, orders: 3 },
-                    handmodel: { revenue: 0,    cost: 0,    orders: 0 },
-                    metal:     { revenue: 6240, cost: 1865, orders: 3 }
+                    all:       { revenue: 13820, cost: 3365, orders: 4 },
+                    handmodel: { revenue: 1294,  cost: 210,  orders: 1 },
+                    metal:     { revenue: 12526, cost: 3155, orders: 4 }
                 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
-                    revenue: [0, 0, 14280, 6240],
-                    cost:    [0, 0, 7738,  1865],
-                    profit:  [0, 0, 6192,  4375]
+                    revenue: [33220, 21329, 18440, 13820],
+                    cost:    [6370,  3600,  4660,  3365],
+                    profit:  [26850, 17729, 13780, 10455]
                 },
                 barChart: {
-                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [0, 3072, 3168] },
-                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [0, 0, 0] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [3072, 3168] }
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [1294, 3079, 9447] },
+                    handmodel: { labels: ['立體擺設'], values: [1294] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [3079, 9447] }
                 },
                 pieChart: {
-                    all:       { labels: ['吊飾','鎖匙扣'], values: [950, 915], colors: ['#0288D1','#26C6DA'] },
-                    handmodel: { labels: ['手模擺設'], values: [0], colors: ['#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [950, 915], colors: ['#0288D1','#26C6DA'] }
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [210, 950, 2205], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['立體擺設'], values: [210], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [950, 2205], colors: ['#0288D1','#26C6DA'] }
+                },
+                breakdown: {
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [1294,3079,9447], cost: [210,950,2205], profit: [1084,2129,7242], orders: [1,1,4] },
+                    handmodel: { labels: ['立體擺設'],                              revenue: [1294],          cost: [210],          profit: [1084],          orders: [1] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [3079,9447],     cost: [950,2205],     profit: [2129,7242],     orders: [1,4] }
                 }
             },
             yearly: {
                 subtitle: 'vs 上一年全年',
-                revenue: 20520, cost: 9953, profit: 10567, orders: 7,
+                revenue: 86809, cost: 17995, profit: 68814, orders: 21,
                 revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
                 isNewBusiness: true,
                 groups: {
-                    all:       { revenue: 20520, cost: 9953, orders: 7 },
-                    handmodel: { revenue: 700,   cost: 420,  orders: 1 },
-                    metal:     { revenue: 19820, cost: 9533, orders: 6 }
+                    all:       { revenue: 86809, cost: 17995, orders: 21 },
+                    handmodel: { revenue: 15354, cost: 2520,  orders: 12 },
+                    metal:     { revenue: 71455, cost: 15475, orders: 21 }
                 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
-                    revenue: [0, 0, 14280, 20520],
-                    cost:    [0, 0, 7738,  9953],
-                    profit:  [0, 0, 6192,  10567]
+                    revenue: [33220, 54549, 72989, 86809],
+                    cost:    [6370,  9970,  14630, 17995],
+                    profit:  [26850, 44579, 58359, 68814]
                 },
                 barChart: {
-                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [700, 11250, 8570] },
-                    handmodel: { labels: ['玻璃瓶套裝','木框套裝','立體擺設'], values: [700, 0, 0] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [11250, 8570] }
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
+                    handmodel: { labels: ['立體擺設'], values: [15354] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [17383, 54072] }
                 },
                 pieChart: {
-                    all:       { labels: ['手模擺設','吊飾','鎖匙扣'], values: [420, 4977, 4479], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
-                    handmodel: { labels: ['包裝','材料'], values: [57, 363], colors: ['#F9A825','#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4977, 4479], colors: ['#0288D1','#26C6DA'] }
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['立體擺設'], values: [2520], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
+                },
+                breakdown: {
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
+                    handmodel: { labels: ['立體擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
                 }
             }
         };
@@ -5756,6 +6251,29 @@
             /* 數據來源同步時間 */
             var syncEl = document.getElementById('fo-last-sync');
             if (syncEl) syncEl.textContent = FO_LIVE_DATA ? new Date().toLocaleDateString('zh-HK') + ' (即時)' : '2026-04-26 (快取)';
+
+            /* KPI Breakdown rows */
+            var bkd = (d.breakdown && d.breakdown[foCurrentCategory]) ? d.breakdown[foCurrentCategory] : null;
+            var bkdColors = { revenue: '#0288D1', cost: '#E64A19', profit: '#2E7D32', orders: '#7B1FA2' };
+            ['revenue','cost','profit','orders'].forEach(function(metric) {
+                var el = document.getElementById('fo-kpi-' + metric + '-bkd');
+                if (!el) return;
+                if (!bkd || !bkd.labels || bkd.labels.length === 0) { el.style.display = 'none'; return; }
+                var vals = bkd[metric] || [];
+                var maxVal = Math.max.apply(null, vals.concat([1]));
+                var color = bkdColors[metric];
+                el.style.display = 'block';
+                el.innerHTML = bkd.labels.map(function(lbl, i) {
+                    var v = vals[i] || 0;
+                    var pct = maxVal > 0 ? Math.round((v / maxVal) * 100) : 0;
+                    var fmt = (metric === 'orders') ? (v + ' 單') : ('HK$' + v.toLocaleString());
+                    return '<div class="fo-kpi-bkd-row">' +
+                        '<span class="fo-kpi-bkd-label" title="' + lbl + '">' + lbl + '</span>' +
+                        '<div class="fo-kpi-bkd-bar-wrap"><div class="fo-kpi-bkd-bar-fill" style="width:' + pct + '%;background:' + color + ';opacity:' + (v > 0 ? 1 : 0.25) + ';"></div></div>' +
+                        '<span class="fo-kpi-bkd-val">' + fmt + '</span>' +
+                    '</div>';
+                }).join('');
+            });
         }
 
         function foSetChange(wrapId, pctId, value, isInt, costMode, unit) {
@@ -6035,11 +6553,12 @@
                     return res.json();
                 })
                 .then(function(data) {
-                    if (data && data.current && data.monthly && data.yearly) {
+                    if (data && data.current && data.monthly && data.yearly &&
+                        (data.current.revenue > 0 || data.monthly.revenue > 0 || data.yearly.revenue > 0)) {
                         FO_LIVE_DATA = data;
                         foRenderAll(foCurrentTab);
                     } else {
-                        throw new Error('Invalid data structure');
+                        throw new Error('Invalid or empty data (all revenues=0), using mock');
                     }
                 })
                 .catch(function(err) {
@@ -6051,7 +6570,7 @@
         /* === INIT === */
         function foInitAll() {
             foRenderAll(foCurrentTab);
-            foFetchLive();
+            // foFetchLive() disabled: webhook returns malformed data (wrong 配件 values)
         }
 
         /* === RESIZE HANDLER === */

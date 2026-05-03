@@ -7,6 +7,8 @@
 
 ## 當前待辦
 
+- [ ] **[P-MED] n8n 安全網** — 確認並修正 `Create Sub Items` 節點 upsert 行為，防止舊 Order_Items 被誤刪（規格：`.fhs/notes/pending_tasks/2026-05-03_n8n_order_items_safety_net.md`）
+
 - [x] 完成四檔案架構 v1.0 落地
 - [x] 驗收壓力測試（/read 回報版本號 v1.0）
 - [x] 確認 .cursorrules 舊規則全部遷移完畢

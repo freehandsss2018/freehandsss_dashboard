@@ -10,7 +10,8 @@
 |---|---|
 | `Freehandsss_dashboard_current.html` | **正式生產環境** = V40.4（2026-04-28 同步） |
 | `freehandsss_dashboardV36.html` | 舊版穩定基準 (Legacy Stable) |
-| `freehandsss_dashboardV40.html` | **當前開發穩定版**（iPhone/Desktop 雙模式，v40.4 財務優化 + API 快取完成） |
+| `freehandsss_dashboardV40.html` | **當前開發穩定版**（V40.7 — FO_MOCK_DATA 成本修正 + 訂單類型確認區塊 + buildPayload K/M 安全網）|
+| `preview_plan_b.html` | 方案B UI 預覽（訂單類型確認區塊，靜態示意用）|
 | `freehandsss_financial_overview.html` | **Financial Overview 頁面**（財務圖表中樞） |
 | `products.json` | 產品資料快取（非 live 資料；NAS 真正運作快取在 `.n8n/data/products.json`） |
 

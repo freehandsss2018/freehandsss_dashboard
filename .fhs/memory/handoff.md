@@ -1,92 +1,71 @@
-# FHS Handoff - 2026-04-30 10:00
-當前版本：v1.4.1（憲法層 + Goal-Driven Execution）/ V40.2（UI層）/ 6 Agents + 2 Skills + Hook System v1.0.0
+# FHS Handoff - 2026-05-03 23:59
+當前版本：v1.4.1（憲法層）/ V40.7（UI層 — FO_MOCK_DATA 成本修正 + 確認區塊）/ 6 Agents + 2 Skills + Hook System v1.0.0
+
+## 本次 Session 完成事項（2026-05-03）
+
+✅ **P0 訂單全面稽核 + 0650429 SKU 修正**
+- 全面稽核 22 筆 Main_Orders：只有 0650429 有財務錯誤
+- 0650429 (Shirley)：2 個 Order_Items Product_Link 由 $340 SKU（嬰兒(P)鎖匙扣單購）改為 $290 SKU（嬰兒鎖匙扣加購）
+- Main_Orders Total_Cost $680→$580，Net_Profit $1,720→$1,820
+- 0600800 Order_ID 確認正確為 0600800（非 0631044）
+
+✅ **FO_MOCK_DATA 更新至 V40.7**
+- 修正 current/monthly/yearly 三個 tab 中的金屬鎖匙扣成本（-$100）
+- current: cost 18095→17995, profit 68714→68814
+- monthly April: cost 3465→3365, profit 10355→10455
+
+✅ **Order_Items 完整性根因分析（0601100 + 0600800）**
+- 0601100：RFS enableK=false 但 k_rh_en=true，第二次提交漏傳 K items（用戶人手修正）
+- 0600800：新舊系統交替，操作員未透過 Dashboard 錄入立體擺設（用戶人手修正）
+
+✅ **Dashboard 防漏修正 — 問題一 A + 問題二 B**
+- `buildOrderItemsForPricing()` K section：新增安全網 guard（enableK OR 子項 section 任一 true）
+- `buildOrderItemsForPricing()` M section：同上
+- 「產品選購」卡片新增「📋 訂單類型確認」區塊（selectOrderType() function）
+- 選「是」→ enableP 自動勾選、highlight-p 樣式、cost-included-badge 顯示
+- 預覽檔：`Freehandsss_Dashboard/preview_plan_b.html`
+
+✅ **ESLint v10.3.0 全局安裝**
+
+✅ **待辦新增：n8n 安全網（問題一 B）**
+- 規格：`.fhs/notes/pending_tasks/2026-05-03_n8n_order_items_safety_net.md`
 
 ## 本次 Session 完成事項（2026-04-30）
 
-✅ **Antigravity v1.21.6 MCP 全修復**
-- 根本原因：`.git/config` 含 `extensions.worktreeConfig = true` → Go server crash
-- 修復：`git config --unset extensions.worktreeConfig`
-- OAuth MCP 沙盒問題：GitHub 改 `node` 直執行，Figma/Perplexity 移除
-- 有效 MCP：airtable-fhs, StitchMCP, github, notion
-
-✅ **VSCode 工具鏈整合**
-- `.vscode/extensions.json`（markdownlint, ESLint, GitHistory, GitLens）
-- `.eslintrc.json`（browser + ES2021）
-- `.markdownlint.json`（MD013/MD033/MD036/MD060 豁免）
-- `.vscode/settings.json` 更新（ESLint + markdownlint on save）
-- Markdownlint 1011 個錯誤修復完成
-
-✅ **Claude Code 全域權限自動化**
-- `~/.claude/settings.json` 加入 `"defaultMode": "bypassPermissions"`
-- /commit, /read, /execute 不再詢問 YES/NO
-
-## 本次 Session 完成事項（2026-04-28）
-
-✅ **FHS Hook Automation System v1.0.0 部署完成**
-- 新增 3 個 Claude Code Hooks 腳本（scripts/hooks/）：
-  * `session-start-sop.sh` — SessionStart hook：自動注入 SOP_NOW + handoff 摘要
-  * `prompt-router.js` — UserPromptSubmit hook：任務路由（9 種類型 → subagent/skill/model）
-  * `pre-tool-guard.js` — PreToolUse hook：守護 AGENTS.md 規則（8 條守護規則，2 阻止 + 6 警告）
-- 配置更新：.claude/settings.json 新增 hooks 區段，全局 settings.json 清理（~90 permissions → 38 patterns）
-- 完成記錄：`.fhs/notes/completion_reports/2026-04-28_fhs-hook-automation-v1_completion_report.md` ✓
-
-✅ **/commit 指令最佳化至 v2.0.0**
-- 新增 Phase 0 Pre-Commit Sweep（5 項健全掃描 P0.1–P0.5）：
-  * P0.1：系統接通確認（hooks + subagents）
-  * P0.2：README & repo-map 同步檢驗
-  * P0.3：沉積檔案掃描（temp/draft）
-  * P0.4：幽靈指令/腳本偵測（Bridge vs Master、Scripts vs README）
-  * P0.5：衝突與遺漏確認（Changelog、handoff、.env 安全）
-- Bridge 檔案更新：`.claude/commands/commit.md` 重寫為 v2.0.0 參考
-- 文件同步：.fhs/ai/commands/README.md 更新 commit 描述、scripts/README.md 新增 hooks 表格
-- 完成記錄：本次 session /commit 執行記錄
+✅ **Antigravity v1.21.6 MCP 全修復**（詳見前版 handoff）
+✅ **VSCode 工具鏈整合**（ESLint、markdownlint）
+✅ **Claude Code 全域權限自動化**（defaultMode: bypassPermissions）
 
 ## 待辦 ⏳ 項目
 
-0. **[LOCKED] Stitch → Antigravity 整合** — 鎖定狀態（已待 20 天）：
-   - 規格文件：`.fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md`
-   - 鎖定原因：等待 V40 前端穩定 + Fat Mo 明確解鎖授權
+0. **[LOCKED] Stitch → Antigravity 整合**：
+   - 規格：`.fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md`
    - **解鎖條件：Fat Mo 說「Stitch 可以繼續了」**
 
-1. **🟡 Legacy Scripts 文件化決策** — P0.4 幽靈偵測發現：
-   - 4 個有用的維護腳本未在 scripts/README.md 記錄：
-     * deploy-order-confirm-date.js — n8n 欄位部署工具
-     * sync-legacy-orders.js — 一次性訂單匯入（2026-01~04）
-     * update-legacy-profit.js — 舊訂單利潤回填
-     * update-legacy-sale-price.js — 舊訂單價格更新
-   - **決策待確認**：加入 README.md 的 Legacy Data Migration Tools 區段？
+1. **[P-MED] n8n 安全網（問題一 B）**：
+   - 規格：`.fhs/notes/pending_tasks/2026-05-03_n8n_order_items_safety_net.md`
+   - 確認 Create Sub Items 節點是否有刪舊邏輯，改為純 upsert
 
-2. **Tier 2 Subagent 評估** — 架構延伸：
-   - 後續若需增強 Airtable 查詢最佳化、API 批量操作、報表生成等能力，可從 agency-agents 挑選
-   - 當前 3 agents 已涵蓋診斷/測試/審查核心需求
+2. **Airtable Total_Cost 分拆欄位（Handmodel_Cost / Metal_Cost）**：
+   - 方案 B：Order_Items 加 formula 欄位 → Main_Orders 加 rollup 欄位
+   - Airtable MCP API 不支援 formula/rollup 建立，需 Fat Mo 在 UI 手動建立
+   - formula：`IF(FIND("立體擺設", ARRAYJOIN({Item_Category}, ",")), SUM({Item_BaseCost}), 0)`
 
-3. **Subagent 運行時測試** — 執行驗證：
-   - 在實際工作流中觸發 database-reviewer、tdd-guide、build-error-resolver
-   - 驗證 MCP tools 綁定、context injection、輸出品質
+3. **🟡 Legacy Scripts 文件化決策**（4 個腳本未在 scripts/README.md 記錄）
 
-4. **Finance-Calculator 整合測試** — 公式驗證：
-   - 前端利潤計算與 n8n Profit Auditor 對齐度檢驗
-   - SKU 正規化流程中公式套用一致性
+4. **Tier 2 Subagent 評估**
 
-5. **iPhone 實機測試** — V40.2 財務模式：
-   - 點「📈 財務」按鈕進入財務模式
-   - KPI + 三圖表正常顯示？
-   - Tab 切換（Current/Monthly/Yearly）觸控回應？
-
-6. **生產版整合評估** — 待決策：
-   - 是否在 `Freehandsss_dashboard_current.html` 新增財務模式入口？
+5. **iPhone 實機測試** — V40 財務模式
 
 ## 核心配置
 
 | 項目 | 現況 |
 |------|------|
 | 憲法層 | `AGENTS.md` v1.4.1 |
-| 穩定生產版 | `Freehandsss_dashboard_current.html`（對應 V37）|
-| 主要開發版 | `freehandsss_dashboardV40.html`（**V40.2** — 含財務模式）|
-| 財務模式入口 | Top Bar「📈 財務」按鈕 → `switchMode('finance')`|
-| 獨立財務頁 | `freehandsss_financial_overview.html`（保留，待確認棄用）|
-| n8n Workflow JSON | `n8n/FHS_Financial_Overview_workflow.json`（待匯入）|
-| Webhook URL | `https://yanhei.synology.me:8443/webhook/financial-overview` |
+| 稼動生產版 | `Freehandsss_dashboard_current.html` |
+| 主要開發版 | `freehandsss_dashboardV40.html`（**V40.7** — 成本修正 + 確認區塊）|
+| FO_MOCK_DATA | V40.7（全年 cost $17,995 / profit $68,814）|
+| n8n Workflow | V45.7.4（24 nodes）|
 | Airtable Base | `app9GuLsW9frN4xaT` |
-| Main_Orders 表 | `tbltCH0I9fknVCtmV`（7筆，Revenue $20,520，Profit $10,567）|
-| Order_Items 表 | `tbljkptnNcUEyDRFH`（154筆 records）|
+| Main_Orders | 22 筆（revenue $86,809，cost $17,995，profit $68,814）|
+| Order_Items | 56 筆（稽核通過，0650429 已修正）|

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>方案 B 預覽 — 立體擺設確認提示</title>
+  <style>
+    /* ============================================================
+       FHS Design Tokens（對齊 current.html V40）
+    ============================================================ */
+    :root {
+      --fhs-bg-base:        #FAF7F4;
+      --fhs-bg-surface:     #FFFFFF;
+      --fhs-text-primary:   #2C2416;
+      --fhs-text-secondary: #7A6A55;
+      --fhs-text-muted:     #B0A090;
+      --fhs-border:         #E0D8CC;
+      --fhs-accent:         #C9714A;
+      --fhs-accent-light:   #F5E8E0;
+      --fhs-success:        #2E7D32;
+      --fhs-success-bg:     #E8F5E9;
+      --fhs-warning:        #FF6D00;
+      --fhs-warning-bg:     #FFF3E0;
+      --fhs-danger:         #C62828;
+      --fhs-danger-bg:      #FFEBEE;
+      --shadow-md:          0 4px 12px rgba(44, 36, 22, 0.12);
+      --shadow-lg:          0 8px 24px rgba(44, 36, 22, 0.16);
+      --radius-lg:          12px;
+      --radius-md:          8px;
+      --radius-sm:          4px;
+      --radius-pill:        999px;
+      --transition-base:    250ms ease-out;
+
+      /* 立體擺設專屬紫色系 */
+      --cat-p-primary:      #7B1FA2;
+      --cat-p-light:        #F3E5F5;
+      --cat-p-border:       #CE93D8;
+      --cat-p-dark:         #4A148C;
+
+      /* 金屬鎖匙扣藍色系 */
+      --cat-k-primary:      #01579B;
+      --cat-k-light:        #E3F2FD;
+      --cat-k-border:       #90CAF9;
+
+      /* 純銀吊飾綠色系 */
+      --cat-m-primary:      #1B5E20;
+      --cat-m-light:        #E8F5E9;
+      --cat-m-border:       #A5D6A7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang HK', 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #F0ECF8 0%, #E8E2F0 100%);
+      color: var(--fhs-text-primary);
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+    }
+
+    /* ---- Page Header ---- */
+    .page-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .page-header h1 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--cat-p-dark);
+      letter-spacing: 0.01em;
+    }
+    .page-header .subtitle {
+      font-size: 12px;
+      color: var(--fhs-text-secondary);
+      margin-top: 6px;
+    }
+    .version-tag {
+      display: inline-block;
+      background: var(--cat-p-light);
+      color: var(--cat-p-primary);
+      border: 1px solid var(--cat-p-border);
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 10px;
+      margin-bottom: 10px;
+    }
+
+    /* ---- Layout: Two columns side by side ---- */
+    .comparison-wrapper {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .phone-column {
+      flex: 0 0 auto;
+      width: 375px;
+      max-width: 100%;
+    }
+
+    .column-label {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--fhs-text-secondary);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .column-label.is-no  { color: var(--fhs-text-secondary); }
+    .column-label.is-yes { color: var(--cat-p-primary); }
+
+    /* ---- iPhone-style Card ---- */
+    .iphone-frame {
+      background: #F5F5F7;
+      border-radius: 40px;
+      padding: 16px 10px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 18px 16px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      margin-bottom: 0;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--fhs-text-primary);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--fhs-border);
+    }
+
+    /* ---- 方案 B：確認提示區塊 ---- */
+    .order-type-confirm {
+      background: var(--fhs-bg-surface);
+      border: 2px solid var(--fhs-border);
+      border-radius: var(--radius-md);
+      padding: 14px 14px 12px;
+      margin-bottom: 16px;
+      transition: border-color var(--transition-base), background var(--transition-base);
+    }
+
+    .order-type-confirm.state-yes {
+      border-color: var(--cat-p-primary);
+      background: var(--cat-p-light);
+    }
+
+    .order-type-confirm .confirm-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--fhs-text-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .order-type-confirm .confirm-desc {
+      font-size: 12px;
+      color: var(--fhs-text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    /* Radio Options */
+    .confirm-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .confirm-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--fhs-border);
+      background: var(--fhs-bg-surface);
+      cursor: pointer;
+      transition: border-color var(--transition-base), background var(--transition-base);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .confirm-option:hover {
+      border-color: var(--cat-p-border);
+      background: #FAF5FD;
+    }
+
+    .confirm-option.selected-no {
+      border-color: var(--fhs-border);
+      background: var(--fhs-bg-surface);
+    }
+
+    .confirm-option.selected-yes {
+      border-color: var(--cat-p-primary);
+      background: rgba(123, 31, 162, 0.06);
+    }
+
+    /* Custom radio circle */
+    .confirm-option .radio-circle {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--fhs-border);
+      background: var(--fhs-bg-surface);
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color var(--transition-base);
+    }
+
+    .confirm-option.selected-no .radio-circle {
+      border-color: var(--fhs-text-muted);
+    }
+
+    .confirm-option.selected-yes .radio-circle {
+      border-color: var(--cat-p-primary);
+      background: var(--cat-p-primary);
+    }
+
+    .confirm-option.selected-yes .radio-circle::after {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .confirm-option .option-text {
+      flex: 1;
+    }
+
+    .confirm-option .option-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fhs-text-primary);
+      line-height: 1.3;
+    }
+
+    .confirm-option.selected-yes .option-label {
+      color: var(--cat-p-dark);
+    }
+
+    .confirm-option .option-sub {
+      font-size: 11px;
+      color: var(--fhs-text-secondary);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* Warning note inside confirm block */
+    .confirm-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      background: var(--fhs-warning-bg);
+      border: 1px solid #FFCC80;
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 11px;
+      color: #BF360C;
+      line-height: 1.45;
+    }
+
+    .confirm-warning .warn-icon {
+      flex-shrink: 0;
+      font-size: 13px;
+      margin-top: 0px;
+    }
+
+    /* ---- Success Badge: 成本已計入 ---- */
+    .cost-included-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--fhs-success-bg);
+      border: 1px solid #A5D6A7;
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--fhs-success);
+      animation: fadeSlideIn 0.3s ease-out;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- Section Toggle Row ---- */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid #EEE;
+      margin-bottom: 0;
+    }
+
+    .toggle-row:last-child {
+      border-bottom: none;
+    }
+
+    .toggle-row strong {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fhs-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Highlighted toggle row (立體擺設 when "yes") */
+    .toggle-row.highlight-p {
+      background: var(--cat-p-light);
+      border-radius: var(--radius-sm);
+      padding: 11px 10px;
+      border-bottom: none;
+      margin-bottom: 1px;
+    }
+
+    .toggle-row.highlight-p strong {
+      color: var(--cat-p-dark);
+    }
+
+    /* iOS-style toggle switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #D1D1D6;
+      border-radius: 34px;
+      transition: 0.35s;
+    }
+
+    .slider::before {
+      position: absolute;
+      content: '';
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.35s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+
+    input:checked + .slider {
+      background: #34C759; /* iOS green */
+    }
+
+    /* Purple for 立體擺設 when highlighted */
+    .toggle-row.highlight-p input:checked + .slider {
+      background: var(--cat-p-primary);
+    }
+
+    input:checked + .slider::before {
+      transform: translateX(20px);
+    }
+
+    /* Addon content (expanded section) */
+    .addon-content {
+      background: #FCFCFC;
+      border: 1px dashed var(--fhs-accent);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin: 8px 0 12px;
+      font-size: 13px;
+      color: var(--fhs-text-secondary);
+    }
+
+    .addon-content.addon-p {
+      border-color: var(--cat-p-border);
+      background: rgba(243, 229, 245, 0.3);
+    }
+
+    .addon-content .mock-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fhs-text-muted);
+      margin-bottom: 6px;
+    }
+
+    .mock-select {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .mock-chip {
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--fhs-border);
+      font-size: 12px;
+      color: var(--fhs-text-secondary);
+      background: var(--fhs-bg-surface);
+    }
+
+    .mock-chip.selected {
+      border-color: var(--cat-p-primary);
+      background: var(--cat-p-light);
+      color: var(--cat-p-dark);
+      font-weight: 600;
+    }
+
+    /* ---- Full card demo section ---- */
+    .full-demo-wrapper {
+      max-width: 390px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--fhs-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 36px 0 12px;
+      position: relative;
+    }
+
+    .section-title::before,
+    .section-title::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 22%;
+      height: 1px;
+      background: var(--fhs-border);
+    }
+    .section-title::before { left: 0; }
+    .section-title::after  { right: 0; }
+
+    /* ---- Divider between compare columns ---- */
+    .column-divider {
+      display: flex;
+      align-items: center;
+      padding-top: 60px;
+    }
+
+    .divider-line {
+      width: 1px;
+      height: 140px;
+      background: linear-gradient(to bottom, transparent, var(--cat-p-border), transparent);
+    }
+
+    /* ---- Interactive demo note ---- */
+    .interactive-note {
+      text-align: center;
+      font-size: 11px;
+      color: var(--fhs-text-muted);
+      margin: -4px 0 20px;
+    }
+
+    /* ---- Annotation labels ---- */
+    .annotation {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--cat-p-primary);
+      background: var(--cat-p-light);
+      border: 1px solid var(--cat-p-border);
+      border-radius: var(--radius-pill);
+      padding: 2px 8px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    /* ---- Hidden by default, JS-controlled ---- */
+    .hidden { display: none !important; }
+
+    /* ---- Responsive: stack on small screens ---- */
+    @media (max-width: 800px) {
+      .comparison-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+      .column-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== Page Header ==================== -->
+  <div class="page-header">
+    <div class="version-tag">方案 B 預覽</div>
+    <h1>方案 B 預覽 — 立體擺設確認提示</h1>
+    <p class="subtitle">在「產品選購」卡片頂部新增訂單類型確認區塊，防止立體擺設成本漏記</p>
+  </div>
+
+  <!-- ==================== Side-by-side Comparison ==================== -->
+  <div class="comparison-wrapper">
+
+    <!-- LEFT: 選「否」狀態 -->
+    <div class="phone-column">
+      <div class="column-label is-no">狀態 A — 選「否」（預設）</div>
+      <div class="iphone-frame">
+        <div class="card">
+          <h2>🛍️ 產品選購</h2>
+
+          <!-- 方案 B 確認提示區塊 — 否狀態 -->
+          <div class="order-type-confirm state-no" id="confirm-no">
+            <div class="confirm-title">
+              <span>📋</span> 訂單類型確認
+            </div>
+            <div class="confirm-desc">此訂單是否包含「立體擺設」取模服務？</div>
+
+            <div class="confirm-options">
+              <div class="confirm-option selected-no" id="opt-no-A">
+                <div class="radio-circle">
+                  <div style="width:7px;height:7px;border-radius:50%;background:#B0A090;"></div>
+                </div>
+                <div class="option-text">
+                  <div class="option-label">否（純金屬／吊飾訂單）</div>
+                </div>
+              </div>
+              <div class="confirm-option" id="opt-yes-A">
+                <div class="radio-circle"></div>
+                <div class="option-text">
+                  <div class="option-label">是 — 含取模服務</div>
+                  <div class="option-sub">+$210 木框套裝自動計入</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="confirm-warning">
+              <span class="warn-icon">⚠️</span>
+              <span>若客人有預約取模，請必須選「是」</span>
+            </div>
+          </div>
+
+          <!-- Section Toggles (否狀態：立體擺設收起) -->
+          <div class="toggle-row" id="row-p-A">
+            <strong>🎨 立體擺設款式</strong>
+            <label class="switch">
+              <input type="checkbox" id="enableP-A" disabled>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <strong>🔑 金屬鎖匙扣</strong>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <strong>✨ 純銀頸鏈吊飾</strong>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="column-divider">
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- RIGHT: 選「是」狀態 -->
+    <div class="phone-column">
+      <div class="column-label is-yes">狀態 B — 選「是」（立體擺設啟用）</div>
+      <div class="iphone-frame">
+        <div class="card">
+          <h2>🛍️ 產品選購</h2>
+
+          <!-- 方案 B 確認提示區塊 — 是狀態 -->
+          <div class="order-type-confirm state-yes" id="confirm-yes">
+            <div class="confirm-title">
+              <span>📋</span> 訂單類型確認
+            </div>
+            <div class="confirm-desc">此訂單是否包含「立體擺設」取模服務？</div>
+
+            <div class="confirm-options">
+              <div class="confirm-option" id="opt-no-B">
+                <div class="radio-circle"></div>
+                <div class="option-text">
+                  <div class="option-label">否（純金屬／吊飾訂單）</div>
+                </div>
+              </div>
+              <div class="confirm-option selected-yes" id="opt-yes-B">
+                <div class="radio-circle">
+                  <!-- filled dot handled by CSS ::after -->
+                </div>
+                <div class="option-text">
+                  <div class="option-label">是 — 含取模服務</div>
+                  <div class="option-sub">+$210 木框套裝自動計入</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="confirm-warning">
+              <span class="warn-icon">⚠️</span>
+              <span>若客人有預約取模，請必須選「是」</span>
+            </div>
+          </div>
+
+          <!-- 成本已計入 badge -->
+          <div class="cost-included-badge" id="badge-B">
+            <span>✓</span>
+            <span>立體擺設成本 $210 已計入</span>
+          </div>
+
+          <!-- Section Toggles (是狀態：立體擺設高亮啟用) -->
+          <div class="toggle-row highlight-p" id="row-p-B">
+            <strong>🎨 立體擺設款式</strong>
+            <label class="switch">
+              <input type="checkbox" id="enableP-B" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <!-- Addon content expanded -->
+          <div class="addon-content addon-p">
+            <div class="mock-label">選擇款式</div>
+            <div class="mock-select">
+              <span class="mock-chip selected">🖼️ 木框款式</span>
+              <span class="mock-chip">🧴 玻璃瓶款式</span>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <strong>🔑 金屬鎖匙扣</strong>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <strong>✨ 純銀頸鏈吊飾</strong>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /comparison-wrapper -->
+
+  <!-- ==================== Interactive Full Demo ==================== -->
+  <div class="section-title">互動示範</div>
+  <p class="interactive-note">點選下方選項，即時查看狀態切換效果</p>
+
+  <div class="full-demo-wrapper">
+    <div class="card">
+      <h2>🛍️ 產品選購</h2>
+
+      <!-- 方案 B 確認提示區塊 — 互動版 -->
+      <div class="order-type-confirm" id="confirm-interactive">
+        <div class="confirm-title">
+          <span>📋</span> 訂單類型確認
+        </div>
+        <div class="confirm-desc">此訂單是否包含「立體擺設」取模服務？</div>
+
+        <div class="confirm-options">
+          <!-- 否 option -->
+          <label>
+            <input type="radio" name="order-type-interactive" value="no" checked
+                   style="position:absolute;opacity:0;pointer-events:none;"
+                   id="radio-no">
+            <div class="confirm-option" id="ui-opt-no" onclick="selectOrderType('no')">
+              <div class="radio-circle" id="rc-no">
+                <div style="width:7px;height:7px;border-radius:50%;background:#B0A090;" id="dot-no"></div>
+              </div>
+              <div class="option-text">
+                <div class="option-label">否（純金屬／吊飾訂單）</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- 是 option -->
+          <label>
+            <input type="radio" name="order-type-interactive" value="yes"
+                   style="position:absolute;opacity:0;pointer-events:none;"
+                   id="radio-yes">
+            <div class="confirm-option" id="ui-opt-yes" onclick="selectOrderType('yes')">
+              <div class="radio-circle" id="rc-yes"></div>
+              <div class="option-text">
+                <div class="option-label">是 — 含取模服務</div>
+                <div class="option-sub">+$210 木框套裝自動計入</div>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="confirm-warning">
+          <span class="warn-icon">⚠️</span>
+          <span>若客人有預約取模，請必須選「是」</span>
+        </div>
+      </div>
+
+      <!-- 成本計入 badge (hidden until "yes") -->
+      <div class="cost-included-badge hidden" id="badge-interactive">
+        <span>✓</span>
+        <span>立體擺設成本 $210 已計入</span>
+      </div>
+
+      <!-- Toggle: 立體擺設（互動控制） -->
+      <div class="toggle-row" id="row-p-interactive">
+        <strong>🎨 立體擺設款式</strong>
+        <label class="switch">
+          <input type="checkbox" id="enableP-interactive">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Addon content (hidden until enableP checked) -->
+      <div class="addon-content addon-p hidden" id="contentP-interactive">
+        <div class="mock-label">選擇款式</div>
+        <div class="mock-select" id="style-chips">
+          <span class="mock-chip" id="chip-wood" onclick="selectStyle('wood')">🖼️ 木框款式</span>
+          <span class="mock-chip" id="chip-glass" onclick="selectStyle('glass')">🧴 玻璃瓶款式</span>
+        </div>
+      </div>
+
+      <!-- Toggle: 金屬鎖匙扣 -->
+      <div class="toggle-row">
+        <strong>🔑 金屬鎖匙扣</strong>
+        <label class="switch">
+          <input type="checkbox" id="enableK-interactive"
+                 onchange="toggleAddon('contentK-interactive', this)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="addon-content hidden" id="contentK-interactive">
+        <div class="mock-label">鎖匙扣選項</div>
+        <div class="mock-select">
+          <span class="mock-chip">🖐️ 嬰兒左手</span>
+          <span class="mock-chip">🖐️ 嬰兒右手</span>
+        </div>
+      </div>
+
+      <!-- Toggle: 純銀頸鏈吊飾 -->
+      <div class="toggle-row">
+        <strong>✨ 純銀頸鏈吊飾</strong>
+        <label class="switch">
+          <input type="checkbox" id="enableM-interactive"
+                 onchange="toggleAddon('contentM-interactive', this)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="addon-content hidden" id="contentM-interactive">
+        <div class="mock-label">吊飾選項</div>
+        <div class="mock-select">
+          <span class="mock-chip">🦶 嬰兒左腳</span>
+          <span class="mock-chip">🦶 嬰兒右腳</span>
+        </div>
+      </div>
+
+    </div><!-- /card -->
+  </div><!-- /full-demo-wrapper -->
+
+  <!-- ==================== JavaScript ==================== -->
+  <script>
+    // Current selection state for interactive demo
+    var currentOrderType = 'no';
+
+    function selectOrderType(type) {
+      currentOrderType = type;
+
+      var confirmBlock  = document.getElementById('confirm-interactive');
+      var badge         = document.getElementById('badge-interactive');
+      var rowP          = document.getElementById('row-p-interactive');
+      var enableP       = document.getElementById('enableP-interactive');
+      var contentP      = document.getElementById('contentP-interactive');
+
+      // --- Radio UI update ---
+      var uiNo  = document.getElementById('ui-opt-no');
+      var uiYes = document.getElementById('ui-opt-yes');
+      var rcNo  = document.getElementById('rc-no');
+      var rcYes = document.getElementById('rc-yes');
+      var dotNo = document.getElementById('dot-no');
+
+      if (type === 'yes') {
+        // Confirm block highlight
+        confirmBlock.classList.add('state-yes');
+
+        // Radio buttons visual
+        uiNo.classList.remove('selected-no');
+        uiYes.classList.add('selected-yes');
+
+        // Dot for "no" option — dimmed
+        if (dotNo) dotNo.style.background = '#D1D1D6';
+        rcNo.style.borderColor = '#D1D1D6';
+
+        // "Yes" radio filled via CSS class (selected-yes provides ::after)
+        // Already set above
+
+        // Show success badge
+        badge.classList.remove('hidden');
+
+        // Highlight toggle row + auto-enable
+        rowP.classList.add('highlight-p');
+        enableP.checked = true;
+
+        // Show addon content
+        contentP.classList.remove('hidden');
+
+      } else {
+        // Restore
+        confirmBlock.classList.remove('state-yes');
+
+        uiNo.classList.add('selected-no');
+        uiYes.classList.remove('selected-yes');
+
+        if (dotNo) dotNo.style.background = '#B0A090';
+        rcNo.style.borderColor = '#D1D1D6';
+
+        // Hide badge
+        badge.classList.add('hidden');
+
+        // Remove toggle highlight
+        rowP.classList.remove('highlight-p');
+        enableP.checked = false;
+
+        // Hide addon content
+        contentP.classList.add('hidden');
+      }
+    }
+
+    // Manual style chip selection (does not affect order type)
+    function selectStyle(style) {
+      var wood  = document.getElementById('chip-wood');
+      var glass = document.getElementById('chip-glass');
+      if (style === 'wood') {
+        wood.classList.add('selected');
+        glass.classList.remove('selected');
+      } else {
+        glass.classList.add('selected');
+        wood.classList.remove('selected');
+      }
+    }
+
+    // Generic addon toggle for K and M sections
+    function toggleAddon(contentId, checkbox) {
+      var el = document.getElementById(contentId);
+      if (!el) return;
+      if (checkbox.checked) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+
+    // Init: set "否" as selected-no on load
+    document.getElementById('ui-opt-no').classList.add('selected-no');
+  </script>
+
+</body>
+</html>
