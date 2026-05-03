@@ -26,3 +26,6 @@ artifacts/
 
 # Generated code snapshot (repomix tool output)
 repomix-output.txt
+
+# Preview / draft HTML files (temporary, not version controlled)
+Freehandsss_Dashboard/preview_*.html
