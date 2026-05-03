@@ -3561,12 +3561,12 @@
             let rf = document.querySelector(`.limb-sel[data-who="${who}"][data-part="右腳"]`)?.value;
 
             const hands = [];
-            if (lh && lh !== "無" && lh !== "待定") hands.push(`左手(${lh})`);
-            if (rh && rh !== "無" && rh !== "待定") hands.push(`右手(${rh})`);
+            if (lh && lh !== "無") hands.push(`左手(${lh})`);
+            if (rh && rh !== "無") hands.push(`右手(${rh})`);
 
             const feet = [];
-            if (lf && lf !== "無" && lf !== "待定") feet.push(`左腳(${lf})`);
-            if (rf && rf !== "無" && rf !== "待定") feet.push(`右腳(${rf})`);
+            if (lf && lf !== "無") feet.push(`左腳(${lf})`);
+            if (rf && rf !== "無") feet.push(`右腳(${rf})`);
 
             if (hands.length === 0 && feet.length === 0) return "";
 

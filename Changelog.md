@@ -1,5 +1,30 @@
 # Changelog
 
+## [AGENTS.md v1.4.2 + Stitch 整合 + Dashboard 修正 + 成本分拆欄位] - 2026-05-03
+
+**執行依據**：Fat Mo 授權（Stitch 解鎖 + execute）
+
+**AGENTS.md 升級至 v1.4.2**：
+- 新增「Stitch 資產守護」原則（禁止 Stitch 輸出未轉換直入主核心）
+- 新增「Airtable 計算職責分工」原則（財務計算由 n8n 負責，Airtable formula 僅作展示輔助）
+
+**Stitch → Antigravity 整合（Phase A–D 完成）**：
+- 新增 `.fhs/ai/commands/ag-stitch-sync.md`、`.fhs/ai/commands/ag-ui-import.md`
+- 更新 `ANTIGRAVITY.md`、`ui-designer.md`、`frontend-developer.md`、`commands/README.md`
+- pending task 標記 COMPLETED，completion report 已存檔
+
+**Dashboard Bug 修正 — IG 預覽「待定」遺漏**：
+- `formatLimbs()` 移除 `&& !== "待定"` 過濾，【嬰兒】/【父母】/【大寶】待定值均正常顯示
+- 同步修正 `freehandsss_dashboardV40.html` + `Freehandsss_dashboard_current.html`
+
+**Airtable 成本分拆欄位建立**：
+- Order_Items：新增 `Handmodel_Cost`、`Keychain_Cost`、`Necklace_Cost`（formula 欄位）
+- Main_Orders：新增對應 3 個 Rollup 欄位（SUM）
+- n8n Create Sub Items 節點待更新以直接寫入上述欄位（formula 方案受 lookup 限制）
+
+**n8n 安全網確認**：
+- Create Sub Items 節點確認已是純 upsert（matchingColumns: Order_Item_Key），待辦關閉
+
 ## [FHS Hook 自動化系統 v1.0.0 上線] - 2026-04-28
 
 **執行依據**：Fat Mo `/execute` 授權（flow_id: 2026-04-28-1844）

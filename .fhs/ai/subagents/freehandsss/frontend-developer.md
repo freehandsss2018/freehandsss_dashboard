@@ -40,6 +40,7 @@ version: 1.1.0
 | `ui-designer` 產出的 **FHS Design Spec** | Stitch 原始 HTML 輸出（含 React/Tailwind） |
 | 明確標注版本的 CSS Variables 規格 | 未經 ui-designer spec 核可的設計草稿 |
 | 含 TODO[hookup] 標記的 wireframe 指示 | 直接複製自 V36/V37/V38 的樣式片段 |
+| Stitch 輸出經 `/ag-ui-import` 轉換後的 Vanilla HTML | 未通過 `/ag-ui-import` 的 Stitch 草稿 |
 
 > ⚠️ 若接收到的設計輸入未通過 Step 2（Impeccable Refinement）+ Step 3（UI/UX Pro Max Spec），
 > 應停下並要求 ui-designer 補完整 FHS Design Spec。

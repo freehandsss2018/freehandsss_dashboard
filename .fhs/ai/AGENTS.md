@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.1
-> Last updated: 2026-04-18
+> Version: v1.4.2
+> Last updated: 2026-05-03
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -50,6 +50,7 @@
 - **前端利潤最高真理**：前端利潤結算為絕對真理，n8n 嚴禁擅自重算利潤。唯一例外：前端傳入值為 0 時，n8n 方可介入計算。
 - **n8n Code Node 輸出規範**：所有 Code Node 必須回傳 `[{json: {auditPassed: true, ...}}]` 格式，嚴禁回傳裸物件。
 - **SKU 審計前置**：執行任何財務審計前，必須先調用 `Parse Items` 節點對 SKU 進行正規化（如 3肢->4肢）。
+- **Airtable 計算職責分工**：Airtable formula/lookup 欄位僅用於展示輔助（如 Item_ID、Item_Category）。所有核心財務欄位（Total_Cost、Handmodel_Cost、Keychain_Cost、Necklace_Cost 等成本分類欄位）必須由 n8n 計算後直接寫入，嚴禁以 Airtable formula 替代 n8n 計算邏輯。Airtable formula 無法可靠處理 multipleLookupValues 陣列計算，是架構反模式。
 
 ### 資料結構守護
 - **Raw_Form_State 不可侵犯**：嚴禁為修復任何單點 Bug（如 Telegram 換行排版）而刪除或破壞 Raw_Form_State。此欄位是舊單還原與修改訂單的唯一生命線。
@@ -100,6 +101,11 @@
 - **先定義成功標準**：任何非瑣碎任務開始前，先聲明可驗證的完成條件（如「完成後 X 檔案存在且非空」）
 - **驗證循環**：實作完成後必須對照成功標準逐項確認，不得靜默宣告完成
 - **不確定時停止**：若 AI 無法確認某步驟結果，必須停下詢問 Fat Mo，禁止猜測繼續
+
+### Stitch 資產守護
+- **Stitch 輸出禁止直入**：Google Stitch 或任何 MCP 生成的 UI 組件，嚴禁未經轉換直接覆寫 `current.html` / V36 / V37 / V40 等主核心。
+- **必須無害化**：Stitch 產出必須先去除 React/Tailwind/CDN 外部依賴，轉為純 Vanilla HTML/CSS，方可進入 Phase B 實作。
+- **草稿隔離**：Stitch 生成物作為「Draft」暫存於 `.fhs/notes/ai_reports/`，只有通過 `/ag-ui-import` 轉換且 Code Reviewer PASS 後，方可合併至 prototype。
 
 ### 衝突優先級聲明
 - 若本文件（AGENTS.md）與 `.cursorrules` 有任何規則衝突，以本文件為最終準則。

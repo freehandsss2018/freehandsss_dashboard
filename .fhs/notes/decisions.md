@@ -7,6 +7,32 @@
 
 ## 記錄
 
+[2026-05-03] Airtable 成本分拆欄位建立 + n8n 財務計算職責確立
+
+決策：
+- 在 Order_Items 新增 3 個成本分類欄位：Handmodel_Cost（立體擺設）、Keychain_Cost（金屬鎖匙扣）、Necklace_Cost（純銀頸鏈吊飾）
+- 在 Main_Orders 新增 3 個對應 Rollup 欄位（SUM）
+- 確立原則：上述欄位由 n8n 計算並直接寫入，不使用 Airtable formula
+- AGENTS.md 升級至 v1.4.2，新增「Airtable 計算職責分工」規則
+原因：Airtable formula 無法可靠處理 multipleLookupValues 陣列計算（會出現紅色三角形錯誤）。n8n 在處理訂單時已知商品類別，由 n8n 計算成本分類更穩定可靠。
+批准：Fat Mo ✅（2026-05-03）
+
+---
+
+[2026-05-03] Stitch → Antigravity 整合完成 — 建立 UI 設計工具管線
+
+決策：
+- 將 Google Stitch MCP 整合至 Antigravity 設計工作流，建立標準化轉換管線
+- 新增 `/ag-stitch-sync` 指令：讓 Antigravity 開啟並擷取 Stitch 生成的 UI snippet
+- 新增 `/ag-ui-import` 指令：將確認後的 UI snippet 去除外部依賴，轉為 Vanilla HTML/CSS
+- 更新 AGENTS.md Section 3 加入「Stitch 資產守護」原則
+- 更新 ANTIGRAVITY.md 加入 Stitch MCP 使用入口
+- 更新 ui-designer.md / frontend-developer.md 明確 Stitch 工作邊界
+原因：系統缺乏 Stitch 明確工作流，導致設計工具整合不完整。Fat Mo 授權解除 A2 寫入鎖並執行整合（2026-05-03）。
+批准：Fat Mo ✅（2026-05-03）
+
+---
+
 [2026-04-28] V40.4 同步至 current（生產環境正式切換）
 
 決策：

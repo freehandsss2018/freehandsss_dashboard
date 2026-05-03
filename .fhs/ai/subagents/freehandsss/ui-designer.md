@@ -28,6 +28,7 @@ version: 2.0.0
 - **禁止**：`.mode-ling` / `.mode-fcat` CSS class
 - **禁止**：修改任何現有主檔（`current.html` / V36 / V37）
 - **禁止**：任何 `fetch()` / n8n webhook URL / 真實 API 呼叫
+- **Stitch 協同**：可使用 `mcp__magic__21st_magic_component_builder` 輔助生成 UI 組件，但必須透過 `/ag-stitch-sync` → `/ag-ui-import` 管線轉換，嚴禁 Stitch 輸出直接進入 Spec 或主核心
 - **必須**：`roleLingBtn` / `roleFatBtn` ID 保留（webhook contract），但不驅動視覺主題
 - **必須**：設計輸出可由 frontend-developer 直接轉化為靜態 HTML 原型
 - **憲法層**：AGENTS.md（最高優先級）

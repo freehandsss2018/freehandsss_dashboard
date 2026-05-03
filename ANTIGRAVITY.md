@@ -53,6 +53,23 @@
 
 ---
 
+## Stitch MCP（UI 生成輔助）
+
+Antigravity 可調用 Google Stitch MCP（`mcp__magic__21st_magic_component_builder`）生成 UI 組件：
+
+| 指令 | 用途 |
+|------|------|
+| `/ag-stitch-sync` | 開啟 Stitch，擷取生成的 UI snippet，識別外部依賴 |
+| `/ag-ui-import` | 去除 React/Tailwind/CDN，轉為 Vanilla HTML/CSS，移交 frontend-developer |
+
+**核心守則**：
+- ❌ 禁止：Stitch 產出未經轉換直接覆寫任何主核心（`current.html` / V40 等）
+- ✅ 必須：所有 Stitch 轉化產物通過 Code Reviewer PASS 後方可合併
+
+> Master 定義：`.fhs/ai/commands/ag-stitch-sync.md` / `.fhs/ai/commands/ag-ui-import.md`
+
+---
+
 ## 寫入守則（重要）
 
 - 報告必須寫入：`.fhs/notes/ai_reports/`（絕對路徑，非 brain/ artifact）

@@ -46,7 +46,9 @@ freehandsss_dashboard/
 │   │   │   ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
 │   │   │   ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
 │   │   │   ├── px-audit.md              ← 外部審查（第三方審計員）
-│   │   │   └── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
+│   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
+│   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
+│   │   │   └── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）
 │   │   │   ├── README.md                ← subagents 目錄說明與雙層架構

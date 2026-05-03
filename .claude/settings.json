@@ -36,6 +36,7 @@
     ]
   },
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "mcp__claude_ai_Notion__notion-fetch",
       "Bash(start \"\" \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\freehandsss_dashboardV35.html\")",
@@ -47,7 +48,25 @@
       "Bash(\"C:/Users/Edwin/AppData/Local/Temp/calc.txt\")",
       "Bash(python \"C:/Users/Edwin/AppData/Local/Temp/fix_wf_final.py\")",
       "Bash(python \"C:/Users/Edwin/AppData/Local/Temp/read_calc.py\")",
-      "Bash(python \"C:/Users/Edwin/AppData/Local/Temp/final_verify.py\")"
+      "Bash(python \"C:/Users/Edwin/AppData/Local/Temp/final_verify.py\")",
+      "mcp__claude_ai_Airtable__list_records_for_table",
+      "mcp__claude_ai_Airtable__list_tables_for_base",
+      "mcp__claude_ai_Airtable__list_bases",
+      "mcp__claude_ai_Airtable__search_bases",
+      "mcp__claude_ai_Airtable__search_records",
+      "mcp__claude_ai_Airtable__get_table_schema",
+      "mcp__claude_ai_Airtable__list_pages_for_base",
+      "mcp__claude_ai_Airtable__list_workspaces",
+      "mcp__n8n-mcp-server__get_execution_log",
+      "mcp__n8n-mcp-server__get_workflow",
+      "mcp__n8n-mcp-server__get_node",
+      "mcp__n8n-mcp-server__verify_triple_sync",
+      "Bash(curl -sk -H * https://yanhei.synology.me:8443/api/v1/workflows*)",
+      "Bash(curl -sk -H * https://yanhei.synology.me:8443/api/v1/executions*)",
+      "Bash(curl --version*)",
+      "Bash(cp *dashboardV40.html *current.html)",
+      "Bash(cp *freehandsss_dashboardV40.html *)",
+      "Bash(curl -sk *yanhei.synology.me*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Edwin\\AppData\\Local\\Temp"

@@ -10,6 +10,8 @@
 | ag-plan.md | /ag-plan | A2 產出本地落實 Plan（含落盤自查） | Antigravity |
 | cl-flow.md | /cl-flow | A3 最終審核報告（verdict only，NO-TOUCH） | Claude |
 | execute.md | /execute | 唯一正式執行入口（需 Fat Mo 明確批准） | Claude |
+| ag-stitch-sync.md | /ag-stitch-sync | Stitch UI snippet 擷取與依賴識別 | Antigravity |
+| ag-ui-import.md | /ag-ui-import | Stitch → Vanilla HTML/CSS 轉換，移交 frontend-developer | Antigravity |
 
 ## 系統維護指令
 
