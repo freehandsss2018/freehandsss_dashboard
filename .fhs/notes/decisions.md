@@ -7,6 +7,42 @@
 
 ## 記錄
 
+[2026-05-04] Order_Items 成本分類欄位計算方式確認（formula 保留）
+
+決策：
+- 保留 `Handmodel_Cost`、`Keychain_Cost`、`Necklace_Cost` 為 Airtable formula 欄位（不改 number）
+- 原因：公式已修復（無紅三角），且 formula 可即時反映 Product_Link 成本異動，n8n 寫入反而無此優勢
+
+**計算邏輯（供日後轉移其他 Database 用）**
+
+三個欄位共用相同邏輯，差異僅在類別關鍵字：
+
+```
+IF(
+  FIND("{類別}", ARRAYJOIN({Item_Category}, ",")),
+  SUM({Item_BaseCost}) * {Quantity},
+  0
+)
+```
+
+| 欄位 | 類別關鍵字 | 說明 |
+|------|-----------|------|
+| Handmodel_Cost | `立體擺設` | Item_Category 含此字串時，計算 Item_BaseCost × Quantity |
+| Keychain_Cost | `金屬鎖匙扣` | 同上 |
+| Necklace_Cost | `純銀頸鏈` | 同上（注意：關鍵字為「純銀頸鏈」，非全名「純銀頸鏈吊飾」） |
+
+**依賴欄位**：
+- `Item_Category`：multipleLookupValues，透過 `Product_Link → Main_Category` 取得
+- `Item_BaseCost`：multipleLookupValues，透過 `Product_Link → Total_Base_Cost` 取得
+- `Quantity`：number，由 n8n 或 Dashboard 直接寫入
+
+**轉移注意**：
+- 若目標 DB 不支援 lookup array，需先在 n8n 解析 `Item_Category`，改為 conditional 寫入
+
+批准：Fat Mo ✅（2026-05-04）
+
+---
+
 [2026-05-04] 鎖匙扣跨部位運費扣減規則建立 + Node 14 V40.6 部署
 
 決策：

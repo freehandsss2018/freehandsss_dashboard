@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// === Freehandsss V40.5 (安全重生版): 大腦 2 號 (利潤精算 - 並將子項目打包) ===\n\nconst parseNode = $('Parse Items & Generate SKU');\nconst parseNodeItems = parseNode ? parseNode.all() : [];\n\nif (parseNodeItems.length === 0) {\n    // 根本性防禦：如果連初始解析都沒有，傳回基本的空 payload 避免當機\n    return [{ json: { Total_Revenue: 0, Total_Cost: 0, Final_Profit: 0, Sub_Items: [] } }];\n}\n\nconst firstNodeData = parseNodeItems[0].json || {};\nconst totalRevenue = Number(firstNodeData.Total_Revenue) || 0;\nconst rawFormState = firstNodeData.Raw_Form_State || \"\";\n\nlet deposit = 0;\nlet balance = 0;\nlet additionalFee = 0;\n\ntry {\n    const triggerNode = $('Receive Dashboard Order');\n    const triggerBody = (triggerNode && triggerNode.first()) ? (triggerNode.first().json.body || triggerNode.first().json) : {};\n    deposit = Number(triggerBody.Deposit) || 0;\n    balance = Number(triggerBody.Balance) || 0;\n    additionalFee = Number(triggerBody.Additional_Fee) || 0;\n} catch (error) { }\n\nlet totalBaseCost = 0;\nlet packedItems = [];\n\nconst items = $input.all(); \nfor (let i = 0; i < parseNodeItems.length; i++) {\n    // 終極防禦機制：當 $input 找不到對應 item 時安全回退，避免 Cannot read properties of undefined\n    let originalItemData = parseNodeItems[i].json || {};\n    let itemData = (items[i] && items[i].json) ? items[i].json : originalItemData;\n\n    let itemCost = Number(itemData.Total_Base_Cost) || 0;\n    totalBaseCost += itemCost;\n\n    packedItems.push({\n        Product_Record_ID: itemData.id || null, \n        Product_Name: itemData.Product_Name || originalItemData.Search_SKU || \"Unknown SKU\",\n        Total_Base_Cost: itemCost,\n        Quantity: Number(originalItemData.Original_Qty) || 1,\n        Notes: originalItemData.Item_Notes || \"\",\n        Order_Item_Key: originalItemData.Order_Item_Key || \"\"\n    });\n}\n\nconst finalProfit = totalRevenue - totalBaseCost;\n\nreturn [{\n    json: {\n        ...firstNodeData,              \n        Total_Revenue: totalRevenue,   \n        Total_Cost: totalBaseCost,     \n        Final_Profit: finalProfit,     \n        Deposit: deposit,              \n        Balance: balance,              \n        Additional_Fee: additionalFee, \n        Raw_Form_State: rawFormState,\n        Sub_Items: packedItems         \n    }\n}];",
+    "notice": ""
+  },
+  "id": "7ffb2baa-8f1d-4ec9-bb52-b4ad3c61f98d",
+  "name": "Calculate Profit & Pack Items",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    32224,
+    7424
+  ],
+  "typeVersion": 2
+}

@@ -5,8 +5,12 @@
 | 檔案 | 用途 |
 |---|---|
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
-| `rebuild_index.py` | 重建本地索引或快取的排錯腳本 |
-| `cl-flow-runner.js` | `/cl-flow` 協調器核心 — 並行調用 Perplexity + Gemini API，生成真實 artifact 到 `artifacts/{flow_id}/`，供 Claude 審閱後產出最終計劃 |
+| `rebuild_index.py` | 重建本地索引或快取的排錯腳本（Antigravity 專用） |
+| `cl-flow-runner.js` | `/cl-flow` 協調器核心 — 並行調用 Perplexity + Gemini API，生成真實 artifact |
+| `sync-legacy-orders.js` | 一次性匯入 2026-01 ~ 2026-04 的 Excel 舊訂單到 Airtable |
+| `update-legacy-profit.js` | 計算並回填舊訂單的 `Total_Cost` 與 `Net_Profit` |
+| `update-legacy-sale-price.js` | 為非 P 系列舊訂單補入木框售價 (+ $2,380) 並更新利潤 |
+| `deploy-order-confirm-date.js` | 透過 REST API 將 `Order_Confirm_Date` 欄位映射自動加入 n8n 節點 |
 
 ## hooks/ — Claude Code Hooks 執行層
 

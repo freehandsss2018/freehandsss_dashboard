@@ -1,5 +1,18 @@
 # Changelog
 
+## [Blender MCP 環境建置完成] - 2026-05-05
+
+**執行依據**：Fat Mo 授權（安裝 Blender MCP 完整環境）
+
+**Blender MCP 環境建置**：
+- 確認 Blender 5.1.1 已安裝（`C:\Program Files\Blender Foundation\Blender 5.1\`）
+- 安裝 uv 0.11.8（`C:\Users\Edwin\.local\bin\`）
+- 下載並安裝 Blender MCP addon v1.2（blender_mcp_addon.py → Blender Preferences）
+- Claude Code MCP server 設定完成（`claude mcp add blender`，已寫入 `~/.claude.json`）
+- Blender ↔ Claude Code 連線測試通過（port 9876，status: ✅ Connected）
+
+**注意**：每次開啟 Blender 需重新點「Connect to MCP server」（port 9876）
+
 ## [AGENTS.md v1.4.2 + Stitch 整合 + Dashboard 修正 + 成本分拆欄位] - 2026-05-03
 
 **執行依據**：Fat Mo 授權（Stitch 解鎖 + execute）
