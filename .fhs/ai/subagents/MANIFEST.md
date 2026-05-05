@@ -15,6 +15,7 @@
 | database-reviewer | 1.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/database-reviewer.md` | FHS native (ECC concept rewrite) |
 | tdd-guide | 1.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/tdd-guide.md` | FHS native (ECC concept rewrite) |
 | build-error-resolver | 1.0.0 | claude-haiku-4-5-20251001 | active | `~/.claude/agents/freehandsss/build-error-resolver.md` | FHS native (ECC concept rewrite) |
+| blender-3d-modeler | 1.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/blender-3d-modeler.md` | FHS native (2026-05-05 心形手模 session) |
 
 ---
 
@@ -38,6 +39,7 @@
 | database-reviewer | 1.0.0 | 2026-04-28 | 初次安裝（ECC concept，重寫為 Airtable + n8n 專用）|
 | tdd-guide | 1.0.0 | 2026-04-28 | 初次安裝（ECC concept，重寫為 FHS Python + n8n 專用）|
 | build-error-resolver | 1.0.0 | 2026-04-28 | 初次安裝（ECC concept，Haiku model，n8n + JS + Python 專用）|
+| blender-3d-modeler | 1.0.0 | 2026-05-05 | 初次安裝（FHS native，Blender 5.1.1 實戰驗證 — MANIFOLD boolean / 碎片清除 / 外殼放量 / Z-slice）|
 
 ## Skills（非 subagent）
 

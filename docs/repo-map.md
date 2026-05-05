@@ -64,7 +64,8 @@ freehandsss_dashboard/
 │   │   │       ├── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
 │   │   │       ├── database-reviewer.md ← v1.0.0 Airtable schema + n8n 資料流審查（2026-04-28 新增）
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
-│   │   │       └── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
+│   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
+│       └── blender-3d-modeler.md  ← v1.0.0 Blender 3D 建模（MANIFOLD boolean / 碎片清除 / 外殼放量 / Z-slice，2026-05-05 新增）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
 │   │       ├── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
 │   │       │   ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）

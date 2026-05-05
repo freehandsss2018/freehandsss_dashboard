@@ -7,6 +7,24 @@
 
 ## 記錄
 
+[2026-05-05] blender-3d-modeler subagent — 採用 Single-file 內嵌知識設計
+
+決策：
+- **不採用** AG 計劃的 skill + subagent 雙層架構（`BlenderAdvancedModeling` skill + `BlenderModelPro` subagent）
+- **採用** 單一 subagent 檔案，將所有已驗證的 Python 配方嵌入同一個 .md（與 `build-error-resolver.md` 相同模式）
+- Model 選用 `claude-sonnet-4-6`（需要工具執行能力，Haiku 功能不足）
+
+原因：
+- 此任務需要工具執行能力（`mcp__blender__execute_blender_code`），skill 只是純知識 reference layer，無執行能力
+- 雙層架構增加維護成本，且 FHS 最小化原則要求避免過度拆分
+- 單一 subagent 內嵌知識可確保配方「記憶」隨 agent 一起部署，不依賴額外 skill 讀取
+
+知識來源：2026-05-05 心形凹槽手模 Blender session 實際驗證配方（MANIFOLD boolean / 浮空碎片清除 / 外殼放量 / Z-slice 分析）
+
+批准：Fat Mo ✅（2026-05-05 /execute — Flow 2026-05-05-2300）
+
+---
+
 [2026-05-04] Order_Items 成本分類欄位計算方式確認（formula 保留）
 
 決策：

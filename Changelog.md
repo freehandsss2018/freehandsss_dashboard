@@ -2,7 +2,7 @@
 
 ## [V40.8 Dashboard UI/UX & Finance Optimization] - 2026-05-05
 
-**執行依據**：Fat Mo 授權（UI/UX enhancements & financial logic alignment）
+**執行依據**：Fat Mo 授權（UI/UX enhancements & financial logic alignment + Blender Automation）
 
 **核心變更**：
 - **移除嬰兒月齡邏輯**：移除「嬰兒月齡」輸入框與相關紅框警告，版面精簡化。
@@ -11,10 +11,14 @@
   - 「已付訂金/全數」欄位在無手動輸入時，預設自動顯示系統建議總價。
   - 欄位區分「佔位建議值（淺黑色）」與「手動輸入值（實黑色）」，提升視覺回饋。
 - **IG 訊息分段預覽對比優化**：修正預覽卡片標題顏色為純白，解決在深藍背景下文字看不清楚的問題。
+- **部署 Blender 3D 建模子代理 (Subagent)**：
+  - 建立 `blender-3d-modeler`，封裝 MANIFOLD boolean、碎片清除、外殼放量、Z-slice 分析等 Python 建模配方。
+  - 採用單檔案內嵌知識架構，確保 MCP 工具執行權限。
 
 **版本資訊**：
 - UI 層：V40.8
 - 憲法層：v1.4.2
+- Subagents：7 個活躍 (新增 Blender 建模專家)
 - n8n Workflow：V45.7.4
 
 ## [V40.7 Dashboard Promotion to Stable Production] - 2026-05-05

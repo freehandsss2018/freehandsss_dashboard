@@ -1,7 +1,14 @@
-# FHS Handoff - 2026-05-05 17:30
-當前版本：v1.4.2（憲法層）/ V40.8（UI層 / Stable Production）/ 6 Agents + 2 Skills + Hook System v1.0.0
+# FHS Handoff - 2026-05-05 23:40
+當前版本：v1.4.2（憲法層）/ V40.8（UI層 / Stable Production）/ 7 Agents + 2 Skills + Hook System v1.0.0
 
 ## 本次 Session 完成事項（2026-05-05）
+
+✅ **blender-3d-modeler Subagent v1.0.0 建立（Flow 2026-05-05-2300）**
+- 建立 `.fhs/ai/subagents/freehandsss/blender-3d-modeler.md`（Master）
+- 部署至 `~/.claude/agents/freehandsss/blender-3d-modeler.md`（Runtime）
+- 封裝 4 個實戰驗證 Python 配方：K1 MANIFOLD boolean / K2 浮空碎片清除 / K3 外殼放量 / K4 Z-slice 分析
+- 架構決策：single-file 內嵌知識（非 skill+subagent 雙層），理由：需要 Blender MCP 工具執行能力
+- 同步更新：MANIFEST.md / repo-map.md / decisions.md
 
 ✅ **V40.8 Dashboard UI/UX & 財務優化**
 - 移除嬰兒月齡邏輯，簡化版面。

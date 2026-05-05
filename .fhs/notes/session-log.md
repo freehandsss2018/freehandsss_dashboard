@@ -1,18 +1,24 @@
 # Session Log — 2026-05-05（第二十一次）
 
 ## 概覽
-完成 Freehandsss Dashboard (V40.8) UI/UX 優化。移除「嬰兒月齡」舊欄位，實作「動態報價明細 (#priceBreakdown)」，優化「財務欄位智能預填」與「IG 預覽對比」，並完成穩定版同步。
+完成 Freehandsss Dashboard (V40.8) UI/UX 優化與 Blender 3D 建模自動化 Subagent 部署。系統版本提升至 V40.8，Active Agents 增至 7 個。
 
 ## 主要完成事項
-1. **Dashboard V40.8 UI 優化**：
+1. **Blender 3D 建模 Subagent 部署 (`blender-3d-modeler`)**：
+   - 建立並部署 `blender-3d-modeler` (v1.0.0)，封裝 MANIFOLD boolean、碎片清理、外殼放量、Z-slice 分析四大 Python 配方。
+   - 採用 Single-file Embedded 知識架構，解決 MCP 工具執行權限問題。
+   - 完成 MANIFEST.md、repo-map.md、decisions.md 同步。
+2. **Dashboard V40.8 UI 優化**：
    - 移除「嬰兒月齡」輸入框與紅框警告邏輯。
    - 新增動態報價拆解明細，隨產品選擇即時顯示計算式。
    - 訂金/尾數欄位 Placeholder 色彩區分（#999 建議值 vs #000 實體值）。
    - 智能訂金預填（當欄位為空時自動載入建議總價）。
    - IG 預覽標題高對比優化（White color）。
-2. **穩定版同步**：
+3. **穩定版同步**：
    - `freehandsss_dashboardV40.html` (V40.8) -> `Freehandsss_dashboard_current.html`。
-3. **文件同步**：
+4. **教訓記錄 (Lesson)**：
+   - 記錄 `2026-05-05_Blender_Subagent.md`，重點在於 Subagent 知識與工具執行的整合。
+5. **文件同步**：
    - 更新 `README.md` (root)、`Freehandsss_Dashboard/README.md`、`Changelog.md`、`handoff.md`。
 
 ## 待辦（承接至下次）
