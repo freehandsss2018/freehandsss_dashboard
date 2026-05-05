@@ -32,15 +32,15 @@
 
 | 檔案 | 用途 |
 |***|***|
-| Freehandsss_dashboard_current.html | **正式環境** = V40.4 (2026-04-28 同步) |
+| Freehandsss_dashboard_current.html | **正式環境** = V40.7 (2026-05-05 同步) |
 | freehandsss_dashboardV36.html | 舊版穩定基準 (Legacy Stable Baseline) |
 | freehandsss_dashboardV37.html | 展示/試用版本 (Trial / Legacy) |
-| freehandsss_dashboardV40.html | **當前開發穩定版** (Active Development) |
+| freehandsss_dashboardV40.html | **當前穩定基準** (Latest Stable) |
 
 **版本說明：**
 
 - V36 = 舊版穩定基準（2026-04前）
-- V40.4 = 當前生產版本（響應式設計 + API 快取優化）
+- V40.7 = 當前生產版本（響應式設計 + 財務優化 + API 快取優化）
 - 功能版本號 = 參閱 Changelog.md 最新記錄
 
 ## 備份與歸檔政策
@@ -74,10 +74,10 @@
 
 ## 版本
 
-- **系統版本**：v1.4.1（見 `.fhs/ai/AGENTS.md`）
+- **系統版本**：v1.4.2（見 `.fhs/ai/AGENTS.md`）
 - **SOP 版本**：v2.0（見 `docs/GLOBAL_AI_SOP.md`）
-- **Dashboard UI 版本**：V40.4 (Active Production)
+- **Dashboard UI 版本**：V40.7 (Active Production)
   - 響應式設計（iPhone <768px / Desktop ≥768px）
   - Airtable API 快取優化（5分鐘 sessionStorage）
   - Financial Overview 內嵌模式
-- **最後更新**：2026-04-28（V40 同步至 current）
+- **最後更新**：2026-05-05（V40.7 同步至 current）

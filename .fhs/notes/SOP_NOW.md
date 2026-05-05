@@ -16,9 +16,9 @@
 
 | 項目 | 現況 |
 |------|------|
-| 憲法版本 | AGENTS.md v1.4.1 |
-| 穩定生產版 | freehandsss_dashboardV37.html |
-| 開發版（新）| freehandsss_dashboardV40.html（iPhone/Desktop 響應式，Code Reviewer PASS） |
+| 憲法版本 | AGENTS.md v1.4.2 |
+| 穩定生產版 | freehandsss_dashboardV40.html (V40.7) |
+| 開發版（新）| freehandsss_dashboardV41.html (Planned) |
 | 開發版（舊）| freehandsss_dashboardV39_proto.html（已棄用，設計概念廢除） |
 | n8n Workflow | V45.7.4（24 nodes） |
 | Airtable Base | app9GuLsW9frN4xaT |

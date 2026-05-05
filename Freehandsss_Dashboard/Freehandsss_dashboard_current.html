@@ -296,6 +296,63 @@
             display: block;
         }
 
+        /* ── 方案B：訂單類型確認區塊 ── */
+        .order-type-confirm {
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+            transition: border-color .25s, background .25s;
+        }
+        .order-type-confirm.state-yes { border-color: #7B1FA2; background: #F3E5F5; }
+        .order-type-confirm .confirm-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .order-type-confirm .confirm-desc  { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.5; }
+        .confirm-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .confirm-option {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 12px; border-radius: 8px;
+            border: 1.5px solid #eee; background: #fff;
+            cursor: pointer; transition: border-color .25s, background .25s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .confirm-option.selected-yes { border-color: #7B1FA2; background: rgba(123,31,162,0.06); }
+        .radio-circle {
+            flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid #ccc; background: #fff; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color .25s;
+        }
+        .confirm-option.selected-yes .radio-circle { border-color: #7B1FA2; background: #7B1FA2; }
+        .confirm-option.selected-yes .radio-circle::after {
+            content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff;
+        }
+        .confirm-option .option-label { font-size: 13px; font-weight: 600; line-height: 1.3; }
+        .confirm-option.selected-yes .option-label { color: #4A148C; }
+        .confirm-option .option-sub { font-size: 11px; color: #888; margin-top: 2px; }
+        .confirm-warning {
+            display: flex; align-items: flex-start; gap: 6px;
+            background: #FFF3E0; border: 1px solid #FFCC80; border-radius: 4px;
+            padding: 7px 10px; font-size: 11px; color: #BF360C; line-height: 1.45;
+        }
+        .cost-included-badge {
+            align-items: center; gap: 6px;
+            background: #E8F5E9; border: 1px solid #A5D6A7; border-radius: 4px;
+            padding: 7px 12px; margin-bottom: 12px;
+            font-size: 12px; font-weight: 600; color: #2E7D32;
+            animation: fadeSlideIn .3s ease-out;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .toggle-row.highlight-p {
+            background: #F3E5F5; border-radius: 6px;
+            padding: 10px 10px; border-bottom: none; margin-bottom: 1px;
+        }
+        .toggle-row.highlight-p strong { color: #4A148C; }
+        .toggle-row.highlight-p input:checked + .slider { background: #7B1FA2; }
+
         .limb-grid {
             display: flex;
             flex-direction: column;
@@ -1993,7 +2050,37 @@
     <div class="card card-product">
         <h2>🛍️ 產品選購</h2>
 
-        <div class="toggle-row">
+        <!-- ── 方案B：訂單類型確認區塊 ── -->
+        <div class="order-type-confirm" id="orderTypeConfirm">
+            <div class="confirm-title">📋 訂單類型確認</div>
+            <div class="confirm-desc">此訂單是否包含「立體擺設」取模服務？</div>
+            <div class="confirm-options">
+                <div class="confirm-option selected-yes" id="confirmOptNo" onclick="selectOrderType('no')">
+                    <div class="radio-circle" id="rcNo">
+                        <div style="width:7px;height:7px;border-radius:50%;background:#B0A090;" id="dotNo"></div>
+                    </div>
+                    <div>
+                        <div class="option-label">否（純金屬／吊飾訂單）</div>
+                    </div>
+                </div>
+                <div class="confirm-option" id="confirmOptYes" onclick="selectOrderType('yes')">
+                    <div class="radio-circle" id="rcYes"></div>
+                    <div>
+                        <div class="option-label">是 — 含取模服務</div>
+                        <div class="option-sub">+$210 木框套裝自動計入</div>
+                    </div>
+                </div>
+            </div>
+            <div class="confirm-warning">
+                <span>⚠️</span>
+                <span>若客人有預約取模，請必須選「是」</span>
+            </div>
+        </div>
+        <div class="cost-included-badge" id="costIncludedBadge" style="display:none;">
+            <span>✓</span><span>立體擺設成本 $210 已計入</span>
+        </div>
+
+        <div class="toggle-row" id="toggleRowP">
             <strong>🎨 立體擺設款式</strong>
             <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this)"> <span
                     class="slider"></span></label>
@@ -3296,6 +3383,42 @@
             generate();
         }
 
+        function selectOrderType(type) {
+            var confirmBlock = document.getElementById('orderTypeConfirm');
+            var badge        = document.getElementById('costIncludedBadge');
+            var enablePChk   = document.getElementById('enableP');
+            var optNo        = document.getElementById('confirmOptNo');
+            var optYes       = document.getElementById('confirmOptYes');
+            var rcNo         = document.getElementById('rcNo');
+            var dotNo        = document.getElementById('dotNo');
+            var rowP         = document.getElementById('toggleRowP');
+            if (type === 'yes') {
+                confirmBlock.classList.add('state-yes');
+                optNo.classList.remove('selected-yes');
+                optYes.classList.add('selected-yes');
+                if (dotNo) dotNo.style.background = '#D1D1D6';
+                if (rcNo)  rcNo.style.borderColor  = '#D1D1D6';
+                badge.style.display = 'flex';
+                if (rowP) rowP.classList.add('highlight-p');
+                if (enablePChk && !enablePChk.checked) {
+                    enablePChk.checked = true;
+                    toggleAddon('contentP', enablePChk);
+                }
+            } else {
+                confirmBlock.classList.remove('state-yes');
+                optNo.classList.add('selected-yes');
+                optYes.classList.remove('selected-yes');
+                if (dotNo) dotNo.style.background = '#B0A090';
+                if (rcNo)  rcNo.style.borderColor  = '#ccc';
+                badge.style.display = 'none';
+                if (rowP) rowP.classList.remove('highlight-p');
+                if (enablePChk && enablePChk.checked) {
+                    enablePChk.checked = false;
+                    toggleAddon('contentP', enablePChk);
+                }
+            }
+        }
+
         function togglePart(boxId, cb) {
             document.getElementById(boxId).classList.toggle('active', cb.checked);
             generate();
@@ -3657,8 +3780,9 @@
             }
 
             // 金屬鎖匙扣 擷取邏輯
+            // 安全網：section toggle 關閉但子項目已勾選時仍納入 payload（防 0601100 類問題）
             const enableK = getValSafe("enableK", false);
-            if (enableK) {
+            if (enableK || getValSafe('k_baby_sec_en', false) || getValSafe('k_elder_sec_en', false) || getValSafe('k_family_en', false)) {
                 if (getValSafe('k_baby_sec_en', false)) {
                     const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
                     babyParts.forEach(p => {
@@ -3693,8 +3817,8 @@
                 }
             }
 
-            // 純銀吊飾擷取
-            if (getValSafe('enableM', false)) {
+            // 純銀吊飾擷取（同上安全網邏輯）
+            if (getValSafe('enableM', false) || getValSafe('m_baby_sec_en', false) || getValSafe('m_elder_sec_en', false)) {
                 if (getValSafe('m_baby_sec_en', false)) {
                     const babyParts = [{ id: "lh", type: "嬰兒" }, { id: "rh", type: "嬰兒" }, { id: "lf", type: "嬰兒" }, { id: "rf", type: "嬰兒" }];
                     babyParts.forEach(p => {
@@ -4434,6 +4558,7 @@
                 "Order_ID": currentMode === 'edit' ? editTargetOrderId : currentOrderId,
                 "Customer_Name": document.getElementById("momName") ? document.getElementById("momName").value || "待定" : "待定",
                 "Appointment_Date": rawDate ? rawDate : null,
+                "Order_Confirm_Date": currentMode === 'create' ? new Date().toISOString().slice(0, 10) : undefined,
                 "Deposit": document.getElementById("deposit") ? Number(document.getElementById("deposit").value) || 0 : 0,
                 "Balance": document.getElementById("balance") ? Number(document.getElementById("balance").value) || 0 : 0,
                 "Additional_Fee": document.getElementById("additional") ? Number(document.getElementById("additional").value) || 0 : 0,
@@ -5922,9 +6047,9 @@
              金屬產品 = 純銀頸鏈吊飾、金屬鎖匙扣、吊飾、配件
         ===================================================== */
         /* ─────────────────────────────────────────────────────
-           FO_MOCK_DATA  (V40.6 — 2026-05-02 同步自 Airtable 真實數據)
+           FO_MOCK_DATA  (V40.7 — 2026-05-02 同步自 Airtable 真實數據)
            ─────────────────────────────────────────────────────
-           全年總計：21 單，收入 HK$86,809，成本 HK$18,095，毛利 HK$68,714
+           全年總計：21 單，收入 HK$86,809，成本 HK$17,995，毛利 HK$68,814
            月份分佈：1月7單/$33,220 | 2月6單/$21,329 | 3月4單/$18,440 | 4月4單/$13,820
 
            ⚠️  產品分類說明（3類，待 n8n SKU mapping 修正後可細分）：
@@ -5932,24 +6057,24 @@
                        目前 Airtable Item_Category 無法區分玻璃瓶套裝/木框套裝
                        原因：n8n 將所有手模訂單 map 到同一 SKU「立體擺設(4肢)」
              純銀頸鏈吊飾 (吊飾)  = 6單，收入$17,383，成本$4,925
-             金屬鎖匙扣   (鎖匙扣) = 19單，收入$54,072，成本$10,650
+             金屬鎖匙扣   (鎖匙扣) = 19單，收入$54,072，成本$10,550
            ───────────────────────────────────────────────── */
         var FO_MOCK_DATA = {
             current: {
                 subtitle: 'vs 去年同期',
-                revenue: 86809, cost: 18095, profit: 68714, orders: 21,
+                revenue: 86809, cost: 17995, profit: 68814, orders: 21,
                 revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
                 isNewBusiness: true,
                 groups: {
-                    all:       { revenue: 86809, cost: 18095, orders: 21 },
+                    all:       { revenue: 86809, cost: 17995, orders: 21 },
                     handmodel: { revenue: 15354, cost: 2520,  orders: 12 },
-                    metal:     { revenue: 71455, cost: 15575, orders: 21 }
+                    metal:     { revenue: 71455, cost: 15475, orders: 21 }
                 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
                     revenue: [33220, 54549, 72989, 86809],
-                    cost:    [6370,  9970,  14630, 18095],
-                    profit:  [26850, 44579, 58359, 68714]
+                    cost:    [6370,  9970,  14630, 17995],
+                    profit:  [26850, 44579, 58359, 68814]
                 },
                 barChart: {
                     all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
@@ -5957,31 +6082,31 @@
                     metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [17383, 54072] }
                 },
                 pieChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10650], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
                     handmodel: { labels: ['立體擺設'], values: [2520], colors: ['#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10650], colors: ['#0288D1','#26C6DA'] }
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
                 },
                 breakdown: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10650], profit: [12834,12458,43422], orders: [12,6,19] },
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
                     handmodel: { labels: ['立體擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10650],      profit: [12458,43422],      orders: [6,19] }
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
                 }
             },
             monthly: {
                 subtitle: 'vs 上個月 (3月)',
-                revenue: 13820, cost: 3465, profit: 10355, orders: 4,
-                revenueChange: -25.1, costChange: -25.7, profitChange: -24.8, ordersChange: 0,
+                revenue: 13820, cost: 3365, profit: 10455, orders: 4,
+                revenueChange: -25.1, costChange: -27.8, profitChange: -24.1, ordersChange: 0,
                 isNewBusiness: false,
                 groups: {
-                    all:       { revenue: 13820, cost: 3465, orders: 4 },
+                    all:       { revenue: 13820, cost: 3365, orders: 4 },
                     handmodel: { revenue: 1294,  cost: 210,  orders: 1 },
-                    metal:     { revenue: 12526, cost: 3255, orders: 4 }
+                    metal:     { revenue: 12526, cost: 3155, orders: 4 }
                 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
                     revenue: [33220, 21329, 18440, 13820],
-                    cost:    [6370,  3600,  4660,  3465],
-                    profit:  [26850, 17729, 13780, 10355]
+                    cost:    [6370,  3600,  4660,  3365],
+                    profit:  [26850, 17729, 13780, 10455]
                 },
                 barChart: {
                     all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [1294, 3079, 9447] },
@@ -5989,31 +6114,31 @@
                     metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [3079, 9447] }
                 },
                 pieChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [210, 950, 2305], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [210, 950, 2205], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
                     handmodel: { labels: ['立體擺設'], values: [210], colors: ['#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [950, 2305], colors: ['#0288D1','#26C6DA'] }
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [950, 2205], colors: ['#0288D1','#26C6DA'] }
                 },
                 breakdown: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [1294,3079,9447], cost: [210,950,2305], profit: [1084,2129,7142], orders: [1,1,4] },
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [1294,3079,9447], cost: [210,950,2205], profit: [1084,2129,7242], orders: [1,1,4] },
                     handmodel: { labels: ['立體擺設'],                              revenue: [1294],          cost: [210],          profit: [1084],          orders: [1] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [3079,9447],     cost: [950,2305],     profit: [2129,7142],     orders: [1,4] }
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [3079,9447],     cost: [950,2205],     profit: [2129,7242],     orders: [1,4] }
                 }
             },
             yearly: {
                 subtitle: 'vs 上一年全年',
-                revenue: 86809, cost: 18095, profit: 68714, orders: 21,
+                revenue: 86809, cost: 17995, profit: 68814, orders: 21,
                 revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
                 isNewBusiness: true,
                 groups: {
-                    all:       { revenue: 86809, cost: 18095, orders: 21 },
+                    all:       { revenue: 86809, cost: 17995, orders: 21 },
                     handmodel: { revenue: 15354, cost: 2520,  orders: 12 },
-                    metal:     { revenue: 71455, cost: 15575, orders: 21 }
+                    metal:     { revenue: 71455, cost: 15475, orders: 21 }
                 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
                     revenue: [33220, 54549, 72989, 86809],
-                    cost:    [6370,  9970,  14630, 18095],
-                    profit:  [26850, 44579, 58359, 68714]
+                    cost:    [6370,  9970,  14630, 17995],
+                    profit:  [26850, 44579, 58359, 68814]
                 },
                 barChart: {
                     all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
@@ -6021,14 +6146,14 @@
                     metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [17383, 54072] }
                 },
                 pieChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10650], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
                     handmodel: { labels: ['立體擺設'], values: [2520], colors: ['#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10650], colors: ['#0288D1','#26C6DA'] }
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
                 },
                 breakdown: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10650], profit: [12834,12458,43422], orders: [12,6,19] },
+                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
                     handmodel: { labels: ['立體擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10650],      profit: [12458,43422],      orders: [6,19] }
+                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
                 }
             }
         };

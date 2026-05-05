@@ -1,7 +1,27 @@
-# Session Log — 2026-05-04（第二十次）
+# Session Log — 2026-05-05（第二十一次）
 
 ## 概覽
-鎖匙扣跨部位運費扣減規則建立：n8n Node 14 V40.6 部署，12 筆 Airtable 歷史訂單修正（−$280），n8n-client.js HTTP 400 修正，全 22 單成本核對清單生成，4 份文件同步更新。
+完成 Freehandsss Dashboard (V40.8) UI/UX 優化。移除「嬰兒月齡」舊欄位，實作「動態報價明細 (#priceBreakdown)」，優化「財務欄位智能預填」與「IG 預覽對比」，並完成穩定版同步。
+
+## 主要完成事項
+1. **Dashboard V40.8 UI 優化**：
+   - 移除「嬰兒月齡」輸入框與紅框警告邏輯。
+   - 新增動態報價拆解明細，隨產品選擇即時顯示計算式。
+   - 訂金/尾數欄位 Placeholder 色彩區分（#999 建議值 vs #000 實體值）。
+   - 智能訂金預填（當欄位為空時自動載入建議總價）。
+   - IG 預覽標題高對比優化（White color）。
+2. **穩定版同步**：
+   - `freehandsss_dashboardV40.html` (V40.8) -> `Freehandsss_dashboard_current.html`。
+3. **文件同步**：
+   - 更新 `README.md` (root)、`Freehandsss_Dashboard/README.md`、`Changelog.md`、`handoff.md`。
+
+## 待辦（承接至下次）
+- 監控報價明細在極端組合（超多產品）下的佈局穩定性。
+- 🟡 Legacy Scripts 文件化決策（進度維持 4 個未記錄）。
+
+---
+
+# Session Log — 2026-05-04（第二十次）
 
 ## 主要完成事項
 1. **Product Bible §2.5 新增**：跨部位鎖匙扣運費共享規則 (keychainItemCount−1)×$20

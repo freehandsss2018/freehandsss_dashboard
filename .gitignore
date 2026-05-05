@@ -29,3 +29,9 @@ repomix-output.txt
 
 # Preview / draft HTML files (temporary, not version controlled)
 Freehandsss_Dashboard/preview_*.html
+
+# 3D Assets (Large files, ignore)
+*.stl
+*.blend
+*.blend1
+

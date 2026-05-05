@@ -1,7 +1,17 @@
-# FHS Handoff - 2026-05-05
-當前版本：v1.4.2（憲法層）/ V40.6（n8n Node 14）/ V40.7（UI層）/ 6 Agents + 2 Skills + Hook System v1.0.0
+# FHS Handoff - 2026-05-05 17:30
+當前版本：v1.4.2（憲法層）/ V40.8（UI層 / Stable Production）/ 6 Agents + 2 Skills + Hook System v1.0.0
 
 ## 本次 Session 完成事項（2026-05-05）
+
+✅ **V40.8 Dashboard UI/UX & 財務優化**
+- 移除嬰兒月齡邏輯，簡化版面。
+- 實作 `#priceBreakdown` 動態報價拆解顯示。
+- 訂金欄位智能預填總價，並以 Placeholder 色彩區分狀態。
+- 修正 IG 預覽標題顏色 (White) 提升對比。
+- 同步至 `Freehandsss_dashboard_current.html`。
+
+✅ **V40.7 穩定版晉升** (已完成)
+- 完成 V40.7 正式生產版切換與全系統文件同步。
 
 ✅ **Blender MCP 環境建置完成**
 - 確認 Blender 5.1.1 已安裝（`C:\Program Files\Blender Foundation\Blender 5.1\`）
@@ -22,7 +32,7 @@
 |------|------|
 | 憲法層 | `AGENTS.md` v1.4.2 |
 | 稼動生產版 | `Freehandsss_dashboard_current.html` |
-| 主要開發版 | `freehandsss_dashboardV40.html`（V40.7）|
+| 主要開發版 | `freehandsss_dashboardV40.html`（V40.8）|
 | n8n Workflow | V45.7.4（24 nodes）|
 | Airtable Base | `app9GuLsW9frN4xaT` |
 | Airtable 新欄位 | Order_Items +3 formula / Main_Orders +3 rollup |

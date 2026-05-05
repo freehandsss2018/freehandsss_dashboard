@@ -1,5 +1,41 @@
 # Changelog
 
+## [V40.8 Dashboard UI/UX & Finance Optimization] - 2026-05-05
+
+**執行依據**：Fat Mo 授權（UI/UX enhancements & financial logic alignment）
+
+**核心變更**：
+- **移除嬰兒月齡邏輯**：移除「嬰兒月齡」輸入框與相關紅框警告，版面精簡化。
+- **動態報價明細 (#priceBreakdown)**：在「系統精算建議報價」旁新增動態明細顯示（例：`$3240 (2380+860)`），並優化框架自動高度調整。
+- **財務 UI/UX 智能預填**：
+  - 「已付訂金/全數」欄位在無手動輸入時，預設自動顯示系統建議總價。
+  - 欄位區分「佔位建議值（淺黑色）」與「手動輸入值（實黑色）」，提升視覺回饋。
+- **IG 訊息分段預覽對比優化**：修正預覽卡片標題顏色為純白，解決在深藍背景下文字看不清楚的問題。
+
+**版本資訊**：
+- UI 層：V40.8
+- 憲法層：v1.4.2
+- n8n Workflow：V45.7.4
+
+## [V40.7 Dashboard Promotion to Stable Production] - 2026-05-05
+
+**執行依據**：Fat Mo 授權（promote V40 to current）
+
+**核心變更**：
+- 將 `freehandsss_dashboardV40.html` (V40.7) 複製並覆蓋 `Freehandsss_dashboard_current.html`。
+- V40.7 正式成為穩定生產版基準，具備 iPhone/Desktop 響應式設計、財務優化與 API 快取功能。
+
+**文件同步**：
+- `README.md` (root)：更新版本狀態、特性說明與最後更新日期 (2026-05-05)。
+- `docs/repo-map.md`：更新檔案地圖，將 V40.7 標註為現役正式環境。
+- `Freehandsss_Dashboard/README.md`：同步更新版本號 (V40.7) 與功能描述。
+- `.fhs/notes/SOP_NOW.md`：更新系統快照，將 V40.7 列為穩定生產版，憲法層對齊至 v1.4.2。
+
+**版本資訊**：
+- UI 層：V40.7
+- 憲法層：v1.4.2
+- n8n Workflow：V45.7.4
+
 ## [Blender MCP 環境建置完成] - 2026-05-05
 
 **執行依據**：Fat Mo 授權（安裝 Blender MCP 完整環境）

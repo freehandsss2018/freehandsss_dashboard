@@ -208,6 +208,12 @@
             outline: none;
         }
 
+        /* V40.8: Light black (grey) placeholders */
+        ::placeholder {
+            color: #999;
+            opacity: 1;
+        }
+
         select {
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
@@ -430,6 +436,10 @@
             background: var(--dark);
             color: var(--white);
             border-top: 5px solid #2A2D43;
+        }
+        .preview-card h2 {
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         textarea#output-preview {
@@ -2026,16 +2036,7 @@
 
         <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
                 oninput="generate()"></div>
-        <div class="grid-2-col" style="margin-bottom: 10px;">
-            <div class="form-group" style="margin-bottom: 0;"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>👶 嬰兒月齡 (選填)</label>
-                <input type="number" id="babyAgeMonths" placeholder="例如：4" min="0" oninput="generate()">
-            </div>
-        </div>
-        <div id="babyAgeWarning" style="color: #E63946; font-size: 12px; margin-bottom: 15px; display: none; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 8px; border: 1px solid #ffcdd2;">
-            ⚠️ 寶寶已超過 3 個月，建議主推「玻璃瓶套裝」以獲得最佳展示空間！
-        </div>
+        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
         <div class="form-group"><label>取模時間</label>
             <div class="grid-2-col">
                 <select id="appTimeHour" onchange="generate()"></select>
@@ -2537,12 +2538,12 @@
         <!-- V32 Ling Au Quote Engine UI -->
         <div id="pricingEngineUI" style="margin-bottom: 20px; padding: 15px; background: rgba(82, 183, 136, 0.1); border: 2px dashed #52B788; border-radius: 12px; transition: all 0.3s ease;">
             <div style="font-size: 18px; font-weight: bold; color: #2D6A4F; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>💡 系統精算建議報價：$<span id="suggestedPrice">0</span></span>
+                <span>💡 系統精算建議報價：$<span id="suggestedPrice">0</span><span id="priceBreakdown" style="font-size:13px; font-weight:normal; color:#457B9D; margin-left:5px;"></span></span>
                 <span style="font-size: 12px; font-weight: normal; color: #666; background: white; padding: 2px 8px; border-radius: 12px; border: 1px solid #ddd;" class="fat-only">畫圖成本: $<span id="drawingCost">0</span></span>
             </div>
             <!-- Scenario O: Adult Wood Force Hint -->
             <div id="adultWoodForceHint" style="display:none; font-size:11px; color:#D32F2F; margin-bottom:5px; font-weight:bold;">🛡️ 成人+木框：系統已強制鎖定為 P (照片建模) 模式</div>
-            <div style="font-size: 12px; color: #555; line-height: 1.6; max-height: 100px; overflow-y: auto; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
+            <div style="font-size: 12px; color: #555; line-height: 1.6; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
         </div>
 
         <div class="form-group"><label>已付訂金/全數 ($)</label><input type="number" id="deposit" placeholder="0"
@@ -3091,7 +3092,15 @@
                 
                 if (response.ok) {
                     statusEl.innerText = "同步狀態：設定已儲存至雲端";
-                    if(type === 'normal') showToast("設定已生效！");
+                    // [BUG FIX] 更新 sessionStorage 緩存，確保刷新頁面後立即生效，不受 30 分鐘 TTL 影響
+                    try {
+                        sessionStorage.setItem('fhs_sysconfig_cache', JSON.stringify({ data: systemConfig, ts: Date.now() }));
+                    } catch(e) {}
+                    if(type === 'normal') {
+                        showToast("設定已生效！下張起始編號已更新。");
+                        // 立即更新當前頁面的訂單 ID 顯示
+                        generateOrderID();
+                    }
                 }
             } catch (error) {
                 statusEl.innerText = "同步狀態：儲存失敗";
@@ -3606,25 +3615,18 @@
             const ampm = document.getElementById("appTimeAmPm").value;
             const timeStr = hour === '待定' ? '待定' : `${hour} ${ampm}`;
 
-            const deposit = document.getElementById("deposit").value || "0";
-            const balance = document.getElementById("balance").value || "0";
-            const additional = document.getElementById("additional").value || "0";
+            const depEl = document.getElementById("deposit");
+            const balEl = document.getElementById("balance");
+            const addEl = document.getElementById("additional");
+
+            const deposit = depEl.value || depEl.placeholder || "0";
+            const balance = balEl.value || (balEl.placeholder && !balEl.placeholder.includes('已付清') ? balEl.placeholder : "0");
+            const additional = addEl.value || "0";
 
             let hasP = document.getElementById("enableP").checked;
             let hasK = document.getElementById("enableK").checked;
             let hasM = document.getElementById("enableM").checked;
 
-            // --- Scenario L: Baby Age Warning & Logic Trap ---
-            const babyAgeArr = (document.getElementById("custBabyAge")?.value || "").split(/[個月]+/);
-            const babyMonth = parseInt(babyAgeArr[0] || "0");
-            const ageWarning = document.getElementById("babyAgeWarning");
-            if (ageWarning) {
-                if (hasP && document.getElementById("pSubCat").value === "木框款式" && babyMonth >= 3) {
-                    ageWarning.style.display = "block";
-                } else {
-                    ageWarning.style.display = "none";
-                }
-            }
 
             const custInfo = `【客人資料】
 聯絡人：${mom}
@@ -3881,6 +3883,7 @@
             }
 
             let logs = [];
+            let breakdownParts = []; // V40.8: breakdown display
             const enableP = getValSafe("enableP", false);
             const pSubCat = getValSafe("pSubCat", "");
             const hasMainProduct = enableP;
@@ -3925,6 +3928,7 @@
                 standaloneSurchargePaid = true;
                 totalSuggestedPrice += 1000;
                 totalSystemAdditionalFee += 1000;
+                breakdownParts.push(1000);
                 logs.push(`<div style="color:#E65100; font-weight:bold;">🌟首飾單購圖紙費: +$1000 (已解鎖異部位附加費豁免)</div>`);
             }
 
@@ -3967,6 +3971,7 @@
                     else if (name.includes("玻璃")) price = name.includes("4肢") ? 1680 : 1380;
                     
                     totalSuggestedPrice += price;
+                    breakdownParts.push(price);
                     totalDrawingCost += item.FatMoCost;
                     item.CalculatedPrice = price;
                     logs.push(`🎨 <b>${name}</b>: $${price}`);
@@ -3978,6 +3983,7 @@
                     if (hasAdultInSet && hasBabyInSet) {
                         totalSuggestedPrice += 300;
                         totalSystemAdditionalFee += 300;
+                        breakdownParts.push(300);
                         logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$300</div>`);
                     }
                 }
@@ -3986,6 +3992,7 @@
                     let price = name.includes("羊毛氈") ? 680 : 0;
                     price *= qty;
                     totalSuggestedPrice += price;
+                    breakdownParts.push(price);
                     item.CalculatedPrice = price;
                     logs.push(`🧸 <b>${name}</b> x${qty}: $${price}`);
                     totalDrawingCost += item.FatMoCost;
@@ -4042,6 +4049,7 @@
                                 let crossFee = pModeState === "S" ? 100 : 300;
                                 totalSuggestedPrice += crossFee;
                                 totalSystemAdditionalFee += crossFee;
+                                breakdownParts.push(crossFee);
                                 logs.push(`<div style="color:#D32F2F; font-size:11px;">⚠️ 異部位建模費: +$${crossFee}</div>`);
                             }
                         }
@@ -4053,6 +4061,7 @@
                     
                     item.CalculatedPrice = price;
                     totalSuggestedPrice += price;
+                    breakdownParts.push(price);
                     totalDrawingCost += item.FatMoCost;
                 });
             }
@@ -4077,13 +4086,29 @@
             if (uiCost) uiCost.innerText = totalDrawingCost;
             if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
 
+            // V40.8: Show breakdown (e.g. "(2380+860)")
+            const bkEl = document.getElementById('priceBreakdown');
+            if (bkEl) {
+                const nonZero = breakdownParts.filter(p => p > 0);
+                bkEl.innerText = nonZero.length > 1 ? `(${nonZero.join('+')})` : '';
+            }
+
+            // V40.8: Set deposit placeholder (light black) instead of value (solid black)
+            const depositEl = document.getElementById('deposit');
+            if (depositEl) {
+                depositEl.placeholder = totalSuggestedPrice > 0 ? totalSuggestedPrice : "0";
+            }
+
             // --- V36.2 Ling Au Finance UX Optimization ---
-            const depositVal = Number(document.getElementById('deposit')?.value) || 0;
+            // V40.8: Finance calculation logic using placeholder as default
+            const dVal = depositEl ? (depositEl.value || depositEl.placeholder || 0) : 0;
+            const depositVal = Number(dVal) || 0;
             const additionalVal = Number(document.getElementById('additional')?.value) || 0;
             const expectedBal = totalSuggestedPrice - depositVal + additionalVal;
             const balanceEl = document.getElementById('balance');
             if (balanceEl) {
                 balanceEl.placeholder = expectedBal <= 0 ? "0 (已付清)" : expectedBal;
+                // If value exists, it stays solid black. If no value, placeholder is light grey.
             }
             
             const engineUI = document.getElementById("pricingEngineUI");

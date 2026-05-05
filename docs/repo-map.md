@@ -16,10 +16,10 @@ freehandsss_dashboard/
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── README.md                           ← Dashboard 目錄說明
-│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V36 一致）
+│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V40.7 一致）
 │   ├── freehandsss_dashboardV36.html       # 舊版穩定基準 (Legacy Stable)
 │   ├── freehandsss_dashboardV37.html       # 展示/試用版本 (Trial / Legacy)
-│   ├── freehandsss_dashboardV40.html       # **當前開發穩定版** (iPhone/Desktop 雙模式，v40.4 財務優化完成)
+│   ├── freehandsss_dashboardV40.html       # **最新穩定基準** (iPhone/Desktop 雙模式，v40.7 財務優化完成)
 │   ├── freehandsss_financial_overview.html ← Financial Overview 頁面 (財務圖表中樞)
 │   ├── products.js                         ← 前端產品快取
 │   ├── products.json                       ← 前端產品快取（JSON 格式）
@@ -33,7 +33,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 幕後系統總綱
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
-│   │   ├── AGENTS.md                   ← 憲法層 v1.4.1（2026-04-28 新增 §Goal-Driven Execution）
+│   │   ├── AGENTS.md                   ← 憲法層 v1.4.2（2026-05-03 更新）
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
