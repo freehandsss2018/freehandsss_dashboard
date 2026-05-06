@@ -1,23 +1,20 @@
-# FHS Handoff - 2026-05-06 21:50
-當前版本：v1.4.2（憲法層）/ V40.8（UI層 / Stable Production）/ 8 Agents + 2 Skills + Hook System v1.0.0
+# FHS Handoff - 2026-05-06 23:47
+當前版本：v1.4.3（憲法層）/ V40.8（UI層 / Stable Production）/ 8 Agents + 2 Skills + Hook System v1.0.0
 
-## 本次 Session 完成事項（2026-05-06）
+## 本次 Session 完成事項（2026-05-06 · /execute 執行階段）
 
-✅ **執行邊界認知校正**
-- 重新確認 `AGENTS.md` 行動綱領。未來任何涉及檔案寫入或刪除的操作，必須嚴格執行「規劃優先 → 產出 `ag-plan` → 等候授權」流程。
-- 禁止在未獲授權下執行靜默檔案修正。
+✅ **A1/A2 計畫審裁與執行完成**
+- 執行 A1 Verdict：刪除 `repomix-output.txt`（根目錄清潔）
+- 執行 A2 Proposal A：AGENTS.md 新增 Rule 3.11（會話初始化 & Token 節約防腐機制）
+  - 版本升級：v1.4.2 → v1.4.3
+  - 核心條文：Anti-Stale Timestamp Check 限制範圍澄清，防止新 session 失憶
+  - 補充 `/read` 指令定義，明確「全量重載」角色與使用時機
+- 產出制度層完成記錄：`.fhs/notes/completion_reports/2026-05-06_add-rule-3-11_completion_report.md`
 
-✅ **系統架構衛生大掃除**
-- **冗贅清理**:
-    - 強制刪除 `Maintenance_Tools/rebuild_index.py`、`rebuild_index.py`、`scripts/rebuild_index.py`。
-    - 從 `docs/repo-map.md` 中清除所有與該指令相關的參照。
-- **文檔同步**:
-    - 更新 `scripts/README.md`，設立「Legacy 歷史資料遷移與校正腳本」區塊，歸檔四個過往處理 2026-Q1 數據的歷史腳本。
-    - 更新 `.fhs/notes/SOP_NOW.md` 指令對照表，加入 `cl-flow-fast`、`ag-stitch-sync` 與 `ag-ui-import`。
-    - 更新 `.fhs/ai/commands/README.md`，將 `cl-flow-fast` 加入指令集索引。
-
-✅ **橋接機制補齊**
-- 在 `.agents/workflows/` 新增 `ag-stitch-sync.md` 與 `ag-ui-import.md` 橋接檔，對齊 `.fhs/ai/commands/` 下的定義。
+✅ **後效同步稽核完成**
+- [A] 結構變動：`repomix-output.txt` 刪除 → docs/repo-map.md 檢查通過
+- [B] 制度層變動：AGENTS.md + read.md 修改 → 完成記錄已產出
+- [C] CHANGELOG 稽核：版本升級 + 規則語義變更 → CHANGELOG.md 已更新
 
 ## 待辦 ⏳ 項目
 
@@ -28,11 +25,11 @@
 
 | 項目 | 現況 |
 |------|------|
-| 憲法層 | `AGENTS.md` v1.4.2 |
+| 憲法層 | `AGENTS.md` v1.4.3（含 Rule 3.11） |
 | 稼動生產版 | `Freehandsss_dashboard_current.html` |
 | 主要開發版 | `freehandsss_dashboardV40.html`（V40.8）|
 | n8n Workflow | V45.7.4（24 nodes）|
 | Airtable Base | `app9GuLsW9frN4xaT` |
 | Blender MCP | addon v1.2 已裝，每次開啟 Blender 需重新 Connect |
 | uv | 0.11.8 |
-| Subagents | 8 個活躍 (含新橋接指令支援) |
+| Subagents | 8 個活躍 + 7 個 Bridge Definitions（blender-3d-modeler, build-error-resolver, code-reviewer 等） |

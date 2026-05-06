@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.2
-> Last updated: 2026-05-03
+> Version: v1.4.3
+> Last updated: 2026-05-06
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -59,6 +59,10 @@
 ### 記憶同步強制
 - **Notion 雲端同步**：凡完成以下任一項，必須執行 `/commit` 指令（及 `node scripts/Sync_Notion_Brain.js`）：重大架構變更 / 新增 Lesson Learned / 版本迭代完成。嚴禁在未同步情況下宣告任務結束。
 - **Mid-Session 脈衝（重定義）**：廢止「每 10 則對話自動存檔」（LLM 無法可靠計數，空規則製造虛假安全感）。新機制：Fat Mo 輸入「checkpoint」或「存檔」→ 只更新 handoff.md（無 git push）。AI 不得在此兩種情況以外單獨寫入 handoff.md。
+- **會話初始化與 Token 節約原則（Rule 3.11）**：
+  1. **Session 絕對起點**：任何新 Session 開啟後，AI 必須確保已獲取當前狀態資訊。未完成初始化前，嚴禁執行代碼寫入。優先使用 `scripts/hooks/session-start-sop.sh` Hook 的輕量快照（~300 tokens）；遇重大決策或遺漏風險時，使用 `/read` 進行全量重載（~2000 tokens）。
+  2. **輕量化優先**：一般情況下，依賴 Hook 自動注入的狀態快照。僅在以下情況升級至全量重載：複雜架構決策 / 跨長時間 session 的風險評估 / 需驗證所有 handoff 細節。
+  3. **Anti-Stale 防腐（限制範圍澄清）**：在 **session 內**，若檔案時間戳未變，可禁止重複讀取以節省 token。**但此限制僅適用於 session 內的重複讀取**；**新 session 的首次初始化不受時間戳限制，必須執行**。每個新 session 都是全新的 AI context，無法依賴前一個 session 的讀取狀態。
 
 ### 文件同步強制律
 - 凡任何操作涉及以下任一情況，必須在同一次任務內同步更新 docs/repo-map.md 與對應層級的 README.md，不得事後補做：

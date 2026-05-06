@@ -1,5 +1,22 @@
 # Changelog
 
+## [AGENTS.md v1.4.3 - Session Initialization & Token Economy] - 2026-05-06
+
+**執行依據**：Fat Mo 授權（`/execute` 指令）
+
+**核心變更**：
+- **新增 Rule 3.11「會話初始化與 Token 節約原則」**：
+  - 制度化 Hook 系統的輕量快照機制（~300 tokens），優先於全量重載（~2000 tokens）
+  - 明確澄清 Anti-Stale Timestamp Check 的範圍限制：**僅適用於 session 內的重複讀取，新 session 首次初始化不受限制**
+  - 防止 LLM context 全新但被誤認為已讀的失憶風險
+- **更新 `read.md`**：明確標示 `/read` 為「全量重載」指令，非日常初始化工具
+- **刪除根目錄 `repomix-output.txt`**：移除大型文字檔減少 grep 雜訊
+
+**版本資訊**：
+- 憲法層：v1.4.3 (新增 Rule 3.11)
+- UI 層：V40.8 (Stable)
+- Subagents：8 個活躍
+
 ## [System Hygiene & Boundary Recognition] - 2026-05-06
 
 **執行依據**：Fat Mo 授權（系統優化、冗贅清理與執行邊界校正）

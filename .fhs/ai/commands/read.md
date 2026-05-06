@@ -1,10 +1,15 @@
 # /read
 
-**用途 (Purpose)**：初始化 AI 記憶體，進行環境與進度同步。
+**用途 (Purpose)**：**全量重載** AI 記憶體，進行完整環境與進度同步。
 本指令是 `/.fhs/notes/SOP_NOW.md` 的統一入口別名，
 讓 Claude Code 與 Antigravity 都能用同一個指令觸發。
+
+⚠️ **使用時機**：
+- 一般 session 開啟時，優先使用 `scripts/hooks/session-start-sop.sh` Hook 的輕量快照（~300 tokens）
+- 當需要 **完整狀態重新載入** 時（如遇複雜決策、需驗證所有 handoff 細節、或跨長時間 session 的遺漏風險），才使用 `/read` 進行全量重載（~2000 tokens）
+
 **Added in**：v1.0
-**Updated**：2026-04-25（路徑防守機制）
+**Updated**：2026-05-06（明確全量重載角色）
 
 ---
 
