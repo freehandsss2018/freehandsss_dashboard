@@ -1,37 +1,28 @@
-# FHS Handoff - 2026-05-05 23:40
-當前版本：v1.4.2（憲法層）/ V40.8（UI層 / Stable Production）/ 7 Agents + 2 Skills + Hook System v1.0.0
+# FHS Handoff - 2026-05-06 21:50
+當前版本：v1.4.2（憲法層）/ V40.8（UI層 / Stable Production）/ 8 Agents + 2 Skills + Hook System v1.0.0
 
-## 本次 Session 完成事項（2026-05-05）
+## 本次 Session 完成事項（2026-05-06）
 
-✅ **blender-3d-modeler Subagent v1.0.0 建立（Flow 2026-05-05-2300）**
-- 建立 `.fhs/ai/subagents/freehandsss/blender-3d-modeler.md`（Master）
-- 部署至 `~/.claude/agents/freehandsss/blender-3d-modeler.md`（Runtime）
-- 封裝 4 個實戰驗證 Python 配方：K1 MANIFOLD boolean / K2 浮空碎片清除 / K3 外殼放量 / K4 Z-slice 分析
-- 架構決策：single-file 內嵌知識（非 skill+subagent 雙層），理由：需要 Blender MCP 工具執行能力
-- 同步更新：MANIFEST.md / repo-map.md / decisions.md
+✅ **執行邊界認知校正**
+- 重新確認 `AGENTS.md` 行動綱領。未來任何涉及檔案寫入或刪除的操作，必須嚴格執行「規劃優先 → 產出 `ag-plan` → 等候授權」流程。
+- 禁止在未獲授權下執行靜默檔案修正。
 
-✅ **V40.8 Dashboard UI/UX & 財務優化**
-- 移除嬰兒月齡邏輯，簡化版面。
-- 實作 `#priceBreakdown` 動態報價拆解顯示。
-- 訂金欄位智能預填總價，並以 Placeholder 色彩區分狀態。
-- 修正 IG 預覽標題顏色 (White) 提升對比。
-- 同步至 `Freehandsss_dashboard_current.html`。
+✅ **系統架構衛生大掃除**
+- **冗贅清理**:
+    - 強制刪除 `Maintenance_Tools/rebuild_index.py`、`rebuild_index.py`、`scripts/rebuild_index.py`。
+    - 從 `docs/repo-map.md` 中清除所有與該指令相關的參照。
+- **文檔同步**:
+    - 更新 `scripts/README.md`，設立「Legacy 歷史資料遷移與校正腳本」區塊，歸檔四個過往處理 2026-Q1 數據的歷史腳本。
+    - 更新 `.fhs/notes/SOP_NOW.md` 指令對照表，加入 `cl-flow-fast`、`ag-stitch-sync` 與 `ag-ui-import`。
+    - 更新 `.fhs/ai/commands/README.md`，將 `cl-flow-fast` 加入指令集索引。
 
-✅ **V40.7 穩定版晉升** (已完成)
-- 完成 V40.7 正式生產版切換與全系統文件同步。
-
-✅ **Blender MCP 環境建置完成**
-- 確認 Blender 5.1.1 已安裝（`C:\Program Files\Blender Foundation\Blender 5.1\`）
-- 安裝 uv 0.11.8（`C:\Users\Edwin\.local\bin\`）
-- 下載 Blender MCP addon v1.2 至桌面，已在 Blender 安裝並啟用
-- Claude Code MCP server 設定（`claude mcp add blender`，寫入 `~/.claude.json`）
-- Blender ↔ Claude Code 連線測試通過（port 9876，status: ✅ Connected）
+✅ **橋接機制補齊**
+- 在 `.agents/workflows/` 新增 `ag-stitch-sync.md` 與 `ag-ui-import.md` 橋接檔，對齊 `.fhs/ai/commands/` 下的定義。
 
 ## 待辦 ⏳ 項目
 
 1. **[P-MED] iPhone 實機測試 — V40 財務模式**
-2. **🟡 Legacy Scripts 文件化決策**（4 個腳本未在 scripts/README.md 記錄）
-3. **🟡 rebuild_index.py**（根目錄，Antigravity conversation 索引工具，任務未完成中）
+2. **[P-LOW] 定期執行 /fhs-audit 確保衛生狀態**
 
 ## 核心配置
 
@@ -42,6 +33,6 @@
 | 主要開發版 | `freehandsss_dashboardV40.html`（V40.8）|
 | n8n Workflow | V45.7.4（24 nodes）|
 | Airtable Base | `app9GuLsW9frN4xaT` |
-| Airtable 新欄位 | Order_Items +3 formula / Main_Orders +3 rollup |
 | Blender MCP | addon v1.2 已裝，每次開啟 Blender 需重新 Connect |
-| uv | 0.11.8（`C:\Users\Edwin\.local\bin\`）|
+| uv | 0.11.8 |
+| Subagents | 8 個活躍 (含新橋接指令支援) |

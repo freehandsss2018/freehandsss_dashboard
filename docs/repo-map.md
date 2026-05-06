@@ -114,7 +114,6 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 維護工具說明
 │   ├── run_all.py                       ← 全部測試執行器
 │   ├── generate_fix_payload.py          ← 修復 Payload 產生器
-│   ├── rebuild_index.py                 ← 索引重建腳本
 │   ├── FHS_Comprehensive_Test.py        ← 綜合測試
 │   ├── FHS_Full_System_Test.py          ← 全系統測試
 │   ├── FHS_System_StressTester.py       ← 壓力測試
@@ -145,7 +144,6 @@ freehandsss_dashboard/
 ├── scripts/                             ← 輔助腳本
 │   ├── README.md                        ← 腳本說明索引
 │   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
-│   ├── rebuild_index.py                 ← 本地索引重建
 │   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner）
 │   └── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │       ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要

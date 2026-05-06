@@ -46,9 +46,12 @@
 |------|------------|-------------|-------------|
 | `/read` | `.fhs/ai/commands/read.md` | `.claude/commands/read.md` | `.agents/workflows/read.md` |
 | `/cl-flow` | `.fhs/ai/commands/cl-flow.md` | `.claude/commands/cl-flow.md` | `.agents/workflows/cl-flow.md` |
+| `/cl-flow-fast` | `.fhs/ai/commands/cl-flow-fast.md` | `.claude/commands/cl-flow-fast.md` | `.agents/workflows/cl-flow-fast.md` |
 | `/execute` | `.fhs/ai/commands/execute.md` | `.claude/commands/execute.md` | `.agents/workflows/execute.md` |
 | `/commit` | `.fhs/ai/commands/commit.md` | `.claude/commands/commit.md` | `.agents/workflows/commit.md` |
 | `/ag-plan` | `.fhs/ai/commands/ag-plan.md` | — | `.agents/workflows/ag-plan.md` |
+| `/ag-stitch-sync` | `.fhs/ai/commands/ag-stitch-sync.md` | — | `.agents/workflows/ag-stitch-sync.md` |
+| `/ag-ui-import` | `.fhs/ai/commands/ag-ui-import.md` | — | `.agents/workflows/ag-ui-import.md` |
 | `/fhs-check` | `.fhs/ai/commands/fhs-check.md` | `.claude/commands/fhs-check.md` | `.agents/workflows/fhs-check.md` |
 | `/fhs-audit` | `.fhs/ai/commands/fhs-audit.md` | `.claude/commands/fhs-audit.md` | `.agents/workflows/fhs-audit.md` |
 | `/guardian` | `.fhs/ai/commands/guardian.md` | `.claude/commands/guardian.md` | `.agents/workflows/guardian.md` |

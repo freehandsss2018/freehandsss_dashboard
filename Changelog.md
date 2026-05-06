@@ -1,5 +1,26 @@
 # Changelog
 
+## [System Hygiene & Boundary Recognition] - 2026-05-06
+
+**執行依據**：Fat Mo 授權（系統優化、冗贅清理與執行邊界校正）
+
+**核心變更**：
+- **執行邊界認知校正**：重新確認 `AGENTS.md` 行動綱領。未來任何涉及檔案寫入或刪除的操作，必須嚴格執行「規劃優先 → 產出 `ag-plan` → 等候授權」流程。
+- **移除棄用資源**：
+    - 強制刪除 `Maintenance_Tools/rebuild_index.py`、`rebuild_index.py`、`scripts/rebuild_index.py` (因系統索引已穩定，不再需要手動重建)。
+    - 從 `docs/repo-map.md` 中清除所有與該指令相關的參照。
+- **文檔與指令集維護**：
+    - 更新 `scripts/README.md`，設立「Legacy 歷史資料遷移與校正腳本」區塊，歸檔四個過往處理 2026-Q1 數據的歷史腳本。
+    - 更新 `.fhs/notes/SOP_NOW.md` 指令對照表，加入 `cl-flow-fast`、`ag-stitch-sync` 與 `ag-ui-import`。
+    - 更新 `.fhs/ai/commands/README.md`，將 `cl-flow-fast` 加入指令集索引。
+- **橋接機制補齊**：
+    - 在 `.agents/workflows/` 新增 `ag-stitch-sync.md` 與 `ag-ui-import.md` 橋接檔，對齊 `.fhs/ai/commands/` 下的定義。
+
+**版本資訊**：
+- UI 層：V40.8 (Stable)
+- 憲法層：v1.4.2
+- Subagents：8 個活躍 (含新橋接指令支援)
+
 ## [V40.8 Dashboard UI/UX & Finance Optimization] - 2026-05-05
 
 **執行依據**：Fat Mo 授權（UI/UX enhancements & financial logic alignment + Blender Automation）

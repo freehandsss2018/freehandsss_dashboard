@@ -1,3 +1,29 @@
+# Session Log — 2026-05-06（第二十二次）
+
+## 概覽
+完成系統架構衛生大掃除與執行邊界認知校正。強化了對 `AGENTS.md` 規劃優先原則的理解，並清理了所有關於棄用指令 `rebuild_index.py` 的實體與文檔殘留。
+
+## 主要完成事項
+1. **執行邊界認知校正**：
+   - 重新確認 `AGENTS.md` 行動綱領。明確所有寫入/刪除操作必須先經 `ag-plan` 授權。
+2. **架構衛生清理**：
+   - **實體刪除**: 移除 `Maintenance_Tools/rebuild_index.py`、`rebuild_index.py`、`scripts/rebuild_index.py`。
+   - **文檔去參照**: 從 `docs/repo-map.md` 中徹底移除上述檔案的參照。
+   - **Legacy 腳本歸檔**: 在 `scripts/README.md` 中建立專屬 Legacy 區塊，歸檔 4 個歷史遷移腳本。
+3. **指令集與橋接補齊**：
+   - 在 `.agents/workflows/` 補齊 `ag-stitch-sync.md` 與 `ag-ui-import.md`。
+   - 更新 `.fhs/notes/SOP_NOW.md` 指令對照表，納入最新指令。
+4. **Memory Engine 同步**：
+   - 記錄 `2026-05-06_boundary_hygiene.md` 教訓。
+   - 更新 `handoff.md` 與 `Changelog.md`。
+   - 執行 `Sync_Notion_Brain.js` 完成雲端備份。
+
+## 待辦（承接至下次）
+- [P-MED] iPhone 實機測試 — V40 財務模式。
+- [P-LOW] 定期執行 /fhs-audit 確保衛生狀態。
+
+---
+
 # Session Log — 2026-05-05（第二十一次）
 
 ## 概覽
