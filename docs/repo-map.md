@@ -12,6 +12,11 @@ freehandsss_dashboard/
 ├── .mcp.json                            ← Claude Code MCP server 註冊（n8n-mcp-server）
 ├── Changelog.md                         ← 系統版本變更記錄
 ├── package.json / package-lock.json     ← Node.js 依賴
+├── 3d/                                  ← 3D 建模工作目錄（2026-05-07 新增，blender-3d-modeler 路徑規則）
+│   ├── README.md                        ← 路徑規則說明
+│   ├── input/                           ← 用戶上傳的原始 STL（只讀）
+│   ├── projects/                        ← Blender .blend 工作檔（按 slug 分類）
+│   └── output/                          ← 最終列印用 STL（按 slug 分類）
 ├── .claude/                             ← Claude Code 專屬配置（含橋接指令）
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
@@ -65,7 +70,7 @@ freehandsss_dashboard/
 │   │   │       ├── database-reviewer.md ← v1.0.0 Airtable schema + n8n 資料流審查（2026-04-28 新增）
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
-│       └── blender-3d-modeler.md  ← v1.0.0 Blender 3D 建模（MANIFOLD boolean / 碎片清除 / 外殼放量 / Z-slice，2026-05-05 新增）
+│       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
 │   │       ├── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
 │   │       │   ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）

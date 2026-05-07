@@ -7,6 +7,19 @@
 
 ## 記錄
 
+[2026-05-07] blender-3d-modeler v2.0.0 — 升級為 Triage-first 工程型 subagent
+
+決策：
+- v1.0.0 的問題：角色定義過窄（只有 4 個配方），無 Triage 邏輯，無 I/O 合約，無 failure handling
+- v2.0.0 升級：新增 STL Triage 決策樹（REPAIR/REBUILD/HANDOFF）、FDM printability check、HANDOFF 工具清單
+- **開放藝術建模**：Fat Mo 明確確認藝術設計/造型設計/美學調整均在能力範圍內（原 Non-Goals 錯誤限制）
+- **新增 3d/ 路徑規則**：`3d/input/`（上傳）/ `3d/projects/{slug}/`（工作檔）/ `3d/output/{slug}/`（列印用 STL），提升專案組織層次
+- Triage 閾值：non_manifold_edges < 50 → REPAIR；≥ 50 → REBUILD（保守設定，寧可多問不擅自修）
+
+批准：Fat Mo ✅（2026-05-07 /execute — Flow 2026-05-07-1007）
+
+---
+
 [2026-05-05] blender-3d-modeler subagent — 採用 Single-file 內嵌知識設計
 
 決策：

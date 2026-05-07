@@ -1,5 +1,27 @@
 # Changelog
 
+## [blender-3d-modeler v2.0.0 — Triage-first FDM Subagent] - 2026-05-07
+
+**執行依據**：Fat Mo 授權（`/execute` — Flow 2026-05-07-1007）
+
+**核心變更**：
+- **blender-3d-modeler subagent v1.0.0 → v2.0.0**：
+  - 新增 STL Triage 決策樹（REPAIR / REBUILD / HANDOFF）
+  - 新增 FDM Printability Check（Bambu P1S 基準：壁厚 0.8mm、懸臂 45°）
+  - 新增 HANDOFF 工具清單（Meshmixer / Fusion 360 / ZBrush 等）
+  - 新增 3d/ 路徑規則（input / projects / output 三層）
+  - 開放藝術建模、造型設計、美學調整能力（移出 Non-Goals）
+  - 強化 Non-Goals 邊界（切片參數、支撐生成、多材料）
+- **新增 3d/ 工作目錄**：heart-hand-cavity 專案已遷移至新路徑結構
+- **MANIFEST.md**：blender-3d-modeler 版本號更新至 2.0.0
+
+**版本資訊**：
+- 憲法層：v1.4.3（不變）
+- Subagents：7 個活躍（blender-3d-modeler 升至 v2.0.0）
+- 3D 路徑：新增 `3d/` 目錄結構
+
+---
+
 ## [AGENTS.md v1.4.3 - Session Initialization & Token Economy] - 2026-05-06
 
 **執行依據**：Fat Mo 授權（`/execute` 指令）
