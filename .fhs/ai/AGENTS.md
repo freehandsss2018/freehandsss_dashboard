@@ -163,6 +163,7 @@
 | `/execute` | 唯一正式授權執行入口（修改磁碟） | Fat Mo / Claude | `.fhs/ai/commands/execute.md` |
 | `/fhs-check` | 全系統健康檢查（核心功能、壓力、驗收） | Claude | `.fhs/ai/commands/fhs-check.md` |
 | `/fhs-audit` | 內部巡邏、架構衛生稽核、版本噪音清理 | Claude | `.fhs/ai/commands/fhs-audit.md` |
+| `/fhs-cost-audit` | 財務成本完整性稽核（Total_Cost vs rollup 比對） | Claude | `.fhs/ai/commands/fhs-cost-audit.md` |
 | `/px-audit` | 外部研究與全域架構審查（Perplexity） | Perplexity Pro | `.fhs/ai/commands/px-audit.md` |
 | `v39-aom.md` | 已遷移至 `archive/v39-aom.md`，內容見 subagents/OPERATING_MODEL.md | N/A | Archived |
 

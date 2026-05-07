@@ -7,6 +7,17 @@
 
 ## 記錄
 
+[2026-05-07] n8n V40.9 零成本防衛 + Airtable 公式修正 + /fhs-cost-audit 指令
+
+決策：
+- **Airtable 公式反模式修正**：Keychain_Cost / Handmodel_Cost / Necklace_Cost 三個 rollup 公式原有 `× Quantity` 錯誤，導致批次 SKU（如 $290/2件）成本翻倍。修正為直接 `SUM(Item_BaseCost)`，與 AGENTS.md 架構規則（Airtable 公式僅供展示輔助）對齊。
+- **n8n Node 14 零成本防衛**：加入 `zeroCostItems` 陣列，偵測 Total_Base_Cost = $0 的有效 SKU，輸出 `Cost_Lookup_Warning` 與 `Has_Cost_Error`。防止 SKU 名稱查找失敗時 Total_Cost 靜默為 $0（Katkat 問題一類型根因）。
+- **新增 `/fhs-cost-audit` 指令**：定期執行 `audit_total_cost_integrity.py` 比對 Total_Cost 與各類目 rollup 總和，異常自動分類為 CRITICAL / WARN / OK。與 `/fhs-audit`（架構衛生）、`/fhs-check`（功能測試）職責不重疊。
+
+批准：Fat Mo ✅（2026-05-07 /execute）
+
+---
+
 [2026-05-07] blender-3d-modeler v2.0.0 — 升級為 Triage-first 工程型 subagent
 
 決策：

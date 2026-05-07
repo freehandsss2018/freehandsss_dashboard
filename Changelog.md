@@ -1,5 +1,32 @@
 # Changelog
 
+## [V40.9 — n8n 零成本防衛機制 + /fhs-cost-audit 指令] - 2026-05-07
+
+**執行依據**：Fat Mo 授權（`/execute`）
+
+**核心變更**：
+- **n8n Node 14 "Calculate Profit & Pack Items" V40.6 → V40.9**：
+  - 新增零成本 SKU 防衛機制：偵測 `Total_Base_Cost = $0` 的有效 SKU
+  - 輸出 `Cost_Lookup_Warning`（警告文字）與 `Has_Cost_Error`（布林值）
+  - 防止因 SKU 名稱查找失敗導致 Total_Cost 靜默偏低（如 Katkat 問題一根因）
+- **Airtable Order_Items 公式修正**：
+  - `Keychain_Cost` / `Handmodel_Cost` / `Necklace_Cost` 三個欄位公式移除錯誤的 `× Quantity`
+  - 修正 Shirley 問題二：批次價 $290 × Quantity 2 = $580 → 正確 $290（已驗證）
+- **新增 `/fhs-cost-audit` 指令**：
+  - Master：`.fhs/ai/commands/fhs-cost-audit.md`
+  - Bridge：`.claude/commands/fhs-cost-audit.md`
+  - 觸發腳本：`python Maintenance_Tools/audit_total_cost_integrity.py`
+- **新增 `Maintenance_Tools/audit_total_cost_integrity.py`**：
+  - 掃描所有 Main_Orders，比對 Total_Cost 與 rollup 加總
+  - 輸出報告至 `.fhs/notes/aireports/total_cost_audit_YYYY-MM-DD.md`
+
+**版本資訊**：
+- n8n Workflow：V40.9（Node 14 防衛升級）
+- 憲法層：v1.4.3（不變）
+- 指令系統：新增 `/fhs-cost-audit`
+
+---
+
 ## [blender-3d-modeler v2.0.0 — Triage-first FDM Subagent] - 2026-05-07
 
 **執行依據**：Fat Mo 授權（`/execute` — Flow 2026-05-07-1007）
