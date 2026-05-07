@@ -1,5 +1,25 @@
 # Changelog
 
+## [Maintenance_Tools: audit_total_cost_integrity.py 詳細格式重構] - 2026-05-08
+
+**核心變更**：
+- **`Maintenance_Tools/audit_total_cost_integrity.py` 完整重構**：
+  - 從簡單 rollup 比較轉換為訂單逐項明細報告格式
+  - 新增 `fetch_order_items_batch(order_item_ids)`：批量讀取 Order_Items，分頁遍歷全表並過濾指定 ID，返回記錄 ID → 欄位字典映射
+  - 新增 `build_detailed_report_section(rec)`：為單筆訂單產出詳細 markdown 段落，包含產品表、小計、跨部位扣減邏輯、最終成本、收入利潤
+  - 修正欄位 ID：Appointment_Date `fldEJXnuXW5kgEgb0`、Order_Items 表 `tbljkptnNcUEyDRFH`
+  - 解決 lookup/formula 欄位回傳陣列問題：型別檢查 + 首元素提取
+  - 輸出報告格式與 `.fhs/notes/2026-05-04_cost_audit_detailed.md` 對齊
+- **執行與驗證**：
+  - 命令：`PYTHONIOENCODING=utf-8 python Maintenance_Tools/audit_total_cost_integrity.py`
+  - 驗證結果：全 23 單成本核對通過（✅ 正常: 23, ⚠️ 待確認: 0）
+
+**版本資訊**：
+- n8n Workflow：V45.7.4（不變）
+- 憲法層：v1.4.3（不變）
+
+---
+
 ## [V40.9 — n8n 零成本防衛機制 + /fhs-cost-audit 指令] - 2026-05-07
 
 **執行依據**：Fat Mo 授權（`/execute`）

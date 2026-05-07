@@ -37,8 +37,10 @@
 
 ## 待辦 ⏳ 項目
 
-1. **[P-MED] iPhone 實機測試 — V40 財務模式**
-2. **[P-LOW] 定期執行 /fhs-audit 確保衛生狀態**
+1. **[P-HIGH] finance-auditor**: 建立 FHS 專屬財務稽核 Subagent（基於 Python/Logic Validation），自動化 V40.8 財務對帳。
+2. **[P-HIGH] Supabase 遷移準備**: 安裝 `read-only-postgres` skill 並進行數據驗證實驗（參考 [awesome_cc_recommendations.md](file:///C:/Users/Edwin/.gemini/antigravity/brain/a51b6cb9-06e4-4860-a4a3-927683814251/awesome_cc_recommendations.md)）。
+3. **[P-MED] iPhone 實機測試 — V40 財務模式**
+4. **[P-LOW] 定期執行 /fhs-audit 確保衛生狀態**
 
 ## 核心配置
 

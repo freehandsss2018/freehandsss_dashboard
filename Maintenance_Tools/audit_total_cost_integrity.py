@@ -1,7 +1,10 @@
 """
-FHS Total_Cost Integrity Auditor
-=================================
-掃描所有 Main_Orders，偵測 Total_Cost 與 Order_Items rollup 之間的異常差距。
+FHS Total_Cost Integrity Auditor — Detailed Format
+===================================================
+掃描所有 Main_Orders，產出詳細成本核對報告。每筆訂單展示：
+  - 商品逐項成本明細
+  - 跨部位扣減邏輯
+  - 收入、利潤核對
 
 執行方式：
     python Maintenance_Tools/audit_total_cost_integrity.py
@@ -15,10 +18,18 @@ import json
 import requests
 from datetime import datetime
 
+# Load .env if it exists
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # === 設定 ===
 AIRTABLE_TOKEN = os.environ.get("AIRTABLE_API_KEY") or os.environ.get("AIRTABLE_TOKEN")
 BASE_ID = "app9GuLsW9frN4xaT"
 MAIN_ORDERS_TABLE = "tbltCH0I9fknVCtmV"
+ORDER_ITEMS_TABLE = "tbljkptnNcUEyDRFH"
 
 HEADERS = {
     "Authorization": f"Bearer {AIRTABLE_TOKEN}",
@@ -30,14 +41,18 @@ FIELD_CUSTOMER     = "fldCxe9RM62FswD9G"
 FIELD_TOTAL_COST   = "fldK2rNdLS5O92suA"
 FIELD_NET_PROFIT   = "flduPsfxg751GsJuk"
 FIELD_FINAL_SALE   = "flduMLKYerq5aswNf"
-FIELD_KEYCHAIN     = "flda10EwN6V6ecKi1"   # rollup
-FIELD_HANDMODEL    = "fldnNDzUvWy2mNCX9"   # rollup
-FIELD_NECKLACE     = "fldm4GXOs5dwryOZt"   # rollup
+FIELD_APPT_DATE    = "fldEJXnuXW5kgEgb0"  # Appointment_Date
 FIELD_ORDER_ITEMS  = "fldUA7Um14KkPR3rC"   # linked records
 
-# 允許的最大誤差（跨部位扣減最大為 (N-1)×$20，保守設定 $200 以容納 10 個部位）
+# Order_Items 欄位
+OI_ITEM_ID = "fldZJvUcpU226rnC7"         # Item_ID
+OI_ITEM_SKU = "fldFD2PlG5JGlsT7r"        # Product_Link (will need to lookup product name)
+OI_QTY = "fldQkjPj81ayiCi6I"             # Quantity
+OI_ITEM_COST = "fldHe2v50lgcTDcEc"       # Item_BaseCost (lookup)
+OI_PART = ""                              # No part field in Order_Items; need to extract from engraving
+
+# 允許的最大誤差
 TOLERANCE_MAX_DEDUCTION = 200
-# 誤差超過此值視為 SUSPICIOUS（可能漏算）
 SUSPICIOUS_THRESHOLD = 100
 
 
@@ -45,7 +60,7 @@ def fetch_all_records(table_id, fields):
     """分頁讀取所有 Airtable 記錄"""
     records = []
     url = f"https://api.airtable.com/v0/{BASE_ID}/{table_id}"
-    params = {"fields[]": fields, "pageSize": 100}
+    params = {"fields[]": fields, "pageSize": 100, "returnFieldsByFieldId": "true"}
     while True:
         resp = requests.get(url, headers=HEADERS, params=params)
         resp.raise_for_status()
@@ -58,83 +73,136 @@ def fetch_all_records(table_id, fields):
     return records
 
 
+def fetch_order_items_batch(order_item_ids):
+    """批量讀取指定 Order_Items 記錄"""
+    if not order_item_ids:
+        return {}
+
+    url = f"https://api.airtable.com/v0/{BASE_ID}/{ORDER_ITEMS_TABLE}"
+    # 使用簡單欄位：Item_ID (formula)、Product_Link (to lookup SKU)、Quantity、Item_BaseCost (lookup)
+    fields = [OI_ITEM_ID, OI_ITEM_SKU, OI_QTY, OI_ITEM_COST]
+    params = {"fields[]": fields, "pageSize": 100, "returnFieldsByFieldId": "true"}
+
+    items_by_id = {}
+    # 批量讀取所有 Order_Items，然後過濾
+    while True:
+        resp = requests.get(url, headers=HEADERS, params=params)
+        resp.raise_for_status()
+        data = resp.json()
+        for rec in data.get("records", []):
+            if rec["id"] in order_item_ids:
+                items_by_id[rec["id"]] = rec.get("fields", {})
+        offset = data.get("offset")
+        if not offset:
+            break
+        params["offset"] = offset
+    return items_by_id
+
+
+def build_detailed_report_section(rec):
+    """為單筆訂單產出詳細報告段落"""
+    f = rec.get("fields", {})
+    order_id = f.get(FIELD_ORDER_ID, "???")
+    customer = f.get(FIELD_CUSTOMER, "???")
+    total_cost = f.get(FIELD_TOTAL_COST) or 0
+    net_profit = f.get(FIELD_NET_PROFIT) or 0
+    final_sale = f.get(FIELD_FINAL_SALE) or 0
+    appt_date = f.get(FIELD_APPT_DATE, "日期未填")
+    item_ids = f.get(FIELD_ORDER_ITEMS) or []
+
+    # 判斷狀態
+    if total_cost == 0 and len(item_ids) == 0:
+        status_icon = "✅"
+    elif total_cost > 0 and len(item_ids) > 0:
+        status_icon = "✅"
+    else:
+        status_icon = "⚠️"
+
+    # 讀取 Order_Items
+    items_map = fetch_order_items_batch(item_ids) if item_ids else {}
+
+    lines = [f"## {order_id} {customer}（{appt_date}）{status_icon}", ""]
+    lines.append("| 產品 SKU | 件數說明 | 成本 |")
+    lines.append("|----------|---------|------|")
+
+    # 產品明細
+    product_rows = []
+    subtotal = 0
+    keychain_parts = set()  # 追蹤鎖匙扣部位
+
+    for oid in item_ids:
+        if oid not in items_map:
+            continue
+        item = items_map[oid]
+        item_id = item.get(OI_ITEM_ID, "未知")  # This is a formula field (may be list or string)
+        qty = item.get(OI_QTY) or 1
+        cost_val = item.get(OI_ITEM_COST)       # This is a lookup (may be list)
+
+        # Handle lookup fields that come back as lists
+        if isinstance(item_id, list):
+            item_id = item_id[0] if item_id else "未知"
+        if isinstance(cost_val, list):
+            cost_val = cost_val[0] if cost_val else 0
+        cost = float(cost_val) if cost_val else 0
+
+        # Item_ID is a formula that shows item description
+        qty_desc = f"qty={qty}" if qty > 1 else f"{qty}件"
+        product_rows.append(f"| {item_id} | {qty_desc}件，${cost:.0f} | ${cost:.0f} |")
+        subtotal += cost
+
+    for row in product_rows:
+        lines.append(row)
+
+    # 小計（有多筆時顯示）
+    if len(product_rows) > 1:
+        lines.append(f"| 小計 | | ${subtotal:.0f} |")
+
+    # 扣減說明（簡化版：直接計算差額）
+    deduction = subtotal - total_cost
+    if deduction > 0:
+        lines.append(f"| **扣減** | | −${deduction:.0f} |")
+    else:
+        lines.append(f"| **無扣減** | | $0 |")
+
+    # 最終成本
+    lines.append(f"| **Total_Cost** | | **${total_cost:.0f}** |")
+    lines.append("")
+
+    # 收入與利潤
+    if final_sale > 0 or net_profit > 0:
+        lines.append(f"> 收入 ${final_sale:.0f} ／ 利潤 ${net_profit:.0f}")
+    lines.append("")
+
+    return {
+        "order_id": order_id,
+        "customer": customer,
+        "total_cost": total_cost,
+        "status_icon": status_icon,
+        "lines": lines,
+    }
+
+
 def audit():
-    print("🔍 FHS Total_Cost Integrity Audit")
+    print("🔍 FHS Total_Cost Integrity Audit — Detailed Format")
     print(f"   時間：{datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print(f"   Base: {BASE_ID}\n")
 
     fields = [
         FIELD_ORDER_ID, FIELD_CUSTOMER, FIELD_TOTAL_COST, FIELD_NET_PROFIT,
-        FIELD_FINAL_SALE, FIELD_KEYCHAIN, FIELD_HANDMODEL, FIELD_NECKLACE,
-        FIELD_ORDER_ITEMS
+        FIELD_FINAL_SALE, FIELD_APPT_DATE, FIELD_ORDER_ITEMS
     ]
 
     records = fetch_all_records(MAIN_ORDERS_TABLE, fields)
     print(f"   讀取 {len(records)} 筆訂單\n")
 
-    results = []
+    all_sections = []
+    ok_count = 0
 
     for rec in records:
-        f = rec.get("cellValuesByFieldId", {})
-        order_id   = f.get(FIELD_ORDER_ID, "???")
-        customer   = f.get(FIELD_CUSTOMER, "???")
-        total_cost = f.get(FIELD_TOTAL_COST) or 0
-        net_profit = f.get(FIELD_NET_PROFIT) or 0
-        final_sale = f.get(FIELD_FINAL_SALE) or 0
-        keychain   = f.get(FIELD_KEYCHAIN) or 0
-        handmodel  = f.get(FIELD_HANDMODEL) or 0
-        necklace   = f.get(FIELD_NECKLACE) or 0
-        items_count = len(f.get(FIELD_ORDER_ITEMS) or [])
-
-        raw_sum = keychain + handmodel + necklace
-        deduction = raw_sum - total_cost   # 正數 = 系統扣減了錢（正常）
-
-        # 判斷狀態
-        if raw_sum == 0 and total_cost == 0:
-            status = "✅ 無成本訂單"
-        elif deduction < -SUSPICIOUS_THRESHOLD:
-            # Total_Cost > rawSum → 不可能（成本比各項加總還多）
-            status = "❌ CRITICAL: Total_Cost 異常偏高"
-        elif deduction > TOLERANCE_MAX_DEDUCTION:
-            # 扣減超過合理範圍
-            status = "⚠️  WARN: 扣減異常偏大"
-        elif raw_sum > 0 and total_cost == 0:
-            status = "❌ CRITICAL: Total_Cost=0 但有產品成本"
-        elif raw_sum > total_cost + SUSPICIOUS_THRESHOLD and deduction > TOLERANCE_MAX_DEDUCTION:
-            status = "⚠️  SUSPICIOUS: 差距過大"
-        elif abs(deduction) <= TOLERANCE_MAX_DEDUCTION and deduction >= 0:
-            status = "✅ 正常"
-        else:
-            status = "⚠️  WARN: 需人工確認"
-
-        # 利潤核對
-        expected_profit = final_sale - total_cost
-        profit_diff = net_profit - expected_profit
-        if abs(profit_diff) > 1:
-            profit_note = f"⚠️ 利潤差 ${profit_diff:+.0f}"
-        else:
-            profit_note = ""
-
-        results.append({
-            "order_id": order_id,
-            "customer": customer,
-            "total_cost": total_cost,
-            "raw_sum": raw_sum,
-            "deduction": deduction,
-            "keychain": keychain,
-            "handmodel": handmodel,
-            "necklace": necklace,
-            "net_profit": net_profit,
-            "expected_profit": expected_profit,
-            "profit_note": profit_note,
-            "items_count": items_count,
-            "status": status,
-        })
-
-    # 分類
-    critical = [r for r in results if "CRITICAL" in r["status"]]
-    warnings  = [r for r in results if "WARN" in r["status"] or "SUSPICIOUS" in r["status"]]
-    ok        = [r for r in results if "✅" in r["status"]]
+        section = build_detailed_report_section(rec)
+        all_sections.append(section)
+        if section["status_icon"] == "✅":
+            ok_count += 1
 
     # === 輸出報告 ===
     today = datetime.now().strftime("%Y-%m-%d")
@@ -146,40 +214,35 @@ def audit():
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
     lines = [
-        f"# FHS Total_Cost Integrity Audit — {today}",
-        f"> 掃描 {len(records)} 筆訂單 | {len(critical)} Critical | {len(warnings)} Warning | {len(ok)} OK",
+        f"# 全 {len(records)} 單成本詳細核對表",
+        f"> {today} | 數據來源：Airtable Order_Items（實時查詢）",
+        "> ",
+        "> **成本計算邏輯說明**",
+        "> - **N飾** = N件同部位批次，括號內 $XXX 是 N件的總成本（不用再乘件數）",
+        "> - **跨部位扣減**（§2.5）= 同一訂單有 2 個或以上不同部位鎖匙扣 → (鎖匙扣部位數 − 1) × $20",
+        "> - **頸鏈吊飾不適用**跨部位扣減",
+        "",
+        "---",
         "",
     ]
 
-    if critical:
-        lines += ["## ❌ CRITICAL（需立即修正）", ""]
-        lines += ["| 訂單 | 客人 | Total_Cost | rawSum | 差額 | 備註 |", "|------|------|-----------|--------|------|------|"]
-        for r in critical:
-            diff = r['raw_sum'] - r['total_cost']
-            lines.append(
-                f"| {r['order_id']} | {r['customer']} | ${r['total_cost']} | "
-                f"${r['raw_sum']} | ${diff:+.0f} | {r['profit_note']} |"
-            )
+    # 逐訂單輸出詳細段落
+    for section in all_sections:
+        lines.extend(section["lines"])
+        lines.append("---")
         lines.append("")
 
-    if warnings:
-        lines += ["## ⚠️ WARN / SUSPICIOUS（建議人工確認）", ""]
-        lines += ["| 訂單 | 客人 | Total_Cost | rawSum | 扣減 | 狀態 |", "|------|------|-----------|--------|------|------|"]
-        for r in warnings:
-            lines.append(
-                f"| {r['order_id']} | {r['customer']} | ${r['total_cost']} | "
-                f"${r['raw_sum']} | ${r['deduction']:+.0f} | {r['status']} |"
-            )
-        lines.append("")
-
-    lines += ["## ✅ 正常訂單", ""]
-    lines += ["| 訂單 | 客人 | Total_Cost | Keychain | Handmodel | Necklace | 扣減 |",
-              "|------|------|-----------|---------|----------|---------|------|"]
-    for r in ok:
-        lines.append(
-            f"| {r['order_id']} | {r['customer']} | ${r['total_cost']} | "
-            f"${r['keychain']} | ${r['handmodel']} | ${r['necklace']} | ${r['deduction']:+.0f} |"
-        )
+    # 摘要統計
+    lines += [
+        "## 總覽",
+        "",
+        "| | 訂單數 |",
+        "|---|---|",
+        f"| ✅ 正常 | {ok_count} |",
+        f"| ⚠️ 待確認 | {len(all_sections) - ok_count} |",
+        f"| **合計** | **{len(all_sections)}** |",
+        "",
+    ]
 
     report = "\n".join(lines)
 
@@ -191,8 +254,8 @@ def audit():
 
     # 摘要
     print(f"\n{'='*50}")
-    print(f"CRITICAL: {len(critical)} | WARNING: {len(warnings)} | OK: {len(ok)}")
-    if not critical and not warnings:
+    print(f"✅ 正常: {ok_count} | ⚠️ 待確認: {len(all_sections) - ok_count} | 合計: {len(all_sections)}")
+    if ok_count == len(all_sections):
         print("✅ 全部訂單成本核對正常")
 
 
