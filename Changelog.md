@@ -1,5 +1,19 @@
 # Changelog
 
+## [freehandsss_dashboardV40.html IG 預覽格式調整] - 2026-05-08
+
+**核心變更**：
+- **`freehandsss_dashboardV40.html` IG 預覽格式調整**：
+  - 更新 Category B 金屬產品（嬰兒、大寶、家庭組合）的 IG 預覽訊息輸出格式。
+  - 將刻字內容排版從原本的一行改為分行，並加上獨立的「刻字」標題，以對齊客戶需求格式。
+  - 動態調整 Category B 的區塊標題：若包含取模服務（`hasP` 為 true）則顯示為「【加購項目】」；若為純金屬/吊飾訂單（`hasP` 為 false）則顯示為「【單購項目】」。
+  - 修正「刻字」與「上排/下排」文字的縮排對齊（加入 3 個半形空白），以確保輸出排版一致且美觀。
+
+**版本資訊**：
+- 前端 Dashboard：V40.8（不變）
+- n8n Workflow：V45.7.4（不變）
+- 憲法層：v1.4.3（不變）
+
 ## [Maintenance_Tools: audit_total_cost_integrity.py 詳細格式重構] - 2026-05-08
 
 **核心變更**：

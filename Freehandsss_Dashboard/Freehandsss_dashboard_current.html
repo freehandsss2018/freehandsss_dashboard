@@ -208,6 +208,12 @@
             outline: none;
         }
 
+        /* V40.8: Light black (grey) placeholders */
+        ::placeholder {
+            color: #999;
+            opacity: 1;
+        }
+
         select {
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
@@ -430,6 +436,10 @@
             background: var(--dark);
             color: var(--white);
             border-top: 5px solid #2A2D43;
+        }
+        .preview-card h2 {
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         textarea#output-preview {
@@ -2026,16 +2036,7 @@
 
         <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
                 oninput="generate()"></div>
-        <div class="grid-2-col" style="margin-bottom: 10px;">
-            <div class="form-group" style="margin-bottom: 0;"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>👶 嬰兒月齡 (選填)</label>
-                <input type="number" id="babyAgeMonths" placeholder="例如：4" min="0" oninput="generate()">
-            </div>
-        </div>
-        <div id="babyAgeWarning" style="color: #E63946; font-size: 12px; margin-bottom: 15px; display: none; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 8px; border: 1px solid #ffcdd2;">
-            ⚠️ 寶寶已超過 3 個月，建議主推「玻璃瓶套裝」以獲得最佳展示空間！
-        </div>
+        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
         <div class="form-group"><label>取模時間</label>
             <div class="grid-2-col">
                 <select id="appTimeHour" onchange="generate()"></select>
@@ -2082,7 +2083,7 @@
 
         <div class="toggle-row" id="toggleRowP">
             <strong>🎨 立體擺設款式</strong>
-            <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this)"> <span
+            <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this); _syncOrderTypeUI(this.checked)"> <span
                     class="slider"></span></label>
         </div>
         <div id="contentP" class="addon-content">
@@ -2537,12 +2538,12 @@
         <!-- V32 Ling Au Quote Engine UI -->
         <div id="pricingEngineUI" style="margin-bottom: 20px; padding: 15px; background: rgba(82, 183, 136, 0.1); border: 2px dashed #52B788; border-radius: 12px; transition: all 0.3s ease;">
             <div style="font-size: 18px; font-weight: bold; color: #2D6A4F; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>💡 系統精算建議報價：$<span id="suggestedPrice">0</span></span>
+                <span>💡 系統精算建議報價：$<span id="suggestedPrice">0</span><span id="priceBreakdown" style="font-size:13px; font-weight:normal; color:#457B9D; margin-left:5px;"></span></span>
                 <span style="font-size: 12px; font-weight: normal; color: #666; background: white; padding: 2px 8px; border-radius: 12px; border: 1px solid #ddd;" class="fat-only">畫圖成本: $<span id="drawingCost">0</span></span>
             </div>
             <!-- Scenario O: Adult Wood Force Hint -->
             <div id="adultWoodForceHint" style="display:none; font-size:11px; color:#D32F2F; margin-bottom:5px; font-weight:bold;">🛡️ 成人+木框：系統已強制鎖定為 P (照片建模) 模式</div>
-            <div style="font-size: 12px; color: #555; line-height: 1.6; max-height: 100px; overflow-y: auto; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
+            <div style="font-size: 12px; color: #555; line-height: 1.6; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
         </div>
 
         <div class="form-group"><label>已付訂金/全數 ($)</label><input type="number" id="deposit" placeholder="0"
@@ -3006,6 +3007,7 @@
     <script>
         console.log("FHS Dashboard V36.2.2 Initialized");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
+        let babyFillMode = 'all';
         
         // --- System Global Config V35.0 State - V31.2 ---
         let systemConfig = {
@@ -3091,7 +3093,15 @@
                 
                 if (response.ok) {
                     statusEl.innerText = "同步狀態：設定已儲存至雲端";
-                    if(type === 'normal') showToast("設定已生效！");
+                    // [BUG FIX] 更新 sessionStorage 緩存，確保刷新頁面後立即生效，不受 30 分鐘 TTL 影響
+                    try {
+                        sessionStorage.setItem('fhs_sysconfig_cache', JSON.stringify({ data: systemConfig, ts: Date.now() }));
+                    } catch(e) {}
+                    if(type === 'normal') {
+                        showToast("設定已生效！下張起始編號已更新。");
+                        // 立即更新當前頁面的訂單 ID 顯示
+                        generateOrderID();
+                    }
                 }
             } catch (error) {
                 statusEl.innerText = "同步狀態：儲存失敗";
@@ -3383,16 +3393,15 @@
             generate();
         }
 
-        function selectOrderType(type) {
+        function _syncOrderTypeUI(isYes) {
             var confirmBlock = document.getElementById('orderTypeConfirm');
             var badge        = document.getElementById('costIncludedBadge');
-            var enablePChk   = document.getElementById('enableP');
             var optNo        = document.getElementById('confirmOptNo');
             var optYes       = document.getElementById('confirmOptYes');
             var rcNo         = document.getElementById('rcNo');
             var dotNo        = document.getElementById('dotNo');
             var rowP         = document.getElementById('toggleRowP');
-            if (type === 'yes') {
+            if (isYes) {
                 confirmBlock.classList.add('state-yes');
                 optNo.classList.remove('selected-yes');
                 optYes.classList.add('selected-yes');
@@ -3400,10 +3409,6 @@
                 if (rcNo)  rcNo.style.borderColor  = '#D1D1D6';
                 badge.style.display = 'flex';
                 if (rowP) rowP.classList.add('highlight-p');
-                if (enablePChk && !enablePChk.checked) {
-                    enablePChk.checked = true;
-                    toggleAddon('contentP', enablePChk);
-                }
             } else {
                 confirmBlock.classList.remove('state-yes');
                 optNo.classList.add('selected-yes');
@@ -3412,6 +3417,19 @@
                 if (rcNo)  rcNo.style.borderColor  = '#ccc';
                 badge.style.display = 'none';
                 if (rowP) rowP.classList.remove('highlight-p');
+            }
+        }
+
+        function selectOrderType(type) {
+            var enablePChk = document.getElementById('enableP');
+            var isYes = type === 'yes';
+            _syncOrderTypeUI(isYes);
+            if (isYes) {
+                if (enablePChk && !enablePChk.checked) {
+                    enablePChk.checked = true;
+                    toggleAddon('contentP', enablePChk);
+                }
+            } else {
                 if (enablePChk && enablePChk.checked) {
                     enablePChk.checked = false;
                     toggleAddon('contentP', enablePChk);
@@ -3497,11 +3515,32 @@
                 html += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
             }
 
-            html += `<div class="limb-grid"><div class="limb-title" style="border-bottom: 1px solid #eee; padding-bottom: 5px;">【嬰兒】</div><div class="grid-2-col">`;
-            ["左手", "右手", "左腳", "右腳"].forEach(l => {
-                html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="嬰兒" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
-            });
-            html += `</div></div>`;
+            const quickColors = colors.filter(c => c !== '無' && c !== '待定');
+            const qcOptions = quickColors.map(c => `<option value="${c}"${c === '香檳金' ? ' selected' : ''}>${c}</option>`).join('');
+            const limbOptions = colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('');
+            html += `<div class="limb-grid">
+              <div class="limb-title" style="border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">【嬰兒】</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
+                <button type="button" id="babyBtn_all"    onclick="babySetMode('all')"    style="font-size:14px; padding:10px 4px; border:1px solid #C9A96E; background:#C9A96E; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">二手二腳</button>
+                <button type="button" id="babyBtn_left"   onclick="babySetMode('left')"   style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(左)</span></button>
+                <button type="button" id="babyBtn_right"  onclick="babySetMode('right')"  style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(右)</span></button>
+                <button type="button" id="babyBtn_custom" onclick="babySetMode('custom')" style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">自訂 ↓</button>
+              </div>
+              <div id="babyColorRow" class="mini-col" style="margin-bottom:4px;">
+                <label>顏色</label>
+                <select id="babyQuickColor" onchange="babyColorChanged()" style="padding:8px; font-size:14px; border:1px solid #ddd; border-radius:6px;">${qcOptions}</select>
+              </div>
+              <div id="babyCustomGrid" style="display:none; margin-top:8px; padding:8px; background:#fafafa; border:1px solid #eee; border-radius:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <label style="font-size:12px; color:#888; margin:0;">顏色</label>
+                  <button type="button" onclick="babyApplyAllCustom()" style="font-size:12px; padding:5px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer;">全部同色</button>
+                </div>
+                <select id="babyCustomColor" onchange="babyApplyAllCustom()" style="width:100%; padding:8px; font-size:14px; border:1px solid #ddd; border-radius:6px; margin-bottom:10px;">${qcOptions}</select>
+                <div class="grid-2-col">
+                  ${["左手", "右手", "左腳", "右腳"].map(l => `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="嬰兒" data-part="${l}" onchange="generate()">${limbOptions}</select></div>`).join('')}
+                </div>
+              </div>
+            </div>`;
 
             if (sub === "玻璃瓶款式") {
                 html += `
@@ -3536,6 +3575,65 @@
             }
 
             container.innerHTML = html;
+            babyRestoreVisual();
+        }
+
+        function babyRestoreVisual() {
+            const modes = ['all', 'left', 'right', 'custom'];
+            modes.forEach(m => {
+                const btn = document.getElementById(`babyBtn_${m}`);
+                if (!btn) return;
+                const isActive = m === babyFillMode;
+                const isCustom = m === 'custom';
+                btn.style.background  = isActive ? (isCustom ? '#FFF8F0' : '#C9A96E') : '#fff';
+                btn.style.color       = isActive ? (isCustom ? '#B07D4C' : '#fff')    : '#555';
+                btn.style.borderColor = isActive ? '#C9A96E' : '#ddd';
+                btn.style.fontWeight  = isActive ? 'bold' : 'normal';
+            });
+            const isCustom = babyFillMode === 'custom';
+            const grid = document.getElementById('babyCustomGrid');
+            if (grid) grid.style.display = isCustom ? 'block' : 'none';
+            const colorRow = document.getElementById('babyColorRow');
+            if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
+        }
+
+        function babySetMode(mode) {
+            babyFillMode = mode;
+            babyRestoreVisual();
+            if (mode !== 'custom') babyApplyFill(mode);
+        }
+
+        function babyApplyFill(mode) {
+            const color = document.getElementById('babyQuickColor')?.value || '香檳金';
+            const config = {
+                all:   { set: ["左手", "右手", "左腳", "右腳"], clear: [] },
+                left:  { set: ["左手", "左腳"],                 clear: ["右手", "右腳"] },
+                right: { set: ["右手", "右腳"],                 clear: ["左手", "左腳"] }
+            };
+            const c = config[mode];
+            if (!c) return;
+            c.set.forEach(part => {
+                const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
+                if (s) s.value = color;
+            });
+            c.clear.forEach(part => {
+                const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
+                if (s) s.value = '無';
+            });
+            generate();
+        }
+
+        function babyColorChanged() {
+            if (babyFillMode !== 'custom') babyApplyFill(babyFillMode);
+        }
+
+        function babyApplyAllCustom() {
+            const color = document.getElementById('babyCustomColor')?.value || document.getElementById('babyQuickColor')?.value || '香檳金';
+            ["左手", "右手", "左腳", "右腳"].forEach(part => {
+                const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
+                if (s) s.value = color;
+            });
+            generate();
         }
 
         function updateTimeOptions() {
@@ -3576,6 +3674,32 @@
             return text;
         }
 
+        function formatBabyLimbs() {
+            const lh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左手"]')?.value;
+            const rh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右手"]')?.value;
+            const lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]')?.value;
+            const rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]')?.value;
+
+            const activeVals = [lh, rh, lf, rf].filter(v => v && v !== '無' && v !== '待定');
+            if (activeVals.length === 0) return '';
+
+            let text = '【嬰兒】\n';
+            if (babyFillMode === 'all') {
+                text += ` 二手二腳（${activeVals[0]}）\n`;
+            } else if (babyFillMode === 'left' || babyFillMode === 'right') {
+                text += ` 一手一腳（${activeVals[0]}）\n`;
+            } else {
+                const hands = [], feet = [];
+                if (lh && lh !== '無') hands.push(`左手(${lh})`);
+                if (rh && rh !== '無') hands.push(`右手(${rh})`);
+                if (lf && lf !== '無') feet.push(`左腳(${lf})`);
+                if (rf && rf !== '無') feet.push(`右腳(${rf})`);
+                if (hands.length > 0) text += ` - ${hands.join('、')}\n`;
+                if (feet.length > 0) text += ` - ${feet.join('、')}\n`;
+            }
+            return text;
+        }
+
         function getFamilyComboDetails() {
             const combo = document.getElementById("k_family_combo")?.value;
             const p1 = document.getElementById("fam_p1_sel")?.value;
@@ -3606,25 +3730,18 @@
             const ampm = document.getElementById("appTimeAmPm").value;
             const timeStr = hour === '待定' ? '待定' : `${hour} ${ampm}`;
 
-            const deposit = document.getElementById("deposit").value || "0";
-            const balance = document.getElementById("balance").value || "0";
-            const additional = document.getElementById("additional").value || "0";
+            const depEl = document.getElementById("deposit");
+            const balEl = document.getElementById("balance");
+            const addEl = document.getElementById("additional");
+
+            const deposit = depEl.value || depEl.placeholder || "0";
+            const balance = balEl.value || (balEl.placeholder && !balEl.placeholder.includes('已付清') ? balEl.placeholder : "0");
+            const additional = addEl.value || "0";
 
             let hasP = document.getElementById("enableP").checked;
             let hasK = document.getElementById("enableK").checked;
             let hasM = document.getElementById("enableM").checked;
 
-            // --- Scenario L: Baby Age Warning & Logic Trap ---
-            const babyAgeArr = (document.getElementById("custBabyAge")?.value || "").split(/[個月]+/);
-            const babyMonth = parseInt(babyAgeArr[0] || "0");
-            const ageWarning = document.getElementById("babyAgeWarning");
-            if (ageWarning) {
-                if (hasP && document.getElementById("pSubCat").value === "木框款式" && babyMonth >= 3) {
-                    ageWarning.style.display = "block";
-                } else {
-                    ageWarning.style.display = "none";
-                }
-            }
 
             const custInfo = `【客人資料】
 聯絡人：${mom}
@@ -3661,7 +3778,7 @@
                 let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
                 if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}\n`;
                 if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}\n`;
-                detailsA += formatLimbs("嬰兒");
+                detailsA += formatBabyLimbs();
                 if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
                 if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
                 detailsA += `\n- 客製化刻字：${document.getElementById("pEngraving")?.value || "待定"}\n\n`;
@@ -3685,7 +3802,7 @@
                 forceHint.style.display = (adultPForce && hasAdultInOrder) ? "block" : "none";
             }
             if (hasK || hasM) {
-                let detailsB = "【選購/加購項目】\n";
+                let detailsB = hasP ? "【加購項目】\n" : "【單購項目】\n";
                 if (hasK) {
                     let kDetails = "";
                     const kBabyParts = [{ id: "lh", name: "嬰兒左手" }, { id: "rh", name: "嬰兒右手" }, { id: "lf", name: "嬰兒左腳" }, { id: "rf", name: "嬰兒右腳" }];
@@ -3695,7 +3812,7 @@
                             let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
                             let top = document.getElementById(`k_${p.id}_top`).value || "待定";
                             let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
-                            kDetails += ` - ${p.name}(x${qty})\n   上排：${top} | 下排：${bot}\n`;
+                            kDetails += ` - ${p.name}(x${qty})\n   刻字\n   上排：${top} | 下排：${bot}\n`;
                         }});
                     }
                     if (document.getElementById('k_elder_sec_en')?.checked) {
@@ -3703,7 +3820,7 @@
                             let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
                             let top = document.getElementById(`k_${p.id}_top`).value || "待定";
                             let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
-                            kDetails += ` - ${p.name}(x${qty})\n   上排：${top} | 下排：${bot}\n`;
+                            kDetails += ` - ${p.name}(x${qty})\n   刻字\n   上排：${top} | 下排：${bot}\n`;
                         }});
                     }
                     if (document.getElementById('k_family_en')?.checked) {
@@ -3711,7 +3828,7 @@
                         let top = document.getElementById(`k_family_top`).value || "待定";
                         let bot = document.getElementById(`k_family_bot`).value || "待定";
                         let comboInfo = getFamilyComboDetails();
-                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻名：${top} | ${bot}\n`;
+                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻字\n   上排：${top} | 下排：${bot}\n`;
                     }
                     detailsB += `產品類別：鎖匙扣 (不鏽鋼)\n${kDetails || " - (未選擇)\n"}`;
                 }
@@ -3881,6 +3998,7 @@
             }
 
             let logs = [];
+            let breakdownParts = []; // V40.8: breakdown display
             const enableP = getValSafe("enableP", false);
             const pSubCat = getValSafe("pSubCat", "");
             const hasMainProduct = enableP;
@@ -3925,6 +4043,7 @@
                 standaloneSurchargePaid = true;
                 totalSuggestedPrice += 1000;
                 totalSystemAdditionalFee += 1000;
+                breakdownParts.push(1000);
                 logs.push(`<div style="color:#E65100; font-weight:bold;">🌟首飾單購圖紙費: +$1000 (已解鎖異部位附加費豁免)</div>`);
             }
 
@@ -3967,6 +4086,7 @@
                     else if (name.includes("玻璃")) price = name.includes("4肢") ? 1680 : 1380;
                     
                     totalSuggestedPrice += price;
+                    breakdownParts.push(price);
                     totalDrawingCost += item.FatMoCost;
                     item.CalculatedPrice = price;
                     logs.push(`🎨 <b>${name}</b>: $${price}`);
@@ -3978,6 +4098,7 @@
                     if (hasAdultInSet && hasBabyInSet) {
                         totalSuggestedPrice += 300;
                         totalSystemAdditionalFee += 300;
+                        breakdownParts.push(300);
                         logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$300</div>`);
                     }
                 }
@@ -3986,6 +4107,7 @@
                     let price = name.includes("羊毛氈") ? 680 : 0;
                     price *= qty;
                     totalSuggestedPrice += price;
+                    breakdownParts.push(price);
                     item.CalculatedPrice = price;
                     logs.push(`🧸 <b>${name}</b> x${qty}: $${price}`);
                     totalDrawingCost += item.FatMoCost;
@@ -4042,6 +4164,7 @@
                                 let crossFee = pModeState === "S" ? 100 : 300;
                                 totalSuggestedPrice += crossFee;
                                 totalSystemAdditionalFee += crossFee;
+                                breakdownParts.push(crossFee);
                                 logs.push(`<div style="color:#D32F2F; font-size:11px;">⚠️ 異部位建模費: +$${crossFee}</div>`);
                             }
                         }
@@ -4053,6 +4176,7 @@
                     
                     item.CalculatedPrice = price;
                     totalSuggestedPrice += price;
+                    breakdownParts.push(price);
                     totalDrawingCost += item.FatMoCost;
                 });
             }
@@ -4077,13 +4201,29 @@
             if (uiCost) uiCost.innerText = totalDrawingCost;
             if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
 
+            // V40.8: Show breakdown (e.g. "(2380+860)")
+            const bkEl = document.getElementById('priceBreakdown');
+            if (bkEl) {
+                const nonZero = breakdownParts.filter(p => p > 0);
+                bkEl.innerText = nonZero.length > 1 ? `(${nonZero.join('+')})` : '';
+            }
+
+            // V40.8: Set deposit placeholder (light black) instead of value (solid black)
+            const depositEl = document.getElementById('deposit');
+            if (depositEl) {
+                depositEl.placeholder = totalSuggestedPrice > 0 ? totalSuggestedPrice : "0";
+            }
+
             // --- V36.2 Ling Au Finance UX Optimization ---
-            const depositVal = Number(document.getElementById('deposit')?.value) || 0;
+            // V40.8: Finance calculation logic using placeholder as default
+            const dVal = depositEl ? (depositEl.value || depositEl.placeholder || 0) : 0;
+            const depositVal = Number(dVal) || 0;
             const additionalVal = Number(document.getElementById('additional')?.value) || 0;
             const expectedBal = totalSuggestedPrice - depositVal + additionalVal;
             const balanceEl = document.getElementById('balance');
             if (balanceEl) {
                 balanceEl.placeholder = expectedBal <= 0 ? "0 (已付清)" : expectedBal;
+                // If value exists, it stays solid black. If no value, placeholder is light grey.
             }
             
             const engineUI = document.getElementById("pricingEngineUI");

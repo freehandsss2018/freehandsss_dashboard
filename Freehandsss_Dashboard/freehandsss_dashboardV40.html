@@ -2083,7 +2083,7 @@
 
         <div class="toggle-row" id="toggleRowP">
             <strong>🎨 立體擺設款式</strong>
-            <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this)"> <span
+            <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this); _syncOrderTypeUI(this.checked)"> <span
                     class="slider"></span></label>
         </div>
         <div id="contentP" class="addon-content">
@@ -3007,6 +3007,7 @@
     <script>
         console.log("FHS Dashboard V36.2.2 Initialized");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
+        let babyFillMode = 'all';
         
         // --- System Global Config V35.0 State - V31.2 ---
         let systemConfig = {
@@ -3392,16 +3393,15 @@
             generate();
         }
 
-        function selectOrderType(type) {
+        function _syncOrderTypeUI(isYes) {
             var confirmBlock = document.getElementById('orderTypeConfirm');
             var badge        = document.getElementById('costIncludedBadge');
-            var enablePChk   = document.getElementById('enableP');
             var optNo        = document.getElementById('confirmOptNo');
             var optYes       = document.getElementById('confirmOptYes');
             var rcNo         = document.getElementById('rcNo');
             var dotNo        = document.getElementById('dotNo');
             var rowP         = document.getElementById('toggleRowP');
-            if (type === 'yes') {
+            if (isYes) {
                 confirmBlock.classList.add('state-yes');
                 optNo.classList.remove('selected-yes');
                 optYes.classList.add('selected-yes');
@@ -3409,10 +3409,6 @@
                 if (rcNo)  rcNo.style.borderColor  = '#D1D1D6';
                 badge.style.display = 'flex';
                 if (rowP) rowP.classList.add('highlight-p');
-                if (enablePChk && !enablePChk.checked) {
-                    enablePChk.checked = true;
-                    toggleAddon('contentP', enablePChk);
-                }
             } else {
                 confirmBlock.classList.remove('state-yes');
                 optNo.classList.add('selected-yes');
@@ -3421,6 +3417,19 @@
                 if (rcNo)  rcNo.style.borderColor  = '#ccc';
                 badge.style.display = 'none';
                 if (rowP) rowP.classList.remove('highlight-p');
+            }
+        }
+
+        function selectOrderType(type) {
+            var enablePChk = document.getElementById('enableP');
+            var isYes = type === 'yes';
+            _syncOrderTypeUI(isYes);
+            if (isYes) {
+                if (enablePChk && !enablePChk.checked) {
+                    enablePChk.checked = true;
+                    toggleAddon('contentP', enablePChk);
+                }
+            } else {
                 if (enablePChk && enablePChk.checked) {
                     enablePChk.checked = false;
                     toggleAddon('contentP', enablePChk);
@@ -3506,11 +3515,32 @@
                 html += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
             }
 
-            html += `<div class="limb-grid"><div class="limb-title" style="border-bottom: 1px solid #eee; padding-bottom: 5px;">【嬰兒】</div><div class="grid-2-col">`;
-            ["左手", "右手", "左腳", "右腳"].forEach(l => {
-                html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="嬰兒" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
-            });
-            html += `</div></div>`;
+            const quickColors = colors.filter(c => c !== '無' && c !== '待定');
+            const qcOptions = quickColors.map(c => `<option value="${c}"${c === '香檳金' ? ' selected' : ''}>${c}</option>`).join('');
+            const limbOptions = colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('');
+            html += `<div class="limb-grid">
+              <div class="limb-title" style="border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">【嬰兒】</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
+                <button type="button" id="babyBtn_all"    onclick="babySetMode('all')"    style="font-size:14px; padding:10px 4px; border:1px solid #C9A96E; background:#C9A96E; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">二手二腳</button>
+                <button type="button" id="babyBtn_left"   onclick="babySetMode('left')"   style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(左)</span></button>
+                <button type="button" id="babyBtn_right"  onclick="babySetMode('right')"  style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(右)</span></button>
+                <button type="button" id="babyBtn_custom" onclick="babySetMode('custom')" style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">自訂 ↓</button>
+              </div>
+              <div id="babyColorRow" class="mini-col" style="margin-bottom:4px;">
+                <label>顏色</label>
+                <select id="babyQuickColor" onchange="babyColorChanged()" style="padding:8px; font-size:14px; border:1px solid #ddd; border-radius:6px;">${qcOptions}</select>
+              </div>
+              <div id="babyCustomGrid" style="display:none; margin-top:8px; padding:8px; background:#fafafa; border:1px solid #eee; border-radius:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <label style="font-size:12px; color:#888; margin:0;">顏色</label>
+                  <button type="button" onclick="babyApplyAllCustom()" style="font-size:12px; padding:5px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer;">全部同色</button>
+                </div>
+                <select id="babyCustomColor" onchange="babyApplyAllCustom()" style="width:100%; padding:8px; font-size:14px; border:1px solid #ddd; border-radius:6px; margin-bottom:10px;">${qcOptions}</select>
+                <div class="grid-2-col">
+                  ${["左手", "右手", "左腳", "右腳"].map(l => `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="嬰兒" data-part="${l}" onchange="generate()">${limbOptions}</select></div>`).join('')}
+                </div>
+              </div>
+            </div>`;
 
             if (sub === "玻璃瓶款式") {
                 html += `
@@ -3545,6 +3575,65 @@
             }
 
             container.innerHTML = html;
+            babyRestoreVisual();
+        }
+
+        function babyRestoreVisual() {
+            const modes = ['all', 'left', 'right', 'custom'];
+            modes.forEach(m => {
+                const btn = document.getElementById(`babyBtn_${m}`);
+                if (!btn) return;
+                const isActive = m === babyFillMode;
+                const isCustom = m === 'custom';
+                btn.style.background  = isActive ? (isCustom ? '#FFF8F0' : '#C9A96E') : '#fff';
+                btn.style.color       = isActive ? (isCustom ? '#B07D4C' : '#fff')    : '#555';
+                btn.style.borderColor = isActive ? '#C9A96E' : '#ddd';
+                btn.style.fontWeight  = isActive ? 'bold' : 'normal';
+            });
+            const isCustom = babyFillMode === 'custom';
+            const grid = document.getElementById('babyCustomGrid');
+            if (grid) grid.style.display = isCustom ? 'block' : 'none';
+            const colorRow = document.getElementById('babyColorRow');
+            if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
+        }
+
+        function babySetMode(mode) {
+            babyFillMode = mode;
+            babyRestoreVisual();
+            if (mode !== 'custom') babyApplyFill(mode);
+        }
+
+        function babyApplyFill(mode) {
+            const color = document.getElementById('babyQuickColor')?.value || '香檳金';
+            const config = {
+                all:   { set: ["左手", "右手", "左腳", "右腳"], clear: [] },
+                left:  { set: ["左手", "左腳"],                 clear: ["右手", "右腳"] },
+                right: { set: ["右手", "右腳"],                 clear: ["左手", "左腳"] }
+            };
+            const c = config[mode];
+            if (!c) return;
+            c.set.forEach(part => {
+                const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
+                if (s) s.value = color;
+            });
+            c.clear.forEach(part => {
+                const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
+                if (s) s.value = '無';
+            });
+            generate();
+        }
+
+        function babyColorChanged() {
+            if (babyFillMode !== 'custom') babyApplyFill(babyFillMode);
+        }
+
+        function babyApplyAllCustom() {
+            const color = document.getElementById('babyCustomColor')?.value || document.getElementById('babyQuickColor')?.value || '香檳金';
+            ["左手", "右手", "左腳", "右腳"].forEach(part => {
+                const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
+                if (s) s.value = color;
+            });
+            generate();
         }
 
         function updateTimeOptions() {
@@ -3582,6 +3671,32 @@
             let text = `【${who}】\n`;
             if (hands.length > 0) text += ` - ${hands.join('、')}\n`;
             if (feet.length > 0) text += ` - ${feet.join('、')}\n`;
+            return text;
+        }
+
+        function formatBabyLimbs() {
+            const lh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左手"]')?.value;
+            const rh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右手"]')?.value;
+            const lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]')?.value;
+            const rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]')?.value;
+
+            const activeVals = [lh, rh, lf, rf].filter(v => v && v !== '無' && v !== '待定');
+            if (activeVals.length === 0) return '';
+
+            let text = '【嬰兒】\n';
+            if (babyFillMode === 'all') {
+                text += ` 二手二腳（${activeVals[0]}）\n`;
+            } else if (babyFillMode === 'left' || babyFillMode === 'right') {
+                text += ` 一手一腳（${activeVals[0]}）\n`;
+            } else {
+                const hands = [], feet = [];
+                if (lh && lh !== '無') hands.push(`左手(${lh})`);
+                if (rh && rh !== '無') hands.push(`右手(${rh})`);
+                if (lf && lf !== '無') feet.push(`左腳(${lf})`);
+                if (rf && rf !== '無') feet.push(`右腳(${rf})`);
+                if (hands.length > 0) text += ` - ${hands.join('、')}\n`;
+                if (feet.length > 0) text += ` - ${feet.join('、')}\n`;
+            }
             return text;
         }
 
@@ -3663,7 +3778,7 @@
                 let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
                 if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}\n`;
                 if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}\n`;
-                detailsA += formatLimbs("嬰兒");
+                detailsA += formatBabyLimbs();
                 if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
                 if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
                 detailsA += `\n- 客製化刻字：${document.getElementById("pEngraving")?.value || "待定"}\n\n`;
@@ -3687,7 +3802,7 @@
                 forceHint.style.display = (adultPForce && hasAdultInOrder) ? "block" : "none";
             }
             if (hasK || hasM) {
-                let detailsB = "【選購/加購項目】\n";
+                let detailsB = hasP ? "【加購項目】\n" : "【單購項目】\n";
                 if (hasK) {
                     let kDetails = "";
                     const kBabyParts = [{ id: "lh", name: "嬰兒左手" }, { id: "rh", name: "嬰兒右手" }, { id: "lf", name: "嬰兒左腳" }, { id: "rf", name: "嬰兒右腳" }];
@@ -3697,7 +3812,7 @@
                             let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
                             let top = document.getElementById(`k_${p.id}_top`).value || "待定";
                             let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
-                            kDetails += ` - ${p.name}(x${qty})\n   上排：${top} | 下排：${bot}\n`;
+                            kDetails += ` - ${p.name}(x${qty})\n   刻字\n   上排：${top} | 下排：${bot}\n`;
                         }});
                     }
                     if (document.getElementById('k_elder_sec_en')?.checked) {
@@ -3705,7 +3820,7 @@
                             let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
                             let top = document.getElementById(`k_${p.id}_top`).value || "待定";
                             let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
-                            kDetails += ` - ${p.name}(x${qty})\n   上排：${top} | 下排：${bot}\n`;
+                            kDetails += ` - ${p.name}(x${qty})\n   刻字\n   上排：${top} | 下排：${bot}\n`;
                         }});
                     }
                     if (document.getElementById('k_family_en')?.checked) {
@@ -3713,7 +3828,7 @@
                         let top = document.getElementById(`k_family_top`).value || "待定";
                         let bot = document.getElementById(`k_family_bot`).value || "待定";
                         let comboInfo = getFamilyComboDetails();
-                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻名：${top} | ${bot}\n`;
+                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻字\n   上排：${top} | 下排：${bot}\n`;
                     }
                     detailsB += `產品類別：鎖匙扣 (不鏽鋼)\n${kDetails || " - (未選擇)\n"}`;
                 }
