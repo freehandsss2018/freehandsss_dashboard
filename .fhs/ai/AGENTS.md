@@ -182,6 +182,7 @@
 | 任務為 V40+ Phase A 設計規範定義（視覺語言、wireframe、component spec） | `ui-designer` |
 | n8n workflow 節點報錯、Dashboard JS Runtime Error、Python 腳本崩潰 | `build-error-resolver` |
 | Airtable schema 審查、n8n Code Node 資料流驗證、SKU 正規化稽核、Triple_Sync 欄位核查 | `database-reviewer` |
+| Live Airtable 財務數據驗證、訂單 Total_Cost 互動式對帳、三端利潤一致性稽核（Airtable↔n8n↔Dashboard）| `finance-auditor` |
 | 新建 Maintenance_Tools Python 腳本、Python 測試失敗、n8n Code Node 邏輯規劃 | `tdd-guide` |
 | 任何涉及 STL 匯入、mesh 修復、3D 列印準備、Blender 操作 | `blender-3d-modeler` |
 | 需要搜索 3 個以上未知檔案位置的廣泛探索 | `Explore` |

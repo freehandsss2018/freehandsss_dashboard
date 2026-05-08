@@ -76,6 +76,7 @@ freehandsss_dashboard/
 │   │   │       ├── frontend-developer.md ← Phase B 原型（使用 Input Contract）
 │   │   │       ├── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
 │   │   │       ├── database-reviewer.md ← v1.0.0 Airtable schema + n8n 資料流審查（2026-04-28 新增）
+│   │   │       ├── finance-auditor.md   ← v1.0.0 三端財務稽核員（Live Airtable + n8n + Dashboard，Supabase 就緒，2026-05-10 新增）
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
 │       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
@@ -85,7 +86,7 @@ freehandsss_dashboard/
 │   │       │   ├── README.md            ← 用途、角色邊界、使用場景
 │   │       │   └── vendor/
 │   │       │       └── SKILL.md        ← 來源說明與角色邊界聲明
-│   │       ├── finance-calculator/      ← FHS 財務計算核心公式（2026-04-28 新增）
+│   │       ├── finance-calculator/      ← FHS 財務計算核心公式（2026-04-28 新增，finance-auditor 強制讀取）
 │   │       │   └── SKILL.md            ← 利潤公式、前端/n8n 優先規則、欄位類型規範
 │   │       └── vendor/                  ← 外部 skill/tool vendor-in 區（2026-05-09 新增）
 │   │           ├── superpowers/         ← 來源：github.com/obra/superpowers

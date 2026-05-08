@@ -7,6 +7,21 @@
 
 ## 記錄
 
+[2026-05-10] finance-auditor Subagent v1.0.0 — 三端財務稽核員建立
+
+決策：
+- **建立 `finance-auditor` subagent**（不升級 database-reviewer）：database-reviewer 職責為靜態 Schema/Code 審查，finance-auditor 職責為 Live Airtable 動態數據驗證，兩者正交。
+- **Single-file 內嵌 Python 邏輯**：與 `build-error-resolver`、`blender-3d-modeler` 同模式，避免雙層架構增加維護成本。
+- **強制讀取 `finance-calculator` skill**：公式不重複定義，節省 token，finance-calculator 作為共用 reference layer。
+- **三端架構清晰切割**：Tier 1 Airtable（數據源）→ Tier 2 n8n（計算引擎）→ Tier 3 Dashboard（前端真理）。前端 profit ≠ 0 時為絕對真理，finance-auditor 強制遵守 AGENTS.md §財務真理守護。
+- **Supabase 就緒設計**：Phase 3 Tier 1 查詢層已文件化替換路徑（Airtable MCP → read-only-postgres skill），欄位名稱對齊 Triple_Sync_Field_Map.md，遷移時只需替換連接方式，不改稽核邏輯。
+- **FHS_Prompts.md 情境五觸發詞收窄**：「利潤」「Total Cost」移出情境五，改為「財務規則確認」入口；Live 驗證統一走情境二十一。
+- **AGENTS.md 新增決定性路由規則**：Live Airtable 財務驗證觸發時強制調用 finance-auditor，不得由 Claude 直接處理。
+
+批准：Fat Mo ✅（2026-05-10 /execute）
+
+---
+
 [2026-05-07] n8n V40.9 零成本防衛 + Airtable 公式修正 + /fhs-cost-audit 指令
 
 決策：

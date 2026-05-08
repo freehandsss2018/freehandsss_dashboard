@@ -1,6 +1,6 @@
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.4
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.5
 >
-> 最後更新：2026-05-09（補入情境十三～二十；修正情境九廢除規則；對齊 AGENTS.md v1.4.3）
+> 最後更新：2026-05-10（新增情境二十一 finance-auditor；收窄情境五觸發詞；對齊 AGENTS.md v1.4.3）
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
 
@@ -30,10 +30,11 @@
 觸發：用戶提及「錯誤」「Error Log」「異常」「診斷」「掛了」
 執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/error-eye.md。
 
-## 【情境五：財務數據審計 (Financial Audit)】
+## 【情境五：財務規則確認 (Financial Rules)】
 
-- 觸發：用戶提及「利潤」「審計」「Total Cost」
-處理 `System_Total_Cost` 與利潤結算。
+- 觸發：用戶提及「財務規則」「n8n 利潤規則」「auditPassed 格式」「前端利潤守護」
+> ⚠️ 邊界說明：此情境處理**靜態財務規則確認**（n8n 節點格式、利潤守護規則）。若需 Live Airtable 數據查詢或三端比對，請走**情境二十一（finance-auditor）**。
+處理 `System_Total_Cost` 與利潤結算**規則**。
 - **死線**：前端利潤結算為最高真理，n8n 不得擅自重算（除非前端為 0）。
 - **n8n 代碼輸出規範**：強制執行 `[{json: {auditPassed: true...}}]` 格式，嚴禁回傳裸物件。
 - **SKU 對齊**：執行審計前，必須調用 `Parse Items` 正規化地圖。
@@ -142,6 +143,14 @@ Ling Au 專屬設計準則（強制執行）：
 
 觸發：用戶提及「代碼分析」「code analysis」「程式碼品質」「重構分析」「技術債」「code review」
 執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/code-analysis.md。
+
+## 【情境二十一：三端財務稽核 (Finance Auditor)】
+
+觸發：用戶提及「對帳」「Live 驗證」「Airtable 利潤驗證」「訂單成本比對」「三端財務」「財務稽核」「Total_Cost 不對」「利潤差異」「成本差了」
+> 與情境五的區別：情境五處理靜態財務規則確認（n8n 格式、利潤守護規則）；此情境**查詢 Live Airtable 數據**，執行三端（Airtable↔n8n↔Dashboard）互動式驗證。
+> 與情境十六的區別：情境十六跑全域批次 Python 腳本掃描；此情境針對**指定訂單的互動式深入稽核**。
+執行邏輯：此情境已獨立為 Subagent，請立即調用 `finance-auditor` Subagent 執行三端財務稽核。
+配套 Skills：`.fhs/ai/skills/finance-calculator/SKILL.md`（財務公式）、`.fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md`（Supabase 就緒）
 
 ---
 

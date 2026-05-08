@@ -1,5 +1,31 @@
 # Changelog
 
+## [finance-auditor Subagent v1.0.0 — 三端財務稽核員] - 2026-05-10
+
+**執行依據**：Fat Mo `/execute` 授權（Option A：互動式 Live 驗證）
+
+**核心變更**：
+
+建立新 FHS Subagent `finance-auditor`，專門執行互動式 Live Airtable 三端財務驗證（Airtable ↔ n8n ↔ Dashboard），與現有財務工具（database-reviewer 靜態審查、/fhs-cost-audit 批次掃描）職責正交。
+
+**新增檔案**：
+- `.fhs/ai/subagents/freehandsss/finance-auditor.md` — v1.0.0（Single-file 內嵌 Python 邏輯，Supabase 就緒）
+- `.fhs/reports/completion/2026-05-10_finance-auditor-subagent_completion_report.md`
+
+**FHS_Prompts.md v1.4 → v1.5**：
+- 情境五觸發詞收窄：移除「利潤」「Total Cost」，改為「財務規則確認」（靜態規則查詢，不涉及 Live 數據）
+- 新增情境二十一：finance-auditor 互動式三端驗證觸發詞（「對帳」「Live 驗證」「Airtable 利潤驗證」「訂單成本比對」等）
+
+**AGENTS.md 新增決定性路由規則**：
+- `finance-auditor` 條目：Live Airtable 財務驗證 → 必須調用 finance-auditor，無例外
+
+**設計決策（decisions.md）**：
+- 三端架構清晰切割（Tier 1 Airtable / Tier 2 n8n / Tier 3 Dashboard 前端真理）
+- Supabase 就緒：Tier 1 查詢層已抽象化，未來遷移只需替換連接方式，不改稽核邏輯
+- 強制讀取 finance-calculator skill，不重複定義公式（省 token）
+
+---
+
 ## [Subagent 決定性路由規則 + Skills 連接] - 2026-05-09
 
 **執行依據**：Fat Mo 口頭授權（「1及2 均執行」）
