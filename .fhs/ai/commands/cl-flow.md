@@ -109,7 +109,7 @@ Claude 必須生成以下檔案：
 > ⚠️ 此模式為緊急備援，正常情況請使用【新路】Runner 模式。
 > 適用場景：Perplexity/Gemini API 全掛、或 Antigravity 已在外部手動撰寫計劃。
 
-當未傳入任務描述，且 `.fhs/notes/ai_reports/` 下存在以下兩個檔案時啟動：
+當未傳入任務描述，且 `.fhs/reports/planning/` 下存在以下兩個檔案時啟動：
 
 - `a1_implementation_plan.md`
 - `a2_implementation_plan.md`
@@ -117,8 +117,8 @@ Claude 必須生成以下檔案：
 ### Step 1 — 讀取靜態檔案
 
 嚴格讀取以下兩個路徑：
-- `.fhs/notes/ai_reports/a1_implementation_plan.md`
-- `.fhs/notes/ai_reports/a2_implementation_plan.md`
+- `.fhs/reports/planning/a1_implementation_plan.md`
+- `.fhs/reports/planning/a2_implementation_plan.md`
 
 任一不存在或為空 → 報錯停止，不猜測、不 fallback。
 
@@ -129,7 +129,7 @@ Claude 必須生成以下檔案：
 
 ### Step 3 — 產出 Verdict
 
-輸出 `.fhs/notes/ai_reports/a3_execution_verdict.md`，內容包含：
+輸出 `.fhs/reports/planning/a3_execution_verdict.md`，內容包含：
 - 最終建議
 - 主要風險
 - 未解決問題
@@ -157,6 +157,6 @@ Claude 必須生成以下檔案：
 | 舊版 (v2.0) | 新版 (v2.1.0) |
 |------------|--------------|
 | 直接讀取 a1/a2_implementation_plan.md | 執行 runner 腳本生成真實 artifact |
-| 輸出到 .fhs/notes/ai_reports/ | 輸出到 artifacts/{flow_id}/ |
+| 輸出到 .fhs/reports/planning/ | 輸出到 artifacts/{flow_id}/ |
 | Claude 可能模擬審閱 | 強制引述真實 artifact 內容 |
 | 無 state.json 狀態追蹤 | flow_id + state.json 全程追蹤 |

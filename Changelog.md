@@ -1,5 +1,35 @@
 # Changelog
 
+## [Skill Import — superpowers + awesome-claude-code] - 2026-05-09
+
+**執行依據**：Fat Mo `/execute` 授權（Flow 0152 + Flow 0206）
+
+**核心變更**：
+
+新增 `.fhs/ai/skills/vendor/` 目錄，引入來自 `obra/superpowers` 及 `hesreallyhim/awesome-claude-code` 的外部技能與指令，採 vendor-in 策略（複製至本地，不依賴外部 repo）。
+
+**新增 Skills（Master 層）**：
+- `.fhs/ai/skills/vendor/superpowers/test-driven-development.md` — TDD RED-GREEN-REFACTOR 強制機制
+- `.fhs/ai/skills/vendor/superpowers/systematic-debugging.md` — 四階段根因調查法（Iron Law: 未完成 Phase 1 禁止修復）
+- `.fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md` — 唯讀 PostgreSQL/Supabase 查詢（10K row limit，write-block）
+- `.fhs/ai/skills/vendor/awesome-cc/supabase-query.md` — Supabase Management API CLI（DDL/RLS/Storage）
+- `.fhs/ai/skills/vendor/awesome-cc/hooks-setup-guide.md` — Dippy + parry hooks 安裝指南（待手動安裝）
+
+**新增 Claude Code Commands（可立即使用）**：
+- `/tdd-guide` — TDD 強制執行橋接
+- `/debug-guide` — 系統化除錯橋接
+- `/db-query` — Supabase/PostgreSQL 唯讀查詢橋接（解決 P-HIGH #2）
+- `/five` — 五個為什麼根因分析
+- `/mermaid` — SQL/Airtable schema → Mermaid 圖表
+- `/code-analysis` — 多角度代碼深度分析
+
+**版本資訊**：
+- 前端 Dashboard：V40.8（不變）
+- n8n Workflow：V45.7.4（不變）
+- 憲法層：v1.4.3（不變）
+
+---
+
 ## [freehandsss_dashboardV40.html IG 預覽格式調整] - 2026-05-08
 
 **核心變更**：

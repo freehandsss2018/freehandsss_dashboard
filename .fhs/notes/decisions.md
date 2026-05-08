@@ -247,7 +247,7 @@ IF(
 - Phase 1 僅支援 FHS_Core_OrderProcessor（Workflow ID: 6Ljih0hSKr9RpYNm）
 - 放在 dashboard repo 內作為子目錄，不獨立 repo
 - n8n API key 共用根目錄 `.env`（變數名 N8N_KEY / N8N_INSTANCE）
-- 備份路徑：`.fhs/notes/aireports/n8n-mcp-backups/{date}/{workflowId}/{nodeName}.json`
+- 備份路徑：`.fhs/memory/backups/n8n-mcp/{date}/{workflowId}/{nodeName}.json`
 - `update_node_code` 預設 dry-run，需 `/execute` 授權才真正 PUT
 - 寫入前自動備份 + `rollback_node_code` 回滾機制
 - 測試執行僅接受 mock payload（mock_create/edit/delete_order.json）

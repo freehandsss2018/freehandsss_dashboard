@@ -9,5 +9,5 @@
 
 執行後必須完成後效同步稽核（A/B/C 三項觸發條件核查）：
 - [A] 結構變動 → 更新 docs/repo-map.md + README.md
-- [B] 制度層變動 → 產出 .fhs/notes/completion_reports/ 完成記錄
+- [B] 制度層變動 → 產出 .fhs/reports/completion/ 完成記錄
 - [C] CHANGELOG 稽核 → 更新 CHANGELOG.md

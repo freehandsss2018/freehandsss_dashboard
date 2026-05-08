@@ -10,7 +10,7 @@
 
 1. **落盤實體路徑限制**：
    - A1 產出之報告**必須**由橋接 Agent (或由 A1 MCP) 寫入專案的實體正確路徑：
-     `.fhs/notes/ai_reports/a1_implementation_plan.md`
+     `.fhs/reports/planning/a1_implementation_plan.md`
 
 2. **報告內容要求**：
    - 外部市場或工具之最新情報與第三方視角。

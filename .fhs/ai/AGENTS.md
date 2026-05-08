@@ -86,7 +86,7 @@
 
 則任務完成後，必須同步產出一份正式完成記錄。
 
-存放位置：`.fhs/notes/completion_reports/`
+存放位置：`.fhs/reports/completion/`
 命名格式：`YYYY-MM-DD_<task_slug>_completion_report.md`
 
 若未產出正式完成記錄，該任務視為未正式收尾。
@@ -109,7 +109,7 @@
 ### Stitch 資產守護
 - **Stitch 輸出禁止直入**：Google Stitch 或任何 MCP 生成的 UI 組件，嚴禁未經轉換直接覆寫 `current.html` / V36 / V37 / V40 等主核心。
 - **必須無害化**：Stitch 產出必須先去除 React/Tailwind/CDN 外部依賴，轉為純 Vanilla HTML/CSS，方可進入 Phase B 實作。
-- **草稿隔離**：Stitch 生成物作為「Draft」暫存於 `.fhs/notes/ai_reports/`，只有通過 `/ag-ui-import` 轉換且 Code Reviewer PASS 後，方可合併至 prototype。
+- **草稿隔離**：Stitch 生成物作為「Draft」暫存於 `.fhs/reports/planning/`，只有通過 `/ag-ui-import` 轉換且 Code Reviewer PASS 後，方可合併至 prototype。
 
 ### 衝突優先級聲明
 - 若本文件（AGENTS.md）與 `.cursorrules` 有任何規則衝突，以本文件為最終準則。
@@ -154,8 +154,8 @@
 
 | 指令 | 中文說明 | 執行方 | 備註 |
 |------|---------|-------|------|
-| `/px-plan` | px 出 plan | Perplexity | 產出 `a1_implementation_plan.md` 到 `.fhs/notes/ai_reports/` |
-| `/ag-plan` | ag 出 plan | Antigravity | 產出 `a2_implementation_plan.md` 到 `.fhs/notes/ai_reports/` |
+| `/px-plan` | px 出 plan | Perplexity | 產出 `a1_implementation_plan.md` 到 `.fhs/reports/planning/` |
+| `/ag-plan` | ag 出 plan | Antigravity | 產出 `a2_implementation_plan.md` 到 `.fhs/reports/planning/` |
 | `/cl-plan` | cl 出 plan | Claude | Claude 產出計畫 |
 | `/cl-review` | cl 給我審視報告 | Claude | 技術審視，不執行寫入 |
 | `/cl-flow` | cl 給我最終報告（完整版） | Claude | PX + AG → 產出 verdict → 停止等待。適合架構決策、新系統引入 |

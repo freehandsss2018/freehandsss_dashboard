@@ -8,7 +8,7 @@
 
 ## 前置條件（必須全部滿足）
 
-- [ ] `/ag-stitch-sync` 已完成，草稿存在於 `.fhs/notes/ai_reports/stitch_draft_*.html`
+- [ ] `/ag-stitch-sync` 已完成，草稿存在於 `.fhs/reports/planning/stitch_draft_*.html`
 - [ ] 依賴清單已由 `/ag-stitch-sync` 識別完畢
 - [ ] Fat Mo 已確認草稿方向正確
 

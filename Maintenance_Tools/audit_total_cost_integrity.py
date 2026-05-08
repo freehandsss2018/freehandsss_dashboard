@@ -10,7 +10,7 @@ FHS Total_Cost Integrity Auditor — Detailed Format
     python Maintenance_Tools/audit_total_cost_integrity.py
 
 輸出：
-    .fhs/notes/aireports/total_cost_audit_YYYY-MM-DD.md
+    .fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md
 """
 
 import os
@@ -208,7 +208,7 @@ def audit():
     today = datetime.now().strftime("%Y-%m-%d")
     report_path = os.path.join(
         os.path.dirname(__file__), "..",
-        ".fhs", "notes", "aireports",
+        ".fhs", "reports", "audits", "cost",
         f"total_cost_audit_{today}.md"
     )
     os.makedirs(os.path.dirname(report_path), exist_ok=True)

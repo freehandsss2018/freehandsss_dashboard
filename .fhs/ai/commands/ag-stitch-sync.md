@@ -15,7 +15,7 @@
    - Tailwind class（如 `px-4`, `text-sm`, `flex`）
    - 外部 CDN `<link>` / `<script>`
 4. **標注依賴清單**：列出所有需要去除的項目，供 `/ag-ui-import` 使用
-5. **存入草稿**：將原始 Stitch 輸出存入 `.fhs/notes/ai_reports/stitch_draft_{YYYY-MM-DD}.html`
+5. **存入草稿**：將原始 Stitch 輸出存入 `.fhs/reports/planning/stitch_draft_{YYYY-MM-DD}.html`
 
 ---
 
@@ -23,13 +23,13 @@
 
 - ❌ 禁止：Stitch 輸出直接覆寫任何主核心（`current.html` / V36 / V37 / V40）
 - ❌ 禁止：跳過依賴清單步驟直接進入轉換
-- ✅ 必須：草稿只存入 `.fhs/notes/ai_reports/`，不得存入 `Freehandsss_Dashboard/`
+- ✅ 必須：草稿只存入 `.fhs/reports/planning/`，不得存入 `Freehandsss_Dashboard/`
 - ✅ 必須：依賴清單明文輸出，讓 Fat Mo 可審視
 
 ---
 
 ## 副作用 (Side Effects)
 
-- 是否寫檔：**是**（只限 `.fhs/notes/ai_reports/stitch_draft_*.html`）
+- 是否寫檔：**是**（只限 `.fhs/reports/planning/stitch_draft_*.html`）
 - 是否修改主核心：**絕對禁止**
 - 是否執行 shell：**否**

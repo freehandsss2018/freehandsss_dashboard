@@ -20,7 +20,7 @@
 - **產出命名**：
   - `a1_audit_report.md`（A1 審計報告）
   - `a1_implementation_plan.md`（A1 實施建議，選用）
-- **產出路徑**：`.fhs/notes/ai_reports/`（**必須正式落盤，不接受 artifact 代替**）
+- **產出路徑**：`.fhs/reports/planning/`（**必須正式落盤，不接受 artifact 代替**）
 - **價值**：跨專案的客觀視角，防止開發者陷入局部細節
 
 ### 2. Agent 2 (A2): The Core Planner (Gemini / Antigravity)
@@ -29,11 +29,11 @@
 - **邊界**：具備本地全方位的讀取權限（.env、歷史日誌、私有腳本、NAS 數據）
 - **產出命名**：
   - `a2_implementation_plan.md`（A2 本地實施計畫）
-- **產出路徑**：`.fhs/notes/ai_reports/`（**必須正式落盤，不接受 artifact 代替**）
+- **產出路徑**：`.fhs/reports/planning/`（**必須正式落盤，不接受 artifact 代替**）
 - **價值**：將 A1 的外部方案轉化為 100% 適合當前環境的實施計畫
 
 > ⚠️ **Artifacts 陷阱警告**：若 A2 不明確指定寫入路徑，報告可能被存為隱藏 artifact（如 `.gemini/antigravity/brain/`），導致 A3 找不到檔案。
-> **A2 的每份正式報告，必須透過絕對路徑直接寫入 `.fhs/notes/ai_reports/`，不得以 artifact 代替。**
+> **A2 的每份正式報告，必須透過絕對路徑直接寫入 `.fhs/reports/planning/`，不得以 artifact 代替。**
 
 ### 3. Fat Mo: The Bridge（唯一上下文橋接者）
 
@@ -50,7 +50,7 @@
 - **職能**：技術把關與精準執行
 - **邊界**：具備最高權限的腳本執行與代碼寫入能力
 - **產出命名**：
-  - `a3_execution_verdict.md`（A3 裁決報告，存放於 `.fhs/notes/ai_reports/`）
+  - `a3_execution_verdict.md`（A3 裁決報告，存放於 `.fhs/reports/planning/`）
 - **價值**：確保代碼最後一哩路的品質，並作為 A2 規劃方案的技術守門員
 
 ---
@@ -92,10 +92,10 @@
 
 | Agent | 報告類型 | 命名格式 | 存放位置 |
 |-------|---------|---------|---------|
-| A1 | 審計報告 | `a1_audit_report.md` | `.fhs/notes/ai_reports/` |
-| A1 | 實施建議（選用） | `a1_implementation_plan.md` | `.fhs/notes/ai_reports/` |
-| A2 | 本地實施計畫 | `a2_implementation_plan.md` | `.fhs/notes/ai_reports/` |
-| A3 | 裁決報告 | `a3_execution_verdict.md` | `.fhs/notes/ai_reports/` |
+| A1 | 審計報告 | `a1_audit_report.md` | `.fhs/reports/planning/` |
+| A1 | 實施建議（選用） | `a1_implementation_plan.md` | `.fhs/reports/planning/` |
+| A2 | 本地實施計畫 | `a2_implementation_plan.md` | `.fhs/reports/planning/` |
+| A3 | 裁決報告 | `a3_execution_verdict.md` | `.fhs/reports/planning/` |
 
 > ❌ **舊格式已退役**：`audit_report.md.resolved`、`implementation_plan.md.resolved` — 不再讀取，不得產出
 > ❌ **不接受 artifact 代替正式落盤檔案** — 所有報告必須以實體 `.md` 檔案存在於上述路徑
@@ -120,10 +120,10 @@
 ```text
 Fat Mo 輸入 /cl-flow（或 /a3go）
     ↓
-A3 檢查 .fhs/notes/ai_reports/a1_implementation_plan.md
+A3 檢查 .fhs/reports/planning/a1_implementation_plan.md
     → 不存在：立即停止
     → 存在但為空：等待 5 秒，重試一次；仍空：停止
-A3 檢查 .fhs/notes/ai_reports/a2_implementation_plan.md（同上）
+A3 檢查 .fhs/reports/planning/a2_implementation_plan.md（同上）
     ↓ A1 ✅ A2 ✅
 A3 讀取兩份報告，執行技術評估
     ↓
@@ -164,7 +164,7 @@ A3 重新列出所有執行項目
 
 | 項目 | 規範 |
 |------|------|
-| **存放路徑** | `.fhs/notes/completion_reports/` |
+| **存放路徑** | `.fhs/reports/completion/` |
 | **命名格式** | `YYYY-MM-DD_<task_slug>_completion_report.md` |
 | **命名範例** | `2026-03-31_a3_workflow_optimization_completion_report.md` |
 

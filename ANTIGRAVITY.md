@@ -30,7 +30,7 @@
 | 指令 | 說明 |
 |------|------|
 | `/read` | 初始化：讀取 SOP_NOW.md + handoff.md，輸出系統狀態 |
-| `/ag-plan` | 產出本地實作計劃（A2），寫入 `.fhs/notes/ai_reports/` |
+| `/ag-plan` | 產出本地實作計劃（A2），寫入 `.fhs/reports/planning/` |
 | `/cl-flow` | 觸發 Claude Code 執行全自動規劃（PX+Gemini+Claude） |
 | `/execute` | 唯一執行授權入口（Fat Mo 下達，Claude Code 執行） |
 | `/commit` | 任務收尾：Memory 同步 + Git 推送 |
@@ -72,7 +72,7 @@ Antigravity 可調用 Google Stitch MCP（`mcp__magic__21st_magic_component_buil
 
 ## 寫入守則（重要）
 
-- 報告必須寫入：`.fhs/notes/ai_reports/`（絕對路徑，非 brain/ artifact）
+- 報告必須寫入：`.fhs/reports/planning/`（絕對路徑，非 brain/ artifact）
 - 執行後自查：確認檔案存在且非空
 - 禁止修改：HTML ID、`captureFormState()`、`current.html`、任何 n8n webhook 掛鉤
 - 任何架構改動：先提方案，等 Fat Mo 確認後才動手

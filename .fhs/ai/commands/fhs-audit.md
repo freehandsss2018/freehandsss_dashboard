@@ -114,5 +114,5 @@ A5-5b 頂部註釋與 Changelog 一致     ✅ / 🟡 差異：___
 ## 執行規則
 - 全程只讀取，不修改任何檔案
 - 若無法讀取某目錄，記錄為 🔴 並繼續
-- 報告完成後寫入 .fhs/notes/ai_reports/audit_YYYY-MM-DD.md
+- 報告完成後寫入 .fhs/reports/audits/system/audit_YYYY-MM-DD.md
 - 等待 Fat Mo 指示後才處理任何問題，不自行修復

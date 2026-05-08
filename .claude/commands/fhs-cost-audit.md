@@ -9,5 +9,5 @@
 ### 簡化流程：
 1. 確認 `AIRTABLE_API_KEY` 環境變數已設定
 2. 執行 `python Maintenance_Tools/audit_total_cost_integrity.py`
-3. 輸出報告至 `.fhs/notes/aireports/total_cost_audit_YYYY-MM-DD.md`
+3. 輸出報告至 `.fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md`
 4. 若有 CRITICAL 項目，回報 Fat Mo 等待處理授權

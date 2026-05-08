@@ -18,6 +18,14 @@ freehandsss_dashboard/
 │   ├── projects/                        ← Blender .blend 工作檔（按 slug 分類）
 │   └── output/                          ← 最終列印用 STL（按 slug 分類）
 ├── .claude/                             ← Claude Code 專屬配置（含橋接指令）
+│   ├── commands/
+│   │   ├── tdd-guide.md        ← /tdd-guide Bridge → vendor/superpowers/test-driven-development（2026-05-09）
+│   │   ├── debug-guide.md      ← /debug-guide Bridge → vendor/superpowers/systematic-debugging（2026-05-09）
+│   │   ├── db-query.md         ← /db-query Bridge → vendor/awesome-cc/read-only-postgres（2026-05-09）
+│   │   ├── five.md             ← /five 五個為什麼根因分析（2026-05-09）
+│   │   ├── mermaid.md          ← /mermaid Schema → Mermaid 圖表生成（2026-05-09）
+│   │   └── code-analysis.md    ← /code-analysis 多角度代碼深度分析（2026-05-09）
+│   └── settings.json           ← hooks 配置（SessionStart/UserPromptSubmit/PreToolUse）
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── README.md                           ← Dashboard 目錄說明
@@ -77,8 +85,16 @@ freehandsss_dashboard/
 │   │       │   ├── README.md            ← 用途、角色邊界、使用場景
 │   │       │   └── vendor/
 │   │       │       └── SKILL.md        ← 來源說明與角色邊界聲明
-│   │       └── finance-calculator/      ← FHS 財務計算核心公式（2026-04-28 新增）
-│   │           └── SKILL.md            ← 利潤公式、前端/n8n 優先規則、欄位類型規範
+│   │       ├── finance-calculator/      ← FHS 財務計算核心公式（2026-04-28 新增）
+│   │       │   └── SKILL.md            ← 利潤公式、前端/n8n 優先規則、欄位類型規範
+│   │       └── vendor/                  ← 外部 skill/tool vendor-in 區（2026-05-09 新增）
+│   │           ├── superpowers/         ← 來源：github.com/obra/superpowers
+│   │           │   ├── test-driven-development.md  ← TDD RED-GREEN-REFACTOR 強制機制
+│   │           │   └── systematic-debugging.md     ← 四階段根因調查法
+│   │           └── awesome-cc/          ← 來源：hesreallyhim/awesome-claude-code
+│   │               ├── read-only-postgres.md  ← 唯讀 PostgreSQL/Supabase 查詢（Supabase 遷移驗證）
+│   │               ├── supabase-query.md      ← Supabase Management API CLI skill
+│   │               └── hooks-setup-guide.md   ← Dippy + parry hooks 安裝指南（需手動安裝）
 │   ├── notes/
 │   │   ├── README.md                    ← 筆記層總綱
 │   │   ├── decisions.md

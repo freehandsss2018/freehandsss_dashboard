@@ -16,7 +16,7 @@
      - 確認 `cl-final-plan.md` 中 Verdict 為 `APPROVED_READY` 或 Fat Mo 明確口頭批准
      - 不得重新規劃，不得重跑 PX 或 AG
    - **若前序為舊版 `/cl-flow` 流程**（無 artifacts/）：
-     - 確認 `.fhs/notes/ai_reports/a3_execution_verdict.md` 存在且非空。
+     - 確認 `.fhs/reports/planning/a3_execution_verdict.md` 存在且非空。
 
 2. **執行約束 (Strict Execution)**：
    - 重新列出準備修改的檔案。
@@ -39,7 +39,7 @@
 
    **[B] 制度層變動稽核**
    觸發條件（任一）：修改 `AGENTS.md` / `GLOBAL_AI_SOP.md` / `.fhs/ai/commands/` 內任何指令檔 / `README` / `repo-map` / workflow 文件 / 任何制度層、協議層、指令層之變更
-   → 強制在 `.fhs/notes/completion_reports/` 產出正式完成記錄
+   → 強制在 `.fhs/reports/completion/` 產出正式完成記錄
    → 命名格式：`YYYY-MM-DD_<task_slug>_completion_report.md`
 
    **[C] CHANGELOG 稽核**

@@ -10,5 +10,5 @@
 5. 過時檔案偵測 - 版本號、Changelog、handoff 日期（A5-1 至 A5-5b）
 
 輸出格式：每項標示 ✅ / 🟡 / 🔴，統計總通過數，列出待處理清單。
-報告完成後寫入 .fhs/notes/ai_reports/audit_YYYY-MM-DD.md。
+報告完成後寫入 .fhs/reports/audits/system/audit_YYYY-MM-DD.md。
 等待 Fat Mo 指示後才處理問題，不自行修復。

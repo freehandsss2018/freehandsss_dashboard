@@ -9,10 +9,10 @@
 ## 預期行為與強制規則 (Expected Behavior & Guardrails)
 
 1. **落盤實體路徑限制 (No Artifact Trap)**：
-   - A2 **必須**將報告直接寫入專案的實體絕對路徑：`d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\notes\ai_reports\a2_implementation_plan.md`
+   - A2 **必須**將報告直接寫入專案的實體絕對路徑：`d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\reports\planning\a2_implementation_plan.md`
    - **絕對禁止**使用相對路徑寫入。
    - **絕對禁止**只產生內部 artifact（如存在 `.gemini/antigravity/brain/` 內）而不寫入專案目錄。
-   - 沒有落盤到 `.fhs/notes/ai_reports/`，即視為任務失敗，禁止宣告完成。
+   - 沒有落盤到 `.fhs/reports/planning/`，即視為任務失敗，禁止宣告完成。
 
 2. **自查驗證機制 (Self-Audit)**：
    - 每次產出 `a2_implementation_plan.md` 後，A2 必須立刻發起自查，透過 file reader 確認該絕對路徑檔案存在且內容不為空。
