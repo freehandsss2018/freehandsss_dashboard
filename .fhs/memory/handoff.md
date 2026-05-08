@@ -3,67 +3,31 @@
 
 ## 本次 Session 完成事項（2026-05-09）
 
-### Session A — Skill Import（obra/superpowers + awesome-claude-code）
+### 指令系統重構分析 + 三項執行
 
-✅ **Vendor-in 4 個外部 Skill**
-- `.fhs/ai/skills/vendor/superpowers/test-driven-development.md`
-- `.fhs/ai/skills/vendor/superpowers/systematic-debugging.md`
-- `.fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md`
-- `.fhs/ai/skills/vendor/awesome-cc/supabase-query.md`
-- `.fhs/ai/skills/vendor/awesome-cc/hooks-setup-guide.md`（安裝指南備用）
+**問題診斷**：系統指令過多相似，subagent 無決定性觸發機制，FHS_Prompts.md 路由表靜默過期。
 
-✅ **建立 6 個新指令（Master + Bridge 雙層）**
+**Range B 執行（三層修復）**：
 
-| 指令 | Master | Bridge |
-|-----|--------|--------|
-| `/tdd-guide` | `.fhs/ai/commands/tdd-guide.md` | `.claude/commands/tdd-guide.md` |
-| `/debug-guide` | `.fhs/ai/commands/debug-guide.md` | `.claude/commands/debug-guide.md` |
-| `/db-query` | `.fhs/ai/commands/db-query.md` | `.claude/commands/db-query.md` |
-| `/five` | `.fhs/ai/commands/five.md` | `.claude/commands/five.md` |
-| `/mermaid` | `.fhs/ai/commands/mermaid.md` | `.claude/commands/mermaid.md` |
-| `/code-analysis` | `.fhs/ai/commands/code-analysis.md` | `.claude/commands/code-analysis.md` |
+✅ **FHS_Prompts.md v1.3 → v1.4**
+- 修正情境九：移除已廢除「每10則對話自動存檔」規則
+- 新增情境十三～二十：補入 8 個缺失指令路由（/debug-guide、/tdd-guide、/five、/fhs-cost-audit、/cl-flow-fast、/db-query、/mermaid、/code-analysis）
 
-### Session B — 報告統一中心（Option B）
+✅ **AGENTS.md 新增兩條強制律**
+- FHS_Prompts.md 路由同步強制律：凡新增/刪除指令必須同步更新路由表
+- Subagent 決定性路由規則（8條）：條件成立 → 必須調用 subagent，不再依賴軟性「proactively」
 
-✅ **建立 `.fhs/reports/` 統一報告中心**
+✅ **fhs-audit.md A4-3 強化**：從「確認是否被引用」改為「逐一對照 FHS_Prompts.md 輸出缺失清單」
 
-```
-.fhs/reports/
-├── README.md
-├── planning/           ← ai_reports/ 全部遷移至此
-│   └── design-specs/
-├── audits/
-│   ├── system/         ← audit_YYYY-MM-DD.md
-│   └── cost/           ← total_cost_audit_YYYY-MM-DD.md
-├── incidents/          ← n8n/V45.7.4_Incident_Report.md
-└── completion/         ← 所有完成記錄（19份）
-```
+✅ **todo.md 清理**：關閉 V37/V39 過期條目
 
-✅ **n8n MCP 備份遷移**：`.fhs/notes/aireports/n8n-mcp-backups/` → `.fhs/memory/backups/n8n-mcp/`
+**Subagent Skills 連接**：
 
-✅ **20+ 個檔案路徑引用更新**
+✅ `build-error-resolver` → 強制載入 `systematic-debugging.md`（Iron Law）
+✅ `tdd-guide` → 強制載入 `test-driven-development.md`
+✅ `database-reviewer` → 強制載入 `read-only-postgres.md` + `supabase-query.md`
 
-| 更新的系統文件 |
-|------|
-| `.fhs/ai/AGENTS.md` |
-| `docs/GLOBAL_AI_SOP.md` |
-| `.fhs/ai/commands/fhs-audit.md` |
-| `.fhs/ai/commands/fhs-cost-audit.md` |
-| `.fhs/ai/commands/ag-plan.md`（含絕對路徑）|
-| `.fhs/ai/commands/px-plan.md` |
-| `.fhs/ai/commands/execute.md` |
-| `.fhs/ai/commands/cl-flow.md` |
-| `.fhs/ai/commands/ag-stitch-sync.md` |
-| `.fhs/ai/commands/ag-ui-import.md` |
-| `.claude/commands/cl-flow.md` |
-| `.claude/commands/fhs-audit.md` |
-| `.claude/commands/fhs-cost-audit.md` |
-| `.claude/commands/execute.md` |
-| `.agents/workflows/fhs-audit.md` |
-| `.agents/workflows/ag-plan.md` |
-| `ANTIGRAVITY.md` |
-| `.fhs/notes/decisions.md` |
-| `Maintenance_Tools/audit_total_cost_integrity.py` |
+**Range A（/auto meta-skill）**：評估後取消。FHS_Prompts.md v1.4 已在更根本層面解決路由問題，/auto 為多餘步驟。
 
 ## 待辦 ⏳ 項目
 
@@ -77,12 +41,11 @@
 
 | 項目 | 現況 |
 |------|------|
-| 憲法層 | `AGENTS.md` v1.4.3（含 Rule 3.11） |
+| 憲法層 | `AGENTS.md` v1.4.3（含 Subagent 決定性路由規則 + FHS_Prompts 同步強制律） |
+| 路由總機 | `docs/FHS_Prompts.md` v1.4（20 個情境，覆蓋所有現有指令） |
 | 稼動生產版 | `Freehandsss_dashboard_current.html` |
 | 主要開發版 | `freehandsss_dashboardV40.html`（V40.8）|
 | n8n Workflow | V45.7.4（24 nodes）|
 | Airtable Base | `app9GuLsW9frN4xaT` |
-| 報告中心 | `.fhs/reports/`（統一，取代 ai_reports/ + aireports/ + completion_reports/） |
-| Blender MCP | addon v1.2，每次開啟 Blender 需重新 Connect |
-| uv | 0.11.8 |
-| Subagents | 8 個活躍 + 7 個 Bridge Definitions |
+| 報告中心 | `.fhs/reports/`（統一） |
+| Subagents | 7 個 FHS 專屬（含 Skills 連接） + 通用 Explore/Plan/general-purpose |

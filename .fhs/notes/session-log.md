@@ -3,6 +3,21 @@
 ## 概覽
 完成外部 Skill 引入（obra/superpowers + hesreallyhim/awesome-claude-code）與系統報告路徑大統一。新增 6 個指令（Master + Bridge 雙層），並將分散的 ai_reports/ aireports/ completion_reports/ 三個目錄整合至統一的 `.fhs/reports/` 中心。
 
+---
+
+## Session 追加（2026-05-09 深夜）
+
+**任務**：指令系統路由問題根因分析與修復
+
+**核心洞見**：FHS_Prompts.md 是系統路由總機，但無外部守護機制，導致靜默過期（6 個新指令未被記錄）。Subagent 系統存在但觸發全靠軟性「proactively」，等同無規則。
+
+**完成**：
+- FHS_Prompts.md v1.4：修正情境九 + 補入情境十三～二十（8 個缺失路由）
+- AGENTS.md：FHS_Prompts.md 同步強制律 + 8 條 Subagent 決定性路由規則
+- Agent definitions：build-error-resolver/tdd-guide/database-reviewer 各自連接對應 skill
+- fhs-audit.md A4-3：改為確定性覆蓋率檢查
+- /auto meta-skill：評估後取消，FHS_Prompts.md 已在更根本層面解決問題
+
 ## 主要完成事項
 
 1. **Skill Vendor-in（obra/superpowers）**：

@@ -1,5 +1,55 @@
 # Changelog
 
+## [Subagent 決定性路由規則 + Skills 連接] - 2026-05-09
+
+**執行依據**：Fat Mo 口頭授權（「1及2 均執行」）
+
+**核心變更**：
+
+將 subagent 調用從「軟性建議（proactively）」升級為「決定性強制規則」，並連接 agent definitions 與對應 skill 文件。
+
+**AGENTS.md 新增 Subagent 決定性路由規則（8條）**：
+覆蓋所有 FHS 專屬 subagent（frontend-developer、code-reviewer、ui-designer、build-error-resolver、database-reviewer、tdd-guide、blender-3d-modeler、Explore）。條件成立 → 必須調用，無例外。
+
+**Agent Definition Skills 連接**：
+- `build-error-resolver` → 強制載入 `systematic-debugging.md`（Iron Law：根因確認前禁止修復）
+- `tdd-guide` → 強制載入 `test-driven-development.md`（禁止跳過 RED 階段）
+- `database-reviewer` → 強制載入 `read-only-postgres.md` + `supabase-query.md`
+
+---
+
+## [FHS_Prompts 路由修復 + AGENTS.md 強制律] - 2026-05-09
+
+**執行依據**：Fat Mo `/execute` 授權（Range B）
+
+**核心變更**：
+
+修復路由總機 `docs/FHS_Prompts.md` 的覆蓋缺口，並在 `AGENTS.md` 加入結構性防護，確保未來新增指令時路由不再靜默過期。
+
+**FHS_Prompts.md v1.3 → v1.4**：
+- 修正情境九：移除已廢除的「每10則對話自動存檔」觸發條件，改為「用戶輸入 checkpoint / 存檔」
+- 新增情境十三：`/debug-guide`（代碼根因調查，與情境四 Error Eye 明確區分）
+- 新增情境十四：`/tdd-guide`（測試驅動開發）
+- 新增情境十五：`/five`（五個為什麼根因分析）
+- 新增情境十六：`/fhs-cost-audit`（成本完整性稽核，與情境五財務審計明確區分）
+- 新增情境十七：`/cl-flow-fast`（輕量快速規劃）
+- 新增情境十八：`/db-query`（資料庫查詢）
+- 新增情境十九：`/mermaid`（流程圖與架構圖）
+- 新增情境二十：`/code-analysis`（代碼分析）
+
+**AGENTS.md 新增規則**：
+- 新增「FHS_Prompts.md 路由同步強制律」：凡新增或刪除 `.fhs/ai/commands/` 指令檔，必須同步更新 `docs/FHS_Prompts.md`，違反視為任務未完成。
+
+**fhs-audit.md 更新**：
+- A4-3 改為確定性覆蓋率檢查：逐一列出缺少 FHS_Prompts.md 路由條目的指令，輸出格式從「孤獨」改為「缺少路由」清單。
+
+**版本資訊**：
+- FHS_Prompts.md：v1.4（新）
+- AGENTS.md：v1.4.3（規則內容新增，版本號不變）
+- Dashboard / n8n：不變
+
+---
+
 ## [Skill Import — superpowers + awesome-claude-code] - 2026-05-09
 
 **執行依據**：Fat Mo `/execute` 授權（Flow 0152 + Flow 0206）

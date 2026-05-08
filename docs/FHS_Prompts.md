@@ -1,6 +1,6 @@
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.3
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.4
 >
-> 最後更新：2026-04-03（對齊 AGENTS.md v1.4.0 與 v2.1.0 規劃流）
+> 最後更新：2026-05-09（補入情境十三～二十；修正情境九廢除規則；對齊 AGENTS.md v1.4.3）
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
 
@@ -69,9 +69,10 @@ Ling Au 專屬設計準則（強制執行）：
 
 ## 【情境九：記憶引擎 3.0 (Memory Engine)】
 
-觸發：自動（每 10 則對話 / 用戶宣告結束）
+觸發：用戶輸入「checkpoint」「存檔」或明確宣告結束 session
 執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/commit.md。
 > 備註：舊指令別名 `/reflect` 已退役，統一使用 `/commit`。
+> ⚠️ 「每 10 則對話自動存檔」規則已在 AGENTS.md v1.4.1 廢除，AI 不得在無明確觸發的情況下單獨寫入 handoff.md。
 
 ## 【情境十：全端守護與防重災稽核 (The Guardian)】
 
@@ -92,6 +93,55 @@ Ling Au 專屬設計準則（強制執行）：
 2. 執行 `/ag-plan` (由 A2 提供本地實施計畫)
 3. 執行 `/cl-flow` (由 A3 產出最終 Verdict 與執行序，等待授權)
 指令說明詳見：.fhs/ai/commands/cl-flow.md。
+
+---
+
+## 【情境十三：代碼根因調查 (Debug Guide)】
+
+觸發：用戶提及「除錯」「找 bug」「根因」「測試失敗」「test failure」「root cause」
+> 與情境四的區別：情境四處理 n8n/系統層錯誤監控；此情境處理代碼邏輯層的 root cause 調查。
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/debug-guide.md。
+配套技能：`.fhs/ai/skills/vendor/superpowers/systematic-debugging.md`（四階段根因調查法，NO FIX WITHOUT ROOT CAUSE）
+
+## 【情境十四：測試驅動開發 (TDD Guide)】
+
+觸發：用戶提及「TDD」「測試驅動」「先寫測試」「test first」「寫測試再實作」
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/tdd-guide.md。
+配套技能：`.fhs/ai/skills/vendor/superpowers/test-driven-development.md`
+
+## 【情境十五：五個為什麼根因分析 (Five Whys)】
+
+觸發：用戶提及「為什麼」「五個為什麼」「five whys」「根因分析」「系統性原因」
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/five.md。
+最佳搭配：`/debug-guide`（找到根因後再開始修復）
+
+## 【情境十六：財務成本完整性稽核 (Cost Audit)】
+
+觸發：用戶提及「成本稽核」「cost audit」「Total_Cost 對帳」「rollup 比對」「成本完整性」
+> 與情境五的區別：情境五處理一般財務數據審計；此情境專門執行 Total_Cost vs rollup 的結構性比對。
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/fhs-cost-audit.md。
+
+## 【情境十七：輕量快速規劃 (Fast Planning)】
+
+觸發：用戶提及「快速規劃」「輕量版規劃」「功能實作」「UI 修改」「bug fix 規劃」「跳過 PX」
+> 與情境十二的區別：情境十二跑完整 PX+AG+CL 三段流程；此情境跳過 PX，只跑 AG → 精簡 Verdict，適合功能實作、UI 修改、Bug 修復。
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/cl-flow-fast.md（或直接執行 `/cl-flow-fast [任務]`）。
+
+## 【情境十八：資料庫查詢 (DB Query)】
+
+觸發：用戶提及「查詢資料庫」「Supabase 查詢」「Postgres」「SQL 查詢」「read-only 查詢」
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/db-query.md。
+配套技能：`.fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md`、`.fhs/ai/skills/vendor/awesome-cc/supabase-query.md`
+
+## 【情境十九：流程圖與架構圖 (Mermaid)】
+
+觸發：用戶提及「流程圖」「架構圖」「diagram」「mermaid」「畫圖」「視覺化流程」
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/mermaid.md。
+
+## 【情境二十：代碼分析 (Code Analysis)】
+
+觸發：用戶提及「代碼分析」「code analysis」「程式碼品質」「重構分析」「技術債」「code review」
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/code-analysis.md。
 
 ---
 

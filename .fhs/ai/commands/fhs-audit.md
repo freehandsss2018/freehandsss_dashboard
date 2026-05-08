@@ -35,7 +35,7 @@ A3-5 掃描 .fhs/memory/lessons/，列出檔名含 _temp 或 _draft 的臨時日
 （孤獨檔案 = 沒有被任何文件引用、也沒有被任何指令使用的檔案）
 A4-1 掃描 docs/archive/pre-v1.0-backup/，列出所有仍存在的備份檔案
 A4-2 確認 Freehandsss_Dashboard/ 資料夾是否仍為空（repo-map 標註為空）
-A4-3 掃描 .fhs/ai/commands/，確認每個 .md 是否都被 FHS_Prompts.md 或 .fhs/ai/AGENTS.md 引用
+A4-3 掃描 .fhs/ai/commands/，逐一列出每個 .md 指令檔，對照 docs/FHS_Prompts.md 確認是否有對應的情境路由條目（含觸發關鍵詞）。輸出缺失清單（如有）
 A4-4 確認 perplexity-mcp-server/ 是否有對應文件說明其用途
 
 ### 檢查五：過時檔案偵測
@@ -80,7 +80,7 @@ A3-5 lessons/ 臨時日誌              ✅ 無 / 🟡 發現：___
 【檢查四：孤獨檔案】
 A4-1 archive/pre-v1.0-backup/ 內容  列出：___
 A4-2 Freehandsss_Dashboard/ 為空    ✅ / 🟡 發現內容：___
-A4-3 commands/ 全部被引用           ✅ / 🟡 孤獨：___
+A4-3 commands/ 全部有 FHS_Prompts 路由條目  ✅ / 🔴 缺少路由：___
 A4-4 perplexity-mcp-server/ 有說明  ✅ / 🟡
 
 【檢查五：過時檔案】

@@ -64,6 +64,10 @@
   2. **輕量化優先**：一般情況下，依賴 Hook 自動注入的狀態快照。僅在以下情況升級至全量重載：複雜架構決策 / 跨長時間 session 的風險評估 / 需驗證所有 handoff 細節。
   3. **Anti-Stale 防腐（限制範圍澄清）**：在 **session 內**，若檔案時間戳未變，可禁止重複讀取以節省 token。**但此限制僅適用於 session 內的重複讀取**；**新 session 的首次初始化不受時間戳限制，必須執行**。每個新 session 都是全新的 AI context，無法依賴前一個 session 的讀取狀態。
 
+### FHS_Prompts.md 路由同步強制律
+- 凡新增或刪除 `.fhs/ai/commands/` 內任何指令檔，必須在同一次任務內同步更新 `docs/FHS_Prompts.md`，確保有對應的情境路由條目（包含：觸發關鍵詞、執行邏輯指向）。
+- 違反此律視為任務未完成，Fat Mo 有權要求重做。
+
 ### 文件同步強制律
 - 凡任何操作涉及以下任一情況，必須在同一次任務內同步更新 docs/repo-map.md 與對應層級的 README.md，不得事後補做：
   - 新增、刪除或移動任何檔案或目錄
@@ -166,6 +170,21 @@
 | `/fhs-cost-audit` | 財務成本完整性稽核（Total_Cost vs rollup 比對） | Claude | `.fhs/ai/commands/fhs-cost-audit.md` |
 | `/px-audit` | 外部研究與全域架構審查（Perplexity） | Perplexity Pro | `.fhs/ai/commands/px-audit.md` |
 | `v39-aom.md` | 已遷移至 `archive/v39-aom.md`，內容見 subagents/OPERATING_MODEL.md | N/A | Archived |
+
+### Subagent 決定性路由規則（強制調用，不得以 Claude 直接處理替代）
+
+以下場景條件成立時，必須調用對應 Subagent。**「考慮使用」不夠——條件成立即必須調用，無例外。**
+
+| 觸發條件 | 必須調用的 Subagent |
+|---------|-------------------|
+| 任務要求建立或修改 HTML 原型（V40+ prototype） | `frontend-developer` |
+| `frontend-developer` 完成原型後進行品質稽核（Phase C） | `code-reviewer` |
+| 任務為 V40+ Phase A 設計規範定義（視覺語言、wireframe、component spec） | `ui-designer` |
+| n8n workflow 節點報錯、Dashboard JS Runtime Error、Python 腳本崩潰 | `build-error-resolver` |
+| Airtable schema 審查、n8n Code Node 資料流驗證、SKU 正規化稽核、Triple_Sync 欄位核查 | `database-reviewer` |
+| 新建 Maintenance_Tools Python 腳本、Python 測試失敗、n8n Code Node 邏輯規劃 | `tdd-guide` |
+| 任何涉及 STL 匯入、mesh 修復、3D 列印準備、Blender 操作 | `blender-3d-modeler` |
+| 需要搜索 3 個以上未知檔案位置的廣泛探索 | `Explore` |
 
 ### 關鍵語義邊界（不得違反）
 
