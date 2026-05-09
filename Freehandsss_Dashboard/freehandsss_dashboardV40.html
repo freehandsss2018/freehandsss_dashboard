@@ -3006,7 +3006,7 @@
 
     <script>
         console.log("FHS Dashboard V36.2.2 Initialized");
-        const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅及藍"];
+        const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅色", "藍色"];
         let babyFillMode = 'all';
         
         // --- System Global Config V35.0 State - V31.2 ---
@@ -3515,8 +3515,8 @@
                 html += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
             }
 
-            const quickColors = colors.filter(c => c !== '無' && c !== '待定');
-            const qcOptions = quickColors.map(c => `<option value="${c}"${c === '香檳金' ? ' selected' : ''}>${c}</option>`).join('');
+            const quickColors = colors.filter(c => c !== '無');
+            const qcOptions = quickColors.map(c => `<option value="${c}"${c === '待定' ? ' selected' : ''}>${c}</option>`).join('');
             const limbOptions = colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('');
             html += `<div class="limb-grid">
               <div class="limb-title" style="border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">【嬰兒】</div>
@@ -3600,11 +3600,18 @@
         function babySetMode(mode) {
             babyFillMode = mode;
             babyRestoreVisual();
-            if (mode !== 'custom') babyApplyFill(mode);
+            if (mode !== 'custom') {
+                babyApplyFill(mode);
+            } else {
+                // [V40 Fix] 進入自訂模式時，預設所有肢體為「待定」以確保報價精確
+                const customSelect = document.getElementById('babyCustomColor');
+                if (customSelect) customSelect.value = '待定';
+                babyApplyAllCustom();
+            }
         }
 
         function babyApplyFill(mode) {
-            const color = document.getElementById('babyQuickColor')?.value || '香檳金';
+            const color = document.getElementById('babyQuickColor')?.value || '待定';
             const config = {
                 all:   { set: ["左手", "右手", "左腳", "右腳"], clear: [] },
                 left:  { set: ["左手", "左腳"],                 clear: ["右手", "右腳"] },
@@ -3628,7 +3635,7 @@
         }
 
         function babyApplyAllCustom() {
-            const color = document.getElementById('babyCustomColor')?.value || document.getElementById('babyQuickColor')?.value || '香檳金';
+            const color = document.getElementById('babyCustomColor')?.value || document.getElementById('babyQuickColor')?.value || '待定';
             ["左手", "右手", "左腳", "右腳"].forEach(part => {
                 const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
                 if (s) s.value = color;
@@ -3680,7 +3687,7 @@
             const lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]')?.value;
             const rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]')?.value;
 
-            const activeVals = [lh, rh, lf, rf].filter(v => v && v !== '無' && v !== '待定');
+            const activeVals = [lh, rh, lf, rf].filter(v => v && v !== '無');
             if (activeVals.length === 0) return '';
 
             let text = '【嬰兒】\n';
@@ -4093,7 +4100,7 @@
 
                     let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
                     let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
-                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無" && s.value !== "待定");
+                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
 
                     if (hasAdultInSet && hasBabyInSet) {
                         totalSuggestedPrice += 300;
@@ -4266,7 +4273,7 @@
             if (document.getElementById('enableP').checked) {
                 html += `<div class="v-item" style="border-left:5px solid #D4A373;"><b>🎨 3D擺設:</b><br>`;
                 document.querySelectorAll('.limb-sel').forEach(sel => {
-                    if (sel.value !== '無' && sel.value !== '待定' && sel.value !== '') html += ` ▪️ ${sel.dataset.who}${sel.dataset.part}: ${sel.value}<br>`;
+                    if (sel.value !== '無' && sel.value !== '') html += ` ▪️ ${sel.dataset.who}${sel.dataset.part}: ${sel.value}<br>`;
                 });
                 html += `</div>`;
             }

@@ -1,5 +1,19 @@
 # Changelog
 
+## [Dashboard 嬰兒顏色與預設邏輯更新] - 2026-05-09
+
+**執行依據**：Fat Mo `/execute` 授權（Dashboard 顏色與邏輯優化）
+
+**核心變更**：
+- **顏色選項擴充**：`colors` 陣列新增「粉紅色」、「藍色」，移除「粉紅及藍」複合選項。
+- **自訂模式預設值機制**：修改 `babySetMode`，確保切換至「自訂 ↓」時，四肢顏色預設為「待定」。
+- **報價與預覽一致性修復**：修正 `pricing` 與 `preview` 邏輯中對「待定」的過濾規則，確保其被計入有效肢體以計算正確價格（$2380）並在 IG 訊息中正確顯示。
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV40.html` (V40.8 → V40.9)
+
+---
+
 ## [finance-auditor Subagent v1.0.0 — 三端財務稽核員] - 2026-05-10
 
 **執行依據**：Fat Mo `/execute` 授權（Option A：互動式 Live 驗證）
