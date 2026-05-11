@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.3
-> Last updated: 2026-05-06
+> Version: v1.4.4
+> Last updated: 2026-05-10
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -120,11 +120,21 @@
 
 ***
 
-## 4. 三端同步稽核（任何修改前必做）
+## 4. 四端同步稽核（任何修改前必做）
 
 1. **Dashboard**：Payload 結構是否變動？
 2. **n8n**：節點 Mapping 是否中斷？
 3. **Airtable**：欄位讀寫一致性是否受影響？
+4. **Supabase**：雙寫邏輯是否同步受影響？（2026-05-10 新增）
+
+### Supabase 雙系統共存規則（v1.4.4 新增）
+- **永久雙系統**：Airtable 與 Supabase 永久共存，Airtable 為操作介面，Supabase 為查詢層。禁止擅自退役任一端。
+- **Supabase Free Tier**：使用 Free Tier（$0/月）。用量警戒線：資料庫 400 MB / 月頻寬 1.5 GB。超出則提示 Fat Mo 評估升級，不自動升級。
+- **防閒置強制**：Supabase Free Tier 7 天不活動即暫停。n8n 必須維持每 6 天定時 ping（Anti-Idle node）。
+- **雙寫隔離**：n8n Mirror 寫入 Supabase 失敗，不得中斷 Airtable 主流程。使用 try-catch 隔離，失敗記入 Error_Logs。
+- **Feature Flag**：雙寫開關透過 n8n Workflow Static Data `supabase_mirror_enabled` 控制，無需改代碼。
+- **Supabase 禁止重算**：Supabase 禁止使用 trigger 或 generated column 重算財務欄位（final_sale_price / net_profit / *_cost）。
+- **Quadruple_Sync 文件**：欄位映射參考 `/n8n/Quadruple_Sync_Field_Map.md`（取代並擴展 Triple_Sync_Field_Map.md）。
 
 ***
 
@@ -135,7 +145,10 @@
 - `/docs/FHS_Blueprint.md`（架構 ID 命名、數據流）
 - `/docs/FHS_Product_Bible_V3.7.md`（SKU、售價、業務規則）
 - `/docs/FHS_Prompts.md`（11 個業務情境的入口路由與處理邏輯——擔任總機角色，遇特定任務調用對應 command，遇業務邏輯問題時必讀）
-- `/n8n/Triple_Sync_Field_Map.md`（三端欄位映射）
+- `/n8n/Triple_Sync_Field_Map.md`（三端欄位映射，已由 Quadruple_Sync 擴展）
+- `/n8n/Quadruple_Sync_Field_Map.md`（四端欄位映射：Airtable ↔ n8n ↔ Dashboard ↔ Supabase）
+- `/n8n/Airtable_Schema_Snapshot_2026-05.md`（Airtable 6 表 schema 快照）
+- `/n8n/N8N_Node_Interaction_Map.md`（n8n 24 nodes Airtable 互動圖）
 - `/docs/GLOBAL_AI_SOP.md`（多 AI 協作協議）
 
 ***

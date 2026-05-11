@@ -1,3 +1,28 @@
+# Session Log — 2026-05-11（第二十五次）
+
+## 概覽
+完成 Freehandsss Dashboard V41 的 UI/UX 優化與生產環境正式發佈。主要解決了行動裝置上 Supabase 切換按鈕遮擋操作鍵的痛點，並強化了系統狀態的視覺回饋。
+
+## 主要完成事項
+1. **Dashboard V41 UI/UX 優化**：
+   - **狀態列整合**：將右下角浮動開關移除，整合至頂部導覽列作為「狀態晶片」。
+   - **視覺動效**：實作 `sb-pulse` 呼吸燈動畫，直觀提示 Supabase Live 連線狀態。
+   - **響應式標籤**：在手機端自動隱藏文字標籤，確保版面精簡並極大化操作空間。
+2. **生產環境發佈 (Production Promotion)**：
+   - 備份舊版 `current.html` 至 `archive/`。
+   - 正式將 `freehandsss_dashboardV41.html` 推送為 `Freehandsss_dashboard_current.html`。
+3. **Memory Engine 同步**：
+   - 教訓記錄：`2026-05-11_UI_UX_Optimization.md` (導航遮擋與狀態整合經驗)。
+   - `handoff.md` 更新至 V41 (2026-05-11)。
+   - `Changelog.md` 記錄 V41 UI 優化細節。
+   - `Freehandsss_Dashboard/README.md` 版本同步。
+
+## 待辦（承接至下次）
+- [P-HIGH] Fat Mo 實機操作確認：確認手機版按鈕遮擋問題是否完全解決。
+- [P-MED] 監控 Supabase 讀取效能與 Fallback 穩定性。
+
+---
+
 # Session Log — 2026-05-09（第二十四次）
 
 ## 概覽

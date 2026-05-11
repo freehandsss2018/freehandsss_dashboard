@@ -12,17 +12,17 @@
 
 ---
 
-## 系統快照（2026-04-22）
+## 系統快照（2026-05-11）
 
 | 項目 | 現況 |
 |------|------|
-| 憲法版本 | AGENTS.md v1.4.2 |
-| 穩定生產版 | freehandsss_dashboardV40.html (V40.7) |
-| 開發版（新）| freehandsss_dashboardV41.html (Planned) |
-| 開發版（舊）| freehandsss_dashboardV39_proto.html（已棄用，設計概念廢除） |
-| n8n Workflow | V45.7.4（24 nodes） |
+| 憲法版本 | AGENTS.md v1.4.4 |
+| 穩定生產版 | Freehandsss_dashboard_current.html (V41) |
+| 開發版（新）| freehandsss_dashboardV42.html (Planned) |
+| 開發版（舊）| freehandsss_dashboardV41.html (Released) |
+| n8n Workflow | V45.7.4（26 nodes - Supabase Dual-Write 啟用） |
 | Airtable Base | app9GuLsW9frN4xaT |
-| 設計軸 | **iPhone（< 768px）vs Desktop（≥ 768px）— 雙模式已廢除** |
+| 數據源 | **Airtable (SSoT) + Supabase (Query Layer) 永久雙系統** |
 
 ---
 

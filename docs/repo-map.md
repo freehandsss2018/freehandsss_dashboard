@@ -12,6 +12,19 @@ freehandsss_dashboard/
 ├── .mcp.json                            ← Claude Code MCP server 註冊（n8n-mcp-server）
 ├── Changelog.md                         ← 系統版本變更記錄
 ├── package.json / package-lock.json     ← Node.js 依賴
+├── .env.supabase.example                ← Supabase 連線變數範本（2026-05-10 新增）
+├── supabase/                            ← Supabase Schema 文件區（2026-05-10 新增）
+│   ├── README.md                        ← Fat Mo 操作指南
+│   ├── ANTI_IDLE_SETUP.md               ← 防閒置 ping 設定（Free Tier 7 天暫停問題）
+│   ├── migrations/
+│   │   └── 0001_initial_schema.sql      ← 初始建表 DDL（6 表 + 索引 + ENUM）
+│   ├── rls/
+│   │   └── rls_policies.sql             ← Row Level Security 政策
+│   └── rpc/
+│       ├── get_order_summary.sql        ← 訂單摘要（Dashboard Financial Overview）
+│       ├── get_profit_audit.sql         ← 利潤稽核（finance-auditor）
+│       ├── get_recent_orders.sql        ← 最近訂單列表（Dashboard）
+│       └── get_products_by_category.sql ← 產品目錄（Dashboard / n8n cache）
 ├── 3d/                                  ← 3D 建模工作目錄（2026-05-07 新增，blender-3d-modeler 路徑規則）
 │   ├── README.md                        ← 路徑規則說明
 │   ├── input/                           ← 用戶上傳的原始 STL（只讀）
@@ -46,7 +59,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 幕後系統總綱
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
-│   │   ├── AGENTS.md                   ← 憲法層 v1.4.2（2026-05-03 更新）
+│   │   ├── AGENTS.md                   ← 憲法層 v1.4.4（2026-05-10 更新：Supabase 四端共存規則）
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
@@ -129,7 +142,10 @@ freehandsss_dashboard/
 │
 │   ├── n8n/                                 ← n8n Workflow 配置區
 │   ├── README.md                        ← n8n 配置說明
-│   ├── Triple_Sync_Field_Map.md         ← 三端對齊欄位地圖 V45.7.4+
+│   ├── Triple_Sync_Field_Map.md         ← 三端對齊欄位地圖 V45.7.4+（已由 Quadruple 擴展）
+│   ├── Quadruple_Sync_Field_Map.md      ← 四端欄位映射（Airtable ↔ n8n ↔ Dashboard ↔ Supabase，2026-05-10 新增）
+│   ├── Airtable_Schema_Snapshot_2026-05.md ← Airtable 6 表 schema 快照 + Postgres DDL 草稿（2026-05-10）
+│   ├── N8N_Node_Interaction_Map.md      ← n8n 24 nodes Airtable 互動圖（2026-05-10 新增）
 │   ├── FHS_Core_OrderProcessor.json     ← 核心訂單處理機
 │   └── FHS_Financial_Overview_workflow.json ← 財務聚合機
 ├── Maintenance_Tools/                   ← 系統健康檢查與維護腳本

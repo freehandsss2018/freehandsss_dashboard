@@ -3,5 +3,9 @@
     "airtable": "^0.12.2",
     "dotenv": "^16.6.1",
     "jsdom": "^28.1.0"
+  },
+  "devDependencies": {
+    "pg": "^8.20.0",
+    "playwright": "^1.59.1"
   }
 }

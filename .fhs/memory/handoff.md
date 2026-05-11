@@ -1,38 +1,39 @@
-# FHS Handoff - 2026-05-09 20:00
-當前版本：v1.4.3（憲法層） / V40.9（UI層 / Stable Production）
+# FHS Handoff - 2026-05-11 21:30 (V41 UI 優化與正式上線完成)
+當前版本：v1.4.4（憲法層） / V41（Stable Production - Supabase 整合與 UI 優化）
 
-## 本次 Session 完成事項（2026-05-09）
+## 本次 Session 完成事項（2026-05-11）
 
-### Dashboard 嬰兒顏色與預設邏輯更新 (V40.9)
+### 🎨 V41 UI/UX 優化 (Mobile Navigation Fix)
+- **Supabase 狀態列重構**：移除右下角遮擋按鈕的浮動開關，整合至頂部導覽列作為「狀態晶片」。
+- **視覺回饋**：加入呼吸燈動畫 (sb-pulse) 提示 Supabase Live 狀態。
+- **行動端響應式**：在手機版自動隱藏文字標籤，保留圖示，優化操作空間。
 
-✅ **新增顏色選項**：
-- `colors` 陣列新增「粉紅色」、「藍色」。
-- 移除「粉紅及藍」複合選項，保持數據原子性。
-
-✅ **自訂模式「待定」安全機制**：
-- 修改 `babySetMode`：點擊「自訂 ↓」時，四肢顏色強制預設為「待定」。
-- 自動觸發 `babyApplyAllCustom()`，確保初始報價立即鎖定為 4 肢規格（$2380）。
-
-✅ **邏輯一致性修正**：
-- 更新 `pricing` 與 `preview` 判斷邏輯，確保「待定」不被視為「無」，從而正確計算價格與顯示 IG 訊息。
+### 🚀 正式上線 (Production Promotion)
+- **備份**：已完成 `current.html` 備份。
+- **發佈**：同步 `freehandsss_dashboardV41.html` 至 `Freehandsss_dashboard_current.html`。
+- **日誌**：更新 `Changelog.md` 與 `Freehandsss_Dashboard/README.md`。
 
 ---
 
 ## 待辦 ⏳ 項目
 
-1. **[P-HIGH] finance-auditor 三端驗證執行**: 需利用新建的 subagent 對 V40.9 的變更進行 Live 數據對帳（Airtable ↔ Dashboard）。
-2. **[P-MED] iPhone 實機測試**: 驗證 V40.9 在小螢幕下的顏色下拉選單與預覽顯示。
-3. **[P-LOW] 定期執行 /fhs-audit**: 確保代碼修改未破壞系統衛生。
+1. **[P-HIGH] Phase 4 — 雙系統穩定共存確認**: Fat Mo 在生產版開啟 Supabase flag 進行 Live 數據對帳
+2. **[P-HIGH] Anti-Idle Ping**: 設定 n8n Schedule Trigger 每 6 天 ping Supabase（防止 Free Tier 暫停）
+3. **[P-MED] pg_cron TTL**: 在 Supabase 設定 `error_logs` 30 天自動清理
+4. **[P-LOW] finance-auditor 四端稽核**: Airtable ↔ n8n ↔ Dashboard ↔ Supabase 全鏈路一致性檢查
+
+---
 
 ## 核心配置
 
 | 項目 | 現況 |
 |------|------|
-| 憲法層 | `AGENTS.md` v1.4.3 |
+| 憲法層 | `AGENTS.md` v1.4.4 |
 | 路由總機 | `docs/FHS_Prompts.md` v1.5 |
-| 稼動生產版 | `Freehandsss_dashboard_current.html` |
-| 主要開發版 | `freehandsss_dashboardV40.html`（V40.9）|
+| 稼動生產版 | `Freehandsss_dashboard_current.html` (V41) |
+| 主要開發版 | `freehandsss_dashboardV41.html` |
 | n8n Workflow | V45.7.4 |
 | Airtable Base | `app9GuLsW9frN4xaT` |
 | 報告中心 | `.fhs/reports/` |
-| Subagents | 9 個 FHS 專屬（含新加入的 finance-auditor） |
+| Subagents | 9 個 FHS 專專屬（含新加入的 finance-auditor） |
+

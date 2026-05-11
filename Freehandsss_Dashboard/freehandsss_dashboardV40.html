@@ -3005,6 +3005,10 @@
     </div>
 
     <script>
+        // ── V40 Supabase fallback constants (used only when Raw_Form_State missing in n8n response) ──
+        const _V40_SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
+        const _V40_SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+
         console.log("FHS Dashboard V36.2.2 Initialized");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅色", "藍色"];
         let babyFillMode = 'all';
@@ -4481,8 +4485,14 @@
                     fetchStatus.style.color = 'green';
                     fetchStatus.innerText = "✅ 讀取成功！畫面已還原。";
                 } else {
-                    fetchStatus.style.color = 'orange';
-                    fetchStatus.innerText = "⚠️ 讀取成功，但該舊單無儲存狀態紀錄。";
+                    // V40: n8n found order but no Raw_Form_State — reconstruct from Supabase
+                    fetchStatus.style.color = '#1565C0';
+                    fetchStatus.innerText = '⏳ 改用 Supabase 重建舊單資料...';
+                    const _ok = await v40ReconstructFromSupabase(oId, fetchStatus);
+                    if (!_ok) {
+                        fetchStatus.style.color = 'orange';
+                        fetchStatus.innerText = "⚠️ 讀取成功，但該舊單無儲存狀態紀錄。";
+                    }
                 }
             } catch (err) {
                 fetchStatus.style.color = 'red';
@@ -4490,6 +4500,105 @@
                 console.error(err);
             } finally {
                 hideLoader();
+            }
+        }
+
+        /**
+         * V40 Supabase-based reconstruction for old orders missing Raw_Form_State.
+         * Pulls customer / appointment / financial fields from Supabase orders,
+         * and product enables / engravings from Supabase order_items.
+         */
+        async function v40ReconstructFromSupabase(oId, fetchStatus) {
+            try {
+                const _res = await fetch(
+                    `${_V40_SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,raw_form_state&limit=1`,
+                    { headers: { apikey: _V40_SB_ANON, Authorization: `Bearer ${_V40_SB_ANON}` } }
+                );
+                const _rows = await _res.json();
+                if (!Array.isArray(_rows) || _rows.length === 0) return false;
+
+                const _row = _rows[0];
+                const _fs  = _row.raw_form_state;
+
+                editTargetOrderId = oId;
+                orderID = oId;
+                isIdValid = true;
+                const _d = document.getElementById('orderIdDisplay');
+                if (_d) _d.value = oId;
+
+                // Prefer full Supabase raw_form_state when available
+                if (_fs && typeof _fs === 'object' && Object.keys(_fs).length > 0) {
+                    restoreFormState(_fs);
+                    if (_d) _d.value = oId;
+                    if (fetchStatus) { fetchStatus.style.color = 'green'; fetchStatus.innerText = '✅ Supabase 讀取成功！畫面已還原。'; }
+                    return true;
+                }
+
+                // Otherwise reconstruct from orders + items
+                const _ir = await fetch(
+                    `${_V40_SB_URL}/rest/v1/order_items?order_fhs_id=eq.${encodeURIComponent(oId)}&select=item_key,item_category,specification,engraving_text,quantity`,
+                    { headers: { apikey: _V40_SB_ANON, Authorization: `Bearer ${_V40_SB_ANON}` } }
+                );
+                const _items = await _ir.json();
+
+                const _synth = {
+                    momName:    _row.customer_name  || '',
+                    appDate:    _row.appointment_at || '',
+                    deposit:    _row.deposit        || 0,
+                    balance:    _row.balance        || 0,
+                    additional: _row.additional_fee || 0,
+                };
+
+                if (Array.isArray(_items) && _items.length > 0) {
+                    const _pItems = _items.filter(i => i.item_category === '立體擺設');
+                    const _kItems = _items.filter(i => i.item_category === '金屬鎖匙扣');
+                    const _mItems = _items.filter(i => i.item_category === '銀飾');
+
+                    if (_pItems.length > 0) {
+                        _synth.enableP    = true;
+                        _synth.pEngraving = _pItems[0].engraving_text || '';
+                        const _pk = (_pItems[0].item_key || '').toLowerCase();
+                        _synth.pSubCat    = _pk.includes('玻璃瓶') ? '玻璃瓶款式' : '木框款式';
+                    }
+                    if (_kItems.length > 0) {
+                        _synth.enableK = true;
+                        _kItems.forEach(item => {
+                            const _sp = item.specification || '';
+                            const _eg = item.engraving_text || '';
+                            const _qt = item.quantity || 1;
+                            let _matched = false;
+                            if (_sp.includes('左手')) { _synth.k_lh_en = true; _synth.k_lh_top = _eg; _synth.k_lh_qty = _qt; _matched = true; }
+                            if (_sp.includes('右手')) { _synth.k_rh_en = true; _synth.k_rh_top = _eg; _synth.k_rh_qty = _qt; _matched = true; }
+                            if (_sp.includes('左腳')) { _synth.k_lf_en = true; _synth.k_lf_top = _eg; _synth.k_lf_qty = _qt; _matched = true; }
+                            if (_sp.includes('右腳')) { _synth.k_rf_en = true; _synth.k_rf_top = _eg; _synth.k_rf_qty = _qt; _matched = true; }
+                            if (!_matched) {
+                                if (_sp.includes('腳')) { _synth.k_lf_en = true; _synth.k_lf_top = _eg; _synth.k_lf_qty = _qt; }
+                                else                    { _synth.k_lh_en = true; _synth.k_lh_top = _eg; _synth.k_lh_qty = _qt; }
+                            }
+                        });
+                    }
+                    if (_mItems.length > 0) {
+                        _synth.enableM = true;
+                        _mItems.forEach(item => {
+                            const _sp = item.specification || '';
+                            const _eg = item.engraving_text || '';
+                            if (_sp.includes('左腳')) _synth.m_lf_eng   = _eg;
+                            if (_sp.includes('右腳')) _synth.m_rf_eng   = _eg;
+                            if (_sp.includes('左手')) _synth.m_e_lf_eng = _eg;
+                            if (_sp.includes('右手')) _synth.m_e_rf_eng = _eg;
+                        });
+                    }
+                }
+
+                restoreFormState(_synth);
+                if (_d) _d.value = oId;
+                editTargetOrderId = oId;
+                orderID = oId;
+                if (fetchStatus) { fetchStatus.style.color = 'orange'; fetchStatus.innerText = '⚠️ 舊單已重建（姓名、日期、金額、刻字已還原；產品細部選項請重新確認）。'; }
+                return true;
+            } catch (e) {
+                console.warn('[v40ReconstructFromSupabase] failed:', e.message);
+                return false;
             }
         }
 
@@ -4850,6 +4959,9 @@
             else if (rawID.includes('_LF') || combinedSearch.includes('左腳')) part = "🦶 左腳";
             else if (rawID.includes('_RF') || combinedSearch.includes('右腳')) part = "🦶 右腳";
             else if (target.includes('家庭')) part = "👨‍👩‍👧‍👦 合成";
+            // Generic fallback for old data without left/right qualifier
+            else if (spec.includes('手')) part = "✋ 手";
+            else if (spec.includes('腳')) part = "🦶 腳";
 
             // 3. 解析類別 (Category)
             let category = "📦 其他";
@@ -5330,7 +5442,7 @@
                 const badge = document.getElementById('reviewCountBadge');
                 if (badge) {
                     if (!orders || orders.length === 0) { badge.style.display = 'none'; }
-                    else { badge.textContent = `${orders.length} 筆`; badge.style.display = 'inline-flex'; }
+                    else { badge.textContent = `${orders.length} 筆 · ${new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'})}`; badge.style.display = 'inline-flex'; }
                 }
                 return;
             }
@@ -5346,7 +5458,7 @@
             // 更新筆數 Badge
             const badge = document.getElementById('reviewCountBadge');
             if (badge) {
-                badge.textContent = `${orders.length} 筆`;
+                badge.textContent = `${orders.length} 筆 · ${new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'})}`;
                 badge.style.display = 'inline-flex';
             }
 
@@ -5355,7 +5467,11 @@
                 const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
                 const batchCol = getBatchColor(o.Batch);
                 
-                const itemsCount = o.items && o.items.length > 0 ? o.items.length : 1;
+                // Dedup: if new-format item_keys exist (no ' | '), drop old Airtable-format items
+                const _rawItems = o.items || [];
+                const _hasNewFmt = _rawItems.some(function(i) { const k = i.OrderKey || i.Order_Item_Key || ''; return k && !k.includes(' | '); });
+                const displayItems = _hasNewFmt ? _rawItems.filter(function(i) { const k = i.OrderKey || i.Order_Item_Key || ''; return !k || !k.includes(' | '); }) : _rawItems;
+                const itemsCount = displayItems.length > 0 ? displayItems.length : 1;
                 
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
                 const orderLeftColsHtml = `
@@ -5385,8 +5501,8 @@
                     </td>
                 `;
 
-                if(o.items && o.items.length > 0) {
-                    o.items.forEach((item, index) => {
+                if(displayItems.length > 0) {
+                    displayItems.forEach((item, index) => {
                         // V45.4 強化型資料解析引擎 (強型別檢查避免 ID 洩漏)
                         const getSafeText = (val) => {
                             if (!val) return "";
@@ -5450,8 +5566,8 @@
                             badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
                         }
                         
-                        // 區塊級批次填色
-                        let itemBatchCol = getBatchColor(item.Batch);
+                        // 區塊級批次填色 — fall back to order-level batch when item has none
+                        let itemBatchCol = getBatchColor(item.Batch || o.Batch || '');
                         let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height: 42px;">
                             <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:13px; padding: 2px 4px;">${badgeHtml}</div>
                         </div>`;
@@ -5489,8 +5605,8 @@
                             </div>`;
                         }
 
-                        // 為單一項目定義批次顏色 (V31.83 修正)
-                        const rowBatch = item.Batch;
+                        // 為單一項目定義批次顏色 — fall back to order-level batch
+                        const rowBatch = item.Batch || o.Batch || '';
                         const rowBatchCol = getBatchColor(rowBatch);
 
                         // 繪製表格列 (TR)
@@ -5935,7 +6051,7 @@
             const isReview = layout && layout.classList.contains('v40-review-active');
             
             if (isReview) {
-                topEl.textContent = '📊 財務核對中心';
+                topEl.textContent = '📋 訂單總覽';
                 return;
             }
 
@@ -5989,7 +6105,7 @@
             const topEl = document.getElementById('v40-top-order-id');
             if (topEl) {
                 if (mode === 'review') {
-                    topEl.textContent = '📊 財務核對中心';
+                    topEl.textContent = '📋 訂單總覽';
                     topEl.style.color = 'var(--fhs-accent)';
                 } else {
                     topEl.style.color = 'inherit';

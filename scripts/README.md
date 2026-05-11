@@ -6,6 +6,20 @@
 |---|---|
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
 | `cl-flow-runner.js` | `/cl-flow` 協調器核心 — 並行調用 Perplexity + Gemini API，生成真實 artifact |
+| `migrate_airtable_to_supabase.js` | **Supabase 遷移**：批量將 Airtable 資料同步至 Supabase (Phase 1) |
+| `run_supabase_migration.js` | **遷移啟動器**：自動化執行 Supabase 遷移流程 |
+| `qa_v41_supabase.js` | **V41 驗證**：測試 Dashboard V41 與 Supabase 連接與渲染 |
+| `add_supabase_mirror_nodes.js` | **n8n 自動化**：自動向 n8n 工作流添加 Supabase 鏡像節點 |
+| `backfill_deposit.js` | **數據回填**：修復舊訂單缺失的訂金欄位 |
+
+## 🧪 測試與驗證腳本 (Test Suite)
+
+| 檔案 | 用途 |
+|---|---|
+| `test_engraving_render.js` | 驗證刻字資料在 V41 渲染是否正確 |
+| `test_full_reconstruction.js` | 測試訂單狀態從 Raw_Form_State 完全重建 |
+| `test_edit_order.js` | 測試 Supabase 環境下的訂單編輯同步 |
+| `test_final_verify.js` | 上線前的最終全系統驗證 |
 
 ## Legacy 歷史資料遷移與校正腳本
 

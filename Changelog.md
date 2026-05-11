@@ -1,5 +1,128 @@
 # Changelog
 
+## [V41 Dashboard UI/UX Optimization] - 2026-05-11
+
+**執行依據**：Fat Mo `/execute` 授權
+
+**核心變更**：
+- **Supabase 切換按鈕重構**：移除右下角遮擋行動版按鈕的浮動開關，整合至頂部狀態列。
+- **狀態列整合**：改為「狀態晶片 (Status Chip)」樣式，具備綠色呼吸燈 (ON) 與中性灰 (OFF) 狀態。
+- **響應式優化**：手機端自動隱藏標籤文字，保留圖示與狀態燈，提升操作空間。
+
+**部署動作**：
+- **發佈**：同步 `freehandsss_dashboardV41.html` 至 `Freehandsss_dashboard_current.html`。
+- **狀態**：生產環境已更新，解決了按鈕遮擋的 UX 痛點。
+
+---
+
+---
+
+## [Supabase Phase 3 — Dashboard V41 Supabase 讀取層] - 2026-05-10
+
+**執行依據**：Fat Mo `/execute` 授權
+
+**核心變更**：建立 `freehandsss_dashboardV41.html`，在 V40 基礎上注入 Supabase Read Layer。
+
+**架構設計**：
+- 寫入路徑不變（Dashboard → n8n webhook → Airtable + Supabase 雙寫）
+- 讀取路徑新增 Supabase-first 選項，失敗自動 fallback → n8n webhook
+
+**新功能**：
+- Feature Flag 切換按鈕（右下角固定 pill，點擊切換，localStorage 持久化）
+- `fetchGlobalReview` 攔截：PostgREST 直查 orders 表（支援年/月/狀態/搜尋篩選）
+- `foFetchLive` 攔截：`get_order_summary` RPC 月/年彙總 → Financial Overview KPI
+- Supabase 讀取失敗自動 fallback 至 n8n webhook，不中斷服務
+- Source badge 顯示（📡 Supabase / ⚠️ n8n fallback）
+
+**新增文件**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（V40 + 258 行 Supabase 層）
+
+---
+
+## [Supabase Phase 2 — n8n 雙寫機制 + 歷史資料遷移] - 2026-05-10
+
+**執行依據**：Fat Mo `/execute` 授權
+
+**核心變更**：FHS_Core_OrderProcessor 工作流程加入 Supabase 並行雙寫，歷史資料遷移完成。
+
+**n8n 新增節點（26 nodes）**：
+- `Mirror to Supabase` (Code) — CREATE path 並行分支，接在 Create Sub Items 後
+- `Mirror Delete to Supabase` (Code) — DELETE path 並行分支，接在 Delete Record 後
+- Feature Flag：`supabase_mirror_enabled` Static Data（預設 ON）
+- Supabase 失敗完全隔離，不影響 Airtable 主流程
+
+**歷史資料遷移結果**：
+- orders: 23 筆（Airtable 24 筆，1 筆重複 order_id 去重）
+- order_items: 62 筆
+- products: 489 筆
+
+**新增文件**：
+- `scripts/add_supabase_mirror_nodes.js` — n8n workflow 更新腳本
+- `scripts/migrate_airtable_to_supabase.js` — 歷史資料遷移腳本
+- `supabase/migrations/0002_add_deleted_at.sql` — orders 軟刪除欄位
+
+**Fat Mo 待辦**：在 n8n 設定環境變數 `SUPABASE_URL` + `SUPABASE_SERVICE_KEY`（Mirror 節點才能生效）
+
+---
+
+## [Supabase Phase 1b — Cloud Migration 執行完成] - 2026-05-10
+
+**執行依據**：Fat Mo 提供 DB 密碼授權自動執行
+
+**核心變更**：`run_supabase_migration.js` 透過 Session Pooler 連接 Supabase cloud，依序執行全部 6 個 SQL 文件。
+
+**執行結果**：
+- 6 Tables 建立成功：`orders`, `order_items`, `products`, `cost_configurations`, `sales_pipeline`, `error_logs`
+- 4 RPC Functions 建立成功：`get_order_summary`, `get_profit_audit`, `get_recent_orders`, `get_products_by_category`
+- RLS Policies 套用成功
+- 連接方式：Session Pooler `aws-1-ap-northeast-1.pooler.supabase.com:5432`（IPv4 相容）
+
+**新增工具**：`scripts/run_supabase_migration.js`
+
+**下一步**：Phase 2 — n8n 雙寫機制建立
+
+---
+
+## [Supabase Phase 1 — Schema SQL 文件建立] - 2026-05-10
+
+**執行依據**：Fat Mo `/execute` 授權
+
+**核心變更**：建立 FHS Supabase 完整 Schema 文件（Migration + RLS + 4 個 RPC function）。含 database-reviewer 全部 P0/P1 修正。
+
+**新增文件**（supabase/ 目錄，10 個文件）：
+- `supabase/migrations/0001_initial_schema.sql` — 6 表 DDL，ENUM，UUID PK，all P0/P1 fixes
+- `supabase/rls/rls_policies.sql` — anon read-only，service_role full，cost_configs internal
+- `supabase/rpc/get_order_summary.sql` / `get_profit_audit.sql` / `get_recent_orders.sql` / `get_products_by_category.sql`
+- `supabase/README.md`、`supabase/ANTI_IDLE_SETUP.md`、`.env.supabase.example`
+
+**P0 關鍵修正**：
+- `order_items.order_fhs_id VARCHAR(20)` FK（解決 n8n 無法直接寫入 UUID 問題）
+- `orders.final_sale_price NOT NULL DEFAULT 0`（AGENTS.md 財務真理強制）
+
+**Fat Mo 待辦**：建立 Supabase Free Tier 專案 → 執行 migration SQL → 設定 Anti-Idle ping
+
+---
+
+## [Supabase Phase 0 — 盤點與對齊 + AGENTS.md v1.4.4] - 2026-05-10
+
+**執行依據**：Fat Mo `/execute` 授權（cl-flow 2026-05-09-2318 CONDITIONAL_READY）
+
+**核心變更**：啟動 Supabase 永久雙系統共存計畫 Phase 0。完成 FHS 全系統盤點，產出四份文件，更新 AGENTS.md 加入 Supabase 四端共存規則。
+
+**新增檔案**：
+- `n8n/Airtable_Schema_Snapshot_2026-05.md` — Airtable 6 表 schema + Postgres DDL 草稿
+- `n8n/N8N_Node_Interaction_Map.md` — n8n 24 nodes 互動圖 + 雙寫改造計畫
+- `n8n/Quadruple_Sync_Field_Map.md` — 四端欄位映射（擴展 Triple_Sync）
+- `.fhs/reports/completion/2026-05-10_supabase-phase-0_completion_report.md`
+
+**修改檔案**：
+- `.fhs/ai/AGENTS.md` v1.4.3 → v1.4.4（新增 Supabase 雙系統共存規則 7 條）
+- `docs/repo-map.md`（更新 n8n/ 目錄條目）
+
+**Fat Mo 確認決策**：Supabase Free Tier + 永久雙系統共存（不退役 Airtable）
+
+---
+
 ## [Dashboard 嬰兒顏色與預設邏輯更新] - 2026-05-09
 
 **執行依據**：Fat Mo `/execute` 授權（Dashboard 顏色與邏輯優化）

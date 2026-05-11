@@ -1,0 +1,15 @@
+{
+  "name": "Mirror Delete to Supabase",
+  "type": "n8n-nodes-base.code",
+  "typeVersion": 2,
+  "position": [
+    31920,
+    6950
+  ],
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// === FHS Supabase Mirror Delete — DELETE path (Phase 2) ===\n// Parallel branch after Delete Record. Soft-delete preserves audit trail.\n// Failure is ISOLATED — never affects Telegram notification.\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || '';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\ntry {\n  const body = $('Receive Dashboard Order').first().json.body\n    || $('Receive Dashboard Order').first().json;\n  const orderId = body.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing');\n\n  const res = await fetch(\n    `${SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`,\n    {\n      method: 'PATCH',\n      headers: {\n        'apikey': SUPABASE_KEY,\n        'Authorization': `Bearer ${SUPABASE_KEY}`,\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal'\n      },\n      body: JSON.stringify({ deleted_at: new Date().toISOString() })\n    }\n  );\n  if (!res.ok) throw new Error(`soft delete failed: ${res.status} ${await res.text()}`);\n\n  return [{ json: { mirrored: true, soft_deleted: orderId } }];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
+  },
+  "id": "06d507b1-4fb5-48d5-9f9b-2b7b5775fa54"
+}
