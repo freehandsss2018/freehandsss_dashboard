@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.4
-> Last updated: 2026-05-10
+> Version: v1.4.5
+> Last updated: 2026-05-13
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,10 +18,12 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.1
-- **Workflow ID**：`6Ljih0hSKr9RpYNm`（24 nodes）
+- **版本**：v1.4.5 (Supabase-First Strategy)
+- **數據核心**：**Supabase (Primary Lead)** + Airtable (Fallback Backup)
+- **SSoT 狀態**：Airtable 暫時維持 SSoT，直至 Supabase 方案完全驗證且 Dashboard 除錯完成後轉移。
+- **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
-- **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV37.html` (穩定開發版 = current)
+- **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
 
 
 ***
@@ -63,6 +65,11 @@
   1. **Session 絕對起點**：任何新 Session 開啟後，AI 必須確保已獲取當前狀態資訊。未完成初始化前，嚴禁執行代碼寫入。優先使用 `scripts/hooks/session-start-sop.sh` Hook 的輕量快照（~300 tokens）；遇重大決策或遺漏風險時，使用 `/read` 進行全量重載（~2000 tokens）。
   2. **輕量化優先**：一般情況下，依賴 Hook 自動注入的狀態快照。僅在以下情況升級至全量重載：複雜架構決策 / 跨長時間 session 的風險評估 / 需驗證所有 handoff 細節。
   3. **Anti-Stale 防腐（限制範圍澄清）**：在 **session 內**，若檔案時間戳未變，可禁止重複讀取以節省 token。**但此限制僅適用於 session 內的重複讀取**；**新 session 的首次初始化不受時間戳限制，必須執行**。每個新 session 都是全新的 AI context，無法依賴前一個 session 的讀取狀態。
+
+### 數據主導權守護 (Rule 3.12)
+- **Supabase-First 戰略**：V41 之後，系統以 Supabase 作為讀取、修改與新增數據的主導核心。
+- **Airtable 後備機制**：Airtable Base 修改為輔助後備方案。若 Supabase 發生事故，系統必須能無縫切換至 Airtable 維持運行。
+- **n8n 優先級對齊**：n8n 工作流必須優先確保 Supabase 數據的準確性與及時性，Airtable 同步作為副手。
 
 ### FHS_Prompts.md 路由同步強制律
 - 凡新增或刪除 `.fhs/ai/commands/` 內任何指令檔，必須在同一次任務內同步更新 `docs/FHS_Prompts.md`，確保有對應的情境路由條目（包含：觸發關鍵詞、執行邏輯指向）。
@@ -127,14 +134,15 @@
 3. **Airtable**：欄位讀寫一致性是否受影響？
 4. **Supabase**：雙寫邏輯是否同步受影響？（2026-05-10 新增）
 
-### Supabase 雙系統共存規則（v1.4.4 新增）
-- **永久雙系統**：Airtable 與 Supabase 永久共存，Airtable 為操作介面，Supabase 為查詢層。禁止擅自退役任一端。
+### Supabase 雙系統共存規則（v1.4.5 更新）
+- **Supabase-First**：Supabase 為主導數據核心（Read/Write/Update），Airtable 為備援。
+- **過渡期 SSoT**：Airtable 目前仍為 SSoT，待 Supabase 方案完全複核且 Dashboard 完成除bug 後，正式轉換 SSoT 至 Supabase。
 - **Supabase Free Tier**：使用 Free Tier（$0/月）。用量警戒線：資料庫 400 MB / 月頻寬 1.5 GB。超出則提示 Fat Mo 評估升級，不自動升級。
 - **防閒置強制**：Supabase Free Tier 7 天不活動即暫停。n8n 必須維持每 6 天定時 ping（Anti-Idle node）。
-- **雙寫隔離**：n8n Mirror 寫入 Supabase 失敗，不得中斷 Airtable 主流程。使用 try-catch 隔離，失敗記入 Error_Logs。
+- **雙寫隔離**：n8n Mirror 寫入 Supabase 失敗，不得中斷 Airtable 主流程（後備鏈路）。使用 try-catch 隔離，失敗記入 Error_Logs。
 - **Feature Flag**：雙寫開關透過 n8n Workflow Static Data `supabase_mirror_enabled` 控制，無需改代碼。
 - **Supabase 禁止重算**：Supabase 禁止使用 trigger 或 generated column 重算財務欄位（final_sale_price / net_profit / *_cost）。
-- **Quadruple_Sync 文件**：欄位映射參考 `/n8n/Quadruple_Sync_Field_Map.md`（取代並擴展 Triple_Sync_Field_Map.md）。
+- **Quadruple_Sync 文件**：欄位映射參考 `/n8n/Quadruple_Sync_Field_Map.md`。
 
 ***
 

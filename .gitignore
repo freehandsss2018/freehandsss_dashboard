@@ -35,3 +35,11 @@ Freehandsss_Dashboard/preview_*.html
 *.blend
 *.blend1
 
+# Temporary debug scripts & local data dumps
+Freehandsss_Dashboard/analyze_bugs.js
+Freehandsss_Dashboard/analyze_bugs.py
+Freehandsss_Dashboard/scratch/
+Freehandsss_Dashboard/supabase_*.json
+scratch/
+airtable-database/
+

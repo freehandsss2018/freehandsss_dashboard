@@ -12,26 +12,27 @@
 
 ---
 
-## 系統快照（2026-05-11）
+## 系統快照（2026-05-12 更新）
 
 | 項目 | 現況 |
 |------|------|
-| 憲法版本 | AGENTS.md v1.4.4 |
+| 憲法版本 | AGENTS.md v1.4.5 |
 | 穩定生產版 | Freehandsss_dashboard_current.html (V41) |
 | 開發版（新）| freehandsss_dashboardV42.html (Planned) |
 | 開發版（舊）| freehandsss_dashboardV41.html (Released) |
-| n8n Workflow | V45.7.4（26 nodes - Supabase Dual-Write 啟用） |
+| n8n Workflow | V45.7.4（Supabase-First 邏輯啟用） |
 | Airtable Base | app9GuLsW9frN4xaT |
-| 數據源 | **Airtable (SSoT) + Supabase (Query Layer) 永久雙系統** |
+| 數據源 | **Supabase (Primary Lead) + Airtable (Fallback Backup)** |
 
 ---
 
 ## 雙系統架構（Claude Code + Antigravity）
 
 ### 設計原則
-- **Single Source of Truth**：所有 Master 指令只在 `/.fhs/ai/commands/` 維護
-- **橋接模式**：Claude Code（`.claude/commands/`）與 Antigravity（`.agents/workflows/`）均為橋接版，讀取 Master 執行，本身不含邏輯
-- **更新規則**：修改任何指令只改 Master，兩端橋接版自動對齊，無需個別修改
+- **Single Source of Truth**：目前由 Airtable 擔任（過渡期），未來將轉移至 Supabase。
+- **Supabase-First**：V41 之後，Supabase 作為資料讀取、修改、新增的主導。
+- **Airtable Backup**：Airtable 作為事故發生時的備援方案。
+- **橋接模式**：Claude Code 與 Antigravity 均讀取 Master 指令執行。
 
 ### 各系統職責
 

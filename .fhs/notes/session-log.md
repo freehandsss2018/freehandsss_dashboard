@@ -1,3 +1,84 @@
+# Session Log
+
+## 2026-05-13: Dashboard Bug Fixes — Code Complete ✅
+
+**Duration**: ~8 hours (compacted from context restart)  
+**Scope**: Fix 3 critical bugs in V41 & V40 order sync, dedup, form restoration  
+**Status**: 🟡 Code Complete, RLS Setup + Testing Pending
+
+### Bugs Fixed
+
+1. **Order Sync Missing from Supabase**
+   - Issue: n8n sync succeeds but Supabase never receives update
+   - Fix: Implemented `sbSyncOrder()` (V41 lines 5081, 7283–7360)
+   - Unblocks: Full end-to-end order edit → sync → restore workflow
+
+2. **Duplicate Items in 訂單總覽**
+   - Issue: Old Airtable format + new Supabase format coexist (2 rows per product)
+   - Fix: Dedup filters in `sbFetchItems()` (V41 7516–7520) & `renderReviewTable()` (V40 ~5470)
+   - Result: Single clean row per product in review table
+
+3. **Auto-Expand Sub-Section Panels**
+   - Issue: Old orders with K/M items but incomplete `raw_form_state` don't open sub-sections
+   - Fix: Auto-repair IIFE + hybrid supplement mode (V41 4428–4454, 4648–4666, 4695–4757)
+   - Benefit: Form automatically expands when loading old orders with items
+
+### Deliverables
+
+**Setup Documents** (`.fhs/setup/`):
+- `README.md` — Document index & quick nav
+- `FATMO_NEXT_STEPS.md` — 25-min action checklist ← **Start here**
+- `SUPABASE_RLS_SETUP.md` — RLS policy instructions
+- `BUG_FIX_TEST_CHECKLIST.md` — Detailed test plan
+
+**Completion Reports** (`.fhs/reports/completion/`):
+- `2026-05-13_Bug_Fix_Summary.md` — Technical context
+- `DEPLOYMENT_ROADMAP.md` — Full timeline & risk matrix
+
+### Critical Blocker 🔴
+
+**4 RLS Policies Required** (manual SQL, 5 minutes):
+```sql
+CREATE POLICY "orders_anon_insert" ON orders FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "orders_anon_update" ON orders FOR UPDATE TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "order_items_anon_insert" ON order_items FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "order_items_anon_delete" ON order_items FOR DELETE TO anon USING (true);
+```
+
+**Why**: Dashboard's `sbSyncOrder()` uses anon public key; policies enable write access to orders + order_items.
+
+### Next Steps ⏭️
+
+**Fat Mo**:
+1. Open `.fhs/setup/FATMO_NEXT_STEPS.md`
+2. Create RLS policies (5 min)
+3. Run test checklist (20 min)
+4. Record pass/fail (5 min)
+
+**Claude Code**:
+- Standby for test results
+- Debug if any tests fail (reference BUG_FIX_TEST_CHECKLIST.md troubleshooting)
+
+---
+
+## 2026-05-12: Full System Check
+
+## 概覽
+執行 fhs-check 全系統健康檢查並更新專案內關於 Airtable 轉向 Supabase 的核心架構規則與紀錄。
+
+## 主要完成事項
+1. **執行 fhs-check**：
+   - 執行 `python Maintenance_Tools/run_all.py`。
+   - LOCAL_AUDIT、LIFECYCLE、STRESS、ACCEPTANCE 皆通過 (PASS)。
+   - PRICE_AUDIT 失敗 (FAIL)，原因為 Airtable API 返回 429 PUBLIC_API_BILLING_LIMIT_EXCEEDED (API billing plan limit exceeded)。
+2. **專案文件與規則檢視**：
+   - 經查閱 `.fhs/ai/AGENTS.md`，V41 版本後由 Supabase 主導、Airtable 作為後備方案的規則已成功記錄，確保 n8n 與資料庫的雙寫架構平穩過渡。
+
+## 待辦（承接至下次）
+- [P-HIGH] 解決 Airtable API 429 超限問題，考慮升級計畫或等待配額重置。
+
+---
+
 # Session Log — 2026-05-11（第二十五次）
 
 ## 概覽

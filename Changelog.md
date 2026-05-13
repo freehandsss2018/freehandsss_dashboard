@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-05-13] Bug Fix + 架構文件 + fhs-bug-triage Skill
+
+**執行依據**：Fat Mo `/execute` 授權
+
+**代碼修復**：
+- `sbSyncOrder()` 補入 `final_sale_price` 欄位（V41 line 7315）— 修復財務欄位同步後為 0 的 Bug
+- 確認 sbSyncOrder 寫入邊界：9 個允許欄位（收款 + UI）/ 6 個禁止欄位（n8n SSoT 成本）
+
+**架構文件**：
+- `n8n/Quadruple_Sync_Field_Map.md` 升至 v1.1：成本計算雙層架構決策、sbSyncOrder 白名單、raw_form_state 解碼表
+- `supabase/descriptions_comments.sql`：6 張表全欄位中文說明（Fat Mo 查閱用）
+
+**Skill 新增**：
+- `.fhs/ai/skills/fhs-bug-triage/SKILL.md`：5-Gate Completion Protocol
+  - Gate 1 Code / Gate 2 DB / Gate 3 Exec / Gate 4 Verify / Gate 5 No-Regress
+  - 防止「代碼已寫 ≠ Bug 已修復」的假完成模式
+
+**Subagent 整合**：
+- `build-error-resolver.md`：掛入 fhs-bug-triage skill，補充完成宣告前強制執行說明
+
+**文件清理**：
+- 刪除 5 份重複 Setup 文件，精簡 SUPABASE_RLS_SETUP.md，新增單一 Postmortem
+
+**尚待 Fat Mo 手動執行**：
+- Supabase SQL Editor 建立 4 個 RLS 寫入 Policy（見 `.fhs/setup/SUPABASE_RLS_SETUP.md`）
+
+---
+
 ## [V41 Dashboard UI/UX Optimization] - 2026-05-11
 
 **執行依據**：Fat Mo `/execute` 授權

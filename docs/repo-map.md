@@ -17,9 +17,11 @@ freehandsss_dashboard/
 │   ├── README.md                        ← Fat Mo 操作指南
 │   ├── ANTI_IDLE_SETUP.md               ← 防閒置 ping 設定（Free Tier 7 天暫停問題）
 │   ├── migrations/
-│   │   └── 0001_initial_schema.sql      ← 初始建表 DDL（6 表 + 索引 + ENUM）
+│   │   ├── 0001_initial_schema.sql      ← 初始建表 DDL（6 表 + 索引 + ENUM）
+│   │   └── 0002_add_deleted_at.sql      ← 軟刪除欄位（orders.deleted_at）
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
+│   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
 │   └── rpc/
 │       ├── get_order_summary.sql        ← 訂單摘要（Dashboard Financial Overview）
 │       ├── get_profit_audit.sql         ← 利潤稽核（finance-auditor）
@@ -59,7 +61,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 幕後系統總綱
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
-│   │   ├── AGENTS.md                   ← 憲法層 v1.4.4（2026-05-10 更新：Supabase 四端共存規則）
+│   │   ├── AGENTS.md                   ← 憲法層 v1.4.5（2026-05-13 更新：Supabase 四端共存規則）
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
@@ -93,6 +95,7 @@ freehandsss_dashboard/
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
 │       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
+│   │       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
 │   │       ├── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
 │   │       │   ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）
@@ -101,6 +104,8 @@ freehandsss_dashboard/
 │   │       │       └── SKILL.md        ← 來源說明與角色邊界聲明
 │   │       ├── finance-calculator/      ← FHS 財務計算核心公式（2026-04-28 新增，finance-auditor 強制讀取）
 │   │       │   └── SKILL.md            ← 利潤公式、前端/n8n 優先規則、欄位類型規範
+│   │       ├── fhs-bug-triage/          ← FHS Bug 修復完成驗證協議（2026-05-13 新增）
+│   │       │   └── SKILL.md            ← 5-Gate Completion Protocol，build-error-resolver 強制執行
 │   │       └── vendor/                  ← 外部 skill/tool vendor-in 區（2026-05-09 新增）
 │   │           ├── superpowers/         ← 來源：github.com/obra/superpowers
 │   │           │   ├── test-driven-development.md  ← TDD RED-GREEN-REFACTOR 強制機制

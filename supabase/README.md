@@ -69,7 +69,7 @@ supabase/
 |------|------|
 | 禁止 trigger 重算財務 | `final_sale_price` / `net_profit` / `*_cost` 由 n8n 寫入，Supabase 不可有 trigger 重算 |
 | raw_form_state 不可刪 | `orders.raw_form_state JSONB NOT NULL` — 訂單還原生命線 |
-| 永久雙系統 | Airtable 不退役，雙系統共存為長期目標 |
+| 雙系統架構 | V41起 Supabase 轉為主導核心，Airtable 轉為後備方案。待完全復核後 Supabase 成為正式 SSoT |
 | Free Tier 警戒線 | 資料庫 400 MB / 月頻寬 1.5 GB 超出須提示 Fat Mo |
 | 防閒置必須 | 每 6 天 ping，否則 Free Tier 暫停 |
 

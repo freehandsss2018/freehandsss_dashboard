@@ -4589,98 +4589,63 @@
                         editTargetOrderId = oId;
                         orderID = oId;
                         isIdValid = true;
-                        const _d = document.getElementById('orderIdDisplay');
-                        if (_d) _d.value = oId;
-                        updateIdStatus('available', '✅ 讀取成功！目前為「修改」模式。');
-
-                        // Delegate to unified reconstruction helper (handles both full & empty raw_form_state,
-                        // includes _parseEng, baby/elder detection, and auto-repair of sub-section panels)
-                        showLoader('讀取訂單明細...');
-                        await reconstructOrderFromSupabase(oId, fetchStatus);
-                        hideLoader();
-                        return;
-                    } else {
-                        hideLoader();
-                        if (fetchStatus) { fetchStatus.style.color = 'red'; fetchStatus.innerText = `❌ Supabase 找不到訂單 #${oId}，請確認單號正確。`; }
-                        return;
+                                                    // item_key-based match (new Dashboard format): also handles elder
+                            if (!_matched) {
+                                if (_ik.includes('_K_E_LH')) { _synth.k_e_lh_en = true; _synth.k_e_lh_top = _eng.top; _synth.k_e_lh_bot = _eng.bot; _synth.k_e_lh_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
+                                else if (_ik.includes('_K_E_RH')) { _synth.k_e_rh_en = true; _synth.k_e_rh_top = _eng.top; _synth.k_e_rh_bot = _eng.bot; _synth.k_e_rh_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
+                                else if (_ik.includes('_K_E_LF')) { _synth.k_e_lf_en = true; _synth.k_e_lf_top = _eng.top; _synth.k_e_lf_bot = _eng.bot; _synth.k_e_lf_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
+                                else if (_ik.includes('_K_E_RF')) { _synth.k_e_rf_en = true; _synth.k_e_rf_top = _eng.top; _synth.k_e_rf_bot = _eng.bot; _synth.k_e_rf_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
+                                else if (_ik.includes('_K_LH')) { _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_bot = _eng.bot; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
+                                else if (_ik.includes('_K_RH')) { _synth.k_rh_en = true; _synth.k_rh_top = _eng.top; _synth.k_rh_bot = _eng.bot; _synth.k_rh_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
+                                else if (_ik.includes('_K_LF')) { _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_bot = _eng.bot; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
+                                else if (_ik.includes('_K_RF')) { _synth.k_rf_en = true; _synth.k_rf_top = _eng.top; _synth.k_rf_bot = _eng.bot; _synth.k_rf_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
+                            }
+                            if (!_matched) {
+                                if (_isElder) {
+                                    if (_sp.includes('腳')) { _synth.k_e_lf_en = true; _synth.k_e_lf_top = _eng.top; _synth.k_e_lf_bot = _eng.bot; _synth.k_e_lf_qty = _qt; _synth.k_elder_sec_en = true; }
+                                    else                    { _synth.k_e_lh_en = true; _synth.k_e_lh_top = _eng.top; _synth.k_e_lh_bot = _eng.bot; _synth.k_e_lh_qty = _qt; _synth.k_elder_sec_en = true; }
+                                } else {
+                                    if (_sp.includes('腳')) { _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_bot = _eng.bot; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; }
+                                    else                    { _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_bot = _eng.bot; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; }
+                                }
+                            }
+                        });
+                        // Default baby section to true if no items matched elder and no baby was set
+                        if (!_synth.k_baby_sec_en && !_synth.k_elder_sec_en) _synth.k_baby_sec_en = true;
                     }
-                } catch (_sbErr) {
-                    hideLoader();
-                    console.warn('[V41] Supabase fetchOldOrder error:', _sbErr.message);
-                    if (fetchStatus) { fetchStatus.style.color = 'red'; fetchStatus.innerText = '❌ Supabase 連線失敗，請重試。'; }
-                    return;
-                }
-            }
-            // ── End V41 Supabase path ──
+                    if (_mItems.length > 0) {
+                        _synth.enableM = true;
+                        _mItems.forEach(item => {
+                            const _sp = item.specification || '';
+                            const _eg = item.engraving_text || '';
+                            const _qt = item.quantity || 1;
+                            const _ik = (item.item_key || '').toUpperCase();
+                            const _isElderM = _ik.includes('_M_E_') || _sp.includes('大寶');
+                            
+                            let _matchedM = false;
+                            if (_sp.includes('左腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            if (_sp.includes('右腳')) { _synth.m_rf_en = true; _synth.m_rf_eng = _eg; _synth.m_rf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            if (_sp.includes('左手')) { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            if (_sp.includes('右手')) { _synth.m_rh_en = true; _synth.m_rh_eng = _eg; _synth.m_rh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            
+                            // Elder M match (item_key based)
+                            if (!_matchedM) {
+                                if (_ik.includes('_M_E_LH')) { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+                                else if (_ik.includes('_M_E_RH')) { _synth.m_e_rh_en = true; _synth.m_e_rh_eng = _eg; _synth.m_e_rh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+                                else if (_ik.includes('_M_E_LF')) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+                                else if (_ik.includes('_M_E_RF')) { _synth.m_e_rf_en = true; _synth.m_e_rf_eng = _eg; _synth.m_e_rf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+                            }
 
-            showLoader(`正在從 n8n 尋找訂單 #${oId}...`);
-            fetchStatus.style.color = '#666';
-            fetchStatus.innerText = "⏳ 讀取中，請稍候...";
-            const fetchUrl = `${getWebhookUrl('https://yanhei.synology.me:8443/webhook/fetch-fhs-order')}?orderId=${oId}`;
-
-            try {
-                const res = await fetch(fetchUrl);
-                const responseData = await res.json();
-                const data = Array.isArray(responseData) ? responseData[0] : responseData;
-
-                if (!data || data.found === false) {
-                    fetchStatus.style.color = 'red';
-                    fetchStatus.innerText = "⚠️ 找不到該訂單，請確認單號正確。";
-                    return;
-                }
-
-                // Restore figures
-                if (data.Deposit !== undefined) document.getElementById('deposit').value = data.Deposit;
-                if (data.Balance !== undefined) document.getElementById('balance').value = data.Balance;
-                if (data.Additional_Fee !== undefined) document.getElementById('additional').value = data.Additional_Fee;
-
-                // Restore form
-                editTargetOrderId = oId; // 🚨 只要找到單，就標註為當前編輯對象，防止更新時變成新增
-                orderID = oId; // 同步內部變數 [V31.1]
-                const idDisp = document.getElementById('orderIdDisplay');
-                if (idDisp) idDisp.value = oId;
-                updateIdStatus('available', '✅ 讀取成功！目前為「修改」模式。');
-                isIdValid = true;
-
-                if (data.Raw_Form_State) {
-                    restoreFormState(data.Raw_Form_State);
-                    fetchStatus.style.color = 'green';
-                    fetchStatus.innerText = "✅ 讀取成功！畫面已還原。";
-                } else {
-                    // n8n found order but no Raw_Form_State — fall back to Supabase reconstruction
-                    fetchStatus.style.color = '#1565C0';
-                    fetchStatus.innerText = '⏳ 改用 Supabase 重建舊單資料...';
-                    const _ok = await reconstructOrderFromSupabase(oId, fetchStatus);
-                    if (!_ok) {
-                        fetchStatus.style.color = 'orange';
-                        fetchStatus.innerText = "⚠️ 讀取成功，但該舊單無儲存狀態紀錄。";
-                    }
-                }
-            } catch (err) {
-                fetchStatus.style.color = 'red';
-                fetchStatus.innerText = "❌ 網路錯誤，無法連接至 n8n 讀取資料。";
-                console.error(err);
-            } finally {
-                hideLoader();
-            }
-        }
-
-        /**
-         * Universal Supabase-based reconstruction for old orders missing Raw_Form_State.
-         * Called from: V41 Supabase path + V41 n8n fallback + (future) V40 n8n path.
-         * Sets editTargetOrderId, orderID, isIdValid as side effects. Updates fetchStatus UI.
-         * Returns true on successful reconstruction, false if Supabase has no data.
-         */
-        async function reconstructOrderFromSupabase(oId, fetchStatus) {
-            try {
-                const _sbUrl = _V41_SB_URL;
-                const _sbKey = _V41_SB_ANON;
-                const _res = await fetch(
-                    `${_sbUrl}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,final_sale_price,raw_form_state&limit=1`,
-                    { headers: { apikey: _sbKey, Authorization: `Bearer ${_sbKey}` } }
-                );
-                const _rows = await _res.json();
-                if (!Array.isArray(_rows) || _rows.length === 0) return false;
+                            if (!_matchedM) {
+                                if (_isElderM) {
+                                    if (_sp.includes('腳')) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; }
+                                    else                    { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; }
+                                } else {
+                                    if (_sp.includes('腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; }
+                                    else                    { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }
+                                }
+                            }
+       if (!Array.isArray(_rows) || _rows.length === 0) return false;
 
                 const _row = _rows[0];
                 const _fs  = _row.raw_form_state;
@@ -4776,8 +4741,11 @@
                                 else if (_ik.includes('_K_RF')) { _synth.k_rf_en = true; _synth.k_rf_top = _eng.top; _synth.k_rf_bot = _eng.bot; _synth.k_rf_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
                             }
                             if (!_matched) {
-                                if (_sp.includes('腳')) { _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; }
-                                else                    { _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; }
+                                if (_sp.includes('腳')) { 
+                                    _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_bot = _eng.bot; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; 
+                                } else { 
+                                    _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_bot = _eng.bot; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; 
+                                }
                             }
                         });
                         // Default baby section to true if no items matched elder and no baby was set
@@ -4788,10 +4756,25 @@
                         _mItems.forEach(item => {
                             const _sp = item.specification || '';
                             const _eg = item.engraving_text || '';
-                            if (_sp.includes('左腳')) _synth.m_lf_eng   = _eg;
-                            if (_sp.includes('右腳')) _synth.m_rf_eng   = _eg;
-                            if (_sp.includes('左手')) _synth.m_e_lf_eng = _eg;
-                            if (_sp.includes('右手')) _synth.m_e_rf_eng = _eg;
+                            const _qt = item.quantity || 1;
+                            const _ik = (item.item_key || '').toUpperCase();
+                            
+                            let _matchedM = false;
+                            if (_sp.includes('左腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            if (_sp.includes('右腳')) { _synth.m_rf_en = true; _synth.m_rf_eng = _eg; _synth.m_rf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            if (_sp.includes('左手')) { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            if (_sp.includes('右手')) { _synth.m_rh_en = true; _synth.m_rh_eng = _eg; _synth.m_rh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
+                            
+                            // Elder M match
+                            if (_ik.includes('_M_E_LH')) { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+                            if (_ik.includes('_M_E_RH')) { _synth.m_e_rh_en = true; _synth.m_e_rh_eng = _eg; _synth.m_e_rh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+                            if (_ik.includes('_M_E_LF')) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+                            if (_ik.includes('_M_E_RF')) { _synth.m_e_rf_en = true; _synth.m_e_rf_eng = _eg; _synth.m_e_rf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
+
+                            if (!_matchedM) {
+                                if (_sp.includes('腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; }
+                                else                    { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }
+                            }
                         });
                     }
                 }
@@ -7130,10 +7113,11 @@
             }
             function _deriveSpec(key) {
                 const k = (key || '').toUpperCase();
-                if (k.includes('_LH')) return '手 / 左手';
-                if (k.includes('_RH')) return '手 / 右手';
-                if (k.includes('_LF')) return '腳 / 左腳';
-                if (k.includes('_RF')) return '腳 / 右腳';
+                const prefix = (k.includes('_E_') || k.includes('_ELDER')) ? '大寶 ' : '';
+                if (k.includes('_LH')) return prefix + '手 / 左手';
+                if (k.includes('_RH')) return prefix + '手 / 右手';
+                if (k.includes('_LF')) return prefix + '腳 / 左腳';
+                if (k.includes('_RF')) return prefix + '腳 / 右腳';
                 return '';
             }
 
@@ -7202,16 +7186,39 @@
             const orderId = row.order_id;
             const rawItems = (itemsMap && itemsMap[orderId]) || [];
             const mappedItems = rawItems.map(function(it) {
+                const ik = it.item_key || '';
+                const cat = it.item_category || '';
+                let spec = it.specification || '';
+                
+                // Fallback to key-based derivation if spec is empty (common in new-format orders)
+                if (!spec && ik) {
+                    const k = ik.toUpperCase();
+                    const prefix = (k.includes('_E_') || k.includes('_ELDER')) ? '大寶 ' : '';
+                    if (k.includes('_LH')) spec = prefix + '手 / 左手';
+                    else if (k.includes('_RH')) spec = prefix + '手 / 右手';
+                    else if (k.includes('_LF')) spec = prefix + '腳 / 左腳';
+                    else if (k.includes('_RF')) spec = prefix + '腳 / 右腳';
+                }
+
                 return {
-                    Item_ID:        it.item_key || '',       // getProductDimensions reads Item_ID
-                    Order_Item_Key: it.item_key || '',
-                    Category:       it.item_category || '',
+                    Item_ID:        ik,       // getProductDimensions reads Item_ID
+                    Order_Item_Key: ik,
+                    Category:       cat,
                     Qty:            it.quantity || 1,
                     Cost:           it.item_base_cost || 0,
                     Batch:          it.batch_number || '',
                     Status:         it.process_status || '待製作',
-                    Product_Name:   (it.item_key || '').split(' | ').slice(1).join(' | ').trim() || it.product_sku || '',
-                    Specification:  it.specification || '',  // getProductDimensions reads Specification
+                    Product_Name:   ik.split(' | ').slice(1).join(' | ').trim() || it.product_sku || '',
+                    Specification: (function(s, c) {
+                        if (!s) return '';
+                        if (c === '金屬鎖匙扣' || c === '銀飾') {
+                            if (!s.includes('左') && !s.includes('右')) {
+                                if (s.includes('腳')) return s + ' (左-預設)';
+                                if (s.includes('手')) return s + ' (左-預設)';
+                            }
+                        }
+                        return s;
+                    })(spec, cat),
                     Engraving_Text: it.engraving_text || '',
                     Engraving:      it.engraving_text || '',  // renderReviewTable reads item.Engraving
                 };
