@@ -5671,10 +5671,10 @@
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
                         }
-                        if (dimensions.part)  badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (dimensions.part && !dimensions.count) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
                         if (dimensions.style) badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`;
                         if (dimensions.count) badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
-                        if (qty >= 1) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
+                        if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
 
                         // Engraving
                         let engText = '';
@@ -5875,8 +5875,8 @@
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
                         }
 
-                        // 部位標籤
-                        if (dimensions.part) {
+                        // 部位標籤：已有 count(立體擺設肢數) 時不重複顯示 part
+                        if (dimensions.part && !dimensions.count) {
                             badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
                         }
 
@@ -5891,8 +5891,8 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
 
-                        // 數量標籤 (放在最後) - V29 修改：強制顯示 x1
-                        if (qty >= 1) {
+                        // 數量標籤：立體擺設是套裝，不顯示 x1
+                        if (qty >= 1 && !dimensions.category.includes('立體擺設')) {
                             badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
                         }
                         
