@@ -7528,10 +7528,11 @@
                     if (_pSubCat) _specFinal = _pSubCat + (_specFinal ? ' · ' + _specFinal : '');
                     if (!_engFinal && _rfs.pEngraving) _engFinal = _rfs.pEngraving;
                     // Fix 4D: derive limb count from raw_form_state.limb_sel_* for Overview badge
+                    // Keys use Chinese part names (from captureFormState data-part attribute)
                     let _handCount = 0, _footCount = 0;
-                    ['嬰兒', '大寶'].forEach(function(_who) {
-                        ['lh', 'rh'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無') _handCount++; });
-                        ['lf', 'rf'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無') _footCount++; });
+                    ['嬰兒', '大寶', '父母'].forEach(function(_who) {
+                        ['左手', '右手'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無') _handCount++; });
+                        ['左腳', '右腳'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無') _footCount++; });
                     });
                     const _totalLimbs = _handCount + _footCount;
                     let _limbSummary = '';
