@@ -7376,14 +7376,19 @@
             // 3. Insert fresh items
             if (orderItemsArray && orderItemsArray.length > 0) {
                 const newItems = orderItemsArray.map(function(item) {
+                    // For P items: store pSubCat in specification (no FK; _deriveSpec returns '')
+                    var _spec = _deriveSpec(item.Order_Item_Key);
+                    if (!_spec && item.Product_Name) {
+                        if (item.Product_Name.includes('木框')) _spec = '木框款式';
+                        else if (item.Product_Name.includes('玻璃')) _spec = '玻璃瓶款式';
+                    }
                     return {
                         order_fhs_id:  orderId,
                         item_key:      item.Order_Item_Key,
                         item_category: _deriveCat(item.Order_Item_Key),
-                        product_sku:   item.Product_Name || '',
                         quantity:      item.Quantity || 1,
                         engraving_text: item.Notes || '',
-                        specification: _deriveSpec(item.Order_Item_Key),
+                        specification: _spec,
                         process_status: '待製作'
                     };
                 });
