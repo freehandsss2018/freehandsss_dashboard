@@ -5312,8 +5312,13 @@
                 else if (combinedSearch.search(/玻璃[瓶罩]|瓶/) > -1) style = "🧴 玻璃瓶";
                 if (combinedSearch.includes('粉紅')) theme = "🌸 粉紅";
                 else if (combinedSearch.includes('海洋')) theme = "🌊 海洋";
-                if (combinedSearch.search(/4肢|四肢/) > -1) count = "✋🦶 4肢";
-                else if (combinedSearch.search(/2肢|兩肢|一對|手足/) > -1) count = "✋🦶 2肢";
+                if      (combinedSearch.search(/4肢|四肢/) > -1)            count = "✋🦶 4肢";
+                else if (combinedSearch.search(/2肢|兩肢|一對|手足/) > -1)  count = "✋🦶 2肢";
+                else if (combinedSearch.includes('1手1腳'))                  count = "✋🦶 1手1腳";
+                else if (combinedSearch.includes('2手'))                     count = "✋✋ 2手";
+                else if (combinedSearch.includes('2腳'))                     count = "🦶🦶 2腳";
+                else if (combinedSearch.includes('1手'))                     count = "✋ 1手";
+                else if (combinedSearch.includes('1腳'))                     count = "🦶 1腳";
             }
             
             return { target, part, category, emoji, material, style, theme, count };
@@ -5666,7 +5671,9 @@
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
                         }
-                        if (dimensions.part) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (dimensions.part)  badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (dimensions.style) badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`;
+                        if (dimensions.count) badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         if (qty >= 1) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
 
                         // Engraving
@@ -5817,10 +5824,10 @@
                                   placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
-                        $${o.Total_Cost || o.Cost || 0}
+                        ${(o.Total_Cost || o.Cost) ? '$' + (o.Total_Cost || o.Cost) : '<span style="color:#bbb;">待計算</span>'}
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
-                        $${o.Net_Profit || 0}
+                        ${o.Net_Profit ? '$' + o.Net_Profit : '<span style="color:#bbb; font-weight:400;">待計算</span>'}
                     </td>
                 `;
 
@@ -7520,6 +7527,22 @@
                     const _pSubCat = _rfs.pSubCat || '';
                     if (_pSubCat) _specFinal = _pSubCat + (_specFinal ? ' · ' + _specFinal : '');
                     if (!_engFinal && _rfs.pEngraving) _engFinal = _rfs.pEngraving;
+                    // Fix 4D: derive limb count from raw_form_state.limb_sel_* for Overview badge
+                    let _handCount = 0, _footCount = 0;
+                    ['嬰兒', '大寶'].forEach(function(_who) {
+                        ['lh', 'rh'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無') _handCount++; });
+                        ['lf', 'rf'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無') _footCount++; });
+                    });
+                    const _totalLimbs = _handCount + _footCount;
+                    let _limbSummary = '';
+                    if      (_totalLimbs === 4) _limbSummary = '4肢';
+                    else if (_totalLimbs === 2 && _handCount === 2) _limbSummary = '2手';
+                    else if (_totalLimbs === 2 && _footCount === 2) _limbSummary = '2腳';
+                    else if (_totalLimbs === 2) _limbSummary = '1手1腳';
+                    else if (_totalLimbs === 1 && _handCount === 1) _limbSummary = '1手';
+                    else if (_totalLimbs === 1) _limbSummary = '1腳';
+                    else if (_totalLimbs > 0)   _limbSummary = _totalLimbs + '肢';
+                    if (_limbSummary) _specFinal = _specFinal + (_specFinal ? ' · ' : '') + _limbSummary;
                 }
 
                 return {
