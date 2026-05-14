@@ -7380,6 +7380,7 @@
                         order_fhs_id:  orderId,
                         item_key:      item.Order_Item_Key,
                         item_category: _deriveCat(item.Order_Item_Key),
+                        product_sku:   item.Product_Name || '',
                         quantity:      item.Quantity || 1,
                         engraving_text: item.Notes || '',
                         specification: _deriveSpec(item.Order_Item_Key),
