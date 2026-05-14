@@ -714,6 +714,8 @@
         /* 對象與部位 (Target & Part) */
         .badge-target-嬰兒 { background: #E1F5FE; color: #0288D1; border-color: #B3E5FC; }
         .badge-target-成人 { background: #EFEBE9; color: #5D4037; border-color: #D7CCC8; }
+        .badge-target-父母 { background: #FCE4EC; color: #C2185B; border-color: #F48FB1; }
+        .badge-target-大寶 { background: #E8F5E9; color: #388E3C; border-color: #A5D6A7; }
         .badge-part { border-color: rgba(0,0,0,0.1); background: #ffffff; color: #555; font-weight: 500; }
         
         /* 數量與產品副標 */
@@ -5302,6 +5304,11 @@
             if (combinedSearch.search(/不[銹鏽]鋼/) > -1) material = "⚙️ 不銹鋼";
             else if (combinedSearch.includes('925金')) material = "👑 925金";
             else if (combinedSearch.search(/925銀|銀/) > -1) material = "✨ 925銀";
+            // Fallback: infer material from category (product name not stored in Supabase order_items)
+            if (!material) {
+                if (category.includes('鎖匙扣')) material = "⚙️ 不銹鋼";
+                else if (category.includes('吊飾') || category.includes('頸鏈')) material = "✨ 925銀";
+            }
 
             // 5. 立體擺設專屬：款式與肢數
             let style = "";
@@ -5665,15 +5672,28 @@
                             else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
                             badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
                         }
-                        if (dimensions.target) {
+                        if (!dimensions.category.includes('立體擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
+                        var _accLimbParsed = null;
+                        try { if (item.LimbParts) _accLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
+                        var _accIs立體 = dimensions.category.includes('立體擺設');
+                        // Target badge: always suppressed for 立體擺設 (limb badges replace it)
+                        if (dimensions.target && !_accIs立體) {
                             let tarClass = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
                             if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
                         }
-                        if (dimensions.part && !dimensions.count) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
-                        if (dimensions.style) badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`;
-                        if (dimensions.count) badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
+                        if (dimensions.part && !dimensions.count && !_accIs立體) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (dimensions.style) { badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`; if (_accIs立體) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`; }
+                        if (_accLimbParsed) {
+                            var _accLimbIcons = {嬰兒:'👶', 父母:'👫', 大寶:'🧒'};
+                            var _accLimbClasses = {嬰兒:'badge-target-嬰兒', 父母:'badge-target-父母', 大寶:'badge-target-大寶'};
+                            _accLimbParsed.forEach(function(lp){ badgeHtml += `<span class="review-badge ${_accLimbClasses[lp.who]||'badge-part'}">${_accLimbIcons[lp.who]||''} ${lp.who} ${lp.sum}</span>`; });
+                        } else if (_accIs立體 && dimensions.count) {
+                            badgeHtml += `<span class="review-badge badge-target-嬰兒">👶 嬰兒 ${dimensions.count.split(' ').pop()}</span>`;
+                        } else if (dimensions.count) {
+                            badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
+                        }
                         if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
 
                         // Engraving
@@ -5857,7 +5877,7 @@
 
                         // 構建多維度標籤 HTML
                         let badgeHtml = `<span class="review-badge ${catClass}">${dimensions.emoji} ${dimensions.category}</span>`;
-                        
+
                         // 材質標籤
                         if (dimensions.material) {
                             let matClass = 'badge-mat-default';
@@ -5866,28 +5886,40 @@
                             else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
                             badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
                         }
+                        if (!dimensions.category.includes('立體擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
 
-                        // 對象標籤
-                        if (dimensions.target) {
+                        var _tblLimbParsed = null;
+                        try { if (item.LimbParts) _tblLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
+                        var _tblIs立體 = dimensions.category.includes('立體擺設');
+
+                        // 對象標籤：立體擺設一律改以個別人物肢數 badge 取代
+                        if (dimensions.target && !_tblIs立體) {
                             let tarClass = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
                             if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
                         }
 
-                        // 部位標籤：已有 count(立體擺設肢數) 時不重複顯示 part
-                        if (dimensions.part && !dimensions.count) {
+                        // 部位標籤：已有 count 或 立體擺設 時不重複顯示 part
+                        if (dimensions.part && !dimensions.count && !_tblIs立體) {
                             badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
                         }
 
                         // V29 擴展：款式、主題標籤 (僅限立體擺設)
                         if (dimensions.style) {
                             badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`;
+                            if (_tblIs立體) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
                         }
                         if (dimensions.theme) {
                             badgeHtml += `<span class="review-badge badge-part" style="border-color:#B07D4C; color:#B07D4C;">${dimensions.theme}</span>`;
                         }
-                        if (dimensions.count) {
+                        if (_tblLimbParsed) {
+                            var _tblLimbIcons = {嬰兒:'👶', 父母:'👫', 大寶:'🧒'};
+                            var _tblLimbClasses = {嬰兒:'badge-target-嬰兒', 父母:'badge-target-父母', 大寶:'badge-target-大寶'};
+                            _tblLimbParsed.forEach(function(lp){ badgeHtml += `<span class="review-badge ${_tblLimbClasses[lp.who]||'badge-part'}">${_tblLimbIcons[lp.who]||''} ${lp.who} ${lp.sum}</span>`; });
+                        } else if (_tblIs立體 && dimensions.count) {
+                            badgeHtml += `<span class="review-badge badge-target-嬰兒">👶 嬰兒 ${dimensions.count.split(' ').pop()}</span>`;
+                        } else if (dimensions.count) {
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
 
@@ -7527,25 +7559,35 @@
                     const _pSubCat = _rfs.pSubCat || '';
                     if (_pSubCat) _specFinal = _pSubCat + (_specFinal ? ' · ' + _specFinal : '');
                     if (!_engFinal && _rfs.pEngraving) _engFinal = _rfs.pEngraving;
-                    // Fix 4D: derive limb count from raw_form_state.limb_sel_* for Overview badge
-                    // 嬰兒: count any non-'無' value (待定 = TBD color but limb IS planned)
-                    // 大寶/父母: only count explicit colors, not '待定' (default empty state)
-                    let _handCount = 0, _footCount = 0;
-                    ['左手', '右手'].forEach(function(k) { var v = _rfs['limb_sel_嬰兒_' + k]; if (v && v !== '無') _handCount++; });
-                    ['左腳', '右腳'].forEach(function(k) { var v = _rfs['limb_sel_嬰兒_' + k]; if (v && v !== '無') _footCount++; });
-                    ['大寶', '父母'].forEach(function(_who) {
-                        ['左手', '右手'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無' && v !== '待定') _handCount++; });
-                        ['左腳', '右腳'].forEach(function(k) { var v = _rfs['limb_sel_' + _who + '_' + k]; if (v && v !== '無' && v !== '待定') _footCount++; });
+                    // Fix 4D: derive limb count per person from raw_form_state.limb_sel_*
+                    var _fmtLimbs = function(h, f) {
+                        var t = h + f;
+                        if (t === 4) return '4肢';
+                        if (t === 2 && h === 2) return '2手';
+                        if (t === 2 && f === 2) return '2腳';
+                        if (t === 2) return '1手1腳';
+                        if (t === 1 && h === 1) return '1手';
+                        if (t === 1) return '1腳';
+                        if (t > 0) return t + '肢';
+                        return '';
+                    };
+                    // 嬰兒: 待定 = TBD color but limb IS planned → count it
+                    var _bH = 0, _bF = 0;
+                    ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_嬰兒_'+k]; if(v&&v!=='無') _bH++; });
+                    ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_嬰兒_'+k]; if(v&&v!=='無') _bF++; });
+                    var _babySum = _fmtLimbs(_bH, _bF);
+                    // 父母/大寶: 待定 = default empty → do NOT count
+                    var _limbPartsArr = _babySum ? [{who:'嬰兒', sum:_babySum}] : [];
+                    var _totalH = _bH, _totalF = _bF;
+                    ['父母','大寶'].forEach(function(_who){
+                        var _wH=0, _wF=0;
+                        ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無'&&v!=='待定') _wH++; });
+                        ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無'&&v!=='待定') _wF++; });
+                        var _wSum = _fmtLimbs(_wH, _wF);
+                        if (_wSum) { _limbPartsArr.push({who:_who, sum:_wSum}); _totalH += _wH; _totalF += _wF; }
                     });
-                    const _totalLimbs = _handCount + _footCount;
-                    let _limbSummary = '';
-                    if      (_totalLimbs === 4) _limbSummary = '4肢';
-                    else if (_totalLimbs === 2 && _handCount === 2) _limbSummary = '2手';
-                    else if (_totalLimbs === 2 && _footCount === 2) _limbSummary = '2腳';
-                    else if (_totalLimbs === 2) _limbSummary = '1手1腳';
-                    else if (_totalLimbs === 1 && _handCount === 1) _limbSummary = '1手';
-                    else if (_totalLimbs === 1) _limbSummary = '1腳';
-                    else if (_totalLimbs > 0)   _limbSummary = _totalLimbs + '肢';
+                    // Append total to _specFinal so getProductDimensions can still detect pattern
+                    var _limbSummary = _fmtLimbs(_totalH, _totalF);
                     if (_limbSummary) _specFinal = _specFinal + (_specFinal ? ' · ' : '') + _limbSummary;
                 }
 
@@ -7562,6 +7604,7 @@
                     Specification:  _specFinal,
                     Engraving_Text: _engFinal,
                     Engraving:      _engFinal,
+                    LimbParts:      (typeof _limbPartsArr !== 'undefined' && _limbPartsArr.length > 0) ? JSON.stringify(_limbPartsArr) : '',
                 };
             });
             return {

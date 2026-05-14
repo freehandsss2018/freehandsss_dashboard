@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-05-15] Badge 顯示架構全面重構 + Bug 修復
+
+**Badge 兩行佈局**：所有產品 badge 改為兩行顯示
+- Row 1：類別 + 材質（鎖匙扣/純銀吊飾）或 類別 + 款式（立體擺設）
+- Row 2：對象 + 部位 + 數量，或個別人物肢數 badges
+- 技術實現：flex line-break（`flex-basis:100%;height:0`）分隔行
+
+**個別人物肢數 Badges**（立體擺設）：
+- 舊格式：一個黃色 badge `✋🦶 4肢`
+- 新格式：每人獨立彩色 badge — `👶 嬰兒 4肢`（藍）、`👫 父母 2手`（粉）、`🧒 大寶 4肢`（綠）
+- 資料結構：`LimbParts` JSON 陣列 `[{who, sum}]` 存入 mapOrder return object
+
+**Bug Fix — 鎖匙扣 不銹鋼 badge 消失**：
+- 根因：`product_name`（含 `不銹鋼`）未存入 Supabase `order_items`，`combinedSearch` 無法偵測材質
+- 修復：`getProductDimensions` 加 category fallback（`金屬鎖匙扣` → `⚙️ 不銹鋼`，`吊飾/頸鏈` → `✨ 925銀`）
+
+**Bug Fix — 木框 顯示舊格式**：
+- 根因：舊訂單無 raw_form_state limb_sel 資料 → `LimbParts` 空 → 回退到 target badge + 黃色 count badge
+- 修復：立體擺設一律隱藏 target badge；無 `LimbParts` 但有 `dimensions.count` 時，改顯示藍色 `👶 嬰兒 4肢` badge
+
+**CSS 新增**：`.badge-target-父母`（粉紅）、`.badge-target-大寶`（綠色）
+
+---
+
 ## [2026-05-14] Fix 4D 系列 + Overview Badge 全面修復
 
 **Fix 4D-v1**（mapOrder）：P 款從 `raw_form_state.limb_sel_嬰兒_*` 派生肢數，但 key 名稱錯誤（用 lh/rh/lf/rf）→ 讀不到資料
