@@ -1,4 +1,4 @@
-# FHS Handoff - 2026-05-14 (Bug 4/5 修復完成)
+# FHS Handoff - 2026-05-14 (Overview Badge 全面修復完成)
 
 當前版本：v1.4.5（憲法層） / V41（Stable Production）
 
@@ -6,36 +6,26 @@
 
 ## 本次 Session 完成事項
 
-### ✅ Fix 4A/4B/4C + pEngraving Save（上次 Session 遺留，本次確認已上線）
+### ✅ Bug 5C 修復（sbFetchGlobalReview NULL confirmed_at 排除）
+- 真正根因：PostgreSQL NULL 比較永遠 false → 歷史訂單（confirmed_at=NULL）被日期過濾排除
+- 修復：PostgREST `or(col.gte.X,col.is.null)` 語法
 
-- Fix 4B 擴展（line ~4542）：renderLimbGrid 後 re-apply babyQuickColor/woodStyle/en_parent/en_elder
-- Fix 4C 擴展（line ~4866）：restoreFormState(_synth) 前 carry 全部 limb_sel_* from raw_form_state
-- pEngraving save fix（line ~4022）：orderItemsArray.push 補入 Notes 欄位
+### ✅ Fix 4D 系列（P 款肢數 Badge）
+- v1 失敗：key 名用 lh/rh/lf/rf（錯）→ 應用中文 左手/右手/左腳/右腳
+- v2 失敗：玻璃瓶大寶/父母 section 預設「待定」被計入 → 8肢 → 無 pattern 匹配
+- v3 成功：嬰兒只排除「無」，大寶/父母同時排除「無」+「待定」
+- getProductDimensions 新增 1手1腳/2手/2腳/1手/1腳 pattern
 
-### ✅ CRUD 測試（test001–test007 全部 PASS）
+### ✅ Bug 1 UI 修復
+- total_cost/net_profit = 0 時顯示「待計算」（灰色），不再顯示 $0
 
-- test001–006：前次 Session 完成
-- test007（P木框 + M大寶）：本次完成
-- test-e1（人手測試）：Fat Mo 手動新增，新增/載入均成功
+### ✅ Badge 清理
+- 有 count 時不重複顯示 part（去除立體擺設多餘 ✋ icon）
+- 立體擺設不顯示 x1 數量
+- Accordion renderer 補入 style + count badge
 
-### ✅ A2 測試指令文件
-
-- `artifacts/2026-05-13-2257/A2_browser_test_prompt.md` 生成完畢（10 筆訂單 CRUD 規格）
-
-### 🔴 新發現 Bug（尚未修復）
-
-**Bug 4** — 立體擺設 Overview vs Edit Form 不符
-- 根因：`mapOrder` 只讀 `order_items.item_key`（`TEMP_P_MAIN`），不讀 `raw_form_state.pSubCat`
-- 影響：Overview 顯示 P 款式類型錯誤/空白
-
-**Bug 5** — 新增訂單後 Overview 不立即顯示（需等 3 分鐘）
-- 根因 1：`sbSyncOrder.orderRow` 沒有 `confirmed_at` → Supabase 存 NULL → date filter 排除
-- 根因 2：`sbSyncOrder` 完成後沒有觸發 `fetchGlobalReview(true)`
-- 影響：操作者誤以為新增失敗
-
-**Bug 6** — 沒有收到 Telegram 訊息
-- 根因：待查 n8n 執行日誌
-- 影響：訂單通知系統無效
+### ✅ Skill 建立
+- `.fhs/ai/skills/fhs-p-product-display/SKILL.md`：立體擺設 Overview 顯示 bug 診斷 skill
 
 ---
 
@@ -43,17 +33,16 @@
 
 ### 🔴 BLOCKING（下次 Session 優先處理）
 
-1. **Bug 5 修復**（sbSyncOrder 加 confirmed_at + 完成後觸發 Overview 刷新）
-2. **Bug 4 修復**（mapOrder 從 raw_form_state 補充 P 產品顯示欄位）
-3. **Bug 6 診斷**（查 n8n 執行日誌，確認 Telegram 節點）
-4. **test008–010 CRUD 測試**（待 Bug 4/5 修復後繼續）
+1. **玻璃瓶 父母/大寶 部份顯示 Bug**（產品明細需正確顯示 父母/大寶 選取資訊）
+2. **Bug 6 修復**（n8n `Fetch Exact Base Cost` 節點 Rate Limit → Telegram 節點未執行）
+3. **test008–010 CRUD 測試**（暫停中）
 
 ### 📋 架構後續（排期）
 
-5. **Phase A**：Supabase 建立 `v_products_with_costs` VIEW
-6. **Phase B**：n8n 讀取從 Airtable → Supabase
-7. **Anti-Idle Ping**：n8n Schedule Trigger 每 6 天 ping Supabase
-8. **pg_cron TTL**：`error_logs` 30 天自動清理
+4. **Phase A**：Supabase 建立 `v_products_with_costs` VIEW
+5. **Phase B**：n8n 讀取從 Airtable → Supabase
+6. **Anti-Idle Ping**：n8n Schedule Trigger 每 6 天 ping Supabase
+7. **pg_cron TTL**：`error_logs` 30 天自動清理
 
 ---
 
@@ -67,13 +56,11 @@
 | n8n Workflow | V45.7.4 |
 | Airtable Base | `app9GuLsW9frN4xaT` |
 | Supabase | Primary Lead（RLS 已設，anon write 正常）|
-| Field Map | `n8n/Quadruple_Sync_Field_Map.md` v1.1 |
-| Bug Triage Skill | `.fhs/ai/skills/fhs-bug-triage/SKILL.md` |
-| Subagents | 8 個 |
+| Skills | fhs-bug-triage, fhs-p-product-display（本次新增）|
 
 ---
 
-## 本次教訓記錄
+## 本次教訓
 
-- `2026-05-13_Bug_Fix_Completion_Bias.md`：代碼已寫 ≠ Bug 已修復，宣告完成前必須通過 5-Gate Protocol
-- `2026-05-14_Overview_Refresh_Gap.md`（待寫）：sbSyncOrder 必須攜帶 confirmed_at 否則 date filter 靜默排除新訂單
+- `2026-05-14_P_Product_Badge_Debug.md`：limb_sel key 中文命名 + 待定/無分層計算
+- 玻璃瓶 vs 木框 的差異：玻璃瓶多出 大寶/父母 section，預設值為「待定」而非「無」

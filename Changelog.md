@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-05-14] Fix 4D 系列 + Overview Badge 全面修復
+
+**Fix 4D-v1**（mapOrder）：P 款從 `raw_form_state.limb_sel_嬰兒_*` 派生肢數，但 key 名稱錯誤（用 lh/rh/lf/rf）→ 讀不到資料
+**Fix 4D-v2**（mapOrder）：修正 key 為中文（左手/右手/左腳/右腳），同時加入父母角色
+
+**Fix 4D-v3**（mapOrder）：排除「待定」→ 玻璃瓶大寶/父母 section 預設值為「待定」，被錯誤計入 → 8肢 → 無 pattern 匹配 → 空白
+根因：嬰兒「待定」=有選取（顏色TBD），大寶/父母「待定」=section 預設空值。分兩層邏輯解決。
+
+**Bug 1 UI**：total_cost/net_profit = 0 時顯示「待計算」取代 $0（n8n 未處理時避免誤解）
+
+**Badge 清理**：
+- 立體擺設有 count 時，不重複顯示 part（避免 ✋ 1手1腳 旁多餘 ✋）
+- 立體擺設不顯示 x1 數量 badge（套裝不需要數量）
+- Accordion renderer 補入 style + count badge 渲染
+
+**getProductDimensions 擴展**：新增 1手1腳/2手/2腳/1手/1腳 pattern 偵測
+
+---
+
 ## [2026-05-14] Fix 5C — Bug 5 真正根因修復（confirmed_at IS NULL 排除問題）
 
 **Fix 5C**（line ~7594 `sbFetchGlobalReview`）：日期過濾改用 PostgREST `or(col.gte.X,col.is.null)` 語法

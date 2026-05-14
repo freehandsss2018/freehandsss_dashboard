@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-05-14: Overview Badge 全面修復 ✅
+
+**Scope**: Fix 4D（P 款肢數 Badge）系列、Bug 5C（confirmed_at NULL）、Bug 1 UI  
+**Status**: ✅ 全部推送至 GitHub
+
+### 完成事項
+1. Bug 5C：PostgREST or(is.null) 修復 NULL confirmed_at 排除問題
+2. Fix 4D v1-v3：limb_sel 中文 key + 嬰兒/大寶父母分層計算
+3. Bug 1 UI：0 成本顯示「待計算」
+4. Badge 清理：去重複 part/count，立體擺設不顯示 x1
+5. Skill：fhs-p-product-display SKILL.md
+
+---
+
 ## 2026-05-13: Dashboard Bug Fixes — Code Complete ✅
 
 **Duration**: ~8 hours (compacted from context restart)  
