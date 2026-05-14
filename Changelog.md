@@ -1,5 +1,35 @@
 # Changelog
 
+## [2026-05-14] 新發現 Bug（待修復）— Overview + Telegram
+
+**測試基礎**：test001–007 CRUD 全部 PASS；test-e1 人手測試成功
+
+**Bug 4**（Overview P 款式不符）：`mapOrder` 只讀 `order_items.item_key`（TEMP_P_MAIN），不讀 `raw_form_state.pSubCat`，導致總覽欄位與編輯表單不一致。根因定位：`freehandsss_dashboardV41.html` line ~7402 `mapOrder()` 函數。
+
+**Bug 5**（新增訂單後總覽需等 3 分鐘）：
+- `sbSyncOrder.orderRow` 未帶 `confirmed_at` → Supabase 存 NULL → `sbFetchGlobalReview` 的 date range filter（`confirmed_at.gte.YYYY-MM-01`）靜默排除所有 NULL confirmed_at 訂單
+- `sbSyncOrder` 完成後沒有觸發 `fetchGlobalReview(true)`
+- 根因定位：line ~7347 `orderRow` 物件 + line ~7398 `sbSyncOrder` 末尾
+
+**Bug 6**（無 Telegram 訊息）：需查 n8n 執行日誌，根因未定位
+
+---
+
+## [2026-05-13] Fix 4B/4C/pEngraving — 立體擺設全欄位還原修復
+
+**執行依據**：Fat Mo `/execute` 授權（flow_id: 2026-05-13-2257）
+
+**根本原因**：`reconstructOrderFromSupabase` 第二次 `restoreFormState(_synth)` 呼叫時，`renderLimbGrid()` 重建整個 `limbContainer` DOM，導致 `babyQuickColor`、`limb_sel_*`（全部肢體顏色）、`pEngraving`、`woodStyle`、`baseColor`、`en_parent`/`en_elder` 全部重設為預設值。
+
+**修復內容（freehandsss_dashboardV41.html）**：
+- **Fix 4B 擴展**（line ~4542）：`renderLimbGrid()` 後 loop re-apply 所有動態元素（`baseColor`、`woodStyle`、`babyQuickColor`、`babyCustomColor`、`en_parent`、`en_elder`）
+- **Fix 4C 擴展**（line ~4866）：`restoreFormState(_synth)` 前從 `raw_form_state` carry over 所有無法從 `order_items` 派生的欄位，包含全部 `limb_sel_*` 鍵（最關鍵修復）
+- **pEngraving save fix**（line ~4022）：立體擺設 push 補入 `Notes: pEngraving.value`，確保 Supabase `order_items.engraving_text` 不永遠為空
+
+**待測試**：10 個 `test+數字` CRUD 訂單全套驗證（見 artifacts/2026-05-13-2257/cl-final-plan.md）
+
+---
+
 ## [2026-05-13] Bug Fix + 架構文件 + fhs-bug-triage Skill
 
 **執行依據**：Fat Mo `/execute` 授權

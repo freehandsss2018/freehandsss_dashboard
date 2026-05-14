@@ -1,49 +1,59 @@
-# FHS Handoff - 2026-05-13 (Bug Fix + Architecture + Skill)
+# FHS Handoff - 2026-05-14 (CRUD 測試完成 + 新 Bug 發現)
+
 當前版本：v1.4.5（憲法層） / V41（Stable Production）
 
 ---
 
 ## 本次 Session 完成事項
 
-### 🐛 Dashboard Bug 修復（代碼完成）
-- **Bug 1 — Supabase 同步缺失**：`sbSyncOrder()` 已實作（V41 7283–7360），並在 n8n 成功後觸發（line 5081）
-- **Bug 1 附加**：`final_sale_price` 補入 `sbSyncOrder orderRow`（line 7315）— 修復財務欄位同步後為 0 的問題
-- **Bug 2 — 重複資料**：`sbFetchItems()` dedup filter（V41 7516–7520）+ `renderReviewTable()` dedup（V40 ~5470）
-- **Bug 3 — 面板未展開**：Auto-repair IIFE（4428–4454）+ hybrid supplement mode（4648–4666）+ enhanced item parsing（4695–4757）
+### ✅ Fix 4A/4B/4C + pEngraving Save（上次 Session 遺留，本次確認已上線）
 
-### 🏗️ 架構文件更新
-- `n8n/Quadruple_Sync_Field_Map.md` → **v1.1**
-  - 成本計算雙層架構決策（Supabase View 即時報價 vs n8n 歷史快照）
-  - sbSyncOrder 寫入白名單（9 允許 / 6 禁止）
-  - raw_form_state 解碼表（17 個 key）
-- `supabase/descriptions_comments.sql` — 6 張表全欄位中文說明（新建）
+- Fix 4B 擴展（line ~4542）：renderLimbGrid 後 re-apply babyQuickColor/woodStyle/en_parent/en_elder
+- Fix 4C 擴展（line ~4866）：restoreFormState(_synth) 前 carry 全部 limb_sel_* from raw_form_state
+- pEngraving save fix（line ~4022）：orderItemsArray.push 補入 Notes 欄位
 
-### 🛠️ Skill + Subagent
-- `.fhs/ai/skills/fhs-bug-triage/SKILL.md` — 5-Gate Completion Protocol（新建）
-- `build-error-resolver.md` — 掛入 fhs-bug-triage skill，更新必讀清單
+### ✅ CRUD 測試（test001–test007 全部 PASS）
 
-### 📁 文件清理
-- 刪除 5 份重複 Setup 文件，精簡 SUPABASE_RLS_SETUP.md 為純 SQL
+- test001–006：前次 Session 完成
+- test007（P木框 + M大寶）：本次完成
+- test-e1（人手測試）：Fat Mo 手動新增，新增/載入均成功
+
+### ✅ A2 測試指令文件
+
+- `artifacts/2026-05-13-2257/A2_browser_test_prompt.md` 生成完畢（10 筆訂單 CRUD 規格）
+
+### 🔴 新發現 Bug（尚未修復）
+
+**Bug 4** — 立體擺設 Overview vs Edit Form 不符
+- 根因：`mapOrder` 只讀 `order_items.item_key`（`TEMP_P_MAIN`），不讀 `raw_form_state.pSubCat`
+- 影響：Overview 顯示 P 款式類型錯誤/空白
+
+**Bug 5** — 新增訂單後 Overview 不立即顯示（需等 3 分鐘）
+- 根因 1：`sbSyncOrder.orderRow` 沒有 `confirmed_at` → Supabase 存 NULL → date filter 排除
+- 根因 2：`sbSyncOrder` 完成後沒有觸發 `fetchGlobalReview(true)`
+- 影響：操作者誤以為新增失敗
+
+**Bug 6** — 沒有收到 Telegram 訊息
+- 根因：待查 n8n 執行日誌
+- 影響：訂單通知系統無效
 
 ---
 
 ## 待辦 ⏳ 項目
 
-### 🔴 BLOCKING（Fat Mo 手動執行，5 分鐘）
-1. **Supabase SQL Editor 建立 4 個 RLS 寫入 Policy**
-   - 見 `.fhs/setup/SUPABASE_RLS_SETUP.md`
-   - 完成後 sbSyncOrder 才能正常同步
+### 🔴 BLOCKING（下次 Session 優先處理）
 
-### 🟡 Live 驗證（RLS 完成後）
-2. 編輯一筆訂單 → 同步 → 確認 Console 顯示 `[sbSyncOrder] Supabase sync complete`
-3. Supabase Table Editor 確認 `orders.final_sale_price` 非 0、`order_items` 有資料
+1. **Bug 5 修復**（sbSyncOrder 加 confirmed_at + 完成後觸發 Overview 刷新）
+2. **Bug 4 修復**（mapOrder 從 raw_form_state 補充 P 產品顯示欄位）
+3. **Bug 6 診斷**（查 n8n 執行日誌，確認 Telegram 節點）
+4. **test008–010 CRUD 測試**（待 Bug 4/5 修復後繼續）
 
-### 📋 架構後續（下次 Session）
-4. **Phase A**：在 Supabase 建立 `v_products_with_costs` VIEW（供 Dashboard 即時報價）
-5. **Phase B**：n8n 讀取來源從 Airtable → Supabase（減少 Airtable API 調用）
-6. **Anti-Idle Ping**：n8n Schedule Trigger 每 6 天 ping Supabase
-7. **pg_cron TTL**：`error_logs` 30 天自動清理設定
-8. **Supabase 資料遷移最終確認**：`migrate_airtable_to_supabase.js`
+### 📋 架構後續（排期）
+
+5. **Phase A**：Supabase 建立 `v_products_with_costs` VIEW
+6. **Phase B**：n8n 讀取從 Airtable → Supabase
+7. **Anti-Idle Ping**：n8n Schedule Trigger 每 6 天 ping Supabase
+8. **pg_cron TTL**：`error_logs` 30 天自動清理
 
 ---
 
@@ -56,15 +66,14 @@
 | 主要開發版 | `freehandsss_dashboardV41.html` |
 | n8n Workflow | V45.7.4 |
 | Airtable Base | `app9GuLsW9frN4xaT` |
-| Supabase | Primary Lead（RLS 待補）|
+| Supabase | Primary Lead（RLS 已設，anon write 正常）|
 | Field Map | `n8n/Quadruple_Sync_Field_Map.md` v1.1 |
 | Bug Triage Skill | `.fhs/ai/skills/fhs-bug-triage/SKILL.md` |
-| 報告中心 | `.fhs/reports/` |
-| Subagents | 8 個（含 fhs-bug-triage 整合） |
+| Subagents | 8 個 |
 
 ---
 
 ## 本次教訓記錄
 
-`.fhs/memory/lessons/2026-05-13_Bug_Fix_Completion_Bias.md`
-— 代碼已寫 ≠ Bug 已修復。宣告完成前必須通過 5-Gate Protocol。
+- `2026-05-13_Bug_Fix_Completion_Bias.md`：代碼已寫 ≠ Bug 已修復，宣告完成前必須通過 5-Gate Protocol
+- `2026-05-14_Overview_Refresh_Gap.md`（待寫）：sbSyncOrder 必須攜帶 confirmed_at 否則 date filter 靜默排除新訂單

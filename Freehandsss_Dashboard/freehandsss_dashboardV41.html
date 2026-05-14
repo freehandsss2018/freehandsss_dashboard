@@ -3090,6 +3090,10 @@
         // Supabase connection constants — used by both Supabase path and n8n fallback reconstruction
         const _V41_SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
         const _V41_SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+        const SB_URL = _V41_SB_URL;
+        const SB_ANON = _V41_SB_ANON;
+        window.SB_URL = SB_URL;
+        window.SB_ANON_KEY = SB_ANON;
 
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅色", "藍色"];
@@ -4018,7 +4022,8 @@
                 orderItemsArray.push({
                     "Order_Item_Key": "TEMP_P_MAIN",
                     "Product_Name": pName,
-                    "Quantity": 1
+                    "Quantity": 1,
+                    "Notes": document.getElementById('pEngraving')?.value || ''
                 });
             }
 
@@ -4538,6 +4543,13 @@
 
                 // 🚨 重新渲染動態 DOM (此時 pSubCat 等控制項的數值已就位)
                 if (document.getElementById("pSubCat")) renderLimbGrid();
+                // [Fix 4B] renderLimbGrid() recreates dynamic elements with defaults; re-apply all saved values
+                ['baseColor', 'woodStyle', 'babyQuickColor', 'babyCustomColor'].forEach(function(fid) {
+                    if (state[fid] != null) { var _el = document.getElementById(fid); if (_el) _el.value = state[fid]; }
+                });
+                ['en_parent', 'en_elder'].forEach(function(fid) {
+                    if (state[fid] != null) { var _el = document.getElementById(fid); if (_el) { _el.checked = state[fid]; _el.dispatchEvent(new Event('change')); } }
+                });
                 if (document.getElementById("k_family_combo")) updateFamilyParts();
                 if (document.getElementById("m_family_combo")) updateFamilyParts();
 
@@ -4766,7 +4778,9 @@
                         _synth.enableP    = true;
                         _synth.pEngraving = _pItems[0].engraving_text || '';
                         const _pk = (_pItems[0].item_key || '').toLowerCase();
-                        _synth.pSubCat    = _pk.includes('玻璃瓶') ? '玻璃瓶款式' : '木框款式';
+                        // [Fix 4A] item_key is always TEMP_P_MAIN (no subtype info); prefer raw_form_state
+                        _synth.pSubCat = (_fs && _fs.pSubCat) ? _fs.pSubCat : (_pk.includes('玻璃瓶') ? '玻璃瓶款式' : '木框款式');
+                        if (_fs && _fs.baseColor) _synth.baseColor = _fs.baseColor;
                     }
                     if (_kItems.length > 0) {
                         _synth.enableK = true;
@@ -4851,6 +4865,26 @@
                         });
                         if (!_synth.m_baby_sec_en && !_synth.m_elder_sec_en) _synth.m_baby_sec_en = true;
                     }
+                }
+
+                // [Fix 4C] Carry over ALL _fs fields that _synth cannot derive from order_items.
+                // Covers: P-section selects, dynamic limb colors, engraving — all lost when
+                // the second restoreFormState(_synth) calls renderLimbGrid() and destroys limbContainer.
+                if (_fs) {
+                    if (_fs.pSubCat   && !_synth.pSubCat)   _synth.pSubCat   = _fs.pSubCat;
+                    if (_fs.baseColor  && !_synth.baseColor)  _synth.baseColor  = _fs.baseColor;
+                    if (_fs.woodStyle  && !_synth.woodStyle)  _synth.woodStyle  = _fs.woodStyle;
+                    if (_fs.babyQuickColor && !_synth.babyQuickColor) _synth.babyQuickColor = _fs.babyQuickColor;
+                    if (_fs.babyCustomColor && !_synth.babyCustomColor) _synth.babyCustomColor = _fs.babyCustomColor;
+                    if (_fs.pEngraving && !_synth.pEngraving) _synth.pEngraving = _fs.pEngraving;
+                    if (_fs.enableP != null && _synth.enableP == null) _synth.enableP = _fs.enableP;
+                    if (_fs.en_parent != null) _synth.en_parent = _fs.en_parent;
+                    if (_fs.en_elder  != null) _synth.en_elder  = _fs.en_elder;
+                    // Critical: carry all limb_sel_* so Step 3 of restoreFormState can restore them
+                    // after renderLimbGrid() destroys and recreates the entire limbContainer DOM.
+                    Object.keys(_fs).forEach(function(k) {
+                        if (k.startsWith('limb_sel_')) _synth[k] = _fs[k];
+                    });
                 }
 
                 restoreFormState(_synth);
@@ -7238,6 +7272,10 @@
         const SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
         const SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
         const FLAG_KEY = 'fhs_supabase_read';
+
+        // Expose for testing
+        window.SB_URL = SB_URL;
+        window.SB_ANON_KEY = SB_ANON;
 
         function isSupabaseRead() {
             return localStorage.getItem(FLAG_KEY) === '1';
