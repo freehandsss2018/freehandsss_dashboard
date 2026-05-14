@@ -7347,6 +7347,7 @@
             const orderRow = {
                 order_id:          orderId,
                 customer_name:     payload.Customer_Name || '',
+                confirmed_at:      new Date().toISOString(),
                 appointment_at:    payload.Appointment_Date || null,
                 deposit:           payload.Deposit  || 0,
                 balance:           payload.Balance  || 0,
@@ -7396,6 +7397,10 @@
                 }
             }
             console.log('[sbSyncOrder] Supabase sync complete for', orderId);
+            // Fix 5B: immediately refresh Overview so new order appears without 5-min wait
+            setTimeout(function() {
+                if (window.fetchGlobalReview) window.fetchGlobalReview(true);
+            }, 400);
         }
         window.sbSyncOrder = sbSyncOrder;
 
@@ -7502,6 +7507,15 @@
                 // Structured key: empty for legacy pipe format, pass through for new format
                 const _cleanKey = _ik.includes(' | ') ? '' : (it.item_key || '');
 
+                // Fix 4: For P items, supplement Specification and Engraving from raw_form_state
+                let _specFinal = _spec;
+                let _engFinal  = it.engraving_text || '';
+                if (_cat === '立體擺設') {
+                    const _pSubCat = _rfs.pSubCat || '';
+                    if (_pSubCat) _specFinal = _pSubCat + (_specFinal ? ' · ' + _specFinal : '');
+                    if (!_engFinal && _rfs.pEngraving) _engFinal = _rfs.pEngraving;
+                }
+
                 return {
                     Item_ID:        it.item_key || '',
                     Order_Item_Key: _cleanKey,
@@ -7512,9 +7526,9 @@
                     Batch:          it.batch_number || '',
                     Status:         it.process_status || '待製作',
                     Product_Name:   (it.item_key || '').split(' | ').slice(1).join(' | ').trim() || it.product_sku || '',
-                    Specification:  _spec,
-                    Engraving_Text: it.engraving_text || '',
-                    Engraving:      it.engraving_text || '',
+                    Specification:  _specFinal,
+                    Engraving_Text: _engFinal,
+                    Engraving:      _engFinal,
                 };
             });
             return {

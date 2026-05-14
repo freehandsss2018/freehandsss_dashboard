@@ -1,5 +1,27 @@
 # Changelog
 
+## [2026-05-14] Fix 5A/5B + Fix 4 + Bug 6 根因確認
+
+**Fix 5A**（line ~7350 `sbSyncOrder`）：`orderRow` 加入 `confirmed_at: new Date().toISOString()`
+- 根因：confirmed_at 為 NULL → `sbFetchGlobalReview` 的日期 range filter 靜默排除所有新訂單
+- 修復：每次 sbSyncOrder upsert 時設置當前時間（n8n 之後可覆蓋正確狀態日期）
+
+**Fix 5B**（line ~7399 `sbSyncOrder` 末尾）：完成後 400ms 觸發 `fetchGlobalReview(true)`
+- 根因：同步後 Overview 不自動更新，用戶需等 5 分鐘 auto-refresh 或手動刷新
+- 修復：同步完成立即刷新 Overview，訂單即時可見
+
+**Fix 4**（line ~7507 `mapOrder`）：P 產品從 `raw_form_state` 補充款式類型 + 刻字
+- 根因：`item_key=TEMP_P_MAIN` 無法派生 pSubCat/pEngraving，Overview 顯示空白
+- 修復：`_cat === '立體擺設'` 時從 `_rfs.pSubCat` 補 Specification，`_rfs.pEngraving` 補 Engraving
+
+**Bug 6 根因確認（n8n 執行日誌）**：
+- `Fetch Exact Base Cost` 節點觸發 Airtable API Rate Limit（30 req/sec），workflow 停止
+- 後續 `Send Profit Report`（Telegram）節點完全未執行
+- 影響執行：#3383, #3385, #3387, #3388（2026-05-13–14）
+- 修復方向：n8n `Fetch Exact Base Cost` 節點加 retry / exponential backoff（下次 n8n session 處理）
+
+---
+
 ## [2026-05-14] 新發現 Bug（待修復）— Overview + Telegram
 
 **測試基礎**：test001–007 CRUD 全部 PASS；test-e1 人手測試成功
