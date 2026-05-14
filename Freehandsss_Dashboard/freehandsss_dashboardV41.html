@@ -7594,15 +7594,12 @@
 
             if (year && month) {
                 const m = month.padStart(2,'0');
-                qs['confirmed_at'] = 'gte.' + year + '-' + m + '-01';
-                // end of month
                 const lastDay = new Date(Number(year), Number(month), 0).getDate();
-                qs['confirmed_at'] = 'gte.' + year + '-' + m + '-01';
-                // PostgREST can't do two filters on same col in qs — use range header
-                delete qs['confirmed_at'];
-                qs['and'] = '(confirmed_at.gte.' + year + '-' + m + '-01,confirmed_at.lte.' + year + '-' + m + '-' + String(lastDay).padStart(2,'0') + ')';
+                const dEnd = year + '-' + m + '-' + String(lastDay).padStart(2,'0');
+                // Include orders with confirmed_at in range OR confirmed_at IS NULL (new/draft orders)
+                qs['and'] = '(or(confirmed_at.gte.' + year + '-' + m + '-01,confirmed_at.is.null),or(confirmed_at.lte.' + dEnd + ',confirmed_at.is.null))';
             } else if (year) {
-                qs['and'] = '(confirmed_at.gte.' + year + '-01-01,confirmed_at.lte.' + year + '-12-31)';
+                qs['and'] = '(or(confirmed_at.gte.' + year + '-01-01,confirmed_at.is.null),or(confirmed_at.lte.' + year + '-12-31,confirmed_at.is.null))';
             }
 
             const rows = await sbFetch('orders', qs);

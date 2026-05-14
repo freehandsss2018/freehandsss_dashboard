@@ -1,4 +1,4 @@
-# FHS Handoff - 2026-05-14 (CRUD 測試完成 + 新 Bug 發現)
+# FHS Handoff - 2026-05-14 (Bug 4/5 修復完成)
 
 當前版本：v1.4.5（憲法層） / V41（Stable Production）
 

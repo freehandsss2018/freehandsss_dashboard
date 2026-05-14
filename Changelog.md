@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-05-14] Fix 5C — Bug 5 真正根因修復（confirmed_at IS NULL 排除問題）
+
+**Fix 5C**（line ~7594 `sbFetchGlobalReview`）：日期過濾改用 PostgREST `or(col.gte.X,col.is.null)` 語法
+- 真正根因：PostgreSQL NULL 比較永遠返回 false → `confirmed_at.gte.YYYY-01-01` 排除所有 NULL confirmed_at 訂單
+- Fix 5A 只解決新訂單，歷史訂單（NULL confirmed_at）仍被排除
+- 修復：`qs['and']` 兩個條件均加 `or(...,confirmed_at.is.null)` → NULL 訂單同時顯示
+
+---
+
 ## [2026-05-14] Fix 5A/5B + Fix 4 + Bug 6 根因確認
 
 **Fix 5A**（line ~7350 `sbSyncOrder`）：`orderRow` 加入 `confirmed_at: new Date().toISOString()`
