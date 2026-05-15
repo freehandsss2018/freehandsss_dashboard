@@ -1,21 +1,14 @@
 # Todo — 待辦事項
 
-> 本文件記錄當前待辦事項。
-> AI 在 /read 時會讀取本文件，了解當前優先級。
-> 格式：`- [ ] 待辦內容`（完成後改為 `- [x]`）
+> ⚠️ **SSoT 移轉聲明**：
+> 為避免雙源衝突，近期的短期與跨 session 待辦事項，請一律以 `.fhs/memory/handoff.md` 中的「待辦 ⏳ 項目」區塊為絕對真理 (Single Source of Truth)。
+> 本文件 (`todo.md`) 僅作為長期架構規劃或低優先級技術債的停放區。
 
 ***
 
-## 當前待辦
+## 長期掛起與技術債 (Backlog)
 
-- [x] **[P-MED] n8n 安全網** — 已確認 `Create Sub Items` 節點為純 upsert，無刪舊邏輯（2026-05-03 確認關閉）
-
-- [x] 完成四檔案架構 v1.0 落地
-- [x] 驗收壓力測試（/read 回報版本號 v1.0）
-- [x] 確認 .cursorrules 舊規則全部遷移完畢
-- [x] 確認 V37 與 current 檔案內容完全一致 (Diff check)（已過期：current 現為 V40.8，V37 條目無意義，2026-05-09 關閉）
-- [x] 在 V39 進行新版介面功能併入測試（已過期：V39 已棄用，2026-05-09 關閉）
+- [ ] 定期追蹤 Supabase Free Tier 使用量 (警戒線: Database 400MB / 頻寬 1.5GB)
+- [ ] 評估歷史遺留 Legacy Scripts (sync-legacy-orders.js 等) 的文件化與最終歸檔
 
 ***
-
-> 📋 最後審查：2026-05-09（/execute 執行 Range B 清理）

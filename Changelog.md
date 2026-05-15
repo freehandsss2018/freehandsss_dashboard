@@ -1,5 +1,50 @@
 # Changelog
 
+## [2026-05-15] Supabase-First Phase 1 + Bug 6 Rate Limit 修復
+
+**n8n Smart Cache Strategist v47.2（Bug 6 修復）**：
+- 根因：V47.1 停用 cache 後，每筆訂單都直打 Airtable API → 並發訂單觸發 Rate Limit 429 → Telegram 未執行
+- 修復：偵測 `hasItems: true` 時加入 250ms async delay，防止並發爆 5 req/sec 上限
+- 向後相容：無 SKU 訂單（hasItems: false）不受 delay 影響
+
+**n8n Batch SKU Collector v40.6（Supabase-Ready 預備）**：
+- 新增 `sku_list: string[]` 輸出（Supabase `get_base_cost_by_skus` RPC 所需格式）
+- 保留 `batchFormula`（現有 Airtable 節點繼續使用，向後相容）
+- Phase 2 切換時，n8n HTTP Request 節點直接讀取 `sku_list`，無需再改 Code node
+
+**Supabase Phase 1 Infrastructure（新增檔案）**：
+- `supabase/migrations/0003_base_cost_view_and_rpc.sql`：`v_products_with_costs` VIEW + `get_base_cost_by_skus` RPC
+- `supabase/rpc/get_base_cost_by_skus.sql`：RPC 定義（參考文件，與 migration 一致）
+- VIEW 欄位名稱刻意保留 Airtable 大寫慣例（`Product_Name`, `Total_Base_Cost`）→ n8n `Local Data Mapper` 零改動切換
+
+**migrate_airtable_to_supabase.js 修復（database-reviewer 稽核後）**：
+- P0-A Fix：`parseMoney()` 剝除 `$` 前綴，修復 Final_Sale_Price / Total_Cost / Net_Profit 全部歸零問題
+- P1-A Fix：`parseDate()` 將 `"2026年1月20日"` 轉為 ISO `"2026-01-20"`，修復 PostgreSQL DATE 解析失敗
+- P1-B Fix：新增 Base_Costs → cost_configurations 遷移段落（Step 0，先於 Product_Database 執行）
+- P1-C Fix：`mapProduct` 讀取 `f.Main_Category`（原錯誤讀 `f.Category`）
+- P1-D Fix：`mapProduct` 補齊 target_object / material / mode / item_per_set / suggested_price / markup_factor
+- P2-A Fix：`mapOrderItem` 補入 reference_image_url + ai_suggestion 映射
+- P2-B Fix：`mapOrderItem` 繼承父訂單 batch_number（透過 orderBatchMap）
+- P2-C Fix：`mapOrderItem` 計算 subtotal_cost = item_base_cost × quantity
+- P2-D Fix：products 遷移時解析 Linked_Base_Cost → cost_config_id UUID
+
+**n8n Smart Cache Strategist v47.3（Supabase-First 成本查詢）**：
+- 直接呼叫 Supabase RPC `get_base_cost_by_skus` via `fetch()`
+- 成功時：將成本 map 存於輸出 `supabaseCosts`，並將 `batchFormula` 覆寫為 `RECORD_ID()='SUPABASE_SKIP'`（Airtable 節點返回空結果而非報錯，工作流不中斷）
+- 失敗時：回退 Airtable 路徑（v47.2 延遲保護仍有效）
+
+**n8n Local Data Mapper v40.6（Supabase-First 感知）**：
+- 優先讀取 Smart Cache Strategist 的 `supabaseCosts`（Supabase 路徑）
+- 若 `supabaseFetched: false`：回退讀取 Fetch Exact Base Cost Airtable 輸出
+- 此修復連帶解決 Telegram 未發送問題（Airtable Rate Limit 不再中斷工作流）
+
+**Fat Mo 待執行（SQL migration）**：
+1. 在 Supabase SQL Editor 執行 `0003_base_cost_view_and_rpc.sql`
+2. 確認 `products` 表 `total_base_cost` 已填入（488 SKU）
+3. n8n UI 更新 Telegram 節點文字：「Upsert 至 Airtable」→「寫入 Supabase」
+
+---
+
 ## [2026-05-15] Badge 顯示架構全面重構 + Bug 修復
 
 **Badge 兩行佈局**：所有產品 badge 改為兩行顯示

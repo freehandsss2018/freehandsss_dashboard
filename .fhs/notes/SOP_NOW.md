@@ -62,7 +62,7 @@
 
 | 資源 | 位置 | 用途 | 誰用 |
 |------|------|------|------|
-| FHS Subagents（3個） | `.fhs/ai/subagents/freehandsss/` → `~/.claude/agents/freehandsss/` | ui-designer / frontend-developer / code-reviewer | Claude Code 專用 |
+| FHS Subagents（8個） | `.fhs/ai/subagents/freehandsss/` → `~/.claude/agents/freehandsss/` | ui-designer, frontend-developer, code-reviewer, database-reviewer, finance-auditor, tdd-guide, build-error-resolver, blender-3d-modeler | Claude Code 專用 |
 | Gemini Skills（22個） | `.gemini/skills/` | 設計工具（frontend-design、audit、critique 等） | Antigravity 專用 |
 | ui-ux-pro-max | `.fhs/ai/skills/ui-ux-pro-max/` | FHS 設計規格（ui-designer 在 Phase A 讀取） | 共用（reference） |
 | MCP: Airtable-FHS | `~/.gemini/antigravity/mcp_config.json` | Airtable 直連 | Antigravity |

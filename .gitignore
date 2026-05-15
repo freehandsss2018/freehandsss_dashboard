@@ -34,6 +34,10 @@ Freehandsss_Dashboard/preview_*.html
 *.stl
 *.blend
 *.blend1
+*.ztl
+*.zpr
+"Temp 33/"
+Temp\ 33/
 
 # Temporary debug scripts & local data dumps
 Freehandsss_Dashboard/analyze_bugs.js

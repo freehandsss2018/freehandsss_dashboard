@@ -18,7 +18,8 @@ freehandsss_dashboard/
 │   ├── ANTI_IDLE_SETUP.md               ← 防閒置 ping 設定（Free Tier 7 天暫停問題）
 │   ├── migrations/
 │   │   ├── 0001_initial_schema.sql      ← 初始建表 DDL（6 表 + 索引 + ENUM）
-│   │   └── 0002_add_deleted_at.sql      ← 軟刪除欄位（orders.deleted_at）
+│   │   ├── 0002_add_deleted_at.sql      ← 軟刪除欄位（orders.deleted_at）
+│   │   └── 0003_base_cost_view_and_rpc.sql ← v_products_with_costs VIEW + get_base_cost_by_skus RPC（2026-05-15，Supabase-First Phase 1）
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -26,7 +27,8 @@ freehandsss_dashboard/
 │       ├── get_order_summary.sql        ← 訂單摘要（Dashboard Financial Overview）
 │       ├── get_profit_audit.sql         ← 利潤稽核（finance-auditor）
 │       ├── get_recent_orders.sql        ← 最近訂單列表（Dashboard）
-│       └── get_products_by_category.sql ← 產品目錄（Dashboard / n8n cache）
+│       ├── get_products_by_category.sql ← 產品目錄（Dashboard / n8n cache）
+│       └── get_base_cost_by_skus.sql    ← 批量 SKU 成本查詢（2026-05-15，替代 Airtable Fetch Exact Base Cost）
 ├── 3d/                                  ← 3D 建模工作目錄（2026-05-07 新增，blender-3d-modeler 路徑規則）
 │   ├── README.md                        ← 路徑規則說明
 │   ├── input/                           ← 用戶上傳的原始 STL（只讀）

@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// API V40.5 協議：批量收集 SKU (安全重生版)\nconst items = $input.all();\n\n// 強制數組檢查與防禦\nif (!Array.isArray(items) || items.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", hasItems: false } };\n}\n\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"無商品\"))];\n\nif (skus.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", hasItems: false } };\n}\n\nconst formulaParts = skus.map(s => `{Product_Name} = '${s}'`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : formulaParts[0];\n\nreturn { json: { batchFormula: finalFormula, hasItems: true } };",
+    "notice": ""
+  },
+  "id": "94d1c0c0-5cd8-460c-be20-e3b328ccf8db",
+  "name": "Batch SKU Collector",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    31616,
+    7424
+  ],
+  "typeVersion": 2
+}

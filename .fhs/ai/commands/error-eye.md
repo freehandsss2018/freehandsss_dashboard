@@ -14,7 +14,7 @@
 輸出格式：
 - 🔴 嚴重（系統停擺）：立即觸發 Telegram 通知 Fat Mo
 - 🟡 警告（功能異常）：列出修復步驟，等待確認
-- 🟢 輕微（可觀察）：記錄至 session-log.md
+- 🟢 輕微（可觀察）：記錄至 .fhs/notes/session-log.md
 
 異常處理：
 - 無法連接 Airtable → 回報「Error_Logs 讀取失敗，請確認 MCP 連線」

@@ -714,6 +714,8 @@
         /* 對象與部位 (Target & Part) */
         .badge-target-嬰兒 { background: #E1F5FE; color: #0288D1; border-color: #B3E5FC; }
         .badge-target-成人 { background: #EFEBE9; color: #5D4037; border-color: #D7CCC8; }
+        .badge-target-父母 { background: #FCE4EC; color: #C2185B; border-color: #F48FB1; }
+        .badge-target-大寶 { background: #E8F5E9; color: #388E3C; border-color: #A5D6A7; }
         .badge-part { border-color: rgba(0,0,0,0.1); background: #ffffff; color: #555; font-weight: 500; }
         
         /* 數量與產品副標 */
@@ -1251,11 +1253,19 @@
             color: #fff;
             border-color: var(--fhs-accent);
         }
+        @media (max-width: 480px) {
+            .fhs-top-bar__order-id { flex: 1; font-size: 10px; }
+            .fhs-top-bar__logo { font-size: 13px; }
+        }
         @media (max-width: 400px) {
             .fhs-top-bar__actions button {
                 padding: 5px 7px;
                 font-size: 12px;
             }
+        }
+        @media (max-width: 380px) {
+            .fhs-top-bar__order-id { display: none; }
+            .fhs-top-bar { gap: 4px; padding: 0 8px; }
         }
 
         /* --- FHS Card --- */
@@ -1823,7 +1833,7 @@
 
         /* V41 Supabase Status Chip - Integrated UI */
         .sb-status-chip {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
             padding: 4px 10px;
@@ -1833,10 +1843,12 @@
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
-            height: 32px;
+            height: 28px; /* Slightly more compact */
             font-size: 11px;
             font-weight: 700;
             color: var(--fhs-text-secondary);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .sb-status-chip:hover {
             background: rgba(0,0,0,0.08);
@@ -1852,11 +1864,18 @@
             height: 8px;
             border-radius: 50%;
             background: #94a3b8;
+            flex-shrink: 0;
         }
         .sb-status-chip.is-active .sb-status-dot {
             background: #4CAF50;
             box-shadow: 0 0 0 rgba(76, 175, 80, 0.4);
             animation: sb-pulse 2s infinite;
+        }
+        .sb-status-msg {
+            font-weight: 400;
+            font-size: 10px;
+            opacity: 0.8;
+            margin-left: 4px;
         }
         @keyframes sb-pulse {
             0% { box-shadow: 0 0 0 0px rgba(76, 175, 80, 0.4); }
@@ -1864,8 +1883,17 @@
             100% { box-shadow: 0 0 0 0px rgba(76, 175, 80, 0); }
         }
         @media (max-width: 600px) {
-            .sb-status-chip .sb-text { display: none; }
-            .sb-status-chip { padding: 4px 8px; gap: 0; width: 32px; justify-content: center; }
+            .sb-status-chip { padding: 4px 8px; gap: 4px; }
+            .sb-status-msg { display: none; } /* Hide detailed status on mobile */
+        }
+        @media (max-width: 420px) {
+            .sb-status-chip .sb-label-full { display: none; }
+            .sb-status-chip .sb-label-short { display: inline; }
+            .sb-status-chip { padding: 4px 6px; }
+        }
+        @media (min-width: 421px) {
+            .sb-status-chip .sb-label-full { display: inline; }
+            .sb-status-chip .sb-label-short { display: none; }
         }
     </style>
 
@@ -3064,6 +3092,10 @@
         // Supabase connection constants — used by both Supabase path and n8n fallback reconstruction
         const _V41_SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
         const _V41_SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+        const SB_URL = _V41_SB_URL;
+        const SB_ANON = _V41_SB_ANON;
+        window.SB_URL = SB_URL;
+        window.SB_ANON_KEY = SB_ANON;
 
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅色", "藍色"];
@@ -3992,7 +4024,8 @@
                 orderItemsArray.push({
                     "Order_Item_Key": "TEMP_P_MAIN",
                     "Product_Name": pName,
-                    "Quantity": 1
+                    "Quantity": 1,
+                    "Notes": document.getElementById('pEngraving')?.value || ''
                 });
             }
 
@@ -4439,6 +4472,9 @@
                 // 🚨 步驟 1：先還原基本欄位 (有 ID 的靜態元素，例如開關、pSubCat)
                 for (let key in state) {
                     if (!key.startsWith('limb_sel_')) {
+                        // 🚨 [Fix] Skip null or undefined values to prevent overwriting existing data with nothing
+                        if (state[key] == null) continue;
+
                         // 🚨 防呆：絕對不還原搜尋框內容，保持用戶當前輸入
                         if (key === 'searchOrderId') continue;
 
@@ -4509,6 +4545,13 @@
 
                 // 🚨 重新渲染動態 DOM (此時 pSubCat 等控制項的數值已就位)
                 if (document.getElementById("pSubCat")) renderLimbGrid();
+                // [Fix 4B] renderLimbGrid() recreates dynamic elements with defaults; re-apply all saved values
+                ['baseColor', 'woodStyle', 'babyQuickColor', 'babyCustomColor'].forEach(function(fid) {
+                    if (state[fid] != null) { var _el = document.getElementById(fid); if (_el) _el.value = state[fid]; }
+                });
+                ['en_parent', 'en_elder'].forEach(function(fid) {
+                    if (state[fid] != null) { var _el = document.getElementById(fid); if (_el) { _el.checked = state[fid]; _el.dispatchEvent(new Event('change')); } }
+                });
                 if (document.getElementById("k_family_combo")) updateFamilyParts();
                 if (document.getElementById("m_family_combo")) updateFamilyParts();
 
@@ -4518,6 +4561,7 @@
                 // 🚨 步驟 3：還原剛剛重新渲染的動態欄位 (limb_sel_)
                 for (let key in state) {
                     if (key.startsWith('limb_sel_')) {
+                        if (state[key] == null) continue; // [Fix] skip null
                         const parts = key.split('_');
                         const who = parts[2];
                         const part = parts[3];
@@ -4589,63 +4633,98 @@
                         editTargetOrderId = oId;
                         orderID = oId;
                         isIdValid = true;
-                                                    // item_key-based match (new Dashboard format): also handles elder
-                            if (!_matched) {
-                                if (_ik.includes('_K_E_LH')) { _synth.k_e_lh_en = true; _synth.k_e_lh_top = _eng.top; _synth.k_e_lh_bot = _eng.bot; _synth.k_e_lh_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
-                                else if (_ik.includes('_K_E_RH')) { _synth.k_e_rh_en = true; _synth.k_e_rh_top = _eng.top; _synth.k_e_rh_bot = _eng.bot; _synth.k_e_rh_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
-                                else if (_ik.includes('_K_E_LF')) { _synth.k_e_lf_en = true; _synth.k_e_lf_top = _eng.top; _synth.k_e_lf_bot = _eng.bot; _synth.k_e_lf_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
-                                else if (_ik.includes('_K_E_RF')) { _synth.k_e_rf_en = true; _synth.k_e_rf_top = _eng.top; _synth.k_e_rf_bot = _eng.bot; _synth.k_e_rf_qty = _qt; _synth.k_elder_sec_en = true; _matched = true; }
-                                else if (_ik.includes('_K_LH')) { _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_bot = _eng.bot; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
-                                else if (_ik.includes('_K_RH')) { _synth.k_rh_en = true; _synth.k_rh_top = _eng.top; _synth.k_rh_bot = _eng.bot; _synth.k_rh_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
-                                else if (_ik.includes('_K_LF')) { _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_bot = _eng.bot; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
-                                else if (_ik.includes('_K_RF')) { _synth.k_rf_en = true; _synth.k_rf_top = _eng.top; _synth.k_rf_bot = _eng.bot; _synth.k_rf_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
-                            }
-                            if (!_matched) {
-                                if (_isElder) {
-                                    if (_sp.includes('腳')) { _synth.k_e_lf_en = true; _synth.k_e_lf_top = _eng.top; _synth.k_e_lf_bot = _eng.bot; _synth.k_e_lf_qty = _qt; _synth.k_elder_sec_en = true; }
-                                    else                    { _synth.k_e_lh_en = true; _synth.k_e_lh_top = _eng.top; _synth.k_e_lh_bot = _eng.bot; _synth.k_e_lh_qty = _qt; _synth.k_elder_sec_en = true; }
-                                } else {
-                                    if (_sp.includes('腳')) { _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_bot = _eng.bot; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; }
-                                    else                    { _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_bot = _eng.bot; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; }
-                                }
-                            }
-                        });
-                        // Default baby section to true if no items matched elder and no baby was set
-                        if (!_synth.k_baby_sec_en && !_synth.k_elder_sec_en) _synth.k_baby_sec_en = true;
-                    }
-                    if (_mItems.length > 0) {
-                        _synth.enableM = true;
-                        _mItems.forEach(item => {
-                            const _sp = item.specification || '';
-                            const _eg = item.engraving_text || '';
-                            const _qt = item.quantity || 1;
-                            const _ik = (item.item_key || '').toUpperCase();
-                            const _isElderM = _ik.includes('_M_E_') || _sp.includes('大寶');
-                            
-                            let _matchedM = false;
-                            if (_sp.includes('左腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            if (_sp.includes('右腳')) { _synth.m_rf_en = true; _synth.m_rf_eng = _eg; _synth.m_rf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            if (_sp.includes('左手')) { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            if (_sp.includes('右手')) { _synth.m_rh_en = true; _synth.m_rh_eng = _eg; _synth.m_rh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            
-                            // Elder M match (item_key based)
-                            if (!_matchedM) {
-                                if (_ik.includes('_M_E_LH')) { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-                                else if (_ik.includes('_M_E_RH')) { _synth.m_e_rh_en = true; _synth.m_e_rh_eng = _eg; _synth.m_e_rh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-                                else if (_ik.includes('_M_E_LF')) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-                                else if (_ik.includes('_M_E_RF')) { _synth.m_e_rf_en = true; _synth.m_e_rf_eng = _eg; _synth.m_e_rf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-                            }
+                        const _d = document.getElementById('orderIdDisplay');
+                        if (_d) _d.value = oId;
+                        updateIdStatus('available', '✅ 讀取成功！目前為「修改」模式。');
 
-                            if (!_matchedM) {
-                                if (_isElderM) {
-                                    if (_sp.includes('腳')) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; }
-                                    else                    { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; }
-                                } else {
-                                    if (_sp.includes('腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; }
-                                    else                    { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }
-                                }
-                            }
-       if (!Array.isArray(_rows) || _rows.length === 0) return false;
+                        // Delegate to unified reconstruction helper (handles both full & empty raw_form_state,
+                        // includes _parseEng, baby/elder detection, and auto-repair of sub-section panels)
+                        showLoader('讀取訂單明細...');
+                        await reconstructOrderFromSupabase(oId, fetchStatus);
+                        hideLoader();
+                        return;
+                    } else {
+                        hideLoader();
+                        if (fetchStatus) { fetchStatus.style.color = 'red'; fetchStatus.innerText = `❌ Supabase 找不到訂單 #${oId}，請確認單號正確。`; }
+                        return;
+                    }
+                } catch (_sbErr) {
+                    hideLoader();
+                    console.warn('[V41] Supabase fetchOldOrder error:', _sbErr.message);
+                    if (fetchStatus) { fetchStatus.style.color = 'red'; fetchStatus.innerText = '❌ Supabase 連線失敗，請重試。'; }
+                    return;
+                }
+            }
+            // ── End V41 Supabase path ──
+
+            showLoader(`正在從 n8n 尋找訂單 #${oId}...`);
+            fetchStatus.style.color = '#666';
+            fetchStatus.innerText = "⏳ 讀取中，請稍候...";
+            const fetchUrl = `${getWebhookUrl('https://yanhei.synology.me:8443/webhook/fetch-fhs-order')}?orderId=${oId}`;
+
+            try {
+                const res = await fetch(fetchUrl);
+                const responseData = await res.json();
+                const data = Array.isArray(responseData) ? responseData[0] : responseData;
+
+                if (!data || data.found === false) {
+                    fetchStatus.style.color = 'red';
+                    fetchStatus.innerText = "⚠️ 找不到該訂單，請確認單號正確。";
+                    return;
+                }
+
+                // Restore figures
+                if (data.Deposit !== undefined) document.getElementById('deposit').value = data.Deposit;
+                if (data.Balance !== undefined) document.getElementById('balance').value = data.Balance;
+                if (data.Additional_Fee !== undefined) document.getElementById('additional').value = data.Additional_Fee;
+
+                // Restore form
+                editTargetOrderId = oId; // 🚨 只要找到單，就標註為當前編輯對象，防止更新時變成新增
+                orderID = oId; // 同步內部變數 [V31.1]
+                const idDisp = document.getElementById('orderIdDisplay');
+                if (idDisp) idDisp.value = oId;
+                updateIdStatus('available', '✅ 讀取成功！目前為「修改」模式。');
+                isIdValid = true;
+
+                if (data.Raw_Form_State) {
+                    restoreFormState(data.Raw_Form_State);
+                    fetchStatus.style.color = 'green';
+                    fetchStatus.innerText = "✅ 讀取成功！畫面已還原。";
+                } else {
+                    // n8n found order but no Raw_Form_State — fall back to Supabase reconstruction
+                    fetchStatus.style.color = '#1565C0';
+                    fetchStatus.innerText = '⏳ 改用 Supabase 重建舊單資料...';
+                    const _ok = await reconstructOrderFromSupabase(oId, fetchStatus);
+                    if (!_ok) {
+                        fetchStatus.style.color = 'orange';
+                        fetchStatus.innerText = "⚠️ 讀取成功，但該舊單無儲存狀態紀錄。";
+                    }
+                }
+            } catch (err) {
+                fetchStatus.style.color = 'red';
+                fetchStatus.innerText = "❌ 網路錯誤，無法連接至 n8n 讀取資料。";
+                console.error(err);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        /**
+         * Universal Supabase-based reconstruction for old orders missing Raw_Form_State.
+         * Called from: V41 Supabase path + V41 n8n fallback + (future) V40 n8n path.
+         * Sets editTargetOrderId, orderID, isIdValid as side effects. Updates fetchStatus UI.
+         * Returns true on successful reconstruction, false if Supabase has no data.
+         */
+        async function reconstructOrderFromSupabase(oId, fetchStatus) {
+            try {
+                const _sbUrl = _V41_SB_URL;
+                const _sbKey = _V41_SB_ANON;
+                const _res = await fetch(
+                    `${_sbUrl}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,final_sale_price,raw_form_state&limit=1`,
+                    { headers: { apikey: _sbKey, Authorization: `Bearer ${_sbKey}` } }
+                );
+                const _rows = await _res.json();
+                if (!Array.isArray(_rows) || _rows.length === 0) return false;
 
                 const _row = _rows[0];
                 const _fs  = _row.raw_form_state;
@@ -4657,6 +4736,8 @@
                 const _d = document.getElementById('orderIdDisplay');
                 if (_d) _d.value = oId;
 
+                // [Fix B] Move financial injection to END of function to ensure it persists after restoreFormState
+
                 // If raw_form_state has full data, restore it first
                 if (_fs && typeof _fs === 'object' && Object.keys(_fs).length > 0) {
                     restoreFormState(_fs);
@@ -4666,14 +4747,9 @@
                     const _mOn = document.getElementById('enableM');
                     const _kLimbs = ['k_lh_en','k_rh_en','k_lf_en','k_rf_en','k_e_lh_en','k_e_rh_en','k_e_lf_en','k_e_rf_en'];
                     const _mLimbs = ['m_lh_en','m_rh_en','m_lf_en','m_rf_en','m_e_lh_en','m_e_rh_en','m_e_lf_en','m_e_rf_en'];
-                    const _kMissing = (_kOn && _kOn.checked) && !_kLimbs.some(function(id) { var e=document.getElementById(id); return e && e.checked; });
-                    const _mMissing = (_mOn && _mOn.checked) && !_mLimbs.some(function(id) { var e=document.getElementById(id); return e && e.checked; });
-                    if (!_kMissing && !_mMissing) {
-                        // Form looks complete
-                        if (fetchStatus) { fetchStatus.style.color = 'green'; fetchStatus.innerText = '✅ Supabase 讀取成功！畫面已還原。'; }
-                        return true;
-                    }
-                    // Fall through to item-based supplement (don't return yet)
+                    // [Fix B1] ALWAYS fall through to order_items check.
+                    // raw_form_state may have enableK/M=false even when items exist in Supabase.
+                    // Item-based data is the ground truth and must override rfs enable flags.
                     if (fetchStatus) fetchStatus.innerText = '⏳ 補充還原產品選項中...';
                 }
 
@@ -4685,23 +4761,28 @@
                 const _items = await _ir.json();
 
                 const _synth = {
-                    momName:    _row.customer_name  || '',
-                    appDate:    _row.appointment_at || '',
-                    deposit:    _row.deposit        || 0,
-                    balance:    _row.balance        || 0,
-                    additional: _row.additional_fee || 0,
+                    momName:    _row.customer_name  || _row.Customer_Name || '',
+                    appDate:    _row.appointment_at || _row.Appointment_Date || '',
+                    // [Fix] Use nullish coalescing to prevent forcing "0" when DB is null, 
+                    // allowing placeholder logic to work or avoiding overwrite.
+                    deposit:    (_row.deposit ?? _row.Deposit) ?? '',
+                    balance:    (_row.balance ?? _row.Balance) ?? '',
+                    additional: (_row.additional_fee ?? _row.Additional_Fee) ?? '',
                 };
 
                 if (Array.isArray(_items) && _items.length > 0) {
                     const _pItems = _items.filter(i => i.item_category === '立體擺設');
                     const _kItems = _items.filter(i => i.item_category === '金屬鎖匙扣');
-                    const _mItems = _items.filter(i => i.item_category === '銀飾');
+                    // [Fix B2] Correct category string — Supabase stores '純銀頸鏈吊飾', NOT '銀飾'
+                    const _mItems = _items.filter(i => i.item_category === '純銀頸鏈吊飾' || i.item_category === '銀飾' || (i.item_category || '').includes('吊飾'));
 
                     if (_pItems.length > 0) {
                         _synth.enableP    = true;
                         _synth.pEngraving = _pItems[0].engraving_text || '';
                         const _pk = (_pItems[0].item_key || '').toLowerCase();
-                        _synth.pSubCat    = _pk.includes('玻璃瓶') ? '玻璃瓶款式' : '木框款式';
+                        // [Fix 4A] item_key is always TEMP_P_MAIN (no subtype info); prefer raw_form_state
+                        _synth.pSubCat = (_fs && _fs.pSubCat) ? _fs.pSubCat : (_pk.includes('玻璃瓶') ? '玻璃瓶款式' : '木框款式');
+                        if (_fs && _fs.baseColor) _synth.baseColor = _fs.baseColor;
                     }
                     if (_kItems.length > 0) {
                         _synth.enableK = true;
@@ -4741,11 +4822,8 @@
                                 else if (_ik.includes('_K_RF')) { _synth.k_rf_en = true; _synth.k_rf_top = _eng.top; _synth.k_rf_bot = _eng.bot; _synth.k_rf_qty = _qt; _synth.k_baby_sec_en = true; _matched = true; }
                             }
                             if (!_matched) {
-                                if (_sp.includes('腳')) { 
-                                    _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_bot = _eng.bot; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; 
-                                } else { 
-                                    _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_bot = _eng.bot; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; 
-                                }
+                                if (_sp.includes('腳')) { _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; }
+                                else                    { _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; }
                             }
                         });
                         // Default baby section to true if no items matched elder and no baby was set
@@ -4753,33 +4831,86 @@
                     }
                     if (_mItems.length > 0) {
                         _synth.enableM = true;
-                        _mItems.forEach(item => {
-                            const _sp = item.specification || '';
-                            const _eg = item.engraving_text || '';
-                            const _qt = item.quantity || 1;
-                            const _ik = (item.item_key || '').toUpperCase();
-                            
-                            let _matchedM = false;
-                            if (_sp.includes('左腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            if (_sp.includes('右腳')) { _synth.m_rf_en = true; _synth.m_rf_eng = _eg; _synth.m_rf_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            if (_sp.includes('左手')) { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            if (_sp.includes('右手')) { _synth.m_rh_en = true; _synth.m_rh_eng = _eg; _synth.m_rh_qty = _qt; _synth.m_baby_sec_en = true; _matchedM = true; }
-                            
-                            // Elder M match
-                            if (_ik.includes('_M_E_LH')) { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-                            if (_ik.includes('_M_E_RH')) { _synth.m_e_rh_en = true; _synth.m_e_rh_eng = _eg; _synth.m_e_rh_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-                            if (_ik.includes('_M_E_LF')) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-                            if (_ik.includes('_M_E_RF')) { _synth.m_e_rf_en = true; _synth.m_e_rf_eng = _eg; _synth.m_e_rf_qty = _qt; _synth.m_elder_sec_en = true; _matchedM = true; }
-
-                            if (!_matchedM) {
-                                if (_sp.includes('腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; }
-                                else                    { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }
+                        _synth.m_baby_sec_en  = false;
+                        _synth.m_elder_sec_en = false;
+                        // [Fix B3 v2] Correct direction mapping + elder/baby separation + QUANTITY
+                        _mItems.forEach(function(item) {
+                            const _sp  = item.specification || '';
+                            const _eg  = item.engraving_text || '';
+                            const _qt  = item.quantity || 1;  // [Fix B4] quantity was missing
+                            const _ik  = (item.item_key || '').toUpperCase();
+                            const _ikO = (item.item_key || '');
+                            const _isElder = _ik.includes('_M_E_') || _ikO.includes('大寶') || _ikO.includes('長輩') || _ikO.includes('家庭');
+                            if (_sp.includes('左手')) {
+                                if (_isElder) { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; }
+                                else          { _synth.m_lh_en   = true; _synth.m_lh_eng   = _eg; _synth.m_lh_qty   = _qt; _synth.m_baby_sec_en  = true; }
+                            }
+                            if (_sp.includes('右手')) {
+                                if (_isElder) { _synth.m_e_rh_en = true; _synth.m_e_rh_eng = _eg; _synth.m_e_rh_qty = _qt; _synth.m_elder_sec_en = true; }
+                                else          { _synth.m_rh_en   = true; _synth.m_rh_eng   = _eg; _synth.m_rh_qty   = _qt; _synth.m_baby_sec_en  = true; }
+                            }
+                            if (_sp.includes('左腳')) {
+                                if (_isElder) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; }
+                                else          { _synth.m_lf_en   = true; _synth.m_lf_eng   = _eg; _synth.m_lf_qty   = _qt; _synth.m_baby_sec_en  = true; }
+                            }
+                            if (_sp.includes('右腳')) {
+                                if (_isElder) { _synth.m_e_rf_en = true; _synth.m_e_rf_eng = _eg; _synth.m_e_rf_qty = _qt; _synth.m_elder_sec_en = true; }
+                                else          { _synth.m_rf_en   = true; _synth.m_rf_eng   = _eg; _synth.m_rf_qty   = _qt; _synth.m_baby_sec_en  = true; }
+                            }
+                            // Fallback: spec has 手/腳 but no 左/右 direction (legacy undirected — assume left as best-guess)
+                            // IMPORTANT: mapOrder overview uses the same fallback so both display consistently
+                            if (!_sp.includes('左') && !_sp.includes('右')) {
+                                if      (_sp.includes('腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; }
+                                else if (_sp.includes('手')) { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }
+                                else                          { _synth.m_lh_en = true; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }
                             }
                         });
+                        if (!_synth.m_baby_sec_en && !_synth.m_elder_sec_en) _synth.m_baby_sec_en = true;
                     }
                 }
 
+                // [Fix 4C] Carry over ALL _fs fields that _synth cannot derive from order_items.
+                // Covers: P-section selects, dynamic limb colors, engraving — all lost when
+                // the second restoreFormState(_synth) calls renderLimbGrid() and destroys limbContainer.
+                if (_fs) {
+                    if (_fs.pSubCat   && !_synth.pSubCat)   _synth.pSubCat   = _fs.pSubCat;
+                    if (_fs.baseColor  && !_synth.baseColor)  _synth.baseColor  = _fs.baseColor;
+                    if (_fs.woodStyle  && !_synth.woodStyle)  _synth.woodStyle  = _fs.woodStyle;
+                    if (_fs.babyQuickColor && !_synth.babyQuickColor) _synth.babyQuickColor = _fs.babyQuickColor;
+                    if (_fs.babyCustomColor && !_synth.babyCustomColor) _synth.babyCustomColor = _fs.babyCustomColor;
+                    if (_fs.pEngraving && !_synth.pEngraving) _synth.pEngraving = _fs.pEngraving;
+                    if (_fs.enableP != null && _synth.enableP == null) _synth.enableP = _fs.enableP;
+                    if (_fs.en_parent != null) _synth.en_parent = _fs.en_parent;
+                    if (_fs.en_elder  != null) _synth.en_elder  = _fs.en_elder;
+                    // Critical: carry all limb_sel_* so Step 3 of restoreFormState can restore them
+                    // after renderLimbGrid() destroys and recreates the entire limbContainer DOM.
+                    Object.keys(_fs).forEach(function(k) {
+                        if (k.startsWith('limb_sel_')) _synth[k] = _fs[k];
+                    });
+                }
+
                 restoreFormState(_synth);
+
+                // [Fix B - Execution] Final financial injection to ensure DB truth wins
+                (function _injectFinancials() {
+                    const _depEl  = document.getElementById('deposit');
+                    const _balEl  = document.getElementById('balance');
+                    const _addEl  = document.getElementById('additional');
+                    
+                    const dbDep = _row.deposit ?? _row.Deposit;
+                    const dbBal = _row.balance ?? _row.Balance;
+                    const dbAdd = _row.additional_fee ?? _row.Additional_Fee;
+
+                    console.log('[reconstructOrderFromSupabase] Injecting financials:', { dbDep, dbBal, dbAdd });
+
+                    if (_depEl && dbDep != null) _depEl.value = dbDep;
+                    if (_balEl && dbBal != null) _balEl.value = dbBal;
+                    if (_addEl && dbAdd != null) _addEl.value = dbAdd;
+                    
+                    // CRITICAL: Trigger generate() again to update text preview with injected values
+                    if (typeof generate === 'function') generate();
+                })();
+
                 if (_d) _d.value = oId;
                 if (typeof editTargetOrderId !== 'undefined') editTargetOrderId = oId;
                 if (typeof orderID !== 'undefined') orderID = oId;
@@ -5173,6 +5304,11 @@
             if (combinedSearch.search(/不[銹鏽]鋼/) > -1) material = "⚙️ 不銹鋼";
             else if (combinedSearch.includes('925金')) material = "👑 925金";
             else if (combinedSearch.search(/925銀|銀/) > -1) material = "✨ 925銀";
+            // Fallback: infer material from category (product name not stored in Supabase order_items)
+            if (!material) {
+                if (category.includes('鎖匙扣')) material = "⚙️ 不銹鋼";
+                else if (category.includes('吊飾') || category.includes('頸鏈')) material = "✨ 925銀";
+            }
 
             // 5. 立體擺設專屬：款式與肢數
             let style = "";
@@ -5183,8 +5319,13 @@
                 else if (combinedSearch.search(/玻璃[瓶罩]|瓶/) > -1) style = "🧴 玻璃瓶";
                 if (combinedSearch.includes('粉紅')) theme = "🌸 粉紅";
                 else if (combinedSearch.includes('海洋')) theme = "🌊 海洋";
-                if (combinedSearch.search(/4肢|四肢/) > -1) count = "✋🦶 4肢";
-                else if (combinedSearch.search(/2肢|兩肢|一對|手足/) > -1) count = "✋🦶 2肢";
+                if      (combinedSearch.search(/4肢|四肢/) > -1)            count = "✋🦶 4肢";
+                else if (combinedSearch.search(/2肢|兩肢|一對|手足/) > -1)  count = "✋🦶 2肢";
+                else if (combinedSearch.includes('1手1腳'))                  count = "✋🦶 1手1腳";
+                else if (combinedSearch.includes('2手'))                     count = "✋✋ 2手";
+                else if (combinedSearch.includes('2腳'))                     count = "🦶🦶 2腳";
+                else if (combinedSearch.includes('1手'))                     count = "✋ 1手";
+                else if (combinedSearch.includes('1腳'))                     count = "🦶 1腳";
             }
             
             return { target, part, category, emoji, material, style, theme, count };
@@ -5531,14 +5672,29 @@
                             else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
                             badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
                         }
-                        if (dimensions.target) {
+                        if (!dimensions.category.includes('立體擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
+                        var _accLimbParsed = null;
+                        try { if (item.LimbParts) _accLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
+                        var _accIs立體 = dimensions.category.includes('立體擺設');
+                        // Target badge: always suppressed for 立體擺設 (limb badges replace it)
+                        if (dimensions.target && !_accIs立體) {
                             let tarClass = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
                             if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
                         }
-                        if (dimensions.part) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
-                        if (qty >= 1) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
+                        if (dimensions.part && !dimensions.count && !_accIs立體) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (dimensions.style) { badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`; if (_accIs立體) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`; }
+                        if (_accLimbParsed) {
+                            var _accLimbIcons = {嬰兒:'👶', 父母:'👫', 大寶:'🧒'};
+                            var _accLimbClasses = {嬰兒:'badge-target-嬰兒', 父母:'badge-target-父母', 大寶:'badge-target-大寶'};
+                            _accLimbParsed.forEach(function(lp){ badgeHtml += `<span class="review-badge ${_accLimbClasses[lp.who]||'badge-part'}">${_accLimbIcons[lp.who]||''} ${lp.who} ${lp.sum}</span>`; });
+                        } else if (_accIs立體 && dimensions.count) {
+                            badgeHtml += `<span class="review-badge badge-target-嬰兒">👶 嬰兒 ${dimensions.count.split(' ').pop()}</span>`;
+                        } else if (dimensions.count) {
+                            badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
+                        }
+                        if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
 
                         // Engraving
                         let engText = '';
@@ -5688,10 +5844,10 @@
                                   placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
-                        $${o.Total_Cost || o.Cost || 0}
+                        ${(o.Total_Cost || o.Cost) ? '$' + (o.Total_Cost || o.Cost) : '<span style="color:#bbb;">待計算</span>'}
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
-                        $${o.Net_Profit || 0}
+                        ${o.Net_Profit ? '$' + o.Net_Profit : '<span style="color:#bbb; font-weight:400;">待計算</span>'}
                     </td>
                 `;
 
@@ -5721,7 +5877,7 @@
 
                         // 構建多維度標籤 HTML
                         let badgeHtml = `<span class="review-badge ${catClass}">${dimensions.emoji} ${dimensions.category}</span>`;
-                        
+
                         // 材質標籤
                         if (dimensions.material) {
                             let matClass = 'badge-mat-default';
@@ -5730,33 +5886,45 @@
                             else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
                             badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
                         }
+                        if (!dimensions.category.includes('立體擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
 
-                        // 對象標籤
-                        if (dimensions.target) {
+                        var _tblLimbParsed = null;
+                        try { if (item.LimbParts) _tblLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
+                        var _tblIs立體 = dimensions.category.includes('立體擺設');
+
+                        // 對象標籤：立體擺設一律改以個別人物肢數 badge 取代
+                        if (dimensions.target && !_tblIs立體) {
                             let tarClass = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
                             if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
                         }
 
-                        // 部位標籤
-                        if (dimensions.part) {
+                        // 部位標籤：已有 count 或 立體擺設 時不重複顯示 part
+                        if (dimensions.part && !dimensions.count && !_tblIs立體) {
                             badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
                         }
 
                         // V29 擴展：款式、主題標籤 (僅限立體擺設)
                         if (dimensions.style) {
                             badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`;
+                            if (_tblIs立體) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
                         }
                         if (dimensions.theme) {
                             badgeHtml += `<span class="review-badge badge-part" style="border-color:#B07D4C; color:#B07D4C;">${dimensions.theme}</span>`;
                         }
-                        if (dimensions.count) {
+                        if (_tblLimbParsed) {
+                            var _tblLimbIcons = {嬰兒:'👶', 父母:'👫', 大寶:'🧒'};
+                            var _tblLimbClasses = {嬰兒:'badge-target-嬰兒', 父母:'badge-target-父母', 大寶:'badge-target-大寶'};
+                            _tblLimbParsed.forEach(function(lp){ badgeHtml += `<span class="review-badge ${_tblLimbClasses[lp.who]||'badge-part'}">${_tblLimbIcons[lp.who]||''} ${lp.who} ${lp.sum}</span>`; });
+                        } else if (_tblIs立體 && dimensions.count) {
+                            badgeHtml += `<span class="review-badge badge-target-嬰兒">👶 嬰兒 ${dimensions.count.split(' ').pop()}</span>`;
+                        } else if (dimensions.count) {
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
 
-                        // 數量標籤 (放在最後) - V29 修改：強制顯示 x1
-                        if (qty >= 1) {
+                        // 數量標籤：立體擺設是套裝，不顯示 x1
+                        if (qty >= 1 && !dimensions.category.includes('立體擺設')) {
                             badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
                         }
                         
@@ -6992,6 +7160,91 @@
             foRenderAll(tab);
         }
 
+        function showConnectingBanner() {
+            if (document.getElementById('v41-connect-banner')) return;
+            const b = document.createElement('div');
+            b.id = 'v41-connect-banner';
+            b.style.cssText = 'position:fixed; top:54px; left:50%; transform:translateX(-50%); background:#2E7D32; color:white; padding:6px 16px; border-radius:20px; font-size:12px; font-weight:700; z-index:2100; transition:opacity 0.4s; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.2);';
+            b.innerHTML = '⏳ 正在切換至 Supabase 實時數據流...';
+            document.body.appendChild(b);
+        }
+
+        function hideConnectingBanner() {
+            const b = document.getElementById('v41-connect-banner');
+            if (b) { b.style.opacity = '0'; setTimeout(function() { b.remove(); }, 400); }
+        }
+
+        /* ── Auto-refresh (every 5 min while Supabase flag ON) ───── */
+        const AUTO_REFRESH_MS = 5 * 60 * 1000;
+        let _v41RefreshTimer = null;
+
+        function startAutoRefresh() {
+            if (_v41RefreshTimer) clearInterval(_v41RefreshTimer);
+            _v41RefreshTimer = setInterval(function() {
+                if (!isSupabaseRead()) { stopAutoRefresh(); return; }
+                sbBadge('🔄 更新中...', '#90CAF9');
+                if (window.foFetchLive) window.foFetchLive();
+                if (window.fetchGlobalReview) window.fetchGlobalReview(true);
+            }, AUTO_REFRESH_MS);
+        }
+
+        function stopAutoRefresh() {
+            if (_v41RefreshTimer) { clearInterval(_v41RefreshTimer); _v41RefreshTimer = null; }
+        }
+
+        /* ── Toggle UI injection ─────────────────────────────────── */
+        function injectToggle() {
+            // Check if top bar actions group exists for injection
+            const actions = document.querySelector('.fhs-top-bar__actions');
+            
+            const pill = document.createElement('div');
+            pill.id = 'v41-supabase-toggle';
+            pill.className = 'sb-status-chip';
+            // If top bar is missing, fallback to floating (but higher to avoid obstruction)
+            if (!actions) {
+                pill.style.cssText = 'position:fixed; top:70px; right:16px; z-index:9999; box-shadow:0 2px 8px rgba(0,0,0,0.15);';
+            }
+
+            function updatePill() {
+                const on = isSupabaseRead();
+                const labelFull = on ? 'Supa 已開啟' : 'Supa 已關閉';
+                const labelShort = on ? 'Supa 開' : 'Supa 關';
+                
+                pill.className = 'sb-status-chip' + (on ? ' is-active' : '');
+                pill.innerHTML = `
+                    <span class="sb-status-dot"></span>
+                    <span class="sb-label-full">${labelFull}</span>
+                    <span class="sb-label-short">${labelShort}</span>
+                    <span id="v41-sb-status" class="sb-status-msg"></span>
+                `;
+            }
+
+            pill.addEventListener('click', function() {
+                const next = isSupabaseRead() ? '0' : '1';
+                localStorage.setItem(FLAG_KEY, next);
+                updatePill();
+                if (next === '1') {
+                    showConnectingBanner();
+                    sbBadge('⏳ 連線中...', '#2E7D32');
+                    startAutoRefresh();
+                } else {
+                    stopAutoRefresh();
+                    hideConnectingBanner(); // Just in case
+                }
+                if (window.fetchGlobalReview) window.fetchGlobalReview(true);
+                if (window.foFetchLive)       window.foFetchLive();
+            });
+
+            updatePill();
+            
+            if (actions) {
+                // Prepend to actions to be visible but not at the very end
+                actions.prepend(pill);
+            } else {
+                document.body.appendChild(pill);
+            }
+        }
+
         /* === RENDER ALL === */
         function foRenderAll(tab) {
             foUpdateKPI(tab);
@@ -7059,6 +7312,10 @@
         const SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
         const FLAG_KEY = 'fhs_supabase_read';
 
+        // Expose for testing
+        window.SB_URL = SB_URL;
+        window.SB_ANON_KEY = SB_ANON;
+
         function isSupabaseRead() {
             return localStorage.getItem(FLAG_KEY) === '1';
         }
@@ -7113,11 +7370,10 @@
             }
             function _deriveSpec(key) {
                 const k = (key || '').toUpperCase();
-                const prefix = (k.includes('_E_') || k.includes('_ELDER')) ? '大寶 ' : '';
-                if (k.includes('_LH')) return prefix + '手 / 左手';
-                if (k.includes('_RH')) return prefix + '手 / 右手';
-                if (k.includes('_LF')) return prefix + '腳 / 左腳';
-                if (k.includes('_RF')) return prefix + '腳 / 右腳';
+                if (k.includes('_LH')) return '手 / 左手';
+                if (k.includes('_RH')) return '手 / 右手';
+                if (k.includes('_LF')) return '腳 / 左腳';
+                if (k.includes('_RF')) return '腳 / 右腳';
                 return '';
             }
 
@@ -7128,14 +7384,16 @@
 
             // 1. Upsert orders row
             const orderRow = {
-                order_id:        orderId,
-                customer_name:   payload.Customer_Name || '',
-                appointment_at:  payload.Appointment_Date || null,
-                deposit:         payload.Deposit  || 0,
-                balance:         payload.Balance  || 0,
-                additional_fee:  payload.Additional_Fee || 0,
-                full_order_text: payload.Full_Order_Text || '',
-                raw_form_state:  rawFormObj
+                order_id:          orderId,
+                customer_name:     payload.Customer_Name || '',
+                confirmed_at:      new Date().toISOString(),
+                appointment_at:    payload.Appointment_Date || null,
+                deposit:           payload.Deposit  || 0,
+                balance:           payload.Balance  || 0,
+                additional_fee:    payload.Additional_Fee || 0,
+                final_sale_price:  payload.System_Final_Sale_Price || 0,
+                full_order_text:   payload.Full_Order_Text || '',
+                raw_form_state:    rawFormObj
             };
             const upRes = await fetch(SB_URL + '/rest/v1/orders?on_conflict=order_id', {
                 method: 'POST',
@@ -7157,13 +7415,19 @@
             // 3. Insert fresh items
             if (orderItemsArray && orderItemsArray.length > 0) {
                 const newItems = orderItemsArray.map(function(item) {
+                    // For P items: store pSubCat in specification (no FK; _deriveSpec returns '')
+                    var _spec = _deriveSpec(item.Order_Item_Key);
+                    if (!_spec && item.Product_Name) {
+                        if (item.Product_Name.includes('木框')) _spec = '木框款式';
+                        else if (item.Product_Name.includes('玻璃')) _spec = '玻璃瓶款式';
+                    }
                     return {
                         order_fhs_id:  orderId,
                         item_key:      item.Order_Item_Key,
                         item_category: _deriveCat(item.Order_Item_Key),
                         quantity:      item.Quantity || 1,
                         engraving_text: item.Notes || '',
-                        specification: _deriveSpec(item.Order_Item_Key),
+                        specification: _spec,
                         process_status: '待製作'
                     };
                 });
@@ -7178,6 +7442,10 @@
                 }
             }
             console.log('[sbSyncOrder] Supabase sync complete for', orderId);
+            // Fix 5B: immediately refresh Overview so new order appears without 5-min wait
+            setTimeout(function() {
+                if (window.fetchGlobalReview) window.fetchGlobalReview(true);
+            }, 400);
         }
         window.sbSyncOrder = sbSyncOrder;
 
@@ -7185,56 +7453,172 @@
         function mapOrder(row, itemsMap) {
             const orderId = row.order_id;
             const rawItems = (itemsMap && itemsMap[orderId]) || [];
+
+            // [Fix A Revised v2] Build direction pools from orders.raw_form_state
+            // Supabase order_items.item_key is stored in legacy pipe format with null specification,
+            // so direction MUST be derived from raw_form_state, not from item_key suffix.
+            const _rfs = (row.raw_form_state && typeof row.raw_form_state === 'object') ? row.raw_form_state : {};
+
+            // Ordered direction pools per product class
+            const _kPool  = [];  // baby keychain (K)
+            const _kePool = [];  // elder keychain (K_E)
+            const _mPool  = [];  // baby necklace/pendant (M) — each flag = independent limb
+            const _mePool = [];  // elder necklace/pendant (M_E)
+            // K baby
+            if (_rfs.k_lh_en)   _kPool.push('左手');
+            if (_rfs.k_rh_en)   _kPool.push('右手');
+            if (_rfs.k_lf_en)   _kPool.push('左腳');
+            if (_rfs.k_rf_en)   _kPool.push('右腳');
+            // K elder
+            if (_rfs.k_e_lh_en) _kePool.push('左手');
+            if (_rfs.k_e_rh_en) _kePool.push('右手');
+            if (_rfs.k_e_lf_en) _kePool.push('左腳');
+            if (_rfs.k_e_rf_en) _kePool.push('右腳');
+            // M baby — CORRECT mapping: lh=左手, rh=右手, lf=左腳, rf=右腳 (NOT combined)
+            if (_rfs.m_lh_en)   _mPool.push('左手');
+            if (_rfs.m_rh_en)   _mPool.push('右手');
+            if (_rfs.m_lf_en)   _mPool.push('左腳');
+            if (_rfs.m_rf_en)   _mPool.push('右腳');
+            // M elder
+            if (_rfs.m_e_lh_en) _mePool.push('左手');
+            if (_rfs.m_e_rh_en) _mePool.push('右手');
+            if (_rfs.m_e_lf_en) _mePool.push('左腳');
+            if (_rfs.m_e_rf_en) _mePool.push('右腳');
+
+            // Sequential assignment indices
+            let _kIdx = 0, _keIdx = 0, _mIdx = 0, _meIdx = 0;
+
             const mappedItems = rawItems.map(function(it) {
-                const ik = it.item_key || '';
-                const cat = it.item_category || '';
-                let spec = it.specification || '';
-                
-                // Fallback to key-based derivation if spec is empty (common in new-format orders)
-                if (!spec && ik) {
-                    const k = ik.toUpperCase();
-                    const prefix = (k.includes('_E_') || k.includes('_ELDER')) ? '大寶 ' : '';
-                    if (k.includes('_LH')) spec = prefix + '手 / 左手';
-                    else if (k.includes('_RH')) spec = prefix + '手 / 右手';
-                    else if (k.includes('_LF')) spec = prefix + '腳 / 左腳';
-                    else if (k.includes('_RF')) spec = prefix + '腳 / 右腳';
+                const _ik     = (it.item_key || '').toUpperCase();
+                const _ikOrig = (it.item_key || '');  // preserve original case for text matching
+                const _cat    = it.item_category || '';
+                let _spec     = it.specification || '';
+
+                // Step 1: Assign direction from raw_form_state pool
+                // Only supplement if spec currently lacks a direction qualifier (左/右)
+                if (!_spec.includes('左') && !_spec.includes('右')) {
+                    // Elder detection: for legacy pipe-format keys, check for text indicators
+                    const _isElder = _ik.includes('_K_E_') || _ik.includes('_M_E_')
+                                  || _ikOrig.includes('大寶') || _ikOrig.includes('長輩')
+                                  || _ikOrig.includes('家庭');
+
+                    if (_cat === '金屬鎖匙扣') {
+                        if (_isElder && _keIdx < _kePool.length) {
+                            let _found = -1;
+                            for (let i = _keIdx; i < _kePool.length; i++) {
+                                if (!_spec || (_spec.includes('手') && _kePool[i].includes('手')) || (_spec.includes('腳') && _kePool[i].includes('腳'))) { _found = i; break; }
+                            }
+                            const _use = _found >= 0 ? _found : _keIdx;
+                            if (_use < _kePool.length) { _spec = _kePool[_use]; _keIdx = _use + 1; }
+                        } else if (!_isElder && _kIdx < _kPool.length) {
+                            let _found = -1;
+                            for (let i = _kIdx; i < _kPool.length; i++) {
+                                if (!_spec || (_spec.includes('手') && _kPool[i].includes('手')) || (_spec.includes('腳') && _kPool[i].includes('腳'))) { _found = i; break; }
+                            }
+                            const _use = _found >= 0 ? _found : _kIdx;
+                            if (_use < _kPool.length) { _spec = _kPool[_use]; _kIdx = _use + 1; }
+                        }
+                    } else if (_cat === '純銀頸鏈吊飾' || _cat.includes('吊飾') || _cat.includes('頸鏈') || _cat === '銀飾') {
+                        // Pendant: distinguish elder vs baby by item_key text
+                        if (_isElder && _meIdx < _mePool.length) {
+                            const _use = _meIdx;
+                            _spec = _mePool[_use]; _meIdx = _use + 1;
+                        } else if (!_isElder && _mIdx < _mPool.length) {
+                            let _found = -1;
+                            for (let i = _mIdx; i < _mPool.length; i++) {
+                                if (!_spec || (_spec.includes('手') && _mPool[i].includes('手')) || (_spec.includes('腳') && _mPool[i].includes('腳'))) { _found = i; break; }
+                            }
+                            const _use = _found >= 0 ? _found : _mIdx;
+                            if (_use < _mPool.length) { _spec = _mPool[_use]; _mIdx = _use + 1; }
+                        }
+                    }
+                }
+
+                // Step 2: Fallback — try item_key suffix (for future new-format items in Supabase)
+                if (!_spec.includes('左') && !_spec.includes('右')) {
+                    if      (_ik.includes('_K_LH') || _ik.includes('_M_LH')) _spec = '左手';
+                    else if (_ik.includes('_K_RH') || _ik.includes('_M_RH')) _spec = '右手';
+                    else if (_ik.includes('_K_LF') || _ik.includes('_M_LF')) _spec = '左腳';
+                    else if (_ik.includes('_K_RF') || _ik.includes('_M_RF')) _spec = '右腳';
+                }
+                // Step 3: Last-resort fallback for legacy undirected specs (e.g. spec="腳" with no 左/右)
+                // MUST match the same fallback logic used in reconstructOrderFromSupabase
+                // so overview and edit mode show consistent direction info
+                if (!_spec.includes('左') && !_spec.includes('右')) {
+                    if      (_spec.includes('腳')) _spec = _spec.replace('腳', '左腳');
+                    else if (_spec.includes('手')) _spec = _spec.replace('手', '左手');
+                }
+
+                // Structured key: empty for legacy pipe format, pass through for new format
+                const _cleanKey = _ik.includes(' | ') ? '' : (it.item_key || '');
+
+                // Fix 4: For P items, supplement Specification and Engraving from raw_form_state
+                let _specFinal = _spec;
+                let _engFinal  = it.engraving_text || '';
+                if (_cat === '立體擺設') {
+                    const _pSubCat = _rfs.pSubCat || '';
+                    if (_pSubCat) _specFinal = _pSubCat + (_specFinal ? ' · ' + _specFinal : '');
+                    if (!_engFinal && _rfs.pEngraving) _engFinal = _rfs.pEngraving;
+                    // Fix 4D: derive limb count per person from raw_form_state.limb_sel_*
+                    var _fmtLimbs = function(h, f) {
+                        var t = h + f;
+                        if (t === 4) return '4肢';
+                        if (t === 2 && h === 2) return '2手';
+                        if (t === 2 && f === 2) return '2腳';
+                        if (t === 2) return '1手1腳';
+                        if (t === 1 && h === 1) return '1手';
+                        if (t === 1) return '1腳';
+                        if (t > 0) return t + '肢';
+                        return '';
+                    };
+                    // 嬰兒: 待定 = TBD color but limb IS planned → count it
+                    var _bH = 0, _bF = 0;
+                    ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_嬰兒_'+k]; if(v&&v!=='無') _bH++; });
+                    ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_嬰兒_'+k]; if(v&&v!=='無') _bF++; });
+                    var _babySum = _fmtLimbs(_bH, _bF);
+                    // 父母/大寶: 待定 = default empty → do NOT count
+                    var _limbPartsArr = _babySum ? [{who:'嬰兒', sum:_babySum}] : [];
+                    var _totalH = _bH, _totalF = _bF;
+                    ['父母','大寶'].forEach(function(_who){
+                        var _wH=0, _wF=0;
+                        ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無') _wH++; });
+                        ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無') _wF++; });
+                        var _wSum = _fmtLimbs(_wH, _wF);
+                        if (_wSum) { _limbPartsArr.push({who:_who, sum:_wSum}); _totalH += _wH; _totalF += _wF; }
+                    });
+                    // Append total to _specFinal so getProductDimensions can still detect pattern
+                    var _limbSummary = _fmtLimbs(_totalH, _totalF);
+                    if (_limbSummary) _specFinal = _specFinal + (_specFinal ? ' · ' : '') + _limbSummary;
                 }
 
                 return {
-                    Item_ID:        ik,       // getProductDimensions reads Item_ID
-                    Order_Item_Key: ik,
-                    Category:       cat,
+                    Item_ID:        it.item_key || '',
+                    Order_Item_Key: _cleanKey,
+                    OrderKey:       _cleanKey,
+                    Category:       _cat,
                     Qty:            it.quantity || 1,
                     Cost:           it.item_base_cost || 0,
                     Batch:          it.batch_number || '',
                     Status:         it.process_status || '待製作',
-                    Product_Name:   ik.split(' | ').slice(1).join(' | ').trim() || it.product_sku || '',
-                    Specification: (function(s, c) {
-                        if (!s) return '';
-                        if (c === '金屬鎖匙扣' || c === '銀飾') {
-                            if (!s.includes('左') && !s.includes('右')) {
-                                if (s.includes('腳')) return s + ' (左-預設)';
-                                if (s.includes('手')) return s + ' (左-預設)';
-                            }
-                        }
-                        return s;
-                    })(spec, cat),
-                    Engraving_Text: it.engraving_text || '',
-                    Engraving:      it.engraving_text || '',  // renderReviewTable reads item.Engraving
+                    Product_Name:   (it.item_key || '').split(' | ').slice(1).join(' | ').trim() || it.product_sku || '',
+                    Specification:  _specFinal,
+                    Engraving_Text: _engFinal,
+                    Engraving:      _engFinal,
+                    LimbParts:      (typeof _limbPartsArr !== 'undefined' && _limbPartsArr.length > 0) ? JSON.stringify(_limbPartsArr) : '',
                 };
             });
             return {
-                id:               orderId,                 // FHS order number — n8n Search Record uses Order_ID filter, safe for delete & update-meta
-                _uuid:            row.id || '',            // Supabase UUID kept for future direct writes
+                id:               orderId,
+                _uuid:            row.id || '',
                 Order_ID:         orderId,
-                Customer:         row.customer_name || '', // render uses o.Customer
+                Customer:         row.customer_name || '',
                 Date:             row.confirmed_at  || row.appointment_at || '',
                 Appointment_Date: row.appointment_at || '',
                 Final_Sale_Price: Number(row.final_sale_price) || 0,
                 Net_Profit:       Number(row.net_profit) || 0,
                 Total_Cost:       Number(row.total_cost) || 0,
                 Process_Status:   row.process_status || '待確認',
-                Batch:            row.batch_number || '',  // render uses o.Batch
+                Batch:            row.batch_number || '',
                 Admin_Notes:      row.admin_notes || '',
                 items:            mappedItems,
                 _source:          'supabase'
@@ -7271,7 +7655,8 @@
             // Build PostgREST filter against orders table
             // Only pass status values that exist in Supabase ENUM; manufacturing-step values cause errors
             const SB_ORDER_STATUSES = new Set(['待確認','製作中','完成','已取件','已取消']);
-            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
+            // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
+            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
 
             if (status && SB_ORDER_STATUSES.has(status)) qs['process_status'] = 'eq.' + status;
             if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';
@@ -7279,15 +7664,12 @@
 
             if (year && month) {
                 const m = month.padStart(2,'0');
-                qs['confirmed_at'] = 'gte.' + year + '-' + m + '-01';
-                // end of month
                 const lastDay = new Date(Number(year), Number(month), 0).getDate();
-                qs['confirmed_at'] = 'gte.' + year + '-' + m + '-01';
-                // PostgREST can't do two filters on same col in qs — use range header
-                delete qs['confirmed_at'];
-                qs['and'] = '(confirmed_at.gte.' + year + '-' + m + '-01,confirmed_at.lte.' + year + '-' + m + '-' + String(lastDay).padStart(2,'0') + ')';
+                const dEnd = year + '-' + m + '-' + String(lastDay).padStart(2,'0');
+                // Include orders with confirmed_at in range OR confirmed_at IS NULL (new/draft orders)
+                qs['and'] = '(or(confirmed_at.gte.' + year + '-' + m + '-01,confirmed_at.is.null),or(confirmed_at.lte.' + dEnd + ',confirmed_at.is.null))';
             } else if (year) {
-                qs['and'] = '(confirmed_at.gte.' + year + '-01-01,confirmed_at.lte.' + year + '-12-31)';
+                qs['and'] = '(or(confirmed_at.gte.' + year + '-01-01,confirmed_at.is.null),or(confirmed_at.lte.' + year + '-12-31,confirmed_at.is.null))';
             }
 
             const rows = await sbFetch('orders', qs);
@@ -7349,7 +7731,7 @@
                     orders = await sbFetchGlobalReview(year, month, status, batch, search);
                 } catch(err) {
                     console.warn('[V41 Supabase] fetchGlobalReview fallback to n8n:', err.message);
-                    sbBadge('⚠️ n8n fallback', '#E65100');
+                    sbBadge('⚠️ n8n 備援', '#E65100');
                     if (loading) loading.style.display = 'none';
                     return origFn.apply(this, arguments);
                 }
@@ -7380,7 +7762,7 @@
                     })
                     .catch(function(err) {
                         console.warn('[V41 Supabase] foFetchLive fallback:', err.message);
-                        sbBadge('⚠️ n8n fallback', '#E65100');
+                        sbBadge('⚠️ n8n 備援', '#E65100');
                         if (origFn) origFn.apply(this, arguments);
                     })
                     .finally(function() { window.FO_DATA_LOADING = false; });
@@ -7444,12 +7826,16 @@
                 const on = isSupabaseRead();
                 if (on) {
                     pill.classList.add('is-active');
-                    pill.innerHTML = '<span class="sb-status-dot"></span><span class="sb-text">Supabase ON</span>'
-                        + ' &nbsp;<span id="v41-sb-status" style="font-weight:400;font-size:10px;opacity:0.8;"></span>';
+                    pill.innerHTML = '<span class="sb-status-dot"></span>' +
+                        '<span class="sb-label-full">Supabase 已開啟</span>' +
+                        '<span class="sb-label-short">Supa ON</span>' +
+                        ' <span id="v41-sb-status" class="sb-status-msg"></span>';
                 } else {
                     pill.classList.remove('is-active');
-                    pill.innerHTML = '<span class="sb-status-dot"></span><span class="sb-text">Supabase OFF</span>'
-                        + ' &nbsp;<span id="v41-sb-status" style="font-weight:400;font-size:10px;opacity:0.8;"></span>';
+                    pill.innerHTML = '<span class="sb-status-dot"></span>' +
+                        '<span class="sb-label-full">Supabase 已關閉</span>' +
+                        '<span class="sb-label-short">Supa OFF</span>' +
+                        ' <span id="v41-sb-status" class="sb-status-msg"></span>';
                 }
             }
 

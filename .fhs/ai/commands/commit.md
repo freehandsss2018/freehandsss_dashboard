@@ -13,7 +13,7 @@
 
 ### P0.1 系統接通確認
 - **Hooks**: 確認 `scripts/hooks/` (session-start-sop.sh, prompt-router.js, pre-tool-guard.js) 與 `.claude/settings.json` 存在。
-- **Subagents**: 確認 `~/.claude/agents/freehandsss/` 下 6 個主要 agent 存在且非空。
+- **Subagents**: 確認 `~/.claude/agents/freehandsss/` 下 8 個主要 agent 存在且非空。
 - **🔴 失敗處理**：輸出「❌ 系統接通失敗」，指明缺失項並停止。
 
 ### P0.2 文件同步映射
@@ -24,12 +24,15 @@
 - 新增/刪除目錄 ↔ `docs/repo-map.md`
 - **🟡 警告**：列出未同步清單並確認。
 
-### P0.3 沉積與幽靈偵測
+### P0.3 沉積掃描
 - **Git Check**: 執行 `git status` 辨識疑似臨時檔 (test_*, fix_*, *_temp, *_draft)。
-- **Ghost Check**: 比對 `.fhs/ai/commands/` (Master) vs `.claude/commands/` (Bridge)。
-- **🟡 警告**：列出發現項，確認是否清除或補全。
+- **🟡 警告**：列出發現項，確認是否清除。
 
-### P0.4 狀態一致性
+### P0.4 幽靈偵測
+- **Ghost Check**: 比對 `.fhs/ai/commands/` (Master) vs `.claude/commands/` (Bridge)。
+- **🟡 警告**：列出發現項，確認是否補全指令橋接。
+
+### P0.5 狀態一致性
 - **Changelog.md** & **handoff.md**: 確保在本 session 已更新（若有代碼改動）。
 - **.env**: 嚴禁 Staging 包含真實 API Keys。
 - **🔴 失敗**：手動改動後未更 Changelog/Handoff 則禁止 commit。

@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// V47.2 Fix: Rate limit throttle for concurrent orders + hasItems guard\nconst batchItems = $(\"Batch SKU Collector\").all();\n\n// Rate limit guard: only delay when there are real SKUs to fetch\n// Prevents Airtable 429 when multiple orders arrive within seconds\nconst hasValidItems = batchItems.some(item => item.json.hasItems === true);\nif (hasValidItems) {\n  await new Promise(r => setTimeout(r, 250));\n}\n\n// Cache disabled (V47.1 reason: stale zero-cost data on NAS cache)\nreturn batchItems.map(item => ({\n  json: { ...item.json, useCache: false }\n}));",
+    "notice": ""
+  },
+  "id": "2bb644ad-7b4c-456e-884a-e2cbfd09a10e",
+  "name": "Smart Cache Strategist",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    31920,
+    7248
+  ],
+  "typeVersion": 2
+}

@@ -7581,8 +7581,8 @@
                     var _totalH = _bH, _totalF = _bF;
                     ['父母','大寶'].forEach(function(_who){
                         var _wH=0, _wF=0;
-                        ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無'&&v!=='待定') _wH++; });
-                        ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無'&&v!=='待定') _wF++; });
+                        ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無') _wH++; });
+                        ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無') _wF++; });
                         var _wSum = _fmtLimbs(_wH, _wF);
                         if (_wSum) { _limbPartsArr.push({who:_who, sum:_wSum}); _totalH += _wH; _totalF += _wF; }
                     });

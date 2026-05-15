@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// API V40.5 協議：本地數據映射 Mapping (存活定律版)\nconst costNode = $(\"Fetch Exact Base Cost\");\nconst originalItemsNode = $(\"Parse Items & Generate SKU\");\n\n// 確保節點存在且有資料，否則安全回退\nconst costResults = costNode ? costNode.all() : [];\nconst originalItems = originalItemsNode ? originalItemsNode.all() : [];\n\nconst costMap = {};\ncostResults.forEach(r => {\n    if (r.json && r.json.id) {\n        costMap[r.json.Product_Name] = {\n            id: r.json.id,\n            Product_Name: r.json.Product_Name,\n            Total_Base_Cost: Number(r.json.Total_Base_Cost) || 0\n        };\n    }\n});\n\nreturn originalItems.map(item => {\n    const sku = item.json.Search_SKU;\n    // 實裝 Section 14.5 數據映射存活定律：找不到成本則預設為 0\n    const costData = costMap[sku] || { id: null, Product_Name: sku, Total_Base_Cost: 0 };\n    return {\n        json: {\n            ...item.json,\n            ...costData\n        }\n    };\n});",
+    "notice": ""
+  },
+  "id": "bcf44653-be85-445b-ad3b-275eb11e1f1c",
+  "name": "Local Data Mapper",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    32016,
+    7424
+  ],
+  "typeVersion": 2
+}

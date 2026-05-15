@@ -105,6 +105,23 @@ async function batchUpsert(table, rows, batchSize = 50) {
 
 // ── Field mappers ─────────────────────────────────────────────────────────────
 
+// Fix P0-A: Airtable exports financial fields with "$" prefix (e.g. "$2160")
+// Number("$2160") returns NaN → fallback to 0/null silently corrupts all historical data
+function parseMoney(val) {
+  if (val == null || val === '') return null;
+  const n = parseFloat(String(val).replace(/[$,]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+// Fix P1-A: Airtable exports dates in Chinese format "2026年1月20日"
+// PostgreSQL DATE cannot parse this — converts to ISO "2026-01-20"
+function parseDate(val) {
+  if (!val) return null;
+  const zh = String(val).match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if (zh) return `${zh[1]}-${zh[2].padStart(2,'0')}-${zh[3].padStart(2,'0')}`;
+  return val; // already "YYYY-MM-DD", pass through
+}
+
 function mapOrder(rec) {
   const f = rec.fields;
   let rawFormState = {};
@@ -119,12 +136,12 @@ function mapOrder(rec) {
   return {
     order_id: f.Order_ID || rec.id,
     customer_name: f.Customer_Name || null,
-    appointment_at: f.Appointment_Date || null,       // Supabase column: appointment_at
-    confirmed_at: f.Order_Confirm_Date || null,       // Supabase column: confirmed_at
+    appointment_at: parseDate(f.Appointment_Date),   // Fix P1-A: Chinese date format
+    confirmed_at: parseDate(f.Order_Confirm_Date),
     process_status: mapOrderStatus(f.Process_Status),
-    final_sale_price: Number(f.Final_Sale_Price) || 0,
-    total_cost: Number(f.Total_Cost) || null,
-    net_profit: Number(f.Net_Profit) || null,
+    final_sale_price: parseMoney(f.Final_Sale_Price) ?? 0, // Fix P0-A: strip "$" prefix
+    total_cost: parseMoney(f.Total_Cost),
+    net_profit: parseMoney(f.Net_Profit),
     raw_form_state: rawFormState,
     full_order_text: f.Full_Order_Text || null,
     batch_number: f.Batch_Number || null,
@@ -140,24 +157,34 @@ function mapOrderStatus(status) {
   return MAP[status] || '待確認';
 }
 
-function mapOrderItem(rec, orderIdMap) {
+function mapOrderItem(rec, orderIdMap, orderBatchMap) {
   const f = rec.fields;
   // Airtable field: Order_Link (array of record IDs)
   const orderRecordId = (f.Order_Link || [])[0];
   const orderFhsId = orderIdMap[orderRecordId] || null;
   // Item_BaseCost is a rollup array in Airtable
   const baseCost = Array.isArray(f.Item_BaseCost) ? f.Item_BaseCost[0] : f.Item_BaseCost;
+  const baseCostNum = Number(baseCost) || 0;
   // Item_Category is an array
   const category = Array.isArray(f.Item_Category) ? f.Item_Category[0] : (f.Item_Category || null);
-  // Item_ID is the human-readable key (e.g. FHS-00123_K_LH); used by getProductDimensions
+  // Item_ID is the human-readable key; Order_Item_Key may be empty for older records
   const itemKey = f.Item_ID || rec.id;
+  const qty = Number(f.Quantity) || 1;
+
+  // Fix P2-A: Reference_Image is an attachment array in Airtable API
+  // CSV export uses URL strings; API response uses {url, filename} objects
+  let refImages = null;
+  if (Array.isArray(f.Reference_Image) && f.Reference_Image.length > 0) {
+    refImages = f.Reference_Image.map(a => (typeof a === 'string' ? a : a.url));
+  }
 
   return {
     order_fhs_id: orderFhsId,
     item_key: itemKey,
     product_sku: null,                           // Item_ID ≠ SKU format; skip FK to avoid constraint
-    quantity: Number(f.Quantity) || 1,
-    item_base_cost: Number(baseCost) || 0,
+    quantity: qty,
+    item_base_cost: baseCostNum,
+    subtotal_cost: baseCostNum * qty,            // Fix P2-C: compute subtotal (no Airtable field)
     item_category: category,
     handmodel_cost: f.Handmodel_Cost != null ? Number(f.Handmodel_Cost) : null,
     keychain_cost: f.Keychain_Cost != null ? Number(f.Keychain_Cost) : null,
@@ -165,7 +192,9 @@ function mapOrderItem(rec, orderIdMap) {
     specification: f.Specification || null,
     engraving_text: f.Engraving_Text || null,
     process_status: mapItemStatus(f.Process_Status || '待製作'),
-    batch_number: null,
+    reference_image_url: refImages,              // Fix P2-A: was never mapped
+    ai_suggestion: f.AI_Engraving_Suggestion || null, // Fix P2-A: was never mapped
+    batch_number: orderBatchMap[orderRecordId] || null, // Fix P2-B: inherit from parent order
   };
 }
 
@@ -179,9 +208,20 @@ function mapItemStatus(status) {
 function mapProduct(rec) {
   const f = rec.fields;
   return {
-    sku: f.SKU || f.Product_Name || rec.id,
-    main_category: f.Category || f.Type || null, // Supabase column: main_category
-    total_base_cost: Number(f.Base_Cost || f.Total_Base_Cost) || null,
+    // P0-C note: sku must exactly match n8n Search_SKU output for get_base_cost_by_skus to work
+    sku: f.Product_Name || f.SKU || rec.id,
+    // Fix P1-C: Airtable field is "Main_Category", not "Category" or "Type"
+    main_category: f.Main_Category || null,
+    // Fix P1-D: previously missing fields
+    target_object: f.Target_Object || null,
+    material: f.Material || null,
+    mode: f.Mode || null,
+    item_per_set: f.Item_Per_Set ? Number(f.Item_Per_Set) : 1,
+    // Fix P0-A: Total_Base_Cost may have "$" prefix if exported from certain views
+    total_base_cost: parseMoney(f.Total_Base_Cost) ?? parseMoney(f.Base_Cost),
+    suggested_price: parseMoney(f.Suggested_Price_Manual) ?? parseMoney(f.Suggested_Price),
+    markup_factor: f.Markup_Factor ? Number(f.Markup_Factor) : null,
+    // cost_config_id: not mapped — Linked_Base_Cost is a record link, requires 2-pass migration
   };
 }
 
@@ -190,17 +230,60 @@ function mapProduct(rec) {
 async function main() {
   console.log('=== FHS Airtable → Supabase Historical Migration ===\n');
 
+  // 0. Migrate Base_Costs → cost_configurations (Fix P1-B: was completely missing)
+  // Must run before Product_Database so cost_config_id FK can be resolved
+  console.log('[0/4] Fetching Base_Costs from Airtable...');
+  const costRecs = await airtableAll('Base_Costs');
+  console.log(`  Found ${costRecs.length} cost configs`);
+
+  const costRows = costRecs
+    .filter(r => r.fields['Linked_Base_Cost'] || r.fields['Config_Name'])
+    .map(r => {
+      const f = r.fields;
+      return {
+        // Airtable primary key field is the linked record label "Linked_Base_Cost"
+        config_name: f['Linked_Base_Cost'] || f['Config_Name'] || r.id,
+        drawing_cost: parseMoney(f.Drawing_Cost),
+        printing_cost: parseMoney(f.Printing_Cost),
+        clasp_cost: parseMoney(f.Clasp_Cost),
+        shipping_cost: parseMoney(f.Shipping_Cost),
+      };
+    });
+
+  // Build config_name → Supabase UUID map (for products.cost_config_id)
+  const configNameMap = {};
+  if (costRows.length > 0) {
+    await batchUpsert('cost_configurations', costRows);
+    // Fetch back to get UUIDs
+    const { body: configs } = await httpsRequest({
+      hostname: new URL(SUPABASE_URL).hostname,
+      path: '/rest/v1/cost_configurations?select=id,config_name',
+      method: 'GET',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+      }
+    });
+    if (Array.isArray(configs)) {
+      configs.forEach(c => { configNameMap[c.config_name] = c.id; });
+    }
+  }
+  console.log('  [OK] Base_Costs migrated\n');
+
   // 1. Migrate Main_Orders
-  console.log('[1/3] Fetching Main_Orders from Airtable...');
+  console.log('[1/4] Fetching Main_Orders from Airtable...');
   const orderRecs = await airtableAll('Main_Orders');
   console.log(`  Found ${orderRecs.length} orders`);
 
   // Build Airtable record ID → order_id map (for order_items FK)
+  // Build Airtable record ID → batch_number map (Fix P2-B: pass to order_items)
   const orderIdMap = {};
+  const orderBatchMap = {};
   const orderRows = orderRecs
     .filter(r => r.fields.Order_ID)
     .map(r => {
       orderIdMap[r.id] = r.fields.Order_ID;
+      orderBatchMap[r.id] = r.fields.Batch_Number || null;
       return mapOrder(r);
     });
 
@@ -209,13 +292,13 @@ async function main() {
   console.log('  [OK] Orders migrated\n');
 
   // 2. Migrate Order_Items
-  console.log('[2/3] Fetching Order_Items from Airtable...');
+  console.log('[2/4] Fetching Order_Items from Airtable...');
   const itemRecs = await airtableAll('Order_Items');
   console.log(`  Found ${itemRecs.length} items`);
 
   const itemRows = itemRecs
     .filter(r => (r.fields.Order_Link || []).length > 0)
-    .map(r => mapOrderItem(r, orderIdMap))
+    .map(r => mapOrderItem(r, orderIdMap, orderBatchMap))
     .filter(r => r.order_fhs_id); // skip orphaned items
 
   console.log(`  Upserting ${itemRows.length} items to Supabase...`);
@@ -223,22 +306,36 @@ async function main() {
   console.log('  [OK] Items migrated\n');
 
   // 3. Migrate Product_Database
-  console.log('[3/3] Fetching Product_Database from Airtable...');
+  console.log('[3/4] Fetching Product_Database from Airtable...');
   const productRecs = await airtableAll('Product_Database');
   console.log(`  Found ${productRecs.length} products`);
 
   const productRows = productRecs
-    .filter(r => r.fields.SKU || r.fields.Product_Name)
-    .map(r => mapProduct(r));
+    .filter(r => r.fields.Product_Name || r.fields.SKU)
+    .map(r => {
+      const row = mapProduct(r);
+      // Resolve cost_config_id from Linked_Base_Cost label (Fix P2-D)
+      const linkedName = Array.isArray(r.fields.Linked_Base_Cost)
+        ? r.fields.Linked_Base_Cost[0]
+        : r.fields.Linked_Base_Cost;
+      if (linkedName && configNameMap[linkedName]) {
+        row.cost_config_id = configNameMap[linkedName];
+      }
+      return row;
+    });
 
   console.log(`  Upserting ${productRows.length} products to Supabase...`);
   await batchUpsert('products', productRows);
   console.log('  [OK] Products migrated\n');
 
   console.log('=== Migration complete ===');
-  console.log(`  Orders:   ${orderRows.length}`);
-  console.log(`  Items:    ${itemRows.length}`);
-  console.log(`  Products: ${productRows.length}`);
+  console.log(`  Cost configs: ${costRows.length}`);
+  console.log(`  Orders:       ${orderRows.length}`);
+  console.log(`  Items:        ${itemRows.length}`);
+  console.log(`  Products:     ${productRows.length}`);
+  console.log('\n⚠️  Note: item_key format for historical records uses Airtable Item_ID format.');
+  console.log('   n8n new orders use a different format — they will NOT conflict (different keys).');
+  console.log('   Run: SELECT COUNT(*) FROM order_items WHERE item_key LIKE \'%|%\' to audit.');
 }
 
 main().catch(err => {
