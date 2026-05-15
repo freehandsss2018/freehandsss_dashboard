@@ -157,7 +157,7 @@ function mapOrderStatus(status) {
   return MAP[status] || '待確認';
 }
 
-function mapOrderItem(rec, orderIdMap, orderBatchMap) {
+function mapOrderItem(rec, orderIdMap, orderBatchMap, productSkuMap) {
   const f = rec.fields;
   // Airtable field: Order_Link (array of record IDs)
   const orderRecordId = (f.Order_Link || [])[0];
@@ -170,6 +170,9 @@ function mapOrderItem(rec, orderIdMap, orderBatchMap) {
   // Item_ID is the human-readable key; Order_Item_Key may be empty for older records
   const itemKey = f.Item_ID || rec.id;
   const qty = Number(f.Quantity) || 1;
+  // Resolve product_sku from Product_Link → productSkuMap (Step 1.5 pre-fetch)
+  const productRecordId = Array.isArray(f.Product_Link) ? f.Product_Link[0] : (f.Product_Link || null);
+  const productSku = (productSkuMap && productRecordId) ? (productSkuMap[productRecordId] || null) : null;
 
   // Fix P2-A: Reference_Image is an attachment array in Airtable API
   // CSV export uses URL strings; API response uses {url, filename} objects
@@ -181,7 +184,7 @@ function mapOrderItem(rec, orderIdMap, orderBatchMap) {
   return {
     order_fhs_id: orderFhsId,
     item_key: itemKey,
-    product_sku: null,                           // Item_ID ≠ SKU format; skip FK to avoid constraint
+    product_sku: productSku,                     // Resolved from Product_Link → productSkuMap
     quantity: qty,
     item_base_cost: baseCostNum,
     subtotal_cost: baseCostNum * qty,            // Fix P2-C: compute subtotal (no Airtable field)
@@ -291,6 +294,17 @@ async function main() {
   await batchUpsert('orders', orderRows);
   console.log('  [OK] Orders migrated\n');
 
+  // 1.5. Pre-fetch Product_Database to build SKU map (before Order_Items, for product_sku resolution)
+  console.log('[1.5/4] Pre-fetching Product_Database for SKU map...');
+  const productRecs = await airtableAll('Product_Database');
+  const productSkuMap = {};
+  productRecs.forEach(r => {
+    if (r.fields.Product_Name || r.fields.SKU) {
+      productSkuMap[r.id] = r.fields.Product_Name || r.fields.SKU;
+    }
+  });
+  console.log(`  Built SKU map: ${Object.keys(productSkuMap).length} products`);
+
   // 2. Migrate Order_Items
   console.log('[2/4] Fetching Order_Items from Airtable...');
   const itemRecs = await airtableAll('Order_Items');
@@ -298,16 +312,15 @@ async function main() {
 
   const itemRows = itemRecs
     .filter(r => (r.fields.Order_Link || []).length > 0)
-    .map(r => mapOrderItem(r, orderIdMap, orderBatchMap))
+    .map(r => mapOrderItem(r, orderIdMap, orderBatchMap, productSkuMap))
     .filter(r => r.order_fhs_id); // skip orphaned items
 
   console.log(`  Upserting ${itemRows.length} items to Supabase...`);
   await batchUpsert('order_items', itemRows);
   console.log('  [OK] Items migrated\n');
 
-  // 3. Migrate Product_Database
-  console.log('[3/4] Fetching Product_Database from Airtable...');
-  const productRecs = await airtableAll('Product_Database');
+  // 3. Migrate Product_Database (upsert using already-fetched productRecs from Step 1.5)
+  console.log('[3/4] Upserting Product_Database to Supabase...');
   console.log(`  Found ${productRecs.length} products`);
 
   const productRows = productRecs
@@ -331,11 +344,13 @@ async function main() {
   console.log('=== Migration complete ===');
   console.log(`  Cost configs: ${costRows.length}`);
   console.log(`  Orders:       ${orderRows.length}`);
+  console.log(`  SKU map:      ${Object.keys(productSkuMap).length} entries`);
   console.log(`  Items:        ${itemRows.length}`);
   console.log(`  Products:     ${productRows.length}`);
   console.log('\n⚠️  Note: item_key format for historical records uses Airtable Item_ID format.');
   console.log('   n8n new orders use a different format — they will NOT conflict (different keys).');
-  console.log('   Run: SELECT COUNT(*) FROM order_items WHERE item_key LIKE \'%|%\' to audit.');
+  console.log("   Run: SELECT COUNT(*) FROM order_items WHERE item_key LIKE '%|%' to audit.");
+
 }
 
 main().catch(err => {

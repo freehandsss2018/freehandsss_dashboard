@@ -19,7 +19,8 @@ freehandsss_dashboard/
 │   ├── migrations/
 │   │   ├── 0001_initial_schema.sql      ← 初始建表 DDL（6 表 + 索引 + ENUM）
 │   │   ├── 0002_add_deleted_at.sql      ← 軟刪除欄位（orders.deleted_at）
-│   │   └── 0003_base_cost_view_and_rpc.sql ← v_products_with_costs VIEW + get_base_cost_by_skus RPC（2026-05-15，Supabase-First Phase 1）
+│   │   ├── 0003_base_cost_view_and_rpc.sql ← v_products_with_costs VIEW + get_base_cost_by_skus RPC（2026-05-15，Supabase-First Phase 1）
+│   │   └── 0004_cost_infrastructure.sql    ← recalculate_product_costs() + v_order_cost_breakdown VIEW（2026-05-15，Supabase-First Phase 2）
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
