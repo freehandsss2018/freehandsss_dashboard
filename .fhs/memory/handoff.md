@@ -1,8 +1,27 @@
-# FHS Handoff - 2026-05-16 (V41 Finance Mode → Supabase 接回 + 定價優惠記錄)
+# FHS Handoff - 2026-05-16 (V41 Finance Mode bugs 修正 + 新 Session 待辦)
 
 ---
 
-## 本次 Session 完成事項（最新，Finance Mode Supabase 接回）
+## 本次 Session 完成事項（最新補充，Finance Mode Bug 修正）
+
+### ✅ Finance Mode current tab 修正
+
+**問題**：
+1. 趨勢線圖空白 — `current` tab 的 chart RPC 只返回 1 個月數據點（MTD），`foDrawLine` 無法畫線
+2. 訂單數錯誤 — `current` tab 用 `tab_mode:'current'`（本月初至今），不符合業務預期
+
+**根因**：`current` tab 應顯示 YTD（今年1月至今），但 RPC 用了 MTD 模式
+
+**修正**：`current` tab 4 個 RPC calls 的 `tab_mode: 'current'` → `tab_mode: 'yearly'`
+- 訂單數：現顯示今年全年（Jan 2026至今）✅
+- 趨勢線圖：現返回逐月5個點（Jan-May 2026）✅
+- 同步更新 V41.html + current.html
+
+**注意**：`current` tab 與 `yearly` tab 現在使用相同 RPC 資料（均為YTD），待 V42 再分拆差異化。
+
+---
+
+## 本次 Session 完成事項（Finance Mode Supabase 接回）
 
 ### ✅ V41 Finance Mode — 完整接回 Supabase RPC
 
@@ -80,12 +99,42 @@
 
 ---
 
-## 待執行（人工）
+## 待辦 ⏳ 項目（交新 Session 處理）
 
-⚠️ **Migration 0008 尚未執行**：
-- 檔案：`supabase/migrations/0008_order_0600802_admin_notes.sql`
-- 動作：在 Supabase SQL Editor 貼入並 Run
-- 內容：更新訂單 0600802 admin_notes（定價優惠說明）
+### 🔴 需驗證（優先）
+
+1. **Finance Mode 視覺全面驗證**
+   - 三個 Tab（Current/Monthly/Yearly）數字是否符合預期
+   - Monthly tab 的趨勢線圖（6個月）是否正確
+   - Bar Chart、Pie Chart 品類分布是否正確
+   - ⚠️ 目前 `current` 與 `yearly` tab 顯示相同數據（均為YTD），需向 Fat Mo 確認是否接受，或 V42 再分拆
+
+2. **Monthly tab 行為確認**
+   - RPC `monthly` 模式：`cur_end = 本月最後一日（May 31）`，是「完整當月」
+   - 趨勢圖用 `monthly` charts（6個月 Dec-May），與 KPI 時間範圍不同步
+   - 需確認是否符合 Fat Mo 預期
+
+### 📋 架構後續（排期）
+
+3. **Anti-Idle Ping**：n8n Schedule Trigger 每 6 天 ping Supabase（防 free tier 休眠）
+4. **pg_cron TTL**：`error_logs` 30 天自動清理
+5. **Airtable quota 重置後**：驗證 `SUPABASE_SKIP` fallback 不再觸發 429
+
+### 📋 Backlog（中優先）
+
+6. **n8n Create Sub Items 安全網**
+   - 確認 Node 17 是否「先刪再建」，若有需改為純 upsert
+   - 參見 `.fhs/notes/pending_tasks/2026-05-03_n8n_order_items_safety_net.md`
+
+7. **adjustment_amount 接入 Dashboard**
+   - V41 HTML 目前完全未讀取此欄位，手動折扣無法顯示於 UI
+
+### 🎯 下一個版本 V42
+
+8. **V42 Dashboard 介面優化 + 動畫系統**（cl-final-plan 已規劃）
+   - Finance Mode `current` vs `yearly` tab 差異化
+   - UI 視覺升級、動畫系統
+   - 啟動方式：`/cl-flow-fast V42 介面優化`
 
 ---
 
