@@ -6,13 +6,13 @@
 
 ## 初始化步驟（必做）
 
-1. 讀取 `/.fhs/ai/AGENTS.md`（憲法層 v1.4.1）— 同步所有規則
+1. 讀取 `/.fhs/ai/AGENTS.md`（憲法層 v1.4.5）— 同步所有規則
 2. 讀取 `/.fhs/memory/handoff.md` — 同步上次 session 狀態與待辦
 3. 輸出系統狀態報告（版本號、當前基準版本、未解決項目）
 
 ---
 
-## 系統快照（2026-05-12 更新）
+## 系統快照（2026-05-16 更新）
 
 | 項目 | 現況 |
 |------|------|
@@ -23,6 +23,8 @@
 | n8n Workflow | V45.7.4（Supabase-First 邏輯啟用） |
 | Airtable Base | app9GuLsW9frN4xaT |
 | 數據源 | **Supabase (Primary Lead) + Airtable (Fallback Backup)** |
+| database-reviewer | v2.1.0（Supabase Layer 1/2 優先順序重組） |
+| finance-auditor | v2.0.0（Quadruple 四端架構，Supabase 主導） |
 
 ---
 
