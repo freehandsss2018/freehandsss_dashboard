@@ -65,6 +65,7 @@ freehandsss_dashboard/
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
 │   │   ├── AGENTS.md                   ← 憲法層 v1.4.5（2026-05-13 更新：Supabase 四端共存規則）
+│   │   ├── FHS_Finance_Bible.md        ← 財務計算聖經 v1.0.0（2026-05-16 新增：雙層成本架構、SKU映射、驗證公式，subagent 強制前置讀取）
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
@@ -93,8 +94,8 @@ freehandsss_dashboard/
 │   │   │       ├── ui-designer.md       ← v2.0.0 Phase A 設計（iPhone/Desktop 響應式，廢除雙模式）
 │   │   │       ├── frontend-developer.md ← Phase B 原型（使用 Input Contract）
 │   │   │       ├── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
-│   │   │       ├── database-reviewer.md ← v1.0.0 Airtable schema + n8n 資料流審查（2026-04-28 新增）
-│   │   │       ├── finance-auditor.md   ← v1.0.0 三端財務稽核員（Live Airtable + n8n + Dashboard，Supabase 就緒，2026-05-10 新增）
+│   │   │       ├── database-reviewer.md ← v2.0.0 Airtable schema + n8n 資料流審查（2026-05-16 升級：Quadruple Sync + Finance Bible 強制讀取）
+│   │   │       ├── finance-auditor.md   ← v2.0.0 四端財務稽核員（Supabase-First，Finance Bible 強制前置，2026-05-16 升級）
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
 │       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）

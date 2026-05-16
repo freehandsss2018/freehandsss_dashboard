@@ -1,0 +1,15 @@
+{
+  "name": "Mirror to Supabase",
+  "type": "n8n-nodes-base.code",
+  "typeVersion": 2,
+  "position": [
+    32000,
+    7800
+  ],
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// === FHS Supabase Mirror Write — CREATE path (Phase 2) ===\n// Parallel branch after Create Sub Items. Airtable write already complete.\n// Failure is ISOLATED — never throws to main flow.\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\nconst hdrs = {\n  'apikey': SUPABASE_KEY,\n  'Authorization': `Bearer ${SUPABASE_KEY}`,\n  'Content-Type': 'application/json',\n  'Prefer': 'resolution=merge-duplicates,return=minimal'\n};\n\nasync function upsert(table, conflictCol, payload) {\n  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${conflictCol}`, {\n    method: 'POST', headers: hdrs, body: JSON.stringify(payload)\n  });\n  if (!res.ok) throw new Error(`${table}: ${res.status} ${await res.text()}`);\n}\n\ntry {\n  const calc = $('Calculate Profit & Pack Items').first().json;\n  const orderId = calc.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing from Calculate Profit node');\n\n  let rawFormState = {};\n  try {\n    rawFormState = typeof calc.Raw_Form_State === 'string'\n      ? JSON.parse(calc.Raw_Form_State || '{}')\n      : (calc.Raw_Form_State || {});\n  } catch(e) { rawFormState = { raw: String(calc.Raw_Form_State) }; }\n\n  await upsert('orders', 'order_id', {\n    order_id: orderId,\n    customer_name: calc.Customer_Name || orderId,\n    appointment_at: calc.Appointment_Date || null,\n    confirmed_at: calc.Order_Confirm_Date || null,\n    process_status: '待確認',\n    final_sale_price: calc.Total_Revenue || 0,\n    total_cost: calc.Total_Cost || 0,\n    net_profit: calc.Final_Profit || 0,\n    raw_form_state: rawFormState\n  });\n\n  const subItems = calc.Sub_Items || [];\n  for (const item of subItems) {\n    const key = item.Order_Item_Key;\n    if (!key) continue;\n    await upsert('order_items', 'item_key', {\n      order_fhs_id: orderId,\n      item_key: key,\n      product_sku: null,\n      quantity: item.Quantity || 1,\n      item_base_cost: item.Total_Base_Cost || 0,\n      process_status: '待製作'\n    });\n  }\n\n  return [{ json: { mirrored: true, order_id: orderId, items: subItems.length } }];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
+  },
+  "id": "5e6d7bc0-1c83-4eda-9af7-ca72fd9d958d"
+}

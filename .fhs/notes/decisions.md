@@ -7,6 +7,23 @@
 
 ## 記錄
 
+[2026-05-16] Supabase-First 財務遷移 — n8n V47.4 + Finance Bible + 四端架構完成
+
+決策：
+- **n8n `Calculate Profit & Pack Items` 升級 V47.4**：新增 `getItemCategory(sku)` 函數推導 item_category（木框/玻璃瓶→立體擺設，鎖匙扣→金屬鎖匙扣，吊飾→銀飾）。每個 packed item 新增 `Item_Category`、`Handmodel_Cost`、`Keychain_Cost`、`Necklace_Cost`。訂單層新增 `Handmodel_Cost_Total`、`Keychain_Cost_Total`、`Necklace_Cost_Total`。鎖匙扣運費扣減同步套用至 `keychainCostTotal`。
+- **n8n `Mirror to Supabase` 升級 V47.4**：orders upsert 補入 `deposit`、`balance`、`additional_fee`、`full_order_text`、`handmodel_cost`、`keychain_cost`、`necklace_cost`。order_items upsert 修正 `product_sku`（從 hardcoded null 改為 `item.Product_Name || null`）並新增 `item_category`、`handmodel_cost`、`keychain_cost`、`necklace_cost`、`subtotal_cost`、`specification`。
+- **建立 `.fhs/ai/FHS_Finance_Bible.md` v1.0.0**：統一財務計算聖經，10 節涵蓋雙層成本架構、SKU映射、節點職責、驗證公式、反模式。所有涉及財務的 subagent 強制在執行前讀取此文件。
+- **subagent 升級至 v2.0.0**：`database-reviewer` 和 `finance-auditor` 均升級，加入 Finance Bible 強制前置讀取（Phase 0），將 Triple Sync 欄位地圖參照改為 Quadruple Sync，`finance-auditor` 架構從三端升為四端（新增 Supabase 為 Tier 1 主導）。
+- **雙層成本架構確認**：Layer 1（Supabase View 動態）提供即時報價，Layer 2（n8n 靜態寫入）保存歷史快照。Supabase trigger/generated column 嚴禁計算財務欄位。
+
+根因修正（C0.5）：
+- 23 筆 Supabase 歷史訂單 `handmodel/keychain/necklace_cost = NULL`：根因是 Mirror to Supabase 節點從未包含這些欄位，已在 V47.4 修正。歷史訂單需另行 backfill（待 Airtable quota 重置後）。
+- 2 筆 order_items `product_sku = NULL`：order 0600100 特殊品（立體擺設 + 金屿扣/腳）因無標準 SKU 匹配，NULL 屬正確行為，無需修正。
+
+批准：Fat Mo ✅（2026-05-16 授權處理）
+
+---
+
 [2026-05-10] finance-auditor Subagent v1.0.0 — 三端財務稽核員建立
 
 決策：

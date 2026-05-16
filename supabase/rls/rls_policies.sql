@@ -24,6 +24,12 @@ CREATE POLICY "orders_anon_read"
   TO anon
   USING (true);
 
+-- anon: DELETE (Dashboard hard-delete feature)
+CREATE POLICY "orders_anon_delete"
+  ON orders FOR DELETE
+  TO anon
+  USING (true);
+
 -- service_role: full access (bypasses RLS, no policy needed, but explicit for clarity)
 CREATE POLICY "orders_service_full"
   ON orders FOR ALL

@@ -1,5 +1,28 @@
 # FHS Dashboard Changelog
 
+## [V47.4] — 2026-05-16
+
+### n8n Workflow: Supabase-First Cost Architecture (C0.5 Fix)
+
+**Workflow ID**: `6Ljih0hSKr9RpYNm`
+
+#### Node: `Calculate Profit & Pack Items`
+- Added `getItemCategory(sku)` function: derives `item_category` from SKU string (木框/玻璃瓶→立體擺設, 鎖匙扣→金屬鎖匙扣, 吊飾→銀飾)
+- Each packed item now includes: `Item_Category`, `Handmodel_Cost`, `Keychain_Cost`, `Necklace_Cost`
+- Return payload now includes order-level: `Handmodel_Cost_Total`, `Keychain_Cost_Total`, `Necklace_Cost_Total`
+- Keychain shipping deduction `(keychainItemCount - 1) × $20` now applied to `keychainCostTotal` (Bible V3.7 §2.5)
+
+#### Node: `Mirror to Supabase`
+- **orders upsert**: added `deposit`, `balance`, `additional_fee`, `full_order_text`, `handmodel_cost`, `keychain_cost`, `necklace_cost`
+- **order_items upsert**: `product_sku` changed from hardcoded `null` → `item.Product_Name || null`; added `item_category`, `handmodel_cost`, `keychain_cost`, `necklace_cost`, `subtotal_cost`, `specification`
+
+### Knowledge System: FHS Finance Bible
+- Created `.fhs/ai/FHS_Finance_Bible.md` v1.0.0 — mandatory pre-task reading for all financial tasks
+- Upgraded `database-reviewer` → v2.0.0 (Finance Bible Phase 0, Quadruple Sync)
+- Upgraded `finance-auditor` → v2.0.0 (Finance Bible Phase 0, 4-tier Supabase-First architecture)
+
+---
+
 ## [V1.4.1] — 2026-04-18
 
 ### System: Versioning Alignment

@@ -662,6 +662,21 @@
         .review-table tbody td { padding:10px; border-right:1px solid #f0f0f0; vertical-align:top; font-size:13px; line-height:1.5; }
         .review-table tbody td:last-child { border-right:none; }
 
+        /* === 任務一：複選 checkbox 欄 === */
+        .review-cb-th { width:36px; min-width:36px; text-align:center !important; padding:8px 4px !important; }
+        .review-cb-td { width:36px; min-width:36px; text-align:center; padding:8px 4px; vertical-align:top; }
+        .review-cb-td input[type=checkbox], .review-cb-th input[type=checkbox] { width:16px; height:16px; cursor:pointer; accent-color:var(--fhs-danger,#E63946); }
+        #bulkDeleteBar { display:none; align-items:center; gap:12px; padding:10px 16px; background:#fff3f3; border:1px solid #ffcccc; border-radius:var(--radius-md,8px); margin-bottom:12px; }
+        #bulkDeleteBar.visible { display:flex; }
+        #bulkDeleteBtn { padding:8px 18px; background:var(--fhs-danger,#E63946); color:#fff; border:none; border-radius:var(--radius-md,8px); font-weight:700; font-size:13px; cursor:pointer; transition:opacity .15s; }
+        #bulkDeleteBtn:hover { opacity:0.85; }
+        #bulkDeleteProgress { font-size:13px; color:#cc4444; font-weight:600; }
+
+        /* === 任務二：排序 header 箭頭 === */
+        .sort-th { cursor:pointer; user-select:none; }
+        .sort-th:hover { background:rgba(255,255,255,0.08) !important; }
+        .sort-arrow { display:inline-block; margin-left:4px; font-size:10px; opacity:0.7; }
+
         /* === 子項目矩陣網格列 (Item Row Grid) === */
         .review-item-row {
             display: grid;
@@ -2035,25 +2050,35 @@
                 </button>
             </div>
 
+            <!-- 任務一：批量刪除工具列 -->
+            <div id="bulkDeleteBar">
+                <button id="bulkDeleteBtn" onclick="executeBulkDelete()">🗑️ 刪除已選 (<span id="bulkDeleteCount">0</span>)</button>
+                <span id="bulkDeleteProgress"></span>
+                <button onclick="clearAllSelections()" style="padding:6px 14px; background:transparent; border:1px solid #ccc; border-radius:var(--radius-md,8px); font-size:13px; cursor:pointer;">取消選擇</button>
+            </div>
+
             <div class="review-table-wrap" style="overflow-x:auto; max-height:72vh; width:100%; border-radius:var(--radius-lg); background:#fff; border:1px solid var(--fhs-border);">
                 <table class="review-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:var(--fhs-text-sm);" id="reviewTable">
                     <thead style="position:sticky; top:0; z-index:20; background:#fff; box-shadow:0 1px 0 var(--fhs-border);">
                         <tr>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:90px;">📝 單號</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;">📅 日期</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;">👤 客人</th>
+                            <th class="review-cb-th" style="padding:8px 4px; background:#f5f5f5; border:none;">
+                                <input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)">
+                            </th>
+                            <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:90px;" onclick="sortReviewTable('Order_ID')">📝 單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
+                            <th class="sort-th" data-sort="Date" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;" onclick="sortReviewTable('Date')">📅 日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
+                            <th class="sort-th" data-sort="Customer" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;" onclick="sortReviewTable('Customer')">👤 客人<span class="sort-arrow" id="sort-arrow-Customer"></span></th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">📝 備註</th>
-                            <th style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">💰 成本</th>
-                            <th style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">🏆 利潤</th>
+                            <th class="sort-th" data-sort="Total_Cost" style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Total_Cost')">💰 成本<span class="sort-arrow" id="sort-arrow-Total_Cost"></span></th>
+                            <th class="sort-th" data-sort="Net_Profit" style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Net_Profit')">🏆 利潤<span class="sort-arrow" id="sort-arrow-Net_Profit"></span></th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:160px;">✂️ 刻字</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:200px;">📦 產品明細</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;">🏷️ 批次</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">🚥 進度</th>
+                            <th class="sort-th" data-sort="Status" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;" onclick="sortReviewTable('Status')">🚥 進度<span class="sort-arrow" id="sort-arrow-Status"></span></th>
                         </tr>
                     </thead>
                     <tbody id="reviewTableBody">
                         <tr>
-                            <td colspan="10" style="padding:48px; text-align:center; color:var(--fhs-text-muted); font-size:var(--fhs-text-sm);">請選擇上方條件載入資料</td>
+                            <td colspan="11" style="padding:48px; text-align:center; color:var(--fhs-text-muted); font-size:var(--fhs-text-sm);">請選擇上方條件載入資料</td>
                         </tr>
                     </tbody>
                 </table>
@@ -5252,6 +5277,13 @@
         let reviewFetchTimeout = null;
         let globalOrders = [];
 
+        // === 任務一：複選功能 ===
+        let selectedOrderIds = new Set();
+
+        // === 任務二：欄位排序 ===
+        let sortField = null;
+        let sortDir = 'asc';
+
         // --- 防爆機制：全域更新佇列 (Debounce Queue) ---
         let metadataUpdateQueue = [];
         let metadataUpdateTimer = null;
@@ -5576,7 +5608,7 @@
 
             showLoader("正在載入全域核對資料...");
             loading.style.display = "inline";
-            tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
 
             let fetchUrl = getWebhookUrl("https://yanhei.synology.me:8443/webhook/fetch-global-review");
             const params = [];
@@ -5595,7 +5627,7 @@
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
                     if (attempt > 1) {
-                        tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#888;">⏳ Airtable 流量限制，第 ${attempt} 次重試中...</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="11" style="padding:20px; text-align:center; color:#888;">⏳ Airtable 流量限制，第 ${attempt} 次重試中...</td></tr>`;
                         await new Promise(r => setTimeout(r, attempt * 2000));
                     }
                     const res = await fetch(fetchUrl, { method: 'GET' });
@@ -5612,7 +5644,7 @@
                         if (attempt < 3) continue;
                     } else {
                         loading.style.display = "none";
-                        tbody.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="11" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
                         hideLoader();
                         return;
                     }
@@ -5622,7 +5654,7 @@
                 }
             }
             loading.style.display = "none";
-            tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
             hideLoader();
         }
 
@@ -5803,7 +5835,7 @@
 
             const tbody = document.getElementById("reviewTableBody");
             if (!orders || orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
                 const badge = document.getElementById('reviewCountBadge');
                 if (badge) { badge.style.display = 'none'; }
                 return;
@@ -5824,7 +5856,11 @@
                 const itemsCount = o.items && o.items.length > 0 ? o.items.length : 1;
                 
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
+                const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
                 const orderLeftColsHtml = `
+                    <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:1px solid #ebebeb;">
+                        <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
+                    </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:13px; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">
                         <div class="review-jump-pill" onclick="jumpToEditOrder('${o.Order_ID}')">
                             ${o.Order_ID || 'N/A'} ➜
@@ -6018,6 +6054,187 @@
             });
 
             tbody.innerHTML = html;
+
+            // 任務一：重繪後同步 master checkbox 狀態
+            _syncMasterCheckbox();
+        }
+
+        // ========================================================
+        // 任務一：複選功能 (Multi-select)
+        // ========================================================
+
+        function toggleOrderSelection(orderId, checked) {
+            if (checked) {
+                selectedOrderIds.add(orderId);
+            } else {
+                selectedOrderIds.delete(orderId);
+            }
+            _syncBulkDeleteBar();
+            _syncMasterCheckbox();
+        }
+
+        function toggleMasterCheckbox(checked) {
+            const checkboxes = document.querySelectorAll('.order-row-cb');
+            checkboxes.forEach(cb => {
+                const oid = cb.dataset.orderId;
+                cb.checked = checked;
+                if (checked) {
+                    selectedOrderIds.add(oid);
+                } else {
+                    selectedOrderIds.delete(oid);
+                }
+            });
+            _syncBulkDeleteBar();
+        }
+
+        function clearAllSelections() {
+            selectedOrderIds.clear();
+            document.querySelectorAll('.order-row-cb').forEach(cb => cb.checked = false);
+            const master = document.getElementById('masterCheckbox');
+            if (master) master.checked = false;
+            _syncBulkDeleteBar();
+        }
+
+        function _syncBulkDeleteBar() {
+            const bar = document.getElementById('bulkDeleteBar');
+            const countEl = document.getElementById('bulkDeleteCount');
+            if (!bar) return;
+            const n = selectedOrderIds.size;
+            if (n > 0) {
+                bar.classList.add('visible');
+                if (countEl) countEl.textContent = n;
+            } else {
+                bar.classList.remove('visible');
+                if (countEl) countEl.textContent = '0';
+            }
+        }
+
+        function _syncMasterCheckbox() {
+            const master = document.getElementById('masterCheckbox');
+            if (!master) return;
+            const allCbs = document.querySelectorAll('.order-row-cb');
+            if (allCbs.length === 0) { master.checked = false; master.indeterminate = false; return; }
+            const checkedCount = Array.from(allCbs).filter(cb => cb.checked).length;
+            if (checkedCount === 0) { master.checked = false; master.indeterminate = false; }
+            else if (checkedCount === allCbs.length) { master.checked = true; master.indeterminate = false; }
+            else { master.checked = false; master.indeterminate = true; }
+        }
+
+        async function executeBulkDelete() {
+            const ids = Array.from(selectedOrderIds);
+            if (ids.length === 0) return;
+            if (!confirm(`確定要刪除 ${ids.length} 筆訂單嗎？此操作無法復原。`)) return;
+
+            const btn = document.getElementById('bulkDeleteBtn');
+            const progress = document.getElementById('bulkDeleteProgress');
+            if (btn) btn.disabled = true;
+
+            let done = 0;
+            const errors = [];
+
+            for (const recordId of ids) {
+                const order = globalOrders.find(o => o.id === recordId);
+                if (!order) { done++; continue; }
+                if (order.Order_ID === 'FHS-SYSTEM-CONFIG') {
+                    errors.push(`${order.Order_ID}（系統紀錄，跳過）`);
+                    done++; continue;
+                }
+
+                if (progress) progress.textContent = `刪除 ${done + 1}/${ids.length}…`;
+
+                try {
+                    const sbDelRes = await fetch(
+                        `${_V41_SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(order.Order_ID)}`,
+                        {
+                            method: 'DELETE',
+                            headers: {
+                                'apikey': _V41_SB_ANON,
+                                'Authorization': `Bearer ${_V41_SB_ANON}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+                    if (!sbDelRes.ok) {
+                        const errBody = await sbDelRes.text();
+                        errors.push(`${order.Order_ID}: Supabase 錯誤 (${sbDelRes.status})`);
+                    } else {
+                        // n8n async sync (best-effort)
+                        fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b"), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ Record_ID: recordId, Order_ID: order.Order_ID, action: 'delete' })
+                        }).catch(e => console.warn("n8n bulk delete sync failed:", e));
+                    }
+                } catch(err) {
+                    errors.push(`${order.Order_ID}: ${err.message}`);
+                }
+                done++;
+            }
+
+            if (progress) progress.textContent = '';
+            if (btn) btn.disabled = false;
+            selectedOrderIds.clear();
+
+            if (errors.length > 0) {
+                alert(`批量刪除完成，但有 ${errors.length} 筆失敗：\n${errors.join('\n')}`);
+            } else {
+                alert(`✅ 已成功刪除 ${ids.length} 筆訂單。`);
+            }
+
+            // 從 Supabase 重新拉取最新訂單列表
+            if (window.fetchGlobalReview) {
+                await window.fetchGlobalReview(true);
+            } else {
+                await fetchGlobalReview(true);
+            }
+        }
+
+        // ========================================================
+        // 任務二：欄位排序 (Column Sort)
+        // ========================================================
+
+        function sortReviewTable(field) {
+            if (sortField === field) {
+                sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
+            } else {
+                sortField = field;
+                sortDir = 'asc';
+            }
+
+            // 更新箭頭指示
+            const allArrows = document.querySelectorAll('.sort-arrow');
+            allArrows.forEach(el => el.textContent = '');
+            const arrowEl = document.getElementById('sort-arrow-' + field);
+            if (arrowEl) arrowEl.textContent = sortDir === 'asc' ? ' ▲' : ' ▼';
+
+            // Client-side 排序 globalOrders
+            const sorted = [...globalOrders].sort((a, b) => {
+                let aVal = a[field];
+                let bVal = b[field];
+
+                // 數值型欄位
+                if (field === 'Total_Cost' || field === 'Net_Profit') {
+                    aVal = parseFloat(aVal) || 0;
+                    bVal = parseFloat(bVal) || 0;
+                    return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+
+                // 日期型欄位
+                if (field === 'Date') {
+                    aVal = aVal ? new Date(aVal).getTime() : 0;
+                    bVal = bVal ? new Date(bVal).getTime() : 0;
+                    return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+
+                // 字串型欄位
+                aVal = String(aVal || '').toLowerCase();
+                bVal = String(bVal || '').toLowerCase();
+                if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderReviewTable(sorted);
         }
 
         async function saveInlineEdit(recordId, field, elementId, itemIndex) {
@@ -6181,24 +6398,41 @@
             try {
                 showLoader("正在從系統中徹底刪除訂單...");
 
-                const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b");
-                const res = await fetch(url, {
+                // Supabase hard delete (primary)
+                const sbDelRes = await fetch(
+                    `${_V41_SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(currentDeleteOrderId)}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'apikey': _V41_SB_ANON,
+                            'Authorization': `Bearer ${_V41_SB_ANON}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                if (!sbDelRes.ok) {
+                    const errBody = await sbDelRes.text();
+                    throw new Error(`Supabase 刪除失敗 (${sbDelRes.status}): ${errBody}`);
+                }
+
+                // n8n webhook (async non-blocking, best-effort Airtable sync)
+                fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b"), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ Record_ID: currentDeleteId, Order_ID: currentDeleteOrderId, action: 'delete' })
-                });
+                }).catch(e => console.warn("n8n delete sync failed (non-blocking):", e));
 
-                if (res.ok) {
-                    globalOrders = globalOrders.filter(o => o.id !== currentDeleteId);
-                    renderReviewTable(globalOrders);
-                    closeDeleteModal();
-                    alert("🗑️ 訂單已成功從資料庫中刪除。");
+                closeDeleteModal();
+                alert("🗑️ 訂單已成功從資料庫中刪除。");
+                // 任務三：從 Supabase 重新拉取最新訂單列表（確保數據最新）
+                if (window.fetchGlobalReview) {
+                    await window.fetchGlobalReview(true);
                 } else {
-                    throw new Error("同步伺服器回報錯誤。");
+                    await fetchGlobalReview(true);
                 }
             } catch (err) {
                 console.error("Delete Error:", err);
-                alert("❌ 刪除失敗，請確認與 NAS 的連線或檢查 Webhook 權限。");
+                alert("❌ 刪除失敗：" + err.message);
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
@@ -7724,7 +7958,7 @@
                 const tbody  = document.getElementById('reviewTableBody');
                 const loading = document.getElementById('reviewLoading');
                 if (loading) loading.style.display = 'inline';
-                if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
 
                 let orders;
                 try {
