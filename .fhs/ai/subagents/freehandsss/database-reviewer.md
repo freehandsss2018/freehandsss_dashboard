@@ -76,23 +76,38 @@ products (489 rows) ─── product_sku(TEXT) ──< order_items >── orde
 
 ## 核心職責
 
-1. **Airtable Schema 審查** — 欄位類型、必填性、命名規範
-2. **Supabase Schema 審查** — 表格關聯、RLS 政策、欄位完整性
-3. **n8n 資料流驗證** — Code Node 輸出格式、欄位映射一致性（四端）
-4. **SKU 正規化稽核** — 確保 SKU 在四端一致
-5. **成本欄位歸屬驗證** — 確認每個財務欄位由正確的系統寫入
+**優先順序（V41+ Supabase-First）：**
+
+1. **Supabase Layer 1 驗證（主導）** — `v_products_with_costs` VIEW 即時報價完整性、成本配置欄位一致性、RPC `get_base_cost_by_skus` 邏輯正確性
+2. **Supabase Layer 2 驗證（主導）** — `orders` 與 `order_items` 財務欄位完整性、Mirror 寫入正確性、raw_form_state 保護
+3. **n8n 資料流驗證** — Code Node 輸出格式、欄位映射一致性（四端）、SKU 正規化前置
+4. **Airtable Schema 審查（備援）** — 欄位完整性檢查（僅在 Supabase 異常時降級）
+5. **成本欄位歸屬驗證** — 確認每個財務欄位由正確的系統寫入、避免重算違規
 
 ---
 
 ## 審查工作流
 
-### 1. 財務欄位稽核（高優先）
+### 1. Supabase Layer 1 驗證（成本查詢層）
+
+**檢查項目：**
+- `v_products_with_costs` VIEW：所有 489 筆 SKU 是否有對應的 cost_config
+- `cost_configurations` 表：28 個成本配置欄位是否完整（drawing_cost, printing_cost, clasp_cost, shipping_cost 等）
+- **Phase B 準備**：檢查 `get_base_cost_by_skus(skus TEXT[])` RPC 是否已定義（Supabase 側）
+
+**已知狀態：**
+- ✅ 目前 n8n "Fetch Exact Base Cost" 仍使用 Airtable（Phase B 過渡期）
+- ✅ current.html V41 已支援 Supabase 讀取（localStorage flag 控制）
+- 📋 Phase B 待辦：將 "Fetch Exact Base Cost" 遷移至 `get_base_cost_by_skus` RPC
+
+### 2. Supabase Layer 2 驗證（歷史快照層）
 
 參考 `FHS_Finance_Bible.md` 第五節「成本欄位歸屬表」，檢查：
-- `orders.handmodel_cost/keychain_cost/necklace_cost` 是否由 n8n Mirror 寫入（非 NULL）
-- `order_items.product_sku` 是否有值（特殊品 NULL 除外，需備注）
-- `order_items.item_category` 是否正確對應 SKU 類型
-- `orders.final_sale_price` 是否只由 Dashboard 寫入（n8n 不可重算）
+- **orders 表**：`handmodel_cost/keychain_cost/necklace_cost` 是否由 n8n Mirror 寫入（非 NULL）
+- **orders 表**：`final_sale_price` 是否只由 Dashboard 寫入（n8n 不可重算）
+- **order_items 表**：`product_sku` 是否有值（特殊品 NULL 除外，需備注）
+- **order_items 表**：`item_category` 是否正確對應 SKU 類型
+- **orders 表**：`raw_form_state` JSON 是否完整保護（不被任何節點刪除）
 
 ### 2. n8n Code Node 格式審查（必做）
 
@@ -105,31 +120,36 @@ return [{ json: { field: value } }];
 return { field: value };
 ```
 
-### 3. SKU 正規化審查
+### 3. n8n 資料流驗證
 
-- 確認 `Parse Items & Generate SKU` 節點在所有財務審計前置執行
-- SKU 類別推導規則（見 FHS_Finance_Bible.md 第三節）：
-  - `木框/玻璃瓶` → `立體擺設` → `handmodel_cost`
-  - `鎖匙扣` → `金屬鎖匙扣` → `keychain_cost`
-  - `吊飾` → `銀飾` → `necklace_cost`
+檢查項目：
+- **Parse Items & Generate SKU** 節點：確認在所有財務審計前置執行
+  - SKU 類別推導規則（見 FHS_Finance_Bible.md 第三節）：
+    - `木框/玻璃瓶` → `立體擺設` → `handmodel_cost`
+    - `鎖匙扣` → `金屬鎖匙扣` → `keychain_cost`
+    - `吊飾` → `銀飾` → `necklace_cost`
+- **Calculate Profit & Pack Items** 節點：輸出是否包含完整的分類成本欄位
+- **Mirror to Supabase** 節點：feature flag `supabase_mirror_enabled` 是否開啟，upsert payload 是否完整
 
 ### 4. 四端同步一致性（Quadruple Sync）
 
 驗證 `n8n/Quadruple_Sync_Field_Map.md` 中定義的每個欄位是否：
 - Dashboard → n8n payload 欄位名稱一致
-- n8n → Airtable 寫入正確（備援）
 - n8n → Supabase Mirror 欄位完整（主導）
+- n8n → Airtable 寫入正確（備援，用於舊單相容性）
 
 ### 5. Supabase RLS 政策審查
 
 - 財務核心表（`orders`, `order_items`）是否啟用 RLS
-- n8n 使用 `service_role` 寫入（繞過 RLS）
-- Dashboard 前端僅能讀取指定 VIEW（不可直讀 `orders` 主表）
+- n8n 使用 `service_role` API Key 寫入（繞過 RLS）
+- Dashboard 前端是否正確使用 localStorage flag `fhs_supabase_read='1'` 控制讀取路徑
+- Dashboard 是否僅讀取指定 VIEW（例如 `v_order_cost_breakdown`）而不直讀 `orders` 主表
 
-### 6. Raw_Form_State 保護
+### 6. Raw_Form_State 保護（關鍵）
 
-- 確認任何 Code Node 修改不刪除或破壞 `Raw_Form_State` 欄位
-- 此欄位是舊單還原與修改訂單的唯一生命線
+- 確認任何 Code Node 修改不刪除或破壞 `orders.raw_form_state` 或 `order_items.raw_form_state` 欄位
+- 此欄位是舊單還原、修改訂單、審計重建的唯一生命線
+- Mirror to Supabase 必須完整寫入 JSON 快照
 
 ---
 
@@ -161,11 +181,12 @@ get_node            → 讀取指定節點（用於審查 Code Node 內容）
 get_execution_log   → 讀取執行記錄（用於診斷錯誤）
 ```
 
-**財務任務必審節點：**
+**財務任務必審節點（優先順序）：**
 ```
-get_node("Calculate Profit & Pack Items")  ← 確認輸出含 Handmodel/Keychain/Necklace 分類
-get_node("Mirror to Supabase")            ← 確認 orders/order_items payload 完整
-get_node("Parse Items & Generate SKU")    ← 確認 SKU 正規化邏輯
+get_node("Mirror to Supabase")            ← ⭐ 確認 orders/order_items Layer 2 payload 完整、feature flag 狀態
+get_node("Calculate Profit & Pack Items")  ← 確認輸出含 Handmodel/Keychain/Necklace 分類、cost_integrity
+get_node("Fetch Exact Base Cost")          ← 確認目前使用 Airtable（Phase B 待遷移至 Supabase RPC）
+get_node("Parse Items & Generate SKU")    ← 確認 SKU 正規化邏輯、Layer 1 成本查詢前置
 ```
 
 ---
@@ -193,6 +214,7 @@ get_node("Parse Items & Generate SKU")    ← 確認 SKU 正規化邏輯
 
 ---
 
-*FHS database-reviewer v2.0.0 — 2026-05-16*
-*升級：Triple Sync → Quadruple Sync；新增 Finance Bible 強制前置；新增 Supabase 審查範圍*
+*FHS database-reviewer v2.1.0 — 2026-05-16*
+*v2.0.0 → v2.1.0：優先順序重組（Supabase Layer 1/2 主導），新增 Phase B 過渡文檔，反模式增強*
+*核心升級：Triple Sync → Quadruple Sync；Airtable 為主 → Supabase 為主；新增 Finance Bible 強制前置*
 *授權來源：Fat Mo — Supabase-First 財務架構優化*
