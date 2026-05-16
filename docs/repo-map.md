@@ -20,16 +20,22 @@ freehandsss_dashboard/
 │   │   ├── 0001_initial_schema.sql      ← 初始建表 DDL（6 表 + 索引 + ENUM）
 │   │   ├── 0002_add_deleted_at.sql      ← 軟刪除欄位（orders.deleted_at）
 │   │   ├── 0003_base_cost_view_and_rpc.sql ← v_products_with_costs VIEW + get_base_cost_by_skus RPC（2026-05-15，Supabase-First Phase 1）
-│   │   └── 0004_cost_infrastructure.sql    ← recalculate_product_costs() + v_order_cost_breakdown VIEW（2026-05-15，Supabase-First Phase 2）
+│   │   ├── 0004_cost_infrastructure.sql    ← recalculate_product_costs() + v_order_cost_breakdown VIEW（2026-05-15，Supabase-First Phase 2）
+│   │   ├── 0005_field_descriptions.sql     ← 全表欄位中文說明 COMMENT ON（2026-05-16）
+│   │   ├── 0006_n8n_cost_adjustments.sql   ← 新增 n8n_cost_adjustments 欄位 + 修正 0600802 keychain_cost（2026-05-16）
+│   │   ├── 0007_fix_n8n_cost_adjustments.sql ← n8n_cost_adjustments JSONB→NUMERIC，新增 n8n_adjustment_notes JSONB（2026-05-16）
+│   │   └── 0008_order_0600802_admin_notes.sql ← 訂單 0600802 定價優惠原因記錄至 admin_notes（2026-05-16，待執行）
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
 │   └── rpc/
-│       ├── get_order_summary.sql        ← 訂單摘要（Dashboard Financial Overview）
+│       ├── get_order_summary.sql        ← 訂單摘要（已棄用，由 get_financial_kpis 替代）
 │       ├── get_profit_audit.sql         ← 利潤稽核（finance-auditor）
 │       ├── get_recent_orders.sql        ← 最近訂單列表（Dashboard）
 │       ├── get_products_by_category.sql ← 產品目錄（Dashboard / n8n cache）
-│       └── get_base_cost_by_skus.sql    ← 批量 SKU 成本查詢（2026-05-15，替代 Airtable Fetch Exact Base Cost）
+│       ├── get_base_cost_by_skus.sql    ← 批量 SKU 成本查詢（2026-05-15，替代 Airtable Fetch Exact Base Cost）
+│       ├── get_financial_kpis.sql       ← Finance Mode KPI（revenue/cost/profit/orders/margin/aov，2026-05-16）
+│       └── get_financial_charts.sql     ← Finance Mode 圖表（trend/category_revenue/cost_breakdown，2026-05-16）
 ├── 3d/                                  ← 3D 建模工作目錄（2026-05-07 新增，blender-3d-modeler 路徑規則）
 │   ├── README.md                        ← 路徑規則說明
 │   ├── input/                           ← 用戶上傳的原始 STL（只讀）

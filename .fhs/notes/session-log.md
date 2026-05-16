@@ -1,5 +1,38 @@
 # Session Log
 
+## 2026-05-16b: V41 Finance Mode → Supabase 接回 + Schema 修正 + 定價優惠記錄 ✅
+
+**Scope**: V41 Finance Mode 完整接回 Supabase RPC；n8n_cost_adjustments 欄位設計修正；訂單 0600802 定價優惠調查與記錄。
+**Status**: ✅ 完成（Migration 0008 待 Fat Mo 在 Supabase SQL Editor 手動執行）
+
+### 主要完成事項
+
+1. **V41 Finance Mode → Supabase RPC 接回**
+   - 新建 `get_financial_kpis.sql` + `get_financial_charts.sql` RPC（已部署）
+   - `sbFetchFinancial()` 改為 12 parallel RPC calls（9 KPI + 3 chart）
+   - V41.html + current.html 同步更新，data source label 改「Supabase」
+
+2. **n8n_cost_adjustments 欄位設計修正**
+   - Migration 0006：新增欄位（JSONB，設計錯誤）
+   - Migration 0007：修正為 NUMERIC(10,2)，新增 n8n_adjustment_notes JSONB
+   - n8n V47.5：Calculate Profit + Mirror to Supabase 節點更新
+
+3. **訂單 0600802 完整調查（WingLee）**
+   - `final_sale_price = $2,160` ✅ 正確（實際成交）
+   - `__System_Final_Sale_Price = $3,460`（系統建議，RH+RF 不同部位 P-mode = $1,580×2 + $300 cross-part）
+   - 差額 $1,300 = Fat Mo 授權定價優惠（以同部位2件定價收費）
+   - Migration 0008 更新 admin_notes（待執行）
+
+4. **FHS_Prompts.md v1.5 → v1.6**
+   - 新增情境二十二：定價差異與授權優惠調查（Pricing Concession Audit）
+   - 情境二十一補邊界說明
+
+5. **Subagent 知識庫新增**
+   - `.fhs/memory/lessons/2026-05-16_keychain_shipping_deduction.md`
+   - `.fhs/memory/lessons/2026-05-16_order_0600802_pricing_concession.md`
+
+---
+
 ## 2026-05-16: 文檔生態系統審核完成 + /fhs-audit v2.0 優化升級 ✅
 
 **Scope**: 將 4 階段文檔生態系統審核整合進 /fhs-audit command，並將檢查六融入系統衛生稽核流程。  

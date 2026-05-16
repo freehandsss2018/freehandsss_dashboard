@@ -2693,7 +2693,7 @@
 
             <!-- 數據來源 + 對比基準說明 -->
             <div id="fo-data-source">
-                數據來源：<span>Airtable Orders</span>
+                數據來源：<span>Supabase</span>
                 &nbsp;|&nbsp; 最後同步：<span id="fo-last-sync">—</span>
                 &nbsp;|&nbsp; <span id="fo-compare-note" style="color:var(--fhs-text-muted);"></span>
             </div>
@@ -7915,32 +7915,127 @@
 
         /* ── Supabase Financial Overview replacement ─────────────── */
         async function sbFetchFinancial() {
-            const now = new Date();
-            const y = now.getFullYear(), m = now.getMonth() + 1;
-            const pad = n => String(n).padStart(2,'0');
+            const refDate = new Date().toISOString().split('T')[0];
 
-            const monthStart = y + '-' + pad(m) + '-01';
-            const today      = y + '-' + pad(m) + '-' + pad(now.getDate());
-            const yearStart  = y + '-01-01';
-
-            const [monthRows, yearRows] = await Promise.all([
-                sbRpc('get_order_summary', { date_from: monthStart, date_to: today }),
-                sbRpc('get_order_summary', { date_from: yearStart,  date_to: today })
+            // 12 parallel RPC calls: KPIs per tab+category, charts per tab
+            const results = await Promise.all([
+                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'all',       ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'handmodel', ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'handmodel', ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'handmodel', ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'metal',     ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'metal',     ref_date: refDate }),
+                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'metal',     ref_date: refDate }),
+                sbRpc('get_financial_charts', { tab_mode: 'current',  category: 'all',       ref_date: refDate }),
+                sbRpc('get_financial_charts', { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
+                sbRpc('get_financial_charts', { tab_mode: 'yearly',   category: 'all',       ref_date: refDate })
             ]);
 
-            function agg(rows) {
-                return rows.reduce((acc, r) => {
-                    acc.revenue += Number(r.final_sale_price) || 0;
-                    acc.cost    += Number(r.total_cost)       || 0;
-                    acc.profit  += Number(r.net_profit)       || 0;
-                    acc.orders  += 1;
-                    return acc;
-                }, { revenue: 0, cost: 0, profit: 0, orders: 0 });
+            const kCurAll = results[0], kMonAll = results[1], kYrAll = results[2];
+            const kCurHm  = results[3], kMonHm  = results[4], kYrHm  = results[5];
+            const kCurMt  = results[6], kMonMt  = results[7], kYrMt  = results[8];
+            const chCur   = results[9], chMon   = results[10], chYr  = results[11];
+
+            function pct(a, b) {
+                if (!b || b === 0) return null;
+                return Math.round((a - b) / b * 1000) / 10;
             }
 
-            const monthly = agg(monthRows);
-            const yearly  = agg(yearRows);
-            return { current: monthly, monthly, yearly, _source: 'supabase' };
+            function buildChartData(ch) {
+                const cr = ch.category_revenue || {};
+                const cb = ch.cost_breakdown   || {};
+                const tr = ch.trend            || [];
+
+                const lineLabels = tr.map(function(t) {
+                    const parts = (t.period || '').split('-');
+                    return parts[1] ? (parseInt(parts[1], 10) + '月') : t.period;
+                });
+
+                const barLabels  = ['立體擺設', '純銀頸鏈吊飾', '金屬鎖匙扣'];
+                const barAllVals = [cr.handmodel || 0, cr.necklace || 0, cr.keychain || 0];
+                const barHmVals  = [cr.handmodel || 0];
+                const barMtVals  = [cr.necklace  || 0, cr.keychain || 0];
+
+                const pieAllCol = ['#7B1FA2', '#0288D1', '#26C6DA'];
+
+                return {
+                    lineChart: {
+                        labels:  lineLabels,
+                        revenue: tr.map(function(t) { return t.revenue || 0; }),
+                        cost:    tr.map(function(t) { return t.cost    || 0; }),
+                        profit:  tr.map(function(t) { return t.profit  || 0; })
+                    },
+                    barChart: {
+                        all:       { labels: barLabels,                       values: barAllVals },
+                        handmodel: { labels: ['立體擺設'],                    values: barHmVals  },
+                        metal:     { labels: ['純銀頸鏈吊飾', '金屬鎖匙扣'], values: barMtVals  }
+                    },
+                    pieChart: {
+                        all:       { labels: barLabels,                       values: [cb.handmodel || 0, cb.necklace || 0, cb.keychain || 0], colors: pieAllCol },
+                        handmodel: { labels: ['立體擺設'],                    values: [cb.handmodel || 0],                                     colors: ['#7B1FA2'] },
+                        metal:     { labels: ['純銀頸鏈吊飾', '金屬鎖匙扣'], values: [cb.necklace  || 0, cb.keychain || 0],                   colors: ['#0288D1', '#26C6DA'] }
+                    },
+                    breakdown: {
+                        all: {
+                            labels:  barLabels,
+                            revenue: barAllVals,
+                            cost:    [cb.handmodel || 0, cb.necklace || 0, cb.keychain || 0],
+                            profit:  [
+                                (cr.handmodel || 0) - (cb.handmodel || 0),
+                                (cr.necklace  || 0) - (cb.necklace  || 0),
+                                (cr.keychain  || 0) - (cb.keychain  || 0)
+                            ],
+                            orders:  [0, 0, 0]
+                        },
+                        handmodel: {
+                            labels:  ['立體擺設'],
+                            revenue: [cr.handmodel || 0],
+                            cost:    [cb.handmodel || 0],
+                            profit:  [(cr.handmodel || 0) - (cb.handmodel || 0)],
+                            orders:  [0]
+                        },
+                        metal: {
+                            labels:  ['純銀頸鏈吊飾', '金屬鎖匙扣'],
+                            revenue: [cr.necklace || 0, cr.keychain || 0],
+                            cost:    [cb.necklace  || 0, cb.keychain || 0],
+                            profit:  [
+                                (cr.necklace || 0) - (cb.necklace || 0),
+                                (cr.keychain || 0) - (cb.keychain || 0)
+                            ],
+                            orders:  [0, 0]
+                        }
+                    }
+                };
+            }
+
+            function buildTab(kAll, kHm, kMt, ch, subtitle) {
+                const cur = kAll.current, prev = kAll.previous || {};
+                const curHm = kHm.current, curMt = kMt.current;
+                const charts = buildChartData(ch);
+                return Object.assign({
+                    subtitle:      subtitle,
+                    revenue:       cur.revenue, cost:   cur.cost,   profit: cur.profit, orders: cur.orders,
+                    revenueChange: pct(cur.revenue, prev.revenue),
+                    costChange:    pct(cur.cost,    prev.cost),
+                    profitChange:  pct(cur.profit,  prev.profit),
+                    ordersChange:  pct(cur.orders,  prev.orders),
+                    isNewBusiness: !prev.revenue,
+                    groups: {
+                        all:       { revenue: cur.revenue,   cost: cur.cost,   orders: cur.orders   },
+                        handmodel: { revenue: curHm.revenue, cost: curHm.cost, orders: curHm.orders },
+                        metal:     { revenue: curMt.revenue, cost: curMt.cost, orders: curMt.orders }
+                    }
+                }, charts);
+            }
+
+            return {
+                current: buildTab(kCurAll, kCurHm, kCurMt, chCur, 'vs 去年同期'),
+                monthly: buildTab(kMonAll, kMonHm, kMonMt, chMon, 'vs 上個月'),
+                yearly:  buildTab(kYrAll,  kYrHm,  kYrMt,  chYr,  'vs 上一年全年'),
+                _source: 'supabase'
+            };
         }
 
         /* ── Patch fetchGlobalReview ─────────────────────────────── */

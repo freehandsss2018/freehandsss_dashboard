@@ -1,14 +1,14 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.5
+version: v1.6
 compatible_with: AGENTS.md v1.4.5
 last_updated: 2026-05-16
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.5
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.6
 >
-> 最後更新：2026-05-16（對齊 AGENTS.md v1.4.5；新增情境二十一 finance-auditor；收窄情境五觸發詞）
+> 最後更新：2026-05-16（新增情境二十二 Pricing Concession Audit；情境二十一補邊界說明）
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
 
@@ -157,8 +157,25 @@ Ling Au 專屬設計準則（強制執行）：
 觸發：用戶提及「對帳」「Live 驗證」「Airtable 利潤驗證」「訂單成本比對」「三端財務」「財務稽核」「Total_Cost 不對」「利潤差異」「成本差了」
 > 與情境五的區別：情境五處理靜態財務規則確認（n8n 格式、利潤守護規則）；此情境**查詢 Live Airtable 數據**，執行三端（Airtable↔n8n↔Dashboard）互動式驗證。
 > 與情境十六的區別：情境十六跑全域批次 Python 腳本掃描；此情境針對**指定訂單的互動式深入稽核**。
+> ⚠️ 若差異來自 `final_sale_price` vs 系統建議價（`__System_Final_Sale_Price`），請先走**情境二十二**查 `admin_notes`，確認非授權優惠後才在此情境執行三端比對。
 執行邏輯：此情境已獨立為 Subagent，請立即調用 `finance-auditor` Subagent 執行三端財務稽核。
 配套 Skills：`.fhs/ai/skills/finance-calculator/SKILL.md`（財務公式）、`.fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md`（Supabase 就緒）
+
+## 【情境二十二：定價差異與授權優惠調查 (Pricing Concession Audit)】
+
+觸發：用戶提及「售價不對」「系統價格不一樣」「final_sale_price 差異」「授權優惠」「定價優惠」「為何成交價不同」「建議售價」「系統報價不符」
+> 與情境二十一的區別：情境二十一核對三端財務數據；此情境專門處理 `final_sale_price` vs `__System_Final_Sale_Price` 的差異根因調查。
+> 與情境六的區別：情境六處理定價規則更新（Bible Sync）；此情境處理**已存在訂單**的成交價與系統建議價差異的事後調查。
+執行邏輯：
+1. **先查 `admin_notes`** — 若含優惠說明，差異為授權決定，非錯誤，停止調查並告知用戶
+2. 若 `admin_notes` 為空，從 `raw_form_state.__System_Final_Sale_Price`（系統建議）
+   與 `deposit + balance + additional_fee`（實際收款）對比，計算差額來源
+3. 定價計算根源：`calculatePricing()` → `processTierPricing()`
+   位置：`Freehandsss_Dashboard/Freehandsss_dashboard_current.html` lines 4276–4339
+4. 跨部位（cross-part）觸發條件：P模式 metalItem[index>0] 且 `!standaloneSurchargePaid` → +$300 附加費
+   同部位多件：按 Product Bible V3.7 §2 tier 表查累計定價（不重置）
+5. 若確認為未記錄的授權優惠：補寫 `admin_notes`，必要時開 Migration 更新 Supabase
+參考：`.fhs/memory/lessons/2026-05-16_order_0600802_pricing_concession.md`（訂單 0600802 完整案例）
 
 ---
 

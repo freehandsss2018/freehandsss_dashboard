@@ -1,3 +1,94 @@
+# FHS Handoff - 2026-05-16 (V41 Finance Mode → Supabase 接回 + 定價優惠記錄)
+
+---
+
+## 本次 Session 完成事項（最新，Finance Mode Supabase 接回）
+
+### ✅ V41 Finance Mode — 完整接回 Supabase RPC
+
+**目標**：替換原 `sbFetchFinancial()` 中已廢棄的 `get_order_summary` RPC，改用新建的雙 RPC。
+
+**新 RPC（已部署）**：
+- `supabase/rpc/get_financial_kpis.sql` — 財務 KPI（revenue/cost/profit/orders/margin/aov）
+- `supabase/rpc/get_financial_charts.sql` — 圖表資料（trend/category_revenue/cost_breakdown）
+
+**前端修改**（同步更新 V41.html + current.html）：
+- `sbFetchFinancial()` 改為 12 parallel RPC calls（9 KPI + 3 chart，3 tabs × 3 categories）
+- Data source label 改為「Supabase」
+- `buildChartData()` + `buildTab()` 輔助函數映射 RPC 格式 → FO_MOCK_DATA 格式
+
+**驗證結果**：12/12 RPC 呼叫成功，HK$13,030 May revenue，81.7% margin（真實數據）
+
+---
+
+### ✅ Supabase Schema 修正 — n8n_cost_adjustments 欄位
+
+**Migration 0006**（已執行）：
+- 新增 `n8n_cost_adjustments JSONB`（事後發現設計錯誤）
+- 修正訂單 0600802：`keychain_cost = 450`（V3.7 §2.5 扣減後正確值）
+
+**Migration 0007**（已執行）：
+- `n8n_cost_adjustments JSONB` → `NUMERIC(10,2) DEFAULT 0`（系統扣減總額，例如 -20）
+- 新增 `n8n_adjustment_notes JSONB DEFAULT '[]'`（可讀性說明陣列，不參與財務計算）
+- 更新訂單 0600802：`n8n_cost_adjustments = -20`，`n8n_adjustment_notes = [{type, amount, desc, basis, keychain_item_count}]`
+
+**欄位設計說明**：
+| 欄位 | 類型 | 用途 |
+|------|------|------|
+| `n8n_cost_adjustments` | NUMERIC(10,2) | n8n 自動計算扣減總額（如 -20），參與財務計算 |
+| `n8n_adjustment_notes` | JSONB | 扣減項目可讀性說明陣列，不參與計算 |
+| `adjustment_amount` | NUMERIC | Fat Mo 人工輸入折扣，Dashboard 填入（V41 HTML 目前未接入） |
+
+---
+
+### ✅ n8n Workflow V47.5 更新
+
+**節點：`Calculate Profit & Pack Items`**（workflow 6Ljih0hSKr9RpYNm）
+- 新增 `N8n_Cost_Adjustments`（NUMERIC，keychain 跨件運費扣減總額）
+- 新增 `N8n_Adjustment_Notes`（JSONB 陣列，含 type/amount/desc/basis/keychain_item_count）
+
+**節點：`Mirror to Supabase`**
+- orders upsert 加入 `n8n_cost_adjustments` + `n8n_adjustment_notes` 兩個新欄位
+
+---
+
+### ✅ 訂單 0600802（WingLee）完整調查
+
+**調查結論**：
+- `final_sale_price = $2,160` ✅ 正確（實際收款）
+- `raw_form_state.__System_Final_Sale_Price = $3,460`（系統建議，非錯誤）
+- 差額 $1,300 = **Fat Mo 授權定價優惠**（非數據錯誤）
+
+**HK$3,460 計算方法**（`processTierPricing()` in current.html:4276-4339）：
+- RH 鎖匙扣（index 0, qty=1, P-mode）→ $1,580
+- RF 鎖匙扣（index 1, qty=1, P-mode, 異部位重置）→ $1,580
+- 異部位附加費（index=1, P-mode, !standaloneSurchargePaid）→ $300
+- **合計：$3,460**
+
+**實際成交 $2,160 原因**：Fat Mo 以「同部位2件P-mode」定價（$2,160）收費，豁免跨部位重置及 $300 附加費。
+
+**Migration 0008**（待執行）：
+- 更新 `admin_notes` 記錄定價優惠原因與計算說明
+
+---
+
+### ✅ Subagent 知識庫更新
+
+新建 lesson 檔案：
+- `.fhs/memory/lessons/2026-05-16_keychain_shipping_deduction.md` — §2.5 $20 運費扣減根源、n8n code 位置、快速診斷指南
+- `.fhs/memory/lessons/2026-05-16_order_0600802_pricing_concession.md` — $1,300 定價優惠說明（Supabase / n8n / Dashboard 各層位置對照）
+
+---
+
+## 待執行（人工）
+
+⚠️ **Migration 0008 尚未執行**：
+- 檔案：`supabase/migrations/0008_order_0600802_admin_notes.sql`
+- 動作：在 Supabase SQL Editor 貼入並 Run
+- 內容：更新訂單 0600802 admin_notes（定價優惠說明）
+
+---
+
 # FHS Handoff - 2026-05-16 (文檔生態系統審核完成 + /fhs-audit 優化升級)
 
 當前版本：v1.4.5（憲法層） / V41（Stable Production）
