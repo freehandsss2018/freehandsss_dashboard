@@ -1,3 +1,12 @@
+---
+name: FHS Product Bible
+version: v3.7
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
+domain: Product Pricing & Cost Structure
+description: Authoritative source for all product costs, pricing rules, and business logic
+---
+
 # 📜 FHS 全盤產品聖經 (FHS Product Bible) - V3.7
 >
 > **⚠️ 系統最高指導原則 (System Absolute Truth)**

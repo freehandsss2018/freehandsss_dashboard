@@ -3,6 +3,9 @@ name: finance-auditor
 description: FHS 三端財務稽核員（互動式 Live 驗證）。Use PROACTIVELY when user asks for live Airtable profit verification, order cost reconciliation, three-tier financial validation (Airtable↔n8n↔Dashboard), or Supabase-ready financial audit. Read-only audit mode — does NOT modify Airtable records or n8n workflows.
 tools: ["Bash", "Read", "Grep", "Glob", "mcp__claude_ai_Airtable__search_bases", "mcp__claude_ai_Airtable__list_tables_for_base", "mcp__claude_ai_Airtable__get_table_schema", "mcp__claude_ai_Airtable__list_records_for_table", "mcp__claude_ai_Airtable__search_records", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node", "mcp__n8n-mcp-server__verify_triple_sync"]
 model: claude-sonnet-4-6
+version: v2.0.0
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
 ---
 
 # FHS Finance Auditor — 四端財務稽核員

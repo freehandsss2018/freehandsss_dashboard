@@ -3,6 +3,9 @@ name: frontend-developer
 description: FHS V39 原型實作者，負責把 UI Designer 設計轉化為可運行的純 HTML/CSS/JS 原型。Use PROACTIVELY for V39+ Phase B prototype builds. Outputs static HTML files with zero external dependencies and zero n8n connections. Do NOT use for functional hookup or any fetch/webhook work.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, LS, WebSearch, WebFetch, TodoWrite, Task, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__playwright__browser_snapshot, mcp__playwright__browser_click
 model: claude-sonnet-4-6
+version: v1.0.0
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
 version: 1.1.0
 ---
 

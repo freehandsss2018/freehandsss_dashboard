@@ -1,3 +1,12 @@
+---
+name: FHS Legacy Migration Notes
+version: v1.0
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
+domain: Historical Data Migration
+description: Record of Excel-to-Airtable migration issues and solutions for legacy orders
+---
+
 # FHS 舊訂單遷移注意事項
 >
 > **用途**：記錄 Excel 舊資料遷移至 Airtable 的缺失問題與處理方法，供日後再次遷移時參考。

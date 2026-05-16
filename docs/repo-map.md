@@ -94,12 +94,11 @@ freehandsss_dashboard/
 │   │   │       ├── ui-designer.md       ← v2.0.0 Phase A 設計（iPhone/Desktop 響應式，廢除雙模式）
 │   │   │       ├── frontend-developer.md ← Phase B 原型（使用 Input Contract）
 │   │   │       ├── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
-│   │   │       ├── database-reviewer.md ← v2.0.0 Airtable schema + n8n 資料流審查（2026-05-16 升級：Quadruple Sync + Finance Bible 強制讀取）
+│   │   │       ├── database-reviewer.md ← v2.1.0 Airtable schema + n8n 資料流審查（2026-05-16 升級：Supabase Layer 1/2 優先順序重組 + Finance Bible 強制讀取）
 │   │   │       ├── finance-auditor.md   ← v2.0.0 四端財務稽核員（Supabase-First，Finance Bible 強制前置，2026-05-16 升級）
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
 │       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
-│   │       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
 │   │       ├── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
 │   │       │   ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）
@@ -144,17 +143,17 @@ freehandsss_dashboard/
 │   ├── FHS_Product_Bible_V3.7.md        ← 產品定價聖經（成本/售價/折扣邏輯唯一真理）
 │   ├── FHS_Legacy_Migration_Notes.md    ← Excel 舊訂單遷移注意事項（缺失問題與處理方法）
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）
-│   ├── GLOBAL_AI_SOP.md                ← v2.2 跨環境與多代理協作協議（+ Completion Report 規範）
+│   ├── GLOBAL_AI_SOP.md                ← v2.2 跨環境與多代理協作協議（⚠️ 被 AGENTS.md v1.4.5 憲法層超越，保留作歷史參考）
 │   └── archive/
 │       ├── README.md                    ← 歸檔政策
 │       └── pre-v1.0-backup/
 │
 │   ├── n8n/                                 ← n8n Workflow 配置區
 │   ├── README.md                        ← n8n 配置說明
-│   ├── Triple_Sync_Field_Map.md         ← 三端對齊欄位地圖 V45.7.4+（已由 Quadruple 擴展）
-│   ├── Quadruple_Sync_Field_Map.md      ← 四端欄位映射（Airtable ↔ n8n ↔ Dashboard ↔ Supabase，2026-05-10 新增）
+│   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）
+│   ├── Quadruple_Sync_Field_Map.md      ← v1.1 (2026-05-13) 四端欄位映射（Airtable ↔ n8n ↔ Dashboard ↔ Supabase，最新版本）
 │   ├── Airtable_Schema_Snapshot_2026-05.md ← Airtable 6 表 schema 快照 + Postgres DDL 草稿（2026-05-10）
-│   ├── N8N_Node_Interaction_Map.md      ← n8n 24 nodes Airtable 互動圖（2026-05-10 新增）
+│   ├── N8N_Node_Interaction_Map.md      ← n8n 26 nodes 工作流互動圖（FHS_Core_OrderProcessor v45.7.4，2026-05-10 新增）
 │   ├── FHS_Core_OrderProcessor.json     ← 核心訂單處理機
 │   └── FHS_Financial_Overview_workflow.json ← 財務聚合機
 ├── Maintenance_Tools/                   ← 系統健康檢查與維護腳本

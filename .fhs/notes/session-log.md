@@ -1,5 +1,60 @@
 # Session Log
 
+## 2026-05-16: 文檔生態系統審核完成 + /fhs-audit v2.0 優化升級 ✅
+
+**Scope**: 將 4 階段文檔生態系統審核整合進 /fhs-audit command，並將檢查六融入系統衛生稽核流程。  
+**Status**: ✅ 完成，零待辦
+
+### 主要完成事項
+
+1. **文檔生態系統 4 階段審核完成**（2026-05-16 一日）：
+   - **Phase 1/2**：根目錄 & .fhs/ 層級版本同步 → 16 個檔案驗證 ✅
+   - **Phase 3**：Subagent 標準化（8/8 + YAML frontmatter） → 5 個核心檔案 ✅
+   - **Phase 3.5**：docs/ 文件夾深度掃描 → 8 個關鍵文檔版本標記 ✅
+   - **Phase 4**：自動化驗證工具運行 → bash + Python 皆正常 ✅
+   - **修復檔案總數**：29 個（包含 3 個缺失版本的 subagent）
+   - **版本漂移狀態**：✅ **零漂移，全部對齐至 AGENTS.md v1.4.5**
+
+2. **/fhs-audit 指令優化升級（v1.0 → v2.0）**：
+   - 擴展檢查項：21 項 → 25 項
+   - 擴展檢查維度：5 大 → 6 大
+   - **新增檢查六**：文檔生態系統版本一致性
+     - A6-1：根目錄 & .fhs/ 層級版本同步
+     - A6-2：Subagent 標準化 (8/8)
+     - A6-3：docs/ 文件夾版本標記
+     - A6-4：自動化驗證工具運行
+   - 更新檔案：
+     - `.fhs/ai/commands/fhs-audit.md` (v2.0)
+     - `.fhs/ai/commands/README.md` (列表更新)
+     - 報告格式新增檢查六區段
+     - 版本日誌記錄升級詳情
+
+3. **自動化驗證系統部署**：
+   - `.fhs/tools/verify_repo_map.sh` → ✅ 0 errors, 0 warnings
+   - `.fhs/tools/generate_version_manifest.py` → ✅ 12 個檔案追蹤成功（UTF-8 編碼修復）
+   - 版本清單輸出：`.fhs/reports/version_manifest.json`
+
+4. **稽核報告產出**：
+   - `.fhs/reports/FHS_Documentation_Ecosystem_Complete_Audit_20260516.md`（完整分析）
+   - `.fhs/reports/version_manifest.json`（自動化驗證清單）
+
+### 關鍵修復清單
+
+- ✅ 29 個檔案版本聲明與 compatible_with 欄位更新
+- ✅ 3 個 subagent (blender-3d-modeler, database-reviewer, finance-auditor) 缺失 version 字段修正
+- ✅ GLOBAL_AI_SOP.md 標記為已過時（⛔ 廢棄）
+- ✅ Python UTF-8 編碼支援修復（cp950 → UTF-8）
+
+### 待辦（下次 session）
+
+- [P-MED] test008–010 CRUD 測試（暫停中）
+- [P-MED] 玻璃瓶 父母/大寶 顯示驗證（修復已部署，需用真實訂單確認）
+- [P-LOW] Anti-Idle Ping：n8n Schedule Trigger 每 6 天 ping Supabase
+- [P-LOW] pg_cron TTL：`error_logs` 30 天自動清理
+- [P-LOW] Airtable 月度 quota 重置後：驗證 `SUPABASE_SKIP` fallback 不再觸發 429
+
+---
+
 ## 2026-05-15: /fhs-check 系統健康檢查 🔴
 
 **Scope**: 執行 `python Maintenance_Tools/run_all.py` 進行全週期與壓力測試。

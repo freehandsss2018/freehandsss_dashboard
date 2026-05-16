@@ -13,3 +13,64 @@
 | `pending_tasks/` | **掛起任務**：待續行或需跨 Session 追蹤的任務細節 |
 
 > ⚠️ 修改任何業務規則或架構前，必須同步更新 `decisions.md`。
+
+---
+
+## 版本同步機制（Phase 3 — 2026-05-16）
+
+### 單一真相來源（Single Source of Truth）規則
+
+所有系統版本與日期必須遵循「金字塔」同步模型：
+
+```
+頂層：AGENTS.md v1.4.5（憲法層 — 最高權威）
+  ├─ 所有 README.md 檔案必須參考此版本
+  ├─ 所有 subagent/*.md 必須聲明相容版本
+  └─ 所有 repo-map.md 記錄必須追蹤此版本
+```
+
+### Subagent 版本格式標準（統一頭尾聲明）
+
+所有 `.fhs/ai/subagents/freehandsss/*.md` 必須遵循此格式：
+
+```yaml
+---
+name: {{subagent_name}}
+description: {{說明 + Phase + 觸發時機}}
+tools: [...]
+model: {{claude-model}}
+version: v{{X}}.{{Y}}.{{Z}}
+compatible_with: AGENTS.md v1.4.5
+last_updated: YYYY-MM-DD
+---
+
+{{內容}}
+
+---
+**版本履歷**
+- v{{X}}.{{Y}}.{{Z}} (YYYY-MM-DD): {{變更說明}}
+```
+
+### 日期同步清單
+
+| 檔案 | 當前版本 | 相容性檢查 | 最後更新 |
+|------|---------|----------|--------|
+| AGENTS.md | v1.4.5 | ✅ | 2026-05-13 |
+| README.md (root) | v1.4.5 | ✅ | 2026-05-16 |
+| repo-map.md | 2026-05-16 | ✅ | 2026-05-16 |
+| Freehandsss_Dashboard/README.md | V41 | ✅ | 2026-05-16 |
+| supabase/README.md | Phase 4 Pending | ✅ | 2026-05-16 |
+| n8n/README.md | v1.1 | ✅ | 2026-05-16 |
+| ui-designer.md | ⏳ 待更新 | - | - |
+| frontend-developer.md | ⏳ 待更新 | - | - |
+| code-reviewer.md | ⏳ 待更新 | - | - |
+| tdd-guide.md | ⏳ 待更新 | - | - |
+| build-error-resolver.md | ⏳ 待更新 | - | - |
+
+### 修改流程
+
+1. 更新 AGENTS.md 時，版本號遞增（e.g., v1.4.5 → v1.4.6）
+2. 同步更新所有相關 README 中的 AGENTS.md 參考版本
+3. 所有 subagent 檔案必須聲明 `compatible_with: AGENTS.md vX.X.X`
+4. 在 `.fhs/notes/decisions.md` 記錄版本變更理由
+5. 執行 repo-map.md 自動驗證（檢查是否有陳舊日期）

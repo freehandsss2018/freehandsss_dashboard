@@ -1,4 +1,18 @@
+---
+name: FHS System Changelog
+version: v1.0
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
+description: Unified changelog for n8n workflows, Dashboard, and system architecture
+note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Architecture (v1.4.x)"
+---
+
 # FHS Dashboard Changelog
+
+> **版本說明**：本檔案追蹤多個版本線：
+> - **n8n Workflow**: V45.x–V47.x（後端業務邏輯）
+> - **Dashboard Proto**: V36–V42（前端介面）
+> - **System Architecture**: v1.4.x（AGENTS.md 憲法層）
 
 ## [V47.4] — 2026-05-16
 

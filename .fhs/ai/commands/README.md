@@ -24,7 +24,7 @@
 | error-eye.md | /error-eye | 錯誤監控（Catch-Push-Diagnose） |
 | guardian.md | /guardian | 全端守護稽核（Anti-Tunnel Vision） |
 | px-audit.md | /px audit | 外部審查（第三方審計員） |
-| fhs-audit.md | /fhs-audit | 系統架構衛生稽核（21項，5大檢查） |
+| fhs-audit.md | /fhs-audit | 系統架構衛生稽核（v2.0 新增檢查六）：25項，6大檢查<br/>新增：文檔生態系統版本一致性審核 |
 
 ## 退役指令（保留歷史引用）
 

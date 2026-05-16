@@ -1,0 +1,85 @@
+{
+  "generated_at": "2026-05-16T14:07:42.709751",
+  "files": {
+    "AGENTS.md": {
+      "path": ".fhs/ai/AGENTS.md",
+      "version": "v1.4.5",
+      "type": "constitution",
+      "status": "✅ Source of Truth"
+    },
+    "README.md": {
+      "path": "README.md",
+      "version": "1.4.5",
+      "type": "readme",
+      "status": "✅ Found"
+    },
+    ".fhs/ai/README.md": {
+      "path": ".fhs/ai/README.md",
+      "version": "1.4.5",
+      "type": "readme",
+      "status": "✅ Found"
+    },
+    "Freehandsss_Dashboard/README.md": {
+      "path": "Freehandsss_Dashboard/README.md",
+      "version": "1.4.5",
+      "type": "readme",
+      "status": "✅ Found"
+    },
+    "blender-3d-modeler.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\blender-3d-modeler.md",
+      "version": "v2.0.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    },
+    "build-error-resolver.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\build-error-resolver.md",
+      "version": "v1.0.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    },
+    "code-reviewer.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\code-reviewer.md",
+      "version": "1.1.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    },
+    "database-reviewer.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\database-reviewer.md",
+      "version": "v2.1.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    },
+    "finance-auditor.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\finance-auditor.md",
+      "version": "v2.0.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    },
+    "frontend-developer.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\frontend-developer.md",
+      "version": "1.1.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    },
+    "tdd-guide.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\tdd-guide.md",
+      "version": "v1.0.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    },
+    "ui-designer.md": {
+      "path": ".fhs/ai/subagents/freehandsss\\ui-designer.md",
+      "version": "2.0.0",
+      "compatible_with": "AGENTS.md v1.4.5",
+      "type": "subagent",
+      "status": "✅ Standardized"
+    }
+  }
+}

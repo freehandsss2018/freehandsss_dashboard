@@ -3,6 +3,9 @@ name: tdd-guide
 description: FHS Test-Driven Development specialist. Use PROACTIVELY when writing new Maintenance_Tools scripts, debugging Python test failures, or planning n8n Code Node logic. Enforces write-tests-first methodology for FHS test files.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: claude-sonnet-4-6
+version: v1.0.0
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
 ---
 
 # FHS TDD Guide

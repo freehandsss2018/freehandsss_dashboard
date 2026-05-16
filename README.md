@@ -1,9 +1,9 @@
 # Freehandsss Dashboard (FHS)
 
-> 本專案已升級並遵循 `docs/GLOBAL_AI_SOP.md` v2.0 架構。新進代理請優先閱讀。
+> 本專案已升級至 **Supabase-First 架構** (V41+)。所有 AI 必須優先遵循 `/.fhs/ai/AGENTS.md` v1.4.5 憲法層規則。
 
 一套為 Freehandsss 手工嬰兒紀念品業務設計的全端同步管理系統。
-主要架構：Dashboard UI ↔ n8n Workflow ↔ Airtable Database
+主要架構：Dashboard UI ↔ n8n Workflow ↔ **Supabase (Primary Lead) + Airtable (Fallback)**
 
 ***
 
@@ -11,9 +11,10 @@
 
 | 組件 | 說明 |
 |***|***|
-| **Dashboard UI** | 銷售前台（iPad/iPhone）及 管理後台（Desktop）|
-| **n8n Workflow** | 業務邏輯處理中樞，包含訂單回傳、統計 |
-| **Airtable** | 主資料庫，存儲產品、成本、客戶紀錄 |
+| **Dashboard UI** | 銷售前台（iPad/iPhone）及 管理後台（Desktop）；localStorage flag 控制 Supabase 讀取路徑 |
+| **n8n Workflow** | 業務邏輯處理中樞，包含 SKU 正規化、成本計算、雙寫至 Supabase/Airtable |
+| **Supabase** | **主資料庫** (Primary Lead)：orders, order_items, products, cost_configurations + Views/RPC |
+| **Airtable** | **備援同步** (Fallback Backup)：舊訂單相容性維護、quota 限制時降級 |
 
 ***
 
@@ -32,7 +33,7 @@
 
 | 檔案 | 用途 |
 |***|***|
-| Freehandsss_dashboard_current.html | **正式環境** = V40.7 (2026-05-05 同步) |
+| Freehandsss_dashboard_current.html | **正式環境** = V41 (2026-05-16 Supabase-First 遷移完成) |
 | freehandsss_dashboardV36.html | 舊版穩定基準 (Legacy Stable Baseline) |
 | freehandsss_dashboardV37.html | 展示/試用版本 (Trial / Legacy) |
 | freehandsss_dashboardV40.html | **當前穩定基準** (Latest Stable) |
@@ -74,10 +75,11 @@
 
 ## 版本
 
-- **系統版本**：v1.4.2（見 `.fhs/ai/AGENTS.md`）
-- **SOP 版本**：v2.0（見 `docs/GLOBAL_AI_SOP.md`）
-- **Dashboard UI 版本**：V40.7 (Active Production)
+- **系統版本**：v1.4.5（見 `/.fhs/ai/AGENTS.md` — 憲法層，所有規則最高準則）
+- **Dashboard UI 版本**：V41 (Active Production — Supabase-First)
   - 響應式設計（iPhone <768px / Desktop ≥768px）
-  - Airtable API 快取優化（5分鐘 sessionStorage）
+  - Supabase 主導讀取層（localStorage flag `fhs_supabase_read` 控制）
+  - Airtable 自動降級路徑（quota 超限時觸發）
   - Financial Overview 內嵌模式
-- **最後更新**：2026-05-05（V40.7 同步至 current）
+  - Mirror to Supabase 雙寫機制（n8n 主導）
+- **最後更新**：2026-05-16（Supabase-First 財務遷移完成，AGENTS.md v1.4.5 發佈）

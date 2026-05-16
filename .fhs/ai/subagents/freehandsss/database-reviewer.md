@@ -3,6 +3,9 @@ name: database-reviewer
 description: FHS Airtable schema specialist and n8n data flow validator. Use PROACTIVELY when reviewing Airtable field mappings, n8n Code Node data structures, SKU normalization, or Triple_Sync field consistency. Read-only audit mode by default.
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: claude-sonnet-4-6
+version: v2.1.0
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
 ---
 
 # FHS Database Reviewer

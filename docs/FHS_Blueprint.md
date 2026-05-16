@@ -1,3 +1,11 @@
+---
+name: FHS System Blueprint
+version: v4.8
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
+description: Core logic and technical specifications for FHS system architecture
+---
+
 # FHS 系統藍圖 (FHS System Blueprint) - V4.8 (n8n Soul Restoration)
 
 > [!IMPORTANT]

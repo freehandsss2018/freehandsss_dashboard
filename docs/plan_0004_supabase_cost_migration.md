@@ -1,3 +1,12 @@
+---
+name: Plan 0004 - Supabase Cost Architecture Migration
+version: v1.0
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
+status: Execution Pending
+description: Complete cost infrastructure migration from Airtable to Supabase
+---
+
 # Plan 0004: Supabase 成本架構完整遷移
 
 **建立日期**: 2026-05-15

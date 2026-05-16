@@ -1,10 +1,14 @@
-# GLOBAL AI COLLABORATION SOP v2.2
+# ⚠️ GLOBAL AI COLLABORATION SOP v2.2 — 已過時
+
+> **⛔ 此文件已被 AGENTS.md v1.4.5 取代**
+> **建議**：不再參考本文件，改用 `/.fhs/ai/AGENTS.md` 作為系統憲法層
 
 ## 跨環境多代理協作與安全協議 (Universal Edition)
 
 > **版本：** v2.2
 > **升級日期：** 2026-03-31
 > **前版：** v2.1（2026-03-31）
+> **棄用日期：** 2026-05-16
 
 本協議整合 **Perplexity (外部分析)**、**Gemini/Antigravity (本地規劃)** 與 **Claude Code (精準執行)** 的優勢，
 並明確定義 **Fat Mo 作為唯一上下文橋接者** 的協作模式，建立安全、高效的跨環境開發協議。

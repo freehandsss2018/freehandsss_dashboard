@@ -8,7 +8,7 @@
 
 | 檔案 | 用途 |
 |---|---|
-| `Freehandsss_dashboard_current.html` | **正式生產環境** = V41（2026-05-11 同步） |
+| `Freehandsss_dashboard_current.html` | **正式生產環境** = V41（2026-05-16 Supabase-First 遷移完成） |
 | `freehandsss_dashboardV36.html` | 舊版穩定基準 (Legacy Stable) |
 | `freehandsss_dashboardV40.html` | 前一版穩定基準（V40.8 — 移除嬰兒月齡 + 報價明細 breakdown）|
 | `freehandsss_dashboardV41.html` | **最新穩定基準**（V41 — 優化 Supabase 切換按鈕佈局，移除遮擋）|
@@ -29,9 +29,9 @@
   - **響應式優化**：手機端自動隱藏狀態文字，僅顯示圖示。
   - 繼承 V40.8：移除嬰兒月齡邏輯，版面精簡化。
   - 繼承 V40.8：報價明細 (#priceBreakdown) 動態顯示。
-- 憲法層：v1.4.2（AGENTS.md）
+- 憲法層：v1.4.5（AGENTS.md，2026-05-13）
 
 ## 相關文件
 
-- 三端欄位映射：`/n8n/Triple_Sync_Field_Map.md`
+- 四端欄位映射：`/n8n/Quadruple_Sync_Field_Map.md`（v1.1，2026-05-13，取代 Triple_Sync）
 - 架構說明：`/docs/FHS_Blueprint.md`

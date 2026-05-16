@@ -1,9 +1,10 @@
-# /fhs-audit（系統架構衛生稽核）
+# /fhs-audit（系統架構衛生稽核 v2.0）
 
-用途：全面檢查系統文件健康度，偵測衝突、沉積、孤獨檔案、過時檔案，並確認 README 與 repo-map 準確性。
+用途：全面檢查系統文件健康度，偵測衝突、沉積、孤獨檔案、過時檔案、版本漂移，並確認 README、repo-map 準確性與文檔生態系統一致性。
 
 觸發指令：/fhs-audit
 性質：純讀取稽核，不修改任何檔案，只輸出報告。
+更新日期：2026-05-16（新增檢查六：文檔生態系統版本一致性）
 
 ---
 
@@ -45,6 +46,51 @@ A5-3 確認 .fhs/memory/handoff.md 最後更新日期（若超過 7 天代表記
 A5-4 掃描 .fhs/notes/todo.md，列出所有超過 30 天未處理的待辦事項
 A5-5a 確認穩定/開發版實體檔案存在（對照 AGENTS.md 或 handoff.md 記載之版本號，如 V41/V42）
 A5-5b 確認 Changelog.md 最新版本號與該開發版 HTML 內部頂部註釋的版本標記一致
+
+### 檢查六：文檔生態系統版本一致性
+（新增：2026-05-16，融合文檔審核流程）
+
+**目標**：確保所有文檔、subagent、README 與 AGENTS.md 版本對齊，達到零文檔漂移
+
+A6-1 根目錄 & .fhs/ 層級版本同步
+- 確認 README.md (root) 版本聲明
+- 確認 .fhs/ai/README.md 版本聲明
+- 確認 .fhs/ai/AGENTS.md = 真理來源 (v1.4.5)
+- 確認 .fhs/notes/README.md 版本聲明
+- 確認功能層 README (Freehandsss_Dashboard、n8n、supabase) 版本標記
+
+A6-2 Subagent 標準化檢查 (.fhs/ai/subagents/freehandsss/)
+- 所有 8 個 subagent 檔案必須包含 YAML frontmatter
+- 必要字段：name、version、compatible_with、last_updated
+- compatible_with 必須指向當前 AGENTS.md 版本 (v1.4.5)
+- 檢查檔案清單：
+  - blender-3d-modeler.md (v2.0.0)
+  - build-error-resolver.md (v1.0.0)
+  - code-reviewer.md (v1.1.0)
+  - database-reviewer.md (v2.1.0)
+  - finance-auditor.md (v2.0.0)
+  - frontend-developer.md (v1.1.0)
+  - tdd-guide.md (v1.0.0)
+  - ui-designer.md (v2.0.0)
+
+A6-3 docs/ 文件夾版本標記 (深度掃描)
+- 確認關鍵文檔包含版本聲明：
+  - FHS_Blueprint.md (v4.8)
+  - FHS_Product_Bible_V3.7.md (v3.7)
+  - FHS_Prompts.md (v1.5)
+  - FHS_Finance_Bible.md
+  - FHS_Legacy_Migration_Notes.md (v1.0)
+  - plan_0004_supabase_cost_migration.md (v1.0)
+  - CHANGELOG.md (v1.0)
+  - repo-map.md (最新日期)
+- 確認 GLOBAL_AI_SOP.md 正確標記為過時 (⛔ 廢棄標記)
+
+A6-4 自動化驗證工具運行 (Phase 4)
+- 執行 verify_repo_map.sh → 驗證 repo-map 與實際結構一致性
+  期望：0 errors, 0 warnings
+- 執行 generate_version_manifest.py → 生成版本清單 JSON
+  期望：12 個文件追蹤成功，無編碼錯誤
+- 驗證輸出：.fhs/reports/version_manifest.json 存在且有效
 
 ---
 
@@ -91,10 +137,16 @@ A5-4 todo.md 逾期待辦               ✅ 無 / 🟡 發現___項
 A5-5a 指定版號之實體檔案存在        ✅ / 🔴
 A5-5b 頂部註釋與 Changelog 一致     ✅ / 🟡 差異：___
 
-========================================
-總計：___ / 24 項通過
+【檢查六：文檔生態系統版本一致性】
+A6-1 根目錄 & .fhs/ 層級版本同步   ✅ / 🟡 發現___項問題
+A6-2 Subagent 標準化 (8/8)         ✅ / 🔴 缺失：___
+A6-3 docs/ 文件夾版本標記          ✅ / 🟡 未標記：___
+A6-4 自動化驗證工具運行            ✅ / 🔴 工具失敗：___
 
-🟢 架構乾淨（24/24 或僅 🟡）
+========================================
+總計：___ / 25 項通過
+
+🟢 架構乾淨（25/25 或僅 🟡）
 🟡 輕微待整理（有 🟡 項目）— 列出建議
 🔴 需要立即處理（有 🔴 項目）— 等待 Fat Mo 指示
 ========================================
@@ -109,10 +161,27 @@ A5-5b 頂部註釋與 Changelog 一致     ✅ / 🟡 差異：___
 📁 孤獨檔案清單：
 （列出所有建議歸檔或刪除的檔案）
 
+📝 文檔版本狀態（檢查六新增）：
+版本清單自動化驗證報告：.fhs/reports/version_manifest.json
+真理來源版本：AGENTS.md v1.4.5
+文檔漂移狀態：✅ 零漂移 / 🟡 輕微不同步 / 🔴 嚴重版本冲突
+
 ---
 
 ## 執行規則
 - 全程只讀取，不修改任何檔案
 - 若無法讀取某目錄，記錄為 🔴 並繼續
 - 報告完成後寫入 .fhs/reports/audits/system/audit_YYYY-MM-DD.md
+- 檢查六（文檔版本）支援自動化工具驗證：
+  - 執行 `bash .fhs/tools/verify_repo_map.sh`
+  - 執行 `python .fhs/tools/generate_version_manifest.py`
+  - 驗證輸出：`.fhs/reports/version_manifest.json`
 - 等待 Fat Mo 指示後才處理任何問題，不自行修復
+
+## 版本更新日誌
+- **v2.0** (2026-05-16)：新增檢查六「文檔生態系統版本一致性」，融合 4 階段文檔審核流程
+  - Phase 1/2：根目錄 & .fhs/ 層級版本同步
+  - Phase 3：Subagent 標準化檢查
+  - Phase 3.5：docs/ 文件夾深度掃描
+  - Phase 4：自動化驗證工具運行
+- **v1.0** (原始版本)：5 項系統衛生檢查

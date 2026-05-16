@@ -1,6 +1,14 @@
+---
+name: FHS Business Scenarios Library
+version: v1.5
+compatible_with: AGENTS.md v1.4.5
+last_updated: 2026-05-16
+description: Business situation detection and command routing for AI execution
+---
+
 # FHS 業務情境劇本庫 (Scenarios Library) - v1.5
 >
-> 最後更新：2026-05-10（新增情境二十一 finance-auditor；收窄情境五觸發詞；對齊 AGENTS.md v1.4.3）
+> 最後更新：2026-05-16（對齊 AGENTS.md v1.4.5；新增情境二十一 finance-auditor；收窄情境五觸發詞）
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
 
