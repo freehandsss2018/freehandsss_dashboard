@@ -1,4 +1,4 @@
-# FHS Handoff - 2026-05-15 (Badge 佈局重構完成)
+# FHS Handoff - 2026-05-16 (Plan 0004 成本架構遷移完成 + Bug 6 修復)
 
 當前版本：v1.4.5（憲法層） / V41（Stable Production）
 
@@ -6,46 +6,72 @@
 
 ## 本次 Session 完成事項
 
-### ✅ Badge 兩行佈局（所有產品類型）
-- 鎖匙扣/純銀吊飾：Row 1 = 類別+材質，Row 2 = 對象+部位+數量
-- 立體擺設：Row 1 = 類別+款式（木框/玻璃瓶），Row 2 = 個別人物肢數 badges
-- 技術：flex `flex-basis:100%;height:0` line-break
+### ✅ Plan 0004 — Supabase 成本架構完整遷移
 
-### ✅ 個別人物肢數 Badges（立體擺設）
-- 舊：黃色 badge `✋🦶 4肢`（所有人合計）
-- 新：`👶 嬰兒 1手1腳`（藍）、`👫 父母 2手`（粉）、`🧒 大寶 4肢`（綠）
-- 資料：`LimbParts` JSON 陣列在 mapOrder 計算，傳至 badge renderer
+**Step 1 — CSV → Supabase 資料遷移（`scripts/migrate_from_csv.js`）**
+- Airtable API 月度限額耗盡（429），改用 `airtable-database/` CSV 檔案
+- 新建 `scripts/migrate_from_csv.js`（支援 multiline quoted fields 的 CSV parser）
+- 成功遷移：
+  - `cost_configurations`: 28 筆
+  - `products`: 489 筆（含 `cost_config_id` 100% 連結、`total_base_cost` 全填）
+  - `orders`: 23 筆歷史訂單（狀態 `待確認`，無損壞）
+  - `order_items`: 64 筆（50 筆有 `product_sku`，15 筆歷史孤兒正常）
 
-### ✅ Bug Fix — 鎖匙扣 不銹鋼 badge 消失
-- 根因：Supabase order_items 不存 product_name，combinedSearch 無法偵測材質
-- 修復：getProductDimensions category fallback
+**Step 2 — SQL migration（`0004_cost_infrastructure.sql`）**
+- 在 Supabase SQL Editor 執行
+- 建立：`recalculate_product_costs()` function + `v_order_cost_breakdown` VIEW
 
-### ✅ Bug Fix — 木框 顯示舊格式
-- 根因：LimbParts 空時回退 target badge + 黃色 count
-- 修復：立體擺設一律隱藏 target badge；fallback 改顯示藍色嬰兒 badge
+**Step 3 — 驗證查詢**
+- `cost_configurations`: 28 ✅
+- `products with cost_config_id`: 489/489 ✅
+- `products with NULL total_cost`: 0 ✅
+- `cost_integrity ✓ matched`: 50 筆 ✅
+- `cost_integrity ⚠ no product`: 15 筆（歷史孤兒，可接受）
 
-### ✅ CSS 新增
-- `.badge-target-父母`（粉紅）、`.badge-target-大寶`（綠色）
+### ✅ Bug 6 修復 — Airtable 429 導致 Telegram 未執行
 
-### ✅ Skill 建立
-- `.fhs/ai/skills/fhs-overview-badge-layout/SKILL.md`
+**根因**：`Smart Cache Strategist` 成功從 Supabase 取得成本後，`Fetch Exact Base Cost`（Airtable 節點）仍執行 `SUPABASE_SKIP` 查詢 → Airtable 月度 quota 耗盡 → 429 → workflow 中斷 → Telegram 未執行
+
+**修復**：透過 n8n REST API PUT，設定 `Fetch Exact Base Cost` 節點：
+- `onError: continueRegularOutput`
+- `continueOnFail: true`
+
+現在 Airtable 429 不再中斷 workflow，Telegram 正常發送。
+
+### ✅ RPC 驗證
+
+`get_base_cost_by_skus` Supabase RPC 確認存在且正常：
+- 呼叫 `POST /rest/v1/rpc/get_base_cost_by_skus` → 200 ✅
+- 返回正確 `Product_Name` + `Total_Base_Cost`
+
+---
+
+## 架構狀態更新
+
+| 項目 | 狀態 |
+|------|------|
+| `cost_configurations` | ✅ 28 筆（Supabase） |
+| `products.cost_config_id` | ✅ 489/489 全連結 |
+| `products.total_base_cost` | ✅ 全填 |
+| `get_base_cost_by_skus` RPC | ✅ 正常 |
+| `v_order_cost_breakdown` VIEW | ✅ 建立 |
+| n8n Supabase-First 成本讀取 | ✅ 啟用（Bug 6 已修） |
+| Airtable 成本讀取 | ⚠️ 月度 quota 耗盡（重置後自動恢復為 fallback） |
 
 ---
 
 ## 待辦 ⏳ 項目
 
-### 🔴 BLOCKING（下次 Session 優先處理）
+### 🔴 BLOCKING
 
-1. **Bug 6 修復**（n8n `Fetch Exact Base Cost` 節點 Rate Limit → Telegram 節點未執行）
-2. **test008–010 CRUD 測試**（暫停中）
-3. **玻璃瓶 父母/大寶 顯示驗證**（修復已部署，需用真實訂單確認）
+1. **test008–010 CRUD 測試**（暫停中）
+2. **玻璃瓶 父母/大寶 顯示驗證**（修復已部署，需用真實訂單確認）
 
 ### 📋 架構後續（排期）
 
-4. **Phase A**：Supabase 建立 `v_products_with_costs` VIEW
-5. **Phase B**：n8n 讀取從 Airtable → Supabase
-6. **Anti-Idle Ping**：n8n Schedule Trigger 每 6 天 ping Supabase
-7. **pg_cron TTL**：`error_logs` 30 天自動清理
+3. **Anti-Idle Ping**：n8n Schedule Trigger 每 6 天 ping Supabase（防止 free tier 休眠）
+4. **pg_cron TTL**：`error_logs` 30 天自動清理
+5. **Airtable 月度 quota 重置後**：驗證 `SUPABASE_SKIP` fallback 不再觸發 429
 
 ---
 
@@ -55,15 +81,16 @@
 |------|------|
 | 憲法層 | `AGENTS.md` v1.4.5 |
 | 穩定生產版 | `Freehandsss_dashboard_current.html` (V41) |
-| 主要開發版 | `freehandsss_dashboardV41.html` |
-| n8n Workflow | V45.7.4 |
-| Airtable Base | `app9GuLsW9frN4xaT` |
-| Supabase | Primary Lead（RLS 已設，anon write 正常）|
-| Skills | fhs-bug-triage, fhs-p-product-display, fhs-overview-badge-layout（本次新增）|
+| n8n Workflow | V45.7.4（Supabase-First 成本讀取啟用）|
+| Airtable Base | `app9GuLsW9frN4xaT`（quota 耗盡，月初重置） |
+| Supabase | Primary Lead（成本架構完整，RLS 正常）|
+| 新增腳本 | `scripts/migrate_from_csv.js`（CSV → Supabase 遷移備用）|
 
 ---
 
 ## 本次教訓
-- `2026-05-15_Overview_Badge_Layout_Redesign.md`：兩行 badge 佈局、個別人物 badge、材質 fallback、木框舊格式根因
-- category fallback 可補救 Supabase 不存 product_name 的問題
-- 立體擺設 badge 邏輯不能依賴 LimbParts 是否存在，需統一 suppress target badge
+
+- Airtable API 月度 quota 耗盡時，改用 CSV export 執行 migration 是可行 fallback
+- CSV multiline quoted fields 需要 character-by-character parser，不能簡單按 `\n` 分行
+- n8n 節點 `continueOnFail` 可透過 REST API PUT 更新（需清理 settings 欄位）
+- `SUPABASE_SKIP` 雖能讓 Airtable 返回 0 筆，但仍會消耗月度 API quota

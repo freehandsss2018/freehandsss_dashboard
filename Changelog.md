@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-05-16] Plan 0004 成本架構遷移完成 + Bug 6 根治
+
+**Plan 0004 — Supabase 成本架構完整遷移**：
+- Airtable API 月度 quota 耗盡（429），新建 `scripts/migrate_from_csv.js` 從 CSV 遷移
+- 成功遷移：cost_configurations 28筆、products 489筆（含 cost_config_id 100% 連結）、orders 23筆、order_items 64筆
+- 執行 `supabase/migrations/0004_cost_infrastructure.sql`：建立 `recalculate_product_costs()` function + `v_order_cost_breakdown` VIEW
+- 驗證：cost_integrity ✓ matched 50筆，⚠ no product 15筆（歷史孤兒，可接受）
+
+**Bug 6 根治 — Airtable 429 導致 Telegram 未執行**：
+- 根因：`Smart Cache Strategist` Supabase 成功後，`Fetch Exact Base Cost`（Airtable 節點）仍執行 API 呼叫 → 月度 quota 耗盡 → 429 → workflow 中斷
+- 修復：透過 n8n REST API PUT，設定 `Fetch Exact Base Cost` 節點 `onError: continueRegularOutput`、`continueOnFail: true`
+- 效果：Airtable 429 不再中斷 workflow，Supabase 成本路徑正常，Telegram 正常發送
+
+**Supabase Schema 中文欄位說明**：
+- 新增 `supabase/migrations/0005_field_descriptions.sql`
+- 為所有 table（cost_configurations、products、orders、order_items、sales_pipeline、error_logs）每個欄位補充中文 COMMENT，說明用途及跨表關聯
+
 ## [2026-05-15] Supabase-First Phase 1 + Bug 6 Rate Limit 修復
 
 **n8n Smart Cache Strategist v47.2（Bug 6 修復）**：
