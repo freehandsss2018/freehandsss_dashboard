@@ -6,21 +6,21 @@
 
 ## 初始化步驟（必做）
 
-1. 讀取 `/.fhs/ai/AGENTS.md`（憲法層 v1.4.5）— 同步所有規則
+1. 讀取 `/.fhs/ai/AGENTS.md`（憲法層 v1.4.6）— 同步所有規則
 2. 讀取 `/.fhs/memory/handoff.md` — 同步上次 session 狀態與待辦
 3. 輸出系統狀態報告（版本號、當前基準版本、未解決項目）
 
 ---
 
-## 系統快照（2026-05-16 更新）
+## 系統快照（2026-05-17 更新）
 
 | 項目 | 現況 |
 |------|------|
-| 憲法版本 | AGENTS.md v1.4.5 |
+| 憲法版本 | AGENTS.md v1.4.6 |
 | 穩定生產版 | Freehandsss_dashboard_current.html (V41) |
 | 開發版（新）| freehandsss_dashboardV42.html (Planned) |
 | 開發版（舊）| freehandsss_dashboardV41.html (Released) |
-| n8n Workflow | V45.7.4（Supabase-First 邏輯啟用） |
+| n8n Workflow | V47.4（Supabase-First 邏輯啟用） |
 | Airtable Base | app9GuLsW9frN4xaT |
 | 數據源 | **Supabase (Primary Lead) + Airtable (Fallback Backup)** |
 | database-reviewer | v2.1.0（Supabase Layer 1/2 優先順序重組） |
@@ -41,7 +41,7 @@
 | 系統 | 主要用途 | 執行什麼 |
 |------|---------|---------|
 | **Antigravity** | 討論、審閱、輕量工作、ag-plan 規劃 | 文件修補、UI 文字微調、分析報告、/ag-plan |
-| **Claude Code** | 複雜 coding、三端同步、subagent 執行 | /cl-flow、/execute、HTML 修改、n8n 接回 |
+| **Claude Code** | 複雜 coding、四端同步、subagent 執行 | /cl-flow、/execute、HTML 修改、n8n 接回 |
 
 ### 指令系統對照
 

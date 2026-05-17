@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.5
-> Last updated: 2026-05-13
+> Version: v1.4.6
+> Last updated: 2026-05-17
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,12 +18,20 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.5 (Supabase-First Strategy)
-- **數據核心**：**Supabase (Primary Lead)** + Airtable (Fallback Backup)
-- **SSoT 狀態**：Airtable 暫時維持 SSoT，直至 Supabase 方案完全驗證且 Dashboard 除錯完成後轉移。
+- **版本**：v1.4.6 (Supabase-First Strategy)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
+
+### 1.1 數據主導權矩陣（消除「Primary」與「SSoT」並列歧義）
+
+| 角色 | 目前承擔者 | Sunset 條件 |
+|------|----------|-----------|
+| **Read/Write Lead**（讀寫主流程） | **Supabase** | 永久角色 |
+| **Authoritative Snapshot**（權威快照、SSoT 過渡期） | **Airtable** | Supabase 雙寫驗證連續 30 天無事故 + Dashboard 全功能除錯完成後正式翻轉至 Supabase |
+| **Fallback Backup**（事故後備） | Airtable | Supabase SSoT 翻轉後 Airtable 仍保留作為冷備援 |
+
+> **語義要點**：Supabase 為**運行時主導**（Lead），Airtable 為**過渡期權威快照**（Snapshot）。兩者職責不重疊，不衝突。
 
 
 ***
@@ -44,7 +52,7 @@
 - **n8n Code Node 格式**：所有 Code Node 必須回傳 `[{json: {...}}]` 陣列，不得例外
 - **交接強制**：每次任務結束後，必須主動寫入 `.fhs/memory/handoff.md` 與 `CHANGELOG.md`
 - **決策記錄強制**：任何架構改動完成後，必須同步更新 `.fhs/notes/decisions.md`
-- **修改前必讀**：`.fhs/memory/handoff.md` 與 `n8n/Triple_Sync_Field_Map.md`
+- **修改前必讀**：`.fhs/memory/handoff.md` 與 `n8n/Quadruple_Sync_Field_Map.md`
 - **提交前必查**：`.gitignore` 包含 `.env`、`*.xlsx`、`logs/`
 - **亂碼自癒**：發現 NEL/U+0085 問題，立即參考 `/docs/FHS_Blueprint.md` 修復
 
@@ -52,7 +60,7 @@
 - **前端利潤最高真理**：前端利潤結算為絕對真理，n8n 嚴禁擅自重算利潤。唯一例外：前端傳入值為 0 時，n8n 方可介入計算。
 - **n8n Code Node 輸出規範**：所有 Code Node 必須回傳 `[{json: {auditPassed: true, ...}}]` 格式，嚴禁回傳裸物件。
 - **SKU 審計前置**：執行任何財務審計前，必須先調用 `Parse Items` 節點對 SKU 進行正規化（如 3肢->4肢）。
-- **Airtable 計算職責分工**：Airtable formula/lookup 欄位僅用於展示輔助（如 Item_ID、Item_Category）。所有核心財務欄位（Total_Cost、Handmodel_Cost、Keychain_Cost、Necklace_Cost 等成本分類欄位）必須由 n8n 計算後直接寫入，嚴禁以 Airtable formula 替代 n8n 計算邏輯。Airtable formula 無法可靠處理 multipleLookupValues 陣列計算，是架構反模式。
+- **財務欄位計算職責分工**：Airtable formula/lookup 欄位僅用於展示輔助（如 Item_ID、Item_Category）。所有核心財務欄位（Total_Cost、Handmodel_Cost、Keychain_Cost、Necklace_Cost 等成本分類欄位）必須由 n8n 計算後**寫入 Supabase（Primary）並同步鏡像至 Airtable（Fallback）**，嚴禁以 Airtable formula 替代 n8n 計算邏輯。Airtable formula 無法可靠處理 multipleLookupValues 陣列計算，是架構反模式。
 
 ### 資料結構守護
 - **Raw_Form_State 不可侵犯**：嚴禁為修復任何單點 Bug（如 Telegram 換行排版）而刪除或破壞 Raw_Form_State。此欄位是舊單還原與修改訂單的唯一生命線。
@@ -118,7 +126,7 @@
 - **不確定時停止**：若 AI 無法確認某步驟結果，必須停下詢問 Fat Mo，禁止猜測繼續
 
 ### Stitch 資產守護
-- **Stitch 輸出禁止直入**：Google Stitch 或任何 MCP 生成的 UI 組件，嚴禁未經轉換直接覆寫 `current.html` / V36 / V37 / V40 等主核心。
+- **Stitch 輸出禁止直入**：Google Stitch 或任何 MCP 生成的 UI 組件，嚴禁未經轉換直接覆寫 `current.html` / V41 等主核心（V36 / V37 / V40 已 archive，不再受此守護但亦不得污染）。
 - **必須無害化**：Stitch 產出必須先去除 React/Tailwind/CDN 外部依賴，轉為純 Vanilla HTML/CSS，方可進入 Phase B 實作。
 - **草稿隔離**：Stitch 生成物作為「Draft」暫存於 `.fhs/reports/planning/`，只有通過 `/ag-ui-import` 轉換且 Code Reviewer PASS 後，方可合併至 prototype。
 
@@ -139,7 +147,7 @@
 - **過渡期 SSoT**：Airtable 目前仍為 SSoT，待 Supabase 方案完全複核且 Dashboard 完成除bug 後，正式轉換 SSoT 至 Supabase。
 - **Supabase Free Tier**：使用 Free Tier（$0/月）。用量警戒線：資料庫 400 MB / 月頻寬 1.5 GB。超出則提示 Fat Mo 評估升級，不自動升級。
 - **防閒置強制**：Supabase Free Tier 7 天不活動即暫停。n8n 必須維持每 6 天定時 ping（Anti-Idle node）。
-- **雙寫隔離**：n8n Mirror 寫入 Supabase 失敗，不得中斷 Airtable 主流程（後備鏈路）。使用 try-catch 隔離，失敗記入 Error_Logs。
+- **雙寫隔離**：n8n 寫入 Supabase（主流程），同步鏡像至 Airtable（後備鏈路）。Supabase 寫入失敗，不得中斷 Airtable 後備鏈路；Airtable 寫入失敗，不得中斷 Supabase 主流程。使用 try-catch 隔離，失敗記入 Error_Logs。
 - **Feature Flag**：雙寫開關透過 n8n Workflow Static Data `supabase_mirror_enabled` 控制，無需改代碼。
 - **Supabase 禁止重算**：Supabase 禁止使用 trigger 或 generated column 重算財務欄位（final_sale_price / net_profit / *_cost）。
 - **Quadruple_Sync 文件**：欄位映射參考 `/n8n/Quadruple_Sync_Field_Map.md`。
@@ -153,7 +161,7 @@
 - `/docs/FHS_Blueprint.md`（架構 ID 命名、數據流）
 - `/docs/FHS_Product_Bible_V3.7.md`（SKU、售價、業務規則）
 - `/docs/FHS_Prompts.md`（11 個業務情境的入口路由與處理邏輯——擔任總機角色，遇特定任務調用對應 command，遇業務邏輯問題時必讀）
-- `/n8n/Triple_Sync_Field_Map.md`（三端欄位映射，已由 Quadruple_Sync 擴展）
+- ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）
 - `/n8n/Quadruple_Sync_Field_Map.md`（四端欄位映射：Airtable ↔ n8n ↔ Dashboard ↔ Supabase）
 - `/n8n/Airtable_Schema_Snapshot_2026-05.md`（Airtable 6 表 schema 快照）
 - `/n8n/N8N_Node_Interaction_Map.md`（n8n 24 nodes Airtable 互動圖）
@@ -202,8 +210,8 @@
 | `frontend-developer` 完成原型後進行品質稽核（Phase C） | `code-reviewer` |
 | 任務為 V40+ Phase A 設計規範定義（視覺語言、wireframe、component spec） | `ui-designer` |
 | n8n workflow 節點報錯、Dashboard JS Runtime Error、Python 腳本崩潰 | `build-error-resolver` |
-| Airtable schema 審查、n8n Code Node 資料流驗證、SKU 正規化稽核、Triple_Sync 欄位核查 | `database-reviewer` |
-| Live Airtable 財務數據驗證、訂單 Total_Cost 互動式對帳、三端利潤一致性稽核（Airtable↔n8n↔Dashboard）| `finance-auditor` |
+| Airtable schema 審查、n8n Code Node 資料流驗證、SKU 正規化稽核、Quadruple_Sync 欄位核查 | `database-reviewer` |
+| Live Airtable/Supabase 財務數據驗證、訂單 Total_Cost 互動式對帳、四端利潤一致性稽核（Airtable↔n8n↔Dashboard↔Supabase）| `finance-auditor` |
 | 新建 Maintenance_Tools Python 腳本、Python 測試失敗、n8n Code Node 邏輯規劃 | `tdd-guide` |
 | 任何涉及 STL 匯入、mesh 修復、3D 列印準備、Blender 操作 | `blender-3d-modeler` |
 | 需要搜索 3 個以上未知檔案位置的廣泛探索 | `Explore` |

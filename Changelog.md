@@ -1,5 +1,50 @@
 # Changelog
 
+## [2026-05-17] /fhs-audit v2.1 + 全專案語義稽核大掃除
+
+**制度層（憲法 + 指令系統）**：
+- AGENTS.md §1 新增「數據主導權矩陣」表格，消除 Primary Lead / SSoT 並列歧義（Read/Write Lead = Supabase；Authoritative Snapshot 過渡 = Airtable）
+- AGENTS.md L47 修改前必讀文件 `Triple_Sync_Field_Map.md` → `Quadruple_Sync_Field_Map.md`
+- `.fhs/ai/commands/fhs-audit.md` v2.0 → **v2.1**：新增 Check 7「語義稽核」5 維深度檢測（D1 Stale / D2 Orphan / D3 Conflict / D4 Redundant / D5 Loops），總分由 25 → 30
+- `.fhs/ai/commands/px-audit.md` L10 引用更新為 Quadruple_Sync
+
+**新工具層（.fhs/tools/）**：
+- `.fhs/tools/semantic_audit.py` MVP — 6 個 canonical key 追蹤、48 個 deprecated hits、273 個 dangling links、2 個 cycles 自動偵測
+- `.fhs/tools/canonical_keys.yml` — 單一真理 key 清單（agents_version / n8n_version / ssot_owner / supabase_role / production_html / field_map_authority）
+- `.fhs/tools/deprecated_terms.txt` — 已廢棄詞黑名單（Triple_Sync_Field_Map、三端同步/稽核/映射、v39-aom.md）
+
+**版本字串大對齊**：
+- n8n workflow 版本跨檔統一為 **V47.4**（修正 SOP_NOW V45.7.4 / MEMORY v47.3 漂移；以 decisions 2026-05-16 為真理來源）
+- `SOP_NOW.md` 系統快照升 v1.4.6 / 2026-05-17 / V47.4
+- `docs/FHS_Prompts.md` compatible_with v1.4.5 → v1.4.6
+- AGENTS.md §1 內文版號補對齊 v1.4.6
+- 自動記憶（MEMORY.md + project_v40_status.md）n8n 版本對齊 V47.4
+
+**語義衝突修正**：
+- `.cursorrules` L48 + L60：Triple_Sync → Quadruple_Sync（含三端→四端）
+- `.fhs/notes/SOP_NOW.md` L44：「三端同步」→「四端同步」
+- `.fhs/notes/decisions.md` L34 Supabase 就緒設計引用更新
+- `.fhs/notes/decisions.md` 2026-05-04 條目加 ⚠️ SUPERSEDED 標籤（Airtable formula 保留決策已被 Supabase-First 取代）
+- `.fhs/memory/handoff.md` Anti-Idle Ping 從「待辦」改為「部署驗證」（避免與 AGENTS.md §4 硬規則重複定義）
+- `n8n/Quadruple_Sync_Field_Map.md` 新增段落「n8n 內部計算規則（非持久化）」描述 Shipping/Necklace_Deduction，完成 Triple_Sync 完整遷移
+
+**結構清理**：
+- `docs/repo-map.md` 新增 `.fhs/tools/` 條目；修正 ai_reports/ 描述（實際空目錄）
+- `~/.claude/agents/freehandsss/FHS_Finance_Bible.md` 刪除（同步孤兒，非 subagent；source 目錄無此檔）
+
+**為何重要**：
+上一次 `/fhs-audit` 通過（結構稽核全綠），但 AGENTS.md 仍存在 6 處與 Supabase-First 矛盾的措辭。本次新增 Check 7 填補「純結構稽核 → 語義稽核」的能力缺口，杜絕未來「文件看似乾淨、實則內部矛盾」的隱性漂移。
+
+## [2026-05-17] AGENTS.md v1.4.6 — Supabase-First 規則對齊修正
+
+**制度層更新（憲法層 patch）**：
+- **財務欄位計算職責分工**：明確寫入目標為 Supabase（Primary）→ Airtable（Fallback）；舊版未提 Supabase，AI 易誤判
+- **雙寫隔離語義修正**：Supabase 改為主流程，Airtable 降為後備鏈路；舊版稱 Airtable 為「主流程」，與 Supabase-First 戰略矛盾
+- **Subagent 路由 — database-reviewer**：`Triple_Sync` → `Quadruple_Sync` 欄位核查
+- **Subagent 路由 — finance-auditor**：三端稽核 → 四端稽核（補入 Supabase）
+- **系統真理庫**：Triple_Sync_Field_Map.md 標注 [已廢棄]，避免 AI 誤用殭屍 reference
+- **Stitch 資產守護**：守護清單從 V36/V37/V40 更新為 V41（current 主核心）
+
 ## [2026-05-17] 訂單總覽 Filter/Sort + 批量操作工具列
 
 **訂單總覽 Filter/Sort 功能**：

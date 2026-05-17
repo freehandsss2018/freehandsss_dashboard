@@ -276,3 +276,50 @@ LEFT JOIN cost_configurations c ON p.cost_config_id = c.id;
 | P2 | `cost_configurations` 缺 `ON DELETE SET NULL` | 在 products FK 加上 |
 | P2 | `sales_pipeline` 無 Upsert key | 新增 `pipeline_key VARCHAR UNIQUE` |
 | P3 | `batch_number` 在 order_items 冗餘 | 文件化為刻意 denormalization 或移除 |
+
+---
+
+## 🧮 n8n 內部計算規則（非持久化）
+
+> 補完日期：2026-05-17（database-reviewer 驗證 Triple_Sync 遷移後新增）
+> 以下計算值僅存在於 n8n workflow 執行記憶體，**不寫入 Airtable / Supabase / Dashboard 任何持久層**。
+
+### Shipping_Deduction（運費扣減）
+
+- **節點**：`Node 14 – Cost Calculator`（V47.4 workflow 內計算）
+- **目的**：跨部位訂單運費分攤（單一訂單含多件商品時，運費按部位均攤）
+- **公式**（V40.6+）：
+
+```
+Shipping_Deduction = SUM(運費分攤額) per item
+  where 運費分攤額 = base_shipping_cost / number_of_parts_in_order
+```
+
+- **使用方式**：在 `Total_Cost` 計算時扣減（避免重複計算運費），但**不存任何欄位**
+- **接收方**：僅供 Profit Auditor 中間驗算使用
+
+### Necklace_Deduction（頸鏈成本扣減）
+
+- **節點**：同 `Node 14 – Cost Calculator`
+- **目的**：純銀頸鏈的吊飾成本與鏈體成本分離計算
+- **公式**：
+
+```
+IF(Item_Category 含 "純銀頸鏈"):
+  Necklace_Deduction = Item_BaseCost × Quantity - 吊飾單獨成本
+ELSE:
+  Necklace_Deduction = 0
+```
+
+- **使用方式**：用於計算 `Necklace_Cost` 欄位前先扣除吊飾成本，避免重複入帳
+- **接收方**：寫入後續 `necklace_cost`（Supabase / Airtable）的中間步驟
+
+### 設計原則
+
+| 規則 | 說明 |
+|------|------|
+| **非持久化** | Deduction 類中間值禁止建立 column。每次 workflow 執行重新計算 |
+| **不入四端映射表** | 不出現在 Airtable / Supabase / Dashboard / n8n payload 欄位映射中 |
+| **改動觸發** | Cost Calculator 邏輯改動時，必須同步更新本段落，並在 CHANGELOG 標註 |
+
+> **歷史背景**：Triple_Sync_Field_Map.md 曾在 Node 14 章節描述這些計算值，但 Triple_Sync 文件已 [已廢棄]。本段落為遷移至 Quadruple_Sync 的補完，避免知識斷層。

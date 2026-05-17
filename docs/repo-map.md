@@ -129,13 +129,15 @@ freehandsss_dashboard/
 │   │   ├── todo.md
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
-│   │   ├── ai_reports/                  ← AI 協作報告區（活躍）
-│   │   │   ├── v39-rebuild_phase0_contract_freeze.md  ← Contract-Critical ID 清單（V40 更新版）
-│   │   │   └── v40-phase1_design_spec.md              ← V40 響應式設計規格（取代 v39 spec）
+│   │   ├── ai_reports/                  ← AI 協作報告區（目前空，保留作為未來報告暫存）
 │   │   └── completion_reports/          ← 制度任務完成記錄（v1.4.0 新增）
-│   └── memory/
-│       ├── README.md                   ← 記憶層與同步規範
-│       └── handoff.md
+│   ├── memory/
+│   │   ├── README.md                   ← 記憶層與同步規範
+│   │   └── handoff.md
+│   └── tools/                          ← 稽核工具腳本（2026-05-17 v2.1 新增）
+│       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測 MVP
+│       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等）
+│       └── deprecated_terms.txt        ← 已廢棄詞黑名單（Triple_Sync_Field_Map / 三端同步 等）
 │
 │
 ├── .agents/                             ← IDE 專屬：Slash 指令與自動化工作流
@@ -146,6 +148,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 技術文件索引
 │   ├── repo-map.md                      ← 本文件
 │   ├── FHS_Blueprint.md
+│   ├── DESIGN.md                        ← 大地溫潤 (Earthy Warm) 設計系統規範（2026-05-17 新增）
 │   ├── FHS_Product_Bible_V3.7.md        ← 產品定價聖經（成本/售價/折扣邏輯唯一真理）
 │   ├── FHS_Legacy_Migration_Notes.md    ← Excel 舊訂單遷移注意事項（缺失問題與處理方法）
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）

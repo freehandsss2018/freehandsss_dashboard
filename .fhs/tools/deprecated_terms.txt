@@ -1,0 +1,36 @@
+# FHS 已廢棄詞黑名單 (Deprecated Terms Blacklist)
+# 用途：fhs-audit Check 7 (A7-5 Loop/Dangling link) 的偵測依據
+# 任何活躍規則文字（非歷史記錄 / archive / 完成報告）含這些詞，視為殭屍 reference 命中。
+#
+# 維護規則：
+# - 新廢棄詞加入時，必須在註解標註廢棄日期與取代詞
+# - 允許出現的例外位置由 exception_paths 指定
+# - 移除廢棄詞時必須先確認全專案無活躍引用
+#
+# 格式：每行一個 token，# 開頭為註解
+# 可在 token 後加 ; 指定 replacement（半自動修復用）
+
+# === 文件遷移 ===
+Triple_Sync_Field_Map.md; Quadruple_Sync_Field_Map.md     # 廢棄於 2026-05-13 (Supabase-First Phase)
+Triple_Sync_Field_Map ; Quadruple_Sync_Field_Map           # 同上，不含 .md 副檔名版本
+
+# === 概念遷移 ===
+三端同步 ; 四端同步                                          # 廢棄於 2026-05-13
+三端稽核 ; 四端稽核                                          # 廢棄於 2026-05-13
+三端映射 ; 四端映射                                          # 廢棄於 2026-05-13
+
+# === Subagent / Command 遷移 ===
+v39-aom.md                                                  # 已移至 archive/v39-aom.md（subagents/OPERATING_MODEL.md 取代）
+
+# === 例外允許出現的位置（不會被當作命中）===
+# 這些路徑下的命中視為合法歷史記錄
+# exception_paths:
+#   - .fhs/reports/completion/
+#   - .fhs/reports/audits/
+#   - docs/archive/
+#   - Freehandsss_Dashboard/archive/
+#   - CHANGELOG.md
+#   - .fhs/notes/session-log.md
+#   - artifacts/
+#   - node_modules/
+#   - .fhs/tools/deprecated_terms.txt          # 本檔自身

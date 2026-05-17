@@ -1,0 +1,1489 @@
+{
+  "generated_at": "2026-05-17T18:16:55",
+  "tool_version": "0.1.0-mvp",
+  "summary": {
+    "canonical_keys_tracked": 6,
+    "deprecated_term_hits": 48,
+    "dangling_links": 273,
+    "cycles_detected": 2
+  },
+  "D1_D3_canonical_values": {
+    "agents_version": {
+      "status": "ok",
+      "value": "v1.4.6",
+      "source": ".fhs/ai/AGENTS.md"
+    },
+    "n8n_version": {
+      "status": "ok",
+      "value": "V47.4",
+      "source": ".fhs/notes/SOP_NOW.md"
+    },
+    "ssot_owner": {
+      "status": "ok",
+      "value": "**Supabase**",
+      "source": ".fhs/ai/AGENTS.md"
+    },
+    "supabase_role": {
+      "status": "no_match",
+      "value": null,
+      "source": ".fhs/ai/AGENTS.md"
+    },
+    "production_html": {
+      "status": "ok",
+      "value": "freehandsss_dashboardV41.html",
+      "source": ".fhs/ai/AGENTS.md"
+    },
+    "field_map_authority": {
+      "status": "ok",
+      "value": "Quadruple_Sync_Field_Map.md",
+      "source": ".fhs/ai/AGENTS.md"
+    }
+  },
+  "D2_D5_dangling_links": [
+    {
+      "from": ".cursorrules",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".cursorrules",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".cursorrules",
+      "to": "docs/SOP_NOW.md"
+    },
+    {
+      "from": "ANTIGRAVITY.md",
+      "to": "fhs/ai/commands/ag-stitch-sync.md"
+    },
+    {
+      "from": "ANTIGRAVITY.md",
+      "to": "fhs/ai/commands/ag-ui-import.md"
+    },
+    {
+      "from": "ANTIGRAVITY.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": "ANTIGRAVITY.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": "CLAUDE.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": "CLAUDE.md",
+      "to": "fhs/notes/decisions.md"
+    },
+    {
+      "from": "README.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".agents/README.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".agents/workflows/ag-plan.md",
+      "to": "fhs/reports/planning/a2_implementation_plan.md"
+    },
+    {
+      "from": ".agents/workflows/ag-plan.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/ag-plan.md"
+    },
+    {
+      "from": ".agents/workflows/ag-stitch-sync.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/ag-stitch-sync.md"
+    },
+    {
+      "from": ".agents/workflows/ag-ui-import.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/ag-ui-import.md"
+    },
+    {
+      "from": ".agents/workflows/cl-flow-fast.md",
+      "to": "fhs/ai/commands/cl-flow-fast.md"
+    },
+    {
+      "from": ".agents/workflows/cl-flow.md",
+      "to": "fhs/ai/commands/cl-flow.md"
+    },
+    {
+      "from": ".agents/workflows/commit.md",
+      "to": "fhs/ai/commands/commit.md"
+    },
+    {
+      "from": ".agents/workflows/error-eye.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/error-eye.md"
+    },
+    {
+      "from": ".agents/workflows/execute.md",
+      "to": "fhs/ai/commands/execute.md"
+    },
+    {
+      "from": ".agents/workflows/fhs-audit.md",
+      "to": "fhs/reports/audits/system/audit_YYYY-MM-DD.md"
+    },
+    {
+      "from": ".agents/workflows/fhs-audit.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/fhs-audit.md"
+    },
+    {
+      "from": ".agents/workflows/fhs-check.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss\\freehandsss_dashboard/.fhs/ai/commands/fhs-check.md"
+    },
+    {
+      "from": ".agents/workflows/guardian.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/guardian.md"
+    },
+    {
+      "from": ".agents/workflows/px-plan.md",
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/px-plan.md"
+    },
+    {
+      "from": ".agents/workflows/read.md",
+      "to": "fhs/notes/handoff.md"
+    },
+    {
+      "from": ".agents/workflows/read.md",
+      "to": "fhs/notes/SOP_NOW.md"
+    },
+    {
+      "from": ".agents/workflows/read.md",
+      "to": "fhs/ai/commands/read.md"
+    },
+    {
+      "from": ".agents/workflows/read.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".claude/commands/cl-flow-fast.md",
+      "to": "ag-plan.md"
+    },
+    {
+      "from": ".claude/commands/cl-flow-fast.md",
+      "to": "fhs/ai/commands/cl-flow-fast.md"
+    },
+    {
+      "from": ".claude/commands/cl-flow.md",
+      "to": "fhs/ai/commands/cl-flow.md"
+    },
+    {
+      "from": ".claude/commands/code-analysis.md",
+      "to": "fhs/ai/commands/code-analysis.md"
+    },
+    {
+      "from": ".claude/commands/commit.md",
+      "to": "fhs/ai/commands/commit.md"
+    },
+    {
+      "from": ".claude/commands/db-query.md",
+      "to": "fhs/ai/commands/db-query.md"
+    },
+    {
+      "from": ".claude/commands/debug-guide.md",
+      "to": "fhs/ai/commands/debug-guide.md"
+    },
+    {
+      "from": ".claude/commands/error-eye.md",
+      "to": "fhs/ai/commands/error-eye.md"
+    },
+    {
+      "from": ".claude/commands/execute.md",
+      "to": "fhs/ai/commands/execute.md"
+    },
+    {
+      "from": ".claude/commands/fhs-audit.md",
+      "to": "fhs/ai/commands/fhs-audit.md"
+    },
+    {
+      "from": ".claude/commands/fhs-check.md",
+      "to": "fhs/ai/commands/fhs-check.md"
+    },
+    {
+      "from": ".claude/commands/fhs-cost-audit.md",
+      "to": "fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
+    },
+    {
+      "from": ".claude/commands/fhs-cost-audit.md",
+      "to": "fhs/ai/commands/fhs-cost-audit.md"
+    },
+    {
+      "from": ".claude/commands/five.md",
+      "to": "fhs/ai/commands/five.md"
+    },
+    {
+      "from": ".claude/commands/guardian.md",
+      "to": "fhs/ai/commands/guardian.md"
+    },
+    {
+      "from": ".claude/commands/mermaid.md",
+      "to": "fhs/ai/commands/mermaid.md"
+    },
+    {
+      "from": ".claude/commands/px-audit.md",
+      "to": "fhs/ai/commands/px-audit.md"
+    },
+    {
+      "from": ".claude/commands/read.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".claude/commands/read.md",
+      "to": "fhs/notes/SOP_NOW.md"
+    },
+    {
+      "from": ".claude/commands/read.md",
+      "to": "fhs/ai/commands/read.md"
+    },
+    {
+      "from": ".claude/commands/read.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".claude/commands/tdd-guide.md",
+      "to": "fhs/ai/commands/tdd-guide.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/ai/commands/fhs-audit.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/ai/commands/execute.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "GLOBAL_AI_SOP.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/ai/commands/fhs-cost-audit.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "repo-map.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "v39-aom.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "todo.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "a1_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/notes/decisions.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "session-log.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/ai/commands/fhs-check.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/ai/commands/px-audit.md"
+    },
+    {
+      "from": ".fhs/ai/FHS_Finance_Bible.md",
+      "to": "fhs/ai/FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/commands/ag-plan.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow-fast.md",
+      "to": "px-report.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "fhs/reports/planning/a1_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "fhs/reports/planning/a3_execution_verdict.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "a1_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "fhs/reports/planning/a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/code-analysis.md",
+      "to": "claude/commands/code-analysis.md"
+    },
+    {
+      "from": ".fhs/ai/commands/commit.md",
+      "to": "fhs/memory/lessons/YYYY-MM-DD_主題.md"
+    },
+    {
+      "from": ".fhs/ai/commands/commit.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/ai/commands/commit.md",
+      "to": "fhs/notes/session-log.md"
+    },
+    {
+      "from": ".fhs/ai/commands/db-query.md",
+      "to": "fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md"
+    },
+    {
+      "from": ".fhs/ai/commands/db-query.md",
+      "to": "claude/commands/db-query.md"
+    },
+    {
+      "from": ".fhs/ai/commands/debug-guide.md",
+      "to": "claude/commands/debug-guide.md"
+    },
+    {
+      "from": ".fhs/ai/commands/debug-guide.md",
+      "to": "fhs/ai/skills/vendor/superpowers/systematic-debugging.md"
+    },
+    {
+      "from": ".fhs/ai/commands/execute.md",
+      "to": "GLOBAL_AI_SOP.md"
+    },
+    {
+      "from": ".fhs/ai/commands/execute.md",
+      "to": "cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/execute.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/ai/commands/execute.md",
+      "to": "fhs/reports/planning/a3_execution_verdict.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-check.md",
+      "to": "fhs/notes/session-log.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-check.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-cost-audit.md",
+      "to": "fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
+    },
+    {
+      "from": ".fhs/ai/commands/five.md",
+      "to": "claude/commands/five.md"
+    },
+    {
+      "from": ".fhs/ai/commands/mermaid.md",
+      "to": "claude/commands/mermaid.md"
+    },
+    {
+      "from": ".fhs/ai/commands/px-plan.md",
+      "to": "fhs/reports/planning/a1_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/read.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/ai/commands/read.md",
+      "to": "fhs/memory/MEMORY.md"
+    },
+    {
+      "from": ".fhs/ai/commands/read.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/ai/commands/read.md",
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/ai/commands/read.md",
+      "to": "fhs/notes/SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/ai/commands/README.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/ai/commands/tdd-guide.md",
+      "to": "fhs/ai/skills/vendor/superpowers/test-driven-development.md"
+    },
+    {
+      "from": ".fhs/ai/commands/tdd-guide.md",
+      "to": "claude/commands/tdd-guide.md"
+    },
+    {
+      "from": ".fhs/ai/skills/fhs-bug-triage/SKILL.md",
+      "to": "fhs/reports/completion/2026-05-13_Session_Workflow_Postmortem.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/interaction-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/ux-writing.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/motion-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/responsive-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/spatial-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/color-and-contrast.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/typography.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/vendor/SKILL.md",
+      "to": "FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/install-log.md",
+      "to": "fhs/notes/completion_reports/2026-04-05_subagent-engineering_completion_report.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/install-log.md",
+      "to": "fhs/notes/completion_reports/2026-04-05_uiux-intelligence-integration_completion_report.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/subagents/freehandsss/tdd-guide.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/subagents/freehandsss/code-reviewer.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/subagents/freehandsss/database-reviewer.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/subagents/freehandsss/frontend-developer.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/subagents/freehandsss/ui-designer.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/subagents/freehandsss/build-error-resolver.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/README.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/build-error-resolver.md",
+      "to": "fhs/ai/skills/fhs-bug-triage/SKILL.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/build-error-resolver.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/code-reviewer.md",
+      "to": "fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/database-reviewer.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/database-reviewer.md",
+      "to": "fhs/ai/FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
+      "to": "Triple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
+      "to": "fhs/ai/FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/freehandsss/ui-designer.md",
+      "to": "fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-03-30_AI_Architecture_Upgrade_v1.2.md",
+      "to": "repo-map.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
+      "to": "a3_execution_verdict.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
+      "to": "a1_audit_report.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-03-31_System_Init_v131.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-04-03_command_authorization_lesson.md",
+      "to": "GLOBAL_AI_SOP.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-04-30_antigravity-mcp-vscode-config.md",
+      "to": "memory/feedback_antigravity_worktreeconfig.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-05_Blender_Subagent.md",
+      "to": "MANIFEST.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/notes/SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "commands/README.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "repo-map.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-13_Bug_Fix_Completion_Bias.md",
+      "to": "fhs/ai/skills/fhs-bug-triage/SKILL.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-16_keychain_shipping_deduction.md",
+      "to": "fhs/memory/lessons/2026-05-04_keychain-shipping-deduction.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/20260320_1358_Memory_Engine_2.0_Architecture.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/20260321_Airtable_Data_Cleansing_V3.5.md",
+      "to": "FHS_Product_Bible_V3.5.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/20260321_History_Indexing_Fix.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/20260322_Unauthorized_Merge_Violation.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/20260324_Incomplete_SOUL_Recovery_Incident.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/20260324_System_Management_Chaos_Reflection.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/20260326_Triple_Sync_Field_Map_Ground_Truth.md",
+      "to": "Triple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "agents/workflows/freehandsss-optimizer-v2.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "build-error-resolver.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "fhs/ai/commands/v39-aom.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "fhs/ai/FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "OPERATING_MODEL.md"
+    },
+    {
+      "from": ".fhs/notes/README.md",
+      "to": "fhs/notes/decisions.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/execute.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/guardian.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/fhs-audit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/read.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/ag-plan.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/commit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/execute.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/ag-stitch-sync.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/fhs-check.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/cl-flow.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/execute.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/fhs-audit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/error-eye.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/cl-flow.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/read.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/commit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/error-eye.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/guardian.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/cl-flow-fast.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/cl-flow.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/cl-flow-fast.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/fhs-audit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/fhs-check.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/ag-stitch-sync.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/error-eye.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/cl-flow-fast.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/commit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/read.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/ag-ui-import.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/ag-ui-import.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/guardian.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/ag-plan.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/fhs-check.md"
+    },
+    {
+      "from": ".fhs/notes/todo.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "fhs/notes/ai_reports/a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "fhs/notes/decisions.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "frontend-developer.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "fhs/ai/commands/ag-ui-import.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "ui-designer.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "fhs/ai/commands/ag-stitch-sync.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "OPERATING_MODEL.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "Triple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "fhs/ai/README.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "fhs/ai/subagents/README.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "Quadruple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "fhs/notes/README.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "to": "fhs/ai/README.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "to": "fhs/ai/subagents/README.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "to": "fhs/notes/README.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
+      "to": "FHS_Product_Bible_v3.7.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
+      "to": "docs/product-bible.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
+      "to": "GLOBAL_AI_SOP.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "implementation_plan.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "a1_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/reports/README.md",
+      "to": "fhs/reports/planning/a3_execution_verdict.md"
+    },
+    {
+      "from": ".fhs/reports/README.md",
+      "to": "fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
+    },
+    {
+      "from": ".fhs/reports/README.md",
+      "to": "fhs/reports/audits/system/audit_YYYY-MM-DD.md"
+    },
+    {
+      "from": ".fhs/reports/README.md",
+      "to": "fhs/reports/planning/a1_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a1_implementation_plan.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a1_implementation_plan.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a1_implementation_plan.md",
+      "to": "repo-map.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a1_product_sync_audit.md",
+      "to": "FHS_Product_Bible_V3.7.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a2_implementation_plan.md",
+      "to": "file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/CHANGELOG.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a3_execution_verdict.md",
+      "to": "read.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a3_execution_verdict.md",
+      "to": "fhs/ai/commands/README.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a3_execution_verdict.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a3_execution_verdict.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a3_execution_verdict.md",
+      "to": "ag-plan.md"
+    },
+    {
+      "from": ".fhs/reports/planning/AGENT_2_GEMINI_OPTIMIZED_REPORT.md",
+      "to": "CLAUDE_SESSION_INIT.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "freehandsss-optimizer-v2.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "a3go.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "commit.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "cl-flow.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "reflect.md"
+    },
+    {
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "fhs-check.md"
+    },
+    {
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "fhs/notes/todo.md"
+    },
+    {
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "px-audit.md"
+    },
+    {
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "completion_reports/2026-04-03_audit_resolution_completion_report.md"
+    },
+    {
+      "from": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".gemini/skills/arrange/SKILL.md",
+      "to": "reference/spatial-design.md"
+    },
+    {
+      "from": ".gemini/skills/frontend-design/SKILL.md",
+      "to": "impeccable.md"
+    },
+    {
+      "from": ".gemini/skills/teach-impeccable/SKILL.md",
+      "to": "impeccable.md"
+    },
+    {
+      "from": ".gemini/skills/typeset/SKILL.md",
+      "to": "reference/typography.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "fhs/ai/skills/vendor/superpowers/systematic-debugging.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "fhs/ai/skills/vendor/superpowers/test-driven-development.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "fhs/ai/skills/vendor/awesome-cc/supabase-query.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "fhs/ai/skills/finance-calculator/SKILL.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "fhs/memory/lessons/2026-05-16_order_0600802_pricing_concession.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "a1_audit_report.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "2026-03-31_a3_workflow_optimization_completion_report.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "a3_execution_verdict.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "a1_implementation_plan.md"
+    },
+    {
+      "from": "docs/plan_0004_supabase_cost_migration.md",
+      "to": "fhs/notes/todo.md"
+    },
+    {
+      "from": "n8n/Prevention_Optimization_Proposal.md",
+      "to": "file:///C:/Users/Edwin/.gemini/antigravity/brain/a53ee22f-985b-447a-88a7-8b189548fcb2/walkthrough.md"
+    }
+  ],
+  "D5_cycles": [
+    [
+      "docs/GLOBAL_AI_SOP.md",
+      "docs/GLOBAL_AI_SOP.md"
+    ],
+    [
+      "docs/FHS_Product_Bible_V3.7.md",
+      "docs/FHS_Legacy_Migration_Notes.md",
+      "docs/FHS_Product_Bible_V3.7.md"
+    ]
+  ],
+  "D5_deprecated_term_hits": [
+    {
+      "file": ".claude/commands/px-audit.md",
+      "line": 6,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "1. 拉取現況：讀取 .fhs/ai/AGENTS.md + n8n/Triple_Sync_Field_Map.md"
+    },
+    {
+      "file": ".claude/commands/px-audit.md",
+      "line": 6,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "1. 拉取現況：讀取 .fhs/ai/AGENTS.md + n8n/Triple_Sync_Field_Map.md"
+    },
+    {
+      "file": ".fhs/ai/AGENTS.md",
+      "line": 164,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）"
+    },
+    {
+      "file": ".fhs/ai/AGENTS.md",
+      "line": 164,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）"
+    },
+    {
+      "file": ".fhs/ai/FHS_Finance_Bible.md",
+      "line": 282,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "❌ n8n/Triple_Sync_Field_Map.md（已被 Quadruple_Sync 取代）"
+    },
+    {
+      "file": ".fhs/ai/FHS_Finance_Bible.md",
+      "line": 282,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "❌ n8n/Triple_Sync_Field_Map.md（已被 Quadruple_Sync 取代）"
+    },
+    {
+      "file": ".fhs/ai/commands/cl-flow-fast.md",
+      "line": 65,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "- 步驟是否違反 AGENTS.md 硬規則（HTML ID、API Key、三端同步）"
+    },
+    {
+      "file": ".fhs/ai/subagents/freehandsss/build-error-resolver.md",
+      "line": 109,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "verify_triple_sync → 執行三端同步驗證（修復後確認）"
+    },
+    {
+      "file": ".fhs/ai/subagents/freehandsss/database-reviewer.md",
+      "line": 29,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "> ❌ 禁止使用 `n8n/Triple_Sync_Field_Map.md` 作為財務架構參考（已過時，Quadruple 版本已取代）"
+    },
+    {
+      "file": ".fhs/ai/subagents/freehandsss/database-reviewer.md",
+      "line": 29,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "> ❌ 禁止使用 `n8n/Triple_Sync_Field_Map.md` 作為財務架構參考（已過時，Quadruple 版本已取代）"
+    },
+    {
+      "file": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
+      "line": 30,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "> ❌ 禁止以 `Triple_Sync_Field_Map.md` 作為財務架構參考（已過時）"
+    },
+    {
+      "file": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
+      "line": 30,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "> ❌ 禁止以 `Triple_Sync_Field_Map.md` 作為財務架構參考（已過時）"
+    },
+    {
+      "file": ".fhs/memory/lessons/2026-03-31_System_Init_v131.md",
+      "line": 22,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "2. **n8n Triple_Sync_Field_Map 驗證**"
+    },
+    {
+      "file": ".fhs/memory/lessons/2026-03-31_System_Init_v131.md",
+      "line": 59,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- n8n/Triple_Sync_Field_Map.md (V45.7.4+)"
+    },
+    {
+      "file": ".fhs/memory/lessons/2026-03-31_System_Init_v131.md",
+      "line": 59,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- n8n/Triple_Sync_Field_Map.md (V45.7.4+)"
+    },
+    {
+      "file": ".fhs/memory/lessons/20260326_Triple_Sync_Field_Map_Ground_Truth.md",
+      "line": 1,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "# 20260326_Triple_Sync_Field_Map_Ground_Truth"
+    },
+    {
+      "file": ".fhs/memory/lessons/20260326_Triple_Sync_Field_Map_Ground_Truth.md",
+      "line": 9,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- 建立 `Triple_Sync_Field_Map.md` 文件。"
+    },
+    {
+      "file": ".fhs/memory/lessons/20260326_Triple_Sync_Field_Map_Ground_Truth.md",
+      "line": 9,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- 建立 `Triple_Sync_Field_Map.md` 文件。"
+    },
+    {
+      "file": ".fhs/notes/decisions.md",
+      "line": 297,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "- 三端同步驗證（verify_triple_sync）制度化"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 81,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**當前**：「Triple_Sync_Field_Map.md - 三端對齊欄位地圖」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 81,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**當前**：「Triple_Sync_Field_Map.md - 三端對齊欄位地圖」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 82,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**應為**：「Triple_Sync_Field_Map.md - ⚠️ [已由 Quadruple_Sync_Field_Map.md 取代] 三端對齊欄位地圖」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 82,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**應為**：「Triple_Sync_Field_Map.md - ⚠️ [已由 Quadruple_Sync_Field_Map.md 取代] 三端對齊欄位地圖」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 120,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**當前**：「三端欄位映射：`/n8n/Triple_Sync_Field_Map.md`」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 120,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**當前**：「三端欄位映射：`/n8n/Triple_Sync_Field_Map.md`」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 127,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**當前**：「Triple_Sync_Field_Map.md - 三端對齊欄位地圖（位於 n8n/）」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 127,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**當前**：「Triple_Sync_Field_Map.md - 三端對齊欄位地圖（位於 n8n/）」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 132,
+      "token": "三端映射",
+      "replacement": "四端映射",
+      "snippet": "#### 17. n8n/README.md 第 5 行 — 三端映射未說明過時狀態"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 134,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**當前**：「`Triple_Sync_Field_Map.md` - Dashboard ↔ n8n ↔ Airtable 三端欄位映射」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 134,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**當前**：「`Triple_Sync_Field_Map.md` - Dashboard ↔ n8n ↔ Airtable 三端欄位映射」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 188,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**當前**：「Triple_Sync_Field_Map.md - 三端對齊欄位地圖（位於 n8n/）」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "line": 188,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**當前**：「Triple_Sync_Field_Map.md - 三端對齊欄位地圖（位於 n8n/）」"
+    },
+    {
+      "file": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "line": 114,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- 完全移除 Triple_Sync_Field_Map.md（已由 Quadruple_Sync 取代）"
+    },
+    {
+      "file": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "line": 114,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- 完全移除 Triple_Sync_Field_Map.md（已由 Quadruple_Sync 取代）"
+    },
+    {
+      "file": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
+      "line": 5,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**來源**：Freehandsss_Dashboard/freehandsss_dashboardV37.html（穩定生產版）+ Triple_Sync_Field_Map.md V45.7.4"
+    },
+    {
+      "file": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
+      "line": 5,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**來源**：Freehandsss_Dashboard/freehandsss_dashboardV37.html（穩定生產版）+ Triple_Sync_Field_Map.md V45.7.4"
+    },
+    {
+      "file": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
+      "line": 196,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "**對齊文件**：`n8n/Triple_Sync_Field_Map.md` §2.1 / §2.2"
+    },
+    {
+      "file": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
+      "line": 196,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "**對齊文件**：`n8n/Triple_Sync_Field_Map.md` §2.1 / §2.2"
+    },
+    {
+      "file": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
+      "line": 309,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "2. Triple_Sync_Field_Map.md（payload 真理）"
+    },
+    {
+      "file": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
+      "line": 309,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "2. Triple_Sync_Field_Map.md（payload 真理）"
+    },
+    {
+      "file": ".gemini/skills/px/SKILL.md",
+      "line": 22,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
+    },
+    {
+      "file": ".gemini/skills/px/SKILL.md",
+      "line": 22,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
+    },
+    {
+      "file": "docs/repo-map.md",
+      "line": 159,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "│   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）"
+    },
+    {
+      "file": "docs/repo-map.md",
+      "line": 159,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "│   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）"
+    },
+    {
+      "file": "docs/repo-map.md",
+      "line": 190,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "│   │       └── verify-triple-sync.js    ← 三端同步驗證"
+    },
+    {
+      "file": "n8n/Quadruple_Sync_Field_Map.md",
+      "line": 325,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "> **歷史背景**：Triple_Sync_Field_Map.md 曾在 Node 14 章節描述這些計算值，但 Triple_Sync 文件已 [已廢棄]。本段落為遷移至 Quadruple_Sync 的補完，避免知識斷層。"
+    },
+    {
+      "file": "n8n/Quadruple_Sync_Field_Map.md",
+      "line": 325,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "> **歷史背景**：Triple_Sync_Field_Map.md 曾在 Node 14 章節描述這些計算值，但 Triple_Sync 文件已 [已廢棄]。本段落為遷移至 Quadruple_Sync 的補完，避免知識斷層。"
+    },
+    {
+      "file": "n8n/README.md",
+      "line": 11,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "> 修改任何 n8n 配置前，必須先完成三端同步稽核（見 .fhs/ai/AGENTS.md 第 4 條）。"
+    }
+  ],
+  "notes": [
+    "本 JSON 為候選清單，不是判決。/fhs-audit 主流程 Claude 需做語義仲裁。",
+    "D4 沉餘偵測未實作於 MVP（需 fuzzy match 依賴）；由 Claude 讀文件直接判斷。"
+  ]
+}

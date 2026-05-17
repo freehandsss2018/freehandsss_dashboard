@@ -1,5 +1,28 @@
 # Session Log
 
+## 2026-05-17 (Session 3): Stitch Earthy Warm V41 Design System Export & Semantic Audit ✅
+
+**Scope**: 將 V41 設計系統大地溫潤 (Earthy Warm) 匯出至 Google Stitch 專案並配置設計系統屬性；執行 /fhs-audit v2.1 全專案語義稽核與大掃除，修復語義漂移。
+**Status**: ✅ 完成（Stitch 匯出成功，語義衝突全數清除）
+
+### 主要完成事項
+
+1. **Stitch 大地溫潤 (Earthy Warm) 設計系統導出**
+   - 新建 `docs/DESIGN.md` 作為大地溫潤 (Earthy Warm) 核心色彩、字型、Spacing、玻璃擬態以及雙端 (Ling Au / Fat Mo) 分流介面標準之 Single Source of Truth (SSOT)。
+   - 在 Google Stitch 建立專案 `"Freehandsss Dashboard V41 Design System"` (Project ID: `11117181158430315963`)。
+   - 上傳 Base64 格式 `docs/DESIGN.md`，建立 Screen 實例 `4258009578173095400`。
+   - 建立並註冊設計系統資產 `"Freehandsss Earthy Warm V41"` (Asset ID: `08d31e5f626240ff8a69be7fa9816c49`)。
+   - 產出 `2026-05-17_stitch_design_system_export_completion_report.md`。
+
+2. **fhs-audit v2.1 與語義稽核大掃除**
+   - 升級 `.fhs/ai/commands/fhs-audit.md` 至 v2.1，新增 Check 7「語義稽核」5 維深度檢測。
+   - 實作語義稽核工具 `.fhs/tools/semantic_audit.py`，提供 canonical keys、deprecated terms 偵測。
+   - 修正 `AGENTS.md` v1.4.6 憲法條文，對齊 Supabase-First 雙寫隔離、欄位計算職責與 Stitch 資產守護規則。
+   - 跨檔案統一 n8n 版本號為 V47.4，修復 `SOP_NOW.md`、`docs/FHS_Prompts.md` 與自動記憶版本漂移。
+   - 修正全專案語義衝突，更新 `.cursorrules` L48/L60 及 `SOP_NOW.md` L44 中 `Triple_Sync` 舊措辭至 `Quadruple_Sync`。
+
+---
+
 ## 2026-05-17 (Session 2): 訂單總覽 Filter/Sort + 批量操作工具列 ✅
 
 **Scope**: 訂單總覽新增類別 Chip 篩選、排序快選、sort header 視覺；批量操作工具列升級（Status/Batch/Delete）。

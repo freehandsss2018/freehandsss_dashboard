@@ -1,10 +1,10 @@
-# /fhs-audit（系統架構衛生稽核 v2.0）
+# /fhs-audit（系統架構衛生稽核 v2.1）
 
-用途：全面檢查系統文件健康度，偵測衝突、沉積、孤獨檔案、過時檔案、版本漂移，並確認 README、repo-map 準確性與文檔生態系統一致性。
+用途：全面檢查系統文件健康度，偵測衝突、沉積、孤獨檔案、過時檔案、版本漂移、語義一致性，並確認 README、repo-map 準確性與文檔生態系統一致性。
 
 觸發指令：/fhs-audit
 性質：純讀取稽核，不修改任何檔案，只輸出報告。
-更新日期：2026-05-16（新增檢查六：文檔生態系統版本一致性）
+更新日期：2026-05-17（新增檢查七：語義稽核 — D1-D5 五維深度檢測）
 
 ---
 
@@ -92,6 +92,42 @@ A6-4 自動化驗證工具運行 (Phase 4)
   期望：12 個文件追蹤成功，無編碼錯誤
 - 驗證輸出：.fhs/reports/version_manifest.json 存在且有效
 
+### 檢查七：語義稽核 (Semantic Audit) — v2.1 新增
+
+（2026-05-17 新增：填補 v2.0 純結構稽核未能偵測「語義漂移」的盲區）
+
+**目標**：偵測 5 個語義維度（過時 / 孤立 / 衝突 / 沉餘 / 廻路），確保憲法層規則與實際架構對齊。
+
+**前置條件**：執行 `python .fhs/tools/semantic_audit.py` 生成 `.fhs/reports/semantic_audit_candidates.json`。
+
+A7-1 **D1 Stale 過時偵測**（純程式化）
+- 讀取 `.fhs/tools/canonical_keys.yml` 內每個 key 的 source_of_truth 與 pattern
+- 抽取每檔當前值 → 比對是否與真理來源一致
+- 期望：`canonical_values` 全部 `status: ok`，無 `no_match` 或 `missing_source`
+
+A7-2 **D2 Orphan 孤立偵測**（程式化 + AI 仲裁）
+- 從 `D2_D5_dangling_links` 抽取所有指向不存在檔案的引用
+- AI 二次過濾：合法封存（archive/）vs 真孤兒
+- 期望：`dangling_links` 為空，或全部為已批准封存
+
+A7-3 **D3 Conflict 跨檔值衝突**（純程式化）
+- 對每個 canonical key，掃描 allowed_references 內各檔的對應值
+- 不一致即報告差異（如 SOP_NOW 寫 v1.4.5 但 AGENTS 寫 v1.4.6）
+- 期望：所有 allowed_references 與 source_of_truth 值對齊
+
+A7-4 **D4 Redundant 沉餘規則**（AI 仲裁為主）
+- MVP 未自動化；由 Claude 主流程讀取 AGENTS.md / SOP_NOW.md / decisions.md / handoff.md
+- 找出同一條制度規則在兩處被當 source of truth 寫出的情況
+- 期望：每條規則只在一處有「定義性」表述，其他處引用而非重定義
+
+A7-5 **D5 Loops 廻路 / Dangling / 殭屍 reference**（純程式化）
+- 從 `D5_cycles` 偵測命令／文件循環引用（A→B→A）
+- 從 `D5_deprecated_term_hits` 偵測黑名單命中（`.fhs/tools/deprecated_terms.txt`）
+- 期望：`cycles` 為空；`deprecated_term_hits` 為空（命中視為殭屍 reference）
+
+**Check 7 通過標準**：A7-1 ~ A7-5 全綠（或 🟣 標示「需 LLM 二次審查」項已由 Claude 主流程處理）。
+**降級規則**：若 `.fhs/tools/semantic_audit.py` 執行失敗，Check 7 標記為 🔴 並暫停剩餘檢查，提示 Fat Mo 修腳本。
+
 ---
 
 ## 輸出報告格式
@@ -143,8 +179,15 @@ A6-2 Subagent 標準化 (8/8)         ✅ / 🔴 缺失：___
 A6-3 docs/ 文件夾版本標記          ✅ / 🟡 未標記：___
 A6-4 自動化驗證工具運行            ✅ / 🔴 工具失敗：___
 
+【檢查七：語義稽核 (Semantic Audit)】
+A7-1 D1 Stale canonical 值對齊     ✅ / 🟡 漂移：___
+A7-2 D2 Orphan / Dangling links    ✅ / 🟡 候選：___（需 🟣 AI 二次過濾）
+A7-3 D3 Conflict 跨檔值不一致      ✅ / 🔴 衝突：___
+A7-4 D4 Redundant 規則沉餘         ✅ / 🟡 候選：___（🟣 AI 仲裁）
+A7-5 D5 Loops / Deprecated 命中    ✅ / 🔴 殭屍 ref：___
+
 ========================================
-總計：___ / 25 項通過
+總計：___ / 30 項通過
 
 🟢 架構乾淨（25/25 或僅 🟡）
 🟡 輕微待整理（有 🟡 項目）— 列出建議
@@ -179,6 +222,12 @@ A6-4 自動化驗證工具運行            ✅ / 🔴 工具失敗：___
 - 等待 Fat Mo 指示後才處理任何問題，不自行修復
 
 ## 版本更新日誌
+- **v2.1** (2026-05-17)：新增檢查七「語義稽核 (Semantic Audit)」— 5 維深度檢測（D1 Stale / D2 Orphan / D3 Conflict / D4 Redundant / D5 Loops），補齊 v2.0 純結構稽核盲區
+  - 新增輔助腳本 `.fhs/tools/semantic_audit.py`（MVP 三函式）
+  - 新增配置檔 `.fhs/tools/canonical_keys.yml`（單一真理 key 清單）
+  - 新增黑名單 `.fhs/tools/deprecated_terms.txt`（已廢棄詞）
+  - 輸出 `.fhs/reports/semantic_audit_candidates.json` 供 fhs-audit 主流程仲裁
+  - 總分由 25 → 30
 - **v2.0** (2026-05-16)：新增檢查六「文檔生態系統版本一致性」，融合 4 階段文檔審核流程
   - Phase 1/2：根目錄 & .fhs/ 層級版本同步
   - Phase 3：Subagent 標準化檢查

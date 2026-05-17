@@ -1,0 +1,62 @@
+# FHS 單一真理 Key 清單 (Canonical Keys)
+# 用途：fhs-audit Check 7 (A7-3 Conflict canonical-key 抽取) 的偵測依據
+# 每個 key 定義「真理來源」與「允許參照位置」。半自動腳本會抽取每檔當前值並比對。
+#
+# 維護規則：
+# - 改動 canonical key 時，必須同步更新真理來源檔內值
+# - 新增 key 必須有對應 regex 抽取規則
+# - 已廢棄 key 移至 deprecated_terms.txt
+#
+# 格式：
+#   <key_name>:
+#     source_of_truth: <檔案路徑>          # 真理來源
+#     pattern: <regex 抽取規則>             # 從檔內抽出當前值
+#     allowed_references: [<檔案清單>]      # 允許出現此 key 的其他檔案（必須與 source 一致）
+
+agents_version:
+  source_of_truth: .fhs/ai/AGENTS.md
+  pattern: '^>\s*Version:\s*(v\d+\.\d+\.\d+)'
+  allowed_references:
+    - .fhs/notes/SOP_NOW.md
+    - docs/FHS_Prompts.md
+    - .fhs/ai/subagents/freehandsss/*.md
+    - .fhs/reports/audits/system/audit_*.md
+
+n8n_version:
+  source_of_truth: .fhs/notes/SOP_NOW.md
+  pattern: 'n8n\s+Workflow\s*\|\s*(V\d+\.\d+(?:\.\d+)?)'
+  allowed_references:
+    - .fhs/memory/handoff.md
+    - .fhs/notes/decisions.md
+
+ssot_owner:
+  source_of_truth: .fhs/ai/AGENTS.md
+  pattern: 'Read/Write Lead.*?(\*\*\w+\*\*)'
+  allowed_references:
+    - .fhs/notes/SOP_NOW.md
+    - .cursorrules
+  note: "Read/Write Lead vs Authoritative Snapshot 區分，禁止混用「主」字單獨指 Airtable"
+
+supabase_role:
+  source_of_truth: .fhs/ai/AGENTS.md
+  pattern: 'Supabase.*?(Primary Lead|Read/Write Lead)'
+  allowed_references:
+    - .fhs/notes/SOP_NOW.md
+    - .fhs/memory/handoff.md
+
+production_html:
+  source_of_truth: .fhs/ai/AGENTS.md
+  pattern: '(freehandsss_dashboardV\d+\.html).*穩定生產版'
+  allowed_references:
+    - .fhs/notes/SOP_NOW.md
+    - .fhs/memory/handoff.md
+    - docs/repo-map.md
+
+field_map_authority:
+  source_of_truth: .fhs/ai/AGENTS.md
+  pattern: '(Quadruple_Sync_Field_Map\.md|Triple_Sync_Field_Map\.md)'
+  allowed_references:
+    - .cursorrules
+    - .fhs/ai/commands/*.md
+    - .fhs/notes/decisions.md
+  note: "目前唯一合法權威為 Quadruple_Sync；Triple_Sync 已廢棄，僅允許出現在 [已廢棄] 標註內文"

@@ -1,7 +1,7 @@
 ---
 name: FHS Business Scenarios Library
 version: v1.6
-compatible_with: AGENTS.md v1.4.5
+compatible_with: AGENTS.md v1.4.6
 last_updated: 2026-05-16
 description: Business situation detection and command routing for AI execution
 ---

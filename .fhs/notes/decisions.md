@@ -31,7 +31,7 @@
 - **Single-file 內嵌 Python 邏輯**：與 `build-error-resolver`、`blender-3d-modeler` 同模式，避免雙層架構增加維護成本。
 - **強制讀取 `finance-calculator` skill**：公式不重複定義，節省 token，finance-calculator 作為共用 reference layer。
 - **三端架構清晰切割**：Tier 1 Airtable（數據源）→ Tier 2 n8n（計算引擎）→ Tier 3 Dashboard（前端真理）。前端 profit ≠ 0 時為絕對真理，finance-auditor 強制遵守 AGENTS.md §財務真理守護。
-- **Supabase 就緒設計**：Phase 3 Tier 1 查詢層已文件化替換路徑（Airtable MCP → read-only-postgres skill），欄位名稱對齊 Triple_Sync_Field_Map.md，遷移時只需替換連接方式，不改稽核邏輯。
+- **Supabase 就緒設計**：Phase 3 Tier 1 查詢層已文件化替換路徑（Airtable MCP → read-only-postgres skill），欄位名稱對齊 Quadruple_Sync_Field_Map.md，遷移時只需替換連接方式，不改稽核邏輯。
 - **FHS_Prompts.md 情境五觸發詞收窄**：「利潤」「Total Cost」移出情境五，改為「財務規則確認」入口；Live 驗證統一走情境二十一。
 - **AGENTS.md 新增決定性路由規則**：Live Airtable 財務驗證觸發時強制調用 finance-auditor，不得由 Claude 直接處理。
 
@@ -83,7 +83,11 @@
 
 [2026-05-04] Order_Items 成本分類欄位計算方式確認（formula 保留）
 
-決策：
+> ⚠️ **SUPERSEDED**：本決策已於 **2026-05-13 Supabase-First 策略 (AGENTS.md v1.4.5+)** 與 **2026-05-17 AGENTS.md v1.4.6 §財務真理守護「財務欄位計算職責分工」** 取代。
+> 現行規則：核心財務欄位（含 Handmodel/Keychain/Necklace_Cost）必須由 n8n 計算後寫入 **Supabase (Primary)** 並鏡像至 Airtable (Fallback)。Airtable formula 僅作展示輔助，非權威來源。
+> 保留此條目作為歷史記錄。
+
+決策（已 Superseded）：
 - 保留 `Handmodel_Cost`、`Keychain_Cost`、`Necklace_Cost` 為 Airtable formula 欄位（不改 number）
 - 原因：公式已修復（無紅三角），且 formula 可即時反映 Product_Link 成本異動，n8n 寫入反而無此優勢
 
