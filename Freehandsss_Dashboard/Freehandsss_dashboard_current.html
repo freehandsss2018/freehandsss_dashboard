@@ -666,16 +666,84 @@
         .review-cb-th { width:36px; min-width:36px; text-align:center !important; padding:8px 4px !important; }
         .review-cb-td { width:36px; min-width:36px; text-align:center; padding:8px 4px; vertical-align:top; }
         .review-cb-td input[type=checkbox], .review-cb-th input[type=checkbox] { width:16px; height:16px; cursor:pointer; accent-color:var(--fhs-danger,#E63946); }
-        #bulkDeleteBar { display:none; align-items:center; gap:12px; padding:10px 16px; background:#fff3f3; border:1px solid #ffcccc; border-radius:var(--radius-md,8px); margin-bottom:12px; }
-        #bulkDeleteBar.visible { display:flex; }
-        #bulkDeleteBtn { padding:8px 18px; background:var(--fhs-danger,#E63946); color:#fff; border:none; border-radius:var(--radius-md,8px); font-weight:700; font-size:13px; cursor:pointer; transition:opacity .15s; }
-        #bulkDeleteBtn:hover { opacity:0.85; }
-        #bulkDeleteProgress { font-size:13px; color:#cc4444; font-weight:600; }
+        #bulkActionBar { display:none; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px 16px; background:var(--fhs-bg-elevated,#F0EBE4); border:1px solid var(--fhs-accent,#C9714A); border-radius:var(--radius-md,8px); margin-bottom:12px; }
+        #bulkActionBar.visible { display:flex; }
+        .bulk-count-badge { font-size:13px; font-weight:700; color:var(--fhs-accent,#C9714A); white-space:nowrap; }
+        .bulk-divider { width:1px; height:28px; background:var(--fhs-accent,#C9714A); opacity:0.3; flex-shrink:0; }
+        .bulk-action-group { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
+        .bulk-action-label { font-size:12px; font-weight:600; color:var(--fhs-text-secondary,#666); white-space:nowrap; }
+        .bulk-select { padding:5px 8px; font-size:12px; border:1px solid var(--fhs-border,#ddd); border-radius:var(--radius-md,8px); background:#fff; max-width:150px; }
+        .bulk-input { padding:5px 8px; font-size:12px; border:1px solid var(--fhs-border,#ddd); border-radius:var(--radius-md,8px); background:#fff; width:80px; }
+        .bulk-apply-btn { padding:5px 12px; background:var(--fhs-accent,#C9714A); color:#fff; border:none; border-radius:var(--radius-md,8px); font-size:12px; font-weight:600; cursor:pointer; transition:opacity .15s; white-space:nowrap; }
+        .bulk-apply-btn:hover { opacity:0.85; }
+        .bulk-delete-btn { padding:6px 14px; background:var(--fhs-danger,#E63946); color:#fff; border:none; border-radius:var(--radius-md,8px); font-size:12px; font-weight:700; cursor:pointer; transition:opacity .15s; white-space:nowrap; }
+        .bulk-delete-btn:hover { opacity:0.85; }
+        .bulk-cancel-btn { padding:6px 12px; background:transparent; border:1px solid var(--fhs-border,#ccc); border-radius:var(--radius-md,8px); font-size:12px; cursor:pointer; white-space:nowrap; }
+        .bulk-progress-text { font-size:12px; color:var(--fhs-accent,#C9714A); font-weight:600; }
+        @media (max-width:767px) { #bulkActionBar { padding:10px 12px; } .bulk-divider { display:none; } .bulk-action-group { flex-wrap:wrap; } }
 
         /* === 任務二：排序 header 箭頭 === */
-        .sort-th { cursor:pointer; user-select:none; }
+        .sort-th { cursor:pointer; user-select:none; position:relative; transition:background .15s,color .15s; }
         .sort-th:hover { background:rgba(255,255,255,0.08) !important; }
         .sort-arrow { display:inline-block; margin-left:4px; font-size:10px; opacity:0.7; }
+        /* Sort header active state */
+        .sort-th.sort-active { background:rgba(201,113,74,.15) !important; color:var(--fhs-accent) !important; box-shadow:inset 0 -3px 0 var(--fhs-accent); }
+        .sort-th.sort-active .sort-arrow { opacity:1; color:var(--fhs-accent); font-size:11px; }
+
+        /* === review-filters-v2 ─ Filter Bar 增強版 === */
+        .review-filters-v2 { background:var(--fhs-bg-elevated); border:1px solid var(--fhs-border); border-radius:var(--radius-lg); margin-bottom:24px; overflow:hidden; }
+        .filter-toggle-bar { display:none; align-items:center; justify-content:space-between; padding:0 16px; height:44px; cursor:pointer; background:transparent; border:none; width:100%; user-select:none; -webkit-tap-highlight-color:transparent; transition:background .15s; }
+        .filter-toggle-bar:active { background:var(--fhs-border); }
+        .filter-toggle-summary { display:flex; align-items:center; gap:8px; }
+        .filter-icon { color:var(--fhs-accent); flex-shrink:0; }
+        .filter-toggle-label { font-size:var(--fhs-text-sm); font-weight:700; color:var(--fhs-text-primary); }
+        .filter-active-hint { font-size:var(--fhs-text-xs); color:var(--fhs-accent); font-weight:600; background:var(--fhs-accent-light); padding:2px 8px; border-radius:10px; display:none; }
+        .filter-active-hint.visible { display:inline-block; }
+        .filter-chevron { color:var(--fhs-text-muted); flex-shrink:0; transition:transform .2s; }
+        .filter-toggle-bar.expanded .filter-chevron { transform:rotate(180deg); }
+        .filter-body { padding:16px 20px 20px; display:flex; flex-direction:column; gap:12px; }
+        .filter-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px 16px; }
+        .filter-row-secondary { padding-top:12px; border-top:1px solid var(--fhs-border); align-items:center; }
+        .filter-group { display:flex; align-items:center; gap:8px; min-height:36px; }
+        .filter-label { font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+        .fhs-select { height:36px; padding:0 28px 0 10px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); background:var(--fhs-bg-surface); color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); cursor:pointer; transition:border-color .15s,box-shadow .15s; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A6A55' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; }
+        .fhs-select:focus { outline:none; border-color:var(--fhs-border-focus); box-shadow:0 0 0 3px var(--fhs-accent-light); }
+        .fhs-select--wide { min-width:160px; }
+        .fhs-select--sort { min-width:180px; }
+        .fhs-input { height:36px; padding:0 10px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); background:var(--fhs-bg-surface); color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); transition:border-color .15s,box-shadow .15s; }
+        .fhs-input:focus { outline:none; border-color:var(--fhs-border-focus); box-shadow:0 0 0 3px var(--fhs-accent-light); }
+        .fhs-input--sm { width:96px; }
+        .fhs-input--md { width:144px; }
+        .fhs-btn-refresh { margin-left:auto; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border:none; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-size:var(--fhs-text-xs); font-weight:700; cursor:pointer; transition:background .15s,transform .1s; white-space:nowrap; flex-shrink:0; }
+        .fhs-btn-refresh:hover { background:#256427; }
+        .fhs-btn-refresh:active { background:#1b4d1d; transform:scale(0.97); }
+        /* Chip group */
+        .chip-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+        .chip-btn { display:inline-flex; align-items:center; height:30px; padding:0 12px; border:1.5px solid var(--fhs-border); border-radius:15px; background:var(--fhs-bg-surface); color:var(--fhs-text-secondary); font-size:var(--fhs-text-xs); font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; user-select:none; -webkit-tap-highlight-color:transparent; }
+        .chip-btn:hover:not(.active) { border-color:var(--fhs-accent); color:var(--fhs-accent); background:var(--fhs-accent-light); }
+        .chip-btn.active { background:var(--fhs-accent); border-color:#B5603B; color:#fff; box-shadow:0 1px 3px rgba(201,113,74,.3); }
+        .chip-btn:active { transform:scale(0.95); }
+        /* Accordion sort status bar */
+        .acc-sort-status { display:none; font-size:var(--fhs-text-xs); color:var(--fhs-accent); background:var(--fhs-accent-light); border:1px solid rgba(201,113,74,.25); border-radius:var(--radius-sm); padding:6px 12px; margin-bottom:12px; font-weight:600; }
+        .acc-sort-status.visible { display:block; }
+        /* Mobile */
+        @media (max-width:767px) {
+            .review-filters-v2 { border-radius:var(--radius-md); margin-bottom:16px; }
+            .filter-toggle-bar { display:flex; }
+            .filter-body { max-height:0; overflow:hidden; padding:0 16px; transition:max-height .3s ease,padding .3s ease; }
+            .filter-body.open { max-height:700px; padding:12px 16px 16px; }
+            .fhs-select, .fhs-input { height:44px; font-size:var(--fhs-text-sm); }
+            .fhs-select { padding-right:32px; }
+            .fhs-input--sm { width:100%; max-width:120px; }
+            .fhs-input--md { width:100%; max-width:180px; }
+            .filter-row { gap:10px 12px; }
+            .filter-row-secondary { padding-top:10px; }
+            .fhs-btn-refresh { margin-left:0; width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
+            .fhs-select--sort { min-width:0; width:100%; max-width:260px; }
+            .chip-btn { height:36px; padding:0 14px; font-size:var(--fhs-text-sm); }
+            .acc-sort-status { display:none; }
+            .acc-sort-status.visible { display:block; }
+        }
 
         /* === 子項目矩陣網格列 (Item Row Grid) === */
         .review-item-row {
@@ -2019,72 +2087,156 @@
                 </span>
             </div>
 
-            <div class="review-filters" style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:20px; background:var(--fhs-bg-elevated); border-radius:var(--radius-lg); margin-bottom:24px; border:1px solid var(--fhs-border); width:100%;">
-                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
-                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">📅 年度</label>
-                    <select id="reviewYear" style="min-width:80px;" onchange="fetchGlobalReview()"></select>
+            <!-- review-filters-v2：Filter Bar 增強版（產品類別 Chip + 排序下拉 + Mobile 收合） -->
+            <div class="review-filters-v2" id="reviewFiltersV2">
+
+                <!-- Mobile Only：Filter 收合 Toggle Bar -->
+                <div class="filter-toggle-bar" id="reviewFilterToggle" role="button" aria-expanded="false" aria-controls="reviewFilterBody">
+                    <div class="filter-toggle-summary">
+                        <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+                        </svg>
+                        <span class="filter-toggle-label">篩選條件</span>
+                        <span class="filter-active-hint" id="filterActiveHint"></span>
+                    </div>
+                    <svg class="filter-chevron" id="filterChevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
                 </div>
-                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
-                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">📆 月份</label>
-                    <select id="reviewMonth" style="min-width:80px;" onchange="fetchGlobalReview()">
-                        <option value="">全部</option>
-                        <option value="01">1月</option>
-                        <option value="02">2月</option>
-                        <option value="03">3月</option>
-                        <option value="04">4月</option>
-                        <option value="05">5月</option>
-                        <option value="06">6月</option>
-                        <option value="07">7月</option>
-                        <option value="08">8月</option>
-                        <option value="09">9月</option>
-                        <option value="10">10月</option>
-                        <option value="11">11月</option>
-                        <option value="12">12月</option>
-                    </select>
-                </div>
-                <div class="filter-divider" style="width:1px; height:32px; background:var(--fhs-border);"></div>
-                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
-                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">🚥 狀態</label>
-                    <select id="reviewStatus" style="min-width:160px;" onchange="fetchGlobalReview()">
-                        <option value="">全部狀態</option>
+
+                <!-- Filter Body（Desktop 常駐，Mobile 收合） -->
+                <div class="filter-body" id="reviewFilterBody">
+
+                    <!-- 第一行：日期 + 狀態 + 批次 + 搜尋 -->
+                    <div class="filter-row filter-row-primary">
+                        <div class="filter-group">
+                            <label class="filter-label" for="reviewYear">📅 年度</label>
+                            <select id="reviewYear" class="fhs-select" onchange="fetchGlobalReview(); updateFilterActiveHint();"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label" for="reviewMonth">📆 月份</label>
+                            <select id="reviewMonth" class="fhs-select" onchange="fetchGlobalReview(); updateFilterActiveHint();">
+                                <option value="">全部</option>
+                                <option value="01">1月</option>
+                                <option value="02">2月</option>
+                                <option value="03">3月</option>
+                                <option value="04">4月</option>
+                                <option value="05">5月</option>
+                                <option value="06">6月</option>
+                                <option value="07">7月</option>
+                                <option value="08">8月</option>
+                                <option value="09">9月</option>
+                                <option value="10">10月</option>
+                                <option value="11">11月</option>
+                                <option value="12">12月</option>
+                            </select>
+                        </div>
+                        <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
+                        <div class="filter-group">
+                            <label class="filter-label" for="reviewStatus">🚥 狀態</label>
+                            <select id="reviewStatus" class="fhs-select fhs-select--wide" onchange="fetchGlobalReview(); updateFilterActiveHint();">
+                                <option value="">全部狀態</option>
+                                <option value="0 什麼都未做">0 什麼都未做</option>
+                                <option value="1 已繪圖 或 已取相">1 已繪圖/取相</option>
+                                <option value="1.5 已交付建模師, 等3D圖中">1.5 等3D圖中</option>
+                                <option value="2 已修3D圖, 但未核對">2 已修3D圖</option>
+                                <option value="2.5 已核對3D圖, 準備打印">2.5 準備打印</option>
+                                <option value="3 已交付廠家, 打印中">3 打印中</option>
+                                <option value="Done 已完成">Done ✅</option>
+                            </select>
+                        </div>
+                        <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
+                        <div class="filter-group">
+                            <label class="filter-label" for="reviewBatch">🏷️ 批次</label>
+                            <input type="text" id="reviewBatch" class="fhs-input fhs-input--sm" placeholder="第X批"
+                                oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label" for="reviewSearch">🔍 搜尋</label>
+                            <input type="text" id="reviewSearch" class="fhs-input fhs-input--md" placeholder="姓名/單號"
+                                oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
+                        </div>
+                    </div>
+
+                    <!-- 第二行：產品類別 Chip + 排序下拉 + 重新載入 -->
+                    <div class="filter-row filter-row-secondary">
+                        <div class="filter-group">
+                            <label class="filter-label">📦 類別</label>
+                            <div class="chip-group" role="group" aria-label="產品類別篩選">
+                                <button class="chip-btn active" data-category="" type="button">全部</button>
+                                <button class="chip-btn" data-category="手模" type="button">手模</button>
+                                <button class="chip-btn" data-category="鑰匙扣" type="button">鑰匙扣</button>
+                                <button class="chip-btn" data-category="頸鏈" type="button">頸鏈</button>
+                            </div>
+                        </div>
+                        <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
+                        <div class="filter-group">
+                            <label class="filter-label" for="reviewSortSelect">↕ 排序</label>
+                            <select id="reviewSortSelect" class="fhs-select fhs-select--sort">
+                                <option value="">預設（載入順序）</option>
+                                <optgroup label="日期">
+                                    <option value="Date_desc">日期 — 最新優先</option>
+                                    <option value="Date_asc">日期 — 最舊優先</option>
+                                </optgroup>
+                                <optgroup label="單號">
+                                    <option value="Order_ID_desc">單號 — 降序</option>
+                                    <option value="Order_ID_asc">單號 — 升序</option>
+                                </optgroup>
+                                <optgroup label="客人">
+                                    <option value="Customer_asc">客人 — A→Z</option>
+                                    <option value="Customer_desc">客人 — Z→A</option>
+                                </optgroup>
+                                <optgroup label="成本">
+                                    <option value="Total_Cost_desc">成本 — 高→低</option>
+                                    <option value="Total_Cost_asc">成本 — 低→高</option>
+                                </optgroup>
+                                <optgroup label="利潤">
+                                    <option value="Net_Profit_desc">利潤 — 高→低</option>
+                                    <option value="Net_Profit_asc">利潤 — 低→高</option>
+                                </optgroup>
+                                <optgroup label="進度">
+                                    <option value="Status_asc">進度 — 0→Done</option>
+                                    <option value="Status_desc">進度 — Done→0</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <button class="fhs-btn-refresh" type="button"
+                            onclick="(window.fetchGlobalReview || fetchGlobalReview)(true)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            重新載入
+                        </button>
+                    </div>
+
+                </div><!-- /filter-body -->
+            </div><!-- /review-filters-v2 -->
+
+            <!-- 任務一：批量操作工具列 -->
+            <div id="bulkActionBar">
+                <span class="bulk-count-badge">已選 <strong id="bulkActionCount">0</strong> 筆</span>
+                <span class="bulk-divider"></span>
+                <div class="bulk-action-group">
+                    <label class="bulk-action-label">🚥 批量進度</label>
+                    <select id="bulkStatusSelect" class="bulk-select">
+                        <option value="">— 選擇進度 —</option>
                         <option value="0 什麼都未做">0 什麼都未做</option>
                         <option value="1 已繪圖 或 已取相">1 已繪圖/取相</option>
-                        <option value="1.5 已交付建模師, 等3D圖中">1.5 等3D圖中</option>
                         <option value="2 已修3D圖, 但未核對">2 已修3D圖</option>
-                        <option value="2.5 已核對3D圖, 準備打印">2.5 準備打印</option>
-                        <option value="3 已交付廠家, 打印中">3 打印中</option>
                         <option value="Done 已完成">Done ✅</option>
                     </select>
+                    <button class="bulk-apply-btn" onclick="executeBulkStatusUpdate()">套用</button>
                 </div>
-                <div class="filter-divider" style="width:1px; height:32px; background:var(--fhs-border);"></div>
-                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
-                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">🏷️ 批次</label>
-                    <input type="text" id="reviewBatch" placeholder="第X批" style="width:96px;"
-                        oninput="debounceFetchGlobalReview()">
+                <span class="bulk-divider"></span>
+                <div class="bulk-action-group">
+                    <label class="bulk-action-label">🏷️ 批量批次</label>
+                    <input type="text" id="bulkBatchInput" class="bulk-input" placeholder="第X批">
+                    <button class="bulk-apply-btn" onclick="executeBulkBatchUpdate()">套用</button>
                 </div>
-                <div class="filter-group" style="display:flex; align-items:center; gap:8px;">
-                    <label style="font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; white-space:nowrap;">🔍 搜尋</label>
-                    <input type="text" id="reviewSearch" placeholder="姓名/單號" style="width:144px;"
-                        oninput="debounceFetchGlobalReview()">
-                </div>
-                <button
-                    class="review-btn-refresh"
-                    style="margin-left:auto; padding:10px 20px; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-weight:700; font-size:var(--fhs-text-sm); border:none; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background var(--transition-fast);"
-                    onclick="(window.fetchGlobalReview || fetchGlobalReview)(true)">
-                    <svg xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    重新載入
-                </button>
-            </div>
-
-            <!-- 任務一：批量刪除工具列 -->
-            <div id="bulkDeleteBar">
-                <button id="bulkDeleteBtn" onclick="executeBulkDelete()">🗑️ 刪除已選 (<span id="bulkDeleteCount">0</span>)</button>
-                <span id="bulkDeleteProgress"></span>
-                <button onclick="clearAllSelections()" style="padding:6px 14px; background:transparent; border:1px solid #ccc; border-radius:var(--radius-md,8px); font-size:13px; cursor:pointer;">取消選擇</button>
+                <span style="flex:1"></span>
+                <button id="bulkDeleteBtn" class="bulk-delete-btn" onclick="executeBulkDelete()">🗑️ 刪除</button>
+                <span id="bulkDeleteProgress" class="bulk-progress-text"></span>
+                <button class="bulk-cancel-btn" onclick="clearAllSelections()">✕ 取消</button>
             </div>
 
             <div class="review-table-wrap" style="overflow-x:auto; max-height:72vh; width:100%; border-radius:var(--radius-lg); background:#fff; border:1px solid var(--fhs-border);">
@@ -2116,6 +2268,8 @@
 
             <!-- V40 iPhone Accordion 容器（< 768px 顯示，Desktop 隱藏） -->
             <div id="reviewAccordionContainer" style="display:none;">
+                <!-- 當前排序狀態提示（JS 動態更新） -->
+                <div class="acc-sort-status" id="accSortStatus" aria-live="polite"></div>
                 <p class="acc-empty">請選擇上方條件載入資料</p>
             </div>
 
@@ -5347,6 +5501,7 @@
         // === 任務二：欄位排序 ===
         let sortField = null;
         let sortDir = 'asc';
+        let reviewCategoryFilter = '';
 
         // --- 防爆機制：全域更新佇列 (Debounce Queue) ---
         let metadataUpdateQueue = [];
@@ -6133,7 +6288,7 @@
             } else {
                 selectedOrderIds.delete(orderId);
             }
-            _syncBulkDeleteBar();
+            _syncBulkActionBar();
             _syncMasterCheckbox();
         }
 
@@ -6148,7 +6303,7 @@
                     selectedOrderIds.delete(oid);
                 }
             });
-            _syncBulkDeleteBar();
+            _syncBulkActionBar();
         }
 
         function clearAllSelections() {
@@ -6156,12 +6311,12 @@
             document.querySelectorAll('.order-row-cb').forEach(cb => cb.checked = false);
             const master = document.getElementById('masterCheckbox');
             if (master) master.checked = false;
-            _syncBulkDeleteBar();
+            _syncBulkActionBar();
         }
 
-        function _syncBulkDeleteBar() {
-            const bar = document.getElementById('bulkDeleteBar');
-            const countEl = document.getElementById('bulkDeleteCount');
+        function _syncBulkActionBar() {
+            const bar = document.getElementById('bulkActionBar');
+            const countEl = document.getElementById('bulkActionCount');
             if (!bar) return;
             const n = selectedOrderIds.size;
             if (n > 0) {
@@ -6253,6 +6408,122 @@
             }
         }
 
+        async function executeBulkStatusUpdate() {
+            const newStatus = document.getElementById('bulkStatusSelect').value;
+            if (!newStatus) { alert('請先選擇進度。'); return; }
+            const ids = Array.from(selectedOrderIds);
+            if (ids.length === 0) return;
+            if (!confirm(`確定將 ${ids.length} 筆訂單進度設為「${newStatus}」？`)) return;
+
+            const progress = document.getElementById('bulkDeleteProgress');
+            let done = 0, errors = [];
+            const _orders = window.globalOrders || globalOrders;
+
+            for (const recordId of ids) {
+                const order = _orders.find(o => o.id === recordId);
+                if (!order) { done++; continue; }
+                if (progress) progress.textContent = `更新 ${done + 1}/${ids.length}…`;
+
+                order.Status = newStatus;
+                order.Process_Status = newStatus;
+                if (order.items) {
+                    order.items.forEach(item => {
+                        item.Status = newStatus;
+                        item.Process_Status = newStatus;
+                    });
+                }
+
+                const updateEntry = {
+                    Record_ID: recordId,
+                    Item_Record_ID: null,
+                    Batch_Number: order.Batch || order.Batch_Number || '',
+                    Process_Status: newStatus,
+                    Admin_Notes: order.Admin_Notes || ''
+                };
+                try {
+                    const res = await fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta"), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify([updateEntry])
+                    });
+                    if (!res.ok) errors.push(`${order.Order_ID}: HTTP ${res.status}`);
+                } catch(e) {
+                    errors.push(`${order.Order_ID}: ${e.message}`);
+                }
+                done++;
+            }
+
+            if (progress) progress.textContent = '';
+            document.getElementById('bulkStatusSelect').value = '';
+
+            if (window.applyReviewFilters) window.applyReviewFilters();
+            else if (typeof renderReviewTable === 'function') renderReviewTable(_orders);
+
+            if (errors.length > 0) {
+                alert(`批量進度更新完成，但有 ${errors.length} 筆失敗：\n${errors.join('\n')}`);
+            } else {
+                alert(`✅ 已成功更新 ${ids.length} 筆訂單進度。`);
+            }
+        }
+
+        async function executeBulkBatchUpdate() {
+            const newBatch = document.getElementById('bulkBatchInput').value.trim();
+            if (!newBatch) { alert('請先輸入批次號碼。'); return; }
+            const ids = Array.from(selectedOrderIds);
+            if (ids.length === 0) return;
+            if (!confirm(`確定將 ${ids.length} 筆訂單批次設為「${newBatch}」？`)) return;
+
+            const progress = document.getElementById('bulkDeleteProgress');
+            let done = 0, errors = [];
+            const _orders = window.globalOrders || globalOrders;
+
+            for (const recordId of ids) {
+                const order = _orders.find(o => o.id === recordId);
+                if (!order) { done++; continue; }
+                if (progress) progress.textContent = `更新 ${done + 1}/${ids.length}…`;
+
+                order.Batch = newBatch;
+                order.Batch_Number = newBatch;
+                if (order.items) {
+                    order.items.forEach(item => {
+                        item.Batch = newBatch;
+                        item.Batch_Number = newBatch;
+                    });
+                }
+
+                const updateEntry = {
+                    Record_ID: recordId,
+                    Item_Record_ID: null,
+                    Batch_Number: newBatch,
+                    Process_Status: order.Status || order.Process_Status || '0 什麼都未做',
+                    Admin_Notes: order.Admin_Notes || ''
+                };
+                try {
+                    const res = await fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta"), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify([updateEntry])
+                    });
+                    if (!res.ok) errors.push(`${order.Order_ID}: HTTP ${res.status}`);
+                } catch(e) {
+                    errors.push(`${order.Order_ID}: ${e.message}`);
+                }
+                done++;
+            }
+
+            if (progress) progress.textContent = '';
+            document.getElementById('bulkBatchInput').value = '';
+
+            if (window.applyReviewFilters) window.applyReviewFilters();
+            else if (typeof renderReviewTable === 'function') renderReviewTable(_orders);
+
+            if (errors.length > 0) {
+                alert(`批量批次更新完成，但有 ${errors.length} 筆失敗：\n${errors.join('\n')}`);
+            } else {
+                alert(`✅ 已成功更新 ${ids.length} 筆訂單批次。`);
+            }
+        }
+
         // ========================================================
         // 任務二：欄位排序 (Column Sort)
         // ========================================================
@@ -6264,42 +6535,148 @@
                 sortField = field;
                 sortDir = 'asc';
             }
-
-            // 更新箭頭指示
-            const allArrows = document.querySelectorAll('.sort-arrow');
-            allArrows.forEach(el => el.textContent = '');
-            const arrowEl = document.getElementById('sort-arrow-' + field);
-            if (arrowEl) arrowEl.textContent = sortDir === 'asc' ? ' ▲' : ' ▼';
-
-            // Client-side 排序 globalOrders
-            const sorted = [...globalOrders].sort((a, b) => {
-                let aVal = a[field];
-                let bVal = b[field];
-
-                // 數值型欄位
-                if (field === 'Total_Cost' || field === 'Net_Profit') {
-                    aVal = parseFloat(aVal) || 0;
-                    bVal = parseFloat(bVal) || 0;
-                    return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
-                }
-
-                // 日期型欄位
-                if (field === 'Date') {
-                    aVal = aVal ? new Date(aVal).getTime() : 0;
-                    bVal = bVal ? new Date(bVal).getTime() : 0;
-                    return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
-                }
-
-                // 字串型欄位
-                aVal = String(aVal || '').toLowerCase();
-                bVal = String(bVal || '').toLowerCase();
-                if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
-                if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            renderReviewTable(sorted);
+            updateSortHeaderUI(field, sortDir);
+            // Sync sort select dropdown
+            const sortSel = document.getElementById('reviewSortSelect');
+            if (sortSel) {
+                const val = field + '_' + sortDir;
+                if (sortSel.querySelector('option[value="' + val + '"]')) sortSel.value = val;
+            }
+            updateAccSortStatus();
+            updateFilterActiveHint();
+            applyReviewFilters();
         }
+
+        // ── Filter + Sort orchestrator ──────────────────────────────
+        function applyReviewFilters() {
+            const _orders = window.globalOrders || globalOrders;
+            if (!_orders) return;
+            let filtered = _orders;
+            // Category chip filter
+            if (reviewCategoryFilter) {
+                filtered = filtered.filter(function(o) { return matchesOrderCategory(o, reviewCategoryFilter); });
+            }
+            // Sort
+            if (sortField) {
+                const _field = sortField, _dir = sortDir;
+                filtered = filtered.slice().sort(function(a, b) {
+                    let aVal = a[_field], bVal = b[_field];
+                    if (_field === 'Total_Cost' || _field === 'Net_Profit') {
+                        aVal = parseFloat(aVal) || 0; bVal = parseFloat(bVal) || 0;
+                        return _dir === 'asc' ? aVal - bVal : bVal - aVal;
+                    }
+                    if (_field === 'Date') {
+                        aVal = aVal ? new Date(aVal).getTime() : 0;
+                        bVal = bVal ? new Date(bVal).getTime() : 0;
+                        return _dir === 'asc' ? aVal - bVal : bVal - aVal;
+                    }
+                    aVal = String(aVal || '').toLowerCase();
+                    bVal = String(bVal || '').toLowerCase();
+                    if (aVal < bVal) return _dir === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return _dir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+            renderReviewTable(filtered);
+        }
+        window.applyReviewFilters = applyReviewFilters;
+
+        function matchesOrderCategory(order, cat) {
+            const items = order.items || [];
+            if (cat === '手模') return items.some(function(i) { const c = i.Category || ''; return c.includes('擺設') || c.includes('木框') || c.includes('玻璃瓶'); });
+            if (cat === '鑰匙扣') return items.some(function(i) { const c = i.Category || ''; return c.includes('鎖匙扣') || c.includes('鑰匙扣'); });
+            if (cat === '頸鏈') return items.some(function(i) { const c = i.Category || ''; return c.includes('吊飾') || c.includes('頸鏈'); });
+            return true;
+        }
+
+        function updateSortHeaderUI(field, dir) {
+            document.querySelectorAll('.sort-th').forEach(function(th) {
+                th.classList.remove('sort-active', 'sort-asc', 'sort-desc');
+            });
+            document.querySelectorAll('.sort-arrow').forEach(function(el) { el.textContent = ''; });
+            if (!field) return;
+            const targetTh = document.querySelector('.sort-th[data-sort="' + field + '"]');
+            if (targetTh) targetTh.classList.add('sort-active', dir === 'asc' ? 'sort-asc' : 'sort-desc');
+            const arrowEl = document.getElementById('sort-arrow-' + field);
+            if (arrowEl) arrowEl.textContent = dir === 'asc' ? ' ▲' : ' ▼';
+        }
+
+        function updateAccSortStatus() {
+            const el = document.getElementById('accSortStatus');
+            if (!el) return;
+            if (!sortField) { el.classList.remove('visible'); el.textContent = ''; return; }
+            const labels = { Order_ID:'單號', Date:'日期', Customer:'客人', Total_Cost:'成本', Net_Profit:'利潤', Status:'進度' };
+            el.textContent = '↕ 按 ' + (labels[sortField] || sortField) + (sortDir === 'asc' ? ' 升序' : ' 降序') + ' 排列';
+            el.classList.add('visible');
+        }
+
+        function updateFilterActiveHint() {
+            const hint = document.getElementById('filterActiveHint');
+            if (!hint) return;
+            let count = 0;
+            const year = document.getElementById('reviewYear');
+            const month = document.getElementById('reviewMonth');
+            const status = document.getElementById('reviewStatus');
+            const batch = document.getElementById('reviewBatch');
+            const search = document.getElementById('reviewSearch');
+            const sortSel = document.getElementById('reviewSortSelect');
+            if (year && year.value) count++;
+            if (month && month.value) count++;
+            if (status && status.value) count++;
+            if (batch && batch.value) count++;
+            if (search && search.value) count++;
+            if (reviewCategoryFilter) count++;
+            if (sortSel && sortSel.value) count++;
+            if (count > 0) { hint.textContent = '已選 ' + count + ' 項'; hint.classList.add('visible'); }
+            else { hint.classList.remove('visible'); }
+        }
+
+        // ── Mobile filter toggle + chip + sort select init ──────────
+        (function() {
+            // Mobile filter toggle
+            const toggle = document.getElementById('reviewFilterToggle');
+            const filterBody = document.getElementById('reviewFilterBody');
+            if (toggle && filterBody) {
+                toggle.addEventListener('click', function() {
+                    const isOpen = filterBody.classList.toggle('open');
+                    toggle.classList.toggle('expanded', isOpen);
+                    toggle.setAttribute('aria-expanded', String(isOpen));
+                });
+            }
+            // Chip filter
+            document.querySelectorAll('.chip-btn[data-category]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.chip-btn[data-category]').forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    reviewCategoryFilter = btn.dataset.category || '';
+                    updateFilterActiveHint();
+                    applyReviewFilters();
+                });
+            });
+            // Sort select dropdown
+            const sortSel = document.getElementById('reviewSortSelect');
+            if (sortSel) {
+                sortSel.addEventListener('change', function() {
+                    const val = this.value;
+                    if (!val) {
+                        sortField = null; sortDir = 'asc';
+                        updateSortHeaderUI(null, null);
+                        updateAccSortStatus();
+                        updateFilterActiveHint();
+                        applyReviewFilters();
+                        return;
+                    }
+                    const lastUnderscore = val.lastIndexOf('_');
+                    const field = val.substring(0, lastUnderscore);
+                    const dir = val.substring(lastUnderscore + 1);
+                    sortField = field; sortDir = dir;
+                    updateSortHeaderUI(field, dir);
+                    updateAccSortStatus();
+                    updateFilterActiveHint();
+                    applyReviewFilters();
+                });
+            }
+        })();
 
         async function saveInlineEdit(recordId, field, elementId, itemIndex) {
             const el = document.getElementById(elementId);

@@ -1,5 +1,25 @@
 # Session Log
 
+## 2026-05-17 (Session 2): 訂單總覽 Filter/Sort + 批量操作工具列 ✅
+
+**Scope**: 訂單總覽新增類別 Chip 篩選、排序快選、sort header 視覺；批量操作工具列升級（Status/Batch/Delete）。
+**Status**: ✅ 完成（V41.html + current.html 同步）
+
+### 主要完成事項
+
+1. **Filter/Sort 篩選排序功能**
+   - `review-filters-v2` 面板：年月狀態批次搜尋 + 類別 Chips + 排序快選下拉
+   - `applyReviewFilters()` 客戶端即時篩選，`sortReviewTable()` 多欄升降序
+   - IIFE 綁定事件（DOMContentLoaded 在底部腳本不觸發，改用 IIFE）
+   - 修復「無資料顯示」bug：applyReviewFilters 跨 script block 作用域
+
+2. **#bulkActionBar 批量操作工具列**
+   - 舊 #bulkDeleteBar（僅刪除）升級為 #bulkActionBar（進度 + 批次 + 刪除 + 取消）
+   - `executeBulkStatusUpdate()` / `executeBulkBatchUpdate()` 批量更新
+   - 批量後 re-render 本地資料（不重打 API）
+
+---
+
 ## 2026-05-17: Finance Mode 全面 Bug 修正 + 手模細分 + 數量面板 ✅
 
 **Scope**: Finance Mode 財務指標數據錯誤（收入/毛利/訂單細分）全面修復；手模 Bar Chart 細分為木框/玻璃瓶；新增手模銷售數量面板；item_category 編碼損壞診斷與修復。

@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-05-17] 訂單總覽 Filter/Sort + 批量操作工具列
+
+**訂單總覽 Filter/Sort 功能**：
+- 新增 `review-filters-v2` 篩選面板：年度/月份/狀態/批次/搜尋（Row 1）+ 類別 Chip 篩選 + 排序快選（Row 2）
+- `applyReviewFilters()` 實現客戶端即時篩選（不重打 API）
+- `sortReviewTable(field)` 支援所有欄位升降序排序
+- `matchesOrderCategory(order, cat)` 按手模/鑰匙扣/頸鏈分類
+- IIFE 事件綁定（修復 DOMContentLoaded 在 body 底部腳本中不觸發的 bug）
+- 修復「無資料顯示」bug：applyReviewFilters 跨 script block 作用域問題，還原 fetch handler 直接調用 renderReviewTable
+
+**批量操作工具列（#bulkActionBar）**：
+- 舊 `#bulkDeleteBar`（僅刪除）升級為 `#bulkActionBar`（狀態 + 批次 + 刪除）
+- `executeBulkStatusUpdate()` — 批量設定 Process_Status，POST 到 `update-order-meta` webhook
+- `executeBulkBatchUpdate()` — 批量設定 Batch_Number，POST 到 `update-order-meta` webhook
+- `executeBulkDelete()` — 現有功能保留，Supabase DELETE + n8n async 同步
+- V41.html + current.html 同步更新
+
 ## [2026-05-16] Plan 0004 成本架構遷移完成 + Bug 6 根治
 
 **Plan 0004 — Supabase 成本架構完整遷移**：
