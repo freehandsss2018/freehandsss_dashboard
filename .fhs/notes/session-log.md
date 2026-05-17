@@ -1,5 +1,35 @@
 # Session Log
 
+## 2026-05-17: Finance Mode 全面 Bug 修正 + 手模細分 + 數量面板 ✅
+
+**Scope**: Finance Mode 財務指標數據錯誤（收入/毛利/訂單細分）全面修復；手模 Bar Chart 細分為木框/玻璃瓶；新增手模銷售數量面板；item_category 編碼損壞診斷與修復。
+**Status**: ✅ 完成（SQL 已部署至 Supabase，current.html 已同步）
+
+### 主要完成事項
+
+1. **get_financial_charts.sql 重大修正**
+   - 主分類邏輯（handmodel > keychain > necklace）防止混合訂單雙重計算
+   - 新增 `*_profit` 欄位（用 net_profit 按主分類分組，非 revenue-cost）
+   - 新增 `*_orders` 欄位（包容式計數，允許混合訂單各自計算）
+   - 新增 `handmodel_frame` / `handmodel_bottle`（item_key ILIKE 過濾）
+
+2. **get_financial_kpis.sql 修正**
+   - `metal_qty.necklace` 改用 `ILIKE '%頸鏈%'`（修復 UTF-8 編碼損壞問題）
+   - 新增 `handmodel_qty: { frame, bottle }` 欄位（item_key ILIKE）
+   - 驗證：keychain=33, necklace=8, frame=15, bottle=1 ✅
+
+3. **Dashboard JS 修正（V41.html）**
+   - breakdown: orders 從硬編碼 [0,0,0] 改為讀取 SQL 真實值
+   - breakdown: profit 從 revenue-cost 改為 SQL `*_profit` 欄位（防負值）
+   - handmodel Bar Chart fallback：有細分時顯示 木框/玻璃瓶，否則顯示總計
+
+4. **診斷教訓**
+   - item_category '純銀頸鏈吊飾' 首字元 UTF-8 損壞 → ILIKE '%頸鏈%' 繞過
+   - COMMENT ON FUNCTION 不支援相鄰多行字串 → 合併成單行
+   - 教訓文件：`.fhs/memory/lessons/2026-05-17_finance-mode-sql-debugging.md`
+
+---
+
 ## 2026-05-16b: V41 Finance Mode → Supabase 接回 + Schema 修正 + 定價優惠記錄 ✅
 
 **Scope**: V41 Finance Mode 完整接回 Supabase RPC；n8n_cost_adjustments 欄位設計修正；訂單 0600802 定價優惠調查與記錄。

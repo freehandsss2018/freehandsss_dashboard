@@ -103,7 +103,7 @@ BEGIN
             WHERE o.confirmed_at BETWEEN cur_start AND cur_end
               AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
               AND (o.necklace_cost > 0)
-              AND oi.item_category = '純銀頸鏈吊飾'
+              AND oi.item_category ILIKE '%頸鏈%'
           ), 0)
         ),
         'handmodel_qty', json_build_object(
@@ -179,7 +179,7 @@ BEGIN
             WHERE o.confirmed_at BETWEEN prev_start AND prev_end
               AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
               AND (o.necklace_cost > 0)
-              AND oi.item_category = '純銀頸鏈吊飾'
+              AND oi.item_category ILIKE '%頸鏈%'
           ), 0)
         ),
         'handmodel_qty', json_build_object(

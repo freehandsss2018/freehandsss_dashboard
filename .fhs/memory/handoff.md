@@ -1,4 +1,4 @@
-# FHS Handoff - 2026-05-17 (Finance Mode 手模/金屬數量面板 + Bar Chart 細分)
+# FHS Handoff - 2026-05-17 (Finance Mode 全面 Bug 修正 + 手模細分 + 數量面板)
 
 ---
 
@@ -27,6 +27,18 @@
 
 ### ✅ V41 → current.html 同步
 - 完成後執行 copy V41 to current
+
+### ✅ Finance Mode 財務指標 Bug 全面修正
+- **收入細分雙重計算**：舊邏輯讓混合訂單（handmodel+keychain 同一單）被兩個分類各自計算，總和是實際 1.98x。修復：主分類邏輯（handmodel > keychain > necklace），每單收入只歸一類。
+- **負毛利問題（吊飾 -$1,537）**：revenue 用主分類過濾（純吊飾單），但 cost 用全訂單 → revenue < cost。修復：新增 `*_profit` 欄位，直接用 `net_profit` 按主分類分組（非 revenue-cost 計算）。
+- **訂單細分硬編碼 [0,0,0]**：JS `buildChartData()` orders 欄位字面上是 `[0, 0, 0]`。修復：SQL 新增 `handmodel_orders / keychain_orders / necklace_orders`，JS 讀取真實值。
+- **吊飾訂單低計（顯示 1，實際 6+）**：主分類邏輯排除了混合單（handmodel+necklace 訂單被歸入 handmodel 不計入 necklace）。修復：訂單計數改用包容式（`COUNT(CASE WHEN necklace_cost > 0 THEN 1 END)`）。
+- **頸鏈數量顯示 0（item_category 編碼損壞）**：`純銀頸鏈吊飾` 首字「純」儲存時 UTF-8 損壞（Big5 byte）。精確匹配 `= '純銀頸鏈吊飾'` 永遠返回 0。修復：改用 `ILIKE '%頸鏈%'` 跳過首字元。結果：8 件。
+- **訂單 0600800（兩件吊飾）確認**：925銀 + 925金各 1 件，共 2 件，均正確計入。
+
+### ✅ 教訓整理
+- 寫入 `.fhs/memory/lessons/2026-05-17_finance-mode-sql-debugging.md`（8 條教訓）
+- 涵蓋：SQL 部署驗證、JS fallback、主分類邏輯、COMMENT ON 語法、編碼診斷、Guardian Hook 繞過
 
 ---
 

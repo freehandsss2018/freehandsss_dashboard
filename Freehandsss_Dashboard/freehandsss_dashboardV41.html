@@ -8075,29 +8075,22 @@
                             labels:  barLabels,
                             revenue: barAllVals,
                             cost:    [cb.handmodel || 0, cb.necklace || 0, cb.keychain || 0],
-                            profit:  [
-                                (cr.handmodel || 0) - (cb.handmodel || 0),
-                                (cr.necklace  || 0) - (cb.necklace  || 0),
-                                (cr.keychain  || 0) - (cb.keychain  || 0)
-                            ],
-                            orders:  [0, 0, 0]
+                            profit:  [cr.handmodel_profit || 0, cr.necklace_profit || 0, cr.keychain_profit || 0],
+                            orders:  [cr.handmodel_orders || 0, cr.necklace_orders || 0, cr.keychain_orders || 0]
                         },
                         handmodel: {
                             labels:  ['立體擺設'],
                             revenue: [cr.handmodel || 0],
                             cost:    [cb.handmodel || 0],
-                            profit:  [(cr.handmodel || 0) - (cb.handmodel || 0)],
-                            orders:  [0]
+                            profit:  [cr.handmodel_profit || 0],
+                            orders:  [cr.handmodel_orders || 0]
                         },
                         metal: {
                             labels:  ['純銀頸鏈吊飾', '金屬鎖匙扣'],
                             revenue: [cr.necklace || 0, cr.keychain || 0],
                             cost:    [cb.necklace  || 0, cb.keychain || 0],
-                            profit:  [
-                                (cr.necklace || 0) - (cb.necklace || 0),
-                                (cr.keychain || 0) - (cb.keychain || 0)
-                            ],
-                            orders:  [0, 0]
+                            profit:  [cr.necklace_profit || 0, cr.keychain_profit || 0],
+                            orders:  [cr.necklace_orders || 0, cr.keychain_orders || 0]
                         }
                     }
                 };
