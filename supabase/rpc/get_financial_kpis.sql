@@ -65,12 +65,67 @@ BEGIN
         'cost',    COALESCE(SUM(total_cost), 0),
         'profit',  COALESCE(SUM(net_profit), 0),
         'orders',  COUNT(*),
+        -- orders_inclusive: actual count of orders containing that product type (allows overlap for mixed orders)
+        'orders_inclusive', CASE
+          WHEN category = 'handmodel' THEN (
+            SELECT COUNT(*) FROM orders o2
+            WHERE o2.confirmed_at BETWEEN cur_start AND cur_end
+              AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o2.handmodel_cost > 0
+          )
+          WHEN category = 'metal' THEN (
+            SELECT COUNT(*) FROM orders o2
+            WHERE o2.confirmed_at BETWEEN cur_start AND cur_end
+              AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND (o2.keychain_cost > 0 OR o2.necklace_cost > 0)
+          )
+          ELSE COUNT(*) END,
         'margin',  CASE WHEN SUM(final_sale_price) > 0
                         THEN ROUND(SUM(net_profit) / SUM(final_sale_price) * 100, 1)
                         ELSE 0 END,
         'aov',     CASE WHEN COUNT(*) > 0
                         THEN ROUND(SUM(final_sale_price) / COUNT(*), 0)
-                        ELSE 0 END
+                        ELSE 0 END,
+        'metal_qty', json_build_object(
+          'keychain', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN cur_start AND cur_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND (o.keychain_cost > 0)
+              AND oi.item_category = '金屬鎖匙扣'
+          ), 0),
+          'necklace', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN cur_start AND cur_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND (o.necklace_cost > 0)
+              AND oi.item_category = '純銀頸鏈吊飾'
+          ), 0)
+        ),
+        'handmodel_qty', json_build_object(
+          'frame', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN cur_start AND cur_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o.handmodel_cost > 0
+              AND oi.item_key ILIKE '%木框%'
+          ), 0),
+          'bottle', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN cur_start AND cur_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o.handmodel_cost > 0
+              AND oi.item_key ILIKE '%玻璃瓶%'
+          ), 0)
+        )
       )
       FROM orders
       WHERE confirmed_at BETWEEN cur_start AND cur_end
@@ -78,7 +133,7 @@ BEGIN
         AND (
           category = 'all'
           OR (category = 'handmodel' AND handmodel_cost > 0)
-          OR (category = 'metal'     AND (keychain_cost > 0 OR necklace_cost > 0))
+          OR (category = 'metal'     AND handmodel_cost = 0 AND (keychain_cost > 0 OR necklace_cost > 0))
         )
     ),
     'previous', (
@@ -87,12 +142,66 @@ BEGIN
         'cost',    COALESCE(SUM(total_cost), 0),
         'profit',  COALESCE(SUM(net_profit), 0),
         'orders',  COUNT(*),
+        'orders_inclusive', CASE
+          WHEN category = 'handmodel' THEN (
+            SELECT COUNT(*) FROM orders o2
+            WHERE o2.confirmed_at BETWEEN prev_start AND prev_end
+              AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o2.handmodel_cost > 0
+          )
+          WHEN category = 'metal' THEN (
+            SELECT COUNT(*) FROM orders o2
+            WHERE o2.confirmed_at BETWEEN prev_start AND prev_end
+              AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND (o2.keychain_cost > 0 OR o2.necklace_cost > 0)
+          )
+          ELSE COUNT(*) END,
         'margin',  CASE WHEN SUM(final_sale_price) > 0
                         THEN ROUND(SUM(net_profit) / SUM(final_sale_price) * 100, 1)
                         ELSE 0 END,
         'aov',     CASE WHEN COUNT(*) > 0
                         THEN ROUND(SUM(final_sale_price) / COUNT(*), 0)
-                        ELSE 0 END
+                        ELSE 0 END,
+        'metal_qty', json_build_object(
+          'keychain', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN prev_start AND prev_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND (o.keychain_cost > 0)
+              AND oi.item_category = '金屬鎖匙扣'
+          ), 0),
+          'necklace', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN prev_start AND prev_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND (o.necklace_cost > 0)
+              AND oi.item_category = '純銀頸鏈吊飾'
+          ), 0)
+        ),
+        'handmodel_qty', json_build_object(
+          'frame', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN prev_start AND prev_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o.handmodel_cost > 0
+              AND oi.item_key ILIKE '%木框%'
+          ), 0),
+          'bottle', COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            JOIN orders o ON oi.order_fhs_id = o.order_id
+            WHERE o.confirmed_at BETWEEN prev_start AND prev_end
+              AND o.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o.handmodel_cost > 0
+              AND oi.item_key ILIKE '%玻璃瓶%'
+          ), 0)
+        )
       )
       FROM orders
       WHERE confirmed_at BETWEEN prev_start AND prev_end
@@ -100,7 +209,7 @@ BEGIN
         AND (
           category = 'all'
           OR (category = 'handmodel' AND handmodel_cost > 0)
-          OR (category = 'metal'     AND (keychain_cost > 0 OR necklace_cost > 0))
+          OR (category = 'metal'     AND handmodel_cost = 0 AND (keychain_cost > 0 OR necklace_cost > 0))
         )
     ),
     'last_sync', NOW()

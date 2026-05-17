@@ -69,7 +69,21 @@ BEGIN
       SELECT json_build_object(
         'handmodel', COALESCE(SUM(CASE WHEN handmodel_cost > 0 THEN final_sale_price ELSE 0 END), 0),
         'keychain',  COALESCE(SUM(CASE WHEN keychain_cost  > 0 THEN final_sale_price ELSE 0 END), 0),
-        'necklace',  COALESCE(SUM(CASE WHEN necklace_cost  > 0 THEN final_sale_price ELSE 0 END), 0)
+        'necklace',  COALESCE(SUM(CASE WHEN necklace_cost  > 0 THEN final_sale_price ELSE 0 END), 0),
+        'handmodel_frame', COALESCE((
+          SELECT SUM(o2.final_sale_price) FROM orders o2
+          WHERE o2.confirmed_at BETWEEN cur_start AND cur_end
+            AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+            AND o2.handmodel_cost > 0
+            AND EXISTS (SELECT 1 FROM order_items oi WHERE oi.order_fhs_id = o2.order_id AND oi.item_key ILIKE '%木框%')
+        ), 0),
+        'handmodel_bottle', COALESCE((
+          SELECT SUM(o2.final_sale_price) FROM orders o2
+          WHERE o2.confirmed_at BETWEEN cur_start AND cur_end
+            AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+            AND o2.handmodel_cost > 0
+            AND EXISTS (SELECT 1 FROM order_items oi WHERE oi.order_fhs_id = o2.order_id AND oi.item_key ILIKE '%玻璃瓶%')
+        ), 0)
       )
       FROM orders
       WHERE confirmed_at BETWEEN cur_start AND cur_end

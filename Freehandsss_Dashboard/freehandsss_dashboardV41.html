@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-HK">
 
 <head>
@@ -1737,11 +1737,41 @@
             #fo-tab-bar { top: 56px; }
             .fo-tab-btn { padding: 12px 14px; font-size: 13px; }
             #fo-main { padding: 16px 14px 80px; }
-            #fo-kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            .fo-kpi-value { font-size: 20px; }
+            #fo-kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            /* 手機 KPI 卡：縮小 padding，移除 overflow:hidden 截斷（改為 overflow-x:clip 保留偽元素遮罩） */
+            .fo-kpi-card {
+                padding: 12px 12px 12px 16px;
+                overflow: visible;
+                overflow-x: clip;
+            }
+            /* KPI 大數字：使用 clamp 避免過長金額換行截斷 */
+            .fo-kpi-value {
+                font-size: clamp(14px, 4vw, 20px);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            /* KPI top 行 label/badge 縮小 */
+            .fo-kpi-label { font-size: 10px; }
+            .fo-kpi-badge { font-size: 9px; }
+            /* KPI change / subtitle 縮小 */
+            .fo-kpi-change { font-size: 11px; }
+            .fo-kpi-subtitle { font-size: 9px; }
+            /* BKD breakdown 行字體縮小，避免溢出 */
+            .fo-kpi-bkd-label { font-size: 9px; width: 48px; }
+            .fo-kpi-bkd-val   { font-size: 9px; width: 44px; }
+            /* Charts */
             .fo-charts-row { flex-direction: column; }
             #fo-pie-card { width: 100%; }
             .fo-chart-title { font-size: 13px; }
+        }
+        /* 極小螢幕（320px）：KPI 改為單列，確保數字完整顯示 */
+        @media (max-width: 359px) {
+            #fo-kpi-grid { grid-template-columns: 1fr; }
+            .fo-kpi-value { font-size: 18px; white-space: normal; }
         }
         @media (min-width: 768px) {
             #fo-kpi-grid { grid-template-columns: repeat(3, 1fr); }
@@ -2777,6 +2807,40 @@
                         <span>&#9650;</span><span id="fo-kpi-aov-pct">+0%</span>
                     </div>
                     <div id="fo-kpi-aov-subtitle" class="fo-kpi-subtitle">vs 去年同期</div>
+                </div>
+            </div>
+
+            <!-- Handmodel Product Sales Quantity Panel -->
+            <div id="fo-handmodel-qty-panel" style="display:none; margin-bottom:24px; padding:16px; background:var(--fhs-bg-elevated); border-radius:8px; border-left:4px solid #7B1FA2;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <span style="font-size:13px; font-weight:500; color:var(--fhs-text-primary);">手模擺設銷售數量</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; text-align:center;">
+                    <div>
+                        <div style="font-size:24px; font-weight:bold; color:#7B1FA2; margin-bottom:4px;" id="fo-handmodel-qty-frame">0</div>
+                        <div style="font-size:12px; color:var(--fhs-text-secondary);">木框套裝（件）</div>
+                    </div>
+                    <div>
+                        <div style="font-size:24px; font-weight:bold; color:#AB47BC; margin-bottom:4px;" id="fo-handmodel-qty-bottle">0</div>
+                        <div style="font-size:12px; color:var(--fhs-text-secondary);">玻璃瓶套裝（件）</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metal Product Sales Quantity Panel -->
+            <div id="fo-metal-qty-panel" style="display:none; margin-bottom:24px; padding:16px; background:var(--fhs-bg-elevated); border-radius:8px; border-left:4px solid #26C6DA;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <span style="font-size:13px; font-weight:500; color:var(--fhs-text-primary);">金屬產品銷售數量</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; text-align:center;">
+                    <div>
+                        <div style="font-size:24px; font-weight:bold; color:#26C6DA; margin-bottom:4px;" id="fo-metal-qty-keychain">0</div>
+                        <div style="font-size:12px; color:var(--fhs-text-secondary);">鎖匙扣（件）</div>
+                    </div>
+                    <div>
+                        <div style="font-size:24px; font-weight:bold; color:#0288D1; margin-bottom:4px;" id="fo-metal-qty-necklace">0</div>
+                        <div style="font-size:12px; color:var(--fhs-text-secondary);">頸鍊（件）</div>
+                    </div>
                 </div>
             </div>
 
@@ -6921,19 +6985,21 @@
         var FO_MOCK_DATA = {
             current: {
                 subtitle: 'vs 去年同期',
-                revenue: 86809, cost: 17995, profit: 68814, orders: 21,
+                revenue: 86819, cost: 18122, profit: 68697, orders: 23,
                 revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
                 isNewBusiness: true,
                 groups: {
-                    all:       { revenue: 86809, cost: 17995, orders: 21 },
-                    handmodel: { revenue: 15354, cost: 2520,  orders: 12 },
-                    metal:     { revenue: 71455, cost: 15475, orders: 21 }
+                    all:       { revenue: 86819, cost: 18122, orders: 23 },
+                    handmodel: { revenue: 68119, cost: 13021, orders: 16 },
+                    metal:     { revenue: 18700, cost: 5101,  orders: 7  }
                 },
+                handmodel_qty: { frame: 15, bottle: 1 },
+                metal_qty: { keychain: 11, necklace: 0 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
-                    revenue: [33220, 54549, 72989, 86809],
-                    cost:    [6370,  9970,  14630, 17995],
-                    profit:  [26850, 44579, 58359, 68814]
+                    revenue: [33220, 54549, 72989, 86819],
+                    cost:    [6370,  9970,  14630, 18122],
+                    profit:  [26850, 44579, 58359, 68697]
                 },
                 barChart: {
                     all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
@@ -6952,15 +7018,17 @@
                 }
             },
             monthly: {
-                subtitle: 'vs 上個月 (3月)',
-                revenue: 13820, cost: 3365, profit: 10455, orders: 4,
-                revenueChange: -25.1, costChange: -27.8, profitChange: -24.1, ordersChange: 0,
+                subtitle: 'vs 上個月 (4月)',
+                revenue: 13030, cost: 3581, profit: 10644, orders: 4,
+                revenueChange: -13.2, costChange: -6.4, profitChange: -4.9, ordersChange: -20.0,
                 isNewBusiness: false,
                 groups: {
-                    all:       { revenue: 13820, cost: 3365, orders: 4 },
-                    handmodel: { revenue: 1294,  cost: 210,  orders: 1 },
-                    metal:     { revenue: 12526, cost: 3155, orders: 4 }
+                    all:       { revenue: 13030, cost: 3581, orders: 4 },
+                    handmodel: { revenue: 13030, cost: 3581, orders: 4 },
+                    metal:     { revenue: 0,     cost: 0,    orders: 0 }
                 },
+                handmodel_qty: { frame: 4, bottle: 0 },
+                metal_qty: { keychain: 0, necklace: 0 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
                     revenue: [33220, 21329, 18440, 13820],
@@ -6985,19 +7053,21 @@
             },
             yearly: {
                 subtitle: 'vs 上一年全年',
-                revenue: 86809, cost: 17995, profit: 68814, orders: 21,
+                revenue: 86819, cost: 18122, profit: 68697, orders: 23,
                 revenueChange: null, costChange: null, profitChange: null, ordersChange: null,
                 isNewBusiness: true,
                 groups: {
-                    all:       { revenue: 86809, cost: 17995, orders: 21 },
-                    handmodel: { revenue: 15354, cost: 2520,  orders: 12 },
-                    metal:     { revenue: 71455, cost: 15475, orders: 21 }
+                    all:       { revenue: 86819, cost: 18122, orders: 23 },
+                    handmodel: { revenue: 68119, cost: 13021, orders: 16 },
+                    metal:     { revenue: 18700, cost: 5101,  orders: 7  }
                 },
+                handmodel_qty: { frame: 15, bottle: 1 },
+                metal_qty: { keychain: 11, necklace: 0 },
                 lineChart: {
                     labels: ['1月','2月','3月','4月'],
-                    revenue: [33220, 54549, 72989, 86809],
-                    cost:    [6370,  9970,  14630, 17995],
-                    profit:  [26850, 44579, 58359, 68814]
+                    revenue: [33220, 54549, 72989, 86819],
+                    cost:    [6370,  9970,  14630, 18122],
+                    profit:  [26850, 44579, 58359, 68697]
                 },
                 barChart: {
                     all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
@@ -7054,7 +7124,7 @@
             document.getElementById('fo-kpi-revenue-value').textContent = fmtHKDFull(stats.revenue);
             document.getElementById('fo-kpi-cost-value').textContent    = fmtHKDFull(stats.cost);
             document.getElementById('fo-kpi-profit-value').textContent  = fmtHKDFull(stats.revenue - stats.cost);
-            document.getElementById('fo-kpi-orders-value').textContent  = stats.orders;
+            document.getElementById('fo-kpi-orders-value').textContent  = (stats.orders_inclusive !== undefined ? stats.orders_inclusive : stats.orders);
             
             var margin = stats.revenue > 0 ? (((stats.revenue - stats.cost) / stats.revenue) * 100) : 0;
             var aov    = stats.orders > 0  ? Math.round(stats.revenue / stats.orders) : 0;
@@ -7133,6 +7203,26 @@
                     '</div>';
                 }).join('');
             });
+
+            /* Handmodel product quantity panel - show only when handmodel category selected */
+            var handmodelQtyPanel = document.getElementById("fo-handmodel-qty-panel");
+            if (foCurrentCategory === "handmodel" && d.handmodel_qty) {
+                handmodelQtyPanel.style.display = "block";
+                document.getElementById("fo-handmodel-qty-frame").textContent = d.handmodel_qty.frame || 0;
+                document.getElementById("fo-handmodel-qty-bottle").textContent = d.handmodel_qty.bottle || 0;
+            } else {
+                handmodelQtyPanel.style.display = "none";
+            }
+
+            /* Metal product quantity panel - show only when metal category selected */
+            var metalQtyPanel = document.getElementById("fo-metal-qty-panel");
+            if (foCurrentCategory === "metal" && d.metal_qty) {
+                metalQtyPanel.style.display = "block";
+                document.getElementById("fo-metal-qty-keychain").textContent = d.metal_qty.keychain || 0;
+                document.getElementById("fo-metal-qty-necklace").textContent = d.metal_qty.necklace || 0;
+            } else {
+                metalQtyPanel.style.display = "none";
+            }
         }
 
         function foSetChange(wrapId, pctId, value, isInt, costMode, unit) {
@@ -7514,7 +7604,7 @@
         /* === INIT === */
         function foInitAll() {
             foRenderAll(foCurrentTab);
-            // foFetchLive() disabled: webhook returns malformed data (wrong 配件 values)
+            if (window.foFetchLive) window.foFetchLive();
         }
 
         /* === RESIZE HANDLER === */
@@ -7919,7 +8009,7 @@
 
             // 12 parallel RPC calls: KPIs per tab+category, charts per tab
             const results = await Promise.all([
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }), // current tab = YTD (Jan→now)
+                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }), // current tab = YTD (Jan->now)
                 sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'handmodel', ref_date: refDate }), // current tab = YTD
@@ -7955,7 +8045,10 @@
 
                 const barLabels  = ['立體擺設', '純銀頸鏈吊飾', '金屬鎖匙扣'];
                 const barAllVals = [cr.handmodel || 0, cr.necklace || 0, cr.keychain || 0];
-                const barHmVals  = [cr.handmodel || 0];
+                const hmFrame = cr.handmodel_frame || 0;
+                const hmBottle = cr.handmodel_bottle || 0;
+                const barHmVals   = (hmFrame + hmBottle > 0) ? [hmFrame, hmBottle] : [cr.handmodel || 0];
+                const barHmLabels = (hmFrame + hmBottle > 0) ? ['木框立體擺設', '玻璃瓶立體擺設'] : ['立體擺設'];
                 const barMtVals  = [cr.necklace  || 0, cr.keychain || 0];
 
                 const pieAllCol = ['#7B1FA2', '#0288D1', '#26C6DA'];
@@ -7968,8 +8061,8 @@
                         profit:  tr.map(function(t) { return t.profit  || 0; })
                     },
                     barChart: {
-                        all:       { labels: barLabels,                       values: barAllVals },
-                        handmodel: { labels: ['立體擺設'],                    values: barHmVals  },
+                        all:       { labels: barLabels,    values: barAllVals },
+                        handmodel: { labels: barHmLabels,  values: barHmVals  },
                         metal:     { labels: ['純銀頸鏈吊飾', '金屬鎖匙扣'], values: barMtVals  }
                     },
                     pieChart: {
@@ -8023,10 +8116,12 @@
                     ordersChange:  pct(cur.orders,  prev.orders),
                     isNewBusiness: !prev.revenue,
                     groups: {
-                        all:       { revenue: cur.revenue,   cost: cur.cost,   orders: cur.orders   },
-                        handmodel: { revenue: curHm.revenue, cost: curHm.cost, orders: curHm.orders },
-                        metal:     { revenue: curMt.revenue, cost: curMt.cost, orders: curMt.orders }
-                    }
+                        all:       { revenue: cur.revenue,   cost: cur.cost,   orders: cur.orders,   orders_inclusive: cur.orders_inclusive   || cur.orders   },
+                        handmodel: { revenue: curHm.revenue, cost: curHm.cost, orders: curHm.orders, orders_inclusive: curHm.orders_inclusive || curHm.orders },
+                        metal:     { revenue: curMt.revenue, cost: curMt.cost, orders: curMt.orders, orders_inclusive: curMt.orders_inclusive || curMt.orders }
+                    },
+                    handmodel_qty: (curHm.handmodel_qty || cur.handmodel_qty || { frame: 0, bottle: 0 }),
+                    metal_qty: (curMt.metal_qty || cur.metal_qty || { keychain: 0, necklace: 0 })
                 }, charts);
             }
 
