@@ -65,11 +65,18 @@ BEGIN
     ),
 
     -- Bar Chart: Revenue by product category
+    -- FIXED: Use primary category logic (handmodel > keychain > necklace) to avoid double-counting mixed orders
     'category_revenue', (
       SELECT json_build_object(
         'handmodel', COALESCE(SUM(CASE WHEN handmodel_cost > 0 THEN final_sale_price ELSE 0 END), 0),
-        'keychain',  COALESCE(SUM(CASE WHEN keychain_cost  > 0 THEN final_sale_price ELSE 0 END), 0),
-        'necklace',  COALESCE(SUM(CASE WHEN necklace_cost  > 0 THEN final_sale_price ELSE 0 END), 0),
+        'keychain',  COALESCE(SUM(CASE WHEN handmodel_cost = 0 AND keychain_cost > 0 THEN final_sale_price ELSE 0 END), 0),
+        'necklace',  COALESCE(SUM(CASE WHEN handmodel_cost = 0 AND keychain_cost = 0 AND necklace_cost > 0 THEN final_sale_price ELSE 0 END), 0),
+        'handmodel_profit', COALESCE(SUM(CASE WHEN handmodel_cost > 0 THEN net_profit ELSE 0 END), 0),
+        'keychain_profit',  COALESCE(SUM(CASE WHEN handmodel_cost = 0 AND keychain_cost > 0 THEN net_profit ELSE 0 END), 0),
+        'necklace_profit',  COALESCE(SUM(CASE WHEN handmodel_cost = 0 AND keychain_cost = 0 AND necklace_cost > 0 THEN net_profit ELSE 0 END), 0),
+        'handmodel_orders', COUNT(CASE WHEN handmodel_cost > 0 THEN 1 END),
+        'keychain_orders',  COUNT(CASE WHEN keychain_cost > 0 THEN 1 END),
+        'necklace_orders',  COUNT(CASE WHEN necklace_cost > 0 THEN 1 END),
         'handmodel_frame', COALESCE((
           SELECT SUM(o2.final_sale_price) FROM orders o2
           WHERE o2.confirmed_at BETWEEN cur_start AND cur_end
@@ -115,6 +122,4 @@ END;
 $$;
 
 COMMENT ON FUNCTION get_financial_charts IS
-  'Finance Mode chart data. Returns trend (line), category_revenue (bar), cost_breakdown (pie). '
-  'Called by n8n Finance Webhook after get_financial_kpis. '
-  'monthly mode returns 6-month trend; yearly returns month-by-month YTD.';
+  'Finance Mode chart data. Returns trend (line), category_revenue (bar), cost_breakdown (pie). Called by n8n Finance Webhook after get_financial_kpis. monthly mode returns 6-month trend; yearly returns month-by-month YTD. FIXED 2026-05-17: category_revenue uses primary category logic to prevent double-counting mixed orders.';
