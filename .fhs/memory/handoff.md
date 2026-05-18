@@ -1,53 +1,65 @@
-# FHS Handoff - 2026-05-17 21:30
+# FHS Handoff - 2026-05-18 深夜
 當前版本：v1.4.6（憲法層）/ V41（UI層）
+n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
+
+---
 
 ## 本次 Session 完成事項
 
-### 1. 訂單總覽 Filter/Sort 功能 (V41)
-- 新增 `review-filters-v2` 篩選面板（Year/Month/Status/Batch/Search + 類別 Chips + 排序快選）
-- `applyReviewFilters()` 客戶端即時篩選，`sortReviewTable()` 升降序排序
-- `matchesOrderCategory()` 按手模/鑰匙扣/頸鏈分類
-- 修復 DOMContentLoaded bug → 改用 IIFE 事件綁定
-- 修復「無資料顯示」bug：fetch handler 還原直接調用 `renderReviewTable(globalOrders)`
+### 1. Telegram 通知系統全面重構（Supabase-First）
+- **拓撲重組**：Mirror to Supabase → Pack Telegram Data → Send Profit Report（繞過 Airtable 依賴）
+- **三格訊息分離**：新訂單（完整商品清單）/ 修改訂單（精簡 + 變更摘要）/ 刪除訂單（最簡）
+- **訊息架構**：Pack Telegram Data 組裝 `Full_Message`，Telegram 節點直接送出
 
-### 2. 批量操作工具列升級 (V41)
-- 舊 `#bulkDeleteBar`（僅有刪除）→ 新 `#bulkActionBar`（進度 + 批次 + 刪除 + 取消）
-- `executeBulkStatusUpdate()` — 批量設定 Process_Status（POST to update-order-meta）
-- `executeBulkBatchUpdate()` — 批量設定 Batch_Number（POST to update-order-meta）
-- `executeBulkDelete()` — 保留，Supabase DELETE + n8n 最佳努力同步
-- 選後立即 re-render via `applyReviewFilters()` 或 `renderReviewTable()`
-- V41.html + current.html 已同步
+### 2. n8n Bug 修復
+- **Batch SKU Collector**：移除 `require('fs')` → NAS 不支援
+- **Smart Cache Strategist V47.9**：`fetch()` 在 NAS Code 節點不可用 → 改用 26種 base SKU 成本硬編碼對照表 + prefix matching
+- **Pack Telegram Data**：`$⚠️` 格式修正、雙🔄修正、Update_Note 直接輸出
+- **Notify Telegram (Delete)**：Unicode 編碼修復（不再顯示 `?????`）
 
-### 3. Stitch 大地溫潤 (Earthy Warm) 設計系統同步與資產導出
-- **[新建]** `docs/DESIGN.md`：詳細梳理大地溫潤 (Earthy Warm) 核心色彩、狀態色、字型比例、8px 網格、玻璃擬態以及雙端 (Ling Au / Fat Mo) 分流介面標準。
-- **[修改]** `docs/README.md` & `docs/repo-map.md` & `README.md` & `.fhs/ai/README.md` & `Freehandsss_Dashboard/README.md`：更新版本號為憲法層 v1.4.6，並完成文件同步。
-- **[Stitch MCP 註冊]**：
-  - 新建專案：`"Freehandsss Dashboard V41 Design System"` (Project ID: `11117181158430315963`)
-  - 規格上傳：上傳 UTF-8 Base64 `docs/DESIGN.md`，建立 Screen `4258009578173095400`
-  - 建立設計系統：解析並建立 `"Freehandsss Earthy Warm V41"` (Asset ID: `08d31e5f626240ff8a69be7fa9816c49`)
-- **[完成記錄]**：寫入 `2026-05-17_stitch_design_system_export_completion_report.md` 及 Lessons 學習日誌。
+### 3. Dashboard Bug 修復
+- **Bug #1 - confirmed_at**：edit 時不再覆蓋建立日期（兩個 HTML 檔案）
+- **Bug #2 - Loader 文字**：「正在同步數據至 Supabase + Airtable...」
+- **Bug #3 - lastFetchedState 時序**：移到 limb_sel_ DOM 還原後，修復部位欄位誤報
+- **Update_Note 優化**：取模時間（合拼 hour + ampm）+ 顯示原本→修改值格式
+
+### 4. 成本查詢根本問題確認
+- Supabase products 表有 200 個 SKU（手模擺設 4 個 + 鎖匙扣/吊飾 196 個）
+- NAS n8n Code 節點 fetch() 完全不可用 → V47.9 hardcoded map 繞過
+- Airtable API 月度限制已達上限（5月底重置）
+
+---
 
 ## 待辦 ⏳ 項目
 
-1. **Anti-Idle Ping 部署驗證**：依 AGENTS.md §4「防閒置強制」硬規則，驗證 n8n 是否已存在每 6天 ping Supabase 的 Schedule Trigger node；如缺失則補建（非重新定義規則，僅執行驗證/補建）
-2. **pg_cron TTL**：`error_logs` 表 30 天自動清理
-3. **V42 Dashboard**：介面優化 + 動畫系統（規劃中）
-4. **current/yearly tab 數據確認**：兩個 tab 均顯示 YTD 數據（相同），Fat Mo 需確認是否接受
-5. **supabase/migrations/0009_backfill_n8n_cost_adjustments.sql**：已列入 Staging，等待 commit，後續需確認是否需要部署
+1. **Telegram Footer 移除**：「This message was sent automatically with n8n」由 n8n 實例層自動加入，需 Fat Mo 在 NAS 的 n8n 環境配置中關閉（非 workflow 層面可修）
+2. **Supabase products 成本更新**：若新增產品類型，需同步更新 Smart Cache Strategist V47.9 的硬編碼表
+3. **Airtable 背景同步驗證**：API 額度重置（6月初）後確認背景 Airtable sync path 正常
+4. **Anti-Idle Ping 驗證**：確認 n8n 每 6 天 ping Supabase 的 Schedule Trigger 存在
+5. **pg_cron TTL**：`error_logs` 表 30 天自動清理
+
+---
 
 ## 核心配置
 
 | 項目 | 值 |
 |------|-----|
-| 生產版 | Freehandsss_dashboard_current.html (= V41) |
-| 開發版 | freehandsss_dashboardV41.html |
-| Supabase URL | https://vpmwizzixnwilmzctdvu.supabase.co |
-| n8n Workflow | V47.4（Supabase-First） |
-| Airtable Base | app9GuLsW9frN4xaT |
-| RPC: KPIs | get_financial_kpis（含 handmodel_qty + metal_qty） |
-| RPC: Charts | get_financial_charts（含 handmodel_frame + handmodel_bottle） |
-| Webhook: update-order-meta | https://yanhei.synology.me:8443/webhook/update-order-meta |
-| Guardian Hook | pre-tool-guard.js 阻擋 Edit → current.html，需 PowerShell temp file |
-| 批量操作 | #bulkActionBar（Status + Batch + Delete），_syncBulkActionBar() 控顯隱 |
-| Stitch 專案 ID | 11117181158430315963 |
-| Stitch 設計系統 ID | 08d31e5f626240ff8a69be7fa9816c49 |
+| n8n Workflow ID | `6Ljih0hSKr9RpYNm` |
+| n8n versionId (Smart Cache) | `d43bce23` |
+| n8n versionId (Pack Telegram) | `d5f7121c` |
+| Supabase URL | `https://vpmwizzixnwilmzctdvu.supabase.co` |
+| Airtable Base | `app9GuLsW9frN4xaT` |
+| Dashboard 生產版 | `Freehandsss_dashboard_current.html` (V41) |
+| Dashboard 開發版 | `freehandsss_dashboardV41.html` |
+
+### n8n Code 節點 NAS 限制（重要）
+- `fetch()` ❌ 靜默失敗
+- `process.env` ❌ IIFE try-catch 繞過
+- `require()` ❌ 完全不可用
+- → 所有 HTTP 呼叫必須用 HTTP Request 節點，Code 節點只做計算
+
+### Telegram 訊息路徑
+```
+收到 Webhook → Supabase Mirror → Pack Telegram Data → Send Profit Report
+（Airtable 全部 continueOnFail: true，不阻斷主路徑）
+```

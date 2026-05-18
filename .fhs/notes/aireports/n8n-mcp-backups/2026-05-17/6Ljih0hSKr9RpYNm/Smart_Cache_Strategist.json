@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// V47.3 Supabase-First: fetch cost directly from Supabase, bypass Airtable Rate Limit\n// Fallback: Airtable path (V47.2 delay) if Supabase unavailable\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst batchItems = $(\"Batch SKU Collector\").all();\nconst hasValidItems = batchItems.some(item => item.json.hasItems === true);\nconst skuList = batchItems.length > 0 ? (batchItems[0].json.sku_list || []) : [];\n\nif (hasValidItems && skuList.length > 0) {\n  try {\n    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_base_cost_by_skus`, {\n      method: 'POST',\n      headers: {\n        'apikey': SUPABASE_KEY,\n        'Authorization': `Bearer ${SUPABASE_KEY}`,\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ sku_list: skuList })\n    });\n\n    if (res.ok) {\n      const costRows = await res.json();\n      if (Array.isArray(costRows) && costRows.length > 0) {\n        // Build cost map keyed by Product_Name (matches Local Data Mapper lookup key)\n        const supabaseCosts = {};\n        costRows.forEach(r => { supabaseCosts[r.Product_Name] = r; });\n\n        // Override batchFormula to SKIP Airtable lookup (returns 0 records, no error)\n        // Airtable node still runs (n8n requires it) but returns empty safely\n        return batchItems.map(item => ({\n          json: {\n            ...item.json,\n            useCache: false,\n            supabaseFetched: true,\n            supabaseCosts,\n            batchFormula: \"RECORD_ID()='SUPABASE_SKIP'\"\n          }\n        }));\n      }\n    }\n  } catch (e) {\n    // Supabase unreachable — fall through to Airtable\n  }\n}\n\n// Airtable fallback (V47.2 rate-limit delay still active)\nif (hasValidItems) {\n  await new Promise(r => setTimeout(r, 250));\n}\nreturn batchItems.map(item => ({\n  json: { ...item.json, useCache: false, supabaseFetched: false }\n}));",
+    "notice": ""
+  },
+  "id": "2bb644ad-7b4c-456e-884a-e2cbfd09a10e",
+  "name": "Smart Cache Strategist",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    31920,
+    7248
+  ],
+  "typeVersion": 2
+}

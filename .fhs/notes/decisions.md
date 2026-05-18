@@ -7,6 +7,30 @@
 
 ## 記錄
 
+[2026-05-18] Telegram 通知分格 + Dashboard 部位誤報 Bug Fix
+
+決策：
+- **Telegram 三格分離**：`Pack Telegram Data`（n8n）改為在 JS 內組裝完整 `Full_Message`，`Send Profit Report` 只輸出 `={{ $json.Full_Message }}`。新訂單顯示完整商品清單（`Sub_Items`），修改訂單只顯示財務核算 + `Update_Note`，刪除訂單顯示最精簡格式。
+- **Dashboard Update_Note 部位誤報修復**：`lastFetchedState` 從 Airtable 讀回時不含 `limb_sel_*` 鍵，比較時 `"true" !== undefined` 導致所有 body parts 被誤標為已變動。修復：加 `if (!(k in lastFetchedState)) continue` + `String()` 型別正規化。受影響文件：`freehandsss_dashboardV41.html` + `Freehandsss_dashboard_current.html` Line 5417。
+- **n8n Pack Telegram Data 雙 🔄 修復**：`Update_Note` 本身已帶 `🔄 更新項目:` 前綴，移除模板中多加的 `🔄 ` 避免重複。
+
+批准：Fat Mo ✅（2026-05-18）
+
+---
+
+[2026-05-17] 介面分流術語語意大清洗 — 取消 Ling Au / Fat Mo 介面標準命名
+
+決策：
+- **術語替換範圍**：僅針對「UI 介面模式」命名，管理員身份的 Fat Mo 稱呼保留不動。
+- **替換對照**：`Ling Au 行動端模式 / Ling Au 模式` → `📱 Mobile phone 介面模式`；`Fat Mo 桌面端模式 / Fat Mo 模式` → `💻 Desktop 介面`。
+- **受影響文件**：`docs/DESIGN.md`、`docs/FHS_Blueprint.md`、`docs/FHS_Prompts.md`、`docs/FHS_Product_Bible_V3.7.md`（共 9 處替換）。
+- **根因**：舊術語白紙黑字寫入設計文件，每次新 session AI 讀取文件後都會重新載入舊術語，導致術語不斷回調；唯有在源頭清洗才能徹底防止。
+- **GLOBAL_AI_SOP.md**：不在本次清洗範圍，管理員 Fat Mo 身份保留。
+
+批准：Fat Mo ✅（2026-05-17 授權執行）
+
+---
+
 [2026-05-16] Supabase-First 財務遷移 — n8n V47.4 + Finance Bible + 四端架構完成
 
 決策：

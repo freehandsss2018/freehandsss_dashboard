@@ -1,5 +1,27 @@
 # Session Log
 
+## 2026-05-18 (Session 4): Telegram 重構 + n8n NAS 限制發現 + Dashboard 時序 Bug 修復 ✅
+
+**Scope**: Telegram 通知三格分離、Supabase-First 拓撲重組、n8n Code Node NAS 限制根因確認、Dashboard Update_Note 時序 Bug 修復
+**Status**: ✅ 完成（成本查詢正常，修改訂單訊息格式正確）
+
+### 主要完成事項
+
+1. **Telegram 訊息三格分離**：新訂單（完整商品）/ 修改訂單（精簡 + 變更摘要）/ 刪除訂單（最簡）
+2. **n8n Supabase-First 拓撲**：Mirror to Supabase → Pack Telegram Data → Send Profit Report（Airtable 全部背景執行 + continueOnFail）
+3. **n8n Code Node NAS 限制確認**：`fetch()` / `process.env` / `require()` 全部靜默失敗 → Smart Cache Strategist V47.9 改用 hardcoded 成本對照表
+4. **Dashboard Update_Note 時序修復**：`lastFetchedState` 移到 `limb_sel_*` DOM 還原後截取，修復部位欄位誤報
+5. **Update_Note 格式優化**：取模時間（hour + ampm 合拼）+ 原本/修改值顯示
+6. **Notify Telegram (Delete) 編碼修復**：`?????` 改為正確中文/emoji
+
+### 關鍵發現
+
+- n8n NAS Code 節點無法發出 HTTP 呼叫（fetch 靜默失敗）
+- Dashboard `lastFetchedState` 時序 bug（在 DOM 還原前截取）
+- n8n Telegram footer 由 n8n 實例層附加，不可從 workflow 移除
+
+---
+
 ## 2026-05-17 (Session 3): Stitch Earthy Warm V41 Design System Export & Semantic Audit ✅
 
 **Scope**: 將 V41 設計系統大地溫潤 (Earthy Warm) 匯出至 Google Stitch 專案並配置設計系統屬性；執行 /fhs-audit v2.1 全專案語義稽核與大掃除，修復語義漂移。

@@ -4798,9 +4798,6 @@
                 if (document.getElementById("k_family_combo")) updateFamilyParts();
                 if (document.getElementById("m_family_combo")) updateFamilyParts();
 
-                // 🚨 儲存目前狀態供後續比對差異
-                lastFetchedState = JSON.parse(captureFormState());
-
                 // 🚨 步驟 3：還原剛剛重新渲染的動態欄位 (limb_sel_)
                 for (let key in state) {
                     if (key.startsWith('limb_sel_')) {
@@ -4814,6 +4811,9 @@
                         }
                     }
                 }
+
+                // 🚨 儲存目前狀態供後續比對差異 (必須在 limb_sel_ 還原後才截取)
+                lastFetchedState = JSON.parse(captureFormState());
 
                 generate(); // 最後刷新文字預覽
                 console.log("✅ Form state restoration complete.");
@@ -5218,7 +5218,7 @@
             const originalText = btn.innerText;
             btn.innerText = "🔄 數據發射中...";
             btn.disabled = true;
-            showLoader("🚀 正在同步數據至 Airtable...");
+            showLoader("🚀 正在同步數據至 Supabase + Airtable...");
 
             const rawDate = getValSafe("appDate", null);
             const enableP = getValSafe("enableP", false);
@@ -5408,19 +5408,35 @@
                 "Update_Note": (function () {
                     if (currentMode !== 'edit' || !lastFetchedState) return "";
                     const currentState = JSON.parse(captureFormState());
-                    const changes = [];
                     const labelMap = {
-                        'momName': '聯絡人', 'appDate': '日期', 'appTimeHour': '時', 'appTimeAmPm': '上午/下午',
+                        'momName': '聯絡人', 'appDate': '預約日期',
                         'deposit': '訂金', 'balance': '尾數', 'additional': '附加費',
                         'enableP': '石膏開關', 'enableK': '金屬開關', 'enableM': '銀飾開關'
                     };
-                    for (let k in currentState) {
-                        if (currentState[k] !== lastFetchedState[k]) {
-                            const label = labelMap[k] || k.replace('limb_sel_', '部位:');
-                            changes.push(label);
-                        }
+                    const moneyFields = new Set(['deposit', 'balance', 'additional']);
+                    const lines = [];
+
+                    // 合拼取模時間 (appTimeHour + appTimeAmPm → 一條)
+                    const oldTime = [lastFetchedState['appTimeHour'], lastFetchedState['appTimeAmPm']].filter(Boolean).join(' ');
+                    const newTime = [currentState['appTimeHour'], currentState['appTimeAmPm']].filter(Boolean).join(' ');
+                    if (oldTime !== newTime) {
+                        lines.push('取模時間\n原本: ' + (oldTime || '未設') + '\n修改: ' + (newTime || '未設'));
                     }
-                    return changes.length > 0 ? "🔄 更新項目: " + changes.join(', ') : "ℹ️ 無明顯內容變動";
+
+                    const skipKeys = new Set(['appTimeHour', 'appTimeAmPm']);
+                    for (let k in currentState) {
+                        if (skipKeys.has(k)) continue;
+                        if (!(k in lastFetchedState)) continue;
+                        const curr = String(currentState[k] ?? '');
+                        const prev = String(lastFetchedState[k] ?? '');
+                        if (curr === prev) continue;
+                        const label = labelMap[k] || k.replace('limb_sel_', '部位:');
+                        const prevVal = moneyFields.has(k) ? '$' + prev : (prev || '未設');
+                        const currVal = moneyFields.has(k) ? '$' + curr : (curr || '未設');
+                        lines.push(label + '\n原本: ' + prevVal + '\n修改: ' + currVal);
+                    }
+                    if (lines.length === 0) return "ℹ️ 無明顯內容變動";
+                    return "🔄 更新項目: " + lines.join('\n\n更新項目: ');
                 })(),
                 "Order_Items_List": orderItemsArray
             };
@@ -5438,7 +5454,7 @@
 
                     // Also sync to Supabase (fire-and-forget; requires anon write policy)
                     if (window.sbSyncOrder && localStorage.getItem('fhs_supabase_read') === '1') {
-                        window.sbSyncOrder(payload, orderItemsArray).catch(function(e) {
+                        window.sbSyncOrder(payload, orderItemsArray, currentMode).catch(function(e) {
                             console.warn('[V41] sbSyncOrder background error:', e.message);
                         });
                     }
@@ -8058,7 +8074,7 @@
         //   CREATE POLICY "orders_anon_update" ON orders FOR UPDATE TO anon USING (true) WITH CHECK (true);
         //   CREATE POLICY "order_items_anon_insert" ON order_items FOR INSERT TO anon WITH CHECK (true);
         //   CREATE POLICY "order_items_anon_delete" ON order_items FOR DELETE TO anon USING (true);
-        async function sbSyncOrder(payload, orderItemsArray) {
+        async function sbSyncOrder(payload, orderItemsArray, mode = 'create') {
             const orderId = payload.Order_ID;
             if (!orderId) return;
 
@@ -8084,17 +8100,19 @@
             try { rawFormObj = typeof payload.Raw_Form_State === 'string' ? JSON.parse(payload.Raw_Form_State) : (payload.Raw_Form_State || {}); } catch(e) {}
 
             // 1. Upsert orders row
+            // confirmed_at = order creation date; must NOT be overwritten on edit.
+            // updated_at is handled by Supabase trigger (orders_updated_at).
             const orderRow = {
                 order_id:          orderId,
                 customer_name:     payload.Customer_Name || '',
-                confirmed_at:      new Date().toISOString(),
                 appointment_at:    payload.Appointment_Date || null,
                 deposit:           payload.Deposit  || 0,
                 balance:           payload.Balance  || 0,
                 additional_fee:    payload.Additional_Fee || 0,
                 final_sale_price:  payload.System_Final_Sale_Price || 0,
                 full_order_text:   payload.Full_Order_Text || '',
-                raw_form_state:    rawFormObj
+                raw_form_state:    rawFormObj,
+                ...(mode === 'create' ? { confirmed_at: new Date().toISOString().slice(0, 10) } : {})
             };
             const upRes = await fetch(SB_URL + '/rest/v1/orders?on_conflict=order_id', {
                 method: 'POST',

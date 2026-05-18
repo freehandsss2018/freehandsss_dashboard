@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// 1. 抓取剛剛建好的「主訂單 ID」\nconst recordId = $input.first().json.id;\n\n// 2. 獲取打包好的子項目清單\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. 轉換為 n8n 資料格式\nreturn subItems.map(item => ({\n  json: {\n    Product_ID: item.Product_Record_ID,\n    Quantity: item.Quantity,\n    Notes: item.Notes,\n    Main_Order_ID: recordId,\n    Order_Item_Key: item.Order_Item_Key\n  }\n}));",
+    "notice": ""
+  },
+  "id": "f2fe8818-c460-4ba8-94bb-0be673a85c91",
+  "name": "Bind Main Order ID",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    31408,
+    7648
+  ],
+  "typeVersion": 2
+}

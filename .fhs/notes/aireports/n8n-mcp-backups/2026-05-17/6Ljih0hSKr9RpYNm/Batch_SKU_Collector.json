@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// API V40.6 協議：批量收集 SKU (Supabase-Ready 版)\n// File guard wrapped in outer try-catch — safe even if fs/path unavailable on NAS\nlet _fg = { status: 'skipped', path: '', cwd: '', err: '' };\ntry {\n  const fs = require('fs');\n  const path = require('path');\n  const cwd = process.cwd();\n  const home = process.env.HOME || process.env.USERPROFILE || '/root';\n  const n8nUserFolder = process.env.N8N_USER_FOLDER || process.env.N8N_USER_DATA_FOLDER || '';\n  _fg.cwd = cwd;\n  _fg.home = home;\n  _fg.n8nUserFolder = n8nUserFolder;\n\n  const dirs = [\n    ...(n8nUserFolder ? [require('path').join(n8nUserFolder, 'data')] : []),\n    path.join(home, '.n8n', 'data'),\n    path.join(cwd, '.n8n', 'data'),\n    '/root/.n8n/data',\n    '/home/node/.n8n/data',\n    '/volume1/@appstore/n8n/var/.n8n/data',\n    '/var/packages/n8n/var/.n8n/data',\n  ];\n\n  for (const dir of dirs) {\n    try {\n      const fp = path.join(dir, 'products.json');\n      if (!fs.existsSync(fp)) {\n        fs.mkdirSync(dir, { recursive: true });\n        fs.writeFileSync(fp, '{}');\n        _fg.status = 'created';\n      } else {\n        _fg.status = 'already_exists';\n      }\n      _fg.path = fp;\n      break;\n    } catch(e) {\n      _fg.status = 'dir_failed:' + e.message;\n      continue;\n    }\n  }\n} catch(e) {\n  // require('fs') blocked or other top-level error — do NOT throw, continue with SKU logic\n  _fg.status = 'require_failed:' + e.message;\n  _fg.err = e.message;\n}\n\nconst items = $input.all();\n\nif (!Array.isArray(items) || items.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", sku_list: [], hasItems: false, _fg } };\n}\n\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"無商品\"))];\n\nif (skus.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", sku_list: [], hasItems: false, _fg } };\n}\n\nconst formulaParts = skus.map(s => `{Product_Name} = '${s}'`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : formulaParts[0];\n\nreturn { json: { batchFormula: finalFormula, sku_list: skus, hasItems: true, _fg } };",
+    "notice": ""
+  },
+  "id": "94d1c0c0-5cd8-460c-be20-e3b328ccf8db",
+  "name": "Batch SKU Collector",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    31616,
+    7424
+  ],
+  "typeVersion": 2
+}

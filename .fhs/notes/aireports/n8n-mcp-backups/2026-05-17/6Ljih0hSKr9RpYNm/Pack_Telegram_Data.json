@@ -1,0 +1,16 @@
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "Pack Telegram Data",
+  "type": "n8n-nodes-base.code",
+  "typeVersion": 2,
+  "position": [
+    30480,
+    7680
+  ],
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "const calc = $('Calculate Profit & Pack Items').first().json;\nconst trigger = $('Receive Dashboard Order').first().json;\nconst body = trigger.body || trigger;\nreturn [{ json: {\n  Action: body.action || body.Action || 'create',\n  Customer_Name: calc.Customer_Name || '',\n  Order_ID: calc.Order_ID || '',\n  Order_Text: calc.Order_Text || '',\n  Update_Note: body.Update_Note || '',\n  Total_Revenue: calc.Total_Revenue || 0,\n  Total_Cost: calc.Total_Cost || 0,\n  Final_Profit: calc.Final_Profit || 0\n}}];",
+    "notice": ""
+  }
+}

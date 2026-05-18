@@ -1,5 +1,61 @@
 # Changelog
 
+## [2026-05-18] Telegram 三格分離 + n8n Supabase-First 重構 + Dashboard Update_Note 修復
+
+**Telegram 訊息架構重構**：
+- Pack Telegram Data 改為在 JS 內組裝完整 `Full_Message`（三格：新訂單/修改訂單/刪除訂單）
+- 新訂單：完整商品清單（Sub_Items）+ 財務核算
+- 修改訂單：精簡格式 + Update_Note（原本值 → 修改值）
+- 刪除訂單：最簡格式（客人 + 單號 + 確認文字）
+- Send Profit Report 改為 `={{ $json.Full_Message }}`
+
+**n8n Supabase-First 拓撲**：
+- 執行路徑：Mirror to Supabase → Pack Telegram Data → Send Profit Report
+- 所有 Airtable 節點設 continueOnFail: true（背景執行，不阻斷 Telegram）
+- Notify Telegram (Delete) Unicode 編碼修復
+
+**Smart Cache Strategist V47.9**：
+- 發現 NAS n8n Code 節點 `fetch()` 完全不可用（靜默失敗）
+- 改用 26 種 base SKU 本地成本對照表 + prefix matching
+- 解決鎖匙扣/吊飾 SKU 格式不符導致的成本 = 0 問題
+
+**Dashboard Update_Note 修復**：
+- `lastFetchedState` 時序 Bug：移到 `limb_sel_*` DOM 還原後截取（兩個 HTML 檔案）
+- 格式升級：取模時間（hour + ampm 合拼）/ 顯示「原本: X → 修改: Y」
+- 修改範圍：`Freehandsss_dashboard_current.html` + `freehandsss_dashboardV41.html`（Lines 4802, 5408-5426）
+
+---
+
+## [2026-05-18] Bug Fix — Telegram 真正根因修復（Read Cache File 阻塞）
+
+**Bug #1 追加修復 — Telegram 通知失效（真正根因）**：
+- **真正 Root Cause**：`Read Cache File` 節點嘗試讀取 `.n8n/data/products.json`；NAS 上該檔案不存在 → 節點即時報錯 → 整條執行鏈在 ~153ms 截斷 → `Pack Telegram Data` / `Send Profit Report` 永不觸發
+- **修復**：`Batch SKU Collector` 節點頂部加入 file guard，自動探測 5 個可能路徑，若 `products.json` 不存在則建立空檔案，確保 `Read Cache File` 不再失敗
+- n8n `Batch SKU Collector` versionId: `d5d30400`（backup: `.fhs/notes/aireports/n8n-mcp-backups/2026-05-17/`）
+
+---
+
+## [2026-05-17] Bug Fix — Telegram 失效 / Loader 訊息 / confirmed_at 混亂（V41 + n8n V47.6）
+
+**Bug #1 修復 — Telegram 通知失效**：
+- **Root Cause**：`Local Data Mapper` SKU 未命中時回傳 `id: null` → `Bind Main Order ID` 傳 `Product_ID: null` → `Create Sub Items` 向 Airtable 送 `[null]` linked record → API 拒絕 → 整條鏈截斷 → `Pack Telegram Data` 永不觸發
+- n8n `Bind Main Order ID`：`Product_ID` 只在非 null 時加入 json；過濾無 `Order_Item_Key` 的項目
+- n8n `Pack Telegram Data`：`$('Calculate Profit & Pack Items').first()` 改為 `.all()[0]?.json`，防 0-output 時 throw
+
+**Bug #2 修復 — Loader 訊息錯誤**：
+- Dashboard V41 Line 5221：`"正在同步數據至 Airtable..."` → `"正在同步數據至 Supabase + Airtable..."`
+
+**Bug #3 修復 — confirmed_at / updated_at 混亂**：
+- **Root Cause（雙側）**：Dashboard `sbSyncOrder` 每次都寫 `new Date().toISOString()` 到 `confirmed_at`；n8n `Mirror to Supabase` 對 edit 操作傳 `null` 清空 `confirmed_at`，並將 `process_status` 強制重置為 `'待確認'`
+- Dashboard `sbSyncOrder`：新增 `mode` 參數（`'create'`/`'edit'`）；只在 `mode === 'create'` 時寫入 `confirmed_at`；`updated_at` 由 Supabase trigger `orders_updated_at` 自動處理
+- n8n `Mirror to Supabase` V47.6：`confirmed_at` 僅在 `action === 'create'` 且有值時寫入；`process_status` 僅在 create 時設 `'待確認'`，edit 時保留現有狀態
+
+**修改範圍**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（Lines 5221, 5441, 8061, 8087–8098）
+- n8n FHS_Core_OrderProcessor：`Pack Telegram Data`、`Bind Main Order ID`、`Mirror to Supabase`
+
+---
+
 ## [2026-05-17] /fhs-audit v2.1 + 全專案語義稽核大掃除
 
 **制度層（憲法 + 指令系統）**：
