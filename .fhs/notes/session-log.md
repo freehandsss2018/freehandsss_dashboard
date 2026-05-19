@@ -1,5 +1,35 @@
 # Session Log
 
+## 2026-05-19 (Session 5): Finance UX 四項優化 + Duplicate ID 修復 + Balance Placeholder 根因修復 ✅
+
+**Scope**: Review Mode 遺留 bug + Finance UX 體驗優化 + DOM Restore 三層陷阱根因修復
+**Status**: ✅ 完成（V41 dev + current.html 同步更新）
+
+### 主要完成事項
+
+1. **Duplicate form field id 修復（雙層根因）**：
+   - 第一層：`qaCenter` 靜態 ID 重複 → 加 `qac-` 前綴
+   - 第二層：`v40InitDrawerMirrors()` `cloneNode(true)` 複製所有子元素 ID → 加 `stripDescendantIds()` 清除 clone ID
+
+2. **Finance UX 四項優化**：
+   - 批次輸入 focus-to-clear：點擊「第35批」→ 清空顯示純數字、全選、限制輸入數字 (`batchInputFocus`)
+   - Deposit 運算式：接受 `80+900`，標籤旁即時顯示 `= $980`，blur 後計算結果填入 (`evalSimpleMath`)
+   - Balance 自動餘數提示：`generate()` 只讀 `deposit.value`（空 deposit = 0 付款 → balance placeholder 顯示全額）
+   - Deposit/Balance 0 值顯示空白讓 placeholder 生效
+
+3. **DOM Restore 三層 0 值陷阱修復（真正根因）**：
+   - n8n path（line ~4924）：`data.Balance || ''`
+   - `restoreFormState` 迴圈：`_isFinField && 0 → ''`
+   - **`_injectFinancials()`（真正根因）**：`dbDep != null` 允許 0 → 覆蓋前兩層 → 修復為 `dbDep || ''`
+
+### 關鍵發現
+
+- `_injectFinancials()` 是 Fix B 設計，特意在 `restoreFormState` 後執行確保 DB 值獲勝，但 `!= null` 條件對 0 為 true 是隱藏陷阱
+- `generate()` 不可用 `deposit.placeholder` 作 fallback（placeholder = 建議售價，非已付金額）
+- DOM Restore 修復必須同時搜尋三個注入點
+
+---
+
 ## 2026-05-18 (Session 4): Telegram 重構 + n8n NAS 限制發現 + Dashboard 時序 Bug 修復 ✅
 
 **Scope**: Telegram 通知三格分離、Supabase-First 拓撲重組、n8n Code Node NAS 限制根因確認、Dashboard Update_Note 時序 Bug 修復

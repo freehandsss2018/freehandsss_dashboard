@@ -1,4 +1,4 @@
-# FHS Handoff - 2026-05-18 深夜
+# FHS Handoff - 2026-05-19 深夜
 當前版本：v1.4.6（憲法層）/ V41（UI層）
 n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
@@ -6,27 +6,25 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
 ## 本次 Session 完成事項
 
-### 1. Telegram 通知系統全面重構（Supabase-First）
-- **拓撲重組**：Mirror to Supabase → Pack Telegram Data → Send Profit Report（繞過 Airtable 依賴）
-- **三格訊息分離**：新訂單（完整商品清單）/ 修改訂單（精簡 + 變更摘要）/ 刪除訂單（最簡）
-- **訊息架構**：Pack Telegram Data 組裝 `Full_Message`，Telegram 節點直接送出
+### 1. Review Mode 三個核心 Bug 修復（上個 session 遺留）
+- **批次顏色消失**：新增 `applyBatchColorLive()` 函數（兩個 HTML 檔案）
+- **輸入「13」不自動轉「第13批」**：真正的 `saveInlineEdit`（line 6697）`const value` → `let value`
+- **批次/進度不同步 Supabase**：修復 RLS 政策、ENUM→text、UUID on-demand 查詢、`return=representation` 偵測 0 rows
 
-### 2. n8n Bug 修復
-- **Batch SKU Collector**：移除 `require('fs')` → NAS 不支援
-- **Smart Cache Strategist V47.9**：`fetch()` 在 NAS Code 節點不可用 → 改用 26種 base SKU 成本硬編碼對照表 + prefix matching
-- **Pack Telegram Data**：`$⚠️` 格式修正、雙🔄修正、Update_Note 直接輸出
-- **Notify Telegram (Delete)**：Unicode 編碼修復（不再顯示 `?????`）
+### 2. Duplicate form field id 警告修復（雙層根因）
+- **第一層**：`qaCenter` 隱藏 div（iPhone Drawer 來源）與系統模式面板 ID 衝突 → 改名 `qac-` 前綴
+- **第二層**：`v40InitDrawerMirrors()` 的 `cloneNode(true)` 複製所有子元素 ID → 加 `stripDescendantIds()` 清除 clone ID
+- 影響範圍：`fatmoConfigPanel`（btnIdModeRandom / btnIdModeSeq / nextSeqIdInput）及 `qaCenter` clone 全數消除
 
-### 3. Dashboard Bug 修復
-- **Bug #1 - confirmed_at**：edit 時不再覆蓋建立日期（兩個 HTML 檔案）
-- **Bug #2 - Loader 文字**：「正在同步數據至 Supabase + Airtable...」
-- **Bug #3 - lastFetchedState 時序**：移到 limb_sel_ DOM 還原後，修復部位欄位誤報
-- **Update_Note 優化**：取模時間（合拼 hour + ampm）+ 顯示原本→修改值格式
+### 3. Finance UX 四項優化
+- **批次欄 focus-to-clear**：點擊「第35批」→ 清空顯示純數字、全選、限制輸入數字 (`batchInputFocus`)
+- **Deposit 運算式輸入**：接受 `80+900`，標籤旁即時顯示 `= $980`，blur 後計算結果填入 (`evalSimpleMath`)
+- **Balance 自動餘數提示**：`generate()` 改為只讀 deposit.value（不用 placeholder 作 fallback），空 deposit = 0 付款 → balance placeholder 顯示全額
+- **Deposit/Balance = 0 顯示優化**：三個 restore 路徑（line 4924 n8n path / `restoreFormState` 迴圈 / `_injectFinancials`）統一用 `|| ''` 處理，0 值顯示空白讓 placeholder 生效
 
-### 4. 成本查詢根本問題確認
-- Supabase products 表有 200 個 SKU（手模擺設 4 個 + 鎖匙扣/吊飾 196 個）
-- NAS n8n Code 節點 fetch() 完全不可用 → V47.9 hardcoded map 繞過
-- Airtable API 月度限制已達上限（5月底重置）
+### 4. 深層根因：`_injectFinancials()` 覆蓋問題
+- `reconstructOrderFromSupabase` 的 Fix B 注入函數在 `restoreFormState` 之後執行，`dbDep != null` 條件判斷允許 0 值寫入 → 覆蓋所有之前 restore 的修復
+- 修復：`_depEl.value = dbDep || ''` / `_balEl.value = dbBal || ''`
 
 ---
 
@@ -62,4 +60,12 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 ```
 收到 Webhook → Supabase Mirror → Pack Telegram Data → Send Profit Report
 （Airtable 全部 continueOnFail: true，不阻斷主路徑）
+```
+
+### DOM Restore 三層路徑（重要）
+```
+n8n path: line 4923-4924 (data.Deposit / data.Balance)
+restoreFormState loop: line 4732 (state[key] for all form fields)
+_injectFinancials: line 5154-5155 (dbDep / dbBal — 最後執行，會覆蓋前兩層)
+→ 三層都需要 || '' 處理 0 值
 ```

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-HK">
 
 <head>
@@ -2830,8 +2830,11 @@
             <div style="font-size: 12px; color: #555; line-height: 1.6; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
         </div>
 
-        <div class="form-group"><label>已付訂金/全數 ($)</label><input type="number" id="deposit" placeholder="0"
-                oninput="generate()"></div>
+        <div class="form-group">
+            <label>已付訂金/全數 ($) <span id="deposit-eval-display" style="font-size:12px; color:#888; font-weight:normal;"></span></label>
+            <input type="text" inputmode="decimal" id="deposit" placeholder="0"
+                oninput="onDepositInput()" onblur="onDepositBlur()">
+        </div>
         <div class="grid-2-col">
             <div class="form-group"><label>產品尾數 ($)</label><input type="number" id="balance" placeholder="0"
                     oninput="generate()"></div>
@@ -4591,9 +4594,9 @@
             }
 
             // --- V36.2 Ling Au Finance UX Optimization ---
-            // V40.8: Finance calculation logic using placeholder as default
-            const dVal = depositEl ? (depositEl.value || depositEl.placeholder || 0) : 0;
-            const depositVal = Number(dVal) || 0;
+            // deposit placeholder is just a hint; only actual typed value counts as payment
+            const dRaw = depositEl ? depositEl.value.trim() : '';
+            const depositVal = dRaw ? (evalSimpleMath(dRaw) || Number(dRaw) || 0) : 0;
             const additionalVal = Number(document.getElementById('additional')?.value) || 0;
             const expectedBal = totalSuggestedPrice - depositVal + additionalVal;
             const balanceEl = document.getElementById('balance');
@@ -4726,7 +4729,9 @@
                             if (el.type === 'checkbox' || el.type === 'radio') {
                                 el.checked = state[key];
                             } else {
-                                el.value = state[key];
+                                // deposit/balance: treat 0 as empty so placeholder hint shows
+                                const _isFinField = (key === 'deposit' || key === 'balance');
+                                el.value = (_isFinField && (state[key] === 0 || state[key] === '0')) ? '' : state[key];
                             }
                             // 觸發 UI 聯動事件，讓其他區塊展開 (加 try/catch 防止單一欄位失效導致全盤失敗)
                             try {
@@ -4918,7 +4923,7 @@
 
                 // Restore figures
                 if (data.Deposit !== undefined) document.getElementById('deposit').value = data.Deposit;
-                if (data.Balance !== undefined) document.getElementById('balance').value = data.Balance;
+                if (data.Balance !== undefined) document.getElementById('balance').value = data.Balance || '';
                 if (data.Additional_Fee !== undefined) document.getElementById('additional').value = data.Additional_Fee;
 
                 // Restore form
@@ -5146,8 +5151,8 @@
 
                     console.log('[reconstructOrderFromSupabase] Injecting financials:', { dbDep, dbBal, dbAdd });
 
-                    if (_depEl && dbDep != null) _depEl.value = dbDep;
-                    if (_balEl && dbBal != null) _balEl.value = dbBal;
+                    if (_depEl && dbDep != null) _depEl.value = dbDep || '';
+                    if (_balEl && dbBal != null) _balEl.value = dbBal || '';
                     if (_addEl && dbAdd != null) _addEl.value = dbAdd;
                     
                     // CRITICAL: Trigger generate() again to update text preview with injected values
@@ -5983,7 +5988,10 @@
                                         id="acc-batch-${o.id}-${idx}"
                                         value="${rowBatch}"
                                         placeholder="批次"
+                                        inputmode="numeric"
                                         style="width:80px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); font-size:12px; text-align:center;"
+                                        onfocus="batchInputFocus(this)"
+                                        oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value)"
                                         onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'acc-batch-${o.id}-${idx}', ${idx})">
                                 </div>
                                 <div style="display:flex; flex-direction:column; gap:2px; flex:2;">
@@ -6253,10 +6261,13 @@
                                 ${prodHtml}
                             </td>
                             <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${rowBatchCol};">
-                                <input type="text" id="batch-input-${o.id}-${index}" class="review-batch-input" 
-                                       value="${rowBatch || ''}" 
+                                <input type="text" id="batch-input-${o.id}-${index}" class="review-batch-input"
+                                       value="${rowBatch || ''}"
                                        style="width:80%; max-width:80px; text-align:center; margin:0 auto; font-size:13px;"
-                                       onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'batch-input-${o.id}-${index}', ${index})" 
+                                       inputmode="numeric"
+                                       onfocus="batchInputFocus(this)"
+                                       oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value)"
+                                       onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'batch-input-${o.id}-${index}', ${index})"
                                        placeholder="批次">
                             </td>
                             <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; background-color:${rowBatchCol};">
@@ -6271,7 +6282,7 @@
                                     <option value="3 已交付廠家, 打印中" ${(item.Status || o.Status) === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
                                     <option value="Done 已完成" ${(item.Status || o.Status) === 'Done 已完成' ? 'selected' : ''}>Done ✅</option>
                                 </select>
-                                <div id="save-indicator-${o.id}" class="review-save-indicator" style="font-size:10px;"></div>
+                                <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
                             </td>
                         </tr>`;
                     });
@@ -6696,30 +6707,66 @@
 
         async function saveInlineEdit(recordId, field, elementId, itemIndex) {
             const el = document.getElementById(elementId);
-            const value = el ? el.value : '';
-            
+            let value = el ? el.value : '';
+
             console.log(`📡 saveInlineEdit triggered: [RecID: ${recordId}] [Field: ${field}] [Value: ${value}] [ItemIndex: ${itemIndex}]`);
-            
-            const ind = document.getElementById(`save-indicator-${recordId}`);
-            if (ind) {
-                ind.innerText = "⏳ 準備同步...";
-                ind.style.color = "#888"; 
-            }
-            
-            const orderIndex = globalOrders.findIndex(o => o.id === recordId);
+
+            const _indId = (itemIndex !== undefined) ? `save-indicator-${recordId}-${itemIndex}` : `save-indicator-${recordId}`;
+            const ind = document.getElementById(_indId);
+            const setInd = function(text, color) { if (ind) { ind.innerText = text; ind.style.color = color; } };
+
+            setInd("⏳ 準備同步...", "#888");
+
+            const _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            const orderIndex = _gOrders.findIndex(o => o.id === recordId);
             if (orderIndex === -1) {
-                console.error("❌ Order not found in globalOrders:", recordId);
+                console.error("❌ Order not found in globalOrders:", recordId, '| total orders:', _gOrders.length);
+                setInd("❌ 找不到訂單", "red");
+                setTimeout(() => setInd("", ""), 3000);
                 return;
             }
 
-            const o = globalOrders[orderIndex];
+            const o = _gOrders[orderIndex];
             const isItemUpdate = (itemIndex !== undefined && o.items && o.items[itemIndex]);
             const itemObj = isItemUpdate ? o.items[itemIndex] : null;
+
+            // On-demand _sb_id fetch (when data came from n8n fallback — no UUID on items)
+            if (isItemUpdate && itemObj && !itemObj._sb_id && itemObj.Item_ID && o.Order_ID) {
+                try {
+                    const _sbUrl2 = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+                    const _sbKey2 = window.SB_ANON_KEY || '';
+                    if (_sbKey2) {
+                        setInd("🔍 查詢UUID...", "#888");
+                        const _idResp = await fetch(
+                            _sbUrl2 + '/rest/v1/order_items?select=id,item_key&order_fhs_id=eq.' + encodeURIComponent(o.Order_ID),
+                            { headers: { 'apikey': _sbKey2, 'Authorization': 'Bearer ' + _sbKey2 } }
+                        );
+                        if (_idResp.ok) {
+                            const _idRows = await _idResp.json();
+                            const _m = Array.isArray(_idRows) && _idRows.find(function(r) { return r.item_key === itemObj.Item_ID; });
+                            if (_m && _m.id) {
+                                itemObj._sb_id = _m.id;
+                                console.log('✅ _sb_id resolved on-demand:', _m.id, 'for', itemObj.Item_ID);
+                            } else {
+                                console.warn('⚠️ _sb_id not found | item_key:', itemObj.Item_ID, '| rows:', Array.isArray(_idRows) ? _idRows.length : _idRows);
+                            }
+                        }
+                    }
+                } catch(_e) { console.warn('_sb_id lookup failed:', _e.message); }
+            }
 
             // 1. Update local state
             if (field === 'Admin_Notes') {
                 o.Admin_Notes = value;
             } else if (field === 'Batch_Number') {
+                // 格式化：提取數字 → 第N批（接受 "13"、"批13"、"13批" 等格式）
+                if (value) {
+                    const _match = value.trim().match(/\d+/);
+                    if (_match) {
+                        value = '第' + _match[0] + '批';
+                        if (el) el.value = value;
+                    }
+                }
                 if (isItemUpdate) {
                     itemObj.Batch = value;
                     itemObj.Batch_Number = value;
@@ -6727,14 +6774,10 @@
                     o.Batch = value;
                     o.Batch_Number = value;
                 }
-                
-                // UI feedback (colors)
-                let targetRow = isItemUpdate ? document.getElementById(`row-${recordId}-item-${itemIndex}`) : document.getElementById(`row-${recordId}`);
-                if (targetRow) {
-                    const batchCells = targetRow.querySelectorAll('.batch-cell');
-                    const newColor = getBatchColor(value);
-                    batchCells.forEach(cell => cell.style.backgroundColor = newColor);
-                }
+                // 更新所有同批次顏色
+                if (window.applyBatchColorLive) window.applyBatchColorLive(value);
+                const targetRow = isItemUpdate ? document.getElementById(`row-${recordId}-item-${itemIndex}`) : document.getElementById(`row-${recordId}`);
+                if (targetRow) targetRow.querySelectorAll('.batch-cell').forEach(c => c.style.backgroundColor = (window.getBatchColor || getBatchColor)(value));
             } else if (field === 'Process_Status') {
                 if (isItemUpdate) {
                     itemObj.Status = value;
@@ -6747,10 +6790,11 @@
 
             // 2. Construct entry
             const updateEntry = {
-                Record_ID: recordId,
-                Item_Record_ID: isItemUpdate ? itemObj.id : null, 
-                Batch_Number: isItemUpdate ? (itemObj.Batch || '') : (o.Batch || ''),
-                Process_Status: isItemUpdate ? (itemObj.Status || '0 什麼都未做') : (o.Status || '0 什麼都未做'),
+                Record_ID:  recordId,
+                _sb_id:     isItemUpdate ? (itemObj._sb_id || '') : '',
+                _field:     field,
+                Batch_Number:   isItemUpdate ? (itemObj.Batch_Number || itemObj.Batch || '') : (o.Batch_Number || o.Batch || ''),
+                Process_Status: isItemUpdate ? (itemObj.Process_Status || itemObj.Status || '0 什麼都未做') : (o.Process_Status || o.Status || '0 什麼都未做'),
                 Admin_Notes: o.Admin_Notes || ''
             };
 
@@ -6773,7 +6817,8 @@
                     metadataUpdateQueue = []; 
 
                     queueToSubmit.forEach(e => {
-                        const indicator = document.getElementById(`save-indicator-${e.Record_ID}`);
+                        const _iid = (e.ItemIndex !== undefined) ? `save-indicator-${e.Record_ID}-${e.ItemIndex}` : `save-indicator-${e.Record_ID}`;
+                        const indicator = document.getElementById(_iid);
                         if (indicator) {
                             indicator.innerText = "🔄 同步中...";
                             indicator.style.color = "#E76F51";
@@ -6782,32 +6827,59 @@
 
                     try {
                         showLoader("正在更新資料...");
-                        const url = getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta");
-                        const res = await fetch(url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(queueToSubmit) 
-                        });
-                        
-                        if(res.ok) {
-                            queueToSubmit.forEach(e => {
-                                const indicator = document.getElementById(`save-indicator-${e.Record_ID}`);
-                                if (indicator) {
-                                    indicator.innerText = "✔ 已儲存";
-                                    indicator.style.color = "#2A9D8F";
-                                    setTimeout(() => { if(indicator.innerText === "✔ 已儲存") indicator.innerText = ""; }, 2000);
-                                }
-                            });
-                        } else {
-                            throw new Error("HTTP Status " + res.status);
+                        const _sbUrl  = window.SB_URL  || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+                        const _sbKey  = window.SB_ANON_KEY || '';
+                        const _sbHeaders = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+                        console.log('🔑 SB_URL:', _sbUrl, '| SB_ANON_KEY length:', _sbKey.length);
+                        for (const entry of queueToSubmit) {
+                            const _orderId = entry.Record_ID;
+                            const _sbId    = entry._sb_id;   // item UUID — most reliable
+                            const _f       = entry._field;
+                            const _patch   = {};
+                            if (_f === 'Batch_Number')   _patch.batch_number   = entry.Batch_Number;
+                            if (_f === 'Process_Status') _patch.process_status = entry.Process_Status;
+                            if (_f === 'Admin_Notes')    _patch.admin_notes    = entry.Admin_Notes;
+                            if (Object.keys(_patch).length === 0) continue;
+                            console.log('📤 PATCH', _f, '→', JSON.stringify(_patch), '| _sb_id:', _sbId || '(empty→order fallback)');
+
+                            if (_sbId) {
+                                // 最可靠：用 item UUID 直接 PATCH
+                                const _r = await fetch(_sbUrl + '/rest/v1/order_items?id=eq.' + encodeURIComponent(_sbId), {
+                                    method: 'PATCH', headers: _sbHeaders, body: JSON.stringify(_patch)
+                                });
+                                const _body = await _r.json().catch(function() { return []; });
+                                console.log('item UUID PATCH status:', _r.status, '| rows updated:', Array.isArray(_body) ? _body.length : '?');
+                                if (!_r.ok) throw new Error('item PATCH ' + _r.status + ' ' + JSON.stringify(_body));
+                                if (Array.isArray(_body) && _body.length === 0) throw new Error('item PATCH 0 rows matched UUID: ' + _sbId + ' — RLS 或 UUID 有誤');
+                            } else {
+                                // Order-level fallback
+                                const _r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(_orderId), {
+                                    method: 'PATCH', headers: _sbHeaders, body: JSON.stringify(_patch)
+                                });
+                                const _body = await _r.json().catch(function() { return []; });
+                                console.log('order PATCH status:', _r.status, '| rows updated:', Array.isArray(_body) ? _body.length : '?');
+                                if (!_r.ok) throw new Error('order PATCH ' + _r.status + ' ' + JSON.stringify(_body));
+                                if (Array.isArray(_body) && _body.length === 0) throw new Error('order PATCH 0 rows matched: ' + _orderId);
+                            }
                         }
+                        queueToSubmit.forEach(e => {
+                            const _iid = (e.ItemIndex !== undefined) ? `save-indicator-${e.Record_ID}-${e.ItemIndex}` : `save-indicator-${e.Record_ID}`;
+                            const indicator = document.getElementById(_iid);
+                            if (indicator) {
+                                indicator.innerText = "✔ 已儲存";
+                                indicator.style.color = "#2A9D8F";
+                                setTimeout(() => { if(indicator.innerText === "✔ 已儲存") indicator.innerText = ""; }, 2000);
+                            }
+                        });
                     } catch(e) {
                         console.error("Batch Update Error:", e);
                         queueToSubmit.forEach(e => {
-                            const indicator = document.getElementById(`save-indicator-${e.Record_ID}`);
+                            const _iid = (e.ItemIndex !== undefined) ? `save-indicator-${e.Record_ID}-${e.ItemIndex}` : `save-indicator-${e.Record_ID}`;
+                            const indicator = document.getElementById(_iid);
                             if (indicator) {
                                 indicator.innerText = "❌ 儲存失敗";
                                 indicator.style.color = "red";
+                                setTimeout(() => { if(indicator && indicator.innerText === "❌ 儲存失敗") indicator.innerText = ""; }, 5000);
                             }
                         });
                     } finally {
@@ -7072,6 +7144,52 @@
             if (log) log.innerHTML = '';
         }
 
+        // ─── Batch Input UX ─────────────────────────────────────
+        function batchInputFocus(el) {
+            const num = el.value.replace(/\D/g, '');
+            el.value = num;
+            el.select();
+        }
+
+        // ─── Deposit Smart Input ─────────────────────────────────
+        function evalSimpleMath(expr) {
+            const s = String(expr).trim();
+            if (!s) return NaN;
+            if (!/^[\d\s+\-.]+$/.test(s)) return NaN;
+            try {
+                const result = Function('"use strict"; return (' + s + ')')();
+                return (typeof result === 'number' && isFinite(result) && result >= 0) ? Math.round(result) : NaN;
+            } catch(e) { return NaN; }
+        }
+        function onDepositInput() {
+            const el = document.getElementById('deposit');
+            const display = document.getElementById('deposit-eval-display');
+            const expr = el ? el.value.trim() : '';
+            if (display) {
+                if (expr && /[+\-]/.test(expr)) {
+                    const r = evalSimpleMath(expr);
+                    display.textContent = isNaN(r) ? '' : ('= $' + r);
+                } else {
+                    display.textContent = '';
+                }
+            }
+            generate();
+        }
+        function onDepositBlur() {
+            const el = document.getElementById('deposit');
+            if (!el) return;
+            const expr = el.value.trim();
+            if (expr && /[+\-]/.test(expr)) {
+                const r = evalSimpleMath(expr);
+                if (!isNaN(r)) {
+                    el.value = r;
+                    const display = document.getElementById('deposit-eval-display');
+                    if (display) display.textContent = '';
+                }
+            }
+            generate();
+        }
+
         // =====================================================
         // V40 Drawer 控制（純 UI，不影響業務邏輯）
         // =====================================================
@@ -7171,12 +7289,17 @@
         // iPhone Drawer 設定 Tab：複製 fatmoConfigPanel 內容
         // iPhone Drawer QA Tab：複製 qaCenter 內容
         function v40InitDrawerMirrors() {
+            function stripDescendantIds(el) {
+                el.querySelectorAll('[id]').forEach(function(n) { n.removeAttribute('id'); });
+            }
+
             const settingsSrc = document.getElementById('fatmoConfigPanel');
             const settingsDst = document.getElementById('v40-drawer-settings-mirror');
             if (settingsSrc && settingsDst && settingsDst.childElementCount === 0) {
                 const clone = settingsSrc.cloneNode(true);
                 clone.id = 'v40-fatmo-mirror';
                 clone.style.display = 'block';
+                stripDescendantIds(clone);
                 settingsDst.appendChild(clone);
             }
 
@@ -7186,6 +7309,7 @@
                 const clone = qaSrc.cloneNode(true);
                 clone.id = 'v40-qa-mirror';
                 clone.style.display = 'block';
+                stripDescendantIds(clone);
                 qaDst.appendChild(clone);
             }
         }
@@ -7250,11 +7374,11 @@
     <div id="qaCenter" class="qa-center card" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
             <h2 style="color: #457B9D; margin:0;">🛠️ 系統品質自動化檢驗中心 (Quality Assurance)</h2>
-            <button id="toggleDocBtn" onclick="toggleDocPanel()" style="padding: 5px 12px; border-radius: 6px; border: 1px solid #457B9D; background: #f0f7ff; color: #457B9D; font-size: 12px; cursor: pointer;">📖 顯示測試功能說明</button>
+            <button id="qac-toggleDocBtn" onclick="toggleDocPanel()" style="padding: 5px 12px; border-radius: 6px; border: 1px solid #457B9D; background: #f0f7ff; color: #457B9D; font-size: 12px; cursor: pointer;">📖 顯示測試功能說明</button>
         </div>
-        
+
         <!-- 摺疊式測試功能說明 -->
-        <div id="qaDocPanel" style="display:none; background:#f9f9fb; padding:15px; border-radius:8px; border:1px solid #e1e4e8; margin-bottom:15px; font-size:13px; line-height:1.6; color:#444;">
+        <div id="qac-qaDocPanel" style="display:none; background:#f9f9fb; padding:15px; border-radius:8px; border:1px solid #e1e4e8; margin-bottom:15px; font-size:13px; line-height:1.6; color:#444;">
             <div style="margin-bottom:12px;">
                 <b style="color:#457B9D;">1. 數據精確度檢核 (Data Precision)</b><br>
                 <b>【背景/目的】</b> Dashboard 需處理複雜的產品規格與代碼，此測試模擬過百種產品組合。<br>
@@ -7271,10 +7395,10 @@
                 <b>【用法/檢驗結果】</b> 從訂單總覽選取一筆具備歷史狀態的訂單，驗證 UI 是否能成功重現該筆訂單在下單時的選框狀態。
             </div>
         </div>
-        <style>#qaDocPanel.active { display: block !important; }</style>
+        <style>#qac-qaDocPanel.active { display: block !important; }</style>
 
         <p style="font-size: 13px; color: #888; margin-bottom: 15px;">※ 檢驗功能僅於「沙盒模式」開啟。所有測試資料將不會污染正式資料庫。</p>
-        
+
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
             <button onclick="runAllAudits()" style="padding: 10px 20px; border-radius: 8px; border: none; background: #457B9D; color: white; font-weight: bold; cursor: pointer; font-size: 14px;">🚀 啟動全方位檢驗</button>
             <button onclick="clearQALog(); runDataAccuracyCheck()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #457B9D; background: #f0f7ff; color: #457B9D; font-weight: bold; cursor: pointer;">🧪 數據精確度</button>
@@ -7282,7 +7406,7 @@
             <button onclick="clearQALog(); timemachineTest()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #9c27b0; background: #f3e5f5; color: #6a1b9a; font-weight: bold; cursor: pointer;">🕐 歷史還原測試</button>
             <button onclick="clearQALog()" style="padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; background: #f5f5f5; color: #666; cursor: pointer;">🗑️ 清除日誌</button>
         </div>
-        <div id="qaLog" class="qa-log">檢驗日誌將顯示在此處...</div>
+        <div id="qac-qaLog" class="qa-log">檢驗日誌將顯示在此處...</div>
     </div>
 
     <!-- V34.5 Premium Delete Order Modal (V40 fix: opacity/pointer-events moved to CSS class) -->
@@ -8312,13 +8436,16 @@
 
                 return {
                     Item_ID:        it.item_key || '',
+                    _sb_id:         it.id || '',
                     Order_Item_Key: _cleanKey,
                     OrderKey:       _cleanKey,
                     Category:       _cat,
                     Qty:            it.quantity || 1,
                     Cost:           it.item_base_cost || 0,
                     Batch:          it.batch_number || '',
+                    Batch_Number:   it.batch_number || '',
                     Status:         it.process_status || '待製作',
+                    Process_Status: it.process_status || '待製作',
                     Product_Name:   (it.item_key || '').split(' | ').slice(1).join(' | ').trim() || it.product_sku || '',
                     Specification:  _specFinal,
                     Engraving_Text: _engFinal,
@@ -8350,7 +8477,7 @@
             // PostgREST: order_fhs_id=in.(id1,id2,...)
             const inList = orderIds.map(function(id) { return id; }).join(',');
             const rows = await sbFetch('order_items', {
-                select: 'order_fhs_id,item_key,item_category,quantity,item_base_cost,batch_number,process_status,product_sku,specification,engraving_text',
+                select: 'id,order_fhs_id,item_key,item_category,quantity,item_base_cost,batch_number,process_status,product_sku,specification,engraving_text',
                 order_fhs_id: 'in.(' + inList + ')',
                 limit: 500
             });
