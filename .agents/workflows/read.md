@@ -12,7 +12,7 @@ description: 系統初始化與記憶同步 (Antigravity Bridge)
 
 ### 簡化流程：
 1. 讀取 `/.fhs/notes/SOP_NOW.md` ← **主路徑（必須）**
-2. 讀取 `/.fhs/notes/handoff.md` ← 上次 session 狀態（可選）
+2. 讀取 `/.fhs/memory/handoff.md` ← 上次 session 狀態（可選）
 3. 讀取 `/.fhs/ai/AGENTS.md`（前 100 行）← 確認憲法版本
 4. 輸出狀態同步報告（版本號、UI、Workflow ID、未解決項）
 

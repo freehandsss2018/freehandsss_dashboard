@@ -14,6 +14,25 @@ note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Ar
 > - **Dashboard Proto**: V36–V42（前端介面）
 > - **System Architecture**: v1.4.x（AGENTS.md 憲法層）
 
+## [System v1.4.6-patch1] — 2026-05-19
+
+### Antigravity (A2) 系統性 Bug 修復
+
+**問題**：A2 在任何輸入下自動執行初始化、主動處理待辦、越權寫入檔案
+
+#### 修復項目
+- **SOP_NOW.md**：弱化 Soul Awakening Hook 為條件觸發（非無條件強制）；AGENTS.md 讀取範圍限前 100 行；A2 職責補充「禁止自主寫入」
+- **handoff.md**：待辦清單標題下加防呆標示，明確禁止 AI 自主執行
+- **.agents/workflows/read.md**：修正 handoff 路徑 `/notes/` → `/memory/`（靜默失敗 bug）
+- **.agents/workflows/ag-plan.md**：移除橋接版硬編碼步驟（違反橋接版規則）
+- **.agents/workflows/error-eye.md**：移除橋接版硬編碼步驟
+- **.agents/workflows/fhs-check.md**：移除橋接版硬編碼規則
+- **guardian.md**：自動關鍵詞觸發條件 → 純手動 /guardian 觸發
+- **commit.md**：移除重複定義的第一/二/三階段內容（~50% token 浪費）
+- **AGENTS.md**：關鍵語義邊界補充 `/commit` 授權例外，消除與 `/execute` 唯一入口的語義灰色地帶
+
+---
+
 ## [V47.4] — 2026-05-16
 
 ### n8n Workflow: Supabase-First Cost Architecture (C0.5 Fix)

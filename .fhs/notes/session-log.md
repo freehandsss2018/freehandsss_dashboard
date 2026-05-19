@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-05-19 (Session 6): Antigravity 系統性 Bug 修復 + implicit memory 驗證 ✅
+
+**Scope**: A2 Dead Loop / 越權寫入 / token 浪費全面修復；GEMINI.md 機制驗證（不存在）；Fix [A][C][D][E][G][H][I] 共 9 檔完成
+
+---
+
 ## 2026-05-19 (Session 5): Finance UX 四項優化 + Duplicate ID 修復 + Balance Placeholder 根因修復 ✅
 
 **Scope**: Review Mode 遺留 bug + Finance UX 體驗優化 + DOM Restore 三層陷阱根因修復

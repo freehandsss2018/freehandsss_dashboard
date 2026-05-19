@@ -220,5 +220,6 @@
 
 - **`/cl-flow` ≠ 執行授權**：`/cl-flow` 只產出最終報告（verdict），禁止任何實際寫入業務檔案。
 - **`/execute` = 唯一執行入口**：沒有 Fat Mo 明確輸入 `/execute`，任何 AI 不得寫入業務檔案。
+- **`/commit` 授權例外**：`/commit` 指令的 Memory Engine 同步（`handoff.md`、`session-log.md`、`lessons/`）及 Git 操作為授權寫入，無需額外 `/execute`。此例外僅限 `/commit` 指令明確觸發的寫入範圍，不得類比至其他場景。
 - **NO-TOUCH GUARDRAIL**：在 `/cl-flow` 全程，絕對禁止使用任何寫入、修改、建立、刪除工具。
 - **Fat Mo 最終承認者**：任一 agent 的結論，不得自動視為 Fat Mo 已確認。`/execute` 是唯一有效授權信號。

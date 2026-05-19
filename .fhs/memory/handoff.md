@@ -1,4 +1,4 @@
-# FHS Handoff - 2026-05-19 深夜
+# FHS Handoff - 2026-05-19
 當前版本：v1.4.6（憲法層）/ V41（UI層）
 n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
@@ -6,35 +6,42 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
 ## 本次 Session 完成事項
 
-### 1. Review Mode 三個核心 Bug 修復（上個 session 遺留）
-- **批次顏色消失**：新增 `applyBatchColorLive()` 函數（兩個 HTML 檔案）
-- **輸入「13」不自動轉「第13批」**：真正的 `saveInlineEdit`（line 6697）`const value` → `let value`
-- **批次/進度不同步 Supabase**：修復 RLS 政策、ENUM→text、UUID on-demand 查詢、`return=representation` 偵測 0 rows
+### Antigravity (A2/Gemini) 系統性 Bug 修復
 
-### 2. Duplicate form field id 警告修復（雙層根因）
-- **第一層**：`qaCenter` 隱藏 div（iPhone Drawer 來源）與系統模式面板 ID 衝突 → 改名 `qac-` 前綴
-- **第二層**：`v40InitDrawerMirrors()` 的 `cloneNode(true)` 複製所有子元素 ID → 加 `stripDescendantIds()` 清除 clone ID
-- 影響範圍：`fatmoConfigPanel`（btnIdModeRandom / btnIdModeSeq / nextSeqIdInput）及 `qaCenter` clone 全數消除
+**問題**：A2 在任何輸入（含「say hi」）下自動執行初始化、主動處理待辦清單、越權寫入檔案
 
-### 3. Finance UX 四項優化
-- **批次欄 focus-to-clear**：點擊「第35批」→ 清空顯示純數字、全選、限制輸入數字 (`batchInputFocus`)
-- **Deposit 運算式輸入**：接受 `80+900`，標籤旁即時顯示 `= $980`，blur 後計算結果填入 (`evalSimpleMath`)
-- **Balance 自動餘數提示**：`generate()` 改為只讀 deposit.value（不用 placeholder 作 fallback），空 deposit = 0 付款 → balance placeholder 顯示全額
-- **Deposit/Balance = 0 顯示優化**：三個 restore 路徑（line 4924 n8n path / `restoreFormState` 迴圈 / `_injectFinancials`）統一用 `|| ''` 處理，0 值顯示空白讓 placeholder 生效
+**根因（共 5 條）**：
+1. SOP_NOW.md 無條件強制觸發器（Soul Awakening Hook）
+2. A2 職責欄缺少「需用戶確認」約束
+3. .agents/workflows/read.md 指向錯誤 handoff 路徑（靜默失敗）
+4. 三個橋接版含硬編碼邏輯（違反橋接版規則）
+5. guardian.md 關鍵詞自動觸發
 
-### 4. 深層根因：`_injectFinancials()` 覆蓋問題
-- `reconstructOrderFromSupabase` 的 Fix B 注入函數在 `restoreFormState` 之後執行，`dbDep != null` 條件判斷允許 0 值寫入 → 覆蓋所有之前 restore 的修復
-- 修復：`_depEl.value = dbDep || ''` / `_balEl.value = dbBal || ''`
+**已修復（7 檔）**：
+- `.fhs/notes/SOP_NOW.md`：弱化 Soul Awakening Hook + 限制 AGENTS.md 讀取前 100 行 + A2 職責補充禁止自主寫入
+- `.fhs/memory/handoff.md`：待辦清單加防呆標示
+- `.agents/workflows/read.md`：路徑 `/notes/` → `/memory/`
+- `.agents/workflows/ag-plan.md`、`error-eye.md`、`fhs-check.md`：移除橋接版硬編碼邏輯
+- `.fhs/ai/commands/guardian.md`：自動觸發 → 純手動 /guardian
+
+**附加修復（2 檔）**：
+- `.fhs/ai/commands/commit.md`：移除重複的第一/二/三階段內容（~50% token 浪費）
+- `.fhs/ai/AGENTS.md`：補充 /commit 授權例外聲明，消除語義灰色地帶
+
+**驗證結果**：
+- GEMINI.md 機制：經測試確認 Antigravity 不載入專案根目錄 GEMINI.md，Fix [J] 放棄
+- implicit memory 殘留路徑：接受為殘留風險，靠使用習慣管理（A2 仍可能從 IDE 開啟檔案推斷工作意圖）
 
 ---
 
 ## 待辦 ⏳ 項目
+> ⚠️ 此待辦清單僅供狀態備份。未經用戶明確指派任務，所有 AI 嚴禁主動執行。
 
-1. **Telegram Footer 移除**：「This message was sent automatically with n8n」由 n8n 實例層自動加入，需 Fat Mo 在 NAS 的 n8n 環境配置中關閉（非 workflow 層面可修）
-2. **Supabase products 成本更新**：若新增產品類型，需同步更新 Smart Cache Strategist V47.9 的硬編碼表
-3. **Airtable 背景同步驗證**：API 額度重置（6月初）後確認背景 Airtable sync path 正常
-4. **Anti-Idle Ping 驗證**：確認 n8n 每 6 天 ping Supabase 的 Schedule Trigger 存在
-5. **pg_cron TTL**：`error_logs` 表 30 天自動清理
+1. **Supabase products 成本更新**：若新增產品類型，需同步更新 Smart Cache Strategist V47.9 的硬編碼表
+2. **Airtable 背景同步驗證**：API 額度重置（6月初）後確認背景 Airtable sync path 正常
+3. **Anti-Idle Ping 驗證**：確認 n8n 每 6 天 ping Supabase 的 Schedule Trigger 存在
+4. **pg_cron TTL**：`error_logs` 表 30 天自動清理
+5. **A2 implicit memory 觀察**：後續幾個 session 觀察 A2 在「say hi」後是否仍主動引導工作，記錄改善程度
 
 ---
 
@@ -56,16 +63,7 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 - `require()` ❌ 完全不可用
 - → 所有 HTTP 呼叫必須用 HTTP Request 節點，Code 節點只做計算
 
-### Telegram 訊息路徑
-```
-收到 Webhook → Supabase Mirror → Pack Telegram Data → Send Profit Report
-（Airtable 全部 continueOnFail: true，不阻斷主路徑）
-```
-
-### DOM Restore 三層路徑（重要）
-```
-n8n path: line 4923-4924 (data.Deposit / data.Balance)
-restoreFormState loop: line 4732 (state[key] for all form fields)
-_injectFinancials: line 5154-5155 (dbDep / dbBal — 最後執行，會覆蓋前兩層)
-→ 三層都需要 || '' 處理 0 值
-```
+### Antigravity implicit memory 說明
+- A2 的行為約束主要靠 implicit memory（1.73MB .pb 檔），非文件直接載入
+- GEMINI.md 機制已驗證不存在（2026-05-19 測試）
+- 文件層修復（SOP_NOW.md、橋接版）封閉了文件觸發路徑，但 implicit memory 本能仍在
