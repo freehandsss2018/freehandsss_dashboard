@@ -48,6 +48,7 @@ freehandsss_dashboard/
 │   │   ├── db-query.md         ← /db-query Bridge → vendor/awesome-cc/read-only-postgres（2026-05-09）
 │   │   ├── five.md             ← /five 五個為什麼根因分析（2026-05-09）
 │   │   ├── mermaid.md          ← /mermaid Schema → Mermaid 圖表生成（2026-05-09）
+│   │   ├── rp.md               ← /rp Prompt 結構化重寫 Bridge（CL，2026-05-20）
 │   │   └── code-analysis.md    ← /code-analysis 多角度代碼深度分析（2026-05-09）
 │   └── settings.json           ← hooks 配置（SessionStart/UserPromptSubmit/PreToolUse）
 │
@@ -86,7 +87,8 @@ freehandsss_dashboard/
 │   │   │   ├── px-audit.md              ← 外部審查（第三方審計員）
 │   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
-│   │   │   └── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
+│   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
+│   │   │   └── rp.md                    ← /rp Prompt 結構化重寫（CL/AG/PL 三端通用，2026-05-20）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）
 │   │   │   ├── README.md                ← subagents 目錄說明與雙層架構

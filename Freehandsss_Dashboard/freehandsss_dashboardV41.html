@@ -6172,7 +6172,7 @@
             let html = "";
             orders.forEach((o) => {
                 const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
-                const batchCol = getBatchColor(o.Batch);
+                const batchCol = getBatchColor(o.Batch || (o.items && o.items.length > 0 && o.items[0].Batch) || '');
                 
                 const itemsCount = o.items && o.items.length > 0 ? o.items.length : 1;
                 
@@ -6358,10 +6358,10 @@
                                 </select>
                                 <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
                             </td>
-                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${batchCol};">
+                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding:8px; background-color:${batchCol};">
                                 <textarea class="review-notes-textarea"
                                           id="notes-input-${o.id}"
-                                          style="font-size:13px;"
+                                          style="font-size:13px; background:#ffffff;"
                                           onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
                                           placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                             </td>` : ''}

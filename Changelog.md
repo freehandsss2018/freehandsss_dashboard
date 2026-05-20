@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-05-20] /rp 通用指令新增 + 備註欄批次色 Bug 修復
+
+**新增 `/rp` 通用 Prompt 重寫指令（CL / AG / PL 三端）**：
+- 新建 `.fhs/ai/commands/rp.md`（Master）
+- 新建 `.claude/commands/rp.md`（Claude Code Bridge）
+- 新建 `.agents/workflows/rp.md`（Antigravity Bridge）
+- 同步更新 `docs/FHS_Prompts.md`（情境二十三）、`docs/repo-map.md`、`.fhs/ai/commands/README.md`
+
+**修復 `freehandsss_dashboardV41.html` 備註欄批次色 Bug**：
+- 根因 A：備註欄 td 用 `o.Batch`（訂單層），但部分 Supabase 訂單 batch_number 只存在 item 層
+  - 修復：`batchCol = getBatchColor(o.Batch || items[0].Batch || '')`（加 item 層 fallback）
+- 根因 B：td `background-color:batchCol` 被 CSS `.review-notes-textarea { background:#ffffff }` 覆蓋
+  - 修復：td 加 `padding:8px`，textarea inline `background:#ffffff` 強制白底，批次色以「相框」方式顯現
+
+---
+
 ## [2026-05-20] Reflect→Think 閉環補強（learnings.md + /read 鉤入 + handoff 解封）
 
 **新建 `.fhs/memory/learnings.md`**：

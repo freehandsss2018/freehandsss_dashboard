@@ -1,5 +1,17 @@
 # Session Log
 
+## 2026-05-20 (Session 8): /rp 指令新增 + 備註欄批次色 Bug 修復 ✅
+
+**Scope**: 新增 /rp 通用 Prompt 重寫指令（CL/AG/PL 三端橋接）；修復 Review Mode 備註欄批次色不跟隨問題（根因：item 層 Batch fallback 缺失 + CSS 優先級覆蓋）；更新 Supabase-First 查詢優先級 feedback memory
+
+---
+
+## 2026-05-20 (Session 7): 訂單總覽欄位優化（入帳欄 + 備註移末 + 批次色同步）✅
+
+**Scope**: Review Mode 新增入帳欄（Final_Sale_Price 金色）、備註欄移至表末、colspan 12 同步、sort 擴展
+
+---
+
 ## 2026-05-19 (Session 6): Antigravity 系統性 Bug 修復 + implicit memory 驗證 ✅
 
 **Scope**: A2 Dead Loop / 越權寫入 / token 浪費全面修復；GEMINI.md 機制驗證（不存在）；Fix [A][C][D][E][G][H][I] 共 9 檔完成

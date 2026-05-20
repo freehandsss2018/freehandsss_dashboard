@@ -4,7 +4,31 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
 ---
 
-## 本次 Session 完成事項（2026-05-20）
+## 本次 Session 完成事項（2026-05-20 第二 session）
+
+### 1. /rp 通用 Prompt 重寫指令（CL / AG / PL 三端）
+- 新建 `.fhs/ai/commands/rp.md`（Master）+ `.claude/commands/rp.md` + `.agents/workflows/rp.md`
+- 同步更新 `docs/FHS_Prompts.md`（情境二十三）、`docs/repo-map.md`、`.fhs/ai/commands/README.md`
+- 用法：`/rp [原始問題]` → XML 結構化輸出 → 分析改寫效果 → 純文字版本
+
+### 2. 備註欄批次色 Bug 修復（freehandsss_dashboardV41.html）
+
+**根因 A（訂單 vs 子項目層欄位不對稱）**：
+- `batchCol` 只讀 `o.Batch`（訂單層），但部分 Supabase 訂單的 batch_number 只存在 item 層
+- Supabase mapOrder 正確映射 `row.batch_number → o.Batch`，但若訂單層為空、item 層有值，batchCol = #ffffff
+- 修復：`batchCol = getBatchColor(o.Batch || (o.items && o.items.length > 0 && o.items[0].Batch) || '')`
+
+**根因 B（CSS 優先級覆蓋）**：
+- `.review-notes-textarea { background:#ffffff }` 蓋住 td 的 batchCol 背景
+- 修復：td 改用 `padding:8px`，textarea inline `background:#ffffff` 強制白底，批次色以「相框」方式顯現
+
+**查詢優先級糾正（feedback memory 已更新）**：
+- 診斷時先呼叫 Airtable MCP（返回 429 月限），違反 Supabase-First 原則
+- 已更新 `feedback_airtable_direct_query.md`：Supabase 優先，Airtable 只作 fallback
+
+---
+
+## 上次 Session 完成事項（2026-05-20 第一 session）
 
 ### 訂單總覽（Review Mode）欄位優化
 
