@@ -1,6 +1,21 @@
-# FHS Handoff - 2026-05-20
+# FHS Handoff - 2026-05-21
 當前版本：v1.4.6（憲法層）/ V41（UI層）
 n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
+
+---
+
+## 本次 Session 完成事項（2026-05-21）
+
+### 3. 批次色 Over-Sweep Bug 修復（freehandsss_dashboardV41.html）
+
+**根因（訂單內多批次 item 被一次性覆蓋）**：
+- `applyBatchColorLive` 未定義（silent ReferenceError），oninput 無效
+- `saveInlineEdit` Batch_Number 段用 `.order-group-${orderId} .batch-cell` 掃全訂單，更新單一 item 批次時所有 item 顏色一同改變
+
+**修復**：
+- `applyBatchColorLive` 以正規式 `^batch-input-(.+)-(\d+)$` 從 input.id 提取 orderId + itemIndex，只更新 `#row-orderId-item-itemIndex` 的 `.batch-cell`；itemIndex===0 時才同步備註 td
+- `saveInlineEdit` 改用 `_targetRow = getElementById('row-${recordId}-item-${itemIndex}')` 精準定位，消除全訂單掃描
+- `oninput` 改傳 `this` 作為第二參數：`applyBatchColorLive(this.value, this)`（replace_all，2 處）
 
 ---
 

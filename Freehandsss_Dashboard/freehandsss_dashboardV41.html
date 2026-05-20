@@ -6069,7 +6069,7 @@
                                         inputmode="numeric"
                                         style="width:80px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); font-size:12px; text-align:center;"
                                         onfocus="batchInputFocus(this)"
-                                        oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value)"
+                                        oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
                                         onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'acc-batch-${o.id}-${idx}', ${idx})">
                                 </div>
                                 <div style="display:flex; flex-direction:column; gap:2px; flex:2;">
@@ -6340,7 +6340,7 @@
                                        style="width:80%; max-width:80px; text-align:center; margin:0 auto; font-size:13px;"
                                        inputmode="numeric"
                                        onfocus="batchInputFocus(this)"
-                                       oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value)"
+                                       oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'batch-input-${o.id}-${index}', ${index})"
                                        placeholder="批次">
                             </td>
@@ -6862,10 +6862,14 @@
                     o.Batch = value;
                     o.Batch_Number = value;
                 }
-                // 更新所有同批次顏色
-                if (window.applyBatchColorLive) window.applyBatchColorLive(value);
-                const targetRow = isItemUpdate ? document.getElementById(`row-${recordId}-item-${itemIndex}`) : document.getElementById(`row-${recordId}`);
-                if (targetRow) targetRow.querySelectorAll('.batch-cell').forEach(c => c.style.backgroundColor = (window.getBatchColor || getBatchColor)(value));
+                // 只更新當前 item row 的批次色；備註 td 僅 item 0 時同步
+                const _savedCol = (window.getBatchColor || getBatchColor)(value);
+                const _targetRow = isItemUpdate ? document.getElementById(`row-${recordId}-item-${itemIndex}`) : document.getElementById(`row-${recordId}`);
+                if (_targetRow) _targetRow.querySelectorAll('.batch-cell').forEach(c => c.style.backgroundColor = _savedCol);
+                if (!isItemUpdate || itemIndex === 0) {
+                    const _notesTa = document.getElementById('notes-input-' + recordId);
+                    if (_notesTa && _notesTa.parentElement) _notesTa.parentElement.style.backgroundColor = _savedCol;
+                }
             } else if (field === 'Process_Status') {
                 if (isItemUpdate) {
                     itemObj.Status = value;
@@ -7238,6 +7242,21 @@
             el.value = num;
             el.select();
         }
+
+        function applyBatchColorLive(val, inputEl) {
+            if (!inputEl) return;
+            const m = inputEl.id.match(/^batch-input-(.+)-(\d+)$/);
+            if (!m) return;
+            const orderId = m[1], itemIndex = parseInt(m[2], 10);
+            const col = getBatchColor(val);
+            const itemRow = document.getElementById('row-' + orderId + '-item-' + itemIndex);
+            if (itemRow) itemRow.querySelectorAll('.batch-cell').forEach(function(c) { c.style.backgroundColor = col; });
+            if (itemIndex === 0) {
+                const notesTa = document.getElementById('notes-input-' + orderId);
+                if (notesTa && notesTa.parentElement) notesTa.parentElement.style.backgroundColor = col;
+            }
+        }
+        window.applyBatchColorLive = applyBatchColorLive;
 
         // ─── Deposit Smart Input ─────────────────────────────────
         function evalSimpleMath(expr) {
