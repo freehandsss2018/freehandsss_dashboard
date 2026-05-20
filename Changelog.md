@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-05-20] Reflect→Think 閉環補強（learnings.md + /read 鉤入 + handoff 解封）
+
+**新建 `.fhs/memory/learnings.md`**：
+- 三節骨架（Patterns / Pitfalls / Preferences），上限 50 條，每條含日期來源
+- 預填 9 條 distill 自 decisions.md 的示範條目
+
+**修改 `.fhs/notes/SOP_NOW.md`**：
+- 初始化步驟加入 Step 3「讀取 learnings.md」，原 Step 3 改為 Step 4
+- 每 session /read 強制載入 pattern/pitfall/preference 至工作記憶
+
+**修改 `.fhs/memory/handoff.md`**：
+- 待辦清單封鎖文字從「嚴禁主動執行」微調為「寫入/執行需授權；引用 learnings.md 提示不需授權」
+- 解除 2026-05-19 A2 越權修復時引入的過度封鎖，恢復 Reflect→Think 回灌路徑
+
+**修改 `.fhs/ai/commands/commit.md`**：
+- Phase 1 新增 Step 5：commit 結尾詢問 Fat Mo 是否 distill lesson，手動 append，無回應靜默跳過
+
+---
+
 ## [2026-05-18] Telegram 三格分離 + n8n Supabase-First 重構 + Dashboard Update_Note 修復
 
 **Telegram 訊息架構重構**：

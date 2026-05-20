@@ -8,7 +8,8 @@
 
 1. 讀取 `/.fhs/ai/AGENTS.md`（前 100 行）— 確認憲法版本號
 2. 讀取 `/.fhs/memory/handoff.md` — 同步上次 session 狀態與待辦
-3. 輸出系統狀態報告（版本號、當前基準版本、未解決項目）
+3. 讀取 `/.fhs/memory/learnings.md` — 載入 pattern / pitfall / preference 至工作記憶
+4. 輸出系統狀態報告（版本號、當前基準版本、未解決項目）
 
 ---
 

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-05-17T18:16:55",
+  "generated_at": "2026-05-18T23:55:52",
   "tool_version": "0.1.0-mvp",
   "summary": {
     "canonical_keys_tracked": 6,
-    "deprecated_term_hits": 48,
-    "dangling_links": 273,
-    "cycles_detected": 2
+    "deprecated_term_hits": 60,
+    "dangling_links": 330,
+    "cycles_detected": 4
   },
   "D1_D3_canonical_values": {
     "agents_version": {
@@ -46,15 +46,11 @@
     },
     {
       "from": ".cursorrules",
-      "to": "fhs/ai/AGENTS.md"
-    },
-    {
-      "from": ".cursorrules",
       "to": "docs/SOP_NOW.md"
     },
     {
-      "from": "ANTIGRAVITY.md",
-      "to": "fhs/ai/commands/ag-stitch-sync.md"
+      "from": ".cursorrules",
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": "ANTIGRAVITY.md",
@@ -69,12 +65,240 @@
       "to": "fhs/memory/handoff.md"
     },
     {
-      "from": "CLAUDE.md",
+      "from": "ANTIGRAVITY.md",
+      "to": "fhs/ai/commands/ag-stitch-sync.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "supabase-query.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/skills/vendor/superpowers/test-driven-development.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/cl-flow-fast.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "claude/commands/cl-flow-fast.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "v39-rebuild_phase0_contract_freeze.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "test-driven-development.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "2026-03-31_a3_workflow_optimization_completion_report.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/skills/fhs-bug-triage/SKILL.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "Quadruple_Sync_Field_Map.md"
+    },
+    {
+      "from": "Changelog.md",
       "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/fhs-audit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/px-audit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "read-only-postgres.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/notes/2026-05-04_cost_audit_detailed.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "OPERATING_MODEL.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_INTEGRATION.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "systematic-debugging.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "MANIFEST.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ag-stitch-sync.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/cl-flow.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "repo-map.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/setup/SUPABASE_RLS_SETUP.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/notes/SOP_NOW.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/skills/vendor/awesome-cc/supabase-query.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "CLAUDE_SESSION_INIT.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "claude/commands/fhs-cost-audit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "v40-phase1_design_spec.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Product_Bible_V3.5.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/skills/vendor/awesome-cc/hooks-setup-guide.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/ag-stitch-sync.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "Triple_Sync_Field_Map.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/notes/decisions.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/ag-ui-import.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "frontend-developer.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/skills/vendor/superpowers/systematic-debugging.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "commands/README.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/README.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "agents/workflows/cl-flow-fast.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ag-ui-import.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/subagents/OPERATING_MODEL.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ui-designer.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "todo.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/notes/aireports/total_cost_audit_YYYY-MM-DD.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "build-error-resolver.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/fhs-cost-audit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/reports/completion/2026-05-10_supabase-phase-0_completion_report.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "read.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/reports/completion/2026-05-10_finance-auditor-subagent_completion_report.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/commands/v39-aom.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs/ai/subagents/freehandsss/finance-auditor.md"
     },
     {
       "from": "CLAUDE.md",
       "to": "fhs/notes/decisions.md"
+    },
+    {
+      "from": "CLAUDE.md",
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": "README.md",
@@ -122,11 +346,11 @@
     },
     {
       "from": ".agents/workflows/fhs-audit.md",
-      "to": "fhs/reports/audits/system/audit_YYYY-MM-DD.md"
+      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/fhs-audit.md"
     },
     {
       "from": ".agents/workflows/fhs-audit.md",
-      "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/fhs-audit.md"
+      "to": "fhs/reports/audits/system/audit_YYYY-MM-DD.md"
     },
     {
       "from": ".agents/workflows/fhs-check.md",
@@ -146,10 +370,6 @@
     },
     {
       "from": ".agents/workflows/read.md",
-      "to": "fhs/notes/SOP_NOW.md"
-    },
-    {
-      "from": ".agents/workflows/read.md",
       "to": "fhs/ai/commands/read.md"
     },
     {
@@ -157,12 +377,16 @@
       "to": "fhs/ai/AGENTS.md"
     },
     {
-      "from": ".claude/commands/cl-flow-fast.md",
-      "to": "ag-plan.md"
+      "from": ".agents/workflows/read.md",
+      "to": "fhs/notes/SOP_NOW.md"
     },
     {
       "from": ".claude/commands/cl-flow-fast.md",
       "to": "fhs/ai/commands/cl-flow-fast.md"
+    },
+    {
+      "from": ".claude/commands/cl-flow-fast.md",
+      "to": "ag-plan.md"
     },
     {
       "from": ".claude/commands/cl-flow.md",
@@ -202,11 +426,11 @@
     },
     {
       "from": ".claude/commands/fhs-cost-audit.md",
-      "to": "fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
+      "to": "fhs/ai/commands/fhs-cost-audit.md"
     },
     {
       "from": ".claude/commands/fhs-cost-audit.md",
-      "to": "fhs/ai/commands/fhs-cost-audit.md"
+      "to": "fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
     },
     {
       "from": ".claude/commands/five.md",
@@ -226,15 +450,15 @@
     },
     {
       "from": ".claude/commands/read.md",
+      "to": "fhs/ai/commands/read.md"
+    },
+    {
+      "from": ".claude/commands/read.md",
       "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": ".claude/commands/read.md",
       "to": "fhs/notes/SOP_NOW.md"
-    },
-    {
-      "from": ".claude/commands/read.md",
-      "to": "fhs/ai/commands/read.md"
     },
     {
       "from": ".claude/commands/read.md",
@@ -250,11 +474,7 @@
     },
     {
       "from": ".fhs/ai/AGENTS.md",
-      "to": "fhs/memory/handoff.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "fhs/ai/commands/execute.md"
+      "to": "fhs/ai/commands/px-audit.md"
     },
     {
       "from": ".fhs/ai/AGENTS.md",
@@ -262,7 +482,7 @@
     },
     {
       "from": ".fhs/ai/AGENTS.md",
-      "to": "fhs/ai/commands/fhs-cost-audit.md"
+      "to": "decisions.md"
     },
     {
       "from": ".fhs/ai/AGENTS.md",
@@ -270,23 +490,7 @@
     },
     {
       "from": ".fhs/ai/AGENTS.md",
-      "to": "v39-aom.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "decisions.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "todo.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
       "to": "a1_implementation_plan.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "fhs/notes/decisions.md"
     },
     {
       "from": ".fhs/ai/AGENTS.md",
@@ -294,7 +498,7 @@
     },
     {
       "from": ".fhs/ai/AGENTS.md",
-      "to": "session-log.md"
+      "to": "fhs/memory/handoff.md"
     },
     {
       "from": ".fhs/ai/AGENTS.md",
@@ -302,7 +506,27 @@
     },
     {
       "from": ".fhs/ai/AGENTS.md",
-      "to": "fhs/ai/commands/px-audit.md"
+      "to": "fhs/ai/commands/execute.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "session-log.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/notes/decisions.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "todo.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "v39-aom.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "fhs/ai/commands/fhs-cost-audit.md"
     },
     {
       "from": ".fhs/ai/FHS_Finance_Bible.md",
@@ -318,11 +542,11 @@
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
-      "to": "a2_implementation_plan.md"
+      "to": "fhs/reports/planning/a1_implementation_plan.md"
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
-      "to": "fhs/reports/planning/a1_implementation_plan.md"
+      "to": "fhs/reports/planning/a2_implementation_plan.md"
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
@@ -330,15 +554,15 @@
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
-      "to": "fhs/reports/planning/a3_execution_verdict.md"
-    },
-    {
-      "from": ".fhs/ai/commands/cl-flow.md",
       "to": "a1_implementation_plan.md"
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
-      "to": "fhs/reports/planning/a2_implementation_plan.md"
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "fhs/reports/planning/a3_execution_verdict.md"
     },
     {
       "from": ".fhs/ai/commands/code-analysis.md",
@@ -346,11 +570,11 @@
     },
     {
       "from": ".fhs/ai/commands/commit.md",
-      "to": "fhs/memory/lessons/YYYY-MM-DD_主題.md"
+      "to": "fhs/memory/handoff.md"
     },
     {
       "from": ".fhs/ai/commands/commit.md",
-      "to": "fhs/memory/handoff.md"
+      "to": "fhs/memory/lessons/YYYY-MM-DD_主題.md"
     },
     {
       "from": ".fhs/ai/commands/commit.md",
@@ -390,11 +614,11 @@
     },
     {
       "from": ".fhs/ai/commands/fhs-check.md",
-      "to": "fhs/notes/session-log.md"
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": ".fhs/ai/commands/fhs-check.md",
-      "to": "fhs/ai/AGENTS.md"
+      "to": "fhs/notes/session-log.md"
     },
     {
       "from": ".fhs/ai/commands/fhs-cost-audit.md",
@@ -414,19 +638,19 @@
     },
     {
       "from": ".fhs/ai/commands/read.md",
-      "to": "fhs/ai/AGENTS.md"
-    },
-    {
-      "from": ".fhs/ai/commands/read.md",
-      "to": "fhs/memory/MEMORY.md"
-    },
-    {
-      "from": ".fhs/ai/commands/read.md",
       "to": "fhs/memory/handoff.md"
     },
     {
       "from": ".fhs/ai/commands/read.md",
+      "to": "fhs/ai/AGENTS.md"
+    },
+    {
+      "from": ".fhs/ai/commands/read.md",
       "to": "SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/ai/commands/read.md",
+      "to": "fhs/memory/MEMORY.md"
     },
     {
       "from": ".fhs/ai/commands/read.md",
@@ -438,11 +662,11 @@
     },
     {
       "from": ".fhs/ai/commands/tdd-guide.md",
-      "to": "fhs/ai/skills/vendor/superpowers/test-driven-development.md"
+      "to": "claude/commands/tdd-guide.md"
     },
     {
       "from": ".fhs/ai/commands/tdd-guide.md",
-      "to": "claude/commands/tdd-guide.md"
+      "to": "fhs/ai/skills/vendor/superpowers/test-driven-development.md"
     },
     {
       "from": ".fhs/ai/skills/fhs-bug-triage/SKILL.md",
@@ -450,15 +674,11 @@
     },
     {
       "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
-      "to": "gemini/skills/frontend-design/reference/interaction-design.md"
-    },
-    {
-      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
       "to": "gemini/skills/frontend-design/reference/ux-writing.md"
     },
     {
       "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
-      "to": "gemini/skills/frontend-design/reference/motion-design.md"
+      "to": "gemini/skills/frontend-design/reference/color-and-contrast.md"
     },
     {
       "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
@@ -466,11 +686,15 @@
     },
     {
       "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": "gemini/skills/frontend-design/reference/motion-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
       "to": "gemini/skills/frontend-design/reference/spatial-design.md"
     },
     {
       "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
-      "to": "gemini/skills/frontend-design/reference/color-and-contrast.md"
+      "to": "gemini/skills/frontend-design/reference/interaction-design.md"
     },
     {
       "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
@@ -490,7 +714,11 @@
     },
     {
       "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
-      "to": "decisions.md"
+      "to": "fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "fhs/ai/subagents/freehandsss/ui-designer.md"
     },
     {
       "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
@@ -502,19 +730,15 @@
     },
     {
       "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
       "to": "fhs/ai/subagents/freehandsss/database-reviewer.md"
     },
     {
       "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
       "to": "fhs/ai/subagents/freehandsss/frontend-developer.md"
-    },
-    {
-      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
-      "to": "fhs/ai/subagents/freehandsss/ui-designer.md"
-    },
-    {
-      "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
-      "to": "fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md"
     },
     {
       "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
@@ -538,11 +762,11 @@
     },
     {
       "from": ".fhs/ai/subagents/freehandsss/database-reviewer.md",
-      "to": "FHS_Finance_Bible.md"
+      "to": "fhs/ai/FHS_Finance_Bible.md"
     },
     {
       "from": ".fhs/ai/subagents/freehandsss/database-reviewer.md",
-      "to": "fhs/ai/FHS_Finance_Bible.md"
+      "to": "FHS_Finance_Bible.md"
     },
     {
       "from": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
@@ -566,11 +790,11 @@
     },
     {
       "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
-      "to": "a1_audit_report.md"
+      "to": "a2_implementation_plan.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
-      "to": "a2_implementation_plan.md"
+      "to": "a1_audit_report.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-03-31_System_Init_v131.md",
@@ -594,7 +818,7 @@
     },
     {
       "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
-      "to": "commands/README.md"
+      "to": "repo-map.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
@@ -602,15 +826,15 @@
     },
     {
       "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
-      "to": "AGENTS.md"
-    },
-    {
-      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
       "to": "SOP_NOW.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
-      "to": "repo-map.md"
+      "to": "commands/README.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "AGENTS.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-05-13_Bug_Fix_Completion_Bias.md",
@@ -619,6 +843,10 @@
     {
       "from": ".fhs/memory/lessons/2026-05-16_keychain_shipping_deduction.md",
       "to": "fhs/memory/lessons/2026-05-04_keychain-shipping-deduction.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-05-18_n8n-nas-code-node-limits-telegram-debug.md",
+      "to": "feedback_n8n_code_node_nas_limits.md"
     },
     {
       "from": ".fhs/memory/lessons/20260320_1358_Memory_Engine_2.0_Architecture.md",
@@ -650,7 +878,7 @@
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "agents/workflows/freehandsss-optimizer-v2.md"
+      "to": "fhs/ai/FHS_Finance_Bible.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
@@ -666,11 +894,11 @@
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "fhs/ai/FHS_Finance_Bible.md"
+      "to": "OPERATING_MODEL.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "OPERATING_MODEL.md"
+      "to": "agents/workflows/freehandsss-optimizer-v2.md"
     },
     {
       "from": ".fhs/notes/README.md",
@@ -678,27 +906,15 @@
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "claude/commands/execute.md"
+      "to": "agents/workflows/ag-ui-import.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/AGENTS.md"
+      "to": "fhs/ai/commands/cl-flow-fast.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "claude/commands/guardian.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/fhs-audit.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/read.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/memory/handoff.md"
+      "to": "claude/commands/cl-flow-fast.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
@@ -706,15 +922,27 @@
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/commit.md"
+      "to": "agents/workflows/fhs-audit.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/execute.md"
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/ag-stitch-sync.md"
+      "to": "agents/workflows/ag-plan.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/fhs-audit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/cl-flow.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/guardian.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
@@ -722,7 +950,47 @@
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/guardian.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/ag-stitch-sync.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/cl-flow.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
       "to": "agents/workflows/cl-flow.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/execute.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/fhs-check.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/guardian.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/read.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/read.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/memory/handoff.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/fhs-check.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
@@ -734,63 +1002,7 @@
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/error-eye.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/cl-flow.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/read.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "claude/commands/commit.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "claude/commands/error-eye.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/guardian.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "claude/commands/cl-flow-fast.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "claude/commands/cl-flow.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/cl-flow-fast.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/fhs-audit.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/fhs-check.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/ag-stitch-sync.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/error-eye.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/cl-flow-fast.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/commit.md"
+      "to": "fhs/ai/commands/ag-stitch-sync.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
@@ -798,7 +1010,7 @@
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/ag-ui-import.md"
+      "to": "agents/workflows/commit.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
@@ -806,15 +1018,31 @@
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/guardian.md"
+      "to": "agents/workflows/execute.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "agents/workflows/ag-plan.md"
+      "to": "agents/workflows/cl-flow-fast.md"
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "fhs/ai/commands/fhs-check.md"
+      "to": "claude/commands/commit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/commit.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "agents/workflows/error-eye.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "claude/commands/error-eye.md"
+    },
+    {
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "fhs/ai/commands/error-eye.md"
     },
     {
       "from": ".fhs/notes/todo.md",
@@ -822,11 +1050,7 @@
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
-      "to": "fhs/notes/ai_reports/a2_implementation_plan.md"
-    },
-    {
-      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
-      "to": "fhs/ai/AGENTS.md"
+      "to": "fhs/ai/commands/ag-stitch-sync.md"
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
@@ -834,7 +1058,7 @@
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
-      "to": "frontend-developer.md"
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
@@ -842,31 +1066,23 @@
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
-      "to": "ui-designer.md"
+      "to": "frontend-developer.md"
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
-      "to": "fhs/ai/commands/ag-stitch-sync.md"
+      "to": "fhs/notes/ai_reports/a2_implementation_plan.md"
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
       "to": "OPERATING_MODEL.md"
     },
     {
-      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
-      "to": "Triple_Sync_Field_Map.md"
-    },
-    {
-      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
-      "to": "fhs/ai/README.md"
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "ui-designer.md"
     },
     {
       "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
       "to": "fhs/ai/subagents/README.md"
-    },
-    {
-      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
-      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
@@ -874,7 +1090,15 @@
     },
     {
       "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
-      "to": "AGENTS.md"
+      "to": "fhs/ai/README.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "Triple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
@@ -885,8 +1109,8 @@
       "to": "fhs/notes/README.md"
     },
     {
-      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
-      "to": "fhs/ai/README.md"
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "AGENTS.md"
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
@@ -894,11 +1118,11 @@
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
-      "to": "fhs/ai/AGENTS.md"
+      "to": "fhs/ai/README.md"
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
-      "to": "AGENTS.md"
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
@@ -909,20 +1133,20 @@
       "to": "fhs/notes/README.md"
     },
     {
-      "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
-      "to": "FHS_Product_Bible_v3.7.md"
+      "from": ".fhs/reports/FHS_Documentation_Audit_20260516.md",
+      "to": "AGENTS.md"
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
-      "to": "docs/product-bible.md"
+      "to": "FHS_Product_Bible_v3.7.md"
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
       "to": "GLOBAL_AI_SOP.md"
     },
     {
-      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "decisions.md"
+      "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
+      "to": "docs/product-bible.md"
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
@@ -930,15 +1154,11 @@
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "implementation_plan.md"
+      "to": "decisions.md"
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "a2_implementation_plan.md"
-    },
-    {
-      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "AGENTS.md"
+      "to": "a1_implementation_plan.md"
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
@@ -946,11 +1166,19 @@
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "a1_implementation_plan.md"
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "implementation_plan.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "AGENTS.md"
     },
     {
       "from": ".fhs/reports/README.md",
-      "to": "fhs/reports/planning/a3_execution_verdict.md"
+      "to": "fhs/reports/planning/a1_implementation_plan.md"
     },
     {
       "from": ".fhs/reports/README.md",
@@ -962,7 +1190,7 @@
     },
     {
       "from": ".fhs/reports/README.md",
-      "to": "fhs/reports/planning/a1_implementation_plan.md"
+      "to": "fhs/reports/planning/a3_execution_verdict.md"
     },
     {
       "from": ".fhs/reports/planning/a1_implementation_plan.md",
@@ -970,11 +1198,11 @@
     },
     {
       "from": ".fhs/reports/planning/a1_implementation_plan.md",
-      "to": "FHS_Prompts.md"
+      "to": "repo-map.md"
     },
     {
       "from": ".fhs/reports/planning/a1_implementation_plan.md",
-      "to": "repo-map.md"
+      "to": "FHS_Prompts.md"
     },
     {
       "from": ".fhs/reports/planning/a1_product_sync_audit.md",
@@ -986,15 +1214,11 @@
     },
     {
       "from": ".fhs/reports/planning/a3_execution_verdict.md",
-      "to": "read.md"
+      "to": "FHS_Prompts.md"
     },
     {
       "from": ".fhs/reports/planning/a3_execution_verdict.md",
       "to": "fhs/ai/commands/README.md"
-    },
-    {
-      "from": ".fhs/reports/planning/a3_execution_verdict.md",
-      "to": "FHS_Prompts.md"
     },
     {
       "from": ".fhs/reports/planning/a3_execution_verdict.md",
@@ -1005,12 +1229,12 @@
       "to": "ag-plan.md"
     },
     {
-      "from": ".fhs/reports/planning/AGENT_2_GEMINI_OPTIMIZED_REPORT.md",
-      "to": "CLAUDE_SESSION_INIT.md"
+      "from": ".fhs/reports/planning/a3_execution_verdict.md",
+      "to": "read.md"
     },
     {
-      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
-      "to": "freehandsss-optimizer-v2.md"
+      "from": ".fhs/reports/planning/AGENT_2_GEMINI_OPTIMIZED_REPORT.md",
+      "to": "CLAUDE_SESSION_INIT.md"
     },
     {
       "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
@@ -1018,19 +1242,31 @@
     },
     {
       "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "cl-flow.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
       "to": "commit.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "freehandsss-optimizer-v2.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "reflect.md"
     },
     {
       "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
       "to": "FHS_Prompts.md"
     },
     {
-      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
-      "to": "cl-flow.md"
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "completion_reports/2026-04-03_audit_resolution_completion_report.md"
     },
     {
-      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
-      "to": "reflect.md"
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "px-audit.md"
     },
     {
       "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
@@ -1043,14 +1279,6 @@
     {
       "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
       "to": "fhs/notes/todo.md"
-    },
-    {
-      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
-      "to": "px-audit.md"
-    },
-    {
-      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
-      "to": "completion_reports/2026-04-03_audit_resolution_completion_report.md"
     },
     {
       "from": ".fhs/reports/planning/design-specs/v39-rebuild_phase0_contract_freeze.md",
@@ -1074,11 +1302,11 @@
     },
     {
       "from": "docs/FHS_Prompts.md",
-      "to": "handoff.md"
+      "to": "fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md"
     },
     {
       "from": "docs/FHS_Prompts.md",
-      "to": "fhs/ai/skills/vendor/superpowers/systematic-debugging.md"
+      "to": "handoff.md"
     },
     {
       "from": "docs/FHS_Prompts.md",
@@ -1086,11 +1314,11 @@
     },
     {
       "from": "docs/FHS_Prompts.md",
-      "to": "fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md"
+      "to": "fhs/ai/skills/vendor/superpowers/systematic-debugging.md"
     },
     {
       "from": "docs/FHS_Prompts.md",
-      "to": "fhs/ai/skills/vendor/awesome-cc/supabase-query.md"
+      "to": "fhs/memory/lessons/2026-05-16_order_0600802_pricing_concession.md"
     },
     {
       "from": "docs/FHS_Prompts.md",
@@ -1098,19 +1326,7 @@
     },
     {
       "from": "docs/FHS_Prompts.md",
-      "to": "fhs/memory/lessons/2026-05-16_order_0600802_pricing_concession.md"
-    },
-    {
-      "from": "docs/GLOBAL_AI_SOP.md",
-      "to": "fhs/ai/AGENTS.md"
-    },
-    {
-      "from": "docs/GLOBAL_AI_SOP.md",
-      "to": "a1_audit_report.md"
-    },
-    {
-      "from": "docs/GLOBAL_AI_SOP.md",
-      "to": "a2_implementation_plan.md"
+      "to": "fhs/ai/skills/vendor/awesome-cc/supabase-query.md"
     },
     {
       "from": "docs/GLOBAL_AI_SOP.md",
@@ -1118,11 +1334,23 @@
     },
     {
       "from": "docs/GLOBAL_AI_SOP.md",
-      "to": "a3_execution_verdict.md"
+      "to": "fhs/ai/AGENTS.md"
     },
     {
       "from": "docs/GLOBAL_AI_SOP.md",
       "to": "a1_implementation_plan.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "a1_audit_report.md"
+    },
+    {
+      "from": "docs/GLOBAL_AI_SOP.md",
+      "to": "a3_execution_verdict.md"
     },
     {
       "from": "docs/plan_0004_supabase_cost_migration.md",
@@ -1135,6 +1363,16 @@
   ],
   "D5_cycles": [
     [
+      "Changelog.md",
+      "Changelog.md"
+    ],
+    [
+      "Changelog.md",
+      "Freehandsss_Dashboard/README.md",
+      "docs/FHS_Blueprint.md",
+      "Changelog.md"
+    ],
+    [
       "docs/GLOBAL_AI_SOP.md",
       "docs/GLOBAL_AI_SOP.md"
     ],
@@ -1145,6 +1383,76 @@
     ]
   ],
   "D5_deprecated_term_hits": [
+    {
+      "file": "Changelog.md",
+      "line": 63,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- AGENTS.md L47 修改前必讀文件 `Triple_Sync_Field_Map.md` → `Quadruple_Sync_Field_Map.md`"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 63,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- AGENTS.md L47 修改前必讀文件 `Triple_Sync_Field_Map.md` → `Quadruple_Sync_Field_Map.md`"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 70,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- `.fhs/tools/deprecated_terms.txt` — 已廢棄詞黑名單（Triple_Sync_Field_Map、三端同步/稽核/映射、v39-aom.md）"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 70,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "- `.fhs/tools/deprecated_terms.txt` — 已廢棄詞黑名單（Triple_Sync_Field_Map、三端同步/稽核/映射、v39-aom.md）"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 81,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "- `.fhs/notes/SOP_NOW.md` L44：「三端同步」→「四端同步」"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 100,
+      "token": "三端稽核",
+      "replacement": "四端稽核",
+      "snippet": "- **Subagent 路由 — finance-auditor**：三端稽核 → 四端稽核（補入 Supabase）"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 101,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- **系統真理庫**：Triple_Sync_Field_Map.md 標注 [已廢棄]，避免 AI 誤用殭屍 reference"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 101,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- **系統真理庫**：Triple_Sync_Field_Map.md 標注 [已廢棄]，避免 AI 誤用殭屍 reference"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 1450,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- **地圖化記錄**：建立 `Triple_Sync_Field_Map.md`，將 Dashboard、n8n、Airtable 三端欄位映射永久記錄於代碼庫，防範未來的數據斷鏈。"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 1450,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- **地圖化記錄**：建立 `Triple_Sync_Field_Map.md`，將 Dashboard、n8n、Airtable 三端欄位映射永久記錄於代碼庫，防範未來的數據斷鏈。"
+    },
     {
       "file": ".claude/commands/px-audit.md",
       "line": 6,
@@ -1273,7 +1581,7 @@
     },
     {
       "file": ".fhs/notes/decisions.md",
-      "line": 297,
+      "line": 321,
       "token": "三端同步",
       "replacement": "四端同步",
       "snippet": "- 三端同步驗證（verify_triple_sync）制度化"
@@ -1441,21 +1749,35 @@
     },
     {
       "file": "docs/repo-map.md",
-      "line": 159,
+      "line": 140,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "│       └── deprecated_terms.txt        ← 已廢棄詞黑名單（Triple_Sync_Field_Map / 三端同步 等）"
+    },
+    {
+      "file": "docs/repo-map.md",
+      "line": 140,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "│       └── deprecated_terms.txt        ← 已廢棄詞黑名單（Triple_Sync_Field_Map / 三端同步 等）"
+    },
+    {
+      "file": "docs/repo-map.md",
+      "line": 162,
       "token": "Triple_Sync_Field_Map.md",
       "replacement": "Quadruple_Sync_Field_Map.md",
       "snippet": "│   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）"
     },
     {
       "file": "docs/repo-map.md",
-      "line": 159,
+      "line": 162,
       "token": "Triple_Sync_Field_Map",
       "replacement": "Quadruple_Sync_Field_Map",
       "snippet": "│   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）"
     },
     {
       "file": "docs/repo-map.md",
-      "line": 190,
+      "line": 193,
       "token": "三端同步",
       "replacement": "四端同步",
       "snippet": "│   │       └── verify-triple-sync.js    ← 三端同步驗證"

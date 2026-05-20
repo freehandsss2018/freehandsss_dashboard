@@ -11,7 +11,7 @@ description: Authoritative source for all product costs, pricing rules, and busi
 >
 > **⚠️ 系統最高指導原則 (System Absolute Truth)**
 > 此文件是 FHS 全產品線「成本結算」、「參考售價推演」與「商業防呆邏輯」的唯一真理。Dashboard 前端引擎與 Airtable 寫入邏輯必須 100% 遵從此文件。
-> **核心定律**：FatMo 的「畫圖成本 (Drawing Cost)」絕對不可妥協；Ling Au 的「前端售價」為最新銷售準則。
+> **核心定律**：FatMo 的「畫圖成本 (Drawing Cost)」絕對不可妥協；前台的「前端售價」為最新銷售準則。
 >
 > 📦 **舊資料遷移（Excel → Airtable）**：請同時閱讀 `docs/FHS_Legacy_Migration_Notes.md`，內含 Excel 缺失問題、欄位對照表與標準遷移流程。
 
@@ -66,7 +66,7 @@ description: Authoritative source for all product costs, pricing rules, and busi
 
 *核心邏輯：金銀同價，高價值感，豁免微小附加費。*
 
-* **定價標準 (最新 - Ling Au 指令)**：
+* **定價標準 (最新指令)**：
   * **加購價 (Add-on)** (已購買擺設套裝)：
     * **1 個吊飾**：$1,980
     * **2 個吊飾**：$2,980

@@ -7,6 +7,20 @@
 
 ## 記錄
 
+[2026-05-20] 補 Reflect→Think 閉環 — 新建 learnings.md + 鉤入 /read + 解 handoff 封鎖
+
+決策：
+- **新建 `.fhs/memory/learnings.md`**：三節骨架（Patterns / Pitfalls / Preferences），上限 50 條。職責與 decisions.md（事件記錄）正交，learnings.md 只存 distill 後的可複用規律，不重複事件細節。
+- **SOP_NOW.md 初始化步驟加入 Step 3**：每 session /read 強制載入 learnings.md，讓歷史教訓在工作記憶中可見。
+- **handoff.md 封鎖文字微調**：2026-05-19 修 A2 越權 bug 後的封鎖過度（「嚴禁主動執行」誤擴張至「嚴禁主動引用」），本次修正為「寫入/執行需授權，引用 learnings.md 提示不需授權」。
+- **commit.md Phase 1 加 Step 5**：每次 commit 結尾詢問 Fat Mo 是否有 lesson 要 distill，手動 append，無回應靜默跳過，零 LLM 自動化成本。
+
+原因：FHS 有大量 Reflect artifact（decisions.md 488 行、handoff.md、lessons/、CHANGELOG.md）但缺乏「下一個 session 主動引用」機制。gstack Reflect→Think 閉環的核心是 persistent learning 回灌，最小實作是一份壓縮的 learnings.md + /read 鉤入。
+
+批准：Fat Mo ✅（2026-05-20 授權執行）
+
+---
+
 [2026-05-18] Telegram 通知分格 + Dashboard 部位誤報 Bug Fix
 
 決策：

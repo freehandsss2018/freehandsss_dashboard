@@ -650,10 +650,47 @@
         .review-btn-refresh { padding:6px 14px; border-radius:8px; border:none; background:linear-gradient(135deg, #2A9D8F, #21867a); color:white; font-weight:bold; cursor:pointer; font-size:12px; transition:transform 0.1s, box-shadow 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
         .review-btn-refresh:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,0.15); }
 
-        /* 資料表外框 */
-        .review-table-wrap { overflow-x:auto; max-height:72vh; border:1px solid #e0e0e0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+        /* 資料表外框 — 無內部捲動 + overflow:visible（避免成為 sticky scrolling ancestor，讓 thead 能 sticky 到 viewport） */
+        .review-table-wrap { overflow:visible; border:1px solid #e0e0e0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
         .review-table { width:100%; border-collapse:collapse; font-size:13px; text-align:left; line-height:1.5; }
-        .review-table thead { position:sticky; top:0; z-index:10; }
+        .review-table thead { position:sticky; top:48px; z-index:10; }
+
+        /* === Review Mode 三區 sticky 佈局（body.v40-review-active） ===
+           採用 position:sticky 而非 fixed：
+           - sticky 在文檔流佔位，自然向下推內容，無需 paddingTop 補償
+           - 不受 containing block 影響（backdrop-filter/transform 不會破壞 sticky）
+           - 每個 sticky 元素相對於最近的 scroll container（這裡是 window）
+        */
+        body.v40-review-active { padding-left:0; padding-right:0; padding-top:0; }
+        body.v40-review-active #reviewModeContainer .card,
+        body.v40-review-active #reviewModeContainer .card:hover {
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transform: none;
+            transition: none;
+            background: #ffffff;
+        }
+        /* Zone 2：標題列 — sticky at top:48px（Zone 1 下方） */
+        body.v40-review-active #reviewZone2 {
+            position: sticky; top: 48px; z-index: 1999;
+            background: var(--fhs-bg-surface, #ffffff);
+            border-bottom: 1px solid var(--fhs-border, #e5e5e5);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        body.v40-review-active .review-header { margin-bottom: 0; padding: 10px 24px; }
+        /* Zone 3 filter：篩選列 — sticky，top 由 JS 設為 48 + zone2H */
+        body.v40-review-active #reviewFiltersV2 {
+            position: sticky; z-index: 1998;
+            border-radius: 0; margin: 0;
+            border-left: none; border-right: none; border-top: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            background: var(--fhs-bg-elevated, #f7f3ee);
+            /* top 由 JS 動態設定 */
+        }
+        /* Zone 3 table：表格 thead sticky top 由 JS 動態設為 48 + zone2H + zone3FilterH */
+        body.v40-review-active #reviewModeContainer .review-table-wrap { background:#fff; }
+        /* 隱藏 #bulkActionBar 預設 display:none 不需處理；避免讓 review mode 下出現多餘 margin */
+        body.v40-review-active #bulkActionBar { margin-top:0; margin-bottom:0; }
         .review-table thead th { padding:10px 10px; background:linear-gradient(135deg, #2A2D43, #3d4163); color:white; border:none; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
         .review-table thead th:first-child { border-radius:10px 0 0 0; }
         .review-table thead th:last-child { border-radius:0 10px 0 0; }
@@ -2063,10 +2100,12 @@
     <!-- 訂單總覽 (V28 優化版 + V40 fix: Tailwind classes removed) -->
     <div id="reviewModeContainer"
         class="review-container"
-        style="display:none; width:100%; max-width:1600px; margin:0 auto; padding:0 8px;">
-        <div class="card" style="padding:24px; width:100%; overflow:hidden;">
+        style="display:none; width:100%; max-width:100%; margin:0; padding:0;">
+        <div class="card" style="padding:0; width:100%; overflow:visible;">
 
-            <div class="review-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+            <!-- Zone 2：標題列（fixed at top:48px） -->
+            <div id="reviewZone2">
+            <div class="review-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:12px 24px 8px;">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <h2 class="review-title" style="margin:0; padding:0; display:flex; align-items:center; gap:8px;">
                         <span style="font-size:1.875rem;">📊</span> 訂單總覽
@@ -2086,8 +2125,9 @@
                     載入中...
                 </span>
             </div>
+            </div><!-- /reviewZone2 -->
 
-            <!-- review-filters-v2：Filter Bar 增強版（產品類別 Chip + 排序下拉 + Mobile 收合） -->
+            <!-- Zone 3 filter：篩選列（fixed at top:48px+zone2H，由 JS 動態計算） -->
             <div class="review-filters-v2" id="reviewFiltersV2">
 
                 <!-- Mobile Only：Filter 收合 Toggle Bar -->
@@ -2239,9 +2279,9 @@
                 <button class="bulk-cancel-btn" onclick="clearAllSelections()">✕ 取消</button>
             </div>
 
-            <div class="review-table-wrap" style="overflow-x:auto; max-height:72vh; width:100%; border-radius:var(--radius-lg); background:#fff; border:1px solid var(--fhs-border);">
+            <div class="review-table-wrap" style="overflow:visible; width:100%; border-radius:var(--radius-lg); background:#fff; border:1px solid var(--fhs-border);">
                 <table class="review-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:var(--fhs-text-sm);" id="reviewTable">
-                    <thead style="position:sticky; top:0; z-index:20; background:#fff; box-shadow:0 1px 0 var(--fhs-border);">
+                    <thead style="position:sticky; z-index:20; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
                         <tr>
                             <th class="review-cb-th" style="padding:8px 4px; background:#f5f5f5; border:none;">
                                 <input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)">
@@ -2249,18 +2289,19 @@
                             <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:90px;" onclick="sortReviewTable('Order_ID')">📝 單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
                             <th class="sort-th" data-sort="Date" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;" onclick="sortReviewTable('Date')">📅 日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
                             <th class="sort-th" data-sort="Customer" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;" onclick="sortReviewTable('Customer')">👤 客人<span class="sort-arrow" id="sort-arrow-Customer"></span></th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">📝 備註</th>
+                            <th class="sort-th" data-sort="Final_Sale_Price" style="padding:12px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Final_Sale_Price')">💵 入帳<span class="sort-arrow" id="sort-arrow-Final_Sale_Price"></span></th>
                             <th class="sort-th" data-sort="Total_Cost" style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Total_Cost')">💰 成本<span class="sort-arrow" id="sort-arrow-Total_Cost"></span></th>
                             <th class="sort-th" data-sort="Net_Profit" style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Net_Profit')">🏆 利潤<span class="sort-arrow" id="sort-arrow-Net_Profit"></span></th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:160px;">✂️ 刻字</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:200px;">📦 產品明細</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;">🏷️ 批次</th>
                             <th class="sort-th" data-sort="Status" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;" onclick="sortReviewTable('Status')">🚥 進度<span class="sort-arrow" id="sort-arrow-Status"></span></th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">📝 備註</th>
                         </tr>
                     </thead>
                     <tbody id="reviewTableBody">
                         <tr>
-                            <td colspan="11" style="padding:48px; text-align:center; color:var(--fhs-text-muted); font-size:var(--fhs-text-sm);">請選擇上方條件載入資料</td>
+                            <td colspan="12" style="padding:48px; text-align:center; color:var(--fhs-text-muted); font-size:var(--fhs-text-sm);">請選擇上方條件載入資料</td>
                         </tr>
                     </tbody>
                 </table>
@@ -3707,8 +3748,19 @@
                 finances.forEach(fi => fi.style.display = 'none');
                 systems.forEach(s => s.style.display = 'none');
 
-                // Finance mode body class
+                // Mode body classes
                 document.body.classList.toggle('v40-finance-active', mode === 'finance');
+                document.body.classList.toggle('v40-review-active', mode === 'review');
+                // 清理 inline style：sticky 切換不需要 paddingTop，但要清除舊版可能殘留的
+                const _tw = document.querySelector('#reviewModeContainer .review-table-wrap');
+                if (_tw && _tw.style.paddingTop) _tw.style.paddingTop = '';
+                if (mode !== 'review') {
+                    const th = document.querySelector('#reviewTable thead');
+                    const fb = document.getElementById('reviewFiltersV2');
+                    if (th) th.style.top = '';
+                    if (fb) fb.style.top = '';
+                    if (window._reviewZone2Observer) { window._reviewZone2Observer.disconnect(); window._reviewZone2Observer = null; }
+                }
 
                 console.log(`[DEBUG] Found ${forms.length} formContainers, ${reviews.length} reviewContainers`);
 
@@ -3720,6 +3772,31 @@
                 } else if (mode === 'review') {
                     reviews.forEach(r => r.style.display = 'block');
                     forms.forEach(f => f.style.display = 'none');
+                    // sticky 佈局：Zone2/Zone3/thead 在文檔流自然佔位，
+                    // 只需設定 Zone3 與 thead 的 sticky top（= 上方所有 sticky 元素高度總和）
+                    requestAnimationFrame(function() { requestAnimationFrame(function applyReviewZoneOffsets() {
+                        const zone2El = document.getElementById('reviewZone2');
+                        const zone3FilterEl = document.getElementById('reviewFiltersV2');
+                        const thead = document.querySelector('#reviewTable thead');
+                        if (!zone2El || !zone3FilterEl) { console.warn('[ZoneFix] missing element'); return; }
+                        const zone1H = 48;
+                        const zone2H = zone2El.getBoundingClientRect().height;
+                        zone3FilterEl.style.top = (zone1H + zone2H) + 'px';
+                        const zone3FilterH = zone3FilterEl.getBoundingClientRect().height;
+                        if (thead) thead.style.top = (zone1H + zone2H + zone3FilterH) + 'px';
+                        console.log('[ZoneFix-sticky]', { zone1H, zone2H, zone3FilterH, zone3Top:(zone1H+zone2H), theadTop:(zone1H+zone2H+zone3FilterH) });
+                        if (window._reviewZone2Observer) window._reviewZone2Observer.disconnect();
+                        if (window.ResizeObserver) {
+                            window._reviewZone2Observer = new ResizeObserver(function() {
+                                const z2h = zone2El.getBoundingClientRect().height;
+                                zone3FilterEl.style.top = (zone1H + z2h) + 'px';
+                                const z3h = zone3FilterEl.getBoundingClientRect().height;
+                                if (thead) thead.style.top = (zone1H + z2h + z3h) + 'px';
+                            });
+                            window._reviewZone2Observer.observe(zone2El);
+                            window._reviewZone2Observer.observe(zone3FilterEl);
+                        }
+                    }); });
                 } else if (mode === 'finance') {
                     finances.forEach(fi => fi.style.display = 'block');
                     forms.forEach(f => f.style.display = 'none');
@@ -3757,6 +3834,7 @@
                 (window.fetchGlobalReview || fetchGlobalReview)();
             }
         }
+        
         window.switchMode = switchMode; // 強制全局掛載
 
         function toggleAddon(id, cb) {
@@ -5848,7 +5926,7 @@
 
             showLoader("正在載入全域核對資料...");
             loading.style.display = "inline";
-            tbody.innerHTML = '<tr><td colspan="11" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
 
             let fetchUrl = getWebhookUrl("https://yanhei.synology.me:8443/webhook/fetch-global-review");
             const params = [];
@@ -5867,7 +5945,7 @@
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
                     if (attempt > 1) {
-                        tbody.innerHTML = `<tr><td colspan="11" style="padding:20px; text-align:center; color:#888;">⏳ Airtable 流量限制，第 ${attempt} 次重試中...</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">⏳ Airtable 流量限制，第 ${attempt} 次重試中...</td></tr>`;
                         await new Promise(r => setTimeout(r, attempt * 2000));
                     }
                     const res = await fetch(fetchUrl, { method: 'GET' });
@@ -5884,7 +5962,7 @@
                         if (attempt < 3) continue;
                     } else {
                         loading.style.display = "none";
-                        tbody.innerHTML = '<tr><td colspan="11" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
                         hideLoader();
                         return;
                     }
@@ -5894,7 +5972,7 @@
                 }
             }
             loading.style.display = "none";
-            tbody.innerHTML = `<tr><td colspan="11" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
             hideLoader();
         }
 
@@ -6078,7 +6156,7 @@
 
             const tbody = document.getElementById("reviewTableBody");
             if (!orders || orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="12" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
                 const badge = document.getElementById('reviewCountBadge');
                 if (badge) { badge.style.display = 'none'; }
                 return;
@@ -6115,12 +6193,8 @@
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${cDate}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${o.Customer || '-'}</td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px;">
-                        <textarea class="review-notes-textarea"
-                                  id="notes-input-${o.id}"
-                                  style="font-size:13px;"
-                                  onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
-                                  placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
+                        ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
                         ${(o.Total_Cost || o.Cost) ? '$' + (o.Total_Cost || o.Cost) : '<span style="color:#bbb;">待計算</span>'}
@@ -6271,7 +6345,7 @@
                                        placeholder="批次">
                             </td>
                             <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; background-color:${rowBatchCol};">
-                                <select id="status-select-${o.id}-${index}" class="review-status-select" 
+                                <select id="status-select-${o.id}-${index}" class="review-status-select"
                                         style="width:90%; font-size:13px; margin:0 auto;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index})">
                                     <option value="0 什麼都未做" ${(item.Status || o.Status) === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
@@ -6284,6 +6358,13 @@
                                 </select>
                                 <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
                             </td>
+                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${batchCol};">
+                                <textarea class="review-notes-textarea"
+                                          id="notes-input-${o.id}"
+                                          style="font-size:13px; background:transparent;"
+                                          onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
+                                          placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                            </td>` : ''}
                         </tr>`;
                     });
                 } else {
@@ -6292,8 +6373,15 @@
                     html += `
                     <tr class="order-group-${o.id}" id="row-${o.id}">
                         ${orderLeftColsHtml}
-                        <td colspan="6" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
+                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
+                        </td>
+                        <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px;">
+                            <textarea class="review-notes-textarea"
+                                      id="notes-input-${o.id}"
+                                      style="font-size:13px;"
+                                      onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
+                                      placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                         </td>
                     </tr>`;
                 }
@@ -6588,7 +6676,7 @@
                 const _field = sortField, _dir = sortDir;
                 filtered = filtered.slice().sort(function(a, b) {
                     let aVal = a[_field], bVal = b[_field];
-                    if (_field === 'Total_Cost' || _field === 'Net_Profit') {
+                    if (_field === 'Total_Cost' || _field === 'Net_Profit' || _field === 'Final_Sale_Price') {
                         aVal = parseFloat(aVal) || 0; bVal = parseFloat(bVal) || 0;
                         return _dir === 'asc' ? aVal - bVal : bVal - aVal;
                     }
@@ -8663,7 +8751,7 @@
                 const tbody  = document.getElementById('reviewTableBody');
                 const loading = document.getElementById('reviewLoading');
                 if (loading) loading.style.display = 'inline';
-                if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
 
                 let orders;
                 try {

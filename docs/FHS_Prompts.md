@@ -17,7 +17,7 @@ description: Business situation detection and command routing for AI execution
 ## 【情境一：訂單建立 (POS Mode)】
 
 - 觸發：用戶提及「新單」「下單」「報價」「POS」
-此情境旨在為 Ling Au 創造流暢的下單體驗。
+此情境旨在為 Mobile phone 介面創造流暢的下單體驗。
 - **動作準則**：鎖定 5D SKU 查找，自動從資料庫提取價格。
 - **回覆要求**：生成的訊息必須精準分段、具備 Emoji 引導、並剔除冗餘數據。
 
@@ -55,9 +55,9 @@ description: Business situation detection and command routing for AI execution
 
 ## 【情境七：Stitch UI 翻新協議】
 
-- 觸發：用戶提及「UI」「介面」「翻新」「Ling Au」
+- 觸發：用戶提及「UI」「介面」「翻新」「Mobile phone 介面」
 
-Ling Au 專屬設計準則（強制執行）：
+Mobile phone 介面專屬設計準則（強制執行）：
 
 - 觸控區最小 44px（iPad / iPhone 操作防呆）
 - 所有非同步操作必須包裹 showLoader() / hideLoader()

@@ -133,7 +133,8 @@ freehandsss_dashboard/
 │   │   └── completion_reports/          ← 制度任務完成記錄（v1.4.0 新增）
 │   ├── memory/
 │   │   ├── README.md                   ← 記憶層與同步規範
-│   │   └── handoff.md
+│   │   ├── handoff.md
+│   │   └── learnings.md                ← Pattern / Pitfall / Preference distill（/read Step 3，2026-05-20 新增）
 │   └── tools/                          ← 稽核工具腳本（2026-05-17 v2.1 新增）
 │       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測 MVP
 │       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等）

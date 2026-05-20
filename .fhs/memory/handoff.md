@@ -35,7 +35,7 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 ---
 
 ## 待辦 ⏳ 項目
-> ⚠️ 此待辦清單僅供狀態備份。未經用戶明確指派任務，所有 AI 嚴禁主動執行。
+> ⚠️ 此待辦清單僅供狀態備份。未經 Fat Mo 明確指派任務，AI 嚴禁主動「寫入」或「執行」業務檔案；但允許在 /read 初始化後，主動引用 `.fhs/memory/learnings.md` 條目提示相關 pattern 或 pitfall（純文字提示，不觸發任何寫入）。
 
 1. **Supabase products 成本更新**：若新增產品類型，需同步更新 Smart Cache Strategist V47.9 的硬編碼表
 2. **Airtable 背景同步驗證**：API 額度重置（6月初）後確認背景 Airtable sync path 正常

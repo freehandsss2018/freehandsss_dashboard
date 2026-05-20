@@ -20,7 +20,7 @@ description: Core logic and technical specifications for FHS system architecture
 * **核心業務**：嬰兒手足立體石膏倒模紀念品工作室。提供木框、玻璃瓶以及客製化金屬飾品（鎖匙扣、頸鏈）等服務。
 * **技術定位**：傳統手工倒模技術與現代 3D 渲染/金屬鑄造技術的結合。
 * **角色分工**：
-  * **Ling Au (用戶)**：負責銷售、IG 經營、客情維護。操作 Dashboard 程度為核心使用者，因此前端介面必須極度防呆、直觀。
+  * **前端使用者 (Mobile phone 介面)**：負責銷售、IG 經營、客情維護。操作 Dashboard 程度為核心使用者，因此前端介面必須極度防呆、直觀。
   * **Fat Mo (後台/總架構師)**：負責技術架構、工作流維護、財務數據精算與系統除錯。
 
 ## 2. 系統架構 (Technical Architecture)
@@ -30,7 +30,7 @@ description: Core logic and technical specifications for FHS system architecture
   * **功能**：
     * **守護者**：強制所有邏輯變更符合 `FHS_Blueprint.md` 準則。
     * **財務執行**：系統唯一的財務計算核心，減少人工干預利潤計算。
-    * **引導導購**：確保 UI 始終維持對 Ling Au 的「智能菜單」防呆水平。
+    * **引導導購**：確保 UI 始終維持「智能菜單」防呆水平。
     * **持續記憶**：透過 `.cursorrules` 與 `Changelog.md` 實現自我修復與持續進化。
     * **n8n 靈魂守護**：強制生產環境運行 24 節點 Gold Master 版本，並實施「三端對齊稽核」。
 
@@ -68,8 +68,8 @@ description: Core logic and technical specifications for FHS system architecture
 
 * **視覺風格**：全系統採用 V31.0 (Historical Reference) 定案的 Premium 玻璃擬態 (Glassmorphism) 設計，包含漸層背景與平滑過渡動畫。
 * **雙端分流架構 (Dual-Experience UI)**：
-  * **👧 Ling Au 模式 (行動端 < 768px)**：定位為「Point-of-Sale 點餐機」。必須實作固定底部導覽列 (Bottom Navigation)、卡片式步進引導 (Wizard flow)、加大觸控區域 (大於 44px)，並強制隱藏複雜的財務數據網格。
-  * **👦 Fat Mo 模式 (桌面端 > 1200px)**：定位為「Data Cockpit 決策座艙」。必須實作側邊導覽列 (Sidebar)、最大化全域核對中心的螢幕寬度（嚴格遵守 td rowspan 對齊定律），並於頂部新增「動態財務看板」(自動結算總收入、總成本與最終利潤)。
+  * **📱 Mobile phone 介面模式 (行動端 < 768px)**：定位為「Point-of-Sale 點餐機」。必須實作固定底部導覽列 (Bottom Navigation)、卡片式步進引導 (Wizard flow)、加大觸控區域 (大於 44px)，並強制隱藏複雜的財務數據網格。
+  * **💻 Desktop 介面 (桌面端 > 1200px)**：定位為「Data Cockpit 決策座艙」。必須實作側邊導覽列 (Sidebar)、最大化全域核對中心的螢幕寬度（嚴格遵守 td rowspan 對齊定律），並於頂部新增「動態財務看板」(自動結算總收入、總成本與最終利潤)。
 * **UI 開發與邏輯防護守則 (Stitch MCP Protocol)**：
   * 任何 UI 外殼的翻新，必須透過 Stitch MCP 或類似 AI 工具生成，但絕對嚴禁修改既有的 Element IDs (如 `momName`, `syncBtn`, `reviewTableBody`)。
   * 必須 100% 保留 `captureFormState()` 的數據擷取結構與現有的 `onclick`/`onchange` 綁定，以確保 n8n 與 Airtable 寫入鏈路不被破壞。
