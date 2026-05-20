@@ -6,6 +6,14 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
 ## 本次 Session 完成事項（2026-05-21）
 
+### 4. 訂單總覽 UI 三項優化（freehandsss_dashboardV41.html）
+
+1. **📦 產品明細排序**：`renderReviewTable` 渲染前對 `o.items[]` 按 `item.Category` 優先排序（立體擺設→鎖匙扣→吊飾/純銀→其他），排序在 `batchCol` 計算前執行確保備註欄批次色跟隨正確
+2. **訂單間粗分隔線**：訂單末行（`isLastItem`）及所有 rowspan td 加 `border-bottom:3px solid #b0b0b0`（初版黑色 `#222` 不融合，已改為中灰）
+3. **Checkbox th 背景修復**：移除 checkbox `th` 的 inline `background:#f5f5f5`，改為繼承 `.review-table thead th` 的深藍漸變背景，方格本身白色不變
+
+---
+
 ### 3. 批次色 Over-Sweep Bug 修復（freehandsss_dashboardV41.html）
 
 **根因（訂單內多批次 item 被一次性覆蓋）**：

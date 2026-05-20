@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-05-21] 🧸 羊毛氈公仔分類修正（Category C → 立體擺設款式）
+
+**修改 `freehandsss_dashboardV41.html`**：
+- 將「🧸 羊毛氈公仔 ($680)」從「🎀 配件加購 (Category C)」移至「🎨 立體擺設款式」，置於「客製化刻字」欄位之後
+- 移除空的 Category C 區塊（toggle-row + `contentW` div）
+- JS `buildOrderItemsForPricing()` 中 羊毛氈公仔 的外層 guard 從 `getValSafe('enableW')` 改為 `getValSafe('enableP')`，與新的 UI 歸屬一致
+
+---
+
 ## [2026-05-20] /rp 通用指令新增 + 備註欄批次色 Bug 修復
 
 **新增 `/rp` 通用 Prompt 重寫指令（CL / AG / PL 三端）**：

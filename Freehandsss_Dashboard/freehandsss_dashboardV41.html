@@ -2283,7 +2283,7 @@
                 <table class="review-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:var(--fhs-text-sm);" id="reviewTable">
                     <thead style="position:sticky; z-index:20; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
                         <tr>
-                            <th class="review-cb-th" style="padding:8px 4px; background:#f5f5f5; border:none;">
+                            <th class="review-cb-th" style="padding:8px 4px; border:none;">
                                 <input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)">
                             </th>
                             <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:90px;" onclick="sortReviewTable('Order_ID')">📝 單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
@@ -2420,6 +2420,13 @@
                 </select>
             </div>
             <div id="limbContainer"></div>
+            <div class="part-item">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight: bold; color: #444;">🧸 羊毛氈公仔 ($680)</span>
+                    <label class="switch"><input type="checkbox" id="w_wool_en"
+                            onchange="generate()"><span class="slider"></span></label>
+                </div>
+            </div>
             <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
                     oninput="generate()"></div>
         </div>
@@ -2834,25 +2841,6 @@
                 </div>
             </div>
 
-            <!-- Category C: Accessories -->
-            <div class="toggle-row" style="border-top: 1px solid #eee; padding-top: 15px;">
-                <span style="font-weight: bold; color: #444;">🎀 配件加購 (Category C)</span>
-                <label class="switch"><input type="checkbox" id="enableW"
-                        onchange="toggleAddon('contentW', this)"><span class="slider"></span></label>
-            </div>
-            <div id="contentW" class="addon-content">
-                <div class="part-item">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight: bold; color: #444;">🧸 羊毛氈公仔 ($680)</span>
-                        <label class="switch"><input type="checkbox" id="w_wool_en"
-                                onchange="generate()"><span class="slider"></span></label>
-                    </div>
-                    <div class="grid-3-col" style="margin-top:10px;">
-                        <div class="mini-col"><label>數量</label><input type="number" id="w_wool_qty" value="1"
-                                min="1" oninput="generate()"></div>
-                    </div>
-                </div>
-            </div>
 
         </div>
     </div>
@@ -4423,8 +4411,8 @@
                 }
             }
 
-            // Category C: Accessories
-            if (getValSafe('enableW', false)) {
+            // 羊毛氈公仔（歸屬立體擺設款式）
+            if (getValSafe('enableP', false)) {
                 if (getValSafe('w_wool_en', false)) {
                     let qty = Math.max(1, Math.floor(Number(getValSafe('w_wool_qty', '1')) || 1));
                     orderItemsArray.push({
@@ -4725,6 +4713,7 @@
                 document.querySelectorAll('.limb-sel').forEach(sel => {
                     if (sel.value !== '無' && sel.value !== '') html += ` ▪️ ${sel.dataset.who}${sel.dataset.part}: ${sel.value}<br>`;
                 });
+                if (document.getElementById('w_wool_en')?.checked) html += ` ▪️ 🧸 羊毛氈公仔 x1 $680<br>`;
                 html += `</div>`;
             }
             if (document.getElementById('enableK').checked || document.getElementById('enableM').checked) {
@@ -6171,6 +6160,17 @@
 
             let html = "";
             orders.forEach((o) => {
+                // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
+                if (o.items && o.items.length > 1) {
+                    const _cp = (cat) => {
+                        if (!cat) return 99;
+                        if (cat.includes('立體')) return 0;
+                        if (cat.includes('鎖匙')) return 1;
+                        if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀')) return 2;
+                        return 99;
+                    };
+                    o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
+                }
                 const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
                 const batchCol = getBatchColor(o.Batch || (o.items && o.items.length > 0 && o.items[0].Batch) || '');
                 
@@ -6179,10 +6179,10 @@
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
                 const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
                 const orderLeftColsHtml = `
-                    <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:1px solid #ebebeb;">
+                    <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:13px; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:13px; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">
                         <div class="review-jump-pill" onclick="jumpToEditOrder('${o.Order_ID}')">
                             ${o.Order_ID || 'N/A'} ➜
                         </div>
@@ -6191,15 +6191,15 @@
                             🗑️ 刪除
                         </button>
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${cDate}</td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px;">${o.Customer || '-'}</td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${cDate}</td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${o.Customer || '-'}</td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         ${(o.Total_Cost || o.Cost) ? '$' + (o.Total_Cost || o.Cost) : '<span style="color:#bbb;">待計算</span>'}
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:15px; text-align:center;">
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         ${o.Net_Profit ? '$' + o.Net_Profit : '<span style="color:#bbb; font-weight:400;">待計算</span>'}
                     </td>
                 `;
@@ -6325,16 +6325,18 @@
                         const rowBatchCol = getBatchColor(rowBatch);
 
                         // 繪製表格列 (TR)
+                        const isLastItem = index === itemsCount - 1;
+                        const _rowBorderB = isLastItem ? '3px solid #b0b0b0' : '1px solid #ebebeb';
                         html += `
                         <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${rowBatchCol};">
                                 ${engHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
                                 ${prodHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${rowBatchCol};">
                                 <input type="text" id="batch-input-${o.id}-${index}" class="review-batch-input"
                                        value="${rowBatch || ''}"
                                        style="width:80%; max-width:80px; text-align:center; margin:0 auto; font-size:13px;"
@@ -6344,7 +6346,7 @@
                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'batch-input-${o.id}-${index}', ${index})"
                                        placeholder="批次">
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:1px solid #ebebeb; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                                 <select id="status-select-${o.id}-${index}" class="review-status-select"
                                         style="width:90%; font-size:13px; margin:0 auto;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index})">
@@ -6358,7 +6360,7 @@
                                 </select>
                                 <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
                             </td>
-                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding:8px; background-color:${batchCol};">
+                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:8px; background-color:${batchCol};">
                                 <textarea class="review-notes-textarea"
                                           id="notes-input-${o.id}"
                                           style="font-size:13px; background:#ffffff;"
@@ -6373,7 +6375,7 @@
                     html += `
                     <tr class="order-group-${o.id}" id="row-${o.id}">
                         ${orderLeftColsHtml}
-                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
+                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
                         </td>
                         <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${orderBatchCol};">
