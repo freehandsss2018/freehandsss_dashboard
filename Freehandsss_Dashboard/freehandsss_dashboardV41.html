@@ -867,8 +867,8 @@
         .review-status-select:focus { border-color:#2A9D8F; box-shadow:0 0 0 2px rgba(42,157,143,0.1); outline:none; }
 
         /* 備註欄 */
-        .review-notes-textarea { width:100%; height:48px; font-size:12px; padding:5px 7px; border-radius:6px; border:1px solid #ddd; resize:vertical; transition:border-color 0.2s; line-height:1.5; }
-        .review-notes-textarea:focus { border-color:#457B9D; outline:none; }
+        .review-notes-textarea { width:100%; height:48px; font-size:12px; padding:5px 7px; border-radius:6px; border:1px solid rgba(0,0,0,0.12); resize:vertical; transition:border-color 0.2s, box-shadow 0.2s; line-height:1.5; background:#ffffff; color:#333; }
+        .review-notes-textarea:focus { border-color:#457B9D; outline:none; box-shadow:0 0 0 2px rgba(69,123,157,0.15); background:#ffffff; }
 
         /* 儲存指示器 */
         .review-save-indicator { font-size:9px; color:#2A9D8F; text-align:right; min-height:12px; margin-top:2px; }
@@ -6361,7 +6361,7 @@
                             ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${batchCol};">
                                 <textarea class="review-notes-textarea"
                                           id="notes-input-${o.id}"
-                                          style="font-size:13px; background:transparent;"
+                                          style="font-size:13px;"
                                           onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
                                           placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                             </td>` : ''}
@@ -6376,10 +6376,10 @@
                         <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:1px solid #ebebeb; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
                         </td>
-                        <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px;">
+                        <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${orderBatchCol};">
                             <textarea class="review-notes-textarea"
                                       id="notes-input-${o.id}"
-                                      style="font-size:13px;"
+                                      style="font-size:13px; background:transparent;"
                                       onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
                                       placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                         </td>

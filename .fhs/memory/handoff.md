@@ -1,10 +1,24 @@
-# FHS Handoff - 2026-05-19
+# FHS Handoff - 2026-05-20
 當前版本：v1.4.6（憲法層）/ V41（UI層）
 n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
 ---
 
-## 本次 Session 完成事項
+## 本次 Session 完成事項（2026-05-20）
+
+### 訂單總覽（Review Mode）欄位優化
+
+**改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+1. **新增 💵 入帳欄**：插入於 👤 客人 右側、💰 成本 左側，顯示 `o.Final_Sale_Price`（`#B07D4C` 金色），支援點擊排序（數值排序）
+2. **移動 📝 備註欄**：從第 4 欄（客人右側）移至表末（🚥 進度 右側），維持 rowspan
+3. **備註批次色同步**：備註欄 td 背景使用 `batchCol`（訂單級批次色），textarea 本身保持白色（`background:#ffffff`），文字清晰可讀
+4. **colspan 全面更新**：所有空狀態/loading 佔位 td 由 `colspan="11"` 更新為 `colspan="12"`
+5. **sort 擴展**：`applyReviewFilters` 排序邏輯加入 `Final_Sale_Price` 數值分支
+
+---
+
+## 上次 Session 完成事項（2026-05-19）
 
 ### Antigravity (A2/Gemini) 系統性 Bug 修復
 
