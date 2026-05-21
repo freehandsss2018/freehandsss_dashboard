@@ -835,6 +835,7 @@
         .badge-target-嬰兒 { background: #E1F5FE; color: #0288D1; border-color: #B3E5FC; }
         .badge-target-成人 { background: #EFEBE9; color: #5D4037; border-color: #D7CCC8; }
         .badge-target-父母 { background: #FCE4EC; color: #C2185B; border-color: #F48FB1; }
+        .badge-target-家庭 { background: #FFF3E0; color: #BF360C; border-color: #FFCC80; }
         .badge-target-大寶 { background: #E8F5E9; color: #388E3C; border-color: #A5D6A7; }
         .badge-part { border-color: rgba(0,0,0,0.1); background: #ffffff; color: #555; font-weight: 500; }
         
@@ -2641,12 +2642,8 @@
                             </div>
                         </div>
 
-                        <div class="mini-col" style="grid-column: span 1; margin-top: 5px;">
-                            <label>上排(最多6字)</label><input type="text" id="k_family_top" maxlength="8" placeholder="待定"
-                                oninput="generate()">
-                        </div>
-                        <div class="mini-col" style="grid-column: span 2; margin-top: 5px;">
-                            <label>下排(最多8字)</label><input type="text" id="k_family_bot" maxlength="8" placeholder="待定"
+                        <div class="mini-col" style="grid-column: span 3; margin-top: 5px;">
+                            <label>刻字</label><input type="text" id="k_family_eng" placeholder="待定"
                                 oninput="generate()">
                         </div>
                     </div>
@@ -4301,10 +4298,9 @@
                     }
                     if (document.getElementById('k_family_en')?.checked) {
                         let qty = document.getElementById(`k_family_qty`).value || "1";
-                        let top = document.getElementById(`k_family_top`).value || "待定";
-                        let bot = document.getElementById(`k_family_bot`).value || "待定";
+                        let eng = document.getElementById(`k_family_eng`)?.value || "待定";
                         let comboInfo = getFamilyComboDetails();
-                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻字\n   上排：${top} | 下排：${bot}\n`;
+                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻字：${eng}\n`;
                     }
                     detailsB += `產品類別：鎖匙扣 (不鏽鋼)\n${kDetails || " - (未選擇)\n"}`;
                 }
@@ -5392,9 +5388,7 @@
                     }
                     if (getValSafe('k_family_en', false)) {
                         let qty = Number(getValSafe('k_family_qty', '1')) || 1;
-                        let topEng = getValSafe('k_family_top', '');
-                        let botEng = getValSafe('k_family_bot', '');
-                        let engNotes = (topEng || botEng) ? `[上排]${topEng || '待定'} [下排]${botEng || '待定'}` : '';
+                        let engNotes = getValSafe('k_family_eng', '');
                         let comboInfo = getFamilyComboDetails();
                         let finalObj = comboInfo.sType;
                         if (!hasMainProduct) {
@@ -6115,8 +6109,24 @@
                             if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
+                            // 家庭合成：從 Engraving 的 合成: 資訊解析部位 badges
+                            if (dimensions.target.includes('家庭')) {
+                                const _accComboM = (item.Engraving || '').match(/合成:\s*([^|]+)/);
+                                if (_accComboM) {
+                                    const _accCParts = _accComboM[1].split('+').map(s => s.trim()).filter(s => s && s !== '父母手');
+                                    const _accCTargets = [], _accCLimbs = [];
+                                    _accCParts.forEach(_p => {
+                                        if (_p.includes('嬰兒') && !_accCTargets.includes('嬰兒')) _accCTargets.push('嬰兒');
+                                        if (_p.includes('大寶') && !_accCTargets.includes('大寶')) _accCTargets.push('大寶');
+                                        const _l = _p.includes('右手') ? '✋ 右手' : _p.includes('左手') ? '✋ 左手' : _p.includes('右腳') ? '🦶 右腳' : _p.includes('左腳') ? '🦶 左腳' : '';
+                                        if (_l && !_accCLimbs.includes(_l)) _accCLimbs.push(_l);
+                                    });
+                                    _accCTargets.forEach(_t => { badgeHtml += `<span class="review-badge ${_t === '嬰兒' ? 'badge-target-嬰兒' : 'badge-target-大寶'}">${_t === '嬰兒' ? '👶' : '🧒'} ${_t}</span>`; });
+                                    _accCLimbs.forEach(_l => { badgeHtml += `<span class="review-badge badge-part">${_l}</span>`; });
+                                }
+                            }
                         }
-                        if (dimensions.part && !dimensions.count && !_accIs立體) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
+                        if (dimensions.part && !dimensions.count && !_accIs立體 && !dimensions.target.includes('家庭')) badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
                         if (dimensions.style) { badgeHtml += `<span class="review-badge badge-part" style="border-color:#D4A373;">${dimensions.style}</span>`; if (_accIs立體) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`; }
                         if (_accLimbParsed) {
                             var _accLimbIcons = {嬰兒:'👶', 父母:'👫', 大寶:'🧒'};
@@ -6134,12 +6144,13 @@
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
                         }
 
-                        // Engraving
+                        // Engraving (strip 合成: info for family combo)
                         let engText = '';
-                        if (item.Engraving && item.Engraving !== '待定' && item.Engraving !== '不適用') {
+                        const _accEngStrip = item.Engraving ? item.Engraving.replace(/\s*\|?\s*合成:.*/, '').trim() : '';
+                        if (_accEngStrip && _accEngStrip !== '待定' && _accEngStrip !== '不適用') {
                             engText = `<div class="acc-field-row" style="margin-top:4px;">
                                 <span class="acc-field-label">✂️ 刻字</span>
-                                <span class="acc-field-value">${item.Engraving}</span>
+                                <span class="acc-field-value">${_accEngStrip}</span>
                             </div>`;
                         }
 
@@ -6380,10 +6391,26 @@
                             if (dimensions.target.includes('大寶')) tarClass = 'badge-target-大寶';
                             if (dimensions.target.includes('家庭')) tarClass = 'badge-target-家庭';
                             badgeHtml += `<span class="review-badge ${tarClass}">${dimensions.target}</span>`;
+                            // 家庭合成：從 Engraving 的 合成: 資訊解析嬰兒/大寶部位 badges
+                            if (dimensions.target.includes('家庭')) {
+                                const _comboM = (item.Engraving || '').match(/合成:\s*([^|]+)/);
+                                if (_comboM) {
+                                    const _cParts = _comboM[1].split('+').map(s => s.trim()).filter(s => s && s !== '父母手');
+                                    const _cTargets = [], _cLimbs = [];
+                                    _cParts.forEach(_p => {
+                                        if (_p.includes('嬰兒') && !_cTargets.includes('嬰兒')) _cTargets.push('嬰兒');
+                                        if (_p.includes('大寶') && !_cTargets.includes('大寶')) _cTargets.push('大寶');
+                                        const _limb = _p.includes('右手') ? '✋ 右手' : _p.includes('左手') ? '✋ 左手' : _p.includes('右腳') ? '🦶 右腳' : _p.includes('左腳') ? '🦶 左腳' : '';
+                                        if (_limb && !_cLimbs.includes(_limb)) _cLimbs.push(_limb);
+                                    });
+                                    _cTargets.forEach(_t => { badgeHtml += `<span class="review-badge ${_t === '嬰兒' ? 'badge-target-嬰兒' : 'badge-target-大寶'}">${_t === '嬰兒' ? '👶' : '🧒'} ${_t}</span>`; });
+                                    _cLimbs.forEach(_l => { badgeHtml += `<span class="review-badge badge-part">${_l}</span>`; });
+                                }
+                            }
                         }
 
-                        // 部位標籤：已有 count 或 立體擺設 時不重複顯示 part
-                        if (dimensions.part && !dimensions.count && !_tblIs立體) {
+                        // 部位標籤：已有 count 或 立體擺設 時不重複顯示 part；家庭合成已由上方處理
+                        if (dimensions.part && !dimensions.count && !_tblIs立體 && !dimensions.target.includes('家庭')) {
                             badgeHtml += `<span class="review-badge badge-part">${dimensions.part}</span>`;
                         }
 
@@ -6425,11 +6452,13 @@
                         
                         // 刻字水平佈局 (V29) — 移除括號與文字輔助
                         let engHtml = '<span style="color:#ddd; font-size:13px;">—</span>';
-                        if(item.Engraving && item.Engraving !== '待定' && item.Engraving !== '不適用') {
+                        // 家庭合成 Notes 包含 "| 合成: ..." — 刻字欄只顯示刻字文字
+                        const _engStripped = item.Engraving ? item.Engraving.replace(/\s*\|?\s*合成:.*/, '').trim() : '';
+                        if(_engStripped && _engStripped !== '待定' && _engStripped !== '不適用') {
                             // 擷取上排與下排
                             let top = "";
                             let bot = "";
-                            const raw = item.Engraving;
+                            const raw = _engStripped;
                             
                             // 兼容 [上排]xxx [下排]yyy 格式
                             const topMatch = raw.match(/\[上排\](.*?)(\[下排\]|$)/);

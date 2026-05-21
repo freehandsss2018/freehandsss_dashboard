@@ -1,6 +1,34 @@
 # FHS Handoff - 2026-05-21
-當前版本：v1.4.6（憲法層）/ V41（UI層）
+當前版本：v1.4.6（憲法層）/ V41（UI層）→ current 已升版
 n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
+
+---
+
+## 本次 Session 完成事項（2026-05-21 第六 Session）
+
+### 10. 家庭合成鎖匙扣刻字欄重構 + 訂單總覽 3 Bug 修復
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`（+ current）
+
+**刻字欄重構**：
+- 移除 `k_family_top`（上排最多6字）+ `k_family_bot`（下排最多8字）
+- 新增 `k_family_eng`（刻字，無字數限制），對齊立體擺設設計
+- 更新 `generate()` 預覽 + Webhook Builder Notes（移除 [上排]/[下排] wrapper）
+- n8n 本地 JSON 確認無解析 [上排]/[下排] 邏輯，格式變更安全
+
+**訂單總覽 3 Bug 修復（Desktop + iPhone）**：
+1. **底色透明（Bug 1）**：新增 `.badge-target-家庭 { background:#FFF3E0; color:#BF360C; border-color:#FFCC80; }` CSS
+2. **部位缺失（Bug 2）**：從 `item.Engraving` 的 `合成:` 區段解析 嬰兒/大寶 + 右手/左腳 badges，取代舊的 `部位合成` badge
+3. **刻字顯示合成（Bug 3）**：`_engStripped` / `_accEngStrip` strip `| 合成:...`，無刻字時顯示 `—`
+
+**版本升級**：`freehandsss_dashboardV41.html` → `Freehandsss_dashboard_current.html`（已覆蓋）
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（CSS + HTML + JS 直接修復，無需 subagent） |
+| 遵從 Router | — |
 
 ---
 

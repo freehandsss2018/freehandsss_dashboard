@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-05-21] 🔑 家庭合成鎖匙扣刻字欄重構 + 訂單總覽 3 Bug 修復 + V41 升版 current
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`、`Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+
+**家庭合成鎖匙扣刻字欄重構**：
+- 移除「上排(最多6字)」+ 「下排(最多8字)」兩個獨立輸入欄（id: k_family_top / k_family_bot）
+- 新增單一「刻字」輸入欄（id: k_family_eng，無字數限制），對齊立體擺設款式設計
+- 同步更新 `generate()` 預覽（上排/下排 → 刻字：text）與 Webhook Builder Notes 格式（移除 [上排]/[下排] wrapper）
+
+**訂單總覽 3 Bug 修復（renderReviewTable + renderReviewAccordion）**：
+- Bug 1 - 家庭 badge 底色透明：新增 `.badge-target-家庭` CSS 規則（橙色系 #FFF3E0）
+- Bug 2 - 部位組合資訊缺失：從 `item.Engraving` 的 `合成:` 區段解析嬰兒/大寶部位，渲染 👶 嬰兒 + ✋/🦶 part badges（Desktop + iPhone）
+- Bug 3 - 刻字欄顯示合成資訊：`_engStripped` / `_accEngStrip` 先 strip `| 合成:...`，純合成 Notes 顯示為 `—`（Desktop + iPhone）
+
+**V41 升版 current**：`freehandsss_dashboardV41.html` → `Freehandsss_dashboard_current.html`
+
+---
+
 ## [2026-05-21] 🛡️ 新產品跨層融入保護機制（pitfalls.yaml + product-integration-validator + /new-product）
 
 **新增三個機制檔案**（源自 2026-05-19~21 Bug 修復循環學習）：
