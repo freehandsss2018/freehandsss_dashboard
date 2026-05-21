@@ -88,7 +88,8 @@ freehandsss_dashboard/
 │   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
-│   │   │   └── rp.md                    ← /rp Prompt 結構化重寫（CL/AG/PL 三端通用，2026-05-20）
+│   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫（CL/AG/PL 三端通用，2026-05-20）
+│   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導（5步 atomic 流程 + rollback matrix，2026-05-21）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）
 │   │   │   ├── README.md                ← subagents 目錄說明與雙層架構
@@ -106,7 +107,8 @@ freehandsss_dashboard/
 │   │   │       ├── finance-auditor.md   ← v2.0.0 四端財務稽核員（Supabase-First，Finance Bible 強制前置，2026-05-16 升級）
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
-│       │       └── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
+│       │       ├── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
+│       │       └── product-integration-validator.md ← v1.0.0 新產品跨層融入驗證（2026-05-21：UI/ENUM/n8n/RLS 四層 checklist + pitfalls P1-P5）
 │   │   └── skills/                      ← FHS Design Intelligence 參考層（2026-04-05 新增）
 │   │       ├── ui-ux-pro-max/           ← FHS-curated UI/UX intelligence layer (Consumed by: ui-designer/reviewer)
 │   │       │   ├── FHS_INTEGRATION.md   ← v2.0.0 核心整合指引（--fhs-* tokens + 響應式規則，廢除雙模式）
@@ -136,7 +138,8 @@ freehandsss_dashboard/
 │   ├── memory/
 │   │   ├── README.md                   ← 記憶層與同步規範
 │   │   ├── handoff.md
-│   │   └── learnings.md                ← Pattern / Pitfall / Preference distill（/read Step 3，2026-05-20 新增）
+│   │   ├── learnings.md                ← Pattern / Pitfall / Preference distill（/read Step 3，2026-05-20 新增）
+│   │   └── pitfalls.yaml               ← Machine-readable 跨層整合 pitfall 知識庫（2026-05-21 新增，product-integration-validator 使用）
 │   └── tools/                          ← 稽核工具腳本（2026-05-17 v2.1 新增）
 │       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測 MVP
 │       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等）

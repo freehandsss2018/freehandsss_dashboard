@@ -4,7 +4,116 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
 ---
 
-## 本次 Session 完成事項（2026-05-21）
+## 本次 Session 完成事項（2026-05-21 第五 Session）
+
+### 9. IIFE Template Literal 語法 Bug 修復 + 新產品跨層融入保護機制建立
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（line 6173：IIFE `})()` → `})()}`）
+- `.fhs/notes/pitfalls.yaml`（新建）
+- `.fhs/ai/subagents/freehandsss/product-integration-validator.md`（新建）
+- `.fhs/ai/commands/new-product.md`（新建）
+- `.fhs/ai/subagents/MANIFEST.md`、`docs/repo-map.md`、`CHANGELOG.md`、completion report（同步）
+
+**Bug 修復（P5 — IIFE-template-literal-syntax）**：
+- **根因**：iPhone accordion dropdown 的 `${(function(){...})()}` 缺少閉合 `}` → template literal 永不終止 → 整頁 JS 語法錯誤 → 全介面按鈕失效
+- **修復**：line 6173 末尾 `})()` → `})()}` 補上閉合括號
+
+**保護機制建立**：
+- `pitfalls.yaml`：5 條 machine-readable 失敗模式（P1~P5），含 `detection_rule` 欄位供 grep 自動掃描
+- `product-integration-validator` subagent：5 個 Checklist（UI↔ENUM / item_key↔deriveCat / n8n SKU 表 / RLS / template literal），PASS/FAIL 報告格式，Haiku model
+- `/new-product` skill：五步 atomic 流程 + Gate 條件 + Rollback Matrix + 已知例外表
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ❌ 未使用（Bug 修復為單字符 typo；機制建立為架構設計，非 execution log 診斷） |
+| 遵從 Router | ❌ 未遵從（理由：build-error-resolver 的 execution log MCP 能力對本任務無附加價值） |
+
+---
+
+## 本次 Session 完成事項（2026-05-21 第四 Session）
+
+### 8. "無子項目" 根本原因確認 + 防禦性修復
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+**根因確認（Root Cause C）**：
+- `order_items.process_status` 是 `item_status` ENUM (`'待製作', '製作中', '完成', '已取件'`)
+- UI 下拉選項值（`"Done 已完成"`, `"0 什麼都未做"` 等）均不在 ENUM 內
+- `saveInlineEdit` PATCH 若 DB 是 TEXT（而非 ENUM），成功存入 `"Done 已完成"`
+- sbSyncOrder pre-fetch 讀回 `"Done 已完成"`，INSERT 時觸發 ENUM 違規 → INSERT 失敗
+- DELETE 已完成 + INSERT 失敗 = `order_items` 為空 → `fetchGlobalReview` 顯示「無子項目」
+
+**修復項目**：
+1. `_sanitizeStatus()` 函數：映射任意 UI 值到合法 ENUM 值（`"Done 已完成"` → `'完成'` 等）
+2. sbSyncOrder INSERT payload 使用 `_sanitizeStatus(_prev.process_status)` 替代直接使用 pre-fetched 值
+3. INSERT 失敗防禦路徑：失敗時用 `_prevItemMap` 資料還原舊 items，防止永久空 `order_items`
+4. INSERT 前 `console.log` payload、失敗時 `console.error` 完整錯誤，方便未來診斷
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ❌ 未使用（根因通過 schema SQL 靜態分析確認，無需 MCP execution log） |
+| 遵從 Router | ❌ 未遵從（理由：Supabase schema migration 文件可直接讀取，不需動態 log 分析） |
+
+---
+
+## 本次 Session 完成事項（2026-05-21 第三 Session）
+
+### 7. Bug C 修復（sbSyncOrder 競態）+ Bug B 強化修復（W_WOOL 獨占 Row 2）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+**Bug C 修復（Critical — 無子項目）**：
+- **根因**：`sbSyncOrder` 無並發控制，用戶快速 toggle W_WOOL 觸發多個 fire-and-forget 同時執行；第二個 DELETE 在第一個 INSERT 之後清空了所有剛插入的 items
+- **修復**：新增 per-orderId last-write-wins 隊列（`window._sbSyncInFlight` / `window._sbSyncPending`）。在-flight 期間，後來的 call 覆蓋 pending 位置而非直接執行。`try/finally` 確保鎖定在任何 early return 後都釋放，並在完成後自動觸發最新 pending call
+
+**Bug B 強化修復（W_WOOL 仍在 Row 2）**：
+- **根因分析擴展**：
+  1. `_woolKey` 缺少 `Category === '配件'` fallback（新格式 mapOrder 後 `_deriveCat('_W_WOOL')` = `'配件'`）
+  2. Badge 使用 `index === 0` 假設立體擺設在首位，但 pipe 格式 items 全部 `_cp = 99`，排序不變，立體擺設可能不在 index 0
+- **修復**：
+  1. `_woolKey` / `_accWoolKey` 新增 `|| it.Category === '配件' || _k.includes('羊毛毡')`
+  2. 用 `_woolBadgeShown` / `_accWoolBadgeShown` flag 取代 `index === 0`，找到第一個 `立體擺設` 行即渲染 badge
+  3. 診斷 log 升級為 v2：記錄所有含 W_WOOL 訂單的完整 item 資料（oik/iid/cat/woolKey）
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ❌ 未使用（競態根因 + woolKey 邏輯均可直接 code 修復，無需 MCP execution log） |
+| 遵從 Router | ❌ 未遵從（理由：純前端 JS 邏輯 Bug，不涉及 n8n execution log 診斷能力） |
+
+---
+
+## 本次 Session 完成事項（2026-05-21 第二 Session）
+
+### 6. 批次/進度重置 Bug 修復 + W_WOOL pipe 格式渲染修復
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+**Bug A 修復（批次/進度重置）**：
+- **根因**：`sbSyncOrder` DELETE + INSERT 覆蓋了 `saveInlineEdit` 已儲存的 `batch_number`/`process_status`
+- **修復**：INSERT 前先 fetch 舊 `order_items` 建立 `_prevItemMap`，按 `item_key` 回填 `process_status` 和 `batch_number`
+- **範圍**：僅保護 `item_key` 完全相同的 item（edit mode 重提交同一訂單時有效）
+
+**Bug B 修復（W_WOOL 獨占 Row 2）**：
+- **根因**：n8n 舊格式 `item_key = '0696216 | 羊毛氈公仔 - 加購'`（pipe format），`_cleanKey = ''`，`Order_Item_Key = ''`，導致 `_woolKey` 回傳 `false`，W_WOOL 渲染為獨立 row，Row 1 無 badge
+- **修復**：`_woolKey` 和 `_accWoolKey` 改為雙重偵測：`_W_WOOL` 後綴 OR 包含 `'羊毛氈'` 字串，覆蓋新舊格式
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ❌ 未使用（根因明確，直接修復；sbSyncOrder 邏輯閱讀即可診斷） |
+| 遵從 Router | ❌ 未遵從（理由：Bug 為前端 JS 邏輯問題，無 execution log 需要 MCP 讀取） |
+
+---
+
+## 本次 Session 完成事項（2026-05-21 第一 Session）
 
 ### 5. 🧸 羊毛氈公仔加購產品 Debug + SOP 文件化
 
@@ -18,6 +127,13 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 - 更新 `.fhs/notes/decisions.md` — 記錄設計決策與原因
 - 更新 `.fhs/notes/SOP_NOW.md` — 加入「產品開發 SOP 參考」表
 
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ❌ 未使用（FK 根因 + Webhook 缺 push 均直接 code 修復，無需 MCP log 讀取） |
+| 遵從 Router | ❌ 未遵從（理由：三個 Bug 均為前端 JS/sbSyncOrder 邏輯，不需要 execution log 診斷能力） |
+
 ---
 
 ### 4. 訂單總覽 UI 三項優化（freehandsss_dashboardV41.html）
@@ -25,6 +141,13 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 1. **📦 產品明細排序**：`renderReviewTable` 渲染前對 `o.items[]` 按 `item.Category` 優先排序（立體擺設→鎖匙扣→吊飾/純銀→其他），排序在 `batchCol` 計算前執行確保備註欄批次色跟隨正確
 2. **訂單間粗分隔線**：訂單末行（`isLastItem`）及所有 rowspan td 加 `border-bottom:3px solid #b0b0b0`（初版黑色 `#222` 不融合，已改為中灰）
 3. **Checkbox th 背景修復**：移除 checkbox `th` 的 inline `background:#f5f5f5`，改為繼承 `.review-table thead th` 的深藍漸變背景，方格本身白色不變
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 不詳（舊格式 session，標準化前） |
+| 實際使用 | ❌ 未使用（純 UI CSS/HTML 調整） |
+| 遵從 Router | — |
 
 ---
 
@@ -38,6 +161,13 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 - `applyBatchColorLive` 以正規式 `^batch-input-(.+)-(\d+)$` 從 input.id 提取 orderId + itemIndex，只更新 `#row-orderId-item-itemIndex` 的 `.batch-cell`；itemIndex===0 時才同步備註 td
 - `saveInlineEdit` 改用 `_targetRow = getElementById('row-${recordId}-item-${itemIndex}')` 精準定位，消除全訂單掃描
 - `oninput` 改傳 `this` 作為第二參數：`applyBatchColorLive(this.value, this)`（replace_all，2 處）
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 不詳（舊格式 session，標準化前） |
+| 實際使用 | ❌ 未使用（前端 JS Bug，console ReferenceError，直接修復） |
+| 遵從 Router | — |
 
 ---
 

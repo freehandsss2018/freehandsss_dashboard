@@ -7,6 +7,31 @@
 
 ## 記錄
 
+[2026-05-21] Subagent 稽核機制新增 — execute.md + commit.md + handoff.md 標準化
+
+決策：
+- **execute.md [E] 欄位新增**：每次 `/execute` 完成後必填「Subagent 使用記錄」表格（Router 建議 / 實際使用 / 遵從 Router），無論是否使用 subagent 均必填。
+- **commit.md Phase 1 強制欄**：handoff.md 每個 session 完成事項末尾強制附上 [E] 表格。
+- **向後不兼容舊 session**：舊 session 記錄補填「不詳（舊格式 session，標準化前）」，不強制補齊 Router 建議。
+
+原因：FHS Router hook 在每個 session 啟動時已建議 subagent，但沒有任何報告欄位記錄是否遵從，導致 Fat Mo 無法審計 subagent 使用率與 Router 的有效性。
+
+批准：Fat Mo ✅（2026-05-21 授權執行）
+
+---
+
+[2026-05-21] Bug 修復：修改訂單後批次/進度重置 + W_WOOL 舊資料 pipe 格式渲染問題
+
+決策：
+- **sbSyncOrder DELETE+INSERT 加護盾**：修改訂單前先 fetch 舊 `order_items` 的 `{item_key → batch_number, process_status}` 映射，DELETE 後 INSERT 時按 `item_key` 回填，防止已儲存的批次/進度被覆蓋。限制：只能保留 `item_key` 完全相同的 item（新舊格式不同的訂單不受保護）。
+- **_woolKey 擴展 pipe 格式偵測**：`_woolKey` 和 `_accWoolKey` 改為雙重檢查（`_W_WOOL` 後綴 OR `'羊毛氈'` 字串），覆蓋 n8n 舊格式 `item_key = '0696216 | 羊毛氈公仔 - 加購'` 的偵測失敗問題。
+
+原因：n8n 存入 Supabase 的舊格式 item_key 是 pipe format，`_cleanKey` 邏輯 → `Order_Item_Key = ''`，`Item_ID = '0696216 | 羊毛氈公仔 - 加購'` 不含 `_W_WOOL`，導致 `_hasWool = false`，W_WOOL 渲染為獨立 row 且 Row 1 無 badge。
+
+批准：Fat Mo ✅（2026-05-21 授權執行）
+
+---
+
 [2026-05-21] 加購配件（W_WOOL 羊毛氈公仔）渲染架構決策 — 建立 addon_product_sop.md
 
 決策：

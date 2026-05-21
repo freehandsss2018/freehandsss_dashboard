@@ -1,0 +1,118 @@
+# FHS Cross-Layer Integration Pitfalls
+# Machine-readable. Used by product-integration-validator subagent.
+# Format: grep by `id:` or `layer:` or `detection_rule:` for automated scanning.
+# Last updated: 2026-05-21
+# Source: Bug cycle 2026-05-19~21 (Process_Status + W_WOOL + sbSyncOrder)
+
+pitfalls:
+
+  - id: P1
+    name: UUID-as-PATCH-key
+    layer: Dashboard
+    symptom: >
+      Inline edit saves appear to succeed (no JS error), but Process_Status / Batch_Number
+      revert to previous values after next sbSyncOrder cycle.
+    root_cause: >
+      saveInlineEdit used Supabase internal UUID as PATCH filter.
+      sbSyncOrder runs DELETE + full INSERT on every form sync.
+      Each INSERT generates a new UUID, invalidating any previously stored UUID.
+      PATCH targeting old UUID hits 0 rows — silently succeeds with empty result.
+    fix_applied: >
+      Changed PATCH filter from `id=eq.{uuid}` to `item_key=eq.{item_key}`.
+      item_key is deterministic (format: {order_id}_{category}_{limb}) and survives re-inserts.
+    detection_rule: "grep -n 'id=eq\\.' Freehandsss_Dashboard/*.html"
+    prevention: >
+      Never use auto-generated UUID columns as PATCH/UPDATE filter keys for
+      records that participate in DELETE+INSERT cycles.
+      Always use a stable business key (item_key, order_id, sku).
+
+  - id: P2
+    name: ENUM-information-loss
+    layer: Dashboard + Supabase
+    symptom: >
+      User sets progress to "Done 已完成". After sync + re-open order,
+      progress dropdown shows blank (no selection).
+    root_cause: >
+      UI dropdown values (e.g. "Done 已完成") don't match Supabase ENUM values (e.g. "完成").
+      _sanitizeItemStatus converts UI string → ENUM for INSERT.
+      fetchGlobalReview overwrites globalOrders with ENUM value from Supabase.
+      Dropdown option matching fails: "完成" !== "Done 已完成" → no selected option → blank.
+    fix_applied: >
+      Added window._fhsStatusStore (localStorage key: fhs_status_store).
+      Stores original UI strings keyed by "{orderId}|{itemKey}".
+      _getItemStatus() helper reads store first, falls back to item.Status.
+      Dropdown rendering reads _getItemStatus() for selected comparison,
+      preserving original UI string across sbSyncOrder cycles.
+    detection_rule: "grep -n '_fhsStatusStore\\|fhs_status_store' Freehandsss_Dashboard/*.html"
+    prevention: >
+      CRITICAL RULE: Dashboard dropdown option `value` attributes must EXACTLY match
+      Supabase ENUM values, OR a persistent UI-string store must bridge the gap.
+      When adding new ENUM values, add matching dropdown options with identical strings.
+      Never sanitize a UI string before storing it in the local status cache.
+
+  - id: P3
+    name: PGRST102-mixed-keys
+    layer: Dashboard + Supabase
+    symptom: >
+      Console: PGRST102 "All object keys must match".
+      All order_items for an order fail to insert (entire batch rejected).
+    root_cause: >
+      PostgREST batch POST requires all JSON objects in the array to have identical key sets.
+      K/M/P items included batch_number field; W_WOOL item did not.
+      Mixed key presence → PostgREST rejects the entire array.
+    fix_applied: >
+      Every INSERT row now explicitly includes `batch_number: value || null`.
+      Null value is acceptable; missing key is not.
+    detection_rule: >
+      In sbSyncOrder INSERT mapper: verify every row object has identical keys.
+      grep -n 'batch_number' Freehandsss_Dashboard/*.html | grep 'null'
+    prevention: >
+      When adding a new product type (new item category), ensure its INSERT row
+      object includes ALL keys present in other item types, even if value is null.
+      Run product-integration-validator checklist item #3 before deploying.
+
+  - id: P4
+    name: RLS-silent-PATCH-fail
+    layer: Supabase + Dashboard
+    symptom: >
+      saveInlineEdit PATCH to order_items returns HTTP 200 but data doesn't persist.
+      No JS error. No console warning. Appears to succeed.
+    root_cause: >
+      Supabase anon role has no UPDATE policy on order_items table.
+      RLS silently blocks the update; PostgREST returns 200 with 0 rows affected.
+      Only INSERT and DELETE policies exist for anon on order_items.
+    fix_applied: >
+      Replaced Supabase PATCH with local cache (_localItemMetaCache).
+      Cache is applied as overlay during sbSyncOrder pre-fetch phase,
+      so cached values survive the DELETE+INSERT cycle.
+    detection_rule: "grep -n 'UPDATE\\|PATCH' supabase/rls/rls_policies.sql"
+    prevention: >
+      Before implementing any client-side PATCH/UPDATE to a Supabase table,
+      verify anon UPDATE policy exists in rls_policies.sql.
+      If no UPDATE policy: use local cache overlay pattern instead of direct PATCH.
+      New product types that require new tables must have explicit RLS audit.
+
+  - id: P5
+    name: IIFE-template-literal-syntax
+    layer: Dashboard
+    symptom: >
+      ALL interface buttons stop responding. No specific error message.
+      Entire page JS breaks silently.
+    root_cause: >
+      IIFE pattern inside template literal: `${(function(){ ... })()}` was missing
+      the closing `}` that terminates the `${` template expression.
+      Template literal parser continued past the IIFE invocation, treating
+      subsequent HTML (</select>, onclick="...", etc.) as JS expression context.
+      Syntax error propagates and breaks all event handler registration.
+    fix_applied: >
+      Added missing `}` to close the `${...}` template expression.
+      iPhone accordion: line 6173 changed from `})()` to `})()}`.
+      Desktop table: was already correct with `})()}`.
+    detection_rule: >
+      grep -n '\${(function()' Freehandsss_Dashboard/*.html
+      — verify every occurrence ends with `})()}` not `})()`
+    prevention: >
+      Avoid IIFE inside template literals for option rendering.
+      Preferred pattern: precompute status variable before template literal,
+      then use simple ternary `${_s === 'value' ? 'selected' : ''}` per option.
+      If IIFE is necessary, always verify the `${` expression closes with `}` after `()`.

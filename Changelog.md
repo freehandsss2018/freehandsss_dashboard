@@ -1,5 +1,25 @@
 # Changelog
 
+## [2026-05-21] 🛡️ 新產品跨層融入保護機制（pitfalls.yaml + product-integration-validator + /new-product）
+
+**新增三個機制檔案**（源自 2026-05-19~21 Bug 修復循環學習）：
+
+- `.fhs/notes/pitfalls.yaml`：Machine-readable 跨層整合 pitfall 知識庫，記錄 5 個已驗證失敗模式（P1 UUID-as-PATCH-key、P2 ENUM-information-loss、P3 PGRST102-mixed-keys、P4 RLS-silent-PATCH-fail、P5 IIFE-template-literal-syntax），每條含 `detection_rule` 欄位供自動掃描
+- `.fhs/ai/subagents/freehandsss/product-integration-validator.md`：新 subagent v1.0.0，Haiku model，5 個 Checklist（UI↔ENUM、item_key↔deriveCat、n8n SKU 表、RLS 覆蓋、template literal 安全），PASS/FAIL 報告格式
+- `.fhs/ai/commands/new-product.md`：/new-product skill，五步 atomic 流程（Supabase ENUM → n8n SKU 表 → Dashboard UI → RLS → 三端測試），含完整 Rollback Matrix 與已知例外表
+
+**觸發條件**：[B] 制度層變動（新增 .fhs/ai/commands/ 指令 + subagent 規格）+ [C] /new-product 指令語義新增
+
+---
+
+## [2026-05-21] 📋 Subagent 稽核機制：execute.md [E] + commit.md Phase 1 強制欄
+
+**修改指令層（Master 檔）**：
+- `.fhs/ai/commands/execute.md`：新增 [E] Subagent 使用稽核 section
+- `.fhs/ai/commands/commit.md`：Phase 1 Handoff step 補強
+
+---
+
 ## [2026-05-21] 🚨 真因揭曉：FK 23503 殺死整批 INSERT
 
 **根因**：Supabase `order_items.product_sku` 有 FK 約束 → `products(sku)`。「羊毛氈公仔 - 加購」不在 products 表 → 觸發 23503 Foreign Key Violation → **整個 batch INSERT rollback，所有 items 全部寫不入**（包括 P_MAIN / K / M）。

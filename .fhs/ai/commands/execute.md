@@ -52,3 +52,20 @@
    未觸發的條件不輸出，保持收尾精簡。
    若三項均不成立，輸出：「後效同步稽核完成：A/B/C 均不觸發。」
    若同步動作執行失敗，立即暫停並提示 Fat Mo，不得靜默跳過。
+
+   **[E] Subagent 使用稽核（每次 /execute 均必填）**
+   無論是否使用 subagent，每次完成後必須在交付摘要及 handoff.md session 條目末尾附上以下格式：
+
+   ```
+   **Subagent 使用記錄**
+   | 項目 | 內容 |
+   |------|------|
+   | Router 建議 | `<subagent_name>` 或「無建議」 |
+   | 實際使用 | ✅ `<name>` — 委託：`<task>` 或 ❌ 未使用（原因：`<reason>`） |
+   | 遵從 Router | ✅ 遵從 / ❌ 未遵從（原因：`<reason>`） |
+   ```
+
+   填寫規則：
+   - Router 建議欄：從 session 啟動時的 `[FHS Router]` hook 輸出取得建議的 subagent 名稱
+   - 實際使用欄：若使用了 Agent tool 則填 ✅ + subagent 名稱 + 委託摘要；若未使用則填 ❌ + 理由（如「直接修復更高效」「任務不需要 subagent 能力」）
+   - 遵從 Router 欄：若 Router 建議的 subagent 實際有被啟用，則 ✅；否則 ❌ + 理由

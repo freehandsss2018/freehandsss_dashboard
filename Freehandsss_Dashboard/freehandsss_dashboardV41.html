@@ -3372,6 +3372,38 @@
         window.SB_URL = SB_URL;
         window.SB_ANON_KEY = SB_ANON;
 
+        // Global helper: maps any process_status UI string to valid Supabase item_status ENUM.
+        // Used by both sbSyncOrder (INSERT) and saveInlineEdit (PATCH).
+        window._sanitizeItemStatus = function(s) {
+            var _valid = new Set(['待製作', '製作中', '完成', '已取件']);
+            if (_valid.has(s)) return s;
+            if (!s) return '待製作';
+            var _u = (s || '').toLowerCase();
+            if (_u.includes('done') || _u.includes('完成')) return '完成';
+            if (_u.includes('已取件')) return '已取件';
+            if (_u.includes('製作') || _u.includes('打印') || _u.includes('建模') || _u.includes('繪圖')) return '製作中';
+            return '待製作';
+        };
+
+        // Local meta cache: keyed by item_key, holds pending batch/progress changes.
+        // sbSyncOrder uses this as override over the Supabase pre-fetch so that
+        // progress/batch changes from saveInlineEdit survive a re-sync even when
+        // the PATCH to order_items fails (e.g. no anon UPDATE RLS policy) or races.
+        // Format: { [item_key]: { process_status?, batch_number? } }
+        window._localItemMetaCache = window._localItemMetaCache || {};
+
+        // Persistent status store: localStorage-backed, keyed by "orderId|itemKey".
+        // Preserves the ORIGINAL UI dropdown string (e.g. "Done 已完成", "1.5 等3D圖")
+        // so dropdowns keep their selection after sbSyncOrder converts to ENUM and
+        // fetchGlobalReview overwrites globalOrders with the coarse ENUM value.
+        try { window._fhsStatusStore = JSON.parse(localStorage.getItem('fhs_status_store') || '{}'); } catch(e) { window._fhsStatusStore = {}; }
+
+        // Returns the effective UI status string for a given item, falling back gracefully.
+        window._getItemStatus = function(orderId, item) {
+            var _k = orderId + '|' + (item.Item_ID || item.Order_Item_Key || '');
+            return window._fhsStatusStore[_k] || item.Status || item.Process_Status || '';
+        };
+
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅色", "藍色"];
         let babyFillMode = 'all';
@@ -5542,6 +5574,30 @@
 
                     // Also sync to Supabase (fire-and-forget; requires anon write policy)
                     if (window.sbSyncOrder && localStorage.getItem('fhs_supabase_read') === '1') {
+                        // Enrich orderItemsArray with current UI progress/batch from globalOrders
+                        // so sbSyncOrder can use them directly without depending on _prevItemMap.
+                        // This is the authoritative source: what the user sees on screen.
+                        var _enrichOrderId = (currentMode === 'edit') ? editTargetOrderId : currentOrderId;
+                        var _enrichGO = (window.globalOrders || []).find(function(go) { return go.id === _enrichOrderId || go.Order_ID === _enrichOrderId; });
+                        if (_enrichGO && _enrichGO.items) {
+                            var _enrichMap = {};
+                            _enrichGO.items.forEach(function(it) {
+                                var _k = it.Item_ID || it.Order_Item_Key || '';
+                                if (_k) _enrichMap[_k] = { process_status: it.Process_Status || it.Status || '', batch_number: it.Batch_Number || it.Batch || '' };
+                            });
+                            var _sStore = window._fhsStatusStore || {};
+                            orderItemsArray.forEach(function(item) {
+                                var _e = _enrichMap[item.Order_Item_Key];
+                                if (_e) {
+                                    // Prefer localStorage store (original UI string) over globalOrders (may be ENUM)
+                                    var _storeKey = _enrichOrderId + '|' + item.Order_Item_Key;
+                                    var _storedStatus = _sStore[_storeKey] || _e.process_status;
+                                    if (_storedStatus) item._ui_process_status = _storedStatus;
+                                    if (_e.batch_number) item._ui_batch_number = _e.batch_number;
+                                }
+                            });
+                            console.log('[sbSync pre-enrich] enriched', orderItemsArray.length, 'items from globalOrders');
+                        }
                         window.sbSyncOrder(payload, orderItemsArray, currentMode).catch(function(e) {
                             console.warn('[V41] sbSyncOrder background error:', e.message);
                         });
@@ -6006,7 +6062,8 @@
                     o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
                 }
                 // W_WOOL 合併至立體擺設同列，不獨立成 card
-                const _accWoolKey = (it) => (it.Order_Item_Key || it.Item_ID || '').toUpperCase().includes('_W_WOOL');
+                // 同時檢查 _W_WOOL（新格式）和 '羊毛氈'（n8n pipe 格式舊資料）
+                const _accWoolKey = (it) => { const _k = it.Order_Item_Key || it.Item_ID || ''; return _k.toUpperCase().includes('_W_WOOL') || _k.includes('羊毛氈') || _k.includes('羊毛毡') || it.Category === '配件'; };
                 const _accHasWool = (o.items || []).some(_accWoolKey);
                 const _accRenderItems = _accHasWool
                     ? (o.items || []).filter(it => !_accWoolKey(it))
@@ -6021,6 +6078,7 @@
                 // Build items badges HTML
                 let itemsHtml = '';
                 if (_accRenderFinal && _accRenderFinal.length > 0) {
+                    let _accWoolBadgeShown = false;
                     _accRenderFinal.forEach((item, idx) => {
                         const getSafeText = (val) => {
                             if (!val) return "";
@@ -6070,8 +6128,9 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
                         if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
-                        // 羊毛氈公仔加購 badge：合併至立體擺設同 card
-                        if (_accHasWool && dimensions.category.includes('立體擺設') && idx === 0) {
+                        // 羊毛氈公仔加購 badge：合併至第一個立體擺設 card
+                        if (_accHasWool && !_accWoolBadgeShown && dimensions.category.includes('立體擺設')) {
+                            _accWoolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
                         }
 
@@ -6106,13 +6165,12 @@
                                     <select id="acc-status-${o.id}-${idx}"
                                         style="font-size:12px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); width:100%;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx})">
-                                        <option value="0 什麼都未做" ${(item.Status || o.Status) === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
-                                        <option value="1 已繪圖 或 已取相" ${(item.Status || o.Status) === '1 已繪圖 或 已取相' ? 'selected' : ''}>1 已繪圖/取相</option>
-                                        <option value="1.5 已交付建模師, 等3D圖中" ${(item.Status || o.Status) === '1.5 已交付建模師, 等3D圖中' ? 'selected' : ''}>1.5 等3D圖</option>
-                                        <option value="2 已修3D圖, 但未核對" ${(item.Status || o.Status) === '2 已修3D圖, 但未核對' ? 'selected' : ''}>2 已修3D圖</option>
-                                        <option value="2.5 已核對3D圖, 準備打印" ${(item.Status || o.Status) === '2.5 已核對3D圖, 準備打印' ? 'selected' : ''}>2.5 準備打印</option>
-                                        <option value="3 已交付廠家, 打印中" ${(item.Status || o.Status) === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
-                                        <option value="Done 已完成" ${(item.Status || o.Status) === 'Done 已完成' ? 'selected' : ''}>Done ✅</option>
+                                        ${(function(){ var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item); return [
+                                        ['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],
+                                        ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],
+                                        ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],
+                                        ['Done 已完成','Done ✅']
+                                        ].map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join(''); })()}
                                     </select>
                                 </div>
                             </div>
@@ -6199,12 +6257,25 @@
             }
 
             let html = "";
-            // [Diag 2026-05-21] log all item keys per order to verify W_WOOL flows through
+            // [Diag 2026-05-21 v2] log full item data for all orders that have any W_WOOL-related item
             try {
                 orders.forEach(o => {
-                    const keys = (o.items || []).map(i => i.Order_Item_Key || i.Item_ID || '(empty)');
-                    const hasWool = keys.some(k => (k || '').toUpperCase().includes('W_WOOL'));
-                    if (hasWool) console.log('[FHS Diag W_WOOL] Order', o.Order_ID, 'CONTAINS W_WOOL. keys=', keys);
+                    if (!o.items || !o.items.length) return;
+                    const _diagItems = (o.items || []).map(i => ({
+                        oik: i.Order_Item_Key || '(empty)',
+                        iid: i.Item_ID || '(empty)',
+                        cat: i.Category || '(empty)',
+                        woolKey: (
+                            (i.Order_Item_Key||i.Item_ID||'').toUpperCase().includes('_W_WOOL') ||
+                            (i.Order_Item_Key||i.Item_ID||'').includes('羊毛氈') ||
+                            (i.Order_Item_Key||i.Item_ID||'').includes('羊毛毡') ||
+                            i.Category === '配件'
+                        )
+                    }));
+                    const _anyWool = _diagItems.some(d => d.woolKey ||
+                        d.oik.toLowerCase().includes('wool') || d.iid.toLowerCase().includes('wool') ||
+                        d.iid.includes('羊毛') || d.oik.includes('羊毛'));
+                    if (_anyWool) console.log('[FHS Diag W_WOOL] Order', o.Order_ID, 'items:', JSON.stringify(_diagItems));
                 });
             } catch(e) {}
             orders.forEach((o) => {
@@ -6220,7 +6291,8 @@
                     o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
                 }
                 // W_WOOL 是加購配件，合併至立體擺設同一列顯示，不獨立成 row
-                const _woolKey = (it) => (it.Order_Item_Key || it.Item_ID || '').toUpperCase().includes('_W_WOOL');
+                // 同時檢查 _W_WOOL（新格式）、'羊毛氈'（pipe 格式）、Category==='配件'（新格式 mapOrder 後）
+                const _woolKey = (it) => { const _k = it.Order_Item_Key || it.Item_ID || ''; return _k.toUpperCase().includes('_W_WOOL') || _k.includes('羊毛氈') || _k.includes('羊毛毡') || it.Category === '配件'; };
                 const _hasWool = (o.items || []).some(_woolKey);
                 const _renderItems = _hasWool
                     ? (o.items || []).filter(it => !_woolKey(it))
@@ -6261,6 +6333,7 @@
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
+                    let _woolBadgeShown = false;
                     _renderItemsFinal.forEach((item, index) => {
                         // V45.4 強化型資料解析引擎 (強型別檢查避免 ID 洩漏)
                         const getSafeText = (val) => {
@@ -6332,8 +6405,10 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
 
-                        // 羊毛氈公仔加購 badge：合併至立體擺設同列，index===0 避免重複
-                        if (_hasWool && dimensions.category.includes('立體擺設') && index === 0) {
+                        // 羊毛氈公仔加購 badge：合併至第一個立體擺設列（不依賴 index===0，
+                        // 防止 pipe 格式排序後立體擺設不在首位的情況）
+                        if (_hasWool && !_woolBadgeShown && dimensions.category.includes('立體擺設')) {
+                            _woolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
                         }
 
@@ -6411,13 +6486,12 @@
                                 <select id="status-select-${o.id}-${index}" class="review-status-select"
                                         style="width:90%; font-size:13px; margin:0 auto;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index})">
-                                    <option value="0 什麼都未做" ${(item.Status || o.Status) === '0 什麼都未做' ? 'selected' : ''}>0 什麼都未做</option>
-                                    <option value="1 已繪圖 或 已取相" ${(item.Status || o.Status) === '1 已繪圖 或 已取相' ? 'selected' : ''}>1 已繪圖/取相</option>
-                                    <option value="1.5 已交付建模師, 等3D圖中" ${(item.Status || o.Status) === '1.5 已交付建模師, 等3D圖中' ? 'selected' : ''}>1.5 等3D圖</option>
-                                    <option value="2 已修3D圖, 但未核對" ${(item.Status || o.Status) === '2 已修3D圖, 但未核對' ? 'selected' : ''}>2 已修3D圖</option>
-                                    <option value="2.5 已核對3D圖, 準備打印" ${(item.Status || o.Status) === '2.5 已核對3D圖, 準備打印' ? 'selected' : ''}>2.5 準備打印</option>
-                                    <option value="3 已交付廠家, 打印中" ${(item.Status || o.Status) === '3 已交付廠家, 打印中' ? 'selected' : ''}>3 打印中</option>
-                                    <option value="Done 已完成" ${(item.Status || o.Status) === 'Done 已完成' ? 'selected' : ''}>Done ✅</option>
+                                    ${(function(){ var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item); return [
+                                    ['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],
+                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],
+                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],
+                                    ['Done 已完成','Done ✅']
+                                    ].map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join(''); })()}
                                 </select>
                                 <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
                             </td>
@@ -6881,31 +6955,6 @@
             const isItemUpdate = (itemIndex !== undefined && o.items && o.items[itemIndex]);
             const itemObj = isItemUpdate ? o.items[itemIndex] : null;
 
-            // On-demand _sb_id fetch (when data came from n8n fallback — no UUID on items)
-            if (isItemUpdate && itemObj && !itemObj._sb_id && itemObj.Item_ID && o.Order_ID) {
-                try {
-                    const _sbUrl2 = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
-                    const _sbKey2 = window.SB_ANON_KEY || '';
-                    if (_sbKey2) {
-                        setInd("🔍 查詢UUID...", "#888");
-                        const _idResp = await fetch(
-                            _sbUrl2 + '/rest/v1/order_items?select=id,item_key&order_fhs_id=eq.' + encodeURIComponent(o.Order_ID),
-                            { headers: { 'apikey': _sbKey2, 'Authorization': 'Bearer ' + _sbKey2 } }
-                        );
-                        if (_idResp.ok) {
-                            const _idRows = await _idResp.json();
-                            const _m = Array.isArray(_idRows) && _idRows.find(function(r) { return r.item_key === itemObj.Item_ID; });
-                            if (_m && _m.id) {
-                                itemObj._sb_id = _m.id;
-                                console.log('✅ _sb_id resolved on-demand:', _m.id, 'for', itemObj.Item_ID);
-                            } else {
-                                console.warn('⚠️ _sb_id not found | item_key:', itemObj.Item_ID, '| rows:', Array.isArray(_idRows) ? _idRows.length : _idRows);
-                            }
-                        }
-                    }
-                } catch(_e) { console.warn('_sb_id lookup failed:', _e.message); }
-            }
-
             // 1. Update local state
             if (field === 'Admin_Notes') {
                 o.Admin_Notes = value;
@@ -6943,10 +6992,34 @@
                 }
             }
 
+            // Write to local meta cache so sbSyncOrder can use it as override
+            // (guards against PATCH failure / race with sbSyncOrder pre-fetch)
+            // Cache key = orderId + '|' + item_key to avoid cross-order collisions
+            if (isItemUpdate && itemObj) {
+                var _rawItemKey = itemObj.Item_ID || itemObj.Order_Item_Key || '';
+                if (_rawItemKey) {
+                    var _cacheKey = recordId + '|' + _rawItemKey;
+                    if (!window._localItemMetaCache[_cacheKey]) window._localItemMetaCache[_cacheKey] = {};
+                    if (field === 'Process_Status') window._localItemMetaCache[_cacheKey].process_status = window._sanitizeItemStatus(value);
+                    if (field === 'Batch_Number')   window._localItemMetaCache[_cacheKey].batch_number   = value || null;
+                    console.log('[saveInlineEdit] localMetaCache updated:', _cacheKey, window._localItemMetaCache[_cacheKey]);
+
+                    // Persist original UI string to localStorage so dropdown stays selected
+                    // even after fetchGlobalReview overwrites globalOrders with ENUM value
+                    if (field === 'Process_Status') {
+                        if (!window._fhsStatusStore) window._fhsStatusStore = {};
+                        window._fhsStatusStore[_cacheKey] = value;
+                        try { localStorage.setItem('fhs_status_store', JSON.stringify(window._fhsStatusStore)); } catch(e) {}
+                    }
+                }
+            }
+
             // 2. Construct entry
             const updateEntry = {
                 Record_ID:  recordId,
                 _sb_id:     isItemUpdate ? (itemObj._sb_id || '') : '',
+                _item_key:  isItemUpdate ? (itemObj.Item_ID || itemObj.Order_Item_Key || '') : '',
+                _is_item:   isItemUpdate,
                 _field:     field,
                 Batch_Number:   isItemUpdate ? (itemObj.Batch_Number || itemObj.Batch || '') : (o.Batch_Number || o.Batch || ''),
                 Process_Status: isItemUpdate ? (itemObj.Process_Status || itemObj.Status || '0 什麼都未做') : (o.Process_Status || o.Status || '0 什麼都未做'),
@@ -6992,22 +7065,23 @@
                             const _f       = entry._field;
                             const _patch   = {};
                             if (_f === 'Batch_Number')   _patch.batch_number   = entry.Batch_Number;
-                            if (_f === 'Process_Status') _patch.process_status = entry.Process_Status;
+                            if (_f === 'Process_Status') _patch.process_status = (window._sanitizeItemStatus || function(s){return s;})(entry.Process_Status);
                             if (_f === 'Admin_Notes')    _patch.admin_notes    = entry.Admin_Notes;
                             if (Object.keys(_patch).length === 0) continue;
                             console.log('📤 PATCH', _f, '→', JSON.stringify(_patch), '| _sb_id:', _sbId || '(empty→order fallback)');
 
-                            if (_sbId) {
-                                // 最可靠：用 item UUID 直接 PATCH
-                                const _r = await fetch(_sbUrl + '/rest/v1/order_items?id=eq.' + encodeURIComponent(_sbId), {
+                            const _itemKey = entry._item_key;
+                            if (entry._is_item && _itemKey) {
+                                // item_key is stable across DELETE+INSERT; UUID (_sb_id) changes each sync
+                                const _r = await fetch(_sbUrl + '/rest/v1/order_items?item_key=eq.' + encodeURIComponent(_itemKey), {
                                     method: 'PATCH', headers: _sbHeaders, body: JSON.stringify(_patch)
                                 });
                                 const _body = await _r.json().catch(function() { return []; });
-                                console.log('item UUID PATCH status:', _r.status, '| rows updated:', Array.isArray(_body) ? _body.length : '?');
+                                console.log('item_key PATCH status:', _r.status, '| rows updated:', Array.isArray(_body) ? _body.length : '?', '| key:', _itemKey);
                                 if (!_r.ok) throw new Error('item PATCH ' + _r.status + ' ' + JSON.stringify(_body));
-                                if (Array.isArray(_body) && _body.length === 0) throw new Error('item PATCH 0 rows matched UUID: ' + _sbId + ' — RLS 或 UUID 有誤');
+                                if (Array.isArray(_body) && _body.length === 0) throw new Error('item PATCH 0 rows matched item_key: ' + _itemKey);
                             } else {
-                                // Order-level fallback
+                                // Order-level fields (Admin_Notes, order process_status)
                                 const _r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(_orderId), {
                                     method: 'PATCH', headers: _sbHeaders, body: JSON.stringify(_patch)
                                 });
@@ -8388,6 +8462,21 @@
                 if (k.includes('_RF')) return '腳 / 右腳';
                 return '';
             }
+            var _sanitizeStatus = window._sanitizeItemStatus;
+
+            // Concurrency guard: last-write-wins queue per order.
+            // Prevents DELETE+INSERT race when the user re-submits quickly
+            // (e.g. toggle W_WOOL on/off multiple times). At most one sync
+            // runs per orderId; later callers supersede earlier pending ones.
+            if (!window._sbSyncInFlight) window._sbSyncInFlight = {};
+            if (!window._sbSyncPending)  window._sbSyncPending  = {};
+            if (window._sbSyncInFlight[orderId]) {
+                window._sbSyncPending[orderId] = { payload, orderItemsArray, mode };
+                console.log('[sbSyncOrder] Deferred (in-flight) for', orderId);
+                return;
+            }
+            window._sbSyncInFlight[orderId] = true;
+            try {
 
             const sbH = { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': 'application/json' };
 
@@ -8420,13 +8509,39 @@
                 return;
             }
 
-            // 2. Delete old items (removes both old-format and stale new-format)
+            // 2. Preserve existing batch/progress before delete (edit mode: item_key stays same)
+            let _prevItemMap = {};
+            try {
+                const _pvRes = await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) + '&select=item_key,batch_number,process_status', { headers: sbH });
+                if (_pvRes.ok) {
+                    const _pvRows = await _pvRes.json();
+                    if (Array.isArray(_pvRows)) _pvRows.forEach(function(r) { if (r.item_key) _prevItemMap[r.item_key] = { batch_number: r.batch_number || null, process_status: r.process_status || null }; });
+                }
+            } catch(e) { console.warn('[sbSyncOrder] pre-fetch preserve error:', e.message); }
+
+            // Overlay local meta cache on top of Supabase pre-fetch.
+            // Handles two failure modes: (a) PATCH never landed (no anon UPDATE RLS),
+            // (b) saveInlineEdit PATCH raced ahead of this pre-fetch.
+            // Cache keys are namespaced as orderId + '|' + item_key.
+            var _cache = window._localItemMetaCache || {};
+            Object.keys(_cache).forEach(function(ck) {
+                // Only apply entries that belong to this order
+                if (!ck.startsWith(orderId + '|')) return;
+                var _ik = ck.slice(orderId.length + 1);  // extract the item_key part
+                if (!_prevItemMap[_ik]) _prevItemMap[_ik] = {};
+                var _c = _cache[ck];
+                if (_c.process_status !== undefined) _prevItemMap[_ik].process_status = _c.process_status;
+                if (_c.batch_number   !== undefined) _prevItemMap[_ik].batch_number   = _c.batch_number;
+            });
+            console.log('[sbSyncOrder] _prevItemMap after cache overlay:', JSON.stringify(_prevItemMap));
+
+            // 3. Delete old items (removes both old-format and stale new-format)
             await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId), {
                 method: 'DELETE',
                 headers: sbH
             }).catch(function(e) { console.warn('[sbSyncOrder] delete items error:', e.message); });
 
-            // 3. Insert fresh items
+            // 4. Insert fresh items (preserving batch/progress where item_key matches)
             if (orderItemsArray && orderItemsArray.length > 0) {
                 const newItems = orderItemsArray.map(function(item) {
                     // For P items: store pSubCat in specification (no FK; _deriveSpec returns '')
@@ -8441,16 +8556,26 @@
                     // rolls back ENTIRE batch insert (all items lost).
                     // getProductDimensions already identifies W_WOOL via Order_Item_Key,
                     // so Product_Name fallback is not critical for rendering.
-                    return {
+                    var _prev = _prevItemMap[item.Order_Item_Key] || {};
+                    // Priority: _ui_* (from globalOrders UI state, set by pre-enrich) >
+                    //           _prev (from Supabase pre-fetch) — handles no-UPDATE-RLS case.
+                    var _status = item._ui_process_status || _prev.process_status;
+                    var _batch  = item._ui_batch_number  || _prev.batch_number || null;
+                    // batch_number must always be present (even if null) so all rows
+                    // have identical key sets — PostgREST PGRST102 rejects mixed-key batches
+                    var _row = {
                         order_fhs_id:  orderId,
                         item_key:      item.Order_Item_Key,
                         item_category: _deriveCat(item.Order_Item_Key),
                         quantity:      item.Quantity || 1,
                         engraving_text: item.Notes || '',
                         specification: _spec,
-                        process_status: '待製作'
+                        process_status: _sanitizeStatus(_status),
+                        batch_number:  _batch
                     };
+                    return _row;
                 });
+                console.log('[sbSyncOrder] INSERT payload:', JSON.stringify(newItems));
                 const insRes = await fetch(SB_URL + '/rest/v1/order_items', {
                     method: 'POST',
                     headers: Object.assign({}, sbH, { 'Prefer': 'return=minimal' }),
@@ -8458,7 +8583,29 @@
                 });
                 if (!insRes.ok) {
                     const txt = await insRes.text().catch(function() { return ''; });
-                    console.warn('[sbSyncOrder] order_items insert failed', insRes.status, txt);
+                    console.error('[sbSyncOrder] order_items INSERT FAILED', insRes.status, txt);
+                    // Defensive: DELETE succeeded but INSERT failed → order_items is now empty.
+                    // Re-insert previous items from _prevItemMap to prevent "無子項目" state.
+                    // Only item_key + sanitized process_status + batch_number are restored
+                    // (other fields have DB defaults or can be re-derived on next full sync).
+                    var _restoreRows = Object.keys(_prevItemMap).map(function(ik) {
+                        var _d = _prevItemMap[ik];
+                        var _r = {
+                            order_fhs_id:  orderId,
+                            item_key:      ik,
+                            process_status: _sanitizeStatus(_d.process_status),
+                            batch_number:  _d.batch_number || null
+                        };
+                        return _r;
+                    });
+                    if (_restoreRows.length > 0) {
+                        console.warn('[sbSyncOrder] Restoring', _restoreRows.length, 'previous items after INSERT failure');
+                        await fetch(SB_URL + '/rest/v1/order_items', {
+                            method: 'POST',
+                            headers: Object.assign({}, sbH, { 'Prefer': 'return=minimal' }),
+                            body: JSON.stringify(_restoreRows)
+                        }).catch(function(e) { console.warn('[sbSyncOrder] restore failed:', e.message); });
+                    }
                 }
             }
             console.log('[sbSyncOrder] Supabase sync complete for', orderId);
@@ -8466,6 +8613,17 @@
             setTimeout(function() {
                 if (window.fetchGlobalReview) window.fetchGlobalReview(true);
             }, 400);
+            } finally {
+                // Release per-order lock; run latest queued call if any (last-write-wins)
+                delete window._sbSyncInFlight[orderId];
+                var _pendingNext = window._sbSyncPending[orderId];
+                if (_pendingNext) {
+                    delete window._sbSyncPending[orderId];
+                    sbSyncOrder(_pendingNext.payload, _pendingNext.orderItemsArray, _pendingNext.mode).catch(function(e) {
+                        console.warn('[sbSyncOrder] deferred sync error:', e.message);
+                    });
+                }
+            }
         }
         window.sbSyncOrder = sbSyncOrder;
 

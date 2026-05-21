@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-05-21 (Session 9~10): 進度/W_WOOL Bug 修復循環完結 + 新產品跨層融入保護機制 ✅
+
+**Scope**: IIFE template literal 語法 Bug 修復（`})()` → `})()}`，全介面按鈕失效根因）；5輪 Bug 循環學習提取（P1~P5 pitfalls.yaml）；建立 product-integration-validator subagent + /new-product skill + Rollback Matrix；CHANGELOG/repo-map/MANIFEST 同步
+
+---
+
 ## 2026-05-20 (Session 8): /rp 指令新增 + 備註欄批次色 Bug 修復 ✅
 
 **Scope**: 新增 /rp 通用 Prompt 重寫指令（CL/AG/PL 三端橋接）；修復 Review Mode 備註欄批次色不跟隨問題（根因：item 層 Batch fallback 缺失 + CSS 優先級覆蓋）；更新 Supabase-First 查詢優先級 feedback memory

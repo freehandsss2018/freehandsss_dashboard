@@ -42,6 +42,7 @@
 ## 【Phase 1: Memory Engine 同步】
 1. **Lessons**: 寫入 `.fhs/memory/lessons/YYYY-MM-DD_主題.md`。
 2. **Handoff**: 更新 `.fhs/memory/handoff.md` (強制包含：版本、完成事項、待辦、核心配置)。
+   每個 session 完成事項末尾必須附上 **Subagent 使用記錄** 表格（格式見 execute.md [E]）。
 3. **Notion**: 執行 `node scripts/Sync_Notion_Brain.js`。
 4. **Logs**: 更新 `.fhs/notes/session-log.md`。
 5. **Learnings Prompt**: 詢問 Fat Mo「本次 commit 是否有 lesson 要 distill 進 `.fhs/memory/learnings.md`（Pattern / Pitfall / Preference 三選一，一句話即可）？」Fat Mo 回應後手動 append；無回應或回應「不用」則靜默跳過，不寫入任何內容。
