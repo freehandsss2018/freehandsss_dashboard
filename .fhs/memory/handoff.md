@@ -6,6 +6,20 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 
 ## 本次 Session 完成事項（2026-05-21）
 
+### 5. 🧸 羊毛氈公仔加購產品 Debug + SOP 文件化
+
+**Bug 根因與修復**：
+1. **FK 23503 violation**：`sbSyncOrder` 寫入 `product_sku: item.Product_Name`（"羊毛氈公仔 - 加購"不在 products 表）→ 整批 INSERT rollback。修復：移除 product_sku 欄位
+2. **Webhook 缺 push**：Webhook builder 無 W_WOOL 加購 item push 邏輯，新增含雙重 guard（enableP + w_wool_en）
+3. **Review Mode 獨立行**：W_WOOL 被渲染為單獨 row/card。修復：分離 `_woolKey`，過濾出渲染陣列，合併 badge 至立體擺設同列（Desktop `renderReviewTable` + iPhone `renderReviewAccordion`）
+
+**SOP 文件化**：
+- 新建 `.fhs/notes/addon_product_sop.md`（v1.0）— 含四個必改位置、FK 保護原則、code template、4 項 checklist
+- 更新 `.fhs/notes/decisions.md` — 記錄設計決策與原因
+- 更新 `.fhs/notes/SOP_NOW.md` — 加入「產品開發 SOP 參考」表
+
+---
+
 ### 4. 訂單總覽 UI 三項優化（freehandsss_dashboardV41.html）
 
 1. **📦 產品明細排序**：`renderReviewTable` 渲染前對 `o.items[]` 按 `item.Category` 優先排序（立體擺設→鎖匙扣→吊飾/純銀→其他），排序在 `batchCol` 計算前執行確保備註欄批次色跟隨正確

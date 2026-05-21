@@ -86,6 +86,14 @@ Claude 審閱 → artifacts/{flow_id}/cl-final-plan.md（A3 Verdict）
 
 ---
 
+## 產品開發 SOP 參考
+
+| SOP | 路徑 | 適用場景 |
+|-----|------|---------|
+| 加購配件新增 | `.fhs/notes/addon_product_sop.md` | 新增類似「羊毛氈公仔」的加購配件時，必讀此 SOP（含 FK 保護原則 + 四個必改位置 + checklist） |
+
+---
+
 ## 同步更新規則（給所有 AI）
 
 1. **修改任何指令** → 只改 `/.fhs/ai/commands/` 內的 Master 檔案

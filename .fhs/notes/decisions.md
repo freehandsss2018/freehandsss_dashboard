@@ -7,6 +7,20 @@
 
 ## 記錄
 
+[2026-05-21] 加購配件（W_WOOL 羊毛氈公仔）渲染架構決策 — 建立 addon_product_sop.md
+
+決策：
+- **加購配件不獨立成 Review Mode row**：改以 inline badge 合併至父產品（立體擺設）同列，`_woolKey`/`_hasWool`/`_renderItemsFinal` 模式在 `renderReviewTable` 和 `renderReviewAccordion` 兩個渲染函式中同步實作。
+- **sbSyncOrder 禁止寫 product_sku**：加購配件 Product_Name 不在 Supabase `products` 表，強行寫入會觸發 FK 23503，導致整批 INSERT rollback（所有 item 全失敗）。移除後問題解除。
+- **Order_Item_Key 後綴作為唯一識別**：`_W_WOOL` 後綴同時作為 `_deriveCat`、`getProductDimensions`、渲染分離的識別依據，不依賴 Product_Name 字串（Supabase 不儲存 Product_Name）。
+- **SOP 文件化**：建立 `.fhs/notes/addon_product_sop.md`，含四個必改位置與 checklist，供 subagent 日後新增同類加購配件時參照。
+
+原因：羊毛氈公仔是首個「加購型配件」產品，其架構問題（FK 衝突 + 渲染分離）屬可預期重複出現的 pattern，需要 SOP 固化，避免每次新加配件都要重新 debug。
+
+批准：Fat Mo ✅（2026-05-21 授權執行）
+
+---
+
 [2026-05-20] 補 Reflect→Think 閉環 — 新建 learnings.md + 鉤入 /read + 解 handoff 封鎖
 
 決策：

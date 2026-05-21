@@ -5426,6 +5426,22 @@
                         });
                     }
                 }
+
+                // 羊毛氈公仔 add-on（隸屬立體擺設款式）
+                // [Diag 2026-05-21] log guard state to confirm push fires
+                const _diagEnP = getValSafe('enableP', false);
+                const _diagWool = getValSafe('w_wool_en', false);
+                console.log('[FHS Diag W_WOOL] enableP=', _diagEnP, ' w_wool_en=', _diagWool);
+                if (_diagEnP && _diagWool) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": `${currentOrderId}_W_WOOL`,
+                        "Product_Name": "羊毛氈公仔 - 加購",
+                        "Quantity": 1
+                    });
+                    console.log('[FHS Diag W_WOOL] PUSHED to orderItemsArray, key=', `${currentOrderId}_W_WOOL`);
+                } else {
+                    console.warn('[FHS Diag W_WOOL] SKIPPED — guard failed (need both enableP + w_wool_en)');
+                }
             } catch (err) {
                 console.warn("商品擷取遇到小問題，但仍會繼續送出訂單:", err);
             }
@@ -5637,6 +5653,7 @@
             if (rawID.includes('_K_') || combinedSearch.includes('鎖匙扣')) { category = "🔑 鎖匙扣"; emoji = "🔑"; }
             else if (rawID.includes('_M_') || combinedSearch.search(/吊飾|頸鏈/) > -1) { category = "💍 純銀吊飾"; emoji = "💍"; }
             else if (rawID.includes('_P_') || combinedSearch.search(/擺設|木框|玻璃/) > -1) { category = "🎨 立體擺設"; emoji = "🎨"; }
+            else if (rawID.includes('_W_WOOL') || combinedSearch.includes('羊毛氈')) { category = "🧸 羊毛氈公仔"; emoji = "🧸"; }
             
             // 4. 解析材質 (Material)
             let material = "";
@@ -5977,15 +5994,34 @@
 
             let html = '';
             orders.forEach((o) => {
+                // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
+                if (o.items && o.items.length > 1) {
+                    const _cp = (cat) => {
+                        if (!cat) return 99;
+                        if (cat.includes('立體')) return 0;
+                        if (cat.includes('鎖匙')) return 1;
+                        if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀')) return 2;
+                        return 99;
+                    };
+                    o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
+                }
+                // W_WOOL 合併至立體擺設同列，不獨立成 card
+                const _accWoolKey = (it) => (it.Order_Item_Key || it.Item_ID || '').toUpperCase().includes('_W_WOOL');
+                const _accHasWool = (o.items || []).some(_accWoolKey);
+                const _accRenderItems = _accHasWool
+                    ? (o.items || []).filter(it => !_accWoolKey(it))
+                    : (o.items || []);
+                const _accRenderFinal = _accRenderItems.length > 0 ? _accRenderItems : (o.items || []);
+
                 const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
                 const profit = Number(o.Net_Profit || 0);
                 const profitColor = profit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
-                const itemCount = o.items && o.items.length > 0 ? o.items.length : 0;
+                const itemCount = _accRenderFinal.length;
 
                 // Build items badges HTML
                 let itemsHtml = '';
-                if (o.items && o.items.length > 0) {
-                    o.items.forEach((item, idx) => {
+                if (_accRenderFinal && _accRenderFinal.length > 0) {
+                    _accRenderFinal.forEach((item, idx) => {
                         const getSafeText = (val) => {
                             if (!val) return "";
                             if (Array.isArray(val)) return val[0] || "";
@@ -6034,6 +6070,10 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
                         if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
+                        // 羊毛氈公仔加購 badge：合併至立體擺設同 card
+                        if (_accHasWool && dimensions.category.includes('立體擺設') && idx === 0) {
+                            badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
+                        }
 
                         // Engraving
                         let engText = '';
@@ -6159,6 +6199,14 @@
             }
 
             let html = "";
+            // [Diag 2026-05-21] log all item keys per order to verify W_WOOL flows through
+            try {
+                orders.forEach(o => {
+                    const keys = (o.items || []).map(i => i.Order_Item_Key || i.Item_ID || '(empty)');
+                    const hasWool = keys.some(k => (k || '').toUpperCase().includes('W_WOOL'));
+                    if (hasWool) console.log('[FHS Diag W_WOOL] Order', o.Order_ID, 'CONTAINS W_WOOL. keys=', keys);
+                });
+            } catch(e) {}
             orders.forEach((o) => {
                 // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
                 if (o.items && o.items.length > 1) {
@@ -6171,10 +6219,18 @@
                     };
                     o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
                 }
+                // W_WOOL 是加購配件，合併至立體擺設同一列顯示，不獨立成 row
+                const _woolKey = (it) => (it.Order_Item_Key || it.Item_ID || '').toUpperCase().includes('_W_WOOL');
+                const _hasWool = (o.items || []).some(_woolKey);
+                const _renderItems = _hasWool
+                    ? (o.items || []).filter(it => !_woolKey(it))
+                    : (o.items || []);
+                const _renderItemsFinal = _renderItems.length > 0 ? _renderItems : (o.items || []);
+
                 const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
                 const batchCol = getBatchColor(o.Batch || (o.items && o.items.length > 0 && o.items[0].Batch) || '');
-                
-                const itemsCount = o.items && o.items.length > 0 ? o.items.length : 1;
+
+                const itemsCount = _renderItemsFinal.length > 0 ? _renderItemsFinal.length : 1;
                 
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
                 const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
@@ -6204,8 +6260,8 @@
                     </td>
                 `;
 
-                if(o.items && o.items.length > 0) {
-                    o.items.forEach((item, index) => {
+                if(_renderItemsFinal && _renderItemsFinal.length > 0) {
+                    _renderItemsFinal.forEach((item, index) => {
                         // V45.4 強化型資料解析引擎 (強型別檢查避免 ID 洩漏)
                         const getSafeText = (val) => {
                             if (!val) return "";
@@ -6274,6 +6330,11 @@
                             badgeHtml += `<span class="review-badge badge-target-嬰兒">👶 嬰兒 ${dimensions.count.split(' ').pop()}</span>`;
                         } else if (dimensions.count) {
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
+                        }
+
+                        // 羊毛氈公仔加購 badge：合併至立體擺設同列，index===0 避免重複
+                        if (_hasWool && dimensions.category.includes('立體擺設') && index === 0) {
+                            badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
                         }
 
                         // 數量標籤：立體擺設是套裝，不顯示 x1
@@ -8316,6 +8377,7 @@
                 if (k.match(/_P_/)) return '立體擺設';
                 if (k.match(/_K_/)) return '金屬鎖匙扣';
                 if (k.match(/_M_/)) return '銀飾';
+                if (k.includes('_W_WOOL')) return '配件';
                 return '';
             }
             function _deriveSpec(key) {
@@ -8373,6 +8435,12 @@
                         if (item.Product_Name.includes('木框')) _spec = '木框款式';
                         else if (item.Product_Name.includes('玻璃')) _spec = '玻璃瓶款式';
                     }
+                    // [Fix 2026-05-21] DO NOT write product_sku from sbSyncOrder:
+                    // Supabase order_items.product_sku has FK constraint → products(sku).
+                    // "羊毛氈公仔 - 加購" not in products table → FK violation 23503
+                    // rolls back ENTIRE batch insert (all items lost).
+                    // getProductDimensions already identifies W_WOOL via Order_Item_Key,
+                    // so Product_Name fallback is not critical for rendering.
                     return {
                         order_fhs_id:  orderId,
                         item_key:      item.Order_Item_Key,

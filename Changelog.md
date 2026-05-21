@@ -1,5 +1,52 @@
 # Changelog
 
+## [2026-05-21] 🚨 真因揭曉：FK 23503 殺死整批 INSERT
+
+**根因**：Supabase `order_items.product_sku` 有 FK 約束 → `products(sku)`。「羊毛氈公仔 - 加購」不在 products 表 → 觸發 23503 Foreign Key Violation → **整個 batch INSERT rollback，所有 items 全部寫不入**（包括 P_MAIN / K / M）。
+
+**Console 真實錯誤**：
+```
+POST .../order_items 409 Conflict
+{"code":"23503","details":"Key is not present in table \"products\".",
+ "message":"insert or update on table \"order_items\" violates foreign key constraint \"order_items_product_sku_fkey\""}
+```
+
+**修復 `freehandsss_dashboardV41.html` (sbSyncOrder line 8385)**：
+- **撤回**前一輪錯誤新增的 `product_sku: item.Product_Name`
+- mapOrder 已透過 `Order_Item_Key` (W_WOOL 後綴) + getProductDimensions pattern 識別商品類別，不依賴 `product_sku` 欄
+- 副作用：Supabase order_items.product_sku 將為 NULL（如其他系統依賴此欄，需另外把「羊毛氈公仔 - 加購」加入 products 表）
+
+**已知殘留風險**：
+- n8n Mirror to Supabase 仍會嘗試寫 product_sku，遇 W_WOOL 會在迴圈中 throw（已寫的前序 items 留在 DB）
+- 但 sbSyncOrder 緊接 DELETE + INSERT 全覆寫，最終狀態正確
+- 若 `fhs_supabase_read != '1'`（sbSyncOrder 不跑），n8n 殘片會留在 DB
+
+---
+
+## [2026-05-21] 🧸 羊毛氈公仔 診斷 log 注入
+
+**修改 `freehandsss_dashboardV41.html`**：
+- Webhook builder (line 5430)：新增 `[FHS Diag W_WOOL]` console log，顯示 `enableP / w_wool_en` 兩個 guard 變數實值，並在 push 後 log key；guard 失敗時 console.warn
+- renderReviewTable (line 6171)：新增 per-order item key 掃描 log，凡 `o.items` 含 W_WOOL key 即 console.log
+- 目的：診斷「Review Mode 缺羊毛氈公仔」三段失效定位（form state / Supabase write / 前端讀取）
+
+---
+
+## [2026-05-21] 🧸 羊毛氈公仔 Supabase 三層修復（category / product_sku / badge）
+
+**修改 `freehandsss_dashboardV41.html`**：
+- Fix 1 (`_deriveCat`)：W_WOOL key 現返回 `'配件'`，`order_items.item_category` 不再空白
+- Fix 2 (`sbSyncOrder` item mapper)：補寫 `product_sku: item.Product_Name`，`mapOrder` 讀回時 `Product_Name` 不再空白
+- Fix 3 (`getProductDimensions`)：新增 `_W_WOOL / 羊毛氈` 分支，Review Mode badge 顯示 `🧸 羊毛氈公仔` 而非 `📦 其他`
+
+## [2026-05-21] 🧸 羊毛氈公仔 webhook 寫入修復
+
+**修改 `freehandsss_dashboardV41.html`**：
+- 在 Webhook 提交函式的 `orderItemsArray` 構建器中加入 `W_WOOL` 項目，修復 `enableP + w_wool_en` 選購後，Supabase `order_items` 缺記錄、Review Mode 產品明細欄空白的問題
+- 根因：舊 Category C（`enableW`）移除後，Webhook 層從未補上對應邏輯；定價函式（`buildOrderItemsForPricing()`）的 `isAccessory` + $680 邏輯本身正確，無需修改
+
+---
+
 ## [2026-05-21] 🧸 羊毛氈公仔分類修正（Category C → 立體擺設款式）
 
 **修改 `freehandsss_dashboardV41.html`**：
