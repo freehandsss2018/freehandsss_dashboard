@@ -7,6 +7,20 @@
 
 ## 記錄
 
+[2026-05-22] Order_ID Rename Race Condition 根治 — AG 架構分析 + Migration 0011 落地
+
+決策：
+- **架構性 timing bug**：`responseMode: "onReceived"` 導致前端 sbSyncOrder 在 n8n rename RPC 前到達，造成 409。修復層選擇在資料庫（merge-on-collision）而非更改 n8n responseMode（影響 UX）。
+- **Migration 0011**：`rename_order_id` 升版，加入 `FOR UPDATE` row-level lock（防止 concurrent deadlock）、merge-on-collision 邏輯（若兩者同時存在則合併關鍵欄位並刪除舊 ghost row）、SECURITY DEFINER（anon/service_role 均可呼叫）、冪等（重複呼叫安全）。
+- **Frontend V41.2**：`effectiveOrderId = New_Order_ID || orderId`，sbSyncOrder 所有 Supabase 操作改用 effectiveOrderId；pre-fetch 保留 product_sku 避免 FK 23503。
+- **知識沉澱**：race condition pattern 寫入 `build-error-resolver.md`，未來相似問題可直接索引。
+
+原因：n8n responseMode 架構問題無法從程式碼審查發現，需要 AG 跨層分析；資料庫層修復比 workflow 層修復更穩健（不影響響應速度，且可冪等重試）。
+
+批准：Fat Mo ✅（AG 方案 + /execute 授權 2026-05-22）
+
+***
+
 [2026-05-22] Order_ID 修改功能三端修復 — Frontend + Supabase + n8n
 
 決策：

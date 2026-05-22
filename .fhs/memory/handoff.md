@@ -33,6 +33,35 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 
 ---
 
+## 本次 Session 完成事項（2026-05-22 Session 12 — AG 分析後執行）
+
+### 12. Order_ID Rename Race Condition — AG 根因分析 + 全面修復落地
+
+**根因（AG 發現）**：
+- `n8n responseMode: "onReceived"` 在節點處理完成前就回 200 OK
+- 前端收到 200 後立即執行 `sbSyncOrder()`，以 new_id 寫入 Supabase
+- n8n 的 `rename_order_id` RPC 到達時 new_id 已存在 → 409 UNIQUE constraint
+- 這是架構性 timing bug，不是程式碼錯誤，程式碼審查看不出來
+
+**修改完成**：
+- `freehandsss_dashboardV41.html` V41.2：`effectiveOrderId = New_Order_ID || orderId`，sbSyncOrder 全面用新 ID；pre-fetch 保留 `product_sku`；fallback restore 用 `effectiveOrderId`
+- `supabase/migrations/0011_rename_order_id_security_definer.sql`：已執行（2026-05-22），加入 row-level lock + merge-on-collision + SECURITY DEFINER
+- `C:\Users\Edwin\.claude\agents\freehandsss\build-error-resolver.md`：補入「n8n Webhook Race Condition」與「sbSyncOrder product_sku 被清空」兩個高頻錯誤模式
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`：已同步至 V41.html（518638 bytes）
+
+**驗證**：
+- n8n execution 3642 成功（Mirror to Supabase V47.10 rename 路徑確認正常）
+- Migration 0011 SQL 手動執行 "Success. No rows returned"
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ❌ 未使用（直接執行 AG 已完成的 implementation plan，無需額外診斷） |
+| 遵從 Router | ❌ 未遵從（AG 已完成根因分析，本 session 為執行 + 收尾，subagent 不增值） |
+
+---
+
 ## 本次 Session 完成事項（2026-05-21 第六 Session）
 
 ### 10. 家庭合成鎖匙扣刻字欄重構 + 訂單總覽 3 Bug 修復

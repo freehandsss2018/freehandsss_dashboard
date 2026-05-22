@@ -4283,17 +4283,23 @@
                     if (document.getElementById('k_baby_sec_en')?.checked) {
                         kBabyParts.forEach(p => { if (document.getElementById(`k_${p.id}_en`)?.checked) {
                             let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
-                            let top = document.getElementById(`k_${p.id}_top`).value || "待定";
-                            let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
-                            kDetails += ` - ${p.name}(x${qty})\n   刻字\n   上排：${top} | 下排：${bot}\n`;
+                            let top = document.getElementById(`k_${p.id}_top`).value;
+                            let bot = document.getElementById(`k_${p.id}_bot`).value;
+                            const _t = (top && top.trim() !== '待定') ? top : '';
+                            const _b = (bot && bot.trim() !== '待定') ? bot : '';
+                            let engLine = (_t && _b) ? `\n   上排：${_t} | 下排：${_b}` : (_t || _b) ? `: ${_t || _b}` : `\n   上排：待定 | 下排：待定`;
+                            kDetails += ` - ${p.name}(x${qty})\n   刻字${engLine}\n`;
                         }});
                     }
                     if (document.getElementById('k_elder_sec_en')?.checked) {
                         kElderParts.forEach(p => { if (document.getElementById(`k_${p.id}_en`)?.checked) {
                             let qty = document.getElementById(`k_${p.id}_qty`).value || "1";
-                            let top = document.getElementById(`k_${p.id}_top`).value || "待定";
-                            let bot = document.getElementById(`k_${p.id}_bot`).value || "待定";
-                            kDetails += ` - ${p.name}(x${qty})\n   刻字\n   上排：${top} | 下排：${bot}\n`;
+                            let top = document.getElementById(`k_${p.id}_top`).value;
+                            let bot = document.getElementById(`k_${p.id}_bot`).value;
+                            const _t = (top && top.trim() !== '待定') ? top : '';
+                            const _b = (bot && bot.trim() !== '待定') ? bot : '';
+                            let engLine = (_t && _b) ? `\n   上排：${_t} | 下排：${_b}` : (_t || _b) ? `: ${_t || _b}` : `\n   上排：待定 | 下排：待定`;
+                            kDetails += ` - ${p.name}(x${qty})\n   刻字${engLine}\n`;
                         }});
                     }
                     if (document.getElementById('k_family_en')?.checked) {
@@ -5353,7 +5359,7 @@
                                 let qty = Number(getValSafe(`k_${p.id}_qty`, "1")) || 1;
                                 let topEng = getValSafe(`k_${p.id}_top`, "");
                                 let botEng = getValSafe(`k_${p.id}_bot`, "");
-                                let engNotes = (topEng || botEng) ? `[上排]${topEng || '待定'} [下排]${botEng || '待定'}` : '';
+                                let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : topEng ? `[上排]${topEng}` : botEng ? `[下排]${botEng}` : '';
                                 let finalObj = p.type;
                                 if (!hasMainProduct) finalObj = "嬰兒(P)";
                                 orderItemsArray.push({
@@ -5373,7 +5379,7 @@
                                 let qty = Number(getValSafe(`k_${p.id}_qty`, "1")) || 1;
                                 let topEng = getValSafe(`k_${p.id}_top`, "");
                                 let botEng = getValSafe(`k_${p.id}_bot`, "");
-                                let engNotes = (topEng || botEng) ? `[上排]${topEng || '待定'} [下排]${botEng || '待定'}` : '';
+                                let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : topEng ? `[上排]${topEng}` : botEng ? `[下排]${botEng}` : '';
                                 let finalObj = p.type;
                                 if (!hasMainProduct) finalObj = "家庭(P1)";
                                 orderItemsArray.push({
@@ -5491,6 +5497,12 @@
             const payload = {
                 "action": currentMode,
                 "Order_ID": currentMode === 'edit' ? editTargetOrderId : currentOrderId,
+                // [V41.1] New_Order_ID: 只在 edit mode 且用戶實際修改了 Order_ID 時才加入
+                // editTargetOrderId = 載入時的原始 ID（WHERE clause anchor，不可修改）
+                // currentOrderId    = orderIdDisplay 的當前值（用戶輸入的新 ID）
+                ...(currentMode === 'edit' && editTargetOrderId && currentOrderId && currentOrderId !== editTargetOrderId
+                    ? { "New_Order_ID": currentOrderId }
+                    : {}),
                 "Customer_Name": document.getElementById("momName") ? document.getElementById("momName").value || "待定" : "待定",
                 "Appointment_Date": rawDate ? rawDate : null,
                 "Order_Confirm_Date": currentMode === 'create' ? new Date().toISOString().slice(0, 10) : undefined,
@@ -6464,8 +6476,8 @@
                             const topMatch = raw.match(/\[上排\](.*?)(\[下排\]|$)/);
                             const botMatch = raw.match(/\[下排\](.*?)$/);
                             
-                            if (topMatch) top = topMatch[1].replace(/[\(\)\[\]（）]/g, '').trim();
-                            if (botMatch) bot = botMatch[1].replace(/[\(\)\[\]（）]/g, '').trim();
+                            if (topMatch) { top = topMatch[1].replace(/[\(\)\[\]（）]/g, '').trim(); if (top === '待定') top = ''; }
+                            if (botMatch) { bot = botMatch[1].replace(/[\(\)\[\]（）]/g, '').trim(); if (bot === '待定') bot = ''; }
                             
                             // 如果沒匹配到標籤，嘗試用 | 分隔
                             if (!top && !bot && raw.includes('|')) {
@@ -8474,6 +8486,10 @@
         async function sbSyncOrder(payload, orderItemsArray, mode = 'create') {
             const orderId = payload.Order_ID;
             if (!orderId) return;
+            // [V41.2] If n8n already renamed the order (New_Order_ID present in edit mode),
+            // use the new ID for all Supabase operations — avoids re-inserting stale old-ID data.
+            const effectiveOrderId = (mode === 'edit' && payload.New_Order_ID && payload.New_Order_ID !== orderId)
+                ? payload.New_Order_ID : orderId;
 
             function _deriveCat(key) {
                 const k = (key || '').toUpperCase();
@@ -8516,7 +8532,7 @@
             // confirmed_at = order creation date; must NOT be overwritten on edit.
             // updated_at is handled by Supabase trigger (orders_updated_at).
             const orderRow = {
-                order_id:          orderId,
+                order_id:          effectiveOrderId,
                 customer_name:     payload.Customer_Name || '',
                 appointment_at:    payload.Appointment_Date || null,
                 deposit:           payload.Deposit  || 0,
@@ -8541,10 +8557,10 @@
             // 2. Preserve existing batch/progress before delete (edit mode: item_key stays same)
             let _prevItemMap = {};
             try {
-                const _pvRes = await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) + '&select=item_key,batch_number,process_status', { headers: sbH });
+                const _pvRes = await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(effectiveOrderId) + '&select=item_key,batch_number,process_status,product_sku', { headers: sbH });
                 if (_pvRes.ok) {
                     const _pvRows = await _pvRes.json();
-                    if (Array.isArray(_pvRows)) _pvRows.forEach(function(r) { if (r.item_key) _prevItemMap[r.item_key] = { batch_number: r.batch_number || null, process_status: r.process_status || null }; });
+                    if (Array.isArray(_pvRows)) _pvRows.forEach(function(r) { if (r.item_key) _prevItemMap[r.item_key] = { batch_number: r.batch_number || null, process_status: r.process_status || null, product_sku: r.product_sku || null }; });
                 }
             } catch(e) { console.warn('[sbSyncOrder] pre-fetch preserve error:', e.message); }
 
@@ -8565,7 +8581,7 @@
             console.log('[sbSyncOrder] _prevItemMap after cache overlay:', JSON.stringify(_prevItemMap));
 
             // 3. Delete old items (removes both old-format and stale new-format)
-            await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId), {
+            await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(effectiveOrderId), {
                 method: 'DELETE',
                 headers: sbH
             }).catch(function(e) { console.warn('[sbSyncOrder] delete items error:', e.message); });
@@ -8579,12 +8595,9 @@
                         if (item.Product_Name.includes('木框')) _spec = '木框款式';
                         else if (item.Product_Name.includes('玻璃')) _spec = '玻璃瓶款式';
                     }
-                    // [Fix 2026-05-21] DO NOT write product_sku from sbSyncOrder:
-                    // Supabase order_items.product_sku has FK constraint → products(sku).
-                    // "羊毛氈公仔 - 加購" not in products table → FK violation 23503
-                    // rolls back ENTIRE batch insert (all items lost).
-                    // getProductDimensions already identifies W_WOOL via Order_Item_Key,
-                    // so Product_Name fallback is not critical for rendering.
+                    // product_sku: preserve value resolved by n8n (stored in _prevItemMap).
+                    // Do NOT write item.Product_Name directly — FK → products(sku) would
+                    // reject unsupported SKUs (e.g. 羊毛氈公仔 - 加購) and roll back entire batch.
                     var _prev = _prevItemMap[item.Order_Item_Key] || {};
                     // Priority: _ui_* (from globalOrders UI state, set by pre-enrich) >
                     //           _prev (from Supabase pre-fetch) — handles no-UPDATE-RLS case.
@@ -8593,14 +8606,15 @@
                     // batch_number must always be present (even if null) so all rows
                     // have identical key sets — PostgREST PGRST102 rejects mixed-key batches
                     var _row = {
-                        order_fhs_id:  orderId,
+                        order_fhs_id:  effectiveOrderId,
                         item_key:      item.Order_Item_Key,
                         item_category: _deriveCat(item.Order_Item_Key),
                         quantity:      item.Quantity || 1,
                         engraving_text: item.Notes || '',
                         specification: _spec,
                         process_status: _sanitizeStatus(_status),
-                        batch_number:  _batch
+                        batch_number:  _batch,
+                        product_sku:   _prev.product_sku || null
                     };
                     return _row;
                 });
@@ -8620,10 +8634,11 @@
                     var _restoreRows = Object.keys(_prevItemMap).map(function(ik) {
                         var _d = _prevItemMap[ik];
                         var _r = {
-                            order_fhs_id:  orderId,
+                            order_fhs_id:  effectiveOrderId,
                             item_key:      ik,
                             process_status: _sanitizeStatus(_d.process_status),
-                            batch_number:  _d.batch_number || null
+                            batch_number:  _d.batch_number || null,
+                            product_sku:   _d.product_sku || null
                         };
                         return _r;
                     });
@@ -8637,7 +8652,7 @@
                     }
                 }
             }
-            console.log('[sbSyncOrder] Supabase sync complete for', orderId);
+            console.log('[sbSyncOrder] Supabase sync complete for', effectiveOrderId, effectiveOrderId !== orderId ? '(renamed from ' + orderId + ')' : '');
             // Fix 5B: immediately refresh Overview so new order appears without 5-min wait
             setTimeout(function() {
                 if (window.fetchGlobalReview) window.fetchGlobalReview(true);

@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-22 (Session 12): Migration 0011 執行 + Race Condition 知識沉澱 ✅
+
+**Scope**: 執行 Migration 0011（race condition RPC），更新 build-error-resolver.md 知識庫，同步 current.html，完成 handoff + decisions 文件。
+**Status**: ✅ 完成，系統全到位
+
+---
+
 ## 2026-05-22 (Session 11): n8n Supabase Mirror 沙箱 fetch 靜默失敗修復 + 雙端 migrations 部署驗證 ✅
 
 **Scope**: 診斷並修復 n8n 沙箱中 fetch 丟失導致 Supabase 雙寫/RPC 靜默失敗 Bug；重構為 axios 實作（V47.10）；部署並驗證 Supabase 0010 & 0011 遷移；同步 pitsfalls.yaml P6 / validator C3 / learnings.md。
