@@ -116,3 +116,23 @@ pitfalls:
       Preferred pattern: precompute status variable before template literal,
       then use simple ternary `${_s === 'value' ? 'selected' : ''}` per option.
       If IIFE is necessary, always verify the `${` expression closes with `}` after `()`.
+
+  - id: P6
+    name: n8n-sandbox-fetch-disallowed
+    layer: n8n + Supabase
+    symptom: >
+      Supabase order renaming (or database writes) in n8n Code nodes fails silently.
+      The execution succeeds in n8n, but the database records remain unchanged or duplicated.
+    root_cause: >
+      Standard global `fetch` is undefined in the n8n container sandbox (or older Node version).
+      Additionally, standard built-in Node modules like `https` are disallowed.
+      Using `fetch` or `https` causes ReferenceError or Disallowed Module error, which triggers
+      a `try-catch` inside the node that swallows the error (returning `mirrored: false` in the execution JSON metadata) without failing the workflow.
+    fix_applied: >
+      Replaced all occurrences of `fetch` with `axios` in n8n Code nodes (`Mirror to Supabase` and `Mirror Delete to Supabase`).
+      `axios` is explicitly enabled in n8n's `NODE_FUNCTION_ALLOW_EXTERNAL` environment variable, making it fully functional in the sandbox.
+    detection_rule: "grep -n 'fetch(' n8n/*.json"
+    prevention: >
+      Never use `fetch()` or built-in Node.js modules (like `https`, `http`, `fs`) in n8n Code nodes.
+      Always use `axios` (i.e. `const axios = require('axios')`) for making HTTP requests inside n8n Code nodes, as it is authorized by the container settings.
+      Ensure that JS errors returned in node execution JSON do not silently pass without telemetry/alerting.

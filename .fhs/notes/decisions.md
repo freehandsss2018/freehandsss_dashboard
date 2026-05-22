@@ -7,6 +7,19 @@
 
 ## 記錄
 
+[2026-05-22] Order_ID 修改功能三端修復 — Frontend + Supabase + n8n
+
+決策：
+- **Frontend `New_Order_ID` 欄位**：edit mode 下 payload 新增 `New_Order_ID`（currentOrderId），`Order_ID` 保持 editTargetOrderId（WHERE clause anchor 不變）。`editTargetOrderId` 不在 `onIdInputBlur()` 更新，保持不可變，避免邏輯矛盾。
+- **Supabase migration 0010**：`order_items.order_fhs_id` FK 加 `ON UPDATE CASCADE`；新建 `rename_order_id(old_id, new_id)` RPC，在一個 transaction 內先更新 item_key prefix，再更新 orders.order_id（CASCADE 自動更新 order_fhs_id）。
+- **n8n Mirror_to_Supabase V47.7**：偵測 `New_Order_ID`，若存在則先調用 RPC，RPC 完成後 `orderId` 改為新值，後續 orders/order_items upsert 用新 ID。`process_status` / `batch_number` 在 RPC 內完全不觸碰。
+
+原因：Order_ID 是 orders 表的 unique key（非 UUID PK），order_items 有 FK 指向它。直接 PATCH 觸發 FK violation；delete + reinsert 會清空製作進度；item_key 含 order_id prefix，ON UPDATE CASCADE 不會自動修復，需 RPC 顯式更新。
+
+批准：Fat Mo ✅（2026-05-22 授權執行）
+
+***
+
 [2026-05-21] Subagent 稽核機制新增 — execute.md + commit.md + handoff.md 標準化
 
 決策：

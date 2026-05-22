@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-05-22] 🐛 n8n Supabase Mirror 沙箱 fetch 靜默失敗修復 + 雙端 migrations 部署驗證
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `.fhs/notes/pitfalls.yaml`（新增 P6: n8n-sandbox-fetch-disallowed）
+- `.fhs/ai/subagents/freehandsss/product-integration-validator.md`（Checklist C3）
+- `.fhs/memory/learnings.md`（修正 n8n Code Node 限制）
+- `.fhs/memory/handoff.md`（更新完成事項與待辦狀態）
+- `docs/repo-map.md`（加入新 migrations 說明）
+- `scripts/README.md`（加入 update_n8n_supabase_mirror.js 說明）
+- `n8n/FHS_Core_OrderProcessor_live.json`（更新後的 n8n 備份檔）
+- `supabase/migrations/0010_order_id_cascade_update.sql`
+- `supabase/migrations/0011_rename_order_id_security_definer.sql`
+- `scripts/update_n8n_supabase_mirror.js`
+
+**根因與修復 (n8n sandbox fetch disallowed)**：
+- **根因**：n8n 容器沙箱不支援 global `fetch` 且禁用 `https` 等內建 Node.js 模組，使得原本以 `fetch` 實作的 Supabase mirror 寫入與 RPC 重命名調用靜默報錯（ReferenceError: fetch is not defined），錯誤被 try-catch 吞掉，導致 Supabase 雙寫未真正執行。
+- **修復**：利用 n8n 已授權的外部模組 `axios` 全面重構 `Mirror to Supabase` 和 `Mirror Delete to Supabase` Code Nodes（V47.10）。經 Webhook 模擬調用與 SQL 直查，Order ID 重命名已能正確執行且無 duplicated 資料。
+
+**Supabase Migrations 部署**：
+- 成功在 Supabase 套用 `0010` (ON UPDATE CASCADE) 與 `0011` (併發安全且支援 race condition 合併的 `rename_order_id` RPC)，消除 FK 衝突。
+
+---
+
 ## [2026-05-21] 🔑 家庭合成鎖匙扣刻字欄重構 + 訂單總覽 3 Bug 修復 + V41 升版 current
 
 **修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`、`Freehandsss_Dashboard/Freehandsss_dashboard_current.html`

@@ -94,6 +94,10 @@ C2. 確認 product_sku FK 安全性
     → 新 SKU 是否已在 Supabase products 表中存在？
     → 若新 SKU 不在 products 表 → sbSyncOrder 會觸發 FK 23503 Violation
     → 此時 INSERT row 的 product_sku 必須設為 NULL（同 W_WOOL 處理方式）
+
+C3. 驗證 n8n Code Nodes 的 HTTP 請求安全性
+    → 檢查 n8n Code Nodes 是否使用 `fetch()` 或 `https`/`http` 內建 Node.js 模組
+    → 若有 HTTP 呼叫需求，必須統一使用 `axios`（即 `require('axios')`）以免 sandbox 靜默失敗或拋出 disallowed module 異常。
 ```
 
 ### Checklist D — RLS 政策覆蓋

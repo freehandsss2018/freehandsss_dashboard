@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// V47 Input Normalizer - single output\nconst input = $input.all()[0].json;\nconst rawPayload = (input.body !== undefined) ? input.body : input;\nconst body = Array.isArray(rawPayload) ? (rawPayload[0] || {}) : rawPayload;\nconst action = (body.action || body.Action || input.action || input.Action || \"create\").toLowerCase();\nreturn [{\n  json: {\n    ...input,\n    action: action,\n    isDelete: (action === 'delete'),\n    Record_ID: body.Record_ID || body.id || input.Record_ID || \"\",\n    Order_ID: body.Order_ID || input.Order_ID || \"\",\n    Customer_Name: body.Customer_Name || input.Customer_Name || \"\"\n  }\n}];",
+    "notice": ""
+  },
+  "id": "1a7ade1b-fa1f-4ff0-9500-29c5919d1d6b",
+  "name": "Input Normalizer",
+  "type": "n8n-nodes-base.code",
+  "typeVersion": 2,
+  "position": [
+    31184,
+    7680
+  ]
+}

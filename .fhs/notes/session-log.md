@@ -1,5 +1,30 @@
 # Session Log
 
+## 2026-05-22 (Session 11): n8n Supabase Mirror 沙箱 fetch 靜默失敗修復 + 雙端 migrations 部署驗證 ✅
+
+**Scope**: 診斷並修復 n8n 沙箱中 fetch 丟失導致 Supabase 雙寫/RPC 靜默失敗 Bug；重構為 axios 實作（V47.10）；部署並驗證 Supabase 0010 & 0011 遷移；同步 pitsfalls.yaml P6 / validator C3 / learnings.md。
+**Status**: ✅ 完成，模擬 Webhook 與直查 SQL 驗證成功，無 duplicate/FK 錯誤
+
+### 主要完成事項
+
+1. **n8n Supabase Mirror 沙箱限制修復**：
+   - 發現 n8n 沙箱中 `fetch()` 與 `https` 模組不可用（引發 ReferenceError: fetch is not defined 靜默失敗）。
+   - 建立 `scripts/update_n8n_supabase_mirror.js` 腳本，透過 n8n REST API 取得、修改並上傳工作流代碼，使用預授權的 `axios`（`require('axios')`）重構 `Mirror to Supabase` 和 `Mirror Delete to Supabase` Code 節點。
+   - 模擬調用 Webhook `3635`，驗證寫入與 RPC 重命名順利執行。
+
+2. **Supabase Migrations 部署**：
+   - 執行 migration `0010` (為 `order_items` 加入 `ON UPDATE CASCADE` 外鍵級聯)。
+   - 執行 migration `0011` (加入併發鎖定與 race-condition 合併防衝突的 `rename_order_id` RPC)。
+   - 手動 SQL 與 Webhook 測試證明重命名舊訂單後，舊 Row 被刪除，所有 Items 外鍵自動串聯更新，無 duplicated 殘留。
+
+3. **保護機制同步**：
+   - 更新 `pitfalls.yaml`：新增 **`P6: n8n-sandbox-fetch-disallowed`** 條目。
+   - 更新 `product-integration-validator.md`：新增 Checklist item **`C3`** (n8n sandbox request audit)。
+   - 更新 `learnings.md`：更新 n8n Code 節點 HTTP 請求限制與 axios 可用性 Pattern。
+   - 更新 `handoff.md` / `Changelog.md` / `repo-map.md` / `scripts/README.md`。
+
+---
+
 ## 2026-05-21 (Session 9~10): 進度/W_WOOL Bug 修復循環完結 + 新產品跨層融入保護機制 ✅
 
 **Scope**: IIFE template literal 語法 Bug 修復（`})()` → `})()}`，全介面按鈕失效根因）；5輪 Bug 循環學習提取（P1~P5 pitfalls.yaml）；建立 product-integration-validator subagent + /new-product skill + Rollback Matrix；CHANGELOG/repo-map/MANIFEST 同步

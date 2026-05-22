@@ -1,0 +1,1807 @@
+{
+  "updatedAt": "2026-05-22T01:55:36.432Z",
+  "createdAt": "2026-03-24T02:57:23.796Z",
+  "id": "6Ljih0hSKr9RpYNm",
+  "name": "FHS_Core_OrderProcessor",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### ?? ??????????\n\n**????:** ??????? Dashboard ??????????????\n\n**????:**\n1. **?????? (Profit Auditor):** [V45 ??] ?????????????,??????????\n2. **?????:** ???????????????????\n3. **????:** ????????????????????????????\n4. **????:** ??????? Airtable (?????),?? Upsert ?????\n5. **Telegram ??:** ?????????????????",
+        "height": 312,
+        "width": 550,
+        "color": 1
+      },
+      "id": "9decd26c-07f2-4553-a1a7-8220dd9ea7fc",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        30896,
+        6848
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.Order_Items_List",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "id": "479490d0-f233-431f-951f-031122ebac84",
+      "name": "Find Product ID",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        31088,
+        7840
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "7620524971",
+        "text": "={{ $json.Full_Message }}",
+        "replyMarkup": "none",
+        "additionalFields": {}
+      },
+      "id": "c87bd1f1-c7db-41ff-aef5-c4ceb6b02e17",
+      "name": "Send Profit Report",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        32048,
+        7664
+      ],
+      "webhookId": "4f286124-f5ee-411b-851f-9dd83e1fc318",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "resource": "record",
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbljkptnNcUEyDRFH",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product_Link": "={{ [$json.Product_ID] }}",
+            "Quantity": "={{ Number($json.Quantity) }}",
+            "Engraving_Text": "={{ $json.Notes }}",
+            "Order_Link": "={{ [$json.Main_Order_ID] }}",
+            "Order_Item_Key": "={{ $json.Order_Item_Key }}"
+          },
+          "matchingColumns": [
+            "Order_Item_Key"
+          ]
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "895c1914-7705-49cc-bdfa-409ddee285c1",
+      "name": "Create Sub Items",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        31616,
+        7648
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// 1. ??????????? ID?\nconst recordId = $input.first().json.id;\n\n// 2. ???????????\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. ??? n8n ????\n// Product_ID ??? null ??? - ? null ?? Airtable ?? [null],\n// linked record ???? null ID,?? Create Sub Items ????? Telegram ?\nreturn subItems\n  .filter(item => item.Order_Item_Key)\n  .map(item => {\n    const row = {\n      Quantity: item.Quantity,\n      Notes: item.Notes,\n      Main_Order_ID: recordId,\n      Order_Item_Key: item.Order_Item_Key\n    };\n    if (item.Product_Record_ID) row.Product_ID = item.Product_Record_ID;\n    return { json: row };\n  });",
+        "notice": ""
+      },
+      "id": "f2fe8818-c460-4ba8-94bb-0be673a85c91",
+      "name": "Bind Main Order ID",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        31408,
+        7648
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "resource": "record",
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order_ID": "={{ $json.Order_ID }}",
+            "Customer_Name": "={{ $json.Customer_Name }}",
+            "Deposit": "={{ $json.Deposit }}",
+            "Balance": "={{ $json.Balance }}",
+            "Additional_Fee": "={{ $json.Additional_Fee }}",
+            "Final_Sale_Price": "={{ $json.Total_Revenue }}",
+            "Total_Cost": "={{ $json.Total_Cost }}",
+            "Net_Profit": "={{ $json.Final_Profit }}",
+            "Full_Order_Text": "={{ $json.Order_Text }}",
+            "Raw_Form_State": "={{ $json.Raw_Form_State }}",
+            "Appointment_Date": "={{ $json.Appointment_Date }}",
+            "Order_Confirm_Date": "={{ $json.Order_Confirm_Date || null }}"
+          },
+          "matchingColumns": [
+            "Order_ID"
+          ]
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "a702631d-a2f5-4553-9ed2-33a5449397ba",
+      "name": "Create Main Order",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        31840,
+        7744
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// API V40.6 ??:???? SKU (Supabase-Ready ?)\n// ????:?? batchFormula ??? Airtable ????\n// ??:sku_list ????? Supabase RPC ????\nconst items = $input.all();\n\nif (!Array.isArray(items) || items.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", sku_list: [], hasItems: false } };\n}\n\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"???\"))];\n\nif (skus.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", sku_list: [], hasItems: false } };\n}\n\nconst formulaParts = skus.map(s => `{Product_Name} = '${s}'`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : formulaParts[0];\n\n// sku_list: Supabase get_base_cost_by_skus RPC ????\n// Phase 2 ???,n8n HTTP Request ?????????\nreturn { json: { batchFormula: finalFormula, sku_list: skus, hasItems: true } };",
+        "notice": ""
+      },
+      "id": "94d1c0c0-5cd8-460c-be20-e3b328ccf8db",
+      "name": "Batch SKU Collector",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        31616,
+        7424
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblC3HDJAz9W0OF6R",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ $json.batchFormula }}",
+        "returnAll": true,
+        "options": {},
+        "sort": {}
+      },
+      "id": "503014ba-a49f-4388-9c44-3ef56f5ff4dd",
+      "name": "Fetch Exact Base Cost",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        31824,
+        7424
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// API V40.6 Supabase-First: reads costs from Supabase (via Smart Cache Strategist)\n// Fallback: Airtable node output (if Smart Cache Strategist couldn't reach Supabase)\nconst originalItemsNode = $(\"Parse Items & Generate SKU\");\nconst originalItems = originalItemsNode ? originalItemsNode.all() : [];\n\n// Check if Smart Cache Strategist already fetched costs from Supabase\nconst cacheData = $(\"Smart Cache Strategist\").first().json;\n\nlet costMap = {};\n\nif (cacheData.supabaseFetched && cacheData.supabaseCosts) {\n  // Supabase path: cost data pre-fetched, keyed by Product_Name\n  costMap = cacheData.supabaseCosts;\n} else {\n  // Airtable fallback: read from Fetch Exact Base Cost node output\n  const costNode = $(\"Fetch Exact Base Cost\");\n  const costResults = costNode ? costNode.all() : [];\n  costResults.forEach(r => {\n    if (r.json && r.json.id) {\n      costMap[r.json.Product_Name] = {\n        id: r.json.id,\n        Product_Name: r.json.Product_Name,\n        Total_Base_Cost: Number(r.json.Total_Base_Cost) || 0\n      };\n    }\n  });\n}\n\nreturn originalItems.map(item => {\n  const sku = item.json.Search_SKU;\n  // Section 14.5 ????:????????? 0(?? V40.9 ?????)\n  const costData = costMap[sku] || { id: null, Product_Name: sku, Total_Base_Cost: 0 };\n  return { json: { ...item.json, ...costData } };\n});",
+        "notice": ""
+      },
+      "id": "bcf44653-be85-445b-ad3b-275eb11e1f1c",
+      "name": "Local Data Mapper",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        32016,
+        7424
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// === Freehandsss V47.5 (??????: item ?? + order ?? + n8n_cost_adjustments) ===\n// ??:N8n_Cost_Adjustments = NUMERIC ????,N8n_Adjustment_Notes = JSONB ????\n// ??:.fhs/ai/FHS_Finance_Bible.md �3-4, Product Bible V3.7 �2.5\n\nconst parseNode = $('Parse Items & Generate SKU');\nconst parseNodeItems = parseNode ? parseNode.all() : [];\n\nif (parseNodeItems.length === 0) {\n    return [{ json: { Total_Revenue: 0, Total_Cost: 0, Final_Profit: 0, Sub_Items: [],\n        Cost_Lookup_Warning: \"\", Has_Cost_Error: false,\n        Handmodel_Cost_Total: 0, Keychain_Cost_Total: 0, Necklace_Cost_Total: 0,\n        N8n_Cost_Adjustments: 0, N8n_Adjustment_Notes: [] } }];\n}\n\nconst firstNodeData = parseNodeItems[0].json || {};\nconst totalRevenue = Number(firstNodeData.Total_Revenue) || 0;\nconst rawFormState = firstNodeData.Raw_Form_State || \"\";\n\nlet deposit = 0, balance = 0, additionalFee = 0;\ntry {\n    const triggerNode = $('Receive Dashboard Order');\n    const triggerBody = (triggerNode && triggerNode.first()) ? (triggerNode.first().json.body || triggerNode.first().json) : {};\n    deposit = Number(triggerBody.Deposit) || 0;\n    balance = Number(triggerBody.Balance) || 0;\n    additionalFee = Number(triggerBody.Additional_Fee) || 0;\n} catch (error) {}\n\n// SKU ? item_category ??(Finance Bible �3)\nfunction getItemCategory(sku) {\n    if (sku.includes('??') || sku.includes('???')) return '????';\n    if (sku.includes('???')) return '?????';\n    if (sku.includes('??')) return '??';\n    return '??';\n}\n\nlet totalBaseCost = 0;\nlet handmodelCostTotal = 0;\nlet keychainCostTotal = 0;\nlet necklaceCostTotal = 0;\nlet packedItems = [];\nlet keychainItemCount = 0;\nconst zeroCostItems = [];\n\nconst items = $input.all();\nfor (let i = 0; i < parseNodeItems.length; i++) {\n    let originalItemData = parseNodeItems[i].json || {};\n    let itemData = (items[i] && items[i].json) ? items[i].json : originalItemData;\n\n    let itemCost = Number(itemData.Total_Base_Cost) || 0;\n    totalBaseCost += itemCost;\n\n    const sku = originalItemData.Search_SKU || itemData.Search_SKU || \"\";\n    if (sku.includes(\"???\")) keychainItemCount++;\n\n    if (itemCost === 0 && sku && sku !== \"???\" && sku.trim() !== \"\") {\n        zeroCostItems.push(sku);\n    }\n\n    const itemCategory = getItemCategory(sku);\n    const itemHandmodelCost = itemCategory === '????'  ? itemCost : 0;\n    const itemKeychainCost  = itemCategory === '?????' ? itemCost : 0;\n    const itemNecklaceCost  = itemCategory === '??'      ? itemCost : 0;\n\n    handmodelCostTotal += itemHandmodelCost;\n    keychainCostTotal  += itemKeychainCost;\n    necklaceCostTotal  += itemNecklaceCost;\n\n    packedItems.push({\n        Product_Record_ID: itemData.id || null,\n        Product_Name:      itemData.Product_Name || originalItemData.Search_SKU || \"Unknown SKU\",\n        Total_Base_Cost:   itemCost,\n        Quantity:          Number(originalItemData.Original_Qty) || 1,\n        Notes:             originalItemData.Item_Notes || \"\",\n        Order_Item_Key:    originalItemData.Order_Item_Key || \"\",\n        Item_Category:     itemCategory,\n        Handmodel_Cost:    itemHandmodelCost,\n        Keychain_Cost:     itemKeychainCost,\n        Necklace_Cost:     itemNecklaceCost\n    });\n}\n\n// ????????????(V3.7 �2.5)\nconst keychainShippingDeduction = keychainItemCount > 1 ? (keychainItemCount - 1) * 20 : 0;\ntotalBaseCost     -= keychainShippingDeduction;\nkeychainCostTotal -= keychainShippingDeduction;\n\n// N8n_Cost_Adjustments = NUMERIC ????(??)\n// N8n_Adjustment_Notes = JSONB ????(?????,?????)\nconst n8nAdjustmentNotes = [];\nif (keychainShippingDeduction > 0) {\n    n8nAdjustmentNotes.push({\n        type:                \"keychain_shipping_deduction\",\n        amount:              -keychainShippingDeduction,\n        desc:                `${keychainItemCount} ????????,?? ${keychainItemCount - 1} ?????(?? $20)`,\n        basis:               \"Product Bible V3.7 �2.5\",\n        keychain_item_count: keychainItemCount\n    });\n}\nconst n8nCostAdjustments = n8nAdjustmentNotes.reduce((sum, item) => sum + (item.amount || 0), 0);\n\nconst finalProfit = totalRevenue - totalBaseCost;\n\nconst hasCostError = zeroCostItems.length > 0;\nconst costLookupWarning = hasCostError\n    ? `?? SKU ??????,Total_Cost ????!\\n?????? = $0:\\n${zeroCostItems.map(s => `. ${s}`).join('\\n')}`\n    : \"\";\n\nreturn [{\n    json: {\n        ...firstNodeData,\n        Total_Revenue:        totalRevenue,\n        Total_Cost:           totalBaseCost,\n        Final_Profit:         finalProfit,\n        Deposit:              deposit,\n        Balance:              balance,\n        Additional_Fee:       additionalFee,\n        Raw_Form_State:       rawFormState,\n        Sub_Items:            packedItems,\n        Cost_Lookup_Warning:  costLookupWarning,\n        Has_Cost_Error:       hasCostError,\n        Handmodel_Cost_Total: handmodelCostTotal,\n        Keychain_Cost_Total:  keychainCostTotal,\n        Necklace_Cost_Total:  necklaceCostTotal,\n        N8n_Cost_Adjustments: n8nCostAdjustments,\n        N8n_Adjustment_Notes: n8nAdjustmentNotes\n    }\n}];",
+        "notice": ""
+      },
+      "id": "7ffb2baa-8f1d-4ec9-bb52-b4ad3c61f98d",
+      "name": "Calculate Profit & Pack Items",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        32224,
+        7424
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "multipleMethods": false,
+        "httpMethod": "POST",
+        "path": "1444800b-1397-4154-b2da-a4d328c6c51b",
+        "authentication": "none",
+        "responseMode": "onReceived",
+        "contentTypeNotice": "",
+        "options": {}
+      },
+      "id": "5e776f97-bd51-4632-a729-0454e9c84a99",
+      "name": "Receive Dashboard Order",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        30960,
+        7424
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "b2429fcb-502e-407f-be70-7318b774d689"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// === V45.7.4 Parse Items & Generate SKU (SKU Normalization Layer) ===\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst orderId = body.Order_ID || \"???\";\nconst customer = body.Customer_Name || \"???\";\nconst appDate = body.Appointment_Date || null;\nconst confirmDate = body.Order_Confirm_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\n// V45.7.4: Support both Order_Items_List (Dashboard) and Items (legacy/test)\nconst itemsList = body.Order_Items_List || body.Items;\n\nif (itemsList && Array.isArray(itemsList)) {\n    for (const item of itemsList) {\n        let sku = item.Product_Name || \"\";\n        const qty = Number(item.Quantity) || 1;\n\n        // === 1. 3D Display SKU Normalization (Bible V3.7 Section 4) ===\n        // Handles: ????/????/????(??) ? ???? (N?)\n        // Rule: 3? maps to 4? pricing per V3.7\n        if (sku.includes(\"??\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `???? ${limb}`;\n        } else if (sku.includes(\"???\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `????? ${limb}`;\n        }\n\n        // === 2. Keychain SKU Normalization ===\n        // Dashboard sends: \"????? - ???\" + Mode: \"(??)\"\n        // Airtable expects: \"????? - ??? - {qty}? {mode}\"\n        if (sku.includes(\"???\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        // === 3. Jewelry/Charm SKU Normalization ===\n        // Dashboard sends: \"???? - 925?\" + Mode: \"(??)\"\n        // Airtable expects: \"???? - 925? - {qty}? {mode}\"\n        if (sku.includes(\"??\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        let shipping_saved = (sku.includes(\"???\") && qty > 1) ? (qty - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"??\")) ? Math.floor(qty / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Order_Confirm_Date: confirmDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: qty,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key || \"\",\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"???\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;",
+        "notice": ""
+      },
+      "id": "97e25cdd-619b-4033-b189-8f2fbb654ac4",
+      "name": "Parse Items & Generate SKU",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        31184,
+        7424
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Profit Auditor V45.8 - Anti-Loss Guard\n// Business logic: Ling Au sets prices manually; system price is reference only.\n// Audit purpose: only alert if actual collected < system cost (selling at a loss)\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\n\nconst deposit       = Number(body.Deposit)           || 0;\nconst balance       = Number(body.Balance)           || 0;\nconst additionalFee = Number(body.Additional_Fee)    || 0;\nconst actualTotal   = deposit + balance + additionalFee;\nconst systemCost    = Number(body.System_Total_Cost) || 0;\n\nlet auditResults = {\n    auditPassed: true,\n    systemCost:  systemCost,\n    actualTotal: actualTotal,\n    discrepancy: 0,\n    reasons:     [],\n    orderId:     body.Order_ID      || \"Unknown\",\n    customer:    body.Customer_Name || \"Unknown\",\n    role:        body.Role          || \"ling\"\n};\n\n// Only audit when both values are meaningful (skip if no payment entered yet)\nif (actualTotal > 0 && systemCost > 0) {\n    if (actualTotal < systemCost) {\n        const diff = systemCost - actualTotal;\n        auditResults.auditPassed = false;\n        auditResults.discrepancy = diff;\n        auditResults.reasons.push(`At-a-loss alert: collected $${actualTotal}, cost $${systemCost}, gap $${diff}`);\n    }\n}\n\nreturn [{ json: auditResults }];",
+        "notice": ""
+      },
+      "id": "008aca1b-15c9-43c9-a861-e8c602fcded3",
+      "name": "Profit Auditor",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        30816,
+        7216
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "dataType": "boolean",
+        "value1": "={{ $json.auditPassed }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": false,
+              "output": 0
+            }
+          ]
+        },
+        "fallbackOutput": 1
+      },
+      "id": "e6bc9cd3-a6ba-4574-9adf-b9a1d35afa9f",
+      "name": "Auditor Logic Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        31024,
+        7200
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "7620524971",
+        "text": "=?? ?????????? ??\n??:{{ $json.orderId }}\n??:?????!",
+        "replyMarkup": "none",
+        "additionalFields": {}
+      },
+      "id": "e1c41995-b56d-48a2-96c0-798dece625b0",
+      "name": "Auditor Alert",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        31232,
+        7200
+      ],
+      "typeVersion": 1.2,
+      "webhookId": "87d23371-1560-4e1b-91e6-79c0e702dc7c",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filePath": ".n8n/data/products.json",
+        "dataPropertyName": "data"
+      },
+      "id": "95b15b0c-5474-4074-acf6-84956f195e3c",
+      "name": "Read Cache File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "position": [
+        31728,
+        7248
+      ],
+      "typeVersion": 1,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// V47.9 Local Cost Map — fetch() unavailable in Code nodes on this NAS\n// Costs from Supabase products table (2026-05-18). Base SKU = prefix before '- N飾 (...)'\nconst COST_MAP = {\n  // 手模擺設 — exact match\n  \"玻璃瓶套裝 (4肢)\": 210,\n  \"玻璃瓶套裝 (2肢)\": 210,\n  \"木框套裝 (4肢)\":   210,\n  \"木框套裝 (2肢)\":   210,\n  // 嬰兒鎖匙扣\n  \"嬰兒鎖匙扣 - 不銹鋼\":   185,\n  \"嬰兒鎖匙扣 - 鋁合金\":   212,\n  \"嬰兒(P)鎖匙扣 - 不銹鋼\": 235,\n  \"嬰兒(P)鎖匙扣 - 鋁合金\": 262,\n  // 嬰兒吊飾\n  \"嬰兒吊飾 - 925銀\":    425,\n  \"嬰兒吊飾 - 925金\":    481,\n  \"嬰兒(P)吊飾 - 925銀\": 475,\n  \"嬰兒(P)吊飾 - 925金\": 531,\n  // 家庭 S 系列鎖匙扣\n  \"家庭(S1)鎖匙扣 - 不銹鋼\": 275,\n  \"家庭(S1)鎖匙扣 - 鋁合金\": 275,\n  \"家庭(S2)鎖匙扣 - 不銹鋼\": 275,\n  \"家庭(S2)鎖匙扣 - 鋁合金\": 275,\n  // 家庭 P 系列鎖匙扣\n  \"家庭(P1)鎖匙扣 - 不銹鋼\": 405,\n  \"家庭(P1)鎖匙扣 - 鋁合金\": 405,\n  \"家庭(P2)鎖匙扣 - 不銹鋼\": 405,\n  \"家庭(P2)鎖匙扣 - 鋁合金\": 405,\n  // 家庭吊飾\n  \"家庭(S1)吊飾 - 925銀\": 475,\n  \"家庭(S1)吊飾 - 925金\": 531,\n  \"家庭(S2)吊飾 - 925銀\": 475,\n  \"家庭(S2)吊飾 - 925金\": 531,\n  \"家庭(P1)吊飾 - 925銀\": 605,\n  \"家庭(P1)吊飾 - 925金\": 661,\n  \"家庭(P2)吊飾 - 925銀\": 605,\n  \"家庭(P2)吊飾 - 925金\": 661,\n  // 成人\n  \"成人(P)鎖匙扣 - 不銹鋼\": 405,\n  \"成人(P)吊飾 - 925銀\":    605,\n};\n\nfunction lookupCost(sku) {\n  if (!sku) return null;\n  // 1. Exact match\n  if (COST_MAP[sku] !== undefined) return COST_MAP[sku];\n  // 2. Prefix match (handles variants like \"嬰兒鎖匙扣 - 不銹鋼 - 5飾 (加購)\")\n  for (const base of Object.keys(COST_MAP)) {\n    if (sku.startsWith(base)) return COST_MAP[base];\n  }\n  return null;\n}\n\nconst batchItems = $(\"Batch SKU Collector\").all();\nconst hasValidItems = batchItems.some(item => item.json.hasItems === true);\nconst skuList = batchItems.length > 0 ? (batchItems[0].json.sku_list || []) : [];\n\nif (hasValidItems && skuList.length > 0) {\n  const supabaseCosts = {};\n  for (const sku of skuList) {\n    const cost = lookupCost(sku);\n    if (cost !== null) {\n      supabaseCosts[sku] = { Product_Name: sku, Total_Base_Cost: cost };\n    }\n  }\n  if (Object.keys(supabaseCosts).length > 0) {\n    return batchItems.map(item => ({\n      json: {\n        ...item.json,\n        useCache: false,\n        supabaseFetched: true,\n        supabaseCosts,\n        batchFormula: \"RECORD_ID()='SUPABASE_SKIP'\"\n      }\n    }));\n  }\n}\n\n// No costs found in local map — fall through to Airtable\nif (hasValidItems) {\n  await new Promise(r => setTimeout(r, 250));\n}\nreturn batchItems.map(item => ({\n  json: { ...item.json, useCache: false, supabaseFetched: false }\n}));",
+        "notice": ""
+      },
+      "id": "2bb644ad-7b4c-456e-884a-e2cbfd09a10e",
+      "name": "Smart Cache Strategist",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        31920,
+        7248
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "dataType": "string",
+        "value1": "={{ $json.useCache === true ? 'yes' : 'no' }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": "yes",
+              "output": 0
+            }
+          ]
+        },
+        "fallbackOutput": 1
+      },
+      "id": "99e0b047-9bbe-4619-905c-b0d250d1a11a",
+      "name": "Cache Hit?",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        32128,
+        7248
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "resource": "record",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ \"TRIM({Order_ID}) = '\" + $json.Order_ID + \"'\" }}",
+        "returnAll": false,
+        "limit": 100,
+        "options": {},
+        "sort": {}
+      },
+      "id": "8a497284-6a00-4a42-8501-749bd67250a2",
+      "name": "Search Record to Delete",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        31504,
+        7232
+      ],
+      "typeVersion": 2.1,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "resource": "record",
+        "operation": "deleteRecord",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "list"
+        },
+        "id": "={{ $json.id }}"
+      },
+      "id": "0a4b6ceb-ef50-41cb-a7af-d8f8ffc525cc",
+      "name": "Delete Record",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        31712,
+        7056
+      ],
+      "typeVersion": 2.1,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "7620524971",
+        "text": "=🗑️ 【Freehandsss 刪除訂單】\n👤 {{ $('Search Record to Delete').first().json.fields?.Customer_Name || '' }}  |  📝 #{{ $('Search Record to Delete').first().json.fields?.Order_ID || '(???)' }}\n⚠️ 此訂單已被刪除",
+        "replyMarkup": "none",
+        "additionalFields": {}
+      },
+      "id": "c417aea1-e0f2-45dc-92da-d5302070b899",
+      "name": "Notify Telegram (Delete)",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        32000,
+        7072
+      ],
+      "typeVersion": 1.2,
+      "webhookId": "2f0ff02a-880d-4042-a9e2-7b4054da2281",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// V47 Input Normalizer - single output\n// [V47.7] Added New_Order_ID forwarding for Order_ID rename support\nconst input = $input.all()[0].json;\nconst rawPayload = (input.body !== undefined) ? input.body : input;\nconst body = Array.isArray(rawPayload) ? (rawPayload[0] || {}) : rawPayload;\nconst action = (body.action || body.Action || input.action || input.Action || \"create\").toLowerCase();\nreturn [{\n  json: {\n    ...input,\n    action: action,\n    isDelete: (action === 'delete'),\n    Record_ID: body.Record_ID || body.id || input.Record_ID || \"\",\n    Order_ID: body.Order_ID || input.Order_ID || \"\",\n    New_Order_ID: body.New_Order_ID || input.New_Order_ID || null,\n    Customer_Name: body.Customer_Name || input.Customer_Name || \"\"\n  }\n}];",
+        "notice": ""
+      },
+      "id": "1a7ade1b-fa1f-4ff0-9500-29c5919d1d6b",
+      "name": "Input Normalizer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        31184,
+        7680
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "dataType": "string",
+        "value1": "={{ $json.action }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": "delete",
+              "output": 0
+            }
+          ]
+        },
+        "fallbackOutput": 1
+      },
+      "id": "23a75050-1f12-463b-846c-6765807953d1",
+      "name": "Switch Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        31392,
+        7408
+      ]
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Pack Telegram Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        30480,
+        7680
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const calcItem = $('Calculate Profit & Pack Items').all()[0];\nconst calc = calcItem ? calcItem.json : {};\nconst trigger = $('Receive Dashboard Order').first().json;\nconst body = trigger.body || trigger;\n\nconst hasCostError = calc.Has_Cost_Error === true || calc.Total_Cost === 0;\nconst action = body.action || body.Action || 'create';\n\n// When cost unavailable, omit '$' prefix to avoid '$⚠️ 待核算'\nconst costDisplay   = hasCostError ? '⚠️ 待核算' : '$' + calc.Total_Cost;\nconst profitDisplay = hasCostError ? '⚠️ 待核算' : '$' + calc.Final_Profit;\nconst revenueDisplay = '$' + (calc.Total_Revenue || 0);\n\nlet message = '';\n\nif (action === 'create') {\n  const subItems = calc.Sub_Items || [];\n  const orderLines = subItems.length > 0\n    ? subItems.map(item => {\n        const qty = item.Quantity > 1 ? ' x' + item.Quantity : '';\n        return '• ' + (item.Product_Name || '') + qty;\n      }).join('\\n')\n    : '  (無商品記錄)';\n\n  message = [\n    '📦 【Freehandsss 新訂單】',\n    '👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || ''),\n    '📅 ' + (calc.Appointment_Date || '未定'),\n    '------------------------',\n    '🛍️ 訂單商品：',\n    orderLines,\n    '------------------------',\n    '💰 入帳：' + revenueDisplay,\n    '💵 成本：' + costDisplay,\n    '🏆 利潤：' + profitDisplay\n  ].join('\\n');\n\n} else if (action === 'edit') {\n  const updateNote = body.Update_Note ? '\\n' + body.Update_Note : '';\n  message = [\n    '✏️ 【Freehandsss 修正訂單】',\n    '👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || ''),\n    '📅 ' + (calc.Appointment_Date || '未定') + updateNote,\n    '------------------------',\n    '💰 入帳：' + revenueDisplay,\n    '💵 成本：' + costDisplay,\n    '🏆 利潤：' + profitDisplay\n  ].join('\\n');\n\n} else {\n  message = '🗑️ 【Freehandsss 刪除訂單】\\n👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || '') + '\\n⚠️ 此訂單已被刪除';\n}\n\nreturn [{ json: {\n  Action:         action,\n  Customer_Name:  calc.Customer_Name || '',\n  Order_ID:       calc.Order_ID || '',\n  Full_Message:   message,\n  Has_Cost_Error: hasCostError\n}}];",
+        "notice": ""
+      }
+    },
+    {
+      "name": "Mirror to Supabase",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32000,
+        7800
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// === FHS Supabase Mirror Write — CREATE/EDIT path (V47.9) ===\n// Changes from V47.8:\n// - [V47.9] Added rename diagnostics in return JSON (action, newOrderId, rpc_status)\n//   to surface silent failures in execution log inspection\n// V47.8 preserved:\n// - New_Order_ID read from Input Normalizer\n// - confirmed_at / process_status only set on create\n// - process.env NAS try-catch\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\nconst hdrs = {\n  'apikey': SUPABASE_KEY,\n  'Authorization': `Bearer ${SUPABASE_KEY}`,\n  'Content-Type': 'application/json',\n  'Prefer': 'resolution=merge-duplicates,return=minimal'\n};\n\nasync function upsert(table, conflictCol, payload) {\n  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${conflictCol}`, {\n    method: 'POST', headers: hdrs, body: JSON.stringify(payload)\n  });\n  if (!res.ok) throw new Error(`${table}: ${res.status} ${await res.text()}`);\n}\n\ntry {\n  const calc = $('Calculate Profit & Pack Items').first().json;\n  let orderId = calc.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing from Calculate Profit node');\n\n  const action = (() => {\n    try { return ($('Input Normalizer').first().json.action || 'create').toLowerCase(); } catch(e) { return 'create'; }\n  })();\n\n  // [V47.8] Read New_Order_ID from Input Normalizer (explicit field, reliable)\n  const newOrderId = (() => {\n    try { return $('Input Normalizer').first().json.New_Order_ID || null; } catch(e) { return null; }\n  })();\n\n  // [V47.9] Capture diagnostics\n  const diag = {\n    action_received: action,\n    order_id_received: orderId,\n    new_order_id_received: newOrderId,\n    rename_condition_met: (action === 'edit' && !!newOrderId && newOrderId !== orderId),\n    rpc_called: false,\n    rpc_status: null,\n    rpc_error: null\n  };\n\n  let rawFormState = {};\n  try {\n    rawFormState = typeof calc.Raw_Form_State === 'string'\n      ? JSON.parse(calc.Raw_Form_State || '{}')\n      : (calc.Raw_Form_State || {});\n  } catch(e) { rawFormState = { raw: String(calc.Raw_Form_State) }; }\n\n  // [V47.8] Atomic Order_ID rename via Supabase RPC\n  let orderRenamed = null;\n  if (action === 'edit' && newOrderId && newOrderId !== orderId) {\n    diag.rpc_called = true;\n    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rename_order_id`, {\n      method: 'POST',\n      headers: hdrs,\n      body: JSON.stringify({ old_id: orderId, new_id: newOrderId })\n    });\n    diag.rpc_status = rpcRes.status;\n    if (!rpcRes.ok) {\n      const rpcErr = await rpcRes.text();\n      diag.rpc_error = rpcErr;\n      throw new Error(`rename_order_id RPC failed: ${rpcRes.status} ${rpcErr}`);\n    }\n    orderRenamed = `${orderId} → ${newOrderId}`;\n    orderId = newOrderId;\n  }\n\n  const orderPayload = {\n    order_id:               orderId,\n    customer_name:          calc.Customer_Name || orderId,\n    appointment_at:         calc.Appointment_Date || null,\n    final_sale_price:       calc.Total_Revenue         || 0,\n    total_cost:             calc.Total_Cost            || 0,\n    net_profit:             calc.Final_Profit          || 0,\n    deposit:                calc.Deposit               || 0,\n    balance:                calc.Balance               || 0,\n    additional_fee:         calc.Additional_Fee        || 0,\n    full_order_text:        calc.Order_Text            || '',\n    handmodel_cost:         calc.Handmodel_Cost_Total  || 0,\n    keychain_cost:          calc.Keychain_Cost_Total   || 0,\n    necklace_cost:          calc.Necklace_Cost_Total   || 0,\n    n8n_cost_adjustments:   Number(calc.N8n_Cost_Adjustments) || 0,\n    n8n_adjustment_notes:   calc.N8n_Adjustment_Notes  || [],\n    raw_form_state:         rawFormState\n  };\n\n  if (action === 'create' && calc.Order_Confirm_Date) {\n    orderPayload.confirmed_at = calc.Order_Confirm_Date;\n  }\n  if (action === 'create') {\n    orderPayload.process_status = '待確認';\n  }\n\n  await upsert('orders', 'order_id', orderPayload);\n\n  const subItems = calc.Sub_Items || [];\n  for (const item of subItems) {\n    const key = item.Order_Item_Key;\n    if (!key) continue;\n    await upsert('order_items', 'item_key', {\n      order_fhs_id:   orderId,\n      item_key:       key,\n      product_sku:    item.Product_Name   || null,\n      item_category:  item.Item_Category  || null,\n      quantity:       item.Quantity       || 1,\n      item_base_cost: item.Total_Base_Cost || 0,\n      subtotal_cost:  item.Total_Base_Cost || 0,\n      handmodel_cost: item.Handmodel_Cost  || 0,\n      keychain_cost:  item.Keychain_Cost   || 0,\n      necklace_cost:  item.Necklace_Cost   || 0,\n      specification:  item.Notes          || '',\n      process_status: '待製作'\n    });\n  }\n\n  return [{ json: {\n    mirrored:              true,\n    action:                action,\n    order_id:              orderId,\n    order_renamed:         orderRenamed,\n    items:                 subItems.length,\n    diag:                  diag,\n    handmodel_cost:        calc.Handmodel_Cost_Total,\n    keychain_cost:         calc.Keychain_Cost_Total,\n    necklace_cost:         calc.Necklace_Cost_Total\n  }}];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
+      },
+      "id": "5e6d7bc0-1c83-4eda-9af7-ca72fd9d958d"
+    },
+    {
+      "name": "Mirror Delete to Supabase",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        31920,
+        6950
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// === FHS Supabase Mirror Delete - DELETE path (Phase 2) ===\n// Parallel branch after Delete Record. Soft-delete preserves audit trail.\n// Failure is ISOLATED - never affects Telegram notification.\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\ntry {\n  const body = $('Receive Dashboard Order').first().json.body\n    || $('Receive Dashboard Order').first().json;\n  const orderId = body.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing');\n\n  const res = await fetch(\n    `${SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`,\n    {\n      method: 'PATCH',\n      headers: {\n        'apikey': SUPABASE_KEY,\n        'Authorization': `Bearer ${SUPABASE_KEY}`,\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal'\n      },\n      body: JSON.stringify({ deleted_at: new Date().toISOString() })\n    }\n  );\n  if (!res.ok) throw new Error(`soft delete: ${res.status} ${await res.text()}`);\n\n  return [{ json: { mirrored: true, soft_deleted: orderId } }];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
+      },
+      "id": "06d507b1-4fb5-48d5-9f9b-2b7b5775fa54"
+    }
+  ],
+  "connections": {
+    "Receive Dashboard Order": {
+      "main": [
+        [
+          {
+            "node": "Input Normalizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profit Auditor": {
+      "main": [
+        [
+          {
+            "node": "Auditor Logic Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auditor Logic Switch": {
+      "main": [
+        [
+          {
+            "node": "Auditor Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Items & Generate SKU": {
+      "main": [
+        [
+          {
+            "node": "Batch SKU Collector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch SKU Collector": {
+      "main": [
+        [
+          {
+            "node": "Read Cache File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Exact Base Cost": {
+      "main": [
+        [
+          {
+            "node": "Local Data Mapper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Data Mapper": {
+      "main": [
+        [
+          {
+            "node": "Calculate Profit & Pack Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Profit & Pack Items": {
+      "main": [
+        [
+          {
+            "node": "Mirror to Supabase",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Main Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Main Order": {
+      "main": [
+        [
+          {
+            "node": "Bind Main Order ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bind Main Order ID": {
+      "main": [
+        [
+          {
+            "node": "Create Sub Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Sub Items": {
+      "main": [
+        []
+      ]
+    },
+    "Read Cache File": {
+      "main": [
+        [
+          {
+            "node": "Smart Cache Strategist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Smart Cache Strategist": {
+      "main": [
+        [
+          {
+            "node": "Fetch Exact Base Cost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cache Hit?": {
+      "main": [
+        [
+          {
+            "node": "Calculate Profit & Pack Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Exact Base Cost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Record to Delete": {
+      "main": [
+        [
+          {
+            "node": "Delete Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Record": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram (Delete)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mirror Delete to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Normalizer": {
+      "main": [
+        [
+          {
+            "node": "Switch Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Action": {
+      "main": [
+        [
+          {
+            "node": "Search Record to Delete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Profit Auditor",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Parse Items & Generate SKU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pack Telegram Data": {
+      "main": [
+        [
+          {
+            "node": "Send Profit Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mirror to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Pack Telegram Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "global": {}
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
+  "activeVersionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
+  "versionCounter": 502,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-24T02:57:23.800Z",
+      "createdAt": "2026-03-24T02:57:23.800Z",
+      "role": "workflow:owner",
+      "workflowId": "6Ljih0hSKr9RpYNm",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-05-21T16:45:16.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "waitingForResponse": true,
+                  "ignoredCount": 2,
+                  "lastShownAt": 1774412857627
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-05-22",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-05-22T01:55:36.435Z",
+    "createdAt": "2026-05-22T01:55:36.435Z",
+    "versionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
+    "workflowId": "6Ljih0hSKr9RpYNm",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "### ?? ??????????\n\n**????:** ??????? Dashboard ??????????????\n\n**????:**\n1. **?????? (Profit Auditor):** [V45 ??] ?????????????,??????????\n2. **?????:** ???????????????????\n3. **????:** ????????????????????????????\n4. **????:** ??????? Airtable (?????),?? Upsert ?????\n5. **Telegram ??:** ?????????????????",
+          "height": 312,
+          "width": 550,
+          "color": 1
+        },
+        "id": "9decd26c-07f2-4553-a1a7-8220dd9ea7fc",
+        "name": "Workflow Description",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          30896,
+          6848
+        ]
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "body.Order_Items_List",
+          "include": "allOtherFields",
+          "options": {}
+        },
+        "id": "479490d0-f233-431f-951f-031122ebac84",
+        "name": "Find Product ID",
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          31088,
+          7840
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "7620524971",
+          "text": "={{ $json.Full_Message }}",
+          "replyMarkup": "none",
+          "additionalFields": {}
+        },
+        "id": "c87bd1f1-c7db-41ff-aef5-c4ceb6b02e17",
+        "name": "Send Profit Report",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          32048,
+          7664
+        ],
+        "webhookId": "4f286124-f5ee-411b-851f-9dd83e1fc318",
+        "credentials": {
+          "telegramApi": {
+            "id": "tSbXz97PKmdPpDNq",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "airtableTokenApi",
+          "resource": "record",
+          "operation": "upsert",
+          "base": {
+            "__rl": true,
+            "value": "app9GuLsW9frN4xaT",
+            "mode": "list"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tbljkptnNcUEyDRFH",
+            "mode": "list"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Product_Link": "={{ [$json.Product_ID] }}",
+              "Quantity": "={{ Number($json.Quantity) }}",
+              "Engraving_Text": "={{ $json.Notes }}",
+              "Order_Link": "={{ [$json.Main_Order_ID] }}",
+              "Order_Item_Key": "={{ $json.Order_Item_Key }}"
+            },
+            "matchingColumns": [
+              "Order_Item_Key"
+            ]
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "id": "895c1914-7705-49cc-bdfa-409ddee285c1",
+        "name": "Create Sub Items",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.1,
+        "position": [
+          31616,
+          7648
+        ],
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "lON99lpYk558mFdA",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// 1. ??????????? ID?\nconst recordId = $input.first().json.id;\n\n// 2. ???????????\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. ??? n8n ????\n// Product_ID ??? null ??? - ? null ?? Airtable ?? [null],\n// linked record ???? null ID,?? Create Sub Items ????? Telegram ?\nreturn subItems\n  .filter(item => item.Order_Item_Key)\n  .map(item => {\n    const row = {\n      Quantity: item.Quantity,\n      Notes: item.Notes,\n      Main_Order_ID: recordId,\n      Order_Item_Key: item.Order_Item_Key\n    };\n    if (item.Product_Record_ID) row.Product_ID = item.Product_Record_ID;\n    return { json: row };\n  });",
+          "notice": ""
+        },
+        "id": "f2fe8818-c460-4ba8-94bb-0be673a85c91",
+        "name": "Bind Main Order ID",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          31408,
+          7648
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "authentication": "airtableTokenApi",
+          "resource": "record",
+          "operation": "upsert",
+          "base": {
+            "__rl": true,
+            "value": "app9GuLsW9frN4xaT",
+            "mode": "list"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tbltCH0I9fknVCtmV",
+            "mode": "list"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Order_ID": "={{ $json.Order_ID }}",
+              "Customer_Name": "={{ $json.Customer_Name }}",
+              "Deposit": "={{ $json.Deposit }}",
+              "Balance": "={{ $json.Balance }}",
+              "Additional_Fee": "={{ $json.Additional_Fee }}",
+              "Final_Sale_Price": "={{ $json.Total_Revenue }}",
+              "Total_Cost": "={{ $json.Total_Cost }}",
+              "Net_Profit": "={{ $json.Final_Profit }}",
+              "Full_Order_Text": "={{ $json.Order_Text }}",
+              "Raw_Form_State": "={{ $json.Raw_Form_State }}",
+              "Appointment_Date": "={{ $json.Appointment_Date }}",
+              "Order_Confirm_Date": "={{ $json.Order_Confirm_Date || null }}"
+            },
+            "matchingColumns": [
+              "Order_ID"
+            ]
+          },
+          "options": {
+            "typecast": true
+          }
+        },
+        "id": "a702631d-a2f5-4553-9ed2-33a5449397ba",
+        "name": "Create Main Order",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.1,
+        "position": [
+          31840,
+          7744
+        ],
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "lON99lpYk558mFdA",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// API V40.6 ??:???? SKU (Supabase-Ready ?)\n// ????:?? batchFormula ??? Airtable ????\n// ??:sku_list ????? Supabase RPC ????\nconst items = $input.all();\n\nif (!Array.isArray(items) || items.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", sku_list: [], hasItems: false } };\n}\n\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"???\"))];\n\nif (skus.length === 0) {\n    return { json: { batchFormula: \"RECORD_ID()='INVALID'\", sku_list: [], hasItems: false } };\n}\n\nconst formulaParts = skus.map(s => `{Product_Name} = '${s}'`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : formulaParts[0];\n\n// sku_list: Supabase get_base_cost_by_skus RPC ????\n// Phase 2 ???,n8n HTTP Request ?????????\nreturn { json: { batchFormula: finalFormula, sku_list: skus, hasItems: true } };",
+          "notice": ""
+        },
+        "id": "94d1c0c0-5cd8-460c-be20-e3b328ccf8db",
+        "name": "Batch SKU Collector",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          31616,
+          7424
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "authentication": "airtableTokenApi",
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "value": "app9GuLsW9frN4xaT",
+            "mode": "id"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tblC3HDJAz9W0OF6R",
+            "mode": "id"
+          },
+          "filterByFormula": "={{ $json.batchFormula }}",
+          "returnAll": true,
+          "options": {},
+          "sort": {}
+        },
+        "id": "503014ba-a49f-4388-9c44-3ef56f5ff4dd",
+        "name": "Fetch Exact Base Cost",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.1,
+        "position": [
+          31824,
+          7424
+        ],
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "lON99lpYk558mFdA",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput",
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// API V40.6 Supabase-First: reads costs from Supabase (via Smart Cache Strategist)\n// Fallback: Airtable node output (if Smart Cache Strategist couldn't reach Supabase)\nconst originalItemsNode = $(\"Parse Items & Generate SKU\");\nconst originalItems = originalItemsNode ? originalItemsNode.all() : [];\n\n// Check if Smart Cache Strategist already fetched costs from Supabase\nconst cacheData = $(\"Smart Cache Strategist\").first().json;\n\nlet costMap = {};\n\nif (cacheData.supabaseFetched && cacheData.supabaseCosts) {\n  // Supabase path: cost data pre-fetched, keyed by Product_Name\n  costMap = cacheData.supabaseCosts;\n} else {\n  // Airtable fallback: read from Fetch Exact Base Cost node output\n  const costNode = $(\"Fetch Exact Base Cost\");\n  const costResults = costNode ? costNode.all() : [];\n  costResults.forEach(r => {\n    if (r.json && r.json.id) {\n      costMap[r.json.Product_Name] = {\n        id: r.json.id,\n        Product_Name: r.json.Product_Name,\n        Total_Base_Cost: Number(r.json.Total_Base_Cost) || 0\n      };\n    }\n  });\n}\n\nreturn originalItems.map(item => {\n  const sku = item.json.Search_SKU;\n  // Section 14.5 ????:????????? 0(?? V40.9 ?????)\n  const costData = costMap[sku] || { id: null, Product_Name: sku, Total_Base_Cost: 0 };\n  return { json: { ...item.json, ...costData } };\n});",
+          "notice": ""
+        },
+        "id": "bcf44653-be85-445b-ad3b-275eb11e1f1c",
+        "name": "Local Data Mapper",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          32016,
+          7424
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// === Freehandsss V47.5 (??????: item ?? + order ?? + n8n_cost_adjustments) ===\n// ??:N8n_Cost_Adjustments = NUMERIC ????,N8n_Adjustment_Notes = JSONB ????\n// ??:.fhs/ai/FHS_Finance_Bible.md �3-4, Product Bible V3.7 �2.5\n\nconst parseNode = $('Parse Items & Generate SKU');\nconst parseNodeItems = parseNode ? parseNode.all() : [];\n\nif (parseNodeItems.length === 0) {\n    return [{ json: { Total_Revenue: 0, Total_Cost: 0, Final_Profit: 0, Sub_Items: [],\n        Cost_Lookup_Warning: \"\", Has_Cost_Error: false,\n        Handmodel_Cost_Total: 0, Keychain_Cost_Total: 0, Necklace_Cost_Total: 0,\n        N8n_Cost_Adjustments: 0, N8n_Adjustment_Notes: [] } }];\n}\n\nconst firstNodeData = parseNodeItems[0].json || {};\nconst totalRevenue = Number(firstNodeData.Total_Revenue) || 0;\nconst rawFormState = firstNodeData.Raw_Form_State || \"\";\n\nlet deposit = 0, balance = 0, additionalFee = 0;\ntry {\n    const triggerNode = $('Receive Dashboard Order');\n    const triggerBody = (triggerNode && triggerNode.first()) ? (triggerNode.first().json.body || triggerNode.first().json) : {};\n    deposit = Number(triggerBody.Deposit) || 0;\n    balance = Number(triggerBody.Balance) || 0;\n    additionalFee = Number(triggerBody.Additional_Fee) || 0;\n} catch (error) {}\n\n// SKU ? item_category ??(Finance Bible �3)\nfunction getItemCategory(sku) {\n    if (sku.includes('??') || sku.includes('???')) return '????';\n    if (sku.includes('???')) return '?????';\n    if (sku.includes('??')) return '??';\n    return '??';\n}\n\nlet totalBaseCost = 0;\nlet handmodelCostTotal = 0;\nlet keychainCostTotal = 0;\nlet necklaceCostTotal = 0;\nlet packedItems = [];\nlet keychainItemCount = 0;\nconst zeroCostItems = [];\n\nconst items = $input.all();\nfor (let i = 0; i < parseNodeItems.length; i++) {\n    let originalItemData = parseNodeItems[i].json || {};\n    let itemData = (items[i] && items[i].json) ? items[i].json : originalItemData;\n\n    let itemCost = Number(itemData.Total_Base_Cost) || 0;\n    totalBaseCost += itemCost;\n\n    const sku = originalItemData.Search_SKU || itemData.Search_SKU || \"\";\n    if (sku.includes(\"???\")) keychainItemCount++;\n\n    if (itemCost === 0 && sku && sku !== \"???\" && sku.trim() !== \"\") {\n        zeroCostItems.push(sku);\n    }\n\n    const itemCategory = getItemCategory(sku);\n    const itemHandmodelCost = itemCategory === '????'  ? itemCost : 0;\n    const itemKeychainCost  = itemCategory === '?????' ? itemCost : 0;\n    const itemNecklaceCost  = itemCategory === '??'      ? itemCost : 0;\n\n    handmodelCostTotal += itemHandmodelCost;\n    keychainCostTotal  += itemKeychainCost;\n    necklaceCostTotal  += itemNecklaceCost;\n\n    packedItems.push({\n        Product_Record_ID: itemData.id || null,\n        Product_Name:      itemData.Product_Name || originalItemData.Search_SKU || \"Unknown SKU\",\n        Total_Base_Cost:   itemCost,\n        Quantity:          Number(originalItemData.Original_Qty) || 1,\n        Notes:             originalItemData.Item_Notes || \"\",\n        Order_Item_Key:    originalItemData.Order_Item_Key || \"\",\n        Item_Category:     itemCategory,\n        Handmodel_Cost:    itemHandmodelCost,\n        Keychain_Cost:     itemKeychainCost,\n        Necklace_Cost:     itemNecklaceCost\n    });\n}\n\n// ????????????(V3.7 �2.5)\nconst keychainShippingDeduction = keychainItemCount > 1 ? (keychainItemCount - 1) * 20 : 0;\ntotalBaseCost     -= keychainShippingDeduction;\nkeychainCostTotal -= keychainShippingDeduction;\n\n// N8n_Cost_Adjustments = NUMERIC ????(??)\n// N8n_Adjustment_Notes = JSONB ????(?????,?????)\nconst n8nAdjustmentNotes = [];\nif (keychainShippingDeduction > 0) {\n    n8nAdjustmentNotes.push({\n        type:                \"keychain_shipping_deduction\",\n        amount:              -keychainShippingDeduction,\n        desc:                `${keychainItemCount} ????????,?? ${keychainItemCount - 1} ?????(?? $20)`,\n        basis:               \"Product Bible V3.7 �2.5\",\n        keychain_item_count: keychainItemCount\n    });\n}\nconst n8nCostAdjustments = n8nAdjustmentNotes.reduce((sum, item) => sum + (item.amount || 0), 0);\n\nconst finalProfit = totalRevenue - totalBaseCost;\n\nconst hasCostError = zeroCostItems.length > 0;\nconst costLookupWarning = hasCostError\n    ? `?? SKU ??????,Total_Cost ????!\\n?????? = $0:\\n${zeroCostItems.map(s => `. ${s}`).join('\\n')}`\n    : \"\";\n\nreturn [{\n    json: {\n        ...firstNodeData,\n        Total_Revenue:        totalRevenue,\n        Total_Cost:           totalBaseCost,\n        Final_Profit:         finalProfit,\n        Deposit:              deposit,\n        Balance:              balance,\n        Additional_Fee:       additionalFee,\n        Raw_Form_State:       rawFormState,\n        Sub_Items:            packedItems,\n        Cost_Lookup_Warning:  costLookupWarning,\n        Has_Cost_Error:       hasCostError,\n        Handmodel_Cost_Total: handmodelCostTotal,\n        Keychain_Cost_Total:  keychainCostTotal,\n        Necklace_Cost_Total:  necklaceCostTotal,\n        N8n_Cost_Adjustments: n8nCostAdjustments,\n        N8n_Adjustment_Notes: n8nAdjustmentNotes\n    }\n}];",
+          "notice": ""
+        },
+        "id": "7ffb2baa-8f1d-4ec9-bb52-b4ad3c61f98d",
+        "name": "Calculate Profit & Pack Items",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          32224,
+          7424
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "multipleMethods": false,
+          "httpMethod": "POST",
+          "path": "1444800b-1397-4154-b2da-a4d328c6c51b",
+          "authentication": "none",
+          "responseMode": "onReceived",
+          "contentTypeNotice": "",
+          "options": {}
+        },
+        "id": "5e776f97-bd51-4632-a729-0454e9c84a99",
+        "name": "Receive Dashboard Order",
+        "type": "n8n-nodes-base.webhook",
+        "position": [
+          30960,
+          7424
+        ],
+        "typeVersion": 2.1,
+        "webhookId": "b2429fcb-502e-407f-be70-7318b774d689"
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// === V45.7.4 Parse Items & Generate SKU (SKU Normalization Layer) ===\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst orderId = body.Order_ID || \"???\";\nconst customer = body.Customer_Name || \"???\";\nconst appDate = body.Appointment_Date || null;\nconst confirmDate = body.Order_Confirm_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\n// V45.7.4: Support both Order_Items_List (Dashboard) and Items (legacy/test)\nconst itemsList = body.Order_Items_List || body.Items;\n\nif (itemsList && Array.isArray(itemsList)) {\n    for (const item of itemsList) {\n        let sku = item.Product_Name || \"\";\n        const qty = Number(item.Quantity) || 1;\n\n        // === 1. 3D Display SKU Normalization (Bible V3.7 Section 4) ===\n        // Handles: ????/????/????(??) ? ???? (N?)\n        // Rule: 3? maps to 4? pricing per V3.7\n        if (sku.includes(\"??\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `???? ${limb}`;\n        } else if (sku.includes(\"???\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `????? ${limb}`;\n        }\n\n        // === 2. Keychain SKU Normalization ===\n        // Dashboard sends: \"????? - ???\" + Mode: \"(??)\"\n        // Airtable expects: \"????? - ??? - {qty}? {mode}\"\n        if (sku.includes(\"???\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        // === 3. Jewelry/Charm SKU Normalization ===\n        // Dashboard sends: \"???? - 925?\" + Mode: \"(??)\"\n        // Airtable expects: \"???? - 925? - {qty}? {mode}\"\n        if (sku.includes(\"??\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        let shipping_saved = (sku.includes(\"???\") && qty > 1) ? (qty - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"??\")) ? Math.floor(qty / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Order_Confirm_Date: confirmDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: qty,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key || \"\",\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"???\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;",
+          "notice": ""
+        },
+        "id": "97e25cdd-619b-4033-b189-8f2fbb654ac4",
+        "name": "Parse Items & Generate SKU",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          31184,
+          7424
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// Profit Auditor V45.8 - Anti-Loss Guard\n// Business logic: Ling Au sets prices manually; system price is reference only.\n// Audit purpose: only alert if actual collected < system cost (selling at a loss)\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\n\nconst deposit       = Number(body.Deposit)           || 0;\nconst balance       = Number(body.Balance)           || 0;\nconst additionalFee = Number(body.Additional_Fee)    || 0;\nconst actualTotal   = deposit + balance + additionalFee;\nconst systemCost    = Number(body.System_Total_Cost) || 0;\n\nlet auditResults = {\n    auditPassed: true,\n    systemCost:  systemCost,\n    actualTotal: actualTotal,\n    discrepancy: 0,\n    reasons:     [],\n    orderId:     body.Order_ID      || \"Unknown\",\n    customer:    body.Customer_Name || \"Unknown\",\n    role:        body.Role          || \"ling\"\n};\n\n// Only audit when both values are meaningful (skip if no payment entered yet)\nif (actualTotal > 0 && systemCost > 0) {\n    if (actualTotal < systemCost) {\n        const diff = systemCost - actualTotal;\n        auditResults.auditPassed = false;\n        auditResults.discrepancy = diff;\n        auditResults.reasons.push(`At-a-loss alert: collected $${actualTotal}, cost $${systemCost}, gap $${diff}`);\n    }\n}\n\nreturn [{ json: auditResults }];",
+          "notice": ""
+        },
+        "id": "008aca1b-15c9-43c9-a861-e8c602fcded3",
+        "name": "Profit Auditor",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          30816,
+          7216
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "mode": "rules",
+          "dataType": "boolean",
+          "value1": "={{ $json.auditPassed }}",
+          "rules": {
+            "rules": [
+              {
+                "operation": "equal",
+                "value2": false,
+                "output": 0
+              }
+            ]
+          },
+          "fallbackOutput": 1
+        },
+        "id": "e6bc9cd3-a6ba-4574-9adf-b9a1d35afa9f",
+        "name": "Auditor Logic Switch",
+        "type": "n8n-nodes-base.switch",
+        "position": [
+          31024,
+          7200
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "7620524971",
+          "text": "=?? ?????????? ??\n??:{{ $json.orderId }}\n??:?????!",
+          "replyMarkup": "none",
+          "additionalFields": {}
+        },
+        "id": "e1c41995-b56d-48a2-96c0-798dece625b0",
+        "name": "Auditor Alert",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          31232,
+          7200
+        ],
+        "typeVersion": 1.2,
+        "webhookId": "87d23371-1560-4e1b-91e6-79c0e702dc7c",
+        "credentials": {
+          "telegramApi": {
+            "id": "tSbXz97PKmdPpDNq",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "filePath": ".n8n/data/products.json",
+          "dataPropertyName": "data"
+        },
+        "id": "95b15b0c-5474-4074-acf6-84956f195e3c",
+        "name": "Read Cache File",
+        "type": "n8n-nodes-base.readBinaryFile",
+        "position": [
+          31728,
+          7248
+        ],
+        "typeVersion": 1,
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// V47.9 Local Cost Map — fetch() unavailable in Code nodes on this NAS\n// Costs from Supabase products table (2026-05-18). Base SKU = prefix before '- N飾 (...)'\nconst COST_MAP = {\n  // 手模擺設 — exact match\n  \"玻璃瓶套裝 (4肢)\": 210,\n  \"玻璃瓶套裝 (2肢)\": 210,\n  \"木框套裝 (4肢)\":   210,\n  \"木框套裝 (2肢)\":   210,\n  // 嬰兒鎖匙扣\n  \"嬰兒鎖匙扣 - 不銹鋼\":   185,\n  \"嬰兒鎖匙扣 - 鋁合金\":   212,\n  \"嬰兒(P)鎖匙扣 - 不銹鋼\": 235,\n  \"嬰兒(P)鎖匙扣 - 鋁合金\": 262,\n  // 嬰兒吊飾\n  \"嬰兒吊飾 - 925銀\":    425,\n  \"嬰兒吊飾 - 925金\":    481,\n  \"嬰兒(P)吊飾 - 925銀\": 475,\n  \"嬰兒(P)吊飾 - 925金\": 531,\n  // 家庭 S 系列鎖匙扣\n  \"家庭(S1)鎖匙扣 - 不銹鋼\": 275,\n  \"家庭(S1)鎖匙扣 - 鋁合金\": 275,\n  \"家庭(S2)鎖匙扣 - 不銹鋼\": 275,\n  \"家庭(S2)鎖匙扣 - 鋁合金\": 275,\n  // 家庭 P 系列鎖匙扣\n  \"家庭(P1)鎖匙扣 - 不銹鋼\": 405,\n  \"家庭(P1)鎖匙扣 - 鋁合金\": 405,\n  \"家庭(P2)鎖匙扣 - 不銹鋼\": 405,\n  \"家庭(P2)鎖匙扣 - 鋁合金\": 405,\n  // 家庭吊飾\n  \"家庭(S1)吊飾 - 925銀\": 475,\n  \"家庭(S1)吊飾 - 925金\": 531,\n  \"家庭(S2)吊飾 - 925銀\": 475,\n  \"家庭(S2)吊飾 - 925金\": 531,\n  \"家庭(P1)吊飾 - 925銀\": 605,\n  \"家庭(P1)吊飾 - 925金\": 661,\n  \"家庭(P2)吊飾 - 925銀\": 605,\n  \"家庭(P2)吊飾 - 925金\": 661,\n  // 成人\n  \"成人(P)鎖匙扣 - 不銹鋼\": 405,\n  \"成人(P)吊飾 - 925銀\":    605,\n};\n\nfunction lookupCost(sku) {\n  if (!sku) return null;\n  // 1. Exact match\n  if (COST_MAP[sku] !== undefined) return COST_MAP[sku];\n  // 2. Prefix match (handles variants like \"嬰兒鎖匙扣 - 不銹鋼 - 5飾 (加購)\")\n  for (const base of Object.keys(COST_MAP)) {\n    if (sku.startsWith(base)) return COST_MAP[base];\n  }\n  return null;\n}\n\nconst batchItems = $(\"Batch SKU Collector\").all();\nconst hasValidItems = batchItems.some(item => item.json.hasItems === true);\nconst skuList = batchItems.length > 0 ? (batchItems[0].json.sku_list || []) : [];\n\nif (hasValidItems && skuList.length > 0) {\n  const supabaseCosts = {};\n  for (const sku of skuList) {\n    const cost = lookupCost(sku);\n    if (cost !== null) {\n      supabaseCosts[sku] = { Product_Name: sku, Total_Base_Cost: cost };\n    }\n  }\n  if (Object.keys(supabaseCosts).length > 0) {\n    return batchItems.map(item => ({\n      json: {\n        ...item.json,\n        useCache: false,\n        supabaseFetched: true,\n        supabaseCosts,\n        batchFormula: \"RECORD_ID()='SUPABASE_SKIP'\"\n      }\n    }));\n  }\n}\n\n// No costs found in local map — fall through to Airtable\nif (hasValidItems) {\n  await new Promise(r => setTimeout(r, 250));\n}\nreturn batchItems.map(item => ({\n  json: { ...item.json, useCache: false, supabaseFetched: false }\n}));",
+          "notice": ""
+        },
+        "id": "2bb644ad-7b4c-456e-884a-e2cbfd09a10e",
+        "name": "Smart Cache Strategist",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          31920,
+          7248
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "mode": "rules",
+          "dataType": "string",
+          "value1": "={{ $json.useCache === true ? 'yes' : 'no' }}",
+          "rules": {
+            "rules": [
+              {
+                "operation": "equal",
+                "value2": "yes",
+                "output": 0
+              }
+            ]
+          },
+          "fallbackOutput": 1
+        },
+        "id": "99e0b047-9bbe-4619-905c-b0d250d1a11a",
+        "name": "Cache Hit?",
+        "type": "n8n-nodes-base.switch",
+        "position": [
+          32128,
+          7248
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "authentication": "airtableTokenApi",
+          "resource": "record",
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "value": "app9GuLsW9frN4xaT",
+            "mode": "id"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tbltCH0I9fknVCtmV",
+            "mode": "id"
+          },
+          "filterByFormula": "={{ \"TRIM({Order_ID}) = '\" + $json.Order_ID + \"'\" }}",
+          "returnAll": false,
+          "limit": 100,
+          "options": {},
+          "sort": {}
+        },
+        "id": "8a497284-6a00-4a42-8501-749bd67250a2",
+        "name": "Search Record to Delete",
+        "type": "n8n-nodes-base.airtable",
+        "position": [
+          31504,
+          7232
+        ],
+        "typeVersion": 2.1,
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "lON99lpYk558mFdA",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "authentication": "airtableTokenApi",
+          "resource": "record",
+          "operation": "deleteRecord",
+          "base": {
+            "__rl": true,
+            "value": "app9GuLsW9frN4xaT",
+            "mode": "list"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tbltCH0I9fknVCtmV",
+            "mode": "list"
+          },
+          "id": "={{ $json.id }}"
+        },
+        "id": "0a4b6ceb-ef50-41cb-a7af-d8f8ffc525cc",
+        "name": "Delete Record",
+        "type": "n8n-nodes-base.airtable",
+        "position": [
+          31712,
+          7056
+        ],
+        "typeVersion": 2.1,
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "lON99lpYk558mFdA",
+            "name": "Airtable Personal Access Token account"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "sendMessage",
+          "chatId": "7620524971",
+          "text": "=🗑️ 【Freehandsss 刪除訂單】\n👤 {{ $('Search Record to Delete').first().json.fields?.Customer_Name || '' }}  |  📝 #{{ $('Search Record to Delete').first().json.fields?.Order_ID || '(???)' }}\n⚠️ 此訂單已被刪除",
+          "replyMarkup": "none",
+          "additionalFields": {}
+        },
+        "id": "c417aea1-e0f2-45dc-92da-d5302070b899",
+        "name": "Notify Telegram (Delete)",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          32000,
+          7072
+        ],
+        "typeVersion": 1.2,
+        "webhookId": "2f0ff02a-880d-4042-a9e2-7b4054da2281",
+        "credentials": {
+          "telegramApi": {
+            "id": "tSbXz97PKmdPpDNq",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// V47 Input Normalizer - single output\n// [V47.7] Added New_Order_ID forwarding for Order_ID rename support\nconst input = $input.all()[0].json;\nconst rawPayload = (input.body !== undefined) ? input.body : input;\nconst body = Array.isArray(rawPayload) ? (rawPayload[0] || {}) : rawPayload;\nconst action = (body.action || body.Action || input.action || input.Action || \"create\").toLowerCase();\nreturn [{\n  json: {\n    ...input,\n    action: action,\n    isDelete: (action === 'delete'),\n    Record_ID: body.Record_ID || body.id || input.Record_ID || \"\",\n    Order_ID: body.Order_ID || input.Order_ID || \"\",\n    New_Order_ID: body.New_Order_ID || input.New_Order_ID || null,\n    Customer_Name: body.Customer_Name || input.Customer_Name || \"\"\n  }\n}];",
+          "notice": ""
+        },
+        "id": "1a7ade1b-fa1f-4ff0-9500-29c5919d1d6b",
+        "name": "Input Normalizer",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          31184,
+          7680
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "rules",
+          "dataType": "string",
+          "value1": "={{ $json.action }}",
+          "rules": {
+            "rules": [
+              {
+                "operation": "equal",
+                "value2": "delete",
+                "output": 0
+              }
+            ]
+          },
+          "fallbackOutput": 1
+        },
+        "id": "23a75050-1f12-463b-846c-6765807953d1",
+        "name": "Switch Action",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 1,
+        "position": [
+          31392,
+          7408
+        ]
+      },
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "Pack Telegram Data",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          30480,
+          7680
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const calcItem = $('Calculate Profit & Pack Items').all()[0];\nconst calc = calcItem ? calcItem.json : {};\nconst trigger = $('Receive Dashboard Order').first().json;\nconst body = trigger.body || trigger;\n\nconst hasCostError = calc.Has_Cost_Error === true || calc.Total_Cost === 0;\nconst action = body.action || body.Action || 'create';\n\n// When cost unavailable, omit '$' prefix to avoid '$⚠️ 待核算'\nconst costDisplay   = hasCostError ? '⚠️ 待核算' : '$' + calc.Total_Cost;\nconst profitDisplay = hasCostError ? '⚠️ 待核算' : '$' + calc.Final_Profit;\nconst revenueDisplay = '$' + (calc.Total_Revenue || 0);\n\nlet message = '';\n\nif (action === 'create') {\n  const subItems = calc.Sub_Items || [];\n  const orderLines = subItems.length > 0\n    ? subItems.map(item => {\n        const qty = item.Quantity > 1 ? ' x' + item.Quantity : '';\n        return '• ' + (item.Product_Name || '') + qty;\n      }).join('\\n')\n    : '  (無商品記錄)';\n\n  message = [\n    '📦 【Freehandsss 新訂單】',\n    '👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || ''),\n    '📅 ' + (calc.Appointment_Date || '未定'),\n    '------------------------',\n    '🛍️ 訂單商品：',\n    orderLines,\n    '------------------------',\n    '💰 入帳：' + revenueDisplay,\n    '💵 成本：' + costDisplay,\n    '🏆 利潤：' + profitDisplay\n  ].join('\\n');\n\n} else if (action === 'edit') {\n  const updateNote = body.Update_Note ? '\\n' + body.Update_Note : '';\n  message = [\n    '✏️ 【Freehandsss 修正訂單】',\n    '👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || ''),\n    '📅 ' + (calc.Appointment_Date || '未定') + updateNote,\n    '------------------------',\n    '💰 入帳：' + revenueDisplay,\n    '💵 成本：' + costDisplay,\n    '🏆 利潤：' + profitDisplay\n  ].join('\\n');\n\n} else {\n  message = '🗑️ 【Freehandsss 刪除訂單】\\n👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || '') + '\\n⚠️ 此訂單已被刪除';\n}\n\nreturn [{ json: {\n  Action:         action,\n  Customer_Name:  calc.Customer_Name || '',\n  Order_ID:       calc.Order_ID || '',\n  Full_Message:   message,\n  Has_Cost_Error: hasCostError\n}}];",
+          "notice": ""
+        }
+      },
+      {
+        "name": "Mirror to Supabase",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          32000,
+          7800
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// === FHS Supabase Mirror Write — CREATE/EDIT path (V47.9) ===\n// Changes from V47.8:\n// - [V47.9] Added rename diagnostics in return JSON (action, newOrderId, rpc_status)\n//   to surface silent failures in execution log inspection\n// V47.8 preserved:\n// - New_Order_ID read from Input Normalizer\n// - confirmed_at / process_status only set on create\n// - process.env NAS try-catch\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\nconst hdrs = {\n  'apikey': SUPABASE_KEY,\n  'Authorization': `Bearer ${SUPABASE_KEY}`,\n  'Content-Type': 'application/json',\n  'Prefer': 'resolution=merge-duplicates,return=minimal'\n};\n\nasync function upsert(table, conflictCol, payload) {\n  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${conflictCol}`, {\n    method: 'POST', headers: hdrs, body: JSON.stringify(payload)\n  });\n  if (!res.ok) throw new Error(`${table}: ${res.status} ${await res.text()}`);\n}\n\ntry {\n  const calc = $('Calculate Profit & Pack Items').first().json;\n  let orderId = calc.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing from Calculate Profit node');\n\n  const action = (() => {\n    try { return ($('Input Normalizer').first().json.action || 'create').toLowerCase(); } catch(e) { return 'create'; }\n  })();\n\n  // [V47.8] Read New_Order_ID from Input Normalizer (explicit field, reliable)\n  const newOrderId = (() => {\n    try { return $('Input Normalizer').first().json.New_Order_ID || null; } catch(e) { return null; }\n  })();\n\n  // [V47.9] Capture diagnostics\n  const diag = {\n    action_received: action,\n    order_id_received: orderId,\n    new_order_id_received: newOrderId,\n    rename_condition_met: (action === 'edit' && !!newOrderId && newOrderId !== orderId),\n    rpc_called: false,\n    rpc_status: null,\n    rpc_error: null\n  };\n\n  let rawFormState = {};\n  try {\n    rawFormState = typeof calc.Raw_Form_State === 'string'\n      ? JSON.parse(calc.Raw_Form_State || '{}')\n      : (calc.Raw_Form_State || {});\n  } catch(e) { rawFormState = { raw: String(calc.Raw_Form_State) }; }\n\n  // [V47.8] Atomic Order_ID rename via Supabase RPC\n  let orderRenamed = null;\n  if (action === 'edit' && newOrderId && newOrderId !== orderId) {\n    diag.rpc_called = true;\n    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rename_order_id`, {\n      method: 'POST',\n      headers: hdrs,\n      body: JSON.stringify({ old_id: orderId, new_id: newOrderId })\n    });\n    diag.rpc_status = rpcRes.status;\n    if (!rpcRes.ok) {\n      const rpcErr = await rpcRes.text();\n      diag.rpc_error = rpcErr;\n      throw new Error(`rename_order_id RPC failed: ${rpcRes.status} ${rpcErr}`);\n    }\n    orderRenamed = `${orderId} → ${newOrderId}`;\n    orderId = newOrderId;\n  }\n\n  const orderPayload = {\n    order_id:               orderId,\n    customer_name:          calc.Customer_Name || orderId,\n    appointment_at:         calc.Appointment_Date || null,\n    final_sale_price:       calc.Total_Revenue         || 0,\n    total_cost:             calc.Total_Cost            || 0,\n    net_profit:             calc.Final_Profit          || 0,\n    deposit:                calc.Deposit               || 0,\n    balance:                calc.Balance               || 0,\n    additional_fee:         calc.Additional_Fee        || 0,\n    full_order_text:        calc.Order_Text            || '',\n    handmodel_cost:         calc.Handmodel_Cost_Total  || 0,\n    keychain_cost:          calc.Keychain_Cost_Total   || 0,\n    necklace_cost:          calc.Necklace_Cost_Total   || 0,\n    n8n_cost_adjustments:   Number(calc.N8n_Cost_Adjustments) || 0,\n    n8n_adjustment_notes:   calc.N8n_Adjustment_Notes  || [],\n    raw_form_state:         rawFormState\n  };\n\n  if (action === 'create' && calc.Order_Confirm_Date) {\n    orderPayload.confirmed_at = calc.Order_Confirm_Date;\n  }\n  if (action === 'create') {\n    orderPayload.process_status = '待確認';\n  }\n\n  await upsert('orders', 'order_id', orderPayload);\n\n  const subItems = calc.Sub_Items || [];\n  for (const item of subItems) {\n    const key = item.Order_Item_Key;\n    if (!key) continue;\n    await upsert('order_items', 'item_key', {\n      order_fhs_id:   orderId,\n      item_key:       key,\n      product_sku:    item.Product_Name   || null,\n      item_category:  item.Item_Category  || null,\n      quantity:       item.Quantity       || 1,\n      item_base_cost: item.Total_Base_Cost || 0,\n      subtotal_cost:  item.Total_Base_Cost || 0,\n      handmodel_cost: item.Handmodel_Cost  || 0,\n      keychain_cost:  item.Keychain_Cost   || 0,\n      necklace_cost:  item.Necklace_Cost   || 0,\n      specification:  item.Notes          || '',\n      process_status: '待製作'\n    });\n  }\n\n  return [{ json: {\n    mirrored:              true,\n    action:                action,\n    order_id:              orderId,\n    order_renamed:         orderRenamed,\n    items:                 subItems.length,\n    diag:                  diag,\n    handmodel_cost:        calc.Handmodel_Cost_Total,\n    keychain_cost:         calc.Keychain_Cost_Total,\n    necklace_cost:         calc.Necklace_Cost_Total\n  }}];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
+        },
+        "id": "5e6d7bc0-1c83-4eda-9af7-ca72fd9d958d"
+      },
+      {
+        "name": "Mirror Delete to Supabase",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          31920,
+          6950
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// === FHS Supabase Mirror Delete - DELETE path (Phase 2) ===\n// Parallel branch after Delete Record. Soft-delete preserves audit trail.\n// Failure is ISOLATED - never affects Telegram notification.\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\ntry {\n  const body = $('Receive Dashboard Order').first().json.body\n    || $('Receive Dashboard Order').first().json;\n  const orderId = body.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing');\n\n  const res = await fetch(\n    `${SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`,\n    {\n      method: 'PATCH',\n      headers: {\n        'apikey': SUPABASE_KEY,\n        'Authorization': `Bearer ${SUPABASE_KEY}`,\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal'\n      },\n      body: JSON.stringify({ deleted_at: new Date().toISOString() })\n    }\n  );\n  if (!res.ok) throw new Error(`soft delete: ${res.status} ${await res.text()}`);\n\n  return [{ json: { mirrored: true, soft_deleted: orderId } }];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
+        },
+        "id": "06d507b1-4fb5-48d5-9f9b-2b7b5775fa54"
+      }
+    ],
+    "connections": {
+      "Receive Dashboard Order": {
+        "main": [
+          [
+            {
+              "node": "Input Normalizer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Profit Auditor": {
+        "main": [
+          [
+            {
+              "node": "Auditor Logic Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Auditor Logic Switch": {
+        "main": [
+          [
+            {
+              "node": "Auditor Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Items & Generate SKU": {
+        "main": [
+          [
+            {
+              "node": "Batch SKU Collector",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Batch SKU Collector": {
+        "main": [
+          [
+            {
+              "node": "Read Cache File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Exact Base Cost": {
+        "main": [
+          [
+            {
+              "node": "Local Data Mapper",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Local Data Mapper": {
+        "main": [
+          [
+            {
+              "node": "Calculate Profit & Pack Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculate Profit & Pack Items": {
+        "main": [
+          [
+            {
+              "node": "Mirror to Supabase",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Create Main Order",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Main Order": {
+        "main": [
+          [
+            {
+              "node": "Bind Main Order ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Bind Main Order ID": {
+        "main": [
+          [
+            {
+              "node": "Create Sub Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Sub Items": {
+        "main": [
+          []
+        ]
+      },
+      "Read Cache File": {
+        "main": [
+          [
+            {
+              "node": "Smart Cache Strategist",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Smart Cache Strategist": {
+        "main": [
+          [
+            {
+              "node": "Fetch Exact Base Cost",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Cache Hit?": {
+        "main": [
+          [
+            {
+              "node": "Calculate Profit & Pack Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Fetch Exact Base Cost",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Record to Delete": {
+        "main": [
+          [
+            {
+              "node": "Delete Record",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete Record": {
+        "main": [
+          [
+            {
+              "node": "Notify Telegram (Delete)",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Mirror Delete to Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Input Normalizer": {
+        "main": [
+          [
+            {
+              "node": "Switch Action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch Action": {
+        "main": [
+          [
+            {
+              "node": "Search Record to Delete",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Profit Auditor",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Parse Items & Generate SKU",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Pack Telegram Data": {
+        "main": [
+          [
+            {
+              "node": "Send Profit Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mirror to Supabase": {
+        "main": [
+          [
+            {
+              "node": "Pack Telegram Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Edwin Li",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-05-22T01:55:37.399Z",
+        "id": 290,
+        "workflowId": "6Ljih0hSKr9RpYNm",
+        "versionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
+        "event": "activated",
+        "userId": "6bd45f76-307d-46fb-be47-d711e31203fb"
+      }
+    ]
+  }
+}

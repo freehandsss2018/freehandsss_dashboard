@@ -11,6 +11,7 @@
 | `run_supabase_migration.js` | **遷移啟動器**：自動化執行 Supabase 遷移流程 |
 | `qa_v41_supabase.js` | **V41 驗證**：測試 Dashboard V41 與 Supabase 連接與渲染 |
 | `add_supabase_mirror_nodes.js` | **n8n 自動化**：自動向 n8n 工作流添加 Supabase 鏡像節點 |
+| `update_n8n_supabase_mirror.js` | **n8n 自動化**：將 n8n 工作流中的 Supabase 鏡像節點代碼更新為基於 Axios 的實作 |
 | `backfill_deposit.js` | **數據回填**：修復舊訂單缺失的訂金欄位 |
 
 ## 🧪 測試與驗證腳本 (Test Suite)

@@ -1,6 +1,35 @@
-# FHS Handoff - 2026-05-21
+# FHS Handoff - 2026-05-22
 當前版本：v1.4.6（憲法層）/ V41（UI層）→ current 已升版
-n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
+n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
+
+---
+
+## 本次 Session 完成事項（2026-05-22）
+
+### 11. Order_ID 修改無效 — 三端修復（Frontend + Supabase + n8n）
+
+**根因三層**：
+1. Frontend：`editTargetOrderId` 為不可變 WHERE anchor，payload 未帶 `New_Order_ID`，新 ID 從未傳到 n8n
+2. Supabase：`order_items.order_fhs_id` FK 缺 `ON UPDATE CASCADE`，直接 PATCH `orders.order_id` 觸發 FK violation
+3. n8n：無 Order_ID rename 邏輯，`item_key` prefix 也無法自動修復
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（payload 加 `New_Order_ID` 條件欄位）
+- `supabase/migrations/0010_order_id_cascade_update.sql`（FK CASCADE）
+- `supabase/migrations/0011_rename_order_id_security_definer.sql`（修復 race condition 的 `rename_order_id` RPC）
+- n8n `Mirror to Supabase` / `Mirror Delete to Supabase` → V47.10（全面使用 `axios` 重構，解決 `fetch is not defined` 導致的靜默失敗與重複訂單問題）
+
+**驗證結果**：
+- 執行 migration 0010 & 0011，已成功套用至 Supabase。
+- 透過 n8n webhook 進行 rename 測試（執行 ID 3635），回傳 `mirrored: true`，成功呼叫 RPC 並透過 Cascade 自動清除舊訂單。
+- 數據庫狀態乾淨，重複訂單 Bug 完全解決。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ✅ 使用（spawn subagent 做完整三層根因確認 + 批評舊方案 + 提出修正版） |
+| 遵從 Router | ✅ 遵從 |
 
 ---
 
@@ -291,10 +320,10 @@ n8n Workflow：V47.9（Smart Cache Strategist 本地成本表）
 | Dashboard 開發版 | `freehandsss_dashboardV41.html` |
 
 ### n8n Code 節點 NAS 限制（重要）
-- `fetch()` ❌ 靜默失敗
-- `process.env` ❌ IIFE try-catch 繞過
-- `require()` ❌ 完全不可用
-- → 所有 HTTP 呼叫必須用 HTTP Request 節點，Code 節點只做計算
+- `fetch()` ❌ 靜默失敗（因為 Node.js sandbox 限制 / Node 版本舊，global.fetch 未定義）
+- `require()` ⚠️ 只能載入經 `NODE_FUNCTION_ALLOW_EXTERNAL` 允許的外部模組（例如：`axios` 可用 ✅，但內建 `https` / `fs` 等被禁用 ❌）
+- `process.env` ❌ IIFE try-catch 繞過（以免 process.env 存取報錯導致流程中斷）
+- → 所有 Supabase Mirror HTTP 寫入已於 V47.10 統一使用 `axios` 重構實作。
 
 ### Antigravity implicit memory 說明
 - A2 的行為約束主要靠 implicit memory（1.73MB .pb 檔），非文件直接載入

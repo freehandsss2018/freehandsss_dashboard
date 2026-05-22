@@ -17,7 +17,7 @@
 ## Pitfalls（重複踩過的雷）
 
 - AI 在計畫未批核前擅自執行架構改動（2026-03-30 事故）→ /execute 是唯一授權信號，任何結果好壞都不能事後合理化
-- n8n Code 節點 NAS 限制：fetch() / process.env / require() 全部靜默失敗，必須用 HTTP Request 節點 — 源自 2026-05-18
+- n8n Code 節點 NAS 限制：fetch() 未定義、https 模組被禁用，會導致靜默失敗；必須使用 axios (require('axios')) 進行 HTTP 呼叫 — 源自 2026-05-22
 - Airtable formula 無法可靠處理 multipleLookupValues 陣列計算，核心財務欄位必須由 n8n 計算後直接寫入 — 源自 2026-05-03
 - try-catch 靜默吞掉 TDZ 錯誤（Temporal Dead Zone），導致 Order_Items_List 空白，無錯誤提示 — 源自 memory
 - 對標外部方法論（如 gstack）時，AI 本身也需要先走 Forcing Questions（「用戶真正缺什麼？」），否則容易產出「答對了錯誤題目」的過度工程 — 源自 2026-05-20

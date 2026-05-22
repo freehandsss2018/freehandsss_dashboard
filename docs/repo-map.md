@@ -24,7 +24,9 @@ freehandsss_dashboard/
 │   │   ├── 0005_field_descriptions.sql     ← 全表欄位中文說明 COMMENT ON（2026-05-16）
 │   │   ├── 0006_n8n_cost_adjustments.sql   ← 新增 n8n_cost_adjustments 欄位 + 修正 0600802 keychain_cost（2026-05-16）
 │   │   ├── 0007_fix_n8n_cost_adjustments.sql ← n8n_cost_adjustments JSONB→NUMERIC，新增 n8n_adjustment_notes JSONB（2026-05-16）
-│   │   └── 0008_order_0600802_admin_notes.sql ← 訂單 0600802 定價優惠原因記錄至 admin_notes（2026-05-16，待執行）
+│   │   ├── 0008_order_0600802_admin_notes.sql ← 訂單 0600802 定價優惠原因記錄至 admin_notes（2026-05-16，待執行）
+│   │   ├── 0010_order_id_cascade_update.sql   ← 外鍵啟用 ON UPDATE CASCADE 與初始 rename_order_id RPC（2026-05-22）
+│   │   └── 0011_rename_order_id_security_definer.sql ← 優化併發鎖定與防衝突合併的 rename_order_id RPC（2026-05-22）
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
