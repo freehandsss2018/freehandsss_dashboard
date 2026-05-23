@@ -1,7 +1,7 @@
 # /new-product — 新產品跨層融入引導
 
 **用途 (Purpose)**：引導 Fat Mo 完成新產品類型（SKU / 配件 / 加購品）融入 FHS 系統的五步跨層流程，確保 Dashboard UI ↔ Supabase schema ↔ n8n SKU 表三端零錯誤整合。
-**版本**：v1.0.0 (2026-05-21)
+**版本**：v1.1.0 (2026-05-23)
 **觸發**：`/new-product [產品名稱或 SKU]`
 **平台**：Claude Code (A3) 專用
 **根據**：2026-05-21 Bug 修復循環學習（pitfalls.yaml P1–P5）
@@ -79,11 +79,19 @@
     若新產品 SKU **不在 products 表**（刻意不入表的加購品）→ 
       必須在 Mirror Prep 加 guard：
       `product_sku: isAddonItem(item.Order_Item_Key) ? null : (item.Product_Name || null)`
+
+2e. 確認 Smart Cache Strategist COST_MAP 含新 SKU 成本
+    讀取 n8n FHS_Core_OrderProcessor_live.json 中 Smart Cache Strategist 節點
+    搜尋 hardcoded COST_MAP / cost table（通常為 const COST_MAP = { ... } 形式）
+    確認新 SKU prefix（如 "皮框套裝"）已加入對應成本條目（total_base_cost）
+    若缺漏：補入對應 SKU key 與 total_base_cost 數值後重新部署節點
+    ⚠️ 此步遺漏 = 新訂單成本計算返回 0（pitfalls P7 根因之一，handoff 待辦 #1）
 ```
 
 **Gate 2 PASS 條件**：
 - n8n 不會因新 SKU 觸發 FK 23503
 - 若新產品是加購品：確認 n8n 不寫入 product_sku（或 NULL）
+- Smart Cache COST_MAP 含新 SKU 成本條目（或確認 fallback 值正確）
 
 **Gate 2 FAIL → Rollback**：
 - 回退 Step 1（刪除 migration 檔）
@@ -118,11 +126,25 @@
     { order_fhs_id, item_key, item_category, quantity,
       engraving_text, specification, process_status, batch_number }
     batch_number 必須永遠存在（值為 null 可以，但 key 不可缺）← P3 教訓
+
+3f. Review Mode 渲染驗證（Desktop + Mobile）
+    建立含新產品的測試訂單後，切換至訂單總覽（Review Mode）：
+
+    Desktop — renderReviewTable：
+    - 確認新 item 列的 category badge 正確顯示（非空、非 undefined）
+    - 確認 getProductDimensions(item) 對新 item_key 返回正確 emoji + 款式名稱
+      （立體擺設新款式應為 "🖼️ [款式名]"；其他類型比照現有 category emoji）
+    - 確認 product_sku、specification、engraving_text 欄位值顯示正確
+
+    Mobile — renderReviewAccordion：
+    - 確認新 item accordion card 標題、款式 badge、明細欄位全部渲染
+    - 確認無空白 card 或 "undefined" 字串出現
 ```
 
 **Gate 3 PASS 條件**：
 - product-integration-validator Checklist A + B + E 全部 PASS
 - 新 INSERT row key set 與現有 item 類型一致
+- Desktop + Mobile Review Mode 均正確渲染新產品明細（無 undefined / 空行）
 
 **Gate 3 FAIL → Rollback**：
 - 回退 Steps 1 + 2（reverts migration + n8n change）
@@ -180,12 +202,28 @@
     → 觸發 n8n 同步 → 確認新 SKU 不觸發 23503 / n8n error log 無新錯誤
 
 5e. 執行 product-integration-validator 全 Checklist（最終驗證）
+
+5f. 已有批次訂單 Edit Mode 重同步保留驗證
+    操作步驟：
+    1. 找一個已有 batch_number 的訂單（或 5a 建立後設定批次並完成第一次同步）
+    2. 重新開啟該訂單 → 進入 Edit Mode → 修改任意欄位（如備註）→ 再次同步
+    3. 同步完成後切換至訂單總覽，確認批次色與批次數字未改變
+
+    驗證 SQL：
+    SELECT item_key, batch_number, process_status
+    FROM order_items
+    WHERE order_fhs_id = '<測試訂單 ID>';
+    期望：batch_number 與第一次設定值完全一致，process_status 為合法 ENUM 值
+
+    ⚠️ 若 batch_number 被清空 → 診斷 _prevItemMap pre-fetch 邏輯（handoff Session #6）
+    ⚠️ 若 process_status 變 null → 確認 _sanitizeItemStatus() 含新值映射（handoff Session #8）
 ```
 
 **Gate 5 PASS 條件**：
 - product-integration-validator 全部 5 個 Checklist PASS
 - 無 PGRST102 / FK 23503 / RLS silent fail
 - 進度設定後 → 同步 → 重開 → 進度仍保留
+- 已有批次訂單 Edit Mode 重同步後，batch_number 100% 保留（SQL 驗證一致）
 
 **Gate 5 FAIL → 診斷**：
 - 呼叫 `build-error-resolver` 讀取 Supabase 錯誤 + n8n execution log

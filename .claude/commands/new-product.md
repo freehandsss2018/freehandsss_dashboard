@@ -1,5 +1,5 @@
 ---
-description: 新產品跨層融入引導 — 五步 atomic 流程 + Rollback Matrix（Claude Code Bridge）
+description: 新產品跨層融入引導 — 五步 atomic 流程 + Rollback Matrix（v1.1.0）（Claude Code Bridge）
 ---
 
 # /new-product (Claude Code Bridge)

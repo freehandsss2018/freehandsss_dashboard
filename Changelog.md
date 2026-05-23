@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-05-23] 📋 /new-product v1.1.0 — 三項 Gap 補強（Order 資料流保護）
+
+**修改檔案**：
+- `.fhs/ai/commands/new-product.md`（Master，v1.0.0 → v1.1.0）
+- `.claude/commands/new-product.md`（橋接版，description 同步）
+
+**主要變更**：
+- **[Step 2 新增 2e] Smart Cache COST_MAP 核查**：要求在新產品融入時，明確確認 n8n Smart Cache Strategist 節點的 hardcoded COST_MAP 已含新 SKU 成本條目，防止新訂單成本計算返回 0（pitfalls P7 根因，handoff 待辦 #1）。
+- **[Step 3 新增 3f] Review Mode 渲染驗證**：要求建立測試訂單後切換至訂單總覽，分別確認 Desktop `renderReviewTable` 與 Mobile `renderReviewAccordion` 正確顯示新產品的 category badge、款式名稱（`getProductDimensions`）、欄位明細，無 undefined 或空行。
+- **[Step 5 新增 5f] 已有批次訂單 Edit Mode 重同步保留驗證**：新增 E2E test case：對已設定 batch_number 的訂單執行「Edit → 修改 → 重新同步」循環，並以 SQL 驗證 batch_number 100% 保留（對應 handoff Session #6 `_prevItemMap` 機制與 Session #8 `_sanitizeItemStatus`）。
+- **Gate 條件更新**：Gate 2 / 3 / 5 各補充對應新子項目的 PASS 條件。
+
+---
+
 ## [2026-05-23] 🐛 Complex SKU 成本計算修復 + 🚀 訂單重覆檢查與同步 UX 優化 (Complex SKU Cost Calc & Sync UX Optimization)
 
 **修改檔案**：

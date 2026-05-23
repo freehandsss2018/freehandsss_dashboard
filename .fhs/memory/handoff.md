@@ -1,6 +1,28 @@
 # FHS Handoff - 2026-05-23
 當前版本：v1.4.7（憲法層）/ V41（UI層）→ current 已升版
 n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
+/new-product skill：v1.1.0（補入 2e COST_MAP / 3f Review Mode / 5f 批次保留驗證）
+
+---
+
+## 本次 Session 完成事項（2026-05-23 Session 16 — /new-product v1.1.0 Gap 補強）
+
+### 16. /new-product skill v1.0.0 → v1.1.0
+
+**完成事項**：
+- Gap Analysis 識別 /new-product 三個缺口：G1（Review Mode 渲染未驗證）、G2（批次保留未驗收）、G3（Smart Cache COST_MAP 未核查）
+- Step 2 新增 2e：Smart Cache COST_MAP 核查（對應 pitfalls P7 / handoff 待辦 #1）
+- Step 3 新增 3f：Review Mode 渲染驗證（Desktop + Mobile + getProductDimensions）
+- Step 5 新增 5f：已有批次訂單 Edit Mode 重同步保留驗證（含 SQL）
+- Gate 2/3/5 PASS 條件同步更新
+- CHANGELOG.md + completion report 同步完成
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` + Haiku |
+| 實際使用 | ❌ 未使用（任務為指令文件補強，非 execution log 診斷） |
+| 遵從 Router | ❌ 未遵從（build-error-resolver 能力與任務不匹配） |
 
 ---
 
@@ -413,6 +435,7 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 2. **Airtable 背景同步驗證**：API 額度重置（6月初）後確認背景 Airtable sync path 正常
 3. **Anti-Idle Ping 驗證**：確認 n8n 每 6 天 ping Supabase 的 Schedule Trigger 存在
 4. **pg_cron TTL**：`error_logs` 表 30 天自動清理
+5. **[DEFERRED] 立體擺設款式管理 UI 整合**：計畫存於 `.fhs/reports/planning/a2_implementation_plan.md`。審閱發現 2 個高風險點須先解決：(R1) addNewFrameStyle 雙 POST 無事務保護需加回滾邏輯；(R2) 計畫缺少 n8n Smart Cache COST_MAP 同步步驟（新 SKU 上線後成本計算將出錯）。Fat Mo 確認 OK 後才可 /execute。
 
 ---
 
