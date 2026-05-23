@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-23 (Session 13): 訂單同步資料丟失全端修復 (Data Loss Fix) ✅
+
+**Scope**: 解耦前台 Dashboard 與 n8n Webhook 的並發直寫競態 (Race Condition)，將 UI `process_status` 與 `batch_number` 移至 Webhook 發送前注入，並部署 Supabase RPC 0013 Migration 解決 Orphan 殘留與 `::order_status` 型別強轉問題。
+**Status**: ✅ 完成，E2E 自動化整合測試 100% 通過
+
+---
+
 ## 2026-05-22 (Session 12): Migration 0011 執行 + Race Condition 知識沉澱 ✅
 
 **Scope**: 執行 Migration 0011（race condition RPC），更新 build-error-resolver.md 知識庫，同步 current.html，完成 handoff + decisions 文件。
