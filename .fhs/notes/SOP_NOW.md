@@ -60,6 +60,8 @@
 | `/fhs-audit` | `.fhs/ai/commands/fhs-audit.md` | `.claude/commands/fhs-audit.md` | `.agents/workflows/fhs-audit.md` |
 | `/guardian` | `.fhs/ai/commands/guardian.md` | `.claude/commands/guardian.md` | `.agents/workflows/guardian.md` |
 | `/error-eye` | `.fhs/ai/commands/error-eye.md` | `.claude/commands/error-eye.md` | `.agents/workflows/error-eye.md` |
+| `/rg` | `.fhs/ai/commands/rg.md` | `.claude/commands/rg.md` | `.agents/workflows/rg.md` |
+| `/rp` | `.fhs/ai/commands/rp.md` | `.claude/commands/rp.md` | `.agents/workflows/rp.md` |
 
 ### Skills & Agents（不重疊）
 

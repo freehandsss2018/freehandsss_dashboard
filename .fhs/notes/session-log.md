@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-23 (Session 15): Complex SKU 成本計算修復與前台同步 UX 優化 (Complex SKU Cost Calc & Sync UX Optimization) ✅
+
+**Scope**: 修復 n8n `Smart Cache Strategist` 中 PostgREST 針對特殊 SKU 括號語法解析 bug、防禦 n8n VM Sandbox 下 `process is not defined` 崩潰；前端 Dashboard 實作即時重覆單號檢查（Supabase + Webhook Fallback）、新增 `#syncProgressBanner` 進度指示條與 4 秒自動輪詢更新機制。
+**Status**: ✅ 完成，模擬 URL 編碼與 E2E 瀏覽器驗收 100% 通過
+
+---
+
 ## 2026-05-23 (Session 13): 訂單同步資料丟失全端修復 (Data Loss Fix) ✅
 
 **Scope**: 解耦前台 Dashboard 與 n8n Webhook 的並發直寫競態 (Race Condition)，將 UI `process_status` 與 `batch_number` 移至 Webhook 發送前注入，並部署 Supabase RPC 0013 Migration 解決 Orphan 殘留與 `::order_status` 型別強轉問題。

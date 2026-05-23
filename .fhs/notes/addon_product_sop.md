@@ -190,4 +190,34 @@ const _isAddon = (it) => ADDON_SUFFIXES.some(s =>
 2. 在 Smart Cache Strategist V47.9 的 hardcoded cost 表加入成本
 3. 才可在 `sbSyncOrder` 恢復寫入 `product_sku`
 
-未完成以上步驟前，**絕對不能**在 sbSyncOrder 加入 `product_sku`。
+未完成以上步驟前，**絕對不能**在 `sbSyncOrder` 加入 `product_sku`。
+
+---
+
+## 五. n8n 端三層必改（V47.11 教訓）
+
+### E. n8n `Smart Cache Strategist` COST_MAP
+
+位置：workflow 節點 `Smart Cache Strategist`（V47.11 後）
+必改：在 `COST_MAP` 常數中新增一行：
+  "新產品 SKU": <cost值>,
+
+若新產品為服務型（無材料成本），填 0。
+若新產品未在此表 → lookupCost 返回 null → 整批訂單落 Airtable fallback（Airtable 429 月限時直接 workflow Error）。
+
+### F. n8n `Parse Items & Generate SKU` normalization
+
+若 Dashboard 送出的 `Product_Name` 有多種可能變體（例如短名稱），
+在節點 Section 4 加防禦性 normalize：
+  `if (sku.includes("關鍵詞")) { sku = "標準 SKU 字串"; }`
+
+### G. n8n `Calculate Profit & Pack Items` getItemCategory
+
+在 `getItemCategory()` 中新增分支（在 `return '其他'` 之前）：
+  `if (sku.includes("新產品關鍵詞")) return '類別名稱';`
+
+類別名稱必須與 Supabase `order_items.item_category` 實際值一致：
+  `立體擺設` / `金屬鎖匙扣` / `純銀頸鏈吊飾` / `配件` / `其他`
+
+⚠️ 注意：此節點歷史上曾有 CJK 亂碼（V47.5 儲存時 UTF-8 損毀），
+若 `includes` 比對失效，需先確認節點原始碼是否含 `?` 亂碼字元。

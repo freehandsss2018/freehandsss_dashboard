@@ -136,3 +136,28 @@ pitfalls:
       Never use `fetch()` or built-in Node.js modules (like `https`, `http`, `fs`) in n8n Code nodes.
       Always use `axios` (i.e. `const axios = require('axios')`) for making HTTP requests inside n8n Code nodes, as it is authorized by the container settings.
       Ensure that JS errors returned in node execution JSON do not silently pass without telemetry/alerting.
+
+  - id: P7
+    name: n8n-mirror-prep-product-sku-fk
+    layer: n8n + Supabase
+    symptom: >
+      n8n workflow Error in ~20s（timeout 特徵，非毫秒級快速拒絕）。
+      order_items 未寫入 Supabase，或 Mirror Prep 路徑卡住。
+    root_cause: >
+      新加購配件的 Product_Name（如「羊毛氈公仔 - 加購」）不在 Supabase products 表，
+      但 Supabase Mirror Prep 節點把 item.Product_Name 寫入 product_sku 欄位，
+      觸發 FK 23503（order_items.product_sku → products.sku），整個 RPC 交易 rollback。
+      同時，Smart Cache COST_MAP 缺此 SKU → lookupCost null → supabaseFetched=false
+      → 落 Airtable fallback → Airtable 429 月限 → 20s timeout → workflow Error。
+    fix_applied: >
+      1. Migration 0014：INSERT 羊毛氈公仔入 products 表（cost=0, price=680）
+      2. Smart Cache V47.11：COST_MAP 加「羊毛氈公仔 - 加購」: 0
+      3. Parse Items V47.11：加防禦性 normalize（includes('羊毛氈') → 標準 SKU）
+      4. Calculate Profit V47.11：重建 getItemCategory（CJK 修復 + 配件分支）
+    detection_rule: >
+      grep -n '"product_sku"' n8n/*.json
+      — 若節點直接 assign item.Product_Name → product_sku，需確認該 SKU 已在 products 表
+    prevention: >
+      新增任何加購配件時，必須先執行 /new-product SOP Step 1（products 表 INSERT）
+      和 Step 2（Smart Cache COST_MAP 更新），再部署 Dashboard 或 n8n 節點改動。
+      順序：Supabase products → Smart Cache → Parse Items → Calculate Profit → 測試。

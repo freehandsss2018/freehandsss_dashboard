@@ -134,9 +134,12 @@ freehandsss_dashboard/
 │   │   ├── decisions.md
 │   │   ├── todo.md
 │   │   ├── session-log.md
-│   │   ├── SOP_NOW.md
-│   │   ├── ai_reports/                  ← AI 協作報告區（目前空，保留作為未來報告暫存）
-│   │   └── completion_reports/          ← 制度任務完成記錄（v1.4.0 新增）
+│   │   └── SOP_NOW.md
+│   ├── reports/                         ← AI 產出正式報告與計劃區（2026-05-23 新增規則）
+│   │   ├── README.md                    ← 報告區總綱
+│   │   ├── completion/                  ← 制度任務完成記錄（含歷史備份）
+│   │   ├── planning/                    ← /cl-flow 與實施計劃暫存區
+│   │   └── audits/                      ← 架構衛生與自動稽核報告區
 │   ├── memory/
 │   │   ├── README.md                   ← 記憶層與同步規範
 │   │   ├── handoff.md

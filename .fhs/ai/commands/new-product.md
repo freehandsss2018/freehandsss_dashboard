@@ -72,6 +72,13 @@
 2c. 確認 n8n 在遇到此 SKU 時的行為：
     - 是否會嘗試寫 product_sku FK？（若 SKU 不在 products 表 → 23503 風險）
     - sbSyncOrder 的 product_sku 欄位處理是否兼容？
+
+2d. 確認 Supabase Mirror Prep `product_sku` 寫入安全性
+    檢查 Mirror Prep 節點：`product_sku: item.Product_Name || null`
+    若新產品 SKU **已在 products 表**（Step 1 已建）→ FK 安全，無需改動
+    若新產品 SKU **不在 products 表**（刻意不入表的加購品）→ 
+      必須在 Mirror Prep 加 guard：
+      `product_sku: isAddonItem(item.Order_Item_Key) ? null : (item.Product_Name || null)`
 ```
 
 **Gate 2 PASS 條件**：

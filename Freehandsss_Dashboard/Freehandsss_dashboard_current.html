@@ -352,6 +352,13 @@
             from { opacity: 0; transform: translateY(-6px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fhs-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .fhs-spin {
+            animation: fhs-spin 1s linear infinite;
+        }
         .toggle-row.highlight-p {
             background: #F3E5F5; border-radius: 6px;
             padding: 10px 10px; border-bottom: none; margin-bottom: 1px;
@@ -2126,6 +2133,11 @@
                     載入中...
                 </span>
             </div>
+            <!-- Sync in progress notification banner -->
+            <div id="syncProgressBanner" style="display:none; background:var(--fhs-warning-bg); border-top:1px solid var(--fhs-border); border-bottom:1px solid var(--fhs-border); padding:8px 24px; font-size:var(--fhs-text-xs); color:var(--fhs-warning); font-weight:600; align-items:center; gap:8px;">
+                <span style="display:inline-block; width:12px; height:12px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;" class="fhs-spin"></span>
+                <span>🔄 訂單 <span id="syncProgressOrderId"></span> 同步中，由於背景更新有時間差，資料將於幾秒後自動更新...</span>
+            </div>
             </div><!-- /reviewZone2 -->
 
             <!-- Zone 3 filter：篩選列（fixed at top:48px+zone2H，由 JS 動態計算） -->
@@ -3849,6 +3861,32 @@
             if (mode === 'review') {
                 initReviewYears();
                 (window.fetchGlobalReview || fetchGlobalReview)();
+
+                // If a sync was triggered recently, start the polling interval if not already running
+                if (window._fhsLastSyncPayload && Date.now() - (window._fhsLastSyncTime || 0) < 20000) {
+                    const banner = document.getElementById('syncProgressBanner');
+                    if (banner) {
+                        const orderText = window._fhsLastSyncPayload.New_Order_ID 
+                            ? `${window._fhsLastSyncPayload.Order_ID} ➔ ${window._fhsLastSyncPayload.New_Order_ID}` 
+                            : window._fhsLastSyncOrderId;
+                        const idSpan = document.getElementById('syncProgressOrderId');
+                        if (idSpan) idSpan.innerText = orderText;
+                        banner.style.display = 'flex';
+                    }
+                    if (!window._syncPollInterval) {
+                        window._syncPollInterval = setInterval(async () => {
+                            if (!window._fhsLastSyncPayload || Date.now() - (window._fhsLastSyncTime || 0) > 20000) {
+                                clearInterval(window._syncPollInterval);
+                                window._syncPollInterval = null;
+                                const b = document.getElementById('syncProgressBanner');
+                                if (b) b.style.display = 'none';
+                                return;
+                            }
+                            console.log("[Sync Poll] Auto-refreshing review table...");
+                            await (window.fetchGlobalReview || fetchGlobalReview)(true);
+                        }, 4000);
+                    }
+                }
             }
         }
         
@@ -5334,6 +5372,51 @@
             let orderItemsArray = [];
             const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
 
+            // Check for duplicate order ID before submitting
+            let needsIdCheck = false;
+            if (currentMode === 'create') {
+                needsIdCheck = true;
+            } else if (currentMode === 'edit' && editTargetOrderId && currentOrderId !== editTargetOrderId) {
+                needsIdCheck = true;
+            }
+
+            if (needsIdCheck) {
+                btn.innerText = "🔍 檢查單號中...";
+                showLoader("🔍 正在檢查單號是否重複...");
+                let duplicateFound = false;
+                try {
+                    if (localStorage.getItem('fhs_supabase_read') === '1') {
+                        const checkUrl = `${SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(currentOrderId)}&select=order_id&limit=1`;
+                        const r = await fetch(checkUrl, {
+                            headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` }
+                        });
+                        const rows = await r.json();
+                        duplicateFound = Array.isArray(rows) && rows.length > 0;
+                    } else {
+                        const checkUrl = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=${currentOrderId}`);
+                        const r = await fetch(checkUrl);
+                        const data = await r.json();
+                        duplicateFound = data && data.found;
+                    }
+
+                    if (duplicateFound) {
+                        alert(`❌ 重複單號：單號「${currentOrderId}」已被使用，請修改！`);
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                        hideLoader();
+                        return; // Abort saving!
+                    }
+                } catch (err) {
+                    console.error("Failed to check duplicate ID at save:", err);
+                    if (!confirm("⚠️ 無法連線資料庫驗證單號是否重複。是否強行儲存？")) {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                        hideLoader();
+                        return; // User aborted
+                    }
+                }
+            }
+
             try {
                 if (hasMainProduct) {
                     let subCat = getValSafe("pSubCat", "");
@@ -5601,6 +5684,11 @@
 
                 if (response.ok) {
                     alert("✅ 同步成功！訂單數據與商品明細已完美射入 NAS。");
+
+                    // Set last sync info for visual sync progress indicator
+                    window._fhsLastSyncTime = Date.now();
+                    window._fhsLastSyncOrderId = currentOrderId;
+                    window._fhsLastSyncPayload = payload;
 
                     // --- V31.2: If new order and sequential mode, update global config ---
                     if (currentMode === 'create' && systemConfig.mode === 'sequential') {
@@ -5946,6 +6034,53 @@
         window.sysCheckN8n = sysCheckN8n;
         window.sysTrackAtCall = sysTrackAtCall;
 
+        function checkSyncFinished(orders) {
+            if (!window._fhsLastSyncPayload) return true;
+            const payload = window._fhsLastSyncPayload;
+            const targetId = payload.New_Order_ID || payload.Order_ID;
+            
+            const found = orders.find(o => o.Order_ID === targetId);
+            if (!found) return false;
+
+            if (payload.New_Order_ID) {
+                const oldFound = orders.find(o => o.Order_ID === payload.Order_ID);
+                if (oldFound) return false;
+            }
+
+            if (found.Customer_Name !== payload.Customer_Name) return false;
+            
+            const salePrice = Number(found.Total_Revenue || found.final_sale_price || 0);
+            if (Math.round(salePrice) !== Math.round(payload.System_Final_Sale_Price)) return false;
+
+            return true;
+        }
+
+        function handleSyncPollingCheck(orders) {
+            const banner = document.getElementById('syncProgressBanner');
+            if (window._fhsLastSyncPayload) {
+                if (checkSyncFinished(orders)) {
+                    console.log("[Sync Poll] Sync check passed! Stopping poll.");
+                    if (window._syncPollInterval) {
+                        clearInterval(window._syncPollInterval);
+                        window._syncPollInterval = null;
+                    }
+                    if (banner) banner.style.display = 'none';
+                    window._fhsLastSyncPayload = null;
+                } else {
+                    if (banner) {
+                        const orderText = window._fhsLastSyncPayload.New_Order_ID 
+                            ? `${window._fhsLastSyncPayload.Order_ID} ➔ ${window._fhsLastSyncPayload.New_Order_ID}` 
+                            : window._fhsLastSyncOrderId;
+                        const idSpan = document.getElementById('syncProgressOrderId');
+                        if (idSpan) idSpan.innerText = orderText;
+                        banner.style.display = 'flex';
+                    }
+                }
+            } else {
+                if (banner) banner.style.display = 'none';
+            }
+        }
+
         function debounceFetchGlobalReview() {
             clearTimeout(reviewFetchTimeout);
             reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
@@ -5993,6 +6128,7 @@
                 if (cached) {
                     globalOrders = cached;
                     renderReviewTable(globalOrders);
+                    handleSyncPollingCheck(globalOrders);
                     return;
                 }
             }
@@ -6028,6 +6164,7 @@
                         globalOrders = data.orders;
                         setReviewCache(cacheKey, data.orders);
                         renderReviewTable(globalOrders);
+                        handleSyncPollingCheck(globalOrders);
                         hideLoader();
                         return;
                     } else if (data && data.message && data.message.includes('Error in workflow')) {
@@ -9062,6 +9199,7 @@
                 window.globalOrders = orders;
                 if (window.renderReviewTable) window.renderReviewTable(orders);
                 if (window.renderReviewAccordion) window.renderReviewAccordion(orders);
+                handleSyncPollingCheck(orders);
                 const _syncT = new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'});
                 sbBadge('✅ 已同步 ' + _syncT, '#A5D6A7');
                 hideConnectingBanner();

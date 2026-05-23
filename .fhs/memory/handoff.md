@@ -1,6 +1,55 @@
-# FHS Handoff - 2026-05-22
-當前版本：v1.4.6（憲法層）/ V41（UI層）→ current 已升版
+# FHS Handoff - 2026-05-23
+當前版本：v1.4.7（憲法層）/ V41（UI層）→ current 已升版
 n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
+
+---
+
+## 本次 Session 完成事項（2026-05-23 Session 15 — Complex SKU 成本計算與前台同步 UX 優化）
+
+### 15. Complex SKU 成本計算修復與前台同步 UX 優化
+
+**完成事項**：
+- **複合商品成本計算修復 (Complex SKU Cost Calc)**：
+  1. 修改 n8n `Smart Cache Strategist` 中的 PostgREST 過濾器語法，將過濾字串改以雙引號包裹（如 `sku.like."FILTER*"`），避免 PostgREST parser 因為括號、空格（如 `木框套裝 (4肢)`）而解碼語法崩潰。
+  2. 新增 `typeof process !== 'undefined'` 條件防護，解決 n8n VM Sandbox 中沒有全域 `process` 物件而導致 `ReferenceError` 崩潰的問題。
+  3. 將修復後的流程備份回本地的 [FHS_Core_OrderProcessor_live.json](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/n8n/FHS_Core_OrderProcessor_live.json)。
+- **客戶端重覆單號檢查**：
+  1. 前端 Dashboard `syncToAirtable()` 新增即時驗證機制，優先調用 Supabase API 直連查詢，若 Supabase 未啟用則使用 Webhook 查詢遠端資料庫是否已存在該 `Order_ID`。
+  2. 若重覆則彈出 Alert 並中止保存，將 Sync 按鈕復原，有效避免數據重疊與覆寫。
+- **同步進度條與自動輪詢機制**：
+  1. 在 `#reviewZone2` 標題列下新增 `#syncProgressBanner` 進度 Banner 與 CSS 載入動畫。
+  2. 當同步成功後或切換至訂單總覽 (Review Mode) 時，若偵測到 20 秒內有進行同步，則啟動每 4 秒一次的自動輪詢（20秒超時）。
+  3. 核對金額與姓名無誤（`checkSyncFinished`）後，自動關閉提示條並重新載入列表。
+  4. 同步更新 `Freehandsss_dashboard_current.html` 與基準 `freehandsss_dashboardV41.html`。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 建議調用 `frontend-developer` |
+| 實際使用 | ✅ 使用（調用 `browser_subagent` 執行 E2E 瀏覽器整合測試，完成重覆單號防護與同步進度條之功能驗收） |
+| 遵從 Router | ✅ 遵從 |
+
+---
+
+## 本次 Session 完成事項（2026-05-23 Session 14 — AG 執行 SOP 補完與設計審查）
+
+### 14. 羊毛氈 Bug 修復與新產品 SOP 擴展（Phase 1 執行域完成）
+
+**完成事項**：
+- **SOP 補完與機制的跨層整合**：
+  1. `addon_product_sop.md`：新增第五節 `n8n 端三層必改`（E. Smart Cache Strategist COST_MAP, F. Parse Items normalization, G. Calculate Profit getItemCategory）。
+  2. `pitfalls.yaml`：新增 `P7` (n8n-mirror-prep-product-sku-fk)，記錄因「羊毛氈加購品」不在 products 表且無 guard 導致 23503 FK 違規回滾、最終觸發 20s 延遲 timeout 的完整根因、修復與預防手段。
+  3. `new-product.md`：在 Step 2 新增 2d 檢測項目，要求檢查 Supabase Mirror Prep 節點對 `product_sku` 寫入的安全性，並加入 `isAddonItem` 條件防禦。
+- **Smart Cache 即時讀設計案審查**：
+  * 已於專案工作區產出：[.fhs/reports/planning/2026-05-23_smart_cache_supabase_design.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/reports/planning/2026-05-23_smart_cache_supabase_design.md)。
+  * 審查要點：
+    1. **Prefix-match 邏輯確認**：Supabase products 表僅包含常見的 489 筆 SKU 組合，未包含無限位數 permutation，且 base SKU 本身不存在於表中。因此**必須保留 Prefix-match 邏輯**。
+    2. **OR Filter URL Encoding 測試**：已實際在環境中透過 Node 測試 PostgREST，證實 `or=(sku.like.BASE1*,sku.like.BASE2*)` 完全相容且支援中文 URL 編碼。
+    3. **提供 V47.12 Smart Cache 程式碼**：包含 Prefix-match fallback，就緒供 A3 (Claude Code) 部署。
+- **報告工作區存放守護落地**：
+  * 憲法層 `AGENTS.md` 升版至 **`v1.4.7`** (新增 Rule 3.14)。
+  * 專案地圖 `docs/repo-map.md` 更新對齊，確保 AI 正式報告 100% 存於專案內以支援 `@` 檢索。
+  * 原外部 review_v2 報告已移動至：[.fhs/reports/handoff_ag_review_v2.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/reports/handoff_ag_review_v2.md)。
 
 ---
 

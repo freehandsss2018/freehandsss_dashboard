@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.6
-> Last updated: 2026-05-17
+> Version: v1.4.7
+> Last updated: 2026-05-23
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -129,6 +129,11 @@
 - **Stitch 輸出禁止直入**：Google Stitch 或任何 MCP 生成的 UI 組件，嚴禁未經轉換直接覆寫 `current.html` / V41 等主核心（V36 / V37 / V40 已 archive，不再受此守護但亦不得污染）。
 - **必須無害化**：Stitch 產出必須先去除 React/Tailwind/CDN 外部依賴，轉為純 Vanilla HTML/CSS，方可進入 Phase B 實作。
 - **草稿隔離**：Stitch 生成物作為「Draft」暫存於 `.fhs/reports/planning/`，只有通過 `/ag-ui-import` 轉換且 Code Reviewer PASS 後，方可合併至 prototype。
+
+### 報告與產出物工作區存放守護 (Rule 3.14)
+- **強制工作區存放**：凡 AI 生成之所有正式報告、設計提案（Plan）、審閱意見（Review）及任務完成報告（Completion Report），**必須存放在專案工作區（Project Workspace）內部的適當目錄中**（例如 `.fhs/reports/` 或 `.fhs/notes/`）。
+- **禁止寫入外部路徑**：絕對禁止將此類文件寫入工作區外的系統暫存區、緩存區或 AI App Data 目錄（如 `~/.gemini/antigravity/brain/...`）。
+- **原因**：確保所有產出物均能被編輯器（如 VS Code、Cursor）的 `@` 檔案索引功能正確檢索與鏈接，方便用戶隨時引用。
 
 ### 衝突優先級聲明
 - 若本文件（AGENTS.md）與 `.cursorrules` 有任何規則衝突，以本文件為最終準則。

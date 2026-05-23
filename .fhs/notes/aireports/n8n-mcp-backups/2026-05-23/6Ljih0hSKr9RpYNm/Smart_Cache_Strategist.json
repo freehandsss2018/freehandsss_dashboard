@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "// V47.9 Local Cost Map — fetch() unavailable in Code nodes on this NAS\n// Costs from Supabase products table (2026-05-18). Base SKU = prefix before '- N飾 (...)'\nconst COST_MAP = {\n  // 手模擺設 — exact match\n  \"玻璃瓶套裝 (4肢)\": 210,\n  \"玻璃瓶套裝 (2肢)\": 210,\n  \"木框套裝 (4肢)\":   210,\n  \"木框套裝 (2肢)\":   210,\n  // 嬰兒鎖匙扣\n  \"嬰兒鎖匙扣 - 不銹鋼\":   185,\n  \"嬰兒鎖匙扣 - 鋁合金\":   212,\n  \"嬰兒(P)鎖匙扣 - 不銹鋼\": 235,\n  \"嬰兒(P)鎖匙扣 - 鋁合金\": 262,\n  // 嬰兒吊飾\n  \"嬰兒吊飾 - 925銀\":    425,\n  \"嬰兒吊飾 - 925金\":    481,\n  \"嬰兒(P)吊飾 - 925銀\": 475,\n  \"嬰兒(P)吊飾 - 925金\": 531,\n  // 家庭 S 系列鎖匙扣\n  \"家庭(S1)鎖匙扣 - 不銹鋼\": 275,\n  \"家庭(S1)鎖匙扣 - 鋁合金\": 275,\n  \"家庭(S2)鎖匙扣 - 不銹鋼\": 275,\n  \"家庭(S2)鎖匙扣 - 鋁合金\": 275,\n  // 家庭 P 系列鎖匙扣\n  \"家庭(P1)鎖匙扣 - 不銹鋼\": 405,\n  \"家庭(P1)鎖匙扣 - 鋁合金\": 405,\n  \"家庭(P2)鎖匙扣 - 不銹鋼\": 405,\n  \"家庭(P2)鎖匙扣 - 鋁合金\": 405,\n  // 家庭吊飾\n  \"家庭(S1)吊飾 - 925銀\": 475,\n  \"家庭(S1)吊飾 - 925金\": 531,\n  \"家庭(S2)吊飾 - 925銀\": 475,\n  \"家庭(S2)吊飾 - 925金\": 531,\n  \"家庭(P1)吊飾 - 925銀\": 605,\n  \"家庭(P1)吊飾 - 925金\": 661,\n  \"家庭(P2)吊飾 - 925銀\": 605,\n  \"家庭(P2)吊飾 - 925金\": 661,\n  // 成人\n  \"成人(P)鎖匙扣 - 不銹鋼\": 405,\n  \"成人(P)吊飾 - 925銀\":    605,\n};\n\nfunction lookupCost(sku) {\n  if (!sku) return null;\n  // 1. Exact match\n  if (COST_MAP[sku] !== undefined) return COST_MAP[sku];\n  // 2. Prefix match (handles variants like \"嬰兒鎖匙扣 - 不銹鋼 - 5飾 (加購)\")\n  for (const base of Object.keys(COST_MAP)) {\n    if (sku.startsWith(base)) return COST_MAP[base];\n  }\n  return null;\n}\n\nconst batchItems = $(\"Batch SKU Collector\").all();\nconst hasValidItems = batchItems.some(item => item.json.hasItems === true);\nconst skuList = batchItems.length > 0 ? (batchItems[0].json.sku_list || []) : [];\n\nif (hasValidItems && skuList.length > 0) {\n  const supabaseCosts = {};\n  for (const sku of skuList) {\n    const cost = lookupCost(sku);\n    if (cost !== null) {\n      supabaseCosts[sku] = { Product_Name: sku, Total_Base_Cost: cost };\n    }\n  }\n  if (Object.keys(supabaseCosts).length > 0) {\n    return batchItems.map(item => ({\n      json: {\n        ...item.json,\n        useCache: false,\n        supabaseFetched: true,\n        supabaseCosts,\n        batchFormula: \"RECORD_ID()='SUPABASE_SKIP'\"\n      }\n    }));\n  }\n}\n\n// No costs found in local map — fall through to Airtable\nif (hasValidItems) {\n  await new Promise(r => setTimeout(r, 250));\n}\nreturn batchItems.map(item => ({\n  json: { ...item.json, useCache: false, supabaseFetched: false }\n}));",
+    "notice": ""
+  },
+  "id": "2bb644ad-7b4c-456e-884a-e2cbfd09a10e",
+  "name": "Smart Cache Strategist",
+  "type": "n8n-nodes-base.code",
+  "position": [
+    31920,
+    7248
+  ],
+  "typeVersion": 2
+}

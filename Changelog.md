@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-05-23] 🐛 Complex SKU 成本計算修復 + 🚀 訂單重覆檢查與同步 UX 優化 (Complex SKU Cost Calc & Sync UX Optimization)
+
+**修改檔案**：
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `n8n/FHS_Core_OrderProcessor_live.json`
+
+**主要變更**：
+- **複合成品成本計算 (Complex SKU PostgREST Filter Escaping)**：修復 n8n `Smart Cache Strategist` node 中 PostgREST 過濾器因為括號/特殊字元（如 "木框套裝 (4肢)"）導致的 URL 解析語法錯誤。修正為雙引號包裹過濾字串（e.g. `sku.like."FILTER*"`）防止語法崩潰，並加入 `typeof process !== 'undefined'` 以防止 n8n 沙箱內 `ReferenceError` 崩潰。
+- **客戶端重覆單號檢查 (Client-side Duplicate ID Validation)**：在前端 Dashboard 儲存同步時，新增即時的單號重覆性檢查。優先採用 Supabase API 直連，若 Supabase 未啟用則使用 Webhook 回傳進行驗證，在確認無重覆單號時才允許發射 Webhook，有效避免數據重疊與覆寫。
+- **同步進度條與自動輪詢機制 (Sync Progress Banner & Auto-Polling)**：於訂單總覽 (Review Mode) 新增同步進度提示條 (`#syncProgressBanner`)，提供視覺反饋（旋轉 spinner 與當前同步單號），並在切換至訂單頁面或同步成功後每 4 秒自動向 Supabase/Webhook 輪詢最新狀態（20秒超時），待後台 n8n 處理完成並更新金額與客戶名稱後自動關閉提示條並重新載入列表，提供流暢的 Optimistic UI 體驗。
+
+---
+
+## [2026-05-23] 📋 報告工作區強制規則與憲法 v1.4.7 升級 (AI Reports Workspace Rule & AGENTS v1.4.7)
+
+**修改檔案**：
+- `.fhs/ai/AGENTS.md` (憲法層升級至 v1.4.7，新增 Rule 3.14)
+- `docs/repo-map.md` (修正並同步新增 `.fhs/reports/` 與其子目錄之結構描述)
+
+**主要變更**：
+- **新增報告工作區存放守護 (Rule 3.14)**：明文禁止 AI 將產出的正式報告、實施計劃（Plan）、審閱意見（Review）與任務完成報告（Completion Report）存放於專案外部（如 App Data 系統路徑 `~/.gemini/antigravity/brain/...`）。所有報告必須存放在專案 Workspace 內的指定目錄（如 `.fhs/reports/` 或 `.fhs/notes/`），以確保用戶可在 IDE 中透過 `@` 檔案選取器快速索引及檢索。
+- **Repo Map 結構修正**：在 `docs/repo-map.md` 中修正原本寫錯的 `completion_reports` 位置，改為對齊真實檔案系統的 `.fhs/reports/` 分支結構。
+
+---
+
 ## [2026-05-23] 🐛 訂單同步資料丟失修復 (Order Items Data Loss Fix)
 
 **修改檔案**：
