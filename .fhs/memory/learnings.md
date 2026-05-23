@@ -11,6 +11,7 @@
 - 雙層成本架構：Supabase View（Layer 1 即時報價）+ n8n 靜態寫入（Layer 2 歷史快照），職責不重疊 — 源自 2026-05-16
 - 四端同步隔離：Supabase 失敗不中斷 Airtable、Airtable 失敗不中斷 Supabase，用 try-catch 分隔鏈路 — 源自 2026-05-16
 - Subagent 單一職責：database-reviewer=靜態 schema；finance-auditor=Live 動態驗證，兩者正交不互換 — 源自 2026-05-10
+- 同步進度輪詢機制：在同步後切換訂單總覽，前端以 4s 輪詢 Supabase 核對金額與姓名（20s超時），配合進度 Banner 消除背景延遲時差，提供樂觀 UI 體驗 — 源自 2026-05-23
 
 ---
 
@@ -19,6 +20,8 @@
 - **【高頻 ⚠️】n8n + sbSyncOrder 雙寫競態**：`responseMode: onReceived` 令前端在 n8n RPC 完成前就觸發 sbSyncOrder，DELETE+INSERT 與 RPC UPSERT 並發搶佔同一 item_key，INSERT 409 衝突後 `.catch()` 靜默吞掉，n8n 的 null 值勝出。架構解法：n8n RPC 為 SSoT，sbSyncOrder 只在 webhook 失敗/catch 時觸發 — 源自 2026-05-23
 - **PostgreSQL ENUM 型別不符（42804）**：JSONB extract（`->>`）得到 text，不能隱式轉型為 `order_status` ENUM，整個 RPC 交易 rollback，COALESCE 無從保護。必須 explicit cast：`(v_json->>'field')::order_status` — 源自 2026-05-23
 - **Webhook payload 缺漏（Late Enrichment）**：enrichment 放在 `if (response.ok)` 後才執行，webhook 發出時 items 缺 `_ui_process_status` / `_ui_batch_number`，n8n 收到空值落回預設。Payload 序列化是邊境管制，UI 狀態必須在 `fetch()` **前**注入 — 源自 2026-05-23
+- **n8n 沙箱 process 未定義**：n8n 限制性 sandbox 中 `process` 完全未定義，直取 `process.env` 拋出 `ReferenceError` 崩潰。必須以 `typeof process !== 'undefined'` 進行條件保護 — 源自 2026-05-23
+- **PostgREST 括號語法崩潰**：SKU 含有括號時（如 "木框套裝 (4肢)"），PostgREST `sku.like.FILTER*` 會因 URL 括號特殊字元解析出錯；過濾值必須用雙引號包裹 `sku.like."FILTER*"` 避免語法崩潰 — 源自 2026-05-23
 
 - AI 在計畫未批核前擅自執行架構改動（2026-03-30 事故）→ /execute 是唯一授權信號，任何結果好壞都不能事後合理化
 - n8n Code 節點 NAS 限制：fetch() 未定義、https 模組被禁用，會導致靜默失敗；必須使用 axios (require('axios')) 進行 HTTP 呼叫 — 源自 2026-05-22
