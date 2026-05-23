@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-22T01:55:36.432Z",
+  "updatedAt": "2026-05-23T03:49:43.889Z",
   "createdAt": "2026-03-24T02:57:23.796Z",
   "id": "6Ljih0hSKr9RpYNm",
   "name": "FHS_Core_OrderProcessor",
@@ -115,7 +115,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// 1. ??????????? ID?\nconst recordId = $input.first().json.id;\n\n// 2. ???????????\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. ??? n8n ????\n// Product_ID ??? null ??? - ? null ?? Airtable ?? [null],\n// linked record ???? null ID,?? Create Sub Items ????? Telegram ?\nreturn subItems\n  .filter(item => item.Order_Item_Key)\n  .map(item => {\n    const row = {\n      Quantity: item.Quantity,\n      Notes: item.Notes,\n      Main_Order_ID: recordId,\n      Order_Item_Key: item.Order_Item_Key\n    };\n    if (item.Product_Record_ID) row.Product_ID = item.Product_Record_ID;\n    return { json: row };\n  });",
+        "jsCode": "// 1. 抓取剛剛建好的「主訂單 ID」\nconst recordId = $input.first().json.id;\n\n// 2. 獲取打包好的子項目清單\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. 轉換為 n8n 資料格式\n// Product_ID 為空時跳過 - 因為 null 會在 Airtable 報錯 [null]，\n// linked record 不接受 null ID，此處 Create Sub Items 報錯會卡住 Telegram 戰報\nreturn subItems\n  .filter(item => item.Order_Item_Key)\n  .map(item => {\n    const row = {\n      Quantity: item.Quantity,\n      Notes: item.Notes,\n      Main_Order_ID: recordId,\n      Order_Item_Key: item.Order_Item_Key\n    };\n    if (item.Product_Record_ID) row.Product_ID = item.Product_Record_ID;\n    return { json: row };\n  });",
         "notice": ""
       },
       "id": "f2fe8818-c460-4ba8-94bb-0be673a85c91",
@@ -292,7 +292,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// === V45.7.4 Parse Items & Generate SKU (SKU Normalization Layer) ===\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst orderId = body.Order_ID || \"???\";\nconst customer = body.Customer_Name || \"???\";\nconst appDate = body.Appointment_Date || null;\nconst confirmDate = body.Order_Confirm_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\n// V45.7.4: Support both Order_Items_List (Dashboard) and Items (legacy/test)\nconst itemsList = body.Order_Items_List || body.Items;\n\nif (itemsList && Array.isArray(itemsList)) {\n    for (const item of itemsList) {\n        let sku = item.Product_Name || \"\";\n        const qty = Number(item.Quantity) || 1;\n\n        // === 1. 3D Display SKU Normalization (Bible V3.7 Section 4) ===\n        // Handles: ????/????/????(??) ? ???? (N?)\n        // Rule: 3? maps to 4? pricing per V3.7\n        if (sku.includes(\"??\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `???? ${limb}`;\n        } else if (sku.includes(\"???\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `????? ${limb}`;\n        }\n\n        // === 2. Keychain SKU Normalization ===\n        // Dashboard sends: \"????? - ???\" + Mode: \"(??)\"\n        // Airtable expects: \"????? - ??? - {qty}? {mode}\"\n        if (sku.includes(\"???\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        // === 3. Jewelry/Charm SKU Normalization ===\n        // Dashboard sends: \"???? - 925?\" + Mode: \"(??)\"\n        // Airtable expects: \"???? - 925? - {qty}? {mode}\"\n        if (sku.includes(\"??\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        let shipping_saved = (sku.includes(\"???\") && qty > 1) ? (qty - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"??\")) ? Math.floor(qty / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Order_Confirm_Date: confirmDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: qty,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key || \"\",\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"???\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;",
+        "jsCode": "// === V45.7.4 Parse Items & Generate SKU (SKU Normalization Layer) ===\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst orderId = body.Order_ID || \"未命名\";\nconst customer = body.Customer_Name || \"未命名\";\nconst appDate = body.Appointment_Date || null;\nconst confirmDate = body.Order_Confirm_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\n// V45.7.4: Support both Order_Items_List (Dashboard) and Items (legacy/test)\nconst itemsList = body.Order_Items_List || body.Items;\n\nif (itemsList && Array.isArray(itemsList)) {\n    for (const item of itemsList) {\n        let sku = item.Product_Name || \"\";\n        const qty = Number(item.Quantity) || 1;\n\n        // === 1. 3D Display SKU Normalization (Bible V3.7 Section 4) ===\n        // Handles: 木框款式/木框套裝/立體擺設(木框) → 木框套裝 (N肢)\n        // Rule: 3肢 maps to 4肢 pricing per V3.7\n        if (sku.includes(\"木框\")) {\n            let limb = (sku.includes(\"4肢\") || sku.includes(\"3肢\")) ? \"(4肢)\" : \"(2肢)\";\n            sku = `木框套裝 ${limb}`;\n        } else if (sku.includes(\"玻璃瓶\")) {\n            let limb = (sku.includes(\"4肢\") || sku.includes(\"3肢\")) ? \"(4肢)\" : \"(2肢)\";\n            sku = `玻璃瓶套裝 ${limb}`;\n        }\n\n        // === 2. Keychain SKU Normalization ===\n        // Dashboard sends: \"嬰兒鎖匙扣 - 不銹鋼\" + Mode: \"(加購)\"\n        // Airtable expects: \"嬰兒鎖匙扣 - 不銹鋼 - {qty}飾 {mode}\"\n        if (sku.includes(\"鎖匙扣\") && item.Mode) {\n            sku = `${sku} - ${qty}飾 ${item.Mode}`;\n        }\n\n        // === 3. Jewelry/Charm SKU Normalization ===\n        // Dashboard sends: \"嬰兒吊飾 - 925銀\" + Mode: \"(加購)\"\n        // Airtable expects: \"嬰兒吊飾 - 925銀 - {qty}飾 {mode}\"\n        if (sku.includes(\"吊飾\") && item.Mode) {\n            sku = `${sku} - ${qty}飾 ${item.Mode}`;\n        }\n\n        let shipping_saved = (sku.includes(\"鎖匙扣\") && qty > 1) ? (qty - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"吊飾\")) ? Math.floor(qty / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Order_Confirm_Date: confirmDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: qty,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key || \"\",\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"無商品\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;",
         "notice": ""
       },
       "id": "97e25cdd-619b-4033-b189-8f2fbb654ac4",
@@ -579,7 +579,8 @@
       }
     },
     {
-      "name": "Mirror to Supabase",
+      "id": "56fed19f-8ba4-4e21-ab36-18614460b6ee",
+      "name": "Supabase Mirror Prep",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -589,24 +590,107 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// === FHS Supabase Mirror Write — CREATE/EDIT path (V47.9) ===\n// Changes from V47.8:\n// - [V47.9] Added rename diagnostics in return JSON (action, newOrderId, rpc_status)\n//   to surface silent failures in execution log inspection\n// V47.8 preserved:\n// - New_Order_ID read from Input Normalizer\n// - confirmed_at / process_status only set on create\n// - process.env NAS try-catch\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\nconst hdrs = {\n  'apikey': SUPABASE_KEY,\n  'Authorization': `Bearer ${SUPABASE_KEY}`,\n  'Content-Type': 'application/json',\n  'Prefer': 'resolution=merge-duplicates,return=minimal'\n};\n\nasync function upsert(table, conflictCol, payload) {\n  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${conflictCol}`, {\n    method: 'POST', headers: hdrs, body: JSON.stringify(payload)\n  });\n  if (!res.ok) throw new Error(`${table}: ${res.status} ${await res.text()}`);\n}\n\ntry {\n  const calc = $('Calculate Profit & Pack Items').first().json;\n  let orderId = calc.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing from Calculate Profit node');\n\n  const action = (() => {\n    try { return ($('Input Normalizer').first().json.action || 'create').toLowerCase(); } catch(e) { return 'create'; }\n  })();\n\n  // [V47.8] Read New_Order_ID from Input Normalizer (explicit field, reliable)\n  const newOrderId = (() => {\n    try { return $('Input Normalizer').first().json.New_Order_ID || null; } catch(e) { return null; }\n  })();\n\n  // [V47.9] Capture diagnostics\n  const diag = {\n    action_received: action,\n    order_id_received: orderId,\n    new_order_id_received: newOrderId,\n    rename_condition_met: (action === 'edit' && !!newOrderId && newOrderId !== orderId),\n    rpc_called: false,\n    rpc_status: null,\n    rpc_error: null\n  };\n\n  let rawFormState = {};\n  try {\n    rawFormState = typeof calc.Raw_Form_State === 'string'\n      ? JSON.parse(calc.Raw_Form_State || '{}')\n      : (calc.Raw_Form_State || {});\n  } catch(e) { rawFormState = { raw: String(calc.Raw_Form_State) }; }\n\n  // [V47.8] Atomic Order_ID rename via Supabase RPC\n  let orderRenamed = null;\n  if (action === 'edit' && newOrderId && newOrderId !== orderId) {\n    diag.rpc_called = true;\n    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rename_order_id`, {\n      method: 'POST',\n      headers: hdrs,\n      body: JSON.stringify({ old_id: orderId, new_id: newOrderId })\n    });\n    diag.rpc_status = rpcRes.status;\n    if (!rpcRes.ok) {\n      const rpcErr = await rpcRes.text();\n      diag.rpc_error = rpcErr;\n      throw new Error(`rename_order_id RPC failed: ${rpcRes.status} ${rpcErr}`);\n    }\n    orderRenamed = `${orderId} → ${newOrderId}`;\n    orderId = newOrderId;\n  }\n\n  const orderPayload = {\n    order_id:               orderId,\n    customer_name:          calc.Customer_Name || orderId,\n    appointment_at:         calc.Appointment_Date || null,\n    final_sale_price:       calc.Total_Revenue         || 0,\n    total_cost:             calc.Total_Cost            || 0,\n    net_profit:             calc.Final_Profit          || 0,\n    deposit:                calc.Deposit               || 0,\n    balance:                calc.Balance               || 0,\n    additional_fee:         calc.Additional_Fee        || 0,\n    full_order_text:        calc.Order_Text            || '',\n    handmodel_cost:         calc.Handmodel_Cost_Total  || 0,\n    keychain_cost:          calc.Keychain_Cost_Total   || 0,\n    necklace_cost:          calc.Necklace_Cost_Total   || 0,\n    n8n_cost_adjustments:   Number(calc.N8n_Cost_Adjustments) || 0,\n    n8n_adjustment_notes:   calc.N8n_Adjustment_Notes  || [],\n    raw_form_state:         rawFormState\n  };\n\n  if (action === 'create' && calc.Order_Confirm_Date) {\n    orderPayload.confirmed_at = calc.Order_Confirm_Date;\n  }\n  if (action === 'create') {\n    orderPayload.process_status = '待確認';\n  }\n\n  await upsert('orders', 'order_id', orderPayload);\n\n  const subItems = calc.Sub_Items || [];\n  for (const item of subItems) {\n    const key = item.Order_Item_Key;\n    if (!key) continue;\n    await upsert('order_items', 'item_key', {\n      order_fhs_id:   orderId,\n      item_key:       key,\n      product_sku:    item.Product_Name   || null,\n      item_category:  item.Item_Category  || null,\n      quantity:       item.Quantity       || 1,\n      item_base_cost: item.Total_Base_Cost || 0,\n      subtotal_cost:  item.Total_Base_Cost || 0,\n      handmodel_cost: item.Handmodel_Cost  || 0,\n      keychain_cost:  item.Keychain_Cost   || 0,\n      necklace_cost:  item.Necklace_Cost   || 0,\n      specification:  item.Notes          || '',\n      process_status: '待製作'\n    });\n  }\n\n  return [{ json: {\n    mirrored:              true,\n    action:                action,\n    order_id:              orderId,\n    order_renamed:         orderRenamed,\n    items:                 subItems.length,\n    diag:                  diag,\n    handmodel_cost:        calc.Handmodel_Cost_Total,\n    keychain_cost:         calc.Keychain_Cost_Total,\n    necklace_cost:         calc.Necklace_Cost_Total\n  }}];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
-      },
-      "id": "5e6d7bc0-1c83-4eda-9af7-ca72fd9d958d"
+        "jsCode": "const input = $input.first().json;\nconst action = (() => {\n  try { return ($('Input Normalizer').first().json.action || 'create').toLowerCase(); } catch(e) { return 'create'; }\n})();\nconst oldOrderId = input.Order_ID;\nconst newOrderId = (() => {\n  try { return $('Input Normalizer').first().json.New_Order_ID || null; } catch(e) { return null; }\n})();\n\nconst staticData = $getWorkflowStaticData('global');\nconst supabaseActive = staticData.supabase_mirror_enabled !== false;\n\nconst SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\n// Build lookup from original webhook items to preserve UI-edited process_status & batch_number\nlet uiItemMap = {};\ntry {\n  const triggerBody = $('Receive Dashboard Order').first().json.body || $('Receive Dashboard Order').first().json;\n  (triggerBody.Order_Items_List || []).forEach(function(it) {\n    if (it.Order_Item_Key) {\n      uiItemMap[it.Order_Item_Key] = {\n        process_status: it._ui_process_status || null,\n        batch_number: it._ui_batch_number || null\n      };\n    }\n  });\n} catch(e) { /* Receive Dashboard Order not in scope */ }\n\nlet rawFormState = {};\ntry {\n  rawFormState = typeof input.Raw_Form_State === 'string'\n    ? JSON.parse(input.Raw_Form_State || '{}')\n    : (input.Raw_Form_State || {});\n} catch(e) { rawFormState = { raw: String(input.Raw_Form_State) }; }\n\nconst order = {\n  customer_name: input.Customer_Name || oldOrderId,\n  appointment_at: input.Appointment_Date || null,\n  final_sale_price: input.Total_Revenue || 0,\n  total_cost: input.Total_Cost || 0,\n  net_profit: input.Final_Profit || 0,\n  deposit: input.Deposit || 0,\n  balance: input.Balance || 0,\n  additional_fee: input.Additional_Fee || 0,\n  full_order_text: input.Order_Text || '',\n  handmodel_cost: input.Handmodel_Cost_Total || 0,\n  keychain_cost: input.Keychain_Cost_Total || 0,\n  necklace_cost: input.Necklace_Cost_Total || 0,\n  n8n_cost_adjustments: Number(input.N8n_Cost_Adjustments) || 0,\n  n8n_adjustment_notes: input.N8n_Adjustment_Notes || [],\n  raw_form_state: rawFormState\n};\n\nif (action === 'create') {\n  order.process_status = '待確認';\n  if (input.Order_Confirm_Date) {\n    order.confirmed_at = input.Order_Confirm_Date;\n  }\n}\n\nconst items = (input.Sub_Items || []).map((item, index) => {\n  const ui = uiItemMap[item.Order_Item_Key] || {};\n  return {\n    item_key: item.Order_Item_Key || (oldOrderId + '_' + index + '_AUTO'),\n    product_sku: item.Product_Name || null,\n    item_category: item.Item_Category || null,\n    quantity: item.Quantity || 1,\n    item_base_cost: item.Total_Base_Cost || 0,\n    subtotal_cost: item.Total_Base_Cost || 0,\n    handmodel_cost: item.Handmodel_Cost || 0,\n    keychain_cost: item.Keychain_Cost || 0,\n    necklace_cost: item.Necklace_Cost || 0,\n    specification: item.Notes || '',\n    process_status: ui.process_status || null,\n    batch_number: ui.batch_number || null\n  };\n});\n\nreturn [{\n  json: {\n    supabaseActive,\n    supabaseKey: SUPABASE_KEY,\n    rpcPayload: {\n      p_action: action,\n      p_old_order_id: oldOrderId,\n      p_new_order_id: newOrderId,\n      p_order: order,\n      p_items: items\n    }\n  }\n}];"
+      }
     },
     {
+      "id": "1220964f-70d0-4809-9238-118a3d1207f5",
+      "name": "Supabase Active Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        32250,
+        7800
+      ],
+      "parameters": {
+        "mode": "rules",
+        "dataType": "boolean",
+        "value1": "={{ $json.supabaseActive }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": true,
+              "output": 0
+            }
+          ]
+        },
+        "fallbackOutput": 1
+      }
+    },
+    {
+      "id": "9fad1ccb-fb10-435e-9234-ca330f23535d",
+      "name": "HTTP: Supabase Sync RPC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        32500,
+        7920
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/rpc/sync_order_to_mirror",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.rpcPayload) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.supabaseKey }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $json.supabaseKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "3d9c8ce6-b3c1-4b3a-9eb9-a22cd58b0894",
       "name": "Mirror Delete to Supabase",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [
         31920,
         6950
       ],
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "// === FHS Supabase Mirror Delete - DELETE path (Phase 2) ===\n// Parallel branch after Delete Record. Soft-delete preserves audit trail.\n// Failure is ISOLATED - never affects Telegram notification.\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\ntry {\n  const body = $('Receive Dashboard Order').first().json.body\n    || $('Receive Dashboard Order').first().json;\n  const orderId = body.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing');\n\n  const res = await fetch(\n    `${SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`,\n    {\n      method: 'PATCH',\n      headers: {\n        'apikey': SUPABASE_KEY,\n        'Authorization': `Bearer ${SUPABASE_KEY}`,\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal'\n      },\n      body: JSON.stringify({ deleted_at: new Date().toISOString() })\n    }\n  );\n  if (!res.ok) throw new Error(`soft delete: ${res.status} ${await res.text()}`);\n\n  return [{ json: { mirrored: true, soft_deleted: orderId } }];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
-      },
-      "id": "06d507b1-4fb5-48d5-9f9b-2b7b5775fa54"
+        "method": "PATCH",
+        "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/orders?order_id=eq.{{ encodeURIComponent($('Receive Dashboard Order').first().json.body?.Order_ID || $('Receive Dashboard Order').first().json.Order_ID) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ deleted_at: new Date().toISOString() }) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {}
+      }
     }
   ],
   "connections": {
@@ -691,7 +775,7 @@
       "main": [
         [
           {
-            "node": "Mirror to Supabase",
+            "node": "Supabase Mirror Prep",
             "type": "main",
             "index": 0
           },
@@ -842,7 +926,36 @@
         ]
       ]
     },
-    "Mirror to Supabase": {
+    "Supabase Mirror Prep": {
+      "main": [
+        [
+          {
+            "node": "Supabase Active Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Active Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Supabase Sync RPC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pack Telegram Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Supabase Sync RPC": {
       "main": [
         [
           {
@@ -865,9 +978,9 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
-  "activeVersionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
-  "versionCounter": 502,
+  "versionId": "e3d7bdb9-2407-45a3-8383-48c5972fb857",
+  "activeVersionId": "e3d7bdb9-2407-45a3-8383-48c5972fb857",
+  "versionCounter": 538,
   "triggerCount": 1,
   "shared": [
     {
@@ -892,7 +1005,7 @@
             "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
             "projectId": "PusL5vFUw7BMC2xH",
             "user": {
-              "updatedAt": "2026-05-21T16:45:16.000Z",
+              "updatedAt": "2026-05-22T16:00:26.000Z",
               "createdAt": "2026-02-10T07:48:45.501Z",
               "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
               "email": "edwinli1030@gmail.com",
@@ -927,7 +1040,7 @@
               },
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2026-05-22",
+              "lastActiveAt": "2026-05-23",
               "isPending": false
             }
           }
@@ -937,9 +1050,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-05-22T01:55:36.435Z",
-    "createdAt": "2026-05-22T01:55:36.435Z",
-    "versionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
+    "updatedAt": "2026-05-23T03:49:43.891Z",
+    "createdAt": "2026-05-23T03:49:43.891Z",
+    "versionId": "e3d7bdb9-2407-45a3-8383-48c5972fb857",
     "workflowId": "6Ljih0hSKr9RpYNm",
     "nodes": [
       {
@@ -1050,7 +1163,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "// 1. ??????????? ID?\nconst recordId = $input.first().json.id;\n\n// 2. ???????????\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. ??? n8n ????\n// Product_ID ??? null ??? - ? null ?? Airtable ?? [null],\n// linked record ???? null ID,?? Create Sub Items ????? Telegram ?\nreturn subItems\n  .filter(item => item.Order_Item_Key)\n  .map(item => {\n    const row = {\n      Quantity: item.Quantity,\n      Notes: item.Notes,\n      Main_Order_ID: recordId,\n      Order_Item_Key: item.Order_Item_Key\n    };\n    if (item.Product_Record_ID) row.Product_ID = item.Product_Record_ID;\n    return { json: row };\n  });",
+          "jsCode": "// 1. 抓取剛剛建好的「主訂單 ID」\nconst recordId = $input.first().json.id;\n\n// 2. 獲取打包好的子項目清單\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. 轉換為 n8n 資料格式\n// Product_ID 為空時跳過 - 因為 null 會在 Airtable 報錯 [null]，\n// linked record 不接受 null ID，此處 Create Sub Items 報錯會卡住 Telegram 戰報\nreturn subItems\n  .filter(item => item.Order_Item_Key)\n  .map(item => {\n    const row = {\n      Quantity: item.Quantity,\n      Notes: item.Notes,\n      Main_Order_ID: recordId,\n      Order_Item_Key: item.Order_Item_Key\n    };\n    if (item.Product_Record_ID) row.Product_ID = item.Product_Record_ID;\n    return { json: row };\n  });",
           "notice": ""
         },
         "id": "f2fe8818-c460-4ba8-94bb-0be673a85c91",
@@ -1227,7 +1340,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "// === V45.7.4 Parse Items & Generate SKU (SKU Normalization Layer) ===\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst orderId = body.Order_ID || \"???\";\nconst customer = body.Customer_Name || \"???\";\nconst appDate = body.Appointment_Date || null;\nconst confirmDate = body.Order_Confirm_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\n// V45.7.4: Support both Order_Items_List (Dashboard) and Items (legacy/test)\nconst itemsList = body.Order_Items_List || body.Items;\n\nif (itemsList && Array.isArray(itemsList)) {\n    for (const item of itemsList) {\n        let sku = item.Product_Name || \"\";\n        const qty = Number(item.Quantity) || 1;\n\n        // === 1. 3D Display SKU Normalization (Bible V3.7 Section 4) ===\n        // Handles: ????/????/????(??) ? ???? (N?)\n        // Rule: 3? maps to 4? pricing per V3.7\n        if (sku.includes(\"??\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `???? ${limb}`;\n        } else if (sku.includes(\"???\")) {\n            let limb = (sku.includes(\"4?\") || sku.includes(\"3?\")) ? \"(4?)\" : \"(2?)\";\n            sku = `????? ${limb}`;\n        }\n\n        // === 2. Keychain SKU Normalization ===\n        // Dashboard sends: \"????? - ???\" + Mode: \"(??)\"\n        // Airtable expects: \"????? - ??? - {qty}? {mode}\"\n        if (sku.includes(\"???\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        // === 3. Jewelry/Charm SKU Normalization ===\n        // Dashboard sends: \"???? - 925?\" + Mode: \"(??)\"\n        // Airtable expects: \"???? - 925? - {qty}? {mode}\"\n        if (sku.includes(\"??\") && item.Mode) {\n            sku = `${sku} - ${qty}? ${item.Mode}`;\n        }\n\n        let shipping_saved = (sku.includes(\"???\") && qty > 1) ? (qty - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"??\")) ? Math.floor(qty / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Order_Confirm_Date: confirmDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: qty,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key || \"\",\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"???\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;",
+          "jsCode": "// === V45.7.4 Parse Items & Generate SKU (SKU Normalization Layer) ===\nconst body = $(\"Receive Dashboard Order\").first().json.body || $(\"Receive Dashboard Order\").first().json;\nconst orderId = body.Order_ID || \"未命名\";\nconst customer = body.Customer_Name || \"未命名\";\nconst appDate = body.Appointment_Date || null;\nconst confirmDate = body.Order_Confirm_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\n// V45.7.4: Support both Order_Items_List (Dashboard) and Items (legacy/test)\nconst itemsList = body.Order_Items_List || body.Items;\n\nif (itemsList && Array.isArray(itemsList)) {\n    for (const item of itemsList) {\n        let sku = item.Product_Name || \"\";\n        const qty = Number(item.Quantity) || 1;\n\n        // === 1. 3D Display SKU Normalization (Bible V3.7 Section 4) ===\n        // Handles: 木框款式/木框套裝/立體擺設(木框) → 木框套裝 (N肢)\n        // Rule: 3肢 maps to 4肢 pricing per V3.7\n        if (sku.includes(\"木框\")) {\n            let limb = (sku.includes(\"4肢\") || sku.includes(\"3肢\")) ? \"(4肢)\" : \"(2肢)\";\n            sku = `木框套裝 ${limb}`;\n        } else if (sku.includes(\"玻璃瓶\")) {\n            let limb = (sku.includes(\"4肢\") || sku.includes(\"3肢\")) ? \"(4肢)\" : \"(2肢)\";\n            sku = `玻璃瓶套裝 ${limb}`;\n        }\n\n        // === 2. Keychain SKU Normalization ===\n        // Dashboard sends: \"嬰兒鎖匙扣 - 不銹鋼\" + Mode: \"(加購)\"\n        // Airtable expects: \"嬰兒鎖匙扣 - 不銹鋼 - {qty}飾 {mode}\"\n        if (sku.includes(\"鎖匙扣\") && item.Mode) {\n            sku = `${sku} - ${qty}飾 ${item.Mode}`;\n        }\n\n        // === 3. Jewelry/Charm SKU Normalization ===\n        // Dashboard sends: \"嬰兒吊飾 - 925銀\" + Mode: \"(加購)\"\n        // Airtable expects: \"嬰兒吊飾 - 925銀 - {qty}飾 {mode}\"\n        if (sku.includes(\"吊飾\") && item.Mode) {\n            sku = `${sku} - ${qty}飾 ${item.Mode}`;\n        }\n\n        let shipping_saved = (sku.includes(\"鎖匙扣\") && qty > 1) ? (qty - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"吊飾\")) ? Math.floor(qty / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Order_Confirm_Date: confirmDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: qty,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key || \"\",\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"無商品\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;",
           "notice": ""
         },
         "id": "97e25cdd-619b-4033-b189-8f2fbb654ac4",
@@ -1514,7 +1627,8 @@
         }
       },
       {
-        "name": "Mirror to Supabase",
+        "id": "56fed19f-8ba4-4e21-ab36-18614460b6ee",
+        "name": "Supabase Mirror Prep",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
@@ -1524,24 +1638,107 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "// === FHS Supabase Mirror Write — CREATE/EDIT path (V47.9) ===\n// Changes from V47.8:\n// - [V47.9] Added rename diagnostics in return JSON (action, newOrderId, rpc_status)\n//   to surface silent failures in execution log inspection\n// V47.8 preserved:\n// - New_Order_ID read from Input Normalizer\n// - confirmed_at / process_status only set on create\n// - process.env NAS try-catch\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\nconst hdrs = {\n  'apikey': SUPABASE_KEY,\n  'Authorization': `Bearer ${SUPABASE_KEY}`,\n  'Content-Type': 'application/json',\n  'Prefer': 'resolution=merge-duplicates,return=minimal'\n};\n\nasync function upsert(table, conflictCol, payload) {\n  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${conflictCol}`, {\n    method: 'POST', headers: hdrs, body: JSON.stringify(payload)\n  });\n  if (!res.ok) throw new Error(`${table}: ${res.status} ${await res.text()}`);\n}\n\ntry {\n  const calc = $('Calculate Profit & Pack Items').first().json;\n  let orderId = calc.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing from Calculate Profit node');\n\n  const action = (() => {\n    try { return ($('Input Normalizer').first().json.action || 'create').toLowerCase(); } catch(e) { return 'create'; }\n  })();\n\n  // [V47.8] Read New_Order_ID from Input Normalizer (explicit field, reliable)\n  const newOrderId = (() => {\n    try { return $('Input Normalizer').first().json.New_Order_ID || null; } catch(e) { return null; }\n  })();\n\n  // [V47.9] Capture diagnostics\n  const diag = {\n    action_received: action,\n    order_id_received: orderId,\n    new_order_id_received: newOrderId,\n    rename_condition_met: (action === 'edit' && !!newOrderId && newOrderId !== orderId),\n    rpc_called: false,\n    rpc_status: null,\n    rpc_error: null\n  };\n\n  let rawFormState = {};\n  try {\n    rawFormState = typeof calc.Raw_Form_State === 'string'\n      ? JSON.parse(calc.Raw_Form_State || '{}')\n      : (calc.Raw_Form_State || {});\n  } catch(e) { rawFormState = { raw: String(calc.Raw_Form_State) }; }\n\n  // [V47.8] Atomic Order_ID rename via Supabase RPC\n  let orderRenamed = null;\n  if (action === 'edit' && newOrderId && newOrderId !== orderId) {\n    diag.rpc_called = true;\n    const rpcRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/rename_order_id`, {\n      method: 'POST',\n      headers: hdrs,\n      body: JSON.stringify({ old_id: orderId, new_id: newOrderId })\n    });\n    diag.rpc_status = rpcRes.status;\n    if (!rpcRes.ok) {\n      const rpcErr = await rpcRes.text();\n      diag.rpc_error = rpcErr;\n      throw new Error(`rename_order_id RPC failed: ${rpcRes.status} ${rpcErr}`);\n    }\n    orderRenamed = `${orderId} → ${newOrderId}`;\n    orderId = newOrderId;\n  }\n\n  const orderPayload = {\n    order_id:               orderId,\n    customer_name:          calc.Customer_Name || orderId,\n    appointment_at:         calc.Appointment_Date || null,\n    final_sale_price:       calc.Total_Revenue         || 0,\n    total_cost:             calc.Total_Cost            || 0,\n    net_profit:             calc.Final_Profit          || 0,\n    deposit:                calc.Deposit               || 0,\n    balance:                calc.Balance               || 0,\n    additional_fee:         calc.Additional_Fee        || 0,\n    full_order_text:        calc.Order_Text            || '',\n    handmodel_cost:         calc.Handmodel_Cost_Total  || 0,\n    keychain_cost:          calc.Keychain_Cost_Total   || 0,\n    necklace_cost:          calc.Necklace_Cost_Total   || 0,\n    n8n_cost_adjustments:   Number(calc.N8n_Cost_Adjustments) || 0,\n    n8n_adjustment_notes:   calc.N8n_Adjustment_Notes  || [],\n    raw_form_state:         rawFormState\n  };\n\n  if (action === 'create' && calc.Order_Confirm_Date) {\n    orderPayload.confirmed_at = calc.Order_Confirm_Date;\n  }\n  if (action === 'create') {\n    orderPayload.process_status = '待確認';\n  }\n\n  await upsert('orders', 'order_id', orderPayload);\n\n  const subItems = calc.Sub_Items || [];\n  for (const item of subItems) {\n    const key = item.Order_Item_Key;\n    if (!key) continue;\n    await upsert('order_items', 'item_key', {\n      order_fhs_id:   orderId,\n      item_key:       key,\n      product_sku:    item.Product_Name   || null,\n      item_category:  item.Item_Category  || null,\n      quantity:       item.Quantity       || 1,\n      item_base_cost: item.Total_Base_Cost || 0,\n      subtotal_cost:  item.Total_Base_Cost || 0,\n      handmodel_cost: item.Handmodel_Cost  || 0,\n      keychain_cost:  item.Keychain_Cost   || 0,\n      necklace_cost:  item.Necklace_Cost   || 0,\n      specification:  item.Notes          || '',\n      process_status: '待製作'\n    });\n  }\n\n  return [{ json: {\n    mirrored:              true,\n    action:                action,\n    order_id:              orderId,\n    order_renamed:         orderRenamed,\n    items:                 subItems.length,\n    diag:                  diag,\n    handmodel_cost:        calc.Handmodel_Cost_Total,\n    keychain_cost:         calc.Keychain_Cost_Total,\n    necklace_cost:         calc.Necklace_Cost_Total\n  }}];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
-        },
-        "id": "5e6d7bc0-1c83-4eda-9af7-ca72fd9d958d"
+          "jsCode": "const input = $input.first().json;\nconst action = (() => {\n  try { return ($('Input Normalizer').first().json.action || 'create').toLowerCase(); } catch(e) { return 'create'; }\n})();\nconst oldOrderId = input.Order_ID;\nconst newOrderId = (() => {\n  try { return $('Input Normalizer').first().json.New_Order_ID || null; } catch(e) { return null; }\n})();\n\nconst staticData = $getWorkflowStaticData('global');\nconst supabaseActive = staticData.supabase_mirror_enabled !== false;\n\nconst SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\n// Build lookup from original webhook items to preserve UI-edited process_status & batch_number\nlet uiItemMap = {};\ntry {\n  const triggerBody = $('Receive Dashboard Order').first().json.body || $('Receive Dashboard Order').first().json;\n  (triggerBody.Order_Items_List || []).forEach(function(it) {\n    if (it.Order_Item_Key) {\n      uiItemMap[it.Order_Item_Key] = {\n        process_status: it._ui_process_status || null,\n        batch_number: it._ui_batch_number || null\n      };\n    }\n  });\n} catch(e) { /* Receive Dashboard Order not in scope */ }\n\nlet rawFormState = {};\ntry {\n  rawFormState = typeof input.Raw_Form_State === 'string'\n    ? JSON.parse(input.Raw_Form_State || '{}')\n    : (input.Raw_Form_State || {});\n} catch(e) { rawFormState = { raw: String(input.Raw_Form_State) }; }\n\nconst order = {\n  customer_name: input.Customer_Name || oldOrderId,\n  appointment_at: input.Appointment_Date || null,\n  final_sale_price: input.Total_Revenue || 0,\n  total_cost: input.Total_Cost || 0,\n  net_profit: input.Final_Profit || 0,\n  deposit: input.Deposit || 0,\n  balance: input.Balance || 0,\n  additional_fee: input.Additional_Fee || 0,\n  full_order_text: input.Order_Text || '',\n  handmodel_cost: input.Handmodel_Cost_Total || 0,\n  keychain_cost: input.Keychain_Cost_Total || 0,\n  necklace_cost: input.Necklace_Cost_Total || 0,\n  n8n_cost_adjustments: Number(input.N8n_Cost_Adjustments) || 0,\n  n8n_adjustment_notes: input.N8n_Adjustment_Notes || [],\n  raw_form_state: rawFormState\n};\n\nif (action === 'create') {\n  order.process_status = '待確認';\n  if (input.Order_Confirm_Date) {\n    order.confirmed_at = input.Order_Confirm_Date;\n  }\n}\n\nconst items = (input.Sub_Items || []).map((item, index) => {\n  const ui = uiItemMap[item.Order_Item_Key] || {};\n  return {\n    item_key: item.Order_Item_Key || (oldOrderId + '_' + index + '_AUTO'),\n    product_sku: item.Product_Name || null,\n    item_category: item.Item_Category || null,\n    quantity: item.Quantity || 1,\n    item_base_cost: item.Total_Base_Cost || 0,\n    subtotal_cost: item.Total_Base_Cost || 0,\n    handmodel_cost: item.Handmodel_Cost || 0,\n    keychain_cost: item.Keychain_Cost || 0,\n    necklace_cost: item.Necklace_Cost || 0,\n    specification: item.Notes || '',\n    process_status: ui.process_status || null,\n    batch_number: ui.batch_number || null\n  };\n});\n\nreturn [{\n  json: {\n    supabaseActive,\n    supabaseKey: SUPABASE_KEY,\n    rpcPayload: {\n      p_action: action,\n      p_old_order_id: oldOrderId,\n      p_new_order_id: newOrderId,\n      p_order: order,\n      p_items: items\n    }\n  }\n}];"
+        }
       },
       {
+        "id": "1220964f-70d0-4809-9238-118a3d1207f5",
+        "name": "Supabase Active Switch",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 1,
+        "position": [
+          32250,
+          7800
+        ],
+        "parameters": {
+          "mode": "rules",
+          "dataType": "boolean",
+          "value1": "={{ $json.supabaseActive }}",
+          "rules": {
+            "rules": [
+              {
+                "operation": "equal",
+                "value2": true,
+                "output": 0
+              }
+            ]
+          },
+          "fallbackOutput": 1
+        }
+      },
+      {
+        "id": "9fad1ccb-fb10-435e-9234-ca330f23535d",
+        "name": "HTTP: Supabase Sync RPC",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          32500,
+          7920
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/rpc/sync_order_to_mirror",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.rpcPayload) }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "={{ $json.supabaseKey }}"
+              },
+              {
+                "name": "Authorization",
+                "value": "={{ 'Bearer ' + $json.supabaseKey }}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "3d9c8ce6-b3c1-4b3a-9eb9-a22cd58b0894",
         "name": "Mirror Delete to Supabase",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
         "position": [
           31920,
           6950
         ],
         "parameters": {
-          "mode": "runOnceForAllItems",
-          "language": "javaScript",
-          "jsCode": "// === FHS Supabase Mirror Delete - DELETE path (Phase 2) ===\n// Parallel branch after Delete Record. Soft-delete preserves audit trail.\n// Failure is ISOLATED - never affects Telegram notification.\n\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY\n  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\n\nconst staticData = $getWorkflowStaticData('global');\nif (staticData.supabase_mirror_enabled === false) {\n  return [{ json: { skipped: true, reason: 'feature_flag_off' } }];\n}\n\ntry {\n  const body = $('Receive Dashboard Order').first().json.body\n    || $('Receive Dashboard Order').first().json;\n  const orderId = body.Order_ID;\n  if (!orderId) throw new Error('Order_ID missing');\n\n  const res = await fetch(\n    `${SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`,\n    {\n      method: 'PATCH',\n      headers: {\n        'apikey': SUPABASE_KEY,\n        'Authorization': `Bearer ${SUPABASE_KEY}`,\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal'\n      },\n      body: JSON.stringify({ deleted_at: new Date().toISOString() })\n    }\n  );\n  if (!res.ok) throw new Error(`soft delete: ${res.status} ${await res.text()}`);\n\n  return [{ json: { mirrored: true, soft_deleted: orderId } }];\n} catch (err) {\n  return [{ json: { mirrored: false, error: err.message } }];\n}"
-        },
-        "id": "06d507b1-4fb5-48d5-9f9b-2b7b5775fa54"
+          "method": "PATCH",
+          "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/orders?order_id=eq.{{ encodeURIComponent($('Receive Dashboard Order').first().json.body?.Order_ID || $('Receive Dashboard Order').first().json.Order_ID) }}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ deleted_at: new Date().toISOString() }) }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "options": {}
+        }
       }
     ],
     "connections": {
@@ -1626,7 +1823,7 @@
         "main": [
           [
             {
-              "node": "Mirror to Supabase",
+              "node": "Supabase Mirror Prep",
               "type": "main",
               "index": 0
             },
@@ -1777,7 +1974,36 @@
           ]
         ]
       },
-      "Mirror to Supabase": {
+      "Supabase Mirror Prep": {
+        "main": [
+          [
+            {
+              "node": "Supabase Active Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Supabase Active Switch": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Supabase Sync RPC",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Pack Telegram Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Supabase Sync RPC": {
         "main": [
           [
             {
@@ -1795,10 +2021,10 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-05-22T01:55:37.399Z",
-        "id": 290,
+        "createdAt": "2026-05-23T03:49:44.791Z",
+        "id": 302,
         "workflowId": "6Ljih0hSKr9RpYNm",
-        "versionId": "dac3ad5b-060f-4747-8f4c-5e721676885a",
+        "versionId": "e3d7bdb9-2407-45a3-8383-48c5972fb857",
         "event": "activated",
         "userId": "6bd45f76-307d-46fb-be47-d711e31203fb"
       }

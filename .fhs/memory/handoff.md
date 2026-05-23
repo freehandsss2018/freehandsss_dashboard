@@ -4,6 +4,38 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 
 ---
 
+## 本次 Session 完成事項（2026-05-23 Session 13 — AG + A3 連線修復）
+
+### 13. 訂單同步時批次/進度資料丟失 — 全端解耦修復
+
+**根因**：
+- **前台與 Supabase 並發寫入競態**：Dashboard 在 n8n Webhook 同步成功後，會並發呼叫 `sbSyncOrder` 直寫 Supabase；而在後台，n8n Webhook 本身也會透過 Supabase RPC 寫入同一個訂單。這兩個並行的寫入任務產生了 Race Condition (雙寫競爭)，時序混亂導致 n8n 處理好的 `product_sku`、批次與進度被 Dashboard 的直寫請求重設。
+- **Webhook Payload 缺漏**：Dashboard 在觸發 Webhook 時，未將當前 UI 上的 items 批次與進度狀態先注入 Webhook payload，導致 n8n 接到的明細缺乏 `_ui_process_status` / `_ui_batch_number`，進而寫入預設 null/待確認值。
+- **Supabase RPC 缺乏孤兒清理與轉型 Bug**：原 `sync_order_to_mirror` RPC 函式在更新 item 表時，沒有清理已被 UI 刪除的 items (Orphan items)；此外，更新 `orders` 時，沒有將 `process_status` 的 text 型別強轉為 `order_status` ENUM 型別，導致執行出錯回滾。
+
+**修改完成**：
+- `Freehandsss_dashboard_current.html` + `freehandsss_dashboardV41.html`：
+  1. 將 items 批次/狀態的 Pre-enrichment 邏輯移到 Webhook 發送**之前**，確保 n8n Webhook 取得完整資料。
+  2. 解耦直寫：在 Webhook 成功 (200 OK) 時，不再調用 `sbSyncOrder`；僅在 Webhook 失敗或網絡出錯時，將 `sbSyncOrder` 作為 Fallback 機制呼叫。
+- `supabase/migrations/0013_sync_order_rpc_orphan_cleanup.sql`：
+  1. RPC 函式新增 `DELETE FROM order_items` 孤兒清理邏輯。
+  2. 修復 `(p_order->>'process_status')::order_status` 強轉，解決型別不符問題。
+- **n8n 部署**：
+  1. 透過 `deploy_native_supabase_mirror.js` 將最新的 SSoT Webhook 準備邏輯部署至 NAS。
+  2. 透過 `scratch_pull_and_save_workflow.js` 完成 live 備份同步。
+
+**驗證結果**：
+- 執行 `test_edit_order_sync.js` 整合測試，模擬載入舊單、編輯並同步，資料庫中 `process_status` (製作中) 與 `batch_number` (第33批) 100% 成功保留，且 `product_sku` 被 n8n 正確填充，完全無資料丟失！
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（通過 Playwright + pg 腳本進行端到端完全驗證，直接修復） |
+| 遵從 Router | — |
+
+---
+
 ## 本次 Session 完成事項（2026-05-22）
 
 ### 11. Order_ID 修改無效 — 三端修復（Frontend + Supabase + n8n）
@@ -332,7 +364,12 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 2. **Airtable 背景同步驗證**：API 額度重置（6月初）後確認背景 Airtable sync path 正常
 3. **Anti-Idle Ping 驗證**：確認 n8n 每 6 天 ping Supabase 的 Schedule Trigger 存在
 4. **pg_cron TTL**：`error_logs` 表 30 天自動清理
-5. **A2 implicit memory 觀察**：後續幾個 session 觀察 A2 在「say hi」後是否仍主動引導工作，記錄改善程度
+
+---
+
+## 已完成項目 ✅
+
+5. **A2 implicit memory 觀察** — ✅ 完成（2026-05-22）：連續 3+ session 驗證，A2 在「say hi」後無再主動執行初始化；SOP_NOW.md 修復有效
 
 ---
 

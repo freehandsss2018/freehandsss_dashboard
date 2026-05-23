@@ -5492,6 +5492,30 @@
                 console.warn("⚠️ 報價陣列與擷取陣列長度不符，跳過注入 Payload", window.fhsCurrentPricingItems, orderItemsArray);
             }
 
+            // Enrich orderItemsArray BEFORE webhook so n8n receives _ui_process_status/_ui_batch_number
+            (function() {
+                var _enrichOrderId = (currentMode === 'edit') ? editTargetOrderId : currentOrderId;
+                var _enrichGO = (window.globalOrders || []).find(function(go) { return go.id === _enrichOrderId || go.Order_ID === _enrichOrderId; });
+                if (_enrichGO && _enrichGO.items) {
+                    var _enrichMap = {};
+                    _enrichGO.items.forEach(function(it) {
+                        var _k = it.Item_ID || it.Order_Item_Key || '';
+                        if (_k) _enrichMap[_k] = { process_status: it.Process_Status || it.Status || '', batch_number: it.Batch_Number || it.Batch || '' };
+                    });
+                    var _sStore = window._fhsStatusStore || {};
+                    orderItemsArray.forEach(function(item) {
+                        var _e = _enrichMap[item.Order_Item_Key];
+                        if (_e) {
+                            var _storeKey = _enrichOrderId + '|' + item.Order_Item_Key;
+                            var _storedStatus = _sStore[_storeKey] || _e.process_status;
+                            if (_storedStatus) item._ui_process_status = _storedStatus;
+                            if (_e.batch_number) item._ui_batch_number = _e.batch_number;
+                        }
+                    });
+                    console.log('[n8n pre-enrich] enriched', orderItemsArray.length, 'items before webhook');
+                }
+            })();
+
             // 數據最終確認 [V31.1] — currentOrderId 已在 try 前宣告
 
             const payload = {
@@ -5578,37 +5602,6 @@
                 if (response.ok) {
                     alert("✅ 同步成功！訂單數據與商品明細已完美射入 NAS。");
 
-                    // Also sync to Supabase (fire-and-forget; requires anon write policy)
-                    if (window.sbSyncOrder && localStorage.getItem('fhs_supabase_read') === '1') {
-                        // Enrich orderItemsArray with current UI progress/batch from globalOrders
-                        // so sbSyncOrder can use them directly without depending on _prevItemMap.
-                        // This is the authoritative source: what the user sees on screen.
-                        var _enrichOrderId = (currentMode === 'edit') ? editTargetOrderId : currentOrderId;
-                        var _enrichGO = (window.globalOrders || []).find(function(go) { return go.id === _enrichOrderId || go.Order_ID === _enrichOrderId; });
-                        if (_enrichGO && _enrichGO.items) {
-                            var _enrichMap = {};
-                            _enrichGO.items.forEach(function(it) {
-                                var _k = it.Item_ID || it.Order_Item_Key || '';
-                                if (_k) _enrichMap[_k] = { process_status: it.Process_Status || it.Status || '', batch_number: it.Batch_Number || it.Batch || '' };
-                            });
-                            var _sStore = window._fhsStatusStore || {};
-                            orderItemsArray.forEach(function(item) {
-                                var _e = _enrichMap[item.Order_Item_Key];
-                                if (_e) {
-                                    // Prefer localStorage store (original UI string) over globalOrders (may be ENUM)
-                                    var _storeKey = _enrichOrderId + '|' + item.Order_Item_Key;
-                                    var _storedStatus = _sStore[_storeKey] || _e.process_status;
-                                    if (_storedStatus) item._ui_process_status = _storedStatus;
-                                    if (_e.batch_number) item._ui_batch_number = _e.batch_number;
-                                }
-                            });
-                            console.log('[sbSync pre-enrich] enriched', orderItemsArray.length, 'items from globalOrders');
-                        }
-                        window.sbSyncOrder(payload, orderItemsArray, currentMode).catch(function(e) {
-                            console.warn('[V41] sbSyncOrder background error:', e.message);
-                        });
-                    }
-
                     // --- V31.2: If new order and sequential mode, update global config ---
                     if (currentMode === 'create' && systemConfig.mode === 'sequential') {
                         systemConfig.last_id = currentOrderId; 
@@ -5624,10 +5617,22 @@
                     }
                 } else {
                     alert("❌ 同步失敗，請檢查 NAS 上的 n8n 節點是否運作正常。");
+                    // Fallback: webhook 失敗時直接寫 Supabase
+                    if (window.sbSyncOrder && localStorage.getItem('fhs_supabase_read') === '1') {
+                        window.sbSyncOrder(payload, orderItemsArray, currentMode).catch(function(e) {
+                            console.warn('[V41] sbSyncOrder fallback error:', e.message);
+                        });
+                    }
                 }
             } catch (error) {
                 console.error("Webhook 錯誤:", error);
                 alert("❌ 網路連線錯誤，無法連接至 NAS。請確認網路環境或 Port 8443 的對外連線。");
+                // Fallback: 網路錯誤時直接寫 Supabase
+                if (window.sbSyncOrder && localStorage.getItem('fhs_supabase_read') === '1') {
+                    window.sbSyncOrder(payload, orderItemsArray, currentMode).catch(function(e) {
+                        console.warn('[V41] sbSyncOrder catch-fallback error:', e.message);
+                    });
+                }
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;

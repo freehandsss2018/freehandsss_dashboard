@@ -41,7 +41,7 @@ def full_cycle_test():
         "Customer_Name": "Cycle_Tester_V4111",
         "Deposit": 500, "Balance": 2000, "Additional_Fee": 0, # 修改金額平衡
         "Full_Order_Text": "【全週期測試 V41.11】內容已進行 *內容修改*",
-        "Order_Items_List": [{"Product_Name": "金屬鎖匙扣 (不鏽鋼)", "Quantity": 2}]
+        "Order_Items_List": [{"Product_Name": "嬰兒鎖匙扣 - 不銹鋼", "Quantity": 2, "Mode": "(加購)"}]
     })
 
     time.sleep(10)

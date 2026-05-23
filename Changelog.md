@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-05-23] 🐛 訂單同步資料丟失修復 (Order Items Data Loss Fix)
+
+**修改檔案**：
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `supabase/migrations/0013_sync_order_rpc_orphan_cleanup.sql`
+
+**架構變更與 Bug 修復**：
+- **雙寫競爭解耦 (Write Concurrency Decoupling)**：前端 Dashboard 在 n8n Webhook 呼叫成功時不再並發直寫 Supabase，`sbSyncOrder` 被限製為僅在 Webhook / 網絡故障時作為 Fallback 執行，消除了 Dashboard 與 n8n 背景任務的競爭條件。
+- **時序提早注入 (Pre-enrichment Timing)**：在觸發 Webhook 前，將 UI 當前的 `_ui_process_status` 與 `_ui_batch_number` 注入 `orderItemsArray` 傳送給 n8n，保成了後台單一寫入源 (SSoT) 擁有完整的狀態與批次資訊。
+- **Supabase RPC 孤兒清理與型別修正 (Orphan Cleanup & Type Cast)**：`sync_order_to_mirror` RPC 函式新增孤兒刪除邏輯以自動清除 UI 已被移除的商品明細。修復 `process_status` 的 ENUM 型別轉型 bug (`::order_status`)，防止 PostgreSQL 拋出 type mismatch 錯誤導致 transaction rollback。
+
+---
+
 ## [2026-05-22] 🐛 n8n Supabase Mirror 沙箱 fetch 靜默失敗修復 + 雙端 migrations 部署驗證
 
 **修改檔案**：
