@@ -48,6 +48,26 @@ return { ... };               // ❌
 **根因**：`Parse Items` 節點未在財務審計前執行，SKU 格式不一致
 **確認方式**：用 `get_execution_log` 查看 Parse Items 節點輸出
 
+### 🔴 n8n Code Node 在 Synology NAS 上的三大限制（2026-05-22 確認）
+**症狀**：Code 節點輸出 `supabaseFetched: false`、成本為 0、HTTP 呼叫靜默失敗
+**根因**：`fetch()` / `require()` / `process.env` 均不可用，try-catch 靜默吞掉
+**修復**：HTTP 呼叫改用 HTTP Request 節點；靜態資料內嵌 hardcoded map
+
+### 🔴 n8n Webhook Race Condition（responseMode: onReceived）
+**症狀**：前端同步後 Supabase 出現 409 衝突，或訂單重複 / rename ghost row
+**根因**：`responseMode: "onReceived"` 在 workflow 完成前回 200，前端 `sbSyncOrder` 與 n8n RPC 同時搶寫
+**架構解法**：n8n RPC 為 SSoT；sbSyncOrder 只在 webhook 失敗/catch 時觸發
+**參考**：`supabase/migrations/0011_rename_order_id_security_definer.sql`
+
+### 🔴 batch_number / process_status 同步後被清空（複合根因，2026-05-23 確認）
+**症狀**：更新訂單後 `order_items.batch_number` 和 `process_status` 變成 null 或 `'待製作'`
+**根因為三層複合，必須全部確認**：
+1. **Prep Code 硬編碼**：`process_status: '待製作'`（非 null）→ COALESCE 永遠覆蓋 → 改為 `ui.process_status || null`
+2. **雙寫競態**：sbSyncOrder INSERT 409 衝突靜默失敗 → 改為 sbSyncOrder 純 fallback
+3. **PostgreSQL 42804 ENUM 型別不符**：JSONB text → `order_status` ENUM 無 explicit cast → RPC 交易 rollback → 加 `::order_status`
+**修復優先順序**：根因 3 → 根因 1 → 根因 2（根因 3 不修，其他兩個修了也白費）
+**參考**：`supabase/migrations/0013_sync_order_rpc_orphan_cleanup.sql`
+
 ---
 
 ## 診斷工作流
