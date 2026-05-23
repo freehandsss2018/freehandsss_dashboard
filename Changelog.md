@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-05-23] 🔄 /commit v2.1.0 — 新增 Phase 1.5 Lesson Distillation 自動判斷清單
+
+**修改檔案**：
+- `.fhs/ai/commands/commit.md`（Master，v2.0.0 → v2.1.0）
+- `.claude/commands/commit.md`（橋接版，description 同步）
+
+**主要變更**：
+- **[新增 Phase 1.5] Lesson Distillation 自動判斷**：將「詢問 Fat Mo 本次是否有 lesson」改為「自動判斷 + 清單式標準」。定義明確的三個分類判斷條件（Pattern / Pitfall / Preference），AI 可在 Phase 1.5 獨立判斷並決定是否寫入 `.fhs/memory/learnings.md`，無需每次詢問。避免操作員「判斷不到」的困擾，同時防止 learnings.md 變成模糊的知識庫。
+- **判斷標準**：Pattern（多 session 驗證的技術模式） / Pitfall（handoff/pitfalls 記錄的已知坑 + 預防方案） / Preference（跨 session 的架構決策確認）。
+
+---
+
 ## [2026-05-23] 📋 /new-product v1.1.0 — 三項 Gap 補強（Order 資料流保護）
 
 **修改檔案**：

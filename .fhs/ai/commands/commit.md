@@ -45,7 +45,35 @@
    每個 session 完成事項末尾必須附上 **Subagent 使用記錄** 表格（格式見 execute.md [E]）。
 3. **Notion**: 執行 `node scripts/Sync_Notion_Brain.js`。
 4. **Logs**: 更新 `.fhs/notes/session-log.md`。
-5. **Learnings Prompt**: 詢問 Fat Mo「本次 commit 是否有 lesson 要 distill 進 `.fhs/memory/learnings.md`（Pattern / Pitfall / Preference 三選一，一句話即可）？」Fat Mo 回應後手動 append；無回應或回應「不用」則靜默跳過，不寫入任何內容。
+5. **Learnings Distillation**: 自動判斷本次會話是否需要 distill Lesson 至 `.fhs/memory/learnings.md`（見 Phase 1.5）。
+
+## 【Phase 1.5: Lesson Distillation 自動判斷】
+
+判斷本次會話是否需要 distill Lesson。ONLY 在以下條件滿足時執行：
+
+### 【Pattern 條件】（成功反覆驗證的做法）
+- ✓ 本次會話改進了多個 session 都在用的技術模式
+- ✓ 該模式已通過至少 2 次以上的不同場景驗證
+- *例*：「同步進度輪詢機制」、「四端同步隔離」— 都是跨多個 session 驗證的
+
+### 【Pitfall 條件】（重複踩過的雷）
+- ✓ 本次會話的根本問題已被其他 session 踩過，或被文件記錄為 handoff 待辦項
+- ✓ 該問題有明確的「預防檢查清單」或「修復方案」
+- ✓ 未來新產品/功能很可能會踩到同一個坑
+- *例*：「Smart Cache COST_MAP 硬編碼表遺漏」— 對應 handoff #1、P7 pitfall，新 SKU 都會遇到
+
+### 【Preference 條件】（Fat Mo 已確認的偏好）
+- ✓ 本次會話涉及架構決策，且 Fat Mo 明確確認了方向
+- ✓ 該決策不是臨時的，而是未來多個類似情況都適用
+- *例*：「橋接版禁止含邏輯」、「最小改動優先」— 都是跨多個會話的決策方向
+
+### 【執行流程】
+1. 檢查本次會話的改動是否屬於上述三種之一 → 若否：靜默跳過
+2. 若是 → 檢查 `.fhs/memory/learnings.md` 是否已有相同或相似條目（避免重複）
+3. 若無重複 → 寫入 1 條內容（≤150 字元含日期來源）
+4. 在 Phase 3 完成報告中註明：「✅ Lesson: [Pattern/Pitfall/Preference] — [選擇原因]」
+
+---
 
 ## 【Phase 2: Git 推送與安全】
 1. **Staging**: `git add .` -> `git status`。

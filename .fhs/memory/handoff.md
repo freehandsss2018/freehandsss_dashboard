@@ -2,6 +2,7 @@
 當前版本：v1.4.7（憲法層）/ V41（UI層）→ current 已升版
 n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 /new-product skill：v1.1.0（補入 2e COST_MAP / 3f Review Mode / 5f 批次保留驗證）
+/commit skill：v2.1.0（新增 Phase 1.5 Lesson Distillation 自動判斷清單）
 
 ---
 
