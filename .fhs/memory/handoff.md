@@ -6,6 +6,29 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 
 ---
 
+## 本次 Session 完成事項（2026-05-24 Session 18 — Dashboard Sort & Financials Post-Deployment Fixes）
+
+### 18. Dashboard Sort & Financials Post-Deployment Fixes
+
+**完成事項**：
+- **產品明細排序修正 (Hardened Sort Priority)**：修正了 `renderReviewTable` 與 `renderReviewAccordion` 的排序演算法，以支援 "倒手模擺設" 等變體類別，將 `'立體' || '擺設' || '倒手' || '手模'` 的 priority 設定為 0 (最高)，`'鎖匙' || '鑰匙'` 為 1，`'吊飾' || '頸鏈' || '純銀' || '銀飾'` 為 2，確保產品順序完全正確。
+- **實時響應式財務更新 (Reactive UI Financial Updates)**：
+  - 給桌面版與手機版的成本與利潤單格/文字元素添加了動態 ID：`cost-cell-${recordId}`、`profit-cell-${recordId}`、`acc-cost-text-${recordId}`、`acc-profit-text-${recordId}`。
+  - 重構了 `saveAdjustmentAmount`，在 patch 發送的同時，利用 DOM 操作立刻計算並更新該筆訂單的成本與利潤數值及顏色，避免了頁面重整前的數值不同步。
+- **財務排序一致性 (Sort Consistency for Adjusted Financials)**：
+  - 更新了對 `Total_Cost` 與 `Net_Profit` 的表單排序邏輯，排序時自動採用已包含 `Adjustment_Amount` 的已調整數值，保證排序與顯示完全吻合。
+- **Playwright QA 整合驗證**：
+  - 重新執行 `qa_v41_supabase.js` 驗收測試，15 PASS / 0 FAIL 綠燈通過。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用 |
+| 遵從 Router | — |
+
+---
+
 ## 本次 Session 完成事項（2026-05-24 Session 17 — Category-Aware Progress Tracking & Financial Adjustments）
 
 ### 17. Category-Aware Progress Dropdown & Financial Adjustments

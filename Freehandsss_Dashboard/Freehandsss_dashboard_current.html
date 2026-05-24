@@ -6242,12 +6242,13 @@
             let html = '';
             orders.forEach((o) => {
                 // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
+                // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
                 if (o.items && o.items.length > 1) {
                     const _cp = (cat) => {
                         if (!cat) return 99;
-                        if (cat.includes('立體')) return 0;
-                        if (cat.includes('鎖匙')) return 1;
-                        if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀')) return 2;
+                        if (cat.includes('立體') || cat.includes('擺設') || cat.includes('倒手') || cat.includes('手模')) return 0;
+                        if (cat.includes('鎖匙') || cat.includes('鑰匙')) return 1;
+                        if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀') || cat.includes('銀飾')) return 2;
                         return 99;
                     };
                     o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
@@ -6263,7 +6264,9 @@
 
                 const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
                 const profit = Number(o.Net_Profit || 0);
-                const profitColor = profit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
+                const displayedCost = Number(o.Total_Cost || o.Cost || 0) + Number(o.Adjustment_Amount || 0);
+                const displayedProfit = profit - Number(o.Adjustment_Amount || 0);
+                const profitColor = displayedProfit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
                 const itemCount = _accRenderFinal.length;
 
                 // Build items badges HTML
@@ -6441,8 +6444,8 @@
                         </div>
                         <div class="acc-order-header-right">
                             <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                                <span class="acc-profit" style="color:${profitColor};">$${profit}</span>
-                                <span style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${o.Total_Cost || o.Cost || 0}</span>
+                                <span id="acc-profit-text-${o.id}" class="acc-profit" style="color:${profitColor};">$${displayedProfit}</span>
+                                <span id="acc-cost-text-${o.id}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${displayedCost}</span>
                             </div>
                             <span class="acc-chevron">▼</span>
                         </div>
@@ -6531,12 +6534,13 @@
             } catch(e) {}
             orders.forEach((o) => {
                 // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
+                // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
                 if (o.items && o.items.length > 1) {
                     const _cp = (cat) => {
                         if (!cat) return 99;
-                        if (cat.includes('立體')) return 0;
-                        if (cat.includes('鎖匙')) return 1;
-                        if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀')) return 2;
+                        if (cat.includes('立體') || cat.includes('擺設') || cat.includes('倒手') || cat.includes('手模')) return 0;
+                        if (cat.includes('鎖匙') || cat.includes('鑰匙')) return 1;
+                        if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀') || cat.includes('銀飾')) return 2;
                         return 99;
                     };
                     o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
@@ -6554,6 +6558,9 @@
                 const batchCol = getBatchColor(o.Batch || (o.items && o.items.length > 0 && o.items[0].Batch) || '');
 
                 const itemsCount = _renderItemsFinal.length > 0 ? _renderItemsFinal.length : 1;
+                const displayedCost = Number(o.Total_Cost || o.Cost || 0) + Number(o.Adjustment_Amount || 0);
+                const displayedProfit = Number(o.Net_Profit || 0) - Number(o.Adjustment_Amount || 0);
+                const profitColor = displayedProfit > 0 ? '#2A9D8F' : '#E63946';
                 
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
                 const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
@@ -6575,11 +6582,11 @@
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        ${(o.Total_Cost || o.Cost) ? '$' + (o.Total_Cost || o.Cost) : '<span style="color:#bbb;">待計算</span>'}
+                    <td id="cost-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
+                        $${displayedCost}
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${(o.Net_Profit || 0) > 0 ? '#2A9D8F' : '#E63946'}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        ${o.Net_Profit ? '$' + o.Net_Profit : '<span style="color:#bbb; font-weight:400;">待計算</span>'}
+                    <td id="profit-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
+                        $${displayedProfit}
                     </td>
                 `;
 
@@ -7132,8 +7139,17 @@
             if (sortField) {
                 const _field = sortField, _dir = sortDir;
                 filtered = filtered.slice().sort(function(a, b) {
-                    let aVal = a[_field], bVal = b[_field];
-                    if (_field === 'Total_Cost' || _field === 'Net_Profit' || _field === 'Final_Sale_Price') {
+                    if (_field === 'Total_Cost') {
+                        aVal = Number(a.Total_Cost || a.Cost || 0) + Number(a.Adjustment_Amount || 0);
+                        bVal = Number(b.Total_Cost || b.Cost || 0) + Number(b.Adjustment_Amount || 0);
+                        return _dir === 'asc' ? aVal - bVal : bVal - aVal;
+                    }
+                    if (_field === 'Net_Profit') {
+                        aVal = Number(a.Net_Profit || 0) - Number(a.Adjustment_Amount || 0);
+                        bVal = Number(b.Net_Profit || 0) - Number(b.Adjustment_Amount || 0);
+                        return _dir === 'asc' ? aVal - bVal : bVal - aVal;
+                    }
+                    if (_field === 'Final_Sale_Price') {
                         aVal = parseFloat(aVal) || 0; bVal = parseFloat(bVal) || 0;
                         return _dir === 'asc' ? aVal - bVal : bVal - aVal;
                     }
@@ -7443,8 +7459,34 @@
 
             const _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
             const orderIndex = _gOrders.findIndex(o => o.id === recordId);
+            let order = null;
             if (orderIndex !== -1) {
                 _gOrders[orderIndex].Adjustment_Amount = numVal;
+                order = _gOrders[orderIndex];
+            }
+
+            // Reactively update cost and profit in the UI
+            if (order) {
+                const displayedCost = Number(order.Total_Cost || order.Cost || 0) + numVal;
+                const displayedProfit = Number(order.Net_Profit || 0) - numVal;
+
+                const costCell = document.getElementById(`cost-cell-${recordId}`);
+                if (costCell) costCell.textContent = '$' + displayedCost;
+
+                const profitCell = document.getElementById(`profit-cell-${recordId}`);
+                if (profitCell) {
+                    profitCell.textContent = '$' + displayedProfit;
+                    profitCell.style.color = displayedProfit > 0 ? '#2A9D8F' : '#E63946';
+                }
+
+                const accCostText = document.getElementById(`acc-cost-text-${recordId}`);
+                if (accCostText) accCostText.textContent = '成本: $' + displayedCost;
+
+                const accProfitText = document.getElementById(`acc-profit-text-${recordId}`);
+                if (accProfitText) {
+                    accProfitText.textContent = '$' + displayedProfit;
+                    accProfitText.style.color = displayedProfit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
+                }
             }
 
             try {
