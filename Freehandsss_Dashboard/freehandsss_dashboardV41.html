@@ -438,6 +438,14 @@
             grid-template-columns: 1fr 1.5fr 1.5fr;
             gap: 8px;
         }
+        .kc-no-eng {
+            color: #777 !important;
+            font-style: italic;
+        }
+        .kc-no-eng::placeholder {
+            color: #999;
+            font-style: italic;
+        }
 
         .preview-card {
             background: var(--dark);
@@ -4232,7 +4240,31 @@
             return { note, sType };
         }
 
+        function syncKcEngVisual() {
+            const kcParts = ['lh','rh','lf','rf','e_lh','e_rh','e_lf','e_rf'];
+            kcParts.forEach(id => {
+                const topEl = document.getElementById(`k_${id}_top`);
+                const botEl = document.getElementById(`k_${id}_bot`);
+                if (!topEl || !botEl) return;
+                const topVal = topEl.value.trim();
+                const botVal = botEl.value.trim();
+                const oneOnly = (topVal && !botVal) || (!topVal && botVal);
+                if (oneOnly) {
+                    topEl.classList.add('kc-no-eng');
+                    botEl.classList.add('kc-no-eng');
+                    topEl.placeholder = '無需刻字';
+                    botEl.placeholder = '無需刻字';
+                } else {
+                    topEl.classList.remove('kc-no-eng');
+                    botEl.classList.remove('kc-no-eng');
+                    topEl.placeholder = '待定';
+                    botEl.placeholder = '待定';
+                }
+            });
+        }
+
         function generate() {
+            syncKcEngVisual();
             const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
             const mom = document.getElementById("momName").value || "待定";
             const dateStr = document.getElementById("appDate").value;
@@ -4325,8 +4357,7 @@
                             let bot = document.getElementById(`k_${p.id}_bot`).value;
                             const _t = (top && top.trim() !== '待定') ? top : '';
                             const _b = (bot && bot.trim() !== '待定') ? bot : '';
-                            let engLine = (_t && _b) ? `\n   上排：${_t} | 下排：${_b}` : (_t || _b) ? `: ${_t || _b}` : `\n   上排：待定 | 下排：待定`;
-                            kDetails += ` - ${p.name}(x${qty})\n   刻字${engLine}\n`;
+                            kDetails += (_t && _b) ? ` - ${p.name}(x${qty})\n   刻字\n   上排：${_t} | 下排：${_b}\n` : (_t || _b) ? ` - ${p.name}(x${qty})\n` : ` - ${p.name}(x${qty})\n   刻字\n   上排：待定 | 下排：待定\n`;
                         }});
                     }
                     if (document.getElementById('k_elder_sec_en')?.checked) {
@@ -4336,8 +4367,7 @@
                             let bot = document.getElementById(`k_${p.id}_bot`).value;
                             const _t = (top && top.trim() !== '待定') ? top : '';
                             const _b = (bot && bot.trim() !== '待定') ? bot : '';
-                            let engLine = (_t && _b) ? `\n   上排：${_t} | 下排：${_b}` : (_t || _b) ? `: ${_t || _b}` : `\n   上排：待定 | 下排：待定`;
-                            kDetails += ` - ${p.name}(x${qty})\n   刻字${engLine}\n`;
+                            kDetails += (_t && _b) ? ` - ${p.name}(x${qty})\n   刻字\n   上排：${_t} | 下排：${_b}\n` : (_t || _b) ? ` - ${p.name}(x${qty})\n` : ` - ${p.name}(x${qty})\n   刻字\n   上排：待定 | 下排：待定\n`;
                         }});
                     }
                     if (document.getElementById('k_family_en')?.checked) {
@@ -5442,7 +5472,7 @@
                                 let qty = Number(getValSafe(`k_${p.id}_qty`, "1")) || 1;
                                 let topEng = getValSafe(`k_${p.id}_top`, "");
                                 let botEng = getValSafe(`k_${p.id}_bot`, "");
-                                let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : topEng ? `[上排]${topEng}` : botEng ? `[下排]${botEng}` : '';
+                                let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : '';
                                 let finalObj = p.type;
                                 if (!hasMainProduct) finalObj = "嬰兒(P)";
                                 orderItemsArray.push({
@@ -5462,7 +5492,7 @@
                                 let qty = Number(getValSafe(`k_${p.id}_qty`, "1")) || 1;
                                 let topEng = getValSafe(`k_${p.id}_top`, "");
                                 let botEng = getValSafe(`k_${p.id}_bot`, "");
-                                let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : topEng ? `[上排]${topEng}` : botEng ? `[下排]${botEng}` : '';
+                                let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : '';
                                 let finalObj = p.type;
                                 if (!hasMainProduct) finalObj = "家庭(P1)";
                                 orderItemsArray.push({
