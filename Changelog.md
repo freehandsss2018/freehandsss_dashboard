@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-05-24] 🚥 Category-Aware Progress Tracking & Financial Adjustments (SUPABASE SSoT Synchronization)
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+
+**主要變更**：
+- **分類相關進度下拉選單 (Category-Aware Status Dropdowns)**：重構訂單總覽 (Review Mode) 表格與行動版折疊卡片中的狀態選擇器，依據商品類別（立體擺設 vs 鎖匙扣/純銀吊飾）動態過濾並呈現可選取狀態。立體擺設僅顯示 `已book日期`、`已取模`、`待交收`、`Done 已完成`；金屬/鎖匙扣則可選擇 `需進行補打` 等。
+- **補打金額輸入欄位 (Line-Item Financial Adjustments)**：當狀態為 `需進行補打` 時，下拉選單下方將動態展開一組數字輸入欄位（預設隱藏，以 HSL 紅色調美化），用戶在輸入補打費用後失焦 (blur) 時，立即透過 Supabase 專屬 PATCH API 發送同步更新請求至 orders 表中的 `adjustment_amount` 欄位。
+- **後台與 SSoT 資料流同步 (SSoT Sync & Data Mapping)**：
+  - 更新 Supabase 讀取 `sbFetchGlobalReview` SQL SELECT 欄位以涵蓋 `adjustment_amount`，並由 `mapOrder` 在載入列表時進行資料綁定與復原。
+  - 前端 `sbSyncOrder` payload 建構加入 `adjustment_amount`，確保後台 n8n 建立/更新訂單時數據一致性。
+- **語法與 JS 例外修正 (Syntax & Runtime Error Fix)**：修復在 `saveInlineEdit` 中漏掉的 `finally` 區塊閉合花括號，消除了瀏覽器中的 `Unexpected token ','` 和 `handleSyncPollingCheck is not defined` 錯誤，確保 QA Playwright 測試 100% 綠燈通過。
+
+---
+
 ## [2026-05-23] 🔄 /commit v2.1.0 — 新增 Phase 1.5 Lesson Distillation 自動判斷清單
 
 **修改檔案**：

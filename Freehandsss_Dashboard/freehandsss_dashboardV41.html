@@ -2887,6 +2887,11 @@
             <div class="form-group"><label>附加費 ($)</label><input type="number" id="additional" placeholder="0"
                     oninput="generate()"></div>
         </div>
+        <div class="form-group" id="adjustment-wrapper" style="display:none; margin-top:8px;">
+            <label>補打費用 ($)</label>
+            <input type="number" id="adjustment" placeholder="0" min="0" step="1" oninput="generate()"
+                   style="width:100%; padding:6px; border:none; border-bottom:1px solid #ccc; outline:none; background:transparent; color:var(--fhs-text-primary);">
+        </div>
     </div>
 
     <div class="card preview-card">
@@ -3392,13 +3397,17 @@
         // Global helper: maps any process_status UI string to valid Supabase item_status ENUM.
         // Used by both sbSyncOrder (INSERT) and saveInlineEdit (PATCH).
         window._sanitizeItemStatus = function(s) {
-            var _valid = new Set(['待製作', '製作中', '完成', '已取件']);
+            var _valid = new Set(['待製作', '製作中', '完成', '已取件', '需進行補打', '已book日期', '已取模', '待交收']);
             if (_valid.has(s)) return s;
             if (!s) return '待製作';
             var _u = (s || '').toLowerCase();
             if (_u.includes('done') || _u.includes('完成')) return '完成';
             if (_u.includes('已取件')) return '已取件';
             if (_u.includes('製作') || _u.includes('打印') || _u.includes('建模') || _u.includes('繪圖')) return '製作中';
+            if (_u.includes('補打')) return '需進行補打';
+            if (_u.includes('book')) return '已book日期';
+            if (_u.includes('取模')) return '已取模';
+            if (_u.includes('交收')) return '待交收';
             return '待製作';
         };
 
@@ -5137,7 +5146,7 @@
                 const _sbUrl = _V41_SB_URL;
                 const _sbKey = _V41_SB_ANON;
                 const _res = await fetch(
-                    `${_sbUrl}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,final_sale_price,raw_form_state&limit=1`,
+                    `${_sbUrl}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,raw_form_state&limit=1`,
                     { headers: { apikey: _sbKey, Authorization: `Bearer ${_sbKey}` } }
                 );
                 const _rows = await _res.json();
@@ -5313,16 +5322,23 @@
                     const _depEl  = document.getElementById('deposit');
                     const _balEl  = document.getElementById('balance');
                     const _addEl  = document.getElementById('additional');
+                    const _adjEl  = document.getElementById('adjustment');
                     
                     const dbDep = _row.deposit ?? _row.Deposit;
                     const dbBal = _row.balance ?? _row.Balance;
                     const dbAdd = _row.additional_fee ?? _row.Additional_Fee;
+                    const dbAdj = _row.adjustment_amount ?? _row.Adjustment_Amount;
 
-                    console.log('[reconstructOrderFromSupabase] Injecting financials:', { dbDep, dbBal, dbAdd });
+                    console.log('[reconstructOrderFromSupabase] Injecting financials:', { dbDep, dbBal, dbAdd, dbAdj });
 
                     if (_depEl && dbDep != null) _depEl.value = dbDep || '';
                     if (_balEl && dbBal != null) _balEl.value = dbBal || '';
                     if (_addEl && dbAdd != null) _addEl.value = dbAdd;
+                    if (_adjEl && dbAdj != null) {
+                        _adjEl.value = dbAdj || '';
+                        const _adjWrapper = document.getElementById('adjustment-wrapper');
+                        if (_adjWrapper) _adjWrapper.style.display = dbAdj > 0 ? 'block' : 'none';
+                    }
                     
                     // CRITICAL: Trigger generate() again to update text preview with injected values
                     if (typeof generate === 'function') generate();
@@ -5646,6 +5662,7 @@
                 "Deposit": document.getElementById("deposit") ? Number(document.getElementById("deposit").value) || 0 : 0,
                 "Balance": document.getElementById("balance") ? Number(document.getElementById("balance").value) || 0 : 0,
                 "Additional_Fee": document.getElementById("additional") ? Number(document.getElementById("additional").value) || 0 : 0,
+                "Adjustment_Amount": document.getElementById("adjustment") ? Number(document.getElementById("adjustment").value) || 0 : 0,
                 "System_Total_Cost": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Total_Cost : 0,
                 "System_Final_Sale_Price": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Final_Sale_Price : 0,
                 "System_Additional_Fee": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Additional_Fee : 0,
@@ -6359,14 +6376,57 @@
                                     <span class="acc-field-label">🚥 進度</span>
                                     <select id="acc-status-${o.id}-${idx}"
                                         style="font-size:12px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); width:100%;"
-                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx})">
-                                        ${(function(){ var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item); return [
-                                        ['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                        ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                        ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],
-                                        ['Done 已完成','Done ✅']
-                                        ].map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join(''); })()}
+                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx});
+                                                  var _adj = document.getElementById('acc-adj-wrapper-${o.id}-${idx}');
+                                                  if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
+                                        ${(function(){
+                                            var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
+                                            var _cat = (dimensions.category || item.Category || '').toString();
+                                            var _opts = [];
+                                            if (_cat.indexOf('立體擺設') !== -1) {
+                                                _opts = [
+                                                    ['已book日期','已book日期'],
+                                                    ['已取模','已取模'],
+                                                    ['待交收','待交收'],
+                                                    ['Done 已完成','Done ✅']
+                                                ];
+                                            } else if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
+                                                _opts = [
+                                                    ['0 什麼都未做','0 什麼都未做'],
+                                                    ['1 已繪圖 或 已取相','1 已繪圖/取相'],
+                                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
+                                                    ['2 已修3D圖, 但未核對','2 已修3D圖'],
+                                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
+                                                    ['3 已交付廠家, 打印中','3 打印中'],
+                                                    ['需進行補打','需進行補打'],
+                                                    ['Done 已完成','Done ✅']
+                                                ];
+                                            } else {
+                                                _opts = [
+                                                    ['0 什麼都未做','0 什麼都未做'],
+                                                    ['1 已繪圖 或 已取相','1 已繪圖/取相'],
+                                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
+                                                    ['2 已修3D圖, 但未核對','2 已修3D圖'],
+                                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
+                                                    ['3 已交付廠家, 打印中','3 打印中'],
+                                                    ['Done 已完成','Done ✅']
+                                                ];
+                                            }
+                                            return _opts.map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join('');
+                                        })()}
                                     </select>
+                                    <div id="acc-adj-wrapper-${o.id}-${idx}" style="display:${(function(){
+                                        var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
+                                        return _s === '需進行補打' ? 'flex' : 'none';
+                                    })()}; align-items:center; gap:4px; margin-top:6px;">
+                                        <span style="color:#e63946; font-size:12px; font-weight:bold;">$</span>
+                                        <input type="number" id="acc-adj-input-${o.id}-${idx}"
+                                               value="${o.Adjustment_Amount || ''}"
+                                               placeholder="金額"
+                                               style="border:1px solid var(--fhs-border); border-radius:var(--radius-sm); outline:none; width:65px; font-size:11px; text-align:center; padding:2px; background:transparent; color:var(--fhs-text-primary);"
+                                               onblur="saveAdjustmentAmount('${o.id}', this.value)"
+                                               onkeydown="if(event.key==='Enter') { this.blur(); }">
+                                    </div>
                                 </div>
                             </div>
                             <div id="acc-save-${o.id}-${idx}" style="font-size:10px; color:#888; min-height:14px; margin-top:2px;"></div>
@@ -6698,14 +6758,57 @@
                             <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                                 <select id="status-select-${o.id}-${index}" class="review-status-select"
                                         style="width:90%; font-size:13px; margin:0 auto;"
-                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index})">
-                                    ${(function(){ var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item); return [
-                                    ['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],
-                                    ['Done 已完成','Done ✅']
-                                    ].map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join(''); })()}
+                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index});
+                                                  var _adj = document.getElementById('adj-wrapper-${o.id}-${index}');
+                                                  if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
+                                    ${(function(){
+                                        var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
+                                        var _cat = (dimensions.category || item.Category || '').toString();
+                                        var _opts = [];
+                                        if (_cat.indexOf('立體擺設') !== -1) {
+                                            _opts = [
+                                                ['已book日期','已book日期'],
+                                                ['已取模','已取模'],
+                                                ['待交收','待交收'],
+                                                ['Done 已完成','Done ✅']
+                                            ];
+                                        } else if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
+                                            _opts = [
+                                                ['0 什麼都未做','0 什麼都未做'],
+                                                ['1 已繪圖 或 已取相','1 已繪圖/取相'],
+                                                ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
+                                                ['2 已修3D圖, 但未核對','2 已修3D圖'],
+                                                ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
+                                                ['3 已交付廠家, 打印中','3 打印中'],
+                                                ['需進行補打','需進行補打'],
+                                                ['Done 已完成','Done ✅']
+                                            ];
+                                        } else {
+                                            _opts = [
+                                                ['0 什麼都未做','0 什麼都未做'],
+                                                ['1 已繪圖 或 已取相','1 已繪圖/取相'],
+                                                ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
+                                                ['2 已修3D圖, 但未核對','2 已修3D圖'],
+                                                ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
+                                                ['3 已交付廠家, 打印中','3 打印中'],
+                                                ['Done 已完成','Done ✅']
+                                            ];
+                                        }
+                                        return _opts.map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join('');
+                                    })()}
                                 </select>
+                                <div id="adj-wrapper-${o.id}-${index}" style="display:${(function(){
+                                    var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
+                                    return _s === '需進行補打' ? 'flex' : 'none';
+                                })()}; align-items:center; justify-content:center; gap:4px; margin-top:6px;">
+                                    <span style="color:#e63946; font-size:12px; font-weight:bold;">$</span>
+                                    <input type="number" id="adj-input-${o.id}-${index}"
+                                           value="${o.Adjustment_Amount || ''}"
+                                           placeholder="金額"
+                                           style="border:none; border-bottom:1px solid #e63946; outline:none; width:55px; font-size:12px; text-align:center; background:transparent; color:var(--fhs-text-primary);"
+                                           onblur="saveAdjustmentAmount('${o.id}', this.value)"
+                                           onkeydown="if(event.key==='Enter') { this.blur(); }">
+                                </div>
                                 <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
                             </td>
                             ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:8px; background-color:${batchCol};">
@@ -7328,6 +7431,38 @@
                         hideLoader();
                     }
                 }, 800);
+        }
+
+        async function saveAdjustmentAmount(recordId, value) {
+            const numVal = Number(value) || 0;
+            console.log(`📡 saveAdjustmentAmount triggered: [RecID: ${recordId}] [Value: ${numVal}]`);
+
+            const _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            const orderIndex = _gOrders.findIndex(o => o.id === recordId);
+            if (orderIndex !== -1) {
+                _gOrders[orderIndex].Adjustment_Amount = numVal;
+            }
+
+            try {
+                showLoader("正在更新補打金額...");
+                const _sbUrl  = window.SB_URL  || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+                const _sbKey  = window.SB_ANON_KEY || '';
+                const _sbHeaders = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+                const _r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(recordId), {
+                    method: 'PATCH',
+                    headers: _sbHeaders,
+                    body: JSON.stringify({ adjustment_amount: numVal })
+                });
+                const _body = await _r.json().catch(function() { return []; });
+                console.log('order adjustment_amount PATCH status:', _r.status, '| rows updated:', Array.isArray(_body) ? _body.length : '?');
+                if (!_r.ok) throw new Error('order adjustment PATCH ' + _r.status + ' ' + JSON.stringify(_body));
+            } catch(e) {
+                console.error("Adjustment Update Error:", e);
+                alert("❌ 補打金額儲存失敗: " + e.message);
+            } finally {
+                hideLoader();
+            }
         }
 
         // === V34.5 Premium Delete Order Modal System ===
@@ -8710,6 +8845,7 @@
                 deposit:           payload.Deposit  || 0,
                 balance:           payload.Balance  || 0,
                 additional_fee:    payload.Additional_Fee || 0,
+                adjustment_amount: payload.Adjustment_Amount || 0,
                 final_sale_price:  payload.System_Final_Sale_Price || 0,
                 full_order_text:   payload.Full_Order_Text || '',
                 raw_form_state:    rawFormObj,
@@ -9014,6 +9150,7 @@
                 Final_Sale_Price: Number(row.final_sale_price) || 0,
                 Net_Profit:       Number(row.net_profit) || 0,
                 Total_Cost:       Number(row.total_cost) || 0,
+                Adjustment_Amount: Number(row.adjustment_amount) || 0,
                 Process_Status:   row.process_status || '待確認',
                 Batch:            row.batch_number || '',
                 Admin_Notes:      row.admin_notes || '',
@@ -9053,7 +9190,7 @@
             // Only pass status values that exist in Supabase ENUM; manufacturing-step values cause errors
             const SB_ORDER_STATUSES = new Set(['待確認','製作中','完成','已取件','已取消']);
             // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
-            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
+            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
 
             if (status && SB_ORDER_STATUSES.has(status)) qs['process_status'] = 'eq.' + status;
             if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';

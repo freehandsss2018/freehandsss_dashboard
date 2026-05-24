@@ -1,61 +1,86 @@
-# 實施計畫 - 立體擺設款式管理 UI 整合方案
+# FHS Progress Tracking & Financial Adjustment Integration (v4)
 
-根據最新需求，本方案不採用配件（如羊毛氈）的動態管理，而是針對核心產品類別「立體擺設」進行動態框架款式（款式類型）的管理。Ling Au 可以直接透過介面新增新的框架款式（如皮框款式），並設定 2肢與 4肢的價格。Dashboard 將自 Supabase 讀取最新款式配置，並自動渲染於款式下拉選單中，實現完全動態的價格計算與訂單總覽渲染。
+實施細分類進度追蹤 (Category-Aware Progress) 與補打調整金額 (Adjustment Amount) 跨系統同步。
 
-## 用戶審查與反饋 (User Review Required)
+## 建議之介面設計 (Premium UI/UX Design Proposal)
+
+為提供最頂級的用戶體驗，本方案設計了以下三處 UI 顯示與互動位置：
+
+1. **訂單總覽 (Review Table) 的行內下拉選單與動態輸入框**
+   - 在訂單總覽的產品項目中，若用戶將進度下拉選單切換至「**需進行補打**」，下拉選單下方將**即時滑出**（使用 CSS transition 動態平滑展開）一個精緻的補打金額輸入框：
+     ```html
+     <div class="adjustment-input-wrapper">
+       <span class="currency-symbol">$</span>
+       <input type="number" class="adjustment-amount-input" placeholder="輸入補打金額">
+     </div>
+     ```
+   - 該輸入框採用無邊框、精緻的下底線設計，並在失去焦點 (onblur) 或按下 Enter 時**自動保存**至 Supabase 且觸發同步。
+
+2. **總覽表格「成交金額 (Final Sale Price)」旁的補打標籤 (Pill Tag)**
+   - 在成交金額的儲存格中，若該訂單的 `adjustment_amount` 大於 0，將在其右方或下方顯示一個精緻的珊瑚色微型標籤 `(補打: +$X)`。
+   - 該標籤採用柔和的半透明背景與文字顏色，既明顯又不搶奪核心金額的視覺焦點。
+
+3. **編輯訂單表單 (Edit Order Modal) 的「財務金額資訊」區域**
+   - 在原有的「訂金」、「尾數」、「附加費」下方，新增一個「補打費用 (Adjustment Amount)」的輸入欄位。
+   - **動態顯示邏輯**：當且僅當此訂單內含「需進行補打」的產品，或該訂單在資料庫中已有 `adjustment_amount > 0` 時，此輸入欄位才會以柔和的淡入動畫顯示，否則預設隱藏以維持表單簡潔性。
+
+---
+
+## 使用者審查確認 (User Review Required)
 
 > [!IMPORTANT]
-> 1. **核心類別價格動態化**：此變更將原本 hardcode 於前端的立體擺設報價（木框 2080/2380，玻璃瓶 1380/1680）改為**動態查表報價**。系統會在網頁載入時從 Supabase 讀取 `main_category = '立體擺設'` 的產品表。
-> 2. **防呆邏輯自動適配**：原本木框款式專屬的防呆邏輯（不支援成人實體倒模，強制判定為 Photo (P) 模式）將自動適配於任何非「玻璃瓶款式」的新增框架款式上。
-> 3. **雙端管理介面**：
->    - **桌上型電腦 (Desktop)**：於右側邊欄 (`#v40-side-panel`) 渲染一個全新的卡片面版 `#frameStyleManagerPanel`。
->    - **行動裝置 (Mobile)**：於滑出式抽屜的設定頁籤 (`#v40-drawer-settings`) 中鏡像渲染該卡片面版。
+> - **數據庫枚舉值 (Database Enum) 擴充**：
+>   為了徹底避免瀏覽器快取被清理或跨裝置登入時「自訂細微狀態」丟失的漏洞，我們將正式擴充 Supabase 的 `item_status` ENUM，直接寫入 `'需進行補打'`, `'已book日期'`, `'已取模'`, `'待交收'` 至資料庫中。
+> - **四端同步更新**：
+>   Airtable 的欄位需要同步寫入，我們將同步修改 `FHS_Action_MetadataUpdate` n8n 工作流中的 Code Node，將 `Adjustment_Amount` 加入 batch-main chunk。
 
-## 擬議變更 (Proposed Changes)
+---
 
-### Dashboard 前端組件
+## 預期改動 (Proposed Changes)
 
+我們將同步修改 `Freehandsss_dashboard_current.html` 與 `freehandsss_dashboardV41.html`，確保正式版與 V41 版程式碼完全一致。
+
+### 1. 資料庫層級 (Supabase Schema)
+- 建立一個 migration 腳本，透過 SQL 編輯器或 pg 連線擴充 ENUM 值：
+  ```sql
+  ALTER TYPE item_status ADD VALUE IF NOT EXISTS '需進行補打';
+  ALTER TYPE item_status ADD VALUE IF NOT EXISTS '已book日期';
+  ALTER TYPE item_status ADD VALUE IF NOT EXISTS '已取模';
+  ALTER TYPE item_status ADD VALUE IF NOT EXISTS '待交收';
+  ```
+
+### 2. 前端介面與邏輯修改 (HTML/CSS/JS)
+
+#### [MODIFY] [Freehandsss_dashboard_current.html](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/Freehandsss_dashboard_current.html)
 #### [MODIFY] [freehandsss_dashboardV41.html](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/freehandsss_dashboardV41.html)
 
-1. **HTML 結構與佈局變更**：
-   - 在右側邊欄 `#v40-side-panel` 的「Fat Mo 設定」卡片後，新增「立體擺設款式管理」卡片 `#frameStyleManagerPanel`，提供款式列表 `.side-frame-styles-list`（含 custom 款式的刪除按鈕）及新增款式表單（款式名稱 `.new-frame-name`、2肢價格 `.new-frame-price-2`、4肢價格 `.new-frame-price-4`、按鈕 `.btn-add-frame` 與狀態列 `.new-frame-status`）。
-   - 在底部抽屜的設定頁籤 `#v40-drawer-settings` 中新增鏡像容器 `<div id="v40-drawer-frame-mirror" style="margin-top: 15px;"></div>`。
-   - 更新 `v40InitDrawerMirrors()` 函數，使之在初始化時將 `#frameStyleManagerPanel` 複製到該鏡像容器中。
+- **更新 `_sanitizeItemStatus`**：
+  支援新的狀態名稱映射，並傳回對應的正確字串。
+- **更新 `mapOrder` 與 `sbFetchGlobalReview` 的 `qs.select`**：
+  查詢及映射 orders 時，將 `adjustment_amount` 欄位納入查詢，並指派給 mappedOrder 對象的 `Adjustment_Amount` 屬性。
+- **更新 `reconstructOrderFromSupabase`**：
+  在表單還原的末端，讀取 `adjustment_amount` 並寫入新表單欄位 `#adjustment`，若數值大於 0 則使該欄位可見。
+- **更新 `sbSyncOrder`**：
+  在 upsert `orders` 的 row 結構中，加入 `adjustment_amount: payload.Adjustment_Amount || 0`。
+- **UI 下拉選單分流渲染**：
+  修改 `renderReviewTable` 渲染下拉選單的 option 生成邏輯：
+  - 立體擺設：僅限 `["已book日期", "已取模", "待交收", "Done 已完成"]`。
+  - 鎖匙扣 & 純銀吊飾：加入 `["需進行補打"]` 選項。
+- **新增行內輸入框與動態切換機制**：
+  在對應的 td 單元格內，若狀態為「需進行補打」，則動態顯示數字輸入框，其值同步更新至 order 的 `Adjustment_Amount` 並調用 `saveInlineEdit` 保存。
+- **更新 `saveInlineEdit` 的 Webhook 送出邏輯**：
+  若欄位為 `Adjustment_Amount`，則在 updateQueue 中標記為非 item 更新，寫入 `Adjustment_Amount`，並直接對 Supabase 進行 orders table PATCH。
 
-2. **新增/更新 JavaScript 業務邏輯**：
-   - **`loadFrameStyles()`**：非同步向 Supabase 查詢 `main_category = '立體擺設'` 的產品。將產品快取於 `window.fhsFrameProducts`，並動態更新款式下拉選單 `#pSubCat` 的 Option 列表（自動保留用戶當前的選中狀態），同時刷新雙端管理面板的款式清單。
-   - **`renderSideFrameStylesList(uniqueTargets)`**：在桌面端和手機端更新款式管理清單，顯示 2肢和 4肢的建議售價，並為非核心款式（排除「木框」與「玻璃瓶」）提供刪除圖標 `🗑️`。
-   - **`updateSubCatOptions(uniqueTargets)`**：動態重構 `#pSubCat` 下拉選單。將 `'木框套裝'` 轉換為 `'木框款式'`、`'皮框套裝'` 轉換為 `'皮框款式'`，以完美相容歷史訂單。
-   - **`addNewFrameStyle(btn)`**：讀取輸入值，並在確認無誤後向 Supabase `products` 表發送 **兩個** `POST` 請求（分別為 `2肢` 和 `4肢` 產品設定，`total_base_cost` 設為預設值 210），成功後清空輸入並調用 `loadFrameStyles()` 刷新。
-   - **`deleteFrameStyle(target_object)`**：確認後向 Supabase 發送 `DELETE` 請求（以 `target_object` 比對，一次刪除 2肢與 4肢），成功後重新加載。
+### 3. 工作流修改 (n8n Workflow)
 
-3. **核心模組整合與防禦**：
-   - **`buildOrderItemsForPricing()`**：動態依據所選款式名稱（例如 `皮框款式`）去除 "款式" 後綴，並拼裝成資料庫產品名稱（例如 `皮框套裝 (4肢)`）推入 `orderItemsArray`。
-   - **`calculatePricing()`**：立體擺設的計價從 `window.fhsFrameProducts` 中比對產品單價；若無資料則 fallback 回原有的 hardcode 報價。
-   - **`isPModeForce` 計算邏輯**：將原有的 `pSubCat === "木框款式"` 判斷，改為 `pSubCat !== "玻璃瓶款式"`。所有新增的框架樣式將默認與木框具有相同的成人 P 模式強制邏輯。
-   - **`adultPForce` 與防呆警告提示**：同步將 `pSubCat === "木框款式"` 改為 `pSubCat !== "玻璃瓶款式"`。
-   - **`getProductDimensions(item)`**：若為立體擺設項目，在解析款式名稱時加入動態提取邏輯，如果不是木框或玻璃瓶，將自動匹配 prefix 為 `🖼️ [款式名稱]`。
+#### [MODIFY] [FHS_Action_MetadataUpdate.json](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/n8n/FHS_Action_MetadataUpdate.json)
+- 修改 `Chunk Main_Orders` Code Node，將 `Adjustment_Amount` 欄位映射到 Airtable 的 `Adjustment_Amount` 中。
 
-4. **生命週期**：
-   - 在 `init()` 啟動時立即執行 `loadFrameStyles()`，確保下拉選單在訂單還原前已完成動態構建。
+---
 
-#### [NEW] [Freehandsss_dashboard_current.html](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/Freehandsss_dashboard_current.html) (同步覆蓋)
-- 在完成 `freehandsss_dashboardV41.html` 的修改與自查後，將其內容完整複製覆蓋至 `Freehandsss_dashboard_current.html`，防止版本偏離。
+## 驗證計畫 (Verification Plan)
 
-## 驗證計劃 (Verification Plan)
-
-### 手動驗證流程
-1. 載入網頁，確認右側邊欄（Desktop）與底部設定抽屜（Mobile）已正常渲染擺設款式管理介面。
-2. 確認款式下拉選單中預載入「木框款式」與「玻璃瓶款式」。
-3. 測試新增款式：
-   - 輸入名稱：`皮框`，2肢價格：`2180`，4肢價格：`2480`。
-   - 點擊「新增款式」，確認提示「新增成功」。
-   - 確認款式下拉選單即時多出 `皮框款式` 選項。
-   - 確認管理清單中出現 `🎨 皮框款式 (2肢: $2180 / 4肢: $2480)`。
-4. 在訂單表單中選擇 `皮框款式`：
-   - 選擇 2肢，確認「建議售價」顯示 `$2180`。
-   - 選擇 4肢，確認「建議售價」顯示 `$2480`。
-   - 勾選「成人」手模，確認防呆機制自動觸發（警告提示：皮框不支援成人實體倒模！系統已強制判定為成人的「照片(P)」模式）。
-5. 保存或更新訂單，驗證 Supabase 寫入的 order_items 的 `product_sku` 包含 `皮框套裝 (2肢)` 或 `皮框套裝 (4肢)`。
-6. 切換至「訂單總覽」，確認該訂單的款式標籤在 Desktop Table 及 Mobile Accordion 中均顯示為 `🖼️ 皮框`。
-7. 測試刪除該自定義款式，確認選單與資料庫中相應項目皆已移除。
+### 自動化與手動驗證
+1. **健康稽核**：執行 `python Maintenance_Tools/run_all.py` 確保全局健康。
+2. **整合測試**：執行 `node scripts/qa_v41_supabase.js` 確保 Supabase 資料讀寫與映射均符合 schema 規範。
+3. **介面測試**：在網頁上修改進度為「需進行補打」，確認補打金額輸入框順利滑出，輸入金額後，檢查控制台輸出之 PATCH 請求成功，且重新整理後金額與狀態正確保留。

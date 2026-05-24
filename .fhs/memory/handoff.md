@@ -6,6 +6,30 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 
 ---
 
+## 本次 Session 完成事項（2026-05-24 Session 17 — Category-Aware Progress Tracking & Financial Adjustments）
+
+### 17. Category-Aware Progress Dropdown & Financial Adjustments
+
+**完成事項**：
+- **分類過濾下拉選單 (Category-Aware Status Select)**：在 Review Mode 的 `renderReviewTable` (桌面版) 和 `renderReviewAccordion` (手機版卡片) 中，將進度狀態下拉選單改為依據 `dimensions.category` 動態顯示：
+  - 立體擺設：`已book日期`、`已取模`、`待交收`、`Done 已完成`。
+  - 金屬鎖匙扣/吊飾：`0 什麼都未做` 至 `Done 已完成`，且包含 `需進行補打`。
+- **補打金額動態輸入與同步 (Dynamic Adjustment Amount)**：
+  - 當下拉選單選取 `需進行補打` 時，下方會動態展開紅色的補打金額輸入框。
+  - 失去焦點 (onblur) 或按下 Enter 時觸發 `saveAdjustmentAmount()`，透過 Supabase API 直連將新金額 PATCH 到 orders 表的 `adjustment_amount` 欄位。
+- **語法錯誤修正 (JS Syntax Repair)**：
+  - 診斷出 `saveInlineEdit` finally 區塊內漏失的閉合花括號 `}`，徹底消除瀏覽器 runtime 的 `Unexpected token ','` 和 `handleSyncPollingCheck is not defined` 錯誤。
+  - 經由 Playwright QA 測試套件 (`qa_v41_supabase.js`) 與系統週期測試 (`run_all.py`) 全面驗收，**15 PASS / 0 FAIL 綠燈通過**。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（由 Playwright Node 整合測試與 git diff 直接鎖定語法及邏輯修復） |
+| 遵從 Router | — |
+
+---
+
 ## 本次 Session 完成事項（2026-05-23 Session 16 — /new-product v1.1.0 Gap 補強）
 
 ### 16. /new-product skill v1.0.0 → v1.1.0
