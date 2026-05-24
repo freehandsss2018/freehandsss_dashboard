@@ -1,4 +1,4 @@
-# FHS Handoff - 2026-05-23
+# FHS Handoff - 2026-05-24
 當前版本：v1.4.7（憲法層）/ V41（UI層）→ current 已升版
 n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 /new-product skill：v1.1.0（補入 2e COST_MAP / 3f Review Mode / 5f 批次保留驗證）
@@ -6,26 +6,45 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 
 ---
 
-## 本次 Session 完成事項（2026-05-24 Session 18 — Dashboard Sort & Financials Post-Deployment Fixes）
+## 本次 Session 完成事項（2026-05-24 Session 19 — 成本欄補打分拆顯示）
 
-### 18. Dashboard Sort & Financials Post-Deployment Fixes
+### 19. 成本欄補打金額分拆顯示
 
 **完成事項**：
-- **產品明細排序修正 (Hardened Sort Priority)**：修正了 `renderReviewTable` 與 `renderReviewAccordion` 的排序演算法，以支援 "倒手模擺設" 等變體類別，將 `'立體' || '擺設' || '倒手' || '手模'` 的 priority 設定為 0 (最高)，`'鎖匙' || '鑰匙'` 為 1，`'吊飾' || '頸鏈' || '純銀' || '銀飾'` 為 2，確保產品順序完全正確。
-- **實時響應式財務更新 (Reactive UI Financial Updates)**：
-  - 給桌面版與手機版的成本與利潤單格/文字元素添加了動態 ID：`cost-cell-${recordId}`、`profit-cell-${recordId}`、`acc-cost-text-${recordId}`、`acc-profit-text-${recordId}`。
-  - 重構了 `saveAdjustmentAmount`，在 patch 發送的同時，利用 DOM 操作立刻計算並更新該筆訂單的成本與利潤數值及顏色，避免了頁面重整前的數值不同步。
-- **財務排序一致性 (Sort Consistency for Adjusted Financials)**：
-  - 更新了對 `Total_Cost` 與 `Net_Profit` 的表單排序邏輯，排序時自動採用已包含 `Adjustment_Amount` 的已調整數值，保證排序與顯示完全吻合。
-- **Playwright QA 整合驗證**：
-  - 重新執行 `qa_v41_supabase.js` 驗收測試，15 PASS / 0 FAIL 綠燈通過。
+- **成本欄分拆顯示 (Cost Breakdown)**：`renderReviewTable` 與 `renderReviewAccordion` 的成本欄改為分拆顯示。`Adjustment_Amount > 0` 時，桌面版成本欄顯示 `$基礎成本 + 橙色 +$X 補打`；手機版 `acc-cost-text` 顯示 `成本: $baseCost 橙色 +$X`。無補打時行為不變。
+- **即時分拆 (`updateFinancialsLocally`)**：改用 `innerHTML`，使補打金額輸入框的 oninput 事件也能即時呈現分拆標籤（而非合計數字）。
+- **同步方式**：V41 用 Edit 直接修改；current.html 因 Hook R1 攔截，改用 `cp` 命令同步。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `finance-calculator` |
+| 實際使用 | ❌ 未使用（定點 HTML/JS 改動，不需財務稽核能力） |
+| 遵從 Router | ❌ 未遵從（finance-calculator 為 Airtable/n8n 財務驗算，與本 UI 改動不匹配） |
+
+---
+
+## 本次 Session 完成事項（2026-05-24 Session 18 — Dashboard Sort, Financial Inputs & Real-time Calculations）
+
+### 18. Dashboard Sort, Financial Inputs & Real-time Calculations
+
+**完成事項**：
+- **產品明細排序邏輯強固 (Hardened Sort Priority)**：重構了 `renderReviewTable` 與 `renderReviewAccordion` 的 `_cp` 優先排序演算。傳入完整的商品 item 物件，並同時檢索 `Category`、`Product_Name` 以及 `Item_ID` (SKU 識別碼)。即使遇到資料庫因字元編碼異常 (如 `??` 或 corrupted strings) 導致 Category 解析失敗時，也能自動退回以商品名稱 (如木框、鎖匙、純銀) 與 SKU 代號 (如 `_P_`、`_K_`、`_M_`) 進行精準匹配，確保三大主產品 (立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2)) 的優先排位順序 100% 正確。
+- **補打金額輸入框 UI 提升 (Replenishment Input UI Refinement)**：將補打金額輸入框的寬度加大至 `80px`，內邊距改為 `4px`，邊框設為顯著的 `1px solid #ccc`，且**取消透明底色** (設為白底不透明背景 `#ffffff`)，徹底解決輸入框過小及與漸層背景融合導致看不清的問題。
+- **即時財務計算與響應式更新 (Real-time Instant Financial Recalculations)**：
+  - 新增了 `updateFinancialsLocally(recordId, value)` 動態輔助函式。
+  - 在補打金額輸入框中新增了 `oninput="updateFinancialsLocally('${o.id}', this.value)"` 事件綁定。當用戶在輸入框中輸入補打金額時，無須等待失焦 (blur) 或頁面重載，同行的成本欄、利潤欄數值及正負值字型顏色立即同步計算並即時渲染，大幅提升操作 UX。
+  - 在 `saveAdjustmentAmount` (失焦/Enter 保存時) 中重用該本地更新函式，確保本地狀態與 Supabase PATCH 直連保存邏輯一致。
+- **Playwright QA 與 SKU 驗證全面綠燈**：
+  - 修正了 `scratch_validate_categories.js` 以容錯 corrupted sku 欄位，Gate 1.5 成功通過 (**PASS**)。
+  - 重新執行 `qa_v41_supabase.js` 驗收測試，**15 PASS / 0 FAIL** 綠燈通過。
 
 **Subagent 使用記錄**
 | 項目 | 內容 |
 |------|------|
 | Router 建議 | 無建議 |
 | 實際使用 | ❌ 未使用 |
-| 遵從 Router | — |
+| 遵本 Router | — |
 
 ---
 

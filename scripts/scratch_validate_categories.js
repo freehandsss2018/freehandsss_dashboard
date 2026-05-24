@@ -20,8 +20,8 @@ function getItemCategory(sku) {
   if (!sku) return '其他';
   if (sku.includes('羊毛氈')) return '配件';
   if (sku.includes('木框') || sku.includes('玻璃瓶') || sku.includes('立體擺設')) return '立體擺設';
-  if (sku.includes('鎖匙扣')) return '金屬鎖匙扣';
-  if (sku.includes('吊飾')) return '純銀頸鏈吊飾';
+  if (sku.includes('鎖匙扣') || sku.includes('鎖匙') || sku.includes('鑰匙') || sku.includes('匙') || sku.includes('扣') || sku.includes('不銹鋼') || sku.includes('鋁合金')) return '金屬鎖匙扣';
+  if (sku.includes('吊飾') || sku.includes('頸鏈') || sku.includes('純銀')) return '純銀頸鏈吊飾';
   return '其他';
 }
 

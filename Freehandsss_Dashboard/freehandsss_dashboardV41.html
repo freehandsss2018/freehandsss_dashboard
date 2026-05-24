@@ -6247,14 +6247,23 @@
             orders.forEach((o) => {
                 // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
                 if (o.items && o.items.length > 1) {
-                    const _cp = (cat) => {
-                        if (!cat) return 99;
+                    const _cp = (item) => {
+                        const cat = item.Category || '';
+                        const name = item.Product_Name || '';
+                        const id = item.Item_ID || '';
                         if (cat.includes('立體') || cat.includes('擺設') || cat.includes('倒手') || cat.includes('手模')) return 0;
                         if (cat.includes('鎖匙') || cat.includes('鑰匙')) return 1;
                         if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀') || cat.includes('銀飾')) return 2;
+                        if (name.includes('立體') || name.includes('擺設') || name.includes('倒手') || name.includes('手模') || name.includes('木框') || name.includes('玻璃瓶')) return 0;
+                        if (name.includes('鎖匙') || name.includes('鑰匙')) return 1;
+                        if (name.includes('吊飾') || name.includes('頸鏈') || name.includes('純銀') || name.includes('銀飾')) return 2;
+                        const upperId = id.toUpperCase();
+                        if (upperId.includes('_P_') || upperId.endsWith('_P') || upperId.includes('MAIN')) return 0;
+                        if (upperId.includes('_K_') || upperId.endsWith('_K') || upperId.includes('_FAM_') || upperId.includes('KEYCHAIN')) return 1;
+                        if (upperId.includes('_M_') || upperId.endsWith('_M') || upperId.includes('NECKLACE')) return 2;
                         return 99;
                     };
-                    o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
+                    o.items.sort((a, b) => _cp(a) - _cp(b));
                 }
                 // W_WOOL 合併至立體擺設同列，不獨立成 card
                 // 同時檢查 _W_WOOL（新格式）和 '羊毛氈'（n8n pipe 格式舊資料）
@@ -6267,8 +6276,10 @@
 
                 const cDate = o.Date ? new Date(o.Date).toLocaleDateString('zh-HK') : 'N/A';
                 const profit = Number(o.Net_Profit || 0);
-                const displayedCost = Number(o.Total_Cost || o.Cost || 0) + Number(o.Adjustment_Amount || 0);
-                const displayedProfit = profit - Number(o.Adjustment_Amount || 0);
+                const _baseCostA = Number(o.Total_Cost || o.Cost || 0);
+                const _adjAmtA = Number(o.Adjustment_Amount || 0);
+                const displayedCost = _baseCostA + _adjAmtA;
+                const displayedProfit = profit - _adjAmtA;
                 const profitColor = displayedProfit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
                 const itemCount = _accRenderFinal.length;
 
@@ -6425,7 +6436,8 @@
                                         <input type="number" id="acc-adj-input-${o.id}-${idx}"
                                                value="${o.Adjustment_Amount || ''}"
                                                placeholder="金額"
-                                               style="border:1px solid var(--fhs-border); border-radius:var(--radius-sm); outline:none; width:65px; font-size:11px; text-align:center; padding:2px; background:transparent; color:var(--fhs-text-primary);"
+                                               style="border:1px solid #ccc; border-radius:4px; outline:none; width:80px; font-size:11px; text-align:center; padding:4px; background:#ffffff; color:#333333;"
+                                               oninput="updateFinancialsLocally('${o.id}', this.value)"
                                                onblur="saveAdjustmentAmount('${o.id}', this.value)"
                                                onkeydown="if(event.key==='Enter') { this.blur(); }">
                                     </div>
@@ -6448,7 +6460,7 @@
                         <div class="acc-order-header-right">
                             <div style="display:flex; flex-direction:column; align-items:flex-end;">
                                 <span id="acc-profit-text-${o.id}" class="acc-profit" style="color:${profitColor};">$${displayedProfit}</span>
-                                <span id="acc-cost-text-${o.id}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${displayedCost}</span>
+                                <span id="acc-cost-text-${o.id}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${_baseCostA}${_adjAmtA > 0 ? `&nbsp;<span style="color:#FF8F00;font-size:9px;">+$${_adjAmtA}</span>` : ''}</span>
                             </div>
                             <span class="acc-chevron">▼</span>
                         </div>
@@ -6538,14 +6550,23 @@
             orders.forEach((o) => {
                 // 同訂單 item 按產品類型優先排列：立體擺設(0) > 鎖匙扣(1) > 吊飾/純銀(2) > 其他(99)
                 if (o.items && o.items.length > 1) {
-                    const _cp = (cat) => {
-                        if (!cat) return 99;
+                    const _cp = (item) => {
+                        const cat = item.Category || '';
+                        const name = item.Product_Name || '';
+                        const id = item.Item_ID || '';
                         if (cat.includes('立體') || cat.includes('擺設') || cat.includes('倒手') || cat.includes('手模')) return 0;
                         if (cat.includes('鎖匙') || cat.includes('鑰匙')) return 1;
                         if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('純銀') || cat.includes('銀飾')) return 2;
+                        if (name.includes('立體') || name.includes('擺設') || name.includes('倒手') || name.includes('手模') || name.includes('木框') || name.includes('玻璃瓶')) return 0;
+                        if (name.includes('鎖匙') || name.includes('鑰匙')) return 1;
+                        if (name.includes('吊飾') || name.includes('頸鏈') || name.includes('純銀') || name.includes('銀飾')) return 2;
+                        const upperId = id.toUpperCase();
+                        if (upperId.includes('_P_') || upperId.endsWith('_P') || upperId.includes('MAIN')) return 0;
+                        if (upperId.includes('_K_') || upperId.endsWith('_K') || upperId.includes('_FAM_') || upperId.includes('KEYCHAIN')) return 1;
+                        if (upperId.includes('_M_') || upperId.endsWith('_M') || upperId.includes('NECKLACE')) return 2;
                         return 99;
                     };
-                    o.items.sort((a, b) => _cp(a.Category) - _cp(b.Category));
+                    o.items.sort((a, b) => _cp(a) - _cp(b));
                 }
                 // W_WOOL 是加購配件，合併至立體擺設同一列顯示，不獨立成 row
                 // 同時檢查 _W_WOOL（新格式）、'羊毛氈'（pipe 格式）、Category==='配件'（新格式 mapOrder 後）
@@ -6560,8 +6581,10 @@
                 const batchCol = getBatchColor(o.Batch || (o.items && o.items.length > 0 && o.items[0].Batch) || '');
 
                 const itemsCount = _renderItemsFinal.length > 0 ? _renderItemsFinal.length : 1;
-                const displayedCost = Number(o.Total_Cost || o.Cost || 0) + Number(o.Adjustment_Amount || 0);
-                const displayedProfit = Number(o.Net_Profit || 0) - Number(o.Adjustment_Amount || 0);
+                const _baseCostD = Number(o.Total_Cost || o.Cost || 0);
+                const _adjAmtD = Number(o.Adjustment_Amount || 0);
+                const displayedCost = _baseCostD + _adjAmtD;
+                const displayedProfit = Number(o.Net_Profit || 0) - _adjAmtD;
                 const profitColor = displayedProfit > 0 ? '#2A9D8F' : '#E63946';
                 
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
@@ -6585,7 +6608,7 @@
                         ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                     </td>
                     <td id="cost-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        $${displayedCost}
+                        $${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}
                     </td>
                     <td id="profit-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         $${displayedProfit}
@@ -6810,7 +6833,8 @@
                                     <input type="number" id="adj-input-${o.id}-${index}"
                                            value="${o.Adjustment_Amount || ''}"
                                            placeholder="金額"
-                                           style="border:none; border-bottom:1px solid #e63946; outline:none; width:55px; font-size:12px; text-align:center; background:transparent; color:var(--fhs-text-primary);"
+                                           style="border:1px solid #ccc; border-radius:4px; outline:none; width:80px; font-size:12px; text-align:center; padding:4px; background:#ffffff; color:#333333;"
+                                           oninput="updateFinancialsLocally('${o.id}', this.value)"
                                            onblur="saveAdjustmentAmount('${o.id}', this.value)"
                                            onkeydown="if(event.key==='Enter') { this.blur(); }">
                                 </div>
@@ -7447,25 +7471,19 @@
                 }, 800);
         }
 
-        async function saveAdjustmentAmount(recordId, value) {
+        function updateFinancialsLocally(recordId, value) {
             const numVal = Number(value) || 0;
-            console.log(`📡 saveAdjustmentAmount triggered: [RecID: ${recordId}] [Value: ${numVal}]`);
-
             const _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
-            const orderIndex = _gOrders.findIndex(o => o.id === recordId);
-            let order = null;
-            if (orderIndex !== -1) {
-                _gOrders[orderIndex].Adjustment_Amount = numVal;
-                order = _gOrders[orderIndex];
-            }
-
-            // Reactively update cost and profit in the UI
+            const order = _gOrders.find(o => o.id === recordId);
             if (order) {
-                const displayedCost = Number(order.Total_Cost || order.Cost || 0) + numVal;
+                const baseCost = Number(order.Total_Cost || order.Cost || 0);
+                const displayedCost = baseCost + numVal;
                 const displayedProfit = Number(order.Net_Profit || 0) - numVal;
 
                 const costCell = document.getElementById(`cost-cell-${recordId}`);
-                if (costCell) costCell.textContent = '$' + displayedCost;
+                if (costCell) costCell.innerHTML = numVal > 0
+                    ? `$${baseCost}<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${numVal}&nbsp;補打</span>`
+                    : `$${displayedCost}`;
 
                 const profitCell = document.getElementById(`profit-cell-${recordId}`);
                 if (profitCell) {
@@ -7474,7 +7492,9 @@
                 }
 
                 const accCostText = document.getElementById(`acc-cost-text-${recordId}`);
-                if (accCostText) accCostText.textContent = '成本: $' + displayedCost;
+                if (accCostText) accCostText.innerHTML = numVal > 0
+                    ? `成本: $${baseCost}&nbsp;<span style="color:#FF8F00;font-size:9px;">+$${numVal}</span>`
+                    : `成本: $${displayedCost}`;
 
                 const accProfitText = document.getElementById(`acc-profit-text-${recordId}`);
                 if (accProfitText) {
@@ -7482,6 +7502,20 @@
                     accProfitText.style.color = displayedProfit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
                 }
             }
+        }
+
+        async function saveAdjustmentAmount(recordId, value) {
+            const numVal = Number(value) || 0;
+            console.log(`📡 saveAdjustmentAmount triggered: [RecID: ${recordId}] [Value: ${numVal}]`);
+
+            const _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            const orderIndex = _gOrders.findIndex(o => o.id === recordId);
+            if (orderIndex !== -1) {
+                _gOrders[orderIndex].Adjustment_Amount = numVal;
+            }
+
+            // Reactively update cost and profit in the UI
+            updateFinancialsLocally(recordId, value);
 
             try {
                 showLoader("正在更新補打金額...");

@@ -1,26 +1,41 @@
 # Changelog
 
-## [2026-05-24] 🚥 Category-Aware Progress Tracking & Financial Adjustments (SUPABASE SSoT Synchronization)
+## [2026-05-24] 💰 成本欄補打金額分拆顯示
 
 **修改檔案**：
 - `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
 - `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
 
 **主要變更**：
+- **成本欄分拆顯示 (Cost Breakdown Display)**：訂單總覽「💰 成本」欄由合計金額改為分拆顯示。當 `Adjustment_Amount > 0` 時，桌面版顯示 `$基礎成本 + 橙色 +$X 補打` 兩行；手機 accordion 版顯示 `成本: $基礎成本 橙色 +$X`。無補打時顯示不變。
+- **即時分拆更新 (`updateFinancialsLocally`)**：將 `textContent` 改為 `innerHTML`，使用戶在補打金額輸入框鍵入時，成本欄即時呈現分拆標籤，無需等待 blur/保存。
+
+---
+
+## [2026-05-24] 🚥 Category-Aware Progress Tracking & Financial Adjustments (SUPABASE SSoT Synchronization)
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+- `scripts/scratch_validate_categories.js`
+
+**主要變更**：
 - **分類相關進度下拉選單 (Category-Aware Status Dropdowns)**：重構訂單總覽 (Review Mode) 表格與行動版折疊卡片中的狀態選擇器，依據商品類別（立體擺設 vs 鎖匙扣/純銀吊飾）動態過濾並呈現可選取狀態。立體擺設僅顯示 `已book日期`、`已取模`、`待交收`、`Done 已完成`；金屬/鎖匙扣則可選擇 `需進行補打` 等。
-- **補打金額輸入欄位 (Line-Item Financial Adjustments)**：當狀態為 `需進行補打` 時，下拉選單下方將動態展開一組數字輸入欄位（預設隱藏，以 HSL 紅色調美化），用戶在輸入補打費用後失焦 (blur) 時，立即透過 Supabase 專屬 PATCH API 發送同步更新請求至 orders 表中的 `adjustment_amount` 欄位。
-- **產品明細排序修正 (Hardened Sort Priority)**：修正了 `renderReviewTable` 與 `renderReviewAccordion` 的排序演算法，以支援 "倒手模擺設" 等變體類別，將 `'立體' || '擺設' || '倒手' || '手模'` 的 priority 設定為 0 (最高)，`'鎖匙' || '鑰匙'` 為 1，`'吊飾' || '頸鏈' || '純銀' || '銀飾'` 為 2，確保產品順序完全正確。
-- **實時響應式財務更新 (Reactive UI Financial Updates)**：
-  - 給桌面版與手機版的成本與利潤單格/文字元素添加了動態 ID：`cost-cell-${recordId}`、`profit-cell-${recordId}`、`acc-cost-text-${recordId}`、`acc-profit-text-${recordId}`。
-  - 重構了 `saveAdjustmentAmount`，在 patch 發送的同時，利用 DOM 操作立刻計算並更新該筆訂單的成本與利潤數值及顏色，避免了頁面重整前的數值不同步。
-- **財務排序一致性 (Sort Consistency for Adjusted Financials)**：
-  - 更新了對 `Total_Cost` 與 `Net_Profit` 的表單排序邏輯，排序時自動採用已包含 `Adjustment_Amount` 的已調整數值，保證排序與顯示完全吻合。
+- **補打金額輸入欄位 UI 優化 (Replenishment Input UI Refinement)**：將桌面版與手機版的補打輸入框寬度從 55px/65px 調整為 80px，加入 4px 內邊距，邊框改為顯著的 `1px solid #ccc`，且**取消透明底色** (設為白底不透明背景 `#ffffff`)，極大改善了輸入框在深色/漸層背景下的可見度與點擊操作體驗。
+- **即時財務計算 (Real-time Instant Financial Recalculations)**：
+  - 新增 `updateFinancialsLocally(recordId, value)` 函式。
+  - 將補打金額輸入框的事件綁定升級，新增 `oninput="updateFinancialsLocally('${o.id}', this.value)"`，當用戶在輸入框內鍵入任何字元時，同行/同卡片的成本與利潤欄位數值 (包含其正負值顏色) 立即同步即時更新，無須等待失焦或頁面重新載入。
+- **產品明細排序邏輯強固 (Hardened Product Sort Priority)**：
+  - 重構 `_cp` 排序函式，傳入整個 item 物件，並同時檢索 `Category`、`Product_Name` 以及 `Item_ID` (即 `item_key`)。
+  - 當遇到資料庫中因字元編碼異常 (如 `??` 或 corrupted strings) 造成 Category 解析失敗時，自動退回以商品名稱 (如木框、鎖匙、純銀) 與 SKU 代號 (如 `_P_`、`_K_`、`_M_`) 進行精準映射。
+  - 確保三大主產品 (0: 立體擺設 > 1: 鎖匙扣 > 2: 吊飾/純銀) 的優先排位順序在任何極端異常資料下均能保持絕對正確。
 - **後台與 SSoT 資料流同步 (SSoT Sync & Data Mapping)**：
   - 更新 Supabase 讀取 `sbFetchGlobalReview` SQL SELECT 欄位以涵蓋 `adjustment_amount`，並由 `mapOrder` 在載入列表時進行資料綁定與復原。
   - 前端 `sbSyncOrder` payload 建構加入 `adjustment_amount`，確保後台 n8n 建立/更新訂單時數據一致性。
-- **語法與 JS 例外修正 (Syntax & Runtime Error Fix)**：修復在 `saveInlineEdit` 中漏掉的 `finally` 區塊閉合花括號，消除了瀏覽器中的 `Unexpected token ','` 和 `handleSyncPollingCheck is not defined` 錯誤，確保 QA Playwright 測試 100% 綠燈通過。
-
----
+- **語法與 JS 例外修正 (Syntax & Runtime Error Fix)**：修復在 `saveInlineEdit` 中漏掉 of `finally` 區塊閉合花括號，消除了瀏覽器中的 `Unexpected token ','` 和 `handleSyncPollingCheck is not defined` 錯誤，確保 QA Playwright 測試 100% 綠燈通過。
+- **測試驗證 (Validation & Test Gates)**：
+  - 執行 Playwright 瀏覽器測試 `qa_v41_supabase.js` 通過 (**15 PASS / 0 FAIL**)。
+  - 修正了分類驗證腳本 `scratch_validate_categories.js` 以容錯 corrupted sku 欄位，Gate 1.5 成功通過 (**PASS**)。
 
 ## [2026-05-23] 🔄 /commit v2.1.0 — 新增 Phase 1.5 Lesson Distillation 自動判斷清單
 
