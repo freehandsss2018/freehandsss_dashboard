@@ -3908,8 +3908,8 @@
                 if (window._fhsLastSyncPayload && Date.now() - (window._fhsLastSyncTime || 0) < 20000) {
                     const banner = document.getElementById('syncProgressBanner');
                     if (banner) {
-                        const orderText = window._fhsLastSyncPayload.New_Order_ID 
-                            ? `${window._fhsLastSyncPayload.Order_ID} ➔ ${window._fhsLastSyncPayload.New_Order_ID}` 
+                        const orderText = window._fhsLastSyncPayload.New_Order_ID
+                            ? `${window._fhsLastSyncPayload.Order_ID} ➔ ${window._fhsLastSyncPayload.New_Order_ID}`
                             : window._fhsLastSyncOrderId;
                         const idSpan = document.getElementById('syncProgressOrderId');
                         if (idSpan) idSpan.innerText = orderText;
@@ -3922,10 +3922,13 @@
                                 window._syncPollInterval = null;
                                 const b = document.getElementById('syncProgressBanner');
                                 if (b) b.style.display = 'none';
+                                _setSyncIndicator(window.globalOrders, false);
+                                window._fhsLastSyncPayload = null;
+                                await (window.fetchGlobalReview || fetchGlobalReview)(true);
                                 return;
                             }
                             console.log("[Sync Poll] Auto-refreshing review table...");
-                            await (window.fetchGlobalReview || fetchGlobalReview)(true);
+                            await (window.fetchGlobalReview || fetchGlobalReview)(true, true);
                         }, 4000);
                     }
                 }
@@ -6119,12 +6122,24 @@
                 if (oldFound) return false;
             }
 
-            if (found.Customer_Name !== payload.Customer_Name) return false;
+            const foundCustomer = found.Customer_Name || found.Customer || '';
+            if (foundCustomer !== payload.Customer_Name) return false;
             
             const salePrice = Number(found.Total_Revenue || found.final_sale_price || 0);
             if (Math.round(salePrice) !== Math.round(payload.System_Final_Sale_Price)) return false;
 
             return true;
+        }
+
+        function _setSyncIndicator(orders, visible) {
+            const payload = window._fhsLastSyncPayload;
+            if (!payload || !orders) return;
+            const targetId = payload.New_Order_ID || payload.Order_ID;
+            const found = orders.find(function(o) { return o.Order_ID === targetId; });
+            if (found) {
+                const ind = document.getElementById('sync-indicator-' + found.id);
+                if (ind) ind.style.display = visible ? 'flex' : 'none';
+            }
         }
 
         function handleSyncPollingCheck(orders) {
@@ -6137,16 +6152,18 @@
                         window._syncPollInterval = null;
                     }
                     if (banner) banner.style.display = 'none';
+                    _setSyncIndicator(orders, false);
                     window._fhsLastSyncPayload = null;
                 } else {
                     if (banner) {
-                        const orderText = window._fhsLastSyncPayload.New_Order_ID 
-                            ? `${window._fhsLastSyncPayload.Order_ID} ➔ ${window._fhsLastSyncPayload.New_Order_ID}` 
+                        const orderText = window._fhsLastSyncPayload.New_Order_ID
+                            ? `${window._fhsLastSyncPayload.Order_ID} ➔ ${window._fhsLastSyncPayload.New_Order_ID}`
                             : window._fhsLastSyncOrderId;
                         const idSpan = document.getElementById('syncProgressOrderId');
                         if (idSpan) idSpan.innerText = orderText;
                         banner.style.display = 'flex';
                     }
+                    _setSyncIndicator(orders, true);
                 }
             } else {
                 if (banner) banner.style.display = 'none';
@@ -6183,7 +6200,7 @@
             } catch(e) {}
         }
 
-        async function fetchGlobalReview(forceRefresh) {
+        async function fetchGlobalReview(forceRefresh, silentPoll) {
             const year = document.getElementById("reviewYear").value;
             const month = document.getElementById("reviewMonth").value;
             const status = document.getElementById("reviewStatus").value;
@@ -6206,9 +6223,11 @@
                 }
             }
 
-            showLoader("正在載入全域核對資料...");
-            loading.style.display = "inline";
-            tbody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
+            if (!silentPoll) {
+                showLoader("正在載入全域核對資料...");
+                loading.style.display = "inline";
+                tbody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
+            }
 
             let fetchUrl = getWebhookUrl("https://yanhei.synology.me:8443/webhook/fetch-global-review");
             const params = [];
@@ -6632,6 +6651,10 @@
                             🗑️ 刪除
                         </button>
                         <button class="fhs-btn-order-detail" onclick="openOrderModal('${o.id}')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>
+                        <div id="sync-indicator-${o.id}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
+                            <span class="fhs-spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;"></span>
+                            同步中
+                        </div>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${cDate}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${o.Customer || '-'}</td>
@@ -9582,7 +9605,7 @@
         /* ── Patch fetchGlobalReview ─────────────────────────────── */
         function patchFetchGlobalReview() {
             const origFn = window.fetchGlobalReview;
-            window.fetchGlobalReview = async function(forceRefresh) {
+            window.fetchGlobalReview = async function(forceRefresh, silentPoll) {
                 if (!isSupabaseRead()) return origFn.apply(this, arguments);
 
                 const year   = document.getElementById('reviewYear')?.value   || '';
@@ -9593,8 +9616,10 @@
 
                 const tbody  = document.getElementById('reviewTableBody');
                 const loading = document.getElementById('reviewLoading');
-                if (loading) loading.style.display = 'inline';
-                if (tbody) tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
+                if (!silentPoll) {
+                    if (loading) loading.style.display = 'inline';
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
+                }
 
                 let orders;
                 try {

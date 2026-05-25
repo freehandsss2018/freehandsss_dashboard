@@ -1,8 +1,51 @@
-# FHS Handoff - 2026-05-24
+# FHS Handoff - 2026-05-25
 當前版本：v1.4.7（憲法層）/ V41（UI層）→ current 已升版
 n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 /new-product skill：v1.1.0（補入 2e COST_MAP / 3f Review Mode / 5f 批次保留驗證）
 /commit skill：v2.1.0（新增 Phase 1.5 Lesson Distillation 自動判斷清單）
+
+---
+
+## 本次 Session 完成事項（2026-05-25 Session 23 — 同步指示下沉至訂單行）
+
+### 23. inline sync-indicator（頂部 Banner → 訂單行內）
+
+**完成事項**：
+- **移除頂部 Banner**：`handleSyncPollingCheck` 及 `switchMode('review')` 內所有 `banner.style.display = 'flex'` 已移除，等待期間 Banner 不再彈出。`#syncProgressBanner` HTML 保留但靜默。
+- **sync-indicator div 注入模板**：`orderLeftColsHtml`（L6635）📋 按鈕後加入 `<div id="sync-indicator-{o.id}">` （初始 `display:none`），含 `.fhs-spin` 旋轉圓圈 + 「同步中」橙色文字。
+- **`_setSyncIndicator(orders, visible)` 輔助函式**：透過 `orders.find(o.Order_ID === targetId).id` 定位目標訂單 DOM，輪詢中 `display:flex`，確認完成後 `display:none`。
+- **V41 + current.html 同步完成**。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（定點 HTML 模板 + JS 修改，直接 Read + Edit 完成） |
+| 遵從 Router | — |
+
+---
+
+## 本次 Session 完成事項（2026-05-25 Session 22 — 輪詢靜默模式 silentPoll）
+
+### 22. 等待 n8n 更新時表格不再閃爍（silentPoll）
+
+**完成事項**：
+- **問題根因**：訂單同步後輪詢（每 4 秒，最多 20 秒）每次呼叫 `fetchGlobalReview(true)` 都觸發 `showLoader()` + `tbody.innerHTML` 清空，導致表格每 4 秒閃爍消失一次，共閃 5 次。
+- **修復**：為 `fetchGlobalReview` 加入第二參數 `silentPoll`（預設 false）。當 `silentPoll=true` 時跳過 showLoader 及 tbody 清空，保留現有表格資料可見，n8n 確認完成後才靜默換入新資料。
+- **修改行號（V41 + current 同步）**：
+  - L6186：函式簽名加 `silentPoll` 參數（n8n 路徑）
+  - L6209：`if (!silentPoll)` 包裹 showLoader + loading + tbody.innerHTML
+  - L9587：Supabase patch 函式簽名加 `silentPoll` 參數
+  - L9598：`if (!silentPoll)` 包裹 loading + tbody.innerHTML
+  - L3928：setInterval callback 改為 `fetchGlobalReview(true, true)`
+- **不變部分**：handleSyncPollingCheck / checkSyncFinished / 20s timeout / Banner 旋轉圖示 / 手動重新載入路徑，全部行為不變。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（定點 JS 參數修改，直接 Grep + Read + Edit 完成） |
+| 遵從 Router | — |
 
 ---
 

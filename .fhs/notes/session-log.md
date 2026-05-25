@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-25 (Sessions 22–24): 同步等待 UX 三層優化 ✅
+
+**Scope**: (1) silentPoll — 輪詢期間不清空表格，保留舊資料可見；(2) inline sync-indicator — 目標訂單行內顯示橙色旋轉「同步中」小標，頂部 Banner 保留；(3) checkSyncFinished 欄位名修復 — Supabase mapOrder 映射 `Customer`，非 `Customer_Name`，導致永遠返回 false；timeout 分支補 `_setSyncIndicator` 隱藏 + final refresh。
+**Status**: ✅ 完成，V41 + current.html 同步
+
+---
+
 ## 2026-05-23 (Session 15): Complex SKU 成本計算修復與前台同步 UX 優化 (Complex SKU Cost Calc & Sync UX Optimization) ✅
 
 **Scope**: 修復 n8n `Smart Cache Strategist` 中 PostgREST 針對特殊 SKU 括號語法解析 bug、防禦 n8n VM Sandbox 下 `process is not defined` 崩潰；前端 Dashboard 實作即時重覆單號檢查（Supabase + Webhook Fallback）、新增 `#syncProgressBanner` 進度指示條與 4 秒自動輪詢更新機制。

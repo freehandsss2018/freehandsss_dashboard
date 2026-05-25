@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-05-25] 📍 同步指示下沉至訂單行（inline sync-indicator）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+
+**主要變更**：
+- **移除頂部 Banner 彈出**：`handleSyncPollingCheck` 及 `switchMode('review')` 內所有 `banner.style.display = 'flex'` 已移除；`#syncProgressBanner` HTML 元素保留但不再顯示。
+- **inline sync-indicator**：`orderLeftColsHtml` 模板（L6635）新增 `<div id="sync-indicator-{o.id}">` 隱藏 div，內含 `.fhs-spin` 旋轉圓圈 + 「同步中」文字（11px，橙色），初始 `display:none`。
+- **`_setSyncIndicator(orders, visible)` 輔助函式**：透過 `orders.find(o.Order_ID === targetId)?.id` 定位對應訂單行，輪詢中顯示，sync 確認完成後隱藏。
+- **行為不變**：`checkSyncFinished` / `handleSyncPollingCheck` 判斷邏輯 / `silentPoll` 輪詢機制均不受影響。
+
+---
+
+## [2026-05-25] 🔇 輪詢靜默模式（silentPoll）— 等待 n8n 更新時保留表格資料
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+
+**主要變更**：
+- **silentPoll 參數**：為 `fetchGlobalReview(forceRefresh, silentPoll)` 新增第二參數，影響 n8n 路徑（L6186）及 Supabase patch（L9587）兩個函式定義。
+- **輪詢路徑繞過 showLoader + tbody 清空**：當 `silentPoll=true` 時，跳過 `showLoader()` 及 `tbody.innerHTML` 清空動作，表格在輪詢期間保持舊資料可見，不再每 4 秒閃爍一次。
+- **setInterval 傳入 silentPoll=true**：L3928 輪詢 callback 改為 `fetchGlobalReview(true, true)`，確保後台輪詢全程靜默。
+- **行為不變部分**：`handleSyncPollingCheck` / `checkSyncFinished` / 20 秒 timeout / Banner 旋轉圖示均不受影響；用戶初次切入訂單總覽及手動「重新載入」仍走完整 showLoader 路徑。
+
+---
+
 ## [2026-05-25] ⚙️ 修正篩選儲存與排序還原
 
 **修改檔案**：
