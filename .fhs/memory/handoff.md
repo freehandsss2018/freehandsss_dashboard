@@ -6,6 +6,46 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 
 ---
 
+## 本次 Session 完成事項（2026-05-25 Session 21 — 修正篩選儲存與排序還原）
+
+### 21. 修正篩選儲存與排序還原
+
+**完成事項**：
+- **排序還原修正**：解決了 `loadFilters()` 從 `localStorage` 還原排序偏好時，後續資料加載 callback 繞過 `applyReviewFilters()` 而直接調用 `renderReviewTable()` 導致表格渲染未排序的 Bug。改在 `fetchGlobalReview` 快取讀取和異步加載完成後統一調用 `applyReviewFilters()`。
+- **客戶端 Date/Month 篩選**：為了解決 Supabase 查詢中 `confirmed_at` 為空（草稿/新訂單）在月分/年度篩選中過度匹配，導致 May 訂單顯示在 January 篩選結果的 Bug，在 `applyReviewFilters` 中加上客戶端 Year/Month 篩選作為 secondary filtering。
+- **時間排序強固**：加入 `parseSafeDate` 以正則安全地解析 `DD/MM/YYYY` 等多種日期格式，確保 legacy 與新格式日期排序皆 100% 正確，修復 Chrome 中 `new Date("20/5/2026").getTime()` 回傳 `NaN` 的問題。
+- **Status 屬性回補**：在 Supabase `mapOrder()` 輸出物件中補上 `Status` 欄位以支援舊版程式碼對該欄位的存取。
+- **同步與驗收**：已同步至 `Freehandsss_dashboard_current.html`；執行 Playwright QA 測試，全部 **15 PASS / 0 FAIL** 通過。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ✅ `browser_subagent` — 用於瀏覽器中操作還原篩選器與排序狀態驗收，定位出 Date/Month 篩選過度匹配與 chrome date parsing 異常等關鍵 root causes。 |
+| 遵從 Router | — |
+
+---
+
+## 本次 Session 完成事項（2026-05-24 Session 20 — 訂單總覽 4 項 UI 優化 F1–F4）
+
+### 20. 訂單總覽 4 項 UI 優化
+
+**完成事項**：
+- **F1 儲存篩選**：篩選列加入 `#fhsSaveFilterBtn`（💾 儲存篩選），`saveFilters()` 寫入 `localStorage('fhs_saved_filter')`，`loadFilters()` 在 `switchMode('review')` 時自動還原（含 sort state + chip）。`_fhsFiltersLoaded` flag 防止重複執行。
+- **F2 備註格填滿**：`.review-notes-textarea` → `height:100%; min-height:80px; resize:none`，加 `td:has(>...)` 高度追蹤；`.acc-notes-textarea` → `min-height:60px; resize:none`。
+- **F3 詳情彈窗**：`#fhsOrderModal`（`position:fixed`），`openOrderModal(orderId)` 從 `globalOrders` 讀取訂單，3 個可折疊 section（財務/產品/備註），ESC + 遮罩點擊可關閉，無 API 請求。
+- **F4 手機版**：accordion header 加 📋 按鈕 + `event.stopPropagation()`；儲存篩選按鈕手機全寬。
+- **同步**：V41 直接 Edit；current.html 用 `cp` 繞過 Hook R1。
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `frontend-developer` |
+| 實際使用 | ✅ `frontend-developer` — 委託：F1-F4 完整實作代碼（上一 session 完成），本 session 由 A3 核查並執行 |
+| 遵從 Router | ✅ 遵從 |
+
+---
+
 ## 本次 Session 完成事項（2026-05-24 Session 19 — 成本欄補打分拆顯示）
 
 ### 19. 成本欄補打金額分拆顯示

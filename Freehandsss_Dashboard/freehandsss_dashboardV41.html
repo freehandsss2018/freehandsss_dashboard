@@ -769,6 +769,9 @@
         .fhs-btn-refresh { margin-left:auto; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border:none; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-size:var(--fhs-text-xs); font-weight:700; cursor:pointer; transition:background .15s,transform .1s; white-space:nowrap; flex-shrink:0; }
         .fhs-btn-refresh:hover { background:#256427; }
         .fhs-btn-refresh:active { background:#1b4d1d; transform:scale(0.97); }
+        /* F1: Save Filter Button */
+        .fhs-btn-save-filter { display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 14px; border:1px solid var(--fhs-border); border-radius:var(--radius-md); background:#fff; color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; flex-shrink:0; }
+        .fhs-btn-save-filter:hover { background:#f4f6f8; }
         /* Chip group */
         .chip-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
         .chip-btn { display:inline-flex; align-items:center; height:30px; padding:0 12px; border:1.5px solid var(--fhs-border); border-radius:15px; background:var(--fhs-bg-surface); color:var(--fhs-text-secondary); font-size:var(--fhs-text-xs); font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; user-select:none; -webkit-tap-highlight-color:transparent; }
@@ -791,6 +794,7 @@
             .filter-row { gap:10px 12px; }
             .filter-row-secondary { padding-top:10px; }
             .fhs-btn-refresh { margin-left:0; width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
+            .fhs-btn-save-filter { width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
             .fhs-select--sort { min-width:0; width:100%; max-width:260px; }
             .chip-btn { height:36px; padding:0 14px; font-size:var(--fhs-text-sm); }
             .acc-sort-status { display:none; }
@@ -883,8 +887,9 @@
         .review-status-select:focus { border-color:#2A9D8F; box-shadow:0 0 0 2px rgba(42,157,143,0.1); outline:none; }
 
         /* 備註欄 */
-        .review-notes-textarea { width:100%; height:48px; font-size:12px; padding:5px 7px; border-radius:6px; border:1px solid rgba(0,0,0,0.12); resize:vertical; transition:border-color 0.2s, box-shadow 0.2s; line-height:1.5; background:#ffffff; color:#333; }
+        .review-notes-textarea { width:100%; height:100%; min-height:80px; font-size:12px; padding:5px 7px; border-radius:6px; border:1px solid rgba(0,0,0,0.12); resize:none; transition:border-color 0.2s, box-shadow 0.2s; line-height:1.5; background:#ffffff; color:#333; }
         .review-notes-textarea:focus { border-color:#457B9D; outline:none; box-shadow:0 0 0 2px rgba(69,123,157,0.15); background:#ffffff; }
+        td:has(> .review-notes-textarea) { height:1px; }
 
         /* 儲存指示器 */
         .review-save-indicator { font-size:9px; color:#2A9D8F; text-align:right; min-height:12px; margin-top:2px; }
@@ -1232,8 +1237,8 @@
             font-size: var(--fhs-text-sm);
             color: var(--fhs-text-primary);
             background: var(--fhs-bg);
-            resize: vertical;
-            min-height: 52px;
+            resize: none;
+            min-height: 60px;
             box-sizing: border-box;
         }
 
@@ -2061,6 +2066,24 @@
             .sb-status-chip .sb-label-full { display: inline; }
             .sb-status-chip .sb-label-short { display: none; }
         }
+        /* F3: Order detail modal */
+        #fhsOrderModal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; padding:16px; }
+        #fhsOrderModal.active { display:flex; }
+        .fhs-modal-box { background:#fff; border-radius:12px; width:100%; max-width:min(800px, 95vw); max-height:90dvh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.22); }
+        .fhs-modal-hdr { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; border-bottom:1px solid var(--fhs-border); }
+        .fhs-modal-title { font-size:15px; font-weight:700; color:var(--fhs-text-primary); margin:0; }
+        .fhs-modal-close { background:none; border:none; cursor:pointer; font-size:20px; color:#888; line-height:1; padding:0 4px; border-radius:4px; }
+        .fhs-modal-close:hover { background:#f0f0f0; color:#333; }
+        .fhs-modal-body { overflow-y:auto; flex:1; padding:0 4px 8px; }
+        .fhs-modal-section { border-bottom:1px solid #f0f0f0; }
+        .fhs-modal-section-hdr { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; cursor:pointer; user-select:none; font-size:13px; font-weight:600; color:var(--fhs-text-primary); }
+        .fhs-modal-section-hdr:hover { background:#fafafa; }
+        .fhs-modal-section-body { padding:4px 16px 12px; font-size:13px; color:#444; }
+        .fhs-modal-row { display:flex; justify-content:space-between; padding:3px 0; gap:8px; }
+        .fhs-modal-lbl { color:#888; flex-shrink:0; }
+        .fhs-modal-val { font-weight:500; text-align:right; }
+        .fhs-btn-order-detail { background:none; border:none; cursor:pointer; font-size:15px; padding:2px 4px; border-radius:4px; line-height:1; }
+        .fhs-btn-order-detail:hover { background:#f0f0f0; }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -2261,6 +2284,7 @@
                                 </optgroup>
                             </select>
                         </div>
+                        <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()">💾 儲存篩選</button>
                         <button class="fhs-btn-refresh" type="button"
                             onclick="(window.fetchGlobalReview || fetchGlobalReview)(true)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3877,6 +3901,7 @@
             /* review fetch: 每次切入均重新載入，不受 currentMode 保護限制 */
             if (mode === 'review') {
                 initReviewYears();
+                loadFilters();
                 (window.fetchGlobalReview || fetchGlobalReview)();
 
                 // If a sync was triggered recently, start the polling interval if not already running
@@ -6174,7 +6199,8 @@
                 const cached = getReviewCache(cacheKey);
                 if (cached) {
                     globalOrders = cached;
-                    renderReviewTable(globalOrders);
+                    if (window.applyReviewFilters) window.applyReviewFilters();
+                    else renderReviewTable(globalOrders);
                     handleSyncPollingCheck(globalOrders);
                     return;
                 }
@@ -6210,7 +6236,8 @@
                     if (data && data.orders) {
                         globalOrders = data.orders;
                         setReviewCache(cacheKey, data.orders);
-                        renderReviewTable(globalOrders);
+                        if (window.applyReviewFilters) window.applyReviewFilters();
+                        else renderReviewTable(globalOrders);
                         handleSyncPollingCheck(globalOrders);
                         hideLoader();
                         return;
@@ -6455,11 +6482,14 @@
                     <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
                         <div class="acc-order-header-left">
                             <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
+                            <button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal('${o.id}')" title="訂單詳情" style="font-size:14px;vertical-align:middle;">📋</button>
                             <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
                         </div>
                         <div class="acc-order-header-right">
-                            <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
                                 <span id="acc-profit-text-${o.id}" class="acc-profit" style="color:${profitColor};">$${displayedProfit}</span>
+                                <span style="font-size:10px; color:#B07D4C; font-weight:600;">入帳: ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '—'}</span>
+                                ${o.Additional_Fee > 0 ? `<span style="font-size:10px; color:#888; font-weight:500;">附加: $${o.Additional_Fee}</span>` : ''}
                                 <span id="acc-cost-text-${o.id}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${_baseCostA}${_adjAmtA > 0 ? `&nbsp;<span style="color:#FF8F00;font-size:9px;">+$${_adjAmtA}</span>` : ''}</span>
                             </div>
                             <span class="acc-chevron">▼</span>
@@ -6601,6 +6631,7 @@
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffcccc; border-radius:4px; color:#cc4444; font-size:11px; cursor:pointer; display:block;">
                             🗑️ 刪除
                         </button>
+                        <button class="fhs-btn-order-detail" onclick="openOrderModal('${o.id}')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${cDate}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${o.Customer || '-'}</td>
@@ -7149,6 +7180,42 @@
             const _orders = window.globalOrders || globalOrders;
             if (!_orders) return;
             let filtered = _orders;
+
+            // Client-side Year filter
+            const yrSel = document.getElementById('reviewYear');
+            const yrVal = yrSel ? yrSel.value : '';
+            if (yrVal) {
+                filtered = filtered.filter(function(o) {
+                    if (!o.Date) return false;
+                    if (o.Date.includes('-')) {
+                        return o.Date.startsWith(yrVal);
+                    } else if (o.Date.includes('/')) {
+                        return o.Date.endsWith('/' + yrVal) || o.Date.endsWith('/' + yrVal + ' ');
+                    }
+                    return o.Date.indexOf(yrVal) !== -1;
+                });
+            }
+
+            // Client-side Month filter
+            const moSel = document.getElementById('reviewMonth');
+            const moVal = moSel ? moSel.value : '';
+            if (moVal) {
+                filtered = filtered.filter(function(o) {
+                    if (!o.Date) return false;
+                    if (o.Date.includes('-')) {
+                        var parts = o.Date.split('-');
+                        return parts[1] === moVal;
+                    } else if (o.Date.includes('/')) {
+                        var parts = o.Date.split('/');
+                        if (parts.length >= 2) {
+                            var m = parts[1].padStart(2, '0');
+                            return m === moVal;
+                        }
+                    }
+                    return false;
+                });
+            }
+
             // Category chip filter
             if (reviewCategoryFilter) {
                 filtered = filtered.filter(function(o) { return matchesOrderCategory(o, reviewCategoryFilter); });
@@ -7157,6 +7224,7 @@
             if (sortField) {
                 const _field = sortField, _dir = sortDir;
                 filtered = filtered.slice().sort(function(a, b) {
+                    let aVal = a[_field], bVal = b[_field];
                     if (_field === 'Total_Cost') {
                         aVal = Number(a.Total_Cost || a.Cost || 0) + Number(a.Adjustment_Amount || 0);
                         bVal = Number(b.Total_Cost || b.Cost || 0) + Number(b.Adjustment_Amount || 0);
@@ -7172,8 +7240,22 @@
                         return _dir === 'asc' ? aVal - bVal : bVal - aVal;
                     }
                     if (_field === 'Date') {
-                        aVal = aVal ? new Date(aVal).getTime() : 0;
-                        bVal = bVal ? new Date(bVal).getTime() : 0;
+                        function parseSafeDate(dStr) {
+                            if (!dStr) return 0;
+                            if (dStr.includes('-')) return new Date(dStr).getTime() || 0;
+                            if (dStr.includes('/')) {
+                                var parts = dStr.split('/');
+                                if (parts.length >= 3) {
+                                    var day = parseInt(parts[0], 10);
+                                    var month = parseInt(parts[1], 10) - 1;
+                                    var year = parseInt(parts[2], 10);
+                                    return new Date(year, month, day).getTime() || 0;
+                                }
+                            }
+                            return new Date(dStr).getTime() || 0;
+                        }
+                        aVal = parseSafeDate(aVal);
+                        bVal = parseSafeDate(bVal);
                         return _dir === 'asc' ? aVal - bVal : bVal - aVal;
                     }
                     aVal = String(aVal || '').toLowerCase();
@@ -7283,6 +7365,90 @@
                 });
             }
         })();
+
+        // F1: Save / Load filter state
+        function saveFilters() {
+            var state = {
+                year:     (document.getElementById('reviewYear')       || {}).value || '',
+                month:    (document.getElementById('reviewMonth')      || {}).value || '',
+                status:   (document.getElementById('reviewStatus')     || {}).value || '',
+                batch:    (document.getElementById('reviewBatch')      || {}).value || '',
+                search:   (document.getElementById('reviewSearch')     || {}).value || '',
+                sort:     (document.getElementById('reviewSortSelect') || {}).value || '',
+                category: reviewCategoryFilter || ''
+            };
+            try { localStorage.setItem('fhs_saved_filter', JSON.stringify(state)); } catch(e) {}
+            var btn = document.getElementById('fhsSaveFilterBtn');
+            if (btn) { btn.textContent = '✅ 已儲存'; setTimeout(function(){ btn.textContent = '💾 儲存篩選'; }, 1500); }
+        }
+
+        var _fhsFiltersLoaded = false;
+        function loadFilters() {
+            if (_fhsFiltersLoaded) return;
+            _fhsFiltersLoaded = true;
+            try {
+                var raw = localStorage.getItem('fhs_saved_filter');
+                if (!raw) return;
+                var s = JSON.parse(raw);
+                function _set(id, val) { var el = document.getElementById(id); if (el && val !== undefined) el.value = val; }
+                _set('reviewYear',      s.year);
+                _set('reviewMonth',     s.month);
+                _set('reviewStatus',    s.status);
+                _set('reviewBatch',     s.batch);
+                _set('reviewSearch',    s.search);
+                _set('reviewSortSelect', s.sort);
+                if (s.category !== undefined) {
+                    reviewCategoryFilter = s.category;
+                    document.querySelectorAll('.chip-btn[data-category]').forEach(function(b) {
+                        b.classList.toggle('active', (b.dataset.category || '') === s.category);
+                    });
+                }
+                if (s.sort) {
+                    var lastU = s.sort.lastIndexOf('_');
+                    if (lastU > 0) {
+                        sortField = s.sort.substring(0, lastU);
+                        sortDir   = s.sort.substring(lastU + 1);
+                        updateSortHeaderUI(sortField, sortDir);
+                        updateAccSortStatus();
+                    }
+                }
+            } catch(e) {}
+        }
+
+        // F3: Order detail modal (IG Raw Message Preview)
+        function openOrderModal(orderId) {
+            var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var o = _go.find(function(x){ return x.id === orderId; });
+            if (!o) { console.warn('[FHS Modal] order not found:', orderId); return; }
+
+            document.getElementById('fhsModalTitle').textContent = 'IG 原始訊息 #' + (o.Order_ID || orderId);
+
+            var msgHtml = '<div style="padding:16px; white-space:pre-wrap; color:#222; font-family:var(--fhs-font-mono, monospace); font-size:14px; background:#fcfcfc; border:1px solid var(--fhs-border); border-radius:8px; min-height:450px; max-height:75dvh; overflow-y:auto; text-align:left; line-height:1.6; margin: 10px 0;">' +
+                (o.Full_Order_Text ? o.Full_Order_Text.replace(/</g,'&lt;') : '<div style="color:#aaa; text-align:center; padding-top:100px;">（無原始訊息）</div>') + '</div>';
+
+            document.getElementById('fhsModalBody').innerHTML = msgHtml;
+
+            document.getElementById('fhsOrderModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOrderModal() {
+            var m = document.getElementById('fhsOrderModal');
+            if (m) m.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function _fhsToggleSection(hdr) {
+            var body = hdr.nextElementSibling;
+            var arrow = hdr.querySelector('span:last-child');
+            var open = body.style.display !== 'none';
+            body.style.display = open ? 'none' : '';
+            if (arrow) arrow.textContent = open ? '▼' : '▲';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { closeOrderModal(); }
+        });
 
         async function saveInlineEdit(recordId, field, elementId, itemIndex) {
             const el = document.getElementById(elementId);
@@ -9222,12 +9388,15 @@
                 Date:             row.confirmed_at  || row.appointment_at || '',
                 Appointment_Date: row.appointment_at || '',
                 Final_Sale_Price: Number(row.final_sale_price) || 0,
+                Additional_Fee:   Number(row.additional_fee) || 0,
                 Net_Profit:       Number(row.net_profit) || 0,
                 Total_Cost:       Number(row.total_cost) || 0,
                 Adjustment_Amount: Number(row.adjustment_amount) || 0,
                 Process_Status:   row.process_status || '待確認',
+                Status:           row.process_status || '待確認',
                 Batch:            row.batch_number || '',
                 Admin_Notes:      row.admin_notes || '',
+                Full_Order_Text:  row.full_order_text || '',
                 items:            mappedItems,
                 _source:          'supabase'
             };
@@ -9264,7 +9433,7 @@
             // Only pass status values that exist in Supabase ENUM; manufacturing-step values cause errors
             const SB_ORDER_STATUSES = new Set(['待確認','製作中','完成','已取件','已取消']);
             // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
-            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
+            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
 
             if (status && SB_ORDER_STATUSES.has(status)) qs['process_status'] = 'eq.' + status;
             if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';
@@ -9438,8 +9607,12 @@
                 }
                 if (loading) loading.style.display = 'none';
                 window.globalOrders = orders;
-                if (window.renderReviewTable) window.renderReviewTable(orders);
-                if (window.renderReviewAccordion) window.renderReviewAccordion(orders);
+                if (window.applyReviewFilters) {
+                    window.applyReviewFilters();
+                } else {
+                    if (window.renderReviewTable) window.renderReviewTable(orders);
+                    if (window.renderReviewAccordion) window.renderReviewAccordion(orders);
+                }
                 handleSyncPollingCheck(orders);
                 const _syncT = new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'});
                 sbBadge('✅ 已同步 ' + _syncT, '#A5D6A7');
@@ -9605,6 +9778,17 @@
         }
     })();
     </script>
+
+    <!-- F3: Order detail modal -->
+    <div id="fhsOrderModal" role="dialog" aria-modal="true" aria-labelledby="fhsModalTitle" onclick="if(event.target===this)closeOrderModal()">
+        <div class="fhs-modal-box">
+            <div class="fhs-modal-hdr">
+                <h2 class="fhs-modal-title" id="fhsModalTitle">訂單詳情</h2>
+                <button class="fhs-modal-close" onclick="closeOrderModal()" aria-label="關閉">✕</button>
+            </div>
+            <div class="fhs-modal-body" id="fhsModalBody"></div>
+        </div>
+    </div>
 
 </body>
 

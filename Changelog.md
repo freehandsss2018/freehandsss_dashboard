@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-05-25] ⚙️ 修正篩選儲存與排序還原
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+
+**主要變更**：
+- **排序還原與載入修正**：修復了 `loadFilters()` 在載入時正確設置內存 `sortField` 與 `sortDir` 但渲染時被 table fetch callback 繞過、導致表格呈現未排序的 Bug。現在在 cache 命中及 fetch 成功後，均優先經由 `applyReviewFilters()` 進行排序和過濾後再渲染。
+- **客戶端 Date/Month 篩選**：為了解決 Supabase 查詢中 `confirmed_at` 為空（草稿/新訂單）在月分/年度篩選中過度匹配，導致 May 訂單顯示在 January 篩選結果 the Bug，在 `applyReviewFilters` 中加上客戶端 Year/Month 篩選作為 secondary filtering。
+- **時間排序強固**：引入了 `parseSafeDate` 輔助函式，使用正則安全解析並標準化 `DD/MM/YYYY` 等多種日期格式，確保 legacy 與新格式日期排序皆 100% 正確，解決了 Chrome 瀏覽器在解析 `DD/MM/YYYY` 格式時因 `Invalid Date` 導致的排序異常。
+- **Status 屬性回補**：在 Supabase `mapOrder()` 輸出的物件中補上 `Status` 欄位，確保與 legacy 前端代碼對 `o.Status` 存取的相容性。
+
+---
+
+## [2026-05-24] 🔮 訂單總覽 4 項 UI 優化（F1–F4）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+
+**主要變更**：
+- **F1 儲存篩選設定**：篩選列新增「💾 儲存篩選」按鈕 (`#fhsSaveFilterBtn`)，點擊後將年份/月份/狀態/批次/搜尋/排序/分類 chip 全部寫入 `localStorage('fhs_saved_filter')`；切換至訂單模式時自動呼叫 `loadFilters()` 還原所有篩選值（含 sort/chip 狀態），且只執行一次（`_fhsFiltersLoaded` flag 保護）。桌面/手機版均適用。
+- **F2 備註格自動填滿**：`.review-notes-textarea` CSS 改為 `height:100%; min-height:80px; resize:none`，並配合 `td:has(>...)` 讓 `<td>` 高度追隨內容；`.acc-notes-textarea` 亦更新為 `min-height:60px; resize:none`，手機版格內備註填滿顯示。
+- **F3 訂單詳情彈窗**：新增 `#fhsOrderModal`（`position:fixed` 全螢幕遮罩），點擊 📋 圖示後不發 API 請求，直接從 `globalOrders` 取得資料並以 3 個可折疊區塊呈現（💰 財務摘要預設收合 / 📦 產品明細預設展開 / 📝 備註預設收合）。支援點擊遮罩或 ESC 鍵關閉。
+- **F4 手機版同步**：accordion header 新增 📋 按鈕（含 `event.stopPropagation()` 防止觸發展開/收合），F1 儲存篩選按鈕手機版全寬顯示。
+
+---
+
 ## [2026-05-24] 💰 成本欄補打金額分拆顯示
 
 **修改檔案**：
