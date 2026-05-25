@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-05-25] 🔢 財務訂單數修復：null confirmed_at 草稿單納入計算（26 vs 28 訂單差異釐清）
+
+**修改檔案**：
+- `supabase/rpc/get_financial_kpis.sql`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`（sync）
+
+**主要變更**：
+- **訂單 WHERE 修正**：`current` + `previous` 兩個區塊的主 WHERE 子句由 `confirmed_at BETWEEN ... AND ...` 改為 `(confirmed_at BETWEEN ... AND ... OR confirmed_at IS NULL) AND deleted_at IS NULL`，確保草稿單（0600106，confirmed_at = NULL）納入計算。
+- **orders_inclusive 子查詢同步修正**：`current` + `previous` 兩個 `orders_inclusive` CASE 子查詢亦加入相同 null + deleted_at 過濾。
+- **釐清 26 vs 28 差異**：Finance Mode 顯示 26 單為正確（2026 YTD）；Review Mode 28 單包含 2025 年訂單（0600100 Oct-2025 $3,980、0696216 Dec-2025 $4,920），設計上正確排除於財務年度視圖。
+- **利潤缺口 $11,631 確認為預存問題**：訂單 0600701 `net_profit = NULL`（n8n 未處理），貢獻 $8,720 至收入但 $0 至利潤；其餘 $2,911 為 n8n 陳舊計算值差異，需 n8n 重新 sync 修復。
+
+---
+
+## [2026-05-25] 💰 財務 KPI 數據對齊修復（adjustment_amount + current tab MTD）
+
+**修改檔案**：
+- `supabase/rpc/get_financial_kpis.sql`
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+
+**主要變更**：
+- **Fix A — KPI 成本/利潤/利潤率公式修正**：`get_financial_kpis.sql` 的 `cost` 欄位改為 `SUM(total_cost) + SUM(adjustment_amount)`，`profit` 改為 `SUM(net_profit) - SUM(adjustment_amount)`，`margin` 分子同步更新。`previous` 區塊亦同步修正。根因：`net_profit = final_sale_price - total_cost`（不含 adjustment_amount），KPI 卡片成本比 Review Mode 明細表偏低，利潤偏高。
+- **Fix B — "current" tab 修正為 MTD**：`sbFetchFinancial()` 中 kCurAll/kCurHm/kCurMt 的 RPC 呼叫從 `tab_mode:'yearly'` 改為 `tab_mode:'current'`（月初至今 vs 去年同期 MTD），消除 "current" tab 與 "yearly" tab 顯示相同數據的 Bug。
+- **Phase 0 查驗結論**：n8n `Supabase Mirror Prep` 節點的 UPSERT payload 不含 `adjustment_amount`，確認此欄位不受 n8n 全量同步覆蓋，無 SSoT 衝突風險。
+
+---
+
 ## [2026-05-25] 🔗 /rp 協議整合至指令工作流（Command Compatibility Map + Safety Boundaries）
 
 **修改檔案**：

@@ -7,6 +7,53 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 
 ---
 
+## 本次 Session 完成事項（2026-05-25 Session 26 — 財務訂單數修復 + null confirmed_at 草稿單）
+
+### 26. 訂單數差異釐清（Finance 26 vs Review 28）+ SQL WHERE 修正
+
+**完成事項**：
+- **根因確認**：`get_financial_kpis.sql` 的 WHERE 子句未包含 `confirmed_at IS NULL` 訂單（草稿單 0600106），導致財務模式少計 1 單；另 2 單差異（28 vs 26）為 2025 年訂單（0600100 Oct-2025、0696216 Dec-2025），2026 YTD 設計上正確排除。
+- **Fix C — SQL WHERE 修正**：`current` + `previous` 兩個主 WHERE 子句改為 `(confirmed_at BETWEEN ... AND ... OR confirmed_at IS NULL) AND deleted_at IS NULL`。
+- **orders_inclusive 子查詢同步修正**：4 個子查詢（current handmodel/metal + previous handmodel/metal）全部加入相同 null + deleted_at 過濾。
+- **利潤缺口確認為預存問題**：`revenue - cost = $96,572`，`profit = $84,941`，缺口 $11,631 = 訂單 0600701（net_profit=NULL，n8n 未處理）$8,720 + 其他陳舊 net_profit 差值 $2,911。需 n8n 重新 sync 0600701 修復。
+- **SQL 已部署至 Supabase，驗證查詢回傳 26 單（正確）**。
+- **current.html 同步完成**。
+
+**待後續**：
+- 訂單 0600701 利潤缺口：需 n8n 重新觸發 sync（total_cost = NULL，net_profit = NULL）
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer`（SQL 審查） |
+| 實際使用 | ❌ 未使用（直接 pg Client 查詢 + Edit 完成，範圍明確） |
+| 遵從 Router | ❌ 未遵從（理由：定點 WHERE 修正 + 直接驗證，database-reviewer 增值有限） |
+
+---
+
+## 本次 Session 完成事項（2026-05-25 Session 25 — 財務 KPI 數據對齊修復）
+
+### 25. 財務 KPI adjustment_amount 公式修正 + "current" tab MTD 修復
+
+**完成事項**：
+- **Phase 0 查驗（只讀）**：確認 `net_profit = final_sale_price - total_cost`（不含 adjustment_amount）；確認 n8n `Supabase Mirror Prep` UPSERT payload 不含 `adjustment_amount`，無 SSoT 覆蓋風險。
+- **Fix A — `get_financial_kpis.sql`**：`current` + `previous` 兩個區塊的 `cost`/`profit`/`margin` 公式同步修正，納入 `adjustment_amount`。修正後 KPI 卡片成本 = `total_cost + adjustment_amount`，利潤 = `net_profit - adjustment_amount`，與 Review Mode 明細表數字對齊。
+- **Fix B — `freehandsss_dashboardV41.html`**：`sbFetchFinancial()` 中 kCurAll/kCurHm/kCurMt 的 RPC 呼叫從 `tab_mode:'yearly'` 改為 `tab_mode:'current'`（MTD），修正 "current" tab 與 "yearly" tab 顯示相同數據的 Bug。
+- **V41 + current.html 同步完成**。
+
+**待 Fat Mo 驗收**：
+- 進入 Finance Mode → "當前月"（current tab）KPI 成本是否已包含補打金額
+- "當前月" 與 "今年" tab 是否顯示不同數據
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer`（SQL 審查）、`finance-auditor`（Live 驗算） |
+| 實際使用 | ❌ 未使用（SQL 改動為定點公式修正，直接 Read + Edit 更高效；finance-auditor 留作 Fat Mo 驗收後的 Gate 驗算） |
+| 遵從 Router | ❌ 未遵從（理由：SQL 變更範圍明確，2 個欄位公式修正不需靜態 schema 審查能力；database-reviewer 的增值有限） |
+
+---
+
 ## 本次 Session 完成事項（2026-05-25 Session 24 — /rp 協議整合至指令工作流）
 
 ### 24. /rp Command Compatibility Map + Safety Boundaries 整合

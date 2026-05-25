@@ -62,26 +62,28 @@ BEGIN
     'current', (
       SELECT json_build_object(
         'revenue', COALESCE(SUM(final_sale_price), 0),
-        'cost',    COALESCE(SUM(total_cost), 0),
-        'profit',  COALESCE(SUM(net_profit), 0),
+        'cost',    COALESCE(SUM(total_cost), 0) + COALESCE(SUM(adjustment_amount), 0),
+        'profit',  COALESCE(SUM(net_profit), 0) - COALESCE(SUM(adjustment_amount), 0),
         'orders',  COUNT(*),
         -- orders_inclusive: actual count of orders containing that product type (allows overlap for mixed orders)
         'orders_inclusive', CASE
           WHEN category = 'handmodel' THEN (
             SELECT COUNT(*) FROM orders o2
-            WHERE o2.confirmed_at BETWEEN cur_start AND cur_end
+            WHERE (o2.confirmed_at BETWEEN cur_start AND cur_end OR o2.confirmed_at IS NULL)
               AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o2.deleted_at IS NULL
               AND o2.handmodel_cost > 0
           )
           WHEN category = 'metal' THEN (
             SELECT COUNT(*) FROM orders o2
-            WHERE o2.confirmed_at BETWEEN cur_start AND cur_end
+            WHERE (o2.confirmed_at BETWEEN cur_start AND cur_end OR o2.confirmed_at IS NULL)
               AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o2.deleted_at IS NULL
               AND (o2.keychain_cost > 0 OR o2.necklace_cost > 0)
           )
           ELSE COUNT(*) END,
         'margin',  CASE WHEN SUM(final_sale_price) > 0
-                        THEN ROUND(SUM(net_profit) / SUM(final_sale_price) * 100, 1)
+                        THEN ROUND((SUM(net_profit) - COALESCE(SUM(adjustment_amount), 0)) / SUM(final_sale_price) * 100, 1)
                         ELSE 0 END,
         'aov',     CASE WHEN COUNT(*) > 0
                         THEN ROUND(SUM(final_sale_price) / COUNT(*), 0)
@@ -128,8 +130,9 @@ BEGIN
         )
       )
       FROM orders
-      WHERE confirmed_at BETWEEN cur_start AND cur_end
+      WHERE (confirmed_at BETWEEN cur_start AND cur_end OR confirmed_at IS NULL)
         AND process_status::TEXT NOT IN ('cancelled', 'refunded')
+        AND deleted_at IS NULL
         AND (
           category = 'all'
           OR (category = 'handmodel' AND handmodel_cost > 0)
@@ -139,25 +142,27 @@ BEGIN
     'previous', (
       SELECT json_build_object(
         'revenue', COALESCE(SUM(final_sale_price), 0),
-        'cost',    COALESCE(SUM(total_cost), 0),
-        'profit',  COALESCE(SUM(net_profit), 0),
+        'cost',    COALESCE(SUM(total_cost), 0) + COALESCE(SUM(adjustment_amount), 0),
+        'profit',  COALESCE(SUM(net_profit), 0) - COALESCE(SUM(adjustment_amount), 0),
         'orders',  COUNT(*),
         'orders_inclusive', CASE
           WHEN category = 'handmodel' THEN (
             SELECT COUNT(*) FROM orders o2
-            WHERE o2.confirmed_at BETWEEN prev_start AND prev_end
+            WHERE (o2.confirmed_at BETWEEN prev_start AND prev_end OR o2.confirmed_at IS NULL)
               AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o2.deleted_at IS NULL
               AND o2.handmodel_cost > 0
           )
           WHEN category = 'metal' THEN (
             SELECT COUNT(*) FROM orders o2
-            WHERE o2.confirmed_at BETWEEN prev_start AND prev_end
+            WHERE (o2.confirmed_at BETWEEN prev_start AND prev_end OR o2.confirmed_at IS NULL)
               AND o2.process_status::TEXT NOT IN ('cancelled', 'refunded')
+              AND o2.deleted_at IS NULL
               AND (o2.keychain_cost > 0 OR o2.necklace_cost > 0)
           )
           ELSE COUNT(*) END,
         'margin',  CASE WHEN SUM(final_sale_price) > 0
-                        THEN ROUND(SUM(net_profit) / SUM(final_sale_price) * 100, 1)
+                        THEN ROUND((SUM(net_profit) - COALESCE(SUM(adjustment_amount), 0)) / SUM(final_sale_price) * 100, 1)
                         ELSE 0 END,
         'aov',     CASE WHEN COUNT(*) > 0
                         THEN ROUND(SUM(final_sale_price) / COUNT(*), 0)
@@ -204,8 +209,9 @@ BEGIN
         )
       )
       FROM orders
-      WHERE confirmed_at BETWEEN prev_start AND prev_end
+      WHERE (confirmed_at BETWEEN prev_start AND prev_end OR confirmed_at IS NULL)
         AND process_status::TEXT NOT IN ('cancelled', 'refunded')
+        AND deleted_at IS NULL
         AND (
           category = 'all'
           OR (category = 'handmodel' AND handmodel_cost > 0)

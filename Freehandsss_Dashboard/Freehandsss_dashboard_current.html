@@ -9485,7 +9485,7 @@
 
             // 12 parallel RPC calls: KPIs per tab+category, charts per tab
             const results = await Promise.all([
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }), // current tab = YTD (Jan->now)
+                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }), // current tab = YTD (Jan->now) vs 去年同期
                 sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'handmodel', ref_date: refDate }), // current tab = YTD
