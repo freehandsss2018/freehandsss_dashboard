@@ -3,6 +3,35 @@
 n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 /new-product skill：v1.1.0（補入 2e COST_MAP / 3f Review Mode / 5f 批次保留驗證）
 /commit skill：v2.1.0（新增 Phase 1.5 Lesson Distillation 自動判斷清單）
+/rp skill：Command Compatibility Map 整合（Exempt 清單 + execute.md 2.4 授權邊界，2026-05-25）
+
+---
+
+## 本次 Session 完成事項（2026-05-25 Session 24 — /rp 協議整合至指令工作流）
+
+### 24. /rp Command Compatibility Map + Safety Boundaries 整合
+
+**完成事項**：
+- **Command Compatibility Map**（rp.md 新增章節）：7 條指令明確分類，`/error-eye`、`/commit`、`/cl-flow`、`/cl-flow-fast` 強制 Exempt，`/execute`、`/new-product` 為建議式支援，`/fhs-check` 為推薦。
+- **Section 2.4 Safety Boundaries**（execute.md 新增）：`/execute` 收到 /rp 精煉提示時，必須宣告 `<original_auth_scope>` 並嚴禁側道授權擴展。
+- **new-product.md 啟動前置**：複合 SKU 場景（多配件/自訂框款）建議先跑 `/rp` 整理規格，標準產品直接跳過。
+- **FHS_Prompts.md 情境二十三更新**：移除 "auto-redirect" 設計，改為建議路由（非強制攔截）+ Exempt 清單（含 /error-eye 原因說明）。
+- **docs/repo-map.md**：/rp 條目更新，補入 Compatibility Map 與日期。
+- **completion report**：`.fhs/reports/completion/2026-05-25_rp-protocol-integration_completion_report.md` 產出。
+- **Changelog.md**：本次變更已記錄。
+
+**設計核心**：消除 auto-intercept 設計（違反 Rule 3.11 Token 節約），建立建議路由機制；`<original_auth_scope>` 鎖定防止 /rp 精煉後授權擴張。
+
+**待 Fat Mo 手動驗收（Gate 否定測試）**：
+- `/commit` 執行時無 /rp 建議出現
+- `/error-eye` 執行時直接路由 build-error-resolver，無前置建議
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（純指令文件修改，直接 Edit 完成） |
+| 遵從 Router | — |
 
 ---
 

@@ -83,6 +83,24 @@
 
 ---
 
+## Command Compatibility Map
+
+指定哪些 FHS 指令支援 /rp 前置整理，哪些必須豁免。
+
+| 指令 | /rp 整合政策 | 說明 |
+|------|------------|------|
+| `/execute` | **建議（複雜輸入時）** | 收到 3+ 動作動詞或並列結構時，輸出一行建議；不攔截，不自動執行 |
+| `/new-product` | **建議（複合 SKU 時）** | 多配件或自訂框款建議先跑 /rp 整理規格；標準產品直接執行 |
+| `/fhs-check` | **推薦（查詢模糊時）** | 查詢目標不明確時建議；明確場景無需 /rp |
+| `/commit` | **Exempt（禁止）** | 自動化流程，插入 /rp 毫無價值且製造 overhead |
+| `/cl-flow` | **Exempt（禁止）** | 已含 Perplexity 研究層（A1），雙重前置為 token 浪費 |
+| `/cl-flow-fast` | **Exempt（禁止）** | 同 /cl-flow |
+| `/error-eye` | **Exempt（禁止）** | 緊急診斷場景，任何延遲均有害；直接路由 build-error-resolver |
+
+> ⚠️ Exempt 指令：AI 不得在這些指令執行前後主動建議或觸發 /rp。
+
+---
+
 ## 副作用 (Side Effects)
 
 - 是否寫檔：**否**

@@ -90,7 +90,7 @@ freehandsss_dashboard/
 │   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
-│   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫（CL/AG/PL 三端通用，2026-05-20）
+│   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫（CL/AG/PL 三端通用，含 Command Compatibility Map，2026-05-25）
 │   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導（5步 atomic 流程 + rollback matrix，2026-05-21）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）

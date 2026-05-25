@@ -1,78 +1,69 @@
-# Implementation Plan — Add Instagram Message Preview & Enlarge Details Modal
+# Implementation Plan — Integrating `/rp` Protocol into Command Workflows
 
-This plan adds Instagram message preview capability directly to the order details popup modal (`#fhsOrderModal`) and widens the modal layout for easier reading of raw conversation text.
+This plan outlines the design and integration of the `/rp` (Rewrite Prompt) protocol into the Freehandsss command and workflow system. The goal is to ensure high-risk or complex prompts are structured before execution, while preventing authorization scope expansion.
 
 ---
 
-## Proposed Changes
+## 1. Integration Strategy
 
-### Component: Frontend Dashboard UI
+To keep the system token-efficient and secure, we divide the commands into three categories:
 
-#### [MODIFY] [freehandsss_dashboardV41.html](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/freehandsss_dashboardV41.html)
+| Command Type | Examples | `/rp` Integration Policy |
+| :--- | :--- | :--- |
+| **High-Risk/Actionable** | `/execute`, `/new-product` | **Selective / Conditional**: Require `/rp` for complex inputs. Must enforce strict authorization boundaries (`<original_auth_scope>`). |
+| **Investigatory/Diagnostic** | `/fhs-check`, `/fhs-audit` | **Manual / Recommended**: Suggest `/rp` when the query contains vague instructions. |
+| **Purely Automated/Flows** | `/commit`, `/cl-flow` | **Exempt / Bypassed**: Strictly bypass `/rp` to prevent redundant prompt wrapping and token waste. |
 
-##### 1. Widen the details modal container
-In the CSS style section, modify `.fhs-modal-box` to increase its size:
-```css
-/* Before */
-.fhs-modal-box { background:#fff; border-radius:12px; width:100%; max-width:560px; max-height:90dvh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.22); }
+---
 
-/* After */
-.fhs-modal-box { background:#fff; border-radius:12px; width:100%; max-width:min(800px, 95vw); max-height:90dvh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.22); }
+## 2. Proposed Changes
+
+### Component: Command & Prompt Ecosystem
+
+#### [MODIFY] [docs/FHS_Prompts.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/docs/FHS_Prompts.md)
+Add a new pre-flight interceptor rule at the top of the general routing section:
+```markdown
+### 0. Pre-Flight Prompt Optimization Interceptor
+- **Trigger**: When a user query matches Scenario 4 (Error Eye/Debug) or Scenario 20 (Code Analysis) and contains vague keywords (e.g., "優化", "修改", "檢查").
+- **Action**: Redirect the user to use `/rp [query]` first, or automatically execute the `/rp` rewrite protocol to refine the request before routing it to the target command.
 ```
 
-##### 2. Add `full_order_text` to Supabase select query
-Update the select query in `sbFetchGlobalReview()` to retrieve `full_order_text`:
-```javascript
-// Before
-const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
-
-// After
-const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
+#### [MODIFY] [d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\ai\commands\execute.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/execute.md)
+Add a security constraint in Section 2 (Execution Rules) to prevent refined prompts from widening the authorization scope:
+```markdown
+### 2.4 Safety Boundaries for Refined Prompts
+If the execution payload is driven by a prompt rewritten by `/rp`:
+- The AI must explicitly declare the `<original_auth_scope>` based on the user's raw message.
+- The modification boundaries must strictly conform to `<original_auth_scope>`. Any side-channel expansions (e.g., refactoring unrelated modules during a bug fix) are strictly prohibited.
 ```
 
-##### 3. Map `full_order_text` in `mapOrder`
-Update `mapOrder()` to assign the `Full_Order_Text` property:
-```javascript
-// Before
-                Admin_Notes:      row.admin_notes || '',
-                items:            mappedItems,
-
-// After
-                Admin_Notes:      row.admin_notes || '',
-                Full_Order_Text:  row.full_order_text || '',
-                items:            mappedItems,
+#### [MODIFY] [d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\ai\commands\new-product.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/new-product.md)
+Update Step 1 (Product Initialization) to suggest prompt optimization for complex custom SKUs:
+```markdown
+### Step 1 — Product Initialization
+- For standard products, proceed directly with schema definitions.
+- For complex composite products (e.g., custom frames with multiple addons), recommend running `/rp /new-product [product details]` first to structure the specifications and pricing components before generating database scripts.
 ```
 
-##### 4. Display IG Message in `openOrderModal()`
-Add a new collapsible section `💬 IG 原始訊息` in `openOrderModal()`:
-```javascript
-            var msgHtml = '<div style="padding:4px 0;white-space:pre-wrap;color:#333;font-family:monospace;font-size:12px;background:#f9f9f9;border:1px solid #eee;border-radius:4px;padding:8px;max-height:250px;overflow-y:auto;text-align:left;">' +
-                (o.Full_Order_Text ? o.Full_Order_Text.replace(/</g,'&lt;') : '（無原始訊息）') + '</div>';
-```
-Insert it into `fhsModalBody.innerHTML`:
-```javascript
-            document.getElementById('fhsModalBody').innerHTML =
-                _sec('💰 財務摘要', finHtml, false) +
-                _sec('📦 產品明細', itemsHtml, true) +
-                _sec('💬 IG 原始訊息', msgHtml, true) +
-                _sec('📝 備註', notesHtml, false);
-```
+#### [MODIFY] [d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\ai\commands\rp.md](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/rp.md)
+Update the command side effects and compatibility mapping table:
+```markdown
+## Command Compatibility Map
 
-#### [MODIFY] [Freehandsss_dashboard_current.html](file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/Freehandsss_dashboard_current.html)
-After modifying `freehandsss_dashboardV41.html`, copy it to `Freehandsss_dashboard_current.html` using the terminal command:
-```powershell
-cp "Freehandsss_Dashboard/freehandsss_dashboardV41.html" "Freehandsss_Dashboard/Freehandsss_dashboard_current.html"
+- **`/execute`**: Supported. Focus on safety boundaries and locking `<original_auth_scope>`.
+- **`/new-product`**: Supported. Focus on extracting SKU patterns and cost formulas.
+- **`/commit`**: Exempt.
+- **`/fhs-check`**: Recommended. Focus on specifying test cases.
 ```
 
 ---
 
-## Verification Plan
+## 3. Verification Plan
+
+### Automated Checks
+* Run `/fhs-audit` to ensure markdown files are syntax-valid and link references are healthy.
 
 ### Manual Verification
-1. Open the dashboard in the browser.
-2. Go to **Review Mode** (訂單總覽).
-3. Click the details icon (📋) for any order.
-4. Verify that:
-   - The modal popup is wider and more spacious.
-   - The collapsible `💬 IG 原始訊息` section is displayed and expanded by default.
-   - The original Instagram message details are printed clearly within it.
+* Simulate a user request: `/rp /execute Fix sorting bug`.
+* Verify that the rewritten prompt contains the correct `<original_auth_scope>` lock.
+* Confirm that purely automated commands (like `/commit`) are not impacted or intercepted.

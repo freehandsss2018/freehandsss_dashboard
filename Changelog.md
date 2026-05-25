@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-05-25] 🔗 /rp 協議整合至指令工作流（Command Compatibility Map + Safety Boundaries）
+
+**修改檔案**：
+- `.fhs/ai/commands/rp.md`（新增 Command Compatibility Map）
+- `.fhs/ai/commands/execute.md`（新增 Section 2.4 Safety Boundaries）
+- `.fhs/ai/commands/new-product.md`（啟動前置補入複合 SKU /rp 建議）
+- `docs/FHS_Prompts.md`（情境二十三：建議路由 + Exempt 清單）
+- `docs/repo-map.md`（/rp 條目更新）
+
+**主要變更**：
+- **Command Compatibility Map**：7 條指令明確分類（Supported / Recommended / Exempt），`/error-eye`、`/commit`、`/cl-flow`、`/cl-flow-fast` 強制 Exempt，禁止 /rp 建議或攔截。
+- **Section 2.4 — Safety Boundaries**：`/execute` 收到 /rp 精煉提示時，必須宣告 `<original_auth_scope>` 並嚴禁側道授權擴展。
+- **建議路由（非強制攔截）**：情境二十三改為：複雜輸入時輸出一行建議，不自動重定向，Fat Mo 可直接忽略。
+- **設計原則**：消除原計畫的 "auto-intercept" 設計，符合 Rule 3.11 Token 節約原則與最小摩擦偏好。
+
+---
+
 ## [2026-05-25] 📍 同步指示下沉至訂單行（inline sync-indicator）
 
 **修改檔案**：
