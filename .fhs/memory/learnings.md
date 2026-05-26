@@ -33,6 +33,10 @@
 - HTML table rowspan 排位陷阱：rowspan 欄若需在逐行渲染欄之後（如備註在進度右側），必須在 `index === 0` 條件內單獨追加 `<td rowspan>`，不能放入 orderLeftColsHtml；否則瀏覽器將後續行的逐行欄錯位填入 rowspan 欄之前 — 源自 2026-05-20
 - 批次色全訂單 over-sweep 陷阱：用 `.order-group-${orderId} .batch-cell` sweep 會掃到同訂單所有 item，導致更新一行批次色時全部同步；必須用 `#row-${orderId}-item-${itemIndex}` 定位單行，備註 td 則只在 itemIndex===0 時同步 — 源自 2026-05-20
 - **【高頻 ⚠️】Chrome Date Parsing 異常與表格排序還原失效**：`new Date("DD/MM/YYYY")` 在 Chrome 等瀏覽器中會解析為 `Invalid Date` (NaN)，導致以該格式進行的日期排序失效。且在頁面載入時還原 filters 雖成功設定選單，但渲染卻繞過 `applyReviewFilters()` 而直接 `renderReviewTable()` 導致表格未排序。解法：在排序前以正則/切割手動解析 `DD/MM/YYYY`，且在 fetch callback 尾端強制呼叫 `applyReviewFilters()` 進行二次過濾與排序。 — 源自 2026-05-25
+- **【高頻 ⚠️】AI 違反 Rule 3.14 未將實施計畫寫入專案實體路徑**：AI 未遵循 `/ag-plan` 指令將實施計畫寫入專案的 `a2_implementation_plan.md`，且未使用繁體中文。必須牢記：所有正式報告與計畫一律實體落盤至專案相對應目錄，且對話與生成內容須遵守繁體中文原則。 — 源自 2026-05-25
+
+- **SELECT / PATCH 帶未套用欄位 → PostgREST 400 整個 fetch 炸掉**：新欄位加入 SELECT 或 PATCH body 前，必須先確認 migration 已套用；否則整個訂單總覽失連。順序：migration 套用 → 加 SELECT → 加 PATCH。 — 源自 2026-05-26
+- **文字分割用位置邏輯比 keyword search 更可靠**：`indexOf('吊飾產品')` 在舊版模板訂單上找不到關鍵字，返回空字串後 `||` fallback 暴露全文。正確做法：`parts[0]` = A、`parts.slice(1)` = B，位置不依賴模板版本 — 源自 2026-05-26
 
 ---
 

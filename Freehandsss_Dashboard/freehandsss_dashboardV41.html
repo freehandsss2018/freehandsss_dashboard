@@ -3623,7 +3623,9 @@
         }
 
         async function checkOrderIDDuplicate(id) {
-            if (!id || currentMode !== 'create') return;
+            if (!id) return;
+            if (currentMode === 'edit' && id === editTargetOrderId) return;
+            if (currentMode !== 'create' && currentMode !== 'edit') return;
 
             updateIdStatus('checking', '正在檢查單號是否重複...');
             showLoader("正在驗證單號是否重複...");
@@ -3657,7 +3659,8 @@
             try {
                 const url = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=${id}`);
                 const response = await fetch(url);
-                const data = await response.json();
+                const _rawData = await response.json();
+                const data = Array.isArray(_rawData) ? _rawData[0] : _rawData;
 
                 if (data && data.found) {
                     updateIdStatus('duplicate', '🔴 重複：此單號已被其他客人使用，請修改！');
@@ -3696,18 +3699,15 @@
 
         function updateSyncButtonState() {
             const syncBtn = document.getElementById('syncBtn');
-            if (!syncBtn) return;
-            if (currentMode === 'create' && !isIdValid) {
-                syncBtn.disabled = true;
-                syncBtn.style.opacity = '0.5';
-                syncBtn.style.cursor = 'not-allowed';
-                syncBtn.title = '單號重複，請修正後再同步';
-            } else {
-                syncBtn.disabled = false;
-                syncBtn.style.opacity = '1';
-                syncBtn.style.cursor = 'pointer';
-                syncBtn.title = '';
-            }
+            const mobileBtn = document.getElementById('v40-submit-btn');
+            const shouldDisable = !isIdValid;
+            [syncBtn, mobileBtn].forEach(function(btn) {
+                if (!btn) return;
+                btn.disabled = shouldDisable;
+                btn.style.opacity = shouldDisable ? '0.5' : '1';
+                btn.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
+                btn.title = shouldDisable ? '單號重複，請修正後再同步' : '';
+            });
         }
         let currentRole = 'ling';
 
@@ -3791,6 +3791,7 @@
             renderLimbGrid();
             updateFamilyParts();
             generate();
+            _syncOrderTypeUI(false);
         }
 
         let currentMode = null; // 🚨 改為 null 以確保首次 switchMode(create) 會觸發 resetForm()
@@ -3950,6 +3951,9 @@
             var rcNo         = document.getElementById('rcNo');
             var dotNo        = document.getElementById('dotNo');
             var rowP         = document.getElementById('toggleRowP');
+            var appDateEl    = document.getElementById('appDate');
+            var appHourEl    = document.getElementById('appTimeHour');
+            var appAmpmEl    = document.getElementById('appTimeAmPm');
             if (isYes) {
                 confirmBlock.classList.add('state-yes');
                 optNo.classList.remove('selected-yes');
@@ -3958,6 +3962,9 @@
                 if (rcNo)  rcNo.style.borderColor  = '#D1D1D6';
                 badge.style.display = 'flex';
                 if (rowP) rowP.classList.add('highlight-p');
+                if (appDateEl) appDateEl.disabled = false;
+                if (appHourEl) appHourEl.disabled = false;
+                if (appAmpmEl) appAmpmEl.disabled = false;
             } else {
                 confirmBlock.classList.remove('state-yes');
                 optNo.classList.add('selected-yes');
@@ -3966,6 +3973,9 @@
                 if (rcNo)  rcNo.style.borderColor  = '#ccc';
                 badge.style.display = 'none';
                 if (rowP) rowP.classList.remove('highlight-p');
+                if (appDateEl) appDateEl.disabled = true;
+                if (appHourEl) appHourEl.disabled = true;
+                if (appAmpmEl) appAmpmEl.disabled = true;
             }
         }
 
@@ -3984,6 +3994,7 @@
                     toggleAddon('contentP', enablePChk);
                 }
             }
+            generate();
         }
 
         function togglePart(boxId, cb) {
@@ -4323,9 +4334,9 @@
             let hasM = document.getElementById("enableM").checked;
 
 
-            const custInfo = `【客人資料】
-聯絡人：${mom}
-取模時間：${date} ${timeStr}\n\n`;
+            const custInfo = hasP
+                ? `【客人資料】\n聯絡人：${mom}\n取模時間：${date} ${timeStr}\n\n`
+                : `【客人資料】\n聯絡人：${mom}\n\n`;
 
             const finInfo = `【付款資料】
 已付訂金/全數：$ ${deposit}
@@ -5026,6 +5037,7 @@
                 // 🚨 儲存目前狀態供後續比對差異 (必須在 limb_sel_ 還原後才截取)
                 lastFetchedState = JSON.parse(captureFormState());
 
+                _syncOrderTypeUI(document.getElementById('enableP')?.checked || false);
                 generate(); // 最後刷新文字預覽
                 console.log("✅ Form state restoration complete.");
             } catch (e) {
@@ -5469,7 +5481,8 @@
                     } else {
                         const checkUrl = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=${currentOrderId}`);
                         const r = await fetch(checkUrl);
-                        const data = await r.json();
+                        const _rawCheck = await r.json();
+                        const data = Array.isArray(_rawCheck) ? _rawCheck[0] : _rawCheck;
                         duplicateFound = data && data.found;
                     }
 
@@ -6496,12 +6509,18 @@
                     itemsHtml = '<p style="font-size:12px; color:var(--fhs-text-muted); margin:0;">無子項目</p>';
                 }
 
+                const _catFlagsM = _getOrderCatFlags(o);
+                let _detailBtnsM = '';
+                if (_catFlagsM.hasA) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;margin-right:2px;">📋</button>';
+                if (_catFlagsM.hasB) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;">📝</button>';
+                if (!_detailBtnsM) _detailBtnsM = '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="font-size:14px;vertical-align:middle;">📋</button>';
+
                 html += `
                 <div class="acc-order" id="acc-order-${o.id}">
                     <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
                         <div class="acc-order-header-left">
                             <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
-                            <button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal('${o.id}')" title="訂單詳情" style="font-size:14px;vertical-align:middle;">📋</button>
+                            ${_detailBtnsM}
                             <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
                         </div>
                         <div class="acc-order-header-right">
@@ -6638,6 +6657,11 @@
                 
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
                 const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
+                const _catFlagsD = _getOrderCatFlags(o);
+                let _detailBtns = '';
+                if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="margin-top:4px; display:block; font-size:11px; padding:2px 6px;">📋 手模</button>';
+                if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;">📝 金屬</button>';
+                if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>';
                 const orderLeftColsHtml = `
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
@@ -6650,7 +6674,7 @@
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffcccc; border-radius:4px; color:#cc4444; font-size:11px; cursor:pointer; display:block;">
                             🗑️ 刪除
                         </button>
-                        <button class="fhs-btn-order-detail" onclick="openOrderModal('${o.id}')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>
+                        ${_detailBtns}
                         <div id="sync-indicator-${o.id}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
                             <span class="fhs-spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;"></span>
                             同步中
@@ -7438,27 +7462,186 @@
             } catch(e) {}
         }
 
-        // F3: Order detail modal (IG Raw Message Preview)
-        function openOrderModal(orderId) {
+        // F3: Order detail modal — catFilter: 'A'=手模擺設, 'B'=金屬產品, undefined=全訂單
+        function openOrderModal(orderId, catFilter) {
             var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
             var o = _go.find(function(x){ return x.id === orderId; });
             if (!o) { console.warn('[FHS Modal] order not found:', orderId); return; }
 
-            document.getElementById('fhsModalTitle').textContent = 'IG 原始訊息 #' + (o.Order_ID || orderId);
+            window._fhsModalOrderId = orderId;
+            var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 IG 原始訊息';
+            document.getElementById('fhsModalTitle').textContent = titleLabel + ' #' + (o.Order_ID || orderId);
 
-            var msgHtml = '<div style="padding:16px; white-space:pre-wrap; color:#222; font-family:var(--fhs-font-mono, monospace); font-size:14px; background:#fcfcfc; border:1px solid var(--fhs-border); border-radius:8px; min-height:450px; max-height:75dvh; overflow-y:auto; text-align:left; line-height:1.6; margin: 10px 0;">' +
-                (o.Full_Order_Text ? o.Full_Order_Text.replace(/</g,'&lt;') : '<div style="color:#aaa; text-align:center; padding-top:100px;">（無原始訊息）</div>') + '</div>';
+            // Prefer dedicated A/B fields (populated after migration 0016); fall back to positional extraction
+            var _rawText = o.Full_Order_Text || '';
+            var currentText = catFilter === 'A'
+                ? (o.Full_Order_Text_A || _extractOrderText(_rawText, 'A'))
+                : catFilter === 'B'
+                    ? (o.Full_Order_Text_B || _extractOrderText(_rawText, 'B'))
+                    : _rawText;
+            var escapedText = currentText.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+            var overrideBadgeHtml = '<span id="fhsOverrideBadge" style="display:' + (o.is_text_overridden ? 'inline-block' : 'none') + ';padding:2px 8px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:4px;font-size:11px;font-weight:600;">✏ 已人工編輯</span>';
+
+            var msgHtml =
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;">' +
+                    overrideBadgeHtml +
+                    '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + orderId + '\')" ' +
+                        'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;">✏️ 編輯</button>' +
+                '</div>' +
+                '<div id="fhsOrderViewDiv" style="padding:12px;white-space:pre-wrap;color:#222;font-family:var(--fhs-font-mono,monospace);font-size:14px;background:#fcfcfc;border:1px solid var(--fhs-border);border-radius:8px;max-height:65dvh;overflow-y:auto;text-align:left;line-height:1.6;margin:0 12px 12px;">' +
+                    (currentText ? escapedText : '<span style="color:#aaa;">（無原始訊息）</span>') +
+                '</div>' +
+                '<div id="fhsOrderEditDiv" style="display:none;padding:0 12px;">' +
+                    '<textarea id="fhsOrderEditTextarea" ' +
+                        'style="width:100%;box-sizing:border-box;border:1px solid #c7d3f7;border-radius:8px;padding:12px;font-family:var(--fhs-font-mono,monospace);font-size:14px;line-height:1.6;color:#222;background:#fff;resize:vertical;min-height:180px;max-height:50dvh;overflow-y:auto;display:block;field-sizing:content;" ' +
+                        'oninput="sessionStorage.setItem(\'fhs_draft_\'+window._fhsModalOrderId,this.value)"></textarea>' +
+                '</div>' +
+                '<div id="fhsOrderEditActions" style="display:none;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--fhs-border);padding:10px 12px;gap:8px;justify-content:flex-end;align-items:center;">' +
+                    '<span id="fhsOrderSaveStatus" style="font-size:12px;color:#888;flex:1;margin-right:4px;"></span>' +
+                    '<button id="fhsOrderCancelBtn" onclick="cancelEdit()" style="padding:6px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#555;">取消</button>' +
+                    '<button id="fhsOrderSaveBtn" onclick="saveOrderText(\'' + orderId + '\')" style="padding:6px 16px;border:none;border-radius:6px;background:#3a5fc8;cursor:pointer;font-size:13px;color:#fff;font-weight:600;">💾 儲存</button>' +
+                '</div>';
 
             document.getElementById('fhsModalBody').innerHTML = msgHtml;
-
             document.getElementById('fhsOrderModal').classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // iOS keyboard: shrink modal box when virtual keyboard appears
+            if (window.visualViewport && !window._fhsVVResize) {
+                window._fhsVVResize = function() {
+                    var box = document.querySelector('.fhs-modal-box');
+                    if (box) box.style.maxHeight = Math.floor(window.visualViewport.height * 0.94) + 'px';
+                };
+                window.visualViewport.addEventListener('resize', window._fhsVVResize);
+            }
         }
 
         function closeOrderModal() {
             var m = document.getElementById('fhsOrderModal');
             if (m) m.classList.remove('active');
             document.body.style.overflow = '';
+            if (window.visualViewport && window._fhsVVResize) {
+                window.visualViewport.removeEventListener('resize', window._fhsVVResize);
+                window._fhsVVResize = null;
+                var box = document.querySelector('.fhs-modal-box');
+                if (box) box.style.maxHeight = '';
+            }
+        }
+
+        function enterEditMode(orderId) {
+            var viewDiv    = document.getElementById('fhsOrderViewDiv');
+            var editDiv    = document.getElementById('fhsOrderEditDiv');
+            var editActions = document.getElementById('fhsOrderEditActions');
+            var editBtn    = document.getElementById('fhsEditOrderBtn');
+            var ta         = document.getElementById('fhsOrderEditTextarea');
+            if (!viewDiv || !editDiv || !ta) return;
+
+            var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var o = _go.find(function(x){ return x.id === orderId; });
+            var draft = sessionStorage.getItem('fhs_draft_' + orderId);
+            ta.value = (draft !== null) ? draft : (o ? o.Full_Order_Text || '' : '');
+
+            viewDiv.style.display = 'none';
+            editDiv.style.display = '';
+            if (editActions) editActions.style.display = 'flex';
+            if (editBtn) editBtn.style.display = 'none';
+            ta.focus();
+        }
+
+        function cancelEdit() {
+            var orderId = window._fhsModalOrderId;
+            var viewDiv    = document.getElementById('fhsOrderViewDiv');
+            var editDiv    = document.getElementById('fhsOrderEditDiv');
+            var editActions = document.getElementById('fhsOrderEditActions');
+            var editBtn    = document.getElementById('fhsEditOrderBtn');
+            if (editDiv) editDiv.style.display = 'none';
+            if (editActions) editActions.style.display = 'none';
+            if (viewDiv) viewDiv.style.display = '';
+            if (editBtn) editBtn.style.display = '';
+            if (orderId) sessionStorage.removeItem('fhs_draft_' + orderId);
+        }
+
+        async function saveOrderText(orderId) {
+            var ta        = document.getElementById('fhsOrderEditTextarea');
+            var saveBtn   = document.getElementById('fhsOrderSaveBtn');
+            var cancelBtn = document.getElementById('fhsOrderCancelBtn');
+            var statusEl  = document.getElementById('fhsOrderSaveStatus');
+            if (!ta) return;
+            var newText = ta.value;
+
+            if (saveBtn)   { saveBtn.disabled = true; saveBtn.textContent = '⏳'; }
+            if (cancelBtn)   cancelBtn.disabled = true;
+            if (statusEl)  statusEl.textContent = '⏳ 儲存中...';
+
+            // Keep draft as insurance during the PATCH
+            sessionStorage.setItem('fhs_draft_' + orderId, newText);
+
+            var _sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+            var _sbKey = window.SB_ANON_KEY || '';
+            var _sbHdr = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+            try {
+                var r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId), {
+                    method: 'PATCH', headers: _sbHdr,
+                    body: JSON.stringify({ full_order_text: newText })
+                });
+                var body = await r.json().catch(function() { return []; });
+                if (!r.ok) throw new Error('PATCH ' + r.status + ' ' + JSON.stringify(body).substring(0, 80));
+                if (Array.isArray(body) && body.length === 0) throw new Error('PATCH matched 0 rows for ' + orderId);
+
+                // Update local cache
+                var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+                var o = _go.find(function(x){ return x.id === orderId; });
+                if (o) { o.Full_Order_Text = newText; o.is_text_overridden = true; }
+
+                // Clear draft
+                sessionStorage.removeItem('fhs_draft_' + orderId);
+
+                // Refresh view div
+                var viewDiv = document.getElementById('fhsOrderViewDiv');
+                if (viewDiv) viewDiv.innerHTML = newText
+                    ? newText.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                    : '<span style="color:#aaa;">（無原始訊息）</span>';
+
+                // Show override badge
+                var badgeEl = document.getElementById('fhsOverrideBadge');
+                if (badgeEl) badgeEl.style.display = 'inline-block';
+
+                // Exit edit mode
+                var editDiv     = document.getElementById('fhsOrderEditDiv');
+                var editActions = document.getElementById('fhsOrderEditActions');
+                var editBtn     = document.getElementById('fhsEditOrderBtn');
+                if (editDiv)     editDiv.style.display = 'none';
+                if (editActions) editActions.style.display = 'none';
+                if (viewDiv)     viewDiv.style.display = '';
+                if (editBtn)     editBtn.style.display = '';
+
+                showToast('✅ 訂單訊息已儲存');
+            } catch(e) {
+                console.error('[saveOrderText] PATCH failed:', e.message);
+                if (statusEl)  statusEl.textContent = '❌ 儲存失敗，草稿已保留';
+                if (saveBtn)   { saveBtn.disabled = false; saveBtn.textContent = '💾 重試'; }
+                if (cancelBtn) cancelBtn.disabled = false;
+                showToast('❌ 儲存失敗：' + e.message.substring(0, 50));
+            }
+        }
+
+        // Split Full_Order_Text into A (手模擺設) / B (吊飾產品) section when catFilter is set.
+        // Both sections start with "Freehandsss 訂單確認" — use positional split (A always first).
+        function _extractOrderText(fullText, catFilter) {
+            if (!fullText || !catFilter) return fullText;
+            var parts = fullText.split(/\n(?=Freehandsss 訂單確認)/);
+            if (parts.length < 2) return fullText; // single section — full text is already correct
+            if (catFilter === 'A') return parts[0];
+            if (catFilter === 'B') return parts.slice(1).join('\n'); // rejoin if ever >2 parts
+            return fullText;
+        }
+
+        function _getOrderCatFlags(o) {
+            var items = o.items || [];
+            var hasA = items.some(function(it) { return (it.Category || '') === '立體擺設'; });
+            var hasB = items.some(function(it) { var c = it.Category || ''; return c && c !== '立體擺設' && c !== '配件'; });
+            return { hasA: hasA, hasB: hasB };
         }
 
         function _fhsToggleSection(hdr) {
@@ -9419,9 +9602,12 @@
                 Status:           row.process_status || '待確認',
                 Batch:            row.batch_number || '',
                 Admin_Notes:      row.admin_notes || '',
-                Full_Order_Text:  row.full_order_text || '',
-                items:            mappedItems,
-                _source:          'supabase'
+                Full_Order_Text:    row.full_order_text || '',
+                Full_Order_Text_A:  row.full_order_text_a || '',
+                Full_Order_Text_B:  row.full_order_text_b || '',
+                is_text_overridden: row.is_text_overridden || false,
+                items:              mappedItems,
+                _source:            'supabase'
             };
         }
 

@@ -1,9 +1,72 @@
+# FHS Handoff - 2026-05-26
+
+當前版本：v1.4.7（憲法層）/ V41（UI層）→ current.html 同步待授權
+n8n Workflow：V47.10（Mirror to Supabase）
+cl-flow 2026-05-26-0627：CONDITIONAL_READY → 執行中（Phase A 完成，migration 待套用）
+
+---
+
+## 本次 Session 完成事項（2026-05-26 Session 28 — Modal 編輯 Phase A + Bug Fixes）
+
+### 28. Modal 訂單訊息編輯功能 Phase A
+
+**完成事項**：
+- `openOrderModal()` 重構：新增 ✏️ 編輯按鈕、view/edit div 切換、override badge（`is_text_overridden`）、iOS keyboard visualViewport 處理
+- `enterEditMode()` / `cancelEdit()` / `saveOrderText()` 三個新函式（sessionStorage draft 保留機制）
+- `mapOrder()` 新增 `is_text_overridden / Full_Order_Text_A / Full_Order_Text_B` 欄位映射
+- `_extractOrderText()` 新函式：按 `Freehandsss 訂單確認` 邊界做位置分割（A=parts[0], B=parts.slice(1)），修正分類顯示 bug
+- supabase/migrations/0015_add_is_text_overridden.sql（新建）
+- supabase/migrations/0016_add_order_text_split_columns.sql（新建）
+- Bug fix：SELECT query 不含未套用欄位（連線 bug 根因）
+- Bug fix：PATCH body 移除未存在的 `is_text_overridden`（儲存失敗根因）
+- Bug fix：金屬訊息顯示手模內容（keyword search → positional split）
+
+**待後續（必須按序）**：
+1. **Fat Mo 授權 current.html 同步**（pre-tool-guard 阻擋，輸入 "sync current" 授權）
+2. **套用 migration 0015** → Supabase SQL Editor 執行 `supabase/migrations/0015_add_is_text_overridden.sql`
+3. **套用 migration 0016** → 同上執行 `supabase/migrations/0016_add_order_text_split_columns.sql`
+4. **migration 完成後告知** → Claude 補加 SELECT 欄位 + sbSyncOrder 寫入路徑 + saveOrderText PATCH
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | build-error-resolver（多次錯誤診斷場景）|
+| 實際使用 | ❌ 未使用（直接 root-cause 修復：SELECT 含未存在欄位 / PATCH body 含未存在欄位 / positional split 邏輯錯誤）|
+| 遵從 Router | — （緊急診斷場景，直接修復比 subagent 快）|
+
+---
+
 # FHS Handoff - 2026-05-25
 當前版本：v1.4.7（憲法層）/ V41（UI層）→ current 已升版
 n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 /new-product skill：v1.1.0（補入 2e COST_MAP / 3f Review Mode / 5f 批次保留驗證）
 /commit skill：v2.1.0（新增 Phase 1.5 Lesson Distillation 自動判斷清單）
 /rp skill：Command Compatibility Map 整合（Exempt 清單 + execute.md 2.4 授權邊界，2026-05-25）
+
+---
+
+## 本次 Session 完成事項（2026-05-25 Session 27 — a2_implementation_plan 六項修復）
+
+### 27. Edit Mode 重複防禦、欄位連動、IG 預覽、利潤修補腳本
+
+**完成事項**：
+- **Item 1 `checkOrderIDDuplicate`**：Edit mode 下新單號 ≠ `editTargetOrderId` 時觸發檢查；n8n 回傳陣列補入解析（`Array.isArray` 防禦）
+- **Item 2 `updateSyncButtonState`**：全模式禁用（非 create only），同步控制手機 `#v40-submit-btn`
+- **Item 3 `syncToAirtable` 預檢**：n8n fallback 陣列解析對齊
+- **Item 4 `_syncOrderTypeUI`**：選「否」→ `appDate/appTimeHour/appTimeAmPm disabled=true`（不清值）；選「是」→ `disabled=false`；`resetForm` + `restoreFormState` + `selectOrderType` 三處掛鉤補完
+- **Item 5 custInfo**：`!hasP` 時 IG 預覽完全移除取模時間行
+- **Item 6 `scripts/repair/sync_0600701.js`**：Dry-run + --force 防護；product_sku 完整性前置核查；`scripts/repair/` 目錄建立
+- **current.html 同步完成**
+
+**待後續**：
+- 訂單 0600701 利潤缺口：Fat Mo 確認 product_sku 齊全後執行 `node scripts/repair/sync_0600701.js --dry-run` 驗收，再去 --dry-run 正式觸發，最後用 finance-auditor 驗算
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（6 項定點 JS/HTML 修改 + 新建腳本，直接 Edit/Write 完成；finance-auditor 留作 Fat Mo 執行 sync_0600701.js 後的 Gate 驗算）|
+| 遵從 Router | — |
 
 ---
 

@@ -1,5 +1,88 @@
 # Changelog
 
+## [2026-05-26] ✨ Modal 訂單訊息編輯功能 Phase A（cl-flow 2026-05-26-0627）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `supabase/migrations/0015_add_is_text_overridden.sql`（新建，待套用）
+- `supabase/migrations/0016_add_order_text_split_columns.sql`（新建，待套用）
+
+**功能說明**：
+- **✏️ 編輯模式**：Modal 新增「✏️ 編輯」按鈕，切換 textarea 編輯視圖
+- **儲存至 Supabase**：PATCH `orders.full_order_text`，失敗時 toast 提示並保留 sessionStorage 草稿
+- **Override Badge**：`is_text_overridden=true` 時顯示「✏ 已人工編輯」標籤（需 migration 0015）
+- **iOS 鍵盤處理**：`visualViewport.resize` 動態收縮 modal box 高度
+- **Sticky 底部操作欄**：儲存 / 取消按鈕固定於 modal 底部
+- **`_extractOrderText()`**：按 `Freehandsss 訂單確認` 邊界做位置分割，手模 = parts[0]，金屬 = parts.slice(1)
+- **`openOrderModal` catFilter 修正**：catFilter='A'/'B' 現正確顯示各自段落，不再互相包含
+
+**待完成（需 Fat Mo 操作）**：
+- 套用 migration 0015（`is_text_overridden` 欄位）
+- 套用 migration 0016（`full_order_text_a/b` 欄位）
+- 授權 current.html 同步（pre-tool-guard 阻擋，需明確授權）
+
+---
+
+## [2026-05-26] ✨ 訂單總覽詳情按鈕拆分（手模擺設 / 金屬產品）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html` + `Freehandsss_dashboard_current.html`
+
+**功能說明**：
+- Desktop：訂單編號欄的 📋 詳情按鈕依訂單 items 類別，條件顯示為「🖐 手模」和/或「🔗 金屬」兩個按鈕
+- Mobile：accordion header 的 📋 按鈕同步替換為 🖐 / 🔗 emoji 按鈕（節省 header 空間）
+- 新增 `_getOrderCatFlags(o)` 輔助函式：掃描 `o.items[]` 的 `Category` 欄位，回傳 `{hasA, hasB}`
+  - hasA: 任一 item.Category === '立體擺設'
+  - hasB: 任一 item.Category 非空、非 '立體擺設'、非 '配件'
+- 擴展 `openOrderModal(orderId, catFilter)` 第二參數：
+  - `catFilter='A'`：顯示 🖐 手模擺設 items（規格、刻字、批次、進度）+ 取模時間（綠色卡片）
+  - `catFilter='B'`：顯示 🔗 金屬產品 items（規格、刻字、批次、進度、補打金額）
+  - `catFilter=undefined`：維持原始行為（顯示 IG 原始訊息全文）
+- Fallback：若 items 無明確分類，回退顯示原 📋 單一按鈕
+
+---
+
+## [2026-05-25] 🔧 a2_implementation_plan 六項修復（Edit Mode 防重、欄位連動、IG 預覽、利潤修補）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html` + `Freehandsss_dashboard_current.html`
+- `scripts/repair/sync_0600701.js`（新建）
+- `docs/repo-map.md`
+
+**Items 1–2 — checkOrderIDDuplicate + updateSyncButtonState**：
+- Edit mode 下若新單號 ≠ `editTargetOrderId` 即觸發重複檢查（原只在 create mode）
+- n8n 回傳陣列時以 `Array.isArray(raw) ? raw[0] : raw` 解析（避免 `data.found = undefined`）
+- `updateSyncButtonState` 改為全模式生效（非 create only），同步禁用手機 `#v40-submit-btn`
+
+**Item 3 — syncToAirtable 預檢**：n8n fallback 同步補入陣列解析
+
+**Item 4 — `_syncOrderTypeUI` 欄位連動**：
+- 選「否（純金屬/吊飾）」時自動 `disabled = true` 約定日期 / 取模時間欄位（不清值，保留用戶輸入）
+- 選「是」時 `disabled = false` 恢復可編輯
+- `resetForm` 尾端補 `_syncOrderTypeUI(false)`；`restoreFormState` 在 `generate()` 前補 `_syncOrderTypeUI(enableP.checked)`
+- `selectOrderType` 尾端補 `generate()` 確保 custInfo 預覽在 enableP 無變化時仍刷新
+
+**Item 5 — IG 訊息預覽**：`custInfo` 改為條件式，`!hasP` 時完全移除「取模時間」行
+
+**Item 6 — sync_0600701.js**：
+- `scripts/repair/` 目錄建立
+- Dry-run + --force 防護；執行前核查 product_sku 完整性；POST 後輸出 finance-auditor 驗收指引
+
+---
+
+## [2026-05-25] 🛡️ 實施計畫與報告路徑規範化及語系強固（AGENTS v1.4.8）
+
+**修改檔案**：
+- `.fhs/ai/AGENTS.md` (憲法層升級至 v1.4.8，補入 Rule 3.14 實施計畫細則與繁中要求)
+- `.fhs/memory/learnings.md` (新增計畫儲存與語系違反 pitfalls)
+- `Changelog.md` (記錄變更)
+
+**主要變更**：
+- **實施計畫路徑指引**：明確在 Rule 3.14 新增 A2 實施計畫實體路徑為 `d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\reports\planning\a2_implementation_plan.md`，杜絕僅存於 `.gemini/antigravity/brain/` 內。
+- **語系一致性要求**：明文規範所有正式報告、計畫與對話輸出必須 100% 遵循繁體中文原則。
+
+---
+
 ## [2026-05-25] 🔢 財務訂單數修復：null confirmed_at 草稿單納入計算（26 vs 28 訂單差異釐清）
 
 **修改檔案**：
