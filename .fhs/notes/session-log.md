@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-27 (Session 32): 編輯系統 v2 雙模式重構 ✅
+
+**Scope**: (1) Modal 3-tab 重構（訊息文本/訂單明細/財務）；(2) Mode 2 save_structured_order_items RPC（migration 0017）；(3) n8n V47.11 DB-level guard（migration 0018）；(4) Inline 刻字 ✏ 按鈕雙管線；(5) Mobile bottom sheet CSS；(6) _mode2ItemLabel 產品辨識度修復（嬰兒/大寶/方向顯示）。Code-reviewer G3a（RPC return missing full_order_text）發現並修復。
+**Status**: ✅ Phase 1–5+7 完成，Phase 6（current.html sync）待 Fat Mo 授權。2 commits pushed.
+
+---
+
 ## 2026-05-27 (Sessions 29–31.6): PGC-ODAT v3 Lite 落地 + 三項 Bug Fix + UI 欄位重排 ✅
 
 **Scope**: (1) Modal Phase A 收尾（migrations 0015/0016 套用）；(2) Modal 編輯 UI 一致性 3 項 Bug Fix；(3) PGC-ODAT v3 Lite 實裝（全域 SKU preload + CSS toggle + Desktop audit-fin + Mobile 💰 drawer + 💡 modal）；(4) IIFE scope 暴露修復、toggle re-render 修復；(5) UI 優化：tooltip 化 + 審計值從產品明細欄移至入帳/成本欄

@@ -15,7 +15,13 @@
 
 ---
 
+## Patterns（成功反覆驗證的做法）
+
+- **data-spec 通過屬性隔離**：當 DOM 元素的顯示文字是「衍生標籤」（非原始資料）時，必須以 `data-spec="..."` 存放原始值供 save 讀取；直接讀 textContent 會把 UI label 寫入 DB。適用所有 renderX 函式中「從 item_key 推導顯示名稱」的場景 — 源自 2026-05-27
+
 ## Pitfalls（重複踩過的雷）
+
+- **RPC return 遺漏前端所需欄位（P8）**：RPC 只返回 `{success, order_id}`，前端 `if (result.full_order_text !== undefined)` 永遠 false，UI 刷新靜默失敗。每次寫 RPC 必須對照前端 result 讀取的所有欄位清單，在 RETURN jsonb_build_object 中逐一確認 — 源自 2026-05-27
 
 - **【高頻 ⚠️】n8n + sbSyncOrder 雙寫競態**：`responseMode: onReceived` 令前端在 n8n RPC 完成前就觸發 sbSyncOrder，DELETE+INSERT 與 RPC UPSERT 並發搶佔同一 item_key，INSERT 409 衝突後 `.catch()` 靜默吞掉，n8n 的 null 值勝出。架構解法：n8n RPC 為 SSoT，sbSyncOrder 只在 webhook 失敗/catch 時觸發 — 源自 2026-05-23
 - **PostgreSQL ENUM 型別不符（42804）**：JSONB extract（`->>`）得到 text，不能隱式轉型為 `order_status` ENUM，整個 RPC 交易 rollback，COALESCE 無從保護。必須 explicit cast：`(v_json->>'field')::order_status` — 源自 2026-05-23
