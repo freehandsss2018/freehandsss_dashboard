@@ -1,160 +1,186 @@
-# A2 Implementation Plan — 訂單總覽子項目成本與利潤柝分優化 (修訂版)
-
-本計畫旨在針對先前方案進行深度批評，並基於系統效能、直觀管理模式、衝突避免、Token 消費、系統長期發展方向、Desktop 與手機版雙介面適配，以及 Subagent & Skill 的自動化驗證，提出更為嚴謹的「全域預載快取 + 按需稽核模式 (Preloaded Global Price Cache with On-Demand Auditing Toggle, PGC-ODAT)」架構分析與實施計畫。
-
----
-
-## 一、 先前方案的 3 個弱點批評 (Critical Retrospective)
-
-1. **弱點 1：資料庫聯表查詢 (PostgREST Join) 的效能負擔**
-   *批評*：先前方案在每次呼叫 `sbFetchItems(orderIds)` 時，均對 Supabase 使用 PostgREST 聯表 Join 語法 `products(suggested_price)`。當操作者載入大量歷史訂單（例如一次載入 200 筆訂單、含上千筆項目）或頻繁切換篩選/分頁/排序時，Supabase 端將為每筆 order_item 執行重覆的商品表 nested lookup。這不僅增加了伺服器端的 Join 負載與 API 響應延遲，也使得網路傳輸體積因巢狀 JSON 結構而變大。
-
-2. **弱點 2：介面資訊過載與手機端版面膨脹 (Mobile Layout Bloat)**
-   *批評*：先前方案預設在每一個產品細節卡片內嵌財務資訊，這在 Desktop 端會造成視覺擁擠，在手機端（手風琴 Card 視圖）更會導致高度直接加倍。對於有 5-6 個項目的訂單，手機螢幕會被大量重複的「建議價/成本/利潤」塞滿，嚴重破壞了現有 V41 版面所追求的精簡性（即移除嬰兒月齡、整合狀態晶片等精簡美學），不符合 Premium UI/UX 憲章。
-
-3. **弱點 3：訂單折扣與建議售價的「數值衝突」造成認知混淆**
-   *批評*：先前方案直接在項目層級顯示「建議價」與「建議利潤」，但未考慮訂單層級的折扣（例如：同部位買多件的 Tier 階梯折扣、加購價優惠、或是管理員手動調整的折讓金額 `Adjustment_Amount`）。當操作者看到「子項目建議利潤之和」與「訂單總利潤」不一致時，會直覺認為系統有計算錯誤，進而產生不必要的對帳困擾，失去了「方便查閱系統有否計算錯誤」的設計初衷。
+# A2 Implementation Plan — PGC-ODAT v3 Lite
+# 訂單總覽子項目成本與利潤稽核（折中方案）
+> 版本：v3 Lite（已決定）
+> 決策日期：2026-05-27
+> 決策記錄：`.fhs/notes/decisions.md`（2026-05-27 條目）
+> 決策人：Fat Mo ✅
 
 ---
 
-## 二、 更好的版本：PGC-ODAT 優化架構 (Better Architecture)
+## 一、方案摘要
 
-為了解決上述 3 個弱點，修訂版架構採取了以下改進：
-1. **快取化 (Performance)**：在應用程式初始化 (`init()`) 時，將全表 490 個 SKU 的 `suggested_price` 一次性非同步載入（大小僅約 20KB）並建立全域 Map 快取。後續查詢 order_items 時**不使用 db join**，直接在前端進行 O(1) 快取查詢，達到零 DB Join 額外開銷。
-2. **按需開啟 (UI/UX)**：新增「🔍 項目稽核模式」切換按鈕。預設隱藏明細財務，保持 V41 極簡美學與順暢滾動；當操作者需要核對時，一鍵啟用即可動態在 Desktop 與手機端渲染詳細財務數字，並將此喜好儲存於 `localStorage` 中。
-3. **語意釐清 (Conflict Avoidance)**：將顯示標籤明確定義為「SKU建議價」與「SKU建議利潤」，並在該稽核列旁說明「不含整單優惠與手動折讓」，避免操作者產生數值衝突的困擾。
+採「全域預載快取 + 按需稽核 Toggle + 對賬試算 Modal」架構（PGC-ODAT v3 Lite）：
 
----
+| 元件 | 說明 |
+|------|------|
+| **Preload（v2 核心）** | init() 時非同步載入 products.sku/suggested_price/cost → flat Map，TTL 30 min |
+| **Toggle（v2 核心）** | CSS class 切換（`body.fhs-audit-on`），不重 render，< 50 ms |
+| **Desktop 財務子列** | `<tr class="audit-fin">` SKU建議價/利潤 + 免責註腳 |
+| **Mobile 💰 Drawer** | per-item drawer，點 💰 icon 展開，不全展開 |
+| **💡 對賬 Modal（v3.A）** | 每行右側 💡 icon → modal 顯示 SKU價/實付推估/可能差異原因 |
 
-## 三、 架構分析與可行性評估 (Architectural Analysis)
-
-### 1. 系統效能 (Performance)
-- **資料庫端**：`products` 表為相對靜態的規格資料（僅 490 筆）。一次性 preload 的 SQL 執行代價極低。order_items 的 PostgREST 查詢保持原始的 simple-select，免除嵌套 Join 負載。
-- **前端渲染**：按需 toggle 僅觸發客戶端重新繪製（`renderReviewTable`），不產生新的 API 請求，切換時間為毫秒級。
-
-### 2. 直觀管理模式 (Intuitive Management)
-- 在篩選工具列的「重新載入」按鈕左側新增「🔍 項目稽核模式」切換鈕，UI 配色與現有 FHS 視覺系統保持高度和諧。
-- 狀態具有狀態記憶功能（使用 `localStorage` 的 `fhs_show_item_financials` 鍵）。
-
-### 3. 衝突避免 (Conflict Avoidance)
-- 不改動資料庫 Schema，亦不改動寫入/新增/編輯訂單的邏輯（`captureFormState`）。
-- 保持 `sbFetchItems` 功能的單一職責，避免破壞其他地方（例如訂單詳情 Modal）對 `sbFetchItems` 回傳結果的依賴。
-
-### 4. Token 消費與長期發展方向 (Token & Maintenance)
-- **代碼變動量小**：不修改 API select 結構，仅在 data map 與 render 階段進行 localized 修改，便於未來 AI 閱讀和維護，能顯著降低後續 sessions 的 Token 消費。
-- **擴展性**：未來若有動態折扣規則調整，可在 preload 快取層直接注入邏輯，不需要頻繁修改後端 SQL 或 Join 映射。
+**捨棄項目**：
+- ❌ v3.B（nested Map）— YAGNI，products 表無 tier_json/effective_date
+- ❌ v3.C（Hybrid sync / user_preferences 表）— 單人系統，localStorage 足夠
 
 ---
 
-## 四、 具體實施計畫 (Step-by-Step Plan)
+## 二、漸進三階段策略
 
-### 階段 1：全域變數與非同步預載入設定
-
-1. 在 `Freehandsss_dashboard_current.html` 的全域變數區域（約 line 5837 後）宣告價格對照表：
-   ```javascript
-   let fhsSuggestedPriceMap = {};
-   ```
-2. 新增非同步載入函數 `preloadSuggestedPrices()`：
-   ```javascript
-   async function preloadSuggestedPrices() {
-       try {
-           if (!isSupabaseRead()) return;
-           const rows = await sbFetch('products', { select: 'sku,suggested_price' });
-           if (rows && rows.length > 0) {
-               rows.forEach(function(r) {
-                   if (r.sku) fhsSuggestedPriceMap[r.sku] = Number(r.suggested_price || 0);
-               });
-               console.log('✅ SKU Suggested Price Map preloaded. Count:', Object.keys(fhsSuggestedPriceMap).length);
-           }
-       } catch (e) {
-           console.error('❌ Failed to preload product prices:', e);
-       }
-   }
-   ```
-3. 在 `init()` 啟動流程中（約 line 10006），非同步呼叫此 preloader：
-   ```javascript
-   preloadSuggestedPrices();
-   ```
-
-### 階段 2：資料結構映射優化 (Mapping)
-
-1. 在 `mapOrder()` 函數中的項目回傳物件中，補全 `Product_SKU` 欄位以利前端 O(1) 尋找：
-   ```javascript
-   // 在 mapOrder() 的 return it 區塊中：
-   Product_SKU: it.product_sku || '',
-   ```
-
-### 階段 3：介面與切換控制實作 (UI & Toggle)
-
-1. **新增稽核模式切換函數 `toggleAuditMode()`**：
-   ```javascript
-   function toggleAuditMode() {
-       window.fhsShowItemFinancials = !window.fhsShowItemFinancials;
-       localStorage.setItem('fhs_show_item_financials', window.fhsShowItemFinancials ? '1' : '0');
-       
-       const btn = document.getElementById('fhsToggleAuditBtn');
-       if (btn) {
-           if (window.fhsShowItemFinancials) {
-               btn.innerHTML = '🔍 隱藏項目財務';
-               btn.style.backgroundColor = '#E2EAFC';
-               btn.style.borderColor = '#B1C9EF';
-               btn.style.color = '#1D3557';
-           } else {
-               btn.innerHTML = '🔍 顯示項目財務';
-               btn.style.backgroundColor = 'var(--fhs-bg-elevated)';
-               btn.style.borderColor = 'var(--fhs-border)';
-               btn.style.color = 'var(--fhs-text-primary)';
-           }
-       }
-       if (window.globalOrders && window.globalOrders.length > 0) {
-           renderReviewTable(window.globalOrders);
-       }
-   }
-   ```
-2. **在 `init()` 補上狀態復原邏輯**：
-   ```javascript
-   window.fhsShowItemFinancials = localStorage.getItem('fhs_show_item_financials') === '1';
-   // 於 DOM 加載完畢後調用一次以更新按鈕外觀
-   setTimeout(() => {
-       const btn = document.getElementById('fhsToggleAuditBtn');
-       if (btn && window.fhsShowItemFinancials) {
-           btn.innerHTML = '🔍 隱藏項目財務';
-           btn.style.backgroundColor = '#E2EAFC';
-           btn.style.borderColor = '#B1C9EF';
-           btn.style.color = '#1D3557';
-       }
-   }, 500);
-   ```
-3. **在篩選工具列插入 Button HTML**：
-   定位至桌面版篩選器第二行尾端（約 line 2280 前後），於 `fhsSaveFilterBtn` 之前插入：
-   ```html
-   <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="background-color: var(--fhs-bg-elevated); color: var(--fhs-text-primary); border: 1px solid var(--fhs-border); margin-right: 6px;">
-       🔍 顯示項目財務
-   </button>
-   ```
-
-### 階段 4：雙版面渲染逻辑修改 (Desktop & Mobile)
-
-1. **Desktop 表格渲染 (`renderReviewTable` 內迴圈)**：
-   若 `window.fhsShowItemFinancials` 啟用，根據項目 `Qty`、`Cost` 與 `Product_SKU` 生成財務 HTML，加入 `.review-item-card` 的垂直 Flex 容器中。
-2. **Mobile Accordion 渲染 (`renderReviewTable` 手機版迴圈)**：
-   同步將生成的財務 HTML 插入手機項卡片 `.acc-item-card` 內 controls 元素之前。
+| Phase | 顯示內容 | 啟動條件 |
+|-------|---------|---------|
+| **P1（現在）** | SKU建議價 + SKU建議利潤 + 灰色註腳「📋 不含整單優惠/折讓」 | 本次實作 |
+| **P2（半年內）** | 加「實付分攤」欄 | 訂單折扣規則完善後 |
+| **P3（成熟後）** | 加「差異欄」+ 自動歸因（Tier/Adjustment/手工折讓） | products 表加 tier_json 後 |
 
 ---
 
-## 五、 啟動 Subagent & Skill 的自動化驗證方案
+## 三、七階段實施計畫
 
-為確保本實施計畫的高標準執行，後續將在獲得授權後，由 Antigravity 協同 Subagent 執行以下驗證步驟：
-1. **動態測試 Skill (Preload Verification)**：
-   建立獨立的測試檔（如 `scripts/repair/test_preload.js`），在 Node 中執行 Supabase products 查詢，核對所得 SKU 的數量和 suggested_price，確保無死鎖或憑證權限錯誤。
-2. **Browser Subagent 視覺驗證 (UI Validation)**：
-   啟動 headless browser subagent，執行以下測試：
-   - 載入 `Freehandsss_dashboard_current.html`。
-   - 確認篩選列有「🔍 顯示項目財務」按鈕，且點擊後表格能無誤地即時重繪。
-   - 切換至手機視窗寬度（750px），確認 Accordion 切換後有相同的財務明細行，且字體大小與排版無遮擋或跑版。
-   - 錄製操作驗收影片保存至 artifacts。
+### Phase 0 — 規劃與授權
+
+- [ ] `database-reviewer` 審查：products select RLS（anon 是否可讀 sku/suggested_price/cost）
+- [ ] 確認 `preloadSuggestedPrices()` 查詢語法安全（無注入風險）
+- [ ] Fat Mo `/execute` 授權 Phase 1 動工
+- **Gate**：database-reviewer PASS + /execute 授權
+- **回滾**：N/A（純規劃）
 
 ---
 
-## 聲明：NO-TOUCH 護欄
-**在未獲得 Fat Mo 正式呼叫 `/execute` 前，Antigravity 不會對專案中的代碼進行任何實體修改。本計畫僅作為架構論證及實施計畫落盤。**
+### Phase 1 — V41 開發版實作（全部在 freehandsss_dashboardV41.html）
+
+| Step | 位置 | 動作 |
+|------|------|------|
+| 1.1 | global 變數區（~line 5837） | 宣告 `let fhsSuggestedPriceMap = {}; let fhsPriceMapLoadedAt = 0;` |
+| 1.2 | helper 函式區 | 新增 `preloadSuggestedPrices()`（async，TTL check，失敗 degrade） |
+| 1.3 | `init()` | 呼叫 `preloadSuggestedPrices()`（非 await，fire-and-forget） |
+| 1.4 | `mapOrder()` | item return 補 `Product_SKU: it.product_sku \|\| ''` |
+| 1.5 | helper 函式區 | 新增 `toggleAuditMode()`（切 body class，localStorage 寫入，不 re-render） |
+| 1.6 | CSS 區 | `.audit-fin { display:none; } body.fhs-audit-on .audit-fin { display:flex; }` |
+| 1.7 | 篩選列 HTML | 插入 `#fhsToggleAuditBtn` 按鈕 + `onclick="toggleAuditMode()"` |
+| 1.8 | `renderReviewTable` Desktop | items 渲染注入 `<tr class="audit-fin">` SKU建議價/利潤 + 缺 SKU fallback（`—`） |
+| 1.9 | `renderReviewTable` Mobile | acc-item-card 右側加 💰 icon + drawer div（預設 `display:none`） |
+| 1.10 | helper 函式區 | 新增 `toggleItemDrawer(itemKey)`（CSS slideDown） |
+| 1.11 | 各渲染行 | 加 💡 icon + `onclick="openAuditModal(itemKey)"` |
+| 1.12 | HTML body 底部 | 新增 `<dialog id="auditCalcModal">` 結構 |
+| 1.13 | helper 函式區 | 新增 `openAuditModal(itemKey)`：計算 SKU建議價/實付推估/差異原因清單 |
+
+- **Gate**：本地 Chrome 手動測試（toggle/drawer/modal）+ NaN guard 確認
+- **回滾**：`git checkout freehandsss_dashboardV41.html`
+
+---
+
+### Phase 2 — 防禦驗證
+
+- [ ] `tdd-guide` 啟動，寫 `scripts/repair/test_preload.js`：
+  - 驗證 490 SKU 載入完整、suggested_price 非 null
+  - 模擬 SKU 缺失 → fallback `—` 顯示
+  - 模擬 Map 未載入 → spinner 顯示
+- [ ] `tdd-guide` 寫 `scripts/repair/test_audit_toggle.js`：
+  - toggle on/off CSS class 正確
+  - localStorage 正確寫入/讀取
+- [ ] `.fhs/notes/pitfalls.yaml` 新增 **P8 — preload-map-race-condition**
+- **Gate**：兩腳本均 PASS
+- **回滾**：N/A
+
+---
+
+### Phase 2.5 — Code Review Gate
+
+- [ ] 啟動 `code-reviewer` 審查 V41 diff
+- 檢查項：HTML ID 未動 / API key 未洩 / 財務真理守護未違反 / captureFormState 未動
+- **Gate**：code-reviewer PASS verdict
+- **回滾**：FAIL → 回 Phase 1 修補
+
+---
+
+### Phase 3 — UX 驗收（Playwright MCP）
+
+- [ ] Desktop 1920px：toggle 開/關、財務子列批次色繼承、💡 modal 開啟/關閉
+- [ ] Mobile 750px：💰 drawer 展開/收合、modal ESC 關閉
+- [ ] 邊界：羊毛氈加購配件 → 顯示「—」非 NaN
+- [ ] 邊界：preload 尚未完成 → spinner 顯示
+- **Gate**：Fat Mo 實機驗收（iPhone Safari）
+- **回滾**：UX FAIL → 回 Phase 1.8/1.9
+
+---
+
+### Phase 4 — /execute 授權同步
+
+- [ ] Fat Mo 輸入 `/execute V41 → current 同步`
+- [ ] 先備份：`cp current.html current.html.bak`
+- [ ] cp V41 → current.html（繞 Hook R1 既有方式）
+- [ ] verify diff = 0（byte 數對齊）
+- **Gate**：byte 數一致
+- **回滾**：`cp current.html.bak current.html`
+
+---
+
+### Phase 5 — 記憶層同步
+
+- [ ] `handoff.md` 加 Session 31 條目
+- [ ] `CHANGELOG.md` 加版本標
+- [ ] `docs/repo-map.md` 加 `scripts/repair/test_preload.js` + `scripts/repair/test_audit_toggle.js`
+- [ ] `/commit` → `node scripts/Sync_Notion_Brain.js`
+- **Gate**：5 個檔案寫入 + commit 完成
+
+---
+
+### Phase 6 — 持續觀察
+
+- 觀察一週實際使用體驗
+- 若 Map 30 min TTL 觸發重整頻繁 → 調整至 60 min
+- 若手機 drawer 動畫卡頓（低端設備）→ 降回 instant show
+- 若 P2 折扣規則完善 → 啟動 Phase 2（實付分攤欄）計畫
+
+---
+
+## 四、防禦規格（preloadSuggestedPrices 必實作）
+
+```javascript
+async function preloadSuggestedPrices() {
+    const TTL = 30 * 60 * 1000; // 30 min
+    if (Date.now() - fhsPriceMapLoadedAt < TTL) return; // cache valid
+    try {
+        if (!isSupabaseRead()) return;
+        const rows = await sbFetch('products', { select: 'sku,suggested_price,cost' });
+        if (!rows || rows.length === 0) return;
+        rows.forEach(r => {
+            if (r.sku) fhsSuggestedPriceMap[r.sku] = {
+                price: Number(r.suggested_price || 0),
+                cost:  Number(r.cost || 0)
+            };
+        });
+        fhsPriceMapLoadedAt = Date.now();
+    } catch (e) {
+        // degrade gracefully — toggle 按鈕完全隱藏
+        const btn = document.getElementById('fhsToggleAuditBtn');
+        if (btn) btn.style.display = 'none';
+    }
+}
+```
+
+**渲染端防禦**：
+```javascript
+const entry = fhsSuggestedPriceMap[sku];
+if (!entry) return '<span style="color:#999" title="未列入價目表">—</span>';
+```
+
+---
+
+## 五、Subagent 啟動矩陣
+
+| Phase | Subagent | 任務 |
+|-------|---------|------|
+| 0 | `database-reviewer` | products select RLS + 查詢安全性 |
+| 2 | `tdd-guide` | test_preload.js + test_audit_toggle.js |
+| 2.5 | `code-reviewer` | V41 diff PASS/FAIL gate |
+| 3 | Playwright MCP | Desktop + Mobile E2E |
+
+---
+
+## 六、待辦 — 舊計畫檔案問題
+
+> ⚠️ handoff.md 第 770 行記錄的「立體擺設款式管理 UI 整合」計畫（含 R1/R2 高風險點）已被本計畫覆蓋。
+> 若需救回，請指示 Fat Mo，可從 git log 找回舊版本。
+> 若已放棄「立體擺設款式管理」計畫，請告知以清理 handoff 待辦 #5。

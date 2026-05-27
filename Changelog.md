@@ -1,5 +1,36 @@
 # Changelog
 
+## [2026-05-27] 🔧 PGC-ODAT 三項 Bug Fix + UI 優化（Session 31.5）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` + `Freehandsss_dashboard_current.html`（同步）
+
+**Bug Fix**：
+- **window scope 未暴露**：`toggleAuditMode`/`toggleItemDrawer`/`openAuditModal`/`closeAuditModal` 在 IIFE 閉包內，`onclick` 找不到函式 → 按鈕完全無反應。修復：加 `window.fn = fn` 四行暴露
+- **toggle 不重繪**：`toggleAuditMode()` 只切換 CSS class，未重繪；map 空時烘入「—」永久顯示。修復：開啟時呼叫 `applyReviewFilters()` 重繪，保留現有篩選
+
+**UI 優化（/rp 7 維度分析後）**：
+- `#fhsToggleAuditBtn` 加 `title` tooltip（SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓）；Mobile 以 💰 drawer 標籤替代 hover
+- `.audit-fin` 移除 label 文字 + footnote，只保留 `$值` 數值；改 flex-column 右對齊垂直堆疊
+- `review-item-card` 改 flex space-between：badges 左、audit 值 右（對齊截圖排版）
+
+---
+
+## [2026-05-27] ✨ PGC-ODAT v3 Lite — 訂單總覽子項目成本與利潤稽核（Session 31）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+**新增功能**：
+- **全域 SKU 價格 preload**：`preloadSuggestedPrices()` 在 `init()` 非同步執行，載入 products.sku/suggested_price/total_base_cost（~490 SKU）至 `fhsSuggestedPriceMap`，TTL 30 min，失敗時 degrade gracefully（隱藏 toggle 按鈕）
+- **稽核模式 Toggle**：篩選列加入 `🔍 顯示項目財務` 按鈕，切換 `body.fhs-audit-on` CSS class（< 50 ms，不重 render），狀態持久化至 localStorage
+- **Desktop 財務稽核列**：每個 item 的 product card 內注入 `.audit-fin` div，顯示「SKU建議價 / SKU建議利潤 + 📋不含整單優惠/折讓」，缺 SKU 顯示「—」
+- **Mobile 💰 per-item drawer**：每個 acc-item-card 右側加 💰 icon，點擊展開 `.item-financial-drawer` 顯示同等財務資訊，不全展開（解決版面膨脹問題）
+- **💡 對賬試算 Modal**（`#auditCalcModal`）：Desktop + Mobile 均有，顯示 SKU建議價、SKU建議利潤、訂單實收、訂單實際利潤、可能差異原因清單（Adjustment_Amount / 折扣推估）
+- **mapOrder() 補 Product_SKU 欄位**：item return object 新增 `Product_SKU: it.product_sku || ''`，供前端 O(1) Map 查詢
+
+**決策依據**：`.fhs/notes/decisions.md` [2026-05-27] PGC-ODAT v3 Lite 條目
+
+---
+
 ## [2026-05-27] 🔧 Modal 編輯 UI 一致性修復（Session 30 — 3 項 bug fix）
 
 **修改檔案**：

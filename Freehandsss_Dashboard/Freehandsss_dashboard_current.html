@@ -769,6 +769,21 @@
         .fhs-btn-refresh { margin-left:auto; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border:none; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-size:var(--fhs-text-xs); font-weight:700; cursor:pointer; transition:background .15s,transform .1s; white-space:nowrap; flex-shrink:0; }
         .fhs-btn-refresh:hover { background:#256427; }
         .fhs-btn-refresh:active { background:#1b4d1d; transform:scale(0.97); }
+        /* PGC-ODAT: Audit mode inline block (hidden by default, shown when body.fhs-audit-on) */
+        .audit-fin { display:none; }
+        body.fhs-audit-on .audit-fin { display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding:2px 6px; background:#f0f4ff; border-radius:4px; font-size:11px; flex-shrink:0; }
+        .audit-fin .audit-label { color:#888; font-weight:500; }
+        .audit-fin .audit-sku-price { color:#2A9D8F; font-weight:700; }
+        .audit-fin .audit-sku-profit { color:#1D3557; font-weight:700; }
+        .audit-fin .audit-na { color:#bbb; }
+        .audit-fin .audit-footnote { color:#aaa; font-size:10px; flex-basis:100%; }
+        .audit-fin .audit-modal-btn { cursor:pointer; background:none; border:none; font-size:12px; padding:0 2px; color:#4A90D9; }
+        /* Mobile item financial drawer */
+        .item-financial-drawer { display:none; margin-top:6px; padding:6px 8px; background:#f8faff; border-radius:6px; border:1px solid #e0e8f5; font-size:11px; }
+        .item-financial-drawer .ifd-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
+        .item-financial-drawer .ifd-label { color:#888; }
+        .item-financial-drawer .ifd-val { font-weight:600; color:#1D3557; }
+        .item-financial-drawer .ifd-footnote { color:#aaa; font-size:10px; margin-top:4px; }
         /* F1: Save Filter Button */
         .fhs-btn-save-filter { display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 14px; border:1px solid var(--fhs-border); border-radius:var(--radius-md); background:#fff; color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; flex-shrink:0; }
         .fhs-btn-save-filter:hover { background:#f4f6f8; }
@@ -2284,6 +2299,7 @@
                                 </optgroup>
                             </select>
                         </div>
+                        <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓">🔍 顯示項目財務</button>
                         <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()">💾 儲存篩選</button>
                         <button class="fhs-btn-refresh" type="button"
                             onclick="(window.fetchGlobalReview || fetchGlobalReview)(true)">
@@ -5841,6 +5857,8 @@
         // ==========================================
         let reviewFetchTimeout = null;
         let globalOrders = [];
+        let fhsSuggestedPriceMap = {};
+        let fhsPriceMapLoadedAt = 0;
 
         // === 任務一：複選功能 ===
         let selectedOrderIds = new Set();
@@ -6427,11 +6445,30 @@
                             </div>`;
                         }
 
+                        var _accAuditSku = item.Product_SKU || '';
+                        var _accAuditEntry = _accAuditSku ? fhsSuggestedPriceMap[_accAuditSku] : null;
+                        var _accDrawerKey = (o.id + '-' + idx).replace(/[^a-zA-Z0-9_-]/g,'_');
+                        var _accDrawerHtml = '';
+                        if (_accAuditEntry) {
+                            var _accProfit = (_accAuditEntry.price - _accAuditEntry.cost).toFixed(0);
+                            _accDrawerHtml = `<div id="item-drawer-${_accDrawerKey}" class="item-financial-drawer">
+                                <div class="ifd-row"><span class="ifd-label">SKU建議價</span><span class="ifd-val" style="color:#2A9D8F;">$${_accAuditEntry.price}</span></div>
+                                <div class="ifd-row"><span class="ifd-label">SKU建議利潤</span><span class="ifd-val" style="color:#1D3557;">$${_accProfit}</span></div>
+                                <div class="ifd-row" style="margin-top:2px;"><button onclick="openAuditModal('${o.id}','${idx}','${_accAuditSku.replace(/'/g,"\\'")}',${_accAuditEntry.price},${_accAuditEntry.cost})" style="font-size:11px;background:#e8f0fe;border:1px solid #b1c9ef;border-radius:4px;padding:2px 8px;color:#1d3557;cursor:pointer;">💡 對賬試算</button></div>
+                                <div class="ifd-footnote">📋 SKU參考價，不含整單優惠／折讓</div>
+                            </div>`;
+                        } else if (_accAuditSku) {
+                            _accDrawerHtml = `<div id="item-drawer-${_accDrawerKey}" class="item-financial-drawer"><span style="color:#bbb;font-size:11px;">— 未列入價目表</span></div>`;
+                        }
+                        var _accFinBtn = (_accAuditEntry || _accAuditSku) ? `<button onclick="toggleItemDrawer('${_accDrawerKey}')" style="background:none;border:none;font-size:14px;cursor:pointer;padding:0 4px;color:#4A90D9;" title="項目財務">💰</button>` : '';
+
                         itemsHtml += `
                         <div class="acc-item-card" style="border-left: 3px solid ${rowBatchCol};">
                             <div class="acc-item-badges">${badgeHtml}</div>
                             ${engText}
+                            ${_accDrawerHtml}
                             <div class="acc-item-controls">
+                                ${_accFinBtn}
                                 <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
                                     <span class="acc-field-label">🏷️ 批次</span>
                                     <input type="text"
@@ -6796,8 +6833,14 @@
                         
                         // 區塊級批次填色 — fall back to order-level batch when item has none
                         let itemBatchCol = getBatchColor(item.Batch || o.Batch || '');
-                        let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height: 42px;">
-                            <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:13px; padding: 2px 4px;">${badgeHtml}</div>
+                        var _auditSku = item.Product_SKU || '';
+                        var _auditEntry = _auditSku ? fhsSuggestedPriceMap[_auditSku] : null;
+                        var _auditPriceHtml = _auditEntry
+                            ? `<span class="audit-sku-price">$${_auditEntry.price}</span><span class="audit-sku-profit">$${(_auditEntry.price - _auditEntry.cost).toFixed(0)}<button class="audit-modal-btn" onclick="openAuditModal('${o.id}','${index}','${_auditSku.replace(/'/g,"\\'")}',${_auditEntry.price},${_auditEntry.cost})" title="對賬試算">💡</button></span>`
+                            : (_auditSku ? `<span class="audit-na" title="SKU: ${_auditSku}">—</span>` : `<span class="audit-na">—</span>`);
+                        let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height:42px; display:flex; align-items:center; justify-content:space-between; gap:4px;">
+                            <div style="flex:1; display:flex; flex-wrap:wrap; align-items:center; font-size:13px; padding:2px 4px;">${badgeHtml}</div>
+                            <div class="audit-fin">${_auditPriceHtml}</div>
                         </div>`;
                         
                         // 刻字水平佈局 (V29) — 移除括號與文字輔助
@@ -9262,6 +9305,111 @@
             return res.json();
         }
 
+        /* ── PGC-ODAT: Audit Toggle + Item Drawer (Phase 1) ────────── */
+        function toggleAuditMode() {
+            window.fhsShowItemFinancials = !window.fhsShowItemFinancials;
+            localStorage.setItem('fhs_show_item_financials', window.fhsShowItemFinancials ? '1' : '0');
+            var _btn = document.getElementById('fhsToggleAuditBtn');
+            if (_btn) {
+                if (window.fhsShowItemFinancials) {
+                    _btn.textContent = '🔍 隱藏項目財務';
+                    _btn.style.backgroundColor = '#E2EAFC';
+                    _btn.style.borderColor = '#B1C9EF';
+                    _btn.style.color = '#1D3557';
+                } else {
+                    _btn.textContent = '🔍 顯示項目財務';
+                    _btn.style.backgroundColor = '';
+                    _btn.style.borderColor = '';
+                    _btn.style.color = '';
+                }
+            }
+            if (window.fhsShowItemFinancials) {
+                var _doRender = function() {
+                    document.body.classList.add('fhs-audit-on');
+                    if (typeof applyReviewFilters === 'function') applyReviewFilters();
+                };
+                if (Object.keys(fhsSuggestedPriceMap).length === 0) {
+                    preloadSuggestedPrices().then(_doRender);
+                } else {
+                    _doRender();
+                }
+            } else {
+                document.body.classList.remove('fhs-audit-on');
+            }
+        }
+
+        function toggleItemDrawer(key) {
+            var _d = document.getElementById('item-drawer-' + key);
+            if (!_d) return;
+            var _open = _d.style.display !== 'none' && _d.style.display !== '';
+            _d.style.display = _open ? 'none' : 'block';
+        }
+
+        function openAuditModal(orderId, itemIdx, sku, skuPrice, skuCost) {
+            var _o = (window.globalOrders || []).find(function(o){ return o.id === orderId; });
+            var _orderSalePrice = _o ? Number(_o.Final_Sale_Price || 0) : 0;
+            var _orderNetProfit = _o ? Number(_o.Net_Profit || 0) : 0;
+            var _orderAdjAmt    = _o ? Number(_o.Adjustment_Amount || 0) : 0;
+            var _skuProfit      = (skuPrice - skuCost).toFixed(0);
+
+            var _reasons = [];
+            if (_orderAdjAmt > 0) _reasons.push('補打金額 $' + _orderAdjAmt + ' 可能計入成本');
+            if (_orderSalePrice > 0 && skuPrice > 0 && _orderSalePrice < skuPrice) _reasons.push('實付 $' + _orderSalePrice + ' < SKU 建議價 $' + skuPrice + '（折扣 / 優惠 / 舊客）');
+            if (_reasons.length === 0) _reasons.push('可能為 Tier 折扣、舊客優惠或手工折讓（系統逐步完善中）');
+
+            var _body = document.getElementById('auditModalBody');
+            if (_body) {
+                _body.innerHTML =
+                    '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+                    '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">SKU</td><td style="padding:6px 4px;font-weight:600;">' + sku + '</td></tr>' +
+                    '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">SKU 建議價</td><td style="padding:6px 4px;font-weight:700;color:#2A9D8F;">$' + skuPrice + '</td></tr>' +
+                    '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">SKU 建議利潤</td><td style="padding:6px 4px;font-weight:700;color:#1D3557;">$' + _skuProfit + '</td></tr>' +
+                    '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">訂單實收</td><td style="padding:6px 4px;color:#B07D4C;font-weight:600;">$' + _orderSalePrice + '</td></tr>' +
+                    '<tr><td style="padding:6px 4px;color:#888;">訂單實際利潤</td><td style="padding:6px 4px;color:' + (_orderNetProfit > 0 ? '#2A9D8F' : '#E63946') + ';font-weight:600;">$' + _orderNetProfit + '</td></tr>' +
+                    '</table>' +
+                    '<div style="margin-top:12px;padding:8px;background:#fff8e1;border-radius:6px;font-size:12px;">' +
+                    '<div style="font-weight:600;color:#F57F17;margin-bottom:4px;">💡 可能差異原因</div>' +
+                    _reasons.map(function(r){ return '<div style="color:#555;margin-top:2px;">• ' + r + '</div>'; }).join('') +
+                    '<div style="color:#aaa;font-size:11px;margin-top:6px;">📋 SKU參考價不含整單優惠／折讓，系統逐步完善中</div>' +
+                    '</div>';
+            }
+            var _modal = document.getElementById('auditCalcModal');
+            if (_modal) { _modal.style.display = 'flex'; }
+        }
+
+        function closeAuditModal() {
+            var _modal = document.getElementById('auditCalcModal');
+            if (_modal) _modal.style.display = 'none';
+        }
+
+        window.toggleAuditMode  = toggleAuditMode;
+        window.toggleItemDrawer = toggleItemDrawer;
+        window.openAuditModal   = openAuditModal;
+        window.closeAuditModal  = closeAuditModal;
+
+        /* ── Preload SKU suggested prices (PGC-ODAT Phase 1) ───────── */
+        async function preloadSuggestedPrices() {
+            const TTL = 30 * 60 * 1000;
+            if (Date.now() - fhsPriceMapLoadedAt < TTL) return;
+            try {
+                if (!isSupabaseRead()) return;
+                const rows = await sbFetch('products', { select: 'sku,suggested_price,total_base_cost' });
+                if (!rows || rows.length === 0) return;
+                rows.forEach(function(r) {
+                    if (r.sku) fhsSuggestedPriceMap[r.sku] = {
+                        price: Number(r.suggested_price || 0),
+                        cost:  Number(r.total_base_cost || 0)
+                    };
+                });
+                fhsPriceMapLoadedAt = Date.now();
+                console.log('[FHS] SKU price map loaded:', Object.keys(fhsSuggestedPriceMap).length, 'SKUs');
+            } catch(e) {
+                console.warn('[FHS] preloadSuggestedPrices failed, hiding audit toggle:', e);
+                var _btn = document.getElementById('fhsToggleAuditBtn');
+                if (_btn) _btn.style.display = 'none';
+            }
+        }
+
         /* ── Write order + items to Supabase after n8n sync ─────── */
         // Requires anon INSERT/UPDATE/DELETE policy on orders + order_items.
         // SQL to run once in Supabase SQL Editor:
@@ -9615,6 +9763,7 @@
                     Status:         it.process_status || '待製作',
                     Process_Status: it.process_status || '待製作',
                     Product_Name:   (it.item_key || '').split(' | ').slice(1).join(' | ').trim() || it.product_sku || '',
+                    Product_SKU:    it.product_sku || '',
                     Specification:  _specFinal,
                     Engraving_Text: _engFinal,
                     Engraving:      _engFinal,
@@ -10002,6 +10151,8 @@
             patchFoFetchLive();
             injectToggle();
             updateVersionBadge();
+            preloadSuggestedPrices();
+            window.fhsShowItemFinancials = localStorage.getItem('fhs_show_item_financials') === '1';
 
             if (isSupabaseRead()) {
                 // Show connecting banner — hides automatically once fetchGlobalReview succeeds
@@ -10033,6 +10184,17 @@
                 <button class="fhs-modal-close" onclick="closeOrderModal()" aria-label="關閉">✕</button>
             </div>
             <div class="fhs-modal-body" id="fhsModalBody"></div>
+        </div>
+    </div>
+
+    <!-- PGC-ODAT: Audit Calc Modal -->
+    <div id="auditCalcModal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this)closeAuditModal()">
+        <div style="background:#fff; border-radius:12px; width:100%; max-width:min(480px,95vw); max-height:90dvh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.22);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px 10px; border-bottom:1px solid #eee;">
+                <div style="font-weight:700; font-size:15px; color:#1D3557;">💡 對賬試算</div>
+                <button onclick="closeAuditModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#888;padding:0 4px;">✕</button>
+            </div>
+            <div id="auditModalBody" style="padding:16px 18px;"></div>
         </div>
     </div>
 

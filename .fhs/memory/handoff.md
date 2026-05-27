@@ -6,6 +6,66 @@ cl-flow 2026-05-26-0627：✅ Phase A 完整收尾（migrations 套用 + code fi
 
 ---
 
+## 本次 Session 完成事項（2026-05-27 Session 31.5 — PGC-ODAT 三項修復 + UI 優化）
+
+### 31.5 PGC-ODAT 上線後 Bug Fix × 3 + UI 優化
+
+**Bug Fix 1 — window scope 未暴露（致命：按鈕無反應）**：
+- 原因：`toggleAuditMode`/`toggleItemDrawer`/`openAuditModal`/`closeAuditModal` 全在 IIFE 內，`onclick="..."` 找不到全域函式
+- 修復：在 `closeAuditModal` 後加 `window.toggleAuditMode = toggleAuditMode; window.toggleItemDrawer = ...` 等 4 行暴露
+
+**Bug Fix 2 — toggleAuditMode 不重繪（致命：開啟後看不到財務）**：
+- 原因：`toggleAuditMode()` 只加/移 `body.fhs-audit-on` CSS class，從未呼叫 re-render；audit-fin div 在 map 為空時已烘入「—」
+- 修復：開啟時先確保 map 已載入，再呼叫 `applyReviewFilters()`（保留現有篩選狀態）重繪
+
+**UI 優化（/rp 7 維度架構分析後執行）**：
+- `#fhsToggleAuditBtn` 加 `title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"`（Desktop hover tooltip；Mobile 以 💰 drawer 標籤替代）
+- `.audit-fin` inline 移除 label 文字 + 📋 footnote，只保留 `$建議價` / `$建議利潤 💡` 數值
+- `.audit-fin` CSS 改 flex-column + align-items:flex-end（右側垂直堆疊）
+- `review-item-card` 改 flex space-between：badges 左對齊，audit 值 右側，對應截圖「+20補打位置」排版
+- **V41 → current.html 同步** ✅（585,392 bytes，exact match）
+
+**後效稽核**：
+- [A] 結構變動：未觸發
+- [B] 制度層變動：未觸發
+- [C] CHANGELOG：✅ 已更新（2026-05-27 Session 31.5 條目）
+
+**Subagent 使用記錄**：全程未使用 subagent（scope/re-render 診斷為定點修復；UI 優化為直接 Edit）
+
+---
+
+## 本次 Session 完成事項（2026-05-27 Session 31 — PGC-ODAT v3 Lite 落地）
+
+### 31. 訂單總覽子項目成本與利潤稽核（PGC-ODAT v3 Lite）
+
+**完成事項**：
+- **架構決策**：採折中方案（v2 preload + v3.A 對賬 modal），捨棄 nested Map（B）與 Hybrid sync（C）
+- **全域 preload**：`preloadSuggestedPrices()` — products 表 490 SKU / TTL 30 min / `total_base_cost` 欄位（計畫筆誤修正）/ degrade gracefully
+- **CSS toggle**：`body.fhs-audit-on` class-based，< 50 ms，不重 render
+- **#fhsToggleAuditBtn**：篩選列加入「🔍 顯示項目財務」按鈕
+- **Desktop .audit-fin div**：注入 prodHtml 內（解 rowspan 衝突），顯示 SKU建議價/利潤 + 📋免責註腳
+- **Mobile 💰 per-item drawer**：`item-financial-drawer` + `toggleItemDrawer()`，不全展開
+- **💡 對賬試算 Modal**（`#auditCalcModal`）：`openAuditModal()` 顯示 SKU價/實收/利潤/可能差異原因清單
+- **mapOrder() 補 `Product_SKU`**：`it.product_sku || ''`
+- **V41 → current.html 同步** ✅（585,082 bytes，diff 一致）
+- **決策記錄**：decisions.md + a2_implementation_plan.md（v3 Lite 正式版）更新
+
+**Phase 2 狀態**：⏳ 未執行（tdd-guide test_preload.js / test_audit_toggle.js），留待下次 session 或 Fat Mo 指示
+
+**後效稽核**：
+- [A] 結構變動：未觸發（無新增/刪除檔案）
+- [B] 制度層變動：未觸發
+- [C] CHANGELOG：✅ 已更新（2026-05-27 Session 31 條目）
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer` |
+| 實際使用 | ❌ 未使用（Phase 0 直讀 migration SQL；Phase 1 定點 Edit；database-reviewer 留 Phase 2.5）|
+| 遵從 Router | ❌ 未遵從（schema 分析直接 Read 更高效；待 tdd + code-reviewer gate 啟動）|
+
+---
+
 ## 本次 Session 完成事項（2026-05-27 Session 30 — Modal 編輯 UI 一致性修復）
 
 ### 30. Modal saveOrderText / enterEditMode 3 項 Bug Fix

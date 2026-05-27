@@ -7,6 +7,26 @@
 
 ## 記錄
 
+[2026-05-27] PGC-ODAT v3 Lite 架構決策 — 訂單總覽子項目成本與利潤稽核（折中方案）
+
+決策：
+- **採折中方案（v2 + v3.A 對賬 modal）**，不採 v3 全升級。
+- **v2 核心**：preload `products` 表（sku/suggested_price/cost，~490 筆，flat Map 結構）至全域 `fhsSuggestedPriceMap`，cache TTL 30 min；CSS class toggle（`body.fhs-audit-on`）切換顯示，不重 render；Desktop 財務子列 + Mobile 💰 per-item drawer。
+- **v3.A 對賬 modal**：每行項目右側加 💡 icon，點擊展開 modal 顯示「SKU建議價 / 實付推估 / 可能差異原因 candidates」，即時計算，不固化欄位。
+- **捨棄 v3.B（nested Map）**：products 表當前無 `tier_json`/`effective_date`，YAGNI 原則，未來需要時再改（5 分鐘工作）。
+- **捨棄 v3.C（Hybrid sync / Supabase user_preferences）**：單人系統，多裝置 toggle 不一致不是痛點；引入新表增加複雜度與失敗路徑，不值得。
+- **Phase 1 策略（漸進三階段）**：Phase 1 = SKU 建議價/利潤 + 免責註腳（不含整單優惠/折讓）；Phase 2 = 實付分攤欄（系統折扣規則完善後）；Phase 3 = 差異欄 + 自動歸因。
+- **開發版原則**：所有改動在 `freehandsss_dashboardV41.html`，驗收後由 Fat Mo /execute 授權同步 current。
+
+原因：
+- **C 過度設計**：Fat Mo 為單人操作，localStorage 已滿足跨 session toggle 持久化需求。
+- **B 超前設計**：products 表結構在可見未來無 tier/effective_date，nested Map 為假設需求付出真實複雜度。
+- **A 解真實痛點**：系統未完善期間實付 ≠ SKU建議價的差異原因眾多（舊客優惠/手工折讓/Tier），對賬 modal 以「候選原因清單」方式呈現，不強行計算攤分，符合「系統未完善 → 漸進改善」的現實。
+
+批准：Fat Mo ✅（2026-05-27 確認折中方案）
+
+***
+
 [2026-05-22] Order_ID Rename Race Condition 根治 — AG 架構分析 + Migration 0011 落地
 
 決策：
