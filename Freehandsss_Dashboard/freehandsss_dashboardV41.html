@@ -1621,6 +1621,10 @@
             #qaCenter {
                 display: none !important;
             }
+            /* 批量重算引擎：手機限定隱藏（高風險操作，桌面限定） */
+            #batchRecalcSection {
+                display: none !important;
+            }
             /* Role bar: keep for contract IDs, compact on mobile */
             .role-bar {
                 flex-wrap: wrap;
@@ -3298,6 +3302,59 @@
             </div>
         </div>
 
+
+        <!-- 💰 財務參數設定中心 (Session 34) -->
+        <div id="financialSettingsCard" class="card" style="border-top: 5px solid #2A9D8F; margin: 0 0 16px 0; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h2 style="color:#2A9D8F; margin:0; font-size:15px; font-weight:700;">💰 財務參數設定中心</h2>
+                <span id="finSettingsBadge" class="sys-badge sys-badge-checking" style="font-size:11px;">載入中</span>
+            </div>
+
+            <!-- 成本參數列表 -->
+            <div style="margin-bottom:16px;">
+                <div style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">成本參數（修改後即時生效於新訂單）</div>
+                <div id="costConfigList" style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="color:var(--fhs-text-secondary); font-size:12px; padding:6px 0;">載入中...</div>
+                </div>
+            </div>
+
+            <!-- 批量重算區（桌面限定，手機隱藏） -->
+            <div id="batchRecalcSection" style="border-top:1px solid var(--fhs-border); padding-top:14px;">
+                <div style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">批量重算引擎（影響歷史訂單財務數據）</div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; align-items:end;">
+                    <div>
+                        <label style="font-size:12px; color:var(--fhs-text-secondary); display:block; margin-bottom:4px;">套用範圍</label>
+                        <select id="batchScope" onchange="window.estimateBatchImpact()" style="width:100%; padding:6px 8px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary);">
+                            <option value="">— 選擇範圍 —</option>
+                            <option value="all">全部訂單</option>
+                            <option value="date_after">指定日期之後</option>
+                            <option value="specific">指定訂單 ID</option>
+                        </select>
+                    </div>
+                    <div id="batchDateWrap" style="display:none;">
+                        <label style="font-size:12px; color:var(--fhs-text-secondary); display:block; margin-bottom:4px;">起始日期</label>
+                        <input type="date" id="batchTargetDate" onchange="window.estimateBatchImpact()" style="width:100%; padding:6px 8px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary);">
+                    </div>
+                </div>
+
+                <div id="batchOrdersWrap" style="display:none; margin-bottom:10px;">
+                    <label style="font-size:12px; color:var(--fhs-text-secondary); display:block; margin-bottom:4px;">訂單 ID（逗號分隔）</label>
+                    <input type="text" id="batchTargetOrders" placeholder="e.g. 0600001,0600002" oninput="window.estimateBatchImpact()" style="width:100%; padding:6px 8px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                </div>
+
+                <div id="batchImpactEstimate" style="font-size:13px; color:var(--fhs-text-secondary); background:var(--fhs-bg-elevated); border-radius:6px; padding:8px 12px; margin-bottom:10px; min-height:34px; display:flex; align-items:center;">請選擇套用範圍以估算受影響訂單數...</div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="batchSafetyLock" placeholder="請輸入 CONFIRM 解鎖" oninput="window.batchSafetyLockCheck()" maxlength="10" autocomplete="off" style="flex:1; padding:7px 10px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); letter-spacing:2px; font-family:monospace;">
+                    <button id="btnExecuteBatchUpdate" onclick="window.executeFinancialBatchUpdate()" disabled style="padding:7px 16px; border-radius:6px; border:none; background:#94a3b8; color:#fff; font-size:13px; font-weight:600; cursor:not-allowed; white-space:nowrap; transition:background 0.2s, cursor 0.2s;">⚡ 執行重算</button>
+                </div>
+
+                <div style="font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:7px 10px; line-height:1.5;">
+                    ⚠️ 批量重算將觸發 n8n 異步工作流，在低峰時段分批執行。重算完成前訂單成本數據可能短暫顯示舊值（最終一致性設計）。
+                </div>
+            </div>
+        </div>
 
         <!-- 🛠️ QA 中心（系統模式面板） -->
         <div class="card" style="border-top: 5px solid #457B9D; margin: 0;">
@@ -6203,12 +6260,16 @@
                 window._sysN8nChecked = true;
                 sysCheckN8n();
             }
+
+            // 財務設定中心：每次進入系統模式時載入最新成本參數
+            if (window.loadCostConfigurations) window.loadCostConfigurations();
         }
 
         window.sysRefreshPanel = sysRefreshPanel;
         window.sysFlushCache = sysFlushCache;
         window.sysCheckN8n = sysCheckN8n;
         window.sysTrackAtCall = sysTrackAtCall;
+        window.showToast = showToast;
 
         function checkSyncFinished(orders) {
             if (!window._fhsLastSyncPayload) return true;
@@ -10683,6 +10744,238 @@
         } else {
             init();
         }
+    })();
+    </script>
+
+    <!-- FS: Financial Settings System (Session 34) -->
+    <script>
+    (function() {
+        'use strict';
+
+        var _FS_SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
+        var _FS_SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+        // TODO (Fat Mo): 建立 n8n 財務批量重算工作流後，將 Webhook URL 填入此處
+        var _FS_N8N_WEBHOOK = '';
+
+        window._fhsCostConfig = {};
+
+        function _fsRpc(fn, body) {
+            return fetch(_FS_SB_URL + '/rest/v1/rpc/' + fn, {
+                method: 'POST',
+                headers: {
+                    'apikey': _FS_SB_ANON,
+                    'Authorization': 'Bearer ' + _FS_SB_ANON,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify(body)
+            }).then(function(r) {
+                return r.json().then(function(d) {
+                    if (!r.ok) throw new Error(d.message || d.error || JSON.stringify(d));
+                    return d;
+                });
+            });
+        }
+
+        function _fsSelect(table, qs) {
+            var url = _FS_SB_URL + '/rest/v1/' + table + '?' + (qs || 'select=*');
+            return fetch(url, {
+                headers: {
+                    'apikey': _FS_SB_ANON,
+                    'Authorization': 'Bearer ' + _FS_SB_ANON,
+                    'Accept': 'application/json'
+                }
+            }).then(function(r) {
+                return r.json().then(function(d) {
+                    if (!r.ok) throw new Error(d.message || JSON.stringify(d));
+                    return d;
+                });
+            });
+        }
+
+        // ── loadCostConfigurations ───────────────────────────
+        window.loadCostConfigurations = function() {
+            var badge = document.getElementById('finSettingsBadge');
+            var list  = document.getElementById('costConfigList');
+            if (!list) return;
+
+            if (badge) { badge.textContent = '載入中'; badge.className = 'sys-badge sys-badge-checking'; }
+
+            _fsSelect('cost_configurations', 'select=*&order=config_key.asc')
+                .then(function(rows) {
+                    window._fhsCostConfig = {};
+                    rows.forEach(function(r) {
+                        window._fhsCostConfig[r.config_key] =
+                            r.data_type === 'number' ? (parseFloat(r.config_value) || 0) : r.config_value;
+                    });
+
+                    if (!rows.length) {
+                        list.innerHTML = '<div style="color:var(--fhs-text-secondary);font-size:12px;padding:6px 0;">尚無設定資料（Migration 0020 未部署？）</div>';
+                    } else {
+                        list.innerHTML = rows.map(function(r) {
+                            return '<div style="display:flex;align-items:center;gap:8px;">'
+                                + '<label style="flex:1;font-size:12px;color:var(--fhs-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + (r.description || '') + '">'
+                                + (r.display_name || r.config_key) + '</label>'
+                                + '<input type="' + (r.data_type === 'number' ? 'number' : 'text') + '" '
+                                + 'data-key="' + r.config_key + '" value="' + r.config_value + '" '
+                                + 'min="0" step="0.01" '
+                                + 'style="width:88px;padding:4px 6px;border:1px solid var(--fhs-border);border-radius:5px;font-size:13px;text-align:right;background:var(--fhs-bg-elevated);color:var(--fhs-text-primary);">'
+                                + '<button onclick="window.saveSingleCostConfig(this)" data-key="' + r.config_key + '" '
+                                + 'style="padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;white-space:nowrap;">儲存</button>'
+                                + '</div>';
+                        }).join('');
+                    }
+                    if (badge) { badge.textContent = '已載入'; badge.className = 'sys-badge sys-badge-ok'; }
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] loadCostConfigurations:', e);
+                    list.innerHTML = '<div style="color:#ef4444;font-size:12px;">載入失敗：' + e.message + '</div>';
+                    if (badge) { badge.textContent = '載入失敗'; badge.className = 'sys-badge sys-badge-error'; }
+                });
+        };
+
+        // ── saveSingleCostConfig ─────────────────────────────
+        window.saveSingleCostConfig = function(btn) {
+            var key   = btn.dataset.key;
+            var input = btn.parentElement.querySelector('input[data-key="' + key + '"]');
+            if (!input) return;
+            var val = input.value;
+
+            btn.disabled = true; btn.textContent = '…';
+            _fsRpc('fhs_upsert_cost_config', { p_key: key, p_value: val, p_updated_by: 'dashboard' })
+                .then(function() {
+                    window._fhsCostConfig[key] = parseFloat(val) || val;
+                    btn.textContent = '✓';
+                    btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #059669;background:#d1fae5;color:#059669;font-size:12px;cursor:pointer;';
+                    setTimeout(function() {
+                        btn.textContent = '儲存';
+                        btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;';
+                        btn.disabled = false;
+                    }, 1800);
+                    if (window.showToast) window.showToast('✅ ' + (key) + ' 已更新為 ' + val);
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] saveSingleCostConfig:', e);
+                    btn.textContent = '失敗';
+                    btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #ef4444;background:#fee2e2;color:#ef4444;font-size:12px;cursor:pointer;';
+                    setTimeout(function() {
+                        btn.textContent = '儲存';
+                        btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;';
+                        btn.disabled = false;
+                    }, 2500);
+                    if (window.showToast) window.showToast('❌ 儲存失敗：' + e.message);
+                });
+        };
+
+        // ── estimateBatchImpact ──────────────────────────────
+        window.estimateBatchImpact = function() {
+            var scope      = (document.getElementById('batchScope') || {}).value;
+            var dateWrap   = document.getElementById('batchDateWrap');
+            var ordersWrap = document.getElementById('batchOrdersWrap');
+            var estEl      = document.getElementById('batchImpactEstimate');
+
+            if (dateWrap)   dateWrap.style.display   = scope === 'date_after' ? 'block' : 'none';
+            if (ordersWrap) ordersWrap.style.display  = scope === 'specific'   ? 'block' : 'none';
+
+            if (!scope) {
+                if (estEl) estEl.textContent = '請選擇套用範圍以估算受影響訂單數...';
+                return;
+            }
+
+            if (estEl) estEl.innerHTML = '<span style="color:var(--fhs-text-secondary);">估算中...</span>';
+
+            var body = { p_scope: scope };
+            if (scope === 'date_after') {
+                var d = (document.getElementById('batchTargetDate') || {}).value;
+                if (!d) { if (estEl) estEl.textContent = '請選擇起始日期'; return; }
+                body.p_target_date = d;
+            } else if (scope === 'specific') {
+                var raw = (document.getElementById('batchTargetOrders') || {}).value || '';
+                var ids = raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+                if (!ids.length) { if (estEl) estEl.textContent = '請輸入至少一個訂單 ID'; return; }
+                body.p_target_orders = ids;
+            }
+
+            _fsRpc('fhs_estimate_batch_impact', body)
+                .then(function(count) {
+                    if (estEl) estEl.innerHTML = '預計影響 <strong style="font-size:15px;color:#1D3557;">' + count + '</strong> 筆訂單';
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] estimateBatchImpact:', e);
+                    if (estEl) estEl.textContent = '估算失敗：' + e.message;
+                });
+        };
+
+        // ── batchSafetyLockCheck ─────────────────────────────
+        window.batchSafetyLockCheck = function() {
+            var val = (document.getElementById('batchSafetyLock') || {}).value || '';
+            var btn = document.getElementById('btnExecuteBatchUpdate');
+            if (!btn) return;
+            var ok = (val === 'CONFIRM');
+            btn.disabled = !ok;
+            btn.style.background = ok ? '#2A9D8F' : '#94a3b8';
+            btn.style.cursor     = ok ? 'pointer' : 'not-allowed';
+        };
+
+        // ── executeFinancialBatchUpdate ──────────────────────
+        window.executeFinancialBatchUpdate = function() {
+            var scope = (document.getElementById('batchScope') || {}).value;
+            if (!scope) return;
+
+            var btn = document.getElementById('btnExecuteBatchUpdate');
+            if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
+
+            var body = { p_scope: scope };
+            if (scope === 'date_after') body.p_target_date = (document.getElementById('batchTargetDate') || {}).value;
+            if (scope === 'specific') {
+                var raw = (document.getElementById('batchTargetOrders') || {}).value || '';
+                body.p_target_orders = raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+            }
+
+            _fsRpc('fhs_apply_financial_batch_update', body)
+                .then(function(result) {
+                    // Notify n8n webhook if configured
+                    if (_FS_N8N_WEBHOOK) {
+                        fetch(_FS_N8N_WEBHOOK, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ batch_id: result.batch_id, scope: scope })
+                        }).catch(function(e) {
+                            console.warn('[FinSettings] n8n webhook failed (non-critical):', e);
+                        });
+                    } else {
+                        console.warn('[FinSettings] _FS_N8N_WEBHOOK 未設定，n8n 未被通知。請 Fat Mo 建立工作流後填入 URL。');
+                    }
+
+                    if (window.showToast) window.showToast('✅ 已提交 ' + result.affected_rows + ' 筆重算任務 | ID: ' + String(result.batch_id).slice(0,8) + '…');
+                    console.log('[FinSettings] Batch submitted:', result);
+
+                    // Reset UI
+                    var sl = document.getElementById('batchSafetyLock');
+                    var bs = document.getElementById('batchScope');
+                    var ei = document.getElementById('batchImpactEstimate');
+                    if (sl) sl.value = '';
+                    if (bs) bs.value = '';
+                    if (ei) ei.textContent = '請選擇套用範圍以估算受影響訂單數...';
+                    window.batchSafetyLockCheck();
+                    window.estimateBatchImpact();
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] executeFinancialBatchUpdate:', e);
+                    if (window.showToast) window.showToast('❌ 提交失敗：' + e.message);
+                })
+                .finally(function() {
+                    if (btn) btn.textContent = '⚡ 執行重算';
+                });
+        };
+
+        // ── getOrderCost (global cache reader) ───────────────
+        // 供訂單建立邏輯讀取最新成本參數，取代硬編碼常數
+        window.getOrderCost = function(key, fallback) {
+            var val = window._fhsCostConfig[key];
+            return (val !== undefined && val !== null) ? val : (fallback !== undefined ? fallback : 0);
+        };
+
     })();
     </script>
 

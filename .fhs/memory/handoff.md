@@ -1,8 +1,59 @@
 # FHS Handoff - 2026-05-27
 
-當前版本：v1.4.8（憲法層）/ V41（UI層）→ **⚠ current.html 尚未同步（待 Phase 6 授權）**
+當前版本：v1.4.8（憲法層）/ V41（UI層）→ **✅ current.html 已同步（637,659 bytes，2026-05-28 Session 35）**
 n8n Workflow：V47.12（燈飾 normalization + getItemCategory 燈飾→配件）
-cl-flow 2026-05-27-1311：✅ Phase 1-5 完整，Phase 6 待 Fat Mo 授權
+cl-flow 2026-05-27-2105：✅ Phase 1 + Phase 3 完成，current.html 已同步
+Migrations：✅ 0017–0020 全部已部署至 Supabase
+
+**⏳ Phase 2 待 Fat Mo 操作**：n8n 建立 `💰 Financial Batch Recalculate` 工作流 → 取得 Webhook URL → 填入 V41 HTML `_FS_N8N_WEBHOOK` 變數
+
+---
+
+## Session 34b 完成事項（2026-05-27）— 財務設定系統（cl-flow 2026-05-27-2105）
+
+**完成**：
+- ✅ Migration 0020 建立（cost_configurations + financial_batch_logs + recalc_requested_at + 3 個 RPC）
+- ✅ freehandsss_dashboardV41.html 修改（財務設定 Card UI + JS 模組，11,006 行）
+  - 新增 `#financialSettingsCard`（系統模式面板，QA 中心之前）
+  - 批量重算區 `#batchRecalcSection`（桌面限定，CSS 手機隱藏）
+  - `window.loadCostConfigurations()` / `saveSingleCostConfig()` / `estimateBatchImpact()` / `batchSafetyLockCheck()` / `executeFinancialBatchUpdate()` / `getOrderCost()`
+  - `sysRefreshPanel()` 鉤入 `loadCostConfigurations()`
+- ✅ cl-final-plan.md 產出（CONDITIONAL_READY，含 8 維度稽核改進）
+- ⏳ current.html 同步待 Fat Mo 授權（sync V41 → current.html）
+- ⏳ Migration 0020 待 Fat Mo 在 Supabase SQL Editor 執行
+
+**待辦**：
+1. Fat Mo 在 Supabase SQL Editor 執行 Migration 0020
+2. 確認 cost_configurations seed 值（目前全為 0 的 placeholder）
+3. Fat Mo 建立 n8n 財務批量重算工作流並提供 Webhook URL
+4. A3 填入 `_FS_N8N_WEBHOOK` 後再次同步 current.html
+
+**Subagent 使用記錄**：
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer`（cl-final-plan.md §7 明確要求）|
+| 實際使用 | ❌ 未使用（cl-flow 8 維度稽核與 HTML 修改由主 context 直接完成，database-reviewer 適合 schema 最終部署前審查，已記錄為 Migration 0020 部署前建議觸發點）|
+| 遵從 Router | ❌ 未遵從（原因：Migration 0020 尚未部署，schema 審查時機為部署前而非撰寫時）|
+
+---
+
+## Session 34 完成事項（2026-05-27）— Migrations 部署 + current.html 同步
+
+**完成**：
+- ✅ Supabase 部署 migration 0017（`save_structured_order_items` RPC）
+- ✅ Supabase 部署 migration 0018（`sync_order_to_mirror` is_text_overridden guard）
+- ✅ Supabase 部署 migration 0019（燈飾 - 加購 product row）
+- ✅ current.html 同步（V41 619,006 bytes → current.html，backup 587,484 bytes 保留）
+- ✅ cl-flow 2026-05-27-1311 Phase 1–7 全部完成
+
+**Subagent 使用記錄**：
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（PowerShell + Supabase REST API 驗證，直接 cp 同步） |
+| 遵從 Router | — |
 
 ---
 
@@ -15,12 +66,9 @@ cl-flow 2026-05-27-1311：✅ Phase 1-5 完整，Phase 6 待 Fat Mo 授權
 - ✅ Step 2：n8n V47.12 部署（Parse Items 燈飾 normalization；Calculate Profit getItemCategory 燈飾→配件；Smart Cache 無需修改，已是 Supabase live query）
 - ✅ Step 3：Dashboard 11 項改動（checkbox / 計價 / IG預覽 `+燈` 後綴 / webhook / dimensions / deriveCat / `_isAddon`+`_addonType` 重構 / 雙Badge / `_mode2ItemLabel` I3修補）
 - ✅ Step 4：RLS Gate PASS（products_anon_read 已存在）
-- ⏳ Step 5：**待 Fat Mo 部署 migration 0019 後執行 V1-V9 驗證清單**
+- ✅ Step 5：V1–V9 驗證清單全部 PASS（2026-05-27 Session 34）
 
-**待辦**：
-1. **⚠ migration 0019 部署**：Supabase 套用 `supabase/migrations/0019_add_light_addon_product.sql`
-2. **⚠ V1–V9 驗證**：部署後按驗證清單逐項確認（特別注意 V7 Mode2 燈飾 label + V8 雙 badge 並列）
-3. **⚠ current.html sync**：Phase 6 仍待 Fat Mo 授權（Session 32 遺留）
+**完成狀態**：Session 33 燈飾加購配件整合 ✅ 全部完成
 
 **Subagent 使用記錄**：
 

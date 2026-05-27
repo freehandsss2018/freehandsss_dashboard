@@ -1621,6 +1621,10 @@
             #qaCenter {
                 display: none !important;
             }
+            /* 批量重算引擎：手機限定隱藏（高風險操作，桌面限定） */
+            #batchRecalcSection {
+                display: none !important;
+            }
             /* Role bar: keep for contract IDs, compact on mobile */
             .role-bar {
                 flex-wrap: wrap;
@@ -2106,6 +2110,44 @@
         .fhs-modal-val { font-weight:500; text-align:right; }
         .fhs-btn-order-detail { background:none; border:none; cursor:pointer; font-size:15px; padding:2px 4px; border-radius:4px; line-height:1; }
         .fhs-btn-order-detail:hover { background:#f0f0f0; }
+        /* F3 v2: dual-mode modal — tabs */
+        .fhs-modal-drag { display:none; width:36px; height:4px; background:#ddd; border-radius:2px; margin:8px auto 4px; flex-shrink:0; }
+        .fhs-modal-tabs { display:flex; border-bottom:2px solid var(--fhs-border); background:#fafafa; flex-shrink:0; }
+        .fhs-modal-tab { flex:1; padding:10px 4px; border:none; background:none; cursor:pointer; font-size:12px; color:#666; border-bottom:3px solid transparent; margin-bottom:-2px; transition:color .15s,border-color .15s; white-space:nowrap; }
+        .fhs-modal-tab.active { color:#3a5fc8; border-bottom-color:#3a5fc8; font-weight:600; background:#fff; }
+        .fhs-modal-tab:hover:not(.active) { background:#f0f4ff; color:#3a5fc8; }
+        .fhs-modal-tab-pane { display:none; overflow-y:auto; max-height:calc(90dvh - 120px); }
+        .fhs-modal-tab-pane.active { display:block; }
+        /* Mode 2: item cards */
+        .fhs-item-card { border:1px solid #e0e8f7; border-radius:8px; padding:12px; margin:8px 12px; background:#fafcff; }
+        .fhs-item-card-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px; }
+        .fhs-item-cat-badge { padding:2px 8px; background:#e8f0fe; color:#3a5fc8; border-radius:4px; font-size:11px; font-weight:600; flex-shrink:0; }
+        .fhs-item-spec-text { font-size:13px; color:#1a2e6b; font-weight:600; }
+        .fhs-item-eng-lbl { font-size:11px; color:#888; margin-bottom:3px; }
+        .fhs-item-eng-input { width:100%; box-sizing:border-box; border:1px solid #c7d3f7; border-radius:6px; padding:6px 10px; font-size:13px; font-family:var(--fhs-font-mono,monospace); line-height:1.5; resize:vertical; min-height:44px; background:#fff; color:#222; }
+        .fhs-item-eng-input:focus { border-color:#3a5fc8; outline:none; box-shadow:0 0 0 2px rgba(58,95,200,.12); }
+        .fhs-item-qty-row { display:flex; align-items:center; gap:8px; margin-top:6px; }
+        .fhs-item-qty-lbl { font-size:12px; color:#666; }
+        .fhs-item-qty-input { width:56px; border:1px solid #c7d3f7; border-radius:6px; padding:4px 8px; font-size:13px; text-align:center; }
+        .fhs-mode2-actions { background:#fff; border-top:1px solid var(--fhs-border); padding:10px 12px; display:flex; gap:8px; justify-content:flex-end; align-items:center; flex-shrink:0; }
+        .fhs-mode2-save-btn { padding:6px 16px; border:none; border-radius:6px; background:#3a5fc8; cursor:pointer; font-size:13px; color:#fff; font-weight:600; transition:opacity .15s; }
+        .fhs-mode2-save-btn:disabled { opacity:.45; cursor:default; }
+        .fhs-finance-row { display:flex; justify-content:space-between; padding:6px 12px; font-size:13px; border-bottom:1px solid #f5f5f5; }
+        .fhs-finance-lbl { color:#888; }
+        .fhs-finance-val { font-weight:600; color:#222; }
+        .fhs-finance-val.profit { color:#1a7a3c; }
+        /* Mobile: bottom sheet */
+        @media (max-width: 768px) {
+            #fhsOrderModal { padding:0; align-items:flex-end; }
+            .fhs-modal-box { max-width:100%; width:100%; max-height:90dvh; border-radius:16px 16px 0 0; }
+            .fhs-modal-drag { display:block; }
+            .fhs-modal-tab-pane { max-height:calc(90dvh - 130px); }
+        }
+        /* Phase 3: inline engraving edit (Desktop hover ✏ / Mobile tap ✏) */
+        .fhs-inline-eng-wrap { display:flex; align-items:flex-start; gap:4px; }
+        .fhs-inline-eng-btn { background:none; border:none; cursor:pointer; font-size:13px; color:#3a5fc8; opacity:0; transition:opacity .15s; border-radius:3px; padding:1px 3px; line-height:1; flex-shrink:0; }
+        .fhs-inline-eng-wrap:hover .fhs-inline-eng-btn,
+        .fhs-inline-eng-btn:focus { opacity:1; }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -2493,6 +2535,12 @@
                     <span style="font-weight: bold; color: #444;">🧸 羊毛氈公仔 ($680)</span>
                     <label class="switch"><input type="checkbox" id="w_wool_en"
                             onchange="generate()"><span class="slider"></span></label>
+                </div>
+            </div>
+            <div class="part-item">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight: bold; color: #444;">💡 燈飾 ($80)</span>
+                    <label class="switch"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
             <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
@@ -3254,6 +3302,59 @@
             </div>
         </div>
 
+
+        <!-- 💰 財務參數設定中心 (Session 34) -->
+        <div id="financialSettingsCard" class="card" style="border-top: 5px solid #2A9D8F; margin: 0 0 16px 0; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h2 style="color:#2A9D8F; margin:0; font-size:15px; font-weight:700;">💰 財務參數設定中心</h2>
+                <span id="finSettingsBadge" class="sys-badge sys-badge-checking" style="font-size:11px;">載入中</span>
+            </div>
+
+            <!-- 成本參數列表 -->
+            <div style="margin-bottom:16px;">
+                <div style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">成本參數（修改後即時生效於新訂單）</div>
+                <div id="costConfigList" style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="color:var(--fhs-text-secondary); font-size:12px; padding:6px 0;">載入中...</div>
+                </div>
+            </div>
+
+            <!-- 批量重算區（桌面限定，手機隱藏） -->
+            <div id="batchRecalcSection" style="border-top:1px solid var(--fhs-border); padding-top:14px;">
+                <div style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">批量重算引擎（影響歷史訂單財務數據）</div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; align-items:end;">
+                    <div>
+                        <label style="font-size:12px; color:var(--fhs-text-secondary); display:block; margin-bottom:4px;">套用範圍</label>
+                        <select id="batchScope" onchange="window.estimateBatchImpact()" style="width:100%; padding:6px 8px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary);">
+                            <option value="">— 選擇範圍 —</option>
+                            <option value="all">全部訂單</option>
+                            <option value="date_after">指定日期之後</option>
+                            <option value="specific">指定訂單 ID</option>
+                        </select>
+                    </div>
+                    <div id="batchDateWrap" style="display:none;">
+                        <label style="font-size:12px; color:var(--fhs-text-secondary); display:block; margin-bottom:4px;">起始日期</label>
+                        <input type="date" id="batchTargetDate" onchange="window.estimateBatchImpact()" style="width:100%; padding:6px 8px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary);">
+                    </div>
+                </div>
+
+                <div id="batchOrdersWrap" style="display:none; margin-bottom:10px;">
+                    <label style="font-size:12px; color:var(--fhs-text-secondary); display:block; margin-bottom:4px;">訂單 ID（逗號分隔）</label>
+                    <input type="text" id="batchTargetOrders" placeholder="e.g. 0600001,0600002" oninput="window.estimateBatchImpact()" style="width:100%; padding:6px 8px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                </div>
+
+                <div id="batchImpactEstimate" style="font-size:13px; color:var(--fhs-text-secondary); background:var(--fhs-bg-elevated); border-radius:6px; padding:8px 12px; margin-bottom:10px; min-height:34px; display:flex; align-items:center;">請選擇套用範圍以估算受影響訂單數...</div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="batchSafetyLock" placeholder="請輸入 CONFIRM 解鎖" oninput="window.batchSafetyLockCheck()" maxlength="10" autocomplete="off" style="flex:1; padding:7px 10px; border:1px solid var(--fhs-border); border-radius:6px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); letter-spacing:2px; font-family:monospace;">
+                    <button id="btnExecuteBatchUpdate" onclick="window.executeFinancialBatchUpdate()" disabled style="padding:7px 16px; border-radius:6px; border:none; background:#94a3b8; color:#fff; font-size:13px; font-weight:600; cursor:not-allowed; white-space:nowrap; transition:background 0.2s, cursor 0.2s;">⚡ 執行重算</button>
+                </div>
+
+                <div style="font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:7px 10px; line-height:1.5;">
+                    ⚠️ 批量重算將觸發 n8n 異步工作流，在低峰時段分批執行。重算完成前訂單成本數據可能短暫顯示舊值（最終一致性設計）。
+                </div>
+            </div>
+        </div>
 
         <!-- 🛠️ QA 中心（系統模式面板） -->
         <div class="card" style="border-top: 5px solid #457B9D; margin: 0;">
@@ -4390,8 +4491,9 @@
             if (hasP) {
                 const sub = document.getElementById("pSubCat").value;
                 let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
-                if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}\n`;
-                if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}\n`;
+                const _lightSuffix = document.getElementById('l_light_en')?.checked ? '+燈' : '';
+                if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}\n`;
+                if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}\n`;
                 detailsA += formatBabyLimbs();
                 if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
                 if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
@@ -4595,6 +4697,14 @@
                         "isAccessory": true
                     });
                 }
+                if (getValSafe('l_light_en', false)) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": "TEMP_L_LIGHTS",
+                        "Product_Name": "燈飾 - 加購",
+                        "Quantity": 1,
+                        "isAccessory": true
+                    });
+                }
             }
             return orderItemsArray;
         }
@@ -4722,12 +4832,12 @@
                 }
 
                 if (item.isAccessory) {
-                    let price = name.includes("羊毛氈") ? 680 : 0;
+                    let price = name.includes("羊毛氈") ? 680 : name.includes("燈飾") ? 80 : 0;
                     price *= qty;
                     totalSuggestedPrice += price;
                     breakdownParts.push(price);
                     item.CalculatedPrice = price;
-                    logs.push(`🧸 <b>${name}</b> x${qty}: $${price}`);
+                    logs.push(`${name.includes("燈飾") ? "💡" : "🧸"} <b>${name}</b> x${qty}: $${price}`);
                     totalDrawingCost += item.FatMoCost;
                 }
             });
@@ -4887,6 +4997,7 @@
                     if (sel.value !== '無' && sel.value !== '') html += ` ▪️ ${sel.dataset.who}${sel.dataset.part}: ${sel.value}<br>`;
                 });
                 if (document.getElementById('w_wool_en')?.checked) html += ` ▪️ 🧸 羊毛氈公仔 x1 $680<br>`;
+                if (document.getElementById('l_light_en')?.checked) html += ` ▪️ 💡 燈飾 x1 $80<br>`;
                 html += `</div>`;
             }
             if (document.getElementById('enableK').checked || document.getElementById('enableM').checked) {
@@ -5667,6 +5778,14 @@
                 } else {
                     console.warn('[FHS Diag W_WOOL] SKIPPED — guard failed (need both enableP + w_wool_en)');
                 }
+                const _diagLight = getValSafe('l_light_en', false);
+                if (_diagEnP && _diagLight) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": `${currentOrderId}_L_LIGHTS`,
+                        "Product_Name": "燈飾 - 加購",
+                        "Quantity": 1
+                    });
+                }
             } catch (err) {
                 console.warn("商品擷取遇到小問題，但仍會繼續送出訂單:", err);
             }
@@ -5922,6 +6041,7 @@
             else if (rawID.includes('_M_') || combinedSearch.search(/吊飾|頸鏈/) > -1) { category = "💍 純銀吊飾"; emoji = "💍"; }
             else if (rawID.includes('_P_') || combinedSearch.search(/擺設|木框|玻璃/) > -1) { category = "🎨 立體擺設"; emoji = "🎨"; }
             else if (rawID.includes('_W_WOOL') || combinedSearch.includes('羊毛氈')) { category = "🧸 羊毛氈公仔"; emoji = "🧸"; }
+            else if (rawID.includes('_L_LIGHTS') || combinedSearch.includes('燈飾')) { category = "💡 燈飾"; emoji = "💡"; }
             
             // 4. 解析材質 (Material)
             let material = "";
@@ -6140,12 +6260,16 @@
                 window._sysN8nChecked = true;
                 sysCheckN8n();
             }
+
+            // 財務設定中心：每次進入系統模式時載入最新成本參數
+            if (window.loadCostConfigurations) window.loadCostConfigurations();
         }
 
         window.sysRefreshPanel = sysRefreshPanel;
         window.sysFlushCache = sysFlushCache;
         window.sysCheckN8n = sysCheckN8n;
         window.sysTrackAtCall = sysTrackAtCall;
+        window.showToast = showToast;
 
         function checkSyncFinished(orders) {
             if (!window._fhsLastSyncPayload) return true;
@@ -6351,10 +6475,13 @@
                 }
                 // W_WOOL 合併至立體擺設同列，不獨立成 card
                 // 同時檢查 _W_WOOL（新格式）和 '羊毛氈'（n8n pipe 格式舊資料）
-                const _accWoolKey = (it) => { const _k = it.Order_Item_Key || it.Item_ID || ''; return _k.toUpperCase().includes('_W_WOOL') || _k.includes('羊毛氈') || _k.includes('羊毛毡') || it.Category === '配件'; };
-                const _accHasWool = (o.items || []).some(_accWoolKey);
-                const _accRenderItems = _accHasWool
-                    ? (o.items || []).filter(it => !_accWoolKey(it))
+                const _isAddon = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; return _k.includes('_W_WOOL') || _k.includes('_L_LIGHTS') || _n.includes('羊毛氈') || _n.includes('燈飾') || (it.Category || '') === '配件'; };
+                const _addonType = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; if (_k.includes('_L_LIGHTS') || _n.includes('燈飾')) return 'light'; if (_k.includes('_W_WOOL') || _n.includes('羊毛氈')) return 'wool'; return 'other'; };
+                const _accHasWool = (o.items || []).some(it => _addonType(it) === 'wool');
+                const _accHasLight = (o.items || []).some(it => _addonType(it) === 'light');
+                const _accHasAddon = _accHasWool || _accHasLight;
+                const _accRenderItems = _accHasAddon
+                    ? (o.items || []).filter(it => !_isAddon(it))
                     : (o.items || []);
                 const _accRenderFinal = _accRenderItems.length > 0 ? _accRenderItems : (o.items || []);
 
@@ -6370,7 +6497,7 @@
                 // Build items badges HTML
                 let itemsHtml = '';
                 if (_accRenderFinal && _accRenderFinal.length > 0) {
-                    let _accWoolBadgeShown = false;
+                    let _accWoolBadgeShown = false; let _accLightBadgeShown = false;
                     _accRenderFinal.forEach((item, idx) => {
                         const getSafeText = (val) => {
                             if (!val) return "";
@@ -6436,19 +6563,26 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
                         if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
-                        // 羊毛氈公仔加購 badge：合併至第一個立體擺設 card
+                        // 加購配件 badge：合併至第一個立體擺設 card
                         if (_accHasWool && !_accWoolBadgeShown && dimensions.category.includes('立體擺設')) {
                             _accWoolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
+                        }
+                        if (_accHasLight && !_accLightBadgeShown && dimensions.category.includes('立體擺設')) {
+                            _accLightBadgeShown = true;
+                            badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600;">💡 燈飾</span>`;
                         }
 
                         // Engraving (strip 合成: info for family combo)
                         let engText = '';
                         const _accEngStrip = item.Engraving ? item.Engraving.replace(/\s*\|?\s*合成:.*/, '').trim() : '';
+                        const _accItemKeyEsc = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                        const _accEngEsc = _accEngStrip.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                         if (_accEngStrip && _accEngStrip !== '待定' && _accEngStrip !== '不適用') {
-                            engText = `<div class="acc-field-row" style="margin-top:4px;">
+                            engText = `<div class="acc-field-row" style="margin-top:4px;display:flex;align-items:center;gap:4px;">
                                 <span class="acc-field-label">✂️ 刻字</span>
-                                <span class="acc-field-value">${_accEngStrip}</span>
+                                <span class="acc-field-value" style="flex:1;">${_accEngStrip}</span>
+                                <button onclick="inlineEditEngraving('${o.id}','${_accItemKeyEsc}','${_accEngEsc}')" style="background:none;border:none;font-size:13px;cursor:pointer;padding:0 2px;color:#3a5fc8;opacity:.8;flex-shrink:0;" title="快速編輯刻字">✏</button>
                             </div>`;
                         }
 
@@ -6680,12 +6814,14 @@
                     };
                     o.items.sort((a, b) => _cp(a) - _cp(b));
                 }
-                // W_WOOL 是加購配件，合併至立體擺設同一列顯示，不獨立成 row
-                // 同時檢查 _W_WOOL（新格式）、'羊毛氈'（pipe 格式）、Category==='配件'（新格式 mapOrder 後）
-                const _woolKey = (it) => { const _k = it.Order_Item_Key || it.Item_ID || ''; return _k.toUpperCase().includes('_W_WOOL') || _k.includes('羊毛氈') || _k.includes('羊毛毡') || it.Category === '配件'; };
-                const _hasWool = (o.items || []).some(_woolKey);
-                const _renderItems = _hasWool
-                    ? (o.items || []).filter(it => !_woolKey(it))
+                // 加購配件（_W_WOOL 羊毛氈 / _L_LIGHTS 燈飾）合併至立體擺設同一列，不獨立成 row
+                const _isAddon = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; return _k.includes('_W_WOOL') || _k.includes('_L_LIGHTS') || _n.includes('羊毛氈') || _n.includes('燈飾') || (it.Category || '') === '配件'; };
+                const _addonType = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; if (_k.includes('_L_LIGHTS') || _n.includes('燈飾')) return 'light'; if (_k.includes('_W_WOOL') || _n.includes('羊毛氈')) return 'wool'; return 'other'; };
+                const _hasWool = (o.items || []).some(it => _addonType(it) === 'wool');
+                const _hasLight = (o.items || []).some(it => _addonType(it) === 'light');
+                const _hasAddon = _hasWool || _hasLight;
+                const _renderItems = _hasAddon
+                    ? (o.items || []).filter(it => !_isAddon(it))
                     : (o.items || []);
                 const _renderItemsFinal = _renderItems.length > 0 ? _renderItems : (o.items || []);
 
@@ -6761,7 +6897,7 @@
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
-                    let _woolBadgeShown = false;
+                    let _woolBadgeShown = false; let _lightBadgeShown = false;
                     _renderItemsFinal.forEach((item, index) => {
                         // V45.4 強化型資料解析引擎 (強型別檢查避免 ID 洩漏)
                         const getSafeText = (val) => {
@@ -6849,11 +6985,14 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
 
-                        // 羊毛氈公仔加購 badge：合併至第一個立體擺設列（不依賴 index===0，
-                        // 防止 pipe 格式排序後立體擺設不在首位的情況）
+                        // 加購配件 badge：合併至第一個立體擺設列
                         if (_hasWool && !_woolBadgeShown && dimensions.category.includes('立體擺設')) {
                             _woolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
+                        }
+                        if (_hasLight && !_lightBadgeShown && dimensions.category.includes('立體擺設')) {
+                            _lightBadgeShown = true;
+                            badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600;">💡 燈飾</span>`;
                         }
 
                         // 數量標籤：立體擺設是套裝，不顯示 x1
@@ -6881,21 +7020,21 @@
                             let top = "";
                             let bot = "";
                             const raw = _engStripped;
-                            
+
                             // 兼容 [上排]xxx [下排]yyy 格式
                             const topMatch = raw.match(/\[上排\](.*?)(\[下排\]|$)/);
                             const botMatch = raw.match(/\[下排\](.*?)$/);
-                            
+
                             if (topMatch) { top = topMatch[1].replace(/[\(\)\[\]（）]/g, '').trim(); if (top === '待定') top = ''; }
                             if (botMatch) { bot = botMatch[1].replace(/[\(\)\[\]（）]/g, '').trim(); if (bot === '待定') bot = ''; }
-                            
+
                             // 如果沒匹配到標籤，嘗試用 | 分隔
                             if (!top && !bot && raw.includes('|')) {
                                 let parts = raw.split('|');
                                 top = parts[0].trim();
                                 bot = parts[1].trim();
                             }
-                            
+
                             // 如果還是空，直接顯示整段 (但移除括號)
                             if (!top && !bot) {
                                 top = raw.replace(/[\(\)\[\]（）]/g, '').trim();
@@ -6906,6 +7045,10 @@
                                 ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${bot}</span></div>` : ''}
                             </div>`;
                         }
+                        // Phase 3: wrap with inline edit button (hover to reveal ✏)
+                        const _itemKeyEscT = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                        const _engEscT = _engStripped.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${o.id}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字">✏</button></div>`;
 
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
@@ -6918,7 +7061,7 @@
                         <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
                             <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${rowBatchCol};">
-                                ${engHtml}
+                                ${engCellHtml}
                             </td>
                             <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
                                 ${prodHtml}
@@ -7534,7 +7677,8 @@
             } catch(e) {}
         }
 
-        // F3: Order detail modal — catFilter: 'A'=手模擺設, 'B'=金屬產品, undefined=全訂單
+        // F3 v2: Order detail modal — dual-mode (Mode 1 text + Mode 2 structured items)
+        // catFilter: 'A'=手模擺設, 'B'=金屬產品, undefined=全訂單
         function openOrderModal(orderId, catFilter) {
             var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
             var o = _go.find(function(x){ return x.id === orderId; });
@@ -7542,10 +7686,12 @@
 
             window._fhsModalOrderId = orderId;
             window._fhsModalCatFilter = catFilter || '';
-            var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 IG 原始訊息';
-            document.getElementById('fhsModalTitle').textContent = titleLabel + ' #' + (o.Order_ID || orderId);
+            window._fhsMode2Loaded = false;   // lazy-load flag: Mode 2 not yet fetched
+            window._fhsMode2Hash   = '';      // dirty-diff baseline hash
 
-            // Prefer dedicated A/B fields (populated after migration 0016); fall back to positional extraction
+            var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 訂單詳情';
+            document.getElementById('fhsModalTitle').textContent = titleLabel + '  ' + (o.Order_ID || orderId);
+
             var _rawText = o.Full_Order_Text || '';
             var currentText = catFilter === 'A'
                 ? (o.Full_Order_Text_A || _extractOrderText(_rawText, 'A'))
@@ -7553,33 +7699,65 @@
                     ? (o.Full_Order_Text_B || _extractOrderText(_rawText, 'B'))
                     : _rawText;
             var escapedText = currentText.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-            var overrideBadgeHtml = '<span id="fhsOverrideBadge" style="display:' + (o.is_text_overridden ? 'inline-block' : 'none') + ';padding:2px 8px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:4px;font-size:11px;font-weight:600;">✏ 已人工編輯</span>';
+            var isOverridden = !!o.is_text_overridden;
+            var eid = orderId.replace(/'/g, "\\'");
+            var cf  = (catFilter || '').replace(/'/g, "\\'");
 
             var msgHtml =
-                '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;">' +
-                    overrideBadgeHtml +
-                    '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + orderId + '\',\'' + (catFilter||'') + '\')" ' +
-                        'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;">✏️ 編輯</button>' +
+                // Drag handle (visible only on mobile via CSS)
+                '<div class="fhs-modal-drag"></div>' +
+                // Tab bar
+                '<div class="fhs-modal-tabs">' +
+                    '<button class="fhs-modal-tab active" id="fhsTabBtn-text"   onclick="switchModalTab(\'text\')">📝 訊息文本</button>' +
+                    '<button class="fhs-modal-tab"        id="fhsTabBtn-detail" onclick="switchModalTab(\'detail\')">🛠 訂單明細</button>' +
+                    '<button class="fhs-modal-tab"        id="fhsTabBtn-finance" onclick="switchModalTab(\'finance\')">💰 財務</button>' +
                 '</div>' +
-                '<div id="fhsOrderViewDiv" style="padding:12px;white-space:pre-wrap;color:#222;font-family:var(--fhs-font-mono,monospace);font-size:14px;background:#fcfcfc;border:1px solid var(--fhs-border);border-radius:8px;max-height:65dvh;overflow-y:auto;text-align:left;line-height:1.6;margin:0 12px 12px;">' +
-                    (currentText ? escapedText : '<span style="color:#aaa;">（無原始訊息）</span>') +
+
+                // ── Tab 0: Mode 1 — text snapshot (existing edit path) ──────────────
+                '<div class="fhs-modal-tab-pane active" id="fhsTabPane-text">' +
+                    '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:10px 12px 6px;">' +
+                        '<span id="fhsOverrideBadge" style="display:' + (isOverridden ? 'inline-flex' : 'none') + ';align-items:center;gap:4px;padding:3px 8px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:4px;font-size:11px;font-weight:600;" title="文本已人工編輯，與訂單明細可能不一致">⚠ 已人工編輯</span>' +
+                        '<button id="fhsRegenBtn" onclick="regenerateFromItems(\'' + eid + '\')" ' +
+                            'style="display:' + (isOverridden ? 'inline-block' : 'none') + ';padding:3px 10px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:5px;cursor:pointer;font-size:12px;color:#3a5fc8;flex-shrink:0;" ' +
+                            'title="以訂單明細重建文本快照（清除人工編輯旗標）">🔄 重新生成</button>' +
+                        '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + eid + '\',\'' + cf + '\')" ' +
+                            'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;margin-left:auto;">✏️ 編輯</button>' +
+                    '</div>' +
+                    '<div id="fhsOrderViewDiv" style="padding:12px;white-space:pre-wrap;color:#222;font-family:var(--fhs-font-mono,monospace);font-size:14px;background:#fcfcfc;border:1px solid var(--fhs-border);border-radius:8px;max-height:58dvh;overflow-y:auto;text-align:left;line-height:1.6;margin:0 12px 12px;">' +
+                        (currentText ? escapedText : '<span style="color:#aaa;">（無原始訊息）</span>') +
+                    '</div>' +
+                    '<div id="fhsOrderEditDiv" style="display:none;padding:0 12px;">' +
+                        '<textarea id="fhsOrderEditTextarea" ' +
+                            'style="width:100%;box-sizing:border-box;border:1px solid #c7d3f7;border-radius:8px;padding:12px;font-family:var(--fhs-font-mono,monospace);font-size:14px;line-height:1.6;color:#222;background:#fff;resize:vertical;min-height:180px;max-height:48dvh;overflow-y:auto;display:block;field-sizing:content;" ' +
+                            'oninput="sessionStorage.setItem(\'fhs_draft_\'+window._fhsModalOrderId,this.value)"></textarea>' +
+                    '</div>' +
+                    '<div id="fhsOrderEditActions" style="display:none;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--fhs-border);padding:10px 12px;gap:8px;justify-content:flex-end;align-items:center;">' +
+                        '<span id="fhsOrderSaveStatus" style="font-size:12px;color:#888;flex:1;margin-right:4px;"></span>' +
+                        '<button id="fhsOrderCancelBtn" onclick="cancelEdit()" style="padding:6px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#555;">取消</button>' +
+                        '<button id="fhsOrderSaveBtn" onclick="saveOrderText(\'' + eid + '\',\'' + cf + '\')" style="padding:6px 16px;border:none;border-radius:6px;background:#3a5fc8;cursor:pointer;font-size:13px;color:#fff;font-weight:600;">💾 儲存</button>' +
+                    '</div>' +
                 '</div>' +
-                '<div id="fhsOrderEditDiv" style="display:none;padding:0 12px;">' +
-                    '<textarea id="fhsOrderEditTextarea" ' +
-                        'style="width:100%;box-sizing:border-box;border:1px solid #c7d3f7;border-radius:8px;padding:12px;font-family:var(--fhs-font-mono,monospace);font-size:14px;line-height:1.6;color:#222;background:#fff;resize:vertical;min-height:180px;max-height:50dvh;overflow-y:auto;display:block;field-sizing:content;" ' +
-                        'oninput="sessionStorage.setItem(\'fhs_draft_\'+window._fhsModalOrderId,this.value)"></textarea>' +
+
+                // ── Tab 1: Mode 2 — structured order_items editor ─────────────────
+                '<div class="fhs-modal-tab-pane" id="fhsTabPane-detail">' +
+                    '<div id="fhsMode2Loading" style="padding:32px;text-align:center;color:#888;font-size:13px;">⏳ 點擊「訂單明細」載入...</div>' +
+                    '<div id="fhsMode2Content"></div>' +
+                    '<div class="fhs-mode2-actions" id="fhsMode2Actions" style="display:none;">' +
+                        '<span id="fhsMode2Status" style="font-size:12px;color:#888;flex:1;"></span>' +
+                        '<button class="fhs-mode2-save-btn" id="fhsMode2SaveBtn" onclick="saveMode2Items(\'' + eid + '\')" disabled>💾 儲存明細</button>' +
+                    '</div>' +
                 '</div>' +
-                '<div id="fhsOrderEditActions" style="display:none;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--fhs-border);padding:10px 12px;gap:8px;justify-content:flex-end;align-items:center;">' +
-                    '<span id="fhsOrderSaveStatus" style="font-size:12px;color:#888;flex:1;margin-right:4px;"></span>' +
-                    '<button id="fhsOrderCancelBtn" onclick="cancelEdit()" style="padding:6px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#555;">取消</button>' +
-                    '<button id="fhsOrderSaveBtn" onclick="saveOrderText(\'' + orderId + '\',\'' + (catFilter||'') + '\')" style="padding:6px 16px;border:none;border-radius:6px;background:#3a5fc8;cursor:pointer;font-size:13px;color:#fff;font-weight:600;">💾 儲存</button>' +
+
+                // ── Tab 2: Finance — read-only financial summary ───────────────────
+                '<div class="fhs-modal-tab-pane" id="fhsTabPane-finance">' +
+                    buildFinanceTabHtml(o) +
                 '</div>';
 
             document.getElementById('fhsModalBody').innerHTML = msgHtml;
             document.getElementById('fhsOrderModal').classList.add('active');
             document.body.style.overflow = 'hidden';
 
-            // iOS keyboard: shrink modal box when virtual keyboard appears
+            // iOS visualViewport: shrink modal when virtual keyboard appears (Session 28 pattern)
             if (window.visualViewport && !window._fhsVVResize) {
                 window._fhsVVResize = function() {
                     var box = document.querySelector('.fhs-modal-box');
@@ -7740,6 +7918,369 @@
             if (catFilter === 'A') return parts[0];
             if (catFilter === 'B') return parts.slice(1).join('\n'); // rejoin if ever >2 parts
             return fullText;
+        }
+
+        // ── F3 v2: Dual-mode Modal helpers ─────────────────────────────────────────
+
+        // Switch between Modal tabs; Mode 2 tab triggers lazy load on first activation
+        function switchModalTab(tab) {
+            ['text','detail','finance'].forEach(function(t) {
+                var btn  = document.getElementById('fhsTabBtn-'    + t);
+                var pane = document.getElementById('fhsTabPane-'   + t);
+                if (btn)  { btn.classList.toggle('active',  t === tab); }
+                if (pane) { pane.classList.toggle('active', t === tab); }
+            });
+            if (tab === 'detail' && !window._fhsMode2Loaded) {
+                loadMode2Items(window._fhsModalOrderId);
+            }
+        }
+
+        // Lazy-load order_items for Mode 2 structured editor
+        async function loadMode2Items(orderId) {
+            var loadingEl  = document.getElementById('fhsMode2Loading');
+            var contentEl  = document.getElementById('fhsMode2Content');
+            var actionsEl  = document.getElementById('fhsMode2Actions');
+            if (!loadingEl || !contentEl) return;
+
+            loadingEl.textContent = '⏳ 載入訂單明細中...';
+            loadingEl.style.display = '';
+            contentEl.innerHTML = '';
+            if (actionsEl) actionsEl.style.display = 'none';
+
+            try {
+                var r = await fetch(
+                    _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
+                    '&select=item_key,item_category,specification,engraving_text,quantity,product_sku,' +
+                    'item_base_cost,subtotal_cost,handmodel_cost,keychain_cost,necklace_cost,batch_number,process_status' +
+                    '&order=item_category.asc,item_key.asc',
+                    { headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON } }
+                );
+                var items = await r.json();
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                if (!Array.isArray(items) || items.length === 0) {
+                    loadingEl.innerHTML = '<span style="color:#aaa;">此訂單暫無明細記錄</span>';
+                    return;
+                }
+
+                loadingEl.style.display = 'none';
+                contentEl.innerHTML = renderMode2Items(items);
+                if (actionsEl) actionsEl.style.display = 'flex';
+
+                // Baseline hash for dirty-diff detection
+                window._fhsMode2Hash = _hashMode2();
+                // Attach input listeners for dirty detection
+                contentEl.querySelectorAll('.fhs-item-eng-input,.fhs-item-qty-input').forEach(function(el) {
+                    el.addEventListener('input', _onMode2Change);
+                });
+
+                window._fhsMode2Loaded = true;
+            } catch(e) {
+                loadingEl.innerHTML = '❌ 載入失敗：' + e.message.substring(0, 60);
+                console.error('[loadMode2Items]', e);
+            }
+        }
+
+        // Render order_items as editable cards
+        // Derives a human-readable identifier for a Mode 2 item card.
+        // Combines who (嬰兒/大寶/家庭合成) with direction (左手/右手/左腳/右腳)
+        // so each card is uniquely identifiable at a glance.
+        function _mode2ItemLabel(it) {
+            var ik  = (it.item_key || '').toUpperCase();
+            var ikO = it.item_key || '';
+            var sp  = it.specification || '';
+            var cat = it.item_category || '';
+
+            // 立體擺設 — spec may hold frame/limb info (e.g. "木框 4肢")
+            if (ik.includes('_P_MAIN') || cat === '立體擺設') {
+                return sp ? '立體擺設 · ' + sp : '立體擺設';
+            }
+            // 羊毛氈
+            if (ik.includes('_W_WOOL') || ikO.includes('羊毛')) {
+                return sp || '羊毛氈公仔';
+            }
+            // 燈飾
+            if (ik.includes('_L_LIGHTS') || ikO.includes('燈飾')) {
+                return '💡 燈飾';
+            }
+            // 家庭合成
+            if (ik.includes('_K_FAM') || ikO.includes('家庭')) {
+                return '家庭合成鎖匙扣';
+            }
+            // Legacy pipe-format keys (e.g. "0696216 | 羊毛氈公仔 - 加購")
+            if (ikO.includes(' | ')) {
+                return sp || ikO.replace(/^[^|]+\|\s*/, '');
+            }
+
+            // Elder vs baby from item_key structure
+            var isElder = ik.includes('_K_E_') || ik.includes('_M_E_')
+                       || ikO.includes('大寶') || ikO.includes('長輩');
+            var who = isElder ? '大寶' : '嬰兒';
+
+            // Direction: check spec content first, then item_key suffix
+            var dir = '';
+            if      (sp.includes('左手') || ik.includes('_LH')) dir = '左手';
+            else if (sp.includes('右手') || ik.includes('_RH')) dir = '右手';
+            else if (sp.includes('左腳') || ik.includes('_LF')) dir = '左腳';
+            else if (sp.includes('右腳') || ik.includes('_RF')) dir = '右腳';
+            else if (sp.includes('手'))                         dir = sp.match(/[左右]?手/) ? sp.match(/[左右]?手/)[0] : '手';
+            else if (sp.includes('腳'))                         dir = sp.match(/[左右]?腳/) ? sp.match(/[左右]?腳/)[0] : '腳';
+
+            return dir ? who + ' · ' + dir : (sp || who);
+        }
+
+        function renderMode2Items(items) {
+            return items.map(function(it) {
+                var specRaw = it.specification || '';  // raw spec stored as data-attr for save pass-through
+                var specEsc = specRaw.replace(/</g,'&lt;').replace(/"/g,'&quot;');
+                var eng   = (it.engraving_text || '').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+                var ik    = (it.item_key || '').replace(/"/g,'&quot;');
+                var qty   = it.quantity || 1;
+                var label = _mode2ItemLabel(it).replace(/</g,'&lt;');
+                return '<div class="fhs-item-card" data-item-key="' + ik + '" data-spec="' + specEsc + '">' +
+                    '<div class="fhs-item-card-hdr">' +
+                        '<span class="fhs-item-cat-badge">' + (it.item_category || '未分類').replace(/</g,'&lt;') + '</span>' +
+                        '<span class="fhs-item-spec-text">' + label + '</span>' +
+                    '</div>' +
+                    '<div class="fhs-item-eng-lbl">刻字 / 備注</div>' +
+                    '<textarea class="fhs-item-eng-input" data-field="engraving_text" rows="2">' + eng + '</textarea>' +
+                    '<div class="fhs-item-qty-row">' +
+                        '<span class="fhs-item-qty-lbl">數量</span>' +
+                        '<input class="fhs-item-qty-input" type="number" min="1" data-field="quantity" value="' + qty + '">' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        // Compute a simple string hash of current Mode 2 form state for dirty-diff detection
+        function _hashMode2() {
+            var contentEl = document.getElementById('fhsMode2Content');
+            if (!contentEl) return '';
+            var parts = [];
+            contentEl.querySelectorAll('.fhs-item-card').forEach(function(card) {
+                var ik  = card.dataset.itemKey || '';
+                var eng = (card.querySelector('[data-field="engraving_text"]') || {}).value || '';
+                var qty = (card.querySelector('[data-field="quantity"]') || {}).value || '';
+                parts.push(ik + '|' + qty + '|' + eng);
+            });
+            return parts.join(';;');
+        }
+
+        function _onMode2Change() {
+            var saveBtn  = document.getElementById('fhsMode2SaveBtn');
+            var statusEl = document.getElementById('fhsMode2Status');
+            var isDirty  = (_hashMode2() !== window._fhsMode2Hash);
+            if (saveBtn) { saveBtn.disabled = !isDirty; saveBtn.style.opacity = isDirty ? '1' : '.45'; }
+            if (statusEl && isDirty) statusEl.textContent = '⚠ 有未儲存的變更';
+        }
+
+        // Collect Mode 2 form data and call save_structured_order_items RPC
+        async function saveMode2Items(orderId) {
+            // Client-side concurrent lock (Session 7 pattern)
+            if (window._sbSyncInFlight && window._sbSyncInFlight[orderId]) {
+                showToast('⏳ 另一項儲存作業進行中，請稍候');
+                return;
+            }
+
+            var contentEl = document.getElementById('fhsMode2Content');
+            var saveBtn   = document.getElementById('fhsMode2SaveBtn');
+            var statusEl  = document.getElementById('fhsMode2Status');
+            if (!contentEl) return;
+
+            // Guard: dirty-diff — skip RPC if nothing changed
+            var currentHash = _hashMode2();
+            if (currentHash === window._fhsMode2Hash) {
+                showToast('ℹ 無變更，無需儲存');
+                return;
+            }
+
+            // Collect items from DOM
+            var _go  = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var _ord = _go.find(function(x){ return x.id === orderId; });
+            var existingItems = (_ord && _ord.items) ? _ord.items : [];
+
+            var newItems = [];
+            var validationErr = null;
+            contentEl.querySelectorAll('.fhs-item-card').forEach(function(card) {
+                var ik  = card.dataset.itemKey || '';
+                var eng = (card.querySelector('[data-field="engraving_text"]') || {}).value || '';
+                var qty = parseInt((card.querySelector('[data-field="quantity"]') || {}).value, 10) || 1;
+                if (qty <= 0) { validationErr = 'item_key ' + ik + ' 數量必須大於 0'; return; }
+
+                // Look up existing item for pass-through fields (costs, sku, etc.)
+                var prev = existingItems.find(function(it){ return it.item_key === ik || it.Order_Item_Key === ik; }) || {};
+                newItems.push({
+                    item_key:       ik,
+                    item_category:  card.querySelector('.fhs-item-cat-badge') ? card.querySelector('.fhs-item-cat-badge').textContent : '',
+                    specification:  card.dataset.spec || '',
+                    engraving_text: eng,
+                    quantity:       qty,
+                    product_sku:    prev.product_sku || prev.SKU || '',
+                    item_base_cost: prev.item_base_cost != null ? prev.item_base_cost : (prev.Base_Cost || 0),
+                    subtotal_cost:  prev.subtotal_cost  != null ? prev.subtotal_cost  : (prev.Subtotal_Cost || 0),
+                    handmodel_cost: prev.handmodel_cost != null ? prev.handmodel_cost : 0,
+                    keychain_cost:  prev.keychain_cost  != null ? prev.keychain_cost  : 0,
+                    necklace_cost:  prev.necklace_cost  != null ? prev.necklace_cost  : 0,
+                    batch_number:   prev.batch_number   || prev.Batch_Number || '',
+                    process_status: prev.process_status || '待製作'
+                });
+            });
+            if (validationErr) { showToast('❌ ' + validationErr); return; }
+            if (newItems.length === 0) { showToast('❌ 無明細項目可儲存'); return; }
+
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ 儲存中...'; }
+            if (statusEl) statusEl.textContent = '⏳ 儲存中...';
+            if (!window._sbSyncInFlight) window._sbSyncInFlight = {};
+            window._sbSyncInFlight[orderId] = true;
+
+            try {
+                var r = await fetch(_V41_SB_URL + '/rest/v1/rpc/save_structured_order_items', {
+                    method: 'POST',
+                    headers: {
+                        apikey: _V41_SB_ANON,
+                        Authorization: 'Bearer ' + _V41_SB_ANON,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ p_order_id: orderId, p_items_json: newItems })
+                });
+                var result = await r.json().catch(function(){ return {}; });
+                if (!r.ok) throw new Error((result.message || result.hint || JSON.stringify(result)).substring(0, 100));
+
+                // Update dirty-diff baseline
+                window._fhsMode2Hash = currentHash;
+
+                // Sync local cache: update items engraving/qty
+                if (_ord && _ord.items) {
+                    _ord.items.forEach(function(it) {
+                        var updated = newItems.find(function(ni){ return ni.item_key === (it.item_key || it.Order_Item_Key); });
+                        if (updated) {
+                            it.engraving_text = updated.engraving_text;
+                            it.Engraving = updated.engraving_text; // overview display field
+                            it.quantity = updated.quantity;
+                            it.Quantity = updated.quantity;
+                        }
+                    });
+                }
+                // Sync is_text_overridden flag in local cache (RPC clears it)
+                if (_ord) { _ord.is_text_overridden = false; }
+
+                // Re-render overview immediately so engraving column updates
+                if (typeof applyReviewFilters === 'function') applyReviewFilters();
+
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存明細'; saveBtn.style.opacity = '.45'; }
+                if (statusEl) statusEl.textContent = '✅ 已儲存';
+                showToast('✅ 訂單明細已儲存，總覽已更新');
+
+                // Reload Mode 1 text tab to show regenerated text
+                var viewDiv = document.getElementById('fhsOrderViewDiv');
+                var badgeEl = document.getElementById('fhsOverrideBadge');
+                var regenBtn = document.getElementById('fhsRegenBtn');
+                if (viewDiv && result.full_order_text !== undefined) {
+                    viewDiv.innerHTML = result.full_order_text
+                        ? result.full_order_text.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                        : '<span style="color:#aaa;">（無原始訊息）</span>';
+                }
+                if (badgeEl) badgeEl.style.display = 'none';   // cleared by RPC
+                if (regenBtn) regenBtn.style.display = 'none';
+
+            } catch(e) {
+                console.error('[saveMode2Items]', e);
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存明細'; saveBtn.style.opacity = '1'; }
+                if (statusEl) statusEl.textContent = '❌ 儲存失敗';
+                showToast('❌ 儲存失敗：' + e.message.substring(0, 60));
+            } finally {
+                if (window._sbSyncInFlight) window._sbSyncInFlight[orderId] = false;
+            }
+        }
+
+        // 🔄 Regenerate full_order_text from current order_items (Mode 1 護欄 button)
+        async function regenerateFromItems(orderId) {
+            var regenBtn = document.getElementById('fhsRegenBtn');
+            if (regenBtn) { regenBtn.disabled = true; regenBtn.textContent = '⏳ 重新生成中...'; }
+
+            try {
+                // Ensure Mode 2 items are loaded first
+                if (!window._fhsMode2Loaded) await loadMode2Items(orderId);
+
+                // Collect current items from Mode 2 DOM (uses same path as saveMode2Items)
+                var contentEl = document.getElementById('fhsMode2Content');
+                if (!contentEl || !contentEl.querySelector('.fhs-item-card')) {
+                    // No Mode 2 items — call RPC with fetch-from-DB (pass empty to trigger DB-side regen)
+                    // Actually: fetch items from DB then call RPC
+                    throw new Error('無訂單明細可用於重新生成');
+                }
+
+                // Reuse saveMode2Items logic but force-treat as dirty
+                var savedHash = window._fhsMode2Hash;
+                window._fhsMode2Hash = '__force_dirty__';  // make dirty
+                await saveMode2Items(orderId);
+                // saveMode2Items will reset hash on success
+
+            } catch(e) {
+                console.error('[regenerateFromItems]', e);
+                showToast('❌ 重新生成失敗：' + e.message.substring(0, 50));
+            } finally {
+                if (regenBtn) { regenBtn.disabled = false; regenBtn.textContent = '🔄 重新生成'; }
+            }
+        }
+
+        // Build read-only financial summary for Tab 2
+        function buildFinanceTabHtml(o) {
+            var rows = [
+                ['訂單編號', o.Order_ID || o.id || '—'],
+                ['客人姓名', o.Customer || o.Customer_Name || '—'],
+                ['售價',     '$' + (o.Final_Sale_Price != null ? o.Final_Sale_Price : '—')],
+                ['訂金',     '$' + (o.Deposit != null ? o.Deposit : '—')],
+                ['尾數',     '$' + (o.Balance != null ? o.Balance : '—')],
+                ['附加費',   '$' + (o.Additional_Fee != null ? o.Additional_Fee : '—')],
+                ['成本',     '$' + (o.Total_Cost != null ? o.Total_Cost : '—')],
+                ['利潤',     '$' + (o.Net_Profit != null ? o.Net_Profit : '—'), 'profit']
+            ];
+            var html = '<div style="padding:12px 4px;">';
+            rows.forEach(function(row) {
+                html += '<div class="fhs-finance-row">' +
+                    '<span class="fhs-finance-lbl">' + row[0] + '</span>' +
+                    '<span class="fhs-finance-val' + (row[2] ? ' ' + row[2] : '') + '">' + row[1] + '</span>' +
+                '</div>';
+            });
+            html += '</div>';
+            return html;
+        }
+
+        // Phase 3: Inline engraving quick-edit — Desktop hover ✏ / Mobile tap ✏
+        // Uses direct PATCH to order_items (same path as saveInlineEdit batch/status edits)
+        async function inlineEditEngraving(orderId, itemKey, currentEng) {
+            var newEng = window.prompt('編輯刻字\n（' + (itemKey || '') + '）', currentEng || '');
+            if (newEng === null) return;      // user cancelled
+            if (newEng === (currentEng || '')) return;  // no change
+
+            var _sbHdr = {
+                apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON,
+                'Content-Type': 'application/json', 'Prefer': 'return=representation'
+            };
+            try {
+                var r = await fetch(
+                    _V41_SB_URL + '/rest/v1/order_items?item_key=eq.' + encodeURIComponent(itemKey),
+                    { method: 'PATCH', headers: _sbHdr, body: JSON.stringify({ engraving_text: newEng }) }
+                );
+                var body = await r.json().catch(function(){ return []; });
+                if (!r.ok) throw new Error('PATCH ' + r.status + ' ' + JSON.stringify(body).substring(0, 60));
+                if (Array.isArray(body) && body.length === 0) throw new Error('PATCH 0 rows — item_key: ' + itemKey);
+
+                // Update local cache so re-render reflects change without full refetch
+                var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+                var _ord = _go.find(function(x){ return x.id === orderId; });
+                if (_ord && _ord.items) {
+                    var _it = _ord.items.find(function(it){ return (it.Item_ID || it.Order_Item_Key) === itemKey; });
+                    if (_it) { _it.Engraving = newEng; _it.Engraving_Text = newEng; _it.engraving_text = newEng; }
+                }
+
+                // Refresh overview so engraving column shows new value
+                if (typeof applyReviewFilters === 'function') applyReviewFilters();
+                showToast('✅ 刻字已更新');
+            } catch(e) {
+                console.error('[inlineEditEngraving]', e);
+                showToast('❌ 刻字更新失敗：' + e.message.substring(0, 50));
+            }
         }
 
         function _getOrderCatFlags(o) {
@@ -9460,6 +10001,7 @@
                 if (k.match(/_K_/)) return '金屬鎖匙扣';
                 if (k.match(/_M_/)) return '銀飾';
                 if (k.includes('_W_WOOL')) return '配件';
+                if (k.includes('_L_LIGHTS')) return '配件';
                 return '';
             }
             function _deriveSpec(key) {
@@ -10202,6 +10744,238 @@
         } else {
             init();
         }
+    })();
+    </script>
+
+    <!-- FS: Financial Settings System (Session 34) -->
+    <script>
+    (function() {
+        'use strict';
+
+        var _FS_SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
+        var _FS_SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+        // TODO (Fat Mo): 建立 n8n 財務批量重算工作流後，將 Webhook URL 填入此處
+        var _FS_N8N_WEBHOOK = '';
+
+        window._fhsCostConfig = {};
+
+        function _fsRpc(fn, body) {
+            return fetch(_FS_SB_URL + '/rest/v1/rpc/' + fn, {
+                method: 'POST',
+                headers: {
+                    'apikey': _FS_SB_ANON,
+                    'Authorization': 'Bearer ' + _FS_SB_ANON,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify(body)
+            }).then(function(r) {
+                return r.json().then(function(d) {
+                    if (!r.ok) throw new Error(d.message || d.error || JSON.stringify(d));
+                    return d;
+                });
+            });
+        }
+
+        function _fsSelect(table, qs) {
+            var url = _FS_SB_URL + '/rest/v1/' + table + '?' + (qs || 'select=*');
+            return fetch(url, {
+                headers: {
+                    'apikey': _FS_SB_ANON,
+                    'Authorization': 'Bearer ' + _FS_SB_ANON,
+                    'Accept': 'application/json'
+                }
+            }).then(function(r) {
+                return r.json().then(function(d) {
+                    if (!r.ok) throw new Error(d.message || JSON.stringify(d));
+                    return d;
+                });
+            });
+        }
+
+        // ── loadCostConfigurations ───────────────────────────
+        window.loadCostConfigurations = function() {
+            var badge = document.getElementById('finSettingsBadge');
+            var list  = document.getElementById('costConfigList');
+            if (!list) return;
+
+            if (badge) { badge.textContent = '載入中'; badge.className = 'sys-badge sys-badge-checking'; }
+
+            _fsSelect('cost_configurations', 'select=*&order=config_key.asc')
+                .then(function(rows) {
+                    window._fhsCostConfig = {};
+                    rows.forEach(function(r) {
+                        window._fhsCostConfig[r.config_key] =
+                            r.data_type === 'number' ? (parseFloat(r.config_value) || 0) : r.config_value;
+                    });
+
+                    if (!rows.length) {
+                        list.innerHTML = '<div style="color:var(--fhs-text-secondary);font-size:12px;padding:6px 0;">尚無設定資料（Migration 0020 未部署？）</div>';
+                    } else {
+                        list.innerHTML = rows.map(function(r) {
+                            return '<div style="display:flex;align-items:center;gap:8px;">'
+                                + '<label style="flex:1;font-size:12px;color:var(--fhs-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + (r.description || '') + '">'
+                                + (r.display_name || r.config_key) + '</label>'
+                                + '<input type="' + (r.data_type === 'number' ? 'number' : 'text') + '" '
+                                + 'data-key="' + r.config_key + '" value="' + r.config_value + '" '
+                                + 'min="0" step="0.01" '
+                                + 'style="width:88px;padding:4px 6px;border:1px solid var(--fhs-border);border-radius:5px;font-size:13px;text-align:right;background:var(--fhs-bg-elevated);color:var(--fhs-text-primary);">'
+                                + '<button onclick="window.saveSingleCostConfig(this)" data-key="' + r.config_key + '" '
+                                + 'style="padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;white-space:nowrap;">儲存</button>'
+                                + '</div>';
+                        }).join('');
+                    }
+                    if (badge) { badge.textContent = '已載入'; badge.className = 'sys-badge sys-badge-ok'; }
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] loadCostConfigurations:', e);
+                    list.innerHTML = '<div style="color:#ef4444;font-size:12px;">載入失敗：' + e.message + '</div>';
+                    if (badge) { badge.textContent = '載入失敗'; badge.className = 'sys-badge sys-badge-error'; }
+                });
+        };
+
+        // ── saveSingleCostConfig ─────────────────────────────
+        window.saveSingleCostConfig = function(btn) {
+            var key   = btn.dataset.key;
+            var input = btn.parentElement.querySelector('input[data-key="' + key + '"]');
+            if (!input) return;
+            var val = input.value;
+
+            btn.disabled = true; btn.textContent = '…';
+            _fsRpc('fhs_upsert_cost_config', { p_key: key, p_value: val, p_updated_by: 'dashboard' })
+                .then(function() {
+                    window._fhsCostConfig[key] = parseFloat(val) || val;
+                    btn.textContent = '✓';
+                    btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #059669;background:#d1fae5;color:#059669;font-size:12px;cursor:pointer;';
+                    setTimeout(function() {
+                        btn.textContent = '儲存';
+                        btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;';
+                        btn.disabled = false;
+                    }, 1800);
+                    if (window.showToast) window.showToast('✅ ' + (key) + ' 已更新為 ' + val);
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] saveSingleCostConfig:', e);
+                    btn.textContent = '失敗';
+                    btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #ef4444;background:#fee2e2;color:#ef4444;font-size:12px;cursor:pointer;';
+                    setTimeout(function() {
+                        btn.textContent = '儲存';
+                        btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;';
+                        btn.disabled = false;
+                    }, 2500);
+                    if (window.showToast) window.showToast('❌ 儲存失敗：' + e.message);
+                });
+        };
+
+        // ── estimateBatchImpact ──────────────────────────────
+        window.estimateBatchImpact = function() {
+            var scope      = (document.getElementById('batchScope') || {}).value;
+            var dateWrap   = document.getElementById('batchDateWrap');
+            var ordersWrap = document.getElementById('batchOrdersWrap');
+            var estEl      = document.getElementById('batchImpactEstimate');
+
+            if (dateWrap)   dateWrap.style.display   = scope === 'date_after' ? 'block' : 'none';
+            if (ordersWrap) ordersWrap.style.display  = scope === 'specific'   ? 'block' : 'none';
+
+            if (!scope) {
+                if (estEl) estEl.textContent = '請選擇套用範圍以估算受影響訂單數...';
+                return;
+            }
+
+            if (estEl) estEl.innerHTML = '<span style="color:var(--fhs-text-secondary);">估算中...</span>';
+
+            var body = { p_scope: scope };
+            if (scope === 'date_after') {
+                var d = (document.getElementById('batchTargetDate') || {}).value;
+                if (!d) { if (estEl) estEl.textContent = '請選擇起始日期'; return; }
+                body.p_target_date = d;
+            } else if (scope === 'specific') {
+                var raw = (document.getElementById('batchTargetOrders') || {}).value || '';
+                var ids = raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+                if (!ids.length) { if (estEl) estEl.textContent = '請輸入至少一個訂單 ID'; return; }
+                body.p_target_orders = ids;
+            }
+
+            _fsRpc('fhs_estimate_batch_impact', body)
+                .then(function(count) {
+                    if (estEl) estEl.innerHTML = '預計影響 <strong style="font-size:15px;color:#1D3557;">' + count + '</strong> 筆訂單';
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] estimateBatchImpact:', e);
+                    if (estEl) estEl.textContent = '估算失敗：' + e.message;
+                });
+        };
+
+        // ── batchSafetyLockCheck ─────────────────────────────
+        window.batchSafetyLockCheck = function() {
+            var val = (document.getElementById('batchSafetyLock') || {}).value || '';
+            var btn = document.getElementById('btnExecuteBatchUpdate');
+            if (!btn) return;
+            var ok = (val === 'CONFIRM');
+            btn.disabled = !ok;
+            btn.style.background = ok ? '#2A9D8F' : '#94a3b8';
+            btn.style.cursor     = ok ? 'pointer' : 'not-allowed';
+        };
+
+        // ── executeFinancialBatchUpdate ──────────────────────
+        window.executeFinancialBatchUpdate = function() {
+            var scope = (document.getElementById('batchScope') || {}).value;
+            if (!scope) return;
+
+            var btn = document.getElementById('btnExecuteBatchUpdate');
+            if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
+
+            var body = { p_scope: scope };
+            if (scope === 'date_after') body.p_target_date = (document.getElementById('batchTargetDate') || {}).value;
+            if (scope === 'specific') {
+                var raw = (document.getElementById('batchTargetOrders') || {}).value || '';
+                body.p_target_orders = raw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+            }
+
+            _fsRpc('fhs_apply_financial_batch_update', body)
+                .then(function(result) {
+                    // Notify n8n webhook if configured
+                    if (_FS_N8N_WEBHOOK) {
+                        fetch(_FS_N8N_WEBHOOK, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ batch_id: result.batch_id, scope: scope })
+                        }).catch(function(e) {
+                            console.warn('[FinSettings] n8n webhook failed (non-critical):', e);
+                        });
+                    } else {
+                        console.warn('[FinSettings] _FS_N8N_WEBHOOK 未設定，n8n 未被通知。請 Fat Mo 建立工作流後填入 URL。');
+                    }
+
+                    if (window.showToast) window.showToast('✅ 已提交 ' + result.affected_rows + ' 筆重算任務 | ID: ' + String(result.batch_id).slice(0,8) + '…');
+                    console.log('[FinSettings] Batch submitted:', result);
+
+                    // Reset UI
+                    var sl = document.getElementById('batchSafetyLock');
+                    var bs = document.getElementById('batchScope');
+                    var ei = document.getElementById('batchImpactEstimate');
+                    if (sl) sl.value = '';
+                    if (bs) bs.value = '';
+                    if (ei) ei.textContent = '請選擇套用範圍以估算受影響訂單數...';
+                    window.batchSafetyLockCheck();
+                    window.estimateBatchImpact();
+                })
+                .catch(function(e) {
+                    console.error('[FinSettings] executeFinancialBatchUpdate:', e);
+                    if (window.showToast) window.showToast('❌ 提交失敗：' + e.message);
+                })
+                .finally(function() {
+                    if (btn) btn.textContent = '⚡ 執行重算';
+                });
+        };
+
+        // ── getOrderCost (global cache reader) ───────────────
+        // 供訂單建立邏輯讀取最新成本參數，取代硬編碼常數
+        window.getOrderCost = function(key, fallback) {
+            var val = window._fhsCostConfig[key];
+            return (val !== undefined && val !== null) ? val : (fallback !== undefined ? fallback : 0);
+        };
+
     })();
     </script>
 
