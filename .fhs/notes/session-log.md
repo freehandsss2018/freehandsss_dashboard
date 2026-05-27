@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-27 (Sessions 29–31.6): PGC-ODAT v3 Lite 落地 + 三項 Bug Fix + UI 欄位重排 ✅
+
+**Scope**: (1) Modal Phase A 收尾（migrations 0015/0016 套用）；(2) Modal 編輯 UI 一致性 3 項 Bug Fix；(3) PGC-ODAT v3 Lite 實裝（全域 SKU preload + CSS toggle + Desktop audit-fin + Mobile 💰 drawer + 💡 modal）；(4) IIFE scope 暴露修復、toggle re-render 修復；(5) UI 優化：tooltip 化 + 審計值從產品明細欄移至入帳/成本欄
+**Status**: ✅ 完成，V41 + current.html 同步（587,484 bytes）
+
+---
+
 ## 2026-05-25 (Sessions 22–24): 同步等待 UX 三層優化 ✅
 
 **Scope**: (1) silentPoll — 輪詢期間不清空表格，保留舊資料可見；(2) inline sync-indicator — 目標訂單行內顯示橙色旋轉「同步中」小標，頂部 Banner 保留；(3) checkSyncFinished 欄位名修復 — Supabase mapOrder 映射 `Customer`，非 `Customer_Name`，導致永遠返回 false；timeout 分支補 `_setSyncIndicator` 隱藏 + final refresh。

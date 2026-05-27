@@ -778,6 +778,13 @@
         .audit-fin .audit-na { color:#bbb; }
         .audit-fin .audit-footnote { color:#aaa; font-size:10px; flex-basis:100%; }
         .audit-fin .audit-modal-btn { cursor:pointer; background:none; border:none; font-size:12px; padding:0 2px; color:#4A90D9; }
+        /* PGC-ODAT: Audit column values (入帳 / 成本 cells) */
+        .audit-fin-col { display:none; }
+        body.fhs-audit-on .audit-fin-col { display:flex; flex-direction:column; align-items:center; gap:3px; margin-top:5px; padding-top:5px; border-top:1px dashed #ccd6f0; font-size:11px; }
+        .audit-fin-col .audit-sku-price  { color:#2A9D8F; font-weight:700; }
+        .audit-fin-col .audit-sku-profit { color:#1D3557; font-weight:700; }
+        .audit-fin-col .audit-na         { color:#ccc; }
+        .audit-fin-col .audit-modal-btn  { cursor:pointer; background:none; border:none; font-size:12px; padding:0 2px; color:#4A90D9; }
         /* Mobile item financial drawer */
         .item-financial-drawer { display:none; margin-top:6px; padding:6px 8px; background:#f8faff; border-radius:6px; border:1px solid #e0e8f5; font-size:11px; }
         .item-financial-drawer .ifd-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
@@ -6699,6 +6706,27 @@
                 if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="margin-top:4px; display:block; font-size:11px; padding:2px 6px;">📋 手模</button>';
                 if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;">📝 金屬</button>';
                 if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>';
+
+                // PGC-ODAT: per-item audit lists for 入帳 / 成本 columns
+                var _pgcItems = (o.items || []).map(function(it) {
+                    var _sku = it.Product_SKU || '';
+                    var _ent = _sku ? fhsSuggestedPriceMap[_sku] : null;
+                    return _ent ? { sku: _sku, price: _ent.price, cost: _ent.cost } : null;
+                });
+                var _pgcHas = _pgcItems.some(function(x){ return x !== null; });
+                var _pgcPriceList = _pgcHas
+                    ? '<div class="audit-fin-col">' + _pgcItems.map(function(x){
+                        return x ? '<span class="audit-sku-price">$' + x.price + '</span>' : '<span class="audit-na">—</span>';
+                    }).join('') + '</div>' : '';
+                var _pgcCostList = _pgcHas
+                    ? '<div class="audit-fin-col">' + _pgcItems.map(function(x, i){
+                        var _sk = ((o.items || [])[i] || {}).Product_SKU || '';
+                        var _skSafe = _sk.replace(/'/g,"\\'");
+                        return x
+                            ? '<span class="audit-sku-profit">$' + x.cost + '<button class="audit-modal-btn" onclick="openAuditModal(\'' + o.id + '\',\'' + i + '\',\'' + _skSafe + '\',' + x.price + ',' + x.cost + ')" title="對賬試算">💡</button></span>'
+                            : '<span class="audit-na">—</span>';
+                    }).join('') + '</div>' : '';
+
                 const orderLeftColsHtml = `
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
@@ -6721,9 +6749,11 @@
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${o.Customer || '-'}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
+                        ${_pgcPriceList}
                     </td>
                     <td id="cost-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        $${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}
+                        <span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
+                        ${_pgcCostList}
                     </td>
                     <td id="profit-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         $${displayedProfit}
@@ -6838,9 +6868,8 @@
                         var _auditPriceHtml = _auditEntry
                             ? `<span class="audit-sku-price">$${_auditEntry.price}</span><span class="audit-sku-profit">$${(_auditEntry.price - _auditEntry.cost).toFixed(0)}<button class="audit-modal-btn" onclick="openAuditModal('${o.id}','${index}','${_auditSku.replace(/'/g,"\\'")}',${_auditEntry.price},${_auditEntry.cost})" title="對賬試算">💡</button></span>`
                             : (_auditSku ? `<span class="audit-na" title="SKU: ${_auditSku}">—</span>` : `<span class="audit-na">—</span>`);
-                        let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height:42px; display:flex; align-items:center; justify-content:space-between; gap:4px;">
-                            <div style="flex:1; display:flex; flex-wrap:wrap; align-items:center; font-size:13px; padding:2px 4px;">${badgeHtml}</div>
-                            <div class="audit-fin">${_auditPriceHtml}</div>
+                        let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height:42px;">
+                            <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:13px; padding:2px 4px;">${badgeHtml}</div>
                         </div>`;
                         
                         // 刻字水平佈局 (V29) — 移除括號與文字輔助
@@ -7928,8 +7957,8 @@
                 const displayedCost = baseCost + numVal;
                 const displayedProfit = Number(order.Net_Profit || 0) - numVal;
 
-                const costCell = document.getElementById(`cost-cell-${recordId}`);
-                if (costCell) costCell.innerHTML = numVal > 0
+                const costVal = document.getElementById(`cost-val-${recordId}`);
+                if (costVal) costVal.innerHTML = numVal > 0
                     ? `$${baseCost}<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${numVal}&nbsp;補打</span>`
                     : `$${displayedCost}`;
 

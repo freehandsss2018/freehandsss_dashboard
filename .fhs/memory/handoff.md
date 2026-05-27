@@ -6,6 +6,31 @@ cl-flow 2026-05-26-0627：✅ Phase A 完整收尾（migrations 套用 + code fi
 
 ---
 
+## 本次 Session 完成事項（2026-05-27 Session 31.6 — PGC-ODAT 審計值欄位重排）
+
+### 31.6 入帳/成本欄位重排（審計值從產品明細欄移至金融欄）
+
+**問題**：審計值（建議價/建議利潤）顯示在「產品明細」欄右側，不直觀。
+**目標**：建議價 → 入帳欄下方；SKU成本 → 成本欄下方（對齊財務列語義）
+
+**修改內容**：
+- CSS 新增 `.audit-fin-col`（hidden by default，`body.fhs-audit-on` 時顯示 flex column）
+- 在 `orderLeftColsHtml` 前建立 `_pgcItems`/`_pgcPriceList`/`_pgcCostList` per-item 列表
+- 入帳 `<td>` 注入 `${_pgcPriceList}`（綠色建議價，每 item 一行）
+- 成本 `<td>` 主值包 `<span id="cost-val-${o.id}">`，注入 `${_pgcCostList}`（SKU成本 + 💡）
+- `prodHtml review-item-card` 移除 `.audit-fin` div，還原非 flex 樣式
+- `updateFinancialsLocally` 改為更新 `cost-val-${recordId}` span（保護審計值不被清除）
+- **V41 → current.html 同步** ✅（587,484 bytes，exact match）
+
+**後效稽核**：
+- [A] 結構變動：未觸發
+- [B] 制度層變動：未觸發
+- [C] CHANGELOG：✅ 已更新（2026-05-27 Session 31.6 條目）
+
+**Subagent 使用記錄**：未使用（定點 6 項 Edit，直接執行）
+
+---
+
 ## 本次 Session 完成事項（2026-05-27 Session 31.5 — PGC-ODAT 三項修復 + UI 優化）
 
 ### 31.5 PGC-ODAT 上線後 Bug Fix × 3 + UI 優化

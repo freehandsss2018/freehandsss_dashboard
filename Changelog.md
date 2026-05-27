@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-05-27] 📐 PGC-ODAT 審計值欄位重排（Session 31.6）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` + `Freehandsss_dashboard_current.html`
+
+- 建議價 → 入帳欄下方（dashed 分隔線，每 item 一行，綠色）
+- SKU成本 → 成本欄下方（每 item 一行，附 💡 對賬試算）
+- 產品明細欄還原純淨 badges，移除 `.audit-fin` div
+- `cost-val-${id}` span 保護：`updateFinancialsLocally` 精準更新值 span，不清除審計列
+
+---
+
 ## [2026-05-27] 🔧 PGC-ODAT 三項 Bug Fix + UI 優化（Session 31.5）
 
 **修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` + `Freehandsss_dashboard_current.html`（同步）

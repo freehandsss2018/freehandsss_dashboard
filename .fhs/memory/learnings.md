@@ -35,6 +35,8 @@
 - **【高頻 ⚠️】Chrome Date Parsing 異常與表格排序還原失效**：`new Date("DD/MM/YYYY")` 在 Chrome 等瀏覽器中會解析為 `Invalid Date` (NaN)，導致以該格式進行的日期排序失效。且在頁面載入時還原 filters 雖成功設定選單，但渲染卻繞過 `applyReviewFilters()` 而直接 `renderReviewTable()` 導致表格未排序。解法：在排序前以正則/切割手動解析 `DD/MM/YYYY`，且在 fetch callback 尾端強制呼叫 `applyReviewFilters()` 進行二次過濾與排序。 — 源自 2026-05-25
 - **【高頻 ⚠️】AI 違反 Rule 3.14 未將實施計畫寫入專案實體路徑**：AI 未遵循 `/ag-plan` 指令將實施計畫寫入專案的 `a2_implementation_plan.md`，且未使用繁體中文。必須牢記：所有正式報告與計畫一律實體落盤至專案相對應目錄，且對話與生成內容須遵守繁體中文原則。 — 源自 2026-05-25
 
+- **【P9】IIFE 閉包函式 onclick 靜默失效**：函式定義在 IIFE `(function(){'use strict';})()` 內，`onclick="fn()"` 全域找不到函式，完全靜默無錯誤。修復：在 IIFE 末尾明確 `window.fn = fn` 暴露。所有新增 onclick 函式必查此項 — 源自 2026-05-27
+- **CSS toggle-only 顯示陷阱**：以 CSS class toggle 控制 display，若內容在 Map 空時已烘入 `—`，切換後只顯示舊快照。必須在 toggle ON 時重新 render（呼叫 applyReviewFilters），而非純 CSS 切換 — 源自 2026-05-27
 - **SELECT / PATCH 帶未套用欄位 → PostgREST 400 整個 fetch 炸掉**：新欄位加入 SELECT 或 PATCH body 前，必須先確認 migration 已套用；否則整個訂單總覽失連。順序：migration 套用 → 加 SELECT → 加 PATCH。 — 源自 2026-05-26
 - **文字分割用位置邏輯比 keyword search 更可靠**：`indexOf('吊飾產品')` 在舊版模板訂單上找不到關鍵字，返回空字串後 `||` fallback 暴露全文。正確做法：`parts[0]` = A、`parts.slice(1)` = B，位置不依賴模板版本 — 源自 2026-05-26
 - **globalOrders cache 欄位名稱陷阱**：Supabase fetch 把 snake_case 映射為 `o.Customer`（非 `o.Customer_Name`）。更新 cache 若只寫 `o.Customer_Name`，Review 表渲染的 `o.Customer` 永遠不更新。寫 cache 時必須同步確認欄位映射關係。 — 源自 2026-05-27
