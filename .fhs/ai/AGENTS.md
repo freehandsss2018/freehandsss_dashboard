@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.7
-> Last updated: 2026-05-23
+> Version: v1.4.8
+> Last updated: 2026-05-25
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.6 (Supabase-First Strategy)
+- **版本**：v1.4.8 (Supabase-First Strategy)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
@@ -132,6 +132,8 @@
 
 ### 報告與產出物工作區存放守護 (Rule 3.14)
 - **強制工作區存放**：凡 AI 生成之所有正式報告、設計提案（Plan）、審閱意見（Review）及任務完成報告（Completion Report），**必須存放在專案工作區（Project Workspace）內部的適當目錄中**（例如 `.fhs/reports/` 或 `.fhs/notes/`）。
+- **實施計畫路徑指引**：Antigravity (A2) 產出的本地實施計畫必須寫入：`d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\reports\planning\a2_implementation_plan.md`。
+- **語系一致性要求**：所有正式報告、計畫與對話輸出必須遵循 **繁體中文** 原則，嚴禁使用英文或其他非指定語系作為主要撰寫語言。
 - **禁止寫入外部路徑**：絕對禁止將此類文件寫入工作區外的系統暫存區、緩存區或 AI App Data 目錄（如 `~/.gemini/antigravity/brain/...`）。
 - **原因**：確保所有產出物均能被編輯器（如 VS Code、Cursor）的 `@` 檔案索引功能正確檢索與鏈接，方便用戶隨時引用。
 

@@ -7469,6 +7469,7 @@
             if (!o) { console.warn('[FHS Modal] order not found:', orderId); return; }
 
             window._fhsModalOrderId = orderId;
+            window._fhsModalCatFilter = catFilter || '';
             var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 IG 原始訊息';
             document.getElementById('fhsModalTitle').textContent = titleLabel + ' #' + (o.Order_ID || orderId);
 
@@ -7485,7 +7486,7 @@
             var msgHtml =
                 '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;">' +
                     overrideBadgeHtml +
-                    '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + orderId + '\')" ' +
+                    '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + orderId + '\',\'' + (catFilter||'') + '\')" ' +
                         'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;">✏️ 編輯</button>' +
                 '</div>' +
                 '<div id="fhsOrderViewDiv" style="padding:12px;white-space:pre-wrap;color:#222;font-family:var(--fhs-font-mono,monospace);font-size:14px;background:#fcfcfc;border:1px solid var(--fhs-border);border-radius:8px;max-height:65dvh;overflow-y:auto;text-align:left;line-height:1.6;margin:0 12px 12px;">' +
@@ -7499,7 +7500,7 @@
                 '<div id="fhsOrderEditActions" style="display:none;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--fhs-border);padding:10px 12px;gap:8px;justify-content:flex-end;align-items:center;">' +
                     '<span id="fhsOrderSaveStatus" style="font-size:12px;color:#888;flex:1;margin-right:4px;"></span>' +
                     '<button id="fhsOrderCancelBtn" onclick="cancelEdit()" style="padding:6px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#555;">取消</button>' +
-                    '<button id="fhsOrderSaveBtn" onclick="saveOrderText(\'' + orderId + '\')" style="padding:6px 16px;border:none;border-radius:6px;background:#3a5fc8;cursor:pointer;font-size:13px;color:#fff;font-weight:600;">💾 儲存</button>' +
+                    '<button id="fhsOrderSaveBtn" onclick="saveOrderText(\'' + orderId + '\',\'' + (catFilter||'') + '\')" style="padding:6px 16px;border:none;border-radius:6px;background:#3a5fc8;cursor:pointer;font-size:13px;color:#fff;font-weight:600;">💾 儲存</button>' +
                 '</div>';
 
             document.getElementById('fhsModalBody').innerHTML = msgHtml;
@@ -7528,7 +7529,7 @@
             }
         }
 
-        function enterEditMode(orderId) {
+        function enterEditMode(orderId, catFilter) {
             var viewDiv    = document.getElementById('fhsOrderViewDiv');
             var editDiv    = document.getElementById('fhsOrderEditDiv');
             var editActions = document.getElementById('fhsOrderEditActions');
@@ -7538,8 +7539,12 @@
 
             var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
             var o = _go.find(function(x){ return x.id === orderId; });
+            var _rawFull = o ? o.Full_Order_Text || '' : '';
+            var _sectionText = catFilter === 'A' ? ((o && o.Full_Order_Text_A) || _extractOrderText(_rawFull, 'A') || _rawFull)
+                             : catFilter === 'B' ? ((o && o.Full_Order_Text_B) || _extractOrderText(_rawFull, 'B') || _rawFull)
+                             : _rawFull;
             var draft = sessionStorage.getItem('fhs_draft_' + orderId);
-            ta.value = (draft !== null) ? draft : (o ? o.Full_Order_Text || '' : '');
+            ta.value = (draft !== null) ? draft : _sectionText;
 
             viewDiv.style.display = 'none';
             editDiv.style.display = '';
@@ -7561,7 +7566,7 @@
             if (orderId) sessionStorage.removeItem('fhs_draft_' + orderId);
         }
 
-        async function saveOrderText(orderId) {
+        async function saveOrderText(orderId, catFilter) {
             var ta        = document.getElementById('fhsOrderEditTextarea');
             var saveBtn   = document.getElementById('fhsOrderSaveBtn');
             var cancelBtn = document.getElementById('fhsOrderCancelBtn');
@@ -7581,9 +7586,28 @@
             var _sbHdr = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
             try {
+                // When editing a single section, reconstruct the full combined text for DB PATCH
+                var _fullCombined = newText;
+                if (catFilter) {
+                    var _gx = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+                    var _ox = _gx.find(function(x){ return x.id === orderId; });
+                    if (_ox) {
+                        var _oldA = _ox.Full_Order_Text_A || _extractOrderText(_ox.Full_Order_Text || '', 'A') || '';
+                        var _oldB = _ox.Full_Order_Text_B || _extractOrderText(_ox.Full_Order_Text || '', 'B') || '';
+                        if (catFilter === 'A') _fullCombined = newText + (_oldB ? '\n' + _oldB : '');
+                        else if (catFilter === 'B') _fullCombined = (_oldA ? _oldA + '\n' : '') + newText;
+                    }
+                }
+                var _textA = _extractOrderText(_fullCombined, 'A');
+                var _textB = _extractOrderText(_fullCombined, 'B');
+                // Parse customer name from edited section to keep customer_name in sync
+                var _nameMatch = newText.match(/聯絡人[：:]\s*(.+)/);
+                var _newCustomerName = _nameMatch ? _nameMatch[1].trim() : null;
+                var _patchBody = { full_order_text: _fullCombined, is_text_overridden: true, full_order_text_a: _textA, full_order_text_b: _textB };
+                if (_newCustomerName) _patchBody.customer_name = _newCustomerName;
                 var r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId), {
                     method: 'PATCH', headers: _sbHdr,
-                    body: JSON.stringify({ full_order_text: newText })
+                    body: JSON.stringify(_patchBody)
                 });
                 var body = await r.json().catch(function() { return []; });
                 if (!r.ok) throw new Error('PATCH ' + r.status + ' ' + JSON.stringify(body).substring(0, 80));
@@ -7592,15 +7616,22 @@
                 // Update local cache
                 var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
                 var o = _go.find(function(x){ return x.id === orderId; });
-                if (o) { o.Full_Order_Text = newText; o.is_text_overridden = true; }
+                if (o) {
+                    o.Full_Order_Text = _fullCombined; o.is_text_overridden = true;
+                    o.Full_Order_Text_A = _textA; o.Full_Order_Text_B = _textB;
+                    // Bug 1 fix: Review table renders o.Customer (mapped from customer_name on fetch)
+                    if (_newCustomerName) { o.Customer = _newCustomerName; o.Customer_Name = _newCustomerName; }
+                }
 
                 // Clear draft
                 sessionStorage.removeItem('fhs_draft_' + orderId);
 
-                // Refresh view div
+                // Refresh view div (apply catFilter so metal modal stays on metal section after save)
                 var viewDiv = document.getElementById('fhsOrderViewDiv');
-                if (viewDiv) viewDiv.innerHTML = newText
-                    ? newText.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                // catFilter: newText is already section-only; no catFilter: show full
+                var _displayText = catFilter ? newText : _fullCombined;
+                if (viewDiv) viewDiv.innerHTML = _displayText
+                    ? _displayText.replace(/&/g,'&amp;').replace(/</g,'&lt;')
                     : '<span style="color:#aaa;">（無原始訊息）</span>';
 
                 // Show override badge
@@ -7616,6 +7647,8 @@
                 if (viewDiv)     viewDiv.style.display = '';
                 if (editBtn)     editBtn.style.display = '';
 
+                // Re-render review table so customer name column updates immediately
+                if (typeof applyReviewFilters === 'function') applyReviewFilters();
                 showToast('✅ 訂單訊息已儲存');
             } catch(e) {
                 console.error('[saveOrderText] PATCH failed:', e.message);
@@ -9294,6 +9327,8 @@
                 adjustment_amount: payload.Adjustment_Amount || 0,
                 final_sale_price:  payload.System_Final_Sale_Price || 0,
                 full_order_text:   payload.Full_Order_Text || '',
+                full_order_text_a: _extractOrderText(payload.Full_Order_Text || '', 'A'),
+                full_order_text_b: _extractOrderText(payload.Full_Order_Text || '', 'B'),
                 raw_form_state:    rawFormObj,
                 ...(mode === 'create' ? { confirmed_at: new Date().toISOString().slice(0, 10) } : {})
             };
@@ -9642,7 +9677,7 @@
             // Only pass status values that exist in Supabase ENUM; manufacturing-step values cause errors
             const SB_ORDER_STATUSES = new Set(['待確認','製作中','完成','已取件','已取消']);
             // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
-            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
+            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
 
             if (status && SB_ORDER_STATUSES.has(status)) qs['process_status'] = 'eq.' + status;
             if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';

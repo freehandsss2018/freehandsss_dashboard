@@ -1,25 +1,48 @@
 # Changelog
 
+## [2026-05-27] 🔧 Modal 編輯 UI 一致性修復（Session 30 — 3 項 bug fix）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（3 項修復）
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`（同步完成）
+
+**Bug Fix 清單**：
+- **Bug 1 — Review 表客名不更新**：`saveOrderText` 更新 `o.Customer_Name` 但 Review table 渲染 `o.Customer`（Supabase fetch 時映射 `customer_name → o.Customer`），改為同時更新 `o.Customer` + `o.Customer_Name`
+- **Bug 2 — 金屬 modal 重開後顯示舊訊息**：用戶在手模段修改客名，`_extractOrderText(newText,'B')` 的金屬段仍含舊名。修復：`saveOrderText` 重建 `_fullCombined`（section text + 舊另一段），再由 `_fullCombined` 分派 A/B
+- **Bug 3 — 編輯框顯示全文 vs 原始訊息只顯示段落不一致**：`enterEditMode` 接受 catFilter 參數，只載入對應段落文字；`saveOrderText` 在 catFilter 存在時從 cache 取舊另一段重組 `_fullCombined` 後再 PATCH，確保 DB `full_order_text` 完整保留兩段
+
+---
+
+## [2026-05-27] ✅ Modal Phase A 完整收尾（migrations 套用 + code fixes + current.html 同步）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（3 項 bug fix）
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`（同步完成）
+
+**本次修復（/execute 授權）**：
+- **SELECT query 補欄位**：新增 `is_text_overridden,full_order_text_a,full_order_text_b` 至 `sbFetchGlobalReview` 查詢（之前缺漏導致欄位永遠回傳 undefined）
+- **saveOrderText PATCH 補全**：PATCH body 加入 `is_text_overridden: true` + `full_order_text_a/b`（_extractOrderText 派生）；local cache 同步更新 `Full_Order_Text_A/B`
+- **sbSyncOrder orderRow 補全**：新建/更新訂單時寫入 `full_order_text_a/b`，確保分段欄位與主文字同步
+
+**前序完成（2026-05-26 Session 28）**：
+- migrations 0015/0016 由 Fat Mo 套用至 Supabase ✅
+
+---
+
 ## [2026-05-26] ✨ Modal 訂單訊息編輯功能 Phase A（cl-flow 2026-05-26-0627）
 
 **修改檔案**：
 - `Freehandsss_Dashboard/freehandsss_dashboardV41.html`
-- `supabase/migrations/0015_add_is_text_overridden.sql`（新建，待套用）
-- `supabase/migrations/0016_add_order_text_split_columns.sql`（新建，待套用）
+- `supabase/migrations/0015_add_is_text_overridden.sql`（新建）
+- `supabase/migrations/0016_add_order_text_split_columns.sql`（新建）
 
 **功能說明**：
 - **✏️ 編輯模式**：Modal 新增「✏️ 編輯」按鈕，切換 textarea 編輯視圖
 - **儲存至 Supabase**：PATCH `orders.full_order_text`，失敗時 toast 提示並保留 sessionStorage 草稿
-- **Override Badge**：`is_text_overridden=true` 時顯示「✏ 已人工編輯」標籤（需 migration 0015）
+- **Override Badge**：`is_text_overridden=true` 時顯示「✏ 已人工編輯」標籤
 - **iOS 鍵盤處理**：`visualViewport.resize` 動態收縮 modal box 高度
-- **Sticky 底部操作欄**：儲存 / 取消按鈕固定於 modal 底部
 - **`_extractOrderText()`**：按 `Freehandsss 訂單確認` 邊界做位置分割，手模 = parts[0]，金屬 = parts.slice(1)
-- **`openOrderModal` catFilter 修正**：catFilter='A'/'B' 現正確顯示各自段落，不再互相包含
-
-**待完成（需 Fat Mo 操作）**：
-- 套用 migration 0015（`is_text_overridden` 欄位）
-- 套用 migration 0016（`full_order_text_a/b` 欄位）
-- 授權 current.html 同步（pre-tool-guard 阻擋，需明確授權）
+- **catFilter 修正**：catFilter='A'/'B' 現正確顯示各自段落
 
 ---
 

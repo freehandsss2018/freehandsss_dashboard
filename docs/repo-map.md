@@ -211,6 +211,8 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 腳本說明索引
 │   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
 │   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner）
+│   ├── repair/                          ← 財務 / 資料修補腳本（一次性，需人工確認後執行）
+│   │   └── sync_0600701.js             ← 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）
 │   └── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │       ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
 │       ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）

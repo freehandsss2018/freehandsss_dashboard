@@ -1,8 +1,57 @@
-# FHS Handoff - 2026-05-26
+# FHS Handoff - 2026-05-27
 
-當前版本：v1.4.7（憲法層）/ V41（UI層）→ current.html 同步待授權
+當前版本：v1.4.8（憲法層）/ V41（UI層）→ current.html ✅ 已同步
 n8n Workflow：V47.10（Mirror to Supabase）
-cl-flow 2026-05-26-0627：CONDITIONAL_READY → 執行中（Phase A 完成，migration 待套用）
+cl-flow 2026-05-26-0627：✅ Phase A 完整收尾（migrations 套用 + code fixes + sync）
+
+---
+
+## 本次 Session 完成事項（2026-05-27 Session 30 — Modal 編輯 UI 一致性修復）
+
+### 30. Modal saveOrderText / enterEditMode 3 項 Bug Fix
+
+**完成事項**：
+- **Bug 1 — Review 表客名不更新**：`saveOrderText` 原本只更新 `o.Customer_Name`，但 Review table 渲染 `o.Customer`（Supabase fetch mapping）→ 改為同時更新兩個 field
+- **Bug 2 — 金屬 modal 重開後顯示舊客名**：`_extractOrderText(newText,'B')` 金屬段仍含舊名 → 修復：以重組 `_fullCombined` 方式確保 A/B split 皆套用最新客名
+- **Bug 3 — 原始訊息 vs 編輯框內容不一致**：`enterEditMode` 新增 catFilter 參數，按段載入；`saveOrderText` 在 catFilter 存在時從 cache 取另一段重組完整 full_order_text 再 PATCH
+- **V41 → current.html 同步** ✅
+
+**後效稽核**：
+- [A] 結構變動：未觸發
+- [B] 制度層變動：未觸發
+- [C] CHANGELOG：✅ 已更新（2026-05-27 Session 30 條目）
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（定點代碼修復，直接執行更高效）|
+| 遵從 Router | — |
+
+---
+
+## 本次 Session 完成事項（2026-05-27 Session 29 — Modal Phase A 完整收尾）
+
+### 29. Modal Phase A 收尾（migrations 套用 + 三項 code fix + current.html sync）
+
+**完成事項**：
+- **Migrations 由 Fat Mo 套用**：0015（`is_text_overridden`）+ 0016（`full_order_text_a/b`）→ Supabase ✅
+- **SELECT query 補三欄位**：`sbFetchGlobalReview` 的 select 字串加入 `is_text_overridden,full_order_text_a,full_order_text_b`（欄位之前未 fetch，導致 undefined）
+- **saveOrderText PATCH 補全**：PATCH body 加 `is_text_overridden: true` + `full_order_text_a/b`（_extractOrderText 派生）；local cache 同步寫 `o.Full_Order_Text_A/B`
+- **sbSyncOrder orderRow 補全**：新建/編輯訂單時寫入 `full_order_text_a/b`，split 欄位與主文字保持同步
+- **V41 → current.html 同步**：/execute 授權後 cp，570,589 bytes，diff 完全一致 ✅
+
+**後效稽核**：
+- [A] 結構變動：未觸發
+- [B] 制度層變動：未觸發
+- [C] CHANGELOG：✅ 已更新（2026-05-27 Modal Phase A 完整收尾條目）
+
+**Subagent 使用記錄**
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（三個定點 Edit + cp sync，直接執行更高效）|
+| 遵從 Router | — |
 
 ---
 
@@ -21,17 +70,11 @@ cl-flow 2026-05-26-0627：CONDITIONAL_READY → 執行中（Phase A 完成，mig
 - Bug fix：PATCH body 移除未存在的 `is_text_overridden`（儲存失敗根因）
 - Bug fix：金屬訊息顯示手模內容（keyword search → positional split）
 
-**待後續（必須按序）**：
-1. **Fat Mo 授權 current.html 同步**（pre-tool-guard 阻擋，輸入 "sync current" 授權）
-2. **套用 migration 0015** → Supabase SQL Editor 執行 `supabase/migrations/0015_add_is_text_overridden.sql`
-3. **套用 migration 0016** → 同上執行 `supabase/migrations/0016_add_order_text_split_columns.sql`
-4. **migration 完成後告知** → Claude 補加 SELECT 欄位 + sbSyncOrder 寫入路徑 + saveOrderText PATCH
-
 **Subagent 使用記錄**
 | 項目 | 內容 |
 |------|------|
 | Router 建議 | build-error-resolver（多次錯誤診斷場景）|
-| 實際使用 | ❌ 未使用（直接 root-cause 修復：SELECT 含未存在欄位 / PATCH body 含未存在欄位 / positional split 邏輯錯誤）|
+| 實際使用 | ❌ 未使用（直接 root-cause 修復）|
 | 遵從 Router | — （緊急診斷場景，直接修復比 subagent 快）|
 
 ---
