@@ -7,6 +7,29 @@
 
 ## 記錄
 
+[2026-05-27] 編輯系統 v2 雙模式重構 — 架構決策
+
+決策：
+- **Mode 1 保留（文本快照編輯）**：`saveOrderText` 不改行為；`is_text_overridden = true` flag 防止 n8n 下次 sync 覆蓋手動文本。
+- **Mode 2 新增（order_items 結構化編輯）**：`save_structured_order_items` RPC（SECURITY DEFINER）原子化 DELETE+INSERT；完成後清除 `is_text_overridden = false`，重新開放 n8n regeneration。
+- **n8n guard 落 DB 層（migration 0018）而非 Code Node**：NAS n8n Code Node 不支援 `fetch()`（P6），guard 寫在 `sync_order_to_mirror` ON CONFLICT CASE WHEN，不受 sandbox 限制。
+- **Dirty-diff 去重**：`_hashMode2()` 字串 hash 比對，hash 相同禁止 POST，節省 DB write 和 token。
+- **Lazy-load（`_fhsMode2Loaded` flag）**：Mode 2 items 只在 tab 首次點擊時 fetch，避免每次開 modal 多一次 DB 讀。
+- **`_prevItemMap` 保護（Session 6 Bug A 模式複用）**：DELETE 前快照 `batch_number`/`process_status`，COALESCE 還原；保護既有批次資料不被 Mode 2 save 清空。
+- **V47.11 節點重命名 + jsCode 備注**：本地 JSON 備份更新；實際保護在 DB 層（migration 0018）。
+- **Mobile bottom sheet（`@media max-width:768px`）**：`align-items:flex-end` + `border-radius:16px 16px 0 0`，直接 CSS 不加 JS resize 邏輯。
+- **code-reviewer gate G1–G10**：G3a（RPC return 缺 `full_order_text`）審查中發現，已修復。
+
+原因：
+- **Root bug**：`saveOrderText` → `orders.full_order_text` only；總覽刻字讀 `order_items.engraving_text` → 兩表不同步，Mode 2 解決從源頭改 `order_items`。
+- **NAS限制**：fetch/process.env 在 n8n Code Node 靜默失敗，DB-level guard 是唯一可靠方案。
+- **單人系統**：無多用戶競爭，客戶端 `_sbSyncInFlight` 鎖已足夠（不需 DB-level lock）。
+- **Sunset path**：Mode 2 為 v3.0 materialized view 鋪路（v3 計畫見 `.fhs/reports/planning/v3_materialized_view_plan.md`）。
+
+批准：Fat Mo ✅（/execute 2026-05-27 Session 32）
+
+***
+
 [2026-05-27] PGC-ODAT v3 Lite 架構決策 — 訂單總覽子項目成本與利潤稽核（折中方案）
 
 決策：

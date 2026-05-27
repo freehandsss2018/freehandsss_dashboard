@@ -26,7 +26,14 @@ freehandsss_dashboard/
 │   │   ├── 0007_fix_n8n_cost_adjustments.sql ← n8n_cost_adjustments JSONB→NUMERIC，新增 n8n_adjustment_notes JSONB（2026-05-16）
 │   │   ├── 0008_order_0600802_admin_notes.sql ← 訂單 0600802 定價優惠原因記錄至 admin_notes（2026-05-16，待執行）
 │   │   ├── 0010_order_id_cascade_update.sql   ← 外鍵啟用 ON UPDATE CASCADE 與初始 rename_order_id RPC（2026-05-22）
-│   │   └── 0011_rename_order_id_security_definer.sql ← 優化併發鎖定與防衝突合併的 rename_order_id RPC（2026-05-22）
+│   │   ├── 0011_rename_order_id_security_definer.sql ← 優化併發鎖定與防衝突合併的 rename_order_id RPC（2026-05-22）
+│   │   ├── 0012_add_adjustment_amount.sql     ← orders 表加 adjustment_amount（補打金額，2026-05-24）
+│   │   ├── 0013_sync_order_rpc_orphan_cleanup.sql ← sync_order_to_mirror 孤兒清理 + process_status ENUM cast（2026-05-23）
+│   │   ├── 0014_add_woolfelts_product.sql     ← products 表加入羊毛氈公仔，解 FK 23503（2026-05-23）
+│   │   ├── 0015_add_is_text_overridden.sql    ← orders 加 is_text_overridden BOOLEAN，Mode 1 手動文本保護（2026-05-26）
+│   │   ├── 0016_add_order_text_split_columns.sql ← orders 加 full_order_text_a/b，手模/金屬段分拆（2026-05-26）
+│   │   ├── 0017_save_structured_items_rpc.sql ← save_structured_order_items RPC，Mode 2 原子化寫入（2026-05-27）⚠ 待部署
+│   │   └── 0018_protect_overridden_text.sql   ← sync_order_to_mirror V47.11 guard（is_text_overridden CASE），n8n DB-level保護（2026-05-27）⚠ 待部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

@@ -1,5 +1,35 @@
 # Changelog
 
+## [2026-05-27] ✨ 編輯系統 v2 雙模式重構（Session 32 — cl-flow 2026-05-27-1311）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（Modal 3-tab + Mode 2 + inline 刻字）
+- `supabase/migrations/0017_save_structured_items_rpc.sql`（新建）
+- `supabase/migrations/0018_protect_overridden_text.sql`（新建）
+- `n8n/FHS_Core_OrderProcessor_live.json`（節點重命名 V47.11 + jsCode 備注）
+
+**根因修復**：`saveOrderText()` 只 PATCH `orders.full_order_text`，不動 `order_items`；訂單總覽刻字欄讀自 `order_items.engraving_text`，文本編輯後總覽刻字不更新。
+
+**新功能**：
+- **3-tab Modal**：📝 訊息文本 / 🛠 訂單明細 / 💰 財務（替換原 `openOrderModal()`）
+- **Mode 2 結構化明細編輯器**：Lazy-load `order_items`，逐 item 卡片編輯規格/刻字/數量，`save_structured_order_items` RPC 原子化寫入
+- **`_prevItemMap` 保護**：RPC DELETE+INSERT 前快照 `batch_number`/`process_status`，COALESCE 還原
+- **Dirty-diff**：`_hashMode2()` 比對，hash 不變禁用存按鈕
+- **Mobile bottom sheet**：`@media (max-width:768px)` 底部錨定（90dvh，rounded top）
+- **Inline 刻字快速編輯**（✏）：Desktop + Mobile 雙管線 `inlineEditEngraving()` → PATCH + 即時刷新
+- **`fhsRegenBtn`**：Mode 1 ⚠ 已人工編輯 badge + 🔄 從明細重生，清除 `is_text_overridden`
+- **n8n V47.11 DB-level guard**：`sync_order_to_mirror` ON CONFLICT CASE WHEN `is_text_overridden=true` 保留手動文本
+
+**Migration**：
+- `0017`：`save_structured_order_items` RPC（SECURITY DEFINER，返回含 `full_order_text`）
+- `0018`：`sync_order_to_mirror` DROP-IN 替換，加 `is_text_overridden` guard
+
+**Code-reviewer Gate**：G1–G9 全部 PASS；G3a（RPC return 缺 `full_order_text`）已修復
+
+**⚠ 待部署**：migrations 0017+0018 需 Fat Mo 在 Supabase 套用；V41→current.html 同步需另行 `/execute` 授權
+
+---
+
 ## [2026-05-27] 📐 PGC-ODAT 審計值欄位重排（Session 31.6）
 
 **修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` + `Freehandsss_dashboard_current.html`

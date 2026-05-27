@@ -1,8 +1,39 @@
 # FHS Handoff - 2026-05-27
 
-當前版本：v1.4.8（憲法層）/ V41（UI層）→ current.html ✅ 已同步
-n8n Workflow：V47.10（Mirror to Supabase）
-cl-flow 2026-05-26-0627：✅ Phase A 完整收尾（migrations 套用 + code fixes + sync）
+當前版本：v1.4.8（憲法層）/ V41（UI層）→ **⚠ current.html 尚未同步（待 Phase 6 授權）**
+n8n Workflow：V47.11（Mirror Prep guard，本地 JSON 更新，Supabase guard 在 migration 0018）
+cl-flow 2026-05-27-1311：✅ Phase 1-5 完整，Phase 6 待 Fat Mo 授權
+
+---
+
+## 本次 Session 完成事項（2026-05-27 Session 32 — 編輯系統 v2 雙模式重構）
+
+### 32. Edit System v2 Dual-Mode Modal Refactor（cl-flow 2026-05-27-1311）
+
+**問題根因**：
+- `saveOrderText()` 只 PATCH `orders.full_order_text`，不動 `order_items`
+- 訂單總覽刻字欄讀自 `order_items.engraving_text`，文本編輯後總覽刻字欄不更新
+
+**完成事項**：
+- **Phase 0**：DB RLS 審查 + n8n Mirror Prep 讀取 + 鎖機制決策（單人系統，客戶端 `_sbSyncInFlight` 鎖已足夠）
+- **Phase 1 — migration 0017**：`save_structured_order_items` RPC（SECURITY DEFINER，`_prevItemMap` 保護 batch+process，返回 `full_order_text`，`GRANT EXECUTE TO anon`）
+- **Phase 2 — V41 Modal 3-tab**：`openOrderModal` 完整替換，📝 訊息文本 / 🛠 訂單明細 / 💰 財務；Mode 2 lazy-load + dirty-diff；Mobile bottom sheet CSS；`fhsOverrideBadge` + `fhsRegenBtn`
+- **Phase 3 — 雙渲染管線 inline 刻字**：`renderReviewTable` + `renderReviewAccordion` 加 ✏ 按鈕，`inlineEditEngraving()` PATCH `order_items?item_key=eq.{key}`
+- **Phase 4 — n8n V47.11**：`sync_order_to_mirror` ON CONFLICT CASE WHEN `is_text_overridden`（migration 0018 — DB-level guard，因 NAS `fetch()` 限制不可在 Code Node 實作）；本地 JSON 節點重命名 + jsCode 備注
+- **Phase 5 — code-reviewer gate**：G1–G9 全 PASS；G3a（RPC return 缺 `full_order_text`）發現並修復
+- **Phase 7 — 文件**：CHANGELOG + decisions.md + pitfalls.yaml（P8）+ v3_materialized_view_plan.md + handoff 本文
+
+**待辦**：
+1. **Fat Mo 部署 migrations**：Supabase 套用 0017 + 0018（順序：0017 先，0018 後）
+2. **Phase 6 — current.html 同步**：需 Fat Mo `/execute V41 → current 同步` 明確授權
+3. **live 驗證**：TC1（資料一致性）/ TC3（lazy tab）/ TC4（mobile bottom sheet）/ TC6（Mode 1 回退相容）/ TC8（批次保護）/ TC9（n8n guard）— 需部署後在瀏覽器實測
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | cl-flow 計畫：database-reviewer → ui-designer → frontend-developer → code-reviewer |
+| 實際使用 | ✅ `code-reviewer`（Phase 5 Gate G1–G10，發現 G3a bug）；其餘階段直接 Read+Edit |
+| 遵從 Router | ✅ 部分遵從（code-reviewer 使用；database-reviewer/ui-designer 跳過因 cl-flow 計畫已有 Phase 0 分析）|
 
 ---
 

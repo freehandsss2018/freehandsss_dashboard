@@ -2106,6 +2106,44 @@
         .fhs-modal-val { font-weight:500; text-align:right; }
         .fhs-btn-order-detail { background:none; border:none; cursor:pointer; font-size:15px; padding:2px 4px; border-radius:4px; line-height:1; }
         .fhs-btn-order-detail:hover { background:#f0f0f0; }
+        /* F3 v2: dual-mode modal — tabs */
+        .fhs-modal-drag { display:none; width:36px; height:4px; background:#ddd; border-radius:2px; margin:8px auto 4px; flex-shrink:0; }
+        .fhs-modal-tabs { display:flex; border-bottom:2px solid var(--fhs-border); background:#fafafa; flex-shrink:0; }
+        .fhs-modal-tab { flex:1; padding:10px 4px; border:none; background:none; cursor:pointer; font-size:12px; color:#666; border-bottom:3px solid transparent; margin-bottom:-2px; transition:color .15s,border-color .15s; white-space:nowrap; }
+        .fhs-modal-tab.active { color:#3a5fc8; border-bottom-color:#3a5fc8; font-weight:600; background:#fff; }
+        .fhs-modal-tab:hover:not(.active) { background:#f0f4ff; color:#3a5fc8; }
+        .fhs-modal-tab-pane { display:none; overflow-y:auto; max-height:calc(90dvh - 120px); }
+        .fhs-modal-tab-pane.active { display:block; }
+        /* Mode 2: item cards */
+        .fhs-item-card { border:1px solid #e0e8f7; border-radius:8px; padding:12px; margin:8px 12px; background:#fafcff; }
+        .fhs-item-card-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px; }
+        .fhs-item-cat-badge { padding:2px 8px; background:#e8f0fe; color:#3a5fc8; border-radius:4px; font-size:11px; font-weight:600; flex-shrink:0; }
+        .fhs-item-spec-text { font-size:12px; color:#555; font-weight:500; }
+        .fhs-item-eng-lbl { font-size:11px; color:#888; margin-bottom:3px; }
+        .fhs-item-eng-input { width:100%; box-sizing:border-box; border:1px solid #c7d3f7; border-radius:6px; padding:6px 10px; font-size:13px; font-family:var(--fhs-font-mono,monospace); line-height:1.5; resize:vertical; min-height:44px; background:#fff; color:#222; }
+        .fhs-item-eng-input:focus { border-color:#3a5fc8; outline:none; box-shadow:0 0 0 2px rgba(58,95,200,.12); }
+        .fhs-item-qty-row { display:flex; align-items:center; gap:8px; margin-top:6px; }
+        .fhs-item-qty-lbl { font-size:12px; color:#666; }
+        .fhs-item-qty-input { width:56px; border:1px solid #c7d3f7; border-radius:6px; padding:4px 8px; font-size:13px; text-align:center; }
+        .fhs-mode2-actions { background:#fff; border-top:1px solid var(--fhs-border); padding:10px 12px; display:flex; gap:8px; justify-content:flex-end; align-items:center; flex-shrink:0; }
+        .fhs-mode2-save-btn { padding:6px 16px; border:none; border-radius:6px; background:#3a5fc8; cursor:pointer; font-size:13px; color:#fff; font-weight:600; transition:opacity .15s; }
+        .fhs-mode2-save-btn:disabled { opacity:.45; cursor:default; }
+        .fhs-finance-row { display:flex; justify-content:space-between; padding:6px 12px; font-size:13px; border-bottom:1px solid #f5f5f5; }
+        .fhs-finance-lbl { color:#888; }
+        .fhs-finance-val { font-weight:600; color:#222; }
+        .fhs-finance-val.profit { color:#1a7a3c; }
+        /* Mobile: bottom sheet */
+        @media (max-width: 768px) {
+            #fhsOrderModal { padding:0; align-items:flex-end; }
+            .fhs-modal-box { max-width:100%; width:100%; max-height:90dvh; border-radius:16px 16px 0 0; }
+            .fhs-modal-drag { display:block; }
+            .fhs-modal-tab-pane { max-height:calc(90dvh - 130px); }
+        }
+        /* Phase 3: inline engraving edit (Desktop hover ✏ / Mobile tap ✏) */
+        .fhs-inline-eng-wrap { display:flex; align-items:flex-start; gap:4px; }
+        .fhs-inline-eng-btn { background:none; border:none; cursor:pointer; font-size:13px; color:#3a5fc8; opacity:0; transition:opacity .15s; border-radius:3px; padding:1px 3px; line-height:1; flex-shrink:0; }
+        .fhs-inline-eng-wrap:hover .fhs-inline-eng-btn,
+        .fhs-inline-eng-btn:focus { opacity:1; }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -6445,10 +6483,13 @@
                         // Engraving (strip 合成: info for family combo)
                         let engText = '';
                         const _accEngStrip = item.Engraving ? item.Engraving.replace(/\s*\|?\s*合成:.*/, '').trim() : '';
+                        const _accItemKeyEsc = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                        const _accEngEsc = _accEngStrip.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                         if (_accEngStrip && _accEngStrip !== '待定' && _accEngStrip !== '不適用') {
-                            engText = `<div class="acc-field-row" style="margin-top:4px;">
+                            engText = `<div class="acc-field-row" style="margin-top:4px;display:flex;align-items:center;gap:4px;">
                                 <span class="acc-field-label">✂️ 刻字</span>
-                                <span class="acc-field-value">${_accEngStrip}</span>
+                                <span class="acc-field-value" style="flex:1;">${_accEngStrip}</span>
+                                <button onclick="inlineEditEngraving('${o.id}','${_accItemKeyEsc}','${_accEngEsc}')" style="background:none;border:none;font-size:13px;cursor:pointer;padding:0 2px;color:#3a5fc8;opacity:.8;flex-shrink:0;" title="快速編輯刻字">✏</button>
                             </div>`;
                         }
 
@@ -6881,21 +6922,21 @@
                             let top = "";
                             let bot = "";
                             const raw = _engStripped;
-                            
+
                             // 兼容 [上排]xxx [下排]yyy 格式
                             const topMatch = raw.match(/\[上排\](.*?)(\[下排\]|$)/);
                             const botMatch = raw.match(/\[下排\](.*?)$/);
-                            
+
                             if (topMatch) { top = topMatch[1].replace(/[\(\)\[\]（）]/g, '').trim(); if (top === '待定') top = ''; }
                             if (botMatch) { bot = botMatch[1].replace(/[\(\)\[\]（）]/g, '').trim(); if (bot === '待定') bot = ''; }
-                            
+
                             // 如果沒匹配到標籤，嘗試用 | 分隔
                             if (!top && !bot && raw.includes('|')) {
                                 let parts = raw.split('|');
                                 top = parts[0].trim();
                                 bot = parts[1].trim();
                             }
-                            
+
                             // 如果還是空，直接顯示整段 (但移除括號)
                             if (!top && !bot) {
                                 top = raw.replace(/[\(\)\[\]（）]/g, '').trim();
@@ -6906,6 +6947,10 @@
                                 ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${bot}</span></div>` : ''}
                             </div>`;
                         }
+                        // Phase 3: wrap with inline edit button (hover to reveal ✏)
+                        const _itemKeyEscT = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                        const _engEscT = _engStripped.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${o.id}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字">✏</button></div>`;
 
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
@@ -6918,7 +6963,7 @@
                         <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
                             <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${rowBatchCol};">
-                                ${engHtml}
+                                ${engCellHtml}
                             </td>
                             <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
                                 ${prodHtml}
@@ -7534,7 +7579,8 @@
             } catch(e) {}
         }
 
-        // F3: Order detail modal — catFilter: 'A'=手模擺設, 'B'=金屬產品, undefined=全訂單
+        // F3 v2: Order detail modal — dual-mode (Mode 1 text + Mode 2 structured items)
+        // catFilter: 'A'=手模擺設, 'B'=金屬產品, undefined=全訂單
         function openOrderModal(orderId, catFilter) {
             var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
             var o = _go.find(function(x){ return x.id === orderId; });
@@ -7542,10 +7588,12 @@
 
             window._fhsModalOrderId = orderId;
             window._fhsModalCatFilter = catFilter || '';
-            var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 IG 原始訊息';
-            document.getElementById('fhsModalTitle').textContent = titleLabel + ' #' + (o.Order_ID || orderId);
+            window._fhsMode2Loaded = false;   // lazy-load flag: Mode 2 not yet fetched
+            window._fhsMode2Hash   = '';      // dirty-diff baseline hash
 
-            // Prefer dedicated A/B fields (populated after migration 0016); fall back to positional extraction
+            var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 訂單詳情';
+            document.getElementById('fhsModalTitle').textContent = titleLabel + '  ' + (o.Order_ID || orderId);
+
             var _rawText = o.Full_Order_Text || '';
             var currentText = catFilter === 'A'
                 ? (o.Full_Order_Text_A || _extractOrderText(_rawText, 'A'))
@@ -7553,33 +7601,65 @@
                     ? (o.Full_Order_Text_B || _extractOrderText(_rawText, 'B'))
                     : _rawText;
             var escapedText = currentText.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-            var overrideBadgeHtml = '<span id="fhsOverrideBadge" style="display:' + (o.is_text_overridden ? 'inline-block' : 'none') + ';padding:2px 8px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:4px;font-size:11px;font-weight:600;">✏ 已人工編輯</span>';
+            var isOverridden = !!o.is_text_overridden;
+            var eid = orderId.replace(/'/g, "\\'");
+            var cf  = (catFilter || '').replace(/'/g, "\\'");
 
             var msgHtml =
-                '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;">' +
-                    overrideBadgeHtml +
-                    '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + orderId + '\',\'' + (catFilter||'') + '\')" ' +
-                        'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;">✏️ 編輯</button>' +
+                // Drag handle (visible only on mobile via CSS)
+                '<div class="fhs-modal-drag"></div>' +
+                // Tab bar
+                '<div class="fhs-modal-tabs">' +
+                    '<button class="fhs-modal-tab active" id="fhsTabBtn-text"   onclick="switchModalTab(\'text\')">📝 訊息文本</button>' +
+                    '<button class="fhs-modal-tab"        id="fhsTabBtn-detail" onclick="switchModalTab(\'detail\')">🛠 訂單明細</button>' +
+                    '<button class="fhs-modal-tab"        id="fhsTabBtn-finance" onclick="switchModalTab(\'finance\')">💰 財務</button>' +
                 '</div>' +
-                '<div id="fhsOrderViewDiv" style="padding:12px;white-space:pre-wrap;color:#222;font-family:var(--fhs-font-mono,monospace);font-size:14px;background:#fcfcfc;border:1px solid var(--fhs-border);border-radius:8px;max-height:65dvh;overflow-y:auto;text-align:left;line-height:1.6;margin:0 12px 12px;">' +
-                    (currentText ? escapedText : '<span style="color:#aaa;">（無原始訊息）</span>') +
+
+                // ── Tab 0: Mode 1 — text snapshot (existing edit path) ──────────────
+                '<div class="fhs-modal-tab-pane active" id="fhsTabPane-text">' +
+                    '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:10px 12px 6px;">' +
+                        '<span id="fhsOverrideBadge" style="display:' + (isOverridden ? 'inline-flex' : 'none') + ';align-items:center;gap:4px;padding:3px 8px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:4px;font-size:11px;font-weight:600;" title="文本已人工編輯，與訂單明細可能不一致">⚠ 已人工編輯</span>' +
+                        '<button id="fhsRegenBtn" onclick="regenerateFromItems(\'' + eid + '\')" ' +
+                            'style="display:' + (isOverridden ? 'inline-block' : 'none') + ';padding:3px 10px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:5px;cursor:pointer;font-size:12px;color:#3a5fc8;flex-shrink:0;" ' +
+                            'title="以訂單明細重建文本快照（清除人工編輯旗標）">🔄 重新生成</button>' +
+                        '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + eid + '\',\'' + cf + '\')" ' +
+                            'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;margin-left:auto;">✏️ 編輯</button>' +
+                    '</div>' +
+                    '<div id="fhsOrderViewDiv" style="padding:12px;white-space:pre-wrap;color:#222;font-family:var(--fhs-font-mono,monospace);font-size:14px;background:#fcfcfc;border:1px solid var(--fhs-border);border-radius:8px;max-height:58dvh;overflow-y:auto;text-align:left;line-height:1.6;margin:0 12px 12px;">' +
+                        (currentText ? escapedText : '<span style="color:#aaa;">（無原始訊息）</span>') +
+                    '</div>' +
+                    '<div id="fhsOrderEditDiv" style="display:none;padding:0 12px;">' +
+                        '<textarea id="fhsOrderEditTextarea" ' +
+                            'style="width:100%;box-sizing:border-box;border:1px solid #c7d3f7;border-radius:8px;padding:12px;font-family:var(--fhs-font-mono,monospace);font-size:14px;line-height:1.6;color:#222;background:#fff;resize:vertical;min-height:180px;max-height:48dvh;overflow-y:auto;display:block;field-sizing:content;" ' +
+                            'oninput="sessionStorage.setItem(\'fhs_draft_\'+window._fhsModalOrderId,this.value)"></textarea>' +
+                    '</div>' +
+                    '<div id="fhsOrderEditActions" style="display:none;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--fhs-border);padding:10px 12px;gap:8px;justify-content:flex-end;align-items:center;">' +
+                        '<span id="fhsOrderSaveStatus" style="font-size:12px;color:#888;flex:1;margin-right:4px;"></span>' +
+                        '<button id="fhsOrderCancelBtn" onclick="cancelEdit()" style="padding:6px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#555;">取消</button>' +
+                        '<button id="fhsOrderSaveBtn" onclick="saveOrderText(\'' + eid + '\',\'' + cf + '\')" style="padding:6px 16px;border:none;border-radius:6px;background:#3a5fc8;cursor:pointer;font-size:13px;color:#fff;font-weight:600;">💾 儲存</button>' +
+                    '</div>' +
                 '</div>' +
-                '<div id="fhsOrderEditDiv" style="display:none;padding:0 12px;">' +
-                    '<textarea id="fhsOrderEditTextarea" ' +
-                        'style="width:100%;box-sizing:border-box;border:1px solid #c7d3f7;border-radius:8px;padding:12px;font-family:var(--fhs-font-mono,monospace);font-size:14px;line-height:1.6;color:#222;background:#fff;resize:vertical;min-height:180px;max-height:50dvh;overflow-y:auto;display:block;field-sizing:content;" ' +
-                        'oninput="sessionStorage.setItem(\'fhs_draft_\'+window._fhsModalOrderId,this.value)"></textarea>' +
+
+                // ── Tab 1: Mode 2 — structured order_items editor ─────────────────
+                '<div class="fhs-modal-tab-pane" id="fhsTabPane-detail">' +
+                    '<div id="fhsMode2Loading" style="padding:32px;text-align:center;color:#888;font-size:13px;">⏳ 點擊「訂單明細」載入...</div>' +
+                    '<div id="fhsMode2Content"></div>' +
+                    '<div class="fhs-mode2-actions" id="fhsMode2Actions" style="display:none;">' +
+                        '<span id="fhsMode2Status" style="font-size:12px;color:#888;flex:1;"></span>' +
+                        '<button class="fhs-mode2-save-btn" id="fhsMode2SaveBtn" onclick="saveMode2Items(\'' + eid + '\')" disabled>💾 儲存明細</button>' +
+                    '</div>' +
                 '</div>' +
-                '<div id="fhsOrderEditActions" style="display:none;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--fhs-border);padding:10px 12px;gap:8px;justify-content:flex-end;align-items:center;">' +
-                    '<span id="fhsOrderSaveStatus" style="font-size:12px;color:#888;flex:1;margin-right:4px;"></span>' +
-                    '<button id="fhsOrderCancelBtn" onclick="cancelEdit()" style="padding:6px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#555;">取消</button>' +
-                    '<button id="fhsOrderSaveBtn" onclick="saveOrderText(\'' + orderId + '\',\'' + (catFilter||'') + '\')" style="padding:6px 16px;border:none;border-radius:6px;background:#3a5fc8;cursor:pointer;font-size:13px;color:#fff;font-weight:600;">💾 儲存</button>' +
+
+                // ── Tab 2: Finance — read-only financial summary ───────────────────
+                '<div class="fhs-modal-tab-pane" id="fhsTabPane-finance">' +
+                    buildFinanceTabHtml(o) +
                 '</div>';
 
             document.getElementById('fhsModalBody').innerHTML = msgHtml;
             document.getElementById('fhsOrderModal').classList.add('active');
             document.body.style.overflow = 'hidden';
 
-            // iOS keyboard: shrink modal box when virtual keyboard appears
+            // iOS visualViewport: shrink modal when virtual keyboard appears (Session 28 pattern)
             if (window.visualViewport && !window._fhsVVResize) {
                 window._fhsVVResize = function() {
                     var box = document.querySelector('.fhs-modal-box');
@@ -7740,6 +7820,321 @@
             if (catFilter === 'A') return parts[0];
             if (catFilter === 'B') return parts.slice(1).join('\n'); // rejoin if ever >2 parts
             return fullText;
+        }
+
+        // ── F3 v2: Dual-mode Modal helpers ─────────────────────────────────────────
+
+        // Switch between Modal tabs; Mode 2 tab triggers lazy load on first activation
+        function switchModalTab(tab) {
+            ['text','detail','finance'].forEach(function(t) {
+                var btn  = document.getElementById('fhsTabBtn-'    + t);
+                var pane = document.getElementById('fhsTabPane-'   + t);
+                if (btn)  { btn.classList.toggle('active',  t === tab); }
+                if (pane) { pane.classList.toggle('active', t === tab); }
+            });
+            if (tab === 'detail' && !window._fhsMode2Loaded) {
+                loadMode2Items(window._fhsModalOrderId);
+            }
+        }
+
+        // Lazy-load order_items for Mode 2 structured editor
+        async function loadMode2Items(orderId) {
+            var loadingEl  = document.getElementById('fhsMode2Loading');
+            var contentEl  = document.getElementById('fhsMode2Content');
+            var actionsEl  = document.getElementById('fhsMode2Actions');
+            if (!loadingEl || !contentEl) return;
+
+            loadingEl.textContent = '⏳ 載入訂單明細中...';
+            loadingEl.style.display = '';
+            contentEl.innerHTML = '';
+            if (actionsEl) actionsEl.style.display = 'none';
+
+            try {
+                var r = await fetch(
+                    _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
+                    '&select=item_key,item_category,specification,engraving_text,quantity,product_sku,' +
+                    'item_base_cost,subtotal_cost,handmodel_cost,keychain_cost,necklace_cost,batch_number,process_status' +
+                    '&order=item_category.asc,item_key.asc',
+                    { headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON } }
+                );
+                var items = await r.json();
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                if (!Array.isArray(items) || items.length === 0) {
+                    loadingEl.innerHTML = '<span style="color:#aaa;">此訂單暫無明細記錄</span>';
+                    return;
+                }
+
+                loadingEl.style.display = 'none';
+                contentEl.innerHTML = renderMode2Items(items);
+                if (actionsEl) actionsEl.style.display = 'flex';
+
+                // Baseline hash for dirty-diff detection
+                window._fhsMode2Hash = _hashMode2();
+                // Attach input listeners for dirty detection
+                contentEl.querySelectorAll('.fhs-item-eng-input,.fhs-item-qty-input').forEach(function(el) {
+                    el.addEventListener('input', _onMode2Change);
+                });
+
+                window._fhsMode2Loaded = true;
+            } catch(e) {
+                loadingEl.innerHTML = '❌ 載入失敗：' + e.message.substring(0, 60);
+                console.error('[loadMode2Items]', e);
+            }
+        }
+
+        // Render order_items as editable cards
+        function renderMode2Items(items) {
+            return items.map(function(it) {
+                var cat   = (it.item_category || '').replace(/"/g,'&quot;');
+                var spec  = (it.specification || '').replace(/</g,'&lt;');
+                var eng   = (it.engraving_text || '').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+                var ik    = (it.item_key || '').replace(/"/g,'&quot;');
+                var qty   = it.quantity || 1;
+                return '<div class="fhs-item-card" data-item-key="' + ik + '">' +
+                    '<div class="fhs-item-card-hdr">' +
+                        '<span class="fhs-item-cat-badge">' + (it.item_category || '未分類').replace(/</g,'&lt;') + '</span>' +
+                        '<span class="fhs-item-spec-text">' + (spec || ik) + '</span>' +
+                    '</div>' +
+                    '<div class="fhs-item-eng-lbl">刻字 / 備注</div>' +
+                    '<textarea class="fhs-item-eng-input" data-field="engraving_text" rows="2">' + eng + '</textarea>' +
+                    '<div class="fhs-item-qty-row">' +
+                        '<span class="fhs-item-qty-lbl">數量</span>' +
+                        '<input class="fhs-item-qty-input" type="number" min="1" data-field="quantity" value="' + qty + '">' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        // Compute a simple string hash of current Mode 2 form state for dirty-diff detection
+        function _hashMode2() {
+            var contentEl = document.getElementById('fhsMode2Content');
+            if (!contentEl) return '';
+            var parts = [];
+            contentEl.querySelectorAll('.fhs-item-card').forEach(function(card) {
+                var ik  = card.dataset.itemKey || '';
+                var eng = (card.querySelector('[data-field="engraving_text"]') || {}).value || '';
+                var qty = (card.querySelector('[data-field="quantity"]') || {}).value || '';
+                parts.push(ik + '|' + qty + '|' + eng);
+            });
+            return parts.join(';;');
+        }
+
+        function _onMode2Change() {
+            var saveBtn  = document.getElementById('fhsMode2SaveBtn');
+            var statusEl = document.getElementById('fhsMode2Status');
+            var isDirty  = (_hashMode2() !== window._fhsMode2Hash);
+            if (saveBtn) { saveBtn.disabled = !isDirty; saveBtn.style.opacity = isDirty ? '1' : '.45'; }
+            if (statusEl && isDirty) statusEl.textContent = '⚠ 有未儲存的變更';
+        }
+
+        // Collect Mode 2 form data and call save_structured_order_items RPC
+        async function saveMode2Items(orderId) {
+            // Client-side concurrent lock (Session 7 pattern)
+            if (window._sbSyncInFlight && window._sbSyncInFlight[orderId]) {
+                showToast('⏳ 另一項儲存作業進行中，請稍候');
+                return;
+            }
+
+            var contentEl = document.getElementById('fhsMode2Content');
+            var saveBtn   = document.getElementById('fhsMode2SaveBtn');
+            var statusEl  = document.getElementById('fhsMode2Status');
+            if (!contentEl) return;
+
+            // Guard: dirty-diff — skip RPC if nothing changed
+            var currentHash = _hashMode2();
+            if (currentHash === window._fhsMode2Hash) {
+                showToast('ℹ 無變更，無需儲存');
+                return;
+            }
+
+            // Collect items from DOM
+            var _go  = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var _ord = _go.find(function(x){ return x.id === orderId; });
+            var existingItems = (_ord && _ord.items) ? _ord.items : [];
+
+            var newItems = [];
+            var validationErr = null;
+            contentEl.querySelectorAll('.fhs-item-card').forEach(function(card) {
+                var ik  = card.dataset.itemKey || '';
+                var eng = (card.querySelector('[data-field="engraving_text"]') || {}).value || '';
+                var qty = parseInt((card.querySelector('[data-field="quantity"]') || {}).value, 10) || 1;
+                if (qty <= 0) { validationErr = 'item_key ' + ik + ' 數量必須大於 0'; return; }
+
+                // Look up existing item for pass-through fields (costs, sku, etc.)
+                var prev = existingItems.find(function(it){ return it.item_key === ik || it.Order_Item_Key === ik; }) || {};
+                newItems.push({
+                    item_key:       ik,
+                    item_category:  card.querySelector('.fhs-item-cat-badge') ? card.querySelector('.fhs-item-cat-badge').textContent : '',
+                    specification:  (card.querySelector('.fhs-item-spec-text') || {}).textContent || '',
+                    engraving_text: eng,
+                    quantity:       qty,
+                    product_sku:    prev.product_sku || prev.SKU || '',
+                    item_base_cost: prev.item_base_cost != null ? prev.item_base_cost : (prev.Base_Cost || 0),
+                    subtotal_cost:  prev.subtotal_cost  != null ? prev.subtotal_cost  : (prev.Subtotal_Cost || 0),
+                    handmodel_cost: prev.handmodel_cost != null ? prev.handmodel_cost : 0,
+                    keychain_cost:  prev.keychain_cost  != null ? prev.keychain_cost  : 0,
+                    necklace_cost:  prev.necklace_cost  != null ? prev.necklace_cost  : 0,
+                    batch_number:   prev.batch_number   || prev.Batch_Number || '',
+                    process_status: prev.process_status || '待製作'
+                });
+            });
+            if (validationErr) { showToast('❌ ' + validationErr); return; }
+            if (newItems.length === 0) { showToast('❌ 無明細項目可儲存'); return; }
+
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ 儲存中...'; }
+            if (statusEl) statusEl.textContent = '⏳ 儲存中...';
+            if (!window._sbSyncInFlight) window._sbSyncInFlight = {};
+            window._sbSyncInFlight[orderId] = true;
+
+            try {
+                var r = await fetch(_V41_SB_URL + '/rest/v1/rpc/save_structured_order_items', {
+                    method: 'POST',
+                    headers: {
+                        apikey: _V41_SB_ANON,
+                        Authorization: 'Bearer ' + _V41_SB_ANON,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ p_order_id: orderId, p_items_json: newItems })
+                });
+                var result = await r.json().catch(function(){ return {}; });
+                if (!r.ok) throw new Error((result.message || result.hint || JSON.stringify(result)).substring(0, 100));
+
+                // Update dirty-diff baseline
+                window._fhsMode2Hash = currentHash;
+
+                // Sync local cache: update items engraving/qty
+                if (_ord && _ord.items) {
+                    _ord.items.forEach(function(it) {
+                        var updated = newItems.find(function(ni){ return ni.item_key === (it.item_key || it.Order_Item_Key); });
+                        if (updated) {
+                            it.engraving_text = updated.engraving_text;
+                            it.Engraving = updated.engraving_text; // overview display field
+                            it.quantity = updated.quantity;
+                            it.Quantity = updated.quantity;
+                        }
+                    });
+                }
+                // Sync is_text_overridden flag in local cache (RPC clears it)
+                if (_ord) { _ord.is_text_overridden = false; }
+
+                // Re-render overview immediately so engraving column updates
+                if (typeof applyReviewFilters === 'function') applyReviewFilters();
+
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存明細'; saveBtn.style.opacity = '.45'; }
+                if (statusEl) statusEl.textContent = '✅ 已儲存';
+                showToast('✅ 訂單明細已儲存，總覽已更新');
+
+                // Reload Mode 1 text tab to show regenerated text
+                var viewDiv = document.getElementById('fhsOrderViewDiv');
+                var badgeEl = document.getElementById('fhsOverrideBadge');
+                var regenBtn = document.getElementById('fhsRegenBtn');
+                if (viewDiv && result.full_order_text !== undefined) {
+                    viewDiv.innerHTML = result.full_order_text
+                        ? result.full_order_text.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                        : '<span style="color:#aaa;">（無原始訊息）</span>';
+                }
+                if (badgeEl) badgeEl.style.display = 'none';   // cleared by RPC
+                if (regenBtn) regenBtn.style.display = 'none';
+
+            } catch(e) {
+                console.error('[saveMode2Items]', e);
+                if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存明細'; saveBtn.style.opacity = '1'; }
+                if (statusEl) statusEl.textContent = '❌ 儲存失敗';
+                showToast('❌ 儲存失敗：' + e.message.substring(0, 60));
+            } finally {
+                if (window._sbSyncInFlight) window._sbSyncInFlight[orderId] = false;
+            }
+        }
+
+        // 🔄 Regenerate full_order_text from current order_items (Mode 1 護欄 button)
+        async function regenerateFromItems(orderId) {
+            var regenBtn = document.getElementById('fhsRegenBtn');
+            if (regenBtn) { regenBtn.disabled = true; regenBtn.textContent = '⏳ 重新生成中...'; }
+
+            try {
+                // Ensure Mode 2 items are loaded first
+                if (!window._fhsMode2Loaded) await loadMode2Items(orderId);
+
+                // Collect current items from Mode 2 DOM (uses same path as saveMode2Items)
+                var contentEl = document.getElementById('fhsMode2Content');
+                if (!contentEl || !contentEl.querySelector('.fhs-item-card')) {
+                    // No Mode 2 items — call RPC with fetch-from-DB (pass empty to trigger DB-side regen)
+                    // Actually: fetch items from DB then call RPC
+                    throw new Error('無訂單明細可用於重新生成');
+                }
+
+                // Reuse saveMode2Items logic but force-treat as dirty
+                var savedHash = window._fhsMode2Hash;
+                window._fhsMode2Hash = '__force_dirty__';  // make dirty
+                await saveMode2Items(orderId);
+                // saveMode2Items will reset hash on success
+
+            } catch(e) {
+                console.error('[regenerateFromItems]', e);
+                showToast('❌ 重新生成失敗：' + e.message.substring(0, 50));
+            } finally {
+                if (regenBtn) { regenBtn.disabled = false; regenBtn.textContent = '🔄 重新生成'; }
+            }
+        }
+
+        // Build read-only financial summary for Tab 2
+        function buildFinanceTabHtml(o) {
+            var rows = [
+                ['訂單編號', o.Order_ID || o.id || '—'],
+                ['客人姓名', o.Customer || o.Customer_Name || '—'],
+                ['售價',     '$' + (o.Final_Sale_Price != null ? o.Final_Sale_Price : '—')],
+                ['訂金',     '$' + (o.Deposit != null ? o.Deposit : '—')],
+                ['尾數',     '$' + (o.Balance != null ? o.Balance : '—')],
+                ['附加費',   '$' + (o.Additional_Fee != null ? o.Additional_Fee : '—')],
+                ['成本',     '$' + (o.Total_Cost != null ? o.Total_Cost : '—')],
+                ['利潤',     '$' + (o.Net_Profit != null ? o.Net_Profit : '—'), 'profit']
+            ];
+            var html = '<div style="padding:12px 4px;">';
+            rows.forEach(function(row) {
+                html += '<div class="fhs-finance-row">' +
+                    '<span class="fhs-finance-lbl">' + row[0] + '</span>' +
+                    '<span class="fhs-finance-val' + (row[2] ? ' ' + row[2] : '') + '">' + row[1] + '</span>' +
+                '</div>';
+            });
+            html += '</div>';
+            return html;
+        }
+
+        // Phase 3: Inline engraving quick-edit — Desktop hover ✏ / Mobile tap ✏
+        // Uses direct PATCH to order_items (same path as saveInlineEdit batch/status edits)
+        async function inlineEditEngraving(orderId, itemKey, currentEng) {
+            var newEng = window.prompt('編輯刻字\n（' + (itemKey || '') + '）', currentEng || '');
+            if (newEng === null) return;      // user cancelled
+            if (newEng === (currentEng || '')) return;  // no change
+
+            var _sbHdr = {
+                apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON,
+                'Content-Type': 'application/json', 'Prefer': 'return=representation'
+            };
+            try {
+                var r = await fetch(
+                    _V41_SB_URL + '/rest/v1/order_items?item_key=eq.' + encodeURIComponent(itemKey),
+                    { method: 'PATCH', headers: _sbHdr, body: JSON.stringify({ engraving_text: newEng }) }
+                );
+                var body = await r.json().catch(function(){ return []; });
+                if (!r.ok) throw new Error('PATCH ' + r.status + ' ' + JSON.stringify(body).substring(0, 60));
+                if (Array.isArray(body) && body.length === 0) throw new Error('PATCH 0 rows — item_key: ' + itemKey);
+
+                // Update local cache so re-render reflects change without full refetch
+                var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+                var _ord = _go.find(function(x){ return x.id === orderId; });
+                if (_ord && _ord.items) {
+                    var _it = _ord.items.find(function(it){ return (it.Item_ID || it.Order_Item_Key) === itemKey; });
+                    if (_it) { _it.Engraving = newEng; _it.Engraving_Text = newEng; _it.engraving_text = newEng; }
+                }
+
+                // Refresh overview so engraving column shows new value
+                if (typeof applyReviewFilters === 'function') applyReviewFilters();
+                showToast('✅ 刻字已更新');
+            } catch(e) {
+                console.error('[inlineEditEngraving]', e);
+                showToast('❌ 刻字更新失敗：' + e.message.substring(0, 50));
+            }
         }
 
         function _getOrderCatFlags(o) {

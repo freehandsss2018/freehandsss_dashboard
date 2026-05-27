@@ -137,6 +137,33 @@ pitfalls:
       Always use `axios` (i.e. `const axios = require('axios')`) for making HTTP requests inside n8n Code nodes, as it is authorized by the container settings.
       Ensure that JS errors returned in node execution JSON do not silently pass without telemetry/alerting.
 
+  - id: P8
+    name: RPC-return-value-missing-frontend-field
+    layer: Dashboard + Supabase
+    symptom: >
+      After Mode 2 structured save, the text tab in the modal still shows the old
+      full_order_text — the regenerated text from the RPC is never reflected.
+      No error is thrown; the PATCH appears to succeed.
+    root_cause: >
+      The save_structured_order_items RPC originally returned only
+      {success, order_id, items_count}.
+      The frontend checked `if (result.full_order_text !== undefined)` to update
+      the text tab, but full_order_text was never in the return object —
+      so the condition was always false and the tab was never refreshed.
+    fix_applied: >
+      Added 'full_order_text', v_new_text to the RETURN jsonb_build_object
+      in migration 0017 (save_structured_order_items RPC).
+      The frontend condition now evaluates correctly after Mode 2 save.
+    detection_rule: >
+      When writing an RPC that regenerates a text field, verify the RETURN statement
+      includes every field the frontend handler checks by name.
+      grep -n "result\." Freehandsss_Dashboard/*.html | grep RPC_NAME
+      — cross-check against RETURN jsonb_build_object in the corresponding migration.
+    prevention: >
+      For any RPC where the frontend reads fields off the result object,
+      write down the expected return shape as a comment above the RETURN statement
+      before implementation. Run code-reviewer gate before deploying migrations.
+
   - id: P7
     name: n8n-mirror-prep-product-sku-fk
     layer: n8n + Supabase
