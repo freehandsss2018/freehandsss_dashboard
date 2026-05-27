@@ -2118,7 +2118,7 @@
         .fhs-item-card { border:1px solid #e0e8f7; border-radius:8px; padding:12px; margin:8px 12px; background:#fafcff; }
         .fhs-item-card-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px; }
         .fhs-item-cat-badge { padding:2px 8px; background:#e8f0fe; color:#3a5fc8; border-radius:4px; font-size:11px; font-weight:600; flex-shrink:0; }
-        .fhs-item-spec-text { font-size:12px; color:#555; font-weight:500; }
+        .fhs-item-spec-text { font-size:13px; color:#1a2e6b; font-weight:600; }
         .fhs-item-eng-lbl { font-size:11px; color:#888; margin-bottom:3px; }
         .fhs-item-eng-input { width:100%; box-sizing:border-box; border:1px solid #c7d3f7; border-radius:6px; padding:6px 10px; font-size:13px; font-family:var(--fhs-font-mono,monospace); line-height:1.5; resize:vertical; min-height:44px; background:#fff; color:#222; }
         .fhs-item-eng-input:focus { border-color:#3a5fc8; outline:none; box-shadow:0 0 0 2px rgba(58,95,200,.12); }
@@ -7883,17 +7883,61 @@
         }
 
         // Render order_items as editable cards
+        // Derives a human-readable identifier for a Mode 2 item card.
+        // Combines who (嬰兒/大寶/家庭合成) with direction (左手/右手/左腳/右腳)
+        // so each card is uniquely identifiable at a glance.
+        function _mode2ItemLabel(it) {
+            var ik  = (it.item_key || '').toUpperCase();
+            var ikO = it.item_key || '';
+            var sp  = it.specification || '';
+            var cat = it.item_category || '';
+
+            // 立體擺設 — spec may hold frame/limb info (e.g. "木框 4肢")
+            if (ik.includes('_P_MAIN') || cat === '立體擺設') {
+                return sp ? '立體擺設 · ' + sp : '立體擺設';
+            }
+            // 羊毛氈
+            if (ik.includes('_W_WOOL') || ikO.includes('羊毛')) {
+                return sp || '羊毛氈公仔';
+            }
+            // 家庭合成
+            if (ik.includes('_K_FAM') || ikO.includes('家庭')) {
+                return '家庭合成鎖匙扣';
+            }
+            // Legacy pipe-format keys (e.g. "0696216 | 羊毛氈公仔 - 加購")
+            if (ikO.includes(' | ')) {
+                return sp || ikO.replace(/^[^|]+\|\s*/, '');
+            }
+
+            // Elder vs baby from item_key structure
+            var isElder = ik.includes('_K_E_') || ik.includes('_M_E_')
+                       || ikO.includes('大寶') || ikO.includes('長輩');
+            var who = isElder ? '大寶' : '嬰兒';
+
+            // Direction: check spec content first, then item_key suffix
+            var dir = '';
+            if      (sp.includes('左手') || ik.includes('_LH')) dir = '左手';
+            else if (sp.includes('右手') || ik.includes('_RH')) dir = '右手';
+            else if (sp.includes('左腳') || ik.includes('_LF')) dir = '左腳';
+            else if (sp.includes('右腳') || ik.includes('_RF')) dir = '右腳';
+            else if (sp.includes('手'))                         dir = sp.match(/[左右]?手/) ? sp.match(/[左右]?手/)[0] : '手';
+            else if (sp.includes('腳'))                         dir = sp.match(/[左右]?腳/) ? sp.match(/[左右]?腳/)[0] : '腳';
+
+            return dir ? who + ' · ' + dir : (sp || who);
+        }
+
         function renderMode2Items(items) {
             return items.map(function(it) {
-                var cat   = (it.item_category || '').replace(/"/g,'&quot;');
-                var spec  = (it.specification || '').replace(/</g,'&lt;');
+                var specRaw = it.specification || '';  // raw spec stored as data-attr for save pass-through
+                var specEsc = specRaw.replace(/</g,'&lt;').replace(/"/g,'&quot;');
                 var eng   = (it.engraving_text || '').replace(/</g,'&lt;').replace(/"/g,'&quot;');
                 var ik    = (it.item_key || '').replace(/"/g,'&quot;');
                 var qty   = it.quantity || 1;
-                return '<div class="fhs-item-card" data-item-key="' + ik + '">' +
+                var label = _mode2ItemLabel(it).replace(/</g,'&lt;');
+                return '<div class="fhs-item-card" data-item-key="' + ik + '" data-spec="' + specEsc + '">' +
                     '<div class="fhs-item-card-hdr">' +
                         '<span class="fhs-item-cat-badge">' + (it.item_category || '未分類').replace(/</g,'&lt;') + '</span>' +
-                        '<span class="fhs-item-spec-text">' + (spec || ik) + '</span>' +
+                        '<span class="fhs-item-spec-text">' + label + '</span>' +
                     '</div>' +
                     '<div class="fhs-item-eng-lbl">刻字 / 備注</div>' +
                     '<textarea class="fhs-item-eng-input" data-field="engraving_text" rows="2">' + eng + '</textarea>' +
@@ -7965,7 +8009,7 @@
                 newItems.push({
                     item_key:       ik,
                     item_category:  card.querySelector('.fhs-item-cat-badge') ? card.querySelector('.fhs-item-cat-badge').textContent : '',
-                    specification:  (card.querySelector('.fhs-item-spec-text') || {}).textContent || '',
+                    specification:  card.dataset.spec || '',
                     engraving_text: eng,
                     quantity:       qty,
                     product_sku:    prev.product_sku || prev.SKU || '',
