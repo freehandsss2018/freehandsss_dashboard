@@ -1,8 +1,34 @@
 # FHS Handoff - 2026-05-27
 
 當前版本：v1.4.8（憲法層）/ V41（UI層）→ **⚠ current.html 尚未同步（待 Phase 6 授權）**
-n8n Workflow：V47.11（Mirror Prep guard，本地 JSON 更新，Supabase guard 在 migration 0018）
+n8n Workflow：V47.12（燈飾 normalization + getItemCategory 燈飾→配件）
 cl-flow 2026-05-27-1311：✅ Phase 1-5 完整，Phase 6 待 Fat Mo 授權
+
+---
+
+## Session 33 完成事項（2026-05-27）— 燈飾加購配件整合
+
+**觸發**：/new-product 燈飾 - 加購（五步 Atomic 流程）
+
+**完成**：
+- ✅ Step 1：migration 0019 建立（正確欄位名稱，修正 A2 計畫 C1 錯誤）
+- ✅ Step 2：n8n V47.12 部署（Parse Items 燈飾 normalization；Calculate Profit getItemCategory 燈飾→配件；Smart Cache 無需修改，已是 Supabase live query）
+- ✅ Step 3：Dashboard 11 項改動（checkbox / 計價 / IG預覽 `+燈` 後綴 / webhook / dimensions / deriveCat / `_isAddon`+`_addonType` 重構 / 雙Badge / `_mode2ItemLabel` I3修補）
+- ✅ Step 4：RLS Gate PASS（products_anon_read 已存在）
+- ⏳ Step 5：**待 Fat Mo 部署 migration 0019 後執行 V1-V9 驗證清單**
+
+**待辦**：
+1. **⚠ migration 0019 部署**：Supabase 套用 `supabase/migrations/0019_add_light_addon_product.sql`
+2. **⚠ V1–V9 驗證**：部署後按驗證清單逐項確認（特別注意 V7 Mode2 燈飾 label + V8 雙 badge 並列）
+3. **⚠ current.html sync**：Phase 6 仍待 Fat Mo 授權（Session 32 遺留）
+
+**Subagent 使用記錄**：
+
+| 階段 | Subagent/Tool | 用途 |
+|------|--------------|------|
+| Step 2 n8n | mcp__n8n-mcp-server__get_node | 讀取 live 節點代碼 |
+| Step 2 n8n | mcp__n8n-mcp-server__update_node_code | 部署 V47.12 兩節點 |
+| 分析階段 | 無 subagent | 純 A3 代碼分析與執行 |
 
 ---
 

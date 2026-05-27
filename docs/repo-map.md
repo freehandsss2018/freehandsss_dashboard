@@ -33,7 +33,8 @@ freehandsss_dashboard/
 │   │   ├── 0015_add_is_text_overridden.sql    ← orders 加 is_text_overridden BOOLEAN，Mode 1 手動文本保護（2026-05-26）
 │   │   ├── 0016_add_order_text_split_columns.sql ← orders 加 full_order_text_a/b，手模/金屬段分拆（2026-05-26）
 │   │   ├── 0017_save_structured_items_rpc.sql ← save_structured_order_items RPC，Mode 2 原子化寫入（2026-05-27）⚠ 待部署
-│   │   └── 0018_protect_overridden_text.sql   ← sync_order_to_mirror V47.11 guard（is_text_overridden CASE），n8n DB-level保護（2026-05-27）⚠ 待部署
+│   │   ├── 0018_protect_overridden_text.sql   ← sync_order_to_mirror V47.11 guard（is_text_overridden CASE），n8n DB-level保護（2026-05-27）⚠ 待部署
+│   │   └── 0019_add_light_addon_product.sql  ← products 表加入燈飾 - 加購 $80，解 FK 23503（2026-05-27）⚠ 待部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

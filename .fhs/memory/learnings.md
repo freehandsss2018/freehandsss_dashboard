@@ -18,6 +18,7 @@
 ## Patterns（成功反覆驗證的做法）
 
 - **data-spec 通過屬性隔離**：當 DOM 元素的顯示文字是「衍生標籤」（非原始資料）時，必須以 `data-spec="..."` 存放原始值供 save 讀取；直接讀 textContent 會把 UI label 寫入 DB。適用所有 renderX 函式中「從 item_key 推導顯示名稱」的場景 — 源自 2026-05-27
+- **`_isAddon()` + `_addonType()` 通用多配件過濾架構**：以三層向後兼容過濾（key 後綴 match → name keyword → category fallback）替代單一 `_woolKey` 假設。未來新增第三個配件只需在 `_addonType()` 加一個 return 分支，Accordion 與 Table 渲染邏輯零改動 — 源自 2026-05-27
 
 ## Pitfalls（重複踩過的雷）
 
@@ -46,6 +47,7 @@
 - **SELECT / PATCH 帶未套用欄位 → PostgREST 400 整個 fetch 炸掉**：新欄位加入 SELECT 或 PATCH body 前，必須先確認 migration 已套用；否則整個訂單總覽失連。順序：migration 套用 → 加 SELECT → 加 PATCH。 — 源自 2026-05-26
 - **文字分割用位置邏輯比 keyword search 更可靠**：`indexOf('吊飾產品')` 在舊版模板訂單上找不到關鍵字，返回空字串後 `||` fallback 暴露全文。正確做法：`parts[0]` = A、`parts.slice(1)` = B，位置不依賴模板版本 — 源自 2026-05-26
 - **globalOrders cache 欄位名稱陷阱**：Supabase fetch 把 snake_case 映射為 `o.Customer`（非 `o.Customer_Name`）。更新 cache 若只寫 `o.Customer_Name`，Review 表渲染的 `o.Customer` 永遠不更新。寫 cache 時必須同步確認欄位映射關係。 — 源自 2026-05-27
+- **單一配件 filter 假設靜默失效**：`_woolKey` 只過濾一種配件，新增第二個配件後 Badge 注入對第二個配件靜默遺失。n8n `getItemCategory()` 亦只含羊毛氈條件，同樣靜默遺漏。每次新增配件前必查：①前端 filter 函式是否支援多配件、②n8n category 函式是否覆蓋新 SKU — 源自 2026-05-27
 
 ---
 

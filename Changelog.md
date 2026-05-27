@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-05-27] 💡 燈飾加購配件完整整合（Session 33 — /new-product 五步流程）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（11 項改動：checkbox / 計價 / IG預覽+燈後綴 / webhook / dimensions / deriveCat / _isAddon+_addonType重構 / 雙Badge / _mode2ItemLabel I3修補）
+- `supabase/migrations/0019_add_light_addon_product.sql`（新建，⚠ 待 Fat Mo 部署）
+- `n8n/FHS_Core_OrderProcessor_live.json`（V47.12：Parse Items 燈飾 normalization + Calculate Profit getItemCategory 燈飾→配件）
+- `.fhs/reports/planning/a2_implementation_plan.md`（C1 欄位修正記錄）
+
+**架構升級**：
+- `_woolKey` 單一假設 → `_isAddon()` + `_addonType()` 通用雙配件過濾（向後兼容）
+- Smart Cache Strategist V47.12 已是 Supabase live query，migration 部署後自動命中，無需修改
+- IG 預覽：燈飾顯示為 `底座顏色：仿古木+燈`（附在款式行），非獨立行
+
+---
+
 ## [2026-05-27] ✨ 編輯系統 v2 雙模式重構（Session 32 — cl-flow 2026-05-27-1311）
 
 **修改檔案**：

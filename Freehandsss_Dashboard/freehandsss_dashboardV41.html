@@ -2533,6 +2533,12 @@
                             onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
+            <div class="part-item">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight: bold; color: #444;">💡 燈飾 ($80)</span>
+                    <label class="switch"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
+                </div>
+            </div>
             <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
                     oninput="generate()"></div>
         </div>
@@ -4428,8 +4434,9 @@
             if (hasP) {
                 const sub = document.getElementById("pSubCat").value;
                 let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
-                if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}\n`;
-                if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}\n`;
+                const _lightSuffix = document.getElementById('l_light_en')?.checked ? '+燈' : '';
+                if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}\n`;
+                if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}\n`;
                 detailsA += formatBabyLimbs();
                 if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
                 if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
@@ -4633,6 +4640,14 @@
                         "isAccessory": true
                     });
                 }
+                if (getValSafe('l_light_en', false)) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": "TEMP_L_LIGHTS",
+                        "Product_Name": "燈飾 - 加購",
+                        "Quantity": 1,
+                        "isAccessory": true
+                    });
+                }
             }
             return orderItemsArray;
         }
@@ -4760,12 +4775,12 @@
                 }
 
                 if (item.isAccessory) {
-                    let price = name.includes("羊毛氈") ? 680 : 0;
+                    let price = name.includes("羊毛氈") ? 680 : name.includes("燈飾") ? 80 : 0;
                     price *= qty;
                     totalSuggestedPrice += price;
                     breakdownParts.push(price);
                     item.CalculatedPrice = price;
-                    logs.push(`🧸 <b>${name}</b> x${qty}: $${price}`);
+                    logs.push(`${name.includes("燈飾") ? "💡" : "🧸"} <b>${name}</b> x${qty}: $${price}`);
                     totalDrawingCost += item.FatMoCost;
                 }
             });
@@ -4925,6 +4940,7 @@
                     if (sel.value !== '無' && sel.value !== '') html += ` ▪️ ${sel.dataset.who}${sel.dataset.part}: ${sel.value}<br>`;
                 });
                 if (document.getElementById('w_wool_en')?.checked) html += ` ▪️ 🧸 羊毛氈公仔 x1 $680<br>`;
+                if (document.getElementById('l_light_en')?.checked) html += ` ▪️ 💡 燈飾 x1 $80<br>`;
                 html += `</div>`;
             }
             if (document.getElementById('enableK').checked || document.getElementById('enableM').checked) {
@@ -5705,6 +5721,14 @@
                 } else {
                     console.warn('[FHS Diag W_WOOL] SKIPPED — guard failed (need both enableP + w_wool_en)');
                 }
+                const _diagLight = getValSafe('l_light_en', false);
+                if (_diagEnP && _diagLight) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": `${currentOrderId}_L_LIGHTS`,
+                        "Product_Name": "燈飾 - 加購",
+                        "Quantity": 1
+                    });
+                }
             } catch (err) {
                 console.warn("商品擷取遇到小問題，但仍會繼續送出訂單:", err);
             }
@@ -5960,6 +5984,7 @@
             else if (rawID.includes('_M_') || combinedSearch.search(/吊飾|頸鏈/) > -1) { category = "💍 純銀吊飾"; emoji = "💍"; }
             else if (rawID.includes('_P_') || combinedSearch.search(/擺設|木框|玻璃/) > -1) { category = "🎨 立體擺設"; emoji = "🎨"; }
             else if (rawID.includes('_W_WOOL') || combinedSearch.includes('羊毛氈')) { category = "🧸 羊毛氈公仔"; emoji = "🧸"; }
+            else if (rawID.includes('_L_LIGHTS') || combinedSearch.includes('燈飾')) { category = "💡 燈飾"; emoji = "💡"; }
             
             // 4. 解析材質 (Material)
             let material = "";
@@ -6389,10 +6414,13 @@
                 }
                 // W_WOOL 合併至立體擺設同列，不獨立成 card
                 // 同時檢查 _W_WOOL（新格式）和 '羊毛氈'（n8n pipe 格式舊資料）
-                const _accWoolKey = (it) => { const _k = it.Order_Item_Key || it.Item_ID || ''; return _k.toUpperCase().includes('_W_WOOL') || _k.includes('羊毛氈') || _k.includes('羊毛毡') || it.Category === '配件'; };
-                const _accHasWool = (o.items || []).some(_accWoolKey);
-                const _accRenderItems = _accHasWool
-                    ? (o.items || []).filter(it => !_accWoolKey(it))
+                const _isAddon = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; return _k.includes('_W_WOOL') || _k.includes('_L_LIGHTS') || _n.includes('羊毛氈') || _n.includes('燈飾') || (it.Category || '') === '配件'; };
+                const _addonType = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; if (_k.includes('_L_LIGHTS') || _n.includes('燈飾')) return 'light'; if (_k.includes('_W_WOOL') || _n.includes('羊毛氈')) return 'wool'; return 'other'; };
+                const _accHasWool = (o.items || []).some(it => _addonType(it) === 'wool');
+                const _accHasLight = (o.items || []).some(it => _addonType(it) === 'light');
+                const _accHasAddon = _accHasWool || _accHasLight;
+                const _accRenderItems = _accHasAddon
+                    ? (o.items || []).filter(it => !_isAddon(it))
                     : (o.items || []);
                 const _accRenderFinal = _accRenderItems.length > 0 ? _accRenderItems : (o.items || []);
 
@@ -6408,7 +6436,7 @@
                 // Build items badges HTML
                 let itemsHtml = '';
                 if (_accRenderFinal && _accRenderFinal.length > 0) {
-                    let _accWoolBadgeShown = false;
+                    let _accWoolBadgeShown = false; let _accLightBadgeShown = false;
                     _accRenderFinal.forEach((item, idx) => {
                         const getSafeText = (val) => {
                             if (!val) return "";
@@ -6474,10 +6502,14 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
                         if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
-                        // 羊毛氈公仔加購 badge：合併至第一個立體擺設 card
+                        // 加購配件 badge：合併至第一個立體擺設 card
                         if (_accHasWool && !_accWoolBadgeShown && dimensions.category.includes('立體擺設')) {
                             _accWoolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
+                        }
+                        if (_accHasLight && !_accLightBadgeShown && dimensions.category.includes('立體擺設')) {
+                            _accLightBadgeShown = true;
+                            badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600;">💡 燈飾</span>`;
                         }
 
                         // Engraving (strip 合成: info for family combo)
@@ -6721,12 +6753,14 @@
                     };
                     o.items.sort((a, b) => _cp(a) - _cp(b));
                 }
-                // W_WOOL 是加購配件，合併至立體擺設同一列顯示，不獨立成 row
-                // 同時檢查 _W_WOOL（新格式）、'羊毛氈'（pipe 格式）、Category==='配件'（新格式 mapOrder 後）
-                const _woolKey = (it) => { const _k = it.Order_Item_Key || it.Item_ID || ''; return _k.toUpperCase().includes('_W_WOOL') || _k.includes('羊毛氈') || _k.includes('羊毛毡') || it.Category === '配件'; };
-                const _hasWool = (o.items || []).some(_woolKey);
-                const _renderItems = _hasWool
-                    ? (o.items || []).filter(it => !_woolKey(it))
+                // 加購配件（_W_WOOL 羊毛氈 / _L_LIGHTS 燈飾）合併至立體擺設同一列，不獨立成 row
+                const _isAddon = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; return _k.includes('_W_WOOL') || _k.includes('_L_LIGHTS') || _n.includes('羊毛氈') || _n.includes('燈飾') || (it.Category || '') === '配件'; };
+                const _addonType = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; if (_k.includes('_L_LIGHTS') || _n.includes('燈飾')) return 'light'; if (_k.includes('_W_WOOL') || _n.includes('羊毛氈')) return 'wool'; return 'other'; };
+                const _hasWool = (o.items || []).some(it => _addonType(it) === 'wool');
+                const _hasLight = (o.items || []).some(it => _addonType(it) === 'light');
+                const _hasAddon = _hasWool || _hasLight;
+                const _renderItems = _hasAddon
+                    ? (o.items || []).filter(it => !_isAddon(it))
                     : (o.items || []);
                 const _renderItemsFinal = _renderItems.length > 0 ? _renderItems : (o.items || []);
 
@@ -6802,7 +6836,7 @@
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
-                    let _woolBadgeShown = false;
+                    let _woolBadgeShown = false; let _lightBadgeShown = false;
                     _renderItemsFinal.forEach((item, index) => {
                         // V45.4 強化型資料解析引擎 (強型別檢查避免 ID 洩漏)
                         const getSafeText = (val) => {
@@ -6890,11 +6924,14 @@
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
 
-                        // 羊毛氈公仔加購 badge：合併至第一個立體擺設列（不依賴 index===0，
-                        // 防止 pipe 格式排序後立體擺設不在首位的情況）
+                        // 加購配件 badge：合併至第一個立體擺設列
                         if (_hasWool && !_woolBadgeShown && dimensions.category.includes('立體擺設')) {
                             _woolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
+                        }
+                        if (_hasLight && !_lightBadgeShown && dimensions.category.includes('立體擺設')) {
+                            _lightBadgeShown = true;
+                            badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600;">💡 燈飾</span>`;
                         }
 
                         // 數量標籤：立體擺設是套裝，不顯示 x1
@@ -7899,6 +7936,10 @@
             // 羊毛氈
             if (ik.includes('_W_WOOL') || ikO.includes('羊毛')) {
                 return sp || '羊毛氈公仔';
+            }
+            // 燈飾
+            if (ik.includes('_L_LIGHTS') || ikO.includes('燈飾')) {
+                return '💡 燈飾';
             }
             // 家庭合成
             if (ik.includes('_K_FAM') || ikO.includes('家庭')) {
@@ -9899,6 +9940,7 @@
                 if (k.match(/_K_/)) return '金屬鎖匙扣';
                 if (k.match(/_M_/)) return '銀飾';
                 if (k.includes('_W_WOOL')) return '配件';
+                if (k.includes('_L_LIGHTS')) return '配件';
                 return '';
             }
             function _deriveSpec(key) {

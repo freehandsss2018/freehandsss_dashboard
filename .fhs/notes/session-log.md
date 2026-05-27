@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-27 (Session 33): 燈飾加購配件完整整合 ✅
+
+**Scope**: /new-product 燈飾 - 加購 五步流程。(1) migration 0019 建立（C1 欄位修正）；(2) n8n V47.12 Parse Items + Calculate Profit 部署；(3) Dashboard 11 項改動（checkbox/計價/IG+燈/webhook/dimensions/deriveCat/_isAddon重構/雙Badge/_mode2ItemLabel I3）；(4) RLS Gate PASS；(5) Step 5 驗證待 migration 部署後執行。
+**Status**: ✅ Code 完成，migration 0019 ⚠ 待 Fat Mo 部署 Supabase。
+
+---
+
 ## 2026-05-27 (Session 32): 編輯系統 v2 雙模式重構 ✅
 
 **Scope**: (1) Modal 3-tab 重構（訊息文本/訂單明細/財務）；(2) Mode 2 save_structured_order_items RPC（migration 0017）；(3) n8n V47.11 DB-level guard（migration 0018）；(4) Inline 刻字 ✏ 按鈕雙管線；(5) Mobile bottom sheet CSS；(6) _mode2ItemLabel 產品辨識度修復（嬰兒/大寶/方向顯示）。Code-reviewer G3a（RPC return missing full_order_text）發現並修復。
