@@ -48,6 +48,7 @@
 - **文字分割用位置邏輯比 keyword search 更可靠**：`indexOf('吊飾產品')` 在舊版模板訂單上找不到關鍵字，返回空字串後 `||` fallback 暴露全文。正確做法：`parts[0]` = A、`parts.slice(1)` = B，位置不依賴模板版本 — 源自 2026-05-26
 - **globalOrders cache 欄位名稱陷阱**：Supabase fetch 把 snake_case 映射為 `o.Customer`（非 `o.Customer_Name`）。更新 cache 若只寫 `o.Customer_Name`，Review 表渲染的 `o.Customer` 永遠不更新。寫 cache 時必須同步確認欄位映射關係。 — 源自 2026-05-27
 - **單一配件 filter 假設靜默失效**：`_woolKey` 只過濾一種配件，新增第二個配件後 Badge 注入對第二個配件靜默遺失。n8n `getItemCategory()` 亦只含羊毛氈條件，同樣靜默遺漏。每次新增配件前必查：①前端 filter 函式是否支援多配件、②n8n category 函式是否覆蓋新 SKU — 源自 2026-05-27
+- **item_base_cost ≠ subtotal_cost × quantity（Mirror Prep 陷阱）**：descriptions_comments.sql 稱 `subtotal_cost = item_base_cost × quantity`，但 Mirror Prep 實際寫入 `item_base_cost = subtotal_cost = Total_Base_Cost`（兩欄相等，不乘 quantity）。批量重算 SQL 必須以 Mirror Prep 代碼為準，而非欄位說明文字 — 源自 2026-05-28
 
 ---
 

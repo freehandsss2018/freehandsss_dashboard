@@ -35,7 +35,8 @@ freehandsss_dashboard/
 │   │   ├── 0017_save_structured_items_rpc.sql ← save_structured_order_items RPC，Mode 2 原子化寫入（2026-05-27）✅ 已部署
 │   │   ├── 0018_protect_overridden_text.sql   ← sync_order_to_mirror V47.11 guard（is_text_overridden CASE）（2026-05-27）✅ 已部署
 │   │   ├── 0019_add_light_addon_product.sql   ← products 表加入燈飾 - 加購 $80，解 FK 23503（2026-05-27）✅ 已部署
-│   │   └── 0020_financial_settings_system.sql ← cost_configurations + financial_batch_logs + recalc_requested_at + 3 RPC（2026-05-27）⚠ 待 Fat Mo 部署
+│   │   ├── 0020_financial_settings_system.sql ← cost_configurations + financial_batch_logs + recalc_requested_at + 3 RPC（2026-05-27）✅ 已部署
+│   │   └── 0021_batch_recalc_execute_rpc.sql  ← fhs_batch_recalc_execute RPC，供 n8n 批量財務重算（2026-05-28）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -220,8 +221,10 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 腳本說明索引
 │   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
 │   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner）
+│   ├── deploy_batch_recalc_workflow.js  ← 建立並啟動 n8n 💰 Financial Batch Recalculate workflow（2026-05-28）
 │   ├── repair/                          ← 財務 / 資料修補腳本（一次性，需人工確認後執行）
-│   │   └── sync_0600701.js             ← 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）
+│   │   ├── sync_0600701.js             ← 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）
+│   │   └── sync_0600903.js             ← 訂單 0600903 財務與時間修補
 │   └── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │       ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
 │       ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）

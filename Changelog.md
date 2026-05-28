@@ -1,5 +1,69 @@
 # Changelog
 
+## [2026-05-28] 💰 財務批量重算工作流上線（Session 36）
+
+**新增檔案**：
+- `supabase/migrations/0021_batch_recalc_execute_rpc.sql`（`fhs_batch_recalc_execute` RPC）
+- `scripts/deploy_batch_recalc_workflow.js`（n8n workflow 建立腳本）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（`_FS_N8N_WEBHOOK` 填入 URL）
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`（同步自 V41，637,625 bytes）
+
+**新功能**：
+- n8n `💰 Financial Batch Recalculate` workflow 上線（ID: `b31HncCglmXooM4F`）
+- `fhs_batch_recalc_execute(UUID)` Supabase RPC：從 `products` 表重讀成本，套用 V47.12 邏輯，更新 `order_items` + `orders` 財務欄位，清除 `recalc_requested_at`
+- `_FS_N8N_WEBHOOK` 已填入：`https://yanhei.synology.me:8443/webhook/fhs-financial-batch-recalc`
+
+**架構**：
+- Webhook → HTTP Request（call `fhs_batch_recalc_execute`）→ Respond（3 節點）
+- `final_sale_price` 永遠不修改（前端真理守護）
+- 鎖匙扣多件折扣 (N-1)×$20 同步套用（Product Bible V3.7 §2.5）
+- 部分訂單失敗不影響其他訂單（逐筆 `EXCEPTION WHEN OTHERS`）
+
+---
+
+## [2026-05-27] 💰 財務設定系統實作（Session 34b — cl-flow 2026-05-27-2105）
+
+**新增檔案**：
+- `supabase/migrations/0020_financial_settings_system.sql`（cost_configurations + financial_batch_logs + recalc_requested_at + 3 RPC）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（11,006 行，+財務設定 Card UI + JS 模組）
+
+**新功能**：
+- ⚙️ 系統模式新增「💰 財務參數設定中心」Card（QA 中心之前）
+- 成本參數即時讀寫（`cost_configurations` 表，6 個預設 key）
+- 批量重算引擎（桌面限定，手機 CSS 隱藏）：範圍選擇 + 影響預估 + CONFIRM 安全鎖
+- `window.getOrderCost(key, fallback)` 全域快取讀取函式（供訂單建立邏輯使用）
+- `window._fhsCostConfig` 全域成本快取（進入系統模式時自動載入）
+- `recalc_requested_at` 新欄位（避免觸發 0018 Airtable sync trigger）
+
+**架構決策**：
+- RPC 不直接呼叫 n8n（避免 pg_net 依賴）；前端 JS 在 RPC 成功後呼叫 n8n Webhook
+- iPhone Drawer 唯讀（批量重算按鈕 `#batchRecalcSection` 手機隱藏）
+- 所有 JS 嵌入 HTML，符合 AGENTS.md §3.1 單一檔案架構規則
+
+**待 Fat Mo 操作**：
+1. Supabase SQL Editor 執行 Migration 0020
+2. 確認/更新 cost_configurations seed 成本數值（目前全 `0`）
+3. 建立 n8n `💰 Financial Batch Recalculate` 工作流，提供 Webhook URL
+4. A3 填入 `_FS_N8N_WEBHOOK` 後同步 current.html
+
+---
+
+## [2026-05-27] 🚀 Migrations 部署 + current.html 同步（Session 34）
+
+**部署**：
+- `supabase/migrations/0017_save_structured_items_rpc.sql` → Supabase ✅
+- `supabase/migrations/0018_protect_overridden_text.sql` → Supabase ✅
+- `supabase/migrations/0019_add_light_addon_product.sql` → Supabase ✅
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html` → V41 同步（619,006 bytes）✅
+
+**生效功能**：Modal 3-tab + Mode 2 結構化明細編輯器 + inline 刻字編輯 + 燈飾加購配件支援
+
+---
+
 ## [2026-05-27] 💡 燈飾加購配件完整整合（Session 33 — /new-product 五步流程）
 
 **修改檔案**：

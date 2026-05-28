@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-28 (Session 36): 💰 財務批量重算工作流上線 ✅
+
+**Scope**: (1) Migration 0021 `fhs_batch_recalc_execute` RPC（Fat Mo SQL Editor 部署）；(2) `deploy_batch_recalc_workflow.js` 建立 n8n workflow（ID: b31HncCglmXooM4F）；(3) V41 HTML `_FS_N8N_WEBHOOK` 填入；(4) current.html 同步（637,625 bytes）。
+**Status**: ✅ 全部完成。財務設定系統（Session 34b 啟動）正式收尾。
+
+---
+
 ## 2026-05-27 (Session 33): 燈飾加購配件完整整合 ✅
 
 **Scope**: /new-product 燈飾 - 加購 五步流程。(1) migration 0019 建立（C1 欄位修正）；(2) n8n V47.12 Parse Items + Calculate Profit 部署；(3) Dashboard 11 項改動（checkbox/計價/IG+燈/webhook/dimensions/deriveCat/_isAddon重構/雙Badge/_mode2ItemLabel I3）；(4) RLS Gate PASS；(5) Step 5 驗證待 migration 部署後執行。

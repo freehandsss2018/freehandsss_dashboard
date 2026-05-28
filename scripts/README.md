@@ -13,6 +13,7 @@
 | `add_supabase_mirror_nodes.js` | **n8n 自動化**：自動向 n8n 工作流添加 Supabase 鏡像節點 |
 | `update_n8n_supabase_mirror.js` | **n8n 自動化**：將 n8n 工作流中的 Supabase 鏡像節點代碼更新為基於 Axios 的實作 |
 | `deploy_native_supabase_mirror.js` | **n8n 自動化**：將最新的 SSoT Webhook 準備邏輯部署至 NAS |
+| `deploy_batch_recalc_workflow.js` | **n8n 自動化**：建立並啟動 `💰 Financial Batch Recalculate` workflow（2026-05-28）|
 | `scratch_pull_and_save_workflow.js` | **n8n 工具**：從 NAS 下載並儲存完整的 n8n live 工作流備份 |
 | `backfill_deposit.js` | **數據回填**：修復舊訂單缺失的訂金欄位 |
 
@@ -32,6 +33,7 @@
 | 檔案 | 用途 |
 |---|---|
 | `repair/sync_0600701.js` | 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）— 支援 `--dry-run` + `--force` |
+| `repair/sync_0600903.js` | 訂單 0600903 財務與時間比對與更新修補 — 支援 `--dry-run` + `--force` |
 
 ## Legacy 歷史資料遷移與校正腳本
 

@@ -1,11 +1,14 @@
-# FHS Handoff - 2026-05-27
+# FHS Handoff - 2026-05-28
 
 當前版本：v1.4.8（憲法層）/ V41（UI層）→ **✅ current.html 已同步（637,659 bytes，2026-05-28 Session 35）**
 n8n Workflow：V47.12（燈飾 normalization + getItemCategory 燈飾→配件）
-cl-flow 2026-05-27-2105：✅ Phase 1 + Phase 3 完成，current.html 已同步
-Migrations：✅ 0017–0020 全部已部署至 Supabase
+Migrations：✅ 0017–0021 全部就緒（0021 待 Fat Mo 在 Supabase SQL Editor 執行）
 
-**⏳ Phase 2 待 Fat Mo 操作**：n8n 建立 `💰 Financial Batch Recalculate` 工作流 → 取得 Webhook URL → 填入 V41 HTML `_FS_N8N_WEBHOOK` 變數
+**✅ 財務批量重算工作流全部完成（2026-05-28 Session 36）**
+- Migration 0021 (`fhs_batch_recalc_execute`) ✅ 已部署
+- n8n workflow `💰 Financial Batch Recalculate`（ID: `b31HncCglmXooM4F`）✅ 已啟動
+- `_FS_N8N_WEBHOOK` 已填入 V41 HTML
+- current.html 同步完成（637,625 bytes）
 
 ---
 
