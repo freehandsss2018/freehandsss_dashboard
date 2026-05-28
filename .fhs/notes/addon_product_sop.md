@@ -20,16 +20,18 @@
 
 ---
 
-## Supabase FK 保護原則（最重要）
+## Supabase FK 保護原則（重要）
 
-> ⚠️ 違反此原則會觸發 23503 FK violation，導致**整批 INSERT rollback**
+> ✅ **v2.1 更新（2026-05-28）**：Migration 0022b 已執行後，`羊毛氈公仔 - 加購` 和 `燈飾 - 加購` 兩個 SKU **已存在於 products 表**（total_base_cost = $30）。FK violation 風險已解除。
+>
+> **但 `sbSyncOrder` 的 item mapper 仍不應寫入 product_sku**（見下方說明）。
 
 `order_items.product_sku` 有 FOREIGN KEY → `products(sku)` 約束。
 
-**規則：`sbSyncOrder` 的 item mapper 絕對不能寫入 `product_sku`。**
+**規則：`sbSyncOrder` 的 item mapper 不應寫入 `product_sku`（除非你確認 SKU 在 products 表中存在）。**
 
-加購配件的 `Product_Name`（如「羊毛氈公仔 - 加購」）通常不存在於
-`products` 表，強行寫入會讓整批訂單子項目消失（所有 item 全部失敗）。
+v2.1 前：加購配件不在 products 表 → 寫入 product_sku 觸發 23503，整批 INSERT rollback。
+v2.1 後：羊毛氈 / 燈飾已在 products 表 → FK 不再 violation。但若未來新增加購配件尚未執行對應 Migration，仍會觸發。
 
 ```javascript
 // ✅ 正確：不寫 product_sku

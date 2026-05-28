@@ -1,5 +1,47 @@
 # Changelog
 
+## [2026-05-29] 🔧 Smart Cache V47.13 — BASE_PREFIXES 補全（Session 37 hotfix）
+
+**修改節點**：
+- n8n `Smart Cache Strategist` V47.12 → V47.13（workflow `6Ljih0hSKr9RpYNm`）
+
+**變更內容**：
+- `BASE_PREFIXES` 補入 `成人(P)鎖匙扣 - 鋁合金` 和 `成人(P)吊飾 - 925金`（G1/G2 空缺修補）
+- 此前兩個 SKU 走 exact-match fallback，現升為 prefix-match，支援未來衍生 SKU 變體
+
+**觸發來源**：產品可追溯性稽核（5 層矩陣審計，2026-05-29）
+
+---
+
+## [2026-05-28] 💰 財務設定 Schema v2.1 上線（Session 37）
+
+**新增檔案**：
+- `supabase/migrations/0022a_cost_config_v2_schema.sql`（17-key schema：4 新欄位 + v1 key 遷移 + 11 新 key）
+- `supabase/migrations/0022b_cost_config_v2_rpc.sql`（樂觀鎖 RPC + 3-param 重載 + fhs_sync_products_from_config）
+- `.fhs/ai/FHS_Product_Cost_Schema_v2.md`（產品成本知識庫 Core 文件 §0-§9）
+- `.fhs/ai/FHS_Product_Cost_UI_Spec.md`（Desktop + Mobile 財務設定 UI 規範）
+- `.fhs/ai/FHS_Product_Cost_Operations.md`（RPC / 並發 / 回滾 SOP）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`（`loadCostConfigurations` + `saveSingleCostConfig` + `_showCostConflictModal` v2.1 改寫）
+- `.fhs/notes/addon_product_sop.md`（解除舊警告，v2.1 後 addon SKU 已存在 products 表）
+
+**新功能**：
+- 成本設定 UI 改為 5-GROUP accordion 分組顯示（17 欄位）
+- `fhs_upsert_cost_config` 升級為 4-param 樂觀鎖版本（`SELECT FOR UPDATE` 消除 TOCTOU）
+- 保留 3-param 舊簽名重載（向後相容）
+- `fhs_sync_products_from_config` RPC：cost_config → products.total_base_cost 鏡像同步（advisory lock 防並發）
+- 衝突 Modal：版本衝突時提供「重新載入」/「強制覆寫」兩個選項
+- batch recalc 進行中時前端自動鎖定欄位 + banner 提示
+
+**架構決策**：
+- 加購配件 α 方案：SKU 直接存 products 表（0014/0019 已有，0022b 同步 $30）
+- display_group γ 方案：schema-time 固定值（CHECK constraint），不需 RPC 傳入
+- v1 key 重命名遷移（wool_felt_addon_cost → addon_cost_wool_felt 等）
+- β 混型訂單（成人P+嬰兒S）Phase 2 defer
+
+---
+
 ## [2026-05-28] 💰 財務批量重算工作流上線（Session 36）
 
 **新增檔案**：

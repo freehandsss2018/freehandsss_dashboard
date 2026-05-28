@@ -20,6 +20,11 @@
 - **data-spec 通過屬性隔離**：當 DOM 元素的顯示文字是「衍生標籤」（非原始資料）時，必須以 `data-spec="..."` 存放原始值供 save 讀取；直接讀 textContent 會把 UI label 寫入 DB。適用所有 renderX 函式中「從 item_key 推導顯示名稱」的場景 — 源自 2026-05-27
 - **`_isAddon()` + `_addonType()` 通用多配件過濾架構**：以三層向後兼容過濾（key 後綴 match → name keyword → category fallback）替代單一 `_woolKey` 假設。未來新增第三個配件只需在 `_addonType()` 加一個 return 分支，Accordion 與 Table 渲染邏輯零改動 — 源自 2026-05-27
 
+## Patterns（成功反覆驗證的做法）
+
+- **3 subagent 並發審計模式**：database-reviewer + ui-designer + code-reviewer 同時跑，收到 3 份 verdict 後一次性修補所有 Critical，比序列審計快 2 倍且漏洞更少 — 源自 2026-05-28
+- **Schema 文件拆 3 層（Core / UI Spec / Operations）**：Core 常駐記憶，UI 和 Ops 按需載入，大幅減少 AI 每次讀全文的 token 消耗 — 源自 2026-05-28
+
 ## Pitfalls（重複踩過的雷）
 
 - **RPC return 遺漏前端所需欄位（P8）**：RPC 只返回 `{success, order_id}`，前端 `if (result.full_order_text !== undefined)` 永遠 false，UI 刷新靜默失敗。每次寫 RPC 必須對照前端 result 讀取的所有欄位清單，在 RETURN jsonb_build_object 中逐一確認 — 源自 2026-05-27
@@ -30,6 +35,8 @@
 - **n8n 沙箱 process 未定義**：n8n 限制性 sandbox 中 `process` 完全未定義，直取 `process.env` 拋出 `ReferenceError` 崩潰。必須以 `typeof process !== 'undefined'` 進行條件保護 — 源自 2026-05-23
 - **PostgREST 括號語法崩潰**：SKU 含有括號時（如 "木框套裝 (4肢)"），PostgREST `sku.like.FILTER*` 會因 URL 括號特殊字元解析出錯；過濾值必須用雙引號包裹 `sku.like."FILTER*"` 避免語法崩潰 — 源自 2026-05-23
 
+- **樂觀鎖 TOCTOU 陷阱**：SELECT version + ON CONFLICT 兩步方案有競爭窗口，必須改 SELECT FOR UPDATE 才能真正消除並發覆蓋 — 源自 2026-05-28（code-reviewer 發現）
+- **RPC GRANT 安全層級**：SECURITY DEFINER 函式若寫業務表（如 products），GRANT 應給 service_role 而非 anon；否則任何持 anon key 的人可觸發 — 源自 2026-05-28
 - AI 在計畫未批核前擅自執行架構改動（2026-03-30 事故）→ /execute 是唯一授權信號，任何結果好壞都不能事後合理化
 - n8n Code 節點 NAS 限制：fetch() 未定義、https 模組被禁用，會導致靜默失敗；必須使用 axios (require('axios')) 進行 HTTP 呼叫 — 源自 2026-05-22
 - **Smart Cache COST_MAP 硬編碼表遺漏**：新 SKU 上線若未在 Smart Cache Strategist 節點新增成本條目，成本計算返回 0；此缺口在 /new-product v1.0.0 未被覆蓋，已補入 Step 2.e — 源自 2026-05-23

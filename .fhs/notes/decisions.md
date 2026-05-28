@@ -7,6 +7,25 @@
 
 ## 記錄
 
+[2026-05-28] 財務設定 Schema v2.1 — 架構決策
+
+決策：
+- **加購配件 α 方案（addon → products 表）**：羊毛氈 / 燈飾 SKU 存 products.total_base_cost，解除舊 FK violation 風險，所有成本從同一表查。
+- **display_group γ 方案（schema-time 固定）**：6 個分組值以 CHECK constraint 寫入，不透過 RPC 傳入，避免 fhs_upsert_cost_config 需改介面。
+- **樂觀鎖 SELECT FOR UPDATE**：替代 SELECT + ON CONFLICT 兩步方案，消除 TOCTOU 競爭。保留 3-param 舊簽名重載向後相容。
+- **fhs_sync_products_from_config GRANT TO service_role**：此 RPC 寫 products，不應開放 anon。前端不直接呼叫，由 batch recalc 前置觸發。
+- **v1 key 重命名遷移（不 DELETE）**：wool_felt_addon_cost → addon_cost_wool_felt 等，保留歷史記錄，只改名不砍。
+- **β 混型訂單 Phase 2 defer**：成人P + 嬰兒S 組合成本計算複雜度高，目前由 Fat Mo 手動調整 net_profit，Phase 2 才建模。
+- **衝突 Modal 雙選項**：「重新載入 / 強制覆寫」，解決同裝置雙分頁死鎖問題（只有重載會形成無限循環）。
+
+原因：
+- 三份 subagent 審計（database-reviewer / ui-designer / code-reviewer）發現 8 個 Critical，均已修補後才進入 Stage 3。
+- 直觀管理原則（Fat Mo 需求）：所有產品成本單一查詢位置（products 表），不跨表。
+
+批准：Fat Mo ✅（/execute → 「go」2026-05-28 Session 37）
+
+---
+
 [2026-05-27] 編輯系統 v2 雙模式重構 — 架構決策
 
 決策：

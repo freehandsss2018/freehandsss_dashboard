@@ -1,4 +1,52 @@
-# FHS Handoff - 2026-05-28
+# FHS Handoff - 2026-05-29 (Session 37b — 產品可追溯性稽核 + V47.13)
+
+**本 session 完成事項**：
+- ✅ 5 層產品可追溯性稽核完成（整體評級 PARTIAL 85%）
+- ✅ n8n Smart Cache Strategist V47.12 → **V47.13**（G1/G2 修補）
+  - 補入 `成人(P)鎖匙扣 - 鋁合金` 和 `成人(P)吊飾 - 925金` 至 BASE_PREFIXES
+  - versionId: `886ae388`，備份已存
+- ✅ Changelog.md 更新
+
+**已知剩餘空缺（低優先，可 defer）**：
+- G3：Finance Bible §4 `getItemCategory` 示例代碼過時（`'銀飾'` vs 實際 `'純銀頸鏈吊飾'`）
+- G4：主力產品無靜態 migration INSERT（依外部腳本，無 CI 驗證機制）
+- G5：所有產品訂單卡片無 `ig_photo` / `Reference_Photo` 欄位
+- G6：`recalc_requested_at` 無從 V41 側寫回，批量重算無時間戳稽核
+
+## 下次 session 必讀（Session 37 遺留）
+1. Fat Mo 需在 Supabase 執行 0022a → 0022b（順序重要，0022b 依賴 version 欄位）
+2. 執行後呼叫 `SELECT fhs_sync_products_from_config()` 確認 addon $30 寫入
+3. V41 財務設定面板測試：GROUP A 顯示 4 欄繪圖費，addon 顯示 $30
+4. current.html 同步：待 Fat Mo 確認 0022a/b migration 執行後再同步
+
+**Subagent 使用記錄**：
+
+| 項目 | 內容 |
+|------|------|
+| Layer 1–3 稽核 | `database-reviewer` background agent（a3bfc59fa4b3ca83e）|
+| Layer 4 稽核 | general-purpose agent（a049a25d14efb9e68）|
+| 遵從 Router | ✅ 按稽核性質分配正確 subagent |
+
+---
+
+# FHS Handoff - 2026-05-28 (Session 37)
+
+**財務設定 Schema v2.1 已落地（Session 37）**
+- ✅ Migrations 0022a + 0022b 已寫入，**待 Fat Mo 在 Supabase SQL Editor 執行**
+- ✅ V41 HTML 改寫（loadCostConfigurations v2.1 / saveSingleCostConfig v2.1 / _showCostConflictModal）
+- ✅ 3 份知識文件落地（FHS_Product_Cost_Schema_v2.md / UI_Spec / Operations）
+- ✅ 後效同步：CHANGELOG / decisions / learnings / addon_product_sop
+- ⏳ **n8n Mirror Prep 互鎖邏輯**：未實作（見 Operations §OP-3），Phase 3.1 待辦
+- ⏳ **current.html 同步**：待 Fat Mo 確認 migration 執行後再同步
+
+## 下次 session 必讀
+1. Fat Mo 需在 Supabase 執行 0022a → 0022b（順序重要，0022b 依賴 version 欄位）
+2. 執行後呼叫 `SELECT fhs_sync_products_from_config()` 確認 addon $30 寫入
+3. V41 財務設定面板測試：GROUP A 顯示 4 欄繪圖費，addon 顯示 $30
+
+---
+
+# FHS Handoff - 2026-05-28 (Session 36 — overwritten)
 
 當前版本：v1.4.8（憲法層）/ V41（UI層）→ **✅ current.html 已同步（637,659 bytes，2026-05-28 Session 35）**
 n8n Workflow：V47.12（燈飾 normalization + getItemCategory 燈飾→配件）
