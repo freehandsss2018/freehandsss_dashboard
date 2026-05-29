@@ -66,3 +66,4 @@
 - 最小改動優先：能補一個釘子就不重做廚房，v2 優先於 v9 — 源自多次 cl-flow 對話
 - 收斂指令體系：零新指令、零新 subagent，除非現有工具無法完成任務 — 源自 2026-04-28
 - 橋接版禁止含邏輯：.claude/commands/ 與 .agents/workflows/ 只做指向，邏輯只在 Master (.fhs/ai/commands/) — 源自 2026-05-19
+- 表單新增 input 前必評估 captureFormState + n8n payload 影響：新欄位若進入 captureFormState，會改變 webhook payload 結構，可能破壞 n8n 解析。先確認範圍再動手，不確定就 defer — 源自 2026-05-29

@@ -1,3 +1,27 @@
+# FHS Handoff - 2026-05-29 (Session 39 — Category A IG 訊息新版格式 + 一鍵版本切換)
+
+**本 session 完成事項**：
+- ✅ V41 新增 Category A 手模擺設訊息 v2 新版格式（移除 section headers、⭐️ bullet、客名後置、訂單編號全形括號）
+- ✅ 一鍵版本切換：`#igFmtToggleA` 按鈕 + `igFormatVersionA` flag + localStorage 持久化，預設 v2，可隨時切回 v1 原版
+- ✅ 隔離設計驗證：v2 不碰共用 custInfo/finInfo/disclaimer，Category B 零影響；`_extractOrderText` A/B 分割仍正確（錨點為 B 段標記）
+- ✅ Node 語法檢查 0 error + DOM stub 模擬 v2 輸出格式正確
+- ✅ CHANGELOG / decisions.md 同步
+
+**待辦（Fat Mo）**：
+1. **current.html 同步**：本次未同步，待 Fat Mo `/execute V41 → current` 授權
+2. **[新增 defer] 付款拆行**：「已付全數 / 已付訂金」拆兩行 —— 下 session 優化付款欄位設定後實作（目前 v2 單行 `*已付訂金/全數：$X`）
+3. **[新增 defer] 未付尾數計算式**：新增計算式輸入欄（如 $1690+2980+860=$5530）—— 與付款拆行同批處理，需評估對 captureFormState/payload 影響
+4. live 驗證：瀏覽器實測切換按鈕、v2 預覽、複製、訂單還原
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `frontend-developer`（IG 訊息 UI 格式改動）|
+| 實際使用 | ❌ 未使用（定點 6 處 Edit + Node 語法/輸出驗證，直接執行更高效；改動為純字串模板與 flag，無設計探索需求）|
+| 遵從 Router | ❌ 未遵從（理由：frontend-developer 適合 Phase B 原型建構，本任務為既有函式定點重構，主 context 直接完成更快）|
+
+---
+
 # FHS Handoff - 2026-05-29 (Session 38 — Migration 0022 驗證 + current.html 同步)
 
 **本 session 完成事項**：

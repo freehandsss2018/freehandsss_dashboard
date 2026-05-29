@@ -7,6 +7,15 @@
 
 ## 記錄
 
+[2026-05-29] Category A IG 訊息雙版本格式 — 架構決策
+
+決策：
+- **版本切換用 flag + localStorage，非分支兩個 HTML**：以 `igFormatVersionA`（v1/v2）單一 flag 控制，原版邏輯逐字保留於 `buildCategoryA_v1()`，可一鍵還原。原因：避免維護兩份 HTML、保留隨時切回原版能力。
+- **v2 不修改共用 custInfo/finInfo/disclaimer**：這三區塊 Category A、B 共用。v2 改為在 build 函式內自建 A 專屬區塊，確保 Category B 輸出 100% 不受影響。原因：硬隔離，防止改 A 波及 B。
+- **不改 formatBabyLimbs() / formatLimbs()，另建 inline 版**：原函式回傳含【嬰兒】header 多行格式，Review/還原可能依賴。v2 另建 `formatBabyLimbsInline()` 回傳「二手二腳（色）」單行。原因：避免動到既有渲染依賴。
+- **付款拆行 / 未付尾數計算式 defer**：v2 範例需兩行付款 + 加數式，但現有表單無對應欄位。Fat Mo 決定下 session 優化設定後再處理，本次 v2 維持單行純數字。原因：避免提前新增 input 影響 captureFormState 與 n8n payload。
+- **日期沿用 YYYY/MM/DD**：v2 只改前綴 `*倒模日期時間:`，不轉 16/4 10:30 風格。原因：零轉換風險。
+
 [2026-05-28] 財務設定 Schema v2.1 — 架構決策
 
 決策：

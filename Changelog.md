@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-05-29] 🖼 Category A 手模擺設 IG 訊息新版格式 + 一鍵版本切換（Session 39）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`：
+  - 新增全域 flag `igFormatVersionA`（'v1' 原版 / 'v2' 新版，預設 v2，localStorage 持久化）
+  - 新增 `formatBabyLimbsInline()` / `formatLimbsInline()`（v2 專用 inline 手腳格式）
+  - 新增 `buildCategoryA_v1()`（原版逐字保留）/ `buildCategoryA_v2()`（新版精簡格式）
+  - 新增 `toggleIgFormatA()` + `#igFmtToggleA` 切換按鈕（preview-box-a 標題列）
+  - `generate()` Category A 區塊改為雙版本分流；同步按鈕標籤
+
+**v2 新版格式要點**（只影響 Category A 手模擺設，Category B 零影響）：
+- 移除 `Freehandsss 訂單確認` 首行；訂單編號改全形括號無空格
+- 移除 section headers（產品資訊/付款資料/免責聲明），客人名移至產品後
+- 產品行 `*倒BB ：` / `*木框：` / `*相+聲頻：`(留空) / `*皮革刻制：`
+- 免責改 ⭐️ bullet，新增「花材批次」「作品不包照片」，移除木框保養/感謝語
+- 隔離設計：v2 不碰共用 custInfo/finInfo/disclaimer，B 段分割錨點仍正確
+
+**Defer（列入待辦，下 session 優化設定後處理）**：
+- 已付全數 / 已付訂金 拆兩行（目前 v2 維持單行 `*已付訂金/全數：$X`）
+- 未付尾數計算式輸入欄（目前 v2 維持純數字 `*未付尾數：$X`）
+
+**未同步 current.html**：待 Fat Mo 授權
+
+---
+
 ## [2026-05-29] 🛠 Supabase 架構整固 + 中文 COMMENT 補全（Session 38）
 
 **新增檔案**：

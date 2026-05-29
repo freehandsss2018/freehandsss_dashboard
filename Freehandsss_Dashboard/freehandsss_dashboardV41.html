@@ -2993,7 +2993,10 @@
         <h2>📱 IG 訊息分段預覽</h2>
         
         <div id="preview-box-a" class="preview-box">
-            <h3>🖼️ Category A: 手模擺設訊息</h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                <h3 style="margin:0;">🖼️ Category A: 手模擺設訊息</h3>
+                <button type="button" id="igFmtToggleA" onclick="toggleIgFormatA()" style="font-size:12px;padding:4px 10px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;white-space:nowrap;">🔄 格式：新版</button>
+            </div>
             <textarea id="output-preview-a" readonly></textarea>
         </div>
 
@@ -3581,7 +3584,9 @@
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
         const colors = ["無", "待定", "香檳金", "金", "香檳銀", "銀", "古銅", "珍珠白", "粉紅色", "藍色"];
         let babyFillMode = 'all';
-        
+        // Category A 手模擺設訊息格式版本：'v1'=原版, 'v2'=新版精簡格式（預設 v2，可一鍵切換）
+        let igFormatVersionA = localStorage.getItem('fhs_ig_fmt_a') || 'v2';
+
         // --- System Global Config V35.0 State - V31.2 ---
         let systemConfig = {
             last_id: "06000",
@@ -4391,6 +4396,39 @@
             return text;
         }
 
+        // v2 格式專用：嬰兒手腳 inline 版（不含【嬰兒】header），如「二手二腳（香檳金）」
+        function formatBabyLimbsInline() {
+            const lh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左手"]')?.value;
+            const rh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右手"]')?.value;
+            const lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]')?.value;
+            const rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]')?.value;
+            const activeVals = [lh, rh, lf, rf].filter(v => v && v !== '無');
+            if (activeVals.length === 0) return '';
+            const color = activeVals[0];
+            if (babyFillMode === 'all') return `二手二腳（${color}）`;
+            if (babyFillMode === 'left' || babyFillMode === 'right') return `一手一腳（${color}）`;
+            const parts = [];
+            if (lh && lh !== '無') parts.push(`左手(${lh})`);
+            if (rh && rh !== '無') parts.push(`右手(${rh})`);
+            if (lf && lf !== '無') parts.push(`左腳(${lf})`);
+            if (rf && rf !== '無') parts.push(`右腳(${rf})`);
+            return parts.join('、');
+        }
+
+        // v2 格式專用：父母/大寶 inline 版
+        function formatLimbsInline(who) {
+            const lh = document.querySelector(`.limb-sel[data-who="${who}"][data-part="左手"]`)?.value;
+            const rh = document.querySelector(`.limb-sel[data-who="${who}"][data-part="右手"]`)?.value;
+            const lf = document.querySelector(`.limb-sel[data-who="${who}"][data-part="左腳"]`)?.value;
+            const rf = document.querySelector(`.limb-sel[data-who="${who}"][data-part="右腳"]`)?.value;
+            const parts = [];
+            if (lh && lh !== '無') parts.push(`左手(${lh})`);
+            if (rh && rh !== '無') parts.push(`右手(${rh})`);
+            if (lf && lf !== '無') parts.push(`左腳(${lf})`);
+            if (rf && rf !== '無') parts.push(`右腳(${rf})`);
+            return parts.join('、');
+        }
+
         function getFamilyComboDetails() {
             const combo = document.getElementById("k_family_combo")?.value;
             const p1 = document.getElementById("fam_p1_sel")?.value;
@@ -4435,8 +4473,69 @@
             });
         }
 
+        // ── Category A 訊息產生器（雙版本）─────────────────────────────
+        // v1：原版完整格式（逐字保留，作為一鍵還原依據）
+        function buildCategoryA_v1(orderId, custInfo, finInfo, disclaimer, noticeA) {
+            const sub = document.getElementById("pSubCat").value;
+            let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
+            const _lightSuffix = document.getElementById('l_light_en')?.checked ? '+燈' : '';
+            if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}\n`;
+            if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}\n`;
+            detailsA += formatBabyLimbs();
+            if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
+            if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
+            detailsA += `\n- 客製化刻字：${document.getElementById("pEngraving")?.value || "待定"}\n\n`;
+            return `Freehandsss 訂單確認\n(訂單編號# ${orderId} 手模擺設)\n\n${custInfo}${detailsA}${finInfo}${disclaimer}${noticeA}`;
+        }
+
+        // v2：新版精簡格式（只影響 Category A，不碰共用 custInfo/finInfo/disclaimer）
+        function buildCategoryA_v2(orderId, mom, date, timeStr, deposit, balance, additional) {
+            const sub = document.getElementById("pSubCat").value;
+            const _lightSuffix = document.getElementById('l_light_en')?.checked ? '+燈' : '';
+            const lines = [];
+            lines.push(`（訂單編號#${orderId}手模擺設）`);
+            const bbLine = formatBabyLimbsInline();
+            if (bbLine) lines.push(`*倒BB ：${bbLine}`);
+            if (sub === "木框款式") lines.push(`*木框：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}`);
+            if (sub === "玻璃瓶款式") lines.push(`*底座：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}`);
+            if (document.getElementById("en_parent")?.checked) { const p = formatLimbsInline("父母"); if (p) lines.push(`*父母 ：${p}`); }
+            if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
+            if (sub === "木框款式") lines.push(`*相+聲頻：`);
+            const eng = document.getElementById("pEngraving")?.value;
+            lines.push(`*皮革刻制：${(eng && eng.trim() !== '待定') ? eng : ''}`);
+            lines.push(`（資料會於倒模當天填寫）`);
+            lines.push(``);
+            lines.push(`*媽媽名： ${mom}`);
+            lines.push(`*已付訂金/全數：$${deposit}`);
+            lines.push(`*未付尾數：$${balance}`);
+            if (additional && additional !== '0' && additional !== 0) lines.push(`*附加費用：$${additional}`);
+            lines.push(`*倒模日期時間: ${date === '待定' ? '待定' : `${date} ${timeStr}`}`);
+            lines.push(``);
+            lines.push(`⭐️手模會因BB郁動而有所瑕疵`);
+            lines.push(`需否再次倒模，取決於倒模師`);
+            lines.push(`如而額外取模：另+$150`);
+            lines.push(`⭐️由於近日訂單較多`);
+            lines.push(`製成品預十五至十八`);
+            lines.push(`星期完成`);
+            lines.push(`⭐️花材會因批次不同，顏色會有所出入`);
+            lines.push(`⭐️作品不包照片`);
+            lines.push(`⭐️由於後期製作全都是全人手製作，所以未能十全十美，完美主義者請慎重考慮`);
+            return lines.join('\n');
+        }
+
+        // 一鍵切換 Category A 訊息格式（v1 原版 ↔ v2 新版），偏好寫入 localStorage
+        function toggleIgFormatA() {
+            igFormatVersionA = (igFormatVersionA === 'v2') ? 'v1' : 'v2';
+            localStorage.setItem('fhs_ig_fmt_a', igFormatVersionA);
+            const btn = document.getElementById('igFmtToggleA');
+            if (btn) btn.textContent = (igFormatVersionA === 'v2') ? '🔄 格式：新版' : '🔄 格式：原版';
+            generate();
+        }
+
         function generate() {
             syncKcEngVisual();
+            const _igBtnA = document.getElementById('igFmtToggleA');
+            if (_igBtnA) _igBtnA.textContent = (igFormatVersionA === 'v2') ? '🔄 格式：新版' : '🔄 格式：原版';
             const currentOrderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : orderID;
             const mom = document.getElementById("momName").value || "待定";
             const dateStr = document.getElementById("appDate").value;
@@ -4487,19 +4586,11 @@
 - 金屬製品不設預覽，成品未必能與照片100%相同
 - 本店保留對上述條款及產品規格之最終解釋權`;
 
-            // --- Generation Category A: 立體手模擺設 ---
+            // --- Generation Category A: 立體手模擺設（雙版本分流）---
             if (hasP) {
-                const sub = document.getElementById("pSubCat").value;
-                let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
-                const _lightSuffix = document.getElementById('l_light_en')?.checked ? '+燈' : '';
-                if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}\n`;
-                if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}\n`;
-                detailsA += formatBabyLimbs();
-                if (document.getElementById("en_parent")?.checked) detailsA += formatLimbs("父母");
-                if (document.getElementById("en_elder")?.checked) detailsA += formatLimbs("大寶");
-                detailsA += `\n- 客製化刻字：${document.getElementById("pEngraving")?.value || "待定"}\n\n`;
-
-                let combinedA = `Freehandsss 訂單確認\n(訂單編號# ${currentOrderId} 手模擺設)\n\n${custInfo}${detailsA}${finInfo}${disclaimer}${noticeA}`;
+                let combinedA = (igFormatVersionA === 'v1')
+                    ? buildCategoryA_v1(currentOrderId, custInfo, finInfo, disclaimer, noticeA)
+                    : buildCategoryA_v2(currentOrderId, mom, date, timeStr, deposit, balance, additional);
                 document.getElementById("output-preview-a").value = combinedA;
                 document.getElementById("preview-box-a").style.display = "block";
                 document.getElementById("btnCopyA").style.display = "flex";
@@ -7910,7 +8001,8 @@
         }
 
         // Split Full_Order_Text into A (手模擺設) / B (吊飾產品) section when catFilter is set.
-        // Both sections start with "Freehandsss 訂單確認" — use positional split (A always first).
+        // 分割錨點為 B 段的 "Freehandsss 訂單確認" 標記，A 永遠在前（positional）。
+        // 注意：v2 新版 A 段不含此標記，但因 A 恆在前、分割點取 B 標記，邏輯仍正確。
         function _extractOrderText(fullText, catFilter) {
             if (!fullText || !catFilter) return fullText;
             var parts = fullText.split(/\n(?=Freehandsss 訂單確認)/);

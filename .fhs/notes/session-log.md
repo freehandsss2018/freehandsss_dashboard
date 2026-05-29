@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-29 (Session 39): 🖼 Category A IG 訊息新版格式 + 一鍵版本切換 ✅
+
+**Scope**: (1) `buildCategoryA_v2()` 新版精簡格式（⭐️ bullet、客名後置、訂單編號全形括號、*相+聲頻 木框限定、日期待定單個）；(2) `buildCategoryA_v1()` 原版完整保留；(3) `#igFmtToggleA` 一鍵切換按鈕 + localStorage 持久化；(4) `formatBabyLimbsInline()` / `formatLimbsInline()` v2 專用 inline 函式。
+**Status**: ✅ V41 完成，Category B 零影響驗證通過。current.html 待 Fat Mo 授權同步。Defer：付款拆行 + 計算式欄位（下 session 優化設定後處理）。
+
+---
+
 ## 2026-05-28 (Session 36): 💰 財務批量重算工作流上線 ✅
 
 **Scope**: (1) Migration 0021 `fhs_batch_recalc_execute` RPC（Fat Mo SQL Editor 部署）；(2) `deploy_batch_recalc_workflow.js` 建立 n8n workflow（ID: b31HncCglmXooM4F）；(3) V41 HTML `_FS_N8N_WEBHOOK` 填入；(4) current.html 同步（637,625 bytes）。
