@@ -1,5 +1,93 @@
 # Changelog
 
+## [2026-05-30] 🧹 編號模式 UI 簡化（Session 41e）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- HTML：移除「🛠️ 編號模式 (Fatmo 專屬)」標題行 + `btnIdModeRandom`/`btnIdModeSeq` 按鈕組；`seqSetRow` 預設 `display:flex`（不再隱藏）
+- JS：`syncConfigUI` 簡化為只更新 `nextSeqIdInput.value`，並在內部強制 `mode='sequential'`；移除 `setIdMode` 函式
+- `systemConfig.mode` 預設值 `"random"` → `"sequential"`（硬鎖，隨機模式徹底廢棄）
+- Session 41d Fix A/B/C 不受影響（`nextSeqIdInput`/`saveSeqSettings`/`generateOrderID` 均保留）
+
+---
+
+## [2026-05-30] 🐛 Order_ID 亂碼修復 + 碰撞保護（Session 41d）
+
+**根因**：`loadSystemConfig()` 在 Supabase mode (`fhs_supabase_read=1`) 下跳過 n8n config 讀取，sessionStorage cache 30 min 後過期 → 回退硬編碼 `mode:"random"` → 生成隨機 ID（如 `0614227`）。
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+- Fix A：`saveSeqSettings()` 同時寫 `localStorage('fhs_sysconfig_persistent')`（持久，無 TTL）
+- Fix B：`loadSystemConfig()` Supabase mode 分支，讀 localStorage 持久設定，再 fallback 硬編碼 default
+- Fix C：新增 `_checkIdExists(id)`（Supabase REST 靜默查詢）；`generateOrderID()` sequential mode 加碰撞迴圈（最多 50 次 +1），找到未用 ID 後更新 `systemConfig.last_id` 並持久化至 localStorage
+
+---
+
+## [2026-05-30] ✨ 介面優化 T1/T2/T3（Session 41c）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+**T1 訂單類型預設值**：`resetForm()` 末尾 `_syncOrderTypeUI(false)` → `selectOrderType('yes')`，新增訂單預設「是 — 含取模服務」並自動開啟立體擺設；edit 模式靠 restoreFormState 覆蓋，舊單不受影響。
+
+**T2 消除 number input 箭頭**：加入全域 CSS `::-webkit-spin-button { -webkit-appearance:none }` + `appearance:textfield`，覆蓋 WebKit/Firefox/標準，split-box-input 一併受惠。
+
+**T3 羊毛氈/燈飾條件顯示**：兩個 `.part-item` 加 `id="woolAddonRow"/"lightAddonRow"` 預設 `display:none`；新增 `_syncAddonVisibility()` 函式（`pSubCat==='玻璃瓶款式'` 才顯示，切換回木框自動取消勾選）；掛入 `#pSubCat` onchange + `resetForm()` renderLimbGrid 後。P7 pitfall 安全：hide+uncheck → payload 不帶 addon。
+
+---
+
+## [2026-05-30] 🐛 已付訂金→未付尾數自動連動修復（Session 41b）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+- `recalcSplitSum('deposit')` 尾端加 `_syncBalanceFromDeposit()` 觸發
+- 新增 `_syncBalanceFromDeposit()`：依 boxKey 1:1 對應，balance[item] = CalculatedPrice − deposit[item]（最低 0），再呼叫 `recalcSplitSum('balance')`
+- 無遞迴風險（deposit → balance 單向）；零 migration；不動其他結構
+
+---
+
+## [2026-05-30] 💳 付款拆分 Phase 2 — item 級 N 格動態拆分（Session 41）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+**架構決策**：
+- D1=item 級（無上限方格，依 fhsCurrentPricingItems 逐項）
+- D2=已付訂金＋未付尾數各 N 格
+- D3=取代 Session 40 尾數算式字串，舊單 fallback 單格
+- 已付全數（#depositFull）移除，釋放空間
+
+**變更清單**：
+- **移除**：`#depositFull` UI div、`onDepositFullInput/Blur`、`onBalanceInput`、Session 40 payload depositFull 邏輯
+- **UI**：`#deposit`/`#balance` 改 `type=hidden`（numeric 總和）；新增 `#depositSplitContainer`/`#balanceSplitContainer`（動態方格）；新增 `#depositSplitData`/`#balanceSplitData`（hidden JSON，by-id 自動進 captureFormState）
+- **CSS**：新增 `.payment-split-row`/`.split-box`/`.split-plus`/`.split-sum-display`（flex-wrap + 手機 75px 緊湊格）
+- **JS 核心**：`_boxKey(item,index)`（boxKey=OIK#PartDesc#target）、`renderPaymentSplits(field)`（保留舊值、預填 CalculatedPrice）、`recalcSplitSum(field)`（只加總不重建 DOM）、`serializeSplits(field)`、`restoreSplits()`
+- **整合**：pricing 引擎完成後呼叫 `renderPaymentSplits`；`restoreFormState` 尾 `setTimeout(restoreSplits,80)`；`generate()` 簡化取值；`buildCategoryA_v2` + `finInfo` 改 `_buildSplitIgLine()` 輸出 `品A$X+品B$Y=$總和` 格式
+- **payload**：Deposit/Balance 回歸 `Number(el.value)||0`（hidden numeric）
+- **送出前校驗**：auto-correct split sum → hidden value
+- **code-reviewer Gate**：G1–G8 全 PASS ✅
+- **零 migration**：明細存 raw_form_state，Supabase deposit/balance 維持數值
+
+**未同步 current.html**：待 Fat Mo 授權
+
+---
+
+## [2026-05-29] 💳 付款結算欄位重構 Phase 1（Session 40）
+
+**修改檔案**：
+- `Freehandsss_Dashboard/freehandsss_dashboardV41.html`：
+  - **UI**：新增 `#depositFull`（已付全數）欄位；`#deposit` label 改「已付訂金」；`#balance` 改 `type=text inputmode="text"`（支援計算式字串）；三欄均新增 eval-display span
+  - **IG v2 預覽**：`buildCategoryA_v2` 新增 `depositFull` 參數，付款區改三行輸出（`*已付全數`、`*已付訂金`、`*未付尾數：算式=$總和`）
+  - **IG v1 預覽**：`finInfo` 補入「已付全數」行；balance 以 evalSimpleMath 數值顯示
+  - **generate()**：新增 `depFullEl / depositFull` 取值
+  - **payload**：`Deposit` 改 D1 全數優先邏輯（full>0 取 full，否則取 deposit）；`Balance` 改用 `evalSimpleMath` 確保算式字串轉數值
+  - **eval 函式**：新增 `onDepositFullInput/Blur`、`onBalanceInput`（算式即時顯示；balance blur 保留算式字串不覆寫）
+  - **restoreFormState**：`_isFinField` 加入 `depositFull`（0→空 特例）
+  - **Update_Note labelMap / moneyFields**：補入 `depositFull`
+
+**設計決策（D1 預設）**：已付全數/訂金互斥，full>0 取 full，否則取 deposit；balance 保留算式字串不在 blur 覆寫。
+**零 migration**：算式原始字串存於 `Raw_Form_State`，Supabase `balance` 欄維持數值。
+
+**未同步 current.html**：待 Fat Mo 授權
+
+---
+
 ## [2026-05-29] 🖼 Category A 手模擺設 IG 訊息新版格式 + 一鍵版本切換（Session 39）
 
 **修改檔案**：

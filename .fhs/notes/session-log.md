@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-30 (Sessions 40–41e): 💳 付款拆分 N 格 + Order_ID 修復 + UI 優化 ✅
+
+**Scope**: Session 40 (付款欄位重構 Phase 1)；Session 41 (item 級 N 格動態拆分，code-reviewer G1–G8 PASS)；Session 41b (deposit→balance 自動連動)；Session 41c (T1 預設 Yes、T2 去箭頭、T3 羊毛氈/燈飾條件顯示)；Session 41d (Order_ID P9 pitfall 修復 + 碰撞迴圈)；Session 41e (編號模式 UI 簡化，硬鎖 sequential)。
+**Status**: ✅ V41 + current.html 一次性 commit。待 live 驗證 VT-01~12。
+
+---
+
 ## 2026-05-29 (Session 39): 🖼 Category A IG 訊息新版格式 + 一鍵版本切換 ✅
 
 **Scope**: (1) `buildCategoryA_v2()` 新版精簡格式（⭐️ bullet、客名後置、訂單編號全形括號、*相+聲頻 木框限定、日期待定單個）；(2) `buildCategoryA_v1()` 原版完整保留；(3) `#igFmtToggleA` 一鍵切換按鈕 + localStorage 持久化；(4) `formatBabyLimbsInline()` / `formatLimbsInline()` v2 專用 inline 函式。

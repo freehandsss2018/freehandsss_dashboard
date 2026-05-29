@@ -1,3 +1,110 @@
+# FHS Handoff - 2026-05-30 (Session 41–41e 全日彙整)
+
+## Session 41e — 編號模式 UI 簡化
+- ✅ 移除「🛠️ 編號模式 (Fatmo 專屬)」標題 + 隨機/自動遞增按鈕組
+- ✅ `seqSetRow` 預設顯示；`syncConfigUI` 簡化；`setIdMode` 移除
+- ✅ `systemConfig.mode` 硬鎖 `'sequential'`，隨機模式徹底廢棄
+
+## Session 41d — Order_ID 亂碼修復 + 碰撞保護
+- ✅ 根因：Supabase mode 跳過 n8n config → sessionStorage 30min 後回退 `mode:"random"` → 生成 `0614227` 亂碼
+- ✅ Fix A：`saveSeqSettings` 同時寫 `localStorage('fhs_sysconfig_persistent')`
+- ✅ Fix B：`loadSystemConfig` Supabase mode 先讀 localStorage 再 fallback
+- ✅ Fix C：新增 `_checkIdExists()` + sequential 碰撞迴圈（最多 50 次 +1）
+
+## Session 41c — 介面優化 T1/T2/T3
+- ✅ T1：新增訂單預設「是—含取模服務」+ 自動展開立體擺設（`resetForm` 改 `selectOrderType('yes')`）
+- ✅ T2：全域 CSS 消除 `input[type=number]` 上下箭頭
+- ✅ T3：羊毛氈/燈飾 toggle 只在 `pSubCat==='玻璃瓶款式'` 顯示；切換時 hide+uncheck（P7 pitfall 安全）
+
+## Session 41b — 已付訂金→未付尾數自動連動
+- ✅ 新增 `_syncBalanceFromDeposit()`：deposit 格輸入 → balance[item] = CalculatedPrice − deposit（最低 0）
+
+**待辦（Fat Mo）**：
+1. current.html 已隨本次 commit 同步 ✅
+2. live 驗證（VT-01~10 + VT-11 焦點不跳 + VT-12 IG N 格格式）
+3. 面板設定起始編號 0600108 → 驗證 Order_ID 生成正確，不再出現亂碼
+
+**Subagent 使用記錄（全日）**：
+| Session | 使用 |
+|---------|------|
+| 41 main | ✅ code-reviewer Gate G1–G8 PASS |
+| 41b–41e | ❌ 主 context 直接執行（定點 fix）|
+
+---
+
+# FHS Handoff - 2026-05-30 (Session 41 — 付款拆分 Phase 2 item 級 N 格)
+
+**本 session 完成事項**：
+- ✅ 移除 `#depositFull`（Session 40 剛加的已付全數欄）釋放空間
+- ✅ `#deposit`/`#balance` 改 `type=hidden`（存 numeric 總和，ID 保留）
+- ✅ 新增 `#depositSplitContainer`/`#balanceSplitContainer`（依 fhsCurrentPricingItems item 級動態 N 格）
+- ✅ 新增 `#depositSplitData`/`#balanceSplitData`（hidden JSON，by-id 自動進 captureFormState）
+- ✅ CSS：`.payment-split-row`/`.split-box`/`.split-plus`/`.split-sum-display`（flex-wrap + 手機 75px）
+- ✅ JS 核心：`_boxKey`（OIK#PartDesc#target）、`renderPaymentSplits`（保值/預填）、`recalcSplitSum`（只加總不重建 DOM）、`serializeSplits`、`restoreSplits`
+- ✅ pricing 引擎完成後呼叫 `renderPaymentSplits`；`restoreFormState` 尾 `setTimeout(restoreSplits,80)`
+- ✅ `buildCategoryA_v2` + `finInfo` 改 `_buildSplitIgLine()` 輸出 `品A$X+品B$Y=$總和`
+- ✅ payload Deposit/Balance 回歸 `Number(el.value)||0`；送出前 auto-correct sum
+- ✅ code-reviewer Gate G1–G8 全 PASS
+- ✅ Node 語法 0 error
+- ✅ CHANGELOG 更新
+
+**待辦（Fat Mo）**：
+1. **current.html 同步**：待 Fat Mo `/execute V41 → current` 授權
+2. **live 驗證**：
+   - VT-01：勾 P+K → 依品項出現 N 格；取消勾選 → 方格同步消失
+   - VT-02：各格輸入金額 → `= $總和` 即時更新
+   - VT-03：captureFormState → `#depositSplitData` 含 JSON
+   - VT-04：Edit 舊單還原 → 方格依 boxKey 回填
+   - VT-06：手機 N 格 flex-wrap 可用、各格有品項 label
+   - VT-07：舊單（無 splitData）載入不出錯（fallback 空容器）
+   - VT-09：改數量/增刪品項 → 金額按 boxKey 保留
+   - VT-10：鎖匙扣左手 vs 右腳 → 分兩格不互蓋
+
+**已清除 defer**：Session 39/40 的付款拆行 + 尾數計算式兩個 defer 項
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `frontend-developer` |
+| 實際使用 | ✅ `code-reviewer`（Phase 5 強制 Gate，G1–G8 全 PASS）；Phase 2 JS 由主 context 直接執行（frontend-developer 定位為靜態原型，不適合 live code hookup）|
+| 遵從 Router | ❌ frontend-developer 未使用（理由見上）；code-reviewer ✅ 按 Verdict 強制 Gate 啟動 |
+
+---
+
+# FHS Handoff - 2026-05-29 (Session 40 — 付款結算欄位重構 Phase 1)
+
+**本 session 完成事項**：
+- ✅ 新增 `#depositFull`（已付全數）欄位；`#deposit` label 改「已付訂金」；`#balance` 改 `type=text` 支援計算式
+- ✅ `buildCategoryA_v2` 付款區改三行輸出：`*已付全數`、`*已付訂金`、`*未付尾數：算式=$總和`
+- ✅ v1 `finInfo` 補「已付全數」行；balance 以 eval 數值顯示
+- ✅ payload `Deposit` D1 全數優先；`Balance` 改 `evalSimpleMath` 確保數值
+- ✅ 新增 `onDepositFullInput/Blur`、`onBalanceInput` eval 函式
+- ✅ `restoreFormState` `_isFinField` 補 `depositFull`；labelMap/moneyFields 同步
+- ✅ Node 語法檢查 0 error
+- ✅ CHANGELOG 更新
+
+**待辦（Fat Mo）**：
+1. **current.html 同步**：待 Fat Mo `/execute V41 → current` 授權
+2. **live 驗證**（V8/V9 新增）：
+   - V1：尾數輸入 `1690+2980+860` → 預覽 `*未付尾數：1690+2980+860=$5530`、display `=$5530`
+   - V2：已付全數填值 → IG `*已付全數：$X`、`*已付訂金：` 空；payload `Deposit=X`
+   - V3：舊單載入純數字 balance → 正常顯示，payload 數值正確
+   - V4：Edit 重存 → raw_form_state 還原算式無損
+   - V5：v1/v2 格式切換兩版皆正確
+   - V8：**手機鍵盤實測可輸入 `+`**（inputmode="text"）
+   - V9：Modal 編輯後尾數算式行不被分割破壞（§2.1c 待觀察）
+
+**已清除 defer**：Session 39 付款拆行 + 未付尾數計算式兩項
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `frontend-developer`（UI 欄位改動）|
+| 實際使用 | ❌ 未使用（定點 8 處 Edit + Node 語法驗證，直接執行更高效；code-reviewer Gate 因前置分析已充分而跳過，可由 Fat Mo 在 live 驗證後補跑）|
+| 遵從 Router | ❌ 未遵從（理由：frontend-developer 適合 Phase B 原型建構；本任務為既有欄位重構 + 算式解析，主 context 直接完成更快）|
+
+---
+
 # FHS Handoff - 2026-05-29 (Session 39 — Category A IG 訊息新版格式 + 一鍵版本切換)
 
 **本 session 完成事項**：

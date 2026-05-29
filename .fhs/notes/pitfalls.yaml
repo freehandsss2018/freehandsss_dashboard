@@ -188,3 +188,25 @@ pitfalls:
       新增任何加購配件時，必須先執行 /new-product SOP Step 1（products 表 INSERT）
       和 Step 2（Smart Cache COST_MAP 更新），再部署 Dashboard 或 n8n 節點改動。
       順序：Supabase products → Smart Cache → Parse Items → Calculate Profit → 測試。
+
+  - id: P9
+    name: supabase-mode-loadSystemConfig-silent-bypass
+    layer: Dashboard JS
+    symptom: >
+      用戶已設定「自動遞增」起始編號，但 30 分鐘後或換 Tab 後，
+      新增訂單仍生成形如 06XXXXX 的隨機 ID（如 0614227）。
+    root_cause: >
+      loadSystemConfig() 在 Supabase mode（fhs_supabase_read=1）下
+      先檢查 sessionStorage cache（TTL 30 min）。
+      cache miss 後直接走 early return，使用硬編碼 default（mode:"random"）。
+      完全跳過 n8n/Airtable config 讀取，用戶設定的 sequential 模式無法存活超過 30 分鐘。
+    fix_applied: >
+      Session 41d (2026-05-30)：
+      1. saveSeqSettings() 同時寫 localStorage('fhs_sysconfig_persistent')（無 TTL）
+      2. loadSystemConfig() Supabase mode 分支先讀 localStorage 再 fallback 硬編碼
+      3. systemConfig.mode 預設值改為 'sequential'；隨機模式 UI 整體移除（Session 41e）
+    detection_rule: >
+      若 loadSystemConfig() 有任何 early return 分支，確認其前先讀 localStorage 持久設定。
+    prevention: >
+      任何新增的「跳過遠端讀取」分支，必須先嘗試讀取 localStorage 持久 key，
+      再才 fallback 硬編碼。sessionStorage 只作短期 cache，不可作為唯一持久層。
