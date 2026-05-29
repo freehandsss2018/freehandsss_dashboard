@@ -10792,78 +10792,180 @@
             });
         }
 
-        // ── loadCostConfigurations ───────────────────────────
+        // ── loadCostConfigurations (v2.1) ─────────────────────
+        // Groups by display_group; stores version metadata for optimistic lock;
+        // checks batch recalc status to disable fields if running.
         window.loadCostConfigurations = function() {
             var badge = document.getElementById('finSettingsBadge');
             var list  = document.getElementById('costConfigList');
             if (!list) return;
 
             if (badge) { badge.textContent = '載入中'; badge.className = 'sys-badge sys-badge-checking'; }
+            window._fhsCostConfig     = {};
+            window._fhsCostConfigMeta = {}; // key → { version, display_name }
 
-            _fsSelect('cost_configurations', 'select=*&order=config_key.asc')
-                .then(function(rows) {
-                    window._fhsCostConfig = {};
-                    rows.forEach(function(r) {
-                        window._fhsCostConfig[r.config_key] =
-                            r.data_type === 'number' ? (parseFloat(r.config_value) || 0) : r.config_value;
+            // Check batch recalc lock first
+            var batchRunning = false;
+            _fsSelect('financial_batch_logs',
+                'select=n8n_status&n8n_status=in.(pending,submitted,processing)&limit=1')
+              .catch(function(){ return []; })
+              .then(function(lockRows) {
+                batchRunning = lockRows && lockRows.length > 0;
+                return _fsSelect('cost_configurations',
+                    'select=*&is_deprecated=is.false&order=display_group.asc,config_key.asc');
+              })
+              .then(function(rows) {
+                rows.forEach(function(r) {
+                    window._fhsCostConfig[r.config_key] =
+                        r.data_type === 'number' ? (parseFloat(r.config_value) || 0) : r.config_value;
+                    window._fhsCostConfigMeta[r.config_key] = {
+                        version: r.version || 0,
+                        display_name: r.display_name || r.config_key
+                    };
+                });
+
+                if (!rows.length) {
+                    list.innerHTML = '<div style="color:var(--fhs-text-secondary);font-size:12px;padding:6px 0;">尚無設定資料（Migration 0022a 未部署？）</div>';
+                    if (badge) { badge.textContent = '無資料'; badge.className = 'sys-badge sys-badge-error'; }
+                    return;
+                }
+
+                var GROUP_LABELS = {
+                    drawing:          'A. 繪圖成本',
+                    material_3d:      'B. 立體擺設物料',
+                    material_jewelry: 'C. 飾品物料',
+                    shipping:         'D. 運費',
+                    addon:            'E. 加購配件',
+                    misc:             'MISC. 其他'
+                };
+                var groups = {};
+                rows.forEach(function(r) {
+                    var g = r.display_group || 'misc';
+                    if (!groups[g]) groups[g] = [];
+                    groups[g].push(r);
+                });
+
+                var batchBanner = batchRunning
+                    ? '<div style="background:#FFF3CD;border:1px solid #F0A500;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#856404;">⚠️ 批量重算進行中，欄位已鎖定，請稍候</div>'
+                    : '';
+
+                var html = batchBanner;
+                var groupOrder = ['drawing','material_3d','material_jewelry','shipping','addon','misc'];
+                groupOrder.forEach(function(gKey) {
+                    if (!groups[gKey]) return;
+                    var isFirst = gKey === 'drawing';
+                    html += '<div class="cost-group" style="border:1px solid var(--fhs-border);border-radius:7px;margin-bottom:8px;overflow:hidden;">'
+                          + '<div class="cost-group-header" onclick="this.parentElement.querySelector(\'.cost-group-body\').style.display=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cost-chevron\').textContent=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'▶\':\'▼\';" '
+                          + 'style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;background:var(--fhs-bg-elevated);font-size:12px;font-weight:700;color:var(--fhs-text-primary);">'
+                          + '<span>' + (GROUP_LABELS[gKey] || gKey) + ' (' + groups[gKey].length + ')</span>'
+                          + '<span class="cost-chevron">' + (isFirst ? '▼' : '▶') + '</span>'
+                          + '</div>'
+                          + '<div class="cost-group-body" style="display:' + (isFirst ? 'block' : 'none') + ';padding:8px 12px;">';
+
+                    groups[gKey].forEach(function(r) {
+                        var disabled = batchRunning ? ' disabled' : '';
+                        html += '<div class="cost-field-row" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;" data-key="' + r.config_key + '">'
+                              + '<label style="flex:1;font-size:12px;color:var(--fhs-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + (r.description || '') + '">'
+                              + (r.display_name || r.config_key) + '</label>'
+                              + '<span style="font-size:10px;color:var(--fhs-text-secondary);">HKD</span>'
+                              + '<input type="' + (r.data_type === 'number' ? 'number' : 'text') + '" '
+                              + 'inputmode="decimal" data-key="' + r.config_key + '" value="' + r.config_value + '" '
+                              + 'data-original="' + r.config_value + '" '
+                              + 'min="0" step="0.01"' + disabled + ' '
+                              + 'oninput="this.style.background=\'#FFF3CD\';" '
+                              + 'style="width:88px;padding:4px 6px;border:1px solid var(--fhs-border);border-radius:5px;font-size:13px;text-align:right;background:var(--fhs-bg-elevated);color:var(--fhs-text-primary);">'
+                              + '<button onclick="window.saveSingleCostConfig(this)"'
+                              + ' data-key="' + r.config_key + '"' + disabled
+                              + ' style="padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;white-space:nowrap;">儲存</button>'
+                              + '</div>';
                     });
 
-                    if (!rows.length) {
-                        list.innerHTML = '<div style="color:var(--fhs-text-secondary);font-size:12px;padding:6px 0;">尚無設定資料（Migration 0020 未部署？）</div>';
-                    } else {
-                        list.innerHTML = rows.map(function(r) {
-                            return '<div style="display:flex;align-items:center;gap:8px;">'
-                                + '<label style="flex:1;font-size:12px;color:var(--fhs-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + (r.description || '') + '">'
-                                + (r.display_name || r.config_key) + '</label>'
-                                + '<input type="' + (r.data_type === 'number' ? 'number' : 'text') + '" '
-                                + 'data-key="' + r.config_key + '" value="' + r.config_value + '" '
-                                + 'min="0" step="0.01" '
-                                + 'style="width:88px;padding:4px 6px;border:1px solid var(--fhs-border);border-radius:5px;font-size:13px;text-align:right;background:var(--fhs-bg-elevated);color:var(--fhs-text-primary);">'
-                                + '<button onclick="window.saveSingleCostConfig(this)" data-key="' + r.config_key + '" '
-                                + 'style="padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;white-space:nowrap;">儲存</button>'
-                                + '</div>';
-                        }).join('');
-                    }
-                    if (badge) { badge.textContent = '已載入'; badge.className = 'sys-badge sys-badge-ok'; }
-                })
-                .catch(function(e) {
-                    console.error('[FinSettings] loadCostConfigurations:', e);
-                    list.innerHTML = '<div style="color:#ef4444;font-size:12px;">載入失敗：' + e.message + '</div>';
-                    if (badge) { badge.textContent = '載入失敗'; badge.className = 'sys-badge sys-badge-error'; }
+                    html += '</div></div>';
                 });
+
+                list.innerHTML = html;
+                if (badge) { badge.textContent = batchRunning ? '鎖定中' : '已載入'; badge.className = batchRunning ? 'sys-badge sys-badge-checking' : 'sys-badge sys-badge-ok'; }
+              })
+              .catch(function(e) {
+                console.error('[FinSettings] loadCostConfigurations:', e);
+                list.innerHTML = '<div style="color:#ef4444;font-size:12px;">載入失敗：' + e.message + '</div>';
+                if (badge) { badge.textContent = '載入失敗'; badge.className = 'sys-badge sys-badge-error'; }
+              });
         };
 
-        // ── saveSingleCostConfig ─────────────────────────────
-        window.saveSingleCostConfig = function(btn) {
+        // ── saveSingleCostConfig (v2.1) ──────────────────────
+        // Uses 4-param RPC with optimistic lock (p_expected_version).
+        // On version_conflict: shows modal with reload / force-save options.
+        window.saveSingleCostConfig = function(btn, forceOverride) {
             var key   = btn.dataset.key;
-            var input = btn.parentElement.querySelector('input[data-key="' + key + '"]');
+            var row   = btn.closest ? btn.closest('.cost-field-row') : btn.parentElement;
+            var input = row ? row.querySelector('input[data-key="' + key + '"]') : null;
             if (!input) return;
-            var val = input.value;
+            var val  = input.value;
+            var meta = (window._fhsCostConfigMeta || {})[key] || {};
+            var expectedVersion = forceOverride ? null : (meta.version != null ? meta.version : null);
 
+            var btnStyle = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;white-space:nowrap;';
             btn.disabled = true; btn.textContent = '…';
-            _fsRpc('fhs_upsert_cost_config', { p_key: key, p_value: val, p_updated_by: 'dashboard' })
-                .then(function() {
+
+            var rpcBody = { p_key: key, p_value: val, p_updated_by: 'dashboard' };
+            if (expectedVersion != null) rpcBody.p_expected_version = expectedVersion;
+
+            _fsRpc('fhs_upsert_cost_config', rpcBody)
+                .then(function(result) {
+                    // Update local metadata with new version
                     window._fhsCostConfig[key] = parseFloat(val) || val;
+                    if (window._fhsCostConfigMeta && result && result.new_version != null) {
+                        window._fhsCostConfigMeta[key] = Object.assign({}, meta, { version: result.new_version });
+                    }
+                    input.style.background = '';
+                    input.dataset.original = val;
                     btn.textContent = '✓';
                     btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #059669;background:#d1fae5;color:#059669;font-size:12px;cursor:pointer;';
                     setTimeout(function() {
-                        btn.textContent = '儲存';
-                        btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;';
-                        btn.disabled = false;
+                        btn.textContent = '儲存'; btn.style.cssText = btnStyle; btn.disabled = false;
                     }, 1800);
-                    if (window.showToast) window.showToast('✅ ' + (key) + ' 已更新為 ' + val);
+                    if (window.showToast) window.showToast('✅ ' + (meta.display_name || key) + ' 已更新為 ' + val);
                 })
                 .catch(function(e) {
-                    console.error('[FinSettings] saveSingleCostConfig:', e);
-                    btn.textContent = '失敗';
-                    btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #ef4444;background:#fee2e2;color:#ef4444;font-size:12px;cursor:pointer;';
-                    setTimeout(function() {
-                        btn.textContent = '儲存';
-                        btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;';
-                        btn.disabled = false;
-                    }, 2500);
-                    if (window.showToast) window.showToast('❌ 儲存失敗：' + e.message);
+                    var msg = e && e.message ? e.message : String(e);
+                    if (msg.indexOf('version_conflict') !== -1) {
+                        // Optimistic lock conflict — show resolution modal
+                        btn.textContent = '衝突'; btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #F59E0B;background:#FEF3C7;color:#92400E;font-size:12px;cursor:pointer;';
+                        setTimeout(function() { btn.textContent = '儲存'; btn.style.cssText = btnStyle; btn.disabled = false; }, 3000);
+                        window._showCostConflictModal(btn, key, val);
+                    } else {
+                        console.error('[FinSettings] saveSingleCostConfig:', e);
+                        btn.textContent = '失敗'; btn.style.cssText = 'padding:4px 10px;border-radius:5px;border:1px solid #ef4444;background:#fee2e2;color:#ef4444;font-size:12px;cursor:pointer;';
+                        setTimeout(function() { btn.textContent = '儲存'; btn.style.cssText = btnStyle; btn.disabled = false; }, 2500);
+                        if (window.showToast) window.showToast('❌ 儲存失敗：' + msg);
+                    }
                 });
+        };
+
+        // ── _showCostConflictModal ───────────────────────────
+        window._showCostConflictModal = function(btn, key, pendingVal) {
+            var existing = document.getElementById('costConflictModal');
+            if (existing) existing.remove();
+            var modal = document.createElement('div');
+            modal.id = 'costConflictModal';
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center;';
+            modal.innerHTML = '<div style="background:#fff;border-radius:10px;padding:24px;max-width:340px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2);">'
+                + '<div style="font-size:15px;font-weight:700;color:#1D3557;margin-bottom:10px;">⚠️ 版本衝突</div>'
+                + '<div style="font-size:13px;color:var(--fhs-text-secondary);margin-bottom:18px;">此欄位在你編輯期間已被其他視窗更新。請選擇處理方式：</div>'
+                + '<div style="display:flex;gap:10px;flex-wrap:wrap;">'
+                + '<button id="costConflictReload" style="flex:1;padding:8px;border-radius:6px;border:1px solid #6B7280;background:#F9FAFB;color:#374151;font-size:13px;cursor:pointer;">重新載入（放棄修改）</button>'
+                + '<button id="costConflictForce" style="flex:1;padding:8px;border-radius:6px;border:1px solid #EF4444;background:#FEE2E2;color:#991B1B;font-size:13px;cursor:pointer;">強制儲存（以我的值覆寫）</button>'
+                + '</div></div>';
+            document.body.appendChild(modal);
+            document.getElementById('costConflictReload').onclick = function() {
+                modal.remove();
+                window.loadCostConfigurations();
+            };
+            document.getElementById('costConflictForce').onclick = function() {
+                modal.remove();
+                window.saveSingleCostConfig(btn, true); // forceOverride = true
+            };
         };
 
         // ── estimateBatchImpact ──────────────────────────────

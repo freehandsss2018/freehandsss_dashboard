@@ -100,14 +100,14 @@ Mirror to Supabase
 function getItemCategory(sku) {
   if (sku.includes('木框') || sku.includes('玻璃瓶')) return '立體擺設';
   if (sku.includes('鎖匙扣'))  return '金屬鎖匙扣';
-  if (sku.includes('吊飾'))    return '銀飾';
+  if (sku.includes('吊飾'))    return '純銀頸鏈吊飾';  // ⚠️ Supabase 實際儲存值，非 '銀飾'
   return '其他';
 }
 
 // 成本分配規則
-// item_category = '立體擺設' → handmodel_cost = item_base_cost, keychain/necklace = 0
-// item_category = '金屬鎖匙扣'→ keychain_cost = item_base_cost, handmodel/necklace = 0
-// item_category = '銀飾'     → necklace_cost = item_base_cost, handmodel/keychain = 0
+// item_category = '立體擺設'    → handmodel_cost = item_base_cost, keychain/necklace = 0
+// item_category = '金屬鎖匙扣'  → keychain_cost = item_base_cost, handmodel/necklace = 0
+// item_category = '純銀頸鏈吊飾'→ necklace_cost = item_base_cost, handmodel/keychain = 0
 ```
 
 ### 跨部位鎖匙扣運費共享扣減（Bible V3.7 §2.5）
@@ -153,7 +153,7 @@ function getItemCategory(sku) {
 | `item_category` | n8n（Mirror to Supabase） | 由 SKU 推導（見第三節） |
 | `handmodel_cost` | n8n（Mirror to Supabase） | item 層：如類別=立體擺設則=item_base_cost，否則=0 |
 | `keychain_cost` | n8n（Mirror to Supabase） | item 層：如類別=金屿扣則=item_base_cost，否則=0 |
-| `necklace_cost` | n8n（Mirror to Supabase） | item 層：如類別=銀飾則=item_base_cost，否則=0 |
+| `necklace_cost` | n8n（Mirror to Supabase） | item 層：如類別=純銀頸鏈吊飾則=item_base_cost，否則=0 |
 | `product_sku` | n8n（Mirror to Supabase） | 來自 Product_Name（matched SKU） |
 | `subtotal_cost` | n8n（Mirror to Supabase） | = item_base_cost × quantity |
 

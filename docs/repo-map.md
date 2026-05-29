@@ -36,7 +36,11 @@ freehandsss_dashboard/
 │   │   ├── 0018_protect_overridden_text.sql   ← sync_order_to_mirror V47.11 guard（is_text_overridden CASE）（2026-05-27）✅ 已部署
 │   │   ├── 0019_add_light_addon_product.sql   ← products 表加入燈飾 - 加購 $80，解 FK 23503（2026-05-27）✅ 已部署
 │   │   ├── 0020_financial_settings_system.sql ← cost_configurations + financial_batch_logs + recalc_requested_at + 3 RPC（2026-05-27）✅ 已部署
-│   │   └── 0021_batch_recalc_execute_rpc.sql  ← fhs_batch_recalc_execute RPC，供 n8n 批量財務重算（2026-05-28）✅ 已部署
+│   │   ├── 0021_batch_recalc_execute_rpc.sql  ← fhs_batch_recalc_execute RPC，供 n8n 批量財務重算（2026-05-28）✅ 已部署
+│   │   ├── 0022a_cost_config_v2_schema.sql    ← cost_configurations v2.1 schema（4 欄位 + 17 keys）✅ 已部署
+│   │   ├── 0022b_cost_config_v2_rpc.sql       ← 樂觀鎖 RPC + fhs_sync_products_from_config ✅ 已部署
+│   │   ├── 0023_main_products_seed.sql        ← 主力 30 SKU 靜態 seed（G4 CI Fix）✅ 已部署
+│   │   └── 0024_recalc_completed_at.sql       ← orders.last_recalc_completed_at + fhs_batch_recalc_execute v2（G6）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

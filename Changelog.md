@@ -1,5 +1,28 @@
 # Changelog
 
+## [2026-05-29] 🛠 Supabase 架構整固 + 中文 COMMENT 補全（Session 38）
+
+**新增檔案**：
+- `supabase/migrations/0023_main_products_seed.sql`（G4：30 個主力 SKU 靜態 seed，ON CONFLICT DO NOTHING）
+- `supabase/migrations/0024_recalc_completed_at.sql`（G6：orders.last_recalc_completed_at + fhs_batch_recalc_execute v2）
+
+**修改檔案**：
+- `.fhs/ai/FHS_Finance_Bible.md`（G3：getItemCategory 示例 '銀飾' → '純銀頸鏈吊飾'，含表格同步）
+- `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`（同步 V41，645,139 bytes）
+- `.fhs/memory/handoff.md`（Session 38 完成記錄）
+
+**Supabase 直接執行（SQL Editor）**：
+- 驗證 Migration 0022a/0022b 已部署（欄位存在 + addon $30 確認）
+- 補建 0020 缺漏 PART 2/3/4/5/6（financial_batch_logs + recalc_requested_at + 3 RPC）
+- 補建 0022b 4-param 樂觀鎖 fhs_upsert_cost_config
+- 刪除 `cost_configurations_v1`（解 FK + 重建 v_order_cost_breakdown v2.1）
+- 執行 0023 主力產品 seed（30 SKUs）
+- 執行 0024（last_recalc_completed_at 欄位 + RPC v2）
+- 全表欄位中文 COMMENT 補全（orders / order_items / products / cost_configurations / financial_batch_logs / sales_pipeline / error_logs）
+- ALTER VIEW security_invoker（消除 UNRESTRICTED 警告）
+
+---
+
 ## [2026-05-29] 🔧 Smart Cache V47.13 — BASE_PREFIXES 補全（Session 37 hotfix）
 
 **修改節點**：

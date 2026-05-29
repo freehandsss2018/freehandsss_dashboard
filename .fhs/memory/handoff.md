@@ -1,3 +1,20 @@
+# FHS Handoff - 2026-05-29 (Session 38 — Migration 0022 驗證 + current.html 同步)
+
+**本 session 完成事項**：
+- ✅ Migration 0022a 驗證：4 新欄位確認存在（version / schema_version / display_group / is_deprecated）
+- ✅ Migration 0022b 驗證：products.total_base_cost = 30（兩個 addon SKU）
+- ✅ current.html 同步：V41（645,139 bytes）→ Freehandsss_dashboard_current.html
+- ✅ G3 修復：Finance Bible §4 `getItemCategory` 示例 `'銀飾'` → `'純銀頸鏈吊飾'`（含表格說明同步）
+- ✅ G4 修復：建立 `0023_main_products_seed.sql`（30 個主力 SKU，ON CONFLICT DO NOTHING）— **待 Fat Mo 在 Supabase SQL Editor 執行**
+- ✅ G6 修復：建立 `0024_recalc_completed_at.sql`（`last_recalc_completed_at` 欄位 + fhs_batch_recalc_execute v2）— ✅ 已執行
+- ✅ `cost_configurations_v1` 廢棄表已刪除（解除 FK + 重建 v_order_cost_breakdown v2.1）
+- ⏳ Task 2：全表欄位中文 COMMENT SQL 已提供（2A–2F），待 Fat Mo 分段貼入執行
+- ⏸ G5：訂單卡片 ig_photo / Reference_Photo 欄位，本 session 暫緩
+
+**已清除待辦**：Session 37/37b 的 Migration 0022a/0022b 執行確認與 current.html 同步
+
+---
+
 # FHS Handoff - 2026-05-29 (Session 37b — 產品可追溯性稽核 + V47.13)
 
 **本 session 完成事項**：
