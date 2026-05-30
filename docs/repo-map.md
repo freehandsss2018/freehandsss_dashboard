@@ -64,10 +64,8 @@ freehandsss_dashboard/
 │   │   ├── db-query.md         ← /db-query Bridge → vendor/awesome-cc/read-only-postgres（2026-05-09）
 │   │   ├── five.md             ← /five 五個為什麼根因分析（2026-05-09）
 │   │   ├── mermaid.md          ← /mermaid Schema → Mermaid 圖表生成（2026-05-09）
-│   │   ├── rp.md               ← /rp Bridge v2.2（structural_warning/資源目錄/反奉承，2026-05-30）
-│   │   ├── rp-flow.md          ← /rp-flow Bridge（四變體串聯管道，2026-05-30）
-│   │   ├── rp-flow-fast.md     ← /rp-flow-fast Bridge（輕量管道，2026-05-30）
-│   │   ├── rp-flow-ag.md       ← /rp-flow-ag Bridge（A1+A2裁決，跳過A3，2026-05-30）
+│   │   ├── rp.md               ← /rp Bridge v2.3（精煉引擎，獨立可用，2026-05-30）
+│   │   ├── ag-flow.md          ← /ag-flow Bridge（精煉內建→A1+A2，AG裁決，2026-05-30）
 │   │   └── code-analysis.md    ← /code-analysis 多角度代碼深度分析（2026-05-09）
 │   └── settings.json           ← hooks 配置（SessionStart/UserPromptSubmit/PreToolUse）
 │
@@ -107,10 +105,8 @@ freehandsss_dashboard/
 │   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
-│   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.2（structural_warning/資源目錄/反奉承守則，2026-05-30）
-│   │   │   ├── rp-flow.md               ← /rp-flow 精煉管道串聯 v1.0.0（四變體/Gate1/verdict批評，2026-05-30）
-│   │   │   ├── rp-flow-fast.md          ← /rp-flow-fast AG Bridge（輕量管道，2026-05-30）
-│   │   │   ├── rp-flow-ag.md            ← /rp-flow-ag AG Bridge（A1+A2裁決，跳過A3，2026-05-30）
+│   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.3（精煉引擎，獨立可用，2026-05-30）
+│   │   │   ├── ag-flow.md               ← /ag-flow 精煉內建→A1+A2，AG裁決（跳A3，2026-05-30）
 │   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導（5步 atomic 流程 + rollback matrix，2026-05-21）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）

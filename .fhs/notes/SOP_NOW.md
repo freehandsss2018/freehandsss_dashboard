@@ -51,6 +51,7 @@
 | `/read` | `.fhs/ai/commands/read.md` | `.claude/commands/read.md` | `.agents/workflows/read.md` |
 | `/cl-flow` | `.fhs/ai/commands/cl-flow.md` | `.claude/commands/cl-flow.md` | `.agents/workflows/cl-flow.md` |
 | `/cl-flow-fast` | `.fhs/ai/commands/cl-flow-fast.md` | `.claude/commands/cl-flow-fast.md` | `.agents/workflows/cl-flow-fast.md` |
+| `/ag-flow` | `.fhs/ai/commands/ag-flow.md` | `.claude/commands/ag-flow.md` | `.agents/workflows/ag-flow.md` |
 | `/execute` | `.fhs/ai/commands/execute.md` | `.claude/commands/execute.md` | `.agents/workflows/execute.md` |
 | `/commit` | `.fhs/ai/commands/commit.md` | `.claude/commands/commit.md` | `.agents/workflows/commit.md` |
 | `/ag-plan` | `.fhs/ai/commands/ag-plan.md` | — | `.agents/workflows/ag-plan.md` |

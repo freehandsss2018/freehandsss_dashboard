@@ -1,9 +1,35 @@
 # /cl-flow
 
-**用途 (Purpose)**：真正的一鍵規劃協調器。觸發 `cl-flow-runner.js` 自動生成 PX + AG 真實 artifact，Claude 審閱後產出 `cl-final-plan.md`，等待 `/execute` 授權。
+**用途 (Purpose)**：精煉任務描述後，自動執行 A1 Perplexity 外部研究 + A2 Gemini ag-plan + A3 Claude Verdict，由 Claude 作最終裁決，等待 `/execute` 授權。
 **對應 Agent**：A3 (Claude Code)
-**Version**: v2.1.0 (2026-04-02)
+**Version**: v2.2.0 (2026-05-30)
 **NO-TOUCH GUARDRAIL**：全程禁止任何業務代碼寫入，直到 Fat Mo 輸入 `/execute`。
+
+> 精煉（/rp）為預設第一步，不可跳過。名稱含義：cl = Claude 作最終裁決。
+
+---
+
+## Step 0 — /rp 精煉（預設，不可跳過）
+
+收到 `/cl-flow [任務]` 時，**必須先執行精煉**，再進入路徑判斷：
+
+1. 讀取並執行 `.fhs/ai/commands/rp.md` Step 1–2（完整 8 維度掃描）
+2. 輸出 `<refined_prompt>` XML
+3. `<structural_warning>`（有問題才出現）
+
+### Gate 1 — 強制審閱
+
+```
+┌──────────────────────────────────────────────────────┐
+│  ⏸ Gate 1 — 精煉 XML 審閱                            │
+│                                                      │
+│  輸入修改指示 → AI 修正 XML 後重顯示（可重複）         │
+│  回覆「Y」    → 繼續進入路徑判斷與管道執行             │
+│  回覆「取消」  → 停止，保留 XML 供手動使用             │
+└──────────────────────────────────────────────────────┘
+```
+
+Fat Mo 回覆「Y」後，以精煉後 `<objective>` 作為任務輸入，進入以下路徑判斷。
 
 ---
 

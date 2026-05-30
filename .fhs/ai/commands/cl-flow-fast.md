@@ -1,11 +1,36 @@
 # /cl-flow-fast
 
-**用途 (Purpose)**：輕量版規劃協調器。跳過 Perplexity 外部研究，直接以 Gemini（AG）產出本地實作計劃，Claude 審閱後輸出精簡 Verdict，等待 `/execute` 授權。
+**用途 (Purpose)**：精煉任務描述後，跳過 Perplexity 外部研究，直接以 Gemini（AG）產出本地實作計劃，Claude 審閱後輸出精簡 Verdict，等待 `/execute` 授權。
 **適用場景**：功能實作、UI 修改、Bug 修復、已定架構的改動（不涉及技術選型或新系統引入）
 **不適用場景**：引入全新 API / 外部服務、重大架構重組、技術選型決策 → 請改用 `/cl-flow`
 **對應 Agent**：A3 (Claude Code)
-**Version**: v1.0.0 (2026-04-26)
+**Version**: v1.1.0 (2026-05-30)
 **NO-TOUCH GUARDRAIL**：全程禁止任何業務代碼寫入，直到 Fat Mo 輸入 `/execute`。
+
+> 精煉（/rp 輕量版）為預設第一步，不可跳過。名稱含義：cl = Claude 裁決，fast = 跳過 PX。
+
+---
+
+## Step 0 — /rp 精煉（預設，不可跳過）
+
+收到 `/cl-flow-fast [任務]` 時，**必須先執行輕量精煉**：
+
+1. 讀取並執行 `.fhs/ai/commands/rp.md` Step 1–2（⚡ 輕掃描，跳過 structural_warning）
+2. 輸出精簡 `<refined_prompt>` XML
+
+### Gate 1 — 強制審閱
+
+```
+┌──────────────────────────────────────────────────────┐
+│  ⏸ Gate 1 — 精煉 XML 審閱                            │
+│                                                      │
+│  輸入修改指示 → AI 修正後重顯示                        │
+│  回覆「Y」    → 繼續執行 Runner（--quick 模式）        │
+│  回覆「取消」  → 停止                                 │
+└──────────────────────────────────────────────────────┘
+```
+
+Fat Mo 回覆「Y」後，以精煉後 `<objective>` 進入 Step 1。
 
 ---
 

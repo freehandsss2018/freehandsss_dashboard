@@ -134,7 +134,7 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 觸發：用戶提及「快速規劃」「輕量版規劃」「功能實作」「UI 修改」「bug fix 規劃」「跳過 PX」
 > 與情境十二的區別：情境十二跑完整 PX+AG+CL 三段流程；此情境跳過 PX，只跑 AG → 精簡 Verdict，適合功能實作、UI 修改、Bug 修復。
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/cl-flow-fast.md（或直接執行 `/cl-flow-fast [任務]`）。
+執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/cl-flow-fast.md（或直接執行 `/cl-flow-fast [任務]`）。精煉已內建為 Step 0，不可跳過。
 
 ## 【情境十八：資料庫查詢 (DB Query)】
 
@@ -199,25 +199,22 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 ---
 
-## 【情境二十四：/rp-flow 精煉管道串聯 (v1.0.0)】
+## 【情境二十四：/ag-flow AG 裁決管道 (v1.0.0)】
 
-- 觸發：用戶輸入 `/rp-flow`、`/rp-flow-fast`、`/rp-flow-ag`、`/rp-flow --review`
-- 執行邏輯：載入並遵循 `.fhs/ai/commands/rp-flow.md`（v1.0.0）
+- 觸發：用戶輸入 `/ag-flow [task]`
+- 執行邏輯：載入並遵循 `.fhs/ai/commands/ag-flow.md`（v1.0.0）
 - 平台：CL / AG
 
-四變體路由：
+管道路由：
 
-| 指令 | A1 PX | A2 ag-plan | A3 Verdict | 批評 | Gate2 |
-|------|:-----:|:----------:|:----------:|------|:-----:|
-| `/rp-flow` | ✅ | ✅ | ✅ | Verdict 後 | ❌ |
-| `/rp-flow --review` | ✅ | ✅ | ✅ | Verdict 後 | ⏸ |
-| `/rp-flow-fast` | ✅ | ✅ | ✅ fast | 跳過 | ❌ |
-| `/rp-flow-ag` | ✅ | ✅ 裁決 | ❌ | ag-plan 後 | ❌ |
+| 指令 | 精煉 | A1 PX | A2 ag-plan | A3 Claude | 裁決者 |
+|------|:---:|:-----:|:----------:|:---------:|--------|
+| `/ag-flow` | ✅ 內建 | ✅ | ✅ 裁決 | ❌ | AG |
 
-- **Gate 1**：所有變體強制停，Fat Mo 審閱 XML 後回 Y 才繼續
-- **verdict_critique / plan_critique**：在最終輸出層批評（有內容才批評）
+- **Gate 1**：強制停，Fat Mo 審閱精煉 XML 後回 Y 才繼續
+- **plan_critique**：ag-plan 產出後輸出真實批評（有內容才批評）
 - **/execute 永遠手動**：AI 不自動觸發，遵 execute.md 硬規則
-- **不替代現有指令**：/cl-flow、/ag-plan 獨立可用，/rp-flow 只是包裝層
+- **精煉已內建**：不需手動先跑 /rp，Step 0 自動執行
 
 ---
 

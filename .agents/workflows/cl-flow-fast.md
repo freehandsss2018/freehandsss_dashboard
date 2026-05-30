@@ -1,5 +1,5 @@
 ---
-description: 輕量規劃協調器 — 跳過 PX，只跑 AG + Claude 精簡 Verdict (Antigravity Bridge)
+description: 精煉（內建）→ 跳 PX，AG + Claude 精簡 Verdict。Claude 裁決。(Antigravity Bridge)
 ---
 
 # /cl-flow-fast (Antigravity Bridge)
@@ -11,11 +11,10 @@ description: 輕量規劃協調器 — 跳過 PX，只跑 AG + Claude 精簡 Ver
 [/.fhs/ai/commands/cl-flow-fast.md](/.fhs/ai/commands/cl-flow-fast.md)
 
 ### 簡化流程：
-1. 執行 `node scripts/cl-flow-runner.js --quick "[任務]"`
-2. 確認 `ag-plan.md` 存在
-3. Claude 審閱 → 輸出精簡 Verdict（cl-final-plan.md）
-4. 停止，等待 `/execute`
+1. Step 0：執行 /rp 精煉（⚡ 輕掃描）→ XML 精簡輸出
+2. Gate 1：強制停，等 Fat Mo 審閱（Y / 修改 / 取消）
+3. 執行 runner（--quick，跳 PX）
+4. Claude 審閱 → 輸出精簡 Verdict
+5. 停止，等待 `/execute`
 
-### 適用場景：
-- ✅ 功能實作、UI 修改、Bug 修復
-- ❌ 技術選型、引入新 API → 改用 `/cl-flow`
+### 裁決者：Claude（A3），跳過 A1 PX

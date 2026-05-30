@@ -8,8 +8,9 @@
 |---|---|---|---|
 | px-plan.md | /px-plan | A1 產出外部架構與情報 Plan | Perplexity |
 | ag-plan.md | /ag-plan | A2 產出本地落實 Plan（含落盤自查） | Antigravity |
-| cl-flow.md | /cl-flow | A3 最終審核報告（verdict only，NO-TOUCH） | Claude |
-| cl-flow-fast.md | /cl-flow-fast | 輕量版 A3 協調器（跳過 PX，僅做 AG + Claude 快速審核） | Claude |
+| cl-flow.md | /cl-flow | 精煉（內建）→ A1+A2+A3，Claude 裁決 | Claude |
+| cl-flow-fast.md | /cl-flow-fast | 精煉（內建）→ A2+A3，跳 PX，Claude 裁決 | Claude |
+| ag-flow.md | /ag-flow | 精煉（內建）→ A1+A2，AG 裁決（跳 A3） | Claude/AG |
 | execute.md | /execute | 唯一正式執行入口（需 Fat Mo 明確批准） | Claude |
 | ag-stitch-sync.md | /ag-stitch-sync | Stitch UI snippet 擷取與依賴識別 | Antigravity |
 | ag-ui-import.md | /ag-ui-import | Stitch → Vanilla HTML/CSS 轉換，移交 frontend-developer | Antigravity |
@@ -39,5 +40,6 @@
 |---|---|---|
 | a3go.md | /a3go | 已由 /cl-flow 取代 (檔案已實體刪除) |
 | reflect.md | /reflect | 已由 /commit 取代 (檔案已實體刪除) |
+| rp-flow.md | /rp-flow /rp-flow-fast /rp-flow-ag | 精煉已內建至 cl-flow/cl-flow-fast/ag-flow，包裝層冗餘 (2026-05-30 刪除) |
 
 > ⚠️ 修改指令邏輯時，必須同步更新 [AGENTS.md](../AGENTS.md) 的 Version。

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-05-30] ♻️ Phase 1 指令精簡 — rp-flow 刪除 + ag-flow 新建 + 精煉內建（Session 46）
+
+**刪除**：`rp-flow.md`（Master + CL×3 + AG×3，共 7 個檔）
+**新建**：`ag-flow.md`（Master + CL + AG，共 3 個檔）
+**修改**：`cl-flow.md` v2.2 / `cl-flow-fast.md` v1.1 — /rp 精煉內建為 Step 0
+**修改**：`rp.md` v2.3 — 移除 rp-flow 引用，更新關係說明與 Compatibility Map
+
+設計決策：
+- /rp 精煉為所有管道的預設第一步（內建，不可跳過）
+- 命名邏輯：指令名 = 最終裁決者（cl-flow=Claude / ag-flow=AG / rp=無裁決）
+- rp-flow 三兄弟為純包裝糖，功能已由 cl-flow/cl-flow-fast/ag-flow 涵蓋
+
+---
+
 ## [2026-05-30] 🚀 /rp-flow 精煉管道串聯 v1.0.0（Session 44c — 四變體/Gate/verdict批評/反奉承內建）
 
 **新建檔案**：`.fhs/ai/commands/rp-flow.md`、`.claude/commands/rp-flow*.md` ×3、`.agents/workflows/rp-flow*.md` ×3

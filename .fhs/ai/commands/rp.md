@@ -1,7 +1,7 @@
 # /rp — Rewrite Prompt
 
 **用途 (Purpose)**：將用戶的原始問題重寫為具備架構思維與明確任務指令的結構化 Prompt，以 XML Tag 格式輸出供審閱；並執行 8 維度架構掃描 + 自我批評，作為任務前置入口。
-**版本**：v2.2 (2026-05-30)
+**版本**：v2.3 (2026-05-30)
 **通用平台**：Claude Code (CL) · Antigravity/Gemini (AG) · Perplexity (PL)
 **觸發**：`/rp [你的原始問題]` 或 `/rp cl-flow [task]` 或 `/rp cl-flow-fast [task]`
 
@@ -120,23 +120,21 @@
 
 ---
 
-## /rp 與 /rp-flow 關係
+## /rp 與管道指令的關係
 
 ```
-/rp [task]            ← 只精煉，你手動決定下一步（無副作用）
-/rp-flow [task]       ← 精煉後自動串聯 cl-flow（有副作用：觸發 A1+A2+A3）
-/rp-flow-fast [task]  ← 精煉後自動串聯 cl-flow-fast
-/rp-flow-ag [task]    ← 精煉後自動串聯 A1+A2（ag-plan 為裁決，跳過 A3）
+/rp [task]            ← 只精煉，Fat Mo 決定下一步（無副作用）
+/cl-flow [task]       ← 精煉（內建）→ A1+A2+A3，Claude 裁決
+/cl-flow-fast [task]  ← 精煉（內建）→ A2+A3，Claude 裁決（跳 PX）
+/ag-flow [task]       ← 精煉（內建）→ A1+A2，AG 裁決（跳 A3）
 ```
 
-**何時用 /rp vs /rp-flow**：
+**何時用 /rp 獨立呼叫**：
 
 | 情況 | 建議 |
 |------|------|
-| 任務模糊，先整理思路 | `/rp` — 只精煉，看 XML 後再決定 |
-| 任務清晰，直接全力規劃 | `/rp-flow` — 精煉後自動跑完整管道 |
-| 任務簡單，只需 ag-plan | `/rp-flow-ag` — 精煉後跑 A1+A2，跳過 A3 |
-| 急需快速方向 | `/rp-flow-fast` — 輕量全管道 |
+| 任務模糊，先整理思路 | `/rp` — 只精煉，看 XML 後再決定管道 |
+| 任務清晰，直接規劃 | 直接用 `/cl-flow` 或 `/ag-flow`（精煉已內建）|
 
 ---
 
@@ -144,9 +142,8 @@
 
 | 情境 | 規則 |
 |------|------|
-| AI **主動建議**在 `/commit`、`/cl-flow`、`/cl-flow-fast`、`/error-eye` 前插 /rp | **Exempt（禁止）** |
+| AI **主動建議**在 `/commit`、`/cl-flow`、`/cl-flow-fast`、`/ag-flow`、`/error-eye` 前插 /rp | **Exempt（禁止）**（管道指令已內建精煉，無需 AI 再建議） |
 | 用戶**明確輸入** `/rp cl-flow [task]` 或 `/rp cl-flow-fast [task]` | **允許**（用戶最高授權，語義為 pipe 組裝，非重複研究） |
-| 用戶明確輸入 `/rp-flow` 系列 | **允許**（獨立指令，非 Exempt 範圍） |
 | `/execute` 收到含 3+ 動作動詞或並列結構的輸入 | AI 可輸出**一行建議**：「輸入較複雜，可先執行 `/rp` 整理後再提交」（不攔截，不自動重定向） |
 | `/new-product`（複合 SKU 場景） | **建議**先跑 /rp 整理規格；標準產品可跳過 |
 | `/fhs-check`（查詢目標模糊時） | **推薦**；明確場景無需 /rp |
@@ -180,11 +177,9 @@
 
 **Commands（CL / AG 共用）**：
 
-- `/cl-flow` — 完整規劃（A1 PX + A2 ag-plan + A3 Verdict）
-- `/cl-flow-fast` — 輕量規劃（跳過 PX，只跑 AG + 精簡 Verdict）
-- `/rp-flow` — /rp 精煉串聯 cl-flow（Gate1 + Verdict 批評）
-- `/rp-flow-fast` — /rp 精煉串聯 cl-flow-fast（輕量）
-- `/rp-flow-ag` — /rp 精煉串聯 A1+A2（ag-plan 為裁決，跳過 A3）
+- `/cl-flow` — 精煉（內建）→ 完整規劃（A1+A2+A3），Claude 裁決
+- `/cl-flow-fast` — 精煉（內建）→ 輕量規劃（A2+A3，跳 PX），Claude 裁決
+- `/ag-flow` — 精煉（內建）→ 外部研究（A1+A2），AG 裁決（跳 A3）
 - `/execute` — 唯一執行授權信號
 - `/commit` — 交接 + Notion 同步
 - `/new-product` — 新產品五步 atomic 流程

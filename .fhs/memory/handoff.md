@@ -1,3 +1,30 @@
+# FHS Handoff - 2026-05-30 (Session 46 — Phase 1 指令精簡)
+
+## Session 46 — 指令體系 Phase 1 精簡
+
+**完成事項**：
+- ✅ 刪除 `rp-flow.md`（Master + CL×3 + AG×3，共 7 個檔）
+- ✅ 新建 `ag-flow.md`（Master + CL + AG，共 3 個檔）
+- ✅ `cl-flow.md` v2.2：/rp 精煉內建為 Step 0 + Gate 1
+- ✅ `cl-flow-fast.md` v1.1：/rp 輕量精煉內建為 Step 0 + Gate 1
+- ✅ `rp.md` v2.3：移除 rp-flow 引用，更新關係說明與 Compatibility Map
+- ✅ 後效同步：README / repo-map / FHS_Prompts / CHANGELOG / decisions / SOP_NOW
+
+**核心設計**：精煉內建預設第一步 / 命名 = 裁決者 / rp-flow 糖衣全刪
+
+**Phase 2（待辦）**：`guardian` `five` `code-analysis` `tdd-guide`（指令）`px-plan` `px-audit` `mermaid` `fhs-cost-audit` — 共 8 個
+
+**待辦（Fat Mo）**：無
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（純 .md 文件建立/刪除/修改，Write/Edit/Bash 直接完成）|
+| 遵從 Router | — |
+
+---
+
 # FHS Handoff - 2026-05-30 (Session 44c — /rp-flow v1.0.0 + rp.md 補丁)
 
 ## Session 44c — /rp-flow 精煉管道串聯 v1.0.0
