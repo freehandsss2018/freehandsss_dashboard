@@ -59,14 +59,10 @@ freehandsss_dashboard/
 │   └── output/                          ← 最終列印用 STL（按 slug 分類）
 ├── .claude/                             ← Claude Code 專屬配置（含橋接指令）
 │   ├── commands/
-│   │   ├── tdd-guide.md        ← /tdd-guide Bridge → vendor/superpowers/test-driven-development（2026-05-09）
-│   │   ├── debug-guide.md      ← /debug-guide Bridge → vendor/superpowers/systematic-debugging（2026-05-09）
 │   │   ├── db-query.md         ← /db-query Bridge → vendor/awesome-cc/read-only-postgres（2026-05-09）
-│   │   ├── five.md             ← /five 五個為什麼根因分析（2026-05-09）
-│   │   ├── mermaid.md          ← /mermaid Schema → Mermaid 圖表生成（2026-05-09）
 │   │   ├── rp.md               ← /rp Bridge v2.3（精煉引擎，獨立可用，2026-05-30）
-│   │   ├── ag-flow.md          ← /ag-flow Bridge（精煉內建→A1+A2，AG裁決，2026-05-30）
-│   │   └── code-analysis.md    ← /code-analysis 多角度代碼深度分析（2026-05-09）
+│   │   └── ag-flow.md          ← /ag-flow Bridge（精煉內建→A1+A2，AG裁決，2026-05-30）
+│   │   [已退役] tdd-guide / debug-guide / five / mermaid / code-analysis（方法論移植至 subagent，2026-05-30）
 │   └── settings.json           ← hooks 配置（SessionStart/UserPromptSubmit/PreToolUse）
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
@@ -95,13 +91,13 @@ freehandsss_dashboard/
 │   │   │   ├── read.md
 │   │   │   ├── cl-flow.md               ← /cl-flow 全自動規劃協調（v2.1.0 重心）
 │   │   │   ├── ag-plan.md               ← /ag-plan 本地實施計畫（A2 專用）
-│   │   │   ├── px-plan.md               ← /px-plan 外部視角計畫（A1 專用）
+│   │   │   [已退役] px-plan（外部研究已內建至 cl-flow A1，2026-05-30）
 │   │   │   ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
 │   │   │   ├── fhs-check.md
 │   │   │   ├── commit.md                ← 宣告結束與記憶同步（Memory Engine，取代 /reflect）
 │   │   │   ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
 │   │   │   ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
-│   │   │   ├── px-audit.md              ← 外部審查（第三方審計員）
+│   │   │   [已退役] px-audit（外部研究已內建至 cl-flow A1，2026-05-30）
 │   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
@@ -123,7 +119,7 @@ freehandsss_dashboard/
 │   │   │       ├── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
 │   │   │       ├── database-reviewer.md ← v2.1.0 Airtable schema + n8n 資料流審查（2026-05-16 升級：Supabase Layer 1/2 優先順序重組 + Finance Bible 強制讀取）
 │   │   │       ├── finance-auditor.md   ← v2.0.0 四端財務稽核員（Supabase-First，Finance Bible 強制前置，2026-05-16 升級）
-│   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發（Python + n8n 專用，2026-04-28 新增）
+│   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發 subagent（Python + n8n 專用，2026-04-28）【指令已退役，subagent 保留】
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
 │       │       ├── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
 │       │       └── product-integration-validator.md ← v1.0.0 新產品跨層融入驗證（2026-05-21：UI/ENUM/n8n/RLS 四層 checklist + pitfalls P1-P5）

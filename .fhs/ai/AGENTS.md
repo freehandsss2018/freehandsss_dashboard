@@ -1,5 +1,5 @@
 # AGENTS — 憲法層
-> Version: v1.4.8
+> Version: v1.4.9
 > Last updated: 2026-05-25
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.8 (Supabase-First Strategy)
+- **版本**：v1.4.9 (Phase 2 指令精簡 + Rule 3.15 根因調查強制律)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
@@ -136,6 +136,13 @@
 - **語系一致性要求**：所有正式報告、計畫與對話輸出必須遵循 **繁體中文** 原則，嚴禁使用英文或其他非指定語系作為主要撰寫語言。
 - **禁止寫入外部路徑**：絕對禁止將此類文件寫入工作區外的系統暫存區、緩存區或 AI App Data 目錄（如 `~/.gemini/antigravity/brain/...`）。
 - **原因**：確保所有產出物均能被編輯器（如 VS Code、Cursor）的 `@` 檔案索引功能正確檢索與鏈接，方便用戶隨時引用。
+
+### 根因調查強制律（Rule 3.15）
+- **遇任何 bug / 錯誤 / 測試失敗，AI 必須先完成根因調查，嚴禁在根因確認前提出任何代碼修改或修復方案。**
+- 根因調查遵循 4 階段法（詳見 `.fhs/ai/skills/vendor/superpowers/systematic-debugging.md`）：Phase 1 現象確認 → Phase 2 模式比對 → Phase 3 假設測試 → Phase 4 實作。
+- 若 3 次根因假設全部失敗，方可輸出「假設性過渡修復方案」，並明確標注「ASSUMPTION-BASED，根因未確認」。
+- **財務欄位豁免**：涉及 `net_profit / total_cost / final_sale_price` 等財務欄位的修復，不適用假設性修復，必須確認根因並獲 Fat Mo 人工確認後方可執行（遵守財務真理守護原則）。
+- 此律適用所有 AI（Claude / Antigravity）及所有 subagent（含 build-error-resolver / code-reviewer）。
 
 ### 衝突優先級聲明
 - 若本文件（AGENTS.md）與 `.cursorrules` 有任何規則衝突，以本文件為最終準則。

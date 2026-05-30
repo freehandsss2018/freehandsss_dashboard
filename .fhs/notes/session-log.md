@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-05-30 (Session 47): 🏗️ Phase 2 指令精簡 + vendor 方法論移植 ✅
+
+**Scope**: vendor 技能架構錯誤修正（slash command → subagent 自動執行）；build-error-resolver + code-reviewer 升級；AGENTS.md Rule 3.15；7 command 退役（15 個檔案）；README 場景速查表。
+**Status**: ✅ 全部完成。指令從 25 → 18（主動記憶降至 9 個核心）。
+
+---
+
 ## 2026-05-30 (Sessions 40–41e): 💳 付款拆分 N 格 + Order_ID 修復 + UI 優化 ✅
 
 **Scope**: Session 40 (付款欄位重構 Phase 1)；Session 41 (item 級 N 格動態拆分，code-reviewer G1–G8 PASS)；Session 41b (deposit→balance 自動連動)；Session 41c (T1 預設 Yes、T2 去箭頭、T3 羊毛氈/燈飾條件顯示)；Session 41d (Order_ID P9 pitfall 修復 + 碰撞迴圈)；Session 41e (編號模式 UI 簡化，硬鎖 sequential)。

@@ -17,7 +17,7 @@
 
 | 項目 | 現況 |
 |------|------|
-| 憲法版本 | AGENTS.md v1.4.6 |
+| 憲法版本 | AGENTS.md v1.4.9（Rule 3.15 根因調查強制律，2026-05-30）|
 | 穩定生產版 | Freehandsss_dashboard_current.html (V41) |
 | 開發版（新）| freehandsss_dashboardV42.html (Planned) |
 | 開發版（舊）| freehandsss_dashboardV41.html (Released) |

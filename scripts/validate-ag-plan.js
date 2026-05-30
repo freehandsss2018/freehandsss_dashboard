@@ -53,14 +53,16 @@ function validateAgPlan(filePath) {
   return true;
 }
 
-// CLI usage
-const filePath = process.argv[2];
-if (!filePath) {
-  console.error('[validate-ag-plan] Usage: node scripts/validate-ag-plan.js <path>');
-  process.exit(1);
-}
-
-const ok = validateAgPlan(filePath);
-process.exit(ok ? 0 : 1);
-
 module.exports = { validateAgPlan };
+
+// CLI usage — only when run directly, NOT when require()'d by cl-flow-runner.
+if (require.main === module) {
+  const filePath = process.argv[2];
+  if (!filePath) {
+    console.error('[validate-ag-plan] Usage: node scripts/validate-ag-plan.js <path>');
+    process.exit(1);
+  }
+
+  const ok = validateAgPlan(filePath);
+  process.exit(ok ? 0 : 1);
+}

@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-05-30] Phase 2 指令精簡 — vendor 技能方法論移植至 subagent + 刪 7 冗餘 command
+
+決策：
+- **設計錯誤修正**：2026-05-09 從 superpowers + awesome-cc 導入的技能被包裝成 slash command（用戶觸發），設計意圖應為 AI 自動執行；本次修正包裝層
+- **方法論移植**：systematic-debugging（4 階段根因法）+ five-whys → build-error-resolver subagent；code-analysis 5 維度 → code-reviewer subagent（sequential-thinking 工具）
+- **Rule 3.15**：遇 bug/錯誤必先根因調查，禁在根因確認前提修復方案；財務欄位豁免
+- **刪除 7 command**：px-plan / px-audit / five / debug-guide / code-analysis / mermaid / tdd-guide（指令）
+- **保留不動**：rg / db-query / error-eye / fhs-check / fhs-audit / guardian / fhs-cost-audit / ag-stitch-sync / ag-ui-import（各有獨立用途）
+- **速查表**：README.md 改寫為場景索引，解決「用時想不起用哪個」痛點
+
+***
+
 [2026-05-30] Phase 1 指令精簡 — 刪 rp-flow，精煉內建，新建 ag-flow
 
 決策：

@@ -1,3 +1,31 @@
+# FHS Handoff - 2026-05-30 (Session 47 — Phase 2 指令精簡 + 方法論移植)
+
+## Session 47 — vendor 方法論移植 + 7 command 退役
+
+**完成事項**：
+- ✅ `build-error-resolver` v1.1.0：description 改 root-cause-first + 根因調查協議（3-line trigger → systematic-debugging.md）+ 財務豁免；雙路徑同步
+- ✅ `code-reviewer` v1.2.0：5 維度分析框架 + sequential-thinking 工具觸發；雙路徑同步
+- ✅ `AGENTS.md` v1.4.9：新增 Rule 3.15（根因調查強制律 + 安全閥 + 財務豁免）
+- ✅ 刪除 7 Master command：px-plan / px-audit / five / debug-guide / code-analysis / mermaid / tdd-guide（指令）
+- ✅ 刪除 7 CL 橋接 + 1 AG 橋接（px-plan）共 8 個橋接檔
+- ✅ FHS_Prompts.md：7 個情境改為「AI 自動執行」說明
+- ✅ repo-map.md：退役標記同步
+- ✅ README.md：改寫為場景速查表（18 個指令 + AI 自動執行對照）
+- ✅ decisions.md / CHANGELOG.md / SOP_NOW.md 同步
+
+**核心設計**：vendor 方法論從「用戶觸發 slash」移植至「AI 自動執行 subagent」，修正 2026-05-09 設計錯誤
+
+**待辦（Fat Mo）**：
+- `/commit` 同步至 Notion Brain
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無（純文件層）|
+| 實際使用 | ❌ 未使用（主 context 直接 Edit/Write/Bash 執行）|
+
+---
+
 # FHS Handoff - 2026-05-30 (Session 46 — Phase 1 指令精簡)
 
 ## Session 46 — 指令體系 Phase 1 精簡

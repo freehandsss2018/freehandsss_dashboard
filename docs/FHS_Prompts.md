@@ -88,41 +88,37 @@ Mobile phone 介面專屬設計準則（強制執行）：
 觸發：用戶提及「大改」「重構」「多個節點」「翻新」「重寫」
 執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/guardian.md。
 
-## 【情境十一：外部研究與系統審查 (Perplexity Audit)】
+## 【情境十一：外部研究與系統審查 (Perplexity 外部研究)】
 
-觸發：輸入 /px audit 或 /px 審查
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/px-audit.md。
+觸發：輸入 /px audit 或 /px 審查，或需要第三方外部視角
+執行邏輯：Perplexity 外部研究已內建至 `/cl-flow` A1 階段，執行 `/cl-flow [任務]` 即自動觸發。若需單獨外部研究，使用 `/cl-flow` 並告知「只需 PX 報告」。指令 `/px-audit` 已退役（2026-05-30）。
 
 ## 【情境十二：全自動規劃流 (The Planning Triad)】
 
 觸發：用戶提及「規劃」「開發新功能」「大規模修改」「流程優化」
 執行邏輯：全系統進入 v2.1.0 核心開發模式。
 
-1. 執行 `/px-plan` (由 A1 提供外部建議)
-2. 執行 `/ag-plan` (由 A2 提供本地實施計畫)
-3. 執行 `/cl-flow` (由 A3 產出最終 Verdict 與執行序，等待授權)
+1. 執行 `/cl-flow [任務]`（A1 Perplexity 外部研究 + A2 本地計畫 + A3 Verdict，三段全自動並行）
+2. 等待 Fat Mo 審閱 cl-final-plan.md，確認後輸入 `/execute`
 指令說明詳見：.fhs/ai/commands/cl-flow.md。
 
 ---
 
-## 【情境十三：代碼根因調查 (Debug Guide)】
+## 【情境十三：代碼根因調查 (Debug / Root Cause)】
 
 觸發：用戶提及「除錯」「找 bug」「根因」「測試失敗」「test failure」「root cause」
 > 與情境四的區別：情境四處理 n8n/系統層錯誤監控；此情境處理代碼邏輯層的 root cause 調查。
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/debug-guide.md。
-配套技能：`.fhs/ai/skills/vendor/superpowers/systematic-debugging.md`（四階段根因調查法，NO FIX WITHOUT ROOT CAUSE）
+執行邏輯：**AI 自動執行**（Rule 3.15）。遇任何 bug/錯誤/測試失敗，build-error-resolver subagent 強制走 4 階段根因調查法（`.fhs/ai/skills/vendor/superpowers/systematic-debugging.md`），在確認根因前禁止提出修復方案。若系統層錯誤（n8n log/Dashboard JS），優先調用 `build-error-resolver` subagent。指令 `/debug-guide` 已退役（2026-05-30），方法論已內建。
 
 ## 【情境十四：測試驅動開發 (TDD Guide)】
 
 觸發：用戶提及「TDD」「測試驅動」「先寫測試」「test first」「寫測試再實作」
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/tdd-guide.md。
-配套技能：`.fhs/ai/skills/vendor/superpowers/test-driven-development.md`
+執行邏輯：調用 `tdd-guide` **subagent**（`.fhs/ai/subagents/freehandsss/tdd-guide.md`）執行 RED-GREEN-REFACTOR 循環。配套技能：`.fhs/ai/skills/vendor/superpowers/test-driven-development.md`。指令 `/tdd-guide` 已退役（2026-05-30），以同名 subagent 取代。
 
 ## 【情境十五：五個為什麼根因分析 (Five Whys)】
 
 觸發：用戶提及「為什麼」「五個為什麼」「five whys」「根因分析」「系統性原因」
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/five.md。
-最佳搭配：`/debug-guide`（找到根因後再開始修復）
+執行邏輯：**AI 自動執行**（Rule 3.15）。Five-Whys 追問法已內建至 `build-error-resolver` subagent 的根因調查協議，遇到「不知道為什麼」或「已試過 2+ 修復仍失敗」時自動觸發。指令 `/five` 已退役（2026-05-30），方法論已內建至 subagent。
 
 ## 【情境十六：財務成本完整性稽核 (Cost Audit)】
 
@@ -145,12 +141,12 @@ Mobile phone 介面專屬設計準則（強制執行）：
 ## 【情境十九：流程圖與架構圖 (Mermaid)】
 
 觸發：用戶提及「流程圖」「架構圖」「diagram」「mermaid」「畫圖」「視覺化流程」
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/mermaid.md。
+執行邏輯：Claude 原生執行（無需指令）。直接告知需要什麼圖（ER 圖 / 流程圖 / 序列圖）及資料來源（schema / n8n workflow / 系統描述），Claude 自動生成 Mermaid 語法。範本參見 `.fhs/ai/skills/vendor/awesome-cc/`。指令 `/mermaid` 已退役（2026-05-30）。
 
 ## 【情境二十：代碼分析 (Code Analysis)】
 
 觸發：用戶提及「代碼分析」「code analysis」「程式碼品質」「重構分析」「技術債」「code review」
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/code-analysis.md。
+執行邏輯：**AI 自動執行**。`code-reviewer` subagent 內建 5 維度分析框架（結構 / 邏輯正確性 / 效能 / 安全 / 可維護性），使用 `mcp__sequential-thinking` 工具逐維度分析，稽核任何代碼時自動覆蓋全部維度。指令 `/code-analysis` 已退役（2026-05-30），方法論已內建至 subagent。
 
 ## 【情境二十一：三端財務稽核 (Finance Auditor)】
 

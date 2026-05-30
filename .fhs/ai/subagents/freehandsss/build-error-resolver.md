@@ -1,6 +1,6 @@
 ---
 name: build-error-resolver
-description: FHS error diagnostics specialist. Use PROACTIVELY when n8n workflow fails, JavaScript runtime errors appear in Dashboard, or Python Maintenance_Tools scripts crash. Focuses on surgical fixes with minimal code changes. Reads execution logs via n8n MCP.
+description: FHS error diagnostics specialist. Use PROACTIVELY when n8n workflow fails, JavaScript runtime errors appear in Dashboard, or Python Maintenance_Tools scripts crash. Root-cause-first diagnostics, then surgical fixes with minimal code changes. Reads execution logs via n8n MCP.
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: claude-haiku-4-5-20251001
 skills: [fhs-bug-triage]
@@ -19,6 +19,10 @@ last_updated: 2026-05-16
 > ⛔ **完成宣告前強制執行 `fhs-bug-triage` 5-Gate Protocol**
 > 路徑：`.fhs/ai/skills/fhs-bug-triage/SKILL.md`
 > 未通過全部 5 Gate → 禁止宣告修復完成。
+
+> 🔍 **根因調查強制律（Rule 3.15）**
+> 在確認根因前，禁止提出任何修復方案。4 階段根因調查法詳見：`.fhs/ai/skills/vendor/superpowers/systematic-debugging.md`
+> 若 3 次假設仍無法確認根因，列出最可能 2 種假設，方可給出標注「ASSUMPTION-BASED，根因未確認」的過渡修復方案。財務欄位（net_profit / total_cost / final_sale_price）不適用假設性修復，必須人工確認後才可動。
 
 ---
 

@@ -2184,6 +2184,137 @@
         .fhs-inline-eng-btn { background:none; border:none; cursor:pointer; font-size:13px; color:#3a5fc8; opacity:0; transition:opacity .15s; border-radius:3px; padding:1px 3px; line-height:1; flex-shrink:0; }
         .fhs-inline-eng-wrap:hover .fhs-inline-eng-btn,
         .fhs-inline-eng-btn:focus { opacity:1; }
+
+        /* IG Preview Modal (flow 2026-05-30-0240) */
+        #igPreviewModalOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 12000;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        #igPreviewModalOverlay.is-open { display: flex; }
+        #igPreviewModal {
+            background: #fff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: min(600px, 95vw);
+            max-height: 90dvh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        #igPreviewModal .igpm-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px 10px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        #igPreviewModal .igpm-hdr-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1D3557;
+        }
+        #igPreviewModal .igpm-close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #888;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        #igPreviewModal .igpm-fmt-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 8px 18px 4px;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+        #igPreviewModal .igpm-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 18px;
+            -webkit-overflow-scrolling: touch;
+        }
+        #igPreviewModal .igpm-seg-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            margin: 0 0 6px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        #igPreviewModal .igpm-pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #1D3557;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin: 0 0 16px;
+            min-height: 60px;
+            border: 1px solid #e9ecef;
+            width: 100%;
+            box-sizing: border-box;
+            resize: vertical;
+            font-family: inherit;
+            outline: none;
+        }
+        #igPreviewModal .igpm-pre:focus {
+            border-color: #457B9D;
+            background: #fff;
+        }
+        #igPreviewModal .igpm-footer {
+            display: flex;
+            gap: 10px;
+            padding: 12px 18px 14px;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        #igPreviewModal .igpm-action-btn {
+            flex: 1;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        #igpmCopyA { background: #1D3557; color: #fff; }
+        #igpmCopyB { background: #457B9D; color: #fff; }
+        #igpmSync  { background: #2a9d8f; color: #fff; flex: 0 0 auto; min-width: 60px; }
+        #igPreviewModal .igpm-action-btn:disabled { opacity: .55; cursor: not-allowed; }
+        #igPreviewModal .igpm-edit-hint {
+            font-size: 11px; color: #aaa; text-align: center;
+            padding: 4px 18px 0; margin: 0; flex-shrink: 0;
+        }
+        #igPreviewModal .igpm-sync-status {
+            font-size: 12px;
+            text-align: center;
+            padding: 4px 18px 0;
+            min-height: 18px;
+            flex-shrink: 0;
+        }
+        /* Mobile bottom-sheet override */
+        @media (max-width: 768px) {
+            #igPreviewModalOverlay { align-items: flex-end; padding: 0; }
+            #igPreviewModal {
+                border-radius: 18px 18px 0 0;
+                max-width: 100%;
+                max-height: 92dvh;
+            }
+        }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -3024,9 +3155,9 @@
         </div>
     </div>
 
-    <div class="card preview-card">
+    <div class="card preview-card" id="legacyPreviewCard" style="display:none;" aria-hidden="true">
         <h2>📱 IG 訊息分段預覽</h2>
-        
+
         <div id="preview-box-a" class="preview-box">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
                 <h3 style="margin:0;">🖼️ Category A: 手模擺設訊息</h3>
@@ -3492,6 +3623,7 @@
     <div class="bottom-action-bar" id="bottomActionBar" style="display:none;">
         <button id="btnCopyA" class="copy-btn btn-category-a" style="display:none;" onclick="copyMessageA()">📋 複製：手模擺設訊息</button>
         <button id="btnCopyB" class="copy-btn btn-category-b" style="display:none;" onclick="copyMessageB()">📋 複製：金屬產品訊息</button>
+        <button id="btnReviewIgMsg" class="copy-btn" onclick="openIgPreviewModal()" style="background-color:#2a9d8f;">🔍 查閱訂單訊息</button>
         <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D;">🚀 同步至後台</button>
     </div>
 
@@ -3506,6 +3638,9 @@
         <button class="fhs-btn-secondary" style="min-width:64px;"
             onclick="copyMessageA(); copyMessageB();">
             📋 複製
+        </button>
+        <button class="fhs-btn-secondary" style="min-width:64px;" onclick="openIgPreviewModal()">
+            🔍 查閱
         </button>
         <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
             onclick="syncToAirtable()">
@@ -4555,19 +4690,25 @@
         }
 
         // v2：新版精簡格式（只影響 Category A，不碰共用 custInfo/finInfo/disclaimer）
-        function _buildSplitIgLine(prefix, field, total) {
+        function _buildSplitIgLine(prefix, field, total, pureNumeric) {
             const container = document.getElementById(field + 'SplitContainer');
             if (!container) return prefix + '：' + (total && total !== '0' ? '$' + total : '');
             const parts = [];
             container.querySelectorAll('.split-box-input').forEach(function(inp) {
-                const lbl = (inp.closest('.split-box') || {}).querySelector
-                    ? (inp.closest('.split-box').querySelector('.split-box-label') || {}).textContent || ''
-                    : '';
                 const v = Number(inp.value) || 0;
-                if (v > 0) parts.push(lbl + '$' + v);
+                if (v > 0) {
+                    if (pureNumeric) {
+                        parts.push(String(v));
+                    } else {
+                        const lbl = (inp.closest('.split-box') || {}).querySelector
+                            ? (inp.closest('.split-box').querySelector('.split-box-label') || {}).textContent || ''
+                            : '';
+                        parts.push(lbl + '$' + v);
+                    }
+                }
             });
             if (parts.length === 0) return prefix + '：' + (total && total !== '0' ? '$' + total : '');
-            if (parts.length === 1) return prefix + '：$' + total;
+            if (parts.length === 1) return prefix + '：' + (pureNumeric ? total : '$' + total);
             return prefix + '：' + parts.join('+') + '=$' + total;
         }
 
@@ -4588,8 +4729,8 @@
             lines.push(`（資料會於倒模當天填寫）`);
             lines.push(``);
             lines.push(`*媽媽名： ${mom}`);
-            lines.push(_buildSplitIgLine('*已付訂金', 'deposit', deposit));
-            lines.push(_buildSplitIgLine('*未付尾數', 'balance', balance));
+            lines.push(_buildSplitIgLine('*已付訂金', 'deposit', deposit, true));
+            lines.push(_buildSplitIgLine('*未付尾數', 'balance', balance, true));
             if (additional && additional !== '0' && additional !== 0) lines.push(`*附加費用：$${additional}`);
             lines.push(`*倒模日期時間: ${date === '待定' ? '待定' : `${date} ${timeStr}`}`);
             lines.push(``);
@@ -11397,6 +11538,131 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                 <button onclick="closeAuditModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#888;padding:0 4px;">✕</button>
             </div>
             <div id="auditModalBody" style="padding:16px 18px;"></div>
+        </div>
+    </div>
+
+    <!-- IG Preview Modal JS (flow 2026-05-30-0240) -->
+    <script>
+    (function() {
+        'use strict';
+
+        // Refresh modal body from live textarea values
+        function _igpmRefresh() {
+            var valA = (document.getElementById('output-preview-a') || {}).value || '';
+            var valB = (document.getElementById('output-preview-b') || {}).value || '';
+            var preA = document.getElementById('igpmPreA');
+            var preB = document.getElementById('igpmPreB');
+            var lblB = document.getElementById('igpmLabelB');
+            if (preA) preA.value = valA.trim() || '(無內容)';
+            var hasBContent = valB.trim().length > 0;
+            if (preB)  { preB.value = valB.trim() || ''; preB.style.display = hasBContent ? '' : 'none'; }
+            if (lblB)  { lblB.style.display = hasBContent ? '' : 'none'; }
+            // Sync format toggle button label
+            var btnOrig  = document.getElementById('igFmtToggleA');
+            var btnModal = document.getElementById('igFmtToggleAModal');
+            if (btnOrig && btnModal) btnModal.textContent = btnOrig.textContent;
+        }
+
+        // Open modal: force-refresh generate() → read textarea → show
+        window.openIgPreviewModal = function() {
+            // Force live-update so textarea reflects current form state (W1 fix)
+            if (typeof window.generate === 'function') { window.generate(); }
+            _igpmRefresh();
+            // Clear status
+            var status = document.getElementById('igpmSyncStatus');
+            if (status) { status.textContent = ''; status.style.color = ''; }
+            // Show overlay
+            var overlay = document.getElementById('igPreviewModalOverlay');
+            if (overlay) overlay.classList.add('is-open');
+            // Focus close button for a11y
+            var closeBtn = overlay && overlay.querySelector('.igpm-close-btn');
+            if (closeBtn) { setTimeout(function(){ closeBtn.focus(); }, 50); }
+        };
+
+        // Close modal: hide + return focus
+        window.closeIgPreviewModal = function() {
+            var overlay = document.getElementById('igPreviewModalOverlay');
+            if (overlay) overlay.classList.remove('is-open');
+            // Return focus to trigger button
+            var trigger = document.getElementById('btnReviewIgMsg');
+            if (trigger) trigger.focus();
+        };
+
+        // Format toggle inside modal: switch format then refresh content
+        window.igpmToggleFmt = function() {
+            if (typeof window.toggleIgFormatA === 'function') { window.toggleIgFormatA(); }
+            _igpmRefresh();
+        };
+
+        // Copy + Sync: clipboard first (independent), then sync with existing pipeline
+        window.igPreviewCopyAndSync = function() {
+            var btn = document.getElementById('igPreviewModalCopySync');
+            var status = document.getElementById('igpmSyncStatus');
+            if (btn) btn.disabled = true;
+
+            // Step 1: Copy to clipboard (uses existing copyMessageA/B which have their own toast)
+            if (typeof window.copyMessageA === 'function') { window.copyMessageA(); }
+            if (typeof window.copyMessageB === 'function') { window.copyMessageB(); }
+
+            // Step 2: Trigger sync via existing pipeline (syncToAirtable has its own banner + polling)
+            if (status) { status.textContent = '⏳ 同步中…'; status.style.color = '#f4a261'; }
+
+            // Close modal after a short delay so user sees the toast, then let syncToAirtable run
+            setTimeout(function() {
+                window.closeIgPreviewModal();
+                // Call sync AFTER modal close so any scroll/focus side effects don't interfere
+                if (typeof window.syncToAirtable === 'function') { window.syncToAirtable(); }
+            }, 600);
+        };
+
+        // Copy individual segment from Modal textarea (edited or original), no sync triggered
+        window.igpmCopySegment = function(seg) {
+            var elId = seg === 'A' ? 'igpmPreA' : 'igpmPreB';
+            var el = document.getElementById(elId);
+            if (!el || !el.value.trim()) return;
+            el.select();
+            document.execCommand('copy');
+            if (typeof showToast === 'function') {
+                showToast(seg === 'A' ? '已複製 A 段（手模擺設）！' : '已複製 B 段（金屬產品）！');
+            }
+        };
+
+        // Sync only (no clipboard copy) — closes modal then fires existing pipeline
+        window.igpmSyncOnly = function() {
+            var status = document.getElementById('igpmSyncStatus');
+            if (status) { status.textContent = '⏳ 同步中…'; status.style.color = '#f4a261'; }
+            window.closeIgPreviewModal();
+            setTimeout(function() {
+                if (typeof window.syncToAirtable === 'function') { window.syncToAirtable(); }
+            }, 300);
+        };
+
+    })();
+    </script>
+
+    <!-- IG Preview Modal (flow 2026-05-30-0240) -->
+    <div id="igPreviewModalOverlay" role="dialog" aria-modal="true" aria-labelledby="igPreviewModalTitle"
+         onclick="if(event.target===this)closeIgPreviewModal()">
+        <div id="igPreviewModal">
+            <div class="igpm-hdr">
+                <span class="igpm-hdr-title" id="igPreviewModalTitle">🔍 查閱訂單訊息</span>
+                <button class="igpm-close-btn" onclick="closeIgPreviewModal()" aria-label="關閉">✕</button>
+            </div>
+            <div class="igpm-fmt-row">
+                <button type="button" id="igFmtToggleAModal" onclick="igpmToggleFmt()" style="font-size:12px;padding:4px 10px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;white-space:nowrap;">🔄 格式：新版</button>
+            </div>
+            <div class="igpm-body" id="igPreviewModalBody">
+                <p class="igpm-seg-label">🖼️ Category A — 手模擺設訊息</p>
+                <textarea class="igpm-pre" id="igpmPreA" spellcheck="false">(無內容)</textarea>
+                <p class="igpm-seg-label" id="igpmLabelB" style="display:none;">⚙️ Category B — 金屬產品訊息</p>
+                <textarea class="igpm-pre" id="igpmPreB" style="display:none;" spellcheck="false">(無內容)</textarea>
+            </div>
+            <div class="igpm-sync-status" id="igpmSyncStatus"></div>
+            <div class="igpm-footer">
+                <button id="igpmCopyA" class="igpm-action-btn" onclick="igpmCopySegment('A')">📋 複製A(手模)</button>
+                <button id="igpmCopyB" class="igpm-action-btn" onclick="igpmCopySegment('B')">📋 複製B(金屬)</button>
+                <button id="igpmSync"  class="igpm-action-btn" onclick="igpmSyncOnly()">🚀 同步</button>
+            </div>
         </div>
     </div>
 
