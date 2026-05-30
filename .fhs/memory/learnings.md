@@ -67,3 +67,5 @@
 - 收斂指令體系：零新指令、零新 subagent，除非現有工具無法完成任務 — 源自 2026-04-28
 - 橋接版禁止含邏輯：.claude/commands/ 與 .agents/workflows/ 只做指向，邏輯只在 Master (.fhs/ai/commands/) — 源自 2026-05-19
 - 表單新增 input 前必評估 captureFormState + n8n payload 影響：新欄位若進入 captureFormState，會改變 webhook payload 結構，可能破壞 n8n 解析。先確認範圍再動手，不確定就 defer — 源自 2026-05-29
+- **cl-flow A2 模型策略**：Fat Mo 決定統一使用 `gemini-3.5-flash`，不做 `--pro` 雙模切換。模型切換一律透過 `.env GEMINI_A2_MODEL_DEFAULT`，不改代碼 — 源自 2026-05-30
+- **外部 API endpoint 必先 probe 再推薦**：AI 知識截止日後的 API model ID 可能已過時或不存在（如 `gemini-2.5-pro-preview-05-06` 不存在）。推薦前必須 `curl` 或 `node` probe 確認端點，不可憑訓練資料直接使用 — 源自 2026-05-30

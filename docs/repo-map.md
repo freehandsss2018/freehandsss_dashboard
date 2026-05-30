@@ -224,7 +224,8 @@ freehandsss_dashboard/
 ├── scripts/                             ← 輔助腳本
 │   ├── README.md                        ← 腳本說明索引
 │   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
-│   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner）
+│   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner，模型由 GEMINI_A2_MODEL_DEFAULT 控制）
+│   ├── validate-ag-plan.js             ← ag-plan 輸出格式守護（6 section + checkbox + 檔案標記驗證，保護 Verdict 鏈）
 │   ├── deploy_batch_recalc_workflow.js  ← 建立並啟動 n8n 💰 Financial Batch Recalculate workflow（2026-05-28）
 │   ├── repair/                          ← 財務 / 資料修補腳本（一次性，需人工確認後執行）
 │   │   ├── sync_0600701.js             ← 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）

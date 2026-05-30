@@ -11,12 +11,14 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { execSync } = require('child_process');
+const { validateAgPlan } = require('./validate-ag-plan');
 
 // ─── Environment Check ───────────────────────────────────────────────────────
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.5-flash';
 
 if (!PERPLEXITY_API_KEY || !GEMINI_API_KEY) {
   console.error('[cl-flow-runner] ERROR: Missing required API keys.');
@@ -92,7 +94,7 @@ function callGemini(prompt) {
 
     const options = {
       hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`,
+      path: `/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -137,7 +139,9 @@ async function withRetry(fn, label, retries = 3) {
 function getCodebaseContext() {
   try {
     const result = execSync(
-      'npx repomix --style plain --ignore "artifacts/,node_modules/,*.xlsx,*.log,.git/" .',
+      'npx repomix --style plain' +
+      ' --include "scripts/,supabase/migrations/,.fhs/notes/SOP_NOW.md,.fhs/memory/handoff.md"' +
+      ' --ignore "artifacts/,node_modules/,*.xlsx,*.log,.git/,Obsidian/"',
       { cwd: ROOT_DIR, timeout: 60000, maxBuffer: 800 * 1024 }
     );
     const raw = result.toString('utf8');
@@ -256,6 +260,12 @@ ${task}
       path.join(ARTIFACTS_DIR, 'ag-plan.md'),
       `# AG Plan (A2)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: Gemini\n**Mode**: ${quickMode ? 'quick (no PX)' : 'full'}\n\n---\n\n${agResult}\n`
     );
+
+    // ── Validate AG Plan Format ────────────────────────────────────────────
+    const agPlanPath = path.join(ARTIFACTS_DIR, 'ag-plan.md');
+    if (!validateAgPlan(agPlanPath)) {
+      console.warn('[cl-flow-runner] ⚠️  ag-plan format incomplete — Verdict chain may be affected. Continuing.');
+    }
 
     // ── Update State ───────────────────────────────────────────────────────
     state.ag_status = 'done';

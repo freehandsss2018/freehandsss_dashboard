@@ -5,7 +5,8 @@
 | 檔案 | 用途 |
 |---|---|
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
-| `cl-flow-runner.js` | `/cl-flow` 協調器核心 — 並行調用 Perplexity + Gemini API，生成真實 artifact |
+| `cl-flow-runner.js` | `/cl-flow` 協調器核心 — 並行調用 Perplexity + Gemini API，生成真實 artifact（模型由 `GEMINI_A2_MODEL_DEFAULT` 控制）|
+| `validate-ag-plan.js` | ag-plan 輸出格式守護 — 驗證 Gemini 產出的 `ag-plan.md` 結構完整性，保護 Verdict 鏈 |
 | `migrate_airtable_to_supabase.js` | **Supabase 遷移**：批量將 Airtable 資料同步至 Supabase (Phase 1)，需 Airtable API |
 | `migrate_from_csv.js` | **CSV 遷移備援**：當 Airtable API quota 耗盡時，改從 `airtable-database/*.csv` 讀取並遷移至 Supabase（支援 multiline quoted fields）|
 | `run_supabase_migration.js` | **遷移啟動器**：自動化執行 Supabase 遷移流程 |

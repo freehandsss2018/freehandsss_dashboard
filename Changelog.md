@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-05-30] ⚙️ cl-flow 協調器強化（Session 43 — 模型配置化 + 格式守護 + context 優化）
+
+**修改檔案**：`scripts/cl-flow-runner.js`、`scripts/validate-ag-plan.js`（新增）、`.env`、`.env.example`
+
+- **Phase 1 — 模型配置化**：`callGemini()` 的模型 ID 從 hardcode `gemini-3.5-flash` 改為讀取 `process.env.GEMINI_A2_MODEL_DEFAULT`（fallback 至 `gemini-3.5-flash`）；`.env` 新增 `GEMINI_A2_MODEL_DEFAULT=gemini-3.5-flash`；`.env.example` 同步補入說明
+- **Phase 3 — ag-plan 格式守護**：新增 `scripts/validate-ag-plan.js`（6 項必要 section 檢查 + checkbox + 檔案標記），`cl-flow-runner.js` 在 ag-plan 寫入後自動呼叫；格式不符時 WARN 繼續（不阻斷流程）
+- **Phase 4 — repomix context 優先級**：repomix 指令從 dump 全倉庫改為 include 優先路徑（`scripts/`、`supabase/migrations/`、`SOP_NOW.md`、`handoff.md`），排除 `Obsidian/`，提升 AG Prompt signal/noise 比
+
+---
+
+## [2026-05-30] ✨ IG 訊息預覽 Modal 重設計（Session 42 — flow 2026-05-30-0240）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+**UX 改動**：移除常駐固定預覽框架，改為按需彈窗查閱 IG 訊息。
+
+- HTML：`preview-card` 加 `id="legacyPreviewCard" style="display:none;"`（隱藏舊框架；`output-preview-a/b` textarea **保留 DOM**，仍為 payload 唯一資料源）
+- HTML：桌面 `#bottomActionBar` 新增 `#btnReviewIgMsg`（查閱訂單訊息）按鈕；手機 `#v40-bottom-bar` 新增「🔍 查閱」按鈕
+- CSS：新增 `#igPreviewModalOverlay` / `#igPreviewModal` 樣式（桌面置中 Modal、手機 bottom-sheet）
+- HTML：新增 IG Preview Modal（`#igPreviewModalOverlay`）含 A/B 分段 `<pre>` 區、`#igFmtToggleAModal` 格式切換、`#igPreviewModalCopySync` 複製並同步鈕
+- JS（新 `<script>` IIFE）：`window.openIgPreviewModal()`（force-refresh generate + 讀 textarea 注入 Modal）/ `window.closeIgPreviewModal()` / `window.igpmToggleFmt()` / `window.igPreviewCopyAndSync()`（複用 copyMessageA/B + syncToAirtable，零新寫入路徑）
+- code-reviewer Gate G1–G8 全 PASS
+- current.html 同步完成（672,050 bytes）
+
+---
+
 ## [2026-05-30] 🧹 編號模式 UI 簡化（Session 41e）
 
 **修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`

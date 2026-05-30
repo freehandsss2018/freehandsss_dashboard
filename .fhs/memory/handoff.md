@@ -1,3 +1,60 @@
+# FHS Handoff - 2026-05-30 (Session 43 — cl-flow 協調器強化)
+
+## Session 43 — cl-flow 模型配置化 + ag-plan 格式守護 + repomix 優化
+
+**完成事項**：
+- ✅ Phase 1：`callGemini()` 模型從 hardcode `gemini-3.5-flash` 改為讀取 `process.env.GEMINI_A2_MODEL_DEFAULT`（fallback 至 `gemini-3.5-flash`）；`.env` / `.env.example` 同步更新
+- ✅ Phase 3：新建 `scripts/validate-ag-plan.js`（6 section + checkbox + 檔案標記三項守護）；`cl-flow-runner.js` ag-plan 寫入後自動呼叫，格式不符 WARN 繼續
+- ✅ Phase 4：repomix 從 dump 全倉庫改為 include 優先路徑（`scripts/`、`supabase/migrations/`、`SOP_NOW.md`、`handoff.md`），排除 `Obsidian/`
+- ✅ 後效：`scripts/README.md` / `docs/repo-map.md` / `Changelog.md` 全部同步
+- ✅ Phase 2（`--pro` 雙模切換）：Fat Mo 決定統一使用 `gemini-3.5-flash`，**已取消**
+
+**模型驗證記錄**：
+- 執行 API probe 確認可用模型清單（2026-05-30）
+- `gemini-3.5-flash` ✅ 存在（現用）
+- `gemini-3.1-pro-preview` ✅ 存在（備選，暫不啟用）
+- A2 計畫原寫 `gemini-3.1-pro` / 我原建議 `gemini-2.5-pro-preview-05-06` — 兩者均 ❌ 不存在
+
+**待辦（Fat Mo）**：
+- 如未來需切換模型，只需改 `.env` 的 `GEMINI_A2_MODEL_DEFAULT` 值，無需動代碼
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（定點 Edit + 新建腳本，主 context 直接執行）|
+| 遵從 Router | — |
+
+---
+
+# FHS Handoff - 2026-05-30 (Session 42 — IG 訊息預覽 Modal 重設計)
+
+## Session 42 — IG 訊息預覽 Modal（flow 2026-05-30-0240）
+
+**完成事項**：
+- ✅ 移除常駐 preview-card（`id="legacyPreviewCard" style="display:none;"`）；`output-preview-a/b` textarea **保留 DOM**（payload 資料源）
+- ✅ 桌面新增 `#btnReviewIgMsg`；手機新增「🔍 查閱」按鈕
+- ✅ `#igPreviewModalOverlay` Modal（含 A/B 分段 `<pre>`、格式切換鈕、複製並同步鈕）+ CSS（桌面 Modal/手機 bottom-sheet）
+- ✅ JS：`openIgPreviewModal / closeIgPreviewModal / igpmToggleFmt / igPreviewCopyAndSync`（全 window 暴露，P9 安全）
+- ✅ code-reviewer Gate G1–G8 全 PASS
+- ✅ current.html 同步完成（672,050 bytes）
+- ✅ CHANGELOG / decisions.md 同步
+
+**待辦（Fat Mo）**：
+1. **Live 驗證 VT-01~08**（含 VT-06 payload 完整性、VT-07 連點防競態）
+2. VT-03 手機 bottom-sheet 實機測試（iOS Safari / Android Chrome）
+
+**技術債標記**：`output-preview` 顯示/資料耦合 → V42 Gate（觸發條件見 decisions.md）
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議（Router 偵測到大範圍改動，建議 /guardian — 判定誤判，無改動可稽核，未觸發）|
+| 實際使用 | ✅ `code-reviewer`（Phase 4 強制 Gate，G1–G8 全 PASS）|
+| 遵從 Router | ❌ /guardian 未觸發（改動前純規劃，code-reviewer Gate 為正確稽核點）|
+
+---
+
 # FHS Handoff - 2026-05-30 (Session 41–41e 全日彙整)
 
 ## Session 41e — 編號模式 UI 簡化
