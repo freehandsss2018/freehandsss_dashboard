@@ -3,9 +3,46 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-05-30] /rp-flow 精煉管道串聯 v1.0.0 — 四變體/Gate/批評移位/反奉承內建
+
+決策：
+- **批評移至最終輸出層**：/rp 初步無參照物，強制批評等於表演；verdict_critique / plan_critique 在 Verdict/ag-plan 產出後才有真實缺陷可批評
+- **Gate 1 強制停（非 timeout 自動繼續）**：Gate 1 的目的是防止錯方向浪費 cl-flow token，強制停比 timeout 更有效；Gate 2 僅 --review 變體，避免讓「全自動」名不符實
+- **/rp-flow-ag = A1+A2（ag-plan 為裁決）**：ag-plan 收到 PX 研究後直接出方案，Fat Mo 自行判斷，跳過 A3 Claude 合成層；適合任務清晰、信任 ag-plan 輸出的場景
+- **反奉承守則內建**：用戶每次輸「不奉承」是設計缺口，守則寫入 rp.md 永遠生效
+- **資源目錄靜態快照**：subagent_skill 維度從目錄對號入座，不依賴 AI session context 猜測
+
+***
+
+[2026-05-30] /rp 指令升級 v2.2 — 三變體/8維度掃描/Pipe模式
+
+決策：
+- **Pipe 模式 vs Exempt 衝突**：Exempt 禁的是 AI 主動建議，用戶明確輸入 `/rp cl-flow` 屬用戶最高授權，語義不同，允許。Pipe 模式發生在 cl-flow A1 研究之前，職責不重疊。
+- **8 維度掃描用「清單 + 地板」**：8 維度每次必點名（不遺忘），但 conflict/token/history 三維設強制地板（可用 [強制·低] 逃生門），其餘可 N/A。避免全強制導致 token 違反 Rule 3.11。
+- **移除純文字版**：Fat Mo 明確要 XML 供審閱，純文字版是重複輸出，對 PL 另設 Markdown 格式。
+- **自我批評封頂 ≤3×1行**：防止 overhead，fast 變體跳過以符合輕量定位。
+- **FHS 自動注入層**：5 個關鍵詞觸發固定系統前提注入，減少 Fat Mo 手填 context 負擔。
+
+***
+
+[2026-05-30] `_buildSplitIgLine` pureNumeric 參數設計（flow 2026-05-30-1248）
+
+決策：
+- **加第 4 參數而非分叉函式**：`_buildSplitIgLine` 被 v1/v2 共 4 處呼叫，若分叉為兩函式須改 4 處呼叫端 + 維護兩版本。參數化只需在函式本體加分支、v2 呼叫端傳 `true`，v1 不傳即維持舊行為，改動最小（C2 原則）。
+- **保留 `=$總和`（多格時）**：純數字 `2380+860+100=$3240` 兼顧簡潔與對帳可讀性；Q1 架構裁決：顯示與 payload 同一管線，不可只改顯示。
+- **需求③ defer**：`saveOrderText` 是 Review Mode 專用 PATCH（需既有 order_id），新單無 Supabase row 不適用；保留 Review Mode 為唯一文字編輯入口，避免兩套編輯 UI 維護負擔。
+
 ***
 
 ## 記錄
+
+[2026-05-30] IG 訊息預覽 Modal — 架構決策（flow 2026-05-30-0240）
+
+決策：
+- **`output-preview-a/b` textarea 隱藏不移除**：兩個 textarea 同時是顯示層與 payload 資料源（L6025–6026 `Full_Order_Text` 讀其 `.value`）。只把外層 `preview-card` 隱藏，textarea 留 DOM，live-update 邏輯照常寫入。移除即導致同步出空訂單（C1 致命風險）。
+- **Modal 讀 textarea `.value`（不另建格式化邏輯）**：保證 Modal 顯示與 payload 內容 bit-by-bit 一致（PX 風險1），無需維護第二套格式化管線。
+- **「複製並同步」純複用 `copyMessageA/B + syncToAirtable`**：零新寫入路徑，不引入雙寫競態（PX 風險3），沿用既有 banner + 輪詢反饋機制。
+- **技術債標記（V42 Gate）**：`output-preview` 顯示層兼資料層耦合屬技術債。觸發解耦條件：當需支援 Category C **或** Supabase SSoT 正式翻轉啟動時，payload 改讀 captureFormState/結構化資料，textarea 轉為純顯示。
 
 [2026-05-29] Category A IG 訊息雙版本格式 — 架構決策
 

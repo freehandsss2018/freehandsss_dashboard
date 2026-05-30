@@ -1,5 +1,57 @@
 # Changelog
 
+## [2026-05-30] 🚀 /rp-flow 精煉管道串聯 v1.0.0（Session 44c — 四變體/Gate/verdict批評/反奉承內建）
+
+**新建檔案**：`.fhs/ai/commands/rp-flow.md`、`.claude/commands/rp-flow*.md` ×3、`.agents/workflows/rp-flow*.md` ×3
+
+- **四變體**：`/rp-flow`（A1+A2+A3）/ `--review`（+Gate2）/ `-fast`（輕量）/ `-ag`（A1+A2，ag-plan 為裁決，跳過 A3）
+- **Gate 1**：所有變體強制停，Fat Mo 審閱 XML 後 Y 才繼續
+- **verdict_critique / plan_critique**：批評移至最終輸出層
+- **/execute 永遠手動**：AI 絕不自動觸發，遵 execute.md 硬規則
+
+**rp.md v2.2 補丁**：`<self_critique>` → `<structural_warning>` + FHS 資源目錄 + 反奉承守則內建
+
+---
+
+## [2026-05-30] ✏️ IG Modal 即時編輯（Session 45）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+- `igpmPreA`/`igpmPreB`：`<pre>` → `<textarea>`（可直接在 Modal 打字）
+- `_igpmRefresh()` 改 `.value`；`igpmCopySegment` 讀 Modal textarea 複製已編輯文字
+- CSS 加 `resize:vertical`/`:focus` 高亮；移除舊導流提示
+- `output-preview-a/b`、`syncToAirtable`、`captureFormState` 全部不動
+- current.html 同步（674,173 bytes）
+
+---
+
+## [2026-05-30] 🔧 /rp 指令升級 v2.2（Session 44 — 三變體/8維度掃描/Pipe模式/FHS自動注入）
+
+**修改檔案**：`.fhs/ai/commands/rp.md`、`.claude/commands/rp.md`、`.agents/workflows/rp.md`、`docs/FHS_Prompts.md`、`docs/repo-map.md`
+
+- **三變體**：`/rp`（標準）/ `/rp cl-flow`（Pipe 組裝）/ `/rp cl-flow-fast`（輕量），分別對應「精煉+掃描+批評 / 加 cl-flow 簡報停等 / 輕掃描跳批評」
+- **8 維度掃描常駐**：perf / ux_mgmt / conflict / token / long_term / responsive / subagent_skill / history；其中 conflict / token / history 三維度強制 [相關]（有 [強制·低] 逃生門）
+- **Pipe 模式**：`/rp cl-flow` 由用戶明確輸入觸發（不違反 Exempt 規則），開頭強制標頭防誤觸發，乾式組裝後停等 /execute
+- **FHS 系統自動注入層**：5 個關鍵詞觸發固定前提注入（Supabase/n8n/Dashboard/訂單/財務），免 Fat Mo 每次手填
+- **移除純文字版**：XML 本身即供審閱格式；PL 使用 Markdown 格式（非 XML）
+- **自我批評封頂**：≤3 點 × 1 行；fast 變體跳過
+- **Compatibility Map v2.2**：Exempt 禁 AI 主動建議，用戶明確 pipe 允許（語義不衝突）
+- 動態 Pipe 判定（v2.2 弱點1修正）：改為讀取 commands/ 目錄存在性判定，不維護白名單
+
+---
+
+## [2026-05-30] ✨ IG Modal 三需求修正（flow 2026-05-30-1248）
+
+**修改檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html`
+
+- **需求① Category A 付款行純價錢**：`_buildSplitIgLine` 加第 4 參數 `pureNumeric`；v2 呼叫傳 `true` → 純數字相加格式（如 `2380+860=$3240`）；v1 呼叫不傳，維持舊明細（C2 隔離）；Category B 不受影響
+- **需求② Modal 複製鈕拆分**：移除舊「複製並同步」合併鈕；改「複製A(手模)」`#igpmCopyA` + 「複製B(金屬)」`#igpmCopyB` + 「同步」`#igpmSync` 三鈕；新增 `igpmCopySegment` / `igpmSyncOnly`，複製與同步解耦，零雙寫
+- **需求③ Defer**：Modal 加導流提示「如需修改訊息文字，請至訂單總覽開啟訂單進行編輯」（saveOrderText 新單不適用）
+- code-reviewer Gate G1–G8 全 PASS；current.html 同步（673,722 bytes）
+- tooling 同步修復：`scripts/validate-ag-plan.js` 加 `require.main===module` 守衛（防 cl-flow-runner require 時誤觸發 exit）
+
+---
+
 ## [2026-05-30] ⚙️ cl-flow 協調器強化（Session 43 — 模型配置化 + 格式守護 + context 優化）
 
 **修改檔案**：`scripts/cl-flow-runner.js`、`scripts/validate-ag-plan.js`（新增）、`.env`、`.env.example`

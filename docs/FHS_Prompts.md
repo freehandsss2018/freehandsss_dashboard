@@ -179,15 +179,45 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 ---
 
-## 【情境二十三：Prompt 結構化重寫 (/rp)】
+## 【情境二十三：Prompt 結構化重寫 (/rp) v2.2】
 
-- 觸發：用戶輸入 `/rp [問題]`、「幫我重寫這個問題」、「結構化我的提問」
-- 執行邏輯：載入並遵循 `.fhs/ai/commands/rp.md`
-- 平台：CL / AG / PL 三端通用（PL 以純文字形式使用）
-- 核心步驟：原始問題 → XML 結構化 → 分析改寫效果 → 輸出純文字版本
-- **建議路由（非強制攔截）**：當 `/execute` 收到含 3+ 個動作動詞或並列結構（如「以及」「同時」「還要」）的輸入時，AI 可輸出一行建議：「輸入較複雜，可先執行 `/rp` 整理後再提交」。不自動重定向，不攔截原始請求，Fat Mo 可直接忽略建議繼續執行。
-- **Exempt 指令**（以下指令禁止推薦或觸發 /rp）：`/commit`、`/cl-flow`、`/cl-flow-fast`、`/error-eye`
-  - `/error-eye` Exempt 原因：緊急診斷場景須立即路由 `build-error-resolver`，任何前置步驟均有害
+- 觸發：用戶輸入 `/rp [問題]`、`/rp cl-flow [task]`、`/rp cl-flow-fast [task]`、「幫我重寫這個問題」、「結構化我的提問」
+- 執行邏輯：載入並遵循 `.fhs/ai/commands/rp.md`（v2.2）
+- 平台：CL / AG / PL 三端通用（PL 使用 Markdown 格式，非 XML）
+
+三變體路由：
+
+| 指令 | 用途 | 輸出 |
+|------|------|------|
+| `/rp [task]` | 標準精煉：8維度掃描 + structural_warning | XML 供審閱，停 |
+| `/rp cl-flow [task]` | Pipe 乾式組裝：精煉 + cl-flow 簡報 | XML + 簡報，停（手動跑 cl-flow）|
+| `/rp cl-flow-fast [task]` | 輕量 Pipe：精煉輕掃描 + fast 簡報 | XML 精簡，停 |
+
+- **structural_warning**：取代自我批評，只在真實結構問題時出現
+- **反奉承守則**：內建於 rp.md，用戶無需每次輸入「專業」「不奉承」
+- **資源目錄**：subagent_skill 維度從 FHS 資源目錄對號入座，不靠 AI 猜
+
+---
+
+## 【情境二十四：/rp-flow 精煉管道串聯 (v1.0.0)】
+
+- 觸發：用戶輸入 `/rp-flow`、`/rp-flow-fast`、`/rp-flow-ag`、`/rp-flow --review`
+- 執行邏輯：載入並遵循 `.fhs/ai/commands/rp-flow.md`（v1.0.0）
+- 平台：CL / AG
+
+四變體路由：
+
+| 指令 | A1 PX | A2 ag-plan | A3 Verdict | 批評 | Gate2 |
+|------|:-----:|:----------:|:----------:|------|:-----:|
+| `/rp-flow` | ✅ | ✅ | ✅ | Verdict 後 | ❌ |
+| `/rp-flow --review` | ✅ | ✅ | ✅ | Verdict 後 | ⏸ |
+| `/rp-flow-fast` | ✅ | ✅ | ✅ fast | 跳過 | ❌ |
+| `/rp-flow-ag` | ✅ | ✅ 裁決 | ❌ | ag-plan 後 | ❌ |
+
+- **Gate 1**：所有變體強制停，Fat Mo 審閱 XML 後回 Y 才繼續
+- **verdict_critique / plan_critique**：在最終輸出層批評（有內容才批評）
+- **/execute 永遠手動**：AI 不自動觸發，遵 execute.md 硬規則
+- **不替代現有指令**：/cl-flow、/ag-plan 獨立可用，/rp-flow 只是包裝層
 
 ---
 

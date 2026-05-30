@@ -1,3 +1,103 @@
+# FHS Handoff - 2026-05-30 (Session 44c — /rp-flow v1.0.0 + rp.md 補丁)
+
+## Session 44c — /rp-flow 精煉管道串聯 v1.0.0
+
+**完成事項**：
+- ✅ `.fhs/ai/commands/rp-flow.md` v1.0.0（四變體：/rp-flow / --review / -fast / -ag）
+- ✅ CL 橋接 ×3（rp-flow / rp-flow-fast / rp-flow-ag）
+- ✅ AG 橋接 ×3（同上）
+- ✅ `rp.md` 補丁：`<self_critique>` → `<structural_warning>` + FHS 資源目錄 + 反奉承守則
+- ✅ CL / AG rp 橋接同步
+- ✅ `docs/FHS_Prompts.md` 情境二十三更新 + 情境二十四新增
+- ✅ `docs/repo-map.md` 新條目（7個）
+- ✅ `Changelog.md` / `decisions.md` 同步
+
+**核心設計**：Gate 1 強制停 / 批評移至 Verdict 後 / /rp-flow-ag A1+A2 ag-plan 裁決 / /execute 永遠手動
+
+**待辦（Fat Mo）**：無
+
+**Subagent 使用記錄**：
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（純 .md 文件建立，Write/Edit 直接完成）|
+| 遵從 Router | — |
+
+---
+
+# FHS Handoff - 2026-05-30 (Session 45 — IG Modal 即時編輯)
+
+## Session 45 — IG Modal textarea 即時編輯
+
+- ✅ `igpmPreA/B`: `<pre>` → `<textarea>`，可在 Modal 直接改文字
+- ✅ `_igpmRefresh()` 改 `.value`；`igpmCopySegment` 讀 Modal textarea（複製已編輯版本）
+- ✅ CSS：`resize:vertical`、`:focus` 高亮、移除導流提示
+- ✅ `output-preview-a/b`、payload、`syncToAirtable` 全不動
+- ✅ current.html 同步（674,173 bytes）
+
+**待辦（Fat Mo）**：VT — 開 Modal → 改文字 → 複製A → 確認剪貼簿是改後文字
+
+**Subagent 使用記錄**：❌ 未使用（3 個定點修改，主 context 直接執行）
+
+---
+
+# FHS Handoff - 2026-05-30 (Session 44b — /rp v2.2 升級)
+
+## Session 44b — /rp 指令升級 v2.2
+
+**完成事項**：
+- ✅ `.fhs/ai/commands/rp.md` v1.0.0 → v2.2（三變體 + 8維度掃描 + Pipe模式 + FHS自動注入 + 移除純文字版 + 自我批評封頂）
+- ✅ `.claude/commands/rp.md` 橋接版同步（三變體簡化流程）
+- ✅ `.agents/workflows/rp.md` Antigravity 橋接版同步
+- ✅ `docs/FHS_Prompts.md` 情境二十三更新（三變體路由表 + Pipe 模式說明）
+- ✅ `docs/repo-map.md` /rp 兩條目更新
+- ✅ `Changelog.md` v2.2 記錄
+- ✅ `decisions.md` 架構決策補錄
+
+**核心設計決策**：Pipe 模式由用戶明確輸入觸發（不違反 Exempt）；三維度強制地板；純文字版移除；自我批評封頂 ≤3×1行；FHS 自動注入層
+
+**待辦（Fat Mo）**：無（指令層，無 migration，無 live 驗證需求）
+
+**Subagent 使用記錄**：
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（純 .md 文件改寫，直接 Write/Edit 完成）|
+| 遵從 Router | — |
+
+---
+
+# FHS Handoff - 2026-05-30 (Session 44 — IG Modal 三需求修正 flow 2026-05-30-1248)
+
+## Session 44 — IG Modal 三需求（flow 2026-05-30-1248）
+
+**完成事項**：
+- ✅ 需求① `_buildSplitIgLine` 加 `pureNumeric` 參數；v2 兩處傳 `true`（純數字相加，保留 `=$總和`）；v1 兩處不傳（舊明細不變）；Category B 隔離
+- ✅ 需求② Modal 複製鈕拆分：移除合併鈕，改三鈕（複製A手模 / 複製B金屬 / 同步）；`igpmCopySegment` + `igpmSyncOnly`；複製與同步解耦
+- ✅ 需求③ Defer：Modal 加導流提示；`saveOrderText` 新單不適用（C3），Review Mode 為唯一文字編輯入口
+- ✅ tooling 修復：`validate-ag-plan.js` 加 `require.main===module` 守衛（防 cl-flow-runner 啟動時誤 exit）
+- ✅ code-reviewer Gate G1–G8 全 PASS
+- ✅ current.html 同步（673,722 bytes）
+
+**待辦（Fat Mo）**：
+1. **Live 驗證**：
+   - VT-1：v2 多格付款 → Modal 顯示 `2380+860=$3240`（純數字，無品名）
+   - VT-2：v1 切換 → 舊明細格式不變
+   - VT-3：複製A → 只得 A 段；複製B → 只得 B 段；零 DB 寫入
+   - VT-4：同步鈕 → 關 Modal 後 syncToAirtable 觸發正常
+   - VT-5：Category B → 格式完全不變
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ✅ `code-reviewer`（強制 Gate，G1–G8 全 PASS）|
+| 遵從 Router | — |
+
+---
+
 # FHS Handoff - 2026-05-30 (Session 43 — cl-flow 協調器強化)
 
 ## Session 43 — cl-flow 模型配置化 + ag-plan 格式守護 + repomix 優化
