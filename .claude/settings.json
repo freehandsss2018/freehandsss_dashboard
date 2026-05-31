@@ -79,7 +79,11 @@
       "Bash(rm \".agents/workflows/px-plan.md\")",
       "Bash([ -f \".fhs/ai/commands/$f.md\" ])",
       "Bash([ -f \".claude/commands/$f.md\" ])",
-      "Bash(xargs -I{} basename {} .md)"
+      "Bash(xargs -I{} basename {} .md)",
+      "Bash(node --input-type=module --eval ' *)",
+      "Bash(node -e \"var fs=require\\('fs'\\); var html=fs.readFileSync\\('Freehandsss_Dashboard/freehandsss_dashboardV41.html','utf8'\\); console.log\\('finInfoB 定義:', html.includes\\('const finInfoB'\\)\\); console.log\\('combinedB 用 finInfoB:', html.includes\\('combinedB = \\\\`Freehandsss'\\) && html.includes\\('\\\\${finInfoB}'\\)\\); console.log\\('combinedB 不含舊 finInfo:', !html.match\\(/combinedB = .+\\\\\\\\\\\\${finInfo\\\\}[^B]/\\)\\);\")",
+      "Bash(node scripts/cl-flow-runner.js --quick \"Phase 3 付款拆格 + 報價明細三色分區 + 快捷填入，共 4 個子任務：T0 吊飾格合併為頸鏈組（Math.ceil\\(totalCharms/2\\)格，boxKey=necklace_N，restoreSplits fallback）；T1 標籤修正（頸鏈①一對/頸鏈②+1隻，移除單部位emoji誤導）；T2 每格加一鍵快捷填入建議金額按鈕（讀 item.CalculatedPrice，點擊填入 input）；T3 三大類顏色區分方案A（立體擺設+配件=暖橙#FFF3E0/#E65100，金屬鎖匙扣=鋼灰#ECEFF1/#37474F，純銀頸鏈吊飾=銀紫#EDE7F6/#4527A0）同時套用於 pricingLogicDetails 明細區和 deposit/balance 拆格 label；T4 seqSetRow 下張起始編號從主畫面移至設定區。硬規則：captureFormState 不可動、HTML ID 不可改、P9 window暴露、Category B pureNumeric不可破。\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const s=JSON.parse\\(fs.readFileSync\\('artifacts/2026-05-31-1236/state.json'\\)\\); s.cl_status='done'; s.status='awaiting_approval'; fs.writeFileSync\\('artifacts/2026-05-31-1236/state.json', JSON.stringify\\(s,null,2\\)\\);\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

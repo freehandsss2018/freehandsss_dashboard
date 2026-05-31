@@ -1,5 +1,72 @@
 # Changelog
 
+## [2026-05-31] 🎨 Phase 3 介面優化 — 付款拆格頸鏈組化 + 三色分區 + 快捷填入 + 編號設定搬移（Session 48 Phase 3）
+
+**修改**（`freehandsss_dashboardV41.html`）：
+- **T0+T1** `renderPaymentSplits`：吊飾格改以 `necklace_N` boxKey 頸鏈組渲染（一對/+1隻）；舊 TEMP_M_* key 靜默忽略不崩潰
+- **T2** 每格加 `⚡` 快捷填入建議金額按鈕（新增 `_quickFillSplitBtn`，window 暴露）
+- **T3** 三色方案 A：報價明細分類標題（暖橙/鋼灰/銀紫）+ split-box label 底色
+- **T4** `seqSetRow` 從訂單區 `fatmoConfigPanel` 移至 `financialSettingsCard` 底部
+- `_syncBalanceFromDeposit`：補 necklace_N boxKey 同步邏輯（避免吊飾格 balance 不更新）
+- `calculatePricing`：新增 `window.fhsNecklaceGroups` 陣列（每條頸鏈的 label/price/boxKey）
+
+**已知限制**：`fatmoConfigPanel` 現為空殼，手機 Drawer settings tab 暫顯空（不影響主功能）
+
+待同步：current.html（需 Fat Mo Live 驗證後授權）
+
+---
+
+## [2026-05-31] 🔧 吊飾售價計算修正 — 頸鏈組計價 + 移除錯誤費用（Session 48 Phase 2）
+
+**修正 5 個 Bug**（`freehandsss_dashboardV41.html`，`calculatePricing()`）：
+- **Bug 1** 移除 $1,000 首飾單購圖紙費（P系列每單虛增 $1,000）
+- **Bug 2** P系列 qty=2 由 $3,080 修正為 $3,280
+- **Bug 3+5** 吊飾改用「總吊飾數合併 → 頸鏈組計價」：
+  - 倒模：1個=$1,980 / 2個=$2,980，之後每組重新計算
+  - P系列：1個=$2,280 / 2個=$3,280；額外1個=$1,640 / 額外2個=$3,280
+  - 多部位（如左手+右腳）合併計算，不再各自獨立定價
+- **Bug 4** 移除異部位建模費 $100/$300（吊飾與鎖匙扣均不收）
+- 925銀 / 925金 售價相同（維持現狀，代碼本已正確）
+
+待同步：Phase 3（付款拆格 N格 UI）待 Fat Mo 確認；current.html 待授權
+
+---
+
+## [2026-05-31] 🔧 Category B IG 訊息【付款資料】格式修正 — 對齊 Category A pureNumeric 格式（Session 48）
+
+**問題**：Category B（金屬產品）IG 訊息的付款行顯示帶品名標籤（`品名$金額+品名$金額=$總和`），與 Category A v2（pureNumeric 格式 `金額1+金額2=$總和`）不一致。
+
+**修改**（`freehandsss_dashboardV41.html`）：
+- 新增 `finInfoB` 變數，付款行改傳 `pureNumeric=true` 至 `_buildSplitIgLine()`
+- `combinedB` 改用 `finInfoB`（原 `finInfo` 僅保留給 Category A v1，不受影響）
+- 付款行 prefix 由 `未付產品尾數` 改為 `未付尾數`，對齊 Category A v2 命名
+
+**影響範圍**：Category B IG 訊息預覽；Category A v1/v2 輸出不變；captureFormState 不動。
+
+待同步：current.html（需 Fat Mo /execute 授權）
+
+---
+
+## [2026-05-30] 🏗️ Phase 2 指令精簡 — vendor 方法論移植 + 7 command 退役（Session 47）
+
+**方法論移植（subagent 升級）**：
+- `build-error-resolver` v1.0.0 → v1.1.0：description 加 root-cause-first；嵌入 4 階段根因調查協議 + Five-Whys 觸發條件（指向 systematic-debugging.md）；財務欄位豁免條款
+- `code-reviewer` v1.1.0 → v1.2.0：新增 5 維度代碼分析框架（sequential-thinking 工具觸發）
+- 兩個 subagent 同步至 `~/.claude/agents/freehandsss/`
+
+**AGENTS.md v1.4.8 → v1.4.9**：新增 Rule 3.15「根因調查強制律」（含安全閥 + 財務豁免）
+
+**刪除（共 15 個檔案）**：
+- Master ×7：px-plan / px-audit / five / debug-guide / code-analysis / mermaid / tdd-guide（指令）
+- CL橋接 ×7：同上
+- AG橋接 ×1：px-plan
+
+**更新**：FHS_Prompts.md（7 個情境改為 AI 自動執行說明）、repo-map.md（退役標記）、README.md（場景速查表）
+
+設計決策：見 decisions.md [2026-05-30] Phase 2
+
+---
+
 ## [2026-05-30] ♻️ Phase 1 指令精簡 — rp-flow 刪除 + ag-flow 新建 + 精煉內建（Session 46）
 
 **刪除**：`rp-flow.md`（Master + CL×3 + AG×3，共 7 個檔）

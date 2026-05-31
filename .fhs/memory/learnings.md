@@ -57,6 +57,7 @@
 - **單一配件 filter 假設靜默失效**：`_woolKey` 只過濾一種配件，新增第二個配件後 Badge 注入對第二個配件靜默遺失。n8n `getItemCategory()` 亦只含羊毛氈條件，同樣靜默遺漏。每次新增配件前必查：①前端 filter 函式是否支援多配件、②n8n category 函式是否覆蓋新 SKU — 源自 2026-05-27
 - **item_base_cost ≠ subtotal_cost × quantity（Mirror Prep 陷阱）**：descriptions_comments.sql 稱 `subtotal_cost = item_base_cost × quantity`，但 Mirror Prep 實際寫入 `item_base_cost = subtotal_cost = Total_Base_Cost`（兩欄相等，不乘 quantity）。批量重算 SQL 必須以 Mirror Prep 代碼為準，而非欄位說明文字 — 源自 2026-05-28
 - **【高頻 ⚠️】Migration 部分執行靜默失敗**：`CREATE TABLE IF NOT EXISTS` 在表已存在時靜默跳過，同一 migration 後續 PART（ALTER TABLE / INSERT / RPC）不會執行，整體功能靜默失效無報錯。預防：新 migration 若含多 PART，各 PART 必須有獨立 smoke-test 查詢確認執行；不能只靠「沒報錯」判斷成功 — 源自 2026-05-29
+- **【P10】付款拆格 boxKey 改動須同步更新所有相關函式**：`renderPaymentSplits` 改 boxKey 格式（如改為 necklace_N）後，`_syncBalanceFromDeposit` / `serializeSplits` / `restoreSplits` 均用舊 boxKey 匹配，balance 靜默不更新無錯誤提示。凡改 boxKey 格式，必查三個函式 — 源自 2026-05-31
 
 ---
 

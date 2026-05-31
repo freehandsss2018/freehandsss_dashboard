@@ -1,3 +1,101 @@
+# FHS Handoff - 2026-05-31 (Session 48 — Phase 3 介面優化)
+
+## Session 48 Phase 3 — 付款拆格頸鏈組化 + 三色 + 快捷填 + 編號設定搬移
+
+**完成事項**：
+- ✅ CSS：`.quick-fill-btn` + `.box-cat-P/K/M .split-box-label` 三色樣式
+- ✅ `calculatePricing`：`window.fhsNecklaceGroups` + `_catHdr()` 分類標題 + 三色 logs
+- ✅ `renderPaymentSplits`：吊飾改頸鏈組（necklace_N boxKey）+ 三色 label + ⚡ 快捷填鈕
+- ✅ `_syncBalanceFromDeposit`：補 necklace_N 同步邏輯
+- ✅ `_quickFillSplitBtn`：新函式 + `window._quickFillSplitBtn` 暴露
+- ✅ seqSetRow 從 `fatmoConfigPanel` 搬至 `financialSettingsCard` 底部（T4）
+- ✅ Changelog.md 更新
+
+**已知限制**：
+- `fatmoConfigPanel` 現為空殼，手機 Drawer settings tab 暫時顯示空白（次要問題，不影響主功能）
+
+**current.html 同步**：✅ 682,164 bytes（2026-05-31 Phase 3 + 照數填入）
+
+**待辦（Fat Mo）**：
+1. **Live 驗證**：
+   - VT-1：吊飾左手×1+右腳×1 → 付款區只顯示「頸鏈① 一對 $2980」一格（不再有兩格+$0格）
+   - VT-2：吊飾3個 → 顯示「頸鏈① 一對 $2980」+「頸鏈② +1隻 $1980」兩格
+   - VT-3：點 ⚡ 按鈕 → 對應格自動填入建議金額，balance 同步更新
+   - VT-4：報價明細區顯示三色分類標題（暖橙/鋼灰/銀紫）
+   - VT-5：財務設定中心底部出現「下張起始編號」（套用功能正常）
+   - VT-6：手機 Drawer settings tab 確認是否需補回 seqSetRow（已知空白問題）
+2. **current.html 同步**：Phase 2+3 全通過後授權
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | code-reviewer（Phase 3 完成後 Gate）|
+| 實際使用 | ❌ 未使用（5 組定點 Edit，主 context 直接執行）|
+| 遵從 Router | ❌ 未遵從（code-reviewer Gate 安排在 Fat Mo Live 驗證後，避免提前 Gate 浪費 token）|
+
+---
+
+# FHS Handoff - 2026-05-31 (Session 48 — 吊飾計價修正 + Category B 付款格式)
+
+## Session 48 Phase 2 — 吊飾售價計算修正
+
+**完成事項**：
+- ✅ 移除 $1,000 首飾單購圖紙費（Bug 1）
+- ✅ 移除異部位建模費 $100/$300（Bug 4，吊飾+鎖匙扣均移除）
+- ✅ 移除 processTierPricing 純銀分支（舊 qty×$800 線性公式）
+- ✅ 新增頸鏈組計價邏輯（Bug 2+3+5）：
+  - 倒模：Math.floor(n/2)×$2,980 + (n%2)×$1,980
+  - P系列：首組 $2,280(1個)/$3,280(2個)；額外每組 $1,640(1個)/$3,280(2個)
+  - 多部位合併計算 → silverItems[0].CalculatedPrice 承擔總價
+- ✅ Changelog.md 更新
+
+**待辦（Fat Mo）**：
+1. **Live 驗證 Phase 2**：
+   - VT-1：倒模 左手×1 → $1,980；左手×1+右腳×1 → $2,980；左手×3 → $4,960
+   - VT-2：P系列 1個 → $2,280；2個 → $3,280；3個 → $4,920
+   - VT-3：鎖匙扣多部位確認無異部位費
+   - VT-4：925銀/金 同價確認
+2. **Phase 3 確認**：付款拆格 N格 UI（頸鏈組為單位，規格已定）→ 告知後執行
+3. **current.html 同步**：Phase 2+3 均完成後授權
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議（直接修正） |
+| 實際使用 | ❌ 未使用（4 處定點 Edit，主 context 直接執行）|
+| 遵從 Router | — |
+
+---
+
+## Session 48 Phase 1 — Category B IG 訊息【付款資料】格式修正
+
+## Session 48 — Category B IG 訊息【付款資料】格式對齊
+
+**完成事項**：
+- ✅ `freehandsss_dashboardV41.html`：新增 `finInfoB` 變數，付款行傳 `pureNumeric=true`，`combinedB` 改用 `finInfoB`
+- ✅ `Changelog.md`：Session 48 條目新增
+
+**修改效果**：
+- Category B 單格：`已付訂金：$1200`（fallback 正常）
+- Category B N 格：`已付訂金：1200+800=$2000`（對齊 Category A v2）
+- Category A v1/v2：不受影響
+
+**待辦（Fat Mo）**：
+1. **Live 驗證**：
+   - VT-1：Category B 勾選 K/M → N 格付款 → 訊息顯示 `已付訂金：金額1+金額2=$總和`（無品名標籤）
+   - VT-2：Category A v1/v2 輸出不變
+   - VT-3：只填單一付款金額（無 split）→ 顯示 `已付訂金：$金額`（fallback 正常）
+2. **current.html 同步**：待 Live 驗證後授權
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無建議 |
+| 實際使用 | ❌ 未使用（2 處定點 Edit，主 context 直接執行）|
+| 遵從 Router | — |
+
+---
+
 # FHS Handoff - 2026-05-30 (Session 47 — Phase 2 指令精簡 + 方法論移植)
 
 ## Session 47 — vendor 方法論移植 + 7 command 退役

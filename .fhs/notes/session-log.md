@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-31 (Session 48): 💳 吊飾計價大修 + 付款拆格 UI 重構 + 定價參照文件 ✅
+
+**Scope**:
+- Category B IG 訊息付款行 pureNumeric 格式對齊（finInfoB）
+- 吊飾計價 Phase 2：移除 $1,000 圖紙費、移除異部位費、頸鏈組合併計價（5 Bug 修正）
+- Phase 3 UI：付款拆格頸鏈組化（necklace_N boxKey）、三色分區（方案 A）、⚡ 快捷填入、⚡ 照數填入、✕ 清除、seqSetRow 搬至財務設定中心
+- `.fhs/notes/product_pricing_reference.md` v2.0.0（吊飾/鎖匙扣/立體擺設/成本結構/折扣/數據位置）
+- learnings.md 補入 P10（boxKey 改動須同步相關函式）
+
+**Status**: ✅ V41 + current.html（683,438 bytes）已同步。待 Live 驗證 VT-1~6。
+
+---
+
 ## 2026-05-30 (Session 47): 🏗️ Phase 2 指令精簡 + vendor 方法論移植 ✅
 
 **Scope**: vendor 技能架構錯誤修正（slash command → subagent 自動執行）；build-error-resolver + code-reviewer 升級；AGENTS.md Rule 3.15；7 command 退役（15 個檔案）；README 場景速查表。

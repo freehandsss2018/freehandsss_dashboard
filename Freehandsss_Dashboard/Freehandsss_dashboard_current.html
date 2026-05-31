@@ -258,6 +258,24 @@
             width: 72px; padding: 4px 5px; border: 1px solid #ccc; border-radius: 4px;
             font-size: 14px; background: #fff;
         }
+        .quick-fill-btn {
+            background: none; border: none; cursor: pointer; font-size: 13px;
+            padding: 0 2px; opacity: 0.45; transition: opacity 0.15s;
+            min-width: 22px; min-height: 22px; line-height: 1;
+        }
+        .quick-fill-btn:hover { opacity: 1; }
+        .box-cat-P .split-box-label {
+            background: #FFF3E0; color: #E65100;
+            border-bottom: 2px solid #E65100; padding: 2px 5px; border-radius: 3px 3px 0 0;
+        }
+        .box-cat-K .split-box-label {
+            background: #ECEFF1; color: #37474F;
+            border-bottom: 2px solid #37474F; padding: 2px 5px; border-radius: 3px 3px 0 0;
+        }
+        .box-cat-M .split-box-label {
+            background: #EDE7F6; color: #4527A0;
+            border-bottom: 2px solid #4527A0; padding: 2px 5px; border-radius: 3px 3px 0 0;
+        }
         .split-plus {
             font-size: 18px; color: #888; padding: 0 2px; align-self: flex-end; margin-bottom: 4px;
         }
@@ -1922,7 +1940,7 @@
         .fo-pie-legend-pct { font-size: 12px; font-weight: 700; color: var(--fhs-text-primary); }
 
         @media (max-width: 767px) {
-            #fo-tab-bar { top: 56px; }
+            #fo-tab-bar { top: 48px; }
             .fo-tab-btn { padding: 12px 14px; font-size: 13px; }
             #fo-main { padding: 16px 14px 80px; }
             #fo-kpi-grid {
@@ -2262,11 +2280,12 @@
             border-radius: 8px;
             padding: 12px 14px;
             margin: 0 0 16px;
-            min-height: 60px;
+            min-height: 200px;
             border: 1px solid #e9ecef;
             width: 100%;
             box-sizing: border-box;
-            resize: vertical;
+            resize: none;
+            overflow-y: hidden;
             font-family: inherit;
             outline: none;
         }
@@ -2616,17 +2635,8 @@
             </div>
             <div id="idStatusText" class="id-status-text" style="color: #888;">系統自動生成</div>
 
-            <!-- Fatmo Order ID Config Panel - V31.2 -->
-            <div id="fatmoConfigPanel" class="fatmo-config-panel">
-                <div id="seqSetRow" class="config-row">
-                    <span class="config-label">下張起始編號</span>
-                    <div class="config-input-group">
-                        <input type="text" id="nextSeqIdInput" style="width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" placeholder="例如 06990">
-                        <button type="button" class="seq-btn" style="background: #52B788; color: white; border: none;" onclick="saveSeqSettings()">套用</button>
-                    </div>
-                </div>
-                <div style="font-size: 11px; color: #457B9D; font-style: italic;" id="configSyncStatus">同步狀態：已載入全域設定</div>
-            </div>
+            <!-- Fatmo Order ID Config Panel - V31.2 (seqSetRow 已移至 financialSettingsCard) -->
+            <div id="fatmoConfigPanel" class="fatmo-config-panel"></div>
         </div>
 
         <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
@@ -3132,13 +3142,21 @@
         </div>
 
         <div class="form-group">
-            <label style="font-weight:600;">已付訂金</label>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <label style="font-weight:600;margin:0;">已付訂金</label>
+                <button type="button" onclick="_quickFillAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#666;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFF3E0';this.style.color='#E65100';this.style.borderColor='#E65100'" onmouseout="this.style.background='#f5f5f5';this.style.color='#666';this.style.borderColor='#ddd'">⚡ 照數填入</button>
+                <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
+            </div>
             <div id="depositSplitContainer" class="payment-split-row"></div>
             <input type="hidden" id="deposit" value="0">
             <input type="hidden" id="depositSplitData" value="">
         </div>
         <div class="form-group">
-            <label style="font-weight:600;">未付尾數</label>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <label style="font-weight:600;margin:0;">未付尾數</label>
+                <button type="button" onclick="_quickFillAllSplits('balance')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#666;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFF3E0';this.style.color='#E65100';this.style.borderColor='#E65100'" onmouseout="this.style.background='#f5f5f5';this.style.color='#666';this.style.borderColor='#ddd'">⚡ 照數填入</button>
+                <button type="button" onclick="_quickClearAllSplits('balance')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
+            </div>
             <div id="balanceSplitContainer" class="payment-split-row"></div>
             <input type="hidden" id="balance" value="0">
             <input type="hidden" id="balanceSplitData" value="">
@@ -3521,6 +3539,18 @@
 
                 <div style="font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:7px 10px; line-height:1.5;">
                     ⚠️ 批量重算將觸發 n8n 異步工作流，在低峰時段分批執行。重算完成前訂單成本數據可能短暫顯示舊值（最終一致性設計）。
+                </div>
+            </div>
+
+            <!-- 下張起始編號（從訂單區移至此設定中心）-->
+            <div id="seqSetRow" style="border-top:1px solid var(--fhs-border); padding-top:12px; margin-top:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <span style="font-size:13px; color:var(--fhs-text-primary); font-weight:600;">下張起始編號</span>
+                    <div style="font-size:11px; color:#457B9D; font-style:italic; margin-top:2px;" id="configSyncStatus">同步狀態：已載入全域設定</div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="text" id="nextSeqIdInput" style="width:90px; padding:5px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;" placeholder="例如 06990">
+                    <button type="button" class="seq-btn" style="background:#52B788; color:white; border:none; border-radius:4px; padding:5px 12px; font-size:13px; cursor:pointer;" onclick="saveSeqSettings()">套用</button>
                 </div>
             </div>
         </div>
@@ -4205,9 +4235,9 @@
                 const bbar = document.getElementById('bottomActionBar');
                 if (bbar) bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system') ? 'none' : 'flex';
 
-                // V40 Bottom Bar: hide order actions in finance/system mode
+                // V40 Bottom Bar: hide order actions in review/finance/system mode
                 const v40bbar = document.getElementById('v40-bottom-bar');
-                if (v40bbar) v40bbar.style.display = (mode === 'finance' || mode === 'system') ? 'none' : '';
+                if (v40bbar) v40bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system') ? 'none' : '';
 
                 if (mode === 'finance') {
                     setTimeout(foInitAll, 50);
@@ -4789,6 +4819,11 @@ ${_buildSplitIgLine('已付訂金', 'deposit', deposit)}
 ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
 附加費用(車費/其它)：$ ${additional}\n\n`;
 
+            const finInfoB = `【付款資料】
+${_buildSplitIgLine('已付訂金', 'deposit', deposit, true)}
+${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
+附加費用(車費/其它)：$ ${additional}\n\n`;
+
             const disclaimer = `【免責聲明】
 -------------------\n`;
 
@@ -4889,7 +4924,7 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                     detailsB += `產品類別：頸鏈吊飾\n${mDetails || " - (未選擇)\n"}-頸鏈：金色/銀色 (二選一)\n\n`;
                 }
 
-                let combinedB = `Freehandsss 訂單確認\n(訂單編號# ${currentOrderId} 吊飾產品)\n\n${custInfo}${detailsB}${finInfo}${disclaimer}${noticeB}`;
+                let combinedB = `Freehandsss 訂單確認\n(訂單編號# ${currentOrderId} 吊飾產品)\n\n${custInfo}${detailsB}${finInfoB}${disclaimer}${noticeB}`;
                 document.getElementById("output-preview-b").value = combinedB;
                 document.getElementById("preview-box-b").style.display = "block";
                 document.getElementById("btnCopyB").style.display = "flex";
@@ -4928,6 +4963,27 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                     "Quantity": 1,
                     "Notes": document.getElementById('pEngraving')?.value || ''
                 });
+            }
+
+            // 羊毛氈公仔/燈飾（歸屬立體擺設款式，順序：燈飾 ➔ 羊毛氈公仔）
+            if (getValSafe('enableP', false)) {
+                if (getValSafe('l_light_en', false)) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": "TEMP_L_LIGHTS",
+                        "Product_Name": "燈飾 - 加購",
+                        "Quantity": 1,
+                        "isAccessory": true
+                    });
+                }
+                if (getValSafe('w_wool_en', false)) {
+                    let qty = Math.max(1, Math.floor(Number(getValSafe('w_wool_qty', '1')) || 1));
+                    orderItemsArray.push({
+                        "Order_Item_Key": "TEMP_W_WOOL",
+                        "Product_Name": "羊毛氈公仔 - 加購",
+                        "Quantity": qty,
+                        "isAccessory": true
+                    });
+                }
             }
 
             // 金屬鎖匙扣 擷取邏輯
@@ -4999,27 +5055,6 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                     });
                 }
             }
-
-            // 羊毛氈公仔（歸屬立體擺設款式）
-            if (getValSafe('enableP', false)) {
-                if (getValSafe('w_wool_en', false)) {
-                    let qty = Math.max(1, Math.floor(Number(getValSafe('w_wool_qty', '1')) || 1));
-                    orderItemsArray.push({
-                        "Order_Item_Key": "TEMP_W_WOOL",
-                        "Product_Name": "羊毛氈公仔 - 加購",
-                        "Quantity": qty,
-                        "isAccessory": true
-                    });
-                }
-                if (getValSafe('l_light_en', false)) {
-                    orderItemsArray.push({
-                        "Order_Item_Key": "TEMP_L_LIGHTS",
-                        "Product_Name": "燈飾 - 加購",
-                        "Quantity": 1,
-                        "isAccessory": true
-                    });
-                }
-            }
             return orderItemsArray;
         }
 
@@ -5074,19 +5109,18 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
 
             let hasMetal = items.some(i => i.Order_Item_Key.includes("_K_"));
             let hasSilver = items.some(i => i.Order_Item_Key.includes("_M_"));
-            let standaloneSurchargePaid = false;
             let metalItems = items.filter(i => i.Order_Item_Key.includes("_K_"));
             let silverItems = items.filter(i => i.Order_Item_Key.includes("_M_"));
 
             let totalSystemAdditionalFee = 0;
+            window.fhsNecklaceGroups = null;
 
-            // --- 處理首飾單購保護費 ($1000) ---
-            if (!hasMainProduct && silverItems.length > 0) {
-                standaloneSurchargePaid = true;
-                totalSuggestedPrice += 1000;
-                totalSystemAdditionalFee += 1000;
-                breakdownParts.push(1000);
-                logs.push(`<div style="color:#E65100; font-weight:bold;">🌟首飾單購圖紙費: +$1000 (已解鎖異部位附加費豁免)</div>`);
+            const _catHdr = function(bg, color, border, text) {
+                return '<div style="margin:4px 0 2px;"><span style="background:' + bg + ';color:' + color + ';border:1px solid ' + border + ';font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;">' + text + '</span></div>';
+            };
+
+            if (hasMainProduct || items.some(i => i.isAccessory)) {
+                logs.push(_catHdr('#FFF3E0','#E65100','#FFCC80','🎨 立體擺設 + 配件'));
             }
 
             items.forEach((item, globalIndex) => {
@@ -5176,16 +5210,6 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                         if (item.Product_Name.includes("P1") || item.Product_Name.includes("P2") || isAdultItem || pModeState === "P") surcharge = 300;
                         
                         price = tempPrice + surcharge;
-                    } else if (productType === '純銀') {
-                        if (hasMainProduct) {
-                            if (qty === 1) price = 1980;
-                            else if (qty === 2) price = 2980;
-                            else price = 2980 + (qty - 2) * 800;
-                        } else {
-                            if (qty === 1) price = 2280;
-                            else if (qty === 2) price = 3080;
-                            else price = 3080 + (qty - 2) * 800;
-                        }
                     } else {
                         if (pModeState === "S" && !item.Product_Name.includes("(P)")) {
                             if (qty === 1) price = 860;
@@ -5201,15 +5225,7 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                             else price = 3520 + (qty - 4) * 880;
                         }
 
-                        if (index === 1) {
-                            if (!standaloneSurchargePaid) {
-                                let crossFee = pModeState === "S" ? 100 : 300;
-                                totalSuggestedPrice += crossFee;
-                                totalSystemAdditionalFee += crossFee;
-                                breakdownParts.push(crossFee);
-                                logs.push(`<div style="color:#D32F2F; font-size:11px;">⚠️ 異部位建模費: +$${crossFee}</div>`);
-                            }
-                        }
+
                     }
                     let metalLogo = (productType === '純銀') ? '💍' : '🔑';
                     let dispName = item.Product_Name;
@@ -5223,13 +5239,53 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                 });
             }
 
+            if (metalItems.length > 0) logs.push(_catHdr('#ECEFF1','#37474F','#B0BEC5','🔑 金屬鎖匙扣'));
             processTierPricing(metalItems, '金屬');
-            processTierPricing(silverItems, '純銀');
 
+            // --- 純銀吊飾 頸鏈組計價（總吊飾數合併，不分部位）---
             if (silverItems.length > 0) {
-                let totalSilverCharms = silverItems.reduce((acc, i) => acc + i.Quantity, 0);
-                let necklaces = Math.ceil(totalSilverCharms / 2);
-                logs.push(`<span style="color:#F9A826; font-weight:bold;">🎁 系統自動配給 ${necklaces} 條頸鏈</span>`);
+                const totalCharms = silverItems.reduce((sum, i) => sum + i.Quantity, 0);
+                let silverPrice = 0;
+                if (hasMainProduct) {
+                    const fullNecklaces = Math.floor(totalCharms / 2);
+                    const singleCharms = totalCharms % 2;
+                    silverPrice = fullNecklaces * 2980 + singleCharms * 1980;
+                } else {
+                    if (totalCharms === 1) {
+                        silverPrice = 2280;
+                    } else {
+                        const remaining = totalCharms - 2;
+                        const extraFull = Math.floor(remaining / 2);
+                        const extraSingle = remaining % 2;
+                        silverPrice = 3280 + extraFull * 3280 + extraSingle * 1640;
+                    }
+                }
+                silverItems[0].CalculatedPrice = silverPrice;
+                for (let si = 1; si < silverItems.length; si++) { silverItems[si].CalculatedPrice = 0; }
+                totalSuggestedPrice += silverPrice;
+                breakdownParts.push(silverPrice);
+                silverItems.forEach(function(item) { totalDrawingCost += item.FatMoCost; });
+
+                // 計算每條頸鏈的分組及金額（供 renderPaymentSplits 使用）
+                const _circled = ['①','②','③','④','⑤'];
+                const _groups = [];
+                let _rem = totalCharms, _gi = 0;
+                while (_rem > 0) {
+                    const _inG = Math.min(2, _rem);
+                    let _gp;
+                    if (hasMainProduct) {
+                        _gp = _inG === 2 ? 2980 : 1980;
+                    } else {
+                        _gp = _gi === 0 ? (_inG === 2 ? 3280 : 2280) : (_inG === 2 ? 3280 : 1640);
+                    }
+                    _groups.push({ boxKey: 'necklace_' + (_gi + 1), label: '頸鏈' + (_circled[_gi] || ('(' + (_gi+1) + ')')) + (_inG === 2 ? ' 一對' : ' +1隻'), price: _gp, charms: _inG });
+                    _rem -= _inG; _gi++;
+                }
+                window.fhsNecklaceGroups = _groups;
+
+                const necklaces = Math.ceil(totalCharms / 2);
+                logs.push(_catHdr('#EDE7F6','#4527A0','#B39DDB','💍 純銀頸鏈吊飾'));
+                logs.push(`💍 <b>吊飾</b> ${totalCharms}個 / ${necklaces}條頸鏈: $${silverPrice}`);
             }
             
             window.fhsCurrentPricingItems = items;
@@ -5956,6 +6012,25 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                     });
                 }
 
+                // 燈飾 & 羊毛氈公仔 add-on（隸屬立體擺設款式，順序：燈飾 ➔ 羊毛氈公仔）
+                const _diagEnP = getValSafe('enableP', false);
+                const _diagLight = getValSafe('l_light_en', false);
+                if (_diagEnP && _diagLight) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": `${currentOrderId}_L_LIGHTS`,
+                        "Product_Name": "燈飾 - 加購",
+                        "Quantity": 1
+                    });
+                }
+                const _diagWool = getValSafe('w_wool_en', false);
+                if (_diagEnP && _diagWool) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": `${currentOrderId}_W_WOOL`,
+                        "Product_Name": "羊毛氈公仔 - 加購",
+                        "Quantity": 1
+                    });
+                }
+
                 // 金屬鎖匙扣 擷取邏輯
                 const enableK = document.getElementById("enableK");
                 if (enableK && enableK.checked) {
@@ -6064,30 +6139,6 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                             }
                         });
                     }
-                }
-
-                // 羊毛氈公仔 add-on（隸屬立體擺設款式）
-                // [Diag 2026-05-21] log guard state to confirm push fires
-                const _diagEnP = getValSafe('enableP', false);
-                const _diagWool = getValSafe('w_wool_en', false);
-                console.log('[FHS Diag W_WOOL] enableP=', _diagEnP, ' w_wool_en=', _diagWool);
-                if (_diagEnP && _diagWool) {
-                    orderItemsArray.push({
-                        "Order_Item_Key": `${currentOrderId}_W_WOOL`,
-                        "Product_Name": "羊毛氈公仔 - 加購",
-                        "Quantity": 1
-                    });
-                    console.log('[FHS Diag W_WOOL] PUSHED to orderItemsArray, key=', `${currentOrderId}_W_WOOL`);
-                } else {
-                    console.warn('[FHS Diag W_WOOL] SKIPPED — guard failed (need both enableP + w_wool_en)');
-                }
-                const _diagLight = getValSafe('l_light_en', false);
-                if (_diagEnP && _diagLight) {
-                    orderItemsArray.push({
-                        "Order_Item_Key": `${currentOrderId}_L_LIGHTS`,
-                        "Product_Name": "燈飾 - 加購",
-                        "Quantity": 1
-                    });
                 }
             } catch (err) {
                 console.warn("商品擷取遇到小問題，但仍會繼續送出訂單:", err);
@@ -9164,7 +9215,7 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
             container.querySelectorAll('.split-box-input').forEach(function(inp) {
                 if (inp.dataset.boxkey) prevData[inp.dataset.boxkey] = inp.value;
             });
-            // Also merge from persisted JSON (for restore scenario)
+            // Merge from persisted JSON (for restore scenario)
             const dataEl = document.getElementById(field + 'SplitData');
             if (dataEl && dataEl.value) {
                 try {
@@ -9183,35 +9234,55 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
             }
 
             const frag = document.createDocumentFragment();
-            items.forEach(function(item, index) {
-                const bk = _boxKey(item, index);
-                const label = item.Product_Name + (item.PartDesc ? ' (' + item.PartDesc + ')' : '');
-                // balance: pre-fill with CalculatedPrice; deposit: pre-fill empty (actual paid)
-                const defaultVal = (field === 'balance') ? (item.CalculatedPrice || '') : '';
-                const savedVal = (prevData[bk] !== undefined && prevData[bk] !== '') ? prevData[bk] : defaultVal;
+            let boxCount = 0;
 
-                if (index > 0) {
+            function _addBox(bk, label, catClass, defaultVal, suggested) {
+                const savedVal = (prevData[bk] !== undefined && prevData[bk] !== '') ? prevData[bk] : defaultVal;
+                if (boxCount > 0) {
                     const plus = document.createElement('span');
                     plus.className = 'split-plus'; plus.textContent = '+';
                     frag.appendChild(plus);
                 }
-
                 const box = document.createElement('div');
-                box.className = 'split-box';
+                box.className = 'split-box ' + catClass;
+                const safeKey = bk.replace(/"/g, '&quot;');
+                const sugNum = Number(suggested) || 0;
                 box.innerHTML = '<span class="split-box-label" title="' + label + '">' + label + '</span>'
                     + '<div class="split-box-input-row">'
                     + '<span class="split-box-dollar">$</span>'
                     + '<input type="number" class="split-box-input" inputmode="numeric"'
-                    + ' data-boxkey="' + bk.replace(/"/g, '&quot;') + '"'
-                    + ' data-field="' + field + '"'
-                    + ' value="' + (savedVal !== '' ? savedVal : '') + '"'
-                    + ' placeholder="0"'
+                    + ' data-boxkey="' + safeKey + '" data-field="' + field + '"'
+                    + ' value="' + (savedVal !== '' ? savedVal : '') + '" placeholder="0"'
                     + ' oninput="recalcSplitSum(\'' + field + '\')">'
+                    + (sugNum > 0 ? '<button type="button" class="quick-fill-btn" data-boxkey="' + safeKey + '" data-suggested="' + sugNum + '" data-field="' + field + '" onclick="_quickFillSplitBtn(this)" title="填入建議金額 $' + sugNum + '">⚡</button>' : '')
                     + '</div>';
                 frag.appendChild(box);
+                boxCount++;
+            }
+
+            items.forEach(function(item, index) {
+                // Silver items handled by necklace groups below
+                if (item.Order_Item_Key && item.Order_Item_Key.includes('_M_')) return;
+
+                const bk = _boxKey(item, index);
+                let displayName = item.Product_Name;
+                displayName = displayName.replace(/ - 不銹鋼/g, '').replace(/ - 鋁合金/g, '').replace(/ - 925銀/g, '').replace(/ - 925金/g, '');
+                const label = displayName + (item.PartDesc ? ' (' + item.PartDesc + ')' : '');
+                const catClass = item.Order_Item_Key.includes('_K_') ? 'box-cat-K' : 'box-cat-P';
+                const defaultVal = (field === 'balance') ? (item.CalculatedPrice || '') : '';
+                _addBox(bk, label, catClass, defaultVal, item.CalculatedPrice || 0);
             });
 
-            // Add total display
+            // Necklace group boxes for silver items
+            const nGroups = window.fhsNecklaceGroups;
+            if (nGroups && nGroups.length > 0) {
+                nGroups.forEach(function(group) {
+                    const defaultVal = (field === 'balance') ? group.price : '';
+                    _addBox(group.boxKey, group.label, 'box-cat-M', defaultVal, group.price);
+                });
+            }
+
+            // Total display
             const sumSpan = document.createElement('span');
             sumSpan.className = 'split-sum-display';
             sumSpan.id = field + 'SplitSum';
@@ -9248,6 +9319,7 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                 if (inp.dataset.boxkey) depMap[inp.dataset.boxkey] = Number(inp.value) || 0;
             });
             items.forEach(function(item, index) {
+                if (item.Order_Item_Key && item.Order_Item_Key.includes('_M_')) return; // handled by necklace groups
                 const bk = _boxKey(item, index);
                 const calcPrice = Number(item.CalculatedPrice) || 0;
                 const paid = depMap[bk] !== undefined ? depMap[bk] : 0;
@@ -9256,8 +9328,52 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
                     if (balInp.dataset.boxkey === bk) balInp.value = remaining;
                 });
             });
+            // Necklace group balance sync
+            const _nGroups = window.fhsNecklaceGroups;
+            if (_nGroups && _nGroups.length > 0) {
+                _nGroups.forEach(function(group) {
+                    const depInp = depContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
+                    const balInp = balContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
+                    if (depInp && balInp) {
+                        balInp.value = Math.max(0, group.price - (Number(depInp.value) || 0));
+                    }
+                });
+            }
             recalcSplitSum('balance');
         }
+
+        function _quickFillSplitBtn(btn) {
+            const suggested = Number(btn.dataset.suggested) || 0;
+            const field = btn.dataset.field || '';
+            const boxKey = btn.dataset.boxkey || '';
+            const container = document.getElementById(field + 'SplitContainer');
+            if (!container) return;
+            const inp = container.querySelector('[data-boxkey="' + boxKey + '"]');
+            if (inp) {
+                inp.value = suggested;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+        window._quickFillSplitBtn = _quickFillSplitBtn;
+
+        function _quickFillAllSplits(field) {
+            const container = document.getElementById(field + 'SplitContainer');
+            if (!container) return;
+            container.querySelectorAll('.quick-fill-btn').forEach(function(btn) {
+                _quickFillSplitBtn(btn);
+            });
+        }
+        window._quickFillAllSplits = _quickFillAllSplits;
+
+        function _quickClearAllSplits(field) {
+            const container = document.getElementById(field + 'SplitContainer');
+            if (!container) return;
+            container.querySelectorAll('.split-box-input').forEach(function(inp) {
+                inp.value = '';
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        }
+        window._quickClearAllSplits = _quickClearAllSplits;
 
         function serializeSplits(field) {
             const container = document.getElementById(field + 'SplitContainer');
@@ -11546,6 +11662,14 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
     (function() {
         'use strict';
 
+        // Auto resize textarea height to fit content scrollHeight
+        function _autoResize(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+        window._autoResize = _autoResize;
+
         // Refresh modal body from live textarea values
         function _igpmRefresh() {
             var valA = (document.getElementById('output-preview-a') || {}).value || '';
@@ -11553,9 +11677,14 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
             var preA = document.getElementById('igpmPreA');
             var preB = document.getElementById('igpmPreB');
             var lblB = document.getElementById('igpmLabelB');
-            if (preA) preA.value = valA.trim() || '(無內容)';
+            if (preA) {
+                preA.value = valA.trim() || '(無內容)';
+            }
             var hasBContent = valB.trim().length > 0;
-            if (preB)  { preB.value = valB.trim() || ''; preB.style.display = hasBContent ? '' : 'none'; }
+            if (preB)  { 
+                preB.value = valB.trim() || ''; 
+                preB.style.display = hasBContent ? '' : 'none'; 
+            }
             if (lblB)  { lblB.style.display = hasBContent ? '' : 'none'; }
             // Sync format toggle button label
             var btnOrig  = document.getElementById('igFmtToggleA');
@@ -11574,6 +11703,17 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
             // Show overlay
             var overlay = document.getElementById('igPreviewModalOverlay');
             if (overlay) overlay.classList.add('is-open');
+
+            // Auto resize textareas after modal is shown to ensure correct scrollHeight calculation
+            var preA = document.getElementById('igpmPreA');
+            var preB = document.getElementById('igpmPreB');
+            setTimeout(function() {
+                _autoResize(preA);
+                if (preB && preB.style.display !== 'none') {
+                    _autoResize(preB);
+                }
+            }, 50);
+
             // Focus close button for a11y
             var closeBtn = overlay && overlay.querySelector('.igpm-close-btn');
             if (closeBtn) { setTimeout(function(){ closeBtn.focus(); }, 50); }
@@ -11592,6 +11732,12 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
         window.igpmToggleFmt = function() {
             if (typeof window.toggleIgFormatA === 'function') { window.toggleIgFormatA(); }
             _igpmRefresh();
+            var preA = document.getElementById('igpmPreA');
+            var preB = document.getElementById('igpmPreB');
+            _autoResize(preA);
+            if (preB && preB.style.display !== 'none') {
+                _autoResize(preB);
+            }
         };
 
         // Copy + Sync: clipboard first (independent), then sync with existing pipeline
@@ -11653,9 +11799,9 @@ ${_buildSplitIgLine('未付產品尾數', 'balance', balance)}
             </div>
             <div class="igpm-body" id="igPreviewModalBody">
                 <p class="igpm-seg-label">🖼️ Category A — 手模擺設訊息</p>
-                <textarea class="igpm-pre" id="igpmPreA" spellcheck="false">(無內容)</textarea>
+                <textarea class="igpm-pre" id="igpmPreA" spellcheck="false" oninput="window._autoResize(this)">(無內容)</textarea>
                 <p class="igpm-seg-label" id="igpmLabelB" style="display:none;">⚙️ Category B — 金屬產品訊息</p>
-                <textarea class="igpm-pre" id="igpmPreB" style="display:none;" spellcheck="false">(無內容)</textarea>
+                <textarea class="igpm-pre" id="igpmPreB" style="display:none;" spellcheck="false" oninput="window._autoResize(this)">(無內容)</textarea>
             </div>
             <div class="igpm-sync-status" id="igpmSyncStatus"></div>
             <div class="igpm-footer">
