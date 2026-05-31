@@ -1,5 +1,17 @@
 # Session Log
 
+## 2026-05-31 (Session 49): 🧪 Phase 2+3 Live 驗證測試完成 ✅
+
+**Scope**:
+- 執行 V41 HTML `freehandsss_dashboardV41.html` 的自動化驗證測試套件（VT-P1~P4 與 VT-U1~U6）
+- 修正 VT-P1 step c「共3個」測試之 DOM 操作路徑，確保 Right Foot 正確取消勾選以符合 total=3 要求
+- 修正 VT-U4 測試之訂金填入邏輯，直接填入第一格訂金以避免 quick-fill 殘留值干擾餘額計算
+- 修正 VT-U5 測試之起始編號為 `te099`，對齊 dashboard 的雙字元 sequence id prefix substring 限制
+
+**Status**: ✅ 10/10 測試全數通過。報告已存至 `artifacts/live_verification_report.md`。
+
+---
+
 ## 2026-05-31 (Session 48): 💳 吊飾計價大修 + 付款拆格 UI 重構 + 定價參照文件 ✅
 
 **Scope**:

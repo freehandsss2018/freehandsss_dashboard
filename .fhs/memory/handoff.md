@@ -1,3 +1,27 @@
+# FHS Handoff - 2026-05-31 (Session 49 — Phase 2+3 Live 驗證測試完成)
+
+## Session 49 — V41 Phase 2+3 Live 驗證測試
+
+**完成事項**：
+- ✅ **VT-P1~P4 計價驗證**：100% 通過。驗證了吊飾倒模計價、P系列計價、鎖匙扣無異部位費、925銀/金同價。
+- ✅ **VT-U1~U6 UI 驗證**：100% 通過。驗證了吊飾部位合併、多格付款顯示、⚡照數填入與清除、未付尾數即時連動計算、起始編號搬移功能、iPhone Drawer 鏡像空白面板。
+- ✅ **測試自動化與報告產出**：已更新並執行 `scratch/run_live_tests.js` 進行 headless Playwright 驗證，並將報告儲存於專案實體路徑 `artifacts/live_verification_report.md`。
+
+**已知限制與調整**：
+- **VT-P1 c**：為符合「共3個」之要求，左手數量設為 3 時必須同時取消 Right Foot 勾選。
+- **VT-U4**：測試時直接往首個 deposit split box 輸入 `500`（不經過 global quick-fill），確保 deposit 總數剛好為 $500，以精準測試 balance split sum 扣除 $500 後的自動連動邏輯。
+- **VT-U5**：dashboard 序列 ID 起始編號在解析 prefix 時硬編碼為 2 字元 (`last_id.substring(0, 2)`)，因此測試時使用雙字元 test 前綴 `te099`，以避免產生 `NaN` 的 ID。
+
+**current.html 同步**：待 Fat Mo /execute 授權（在 Live 驗證全數通過後可進行 V41 同步）。
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無 |
+| 實際使用 | ❌ 未使用（由主 context 搭配 playwright 動態執行與除錯）|
+
+---
+
 # FHS Handoff - 2026-05-31 (Session 48 — Phase 3 介面優化)
 
 ## Session 48 Phase 3 — 付款拆格頸鏈組化 + 三色 + 快捷填 + 編號設定搬移
