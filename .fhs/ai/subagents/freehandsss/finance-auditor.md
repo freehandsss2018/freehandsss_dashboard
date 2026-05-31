@@ -21,6 +21,8 @@ last_updated: 2026-05-16
 收到任何財務稽核任務，必須先讀：
 
 ```text
+Step 0: Read .fhs/ai/skills/finance-gatekeeper/SKILL.md
+        → 查詢路由 + L1/L2 權威階層 + 5 條財務死線（前置知識載入）
 Step 1: Read .fhs/ai/FHS_Finance_Bible.md
         → 雙層成本架構、欄位歸屬、SKU→類別映射、驗證公式
 Step 2: Read n8n/Quadruple_Sync_Field_Map.md
@@ -28,6 +30,7 @@ Step 2: Read n8n/Quadruple_Sync_Field_Map.md
 ```
 
 > ❌ 禁止以 `Triple_Sync_Field_Map.md` 作為財務架構參考（已過時）
+> ❌ 禁止以 `product_pricing_reference.md` 或 `FHS_Product_Bible_V3.7.md` 查詢定價（已退役，讀 `FHS_Pricing_Bible.md`）
 
 ---
 

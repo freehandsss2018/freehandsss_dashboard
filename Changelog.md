@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-06-01] 📚 B 任務完成 — FHS 財務知識守門員建立（Session 50）
+
+**核心變化**：財務知識從「三份文件並列宣稱唯一真理」整合為「兩層清晰架構 + 守門員」。
+
+- ✅ **[NEW]** `.fhs/notes/FHS_Pricing_Bible.md` v1.0.0（L2 現行定價 HEAD）：合併 pricing_reference v2.0.0 + Product_Bible §0/§2.5，涵蓋所有售價公式、品牌禁止邏輯、繪圖成本、生產成本結構、折扣機制
+- ✅ **[NEW]** `.fhs/ai/skills/finance-gatekeeper/SKILL.md` v1.0.0：任何財務任務前強制載入，提供查詢路由表 + L1/L2 衝突解決 + 5 條財務死線
+- ✅ **[DEPRECATED]** `product_pricing_reference.md`：內容已移至 FHS_Pricing_Bible.md
+- ✅ **[DEPRECATED]** `FHS_Product_Bible_V3.7.md`：多項定價規則已過時（Session 48 移除異部位費），品牌邏輯已移植
+- ✅ **[DEPRECATED]** `finance-calculator/SKILL.md`：已整合至 finance-gatekeeper
+- ✅ `FHS_Finance_Bible.md`：加 L1 Authority header + §十 加 Step 0（讀 gatekeeper 為強制前置）
+- ✅ `finance-auditor.md`：啟動前置加 Step 0（讀 finance-gatekeeper SKILL）
+- ✅ `repo-map.md` + `FHS_Prompts.md` 同步
+
+**架構**：L1 Finance_Bible（架構不變量）← L2 FHS_Pricing_Bible（現行定價）← 守門員 SKILL（路由）
+
 ## [2026-05-31] 🧪 Phase 2+3 Live 驗證測試完成 — VT-P1~P4 計價驗證 + VT-U1~U6 UI 驗證（Session 49）
 
 **驗證結果**：

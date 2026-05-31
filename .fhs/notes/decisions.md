@@ -3,6 +3,19 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-05-31] (Session 50) 財務三層顆粒化成本架構：方向裁定 + A/B 分流
+
+決策：
+- **採納 Fat Mo 三層顆粒化邏輯**（base_cost → total_base_cost roll-up → 客人實境結合）；標準 BOM bottom-up costing，方向正確
+- **判定病灶**：現行 `products.total_base_cost`（migration 0023 硬編碼 flat 值）為「偽顆粒」，與 Finance_Bible/pricing_reference 聲稱的「Drawing+Printing+Clasp+Shipping 累加」不符 → Fat Mo 直覺「根基不健全」成立
+- **執行分流**：B（財務知識守門員）先行 → A（三層架構落實）移新 session（B 是 A 維護地基；token 限制）
+- **A 接盤包**：`.fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md`
+- **硬約束**：禁 Postgres trigger/generated column 重算成本；Layer 2 歷史快照不可變
+
+原因：無單一真相源（3 份文件並列宣稱權威），A 改完仍會「被忘記」；故先建 B 地基
+
+***
+
 [2026-05-30] Phase 2 指令精簡 — vendor 技能方法論移植至 subagent + 刪 7 冗餘 command
 
 決策：

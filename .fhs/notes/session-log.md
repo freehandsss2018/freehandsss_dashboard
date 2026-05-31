@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-01 (Session 50): 📚 B 任務完成 — FHS 財務知識守門員建立 ✅
+
+**Scope**: 2a/2b 深化（material_cost_* 根因 + 財務知識散落）；確認 Fat Mo 三層顆粒化成本邏輯正確但現行實作為偽顆粒；B 先行（守門員）A 移新 session；建立 FHS_Pricing_Bible.md（L2）+ finance-gatekeeper SKILL；退役 3 份舊文件；A 接盤包落地。
+**Status**: ✅ B 任務完成；A 留待新 session（接盤包已建）。
+
 ## 2026-05-31 (Session 49): 🔧 T5 複製+同步重構 + 按鈕引導 + 待辦審查 ✅
 
 **Scope**: Live 驗證 10/10 全通過；T5 重構（Modal 唯一出口、狀態機）；T5 補強（文案/禁用解耦）；待辦審查（關閉 2 項過時待辦）；learnings Preference 新增。

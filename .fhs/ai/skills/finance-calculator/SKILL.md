@@ -3,7 +3,13 @@ name: finance-calculator
 type: fhs-native
 version: 1.0.0
 scope: reference-only (不常駐 context，按需 Read)
+status: DEPRECATED
 ---
+
+> ⚠️ **DEPRECATED（2026-06-01）**
+> 本 Skill 已整合至 `.fhs/ai/skills/finance-gatekeeper/SKILL.md`。
+> 請載入 finance-gatekeeper，不要單獨引用本文件。
+> 注意：§SKU 成本映射 引用的 `FHS_Product_Bible_V3.7.md` 亦已退役，請改讀 `FHS_Pricing_Bible.md`。
 
 # FHS Finance Calculator — 核心財務公式
 

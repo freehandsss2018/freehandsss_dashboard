@@ -49,9 +49,10 @@ description: Business situation detection and command routing for AI execution
 
 ## 【情境六：產品定價與商業邏輯更新 (Bible Sync)】
 
-- 觸發：用戶提及「定價」「產品聖經」「Bible」
-**真理來源**：強制讀取 `FHS_Product_Bible_V3.7.md`。
-- **更新規則**：當材質為「純銀/鍍金」時，自動依據吊飾數量套用加購價 ($1980/2,980/+$800)。
+- 觸發：用戶提及「定價」「產品聖經」「Bible」「售價」「多少錢」
+**真理來源**：強制讀取 `.fhs/notes/FHS_Pricing_Bible.md`（L2 現行定價 HEAD，2026-06-01 起取代 Product_Bible_V3.7）。
+- **查詢路由**：先讀 `.fhs/ai/skills/finance-gatekeeper/SKILL.md` 確認讀哪份文件。
+- **注意**：`FHS_Product_Bible_V3.7.md` 已退役，其中 §2 鎖匙扣定價（含異部位費）和 §3 首飾定價均已過時，勿引用。
 
 ## 【情境七：Stitch UI 翻新協議】
 
@@ -155,7 +156,7 @@ Mobile phone 介面專屬設計準則（強制執行）：
 > 與情境十六的區別：情境十六跑全域批次 Python 腳本掃描；此情境針對**指定訂單的互動式深入稽核**。
 > ⚠️ 若差異來自 `final_sale_price` vs 系統建議價（`__System_Final_Sale_Price`），請先走**情境二十二**查 `admin_notes`，確認非授權優惠後才在此情境執行三端比對。
 執行邏輯：此情境已獨立為 Subagent，請立即調用 `finance-auditor` Subagent 執行三端財務稽核。
-配套 Skills：`.fhs/ai/skills/finance-calculator/SKILL.md`（財務公式）、`.fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md`（Supabase 就緒）
+配套 Skills：`.fhs/ai/skills/finance-gatekeeper/SKILL.md`（查詢路由 + 5 條死線）、`.fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md`（Supabase 就緒）
 
 ## 【情境二十二：定價差異與授權優惠調查 (Pricing Concession Audit)】
 

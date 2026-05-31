@@ -1,3 +1,47 @@
+# FHS Handoff - 2026-05-31 (Session 50 — 財務三層成本架構診斷 + A/B 分流存檔)
+
+## Session 50 — 2a/2b 深化：三層顆粒化成本架構
+
+**觸發**：Session 49 移交的 2a（material_cost_* = 0）+ 2b（財務知識散落）。
+Fat Mo 質疑 `products.total_base_cost` 根基不健全，提出三層顆粒化成本邏輯。
+
+**核心結論（主 context 審閱財務檔案後）**：
+- ✅ **Fat Mo 三層顆粒化邏輯正確**（標準 BOM bottom-up costing）
+- 🔴 **現行實作未實現該邏輯**：
+  - 第一層原子成本斷裂（4 個 material_cost_* key = 0 且未接線）
+  - 第二層 `total_base_cost` 為 migration 0023 **硬編碼 flat 值**（偽顆粒，非 roll-up）
+  - 文件聲稱顆粒化，實作是 flat 快照 → 此即「根基不健全」病灶
+- 🟡 第三層 adjustment_amount 相對健康
+
+**Fat Mo 裁決**：
+1. **B（財務知識守門員）先行** — B 是 A 的維護地基
+2. **A（三層架構落實）移至新 session** — token 限制
+3. **先存檔接盤，再跑 B**（本 session 已執行存檔）
+
+**本 session 已完成（存檔授權，NO-TOUCH 業務代碼）**：
+- ✅ A 接盤包：`.fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md`
+- ✅ handoff.md 本條目
+- ✅ decisions.md 補錄
+
+**B 任務完成（2026-06-01）**：
+- ✅ `FHS_Pricing_Bible.md` v1.0.0（L2）建立
+- ✅ `finance-gatekeeper/SKILL.md` v1.0.0 建立
+- ✅ 三份舊文件 deprecated（pricing_reference / Product_Bible_V3.7 / finance-calculator）
+- ✅ Finance_Bible L1 header + Step 0；finance-auditor Step 0
+- ✅ repo-map / FHS_Prompts / CHANGELOG / decisions 同步
+- ✅ 完成記錄：`.fhs/reports/completion/2026-06-01_finance-gatekeeper-B-task_completion_report.md`
+
+**待辦（下次 session）**：
+- ⏸ **A** — 三層顆粒化成本架構落實，讀接盤包接手：`.fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md`
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無（討論 + 存檔階段）|
+| 實際使用 | ❌ 未使用（主 context 讀財務檔 + /rp 精煉 + 接盤包 Write）|
+
+---
+
 # FHS Handoff - 2026-05-31 (Session 49 — T5 + 按鈕引導 + 單號解鎖完成)
 
 ## Session 49 T5 補強 — 按鈕文案 + 同步出口收斂

@@ -1,7 +1,9 @@
 # FHS Finance Bible — 財務計算聖經
 
-> **Version**: v1.0.0
-> **Created**: 2026-05-16
+> **Authority Level**: L1 — 架構不變量（最高權威）
+> **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/notes/FHS_Pricing_Bible.md`。
+> **Version**: v1.1.0
+> **Created**: 2026-05-16 | **Updated**: 2026-06-01（加入 L1 Authority header）
 > **Path**: `.fhs/ai/FHS_Finance_Bible.md`
 >
 > ⚠️ **強制規則**：凡任何 AI（主 agent 或 subagent）涉及財務利潤、成本、折扣計算任務，
@@ -268,10 +270,14 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
 
 ```
 必讀（按優先順序）：
-  1. .fhs/ai/FHS_Finance_Bible.md             ← 本文件（你正在讀）
+  0. .fhs/ai/skills/finance-gatekeeper/SKILL.md ← 守門員（查詢路由 + 5 條死線，先讀此）
+  1. .fhs/ai/FHS_Finance_Bible.md             ← 本文件（架構規則 L1）
   2. n8n/Quadruple_Sync_Field_Map.md          ← 四端欄位映射（最新版）
   3. supabase/migrations/0001_initial_schema.sql ← Supabase 表結構
   4. n8n/N8N_Node_Interaction_Map.md          ← n8n 節點職責
+
+定價/售價/成本/折扣查詢：
+  → .fhs/notes/FHS_Pricing_Bible.md（L2 現行定價 HEAD）
 
 如需查詢 n8n 節點程式碼：
   get_node("Calculate Profit & Pack Items")   ← 核心計算節點
@@ -281,6 +287,8 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
 禁止讀取作為財務架構參考（已過時）：
   ❌ n8n/Triple_Sync_Field_Map.md（已被 Quadruple_Sync 取代）
   ❌ n8n/Airtable_Schema_Snapshot_2026-05.md（僅作歷史參考）
+  ❌ .fhs/notes/product_pricing_reference.md（已退役，讀 FHS_Pricing_Bible.md）
+  ❌ docs/FHS_Product_Bible_V3.7.md（已退役，定價規則多項過時）
 ```
 
 ---

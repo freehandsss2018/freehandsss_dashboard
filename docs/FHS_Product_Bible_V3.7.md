@@ -3,9 +3,16 @@ name: FHS Product Bible
 version: v3.7
 compatible_with: AGENTS.md v1.4.5
 last_updated: 2026-05-16
+status: DEPRECATED
 domain: Product Pricing & Cost Structure
 description: Authoritative source for all product costs, pricing rules, and business logic
 ---
+
+> ⚠️ **DEPRECATED（2026-06-01）— 凍結版本，多項定價規則已過時**
+> 現行定價規則請讀 `.fhs/notes/FHS_Pricing_Bible.md`（L2 現行定價 HEAD）。
+> 品牌定位邏輯（§0）和運費共享規則（§2.5）已移植至 FHS_Pricing_Bible。
+> §2 鎖匙扣定價（含異部位費）和 §3 首飾定價**已過時**，不得用於計算。
+> 本文件保留作歷史參考，不得作為任何定價依據。
 
 # 📜 FHS 全盤產品聖經 (FHS Product Bible) - V3.7
 >

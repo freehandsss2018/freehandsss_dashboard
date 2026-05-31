@@ -74,5 +74,6 @@
 - **cl-flow A2 模型策略**：Fat Mo 決定統一使用 `gemini-3.5-flash`，不做 `--pro` 雙模切換。模型切換一律透過 `.env GEMINI_A2_MODEL_DEFAULT`，不改代碼 — 源自 2026-05-30
 - **外部 API endpoint 必先 probe 再推薦**：AI 知識截止日後的 API model ID 可能已過時或不存在（如 `gemini-2.5-pro-preview-05-06` 不存在）。推薦前必須 `curl` 或 `node` probe 確認端點，不可憑訓練資料直接使用 — 源自 2026-05-30
 - **管道指令命名 = 最終裁決者**：精煉內建為 Step 0（不另建包裝指令），指令名反映裁決者（cl-flow=Claude / ag-flow=AG / rp=只精煉不裁決）；包裝糖衣增加記憶負擔，地基吸收功能後糖衣應刪除 — 源自 2026-05-30
+- **「AI 忘記規則」= Skill 前置載入，非 Subagent**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 在呼叫前已不知道規則的問題 — 源自 2026-06-01
 - **vendor 技能正確包裝層是 subagent 非 slash command**：方法論應 AI 自動執行，slash command 是用戶觸發設計；若用戶要知道何時用才需要 AI 幫助 — 源自 2026-05-30
 - **方法論嵌入 subagent 用 3-line trigger（不 inline 全量）**：brief summary（3 行）+ 指向 vendor 技能路徑；Core 常駐記憶，全量按需載入；避免 token 恆定成本（inline 30 行 × 每次召喚 ≈ +600 tokens）— 源自 2026-05-30
