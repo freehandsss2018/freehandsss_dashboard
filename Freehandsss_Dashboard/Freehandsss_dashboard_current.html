@@ -3653,8 +3653,8 @@
     <div class="bottom-action-bar" id="bottomActionBar" style="display:none;">
         <button id="btnCopyA" class="copy-btn btn-category-a" style="display:none;" onclick="copyMessageA()">📋 複製：手模擺設訊息</button>
         <button id="btnCopyB" class="copy-btn btn-category-b" style="display:none;" onclick="copyMessageB()">📋 複製：金屬產品訊息</button>
-        <button id="btnReviewIgMsg" class="copy-btn" onclick="openIgPreviewModal()" style="background-color:#2a9d8f;">🔍 查閱訂單訊息</button>
-        <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D;">🚀 同步至後台</button>
+        <button id="btnReviewIgMsg" class="copy-btn" onclick="openIgPreviewModal()" style="background-color:#2a9d8f;" title="進入後審閱訂單，確認無誤即可複製並同步至後台完成訂單">✅ 審閱並完成訂單</button>
+        <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D; display:none;">🚀 同步至後台</button>
     </div>
 
     <!-- =====================================================
@@ -3665,16 +3665,9 @@
             onclick="openDrawer(); document.getElementById('v40-drawer').classList.add('is-open'); document.getElementById('v40-drawer-overlay').classList.add('is-visible');">
             ⚙️ 設定
         </button>
-        <button class="fhs-btn-secondary" style="min-width:64px;"
-            onclick="copyMessageA(); copyMessageB();">
-            📋 複製
-        </button>
-        <button class="fhs-btn-secondary" style="min-width:64px;" onclick="openIgPreviewModal()">
-            🔍 查閱
-        </button>
         <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
-            onclick="syncToAirtable()">
-            🚀 提交訂單
+            onclick="openIgPreviewModal()">
+            ✅ 審閱並完成
         </button>
     </div>
 
@@ -4044,15 +4037,14 @@
 
         function updateSyncButtonState() {
             const syncBtn = document.getElementById('syncBtn');
-            const mobileBtn = document.getElementById('v40-submit-btn');
             const shouldDisable = !isIdValid;
-            [syncBtn, mobileBtn].forEach(function(btn) {
-                if (!btn) return;
-                btn.disabled = shouldDisable;
-                btn.style.opacity = shouldDisable ? '0.5' : '1';
-                btn.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
-                btn.title = shouldDisable ? '單號重複，請修正後再同步' : '';
-            });
+            // v40-submit-btn 改開 Modal 審閱，無論單號是否有效均可點（T5）
+            if (syncBtn) {
+                syncBtn.disabled = shouldDisable;
+                syncBtn.style.opacity = shouldDisable ? '0.5' : '1';
+                syncBtn.style.cursor = shouldDisable ? 'not-allowed' : 'pointer';
+                syncBtn.title = shouldDisable ? '單號重複，請修正後再同步' : '';
+            }
         }
         let currentRole = 'ling';
 
@@ -4073,6 +4065,9 @@
         }
 
         async function resetForm(skipId = false) {
+            // T5：重置複製/同步狀態
+            window._fhsIgCopyState = { copiedA: false, copiedB: false, synced: false };
+            if (typeof _updateIgCopyUI === 'function') _updateIgCopyUI();
             // 1. 清空所有基本輸入框
             const inputs = document.querySelectorAll('input:not([type="button"]):not([type="submit"])');
             inputs.forEach(el => {
@@ -4851,10 +4846,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     : buildCategoryA_v2(currentOrderId, mom, date, timeStr, deposit, balance, additional);
                 document.getElementById("output-preview-a").value = combinedA;
                 document.getElementById("preview-box-a").style.display = "block";
-                document.getElementById("btnCopyA").style.display = "flex";
+                // btnCopyA 已隱藏（T5：複製+同步流程移至查閱訂單訊息 Modal）
             } else {
                 document.getElementById("preview-box-a").style.display = "none";
-                document.getElementById("btnCopyA").style.display = "none";
             }
 
             // --- Scenario O: Adult Wood Force Display logic ---
@@ -4927,10 +4921,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 let combinedB = `Freehandsss 訂單確認\n(訂單編號# ${currentOrderId} 吊飾產品)\n\n${custInfo}${detailsB}${finInfoB}${disclaimer}${noticeB}`;
                 document.getElementById("output-preview-b").value = combinedB;
                 document.getElementById("preview-box-b").style.display = "block";
-                document.getElementById("btnCopyB").style.display = "flex";
+                // btnCopyB 已隱藏（T5：複製+同步流程移至查閱訂單訊息 Modal）
             } else {
                 document.getElementById("preview-box-b").style.display = "none";
-                document.getElementById("btnCopyB").style.display = "none";
             }
 
             document.getElementById("no-preview-msg").style.display = (!hasP && !hasK && !hasM) ? "block" : "none";
@@ -11762,6 +11755,23 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         };
 
         // Copy individual segment from Modal textarea (edited or original), no sync triggered
+        // T5 智能識別狀態機：追蹤複製與同步進度，防止雙重 sync
+        window._fhsIgCopyState = { copiedA: false, copiedB: false, synced: false };
+
+        function _updateIgCopyUI() {
+            var s = window._fhsIgCopyState;
+            var btnA = document.getElementById('igpmCopyA');
+            var btnB = document.getElementById('igpmCopyB');
+            var btnS = document.getElementById('igpmSync');
+            if (btnA) btnA.textContent = s.copiedA ? '✅ 已複製A(手模)' : '📋 複製A(手模)';
+            if (btnB) btnB.textContent = s.copiedB ? '✅ 已複製B(金屬)' : '📋 複製B(金屬)';
+            if (btnS) {
+                btnS.textContent = s.synced ? '✅ 已同步' : '🚀 同步';
+                btnS.style.opacity = s.synced ? '0.6' : '1';
+            }
+        }
+        window._updateIgCopyUI = _updateIgCopyUI;
+
         window.igpmCopySegment = function(seg) {
             var elId = seg === 'A' ? 'igpmPreA' : 'igpmPreB';
             var el = document.getElementById(elId);
@@ -11771,12 +11781,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (typeof showToast === 'function') {
                 showToast(seg === 'A' ? '已複製 A 段（手模擺設）！' : '已複製 B 段（金屬產品）！');
             }
+            if (seg === 'A') window._fhsIgCopyState.copiedA = true;
+            else window._fhsIgCopyState.copiedB = true;
+            if (typeof _updateIgCopyUI === 'function') _updateIgCopyUI();
         };
 
         // Sync only (no clipboard copy) — closes modal then fires existing pipeline
         window.igpmSyncOnly = function() {
             var status = document.getElementById('igpmSyncStatus');
             if (status) { status.textContent = '⏳ 同步中…'; status.style.color = '#f4a261'; }
+            window._fhsIgCopyState.synced = true;
+            if (typeof _updateIgCopyUI === 'function') _updateIgCopyUI();
             window.closeIgPreviewModal();
             setTimeout(function() {
                 if (typeof window.syncToAirtable === 'function') { window.syncToAirtable(); }

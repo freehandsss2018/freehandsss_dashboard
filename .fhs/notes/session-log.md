@@ -1,6 +1,9 @@
 # Session Log
 
-## 2026-05-31 (Session 49): 🧪 Phase 2+3 Live 驗證測試完成 ✅
+## 2026-05-31 (Session 49): 🔧 T5 複製+同步重構 + 按鈕引導 + 待辦審查 ✅
+
+**Scope**: Live 驗證 10/10 全通過；T5 重構（Modal 唯一出口、狀態機）；T5 補強（文案/禁用解耦）；待辦審查（關閉 2 項過時待辦）；learnings Preference 新增。
+**Status**: ✅ current.html 684,533 bytes。
 
 **Scope**:
 - 執行 V41 HTML `freehandsss_dashboardV41.html` 的自動化驗證測試套件（VT-P1~P4 與 VT-U1~U6）

@@ -1,3 +1,89 @@
+# FHS Handoff - 2026-05-31 (Session 49 — T5 + 按鈕引導 + 單號解鎖完成)
+
+## Session 49 T5 補強 — 按鈕文案 + 同步出口收斂
+
+**完成事項**：
+- ✅ 桌面 `syncBtn` 設 `display:none`（直接同步入口取消，ID 保留）
+- ✅ 桌面 `btnReviewIgMsg`：「🔍 查閱訂單訊息」→「✅ 審閱並完成訂單」+ tooltip
+- ✅ 手機 `v40-submit-btn`：改 `onclick=openIgPreviewModal()`，文字「✅ 審閱並完成」（取消直接 syncToAirtable）
+- ✅ `updateSyncButtonState()`：解除對 `v40-submit-btn` 的禁用，Modal 入口永遠可點（無論單號狀態）
+- ✅ current.html 同步（684,533 bytes）
+
+**流程總結（T5 全部完成）**：
+- 唯一完成訂單入口：「✅ 審閱並完成訂單」（桌面）/ 「✅ 審閱並完成」（手機）→ 開 Modal → 複製 → 同步
+- 狀態機 `_fhsIgCopyState` 追蹤複製/同步進度，防雙重 sync
+- `resetForm` 自動重置狀態
+
+**待辦（Fat Mo）**：
+1. Live 驗證：桌面只剩「✅ 審閱並完成訂單」；手機底部只剩「⚙️ 設定」+「✅ 審閱並完成」
+2. 長期待辦（4 項）見下方精簡清單
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無 |
+| 實際使用 | ❌ 未使用（定點 Edit，主 context 直接執行）|
+
+---
+
+## Session 49 T5 — 複製+同步流程重構
+
+**完成事項**：
+- ✅ 移除主畫面 `btnCopyA`（複製手模）/ `btnCopyB`（複製金屬）的 show 邏輯（HTML ID 保留，DOM 不刪）
+- ✅ 移除手機版 `v40-bottom-bar` 的「📋 複製」按鈕
+- ✅ 新增 `_fhsIgCopyState = {copiedA, copiedB, synced}` 狀態機 + `_updateIgCopyUI()`
+- ✅ `igpmCopySegment` 複製後更新狀態 + 按鈕文字（✅ 已複製A/B）
+- ✅ `igpmSyncOnly` 同步後設 synced=true，igpmSync 鈕顯示「✅ 已同步」防雙重 sync
+- ✅ `resetForm` 起始重置狀態機
+- ✅ current.html 同步（684,597 bytes）
+- ✅ Changelog.md 更新
+
+**流程變化**：
+- 舊：主畫面有「複製手模」「複製金屬」「同步至後台」三個獨立按鈕
+- 新：唯一出口為「🔍 查閱訂單訊息」Modal → 內含複製A/B + 同步，狀態機防重複 sync
+
+**待辦（Fat Mo）**：
+1. **Live 驗證**：
+   - VT-1：主畫面無「複製手模」「複製金屬」「同步至後台」按鈕
+   - VT-2：點「查閱訂單訊息」→ Modal 內三鈕正常
+   - VT-3：複製A → 按鈕變「✅ 已複製A(手模)」；複製B → 變「✅ 已複製B(金屬)」
+   - VT-4：點同步 → 按鈕變「✅ 已同步」（opacity 0.6）；再開 Modal 顯示同步狀態
+   - VT-5：resetForm 後再開 Modal → 所有按鈕恢復初始狀態
+   - VT-6：手機版底部無「📋 複製」按鈕，只有「🔍 查閱」
+
+**Subagent 使用記錄**：
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無 |
+| 實際使用 | ❌ 未使用（5 組定點 Edit，主 context 直接執行）|
+| 遵從 Router | — |
+
+---
+
+# FHS Handoff - 2026-05-31 (Session 49 — Live 驗證 + 待辦審查)
+
+## Session 49 補充 — 長期待辦健康度審查（2026-05-31）
+
+### 關閉項目（已過時）
+- ~~**Supabase products 成本更新（Smart Cache V47.9 硬編碼表）**~~
+  → V47.13（2026-05-23）已改為 Supabase 即時查詢，硬編碼 COST_MAP 不再存在，新產品自動讀取
+  → 殘留注意：新增產品 SKU 前綴時仍需更新 `BASE_PREFIXES`（輕量，不影響成本正確性）
+- ~~**DEFERRED R2：計畫缺少 COST_MAP 同步步驟**~~
+  → 同上，V47.13 已解決，R2 風險不再成立
+
+### 更新：DEFERRED 立體擺設款式管理 UI 整合
+- R2 ✅ 已失效（V47.13 自動讀 Supabase）
+- **R1 仍需解決**：addNewFrameStyle 雙 POST 無事務保護
+- 風險由 2 降為 1，可考慮重新評估解封時機
+
+### 精簡後真實待辦（4 項）
+1. 🟠 **Anti-Idle Ping 驗證**：本週確認 n8n Schedule Trigger（每 6 天 ping Supabase）存在
+2. 🟡 **Airtable 背景同步驗證**：6月初 quota 重置後確認背景 sync path 正常
+3. 🟢 **pg_cron TTL**：任意空檔確認 `error_logs` 30天自動清理設置
+4. ⚡ **立體擺設 UI 整合（僅剩 R1）**：修復雙 POST 無事務保護後可解封 /execute
+
+---
+
 # FHS Handoff - 2026-05-31 (Session 49 — Phase 2+3 Live 驗證測試完成)
 
 ## Session 49 — V41 Phase 2+3 Live 驗證測試

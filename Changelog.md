@@ -21,6 +21,32 @@
 
 ---
 
+## [2026-05-31] 🔧 T5 補強 — 同步出口收斂 + 按鈕引導文案（Session 49）
+
+**修改**（`freehandsss_dashboardV41.html`）：
+- 桌面 `syncBtn`（🚀 同步至後台）設 `display:none`，取消直接同步入口（ID 保留）
+- 桌面 `btnReviewIgMsg`：「🔍 查閱訂單訊息」→「✅ 審閱並完成訂單」+ tooltip 說明流程
+- 手機 `v40-bottom-bar`：移除獨立「🔍 查閱」，主按鈕 `v40-submit-btn` 改 `onclick=openIgPreviewModal()` + 文字「✅ 審閱並完成」（取消手機直接 syncToAirtable）
+- 結果：桌面與手機統一，**唯一同步出口為查閱 Modal 內的「🚀 同步」**，強制先審閱
+
+current.html 同步：✅ 684,563 bytes
+
+---
+
+## [2026-05-31] 🔧 T5 複製+同步流程重構 — 查閱訂單訊息 Modal 為唯一出口（Session 49）
+
+**修改**（`freehandsss_dashboardV41.html`）：
+- 移除主畫面 `btnCopyA`（複製手模）/ `btnCopyB`（複製金屬）的 show 邏輯（ID 保留、DOM 不刪）
+- 移除手機版 `v40-bottom-bar` 的「📋 複製」按鈕
+- 新增 `_fhsIgCopyState`（狀態機）+ `_updateIgCopyUI()`（按鈕 UI 同步）
+- `igpmCopySegment` 複製後更新 `copiedA/B` 狀態並反映至按鈕文字
+- `igpmSyncOnly` 同步後設 `synced=true`，igpmSync 鈕顯示「✅ 已同步」防雙重 sync
+- `resetForm` 起始重置狀態機，確保新訂單恢復初始狀態
+
+current.html 同步：✅ 684,597 bytes
+
+---
+
 ## [2026-05-31] 🎨 Phase 3 介面優化 — 付款拆格頸鏈組化 + 三色分區 + 快捷填入 + 編號設定搬移（Session 48 Phase 3）
 
 **修改**（`freehandsss_dashboardV41.html`）：
