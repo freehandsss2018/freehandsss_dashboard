@@ -76,11 +76,38 @@
 - **R1 仍需解決**：addNewFrameStyle 雙 POST 無事務保護
 - 風險由 2 降為 1，可考慮重新評估解封時機
 
-### 精簡後真實待辦（4 項）
-1. 🟠 **Anti-Idle Ping 驗證**：本週確認 n8n Schedule Trigger（每 6 天 ping Supabase）存在
-2. 🟡 **Airtable 背景同步驗證**：6月初 quota 重置後確認背景 sync path 正常
-3. 🟢 **pg_cron TTL**：任意空檔確認 `error_logs` 30天自動清理設置
-4. ⚡ **立體擺設 UI 整合（僅剩 R1）**：修復雙 POST 無事務保護後可解封 /execute
+### 真實待辦（Fat Mo 2026-05-31 二次裁決後）
+
+| # | 待辦 | 狀態 | Fat Mo 決策 |
+|---|------|------|------------|
+| 3 | 🟠 **Anti-Idle Ping 驗證**（n8n Schedule Trigger 每 6 天 ping Supabase） | 稍後 | 保留，稍後處理 |
+| 4 | 🟢 **pg_cron TTL**（error_logs 30 天自動清理） | 稍後 | 保留，稍後處理 |
+| 5 | ⚡ **立體擺設款式管理 UI 整合（僅剩 R1）** | 跟進 | R1 雙 POST 無事務保護待修；R2 已失效。保存追蹤 |
+| ~~2~~ | ~~Airtable 背景同步驗證~~ | ❌ **取消** | **角色已轉變**，此驗證不再需要 |
+
+---
+
+### 🔖 移交新 Session 討論（2a / 2b）
+
+> Fat Mo 2026-05-31 指示：以下兩項移至新 session 繼續討論，本 session 不執行。
+
+#### 2a — cost_configurations 四個物料成本 key
+- **現況**：`material_cost_necklace_silver` / `_gold` / `material_cost_keychain_stainless` / `_alloy` 值均為 **0**
+- **關鍵發現（Session 49 已查證）**：這 4 個 key **未接線** —
+  - n8n 不讀（直接讀 `products.total_base_cost` per SKU）
+  - `fhs_sync_products_from_config()` 只同步 addon（羊毛氈/燈飾），不碰這 4 個 key
+  - 填了**不影響任何計算**
+- **設計缺口**：若要接線覆蓋 `total_base_cost`，會丟失 Drawing/Printing/Clasp/Shipping 其他三個成本分量（material 只是其中一個分量，非全部）
+- **Fat Mo 尚未提供實際物料成本數字**
+- **待新 session 決策**：(1) 純記錄不接線；(2) 設計成本分量架構 v3 後接線；(3) 暫不處理標記預留
+
+#### 2b — /price-query skill（全新需求）
+- **用途**：AI 收到「X 件吊飾多少錢」「P 模式 3 個鎖匙扣報價」直接計算回答
+- **設計方向（Claude 建議）**：**hardcode 固定公式**，讀 `.fhs/notes/product_pricing_reference.md`
+  - 理由：Supabase 只存成本不存售價公式；售價公式已在 `calculatePricing()` + reference doc 完整記錄
+  - Supabase 動態方案需額外重建公式，維護點翻倍
+- **現況**：reference doc v2.0.0 已可供 AI 直接查閱計算，skill 為 nice-to-have（非必要）
+- **待新 session 決策**：是否值得新建 skill（vs 直接讀 doc）；若建，確認走 hardcode 公式方向
 
 ---
 
