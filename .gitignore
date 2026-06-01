@@ -51,3 +51,7 @@ airtable-database/
 # Obsidian (machine-specific — keep app/appearance/core-plugins tracked)
 .obsidian/workspace*.json
 .obsidian/graph.json
+
+# NTFS junction test dirs (vault visibility experiment — not real files)
+fhs-notes/
+fhs-ai/

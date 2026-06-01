@@ -224,3 +224,7 @@ Mobile phone 介面專屬設計準則（強制執行）：
 - 系統發生新災難並修復後（補充防護邏輯）
 - AGENTS.md 全域硬規則新增時（同步對齊）
 - commands/ 下任何指令檔更新時（Router 指向不得過時）
+
+
+---
+[[FHS_Knowledge_Map]]

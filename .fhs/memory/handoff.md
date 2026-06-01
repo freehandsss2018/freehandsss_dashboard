@@ -2,15 +2,17 @@
 
 ## Session 51 — Obsidian vault Phase 0 止血清理
 
-**[臨時記錄，待 /cl-flow 定案後補正式 decisions.md]**
+**[Session 51 完結 — Obsidian vault Phase 0+1 整合完成]**
 
-- ✅ 巢狀 vault 衝突已消除：`Obsidian/` 目錄已删除（含巢狀 `.obsidian/`、`歡迎.md`、Notion 匯入鏡像）
-- ✅ `FHS_Memory_Engine.png` (1.4MB) 已保全搬至 `docs/assets/`
-- ✅ `.gitignore` 加入機器特定檔排除（`workspace*.json`、`graph.json`）
-- ✅ `scripts/cl-flow-runner.js:144` repomix ignore 加 `.obsidian/`（堵 AI token 滲漏）
-- ✅ 根 `.obsidian/app.json` 加 `userIgnoreFilters`（vault Graph 不被 code 目錄淡沒）
-- ⏳ vault 範圍（repo root vs `.fhs/` 子樹）待 `/cl-flow` 整合決策後補寫 `decisions.md`
-- ⏳ 三層記憶職責分工（Notion / Obsidian / `.fhs/memory`）待 `/cl-flow` 裁決
+- ✅ 巢狀 vault 衝突消除（Obsidian/ 目錄刪除）
+- ✅ FHS_Memory_Engine.png 保全至 docs/assets/
+- ✅ .gitignore + repomix ignore + userIgnoreFilters 設定完成
+- ✅ D1（vault=repo root）+ D2（三層記憶職責）架構決策寫入 decisions.md
+- ✅ docs/FHS_Knowledge_Map.md MOC hub 建立（7 個 wikilinks，雙向連結）
+- ✅ 5 個 docs 文件加 backlinks 指向 FHS_Knowledge_Map
+- ✅ NTFS junction 方案實證失敗（.fhs/ 永遠對 Obsidian 不可見，硬限制）
+- ✅ Obsidian Graph 上限確認：只能顯示 docs/ + 根目錄層，.fhs/ 不可達
+- ✅ decisions.md + learnings.md 補充 Obsidian dot-dir 硬限制記錄
 
 
 ## Subagent 使用記錄

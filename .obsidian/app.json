@@ -5,6 +5,13 @@
     "artifacts",
     "perplexity-mcp-server",
     ".fhs/memory/backups",
-    "Freehandsss_Dashboard/node_modules"
-  ]
+    ".fhs/memory",
+    "Freehandsss_Dashboard",
+    "scripts",
+    ".claude",
+    ".agents",
+    ".obsidian"
+  ],
+  "alwaysUpdateLinks": true,
+  "showUnsupportedFiles": true
 }

@@ -3,6 +3,32 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-01] (Session 51) Obsidian 整合架構決策 — D1 vault 範圍 + D2 三層記憶職責邊界
+
+決策：
+
+**D1：Vault 範圍 = repo root (freehandsss_dashboard/)**
+- 保持根 .obsidian/ 配置（Phase 0 已 commit，不回頭）
+- 理由：docs/FHS_Blueprint.md 等核心知識文件需在 Obsidian Graph 可視範圍內
+- ⚠️ 已知平台限制（不可配置）：Obsidian 預設隱藏所有 dot-directory（.fhs/、.claude/、.agents/ 等），.fhs/ 整層對 Obsidian 永遠不可見；Obsidian Graph 只能顯示 docs/ 及根目錄的 .md 文件
+- MOC hub 必須放在 docs/（非 .fhs/），否則 Obsidian 看不到
+- repomix ignore 已設 .obsidian/（AI token 邊界確立，不可回退）
+- .gitignore 已排除 workspace*.json + graph.json（機器特定，非協作層）
+
+**D2：三層記憶職責邊界**
+| 層 | 寫入責任 | 衝突優先級 | AI 存取 |
+|---|---------|-----------|---------|
+| Notion（雲端 SSoT） | Fat Mo 手動 + AI via Sync_Notion_Brain.js | 最高（人類真相源） | 唯寫（腳本），不直接讀 |
+| Obsidian（本地視覺化） | Fat Mo 手動建立筆記 | 不參與衝突解析 | **永不寫入**（視覺層） |
+| .fhs/memory（AI 工作記憶） | AI 唯一（handoff/learnings/lessons） | 最低（working memory，可過期） | 讀+寫（AI 主要操作層） |
+
+衝突規則：.fhs/memory 衝突 Notion → Notion 為準；Obsidian .md 不參與衝突解析（非授權來源）。
+AI 存取邊界：AI 讀取 .fhs/memory/ + .fhs/notes/ + docs/（via repomix）；AI 永不讀取或寫入 .obsidian/ 配置及 Obsidian 專屬筆記位置。
+
+原因：docs/ 知識文件為核心業務知識（Product Bible / Blueprint），Obsidian 作視覺圖譜需能看見全域知識層；三層職責清晰切割防止記憶碎片化（AI 只維護 .fhs/memory，不污染 Obsidian 或 Notion 直接存取）
+
+***
+
 [2026-05-31] (Session 50) 財務三層顆粒化成本架構：方向裁定 + A/B 分流
 
 決策：

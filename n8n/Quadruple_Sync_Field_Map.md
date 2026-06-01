@@ -323,3 +323,7 @@ ELSE:
 | **改動觸發** | Cost Calculator 邏輯改動時，必須同步更新本段落，並在 CHANGELOG 標註 |
 
 > **歷史背景**：Triple_Sync_Field_Map.md 曾在 Node 14 章節描述這些計算值，但 Triple_Sync 文件已 [已廢棄]。本段落為遷移至 Quadruple_Sync 的補完，避免知識斷層。
+
+
+---
+[[FHS_Knowledge_Map]]

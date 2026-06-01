@@ -122,3 +122,7 @@ description: Core logic and technical specifications for FHS system architecture
 
 ---
 **版本紀錄與日誌同步**：每次修改核心代碼後，必須同步更新 `Changelog.md`。
+
+
+---
+[[FHS_Knowledge_Map]]

@@ -200,3 +200,7 @@ node scripts/update-legacy-profit.js
 | N欄 成本 | **忽略** | 以 Airtable Product_Database 重算 |
 | O欄 調整 | `Adjustment_Amount` | 若有差異才填 |
 | P欄 利潤 | `Net_Profit` | 由腳本重算，不用 Excel 數字 |
+
+
+---
+[[FHS_Knowledge_Map]]
