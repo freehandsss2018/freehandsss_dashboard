@@ -1,3 +1,28 @@
+# FHS Handoff - 2026-06-01 (Session 51 — Obsidian vault 止血清理 Phase 0)
+
+## Session 51 — Obsidian vault Phase 0 止血清理
+
+**[臨時記錄，待 /cl-flow 定案後補正式 decisions.md]**
+
+- ✅ 巢狀 vault 衝突已消除：`Obsidian/` 目錄已删除（含巢狀 `.obsidian/`、`歡迎.md`、Notion 匯入鏡像）
+- ✅ `FHS_Memory_Engine.png` (1.4MB) 已保全搬至 `docs/assets/`
+- ✅ `.gitignore` 加入機器特定檔排除（`workspace*.json`、`graph.json`）
+- ✅ `scripts/cl-flow-runner.js:144` repomix ignore 加 `.obsidian/`（堵 AI token 滲漏）
+- ✅ 根 `.obsidian/app.json` 加 `userIgnoreFilters`（vault Graph 不被 code 目錄淡沒）
+- ⏳ vault 範圍（repo root vs `.fhs/` 子樹）待 `/cl-flow` 整合決策後補寫 `decisions.md`
+- ⏳ 三層記憶職責分工（Notion / Obsidian / `.fhs/memory`）待 `/cl-flow` 裁決
+
+
+## Subagent 使用記錄
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver` |
+| 實際使用 | ❌ 未使用（原因：任務為 Obsidian vault 結構清理，非 n8n/JS/Python runtime 錯誤，build-error-resolver 範圍不符）|
+| 遵從 Router | ❌ 未遵從（原因：AGENTS.md router 表對 Obsidian 檔案結構盤點應對應 `Explore`；已向 Fat Mo 說明偏離理由，清理範圍小且已 read-only 自行調查，無需獨立派工）|
+
+---
+
 # FHS Handoff - 2026-05-31 (Session 50 — 財務三層成本架構診斷 + A/B 分流存檔)
 
 ## Session 50 — 2a/2b 深化：三層顆粒化成本架構

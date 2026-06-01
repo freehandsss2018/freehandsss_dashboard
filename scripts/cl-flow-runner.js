@@ -141,7 +141,7 @@ function getCodebaseContext() {
     const result = execSync(
       'npx repomix --style plain' +
       ' --include "scripts/,supabase/migrations/,.fhs/notes/SOP_NOW.md,.fhs/memory/handoff.md"' +
-      ' --ignore "artifacts/,node_modules/,*.xlsx,*.log,.git/,Obsidian/"',
+      ' --ignore "artifacts/,node_modules/,*.xlsx,*.log,.git/,Obsidian/,.obsidian/"',
       { cwd: ROOT_DIR, timeout: 60000, maxBuffer: 800 * 1024 }
     );
     const raw = result.toString('utf8');

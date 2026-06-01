@@ -170,8 +170,12 @@ freehandsss_dashboard/
 ├── .agents/                             ← IDE 專屬：Slash 指令與自動化工作流
 ├── .gemini/                             ← Gemini CLI + Skills (Ref: skills/frontend-design/reference/)
 ├── .vscode/                             ← VS Code 設定
+├── .obsidian/                           ← Obsidian vault（人類視覺化圖譜，vault root = repo root，2026-06-01）
+│                                            machine-specific 檔已 gitignore（workspace*.json、graph.json）
 │
 ├── docs/                                ← 技術文件
+│   ├── assets/                          ← 靜態資產（2026-06-01 新增）
+│   │   └── FHS_Memory_Engine.png        ← FHS 記憶引擎架構圖（從 Obsidian/ 保全搬入）
 │   ├── README.md                        ← 技術文件索引
 │   ├── repo-map.md                      ← 本文件
 │   ├── FHS_Blueprint.md

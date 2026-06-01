@@ -1,0 +1,10 @@
+{
+  "userIgnoreFilters": [
+    "node_modules",
+    ".git",
+    "artifacts",
+    "perplexity-mcp-server",
+    ".fhs/memory/backups",
+    "Freehandsss_Dashboard/node_modules"
+  ]
+}
