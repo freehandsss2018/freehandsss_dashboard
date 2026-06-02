@@ -85,14 +85,25 @@
       "Bash(node scripts/cl-flow-runner.js --quick \"Phase 3 付款拆格 + 報價明細三色分區 + 快捷填入，共 4 個子任務：T0 吊飾格合併為頸鏈組（Math.ceil\\(totalCharms/2\\)格，boxKey=necklace_N，restoreSplits fallback）；T1 標籤修正（頸鏈①一對/頸鏈②+1隻，移除單部位emoji誤導）；T2 每格加一鍵快捷填入建議金額按鈕（讀 item.CalculatedPrice，點擊填入 input）；T3 三大類顏色區分方案A（立體擺設+配件=暖橙#FFF3E0/#E65100，金屬鎖匙扣=鋼灰#ECEFF1/#37474F，純銀頸鏈吊飾=銀紫#EDE7F6/#4527A0）同時套用於 pricingLogicDetails 明細區和 deposit/balance 拆格 label；T4 seqSetRow 下張起始編號從主畫面移至設定區。硬規則：captureFormState 不可動、HTML ID 不可改、P9 window暴露、Category B pureNumeric不可破。\")",
       "Bash(node -e \"const fs=require\\('fs'\\); const s=JSON.parse\\(fs.readFileSync\\('artifacts/2026-05-31-1236/state.json'\\)\\); s.cl_status='done'; s.status='awaiting_approval'; fs.writeFileSync\\('artifacts/2026-05-31-1236/state.json', JSON.stringify\\(s,null,2\\)\\);\")",
       "Bash(node scripts/cl-flow-runner.js --quick \"T5 重構底部按鈕流程：移除主畫面「複製手模擺設訊息」「複製金屬產品訊息」「同步至後台」三個獨立按鈕（ID保留但隱藏），改以「查閱訂單訊息」Modal 作唯一出口。Modal 內 Copy A / Copy B / 同步 三鈕保留，加入智能識別狀態機 _fhsIgCopyState={copiedA,copiedB,synced}：同步後 igpmSync 鈕標記已同步並停用，防止雙重 sync；resetForm 時重置狀態。手機版按鈕區同步處理。硬規則：btnCopyA/btnCopyB/syncBtn HTML ID 保留（n8n webhook 安全）；syncToAirtable/copyMessageA/copyMessageB/captureFormState 核心函式不可動。\")",
-      "Bash(node -e \"const fs=require\\('fs'\\); const s=JSON.parse\\(fs.readFileSync\\('artifacts/2026-05-31-1737/state.json'\\)\\); s.cl_status='done'; s.status='awaiting_approval'; fs.writeFileSync\\('artifacts/2026-05-31-1737/state.json',JSON.stringify\\(s,null,2\\)\\);\")"
+      "Bash(node -e \"const fs=require\\('fs'\\); const s=JSON.parse\\(fs.readFileSync\\('artifacts/2026-05-31-1737/state.json'\\)\\); s.cl_status='done'; s.status='awaiting_approval'; fs.writeFileSync\\('artifacts/2026-05-31-1737/state.json',JSON.stringify\\(s,null,2\\)\\);\")",
+      "Bash(node scripts/cl-flow-runner.js \"設計 FHS 財務知識守門員 — 裁定 Finance_Bible / pricing_reference / Product_Bible_V3.7 三份文件權威階層，整合 7 個散落財務資產（FHS_Finance_Bible、product_pricing_reference、FHS_Product_Bible_V3.7、finance-calculator skill、finance-auditor subagent、database-reviewer subagent、fhs-cost-audit command）為單一查詢入口，設計守門員形態（subagent/skill/command 或組合），去重退役冗餘資產，解決 AI 系統時常忘記 FHS 定價售價成本折扣邏輯的根本問題\")",
+      "Bash(grep -E \"\\\\.env$\")",
+      "Bash(node scripts/cl-flow-runner.js \"全盤中立評估 FHS 成本資料的權威來源與計算架構（系統最底層結構）。背景：Fat Mo 提出三層顆粒化成本邏輯（base_cost原子成本→total_base_cost roll-up→adjustment），但明確要求不得預設此結構正確，須由系統實證反推最佳方案。已知張力：Finance_Bible §二與pricing_reference §4.1聲稱 products.total_base_cost 為繪圖+印刷+扣夾+運費四分量顆粒化加總，但 migration 0023_main_products_seed.sql 實作為人手算好的flat數字直接INSERT（偽顆粒）；cost_configurations 4個 material_cost_* key=0且未接線。任務：在至少4個並列候選方案中依量化判準選最佳者——\\(A\\)維持flat快照僅修文件債與維護SOP;\\(B\\)Supabase roll-up唯讀View;\\(C\\)n8n計算層roll-up走HTTP Request節點;\\(D\\)ETL物化視圖定時重算。根決策須先回答：現行flat是真架構缺陷還是僅文件與實作不符的文件債。量化判準6項：c1可維護性\\(新增SKU需手改幾處\\)、c2快照零污染\\(已確認訂單成本不可變為紅線\\)、c3即時報價查詢延遲、c4與calculatePricing直讀及fhs_sync_products_from_config競態、c5是否觸碰Finance_Bible §十一反模式紅線\\(禁Postgres trigger/generated column重算成本\\)及NAS Code Node限制\\(fetch/process.env/require靜默失敗\\)、c6實施與維護複雜度。硬約束：Layer2歷史快照不可變、前端利潤最高真理n8n不得重算、禁改HTML ID/captureFormState、過度工程防線\\(方案複雜度須與實證缺陷嚴重度成比例\\)。輸出需含4候選×6判準評分矩陣與[NEW]/[MODIFY]/[DELETE]檔案清單。\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} | time %{time_total}s\\\\n\" --max-time 25 -X POST https://api.perplexity.ai/chat/completions -H \"Authorization: Bearer $\\(grep -E '^PERPLEXITY_API_KEY=' .env)",
+      "Bash(node scripts/cl-flow-runner.js --quick \"全盤中立評估 FHS 成本資料的權威來源與計算架構（系統最底層結構）。背景：Fat Mo 提出三層顆粒化成本邏輯（base_cost原子成本→total_base_cost roll-up→adjustment），但明確要求不得預設此結構正確，須由系統實證反推最佳方案。已知張力：Finance_Bible §二與pricing_reference §4.1聲稱 products.total_base_cost 為繪圖+印刷+扣夾+運費四分量顆粒化加總，但 migration 0023_main_products_seed.sql 實作為人手算好的flat數字直接INSERT（偽顆粒）；cost_configurations 4個 material_cost_* key=0且未接線。任務：在至少4個並列候選方案中依量化判準選最佳者——\\(A\\)維持flat快照僅修文件債與維護SOP;\\(B\\)Supabase roll-up唯讀View;\\(C\\)n8n計算層roll-up走HTTP Request節點;\\(D\\)ETL物化視圖定時重算。根決策須先回答：現行flat是真架構缺陷還是僅文件與實作不符的文件債。量化判準6項：c1可維護性\\(新增SKU需手改幾處\\)、c2快照零污染\\(已確認訂單成本不可變為紅線\\)、c3即時報價查詢延遲、c4與calculatePricing直讀及fhs_sync_products_from_config競態、c5是否觸碰Finance_Bible §十一反模式紅線\\(禁Postgres trigger/generated column重算成本\\)及NAS Code Node限制\\(fetch/process.env/require靜默失敗\\)、c6實施與維護複雜度。硬約束：Layer2歷史快照不可變、前端利潤最高真理n8n不得重算、禁改HTML ID/captureFormState、過度工程防線\\(方案複雜度須與實證缺陷嚴重度成比例\\)。輸出需含4候選×6判準評分矩陣與[NEW]/[MODIFY]/[DELETE]檔案清單。\")",
+      "Bash(rm -f .px_body.json .px_resp.json .px_content.md)",
+      "Bash(rm -rf artifacts/2026-06-01-0111 artifacts/2026-06-01-0119)",
+      "Bash(grep -rniE \"FHS_Memory_Engine|Obsidian/Freehandsss|Obsidian\\\\\\\\\\\\\\\\\" --include=\"*.md\" --include=\"*.js\" --include=\"*.json\" --include=\"*.html\" .)",
+      "Bash(mkdir -p docs/assets)",
+      "Bash(cp \"Obsidian/Freehandsss/FHS_Memory_Engine.png\" \"docs/assets/FHS_Memory_Engine.png\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
       "C:\\Users\\Edwin\\AppData\\Local\\Temp",
       "\\tmp",
       "d:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\Freehandsss_Dashboard",
-      "d:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\.fhs\\ai\\commands"
+      "d:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\.fhs\\ai\\commands",
+      "C:\\Users\\Edwin\\.claude\\agents\\freehandsss"
     ]
   },
   "hooks": {

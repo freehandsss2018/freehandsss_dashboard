@@ -60,6 +60,12 @@
 - **item_base_cost ≠ subtotal_cost × quantity（Mirror Prep 陷阱）**：descriptions_comments.sql 稱 `subtotal_cost = item_base_cost × quantity`，但 Mirror Prep 實際寫入 `item_base_cost = subtotal_cost = Total_Base_Cost`（兩欄相等，不乘 quantity）。批量重算 SQL 必須以 Mirror Prep 代碼為準，而非欄位說明文字 — 源自 2026-05-28
 - **【高頻 ⚠️】Migration 部分執行靜默失敗**：`CREATE TABLE IF NOT EXISTS` 在表已存在時靜默跳過，同一 migration 後續 PART（ALTER TABLE / INSERT / RPC）不會執行，整體功能靜默失效無報錯。預防：新 migration 若含多 PART，各 PART 必須有獨立 smoke-test 查詢確認執行；不能只靠「沒報錯」判斷成功 — 源自 2026-05-29
 - **【P10】付款拆格 boxKey 改動須同步更新所有相關函式**：`renderPaymentSplits` 改 boxKey 格式（如改為 necklace_N）後，`_syncBalanceFromDeposit` / `serializeSplits` / `restoreSplits` 均用舊 boxKey 匹配，balance 靜默不更新無錯誤提示。凡改 boxKey 格式，必查三個函式 — 源自 2026-05-31
+- **【財務核心 ⚠️】運費扣減公式必用件數而非行數**：Finance Bible 舊公式 `(order_items行數-1)×$20` 是 BUG。正確：`(總件數-1)×單件運費`，總件數=SUM(quantity across all same-category order_items)。例：左手×1+右手×2=3件，扣減=(3-1)×$20=$40，非$20。吊飾同理用$35 — Fat Mo 確認 2026-06-02
+- **【財務核心 ⚠️】同部位首件含畫圖費，第2件起免畫圖（位置依賴成本）**：鎖匙扣與吊飾均適用。同部位第1件=全成本，第2件起=免畫圖。跨產品規則：部位已有任何產品，後加同部位其他類型亦免畫圖。此規則之前從未記錄，是 AI 反覆算錯根本原因 — Fat Mo 確認 2026-06-02
+- **【財務核心 ⚠️】吊飾 Clasp=頸鏈非扣夾，1鏈最多2飾（奇偶規則）**：吊飾成本=畫圖+打印+頸鏈+運費，無環扣。Airtable Clasp欄對吊飾=頸鏈，現行$100（舊$70已過時）。奇數件加$100頸鏈，偶數件免頸鏈（共用同鏈） — Fat Mo 確認 2026-06-02
+- **【財務核心 ⚠️】財務規則必須即時落盤，不可只靠口頭說明**：Fat Mo 多次口頭解釋的規則因未寫進文件，每 session AI 重新算錯。任何財務規則一經確認：①寫入 Finance Bible ②寫入 learnings.md ③寫入持久記憶。財務算錯=嚴重核心錯誤 — 2026-06-02
+- **【Pattern】`_fhsCostReady` flag 競態防護**：前端從 Supabase 非同步載入 config 後才設 true；`calculatePricing` 入口 guard 若 false 則拒絕計算並提示。任何 page-load 讀 Supabase 再用於計算的場景均須此模式，防止空值算出 0 — 源自 2026-06-02 P1 W5 Live 驗證
+- **【Pattern】`chargedPositions Set` 跨陣列位置追蹤**：在 metal/silver/family 外層建 Set，PartDesc `.trim().toLowerCase()` 正規化後追蹤已計畫圖費的部位；同部位跨產品第 2 件 baseDrawing=0。新增產品類型時必查此 Set 是否需要擴充 — 源自 2026-06-02 P1 W1 Live 驗證
 
 ---
 

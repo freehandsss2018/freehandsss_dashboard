@@ -2,8 +2,8 @@
 
 > **Authority Level**: L1 — 架構不變量（最高權威）
 > **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/notes/FHS_Pricing_Bible.md`。
-> **Version**: v1.1.0
-> **Created**: 2026-05-16 | **Updated**: 2026-06-01（加入 L1 Authority header）
+> **Version**: v1.2.0
+> **Created**: 2026-05-16 | **Updated**: 2026-06-02（G1–G6：位置依賴成本規則、鎖匙扣/吊飾扣減公式修正、Clasp=頸鏈釐清）
 > **Path**: `.fhs/ai/FHS_Finance_Bible.md`
 >
 > ⚠️ **強制規則**：凡任何 AI（主 agent 或 subagent）涉及財務利潤、成本、折扣計算任務，
@@ -50,7 +50,8 @@ RPC： POST /rest/v1/rpc/get_base_cost_by_skus with {"sku_list": [...]}
 ```
 Airtable Base_Costs（人工維護）
     → 同步腳本 → Supabase cost_configurations（28 個配置）
-    → products.total_base_cost（= drawing + printing + clasp + shipping）
+    → products.total_base_cost（= drawing + printing + clasp/頸鏈 + shipping）
+       ⚠️ 鎖匙扣的 clasp=環扣；吊飾的 clasp=頸鏈($100 現行，Airtable $70 已過時）
     → v_products_with_costs.Total_Base_Cost
 ```
 
@@ -115,17 +116,85 @@ function getItemCategory(sku) {
 ### 跨部位鎖匙扣運費共享扣減（Bible V3.7 §2.5）
 
 ```
-規則：同一訂單，鎖匙扣 Order_Items 數量 > 1 時，
-      共享運費：(鎖匙扣項目數 - 1) × $20 從 keychain_cost 扣減
+規則：同一訂單，鎖匙扣總件數 > 1 時，
+      共享運費：(鎖匙扣總件數 - 1) × $20 從 keychain_cost 扣減
+
+⚠️ 【G1 修正 2026-06-02】「總件數」= SUM(quantity) across all keychain order_items
+   NOT「行數 row count」。例：左手×1 + 右手×2 = 3件，扣減 = (3-1)×$20 = $40，
+   而非 (2行-1)×$20 = $20。
 
 扣減應用層：orders.keychain_cost（訂單層彙總，非 order_items 層）
 計算公式：
   orders.keychain_cost = SUM(order_items.keychain_cost) - keychainShippingDeduction
   orders.handmodel_cost = SUM(order_items.handmodel_cost)（無扣減）
-  orders.necklace_cost = SUM(order_items.necklace_cost)（無扣減）
-  orders.total_cost = SUM(all item costs) - keychainShippingDeduction
+  orders.necklace_cost = SUM(order_items.necklace_cost) - necklaceShippingDeduction
+  orders.total_cost = SUM(all item costs) - keychainShippingDeduction - necklaceShippingDeduction
 
 驗證：orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost = orders.total_cost
+```
+
+### 位置依賴成本規則（Per-Position Cost Rules）— 2026-06-02 Fat Mo 確認
+
+> ⚠️ 以下為成本(cost)計算核心規則。過去因未記錄，AI 反覆算錯。
+> 售價(price)計算邏輯另見 `FHS_Pricing_Bible.md`，兩者不同勿混淆。
+
+#### 鎖匙扣每件成本組件
+```
+成本 = 畫圖 + 打印 + 環扣(Clasp) + 運費($20/件)
+```
+
+#### 純銀頸鏈吊飾每件成本組件
+```
+成本 = 畫圖 + 打印 + 頸鏈 + 運費($35/件)
+
+⚠️ 【G6】吊飾無「扣夾」。Airtable Base_Costs 的「Clasp」欄位，
+   對吊飾而言代表「頸鏈」（neck chain），非金屬扣夾。
+   現行頸鏈成本 = $100（Airtable 舊值 $70 已過時，以 $100 為準）
+```
+
+#### 【G2】畫圖費：同部位首件計費，後續免費
+```
+規則：同一訂單、同一部位（如「嬰兒左手」）：
+  第 1 件：全成本（含畫圖費）— 稱「單購 SKU」
+  第 2 件起：免畫圖費（同一部位的圖只畫一次）— 稱「加購 SKU」
+
+適用：鎖匙扣 + 純銀頸鏈吊飾均適用此規則。
+
+驗算範例（訂單 #0600007，嬰兒鎖匙扣不銹鋼，Drawing=$60 Printing=$95 Clasp=$10 Shipping=$20）：
+  嬰兒左手 ×1（部位首件）：$60+$95+$10+$20 = $185
+  嬰兒右手 ×1（部位首件）：$60+$95+$10+$20 = $185
+  嬰兒右手 ×2（同部位加購）：$95+$10+$20 = $125（免畫圖）
+  小計 $495，運費扣減 (3件-1)×$20 = $40 → 鎖匙扣成本 = $455
+```
+
+#### 【G3】跨產品部位規則
+```
+規則：同一訂單、同一部位，不論產品類型（鎖匙扣或吊飾）：
+  若該部位已有任何一件產品，後加的同部位其他類型產品，
+  即使是「該類首件」，同樣免畫圖費（部位已畫過）。
+
+範例：嬰兒左手已有鎖匙扣 → 再加購嬰兒左手吊飾 → 吊飾免畫圖費
+```
+
+#### 【G4】頸鏈費：1 頸鏈最多 2 吊飾（奇偶交替規則）
+```
+核心邏輯：每條頸鏈最多掛 2 個吊飾
+  奇數件（第1、3、5…件）：含頸鏈費 $100
+  偶數件（第2、4、6…件）：免頸鏈費（與前一件共用同一頸鏈）
+
+範例（同部位 4 件吊飾，Drawing=$60 Printing=$260 Necklace=$100 Shipping=$35）：
+  第1件（部位首件）：$60+$260+$100+$35 = $455（含畫圖+頸鏈）
+  第2件（同鏈）：  $260+$35 = $295（免畫圖、共用頸鏈）
+  第3件（新鏈）：  $260+$100+$35 = $395（免畫圖、新頸鏈）
+  第4件（同鏈）：  $260+$35 = $295（免畫圖、共用頸鏈）
+  小計 $1440，運費扣減 (4件-1)×$35=$105 → 吊飾成本 = $1335
+```
+
+#### 【G5】純銀頸鏈吊飾運費共享扣減
+```
+規則：同一訂單，吊飾總件數 > 1 時，
+      (吊飾總件數 - 1) × $35 從 necklace_cost 扣減
+      ⚠️ 總件數 = SUM(quantity) across all necklace order_items（非行數）
 ```
 
 ---

@@ -1,3 +1,78 @@
+# FHS Handoff - 2026-06-02 (Session 53 — P1 成本邏輯憲法化執行完成)
+
+## Session 53 — P1 成本邏輯憲法化（cl-flow + /execute）
+
+**[Session 53 完結 — P1 Phase 1–4 + Phase 6 執行完成，待 Fat Mo Live 驗證]**
+
+### 執行完成項目
+- ✅ `0025_cost_atoms_seed.sql`：3 新 key（necklace_chain_cost=100、charm_shipping=35、mixed_member_surcharge=300）+ P0 語義修正，database-reviewer PASS
+- ✅ V41 HTML：`_fhsCostReady` ready 旗標、W5 競態防護、W1 chargedPositions 跨陣列畫圖追蹤、畫圖費 de-hardcode、頸鏈成本 + 運費扣減組件、shadow kill-switch，code-reviewer G1–G8 全 PASS
+- ✅ n8n V47.14（已部署 LIVE）：P0 shipping bug 修正（行數→件數）
+- ✅ `FHS_Product_Cost_Schema_v2.md`：17→20 keys；Changelog、repo-map 同步
+
+### 已完成（Session 53 全部收尾）
+- ✅ migration 0025 已部署（Supabase）
+- ✅ material_cost_keychain_stainless = 95, material_cost_keychain_alloy = 122 已更新
+- ✅ V1–V5 + VT-P1~P4 + VT-U1~U6 全 15 項 PASS
+- ✅ current.html 同步（689,258 bytes，2026-06-02）
+
+### DEFERRED（下次 session 接棒）
+- ⏸ 物料/打印成本填入（material_cost_* 仍為 0）→ Fat Mo 確認數字後填 Supabase
+- ⏸ n8n 完全信任前端成本（待物料成本完整後）
+- ⏸ PRM v2 P2：產品定義審計 + 命名規範設計
+
+### Subagent 使用記錄
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | database-reviewer、code-reviewer |
+| 實際使用 | ✅ database-reviewer（Phase 1 Gate PASS）；✅ code-reviewer（G1–G8 Gate PASS，含 G8 修正重稽）；❌ finance-auditor（需 Fat Mo Live 驗證，subagent 無法替代）|
+| 遵從 Router | ✅ 完全遵從 |
+
+---
+
+# FHS Handoff - 2026-06-02 (Session 52 — P0 Finance Bible 修正 + PRM 財務 SSOT 工程啟動)
+
+## Session 52 — P0 完成 + PRM v2 財務系統 SSOT 工程路線圖
+
+**[Session 52 完結 — P0 G1–G7 全部執行完成]**
+
+### P0 完成事項
+- ✅ Finance Bible v1.2.0：G1 運費公式修正（件數非行數）+ G2 同部位畫圖規則 + G3 跨產品免畫圖 + G4 頸鏈奇偶規則 + G5 吊飾運費扣減 + G6 Clasp=頸鏈$100
+- ✅ learnings.md：補入4條財務核心 pitfall（G7）
+- ✅ 持久記憶固化（project_cost_calculation_rules.md + feedback_finance_rules_must_be_recorded.md）
+- ✅ Changelog + decisions 後效同步完成
+- ✅ 驗算範例固化：訂單 #0600007 鎖匙扣 = $455（非$535/$475/$495）
+
+### 本 session 重大發現（財務根因）
+- 運費扣減公式從 2026-05-16 起就寫錯（行數非件數），所有訂單成本均可能低算
+- 吊飾頸鏈奇偶規則、跨產品免畫圖規則從未被記錄進任何文件
+- Finance Bible §二資料鏈的 `clasp` 語義對吊飾有誤（應為頸鏈）
+
+### PRM v2 路線圖（已獲 Fat Mo 核准）
+| Phase | 說明 | 狀態 |
+|---|---|---|
+| P0 | 規則止血 G1–G7 | ✅ 完成 |
+| P1 | 成本邏輯憲法化（地基）| ⏸ 下個新 session |
+| P2 | 產品定義審計 + 命名規範設計 | ⏸ 待 P1 後 |
+| P3 | Supabase 全表逐格審計 | ⏸ 待 P2 後 |
+| P3X | 產品名稱重整執行（跨四層高危）| ⏸ 待 P3 後 |
+| P-TEST | 跨層端到端測試 V41↔n8n↔Supabase↔Airtable | ⏸ 緊接 P3X |
+| P4 | 雙庫對賬 + 尋源台賬 | ⏸ 待 P3X 後 |
+| P5 | 治理機制鎖定 | ⏸ 最後 |
+
+### 待辦（Fat Mo + 下 session）
+- ⏸ **P1**：開新 session，以 `/cl-flow` 規劃「成本邏輯憲法化」
+- ⏸ **立體擺設 + 燈飾加購成本規則**：本 session 未處理，待 P1 一併納入
+- ⏸ Airtable 頸鏈 Clasp 值 $70→$100 更新（Supabase 產品成本亦需驗證）
+
+### Subagent 使用記錄
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | database-reviewer |
+| 實際使用 | ✅ database-reviewer（Airtable×Supabase SKU 對賬）；✅ Explore（根源搜尋）；主 context 執行文件修正 |
+
+---
+
 # FHS Handoff - 2026-06-01 (Session 51 — Obsidian vault 止血清理 Phase 0)
 
 ## Session 51 — Obsidian vault Phase 0 止血清理

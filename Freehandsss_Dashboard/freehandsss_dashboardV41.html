@@ -5100,6 +5100,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 logs.push(`<div style="color:#D32F2F; font-weight:bold; background:#FFEBEE; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆鎖死] 木框不支援成人實體倒模！系統已強制判定為成人的「照片(P)」模式，適用高階報價基礎。</div>`);
             }
 
+            // W5: 競態防護 — cost_configurations 未載入時拒絕計算（防零成本提交）
+            if (!window._fhsCostReady) {
+                if (uiPrice) uiPrice.innerText = "—";
+                if (uiCost) uiCost.innerText = "—";
+                if (uiDetails) uiDetails.innerHTML = '<div style="color:#E65100;font-weight:bold;padding:6px;">⏳ 成本設定載入中，請稍候再計算...</div>';
+                return;
+            }
+            const _cc = window._fhsCostConfig || {}; // 原子成本快取
+            const chargedPositions = new Set();       // W1: 跨產品同部位已畫圖追蹤
+
             let hasMetal = items.some(i => i.Order_Item_Key.includes("_K_"));
             let hasSilver = items.some(i => i.Order_Item_Key.includes("_M_"));
             let metalItems = items.filter(i => i.Order_Item_Key.includes("_K_"));
@@ -5121,31 +5131,48 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 let name = item.Product_Name;
                 let qty = item.Quantity;
                 
-                // --- 1. FatMo 畫圖成本 (Base Cost) ---
+                // --- 1. 畫圖成本（從 cost_configurations 讀取，W1: chargedPositions 跨陣列追蹤）---
                 let isPModeForce = (!hasMainProduct) || (enableP && pSubCat === "木框款式" && (name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")))));
+
+                // 讀原子畫圖費（fallback 保留舊 hardcode 值作防守）
+                const _dAP = _cc.drawing_cost_adult_p || 240; // 成人照片建模(P)
+                const _dAS = _cc.drawing_cost_adult_s || 110; // 成人掃描建模(S)
+                const _dBP = _cc.drawing_cost_baby_p  || 110; // 嬰兒/大寶照片(P)
+                const _dBS = _cc.drawing_cost_baby_s  || 60;  // 嬰兒/大寶掃描(S)
 
                 if (item.isFamily) {
                     let parts = (item.comboNote || "").split(/[+、,， ]+/).filter(x => x.trim().length > 0);
                     parts.forEach(p => {
                         let isAdult = p.includes("父母") || p.includes("成人");
                         if (isAdult) {
-                            cost += isPModeForce ? 240 : 110;
+                            cost += isPModeForce ? _dAP : _dAS;
                         } else {
-                            if (p.includes("(P)") || name.includes("(P)")) cost += 110;
-                            else if (p.includes("(S)") || name.includes("(S)")) cost += 60;
-                            else cost += (!hasMainProduct) ? 110 : 60;
+                            if (p.includes("(P)") || name.includes("(P)")) cost += _dBP;
+                            else if (p.includes("(S)") || name.includes("(S)")) cost += _dBS;
+                            else cost += (!hasMainProduct) ? _dBP : _dBS;
                         }
                     });
-                } else {
+                } else if (!item.isAccessory) {
+                    // 鎖匙扣 / 吊飾：按 P/S 模式與成人/嬰兒 tier 決定畫圖費
                     let isAdultItem = name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
+                    let baseDrawing;
                     if (name.includes("(P)")) {
-                        cost = isAdultItem ? 240 : 110;
+                        baseDrawing = isAdultItem ? _dAP : _dBP;
                     } else if (name.includes("(S)")) {
-                        cost = isAdultItem ? 110 : 60;
+                        baseDrawing = isAdultItem ? _dAS : _dBS;
                     } else {
-                        cost = isPModeForce ? (isAdultItem ? 240 : 110) : (isAdultItem ? 110 : 60);
+                        baseDrawing = isPModeForce ? (isAdultItem ? _dAP : _dBP) : (isAdultItem ? _dAS : _dBS);
                     }
+                    // W1: 同部位已收畫圖費則免（跨產品：鎖匙扣+吊飾同部位，第2項免）
+                    const _posKey = (item.PartDesc || '').trim().toLowerCase();
+                    if (_posKey && chargedPositions.has(_posKey)) {
+                        baseDrawing = 0; // 同部位已計費，免除
+                    } else if (_posKey) {
+                        chargedPositions.add(_posKey);
+                    }
+                    cost = baseDrawing;
                 }
+                // isAccessory 保持 cost=0（配件無畫圖費）
                 item.FatMoCost = cost * qty;
 
                 // --- 2. 主商品報價 ---
@@ -5165,10 +5192,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
 
                     if (hasAdultInSet && hasBabyInSet) {
-                        totalSuggestedPrice += 300;
-                        totalSystemAdditionalFee += 300;
-                        breakdownParts.push(300);
-                        logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$300</div>`);
+                        const _mixedSurcharge = _cc.mixed_member_surcharge || 300; // 讀 config，fallback $300
+                        totalSuggestedPrice += _mixedSurcharge;
+                        totalSystemAdditionalFee += _mixedSurcharge;
+                        breakdownParts.push(_mixedSurcharge);
+                        logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$${_mixedSurcharge}</div>`);
                     }
                 }
 
@@ -5281,15 +5309,57 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 logs.push(`💍 <b>吊飾</b> ${totalCharms}個 / ${necklaces}條頸鏈: $${silverPrice}`);
             }
             
+            // --- 頸鏈成本（吊飾訂單，P0 奇偶規則：ceil(N/2)×$100）---
+            let _totalNecklaceChainCost = 0;
+            if (silverItems.length > 0) {
+                const _silverQtyTotal = silverItems.reduce((s, i) => s + i.Quantity, 0);
+                const _necklaceCount = Math.ceil(_silverQtyTotal / 2);
+                _totalNecklaceChainCost = _necklaceCount * (_cc.necklace_chain_cost || 100);
+                if (_totalNecklaceChainCost > 0) {
+                    logs.push(_catHdr('#EDE7F6','#4527A0','#B39DDB','💎 頸鏈成本'));
+                    logs.push(`💎 頸鏈 ×${_necklaceCount} 條: $${_totalNecklaceChainCost}`);
+                }
+            }
+
+            // --- 多件運費扣減（P0 規則：同類(總件數-1)×單件運費）---
+            let _totalShippingDeduction = 0;
+            if (metalItems.length > 0) {
+                const _kQty = metalItems.reduce((s, i) => s + i.Quantity, 0);
+                if (_kQty > 1) {
+                    const _kDed = (_kQty - 1) * (_cc.keychain_shipping_deduction_per_extra || 20);
+                    _totalShippingDeduction += _kDed;
+                    logs.push(`📦 鎖匙扣多件運費優惠 (${_kQty}件): -$${_kDed}`);
+                }
+            }
+            if (silverItems.length > 0) {
+                const _mQty = silverItems.reduce((s, i) => s + i.Quantity, 0);
+                if (_mQty > 1) {
+                    const _mDed = (_mQty - 1) * (_cc.charm_shipping_deduction_per_extra || 35);
+                    _totalShippingDeduction += _mDed;
+                    logs.push(`📦 吊飾多件運費優惠 (${_mQty}件): -$${_mDed}`);
+                }
+            }
+
+            // --- 成本合計（畫圖 + 頸鏈 - 運費扣減）---
+            const _totalCostNew = Math.max(0, totalDrawingCost + _totalNecklaceChainCost - _totalShippingDeduction); // G8: 防負數
+
+            // W4 Shadow 對比（新舊引擎差值記錄，kill-switch 控制輸出）
+            if (!window.USE_LEGACY_COST_LOGIC && totalDrawingCost !== _totalCostNew) {
+                console.warn('[FHS Cost Shadow] 舊(畫圖only):', totalDrawingCost,
+                    '新(頸鏈+運費):', _totalCostNew,
+                    '差值:', _totalCostNew - totalDrawingCost);
+            }
+            const _systemTotalCost = window.USE_LEGACY_COST_LOGIC ? totalDrawingCost : _totalCostNew;
+
             window.fhsCurrentPricingItems = items;
             window.fhsCurrentPricingMeta = {
                 System_Final_Sale_Price: totalSuggestedPrice,
-                System_Total_Cost: totalDrawingCost,
+                System_Total_Cost: _systemTotalCost,
                 System_Additional_Fee: totalSystemAdditionalFee
             };
 
             if (uiPrice) uiPrice.innerText = totalSuggestedPrice;
-            if (uiCost) uiCost.innerText = totalDrawingCost;
+            if (uiCost) uiCost.innerText = _systemTotalCost;
             if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
 
             // V40.8: Show breakdown (e.g. "(2380+860)")
@@ -11351,6 +11421,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (badge) { badge.textContent = '載入中'; badge.className = 'sys-badge sys-badge-checking'; }
             window._fhsCostConfig     = {};
             window._fhsCostConfigMeta = {}; // key → { version, display_name }
+            window._fhsCostReady      = false; // W5: 競態防護旗標，rows 載入後才設 true
 
             // Check batch recalc lock first
             var batchRunning = false;
@@ -11371,6 +11442,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         display_name: r.display_name || r.config_key
                     };
                 });
+                window._fhsCostReady = true; // W5: 原子成本已載入記憶體，計價可啟動
 
                 if (!rows.length) {
                     list.innerHTML = '<div style="color:var(--fhs-text-secondary);font-size:12px;padding:6px 0;">尚無設定資料（Migration 0022a 未部署？）</div>';

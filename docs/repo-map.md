@@ -40,7 +40,8 @@ freehandsss_dashboard/
 │   │   ├── 0022a_cost_config_v2_schema.sql    ← cost_configurations v2.1 schema（4 欄位 + 17 keys）✅ 已部署
 │   │   ├── 0022b_cost_config_v2_rpc.sql       ← 樂觀鎖 RPC + fhs_sync_products_from_config ✅ 已部署
 │   │   ├── 0023_main_products_seed.sql        ← 主力 30 SKU 靜態 seed（G4 CI Fix）✅ 已部署
-│   │   └── 0024_recalc_completed_at.sql       ← orders.last_recalc_completed_at + fhs_batch_recalc_execute v2（G6）✅ 已部署
+│   │   ├── 0024_recalc_completed_at.sql       ← orders.last_recalc_completed_at + fhs_batch_recalc_execute v2（G6）✅ 已部署
+│   │   └── 0025_cost_atoms_seed.sql           ← P1 原子成本補完：3 新 key（頸鏈$100/吊飾運費$35/混合$300）+ P0 語義修正 ⏳ 待部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

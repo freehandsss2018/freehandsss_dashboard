@@ -1,5 +1,56 @@
 # Changelog
 
+## [2026-06-02] ⚡ P1 — 成本邏輯憲法化（Session 53）
+
+**核心變化**：前端 `calculatePricing()` 確立為唯一成本計算權威；原子成本從 Supabase `cost_configurations` 讀取，零 hardcode；n8n P0 shipping bug 修正。
+
+### Dashboard V41 — calculatePricing 成本引擎重構
+- ✅ **[W5]** `loadCostConfigurations()` 加入 `_fhsCostReady` ready 旗標；`calculatePricing()` 加入競態防護 guard（未載入時鎖計算，防 0 成本提交）
+- ✅ **[W1]** 加入 `chargedPositions Set` 跨陣列同部位已畫圖追蹤；同部位跨產品（鎖匙扣+吊飾）第 2 件免畫圖費
+- ✅ **[DE-HARDCODE]** 畫圖費 240/110/110/60 → 讀 `_cc.drawing_cost_*`（fallback 保留原值）；配件 accessories 不再意外計入畫圖費
+- ✅ **[NEW]** 頸鏈成本：`Math.ceil(吊飾數/2) × _cc.necklace_chain_cost`（$100）計入 System_Total_Cost
+- ✅ **[NEW]** 多件運費扣減：鎖匙扣 `(件數-1)×$20`、吊飾 `(件數-1)×$35`，全讀 config
+- ✅ **[DE-HARDCODE]** 混合成員附加費 $300 → 讀 `_cc.mixed_member_surcharge`
+- ✅ **[W4]** Shadow kill-switch `window.USE_LEGACY_COST_LOGIC`；新舊差值寫 `console.warn`
+
+### Supabase Migration 0025
+- ✅ **[NEW]** `0025_cost_atoms_seed.sql`：補入 3 個缺失 key（`necklace_chain_cost=100`、`charm_shipping_deduction_per_extra=35`、`mixed_member_surcharge=300`）
+- ✅ **[FIX]** `keychain_shipping_deduction_per_extra` description 修正：語義從「行數」改為「件數 SUM(quantity)」
+
+### n8n V47.14（已部署）
+- ✅ **[FIX P0]** Calculate Profit & Pack Items：`keychainItemCount++`（行數）→ `+= Original_Qty`（件數），對齊 Finance Bible §2.5 P0 修正
+
+### Schema 文件
+- ✅ `FHS_Product_Cost_Schema_v2.md`：17 keys → 20 keys，新增 0025 三個 key 條目
+
+**尚待 Fat Mo 執行**：Supabase SQL Editor 部署 `0025_cost_atoms_seed.sql` → 驗證 smoke test PASS
+
+**尚待 Fat Mo 驗證（Live）**：V1–V10 驗收清單（W5 Slow-3G / W1 同部位免畫圖 / W2 #0600007=$455 / W4 shadow 比對）
+
+**current.html 同步**：待 Live 驗證全通過後授權
+
+---
+
+## [2026-06-02] 🔧 P0 — Finance Bible G1–G7 位置依賴成本規則修正（Session 52）
+
+**核心變化**：Finance Bible v1.1.0 → v1.2.0，修正長期缺失/錯誤的成本計算規則。
+
+- ✅ **[FIX G1]** `FHS_Finance_Bible.md`：鎖匙扣運費扣減公式修正 `(行數-1)×$20` → `(總件數-1)×$20`（件數≠行數，舊公式是 BUG）
+- ✅ **[FIX G1]** 同步修正吊飾「無扣減」錯誤標注 → 吊飾亦有 `(總件數-1)×$35` 扣減
+- ✅ **[NEW G2]** 補入「同部位首件含畫圖費，第2件起免畫圖」位置依賴成本核心規則
+- ✅ **[NEW G3]** 補入跨產品同部位免畫圖規則（鎖匙扣+吊飾同部位，後加者亦免畫圖）
+- ✅ **[NEW G4]** 補入吊飾頸鏈奇偶規則（1鏈最多2飾，奇數件加頸鏈$100，偶數件免）
+- ✅ **[NEW G5]** 補入吊飾運費扣減公式 `(總件數-1)×$35`
+- ✅ **[FIX G6]** 釐清 Airtable Clasp欄位對吊飾=頸鏈（非扣夾），現行$100（舊$70已過時）
+- ✅ **[NEW G7]** `.fhs/memory/learnings.md`：補入4條財務 pitfall 防止再遺忘
+- ✅ 持久記憶已更新（`project_cost_calculation_rules.md` + `feedback_finance_rules_must_be_recorded.md`）
+
+**驗算範例已固化（訂單 #0600007 鎖匙扣）**：左手×1 + 右手×2 → $185+$185+$125-$40 = **$455**
+
+**下步**：P1 成本邏輯憲法化（獨立新 session）
+
+---
+
 ## [2026-06-01] 📚 B 任務完成 — FHS 財務知識守門員建立（Session 50）
 
 **核心變化**：財務知識從「三份文件並列宣稱唯一真理」整合為「兩層清晰架構 + 守門員」。
