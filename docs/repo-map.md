@@ -42,7 +42,8 @@ freehandsss_dashboard/
 │   │   ├── 0023_main_products_seed.sql        ← 主力 30 SKU 靜態 seed（G4 CI Fix）✅ 已部署
 │   │   ├── 0024_recalc_completed_at.sql       ← orders.last_recalc_completed_at + fhs_batch_recalc_execute v2（G6）✅ 已部署
 │   │   ├── 0025_cost_atoms_seed.sql           ← P1 原子成本補完：3 新 key（頸鏈$100/吊飾運費$35/混合$300）+ P0 語義修正 ⏳ 待部署
-│   │   └── 0026_b1_cost_atoms_complete.sql    ← B1 引擎補完：UPDATE necklace 0→260/316；INSERT adult鎖匙扣135×2 + 環扣10；display_name 補（嬰兒）⏳ 待部署
+│   │   ├── 0026_b1_cost_atoms_complete.sql    ← B1 引擎補完：UPDATE necklace 0→260/316；INSERT adult鎖匙扣135×2 + 環扣10；display_name 補（嬰兒）✅ 已部署
+│   │   └── 0027_order_items_cost_breakdown.sql ← Task A 前置資產：order_items 四分量欄（DEFAULT 0，待 Task A 顆粒化 roll-up 填值）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

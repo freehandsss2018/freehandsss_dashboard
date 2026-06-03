@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-03 (Session 57): 🏁 migration 0027 部署 + B2 收尾 + Task A 移交 ✅
+
+**Scope**: migration 0027 部署（order_items 四分量欄 drawing/printing/chain/shipping_cost）；B2 八維度分析裁定範疇收斂（TRANSITION 標示收尾，四分量歸 Task A）；V41 + current.html TRANSITION 橘字警告→灰色中性估算提示；Q1/Q2 per-item 拆行規範寫入 Task A handoff §三-B；decisions.md + handoff Session 57 更新。
+**Status**: ✅ B2 正式收尾。Task A（顆粒化 roll-up）留待新 session cl-flow。
+
+---
+
 ## 2026-06-01 (Session 50): 📚 B 任務完成 — FHS 財務知識守門員建立 ✅
 
 **Scope**: 2a/2b 深化（material_cost_* 根因 + 財務知識散落）；確認 Fat Mo 三層顆粒化成本邏輯正確但現行實作為偽顆粒；B 先行（守門員）A 移新 session；建立 FHS_Pricing_Bible.md（L2）+ finance-gatekeeper SKILL；退役 3 份舊文件；A 接盤包落地。

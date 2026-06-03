@@ -1,3 +1,47 @@
+# FHS Handoff - 2026-06-03 (Session 57 — B2 收尾 + Task A 移交)
+
+## Session 57 — B2 TRANSITION 收尾 + 四分量移交 Task A
+
+**[Session 57 完結 — B2 正式收斂；migration 0027 + 0027 四欄正名為 Task A 資產；TRANSITION 標示更新]**
+
+### 執行完成項目
+
+#### migration 0027 部署（Session 57 開始時執行）
+- ✅ `0027_order_items_cost_breakdown.sql` 已部署至 Supabase（Fat Mo SQL Editor 執行）
+- ✅ Smoke tests PASSED：order_items 四欄存在（drawing/printing/chain/shipping_cost）
+
+#### B2 範疇修正（Rule 3.16 前置查驗）
+- ✅ Finance Bible §一確認：成本側由 n8n 計算，前端 calculatePricing() 為參考預算（非真理）
+- ✅ B2「n8n 信任前端四分量」方向違反職責分工，修正為收尾方案
+- ✅ 八維度分析 + 草案 v1 → 自我批評 → v2（階段收斂，四分量歸 Task A）
+
+#### TRANSITION 標示更新
+- ✅ V41 line 5427–5430：橘字「⚠️ B1：後台回寫待 B2」→ 灰色「成本估算已含打印/環扣/運費（後台記帳由 n8n 負責）」
+- ⚠️ current.html：被安全守護攔截，**待 Fat Mo 授權 current.html 同步**
+
+#### 文件移交
+- ✅ migration 0027 檔頭正名：Task A 資產（現階段四欄 DEFAULT 0）
+- ✅ Task A handoff 補入 §三-B（Q1 chain 奇偶規範、Q2 shipping 毛值規範 + 驗算）
+- ✅ repo-map 更新：0027 標注「Task A 前置資產」
+- ✅ decisions.md 補入 Session 57 B2 範疇修正記錄
+
+### 尚待執行
+
+| # | 項目 | 說明 |
+|---|------|------|
+| 1 | current.html TRANSITION 同步 | 需 Fat Mo 授權，輸入 `/execute` 後執行 |
+| 2 | Session 56 VT-1/2/3 Live 驗證 | n8n V47.15 吊飾運費扣減驗證（屬 S56 尾巴） |
+| 3 | Task A 顆粒化 roll-up | 新 session，依 handoff §四 四個待決命題，順序：先 cl-flow |
+
+### Subagent 使用記錄
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer`（schema 審查） |
+| 實際使用 | ✅ `database-reviewer` — 委託：migration 0027 Gate 稽核（Session 57 開始時） |
+| 遵從 Router | ✅ 遵從 |
+
+---
+
 # FHS Handoff - 2026-06-03 (Session 56 — B2 吊飾運費扣減 + 財務規則語義修正)
 
 ## Session 56 — B2 P0 修正 + 收款確收守護語義修正

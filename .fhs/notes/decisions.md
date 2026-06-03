@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-03] (Session 57) B2 範疇修正 — 四分量歸 Task A，B2 收尾為 TRANSITION 標示
+
+決策：B2 範疇從「前端傳四分量 → n8n 信任回寫」修正為「TRANSITION 標示收尾 + 四分量移交 Task A」。
+原因：Finance Bible §一職責分工確立成本側由 n8n 計算（非前端傳入），「n8n 信任前端成本」違反 Rule 3.16。
+四分量拆解（drawing/printing/chain/shipping per-item）本質是 Task A 顆粒化 roll-up 的一部分，
+在 migration 0023 偽顆粒地基上重算位置規則會製造第二套 G2/G3/G4 邏輯，drift 風險高。
+執行項：V41 TRANSITION 標示更新（橘字警告→中性灰色估算提示）；migration 0027 檔頭正名為 Task A 資產；
+per-item 拆行規範（Q1 chain 奇偶、Q2 shipping 毛值）寫入 Task A handoff。
+current.html 同步待 Fat Mo 授權 `/execute` 後執行。
+
+---
+
 [2026-06-03] (Session 55) B1 成本引擎驗證與跨產品免畫圖費 Bug 修復
 
 決策：修復 `calculatePricing()` 中 `chargedPositions` 沒有自動寫入主商品套裝肢體部位的 Bug。現在當 `enableP` 為 true 時，主套裝中選擇的肢體部位（非「無」者）會自動被加入已畫圖部位追蹤。

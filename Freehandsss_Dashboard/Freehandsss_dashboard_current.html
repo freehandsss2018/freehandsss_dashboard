@@ -5424,9 +5424,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             if (uiPrice) uiPrice.innerText = totalSuggestedPrice;
             if (uiCost) uiCost.innerText = _systemTotalCost;
-            // B1 過渡標示（n8n 仍用舊成本路徑，三端一致待 B2）
+            // 成本估算提示（前端為操作者參考預算；後台記帳成本由 n8n 計算寫入 Supabase）
             if (!window.USE_LEGACY_COST_LOGIC && (_totalPrintingCost > 0 || _totalKeychainClaspCost > 0)) {
-                logs.push('<div style="color:#E65100;font-size:10px;margin-top:4px;opacity:0.7;">⚠️ B1：成本顯示已校正（含打印/環扣/運費），後台回寫待 B2</div>');
+                logs.push('<div style="color:#888;font-size:10px;margin-top:4px;opacity:0.7;">成本估算已含打印/環扣/運費（後台記帳由 n8n 負責）</div>');
             }
             if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
 

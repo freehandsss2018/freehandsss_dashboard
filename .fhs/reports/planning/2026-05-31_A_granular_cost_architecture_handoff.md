@@ -60,6 +60,50 @@ Fat Mo 裁決：**B 先行，A 移至新 session**。本文件即為 A 的接盤
 
 ---
 
+## 三-B、order_items 四分量 per-item 拆行規範（2026-06-03 B2 session 確立）
+
+> **來源**：B2 範疇收斂討論，Fat Mo 裁定。四分量由 **Task A** 落地時實作，此節為 A 接手時的確定性規範。
+
+### migration 0027 四欄歸屬
+- `drawing_cost / printing_cost / chain_cost / shipping_cost`（NUMERIC(10,2) DEFAULT 0）
+- 現階段全為 0；**Task A 顆粒化 roll-up 完成後由 n8n Calculate Profit & Pack Items 填值**
+
+### Q1 — chain_cost per-item 拆行規範
+
+**吊飾（Category M）**：頸鏈是訂單層共享資源（G4 奇偶規則），按全訂單累計件位決定。
+```
+全訂單吊飾按 item_key 確定性排序，奇數件位 = $100，偶數件位 = $0
+每行 chain_cost = 該行內「落在奇數位」的件數 × $100
+```
+驗算（同部位 4 件，G4 標靶）：
+- 件1（奇）chain=$100；件2（偶）chain=$0；件3（奇）chain=$100；件4（偶）chain=$0
+- SUM chain = $200，符合 ceil(4/2)×$100 ✓
+
+**鎖匙扣（Category K）**：環扣每件獨立，無共享。
+```
+每行 chain_cost = $10 × row_qty（keychain_clasp_cost 單價）
+```
+
+### Q2 — shipping_cost per-item 拆行規範
+
+**統一模型**：order_items 存**毛運費**（不含扣減），訂單層扣減維持現有 N8n_Adjustment_Notes 機制。
+```
+吊飾每行：shipping_cost = $35 × row_qty（charm_shipping_deduction_per_extra 基礎單價）
+鎖匙扣每行：shipping_cost = $20 × row_qty（keychain_shipping_deduction_per_extra 基礎單價）
+```
+多件扣減 `(總件數−1)×單價` 保持訂單層（已在 orders.necklace_cost / keychain_cost 扣減）。
+
+收斂律（必須成立）：
+```
+SUM(order_items 四欄毛值) − 訂單層扣減 = orders.total_cost
+```
+驗算（G4 標靶，4 吊飾）：
+- 毛：drawing$60 + printing$1,040 + chain$200 + shipping$140 = $1,440
+- 訂單層扣：(4件−1)×$35 = $105
+- 淨：$1,440 − $105 = **$1,335** ✓（B1 標靶不破）
+
+---
+
 ## 四、A 任務的核心待決命題（需新 session 用 cl-flow 正式驗證）
 
 1. **`products.total_base_cost` 應否改為從 `cost_configurations` 原子成本動態 roll-up？**
