@@ -51,8 +51,8 @@
 - **【高頻 ⚠️】Chrome Date Parsing 異常與表格排序還原失效**：`new Date("DD/MM/YYYY")` 在 Chrome 等瀏覽器中會解析為 `Invalid Date` (NaN)，導致以該格式進行的日期排序失效。且在頁面載入時還原 filters 雖成功設定選單，但渲染卻繞過 `applyReviewFilters()` 而直接 `renderReviewTable()` 導致表格未排序。解法：在排序前以正則/切割手動解析 `DD/MM/YYYY`，且在 fetch callback 尾端強制呼叫 `applyReviewFilters()` 進行二次過濾與排序。 — 源自 2026-05-25
 - **【高頻 ⚠️】AI 違反 Rule 3.14 未將實施計畫寫入專案實體路徑**：AI 未遵循 `/ag-plan` 指令將實施計畫寫入專案的 `a2_implementation_plan.md`，且未使用繁體中文。必須牢記：所有正式報告與計畫一律實體落盤至專案相對應目錄，且對話與生成內容須遵守繁體中文原則。 — 源自 2026-05-25
 - **【高頻 ⚠️】AI 誤將驗證報告儲存於 root/artifacts/ 而非 .fhs/reports/**：因受 IDE 目前開啟檔案在 `artifacts/` 的導引以及系統內建「artifacts 專用目錄」提示的影響，忽視了 Rule 3.14 關於正式報告與計畫必須存於 `.fhs/reports/` 或 `.fhs/notes/` 的限制。未來不論 IDE 開啟何處的檔案，均須以 `AGENTS.md` 憲法之目錄存放限制為第一優先。 — 源自 2026-06-03
-- **【嚴重過失 ⚠️ Rule 3.16 觸發】財務規則摘要 ≠ 完整語義，必先讀 Finance Bible**：AI 在 B2 設計階段僅讀 AGENTS.md 摘要「前端利潤結算為絕對真理」，未讀 Finance Bible §一，錯將「確收收款（final_sale_price）不可被 n8n 覆蓋」延伸至「前端估算成本亦為真理」，導致 B2 方向錯誤。正確語義：真理側 = 操作者手輸確收金額；成本側 = n8n 從 Supabase 計算（估算快照）。凡涉及財務規則解釋，必先讀 Finance Bible §一，禁依賴摘要推斷。 — 源自 2026-06-03 Rule 3.16
-- **【嚴重過失 ⚠️】未讀源文件即作財務設計判斷（feedback_investigate_before_asking 財務升級版）**：「嚴禁直接問可自查/自析的事」已有記錄，但 AI 仍在未讀 Finance Bible 下建議「n8n 信任前端四分量」方向。財務討論的第一步 = 讀 Finance Bible（Rule 3.16），違者同等嚴重過失。 — 源自 2026-06-03
+- **【嚴重過失 ⚠️ Rule 3.16 觸發】財務規則摘要 ≠ 完整語義，入口必為 finance-gatekeeper**：AI 在 B2 設計階段僅讀 AGENTS.md 摘要，未走 finance-gatekeeper 路由，錯將「確收收款（final_sale_price）不可被 n8n 覆蓋」延伸至「前端估算成本亦為真理」，導致 B2 方向錯誤。修正後 Rule 3.16：先讀 `.fhs/ai/skills/finance-gatekeeper/SKILL.md`，再按任務路由讀對應文件（L1/L2a/L2b）。禁依賴 AGENTS.md 摘要直接推斷財務語義。 — 源自 2026-06-03 Rule 3.16（2026-06-03 v1.4.11 路由升級）
+- **【嚴重過失 ⚠️】未走路由層即作財務設計判斷（feedback_investigate_before_asking 財務升級版）**：「嚴禁直接問可自查/自析的事」已有記錄，但 AI 仍在未讀 Finance Bible 下建議「n8n 信任前端四分量」方向。財務討論第一步 = 讀 finance-gatekeeper/SKILL.md 取路由（Rule 3.16 v1.4.11），違者同等嚴重過失。 — 源自 2026-06-03（2026-06-03 v1.4.11 更新）
 
 
 - **【P9】IIFE 閉包函式 onclick 靜默失效**：函式定義在 IIFE `(function(){'use strict';})()` 內，`onclick="fn()"` 全域找不到函式，完全靜默無錯誤。修復：在 IIFE 末尾明確 `window.fn = fn` 暴露。所有新增 onclick 函式必查此項 — 源自 2026-05-27

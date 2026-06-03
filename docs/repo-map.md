@@ -121,7 +121,7 @@ freehandsss_dashboard/
 │   │   │       ├── frontend-developer.md ← Phase B 原型（使用 Input Contract）
 │   │   │       ├── code-reviewer.md     ← Phase C 審核（使用 UX checklist 閘門）
 │   │   │       ├── database-reviewer.md ← v2.1.0 Airtable schema + n8n 資料流審查（2026-05-16 升級：Supabase Layer 1/2 優先順序重組 + Finance Bible 強制讀取）
-│   │   │       ├── finance-auditor.md   ← v2.0.0 四端財務稽核員（Supabase-First，Finance Bible 強制前置，2026-05-16 升級）
+│   │   │       ├── finance-auditor.md   ← v2.1.0 四端財務稽核員（v1.4.10 對齊、收款確收語義、V47.15、動態現況，2026-06-03 升級）
 │   │   │       ├── tdd-guide.md         ← v1.0.0 TDD 測試驅動開發 subagent（Python + n8n 專用，2026-04-28）【指令已退役，subagent 保留】
 │   │   │       ├── build-error-resolver.md ← v1.0.0 錯誤診斷（Haiku model，2026-04-28 新增）
 │       │       ├── blender-3d-modeler.md ← v2.0.0 Blender 3D 建模（2026-05-07：Triage / FDM printability / HANDOFF 工具清單 / 路徑規則 / 開放藝術建模）
@@ -132,7 +132,7 @@ freehandsss_dashboard/
 │   │       │   ├── README.md            ← 用途、角色邊界、使用場景
 │   │       │   └── vendor/
 │   │       │       └── SKILL.md        ← 來源說明與角色邊界聲明
-│   │       ├── finance-gatekeeper/      ← 財務知識守門員 v1.0.0（2026-06-01 新增）L1/L2 查詢路由 + 5 條死線
+│   │       ├── finance-gatekeeper/      ← 財務知識守門員 v1.1.0（2026-06-03 升級）L1+L2a+L2b 三層路由、收款確收語義修正、技術債備忘
 │   │       │   └── SKILL.md            ← 任何財務任務前強制載入（取代 finance-calculator）
 │   │       ├── finance-calculator/      ← [DEPRECATED 2026-06-01] 已整合至 finance-gatekeeper
 │   │       │   └── SKILL.md            ← 利潤公式、前端/n8n 優先規則（已過時，勿引用）

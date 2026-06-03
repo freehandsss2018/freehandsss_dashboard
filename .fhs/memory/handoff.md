@@ -1,3 +1,40 @@
+# FHS Handoff - 2026-06-03 (Session 58 — Rule 3.16 強化 + 財務核心文件升版)
+
+## Session 58 — Rule 3.16 任務型路由補入 + finance-gatekeeper v1.1.0 + finance-auditor v2.1.0
+
+**[Session 58 完結 — 財務核心文件體系補完，三檔路由對齊，制度層收尾]**
+
+### 執行完成項目
+
+- ✅ AGENTS.md Rule 3.16：入口改為 finance-gatekeeper/SKILL.md → 任務型路由表（職責/成本key/售價三分支）
+- ✅ finance-gatekeeper/SKILL.md v1.1.0：補 L2a Cost Schema v2 條目、§三收款確收守護語義修正、§五技術債備忘
+- ✅ finance-auditor.md v2.1.0：compatible_with v1.4.10、V47.15、Rule 3.16 語義注入、已知現況動態化
+- ✅ finance-auditor.md 雙路徑同步（~/.claude/agents/freehandsss/）
+- ✅ CHANGELOG.md 更新
+- ✅ 完成記錄：`.fhs/reports/completion/2026-06-03_rule316-finance-docs-upgrade_completion_report.md`
+
+### 尚待執行（延續 Session 57）
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| 1 | current.html TRANSITION 同步 | 待 Fat Mo 授權 `/execute` |
+| 2 | Session 56 VT-1/2/3 Live 驗證 | n8n V47.15 吊飾運費扣減驗證 |
+| 3 | Task A 顆粒化 roll-up | 新 session，先 `/cl-flow` |
+| 4 | Anti-Idle Ping 驗證 | 稍後 |
+| 5 | pg_cron TTL | 稍後 |
+| 6 | 立體擺設 UI 整合（R1） | 追蹤中 |
+| TD | FHS_Pricing_Bible.md 搬移至 .fhs/ai/ | 技術債，PRM v2 P2 |
+
+### Subagent 使用記錄
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer` |
+| 實際使用 | ❌ 未使用（純制度文件修訂） |
+| 遵從 Router | ❌ 未遵從（範圍不符：無 schema/n8n 操作）|
+
+---
+
 # FHS Handoff - 2026-06-03 (Session 57 — B2 收尾 + Task A 移交)
 
 ## Session 57 — B2 TRANSITION 收尾 + 四分量移交 Task A

@@ -3,9 +3,9 @@ name: finance-auditor
 description: FHS 三端財務稽核員（互動式 Live 驗證）。Use PROACTIVELY when user asks for live Airtable profit verification, order cost reconciliation, three-tier financial validation (Airtable↔n8n↔Dashboard), or Supabase-ready financial audit. Read-only audit mode — does NOT modify Airtable records or n8n workflows.
 tools: ["Bash", "Read", "Grep", "Glob", "mcp__claude_ai_Airtable__search_bases", "mcp__claude_ai_Airtable__list_tables_for_base", "mcp__claude_ai_Airtable__get_table_schema", "mcp__claude_ai_Airtable__list_records_for_table", "mcp__claude_ai_Airtable__search_records", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node", "mcp__n8n-mcp-server__verify_triple_sync"]
 model: claude-sonnet-4-6
-version: v2.0.0
-compatible_with: AGENTS.md v1.4.5
-last_updated: 2026-05-16
+version: v2.1.0
+compatible_with: AGENTS.md v1.4.10
+last_updated: 2026-06-03
 ---
 
 # FHS Finance Auditor — 四端財務稽核員
@@ -25,6 +25,8 @@ Step 0: Read .fhs/ai/skills/finance-gatekeeper/SKILL.md
         → 查詢路由 + L1/L2 權威階層 + 5 條財務死線（前置知識載入）
 Step 1: Read .fhs/ai/FHS_Finance_Bible.md
         → 雙層成本架構、欄位歸屬、SKU→類別映射、驗證公式
+        ⚠️ 收款確收守護（v1.4.10）：final_sale_price 為操作者手輸確收真理；
+           total_cost 為 n8n 估算快照，非真理側。詳見 Finance Bible §一職責分工表。
 Step 2: Read n8n/Quadruple_Sync_Field_Map.md
         → 四端欄位映射（最新版，取代舊 Triple_Sync）
 ```
@@ -40,7 +42,7 @@ Step 2: Read n8n/Quadruple_Sync_Field_Map.md
 |------|-----|
 | Airtable Base ID | `app9GuLsW9frN4xaT` |
 | 欄位地圖 | `n8n/Quadruple_Sync_Field_Map.md`（四端版） |
-| 核心 Workflow ID | `6Ljih0hSKr9RpYNm`（26 nodes） |
+| 核心 Workflow ID | `6Ljih0hSKr9RpYNm`（V47.15，versionId: `25351131-44f2-4e95-8c22-fb856042bde8`）|
 | Finance Bible | `.fhs/ai/FHS_Finance_Bible.md`（必讀） |
 | Supabase 角色 | **主導**（V41+ Supabase-First） |
 | Airtable 角色 | **備援**（異步同步，quota 限制時降級） |
@@ -232,14 +234,16 @@ def validate_finance(order):
 
 ## 已知現況（稽核前須知）
 
+> ⚠️ 靜態筆數已過時（基準日 2026-05-16），執行稽核前請先查 Supabase 取得當前訂單 / item 數量。驗證公式 validate_finance() 邏輯持續有效，不依賴靜態筆數。
+
 | 狀態 | 項目 | 說明 |
 |------|------|------|
-| ✅ | `total_cost`, `net_profit` | 全部 23 筆訂單已正確寫入 Supabase |
-| ✅ | `order_items.item_base_cost` | 50/52 筆有值（2 筆特殊品 NULL 屬正常） |
-| ✅ | `products.total_base_cost` | 489 筆全部非 NULL |
-| ✅ | `cost_integrity` | v_order_cost_breakdown 全部 `✓ matched` |
-| ⚠️ | `orders.handmodel/keychain/necklace_cost` | 歷史 23 筆為 NULL（C0.5 修復後新訂單會正確） |
-| ⚠️ | `order_items.product_sku` | 2 筆特殊品（0600100）NULL 屬正常，待 Airtable quota 重置後核對 |
+| 📍 | 訂單 / order_items 筆數 | 執行時即時查 Supabase，不依賴此表靜態數字 |
+| ✅ | 驗證公式 | validate_finance() 邏輯持續有效 |
+| ✅ | `products.total_base_cost` | 全部非 NULL（migration 0023/0026 已完成） |
+| ✅ | `cost_integrity` | v_order_cost_breakdown 全部 `✓ matched`（2026-06-03 基準） |
+| ⚠️ | `orders.handmodel/keychain/necklace_cost` | 歷史舊訂單為 NULL；C0.5 修復後新訂單正確寫入 |
+| ⚠️ | `order_items` 四分量欄 | migration 0027 已部署（2026-06-03），drawing/printing/chain/shipping_cost DEFAULT 0；Task A 完成前不寫入實值 |
 
 ---
 
@@ -289,6 +293,7 @@ def validate_finance(order):
 
 ---
 
-*FHS finance-auditor v2.0.0 — 2026-05-16*
-*升級：Triple → Quadruple 四端架構；Supabase 為主；新增 Finance Bible 強制前置*
+*FHS finance-auditor v2.1.0 — 2026-06-03*
+*升級：compatible_with v1.4.10；收款確收守護語義修正（Rule 3.16）；n8n V47.15；已知現況動態化；migration 0027 四分量欄說明*
+*v2.0.0 — 2026-05-16：Triple → Quadruple 四端架構；Supabase 為主；新增 Finance Bible 強制前置*
 *授權來源：Fat Mo — Supabase-First 財務架構優化*

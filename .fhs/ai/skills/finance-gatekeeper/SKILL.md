@@ -1,9 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.0.0
+version: 1.1.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
+last_updated: 2026-06-03
+compatible_with: AGENTS.md v1.4.10
 ---
 
 # FHS Finance Gatekeeper — 財務知識守門員
@@ -17,12 +19,13 @@ authority: L1 + L2 路由守門員
 
 | 你要問的問題類型 | 讀哪份文件 |
 |----------------|-----------|
-| 產品定價、售價公式（吊飾/鎖匙扣/立體擺設多少錢）| **L2** `.fhs/notes/FHS_Pricing_Bible.md` §2–§4 |
-| FatMo 繪圖成本（Drawing Cost）| **L2** `.fhs/notes/FHS_Pricing_Bible.md` §5 |
-| 產品生產成本結構（total_base_cost 組成）| **L2** `.fhs/notes/FHS_Pricing_Bible.md` §6 |
-| 折扣 / adjustment_amount 機制 | **L2** `.fhs/notes/FHS_Pricing_Bible.md` §7 |
-| 品牌禁止邏輯（禁成人單買、嬰兒核心原則）| **L2** `.fhs/notes/FHS_Pricing_Bible.md` §0 |
-| 架構規則（Layer 2 快照 / 誰寫哪個欄位 / 禁 trigger）| **L1** `.fhs/ai/FHS_Finance_Bible.md` |
+| 產品定價、售價公式（吊飾/鎖匙扣/立體擺設多少錢）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §2–§4 |
+| FatMo 繪圖成本（Drawing Cost）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §5 |
+| 產品生產成本組成邏輯（total_base_cost 有哪些分量）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §6 |
+| 成本 key 實際數值（material_cost_* / keychain_* / chain 等）| **L2a** `.fhs/ai/FHS_Product_Cost_Schema_v2.md` |
+| 折扣 / adjustment_amount 機制 | **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §7 |
+| 品牌禁止邏輯（禁成人單買、嬰兒核心原則）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §0 |
+| 架構規則（Layer 1/2 快照 / 誰寫哪個欄位 / 禁 trigger）| **L1** `.fhs/ai/FHS_Finance_Bible.md` |
 | 四端同步欄位映射 | `n8n/Quadruple_Sync_Field_Map.md` |
 | Live 訂單成本/利潤驗證 | 啟動 `finance-auditor` subagent |
 | Supabase schema / SKU 成本資料 | 啟動 `database-reviewer` subagent |
@@ -31,14 +34,17 @@ authority: L1 + L2 路由守門員
 
 ## 二、權威階層與衝突解決
 
-```
+```text
 L1  FHS_Finance_Bible.md     ← 架構不變量（最高權威）
     若與任何文件衝突，以 L1 為準
 
-L2  FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
+L2a FHS_Product_Cost_Schema_v2.md ← 成本 key 數值定義
+    查成本實際數值時讀此文件
+
+L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
     取代 product_pricing_reference.md（已退役）
     取代 FHS_Product_Bible_V3.7.md（已退役，多項定價規則已過時）
-    若與退役文件衝突，以 L2 為準
+    若與退役文件衝突，以 L2b 為準
 ```
 
 > ⚠️ 若搜索到 `product_pricing_reference.md` 或 `FHS_Product_Bible_V3.7.md`：
@@ -48,7 +54,7 @@ L2  FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 
 ## 三、5 條財務死線（永不違反）
 
-1. **前端利潤最高真理**：前端計算並傳入的 `final_sale_price` 為最終值，n8n 不得重算（除非前端傳入值為 0）
+1. **收款確收守護（v1.4.10 語義修正）**：操作者手動輸入的確收金額 `final_sale_price`（= Deposit + Balance + Additional_Fee）為絕對真理，n8n 不得重算（除非前端傳入值為 0）。成本 `total_cost` 由 n8n 從 Supabase 估算，屬後台快照，非「真理」。
 2. **Layer 2 歷史快照不可變**：`orders.total_cost` / `net_profit` / `handmodel_cost` / `keychain_cost` / `necklace_cost` 訂單確認後不可變更
 3. **禁止 trigger 重算成本**：Postgres trigger / generated column 重算任何成本欄位是架構反模式
 4. **captureFormState() 禁止改動**：此函式是整個 POS 系統的數據根基
@@ -63,3 +69,10 @@ L2  FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 - 「鎖匙扣定價」：每個**身體部位**獨立計階梯；S mode 和 P mode 有不同費率
 - 「adjustment_amount」：FHS 無百分比折扣，唯一調整方式是金額差值（正數=追費，負數=折讓）
 - 「products.total_base_cost」：目前為 migration 0023 硬編碼值，Task A 完成前不是動態 roll-up
+
+---
+
+## 五、技術債備忘
+
+- **FHS_Pricing_Bible.md 位置不一致**：目前存於 `.fhs/notes/`（歷史原因），架構語義屬 L2b AI 行為授權文件，應與 L1 Finance Bible 並排於 `.fhs/ai/`。搬移涉及 5+ 個引用路徑，已列入技術債，計畫於 PRM v2 P2 命名規範設計階段一併處理。在此之前，路由表路徑以 `.fhs/notes/FHS_Pricing_Bible.md` 為準。
+- **Task A 路由更新觸發條件**：Task A（四分量 roll-up）完成後，Cost Schema v2 將升至 v3（新增 drawing/printing/chain/shipping_cost key），本路由表需同步更新。

@@ -1,16 +1,41 @@
 # Changelog
 
+## [2026-06-03] 🛡️ AGENTS.md v1.4.11 — Rule 3.16 任務型路由 + finance-gatekeeper v1.1.0 + finance-auditor v2.1.0
+
+**範圍**：財務核心文件體系補完（制度層）
+
+### AGENTS.md — Rule 3.16 任務型路由補入
+
+- Rule 3.16 入口從「直接讀 Finance Bible」改為「先讀 finance-gatekeeper/SKILL.md 取路由，再讀對應文件」
+- 補入任務型路由表：職責分工→Finance Bible §一；成本 key 數值→Cost Schema v2；售價/報價→Pricing Bible
+- 觸發關鍵字補充「成本 key 數值」「售價公式」
+
+### finance-gatekeeper/SKILL.md v1.0.0 → v1.1.0
+
+- 查詢路由表：新增 L2a `FHS_Product_Cost_Schema_v2.md` 條目（成本 key 實際數值）；§6 條目拆分為組成邏輯（L2b）vs 實際數值（L2a）
+- 權威階層：L2 拆分為 L2a（Cost Schema v2）+ L2b（Pricing Bible）
+- §三第1條：「前端利潤最高真理」→「收款確收守護（v1.4.10）」語義修正
+- §五（新增）：技術債備忘（Pricing Bible 位置 + Task A 路由更新觸發條件）
+
+### finance-auditor.md v2.0.0 → v2.1.0
+
+- compatible_with 升至 v1.4.10；n8n 版本更新至 V47.15
+- Step 1 補入收款確收守護語義說明（Rule 3.16）
+- 已知現況：靜態筆數改為動態查詢提示；補入 migration 0027 四分量欄說明
+
 ## [2026-06-03] ⚡ n8n V47.15 — B2 吊飾運費扣減補入
 
 **節點**：`Calculate Profit & Pack Items`（Workflow 6Ljih0hSKr9RpYNm）
 **versionId**：`25351131-44f2-4e95-8c22-fb856042bde8`
 
 ### 修正
+
 - ✅ **[FIX] 吊飾運費扣減補入（B2 P0 Bug）**：新增 `charmItemCount` 累加吊飾件數（SUM qty，對稱 V47.14 鎖匙扣 P0 修正）；`charmShippingDeduction = (charmItemCount-1) × $35`；同步扣減 `totalBaseCost` 及 `necklaceCostTotal`；寫入 `N8n_Adjustment_Notes`。
 - **影響**：吊飾多件訂單 `Total_Cost` / `Final_Profit` / `Necklace_Cost_Total` 現與前端 V41 一致。
 - **不變**：單件吊飾訂單、鎖匙扣邏輯、其他所有欄位零改動。
 
 ### 架構補充說明（Phase 0 查證結論）
+
 - Smart Cache Strategist V47.13 已是 Supabase-First（axios 查 `products.total_base_cost`），Airtable 為 fallback only——此問題已於 V47.13 解決，B2 無需另行處理。
 
 ## [2026-06-03] 🛡️ AGENTS.md v1.4.10 — 財務規則語義修正 + Rule 3.16

@@ -1,5 +1,5 @@
 # AGENTS — 憲法層
-> Version: v1.4.10
+> Version: v1.4.11
 > Last updated: 2026-06-03
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.10 (收款確收守護語義修正 + Rule 3.16 財務規則前置讀取強制律)
+- **版本**：v1.4.11 (Rule 3.16 任務型路由補入：gatekeeper 為統一入口，三分支路由表；finance-gatekeeper v1.1.0 + finance-auditor v2.1.0)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
@@ -151,10 +151,14 @@
 
 ### 財務規則前置讀取強制律（Rule 3.16）
 
-- **凡任務涉及財務規則解釋、財務設計決策、B-系列成本工程、或任何與 `total_cost / final_sale_price / net_profit / cost_configurations` 相關的討論，AI 必須在作出任何判斷前先讀取 `.fhs/ai/FHS_Finance_Bible.md` 相關章節。**
-- 嚴禁依賴 AGENTS.md 摘要文字推斷財務規則完整語義——摘要為快速索引，Finance Bible 為唯一解釋依據。
+- **凡任務涉及財務規則解釋、財務設計決策、B-系列成本工程、或任何與 `total_cost / final_sale_price / net_profit / cost_configurations` 相關的討論，AI 必須在作出任何判斷前先讀取 `.fhs/ai/skills/finance-gatekeeper/SKILL.md` 確認查詢路由，再按路由讀對應文件。**
+- 嚴禁依賴 AGENTS.md 摘要文字推斷財務規則完整語義——摘要為快速索引，finance-gatekeeper 路由表為正確入口。
 - 違反此律即視為「未完成前置查驗即作判斷」，構成嚴重過失（與 feedback_investigate_before_asking 同等級）。
-- 觸發情境（任一）：提及「信任前端成本」「n8n 重算」「四分量」「成本估算 vs 確收」「profit truth」時，必須先讀 Finance Bible §一（職責分工）再發言。
+- 觸發情境（任一）：提及「信任前端成本」「n8n 重算」「四分量」「成本估算 vs 確收」「profit truth」「成本 key 數值」「售價公式」時，必須先讀 finance-gatekeeper/SKILL.md 取得路由，再發言。
+- **任務型路由（依任務讀最少必要文件）**：
+  - 職責分工 / 誰算哪個欄位 / Layer 1/2 規則 → `.fhs/ai/FHS_Finance_Bible.md` §一
+  - 成本 key 實際數值（material_cost_* / keychain_* / chain 等）→ `.fhs/ai/FHS_Product_Cost_Schema_v2.md`
+  - 售價 / 報價 / 定價公式 → `.fhs/notes/FHS_Pricing_Bible.md` 對應章節
 - 此律起源：2026-06-03 AI 未讀 Finance Bible 即誤解「收款確收守護」規則，將收款側（final_sale_price）的「真理」錯誤延伸至成本側，導致 B2 設計方向錯誤。參見 decisions.md 2026-06-03 事故記錄。
 
 ### 衝突優先級聲明

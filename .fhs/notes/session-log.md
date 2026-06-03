@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-03 (Session 58): 🛡️ AGENTS.md v1.4.11 — Rule 3.16 路由強化 + finance-gatekeeper v1.1.0 + finance-auditor v2.1.0 ✅
+
+**Scope**: Rule 3.16 入口從「讀 Finance Bible」改為「讀 finance-gatekeeper/SKILL.md 取路由，再讀對應文件」；finance-gatekeeper 補 L2a Cost Schema v2 條目、收款確收守護語義修正、§五技術債備忘；finance-auditor 升版 v2.1.0（v1.4.11 對齊、V47.15、動態現況）；repo-map.md 同步；learnings.md 兩條財務過失條目更新。
+**Status**: ✅ 制度層收尾完成。技術債：FHS_Pricing_Bible.md 搬移至 .fhs/ai/ 留 PRM v2 P2。
+
+---
+
 ## 2026-06-03 (Session 57): 🏁 migration 0027 部署 + B2 收尾 + Task A 移交 ✅
 
 **Scope**: migration 0027 部署（order_items 四分量欄 drawing/printing/chain/shipping_cost）；B2 八維度分析裁定範疇收斂（TRANSITION 標示收尾，四分量歸 Task A）；V41 + current.html TRANSITION 橘字警告→灰色中性估算提示；Q1/Q2 per-item 拆行規範寫入 Task A handoff §三-B；decisions.md + handoff Session 57 更新。
