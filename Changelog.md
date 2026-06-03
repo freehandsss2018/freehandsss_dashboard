@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-06-03] 🚀 current.html 同步（B1 Live 驗證通過）
+
+V41 → current.html 同步（693,581 bytes）。B1 Live 驗證 V1–V4 + V-TRANSITION 全 PASS。
+
 ## [2026-06-03] ⚡ B1 — 吊飾/鎖匙扣成本引擎補完（Session 54）
 
 **核心變化**：補入 calculatePricing() 缺失的 3 個成本分量（打印/鑄造費、基礎運費、鎖匙扣環扣），System_Total_Cost 公式達到 Finance Bible G2/G4 完整定義。B1 = 前端顯示權威化；n8n 信任前端+三端一致 deferred 至 B2。

@@ -71,6 +71,7 @@
 
 - **【成本架構 ✅ 2026-06-03】`material_cost_*` = 打印/鑄造費（非原材料進價）**：4 個 key 按材質訂立：necklace_silver=260、necklace_gold=316、keychain_stainless_baby=95（現 keychain_stainless）、keychain_alloy_baby=122（現 keychain_alloy）。語義命名問題（"material"≠"printing"）已確認存在，deferred 至 PRM v2 P2 命名規範設計一并處理，本階段不改 key 名稱。
 - **【成本架構 ✅ 2026-06-03】鎖匙扣打印費依嬰兒/家庭分層**：嬰兒：不鏽鋼=$95，鋁合金=$122；家庭(S/P)：兩種材質均=$135（Airtable Base_Costs 實測）。引擎須按訂單對象選用對應值，不可用嬰兒值套家庭訂單（低估$40）。吊飾打印費跨所有對象一致（銀=$260，金=$316）。
+- **【Pattern ✅ 2026-06-03】Phase 0 payload 流向前置查證**：前端改動影響財務計算前，先查 n8n Code Node 是否實際讀取該欄位（get_node MCP），再決定隔離策略。B1 實證：System_Total_Cost 在 payload 但 n8n 完全不讀（讀 per-item Total_Base_Cost），使 B1 從「需隔離旗標」降為「純顯示層」。省去複雜防護設計 — 源自 2026-06-03 B1 Phase 0
 
 ---
 

@@ -47,12 +47,14 @@
 - ✅ `FHS_Product_Cost_Schema_v2.md` v2.2.0（21→23 keys，clasp_cost 文件錯誤修正）
 - ✅ CHANGELOG / decisions / repo-map / completion report 同步
 
-### 尚待 Fat Mo
-- ⏸ 部署 migration 0025（若未部署）→ 再部署 0026
-- ⏸ Live 驗證 V1：嬰兒鎖匙扣3件 = **$455**
-- ⏸ Live 驗證 V2：同部位4件吊飾 = **$1,335**
-- ⏸ V3–V8 驗證（見完成報告）
-- ⏸ V1–V8 全通過後授權 current.html 同步
+### 已完成（Live 驗證 + current.html 同步）
+- ✅ Migration 0026 部署（Supabase，smoke tests 全 PASS）
+- ✅ Live 驗證 V1：$455 PASS
+- ✅ Live 驗證 V2：$1,335 PASS
+- ✅ Live 驗證 V3：$275 PASS
+- ✅ Live 驗證 V4：$511 PASS
+- ✅ V-TRANSITION 過渡標示 PASS
+- ✅ **current.html 同步完成（693,581 bytes，2026-06-03）**
 
 ### DEFERRED → B2
 - n8n 信任前端 / 四分量 payload / 吊飾運費 P0 三項接線
