@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.9
-> Last updated: 2026-05-25
+> Version: v1.4.10
+> Last updated: 2026-06-03
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.9 (Phase 2 指令精簡 + Rule 3.15 根因調查強制律)
+- **版本**：v1.4.10 (收款確收守護語義修正 + Rule 3.16 財務規則前置讀取強制律)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
@@ -57,7 +57,12 @@
 - **亂碼自癒**：發現 NEL/U+0085 問題，立即參考 `/docs/FHS_Blueprint.md` 修復
 
 ### 財務真理守護
-- **前端利潤最高真理**：前端利潤結算為絕對真理，n8n 嚴禁擅自重算利潤。唯一例外：前端傳入值為 0 時，n8n 方可介入計算。
+- **收款確收守護（原「前端利潤最高真理」，2026-06-03 語義修正）**：
+  操作者手動輸入的確收金額（`final_sale_price` = Deposit + Balance + Additional_Fee）為絕對真理，n8n 嚴禁覆蓋或重算這三個欄位。
+  成本（`total_cost` 及各分量）由 n8n 從 Supabase `cost_configurations` 計算，屬後台記帳快照，為系統估算值。
+  `net_profit` = `final_sale_price` - `total_cost`，由 n8n 計算並寫入 Supabase。
+  詳見 `.fhs/ai/FHS_Finance_Bible.md` §一（職責分工表）與 §驗證 2–3。
+  > ⚠️ 語義修正記錄：原文「前端利潤結算為絕對真理」因語義模糊導致 AI 誤讀為「前端 calculatePricing() 估算成本亦為真理」。正確含義僅限收款確收側，成本側由 n8n/Supabase 負責。參見 decisions.md 2026-06-03 事故記錄。
 - **n8n Code Node 輸出規範**：所有 Code Node 必須回傳 `[{json: {auditPassed: true, ...}}]` 格式，嚴禁回傳裸物件。
 - **SKU 審計前置**：執行任何財務審計前，必須先調用 `Parse Items` 節點對 SKU 進行正規化（如 3肢->4肢）。
 - **財務欄位計算職責分工**：Airtable formula/lookup 欄位僅用於展示輔助（如 Item_ID、Item_Category）。所有核心財務欄位（Total_Cost、Handmodel_Cost、Keychain_Cost、Necklace_Cost 等成本分類欄位）必須由 n8n 計算後**寫入 Supabase（Primary）並同步鏡像至 Airtable（Fallback）**，嚴禁以 Airtable formula 替代 n8n 計算邏輯。Airtable formula 無法可靠處理 multipleLookupValues 陣列計算，是架構反模式。
@@ -144,7 +149,16 @@
 - **財務欄位豁免**：涉及 `net_profit / total_cost / final_sale_price` 等財務欄位的修復，不適用假設性修復，必須確認根因並獲 Fat Mo 人工確認後方可執行（遵守財務真理守護原則）。
 - 此律適用所有 AI（Claude / Antigravity）及所有 subagent（含 build-error-resolver / code-reviewer）。
 
+### 財務規則前置讀取強制律（Rule 3.16）
+
+- **凡任務涉及財務規則解釋、財務設計決策、B-系列成本工程、或任何與 `total_cost / final_sale_price / net_profit / cost_configurations` 相關的討論，AI 必須在作出任何判斷前先讀取 `.fhs/ai/FHS_Finance_Bible.md` 相關章節。**
+- 嚴禁依賴 AGENTS.md 摘要文字推斷財務規則完整語義——摘要為快速索引，Finance Bible 為唯一解釋依據。
+- 違反此律即視為「未完成前置查驗即作判斷」，構成嚴重過失（與 feedback_investigate_before_asking 同等級）。
+- 觸發情境（任一）：提及「信任前端成本」「n8n 重算」「四分量」「成本估算 vs 確收」「profit truth」時，必須先讀 Finance Bible §一（職責分工）再發言。
+- 此律起源：2026-06-03 AI 未讀 Finance Bible 即誤解「收款確收守護」規則，將收款側（final_sale_price）的「真理」錯誤延伸至成本側，導致 B2 設計方向錯誤。參見 decisions.md 2026-06-03 事故記錄。
+
 ### 衝突優先級聲明
+
 - 若本文件（AGENTS.md）與 `.cursorrules` 有任何規則衝突，以本文件為最終準則。
 
 ***
@@ -157,6 +171,7 @@
 4. **Supabase**：雙寫邏輯是否同步受影響？（2026-05-10 新增）
 
 ### Supabase 雙系統共存規則（v1.4.5 更新）
+
 - **Supabase-First**：Supabase 為主導數據核心（Read/Write/Update），Airtable 為備援。
 - **過渡期 SSoT**：Airtable 目前仍為 SSoT，待 Supabase 方案完全複核且 Dashboard 完成除bug 後，正式轉換 SSoT 至 Supabase。
 - **Supabase Free Tier**：使用 Free Tier（$0/月）。用量警戒線：資料庫 400 MB / 月頻寬 1.5 GB。超出則提示 Fat Mo 評估升級，不自動升級。

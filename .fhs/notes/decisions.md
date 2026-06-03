@@ -797,3 +797,57 @@ IF(
     2.  於 `AGENTS.md` v1.2.1 補入「防越權護欄」強制條款。
     3.  建立本事故紀錄。
 - **警示**：未來的 AI 夥伴嚴禁以此作為「反正結果是好的就沒關係」的借鏡。程序正義大於功能優化。
+
+---
+
+## 🛡️ AI 過失記錄（2026-06-03）— 財務規則語義誤讀事故
+
+### [2026-06-03] 「前端利潤最高真理」語義誤讀 → B2 設計方向錯誤
+
+**事故內容**：
+AI 在 Session 56 B2 設計階段，未讀取 Finance Bible，僅依賴 AGENTS.md 第 60 行摘要
+「前端利潤結算為絕對真理」，錯誤地將「確收收款（final_sale_price）不可被 n8n 覆蓋」
+的規則語義，延伸詮釋為「前端 calculatePricing() 估算成本亦為 n8n 應信任的真理」。
+
+**導致後果**：
+- B2 cl-final-plan.md 中錯誤提出「n8n 信任前端四分量」設計方向
+- Fat Mo 被迫花時間澄清規則原意
+- 需回頭修正 AGENTS.md、Finance Bible、learnings.md
+
+**正確語義（Fat Mo 2026-06-03 確認）**：
+- 「真理」側 = 操作者手動輸入的確收金額（Deposit + Balance + Additional_Fee = final_sale_price），n8n 嚴禁覆蓋
+- 成本側 = n8n 從 Supabase cost_configurations 計算，屬後台記帳估算快照
+- 系統 calculatePricing() 輸出 = 供操作者參考的預算估算，非確收數字
+- net_profit = final_sale_price（確收）- total_cost（n8n 估算）
+
+**根本原因**：
+AI 未遵守「缺資料先查檔案」原則（feedback_investigate_before_asking），
+在有 Finance Bible 可查的情況下跳過讀取，直接基於摘要作判斷。
+
+**處置**：
+1. AGENTS.md v1.4.10：修正規則文字為「收款確收守護」，語義清晰化
+2. AGENTS.md：新增 Rule 3.16（財務規則前置讀取強制律）
+3. learnings.md：補入兩條嚴重過失 pitfall
+4. Finance Bible：現有記錄已正確，無需修改（本次確認對齊）
+5. 本事故記錄
+
+**警示（給未來 AI）**：
+財務規則在 AGENTS.md 的摘要文字 ≠ 完整語義。Finance Bible 是唯一解釋依據。
+摘要「前端利潤最高真理」= 收款確收，不等於成本估算。
+Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
+
+---
+
+## [2026-06-03] B2 收尾 + migration 0027 決策
+
+**決策**：在 Supabase `order_items` 新增四個成本分量欄位，供未來生產品需求查詢用。
+
+**背景**：B2 Live 驗證 PASS（V47.15 吊飾運費扣減正確）。Fat Mo 確認為可持續發展應加入欄位。
+
+**欄位清單（migration 0027）**：
+- `drawing_cost    NUMERIC(10,2) DEFAULT 0`
+- `printing_cost   NUMERIC(10,2) DEFAULT 0`
+- `chain_cost      NUMERIC(10,2) DEFAULT 0`（吊飾頸鏈 / 鎖匙扣環扣）
+- `shipping_cost   NUMERIC(10,2) DEFAULT 0`（淨運費，扣減後）
+
+**執行時機**：下一 session，Fat Mo `/execute` 授權後執行。

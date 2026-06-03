@@ -17,7 +17,7 @@
 
 | 項目 | 現況 |
 |------|------|
-| 憲法版本 | AGENTS.md v1.4.9（Rule 3.15 根因調查強制律，2026-05-30）|
+| 憲法版本 | AGENTS.md v1.4.10（Rule 3.16 財務規則前置讀取強制律，收款確收守護語義修正，2026-06-03）|
 | 穩定生產版 | Freehandsss_dashboard_current.html (V41) |
 | 開發版（新）| freehandsss_dashboardV42.html (Planned) |
 | 開發版（舊）| freehandsss_dashboardV41.html (Released) |

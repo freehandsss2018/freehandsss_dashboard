@@ -1,3 +1,57 @@
+# FHS Handoff - 2026-06-03 (Session 56 — B2 吊飾運費扣減 + 財務規則語義修正)
+
+## Session 56 — B2 P0 修正 + 收款確收守護語義修正
+
+**[Session 56 完結 — V47.15 LIVE，吊飾運費扣減補入；AGENTS.md v1.4.10 財務規則語義修正完成]**
+
+### 執行完成項目
+
+#### B2 Phase 0 查證結論
+- ✅ Smart Cache Strategist V47.13 已是 Supabase-First（axios 查 `products.total_base_cost`），Airtable 僅 fallback——無需額外處理
+- ✅ 唯一缺口確認：`Calculate Profit & Pack Items` 吊飾運費扣減完全缺失
+
+#### n8n V47.15 — 吊飾運費扣減補入（LIVE）
+- ✅ `charmItemCount` 累加件數（SUM qty）；`charmShippingDeduction = (件數-1) × $35`
+- ✅ 扣減 `totalBaseCost` 及 `necklaceCostTotal`；寫入 `N8n_Adjustment_Notes`
+- ✅ versionId: `25351131-44f2-4e95-8c22-fb856042bde8`
+- ✅ 備份：`.fhs/notes/aireports/n8n-mcp-backups/2026-06-03/6Ljih0hSKr9RpYNm/Calculate_Profit___Pack_Items.json`
+
+#### 財務規則語義重大修正（Rule 3.16 事故記錄）
+- ✅ AGENTS.md v1.4.9 → v1.4.10：「收款確收守護」語義修正（真理側=確收收款，成本側=n8n估算）
+- ✅ Rule 3.16 新增（財務規則前置讀取強制律）
+- ✅ learnings.md、decisions.md、CHANGELOG、持久記憶全部更新
+
+### 尚待 Fat Mo Live 驗證
+
+| # | 驗證項目 | 預期結果 |
+|---|---------|---------|
+| VT-1 | 吊飾單件訂單 | n8n 無扣減，`Total_Cost` = 前端估算 |
+| VT-2 | 吊飾多件訂單（2件+） | `N8n_Adjustment_Notes` 含 `charm_shipping_deduction`；`Total_Cost` 對齊前端 |
+| VT-3 | B1 標靶不回歸 | V1($455) / V2($1,335) 不變 |
+
+**Rollback 指令**（若失敗）：`rollback_node_code("Calculate Profit & Pack Items", "<備份路徑>")`
+
+### 下 session 待執行（Fat Mo 已確認）
+- ⏸ **migration 0027**（Fat Mo 已批准，下 session `/execute`）：
+  `order_items` 新增四分量欄位：
+  ```sql
+  drawing_cost   NUMERIC(10,2) DEFAULT 0
+  printing_cost  NUMERIC(10,2) DEFAULT 0
+  chain_cost     NUMERIC(10,2) DEFAULT 0  -- 吊飾頸鏈 / 鎖匙扣環扣
+  shipping_cost  NUMERIC(10,2) DEFAULT 0  -- 淨運費（扣減後）
+  ```
+  執行流程：寫 migration SQL → database-reviewer Gate → Fat Mo 在 Supabase SQL Editor 執行 → smoke-test
+- ⏸ **B2-TRANSITION 標示更新**：前端 `uiDetails` 「成本顯示已校正，後台回寫待 B2」→ 待 migration 0027 完成後更新為「三端成本已對齊」
+
+### Subagent 使用記錄
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer` |
+| 實際使用 | ❌ 未使用（n8n MCP 直接在主 context 調用，單一 Code Node 外科修正）|
+| 遵從 Router | ❌ 未遵從（database-reviewer 適合 schema 靜態審查；本次為執行層修正）|
+
+---
+
 # FHS Handoff - 2026-06-03 (Session 55 — B1 成本引擎驗證與跨產品免畫圖費 Bug 修復完成)
 
 ## Session 55 — B1 成本引擎驗證與 Waiver 邏輯修正

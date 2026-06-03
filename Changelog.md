@@ -1,5 +1,26 @@
 # Changelog
 
+## [2026-06-03] ⚡ n8n V47.15 — B2 吊飾運費扣減補入
+
+**節點**：`Calculate Profit & Pack Items`（Workflow 6Ljih0hSKr9RpYNm）
+**versionId**：`25351131-44f2-4e95-8c22-fb856042bde8`
+
+### 修正
+- ✅ **[FIX] 吊飾運費扣減補入（B2 P0 Bug）**：新增 `charmItemCount` 累加吊飾件數（SUM qty，對稱 V47.14 鎖匙扣 P0 修正）；`charmShippingDeduction = (charmItemCount-1) × $35`；同步扣減 `totalBaseCost` 及 `necklaceCostTotal`；寫入 `N8n_Adjustment_Notes`。
+- **影響**：吊飾多件訂單 `Total_Cost` / `Final_Profit` / `Necklace_Cost_Total` 現與前端 V41 一致。
+- **不變**：單件吊飾訂單、鎖匙扣邏輯、其他所有欄位零改動。
+
+### 架構補充說明（Phase 0 查證結論）
+- Smart Cache Strategist V47.13 已是 Supabase-First（axios 查 `products.total_base_cost`），Airtable 為 fallback only——此問題已於 V47.13 解決，B2 無需另行處理。
+
+## [2026-06-03] 🛡️ AGENTS.md v1.4.10 — 財務規則語義修正 + Rule 3.16
+
+**事故修正**：AI 誤解「前端利潤最高真理」規則，將收款確收側語義錯誤延伸至成本估算側，導致 B2 設計方向錯誤。本次修正：
+- **AGENTS.md v1.4.9 → v1.4.10**：「前端利潤最高真理」→「收款確收守護」，明確語義為 `final_sale_price`（Deposit+Balance+AdditionalFee 手輸確收金額）不可被 n8n 覆蓋；成本由 n8n 從 Supabase 計算。
+- **Rule 3.16 新增**：財務規則前置讀取強制律——凡涉及財務規則解釋，必先讀 Finance Bible §一，禁依賴 AGENTS.md 摘要推斷。
+- **learnings.md**：補入 2 條嚴重過失 pitfall（財務規則摘要誤讀 + 未讀源文件即判斷）。
+- **decisions.md**：補入事故記錄。
+
 ## [2026-06-03] 🚀 current.html 同步（B1 Live 驗證通過）
 
 V41 → current.html 同步（693,581 bytes）。B1 Live 驗證 V1–V4 + V-TRANSITION 全 PASS。
