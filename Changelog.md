@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-06-03] ⚡ B1 — 吊飾/鎖匙扣成本引擎補完（Session 54）
+
+**核心變化**：補入 calculatePricing() 缺失的 3 個成本分量（打印/鑄造費、基礎運費、鎖匙扣環扣），System_Total_Cost 公式達到 Finance Bible G2/G4 完整定義。B1 = 前端顯示權威化；n8n 信任前端+三端一致 deferred 至 B2。
+
+### Dashboard V41 — calculatePricing 成本引擎補完
+- ✅ **[NEW]** 打印/鑄造費（`_totalPrintingCost`）：吊飾銀=260/金=316（跨對象一致）；鎖匙扣成人=135/嬰兒=不銹鋼95/鋁合金122，全讀 `_cc.material_cost_*`（fallback 保留）
+- ✅ **[NEW]** 基礎運費（`_totalBaseShipping`）：每件加，複用既有 deduction key 單價（吊飾$35/鎖匙扣$20）
+- ✅ **[NEW]** 鎖匙扣環扣（`_totalKeychainClaspCost`）：每件 + `_cc.keychain_clasp_cost`（$10）
+- ✅ **[FIX]** 成本公式：`Drawing + Printing + NecklaceChain + KeychainClasp + BaseShipping − ShippingDeduction`，驗算標靶 $455（嬰兒鎖匙扣3件）/ $1335（4件吊飾）
+- ✅ **[FIX]** 修正 `calculatePricing()` 跨產品畫圖費減免（W1）：主商品套裝所選部位（嬰兒/父母/大寶）若非「無」，其對應的鎖匙扣/吊飾部位畫圖費現在會正確予以免除（解決自動化測試中 V1 被誤判為 $575 的問題，成功對齊標靶 $455）
+- ✅ **[NEW]** Shadow log 增強：新增各分量明細輸出（printing/chain/clasp/baseShip/deduction）
+- ✅ **[NEW]** B1 過渡標示：uiDetails 顯示「成本顯示已校正，後台回寫待 B2」
+
+### Supabase Migration 0026
+- ✅ **[UPDATE]** `material_cost_necklace_silver` 0→**260**；`material_cost_necklace_gold` 0→**316**
+- ✅ **[NEW]** `material_cost_keychain_stainless_adult`=**135**；`material_cost_keychain_alloy_adult`=**135**（成人/家庭層）
+- ✅ **[NEW]** `keychain_clasp_cost`=**10**（鎖匙扣環扣）
+- ✅ **[FIX]** stainless/alloy display_name 補「（嬰兒）」標注
+- ✅ **[FIX DOC]** FHS_Product_Cost_Schema_v2.md：移除錯誤的 `clasp_cost` 行（原為 Airtable column，非 config_key）；key 數 21→23
+
+### 架構決策
+- B1 = 純前端顯示校正（n8n 仍用 total_base_cost，三端一致留 B2）
+- Phase 0 查證：n8n 完全不讀 System_Total_Cost（讀 Total_Base_Cost per item），B1 零回寫風險
+- database-reviewer + code-reviewer Gate G1–G8 全 PASS
+
 ## [2026-06-02] ⚡ P1 — 成本邏輯憲法化（Session 53）
 
 **核心變化**：前端 `calculatePricing()` 確立為唯一成本計算權威；原子成本從 Supabase `cost_configurations` 讀取，零 hardcode；n8n P0 shipping bug 修正。

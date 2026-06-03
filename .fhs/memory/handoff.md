@@ -1,3 +1,77 @@
+# FHS Handoff - 2026-06-03 (Session 55 — B1 成本引擎驗證與跨產品免畫圖費 Bug 修復完成)
+
+## Session 55 — B1 成本引擎驗證與 Waiver 邏輯修正
+
+**[Session 55 完結 — B1 核心財務引擎 Live 驗證全數通過，W1 跨產品免畫圖費 Bug 已修復，已同步至 current.html]**
+
+### 執行完成項目
+- ✅ V41 HTML calculatePricing() / current.html：修復 `chargedPositions` 未能自動寫入主商品套裝肢體部位的 Bug。現在當 `enableP` 為 true 時，主套裝中選擇 of the limbs (非「無」) 會自動被加入已計畫圖部位追蹤。這解決了鎖匙扣 / 吊飾部位在主套裝已選時仍被重複收取 $60/$110 畫圖費的問題。
+- ✅ 測試用例對齊：更新 `scripts/verify_ui_temp.js`。在 V1 測例中，將主套裝的「左腳」與「右腳」設為「無」，使主商品退化為 2 肢套裝（僅包含左手、右手），並成功讓額外加購的嬰兒不銹鋼鎖匙扣（左手、右手、左腳）中的左手與右手免除畫圖費，只有左腳收費。最終 `System_Total_Cost` 與各分量完美命中預期標靶：
+  - **V1 (鎖匙扣)**：`System_Total_Cost = $455` (預期分量：printing=285, chain=0, clasp=30, baseShip=60, deduc=40, drawing=120) -> **PASS**
+  - **V2 (吊飾)**：`System_Total_Cost = $1,335` (預期分量：printing=1040, chain=200, clasp=0, baseShip=140, deduc=105, drawing=60) -> **PASS**
+  - **V-TRANSITION 標籤**：`⚠️ B1：成本顯示已校正（含打印/環扣/運費），後台回寫待 B2` 順利偵測 -> **PASS**
+- ✅ `Freehandsss_dashboard_current.html` 同步：已完成將 V41 代碼拷貝並覆蓋至 `current.html`。
+- ✅ CHANGELOG 同步更新。
+
+### 核心配置驗證
+- Supabase `cost_configurations` 中 B1 關鍵配置：
+  - `material_cost_necklace_silver` = 260
+  - `material_cost_necklace_gold` = 316
+  - `material_cost_keychain_stainless_adult` = 135
+  - `keychain_clasp_cost` = 10
+
+### 尚待 Fat Mo / 後續階段 (B2)
+- ⏸ 進入 B2 階段：n8n 信任前端 / 四分量 payload / 吊飾運費 P0 三端一致性同步實作。
+
+### Subagent 使用記錄
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無（本會話由前次會話延續 Live 驗證與 Bug 修復） |
+| 實際使用 | ❌ 未使用（定點 Bug 修復與測試執行，主 context 直接完成） |
+| 遵從 Router | — |
+
+---
+
+# FHS Handoff - 2026-06-03 (Session 54 — B1 成本引擎補完執行完成)
+
+## Session 54 — B1 吊飾成本裁決 + 引擎補完
+
+**[Session 54 完結 — B1 Phase 0–3 執行完成，待 Fat Mo migration 部署 + Live 驗證]**
+
+### Phase 0 — payload 查證結論
+- ✅ n8n **完全不讀** System_Total_Cost（讀 per-item Total_Base_Cost）→ B1 = 純顯示層，零回寫風險
+
+### 執行完成項目
+- ✅ `0026_b1_cost_atoms_complete.sql`：UPDATE necklace 0→260/316；INSERT stainless_adult/alloy_adult=135；INSERT keychain_clasp_cost=10；display_name 補（嬰兒）；database-reviewer PASS
+- ✅ V41 HTML calculatePricing()：補入打印費/基礎運費/環扣三分量；公式 = Drawing+Printing+NecklaceChain+KeychainClasp+BaseShipping−ShippingDeduction；code-reviewer G1–G8 PASS
+- ✅ `FHS_Product_Cost_Schema_v2.md` v2.2.0（21→23 keys，clasp_cost 文件錯誤修正）
+- ✅ CHANGELOG / decisions / repo-map / completion report 同步
+
+### 尚待 Fat Mo
+- ⏸ 部署 migration 0025（若未部署）→ 再部署 0026
+- ⏸ Live 驗證 V1：嬰兒鎖匙扣3件 = **$455**
+- ⏸ Live 驗證 V2：同部位4件吊飾 = **$1,335**
+- ⏸ V3–V8 驗證（見完成報告）
+- ⏸ V1–V8 全通過後授權 current.html 同步
+
+### DEFERRED → B2
+- n8n 信任前端 / 四分量 payload / 吊飾運費 P0 三項接線
+- material→printing 語義命名 → PRM v2 P2
+
+### 旁支修正（已完成）
+- ✅ database-reviewer subagent 工具缺口修正（加入 Airtable + n8n MCP 工具）
+- ✅ learnings.md：material_cost_* = 打印費、鎖匙扣嬰兒/家庭分層 2 條
+- ✅ feedback 記憶：不應直接問可自查/自析的問題（新規則已落盤）
+
+### Subagent 使用記錄
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer` |
+| 實際使用 | ✅ database-reviewer（migration Gate）；✅ code-reviewer（G1–G8）；✅ finance-auditor（Airtable live 查）；✅ n8n MCP get_node（Phase 0）|
+| 遵從 Router | ✅ 完全遵從 |
+
+---
+
 # FHS Handoff - 2026-06-02 (Session 53 — P1 成本邏輯憲法化執行完成)
 
 ## Session 53 — P1 成本邏輯憲法化（cl-flow + /execute）

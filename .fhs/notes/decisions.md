@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-03] (Session 55) B1 成本引擎驗證與跨產品免畫圖費 Bug 修復
+
+決策：修復 `calculatePricing()` 中 `chargedPositions` 沒有自動寫入主商品套裝肢體部位的 Bug。現在當 `enableP` 為 true 時，主套裝中選擇的肢體部位（非「無」者）會自動被加入已畫圖部位追蹤。
+原因：此 Bug 導致加購鎖匙扣/吊飾部位在主套裝中已選時仍被重複收取畫圖費，使得自動化驗證 V1 計價出現 $575 而非預期標靶 $455。修正後 V1 ($455)、V2 ($1335) 及 B1 標籤全數通過自動化驗證，並已同步更新 `current.html`。
+
+[2026-06-03] (Session 54) B1 成本引擎補完 — calculatePricing() 成本公式達到 Finance Bible 完整定義
+
+決策：補入 calculatePricing() 三個缺失分量（打印費 Printing、基礎運費 BaseShipping、鎖匙扣環扣 KeychainClasp），公式改為 Drawing+Printing+NecklaceChain+KeychainClasp+BaseShipping−ShippingDeduction。
+關鍵發現：Phase 0 查證確認 n8n 完全不讀 System_Total_Cost（讀 per-item Total_Base_Cost），B1 = 純前端顯示層，零回寫風險。
+B1/B2 邊界：前端顯示校正 = B1；n8n 信任前端+四分量 payload+三端一致 = B2（待 Live 驗證後啟動）。
+material_cost_* 命名語義（= 打印費）deferred 至 PRM v2 P2 命名規範設計。
+文件修正：FHS_Product_Cost_Schema_v2.md 移除錯誤的 `clasp_cost` config_key 行（原為 Airtable per-product column）；key 數 21→23。
+decisions.md 生效日記錄：material_cost_necklace_silver/gold 由 0→260/316，自 2026-06-03 起反映實際打印成本；跨期財務分析需分段看待。
+
+---
+
 [2026-06-02] (Session 52) Finance Bible G1–G6 成本規則修正 — 位置依賴成本邏輯首次正式落盤
 
 決策：將 Fat Mo 多次口頭說明但從未記錄的鎖匙扣/吊飾成本計算規則，正式寫入 Finance Bible v1.2.0。

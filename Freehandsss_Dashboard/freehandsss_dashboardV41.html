@@ -5055,6 +5055,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             let items = buildOrderItemsForPricing();
             let totalSuggestedPrice = 0;
             let totalDrawingCost = 0;
+            let _totalPrintingCost = 0;     // B1: 打印/鑄造費
+            let _totalBaseShipping = 0;     // B1: 基礎運費（每件，複用 deduction key 單價）
+            let _totalKeychainClaspCost = 0; // B1: 鎖匙扣環扣（每件）
             
             const uiPrice = document.getElementById("suggestedPrice");
             const uiCost = document.getElementById("drawingCost");
@@ -5109,6 +5112,22 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
             const _cc = window._fhsCostConfig || {}; // 原子成本快取
             const chargedPositions = new Set();       // W1: 跨產品同部位已畫圖追蹤
+
+            // W1: If main product is selected, pre-populate charged positions from the selected limbs in the set
+            if (enableP) {
+                const emojiMap = { "左手": "🖐️ 左手", "右手": "🖐️ 右手", "左腳": "🦶 左腳", "右腳": "🦶 右腳" };
+                const whoList = ["嬰兒", "父母", "大寶"];
+                const partsList = ["左手", "右手", "左腳", "右腳"];
+                whoList.forEach(who => {
+                    partsList.forEach(part => {
+                        const sel = document.querySelector(`.limb-sel[data-who="${who}"][data-part="${part}"]`);
+                        if (sel && sel.value !== "無") {
+                            chargedPositions.add(emojiMap[part].toLowerCase());
+                        }
+                    });
+                });
+            }
+
 
             let hasMetal = items.some(i => i.Order_Item_Key.includes("_K_"));
             let hasSilver = items.some(i => i.Order_Item_Key.includes("_M_"));
@@ -5171,6 +5190,31 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         chargedPositions.add(_posKey);
                     }
                     cost = baseDrawing;
+
+                    // B1: 打印費 / 基礎運費 / 環扣（每件，全讀 _cc，fallback 保留）
+                    const _isK = item.Order_Item_Key.includes('_K_');
+                    const _isM = item.Order_Item_Key.includes('_M_');
+                    let _printUnit = 0, _shipUnit = 0, _claspUnit = 0;
+                    if (_isM) {
+                        // 吊飾：打印費按銀/金，跨所有對象一致
+                        _printUnit = name.includes('金')
+                            ? (_cc.material_cost_necklace_gold    || 316)
+                            : (_cc.material_cost_necklace_silver  || 260);
+                        _shipUnit  = _cc.charm_shipping_deduction_per_extra   || 35;
+                    } else if (_isK) {
+                        // 鎖匙扣：打印費依對象（adult/family→135，baby→95/122）× 材質
+                        const _isAlloyK = name.includes('鋁');
+                        _printUnit = isAdultItem
+                            ? (_isAlloyK ? (_cc.material_cost_keychain_alloy_adult       || 135)
+                                         : (_cc.material_cost_keychain_stainless_adult   || 135))
+                            : (_isAlloyK ? (_cc.material_cost_keychain_alloy             || 122)
+                                         : (_cc.material_cost_keychain_stainless         || 95));
+                        _shipUnit  = _cc.keychain_shipping_deduction_per_extra || 20;
+                        _claspUnit = _cc.keychain_clasp_cost                   || 10;
+                    }
+                    item.PrintingCost     = _printUnit * qty;
+                    item.BaseShippingCost = _shipUnit  * qty;
+                    item.ClaspCost        = _claspUnit * qty;
                 }
                 // isAccessory 保持 cost=0（配件無畫圖費）
                 item.FatMoCost = cost * qty;
@@ -5256,7 +5300,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     item.CalculatedPrice = price;
                     totalSuggestedPrice += price;
                     breakdownParts.push(price);
-                    totalDrawingCost += item.FatMoCost;
+                    totalDrawingCost      += item.FatMoCost;
+                    _totalPrintingCost    += item.PrintingCost     || 0; // B1
+                    _totalBaseShipping    += item.BaseShippingCost || 0; // B1
+                    _totalKeychainClaspCost += item.ClaspCost      || 0; // B1
                 });
             }
 
@@ -5285,7 +5332,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 for (let si = 1; si < silverItems.length; si++) { silverItems[si].CalculatedPrice = 0; }
                 totalSuggestedPrice += silverPrice;
                 breakdownParts.push(silverPrice);
-                silverItems.forEach(function(item) { totalDrawingCost += item.FatMoCost; });
+                silverItems.forEach(function(item) {
+                    totalDrawingCost   += item.FatMoCost;
+                    _totalPrintingCost += item.PrintingCost     || 0; // B1
+                    _totalBaseShipping += item.BaseShippingCost || 0; // B1
+                    // 吊飾無環扣（ClaspCost = 0）
+                });
 
                 // 計算每條頸鏈的分組及金額（供 renderPaymentSplits 使用）
                 const _circled = ['①','②','③','④','⑤'];
@@ -5340,14 +5392,26 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
 
-            // --- 成本合計（畫圖 + 頸鏈 - 運費扣減）---
-            const _totalCostNew = Math.max(0, totalDrawingCost + _totalNecklaceChainCost - _totalShippingDeduction); // G8: 防負數
+            // --- 成本合計（B1: Drawing + Printing + NecklaceChain + KeychainClasp + BaseShipping − ShippingDeduction）---
+            const _totalCostNew = Math.max(0,
+                totalDrawingCost
+                + _totalPrintingCost
+                + _totalNecklaceChainCost
+                + _totalKeychainClaspCost
+                + _totalBaseShipping
+                - _totalShippingDeduction
+            ); // G8: 防負數
 
             // W4 Shadow 對比（新舊引擎差值記錄，kill-switch 控制輸出）
             if (!window.USE_LEGACY_COST_LOGIC && totalDrawingCost !== _totalCostNew) {
                 console.warn('[FHS Cost Shadow] 舊(畫圖only):', totalDrawingCost,
-                    '新(頸鏈+運費):', _totalCostNew,
-                    '差值:', _totalCostNew - totalDrawingCost);
+                    '新(B1全分量):', _totalCostNew,
+                    '差值:', _totalCostNew - totalDrawingCost,
+                    '| 分量: printing=', _totalPrintingCost,
+                    'chain=', _totalNecklaceChainCost,
+                    'clasp=', _totalKeychainClaspCost,
+                    'baseShip=', _totalBaseShipping,
+                    'deduc=', _totalShippingDeduction);
             }
             const _systemTotalCost = window.USE_LEGACY_COST_LOGIC ? totalDrawingCost : _totalCostNew;
 
@@ -5360,6 +5424,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             if (uiPrice) uiPrice.innerText = totalSuggestedPrice;
             if (uiCost) uiCost.innerText = _systemTotalCost;
+            // B1 過渡標示（n8n 仍用舊成本路徑，三端一致待 B2）
+            if (!window.USE_LEGACY_COST_LOGIC && (_totalPrintingCost > 0 || _totalKeychainClaspCost > 0)) {
+                logs.push('<div style="color:#E65100;font-size:10px;margin-top:4px;opacity:0.7;">⚠️ B1：成本顯示已校正（含打印/環扣/運費），後台回寫待 B2</div>');
+            }
             if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
 
             // V40.8: Show breakdown (e.g. "(2380+860)")

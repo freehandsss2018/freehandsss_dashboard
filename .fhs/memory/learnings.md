@@ -50,6 +50,8 @@
 - 批次色全訂單 over-sweep 陷阱：用 `.order-group-${orderId} .batch-cell` sweep 會掃到同訂單所有 item，導致更新一行批次色時全部同步；必須用 `#row-${orderId}-item-${itemIndex}` 定位單行，備註 td 則只在 itemIndex===0 時同步 — 源自 2026-05-20
 - **【高頻 ⚠️】Chrome Date Parsing 異常與表格排序還原失效**：`new Date("DD/MM/YYYY")` 在 Chrome 等瀏覽器中會解析為 `Invalid Date` (NaN)，導致以該格式進行的日期排序失效。且在頁面載入時還原 filters 雖成功設定選單，但渲染卻繞過 `applyReviewFilters()` 而直接 `renderReviewTable()` 導致表格未排序。解法：在排序前以正則/切割手動解析 `DD/MM/YYYY`，且在 fetch callback 尾端強制呼叫 `applyReviewFilters()` 進行二次過濾與排序。 — 源自 2026-05-25
 - **【高頻 ⚠️】AI 違反 Rule 3.14 未將實施計畫寫入專案實體路徑**：AI 未遵循 `/ag-plan` 指令將實施計畫寫入專案的 `a2_implementation_plan.md`，且未使用繁體中文。必須牢記：所有正式報告與計畫一律實體落盤至專案相對應目錄，且對話與生成內容須遵守繁體中文原則。 — 源自 2026-05-25
+- **【高頻 ⚠️】AI 誤將驗證報告儲存於 root/artifacts/ 而非 .fhs/reports/**：因受 IDE 目前開啟檔案在 `artifacts/` 的導引以及系統內建「artifacts 專用目錄」提示的影響，忽視了 Rule 3.14 關於正式報告與計畫必須存於 `.fhs/reports/` 或 `.fhs/notes/` 的限制。未來不論 IDE 開啟何處的檔案，均須以 `AGENTS.md` 憲法之目錄存放限制為第一優先。 — 源自 2026-06-03
+
 
 - **【P9】IIFE 閉包函式 onclick 靜默失效**：函式定義在 IIFE `(function(){'use strict';})()` 內，`onclick="fn()"` 全域找不到函式，完全靜默無錯誤。修復：在 IIFE 末尾明確 `window.fn = fn` 暴露。所有新增 onclick 函式必查此項 — 源自 2026-05-27
 - **CSS toggle-only 顯示陷阱**：以 CSS class toggle 控制 display，若內容在 Map 空時已烘入 `—`，切換後只顯示舊快照。必須在 toggle ON 時重新 render（呼叫 applyReviewFilters），而非純 CSS 切換 — 源自 2026-05-27
@@ -66,6 +68,9 @@
 - **【財務核心 ⚠️】財務規則必須即時落盤，不可只靠口頭說明**：Fat Mo 多次口頭解釋的規則因未寫進文件，每 session AI 重新算錯。任何財務規則一經確認：①寫入 Finance Bible ②寫入 learnings.md ③寫入持久記憶。財務算錯=嚴重核心錯誤 — 2026-06-02
 - **【Pattern】`_fhsCostReady` flag 競態防護**：前端從 Supabase 非同步載入 config 後才設 true；`calculatePricing` 入口 guard 若 false 則拒絕計算並提示。任何 page-load 讀 Supabase 再用於計算的場景均須此模式，防止空值算出 0 — 源自 2026-06-02 P1 W5 Live 驗證
 - **【Pattern】`chargedPositions Set` 跨陣列位置追蹤**：在 metal/silver/family 外層建 Set，PartDesc `.trim().toLowerCase()` 正規化後追蹤已計畫圖費的部位；同部位跨產品第 2 件 baseDrawing=0。新增產品類型時必查此 Set 是否需要擴充 — 源自 2026-06-02 P1 W1 Live 驗證
+
+- **【成本架構 ✅ 2026-06-03】`material_cost_*` = 打印/鑄造費（非原材料進價）**：4 個 key 按材質訂立：necklace_silver=260、necklace_gold=316、keychain_stainless_baby=95（現 keychain_stainless）、keychain_alloy_baby=122（現 keychain_alloy）。語義命名問題（"material"≠"printing"）已確認存在，deferred 至 PRM v2 P2 命名規範設計一并處理，本階段不改 key 名稱。
+- **【成本架構 ✅ 2026-06-03】鎖匙扣打印費依嬰兒/家庭分層**：嬰兒：不鏽鋼=$95，鋁合金=$122；家庭(S/P)：兩種材質均=$135（Airtable Base_Costs 實測）。引擎須按訂單對象選用對應值，不可用嬰兒值套家庭訂單（低估$40）。吊飾打印費跨所有對象一致（銀=$260，金=$316）。
 
 ---
 
