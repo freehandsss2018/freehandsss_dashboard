@@ -1,5 +1,25 @@
 # Changelog
 
+## [2026-06-04] 🐛 W5-FIX: _fhsCostReady 永久 false + rp.md 注入層補丁 + Supabase-First 違規記錄
+
+**範圍**：前端 bug 修復 + 制度層防護強化（Session 59）
+
+### [BUG FIX] W5 競態守護設計缺陷修正（calculatePricing 永久顯示「成本設定載入中」）
+- **根因**：`loadCostConfigurations()` 頂部有 `if (!list) return` 守衛，`costConfigList` DOM 元素只在 QA 模式面板存在，正常頁面載入時函式立即 return，`_fhsCostReady` 永遠不被設為 true
+- **修正 1**：移動守衛至 `_fhsCostReady = true` 之後（先載入資料，再判斷是否渲染 DOM）
+- **修正 2**：`init()` 新增 `loadCostConfigurations()` 呼叫，確保頁面啟動時預載成本設定
+- V41 + current.html 雙檔同步（693,925 bytes）
+
+### [RULE] rp.md FHS 自動注入層補丁（v2.3 語義修正）
+- 新增觸發詞「驗證/查詢/VT/live data/查單/查訂單」→ 注入 Supabase-First + blocker 上報原則
+- 修正「財務/成本/利潤」觸發詞注入前提（對齊 2026-06-03 收款確收守護語義修正）
+
+### [PITFALL] Supabase-First 靜默降級違規記錄（2026-06-04 事故）
+- learnings.md 新增：工具缺 Supabase MCP = blocker 上報，禁止靜默降級至 Airtable
+- 持久記憶 feedback_supabase_first_enforcement.md 新建
+
+---
+
 ## [2026-06-03] 🛡️ AGENTS.md v1.4.11 — Rule 3.16 任務型路由 + finance-gatekeeper v1.1.0 + finance-auditor v2.1.0
 
 **範圍**：財務核心文件體系補完（制度層）

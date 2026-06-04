@@ -53,6 +53,7 @@
 - **【高頻 ⚠️】AI 誤將驗證報告儲存於 root/artifacts/ 而非 .fhs/reports/**：因受 IDE 目前開啟檔案在 `artifacts/` 的導引以及系統內建「artifacts 專用目錄」提示的影響，忽視了 Rule 3.14 關於正式報告與計畫必須存於 `.fhs/reports/` 或 `.fhs/notes/` 的限制。未來不論 IDE 開啟何處的檔案，均須以 `AGENTS.md` 憲法之目錄存放限制為第一優先。 — 源自 2026-06-03
 - **【嚴重過失 ⚠️ Rule 3.16 觸發】財務規則摘要 ≠ 完整語義，入口必為 finance-gatekeeper**：AI 在 B2 設計階段僅讀 AGENTS.md 摘要，未走 finance-gatekeeper 路由，錯將「確收收款（final_sale_price）不可被 n8n 覆蓋」延伸至「前端估算成本亦為真理」，導致 B2 方向錯誤。修正後 Rule 3.16：先讀 `.fhs/ai/skills/finance-gatekeeper/SKILL.md`，再按任務路由讀對應文件（L1/L2a/L2b）。禁依賴 AGENTS.md 摘要直接推斷財務語義。 — 源自 2026-06-03 Rule 3.16（2026-06-03 v1.4.11 路由升級）
 - **【嚴重過失 ⚠️】未走路由層即作財務設計判斷（feedback_investigate_before_asking 財務升級版）**：「嚴禁直接問可自查/自析的事」已有記錄，但 AI 仍在未讀 Finance Bible 下建議「n8n 信任前端四分量」方向。財務討論第一步 = 讀 finance-gatekeeper/SKILL.md 取路由（Rule 3.16 v1.4.11），違者同等嚴重過失。 — 源自 2026-06-03（2026-06-03 v1.4.11 更新）
+- **【嚴重過失 ⚠️】工具限制不得成為繞開 Supabase-First 的理由（靜默降級禁止）**：發現執行工具（AG/subagent）缺少 Supabase 存取能力時，正確行動 = 報告 blocker + 詢問解法，而非靜默降級至 Airtable。根因：設計 prompt 時以「工具能做什麼」為起點，而非「架構要求什麼」，導致主動繞過 Supabase-First 原則。Airtable 僅用於：歷史記錄補救 / 冷備援 / Supabase 不可達時的緊急回退。任何 live 資料查詢設計必須以 Supabase 為起點 — 源自 2026-06-04 事故
 
 
 - **【P9】IIFE 閉包函式 onclick 靜默失效**：函式定義在 IIFE `(function(){'use strict';})()` 內，`onclick="fn()"` 全域找不到函式，完全靜默無錯誤。修復：在 IIFE 末尾明確 `window.fn = fn` 暴露。所有新增 onclick 函式必查此項 — 源自 2026-05-27

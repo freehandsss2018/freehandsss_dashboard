@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-04 (Session 59): 🐛 W5-FIX _fhsCostReady + Supabase-First 違規記錄 + AG Supabase MCP 確認 ✅
+
+**Scope**: 待辦全面核查（8項）；Supabase-First 靜默降級違規記錄（learnings + memory + rp.md 注入層）；AG Supabase MCP 安裝確認（mcp.supabase.com/mcp）；VT-1/2/3 AG XML prompt 備妥；W5 _fhsCostReady 永久 false bug 修正（loadCostConfigurations init 啟動呼叫 + guard 後移）；V41 + current.html 雙檔同步（693,925 bytes）。
+**Status**: ✅ W5-FIX 完成。VT-1/2/3 待 Fat Mo 交 AG 執行。Anti-Idle Ping / pg_cron / Task A 待處理。
+
+---
+
 ## 2026-06-03 (Session 58): 🛡️ AGENTS.md v1.4.11 — Rule 3.16 路由強化 + finance-gatekeeper v1.1.0 + finance-auditor v2.1.0 ✅
 
 **Scope**: Rule 3.16 入口從「讀 Finance Bible」改為「讀 finance-gatekeeper/SKILL.md 取路由，再讀對應文件」；finance-gatekeeper 補 L2a Cost Schema v2 條目、收款確收守護語義修正、§五技術債備忘；finance-auditor 升版 v2.1.0（v1.4.11 對齊、V47.15、動態現況）；repo-map.md 同步；learnings.md 兩條財務過失條目更新。

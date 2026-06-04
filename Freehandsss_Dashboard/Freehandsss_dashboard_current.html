@@ -11415,6 +11415,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // Show connecting banner — hides automatically once fetchGlobalReview succeeds
                 showConnectingBanner();
                 sbBadge('⏳ 連線中...', '#90CAF9');
+                // W5-FIX: 啟動預載成本設定，確保 calculatePricing() 的 _fhsCostReady guard 能通過
+                loadCostConfigurations();
                 // Stagger initial loads: financial overview first, then order list
                 setTimeout(function() { if (window.foFetchLive) window.foFetchLive(); }, 800);
                 setTimeout(function() { if (window.fetchGlobalReview) window.fetchGlobalReview(true); }, 1500);
@@ -11511,6 +11513,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     };
                 });
                 window._fhsCostReady = true; // W5: 原子成本已載入記憶體，計價可啟動
+                // W5-FIX: 若從啟動預載呼叫（list 不存在），資料已入記憶體，直接返回跳過 DOM 渲染
+                if (!list) return;
 
                 if (!rows.length) {
                     list.innerHTML = '<div style="color:var(--fhs-text-secondary);font-size:12px;padding:6px 0;">尚無設定資料（Migration 0022a 未部署？）</div>';

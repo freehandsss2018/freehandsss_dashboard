@@ -1,3 +1,49 @@
+# FHS Handoff - 2026-06-04 (Session 59 — W5-FIX + 違規記錄 + 待辦核查)
+
+## Session 59 — W5-FIX + Supabase-First 違規記錄 + AG Supabase MCP 調查
+
+**[Session 59 完結]**
+
+### 執行完成項目
+
+- ✅ current.html TRANSITION 同步核查：確認 commit `9f46578`（Session 57）已包含，無需重執行
+- ✅ 待辦全面核查（8 項）：1項已完成，2項追蹤中，5項確認未完成
+- ✅ Supabase-First 違規記錄（2 個嚴重過失）：
+  - 過失 1：VT 驗證 prompt 靜默降級至 Airtable（應報 blocker）
+  - 過失 2：AG 缺 Supabase MCP 未先解決就繞開
+  - 落盤：learnings.md + memory/feedback_supabase_first_enforcement.md + rp.md 注入層補丁
+- ✅ AG Supabase MCP 調查：Fat Mo 已自行安裝（mcp_config.json 確認 `mcp.supabase.com/mcp`）
+- ✅ VT-1/2/3 AG 驗證 prompt 重寫（Supabase 版，XML 格式供 Fat Mo 轉交 AG）
+- ✅ **[BUG FIX] W5 _fhsCostReady 永久 false**：
+  - 根因：`loadCostConfigurations()` 頂部 `if (!list) return` 守衛在正常頁面載入時直接 return，_fhsCostReady 永遠不被設 true
+  - 修正：守衛移至資料載入後；init() 新增 loadCostConfigurations() 啟動呼叫
+  - V41 + current.html 雙檔同步（693,925 bytes）
+
+### 尚待執行
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| ~~1~~ | ~~current.html TRANSITION 同步~~ | ✅ 已完成（commit 9f46578，Session 57） |
+| 2 | Session 56 VT-1/2/3 Live 驗證 | AG 已有 Supabase MCP，XML prompt 已備妥，待 Fat Mo 交 AG 執行 |
+| 3 | Task A 顆粒化 roll-up | 新 session，需 `/cl-flow` 先規劃 |
+| 4 | Anti-Idle Ping 驗證 | n8n 主 workflow 無 Schedule Trigger，需建獨立 workflow |
+| 5 | pg_cron TTL | Supabase SQL Editor 手動執行（ANTI_IDLE_SETUP.md 有 SQL） |
+| 6 | 立體擺設 UI 整合（R1） | 追蹤中（R1 雙 POST 無事務保護） |
+| TD1 | FHS_Pricing_Bible.md 搬移至 .fhs/ai/ | 技術債，PRM v2 P2 |
+| TD2 | learnings.md 合併/退役整理 | 技術債（已超 50 條上限，含重複標頭） |
+
+### Subagent 使用記錄
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver`（W5 bug 診斷時）|
+| 實際使用 | ❌ 未使用（定點 grep + read + 2 處 Edit，主 context 直接完成） |
+| 遵從 Router | ❌ 未遵從（bug 定位清晰，inline 診斷更高效）|
+
+---
+
+---
+
 # FHS Handoff - 2026-06-03 (Session 58 — Rule 3.16 強化 + 財務核心文件升版)
 
 ## Session 58 — Rule 3.16 任務型路由補入 + finance-gatekeeper v1.1.0 + finance-auditor v2.1.0
@@ -13,17 +59,11 @@
 - ✅ CHANGELOG.md 更新
 - ✅ 完成記錄：`.fhs/reports/completion/2026-06-03_rule316-finance-docs-upgrade_completion_report.md`
 
-### 尚待執行（延續 Session 57）
+### 尚待執行（已移至 Session 59）
 
 | # | 項目 | 狀態 |
 |---|------|------|
-| 1 | current.html TRANSITION 同步 | 待 Fat Mo 授權 `/execute` |
-| 2 | Session 56 VT-1/2/3 Live 驗證 | n8n V47.15 吊飾運費扣減驗證 |
-| 3 | Task A 顆粒化 roll-up | 新 session，先 `/cl-flow` |
-| 4 | Anti-Idle Ping 驗證 | 稍後 |
-| 5 | pg_cron TTL | 稍後 |
-| 6 | 立體擺設 UI 整合（R1） | 追蹤中 |
-| TD | FHS_Pricing_Bible.md 搬移至 .fhs/ai/ | 技術債，PRM v2 P2 |
+| 1 | current.html TRANSITION 同步 | ✅ 已完成（Session 59 核查確認）|
 
 ### Subagent 使用記錄
 
