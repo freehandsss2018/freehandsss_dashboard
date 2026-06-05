@@ -3,6 +3,16 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-05] (Session 60) Task A 四分量後台記帳 — 前端透傳策略採用
+
+決策：四分量（drawing/printing/chain/shipping_cost）由前端 calculatePricing() 算好後透傳，n8n 接收並寫入 order_items。
+原因：(1) cost_configurations 原子成本已在前幾個 Phase 建好；(2) calculatePricing() 已從 Supabase 讀原子成本計算四分量；
+(3) n8n 拿不到部位級資料，無法重算 drawing 豁免邏輯（最高頻財務雷）；
+(4) 此策略等同正式啟動「n8n 信任前端成本分量」——與「收款確收守護」不衝的。
+「products.total_base_cost 改 roll-up」列 Deferred，本期只接通最後一條傳遞路線。
+改動點：V41 HTML calculatePricing()/payload，n8n Parse Items/Calculate Profit/Supabase Mirror Prep，migration 0028 RPC。
+⚠️ migration 0028 需 Fat Mo 在 Supabase SQL Editor 執行後生效。
+
 [2026-06-03] (Session 57) B2 範疇修正 — 四分量歸 Task A，B2 收尾為 TRANSITION 標示
 
 決策：B2 範疇從「前端傳四分量 → n8n 信任回寫」修正為「TRANSITION 標示收尾 + 四分量移交 Task A」。

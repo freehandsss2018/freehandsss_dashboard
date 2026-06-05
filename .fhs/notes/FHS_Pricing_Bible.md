@@ -1,8 +1,8 @@
 # FHS 定價聖經 (FHS Pricing Bible)
 
 > **Authority Level**: L2 — 現行定價 HEAD
-> **Version**: v1.0.0
-> **建立日期**: 2026-06-01（合併自 product_pricing_reference.md v2.0.0 + FHS_Product_Bible_V3.7 §0/§2.5）
+> **Version**: v1.1.0
+> **更新日期**: 2026-06-05 (Session 61)
 > **衝突規則**: 若本文件與 L1（`.fhs/ai/FHS_Finance_Bible.md`）衝突，以 L1 為準；本文件取代所有舊版定價文件（pricing_reference / Product_Bible_V3.7）
 > **Source of Truth**: `freehandsss_dashboardV41.html` → `calculatePricing()` 函式（代碼為最終裁決者）
 > **警告**: 計價邏輯變更後，本文件必須同步修訂，否則將成為誤導來源。
@@ -110,6 +110,12 @@ else:
 | 5 | **$8,200** |
 
 額外頸鏈：+1隻 = **$1,640**；+一對 = **$3,280**
+
+### 3.4 吊飾跨部位運費共享規則
+
+- **規則**：`Shipping_Deduction = (同訂單吊飾 Order_Items 總數 − 1) × $35`（總件數 = SUM qty）
+- **計算層級**：訂單層級彙總，非 item 層級
+- **n8n 成本與利潤**：`charmShippingDeduction = (件數-1) × $35`，正確寫入 `N8n_Adjustment_Notes` 並從 `total_cost` 中扣除（對齊 V47.15 修正）
 
 ---
 
@@ -272,6 +278,7 @@ total_base_cost = Drawing_Cost + Printing_Cost + Clasp_Cost + Shipping_Cost
 
 | 版本 | 日期 | Session | 變更摘要 |
 |------|------|---------|---------|
+| v1.1.0 | 2026-06-05 | Session 61 | 補入吊飾跨部位運費共享規則 ($35/件) 說明 |
 | v1.0.0 | 2026-06-01 | Session 50 | 合併 product_pricing_reference.md v2.0.0 + FHS_Product_Bible_V3.7 §0/§2.5；退役兩份舊文件 |
 | — | 2026-05-31 | Session 48 | pricing_reference v2.0.0：補全立體擺設/繪圖成本/折扣機制/數據位置 |
 | — | 2026-05-31 | Session 48 Phase 2 | 吊飾計價大修：移除 $1,000 圖紙費；移除異部位費；改用頸鏈組公式 |

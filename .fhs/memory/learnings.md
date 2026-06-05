@@ -27,6 +27,8 @@
 
 ## Pitfalls（重複踩過的雷）
 
+- [Pitfall 2026-06-05] 收斂律比對不同源成本系統必觸假警報：n8n 四分量合計 vs products.total_base_cost 在有 W1 免畫圖的混合訂單中必然偏差>$1，不可推入 zeroCostItems，應改推 n8nAdjustmentNotes。
+
 - [Pitfall 2026-06-01] Obsidian Windows 不追蹤 NTFS junction：mklink /J 建立的 junction 在 PowerShell 可見，但 Obsidian 索引/Graph/FileExplorer 完全看不到。實證確認。
 - [Pitfall 2026-06-01] Obsidian dot-directory 硬限制：.fhs/ 等 dot-dir 對 Obsidian 結構性不可見（Graph + FileExplorer），userIgnoreFilters 只影響 QuickSwitcher，Graph 需用 Graph View 自身 filter 設定。
 - **RPC return 遺漏前端所需欄位（P8）**：RPC 只返回 `{success, order_id}`，前端 `if (result.full_order_text !== undefined)` 永遠 false，UI 刷新靜默失敗。每次寫 RPC 必須對照前端 result 讀取的所有欄位清單，在 RETURN jsonb_build_object 中逐一確認 — 源自 2026-05-27

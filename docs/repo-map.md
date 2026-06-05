@@ -153,6 +153,7 @@ freehandsss_dashboard/
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
 │   │   ├── FHS_Pricing_Bible.md         ← 定價聖經 v1.0.0 L2（2026-06-01 新增）合併 pricing_reference + Product_Bible 品牌邏輯，現行定價 HEAD
+│   │   ├── FHS_System_Logic_Overview.md ← 系統運作總論 v1.0.0（2026-06-05 新增）前端成本/售價/畫圖費/n8n節點/IG訊息/B1標靶全記錄
 │   │   └── product_pricing_reference.md ← [DEPRECATED 2026-06-01] 已合併至 FHS_Pricing_Bible.md
 │   ├── reports/                         ← AI 產出正式報告與計劃區（2026-05-23 新增規則）
 │   │   ├── README.md                    ← 報告區總綱

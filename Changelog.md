@@ -1,5 +1,75 @@
 # Changelog
 
+## [2026-06-05] ✅ Telegram 待核算假警報修復（Session 61 — n8n V47.17）
+
+**範圍**：n8n Calculate Profit & Pack Items 單節點修復
+
+### [FIX] V47.17 — 收斂律警告降級，修復混合訂單 Telegram「待核算」假警報
+
+**問題**：混合訂單（P_MAIN + 加購 K/M）提交後，Telegram 成本及利潤均顯示「待核算」。
+**根因**：V47.16 收斂律自我檢查把警告推入 `zeroCostItems`，導致 `Has_Cost_Error = true`。W1 免畫圖使四分量合計 ≠ `products.total_base_cost`（兩個不同源成本系統），必然觸發假警報。
+**修復**：收斂律警告移至 `n8nAdjustmentNotes`（純審計記錄），不再污染 `Has_Cost_Error`。
+
+- n8n V47.16 → **V47.17** (LIVE)，versionId: `0c3a1293-bd46-4650-b920-b6d867f75551`
+
+---
+
+## [2026-06-05] ⚡ VT-1/2/3 吊飾運費扣減驗收 + 定價寶典文件升版（Session 61）
+
+**範圍**：Supabase/Airtable 雙端數據稽核 + 驗收報告建立 + 定價寶典（Pricing Bible）文件升版
+
+### [AUDIT] VT-1/2/3 吊飾運費扣減驗證
+- **VT-1 (單件吊飾)** — **PASS**：確認訂單 `T730548` `total_cost` 為 `$635`，無異常扣減，`n8n_adjustment_notes` 無扣減欄位。
+- **VT-2 (多件吊飾)** — **PASS**：確認訂單 `T584316` `total_cost` 為 `$530`，`n8n_cost_adjustments` 寫入 `-$105` (扣減式：(4-1)*$35 = $105)，`n8n_adjustment_notes` 完整寫入折扣依據與件數。
+- **VT-3 (B1 歷史標靶)** — **FAIL (無資料)**：於 Supabase/Airtable 進行精確查詢，未查得 `$455` (3鎖匙扣) 與 `$1,335` (4吊飾) 實體訂單。核對 Session 54 B1 完成報告，確認此兩筆為前端 Playwright 模擬測例，未正式送出至資料庫。
+- **報告產出**：已於 `.fhs/reports/2026-06-05_vt_charm_shipping_validation_report.md` 產出完整驗收報告。
+
+### [DOC] FHS_Pricing_Bible.md v1.1.0 升版
+- 補入 **§3.4 吊飾跨部位運費共享規則**，說明 `(count-1) * $35` 扣減邏輯與 n8n 扣除路徑，與鎖匙扣運費共享對齊，消除文件空白。
+
+---
+
+## [2026-06-05] ✅ Task A 四分量後台記帳落地 + 系統總論文件建立（Session 60）
+
+**範圍**：前端 + n8n 三節點 + Supabase migration + 文件化
+
+### [FEAT] Task A — 四分量後台記帳接通（n8n V47.16）
+
+**白話**：把訂單成本拆成 4 個信封（畫圖/打印/鏈條/運費）分別記入 order_items，補上前幾 Phase 建好底層後欠缺的最後一條傳遞路線。
+
+**改動點**：
+- **V41 HTML** — `calculatePricing()`：補 per-item `ChainCost`
+  - 吊飾：全訂單按 silverItems 順序奇偶位分配（奇=$100，偶=$0），含 qty>1 多件正確展開
+  - 鎖匙扣：`ChainCost = ClaspCost`（$10×qty，已逐件算好）
+- **V41 HTML** — payload injection（line 6299-6303）：補 `Printing_Cost / Chain_Cost / Shipping_Cost`
+  - 現在 orderItemsArray 每件含完整四分量，傳給 n8n
+- **n8n Parse Items & Generate SKU**（V47.16）：outputItems 透傳四欄 `Drawing/Printing/Chain/Shipping_Cost`
+- **n8n Calculate Profit & Pack Items**（V47.16）：
+  - packedItems 補四欄（從 originalItemData 讀取前端透傳值）
+  - 新增收斂律自我檢查：`SUM(四欄毛值)−扣減 ≈ Total_Cost`，偏差>$1 則 zeroCostItems 警告
+- **n8n Supabase Mirror Prep**（V47.16）：items mapping 補四欄（snake_case）
+- **migration 0028**（`supabase/migrations/0028_sync_rpc_four_cost_columns.sql`）：
+  - 更新 `sync_order_to_mirror` RPC，INSERT/UPDATE order_items 補寫四欄
+  - COALESCE 保護：舊訂單 NULL 時不破壞既有資料
+  - ⚠️ **需 Fat Mo 在 Supabase SQL Editor 執行**
+
+**收斂律驗算**：
+- V1 鎖匙扣3件：(120+285+30+60)−40 = **455 ✓**
+- V2 吊飾4件：(60+1040+200+140)−105 = **1335 ✓**
+
+### [DOC] FHS_System_Logic_Overview.md v1.0.0 建立
+
+- 路徑：`.fhs/notes/FHS_System_Logic_Overview.md`
+- 完整記錄：前端成本計算、售價公式、畫圖費豁免規則、n8n 節點流程、成本原子數值、IG 訊息邏輯、B1 驗收標靶、rollback 指引
+- 讓任何新 session AI 或人員讀完即可理解整套系統
+
+**⚠️ 待 Fat Mo 執行**：
+1. Supabase SQL Editor 執行 `0028_sync_rpc_four_cost_columns.sql`
+2. current.html 同步（授權後 `/execute` 更新）
+3. VT-1/2 真實訂單驗收
+
+---
+
 ## [2026-06-04] 🐛 W5-FIX: _fhsCostReady 永久 false + rp.md 注入層補丁 + Supabase-First 違規記錄
 
 **範圍**：前端 bug 修復 + 制度層防護強化（Session 59）

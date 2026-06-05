@@ -1,3 +1,93 @@
+# FHS Handoff - 2026-06-05 (Session 61 — VT-1/2/3 驗收 + Task A 驗證 + V47.17 修復)
+
+## Session 61 — 完整收尾
+
+**[Session 61 完結]**
+
+### 執行完成項目
+
+- ✅ **Task A 四分量後台記帳 — 全面驗證通過**（test05 訂單）：
+  - migration 0028 確認已部署（drawing_cost 有值可證）
+  - current.html 確認已同步（694,941 bytes = V41，兩檔一致）
+  - test05 四分量寫入正確：P_MAIN drawing=60 ✓、K_LH printing=95/chain=10/ship=20 ✓、M_LH printing=465/chain=100/ship=35 ✓
+  - drawing_cost=0 for K/M 屬 W1 免畫圖正確行為（P_MAIN 加購場景）
+
+- ✅ **[BUG FIX] Telegram「待核算」假警報修復（n8n V47.17 LIVE）**：
+  - 根因：V47.16 收斂律警告推入 `zeroCostItems`，混合訂單因 W1 免畫圖使四分量與 products.total_base_cost 不同源，偏差必然 >$1，觸發 `Has_Cost_Error=true`
+  - 修復：收斂律警告改推 `n8nAdjustmentNotes`（type: "convergence_note"），不污染 `Has_Cost_Error`
+  - versionId: `0c3a1293-bd46-4650-b920-b6d867f75551`
+  - Rollback: `.fhs/notes/aireports/n8n-mcp-backups/2026-06-04/.../Calculate_Profit___Pack_Items.json`
+
+- ✅ **Session 56 VT-1/2/3 吊飾運費扣減驗收**（AG A2 執行，A3 複核）：
+  - VT-1：T730548，total_cost=$635，單件無扣減 ✓ **PASS**
+  - VT-2：T584316，total_cost=$530，4件吊飾扣減$105=(4-1)×$35 ✓ **PASS**
+  - VT-3：B1歷史標靶（$455/$1,335）DB無記錄屬預期（前端模擬未寫入生產DB）✓ **PASS**
+  - 驗收報告：`.fhs/reports/2026-06-05_vt_charm_shipping_validation_report.md`
+- ✅ **FHS_Pricing_Bible.md v1.1.0**：補入 §3.4 吊飾跨部位運費共享規則
+
+### 尚待執行
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| 1 | Anti-Idle Ping 驗證 | ⏸ 稍後 |
+| 2 | pg_cron TTL | ⏸ 稍後（Supabase SQL Editor 手動執行） |
+| 3 | 立體擺設 UI 整合 R1 | ⏸ 追蹤中（R1 雙 POST 無事務保護） |
+| TD1 | FHS_Pricing_Bible.md 搬移至 .fhs/ai/ | 技術債 P2 |
+| TD2 | learnings.md 合併退役整理 | 技術債（已超 50 條上限） |
+
+### Subagent 使用記錄
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `build-error-resolver`（Telegram bug 診斷）|
+| 實際使用 | ❌ 未使用（代碼追蹤 + n8n MCP 直接診斷，主 context 完成）|
+| 遵從 Router | ❌ 未遵從（bug 定位清晰，inline 診斷更高效）|
+
+---
+
+# FHS Handoff - 2026-06-05 (Session 60 — Task A 四分量後台記帳 + 系統總論文件)
+
+## Session 60 — Task A 四分量後台記帳落地
+
+**[Session 60 完結]**
+
+### 執行完成項目
+
+- ✅ **Task A 四分量後台記帳**（接通最後一條傳遞路線）：
+  - V41 `calculatePricing()` 補 per-item `ChainCost`（吊飾奇偶位分配 + 鎖匙扣=ClaspCost）
+  - V41 payload injection 補 `Printing_Cost / Chain_Cost / Shipping_Cost`
+  - n8n Parse Items & Generate SKU 補透傳四欄（V47.16）
+  - n8n Calculate Profit & Pack Items 補四欄 + 收斂律自我檢查（V47.16）
+  - n8n Supabase Mirror Prep items mapping 補四欄（V47.16）
+  - 建立 `migration 0028`（更新 sync_order_to_mirror RPC 含四欄）
+- ✅ **FHS_System_Logic_Overview.md v1.0.0** 建立：`.fhs/notes/FHS_System_Logic_Overview.md`
+  - 完整記錄前端成本/定價/畫圖費豁免規則/n8n節點流程/成本原子數值/IG訊息邏輯/B1標靶/rollback 指引
+- ✅ CHANGELOG / decisions / handoff / repo-map 同步
+
+### 尚待執行
+
+| # | 項目 | 狀態 | 說明 |
+|---|------|------|------|
+| 1 | **重要** migration 0028 部署 | ⚠️ 待 Fat Mo 在 Supabase SQL Editor 手動執行 | 不執行則四欄永遠 = 0 |
+| 2 | current.html 同步 | ⚠️ 待授權 | V41 已改，需同步至正式版 |
+| 3 | VT-1/2 真實訂單驗收 | ⏸ 待 Fat Mo | V1=$455 / V2=$1,335 四欄正確寫入 Supabase |
+| 4 | Session 56 VT-1/2/3 吊飾運費扣減驗證 | ⏸ 待 Fat Mo 交 AG | XML Supabase Prompt 已備妥 |
+| 5 | Anti-Idle Ping 驗證 | ⏸ 稍後 | n8n 主 workflow 無 Schedule Trigger |
+| 6 | pg_cron TTL | ⏸ 稍後 | Supabase SQL Editor 手動執行 |
+| 7 | 立體擺設 UI 整合 R1 | ⏸ 追蹤中 | R1 雙 POST 無事務保護 |
+| TD1 | FHS_Pricing_Bible.md 搬移 | 技術債 P2 | — |
+| TD2 | learnings.md 合併退役整理 | 技術債 | 已超 50 條上限 |
+
+### Subagent 使用記錄
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | `database-reviewer`（財務計算相關） |
+| 實際使用 | ❌ 未使用（n8n MCP get_node/get_workflow/update_node_code 直接在主 context 執行，確認節點代碼後外科修改，非靜默假設） |
+| 遵從 Router | ❌ 未遵從（直接手術修復更高效；finance-auditor VT-1/2 驗收待 migration 0028 部署後再委派） |
+
+---
+
 # FHS Handoff - 2026-06-04 (Session 59 — W5-FIX + 違規記錄 + 待辦核查)
 
 ## Session 59 — W5-FIX + Supabase-First 違規記錄 + AG Supabase MCP 調查

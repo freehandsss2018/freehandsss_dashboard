@@ -5373,6 +5373,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
 
+
+            // Task A: Per-item ChainCost（§三-B Q1 奇偶位規則）
+            // 吊飾：全訂單按 silverItems 順序逰件判奇偶，奇數件位=$100，偶數件位=$0
+            // 鎖匙扣：ChainCost = ClaspCost（$10×qty，已算好）
+            let _charmOrdPos = 0;
+            silverItems.forEach(function(sItem) {
+                let _ic = 0;
+                for (let j = 0; j < sItem.Quantity; j++) {
+                    _charmOrdPos++;
+                    if (_charmOrdPos % 2 === 1) _ic += (_cc.necklace_chain_cost || 100);
+                }
+                sItem.ChainCost = _ic;
+            });
+            metalItems.forEach(function(kItem) { kItem.ChainCost = kItem.ClaspCost || 0; });
+
             // --- 多件運費扣減（P0 規則：同類(總件數-1)×單件運費）---
             let _totalShippingDeduction = 0;
             if (metalItems.length > 0) {
@@ -6282,7 +6297,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let pItem = window.fhsCurrentPricingItems[idx];
                     if (pItem) {
                         oItem.Suggested_Price_Manual = pItem.CalculatedPrice;
-                        oItem.Drawing_Cost = pItem.FatMoCost;
+                        oItem.Drawing_Cost   = pItem.FatMoCost        || 0;
+                        oItem.Printing_Cost  = pItem.PrintingCost     || 0;  // Task A
+                        oItem.Chain_Cost     = pItem.ChainCost        || 0;  // Task A
+                        oItem.Shipping_Cost  = pItem.BaseShippingCost || 0;  // Task A
                     }
                 });
             } else {

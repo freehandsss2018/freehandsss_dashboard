@@ -50,7 +50,7 @@ function callPerplexity(prompt) {
     const body = JSON.stringify({
       model: 'sonar-reasoning-pro',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 8192
+      max_tokens: 3072
     });
 
     const options = {
@@ -78,7 +78,7 @@ function callPerplexity(prompt) {
       });
     });
     req.on('error', reject);
-    req.setTimeout(60000, () => { req.destroy(); reject(new Error('Perplexity timeout')); });
+    req.setTimeout(180000, () => { req.destroy(); reject(new Error('Perplexity timeout')); });
     req.write(body);
     req.end();
   });
