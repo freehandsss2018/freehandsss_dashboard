@@ -1,3 +1,38 @@
+# FHS Handoff - 2026-06-05 (Session 62 — TD1 FHS_Pricing_Bible.md 搬移)
+
+## Session 62 — 技術債清償：Pricing Bible 搬移至 .fhs/ai/
+
+**[Session 62 完結]**
+
+### 執行完成項目
+
+- ✅ **[TD1 清償] FHS_Pricing_Bible.md 搬移（`.fhs/notes/` → `.fhs/ai/`）**：
+  - 新路徑：`.fhs/ai/FHS_Pricing_Bible.md`（v1.1.0，內容不變）
+  - 舊路徑 `.fhs/notes/FHS_Pricing_Bible.md` 已刪除
+  - 更新引用（6 個檔案）：`FHS_Finance_Bible.md`、`AGENTS.md`、`FHS_Prompts.md`、`repo-map.md`、`finance-gatekeeper/SKILL.md`、`FHS_Product_Bible_V3.7.md`
+  - `finance-gatekeeper/SKILL.md` §五技術債備忘：Pricing Bible 位置不一致條目已移除
+  - `decisions.md` 補入 Session 62 架構決策記錄
+
+### 尚待執行
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| 1 | Anti-Idle Ping 驗證 | ⏸ 稍後 |
+| 2 | pg_cron TTL（Supabase SQL Editor 手動執行）| ⏸ 稍後 |
+| 3 | 立體擺設 UI 整合 R1（雙 POST 無事務保護）| ⏸ 追蹤中 |
+| ~~TD1~~ | ~~FHS_Pricing_Bible.md 搬移至 .fhs/ai/~~ | ✅ 完成（Session 62）|
+| TD2 | learnings.md 合併/退役整理（已超 50 條上限）| 技術債 |
+
+### Subagent 使用記錄
+
+| 項目 | 內容 |
+|------|------|
+| Router 建議 | 無（純檔案搬移任務）|
+| 實際使用 | ❌ 未使用（定點 Write/Edit/PowerShell，主 context 直接完成）|
+| 遵從 Router | — |
+
+---
+
 # FHS Handoff - 2026-06-05 (Session 61 — VT-1/2/3 驗收 + Task A 驗證 + V47.17 修復)
 
 ## Session 61 — 完整收尾

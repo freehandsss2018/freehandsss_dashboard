@@ -158,7 +158,7 @@
 - **任務型路由（依任務讀最少必要文件）**：
   - 職責分工 / 誰算哪個欄位 / Layer 1/2 規則 → `.fhs/ai/FHS_Finance_Bible.md` §一
   - 成本 key 實際數值（material_cost_* / keychain_* / chain 等）→ `.fhs/ai/FHS_Product_Cost_Schema_v2.md`
-  - 售價 / 報價 / 定價公式 → `.fhs/notes/FHS_Pricing_Bible.md` 對應章節
+  - 售價 / 報價 / 定價公式 → `.fhs/ai/FHS_Pricing_Bible.md` 對應章節
 - 此律起源：2026-06-03 AI 未讀 Finance Bible 即誤解「收款確收守護」規則，將收款側（final_sale_price）的「真理」錯誤延伸至成本側，導致 B2 設計方向錯誤。參見 decisions.md 2026-06-03 事故記錄。
 
 ### 衝突優先級聲明

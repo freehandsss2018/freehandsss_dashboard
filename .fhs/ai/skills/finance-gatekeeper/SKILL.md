@@ -19,12 +19,12 @@ compatible_with: AGENTS.md v1.4.10
 
 | 你要問的問題類型 | 讀哪份文件 |
 |----------------|-----------|
-| 產品定價、售價公式（吊飾/鎖匙扣/立體擺設多少錢）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §2–§4 |
-| FatMo 繪圖成本（Drawing Cost）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §5 |
-| 產品生產成本組成邏輯（total_base_cost 有哪些分量）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §6 |
+| 產品定價、售價公式（吊飾/鎖匙扣/立體擺設多少錢）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §2–§4 |
+| FatMo 繪圖成本（Drawing Cost）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §5 |
+| 產品生產成本組成邏輯（total_base_cost 有哪些分量）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §6 |
 | 成本 key 實際數值（material_cost_* / keychain_* / chain 等）| **L2a** `.fhs/ai/FHS_Product_Cost_Schema_v2.md` |
-| 折扣 / adjustment_amount 機制 | **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §7 |
-| 品牌禁止邏輯（禁成人單買、嬰兒核心原則）| **L2b** `.fhs/notes/FHS_Pricing_Bible.md` §0 |
+| 折扣 / adjustment_amount 機制 | **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §7 |
+| 品牌禁止邏輯（禁成人單買、嬰兒核心原則）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §0 |
 | 架構規則（Layer 1/2 快照 / 誰寫哪個欄位 / 禁 trigger）| **L1** `.fhs/ai/FHS_Finance_Bible.md` |
 | 四端同步欄位映射 | `n8n/Quadruple_Sync_Field_Map.md` |
 | Live 訂單成本/利潤驗證 | 啟動 `finance-auditor` subagent |
@@ -74,5 +74,4 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 
 ## 五、技術債備忘
 
-- **FHS_Pricing_Bible.md 位置不一致**：目前存於 `.fhs/notes/`（歷史原因），架構語義屬 L2b AI 行為授權文件，應與 L1 Finance Bible 並排於 `.fhs/ai/`。搬移涉及 5+ 個引用路徑，已列入技術債，計畫於 PRM v2 P2 命名規範設計階段一併處理。在此之前，路由表路徑以 `.fhs/notes/FHS_Pricing_Bible.md` 為準。
 - **Task A 路由更新觸發條件**：Task A（四分量 roll-up）完成後，Cost Schema v2 將升至 v3（新增 drawing/printing/chain/shipping_cost key），本路由表需同步更新。

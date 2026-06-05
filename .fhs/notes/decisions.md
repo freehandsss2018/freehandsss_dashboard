@@ -3,6 +3,14 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-05] (Session 62) FHS_Pricing_Bible.md 搬移至 .fhs/ai/
+
+決策：將 `FHS_Pricing_Bible.md`（L2 定價聖經）從 `.fhs/notes/` 搬移至 `.fhs/ai/`。
+原因：L2b 定價文件的架構語義與 L1 Finance Bible 同屬 AI 行為授權文件層，應並排於 `.fhs/ai/`，而非混入 notes 筆記層。
+改動點：新路徑 `.fhs/ai/FHS_Pricing_Bible.md`；舊路徑 `.fhs/notes/FHS_Pricing_Bible.md` 已刪除。
+更新引用：FHS_Finance_Bible.md / AGENTS.md / FHS_Prompts.md / repo-map.md / finance-gatekeeper/SKILL.md / FHS_Product_Bible_V3.7.md 共 6 個檔案。
+finance-gatekeeper/SKILL.md §五技術債備忘中的 Pricing Bible 位置不一致條目已移除（技術債清償）。
+
 [2026-06-05] (Session 60) Task A 四分量後台記帳 — 前端透傳策略採用
 
 決策：四分量（drawing/printing/chain/shipping_cost）由前端 calculatePricing() 算好後透傳，n8n 接收並寫入 order_items。

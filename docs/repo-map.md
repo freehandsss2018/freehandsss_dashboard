@@ -89,6 +89,7 @@ freehandsss_dashboard/
 │   │   ├── README.md                   ← AI 指揮系統說明
 │   │   ├── AGENTS.md                   ← 憲法層 v1.4.5（2026-05-13 更新：Supabase 四端共存規則）
 │   │   ├── FHS_Finance_Bible.md        ← 財務架構聖經 v1.1.0 L1（架構不變量：Layer 2 快照、欄位歸屬、禁 trigger；2026-06-01 加 Authority header）
+│   │   ├── FHS_Pricing_Bible.md        ← 定價聖經 v1.1.0 L2（2026-06-05 搬移）合併 pricing_reference + Product_Bible 品牌邏輯，現行定價 HEAD
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
@@ -152,9 +153,8 @@ freehandsss_dashboard/
 │   │   ├── todo.md
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
-│   │   ├── FHS_Pricing_Bible.md         ← 定價聖經 v1.0.0 L2（2026-06-01 新增）合併 pricing_reference + Product_Bible 品牌邏輯，現行定價 HEAD
 │   │   ├── FHS_System_Logic_Overview.md ← 系統運作總論 v1.0.0（2026-06-05 新增）前端成本/售價/畫圖費/n8n節點/IG訊息/B1標靶全記錄
-│   │   └── product_pricing_reference.md ← [DEPRECATED 2026-06-01] 已合併至 FHS_Pricing_Bible.md
+│   │   └── product_pricing_reference.md ← [DEPRECATED 2026-06-01] 已合併至 FHS_Pricing_Bible.md（現位於 .fhs/ai/）
 │   ├── reports/                         ← AI 產出正式報告與計劃區（2026-05-23 新增規則）
 │   │   ├── README.md                    ← 報告區總綱
 │   │   ├── completion/                  ← 制度任務完成記錄（含歷史備份）
@@ -184,7 +184,7 @@ freehandsss_dashboard/
 │   ├── repo-map.md                      ← 本文件
 │   ├── FHS_Blueprint.md
 │   ├── DESIGN.md                        ← 大地溫潤 (Earthy Warm) 設計系統規範（2026-05-17 新增）
-│   ├── FHS_Product_Bible_V3.7.md        ← [DEPRECATED 2026-06-01] 多項定價規則已過時，現行定價請讀 FHS_Pricing_Bible.md
+│   ├── FHS_Product_Bible_V3.7.md        ← [DEPRECATED 2026-06-01] 多項定價規則已過時，現行定價請讀 .fhs/ai/FHS_Pricing_Bible.md
 │   ├── FHS_Legacy_Migration_Notes.md    ← Excel 舊訂單遷移注意事項（缺失問題與處理方法）
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）
 │   ├── GLOBAL_AI_SOP.md                ← v2.2 跨環境與多代理協作協議（⚠️ 被 AGENTS.md v1.4.5 憲法層超越，保留作歷史參考）

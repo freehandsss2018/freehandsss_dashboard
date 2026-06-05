@@ -1,7 +1,7 @@
 # FHS Finance Bible — 財務計算聖經
 
 > **Authority Level**: L1 — 架構不變量（最高權威）
-> **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/notes/FHS_Pricing_Bible.md`。
+> **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/ai/FHS_Pricing_Bible.md`。
 > **Version**: v1.2.0
 > **Created**: 2026-05-16 | **Updated**: 2026-06-02（G1–G6：位置依賴成本規則、鎖匙扣/吊飾扣減公式修正、Clasp=頸鏈釐清）
 > **Path**: `.fhs/ai/FHS_Finance_Bible.md`
@@ -346,7 +346,7 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
   4. n8n/N8N_Node_Interaction_Map.md          ← n8n 節點職責
 
 定價/售價/成本/折扣查詢：
-  → .fhs/notes/FHS_Pricing_Bible.md（L2 現行定價 HEAD）
+  → .fhs/ai/FHS_Pricing_Bible.md（L2 現行定價 HEAD）
 
 如需查詢 n8n 節點程式碼：
   get_node("Calculate Profit & Pack Items")   ← 核心計算節點

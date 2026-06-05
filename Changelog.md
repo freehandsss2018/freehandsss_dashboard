@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-06-05] ✅ TD1 技術債清償：FHS_Pricing_Bible.md 搬移（Session 62）
+
+**範圍**：純架構搬移，無業務邏輯變更
+
+### [REFACTOR] FHS_Pricing_Bible.md 路徑遷移（.fhs/notes/ → .fhs/ai/）
+
+- **搬移**：`FHS_Pricing_Bible.md` v1.1.0 從 `.fhs/notes/` 遷移至 `.fhs/ai/`（AI 規則層統一管理）
+- **舊路徑刪除**：`.fhs/notes/FHS_Pricing_Bible.md` 已移除
+- **引用更新（6 個檔案）**：`FHS_Finance_Bible.md`、`AGENTS.md`、`FHS_Prompts.md`、`repo-map.md`、`finance-gatekeeper/SKILL.md`、`FHS_Product_Bible_V3.7.md`
+- **技術債備忘清除**：`finance-gatekeeper/SKILL.md` §五「Pricing Bible 位置不一致」條目移除
+- **decisions.md**：補入 Session 62 架構決策記錄
+
+---
+
 ## [2026-06-05] ✅ Telegram 待核算假警報修復（Session 61 — n8n V47.17）
 
 **範圍**：n8n Calculate Profit & Pack Items 單節點修復

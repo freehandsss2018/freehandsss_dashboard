@@ -50,7 +50,7 @@ description: Business situation detection and command routing for AI execution
 ## 【情境六：產品定價與商業邏輯更新 (Bible Sync)】
 
 - 觸發：用戶提及「定價」「產品聖經」「Bible」「售價」「多少錢」
-**真理來源**：強制讀取 `.fhs/notes/FHS_Pricing_Bible.md`（L2 現行定價 HEAD，2026-06-01 起取代 Product_Bible_V3.7）。
+**真理來源**：強制讀取 `.fhs/ai/FHS_Pricing_Bible.md`（L2 現行定價 HEAD，2026-06-01 起取代 Product_Bible_V3.7）。
 - **查詢路由**：先讀 `.fhs/ai/skills/finance-gatekeeper/SKILL.md` 確認讀哪份文件。
 - **注意**：`FHS_Product_Bible_V3.7.md` 已退役，其中 §2 鎖匙扣定價（含異部位費）和 §3 首飾定價均已過時，勿引用。
 
