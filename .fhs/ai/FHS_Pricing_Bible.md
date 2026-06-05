@@ -1,8 +1,8 @@
 # FHS 定價聖經 (FHS Pricing Bible)
 
 > **Authority Level**: L2 — 現行定價 HEAD
-> **Version**: v1.1.0
-> **更新日期**: 2026-06-05 (Session 61)
+> **Version**: v1.2.0
+> **更新日期**: 2026-06-05 (Session 63 — §10 重構為規則 ID 表)
 > **衝突規則**: 若本文件與 L1（`.fhs/ai/FHS_Finance_Bible.md`）衝突，以 L1 為準；本文件取代所有舊版定價文件（pricing_reference / Product_Bible_V3.7）
 > **Source of Truth**: `freehandsss_dashboardV41.html` → `calculatePricing()` 函式（代碼為最終裁決者）
 > **警告**: 計價邏輯變更後，本文件必須同步修訂，否則將成為誤導來源。
@@ -274,14 +274,29 @@ total_base_cost = Drawing_Cost + Printing_Cost + Clasp_Cost + Shipping_Cost
 
 ---
 
-## §10 修訂歷史
+## §10 規則沿革（按規則 ID 可查）
 
-| 版本 | 日期 | Session | 變更摘要 |
-|------|------|---------|---------|
-| v1.1.0 | 2026-06-05 | Session 61 | 補入吊飾跨部位運費共享規則 ($35/件) 說明 |
-| v1.0.0 | 2026-06-01 | Session 50 | 合併 product_pricing_reference.md v2.0.0 + FHS_Product_Bible_V3.7 §0/§2.5；退役兩份舊文件 |
-| — | 2026-05-31 | Session 48 | pricing_reference v2.0.0：補全立體擺設/繪圖成本/折扣機制/數據位置 |
-| — | 2026-05-31 | Session 48 Phase 2 | 吊飾計價大修：移除 $1,000 圖紙費；移除異部位費；改用頸鏈組公式 |
+> **查詢方式**：按規則 ID 找到現行值 + 上次變更日期 + 對應 Session；深層決策理由見 `decisions.md [日期]`。
+> **新增規則時**：在此表加一行，格式相同。
+
+| 規則 ID | 現行值 | 上次變更日 | Session | 變更前值 | → decisions |
+|---------|--------|-----------|---------|---------|-------------|
+| `CHARM_SHIPPING_DEDUCTION` | (件數-1)×$35 per 訂單 | 2026-06-05 | S61 | 缺失（從未記錄）| [2026-06-05] B2 吊飾運費扣減 |
+| `KEYCHAIN_SHIPPING_DEDUCTION` | (件數-1)×$20 per 訂單 | 2026-05-03 | — | — | FHS_Product_Bible_V3.7 §2.5 遷入 |
+| `CHARM_NECKLACE_FORMULA_RECAST` | floor(n/2)×$2,980 + (n%2)×$1,980（倒模）| 2026-05-31 | S48 Ph2 | qty×$800 線性公式（已廢） | [2026-05-31] 吊飾計價大修 |
+| `CHARM_DRAWING_FEE` | 無獨立圖紙費（已移除 $1,000 單購圖紙費）| 2026-05-31 | S48 Ph2 | $1,000 單購圖紙費 | [2026-05-31] 吊飾計價大修 |
+| `CROSS_BODY_SURCHARGE` | 無異部位附加費（已移除）| 2026-05-31 | S48 Ph2 | 跨部位加收 $100/$300 | [2026-05-31] 吊飾計價大修 |
+| `MEMBER_SURCHARGE` | 同訂單成人+嬰兒同時出現 +$300 | 2026-05-31 | S48 | — | 新增 |
+| `ADULT_DRAWING_S` | $110 per 件 | 2026-06-02 | S53 | $110（未變，成本邏輯憲法化確認）| decisions [2026-06-02] |
+| `BABY_DRAWING_S` | $60 per 件 | 2026-06-02 | S53 | $60（確認）| decisions [2026-06-02] |
+| `CLASP_COST` | $10 per 件（環扣，非頸鏈）| 2026-06-03 | S54 | 缺失 / 誤記為$0 | decisions [2026-06-03] B1 成本補完 |
+| `NECKLACE_CHAIN_COST` | $100 per 條（頸鏈）| 2026-06-03 | S53 | 缺失 | decisions [2026-06-02] P1 |
+| `ADDON_WOOL_FELT` | $680 per 件（羊毛氈公仔）| 2026-05-31 | S48 | — | 新增 |
+| `ADDON_LIGHTS` | $80 per 件（燈飾）| 2026-05-31 | S48 | — | 新增 |
+| `P_MODE_4_LIMB_WOODFRAME` | $2,380（木框4肢）| 2026-05-31 | S48 Ph2 | — | Session 48 Phase 2 確認 |
+| `P_MODE_2_LIMB_WOODFRAME` | $2,080（木框非4肢）| 2026-05-31 | S48 Ph2 | — | Session 48 Phase 2 確認 |
+
+> **文件版本歷史**（Pricing_Bible 整體版本，非逐規則）：v1.0.0（2026-06-01 建立）→ v1.1.0（2026-06-05 吊飾運費規則補入）→ v1.2.0（2026-06-05 §10 重構為規則 ID 表）
 
 ---
 

@@ -4,7 +4,7 @@ description: FHS Test-Driven Development specialist. Use PROACTIVELY when writin
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: claude-sonnet-4-6
 version: v1.0.0
-compatible_with: AGENTS.md v1.4.5
+compatible_with: AGENTS.md v1.4.12
 last_updated: 2026-05-16
 ---
 

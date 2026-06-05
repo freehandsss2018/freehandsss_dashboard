@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.11
-> Last updated: 2026-06-03
+> Version: v1.4.12
+> Last updated: 2026-06-05
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.11 (Rule 3.16 任務型路由補入：gatekeeper 為統一入口，三分支路由表；finance-gatekeeper v1.1.0 + finance-auditor v2.1.0)
+- **版本**：v1.4.12 (Rule 3.17 雙紀律強制律：三交付邊界強制自檢兩行，任務型有效驗收表，記憶合併 −1；Session 63 系統知識文件化治理方案)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
@@ -85,8 +85,14 @@
 - **n8n 優先級對齊**：n8n 工作流必須優先確保 Supabase 數據的準確性與及時性，Airtable 同步作為副手。
 
 ### FHS_Prompts.md 路由同步強制律
-- 凡新增或刪除 `.fhs/ai/commands/` 內任何指令檔，必須在同一次任務內同步更新 `docs/FHS_Prompts.md`，確保有對應的情境路由條目（包含：觸發關鍵詞、執行邏輯指向）。
-- 違反此律視為任務未完成，Fat Mo 有權要求重做。
+凡以下任一情況，必須在同一任務內稽核並更新 `docs/FHS_Prompts.md`（補/改觸發詞或新增情境）：
+1. `.fhs/ai/commands/` 新增或刪除任何指令檔
+2. `AGENTS.md` 新增任何 Rule（Rule 3.x）
+3. `.fhs/ai/` 新增或刪除任何 L2 文件（`FHS_Finance_Bible` / `FHS_Pricing_Bible` / `FHS_Product_Definition` / `FHS_Product_Cost_Schema` 等）
+4. 核心業務語義修正：財務術語定義改變（`final_sale_price` / `total_cost` / `net_profit`）、產品身份定義改變（§0 例外規則、新類別、部位計算規則）
+
+更新動作：在對應情境加/改觸發詞，更新 `compatible_with` + `last_updated` + `最後稽核` 欄。
+違反此律視為任務未完成，Fat Mo 有權要求重做。
 
 ### 文件同步強制律
 - 凡任何操作涉及以下任一情況，必須在同一次任務內同步更新 docs/repo-map.md 與對應層級的 README.md，不得事後補做：
@@ -160,6 +166,36 @@
   - 成本 key 實際數值（material_cost_* / keychain_* / chain 等）→ `.fhs/ai/FHS_Product_Cost_Schema_v2.md`
   - 售價 / 報價 / 定價公式 → `.fhs/ai/FHS_Pricing_Bible.md` 對應章節
 - 此律起源：2026-06-03 AI 未讀 Finance Bible 即誤解「收款確收守護」規則，將收款側（final_sale_price）的「真理」錯誤延伸至成本側，導致 B2 設計方向錯誤。參見 decisions.md 2026-06-03 事故記錄。
+
+### 雙紀律強制律（Rule 3.17）
+
+凡 AI 達到以下三個**交付邊界**之一，必須輸出「雙紀律自檢」兩行（此為強制，不可省略）：
+
+1. AI 宣告任務完成時
+2. `/execute` 收尾時
+3. 寫 `handoff.md` 前
+
+**強制輸出格式（交付結尾必附）**：
+```
+【交付前雙紀律自檢】
+驗收：[任務型對應驗證 + 結果 PASS/FAIL/不適用+具體理由]
+Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
+```
+
+**任務型有效驗收表（防「打勾儀式」）**：
+
+| 任務型 | 有效驗收 = | 無效 = |
+|--------|-----------|--------|
+| 財務/成本 | `finance-auditor` live 三端，附訂單號 | 口算/口稱 PASS |
+| 文件治理 | ≤2 跳盲測（3 問）或斷鏈數 = 0 附截圖/log | 「已完成」無證據 |
+| 代碼/HTML | `code-reviewer` G1–G8 Gate 報告 | 肉眼確認 |
+| n8n | `trigger_test_execution` log 或 execution log | 未觸發測試 |
+| 純文件搬移 | 引用同步清單（N 個檔各一行確認）| 「已同步」無清單 |
+| 純規劃（cl-flow 待 execute）| 「待 /execute；驗收於執行後」| 不適用其他型 |
+
+**誠實限制（B3）**：hook 可驗「有無輸出」，無法驗「內容真實性」；品質靠 AI 誠實 + 任務型綁定。  
+**記憶對應**：`feedback_pre_delivery_dual_discipline`（由 `feedback_subagent_router` + `feedback_delivery_standards` 合併升級）。  
+**規則起源**：Session 63 系統知識文件化治理方案（2026-06-05）。
 
 ### 衝突優先級聲明
 

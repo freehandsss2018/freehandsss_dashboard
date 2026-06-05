@@ -4,7 +4,7 @@ description: FHS Airtable schema specialist and n8n data flow validator. Use PRO
 tools: ["Read", "Grep", "Glob", "Bash", "mcp__claude_ai_Airtable__search_bases", "mcp__claude_ai_Airtable__list_tables_for_base", "mcp__claude_ai_Airtable__get_table_schema", "mcp__claude_ai_Airtable__list_records_for_table", "mcp__claude_ai_Airtable__search_records", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node", "mcp__n8n-mcp-server__get_workflow", "mcp__n8n-mcp-server__verify_triple_sync"]
 model: claude-sonnet-4-6
 version: v2.1.0
-compatible_with: AGENTS.md v1.4.5
+compatible_with: AGENTS.md v1.4.12
 last_updated: 2026-05-16
 ---
 

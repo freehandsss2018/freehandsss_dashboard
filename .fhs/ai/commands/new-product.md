@@ -1,7 +1,7 @@
 # /new-product — 新產品跨層融入引導
 
 **用途 (Purpose)**：引導 Fat Mo 完成新產品類型（SKU / 配件 / 加購品）融入 FHS 系統的五步跨層流程，確保 Dashboard UI ↔ Supabase schema ↔ n8n SKU 表三端零錯誤整合。
-**版本**：v1.1.0 (2026-05-23)
+**版本**：v1.2.0 (2026-06-05) — 補 Step 6 知識落盤（Gate 6）
 **觸發**：`/new-product [產品名稱或 SKU]`
 **平台**：Claude Code (A3) 專用
 **根據**：2026-05-21 Bug 修復循環學習（pitfalls.yaml P1–P5）
@@ -230,6 +230,36 @@
 **Gate 5 FAIL → 診斷**：
 - 呼叫 `build-error-resolver` 讀取 Supabase 錯誤 + n8n execution log
 - 根據失敗 Checklist 項目判斷回退哪步
+
+---
+
+### Step 6 — 知識落盤（強制，Gate 5 PASS 後執行）
+
+**負責**：A3（Claude Code 主 context）
+**執行範圍**：純文件寫入，不改代碼/schema
+
+```
+6a. FHS_Product_Definition.md — 新增產品條目
+    必填欄位：身份 / 部位構成 / 產品間關係 / SKU 命名 / Order_Item_Key 格式
+              §0 狀態（符合 / 例外+裁決日期→decisions）
+              → 定價連結（Pricing_Bible §N）
+              → 成本連結（Cost_Schema_v2 §N）
+
+6b. FHS_Pricing_Bible.md §10 — 登沿革一行
+    格式：| [規則 ID] | [現行值] | [日期] | [Session] | 新增 | — |
+
+6c. decisions.md — 記決策理由
+    §0 例外產品：必填（含理由 + Fat Mo 核准）
+    一般產品：選填（有架構決策才填）
+```
+
+**Gate 6 PASS 條件**：
+- `FHS_Product_Definition.md` 有新產品條目，§0 狀態欄已填
+- `database-reviewer` 確認條目內 SKU 連結指向 Supabase `products` 表真實 row
+- `FHS_Pricing_Bible.md §10` 有對應沿革行
+- §0 例外產品：`decisions.md` 有正式批准記錄
+
+**Gate 6 FAIL → 不得宣告產品上線完成**
 
 ---
 

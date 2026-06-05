@@ -1,16 +1,19 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.6
-compatible_with: AGENTS.md v1.4.6
-last_updated: 2026-05-16
+version: v1.7
+compatible_with: AGENTS.md v1.4.12
+last_updated: 2026-06-05
+last_audited_session: S63
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.6
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.7
 >
-> 最後更新：2026-05-16（新增情境二十二 Pricing Concession Audit；情境二十一補邊界說明）
+> 最後更新：2026-06-05（v1.7 S63 同步：收款確收守護語義修正；情境六三叉路由；情境十二/二十三更新；kgov 觸發；同步觸發機制說明）
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
+>
+> **⚠️ 同步觸發**：AGENTS Rule 新增 / `.fhs/ai/commands/` 增刪 / `.fhs/ai/` L2 文件增刪 / 核心業務語義修正 → 必須同步更新本文件（觸發機制見 AGENTS.md 文件同步強制律 + execute.md [F] 項）。
 
 ---
 
@@ -43,16 +46,18 @@ description: Business situation detection and command routing for AI execution
 - 觸發：用戶提及「財務規則」「n8n 利潤規則」「auditPassed 格式」「前端利潤守護」
 > ⚠️ 邊界說明：此情境處理**靜態財務規則確認**（n8n 節點格式、利潤守護規則）。若需 Live Airtable 數據查詢或三端比對，請走**情境二十一（finance-auditor）**。
 處理 `System_Total_Cost` 與利潤結算**規則**。
-- **死線**：前端利潤結算為最高真理，n8n 不得擅自重算（除非前端為 0）。
+- **收款確收守護**：操作者手動輸入的 `final_sale_price`（Deposit + Balance + Additional_Fee）為絕對真理，n8n 嚴禁重算這三個確收欄位。成本側（`total_cost`）由 n8n 從 Supabase 計算，屬估算快照。詳見 AGENTS.md 財務真理守護。
 - **n8n 代碼輸出規範**：強制執行 `[{json: {auditPassed: true...}}]` 格式，嚴禁回傳裸物件。
 - **SKU 對齊**：執行審計前，必須調用 `Parse Items` 正規化地圖。
 
 ## 【情境六：產品定價與商業邏輯更新 (Bible Sync)】
 
-- 觸發：用戶提及「定價」「產品聖經」「Bible」「售價」「多少錢」
-**真理來源**：強制讀取 `.fhs/ai/FHS_Pricing_Bible.md`（L2 現行定價 HEAD，2026-06-01 起取代 Product_Bible_V3.7）。
+- 觸發（三叉路由，依問題性質選一）：
+  - 「定價」「售價」「多少錢」「報價」「Bible」→ **定價**：讀 `.fhs/ai/FHS_Pricing_Bible.md`（L2 現行定價 HEAD）
+  - 「成本」「cost」「這值多少成本」→ **成本**：讀 `.fhs/ai/FHS_Product_Cost_Schema_v2.md`
+  - 「產品定義」「這是什麼產品」「§0」「WHAT」「這個產品的結構」→ **產品身份**：讀 `.fhs/ai/FHS_Product_Definition.md`（L2 產品身份 SSoT）
 - **查詢路由**：先讀 `.fhs/ai/skills/finance-gatekeeper/SKILL.md` 確認讀哪份文件。
-- **注意**：`FHS_Product_Bible_V3.7.md` 已退役，其中 §2 鎖匙扣定價（含異部位費）和 §3 首飾定價均已過時，勿引用。
+- **注意**：`FHS_Product_Bible_V3.7.md` 已退役，定義層已遷至 `FHS_Product_Definition.md`，定價已遷至 `FHS_Pricing_Bible.md`，勿引用舊檔。
 
 ## 【情境七：Stitch UI 翻新協議】
 
@@ -73,8 +78,9 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 ## 【情境八：內部巡邏與一致性檢查 (Internal Patrol)】
 
-- 觸發：用戶提及「巡邏」「一致性」「冗餘」「清理」「fhs-audit」
+- 觸發：用戶提及「巡邏」「一致性」「冗餘」「清理」「fhs-audit」「kgov」「知識治理」「Product_Definition」「doc-gov」
 - **動作**：執行內部巡邏，檢查是否存在孤立檔案、過時版本或路由斷層。
+- **kgov 觸發**：識別為 FHS 知識治理框架（Session 63）再優化任務 → 稽核 `.fhs/ai/FHS_Product_Definition.md` + `FHS_Pricing_Bible.md §10` + `AGENTS Rule 3.17` + `/new-product Step 6`。
 - **執行邏輯**：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/fhs-audit.md。
 
 ## 【情境九：記憶引擎 3.0 (Memory Engine)】
@@ -101,6 +107,8 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 1. 執行 `/cl-flow [任務]`（A1 Perplexity 外部研究 + A2 本地計畫 + A3 Verdict，三段全自動並行）
 2. 等待 Fat Mo 審閱 cl-final-plan.md，確認後輸入 `/execute`
+3. `/execute` 完成後 Step 6 強制雙紀律自檢（Rule 3.17）再收尾
+- **新產品上線**：走 `/new-product`（6步 atomic 流程，含 Step 6 kgov 知識落盤）
 指令說明詳見：.fhs/ai/commands/cl-flow.md。
 
 ---
@@ -176,10 +184,10 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 ---
 
-## 【情境二十三：Prompt 結構化重寫 (/rp) v2.2】
+## 【情境二十三：Prompt 結構化重寫 (/rp) v2.3】
 
 - 觸發：用戶輸入 `/rp [問題]`、`/rp cl-flow [task]`、`/rp cl-flow-fast [task]`、「幫我重寫這個問題」、「結構化我的提問」
-- 執行邏輯：載入並遵循 `.fhs/ai/commands/rp.md`（v2.2）
+- 執行邏輯：載入並遵循 `.fhs/ai/commands/rp.md`（v2.3）
 - 平台：CL / AG / PL 三端通用（PL 使用 Markdown 格式，非 XML）
 
 三變體路由：

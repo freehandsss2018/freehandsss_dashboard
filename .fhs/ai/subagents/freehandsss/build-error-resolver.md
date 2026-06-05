@@ -5,7 +5,7 @@ tools: ["Read", "Grep", "Glob", "Bash"]
 model: claude-haiku-4-5-20251001
 skills: [fhs-bug-triage]
 version: v1.0.0
-compatible_with: AGENTS.md v1.4.5
+compatible_with: AGENTS.md v1.4.12
 last_updated: 2026-05-16
 ---
 

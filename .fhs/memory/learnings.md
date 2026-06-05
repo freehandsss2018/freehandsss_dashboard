@@ -96,3 +96,15 @@
 - **「AI 忘記規則」= Skill 前置載入，非 Subagent**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 在呼叫前已不知道規則的問題 — 源自 2026-06-01
 - **vendor 技能正確包裝層是 subagent 非 slash command**：方法論應 AI 自動執行，slash command 是用戶觸發設計；若用戶要知道何時用才需要 AI 幫助 — 源自 2026-05-30
 - **方法論嵌入 subagent 用 3-line trigger（不 inline 全量）**：brief summary（3 行）+ 指向 vendor 技能路徑；Core 常駐記憶，全量按需載入；避免 token 恆定成本（inline 30 行 × 每次召喚 ≈ +600 tokens）— 源自 2026-05-30
+
+---
+
+## Patterns（成功反覆驗證的做法）
+
+- **【Pattern ✅ 2026-06-05 Session 63】kgov 知識治理框架設計模式**：治理文件（路由總機/規則索引）必須有**同步觸發機制**（AGENTS 規則層 + execute [F] 稽核項），不能靠 AI 自律維護。最小改動原則：+1 文件填真空，改既有不膨脹，規則用 harness 鎖不靠告示。Pattern 驗證：Session 63 P0–P4 完整執行，盲測 3 問全綠（≤2跳）。
+
+---
+
+## Pitfalls（重複踩過的雷）
+
+- **【Pitfall ✅ 2026-06-05 Session 63】路由總機被動維護 = 每次系統演進後路由腐爛**：FHS_Prompts.md 只在 commands/ 增刪時觸發更新，AGENTS Rule 新增 / L2 文件新增 / 語義修正不觸發 → 累積 3–5 個 session 後路由過時，AI 走錯路。修復：AGENTS 文件同步律擴充 4 觸發 + execute.md [F] 強制稽核，每次 /execute 自動問「路由總機要不要更新？」。

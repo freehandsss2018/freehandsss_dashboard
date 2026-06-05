@@ -1,8 +1,8 @@
 ---
 name: FHS System Changelog
 version: v1.0
-compatible_with: AGENTS.md v1.4.5
-last_updated: 2026-05-16
+compatible_with: AGENTS.md v1.4.12
+last_updated: 2026-06-05
 description: Unified changelog for n8n workflows, Dashboard, and system architecture
 note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Architecture (v1.4.x)"
 ---
@@ -13,6 +13,66 @@ note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Ar
 > - **n8n Workflow**: V45.x–V47.x（後端業務邏輯）
 > - **Dashboard Proto**: V36–V42（前端介面）
 > - **System Architecture**: v1.4.x（AGENTS.md 憲法層）
+
+## [System v1.4.12-patch1] — 2026-06-05 (Session 63 補丁)
+
+### FHS_Prompts.md 同步機制補丁
+
+**問題**：FHS_Prompts.md 路由總機缺乏自動同步觸發機制，Fat Mo 須靠人工主動巡查才能發現過時路由。
+
+#### 變動
+- `AGENTS.md`：文件同步強制律擴充 3 個新觸發條件（AGENTS Rule 新增 / L2 文件增刪 / 核心業務語義修正）
+- `execute.md`：新增 [F] FHS_Prompts.md 同步稽核項（與 [B] 同等強制力）
+- `FHS_Prompts.md` v1.7：
+  - 情境五：「前端利潤最高真理」→「收款確收守護」語義修正
+  - 情境六：三叉路由（定價 / 成本 / 產品身份各自獨立入口）
+  - 情境八：加 kgov / 知識治理 / Product_Definition 觸發詞
+  - 情境十二：補 /new-product 6步 + kgov 落盤 + Rule 3.17 提示
+  - 情境二十三：v2.2 → v2.3
+  - Header：同步觸發說明 + last_audited_session: S63
+
+---
+
+## [System v1.4.12] — 2026-06-05 (Session 63)
+
+### 系統知識文件化治理方案
+
+**目標**：建立可追尋的產品定義 SSoT，消除「AI 每次需重新解說」痛點，雙紀律強制律上線。
+
+#### Phase 0 — 全文件盤點
+- Explore 掃描 30+ 檔：17 個版本漂移（14 個 subagent 檔 compatible_with = v1.4.5/6），3 個斷鏈
+
+#### Phase 1 — 止血
+- `docs/FHS_Blueprint.md`：Product_Bible_V3.7 死鏈 → FHS_Product_Definition.md；compatible_with v1.4.11
+- `docs/README.md`：Product_Bible_V3.7 標 DEPRECATED，重定向至新檔
+- `.fhs/notes/product_pricing_reference.md`：修正錯誤路徑 `.fhs/notes/` → `.fhs/ai/FHS_Pricing_Bible.md`
+- 8 個 subagent 檔：compatible_with 批次更新 v1.4.5/6 → v1.4.11（後再更至 v1.4.12）
+- `docs/FHS_Legacy_Migration_Notes.md`、`docs/FHS_Prompts.md`：版本對齊
+
+#### Phase 2 — 產品定義 SSoT
+- `[NEW]` `.fhs/ai/FHS_Product_Definition.md` v1.0.0：L2 產品身份 SSoT，4 類產品完整條目，§0 狀態欄強制，只回答 WHAT
+- `.fhs/ai/commands/new-product.md` v1.1.0 → v1.2.0：補 Step 6 知識落盤（Gate 6）
+
+#### Phase 3 — 規則沿革可查化
+- `.fhs/ai/FHS_Pricing_Bible.md` v1.1.0 → v1.2.0：§10 重構為規則 ID 可查表（14 條規則，按規則 ID 索引，≤2 跳可查現值+上次變更）
+
+#### Phase 4 — 治理鎖定
+- `AGENTS.md` v1.4.11 → v1.4.12：新增 Rule 3.17（雙紀律強制律）
+- `.fhs/ai/commands/cl-flow.md` v2.2.0 → v2.3.0：Step 6 嵌雙紀律自檢出口 Gate
+- `.fhs/ai/commands/execute.md`：[E] 擴充為雙紀律兩行格式（驗收 + Subagent）
+- `docs/repo-map.md`：同步所有 Phase 1-4 新增/修改
+- 記憶合併：`feedback_subagent_router` + `feedback_delivery_standards` → `feedback_pre_delivery_dual_discipline`（淨 −1）
+
+#### 淨變化審計
+| 類型 | 數量 |
+|------|:---:|
+| 新增檔 | +1（FHS_Product_Definition.md）|
+| 修改既有 | ~12 |
+| 刪除/退役 | 0 |
+| 記憶淨增減 | −1 |
+| 新 skill/subagent | 0 |
+
+---
 
 ## [System v1.4.6-patch1] — 2026-05-19
 

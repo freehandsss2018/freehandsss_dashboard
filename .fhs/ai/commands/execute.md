@@ -59,19 +59,39 @@
    若三項均不成立，輸出：「後效同步稽核完成：A/B/C 均不觸發。」
    若同步動作執行失敗，立即暫停並提示 Fat Mo，不得靜默跳過。
 
-   **[E] Subagent 使用稽核（每次 /execute 均必填）**
+   **[E] 雙紀律自檢（每次 /execute 均必填，Rule 3.17）**
    無論是否使用 subagent，每次完成後必須在交付摘要及 handoff.md session 條目末尾附上以下格式：
 
    ```
-   **Subagent 使用記錄**
-   | 項目 | 內容 |
-   |------|------|
-   | Router 建議 | `<subagent_name>` 或「無建議」 |
-   | 實際使用 | ✅ `<name>` — 委託：`<task>` 或 ❌ 未使用（原因：`<reason>`） |
-   | 遵從 Router | ✅ 遵從 / ❌ 未遵從（原因：`<reason>`） |
+   【交付前雙紀律自檢】
+   驗收：[任務型對應驗證 + 結果 PASS/FAIL/不適用+具體理由]
+   Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
    ```
 
-   填寫規則：
-   - Router 建議欄：從 session 啟動時的 `[FHS Router]` hook 輸出取得建議的 subagent 名稱
-   - 實際使用欄：若使用了 Agent tool 則填 ✅ + subagent 名稱 + 委託摘要；若未使用則填 ❌ + 理由（如「直接修復更高效」「任務不需要 subagent 能力」）
-   - 遵從 Router 欄：若 Router 建議的 subagent 實際有被啟用，則 ✅；否則 ❌ + 理由
+   驗收行有效標準（任務型分流，詳見 AGENTS Rule 3.17）：
+   - 財務/成本 → `finance-auditor` live 三端，附訂單號（口算/口稱 = 無效）
+   - 文件治理 → ≤2 跳盲測（3 問）或斷鏈數 = 0 附 log（「已完成」無證據 = 無效）
+   - 代碼/HTML → `code-reviewer` G1–G8 Gate 報告（肉眼確認 = 無效）
+   - n8n → execution log 或 `trigger_test_execution` log（未觸發測試 = 無效）
+   - 純文件搬移 → 引用同步清單（N 個檔各一行確認）
+   - 純規劃 → 「待 /execute；驗收於執行後」
+
+   Subagent 行填寫規則：
+   - 記錄前置評估結果（哪些 subagent 被考慮 + 為何用/不用）
+   - 若使用了 Agent tool 則填 ✅ + subagent 名稱 + 委託摘要
+   - 若未使用則填 ❌ + 理由（如「直接修復更高效」「任務不需要 subagent 能力」）
+
+   **[F] FHS_Prompts.md 同步稽核（每次 /execute 均必查）**
+
+   觸發條件（任一成立即強制執行）：
+   - `AGENTS.md` 新增任何 Rule
+   - `.fhs/ai/commands/` 有增刪
+   - `.fhs/ai/` 新增或刪除 L2 文件
+   - 核心業務語義修正（財務術語定義 / 產品身份定義 / §0 規則改變）
+
+   執行動作：
+   → 稽核 `docs/FHS_Prompts.md` 對應情境，補觸發詞或新增情境
+   → 更新 `compatible_with` + `last_updated` + `最後稽核: S[session號]`
+   → 在交付摘要中記錄「[F] 觸發：已更新」或「[F] 不觸發：[理由]」
+
+   ⚠️ [F] 未執行或「最後稽核」未更新 = 任務不得視為正式收尾（與 [B] 同等強制力）

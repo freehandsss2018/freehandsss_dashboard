@@ -1,5 +1,5 @@
 > ⚠️ **DEPRECATED（2026-06-01）**
-> 本文件已合併至 `.fhs/notes/FHS_Pricing_Bible.md`（L2 現行定價 HEAD）。
+> 本文件已合併至 `.fhs/ai/FHS_Pricing_Bible.md`（L2 現行定價 HEAD，Session 62 路徑更新）。
 > 請勿再引用本文件進行定價計算。內容僅作歷史存檔。
 
 # FHS 產品定價規則參照文件

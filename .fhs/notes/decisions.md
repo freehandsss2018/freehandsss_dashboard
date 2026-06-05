@@ -881,3 +881,37 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 - `shipping_cost   NUMERIC(10,2) DEFAULT 0`（淨運費，扣減後）
 
 **執行時機**：下一 session，Fat Mo `/execute` 授權後執行。
+
+---
+
+## [2026-06-05] Session 63 — 系統知識文件化治理方案
+
+### D1：產品定義 SSoT 新建（FHS_Product_Definition.md）
+
+**決策**：新建 `.fhs/ai/FHS_Product_Definition.md` v1.0.0 作為 L2 產品身份 SSoT。
+
+**原因**：唯一前任 `docs/FHS_Product_Bible_V3.7.md` 已 DEPRECATED，造成「定義真空」——AI 每次需逆向工程代碼或問回 Fat Mo 才能理解產品結構。新文件填補空缺，只回答 WHAT（身份/部位/關係/SKU/§0 狀態），禁止含成本數值或定價公式（防止職責污染）。
+
+**架構約束**：
+- 本文件只負責「這個產品是什麼」，成本問 Cost_Schema_v2，定價問 Pricing_Bible
+- §0 嬰兒原則例外：必須有 decisions.md 正式批准記錄（選 Option B，非 inline 備注）
+
+### D2：Pricing_Bible §10 改按規則 ID 可查
+
+**決策**：§10 從「版本排序」重構為「規則 ID 排序」。
+
+**原因**：「某條規則何時/為何/從什麼改成什麼」查不到——§10 以版本排列，要找特定規則需掃全文。改為按規則 ID 行（14 條）後，≤2 跳可查任一規則的現值+上次變更日+Session。
+
+### D3：Rule 3.17 雙紀律強制律上線
+
+**決策**：AGENTS.md 新增 Rule 3.17，cl-flow/execute 出口 Gate 嵌自檢兩行。
+
+**原因**：`feedback_subagent_router` + `feedback_delivery_standards` 記憶已存在，本 session (Session 63) 仍出現 router 跳過和未驗收交付模式，純告示機制無效。升級為 harness 層強制律（三交付邊界），任務型有效驗收表防「打勾儀式」。
+
+**記憶淨效應**：`feedback_subagent_router` + `feedback_delivery_standards` 合併 → `feedback_pre_delivery_dual_discipline`（淨 −1 條）。
+
+### D4：/new-product 補 Step 6 知識落盤
+
+**決策**：`/new-product` 五步流程補第六步（知識落盤），Gate 5 PASS 後強制執行。
+
+**原因**：B4 斷點——缺 Step 6 意味著每次新產品上線後不會自動寫 Product_Definition 條目或登 Pricing_Bible §10 沿革，AI 仍需事後補救或問回 Fat Mo。Gate 6 PASS 條件：FHS_Product_Definition.md 條目存在 + database-reviewer 確認 SKU 連結真值 + §10 有對應沿革行。

@@ -4,7 +4,7 @@ description: FHS V39 品質守門員，稽核 HTML 原型是否符合 AGENTS.md 
 tools: Read, Grep, Glob, Bash, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: claude-haiku-4-5
 version: v1.0.0
-compatible_with: AGENTS.md v1.4.5
+compatible_with: AGENTS.md v1.4.12
 last_updated: 2026-05-16
 version: 1.1.0
 ---

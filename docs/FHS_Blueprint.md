@@ -1,18 +1,21 @@
 ---
 name: FHS System Blueprint
 version: v4.8
-compatible_with: AGENTS.md v1.4.5
-last_updated: 2026-05-16
+compatible_with: AGENTS.md v1.4.11
+last_updated: 2026-06-05
 description: Core logic and technical specifications for FHS system architecture
 ---
 
 # FHS 系統藍圖 (FHS System Blueprint) - V4.8 (n8n Soul Restoration)
 
 > [!IMPORTANT]
-> **所有的具體售價、成本與銷售防呆邏輯，已全數轉移至 `FHS_Product_Bible_V3.7.md`，並通過「終極審判 (The Final Judgment)」100% 盲測驗收。**
+> **本文件 (`FHS_Blueprint.md`) 是全系統的「核心邏輯與技術規格真相」。**
+> 它定義了數據結構、ID 規則以及系統架構的最高準則。當 AI 介入開發時，必須首先讀取此文件，以確保所有決策與既定邏輯不產生衝突。
 >
-> 💡 **【給 Fat Mo 的系統文件定位說明】**
-> 本文件 (`FHS_Blueprint.md`) 是全系統的「核心邏輯與技術規格真相」。它定義了數據結構、ID 規則以及系統架構的最高準則。當 AI (如 Cursor/Antigravity) 介入開發時，必須首先讀取此文件，以確保所有決策與既定邏輯不產生衝突。
+> ⚠️ **文件定位更新（2026-06-05）**：
+> - 現行**定價規則**唯一真理：`.fhs/ai/FHS_Pricing_Bible.md`（L2 HEAD，取代 FHS_Product_Bible_V3.7.md）
+> - 現行**產品定義**唯一真理：`.fhs/ai/FHS_Product_Definition.md`（取代 FHS_Product_Bible_V3.7.md）
+> - `FHS_Product_Bible_V3.7.md` 已 DEPRECATED（2026-06-01），僅作歷史參考，禁止用於任何計算
 
 ## 1. 公司背景與人員定義 (Business Context)
 
@@ -47,7 +50,7 @@ description: Core logic and technical specifications for FHS system architecture
 
 ### 3.1 定價與成本結構 (Pricing & Cost Structure)
 
-系統嚴格執行 **五維度查找邏輯 (5D Lookup Logic)**，所有的基礎售價 (`Suggested_Price_Manual`)、畫圖成本 (`Drawing_Cost`) 以及階梯加購規則，統一由 `FHS_Product_Bible_V3.7.md` 作為唯一真理來源。
+系統嚴格執行 **五維度查找邏輯 (5D Lookup Logic)**，所有的基礎售價、畫圖成本以及階梯加購規則，統一由 `.fhs/ai/FHS_Pricing_Bible.md`（L2 HEAD）作為唯一真理來源。
 
 * **圖紙費規則**：
   * **同部位**：邏輯定義於 Product Bible。

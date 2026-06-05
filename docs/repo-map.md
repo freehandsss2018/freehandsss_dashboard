@@ -87,9 +87,10 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 幕後系統總綱
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
-│   │   ├── AGENTS.md                   ← 憲法層 v1.4.5（2026-05-13 更新：Supabase 四端共存規則）
+│   │   ├── AGENTS.md                   ← 憲法層 v1.4.12（2026-06-05 Rule 3.17 雙紀律強制律；Rule 3.16 財務規則前置讀取）
 │   │   ├── FHS_Finance_Bible.md        ← 財務架構聖經 v1.1.0 L1（架構不變量：Layer 2 快照、欄位歸屬、禁 trigger；2026-06-01 加 Authority header）
-│   │   ├── FHS_Pricing_Bible.md        ← 定價聖經 v1.1.0 L2（2026-06-05 搬移）合併 pricing_reference + Product_Bible 品牌邏輯，現行定價 HEAD
+│   │   ├── FHS_Pricing_Bible.md        ← 定價聖經 v1.2.0 L2（§10 重構為規則 ID 可查表；2026-06-05）現行定價 HEAD
+│   │   ├── FHS_Product_Definition.md   ← 產品身份 SSoT v1.0.0 L2（NEW 2026-06-05）4 類產品：立體擺設/吊飾/鎖匙扣/加購配件；§0 狀態欄強制；只回答 WHAT
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
@@ -107,7 +108,7 @@ freehandsss_dashboard/
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
 │   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.3（精煉引擎，獨立可用，2026-05-30）
 │   │   │   ├── ag-flow.md               ← /ag-flow 精煉內建→A1+A2，AG裁決（跳A3，2026-05-30）
-│   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導（5步 atomic 流程 + rollback matrix，2026-05-21）
+│   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導 v1.2.0（6步 atomic 流程 + Step 6 知識落盤 Gate，2026-06-05）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）
 │   │   │   ├── README.md                ← subagents 目錄說明與雙層架構

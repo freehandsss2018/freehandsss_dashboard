@@ -1,3 +1,59 @@
+# FHS Handoff - 2026-06-05 (Session 63 — 系統知識文件化治理方案)
+
+## Session 63 補丁 — FHS_Prompts.md 同步機制補丁
+
+**[Session 63 Patch 完結]**
+
+### 執行完成項目
+
+- ✅ **AGENTS.md**：文件同步強制律擴充（3 個新觸發條件）
+- ✅ **execute.md**：新增 [F] FHS_Prompts.md 同步稽核項（與 [B] 同等強制力）
+- ✅ **FHS_Prompts.md** v1.7：9 個改動（情境五語義修正 + 情境六三叉路由 + kgov 觸發 + 版本同步）
+- ✅ **CHANGELOG**：[System v1.4.12-patch1]
+- ✅ **completion report**：prompts-sync-mechanism
+
+### 根本問題解決
+
+路由總機不再需要 Fat Mo 主動巡查——每次 /execute 的 [F] 項強制自問「FHS_Prompts.md 要不要更新？」
+
+【交付前雙紀律自檢】
+驗收：文件治理 — 引用同步清單 5 個檔全 ✅ — PASS
+Subagent：未派（合理）
+
+---
+
+## Session 63 — 知識文件化治理方案（P0–P4 全部完成）
+
+**[Session 63 完結]**
+
+### 執行完成項目
+
+- ✅ **Phase 0**：Explore 全文件盤點（17 漂移 + 3 斷鏈）
+- ✅ **Phase 1**：止血（dead links 修復，版本漂移歸零）
+- ✅ **Phase 2**：`[NEW]` `FHS_Product_Definition.md` v1.0.0（4 類產品 SSoT）；`/new-product` Step 6 知識落盤 Gate
+- ✅ **Phase 3**：`FHS_Pricing_Bible.md` v1.2.0（§10 規則 ID 可查表，14 條）
+- ✅ **Phase 4**：`AGENTS.md` v1.4.12（Rule 3.17 雙紀律強制律）；`cl-flow` + `execute` 出口 Gate；記憶合併 −1
+- ✅ **後效同步**：CHANGELOG v1.4.12；decisions.md Session 63 D1–D4；completion report
+
+### 盲測驗收結果
+
+- 盲測 3 問全綠（≤2 跳）：Q1 寵物吊飾 §0 / Q2 頸鏈奇偶規則 / Q3 clasp 成本 — **PASS**
+
+### 尚待執行
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| 1 | Anti-Idle Ping 驗證 | ⏸ 稍後 |
+| 3 | 立體擺設 UI 整合 R1（雙 POST 無事務保護）| ⏸ 追蹤中 |
+| TD2 | learnings.md 合併/退役整理（已超 50 條上限）| 技術債 |
+| B3 | 文件↔代碼漂移為架構限制（已寫入 decisions.md，誠實存檔）| 已記錄 |
+
+【交付前雙紀律自檢】
+驗收：文件治理 — 盲測 3 問全綠；斷鏈數 = 0；版本漂移 = 0 — PASS
+Subagent：前置評估 Explore（Phase 0，已在 pre-compaction 執行）；本次後效同步為純文件任務，無需 subagent — ❌ 未派，合理
+
+---
+
 # FHS Handoff - 2026-06-05 (Session 62 — TD1 FHS_Pricing_Bible.md 搬移)
 
 ## Session 62 — 技術債清償：Pricing Bible 搬移至 .fhs/ai/
@@ -18,7 +74,7 @@
 | # | 項目 | 狀態 |
 |---|------|------|
 | 1 | Anti-Idle Ping 驗證 | ⏸ 稍後 |
-| 2 | pg_cron TTL（Supabase SQL Editor 手動執行）| ⏸ 稍後 |
+| ~~2~~ | ~~pg_cron TTL（Supabase SQL Editor 手動執行）~~ | ✅ 完成（Session 63，Fat Mo 手動執行） |
 | 3 | 立體擺設 UI 整合 R1（雙 POST 無事務保護）| ⏸ 追蹤中 |
 | ~~TD1~~ | ~~FHS_Pricing_Bible.md 搬移至 .fhs/ai/~~ | ✅ 完成（Session 62）|
 | TD2 | learnings.md 合併/退役整理（已超 50 條上限）| 技術債 |
