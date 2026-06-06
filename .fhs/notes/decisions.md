@@ -3,6 +3,12 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-07] (Session 65 補充) V42 正式成為開發基線
+
+決策：下一個 session 起，所有開發改動一律在 `freehandsss_dashboardV42.html` 進行。V41 為當前穩定生產版本（current.html 指向），V42 為開發版。
+原因：V42 已通過 code-reviewer G1–G8 Gate（Session 64），具備足夠品質作為開發基線。
+晉升條件不變：V42 → current.html 仍需 V1–V11 手機測試全綠 + 桌面回歸 + Fat Mo 授權 + diff 審查。
+
 [2026-06-07] (Session 65) migration 0030 — 立體擺設 products.total_base_cost 修正（$0 → $210）
 
 決策：寫入 migration 0030_fix_3d_frame_base_costs.sql，UPDATE products.total_base_cost = 210 for all 4 立體擺設 SKUs（木框套裝 4肢/2肢、玻璃瓶套裝 4肢/2肢）。
