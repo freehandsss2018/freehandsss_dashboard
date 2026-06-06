@@ -214,6 +214,12 @@ total_base_cost = Drawing_Cost + Printing_Cost + Clasp_Cost + Shipping_Cost
 | 嬰兒吊飾 - 925銀 (S mode) | $60 | $260 | $70 | $35 | **$425** |
 | 嬰兒吊飾 - 925金 (S mode) | $60 | $316 | $70 | $35 | **$481** |
 | 嬰兒(P)吊飾 - 925銀 | $110 | $260 | $70 | $35 | **$475** |
+| 立體擺設 - 木框套裝（2肢或4肢）| $60（per set，不分肢數）| $150 | $0 | $0 | **$210** |
+| 立體擺設 - 玻璃瓶套裝（2肢或4肢）| $60（per set，不分肢數）| $150 | $0 | $0 | **$210** |
+
+> **立體擺設繪圖費補充**：$60 per 訂單（不論 2肢/4肢），整套一次性計算，由 GROUP B material_cost 承擔（非逐肢累加）。2肢/4肢售價不同（§2.1）但生產成本相同。三重數據確認：Airtable Base_Costs ✅ + cost_configurations `material_cost_woodframe/glassjar=210` ✅ + V41 HTML 確認對話框「$210 已計入」✅。已由 **migration 0030** 更新至 Supabase products 表（修復 migration 0023 的 placeholder=0 問題）。
+>
+> ⚠️ **附帶技術債（Task A 範疇）**：chargedPositions Set 不追蹤 P_MAIN 肢（P_MAIN PartDesc 為空），混合訂單（立體擺設 + K/M 同部位）前端顯示可能雙計繪圖費。DB 層成本已由 migration 0030 修正；前端顯示層待 Task A 修復。
 
 ### 6.3 cost_configurations 待填項目
 

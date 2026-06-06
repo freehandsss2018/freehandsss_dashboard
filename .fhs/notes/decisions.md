@@ -3,6 +3,21 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-07] (Session 65) migration 0030 — 立體擺設 products.total_base_cost 修正（$0 → $210）
+
+決策：寫入 migration 0030_fix_3d_frame_base_costs.sql，UPDATE products.total_base_cost = 210 for all 4 立體擺設 SKUs（木框套裝 4肢/2肢、玻璃瓶套裝 4肢/2肢）。
+原因：migration 0023 以 placeholder=0 seeded 4 個 SKU，`fhs_sync_products_from_config()` 不覆蓋立體擺設；Smart Cache 讀 0 → n8n handmodel_cost=0 → 所有立體擺設訂單成本少計 $210/單，財務數據不準確（用戶報告根因）。三重確認：Airtable Base_Costs（Drawing $60 + Printing $150 = $210）+ Supabase cost_configurations（material_cost_woodframe=210）+ V41 HTML 確認對話框（"立體擺設成本 $210 已計入"）。
+改動點：supabase/migrations/0030_fix_3d_frame_base_costs.sql [NEW]；FHS_Pricing_Bible.md §6.2 補入立體擺設代表性數值（2 行 + 技術債 footnote）；learnings.md 新增 Pitfall 2026-06-07。
+附帶發現（未修）：chargedPositions Set 不追蹤 P_MAIN 肢（PartDesc 空字串），混合訂單前端顯示可能雙計繪圖費 — Task A 範疇。
+四分量收斂警告：migration 0030 後，P_MAIN 四分量送 Drawing=$60/Printing=$0，products.total_base_cost=210，delta=$150 觸發 n8nAdjustmentNotes 警告（非 zeroCostItems），不影響 Has_Cost_Error。
+
+[2026-06-06] (Session 64) V42 開發版建立 + V41 凍結宣告
+
+決策：建立 freehandsss_dashboardV42.html（從 V41 複製為基線，694,941 bytes）作為手機訂單總覽視覺觸控改造的開發版本。
+V41 於 V42 開發期間正式凍結：任何 hotfix 若需回流，必須同步 cherry-pick 至 V42，不得直接改 V41。
+V42 晉升 current.html 門檻：手機 V1–V11 驗證清單全綠 + 桌面回歸通過 + Fat Mo 授權 + diff 審查，缺一不可。
+改動點：Freehandsss_Dashboard/freehandsss_dashboardV42.html [NEW]；repo-map.md 補 V41/V42 條目。
+
 [2026-06-05] (Session 62) FHS_Pricing_Bible.md 搬移至 .fhs/ai/
 
 決策：將 `FHS_Pricing_Bible.md`（L2 定價聖經）從 `.fhs/notes/` 搬移至 `.fhs/ai/`。

@@ -27,6 +27,8 @@
 
 ## Pitfalls（重複踩過的雷）
 
+- [Pitfall 2026-06-07] **立體擺設 products.total_base_cost 永久為 0**：migration 0023 以 `ON CONFLICT DO NOTHING` 將 4 個立體擺設 SKU seeded 為 total_base_cost=0（placeholder），後無 migration 或 RPC 補值；`fhs_sync_products_from_config` 只覆蓋 addon 產品。Smart Cache 讀 0 → handmodel_cost=0 → 所有立體擺設訂單成本少計 $210。修復：migration 0030（Drawing $60 + Printing $150 = $210，三重確認）。附帶：chargedPositions Set 不追蹤 P_MAIN 肢，K/M 同部位可能重複計畫圖費 — Task A 修 — Session 65
+
 - [Pitfall 2026-06-05] 收斂律比對不同源成本系統必觸假警報：n8n 四分量合計 vs products.total_base_cost 在有 W1 免畫圖的混合訂單中必然偏差>$1，不可推入 zeroCostItems，應改推 n8nAdjustmentNotes。
 
 - [Pitfall 2026-06-01] Obsidian Windows 不追蹤 NTFS junction：mklink /J 建立的 junction 在 PowerShell 可見，但 Obsidian 索引/Graph/FileExplorer 完全看不到。實證確認。

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FHS V42 Stitch Visual Prototypes Draft</title>
+    <style>
+        :root {
+            /* Threads Design Tokens */
+            --fhs-bg:            #F7F5F0;
+            --fhs-bg-surface:    #FFFFFF;
+            --fhs-bg-elevated:   #FAF7F4;
+            --fhs-border:        #E6DEC9;
+            --fhs-text-primary:  #2C2416;
+            --fhs-text-secondary:#6B5F4C;
+            --fhs-text-muted:    #A89B87;
+            --fhs-accent:        #B07D4C;
+            --fhs-success:       #5C8A67;
+            --fhs-danger:        #C2593F;
+            --fhs-danger-bg:     rgba(194, 89, 63, 0.08);
+            --fhs-star-amber:    #F5B301;
+            --radius-lg:         12px;
+            --radius-pill:       9999px;
+            --fhs-swipe-spring:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --fhs-bs-spring:     cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--fhs-bg);
+            color: var(--fhs-text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-bottom: 80px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--fhs-text-secondary);
+            margin-bottom: 8px;
+            margin-top: 16px;
+        }
+
+        .card {
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(44, 36, 22, 0.04);
+        }
+
+        /* ==========================================
+           組件 1: 左滑卡片效果 CSS
+           ========================================== */
+        .swipe-row-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            margin-bottom: 8px;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            border: 1px solid var(--fhs-border);
+        }
+        .swipe-underlay {
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 140px;
+            display: flex;
+            align-items: stretch;
+            border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .swipe-row-wrapper.is-swiping .swipe-underlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .swipe-btn {
+            width: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.2;
+            min-height: 44px;
+            -webkit-tap-highlight-color: transparent;
+            transition: filter 0.1s ease;
+        }
+        .swipe-btn:active { filter: brightness(0.88); }
+        .swipe-btn--archive {
+            background-color: #F0EBE4; /* 暖米 */
+            color: var(--fhs-text-secondary);
+        }
+        .swipe-btn--archive svg { color: var(--fhs-text-secondary); }
+        .swipe-btn--more {
+            background-color: #E0D8CC; /* 暖灰 */
+            color: var(--fhs-text-primary);
+        }
+        .swipe-btn--more svg { color: var(--fhs-text-primary); }
+        .swipe-content {
+            position: relative;
+            z-index: 1;
+            background: var(--fhs-bg-surface);
+            transition: transform 0.25s var(--fhs-swipe-spring);
+            will-change: transform;
+            margin-bottom: 0;
+            border-radius: var(--radius-lg);
+        }
+        .swipe-row-wrapper.is-open .swipe-content {
+            transform: translateX(-140px);
+        }
+
+        /* ── 普通卡片樣子 ── */
+        .acc-order {
+            border-left: 3px solid transparent;
+            transition: border-left-color 0.18s ease;
+        }
+        .acc-order.is-starred {
+            border-left-color: var(--fhs-star-amber);
+        }
+        .acc-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            cursor: pointer;
+        }
+        .acc-order-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .acc-order-id {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--fhs-text-primary);
+        }
+        .acc-order-meta {
+            font-size: 12px;
+            color: var(--fhs-text-secondary);
+        }
+        .acc-order-header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .acc-profit {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .acc-chevron {
+            font-size: 10px;
+            color: var(--fhs-text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        /* ==========================================
+           組件 2: Bottom-Sheet 行動選單 CSS
+           ========================================== */
+        .bs-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+        .bs-overlay.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .bs-sheet {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 1001;
+            background: var(--fhs-bg-surface);
+            border-top-left-radius: calc(var(--radius-lg) * 2);
+            border-top-right-radius: calc(var(--radius-lg) * 2);
+            transform: translateY(100%);
+            transition: transform 0.38s var(--fhs-bs-spring);
+            will-change: transform;
+            border-top: 1px solid var(--fhs-border);
+            box-shadow: 0 -4px 24px rgba(44, 36, 22, 0.10);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .bs-sheet.is-open { transform: translateY(0); }
+        .bs-handle {
+            width: 36px; height: 4px;
+            background: var(--fhs-border);
+            border-radius: 2px;
+            margin: 12px auto 0;
+        }
+        .bs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px 8px;
+            border-bottom: 1px solid var(--fhs-border);
+        }
+        .bs-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--fhs-text-primary);
+        }
+        .bs-close {
+            width: 32px; height: 32px;
+            border: none;
+            background: var(--fhs-bg-elevated);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--fhs-text-secondary);
+            transition: background 0.12s ease;
+        }
+        .bs-close:active { background: var(--fhs-border); }
+        .bs-list { list-style: none; margin: 0; padding: 8px 0; }
+        
+        .bs-item {
+            width: 100%; height: 52px;
+            display: flex; align-items: center; gap: 14px;
+            padding: 0 20px;
+            border: none; background: transparent;
+            cursor: pointer;
+            font-size: 15px; font-weight: 500;
+            color: var(--fhs-text-primary);
+            text-align: left;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .bs-item svg { color: var(--fhs-text-secondary); flex-shrink: 0; transition: color 0.15s ease; }
+        
+        /* Hover & Active States */
+        .bs-item:hover { background-color: var(--fhs-bg-elevated); color: var(--fhs-text-primary); }
+        .bs-item:hover svg { color: var(--fhs-text-primary); }
+        .bs-item:active { background-color: var(--fhs-border); }
+        
+        .bs-item--star.is-starred { color: var(--fhs-star-amber); }
+        .bs-item--star.is-starred svg { color: var(--fhs-star-amber); fill: var(--fhs-star-amber); }
+        
+        .bs-divider { height: 1px; background: var(--fhs-border); margin: 8px 20px; opacity: 0.6; }
+        
+        .bs-item--danger { color: var(--fhs-danger); }
+        .bs-item--danger svg { color: var(--fhs-danger); }
+        .bs-item--danger:hover { background-color: rgba(194, 89, 63, 0.08); color: var(--fhs-danger); }
+        .bs-item--danger:active { background-color: rgba(194, 89, 63, 0.16); }
+
+        /* Badge overlay support */
+        .bs-icon-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .bs-icon-badge {
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+            font-size: 8px;
+            font-weight: 850;
+            width: 10px;
+            height: 10px;
+            line-height: 9px;
+            border-radius: 50%;
+            text-align: center;
+            color: #fff;
+            border: 1px solid var(--fhs-bg-surface);
+            pointer-events: none;
+        }
+        .bs-icon-badge--a { background-color: var(--fhs-accent); }
+        .bs-icon-badge--b { background-color: #457B9D; }
+
+        /* ==========================================
+           組件 3: Segmented Control CSS
+           ========================================== */
+        .fhs-seg-ctrl {
+            display: flex;
+            background: var(--fhs-bg-elevated);
+            border: 1px solid var(--fhs-border);
+            border-radius: 10px;
+            padding: 3px; gap: 2px;
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .fhs-seg-btn {
+            flex: 1; height: 36px;
+            border: none; border-radius: 8px;
+            background: transparent !important;
+            font-size: 14px; font-weight: 500;
+            color: var(--fhs-text-secondary);
+            cursor: pointer;
+            transition: color 0.18s ease;
+            -webkit-tap-highlight-color: transparent;
+            white-space: nowrap;
+            position: relative;
+            z-index: 1;
+            box-shadow: none !important;
+        }
+        .fhs-seg-btn.is-active {
+            color: var(--fhs-text-primary);
+            font-weight: 700;
+        }
+        .fhs-seg-indicator {
+            position: absolute;
+            top: 3px;
+            bottom: 3px;
+            left: 3px;
+            z-index: 0;
+            background: var(--fhs-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(44, 36, 22, 0.12), 0 0 0 1px var(--fhs-border);
+            transition: transform 0.25s cubic-bezier(0.32, 0.94, 0.6, 1), width 0.25s cubic-bezier(0.32, 0.94, 0.6, 1);
+            will-change: transform, width;
+        }
+
+        /* ==========================================
+           組件 4: 最愛啟動動畫 CSS
+           ========================================== */
+        @keyframes fhsStarPop {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.35); }
+            70% { transform: scale(0.88); }
+            100% { transform: scale(1.0); }
+        }
+        .bs-item--star.is-animating svg {
+            animation: fhsStarPop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform-origin: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Sprite Inline -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <symbol id="icon-message-circle" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+        </symbol>
+        <symbol id="icon-send" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M22 2 11 13M22 2 15 22l-4-9-9-4Z"/>
+        </symbol>
+        <symbol id="icon-square-pen" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84.84-2.873a2 2 0 0 1 .506-.852Z"/>
+        </symbol>
+        <symbol id="icon-star" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.454 2.454 0 0 0 1.84 1.34l5.16.752a.53.53 0 0 1 .294.904l-3.735 3.638a2.454 2.454 0 0 0-.706 2.172l.882 5.139a.53.53 0 0 1-.771.56l-4.618-2.428a2.454 2.454 0 0 0-2.282 0l-4.618 2.427a.53.53 0 0 1-.77-.56l.881-5.138a2.454 2.454 0 0 0-.706-2.172l-3.735-3.638a.53.53 0 0 1 .294-.904l5.16-.752a2.454 2.454 0 0 0 1.84-1.34Z"/>
+        </symbol>
+        <symbol id="icon-archive" viewBox="0 0 24 24">
+            <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="2" y="4" width="20" height="5" rx="2"/>
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M10 13h4"/>
+        </symbol>
+        <symbol id="icon-trash-2" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>
+        </symbol>
+        <symbol id="icon-more-horizontal" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+            <circle cx="19" cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+            <circle cx="5"  cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+        </symbol>
+        <symbol id="icon-undo-2" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>
+        </symbol>
+        <symbol id="icon-x" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M18 6 6 18M6 6l12 12"/>
+        </symbol>
+    </svg>
+
+    <div class="container">
+        <h1>FHS V42 視覺組件原型</h1>
+
+        <!-- SECTION 1: 左滑卡片 -->
+        <div class="section-title">1. 左滑卡片效果 (Touch / Drag 模擬)</div>
+        <div class="swipe-row-wrapper" id="demoSwipeRow">
+            <div class="swipe-underlay">
+                <button class="swipe-btn swipe-btn--archive" type="button" onclick="alert('點擊封存')">
+                    <svg width="20" height="20"><use href="#icon-archive"/></svg>
+                    <span>封存</span>
+                </button>
+                <button class="swipe-btn swipe-btn--more" type="button" onclick="openDemoSheet()">
+                    <svg width="20" height="20"><use href="#icon-more-horizontal"/></svg>
+                    <span>更多</span>
+                </button>
+            </div>
+            <div class="swipe-content">
+                <div class="acc-order" id="demoAccOrder">
+                    <div class="acc-order-header">
+                        <div class="acc-order-header-left">
+                            <span class="acc-order-id">FHS-LH2009 ➜</span>
+                            <span class="acc-order-meta">2026-06-06 · Edwin · 3 件</span>
+                        </div>
+                        <div class="acc-order-header-right">
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
+                                <span class="acc-profit" style="color:var(--fhs-success);">$1,230</span>
+                                <span style="font-size:10px; color:#B07D4C; font-weight:600;">入帳: $3,280</span>
+                                <span style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $2,050</span>
+                            </div>
+                            <span class="acc-chevron">▼</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="font-size: 12px; color: var(--fhs-text-secondary); text-align: center; margin-top: -4px;">
+            💡 請在上方卡片上【向左滑動】或【拖拽】進行測試。
+        </p>
+
+        <!-- SECTION 2: Segmented Control -->
+        <div class="section-title">2. Segmented Control 切換動畫</div>
+        <div class="card" style="padding: 12px;">
+            <div class="fhs-seg-ctrl" id="demoSegCtrl">
+                <div class="fhs-seg-indicator" id="demoSegIndicator"></div>
+                <button class="fhs-seg-btn is-active" type="button" data-index="0">進行中</button>
+                <button class="fhs-seg-btn" type="button" data-index="1">已封存</button>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Bottom Sheet Trigger -->
+        <div class="section-title">3. Bottom-Sheet & 星星彈跳動畫</div>
+        <button class="bs-item" type="button" onclick="openDemoSheet()" style="background: var(--fhs-bg-surface); border: 1px solid var(--fhs-border); border-radius: var(--radius-lg); justify-content: center; height: 48px;">
+            🚀 開啟行動操作選單 (Bottom-Sheet)
+        </button>
+    </div>
+
+    <!-- Bottom Sheet 本體 -->
+    <div class="bs-overlay" id="demoBsOverlay" onclick="closeDemoSheet()"></div>
+    <div class="bs-sheet" id="demoBsSheet">
+        <div class="bs-handle"></div>
+        <div class="bs-header">
+            <span class="bs-title">訂單 FHS-LH2009</span>
+            <button class="bs-close" type="button" onclick="closeDemoSheet()">
+                <svg width="20" height="20"><use href="#icon-x"/></svg>
+            </button>
+        </div>
+        <ul class="bs-list">
+            <li><button class="bs-item" type="button" onclick="closeDemoSheet()">
+                <div class="bs-icon-wrapper">
+                    <svg width="20" height="20"><use href="#icon-message-circle"/></svg>
+                    <span class="bs-icon-badge bs-icon-badge--a">A</span>
+                </div>
+                <span>手模 IG 訊息</span>
+            </button></li>
+            <li><button class="bs-item" type="button" onclick="closeDemoSheet()">
+                <div class="bs-icon-wrapper">
+                    <svg width="20" height="20"><use href="#icon-message-circle"/></svg>
+                    <span class="bs-icon-badge bs-icon-badge--b">B</span>
+                </div>
+                <span>金屬 IG 訊息</span>
+            </button></li>
+            <li><button class="bs-item" type="button" onclick="closeDemoSheet()">
+                <svg width="20" height="20"><use href="#icon-square-pen"/></svg>
+                <span>編輯訂單</span>
+            </button></li>
+            <li><button class="bs-item bs-item--star" type="button" id="demoBsBtnStar" onclick="toggleDemoStar()">
+                <svg width="20" height="20"><use href="#icon-star"/></svg>
+                <span id="demoBsStarLabel">加入最愛</span>
+            </button></li>
+            <li><button class="bs-item" type="button" onclick="closeDemoSheet()">
+                <svg width="20" height="20"><use href="#icon-archive"/></svg>
+                <span>封存訂單</span>
+            </button></li>
+            <li class="bs-divider"></li>
+            <li><button class="bs-item bs-item--danger" type="button" onclick="closeDemoSheet(); alert('刪除訂單')">
+                <svg width="20" height="20"><use href="#icon-trash-2"/></svg>
+                <span>刪除訂單</span>
+            </button></li>
+        </ul>
+    </div>
+
+    <!-- Scripting for Demos -->
+    <script>
+        // --- 1. Swipe Row Animation & Touch Drag Handling ---
+        const swipeRow = document.getElementById('demoSwipeRow');
+        const swipeContent = swipeRow.querySelector('.swipe-content');
+        let startX = 0;
+        let currentX = 0;
+        let isSwiping = false;
+        let isOpen = false;
+        const maxSlide = 140;
+        const threshold = 40;
+
+        swipeRow.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isSwiping = true;
+            swipeRow.classList.add('is-swiping');
+            swipeContent.style.transition = 'none';
+        }, { passive: true });
+
+        swipeRow.addEventListener('touchmove', (e) => {
+            if (!isSwiping) return;
+            const diff = e.touches[0].clientX - startX;
+            let targetX = isOpen ? -maxSlide + diff : diff;
+            if (targetX > 0) targetX = 0;
+            if (targetX < -maxSlide) {
+                targetX = -maxSlide + (targetX + maxSlide) * 0.2; // resistance
+            }
+            swipeContent.style.transform = `translateX(${targetX}px)`;
+            currentX = targetX;
+        }, { passive: true });
+
+        swipeRow.addEventListener('touchend', () => {
+            if (!isSwiping) return;
+            isSwiping = false;
+            swipeRow.classList.remove('is-swiping');
+            swipeContent.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            
+            if (isOpen) {
+                if (currentX > -maxSlide + threshold) {
+                    swipeContent.style.transform = '';
+                    swipeRow.classList.remove('is-open');
+                    isOpen = false;
+                } else {
+                    swipeContent.style.transform = `translateX(-${maxSlide}px)`;
+                }
+            } else {
+                if (currentX < -threshold) {
+                    swipeContent.style.transform = `translateX(-${maxSlide}px)`;
+                    swipeRow.classList.add('is-open');
+                    isOpen = true;
+                } else {
+                    swipeContent.style.transform = '';
+                }
+            }
+        });
+
+        // Mouse support for desktop testing
+        let isMouseDown = false;
+        swipeRow.addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            isMouseDown = true;
+            swipeRow.classList.add('is-swiping');
+            swipeContent.style.transition = 'none';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isMouseDown) return;
+            const diff = e.clientX - startX;
+            let targetX = isOpen ? -maxSlide + diff : diff;
+            if (targetX > 0) targetX = 0;
+            if (targetX < -maxSlide) {
+                targetX = -maxSlide + (targetX + maxSlide) * 0.2;
+            }
+            swipeContent.style.transform = `translateX(${targetX}px)`;
+            currentX = targetX;
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+            swipeRow.classList.remove('is-swiping');
+            swipeContent.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            
+            if (isOpen) {
+                if (currentX > -maxSlide + threshold) {
+                    swipeContent.style.transform = '';
+                    swipeRow.classList.remove('is-open');
+                    isOpen = false;
+                } else {
+                    swipeContent.style.transform = `translateX(-${maxSlide}px)`;
+                }
+            } else {
+                if (currentX < -threshold) {
+                    swipeContent.style.transform = `translateX(-${maxSlide}px)`;
+                    swipeRow.classList.add('is-open');
+                    isOpen = true;
+                } else {
+                    swipeContent.style.transform = '';
+                }
+            }
+        });
+
+        // --- 2. Segmented Control ---
+        const segCtrl = document.getElementById('demoSegCtrl');
+        const segBtns = segCtrl.querySelectorAll('.fhs-seg-btn');
+        
+        function updateSegIndicator() {
+            const activeBtn = segCtrl.querySelector('.fhs-seg-btn.is-active');
+            const indicator = document.getElementById('demoSegIndicator');
+            if (!activeBtn || !indicator) return;
+            
+            const ctrlRect = segCtrl.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            
+            const leftOffset = btnRect.left - ctrlRect.left;
+            const width = btnRect.width;
+            
+            requestAnimationFrame(() => {
+                indicator.style.width = `${width}px`;
+                indicator.style.transform = `translateX(${leftOffset}px)`;
+            });
+        }
+        
+        segBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                segBtns.forEach(b => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+                updateSegIndicator();
+            });
+        });
+        
+        // Initial setup
+        setTimeout(updateSegIndicator, 100);
+        window.addEventListener('resize', updateSegIndicator);
+
+        // --- 3. Bottom Sheet Functions ---
+        const bsSheet = document.getElementById('demoBsSheet');
+        const bsOverlay = document.getElementById('demoBsOverlay');
+
+        function openDemoSheet() {
+            // Close swipe card first
+            swipeContent.style.transform = '';
+            swipeRow.classList.remove('is-open');
+            isOpen = false;
+
+            // Open sheet
+            bsOverlay.classList.add('is-visible');
+            bsSheet.classList.add('is-open');
+        }
+
+        function closeDemoSheet() {
+            bsOverlay.classList.remove('is-visible');
+            bsSheet.classList.remove('is-open');
+        }
+
+        // --- 4. Star Bounce Animation ---
+        let isStarred = false;
+        function toggleDemoStar() {
+            const starBtn = document.getElementById('demoBsBtnStar');
+            const label = document.getElementById('demoBsStarLabel');
+            const card = document.getElementById('demoAccOrder');
+
+            starBtn.classList.add('is-animating');
+            
+            isStarred = !isStarred;
+            if (isStarred) {
+                starBtn.classList.add('is-starred');
+                card.classList.add('is-starred');
+                label.textContent = '取消最愛';
+            } else {
+                starBtn.classList.remove('is-starred');
+                card.classList.remove('is-starred');
+                label.textContent = '加入最愛';
+            }
+
+            setTimeout(() => {
+                starBtn.classList.remove('is-animating');
+            }, 350);
+        }
+    </script>
+</body>
+</html>

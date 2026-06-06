@@ -43,7 +43,10 @@ freehandsss_dashboard/
 │   │   ├── 0024_recalc_completed_at.sql       ← orders.last_recalc_completed_at + fhs_batch_recalc_execute v2（G6）✅ 已部署
 │   │   ├── 0025_cost_atoms_seed.sql           ← P1 原子成本補完：3 新 key（頸鏈$100/吊飾運費$35/混合$300）+ P0 語義修正 ⏳ 待部署
 │   │   ├── 0026_b1_cost_atoms_complete.sql    ← B1 引擎補完：UPDATE necklace 0→260/316；INSERT adult鎖匙扣135×2 + 環扣10；display_name 補（嬰兒）✅ 已部署
-│   │   └── 0027_order_items_cost_breakdown.sql ← Task A 前置資產：order_items 四分量欄（DEFAULT 0，待 Task A 顆粒化 roll-up 填值）✅ 已部署
+│   │   ├── 0027_order_items_cost_breakdown.sql ← Task A 前置資產：order_items 四分量欄（DEFAULT 0，待 Task A 顆粒化 roll-up 填值）✅ 已部署
+│   │   ├── 0028_sync_rpc_four_cost_columns.sql ← Task A 收尾：sync_order_to_mirror RPC 支援 4 個成本欄位填值（由 n8n 寫入）✅ 已部署
+│   │   ├── 0029_add_archive_favorite_columns.sql ← V42 封存/最愛：orders.is_archived / is_favorite / archived_at / meta_updated_at ⏳ 待 Fat Mo 執行
+│   │   └── 0030_fix_3d_frame_base_costs.sql ← 立體擺設 products.total_base_cost 修正：4 SKU 由 0 → 210（Session 65 根因修復）⏳ 待 Fat Mo 執行
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -70,7 +73,9 @@ freehandsss_dashboard/
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── README.md                           ← Dashboard 目錄說明
-│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V40.7 一致）
+│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V41 一致）
+│   ├── freehandsss_dashboardV42.html       ← 🚧 開發版（Session 64 起）：手機訂單總覽 WhatsApp/Threads 視覺觸控改造；V41 凍結期間 hotfix 須 cherry-pick 至此
+│   ├── freehandsss_dashboardV41.html       ← ⛔ 已凍結（V42 開發期間禁止改動）；穩定生產基準；成本引擎 B1+B2+Task A 完成版
 │   ├── freehandsss_dashboardV36.html       # 舊版穩定基準 (Legacy Stable)
 │   ├── freehandsss_dashboardV37.html       # 展示/試用版本 (Trial / Legacy)
 │   ├── freehandsss_dashboardV40.html       # **最新穩定基準** (iPhone/Desktop 雙模式，v40.7 財務優化完成)

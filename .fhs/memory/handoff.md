@@ -1,3 +1,103 @@
+# FHS Handoff - 2026-06-07 (Session 65 — 立體擺設財務根因診斷 + migration 0030)
+
+## Session 65 完結
+
+### 問題根因（Phase 0 診斷確認）
+
+**用戶報告**：「財務所項數據均不準確，特別是立體手模擺設思疑有重疊金額發生」
+
+**ROOT CAUSE A（DB層，最高優先，已修復）**：
+- `products.total_base_cost = 0` for ALL 4 立體擺設 SKUs（migration 0023 placeholder，無後續補值）
+- `fhs_sync_products_from_config()` 只覆蓋 addon 產品
+- 結果：`handmodel_cost = $0` for ALL 立體擺設訂單，成本少計 $210/單
+
+**ROOT CAUSE B（前端顯示層，未修）**：
+- `chargedPositions Set` 不追蹤 P_MAIN 肢（`PartDesc = ''`）
+- 混合訂單（立體擺設 + K/M 同部位）前端顯示可能雙計繪圖費
+- 四分量收斂警告：P_MAIN 送 Drawing=$60/Printing=$0，products.total_base_cost=210，delta=$150 → n8nAdjustmentNotes（不影響 Has_Cost_Error）
+- Task A 範疇
+
+### 執行完成項目
+
+- ✅ **migration 0030**：`supabase/migrations/0030_fix_3d_frame_base_costs.sql`（UPDATE 4 SKU total_base_cost: 0 → 210，含 DO $$煙霧測試，驗收 4 SKU 各自通過）
+- ✅ **FHS_Pricing_Bible.md §6.2**：新增立體擺設代表性數值（木框套裝 + 玻璃瓶套裝各一行，$210）+ 技術債 footnote
+- ✅ **learnings.md**：新增 Pitfall 2026-06-07（立體擺設 products.total_base_cost = 0 根因記錄）
+- ✅ **decisions.md**：[2026-06-07] Session 65 決策記錄
+- ✅ **repo-map.md**：補 migration 0028/0029/0030 條目（修復舊 0027 └── → ├── 格式）
+- ✅ **CHANGELOG.md**：[2026-06-07] 立體擺設成本修正 entry
+
+### 待 Fat Mo 手動執行
+
+- ⏳ **Priority 1**：在 Supabase SQL Editor 執行 `0030_fix_3d_frame_base_costs.sql`
+  - 執行後 4 行 RAISE NOTICE 各自通過 = 成功
+  - 生效後：新立體擺設訂單 handmodel_cost 正確 = $210
+  - 舊訂單 handmodel_cost 不自動回填（需手動 recalc 或接受歷史誤差）
+- ⏳ **Priority 2**（來自 Session 64）：在 Supabase SQL Editor 執行 `0029_add_archive_favorite_columns.sql`
+
+### 技術債記錄
+
+- **[TD-P-chargedPositions]** 立體擺設前端顯示層：P_MAIN 肢不加入 chargedPositions，混合訂單前端可能雙計繪圖費 → Task A 修（需讀 form limb 選擇器資料）
+- **[R1 DEFERRED]** addNewFrameStyle 雙 POST 無事務保護（Session 63 起）
+- **[TD2]** learnings.md 超過 50 條 → 需 consolidation
+
+### 後效同步稽核
+
+- **[A]** repo-map.md 已更新（新增 0028/0029/0030）✅
+- **[B]** 不觸發（無制度層文件變動）
+- **[C]** CHANGELOG.md 已更新（財務修正記錄）✅
+- **[F]** 不觸發（§6.2 填值非術語定義變更；FHS_Prompts.md 路由已正確覆蓋立體擺設）
+
+【交付前雙紀律自檢】
+驗收：財務/成本 — migration 0030 已寫入含獨立煙霧測試（DO $$ LOOP 驗 4 SKU），三重確認 $210（Airtable Base_Costs + cost_configurations + HTML 對話框）。DB 層根因修復 PASS（⏳ 待 Fat Mo 在 Supabase 執行後正式生效）。前端顯示層 chargedPositions gap 留 Task A。
+Subagent：❌ 未派 subagent。Phase 0 診斷使用 Airtable MCP 直接查詢（前一 session 已完成）。migration 0030 為直接 SQL 修復，比 database-reviewer 更高效。
+
+---
+
+# FHS Handoff - 2026-06-06 (Session 64 — V42 手機訂單總覽 WhatsApp/Threads 視覺觸控改造)
+
+## Session 64 完結
+
+### 執行完成項目
+
+- ✅ **V42 建立**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（742KB，從 V41 694KB 起點）
+- ✅ **Lucide SVG sprite**（9 icons）注入 + Threads 視覺 CSS 全系統
+- ✅ **AG Stitch 4 組件縫合**：左滑 CSS + HTML wrapper、Bottom-Sheet 視覺精緻化、iOS Segmented Indicator、Star 彈跳動畫
+- ✅ **左滑手勢引擎**（AG Stitch）：IIFE + MutationObserver 重綁，方向鎖、阻尼、互斥收合
+- ✅ **P3 Bridge 函式**：`openBsSheet()` / `closeBsSheet()`（H2 正確簽名），overlay tap-to-close
+- ✅ **P4 持久化**：`toggleFavorite()` / `toggleArchive()` / `updateOrderMeta()` / `triggerArchiveOrder()`
+- ✅ **5 秒 Undo Toast**：`showUndoToast()` + progress bar + `beforeunload` keepalive PATCH（H1 修正）
+- ✅ **Segmented Control**：「進行中 / 已封存」+ `applyReviewFilters` 包裹 + 最愛置頂排序
+- ✅ **P3.2**：手機版 emoji 按鈕 display:none（保留 HTML ID）
+- ✅ **P3.6**：首載 peek 動畫（-8px → 0，60ms）
+- ✅ **Supabase migration 0029**：已寫入 `supabase/migrations/0029_add_archive_favorite_columns.sql`
+- ✅ **CHANGELOG**、**repo-map.md**、**decisions.md** 全部同步
+
+### 待 Fat Mo 手動執行
+
+- ⏳ **P1.3**：在 Supabase SQL Editor 執行 `0029_add_archive_favorite_columns.sql` + smoke test
+
+### P5 code-reviewer Gate
+
+- ✅ **P5**：`code-reviewer` G1–G8 全部 PASS（2026-06-06）
+  - G1 captureFormState 完好 ✅
+  - G2 既有 ID 零刪除 ✅
+  - G3 桌面 >767 完全不生效 ✅
+  - G4 新函式 window 暴露（9 個）✅
+  - G5 H1 keepalive fetch（無 sendBeacon）✅
+  - G6 H2 正確函式簽名 ✅
+  - G7 H3 手勢/toggleAccordion 不衝突 ✅
+  - G8 V41/current.html 零改動 ✅
+
+### 晉升條件（V42 → current.html）
+
+V1–V11 手機測試全綠 + 桌面回歸 + Fat Mo 授權 + diff 審查（缺一不可）
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — P5 code-reviewer G1–G8 Gate 報告尚未產出（P5 未完成）；截圖確認 segmented control + bottom-sheet 視覺正確渲染 — 條件 PARTIAL PASS（P5 仍需執行）
+Subagent：✅ frontend-developer（3 次截圖）；❌ code-reviewer（P5 待 Fat Mo 指令繼續）
+
+---
+
 # FHS Handoff - 2026-06-05 (Session 63 — 系統知識文件化治理方案)
 
 ## Session 63 補丁 — FHS_Prompts.md 同步機制補丁

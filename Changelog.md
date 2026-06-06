@@ -1,5 +1,55 @@
 # Changelog
 
+## [2026-06-07] 🐛 立體擺設 products.total_base_cost 修正（Session 65）
+
+**範圍**：Supabase products 表資料層修正 + FHS_Pricing_Bible.md §6.2 補全
+
+### [BUGFIX] migration 0030 — 立體擺設成本 $0 → $210
+
+- **根因**：migration 0023 將 4 個立體擺設 SKU seeded 為 `total_base_cost=0`（placeholder），無後續 migration 或 RPC 補值，`fhs_sync_products_from_config()` 不覆蓋立體擺設。Smart Cache 讀 0 → n8n `handmodel_cost=0` → 所有立體擺設訂單成本少計 $210/單
+- **修復**：`supabase/migrations/0030_fix_3d_frame_base_costs.sql`，UPDATE 4 SKU `total_base_cost = 210`（含煙霧測試）
+- **確認依據**：Airtable Base_Costs（Drawing $60 + Printing $150）+ Supabase cost_configurations（material_cost_woodframe=210）+ V41 HTML 確認對話框（"立體擺設成本 $210 已計入"）三重確認
+- **附帶發現（未修）**：chargedPositions Set 不追蹤 P_MAIN 肢，混合訂單前端顯示可能雙計繪圖費 → Task A 範疇
+
+### [DOCS] FHS_Pricing_Bible.md §6.2 補全
+
+- 新增立體擺設代表性數值：木框套裝/玻璃瓶套裝各一行（均 $210：Drawing $60 + Printing $150）
+- 補充繪圖費說明（per set 非 per limb）+ 技術債 footnote
+
+### ⚠️ Fat Mo 待執行
+
+- 在 Supabase SQL Editor 執行 `0030_fix_3d_frame_base_costs.sql` → smoke test 全 PASS 後生效
+- 執行後所有新立體擺設訂單 `handmodel_cost` 將正確計入 $210
+
+---
+
+## [2026-06-06] 🚧 V42 手機訂單總覽 WhatsApp/Threads 視覺觸控改造（Session 64）
+
+**範圍**：`freehandsss_dashboardV42.html` 開發版（V41 凍結，不得改動）
+
+### [FEATURE] 左滑手勢 + Threads 視覺系統
+- **Lucide SVG sprite**（9 icons）：message-circle、send、square-pen、star、archive、trash-2、more-horizontal、undo-2、x；零外部依賴、MIT
+- **左滑卡片（.swipe-row-wrapper）**：translateX -140px，方向鎖手勢引擎（8px 死區，MutationObserver 重綁），封存 + 更多兩鍵（暖米 #F0EBE4 + 暖灰 #E0D8CC）
+- **Bottom-Sheet 行動選單**：`openBsSheet(orderId, displayId)` 從底部推出，手模 A / 金屬 B 標籤 badge 差異，5 個操作 + 刪除危險區（H2 正確函式簽名：openOrderModal(id,'A'/'B')、jumpToEditOrder(Order_ID)、openDeleteModal(id,Order_ID)）
+- **Threads 單色視覺**：預設 `--fhs-text-secondary`，最愛啟動 `#F5B301`，刪除紅 `--fhs-danger`
+- **Star 彈跳動畫**：`@keyframes fhsStarPop` scale 1.35 → 0.88 → 1.0，350ms spring
+- **iOS Segmented Control**：`.fhs-seg-indicator` 滑動指示器，「進行中 / 已封存」分頁
+
+### [FEATURE] 封存/最愛持久化（Supabase-First）
+- **Supabase migration 0029**：`orders` 表新增 `is_archived`/`is_favorite` boolean（待 Fat Mo 在 SQL Editor 手動執行）
+- **5 秒 Undo Toast**：封存後進度條倒數，Undo 取消佇列，逾時才 PATCH
+- **H1 修正**：頁面卸載用 `fetch(keepalive:true)` 取代 `navigator.sendBeacon`（sendBeacon 只能 POST，不能 PATCH）
+- **applyReviewFilters 包裹**：segmented 分頁過濾 + 最愛置頂排序，直接對 `window.globalOrders` slice 攔截
+
+### [FIX] 手機版 emoji 按鈕隱藏
+- `@media (max-width:767px)`: `.fhs-btn-order-detail`、`.acc-action-row` `display:none !important`（保留 HTML ID）
+
+### [ARCH] V41 凍結 / V42 治理
+- V41 凍結：decisions.md 記載，hotfix 須 cherry-pick
+- V42 晉升 checklist：V1–V11 手機測試全綠 + 桌面回歸 + Fat Mo 授權 + diff 審查
+
+---
+
 ## [2026-06-05] ✅ TD1 技術債清償：FHS_Pricing_Bible.md 搬移（Session 62）
 
 **範圍**：純架構搬移，無業務邏輯變更
