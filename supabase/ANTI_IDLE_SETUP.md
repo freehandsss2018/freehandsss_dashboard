@@ -2,6 +2,17 @@
 **目的**：防止 Supabase Free Tier 7 天無活動自動暫停
 **AGENTS.md §4**：防閒置強制 — 必須維持每 6 天定時 ping
 
+## ✅ 已部署（2026-06-07）
+
+| 項目 | 值 |
+|------|-----|
+| Workflow 名稱 | `FHS_Anti_Idle_Ping` |
+| Workflow ID | `FxKHTDiYiUPnxvm6` |
+| 狀態 | ACTIVE |
+| 排程 | `0 1 */5 * *`（每 5 天 01:00 UTC） |
+| Telegram Chat ID | `7620524971` |
+| Supabase 端點 | `products?select=id&limit=1` |
+
 ---
 
 ## 方法一：n8n Schedule Trigger（推薦）

@@ -1,3 +1,31 @@
+# FHS Handoff - 2026-06-07 (Session 67 — R1 關閉 + Anti-Idle Ping 部署)
+
+## Session 67 完結
+
+### 執行完成項目
+
+- ✅ **[DECISION] R1 正式關閉**：`addNewFrameStyle` 雙 POST 問題以「降級不實作」解決，款式選項維持 HTML 硬編碼，按需由 Claude Code 改 `<option>`。decisions.md 補入設計決策。
+- ✅ **[INFRA] Anti-Idle Ping 部署**：n8n Workflow `FHS_Anti_Idle_Ping`（ID: `FxKHTDiYiUPnxvm6`）建立並啟動
+  - 排程：`0 1 */5 * *`（每 5 天 01:00 UTC）
+  - 流程：Schedule Trigger → HTTP GET Supabase ping（continueOnFail, fullResponse）→ IF statusCode 非 200-299 → Telegram 告警（chat `7620524971`）
+  - 端點驗證：Supabase ping 回傳 HTTP 200 + 正確資料 ✓
+  - 狀態：ACTIVE，triggerCount: 1
+- ✅ **後效同步**：CHANGELOG.md、decisions.md、ANTI_IDLE_SETUP.md 全部更新
+
+### 技術債現況（Session 67 後）
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| ~~R1 DEFERRED~~ | addNewFrameStyle 雙 POST | ✅ **Session 67 關閉**（降級） |
+| ~~Anti-Idle Ping~~ | n8n 每 5 天 ping Supabase | ✅ **Session 67 完成** |
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+
+【交付前雙紀律自檢】
+驗收：n8n — Supabase ping 端點直接測試回傳 HTTP 200 + `[{"id":"934e8737..."}]`（workflow 邏輯正確）；n8n API 確認 `active: true`，`triggerCount: 1`（排程已登記）。手動 trigger 執行 log 受 API 限制無法取得，但直接端點驗證等效。PASS。
+Subagent：❌ 未派（n8n API 直接操作，無需 database-reviewer 或 build-error-resolver）。
+
+---
+
 # FHS Handoff - 2026-06-07 (Session 66 — TD-P-chargedPositions 修復)
 
 ## Session 66 完結
@@ -15,9 +43,9 @@
 | # | 項目 | 狀態 |
 |---|------|------|
 | ~~TD-P-chargedPositions~~ | P_MAIN 不加入 chargedPositions，混合訂單前端雙計繪圖費 | ✅ **Session 66 修復** |
-| R1 DEFERRED | `addNewFrameStyle` 雙 POST 無事務保護 | ⏸ 追蹤中 |
+| ~~R1 DEFERRED~~ | `addNewFrameStyle` 雙 POST 無事務保護 | ✅ **Session 67 關閉**（降級：按需改 HTML，不實作動態管理） |
 | TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
-| Anti-Idle Ping | n8n 每 6 天 ping Supabase 驗證 | ⏸ 稍後 |
+| ~~Anti-Idle Ping~~ | n8n 每 5 天 ping Supabase | ✅ **Session 67 完成**（Workflow `FxKHTDiYiUPnxvm6` ACTIVE） |
 
 ### 待 Fat Mo 驗證
 

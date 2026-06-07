@@ -3,6 +3,19 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-07] (Session 67) Anti-Idle Ping 部署 — n8n 防閒置 Workflow
+
+決策：建立獨立 n8n Workflow `FHS_Anti_Idle_Ping`（ID: `FxKHTDiYiUPnxvm6`），每 5 天 ping Supabase 一次。
+原因：FHS 使用 Supabase Free Tier，7 天無 API 請求自動暫停。頻率選 5 天（非 6 天）以留安全邊際，避免時區/月份邊界引起誤差。
+設計：Schedule Trigger `0 1 */5 * *` → HTTP GET `products?select=id&limit=1`（continueOnFail:true, fullResponse:true）→ IF statusCode 非 200-299 → Telegram 告警至 chat 7620524971。
+Telegram credential：複用現有 "Telegram account"（ID: tSbXz97PKmdPpDNq）。
+
+[2026-06-07] (Session 67) R1 關閉 — 立體擺設款式管理 UI 降級決策
+
+決策：`addNewFrameStyle` 功能不實作。木框色款 / 底座顏色選項維持硬編碼於 HTML（`#woodStyle` / `#baseColor` select），按需由 Claude Code 直接加 `<option>`。
+原因：款式新增頻率極低（預計 < 每季一次），建動態管理系統（migration + RPC + 動態渲染）的複雜度遠超收益。R1 風險（雙 POST 無事務保護）因功能不實作而自動消滅。
+影響：零代碼改動；Fat Mo 需新增款式時直接告知 Claude Code，1 行 HTML 即可完成。
+
 [2026-06-07] (Session 66) TD-P-chargedPositions 修復 — P_MAIN 排除 drawing cost 分支
 
 決策：在 `calculatePricing()` 的 `else if (!item.isAccessory)` 條件加入 `&& item.Order_Item_Key !== "TEMP_P_MAIN"`，讓 TEMP_P_MAIN 不進入 K/M 畫圖費計算分支。

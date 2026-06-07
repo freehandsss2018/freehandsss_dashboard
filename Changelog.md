@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-06-07] ⚡ Anti-Idle Ping 部署（Session 67）
+
+**範圍**：n8n 新 Workflow `FHS_Anti_Idle_Ping`（ID: `FxKHTDiYiUPnxvm6`）
+
+### [INFRA] Supabase Free Tier 防暫停機制上線
+
+- **目的**：防止 Supabase Free Tier 因 7 天無 API 請求自動暫停
+- **設計**：Schedule Trigger（每 5 天 cron `0 1 */5 * *`）→ HTTP GET Supabase ping → IF statusCode 非 200-299 → Telegram 告警
+- **驗證**：Supabase ping 端點直接測試回傳 HTTP 200 + 正確資料 ✓
+- **Telegram**：告警發至 chat `7620524971`，訊息含 Supabase Dashboard 直連連結
+- **狀態**：ACTIVE（n8n 已啟動，triggerCount: 1）
+
+---
+
 ## [2026-06-07] 🐛 TD-P-chargedPositions 修復 — P_MAIN 畫圖費雙計問題（Session 66）
 
 **範圍**：`freehandsss_dashboardV42.html` 前端顯示層

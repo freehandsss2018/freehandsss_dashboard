@@ -110,3 +110,4 @@
 ## Pitfalls（重複踩過的雷）
 
 - **【Pitfall ✅ 2026-06-05 Session 63】路由總機被動維護 = 每次系統演進後路由腐爛**：FHS_Prompts.md 只在 commands/ 增刪時觸發更新，AGENTS Rule 新增 / L2 文件新增 / 語義修正不觸發 → 累積 3–5 個 session 後路由過時，AI 走錯路。修復：AGENTS 文件同步律擴充 4 觸發 + execute.md [F] 強制稽核，每次 /execute 自動問「路由總機要不要更新？」。
+- **【Pitfall ✅ 2026-06-07 Session 67】n8n API `POST /workflows` 的 `active` 欄位為 read-only**：建立 Workflow 時若 JSON payload 含 `"active": true` → `{"message":"request/body/active is read-only"}` 400 失敗。正確流程：先 POST（不含 `active`）得到 Workflow ID，再單獨 `POST /api/v1/workflows/{id}/activate` 啟用。n8n REST API v1 亦無 `/workflows/{id}/run` 端點，手動觸發只能用 n8n UI 或 Webhook 節點。
