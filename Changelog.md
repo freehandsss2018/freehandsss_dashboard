@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-06-08] 🛡️ Sync_Notion_Brain.js V2.1 韌性硬化
+
+**範圍**：`scripts/Sync_Notion_Brain.js`（記憶引擎 Notion 同步）
+
+### [FIX] 暫時性網路故障不再拖垮整批同步
+
+- **根因**：原腳本對所有 fetch response 直接 `.json()`，無 `response.ok`/content-type guard、無重試 → 任一暫時性非-JSON 回應（閘道 HTML 錯誤頁）即以 `SyntaxError` 崩潰，丟失剩餘同步（Session 69 commit 時實際觸發）
+- **修復**：新增 `notionRequest()` 統一包裝 — 檢查 `response.ok` + content-type JSON 驗證 + 指數退避重試（500/1000/2000ms）
+- **逐項保護**：archive/push 迴圈逐項 try/catch，單項失敗記入 `failures[]` 不中斷整批，結尾輸出失敗摘要並 `exit(1)`
+- **早退**：`NOTION_API_KEY` 缺失即 `exit(1)`
+- **驗證**：`node -c` 語法 OK + 實跑全程通過 exit 0
+
+---
+
 ## [2026-06-08] 🎨 立體擺設款式三組重排（V42 UI，取代框版）
 
 **範圍**：前端輕量分組重排（`freehandsss_dashboardV42.html`，開發基線）

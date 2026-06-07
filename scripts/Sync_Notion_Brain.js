@@ -1,6 +1,8 @@
 /**
- * FHS Sync_Notion_Brain.js - V2.0
+ * FHS Sync_Notion_Brain.js - V2.1
  * Purpose: Auto-Discovery Sync & Global Brain Pruning.
+ * V2.1 (2026-06-08): 韌性硬化 — response.ok + content-type guard、指數退避重試、
+ *                    逐項 try/catch（單項失敗不再以 SyntaxError 拖垮整批），結尾失敗摘要。
  */
 
 const fs = require('fs');
@@ -11,8 +13,59 @@ const NOTION_TOKEN = process.env.NOTION_API_KEY;
 const DATABASE_ID = process.env.NOTION_DATABASE_ID || "329574ef-3b8b-8135-80be-f248aedb9d46";
 const LESSONS_DIR = path.join(__dirname, '..', '.fhs', 'memory', 'lessons');
 
+const NOTION_HEADERS = {
+    "Authorization": `Bearer ${NOTION_TOKEN}`,
+    "Notion-Version": "2022-06-28",
+    "Content-Type": "application/json"
+};
+
+// 失敗收集器：單項失敗記錄但不中斷整批
+const failures = [];
+
+/**
+ * 韌性 Notion 請求：
+ * - 檢查 response.ok（非 2xx 視為失敗）
+ * - parse 模式下檢查 content-type 為 JSON（暫時性閘道回 HTML 不再 crash）
+ * - 暫時性錯誤（網路/5xx/429/非-JSON）指數退避重試
+ */
+async function notionRequest(url, options, { parse = false, retries = 3 } = {}) {
+    let lastErr;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const res = await fetch(url, options);
+            const ct = res.headers.get('content-type') || '';
+
+            if (!res.ok) {
+                const body = await res.text().catch(() => '');
+                throw new Error(`HTTP ${res.status} ${res.statusText} — ${body.slice(0, 150)}`);
+            }
+            if (parse) {
+                if (!ct.includes('application/json')) {
+                    const body = await res.text().catch(() => '');
+                    throw new Error(`Non-JSON response (content-type: ${ct || 'none'}) — ${body.slice(0, 150)}`);
+                }
+                return await res.json();
+            }
+            return res;
+        } catch (e) {
+            lastErr = e;
+            if (attempt < retries) {
+                const wait = 500 * Math.pow(2, attempt - 1); // 500ms → 1000ms → 2000ms
+                console.log(`   ⚠️ 請求失敗（第 ${attempt}/${retries} 次）：${e.message}。${wait}ms 後重試…`);
+                await new Promise(r => setTimeout(r, wait));
+            }
+        }
+    }
+    throw new Error(`重試 ${retries} 次仍失敗：${lastErr.message}`);
+}
+
 async function runPruneAndSync() {
-    console.log("✂️ FHS Cloud Brain Pruning (V1.3) Started...");
+    console.log("✂️ FHS Cloud Brain Pruning (V2.1) Started...");
+
+    if (!NOTION_TOKEN) {
+        console.error("❌ NOTION_API_KEY 未設定（.env），中止同步。");
+        process.exit(1);
+    }
 
     // 1. Define Whitelist/Keep List
     const highValueLessons = [
@@ -44,9 +97,14 @@ async function runPruneAndSync() {
         "20260321_JS_Init_Bug_Context"
     ];
 
-    // 2. Prune Unwanted
+    // 2. Prune Unwanted（逐項保護，單項失敗不中斷）
     for (const title of unwantedTitles) {
-        await archiveByTitle(title);
+        try {
+            await archiveByTitle(title);
+        } catch (e) {
+            failures.push({ op: `archive:${title}`, msg: e.message });
+            console.log(`   ❌ 封存失敗 [${title}]：${e.message}`);
+        }
     }
 
     // 3. Auto-Discovery: Sync ALL lessons in directory
@@ -57,7 +115,12 @@ async function runPruneAndSync() {
             if (unwantedTitles.includes(title)) continue;
             const filePath = path.join(LESSONS_DIR, file);
             const content = fs.readFileSync(filePath, 'utf8');
-            await pushToNotion(title, content, "Memory");
+            try {
+                await pushToNotion(title, content, "Memory");
+            } catch (e) {
+                failures.push({ op: `push:${title}`, msg: e.message });
+                console.log(`   ❌ 同步失敗 [${title}]：${e.message}`);
+            }
             await new Promise(r => setTimeout(r, 333)); // Rate limit: 3 RPS
         }
     } else {
@@ -66,36 +129,40 @@ async function runPruneAndSync() {
 
     // 4. Update High Value Sessions
     for (const session of highValueSessions) {
-        await pushToNotion(session.title, "", "Architecture", session.summary);
+        try {
+            await pushToNotion(session.title, "", "Architecture", session.summary);
+        } catch (e) {
+            failures.push({ op: `session:${session.title}`, msg: e.message });
+            console.log(`   ❌ Session 同步失敗 [${session.title}]：${e.message}`);
+        }
+    }
+
+    // 5. 結尾摘要
+    if (failures.length > 0) {
+        console.log(`\n⚠️ Sync 完成但有 ${failures.length} 項失敗：`);
+        failures.forEach(f => console.log(`   • ${f.op} → ${f.msg}`));
+        console.log("🏁 部分同步完成（上述項目需重跑）。");
+        process.exit(1);
     }
 
     console.log("\n🏁 Pruning and Sync completed. Cloud Brain is now Filtered & Purified.");
 }
 
 async function archiveByTitle(title) {
-    const searchResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
+    const searchResult = await notionRequest(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
         method: "POST",
-        headers: {
-            "Authorization": `Bearer ${NOTION_TOKEN}`,
-            "Notion-Version": "2022-06-28",
-            "Content-Type": "application/json"
-        },
+        headers: NOTION_HEADERS,
         body: JSON.stringify({
             filter: { property: "title", title: { equals: title } }
         })
-    });
+    }, { parse: true });
 
-    const searchResult = await searchResponse.json();
     if (searchResult.results && searchResult.results.length > 0) {
         for (const page of searchResult.results) {
             console.log(`🗑️ Archiving: ${title} (${page.id})...`);
-            await fetch(`https://api.notion.com/v1/pages/${page.id}`, {
+            await notionRequest(`https://api.notion.com/v1/pages/${page.id}`, {
                 method: "PATCH",
-                headers: {
-                    "Authorization": `Bearer ${NOTION_TOKEN}`,
-                    "Notion-Version": "2022-06-28",
-                    "Content-Type": "application/json"
-                },
+                headers: NOTION_HEADERS,
                 body: JSON.stringify({ archived: true })
             });
         }
@@ -106,19 +173,14 @@ async function pushToNotion(title, markdown, defaultTag, forcedSummary = null) {
     const metadata = markdown ? extractMetadata(markdown) : { summary: forcedSummary, tags: [defaultTag] };
     if (forcedSummary) metadata.summary = forcedSummary;
 
-    const searchResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
+    const searchResult = await notionRequest(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
         method: "POST",
-        headers: {
-            "Authorization": `Bearer ${NOTION_TOKEN}`,
-            "Notion-Version": "2022-06-28",
-            "Content-Type": "application/json"
-        },
+        headers: NOTION_HEADERS,
         body: JSON.stringify({
             filter: { property: "title", title: { equals: title } }
         })
-    });
+    }, { parse: true });
 
-    const searchResult = await searchResponse.json();
     const existingPage = searchResult.results && searchResult.results.length > 0 ? searchResult.results[0] : null;
 
     const properties = {
@@ -129,24 +191,16 @@ async function pushToNotion(title, markdown, defaultTag, forcedSummary = null) {
 
     if (existingPage) {
         console.log(`📝 Updating metadata for: ${title}`);
-        await fetch(`https://api.notion.com/v1/pages/${existingPage.id}`, {
+        await notionRequest(`https://api.notion.com/v1/pages/${existingPage.id}`, {
             method: "PATCH",
-            headers: {
-                "Authorization": `Bearer ${NOTION_TOKEN}`,
-                "Notion-Version": "2022-06-28",
-                "Content-Type": "application/json"
-            },
+            headers: NOTION_HEADERS,
             body: JSON.stringify({ properties })
         });
     } else if (markdown) {
         console.log(`✨ Creating new high-value page: ${title}`);
-        const createResponse = await fetch("https://api.notion.com/v1/pages", {
+        await notionRequest("https://api.notion.com/v1/pages", {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${NOTION_TOKEN}`,
-                "Notion-Version": "2022-06-28",
-                "Content-Type": "application/json"
-            },
+            headers: NOTION_HEADERS,
             body: JSON.stringify({
                 parent: { database_id: DATABASE_ID },
                 properties,
@@ -184,4 +238,7 @@ function extractMetadata(markdown) {
     return { summary: summary.substring(0, 200), tags: [...new Set(tags)] };
 }
 
-runPruneAndSync().catch(err => console.error(err));
+runPruneAndSync().catch(err => {
+    console.error("❌ 致命錯誤（非單項）：", err.message);
+    process.exit(1);
+});
