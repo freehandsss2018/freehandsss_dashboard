@@ -1,3 +1,33 @@
+# FHS Handoff - 2026-06-07 (Session 68 — Supabase MCP 建立 + Test01 Live 驗收)
+
+## Session 68 完結
+
+### 執行完成項目
+
+- ✅ **[INFRA] Supabase MCP Server 建立**：`.mcp.json` + `settings.local.json` 新增 `@supabase/mcp-server-supabase@latest`
+  - 採用 Personal Access Token（PAT）驗證，非 Service Role Key
+  - PAT 存於 `--access-token` flag（gitignored 檔案，安全）
+  - 重啟後確認 `mcp__supabase__*` 工具組全部上線（execute_sql、list_tables 等）
+- ✅ **[VERIFY] Session 66 TD-P-chargedPositions Live 驗收 — PASS**：
+  - Test01 訂單：木框套裝 (4肢) + 嬰兒不銹鋼鎖匙扣 4飾 (加購) × 4
+  - P_MAIN.drawing_cost = $0 ✓（修復確認，無虛假 $60）
+  - K_LH.drawing_cost = $0 ✓（W1 免畫圖：左手 ∈ 4肢框架）
+  - total_cost = $335 = handmodel $210 + keychain $125（= $185 − $60 deduction）✓
+  - n8n_adjustment_notes: keychain deduction −$60 ✓，convergence_note $105 delta（預期，非錯誤）✓
+
+### 技術債現況（Session 68 後）
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| ~~Session 66 Live 驗收~~ | TD-P-chargedPositions 修復確認 | ✅ **Session 68 PASS** |
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+
+【交付前雙紀律自檢】
+驗收：Supabase MCP — `mcp__supabase__execute_sql` 成功查詢 test01 訂單，數據正確；Session 66 修復 — P_MAIN.drawing_cost=$0、total_cost=$335 符合預期 PASS。
+Subagent：❌ 未派（MCP 設定 + Supabase 直查，主 context 完成）
+
+---
+
 # FHS Handoff - 2026-06-07 (Session 67 — R1 關閉 + Anti-Idle Ping 部署)
 
 ## Session 67 完結

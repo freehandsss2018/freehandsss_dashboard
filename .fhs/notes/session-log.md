@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-07 (Session 68): 🔌 Supabase MCP 建立 + Test01 Live 驗收 ✅
+
+**Scope**: (1) 建立 Supabase MCP（`@supabase/mcp-server-supabase@latest`，PAT 驗證）；(2) Test01 訂單 Live 驗收 — Session 66 TD-P-chargedPositions 修復確認 PASS（P_MAIN drawing=$0，total_cost=$335 正確）。
+**Status**: ✅ MCP 上線。Session 66 修復 Live 驗收通過。
+
+---
+
 ## 2026-06-07 (Session 67): 🛡️ Anti-Idle Ping 部署 + R1 關閉 ✅
 
 **Scope**: (1) R1 addNewFrameStyle 調查確認函式從未實作，執行八維度分析後降級為「按需改 HTML」並關閉追蹤；(2) Supabase Free Tier Anti-Idle Ping 評估確認需要，建立 n8n Workflow `FHS_Anti_Idle_Ping`（ID: `FxKHTDiYiUPnxvm6`）每 5 天 ping，失敗送 Telegram 告警，已 ACTIVE。

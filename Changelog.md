@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-06-07] 🔌 Supabase MCP 建立 + Test01 Live 驗收（Session 68）
+
+**範圍**：基礎建設（MCP 設定，gitignored）+ Live 驗收
+
+### [INFRA] Supabase MCP Server 上線
+
+- **套件**：`@supabase/mcp-server-supabase@latest`（npx，Personal Access Token 驗證）
+- **設定**：`.mcp.json` + `settings.local.json`（均 gitignored）
+- **注意**：套件需 PAT（`--access-token`），非 Service Role Key
+
+### [VERIFY] Session 66 TD-P-chargedPositions Live 驗收 — PASS
+
+- **Test01 訂單**：木框套裝 (4肢) + 嬰兒不銹鋼鎖匙扣 4飾
+- **P_MAIN drawing_cost = $0** ✓（修復確認，無虛假 $60）
+- **K_LH drawing_cost = $0** ✓（W1 免畫圖正確）
+- **total_cost = $335**（handmodel $210 + keychain $125 after -$60 deduction）✓
+
+---
+
 ## [2026-06-07] ⚡ Anti-Idle Ping 部署（Session 67）
 
 **範圍**：n8n 新 Workflow `FHS_Anti_Idle_Ping`（ID: `FxKHTDiYiUPnxvm6`）
