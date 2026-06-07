@@ -1,3 +1,34 @@
+# FHS Handoff - 2026-06-07 (Session 66 — TD-P-chargedPositions 修復)
+
+## Session 66 完結
+
+### 執行完成項目
+
+- ✅ **[BUGFIX] TD-P-chargedPositions**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html` line 5733
+  - 根因：`TEMP_P_MAIN` 無 `PartDesc`，W1 chargedPositions 被跳過，P_MAIN 錯誤進入 K/M drawing cost 分支，累積 ~$60 至 `totalDrawingCost`
+  - 修復：條件改為 `else if (!item.isAccessory && item.Order_Item_Key !== "TEMP_P_MAIN")`，P_MAIN `item.FatMoCost = 0`
+  - 不影響：W1 pre-population 仍正確防 K/M 同部位雙收；P_MAIN $210 由 n8n Supabase `products.total_base_cost` 負責
+- ✅ **CHANGELOG.md**、**decisions.md** 同步更新
+
+### 技術債現況（更新）
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| ~~TD-P-chargedPositions~~ | P_MAIN 不加入 chargedPositions，混合訂單前端雙計繪圖費 | ✅ **Session 66 修復** |
+| R1 DEFERRED | `addNewFrameStyle` 雙 POST 無事務保護 | ⏸ 追蹤中 |
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| Anti-Idle Ping | n8n 每 6 天 ping Supabase 驗證 | ⏸ 稍後 |
+
+### 待 Fat Mo 驗證
+
+- **Live 驗證**：混合訂單（立體擺設 + 鎖匙扣同部位）→ 確認前端成本欄不再含虛假 $60 畫圖費
+
+【交付前雙紀律自檢】
+驗收：代碼 — 1 行條件修改，P_MAIN 從 drawing cost 分支排除；W1 pre-population 不變；`item.FatMoCost=0` → `totalDrawingCost` 不含虛假 $60。邏輯 PASS（待 Fat Mo Live 驗證）。
+Subagent：❌ 未派（單點 1 行 Edit，主 context 直接完成）。
+
+---
+
 # FHS Handoff - 2026-06-07 (Session 65 — 立體擺設財務根因診斷 + migration 0030)
 
 ## Session 65 完結
@@ -29,7 +60,7 @@
 ### 待 Fat Mo 手動執行
 
 - ✅ **Priority 1**：`0030_fix_3d_frame_base_costs.sql` — Fat Mo 於 2026-06-07 執行成功（Supabase 回報 "Success. No rows returned"，NOTICE 正常）。4 個立體擺設 SKU total_base_cost = 210 已生效。
-- ⏳ **Priority 2**（來自 Session 64）：在 Supabase SQL Editor 執行 `0029_add_archive_favorite_columns.sql`
+- ✅ **Priority 2**（來自 Session 64）：`0029_add_archive_favorite_columns.sql` — Fat Mo 於 2026-06-07 執行成功（"Success. No rows returned"）。`is_archived` / `is_favorite` 兩欄已生效。
 
 ### 技術債記錄
 

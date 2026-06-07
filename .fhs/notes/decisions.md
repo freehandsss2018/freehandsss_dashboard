@@ -3,6 +3,13 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-07] (Session 66) TD-P-chargedPositions 修復 — P_MAIN 排除 drawing cost 分支
+
+決策：在 `calculatePricing()` 的 `else if (!item.isAccessory)` 條件加入 `&& item.Order_Item_Key !== "TEMP_P_MAIN"`，讓 TEMP_P_MAIN 不進入 K/M 畫圖費計算分支。
+原因：P_MAIN 無 `PartDesc`（空字串），`_posKey = ""`，W1 chargedPositions 追蹤被跳過，P_MAIN 錯誤算出 `baseDrawing ≈ $60` 並累積至 `totalDrawingCost`；前端成本顯示虛高。P_MAIN 的 $210 成本由 n8n 從 Supabase `products.total_base_cost` 取得，前端不需重算。
+影響：W1 pre-population 不變（仍正確防止 K/M 同部位雙收畫圖費）；`item.FatMoCost = 0` for P_MAIN。
+改動點：`Freehandsss_Dashboard/freehandsss_dashboardV42.html` line 5733（1 行）。
+
 [2026-06-07] (Session 65 補充) V42 正式成為開發基線
 
 決策：下一個 session 起，所有開發改動一律在 `freehandsss_dashboardV42.html` 進行。V41 為當前穩定生產版本（current.html 指向），V42 為開發版。

@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-07 (Session 66): 🐛 TD-P-chargedPositions 修復 — P_MAIN 畫圖費雙計 ✅
+
+**Scope**: `calculatePricing()` 1行修復：`else if (!item.isAccessory && item.Order_Item_Key !== "TEMP_P_MAIN")`。P_MAIN 不再進入 K/M drawing cost 分支，`item.FatMoCost = 0`。W1 pre-population 不變。CHANGELOG + decisions + handoff 同步。
+**Status**: ✅ 修復完成，待 Fat Mo Live 驗證混合訂單前端成本。
+
+---
+
 ## 2026-06-05 (Session 63): 📚 kgov 系統知識文件化治理方案 + FHS_Prompts.md 同步機制 ✅
 
 **Scope**: P0–P4 全部完成：FHS_Product_Definition.md v1.0.0（L2 產品身份 SSoT）；Pricing_Bible §10 規則 ID 可查表（14條）；AGENTS Rule 3.17（雙紀律強制律）；/new-product Step 6 知識落盤 Gate；FHS_Prompts.md v1.7（同步機制 + 語義修正 + 三叉路由）；execute.md [F] 強制稽核項；記憶合併 −1（subagent_router + delivery_standards → pre_delivery_dual_discipline）；kgov 召喚詞。

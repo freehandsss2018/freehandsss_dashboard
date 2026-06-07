@@ -5730,8 +5730,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             else cost += (!hasMainProduct) ? _dBP : _dBS;
                         }
                     });
-                } else if (!item.isAccessory) {
+                } else if (!item.isAccessory && item.Order_Item_Key !== "TEMP_P_MAIN") {
                     // 鎖匙扣 / 吊飾：按 P/S 模式與成人/嬰兒 tier 決定畫圖費
+                    // TD-P-chargedPositions: P_MAIN 不在此計算畫圖費，其 $210 成本由 n8n Supabase total_base_cost 負責
                     let isAdultItem = name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
                     let baseDrawing;
                     if (name.includes("(P)")) {

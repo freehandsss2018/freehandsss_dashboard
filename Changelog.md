@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-06-07] 🐛 TD-P-chargedPositions 修復 — P_MAIN 畫圖費雙計問題（Session 66）
+
+**範圍**：`freehandsss_dashboardV42.html` 前端顯示層
+
+### [BUGFIX] calculatePricing() — P_MAIN 不再累積虛假畫圖費
+
+- **根因**：`TEMP_P_MAIN` 無 `PartDesc`，W1 chargedPositions 追蹤被跳過，P_MAIN 錯誤進入 K/M drawing cost 分支，累積 ~$60 至 `totalDrawingCost`，混合訂單前端顯示成本虛高
+- **修復**：`else if (!item.isAccessory)` 條件加入 `&& item.Order_Item_Key !== "TEMP_P_MAIN"`，P_MAIN 不走畫圖費計算，`item.FatMoCost = 0`
+- **不影響**：W1 pre-population 仍正確防止 K/M 同部位雙收畫圖費；P_MAIN 成本 $210 由 n8n 從 Supabase `products.total_base_cost` 計算
+- **改動點**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html` line 5733
+
+---
+
 ## [2026-06-07] 🐛 立體擺設 products.total_base_cost 修正（Session 65）
 
 **範圍**：Supabase products 表資料層修正 + FHS_Pricing_Bible.md §6.2 補全
