@@ -1,3 +1,42 @@
+# FHS Handoff - 2026-06-08 (Session 69 — V42 立體擺設款式三組重排 UI)
+
+## Session 69 完結
+
+### 執行完成項目
+
+- ✅ **[UI] 立體擺設款式三組輕量分組**（`freehandsss_dashboardV42.html`，開發基線）
+  - 起因：上一版（同 session 前段）「倒模對象」加 `.casting-group` 實心框令版面變窄，Fat Mo 要求移框改輕量分組
+  - 三組順序（Fat Mo 定 B&C 調轉 = A→C→B）：
+    - **A 組**：款式類型 + 底座顏色 + 客製化刻字（刻字由區塊最底上移）
+    - **C 組**：倒模對象（嬰兒/父母/大寶）
+    - **B 組**：加購配件（羊毛氈/燈飾）
+  - `renderLimbGrid()` 拆分：底座顏色/木框色款 → 新容器 `#baseColorContainer`（A 組）；嬰兒/父母/大寶 → `#limbContainer`（C 組）
+  - B 組標題 `#ssAddonTitle` 由 `_syncAddonVisibility()` 控制（玻璃瓶顯/木框隱），避免空標題孤兒
+  - CSS：`.casting-group`/`.casting-group-title` → 輕量 `.ss-group-title` + `.ss-group-sep`（無 border box）
+  - 既有 ID 全零改動；captureFormState/payload/`data-who` 未觸及
+- ✅ **CHANGELOG.md** 同步（修訂框版條目為三組重排版）
+
+### 驗收
+
+- ✅ **code-reviewer Gate PASS**：G2 既有 ID 18/18 保留、G3 DOM 平衡（14 div 配對）、資料路徑（pEngraving/baseColor/woodStyle/.limb-sel）命中、V41/current.html 零污染
+- ✅ **playwright 三版渲染**：玻璃瓶桌面/手機（三組齊全）+ 木框桌面（底座=木框色款、加購標題正確隱藏）
+
+### 技術債現況（不變）
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+
+### 待 Fat Mo
+
+- ⏸ V42 → current.html 晉升（需 V1–V11 手機測試全綠 + 桌面回歸 + 授權，本次僅單區塊改動，未達晉升條件）
+
+【交付前雙紀律自檢】
+驗收：HTML/UI — code-reviewer G2/G3 PASS（ID 零刪除、DOM 平衡、資料路徑命中）+ playwright 三版實渲染確認三組順序/刻字上移/木框隱藏加購標題正確。完整 PASS。
+Subagent：✅ `code-reviewer`（唯讀 Gate，兩次：框版 + 三組版皆 PASS）；截圖由主 context playwright 自行完成（reviewer 唯讀無法截圖）。
+
+---
+
 # FHS Handoff - 2026-06-07 (Session 68 — Supabase MCP 建立 + Test01 Live 驗收)
 
 ## Session 68 完結

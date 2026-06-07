@@ -431,6 +431,17 @@
             margin-bottom: 15px;
         }
 
+        .ss-group-title {
+            font-weight: 700;
+            color: #B07D4C;
+            font-size: 13px;
+            margin: 4px 0 8px;
+        }
+        .ss-group-sep {
+            border-top: 1px solid #eee;
+            margin: 14px 0 10px;
+        }
+
         .sec-title-row {
             display: flex;
             justify-content: space-between;
@@ -3250,6 +3261,7 @@
                     class="slider"></span></label>
         </div>
         <div id="contentP" class="addon-content">
+            <!-- A 組：款式類型 + 底座顏色 + 刻字 -->
             <div class="form-group">
                 <label>款式類型</label>
                 <select id="pSubCat" onchange="renderLimbGrid(); _syncAddonVisibility(); generate();">
@@ -3257,7 +3269,20 @@
                     <option value="玻璃瓶款式">玻璃瓶款式</option>
                 </select>
             </div>
+            <div id="baseColorContainer"></div>
+            <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
+                    oninput="generate()"></div>
+
+            <!-- C 組：倒模對象 -->
+            <div class="ss-group-sep"></div>
+            <div class="ss-group-title">倒模對象</div>
             <div id="limbContainer"></div>
+
+            <!-- B 組：加購配件（毛氈 / 燈飾，隨款式顯隱）-->
+            <div id="ssAddonTitle" style="display:none;">
+                <div class="ss-group-sep"></div>
+                <div class="ss-group-title">加購配件</div>
+            </div>
             <div class="part-item" id="woolAddonRow" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-weight: bold; color: #444;">🧸 羊毛氈公仔 ($680)</span>
@@ -3271,8 +3296,6 @@
                     <label class="switch"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
-            <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
-                    oninput="generate()"></div>
         </div>
 
         <div class="toggle-row">
@@ -4883,8 +4906,10 @@
             var isGlass = (document.getElementById('pSubCat') || {}).value === '玻璃瓶款式';
             var woolRow  = document.getElementById('woolAddonRow');
             var lightRow = document.getElementById('lightAddonRow');
+            var addonTitle = document.getElementById('ssAddonTitle');
             if (woolRow)  woolRow.style.display  = isGlass ? '' : 'none';
             if (lightRow) lightRow.style.display = isGlass ? '' : 'none';
+            if (addonTitle) addonTitle.style.display = isGlass ? '' : 'none';
             if (!isGlass) {
                 var w = document.getElementById('w_wool_en');
                 var l = document.getElementById('l_light_en');
@@ -4981,18 +5006,21 @@
         function renderLimbGrid() {
             const sub = document.getElementById("pSubCat").value;
             const container = document.getElementById("limbContainer");
-            let html = '';
+            const baseContainer = document.getElementById("baseColorContainer");
 
+            let baseHtml = '';
             if (sub === "木框款式") {
-                html += `<div class="form-group"><label>木框色款</label><select id="woodStyle" onchange="generate()"><option value="待定">待定</option><option value="粉紅款式">粉紅款式</option><option value="草原款式">草原款式</option></select></div>`;
+                baseHtml += `<div class="form-group"><label>木框色款</label><select id="woodStyle" onchange="generate()"><option value="待定">待定</option><option value="粉紅款式">粉紅款式</option><option value="草原款式">草原款式</option></select></div>`;
             } else {
-                html += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
+                baseHtml += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
             }
+            if (baseContainer) baseContainer.innerHTML = baseHtml;
 
             const quickColors = colors.filter(c => c !== '無');
             const qcOptions = quickColors.map(c => `<option value="${c}"${c === '待定' ? ' selected' : ''}>${c}</option>`).join('');
             const limbOptions = colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('');
-            html += `<div class="limb-grid">
+            let castingHtml = '';
+            castingHtml += `<div class="limb-grid">
               <div class="limb-title" style="border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">【嬰兒】</div>
               <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
                 <button type="button" id="babyBtn_all"    onclick="babySetMode('all')"    style="font-size:14px; padding:10px 4px; border:1px solid #C9A96E; background:#C9A96E; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">二手二腳</button>
@@ -5017,7 +5045,7 @@
             </div>`;
 
             if (sub === "玻璃瓶款式") {
-                html += `
+                castingHtml += `
             <div class="limb-grid">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
                     <span class="limb-title" style="margin:0; border:none;">【父母】</span>
@@ -5026,13 +5054,13 @@
                 <div id="box_parent" class="part-details">
                     <div class="grid-2-col">`;
                 ["左手", "右手"].forEach(l => {
-                    html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="父母" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+                    castingHtml += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="父母" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
                 });
-                html += `       </div>
+                castingHtml += `       </div>
                 </div>
             </div>`;
 
-                html += `
+                castingHtml += `
             <div class="limb-grid">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
                     <span class="limb-title" style="margin:0; border:none;">【大寶】</span>
@@ -5041,14 +5069,14 @@
                 <div id="box_elder" class="part-details">
                     <div class="grid-2-col">`;
                 ["左手", "右手", "左腳", "右腳"].forEach(l => {
-                    html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="大寶" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+                    castingHtml += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="大寶" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
                 });
-                html += `       </div>
+                castingHtml += `       </div>
                 </div>
             </div>`;
             }
 
-            container.innerHTML = html;
+            container.innerHTML = castingHtml;
             babyRestoreVisual();
         }
 

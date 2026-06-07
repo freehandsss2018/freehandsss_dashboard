@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-06-08] 🎨 立體擺設款式三組重排（V42 UI，取代框版）
+
+**範圍**：前端輕量分組重排（`freehandsss_dashboardV42.html`，開發基線）
+
+### [UI] 「立體擺設款式」內三組輕量分組（A→C→B）
+
+- **取代**：移除前一版 `.casting-group` 實心框（佔空間令版面變窄），改輕量標題 + 細分隔線
+- **三組順序**（Fat Mo 定 B&C 調轉）：
+  - **A 組**：款式類型 + 底座顏色 + 客製化刻字（刻字由區塊最底上移至此）
+  - **C 組**：倒模對象（嬰兒/父母/大寶）
+  - **B 組**：加購配件（羊毛氈/燈飾）
+- **`renderLimbGrid()` 拆分**：底座顏色/木框色款 → 新容器 `#baseColorContainer`（A 組）；嬰兒/父母/大寶 → `#limbContainer`（C 組），兩者不再同框
+- **B 組標題隨款式顯隱**：`#ssAddonTitle` 由 `_syncAddonVisibility()` 控制（玻璃瓶顯示、木框隱藏），避免空標題孤兒
+- **CSS**：`.casting-group`/`.casting-group-title` → `.ss-group-title` + `.ss-group-sep`（無 border box）
+- **零改動**：既有 ID（`pSubCat`/`baseColor`/`woodStyle`/`pEngraving`/`w_wool_en`/`l_light_en`/`en_parent`/`box_parent`/`en_elder`/`box_elder`/`babyBtn_*`/`.limb-sel[data-who]`）全保留；captureFormState/payload/`data-who` 讀取未觸及
+- **驗收**：playwright 三版渲染 PASS（玻璃瓶桌面/手機 + 木框桌面，木框正確隱藏加購標題）；⏳ 待 code-reviewer G2/G3
+
+---
+
 ## [2026-06-07] 🔌 Supabase MCP 建立 + Test01 Live 驗收（Session 68）
 
 **範圍**：基礎建設（MCP 設定，gitignored）+ Live 驗收
