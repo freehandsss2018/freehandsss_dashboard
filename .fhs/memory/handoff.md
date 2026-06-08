@@ -1,3 +1,68 @@
+# FHS Handoff - 2026-06-08 (Session 69++ — 玻璃瓶款式 Round 2 精修)
+
+## Session 69++ 完結
+
+### 執行完成項目
+
+- ✅ **[POLISH] 玻璃瓶 UI 折疊單格**：新增 `glass_pending` babyFillMode — 切玻璃瓶時 4 按鈕列 + 4 肢 grid 收摺，改顯「全部待定」單格（`#babyGlassPendingCell`，動態建立），點擊展開 custom 模式
+- ✅ **[POLISH] 嬰兒預設改 `'待定'`**：`_applyGlassDefaults()` 中 4 肢值 `'無'` → `'待定'`；`babyFillMode = 'glass_pending'`
+- ✅ **[POLISH] IG 格式 `*倒BB：待定`**：`formatBabyLimbsInline()` glass_pending early return `'待定'`；`buildCategoryA_v2` 冒號前空格移除
+- ✅ **[POLISH] `需另加100` 縮排清零**：移除 3 個前置半形空格，與 `⭐️如...` 行左對齊
+- ✅ **code-reviewer G1–G8 Gate ALL PASS**
+- ✅ **CHANGELOG.md** 更新
+- ✅ **V42 → current.html** 同步
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+
+### 驗收提示
+
+- 建議 IG 實測「全部待定」單格在手機 IG 貼文視覺效果，確認折疊/展開行為符合預期
+- G7 改進建議（非阻擋）：`fp.onclick` 可改呼 `babyApplyAllCustom()` 取代 `generate()` 以避免冗餘呼叫
+
+【交付前雙紀律自檢】
+驗收：HTML/UI — code-reviewer G1–G8 Gate ALL PASS（8/8）；5 處改動逐一 grep 確認落地。完整 PASS。
+Subagent：✅ code-reviewer（G1–G8 Gate 稽核）；5 處 Edit 主 context 直接執行，改動局部清晰，無需其他 subagent。
+
+---
+
+# FHS Handoff - 2026-06-08 (Session 69+— 玻璃瓶款式差異化 UI + IG 訊息分流)
+
+## Session 69+ 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] 玻璃瓶款式 UI 預設值**：新增 `_applyGlassDefaults()`（window 暴露）— 切選玻璃瓶時父母 toggle 自動 On、嬰兒 4 肢清空（待倒模當天填寫）；守衛 `=== '玻璃瓶款式'`，木框款式零影響
+- ✅ **[FEAT] 玻璃瓶款式 IG 訊息模板分流**（`buildCategoryA_v2` v2）：
+  - 倒BB 行永遠顯示（含空值）
+  - 父母行改為寫死 `*倒：爸媽各一手`
+  - 底座行順序移至父母後
+  - 製程行合併單行（`製成品預十五至十八星期完成`）
+  - 移除花材聲明
+  - 新增 `⭐️如手腳超出已包玻璃瓶尺寸，` + 縮排 `   需另加100，訂購合適玻璃瓶尺寸`（純文案，不接成本鏈）
+  - 木框款式及 v1 格式完全不受影響
+- ✅ **code-reviewer G1–G8 Gate**：全部 PASS
+- ✅ **CHANGELOG.md** 更新
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+
+### 驗收提示
+
+- `   需另加100，...` 第二行縮排（3 個半形空格）需在 IG 實際貼文後視覺確認「需」是否對齊「如」，如有偏差可 1 行微調。
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — code-reviewer G1–G8 Gate 報告 ALL PASS（8/8）；逐行 grep 確認 5 處改動（_applyGlassDefaults 函式、onchange 串接、B1-B4 模板分流）均已落地。⚠️ `   需另加100` 縮排需 IG 實測視覺微調（半形 × 3，可 1 行修正）。PASS（待 Fat Mo IG 實測縮排）。
+Subagent：✅ code-reviewer（G1–G8 Gate 稽核）；A1/A2/B1-B4 四處 Edit 主 context 直接執行，改動局部清晰，無需其他 subagent。
+
+---
+
 # FHS Handoff - 2026-06-08 (Session 69 — V42 立體擺設款式三組重排 UI)
 
 ## Session 69 完結

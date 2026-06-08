@@ -431,6 +431,17 @@
             margin-bottom: 15px;
         }
 
+        .ss-group-title {
+            font-weight: 700;
+            color: #B07D4C;
+            font-size: 13px;
+            margin: 4px 0 8px;
+        }
+        .ss-group-sep {
+            border-top: 1px solid #eee;
+            margin: 14px 0 10px;
+        }
+
         .sec-title-row {
             display: flex;
             justify-content: space-between;
@@ -2334,6 +2345,468 @@
                 max-height: 92dvh;
             }
         }
+
+        /* ================================================================
+           V42 — Threads/WhatsApp 融合視覺系統（手機 max-width:767px）
+           ui-designer 規格 2026-06-06 · database-reviewer PASS
+           桌面 (≥768px) 零影響：所有新規則均在 media query 內或有桌面覆蓋
+           ================================================================ */
+
+        /* ── 新增 token（沿用 :root 命名，不覆蓋既有）── */
+        :root {
+            --fhs-star-amber:    #F5B301;
+            --fhs-toast-bg:      var(--fhs-text-primary);
+            --fhs-bs-overlay:    rgba(0, 0, 0, 0.46);
+            --fhs-bs-spring:     cubic-bezier(0.32, 0.72, 0, 1);
+            --fhs-swipe-spring:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* ── Icon helper（全域，桌面可共用）── */
+        .fhs-icon {
+            color: var(--fhs-text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .fhs-icon--starred { color: var(--fhs-star-amber); }
+        .fhs-icon--starred svg { fill: currentColor; }
+        .fhs-icon--danger  { color: var(--fhs-danger); }
+
+        /* ================================================================
+           手機專屬區塊
+           ================================================================ */
+        @media (max-width: 767px) {
+
+            /* ── 左滑 wrapper ── */
+            .swipe-row-wrapper {
+                position: relative;
+                overflow: hidden;
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--fhs-border);
+                margin-bottom: 10px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+            }
+            .swipe-underlay {
+                position: absolute;
+                top: 0; right: 0; bottom: 0;
+                width: 140px;
+                display: flex;
+                align-items: stretch;
+                border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+                overflow: hidden;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.15s ease;
+                border-left: 1px solid var(--fhs-border);
+            }
+            .swipe-row-wrapper.is-swiping .swipe-underlay,
+            .swipe-row-wrapper.is-open .swipe-underlay {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .swipe-btn {
+                width: 70px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+                font-size: 11px;
+                font-weight: 600;
+                line-height: 1.2;
+                min-height: 44px;
+                -webkit-tap-highlight-color: transparent;
+                transition: filter 0.1s ease;
+            }
+            .swipe-btn:not(:first-child) {
+                border-left: 1px solid var(--fhs-border);
+            }
+            .swipe-btn:active { filter: brightness(0.88); }
+            .swipe-btn--archive {
+                background-color: #F0EBE4;
+                color: var(--fhs-text-secondary);
+            }
+            .swipe-btn--archive svg { color: var(--fhs-text-secondary); }
+            .swipe-btn--more {
+                background-color: #E0D8CC;
+                color: var(--fhs-text-primary);
+            }
+            .swipe-btn--more svg { color: var(--fhs-text-primary); }
+            .swipe-content {
+                position: relative;
+                z-index: 1;
+                background: var(--fhs-bg-card);
+                transition: transform 0.25s var(--fhs-swipe-spring);
+                will-change: transform;
+                margin-bottom: 0;
+                border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+            }
+            .swipe-row-wrapper.is-open .swipe-content {
+                transform: translateX(-140px);
+            }
+
+            /* ── 最愛 accent bar（border-left 方案）── */
+            .acc-order {
+                border-left: 3px solid transparent;
+                transition: border-left-color 0.18s ease;
+            }
+            .acc-order.is-starred {
+                border-left-color: var(--fhs-star-amber);
+            }
+            .swipe-row-wrapper .acc-order {
+                border: none !important;
+                border-left: 3px solid transparent !important;
+                border-radius: 0 !important;
+                margin-bottom: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            .swipe-row-wrapper .acc-order.is-starred {
+                border-left-color: var(--fhs-star-amber) !important;
+            }
+
+            /* ── 智慧置頂欄 Smart Header ── */
+            .fhs-top-bar,
+            body.v40-review-active #reviewZone2,
+            body.v40-review-active #reviewFiltersV2 {
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            body.fhs-header-hidden .fhs-top-bar {
+                transform: translateY(-48px) !important;
+            }
+            body.fhs-header-hidden #reviewZone2 {
+                transform: translateY(-120px) !important;
+            }
+            body.fhs-header-hidden #reviewFiltersV2 {
+                transform: translateY(-200px) !important;
+            }
+
+        } /* end @media max-width:767px */
+
+        /* ── Bottom-Sheet 遮罩 ── */
+        .bs-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--fhs-bs-overlay);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+        .bs-overlay.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ── Bottom-Sheet 本體 ── */
+        .bs-sheet {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 1001;
+            background: var(--fhs-bg-surface);
+            border-top-left-radius: calc(var(--radius-lg) * 2);
+            border-top-right-radius: calc(var(--radius-lg) * 2);
+            transform: translateY(100%);
+            transition: transform 0.38s var(--fhs-bs-spring);
+            will-change: transform;
+            border-top: 1px solid var(--fhs-border);
+            box-shadow: 0 -4px 24px rgba(44, 36, 22, 0.10);
+        }
+        .bs-sheet.is-open { transform: translateY(0); }
+        .bs-handle {
+            width: 36px; height: 4px;
+            background: var(--fhs-border);
+            border-radius: 2px;
+            margin: 12px auto 0;
+        }
+        .bs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px 8px;
+            border-bottom: 1px solid var(--fhs-border);
+        }
+        .bs-title {
+            font-size: 14px; font-weight: 700;
+            color: var(--fhs-text-primary);
+            letter-spacing: 0.01em;
+        }
+        .bs-close {
+            width: 32px; height: 32px;
+            border: none;
+            background: var(--fhs-bg-elevated);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--fhs-text-secondary);
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.12s ease;
+        }
+        .bs-close:active { background: var(--fhs-border); }
+        .bs-list { list-style: none; margin: 0; padding: 8px 0; }
+        .bs-item {
+            width: 100%; height: 56px;
+            display: flex; align-items: center; gap: 16px;
+            padding: 0 20px;
+            border: none; background: transparent;
+            cursor: pointer;
+            font-size: 16px; font-weight: 500;
+            color: var(--fhs-text-primary);
+            text-align: left;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.1s ease;
+        }
+        .bs-item svg { color: var(--fhs-text-secondary); flex-shrink: 0; }
+        .bs-item:active { background: var(--fhs-bg-elevated); }
+        .bs-item--star.is-starred { color: var(--fhs-star-amber); }
+        .bs-item--star.is-starred svg { color: var(--fhs-star-amber); fill: var(--fhs-star-amber); }
+        .bs-divider { height: 1px; background: var(--fhs-border); margin: 6px 20px; }
+        .bs-item--danger { color: var(--fhs-danger); }
+        .bs-item--danger svg { color: var(--fhs-danger); }
+        .bs-item--danger:active { background: var(--fhs-danger-bg); }
+        .bs-safe-area { height: env(safe-area-inset-bottom, 16px); }
+
+        /* ── Toast Undo ── */
+        .fhs-toast {
+            position: fixed;
+            left: 16px; right: 16px;
+            bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+            border-radius: var(--radius-lg);
+            background: var(--fhs-toast-bg);
+            color: #FAF7F4;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(12px);
+            pointer-events: none;
+            transition: opacity 0.22s ease, transform 0.22s var(--fhs-bs-spring);
+            z-index: 1100;
+            box-shadow: 0 4px 20px rgba(44, 36, 22, 0.28);
+        }
+        .fhs-toast.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .fhs-toast-progress {
+            height: 3px; width: 100%;
+            background: var(--fhs-accent);
+            transition: width 5s linear;
+        }
+        .fhs-toast-body {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px; gap: 12px;
+        }
+        .fhs-toast-msg { font-size: 14px; font-weight: 500; flex: 1; line-height: 1.4; }
+        .fhs-toast-undo {
+            display: inline-flex; align-items: center; gap: 5px;
+            height: 32px; padding: 0 12px;
+            border: 1.5px solid rgba(250, 247, 244, 0.35);
+            border-radius: 8px;
+            background: transparent; color: #FAF7F4;
+            font-size: 12px; font-weight: 700;
+            cursor: pointer; white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.1s ease, border-color 0.1s ease;
+            flex-shrink: 0;
+        }
+        .fhs-toast-undo:active {
+            background: rgba(250, 247, 244, 0.12);
+            border-color: rgba(250, 247, 244, 0.6);
+        }
+        .fhs-toast-undo svg { color: var(--fhs-accent); }
+
+        /* ── Segmented Control ── */
+        .fhs-seg-ctrl {
+            display: flex;
+            background: var(--fhs-bg-elevated);
+            border: 1px solid var(--fhs-border);
+            border-radius: 10px;
+            padding: 3px; gap: 2px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 767px) {
+            .fhs-seg-ctrl { width: 100%; }
+        }
+        @media (min-width: 768px) {
+            .fhs-seg-ctrl { display: inline-flex; width: auto; min-width: 220px; }
+        }
+        .fhs-seg-btn {
+            flex: 1; height: 36px;
+            border: none; border-radius: 8px;
+            background: transparent;
+            font-size: 14px; font-weight: 500;
+            color: var(--fhs-text-secondary);
+            cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+            -webkit-tap-highlight-color: transparent;
+            white-space: nowrap;
+        }
+        .fhs-seg-btn.is-active {
+            background: var(--fhs-bg-surface);
+            color: var(--fhs-text-primary);
+            font-weight: 700;
+            box-shadow: 0 1px 4px rgba(44, 36, 22, 0.12), 0 0 0 1px var(--fhs-border);
+        }
+        .fhs-seg-btn:not(.is-active):active { background: rgba(44, 36, 22, 0.05); }
+
+        /* ================================================================
+           /V42 Threads/WhatsApp 視覺系統 END
+           ================================================================ */
+
+        /* ================================================================
+           V42 P3 — Mobile emoji buttons hidden (底部 BS 取代)
+           ================================================================ */
+        @media (max-width: 767px) {
+            .fhs-btn-order-detail { display: none !important; }
+            .acc-action-row { display: none !important; }
+        }
+
+        /* ================================================================
+           V42 P4 — Segmented Control Wrapper (mobile only)
+           ================================================================ */
+        #fhsSegWrapper {
+            display: none;
+            padding: 12px 16px 4px;
+        }
+        @media (max-width: 767px) {
+            #fhsSegWrapper { display: block; }
+        }
+
+        /* ================================================================
+           V42 AG Stitch Snippets — 組件 1: 左滑卡片背景色修正
+           ================================================================ */
+        .swipe-btn--archive {
+            background-color: #F0EBE4 !important;
+            color: var(--fhs-text-secondary) !important;
+        }
+        .swipe-btn--more {
+            background-color: #E0D8CC !important;
+            color: var(--fhs-text-primary) !important;
+        }
+
+        /* ================================================================
+           V42 AG Stitch Snippets — 組件 2: Bottom-Sheet 視覺精緻化
+           ================================================================ */
+        .bs-list {
+            list-style: none;
+            margin: 0;
+            padding: 8px 0;
+        }
+        .bs-item {
+            width: 100%;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--fhs-text-primary);
+            text-align: left;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .bs-item svg {
+            color: var(--fhs-text-secondary);
+            flex-shrink: 0;
+            transition: color 0.15s ease;
+        }
+        .bs-item:hover {
+            background-color: var(--fhs-bg-elevated);
+            color: var(--fhs-text-primary);
+        }
+        .bs-item:hover svg { color: var(--fhs-text-primary); }
+        .bs-item:active { background-color: var(--fhs-border); }
+        .bs-item--star.is-starred { color: var(--fhs-star-amber); }
+        .bs-item--star.is-starred svg {
+            color: var(--fhs-star-amber);
+            fill: var(--fhs-star-amber);
+        }
+        .bs-divider {
+            height: 1px;
+            background: var(--fhs-border);
+            margin: 8px 20px;
+            opacity: 0.6;
+        }
+        .bs-item--danger { color: var(--fhs-danger); }
+        .bs-item--danger svg { color: var(--fhs-danger); }
+        .bs-item--danger:hover {
+            background-color: rgba(194, 89, 63, 0.08);
+            color: var(--fhs-danger);
+        }
+        .bs-item--danger:active { background-color: rgba(194, 89, 63, 0.16); }
+        .bs-icon-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .bs-icon-badge {
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+            font-size: 8px;
+            font-weight: 850;
+            width: 10px;
+            height: 10px;
+            line-height: 9px;
+            border-radius: 50%;
+            text-align: center;
+            color: #fff;
+            border: 1px solid var(--fhs-bg-surface, #fff);
+            pointer-events: none;
+        }
+        .bs-icon-badge--a { background-color: var(--fhs-accent); }
+        .bs-icon-badge--b { background-color: #457B9D; }
+
+        /* ================================================================
+           V42 AG Stitch Snippets — 組件 3: iOS Segmented Control 指示器
+           ================================================================ */
+        .fhs-seg-ctrl { position: relative; z-index: 1; }
+        .fhs-seg-btn {
+            position: relative;
+            z-index: 1;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        .fhs-seg-indicator {
+            position: absolute;
+            top: 3px;
+            bottom: 3px;
+            left: 3px;
+            z-index: 0;
+            background: var(--fhs-bg-surface, #fff);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(44, 36, 22, 0.12), 0 0 0 1px var(--fhs-border);
+            transition: transform 0.25s cubic-bezier(0.32, 0.94, 0.6, 1), width 0.25s cubic-bezier(0.32, 0.94, 0.6, 1);
+            will-change: transform, width;
+            pointer-events: none;
+        }
+
+        /* ================================================================
+           V42 AG Stitch Snippets — 組件 4: Star 彈跳動畫
+           ================================================================ */
+        @keyframes fhsStarPop {
+            0%   { transform: scale(1); }
+            35%  { transform: scale(1.35); }
+            70%  { transform: scale(0.88); }
+            100% { transform: scale(1.0); }
+        }
+        .bs-item--star.is-animating svg {
+            animation: fhsStarPop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform-origin: center;
+        }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -2341,6 +2814,96 @@
 </head>
 
 <body class="fhs-body">
+
+<!-- ===== V42 Bottom-Sheet 行動選單（單例，JS 動態填 orderId）===== -->
+<div class="bs-overlay" id="bsOverlay" aria-hidden="true"></div>
+<div class="bs-sheet"   id="bsSheet"   role="dialog" aria-modal="true" aria-label="訂單操作">
+    <div class="bs-handle" aria-hidden="true"></div>
+    <div class="bs-header">
+        <span class="bs-title">訂單 <span id="bsOrderLabel"></span></span>
+        <button class="bs-close" type="button" aria-label="關閉" onclick="closeBsSheet()">
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-x"/></svg>
+        </button>
+    </div>
+    <ul class="bs-list" role="list">
+        <li><button class="bs-item" type="button" id="bsBtnModelA" onclick="closeBsSheet()">
+            <div class="bs-icon-wrapper">
+                <svg width="20" height="20" aria-hidden="true"><use href="#icon-message-circle"/></svg>
+                <span class="bs-icon-badge bs-icon-badge--a">A</span>
+            </div>
+            <span>手模 IG 訊息</span>
+        </button></li>
+        <li><button class="bs-item" type="button" id="bsBtnModelB" onclick="closeBsSheet()">
+            <div class="bs-icon-wrapper">
+                <svg width="20" height="20" aria-hidden="true"><use href="#icon-message-circle"/></svg>
+                <span class="bs-icon-badge bs-icon-badge--b">B</span>
+            </div>
+            <span>金屬 IG 訊息</span>
+        </button></li>
+        <li><button class="bs-item" type="button" id="bsBtnEdit" onclick="closeBsSheet()">
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-square-pen"/></svg><span>編輯訂單</span>
+        </button></li>
+        <li><button class="bs-item bs-item--star" type="button" id="bsBtnStar" onclick="closeBsSheet()">
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-star"/></svg><span id="bsStarLabel">加入最愛</span>
+        </button></li>
+        <li><button class="bs-item" type="button" id="bsBtnArchive" onclick="closeBsSheet()">
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg><span>封存訂單</span>
+        </button></li>
+        <li class="bs-divider" role="separator" aria-hidden="true"></li>
+        <li><button class="bs-item bs-item--danger" type="button" id="bsBtnDelete" onclick="closeBsSheet()">
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-trash-2"/></svg><span>刪除訂單</span>
+        </button></li>
+    </ul>
+    <div class="bs-safe-area"></div>
+</div>
+
+<!-- ===== V42 Undo Toast（單例）===== -->
+<div class="fhs-toast" id="fhsToast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="fhs-toast-progress" id="fhsToastProgress"></div>
+    <div class="fhs-toast-body">
+        <span class="fhs-toast-msg" id="fhsToastMsg">已封存訂單</span>
+        <button class="fhs-toast-undo" type="button" id="fhsToastUndoBtn">
+            <svg width="16" height="16" aria-hidden="true"><use href="#icon-undo-2"/></svg>復原
+        </button>
+    </div>
+</div>
+
+<!-- ===== V42 Lucide SVG Sprite (inline, zero external deps, MIT) ===== -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icon-message-circle" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+  </symbol>
+  <symbol id="icon-send" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M22 2 11 13M22 2 15 22l-4-9-9-4Z"/>
+  </symbol>
+  <symbol id="icon-square-pen" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84.84-2.873a2 2 0 0 1 .506-.852Z"/>
+  </symbol>
+  <symbol id="icon-star" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.454 2.454 0 0 0 1.84 1.34l5.16.752a.53.53 0 0 1 .294.904l-3.735 3.638a2.454 2.454 0 0 0-.706 2.172l.882 5.139a.53.53 0 0 1-.771.56l-4.618-2.428a2.454 2.454 0 0 0-2.282 0l-4.618 2.427a.53.53 0 0 1-.77-.56l.881-5.138a2.454 2.454 0 0 0-.706-2.172l-3.735-3.638a.53.53 0 0 1 .294-.904l5.16-.752a2.454 2.454 0 0 0 1.84-1.34Z"/>
+  </symbol>
+  <symbol id="icon-archive" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="2" y="4" width="20" height="5" rx="2"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M10 13h4"/>
+  </symbol>
+  <symbol id="icon-trash-2" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>
+  </symbol>
+  <symbol id="icon-more-horizontal" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+    <circle cx="19" cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+    <circle cx="5"  cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-undo-2" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M9 14 4 9l5-5"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>
+  </symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M18 6 6 18M6 6l12 12"/>
+  </symbol>
+</svg>
+<!-- ===== /V42 Lucide SVG Sprite ===== -->
 
     <!-- V40 Top Bar（替換舊 role-bar，保留所有原有 ID） -->
     <div class="fhs-top-bar" id="v40-top-bar">
@@ -2371,19 +2934,17 @@
     <div class="v40-main-col" id="v40-main-col">
 
     <!-- 模式選擇說明卡片（精簡版，模式按鈕已移至 Top Bar） -->
-    <div class="card card-info">
-        <div id="editModeContainer"
-            style="display:none; background:#fcfcfc; padding:15px; border-radius:8px; border:1px dashed #457B9D; margin-bottom:15px;">
-            <label>🔍 輸入舊單 ID (Order_ID) / 快速搜尋</label>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="searchOrderId" oninput="handleFuzzySearch()"
-                    placeholder="例如：FHS-ABC123XYZ 或 06001" style="flex:1;">
-                <button onclick="fetchOldOrder()"
-                    style="padding:0 20px; border-radius:8px; border:none; background:#457B9D; color:white; font-weight:bold; cursor:pointer; white-space:nowrap;">讀取資料</button>
-            </div>
-            <p id="fetchStatus" style="font-size:12px; color:#666; margin:8px 0 0 0;">請輸入單號並點擊讀取，系統將自動覆蓋下方表單。</p>
-            <div id="searchSuggestions" class="suggestions-box"></div>
+    <div id="editModeContainer" class="card card-info"
+        style="display:none; background:#fcfcfc; padding:15px; border-radius:8px; border:1px dashed #457B9D; margin-bottom:15px;">
+        <label>🔍 輸入舊單 ID (Order_ID) / 快速搜尋</label>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="searchOrderId" oninput="handleFuzzySearch()"
+                placeholder="例如：FHS-ABC123XYZ 或 06001" style="flex:1;">
+            <button onclick="fetchOldOrder()"
+                style="padding:0 20px; border-radius:8px; border:none; background:#457B9D; color:white; font-weight:bold; cursor:pointer; white-space:nowrap;">讀取資料</button>
         </div>
+        <p id="fetchStatus" style="font-size:12px; color:#666; margin:8px 0 0 0;">請輸入單號並點擊讀取，系統將自動覆蓋下方表單。</p>
+        <div id="searchSuggestions" class="suggestions-box"></div>
     </div>
 
     <!-- 訂單總覽 (V28 優化版 + V40 fix: Tailwind classes removed) -->
@@ -2603,6 +3164,14 @@
                 </table>
             </div>
 
+            <!-- V42 Segmented Control: 進行中 / 已封存 (mobile only) -->
+            <div id="fhsSegWrapper">
+                <div class="fhs-seg-ctrl" id="fhsSegCtrl" role="tablist" aria-label="訂單分類">
+                    <button class="fhs-seg-btn is-active" type="button" role="tab" data-tab="active" onclick="setSegTab('active')">進行中</button>
+                    <button class="fhs-seg-btn" type="button" role="tab" data-tab="archived" onclick="setSegTab('archived')">已封存</button>
+                </div>
+            </div>
+
             <!-- V40 iPhone Accordion 容器（< 768px 顯示，Desktop 隱藏） -->
             <div id="reviewAccordionContainer" style="display:none;">
                 <!-- 當前排序狀態提示（JS 動態更新） -->
@@ -2692,14 +3261,28 @@
                     class="slider"></span></label>
         </div>
         <div id="contentP" class="addon-content">
+            <!-- A 組：款式類型 + 底座顏色 + 刻字 -->
             <div class="form-group">
                 <label>款式類型</label>
-                <select id="pSubCat" onchange="renderLimbGrid(); _syncAddonVisibility(); generate();">
+                <select id="pSubCat" onchange="renderLimbGrid(); _applyGlassDefaults(); _syncAddonVisibility(); generate();">
                     <option value="木框款式">木框款式</option>
                     <option value="玻璃瓶款式">玻璃瓶款式</option>
                 </select>
             </div>
+            <div id="baseColorContainer"></div>
+            <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
+                    oninput="generate()"></div>
+
+            <!-- C 組：倒模對象 -->
+            <div class="ss-group-sep"></div>
+            <div class="ss-group-title">倒模對象</div>
             <div id="limbContainer"></div>
+
+            <!-- B 組：加購配件（毛氈 / 燈飾，隨款式顯隱）-->
+            <div id="ssAddonTitle" style="display:none;">
+                <div class="ss-group-sep"></div>
+                <div class="ss-group-title">加購配件</div>
+            </div>
             <div class="part-item" id="woolAddonRow" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-weight: bold; color: #444;">🧸 羊毛氈公仔 ($680)</span>
@@ -2713,8 +3296,6 @@
                     <label class="switch"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
-            <div class="form-group"><label>客製化刻字</label><input type="text" id="pEngraving" placeholder="待定"
-                    oninput="generate()"></div>
         </div>
 
         <div class="toggle-row">
@@ -4141,6 +4722,7 @@
 
         async function switchMode(mode) {
             console.log("[DEBUG] switchMode triggered:", mode);
+            document.body.classList.remove('fhs-header-hidden');
             if (currentMode !== mode) {
                 const skipId = (mode === 'edit');
                 await resetForm(skipId); // 只要模式改變，就清空表單
@@ -4324,8 +4906,10 @@
             var isGlass = (document.getElementById('pSubCat') || {}).value === '玻璃瓶款式';
             var woolRow  = document.getElementById('woolAddonRow');
             var lightRow = document.getElementById('lightAddonRow');
+            var addonTitle = document.getElementById('ssAddonTitle');
             if (woolRow)  woolRow.style.display  = isGlass ? '' : 'none';
             if (lightRow) lightRow.style.display = isGlass ? '' : 'none';
+            if (addonTitle) addonTitle.style.display = isGlass ? '' : 'none';
             if (!isGlass) {
                 var w = document.getElementById('w_wool_en');
                 var l = document.getElementById('l_light_en');
@@ -4422,18 +5006,21 @@
         function renderLimbGrid() {
             const sub = document.getElementById("pSubCat").value;
             const container = document.getElementById("limbContainer");
-            let html = '';
+            const baseContainer = document.getElementById("baseColorContainer");
 
+            let baseHtml = '';
             if (sub === "木框款式") {
-                html += `<div class="form-group"><label>木框色款</label><select id="woodStyle" onchange="generate()"><option value="待定">待定</option><option value="粉紅款式">粉紅款式</option><option value="草原款式">草原款式</option></select></div>`;
+                baseHtml += `<div class="form-group"><label>木框色款</label><select id="woodStyle" onchange="generate()"><option value="待定">待定</option><option value="粉紅款式">粉紅款式</option><option value="草原款式">草原款式</option></select></div>`;
             } else {
-                html += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
+                baseHtml += `<div class="form-group"><label>底座顏色</label><select id="baseColor" onchange="generate()"><option value="待定">待定</option><option value="仿古木">仿古木</option><option value="淺木色">淺木色</option></select></div>`;
             }
+            if (baseContainer) baseContainer.innerHTML = baseHtml;
 
             const quickColors = colors.filter(c => c !== '無');
             const qcOptions = quickColors.map(c => `<option value="${c}"${c === '待定' ? ' selected' : ''}>${c}</option>`).join('');
             const limbOptions = colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('');
-            html += `<div class="limb-grid">
+            let castingHtml = '';
+            castingHtml += `<div class="limb-grid">
               <div class="limb-title" style="border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">【嬰兒】</div>
               <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
                 <button type="button" id="babyBtn_all"    onclick="babySetMode('all')"    style="font-size:14px; padding:10px 4px; border:1px solid #C9A96E; background:#C9A96E; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">二手二腳</button>
@@ -4458,7 +5045,7 @@
             </div>`;
 
             if (sub === "玻璃瓶款式") {
-                html += `
+                castingHtml += `
             <div class="limb-grid">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
                     <span class="limb-title" style="margin:0; border:none;">【父母】</span>
@@ -4467,13 +5054,13 @@
                 <div id="box_parent" class="part-details">
                     <div class="grid-2-col">`;
                 ["左手", "右手"].forEach(l => {
-                    html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="父母" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+                    castingHtml += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="父母" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
                 });
-                html += `       </div>
+                castingHtml += `       </div>
                 </div>
             </div>`;
 
-                html += `
+                castingHtml += `
             <div class="limb-grid">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
                     <span class="limb-title" style="margin:0; border:none;">【大寶】</span>
@@ -4482,22 +5069,43 @@
                 <div id="box_elder" class="part-details">
                     <div class="grid-2-col">`;
                 ["左手", "右手", "左腳", "右腳"].forEach(l => {
-                    html += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="大寶" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
+                    castingHtml += `<div class="mini-col"><label>${l}</label><select class="limb-sel" data-who="大寶" data-part="${l}" onchange="generate()">${colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('')}</select></div>`;
                 });
-                html += `       </div>
+                castingHtml += `       </div>
                 </div>
             </div>`;
             }
 
-            container.innerHTML = html;
+            container.innerHTML = castingHtml;
             babyRestoreVisual();
         }
 
+        function _applyGlassDefaults() {
+            if (document.getElementById('pSubCat').value !== '玻璃瓶款式') return;
+            // 父母 toggle On
+            var enParent = document.getElementById('en_parent');
+            if (enParent && !enParent.checked) {
+                enParent.checked = true;
+                togglePart('box_parent', enParent);
+            }
+            // 嬰兒：全部待定，折疊顯示
+            babyFillMode = 'glass_pending';
+            ['左手', '右手', '左腳', '右腳'].forEach(function(part) {
+                var s = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="' + part + '"]');
+                if (s) s.value = '待定';
+            });
+            babyRestoreVisual();
+        }
+        window._applyGlassDefaults = _applyGlassDefaults;
+
         function babyRestoreVisual() {
+            const isGlassPending = babyFillMode === 'glass_pending';
             const modes = ['all', 'left', 'right', 'custom'];
             modes.forEach(m => {
                 const btn = document.getElementById(`babyBtn_${m}`);
                 if (!btn) return;
+                if (isGlassPending) { btn.style.display = 'none'; return; }
+                btn.style.display = '';
                 const isActive = m === babyFillMode;
                 const isCustom = m === 'custom';
                 btn.style.background  = isActive ? (isCustom ? '#FFF8F0' : '#C9A96E') : '#fff';
@@ -4507,9 +5115,26 @@
             });
             const isCustom = babyFillMode === 'custom';
             const grid = document.getElementById('babyCustomGrid');
-            if (grid) grid.style.display = isCustom ? 'block' : 'none';
             const colorRow = document.getElementById('babyColorRow');
-            if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
+            if (isGlassPending) {
+                if (grid) grid.style.display = 'none';
+                if (colorRow) colorRow.style.display = 'none';
+                var fp = document.getElementById('babyGlassPendingCell');
+                if (!fp && grid && grid.parentNode) {
+                    fp = document.createElement('div');
+                    fp.id = 'babyGlassPendingCell';
+                    fp.style.cssText = 'margin:8px 0; padding:12px; background:#fafafa; border:1px solid #eee; border-radius:8px; text-align:center; cursor:pointer; color:#B07D4C; font-size:14px;';
+                    fp.innerHTML = '全部待定 <span style="font-size:12px;color:#aaa;">（點擊展開自訂）</span>';
+                    fp.onclick = function() { babyFillMode = 'custom'; babyRestoreVisual(); generate(); };
+                    grid.parentNode.insertBefore(fp, grid);
+                }
+                if (fp) fp.style.display = 'block';
+            } else {
+                var fp2 = document.getElementById('babyGlassPendingCell');
+                if (fp2) fp2.style.display = 'none';
+                if (grid) grid.style.display = isCustom ? 'block' : 'none';
+                if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
+            }
         }
 
         function babySetMode(mode) {
@@ -4624,6 +5249,7 @@
 
         // v2 格式專用：嬰兒手腳 inline 版（不含【嬰兒】header），如「二手二腳（香檳金）」
         function formatBabyLimbsInline() {
+            if (babyFillMode === 'glass_pending') return '待定';
             const lh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左手"]')?.value;
             const rh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右手"]')?.value;
             const lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]')?.value;
@@ -4743,12 +5369,18 @@
             const lines = [];
             lines.push(`（訂單編號#${orderId}手模擺設）`);
             const bbLine = formatBabyLimbsInline();
-            if (bbLine) lines.push(`*倒BB ：${bbLine}`);
-            if (sub === "木框款式") lines.push(`*木框：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}`);
-            if (sub === "玻璃瓶款式") lines.push(`*底座：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}`);
-            if (document.getElementById("en_parent")?.checked) { const p = formatLimbsInline("父母"); if (p) lines.push(`*父母 ：${p}`); }
-            if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
-            if (sub === "木框款式") lines.push(`*相+聲頻：`);
+            if (sub === '玻璃瓶款式') {
+                lines.push(`*倒BB：${bbLine}`);
+                if (document.getElementById("en_parent")?.checked) lines.push(`*倒：爸媽各一手`);
+                lines.push(`*底座：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}`);
+                if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
+            } else {
+                if (bbLine) lines.push(`*倒BB ：${bbLine}`);
+                if (sub === "木框款式") lines.push(`*木框：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}`);
+                if (document.getElementById("en_parent")?.checked) { const p = formatLimbsInline("父母"); if (p) lines.push(`*父母 ：${p}`); }
+                if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
+                if (sub === "木框款式") lines.push(`*相+聲頻：`);
+            }
             const eng = document.getElementById("pEngraving")?.value;
             lines.push(`*皮革刻制：${(eng && eng.trim() !== '待定') ? eng : ''}`);
             lines.push(`（資料會於倒模當天填寫）`);
@@ -4763,10 +5395,17 @@
             lines.push(`需否再次倒模，取決於倒模師`);
             lines.push(`如而額外取模：另+$150`);
             lines.push(`⭐️由於近日訂單較多`);
-            lines.push(`製成品預十五至十八`);
-            lines.push(`星期完成`);
-            lines.push(`⭐️花材會因批次不同，顏色會有所出入`);
-            lines.push(`⭐️作品不包照片`);
+            if (sub === '玻璃瓶款式') {
+                lines.push(`製成品預十五至十八星期完成`);
+                lines.push(`⭐️作品不包照片`);
+                lines.push(`⭐️如手腳超出已包玻璃瓶尺寸，`);
+                lines.push(`需另加100，訂購合適玻璃瓶尺寸`);
+            } else {
+                lines.push(`製成品預十五至十八`);
+                lines.push(`星期完成`);
+                lines.push(`⭐️花材會因批次不同，顏色會有所出入`);
+                lines.push(`⭐️作品不包照片`);
+            }
             lines.push(`⭐️由於後期製作全都是全人手製作，所以未能十全十美，完美主義者請慎重考慮`);
             return lines.join('\n');
         }
@@ -5171,8 +5810,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             else cost += (!hasMainProduct) ? _dBP : _dBS;
                         }
                     });
-                } else if (!item.isAccessory) {
+                } else if (!item.isAccessory && item.Order_Item_Key !== "TEMP_P_MAIN") {
                     // 鎖匙扣 / 吊飾：按 P/S 模式與成人/嬰兒 tier 決定畫圖費
+                    // TD-P-chargedPositions: P_MAIN 不在此計算畫圖費，其 $210 成本由 n8n Supabase total_base_cost 負責
                     let isAdultItem = name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
                     let baseDrawing;
                     if (name.includes("(P)")) {
@@ -7208,39 +7848,53 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (!_detailBtnsM) _detailBtnsM = '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="font-size:14px;vertical-align:middle;">📋</button>';
 
                 html += `
-                <div class="acc-order" id="acc-order-${o.id}">
-                    <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
-                        <div class="acc-order-header-left">
-                            <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
-                            ${_detailBtnsM}
-                            <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
-                        </div>
-                        <div class="acc-order-header-right">
-                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
-                                <span id="acc-profit-text-${o.id}" class="acc-profit" style="color:${profitColor};">$${displayedProfit}</span>
-                                <span style="font-size:10px; color:#B07D4C; font-weight:600;">入帳: ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '—'}</span>
-                                ${o.Additional_Fee > 0 ? `<span style="font-size:10px; color:#888; font-weight:500;">附加: $${o.Additional_Fee}</span>` : ''}
-                                <span id="acc-cost-text-${o.id}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${_baseCostA}${_adjAmtA > 0 ? `&nbsp;<span style="color:#FF8F00;font-size:9px;">+$${_adjAmtA}</span>` : ''}</span>
-                            </div>
-                            <span class="acc-chevron">▼</span>
-                        </div>
+                <div class="swipe-row-wrapper" id="swipe-row-${o.id}">
+                    <div class="swipe-underlay" aria-hidden="true">
+                        <button class="swipe-btn swipe-btn--more" type="button" onclick="event.stopPropagation(); openBsSheet('${o.id}', '${o.Order_ID}')">
+                            <svg width="20" height="20" aria-hidden="true"><use href="#icon-more-horizontal"/></svg>
+                            <span>更多</span>
+                        </button>
+                        <button class="swipe-btn swipe-btn--archive" type="button" onclick="event.stopPropagation(); triggerArchiveOrder('${o.id}')">
+                            <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg>
+                            <span>封存</span>
+                        </button>
                     </div>
-                    <div class="acc-order-body">
-                        <div class="acc-order-body-inner">
-                            <div class="acc-field-row">
-                                <span class="acc-field-label">📝 備註</span>
-                                <textarea class="acc-notes-textarea"
-                                    id="acc-notes-${o.id}"
-                                    onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'acc-notes-${o.id}')"
-                                    placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                    <div class="swipe-content">
+                        <div class="acc-order" id="acc-order-${o.id}">
+                            <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
+                                <div class="acc-order-header-left">
+                                    <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
+                                    ${_detailBtnsM}
+                                    <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
+                                </div>
+                                <div class="acc-order-header-right">
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
+                                        <span id="acc-profit-text-${o.id}" class="acc-profit" style="color:${profitColor};">$${displayedProfit}</span>
+                                        <span style="font-size:10px; color:#B07D4C; font-weight:600;">入帳: ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '—'}</span>
+                                        ${o.Additional_Fee > 0 ? `<span style="font-size:10px; color:#888; font-weight:500;">附加: $${o.Additional_Fee}</span>` : ''}
+                                        <span id="acc-cost-text-${o.id}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${_baseCostA}${_adjAmtA > 0 ? `&nbsp;<span style="color:#FF8F00;font-size:9px;">+$${_adjAmtA}</span>` : ''}</span>
+                                    </div>
+                                    <span class="acc-chevron">▼</span>
+                                </div>
                             </div>
-                            <div class="acc-field-row">
-                                <span class="acc-field-label">📦 產品明細</span>
-                                <div class="acc-items-list">${itemsHtml}</div>
-                            </div>
-                            <div class="acc-action-row">
-                                <button class="acc-jump-btn" onclick="jumpToEditOrder('${o.Order_ID}')">✏️ 快跳修改</button>
-                                <button class="acc-delete-btn" onclick="openDeleteModal('${o.id}', '${o.Order_ID}')">🗑️</button>
+                            <div class="acc-order-body">
+                                <div class="acc-order-body-inner">
+                                    <div class="acc-field-row">
+                                        <span class="acc-field-label">📝 備註</span>
+                                        <textarea class="acc-notes-textarea"
+                                            id="acc-notes-${o.id}"
+                                            onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'acc-notes-${o.id}')"
+                                            placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                                    </div>
+                                    <div class="acc-field-row">
+                                        <span class="acc-field-label">📦 產品明細</span>
+                                        <div class="acc-items-list">${itemsHtml}</div>
+                                    </div>
+                                    <div class="acc-action-row">
+                                        <button class="acc-jump-btn" onclick="jumpToEditOrder('${o.Order_ID}')">✏️ 快跳修改</button>
+                                        <button class="acc-delete-btn" onclick="openDeleteModal('${o.id}', '${o.Order_ID}')">🗑️</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -9756,6 +10410,185 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             setInterval(syncTopBarOrderId, 1000);
         });
 
+        /* ================================================================
+           V42 AG Stitch — 組件 3: initSegmentedControls (iOS 滑動指示器)
+           ================================================================ */
+        function initSegmentedControls() {
+            document.querySelectorAll('.fhs-seg-ctrl').forEach(ctrl => {
+                let indicator = ctrl.querySelector('.fhs-seg-indicator');
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.className = 'fhs-seg-indicator';
+                    ctrl.insertBefore(indicator, ctrl.firstChild);
+                }
+                const updatePosition = () => {
+                    const activeBtn = ctrl.querySelector('.fhs-seg-btn.is-active');
+                    if (!activeBtn) return;
+                    const ctrlRect = ctrl.getBoundingClientRect();
+                    const btnRect = activeBtn.getBoundingClientRect();
+                    requestAnimationFrame(() => {
+                        indicator.style.width = `${btnRect.width}px`;
+                        indicator.style.transform = `translateX(${btnRect.left - ctrlRect.left}px)`;
+                    });
+                };
+                ctrl.querySelectorAll('.fhs-seg-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        ctrl.querySelectorAll('.fhs-seg-btn').forEach(b => b.classList.remove('is-active'));
+                        btn.classList.add('is-active');
+                        updatePosition();
+                    });
+                });
+                setTimeout(updatePosition, 50);
+                window.addEventListener('resize', updatePosition);
+            });
+        }
+        window.initSegmentedControls = initSegmentedControls;
+
+        /* ================================================================
+           V42 AG Stitch — 組件 4: animateStarToggle (Star 彈跳動畫)
+           ================================================================ */
+        function animateStarToggle(btn, isStarred) {
+            if (!btn) return;
+            btn.classList.add('is-animating');
+            if (isStarred) {
+                btn.classList.add('is-starred');
+            } else {
+                btn.classList.remove('is-starred');
+            }
+            setTimeout(() => btn.classList.remove('is-animating'), 350);
+        }
+        window.animateStarToggle = animateStarToggle;
+
+        /* ================================================================
+           V42 AG Stitch — 組件 1: 左滑手勢引擎（事件委派，綁定 container）
+           ================================================================ */
+        (function() {
+            let startX = 0, startY = 0, currentX = 0;
+            let isSwiping = false;
+            let activeWrapper = null, activeContent = null, isOpen = false;
+            const maxSlide = 140, threshold = 40;
+
+            function bindSwipeContainer() {
+                const container = document.getElementById('reviewAccordionContainer');
+                if (!container || container._swipeBound) return;
+                container._swipeBound = true;
+
+                container.addEventListener('touchstart', (e) => {
+                    const wrapper = e.target.closest('.swipe-row-wrapper');
+                    if (!wrapper) return;
+                    // 關閉其他已滑開的卡片
+                    document.querySelectorAll('.swipe-row-wrapper.is-open').forEach(el => {
+                        if (el !== wrapper) {
+                            el.classList.remove('is-open');
+                            const c = el.querySelector('.swipe-content');
+                            if (c) { c.style.transition = ''; c.style.transform = ''; }
+                        }
+                    });
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    activeWrapper = wrapper;
+                    activeContent = wrapper.querySelector('.swipe-content');
+                    isOpen = wrapper.classList.contains('is-open');
+                    isSwiping = false;
+                    if (activeContent) activeContent.style.transition = 'none';
+                }, { passive: true });
+
+                container.addEventListener('touchmove', (e) => {
+                    if (!activeWrapper || !activeContent) return;
+                    const diffX = e.touches[0].clientX - startX;
+                    const diffY = e.touches[0].clientY - startY;
+                    // 垂直滾動優先：放棄本次側滑
+                    if (!isSwiping && Math.abs(diffY) > Math.abs(diffX)) {
+                        activeWrapper = null; activeContent = null; return;
+                    }
+                    isSwiping = true;
+                    let targetX = isOpen ? -maxSlide + diffX : diffX;
+                    if (targetX > 0) targetX = 0;
+                    if (targetX < -maxSlide) targetX = -maxSlide + (targetX + maxSlide) * 0.2; // 阻尼
+                    activeContent.style.transform = `translateX(${targetX}px)`;
+                    currentX = targetX;
+                }, { passive: true });
+
+                container.addEventListener('touchend', () => {
+                    if (!activeWrapper || !activeContent) return;
+                    activeContent.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    if (isOpen) {
+                        if (currentX > -maxSlide + threshold) {
+                            activeContent.style.transform = '';
+                            activeWrapper.classList.remove('is-open');
+                        } else {
+                            activeContent.style.transform = `translateX(-${maxSlide}px)`;
+                        }
+                    } else {
+                        if (currentX < -threshold) {
+                            activeContent.style.transform = `translateX(-${maxSlide}px)`;
+                            activeWrapper.classList.add('is-open');
+                        } else {
+                            activeContent.style.transform = '';
+                        }
+                    }
+                    activeWrapper = null; activeContent = null; isSwiping = false;
+                });
+            }
+
+            // 初次嘗試；若 renderReviewAccordion 尚未執行，MutationObserver 重綁
+            document.addEventListener('DOMContentLoaded', bindSwipeContainer);
+            // 監聽 container 子節點變化（每次 renderReviewAccordion 重繪後重綁）
+            document.addEventListener('DOMContentLoaded', () => {
+                const container = document.getElementById('reviewAccordionContainer');
+                if (!container) return;
+                new MutationObserver(bindSwipeContainer).observe(container, { childList: true });
+            });
+        })();
+
+        // 初始化 Segmented Controls（DOMContentLoaded 後執行）
+        document.addEventListener('DOMContentLoaded', () => { initSegmentedControls(); });
+
+        // === 手機版智慧置頂欄 Smart Header ===
+        (() => {
+            let lastScrollY = window.scrollY;
+            let accumulatedDelta = 0;
+            const HIDE_THRESHOLD = 50; // 向下滑動 50px 隱藏
+            const SHOW_THRESHOLD = 15; // 向上滑動 15px 顯示
+
+            window.addEventListener('scroll', () => {
+                // 僅在手機版（< 768px）且處於訂單總覽模式下生效
+                if (window.innerWidth >= 768 || !document.body.classList.contains('v40-review-active')) {
+                    document.body.classList.remove('fhs-header-hidden');
+                    accumulatedDelta = 0;
+                    return;
+                }
+
+                const currentScrollY = window.scrollY;
+                const delta = currentScrollY - lastScrollY;
+
+                // 靠近頂端時強制顯示
+                if (currentScrollY <= 20) {
+                    document.body.classList.remove('fhs-header-hidden');
+                    accumulatedDelta = 0;
+                    lastScrollY = currentScrollY;
+                    return;
+                }
+
+                if (delta > 0) {
+                    // 向下滑動
+                    if (accumulatedDelta < 0) accumulatedDelta = 0;
+                    accumulatedDelta += delta;
+                    if (accumulatedDelta > HIDE_THRESHOLD) {
+                        document.body.classList.add('fhs-header-hidden');
+                    }
+                } else if (delta < 0) {
+                    // 向上滑動
+                    if (accumulatedDelta > 0) accumulatedDelta = 0;
+                    accumulatedDelta += delta;
+                    if (Math.abs(accumulatedDelta) > SHOW_THRESHOLD) {
+                        document.body.classList.remove('fhs-header-hidden');
+                    }
+                }
+                lastScrollY = currentScrollY;
+            }, { passive: true });
+        })();
+
     </script>
 
     <!-- V30.1 系統自動化品質檢驗中心 (已移入系統模式面板 V46.1) -->
@@ -11988,6 +12821,337 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             </div>
         </div>
     </div>
+
+
+<!-- ================================================================
+     V42 P3/P4 — Bottom-Sheet + Archive/Favorite persistence
+     Injected as standalone script (zero IIFE dependency)
+     ================================================================ -->
+<script>
+(function() {
+    'use strict';
+
+    /* ── State ── */
+    window._fhsArchivedIds  = window._fhsArchivedIds  || new Set();
+    window._fhsFavoritedIds = window._fhsFavoritedIds || new Set();
+    window._fhsSegTab       = window._fhsSegTab       || 'active';
+    var _bsActiveOrderId    = null;
+    var _archiveUndoTimer   = null;
+    var _archiveUndoPending = null;
+    var _peekDone           = false;
+
+    /* ── Supabase helper ── */
+    function _sbPatch(orderDisplayId, fields, keepalive) {
+        var sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+        var sbKey = window.SB_ANON_KEY || '';
+        var opts = {
+            method: 'PATCH',
+            headers: {
+                'apikey': sbKey,
+                'Authorization': 'Bearer ' + sbKey,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(fields)
+        };
+        if (keepalive) opts.keepalive = true;  // H1: keepalive 取代 sendBeacon
+        return fetch(sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderDisplayId), opts);
+    }
+
+    function _findOrder(orderId) {
+        return (window.globalOrders || []).find(function(o) { return o.id === orderId; });
+    }
+
+    /* ── P3: openBsSheet / closeBsSheet ── */
+    function openBsSheet(orderId, orderDisplayId) {
+        _bsActiveOrderId = orderId;
+        var lbl = document.getElementById('bsOrderLabel');
+        if (lbl) lbl.textContent = orderDisplayId;
+
+        var go = _findOrder(orderId);
+
+        /* Star state */
+        var starBtn = document.getElementById('bsBtnStar');
+        var starLbl = document.getElementById('bsStarLabel');
+        var isStarred = window._fhsFavoritedIds.has(orderId);
+        if (starBtn) starBtn.classList.toggle('is-starred', isStarred);
+        if (starLbl) starLbl.textContent = isStarred ? '取消最愛' : '加入最愛';
+
+        /* Archive button label */
+        var archiveBtn = document.getElementById('bsBtnArchive');
+        if (archiveBtn) {
+            var archiveSpan = archiveBtn.querySelector('span');
+            if (archiveSpan) archiveSpan.textContent = window._fhsArchivedIds.has(orderId) ? '取消封存' : '封存訂單';
+        }
+
+        /* Wire buttons — H2 correct signatures */
+        var btnA = document.getElementById('bsBtnModelA');
+        var btnB = document.getElementById('bsBtnModelB');
+        var btnEdit = document.getElementById('bsBtnEdit');
+        var btnDel = document.getElementById('bsBtnDelete');
+
+        if (btnA) btnA.onclick = function() { closeBsSheet(); if (typeof openOrderModal === 'function') openOrderModal(orderId, 'A'); };
+        if (btnB) btnB.onclick = function() { closeBsSheet(); if (typeof openOrderModal === 'function') openOrderModal(orderId, 'B'); };
+        if (btnEdit) btnEdit.onclick = function() { closeBsSheet(); if (go && typeof jumpToEditOrder === 'function') jumpToEditOrder(go.Order_ID); };
+        if (starBtn) starBtn.onclick = function() { closeBsSheet(); toggleFavorite(orderId); };
+        if (archiveBtn) archiveBtn.onclick = function() { closeBsSheet(); triggerArchiveOrder(orderId); };
+        if (btnDel) btnDel.onclick = function() { closeBsSheet(); if (go && typeof openDeleteModal === 'function') openDeleteModal(orderId, go.Order_ID); };
+
+        /* Show */
+        var overlay = document.getElementById('bsOverlay');
+        var sheet   = document.getElementById('bsSheet');
+        if (overlay) overlay.classList.add('is-visible');
+        if (sheet)   sheet.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBsSheet() {
+        var overlay = document.getElementById('bsOverlay');
+        var sheet   = document.getElementById('bsSheet');
+        if (overlay) overlay.classList.remove('is-visible');
+        if (sheet)   sheet.classList.remove('is-open');
+        document.body.style.overflow = '';
+        /* Reset swiped cards */
+        document.querySelectorAll('.swipe-row-wrapper.is-open').forEach(function(el) {
+            el.classList.remove('is-open');
+            var c = el.querySelector('.swipe-content');
+            if (c) { c.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)'; c.style.transform = ''; }
+        });
+        _bsActiveOrderId = null;
+    }
+
+    /* Overlay tap-to-close */
+    document.addEventListener('DOMContentLoaded', function() {
+        var overlay = document.getElementById('bsOverlay');
+        if (overlay) overlay.addEventListener('click', closeBsSheet);
+    });
+
+    window.openBsSheet  = openBsSheet;
+    window.closeBsSheet = closeBsSheet;
+
+    /* ── P4: updateOrderMeta (direct PATCH, non-blocking) ── */
+    async function updateOrderMeta(orderId, fields) {
+        var go = _findOrder(orderId);
+        if (!go) { console.error('[V42] updateOrderMeta: order not found', orderId); return false; }
+        try {
+            var r = await _sbPatch(go.Order_ID, fields, false);
+            if (!r.ok) {
+                var body = await r.json().catch(function() { return {}; });
+                throw new Error('PATCH ' + r.status + ' ' + JSON.stringify(body).substring(0, 80));
+            }
+            return true;
+        } catch(e) {
+            console.error('[V42] updateOrderMeta failed:', e.message);
+            if (window.appendQALog) window.appendQALog('[V42] updateOrderMeta failed: ' + e.message);
+            return false;
+        }
+    }
+    window.updateOrderMeta = updateOrderMeta;
+
+    /* ── P4: toggleFavorite ── */
+    function toggleFavorite(orderId) {
+        var isNowFav = !window._fhsFavoritedIds.has(orderId);
+        if (isNowFav) { window._fhsFavoritedIds.add(orderId); }
+        else          { window._fhsFavoritedIds.delete(orderId); }
+
+        /* Optimistic card visual */
+        var card = document.getElementById('acc-order-' + orderId);
+        if (card) card.classList.toggle('is-starred', isNowFav);
+
+        /* Star animation */
+        var starBtn = document.getElementById('bsBtnStar');
+        if (starBtn && window.animateStarToggle) window.animateStarToggle(starBtn, isNowFav);
+
+        /* Re-sort list (favorites float to top) */
+        if (window.applyReviewFilters) window.applyReviewFilters();
+
+        /* PATCH Supabase */
+        updateOrderMeta(orderId, { is_favorite: isNowFav }).then(function(ok) {
+            if (!ok) {
+                /* Rollback */
+                if (isNowFav) { window._fhsFavoritedIds.delete(orderId); }
+                else          { window._fhsFavoritedIds.add(orderId); }
+                if (card) card.classList.toggle('is-starred', !isNowFav);
+                if (window.applyReviewFilters) window.applyReviewFilters();
+            }
+        });
+    }
+    window.toggleFavorite = toggleFavorite;
+
+    /* ── P4: undo toast ── */
+    function showUndoToast(msg, onUndo) {
+        var toast      = document.getElementById('fhsToast');
+        var msgEl      = document.getElementById('fhsToastMsg');
+        var undoBtn    = document.getElementById('fhsToastUndoBtn');
+        var progressEl = document.getElementById('fhsToastProgress');
+        if (!toast) return;
+        if (msgEl)   msgEl.textContent = msg;
+        if (undoBtn) undoBtn.onclick   = onUndo;
+        toast.classList.add('is-visible');
+        /* 5s progress bar */
+        if (progressEl) {
+            progressEl.style.transition = 'none';
+            progressEl.style.width = '100%';
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    progressEl.style.transition = 'width 5s linear';
+                    progressEl.style.width = '0%';
+                });
+            });
+        }
+    }
+
+    function hideUndoToast() {
+        var toast = document.getElementById('fhsToast');
+        if (toast) toast.classList.remove('is-visible');
+    }
+
+    function _clearArchiveUndo() {
+        if (_archiveUndoTimer) { clearTimeout(_archiveUndoTimer); _archiveUndoTimer = null; }
+        _archiveUndoPending = null;
+    }
+
+    /* ── P4: triggerArchiveOrder / toggleArchive ── */
+    function triggerArchiveOrder(orderId) { toggleArchive(orderId); }
+
+    function toggleArchive(orderId) {
+        var _orders  = window.globalOrders || [];
+        var go = _findOrder(orderId);
+        if (!go) { console.error('[V42] toggleArchive: order not found', orderId); return; }
+
+        var isCurrentlyArchived = window._fhsArchivedIds.has(orderId);
+
+        if (isCurrentlyArchived) {
+            /* Unarchive */
+            _clearArchiveUndo();
+            window._fhsArchivedIds.delete(orderId);
+            hideUndoToast();
+            updateOrderMeta(orderId, { is_archived: false });
+            if (window.applyReviewFilters) window.applyReviewFilters();
+            return;
+        }
+
+        /* Archive: optimistic remove from active list */
+        window._fhsArchivedIds.add(orderId);
+
+        /* Fade out card */
+        var wrapper = document.getElementById('swipe-row-' + orderId);
+        if (wrapper) {
+            var content = wrapper.querySelector('.swipe-content');
+            if (content) {
+                content.style.transition = 'transform 0.2s ease, opacity 0.25s ease';
+                content.style.opacity = '0';
+            }
+            setTimeout(function() { if (window.applyReviewFilters) window.applyReviewFilters(); }, 260);
+        } else {
+            if (window.applyReviewFilters) window.applyReviewFilters();
+        }
+
+        /* Cancel any previous pending undo */
+        _clearArchiveUndo();
+        _archiveUndoPending = { orderId: orderId, order: go };
+
+        var orderLabel = go.Order_ID || orderId;
+        showUndoToast('已封存 ' + orderLabel, function() {
+            /* Undo: cancel timer, restore */
+            _clearArchiveUndo();
+            window._fhsArchivedIds.delete(orderId);
+            hideUndoToast();
+            if (wrapper && wrapper.querySelector('.swipe-content')) {
+                var c = wrapper.querySelector('.swipe-content');
+                c.style.opacity = '';
+            }
+            if (window.applyReviewFilters) window.applyReviewFilters();
+        });
+
+        /* Schedule PATCH after 5s */
+        _archiveUndoTimer = setTimeout(function() {
+            _archiveUndoPending = null;
+            hideUndoToast();
+            updateOrderMeta(orderId, { is_archived: true }).then(function(ok) {
+                if (!ok) {
+                    /* Rollback on PATCH failure */
+                    window._fhsArchivedIds.delete(orderId);
+                    if (window.applyReviewFilters) window.applyReviewFilters();
+                }
+            });
+        }, 5000);
+    }
+
+    window.triggerArchiveOrder = triggerArchiveOrder;
+    window.toggleArchive       = toggleArchive;
+
+    /* ── P1 page-unload insurance (H1: keepalive PATCH, not sendBeacon) ── */
+    window.addEventListener('beforeunload', function() {
+        if (!_archiveUndoPending) return;
+        var go = _findOrder(_archiveUndoPending.orderId);
+        if (!go) return;
+        _sbPatch(go.Order_ID, { is_archived: true }, true).catch(function(){});
+    });
+
+    /* ── P4: segmented tab + applyReviewFilters override ── */
+    function setSegTab(tab) {
+        window._fhsSegTab = tab;
+        /* Update button states */
+        document.querySelectorAll('.fhs-seg-btn').forEach(function(btn) {
+            btn.classList.toggle('is-active', btn.dataset.tab === tab);
+        });
+        if (window.initSegmentedControls) window.initSegmentedControls();
+        if (window.applyReviewFilters) window.applyReviewFilters();
+    }
+    window.setSegTab = setSegTab;
+
+    /* Wrap applyReviewFilters to inject segment + favorites sort */
+    document.addEventListener('DOMContentLoaded', function() {
+        var _origApply = window.applyReviewFilters;
+        if (!_origApply) return;
+
+        window.applyReviewFilters = function() {
+            /* Swap globalOrders to seg-filtered slice for duration of _origApply */
+            var allOrders = window.globalOrders || [];
+            var segFiltered;
+
+            if (window._fhsSegTab === 'archived') {
+                segFiltered = allOrders.filter(function(o) { return window._fhsArchivedIds.has(o.id); });
+            } else {
+                segFiltered = allOrders.filter(function(o) { return !window._fhsArchivedIds.has(o.id); });
+                /* Starred float to top */
+                if (window._fhsFavoritedIds.size > 0) {
+                    segFiltered = segFiltered.slice().sort(function(a, b) {
+                        var aF = window._fhsFavoritedIds.has(a.id) ? 0 : 1;
+                        var bF = window._fhsFavoritedIds.has(b.id) ? 0 : 1;
+                        return aF - bF;
+                    });
+                }
+            }
+
+            var _saved = window.globalOrders;
+            window.globalOrders = segFiltered;
+            try { _origApply(); } catch(e) { console.error('[V42] applyReviewFilters wrapped error:', e); }
+            window.globalOrders = _saved;
+        };
+    });
+
+    /* ── P3.6: Peek animation (first card after load, once per session) ── */
+    document.addEventListener('DOMContentLoaded', function() {
+        var container = document.getElementById('reviewAccordionContainer');
+        if (!container) return;
+        new MutationObserver(function() {
+            if (_peekDone || window.innerWidth >= 768) return;
+            var firstContent = container.querySelector('.swipe-content');
+            if (!firstContent) return;
+            _peekDone = true;
+            firstContent.style.transition = 'none';
+            firstContent.style.transform  = 'translateX(-8px)';
+            setTimeout(function() {
+                firstContent.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                firstContent.style.transform  = '';
+            }, 60);
+        }).observe(container, { childList: true });
+    });
+
+})();
+</script>
 
 </body>
 

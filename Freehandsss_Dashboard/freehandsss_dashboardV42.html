@@ -3264,7 +3264,7 @@
             <!-- A 組：款式類型 + 底座顏色 + 刻字 -->
             <div class="form-group">
                 <label>款式類型</label>
-                <select id="pSubCat" onchange="renderLimbGrid(); _syncAddonVisibility(); generate();">
+                <select id="pSubCat" onchange="renderLimbGrid(); _applyGlassDefaults(); _syncAddonVisibility(); generate();">
                     <option value="木框款式">木框款式</option>
                     <option value="玻璃瓶款式">玻璃瓶款式</option>
                 </select>
@@ -5080,11 +5080,32 @@
             babyRestoreVisual();
         }
 
+        function _applyGlassDefaults() {
+            if (document.getElementById('pSubCat').value !== '玻璃瓶款式') return;
+            // 父母 toggle On
+            var enParent = document.getElementById('en_parent');
+            if (enParent && !enParent.checked) {
+                enParent.checked = true;
+                togglePart('box_parent', enParent);
+            }
+            // 嬰兒：全部待定，折疊顯示
+            babyFillMode = 'glass_pending';
+            ['左手', '右手', '左腳', '右腳'].forEach(function(part) {
+                var s = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="' + part + '"]');
+                if (s) s.value = '待定';
+            });
+            babyRestoreVisual();
+        }
+        window._applyGlassDefaults = _applyGlassDefaults;
+
         function babyRestoreVisual() {
+            const isGlassPending = babyFillMode === 'glass_pending';
             const modes = ['all', 'left', 'right', 'custom'];
             modes.forEach(m => {
                 const btn = document.getElementById(`babyBtn_${m}`);
                 if (!btn) return;
+                if (isGlassPending) { btn.style.display = 'none'; return; }
+                btn.style.display = '';
                 const isActive = m === babyFillMode;
                 const isCustom = m === 'custom';
                 btn.style.background  = isActive ? (isCustom ? '#FFF8F0' : '#C9A96E') : '#fff';
@@ -5094,9 +5115,26 @@
             });
             const isCustom = babyFillMode === 'custom';
             const grid = document.getElementById('babyCustomGrid');
-            if (grid) grid.style.display = isCustom ? 'block' : 'none';
             const colorRow = document.getElementById('babyColorRow');
-            if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
+            if (isGlassPending) {
+                if (grid) grid.style.display = 'none';
+                if (colorRow) colorRow.style.display = 'none';
+                var fp = document.getElementById('babyGlassPendingCell');
+                if (!fp && grid && grid.parentNode) {
+                    fp = document.createElement('div');
+                    fp.id = 'babyGlassPendingCell';
+                    fp.style.cssText = 'margin:8px 0; padding:12px; background:#fafafa; border:1px solid #eee; border-radius:8px; text-align:center; cursor:pointer; color:#B07D4C; font-size:14px;';
+                    fp.innerHTML = '全部待定 <span style="font-size:12px;color:#aaa;">（點擊展開自訂）</span>';
+                    fp.onclick = function() { babyFillMode = 'custom'; babyRestoreVisual(); generate(); };
+                    grid.parentNode.insertBefore(fp, grid);
+                }
+                if (fp) fp.style.display = 'block';
+            } else {
+                var fp2 = document.getElementById('babyGlassPendingCell');
+                if (fp2) fp2.style.display = 'none';
+                if (grid) grid.style.display = isCustom ? 'block' : 'none';
+                if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
+            }
         }
 
         function babySetMode(mode) {
@@ -5211,6 +5249,7 @@
 
         // v2 格式專用：嬰兒手腳 inline 版（不含【嬰兒】header），如「二手二腳（香檳金）」
         function formatBabyLimbsInline() {
+            if (babyFillMode === 'glass_pending') return '待定';
             const lh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左手"]')?.value;
             const rh = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右手"]')?.value;
             const lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]')?.value;
@@ -5330,12 +5369,18 @@
             const lines = [];
             lines.push(`（訂單編號#${orderId}手模擺設）`);
             const bbLine = formatBabyLimbsInline();
-            if (bbLine) lines.push(`*倒BB ：${bbLine}`);
-            if (sub === "木框款式") lines.push(`*木框：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}`);
-            if (sub === "玻璃瓶款式") lines.push(`*底座：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}`);
-            if (document.getElementById("en_parent")?.checked) { const p = formatLimbsInline("父母"); if (p) lines.push(`*父母 ：${p}`); }
-            if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
-            if (sub === "木框款式") lines.push(`*相+聲頻：`);
+            if (sub === '玻璃瓶款式') {
+                lines.push(`*倒BB：${bbLine}`);
+                if (document.getElementById("en_parent")?.checked) lines.push(`*倒：爸媽各一手`);
+                lines.push(`*底座：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}`);
+                if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
+            } else {
+                if (bbLine) lines.push(`*倒BB ：${bbLine}`);
+                if (sub === "木框款式") lines.push(`*木框：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}`);
+                if (document.getElementById("en_parent")?.checked) { const p = formatLimbsInline("父母"); if (p) lines.push(`*父母 ：${p}`); }
+                if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
+                if (sub === "木框款式") lines.push(`*相+聲頻：`);
+            }
             const eng = document.getElementById("pEngraving")?.value;
             lines.push(`*皮革刻制：${(eng && eng.trim() !== '待定') ? eng : ''}`);
             lines.push(`（資料會於倒模當天填寫）`);
@@ -5350,10 +5395,17 @@
             lines.push(`需否再次倒模，取決於倒模師`);
             lines.push(`如而額外取模：另+$150`);
             lines.push(`⭐️由於近日訂單較多`);
-            lines.push(`製成品預十五至十八`);
-            lines.push(`星期完成`);
-            lines.push(`⭐️花材會因批次不同，顏色會有所出入`);
-            lines.push(`⭐️作品不包照片`);
+            if (sub === '玻璃瓶款式') {
+                lines.push(`製成品預十五至十八星期完成`);
+                lines.push(`⭐️作品不包照片`);
+                lines.push(`⭐️如手腳超出已包玻璃瓶尺寸，`);
+                lines.push(`需另加100，訂購合適玻璃瓶尺寸`);
+            } else {
+                lines.push(`製成品預十五至十八`);
+                lines.push(`星期完成`);
+                lines.push(`⭐️花材會因批次不同，顏色會有所出入`);
+                lines.push(`⭐️作品不包照片`);
+            }
             lines.push(`⭐️由於後期製作全都是全人手製作，所以未能十全十美，完美主義者請慎重考慮`);
             return lines.join('\n');
         }
