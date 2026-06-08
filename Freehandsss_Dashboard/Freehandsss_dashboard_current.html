@@ -5021,8 +5021,11 @@
             const limbOptions = colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('');
             let castingHtml = '';
             castingHtml += `<div class="limb-grid">
-              <div class="limb-title" style="border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">【嬰兒】</div>
-              <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">
+                <span class="limb-title" style="margin:0; border:none;">【嬰兒】</span>
+                <button type="button" id="babyGlassCollapseBtn" onclick="babyReturnToGlassPending()" style="display:none; font-size:12px; padding:4px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer; white-space:nowrap; flex-shrink:0;">↩ 全部待定</button>
+              </div>
+              <div id="babyModeBtnRow" style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
                 <button type="button" id="babyBtn_all"    onclick="babySetMode('all')"    style="font-size:14px; padding:10px 4px; border:1px solid #C9A96E; background:#C9A96E; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">二手二腳</button>
                 <button type="button" id="babyBtn_left"   onclick="babySetMode('left')"   style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(左)</span></button>
                 <button type="button" id="babyBtn_right"  onclick="babySetMode('right')"  style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(右)</span></button>
@@ -5116,6 +5119,18 @@
             const isCustom = babyFillMode === 'custom';
             const grid = document.getElementById('babyCustomGrid');
             const colorRow = document.getElementById('babyColorRow');
+            const isGlassStyle = (document.getElementById('pSubCat') || {}).value === '玻璃瓶款式';
+
+            // S69 Task2: glass_pending 時連同模式按鈕列外層一併隱藏，消除單格上方留白（fit content）
+            // ⚠️ 復原時必須設回 'grid'（非 ''）——空字串會清掉 inline display:grid，使 div 退回 block、4 欄 grid 崩掉
+            const btnRow = document.getElementById('babyModeBtnRow');
+            if (btnRow) btnRow.style.display = isGlassPending ? 'none' : 'grid';
+
+            // S69 Task4 (v2): 收摺控件改為【嬰兒】標題列右側靜態 button（取代舊動態連結 babyGlassCollapseLink）
+            // 玻璃瓶款式且非 glass_pending（展開狀態）時顯示；其餘隱藏。顯隱集中於此單一出口。
+            var collapseBtn = document.getElementById('babyGlassCollapseBtn');
+            if (collapseBtn) collapseBtn.style.display = (isGlassStyle && !isGlassPending) ? '' : 'none';
+
             if (isGlassPending) {
                 if (grid) grid.style.display = 'none';
                 if (colorRow) colorRow.style.display = 'none';
@@ -5124,8 +5139,9 @@
                     fp = document.createElement('div');
                     fp.id = 'babyGlassPendingCell';
                     fp.style.cssText = 'margin:8px 0; padding:12px; background:#fafafa; border:1px solid #eee; border-radius:8px; text-align:center; cursor:pointer; color:#B07D4C; font-size:14px;';
-                    fp.innerHTML = '全部待定 <span style="font-size:12px;color:#aaa;">（點擊展開自訂）</span>';
-                    fp.onclick = function() { babyFillMode = 'custom'; babyRestoreVisual(); generate(); };
+                    fp.innerHTML = '全部待定 <span style="font-size:12px;color:#aaa;">（點擊展開編輯）</span>';
+                    // S69 UX: 展開即進「一手一腳（左）」模式（顏色待定），非空白 custom
+                    fp.onclick = function() { babySetMode('left'); };
                     grid.parentNode.insertBefore(fp, grid);
                 }
                 if (fp) fp.style.display = 'block';
@@ -5136,6 +5152,18 @@
                 if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
             }
         }
+
+        // S69 Task4: 從展開狀態收回「全部待定」（glass_pending），四肢重設為待定
+        function babyReturnToGlassPending() {
+            babyFillMode = 'glass_pending';
+            ['左手', '右手', '左腳', '右腳'].forEach(function(part) {
+                var s = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="' + part + '"]');
+                if (s) s.value = '待定';
+            });
+            babyRestoreVisual();
+            generate();
+        }
+        window.babyReturnToGlassPending = babyReturnToGlassPending;
 
         function babySetMode(mode) {
             babyFillMode = mode;
@@ -12364,6 +12392,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     };
                 });
                 window._fhsCostReady = true; // W5: 原子成本已載入記憶體，計價可啟動
+                // S69 FIX: 成本為非同步載入，首載的 calculatePricing() 已在 _fhsCostReady=false
+                // 時跑過並停在「⏳ 成本設定載入中」，畫面不會自動更新（需手動切換訂單類型才回復）。
+                // 載入完成後主動重觸發一次 generate()（全域，內部會呼 calculatePricing）刷新報價顯示。
+                // 不會遞迴：calculatePricing 只讀 _fhsCostReady，不回呼 loadCostConfigurations。
+                if (window.generate) { try { window.generate(); } catch (e) { console.warn('[FinSettings] post-load generate skipped:', e); } }
                 // W5-FIX: 若從啟動預載呼叫（list 不存在），資料已入記憶體，直接返回跳過 DOM 渲染
                 if (!list) return;
 

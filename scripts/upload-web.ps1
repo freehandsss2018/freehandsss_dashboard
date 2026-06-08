@@ -80,13 +80,13 @@ if (-not $t.TcpTestSucceeded) { Fail "WebDAV 埠 $port 不通（防火牆？通�
 
 # --- 5. WebDAV PUT 上傳 ---
 Write-Host "⏳ 上傳 $fileName ($('{0:N0}' -f $localSize) bytes) → $putUrl"
-$putCode = & curl.exe -k -s -o NUL -w "%{http_code}" -u $cred -T $localFile $putUrl
+$putCode = & curl.exe -k --ssl-no-revoke -s -o NUL -w "%{http_code}" -u $cred -T $localFile $putUrl
 if ($putCode -notin '200','201','204') { Fail "WebDAV PUT 回傳 HTTP $putCode" }
 Write-Host "  ✅ PUT HTTP $putCode"
 
 # --- 6. 驗證關卡 ---
 # 6a. 公開端點 HEAD
-$headOut = & curl.exe -k -s -I $publicUrl
+$headOut = & curl.exe -k --ssl-no-revoke -s -I $publicUrl
 $httpLine = ($headOut | Select-String -Pattern '^HTTP' | Select-Object -First 1).ToString()
 if ($httpLine -notmatch '\b200\b') { Fail "公開端點未回 200：$httpLine（$publicUrl）" }
 $remoteLen = (($headOut | Select-String -Pattern '(?i)^Content-Length:\s*(\d+)').Matches.Groups[1].Value)
@@ -96,7 +96,7 @@ if ([int64]$remoteLen -ne [int64]$localSize) { Fail "大小不符：remote=$remo
 
 # 6c. SHA256 比對
 $tmp = Join-Path $env:TEMP ("uploadweb_verify_" + [guid]::NewGuid().ToString('N') + '.bin')
-& curl.exe -k -s -o $tmp $publicUrl
+& curl.exe -k --ssl-no-revoke -s -o $tmp $publicUrl
 $lh = (Get-FileHash $localFile -Algorithm SHA256).Hash
 $rh = (Get-FileHash $tmp -Algorithm SHA256).Hash
 Remove-Item $tmp -ErrorAction SilentlyContinue

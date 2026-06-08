@@ -1,3 +1,36 @@
+# FHS Handoff - 2026-06-09 (Session 70 — /upload-web 指令 + V42 成本載入修復 + 玻璃瓶嬰兒區 UX)
+
+## Session 70 完結
+
+### 執行完成項目
+
+- ✅ **[INFRA] /upload-web 指令**：`scripts/upload-web.ps1` + Master + CL + AG 三橋接（雙端通用）。WebDAV over HTTPS（`yanhei.synology.me:5006` → `/web`）部署 Dashboard + 三關驗證（HTTP 200 + Content-Length + SHA256）。憑證存 gitignored `.env`。V42 已首次部署至 `https://yanhei.synology.me/freehandsss_dashboardV42.html`（公開，已授權）。後效同步 FHS_Prompts 情境二十五 / repo-map / SOP_NOW / decisions。
+- ✅ **[BUGFIX] V42 成本設定載入卡死**：`loadCostConfigurations()` async 完成設 `_fhsCostReady=true` 後未重觸發計算 → 首載卡「成本設定載入中」。修法：`.then` 內補 `window.generate()` 重觸發。（初版誤判為頂部 `if(!list)return`，已還原。）
+- ✅ **[UX] 玻璃瓶「嬰兒全部待定」單格優化**：文案「點擊展開編輯」、Task2 模式按鈕列加 `#babyModeBtnRow` id、展開進「一手一腳(左)」、標題列右側收合 button `#babyGlassCollapseBtn`「↩ 全部待定」+ `babyReturnToGlassPending()`。code-reviewer G1–G8 ALL PASS（兩輪）。
+- ✅ **[BUGFIX] 模式按鈕崩版（grid→block）**：Task2 那行 `btnRow.style.display = ... : ''` **空字串清掉 inline `display:grid`** → div 退回 block、4 欄崩。改設回 `'grid'`。frontend-developer playwright **實測 computed style** 坐實真因（V42 修前 display=block 寬 66/62/62/46px；V41 grid 全 103px）。
+
+### 重要教訓（已落 Changelog/learnings）
+
+- **`style.display=''` ≠ 還原原值**：會清除 inline 既有 `display`，使元素退回 tag 預設（div→block）。要復原 grid 必須明設 `'grid'`。
+- **視覺 bug 不可純靜態讀碼診斷**：本 session 對按鈕崩版**連續誤判兩次**（當成樣式、當成快取），最終靠 frontend-developer playwright 實測 computed style 才坐實。視覺問題優先實測/量測。
+
+### 待 Fat Mo 驗證
+
+- Ctrl+Shift+R 重整 V42 → ① 成本報價自動算出 ② 模式按鈕等寬一行 ③ 收合鈕往返。
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — code-reviewer G1–G8 ALL PASS（玻璃瓶 UX 兩輪）；frontend-developer playwright 實測坐實按鈕崩版真因並修復；各檔 hash 一致（最終 V42=current `a21dc8bb`→ commit 時以實際為準）。成本載入/按鈕視覺 Live 驗證待 Fat Mo。
+Subagent：✅ code-reviewer（G1–G8 Gate ×2）、✅ frontend-developer（playwright 實測按鈕崩版）；❌ build-error-resolver（root cause 由實測坐實，無需）。
+
+---
+
 # FHS Handoff - 2026-06-08 (Session 69++ — 玻璃瓶款式 Round 2 精修)
 
 ## Session 69++ 完結

@@ -1,5 +1,44 @@
 # Changelog
 
+## [2026-06-09] 💅 V42 玻璃瓶 嬰兒收合控件重構 + 模式按鈕對齊修復（3 點）
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html` + 同步 `Freehandsss_dashboard_current.html`，hash `7a8ab69a`）；code-reviewer G1–G8 ALL PASS
+
+### [UX] 承上輪 glass_pending 收合控件再優化
+- **Item 1 文案**：收合控件「↩ 收回全部待定」→「↩ 全部待定」。（註：與 glass_pending 單格「全部待定」同名異義——單格=展開、此鈕=收合；保留 ↩ 箭頭作收合暗示。）
+- **Item 2 重構**：收合控件由「按鈕列上方動態插入連結 `babyGlassCollapseLink`」改為【嬰兒】標題列右側**靜態 button** `#babyGlassCollapseBtn`（比照父母/大寶列擺位）。移除動態 insertBefore 邏輯，顯隱集中於 `babyRestoreVisual()` 單一出口（`isGlassStyle && !isGlassPending`）。
+- **Item 3 對齊 bug（真因，已修）**：模式按鈕變大/不等寬的真因＝ Task 2 那行 `btnRow.style.display = isGlassPending ? 'none' : ''`——非 glass_pending 時設**空字串清掉 inline `display:grid`**，使 `#babyModeBtnRow` 退回 `display:block`，4 欄 grid 崩潰、按鈕退化為塊級各自收縮（frontend-developer playwright 實測：V42 computed display=block / 寬 66·62·62·46px；V41=grid / 全 103px）。**修復**：改設回 `'grid'`。先前誤把問題當按鈕樣式、兩度誤判，最終靠 playwright 量測坐實。教訓：`style.display=''` ≠ 還原原值，會清除 inline 既有 display。
+- ⏳ 待 Fat Mo Live 驗證：① 收合鈕在標題列右側、展開時才現 ② 模式按鈕恢復原始尺寸 ③ 桌面/手機兩端不擠壓不溢出。
+
+---
+
+## [2026-06-08] 💅 V42 玻璃瓶「嬰兒全部待定」單格 UI/UX 優化（4 點）
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html` + 同步 `Freehandsss_dashboard_current.html`，hash `ac93b4be`）
+
+### [UX] glass_pending 單格四點優化
+- **Task 1 文案**：單格「（點擊展開自訂）」→「（點擊展開編輯）」。
+- **Task 2 fit size**：模式按鈕列外層加 `id="babyModeBtnRow"`，`babyRestoreVisual()` 於 glass_pending 時連同整列隱藏（原本只隱藏個別按鈕，殘留外層 grid 佔位 + margin 造成單格上方留白）。
+- **Task 3 展開預設**：點單格 onclick 由 `babyFillMode='custom'`（空白自訂）改為 `babySetMode('left')`——進「一手一腳（左）」模式，左手+左腳=待定、右手右腳=無。
+- **Task 4 回退**：玻璃瓶款式展開狀態於頂部顯示小連結「↩ 收回全部待定」（`#babyGlassCollapseLink`，動態建立），呼叫新函式 `babyReturnToGlassPending()` 重設四肢為待定並收摺回單格。
+- 僅限 `pSubCat==='玻璃瓶款式'`；木框款式零影響。
+- ⏳ 待 Fat Mo Live 驗證：① 單格上方無留白 ② 點擊展開進左手左腳 ③ 收回連結正常往返 ④ 桌面/手機兩端皆 fit。
+
+---
+
+## [2026-06-08] 🐛 修復 V42 default 介面成本設定載入卡死（async 載入後未重觸發）
+
+**範圍**：bug 修復（`freehandsss_dashboardV42.html` + 同步 `Freehandsss_dashboard_current.html`）
+
+### [BUGFIX] loadCostConfigurations 完成後未重觸發 generate() → 首載卡「成本設定載入中」
+- **根因**：成本設定為**非同步**載入（`loadCostConfigurations()` 的 `_fsSelect` 打 Supabase）。首載時 `calculatePricing()` 在 `_fhsCostReady=false` 時已跑過一次，顯示「⏳ 成本設定載入中，請稍候再計算…」並 return；async 完成後雖設 `_fhsCostReady=true`（line 12366），但**沒有重新觸發計算**，畫面停在載入中，必須手動反覆切換訂單類型（觸發 `generate()`）才回復。
+- **誤判修正**：初版誤以為是頂部 `if(!list)return`（W5 回歸）所致，但 `costConfigList` 為靜態元素（line 4084），`list` 永遠非 null，該守衛從不觸發 → 已還原原狀。
+- **修復**：在 `.then` 設 `_fhsCostReady=true` 後，主動重觸發一次 `window.generate()`（全域，5422 宣告；內部呼 `calculatePricing()`）刷新報價顯示。包 try/catch 防破壞 ready 旗標；不遞迴（`calculatePricing` 只讀旗標、不回呼 `loadCostConfigurations`）。
+- **同步**：current.html（= V42 生產基準）一併修復，兩檔 hash 一致 `6f44756f`。
+- ⏳ 待 Fat Mo Live 驗證：reload V42 default 介面 → 報價應於成本載入完成後**自動**更新，毋須手動切換訂單類型。
+
+---
+
 ## [2026-06-08] 🚀 新增 /upload-web 指令 — WebDAV 部署 Dashboard 至 NAS Web Station
 
 **範圍**：新增指令（基礎設施部署），不改動任何業務代碼
