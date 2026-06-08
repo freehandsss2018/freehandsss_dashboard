@@ -67,7 +67,8 @@ freehandsss_dashboard/
 │   ├── commands/
 │   │   ├── db-query.md         ← /db-query Bridge → vendor/awesome-cc/read-only-postgres（2026-05-09）
 │   │   ├── rp.md               ← /rp Bridge v2.3（精煉引擎，獨立可用，2026-05-30）
-│   │   └── ag-flow.md          ← /ag-flow Bridge（精煉內建→A1+A2，AG裁決，2026-05-30）
+│   │   ├── ag-flow.md          ← /ag-flow Bridge（精煉內建→A1+A2，AG裁決，2026-05-30）
+│   │   └── upload-web.md       ← /upload-web Bridge（WebDAV 部署至 NAS /web，2026-06-08；AG 橋接亦在 .agents/workflows/）
 │   │   [已退役] tdd-guide / debug-guide / five / mermaid / code-analysis（方法論移植至 subagent，2026-05-30）
 │   └── settings.json           ← hooks 配置（SessionStart/UserPromptSubmit/PreToolUse）
 │
@@ -112,6 +113,7 @@ freehandsss_dashboard/
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
 │   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.3（精煉引擎，獨立可用，2026-05-30）
+│   │   │   ├── upload-web.md            ← /upload-web 部署 Dashboard 至 NAS Web Station（WebDAV，2026-06-08）
 │   │   │   ├── ag-flow.md               ← /ag-flow 精煉內建→A1+A2，AG裁決（跳A3，2026-05-30）
 │   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導 v1.2.0（6步 atomic 流程 + Step 6 知識落盤 Gate，2026-06-05）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）

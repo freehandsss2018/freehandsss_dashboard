@@ -3,6 +3,15 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-08] (Session 69) 新增 /upload-web 指令 — 一鍵部署 Dashboard 至 NAS Web Station
+
+決策：建立 `/upload-web` 指令（Master + CL 橋接 + `scripts/upload-web.ps1`），以 WebDAV over HTTPS（`:5006` → `/web`）部署 Dashboard 並三關驗證（HTTP 200 + Content-Length + SHA256）。
+原因：
+1. 通道選擇——NAS 對外僅開 80/443/8443/5006；SSH(22)/SMB(445)/DSM(5000) 全封鎖。WebDAV(5006) 為唯一可程式化且已驗通的通道，優於對外開 SMB 的暴露面。
+2. 腳本化而非純指令——封裝 curl PUT + 驗證，可重複呼叫、不靠 AI 每次重寫，降低人為錯誤。
+3. 護欄——`current.html` 生產版需 `-Force` + 二次確認，防誤推；密碼僅存 gitignored `.env`，永不回顯/入庫。
+4. 編碼坑記錄——`.ps1` 含中文須存 UTF-8 **with BOM**，否則 `powershell.exe`(5.1) 以本機編碼讀取會 garble 字串導致解析失敗；`curl -o $null` 在 PS 中展開為空字串會吞掉下一參數，須用 `-o NUL`。
+
 [2026-06-07] (Session 67) Anti-Idle Ping 部署 — n8n 防閒置 Workflow
 
 決策：建立獨立 n8n Workflow `FHS_Anti_Idle_Ping`（ID: `FxKHTDiYiUPnxvm6`），每 5 天 ping Supabase 一次。

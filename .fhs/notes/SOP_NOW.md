@@ -63,6 +63,7 @@
 | `/error-eye` | `.fhs/ai/commands/error-eye.md` | `.claude/commands/error-eye.md` | `.agents/workflows/error-eye.md` |
 | `/rg` | `.fhs/ai/commands/rg.md` | `.claude/commands/rg.md` | `.agents/workflows/rg.md` |
 | `/rp` | `.fhs/ai/commands/rp.md` | `.claude/commands/rp.md` | `.agents/workflows/rp.md` |
+| `/upload-web` | `.fhs/ai/commands/upload-web.md` | `.claude/commands/upload-web.md` | `.agents/workflows/upload-web.md` |
 
 ### Skills & Agents（不重疊）
 

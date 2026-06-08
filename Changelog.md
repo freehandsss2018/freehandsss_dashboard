@@ -1,5 +1,55 @@
 # Changelog
 
+## [2026-06-08] 🚀 新增 /upload-web 指令 — WebDAV 部署 Dashboard 至 NAS Web Station
+
+**範圍**：新增指令（基礎設施部署），不改動任何業務代碼
+
+### [FEAT] /upload-web 一鍵部署 + 三關驗證
+- 新檔 `scripts/upload-web.ps1`：WebDAV over HTTPS（`yanhei.synology.me:5006` → `/web`）PUT 上傳 + 驗證（公開端點 HTTP 200 + Content-Length 比對 + SHA256 逐位元組）
+- 新檔 `.fhs/ai/commands/upload-web.md`（Master v1.0.0）+ `.claude/commands/upload-web.md`（CL 橋接）
+- 目標代稱：`V42`(預設)/`V41`/`V40`/`current`(生產版需 `-Force` + 二次確認)/字面檔名
+- 憑證存 gitignored `.env`（`NAS_WEBDAV_URL`/`NAS_WEBDAV_USER`/`NAS_WEBDAV_PASS`），密碼永不回顯
+- 後效同步：`FHS_Prompts.md` 情境二十五、`repo-map.md`、`decisions.md`、`SOP_NOW.md`
+- **首次部署**：V42 已上線 `https://yanhei.synology.me/freehandsss_dashboardV42.html`（公開，已授權）
+
+---
+
+## [2026-06-08] 🧴 玻璃瓶款式 UI + IG 模板 Round 2 精修（V42）
+
+**範圍**：前端精修（`freehandsss_dashboardV42.html`，開發基線）
+
+### [POLISH] 玻璃瓶款式 UI 折疊單格 + IG 格式微調
+- **UI 折疊**：新增 `glass_pending` babyFillMode — 切玻璃瓶時隱藏 4 按鈕列 + 4 肢下拉，改顯「全部待定」單格（`#babyGlassPendingCell`）；點擊展開 custom 模式
+- **嬰兒預設**：`_applyGlassDefaults()` 中 4 肢值改為 `'待定'`（原 `'無'`），`babyFillMode = 'glass_pending'`
+- **IG 格式**：`*倒BB：待定`（冒號前移除空格；`formatBabyLimbsInline()` glass_pending 時 early return `'待定'`）
+- **IG 縮排**：`需另加100，...` 行移除 3 個前置空格（與 `⭐️如...` 行左對齊）
+- **G1–G8 Gate**：ALL PASS（code-reviewer 稽核通過）
+
+---
+
+## [2026-06-08] 🧴 玻璃瓶款式差異化 UI 預設 + IG 訊息模板分流（V42）
+
+**範圍**：前端行為改動（`freehandsss_dashboardV42.html`，開發基線）
+
+### [FEAT] 玻璃瓶款式選擇時自動套用預設值
+- 新增 `_applyGlassDefaults()` 函式（window 暴露）：`pSubCat` 切到 `玻璃瓶款式` 時：
+  - 父母 toggle `en_parent` 自動 On
+  - 嬰兒 4 肢清空（'無'）+ `babyFillMode = 'custom'`（資料於倒模當天填寫）
+  - 底座顏色預設已為「待定」（`renderLimbGrid()` 原有行為）
+- 守衛：`!== '玻璃瓶款式'` 即 return，木框款式零影響
+
+### [FEAT] 玻璃瓶款式 IG 訊息模板分流（`buildCategoryA_v2` v2 格式）
+- **倒BB 行**：玻璃瓶款式永遠輸出 `*倒BB ：`（含空值，資料待填）
+- **父母行**：玻璃瓶款式改輸出 `*倒：爸媽各一手`（取代原 `*父母 ：左手/右手動態`）
+- **底座行順序**：玻璃瓶款式底座行移至父母行之後
+- **製程行**：玻璃瓶款式合併為單行 `製成品預十五至十八星期完成`（以 IG 訊息寬度自動換行）
+- **花材聲明**：玻璃瓶款式移除 `⭐️花材會因批次不同，顏色會有所出入`
+- **新增聲明**：玻璃瓶款式於 `⭐️作品不包照片` 後新增純文案：
+  `⭐️如手腳超出已包玻璃瓶尺寸，` / `需另加100，訂購合適玻璃瓶尺寸`（不接成本鏈）
+- 木框款式及 v1 原版格式完全不受影響
+
+---
+
 ## [2026-06-08] 🛡️ Sync_Notion_Brain.js V2.1 韌性硬化
 
 **範圍**：`scripts/Sync_Notion_Brain.js`（記憶引擎 Notion 同步）

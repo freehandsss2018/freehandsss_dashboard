@@ -2,7 +2,7 @@
 name: FHS Business Scenarios Library
 version: v1.7
 compatible_with: AGENTS.md v1.4.12
-last_updated: 2026-06-05
+last_updated: 2026-06-08
 last_audited_session: S63
 description: Business situation detection and command routing for AI execution
 ---
@@ -220,6 +220,16 @@ Mobile phone 介面專屬設計準則（強制執行）：
 - **plan_critique**：ag-plan 產出後輸出真實批評（有內容才批評）
 - **/execute 永遠手動**：AI 不自動觸發，遵 execute.md 硬規則
 - **精煉已內建**：不需手動先跑 /rp，Step 0 自動執行
+
+---
+
+## 【情境二十五：部署 Dashboard 至 NAS Web（/upload-web）(v1.0.0)】
+
+- 觸發詞：「上傳 V42 / 上傳到 web / 部署到 NAS / 上傳 dashboard / upload web / 推上 web folder / 放到 web station」
+- 執行邏輯：載入並遵循 `.fhs/ai/commands/upload-web.md`（或直接 `/upload-web [目標]`）
+- 平台：CL + AG 雙端通用（需本機 shell + curl + WebDAV；2026-06-08 Fat Mo 授權開放 AG）
+- 通道：WebDAV over HTTPS（`yanhei.synology.me:5006` → `/web`）；憑證存 gitignored `.env`
+- 護欄：`current` 生產版需二次確認 + `-Force`；密碼永不回顯；驗證三關（HTTP 200 + 大小 + SHA256）
 
 ---
 
