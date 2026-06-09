@@ -103,6 +103,7 @@
 
 ## Patterns（成功反覆驗證的做法）
 
+- **【Pattern ✅ 2026-06-10 Session 77】事件派發副鏈 + setTimeout(0) 最終同步**：`dispatchEvent` 同步觸發副鏈（如 `_syncBalanceFromDeposit`）可覆蓋即將設定的 per-box 按鈕狀態。修法：在所有 if 塊後加 `setTimeout(0)` 最終 pass 重設按鈕，副鏈全部完成後才執行 — 源自 2026-06-10
 - **【Pattern ✅ 2026-06-05 Session 63】kgov 知識治理框架設計模式**：治理文件（路由總機/規則索引）必須有**同步觸發機制**（AGENTS 規則層 + execute [F] 稽核項），不能靠 AI 自律維護。最小改動原則：+1 文件填真空，改既有不膨脹，規則用 harness 鎖不靠告示。Pattern 驗證：Session 63 P0–P4 完整執行，盲測 3 問全綠（≤2跳）。
 
 ---

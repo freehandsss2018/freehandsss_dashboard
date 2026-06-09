@@ -1,3 +1,295 @@
+# FHS Handoff - 2026-06-10 (Session 79 — V42 部署至 current + NAS)
+
+## Session 79 完結
+
+### 執行完成項目
+
+- ✅ **[DEPLOY] V42 → current + NAS**
+  - `cp Freehandsss_Dashboard/freehandsss_dashboardV42.html → Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+  - WebDAV PUT → NAS Web Station: PASS（764,784 bytes, SHA256: CC67786A2768D498BA0BF1C17592427BE6D4408A42C3A53D3D2D725FD6928C87）
+  - URL: https://yanhei.synology.me/Freehandsss_dashboard_current.html
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 生產版 HTML | Freehandsss_dashboard_current.html = V42 |
+| 本地開發版 | freehandsss_dashboardV42.html |
+| active 色 | #558B2F（橄欖綠） |
+| 未付尾數按鈕 | 僅剩「✕ 清除」，全部半訂/全部付清已移除 |
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：NAS 三閘驗證（HTTP 200 + Content-Length + SHA256）= ✅
+Subagent：❌ 未派
+
+---
+
+# FHS Handoff - 2026-06-10 (Session 78 — 移除 balance 全部半訂/全部付清按鈕)
+
+## Session 78 完結
+
+### 執行完成項目
+
+- ✅ **[UX] 未付尾數行精簡**
+  - 移除 `#fhsHalfFillAllBtnBal`（全部半訂）及 `#fhsFullFillAllBtnBal`（全部付清）兩個按鈕
+  - 僅保留「✕ 清除」按鈕
+  - `_syncGlobalBalanceBtnUI()` 保留（getElementById 返回 null，if-guarded，無害 no-op）
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：HTML grep 確認 `fhsHalfFillAllBtnBal`/`fhsFullFillAllBtnBal` 僅剩 `_syncGlobalBalanceBtnUI` 內部引用 = ✅
+Subagent：❌ 未派
+
+---
+
+# FHS Handoff - 2026-06-10 (Session 77 — per-box 按鈕時序修復)
+
+## Session 77 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] per-box 按鈕狀態時序 Bug**
+  - **Root cause**：`_syncBalanceFromDeposit` C4 的 `_updateBoxBtnState(balContainer, bk, 'half')` 在每次 deposit input event 時觸發，干擾 `_quickFillAllSplits` 的 'full' 設定
+  - R1/R2：移除 `_syncBalanceFromDeposit` 兩個 loop 的 `_updateBoxBtnState`（derive 過程不應設定按鈕狀態）
+  - F1/F2：`_quickFillAllSplits` + `_quickHalfFillAllSplits` 末尾各加 `setTimeout(0)` 最終 pass，所有同步副鏈結束後才設定 per-box 狀態
+
+### 待 Fat Mo Live 驗收
+- ① 點「全部付清」→ deposit 全域按鈕綠色（付清），per-box「全」綠色，「半」灰色
+- ② 點「全部半訂」→ deposit 全域按鈕綠色（半訂），per-box「半」綠色，「全」灰色
+- ③ balance 按鈕狀態獨立於 deposit（derive 後 per-box 保持 neutral）
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：grep 確認 C4 `_updateBoxBtnState(balContainer` 已移除，`setTimeout` 已加入 = ✅；Live 驗證待 Fat Mo。
+Subagent：❌ 未派
+
+---
+
+# FHS Handoff - 2026-06-09 (Session 76 — Balance 狀態機 + 橄欖綠)
+
+## Session 76 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] active 色 #1565C0 → #558B2F**（橄欖綠，4 處精準替換；系統藍保留）
+
+- ✅ **[FEAT] Balance 狀態機（鏡像 deposit）**
+  - `window._balanceMode = 'half'` 初始值
+  - `_syncGlobalBalanceBtnUI()` 新函式（與 `_syncGlobalDepositBtnUI` 對稱）
+  - `_quickHalfFillAllSplits('balance')` + `_quickFillAllSplits('balance')` 各補模式追蹤
+
+- ✅ **[FIX] Balance per-box 按鈕 active 狀態**
+  - `_syncBalanceFromDeposit` items loop（用 `bk`）+ necklace loop（用 `group.boxKey`）各補 `_updateBoxBtnState(..., 'half')`
+
+### 待 Fat Mo Live 驗收
+- ① 全域按鈕 active 色為橄欖綠（#558B2F），不撞橙色 (#E65100)
+- ② 「未付尾數」「全部半訂」預設綠色；「全部付清」灰色
+- ③ 點「全部付清」→ 綠色切換至「全部付清」，「全部半訂」變灰
+- ④ 每格「半」/「全」按鈕隨點擊即時切換 active 綠色
+- ⑤ 手動點格（focusin）→ 兩 per-box 按鈕均回灰
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：grep 確認 `_syncGlobalBalanceBtnUI`/`_balanceMode`/`#558B2F`（按鈕）均到位 = ✅；`#1565C0` 剩餘只剩系統藍 4 處 = ✅；Live 驗證待 Fat Mo。
+Subagent：❌ 未派
+
+---
+
+# FHS Handoff - 2026-06-09 (Session 75 — 三視覺 Bug 修復)
+
+## Session 75 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] Bug 1 — balance 行補「全部半訂」+ 灰色標記**
+  - 未付尾數行補 `#fhsHalfFillAllBtnBal`（全部半訂，藍色）+ `#fhsFullFillAllBtnBal`（全部付清，灰色）
+  - `_syncBalanceFromDeposit()` 兩個 loop（items + necklace group）補 `color:#999` + `data-is-default='true'`
+
+- ✅ **[FIX] Bug 2 — per-box「半」「全」按鈕 active 顏色聯動**
+  - 新增 `_updateBoxBtnState(container, boxKey, mode)` helper（'half'/'full'/'manual' 三態藍/灰）
+  - 5 個觸發點：`_quickHalfFillSplitBtn`、`_quickFillSplitBtn`、`_quickHalfFillAllSplits` forEach、`_quickFillAllSplits` forEach、`focusin` handler
+  - `_quickHalfFillSplitBtn` 同補 `color:#999` + `data-is-default='true'`（半付格也標記預設色）
+
+- ✅ **[FIX] Bug 3 — 按鈕 active 色 `#E65100` → `#1565C0`**
+  - 精準 3 處：HTML `#fhsHalfFillAllBtn` 初始色、`_syncGlobalDepositBtnUI()` 邏輯、balance「全部付清」移除 inline hover handler 改用 class
+  - 產品分類 `.box-cat-P`、`review-badge-qty`、`sbBadge` 的 `#E65100` 全保留不動
+
+### 待 Fat Mo Live 驗收
+- ① 「未付尾數」行有「全部半訂」（藍）+「全部付清」（灰）按鈕
+- ② balance 預填值呈現淺色（#999）
+- ③ 每格「半」按鈕：點擊後變藍（active），「全」仍灰
+- ④ 每格「全」按鈕：點擊後變藍（active），「半」仍灰
+- ⑤ 手動點格輸入（focusin）→ 兩個按鈕均回灰（manual 狀態）
+- ⑥ 全域按鈕及 per-box 按鈕 active 色為藍（#1565C0），與木框套裝橙色（#E65100）明顯區分
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：grep 確認 `fhsHalfFillAllBtnBal`/`_updateBoxBtnState`/`#1565C0`（按鈕）均到位 = ✅；Live 驗證待 Fat Mo。
+Subagent：❌ 未派（精準修改，架構完全掌握，直接執行）。
+
+---
+
+# FHS Handoff - 2026-06-09 (Session 74 — 全部半訂 + 智慧預填 + focus/blur UX)
+
+## Session 74 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] 全部半訂 + 智慧預填 UX**（`freehandsss_dashboardV42.html`）
+  - 新增「全部半訂」按鈕（`#fhsHalfFillAllBtn`，橘色預設）+ 既有「全部付清」加 `#fhsFullFillAllBtn`
+  - `renderPaymentSplits` 後自動呼叫 `_quickHalfFillAllSplits('deposit')` 預填半付（`color:#999`，`data-is-default=true`）
+  - `focusin` 委派：點擊預設格 → 清空 + 正常色 + mode='manual' + 按鈕變灰
+  - `focusout` 委派：空值離開 → 還原半付預設 + 淺色 + 重評估 mode
+  - `_syncGlobalDepositBtnUI()` 根據 `window._depositMode` 同步橘/灰按鈕色
+  - `_quickFillAllSplits('deposit')` 補 mode='full' 追蹤 + 色重設
+
+### 待 Fat Mo Live 驗收
+- ① 生成訂單後，所有 deposit 格自動顯示半付金額（淺色 #999），「全部半訂」橘色
+- ② 點擊任一格 → 即時清空，方便輸入，兩個按鈕均變灰
+- ③ 不輸入直接離開 → 還原半付預設值 + 淺色
+- ④ 點「全部付清」→ 全額填入深色，「全部付清」橘色
+- ⑤ 點「全部半訂」→ 半付預設淺色，「全部半訂」橘色
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — grep 確認所有關鍵函式到位（_syncGlobalDepositBtnUI/fhsHalfFillAllBtn/focusin/focusout = ✅）；Live 驗證待 Fat Mo。
+Subagent：❌ 未派（10 項精準改動，架構完全掌握，直接執行更高效）。
+
+---
+
+# FHS Handoff - 2026-06-09 (Session 73 — 支付按鈕文字改版 + 移除全域按鈕)
+
+## Session 73 完結
+
+### 執行完成項目
+
+- ✅ **[UX] Split-box 支付按鈕重構**（`freehandsss_dashboardV42.html`）
+  - 移除頂部 `#fhsHalfPayBtn` / `#fhsFullPayBtn` HTML 元素（全域切換移除）
+  - `_addBox()` 每格右側：SVG icon → 純文字「半」（上）+「全」（下）flex-column 疊排
+  - 清除孤兒 JS：`_applyPaymentMode()` + `_updateQuickPayBtnState()` + `window._paymentMode` + auto-apply 呼叫塊（共 4 處）
+  - `_quickFillSplitBtn` / `_quickHalfFillSplitBtn` 功能邏輯保留
+
+### 待 Fat Mo Live 驗收
+- ① 頂部「已付訂金」行無多餘按鈕（只剩「全部付清」+「✕ 清除」）
+- ② 每格右側顯示「半」（上）+「全」（下）文字按鈕，垂直疊排
+- ③ 點「半」→ ceil(suggested/2)；點「全」→ suggested 全額
+- ④ Console 無 ReferenceError（孤兒函式已清除）
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — 待 code-reviewer G1–G8 Gate；grep 確認所有孤兒引用零殘留（`_applyPaymentMode`/`_updateQuickPayBtnState`/`_paymentMode` = 0 match）；Live 驗證待 Fat Mo。
+Subagent：❌ 未派（6 個精準 Delete/Edit，架構完全掌握，直接修改更高效）。
+
+---
+
+# FHS Handoff - 2026-06-09 (Session 72 — 支付按鈕 Icon 改版)
+
+## Session 72 完結
+
+### 執行完成項目
+
+- ✅ **[UX] 支付按鈕 Icon 改版**（`freehandsss_dashboardV42.html`）
+  - `#fhsHalfPayBtn` / `#fhsFullPayBtn`：純 SVG icon-only（◑ / ✓），移除文字，加 `title` tooltip
+  - `_addBox()` 每格：`⚡` → ✓ SVG（全付）+ 新增 ◑ SVG 半付按鈕（`.quick-half-btn`）
+  - `照數填入` → `全部付清`（移除 ⚡，保留文字純按鈕，功能不變）
+  - 新增 `_quickHalfFillSplitBtn(btn)`：`Math.ceil(suggested/2)` + `_depositDirty=true` + `window` expose
+  - `_quickFillSplitBtn` 補 `_depositDirty=true`
+  - SVG 常數 `FHS_SVG_FULL` / `FHS_SVG_HALF` 定義於 `renderPaymentSplits` 前
+  - current.html 不動
+
+### 待 Fat Mo Live 驗收
+- ① 頂部 ◑ ✓ icon 顯示、hover tooltip
+- ② 每格右側出現兩個 icon 按鈕（✓ 全付、◑ 半付），無 ⚡
+- ③ 點 ◑ suggested=100 → 50，suggested=105 → 53（ceil）
+- ④ dirty flag 設為 true 後 auto-apply 不再覆蓋
+- ⑤「全部付清」文字顯示，無 icon
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — 待 code-reviewer G1–G8 Gate（本 session 未跑，待 Fat Mo 授權後跑）；Live 驗證待 Fat Mo。
+Subagent：❌ 未派（7 個精準 Edit 改動，架構完全掌握，直接修改更高效；subagent 無附加值）。
+
+---
+
+# FHS Handoff - 2026-06-09 (Session 71 — 全付/半付快速切換按鈕)
+
+## Session 71 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] 全付/半付快速切換按鈕**（`freehandsss_dashboardV42.html`）
+  - `#fhsHalfPayBtn`（½ 半付）、`#fhsFullPayBtn`（全付）於「已付訂金」label row 插入
+  - 半付 = 每格 `ceil(price/2)`；尾數衍生 `floor`（_syncBalanceFromDeposit 級聯，不直接寫 balance）
+  - Default = 半付：`_fhsCostReady=true` + `!_depositDirty` 後自動預填
+  - Dirty flag：`e.isTrusted` 區分人工/程式輸入；點按鈕重置
+  - Disabled gate：`_fhsCostReady=false` 時 disabled + opacity:0.4
+  - 奇數金額：ceil+floor 零差額
+  - code-reviewer G1–G8 ALL PASS
+
+### 待 Fat Mo Live 驗收
+- ① 首載自動半付預填 ② 全付切換 ③ 手動覆蓋後 dirty 保護 ④ 奇數金額無差額
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ 技術債 |
+| — | `perplexity-mcp-server` submodule 有改動，未處理 | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — code-reviewer G1–G8 Gate ALL PASS（G1 captureFormState 完好、G2 ID 零刪除、G5 isTrusted dirty 保護、G6 balance 衍生無直接寫值）；Live 驗證待 Fat Mo。
+Subagent：✅ code-reviewer（G1–G8 Gate 稽核）；實作由主 context 直接完成（架構已完全掌握，無需 frontend-developer 代勞）。
+
+---
+
 # FHS Handoff - 2026-06-09 (Session 70 — /upload-web 指令 + V42 成本載入修復 + 玻璃瓶嬰兒區 UX)
 
 ## Session 70 完結
@@ -16,7 +308,7 @@
 
 ### 待 Fat Mo 驗證
 
-- Ctrl+Shift+R 重整 V42 → ① 成本報價自動算出 ② 模式按鈕等寬一行 ③ 收合鈕往返。
+- ✅ **2026-06-09 Fat Mo 驗收完結**：① 成本報價自動算出 ② 模式按鈕等寬一行 ③ 收合鈕往返 — 全部通過。
 
 ### 技術債現況
 

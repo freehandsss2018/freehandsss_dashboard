@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-10 (Session 75–79): 🎨 V42 Split Payment 按鈕 UX 完成 + 部署 ✅
+
+**Scope**: (S75) 三視覺 Bug 修復（balance 按鈕 + per-box active 色 + #E65100→#1565C0）；(S76) active 色改橄欖綠 #558B2F + Balance 狀態機；(S77) per-box 時序 Bug 修復（移除 C4 + `setTimeout(0)` 最終 pass）；(S78) 移除 balance 全部半訂/全部付清；(S79) V42 部署 → current + NAS（PASS, SHA256: CC67786A）。
+**Status**: ✅ V42 = 生產版。active 色 #558B2F。deposit: 全部半訂/全部付清/清除。balance: 僅清除。
+
+---
+
 ## 2026-06-07 (Session 68): 🔌 Supabase MCP 建立 + Test01 Live 驗收 ✅
 
 **Scope**: (1) 建立 Supabase MCP（`@supabase/mcp-server-supabase@latest`，PAT 驗證）；(2) Test01 訂單 Live 驗收 — Session 66 TD-P-chargedPositions 修復確認 PASS（P_MAIN drawing=$0，total_cost=$335 正確）。

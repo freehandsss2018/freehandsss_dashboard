@@ -1,5 +1,111 @@
 # Changelog
 
+## [2026-06-10] 🐛 V42 Session 77 — per-box 按鈕狀態時序修復
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；current.html 不動
+
+### [FIX] 點「全部付清」後「半」button 仍顯綠色
+- **根本原因**：`_syncBalanceFromDeposit` 內 C4 的 `_updateBoxBtnState(balContainer, bk, 'half')` 在每次 deposit input 變動時觸發，覆蓋 `_quickFillAllSplits` 設定的 'full' 狀態
+- **修復 R1/R2**：移除 `_syncBalanceFromDeposit` 兩個 loop 的 `_updateBoxBtnState` 呼叫（derive 時不應強設按鈕狀態）
+- **修復 F1/F2**：`_quickFillAllSplits` 和 `_quickHalfFillAllSplits` 末尾加 `setTimeout(0)` 最終同步，確保 per-box active 狀態在所有同步 event dispatch 副鏈結束後才設定，不受干擾
+
+---
+
+## [2026-06-09] 🐛 V42 Session 76 — Balance 狀態機 + active 色改橄欖綠
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；current.html 不動
+
+### [FIX] active 色 #1565C0 → #558B2F（橄欖綠）
+- 精準 4 處替換：`#fhsHalfFillAllBtn` HTML 初始色、`_syncGlobalDepositBtnUI`、`_updateBoxBtnState`、`#fhsHalfFillAllBtnBal` HTML 初始色
+- 系統藍（`--fhs-info`、Supabase banner）保留不動
+
+### [FEAT] Balance 全域按鈕狀態機（鏡像 deposit 設計）
+- `window._balanceMode = 'half'`（初始值）+ `_syncGlobalBalanceBtnUI()` 新函式
+- `_quickHalfFillAllSplits('balance')` 末尾加 `_balanceMode='half'` + UI 同步
+- `_quickFillAllSplits('balance')` 新增獨立 balance block：`_balanceMode='full'` + UI 同步 + inputs 色重設
+
+### [FIX] Balance per-box 按鈕 active 狀態
+- `_syncBalanceFromDeposit` items loop + necklace loop 末尾各補 `_updateBoxBtnState(balContainer, bk/'group.boxKey', 'half')`，balance 派生值後 per-box 按鈕即時顯示 active
+
+---
+
+## [2026-06-09] 🐛 V42 三視覺 Bug 修復（balance 按鈕 + per-box 顏色 + 藍色替換）
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；current.html 不動
+
+### [FIX] Bug 1 — balance 行補「全部半訂」+ 灰色標記
+- 未付尾數行補入 `#fhsHalfFillAllBtnBal`（全部半訂，藍色），與 `#fhsFullFillAllBtnBal`（全部付清）並排。
+- `_syncBalanceFromDeposit()` 兩個 loop（items + necklace group）補 `color:#999` + `data-is-default='true'`，balance 預填值同樣顯示淺色。
+
+### [FIX] Bug 2 — per-box「半」「全」按鈕 active 狀態顏色聯動
+- 新增 `_updateBoxBtnState(container, boxKey, mode)` helper：'half'→藍；'full'→藍；'manual'→雙灰。
+- 注入 5 個觸發點：`_quickHalfFillSplitBtn`、`_quickFillSplitBtn`、`_quickHalfFillAllSplits` forEach、`_quickFillAllSplits` forEach、`focusin` handler。
+
+### [FIX] Bug 3 — 按鈕 active 色 `#E65100` → `#1565C0`（避免與產品分類橙色衝突）
+- 精準修改 3 處：`#fhsHalfFillAllBtn` HTML 初始色、`_syncGlobalDepositBtnUI()` 邏輯、balance 全部付清按鈕移除 hover inline handler。
+- 產品分類 `.box-cat-P`、badge、warning 的 `#E65100` 保留不動。
+
+---
+
+## [2026-06-09] ✨ V42 全部半訂 + 預填 + focus/blur UX
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；current.html 不動
+
+### [FEAT] 全部半訂功能 + 智慧預填
+- 新增「全部半訂」按鈕（`#fhsHalfFillAllBtn`）於頂部，對等「全部付清」（`#fhsFullFillAllBtn`）。
+- `renderPaymentSplits` 後自動預填半付：所有 deposit 格填 `ceil(suggested/2)`，`color:#999`，`data-is-default=true`。
+- `focusin`：操作員點擊預設值格 → 即時清空 + `color:#333` + mode='manual'。
+- `focusout`：空值離開 → 還原半付預設 + `color:#999` + 重評估 mode。
+- `window._depositMode = 'half'|'full'|'manual'` 追蹤狀態，`_syncGlobalDepositBtnUI()` 同步橘/灰色。
+- ⏳ 待 Fat Mo Live 驗證：① 預設半付淺色 ② focus 清空 ③ blur 還原 ④ 全部付清→橘色切換。
+
+---
+
+## [2026-06-09] 💅 V42 支付按鈕文字改版（半/全疊排 + 移除全域頂部按鈕）
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；current.html 不動
+
+### [UX] Split-box 按鈕重構 + 代碼清理
+- 移除頂部 `#fhsHalfPayBtn` / `#fhsFullPayBtn` icon 按鈕（全域切換改為每格各自操作）。
+- `_addBox()` 每格右側：SVG icon → 純文字「半」（上）+「全」（下），上下疊排 flex-column。
+- 清除孤兒邏輯：`_applyPaymentMode()` + `_updateQuickPayBtnState()` + `window._paymentMode` + auto-apply 呼叫塊。
+- `_quickFillSplitBtn` / `_quickHalfFillSplitBtn` 功能邏輯保留，改由每格文字按鈕直接觸發。
+- ⏳ 待 Fat Mo Live 驗證：① 頂部無全域付款按鈕 ② 每格右側「半」上「全」下正確 ③ 點擊填入功能正常。
+
+---
+
+## [2026-06-09] 💅 V42 支付按鈕 Icon 改版（◑ ✓ SVG + 全部付清）
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；current.html 不動
+
+### [UX] Payment split icon redesign
+- `#fhsHalfPayBtn` / `#fhsFullPayBtn`：純 SVG icon-only（◑ / ✓），移除文字，加 `title` tooltip。
+- `_addBox()` 每格：`⚡` → ✓ SVG（全付），並新增 ◑ SVG 半付按鈕（`.quick-half-btn`）。
+- `照數填入` → `全部付清`（移除 ⚡ icon，保留文字純按鈕）。
+- 新增 `_quickHalfFillSplitBtn(btn)`：填入 `Math.ceil(suggested/2)`，設 `_depositDirty=true`，掛 `window`。
+- `_quickFillSplitBtn` 補 `_depositDirty=true`（全付也標記 dirty，防自動覆蓋）。
+- SVG 常數 `FHS_SVG_FULL` / `FHS_SVG_HALF` 定義於 `renderPaymentSplits` 前。
+- ⏳ 待 Fat Mo Live 驗證：① 頂部 ◑ ✓ icon 顯示正常 ② 每格兩個 icon 可點 ③ 半付 ceil 正確 ④ dirty flag 有效。
+
+---
+
+## [2026-06-09] ✨ V42 已付訂金「全付/半付」快速切換按鈕（default=半付）
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；code-reviewer G1–G8 ALL PASS
+
+### [FEAT] 全付/半付快速填入按鈕
+- 新增 `#fhsHalfPayBtn`（½ 半付，預設 active 橘色）、`#fhsFullPayBtn`（全付）於「已付訂金」label row。
+- 半付：每格 deposit = `Math.ceil(per_item_price/2)`；balance 自動衍生 `Math.floor`（`_syncBalanceFromDeposit()` 級聯）。
+- 全付：每格 deposit = per_item_price；balance 自動歸 0。
+- Default = 半付：報價算出且 `_fhsCostReady=true` 後自動預填（首載/每次切換商品）。
+- Dirty flag：`e.isTrusted` 區分人工/程式輸入，操作員手動改值後停止自動覆蓋；點按鈕重置。
+- Disabled gate：`_fhsCostReady=false` 時按鈕 disabled + opacity:0.4；成本載入後啟用。
+- 奇數金額規則：已付 ceil、尾數 floor（ceil+floor=total，零差額）。
+- V42 only，current.html 不動（晉升需另行授權）。
+- ⏳ 待 Fat Mo Live 驗證：① 首載自動半付 ② 全付切換 ③ 手動覆蓋後 dirty 保護 ④ 奇數金額無差額。
+
+---
+
 ## [2026-06-09] 💅 V42 玻璃瓶 嬰兒收合控件重構 + 模式按鈕對齊修復（3 點）
 
 **範圍**：前端 UI/UX（`freehandsss_dashboardV42.html` + 同步 `Freehandsss_dashboard_current.html`，hash `7a8ab69a`）；code-reviewer G1–G8 ALL PASS
