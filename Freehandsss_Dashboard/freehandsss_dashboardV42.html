@@ -7785,10 +7785,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var r = window._dlvMap && window._dlvMap.get(orderId);
             if (!r) return '';
             var d = Math.abs(Number(r.days_remaining));
-            if (r.urgency === 'overdue')   return '<span class="dlv-badge dlv-badge-red">🔴 逾期' + d + '天</span>';
-            if (r.urgency === 'due_today') return '<span class="dlv-badge dlv-badge-red">🔴 今日到期</span>';
-            if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow">⚠️ 剩' + d + '天</span>';
-            return '<span class="dlv-badge dlv-badge-green">✓ 正常(剩' + Number(r.days_remaining) + '天)</span>';
+            if (r.urgency === 'overdue')   return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')">🔴 逾期' + d + '天</span>';
+            if (r.urgency === 'due_today') return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')">🔴 今日到期</span>';
+            if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow" style="cursor:pointer;" onclick="jumpToDlvCard(\'yellow\')">⚠️ 剩' + d + '天</span>';
+            return '<span class="dlv-badge dlv-badge-green" style="cursor:pointer;" onclick="jumpToDlvCard(\'green\')">✓ 正常(剩' + Number(r.days_remaining) + '天)</span>';
         }
 
         async function initDeliveryStatsCard() {
@@ -7815,6 +7815,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window._dlvRedRows    = red;
             window._dlvYellowRows = yellow;
             window._dlvGreenRows  = green;
+            if (window._dlvAutoExpand) {
+                var _c = window._dlvAutoExpand; window._dlvAutoExpand = null;
+                setTimeout(function(){ toggleDlvExpand(_c); }, 0);
+            }
         }
 
         function toggleDlvExpand(color) {
@@ -7857,6 +7861,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         window.initDeliveryStatsCard = initDeliveryStatsCard;
         window.toggleDlvExpand = toggleDlvExpand;
+
+        async function jumpToDlvCard(color) {
+            window._dlvAutoExpand = color;
+            if (typeof switchMode === 'function') await switchMode('system');
+            await new Promise(function(r){ requestAnimationFrame(r); });
+            var card = document.getElementById('dlvStatsCard');
+            if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        window.jumpToDlvCard = jumpToDlvCard;
 
         async function jumpToReviewOrder(orderId) {
             var filters = ['reviewYear','reviewMonth','reviewStatus','reviewBatch','reviewSearch'];

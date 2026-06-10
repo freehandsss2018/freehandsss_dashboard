@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-06-10] ✨ Session 83+++++++ — 時限徽章點擊跳回交貨期卡
+
+**範圍**：`freehandsss_dashboardV42.html` 3 處
+
+### [FEAT] 訂單列時限徽章可點擊，跳至 dlvStatsCard 對應類別
+- `_dlvBadgeHtml()` 4 個 badge 加 cursor:pointer + onclick="jumpToDlvCard('color')"
+- 新增 `jumpToDlvCard(color)`：設 `_dlvAutoExpand` flag → switchMode('system') → scroll to dlvStatsCard
+- `renderDeliveryStatsCard()` 尾端消費 `_dlvAutoExpand` flag → toggleDlvExpand(_c)
+- 時序安全：flag 在 auto-refresh 完成的 renderDeliveryStatsCard 內消費，無競態
+
+---
+
 ## [2026-06-10] 🐛 Session 83++++++ — 時限徽章同步修復 + dlvStatsCard UX 優化
 
 **範圍**：`freehandsss_dashboardV42.html` 2 處
