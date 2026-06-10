@@ -7866,9 +7866,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (el) el.value = '';
             });
             if (typeof switchMode === 'function') await switchMode('review');
-            var curOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
-            var inView = curOrders.some(function(o){ return o.id === uuid; });
-            if (!inView && window.fetchGlobalReview) await window.fetchGlobalReview(true);
+            if (window.fetchGlobalReview) await window.fetchGlobalReview(true);
             await new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); });
             var targetEl = document.getElementById('acc-order-' + uuid);
             if (!targetEl) {
@@ -11940,6 +11938,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.toggleItemDrawer = toggleItemDrawer;
         window.openAuditModal   = openAuditModal;
         window.closeAuditModal  = closeAuditModal;
+        window.openOrderModal   = openOrderModal;
 
         /* ── Preload SKU suggested prices (PGC-ODAT Phase 1) ───────── */
         async function preloadSuggestedPrices() {

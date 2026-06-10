@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-06-10] 🐛 Session 83++ — dlvStatsCard button 修復
+
+**範圍**：`freehandsss_dashboardV42.html` 兩處 bug fix
+
+### [FIX] 詳情 button 無反應
+- `openOrderModal` 未 export 至 `window`，inline onclick 靜默失敗
+- 修復：加 `window.openOrderModal = openOrderModal;`（line ~11942）
+
+### [FIX] 跳至 button 顯示訂單總覽頂端而非目標訂單
+- `jumpToReviewOrder` 的 `inView` 守衛跳過 `fetchGlobalReview`，review table DOM 未渲染，targetEl=null
+- 修復：移除 inView 條件，永遠 force-call `fetchGlobalReview(true)` 確保 DOM 渲染後再 scroll
+
+---
+
 ## [2026-06-10] ✨ Session 83+ — 交貨期統計卡強化（豐富資訊 + 跳至訂單）
 
 **範圍**：`freehandsss_dashboardV42.html` 局部強化；code-reviewer G1–G8 PASS
