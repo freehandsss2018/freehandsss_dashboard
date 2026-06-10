@@ -7848,8 +7848,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     '<span><strong>' + (r.order_id || '—') + '</strong> · ' + (r.customer_name || '-') + '</span>' +
                     '<div style="display:flex;gap:4px;align-items:center;">' +
                     '<span style="font-size:11px;color:' + colorStyle + ';">' + dText + '</span>' +
-                    '<button class="dlv-jump-btn" style="color:' + colorStyle + ';" onclick="openOrderModal(\'' + r.id + '\')">詳情</button>' +
-                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="jumpToReviewOrder(\'' + r.id + '\',\'' + (r.order_id || '') + '\')">↗ 跳至</button>' +
+                    '<button class="dlv-jump-btn" style="color:' + colorStyle + ';" onclick="openOrderModal(\'' + (r.order_id || '') + '\')">詳情</button>' +
+                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="jumpToReviewOrder(\'' + (r.order_id || '') + '\')">↗ 跳至</button>' +
                     '</div></div>' +
                     '<div class="dlv-expand-item-sub">起: ' + sDate + ' → 到: ' + eDate + ' · SLA ' + sla + '</div>' +
                     '</div>';
@@ -7859,7 +7859,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.initDeliveryStatsCard = initDeliveryStatsCard;
         window.toggleDlvExpand = toggleDlvExpand;
 
-        async function jumpToReviewOrder(uuid, orderId) {
+        async function jumpToReviewOrder(orderId) {
             var filters = ['reviewYear','reviewMonth','reviewStatus','reviewBatch','reviewSearch'];
             filters.forEach(function(id){
                 var el = document.getElementById(id);
@@ -7868,13 +7868,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (typeof switchMode === 'function') await switchMode('review');
             if (window.fetchGlobalReview) await window.fetchGlobalReview(true);
             await new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); });
-            var targetEl = document.getElementById('acc-order-' + uuid);
+            var targetEl = document.getElementById('acc-order-' + orderId);
             if (!targetEl) {
-                var cb = document.querySelector('.order-row-cb[data-order-id="' + uuid + '"]');
+                var cb = document.querySelector('.order-row-cb[data-order-id="' + orderId + '"]');
                 targetEl = cb ? cb.closest('tr') : null;
             }
             if (!targetEl) {
-                if (typeof openOrderModal === 'function') openOrderModal(uuid);
+                if (typeof openOrderModal === 'function') openOrderModal(orderId);
                 return;
             }
             var scrollEl = targetEl.closest('.swipe-row-wrapper') || targetEl;
