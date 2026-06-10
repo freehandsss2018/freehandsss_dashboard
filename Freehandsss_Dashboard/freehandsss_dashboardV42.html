@@ -852,8 +852,7 @@
         .audit-fin-col .audit-na         { color:#ccc; }
         .audit-fin-col .audit-modal-btn  { cursor:pointer; background:none; border:none; font-size:12px; padding:0 2px; color:#4A90D9; }
         /* Per-item cost breakdown — always visible in cost column */
-        .cost-fin-col { display:flex; flex-direction:column; align-items:flex-start; gap:2px; margin-top:5px; padding-top:5px; border-top:1px dashed #e0e0e0; font-size:11px; }
-        .cost-fin-item { color:#888; font-weight:500; }
+        /* (Session 84) 成本細項改回 toggle-gated，沿用 .audit-fin-col 舊版風格；.cost-fin-* 已退役 */
         /* Mobile item financial drawer */
         .item-financial-drawer { display:none; margin-top:6px; padding:6px 8px; background:#f8faff; border-radius:6px; border:1px solid #e0e8f5; font-size:11px; }
         .item-financial-drawer .ifd-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
@@ -978,7 +977,7 @@
         .review-badge-product { background:#ffffff; color:#333; border: 1px solid #ddd; font-weight: 500; }
 
         /* 刻字欄 — 水平並列佈局 (V29 升級) */
-        .review-eng-container { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .review-eng-container { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
         .review-eng-line { font-size:12px; background:#f0f4f8; padding:3px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:6px; border: 1px solid #d1d9e6; }
         .review-eng-label { font-size:10px; font-weight:900; padding:1px 4px; border-radius:3px; text-transform:uppercase; color: white; }
         .review-eng-label-top { background: #5DADE2; }
@@ -1177,6 +1176,7 @@
         /* V31.9 訂單總覽：快跳修改膠囊 */
         .review-jump-pill {
             display: inline-flex;
+            white-space: nowrap;
             align-items: center;
             padding: 4px 10px;
             background: rgba(212, 163, 115, 0.05);
@@ -3171,16 +3171,16 @@
                             <th class="review-cb-th" style="padding:8px 4px; border:none;">
                                 <input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)">
                             </th>
-                            <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:90px;" onclick="sortReviewTable('Order_ID')">📝 單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
+                            <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:110px;" onclick="sortReviewTable('Order_ID')">📝 單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
                             <th class="sort-th" data-sort="Date" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;" onclick="sortReviewTable('Date')">📅 日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
-                            <th class="sort-th" data-sort="Customer" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;" onclick="sortReviewTable('Customer')">👤 客人<span class="sort-arrow" id="sort-arrow-Customer"></span></th>
-                            <th class="sort-th" data-sort="Final_Sale_Price" style="padding:12px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Final_Sale_Price')">💵 入帳<span class="sort-arrow" id="sort-arrow-Final_Sale_Price"></span></th>
-                            <th class="sort-th" data-sort="Total_Cost" style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Total_Cost')">💰 成本<span class="sort-arrow" id="sort-arrow-Total_Cost"></span></th>
-                            <th class="sort-th" data-sort="Net_Profit" style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Net_Profit')">🏆 利潤<span class="sort-arrow" id="sort-arrow-Net_Profit"></span></th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:160px;">✂️ 刻字</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;">👤 客人</th>
+                            <th style="padding:12px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">💵 入帳</th>
+                            <th style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">💰 成本</th>
+                            <th style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">🏆 利潤</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:70px;">✂️ 刻字</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:200px;">📦 產品明細</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;">🏷️ 批次</th>
-                            <th class="sort-th" data-sort="Status" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;" onclick="sortReviewTable('Status')">🚥 進度<span class="sort-arrow" id="sort-arrow-Status"></span></th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;">🚥 進度</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">📝 備註</th>
                         </tr>
                     </thead>
@@ -8313,29 +8313,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;">📝 金屬</button>';
                 if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>';
 
-                // Direct per-item cost breakdown (always visible, uses item_base_cost from order_items)
-                var _directCostItems = (o.items || []).filter(function(it){ return Number(it.Cost) > 0; });
-                var _pgcCostListDirect = _directCostItems.length > 0
-                    ? '<div class="cost-fin-col">' + _directCostItems.map(function(it){
-                        var _lbl = it.Category === '立體擺設' ? '手模' :
-                                   it.Category === '金屬鎖匙扣' ? '鎖匙扣' :
-                                   it.Category === '銀飾' ? '銀飾' : '配件';
-                        var _qtyStr = Number(it.Qty) > 1 ? '&times;' + Number(it.Qty) : '';
-                        return '<span class="cost-fin-item">' + _lbl + _qtyStr + '&nbsp;$' + it.Cost + '</span>';
-                    }).join('') + '</div>'
-                    : '';
-
-                // PGC-ODAT: per-item audit lists for 入帳 / 成本 columns
-                var _pgcItems = (o.items || []).map(function(it) {
+                // PGC-ODAT: per-item audit data (price lookup per SKU)
+                // Built from _renderItemsFinal (not o.items) to stay index-aligned with forEach loop
+                // _pgcCostListDirect and _pgcPriceList removed — replaced by per-row fin cells in forEach
+                var _pgcItems = (_renderItemsFinal || []).map(function(it) {
                     var _sku = it.Product_SKU || '';
                     var _ent = _sku ? fhsSuggestedPriceMap[_sku] : null;
                     return _ent ? { sku: _sku, price: _ent.price, cost: _ent.cost } : null;
                 });
                 var _pgcHas = _pgcItems.some(function(x){ return x !== null; });
-                var _pgcPriceList = _pgcHas
-                    ? '<div class="audit-fin-col">' + _pgcItems.map(function(x){
-                        return x ? '<span class="audit-sku-price">$' + x.price + '</span>' : '<span class="audit-na">—</span>';
-                    }).join('') + '</div>' : '';
+                // orderLeftColsHtml: 4 rowspan cols only (cb / 單號 / 日期 / 客戶)
+                // 入帳/成本/利潤 are now per-row <td> emitted inside forEach (D1-a)
                 const orderLeftColsHtml = `
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
@@ -8357,17 +8345,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${cDate}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${o.Customer || '-'}</td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
-                        ${_pgcPriceList}
-                    </td>
-                    <td id="cost-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        <span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
-                        ${_pgcCostListDirect}
-                    </td>
-                    <td id="profit-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        $${displayedProfit}
-                    </td>
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
@@ -8531,28 +8508,53 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // 繪製表格列 (TR)
                         const isLastItem = index === itemsCount - 1;
                         const _rowBorderB = isLastItem ? '3px solid #b0b0b0' : '1px solid #ebebeb';
+
+                        // D1-a: per-row 入帳/成本/利潤 cells (方案甲 拆 rowspan)
+                        // index===0: 訂單總額粗體在上，逐項值在下 (audit-fin-col toggle)
+                        // index>0:   只顯逐項值 (audit-fin-col toggle)
+                        var _itEnt   = (_pgcItems || [])[index] || null;
+                        var _itPrice = _itEnt ? _itEnt.price : null;
+                        var _itCost  = Number(item.Cost) > 0 ? Number(item.Cost) : null;
+                        var _itProfit = (_itPrice != null && _itCost != null) ? (_itPrice - _itCost) : null;
+                        var _itPC    = (_itProfit != null && _itProfit > 0) ? '#2A9D8F' : '#E63946';
+                        var _na      = '<span class="audit-na">—</span>';
+                        var _finCells = `
+                          <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
+                          </td>
+                          <td ${index === 0 ? `id="cost-cell-${o.id}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
+                          </td>
+                          <td ${index === 0 ? `id="profit-cell-${o.id}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
+                          </td>`;
+
                         html += `
                         <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${rowBatchCol};">
+                            ${_finCells}
+                            <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 70px; padding: 8px 3px; background-color:${rowBatchCol};">
                                 ${engCellHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
                                 ${prodHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 100px; background-color:${rowBatchCol};">
                                 <input type="text" id="batch-input-${o.id}-${index}" class="review-batch-input"
                                        value="${rowBatch || ''}"
-                                       style="width:80%; max-width:80px; text-align:center; margin:0 auto; font-size:13px;"
+                                       style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:13px;"
                                        inputmode="numeric"
                                        onfocus="batchInputFocus(this)"
                                        oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'batch-input-${o.id}-${index}', ${index})"
                                        placeholder="批次">
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                                 <select id="status-select-${o.id}-${index}" class="review-status-select"
-                                        style="width:90%; font-size:13px; margin:0 auto;"
+                                        style="width:100%; max-width:92px; font-size:13px; margin:0 auto;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index});
                                                   var _adj = document.getElementById('adj-wrapper-${o.id}-${index}');
                                                   if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
@@ -8619,9 +8621,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 } else {
                     // 如果沒有子項目，使用訂單本身的批次顏色 (V31.83 修正)
                     const orderBatchCol = getBatchColor(o.Batch || "");
+                    // D1-a fallback: single-row order needs 入帳/成本/利潤 cells with IDs for live update
                     html += `
                     <tr class="order-group-${o.id}" id="row-${o.id}">
                         ${orderLeftColsHtml}
+                        <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            ${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
+                        </td>
+                        <td id="cost-cell-${o.id}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            <span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
+                        </td>
+                        <td id="profit-cell-${o.id}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            $${displayedProfit}
+                        </td>
                         <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
                         </td>
@@ -9864,6 +9876,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 2. Construct entry
             const updateEntry = {
                 Record_ID:  recordId,
+                ItemIndex:  itemIndex,
                 _sb_id:     isItemUpdate ? (itemObj._sb_id || '') : '',
                 _item_key:  isItemUpdate ? (itemObj.Item_ID || itemObj.Order_Item_Key || '') : '',
                 _is_item:   isItemUpdate,
@@ -9877,7 +9890,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window.lastUpdateEntry = updateEntry;
 
             // 3. Add to queue
-            const existingIdx = metadataUpdateQueue.findIndex(e => e.Record_ID === updateEntry.Record_ID && e.Item_Record_ID === updateEntry.Item_Record_ID);
+            const existingIdx = metadataUpdateQueue.findIndex(e => e.Record_ID === updateEntry.Record_ID && e._item_key === updateEntry._item_key && e._field === updateEntry._field);
             if (existingIdx > -1) {
                 metadataUpdateQueue[existingIdx] = updateEntry;
             } else {
@@ -11888,14 +11901,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
             if (window.fhsShowItemFinancials) {
-                var _doRender = function() {
-                    document.body.classList.add('fhs-audit-on');
-                    if (typeof applyReviewFilters === 'function') applyReviewFilters();
-                };
+                // [Session 84 fix] 首按即時生效：fhs-audit-on class 同步立即加，.audit-fin-col 細項立刻顯示。
+                // 成本/利潤逐項用 item.Cost 直算（不需 SKU map）；僅入帳逐項 SKU 建議價需 preload。
+                // 原 bug：class 藏在 preloadSuggestedPrices().then() 內，首按要等網路往返才顯示＝「沒反應」+ 連按 race。
+                document.body.classList.add('fhs-audit-on');
                 if (Object.keys(fhsSuggestedPriceMap).length === 0) {
-                    preloadSuggestedPrices().then(_doRender);
+                    // 背景補入帳欄 SKU 建議價，回來再 re-render 填值；preload 失敗於其 catch 內自處理，不卡 toggle。
+                    preloadSuggestedPrices().then(function() {
+                        if (window.fhsShowItemFinancials && typeof applyReviewFilters === 'function') applyReviewFilters();
+                    });
                 } else {
-                    _doRender();
+                    if (typeof applyReviewFilters === 'function') applyReviewFilters();
                 }
             } else {
                 document.body.classList.remove('fhs-audit-on');

@@ -1,3 +1,51 @@
+# FHS Handoff - 2026-06-10 (Session 84 — 訂單總覽成本細項：toggle 收摺 + 逐行對齊 + 配色)
+
+## Session 84 完結
+
+### 背景修正
+- 用戶更正：Session 81 把成本細項改 always-visible 是基於**誤判**（舊版無 bug，只是當時沒點開 toggle）。本 session 撤回為 toggle-gated。
+
+### 執行完成項目（皆 `freehandsss_dashboardV42.html`，current 未動）
+
+- ✅ **[方案B] 成本細項改回 toggle-gated + 舊版風格**
+  - `_pgcCostListDirect` 容器 `.cost-fin-col`→`.audit-fin-col`（沿用 `fhs-audit-on`），span→`.audit-sku-profit`（舊深藍粗體）；移除退役 `.cost-fin-*` CSS
+  - 🐛 溜洞：分類標籤 `'銀飾'`→`'純銀頸鏈吊飾'`（原永不命中→頸鏈吊飾錯標「配件」）
+
+- ✅ **[方案甲 D1-a] 拆 rowspan — 財務細項逐行對齊產品行**（/cl-flow 2026-06-10-2052 → /execute）
+  - 入帳/成本/利潤從 rowspan 合併格釋放，改 forEach 逐項 `<td>`（`_finCells`）同 `<tr>` 對齊
+  - 訂單總額移 index===0 列上方；`_pgcItems` 來源改 `_renderItemsFinal`
+  - 三 ID（cost-cell/cost-val/profit-cell-${o.id}）保留於 index===0 + fallback；廢棄堆疊字串；欄數平衡 12；交貨期零波及
+  - frontend-developer 實作 + 主 context 逐行靜態驗證
+
+- ✅ **[配色] 逐項與欄位語義一致**：入帳棕 `#B07D4C`、成本紅 `#E63946`（inline，weight 600）；利潤 `_itPC`；未動全域 `.audit-sku-price`/`.audit-sku-profit`（保護 line 8481）
+
+- ✅ **[FIX] toggleAuditMode 首按無反應**（/execute）：根因 `fhs-audit-on` class 藏在 `preloadSuggestedPrices().then()` 內，首按需等網路往返才顯示 + 連按 race。修復：class 同步立即加（成本/利潤用 item.Cost 不需 map），preload 降為背景補入帳價、`.then` 守衛 `fhsShowItemFinancials` 才 re-render
+
+- ✅ **[FIX] 單項訂單 入帳→進度 欄上方空白**（/execute，方案甲回歸）：7 個 per-row `<td>`（財務×3 + 刻字/產品/批次/狀態）`vertical-align:middle`→`top`（財務/批次/狀態加 padding-top:15px）；fallback 空狀態格保留 middle
+
+- ✅ **[FIX] index>0 孤兒虛線移除**（/execute）：index>0 `.audit-fin-col` inline 覆蓋去 border-top/上方間距，index===0 保留；未動全域 class
+- ✅ **[UX] 進度欄表頭排序移除**（/execute）：line 3182 移除 sort-th/data-sort/onclick/sort-arrow，保留 🚥 進度 文字；其他欄排序 + sortReviewTable() + status 下拉不變
+- ✅ **[UX] 欄寬調整**（/execute）：單號 pill nowrap + th 90→110px（不換行）；刻字 th 160→110/td 140→110px+padding 收窄；`.review-eng-container` flex-wrap wrap→nowrap+gap 6px（TOP/BOT 同行）
+- ✅ **[UX] 刻字再收窄 88px + 立體擺設移 TOP + 批次完整**（/execute）：刻字 th/td 110→88px；engHtml 以 `_tblIs立體` 分流（立體擺設只顯文字無 TOP、允許 wrap；keychain TOP/BOT 維持 nowrap）；批次 cell 90→100px/input max-width 80→92px
+- ✅ **[FIX] 「準備同步...」徽章卡住**（/execute）：根因 updateEntry 漏 `ItemIndex` → timer 清除打錯 order 級元素，item 級永不清。修復補 `ItemIndex: itemIndex` + dedup 改 `_item_key+_field`（原用不存在的 Item_Record_ID）
+- ✅ **[UX] 刻字 70px + 還原立體擺設 TOP**（/execute）：刻字 th/td 88→70px；engHtml 移除 `_tblIs立體` 分流，立體擺設恢復 TOP badge（與 keychain 同結構）
+- ✅ **[UX] 批次/進度方框統一 + 排序收斂**（/execute）：status select 對齊 batch input 92px + 進度欄 140→100px（方框等大）；移除 客人/入帳/成本/利潤 排序三角，僅單號/日期保留排序
+
+- ✅ **[FIX 根治] 鎖匙扣/吊飾刻字失效**（/execute，B 修法）：根因＝n8n `sync_order_to_mirror` RPC 從未含 engraving_text 欄（git 考古坐實）+ Mirror Prep 把刻字誤塞 specification。修：n8n Mirror Prep 補 engraving_text（gated，**已部署+備份** versionId d8e3f8a6）；migration **0034** RPC 補 engraving_text（範本 0017，**✅ 已套用** via Supabase Management API query 端點，繞過掉線 MCP；`has_engraving=true` 驗證）。既有 test01/02 需 re-save 回填（其 raw_form_state 吊飾刻字尚在：test01 m_rf_eng=L / test02 m_lf_eng=L；鎖匙扣本來就沒填）。
+  - ⚠️ **MCP 掉線事件**：Supabase MCP stdio pipe 中途斷（專案/PAT/配置皆正常，curl REST + Management API 均通）；客戶端需 `/mcp` 重連。本次改用 Management API（同 PAT、官方路徑）完成 DDL。
+  - rollback（n8n）：`.fhs/notes/aireports/n8n-mcp-backups/2026-06-10/6Ljih0hSKr9RpYNm/Supabase_Mirror_Prep.json`
+
+### 待辦 / 驗收
+- ⏳ **Fat Mo live 視覺確認**：逐行對齊 + toggle 兩態 + 三欄同色系 + 成本 live 回寫（playwright 因需 Supabase live 資料無法於此環境量測）
+- ⏳ **/commit**：本 session 三項改動 + 前序財務版面診斷（flow 2026-06-10-1153，7 bug 待修）尚未 commit + Notion 同步
+- ⏸ **財務版面 7 bug 修復**（flow 1153 Verdict）：B7 收款確收守護 CRITICAL 等待 /execute
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — 主 context 逐行靜態驗證欄數平衡(12)/三 ID 保留/語法/全域 class 未污染 = PASS；**live 視覺對齊與配色待 Fat Mo 實機**（playwright 環境無 Supabase live 資料，未假裝通過）；code-reviewer G1–G8 Gate 未跑（如需可補派）
+Subagent：✅ frontend-developer（方案甲實作，依 cl-flow Verdict 授權）；配色 2 處 + 方案B 4 處由主 context 直接 Edit（精準小改）；code-reviewer 未派（主 context 已完成等效靜態核驗，如 Fat Mo 要求可補）
+
+---
+
 # FHS Handoff - 2026-06-10 (Session 83 完整 — 交貨期系統全面優化)
 
 ## Session 83 完整完結（多輪 bug fix + 功能強化）

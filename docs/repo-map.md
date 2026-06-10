@@ -49,7 +49,8 @@ freehandsss_dashboard/
 │   │   ├── 0030_fix_3d_frame_base_costs.sql ← 立體擺設 products.total_base_cost 修正：4 SKU 由 0 → 210（Session 65 根因修復）⏳ 待 Fat Mo 執行
 │   │   ├── 0031_expense_logs.sql            ← expense_logs 表（Log Sheet Phase 1，Session 80/81）✅ 已部署
 │   │   ├── 0032_delivery_reminders.sql      ← VIEW v_delivery_reminders（交貨期 SLA 90/126天，HKT，Session 82）✅ 已部署
-│   │   └── 0033_delivery_reminders_item_filter.sql ← VIEW 強化：全 items Done 自動豁免警告（Session 83）✅ 已部署
+│   │   ├── 0033_delivery_reminders_item_filter.sql ← VIEW 強化：全 items Done 自動豁免警告（Session 83）✅ 已部署
+│   │   └── 0034_sync_rpc_add_engraving_text.sql ← sync_order_to_mirror RPC 補 engraving_text 持久化（鎖匙扣/吊飾刻字失效根治，Session 84）✅ 已套用（Management API，has_engraving=true 驗證）
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

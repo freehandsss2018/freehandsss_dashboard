@@ -1,5 +1,79 @@
 # Changelog
 
+## [2026-06-10] 🎨 Session 84 — 訂單總覽成本/入帳細項：toggle 收摺 + 逐行對齊 + 配色一致
+
+**範圍**：`freehandsss_dashboardV42.html`（成本/入帳/利潤欄渲染，僅 dev 基線；current 未動）
+
+### [UX] 方案B — 成本細項改回 toggle-gated + 舊版風格
+- `_pgcCostListDirect` 容器 `.cost-fin-col`→`.audit-fin-col`（沿用 `fhs-audit-on` toggle，與「🔍 顯示項目財務」聯動），span `.cost-fin-item`→`.audit-sku-profit`（舊版深藍粗體）
+- 移除退役 `.cost-fin-col`/`.cost-fin-item` CSS
+- 🐛 溜洞修復：分類標籤 `'銀飾'`→`'純銀頸鏈吊飾'`（原條件永不命中，頸鏈吊飾被錯標「配件」）
+
+### [REFACTOR] 方案甲 D1-a — 拆 rowspan，財務細項逐行對齊產品明細
+- 入帳/成本/利潤 從 `orderLeftColsHtml` 的 rowspan 合併格釋放，改為 forEach 內逐項 `<td>`（`_finCells`），與右側產品行同 `<tr>` 對齊
+- `orderLeftColsHtml` 縮為 4 rowspan 欄（checkbox/單號/日期/客戶）；訂單總額移至 index===0 列上方
+- `_pgcItems` 來源 `o.items`→`_renderItemsFinal`（對齊產品行同一陣列）
+- ID 保留：`cost-cell`/`cost-val`/`profit-cell-${o.id}` 遷至 index===0 格 + 單行 fallback 格（live 成本回寫不斷）
+- 廢棄堆疊字串 `_pgcCostListDirect`/`_pgcPriceList`/`_directCostItems`
+- 欄數平衡（12 欄）；交貨期 `_dlvBadgeHtml`/dlvStatsCard 零波及
+
+### [POLISH] 逐項配色與欄位語義一致
+- 入帳逐項→棕 `#B07D4C`、成本逐項→紅 `#E63946`（inline override，weight 600 區分層級）；利潤逐項沿用 `_itPC`（正綠負紅）
+- 未動全域 `.audit-sku-price`/`.audit-sku-profit` → line 8481 既有審計清單配色不受影響
+
+### [FIX] toggleAuditMode 首按無反應（default 狀態連按 race）
+- 根因：`fhs-audit-on` class 藏在 `preloadSuggestedPrices().then(_doRender)` 內，首按 map 空時要等 `sbFetch('products')` 網路往返才加 class → 視覺「沒反應」；不耐煩連按造成 class 與按鈕文字反相
+- 修復：class **同步立即加**（成本/利潤逐項用 `item.Cost` 直算不需 SKU map，秒顯）；`preloadSuggestedPrices` 降為背景補入帳價，回來再 re-render（`.then` 內守衛 `fhsShowItemFinancials` 仍為 true 才 re-render，消除 race）；preload 失敗於其 catch 自處理，不卡 toggle
+
+### [FIX] 單項訂單 入帳→進度 欄上方空白（方案甲回歸）
+- 根因：方案甲把財務改 per-row `vertical-align:middle`；單項訂單列被左欄 rowspan 內容（刪除鈕+detail+dlv badge）撐高，middle 對齊使「入帳→進度」整段浮於垂直中央 → 上方留白
+- 修復：入帳/成本/利潤 + 刻字/產品/批次/狀態 7 個 per-row `<td>` 一律 `vertical-align:middle`→`top`（財務/批次/狀態加 `padding-top:15px` 對齊左欄基線）；財務與產品同 top 對齊 → 方案甲逐行對齊維持
+- fallback「無子項目」格保留 middle（空狀態無影響）
+
+### [FIX] 鎖匙扣/吊飾刻字失效根治（engraving_text 持久化）
+- 根因（git 考古 + Supabase REST 直查 + n8n 三層讀碼）：新單主寫入走 n8n `sync_order_to_mirror` RPC，該 RPC（0012→0028）order_items **從未含 engraving_text 欄** → 全 NULL；立體擺設靠 mapOrder 的 raw_form_state.pEngraving fallback 顯示，鎖匙扣/吊飾無 fallback → 失效。前端 sbSyncOrder（會寫 engraving_text）僅 webhook 失敗時 fallback。n8n Mirror Prep 更把刻字（item.Notes）誤塞 specification、無 engraving_text 欄。
+- 修法 B（2 層）：
+  - **n8n Supabase Mirror Prep**（已部署 + 自動備份）：items.map 補 `engraving_text`，category-gated（金屬鎖匙扣/純銀頸鏈吊飾取 item.Notes；手模走 raw_form_state.pEngraving 故排除）
+  - **Supabase migration 0034**：`sync_order_to_mirror` 於 order_items INSERT/VALUES/ON CONFLICT 三處補 engraving_text（範本 0017 `NULLIF`；ON CONFLICT 用 COALESCE 防 null-wipe）⏳ 待 Fat Mo 執行
+- 既有 test01/02（engraving_text 已 NULL）需 re-save 觸發 n8n 重寫回填
+
+### [UX] 刻字再收窄至 70px + 還原立體擺設 TOP
+- 刻字 th/td `min-width:88→70px`、td padding `8px 4px→8px 3px`
+- engHtml 移除上一版的 `_tblIs立體` 分流，立體擺設刻字**還原** TOP badge（與 keychain/necklace 同 TOP/BOT 統一結構，`.review-eng-container` nowrap）
+- 取捨：立體擺設長刻字（nowrap）會把該 cell 撐寬 > 70px，收窄僅對短刻字生效
+
+### [UX] 批次/進度方框統一 + 僅單號/日期保留排序
+- 任務1 方框統一：status select `width:90%`→`width:100%;max-width:92px`（對齊 batch input 92px）；進度欄 th `min-width:140→100px`（對齊批次欄）→ 兩方框等大
+- 任務2 排序收斂：移除 客人/入帳/成本/利潤 4 個 th 的 `sort-th`/`data-sort`/`onclick`/`sort-arrow`（保留標題+style）；僅 單號(Order_ID) + 日期(Date) 保留排序；`sortReviewTable()` 函式不動
+
+### [FIX] saveInlineEdit「準備同步...」徽章卡住不消失
+- 根因：`setInd("⏳ 準備同步...")` 設在 `save-indicator-${recordId}-${itemIndex}`（含 index），但 `updateEntry` 未帶 `ItemIndex` → debounce timer 的 `e.ItemIndex` 永遠 undefined → 「同步中/✔已儲存/清除」全打在 `save-indicator-${recordId}`（order 級錯元素），item 級徽章永不清除
+- 修復：`updateEntry` 補 `ItemIndex: itemIndex`（三處 indicator 查找命中正確 item 級元素）
+- 附帶修：queue dedup 由不存在的 `Item_Record_ID` 改為 `_item_key + _field`（防同單多欄位/多項編輯互相覆蓋導致徽章殘留）
+
+### [UX] 刻字再收窄 + 立體擺設刻字移 TOP + 批次顯示完整
+- 任務1 刻字 th/td `min-width:110→88px`、td padding `8px 6px→8px 4px`
+- 任務2 立體擺設刻字：`engHtml` 以 `_tblIs立體` 分流——只顯刻字文字（無 TOP label）、`white-space:normal`+`flex-wrap:wrap` 允許換行（解收窄↔長文字張力）；keychain/necklace TOP/BOT 維持 nowrap 同行
+- 任務3 批次：cell `min-width:90→100px`、input `width:80%→100%`/`max-width:80→92px`（「第N批」完整顯示）
+
+### [UX] 訂單總覽欄寬調整：單號不換行 + 刻字收窄 + TOP/BOT 同行
+- 任務1 單號：`.review-jump-pill` 加 `white-space:nowrap`（"06001008 ➜" 不再內部換行）+ 單號 th `min-width:90px`→`110px`
+- 任務2 刻字收窄：刻字 th `min-width:160px`→`110px`；刻字 td `min-width:140px`→`110px`、`padding:10px`→`8px 6px`
+- 任務3 TOP/BOT 同行：`.review-eng-container` `flex-wrap:wrap`→`nowrap`、gap `10px`→`6px`（TOP 與 BOT badge 不再上下堆疊）
+- 三項相連平衡：單號 +20px ↔ 刻字 −30~50px；nowrap eng-container 確保收窄後 TOP/BOT 仍同行
+
+### [UX] 移除進度欄表頭排序
+- 進度欄 `<th>`（line 3182）移除 `class="sort-th"`/`data-sort="Status"`/`onclick="sortReviewTable('Status')"`/`<span class="sort-arrow">`，保留 🚥 進度 文字 + style
+- 其他欄（單號/日期/客人/入帳/成本/利潤）排序與 `sortReviewTable()` 函式不變；status 下拉不受影響
+
+### [FIX] index>0 列孤兒虛線移除
+- index>0 財務列的 `.audit-fin-col` 虛線分隔（上方無總額卻有線）以 inline `border-top:0;margin-top:0;padding-top:0` 覆蓋移除；index===0（總額列）虛線保留
+- scoped 到 _finCells（`${index === 0 ? '' : ...}`），未動全域 `.audit-fin-col` CSS（保護其他用途）
+
+> ⚠️ live 視覺對齊/配色/首按即時/單項無空白/虛線待 Fat Mo 實機確認（playwright 因需 Supabase live 資料無法於此環境量測）
+
+---
+
 ## [2026-06-10] ✨ Session 83+++++++ — 時限徽章點擊跳回交貨期卡
 
 **範圍**：`freehandsss_dashboardV42.html` 3 處
