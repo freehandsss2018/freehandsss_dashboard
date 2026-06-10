@@ -48,7 +48,8 @@ freehandsss_dashboard/
 │   │   ├── 0029_add_archive_favorite_columns.sql ← V42 封存/最愛：orders.is_archived / is_favorite / archived_at / meta_updated_at ⏳ 待 Fat Mo 執行
 │   │   ├── 0030_fix_3d_frame_base_costs.sql ← 立體擺設 products.total_base_cost 修正：4 SKU 由 0 → 210（Session 65 根因修復）⏳ 待 Fat Mo 執行
 │   │   ├── 0031_expense_logs.sql            ← expense_logs 表（Log Sheet Phase 1，Session 80/81）✅ 已部署
-│   │   └── 0032_delivery_reminders.sql      ← VIEW v_delivery_reminders（交貨期 SLA 90/126天，HKT，Session 82）✅ 已部署
+│   │   ├── 0032_delivery_reminders.sql      ← VIEW v_delivery_reminders（交貨期 SLA 90/126天，HKT，Session 82）✅ 已部署
+│   │   └── 0033_delivery_reminders_item_filter.sql ← VIEW 強化：全 items Done 自動豁免警告（Session 83）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

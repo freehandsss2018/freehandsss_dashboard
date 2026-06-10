@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-06-10] 🗄️ Session 83+++++ — migration 0033 交貨期 item-level 自動豁免
+
+**範圍**：Supabase migration 0033（VIEW 強化）；apply PASS
+
+### [DB] v_delivery_reminders WHERE 新增 item-done 過濾
+- 新條件：若訂單所有 order_items.process_status IN ('完成','已取件')，從警告 VIEW 排除
+- 邏輯：保留 IF (無 items) OR (≥1 item NOT IN ('完成','已取件'))
+- 補充 C1 安全規則（不自動改 orders.process_status）；Fat Mo 在任意明細介面標完成即自動解除
+- 煙霧測試 PASS；FK order_items.order_fhs_id = orders.order_id 已驗證
+
+---
+
 ## [2026-06-10] 🎨 Session 83++++ — dlv badge 顏色修正（三色語義對齊）
 
 **範圍**：CSS 2 行
