@@ -1,9 +1,17 @@
 # Session Log
 
-## 2026-06-10 (Session 83+): ✨ dlvStatsCard 強化 — 豐富資訊列 + ↗ 跳至訂單 ✅
+## 2026-06-10 (Session 83 完整 — 多輪 bug fix + 功能): 🔧 交貨期系統全面優化 ✅
 
-**Scope**: `fetchDeliveryMap()` SELECT 增加 `start_date,sla_days`；展開清單每列顯示起算日/到期日/SLA/urgency + 詳情按鈕 + ↗跳至按鈕；新增 `jumpToReviewOrder(uuid,orderId)` — 清除 filter → switchMode('review') → 條件式 fetchGlobalReview → scroll + dlvFlash 高亮；code-reviewer PASS。
-**Status**: ✅ 完成。Fat Mo 待辦同前（n8n template import + 逾期舊單人工確認）。
+**Scope**:
+- 豐富展開清單（起算日/到期日/SLA）+ ↗ 跳至按鈕；整列可點擊 → openOrderModal；移除詳情 button
+- **[BUG]** window.openOrderModal 未 export → inline onclick 靜默失敗（修復）
+- **[BUG]** r.id=UUID 傳入 jumpToReviewOrder，但 DOM 用 FHS string → 跳至失效（mapOrder id=FHS string 陷阱）
+- **[CSS]** dlv-badge-green 原灰色改為鮮明綠色（#dcfce7/#16a34a）
+- **[DB]** migration 0033 — v_delivery_reminders item-level filter（全 items done → 排除警告）
+- **[BUG]** patchFetchGlobalReview 覆蓋 fetchGlobalReview 繞過 fetchDeliveryMap → 初始無 badge + 改狀態不更新（補平行 fetch）
+- **[FEAT]** jumpToDlvCard(color) — 訂單列徽章點擊 → 跳回設定頁 dlvStatsCard 展開對應顏色清單（_dlvAutoExpand flag 解決時序競態）
+**Key pitfall**: `mapOrder()` maps `o.id = row.order_id`（FHS string），`o._uuid = Supabase UUID`；DOM id + openOrderModal 全用 FHS string
+**Status**: ✅ 完成，7 commits pushed。Fat Mo 待辦：import n8n template + 人工確認逾期舊單（C1）。
 
 ---
 

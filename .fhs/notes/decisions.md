@@ -3,6 +3,17 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-10] (Session 83) 交貨期系統 v_delivery_reminders item-level filter + 雙向跳轉 UX
+
+決策：
+1. **Migration 0033** — v_delivery_reminders VIEW 加入 item-level 豁免條件：若訂單所有 order_items 均為「完成」或「已取件」，即使 orders.process_status 未改，VIEW 自動排除警告。
+   原因：C1 規則禁止系統自動更改 orders.process_status；item 標完成是 Fat Mo 日常操作路徑，系統應自動豁免，無需強迫 Fat Mo 多一步更改訂單狀態。
+2. **jumpToDlvCard / jumpToReviewOrder 雙向跳轉** — 訂單總覽徽章 → 設定頁 dlvStatsCard（對應顏色清單）；設定頁清單 ↗ → 訂單總覽（scroll + flash）。
+   原因：Fat Mo 操作流：設定頁看到警告 → 跳至訂單確認 → 看訂單時想回設定頁查清單，兩個方向均需一鍵操作。
+3. **_dlvAutoExpand flag 時序模式** — `switchMode('system')` 自動觸發 renderDeliveryStatsCard（50ms 後），跳轉前設 flag，renderDeliveryStatsCard 完成時消費。
+   原因：async/await 無法控制 switchMode 內部 setTimeout；flag 是解決此類「render 後動作」時序問題的正確 FHS 模式。
+陷阱記錄（mapOrder id vs _uuid）：mapOrder() 回傳 `o.id = row.order_id`（FHS string，如"06001008"），`o._uuid = Supabase UUID`。所有 DOM id、openOrderModal、jumpToReviewOrder 均用 FHS string。任何從 _dlvMap 傳 id 至 UI 的操作，必須用 `r.order_id`，不能用 `r.id`。
+
 [2026-06-08] (Session 69) 新增 /upload-web 指令 — 一鍵部署 Dashboard 至 NAS Web Station
 
 決策：建立 `/upload-web` 指令（Master + CL 橋接 + `scripts/upload-web.ps1`），以 WebDAV over HTTPS（`:5006` → `/web`）部署 Dashboard 並三關驗證（HTTP 200 + Content-Length + SHA256）。

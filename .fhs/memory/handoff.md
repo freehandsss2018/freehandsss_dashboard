@@ -1,3 +1,34 @@
+# FHS Handoff - 2026-06-10 (Session 83 完整 — 交貨期系統全面優化)
+
+## Session 83 完整完結（多輪 bug fix + 功能強化）
+
+### 執行完成項目
+
+- ✅ **[BUG] window.openOrderModal 未 export** — 加 export 修復詳情 button
+- ✅ **[BUG] mapOrder id=FHS string (非 UUID)** — 所有 button 改傳 r.order_id
+- ✅ **[BUG] patchFetchGlobalReview 繞過 fetchDeliveryMap** — 補平行 fetch，修初始無 badge + 改狀態不更新
+- ✅ **[DB] migration 0033** — v_delivery_reminders item-level 自動豁免（全 items done → 排除警告）
+- ✅ **[CSS] dlv-badge-green** — 改為鮮明綠色（原灰色 W2 退讓設計被否定）
+- ✅ **[FEAT] jumpToDlvCard(color)** — 訂單列徽章點擊跳回設定頁對應顏色清單
+  - _dlvAutoExpand flag 解決時序競態（renderDeliveryStatsCard 完成後消費）
+- ✅ **[UX] dlvStatsCard 整列可點擊**（移除詳情 button，行 onclick=openOrderModal）
+- ✅ **[UX] dlvStatsCard 展開清單豐富資訊**（起算日/到期日/SLA + ↗ 跳至）
+
+### Fat Mo 待辦（上線前）
+- 📋 import `n8n/templates/fhs_delivery_reminder_push.json` 至 NAS n8n → 啟用
+- ⚠️ 人工審查逾期舊單實際交付狀態，手動改 process_status（C1 規則）
+
+### 核心陷阱記錄
+- `mapOrder`: `o.id` = FHS string "06001008"，`o._uuid` = Supabase UUID（與直覺相反）
+- `patchFetchGlobalReview`: 完全覆蓋 window.fetchGlobalReview，原 function 的 dlv 邏輯被繞過
+- `switchMode('system')`: 50ms 後自動觸發 sysRefreshPanel → initDeliveryStatsCard → renderDeliveryStatsCard（會 reset 展開狀態）
+
+【交付前雙紀律自檢】
+驗收：7 個 commits pushed；migration 0033 PASS；badge 三色正確；雙向跳轉（review↔settings）完整
+Subagent：✅ code-reviewer 1 次（Session 83+ PASS）；其餘 ❌ 未派
+
+---
+
 # FHS Handoff - 2026-06-10 (Session 83+ — dlvStatsCard 強化：豐富資訊 + 跳至訂單)
 
 ## Session 83+ 完結
