@@ -1,0 +1,171 @@
+{
+  "name": "FHS_DeliveryReminder_DailyPush",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🚚 FHS 交貨期每日推送 (Session 82)\n\n**觸發時間：** 09:00 HKT（`0 1 * * *` UTC）\n\n**流程：**\n1. Supabase 查 `v_delivery_reminders`（只取 overdue/due_today/warn）\n2. Code 節點格式化訊息（純 array.map — NAS 安全，無 fetch/process.env/require）\n3. IF 判斷有無警示 → 有才推送，空清單靜默\n4. Telegram 推送至 chat 7620524971\n\n**上線前提：** Fat Mo 已人工確認並清理 overdue 舊單 process_status（C1 安全）",
+        "height": 280,
+        "width": 500
+      },
+      "id": "sticky-doc",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-400, -300]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Daily 09:00 HKT",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/v_delivery_reminders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "urgency",
+              "value": "in.(overdue,due_today,warn)"
+            },
+            {
+              "name": "order",
+              "value": "days_remaining.asc"
+            },
+            {
+              "name": "select",
+              "value": "order_id,id,customer_name,days_remaining,urgency"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Supabase v_delivery_reminders",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// NAS-safe: 純 array 操作，無 fetch / process.env / require\nconst items = $input.all();\n\nif (items.length === 0) {\n    return [{ json: { count: 0, text: '' } }];\n}\n\nconst rows = items.map(function(i){ return i.json; });\nconst today = new Date().toLocaleDateString('zh-HK', { timeZone: 'Asia/Hong_Kong' });\n\nvar red    = rows.filter(function(r){ return r.urgency === 'overdue' || r.urgency === 'due_today'; });\nvar yellow = rows.filter(function(r){ return r.urgency === 'warn'; });\n\nvar text = '🚚 FHS 交貨期預警\\n' + today + '\\n';\n\nif (red.length > 0) {\n    text += '\\n🔴 逾期/今日到期 (' + red.length + '):\\n';\n    text += red.map(function(r){\n        var d = Math.abs(Number(r.days_remaining));\n        var status = r.urgency === 'overdue' ? '逾期' + d + '天' : '今日到期';\n        return '• ' + (r.order_id || '—') + ' ' + (r.customer_name || '') + ' (' + status + ')';\n    }).join('\\n');\n}\n\nif (yellow.length > 0) {\n    text += '\\n\\n⚠️ 14天內到期 (' + yellow.length + '):\\n';\n    text += yellow.map(function(r){\n        return '• ' + (r.order_id || '—') + ' ' + (r.customer_name || '') + ' (剩' + r.days_remaining + '天)';\n    }).join('\\n');\n}\n\nreturn [{ json: { count: rows.length, text: text.trim() } }];\n"
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-count-gt-zero",
+              "leftValue": "={{ $json.count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "a1b2c3d4-0004-0004-0004-000000000004",
+      "name": "Has Alerts?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "7620524971",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "none",
+        "additionalFields": {}
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Telegram Push",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, -60],
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 09:00 HKT": {
+      "main": [
+        [{ "node": "Supabase v_delivery_reminders", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase v_delivery_reminders": {
+      "main": [
+        [{ "node": "Format Message", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Message": {
+      "main": [
+        [{ "node": "Has Alerts?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Alerts?": {
+      "main": [
+        [{ "node": "Telegram Push", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

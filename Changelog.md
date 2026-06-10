@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-06-10] 🚚 Session 82/83 — 交貨期提示系統（P1+P2+P3+P4 全部完成）
+
+**範圍**：Supabase migration + 前端 V42 UI + n8n template；code-reviewer G1–G8 PASS
+
+### [DB] Supabase migration 0032 — v_delivery_reminders VIEW
+- 建立 `v_delivery_reminders` VIEW（security_invoker=on，GRANT TO anon/authenticated）
+- 90天 SLA（標準）/ 126天 SLA（玻璃瓶訂單，LATERAL JOIN 偵測 product_sku LIKE '玻璃瓶'）
+- HKT 時區邊界：`timezone('Asia/Hong_Kong', now())::date`
+- urgency 四色：`overdue`(紅) / `due_today`(紅) / `warn`(≤14天黃) / `normal`(>14天綠)
+- 煙霧測試 PASS（0 bad-urgency rows）
+
+### [FEAT] P2 — Dashboard V42 三色交貨期徽章
+- `fetchDeliveryMap()` 平行於 `fetchGlobalReview()` 執行（W3 staleness fix）
+- `_dlvBadgeHtml(orderId)` 注入桌面 `<td>` 及手機 `.acc-order-header-left`
+- 紅=實心填色徽章（逾期/今日到期）/ 黃=實心（14天內）/ 綠=細邊框淺灰（正常，W2 視覺退讓）
+
+### [FEAT] P4 — 設定頁交貨期統計卡
+- `dlvStatsCard`：紅/黃/綠三色計數塊，點色塊展開該狀態訂單清單
+- 清單項 `onclick="openOrderModal(uuid)"` 沿用原生 Modal
+- `sysRefreshPanel()` 呼叫 `initDeliveryStatsCard()` 每次刷新
+
+### [NEW] P3 — n8n 每日 Telegram 推送 template
+- `n8n/templates/fhs_delivery_reminder_push.json`：Schedule `0 1 * * *` + HTTP Request Supabase + Code(格式化) + IF + Telegram
+- 僅 overdue/due_today/warn 出現才推送，空清單靜默
+- 沿用 Telegram credential `tSbXz97PKmdPpDNq`
+
+---
+
 ## [2026-06-10] 🗄️ Session 81 — migration 0031 apply + 成本欄直讀 UI
 
 **範圍**：Supabase migration（apply_migration MCP）+ 前端 UI（`freehandsss_dashboardV42.html`）

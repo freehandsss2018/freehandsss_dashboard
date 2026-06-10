@@ -1,3 +1,30 @@
+# FHS Handoff - 2026-06-10 (Session 82/83 — 交貨期提示系統 P1-P4 完成)
+
+## Session 82/83 完結
+
+### 執行完成項目
+
+- ✅ **[DB] Supabase migration 0032_delivery_reminders 已部署**
+  - VIEW `v_delivery_reminders`：90d/126d SLA（玻璃瓶 LATERAL JOIN）+ HKT timezone + urgency
+  - GRANT TO anon/authenticated；煙霧測試 PASS
+  - code-reviewer G1-G8 PASS（freehandsss_dashboardV42.html）
+
+- ✅ **[FEAT] P2 — V42 三色徽章（桌面+手機）**
+  - `fetchDeliveryMap()` 平行於 `fetchGlobalReview()`（W3）
+  - 紅/黃/綠 `dlv-badge-*` CSS + `_dlvBadgeHtml()` 注入兩處渲染函數
+
+- ✅ **[FEAT] P4 — 設定頁交貨統計卡**
+  - `dlvStatsCard` HTML + `initDeliveryStatsCard()` + `toggleDlvExpand()` + sysRefreshPanel 呼叫
+
+- ✅ **[NEW] P3 — n8n template `fhs_delivery_reminder_push.json`**
+  - Schedule `0 1 * * *` + Supabase HTTP → Code(格式化) → IF → Telegram 7620524971
+
+### Fat Mo 待辦（上線前）
+- 📋 import `n8n/templates/fhs_delivery_reminder_push.json` 至 NAS n8n → 啟用
+- ⚠️ 人工逐張審查逾期舊單實際交付狀態，手動改 process_status（C1 安全規則）
+
+---
+
 # FHS Handoff - 2026-06-10 (Session 82 — migration 0031 confirm apply + /commit)
 
 ## Session 82 完結

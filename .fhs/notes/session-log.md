@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-10 (Session 82/83): 🚚 交貨期提示系統 P1–P4 全部完成 ✅
+
+**Scope**: P1 Supabase VIEW `v_delivery_reminders`（0032 migration, 90d/126d SLA, HKT timezone, LATERAL JOIN 玻璃瓶偵測）；P2 V42 三色徽章（桌面+手機）+ fetchDeliveryMap 平行 fetch；P3 n8n template `fhs_delivery_reminder_push.json`；P4 設定頁 `dlvStatsCard` 統計卡。code-reviewer G1–G8 PASS。
+**Status**: ✅ P1-P4 完成。Fat Mo 待辦：import n8n template + 人工確認逾期舊單。
+
+---
+
 ## 2026-06-10 (Session 80): 📒 Log Sheet Phase 1 + expense_logs migration + NAS 部署 ✅
 
 **Scope**: Log Sheet 記錄中心卡片（支出表單 + 操作者簡稱 + 最近 50 筆列表）；Supabase migration 0031 expense_logs（RLS append-only）；V42→current NAS PASS（771,876B, SHA256: 75995D25）

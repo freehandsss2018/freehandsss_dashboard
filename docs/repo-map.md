@@ -46,7 +46,9 @@ freehandsss_dashboard/
 │   │   ├── 0027_order_items_cost_breakdown.sql ← Task A 前置資產：order_items 四分量欄（DEFAULT 0，待 Task A 顆粒化 roll-up 填值）✅ 已部署
 │   │   ├── 0028_sync_rpc_four_cost_columns.sql ← Task A 收尾：sync_order_to_mirror RPC 支援 4 個成本欄位填值（由 n8n 寫入）✅ 已部署
 │   │   ├── 0029_add_archive_favorite_columns.sql ← V42 封存/最愛：orders.is_archived / is_favorite / archived_at / meta_updated_at ⏳ 待 Fat Mo 執行
-│   │   └── 0030_fix_3d_frame_base_costs.sql ← 立體擺設 products.total_base_cost 修正：4 SKU 由 0 → 210（Session 65 根因修復）⏳ 待 Fat Mo 執行
+│   │   ├── 0030_fix_3d_frame_base_costs.sql ← 立體擺設 products.total_base_cost 修正：4 SKU 由 0 → 210（Session 65 根因修復）⏳ 待 Fat Mo 執行
+│   │   ├── 0031_expense_logs.sql            ← expense_logs 表（Log Sheet Phase 1，Session 80/81）✅ 已部署
+│   │   └── 0032_delivery_reminders.sql      ← VIEW v_delivery_reminders（交貨期 SLA 90/126天，HKT，Session 82）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -207,7 +209,9 @@ freehandsss_dashboard/
 │   ├── Airtable_Schema_Snapshot_2026-05.md ← Airtable 6 表 schema 快照 + Postgres DDL 草稿（2026-05-10）
 │   ├── N8N_Node_Interaction_Map.md      ← n8n 26 nodes 工作流互動圖（FHS_Core_OrderProcessor v45.7.4，2026-05-10 新增）
 │   ├── FHS_Core_OrderProcessor.json     ← 核心訂單處理機
-│   └── FHS_Financial_Overview_workflow.json ← 財務聚合機
+│   ├── FHS_Financial_Overview_workflow.json ← 財務聚合機
+│   └── templates/
+│       └── fhs_delivery_reminder_push.json  ← 交貨期每日 Telegram 推送（09:00 HKT，v_delivery_reminders，Session 82）
 ├── Maintenance_Tools/                   ← 系統健康檢查與維護腳本
 │   ├── README.md                        ← 維護工具說明
 │   ├── run_all.py                       ← 全部測試執行器
