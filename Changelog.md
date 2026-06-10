@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-06-10] 🎨 Session 83++++ — dlv badge 顏色修正（三色語義對齊）
+
+**範圍**：CSS 2 行
+
+### [FIX] .dlv-badge-green / .dlv-badge-yellow 顏色
+- green badge 舊：灰色 transparent/#9ca3af（W2 退讓設計被否定）→ 新：#dcfce7/#16a34a/#86efac
+- yellow badge 微調：border 改 #fcd34d 更清晰
+- 三色徽章現與統計塊紅/黃/綠語義完全對齊
+
+---
+
 ## [2026-06-10] 🐛 Session 83++ — dlvStatsCard button 修復
 
 **範圍**：`freehandsss_dashboardV42.html` 兩處 bug fix
