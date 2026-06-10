@@ -7843,13 +7843,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var sDate = (r.start_date || '').slice(0, 10) || '—';
                 var eDate = (r.due_date   || '').slice(0, 10) || '—';
                 var sla   = r.sla_days ? r.sla_days + '天' : '—';
-                return '<div class="dlv-expand-item">' +
+                return '<div class="dlv-expand-item" style="cursor:pointer;" onclick="openOrderModal(\'' + (r.order_id || '') + '\')">' +
                     '<div class="dlv-expand-item-row">' +
                     '<span><strong>' + (r.order_id || '—') + '</strong> · ' + (r.customer_name || '-') + '</span>' +
                     '<div style="display:flex;gap:4px;align-items:center;">' +
                     '<span style="font-size:11px;color:' + colorStyle + ';">' + dText + '</span>' +
-                    '<button class="dlv-jump-btn" style="color:' + colorStyle + ';" onclick="openOrderModal(\'' + (r.order_id || '') + '\')">詳情</button>' +
-                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="jumpToReviewOrder(\'' + (r.order_id || '') + '\')">↗ 跳至</button>' +
+                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="event.stopPropagation(); jumpToReviewOrder(\'' + (r.order_id || '') + '\')">↗ 跳至</button>' +
                     '</div></div>' +
                     '<div class="dlv-expand-item-sub">起: ' + sDate + ' → 到: ' + eDate + ' · SLA ' + sla + '</div>' +
                     '</div>';
@@ -12545,6 +12544,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (tbody) tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
                 }
 
+                const _dlvFetch = (typeof fetchDeliveryMap === 'function') ? fetchDeliveryMap() : Promise.resolve();
                 let orders;
                 try {
                     orders = await sbFetchGlobalReview(year, month, status, batch, search);
@@ -12555,6 +12555,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     return origFn.apply(this, arguments);
                 }
                 if (loading) loading.style.display = 'none';
+                await _dlvFetch;
                 window.globalOrders = orders;
                 if (window.applyReviewFilters) {
                     window.applyReviewFilters();

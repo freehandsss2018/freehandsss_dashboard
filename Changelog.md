@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-06-10] 🐛 Session 83++++++ — 時限徽章同步修復 + dlvStatsCard UX 優化
+
+**範圍**：`freehandsss_dashboardV42.html` 2 處
+
+### [FIX] patchFetchGlobalReview 補 fetchDeliveryMap 平行啟動
+- 根因：Supabase-First 路徑的 patched fetchGlobalReview 完全繞過 fetchDeliveryMap()
+- 導致 Bug1（改狀態後徽章不更新）+ Bug2（初始不顯示時限徽章）
+- 修復：patched 函式開頭啟動 _dlvFetch = fetchDeliveryMap()，render 前 await
+
+### [UX] dlvStatsCard 展開列移除詳情按鈕，改整列可點擊
+- 移除"詳情"按鈕；.dlv-expand-item div 整體 onclick="openOrderModal(orderId)"
+- "↗ 跳至"按鈕加 event.stopPropagation() 防止觸發行點擊
+
+---
+
 ## [2026-06-10] 🗄️ Session 83+++++ — migration 0033 交貨期 item-level 自動豁免
 
 **範圍**：Supabase migration 0033（VIEW 強化）；apply PASS
