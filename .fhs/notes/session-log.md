@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-10 (Session 83+): ✨ dlvStatsCard 強化 — 豐富資訊列 + ↗ 跳至訂單 ✅
+
+**Scope**: `fetchDeliveryMap()` SELECT 增加 `start_date,sla_days`；展開清單每列顯示起算日/到期日/SLA/urgency + 詳情按鈕 + ↗跳至按鈕；新增 `jumpToReviewOrder(uuid,orderId)` — 清除 filter → switchMode('review') → 條件式 fetchGlobalReview → scroll + dlvFlash 高亮；code-reviewer PASS。
+**Status**: ✅ 完成。Fat Mo 待辦同前（n8n template import + 逾期舊單人工確認）。
+
+---
+
 ## 2026-06-10 (Session 82/83): 🚚 交貨期提示系統 P1–P4 全部完成 ✅
 
 **Scope**: P1 Supabase VIEW `v_delivery_reminders`（0032 migration, 90d/126d SLA, HKT timezone, LATERAL JOIN 玻璃瓶偵測）；P2 V42 三色徽章（桌面+手機）+ fetchDeliveryMap 平行 fetch；P3 n8n template `fhs_delivery_reminder_push.json`；P4 設定頁 `dlvStatsCard` 統計卡。code-reviewer G1–G8 PASS。

@@ -1,3 +1,26 @@
+# FHS Handoff - 2026-06-10 (Session 83+ — dlvStatsCard 強化：豐富資訊 + 跳至訂單)
+
+## Session 83+ 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] dlvStatsCard 展開清單強化（code-reviewer G1-G8 PASS）**
+  - `fetchDeliveryMap()` SELECT 增加 `start_date, sla_days`
+  - 每列新增「詳情」按鈕（openOrderModal）+ 「↗ 跳至」按鈕（jumpToReviewOrder）
+  - 子列顯示起算日 → 到期日 · SLA天數
+  - `jumpToReviewOrder(uuid, orderId)` — 清除 filter → switchMode('review') → 條件式 fetchGlobalReview → scroll + dlvFlash 高亮
+  - CSS：`.dlv-expand-item-row`, `.dlv-expand-item-sub`, `.dlv-jump-btn`, `@keyframes dlvFlash`, `.dlv-jump-highlight`
+
+### Fat Mo 待辦（上線前）
+- 📋 import `n8n/templates/fhs_delivery_reminder_push.json` 至 NAS n8n → 啟用
+- ⚠️ 人工逐張審查逾期舊單實際交付狀態，手動改 process_status（C1 安全規則）
+
+【交付前雙紀律自檢】
+驗收：code-reviewer PASS G1-G8；jumpToReviewOrder 邏輯覆蓋 mobile(acc-order-uuid) + desktop(tr[data-order-id]) 雙路徑
+Subagent：✅ code-reviewer 派 1 次（PASS）
+
+---
+
 # FHS Handoff - 2026-06-10 (Session 82/83 — 交貨期提示系統 P1-P4 完成)
 
 ## Session 82/83 完結

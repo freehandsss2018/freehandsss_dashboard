@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-06-10] ✨ Session 83+ — 交貨期統計卡強化（豐富資訊 + 跳至訂單）
+
+**範圍**：`freehandsss_dashboardV42.html` 局部強化；code-reviewer G1–G8 PASS
+
+### [FEAT] dlvStatsCard 展開清單強化
+- `fetchDeliveryMap()` SELECT 新增 `start_date, sla_days` 欄位
+- 每列顯示：訂單號 · 客戶名 · urgency文字 + **詳情**（openOrderModal）+ **↗ 跳至**（jumpToReviewOrder）
+- 子列顯示：`起: YYYY-MM-DD → 到: YYYY-MM-DD · SLA N天`
+- 新增 `jumpToReviewOrder(uuid, orderId)` — 清除全部 filter → `switchMode('review')` → 條件式 `fetchGlobalReview(true)` → scroll + `.dlv-jump-highlight` 2s 閃爍
+- CSS 新增：`.dlv-expand-item-row`, `.dlv-expand-item-sub`, `.dlv-jump-btn`, `@keyframes dlvFlash`, `.dlv-jump-highlight`
+
+---
+
 ## [2026-06-10] 🚚 Session 82/83 — 交貨期提示系統（P1+P2+P3+P4 全部完成）
 
 **範圍**：Supabase migration + 前端 V42 UI + n8n template；code-reviewer G1–G8 PASS

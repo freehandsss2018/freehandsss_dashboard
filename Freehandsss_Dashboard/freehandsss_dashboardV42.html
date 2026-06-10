@@ -963,8 +963,14 @@
         .dlv-stat-num   { font-size:24px; font-weight:800; line-height:1.1; }
         .dlv-stat-label { font-size:11px; margin-top:3px; font-weight:600; }
         .dlv-expand-list { margin-top:10px; }
-        .dlv-expand-item { padding:7px 10px; border-radius:6px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:12px; border:1px solid #f0f0f0; background:var(--fhs-bg-elevated); }
+        .dlv-expand-item { padding:7px 10px; border-radius:6px; margin-bottom:4px; font-size:12px; border:1px solid #f0f0f0; background:var(--fhs-bg-elevated); }
         .dlv-expand-item:hover { background:#f5f5f5; }
+        .dlv-expand-item-row { display:flex; justify-content:space-between; align-items:center; gap:4px; }
+        .dlv-expand-item-sub { font-size:10px; color:var(--fhs-text-secondary); margin-top:2px; }
+        .dlv-jump-btn { font-size:10px; padding:2px 6px; border:1px solid currentColor; border-radius:4px; background:transparent; cursor:pointer; white-space:nowrap; }
+        .dlv-jump-btn:hover { opacity:0.75; }
+        @keyframes dlvFlash { 0%,100%{background:transparent} 25%,75%{background:rgba(239,68,68,0.18)} 50%{background:rgba(239,68,68,0.35)} }
+        .dlv-jump-highlight { animation:dlvFlash 1.6s ease; }
         .badge-part { border-color: rgba(0,0,0,0.1); background: #ffffff; color: #555; font-weight: 500; }
         
         /* 數量與產品副標 */
@@ -7766,7 +7772,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         async function fetchDeliveryMap() {
             try {
                 const res = await fetch(
-                    _V41_SB_URL + '/rest/v1/v_delivery_reminders?select=order_id,id,customer_name,days_remaining,due_date,urgency',
+                    _V41_SB_URL + '/rest/v1/v_delivery_reminders?select=order_id,id,customer_name,days_remaining,start_date,due_date,sla_days,urgency',
                     { headers: { 'apikey': _V41_SB_ANON, 'Authorization': 'Bearer ' + _V41_SB_ANON } }
                 );
                 if (!res.ok) return;
@@ -7834,15 +7840,51 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var dText = r.urgency === 'overdue'   ? '逾期' + Math.abs(d) + '天'
                           : r.urgency === 'due_today' ? '今日到期'
                           : '剩' + d + '天';
-                return '<div class="dlv-expand-item" onclick="openOrderModal(\'' + r.id + '\')">' +
+                var sDate = (r.start_date || '').slice(0, 10) || '—';
+                var eDate = (r.due_date   || '').slice(0, 10) || '—';
+                var sla   = r.sla_days ? r.sla_days + '天' : '—';
+                return '<div class="dlv-expand-item">' +
+                    '<div class="dlv-expand-item-row">' +
                     '<span><strong>' + (r.order_id || '—') + '</strong> · ' + (r.customer_name || '-') + '</span>' +
-                    '<span style="font-size:11px; color:' + colorStyle + ';">' + dText + '</span>' +
+                    '<div style="display:flex;gap:4px;align-items:center;">' +
+                    '<span style="font-size:11px;color:' + colorStyle + ';">' + dText + '</span>' +
+                    '<button class="dlv-jump-btn" style="color:' + colorStyle + ';" onclick="openOrderModal(\'' + r.id + '\')">詳情</button>' +
+                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="jumpToReviewOrder(\'' + r.id + '\',\'' + (r.order_id || '') + '\')">↗ 跳至</button>' +
+                    '</div></div>' +
+                    '<div class="dlv-expand-item-sub">起: ' + sDate + ' → 到: ' + eDate + ' · SLA ' + sla + '</div>' +
                     '</div>';
             }).join('');
         }
 
         window.initDeliveryStatsCard = initDeliveryStatsCard;
         window.toggleDlvExpand = toggleDlvExpand;
+
+        async function jumpToReviewOrder(uuid, orderId) {
+            var filters = ['reviewYear','reviewMonth','reviewStatus','reviewBatch','reviewSearch'];
+            filters.forEach(function(id){
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            if (typeof switchMode === 'function') await switchMode('review');
+            var curOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var inView = curOrders.some(function(o){ return o.id === uuid; });
+            if (!inView && window.fetchGlobalReview) await window.fetchGlobalReview(true);
+            await new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); });
+            var targetEl = document.getElementById('acc-order-' + uuid);
+            if (!targetEl) {
+                var cb = document.querySelector('.order-row-cb[data-order-id="' + uuid + '"]');
+                targetEl = cb ? cb.closest('tr') : null;
+            }
+            if (!targetEl) {
+                if (typeof openOrderModal === 'function') openOrderModal(uuid);
+                return;
+            }
+            var scrollEl = targetEl.closest('.swipe-row-wrapper') || targetEl;
+            scrollEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            scrollEl.classList.add('dlv-jump-highlight');
+            setTimeout(function(){ scrollEl.classList.remove('dlv-jump-highlight'); }, 2000);
+        }
+        window.jumpToReviewOrder = jumpToReviewOrder;
 
         // === V40 iPhone Accordion 渲染引擎 ===
         function renderReviewAccordion(orders) {
