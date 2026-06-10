@@ -1,5 +1,28 @@
 # Changelog
 
+## [2026-06-10] ✨ V42 Session 80 — Log Sheet 記錄中心 Phase 1 + NAS 部署
+
+**範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）+ Supabase migration；current.html 同步更新
+
+### [FEAT] 📒 記錄中心 (Log Sheet) — 手動支出登記
+- 新增 `#logSheetCard` 卡片（indigo `#6366F1`，置於 QA 中心前）
+- 操作者簡稱輸入（`localStorage` 持久化，`saveExpenseOperator()`）
+- 支出登記表單：日期 / 大分類（軟件支出/打印費/材料/運費/雜項）/ 項目說明 / 金額 / 備註
+- 最近 50 筆記錄列表（`loadExpenseLogs()` + 🔄 刷新按鈕）
+- 系統模式 `sysRefreshPanel` 呼叫 `initLogSheet()` 自動初始化
+
+### [FEAT] Supabase migration 0031 — expense_logs 表
+- `expense_logs`（id/log_type/entry_date/category/item_name/amount/remarks/operator/payload/created_at）
+- RLS append-only（anon 可 SELECT + INSERT，不可 UPDATE/DELETE，審計不可篡改）
+- `log_type` 欄位預留 universal log container 擴充能力
+- 煙霧測試：table ✓ / CHECK constraint ✓ / RLS ✓
+
+### [DEPLOY] V42 → current + NAS
+- SHA256: `75995D258BB8C93A77B2ACDED9F5EAC54D613EB71AB785BA6800CFE2AA49C5B4`（771,876 bytes）
+- URL: https://yanhei.synology.me/Freehandsss_dashboard_current.html
+
+---
+
 ## [2026-06-10] 🐛 V42 Session 77 — per-box 按鈕狀態時序修復
 
 **範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）；current.html 不動

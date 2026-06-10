@@ -1,3 +1,46 @@
+# FHS Handoff - 2026-06-10 (Session 80 — Log Sheet Phase 1 + NAS 部署)
+
+## Session 80 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] 📒 記錄中心 Log Sheet Phase 1**
+  - `#logSheetCard` 卡片（indigo #6366F1）
+  - 支出表單：日期/大分類/項目/金額/備註 + 操作者簡稱（localStorage）
+  - `initLogSheet()` 於系統模式 sysRefreshPanel 自動呼叫
+  - `loadExpenseLogs()` 最近 50 筆列表 + 刷新按鈕
+
+- ✅ **[DB] migration 0031 — expense_logs**
+  - RLS append-only（anon SELECT+INSERT；無 UPDATE/DELETE）
+  - `log_type` discriminator 預留 universal container 擴充
+  - 煙霧測試 PASS（table / CHECK / RLS）
+
+- ✅ **[DEPLOY] V42 → current + NAS**
+  - 771,876 bytes，SHA256: 75995D258BB8C93A77B2ACDED9F5EAC54D613EB71AB785BA6800CFE2AA49C5B4
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 生產版 HTML | Freehandsss_dashboard_current.html = V42 Log Sheet |
+| Supabase migration | 0031_expense_logs.sql（待 apply） |
+| Log Sheet 分類 | 軟件支出/打印費/材料/運費/雜項 |
+
+### 待辦
+- ⏳ Supabase apply migration 0031（`supabase db push` 或 MCP `apply_migration`）
+
+### 技術債現況
+
+| # | 項目 | 狀態 |
+|---|------|------|
+| TD2 | `learnings.md` 超 50 條需整理 | ⏸ |
+| — | `perplexity-mcp-server` submodule | ⏸ |
+
+【交付前雙紀律自檢】
+驗收：NAS 三閘 PASS（771,876B, SHA256: 75995D2）= ✅；migration 0031 待 apply
+Subagent：❌ 未派
+
+---
+
 # FHS Handoff - 2026-06-10 (Session 79 — V42 部署至 current + NAS)
 
 ## Session 79 完結

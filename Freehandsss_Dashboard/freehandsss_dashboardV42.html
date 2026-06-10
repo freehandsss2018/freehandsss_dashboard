@@ -4137,6 +4137,88 @@
             </div>
         </div>
 
+        <!-- 📒 Log Sheet 記錄中心 (Session 69) -->
+        <div id="logSheetCard" class="card" style="border-top:5px solid #6366F1; margin:0 0 16px 0; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h2 style="color:#6366F1; margin:0; font-size:15px; font-weight:700;">📒 記錄中心 (Log Sheet)</h2>
+                <span id="logSheetBadge" class="sys-badge" style="font-size:11px; background:#ede9fe; color:#6366F1;">未載入</span>
+            </div>
+
+            <!-- 操作者簡稱 -->
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; padding:8px 10px; background:var(--fhs-bg-elevated); border-radius:6px; border:1px solid var(--fhs-border);">
+                <span style="font-size:12px; color:var(--fhs-text-secondary); white-space:nowrap;">操作者簡稱：</span>
+                <input type="text" id="logSheetOperator" placeholder="輸入簡稱（如 FatMo）" maxlength="20"
+                    oninput="window.saveExpenseOperator()"
+                    style="flex:1; padding:4px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); min-width:0;">
+                <span style="font-size:11px; color:var(--fhs-text-secondary); white-space:nowrap;">已儲存本機</span>
+            </div>
+
+            <!-- Tab 列（通用容器，未來可擴充） -->
+            <div style="border-bottom:2px solid var(--fhs-border); margin-bottom:12px; display:flex; gap:0;">
+                <button id="logTabExpenseBtn" onclick="window.switchLogTab('expense')"
+                    style="padding:6px 16px; font-size:13px; border:none; border-bottom:2px solid #6366F1; margin-bottom:-2px; background:transparent; color:#6366F1; font-weight:700; cursor:pointer;">
+                    💸 手動支出
+                </button>
+            </div>
+
+            <!-- 💸 支出登記表單 -->
+            <div id="logTabExpenseContent">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">日期 *</label>
+                        <input type="date" id="expDate"
+                            style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">大分類 *</label>
+                        <select id="expCategory"
+                            style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                            <option value="">— 選擇 —</option>
+                            <option value="軟件支出">軟件支出</option>
+                            <option value="打印費">打印費</option>
+                            <option value="材料">材料</option>
+                            <option value="運費">運費</option>
+                            <option value="雜項">雜項</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">項目說明 *</label>
+                    <input type="text" id="expItem" placeholder="例如：為第34批 nickplace & keychain 打印費"
+                        style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                </div>
+                <div style="display:grid; grid-template-columns:120px 1fr; gap:8px; margin-bottom:10px;">
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">金額 HKD *</label>
+                        <input type="number" id="expAmount" inputmode="decimal" min="0" step="0.01" placeholder="0.00"
+                            style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box; text-align:right;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">備註（可選）</label>
+                        <input type="text" id="expRemarks" placeholder="補充說明"
+                            style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                    <button id="btnSubmitExpense" onclick="window.submitExpenseLog()"
+                        style="padding:7px 20px; border-radius:6px; border:none; background:#6366F1; color:#fff; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">
+                        💾 記錄支出
+                    </button>
+                    <span id="expSubmitStatus" style="font-size:12px; color:var(--fhs-text-secondary);"></span>
+                </div>
+
+                <!-- 記錄列表 -->
+                <div style="border-top:1px solid var(--fhs-border); padding-top:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:11px; color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">最近 50 筆支出記錄</span>
+                        <button onclick="window.loadExpenseLogs()"
+                            style="font-size:11px; padding:2px 10px; border:1px solid var(--fhs-border); border-radius:4px; background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); cursor:pointer;">🔄 刷新</button>
+                    </div>
+                    <div id="expenseLogList" style="font-size:12px; color:var(--fhs-text-secondary);">點擊「刷新」載入記錄…</div>
+                </div>
+            </div>
+        </div>
+
         <!-- 🛠️ QA 中心（系統模式面板） -->
         <div class="card" style="border-top: 5px solid #457B9D; margin: 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
@@ -7447,6 +7529,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             // 財務設定中心：每次進入系統模式時載入最新成本參數
             if (window.loadCostConfigurations) window.loadCostConfigurations();
+            // Log Sheet：初始化操作者 + 自動載入記錄
+            if (window.initLogSheet) window.initLogSheet();
         }
 
         window.sysRefreshPanel = sysRefreshPanel;

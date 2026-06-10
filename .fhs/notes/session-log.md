@@ -1,5 +1,12 @@
 # Session Log
 
+## 2026-06-10 (Session 80): 📒 Log Sheet Phase 1 + expense_logs migration + NAS 部署 ✅
+
+**Scope**: Log Sheet 記錄中心卡片（支出表單 + 操作者簡稱 + 最近 50 筆列表）；Supabase migration 0031 expense_logs（RLS append-only）；V42→current NAS PASS（771,876B, SHA256: 75995D25）
+**Status**: ✅ Log Sheet UI 上線。migration 0031 待 apply_migration。
+
+---
+
 ## 2026-06-10 (Session 75–79): 🎨 V42 Split Payment 按鈕 UX 完成 + 部署 ✅
 
 **Scope**: (S75) 三視覺 Bug 修復（balance 按鈕 + per-box active 色 + #E65100→#1565C0）；(S76) active 色改橄欖綠 #558B2F + Balance 狀態機；(S77) per-box 時序 Bug 修復（移除 C4 + `setTimeout(0)` 最終 pass）；(S78) 移除 balance 全部半訂/全部付清；(S79) V42 部署 → current + NAS（PASS, SHA256: CC67786A）。
