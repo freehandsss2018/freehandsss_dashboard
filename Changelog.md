@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-06-10] 🗄️ Session 81 — migration 0031 apply + 成本欄直讀 UI
+
+**範圍**：Supabase migration（apply_migration MCP）+ 前端 UI（`freehandsss_dashboardV42.html`）
+
+### [DB] Supabase apply_migration 0031_expense_logs
+- `expense_logs` 表正式建立於 Supabase（via MCP apply_migration）
+- 煙霧測試 PASS：table ✓ / CHECK constraint ✓ / RLS ✓
+
+### [FIX] 訂單總覽成本欄 — 改用直讀 `it.Cost`
+- 移除舊 `_pgcCostList`（以 SKU lookup + 💡 audit modal 顯示成本，依賴 PGC audit 資料）
+- 新增 `_pgcCostListDirect`：直接讀 `order_items[].Cost`，依 Category 顯示中文標籤（手模/鎖匙扣/銀飾/配件）
+- 新增 CSS `.cost-fin-col` / `.cost-fin-item`（12px 灰色分項列表，dashed 分隔線）
+
+---
+
 ## [2026-06-10] ✨ V42 Session 80 — Log Sheet 記錄中心 Phase 1 + NAS 部署
 
 **範圍**：前端 UI/UX（`freehandsss_dashboardV42.html`）+ Supabase migration；current.html 同步更新

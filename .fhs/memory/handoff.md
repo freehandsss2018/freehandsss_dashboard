@@ -1,3 +1,61 @@
+# FHS Handoff - 2026-06-10 (Session 82 — migration 0031 confirm apply + /commit)
+
+## Session 82 完結
+
+### 執行完成項目
+
+- ✅ **[DB] Supabase apply_migration 0031_expense_logs 確認**
+  - 透過 MCP `apply_migration` 執行（`CREATE TABLE IF NOT EXISTS` 冪等）
+  - 回傳 `success: true`；smoke test 3 項 PASS
+  - Session 80 待辦「Supabase apply migration 0031」正式清除
+
+- ✅ **[COMMIT] Session 81 未 commit 改動推送**
+  - `freehandsss_dashboardV42.html`：per-item 成本直讀（Session 81 code-reviewer PASS）
+
+### 待辦
+- ⏳ **current.html 晉升**：V42 → current + NAS（待 Fat Mo 授權 + V1–V11 手機測試）
+- ⏸ TD2：`learnings.md` 超 50 條需整理
+- ⏸ `perplexity-mcp-server` submodule 有改動，未處理
+
+【交付前雙紀律自檢】
+驗收：Supabase MCP `apply_migration` `success: true`；migration 0031 冪等（IF NOT EXISTS）= ✅
+Subagent：❌ 未派
+
+---
+
+# FHS Handoff - 2026-06-10 (Session 81 — 訂單總覽成本細項永遠顯示)
+
+## Session 81 完結
+
+### 執行完成項目
+
+- ✅ **[VERIFY] migration 0031 expense_logs** — Supabase 確認 `expense_logs` 表已存在（由 Fat Mo 或前置流程部署）
+
+- ✅ **[FIX] 訂單總覽成本欄 — per-item 成本直讀**
+  - **根因**：PGC-ODAT v3 Lite（Session 31）的成本細項藏在 CSS toggle 後面，需點「🔍 顯示項目財務」才能看到，且依賴 `fhsSuggestedPriceMap`（products 表 SKU lookup）
+  - **修復**：新增 `_pgcCostListDirect`，直接讀 `order_items.item_base_cost`（`o.items[n].Cost`），永遠可見，不需 toggle
+  - 新增 CSS `.cost-fin-col` / `.cost-fin-item`（always-visible 分項列表）
+  - 移除死變數 `_pgcCostList`（已被替換）
+  - Category 標籤：立體擺設→手模、金屬鎖匙扣→鎖匙扣、銀飾→銀飾、其他→配件
+  - **code-reviewer G1–G8 ALL PASS**
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 生產版 HTML | Freehandsss_dashboard_current.html = V42（待本次修復晉升）|
+| 開發版 | freehandsss_dashboardV42.html（已修改）|
+| migration 0031 | ✅ expense_logs 表已在 Supabase |
+
+### 待辦
+- ⏳ **current.html 晉升**：V42 修復後需 Fat Mo 授權 + V1–V11 手機測試 + NAS 部署
+- ⏸ TD2：`learnings.md` 超 50 條需整理
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — code-reviewer G1–G8 Gate ALL PASS；Supabase 直查確認 order_items.product_sku 有值（"玻璃瓶套裝 (4肢)"/$210, "嬰兒鎖匙扣..."/$185）= ✅；current.html 晉升待 Fat Mo。
+Subagent：✅ code-reviewer（G1–G8 Gate 稽核）；❌ 其他 subagent（Supabase 直查 + 定點 4 處 Edit，主 context 完成）。
+
+---
+
 # FHS Handoff - 2026-06-10 (Session 80 — Log Sheet Phase 1 + NAS 部署)
 
 ## Session 80 完結

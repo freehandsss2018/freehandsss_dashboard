@@ -851,6 +851,9 @@
         .audit-fin-col .audit-sku-profit { color:#1D3557; font-weight:700; }
         .audit-fin-col .audit-na         { color:#ccc; }
         .audit-fin-col .audit-modal-btn  { cursor:pointer; background:none; border:none; font-size:12px; padding:0 2px; color:#4A90D9; }
+        /* Per-item cost breakdown — always visible in cost column */
+        .cost-fin-col { display:flex; flex-direction:column; align-items:flex-start; gap:2px; margin-top:5px; padding-top:5px; border-top:1px dashed #e0e0e0; font-size:11px; }
+        .cost-fin-item { color:#888; font-weight:500; }
         /* Mobile item financial drawer */
         .item-financial-drawer { display:none; margin-top:6px; padding:6px 8px; background:#f8faff; border-radius:6px; border:1px solid #e0e8f5; font-size:11px; }
         .item-financial-drawer .ifd-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
@@ -8125,6 +8128,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;">📝 金屬</button>';
                 if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>';
 
+                // Direct per-item cost breakdown (always visible, uses item_base_cost from order_items)
+                var _directCostItems = (o.items || []).filter(function(it){ return Number(it.Cost) > 0; });
+                var _pgcCostListDirect = _directCostItems.length > 0
+                    ? '<div class="cost-fin-col">' + _directCostItems.map(function(it){
+                        var _lbl = it.Category === '立體擺設' ? '手模' :
+                                   it.Category === '金屬鎖匙扣' ? '鎖匙扣' :
+                                   it.Category === '銀飾' ? '銀飾' : '配件';
+                        var _qtyStr = Number(it.Qty) > 1 ? '&times;' + Number(it.Qty) : '';
+                        return '<span class="cost-fin-item">' + _lbl + _qtyStr + '&nbsp;$' + it.Cost + '</span>';
+                    }).join('') + '</div>'
+                    : '';
+
                 // PGC-ODAT: per-item audit lists for 入帳 / 成本 columns
                 var _pgcItems = (o.items || []).map(function(it) {
                     var _sku = it.Product_SKU || '';
@@ -8136,15 +8151,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     ? '<div class="audit-fin-col">' + _pgcItems.map(function(x){
                         return x ? '<span class="audit-sku-price">$' + x.price + '</span>' : '<span class="audit-na">—</span>';
                     }).join('') + '</div>' : '';
-                var _pgcCostList = _pgcHas
-                    ? '<div class="audit-fin-col">' + _pgcItems.map(function(x, i){
-                        var _sk = ((o.items || [])[i] || {}).Product_SKU || '';
-                        var _skSafe = _sk.replace(/'/g,"\\'");
-                        return x
-                            ? '<span class="audit-sku-profit">$' + x.cost + '<button class="audit-modal-btn" onclick="openAuditModal(\'' + o.id + '\',\'' + i + '\',\'' + _skSafe + '\',' + x.price + ',' + x.cost + ')" title="對賬試算">💡</button></span>'
-                            : '<span class="audit-na">—</span>';
-                    }).join('') + '</div>' : '';
-
                 const orderLeftColsHtml = `
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
@@ -8171,7 +8177,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     </td>
                     <td id="cost-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         <span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
-                        ${_pgcCostList}
+                        ${_pgcCostListDirect}
                     </td>
                     <td id="profit-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
                         $${displayedProfit}
