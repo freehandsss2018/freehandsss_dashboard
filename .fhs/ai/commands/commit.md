@@ -37,6 +37,13 @@
 - **.env**: 嚴禁 Staging 包含真實 API Keys。
 - **🔴 失敗**：手動改動後未更 Changelog/Handoff 則禁止 commit。
 
+### P0.6 MASTER 待辦同步（新，2026-06-11）
+- 讀取 handoff.md 頂部「📋 MASTER 持續待辦」區塊。
+- 將本 session 已完成的項目從表中移至「已確認完成」清單。
+- 若本 session 產生新待辦，追加至表格。
+- **🟡 警告**：MASTER 區塊若不存在，立即補建後繼續。
+- 目的：解決 append-only 歷史積壓導致「持續待辦永遠不更新」的系統性漏洞。
+
 ---
 
 ## 【Phase 1: Memory Engine 同步】

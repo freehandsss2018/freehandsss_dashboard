@@ -1,0 +1,3 @@
+[submodule "perplexity-mcp-server"]
+	path = perplexity-mcp-server
+	url = https://github.com/cyanheads/perplexity-mcp-server.git
