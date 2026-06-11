@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-06-11] 🟠 Session 92 — V42 支付互斥歸零 + 品類切換顯示修正 + _quickHalfFillAllSplits 載入保護
+
+**範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（6 處 JS 修改）+ Supabase SQL patch（0600103）
+
+### [NEW] 支付分欄互斥歸零（非標準金額自動清零）
+- 已付訂金或未付尾數輸入「非半訂、非全付」金額 → 另一方自動歸 0（灰色）
+- 標準金額定義：`0`、`Math.ceil(calcPrice/2)`、`calcPrice`（per split box）
+- `_syncBalanceFromDeposit()` 加 isStandard 判斷；新增 `_syncDepositFromBalance()` 雙向互斥
+- `_fhsPaymentSyncing` guard 防循環；`recalcSplitSum` 雙向觸發
+
+### [FIX] generate() else 分支補 output-preview-a.value 清空
+- 根因：`enableP=false` 時 else 分支只 hide `preview-box-a`，未清 `output-preview-a.value`
+- IG 訊息 modal（`_igpmRefresh`）讀到殘留舊手模文字，用戶體感 bug 未修
+- 修正：else 分支補 `document.getElementById("output-preview-a").value = ""`
+
+### [FIX] _quickHalfFillAllSplits 載入現有訂單保護
+- 根因：定價引擎每次執行後無條件 auto-fill deposit 為半訂值，覆寫已載入訂單的存值
+- 導致：用戶按同步 → n8n 讀 auto-fill 值 → Supabase 被覆寫（0600103 $500→$790 復原案例）
+- 修正：加 skip guard `inp.value !== '' && inp.value !== '0' && inp.dataset.isDefault !== 'true'`
+- 同步修正：`_addBox` oninput 補 `this.dataset.isDefault='false'`（手動輸入標記）
+
+### [DATA PATCH] Supabase 0600103 財務欄位直接修正
+- deposit=$500, balance=$0, final_sale_price=$500, net_profit=$265, item_sale_price=$500
+- 原因：品類切換後曾為純鎖匙扣訂單，舊手模值 $1580/$790/$790 需人工校正
+
 ## [2026-06-11] 🔴 Session 90/91 — item_sale_price 3-layer 混合訂單收入精確分攤
 
 **範圍**：Supabase migrations 0037+0038、n8n Mirror Prep、V42 HTML Finance tab

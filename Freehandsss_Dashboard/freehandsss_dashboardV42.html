@@ -5653,6 +5653,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // btnCopyA 已隱藏（T5：複製+同步流程移至查閱訂單訊息 Modal）
             } else {
                 document.getElementById("preview-box-a").style.display = "none";
+                document.getElementById("output-preview-a").value = "";
             }
 
             // --- Scenario O: Adult Wood Force Display logic ---
@@ -10393,7 +10394,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     + '<input type="number" class="split-box-input" inputmode="numeric"'
                     + ' data-boxkey="' + safeKey + '" data-field="' + field + '"'
                     + ' value="' + (savedVal !== '' ? savedVal : '') + '" placeholder="0"'
-                    + ' oninput="recalcSplitSum(\'' + field + '\')">'
+                    + ' oninput="this.dataset.isDefault=\'false\'; recalcSplitSum(\'' + field + '\')">'
                     + (sugNum > 0
                         ? '<div style="display:flex;flex-direction:column;gap:1px;">'
                           + '<button type="button" class="quick-half-btn" data-boxkey="' + safeKey + '" data-suggested="' + sugNum + '" data-field="' + field + '" onclick="_quickHalfFillSplitBtn(this)" title="半付 $' + Math.ceil(sugNum / 2) + '" style="background:#f5f5f5;border:1px solid #ddd;border-radius:3px;color:#555;font-size:11px;cursor:pointer;padding:1px 5px;line-height:1.4;min-width:24px;">半</button>'
@@ -10438,6 +10439,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             recalcSplitSum(field);
         }
 
+        var _fhsPaymentSyncing = false;
+
         function recalcSplitSum(field) {
             const container = document.getElementById(field + 'SplitContainer');
             const hiddenEl  = document.getElementById(field);
@@ -10450,7 +10453,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             serializeSplits(field);
             const sumEl = document.getElementById(field + 'SplitSum');
             if (sumEl) sumEl.textContent = total > 0 ? '= $' + total : '';
-            if (field === 'deposit') _syncBalanceFromDeposit();
+            if (field === 'deposit' && !_fhsPaymentSyncing) {
+                _fhsPaymentSyncing = true;
+                _syncBalanceFromDeposit();
+                _fhsPaymentSyncing = false;
+            } else if (field === 'balance' && !_fhsPaymentSyncing) {
+                _fhsPaymentSyncing = true;
+                _syncDepositFromBalance();
+                _fhsPaymentSyncing = false;
+            }
         }
 
         function _syncBalanceFromDeposit() {
@@ -10468,10 +10479,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const bk = _boxKey(item, index);
                 const calcPrice = Number(item.CalculatedPrice) || 0;
                 const paid = depMap[bk] !== undefined ? depMap[bk] : 0;
-                const remaining = Math.max(0, calcPrice - paid);
+                const halfAmt = Math.ceil(calcPrice / 2);
+                const isStandard = (paid === 0 || paid === halfAmt || paid === calcPrice);
+                const newBal = isStandard ? Math.max(0, calcPrice - paid) : 0;
                 balContainer.querySelectorAll('.split-box-input').forEach(function(balInp) {
                     if (balInp.dataset.boxkey === bk) {
-                        balInp.value = remaining;
+                        balInp.value = newBal;
                         balInp.style.color = '#999';
                         balInp.dataset.isDefault = 'true';
                     }
@@ -10484,7 +10497,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     const depInp = depContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
                     const balInp = balContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
                     if (depInp && balInp) {
-                        balInp.value = Math.max(0, group.price - (Number(depInp.value) || 0));
+                        const gPrice = group.price || 0;
+                        const gPaid = Number(depInp.value) || 0;
+                        const gHalf = Math.ceil(gPrice / 2);
+                        const gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
+                        balInp.value = gStandard ? Math.max(0, gPrice - gPaid) : 0;
                         balInp.style.color = '#999';
                         balInp.dataset.isDefault = 'true';
                     }
@@ -10492,6 +10509,66 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
             recalcSplitSum('balance');
         }
+
+        function _syncDepositFromBalance() {
+            var items = window.fhsCurrentPricingItems;
+            if (!items || !items.length) return;
+            var depContainer = document.getElementById('depositSplitContainer');
+            var balContainer = document.getElementById('balanceSplitContainer');
+            if (!depContainer || !balContainer) return;
+            var balMap = {};
+            balContainer.querySelectorAll('.split-box-input').forEach(function(inp) {
+                if (inp.dataset.boxkey) balMap[inp.dataset.boxkey] = Number(inp.value) || 0;
+            });
+            var anyChanged = false;
+            items.forEach(function(item, index) {
+                if (item.Order_Item_Key && item.Order_Item_Key.includes('_M_')) return;
+                var bk = _boxKey(item, index);
+                var calcPrice = Number(item.CalculatedPrice) || 0;
+                var paid = balMap[bk] !== undefined ? balMap[bk] : 0;
+                var halfAmt = Math.ceil(calcPrice / 2);
+                var isStandard = (paid === 0 || paid === halfAmt || paid === calcPrice);
+                if (!isStandard) {
+                    depContainer.querySelectorAll('.split-box-input').forEach(function(depInp) {
+                        if (depInp.dataset.boxkey === bk) {
+                            depInp.value = 0;
+                            depInp.style.color = '#999';
+                            depInp.dataset.isDefault = 'true';
+                            anyChanged = true;
+                        }
+                    });
+                }
+            });
+            var _nGroups = window.fhsNecklaceGroups;
+            if (_nGroups && _nGroups.length > 0) {
+                _nGroups.forEach(function(group) {
+                    var depInp = depContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
+                    var balInp = balContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
+                    if (depInp && balInp) {
+                        var gPrice = group.price || 0;
+                        var gPaid = Number(balInp.value) || 0;
+                        var gHalf = Math.ceil(gPrice / 2);
+                        var gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
+                        if (!gStandard) {
+                            depInp.value = 0;
+                            depInp.style.color = '#999';
+                            depInp.dataset.isDefault = 'true';
+                            anyChanged = true;
+                        }
+                    }
+                });
+            }
+            if (anyChanged) {
+                var depHidden = document.getElementById('deposit');
+                var depSum = 0;
+                depContainer.querySelectorAll('.split-box-input').forEach(function(i) { depSum += Number(i.value) || 0; });
+                if (depHidden) depHidden.value = depSum;
+                var depSumEl = document.getElementById('depositSplitSum');
+                if (depSumEl) depSumEl.textContent = depSum > 0 ? '= $' + depSum : '';
+                serializeSplits('deposit');
+            }
+        }
+        window._syncDepositFromBalance = _syncDepositFromBalance;
 
         function _quickFillSplitBtn(btn) {
             const suggested = Number(btn.dataset.suggested) || 0;
@@ -10627,6 +10704,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (!inp) return;
                 var suggested = Number(btn.dataset.suggested) || 0;
                 if (!suggested) return;
+                // Skip boxes with a saved/user-entered value — only auto-fill empty or previously auto-filled boxes
+                if (inp.value !== '' && inp.value !== '0' && inp.dataset.isDefault !== 'true') return;
                 inp.value = Math.ceil(suggested / 2);
                 inp.style.color = '#999';
                 inp.dataset.isDefault = 'true';

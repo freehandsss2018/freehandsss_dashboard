@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-11 (Session 92 — V42 支付互斥歸零 + 品類切換修正): 🔧 V42 HTML 6 處 JS 修正 ✅
+
+**Scope**: split box 互斥歸零、generate() else clear fix、_quickHalfFillAllSplits 載入保護、Supabase 0600103 patch
+**Result**: 非標準金額→另一方歸零 ✅；IG modal 舊手模文字清除 ✅；載入訂單不再覆寫 split ✅；0600103=$500 ✅
+
 ## 2026-06-10 (Session 83 完整 — 多輪 bug fix + 功能): 🔧 交貨期系統全面優化 ✅
 
 **Scope**:

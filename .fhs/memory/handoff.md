@@ -1,13 +1,19 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-11（Session 90/91 — item_sale_price 3-layer 完成）
+> 上次更新：2026-06-11（Session 92 — V42 支付互斥歸零 + 品類切換修正）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🔴 HIGH | **0600103 deposit 補填** | ⏸ 待 Fat Mo | final_sale_price 校正後=$0，確認是否已收款 |
+| 🟡 MED | **0600103 raw_form_state 同步** | ⏸ 用戶操作 | Supabase 財務欄已 patch $500；用戶需載入→手動改 split $500→同步，才更新 raw_form_state |
 | 🟡 MED | **0038 migration 本地 SQL 補建** | 📋 次 session | 已 apply via MCP（PASS），本地 .sql 檔缺失，需從 Supabase 讀取函數定義補建 |
 | 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
 | 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 92 核實）
+- ✅ **V42 支付互斥歸零** — 非標準金額自動清零另一方，_fhsPaymentSyncing guard，雙向 sync（Session 92）
+- ✅ **generate() else 補 value="" 清空** — IG modal 舊手模文字殘留根治（Session 92）
+- ✅ **_quickHalfFillAllSplits 載入保護** — skip guard + oninput isDefault='false'，防 auto-fill 覆寫已存值（Session 92）
+- ✅ **0600103 Supabase 直接 patch** — deposit=$500, balance=$0, final_sale_price=$500（Session 92）
 
 ### 已確認完成（Session 90/91 核實）
 - ✅ **item_sale_price 3-layer 混合訂單收入修正** — hm_revenue $77,906→$29,812，migration 0037+0038，V42 data_quality 警示（Session 90/91）
@@ -36,6 +42,48 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-11 (Session 92 — V42 支付互斥歸零 + 品類切換顯示修正)
+
+## Session 92 完結
+
+### 執行完成項目
+
+- ✅ **[NEW] V42 支付分欄互斥歸零** — 非標準金額 → 另一方自動歸 0
+  - `_syncBalanceFromDeposit()` + 新增 `_syncDepositFromBalance()` 雙向互斥
+  - `_fhsPaymentSyncing` guard 防循環；`recalcSplitSum` 雙向觸發
+  - 標準：0 / Math.ceil(calcPrice/2) / calcPrice（per split box）
+
+- ✅ **[FIX] generate() else 補 output-preview-a.value = ""**
+  - 根因：else 分支只 hide box，殘留舊手模文字被 _igpmRefresh 讀取
+  - line ~5656：補一行清空
+
+- ✅ **[FIX] _quickHalfFillAllSplits 載入現有訂單保護**
+  - 根因：定價引擎執行後無條件覆寫 split box → 用戶同步後 Supabase 被 n8n 寫回舊值
+  - guard：`inp.value !== '' && inp.value !== '0' && inp.dataset.isDefault !== 'true'` → skip
+  - oninput 補 `this.dataset.isDefault='false'`（手動輸入標記）
+
+- ✅ **[DATA] Supabase 0600103 patch** — deposit=$500, balance=$0, final_sale_price=$500, net_profit=$265, item_sale_price=$500
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | Freehandsss_Dashboard/freehandsss_dashboardV42.html |
+| Supabase patch | orders + order_items, order_id='0600103' |
+| V42 key changes | line ~5656, ~10397, ~10441, ~10470, ~10698 |
+
+### ⚠️ 後續注意
+- 0600103 `raw_form_state` 仍含舊 depositSplitData=$790；用戶下次載入需手動改 split→$500→同步
+- SQL patch 不更新 raw_form_state（see memory: feedback_v42_raw_form_state_patch_caveat）
+
+### Subagent 使用記錄
+| Subagent | 使用 | 用途 |
+|----------|------|------|
+| database-reviewer | ✗ | — |
+| finance-auditor | ✗ | — |
+| build-error-resolver | ✗ | — |
 
 ---
 
