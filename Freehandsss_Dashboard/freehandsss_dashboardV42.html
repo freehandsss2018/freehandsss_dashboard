@@ -7169,8 +7169,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 "System_Total_Cost": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Total_Cost : 0,
                 "System_Final_Sale_Price": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Final_Sale_Price : 0,
                 "System_Additional_Fee": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Additional_Fee : 0,
-                "Full_Order_Text": ((document.getElementById("output-preview-a")?.value || "") + "\n\n" + (document.getElementById("output-preview-b")?.value || "")).trim(),
-                "Clean_Order_Text": ((document.getElementById("output-preview-a")?.value || "").split('🖼️')[0] + "\n" + (document.getElementById("output-preview-b")?.value || "").split('⚙️')[0]).trim(),
+                "Full_Order_Text": (function() {
+                    // Only include 手模段 (output-preview-a) when enableP (含取模服務) is checked.
+                    // Prevents stale hand-model text bleeding into pure-metal orders after category switch.
+                    var _epChk = document.getElementById('enableP');
+                    var _tA = (_epChk && _epChk.checked) ? (document.getElementById("output-preview-a")?.value || "") : "";
+                    var _tB = document.getElementById("output-preview-b")?.value || "";
+                    return (_tA + (_tA && _tB ? "\n\n" : "") + _tB).trim();
+                })(),
+                "Clean_Order_Text": (function() {
+                    var _epChk = document.getElementById('enableP');
+                    var _tA = (_epChk && _epChk.checked) ? ((document.getElementById("output-preview-a")?.value || "").split('🖼️')[0]) : "";
+                    var _tB = (document.getElementById("output-preview-b")?.value || "").split('⚙️')[0];
+                    return (_tA + "\n" + _tB).trim();
+                })(),
                 "Raw_Form_State": (function() {
                     let rawStateStr = captureFormState();
                     try {
