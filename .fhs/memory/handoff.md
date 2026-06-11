@@ -1,3 +1,17 @@
+# FHS Handoff - 2026-06-11 (Session 85 — V42 升格生產)
+
+## Session 85 完結
+
+### 執行完成項目
+
+- ✅ **[DEPLOY] V42 升格 current 生產版**：`freehandsss_dashboardV42.html` (769K) → `Freehandsss_dashboard_current.html`；NAS WebDAV 三關驗證 PASS（HTTP 200 + 大小 787,013 bytes + SHA256 3E5F8A47A619DF84AEA6DDFC9A7A805786EB141B2D25C2241ABE4A4B0D6C20B5）。公開：`https://yanhei.synology.me/Freehandsss_dashboard_current.html`
+
+【交付前雙紀律自檢】
+驗收：V42 = Session 84 全量驗收已完成（逐行靜態驗證 + live 刻字寫入閉環 PASS）；本 session 純升格操作，三關驗證腳本已跑 PASS = 等效。
+Subagent：✅ 沒用 subagent（本 session 純 cp + upload-web + commit）
+
+---
+
 # FHS Handoff - 2026-06-10 (Session 84 — 訂單總覽成本細項：toggle 收摺 + 逐行對齊 + 配色)
 
 ## Session 84 完結
@@ -34,6 +48,7 @@
 - ✅ **[FIX 根治] 鎖匙扣/吊飾刻字失效**（/execute，B 修法）：根因＝n8n `sync_order_to_mirror` RPC 從未含 engraving_text 欄（git 考古坐實）+ Mirror Prep 把刻字誤塞 specification。修：n8n Mirror Prep 補 engraving_text（gated，**已部署+備份** versionId d8e3f8a6）；migration **0034** RPC 補 engraving_text（範本 0017，**✅ 已套用** via Supabase Management API query 端點，繞過掉線 MCP；`has_engraving=true` 驗證）。既有 test01/02 需 re-save 回填（其 raw_form_state 吊飾刻字尚在：test01 m_rf_eng=L / test02 m_lf_eng=L；鎖匙扣本來就沒填）。
   - ⚠️ **MCP 掉線事件**：Supabase MCP stdio pipe 中途斷（專案/PAT/配置皆正常，curl REST + Management API 均通）；客戶端需 `/mcp` 重連。本次改用 Management API（同 PAT、官方路徑）完成 DDL。
   - rollback（n8n）：`.fhs/notes/aireports/n8n-mcp-backups/2026-06-10/6Ljih0hSKr9RpYNm/Supabase_Mirror_Prep.json`
+  - ✅ **寫入端閉環驗證 PASS（2026-06-11）**：新單 test01 鎖匙扣 `test01_K_LH.engraving_text = "[上排]AB [下排]1234"`（MCP 直查生產 DB）→ n8n→RPC→engraving_text 落地確認，根治完成。Supabase MCP 已重連正常。
 
 ### 待辦 / 驗收
 - ⏳ **Fat Mo live 視覺確認**：逐行對齊 + toggle 兩態 + 三欄同色系 + 成本 live 回寫（playwright 因需 Supabase live 資料無法於此環境量測）

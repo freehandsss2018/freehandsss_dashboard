@@ -851,6 +851,8 @@
         .audit-fin-col .audit-sku-profit { color:#1D3557; font-weight:700; }
         .audit-fin-col .audit-na         { color:#ccc; }
         .audit-fin-col .audit-modal-btn  { cursor:pointer; background:none; border:none; font-size:12px; padding:0 2px; color:#4A90D9; }
+        /* Per-item cost breakdown — always visible in cost column */
+        /* (Session 84) 成本細項改回 toggle-gated，沿用 .audit-fin-col 舊版風格；.cost-fin-* 已退役 */
         /* Mobile item financial drawer */
         .item-financial-drawer { display:none; margin-top:6px; padding:6px 8px; background:#f8faff; border-radius:6px; border:1px solid #e0e8f5; font-size:11px; }
         .item-financial-drawer .ifd-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
@@ -944,6 +946,30 @@
         .badge-target-父母 { background: #FCE4EC; color: #C2185B; border-color: #F48FB1; }
         .badge-target-家庭 { background: #FFF3E0; color: #BF360C; border-color: #FFCC80; }
         .badge-target-大寶 { background: #E8F5E9; color: #388E3C; border-color: #A5D6A7; }
+
+        /* 交貨期徽章 (Session 82) */
+        .dlv-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:9px; white-space:nowrap; margin-top:4px; }
+        .dlv-badge-red    { background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; }
+        .dlv-badge-yellow { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
+        .dlv-badge-green  { background:#dcfce7; color:#16a34a; border:1px solid #86efac; }
+        /* 交貨期統計卡 */
+        .dlv-stats-card { display:flex; gap:8px; margin-top:4px; flex-wrap:wrap; }
+        .dlv-stat-block { flex:1; min-width:80px; padding:10px 8px; border-radius:8px; cursor:pointer; text-align:center; transition:transform .1s; user-select:none; }
+        .dlv-stat-block:active { transform:scale(.96); }
+        .dlv-stat-block-red    { background:#fee2e2; border:1.5px solid #fca5a5; }
+        .dlv-stat-block-yellow { background:#fef9c3; border:1.5px solid #fde68a; }
+        .dlv-stat-block-green  { background:#f0fdf4; border:1.5px solid #86efac; }
+        .dlv-stat-num   { font-size:24px; font-weight:800; line-height:1.1; }
+        .dlv-stat-label { font-size:11px; margin-top:3px; font-weight:600; }
+        .dlv-expand-list { margin-top:10px; }
+        .dlv-expand-item { padding:7px 10px; border-radius:6px; margin-bottom:4px; font-size:12px; border:1px solid #f0f0f0; background:var(--fhs-bg-elevated); }
+        .dlv-expand-item:hover { background:#f5f5f5; }
+        .dlv-expand-item-row { display:flex; justify-content:space-between; align-items:center; gap:4px; }
+        .dlv-expand-item-sub { font-size:10px; color:var(--fhs-text-secondary); margin-top:2px; }
+        .dlv-jump-btn { font-size:10px; padding:2px 6px; border:1px solid currentColor; border-radius:4px; background:transparent; cursor:pointer; white-space:nowrap; }
+        .dlv-jump-btn:hover { opacity:0.75; }
+        @keyframes dlvFlash { 0%,100%{background:transparent} 25%,75%{background:rgba(239,68,68,0.18)} 50%{background:rgba(239,68,68,0.35)} }
+        .dlv-jump-highlight { animation:dlvFlash 1.6s ease; }
         .badge-part { border-color: rgba(0,0,0,0.1); background: #ffffff; color: #555; font-weight: 500; }
         
         /* 數量與產品副標 */
@@ -951,7 +977,7 @@
         .review-badge-product { background:#ffffff; color:#333; border: 1px solid #ddd; font-weight: 500; }
 
         /* 刻字欄 — 水平並列佈局 (V29 升級) */
-        .review-eng-container { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .review-eng-container { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
         .review-eng-line { font-size:12px; background:#f0f4f8; padding:3px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:6px; border: 1px solid #d1d9e6; }
         .review-eng-label { font-size:10px; font-weight:900; padding:1px 4px; border-radius:3px; text-transform:uppercase; color: white; }
         .review-eng-label-top { background: #5DADE2; }
@@ -1150,6 +1176,7 @@
         /* V31.9 訂單總覽：快跳修改膠囊 */
         .review-jump-pill {
             display: inline-flex;
+            white-space: nowrap;
             align-items: center;
             padding: 4px 10px;
             background: rgba(212, 163, 115, 0.05);
@@ -3144,16 +3171,16 @@
                             <th class="review-cb-th" style="padding:8px 4px; border:none;">
                                 <input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)">
                             </th>
-                            <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:90px;" onclick="sortReviewTable('Order_ID')">📝 單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
+                            <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:110px;" onclick="sortReviewTable('Order_ID')">📝 單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
                             <th class="sort-th" data-sort="Date" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;" onclick="sortReviewTable('Date')">📅 日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
-                            <th class="sort-th" data-sort="Customer" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;" onclick="sortReviewTable('Customer')">👤 客人<span class="sort-arrow" id="sort-arrow-Customer"></span></th>
-                            <th class="sort-th" data-sort="Final_Sale_Price" style="padding:12px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Final_Sale_Price')">💵 入帳<span class="sort-arrow" id="sort-arrow-Final_Sale_Price"></span></th>
-                            <th class="sort-th" data-sort="Total_Cost" style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Total_Cost')">💰 成本<span class="sort-arrow" id="sort-arrow-Total_Cost"></span></th>
-                            <th class="sort-th" data-sort="Net_Profit" style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;" onclick="sortReviewTable('Net_Profit')">🏆 利潤<span class="sort-arrow" id="sort-arrow-Net_Profit"></span></th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:160px;">✂️ 刻字</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;">👤 客人</th>
+                            <th style="padding:12px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">💵 入帳</th>
+                            <th style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">💰 成本</th>
+                            <th style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;">🏆 利潤</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:70px;">✂️ 刻字</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:200px;">📦 產品明細</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;">🏷️ 批次</th>
-                            <th class="sort-th" data-sort="Status" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;" onclick="sortReviewTable('Status')">🚥 進度<span class="sort-arrow" id="sort-arrow-Status"></span></th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;">🚥 進度</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;">📝 備註</th>
                         </tr>
                     </thead>
@@ -4217,6 +4244,30 @@
                     <div id="expenseLogList" style="font-size:12px; color:var(--fhs-text-secondary);">點擊「刷新」載入記錄…</div>
                 </div>
             </div>
+        </div>
+
+        <!-- 🚚 交貨期進度統計卡 (Session 82) -->
+        <div id="dlvStatsCard" class="card" style="border-top:5px solid #ef4444; margin:0 0 16px 0; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h2 style="color:#ef4444; margin:0; font-size:15px; font-weight:700;">🚚 交貨期進度</h2>
+                <span id="dlvStatsLoading" style="display:none; font-size:11px; color:#9ca3af; background:#f5f5f5; padding:2px 8px; border-radius:9px;">載入中…</span>
+            </div>
+            <p style="font-size:11px; color:var(--fhs-text-secondary); margin:0 0 10px 0;">點擊色塊展開該狀態訂單清單 · 點訂單查詳情</p>
+            <div class="dlv-stats-card">
+                <div class="dlv-stat-block dlv-stat-block-red" onclick="toggleDlvExpand('red')">
+                    <div id="dlvStatRed" class="dlv-stat-num" style="color:#b91c1c;">—</div>
+                    <div class="dlv-stat-label" style="color:#b91c1c;">🔴 逾期/今日</div>
+                </div>
+                <div class="dlv-stat-block dlv-stat-block-yellow" onclick="toggleDlvExpand('yellow')">
+                    <div id="dlvStatYellow" class="dlv-stat-num" style="color:#92400e;">—</div>
+                    <div class="dlv-stat-label" style="color:#92400e;">⚠️ 14天內到期</div>
+                </div>
+                <div class="dlv-stat-block dlv-stat-block-green" onclick="toggleDlvExpand('green')">
+                    <div id="dlvStatGreen" class="dlv-stat-num" style="color:#166534;">—</div>
+                    <div class="dlv-stat-label" style="color:#166534;">✓ 正常</div>
+                </div>
+            </div>
+            <div id="dlvExpandList" class="dlv-expand-list"></div>
         </div>
 
         <!-- 🛠️ QA 中心（系統模式面板） -->
@@ -7249,6 +7300,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // ==========================================
         let reviewFetchTimeout = null;
         let globalOrders = [];
+        window._dlvMap = new Map(); // key=order_id (business ID), value={urgency,days_remaining,due_date,id,customer_name}
         let fhsSuggestedPriceMap = {};
         let fhsPriceMapLoadedAt = 0;
 
@@ -7531,6 +7583,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (window.loadCostConfigurations) window.loadCostConfigurations();
             // Log Sheet：初始化操作者 + 自動載入記錄
             if (window.initLogSheet) window.initLogSheet();
+            // 交貨期統計卡：每次進入系統模式時刷新
+            if (window.initDeliveryStatsCard) window.initDeliveryStatsCard();
         }
 
         window.sysRefreshPanel = sysRefreshPanel;
@@ -7646,6 +7700,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const cached = getReviewCache(cacheKey);
                 if (cached) {
                     globalOrders = cached;
+                    await fetchDeliveryMap();
                     if (window.applyReviewFilters) window.applyReviewFilters();
                     else renderReviewTable(globalOrders);
                     handleSyncPollingCheck(globalOrders);
@@ -7671,6 +7726,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + params.join('&');
             }
 
+            // Start delivery map fetch in parallel with order fetch (W3 staleness fix)
+            const _dlvFetch = fetchDeliveryMap();
             // Retry up to 3 times with backoff (handles Airtable rate limit)
             let lastErr = null;
             for (let attempt = 1; attempt <= 3; attempt++) {
@@ -7685,6 +7742,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (data && data.orders) {
                         globalOrders = data.orders;
                         setReviewCache(cacheKey, data.orders);
+                        await _dlvFetch;
                         if (window.applyReviewFilters) window.applyReviewFilters();
                         else renderReviewTable(globalOrders);
                         handleSyncPollingCheck(globalOrders);
@@ -7708,6 +7766,135 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             tbody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
             hideLoader();
         }
+
+        // === 交貨期提示系統 (Session 82) ===
+
+        async function fetchDeliveryMap() {
+            try {
+                const res = await fetch(
+                    _V41_SB_URL + '/rest/v1/v_delivery_reminders?select=order_id,id,customer_name,days_remaining,start_date,due_date,sla_days,urgency',
+                    { headers: { 'apikey': _V41_SB_ANON, 'Authorization': 'Bearer ' + _V41_SB_ANON } }
+                );
+                if (!res.ok) return;
+                const rows = await res.json();
+                if (Array.isArray(rows)) window._dlvMap = new Map(rows.map(function(r){ return [r.order_id, r]; }));
+            } catch(e) { /* silent — badges absent if Supabase unreachable */ }
+        }
+
+        function _dlvBadgeHtml(orderId) {
+            var r = window._dlvMap && window._dlvMap.get(orderId);
+            if (!r) return '';
+            var d = Math.abs(Number(r.days_remaining));
+            if (r.urgency === 'overdue')   return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')">🔴 逾期' + d + '天</span>';
+            if (r.urgency === 'due_today') return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')">🔴 今日到期</span>';
+            if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow" style="cursor:pointer;" onclick="jumpToDlvCard(\'yellow\')">⚠️ 剩' + d + '天</span>';
+            return '<span class="dlv-badge dlv-badge-green" style="cursor:pointer;" onclick="jumpToDlvCard(\'green\')">✓ 正常(剩' + Number(r.days_remaining) + '天)</span>';
+        }
+
+        async function initDeliveryStatsCard() {
+            var card = document.getElementById('dlvStatsCard');
+            if (!card) return;
+            var loadEl = document.getElementById('dlvStatsLoading');
+            if (loadEl) loadEl.style.display = '';
+            await fetchDeliveryMap();
+            if (loadEl) loadEl.style.display = 'none';
+            renderDeliveryStatsCard();
+        }
+
+        function renderDeliveryStatsCard() {
+            var rows = window._dlvMap ? Array.from(window._dlvMap.values()) : [];
+            var red    = rows.filter(function(r){ return r.urgency === 'overdue' || r.urgency === 'due_today'; });
+            var yellow = rows.filter(function(r){ return r.urgency === 'warn'; });
+            var green  = rows.filter(function(r){ return r.urgency === 'normal'; });
+            var el;
+            el = document.getElementById('dlvStatRed');    if (el) el.textContent = red.length;
+            el = document.getElementById('dlvStatYellow'); if (el) el.textContent = yellow.length;
+            el = document.getElementById('dlvStatGreen');  if (el) el.textContent = green.length;
+            var listEl = document.getElementById('dlvExpandList');
+            if (listEl) { listEl.innerHTML = ''; listEl._dlvColor = null; }
+            window._dlvRedRows    = red;
+            window._dlvYellowRows = yellow;
+            window._dlvGreenRows  = green;
+            if (window._dlvAutoExpand) {
+                var _c = window._dlvAutoExpand; window._dlvAutoExpand = null;
+                setTimeout(function(){ toggleDlvExpand(_c); }, 0);
+            }
+        }
+
+        function toggleDlvExpand(color) {
+            var listEl = document.getElementById('dlvExpandList');
+            if (!listEl) return;
+            var rows = color === 'red' ? (window._dlvRedRows || [])
+                     : color === 'yellow' ? (window._dlvYellowRows || [])
+                     : (window._dlvGreenRows || []);
+            if (listEl._dlvColor === color && listEl.innerHTML !== '') {
+                listEl.innerHTML = '';
+                listEl._dlvColor = null;
+                return;
+            }
+            listEl._dlvColor = color;
+            if (rows.length === 0) {
+                listEl.innerHTML = '<div style="color:var(--fhs-text-secondary); font-size:12px; padding:6px 0;">此類別無訂單</div>';
+                return;
+            }
+            var sorted = rows.slice().sort(function(a, b){ return Number(a.days_remaining) - Number(b.days_remaining); });
+            var colorStyle = color === 'red' ? '#b91c1c' : color === 'yellow' ? '#92400e' : '#6b7280';
+            listEl.innerHTML = sorted.map(function(r){
+                var d = Number(r.days_remaining);
+                var dText = r.urgency === 'overdue'   ? '逾期' + Math.abs(d) + '天'
+                          : r.urgency === 'due_today' ? '今日到期'
+                          : '剩' + d + '天';
+                var sDate = (r.start_date || '').slice(0, 10) || '—';
+                var eDate = (r.due_date   || '').slice(0, 10) || '—';
+                var sla   = r.sla_days ? r.sla_days + '天' : '—';
+                return '<div class="dlv-expand-item" style="cursor:pointer;" onclick="openOrderModal(\'' + (r.order_id || '') + '\')">' +
+                    '<div class="dlv-expand-item-row">' +
+                    '<span><strong>' + (r.order_id || '—') + '</strong> · ' + (r.customer_name || '-') + '</span>' +
+                    '<div style="display:flex;gap:4px;align-items:center;">' +
+                    '<span style="font-size:11px;color:' + colorStyle + ';">' + dText + '</span>' +
+                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="event.stopPropagation(); jumpToReviewOrder(\'' + (r.order_id || '') + '\')">↗ 跳至</button>' +
+                    '</div></div>' +
+                    '<div class="dlv-expand-item-sub">起: ' + sDate + ' → 到: ' + eDate + ' · SLA ' + sla + '</div>' +
+                    '</div>';
+            }).join('');
+        }
+
+        window.initDeliveryStatsCard = initDeliveryStatsCard;
+        window.toggleDlvExpand = toggleDlvExpand;
+
+        async function jumpToDlvCard(color) {
+            window._dlvAutoExpand = color;
+            if (typeof switchMode === 'function') await switchMode('system');
+            await new Promise(function(r){ requestAnimationFrame(r); });
+            var card = document.getElementById('dlvStatsCard');
+            if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        window.jumpToDlvCard = jumpToDlvCard;
+
+        async function jumpToReviewOrder(orderId) {
+            var filters = ['reviewYear','reviewMonth','reviewStatus','reviewBatch','reviewSearch'];
+            filters.forEach(function(id){
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            if (typeof switchMode === 'function') await switchMode('review');
+            if (window.fetchGlobalReview) await window.fetchGlobalReview(true);
+            await new Promise(function(r){ requestAnimationFrame(function(){ requestAnimationFrame(r); }); });
+            var targetEl = document.getElementById('acc-order-' + orderId);
+            if (!targetEl) {
+                var cb = document.querySelector('.order-row-cb[data-order-id="' + orderId + '"]');
+                targetEl = cb ? cb.closest('tr') : null;
+            }
+            if (!targetEl) {
+                if (typeof openOrderModal === 'function') openOrderModal(orderId);
+                return;
+            }
+            var scrollEl = targetEl.closest('.swipe-row-wrapper') || targetEl;
+            scrollEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            scrollEl.classList.add('dlv-jump-highlight');
+            setTimeout(function(){ scrollEl.classList.remove('dlv-jump-highlight'); }, 2000);
+        }
+        window.jumpToReviewOrder = jumpToReviewOrder;
 
         // === V40 iPhone Accordion 渲染引擎 ===
         function renderReviewAccordion(orders) {
@@ -7980,6 +8167,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
                                     ${_detailBtnsM}
                                     <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
+                                    ${_dlvBadgeHtml(o.Order_ID)}
                                 </div>
                                 <div class="acc-order-header-right">
                                     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
@@ -8125,26 +8313,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;">📝 金屬</button>';
                 if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>';
 
-                // PGC-ODAT: per-item audit lists for 入帳 / 成本 columns
-                var _pgcItems = (o.items || []).map(function(it) {
+                // PGC-ODAT: per-item audit data (price lookup per SKU)
+                // Built from _renderItemsFinal (not o.items) to stay index-aligned with forEach loop
+                // _pgcCostListDirect and _pgcPriceList removed — replaced by per-row fin cells in forEach
+                var _pgcItems = (_renderItemsFinal || []).map(function(it) {
                     var _sku = it.Product_SKU || '';
                     var _ent = _sku ? fhsSuggestedPriceMap[_sku] : null;
                     return _ent ? { sku: _sku, price: _ent.price, cost: _ent.cost } : null;
                 });
                 var _pgcHas = _pgcItems.some(function(x){ return x !== null; });
-                var _pgcPriceList = _pgcHas
-                    ? '<div class="audit-fin-col">' + _pgcItems.map(function(x){
-                        return x ? '<span class="audit-sku-price">$' + x.price + '</span>' : '<span class="audit-na">—</span>';
-                    }).join('') + '</div>' : '';
-                var _pgcCostList = _pgcHas
-                    ? '<div class="audit-fin-col">' + _pgcItems.map(function(x, i){
-                        var _sk = ((o.items || [])[i] || {}).Product_SKU || '';
-                        var _skSafe = _sk.replace(/'/g,"\\'");
-                        return x
-                            ? '<span class="audit-sku-profit">$' + x.cost + '<button class="audit-modal-btn" onclick="openAuditModal(\'' + o.id + '\',\'' + i + '\',\'' + _skSafe + '\',' + x.price + ',' + x.cost + ')" title="對賬試算">💡</button></span>'
-                            : '<span class="audit-na">—</span>';
-                    }).join('') + '</div>' : '';
-
+                // orderLeftColsHtml: 4 rowspan cols only (cb / 單號 / 日期 / 客戶)
+                // 入帳/成本/利潤 are now per-row <td> emitted inside forEach (D1-a)
                 const orderLeftColsHtml = `
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
@@ -8158,6 +8337,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             🗑️ 刪除
                         </button>
                         ${_detailBtns}
+                        ${_dlvBadgeHtml(o.Order_ID)}
                         <div id="sync-indicator-${o.id}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
                             <span class="fhs-spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;"></span>
                             同步中
@@ -8165,17 +8345,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${cDate}</td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${o.Customer || '-'}</td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
-                        ${_pgcPriceList}
-                    </td>
-                    <td id="cost-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        <span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
-                        ${_pgcCostList}
-                    </td>
-                    <td id="profit-cell-${o.id}" rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px; text-align:center;">
-                        $${displayedProfit}
-                    </td>
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
@@ -8339,28 +8508,53 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // 繪製表格列 (TR)
                         const isLastItem = index === itemsCount - 1;
                         const _rowBorderB = isLastItem ? '3px solid #b0b0b0' : '1px solid #ebebeb';
+
+                        // D1-a: per-row 入帳/成本/利潤 cells (方案甲 拆 rowspan)
+                        // index===0: 訂單總額粗體在上，逐項值在下 (audit-fin-col toggle)
+                        // index>0:   只顯逐項值 (audit-fin-col toggle)
+                        var _itEnt   = (_pgcItems || [])[index] || null;
+                        var _itPrice = _itEnt ? _itEnt.price : null;
+                        var _itCost  = Number(item.Cost) > 0 ? Number(item.Cost) : null;
+                        var _itProfit = (_itPrice != null && _itCost != null) ? (_itPrice - _itCost) : null;
+                        var _itPC    = (_itProfit != null && _itProfit > 0) ? '#2A9D8F' : '#E63946';
+                        var _na      = '<span class="audit-na">—</span>';
+                        var _finCells = `
+                          <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
+                          </td>
+                          <td ${index === 0 ? `id="cost-cell-${o.id}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
+                          </td>
+                          <td ${index === 0 ? `id="profit-cell-${o.id}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
+                          </td>`;
+
                         html += `
                         <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 140px; padding: 10px; background-color:${rowBatchCol};">
+                            ${_finCells}
+                            <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 70px; padding: 8px 3px; background-color:${rowBatchCol};">
                                 ${engCellHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
                                 ${prodHtml}
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 90px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 100px; background-color:${rowBatchCol};">
                                 <input type="text" id="batch-input-${o.id}-${index}" class="review-batch-input"
                                        value="${rowBatch || ''}"
-                                       style="width:80%; max-width:80px; text-align:center; margin:0 auto; font-size:13px;"
+                                       style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:13px;"
                                        inputmode="numeric"
                                        onfocus="batchInputFocus(this)"
                                        oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'batch-input-${o.id}-${index}', ${index})"
                                        placeholder="批次">
                             </td>
-                            <td class="batch-cell" style="vertical-align:middle; text-align:center; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                                 <select id="status-select-${o.id}-${index}" class="review-status-select"
-                                        style="width:90%; font-size:13px; margin:0 auto;"
+                                        style="width:100%; max-width:92px; font-size:13px; margin:0 auto;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index});
                                                   var _adj = document.getElementById('adj-wrapper-${o.id}-${index}');
                                                   if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
@@ -8427,9 +8621,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 } else {
                     // 如果沒有子項目，使用訂單本身的批次顏色 (V31.83 修正)
                     const orderBatchCol = getBatchColor(o.Batch || "");
+                    // D1-a fallback: single-row order needs 入帳/成本/利潤 cells with IDs for live update
                     html += `
                     <tr class="order-group-${o.id}" id="row-${o.id}">
                         ${orderLeftColsHtml}
+                        <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            ${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
+                        </td>
+                        <td id="cost-cell-${o.id}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            <span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
+                        </td>
+                        <td id="profit-cell-${o.id}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            $${displayedProfit}
+                        </td>
                         <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
                         </td>
@@ -9672,6 +9876,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 2. Construct entry
             const updateEntry = {
                 Record_ID:  recordId,
+                ItemIndex:  itemIndex,
                 _sb_id:     isItemUpdate ? (itemObj._sb_id || '') : '',
                 _item_key:  isItemUpdate ? (itemObj.Item_ID || itemObj.Order_Item_Key || '') : '',
                 _is_item:   isItemUpdate,
@@ -9685,7 +9890,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window.lastUpdateEntry = updateEntry;
 
             // 3. Add to queue
-            const existingIdx = metadataUpdateQueue.findIndex(e => e.Record_ID === updateEntry.Record_ID && e.Item_Record_ID === updateEntry.Item_Record_ID);
+            const existingIdx = metadataUpdateQueue.findIndex(e => e.Record_ID === updateEntry.Record_ID && e._item_key === updateEntry._item_key && e._field === updateEntry._field);
             if (existingIdx > -1) {
                 metadataUpdateQueue[existingIdx] = updateEntry;
             } else {
@@ -11696,14 +11901,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
             if (window.fhsShowItemFinancials) {
-                var _doRender = function() {
-                    document.body.classList.add('fhs-audit-on');
-                    if (typeof applyReviewFilters === 'function') applyReviewFilters();
-                };
+                // [Session 84 fix] 首按即時生效：fhs-audit-on class 同步立即加，.audit-fin-col 細項立刻顯示。
+                // 成本/利潤逐項用 item.Cost 直算（不需 SKU map）；僅入帳逐項 SKU 建議價需 preload。
+                // 原 bug：class 藏在 preloadSuggestedPrices().then() 內，首按要等網路往返才顯示＝「沒反應」+ 連按 race。
+                document.body.classList.add('fhs-audit-on');
                 if (Object.keys(fhsSuggestedPriceMap).length === 0) {
-                    preloadSuggestedPrices().then(_doRender);
+                    // 背景補入帳欄 SKU 建議價，回來再 re-render 填值；preload 失敗於其 catch 內自處理，不卡 toggle。
+                    preloadSuggestedPrices().then(function() {
+                        if (window.fhsShowItemFinancials && typeof applyReviewFilters === 'function') applyReviewFilters();
+                    });
                 } else {
-                    _doRender();
+                    if (typeof applyReviewFilters === 'function') applyReviewFilters();
                 }
             } else {
                 document.body.classList.remove('fhs-audit-on');
@@ -11758,6 +11966,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.toggleItemDrawer = toggleItemDrawer;
         window.openAuditModal   = openAuditModal;
         window.closeAuditModal  = closeAuditModal;
+        window.openOrderModal   = openOrderModal;
 
         /* ── Preload SKU suggested prices (PGC-ODAT Phase 1) ───────── */
         async function preloadSuggestedPrices() {
@@ -12364,6 +12573,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (tbody) tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
                 }
 
+                const _dlvFetch = (typeof fetchDeliveryMap === 'function') ? fetchDeliveryMap() : Promise.resolve();
                 let orders;
                 try {
                     orders = await sbFetchGlobalReview(year, month, status, batch, search);
@@ -12374,6 +12584,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     return origFn.apply(this, arguments);
                 }
                 if (loading) loading.style.display = 'none';
+                await _dlvFetch;
                 window.globalOrders = orders;
                 if (window.applyReviewFilters) {
                     window.applyReviewFilters();

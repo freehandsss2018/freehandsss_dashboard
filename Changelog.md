@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-06-11] 🚀 Session 85 — V42 升格生產 + 刻字寫入驗證閉環
+
+**範圍**：`Freehandsss_dashboard_current.html`（V42 升格為生產版），NAS WebDAV 部署
+
+### [DEPLOY] V42 → current 生產升格
+- `freehandsss_dashboardV42.html` (769K) 覆蓋 `Freehandsss_dashboard_current.html`
+- NAS Web Station 部署：SHA256 `3E5F8A47A619DF84AEA6DDFC9A7A805786EB141B2D25C2241ABE4A4B0D6C20B5`，三關驗證 PASS
+- 公開端點：`https://yanhei.synology.me/Freehandsss_dashboard_current.html`
+
+### [VERIFY] 鎖匙扣刻字寫入閉環確認
+- 新單 test01 `test01_K_LH.engraving_text = "[上排]AB [下排]1234"` MCP 直查生產 DB 確認
+- n8n Mirror Prep → sync_order_to_mirror RPC → engraving_text 完整落地
+
+---
+
 ## [2026-06-10] 🎨 Session 84 — 訂單總覽成本/入帳細項：toggle 收摺 + 逐行對齊 + 配色一致
 
 **範圍**：`freehandsss_dashboardV42.html`（成本/入帳/利潤欄渲染，僅 dev 基線；current 未動）
