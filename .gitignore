@@ -55,3 +55,6 @@ airtable-database/
 # NTFS junction test dirs (vault visibility experiment — not real files)
 fhs-notes/
 fhs-ai/
+
+# Auto-generated JWKS local dev dirs
+docs/jwks/

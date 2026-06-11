@@ -57,6 +57,7 @@
 18. **單一配件 filter 假設靜默失效**：`_woolKey` 只過濾一種配件，新增第二配件後 Badge 靜默遺失。每次新增配件必查：① 前端 filter 函式 ② n8n getItemCategory() — 源自 2026-05-27
 19. **item_base_cost ≠ subtotal_cost × quantity（Mirror Prep 陷阱）**：Mirror Prep 實際寫入 `item_base_cost = subtotal_cost = Total_Base_Cost`（不乘 quantity）。批量重算 SQL 必須以 Mirror Prep 代碼為準，非欄位說明文字 — 源自 2026-05-28
 20. **【高頻 ⚠️】Migration 部分執行靜默失敗**：`CREATE TABLE IF NOT EXISTS` 在表已存在時靜默跳過，後續 PART（ALTER/INSERT/RPC）不執行無報錯。預防：各 PART 必須有獨立 smoke-test 查詢 — 源自 2026-05-29
+21. **批量 UPDATE 前必先 SELECT 記錄原始值**：直接 UPDATE 無法回滾（Supabase 無交易歷史），Airtable 備份不保證有值。每次批量改狀態前先 `SELECT ... RETURNING` 存快照 — 源自 2026-06-11
 21. **【P10】付款拆格 boxKey 改動須同步三函式**：改 boxKey 格式後，`_syncBalanceFromDeposit` / `serializeSplits` / `restoreSplits` 均用舊格式靜默失效。凡改 boxKey 必查三函式 — 源自 2026-05-31
 22. **路由總機被動維護 = 路由腐爛**：FHS_Prompts.md 只在 commands/ 增刪時觸發更新；AGENTS Rule 新增/L2 文件新增/語義修正不觸發 → 累積 3–5 session 後路由過時。修復：AGENTS 文件同步律擴充 4 觸發 — Session 63
 23. **n8n API `POST /workflows` active 欄位 read-only**：建立 Workflow 含 `"active":true` → 400。正確流程：POST（不含 active）→ 得 ID → 單獨 `POST /api/v1/workflows/{id}/activate`。亦無 /run 端點 — Session 67

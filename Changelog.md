@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-06-11] 🚚 Session 88 — Delivery Reminder 上線 + 逾期舊單清理
+
+**範圍**：n8n workflow 匯入、Supabase 資料更新（無 Dashboard HTML 改動）
+
+### [INFRA] FHS_DeliveryReminder_DailyPush workflow 上線
+- 透過 n8n REST API 直接匯入 `n8n/templates/fhs_delivery_reminder_push.json`
+- Workflow ID: `0nSXy6fqo8EL1ABm`，已 Activate（每日 HKT 09:00 推送交貨期警報）
+- Telegram credential `tSbXz97PKmdPpDNq` 自動對應，無需手動設定
+
+### [DATA] 逾期舊單 process_status 修正
+- 8 張逾期單（Gaeac/Akira/森蝶/Kathleen/KaLeiChan/DebbieHo/PrinceCheng/Angel）還原為 `製作中`
+- Fat Mo 將自行逐一更新實際狀態
+
 ## [2026-06-11] 🔧 Session 86 — 系統維護：submodule 修正 + 記憶整合 + 基礎建設驗證
 
 **範圍**：基礎建設維護（無 Dashboard HTML 改動，無 n8n 改動）

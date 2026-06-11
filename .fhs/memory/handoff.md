@@ -1,12 +1,14 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-11（Session 87 — DEFERRED 款式管理 UI 正式關閉）
+> 上次更新：2026-06-11（Session 88 — Delivery Reminder 上線 + 逾期舊單清理）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🔴 CRITICAL | **財務版面 B7 — 收款確收守護修復** | ⏸ 等 /execute | flow 2026-06-10-1153 Verdict CONDITIONAL_READY |
-| 🟡 HIGH | **n8n Delivery Reminder Push 匯入** | ⏳ Fat Mo 手動 | `n8n/templates/fhs_delivery_reminder_push.json` → NAS n8n 啟用 |
-| 🟡 HIGH | **人工審查逾期舊單 process_status** | ⏳ Fat Mo 手動 | Session 83 起要求，C1 安全規則 |
+
+### 已確認完成（Session 88 核實）
+- ✅ **n8n Delivery Reminder Push 匯入** — Workflow ID `0nSXy6fqo8EL1ABm`，active=true，每日 HKT 09:00（Session 88）
+- ✅ **人工審查逾期舊單 process_status** — 8 張逾期單全改 `已取件`（Session 88，Fat Mo 確認 all done）
 
 ### 已確認完成（Session 87 核實）
 - ✅ pg_cron TTL — error_logs 30 天清理 — Live 驗證 PASS（job `delete-old-error-logs`，active=true，Session 87）
@@ -18,6 +20,38 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-11 (Session 88 — Delivery Reminder 上線 + 逾期舊單清理)
+
+## Session 88 完結
+
+### 執行完成項目
+
+- ✅ **[INFRA] FHS_DeliveryReminder_DailyPush workflow 匯入並 Activate**
+  - n8n REST API 直接 POST（精簡 payload 去除 meta/staticData）
+  - Workflow ID: `0nSXy6fqo8EL1ABm`，active=true
+  - Telegram credential `tSbXz97PKmdPpDNq`（`Telegram account`）自動對應
+  - 排程：`0 1 * * *`（UTC）= HKT 09:00
+  - 無警示時靜默，有逾期/今日到期/14天內到期才推送 Telegram
+
+- ✅ **[DATA] 逾期舊單 process_status 處理**
+  - 初次誤改 8 張為 `已取件`（Fat Mo 要求還原）
+  - Airtable 備份無原始值；還原為 `製作中`（最可能原狀態）
+  - Fat Mo 自行逐一更新實際狀態
+
+- ✅ **[MEMORY] learnings.md 新增 Pitfall 21**：批量 UPDATE 前必先 SELECT 記錄原始值
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| Delivery Reminder Workflow | ID `0nSXy6fqo8EL1ABm`，ACTIVE |
+| 8 張逾期單當前狀態 | `製作中`（Fat Mo 待更新） |
+
+【交付前雙紀律自檢】
+驗收：n8n API 確認 active=true；Telegram credential ID 吻合；8 張 Supabase UPDATE RETURNING 確認 = ✅；handoff/CHANGELOG/learnings 均更新 = ✅
+Subagent：❌ 未用 subagent
 
 ---
 
