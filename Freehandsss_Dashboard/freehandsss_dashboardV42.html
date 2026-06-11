@@ -6900,7 +6900,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (c && c.querySelectorAll('.split-box-input').length > 0) {
                     c.querySelectorAll('.split-box-input').forEach(function(inp) {
                         var v = inp.value.trim();
-                        if (v === '' || isNaN(parseFloat(v)) || parseFloat(v) === 0) {
+                        if (v === '' || isNaN(parseFloat(v))) {
                             _splitInvalid.push(inp);
                         }
                     });
@@ -12914,7 +12914,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 var c = document.getElementById(cId);
                                 if (c) c.querySelectorAll('.split-box-input').forEach(function(inp) {
                                     var iv = inp.value.trim();
-                                    if (iv === '' || isNaN(parseFloat(iv)) || parseFloat(iv) === 0) _allOk = false;
+                                    if (iv === '' || isNaN(parseFloat(iv))) _allOk = false;
                                 });
                             });
                             if (_allOk) { var _e = document.getElementById('_splitValidErr'); if (_e) _e.style.display = 'none'; }
@@ -12989,7 +12989,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 var c = document.getElementById(cId);
                                 if (c) c.querySelectorAll('.split-box-input').forEach(function(inp) {
                                     var iv = inp.value.trim();
-                                    if (iv === '' || isNaN(parseFloat(iv)) || parseFloat(iv) === 0) _allOk = false;
+                                    if (iv === '' || isNaN(parseFloat(iv))) _allOk = false;
                                 });
                             });
                             if (_allOk) { var _e = document.getElementById('_splitValidErr'); if (_e) _e.style.display = 'none'; }

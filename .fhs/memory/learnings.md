@@ -67,6 +67,7 @@
 27. **generate() else 分支 hide box 必須同時 clear value**：`display='none'` 只隱藏 UI，`output-preview-a.value` 保留舊值，被 _igpmRefresh 等讀取路徑讀到。凡 hide textarea 必同時 `.value=""` — Session 92
 28. **SQL patch orders/order_items 不更新 raw_form_state**：直接 patch 財務欄位後，raw_form_state 的 depositSplitData 仍為舊值；下次載入→同步 → n8n 讀舊 split 值覆寫 Supabase。永久修正需用戶手動改 split→同步，或額外 jsonb_set patch raw_form_state — Session 92
 29. **多模式 UI early-return 遺漏 else 重置閉包狀態**：條件切換函式 early-return 時若不重置閉包變量（如 babyFillMode），restore 函式仍讀殘留值，UI 停留錯誤狀態。修復：else 分支明確重置 + 呼叫 restore — Session 95
+30. **支付欄位驗證不應攔截 $0**：split 守衛用 `parseFloat(v) === 0` 攔截「未填」，但全付訂金場景 balance=$0 是合法值，導致同步被誤阻。守衛應只攔空字串與 NaN，$0 必須放行 — Session 96
 
 ---
 

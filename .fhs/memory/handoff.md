@@ -1,14 +1,17 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-12（Session 95 — 立體擺設款式切換 babyFillMode 殘留修復）
+> 上次更新：2026-06-12（Session 96 — Split 守衛 $0 誤攔修復 + 0600103 同步確認）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🟡 MED | **Balance focusout 補回缺失（W1）** | 📋 次 session | Edit F 後點入 balance 清空、離開不補回；需加 _balCont focusout 鏡像 deposit 邏輯 |
-| 🟡 MED | **0600103 raw_form_state 同步** | ⏸ 用戶操作 | Supabase 財務欄已 patch $500；用戶需載入→手動改 split $500→同步，才更新 raw_form_state |
 | 🟡 MED | **0038 migration 本地 SQL 補建** | 📋 次 session | 已 apply via MCP（PASS），本地 .sql 檔缺失，需從 Supabase 讀取函數定義補建 |
 | 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
 | 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 96 核實）
+- ✅ **syncToAirtable() split 守衛 $0 誤攔修復** — 移除 `parseFloat(v) === 0` 條件（3 處），$0 balance 合法放行，全付訂金單可正常同步（Session 96）
+- ✅ **0600103 raw_form_state 同步** — Supabase live 查詢確認：deposit=$600、raw_form_state depositSplitData=$600 完全一致；Fat Mo 手動載入→改 split→同步完成（Session 96）
 
 ### 已確認完成（Session 95 核實）
 - ✅ **立體擺設款式切換 babyFillMode 殘留修復** — `_applyGlassDefaults()` early-return 加 else：`babyFillMode='all'` + `babyRestoreVisual()`，玻璃瓶→木框切換介面正確還原（Session 95）

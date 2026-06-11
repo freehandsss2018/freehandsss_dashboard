@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-06-12] 🟢 Session 96 — Split 守衛 $0 誤攔修復 + 0600103 同步確認
+
+**範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（3 處 JS 改動）
+
+### [FIX] syncToAirtable() split 守衛誤攔合法 $0 balance
+- 根因：Session 93 守衛條件 `parseFloat(v) === 0` 把全付訂金場景（balance=$0）視為未填
+- 修正：syncToAirtable() 主守衛 + deposit/balance input 清紅框條件各移除 `|| parseFloat(...) === 0`
+- 行為：守衛只攔空格與 NaN；$0 為合法值，全付訂金單可正常同步
+
+### [DATA] 0600103 raw_form_state 確認同步
+- Supabase live 查詢確認 deposit=$600、raw_form_state depositSplitData=$600 完全一致
+- Fat Mo 已手動載入→改 split→同步，兩端對齊，待辦正式關閉
+
+---
+
 ## [2026-06-12] 🟢 Session 95 — 立體擺設款式切換 babyFillMode 殘留修復
 
 **範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（1 處 JS 改動）
