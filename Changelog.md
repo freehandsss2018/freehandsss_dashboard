@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-06-11] 🟠 Session 89+ — B1 手模利潤比例分攤 + B6 手倒數量修復（migration 0035）
+
+**範圍**：Supabase RPC 修改（無 Dashboard HTML / n8n 改動）
+
+### [HIGH FIX] B6 手倒數量 — get_financial_kpis handmodel_qty
+- `oi.item_key ILIKE '%木框%/%玻璃瓶%'` → `oi.product_sku ILIKE '%木框%/%玻璃瓶%'`
+- item_key 格式 `{order_id}_{suffix}`，品名在 product_sku，原條件永遠不命中
+- 結果：frame 3→11，bottle 0→4（yearly 2026）✅
+
+### [HIGH FIX] B1 手模利潤 — get_financial_charts category_revenue 比例分攤
+- 原：混合單整筆 `net_profit` 歸 `handmodel_cost > 0`（虛高 ~12×，$82,266）
+- 新：`net_profit × item_cost / NULLIF(total_cost, 0)`（成本比例分攤）
+- 同步修正 handmodel_frame/bottle：`SUM(final_sale_price)` → 比例分攤 + product_sku
+- 結果：hm_profit $82,266→$24,349；kc_profit ~$0→$39,043 ✅
+- migration 0035，smoke test PASS
+
 ## [2026-06-11] 🔴 Session 89 — B7 收款確收守護修復（n8n Mirror Prep）
 
 **範圍**：n8n workflow 節點修改（無 Dashboard HTML 改動）

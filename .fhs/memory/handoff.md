@@ -1,14 +1,20 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-11（Session 89 — B7 收款確收守護修復）
+> 上次更新：2026-06-11（Session 89+ — B1/B6 migration 0035 已上線）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🟠 HIGH | **財務版面 B1 手模利潤 + B6 手倒數量** | ⏸ 等 /execute 授權 | B1 需先拍板 item 級分攤方案（已移下方） |
-| 🟠 HIGH | **財務版面 B1 手模利潤 + B6 手倒數量** | ⏸ 等 /execute 授權 | B1 需先拍板 item 級分攤方案 |
+| 🔴 HIGH | **0600103 deposit 補填** | ⏸ 待 Fat Mo | final_sale_price 校正後=$0，確認是否已收款 |
+| 🟡 MED | **財務版面 B3/B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `deleted_at IS NULL` / `handmodel_cost=0` guards |
+| 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 89+ 核實）
+- ✅ **B1 手模利潤比例分攤** — `get_financial_charts` 成本比例分攤，hm_profit $82,266→$24,349（migration 0035）
+- ✅ **B6 手倒數量修復** — `item_key`→`product_sku` ILIKE，frame 3→11，bottle 0→4（migration 0035）
 
 ### 已確認完成（Session 89 核實）
 - ✅ **B7 n8n Mirror Prep 修復** — `final_sale_price = Deposit+Balance+Fee`（非 Total_Revenue），versionId `b91ef4f9`（Session 89）
+- ✅ **9 單歷史資料校正** — Supabase `orders` 9 單 final_sale_price/net_profit 已校正（Session 89）
 
 ### 已確認完成（Session 88 核實）
 - ✅ **n8n Delivery Reminder Push 匯入** — Workflow ID `0nSXy6fqo8EL1ABm`，active=true，每日 HKT 09:00（Session 88）
@@ -24,6 +30,42 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-11 (Session 89+ — B1/B6 財務版面修復)
+
+## Session 89+ 完結
+
+### 執行完成項目
+
+- ✅ **[HIGH FIX] B6 手倒數量 — get_financial_kpis**
+  - 根因：`oi.item_key ILIKE '%木框%'` 永不命中（item_key = `{order_id}_{suffix}`）
+  - 修復：改為 `oi.product_sku ILIKE '%木框%'`（同步修正玻璃瓶）
+  - 驗證：frame 3→11，bottle 0→4（yearly 2026）✅
+
+- ✅ **[HIGH FIX] B1 手模利潤比例分攤 — get_financial_charts**
+  - 根因：混合單整筆 net_profit 歸 handmodel_cost > 0（虛高 ~12×，$82,266）
+  - 修復：`net_profit × item_cost / NULLIF(total_cost, 0)` 成本比例分攤
+  - 同步修正 handmodel_frame/bottle：比例分攤 + product_sku ILIKE
+  - 驗證：hm_profit $82,266→$24,349；kc_profit ~$0→$39,043 ✅
+
+- ✅ **migration 0035** — `supabase/migrations/0035_fix_rpc_b1_b6_financial_kpis_charts.sql`，smoke test PASS
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| Migration | 0035_fix_rpc_b1_b6_financial_kpis_charts.sql |
+| Supabase project | vpmwizzixnwilmzctdvu |
+| get_financial_kpis | B6 fixed (product_sku) |
+| get_financial_charts | B1+B6 fixed (proportional allocation + product_sku) |
+
+### Subagent 使用記錄
+| Subagent | 使用 | 用途 |
+|----------|------|------|
+| database-reviewer | ✗ | — |
+| finance-auditor | ✗ | — |
+| build-error-resolver | ✗ | — |
 
 ---
 
