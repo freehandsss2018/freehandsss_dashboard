@@ -51,7 +51,11 @@ freehandsss_dashboard/
 │   │   ├── 0031_expense_logs.sql            ← expense_logs 表（Log Sheet Phase 1，Session 80/81）✅ 已部署
 │   │   ├── 0032_delivery_reminders.sql      ← VIEW v_delivery_reminders（交貨期 SLA 90/126天，HKT，Session 82）✅ 已部署
 │   │   ├── 0033_delivery_reminders_item_filter.sql ← VIEW 強化：全 items Done 自動豁免警告（Session 83）✅ 已部署
-│   │   └── 0034_sync_rpc_add_engraving_text.sql ← sync_order_to_mirror RPC 補 engraving_text 持久化（鎖匙扣/吊飾刻字失效根治，Session 84）✅ 已套用（Management API，has_engraving=true 驗證）
+│   │   ├── 0034_sync_rpc_add_engraving_text.sql ← sync_order_to_mirror RPC 補 engraving_text 持久化（鎖匙扣/吊飾刻字失效根治，Session 84）✅ 已套用（Management API，has_engraving=true 驗證）
+│   │   ├── 0035_fix_rpc_b1_b6_financial_kpis_charts.sql ← get_financial_kpis + get_financial_charts 全面重建（B1-B6 6 指標，Session 85）✅ 已部署
+│   │   ├── 0036_fix_rpc_b3_qty_deleted_at_guard.sql ← qty 子查詢 8 條補 deleted_at IS NULL 守衛（Session 90）✅ 已部署
+│   │   ├── 0037_add_item_sale_price_and_backfill.sql ← order_items 加 item_sale_price NUMERIC + balanceSplitData 存量補填（Session 90/91）✅ 已部署
+│   │   └── 0038_update_rpc_item_sale_price_3layer.sql ← get_financial_kpis 3-layer fallback（item_sale_price→成本比例→平均分） + data_quality 欄位（Session 90/91，applied via MCP，本地檔待補）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

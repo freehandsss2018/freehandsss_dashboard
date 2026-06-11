@@ -1,5 +1,26 @@
 # Changelog
 
+## [2026-06-11] 🔴 Session 90/91 — item_sale_price 3-layer 混合訂單收入精確分攤
+
+**範圍**：Supabase migrations 0037+0038、n8n Mirror Prep、V42 HTML Finance tab
+
+### [CRITICAL FIX] B1 手模收入虛高根治 — get_financial_kpis item_sale_price 3-layer fallback
+- **根因**：混合訂單（手模 + 鎖匙扣）的整張 `final_sale_price` 被全額歸入手模收入，無按品項分攤
+- **修正**：引入 `order_items.item_sale_price` 精確分帳欄位，RPC 3-layer fallback：
+  - Layer 1：`item_sale_price`（balanceSplitData + depositSplitData 合計）
+  - Layer 2：`final_sale_price × handmodel_cost / total_cost`（成本比例）
+  - Layer 3：`final_sale_price / item_count`（平均分保底）
+- **結果**：hm_revenue $77,906 → $29,812；kc_revenue 正確歸入 metal 分類 ✅
+- Migration 0037（欄位 + 補填）+ 0038（RPC）smoke test PASS
+
+### [NEW] n8n Mirror Prep — inline item_sale_price 解析 + sum validation
+- 每次入帳即從 `balanceSplitData` + `depositSplitData` 解析 `item_sale_price`
+- Sum validation：分帳總和與 `final_sale_price` 誤差 > $1 時 NULL（啟用 fallback）
+
+### [NEW] V42 Finance tab — data_quality 橙色警示
+- `foUpdateKPI()` 末段讀取 `FO_LIVE_DATA.data_quality.avg_split_orders`
+- 17 張歷史混合訂單（pre-V42，無 balanceSplitData）缺精確分帳時顯示橙色 ⚠️ 警示 + 訂單 ID 列表
+
 ## [2026-06-11] 🟠 Session 89+ — B1 手模利潤比例分攤 + B6 手倒數量修復（migration 0035）
 
 **範圍**：Supabase RPC 修改（無 Dashboard HTML / n8n 改動）
