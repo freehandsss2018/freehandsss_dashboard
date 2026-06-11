@@ -5221,7 +5221,11 @@
         }
 
         function _applyGlassDefaults() {
-            if (document.getElementById('pSubCat').value !== '玻璃瓶款式') return;
+            if (document.getElementById('pSubCat').value !== '玻璃瓶款式') {
+                babyFillMode = 'all';
+                babyRestoreVisual();
+                return;
+            }
             // 父母 toggle On
             var enParent = document.getElementById('en_parent');
             if (enParent && !enParent.checked) {

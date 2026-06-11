@@ -1,6 +1,6 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-12（Session 94 — 互斥歸零邊界 + 全格清空）
+> 上次更新：2026-06-12（Session 95 — 立體擺設款式切換 babyFillMode 殘留修復）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -9,6 +9,9 @@
 | 🟡 MED | **0038 migration 本地 SQL 補建** | 📋 次 session | 已 apply via MCP（PASS），本地 .sql 檔缺失，需從 Supabase 讀取函數定義補建 |
 | 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
 | 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 95 核實）
+- ✅ **立體擺設款式切換 babyFillMode 殘留修復** — `_applyGlassDefaults()` early-return 加 else：`babyFillMode='all'` + `babyRestoreVisual()`，玻璃瓶→木框切換介面正確還原（Session 95）
 
 ### 已確認完成（Session 94 核實）
 - ✅ **互斥歸零邊界守衛（Edit A–D）** — `_syncBalanceFromDeposit` + `_syncDepositFromBalance` 各 2 處加 `isDefault!=='true'` guard，防止手輸格被再次歸零（Session 94）
@@ -50,6 +53,30 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-12 (Session 95 — 立體擺設款式切換 babyFillMode 殘留修復)
+
+## Session 95 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] _applyGlassDefaults() early-return 殘留根治**
+  - 根因：玻璃瓶 → 木框切換時 `babyFillMode` 未重置，`babyRestoreVisual()` 仍讀 `'glass_pending'`
+  - 修正：early-return 改為 if/else；else 分支：`babyFillMode = 'all'; babyRestoreVisual();`
+  - 行為：木框 ↔ 玻璃瓶雙向切換現均正確還原各自預設嬰兒介面
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | Freehandsss_Dashboard/freehandsss_dashboardV42.html |
+| 修改位置 | `_applyGlassDefaults()` line ~5223–5228 |
+| 修改內容 | early-return → if/else（else: babyFillMode='all' + babyRestoreVisual()） |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — grep 確認 else 分支正確落地；babyRestoreVisual() 已含完整 木框/玻璃瓶 視覺分支，不需額外修改 = ✅；Live 視覺驗收待 Fat Mo 實機（木框↔玻璃瓶雙向切換確認）
+Subagent：❌ 未用 subagent（單一 3 行精準 Edit，/rp grep 已坐實根因，直接執行）
 
 ---
 

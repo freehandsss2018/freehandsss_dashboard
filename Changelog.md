@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-06-12] 🟢 Session 95 — 立體擺設款式切換 babyFillMode 殘留修復
+
+**範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（1 處 JS 改動）
+
+### [FIX] 玻璃瓶 → 木框切換後介面殘留玻璃瓶狀態
+- 根因：`_applyGlassDefaults()` early-return 未重置 `babyFillMode`，
+  切回木框後 `babyRestoreVisual()` 仍讀 `'glass_pending'`，嬰兒介面停留「全部待定」
+- 修正：early-return 改為 if/else；else 分支加 `babyFillMode = 'all'; babyRestoreVisual();`
+- 行為：木框 ↔ 玻璃瓶雙向切換現均正確還原各自預設介面
+
+**授權**：Fat Mo /execute（/rp 精煉 + grep 坐實根因）
+
+---
+
 ## [2026-06-12] 🟢 Session 94 — Split Box 互斥歸零邊界 + 全格按入清空
 
 **範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（6 處 JS 改動）
