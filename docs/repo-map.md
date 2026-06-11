@@ -9,6 +9,7 @@ freehandsss_dashboard/
 ├── .env                                 ← 環境變數（禁止 commit）
 ├── .env.example                         ← 環境變數範例
 ├── .gitignore                           ← Git 忽略規則
+├── .gitmodules                          ← Git submodule 登錄（perplexity-mcp-server，2026-06-11 補建）
 ├── .mcp.json                            ← Claude Code MCP server 註冊（n8n-mcp-server）
 ├── Changelog.md                         ← 系統版本變更記錄
 ├── package.json / package-lock.json     ← Node.js 依賴

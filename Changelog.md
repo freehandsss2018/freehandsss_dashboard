@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-06-11] 🔧 Session 86 — 系統維護：submodule 修正 + 記憶整合 + 基礎建設驗證
+
+**範圍**：基礎建設維護（無 Dashboard HTML 改動，無 n8n 改動）
+
+### [INFRA] perplexity-mcp-server submodule 修正
+- 補建 `.gitmodules`（從未 commit，歷史缺口）
+- submodule pointer 更新 `e27817b` → `762c9ac`（Hono API fix：`c.res.headers.set` → `c.header`）
+
+### [MEMORY] learnings.md TD2 整合
+- 74 條 → 50 條，退役 24 條（已入 AGENTS.md 硬規則的、Obsidian 工具特定、純 meta）
+- 合併 4 個重複 Patterns 標題、2 個重複 Pitfalls 標題
+- 新增獨立「財務核心」分類（5 條）
+
+### [MEMORY] handoff.md MASTER 待辦機制
+- 頂部新增「📋 MASTER 持續待辦」活文件區塊，解決 append-only 積壓漏洞
+- 查核並核實 Session 84/85 已完成項目
+
+### [PROCESS] commit.md P0.6 新增
+- 新增「MASTER 待辦同步」強制步驟，根治每次 commit 後待辦不更新問題
+
+### [VERIFY] Airtable 背景同步 ✅ PASS
+- 最近 10 次 execution 全 success；`Create Main Order` / `Create Sub Items` 無 continueOnFail，6 月 API 額度重置無影響
+
+### [VERIFY] pg_cron TTL ✅ 早已存在
+- job `delete-old-error-logs`：`0 3 * * *`，DELETE 30d+ records，active=true
+
+---
+
 ## [2026-06-11] 🚀 Session 85 — V42 升格生產 + 刻字寫入驗證閉環
 
 **範圍**：`Freehandsss_dashboard_current.html`（V42 升格為生產版），NAS WebDAV 部署
