@@ -1,17 +1,17 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-11（Session 86 完結）
+> 上次更新：2026-06-11（Session 87 — DEFERRED 款式管理 UI 正式關閉）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🔴 CRITICAL | **財務版面 B7 — 收款確收守護修復** | ⏸ 等 /execute | flow 2026-06-10-1153 Verdict CONDITIONAL_READY |
 | 🟡 HIGH | **n8n Delivery Reminder Push 匯入** | ⏳ Fat Mo 手動 | `n8n/templates/fhs_delivery_reminder_push.json` → NAS n8n 啟用 |
 | 🟡 HIGH | **人工審查逾期舊單 process_status** | ⏳ Fat Mo 手動 | Session 83 起要求，C1 安全規則 |
-| 🟡 MED | **pg_cron TTL — error_logs 30 天清理** | ✅ 已存在 | job `delete-old-error-logs`，`0 3 * * *`，active=true（早已部署）|
-| 🟡 MED | **Airtable 背景同步驗證** | ✅ PASS | 最近 10 次 execution 全 success，無 continueOnFail，Airtable write 正常 |
-| 🟢 LOW | **[DEFERRED] 立體擺設款式管理 UI** | ⏸ 2 高風險待解 | R1(addNewFrameStyle 雙POST無事務)已降級；R2(Smart Cache同步)待確認後才可 /execute |
 
-### 已確認完成（Session 86 核實）
+### 已確認完成（Session 87 核實）
+- ✅ pg_cron TTL — error_logs 30 天清理 — Live 驗證 PASS（job `delete-old-error-logs`，active=true，Session 87）
+- ✅ Airtable 背景同步驗證 — Live 驗證 PASS（最近 10 次 execution 全 success，Session 87）
+- ✅ **[DEFERRED] 立體擺設款式管理 UI — 正式關閉**（Session 87，Fat Mo 授權選項 A）
 - ✅ Session 84 全部改動 commit — git `1f59328`
 - ✅ V42 升格 current 生產版 — git `6fc8494`（Session 85，NAS 三閘 PASS）
 - ✅ Fat Mo live 視覺確認 — V42 升格等效確認

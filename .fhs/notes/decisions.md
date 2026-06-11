@@ -3,6 +3,12 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-11] (Session 87) 立體擺設款式管理 UI DEFERRED 項正式關閉
+
+決策：Fat Mo 選擇選項 A — 正式關閉此 DEFERRED 項。
+原因：Session 67 已降級（R1 關閉），動態款式管理 UI 功能取消；R2（Smart Cache COST_MAP 同步）降格為新增 SKU 時的 SOP checklist 提醒（已錄入 learnings.md Pitfall #10 + /new-product Step 2.e），無需獨立任務追蹤。
+影響：MASTER 待辦移除此項；新增款式流程維持「Fat Mo 告知 Claude Code → 1 行 `<option>` + Smart Cache COST_MAP 同步」。
+
 [2026-06-10] (Session 83) 交貨期系統 v_delivery_reminders item-level filter + 雙向跳轉 UX
 
 決策：
