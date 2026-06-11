@@ -6038,7 +6038,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
 
                     if (hasAdultInSet && hasBabyInSet) {
-                        const _mixedSurcharge = _cc.mixed_member_surcharge || 300; // 讀 config，fallback $300
+                        const _mixedSurcharge = _cc.mixed_member_surcharge ?? 300; // 讀 config，fallback $300
                         totalSuggestedPrice += _mixedSurcharge;
                         totalSystemAdditionalFee += _mixedSurcharge;
                         breakdownParts.push(_mixedSurcharge);

@@ -48,7 +48,10 @@
 
 | 條件 | 附加費 |
 |------|-------|
-| 同一訂單中同時有**成人 + 嬰兒**（`hasAdultInSet && hasBabyInSet`）| **+$300** |
+| 同一訂單中同時有**成人 + 嬰兒**（`hasAdultInSet && hasBabyInSet`）| ~~+$300~~ **$0（2026-06-11 Fat Mo 決定豁免）** |
+
+> 觸發條件：`en_parent` checkbox 已勾（含父母肢體「待定」亦觸發）AND 至少一個嬰兒肢體 ≠「無」。
+> 邏輯保留（UI 仍顯示 +$0）。如需恢復收費，改 `cost_configurations.mixed_member_surcharge` 數值即可。
 
 ### 2.3 配件（`item.isAccessory === true`）
 
@@ -292,7 +295,7 @@ total_base_cost = Drawing_Cost + Printing_Cost + Clasp_Cost + Shipping_Cost
 | `CHARM_NECKLACE_FORMULA_RECAST` | floor(n/2)×$2,980 + (n%2)×$1,980（倒模）| 2026-05-31 | S48 Ph2 | qty×$800 線性公式（已廢） | [2026-05-31] 吊飾計價大修 |
 | `CHARM_DRAWING_FEE` | 無獨立圖紙費（已移除 $1,000 單購圖紙費）| 2026-05-31 | S48 Ph2 | $1,000 單購圖紙費 | [2026-05-31] 吊飾計價大修 |
 | `CROSS_BODY_SURCHARGE` | 無異部位附加費（已移除）| 2026-05-31 | S48 Ph2 | 跨部位加收 $100/$300 | [2026-05-31] 吊飾計價大修 |
-| `MEMBER_SURCHARGE` | 同訂單成人+嬰兒同時出現 +$300 | 2026-05-31 | S48 | — | 新增 |
+| `MEMBER_SURCHARGE` | 同訂單成人+嬰兒同時出現 **+$0（豁免；邏輯保留）** | 2026-06-11 | S90 | +$300 | [2026-06-11] mixed_member_surcharge 歸零（config 值改 0，JS `??` 修正，顯示仍保留）|
 | `ADULT_DRAWING_S` | $110 per 件 | 2026-06-02 | S53 | $110（未變，成本邏輯憲法化確認）| decisions [2026-06-02] |
 | `BABY_DRAWING_S` | $60 per 件 | 2026-06-02 | S53 | $60（確認）| decisions [2026-06-02] |
 | `CLASP_COST` | $10 per 件（環扣，非頸鏈）| 2026-06-03 | S54 | 缺失 / 誤記為$0 | decisions [2026-06-03] B1 成本補完 |

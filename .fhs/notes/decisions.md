@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-11] (Session 90) mixed_member_surcharge 歸零決策
+
+決策：`cost_configurations.mixed_member_surcharge` 由 $300 改為 $0（豁免）。
+原因：Fat Mo 審閱後決定暫不收取此附加費；觸發邏輯與 UI 顯示（+$0）保留，方便日後改回只需調 DB 值。
+技術變更：
+1. Supabase `cost_configurations` → `mixed_member_surcharge = '0'`
+2. V42 HTML line 6041：`|| 300` → `?? 300`（修正 JS falsy 邏輯，0 不應 fallback 至 $300）
+3. FHS_Pricing_Bible.md §2.2 + §10：記錄豁免狀態與觸發條件（`en_parent` 含父母「待定」時亦觸發）
+守護：觸發條件不移除——恢復收費時改 config 值即可，無需改代碼。
+
+[2026-06-11] (Session 90) B3 qty 子查詢補 deleted_at IS NULL 守衛
+
+決策：Migration 0036 — `get_financial_kpis` 8 條 qty 子查詢（metal_qty + handmodel_qty，current + previous 各 4 條）補 `AND o.deleted_at IS NULL`。
+原因：子查詢與主查詢口徑不一致，軟刪訂單的品項數量仍被計入，影響 per-unit 指標計算。
+煙霧測試：PASS（frame + bottle 均 > 0）。
+
 [2026-06-11] (Session 87) 立體擺設款式管理 UI DEFERRED 項正式關閉
 
 決策：Fat Mo 選擇選項 A — 正式關閉此 DEFERRED 項。
