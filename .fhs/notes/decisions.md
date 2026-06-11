@@ -13,6 +13,20 @@
 3. FHS_Pricing_Bible.md §2.2 + §10：記錄豁免狀態與觸發條件（`en_parent` 含父母「待定」時亦觸發）
 守護：觸發條件不移除——恢復收費時改 config 值即可，無需改代碼。
 
+[2026-06-11] (Session 90/91) item_sale_price 3-layer 混合訂單收入分攤方案
+
+決策：引入 `order_items.item_sale_price` 欄位 + RPC 3-layer fallback，修正 B1 手模收入虛高問題。
+原因：混合訂單（手模 + 鎖匙扣同張）的整張 `final_sale_price` 全部被算入手模收入，導致 KPI 膨脹 ~2.6×（$29,812 → 被計算為 $77,906）。
+技術變更：
+1. Migration 0037：`order_items` 加 `item_sale_price NUMERIC`；補填現有訂單的 `balanceSplitData`（balance + deposit 合計）
+2. n8n Mirror Prep：每次入帳時 inline 解析 splitData → `item_sale_price`（含 sum validation ±$1 浮點容差）
+3. Migration 0038：`get_financial_kpis` + `get_financial_charts` 改用 3-layer fallback：
+   - Layer 1: `item_sale_price`（精確分帳）
+   - Layer 2: `final_sale_price × handmodel_cost / total_cost`（成本比例）
+   - Layer 3: `final_sale_price / item_count`（平均分保底）
+4. V42 HTML：Finance tab `fo-data-quality-warn` div + `foUpdateKPI` JS 警示邏輯（17 張舊單缺精確分帳時顯示橙色提示）
+驗收：hm_revenue $77,906 → $29,812；data_quality.avg_split_orders = 17（歷史預 V42 訂單）；V42 新單應 100% 有 item_sale_price。
+
 [2026-06-11] (Session 90) B3 qty 子查詢補 deleted_at IS NULL 守衛
 
 決策：Migration 0036 — `get_financial_kpis` 8 條 qty 子查詢（metal_qty + handmodel_qty，current + previous 各 4 條）補 `AND o.deleted_at IS NULL`。

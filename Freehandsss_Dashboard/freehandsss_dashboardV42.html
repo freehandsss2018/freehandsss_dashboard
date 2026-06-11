@@ -3835,6 +3835,9 @@
                 <span style="font-size:11px; color:var(--fhs-text-muted); margin-left:8px; align-self:center;">※ 配件為附加產品，不獨立計算收入</span>
             </div>
 
+            <!-- data_quality 警示（RPC 回傳混合單缺精確分帳時顯示）-->
+            <div id="fo-data-quality-warn" style="display:none; background:#FFF3E0; border-left:3px solid #FF9800; padding:8px 12px; margin-bottom:8px; border-radius:4px; font-size:12px; color:#5D4037; line-height:1.6;"></div>
+
             <!-- KPI Cards (6 cards) -->
             <div id="fo-kpi-grid">
                 <div class="fo-kpi-card" data-type="revenue" title="收入：客戶實付總金額（含所有已確認訂單）">
@@ -11430,6 +11433,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 document.getElementById("fo-metal-qty-necklace").textContent = d.metal_qty.necklace || 0;
             } else {
                 metalQtyPanel.style.display = "none";
+            }
+
+            /* data_quality 警示：混合單缺精確分帳 */
+            var dqWarn = document.getElementById('fo-data-quality-warn');
+            if (dqWarn) {
+                var dq = FO_LIVE_DATA && FO_LIVE_DATA.data_quality;
+                if (dq && dq.avg_split_orders > 0) {
+                    var dqIds = (dq.avg_split_ids || []).join(' · ');
+                    dqWarn.innerHTML = '⚠️ ' + dq.avg_split_orders + ' 張混合訂單收入以成本比例估算（缺精確售價分帳），建議補填 V42 入帳分拆<br>' +
+                        '<span style="color:#8D6E63; font-size:11px;">' + dqIds + '</span>';
+                    dqWarn.style.display = 'block';
+                } else {
+                    dqWarn.style.display = 'none';
+                }
             }
         }
 
