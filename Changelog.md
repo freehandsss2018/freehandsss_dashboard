@@ -1,5 +1,46 @@
 # Changelog
 
+## [2026-06-12] 🟢 Session 94 — Split Box 互斥歸零邊界 + 全格按入清空
+
+**範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（6 處 JS 改動）
+
+### [FEAT] 互斥歸零邊界守衛（4 處 guard）
+- 根因：用戶點入被歸0的格並輸入值後，另一方仍會再次觸發歸零，形成死鎖
+- 修正：`_syncBalanceFromDeposit` items + necklace loop 加 `!isStandard && isDefault!=='true' → skip`
+- 修正：`_syncDepositFromBalance` items + necklace loop 加 `isDefault!=='true' → skip`
+- 行為：互斥歸零只對 `isDefault='true'`（尚未手動觸碰）的格有效；標準 sync 不受影響
+
+### [UX] 全格按入清空（覆蓋 Session 93 Q1-A）
+- 移除 deposit + balance focusin handler 的 `isDefault==='true'` 條件
+- 所有 split-box-input 點入後無條件清空，方便操作者直接輸入新金額
+
+**code-reviewer**：G1–G8 ALL PASS（8/8）；W1 待辦：balance focusout 補回邏輯缺失（非阻擋）
+
+---
+
+## [2026-06-12] 🟢 Session 93 — Split Box UX 小優化：Balance focusin + Sync Guard
+
+**範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（3 處 JS 改動）
+
+### [FIX] Balance split box focusin 缺失補建
+- 根因：`balanceSplitContainer` 完全缺少 focusin 事件委派（deposit 已有，balance 無）
+- 修正：新增 `_balCont.addEventListener('focusin', ...)` 鏡像 deposit 邏輯
+- 行為：點入 `data-is-default='true'` 的預設格 → 立即清空，非預設格不動
+- 使用 `_balanceMode='manual'`、`_syncGlobalBalanceBtnUI`、`_updateBoxBtnState`
+
+### [FEAT] syncToAirtable() 前置 split 驗證守衛
+- 新增驗證：`syncToAirtable()` 執行前遍歷 deposit + balance 所有 `.split-box-input`
+- 任一格空/0/NaN → block 提交 + 紅框 `outline:2px solid #e63946` + inline `#_splitValidErr` 提示
+- 全部有效才繼續同步流程
+
+### [UX] 紅框自動清除 on valid input
+- deposit/balance input listener：isTrusted 有效值輸入 → 清 outline
+- 全部格均有效時自動隱藏 `#_splitValidErr` 錯誤提示
+
+**code-reviewer**：G1–G8 ALL PASS（8/8）
+
+---
+
 ## [2026-06-11] 🟠 Session 92 — V42 支付互斥歸零 + 品類切換顯示修正 + _quickHalfFillAllSplits 載入保護
 
 **範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（6 處 JS 修改）+ Supabase SQL patch（0600103）

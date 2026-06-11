@@ -1,13 +1,21 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-11（Session 92 — V42 支付互斥歸零 + 品類切換修正）
+> 上次更新：2026-06-12（Session 94 — 互斥歸零邊界 + 全格清空）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| 🟡 MED | **Balance focusout 補回缺失（W1）** | 📋 次 session | Edit F 後點入 balance 清空、離開不補回；需加 _balCont focusout 鏡像 deposit 邏輯 |
 | 🟡 MED | **0600103 raw_form_state 同步** | ⏸ 用戶操作 | Supabase 財務欄已 patch $500；用戶需載入→手動改 split $500→同步，才更新 raw_form_state |
 | 🟡 MED | **0038 migration 本地 SQL 補建** | 📋 次 session | 已 apply via MCP（PASS），本地 .sql 檔缺失，需從 Supabase 讀取函數定義補建 |
 | 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
 | 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 94 核實）
+- ✅ **互斥歸零邊界守衛（Edit A–D）** — `_syncBalanceFromDeposit` + `_syncDepositFromBalance` 各 2 處加 `isDefault!=='true'` guard，防止手輸格被再次歸零（Session 94）
+- ✅ **全格按入無條件清空（Edit E–F）** — deposit + balance focusin 移除 `isDefault==='true'` 條件，所有格點入即清空（Session 94）
+- ✅ **Balance focusin 缺失補建** — `balanceSplitContainer` 新增 focusin 委派，只清預設格（Session 93）
+- ✅ **syncToAirtable() 前置守衛** — 空/0 格 block + 紅框 + inline 提示（Session 93）
+- ✅ **紅框自動清除 on input** — 有效輸入後移除紅框，全格有效隱藏錯誤訊息（Session 93）
 
 ### 已確認完成（Session 92 核實）
 - ✅ **V42 支付互斥歸零** — 非標準金額自動清零另一方，_fhsPaymentSyncing guard，雙向 sync（Session 92）
@@ -42,6 +50,79 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-12 (Session 94 — Split Box 互斥歸零邊界 + 全格清空)
+
+## Session 94 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] 互斥歸零邊界守衛（Edit A–D，4 處）**
+  - 根因：用戶點入被歸0格並輸值後，另一方仍持續歸零 → 死鎖
+  - `_syncBalanceFromDeposit` items + necklace：`!isStandard && isDefault!=='true' → return`
+  - `_syncDepositFromBalance` items + necklace：`isDefault!=='true' → return`（已在 `!isStandard` 塊內）
+  - 標準 sync（isStandard=true，自動推算互補值）不受 guard 影響
+
+- ✅ **[UX] 全格按入清空（Edit E–F，覆蓋 Session 93 Q1-A）**
+  - 移除 deposit + balance focusin 的 `isDefault==='true'` 條件
+  - 所有格點入無條件清空，操作者直接輸入新金額
+
+### ⚠️ W1 待辦（次 session）
+- Balance focusout 補回邏輯缺失：Edit F 後，balance 格點入清空再離開不補回半付預設
+- 需加 `_balCont.addEventListener('focusout', ...)` 鏡像 deposit focusout（code-reviewer 已提供 code snippet）
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | Freehandsss_Dashboard/freehandsss_dashboardV42.html |
+| Edit A | `_syncBalanceFromDeposit` items guard，line ~10518 |
+| Edit B | `_syncBalanceFromDeposit` necklace guard，line ~10537 |
+| Edit C | `_syncDepositFromBalance` items guard，line ~10567 |
+| Edit D | `_syncDepositFromBalance` necklace guard，line ~10587 |
+| Edit E | Deposit focusin 無條件清空，line ~12902 |
+| Edit F | Balance focusin 無條件清空，line ~12962 |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — code-reviewer G1–G8 ALL PASS（8/8）；互斥邏輯四象限分析正確；_fhsPaymentSyncing guard 完整；W1 balance focusout 缺失列入待辦（非阻擋）= ✅；Live 驗收待 Fat Mo 實機
+Subagent：✅ code-reviewer（G1–G8 Gate 稽核）；6 處 Edit 主 context 直接執行，無需其他 subagent
+
+---
+
+# FHS Handoff - 2026-06-12 (Session 93 — Split Box UX 小優化)
+
+## Session 93 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] Balance split box focusin 缺失補建**
+  - 根因：`balanceSplitContainer` 完全缺少 focusin 事件（`depositSplitContainer` Session 74 已有，balance 無）
+  - 修正：新增 `_balCont.addEventListener('focusin', ...)` 鏡像 deposit 邏輯
+  - 行為：點入 `data-is-default='true'` 的預設格 → 立即清空；非預設格（手輸過）不動
+
+- ✅ **[FEAT] syncToAirtable() 前置 split 驗證守衛**
+  - 同步按鈕前，遍歷兩容器所有 `.split-box-input`
+  - 任一格空/0/NaN → block + 紅框 `#e63946` + `#_splitValidErr` inline 提示 + return
+  - 全部有效才放行繼續
+
+- ✅ **[UX] 紅框自動清除 on valid input**
+  - deposit/balance input listener：isTrusted 有效值 → 清 outline；全格有效 → 隱藏錯誤 span
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | Freehandsss_Dashboard/freehandsss_dashboardV42.html |
+| balance focusin | line ~12959 新增 |
+| sync guard | line ~6892 前插入（syncToAirtable 最頂）|
+| input clear | deposit input listener 擴充 + balance 新 input listener |
+
+### Deposit focusin 不動原因
+Session 74 已建立 `depositSplitContainer` focusin handler（line 12902），邏輯完全正確，本次僅補 balance 缺失的對應 handler。
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — code-reviewer G1–G8 Gate ALL PASS（8/8）；5 維度深度分析均達 PASS；captureFormState 保護、HTML ID 衝突、_fhsPaymentSyncing guard 三重確認完整 = ✅；Live 視覺驗收待 Fat Mo 實機確認
+Subagent：✅ code-reviewer（G1–G8 Gate 稽核）；3 處 Edit 主 context 直接執行，改動局部清晰，無需其他 subagent
 
 ---
 

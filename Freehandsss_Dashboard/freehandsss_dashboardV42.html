@@ -6889,6 +6889,37 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // 🚀 Dashboard V22 隱藏雙核發射引擎 (Fat Mo 智能判斷版)
         // ==========================================
         async function syncToAirtable() {
+            // S93: split input validation guard (Q1-A / Q2-B)
+            var _splitInvalid = [];
+            ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
+                var c = document.getElementById(cId);
+                if (c && c.querySelectorAll('.split-box-input').length > 0) {
+                    c.querySelectorAll('.split-box-input').forEach(function(inp) {
+                        var v = inp.value.trim();
+                        if (v === '' || isNaN(parseFloat(v)) || parseFloat(v) === 0) {
+                            _splitInvalid.push(inp);
+                        }
+                    });
+                }
+            });
+            if (_splitInvalid.length > 0) {
+                _splitInvalid.forEach(function(inp) { inp.style.outline = '2px solid #e63946'; });
+                var _errEl = document.getElementById('_splitValidErr');
+                if (!_errEl) {
+                    _errEl = document.createElement('span');
+                    _errEl.id = '_splitValidErr';
+                    _errEl.style.cssText = 'color:#e63946;font-size:12px;display:block;margin:4px 0 2px;';
+                    _errEl.textContent = '請填寫所有分欄金額';
+                    var _sBtn = document.getElementById('syncBtn');
+                    if (_sBtn && _sBtn.parentNode) _sBtn.parentNode.insertBefore(_errEl, _sBtn);
+                } else {
+                    _errEl.style.display = 'block';
+                }
+                return;
+            }
+            var _clearErr = document.getElementById('_splitValidErr');
+            if (_clearErr) _clearErr.style.display = 'none';
+
             const btn = document.getElementById("syncBtn");
             if (!btn) return;
             const originalText = btn.innerText;
@@ -10484,6 +10515,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const newBal = isStandard ? Math.max(0, calcPrice - paid) : 0;
                 balContainer.querySelectorAll('.split-box-input').forEach(function(balInp) {
                     if (balInp.dataset.boxkey === bk) {
+                        if (!isStandard && balInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
                         balInp.value = newBal;
                         balInp.style.color = '#999';
                         balInp.dataset.isDefault = 'true';
@@ -10501,6 +10533,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const gPaid = Number(depInp.value) || 0;
                         const gHalf = Math.ceil(gPrice / 2);
                         const gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
+                        if (!gStandard && balInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
                         balInp.value = gStandard ? Math.max(0, gPrice - gPaid) : 0;
                         balInp.style.color = '#999';
                         balInp.dataset.isDefault = 'true';
@@ -10531,6 +10564,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (!isStandard) {
                     depContainer.querySelectorAll('.split-box-input').forEach(function(depInp) {
                         if (depInp.dataset.boxkey === bk) {
+                            if (depInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
                             depInp.value = 0;
                             depInp.style.color = '#999';
                             depInp.dataset.isDefault = 'true';
@@ -10550,6 +10584,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         var gHalf = Math.ceil(gPrice / 2);
                         var gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
                         if (!gStandard) {
+                            if (depInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
                             depInp.value = 0;
                             depInp.style.color = '#999';
                             depInp.dataset.isDefault = 'true';
@@ -12866,11 +12901,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 _depCont.addEventListener('input', function(e) {
                     if (e.target && e.target.classList.contains('split-box-input') && e.isTrusted) {
                         window._depositDirty = true;
+                        // S93: clear red border on valid input
+                        e.target.style.outline = '';
+                        var v = e.target.value.trim();
+                        if (v !== '' && parseFloat(v) !== 0 && !isNaN(parseFloat(v))) {
+                            var _allOk = true;
+                            ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
+                                var c = document.getElementById(cId);
+                                if (c) c.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                    var iv = inp.value.trim();
+                                    if (iv === '' || isNaN(parseFloat(iv)) || parseFloat(iv) === 0) _allOk = false;
+                                });
+                            });
+                            if (_allOk) { var _e = document.getElementById('_splitValidErr'); if (_e) _e.style.display = 'none'; }
+                        }
                     }
                 });
-                // S74: focus — clear default value for easy entry
+                // S74/S94: focus — clear on entry (all boxes, not just default)
                 _depCont.addEventListener('focusin', function(e) {
-                    if (e.target && e.target.classList.contains('split-box-input') && e.target.dataset.isDefault === 'true') {
+                    if (e.target && e.target.classList.contains('split-box-input')) {
                         e.target.value = '';
                         e.target.style.color = '#333';
                         e.target.dataset.isDefault = 'false';
@@ -12907,6 +12956,39 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     }
                                 }
                             }
+                        }
+                    }
+                });
+            }
+            // S93: balance focusin + input — mirror deposit handler (was missing)
+            var _balCont = document.getElementById('balanceSplitContainer');
+            if (_balCont) {
+                _balCont.addEventListener('focusin', function(e) {
+                    if (e.target && e.target.classList.contains('split-box-input')) {
+                        e.target.value = '';
+                        e.target.style.color = '#333';
+                        e.target.dataset.isDefault = 'false';
+                        window._balanceMode = 'manual';
+                        if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
+                        var _bk = e.target.dataset.boxkey;
+                        if (_bk && typeof _updateBoxBtnState === 'function') _updateBoxBtnState(_balCont, _bk, 'manual');
+                    }
+                });
+                // S93: clear red border on valid balance input
+                _balCont.addEventListener('input', function(e) {
+                    if (e.target && e.target.classList.contains('split-box-input') && e.isTrusted) {
+                        e.target.style.outline = '';
+                        var v = e.target.value.trim();
+                        if (v !== '' && parseFloat(v) !== 0 && !isNaN(parseFloat(v))) {
+                            var _allOk = true;
+                            ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
+                                var c = document.getElementById(cId);
+                                if (c) c.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                    var iv = inp.value.trim();
+                                    if (iv === '' || isNaN(parseFloat(iv)) || parseFloat(iv) === 0) _allOk = false;
+                                });
+                            });
+                            if (_allOk) { var _e = document.getElementById('_splitValidErr'); if (_e) _e.style.display = 'none'; }
                         }
                     }
                 });

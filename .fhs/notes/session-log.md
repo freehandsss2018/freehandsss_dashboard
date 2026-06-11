@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-06-12 (Session 94 — Split Box 互斥歸零邊界 + 全格清空): 🔧 V42 HTML 6 處 Edit ✅
+
+**Scope**: 互斥歸零邊界守衛（Edit A–D，4 處 sync guard）；全格點入無條件清空（Edit E–F）
+**Result**: 手輸格被歸零死鎖修正 ✅；所有格點入即清空 ✅；W1 balance focusout 缺失列為次 session
+
+## 2026-06-12 (Session 93 — Split Box focusin + sync 前置驗證): 🔧 V42 HTML 3 處修正 ✅
+
+**Scope**: balance focusin 缺失補建；syncToAirtable() 空/0 格前置 block；紅框 on-input 自動清除
+**Result**: balance split 點入清空 ✅；sync 前置驗證 ✅；紅框 UX ✅
+
 ## 2026-06-11 (Session 92 — V42 支付互斥歸零 + 品類切換修正): 🔧 V42 HTML 6 處 JS 修正 ✅
 
 **Scope**: split box 互斥歸零、generate() else clear fix、_quickHalfFillAllSplits 載入保護、Supabase 0600103 patch
