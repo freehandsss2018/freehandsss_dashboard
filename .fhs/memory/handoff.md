@@ -1,10 +1,14 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-11（Session 88 — Delivery Reminder 上線 + 逾期舊單清理）
+> 上次更新：2026-06-11（Session 89 — B7 收款確收守護修復）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🔴 CRITICAL | **財務版面 B7 — 收款確收守護修復** | ⏸ 等 /execute | flow 2026-06-10-1153 Verdict CONDITIONAL_READY |
+| 🟠 HIGH | **財務版面 B1 手模利潤 + B6 手倒數量** | ⏸ 等 /execute 授權 | B1 需先拍板 item 級分攤方案（已移下方） |
+| 🟠 HIGH | **財務版面 B1 手模利潤 + B6 手倒數量** | ⏸ 等 /execute 授權 | B1 需先拍板 item 級分攤方案 |
+
+### 已確認完成（Session 89 核實）
+- ✅ **B7 n8n Mirror Prep 修復** — `final_sale_price = Deposit+Balance+Fee`（非 Total_Revenue），versionId `b91ef4f9`（Session 89）
 
 ### 已確認完成（Session 88 核實）
 - ✅ **n8n Delivery Reminder Push 匯入** — Workflow ID `0nSXy6fqo8EL1ABm`，active=true，每日 HKT 09:00（Session 88）
@@ -20,6 +24,64 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-11 (Session 89 — B7 收款確收守護修復)
+
+## Session 89 完結
+
+### 執行完成項目
+
+- ✅ **[CRITICAL FIX] n8n Mirror Prep — final_sale_price 確收守護**
+  - 根因：`final_sale_price: input.Total_Revenue || 0`（系統建議售價）→ 每次儲存訂單均覆蓋確收金額
+  - 修復：`_confirmedRevenue = Deposit + Balance + Additional_Fee`；`final_sale_price = _confirmedRevenue`
+  - 同步修正：`net_profit = _confirmedRevenue - Total_Cost`（消除舊 `Final_Profit` 計算殘留）
+  - Workflow `6Ljih0hSKr9RpYNm`，versionId `b91ef4f9`
+  - 備份：`.fhs/notes/aireports/n8n-mcp-backups/2026-06-11/.../Supabase_Mirror_Prep.json`
+  - Rollback：`mcp__n8n-mcp-server__rollback_node_code` 指向上述備份
+
+### 9 單歷史資料校正 — 待 Fat Mo 授權
+
+以下 9 單 `final_sale_price` 被 `Total_Revenue` 錯誤覆蓋，n8n 已修復（新單不受影響），歷史資料需手動校正：
+
+| order_id | 現 final_sale_price | 正確值（D+B+F） | drift |
+|----------|--------------------|-----------------|----|
+| 0600103 | $2,880 | $0 | +$2,880 ⚠️ deposit=0，確認是否為未付款單 |
+| 0600727 | $3,660 | $6,040 | −$2,380 |
+| 0500703 | $3,680 | $2,120 | +$1,560 |
+| 0600801 | $3,460 | $2,160 | +$1,300 |
+| 0600104 | $3,460 | $2,160 | +$1,300 |
+| 0600724 | $4,880 | $3,590 | +$1,290 |
+| 0500719 | $4,880 | $3,680 | +$1,200 |
+| 0600723 | $5,140 | $4,820 | +$320 |
+| 0600722 | $5,380 | $5,440 | −$60 |
+
+**校正 SQL（Fat Mo 確認後執行）**：
+```sql
+UPDATE orders
+SET
+  final_sale_price = deposit + balance + additional_fee,
+  net_profit = (deposit + balance + additional_fee) - total_cost
+WHERE order_id IN (
+  '0600103','0600727','0500703','0600801','0600104',
+  '0600724','0500719','0600723','0600722'
+)
+  AND deleted_at IS NULL
+RETURNING order_id, final_sale_price, net_profit, deposit, balance, additional_fee, total_cost;
+```
+
+⚠️ 注意 `0600103`（deposit=0）：校正後 `final_sale_price=0`，確認是否為未收款單或須補填 deposit。
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| Mirror Prep versionId | `b91ef4f9` |
+| 備份路徑 | `.fhs/notes/aireports/n8n-mcp-backups/2026-06-11/6Ljih0hSKr9RpYNm/` |
+
+【交付前雙紀律自檢】
+驗收：n8n — `get_node` 回讀確認 `final_sale_price: _confirmedRevenue` + `net_profit: _confirmedRevenue - (input.Total_Cost || 0)` 落地 = ✅；9 單 Supabase live 查詢坐實偏離清單 = ✅；歷史校正 SQL 待 Fat Mo 授權
+Subagent：❌ 未用 subagent（n8n MCP 直接操作，單一節點精準修改，無需 database-reviewer 或 finance-auditor）
 
 ---
 

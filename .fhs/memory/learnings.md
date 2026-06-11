@@ -62,6 +62,7 @@
 22. **路由總機被動維護 = 路由腐爛**：FHS_Prompts.md 只在 commands/ 增刪時觸發更新；AGENTS Rule 新增/L2 文件新增/語義修正不觸發 → 累積 3–5 session 後路由過時。修復：AGENTS 文件同步律擴充 4 觸發 — Session 63
 23. **n8n API `POST /workflows` active 欄位 read-only**：建立 Workflow 含 `"active":true` → 400。正確流程：POST（不含 active）→ 得 ID → 單獨 `POST /api/v1/workflows/{id}/activate`。亦無 /run 端點 — Session 67
 24. **新增 order_items 欄位必須同步 n8n 寫入鏈**：新單主寫入走 n8n sync_order_to_mirror RPC（非前端 sbSyncOrder）。新欄位若未改 (a)Mirror Prep items.map + (b)RPC INSERT/VALUES/ON CONFLICT 三處 → 永遠 NULL。前例：engraving_text 缺欄致鎖匙扣/吊飾刻字全失 — Session 84
+25. **【CRITICAL】Mirror Prep final_sale_price 必用確收三欄，禁用 Total_Revenue**：`Total_Revenue` 是系統建議售價，≠ 操作者確收金額。`final_sale_price` 必須 = `Deposit + Balance + Additional_Fee`；`net_profit` 同步改為 `_confirmedRevenue - Total_Cost`。使用 Total_Revenue 導致 9 單偏差最高 $2,880 — Session 89
 
 ---
 

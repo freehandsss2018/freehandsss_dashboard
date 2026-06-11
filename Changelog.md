@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-06-11] 🔴 Session 89 — B7 收款確收守護修復（n8n Mirror Prep）
+
+**範圍**：n8n workflow 節點修改（無 Dashboard HTML 改動）
+
+### [CRITICAL FIX] B7 收款確收守護 — final_sale_price 覆蓋問題根治
+
+- **根因**：`Supabase Mirror Prep` 節點以 `Total_Revenue`（系統建議售價）寫入 `final_sale_price`，違反收款確收守護（AGENTS Rule 3 財務真理守護）
+- **修復**：`final_sale_price = Deposit + Balance + Additional_Fee`（確收金額）
+- **同步修正**：`net_profit = _confirmedRevenue - Total_Cost`（消除 `Final_Profit` 舊計算殘留）
+- n8n Workflow `6Ljih0hSKr9RpYNm`，versionId `b91ef4f9`
+- 備份：`.fhs/notes/aireports/n8n-mcp-backups/2026-06-11/6Ljih0hSKr9RpYNm/Supabase_Mirror_Prep.json`
+- 影響 9 單歷史資料校正 SQL 已備妥，待 Fat Mo 授權執行
+
 ## [2026-06-11] 🚚 Session 88 — Delivery Reminder 上線 + 逾期舊單清理
 
 **範圍**：n8n workflow 匯入、Supabase 資料更新（無 Dashboard HTML 改動）
