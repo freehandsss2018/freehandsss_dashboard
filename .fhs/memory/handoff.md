@@ -1,12 +1,18 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-11（Session 89+ — B1/B6 migration 0035 已上線）
+> 上次更新：2026-06-11（Session 90/91 — item_sale_price 3-layer 完成）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🔴 HIGH | **0600103 deposit 補填** | ⏸ 待 Fat Mo | final_sale_price 校正後=$0，確認是否已收款 |
-| 🟡 MED | **財務版面 B3/B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `deleted_at IS NULL` / `handmodel_cost=0` guards |
+| 🟡 MED | **0038 migration 本地 SQL 補建** | 📋 次 session | 已 apply via MCP（PASS），本地 .sql 檔缺失，需從 Supabase 讀取函數定義補建 |
+| 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
 | 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 90/91 核實）
+- ✅ **item_sale_price 3-layer 混合訂單收入修正** — hm_revenue $77,906→$29,812，migration 0037+0038，V42 data_quality 警示（Session 90/91）
+- ✅ **B3 qty deleted_at guard** — migration 0036，qty 子查詢補 8 條 deleted_at IS NULL（Session 90）
+- ✅ **mixed_member_surcharge 歸零** — $300→$0 豁免，V42 JS falsy 修正，FHS_Pricing_Bible 更新（Session 90）
 
 ### 已確認完成（Session 89+ 核實）
 - ✅ **B1 手模利潤比例分攤** — `get_financial_charts` 成本比例分攤，hm_profit $82,266→$24,349（migration 0035）
