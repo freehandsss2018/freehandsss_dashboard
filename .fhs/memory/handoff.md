@@ -1,12 +1,14 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-12（Session 97 — split box focusout restore + 全部半訂 force fix）
+> 上次更新：2026-06-12（Session 98 — 0038 migration 本地 SQL 補建）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🟡 MED | **0038 migration 本地 SQL 補建** | 📋 次 session | 已 apply via MCP（PASS），本地 .sql 檔缺失，需從 Supabase 讀取函數定義補建 |
 | 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
 | 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 98 核實）
+- ✅ **0038 migration 本地 SQL 補建** — `supabase/migrations/0038_update_rpc_item_sale_price_3layer.sql`；逆向重建自 Supabase live DB（get_financial_kpis + get_financial_charts，3-layer fallback）（Session 98）
 
 ### 已確認完成（Session 97 核實）
 - ✅ **W1 balance focusout 補回缺失** — 新增 `_balCont focusout` handler，preFocusVal save-restore 架構；含 $0 有效還原（Session 97）

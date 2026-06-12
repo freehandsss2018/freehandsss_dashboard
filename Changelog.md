@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-06-12] 🟢 Session 98 — 0038 migration 本地 SQL 補建
+
+**範圍**：supabase/migrations/0038_update_rpc_item_sale_price_3layer.sql（新增）
+
+### [INFRA] 0038 migration 本地 SQL 逆向重建
+- 根因：migration 0038 當初直接 apply via Supabase MCP，未留本地 .sql 檔
+- 方式：`list_migrations` 確認名稱 → `information_schema.routines` + `pg_proc` 取得 live 函數定義與簽名
+- 內容：`get_financial_kpis` + `get_financial_charts` 兩函數完整定義（SECURITY DEFINER）
+- 核心邏輯：3-layer fallback（item_sale_price → 成本比例 → 平均分）+ data_quality 混合單清單
+- Subagent：❌ 未用（Supabase MCP 直查，主 context 建檔）
+
+---
+
 ## [2026-06-12] 🟢 Session 96 — Split 守衛 $0 誤攔修復 + 0600103 同步確認
 
 **範圍**：Freehandsss_Dashboard/freehandsss_dashboardV42.html（3 處 JS 改動）
