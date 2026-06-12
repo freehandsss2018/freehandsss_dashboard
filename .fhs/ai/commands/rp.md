@@ -160,7 +160,7 @@
 | n8n / webhook / workflow | NAS Code Node fetch 禁用、必用 axios / HTTP Request 節點 |
 | Dashboard / HTML / UI / 手機 | V41 current.html、P9 IIFE window 暴露、手機 bottom-sheet |
 | 訂單 / 付款 / IG / SKU | captureFormState 不可動、Raw_Form_State 不可侵犯 |
-| 財務 / 成本 / 利潤 | 收款確收守護：final_sale_price=真理；total_cost=n8n估算快照；n8n嚴禁覆蓋確收金額 |
+| 財務 / 成本 / 利潤 / KPI / RPC / 混合單 / category | 收款確收守護：final_sale_price=真理；total_cost=n8n估算快照；n8n嚴禁覆蓋確收金額。**3-layer revenue fallback**：category='metal'/'handmodel' 混合單（同單含手模+鎖匙扣）WHERE 絕對禁止加 `AND handmodel_cost=0`；eff_rev 按 item_sale_price → 成本比例 → 平均分三層；previous 期 WHERE 不含 `OR confirmed_at IS NULL`。完整邏輯見 `/.fhs/notes/FHS_System_Logic_Overview.md §十` |
 | 驗證 / 查詢 / VT / live data / 查單 / 查訂單 | Supabase 為唯一 live 資料主源；Airtable 不得作為驗證或查詢資料源（僅歷史補救/冷備援）；執行工具若缺 Supabase 存取 = blocker，須先解決再設計方案，禁止靜默降級 |
 
 ### FHS 資源目錄（供 `architecture_scan.subagent_skill` 對號入座）

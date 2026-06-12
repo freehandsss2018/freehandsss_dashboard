@@ -1,15 +1,15 @@
 ---
 name: FHS Business Scenarios Library
 version: v1.7
-compatible_with: AGENTS.md v1.4.12
-last_updated: 2026-06-08
-last_audited_session: S63
+compatible_with: AGENTS.md v1.4.13
+last_updated: 2026-06-12
+last_audited_session: S100
 description: Business situation detection and command routing for AI execution
 ---
 
 # FHS 業務情境劇本庫 (Scenarios Library) - v1.7
 >
-> 最後更新：2026-06-05（v1.7 S63 同步：收款確收守護語義修正；情境六三叉路由；情境十二/二十三更新；kgov 觸發；同步觸發機制說明）
+> 最後更新：2026-06-12（v1.7 S100 同步：情境五加 KPI/混合單/3-layer/get_financial_* 觸發詞 + §十路由；AGENTS v1.4.13）
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
 >
@@ -43,12 +43,13 @@ description: Business situation detection and command routing for AI execution
 
 ## 【情境五：財務規則確認 (Financial Rules)】
 
-- 觸發：用戶提及「財務規則」「n8n 利潤規則」「auditPassed 格式」「前端利潤守護」
+- 觸發：用戶提及「財務規則」「n8n 利潤規則」「auditPassed 格式」「前端利潤守護」「KPI」「混合單」「3-layer」「get_financial_kpis」「get_financial_charts」「category 收入」「RPC 財務」
 > ⚠️ 邊界說明：此情境處理**靜態財務規則確認**（n8n 節點格式、利潤守護規則）。若需 Live Airtable 數據查詢或三端比對，請走**情境二十一（finance-auditor）**。
 處理 `System_Total_Cost` 與利潤結算**規則**。
 - **收款確收守護**：操作者手動輸入的 `final_sale_price`（Deposit + Balance + Additional_Fee）為絕對真理，n8n 嚴禁重算這三個確收欄位。成本側（`total_cost`）由 n8n 從 Supabase 計算，屬估算快照。詳見 AGENTS.md 財務真理守護。
 - **n8n 代碼輸出規範**：強制執行 `[{json: {auditPassed: true...}}]` 格式，嚴禁回傳裸物件。
 - **SKU 對齊**：執行審計前，必須調用 `Parse Items` 正規化地圖。
+- **RPC KPI / 混合單 3-layer**：涉及 `get_financial_kpis` / `get_financial_charts` / category 模式收入分攤時，必須先讀 `.fhs/notes/FHS_System_Logic_Overview.md §十`（RPC 財務計算層 SSoT，Session 99 建立）。
 
 ## 【情境六：產品定價與商業邏輯更新 (Bible Sync)】
 

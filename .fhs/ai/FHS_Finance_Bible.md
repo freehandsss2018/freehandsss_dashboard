@@ -348,6 +348,10 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
 定價/售價/成本/折扣查詢：
   → .fhs/ai/FHS_Pricing_Bible.md（L2 現行定價 HEAD）
 
+RPC KPI 收入分攤 / 混合單 3-layer / get_financial_kpis / get_financial_charts：
+  → .fhs/notes/FHS_System_Logic_Overview.md §十
+  （RPC 財務計算層唯一 SSoT；按需 Grep 定位後只讀 §十，禁全量）
+
 如需查詢 n8n 節點程式碼：
   get_node("Calculate Profit & Pack Items")   ← 核心計算節點
   get_node("Mirror to Supabase")             ← Supabase 寫入節點
@@ -374,6 +378,7 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
 
 ---
 
-*FHS Finance Bible v1.1.0 — 2026-05-16*
-*v1.1.0 新增：第八節 Airtable 429 降級協議 + CSV 備援流程*
+*FHS Finance Bible v1.2.0 — 2026-06-12*
+*v1.1.0 → v1.2.0：§十強制讀取清單加入 RPC KPI / 混合單 / get_financial_* → FHS_System_Logic_Overview.md §十 指針（Session 99-100 知識治理落地）*
+*v1.1.0 — 2026-05-16：第八節 Airtable 429 降級協議 + CSV 備援流程*
 *授權來源：Fat Mo — Supabase-First 財務架構審核後制定*

@@ -181,7 +181,10 @@ freehandsss_dashboard/
 │   │   ├── README.md                   ← 記憶層與同步規範
 │   │   ├── handoff.md
 │   │   ├── learnings.md                ← Pattern / Pitfall / Preference distill（/read Step 3，2026-05-20 新增）
-│   │   └── pitfalls.yaml               ← Machine-readable 跨層整合 pitfall 知識庫（2026-05-21 新增，product-integration-validator 使用）
+│   │   ├── pitfalls.yaml               ← Machine-readable 跨層整合 pitfall 知識庫（2026-05-21 新增，product-integration-validator 使用）
+│   │   └── lessons/
+│   │       ├── INDEX.md                ← Lessons 唯一檢索入口（一行式索引，2026-06-12 新增）
+│   │       └── *.md                    ← 59 個教訓記錄（Notion Auto-Discovery 自動同步）
 │   └── tools/                          ← 稽核工具腳本（2026-05-17 v2.1 新增）
 │       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測 MVP
 │       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等）
@@ -262,7 +265,9 @@ freehandsss_dashboard/
 │   └── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │       ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
 │       ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）
-│       └── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/Bash）
+│       ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/Bash）
+│       ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
+│       └── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
 ├── artifacts/                           ← /cl-flow 執行時生成（已納入 .gitignore，不版控）
 │   └── {flow_id}/                       ← 每次 /cl-flow 產生獨立資料夾
 │       ├── task-brief.md

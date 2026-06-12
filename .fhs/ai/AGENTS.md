@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.12
-> Last updated: 2026-06-05
+> Version: v1.4.13
+> Last updated: 2026-06-12
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.12 (Rule 3.17 雙紀律強制律：三交付邊界強制自檢兩行，任務型有效驗收表，記憶合併 −1；Session 63 系統知識文件化治理方案)
+- **版本**：v1.4.13 (Rule 3.16 任務型路由加 §十 RPC KPI 條目；execute.md [G] 運算邏輯變動稽核觸發；Session 99-100 知識治理落地)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
@@ -165,6 +165,7 @@
   - 職責分工 / 誰算哪個欄位 / Layer 1/2 規則 → `.fhs/ai/FHS_Finance_Bible.md` §一
   - 成本 key 實際數值（material_cost_* / keychain_* / chain 等）→ `.fhs/ai/FHS_Product_Cost_Schema_v2.md`
   - 售價 / 報價 / 定價公式 → `.fhs/ai/FHS_Pricing_Bible.md` 對應章節
+  - RPC KPI 收入分攤 / 混合單 3-layer / get_financial_* → `.fhs/notes/FHS_System_Logic_Overview.md` §十
 - 此律起源：2026-06-03 AI 未讀 Finance Bible 即誤解「收款確收守護」規則，將收款側（final_sale_price）的「真理」錯誤延伸至成本側，導致 B2 設計方向錯誤。參見 decisions.md 2026-06-03 事故記錄。
 
 ### 雙紀律強制律（Rule 3.17）

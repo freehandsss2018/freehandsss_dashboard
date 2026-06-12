@@ -1,5 +1,32 @@
 # Changelog
 
+## [2026-06-12] 🟢 Session 100 — 知識治理執行層落地（B1+B2+C2+D hooks）
+
+**範圍**：12 項文件/制度/hooks 改動；AGENTS.md v1.4.12→v1.4.13
+
+### [FEAT] B1 強制讀取注入
+- `database-reviewer.md` v2.1.0→v2.2.0：啟動前置加 Step 4（§十按需讀取）
+- `finance-auditor.md` v2.1.0→v2.2.0：啟動前置加 Step 3（§十按需讀取）
+- `finance-gatekeeper/SKILL.md` v1.1.0→v1.2.0：路由表加 KPI/混合單/get_financial_* → §十
+- `FHS_Finance_Bible.md` v1.1.0→v1.2.0：§十強制讀取清單加 §十指針
+
+### [FEAT] B2 後效稽核深度優化
+- `execute.md`（Master + Bridge）：新增 [G] 運算邏輯變動稽核觸發（supabase migration / n8n / calculatePricing / cost_configurations）；補強 [A] 物理特徵判定；[D] 宣告格式改 A/B/C/G
+- `AGENTS.md` v1.4.13：Rule 3.16 任務型路由加 §十 RPC KPI 條目
+
+### [FEAT] C2 Lessons 索引化
+- `.fhs/memory/lessons/INDEX.md`：新建（59 個 lesson 一行式索引，強制新增規則）
+- `.fhs/memory/README.md`：加 INDEX.md 唯一檢索入口指針
+
+### [FEAT] D 知識自動捕捉 hooks
+- `scripts/hooks/post-tool-kgov.js`：PostToolUse hook，命中 migration/財務欄位 → flag + [G] 提醒注入
+- `scripts/hooks/stop-kgov.js`：Stop hook，session 結束守衛（HARD_BLOCK=false 第一階段）
+- `.claude/settings.json`：PostToolUse + Stop hooks 註冊
+
+- Subagent：❌ 純文件/制度改動，無需 subagent
+
+---
+
 ## [2026-06-12] 🟢 Session 99 — Migration 0041 F4+F3 財務口徑完全對齊
 
 **範圍**：supabase/migrations/0041_fix_unconfirmed_doublecount_and_trend_3layer.sql（新增）

@@ -39,7 +39,10 @@
    條件成立 → 對應同步為強制；未完成 = 任務不得視為正式收尾。
 
    **[A] 結構變動稽核**
-   觸發條件（任一）：新增 / 刪除 / 移動任何檔案或目錄；或任何檔案用途 / 定位改變
+   觸發條件（任一，以 git status 物理特徵為準）：
+   - 新增任何檔案（git status 顯示 `?? <path>` 或 `A  <path>`）
+   - 刪除任何檔案（git status 顯示 `D  <path>`）
+   - 移動任何檔案（git status 顯示 `R  <old> → <new>`）
    → 強制更新 `docs/repo-map.md`
    → 強制更新對應層級 `README.md`
 
@@ -53,10 +56,20 @@
    → 強制更新 `CHANGELOG.md`
    ⚠️ 純 typo、純文案潤飾、非語義性重寫，不觸發
 
+   **[G] 運算邏輯變動稽核**
+   觸發條件（任一，以 diff 物理特徵為準）：
+   - `supabase/migrations/*.sql` 含 `CREATE OR REPLACE FUNCTION` 或財務欄位語義變動
+   - n8n Calculate/Mirror 節點代碼變動（透過 `mcp__n8n-mcp-server__update_node_code`）
+   - Dashboard `calculatePricing` 或財務相關 JS 函式修改
+   - `cost_configurations` 表資料值變動
+   → 強制同步更新 `.fhs/notes/FHS_System_Logic_Overview.md` 對應章節
+   → 核查 `.fhs/ai/skills/finance-gatekeeper/SKILL.md` 路由表是否需加行
+   → 稽核宣告須附「G 觸發：已更新 §X」
+
    **[D] 稽核宣告格式**
    完成稽核後，僅輸出「成立」的項目及已執行的同步動作。
    未觸發的條件不輸出，保持收尾精簡。
-   若三項均不成立，輸出：「後效同步稽核完成：A/B/C 均不觸發。」
+   若四項均不成立，輸出：「後效同步稽核完成：A/B/C/G 均不觸發。」
    若同步動作執行失敗，立即暫停並提示 Fat Mo，不得靜默跳過。
 
    **[E] 雙紀律自檢（每次 /execute 均必填，Rule 3.17）**

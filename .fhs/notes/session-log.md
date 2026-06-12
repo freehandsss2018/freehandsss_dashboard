@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-12 (Session 100 — kgov 知識治理強制執行層): 🏛 AGENTS v1.4.13 + hooks ✅
+
+**Scope**: B1 四入口強制讀取（database-reviewer/finance-auditor/SKILL.md/Finance Bible） + B2 execute [G] 運算邏輯觸發稽核 + D hooks（post-tool-kgov.js + stop-kgov.js）+ lessons INDEX.md + AGENTS v1.4.12→v1.4.13
+**Result**: SQL/RPC/財務 JS 改動後強制 SSoT 更新路徑建立 ✅；HARD_BLOCK=false Phase 1 部署 ✅；lessons INDEX 60 行建立 ✅；12 項全完成 ✅
+
 ## 2026-06-12 (Session 97 — split box focusout restore + 全部半訂 force fix): 🔧 V42 HTML 7 處修正 ✅
 
 **Scope**: W1 balance focusout 補建；focusin save pre-focus val；focusout restore to pre-focus（含 $0）；`_quickHalfFillAllSplits` force param

@@ -1,9 +1,12 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-12（Session 99 — Migration 0040 Metal 混合單 3-layer + Charts 守衛）
+> 上次更新：2026-06-12（Session 100 — 知識治理執行層落地 B1+B2+C2+D hooks）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+### 已確認完成（Session 100 核實）
+- ✅ **知識治理執行層落地（B1+B2+C2+D hooks）** — B1 四個前置讀取入口加 §十按需讀取；B2 execute.md [G] 觸發 + [A] 物理化 + Bridge 同步 + AGENTS v1.4.13；C2 lessons INDEX.md 59 檔；D hooks（post-tool-kgov + stop-kgov HARD_BLOCK=false）+ settings.json 註冊（Session 100）
+
 ### 已確認完成（Session 99 核實）
 - ✅ **Migration 0041** — F4 unconfirmed 雙計修復（yearly/current prev -$5,680；monthly prev -1單）+ F3 trend 3-layer（metal 趨勢由全額→比例分攤，與 KPI 對齊）；smoke test PASS（Session 99）
 - ✅ **Migration 0040** — F1 metal 混合單 3-layer（yearly +$56,321.90）+ F2 charts deleted_at 5 塊 + data_quality metal fallback 追蹤 + F8 STABLE 補回；smoke test PASS（Session 99）

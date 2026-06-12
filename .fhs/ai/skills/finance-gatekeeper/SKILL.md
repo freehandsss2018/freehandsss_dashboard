@@ -1,11 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.1.0
+version: 1.2.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-06-03
-compatible_with: AGENTS.md v1.4.10
+last_updated: 2026-06-12
+compatible_with: AGENTS.md v1.4.13
 ---
 
 # FHS Finance Gatekeeper — 財務知識守門員
@@ -27,6 +27,7 @@ compatible_with: AGENTS.md v1.4.10
 | 品牌禁止邏輯（禁成人單買、嬰兒核心原則）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §0 |
 | 架構規則（Layer 1/2 快照 / 誰寫哪個欄位 / 禁 trigger）| **L1** `.fhs/ai/FHS_Finance_Bible.md` |
 | 四端同步欄位映射 | `n8n/Quadruple_Sync_Field_Map.md` |
+| KPI 收入分攤 / 混合單 3-layer fallback / get_financial_kpis / get_financial_charts | §十 `.fhs/notes/FHS_System_Logic_Overview.md` §十（RPC 財務計算層 SSoT） |
 | Live 訂單成本/利潤驗證 | 啟動 `finance-auditor` subagent |
 | Supabase schema / SKU 成本資料 | 啟動 `database-reviewer` subagent |
 

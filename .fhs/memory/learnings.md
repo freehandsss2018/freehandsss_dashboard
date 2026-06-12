@@ -22,6 +22,7 @@
 11. **事件派發副鏈 + setTimeout(0) 最終同步**：dispatchEvent 同步觸發副鏈（如 _syncBalanceFromDeposit）可覆蓋即將設定的按鈕狀態；setTimeout(0) 最終 pass 在所有副鏈完成後執行 — 源自 2026-06-10
 12. **kgov 知識治理框架設計模式**：治理文件須有同步觸發機制（AGENTS 規則層 + /execute [F] 稽核），不能靠 AI 自律；最小改動原則：+1 文件填真空，改既有不膨脹 — Session 63
 13. **Supabase MCP 掉線用 Management API 繞過**：`POST api.supabase.com/v1/projects/{ref}/database/query` + `Bearer PAT` 跑任意 SQL/DDL；⚠️ 必用 curl（python-urllib 觸 Cloudflare 1010）— Session 84
+14. **kgov 知識治理強制執行層（B1+B2+D 三層防禦）**：SQL/RPC 改動後不更新 SSoT 是反覆犯錯的根源；解法：B1 強制前置讀取入口 × 4 + B2 execute [G] 觸發稽核 + D PostToolUse hooks 自動寫 flag；HARD_BLOCK=false Phase 1 先觀測誤觸率 — Session 100
 
 ---
 

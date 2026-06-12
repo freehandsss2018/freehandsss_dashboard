@@ -252,4 +252,114 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 
 ---
 
+---
+
+## 十、Supabase RPC 財務計算層（Session 99 補入）
+
+> **任何 AI agent 處理財務 KPI / 圖表 / 混合單相關任務，必須先讀完本節。**
+> 對應 Migration 歷史：0036 → 0037 → 0038 → 0040 → 0041
+
+### 10.1 兩個核心 RPC 函式
+
+| 函式 | 簽名 | 用途 |
+|------|------|------|
+| `get_financial_kpis` | `(tab_mode, category, ref_date) RETURNS json` | KPI 卡片：revenue / cost / profit / orders / margin / aov / qty |
+| `get_financial_charts` | `(tab_mode, category, ref_date) RETURNS json` | 圖表資料：trend / category_revenue / cost_breakdown |
+
+**tab_mode**：`current`（本月迄今 vs 去年同期）/ `monthly`（本月完整 vs 上月）/ `yearly`（本年迄今 vs 去年同期）
+
+**category**：`all` / `handmodel`（立體擺設）/ `metal`（鎖匙扣+頸鏈）
+
+---
+
+### 10.2 混合單（Mixed Order）定義
+
+**混合單** = 同一張訂單同時含：
+- `handmodel_cost > 0`（立體擺設）
+- `keychain_cost > 0 OR necklace_cost > 0`（金屬品類）
+
+**問題**：整張訂單只有一個 `final_sale_price`，但 category 模式需要拆分歸屬。
+
+**解法**：3-layer revenue fallback（見 10.3）
+
+---
+
+### 10.3 3-Layer Revenue Fallback（收入分攤邏輯）
+
+當 category='handmodel' 且該訂單為混合單時，按以下優先序計算該品類應得收入：
+
+```
+Layer 1（精確）：order_items.item_sale_price
+  → 訂單明細中對應品類的 item_sale_price 加總
+  → 前提：Fat Mo 入帳時逐項填寫分拆金額（V42 n8n 自動填）
+
+Layer 2（比例估算）：final_sale_price × 品類成本 / total_cost
+  → 以成本佔比推算收入份額
+  → 歷史舊單（無 item_sale_price）走此層
+
+Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
+  → 確保不出現 NULL / 0
+  → 極少用，只在 total_cost = 0 時觸發
+```
+
+**metal 3-layer**（同邏輯，金屬品類版）：
+- Layer 1：`item_category = '金屬鎖匙扣' OR ILIKE '%頸鏈%'` 的 item_sale_price
+- Layer 2：`final_sale_price × (keychain_cost + necklace_cost) / total_cost`
+- Layer 3：`final_sale_price / 品項數`
+
+**關鍵原則**：純單（非混合）直接用 `final_sale_price`，不套 3-layer。
+
+---
+
+### 10.4 category 模式 WHERE 條件
+
+```sql
+-- all：所有非取消/退款單
+-- handmodel：handmodel_cost > 0（含混合單）
+-- metal：keychain_cost > 0 OR necklace_cost > 0（含混合單）
+
+-- ⚠️ 禁止在 metal 的 WHERE 加 AND handmodel_cost = 0
+--    這樣會排除混合單，導致收入嚴重低估（migration 0040 修復的 bug）
+```
+
+---
+
+### 10.5 confirmed_at 政策
+
+```sql
+-- current 期：OR confirmed_at IS NULL（含未確認中的進行中訂單）
+-- previous 期：只用 BETWEEN，不含 IS NULL（避免同一張未確認單污染對比基準）
+-- ⚠️ 0041 修復：0040 前兩期都有 IS NULL，導致未確認單雙重計算
+```
+
+---
+
+### 10.6 data_quality 欄位
+
+`get_financial_kpis` 回傳 `data_quality` 節點，追蹤 fallback 使用率：
+
+| 欄位 | 含義 |
+|------|------|
+| `avg_split_orders` | handmodel 混合單走 Layer 2/3 的訂單數 |
+| `avg_split_ids` | 上述訂單 ID 清單 |
+| `metal_fallback_orders` | metal 混合單走 Layer 2/3 的訂單數 |
+| `metal_fallback_ids` | 上述訂單 ID 清單 |
+
+目標：`avg_split_orders` 和 `metal_fallback_orders` 隨時間趨近 0（Fat Mo 補填 item_sale_price 後）。
+
+---
+
+### 10.7 Migration 歷史索引
+
+| Migration | 內容 |
+|-----------|------|
+| 0036 | qty 子查詢補 `deleted_at IS NULL`（8 條） |
+| 0037 | `order_items` 加 `item_sale_price` 欄位 |
+| 0038 | handmodel 3-layer fallback 引入；STABLE 遺失（後補） |
+| 0040 | metal 3-layer + charts deleted_at 守衛 + STABLE 補回 + data_quality 擴充 |
+| 0041 | previous 期移除 IS NULL（F4）+ trend 3-layer 口徑對齊（F3） |
+
+---
+
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
+*§十 由 Session 99 補入（2026-06-12）。*

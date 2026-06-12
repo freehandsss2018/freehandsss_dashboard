@@ -56,6 +56,8 @@
 | `hooks/session-start-sop.sh` | `SessionStart` | 自動注入 SOP_NOW 快照 + handoff 待辦，取代手動 `/read` |
 | `hooks/prompt-router.js` | `UserPromptSubmit` | 分析任務描述，建議最適 subagent / skill / model（建議模式，不強制）|
 | `hooks/pre-tool-guard.js` | `PreToolUse (Write\|Edit\|Bash)` | 守護 AGENTS.md 硬規則：阻止覆蓋 current.html、硬編碼 API key、git add .env 等違規操作 |
+| `hooks/post-tool-kgov.js` | `PostToolUse (Write\|Edit\|mcp__supabase\|mcp__n8n)` | 知識治理自動捕捉：命中財務/RPC/Migration 改動 → 寫 `.fhs/.kgov-pending` flag + 注入 [G] 提醒（2026-06-12）|
+| `hooks/stop-kgov.js` | `Stop` | session 結束知識治理守衛：flag 存在時提醒未結案的 §十/lessons 更新（HARD_BLOCK=false 第一階段，2026-06-12）|
 
 **回滾方法**：刪除 `.claude/settings.json` 中的 `hooks` 區段即可停用所有 hooks，腳本檔案不受影響。
 

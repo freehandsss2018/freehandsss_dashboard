@@ -140,6 +140,29 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|mcp__supabase__apply_migration|mcp__n8n-mcp-server__update_node_code",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/post-tool-kgov.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/stop-kgov.js",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }

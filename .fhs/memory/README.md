@@ -5,6 +5,7 @@
 |---|---|
 | handoff.md | 跨 Session 核心狀態快照，每次 /commit 更新 |
 | lessons/ | AI 教訓庫，所有學習記錄存放於此 |
+| lessons/INDEX.md | **Lessons 唯一檢索入口**（一行式索引表，含日期/主題/關鍵字/摘要） |
 
 ## 同步機制
 lessons/ 下所有 .md 檔案由 scripts/Sync_Notion_Brain.js V2.0
