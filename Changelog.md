@@ -1,5 +1,46 @@
 # Changelog
 
+## [2026-06-12] 🟢 Session 99 — Migration 0041 F4+F3 財務口徑完全對齊
+
+**範圍**：supabase/migrations/0041_fix_unconfirmed_doublecount_and_trend_3layer.sql（新增）
+
+### [FIX] F4 — unconfirmed 訂單 previous 期雙計修復
+- 根因：`get_financial_kpis` previous 期 WHERE 含 `OR confirmed_at IS NULL`，unconfirmed 單同時計入 current 與 previous
+- 修法：previous 期 WHERE 移除該條件，unconfirmed 單只計入 current
+- 驗收：yearly/current previous 期消除 1 張 unconfirmed 單（-$5,680）；monthly previous 少 1 張
+
+### [FIX] F3 — trend 圖 3-layer 口徑對齊（category 模式修正高估）
+- 根因：`get_financial_charts` trend 用整筆 `final_sale_price`，混合單在 category='metal' 模式高估
+- 修法：trend block 重構為 per-order eff_rev（先算 3-layer，再 GROUP BY 月份）
+- 驗收：metal 趨勢各月值調低（混合單由全額 → 比例份額），與 KPI 口徑一致
+
+- Subagent：❌ 未用
+
+---
+
+## [2026-06-12] 🟢 Session 99 — Migration 0040 Metal 混合單 3-layer + Charts 守衛
+
+**範圍**：supabase/migrations/0040_fix_metal_3layer_and_charts_guards.sql（新增）
+
+### [FIX] F1 — Metal 混合單收入缺漏修復（+$56,321.90）
+- 根因：`get_financial_kpis` category='metal' WHERE 含 `AND o.handmodel_cost = 0`，19 張混合單被排除
+- 修法：current/previous 兩期移除守衛；eff_rev 加 metal 3-layer 分支（Layer 1 item_sale_price / Layer 2 成本比例 / Layer 3 平均分）
+- 驗收：yearly_metal.revenue $21,860 → $78,181.90（+$56,321.90）；orders 7 → 25
+
+### [FIX] F2 — get_financial_charts 全面補 deleted_at IS NULL 守衛
+- 根因：0036 只修 kpis qty 子查詢，charts 5 個查詢塊從未補守衛
+- 修法：trend / category_revenue / handmodel_frame / handmodel_bottle / cost_breakdown 各補 `AND deleted_at IS NULL`
+
+### [ENHANCE] data_quality 擴充 metal fallback 追蹤
+- 新增 `metal_fallback_orders` + `metal_fallback_ids`，追蹤 metal Layer 2/3 使用率（yearly = 16 張）
+
+### [PERF] F8 — 補回 STABLE 修飾詞
+- 0038 重建時遺失 STABLE，0040 補回
+
+- Subagent：❌ 未用（Supabase MCP apply_migration + execute_sql，主 context 完成）
+
+---
+
 ## [2026-06-12] 🟢 Session 98 — 0038 migration 本地 SQL 補建
 
 **範圍**：supabase/migrations/0038_update_rpc_item_sale_price_3layer.sql（新增）

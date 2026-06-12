@@ -1,11 +1,12 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-12（Session 98 — 0038 migration 本地 SQL 補建）
+> 上次更新：2026-06-12（Session 99 — Migration 0040 Metal 混合單 3-layer + Charts 守衛）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
-| 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+### 已確認完成（Session 99 核實）
+- ✅ **Migration 0041** — F4 unconfirmed 雙計修復（yearly/current prev -$5,680；monthly prev -1單）+ F3 trend 3-layer（metal 趨勢由全額→比例分攤，與 KPI 對齊）；smoke test PASS（Session 99）
+- ✅ **Migration 0040** — F1 metal 混合單 3-layer（yearly +$56,321.90）+ F2 charts deleted_at 5 塊 + data_quality metal fallback 追蹤 + F8 STABLE 補回；smoke test PASS（Session 99）
 
 ### 已確認完成（Session 98 核實）
 - ✅ **0038 migration 本地 SQL 補建** — `supabase/migrations/0038_update_rpc_item_sale_price_3layer.sql`；逆向重建自 Supabase live DB（get_financial_kpis + get_financial_charts，3-layer fallback）（Session 98）

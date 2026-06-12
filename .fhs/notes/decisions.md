@@ -27,6 +27,33 @@
 4. V42 HTML：Finance tab `fo-data-quality-warn` div + `foUpdateKPI` JS 警示邏輯（17 張舊單缺精確分帳時顯示橙色提示）
 驗收：hm_revenue $77,906 → $29,812；data_quality.avg_split_orders = 17（歷史預 V42 訂單）；V42 新單應 100% 有 item_sale_price。
 
+[2026-06-12] (Session 99) Migration 0041 — F4 unconfirmed 雙計修復 + F3 trend 3-layer 口徑對齊
+
+決策：
+1. **F4**：`get_financial_kpis` previous 期 WHERE 移除 `OR o.confirmed_at IS NULL`。unconfirmed 單只計入 current，不再同時污染 previous 對比基準。
+   影響：yearly/current previous 期消除 1 張 unconfirmed 單（-$5,680）；monthly previous 少 1 張（-$5,680）。
+2. **F3**：`get_financial_charts` trend block 重構為 per-order eff_rev（先算 3-layer，再 GROUP BY 月份）。
+   影響：category='metal' 趨勢圖各月值調低（混合單由全額 → 比例份額），與 KPI 口徑一致。
+煙霧測試：PASS
+
+[2026-06-12] (Session 99) Migration 0040 — Metal 混合單 3-layer + Charts deleted_at 守衛
+
+決策：四項同步修復，打包為 migration 0040。
+原因：
+1. **F1 — Metal 混合單收入缺漏**：`get_financial_kpis` category='metal' 的 WHERE 含 `AND o.handmodel_cost = 0`，19 張混合單（含手模 + 鎖匙扣/頸鏈）被完全排除，缺漏約 $56,322（Layer 2 比例估算）。修法：鏡像 0038 handmodel 3-layer，current/previous 兩期移除守衛 + eff_rev 加 metal 3-layer 分支（Layer 1 item_sale_price / Layer 2 成本比例 / Layer 3 平均分）。
+2. **F2 — get_financial_charts 缺 deleted_at IS NULL**：0036 只修了 kpis qty 子查詢，charts 整支函式從未補。5 個查詢塊（trend / category_revenue / handmodel_frame / handmodel_bottle / cost_breakdown）補 `AND deleted_at IS NULL`。
+3. **data_quality 擴充**：新增 `metal_fallback_orders` + `metal_fallback_ids` 欄位，追蹤 metal 3-layer Layer 2/3 使用率。
+4. **F8 — 補回 STABLE 修飾詞**：0038 重建時遺失，0040 補回。
+驗收（before → after diff）：
+- yearly_metal.revenue: $21,860 → $78,181.90（+$56,321.90）✓
+- yearly_metal.orders: 7 → 25（+18 混合單）✓
+- monthly_metal.revenue: $0 → $6,000（+$6,000）✓
+- current_metal.revenue: $0 → $6,000（+$6,000）✓
+- yearly_all.revenue: $107,820（不變）✓ — 總收入未膨脹
+- data_quality.metal_fallback_orders: 16（yearly）— 16 張歷史混合單走 Layer 2 比例估算
+煙霧測試：inline DO $$ PASS（metal_rev > 0 + metal_fallback_orders IS NOT NULL + charts not null + metal ≤ all）
+待決策（0040 範圍外）：F3 trend 3-layer + F4 unconfirmed 雙計 → 0041（另行授權）；F5 B2 adjustment 語義；F6 0600903 性質。
+
 [2026-06-11] (Session 90) B3 qty 子查詢補 deleted_at IS NULL 守衛
 
 決策：Migration 0036 — `get_financial_kpis` 8 條 qty 子查詢（metal_qty + handmodel_qty，current + previous 各 4 條）補 `AND o.deleted_at IS NULL`。

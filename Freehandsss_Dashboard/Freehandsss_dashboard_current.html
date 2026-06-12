@@ -3753,7 +3753,7 @@
         <div class="form-group">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
                 <label style="font-weight:600;margin:0;">已付訂金</label>
-                <button type="button" id="fhsHalfFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickHalfFillAllSplits('deposit')" style="background:#558B2F;border:1px solid #558B2F;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;">全部半訂</button>
+                <button type="button" id="fhsHalfFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickHalfFillAllSplits('deposit', true)" style="background:#558B2F;border:1px solid #558B2F;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;">全部半訂</button>
                 <button type="button" id="fhsFullFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickFillAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#666;font-size:12px;cursor:pointer;padding:2px 8px;">全部付清</button>
                 <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
             </div>
@@ -3834,6 +3834,9 @@
                 <button class="fo-cat-btn" onclick="foSetCategory('metal')">金屬產品</button>
                 <span style="font-size:11px; color:var(--fhs-text-muted); margin-left:8px; align-self:center;">※ 配件為附加產品，不獨立計算收入</span>
             </div>
+
+            <!-- data_quality 警示（RPC 回傳混合單缺精確分帳時顯示）-->
+            <div id="fo-data-quality-warn" style="display:none; background:#FFF3E0; border-left:3px solid #FF9800; padding:8px 12px; margin-bottom:8px; border-radius:4px; font-size:12px; color:#5D4037; line-height:1.6;"></div>
 
             <!-- KPI Cards (6 cards) -->
             <div id="fo-kpi-grid">
@@ -5218,7 +5221,11 @@
         }
 
         function _applyGlassDefaults() {
-            if (document.getElementById('pSubCat').value !== '玻璃瓶款式') return;
+            if (document.getElementById('pSubCat').value !== '玻璃瓶款式') {
+                babyFillMode = 'all';
+                babyRestoreVisual();
+                return;
+            }
             // 父母 toggle On
             var enParent = document.getElementById('en_parent');
             if (enParent && !enParent.checked) {
@@ -5650,6 +5657,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // btnCopyA 已隱藏（T5：複製+同步流程移至查閱訂單訊息 Modal）
             } else {
                 document.getElementById("preview-box-a").style.display = "none";
+                document.getElementById("output-preview-a").value = "";
             }
 
             // --- Scenario O: Adult Wood Force Display logic ---
@@ -6038,7 +6046,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
 
                     if (hasAdultInSet && hasBabyInSet) {
-                        const _mixedSurcharge = _cc.mixed_member_surcharge || 300; // 讀 config，fallback $300
+                        const _mixedSurcharge = _cc.mixed_member_surcharge ?? 300; // 讀 config，fallback $300
                         totalSuggestedPrice += _mixedSurcharge;
                         totalSystemAdditionalFee += _mixedSurcharge;
                         breakdownParts.push(_mixedSurcharge);
@@ -6885,6 +6893,37 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // 🚀 Dashboard V22 隱藏雙核發射引擎 (Fat Mo 智能判斷版)
         // ==========================================
         async function syncToAirtable() {
+            // S93: split input validation guard (Q1-A / Q2-B)
+            var _splitInvalid = [];
+            ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
+                var c = document.getElementById(cId);
+                if (c && c.querySelectorAll('.split-box-input').length > 0) {
+                    c.querySelectorAll('.split-box-input').forEach(function(inp) {
+                        var v = inp.value.trim();
+                        if (v === '' || isNaN(parseFloat(v))) {
+                            _splitInvalid.push(inp);
+                        }
+                    });
+                }
+            });
+            if (_splitInvalid.length > 0) {
+                _splitInvalid.forEach(function(inp) { inp.style.outline = '2px solid #e63946'; });
+                var _errEl = document.getElementById('_splitValidErr');
+                if (!_errEl) {
+                    _errEl = document.createElement('span');
+                    _errEl.id = '_splitValidErr';
+                    _errEl.style.cssText = 'color:#e63946;font-size:12px;display:block;margin:4px 0 2px;';
+                    _errEl.textContent = '請填寫所有分欄金額';
+                    var _sBtn = document.getElementById('syncBtn');
+                    if (_sBtn && _sBtn.parentNode) _sBtn.parentNode.insertBefore(_errEl, _sBtn);
+                } else {
+                    _errEl.style.display = 'block';
+                }
+                return;
+            }
+            var _clearErr = document.getElementById('_splitValidErr');
+            if (_clearErr) _clearErr.style.display = 'none';
+
             const btn = document.getElementById("syncBtn");
             if (!btn) return;
             const originalText = btn.innerText;
@@ -7166,8 +7205,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 "System_Total_Cost": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Total_Cost : 0,
                 "System_Final_Sale_Price": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Final_Sale_Price : 0,
                 "System_Additional_Fee": window.fhsCurrentPricingMeta ? window.fhsCurrentPricingMeta.System_Additional_Fee : 0,
-                "Full_Order_Text": ((document.getElementById("output-preview-a")?.value || "") + "\n\n" + (document.getElementById("output-preview-b")?.value || "")).trim(),
-                "Clean_Order_Text": ((document.getElementById("output-preview-a")?.value || "").split('🖼️')[0] + "\n" + (document.getElementById("output-preview-b")?.value || "").split('⚙️')[0]).trim(),
+                "Full_Order_Text": (function() {
+                    // Only include 手模段 (output-preview-a) when enableP (含取模服務) is checked.
+                    // Prevents stale hand-model text bleeding into pure-metal orders after category switch.
+                    var _epChk = document.getElementById('enableP');
+                    var _tA = (_epChk && _epChk.checked) ? (document.getElementById("output-preview-a")?.value || "") : "";
+                    var _tB = document.getElementById("output-preview-b")?.value || "";
+                    return (_tA + (_tA && _tB ? "\n\n" : "") + _tB).trim();
+                })(),
+                "Clean_Order_Text": (function() {
+                    var _epChk = document.getElementById('enableP');
+                    var _tA = (_epChk && _epChk.checked) ? ((document.getElementById("output-preview-a")?.value || "").split('🖼️')[0]) : "";
+                    var _tB = (document.getElementById("output-preview-b")?.value || "").split('⚙️')[0];
+                    return (_tA + "\n" + _tB).trim();
+                })(),
                 "Raw_Form_State": (function() {
                     let rawStateStr = captureFormState();
                     try {
@@ -10378,7 +10429,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     + '<input type="number" class="split-box-input" inputmode="numeric"'
                     + ' data-boxkey="' + safeKey + '" data-field="' + field + '"'
                     + ' value="' + (savedVal !== '' ? savedVal : '') + '" placeholder="0"'
-                    + ' oninput="recalcSplitSum(\'' + field + '\')">'
+                    + ' oninput="this.dataset.isDefault=\'false\'; recalcSplitSum(\'' + field + '\')">'
                     + (sugNum > 0
                         ? '<div style="display:flex;flex-direction:column;gap:1px;">'
                           + '<button type="button" class="quick-half-btn" data-boxkey="' + safeKey + '" data-suggested="' + sugNum + '" data-field="' + field + '" onclick="_quickHalfFillSplitBtn(this)" title="半付 $' + Math.ceil(sugNum / 2) + '" style="background:#f5f5f5;border:1px solid #ddd;border-radius:3px;color:#555;font-size:11px;cursor:pointer;padding:1px 5px;line-height:1.4;min-width:24px;">半</button>'
@@ -10423,6 +10474,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             recalcSplitSum(field);
         }
 
+        var _fhsPaymentSyncing = false;
+
         function recalcSplitSum(field) {
             const container = document.getElementById(field + 'SplitContainer');
             const hiddenEl  = document.getElementById(field);
@@ -10435,7 +10488,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             serializeSplits(field);
             const sumEl = document.getElementById(field + 'SplitSum');
             if (sumEl) sumEl.textContent = total > 0 ? '= $' + total : '';
-            if (field === 'deposit') _syncBalanceFromDeposit();
+            if (field === 'deposit' && !_fhsPaymentSyncing) {
+                _fhsPaymentSyncing = true;
+                _syncBalanceFromDeposit();
+                _fhsPaymentSyncing = false;
+            } else if (field === 'balance' && !_fhsPaymentSyncing) {
+                _fhsPaymentSyncing = true;
+                _syncDepositFromBalance();
+                _fhsPaymentSyncing = false;
+            }
         }
 
         function _syncBalanceFromDeposit() {
@@ -10453,10 +10514,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const bk = _boxKey(item, index);
                 const calcPrice = Number(item.CalculatedPrice) || 0;
                 const paid = depMap[bk] !== undefined ? depMap[bk] : 0;
-                const remaining = Math.max(0, calcPrice - paid);
+                const halfAmt = Math.ceil(calcPrice / 2);
+                const isStandard = (paid === 0 || paid === halfAmt || paid === calcPrice);
+                const newBal = isStandard ? Math.max(0, calcPrice - paid) : 0;
                 balContainer.querySelectorAll('.split-box-input').forEach(function(balInp) {
                     if (balInp.dataset.boxkey === bk) {
-                        balInp.value = remaining;
+                        if (!isStandard && balInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
+                        balInp.value = newBal;
                         balInp.style.color = '#999';
                         balInp.dataset.isDefault = 'true';
                     }
@@ -10469,7 +10533,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     const depInp = depContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
                     const balInp = balContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
                     if (depInp && balInp) {
-                        balInp.value = Math.max(0, group.price - (Number(depInp.value) || 0));
+                        const gPrice = group.price || 0;
+                        const gPaid = Number(depInp.value) || 0;
+                        const gHalf = Math.ceil(gPrice / 2);
+                        const gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
+                        if (!gStandard && balInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
+                        balInp.value = gStandard ? Math.max(0, gPrice - gPaid) : 0;
                         balInp.style.color = '#999';
                         balInp.dataset.isDefault = 'true';
                     }
@@ -10477,6 +10546,68 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
             recalcSplitSum('balance');
         }
+
+        function _syncDepositFromBalance() {
+            var items = window.fhsCurrentPricingItems;
+            if (!items || !items.length) return;
+            var depContainer = document.getElementById('depositSplitContainer');
+            var balContainer = document.getElementById('balanceSplitContainer');
+            if (!depContainer || !balContainer) return;
+            var balMap = {};
+            balContainer.querySelectorAll('.split-box-input').forEach(function(inp) {
+                if (inp.dataset.boxkey) balMap[inp.dataset.boxkey] = Number(inp.value) || 0;
+            });
+            var anyChanged = false;
+            items.forEach(function(item, index) {
+                if (item.Order_Item_Key && item.Order_Item_Key.includes('_M_')) return;
+                var bk = _boxKey(item, index);
+                var calcPrice = Number(item.CalculatedPrice) || 0;
+                var paid = balMap[bk] !== undefined ? balMap[bk] : 0;
+                var halfAmt = Math.ceil(calcPrice / 2);
+                var isStandard = (paid === 0 || paid === halfAmt || paid === calcPrice);
+                if (!isStandard) {
+                    depContainer.querySelectorAll('.split-box-input').forEach(function(depInp) {
+                        if (depInp.dataset.boxkey === bk) {
+                            if (depInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
+                            depInp.value = 0;
+                            depInp.style.color = '#999';
+                            depInp.dataset.isDefault = 'true';
+                            anyChanged = true;
+                        }
+                    });
+                }
+            });
+            var _nGroups = window.fhsNecklaceGroups;
+            if (_nGroups && _nGroups.length > 0) {
+                _nGroups.forEach(function(group) {
+                    var depInp = depContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
+                    var balInp = balContainer.querySelector('[data-boxkey="' + group.boxKey + '"]');
+                    if (depInp && balInp) {
+                        var gPrice = group.price || 0;
+                        var gPaid = Number(balInp.value) || 0;
+                        var gHalf = Math.ceil(gPrice / 2);
+                        var gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
+                        if (!gStandard) {
+                            if (depInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
+                            depInp.value = 0;
+                            depInp.style.color = '#999';
+                            depInp.dataset.isDefault = 'true';
+                            anyChanged = true;
+                        }
+                    }
+                });
+            }
+            if (anyChanged) {
+                var depHidden = document.getElementById('deposit');
+                var depSum = 0;
+                depContainer.querySelectorAll('.split-box-input').forEach(function(i) { depSum += Number(i.value) || 0; });
+                if (depHidden) depHidden.value = depSum;
+                var depSumEl = document.getElementById('depositSplitSum');
+                if (depSumEl) depSumEl.textContent = depSum > 0 ? '= $' + depSum : '';
+                serializeSplits('deposit');
+            }
+        }
+        window._syncDepositFromBalance = _syncDepositFromBalance;
 
         function _quickFillSplitBtn(btn) {
             const suggested = Number(btn.dataset.suggested) || 0;
@@ -10603,7 +10734,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window._syncGlobalBalanceBtnUI = _syncGlobalBalanceBtnUI;
 
-        function _quickHalfFillAllSplits(field) {
+        function _quickHalfFillAllSplits(field, force) {
             var container = document.getElementById(field + 'SplitContainer');
             if (!container) return;
             container.querySelectorAll('.quick-half-btn').forEach(function(btn) {
@@ -10612,6 +10743,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (!inp) return;
                 var suggested = Number(btn.dataset.suggested) || 0;
                 if (!suggested) return;
+                // Skip boxes with a saved/user-entered value — only auto-fill empty or previously auto-filled boxes
+                // force=true bypasses this guard (user explicitly clicking 全部半訂)
+                if (!force && inp.value !== '' && inp.value !== '0' && inp.dataset.isDefault !== 'true') return;
                 inp.value = Math.ceil(suggested / 2);
                 inp.style.color = '#999';
                 inp.dataset.isDefault = 'true';
@@ -11430,6 +11564,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 document.getElementById("fo-metal-qty-necklace").textContent = d.metal_qty.necklace || 0;
             } else {
                 metalQtyPanel.style.display = "none";
+            }
+
+            /* data_quality 警示：混合單缺精確分帳 */
+            var dqWarn = document.getElementById('fo-data-quality-warn');
+            if (dqWarn) {
+                var dq = FO_LIVE_DATA && FO_LIVE_DATA.data_quality;
+                if (dq && dq.avg_split_orders > 0) {
+                    var dqIds = (dq.avg_split_ids || []).join(' · ');
+                    dqWarn.innerHTML = '⚠️ ' + dq.avg_split_orders + ' 張混合訂單收入以成本比例估算（缺精確售價分帳），建議補填 V42 入帳分拆<br>' +
+                        '<span style="color:#8D6E63; font-size:11px;">' + dqIds + '</span>';
+                    dqWarn.style.display = 'block';
+                } else {
+                    dqWarn.style.display = 'none';
+                }
             }
         }
 
@@ -12758,11 +12906,27 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 _depCont.addEventListener('input', function(e) {
                     if (e.target && e.target.classList.contains('split-box-input') && e.isTrusted) {
                         window._depositDirty = true;
+                        // S93: clear red border on valid input
+                        e.target.style.outline = '';
+                        var v = e.target.value.trim();
+                        if (v !== '' && parseFloat(v) !== 0 && !isNaN(parseFloat(v))) {
+                            var _allOk = true;
+                            ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
+                                var c = document.getElementById(cId);
+                                if (c) c.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                    var iv = inp.value.trim();
+                                    if (iv === '' || isNaN(parseFloat(iv))) _allOk = false;
+                                });
+                            });
+                            if (_allOk) { var _e = document.getElementById('_splitValidErr'); if (_e) _e.style.display = 'none'; }
+                        }
                     }
                 });
-                // S74: focus — clear default value for easy entry
+                // S74/S94: focus — clear on entry (all boxes, not just default)
                 _depCont.addEventListener('focusin', function(e) {
-                    if (e.target && e.target.classList.contains('split-box-input') && e.target.dataset.isDefault === 'true') {
+                    if (e.target && e.target.classList.contains('split-box-input')) {
+                        e.target.dataset.preFocusVal = e.target.value;
+                        e.target.dataset.preFocusIsDefault = e.target.dataset.isDefault || 'false';
                         e.target.value = '';
                         e.target.style.color = '#333';
                         e.target.dataset.isDefault = 'false';
@@ -12774,28 +12938,111 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         if (_bk && _cont && typeof _updateBoxBtnState === 'function') _updateBoxBtnState(_cont, _bk, 'manual');
                     }
                 });
-                // S74: blur — restore half-default if left empty
+                // S74: blur — restore pre-focus state if left empty; fallback to half-default
                 _depCont.addEventListener('focusout', function(e) {
                     if (e.target && e.target.classList.contains('split-box-input')) {
-                        var val = e.target.value;
-                        if ((val === '' || val === '0') && e.target.dataset.isDefault !== 'true') {
-                            var bk      = e.target.dataset.boxkey;
-                            var halfBtn = _depCont.querySelector('.quick-half-btn[data-boxkey="' + bk + '"]');
-                            if (halfBtn) {
-                                var suggested = Number(halfBtn.dataset.suggested) || 0;
-                                if (suggested > 0) {
-                                    e.target.value = Math.ceil(suggested / 2);
-                                    e.target.style.color = '#999';
-                                    e.target.dataset.isDefault = 'true';
-                                    e.target.dispatchEvent(new Event('input', { bubbles: true }));
-                                    // Re-evaluate mode: if all deposit inputs are now default → half
-                                    var allDefault = true;
-                                    _depCont.querySelectorAll('.split-box-input').forEach(function(inp) {
-                                        if (inp.dataset.isDefault !== 'true') allDefault = false;
-                                    });
-                                    if (allDefault) {
-                                        window._depositMode = 'half';
-                                        if (typeof _syncGlobalDepositBtnUI === 'function') _syncGlobalDepositBtnUI();
+                        var val  = e.target.value;
+                        var bk   = e.target.dataset.boxkey;
+                        if (val === '' || val === '0') {
+                            var pfv  = e.target.dataset.preFocusVal;
+                            var pfid = e.target.dataset.preFocusIsDefault;
+                            if (pfv !== undefined && pfv !== '' && !isNaN(Number(pfv))) {
+                                // Restore to what was there before focus (undo accidental click); $0 is valid
+                                e.target.value = pfv;
+                                e.target.style.color = (pfid === 'true') ? '#999' : '#333';
+                                e.target.dataset.isDefault = pfid || 'false';
+                                e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                            } else {
+                                // No prior value — restore half-default
+                                var halfBtn = _depCont.querySelector('.quick-half-btn[data-boxkey="' + bk + '"]');
+                                if (halfBtn) {
+                                    var suggested = Number(halfBtn.dataset.suggested) || 0;
+                                    if (suggested > 0) {
+                                        e.target.value = Math.ceil(suggested / 2);
+                                        e.target.style.color = '#999';
+                                        e.target.dataset.isDefault = 'true';
+                                        e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                                        var allDefault = true;
+                                        _depCont.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                            if (inp.dataset.isDefault !== 'true') allDefault = false;
+                                        });
+                                        if (allDefault) {
+                                            window._depositMode = 'half';
+                                            if (typeof _syncGlobalDepositBtnUI === 'function') _syncGlobalDepositBtnUI();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            // S93: balance focusin + input — mirror deposit handler (was missing)
+            var _balCont = document.getElementById('balanceSplitContainer');
+            if (_balCont) {
+                _balCont.addEventListener('focusin', function(e) {
+                    if (e.target && e.target.classList.contains('split-box-input')) {
+                        e.target.dataset.preFocusVal = e.target.value;
+                        e.target.dataset.preFocusIsDefault = e.target.dataset.isDefault || 'false';
+                        e.target.value = '';
+                        e.target.style.color = '#333';
+                        e.target.dataset.isDefault = 'false';
+                        window._balanceMode = 'manual';
+                        if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
+                        var _bk = e.target.dataset.boxkey;
+                        if (_bk && typeof _updateBoxBtnState === 'function') _updateBoxBtnState(_balCont, _bk, 'manual');
+                    }
+                });
+                // S93: clear red border on valid balance input
+                _balCont.addEventListener('input', function(e) {
+                    if (e.target && e.target.classList.contains('split-box-input') && e.isTrusted) {
+                        e.target.style.outline = '';
+                        var v = e.target.value.trim();
+                        if (v !== '' && parseFloat(v) !== 0 && !isNaN(parseFloat(v))) {
+                            var _allOk = true;
+                            ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
+                                var c = document.getElementById(cId);
+                                if (c) c.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                    var iv = inp.value.trim();
+                                    if (iv === '' || isNaN(parseFloat(iv))) _allOk = false;
+                                });
+                            });
+                            if (_allOk) { var _e = document.getElementById('_splitValidErr'); if (_e) _e.style.display = 'none'; }
+                        }
+                    }
+                });
+                // W1: blur — restore pre-focus state if left empty; fallback to half-default
+                _balCont.addEventListener('focusout', function(e) {
+                    if (e.target && e.target.classList.contains('split-box-input')) {
+                        var val  = e.target.value;
+                        var bk   = e.target.dataset.boxkey;
+                        if (val === '' || val === '0') {
+                            var pfv  = e.target.dataset.preFocusVal;
+                            var pfid = e.target.dataset.preFocusIsDefault;
+                            if (pfv !== undefined && pfv !== '' && !isNaN(Number(pfv))) {
+                                // Restore to what was there before focus (undo accidental click); $0 is valid
+                                e.target.value = pfv;
+                                e.target.style.color = (pfid === 'true') ? '#999' : '#333';
+                                e.target.dataset.isDefault = pfid || 'false';
+                                e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                            } else {
+                                // No prior value — restore half-default
+                                var halfBtn = _balCont.querySelector('.quick-half-btn[data-boxkey="' + bk + '"]');
+                                if (halfBtn) {
+                                    var suggested = Number(halfBtn.dataset.suggested) || 0;
+                                    if (suggested > 0) {
+                                        e.target.value = Math.ceil(suggested / 2);
+                                        e.target.style.color = '#999';
+                                        e.target.dataset.isDefault = 'true';
+                                        e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                                        var allDefault = true;
+                                        _balCont.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                            if (inp.dataset.isDefault !== 'true') allDefault = false;
+                                        });
+                                        if (allDefault) {
+                                            window._balanceMode = 'half';
+                                            if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
+                                        }
                                     }
                                 }
                             }
