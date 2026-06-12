@@ -1,13 +1,17 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-12（Session 96 — Split 守衛 $0 誤攔修復 + 0600103 同步確認）
+> 上次更新：2026-06-12（Session 97 — split box focusout restore + 全部半訂 force fix）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🟡 MED | **Balance focusout 補回缺失（W1）** | 📋 次 session | Edit F 後點入 balance 清空、離開不補回；需加 _balCont focusout 鏡像 deposit 邏輯 |
 | 🟡 MED | **0038 migration 本地 SQL 補建** | 📋 次 session | 已 apply via MCP（PASS），本地 .sql 檔缺失，需從 Supabase 讀取函數定義補建 |
 | 🟡 MED | **財務版面 B4/B5 qty guards** | 📋 待授權 | qty subquery 缺 `handmodel_cost=0` guards（B3 已修）|
 | 🟡 MED | **財務版面 B2 adjustment_amount 語義** | 📋 待釐清 | 語義需 Fat Mo 確認再動 |
+
+### 已確認完成（Session 97 核實）
+- ✅ **W1 balance focusout 補回缺失** — 新增 `_balCont focusout` handler，preFocusVal save-restore 架構；含 $0 有效還原（Session 97）
+- ✅ **focusout restore 邏輯修正** — deposit + balance focusin 加 preFocusVal/preFocusIsDefault save；focusout 優先還原 pre-focus 狀態而非無差別填半訂（Session 97）
+- ✅ **`_quickHalfFillAllSplits` force 參數** — 按鈕傳 `true` 強制填值，auto-call 不傳保護載入訂單（Session 97）
 
 ### 已確認完成（Session 96 核實）
 - ✅ **syncToAirtable() split 守衛 $0 誤攔修復** — 移除 `parseFloat(v) === 0` 條件（3 處），$0 balance 合法放行，全付訂金單可正常同步（Session 96）
@@ -56,6 +60,38 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-12 (Session 97 — split box focusout restore + 全部半訂 force fix)
+
+## Session 97 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] W1 balance focusout 補回缺失 + preFocusVal 架構**
+  - 根因：focusin 無條件清空但未保存原值；focusout 只能 fallback 半訂，全付後點入 balance 再離開 → 錯誤填半訂
+  - 修復：deposit + balance focusin 各補 `dataset.preFocusVal` + `dataset.preFocusIsDefault`（清空前 save）
+  - focusout：先查 preFocusVal（含 $0 有效）→ 還原原值+原色；無先前值才 fallback 半訂
+
+- ✅ **[FIX] `_quickHalfFillAllSplits` guard 阻擋用戶切換**
+  - 根因：Session 92 載入保護 guard（非空 + isDefault!='true'）同樣阻擋用戶手動按「全部半訂」
+  - 修復：加 `force` 參數；HTML 按鈕 onclick 傳 `true`；renderPaymentSplits auto-call 不傳（保護不變）
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | Freehandsss_Dashboard/freehandsss_dashboardV42.html |
+| deposit focusin | line ~12927 +2 行 save |
+| deposit focusout | line ~12941 改 restore 邏輯 |
+| balance focusin | line ~12984 +2 行 save |
+| balance focusout | line ~13012 改 restore 邏輯（W1）|
+| `_quickHalfFillAllSplits` | line ~10737 +force 參數 |
+| 按鈕 onclick | line ~3756 傳 `true` |
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML — grep 確認 preFocusVal 4 處落地、!force guard 落地、按鈕傳 true = ✅；Live 驗收待 Fat Mo 實機（全付→點 balance→離開→還原$0；全付→全部半訂→deposit/balance 均變半訂）
+Subagent：❌ 未用 subagent（7 處精準 Edit，根因 grep 坐實，直接執行）
 
 ---
 

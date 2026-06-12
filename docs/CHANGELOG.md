@@ -14,6 +14,24 @@ note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Ar
 > - **Dashboard Proto**: V36–V42（前端介面）
 > - **System Architecture**: v1.4.x（AGENTS.md 憲法層）
 
+## [V42-patch4] — 2026-06-12 (Session 97 — split box focusout restore + 全部半訂 force fix)
+
+### Dashboard V42 — 支付拆格 UX Bug 修復
+
+#### 問題 1：focusin 清空前未保存原值 → focusout 無差別填半訂
+- **根因**：Session 94 Edit E/F 令 focusin 無條件清空，但未保存清空前的值；focusout 只有 fallback 半訂邏輯
+- **修復**：focusin 在清空前存 `dataset.preFocusVal` + `dataset.preFocusIsDefault`；focusout 優先還原 preFocusVal（含 $0 有效值），無先前值才 fallback 半訂
+- **受益場景**：全付後誤點 balance 再離開 → 正確還原 $0；全自訂值誤點再離開 → 還原原值
+
+#### 問題 2：`_quickHalfFillAllSplits` guard 阻擋用戶切換模式
+- **根因**：Session 92 的載入保護 guard（非空 + 非預設）同樣阻擋用戶手動按「全部半訂」
+- **修復**：加 `force` 參數；按鈕呼叫傳 `true`（強制填值）；renderPaymentSplits auto-call 不傳（保持保護）
+
+#### 變動
+- `Freehandsss_Dashboard/freehandsss_dashboardV42.html`：deposit focusin +2 行 save；deposit focusout 改 restore 邏輯；balance focusin +2 行 save；balance focusout 改 restore 邏輯；`_quickHalfFillAllSplits` +force 參數；按鈕 onclick 傳 `true`
+
+---
+
 ## [System v1.4.12-patch1] — 2026-06-05 (Session 63 補丁)
 
 ### FHS_Prompts.md 同步機制補丁

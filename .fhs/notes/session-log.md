@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-12 (Session 97 — split box focusout restore + 全部半訂 force fix): 🔧 V42 HTML 7 處修正 ✅
+
+**Scope**: W1 balance focusout 補建；focusin save pre-focus val；focusout restore to pre-focus（含 $0）；`_quickHalfFillAllSplits` force param
+**Result**: 全付後誤點 balance 再離開 → 還原 $0 ✅；全部半訂可從全付模式切換 ✅；載入訂單保護不變 ✅
+
 ## 2026-06-12 (Session 94 — Split Box 互斥歸零邊界 + 全格清空): 🔧 V42 HTML 6 處 Edit ✅
 
 **Scope**: 互斥歸零邊界守衛（Edit A–D，4 處 sync guard）；全格點入無條件清空（Edit E–F）

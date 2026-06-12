@@ -3753,7 +3753,7 @@
         <div class="form-group">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
                 <label style="font-weight:600;margin:0;">已付訂金</label>
-                <button type="button" id="fhsHalfFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickHalfFillAllSplits('deposit')" style="background:#558B2F;border:1px solid #558B2F;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;">全部半訂</button>
+                <button type="button" id="fhsHalfFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickHalfFillAllSplits('deposit', true)" style="background:#558B2F;border:1px solid #558B2F;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;">全部半訂</button>
                 <button type="button" id="fhsFullFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickFillAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#666;font-size:12px;cursor:pointer;padding:2px 8px;">全部付清</button>
                 <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
             </div>
@@ -10734,7 +10734,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window._syncGlobalBalanceBtnUI = _syncGlobalBalanceBtnUI;
 
-        function _quickHalfFillAllSplits(field) {
+        function _quickHalfFillAllSplits(field, force) {
             var container = document.getElementById(field + 'SplitContainer');
             if (!container) return;
             container.querySelectorAll('.quick-half-btn').forEach(function(btn) {
@@ -10744,7 +10744,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var suggested = Number(btn.dataset.suggested) || 0;
                 if (!suggested) return;
                 // Skip boxes with a saved/user-entered value — only auto-fill empty or previously auto-filled boxes
-                if (inp.value !== '' && inp.value !== '0' && inp.dataset.isDefault !== 'true') return;
+                // force=true bypasses this guard (user explicitly clicking 全部半訂)
+                if (!force && inp.value !== '' && inp.value !== '0' && inp.dataset.isDefault !== 'true') return;
                 inp.value = Math.ceil(suggested / 2);
                 inp.style.color = '#999';
                 inp.dataset.isDefault = 'true';
@@ -12924,6 +12925,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // S74/S94: focus — clear on entry (all boxes, not just default)
                 _depCont.addEventListener('focusin', function(e) {
                     if (e.target && e.target.classList.contains('split-box-input')) {
+                        e.target.dataset.preFocusVal = e.target.value;
+                        e.target.dataset.preFocusIsDefault = e.target.dataset.isDefault || 'false';
                         e.target.value = '';
                         e.target.style.color = '#333';
                         e.target.dataset.isDefault = 'false';
@@ -12935,28 +12938,38 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         if (_bk && _cont && typeof _updateBoxBtnState === 'function') _updateBoxBtnState(_cont, _bk, 'manual');
                     }
                 });
-                // S74: blur — restore half-default if left empty
+                // S74: blur — restore pre-focus state if left empty; fallback to half-default
                 _depCont.addEventListener('focusout', function(e) {
                     if (e.target && e.target.classList.contains('split-box-input')) {
-                        var val = e.target.value;
-                        if ((val === '' || val === '0') && e.target.dataset.isDefault !== 'true') {
-                            var bk      = e.target.dataset.boxkey;
-                            var halfBtn = _depCont.querySelector('.quick-half-btn[data-boxkey="' + bk + '"]');
-                            if (halfBtn) {
-                                var suggested = Number(halfBtn.dataset.suggested) || 0;
-                                if (suggested > 0) {
-                                    e.target.value = Math.ceil(suggested / 2);
-                                    e.target.style.color = '#999';
-                                    e.target.dataset.isDefault = 'true';
-                                    e.target.dispatchEvent(new Event('input', { bubbles: true }));
-                                    // Re-evaluate mode: if all deposit inputs are now default → half
-                                    var allDefault = true;
-                                    _depCont.querySelectorAll('.split-box-input').forEach(function(inp) {
-                                        if (inp.dataset.isDefault !== 'true') allDefault = false;
-                                    });
-                                    if (allDefault) {
-                                        window._depositMode = 'half';
-                                        if (typeof _syncGlobalDepositBtnUI === 'function') _syncGlobalDepositBtnUI();
+                        var val  = e.target.value;
+                        var bk   = e.target.dataset.boxkey;
+                        if (val === '' || val === '0') {
+                            var pfv  = e.target.dataset.preFocusVal;
+                            var pfid = e.target.dataset.preFocusIsDefault;
+                            if (pfv !== undefined && pfv !== '' && !isNaN(Number(pfv))) {
+                                // Restore to what was there before focus (undo accidental click); $0 is valid
+                                e.target.value = pfv;
+                                e.target.style.color = (pfid === 'true') ? '#999' : '#333';
+                                e.target.dataset.isDefault = pfid || 'false';
+                                e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                            } else {
+                                // No prior value — restore half-default
+                                var halfBtn = _depCont.querySelector('.quick-half-btn[data-boxkey="' + bk + '"]');
+                                if (halfBtn) {
+                                    var suggested = Number(halfBtn.dataset.suggested) || 0;
+                                    if (suggested > 0) {
+                                        e.target.value = Math.ceil(suggested / 2);
+                                        e.target.style.color = '#999';
+                                        e.target.dataset.isDefault = 'true';
+                                        e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                                        var allDefault = true;
+                                        _depCont.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                            if (inp.dataset.isDefault !== 'true') allDefault = false;
+                                        });
+                                        if (allDefault) {
+                                            window._depositMode = 'half';
+                                            if (typeof _syncGlobalDepositBtnUI === 'function') _syncGlobalDepositBtnUI();
+                                        }
                                     }
                                 }
                             }
@@ -12969,6 +12982,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (_balCont) {
                 _balCont.addEventListener('focusin', function(e) {
                     if (e.target && e.target.classList.contains('split-box-input')) {
+                        e.target.dataset.preFocusVal = e.target.value;
+                        e.target.dataset.preFocusIsDefault = e.target.dataset.isDefault || 'false';
                         e.target.value = '';
                         e.target.style.color = '#333';
                         e.target.dataset.isDefault = 'false';
@@ -12993,6 +13008,44 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 });
                             });
                             if (_allOk) { var _e = document.getElementById('_splitValidErr'); if (_e) _e.style.display = 'none'; }
+                        }
+                    }
+                });
+                // W1: blur — restore pre-focus state if left empty; fallback to half-default
+                _balCont.addEventListener('focusout', function(e) {
+                    if (e.target && e.target.classList.contains('split-box-input')) {
+                        var val  = e.target.value;
+                        var bk   = e.target.dataset.boxkey;
+                        if (val === '' || val === '0') {
+                            var pfv  = e.target.dataset.preFocusVal;
+                            var pfid = e.target.dataset.preFocusIsDefault;
+                            if (pfv !== undefined && pfv !== '' && !isNaN(Number(pfv))) {
+                                // Restore to what was there before focus (undo accidental click); $0 is valid
+                                e.target.value = pfv;
+                                e.target.style.color = (pfid === 'true') ? '#999' : '#333';
+                                e.target.dataset.isDefault = pfid || 'false';
+                                e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                            } else {
+                                // No prior value — restore half-default
+                                var halfBtn = _balCont.querySelector('.quick-half-btn[data-boxkey="' + bk + '"]');
+                                if (halfBtn) {
+                                    var suggested = Number(halfBtn.dataset.suggested) || 0;
+                                    if (suggested > 0) {
+                                        e.target.value = Math.ceil(suggested / 2);
+                                        e.target.style.color = '#999';
+                                        e.target.dataset.isDefault = 'true';
+                                        e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                                        var allDefault = true;
+                                        _balCont.querySelectorAll('.split-box-input').forEach(function(inp) {
+                                            if (inp.dataset.isDefault !== 'true') allDefault = false;
+                                        });
+                                        if (allDefault) {
+                                            window._balanceMode = 'half';
+                                            if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 });
