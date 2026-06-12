@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-13 (Session 101 — restoreSplits 修復 + 9 單校正核實): 🔧 V42 HTML 2 行修復 ✅
+
+**Scope**: 9 單 Supabase live 核實（drift=0，無需 UPDATE） + restoreSplits() 容器清空修復（載入舊訂單 deposit/balance 顯示 $790 bug）
+**Result**: freehandsss_dashboardV42.html restoreSplits +4 行；learnings.md Pitfall 33 新增 ✅
+
 ## 2026-06-12 (Session 100 — kgov 知識治理強制執行層): 🏛 AGENTS v1.4.13 + hooks ✅
 
 **Scope**: B1 四入口強制讀取（database-reviewer/finance-auditor/SKILL.md/Finance Bible） + B2 execute [G] 運算邏輯觸發稽核 + D hooks（post-tool-kgov.js + stop-kgov.js）+ lessons INDEX.md + AGENTS v1.4.12→v1.4.13

@@ -10794,6 +10794,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         function restoreSplits() {
+            var depCont = document.getElementById('depositSplitContainer');
+            var balCont = document.getElementById('balanceSplitContainer');
+            if (depCont) depCont.innerHTML = '';
+            if (balCont) balCont.innerHTML = '';
             renderPaymentSplits('deposit');
             renderPaymentSplits('balance');
         }

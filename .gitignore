@@ -24,6 +24,9 @@ artifacts/
 # MCP server config (contains sensitive credentials)
 .mcp.json
 
+# kgov runtime state flag (session-scoped, not version controlled)
+.fhs/.kgov-pending
+
 # Generated code snapshot (repomix tool output)
 repomix-output.txt
 

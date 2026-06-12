@@ -71,6 +71,7 @@
 30. **支付欄位驗證不應攔截 $0**：split 守衛用 `parseFloat(v) === 0` 攔截「未填」，但全付訂金場景 balance=$0 是合法值，導致同步被誤阻。守衛應只攔空字串與 NaN，$0 必須放行 — Session 96
 31. **focusin 清空前必保存原值**：focusin 無條件清空 input 而不先 `dataset.preFocusVal = e.target.value`，focusout 只能 fallback 半訂，全付/自訂值被錯誤覆蓋。每個清空 focusin 必加兩行 save — Session 97
 32. **auto-fill guard 須與用戶主動操作區分**：Session 92 載入保護 guard 阻擋了用戶手動按「全部半訂」。解法：`force` 參數；按鈕傳 `true`，auto-call 不傳 — Session 97
+33. **renderPaymentSplits prevData 優先規則吞噬 restoreFormState 還原值**：render 先讀既有 box 值入 prevData，再 merge #depositSplitData（`if prevData[k]===undefined` 才加）。若 box 已有 $790，存檔 $500 被忽略。凡執行「讀取舊紀錄」restore 前，必須 `depCont.innerHTML=''` 清空容器，令 prevData 為空，存檔值才能生效 — Session 101
 
 ---
 

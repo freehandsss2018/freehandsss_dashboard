@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-06-13] 🔧 Session 101 — restoreSplits 容器清空修復 + 9 單校正核實
+
+### [FIX] restoreSplits() — 載入舊訂單後 deposit/balance 顯示 $790 而非存檔值
+- **根因**：`renderPaymentSplits` prevData 邏輯給既有 box 值最高優先，`#depositSplitData` 存檔值被 `if(prevData[k]===undefined)` 條件攔截忽略
+- **修復**：`restoreSplits()` 在 render 前加 `depCont.innerHTML=''` / `balCont.innerHTML=''` 清空容器，確保 prevData 為空，存檔值 ($500/$0) 正確生效
+- **影響**：僅 `restoreFormState` 80ms setTimeout 呼叫路徑，正常 generate() 定價路徑不受影響
+
+### [DATA] 9 單歷史資料校正 — 核實已無需執行
+- Session 89 n8n 修復後，9 單 final_sale_price 已於後續 sync 自動回正，Supabase live 查詢 drift=0，UPDATE 無需執行
+
 ## [2026-06-12] 🟢 Session 100 — 知識治理執行層落地（B1+B2+C2+D hooks）
 
 **範圍**：12 項文件/制度/hooks 改動；AGENTS.md v1.4.12→v1.4.13
