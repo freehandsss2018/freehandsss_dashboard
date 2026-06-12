@@ -3,12 +3,11 @@
 // FHS Stop Hook — Knowledge Governance Session-End Guard
 // Checks for pending kgov flag and reminds (or blocks) before session ends
 //
-// Version: 1.0.0 | 2026-06-12
+// Version: 1.1.0 | 2026-06-12
 // Design: cl-final-plan.md 2026-06-12-1845 §6 D-11
 //
-// PHASE 1: HARD_BLOCK = false (reminder only)
-//   Set HARD_BLOCK = true (after 1-2 weeks calibration, Fat Mo authorises)
-//   to upgrade from reminder to hard block (exit 2)
+// PHASE 2: HARD_BLOCK = true — authorised by Fat Mo 2026-06-12
+//   flag 存在時 exit 2 阻擋 session 結束，強制先更新 §十 / lessons
 //
 // Exit codes:
 //   0 = allow session to end
@@ -20,8 +19,8 @@ const fs = require('fs');
 const path = require('path');
 
 // ── CONFIGURATION ────────────────────────────────────────────────────────────
-// Phase 1: reminder only. Change to true after Fat Mo authorises.
-const HARD_BLOCK = false;
+// Phase 2: HARD_BLOCK = true — authorised by Fat Mo 2026-06-12.
+const HARD_BLOCK = true;
 
 // Auto-release after this many consecutive blocks (prevents infinite loop)
 // Only relevant when HARD_BLOCK = true
