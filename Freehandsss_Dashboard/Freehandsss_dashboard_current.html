@@ -9656,13 +9656,22 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var totalCost = parseFloat(o.Total_Cost ?? o.total_cost ?? 0) || 0;
             var netProfit = parseFloat(o.Net_Profit ?? o.net_profit ?? 0) || 0;
             var adjAmt    = parseFloat(o.Adjustment_Amount ?? o.adjustment_amount ?? 0) || 0;
-            // n8n_adjustment_notes may be JSON array/object — coerce to string
+            // n8n_adjustment_notes: array of {desc, type, basis, amount, ...} — render human-friendly
             var _rawNotes = extra && extra.n8n_adjustment_notes;
-            var n8nNotes  = '';
+            var n8nNotes = '', n8nBasis = '';
             if (_rawNotes) {
-                if (typeof _rawNotes === 'string') n8nNotes = _rawNotes;
-                else if (Array.isArray(_rawNotes)) n8nNotes = _rawNotes.map(function(n){ return typeof n === 'object' ? (n.text || n.note || n.message || JSON.stringify(n)) : String(n); }).filter(Boolean).join(' · ');
-                else n8nNotes = JSON.stringify(_rawNotes);
+                if (typeof _rawNotes === 'string') {
+                    n8nNotes = _rawNotes;
+                } else {
+                    var _arr = Array.isArray(_rawNotes) ? _rawNotes : [_rawNotes];
+                    var _bases = [];
+                    n8nNotes = _arr.map(function(n) {
+                        if (typeof n !== 'object') return String(n);
+                        if (n.basis) _bases.push(n.basis);
+                        return n.desc || n.text || n.message || n.type || JSON.stringify(n);
+                    }).filter(Boolean).join(' · ');
+                    n8nBasis = _bases.join(' · ');
+                }
             }
 
             // Computed checks
@@ -9690,7 +9699,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var flags = [];
             if (!chainMatch)  flags.push({ cls: 'red', msg: '✗ 確收鏈不平衡：訂金+尾款+附加費（' + _f(confirmedRev) + '） ≠ 確收金額（' + _f(finalSale) + '）' });
             if (!profitMatch) flags.push({ cls: '',    msg: '⚠ 利潤驗算：確收−成本=' + _f(profitCalc) + '，DB=' + _f(netProfit) });
-            if (n8nNotes) flags.push({ cls: '', msg: 'ℹ n8n 備注：' + n8nNotes });
+            if (n8nNotes) flags.push({ cls: '', msg: 'ℹ n8n 備注：' + n8nNotes + (n8nBasis ? '<br><span style="font-size:10px;color:#888;padding-left:14px;">依據：' + n8nBasis + '</span>' : '') });
 
             var hasError  = flags.some(function(f){ return f.cls === 'red'; });
             var overallOk = !hasError;
