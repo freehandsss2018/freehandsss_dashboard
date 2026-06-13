@@ -2925,6 +2925,9 @@
         <li><button class="bs-item" type="button" id="bsBtnArchive" onclick="closeBsSheet()">
             <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg><span>封存訂單</span>
         </button></li>
+        <li><button class="bs-item" type="button" id="bsBtnAudit" onclick="closeBsSheet()">
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-calculator"/></svg><span>📊 核對帳</span>
+        </button></li>
         <li class="bs-divider" role="separator" aria-hidden="true"></li>
         <li><button class="bs-item bs-item--danger" type="button" id="bsBtnDelete" onclick="closeBsSheet()">
             <svg width="20" height="20" aria-hidden="true"><use href="#icon-trash-2"/></svg><span>刪除訂單</span>
@@ -14000,6 +14003,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         var btnB = document.getElementById('bsBtnModelB');
         var btnEdit = document.getElementById('bsBtnEdit');
         var btnDel = document.getElementById('bsBtnDelete');
+        var btnAudit = document.getElementById('bsBtnAudit');
 
         if (btnA) btnA.onclick = function() { closeBsSheet(); if (typeof openOrderModal === 'function') openOrderModal(orderId, 'A'); };
         if (btnB) btnB.onclick = function() { closeBsSheet(); if (typeof openOrderModal === 'function') openOrderModal(orderId, 'B'); };
@@ -14007,6 +14011,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         if (starBtn) starBtn.onclick = function() { closeBsSheet(); toggleFavorite(orderId); };
         if (archiveBtn) archiveBtn.onclick = function() { closeBsSheet(); triggerArchiveOrder(orderId); };
         if (btnDel) btnDel.onclick = function() { closeBsSheet(); if (go && typeof openDeleteModal === 'function') openDeleteModal(orderId, go.Order_ID); };
+        if (btnAudit) btnAudit.onclick = function() { closeBsSheet(); if (typeof openOrderModal === 'function') openOrderModal(orderId, 'finance'); };
 
         /* Show */
         var overlay = document.getElementById('bsOverlay');
