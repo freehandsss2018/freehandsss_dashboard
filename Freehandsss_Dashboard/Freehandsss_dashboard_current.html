@@ -2229,6 +2229,53 @@
         .fhs-finance-lbl { color:#888; }
         .fhs-finance-val { font-weight:600; color:#222; }
         .fhs-finance-val.profit { color:#1a7a3c; }
+        /* ── fhsAudit: calculation audit ledger (Phase C, Session 102) ── */
+        .fhsAudit_wrap{padding:12px 14px 20px;font-family:var(--fhs-font-sans,-apple-system,sans-serif);font-size:13px;color:#222;line-height:1.55;}
+        .fhsAudit_summaryCard{border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:6px;}
+        .fhsAudit_summaryCard.pass{background:#f1f8e9;border:1.5px solid #aed581;}
+        .fhsAudit_summaryCard.fail{background:#fff5f5;border:1.5px solid #ffcdd2;}
+        .fhsAudit_summaryHeadline{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;}
+        .fhsAudit_badge_pass{display:inline-flex;align-items:center;gap:3px;background:#558B2F;color:#fff;border-radius:5px;padding:2px 8px;font-size:12px;font-weight:700;}
+        .fhsAudit_badge_fail{display:inline-flex;align-items:center;gap:3px;background:#E63946;color:#fff;border-radius:5px;padding:2px 8px;font-size:12px;font-weight:700;}
+        .fhsAudit_warnRow{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#7a5400;background:#fffde7;border:1px solid #ffe082;border-radius:5px;padding:4px 8px;}
+        .fhsAudit_warnRow.red{color:#7a1a1a;background:#fff5f5;border-color:#ffcdd2;}
+        .fhsAudit_sectionHdr{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#B07D4C;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #E0E0E0;}
+        .fhsAudit_row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:3px 0;}
+        .fhsAudit_row.indent1{padding-left:16px;}
+        .fhsAudit_row.indent2{padding-left:32px;}
+        .fhsAudit_label{flex:1;color:#444;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .fhsAudit_label.muted{color:#888;}
+        .fhsAudit_label.strong{font-weight:600;color:#222;}
+        .fhsAudit_ruleTag{background:#f0f4ff;color:#3a5fc8;border-radius:3px;font-size:10px;padding:1px 4px;font-family:var(--fhs-font-mono,monospace);white-space:nowrap;flex-shrink:0;}
+        .fhsAudit_amount{font-family:var(--fhs-font-mono,monospace);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;flex-shrink:0;font-weight:600;color:#222;min-width:70px;}
+        .fhsAudit_amount.income{color:#B07D4C;}
+        .fhsAudit_amount.cost{color:#E63946;}
+        .fhsAudit_amount.profit{color:#558B2F;font-weight:700;}
+        .fhsAudit_amount.muted{color:#aaa;font-weight:400;}
+        .fhsAudit_amount.deduct{color:#E63946;}
+        .fhsAudit_chk{font-size:12px;flex-shrink:0;width:16px;text-align:center;}
+        .fhsAudit_chk.pass{color:#558B2F;font-weight:700;}
+        .fhsAudit_chk.fail{color:#E63946;font-weight:700;}
+        .fhsAudit_note{font-size:10.5px;color:#888;line-height:1.4;padding:0 0 2px 32px;}
+        .fhsAudit_divider_sub{border:none;border-top:1px solid #E0E0E0;margin:6px 0;}
+        .fhsAudit_divider_total{border:none;border-top:2px solid #333;margin:6px 0;}
+        .fhsAudit_subtotalRow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:4px 0 4px 16px;font-size:12px;font-weight:600;color:#555;border-top:1px solid #E0E0E0;margin-top:2px;}
+        .fhsAudit_totalRow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:7px 0;font-size:14px;font-weight:700;color:#222;border-top:2px solid #333;}
+        .fhsAudit_profitRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0 10px;border-bottom:4px double #333;margin-bottom:4px;}
+        .fhsAudit_profitAmt{font-family:var(--fhs-font-mono,monospace);font-variant-numeric:tabular-nums;font-size:22px;font-weight:800;color:#558B2F;text-align:right;}
+        .fhsAudit_profitAmt.negative{color:#E63946;}
+        .fhsAudit_dimSection{opacity:.7;}
+        .fhsAudit_catTag{display:inline-block;font-size:10px;padding:1px 5px;border-radius:3px;background:#f5ece0;color:#7a4a1a;font-weight:600;vertical-align:middle;margin-left:4px;white-space:nowrap;}
+        .fhsAudit_catTag.keychain{background:#e8f5e9;color:#2e7d32;}
+        .fhsAudit_catTag.necklace{background:#e8eaf6;color:#303f9f;}
+        .fhsAudit_itemHdr{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#333;padding:6px 0 2px;}
+        @media (max-width:767px){
+            .fhsAudit_wrap{padding:10px 10px 16px;font-size:12.5px;}
+            .fhsAudit_amount{min-width:60px;font-size:12.5px;}
+            .fhsAudit_profitAmt{font-size:18px;}
+            .fhsAudit_label{font-size:12px;}
+            .fhsAudit_note{padding-left:16px;font-size:10px;}
+        }
         /* Mobile: bottom sheet */
         @media (max-width: 768px) {
             #fhsOrderModal { padding:0; align-items:flex-end; }
@@ -9225,6 +9272,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window._fhsModalCatFilter = catFilter || '';
             window._fhsMode2Loaded = false;   // lazy-load flag: Mode 2 not yet fetched
             window._fhsMode2Hash   = '';      // dirty-diff baseline hash
+            window._fhsAuditLoaded = false;   // lazy-load flag: audit ledger not yet fetched
 
             var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 訂單詳情';
             document.getElementById('fhsModalTitle').textContent = titleLabel + '  ' + (o.Order_ID || orderId);
@@ -9471,6 +9519,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (tab === 'detail' && !window._fhsMode2Loaded) {
                 loadMode2Items(window._fhsModalOrderId);
             }
+            if (tab === 'finance' && !window._fhsAuditLoaded) {
+                loadAuditLedger(window._fhsModalOrderId);
+            }
         }
 
         // Lazy-load order_items for Mode 2 structured editor
@@ -9516,6 +9567,264 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 loadingEl.innerHTML = '❌ 載入失敗：' + e.message.substring(0, 60);
                 console.error('[loadMode2Items]', e);
             }
+        }
+
+        // Lazy-load augmented cost data for the finance audit ledger (Phase C)
+        async function loadAuditLedger(orderId) {
+            var loadingEl = document.getElementById('fhsAuditLoading');
+            var ledgerEl  = document.getElementById('fhsAuditLedger');
+            if (!ledgerEl) return;
+            if (loadingEl) { loadingEl.textContent = '⏳ 載入財務核對資料...'; loadingEl.style.display = ''; }
+            ledgerEl.innerHTML = '';
+
+            var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var o = _go.find(function(x){ return x.id === orderId; });
+            if (!o) {
+                if (loadingEl) loadingEl.innerHTML = '<span style="color:#E63946;">❌ 找不到訂單資料</span>';
+                return;
+            }
+
+            var hdr = { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON };
+            try {
+                var results = await Promise.all([
+                    fetch(
+                        _V41_SB_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId) +
+                        '&select=n8n_adjustment_notes&limit=1',
+                        { headers: hdr }
+                    ),
+                    fetch(
+                        _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
+                        '&select=item_key,item_category,specification,product_sku,quantity,' +
+                        'item_base_cost,drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price' +
+                        '&order=item_category.asc,item_key.asc',
+                        { headers: hdr }
+                    )
+                ]);
+                if (!results[0].ok) throw new Error('orders HTTP ' + results[0].status);
+                if (!results[1].ok) throw new Error('order_items HTTP ' + results[1].status);
+                var ordExtra = ((await results[0].json()) || [])[0] || {};
+                var items    = await results[1].json();
+                if (loadingEl) loadingEl.style.display = 'none';
+                ledgerEl.innerHTML = buildAuditLedgerHtml(o, ordExtra, Array.isArray(items) ? items : []);
+                window._fhsAuditLoaded = true;
+            } catch(e) {
+                if (loadingEl) loadingEl.innerHTML = '❌ 載入失敗：' + e.message.substring(0, 80);
+                console.error('[loadAuditLedger]', e);
+            }
+        }
+
+        // Render full calculation audit ledger (Phase C, ui-designer Phase A visual spec)
+        function buildAuditLedgerHtml(o, extra, items) {
+            function _f(v) {
+                if (v == null || v === '') return '—';
+                var n = parseFloat(v);
+                if (isNaN(n)) return String(v);
+                return '$' + Math.round(n).toLocaleString('en-HK');
+            }
+            function _fNeg(v) {
+                var n = parseFloat(v);
+                if (isNaN(n) || n === 0) return '$0';
+                return n < 0
+                    ? '(−$' + Math.round(Math.abs(n)).toLocaleString('en-HK') + ')'
+                    : '$' + Math.round(n).toLocaleString('en-HK');
+            }
+            function _chk(pass) {
+                return '<span class="fhsAudit_chk ' + (pass ? 'pass' : 'fail') + '">' + (pass ? '✓' : '✗') + '</span>';
+            }
+            function _tag(id) {
+                return '<span class="fhsAudit_ruleTag">[' + id + ']</span>';
+            }
+            function _row(label, amount, amtCls, indent, ruleId, note) {
+                var cls  = indent ? ' indent' + indent : '';
+                var lCls = (amtCls === 'muted') ? ' muted' : '';
+                var out  = '<div class="fhsAudit_row' + cls + '">' +
+                    '<span class="fhsAudit_label' + lCls + '">' + label + '</span>' +
+                    (ruleId ? _tag(ruleId) : '') +
+                    '<span class="fhsAudit_amount ' + (amtCls || '') + '">' + (amount != null ? amount : '—') + '</span>' +
+                '</div>';
+                if (note) out += '<div class="fhsAudit_note">' + note + '</div>';
+                return out;
+            }
+
+            // Extract values — defensive dual-case (globalOrders may have Pascal_Case from normalizer)
+            var deposit   = parseFloat(o.Deposit   ?? o.deposit   ?? 0) || 0;
+            var balance   = parseFloat(o.Balance   ?? o.balance   ?? 0) || 0;
+            var addFee    = parseFloat(o.Additional_Fee  ?? o.additional_fee   ?? 0) || 0;
+            var finalSale = parseFloat(o.Final_Sale_Price ?? o.final_sale_price ?? 0) || 0;
+            var totalCost = parseFloat(o.Total_Cost ?? o.total_cost ?? 0) || 0;
+            var netProfit = parseFloat(o.Net_Profit ?? o.net_profit ?? 0) || 0;
+            var adjAmt    = parseFloat(o.Adjustment_Amount ?? o.adjustment_amount ?? 0) || 0;
+            var n8nNotes  = (extra && extra.n8n_adjustment_notes) ? extra.n8n_adjustment_notes : '';
+
+            // Computed checks
+            var confirmedRev = deposit + balance + addFee;
+            var chainMatch   = Math.abs(confirmedRev - finalSale) < 0.01;
+            var profitCalc   = finalSale - totalCost;
+            var profitMatch  = Math.abs(profitCalc - netProfit) < 0.01;
+            var kpiProfit    = netProfit - adjAmt;
+
+            // Sum four-column costs from order_items
+            var sumD = 0, sumP = 0, sumC = 0, sumS = 0, sumSug = 0;
+            items.forEach(function(it) {
+                sumD   += parseFloat(it.drawing_cost   ?? 0) || 0;
+                sumP   += parseFloat(it.printing_cost  ?? 0) || 0;
+                sumC   += parseFloat(it.chain_cost     ?? 0) || 0;
+                sumS   += parseFloat(it.shipping_cost  ?? 0) || 0;
+                sumSug += parseFloat(it.item_sale_price ?? 0) || 0;
+            });
+            var sumItemCost = sumD + sumP + sumC + sumS;
+            var costMatch   = items.length === 0 || Math.abs(sumItemCost - totalCost) < 1;
+
+            // Flags
+            var flags = [];
+            if (!chainMatch)  flags.push({ cls: 'red', msg: '✗ 確收鏈不平衡：訂金+尾款+附加費（' + _f(confirmedRev) + '） ≠ 確收金額（' + _f(finalSale) + '）' });
+            if (!costMatch)   flags.push({ cls: '',    msg: '⚠ 品項成本加總 ' + _f(sumItemCost) + ' 與 n8n 總成本 ' + _f(totalCost) + ' 有差異' });
+            if (!profitMatch) flags.push({ cls: '',    msg: '⚠ 利潤驗算：確收−成本=' + _f(profitCalc) + '，DB=' + _f(netProfit) });
+            if (items.length === 0) flags.push({ cls: '', msg: '⚠ 找不到品項成本記錄（order_items 為空）' });
+            if (n8nNotes) flags.push({ cls: '', msg: 'ℹ n8n 備注：' + n8nNotes });
+
+            var hasError  = flags.some(function(f){ return f.cls === 'red'; });
+            var overallOk = !hasError;
+
+            var h = '<div class="fhsAudit_wrap">';
+
+            // ▌ 結論摘要卡
+            var errCount = flags.filter(function(f){ return f.cls === 'red'; }).length;
+            h += '<div class="fhsAudit_summaryCard ' + (overallOk ? 'pass' : 'fail') + '">';
+            h += '<div class="fhsAudit_summaryHeadline">';
+            h += overallOk
+                ? '<span class="fhsAudit_badge_pass">✓ 核對通過</span><span style="font-size:12px;color:#444;font-weight:500;">' + (flags.length === 0 ? '無偏差' : flags.length + ' 項提示') + '</span>'
+                : '<span class="fhsAudit_badge_fail">✗ ' + errCount + ' 項偏差</span>';
+            h += '</div>';
+            flags.forEach(function(f) {
+                h += '<div class="fhsAudit_warnRow' + (f.cls ? ' ' + f.cls : '') + '">' + f.msg + '</div>';
+            });
+            h += '</div>';
+
+            // ① 確收鏈
+            h += '<div class="fhsAudit_sectionHdr"><span>① 確收鏈</span>' +
+                '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">財務真理 · 最終以此為準</span></div>';
+            h += _row('訂金',  _f(deposit),  'income', 1);
+            h += _row('尾款',  _f(balance),  'income', 1);
+            h += _row('附加費', _f(addFee), 'income', 1);
+            h += '<hr class="fhsAudit_divider_sub">';
+            h += '<div class="fhsAudit_row" style="padding:4px 0;">' +
+                '<span class="fhsAudit_label strong">確收金額</span>' +
+                _tag('確收') + _chk(chainMatch) +
+                '<span class="fhsAudit_amount income" style="font-size:15px;">' + _f(finalSale) + '</span>' +
+            '</div>';
+            h += '<div class="fhsAudit_note">' + (chainMatch
+                ? _f(deposit) + ' + ' + _f(balance) + ' + ' + _f(addFee) + ' = ' + _f(finalSale) + ' ✓'
+                : '計算值：' + _f(confirmedRev) + '，DB確收：' + _f(finalSale) + '（差額 ' + _f(Math.abs(confirmedRev - finalSale)) + '）') + '</div>';
+            if (adjAmt !== 0) {
+                h += _row(adjAmt < 0 ? '調整（折讓）' : '調整（追加）', _fNeg(adjAmt), adjAmt < 0 ? 'deduct' : 'income', 1, 'ADJ', n8nNotes || null);
+            }
+
+            // ② 成本快照鏈
+            h += '<div class="fhsAudit_sectionHdr" style="margin-top:14px;"><span>② 成本快照鏈</span>' +
+                '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">n8n 自動記帳 · 快照時間點</span></div>';
+
+            if (items.length === 0) {
+                h += '<div style="padding:16px;color:#aaa;font-size:12px;text-align:center;">（無品項成本記錄）</div>';
+            } else {
+                var catOrder = ['手模', '頸鏈', '鎖匙扣', '吊飾', '羊毛氈', '立體擺設'];
+                var grouped = {}, orderedCats = [];
+                items.forEach(function(it) {
+                    var cat = it.item_category || '其他';
+                    if (!grouped[cat]) grouped[cat] = [];
+                    grouped[cat].push(it);
+                });
+                catOrder.forEach(function(c) { if (grouped[c]) orderedCats.push(c); });
+                Object.keys(grouped).forEach(function(c) { if (orderedCats.indexOf(c) === -1) orderedCats.push(c); });
+
+                orderedCats.forEach(function(cat) {
+                    grouped[cat].forEach(function(it) {
+                        var label    = it.specification || it.product_sku || it.item_key || '品項';
+                        var qty      = parseInt(it.quantity) || 1;
+                        var catCls   = cat === '頸鏈' ? 'necklace' : cat === '鎖匙扣' ? 'keychain' : '';
+                        var catTag   = '<span class="fhsAudit_catTag ' + catCls + '">' + cat + '</span>';
+                        var drawing  = parseFloat(it.drawing_cost  ?? 0) || 0;
+                        var printing = parseFloat(it.printing_cost ?? 0) || 0;
+                        var chain    = parseFloat(it.chain_cost    ?? 0) || 0;
+                        var shipping = parseFloat(it.shipping_cost ?? 0) || 0;
+                        var itemSum  = drawing + printing + chain + shipping;
+
+                        h += '<div class="fhsAudit_itemHdr"><span>' + label + (qty > 1 ? ' ×' + qty : '') + '</span>' + catTag + '</div>';
+                        if (drawing  > 0) h += _row('畫圖費',           _f(drawing),  'cost', 1, 'G2');
+                        if (printing > 0) h += _row('打印費',            _f(printing), 'cost', 1);
+                        if (chain    > 0) h += _row('Chain費（Clasp）', _f(chain),    'cost', 1, 'G4');
+                        if (shipping > 0) h += _row('運費',              _f(shipping), 'cost', 1, 'G1');
+                        if (shipping < 0) h += _row('運費扣減', _fNeg(shipping), 'deduct', 1, 'G1', '多件扣減規則');
+                        if (drawing === 0 && printing === 0 && chain === 0 && shipping === 0) {
+                            h += '<div class="fhsAudit_note" style="padding-left:16px;">（此品項成本欄位為空）</div>';
+                        }
+                        h += '<div class="fhsAudit_subtotalRow"><span>' + label + ' 小計</span>' +
+                            '<span class="fhsAudit_amount cost" style="font-size:13px;">' + _f(itemSum) + '</span></div>';
+                    });
+                });
+
+                h += '<hr class="fhsAudit_divider_sub" style="margin-top:10px;">';
+                if (sumD > 0) h += _row('畫圖費合計',  _f(sumD), 'cost', 1);
+                if (sumP > 0) h += _row('打印費合計',  _f(sumP), 'cost', 1);
+                if (sumC > 0) h += _row('Chain費合計', _f(sumC), 'cost', 1);
+                if (sumS !== 0) h += _row('運費合計', _f(sumS), sumS < 0 ? 'deduct' : 'cost', 1);
+            }
+
+            h += '<div class="fhsAudit_totalRow">' +
+                '<span>總成本</span>' +
+                (items.length > 0 ? _chk(costMatch) : '<span style="width:16px;"></span>') +
+                '<span class="fhsAudit_amount cost" style="font-size:15px;">' + _f(totalCost) + '</span>' +
+            '</div>';
+            if (items.length > 0 && !costMatch) {
+                h += '<div class="fhsAudit_note" style="color:#E63946;">品項加總 ' + _f(sumItemCost) + ' vs n8n總成本 ' + _f(totalCost) + '</div>';
+            }
+
+            // ③ 利潤結算
+            h += '<div class="fhsAudit_sectionHdr" style="margin-top:16px;"><span>③ 利潤結算</span></div>';
+            h += _row('確收金額',    _f(finalSale), 'income');
+            h += _row('(−) 總成本', '(−' + _f(totalCost) + ')', 'deduct');
+            var profitNeg = netProfit < 0;
+            h += '<div class="fhsAudit_profitRow">' +
+                '<div>' +
+                    '<div style="font-size:11px;color:#888;margin-bottom:2px;font-weight:500;">淨利潤 ' + _chk(profitMatch) + '</div>' +
+                    (adjAmt !== 0
+                        ? '<div style="font-size:11px;color:#888;">KPI口徑：' + _f(netProfit) + ' − ' + _f(adjAmt) +
+                          ' = <strong style="color:' + (kpiProfit >= 0 ? '#558B2F' : '#E63946') + ';">' + _f(kpiProfit) + '</strong></div>'
+                        : '') +
+                '</div>' +
+                '<div class="fhsAudit_profitAmt' + (profitNeg ? ' negative' : '') + '">' +
+                    (profitNeg ? '(−' + _f(Math.abs(netProfit)) + ')' : _f(netProfit)) +
+                '</div>' +
+            '</div>';
+            if (adjAmt !== 0) {
+                h += '<div class="fhsAudit_note" style="padding-left:0;">KPI口徑利潤 = 淨利潤 ' + _f(netProfit) + ' − 調整 ' + _f(adjAmt) + ' = ' + _f(kpiProfit) + '</div>';
+            }
+
+            // ④ 建議售價對照（有 item_sale_price 才顯示）
+            var hasSug = items.some(function(it){ return it.item_sale_price != null && parseFloat(it.item_sale_price) > 0; });
+            if (hasSug) {
+                h += '<div class="fhsAudit_sectionHdr fhsAudit_dimSection" style="margin-top:14px;"><span>④ 建議售價對照</span>' +
+                    '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">參考用 · 非確收</span></div>';
+                h += '<div class="fhsAudit_dimSection">';
+                items.forEach(function(it) {
+                    if (it.item_sale_price != null && parseFloat(it.item_sale_price) > 0) {
+                        h += _row(it.specification || it.product_sku || it.item_key || '品項', _f(it.item_sale_price), 'muted', 1);
+                    }
+                });
+                h += '<hr class="fhsAudit_divider_sub">';
+                h += '<div class="fhsAudit_row"><span class="fhsAudit_label" style="color:#888;font-weight:600;">建議總計</span>' +
+                    '<span class="fhsAudit_amount muted" style="font-size:13px;font-weight:700;">' + _f(sumSug) + '</span></div>';
+                var sugDiff = sumSug - finalSale;
+                if (Math.abs(sugDiff) > 0.01) {
+                    h += _row('與確收偏差', _fNeg(sugDiff), sugDiff < 0 ? 'deduct' : 'income');
+                    var pct = sumSug > 0 ? Math.round(Math.abs(sugDiff / sumSug) * 100) : 0;
+                    h += '<div class="fhsAudit_note" style="padding-left:0;">建議 ' + _f(sumSug) + ' vs 確收 ' + _f(finalSale) + '（' + (sugDiff < 0 ? '折讓' : '追加') + ' ' + pct + '%）</div>';
+                }
+                h += '</div>';
+            }
+
+            h += '</div>';
+            return h;
         }
 
         // Render order_items as editable cards
@@ -9761,27 +10070,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
         }
 
-        // Build read-only financial summary for Tab 2
+        // Build finance tab skeleton — full ledger lazy-loaded on tab activation (Phase C)
         function buildFinanceTabHtml(o) {
-            var rows = [
-                ['訂單編號', o.Order_ID || o.id || '—'],
-                ['客人姓名', o.Customer || o.Customer_Name || '—'],
-                ['售價',     '$' + (o.Final_Sale_Price != null ? o.Final_Sale_Price : '—')],
-                ['訂金',     '$' + (o.Deposit != null ? o.Deposit : '—')],
-                ['尾數',     '$' + (o.Balance != null ? o.Balance : '—')],
-                ['附加費',   '$' + (o.Additional_Fee != null ? o.Additional_Fee : '—')],
-                ['成本',     '$' + (o.Total_Cost != null ? o.Total_Cost : '—')],
-                ['利潤',     '$' + (o.Net_Profit != null ? o.Net_Profit : '—'), 'profit']
-            ];
-            var html = '<div style="padding:12px 4px;">';
-            rows.forEach(function(row) {
-                html += '<div class="fhs-finance-row">' +
-                    '<span class="fhs-finance-lbl">' + row[0] + '</span>' +
-                    '<span class="fhs-finance-val' + (row[2] ? ' ' + row[2] : '') + '">' + row[1] + '</span>' +
-                '</div>';
-            });
-            html += '</div>';
-            return html;
+            return '<div id="fhsAuditLoading" style="padding:32px;text-align:center;color:#888;font-size:13px;">⏳ 點擊「💰 財務」載入完整核對帳...</div>' +
+                   '<div id="fhsAuditLedger"></div>';
         }
 
         // Phase 3: Inline engraving quick-edit — Desktop hover ✏ / Mobile tap ✏
@@ -10794,6 +11086,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         function restoreSplits() {
+            var depCont = document.getElementById('depositSplitContainer');
+            var balCont = document.getElementById('balanceSplitContainer');
+            if (depCont) depCont.innerHTML = '';
+            if (balCont) balCont.innerHTML = '';
             renderPaymentSplits('deposit');
             renderPaymentSplits('balance');
         }

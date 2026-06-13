@@ -1,5 +1,34 @@
 # Changelog
 
+## [2026-06-13] ✨ Session 102 — 訂單計算核對帳（Audit Ledger）
+
+**範圍**：V42 `freehandsss_dashboardV42.html` 6 處修改；2 份治理文件更新
+
+### [FEAT] 💰 財務 Tab — 完整計算核對帳（Audit Ledger）
+- **替換**：舊 8 行簡單摘要 → 完整 4 區塊會計帳
+- **① 確收鏈**：訂金+尾款+附加費=確收金額 ✓/✗ 逐行顯示，差額紅字標示
+- **② 成本快照鏈**：每張訂單的每件品項展開 `drawing_cost / printing_cost / chain_cost / shipping_cost`（直讀 DB 四分量，不重演 G2/G3）
+- **③ 利潤結算**：確收 − 成本 = 淨利潤（雙底線會計格式），KPI 口徑（淨利潤 − adjustment）
+- **④ 建議售價對照**（弱化灰色）：`item_sale_price` per item，與確收偏差百分比
+- **結論摘要卡**：綠色「✓ 核對通過」/ 紅色「✗ N 項偏差」，數據品質燈號
+- **規則 ID 標籤**：每行附 `[G1]` `[G2]` 等藍色 badge
+
+### [FEAT] 架構 — Lazy-load 模式（對齊 Mode 2 pattern）
+- `switchModalTab('finance')` → 首次點擊觸發 `loadAuditLedger()`
+- 雙路 Supabase fetch：`orders?n8n_adjustment_notes` + `order_items?...drawing_cost,...,item_sale_price`
+- flag `_fhsAuditLoaded` 防重複載入，`openOrderModal` 重置
+
+### [FEAT] 視覺系統（ui-designer Phase A, Session 102）
+- 新增 CSS `fhsAudit_*` 命名空間（53 行 CSS 隔離，不污染全域）
+- 金額：`tabular-nums monospace` 右對齊；負數括號 `(−$xx)` 紅 #E63946
+- 三色語義：入帳棕 #B07D4C / 成本紅 #E63946 / 利潤橄欖綠 #558B2F
+- 小計單線 / 總計雙線 / 利潤四點雙線（`border-bottom: 4px double #333`）
+- 手機 `@media ≤767px`：字號縮減，禁點線引導，利潤大字 22→18px
+
+### [DOCS] 治理文件
+- `decisions.md`：新增 Session 102 設計決策記錄
+- `FHS_System_Logic_Overview.md`：新增 kgov 同步點（n8n/RPC 變動時檢查 `buildAuditLedgerHtml`）
+
 ## [2026-06-13] 🔧 Session 101 — restoreSplits 容器清空修復 + 9 單校正核實
 
 ### [FIX] restoreSplits() — 載入舊訂單後 deposit/balance 顯示 $790 而非存檔值

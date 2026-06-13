@@ -249,6 +249,17 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 | n8n Supabase Mirror Prep | `rollback_node_code` + backup: `.../Supabase_Mirror_Prep.json` |
 | Supabase RPC | 重新執行 `0012_sync_order_rpc.sql`（四欄保留，只回退 RPC 邏輯）|
 | V41 HTML | `git checkout Freehandsss_Dashboard/freehandsss_dashboardV41.html` |
+| V42 Audit Ledger | `git checkout Freehandsss_Dashboard/freehandsss_dashboardV42.html` |
+
+### kgov 同步點（Session 102 補入）
+
+> 若 n8n **Calculate Profit & Pack Items** 或 **Supabase Mirror Prep** 或 **財務 RPC** 邏輯變動，必須同步檢查 V42 `buildAuditLedgerHtml` 函式：
+> - 四分量欄位映射（`drawing_cost / printing_cost / chain_cost / shipping_cost`）
+> - `n8n_adjustment_notes` 顯示邏輯
+> - 確收鏈公式（`deposit + balance + additional_fee = final_sale_price`）
+> - KPI 口徑（`net_profit − adjustment_amount`）
+>
+> 觸發條件：欄位重命名 / 新成本欄位 / 確收語義變更（任何一項）→ 同步更新 `buildAuditLedgerHtml`。
 
 ---
 

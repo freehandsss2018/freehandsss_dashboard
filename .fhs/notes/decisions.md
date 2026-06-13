@@ -3,6 +3,19 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-13] (Session 102) 訂單計算核對帳（Audit Ledger）— 嵌入既有「💰 財務」Tab
+
+決策：在 `openOrderModal` 的「💰 財務」Tab 實作完整計算核對帳，取代舊的 8 行簡單摘要。
+架構決策：
+1. **嵌入位置**：複用既有 `fhsTabPane-finance` Tab（Phase 0 確認不需新 overlay/modal）
+2. **Lazy-load 模式**：採 `loadMode2Items` 同一模式，首次點擊才 fetch，flag `_fhsAuditLoaded`
+3. **資料來源雙 fetch**：`/orders?order_id=eq.{id}&select=n8n_adjustment_notes` + `/order_items?order_fhs_id=eq.{id}&select=...drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price`
+4. **不重演 G2/G3**：直接讀 DB 已存四分量（frontend calculatePricing 計算後 n8n pass-through 存入）
+5. **三種金額身份**：確收（income棕 #B07D4C）/ 成本快照（cost紅 #E63946）/ 建議售價（muted灰）
+6. **視覺規格**：ui-designer Phase A（Session 102）確立：雙底線會計結算線、規則 ID 藍標籤 `[G2]`、括號負數 `(−$xx)`
+影響檔案：`freehandsss_dashboardV42.html`（CSS block, openOrderModal, switchModalTab, buildFinanceTabHtml, loadAuditLedger, buildAuditLedgerHtml — 6 處修改）
+原因：Fat Mo 需要「操作員可手動核對計算邏輯」的稽核視圖，視覺體感為一級需求。
+
 [2026-06-11] (Session 90) mixed_member_surcharge 歸零決策
 
 決策：`cost_configurations.mixed_member_surcharge` 由 $300 改為 $0（豁免）。

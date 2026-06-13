@@ -8,10 +8,11 @@
 
 | 檔案 | 用途 |
 |---|---|
-| `Freehandsss_dashboard_current.html` | **正式生產環境** = V41（2026-05-16 Supabase-First 遷移完成） |
+| `Freehandsss_dashboard_current.html` | **正式生產環境** = V42（2026-06-13 Session 102 Audit Ledger 上線） |
 | `freehandsss_dashboardV36.html` | 舊版穩定基準 (Legacy Stable) |
 | `freehandsss_dashboardV40.html` | 前一版穩定基準（V40.8 — 移除嬰兒月齡 + 報價明細 breakdown）|
-| `freehandsss_dashboardV41.html` | **最新穩定基準**（V41 — 優化 Supabase 切換按鈕佈局；2026-05-20 修復備註欄批次色同步 bug）|
+| `freehandsss_dashboardV41.html` | V41 穩定基準（Supabase-First 遷移；2026-05-16）|
+| `freehandsss_dashboardV42.html` | **開發基線**（V42 — Audit Ledger + restoreSplits fix）|
 | `freehandsss_financial_overview.html` | **Financial Overview 頁面**（財務圖表中樞） |
 | `products.json` | 產品資料快取（非 live 資料；NAS 真正運作快取在 `.n8n/data/products.json`） |
 

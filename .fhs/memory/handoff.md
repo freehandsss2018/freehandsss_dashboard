@@ -1,9 +1,12 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-13（Session 101 — restoreSplits 修復 + 9 單校正核實）
+> 上次更新：2026-06-13（Session 102 — 訂單計算核對帳 Audit Ledger 上線）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+### 已確認完成（Session 102 核實）
+- ✅ **[FEAT] 訂單計算核對帳 Audit Ledger** — V42「💰 財務」Tab 完整替換：確收鏈/成本快照/利潤結算/建議售價對照四區塊；Lazy-load 雙 fetch；ui-designer Phase A 視覺規格；kgov sync point 落 FHS_System_Logic_Overview.md；升格 current + NAS 部署 PASS（Session 102）
+
 ### 已確認完成（Session 101 核實）
 - ✅ **9 單歷史資料校正** — Supabase live 查詢確認全部 9 單 drift=0，n8n Session 89 修復後自行回正，UPDATE 無需執行
 - ✅ **[FIX] restoreSplits 容器清空** — 修復載入舊訂單後 deposit/balance 顯示 $790 而非存檔值；根因 prevData 優先規則；修復 2 行 innerHTML=''（Session 101）
@@ -70,6 +73,35 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-13 (Session 102 — 訂單計算核對帳 Audit Ledger)
+
+## Session 102 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] 訂單計算核對帳（Audit Ledger）— V42「💰 財務」Tab 全面升級**
+  - 舊 8 行摘要 → 完整 4 區塊會計帳（確收鏈 / 成本快照 / 利潤結算 / 建議售價對照）
+  - Lazy-load 模式：switchModalTab('finance') → loadAuditLedger()，雙路 Supabase fetch
+  - 讀取 `order_items.drawing_cost / printing_cost / chain_cost / shipping_cost / item_sale_price`
+  - 核對邏輯：確收鏈公式驗算、成本加總 vs total_cost 交叉驗、利潤驗算、KPI 口徑
+  - 結論摘要卡：✓ 核對通過（綠）/ ✗ N 項偏差（紅）+ 逐條說明
+  - 升格 current：V42 (823,571 bytes) → `Freehandsss_dashboard_current.html`
+  - NAS upload：SHA256 = 90D15A5FB376B24101E9EAE5AE5D57B48D2C157CA429149EB432814A3151CFC3，三閘 PASS
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | `freehandsss_dashboardV42.html`（6 處）、`decisions.md`、`FHS_System_Logic_Overview.md`、`CHANGELOG.md`、`Freehandsss_Dashboard/README.md` |
+| CSS 命名空間 | `fhsAudit_*`（53 行，完全隔離） |
+| 新函式 | `loadAuditLedger()`、`buildAuditLedgerHtml()` |
+| kgov 同步點 | FHS_System_Logic_Overview.md §九 — n8n/RPC 變動時檢查 buildAuditLedgerHtml |
+
+【交付前雙紀律自檢】
+驗收：ui-designer Phase A 視覺規格落地（雙底線、規則 ID badge、三色語義）；NAS 三閘 PASS；所有 6 函式插入位置正確
+Subagent：✅ 用了 ui-designer subagent（Phase A 視覺設計）；主 context 實作
 
 ---
 
