@@ -9699,7 +9699,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var flags = [];
             if (!chainMatch)  flags.push({ cls: 'red', msg: '✗ 確收鏈不平衡：訂金+尾款+附加費（' + _f(confirmedRev) + '） ≠ 確收金額（' + _f(finalSale) + '）' });
             if (!profitMatch) flags.push({ cls: '',    msg: '⚠ 利潤驗算：確收−成本=' + _f(profitCalc) + '，DB=' + _f(netProfit) });
-            if (n8nNotes) flags.push({ cls: '', msg: '💰 折扣說明：' + n8nNotes + (n8nBasis ? '<br><span style="font-size:10px;color:#888;padding-left:18px;">依據：' + n8nBasis + '</span>' : '') });
+            if (n8nNotes) flags.push({ cls: '', msg: '💰 成本扣減說明：' + n8nNotes + (n8nBasis ? '<br><span style="font-size:10px;color:#888;padding-left:18px;">依據：' + n8nBasis + '</span>' : '') });
 
             var hasError  = flags.some(function(f){ return f.cls === 'red'; });
             var overallOk = !hasError;
