@@ -9590,7 +9590,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var results = await Promise.all([
                     fetch(
                         _V41_SB_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId) +
-                        '&select=n8n_adjustment_notes,handmodel_cost,keychain_cost,necklace_cost&limit=1',
+                        '&select=n8n_adjustment_notes,deposit,balance,handmodel_cost,keychain_cost,necklace_cost&limit=1',
                         { headers: hdr }
                     ),
                     fetch(
@@ -9647,15 +9647,23 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 return out;
             }
 
-            // Extract values — defensive dual-case (globalOrders may have Pascal_Case from normalizer)
-            var deposit   = parseFloat(o.Deposit   ?? o.deposit   ?? 0) || 0;
-            var balance   = parseFloat(o.Balance   ?? o.balance   ?? 0) || 0;
+            // Extract values
+            // deposit/balance NOT in mapOrder output → use extra (fresh Supabase fetch)
+            var deposit   = parseFloat(extra.deposit  ?? o.Deposit   ?? o.deposit   ?? 0) || 0;
+            var balance   = parseFloat(extra.balance  ?? o.Balance   ?? o.balance   ?? 0) || 0;
             var addFee    = parseFloat(o.Additional_Fee  ?? o.additional_fee   ?? 0) || 0;
             var finalSale = parseFloat(o.Final_Sale_Price ?? o.final_sale_price ?? 0) || 0;
             var totalCost = parseFloat(o.Total_Cost ?? o.total_cost ?? 0) || 0;
             var netProfit = parseFloat(o.Net_Profit ?? o.net_profit ?? 0) || 0;
             var adjAmt    = parseFloat(o.Adjustment_Amount ?? o.adjustment_amount ?? 0) || 0;
-            var n8nNotes  = (extra && extra.n8n_adjustment_notes) ? extra.n8n_adjustment_notes : '';
+            // n8n_adjustment_notes may be JSON array/object — coerce to string
+            var _rawNotes = extra && extra.n8n_adjustment_notes;
+            var n8nNotes  = '';
+            if (_rawNotes) {
+                if (typeof _rawNotes === 'string') n8nNotes = _rawNotes;
+                else if (Array.isArray(_rawNotes)) n8nNotes = _rawNotes.map(function(n){ return typeof n === 'object' ? (n.text || n.note || n.message || JSON.stringify(n)) : String(n); }).filter(Boolean).join(' · ');
+                else n8nNotes = JSON.stringify(_rawNotes);
+            }
 
             // Computed checks
             var confirmedRev = deposit + balance + addFee;
