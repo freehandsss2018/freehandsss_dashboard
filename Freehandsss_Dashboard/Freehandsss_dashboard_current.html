@@ -9659,7 +9659,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var totalCost = parseFloat(o.Total_Cost ?? o.total_cost ?? 0) || 0;
             var netProfit = parseFloat(o.Net_Profit ?? o.net_profit ?? 0) || 0;
             var adjAmt    = parseFloat(o.Adjustment_Amount ?? o.adjustment_amount ?? 0) || 0;
-            // n8n_adjustment_notes: array of {desc, type, basis, amount, ...} — render human-friendly
+            // n8n_adjustment_notes: filter to operator-relevant only (amount ≠ 0 = real deduction)
+            // Audit/comparison notes (amount=0 or missing) are developer-internal — hide from operator
             var _rawNotes = extra && extra.n8n_adjustment_notes;
             var n8nNotes = '', n8nBasis = '';
             if (_rawNotes) {
@@ -9668,10 +9669,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 } else {
                     var _arr = Array.isArray(_rawNotes) ? _rawNotes : [_rawNotes];
                     var _bases = [];
-                    n8nNotes = _arr.map(function(n) {
-                        if (typeof n !== 'object') return String(n);
+                    var _opNotes = _arr.filter(function(n) {
+                        // Only show notes with a real monetary adjustment (amount exists and ≠ 0)
+                        return typeof n === 'object' && n.amount != null && parseFloat(n.amount) !== 0;
+                    });
+                    n8nNotes = _opNotes.map(function(n) {
                         if (n.basis) _bases.push(n.basis);
-                        return n.desc || n.text || n.message || n.type || JSON.stringify(n);
+                        return n.desc || n.text || n.message || n.type || '';
                     }).filter(Boolean).join(' · ');
                     n8nBasis = _bases.join(' · ');
                 }
