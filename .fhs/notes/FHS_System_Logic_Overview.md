@@ -251,10 +251,16 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 | V41 HTML | `git checkout Freehandsss_Dashboard/freehandsss_dashboardV41.html` |
 | V42 Audit Ledger | `git checkout Freehandsss_Dashboard/freehandsss_dashboardV42.html` |
 
-### kgov 同步點（Session 102 補入）
+### kgov 同步點（Session 102 補入，Session 103 更新）
 
+> ② 成本快照鏈 v2 架構（Session 103 修復）：
+> - **主結構**：`orders.handmodel_cost / keychain_cost / necklace_cost`（30/30 populated，最可靠）
+> - **Problem E 扣減行**：`catSum − total_cost > 0` → 顯示「運費共享扣減」對賬行
+> - **per-item 次清單**：`order_items.subtotal_cost`（稀疏，舊單全空顯示藍色待補錄條）
+> - **四欄禁用**：`drawing/printing/chain/shipping_cost`（91% 空，Task A 未完成）→ 不再讀取
+>
 > 若 n8n **Calculate Profit & Pack Items** 或 **Supabase Mirror Prep** 或 **財務 RPC** 邏輯變動，必須同步檢查 V42 `buildAuditLedgerHtml` 函式：
-> - 四分量欄位映射（`drawing_cost / printing_cost / chain_cost / shipping_cost`）
+> - 訂單層類別欄映射（`handmodel_cost / keychain_cost / necklace_cost`）
 > - `n8n_adjustment_notes` 顯示邏輯
 > - 確收鏈公式（`deposit + balance + additional_fee = final_sale_price`）
 > - KPI 口徑（`net_profit − adjustment_amount`）

@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-13] (Session 103) Audit Ledger ② 成本快照鏈 v2 修復 — 改用訂單層類別欄
+
+決策：把 ② 成本快照鏈的資料來源從 `order_items` 四欄分解（91% 空）改為 `orders.handmodel/keychain/necklace_cost`（30/30 populated）。
+架構決策：
+1. **主結構改訂單層**：三類別欄作主顯示；四欄降為 Task A 未來補充欄（禁作成本主源）
+2. **Problem E 誠實呈現**：多件鎖匙扣/吊飾單 catSum > total_cost（$20/$35 差額）→ 派生「運費共享扣減」對賬行
+3. **待補錄雙態**：item 層全空 = 舊單藍色 info 條；部分有值 = 展示 subtotal 明細，無值格顯示「—（明細未記錄）」
+4. **costMatch 廢除**：移除基於四欄的假紅旗；保留確收鏈 + 利潤驗算
+5. **fetch 補全**：orders fetch 加 3 個類別欄；items fetch 加 subtotal_cost
+影響檔案：`freehandsss_dashboardV42.html`（loadAuditLedger 2 處 fetch select + buildAuditLedgerHtml 計算重構 + CSS 新增 .fhsAudit_pendingNote）
+原因：Session 102 實作依賴未完成的 Task A 四欄技術債，導致 91% 訂單顯示錯誤成本（例：06001007 木框顯示 $60 而非正確 $210）。診斷 3 輪 live Supabase 查詢後確認唯一可靠替代來源。
+
 [2026-06-13] (Session 102) 訂單計算核對帳（Audit Ledger）— 嵌入既有「💰 財務」Tab
 
 決策：在 `openOrderModal` 的「💰 財務」Tab 實作完整計算核對帳，取代舊的 8 行簡單摘要。

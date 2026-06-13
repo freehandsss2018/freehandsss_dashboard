@@ -2269,6 +2269,7 @@
         .fhsAudit_catTag.keychain{background:#e8f5e9;color:#2e7d32;}
         .fhsAudit_catTag.necklace{background:#e8eaf6;color:#303f9f;}
         .fhsAudit_itemHdr{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#333;padding:6px 0 2px;}
+        .fhsAudit_pendingNote{font-size:11px;color:#5c6e8a;background:#edf4ff;border:1px solid #c1d9f5;border-radius:4px;padding:6px 10px;margin:8px 0 2px;}
         @media (max-width:767px){
             .fhsAudit_wrap{padding:10px 10px 16px;font-size:12.5px;}
             .fhsAudit_amount{min-width:60px;font-size:12.5px;}
@@ -9589,13 +9590,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var results = await Promise.all([
                     fetch(
                         _V41_SB_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId) +
-                        '&select=n8n_adjustment_notes&limit=1',
+                        '&select=n8n_adjustment_notes,handmodel_cost,keychain_cost,necklace_cost&limit=1',
                         { headers: hdr }
                     ),
                     fetch(
                         _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
                         '&select=item_key,item_category,specification,product_sku,quantity,' +
-                        'item_base_cost,drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price' +
+                        'item_base_cost,subtotal_cost,drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price' +
                         '&order=item_category.asc,item_key.asc',
                         { headers: hdr }
                     )
@@ -9663,24 +9664,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var profitMatch  = Math.abs(profitCalc - netProfit) < 0.01;
             var kpiProfit    = netProfit - adjAmt;
 
-            // Sum four-column costs from order_items
-            var sumD = 0, sumP = 0, sumC = 0, sumS = 0, sumSug = 0;
+            // Order-level category costs (30/30 reliable — v2 cost structure)
+            var handmodelCost = parseFloat(o.Handmodel_Cost ?? o.handmodel_cost ?? extra.handmodel_cost ?? 0) || 0;
+            var keychainCost  = parseFloat(o.Keychain_Cost  ?? o.keychain_cost  ?? extra.keychain_cost  ?? 0) || 0;
+            var necklaceCost  = parseFloat(o.Necklace_Cost  ?? o.necklace_cost  ?? extra.necklace_cost  ?? 0) || 0;
+            var catSum        = handmodelCost + keychainCost + necklaceCost;
+            // Problem E: n8n deducts shipping from total_cost but NOT from category cols → catSum > totalCost
+            var shippingDeductAmt = Math.round(catSum - totalCost);
+
+            // Suggested price (sparse — item_sale_price new orders only)
+            var sumSug = 0;
             items.forEach(function(it) {
-                sumD   += parseFloat(it.drawing_cost   ?? 0) || 0;
-                sumP   += parseFloat(it.printing_cost  ?? 0) || 0;
-                sumC   += parseFloat(it.chain_cost     ?? 0) || 0;
-                sumS   += parseFloat(it.shipping_cost  ?? 0) || 0;
                 sumSug += parseFloat(it.item_sale_price ?? 0) || 0;
             });
-            var sumItemCost = sumD + sumP + sumC + sumS;
-            var costMatch   = items.length === 0 || Math.abs(sumItemCost - totalCost) < 1;
 
             // Flags
             var flags = [];
             if (!chainMatch)  flags.push({ cls: 'red', msg: '✗ 確收鏈不平衡：訂金+尾款+附加費（' + _f(confirmedRev) + '） ≠ 確收金額（' + _f(finalSale) + '）' });
-            if (!costMatch)   flags.push({ cls: '',    msg: '⚠ 品項成本加總 ' + _f(sumItemCost) + ' 與 n8n 總成本 ' + _f(totalCost) + ' 有差異' });
             if (!profitMatch) flags.push({ cls: '',    msg: '⚠ 利潤驗算：確收−成本=' + _f(profitCalc) + '，DB=' + _f(netProfit) });
-            if (items.length === 0) flags.push({ cls: '', msg: '⚠ 找不到品項成本記錄（order_items 為空）' });
             if (n8nNotes) flags.push({ cls: '', msg: 'ℹ n8n 備注：' + n8nNotes });
 
             var hasError  = flags.some(function(f){ return f.cls === 'red'; });
@@ -9724,59 +9725,59 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             h += '<div class="fhsAudit_sectionHdr" style="margin-top:14px;"><span>② 成本快照鏈</span>' +
                 '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">n8n 自動記帳 · 快照時間點</span></div>';
 
-            if (items.length === 0) {
-                h += '<div style="padding:16px;color:#aaa;font-size:12px;text-align:center;">（無品項成本記錄）</div>';
-            } else {
-                var catOrder = ['手模', '頸鏈', '鎖匙扣', '吊飾', '羊毛氈', '立體擺設'];
-                var grouped = {}, orderedCats = [];
-                items.forEach(function(it) {
-                    var cat = it.item_category || '其他';
-                    if (!grouped[cat]) grouped[cat] = [];
-                    grouped[cat].push(it);
-                });
-                catOrder.forEach(function(c) { if (grouped[c]) orderedCats.push(c); });
-                Object.keys(grouped).forEach(function(c) { if (orderedCats.indexOf(c) === -1) orderedCats.push(c); });
+            // Main: order-level category breakdown (30/30 reliable — single source of truth)
+            if (handmodelCost > 0) h += _row('手模成本',   _f(handmodelCost), 'cost', 1);
+            if (keychainCost  > 0) h += _row('鎖匙扣成本', _f(keychainCost),  'cost', 1);
+            if (necklaceCost  > 0) h += _row('吊飾成本',   _f(necklaceCost),  'cost', 1);
+            if (catSum === 0 && totalCost > 0) {
+                h += _row('成本（未分類）', _f(totalCost), 'cost', 1, null, '訂單層類別欄未記錄，以 total_cost 為準');
+            }
 
-                orderedCats.forEach(function(cat) {
-                    grouped[cat].forEach(function(it) {
-                        var label    = it.specification || it.product_sku || it.item_key || '品項';
-                        var qty      = parseInt(it.quantity) || 1;
-                        var catCls   = cat === '頸鏈' ? 'necklace' : cat === '鎖匙扣' ? 'keychain' : '';
-                        var catTag   = '<span class="fhsAudit_catTag ' + catCls + '">' + cat + '</span>';
-                        var drawing  = parseFloat(it.drawing_cost  ?? 0) || 0;
-                        var printing = parseFloat(it.printing_cost ?? 0) || 0;
-                        var chain    = parseFloat(it.chain_cost    ?? 0) || 0;
-                        var shipping = parseFloat(it.shipping_cost ?? 0) || 0;
-                        var itemSum  = drawing + printing + chain + shipping;
-
-                        h += '<div class="fhsAudit_itemHdr"><span>' + label + (qty > 1 ? ' ×' + qty : '') + '</span>' + catTag + '</div>';
-                        if (drawing  > 0) h += _row('畫圖費',           _f(drawing),  'cost', 1, 'G2');
-                        if (printing > 0) h += _row('打印費',            _f(printing), 'cost', 1);
-                        if (chain    > 0) h += _row('Chain費（Clasp）', _f(chain),    'cost', 1, 'G4');
-                        if (shipping > 0) h += _row('運費',              _f(shipping), 'cost', 1, 'G1');
-                        if (shipping < 0) h += _row('運費扣減', _fNeg(shipping), 'deduct', 1, 'G1', '多件扣減規則');
-                        if (drawing === 0 && printing === 0 && chain === 0 && shipping === 0) {
-                            h += '<div class="fhsAudit_note" style="padding-left:16px;">（此品項成本欄位為空）</div>';
-                        }
-                        h += '<div class="fhsAudit_subtotalRow"><span>' + label + ' 小計</span>' +
-                            '<span class="fhsAudit_amount cost" style="font-size:13px;">' + _f(itemSum) + '</span></div>';
-                    });
-                });
-
-                h += '<hr class="fhsAudit_divider_sub" style="margin-top:10px;">';
-                if (sumD > 0) h += _row('畫圖費合計',  _f(sumD), 'cost', 1);
-                if (sumP > 0) h += _row('打印費合計',  _f(sumP), 'cost', 1);
-                if (sumC > 0) h += _row('Chain費合計', _f(sumC), 'cost', 1);
-                if (sumS !== 0) h += _row('運費合計', _f(sumS), sumS < 0 ? 'deduct' : 'cost', 1);
+            // Problem E: catSum > totalCost = shipping deduction applied to total_cost but not category cols
+            if (shippingDeductAmt > 0 && shippingDeductAmt <= 200) {
+                h += '<div class="fhsAudit_subtotalRow"><span>類別小計</span>' +
+                    '<span class="fhsAudit_amount cost" style="font-size:13px;">' + _f(catSum) + '</span></div>';
+                h += _row('運費共享扣減（n8n）', _fNeg(-shippingDeductAmt), 'deduct', 1, 'G1', '多件同類型共享運費，已從 total_cost 扣除');
             }
 
             h += '<div class="fhsAudit_totalRow">' +
-                '<span>總成本</span>' +
-                (items.length > 0 ? _chk(costMatch) : '<span style="width:16px;"></span>') +
+                '<span>n8n 總成本</span>' +
                 '<span class="fhsAudit_amount cost" style="font-size:15px;">' + _f(totalCost) + '</span>' +
             '</div>';
-            if (items.length > 0 && !costMatch) {
-                h += '<div class="fhsAudit_note" style="color:#E63946;">品項加總 ' + _f(sumItemCost) + ' vs n8n總成本 ' + _f(totalCost) + '</div>';
+
+            // Per-item secondary list (sparse — item-level costs may not be backfilled for old orders)
+            if (items.length > 0) {
+                var anySubtotal = items.some(function(it){ return parseFloat(it.subtotal_cost ?? 0) > 0; });
+                if (!anySubtotal) {
+                    h += '<div class="fhsAudit_pendingNote">📋 舊訂單，品項分類明細待補錄（以上訂單層金額為準）</div>';
+                } else {
+                    h += '<hr class="fhsAudit_divider_sub" style="margin-top:8px;">';
+                    h += '<div style="font-size:10.5px;color:#888;padding:2px 0 6px;">品項明細</div>';
+                    var catOrder2 = ['手模', '頸鏈', '鎖匙扣', '吊飾', '羊毛氈', '立體擺設'];
+                    var grouped2 = {}, orderedCats2 = [];
+                    items.forEach(function(it) {
+                        var c2 = it.item_category || '其他';
+                        if (!grouped2[c2]) grouped2[c2] = [];
+                        grouped2[c2].push(it);
+                    });
+                    catOrder2.forEach(function(c) { if (grouped2[c]) orderedCats2.push(c); });
+                    Object.keys(grouped2).forEach(function(c) { if (orderedCats2.indexOf(c) === -1) orderedCats2.push(c); });
+                    orderedCats2.forEach(function(cat2) {
+                        grouped2[cat2].forEach(function(it) {
+                            var lbl2   = it.specification || it.product_sku || it.item_key || '品項';
+                            var qty2   = parseInt(it.quantity) || 1;
+                            var cCls2  = cat2 === '頸鏈' ? 'necklace' : cat2 === '鎖匙扣' ? 'keychain' : '';
+                            var cTag2  = '<span class="fhsAudit_catTag ' + cCls2 + '">' + cat2 + '</span>';
+                            var sub2   = parseFloat(it.subtotal_cost ?? 0) || 0;
+                            h += '<div class="fhsAudit_itemHdr"><span>' + lbl2 + (qty2 > 1 ? ' ×' + qty2 : '') + '</span>' + cTag2 + '</div>';
+                            if (sub2 > 0) {
+                                h += _row('成本小計', _f(sub2), 'cost', 1);
+                            } else {
+                                h += '<div class="fhsAudit_note" style="padding-left:16px;color:#aaa;">—（明細未記錄）</div>';
+                            }
+                        });
+                    });
+                }
             }
 
             // ③ 利潤結算

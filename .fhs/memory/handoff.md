@@ -1,9 +1,12 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-13（Session 102 — 訂單計算核對帳 Audit Ledger 上線）
+> 上次更新：2026-06-13（Session 103 — Audit Ledger ② 成本快照 v2 修復）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+### 已確認完成（Session 103 核實）
+- ✅ **[FIX] Audit Ledger ② 成本快照 v2** — 改用 `orders.handmodel/keychain/necklace_cost`（30/30）替代 91% 空的四欄；Problem E 對賬行（類別小計→運費共享扣減→total_cost）；舊單藍色待補錄 info 條；假紅旗 costMatch 移除；NAS 部署 PASS（Session 103）
+
 ### 已確認完成（Session 102 核實）
 - ✅ **[FEAT] 訂單計算核對帳 Audit Ledger** — V42「💰 財務」Tab 完整替換：確收鏈/成本快照/利潤結算/建議售價對照四區塊；Lazy-load 雙 fetch；ui-designer Phase A 視覺規格；kgov sync point 落 FHS_System_Logic_Overview.md；升格 current + NAS 部署 PASS（Session 102）
 

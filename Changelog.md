@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-06-13] 🔧 Session 103 — Audit Ledger ② 成本快照修復（v2）
+
+**範圍**：`freehandsss_dashboardV42.html` 2 函式修改（loadAuditLedger + buildAuditLedgerHtml）
+
+### [FIX] ② 成本快照鏈 — 從四欄分解改為訂單層類別結構
+- **根因**：Session 102 ② 區用 `drawing/printing/chain/shipping_cost` 四欄加總；79 item 中 72 個（91%）四欄全空（Task A 未完成），導致大多數訂單顯示 $0 或殘缺成本
+- **修復**：改以 `orders.handmodel_cost / keychain_cost / necklace_cost`（30/30 populated）為主結構
+- **Problem E 誠實呈現**：多件鎖匙扣/吊飾訂單 catSum > total_cost（運費共享扣減只套進 total_cost 未從類別欄扣）→ 新增「類別小計」→「(−$20) 運費共享扣減」→「n8n 總成本」三行對賬顯示
+- **舊單待補錄**：item 層 subtotal_cost 全空時顯示藍色 `📋 舊訂單，品項分類明細待補錄` 信息條，非紅旗；有值時展示品項 subtotal 明細
+- **fetch 升級**：orders fetch 加選 `handmodel_cost,keychain_cost,necklace_cost`；items fetch 加選 `subtotal_cost`
+- **costMatch 修正**：移除基於四欄 vs total_cost 的假紅旗；保留確收鏈 + 利潤驗算兩個真實核查
+
+### [STYLE] CSS
+- 新增 `.fhsAudit_pendingNote`：藍色系 info 條，區分「待補錄」與真錯誤
+
 ## [2026-06-13] ✨ Session 102 — 訂單計算核對帳（Audit Ledger）
 
 **範圍**：V42 `freehandsss_dashboardV42.html` 6 處修改；2 份治理文件更新
