@@ -9781,7 +9781,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     Object.keys(grouped2).forEach(function(c) { if (orderedCats2.indexOf(c) === -1) orderedCats2.push(c); });
                     orderedCats2.forEach(function(cat2) {
                         grouped2[cat2].forEach(function(it) {
-                            var lbl2   = it.specification || it.product_sku || it.item_key || '品項';
+                            // Show direction/spec only — strip engraving names from legacy item_key
+                            var _sp2 = it.specification || '';
+                            var _ik2 = it.item_key || '';
+                            var lbl2;
+                            if (cat2 === '立體擺設') {
+                                lbl2 = _sp2 || it.product_sku || '立體擺設';
+                            } else if (_sp2) {
+                                var _dm = _sp2.match(/[左右][手腳]/);
+                                lbl2 = _dm ? _dm[0] : _sp2.split(/[\s·]/)[0];
+                            } else if (_ik2.includes(' | ')) {
+                                var _dm2 = _ik2.match(/[左右][手腳]/);
+                                lbl2 = _dm2 ? _dm2[0] : (it.product_sku || cat2 || '品項');
+                            } else {
+                                lbl2 = it.product_sku || cat2 || '品項';
+                            }
                             var qty2   = parseInt(it.quantity) || 1;
                             var cCls2  = cat2 === '頸鏈' ? 'necklace' : cat2 === '鎖匙扣' ? 'keychain' : '';
                             var cTag2  = '<span class="fhsAudit_catTag ' + cCls2 + '">' + cat2 + '</span>';
@@ -9826,7 +9840,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 h += '<div class="fhsAudit_dimSection">';
                 items.forEach(function(it) {
                     if (it.item_sale_price != null && parseFloat(it.item_sale_price) > 0) {
-                        h += _row(it.specification || it.product_sku || it.item_key || '品項', _f(it.item_sale_price), 'muted', 1);
+                        var _spS = it.specification || '', _ikS = it.item_key || '', _lblS;
+                        if (_spS) { var _dmS = _spS.match(/[左右][手腳]/); _lblS = _dmS ? _dmS[0] : _spS.split(/[\s·]/)[0]; }
+                        else if (_ikS.includes(' | ')) { var _dmS2 = _ikS.match(/[左右][手腳]/); _lblS = _dmS2 ? _dmS2[0] : (it.product_sku || '品項'); }
+                        else _lblS = it.product_sku || '品項';
+                        h += _row(_lblS, _f(it.item_sale_price), 'muted', 1);
                     }
                 });
                 h += '<hr class="fhsAudit_divider_sub">';
