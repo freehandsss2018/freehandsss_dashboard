@@ -253,6 +253,11 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 
 ### kgov 同步點（Session 102 補入，Session 103 更新）
 
+> ① 確收鏈欄位來源注意（Session 103b 修復）：
+> - `deposit` / `balance` **不在** `mapOrder()` 輸出 → 必須從 `loadAuditLedger` extra fetch 讀取
+> - `orders` fetch select 必須包含 `deposit,balance`；提取用 `extra.deposit ?? o.Deposit`
+> - `n8n_adjustment_notes` 在 DB 為 JSON array/object，顯示前需 type guard 轉字串
+>
 > ② 成本快照鏈 v2 架構（Session 103 修復）：
 > - **主結構**：`orders.handmodel_cost / keychain_cost / necklace_cost`（30/30 populated，最可靠）
 > - **Problem E 扣減行**：`catSum − total_cost > 0` → 顯示「運費共享扣減」對賬行
