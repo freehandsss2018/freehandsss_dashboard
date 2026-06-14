@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-06-14 (Session 103 — Audit Ledger ② 成本快照 v2 + UX 優化): 🔧 V42 8 處修改 ✅
+
+**Scope**: ① 確收鏈 deposit/balance 來源修正（mapOrder 不含，改讀 Supabase extra）；② 成本快照改訂單層類別欄（handmodel/keychain/necklace_cost，30/30 populated）；n8n 備注 JSON 類型守衛+過濾（amount≠0）；品項標籤去人名；📊 核對帳 bsSheet 捷徑；成本扣減說明標籤優化
+**Result**: 木框4肢 $210 正確顯示；確收鏈 $5,680 正確計算；無 [object Object]；NAS PASS 826,758 bytes SHA256 E3DB41CF ✅
+
+## 2026-06-13 (Session 102 — 訂單計算核對帳 Audit Ledger): ✨ V42 6 處新功能 ✅
+
+**Scope**: 「💰 財務」Tab 完整 4 區塊 Audit Ledger（確收鏈/成本快照/利潤結算/建議售價對照）；Lazy-load 雙 fetch；ui-designer Phase A 視覺規格；kgov sync point
+**Result**: V42 升格 current；NAS SHA256 90D15A5F PASS ✅
+
 ## 2026-06-13 (Session 101 — restoreSplits 修復 + 9 單校正核實): 🔧 V42 HTML 2 行修復 ✅
 
 **Scope**: 9 單 Supabase live 核實（drift=0，無需 UPDATE） + restoreSplits() 容器清空修復（載入舊訂單 deposit/balance 顯示 $790 bug）

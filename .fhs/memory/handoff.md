@@ -1,9 +1,12 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-13（Session 103 — Audit Ledger ② 成本快照 v2 修復）
+> 上次更新：2026-06-14（Session 103 — Audit Ledger ② 成本快照 v2 修復 + UX 優化 + n8n 備注過濾）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
+| 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
+
 ### 已確認完成（Session 103 核實）
 - ✅ **[FIX] Audit Ledger ② 成本快照 v2** — 改用 `orders.handmodel/keychain/necklace_cost`（30/30）替代 91% 空的四欄；Problem E 對賬行（類別小計→運費共享扣減→total_cost）；舊單藍色待補錄 info 條；假紅旗 costMatch 移除；NAS 部署 PASS（Session 103）
 
@@ -76,6 +79,56 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-14 (Session 103 — Audit Ledger ② 成本快照 v2 + UX 優化)
+
+## Session 103 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] Audit Ledger ② 成本快照鏈 v2 — 改用訂單層類別欄**
+  - 根因：Session 102 ② 區用四欄（drawing/printing/chain/shipping_cost），79 item 中 72 個（91%）為空（Task A 未完成）→ 大多數訂單顯示 $0
+  - 修復：改用 `orders.handmodel_cost / keychain_cost / necklace_cost`（30/30 populated）
+  - Problem E 誠實呈現：多件鎖匙扣 catSum > total_cost → 新增「類別小計 → 運費共享扣減（n8n）→ n8n 總成本」三行對賬
+  - 舊單：`subtotal_cost` 全空時顯示藍色 `📋 舊訂單，品項分類明細待補錄`，非紅旗
+  - 假紅旗 costMatch 移除
+
+- ✅ **[FIX] 確收鏈不平衡（deposit/balance 來源錯誤）**
+  - 根因：`mapOrder()` return object 不包含 `Deposit`/`Balance` 欄位（見 line 12800-12822）
+  - 修復：orders fetch 加選 `deposit,balance`；extraction 改為 `parseFloat(extra.deposit ?? o.Deposit ?? ...)`
+
+- ✅ **[FIX] n8n 備注 [object Object] → 人性化文字**
+  - 根因：`n8n_adjustment_notes` 為 JSON 陣列，直接字串拼接顯示 `[object Object]`
+  - 修復：Array.isArray 類型守衛 + `amount !== 0` 過濾（只顯示有實際金額的操作員可見備注）
+  - 系統審計備注（四欄差異比對、Task A 收斂律等）不再顯示
+
+- ✅ **[UX] 品項標題去除刻字人名**
+  - `specification` 欄刻字人名（如「Edwin Left Hand」）改提取方向關鍵字（左手/右手/左腳/右腳）
+  - 立體擺設：直接用 specification / product_sku
+
+- ✅ **[FEAT] 更多（bsSheet）加「📊 核對帳」捷徑**
+  - bsSheet HTML 新增 `id="bsBtnAudit"` 按鈕
+  - `openBsSheet()` 動態綁線：`closeBsSheet()` + `openOrderModal(orderId, 'finance')`
+
+- ✅ **[UX] 成本扣減說明標籤優化**
+  - `ℹ n8n 備注` → `💰 折扣說明` → `💰 成本扣減說明`（避免「折扣」歧義）
+
+- ✅ **NAS 部署 PASS** — `Freehandsss_dashboard_current.html` 826,758 bytes，SHA256 E3DB41CF
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | `freehandsss_dashboardV42.html`（8 處）、`CHANGELOG.md`、`decisions.md`、`FHS_System_Logic_Overview.md` |
+| key finding | `mapOrder()` 不含 `deposit`/`balance`，必須從 Supabase fresh fetch（`extra`）讀取 |
+| n8n_adjustment_notes | JSON 陣列，需 Array.isArray 守衛 + `amount !== 0` 過濾 |
+| CSS | `.fhsAudit_pendingNote`（藍色 info 條） |
+| Commits | Session 103: a–h（9 commits，0211d3d 最新） |
+
+【交付前雙紀律自檢】
+驗收：確收鏈正確讀 deposit/balance（fresh fetch）；② 成本顯示木框4肢 $210（非 $60）；n8n 備注人性化（無 [object Object]）；品項標籤無人名；📊 核對帳捷徑可用；NAS 三閘 PASS
+Subagent：❌ 未用 subagent（延續 Session 103，Grep + Read + Edit 逐步修復）
 
 ---
 
