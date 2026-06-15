@@ -952,6 +952,20 @@
         .dlv-badge-red    { background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; }
         .dlv-badge-yellow { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
         .dlv-badge-green  { background:#dcfce7; color:#16a34a; border:1px solid #86efac; }
+        /* 手機 accordion：整個訂單資訊卡（單號＋日期/名稱＋狀態） */
+        .acc-dlv-card { display:flex; flex-direction:column; gap:2px; border-radius:9px; padding:4px 8px; }
+        .acc-dlv-card.dlv-card-green  { background:#dcfce7; border:1px solid #86efac; }
+        .acc-dlv-card.dlv-card-yellow { background:#fef3c7; border:1px solid #fcd34d; }
+        .acc-dlv-card.dlv-card-red    { background:#fee2e2; border:1px solid #fca5a5; }
+        /* 單號色保留原棕色 */
+        .acc-dlv-card .acc-order-id { color:var(--fhs-accent); }
+        /* 第二行：日期/名稱靠左，狀態靠右 */
+        .acc-meta-row { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+        .acc-meta-row .acc-order-meta { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; color:var(--fhs-text-secondary); }
+        .acc-dlv-status { flex-shrink:0; font-size:10px; font-weight:700; white-space:nowrap; cursor:pointer; }
+        .dlv-card-green  .acc-dlv-status { color:#16a34a; }
+        .dlv-card-yellow .acc-dlv-status { color:#92400e; }
+        .dlv-card-red    .acc-dlv-status { color:#b91c1c; }
         /* 交貨期統計卡 */
         .dlv-stats-card { display:flex; gap:8px; margin-top:4px; flex-wrap:wrap; }
         .dlv-stat-block { flex:1; min-width:80px; padding:10px 8px; border-radius:8px; cursor:pointer; text-align:center; transition:transform .1s; user-select:none; }
@@ -1338,10 +1352,57 @@
 
         .acc-item-controls {
             display: flex;
-            gap: 6px;
+            gap: 8px;
+            align-items: flex-end;
+            flex-wrap: nowrap;
+            margin-top: 8px;
+        }
+        .acc-item-controls .acc-ctrl-fin {
+            flex: 0 0 auto;
+            align-self: flex-end;
+            height: 30px;
+            display: flex;
             align-items: center;
-            flex-wrap: wrap;
+        }
+        .acc-item-controls .acc-ctrl-batch { flex: 0 0 88px; display: flex; flex-direction: column; gap: 3px; }
+        .acc-item-controls .acc-ctrl-status { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .acc-item-controls .acc-ctrl-batch input,
+        .acc-item-controls .acc-ctrl-status select {
+            width: 100%;
+            height: 30px;
+            box-sizing: border-box;
+            padding: 4px 8px;
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            background: var(--fhs-bg-surface, #fff);
+            color: var(--fhs-text-primary);
+        }
+        .acc-item-controls .acc-ctrl-batch input { text-align: center; }
+
+        /* 刻字列 — 標籤左、文字佔滿換行、編輯鈕頂端對齊 */
+        .acc-eng-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
             margin-top: 6px;
+            padding: 5px 8px;
+            background: var(--fhs-bg-elevated, #F0EBE4);
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-sm);
+        }
+        .acc-eng-row .acc-field-label { flex-shrink: 0; line-height: 1.6; }
+        .acc-eng-row .acc-eng-text {
+            flex: 1;
+            min-width: 0;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+            word-break: break-word;
+            line-height: 1.6;
+        }
+        .acc-eng-row .acc-eng-edit {
+            background: none; border: none; font-size: 13px; cursor: pointer;
+            padding: 0 2px; color: #3a5fc8; opacity: .8; flex-shrink: 0; line-height: 1.6;
         }
 
         .acc-notes-textarea {
@@ -2469,7 +2530,7 @@
             }
             .swipe-underlay {
                 position: absolute;
-                top: 0; right: 0; bottom: 0;
+                top: 0; right: 0;
                 width: 140px;
                 display: flex;
                 align-items: stretch;
@@ -2497,6 +2558,7 @@
                 padding: 0;
                 font-size: 11px;
                 font-weight: 600;
+                touch-action: manipulation;
                 line-height: 1.2;
                 min-height: 44px;
                 -webkit-tap-highlight-color: transparent;
@@ -2527,6 +2589,14 @@
             }
             .swipe-row-wrapper.is-open .swipe-content {
                 transform: translateX(-140px);
+            }
+            /* 展開細節 + 左滑揭示按鈕並存：content 左移 -140 露出按鈕，
+               body 反向 +140 補回全寬（按鈕欄只佔 header 高，body 在其下方全寬延展）*/
+            .swipe-row-wrapper.is-open .acc-order { overflow: visible; }
+            .swipe-row-wrapper.is-open .acc-order.open .acc-order-body {
+                transform: translateX(140px);
+                background: var(--fhs-bg-card);
+                border-radius: 0 0 var(--radius-lg) var(--radius-lg);
             }
 
             /* ── 最愛 accent bar（border-left 方案）── */
@@ -2845,6 +2915,7 @@
         }
         .bs-icon-badge--a { background-color: var(--fhs-accent); }
         .bs-icon-badge--b { background-color: #457B9D; }
+        .bs-icon-badge--audit { background-color: #16a34a; }
 
         /* ================================================================
            V42 AG Stitch Snippets — 組件 3: iOS Segmented Control 指示器
@@ -2916,6 +2987,13 @@
             </div>
             <span>金屬 IG 訊息</span>
         </button></li>
+        <li><button class="bs-item" type="button" id="bsBtnAudit" onclick="closeBsSheet()">
+            <div class="bs-icon-wrapper">
+                <svg width="20" height="20" aria-hidden="true"><use href="#icon-message-circle"/></svg>
+                <span class="bs-icon-badge bs-icon-badge--audit">$</span>
+            </div>
+            <span>核對帳單</span>
+        </button></li>
         <li><button class="bs-item" type="button" id="bsBtnEdit" onclick="closeBsSheet()">
             <svg width="20" height="20" aria-hidden="true"><use href="#icon-square-pen"/></svg><span>編輯訂單</span>
         </button></li>
@@ -2923,10 +3001,7 @@
             <svg width="20" height="20" aria-hidden="true"><use href="#icon-star"/></svg><span id="bsStarLabel">加入最愛</span>
         </button></li>
         <li><button class="bs-item" type="button" id="bsBtnArchive" onclick="closeBsSheet()">
-            <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg><span>封存訂單</span>
-        </button></li>
-        <li><button class="bs-item" type="button" id="bsBtnAudit" onclick="closeBsSheet()">
-            <svg width="20" height="20" aria-hidden="true"><use href="#icon-calculator"/></svg><span>📊 核對帳</span>
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg><span>完成訂單</span>
         </button></li>
         <li class="bs-divider" role="separator" aria-hidden="true"></li>
         <li><button class="bs-item bs-item--danger" type="button" id="bsBtnDelete" onclick="closeBsSheet()">
@@ -2940,7 +3015,7 @@
 <div class="fhs-toast" id="fhsToast" role="status" aria-live="polite" aria-atomic="true">
     <div class="fhs-toast-progress" id="fhsToastProgress"></div>
     <div class="fhs-toast-body">
-        <span class="fhs-toast-msg" id="fhsToastMsg">已封存訂單</span>
+        <span class="fhs-toast-msg" id="fhsToastMsg">已完成訂單</span>
         <button class="fhs-toast-undo" type="button" id="fhsToastUndoBtn">
             <svg width="16" height="16" aria-hidden="true"><use href="#icon-undo-2"/></svg>復原
         </button>
@@ -3243,11 +3318,12 @@
                 </table>
             </div>
 
-            <!-- V42 Segmented Control: 進行中 / 已封存 (mobile only) -->
+            <!-- V42 Segmented Control: 全部 / 進行中 / 已完成 (mobile only) -->
             <div id="fhsSegWrapper">
                 <div class="fhs-seg-ctrl" id="fhsSegCtrl" role="tablist" aria-label="訂單分類">
+                    <button class="fhs-seg-btn" type="button" role="tab" data-tab="all" onclick="setSegTab('all')">全部</button>
                     <button class="fhs-seg-btn is-active" type="button" role="tab" data-tab="active" onclick="setSegTab('active')">進行中</button>
-                    <button class="fhs-seg-btn" type="button" role="tab" data-tab="archived" onclick="setSegTab('archived')">已封存</button>
+                    <button class="fhs-seg-btn" type="button" role="tab" data-tab="archived" onclick="setSegTab('archived')">已完成</button>
                 </div>
             </div>
 
@@ -3307,7 +3383,7 @@
         <!-- ── 方案B：訂單類型確認區塊 ── -->
         <div class="order-type-confirm" id="orderTypeConfirm">
             <div class="confirm-title">📋 訂單類型確認</div>
-            <div class="confirm-desc">此訂單是否包含「立體擺設」取模服務？</div>
+            <div class="confirm-desc">此訂單是否包含「手模擺設」取模服務？</div>
             <div class="confirm-options">
                 <div class="confirm-option selected-yes" id="confirmOptNo" onclick="selectOrderType('no')">
                     <div class="radio-circle" id="rcNo">
@@ -3331,11 +3407,11 @@
             </div>
         </div>
         <div class="cost-included-badge" id="costIncludedBadge" style="display:none;">
-            <span>✓</span><span>立體擺設成本 $210 已計入</span>
+            <span>✓</span><span>手模擺設成本 $210 已計入</span>
         </div>
 
         <div class="toggle-row" id="toggleRowP">
-            <strong>🎨 立體擺設款式</strong>
+            <strong>🎨 手模擺設款式</strong>
             <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this); _syncOrderTypeUI(this.checked)"> <span
                     class="slider"></span></label>
         </div>
@@ -3378,7 +3454,7 @@
         </div>
 
         <div class="toggle-row">
-            <strong>🔑 金屬鎖匙扣</strong>
+            <strong>🔑 鎖匙扣</strong>
             <label class="switch"><input type="checkbox" id="enableK" onchange="toggleAddon('contentK', this)"> <span
                     class="slider"></span></label>
         </div>
@@ -3598,7 +3674,7 @@
         </div>
 
         <div class="toggle-row">
-            <strong>✨ 純銀頸鏈吊飾</strong>
+            <strong>✨ 頸鏈吊飾</strong>
             <label class="switch"><input type="checkbox" id="enableM" onchange="toggleAddon('contentM', this)"> <span
                     class="slider"></span></label>
         </div>
@@ -5549,7 +5625,7 @@
         // v1：原版完整格式（逐字保留，作為一鍵還原依據）
         function buildCategoryA_v1(orderId, custInfo, finInfo, disclaimer, noticeA) {
             const sub = document.getElementById("pSubCat").value;
-            let detailsA = `【產品資訊】\n產品類別：立體擺設 (${sub})\n`;
+            let detailsA = `【產品資訊】\n產品類別：手模擺設 (${sub})\n`;
             const _lightSuffix = document.getElementById('l_light_en')?.checked ? '+燈' : '';
             if (sub === "木框款式") detailsA += `木框色款：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}\n`;
             if (sub === "玻璃瓶款式") detailsA += `底座顏色：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}\n`;
@@ -6002,7 +6078,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             };
 
             if (hasMainProduct || items.some(i => i.isAccessory)) {
-                logs.push(_catHdr('#FFF3E0','#E65100','#FFCC80','🎨 立體擺設 + 配件'));
+                logs.push(_catHdr('#FFF3E0','#E65100','#FFCC80','🎨 手模擺設 + 配件'));
             }
 
             items.forEach((item, globalIndex) => {
@@ -6168,7 +6244,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 });
             }
 
-            if (metalItems.length > 0) logs.push(_catHdr('#ECEFF1','#37474F','#B0BEC5','🔑 金屬鎖匙扣'));
+            if (metalItems.length > 0) logs.push(_catHdr('#ECEFF1','#37474F','#B0BEC5','🔑 鎖匙扣'));
             processTierPricing(metalItems, '金屬');
 
             // --- 純銀吊飾 頸鏈組計價（總吊飾數合併，不分部位）---
@@ -6218,7 +6294,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 window.fhsNecklaceGroups = _groups;
 
                 const necklaces = Math.ceil(totalCharms / 2);
-                logs.push(_catHdr('#EDE7F6','#4527A0','#B39DDB','💍 純銀頸鏈吊飾'));
+                logs.push(_catHdr('#EDE7F6','#4527A0','#B39DDB','💍 頸鏈吊飾'));
                 logs.push(`💍 <b>吊飾</b> ${totalCharms}個 / ${necklaces}條頸鏈: $${silverPrice}`);
             }
             
@@ -7385,7 +7461,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.onload = async () => {
             console.log("FHS Dashboard V36.2 Initialized");
             try {
-                await switchMode('create');
+                // Session 104: 預設落地視圖 = 訂單總覽（原為 'create' 新增表單）。
+                // 仍呼叫下方表單初始化，確保使用者切到「新增」時表單已就緒。
+                await switchMode('review');
                 updateTimeOptions();
                 renderLimbGrid();
                 updateFamilyParts();
@@ -7459,7 +7537,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             let emoji = "📦";
             if (rawID.includes('_K_') || combinedSearch.includes('鎖匙扣')) { category = "🔑 鎖匙扣"; emoji = "🔑"; }
             else if (rawID.includes('_M_') || combinedSearch.search(/吊飾|頸鏈/) > -1) { category = "💍 純銀吊飾"; emoji = "💍"; }
-            else if (rawID.includes('_P_') || combinedSearch.search(/擺設|木框|玻璃/) > -1) { category = "🎨 立體擺設"; emoji = "🎨"; }
+            else if (rawID.includes('_P_') || combinedSearch.search(/擺設|木框|玻璃/) > -1) { category = "🎨 手模擺設"; emoji = "🎨"; }
             else if (rawID.includes('_W_WOOL') || combinedSearch.includes('羊毛氈')) { category = "🧸 羊毛氈公仔"; emoji = "🧸"; }
             else if (rawID.includes('_L_LIGHTS') || combinedSearch.includes('燈飾')) { category = "💡 燈飾"; emoji = "💡"; }
             
@@ -7474,11 +7552,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 else if (category.includes('吊飾') || category.includes('頸鏈')) material = "✨ 925銀";
             }
 
-            // 5. 立體擺設專屬：款式與肢數
+            // 5. 手模擺設專屬：款式與肢數
             let style = "";
             let theme = "";
             let count = "";
-            if (category.includes('立體擺設')) {
+            if (category.includes('手模擺設')) {
                 if (combinedSearch.includes('木框')) style = "🖼️ 木框";
                 else if (combinedSearch.search(/玻璃[瓶罩]|瓶/) > -1) style = "🧴 玻璃瓶";
                 if (combinedSearch.includes('粉紅')) theme = "🌸 粉紅";
@@ -7892,6 +7970,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow" style="cursor:pointer;" onclick="jumpToDlvCard(\'yellow\')">⚠️ 剩' + d + '天</span>';
             return '<span class="dlv-badge dlv-badge-green" style="cursor:pointer;" onclick="jumpToDlvCard(\'green\')">✓ 正常(剩' + Number(r.days_remaining) + '天)</span>';
         }
+        // 手機 accordion header card：回傳 urgency CSS class
+        function _dlvCardClass(orderId) {
+            var r = window._dlvMap && window._dlvMap.get(orderId);
+            if (!r) return '';
+            if (r.urgency === 'overdue' || r.urgency === 'due_today') return 'dlv-card-red';
+            if (r.urgency === 'warn') return 'dlv-card-yellow';
+            return 'dlv-card-green';
+        }
+        // 手機 accordion header card：回傳狀態純文字（不含 HTML span）
+        function _dlvStatusText(orderId) {
+            var r = window._dlvMap && window._dlvMap.get(orderId);
+            if (!r) return '';
+            var d = Math.abs(Number(r.days_remaining));
+            if (r.urgency === 'overdue')   return '🔴 逾期' + d + '天';
+            if (r.urgency === 'due_today') return '🔴 今日到期';
+            if (r.urgency === 'warn')      return '⚠️ 剩' + d + '天';
+            return '✓ 正常(剩' + Number(r.days_remaining) + '天)';
+        }
 
         async function initDeliveryStatsCard() {
             var card = document.getElementById('dlvStatsCard');
@@ -8081,10 +8177,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
                             badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
                         }
-                        if (!dimensions.category.includes('立體擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
+                        if (!dimensions.category.includes('手模擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
                         var _accLimbParsed = null;
                         try { if (item.LimbParts) _accLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
-                        var _accIs立體 = dimensions.category.includes('立體擺設');
+                        var _accIs立體 = dimensions.category.includes('手模擺設');
                         // Target badge: always suppressed for 立體擺設 (limb badges replace it)
                         if (dimensions.target && !_accIs立體) {
                             let tarClass = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
@@ -8119,13 +8215,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         } else if (dimensions.count) {
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
-                        if (qty >= 1 && !dimensions.category.includes('立體擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
+                        if (qty >= 1 && !dimensions.category.includes('手模擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
                         // 加購配件 badge：合併至第一個立體擺設 card
-                        if (_accHasWool && !_accWoolBadgeShown && dimensions.category.includes('立體擺設')) {
+                        if (_accHasWool && !_accWoolBadgeShown && dimensions.category.includes('手模擺設')) {
                             _accWoolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
                         }
-                        if (_accHasLight && !_accLightBadgeShown && dimensions.category.includes('立體擺設')) {
+                        if (_accHasLight && !_accLightBadgeShown && dimensions.category.includes('手模擺設')) {
                             _accLightBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600;">💡 燈飾</span>`;
                         }
@@ -8136,10 +8232,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const _accItemKeyEsc = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                         const _accEngEsc = _accEngStrip.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                         if (_accEngStrip && _accEngStrip !== '待定' && _accEngStrip !== '不適用') {
-                            engText = `<div class="acc-field-row" style="margin-top:4px;display:flex;align-items:center;gap:4px;">
+                            engText = `<div class="acc-eng-row">
                                 <span class="acc-field-label">✂️ 刻字</span>
-                                <span class="acc-field-value" style="flex:1;">${_accEngStrip}</span>
-                                <button onclick="inlineEditEngraving('${o.id}','${_accItemKeyEsc}','${_accEngEsc}')" style="background:none;border:none;font-size:13px;cursor:pointer;padding:0 2px;color:#3a5fc8;opacity:.8;flex-shrink:0;" title="快速編輯刻字">✏</button>
+                                <span class="acc-eng-text">${_accEngStrip}</span>
+                                <button class="acc-eng-edit" onclick="inlineEditEngraving('${o.id}','${_accItemKeyEsc}','${_accEngEsc}')" title="快速編輯刻字">✏</button>
                             </div>`;
                         }
 
@@ -8164,25 +8260,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         <div class="acc-item-card" style="border-left: 3px solid ${rowBatchCol};">
                             <div class="acc-item-badges">${badgeHtml}</div>
                             ${engText}
-                            ${_accDrawerHtml}
                             <div class="acc-item-controls">
-                                ${_accFinBtn}
-                                <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
+                                <div class="acc-ctrl-batch">
                                     <span class="acc-field-label">🏷️ 批次</span>
                                     <input type="text"
                                         id="acc-batch-${o.id}-${idx}"
                                         value="${rowBatch}"
                                         placeholder="批次"
                                         inputmode="numeric"
-                                        style="width:80px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); font-size:12px; text-align:center;"
                                         onfocus="batchInputFocus(this)"
                                         oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
                                         onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'acc-batch-${o.id}-${idx}', ${idx})">
                                 </div>
-                                <div style="display:flex; flex-direction:column; gap:2px; flex:2;">
+                                <div class="acc-ctrl-status">
                                     <span class="acc-field-label">🚥 進度</span>
                                     <select id="acc-status-${o.id}-${idx}"
-                                        style="font-size:12px; padding:4px 6px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); width:100%;"
                                         onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx});
                                                   var _adj = document.getElementById('acc-adj-wrapper-${o.id}-${idx}');
                                                   if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
@@ -8190,7 +8282,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                             var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
                                             var _cat = (dimensions.category || item.Category || '').toString();
                                             var _opts = [];
-                                            if (_cat.indexOf('立體擺設') !== -1) {
+                                            if (_cat.indexOf('手模擺設') !== -1) {
                                                 _opts = [
                                                     ['已book日期','已book日期'],
                                                     ['已取模','已取模'],
@@ -8259,17 +8351,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         </button>
                         <button class="swipe-btn swipe-btn--archive" type="button" onclick="event.stopPropagation(); triggerArchiveOrder('${o.id}')">
                             <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg>
-                            <span>封存</span>
+                            <span>完成</span>
                         </button>
                     </div>
                     <div class="swipe-content">
                         <div class="acc-order" id="acc-order-${o.id}">
                             <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
                                 <div class="acc-order-header-left">
-                                    <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
                                     ${_detailBtnsM}
-                                    <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
-                                    ${_dlvBadgeHtml(o.Order_ID)}
+                                    <div class="acc-dlv-card ${_dlvCardClass(o.Order_ID)}">
+                                        <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
+                                        <div class="acc-meta-row">
+                                            <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
+                                            ${_dlvStatusText(o.Order_ID) ? `<span class="acc-dlv-status" onclick="event.stopPropagation();jumpToDlvCard('${_dlvCardClass(o.Order_ID).replace('dlv-card-','')}')">${_dlvStatusText(o.Order_ID)}</span>` : ''}
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="acc-order-header-right">
                                     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
@@ -8485,11 +8581,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             else if (dimensions.material.includes('金')) matClass = 'badge-mat-金';
                             badgeHtml += `<span class="review-badge ${matClass}">${dimensions.material}</span>`;
                         }
-                        if (!dimensions.category.includes('立體擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
+                        if (!dimensions.category.includes('手模擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
 
                         var _tblLimbParsed = null;
                         try { if (item.LimbParts) _tblLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
-                        var _tblIs立體 = dimensions.category.includes('立體擺設');
+                        var _tblIs立體 = dimensions.category.includes('手模擺設');
 
                         // 對象標籤：立體擺設一律改以個別人物肢數 badge 取代
                         if (dimensions.target && !_tblIs立體) {
@@ -8539,17 +8635,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         }
 
                         // 加購配件 badge：合併至第一個立體擺設列
-                        if (_hasWool && !_woolBadgeShown && dimensions.category.includes('立體擺設')) {
+                        if (_hasWool && !_woolBadgeShown && dimensions.category.includes('手模擺設')) {
                             _woolBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600;">🧸 羊毛氈公仔</span>`;
                         }
-                        if (_hasLight && !_lightBadgeShown && dimensions.category.includes('立體擺設')) {
+                        if (_hasLight && !_lightBadgeShown && dimensions.category.includes('手模擺設')) {
                             _lightBadgeShown = true;
                             badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600;">💡 燈飾</span>`;
                         }
 
                         // 數量標籤：立體擺設是套裝，不顯示 x1
-                        if (qty >= 1 && !dimensions.category.includes('立體擺設')) {
+                        if (qty >= 1 && !dimensions.category.includes('手模擺設')) {
                             badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
                         }
                         
@@ -8664,7 +8760,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
                                         var _cat = (dimensions.category || item.Category || '').toString();
                                         var _opts = [];
-                                        if (_cat.indexOf('立體擺設') !== -1) {
+                                        if (_cat.indexOf('手模擺設') !== -1) {
                                             _opts = [
                                                 ['已book日期','已book日期'],
                                                 ['已取模','已取模'],
@@ -9793,7 +9889,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             var _ik2 = it.item_key || '';
                             var lbl2;
                             if (cat2 === '立體擺設') {
-                                lbl2 = _sp2 || it.product_sku || '立體擺設';
+                                lbl2 = _sp2 || it.product_sku || '手模擺設';
                             } else if (_sp2) {
                                 var _dm = _sp2.match(/[左右][手腳]/);
                                 lbl2 = _dm ? _dm[0] : _sp2.split(/[\s·]/)[0];
@@ -9882,7 +9978,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             // 立體擺設 — spec may hold frame/limb info (e.g. "木框 4肢")
             if (ik.includes('_P_MAIN') || cat === '立體擺設') {
-                return sp ? '立體擺設 · ' + sp : '立體擺設';
+                return sp ? '手模擺設 · ' + sp : '手模擺設';
             }
             // 羊毛氈
             if (ik.includes('_W_WOOL') || ikO.includes('羊毛')) {
@@ -10547,7 +10643,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 { i: { Item_ID: 'FHS-K_LH', Product: '嬰兒鎖匙扣' }, e: '👶 嬰兒 / 🔑 鎖匙扣' },
                 { i: { Item_ID: 'FHS-K_E_RH', Product: '大寶鎖匙扣' }, e: '👦 大寶 / ✋ 右手' },
                 { i: { Item_ID: 'FHS-M_LH', Product: '嬰兒吊飾-925銀' }, e: '✨ 925銀 / 💍 純銀吊飾' },
-                { i: { Item_ID: 'FHS-P_WOOD', Product: '木框套裝(4肢)' }, e: '🎨 立體擺設 / ✋🦶 4肢' }
+                { i: { Item_ID: 'FHS-P_WOOD', Product: '木框套裝(4肢)' }, e: '🎨 手模擺設 / ✋🦶 4肢' }
             ];
 
             samples.forEach(s => {
@@ -11409,7 +11505,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             let startX = 0, startY = 0, currentX = 0;
             let isSwiping = false;
             let activeWrapper = null, activeContent = null, isOpen = false;
-            const maxSlide = 140, threshold = 40;
+            const maxSlide = 140, threshold = 64;
 
             function bindSwipeContainer() {
                 const container = document.getElementById('reviewAccordionContainer');
@@ -11419,6 +11515,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 container.addEventListener('touchstart', (e) => {
                     const wrapper = e.target.closest('.swipe-row-wrapper');
                     if (!wrapper) return;
+                    if (e.target.closest('button, input, select, a')) return;  // let click handle it
                     // 關閉其他已滑開的卡片
                     document.querySelectorAll('.swipe-row-wrapper.is-open').forEach(el => {
                         if (el !== wrapper) {
@@ -11432,6 +11529,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     activeWrapper = wrapper;
                     activeContent = wrapper.querySelector('.swipe-content');
                     isOpen = wrapper.classList.contains('is-open');
+                    currentX = isOpen ? -maxSlide : 0;  // reset stale state
                     isSwiping = false;
                     if (activeContent) activeContent.style.transition = 'none';
                 }, { passive: true });
@@ -11469,6 +11567,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         } else {
                             activeContent.style.transform = '';
                         }
+                    }
+                    // 揭示按鈕時，將按鈕欄高度鎖定為 header（啡色區）高度：
+                    // 按鈕固定該大小、不隨展開的 body 拉長（與展開細節並存）
+                    if (activeWrapper.classList.contains('is-open')) {
+                        const ul = activeWrapper.querySelector('.swipe-underlay');
+                        const hdr = activeWrapper.querySelector('.acc-order-header');
+                        if (ul && hdr) ul.style.height = hdr.offsetHeight + 'px';
                     }
                     activeWrapper = null; activeContent = null; isSwiping = false;
                 });
@@ -11683,19 +11788,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     profit:  [26850, 44579, 58359, 68697]
                 },
                 barChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
-                    handmodel: { labels: ['立體擺設'], values: [15354] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [17383, 54072] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], values: [15354, 17383, 54072] },
+                    handmodel: { labels: ['手模擺設'], values: [15354] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'], values: [17383, 54072] }
                 },
                 pieChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
-                    handmodel: { labels: ['立體擺設'], values: [2520], colors: ['#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['手模擺設'], values: [2520], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
                 },
                 breakdown: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
-                    handmodel: { labels: ['立體擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
+                    handmodel: { labels: ['手模擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
                 }
             },
             monthly: {
@@ -11717,19 +11822,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     profit:  [26850, 17729, 13780, 10455]
                 },
                 barChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [1294, 3079, 9447] },
-                    handmodel: { labels: ['立體擺設'], values: [1294] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [3079, 9447] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], values: [1294, 3079, 9447] },
+                    handmodel: { labels: ['手模擺設'], values: [1294] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'], values: [3079, 9447] }
                 },
                 pieChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [210, 950, 2205], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
-                    handmodel: { labels: ['立體擺設'], values: [210], colors: ['#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [950, 2205], colors: ['#0288D1','#26C6DA'] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], values: [210, 950, 2205], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['手模擺設'], values: [210], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'], values: [950, 2205], colors: ['#0288D1','#26C6DA'] }
                 },
                 breakdown: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [1294,3079,9447], cost: [210,950,2205], profit: [1084,2129,7242], orders: [1,1,4] },
-                    handmodel: { labels: ['立體擺設'],                              revenue: [1294],          cost: [210],          profit: [1084],          orders: [1] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [3079,9447],     cost: [950,2205],     profit: [2129,7242],     orders: [1,4] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], revenue: [1294,3079,9447], cost: [210,950,2205], profit: [1084,2129,7242], orders: [1,1,4] },
+                    handmodel: { labels: ['手模擺設'],                              revenue: [1294],          cost: [210],          profit: [1084],          orders: [1] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'],             revenue: [3079,9447],     cost: [950,2205],     profit: [2129,7242],     orders: [1,4] }
                 }
             },
             yearly: {
@@ -11751,19 +11856,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     profit:  [26850, 44579, 58359, 68697]
                 },
                 barChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [15354, 17383, 54072] },
-                    handmodel: { labels: ['立體擺設'], values: [15354] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [17383, 54072] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], values: [15354, 17383, 54072] },
+                    handmodel: { labels: ['手模擺設'], values: [15354] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'], values: [17383, 54072] }
                 },
                 pieChart: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
-                    handmodel: { labels: ['立體擺設'], values: [2520], colors: ['#7B1FA2'] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], values: [2520, 4925, 10550], colors: ['#7B1FA2','#0288D1','#26C6DA'] },
+                    handmodel: { labels: ['手模擺設'], values: [2520], colors: ['#7B1FA2'] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'], values: [4925, 10550], colors: ['#0288D1','#26C6DA'] }
                 },
                 breakdown: {
-                    all:       { labels: ['立體擺設','純銀頸鏈吊飾','金屬鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
-                    handmodel: { labels: ['立體擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
-                    metal:     { labels: ['純銀頸鏈吊飾','金屬鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
+                    all:       { labels: ['手模擺設','頸鏈吊飾','鎖匙扣'], revenue: [15354,17383,54072], cost: [2520,4925,10550], profit: [12834,12458,43522], orders: [12,6,19] },
+                    handmodel: { labels: ['手模擺設'],                              revenue: [15354],            cost: [2520],            profit: [12834],            orders: [12] },
+                    metal:     { labels: ['頸鏈吊飾','鎖匙扣'],             revenue: [17383,54072],      cost: [4925,10550],      profit: [12458,43522],      orders: [6,19] }
                 }
             }
         };
@@ -11876,7 +11981,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 el.innerHTML = bkd.labels.map(function(lbl, i) {
                     var v = vals[i] || 0;
                     var pct = maxVal > 0 ? Math.round((v / maxVal) * 100) : 0;
-                    var fmt = (metric === 'orders') ? (v + ' 單') : ('HK$' + v.toLocaleString());
+                    var fmt = (metric === 'orders') ? (v + ' 單') : ('HK$' + Math.round(v).toLocaleString());
                     return '<div class="fo-kpi-bkd-row">' +
                         '<span class="fo-kpi-bkd-label" title="' + lbl + '">' + lbl + '</span>' +
                         '<div class="fo-kpi-bkd-bar-wrap"><div class="fo-kpi-bkd-bar-fill" style="width:' + pct + '%;background:' + color + ';opacity:' + (v > 0 ? 1 : 0.25) + ';"></div></div>' +
@@ -12958,12 +13063,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     return parts[1] ? (parseInt(parts[1], 10) + '月') : t.period;
                 });
 
-                const barLabels  = ['立體擺設', '純銀頸鏈吊飾', '金屬鎖匙扣'];
+                const barLabels  = ['手模擺設', '頸鏈吊飾', '鎖匙扣'];
                 const barAllVals = [cr.handmodel || 0, cr.necklace || 0, cr.keychain || 0];
                 const hmFrame = cr.handmodel_frame || 0;
                 const hmBottle = cr.handmodel_bottle || 0;
                 const barHmVals   = (hmFrame + hmBottle > 0) ? [hmFrame, hmBottle] : [cr.handmodel || 0];
-                const barHmLabels = (hmFrame + hmBottle > 0) ? ['木框立體擺設', '玻璃瓶立體擺設'] : ['立體擺設'];
+                const barHmLabels = (hmFrame + hmBottle > 0) ? ['木框手模擺設', '玻璃瓶手模擺設'] : ['手模擺設'];
                 const barMtVals  = [cr.necklace  || 0, cr.keychain || 0];
 
                 const pieAllCol = ['#7B1FA2', '#0288D1', '#26C6DA'];
@@ -12978,12 +13083,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     barChart: {
                         all:       { labels: barLabels,    values: barAllVals },
                         handmodel: { labels: barHmLabels,  values: barHmVals  },
-                        metal:     { labels: ['純銀頸鏈吊飾', '金屬鎖匙扣'], values: barMtVals  }
+                        metal:     { labels: ['頸鏈吊飾', '鎖匙扣'], values: barMtVals  }
                     },
                     pieChart: {
                         all:       { labels: barLabels,                       values: [cb.handmodel || 0, cb.necklace || 0, cb.keychain || 0], colors: pieAllCol },
-                        handmodel: { labels: ['立體擺設'],                    values: [cb.handmodel || 0],                                     colors: ['#7B1FA2'] },
-                        metal:     { labels: ['純銀頸鏈吊飾', '金屬鎖匙扣'], values: [cb.necklace  || 0, cb.keychain || 0],                   colors: ['#0288D1', '#26C6DA'] }
+                        handmodel: { labels: ['手模擺設'],                    values: [cb.handmodel || 0],                                     colors: ['#7B1FA2'] },
+                        metal:     { labels: ['頸鏈吊飾', '鎖匙扣'], values: [cb.necklace  || 0, cb.keychain || 0],                   colors: ['#0288D1', '#26C6DA'] }
                     },
                     breakdown: {
                         all: {
@@ -12994,14 +13099,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             orders:  [cr.handmodel_orders || 0, cr.necklace_orders || 0, cr.keychain_orders || 0]
                         },
                         handmodel: {
-                            labels:  ['立體擺設'],
+                            labels:  ['手模擺設'],
                             revenue: [cr.handmodel || 0],
                             cost:    [cb.handmodel || 0],
                             profit:  [cr.handmodel_profit || 0],
                             orders:  [cr.handmodel_orders || 0]
                         },
                         metal: {
-                            labels:  ['純銀頸鏈吊飾', '金屬鎖匙扣'],
+                            labels:  ['頸鏈吊飾', '鎖匙扣'],
                             revenue: [cr.necklace || 0, cr.keychain || 0],
                             cost:    [cb.necklace  || 0, cb.keychain || 0],
                             profit:  [cr.necklace_profit || 0, cr.keychain_profit || 0],
@@ -13493,7 +13598,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 var GROUP_LABELS = {
                     drawing:          'A. 繪圖成本',
-                    material_3d:      'B. 立體擺設物料',
+                    material_3d:      'B. 手模擺設物料',
                     material_jewelry: 'C. 飾品物料',
                     shipping:         'D. 運費',
                     addon:            'E. 加購配件',
@@ -13959,6 +14064,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     var _peekDone           = false;
 
     /* ── Supabase helper ── */
+    function _sbRpc(rpcName, params, keepalive) {
+        var sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+        var sbKey = window.SB_ANON_KEY || '';
+        var opts = {
+            method: 'POST',
+            headers: { 'apikey': sbKey, 'Authorization': 'Bearer ' + sbKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        };
+        if (keepalive) opts.keepalive = true;
+        return fetch(sbUrl + '/rest/v1/rpc/' + rpcName, opts);
+    }
+
     function _sbPatch(orderDisplayId, fields, keepalive) {
         var sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
         var sbKey = window.SB_ANON_KEY || '';
@@ -13999,7 +14116,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         var archiveBtn = document.getElementById('bsBtnArchive');
         if (archiveBtn) {
             var archiveSpan = archiveBtn.querySelector('span');
-            if (archiveSpan) archiveSpan.textContent = window._fhsArchivedIds.has(orderId) ? '取消封存' : '封存訂單';
+            if (archiveSpan) archiveSpan.textContent = window._fhsArchivedIds.has(orderId) ? '取消完成' : '完成訂單';
         }
 
         /* Wire buttons — H2 correct signatures */
@@ -14142,12 +14259,22 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         var isCurrentlyArchived = window._fhsArchivedIds.has(orderId);
 
         if (isCurrentlyArchived) {
-            /* Unarchive */
+            /* 取消完成: call fhs_uncomplete_order RPC, restore item statuses */
             _clearArchiveUndo();
             window._fhsArchivedIds.delete(orderId);
             hideUndoToast();
-            updateOrderMeta(orderId, { is_archived: false });
+            /* Clear status store for this order so dropdowns fall back to original globalOrders values */
+            if (go.items && window._fhsStatusStore) {
+                go.items.forEach(function(item) {
+                    var _k = orderId + '|' + (item.Item_ID || item.Order_Item_Key || '');
+                    delete window._fhsStatusStore[_k];
+                });
+                try { localStorage.setItem('fhs_status_store', JSON.stringify(window._fhsStatusStore)); } catch(e) {}
+            }
             if (window.applyReviewFilters) window.applyReviewFilters();
+            _sbRpc('fhs_uncomplete_order', { p_order_fhs_id: orderId }, false)
+                .then(function(r) { if (!r.ok) console.error('[V42] fhs_uncomplete_order failed:', r.status); })
+                .catch(function(e) { console.error('[V42] fhs_uncomplete_order error:', e.message); });
             return;
         }
 
@@ -14172,7 +14299,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         _archiveUndoPending = { orderId: orderId, order: go };
 
         var orderLabel = go.Order_ID || orderId;
-        showUndoToast('已封存 ' + orderLabel, function() {
+        showUndoToast('已完成 ' + orderLabel, function() {
             /* Undo: cancel timer, restore */
             _clearArchiveUndo();
             window._fhsArchivedIds.delete(orderId);
@@ -14184,17 +14311,34 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (window.applyReviewFilters) window.applyReviewFilters();
         });
 
-        /* Schedule PATCH after 5s */
+        /* Schedule RPC after 5s: fhs_complete_order sets is_archived + all items Done atomically */
         _archiveUndoTimer = setTimeout(function() {
             _archiveUndoPending = null;
             hideUndoToast();
-            updateOrderMeta(orderId, { is_archived: true }).then(function(ok) {
-                if (!ok) {
-                    /* Rollback on PATCH failure */
+            _sbRpc('fhs_complete_order', { p_order_fhs_id: orderId }, false)
+                .then(function(r) {
+                    if (!r.ok) {
+                        /* Rollback on RPC failure */
+                        window._fhsArchivedIds.delete(orderId);
+                        if (window.applyReviewFilters) window.applyReviewFilters();
+                        console.error('[V42] fhs_complete_order failed:', r.status);
+                        return;
+                    }
+                    /* Update status store: all items → Done 已完成 */
+                    var _go = _findOrder(orderId);
+                    if (_go && _go.items && window._fhsStatusStore) {
+                        _go.items.forEach(function(item) {
+                            var _k = orderId + '|' + (item.Item_ID || item.Order_Item_Key || '');
+                            window._fhsStatusStore[_k] = 'Done 已完成';
+                        });
+                        try { localStorage.setItem('fhs_status_store', JSON.stringify(window._fhsStatusStore)); } catch(e) {}
+                    }
+                })
+                .catch(function(e) {
                     window._fhsArchivedIds.delete(orderId);
                     if (window.applyReviewFilters) window.applyReviewFilters();
-                }
-            });
+                    console.error('[V42] fhs_complete_order error:', e.message);
+                });
         }, 5000);
     }
 
@@ -14204,9 +14348,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     /* ── P1 page-unload insurance (H1: keepalive PATCH, not sendBeacon) ── */
     window.addEventListener('beforeunload', function() {
         if (!_archiveUndoPending) return;
-        var go = _findOrder(_archiveUndoPending.orderId);
-        if (!go) return;
-        _sbPatch(go.Order_ID, { is_archived: true }, true).catch(function(){});
+        var _oId = _archiveUndoPending.orderId;
+        /* keepalive RPC: atomically sets is_archived + all items Done */
+        _sbRpc('fhs_complete_order', { p_order_fhs_id: _oId }, true).catch(function(){});
     });
 
     /* ── P4: segmented tab + applyReviewFilters override ── */
@@ -14231,18 +14375,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var allOrders = window.globalOrders || [];
             var segFiltered;
 
-            if (window._fhsSegTab === 'archived') {
+            if (window._fhsSegTab === 'all') {
+                segFiltered = allOrders.slice();
+            } else if (window._fhsSegTab === 'archived') {
                 segFiltered = allOrders.filter(function(o) { return window._fhsArchivedIds.has(o.id); });
             } else {
                 segFiltered = allOrders.filter(function(o) { return !window._fhsArchivedIds.has(o.id); });
-                /* Starred float to top */
-                if (window._fhsFavoritedIds.size > 0) {
-                    segFiltered = segFiltered.slice().sort(function(a, b) {
-                        var aF = window._fhsFavoritedIds.has(a.id) ? 0 : 1;
-                        var bF = window._fhsFavoritedIds.has(b.id) ? 0 : 1;
-                        return aF - bF;
-                    });
-                }
+            }
+            /* Starred float to top (active + all tabs) */
+            if (window._fhsSegTab !== 'archived' && window._fhsFavoritedIds.size > 0) {
+                segFiltered = segFiltered.slice().sort(function(a, b) {
+                    var aF = window._fhsFavoritedIds.has(a.id) ? 0 : 1;
+                    var bF = window._fhsFavoritedIds.has(b.id) ? 0 : 1;
+                    return aF - bF;
+                });
             }
 
             var _saved = window.globalOrders;

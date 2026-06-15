@@ -177,6 +177,7 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 | `printing_cost` | 打印/鑄造費分量（Task A，前端傳入）|
 | `chain_cost` | 鏈條/環扣費分量（Task A，前端傳入）|
 | `shipping_cost` | 運費毛值分量（Task A，前端傳入）|
+| `precomplete_status` | 「完成」前的 process_status 快照（用於精準退回）；`fhs_complete_order` 寫入，`fhs_uncomplete_order` 讀取後清空 |
 
 ### 5.3 cost_configurations 關鍵 key
 
@@ -380,8 +381,22 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 | 0038 | handmodel 3-layer fallback 引入；STABLE 遺失（後補） |
 | 0040 | metal 3-layer + charts deleted_at 守衛 + STABLE 補回 + data_quality 擴充 |
 | 0041 | previous 期移除 IS NULL（F4）+ trend 3-layer 口徑對齊（F3） |
+| 0042 | `order_items` 加 `precomplete_status text`；新增 RPC `fhs_complete_order` / `fhs_uncomplete_order`（Session 104，2026-06-15）|
+
+---
+
+### 10.8 完成（Complete）功能架構（Session 104）
+
+「完成」取代「封存」語義：按「完成」= 檢視歸檔 + 全品項設 Done，精準退回還原每項原始進度。
+
+| 函式 | 作用 |
+|------|------|
+| `fhs_complete_order(p_order_fhs_id)` | 單交易：快照 `process_status → precomplete_status`，設 `process_status='Done 已完成'`，設 `orders.is_archived=true` |
+| `fhs_uncomplete_order(p_order_fhs_id)` | 單交易：`process_status = COALESCE(precomplete_status, process_status)`，清空 `precomplete_status`，設 `is_archived=false` |
+
+前端 V42 呼叫路徑：`triggerArchiveOrder → toggleArchive → _sbRpc('fhs_complete_order',…)`（5s undo timer；undo 取消 timer，零 DB 寫）。
 
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8 由 Session 104 補入（2026-06-15）。*

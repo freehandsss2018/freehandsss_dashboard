@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-06-15] 🔧 Session 104 — /upload-web 升格流程 v1.1.0
+
+**範圍**：`.fhs/ai/commands/upload-web.md`（Master）、`.claude/commands/upload-web.md`、`.agents/workflows/upload-web.md`
+
+### [FEAT] /upload-web 無參數升格流程（動態版本偵測）
+- **變更**：`/upload-web`（無參數）預設行為從「上傳 V42 dev」改為「升格流程」
+- **動態偵測**：自動掃描 `Freehandsss_Dashboard/` 找最高版本號 `freehandsss_dashboardV*.html`（PowerShell `Sort-Object`；Bash `sort -V | tail -1`）
+- **流程**：偵測 → 二次確認 → cp → current → upload current（帶 `-Force`）
+- **版本無關**：V43、V44 等日後新版本自動跟上，無需手動改指令
+- **橋接版同步**：CL + AG 橋接版簡化流程均已更新
+- **版本**：v1.0.0 → v1.1.0
+
 ## [2026-06-13] 🔧 Session 103 — Audit Ledger ② 成本快照修復（v2）
 
 **範圍**：`freehandsss_dashboardV42.html` 2 函式修改（loadAuditLedger + buildAuditLedgerHtml）

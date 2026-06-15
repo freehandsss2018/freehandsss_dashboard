@@ -1,6 +1,6 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-14（Session 103 — Audit Ledger ② 成本快照 v2 修復 + UX 優化 + n8n 備注過濾）
+> 上次更新：2026-06-15（Session 104 — /upload-web 升格流程 v1.1.0）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -79,6 +79,33 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-15 (Session 104 — /upload-web 升格流程 v1.1.0)
+
+## Session 104 完結
+
+### 執行完成項目
+
+- ✅ **[FEAT] /upload-web 升格流程 v1.1.0**
+  - 舊預設：`/upload-web`（無參數）= 只上傳 V42 dev
+  - 新預設：自動偵測最高版本號 `freehandsss_dashboardV*.html` → 二次確認 → cp → current → upload current
+  - PowerShell：`Get-ChildItem | Sort-Object { [int]($_.BaseName -replace '...') } | Select -Last 1`
+  - Bash（AG）：`ls ... | sort -V | tail -1`
+  - 動態版本跟蹤：V43、V44 日後自動適用，無需改指令
+  - 三個檔案同步更新：Master + CL Bridge + AG Bridge
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | `.fhs/ai/commands/upload-web.md`（v1.1.0）、`.claude/commands/upload-web.md`、`.agents/workflows/upload-web.md` |
+| 行為變更 | 無參數 = 升格流程（breaking change，舊「只上傳 V42」行為停用） |
+| 指定目標 | `/upload-web V43` = 只上傳指定版；`/upload-web current` = 只上傳現有 current |
+
+【交付前雙紀律自檢】
+驗收：三檔 Edit 成功；新流程邏輯完整（偵測→確認→cp→upload）；AG Bash 指令正確 = ✅
+Subagent：❌ 未用 subagent（定點三檔 Edit，無需）
 
 ---
 

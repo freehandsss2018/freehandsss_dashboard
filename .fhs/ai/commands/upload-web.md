@@ -1,7 +1,7 @@
 # /upload-web — 上傳 Dashboard 至 NAS Web Station
 
-**用途 (Purpose)**：將指定的 Dashboard HTML 檔上傳至 NAS Web Station 的 `/web` 共用資料夾，並自動驗證公開可達性與檔案完整性。
-**版本**：v1.0.0 (2026-06-08)
+**用途 (Purpose)**：自動偵測最新開發版，升格為 current，並上傳至 NAS Web Station `/web` 共用資料夾，三關驗證完整性。
+**版本**：v1.1.0 (2026-06-15)
 **通用平台**：Claude Code (CL) · Antigravity/Gemini (AG) — 雙端通用（需本機 shell + curl；2026-06-08 Fat Mo 授權開放 AG）
 **觸發**：`/upload-web` 或 `/upload-web [目標]`
 
@@ -18,35 +18,76 @@
 
 ## 目標代稱對照
 
-| 輸入 | 實際檔案 |
-|------|---------|
-| （省略）/ `V42` | `freehandsss_dashboardV42.html`（預設，開發基線） |
-| `V41` | `freehandsss_dashboardV41.html` |
-| `V40` | `freehandsss_dashboardV40.html` |
-| `current` | `Freehandsss_dashboard_current.html`（**生產版，需二次確認**） |
+| 輸入 | 行為 |
+|------|------|
+| （省略）| **升格流程**：自動偵測最新版 → cp → current → 上傳 current（見下方步驟） |
+| `V43` / `V42` 等 | 只上傳該指定版本至 NAS（dev 版，**不 cp 不升格**） |
+| `current` | 只上傳現有 current.html（**不 cp**，需二次確認） |
 | 其他字串 | 視為 `Freehandsss_Dashboard\` 下的字面檔名 |
 
 ---
 
 ## 執行步驟
 
-### Step 1 — 解析目標
-從 `/upload-web` 後取出目標代稱（無則預設 `V42`）。
+### 【無參數 — 升格流程（預設）】
 
-### Step 2 — 生產版守護
-若目標解析為 `current.html`：**先向 Fat Mo 二次確認**（「這會把生產版推上公開 web，確定？」）。獲確認後執行時加 `-Force` 旗標；未確認不得執行。
+#### Step 0 — 自動偵測最新版本
+掃描 `Freehandsss_Dashboard/` 資料夾，找版本號最高的 `freehandsss_dashboardV*.html`：
 
-### Step 3 — 公開暴露提醒（首次部署 dev 版時）
-提醒：Web Station `/web` 為公開可瀏覽，dev 版含成本/財務邏輯。確認 Fat Mo 已知悉（沿用既有授權即可，不需每次重問）。
+**PowerShell（CL）：**
+```powershell
+$latest = Get-ChildItem "Freehandsss_Dashboard\freehandsss_dashboardV*.html" |
+  Sort-Object { [int]($_.BaseName -replace 'freehandsss_dashboardV','') } |
+  Select-Object -Last 1
+```
 
-### Step 4 — 執行腳本
+**Bash（AG）：**
+```bash
+latest=$(ls Freehandsss_Dashboard/freehandsss_dashboardV*.html | sort -V | tail -1)
+```
+
+#### Step 1 — 升格確認（二次確認）
+向 Fat Mo 顯示偵測結果並要求確認：
+> 「偵測到最新版：`{latest檔名}`，將升格為 current.html 並部署至 NAS，確定？」
+
+未確認不得繼續。
+
+#### Step 2 — cp 升格
+**PowerShell（CL）：**
+```powershell
+Copy-Item $latest.FullName "Freehandsss_Dashboard\Freehandsss_dashboard_current.html" -Force
+```
+
+**Bash（AG）：**
+```bash
+cp "$latest" "Freehandsss_Dashboard/Freehandsss_dashboard_current.html"
+```
+
+#### Step 3 — 上傳 current
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force
+```
+
+#### Step 4 — 輸出結果
+回報 PASS/FAIL：偵測版本名、公開網址、大小比對、SHA256。
+
+---
+
+### 【指定目標 — 單純上傳】
+
+#### Step 1 — 解析目標
+從 `/upload-web` 後取出目標代稱。
+
+#### Step 2 — 生產版守護（目標為 `current` 時）
+先向 Fat Mo 二次確認（「這會把生產版推上公開 web，確定？」）。獲確認後加 `-Force`；未確認不得執行。
+
+#### Step 3 — 執行腳本
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 [目標] [-Force(僅 current)]
 ```
-腳本流程：讀 `.env` 憑證 → `Test-NetConnection :5006` → `curl.exe -k -T` WebDAV PUT → 驗證三關。
 
-### Step 5 — 輸出結果
-回報 PASS/FAIL：公開網址、大小比對、SHA256。失敗時附腳本的 FAIL 原因。
+#### Step 4 — 輸出結果
+回報 PASS/FAIL：公開網址、大小比對、SHA256。
 
 ---
 
@@ -60,22 +101,22 @@ powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 [目標] [-Force
 ---
 
 ## 安全護欄
-- `current.html` 生產版：強制二次確認 + `-Force`
-- 公開暴露：dev 版含財務邏輯，提醒 Fat Mo
+- 升格流程（無參數）：Step 1 二次確認後才 cp + 上傳
+- `current.html` 生產版（指定目標）：強制二次確認 + `-Force`
 - 密碼：永不回顯、永不寫入 repo（僅存 gitignored `.env`）
 
 ---
 
 ## 常用範例
 ```
-/upload-web              # 上傳 V42（預設）
-/upload-web V41          # 上傳 V41
-/upload-web current      # 上傳生產版（先確認，腳本帶 -Force）
+/upload-web              # 自動偵測最新版 → 升格 current → 部署（最常用）
+/upload-web V43          # 只上傳 V43 dev 版至 NAS（不升格）
+/upload-web current      # 只上傳現有 current（不 cp，先確認）
 ```
 
 ---
 
 ## 副作用 (Side Effects)
-- 是否寫檔：**否**（不改 repo 內任何檔；僅上傳副本至 NAS）
+- 是否寫檔：升格流程會覆寫本機 `Freehandsss_dashboard_current.html`（cp 動作）
 - 是否覆蓋 NAS 既有同名檔：**是**（WebDAV PUT 覆寫）
-- Token 消耗：~200–500（單次腳本呼叫 + 報告）
+- Token 消耗：~200–600（含偵測 + 確認 + 腳本呼叫 + 報告）
