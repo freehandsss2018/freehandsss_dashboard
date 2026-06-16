@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-06-16] 🔧 Session 109 — 核對帳單 bottom-sheet 路由修復（選項 B）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（3 處：line 9385–9387 / 9467 / 14184）
+
+### [FIX] 核對帳單功能鍵未跳轉「💰 財務」分頁
+- **症狀**：手機 bottom-sheet 點「核對帳單」→ Modal 開啟但停在「📝 訊息文本」預設分頁，財務(Audit Ledger)分頁未啟動
+- **根因**：`openOrderModal(orderId, catFilter)` 第二參數是 catFilter（'A'/'B'/undefined），非 tab 選擇器。Session 103 加捷徑時誤傳 `openOrderModal(orderId, 'finance')` → 'finance' 被當 catFilter（落 else=全訂單），分頁 active class 寫死在 text，且無任何 `switchModalTab('finance')` 呼叫 → 捷徑從未真正生效
+- **修法（選項 B）**：`openOrderModal` 加第三參數 `initialTab`（line 9387）；DOM 同步 `innerHTML` 建好後 `if (initialTab && typeof switchModalTab==='function') switchModalTab(initialTab)`（line 9467）；btnAudit 改 `openOrderModal(orderId, '', 'finance')`（line 14184，catFilter 空=全訂單）
+- **回歸**：11 個既有呼叫點未帶第三參數 → initialTab=undefined → 行為不變（grep 坐實零回歸）
+- **驗收**：靜態 grep PASS；live 手機 bsSheet 互動 + NAS 重部署待 Fat Mo
+
 ## [2026-06-16] 🔧 Session 107 — split 還原快照隔離（0600900 全付重載錯顯修復）
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（6 處）

@@ -3,6 +3,12 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-16] (Session 109) openOrderModal 加 initialTab 第三參數（選項 B）— 修復「核對帳單」捷徑落錯分頁
+
+決策：給共用函式 `openOrderModal(orderId, catFilter)` 新增可選第三參數 `initialTab`，而非在 btnAudit 端串接 `openOrderModal(); switchModalTab('finance')`（選項 A）。
+原因：第二參數 catFilter（'A'/'B'/undefined）控制標題與文本分段，語義與「分頁」正交；Session 103 誤把 'finance' 當第二參數導致捷徑永遠停在訊息文本分頁。選項 B 讓「開哪張單的哪段 × 開在哪個分頁」成為清楚的兩個正交參數，未來其他深連結（如直接開訂單明細）可重用 `initialTab`，比在每個呼叫端手動串 switchModalTab 更不易遺漏/競態。11 個既有呼叫點未帶第三參數，零回歸。
+影響檔案：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（line 9385–9387 / 9467 / 14184）
+
 [2026-06-16] (Session 106) P0 sysCheckN8n 雙軌修復 — 消除每次連線檢查消耗 2 次 Airtable API
 
 決策：將 `sysCheckN8n()` 的 ping 目標從 `fetch-global-review?year=2099&month=01`（觸發 n8n FHS_Query_GlobalReview workflow → Airtable，+2 calls/次）改為：

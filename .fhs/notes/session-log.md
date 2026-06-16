@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-16 (Session 109 — 核對帳單路由修復): 🔧 V42 3處改動 ✅
+
+**Scope**: bottom-sheet「核對帳單」點擊未跳財務分頁修復；根因 `openOrderModal` 第二參數是 catFilter 非 tab（Session 103 誤傳 'finance'）；選項 B：加第三參數 `initialTab` + DOM 建好後 `switchModalTab(initialTab)` + btnAudit 改 `(orderId,'','finance')`；11 呼叫點零回歸
+**Result**: 核對帳單 → 自動切財務分頁 + loadAuditLedger 懶載（待 Fat Mo live 驗收）；NAS 重部署待授權
+
 ## 2026-06-16 (Session 107 — split 還原修復 + A區摺疊 + NAS 部署): 🔧 V42 8處改動 + NAS PASS ✅
 
 **Scope**: ① Bug1 split 還原快照隔離（方案A，7處：`_fhsSplitRestoreSnapshot` 宣告/重置/設快照/catch清/renderPaymentSplits權威/restoreSplits guard+finally/resetForm清）；根因 generate() auto-fill 污染 hidden 欄 + P33 prevData 優先；code-reviewer G1–G8 預審（G2採納）；② Bug2 A.繪圖成本 移除 isFirst 特殊化，與BCDE統一（onclick toggle + chevron + 預設摺疊）；③ Supabase cost_configurations INSERT `material_cost_keychain_stainless` HKD 95；④ NAS 部署 PASS SHA256 B5DEF4D8…（838,810 bytes）

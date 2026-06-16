@@ -1,12 +1,16 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-16（Session 107 commit — Bug1 split 還原 + Bug2 A區摺疊 + NAS 部署 PASS）
+> 上次更新：2026-06-16（Session 109 — 核對帳單 bottom-sheet 路由修復：openOrderModal 加 initialTab 第三參數）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | ⏳ 待確認 | 若仍高 → 查 n8n 訂單量 |
+| 🟡 中 | **NAS 重部署（核對帳單路由修復）** | ⏳ 待授權 | V42 dev 已修；current.html（線上）同 bug，需 Fat Mo 授權升格覆蓋 |
+
+### 已確認完成（Session 109 核實）
+- ✅ **[FIX] 核對帳單 bottom-sheet 路由 bug** — 點「核對帳單」應開「💰 財務」分頁卻停在「📝 訊息文本」；根因 Session 103 誤把 `openOrderModal` 第二參數當 tab，實為 catFilter('A'/'B'/undefined)；修法（選項 B）`openOrderModal(orderId, catFilter, initialTab)` 加第三參數 + DOM 同步建好後 `switchModalTab(initialTab)`；btnAudit 改 `(orderId, '', 'finance')`；11 個既有呼叫點零回歸（Session 109）
 
 ### 已確認完成（Session 105 核實）
 - ✅ **[FEAT] 已完成功能全套** — migration 0042 `precomplete_status` + RPC `fhs_complete_order`/`fhs_uncomplete_order`；封存→完成語義（文案6處）；seg control 加「全部」；applyReviewFilters all 分支；toggleArchive 改 RPC + 5s undo；is_archived Supabase fetch 修復刷新後狀態丟失；dlv-card-done 藍灰完成 badge（Session 105）
@@ -84,6 +88,45 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-16 (Session 109 — 核對帳單 bottom-sheet 路由修復)
+
+## Session 109 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] 核對帳單功能鍵未跳轉財務分頁（選項 B：openOrderModal 加 initialTab）**
+  - **症狀**：手機 bottom-sheet 點「核對帳單」→ Modal 開啟但停在「📝 訊息文本」預設分頁，未切到「💰 財務」(Audit Ledger)
+  - **根因**：`openOrderModal(orderId, catFilter)` 第二參數是 **catFilter**（'A'=手模/'B'=金屬/undefined=全訂單），**非 tab 選擇器**。Session 103 加捷徑時誤傳 `openOrderModal(orderId, 'finance')` → 'finance' 被當 catFilter（落 else=全訂單），且分頁 active class 寫死 text → 永遠開訊息文本，無任何程式呼叫 `switchModalTab('finance')`。捷徑從未真正生效
+  - **修法（選項 B，3 處）**：
+    - `openOrderModal(orderId, catFilter, initialTab)` 加第三參數（line 9385–9387）
+    - DOM 同步 `innerHTML` 建好後 `if (initialTab && typeof switchModalTab === 'function') switchModalTab(initialTab);`（line 9467）
+    - btnAudit 綁線 `openOrderModal(orderId, '', 'finance')`（line 14184，catFilter 空=全訂單）
+  - **回歸面**：11 個既有呼叫點（L8061/8100/8354-8356/8530-8532 + btnA 'A' / btnB 'B'）皆未帶第三參數 → initialTab=undefined → 不切分頁，行為完全不變；catFilter 由垃圾值 'finance' 改 '' 無語義差（皆落 else）
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | `freehandsss_dashboardV42.html`（line 9385–9387 / 9467 / 14184） |
+| 函式簽名 | `openOrderModal(orderId, catFilter, initialTab)` — 第二位是 catFilter 非 tab！切分頁用第三參數 |
+| 修復後行為 | 核對帳單 → 全訂單 modal → 自動切財務分頁 → 觸發 loadAuditLedger 懶載 |
+
+### 待辦
+- ⏳ **NAS 重部署 + current.html 升格**：V42 dev 已修，線上同 bug，需 Fat Mo 授權覆蓋正式環境
+- ⏳ **live 手機 bsSheet 互動驗收**：待 Fat Mo 實機（本環境無 Supabase live 資料 + 需觸控，playwright 難量測）
+
+【交付前雙紀律自檢】
+驗收：grep 坐實三處改動落地（3-arg 定義 / switchModalTab 守衛呼叫 / btnAudit 3-arg）＝✅；無殘留 2-arg `openOrderModal(…,'finance')`＝✅；switchModalTab 為 hoisted 宣告、執行期呼叫＋typeof 守衛＝安全；live 手機驗收待 Fat Mo（未假裝通過）
+Subagent：❌ 未用（grep+Read 坐實根因，3 處定點 Edit，局部清晰；如需上線把關可補派 code-reviewer G1–G8）
+
+### Subagent 使用記錄
+
+| Agent | 用/沒用 | 理由 |
+|-------|---------|------|
+| code-reviewer | ❌ 沒用 | 改動局部（單函式加 optional 參數 + 1 處綁線），grep 已坐實零回歸；如 Fat Mo 要求上線把關可補派 |
+| 其他 | ❌ 沒用 | 純 grep/Read/Edit，無 schema/n8n/財務運算變動 |
 
 ---
 

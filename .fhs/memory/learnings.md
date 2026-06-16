@@ -76,6 +76,8 @@
 34. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取，不可依賴 mapOrder output — Session 103
 35. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。任何影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 之後從 fetch 結果重建（`select` 加欄位 → `mapOrder` 回傳 → `orders.forEach` 重填 Set）— Session 105
 36. **【高頻 ⚠️】split 還原被 generate() auto-fill 污染（P33 時序升級）**：`restoreFormState` 多次 `generate()` 中 line 6398 無條件 `_quickHalfFillAllSplits('deposit')` 把空 box 填半額 + `serializeSplits` 污染 hidden 欄；renderPaymentSplits prevData 優先讀污染值 → 存檔值被忽略；+80ms restoreSplits 讀污染 hidden 欄 → 全付/自訂拆分單重載錯顯半額（半額單巧合正確而長期未發現）。Session 101 innerHTML='' 不足（未攔 hidden 污染）。根治＝快照隔離：generate 污染前快照存檔 JSON 為權威，renderPaymentSplits 還原期凌駕 box/hidden；restoreSplits 用 `_fhsPaymentSyncing=true` 壓 cross-sync + finally 清快照；快照四點清除（起點/catch/finally/resetForm）防殘留污染新單 — Session 107
+37. **【平台限制】IG Messaging API Advanced Access 需 Meta Business Verification**：Standard Access 只能讀有 App 角色用戶嘅 DM；讀全部客人 DM 需 Advanced Access；Advanced Access 需通過 Meta Business Verification（BR / 網站 / 業務帳單三選一）。無任何可提交文件嘅個人/小微業務 = 永久封死 IG DM 自動讀取。FHS 已確認此路不通（Session 108）。替代方案：Supabase-only 未更新偵測（S3）或引導客人用 WhatsApp。
+38. **openOrderModal 第二參數是 catFilter 非 tab**：`openOrderModal(orderId, catFilter, initialTab)` — 第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁（text/detail/finance）必須用**第三參數 initialTab**（內部呼 switchModalTab）。Session 103 誤把 'finance' 當第二參數→捷徑永遠停訊息文本分頁。加捷徑/深連結到特定 modal 分頁時切記 — Session 109
 
 ---
 
