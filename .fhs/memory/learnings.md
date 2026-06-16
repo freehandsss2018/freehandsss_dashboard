@@ -73,6 +73,7 @@
 32. **auto-fill guard 須與用戶主動操作區分**：Session 92 載入保護 guard 阻擋了用戶手動按「全部半訂」。解法：`force` 參數；按鈕傳 `true`，auto-call 不傳 — Session 97
 33. **renderPaymentSplits prevData 優先規則吞噬 restoreFormState 還原值**：render 先讀既有 box 值入 prevData，再 merge #depositSplitData（`if prevData[k]===undefined` 才加）。若 box 已有 $790，存檔 $500 被忽略。凡執行「讀取舊紀錄」restore 前，必須 `depCont.innerHTML=''` 清空容器，令 prevData 為空，存檔值才能生效 — Session 101
 34. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取，不可依賴 mapOrder output — Session 103
+35. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。任何影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 之後從 fetch 結果重建（`select` 加欄位 → `mapOrder` 回傳 → `orders.forEach` 重填 Set）— Session 105
 
 ---
 

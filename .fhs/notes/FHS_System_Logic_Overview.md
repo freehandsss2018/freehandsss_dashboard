@@ -396,7 +396,22 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 前端 V42 呼叫路徑：`triggerArchiveOrder → toggleArchive → _sbRpc('fhs_complete_order',…)`（5s undo timer；undo 取消 timer，零 DB 寫）。
 
+### 10.9 `is_archived` 前端同步機制（Session 104 Bug Fix，2026-06-15）
+
+**問題**：`window._fhsArchivedIds`（Set）原本純 in-memory，頁面刷新後清空，已完成訂單退回「進行中」。
+
+**修正**：
+
+| 層次 | 改動 |
+|------|------|
+| `sbFetchGlobalReview` select（V42 line ~13003）| 加入 `is_archived` 欄位 |
+| `mapOrder` 回傳物件（V42 line ~12967）| 加 `is_archived: row.is_archived \|\| false` |
+| 載入後重建（V42 line ~13183）| `window.globalOrders = orders` 後立即 `.clear()` + `forEach` 重建 `_fhsArchivedIds` |
+| dlv badge 隱藏（V42 line 8362/8366）| template 加 `_fhsArchivedIds.has(o.id)` 守衛，已完成訂單不顯示逾期 badge／紅框 |
+
+**重要順序**：重建 `_fhsArchivedIds` 必須在 `applyReviewFilters()` 呼叫**之前**，否則第一次過濾仍用空 Set。
+
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8 由 Session 104 補入（2026-06-15）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。*

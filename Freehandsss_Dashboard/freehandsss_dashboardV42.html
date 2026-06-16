@@ -957,6 +957,7 @@
         .acc-dlv-card.dlv-card-green  { background:#dcfce7; border:1px solid #86efac; }
         .acc-dlv-card.dlv-card-yellow { background:#fef3c7; border:1px solid #fcd34d; }
         .acc-dlv-card.dlv-card-red    { background:#fee2e2; border:1px solid #fca5a5; }
+        .acc-dlv-card.dlv-card-done   { background:#EAF0F8; border:1px solid #93AECB; }
         /* 單號色保留原棕色 */
         .acc-dlv-card .acc-order-id { color:var(--fhs-accent); }
         /* 第二行：日期/名稱靠左，狀態靠右 */
@@ -966,6 +967,7 @@
         .dlv-card-green  .acc-dlv-status { color:#16a34a; }
         .dlv-card-yellow .acc-dlv-status { color:#92400e; }
         .dlv-card-red    .acc-dlv-status { color:#b91c1c; }
+        .dlv-card-done   .acc-dlv-status { color:#2E5C8A; }
         /* 交貨期統計卡 */
         .dlv-stats-card { display:flex; gap:8px; margin-top:4px; flex-wrap:wrap; }
         .dlv-stat-block { flex:1; min-width:80px; padding:10px 8px; border-radius:8px; cursor:pointer; text-align:center; transition:transform .1s; user-select:none; }
@@ -8351,7 +8353,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         </button>
                         <button class="swipe-btn swipe-btn--archive" type="button" onclick="event.stopPropagation(); triggerArchiveOrder('${o.id}')">
                             <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg>
-                            <span>完成</span>
+                            <span>${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id)) ? '取消完成' : '完成'}</span>
                         </button>
                     </div>
                     <div class="swipe-content">
@@ -8359,13 +8361,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
                                 <div class="acc-order-header-left">
                                     ${_detailBtnsM}
-                                    <div class="acc-dlv-card ${_dlvCardClass(o.Order_ID)}">
-                                        <span class="acc-order-id">${o.Order_ID || 'N/A'} ➜</span>
-                                        <div class="acc-meta-row">
-                                            <span class="acc-order-meta">${cDate} · ${o.Customer || '-'} · ${itemCount} 件</span>
-                                            ${_dlvStatusText(o.Order_ID) ? `<span class="acc-dlv-status" onclick="event.stopPropagation();jumpToDlvCard('${_dlvCardClass(o.Order_ID).replace('dlv-card-','')}')">${_dlvStatusText(o.Order_ID)}</span>` : ''}
-                                        </div>
-                                    </div>
+                                    ${(function(){
+                                        var _isArch = window._fhsArchivedIds && window._fhsArchivedIds.has(o.id);
+                                        var _cardCls = _isArch ? 'dlv-card-done' : _dlvCardClass(o.Order_ID);
+                                        var _badgeHtml = '';
+                                        if (_isArch) {
+                                            var _ref = o.Appointment_Date || o.Date;
+                                            var _days = _ref ? Math.round((Date.now() - new Date(_ref).getTime()) / 86400000) : null;
+                                            var _txt = _days !== null ? (_days >= 0 ? '✅ 完成 · ' + _days + 'd 前' : '✅ 完成 · ' + Math.abs(_days) + 'd 後') : '✅ 已完成';
+                                            _badgeHtml = '<span class="acc-dlv-status">' + _txt + '</span>';
+                                        } else if (_dlvStatusText(o.Order_ID)) {
+                                            _badgeHtml = '<span class="acc-dlv-status" onclick="event.stopPropagation();jumpToDlvCard(\'' + _dlvCardClass(o.Order_ID).replace('dlv-card-','') + '\')">' + _dlvStatusText(o.Order_ID) + '</span>';
+                                        }
+                                        return '<div class="acc-dlv-card ' + _cardCls + '"><span class="acc-order-id">' + (o.Order_ID || 'N/A') + ' ➜</span><div class="acc-meta-row"><span class="acc-order-meta">' + cDate + ' · ' + (o.Customer || '-') + ' · ' + itemCount + ' 件</span>' + _badgeHtml + '</div></div>';
+                                    })()}
                                 </div>
                                 <div class="acc-order-header-right">
                                     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
@@ -12964,6 +12973,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 Full_Order_Text_A:  row.full_order_text_a || '',
                 Full_Order_Text_B:  row.full_order_text_b || '',
                 is_text_overridden: row.is_text_overridden || false,
+                is_archived:        row.is_archived || false,
                 items:              mappedItems,
                 _source:            'supabase'
             };
@@ -13000,7 +13010,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // Only pass status values that exist in Supabase ENUM; manufacturing-step values cause errors
             const SB_ORDER_STATUSES = new Set(['待確認','製作中','完成','已取件','已取消']);
             // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
-            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
+            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b,is_archived', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
 
             if (status && SB_ORDER_STATUSES.has(status)) qs['process_status'] = 'eq.' + status;
             if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';
@@ -13178,6 +13188,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (loading) loading.style.display = 'none';
                 await _dlvFetch;
                 window.globalOrders = orders;
+                if (window._fhsArchivedIds) {
+                    window._fhsArchivedIds.clear();
+                    orders.forEach(function(o) { if (o.is_archived) window._fhsArchivedIds.add(o.id); });
+                }
                 if (window.applyReviewFilters) {
                     window.applyReviewFilters();
                 } else {

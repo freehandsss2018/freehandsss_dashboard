@@ -1,11 +1,15 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-15（Session 104 — /upload-web 升格流程 v1.1.0）
+> 上次更新：2026-06-16（Session 105 — 已完成功能全套 + swipe UX 修復）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
+
+### 已確認完成（Session 105 核實）
+- ✅ **[FEAT] 已完成功能全套** — migration 0042 `precomplete_status` + RPC `fhs_complete_order`/`fhs_uncomplete_order`；封存→完成語義（文案6處）；seg control 加「全部」；applyReviewFilters all 分支；toggleArchive 改 RPC + 5s undo；is_archived Supabase fetch 修復刷新後狀態丟失；dlv-card-done 藍灰完成 badge（Session 105）
+- ✅ **[FIX] swipe UX 4 bug** — stale `currentX` reset in touchstart；button/input guard；threshold 40→64；touch-action: manipulation；swipe 按鈕動態文字完成/取消完成（Session 105）
 
 ### 已確認完成（Session 103 核實）
 - ✅ **[FIX] Audit Ledger ② 成本快照 v2** — 改用 `orders.handmodel/keychain/necklace_cost`（30/30）替代 91% 空的四欄；Problem E 對賬行（類別小計→運費共享扣減→total_cost）；舊單藍色待補錄 info 條；假紅旗 costMatch 移除；NAS 部署 PASS（Session 103）

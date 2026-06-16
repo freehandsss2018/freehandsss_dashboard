@@ -1,5 +1,14 @@
 # Session Log
 
+## 2026-06-16 (Session 105 — 已完成功能全套 + swipe UX 修復): ✨ V42 14處改動 + migration 0042 ✅
+
+**Scope**: ① Supabase migration 0042：`precomplete_status` 欄位 + `fhs_complete_order`/`fhs_uncomplete_order` RPC（原子交易）；② 封存→完成 語義全改（文案6處 + seg control 加「全部」）；③ `applyReviewFilters` all 分支；④ `toggleArchive` 改用 RPC；⑤ swipe 引擎 2 bug 修正（stale currentX + button guard）；⑥ threshold 40→64 + touch-action；⑦ swipe 按鈕動態文字（完成/取消完成）；⑧ `is_archived` 加入 Supabase fetch → 頁面刷新後狀態保持；⑨ 已完成 dlv badge 改藍灰 dlv-card-done + ✅完成·Xd前
+**Result**: 0600802 完成後刷新仍在已完成 tab；逾期 badge 已完成訂單不顯示；✅完成·146d前 藍灰底 badge；SHA256 136E93CA PASS ✅
+
+## 2026-06-15 (Session 104 — /upload-web 升格流程 v1.1.0): 🔧 指令文件 3 檔更新 ✅
+
+**Scope**: /upload-web 無參數預設行為改為升格流程（動態偵測最高版 → cp → current → upload）；三端同步（Master + CL + AG Bridge）；版本 v1.1.0
+
 ## 2026-06-14 (Session 103 — Audit Ledger ② 成本快照 v2 + UX 優化): 🔧 V42 8 處修改 ✅
 
 **Scope**: ① 確收鏈 deposit/balance 來源修正（mapOrder 不含，改讀 Supabase extra）；② 成本快照改訂單層類別欄（handmodel/keychain/necklace_cost，30/30 populated）；n8n 備注 JSON 類型守衛+過濾（amount≠0）；品項標籤去人名；📊 核對帳 bsSheet 捷徑；成本扣減說明標籤優化
