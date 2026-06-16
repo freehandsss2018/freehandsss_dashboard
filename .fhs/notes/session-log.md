@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-16 (Session 107 — 成本設定 UI 修復 + 不銹鋼嬰兒物料新增): 🔧 V42 1處 + Supabase INSERT ✅
+
+**Scope**: Supabase cost_configurations INSERT `material_cost_keychain_stainless`（嬰兒/大寶 HKD 95）；A. 繪圖成本 group header 移除 onclick/cursor/chevron（永遠展開不可收摺）；NAS 部署 PASS（836,887 bytes）
+**Result**: C. 飾品物料 8條；A. 繪圖成本 固定展開 ✅
+
 ## 2026-06-16 (Session 106 — P0 sysCheckN8n 雙軌修復 + Airtable 用量全面審計): 🔧 V42 1處 + decisions.md ✅
 
 **Scope**: Airtable quota 全面審計（8維度分析→新舊系統前後對比→根因定位）；P0 fix：`sysCheckN8n()` ping 改 `/healthz` + Supabase `/rest/v1/`（0 AT calls，舊路徑 +2/次）；MCP 稽核 0 實際 AT 呼叫（近 10 session）

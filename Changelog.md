@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-06-16] 🔧 Session 107 — 成本設定 UI 修復 + 不銹鋼嬰兒物料新增
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（line 13638–13648）、Supabase `cost_configurations`
+
+### [DATA] Supabase — 新增 material_cost_keychain_stainless（嬰兒/大寶）
+- **根因**：cost_configurations 只有成人版不銹鋼（_adult），嬰兒/大寶版缺失，定價引擎 fallback 到 hardcoded 95
+- **修復**：INSERT `material_cost_keychain_stainless`，display_name `鎖匙扣 - 不銹鋼物料（嬰兒/大寶）`，HKD 95，display_group `material_jewelry`
+- **效果**：C. 飾品物料 從 7 → 8 條，UI 可直接調整嬰兒不銹鋼成本
+
+### [UX] A. 繪圖成本 group header 永遠展開（不可收摺）
+- **根因**：`drawing` group 雖預設展開，但仍有 onclick toggle，用戶誤按可收摺
+- **修復**：isFirst（drawing）時移除 onclick、cursor:pointer、chevron span；其他分組行為不變
+
+### [DEPLOY] NAS 部署 PASS
+- SHA256: BE1CC0309D84CFDDA41579A29D64ACE70ADF379D7B7ABFC81EDAEF02DEDCA680
+- 836,887 bytes
+
 ## [2026-06-16] 🔧 Session 106 — P0 sysCheckN8n 雙軌修復
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（line 7657–7684）

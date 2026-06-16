@@ -1,11 +1,12 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-16（Session 106 — P0 sysCheckN8n 雙軌修復）
+> 上次更新：2026-06-16（Session 107 — 成本設定 UI 修復 + 不銹鋼嬰兒物料新增）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
+| 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | ⏳ 待確認 | 若仍高 → 查 n8n 訂單量 |
 
 ### 已確認完成（Session 105 核實）
 - ✅ **[FEAT] 已完成功能全套** — migration 0042 `precomplete_status` + RPC `fhs_complete_order`/`fhs_uncomplete_order`；封存→完成語義（文案6處）；seg control 加「全部」；applyReviewFilters all 分支；toggleArchive 改 RPC + 5s undo；is_archived Supabase fetch 修復刷新後狀態丟失；dlv-card-done 藍灰完成 badge（Session 105）
@@ -83,6 +84,29 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-16 (Session 107 — 成本設定 UI 修復 + 不銹鋼嬰兒物料新增)
+
+## Session 107 完結
+
+### 執行完成項目
+
+- ✅ **[DATA] Supabase cost_configurations INSERT** — `material_cost_keychain_stainless`（嬰兒/大寶，HKD 95，display_group `material_jewelry`）；C. 飾品物料 7 → 8 條
+- ✅ **[UX] A. 繪圖成本 永遠展開** — `freehandsss_dashboardV42.html` line 13638–13648；isFirst(drawing) 移除 onclick/cursor:pointer/chevron；其他分組 toggle 行為不變
+- ✅ **NAS 部署 PASS** — 836,887 bytes，SHA256: BE1CC0309D84CFDDA41579A29D64ACE70ADF379D7B7ABFC81EDAEF02DEDCA680
+
+### 核心配置
+| 項目 | 值 |
+|------|-----|
+| 修改檔案 | `freehandsss_dashboardV42.html`（1處）、Supabase `cost_configurations`（INSERT） |
+| 新 Supabase key | `material_cost_keychain_stainless` = 95 |
+| 定價引擎 fallback | 同 hardcoded 值 95（已無需 fallback） |
+
+【交付前雙紀律自檢】
+驗收：Supabase INSERT RETURNING 確認；HTML grep 確認 isFirst 分支無 onclick/cursor；NAS 三閘 PASS = ✅
+Subagent：❌ 未用（Supabase MCP SQL + 定點 Edit，直接執行）
 
 ---
 

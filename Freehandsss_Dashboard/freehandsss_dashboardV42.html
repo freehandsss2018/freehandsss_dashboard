@@ -13637,10 +13637,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (!groups[gKey]) return;
                     var isFirst = gKey === 'drawing';
                     html += '<div class="cost-group" style="border:1px solid var(--fhs-border);border-radius:7px;margin-bottom:8px;overflow:hidden;">'
-                          + '<div class="cost-group-header" onclick="this.parentElement.querySelector(\'.cost-group-body\').style.display=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cost-chevron\').textContent=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'▶\':\'▼\';" '
-                          + 'style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;background:var(--fhs-bg-elevated);font-size:12px;font-weight:700;color:var(--fhs-text-primary);">'
+                          + '<div class="cost-group-header"'
+                          + (isFirst ? '' : ' onclick="this.parentElement.querySelector(\'.cost-group-body\').style.display=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cost-chevron\').textContent=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'▶\':\'▼\';"')
+                          + ' style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;'
+                          + (isFirst ? '' : 'cursor:pointer;')
+                          + 'background:var(--fhs-bg-elevated);font-size:12px;font-weight:700;color:var(--fhs-text-primary);">'
                           + '<span>' + (GROUP_LABELS[gKey] || gKey) + ' (' + groups[gKey].length + ')</span>'
-                          + '<span class="cost-chevron">' + (isFirst ? '▼' : '▶') + '</span>'
+                          + (isFirst ? '' : '<span class="cost-chevron">▶</span>')
                           + '</div>'
                           + '<div class="cost-group-body" style="display:' + (isFirst ? 'block' : 'none') + ';padding:8px 12px;">';
 
