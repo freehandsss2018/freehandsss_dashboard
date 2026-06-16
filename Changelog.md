@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-06-16] 🔧 Session 106 — P0 sysCheckN8n 雙軌修復
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（line 7657–7684）
+
+### [FIX] sysCheckN8n — 消除每次連線檢查消耗 Airtable quota
+- **根因**：`sysCheckN8n()` ping `fetch-global-review?year=2099&month=01` 觸發 n8n `FHS_Query_GlobalReview` workflow → Airtable +2 calls/次；官方 6/16 實測 591/1000，按日均 37 calls 預測月底 ~1,109（超限）
+- **修復**：改為雙軌 ping：`/healthz`（n8n 原生健康檢查，0 AT）+ Supabase `/rest/v1/`（0 AT）；`Promise.all` 並行，badge 三態（正常/部分/異常）
+- **效果**：sysCheckN8n AT calls 從 +2/次 → 0；MCP 稽核確認 0 實際 AT 呼叫（近 10 session）
+
 ## [2026-06-15] 🔧 Session 104 — /upload-web 升格流程 v1.1.0
 
 **範圍**：`.fhs/ai/commands/upload-web.md`（Master）、`.claude/commands/upload-web.md`、`.agents/workflows/upload-web.md`

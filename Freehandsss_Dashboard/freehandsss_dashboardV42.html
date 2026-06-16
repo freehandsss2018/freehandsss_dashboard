@@ -7654,7 +7654,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             setTimeout(sysRefreshPanel, 800);
         }
 
-        // Ping n8n to check connectivity
+        // Ping n8n + Supabase connectivity — 0 Airtable calls (was: fetch-global-review → AT +2/check)
         async function sysCheckN8n() {
             const badge = document.getElementById('sysN8nStatus');
             const metric = document.getElementById('sysN8nPing');
@@ -7663,22 +7663,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             badge.className = 'sys-badge sys-badge-checking'; badge.textContent = '檢查中';
             metric.textContent = '…';
             const start = Date.now();
-            try {
-                const url = getWebhookUrl('https://yanhei.synology.me:8443/webhook/fetch-global-review') + '?year=2099&month=01';
-                const res = await Promise.race([
-                    fetch(url, { method: 'GET' }),
-                    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
-                ]);
-                const ms = Date.now() - start;
-                metric.textContent = ms + ' ms';
-                detail.textContent = res.ok ? '連線正常' : `HTTP ${res.status}`;
-                badge.className = 'sys-badge sys-badge-ok'; badge.textContent = '正常';
-            } catch(e) {
-                const ms = Date.now() - start;
-                metric.textContent = ms + ' ms';
-                detail.textContent = e.message === 'timeout' ? '連線逾時 (>5s)' : '連線失敗: ' + e.message;
-                badge.className = 'sys-badge sys-badge-error'; badge.textContent = '異常';
-            }
+            const tout = ms => new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms));
+            const pingN8n = () => Promise.race([
+                fetch('https://yanhei.synology.me:8443/healthz', { method: 'GET' }).then(r => ({ ok: r.status < 500 })),
+                tout(5000)
+            ]).catch(e => ({ ok: false, err: e.message }));
+            const pingSb = () => Promise.race([
+                fetch((window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co') + '/rest/v1/', {
+                    method: 'GET', headers: { 'apikey': window.SB_ANON_KEY || '' }
+                }).then(r => ({ ok: r.status < 500 })),
+                tout(5000)
+            ]).catch(e => ({ ok: false, err: e.message }));
+            const [n8n, sb] = await Promise.all([pingN8n(), pingSb()]);
+            const ms = Date.now() - start;
+            metric.textContent = ms + ' ms';
+            detail.textContent = 'n8n: ' + (n8n.ok ? '正常' : '異常') + ' | Supabase: ' + (sb.ok ? '正常' : '異常');
+            const allOk = n8n.ok && sb.ok;
+            badge.className = 'sys-badge ' + (allOk ? 'sys-badge-ok' : (n8n.ok || sb.ok) ? 'sys-badge-warn' : 'sys-badge-error');
+            badge.textContent = allOk ? '正常' : (n8n.ok || sb.ok) ? '部分' : '異常';
         }
 
         // Main refresh for system panel

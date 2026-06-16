@@ -3,6 +3,15 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-16] (Session 106) P0 sysCheckN8n 雙軌修復 — 消除每次連線檢查消耗 2 次 Airtable API
+
+決策：將 `sysCheckN8n()` 的 ping 目標從 `fetch-global-review?year=2099&month=01`（觸發 n8n FHS_Query_GlobalReview workflow → Airtable，+2 calls/次）改為：
+1. `https://yanhei.synology.me:8443/healthz` — n8n 原生健康檢查，不觸發任何 workflow（0 AT calls）
+2. `https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/` — Supabase REST ping（0 AT calls）
+兩路 `Promise.all` 並行，顯示「n8n: 正常|異常 | Supabase: 正常|異常」，badge 三態：正常/部分/異常。
+原因：官方 Airtable 後台顯示 6/16 已用 591/1000，按日均 37 calls/day 預測月底 ~1,109 — 超出上限。系統分析確認 sysCheckN8n 是真漏洞（每次用戶打開系統面板皆觸發），其餘 Airtable 殘留均為刻意設計（建單鏡像寫入、災難備援 fallback）。
+影響檔案：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（line 7657–7684）
+
 [2026-06-13] (Session 103) Audit Ledger ② 成本快照鏈 v2 修復 — 改用訂單層類別欄
 
 決策：把 ② 成本快照鏈的資料來源從 `order_items` 四欄分解（91% 空）改為 `orders.handmodel/keychain/necklace_cost`（30/30 populated）。

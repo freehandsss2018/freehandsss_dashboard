@@ -52,6 +52,7 @@
 12. **try-catch 靜默吞掉 TDZ 錯誤**：Temporal Dead Zone 錯誤被 catch 吞掉，導致 Order_Items_List 空白無任何錯誤提示 — 源自 memory
 13. **【高頻 ⚠️】Chrome Date Parsing + 排序還原失效**：`new Date("DD/MM/YYYY")` → Invalid Date；載入時還原 filters 繞過 applyReviewFilters()。解法：正則手動解析 DD/MM/YYYY；fetch callback 尾端強制呼叫 applyReviewFilters() — 源自 2026-05-25
 14. **【高頻 ⚠️】靜默降級禁止（Supabase-First 守護）**：工具缺 Supabase 存取 = blocker，須先解決，禁止靜默降級至 Airtable。Airtable 僅用於：歷史補救/冷備援/緊急回退 — 源自 2026-06-04
+15. **連線健康檢查禁用真實 workflow URL**：`sysCheckN8n` 用 `fetch-global-review` ping 導致每次點擊 +2 AT calls（靜默消耗 quota）。正確做法：n8n 原生 `/healthz` + Supabase `/rest/v1/`（均 0 AT）— 源自 2026-06-16
 15. **【P9】IIFE 閉包函式 onclick 靜默失效**：函式在 IIFE `(function(){'use strict';})()` 內，`onclick="fn()"` 全域找不到，完全靜默。修復：IIFE 末尾明確 `window.fn = fn` 暴露 — 源自 2026-05-27
 16. **SELECT / PATCH 帶未套用欄位 → PostgREST 400**：新欄位加入 SELECT 或 PATCH body 前必確認 migration 已套用；否則整個訂單總覽失連。順序：migration 套用 → 加 SELECT → 加 PATCH — 源自 2026-05-26
 17. **globalOrders cache 欄位名稱陷阱**：Supabase fetch 映射為 `o.Customer`（非 `o.Customer_Name`）。更新 cache 若只寫 `o.Customer_Name`，Review 表渲染永遠不更新 — 源自 2026-05-27

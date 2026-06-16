@@ -1,6 +1,6 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-16（Session 105 — 已完成功能全套 + swipe UX 修復）
+> 上次更新：2026-06-16（Session 106 — P0 sysCheckN8n 雙軌修復）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -83,6 +83,40 @@
 - ✅ TD2 learnings.md 整合 — 74→50 條（Session 86，git `c14458d`）
 - ✅ perplexity-mcp-server submodule — .gitmodules 補建 + Hono fix commit（Session 86，git `c14458d`）
 - ✅ Anti-Idle Ping — n8n Workflow `FxKHTDiYiUPnxvm6` ACTIVE（Session 67）
+
+---
+
+# FHS Handoff - 2026-06-16 (Session 106 — P0 sysCheckN8n 雙軌修復)
+
+## Session 106 完結
+
+### 執行完成項目
+
+- ✅ **[FIX] P0 sysCheckN8n 雙軌修復**（`freehandsss_dashboardV42.html` line 7657–7684）
+  - 舊路徑：`fetch-global-review?year=2099&month=01` → 觸發 n8n FHS_Query_GlobalReview → Airtable +2 calls/次
+  - 新路徑：`/healthz`（n8n 原生）+ Supabase `/rest/v1/`（Promise.all 並行），0 AT calls
+  - badge 三態：正常/部分/異常；detail 顯示 `n8n: 正常 | Supabase: 正常`
+- ✅ **Airtable 用量全面審計**：8維度分析 + 新舊系統前後對比（V40→V42 遷移時間線）；MCP 稽核（近 10 session 0 實際 AT 呼叫）；官方數字 591/1000（6/16，預測月底 ~1,109）
+- ✅ **decisions.md 補錄**、**CHANGELOG.md 更新**、**session-log.md 更新**
+
+### 待辦
+
+- ⏳ **6/19 驗證**：再看 Airtable billing 頁，確認日均是否從 37 降至 ≤20（若仍高 → 查 n8n 訂單量）
+- ⏳ **[Task A]** 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄（持續）
+- ⏳ 舊訂單品項層類別明細補錄（Fat Mo 人工，持續）
+
+### 核心配置
+
+- Dashboard: `freehandsss_dashboardV42.html`（dev）/ `Freehandsss_dashboard_current.html`（production）
+- Supabase: `vpmwizzixnwilmzctdvu.supabase.co`
+- n8n: `https://yanhei.synology.me:8443`（V47.4）
+
+### Subagent 使用記錄
+
+| Agent | 用/沒用 | 理由 |
+|-------|---------|------|
+| database-reviewer | ❌ 沒用 | Hook 建議但本任務為 JS 修改 + 用量稽核，無 schema/Airtable 結構審查需要 |
+| 其他 | ❌ 沒用 | 直接 Grep/Read/PowerShell 效率更高 |
 
 ---
 

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-16 (Session 106 — P0 sysCheckN8n 雙軌修復 + Airtable 用量全面審計): 🔧 V42 1處 + decisions.md ✅
+
+**Scope**: Airtable quota 全面審計（8維度分析→新舊系統前後對比→根因定位）；P0 fix：`sysCheckN8n()` ping 改 `/healthz` + Supabase `/rest/v1/`（0 AT calls，舊路徑 +2/次）；MCP 稽核 0 實際 AT 呼叫（近 10 session）
+**Result**: sysCheckN8n AT drain 消除；6/19 驗證日均是否從 37 降至 ≤20 ✅
+
 ## 2026-06-16 (Session 105 — 已完成功能全套 + swipe UX 修復): ✨ V42 14處改動 + migration 0042 ✅
 
 **Scope**: ① Supabase migration 0042：`precomplete_status` 欄位 + `fhs_complete_order`/`fhs_uncomplete_order` RPC（原子交易）；② 封存→完成 語義全改（文案6處 + seg control 加「全部」）；③ `applyReviewFilters` all 分支；④ `toggleArchive` 改用 RPC；⑤ swipe 引擎 2 bug 修正（stale currentX + button guard）；⑥ threshold 40→64 + touch-action；⑦ swipe 按鈕動態文字（完成/取消完成）；⑧ `is_archived` 加入 Supabase fetch → 頁面刷新後狀態保持；⑨ 已完成 dlv badge 改藍灰 dlv-card-done + ✅完成·Xd前
