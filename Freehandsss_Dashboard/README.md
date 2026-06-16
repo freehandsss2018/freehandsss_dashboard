@@ -8,11 +8,11 @@
 
 | 檔案 | 用途 |
 |---|---|
-| `Freehandsss_dashboard_current.html` | **正式生產環境** = V42（2026-06-13 Session 102 Audit Ledger 上線） |
+| `Freehandsss_dashboard_current.html` | **正式生產環境** = V42（2026-06-16 Session 107：split 還原修復 + 成本設定 A 區摺疊） |
 | `freehandsss_dashboardV36.html` | 舊版穩定基準 (Legacy Stable) |
 | `freehandsss_dashboardV40.html` | 前一版穩定基準（V40.8 — 移除嬰兒月齡 + 報價明細 breakdown）|
 | `freehandsss_dashboardV41.html` | V41 穩定基準（Supabase-First 遷移；2026-05-16）|
-| `freehandsss_dashboardV42.html` | **開發基線**（V42 — Audit Ledger + restoreSplits fix）|
+| `freehandsss_dashboardV42.html` | **開發基線**（V42 — Audit Ledger + split 還原快照隔離 + 成本設定摺疊）|
 | `freehandsss_financial_overview.html` | **Financial Overview 頁面**（財務圖表中樞） |
 | `products.json` | 產品資料快取（非 live 資料；NAS 真正運作快取在 `.n8n/data/products.json`） |
 
@@ -24,12 +24,12 @@
 
 ## 當前版本
 
-- UI 層：**V41** (Active Production)
-  - **Supabase 狀態列整合**：移除右下角浮動按鈕，改為頂部狀態晶片，避免遮擋手機版操作。
-  - **響應式優化**：手機端自動隱藏狀態文字，僅顯示圖示。
-  - 繼承 V40.8：移除嬰兒月齡邏輯，版面精簡化。
-  - 繼承 V40.8：報價明細 (#priceBreakdown) 動態顯示。
-- 憲法層：v1.4.6（AGENTS.md，2026-05-17）
+- UI 層：**V42** (Active Production，2026-06-16 Session 107)
+  - **split 還原快照隔離**：修復全付重載後 deposit/balance 顯示錯誤（P36）
+  - **成本設定中心 A 區摺疊**：繪圖成本與 B/C/D/E/MISC 行為一致，預設摺疊
+  - 繼承 Session 102：Audit Ledger 財務對賬四區塊
+  - 繼承 Session 101：restoreSplits 容器清空修復
+- 憲法層：v1.4.13（AGENTS.md，2026-06-09）
 
 ## 相關文件
 

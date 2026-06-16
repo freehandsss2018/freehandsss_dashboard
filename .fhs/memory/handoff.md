@@ -1,6 +1,6 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-16（Session 107 — 成本設定 UI 修復 + 不銹鋼嬰兒物料新增）
+> 上次更新：2026-06-16（Session 107 commit — Bug1 split 還原 + Bug2 A區摺疊 + NAS 部署 PASS）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -93,20 +93,34 @@
 
 ### 執行完成項目
 
+- ✅ **[FIX] split 還原快照隔離（0600900 全付重載錯顯，方案 A）** — 6 處：宣告 `_fhsSplitRestoreSnapshot`(11160) + restoreFormState 起點重置(6486)/設快照(6516)/catch 清(6632) + renderPaymentSplits 快照權威(10855) + restoreSplits `_fhsPaymentSyncing` guard+finally 清(11263-70) + resetForm 清(4951)。根因：generate() line 6398 auto-fill 污染 hidden 欄 + P33 prevData 優先；快照在污染前設定為權威來源。code-reviewer G1–G8：G2 採納（catch 清快照）、G1/G4 複核為誤報（終局 restoreSplits 權威且不呼 auto-fill）
 - ✅ **[DATA] Supabase cost_configurations INSERT** — `material_cost_keychain_stainless`（嬰兒/大寶，HKD 95，display_group `material_jewelry`）；C. 飾品物料 7 → 8 條
-- ✅ **[UX] A. 繪圖成本 永遠展開** — `freehandsss_dashboardV42.html` line 13638–13648；isFirst(drawing) 移除 onclick/cursor:pointer/chevron；其他分組 toggle 行為不變
-- ✅ **NAS 部署 PASS** — 836,887 bytes，SHA256: BE1CC0309D84CFDDA41579A29D64ACE70ADF379D7B7ABFC81EDAEF02DEDCA680
+- ⚠️ **[UX] A. 繪圖成本 摺疊行為 — 兩度反轉，最終＝與 B/C/D/E/MISC 一致（可摺疊 + 預設摺疊）**
+  - 稍早（同 session）：曾將 `isFirst(drawing)` 特殊化為「永遠展開、不可收摺」（移除 onclick/cursor/chevron，body 預設 block）
+  - 後續 Fat Mo 回報為 bug：A 區缺摺疊 toggle 且預設展開，與其餘區塊不一致
+  - 最終修復（/execute 本次）：移除 `isFirst` 特殊化，所有區塊統一 onclick toggle + chevron + body 預設 `display:none`；`freehandsss_dashboardV42.html` line 13638–13648
+- ✅ **NAS 部署（嬰兒不銹鋼物料）PASS** — 但 A 區摺疊反轉後 SHA256 BE1CC03… 已失效，**待重新部署**
 
 ### 核心配置
 | 項目 | 值 |
 |------|-----|
-| 修改檔案 | `freehandsss_dashboardV42.html`（1處）、Supabase `cost_configurations`（INSERT） |
+| 修改檔案 | `freehandsss_dashboardV42.html`（line 13638–13648）、Supabase `cost_configurations`（INSERT） |
 | 新 Supabase key | `material_cost_keychain_stainless` = 95 |
-| 定價引擎 fallback | 同 hardcoded 值 95（已無需 fallback） |
+| A 區最終行為 | 可摺疊（onclick toggle + ▶/▼ chevron）+ 預設摺疊 |
+
+### 待辦
+- ✅ **NAS 部署（Bug1+Bug2）PASS** — SHA256 `B5DEF4D8063FFE59365DAA0868A17505780CD2FF6E29F1315B9DA7E177F8EEC9`，大小 838,810 bytes（2026-06-16）
 
 【交付前雙紀律自檢】
-驗收：Supabase INSERT RETURNING 確認；HTML grep 確認 isFirst 分支無 onclick/cursor；NAS 三閘 PASS = ✅
-Subagent：❌ 未用（Supabase MCP SQL + 定點 Edit，直接執行）
+驗收：HTML grep 確認 `isFirst` 已無條件分支引用（僅剩註解）；新 onclick toggle 字串與 B/C/D/E 既有實作逐字一致（行為等價由構造保證）= ✅；live 視覺驗收待 Fat Mo（panel 渲染需 Supabase cost 資料，本環境無法 playwright 量測）；如需正式 G1–G8 可補派 code-reviewer
+Subagent：bug1 code-reviewer G1–G8 預審用（spawn 1 次，回傳 FAIL 含 G2/G1/G4，G2 採納、G1/G4 複核為誤報）；bug2 ❌ 未用（定點單區塊 Edit）
+
+### Subagent 使用記錄
+
+| Agent | 用/沒用 | 理由 |
+|-------|---------|------|
+| code-reviewer | ✅ 用（Bug 1 G1–G8 預審） | 方案 A v2 實施前請求獨立稽核；回傳 G2 有效（catch 清快照）、G1/G4 誤報（複核坐實） |
+| 其他 | ❌ 沒用 | Bug 2 定點移除 isFirst，直接 Grep/Edit 效率更高 |
 
 ---
 

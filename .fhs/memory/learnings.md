@@ -75,6 +75,7 @@
 33. **renderPaymentSplits prevData 優先規則吞噬 restoreFormState 還原值**：render 先讀既有 box 值入 prevData，再 merge #depositSplitData（`if prevData[k]===undefined` 才加）。若 box 已有 $790，存檔 $500 被忽略。凡執行「讀取舊紀錄」restore 前，必須 `depCont.innerHTML=''` 清空容器，令 prevData 為空，存檔值才能生效 — Session 101
 34. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取，不可依賴 mapOrder output — Session 103
 35. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。任何影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 之後從 fetch 結果重建（`select` 加欄位 → `mapOrder` 回傳 → `orders.forEach` 重填 Set）— Session 105
+36. **【高頻 ⚠️】split 還原被 generate() auto-fill 污染（P33 時序升級）**：`restoreFormState` 多次 `generate()` 中 line 6398 無條件 `_quickHalfFillAllSplits('deposit')` 把空 box 填半額 + `serializeSplits` 污染 hidden 欄；renderPaymentSplits prevData 優先讀污染值 → 存檔值被忽略；+80ms restoreSplits 讀污染 hidden 欄 → 全付/自訂拆分單重載錯顯半額（半額單巧合正確而長期未發現）。Session 101 innerHTML='' 不足（未攔 hidden 污染）。根治＝快照隔離：generate 污染前快照存檔 JSON 為權威，renderPaymentSplits 還原期凌駕 box/hidden；restoreSplits 用 `_fhsPaymentSyncing=true` 壓 cross-sync + finally 清快照；快照四點清除（起點/catch/finally/resetForm）防殘留污染新單 — Session 107
 
 ---
 

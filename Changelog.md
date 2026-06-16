@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-06-16] 🔧 Session 107 — split 還原快照隔離（0600900 全付重載錯顯修復）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（6 處）
+
+### [FIX] 付款拆分還原鏈污染根治（方案 A 快照隔離）
+- **症狀**：訂單 0600900 按「全部付清」+同步後，DB 正確（deposit=2380, balance=0, raw_form_state.depositSplitData=`{"TEMP_P_MAIN##":2380}`），但重載 UI 錯顯 deposit=1190(半額)/balance=2380。Supabase live 查證確認**寫入鏈正常，純還原鏈 bug**
+- **根因**：`restoreFormState` 多次 `generate()` 中，`generate()`(line 6398) 無條件呼 `_quickHalfFillAllSplits('deposit')`，把空 box 填半額並 `serializeSplits` 污染 hidden 欄；`renderPaymentSplits` prevData 優先讀污染的 box 值使存檔值被忽略（P33 時序升級版）；+80ms `restoreSplits` 讀已污染 hidden 欄 → 渲染錯值。Session 101 的 `innerHTML=''` 修復對此場景無效（未攔 hidden 欄污染）
+- **修復**：新增 `window._fhsSplitRestoreSnapshot`，在任何 generate() 污染前快照存檔 split JSON 為**權威來源**，`renderPaymentSplits` 還原期以快照凌駕被污染的 box/hidden 欄；`restoreSplits` 以 `_fhsPaymentSyncing=true` 壓制 cross-field sync + finally 例外安全清快照；快照四點清除（還原起點/catch/restoreSplits finally/resetForm）
+- **驗收**：code-reviewer G1–G8（G2 catch 清快照採納；G1/G4 經複核為誤報——終局 restoreSplits 權威、不呼 auto-fill）；live 視覺待 Fat Mo
+- line 6486 / 6516 / 6632 / 10855 / 11160 / 11263–11270 / 4951
+
 ## [2026-06-16] 🔧 Session 107 — 成本設定 UI 修復 + 不銹鋼嬰兒物料新增
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（line 13638–13648）、Supabase `cost_configurations`
@@ -9,13 +20,14 @@
 - **修復**：INSERT `material_cost_keychain_stainless`，display_name `鎖匙扣 - 不銹鋼物料（嬰兒/大寶）`，HKD 95，display_group `material_jewelry`
 - **效果**：C. 飾品物料 從 7 → 8 條，UI 可直接調整嬰兒不銹鋼成本
 
-### [UX] A. 繪圖成本 group header 永遠展開（不可收摺）
-- **根因**：`drawing` group 雖預設展開，但仍有 onclick toggle，用戶誤按可收摺
-- **修復**：isFirst（drawing）時移除 onclick、cursor:pointer、chevron span；其他分組行為不變
+### [UX] A. 繪圖成本 group header — 與 B/C/D/E/MISC 一致（可摺疊 + 預設摺疊）
+- ⚠️ **反轉本 session 稍早決定**：稍早曾將 `drawing`（A 繪圖成本）特殊化為「永遠展開、不可收摺」（移除 onclick/cursor/chevron）。Fat Mo 回報此為 bug——A 區與其餘區塊行為不一致（缺摺疊 toggle）且預設展開。
+- **根因**：`var isFirst = gKey === 'drawing'` 對 A 區條件式移除 onclick toggle、cursor:pointer、chevron，且 body 預設 `display:block`
+- **修復**：移除 `isFirst` 特殊化，所有區塊統一（onclick toggle + chevron + cursor + body 預設 `display:none`）；onclick 字串與 B/C/D/E 既有實作完全一致
+- line 13638–13648
 
-### [DEPLOY] NAS 部署 PASS
-- SHA256: BE1CC0309D84CFDDA41579A29D64ACE70ADF379D7B7ABFC81EDAEF02DEDCA680
-- 836,887 bytes
+### [DEPLOY] NAS 部署
+- ⏳ **待重新部署**：原 SHA256 BE1CC03…（836,887 bytes）為「A 永遠展開」舊版，已因本次反轉失效；需 Fat Mo 視覺驗收後重新 /upload-web
 
 ## [2026-06-16] 🔧 Session 106 — P0 sysCheckN8n 雙軌修復
 

@@ -4948,6 +4948,7 @@
             }
             editTargetOrderId = null;
             lastFetchedState = null; // 🚨 清除讀取紀錄
+            window._fhsSplitRestoreSnapshot = null; // S107 方案A: 開新單清快照，防失敗還原殘留污染新單
             document.getElementById('output-preview-a').value = "";
             document.getElementById('output-preview-b').value = "";
             const fetchStatus = document.getElementById('fetchStatus');
@@ -6482,6 +6483,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         function restoreFormState(data) {
             try {
+                window._fhsSplitRestoreSnapshot = null; // S107 方案A: 還原起點重置快照（防上次殘留）
                 let state = data;
                 if (typeof data === 'string') {
                     let cleanData = data.trim();
@@ -6509,6 +6511,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     console.warn("Invalid state data received:", state);
                     return;
                 }
+
+                // S107 方案A: 在任何 generate() 污染前，快照存檔 split JSON 為權威來源
+                window._fhsSplitRestoreSnapshot = {
+                    deposit: (state.depositSplitData != null) ? state.depositSplitData : null,
+                    balance: (state.balanceSplitData != null) ? state.balanceSplitData : null
+                };
 
                 // 🚨 步驟 1：先還原基本欄位 (有 ID 的靜態元素，例如開關、pSubCat)
                 for (let key in state) {
@@ -6621,6 +6629,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 console.log("✅ Form state restoration complete.");
             } catch (e) {
                 console.error("❌ restoreFormState Error:", e);
+                window._fhsSplitRestoreSnapshot = null; // S107 方案A: 例外時清快照（restoreSplits 未跑，防殘留污染後續編輯）
                 alert("還原表單時發生錯誤: " + e.message);
             }
         }
@@ -10843,6 +10852,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     });
                 } catch(e) {}
             }
+            // S107 方案A: 還原期快照為權威，凌駕被污染的 box 值與 hidden 欄
+            var _splitSnap = window._fhsSplitRestoreSnapshot && window._fhsSplitRestoreSnapshot[field];
+            if (_splitSnap) {
+                try {
+                    var _ss = (typeof _splitSnap === 'string') ? JSON.parse(_splitSnap) : _splitSnap;
+                    Object.keys(_ss).forEach(function(k) { prevData[k] = String(_ss[k]); });
+                } catch(e) {}
+            }
 
             const items = window.fhsCurrentPricingItems;
             if (!items || items.length === 0) {
@@ -11141,6 +11158,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         window._depositMode = 'half';
         window._balanceMode = 'half';
+        window._fhsSplitRestoreSnapshot = null; // S107 方案A: 還原期 split 快照（權威來源，防 generate() 污染存檔值）
 
         function _syncGlobalDepositBtnUI() {
             var halfBtn = document.getElementById('fhsHalfFillAllBtn');
@@ -11240,8 +11258,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var balCont = document.getElementById('balanceSplitContainer');
             if (depCont) depCont.innerHTML = '';
             if (balCont) balCont.innerHTML = '';
-            renderPaymentSplits('deposit');
-            renderPaymentSplits('balance');
+            // S107 方案A: 還原期壓制 cross-field sync（_syncBalanceFromDeposit/_syncDepositFromBalance），
+            // 防 deposit/balance 互相覆寫快照值；finally 確保 guard 復原 + 快照清除（例外安全）
+            var _prevSyncing = _fhsPaymentSyncing;
+            _fhsPaymentSyncing = true;
+            try {
+                renderPaymentSplits('deposit');
+                renderPaymentSplits('balance');
+            } finally {
+                _fhsPaymentSyncing = _prevSyncing;
+                window._fhsSplitRestoreSnapshot = null; // 還原閉區間結束，清快照
+            }
         }
 
         // ─── Deposit Smart Input ─────────────────────────────────
@@ -13635,17 +13662,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var groupOrder = ['drawing','material_3d','material_jewelry','shipping','addon','misc'];
                 groupOrder.forEach(function(gKey) {
                     if (!groups[gKey]) return;
-                    var isFirst = gKey === 'drawing';
+                    // S107: A. 繪圖成本 與 B/C/D/E/MISC 行為一致 — 全部可摺疊 + 預設摺疊（移除 isFirst 特殊化）
                     html += '<div class="cost-group" style="border:1px solid var(--fhs-border);border-radius:7px;margin-bottom:8px;overflow:hidden;">'
                           + '<div class="cost-group-header"'
-                          + (isFirst ? '' : ' onclick="this.parentElement.querySelector(\'.cost-group-body\').style.display=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cost-chevron\').textContent=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'▶\':\'▼\';"')
-                          + ' style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;'
-                          + (isFirst ? '' : 'cursor:pointer;')
+                          + ' onclick="this.parentElement.querySelector(\'.cost-group-body\').style.display=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cost-chevron\').textContent=this.parentElement.querySelector(\'.cost-group-body\').style.display===\'none\'?\'▶\':\'▼\';"'
+                          + ' style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;'
                           + 'background:var(--fhs-bg-elevated);font-size:12px;font-weight:700;color:var(--fhs-text-primary);">'
                           + '<span>' + (GROUP_LABELS[gKey] || gKey) + ' (' + groups[gKey].length + ')</span>'
-                          + (isFirst ? '' : '<span class="cost-chevron">▶</span>')
+                          + '<span class="cost-chevron">▶</span>'
                           + '</div>'
-                          + '<div class="cost-group-body" style="display:' + (isFirst ? 'block' : 'none') + ';padding:8px 12px;">';
+                          + '<div class="cost-group-body" style="display:none;padding:8px 12px;">';
 
                     groups[gKey].forEach(function(r) {
                         var disabled = batchRunning ? ' disabled' : '';

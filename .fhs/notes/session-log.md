@@ -1,9 +1,9 @@
 # Session Log
 
-## 2026-06-16 (Session 107 — 成本設定 UI 修復 + 不銹鋼嬰兒物料新增): 🔧 V42 1處 + Supabase INSERT ✅
+## 2026-06-16 (Session 107 — split 還原修復 + A區摺疊 + NAS 部署): 🔧 V42 8處改動 + NAS PASS ✅
 
-**Scope**: Supabase cost_configurations INSERT `material_cost_keychain_stainless`（嬰兒/大寶 HKD 95）；A. 繪圖成本 group header 移除 onclick/cursor/chevron（永遠展開不可收摺）；NAS 部署 PASS（836,887 bytes）
-**Result**: C. 飾品物料 8條；A. 繪圖成本 固定展開 ✅
+**Scope**: ① Bug1 split 還原快照隔離（方案A，7處：`_fhsSplitRestoreSnapshot` 宣告/重置/設快照/catch清/renderPaymentSplits權威/restoreSplits guard+finally/resetForm清）；根因 generate() auto-fill 污染 hidden 欄 + P33 prevData 優先；code-reviewer G1–G8 預審（G2採納）；② Bug2 A.繪圖成本 移除 isFirst 特殊化，與BCDE統一（onclick toggle + chevron + 預設摺疊）；③ Supabase cost_configurations INSERT `material_cost_keychain_stainless` HKD 95；④ NAS 部署 PASS SHA256 B5DEF4D8…（838,810 bytes）
+**Result**: 0600900 全付重載應顯示 $2380/$0（待 Fat Mo live 驗收）；A區摺疊 ▶ toggle；C.飾品物料 8條 ✅
 
 ## 2026-06-16 (Session 106 — P0 sysCheckN8n 雙軌修復 + Airtable 用量全面審計): 🔧 V42 1處 + decisions.md ✅
 
