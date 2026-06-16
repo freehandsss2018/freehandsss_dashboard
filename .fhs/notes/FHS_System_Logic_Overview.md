@@ -411,7 +411,30 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 **重要順序**：重建 `_fhsArchivedIds` 必須在 `applyReviewFilters()` 呼叫**之前**，否則第一次過濾仍用空 Set。
 
+### 10.10 Session 105 UX 修復總覽（2026-06-16）
+
+#### A. 封存→已完成語義更名
+- 所有 UI 文案：「封存」→「完成」；「已封存」→「已完成」
+- Segmented Control：原「進行中 / 已完成」→「全部 / 進行中 / 已完成」（`_fhsSegTab='all'` 分支：`segFiltered = allOrders.slice()`）
+- bsSheet 按鈕：`<span>完成訂單</span>`；動態標籤：`.has(orderId) ? '取消完成' : '完成訂單'`
+
+#### B. Swipe 手勢引擎修復（V42 line ~11503）
+| Bug | 根因 | 修正 |
+|-----|------|------|
+| ✏ 刻字 icon 點擊觸發 swipe drawer | `currentX` 模組層級變數，touchstart 未重置 | `currentX = isOpen ? -maxSlide : 0`（touchstart 起始點） |
+| 互動元件（button/input）誤觸 swipe | 無 guard | `if (e.target.closest('button, input, select, a')) return;` |
+| 靈敏度過高（誤觸） | `threshold=40` | `threshold=64` |
+| swipe-btn 觸控遲頓 | 無 touch 優化 | `.swipe-btn { touch-action: manipulation; }` |
+
+#### C. Swipe 按鈕動態文字
+- Template literal 由靜態 `<span>完成</span>` 改為 `${..._fhsArchivedIds.has(o.id) ? '取消完成' : '完成'}`
+
+#### D. 已完成訂單 dlv-card-done Badge
+- CSS class：`.dlv-card-done { background:#EAF0F8; border:1px solid #93AECB; }`；status text `color:#2E5C8A`
+- Badge 文字：`✅ 完成 · Xd 前`（以 `appointment_at` 或 `Date` 計算天數）
+- 顏色選擇：藍灰（區別正常訂單的綠色 dlv-card-green）
+
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。*
