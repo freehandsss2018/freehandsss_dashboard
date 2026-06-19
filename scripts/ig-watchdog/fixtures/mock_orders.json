@@ -1,0 +1,20 @@
+[
+  {
+    "order_id": "FHS-90001",
+    "customer_name": "陳美玲",
+    "deposit": 500,
+    "final_sale_price": 1000,
+    "created_at": "2026-06-13T02:01:35.527Z",
+    "confirmed_at": "2026-06-13T02:01:35.527Z",
+    "full_order_text": "嬰兒手腳模"
+  },
+  {
+    "order_id": "FHS-90002",
+    "customer_name": "王小強",
+    "deposit": 800,
+    "final_sale_price": 1600,
+    "created_at": "2026-06-07T02:01:35.527Z",
+    "confirmed_at": "2026-06-07T02:01:35.527Z",
+    "full_order_text": "情侶手模"
+  }
+]

@@ -61,3 +61,9 @@ fhs-ai/
 
 # Auto-generated JWKS local dev dirs
 docs/jwks/
+
+# 🔐 IG Watchdog — 客人 DM 私隱紅線（嚴禁進版控）
+# 注意：必須精確 .fhs-local/（勿用 .fhs* 會誤殺已追蹤的 .fhs/）
+.fhs-local/
+scripts/ig-watchdog/output/
+*.zip

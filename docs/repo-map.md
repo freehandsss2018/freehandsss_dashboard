@@ -262,12 +262,23 @@ freehandsss_dashboard/
 │   ├── repair/                          ← 財務 / 資料修補腳本（一次性，需人工確認後執行）
 │   │   ├── sync_0600701.js             ← 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）
 │   │   └── sync_0600903.js             ← 訂單 0600903 財務與時間修補
-│   └── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
-│       ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
-│       ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）
-│       ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/Bash）
-│       ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
-│       └── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
+│   ├── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
+│   │   ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
+│   │   ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）
+│   │   ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/Bash）
+│   │   ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
+│   │   └── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
+│   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110）
+│       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
+│       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）
+│       ├── lib/decoder.mjs(+.test)      ← Meta mojibake 解碼（latin1→utf8 + U+FFFD 守衛，邏輯亦移植進n8n Code節點）
+│       ├── lib/match.mjs(+.test)        ← CJK fuzzy + 🔴🟡⚪ 訊號分層（邏輯亦移植進n8n Code節點）
+│       ├── fixtures/                    ← 合成自測資料（_gen.mjs 產生，無真實客人）
+│       ├── hooks/pre-commit             ← 隱私守衛：擋含 sender_name/participants 的 JSON
+│       ├── SOP.md                       ← Fat Mo 操作指南（架構說明 + 日常=看Telegram即可）
+│       └── package.json                 ← ESM，零 runtime 依賴；npm test/watchdog/calibrate/selftest
+│   # 自動化主體在 n8n workflow「FHS_IGWatchdog_DriveWatch」（NAS），非本機 repo 程式碼
+│   # ⚠️ 客人 DM 內容只在 Google Drive↔NAS n8n 記憶體間流動，永不落本機/Git/第三方雲端
 ├── artifacts/                           ← /cl-flow 執行時生成（已納入 .gitignore，不版控）
 │   └── {flow_id}/                       ← 每次 /cl-flow 產生獨立資料夾
 │       ├── task-brief.md

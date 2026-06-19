@@ -46,7 +46,7 @@
 6. **n8n 沙箱 process 未定義**：限制性 sandbox 中 `process` 完全未定義，直取 `process.env` 崩潰。必以 `typeof process !== 'undefined'` 條件保護 — 源自 2026-05-23
 7. **PostgREST 括號語法崩潰**：SKU 含括號時（如 "木框套裝 (4肢)"），過濾值必須用雙引號包裹 `sku.like."FILTER*"` — 源自 2026-05-23
 8. **RPC GRANT 安全層級**：SECURITY DEFINER 函式若寫業務表（如 products），GRANT 應給 service_role 而非 anon；否則任何持 anon key 的人可觸發 — 源自 2026-05-28
-9. **n8n Code 節點 NAS 限制（fetch 禁用）**：fetch() 未定義、https 模組被禁用，靜默失敗；必須使用 require('axios') 或 HTTP Request 節點 — 源自 2026-05-22
+9. **【更正】n8n Code 節點 NAS 限制**：`fetch`/`require`/`process` 三者皆鎖（require('axios') 同樣失敗，非僅 fetch），改用 HTTP Request 節點；但 `Buffer` 全域物件、`compression` 節點（解壓ZIP）可用；HTTP Request 回應空陣列時下游 0-item 節點被跳過，須設 `alwaysOutputData` — 源自 2026-05-22，2026-06-19 修正補充
 10. **Smart Cache COST_MAP 硬編碼遺漏**：新 SKU 上線若未在 Smart Cache Strategist 節點新增成本條目，成本計算返回 0；已補入 /new-product Step 2.e — 源自 2026-05-23
 11. **Airtable formula 不可靠處理 lookupValues**：multipleLookupValues 陣列計算失可靠；核心財務欄位必須由 n8n 計算後直接寫入 — 源自 2026-05-03
 12. **try-catch 靜默吞掉 TDZ 錯誤**：Temporal Dead Zone 錯誤被 catch 吞掉，導致 Order_Items_List 空白無任何錯誤提示 — 源自 memory

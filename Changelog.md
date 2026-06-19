@@ -1,5 +1,33 @@
 # Changelog
 
+## [2026-06-19] 🆕 Session 110 — IG 漏單看門狗改全自動（方案C：全 NAS n8n 跑）
+
+**範圍**：`scripts/ig-watchdog/`（刪 `server.mjs`，新增 `build_n8n_workflow.cjs`）、`SOP.md`、`scripts/README.md`、n8n workflow `FHS_IGWatchdog_DriveWatch`（新建）
+
+### [FEAT] Session 108 看門狗由「人手匯出+本機常駐」升級為「IG 每日自動匯出+全 NAS 跑」
+- **動機**：Fat Mo 要求「人手1鍵啟動後自動完成全程」。原規劃方案A（本機 server.mjs 常駐接收ZIP分析）已建好並端到端測試通過，但有「主機關機=分析暫停」的硬依賴
+- **關鍵發現**：IG「下載你的資訊」支援目的地選 **Google Drive** + 頻率選 **每天**，使匯出本身變成零點擊全自動排程（非僅一鍵）；NAS n8n 實測 Execute Command/Code節點`require`/`fetch`/`process.env`被鎖，但 **Code 節點 `Buffer` 可用** + **Compression 節點可解壓 ZIP**（皆透過建臨時 webhook probe workflow 實測驗證，測完即刪）→ 證實可將 decoder.mjs/match.mjs 邏輯完整移植進 n8n Code 節點，無需任何本機常駐組件
+- **新架構**：Google Drive Trigger（監測root，fileCreated）→ IF 過濾.zip → Download File → Compression 解壓 → Code「Parse Inbox」（mojibake解碼+thread分組，移植自decoder.mjs）→ HTTP Request×2查Supabase orders/sales_pipeline（anon key唯讀）→ Code「Classify & Report」（Levenshtein模糊比對+🔴🟡⚪分級，移植自match.mjs）→ Telegram Notify
+- **踩坑記錄**：(1) NAS用`filesystem-v2`二進位儲存模式，Code節點讀binary不能用`.data`(base64)，需`await this.helpers.getBinaryDataBuffer(itemIndex,key)`；(2) HTTP Request節點對空陣列回應預設0 items會導致下游節點被跳過（n8n預設0輸入=不執行)，需設`alwaysOutputData:true`
+- **驗證**：用既有19/19測試通過的fixtures，透過臨時webhook probe workflow跑完整鏈（Decompress→Parse→Fetch×2→Classify），結果🔴2🟡2與分類邏輯正確，測試完即刪除probe workflow
+- **棄用清理**：刪`scripts/ig-watchdog/server.mjs`（方案A本機常駐伺服器）；移除已不需要的Windows防火牆8731埠規則（待Fat Mo以管理員權限移除，本工具無權限自動執行）
+- **已知限制**：(1) 別名字典`ig_name_map.json`機制（v2 W1）未移植到NAS版，僅本機`index.mjs`保留；(2) 本機版`index.mjs`與NAS版Code節點邏輯重複維護於兩處，改規則需雙邊同步——已記錄於`build_n8n_workflow.cjs`頂部註解與SOP.md
+- **回滾**：n8n停用/刪除`FHS_IGWatchdog_DriveWatch` workflow即可，零線上業務系統影響
+
+## [2026-06-17] 🆕 Session 108 — IG 漏單看門狗（本地唯讀，DYI 路線）
+
+**範圍**：`scripts/ig-watchdog/`（新增）、`.gitignore`（+3 行）、`docs/repo-map.md`、`scripts/README.md`
+
+### [FEAT] IG 漏單看門狗 — 偵測「IG 有單但 Supabase 無紀錄」
+- **背景**：IG Graph API `instagram_manage_messages` Advanced Access 需 Meta 商業驗證（BR/網站/業務帳單），FHS 三者皆無 → 即時 API 路線封死（前置 flow 2026-06-16-2012 已 cancelled）。改用 Meta 原生「下載你的資訊」(DYI) 匯出，唯一合法免驗證途徑（人工觸發、非即時）
+- **架構**：100% 本地、唯讀外掛。解析 DYI inbox JSON → 與 Supabase `orders`+`sales_pipeline` 唯讀比對 → HTML 報告。**零寫入** Supabase/Airtable，不觸 captureFormState/raw_form_state/確收三欄
+- **核心**：(1) `decoder.mjs` Meta mojibake 解碼（latin1→utf8 + U+FFFD 品質守衛）；(2) `match.mjs` CJK fuzzy（Levenshtein+子串，棄已停維護的 string-similarity）+ DM 訂金對 `orders.deposit`（非 total）+ orders∪pipeline 命中=非漏單；(3) v2 三機制：別名字典 `ig_name_map.json`、🔴🟡⚪ 訊號分層、覆蓋帳本 `coverage.json`
+- **隱私**：客人 DM 與報告只存 `.fhs-local/ig-watchdog/`（.gitignore 封鎖）+ pre-commit hook 二級守衛（擋含 sender_name/participants 的 JSON）
+- **驗收**：單元測試 19/19 PASS（decoder 7 + match 12）；離線 selftest 全鏈 PASS（5 thread → 🔴1/🟡1/matched1/pipeline1/skip1，mojibake 零亂碼）；git status 確認零私隱檔追蹤
+- **技術選型**：純 JS (.mjs，零 build/零 runtime 依賴) + 精簡 hybrid（index + lib/decoder + lib/match）
+- **規劃鏈**：`artifacts/2026-06-16-2330/cl-final-plan.md`（CONDITIONAL_READY，6 修正 C1-C6 全內化）
+- **回滾**：刪 `scripts/ig-watchdog/` + `.fhs-local/` + 撤銷 .gitignore 相關行，秒級復原，零線上影響
+
 ## [2026-06-16] 🔧 Session 109 — 核對帳單 bottom-sheet 路由修復（選項 B）
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（3 處：line 9385–9387 / 9467 / 14184）

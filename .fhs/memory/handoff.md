@@ -1,6 +1,6 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-16（Session 109 — 核對帳單 bottom-sheet 路由修復：openOrderModal 加 initialTab 第三參數）
+> 上次更新：2026-06-19（Session 110 — IG 漏單看門狗改全自動方案C：全 NAS n8n 跑）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -8,6 +8,15 @@
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | ⏳ 待確認 | 若仍高 → 查 n8n 訂單量 |
 | 🟡 中 | **NAS 重部署（核對帳單路由修復）** | ⏳ 待授權 | V42 dev 已修；current.html（線上）同 bug，需 Fat Mo 授權升格覆蓋 |
+| 🟡 中 | **IG 看門狗：重新指派 Google Drive credential** | ⏳ 待 Fat Mo | n8n workflow `FHS_IGWatchdog_DriveWatch` 兩個 Drive 節點（Trigger+Download）的 credential 被最後一次 API PUT 洗掉，需手動回編輯器重新指派 |
+| ⚪ 低 | **IG 看門狗：移除 8731 防火牆規則** | ⏳ 待 Fat Mo | 方案C上線後不再需要；需管理員權限執行 `Remove-NetFirewallRule -DisplayName "FHS-IGWatchdog-Local"` |
+| 🟡 中 | **IG 看門狗：啟用 workflow + 驗證首次自動匯出** | ⏳ 待驗證 | 確認 Drive 出現的檔案真的是 IG 內容（非 FB）、實際路徑符合 Trigger 設定（root） |
+
+### 已確認完成（Session 110 核實）
+- ✅ **[FEAT] IG 漏單看門狗改全自動（方案C：全 NAS n8n 跑）** — 原方案A本機常駐server.mjs已棄用刪除；改用IG「每天自動匯出到Google Drive」+ n8n Google Drive Trigger監測 → Compression解壓 → Code節點移植decoder.mjs/match.mjs邏輯（mojibake解碼+CJK模糊比對+🔴🟡⚪分級）→ HTTP Request唯讀查Supabase → Telegram通知。零主機依賴。workflow `FHS_IGWatchdog_DriveWatch`（ID D4LK6VrQbiXlju0V）
+- ✅ **NAS n8n Code節點能力邊界精確化** — 實測Buffer/Compression節點可用（require/fetch/process仍鎖），filesystem-v2二進位讀檔需`getBinaryDataBuffer`，HTTP空陣列回應需`alwaysOutputData`否則下游節點被跳過；詳見lesson 2026-06-19
+- ✅ **端到端測試通過** — 用既有fixtures透過臨時webhook probe workflow跑完整鏈，🔴2🟡2結果正確，測試完即刪除probe workflow零殘留
+- ⏳ **Subagent 使用記錄**：本 session 全程未使用 subagent，所有 n8n probe 測試/程式碼移植/文件更新均由主 agent 直接執行
 
 ### 已確認完成（Session 109 核實）
 - ✅ **[FIX] 核對帳單 bottom-sheet 路由 bug** — 點「核對帳單」應開「💰 財務」分頁卻停在「📝 訊息文本」；根因 Session 103 誤把 `openOrderModal` 第二參數當 tab，實為 catFilter('A'/'B'/undefined)；修法（選項 B）`openOrderModal(orderId, catFilter, initialTab)` 加第三參數 + DOM 同步建好後 `switchModalTab(initialTab)`；btnAudit 改 `(orderId, '', 'finance')`；11 個既有呼叫點零回歸（Session 109）

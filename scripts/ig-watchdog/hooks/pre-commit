@@ -1,0 +1,35 @@
+#!/bin/sh
+# FHS IG Watchdog — 隱私 pre-commit 守衛（第二道防線）
+# 安裝：cp scripts/ig-watchdog/hooks/pre-commit .git/hooks/pre-commit
+#
+# 阻擋任何「疑似 IG DM 匯出」的檔案誤入暫存區：
+#  - .fhs-local/ 內任何檔
+#  - 任何 .zip
+#  - 內容含 IG DM 特徵欄位（sender_name / participants）的 JSON
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+blocked=""
+
+for f in $staged; do
+  case "$f" in
+    # 白名單：已知合成測試資料（無真實客人），允許 tracked
+    scripts/ig-watchdog/fixtures/*) continue ;;
+    .fhs-local/*|*/.fhs-local/*) blocked="$blocked\n  [私隱目錄] $f" ;;
+    *.zip)                       blocked="$blocked\n  [壓縮檔] $f" ;;
+    *.json)
+      if [ -f "$f" ] && grep -lE '"(sender_name|participants)"' "$f" >/dev/null 2>&1; then
+        blocked="$blocked\n  [疑似 IG DM] $f"
+      fi
+      ;;
+  esac
+done
+
+if [ -n "$blocked" ]; then
+  printf "\n🚫 pre-commit 阻擋：偵測到疑似客人 DM / 私隱檔，禁止 commit：%b\n" "$blocked"
+  printf "\n如確認誤判，可用 git commit --no-verify 強制（請三思隱私風險）。\n\n"
+  exit 1
+fi
+
+exit 0

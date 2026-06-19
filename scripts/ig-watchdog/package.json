@@ -1,0 +1,17 @@
+{
+  "name": "fhs-ig-watchdog",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FHS 本地唯讀 IG 漏單看門狗 — 解析 Meta DYI 匯出 JSON，與 Supabase orders+pipeline 比對，輸出疑似漏單報告。零自動寫入、零外部依賴。",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test lib/decoder.test.mjs lib/match.test.mjs",
+    "watchdog": "node index.mjs",
+    "calibrate": "node index.mjs --calibrate",
+    "selftest": "node index.mjs --selftest",
+    "serve": "node server.mjs"
+  }
+}

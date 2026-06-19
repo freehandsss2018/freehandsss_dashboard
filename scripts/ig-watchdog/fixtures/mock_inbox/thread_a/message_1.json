@@ -1,0 +1,26 @@
+{
+  "participants": [
+    {
+      "name": "é³ç¾ç²"
+    },
+    {
+      "name": "free_handsss"
+    }
+  ],
+  "title": "é³ç¾ç²",
+  "thread_path": "inbox/陳美玲",
+  "messages": [
+    {
+      "sender_name": "free_handsss",
+      "timestamp_ms": 1781229695527,
+      "content": "ä½ å¥½ï¼è«åæ³æ´éæ¬¾ï¼",
+      "type": "Generic"
+    },
+    {
+      "sender_name": "é³ç¾ç²",
+      "timestamp_ms": 1781316095527,
+      "content": "æå·²è½è¨é 500ï¼éº»ç©ä½ ",
+      "type": "Generic"
+    }
+  ]
+}

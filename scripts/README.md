@@ -61,6 +61,30 @@
 
 **回滾方法**：刪除 `.claude/settings.json` 中的 `hooks` 區段即可停用所有 hooks，腳本檔案不受影響。
 
+## ig-watchdog/ — IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→109）
+
+唯讀工具，零人手介入。IG 設定每天自動匯出訊息到 Google Drive → n8n Google Drive Trigger
+偵測新檔 → Compression 解壓 → Code 節點（mojibake 解碼 + CJK 模糊比對）→ 唯讀查 Supabase
+`orders`/`sales_pipeline` → 分級（🔴疑似漏單/🟡待查/⚪低信心）→ Telegram 推送摘要。
+**永不寫入** Supabase/Airtable；客人 DM 內容全程不落地本機/Git/第三方雲端，只在
+Drive↔NAS n8n 記憶體間流動。n8n workflow：`FHS_IGWatchdog_DriveWatch`（ID `D4LK6VrQbiXlju0V`）。
+完整操作/重建見 `ig-watchdog/SOP.md`。
+
+| 檔案/指令 | 用途 |
+|------|------|
+| `build_n8n_workflow.cjs` | **改規則的唯一入口**：產生 n8n workflow JSON（含 Code 節點移植邏輯），PUT 上 n8n 套用 |
+| `npm run watchdog`/`calibrate`/`selftest` | 本機手動工具，保留作 ad-hoc 深度分析/校準用，非日常必需（見 SOP §五）|
+| `npm test` | 單元測試（decoder mojibake 解碼 + match 分類，19 cases）|
+
+**演進**：原規劃本機常駐 `server.mjs`（方案A）已棄用並刪除——實測發現 NAS n8n 的 Code 節點
+其實能用 `Buffer`+`Compression` 節點完成全部解壓/解碼/比對，遂改為全 NAS 跑（方案C），
+徹底消除「主機關機=分析暫停」的依賴。
+
+**背景**：IG Graph API 讀 DM 需 Meta 商業驗證（BR/網站/業務帳單），FHS 無 → 此路封死；
+DYI 每日自動匯出是唯一合法免驗證途徑。詳見 `artifacts/2026-06-16-2330/cl-final-plan.md`。
+
+**回滾**：n8n 停用/刪除 `FHS_IGWatchdog_DriveWatch` workflow 即可，零線上業務系統影響。
+
 ## cl-flow-runner.js 使用說明
 
 **直接使用**（Claude 會自動觸發，通常不需手動執行）：

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-19 (Session 110 — IG 漏單看門狗改全自動方案C): 🆕 全 NAS n8n 跑 ✅
+
+**Scope**：Session 108 方案A（本機常駐 server.mjs）依 Fat Mo 要求改方案C（IG每天自動匯出Google Drive + n8n全自動跑，零主機依賴）；實測NAS n8n Code節點Buffer/Compression可用（require/fetch/process仍鎖）；移植decoder.mjs/match.mjs邏輯進Code節點；踩坑：filesystem-v2二進位讀檔需getBinaryDataBuffer、HTTP空陣列回應需alwaysOutputData；建`build_n8n_workflow.cjs`為改規則唯一入口；刪除已棄用server.mjs；端到端測試（webhook probe，測完即刪）🔴2🟡2結果正確
+**Result**：workflow `FHS_IGWatchdog_DriveWatch`（D4LK6VrQbiXlju0V）已推送正式版；待Fat Mo重新指派Google Drive credential（被API PUT洗掉）+ 移除8731防火牆規則 + 啟用workflow + 驗證首次自動匯出
+
 ## 2026-06-16 (Session 109 — 核對帳單路由修復): 🔧 V42 3處改動 ✅
 
 **Scope**: bottom-sheet「核對帳單」點擊未跳財務分頁修復；根因 `openOrderModal` 第二參數是 catFilter 非 tab（Session 103 誤傳 'finance'）；選項 B：加第三參數 `initialTab` + DOM 建好後 `switchModalTab(initialTab)` + btnAudit 改 `(orderId,'','finance')`；11 呼叫點零回歸
