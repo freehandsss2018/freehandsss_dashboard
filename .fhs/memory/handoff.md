@@ -1,6 +1,6 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-19（Session 110 — IG 漏單看門狗改全自動方案C：全 NAS n8n 跑）
+> 上次更新：2026-06-20（Session 111 — IG 看門狗 v2 重建部署；Session 110 的 v1 架構〔ZIP+Drive Trigger監測root〕已被 Phase 0 實測證偽並取代，見下方 Session 111 區塊）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -8,12 +8,48 @@
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | ⏳ 待確認 | 若仍高 → 查 n8n 訂單量 |
 | 🟡 中 | **NAS 重部署（核對帳單路由修復）** | ⏳ 待授權 | V42 dev 已修；current.html（線上）同 bug，需 Fat Mo 授權升格覆蓋 |
-| 🟡 中 | **IG 看門狗：重新指派 Google Drive credential** | ⏳ 待 Fat Mo | n8n workflow `FHS_IGWatchdog_DriveWatch` 兩個 Drive 節點（Trigger+Download）的 credential 被最後一次 API PUT 洗掉，需手動回編輯器重新指派 |
-| ⚪ 低 | **IG 看門狗：移除 8731 防火牆規則** | ⏳ 待 Fat Mo | 方案C上線後不再需要；需管理員權限執行 `Remove-NetFirewallRule -DisplayName "FHS-IGWatchdog-Local"` |
-| 🟡 中 | **IG 看門狗：啟用 workflow + 驗證首次自動匯出** | ⏳ 待驗證 | 確認 Drive 出現的檔案真的是 IG 內容（非 FB）、實際路徑符合 Trigger 設定（root） |
+| 🟡 中 | **IG 看門狗 v2：等待首次真實 Cron 排程跑（06:00 UTC）並收到 Telegram** | ⏳ 待驗證 | Phase 0 實測 + 端到端測試（拋棄式副本）皆通過，真實找到 1 個🟡候選（Charmaine SIN）；credential 已補上（見下方已確認完成），待今晚排程實跑驗證真的收到通知 |
+| ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
 
-### 已確認完成（Session 110 核實）
+### 已確認完成（Session 111 核實 — IG 看門狗 v2，取代下方 Session 110 描述的 v1）
+- ⚠️ **v1（Session 110）架構已證偽**：實測發現 Meta Drive 匯出**非 ZIP**（直接鏡射解壓後資料夾樹）、
+  Drive Trigger 監測 root **不會**對 7 層深的子資料夾變動觸發。v1 描述的「Drive Trigger→Compression解壓」
+  鏈路從未在生產環境真正跑通過一次。
+- ✅ **Phase 0 實測（cl-flow Flow ID 2026-06-20-0112）**：用拋棄式 probe workflow（建立→測→刪，零殘留）
+  確認 7 項事實 F1-F7，詳見 `artifacts/2026-06-20-0112/cl-final-plan.md`。關鍵：(a) Google Drive 節點原始
+  query 須 `searchMethod:'query'`+`queryString`（非 `filter.query`）；(b) `mimeType='application/json'`
+  乾淨排除媒體；(c) `options.fields` 須陣列；(d) 全域無 parent 限定的 query 接多輸入節點下游會被
+  n8n「每輸入項執行一次」造成 N 倍重複（拓樸問題非節點 bug）；(e) scoped 查詢零重複且直接拿到資料夾名；
+  (f) 同容器下已累積多個 `instagram-*` 子資料夾（需用 id 非名稱追蹤已處理）；(g) pairedItem 在
+  Drive Search fan-out 後可靠，可用 `$('NodeName').item` 串接多層 scoped 查詢不丟 context。
+- ✅ **v2 架構重建**：Schedule Trigger（Cron 06:00 UTC）取代 Drive Trigger；移除 Is ZIP/Decompress；
+  改「以每日匯出資料夾為工作單元 + scoped 逐層查詢」（容器→instagram-*→your_instagram_activity→
+  messages→inbox→thread資料夾→message_*.json），thread 名稱直接從 scoped 查詢拿到（不再用檔名
+  regex 反推）。新增 per-thread message timestamp cursor（`workflowStaticData`，非 Supabase migration，
+  維持唯讀零寫入業務表）+ id 去重保險 + 90 分鐘靜止窗防讀到寫入中的匯出 + 健全計數器（掃描 thread/檔案數）
+  讓異常數字能自我揭穿。生成器：`scripts/ig-watchdog/build_n8n_workflow.cjs`（單一真源，已重寫）。
+- ✅ **端到端測試通過（真實資料，拋棄式測試副本）**：找到 1 個真實🟡候選（Charmaine SIN，有下單意圖
+  無付款證據）；K 媽媽 thread 的訂單明細因是商家自己回覆確認（非客人本人說的）被正確排除，未誤判。
+  二次呼叫驗證「0 新資料夾」分支（staticData 正確記住已處理過）。測試完即刪除，零殘留。
+- ✅ **已 PUT 部署至正式 workflow** `FHS_IGWatchdog_DriveWatch`（ID D4LK6VrQbiXlju0V），17 節點，active。
+- ✅ **7 個 Google Drive 節點 credential 已補上（無需 Fat Mo 手動操作）**：原以為「API 沒法指派
+  credential」僅指**沒有列表端點**（無法探索未知 ID），但 credential ID 早已知（`zQHavrW0ElfaKGxG`，
+  Session 110 即用過）；直接在 PUT body 帶入該 ID 重新覆寫即可，GET 驗證 7 個節點 + Telegram 節點
+  credential 皆正確掛上。**修正前序判斷**：日後遇到「PUT 洗掉 credential」情境，若 credential ID
+  已知，可直接 API 補回，不必每次都要求人工去 UI 重新指派。
+- ⏳ **待驗證**：今晚首次真實 Cron 排程跑（06:00 UTC）+ 收到 Telegram 通知（見上方 MASTER 表）。
+- ✅ **runner 基礎設施修復（附帶發現）**：`scripts/cl-flow-runner.js` 的 Perplexity 呼叫因
+  `sonar-reasoning-pro` 推理模型 `max_tokens:3072` 過低靜默回空白報告，已修復為 8000 + 空 content
+  偵測 throw（影響 `/cl-flow`、`/ag-flow`，`/cl-flow-fast` 因跳過 PX 不受影響）；learnings #39。
+- 📝 **v3 候選已記入待辦（不在本次範圍）**：圖片內容分析（n8n 串接免費視覺 AI 驗證收據真偽），
+  見上方 MASTER 表，Fat Mo 已同意另開規劃不回頭改 v2。
+- ⏳ **Subagent 使用記錄**：Session 110+111 全程未使用 subagent，所有 n8n probe 測試/程式碼移植/
+  文件更新均由主 agent 直接執行。
+
+### 已確認完成（Session 110 核實，v1 架構，已被上方 Session 111 取代）
 - ✅ **[FEAT] IG 漏單看門狗改全自動（方案C：全 NAS n8n 跑）** — 原方案A本機常駐server.mjs已棄用刪除；改用IG「每天自動匯出到Google Drive」+ n8n Google Drive Trigger監測 → Compression解壓 → Code節點移植decoder.mjs/match.mjs邏輯（mojibake解碼+CJK模糊比對+🔴🟡⚪分級）→ HTTP Request唯讀查Supabase → Telegram通知。零主機依賴。workflow `FHS_IGWatchdog_DriveWatch`（ID D4LK6VrQbiXlju0V）
+- ✅ **8731 防火牆規則已移除** — 方案C上線後不再需要本機常駐埠，Fat Mo 以管理員權限執行 `Remove-NetFirewallRule` 確認移除（2026-06-20 驗證 CONFIRMED REMOVED）
+- ✅ **Google Drive credential 重新指派 + workflow 已啟用** — Fat Mo 在 n8n 編輯器手動重新指派 Google Drive Trigger + Download File 兩節點的 credential（API PUT 洗掉的部分），workflow 確認顯示綠點「Published」狀態（2026-06-20）
 - ✅ **NAS n8n Code節點能力邊界精確化** — 實測Buffer/Compression節點可用（require/fetch/process仍鎖），filesystem-v2二進位讀檔需`getBinaryDataBuffer`，HTTP空陣列回應需`alwaysOutputData`否則下游節點被跳過；詳見lesson 2026-06-19
 - ✅ **端到端測試通過** — 用既有fixtures透過臨時webhook probe workflow跑完整鏈，🔴2🟡2結果正確，測試完即刪除probe workflow零殘留
 - ⏳ **Subagent 使用記錄**：本 session 全程未使用 subagent，所有 n8n probe 測試/程式碼移植/文件更新均由主 agent 直接執行

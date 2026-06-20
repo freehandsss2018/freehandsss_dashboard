@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-06-20] 🔧 Session 111 — IG 看門狗 v2 重建（修正 Session 110 v1 架構）+ cl-flow PX 靜默失敗修復
+
+**範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`（重寫）、`scripts/cl-flow-runner.js`（修復）、n8n workflow `FHS_IGWatchdog_DriveWatch`（重建，ID D4LK6VrQbiXlju0V）
+
+### [FIX] IG 看門狗 v1 架構（Session 110）證偽，改建 v2
+- **觸發**：Fat Mo 觀察「月走月壞」現象，要求先系統性了解 Meta DYI 運作模型再重估方案（`/cl-flow`，Flow ID 2026-06-20-0112）
+- **v1 被推翻的兩個假設**：(1) Meta Drive 匯出是 ZIP——實測為**直接鏡射解壓後的資料夾樹**，無壓縮檔；(2) Google Drive Trigger 監測 root 可偵測新檔——實測**子資料夾內變動不觸發**，且每日新增的是「新資料夾」（instagram-*）非 root 下的「新檔案」，v1 從未在生產環境真正觸發過一次
+- **Phase 0 實測（probe-then-delete，零殘留）**：確立 F1-F7 七項事實，詳見 `artifacts/2026-06-20-0112/cl-final-plan.md`。關鍵：Google Drive 節點原始 query 須 `searchMethod:'query'`+`queryString`（`filter.query` 會被靜默忽略）；`mimeType='application/json'` 排除媒體；`options.fields` 須陣列；無 parent 限定的全域 query 接多輸入節點下游會被「每輸入項執行一次」誤判為重複 bug（實為拓樸問題）；scoped 查詢零重複且 pairedItem 可靠，可逐層串接拿到 thread 名稱
+- **v2 新架構**：Schedule Trigger（Cron 06:00 UTC）取代 Drive Trigger；移除 Is ZIP/Decompress；改「以每日匯出資料夾為工作單元 + scoped 逐層查詢」；新增 per-thread message timestamp cursor（`workflowStaticData`，非 Supabase migration）+ id 去重 + 90 分鐘靜止窗 + 健全計數器（掃描 thread/檔案數，讓異常數字能自我揭穿）
+- **驗證**：拋棄式測試副本對真實資料端到端跑通，正確找到 1 個🟡候選並正確排除商家自填訊息誤判；7 個 Google Drive 節點 credential 已用已知 ID 透過 API 補回（修正前序「PUT 洗掉 credential 必須人工 UI 重指派」的判斷——ID 已知時可直接 API 補）
+- **回滾**：n8n 停用/刪除 workflow 即可，零線上業務系統影響；零 Supabase migration、零業務表寫入
+
+### [FIX] `scripts/cl-flow-runner.js` Perplexity 推理模型靜默回空白報告
+- **根因**：`sonar-reasoning-pro` 推理模型在 `<think>` 階段消耗 `max_tokens`，舊值 `3072` 在複雜 prompt 下被吃光，導致 `message.content` 回空字串——HTTP 200 + `finish_reason:'stop'`，不拋錯，px-report.md 恆寫空白通過整條 Verdict 鏈
+- **修復**：`max_tokens` 提高至 8000；resolve 前檢查空 content 視為失敗 throw，交 `withRetry` 重試
+- **影響**：`/cl-flow`、`/ag-flow` 共用此函式皆受影響並已修復；`/cl-flow-fast --quick` 跳過 PX 不受影響
+
 ## [2026-06-19] 🆕 Session 110 — IG 漏單看門狗改全自動（方案C：全 NAS n8n 跑）
 
 **範圍**：`scripts/ig-watchdog/`（刪 `server.mjs`，新增 `build_n8n_workflow.cjs`）、`SOP.md`、`scripts/README.md`、n8n workflow `FHS_IGWatchdog_DriveWatch`（新建）

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-20 (Session 111 — IG 看門狗 v2 重建 + cl-flow PX 修復): 🔧 修正 Session 110 v1 架構 ✅
+
+**Scope**：Fat Mo 觀察「月走月壞」要求先系統性查清 Meta DYI 運作再重估（`/cl-flow` Flow ID 2026-06-20-0112）；Phase 0 實測（probe-then-delete）推翻 v1 兩大假設——Drive 匯出非ZIP（直接鏡射資料夾樹）、Drive Trigger監測root不會對子資料夾觸發；確立F1-F7：`searchMethod:'query'`才是原始Drive q查詢、`mimeType=json`排除媒體、`options.fields`須陣列、全域query接多輸入節點下游會N倍暴增（拓樸問題非bug）、scoped查詢零重複+pairedItem可靠；v2改Cron+scoped逐層查詢+per-thread cursor（workflowStaticData）+id去重+90分鐘靜止窗；附帶修復cl-flow-runner.js Perplexity推理模型靜默回空白報告bug（max_tokens 3072→8000+空content偵測）
+**Result**：拋棄式測試副本對真實資料端到端跑通（正確識別🟡候選+正確排除商家自填訊息）；v2已PUT部署正式workflow；7個Drive節點credential已用已知ID直接API補回（修正前序「必須人工UI重指派」判斷）；v3圖片分析候選已記入待辦（Fat Mo同意另開規劃不回頭改v2）；待今晚06:00 UTC首次真實排程驗證Telegram通知
+
 ## 2026-06-19 (Session 110 — IG 漏單看門狗改全自動方案C): 🆕 全 NAS n8n 跑 ✅
 
 **Scope**：Session 108 方案A（本機常駐 server.mjs）依 Fat Mo 要求改方案C（IG每天自動匯出Google Drive + n8n全自動跑，零主機依賴）；實測NAS n8n Code節點Buffer/Compression可用（require/fetch/process仍鎖）；移植decoder.mjs/match.mjs邏輯進Code節點；踩坑：filesystem-v2二進位讀檔需getBinaryDataBuffer、HTTP空陣列回應需alwaysOutputData；建`build_n8n_workflow.cjs`為改規則唯一入口；刪除已棄用server.mjs；端到端測試（webhook probe，測完即刪）🔴2🟡2結果正確

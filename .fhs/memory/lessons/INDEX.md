@@ -72,3 +72,4 @@
 | 2026-06-12 | 2026-06-12_knowledge-governance-enforcement-layer.md | 知識治理強制執行層 | kgov, hooks, 3-layer, execute-G, pitfall | 邏輯改動不更新文件導致反覆犯錯；B1+B2+D 三層防禦設計記錄 |
 | 2026-06-13 | 2026-06-13_audit_ledger_four_column_unreliable.md | Audit Ledger 四欄不可靠 | audit-ledger, four-column, task-a, total_cost, pitfall, v42 | order_items 四欄 91% 空（Task A 半成品），成本顯示須以 total_cost 為真理；問題E運費扣減破壞驗證1 |
 | 2026-06-19 | 2026-06-19_n8n-nas-code-node-buffer-compression-capabilities.md | NAS Code節點能力邊界精確化 | n8n, nas, code-node, buffer, compression, filesystem-v2, alwaysOutputData | Buffer/Compression節點可用（require/fetch/process仍鎖），filesystem-v2讀檔法+空陣列跳過節點兩個踩坑 |
+| 2026-06-20 | 2026-06-20_n8n-google-drive-search-query-mechanics.md | Google Drive Search 查詢機制精確化 | n8n, google-drive, search, query, pairedItem, fan-out, ig-watchdog-v2 | searchMethod:query才是原始q查詢(filter.query靜默忽略)、fields須陣列、全域query接多輸入下游N倍暴增為拓樸問題非bug、pairedItem在fan-out後可靠 |

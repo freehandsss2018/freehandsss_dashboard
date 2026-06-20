@@ -45,12 +45,19 @@ function writeFile(filePath, content) {
 }
 
 // ─── API: Perplexity ─────────────────────────────────────────────────────────
+// NOTE (2026-06-20 fix): sonar-reasoning-pro 是推理模型，<think> 階段會消耗 max_tokens 配額。
+// 舊版 max_tokens:3072 在較長/較複雜的研究 prompt 下會被推理階段吃光，導致 message.content 回傳
+// 空字串——且 API 回 HTTP 200 + finish_reason:'stop'，不拋錯，是「靜默失敗」。
+// 修正：(1) max_tokens 提高至 8000（與 Gemini maxOutputTokens:8192 對齊量級）
+//       (2) resolve 前檢查 content 是否為空，空字串視為失敗 throw，交給 withRetry 重試/最終拋錯，
+//           不再讓空白悄悄寫入 px-report.md
+//       (3) finish_reason==='length'（被截斷）僅 warn，不視為失敗（內容仍可用，只是結尾可能不完整）
 function callPerplexity(prompt) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       model: 'sonar-reasoning-pro',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 3072
+      max_tokens: 8000
     });
 
     const options = {
@@ -71,7 +78,18 @@ function callPerplexity(prompt) {
         try {
           const json = JSON.parse(data);
           if (json.error) return reject(new Error('Perplexity API error: ' + json.error.message));
-          resolve(json.choices[0].message.content);
+          const choice = json.choices && json.choices[0];
+          const content = choice && choice.message && choice.message.content;
+          if (!content || !content.trim()) {
+            return reject(new Error(
+              'Perplexity returned empty content (finish_reason=' + (choice && choice.finish_reason) +
+              ') — reasoning model likely exhausted max_tokens in <think> phase before producing an answer.'
+            ));
+          }
+          if (choice.finish_reason === 'length') {
+            console.warn('[cl-flow-runner] ⚠️  Perplexity response truncated (finish_reason=length) — content may be incomplete near the end.');
+          }
+          resolve(content);
         } catch (e) {
           reject(new Error('Perplexity parse error: ' + e.message + '\nRaw: ' + data.substring(0, 300)));
         }

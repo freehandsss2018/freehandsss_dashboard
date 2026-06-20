@@ -23,6 +23,7 @@
 12. **kgov 知識治理框架設計模式**：治理文件須有同步觸發機制（AGENTS 規則層 + /execute [F] 稽核），不能靠 AI 自律；最小改動原則：+1 文件填真空，改既有不膨脹 — Session 63
 13. **Supabase MCP 掉線用 Management API 繞過**：`POST api.supabase.com/v1/projects/{ref}/database/query` + `Bearer PAT` 跑任意 SQL/DDL；⚠️ 必用 curl（python-urllib 觸 Cloudflare 1010）— Session 84
 14. **kgov 知識治理強制執行層（B1+B2+D 三層防禦）**：SQL/RPC 改動後不更新 SSoT 是反覆犯錯的根源；解法：B1 強制前置讀取入口 × 4 + B2 execute [G] 觸發稽核 + D PostToolUse hooks 自動寫 flag；HARD_BLOCK=false Phase 1 先觀測誤觸率 — Session 100
+15. **【修正】n8n PUT 洗掉 credential 不一定要人工 UI 重指派**：API 限制是「沒有列表端點」（探索不到未知 ID），但若 credential ID 早已知（曾在別處 GET 確認過），可直接把該 ID 寫進 PUT body 覆寫回去，GET 驗證即可；只有 ID 真的未知時才需要人工去 UI 點選 — Session 111
 
 ---
 
@@ -78,6 +79,7 @@
 36. **【高頻 ⚠️】split 還原被 generate() auto-fill 污染（P33 時序升級）**：`restoreFormState` 多次 `generate()` 中 line 6398 無條件 `_quickHalfFillAllSplits('deposit')` 把空 box 填半額 + `serializeSplits` 污染 hidden 欄；renderPaymentSplits prevData 優先讀污染值 → 存檔值被忽略；+80ms restoreSplits 讀污染 hidden 欄 → 全付/自訂拆分單重載錯顯半額（半額單巧合正確而長期未發現）。Session 101 innerHTML='' 不足（未攔 hidden 污染）。根治＝快照隔離：generate 污染前快照存檔 JSON 為權威，renderPaymentSplits 還原期凌駕 box/hidden；restoreSplits 用 `_fhsPaymentSyncing=true` 壓 cross-sync + finally 清快照；快照四點清除（起點/catch/finally/resetForm）防殘留污染新單 — Session 107
 37. **【平台限制】IG Messaging API Advanced Access 需 Meta Business Verification**：Standard Access 只能讀有 App 角色用戶嘅 DM；讀全部客人 DM 需 Advanced Access；Advanced Access 需通過 Meta Business Verification（BR / 網站 / 業務帳單三選一）。無任何可提交文件嘅個人/小微業務 = 永久封死 IG DM 自動讀取。FHS 已確認此路不通（Session 108）。替代方案：Supabase-only 未更新偵測（S3）或引導客人用 WhatsApp。
 38. **openOrderModal 第二參數是 catFilter 非 tab**：`openOrderModal(orderId, catFilter, initialTab)` — 第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁（text/detail/finance）必須用**第三參數 initialTab**（內部呼 switchModalTab）。Session 103 誤把 'finance' 當第二參數→捷徑永遠停訊息文本分頁。加捷徑/深連結到特定 modal 分頁時切記 — Session 109
+39. **【高頻 ⚠️】cl-flow runner Perplexity 推理模型靜默空白**：`sonar-reasoning-pro` 在 `<think>` 階段吃光低 `max_tokens`（舊值3072），HTTP 200 + finish_reason:'stop' 卻 content 空字串，不拋錯，px-report.md 恆寫空白通過整條 Verdict 鏈。修復：`max_tokens`→8000 + resolve 前檢查空 content 視為失敗 throw 交 withRetry。`/cl-flow`/`/ag-flow` 共用同一 `callPerplexity()` 皆受影響並已修復；`/cl-flow-fast --quick` 跳 PX 不受影響；px-plan/px-audit 非獨立腳本（僅 rp.md 概念條目）無需修 — Session 110
 
 ---
 
