@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-20 (Session 112 — 鎖匙扣成本誤判事故根因排查 + 成本傳播 Phase 1 止血): 🔧 ✅
+
+**Scope**：Fat Mo 改 `cost_configurations.material_cost_keychain_stainless`→115 後，發現訂單 06001008 `order_items.subtotal_cost`仍為185，懷疑未同步；live SQL查證+4支RPC反編譯+migration 0026/schema文件還原組裝公式，確認185=繪圖60+物料115(已是新值)+環扣10，**185本身正確，誤判源於把組裝值當單一原子比對**；同時確認真實缺口——`cost_configurations`改值無任何機制回算`products.total_base_cost`，死碼RPC`recalculate_product_costs`（引用v1 schema不存在欄位）從未真正運作過
+**Result**：migration 0042已部署（DROP死碼RPC + 新增唯讀`fhs_check_product_cost_drift()`，範圍限定嬰兒S/P不銹鋼鎖匙扣40 SKU，smoke test迭代1次後PASS，drift全0）；V42 dev存檔toast加products未自動同步提示；`FHS_System_Logic_Overview.md`§5.3校正多個與live不符的舊值（文件drift本身即同類案例）；附帶發現鋁合金嬰兒層`material_cost_keychain_alloy`key live不存在但SKU在售（base=212），獨立議題已記入待辦；Phase 2單一真源重構未排程
+
 ## 2026-06-20 (Session 111 — IG 看門狗 v2 重建 + cl-flow PX 修復): 🔧 修正 Session 110 v1 架構 ✅
 
 **Scope**：Fat Mo 觀察「月走月壞」要求先系統性查清 Meta DYI 運作再重估（`/cl-flow` Flow ID 2026-06-20-0112）；Phase 0 實測（probe-then-delete）推翻 v1 兩大假設——Drive 匯出非ZIP（直接鏡射資料夾樹）、Drive Trigger監測root不會對子資料夾觸發；確立F1-F7：`searchMethod:'query'`才是原始Drive q查詢、`mimeType=json`排除媒體、`options.fields`須陣列、全域query接多輸入節點下游會N倍暴增（拓樸問題非bug）、scoped查詢零重複+pairedItem可靠；v2改Cron+scoped逐層查詢+per-thread cursor（workflowStaticData）+id去重+90分鐘靜止窗；附帶修復cl-flow-runner.js Perplexity推理模型靜默回空白報告bug（max_tokens 3072→8000+空content偵測）

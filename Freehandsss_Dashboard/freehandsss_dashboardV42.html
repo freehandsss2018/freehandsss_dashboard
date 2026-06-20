@@ -6411,11 +6411,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         // --- V31 分段複製引擎 ---
-        function showToast(msg) {
+        function showToast(msg, duration) {
             const t = document.getElementById("toast");
             t.innerText = msg;
             t.className = "show";
-            setTimeout(() => { t.className = t.className.replace("show", ""); }, 2500);
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, duration || 2500);
         }
 
         function copyMessageA() {
@@ -13740,7 +13740,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     setTimeout(function() {
                         btn.textContent = '儲存'; btn.style.cssText = btnStyle; btn.disabled = false;
                     }, 1800);
-                    if (window.showToast) window.showToast('✅ ' + (meta.display_name || key) + ' 已更新為 ' + val);
+                    if (window.showToast) window.showToast('✅ ' + (meta.display_name || key) + ' 已更新為 ' + val + '；⚠️ products 成本表不會自動同步，請另行執行 drift 檢查確認受影響品項', 6000);
                 })
                 .catch(function(e) {
                     var msg = e && e.message ? e.message : String(e);

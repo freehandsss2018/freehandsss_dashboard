@@ -80,6 +80,7 @@
 37. **【平台限制】IG Messaging API Advanced Access 需 Meta Business Verification**：Standard Access 只能讀有 App 角色用戶嘅 DM；讀全部客人 DM 需 Advanced Access；Advanced Access 需通過 Meta Business Verification（BR / 網站 / 業務帳單三選一）。無任何可提交文件嘅個人/小微業務 = 永久封死 IG DM 自動讀取。FHS 已確認此路不通（Session 108）。替代方案：Supabase-only 未更新偵測（S3）或引導客人用 WhatsApp。
 38. **openOrderModal 第二參數是 catFilter 非 tab**：`openOrderModal(orderId, catFilter, initialTab)` — 第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁（text/detail/finance）必須用**第三參數 initialTab**（內部呼 switchModalTab）。Session 103 誤把 'finance' 當第二參數→捷徑永遠停訊息文本分頁。加捷徑/深連結到特定 modal 分頁時切記 — Session 109
 39. **【高頻 ⚠️】cl-flow runner Perplexity 推理模型靜默空白**：`sonar-reasoning-pro` 在 `<think>` 階段吃光低 `max_tokens`（舊值3072），HTTP 200 + finish_reason:'stop' 卻 content 空字串，不拋錯，px-report.md 恆寫空白通過整條 Verdict 鏈。修復：`max_tokens`→8000 + resolve 前檢查空 content 視為失敗 throw 交 withRetry。`/cl-flow`/`/ag-flow` 共用同一 `callPerplexity()` 皆受影響並已修復；`/cl-flow-fast --quick` 跳 PX 不受影響；px-plan/px-audit 非獨立腳本（僅 rp.md 概念條目）無需修 — Session 110
+40. **order_items 成本是組裝值非單一原子**：勿拿 `subtotal_cost` 直接比對 `cost_configurations` 單一 key 判斷「未同步」；改值後 products 表無自動回算機制，唯一檢查工具 `fhs_check_product_cost_drift()` 範圍有限 — Session 112
 
 ---
 

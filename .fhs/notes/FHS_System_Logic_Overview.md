@@ -181,21 +181,45 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 
 ### 5.3 cost_configurations 關鍵 key
 
-| Key | 值 | 說明 |
+> ⚠️ **2026-06-20（Session 112）live 值校正**：本表前版多個值已與 Supabase live 不符（文件 drift 本身即是本次事故的同類案例）。以下為本次查證之 live 值，校正時間以 `cost_configurations.updated_at` 為準。
+
+| Key | Live 值 | 說明 |
 |-----|----|------|
 | `drawing_cost_baby_s` | $60 | 嬰兒/大寶掃描建模畫圖費 |
 | `drawing_cost_baby_p` | $110 | 嬰兒/大寶照片建模畫圖費 |
 | `drawing_cost_adult_s` | $110 | 成人掃描建模畫圖費 |
 | `drawing_cost_adult_p` | $240 | 成人照片建模畫圖費 |
-| `material_cost_necklace_silver` | $260 | 吊飾925銀打印費 |
-| `material_cost_necklace_gold` | $316 | 吊飾18K金打印費 |
-| `material_cost_keychain_stainless` | $95 | 鎖匙扣不銹鋼（嬰兒）打印費 |
-| `material_cost_keychain_stainless_adult` | $135 | 鎖匙扣不銹鋼（家庭）打印費 |
-| `material_cost_keychain_alloy` | $122 | 鎖匙扣鋁合金（嬰兒）打印費 |
+| `material_cost_necklace_silver` | $465 | 吊飾925銀打印費（前版誤記 $260，已過時）|
+| `material_cost_necklace_gold` | $465 | 吊飾18K金打印費（前版誤記 $316，已過時）|
+| `material_cost_keychain_stainless` | **$115** | 鎖匙扣不銹鋼（嬰兒/大寶）物料費（前版誤記 $95，2026-06-16 改值，本次事故起因）|
+| `material_cost_keychain_stainless_adult` | $125 | 鎖匙扣不銹鋼（成人）物料費（前版誤記 $135）|
+| `material_cost_keychain_alloy_adult` | $135 | 鎖匙扣鋁合金（成人）物料費 |
+| `material_cost_keychain_alloy`（嬰兒層） | **不存在** | ⚠️ 前版文件記載 $122，但此 key 在 live `cost_configurations` 完全不存在；嬰兒鋁合金鎖匙扣 SKU（`products.total_base_cost=212`）成本來源不明，**獨立發現，非本次修復範圍**，待後續排查 |
 | `necklace_chain_cost` | $100 | 吊飾頸鏈費（每條）|
 | `keychain_clasp_cost` | $10 | 鎖匙扣環扣費（每件）|
-| `charm_shipping_deduction_per_extra` | $35 | 吊飾基礎運費（每件毛值）|
-| `keychain_shipping_deduction_per_extra` | $20 | 鎖匙扣基礎運費（每件毛值）|
+| `keychain_shipping_deduction_per_extra` | $20 | 鎖匙扣多件運費扣減（每件）|
+
+### 5.4 成本傳播鏈與已知缺口（Session 112 新增）
+
+**`cost_configurations` 變更 → `products.total_base_cost` 無自動傳播機制**：
+
+```
+cost_configurations（key-value，可編輯）
+        │  fhs_upsert_cost_config()  ← 只寫 key-value，不回算下游
+        ▼
+products.total_base_cost  ← 仍是建表時的 seed 值，除非手動 UPDATE
+        │
+        ▼
+order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照，設計上不回溯）
+```
+
+- 06001008 事故核實：`material_cost_keychain_stainless` 改 115 後，`products.total_base_cost`（185/235）剛好仍與新值組裝一致，**純屬巧合**（seed 本來就是用 115 算的），非系統正確同步。
+- 已壞死的 `recalculate_product_costs(text)` RPC（引用 v1 schema 不存在欄位 `cc.id`/`cc.drawing_cost`/`cc.clasp_cost`，呼叫必報錯）已於 **migration 0042 移除**。
+- 新增唯讀 RPC `fhs_check_product_cost_drift()`：比對 `products.total_base_cost` 與 atom 組裝值，**範圍限定**僅嬰兒 S/P 不銹鋼鎖匙扣（已用 live 數據數學驗證之公式：`drawing_baby_{s|p} + material_cost_keychain_stainless + keychain_clasp_cost`）。其餘 tier（家庭 S1/S2/P1/P2、成人、鋁合金、吊飾、立體擺設）公式未驗證，**刻意不覆蓋**，避免假性 drift 判定。
+- **Dashboard 存檔提示**：`fhs_upsert_cost_config` 存檔成功後，toast 加註「products 成本表不會自動同步，請另行執行 drift 檢查」（V42 dev，line ~13743）。
+- **Phase 2（未排程）**：成本組裝單一真源重構（收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存的成本表徵），另開 `/cl-flow`。
+
+> ✅ Session 112 [G] 稽核收尾確認：本節（§5.3/§5.4）已於 migration 0042 部署同一 session 內同步完成；`finance-gatekeeper/SKILL.md` 路由表已同步加行（v1.3.0）。
 
 ---
 

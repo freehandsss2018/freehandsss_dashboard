@@ -55,7 +55,9 @@ freehandsss_dashboard/
 │   │   ├── 0035_fix_rpc_b1_b6_financial_kpis_charts.sql ← get_financial_kpis + get_financial_charts 全面重建（B1-B6 6 指標，Session 85）✅ 已部署
 │   │   ├── 0036_fix_rpc_b3_qty_deleted_at_guard.sql ← qty 子查詢 8 條補 deleted_at IS NULL 守衛（Session 90）✅ 已部署
 │   │   ├── 0037_add_item_sale_price_and_backfill.sql ← order_items 加 item_sale_price NUMERIC + balanceSplitData 存量補填（Session 90/91）✅ 已部署
-│   │   └── 0038_update_rpc_item_sale_price_3layer.sql ← get_financial_kpis 3-layer fallback（item_sale_price→成本比例→平均分） + data_quality 欄位（Session 90/91，applied via MCP，本地檔待補）✅ 已部署
+│   │   ├── 0038_update_rpc_item_sale_price_3layer.sql ← get_financial_kpis 3-layer fallback（item_sale_price→成本比例→平均分） + data_quality 欄位（Session 90/91，applied via MCP，本地檔待補）✅ 已部署
+│   │   ├── (0039-0041 本地檔缺漏，Session 90-99 applied via MCP 未補建，待後續任務補登 repo-map)
+│   │   └── 0042_drop_dead_recalc_and_cost_drift_check.sql ← DROP 死碼 recalculate_product_costs（v1 schema 遺留，引用不存在欄位必報錯）+ CREATE fhs_check_product_cost_drift()（唯讀比對 products.total_base_cost 與成本原子組裝值，範圍限定嬰兒S/P不銹鋼鎖匙扣，Session 112）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

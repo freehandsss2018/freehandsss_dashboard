@@ -1,15 +1,31 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-20（Session 111 — IG 看門狗 v2 重建部署；Session 110 的 v1 架構〔ZIP+Drive Trigger監測root〕已被 Phase 0 實測證偽並取代，見下方 Session 111 區塊）
+> 上次更新：2026-06-20（Session 112 — 鎖匙扣成本誤判事故根因排查 + 成本傳播 Phase 1 止血，見下方 Session 112 區塊）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | ⏳ 待確認 | 若仍高 → 查 n8n 訂單量 |
-| 🟡 中 | **NAS 重部署（核對帳單路由修復）** | ⏳ 待授權 | V42 dev 已修；current.html（線上）同 bug，需 Fat Mo 授權升格覆蓋 |
+| 🟡 中 | **NAS 重部署（核對帳單路由修復 + 成本設定存檔 toast 提示）** | ⏳ 待授權 | V42 dev 已修（Session 109 路由 + Session 112 toast）；current.html（線上）同步缺，需 Fat Mo 授權升格覆蓋 |
 | 🟡 中 | **IG 看門狗 v2：等待首次真實 Cron 排程跑（06:00 UTC）並收到 Telegram** | ⏳ 待驗證 | Phase 0 實測 + 端到端測試（拋棄式副本）皆通過，真實找到 1 個🟡候選（Charmaine SIN）；credential 已補上（見下方已確認完成），待今晚排程實跑驗證真的收到通知 |
+| 🟡 中 | **鋁合金嬰兒層鎖匙扣成本來源排查** | 📝 已記入待辦 | `material_cost_keychain_alloy`（嬰兒層）live `cost_configurations` 不存在此 key，但對應 SKU（base=212）確實在售，成本來源不明，與本次 stainless 修復案無關，獨立排查（Session 112）|
+| ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
+| ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 112 核實 — 鎖匙扣成本誤判事故根因排查 + Phase 1 止血）
+- ✅ **事故結論**：訂單 06001008 `order_items.subtotal_cost=185` **本身正確**，無需資料校正。185 = 組裝 base cost（繪圖60+物料115+環扣10），非裸物料費；Fat Mo 原假設「物料改115，base就該≈115」為誤讀，已記錄防再犯
+- ✅ **真實 bug 修復**：DROP 死碼 RPC `recalculate_product_costs(text)`（v1 schema 遺留，引用不存在欄位，呼叫必報錯，從未真正工作）；新增唯讀 `fhs_check_product_cost_drift()`（migration 0042，已部署，smoke test PASS：嬰兒S/P不銹鋼鎖匙扣 40 SKU 全數 drift=0）
+- ✅ **V42 dev**：`showToast()` 加可選 duration 參數（向後相容）；成本設定存檔提示加註 products 表不自動同步
+- ✅ **文件 drift 校正**：`FHS_System_Logic_Overview.md` §5.3 多個 key 記載值與 live 不符已修正（stainless 文件$95→live 115；necklace 文件$260/$316→live 均465）；新增 §5.4 成本傳播鏈說明；`finance-gatekeeper/SKILL.md` v1.2.0→v1.3.0 路由表加 drift 檢查指引
+- ✅ **完成記錄**：`.fhs/reports/completion/2026-06-20_keychain_cost_drift_phase1_completion_report.md`
+- 📝 **刻意排除範圍**：家庭/成人複合 tier、鋁合金、吊飾、立體擺設公式未驗證，不納入 drift 函式；`printing_cost` 殘留欄位（如06001008顯示380）不影響財務計算，未清理；Phase 2 單一真源重構未排程
+- ⏳ **Subagent 使用記錄**：本 session 全程未使用 subagent，根因查證（RPC反編譯/live SQL/migration迭代修正）由主 agent 直接執行，理由見完成記錄雙紀律自檢
+
+【交付前雙紀律自檢】
+驗收：財務/成本任務，規則要求 finance-auditor live 三端驗證附訂單號。本次以直接 live SQL 數學驗證完成（40 SKU drift=0 + migration smoke test 強制斷言，首次跑出2筆異常已查證為範本佔位列並修正後重跑PASS）= PASS，未額外派 finance-auditor（理由：問題本質是 RPC/schema 反編譯與公式還原，非三端對賬型問題）
+Subagent：❌ 未使用。前置評估 finance-auditor（live對賬，本案非對賬型，跳過）、database-reviewer（schema審查，已由主agent直接完成等同深度的RPC反編譯，跳過）；理由：需要逐步假設驗證+即時根因追蹤（如drift smoke test失敗後即時查證調整），主agent直接迭代更高效
 
 ### 已確認完成（Session 111 核實 — IG 看門狗 v2，取代下方 Session 110 描述的 v1）
 - ⚠️ **v1（Session 110）架構已證偽**：實測發現 Meta Drive 匯出**非 ZIP**（直接鏡射解壓後資料夾樹）、

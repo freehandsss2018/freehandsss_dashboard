@@ -1,5 +1,28 @@
 # Changelog
 
+## [2026-06-20] 🔧 Session 112 — 鎖匙扣成本誤判事故根因排查 + 成本傳播 Phase 1 止血
+
+**範圍**：`supabase/migrations/0042_drop_dead_recalc_and_cost_drift_check.sql`（新增並已部署）、`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（dev，showToast 擴充 + 存檔提示）、`docs/repo-map.md`、`.fhs/notes/FHS_System_Logic_Overview.md` §5.3/§5.4、`.fhs/ai/skills/finance-gatekeeper/SKILL.md`（v1.2.0→v1.3.0）
+
+### [FIX] 訂單 06001008 鎖匙扣成本「185 vs 設定中心115」誤判 — 結論：185 本身正確，無需資料校正
+- **觸發**：Fat Mo 將 `cost_configurations.material_cost_keychain_stainless` 改為 115，發現 `order_items.subtotal_cost` 仍顯示 185，懷疑成本未同步
+- **根因查證**（live SQL + RPC 反編譯）：185 並非裸物料費，是組裝 base cost = 繪圖60（嬰兒S）+ 物料115（已是新值）+ 環扣10。誤判來自把「組裝結果」與「單一原子值」直接比對
+- **真正發現的 bug**（次要但實質）：`cost_configurations` 變更**從無**自動回算 `products.total_base_cost` 的機制；本次數字剛好對純屬巧合（seed 本來就用 115 算的）。死碼 `recalculate_product_costs(text)` 引用 v1 schema 已不存在欄位，呼叫必報錯，從未真正工作過
+- **附帶發現（獨立議題，未修復）**：`material_cost_keychain_alloy`（嬰兒層鋁合金物料原子）在 live `cost_configurations` 完全不存在 key，但對應 SKU（`嬰兒鎖匙扣 - 鋁合金`，base=212）確實在售，成本來源不明，待後續排查
+
+### [FEAT] Phase 1 止血（v2 方案，刻意不蓋第二套成本組裝引擎，避免 recipe 脆弱風險）
+- DROP 死碼 `recalculate_product_costs(text)`
+- 新增唯讀 RPC `fhs_check_product_cost_drift()`：比對 `products.total_base_cost` 與 atom 組裝值，**範圍限定**僅嬰兒 S/P 不銹鋼鎖匙扣（40 SKU，已用 live 數據數學驗證公式，drift 全 0）；其餘 tier（家庭/成人/鋁合金/吊飾/立體擺設）公式未驗證，刻意不覆蓋
+- V42 dev：`showToast()` 加可選 duration 參數（向後相容）；`fhs_upsert_cost_config` 存檔成功提示加註「products 表不會自動同步，請另行執行 drift 檢查」
+- `Freehandsss_dashboard_current.html`（生產）**未改動**，依硬規則待另行授權升格
+
+### [DOCS] 文件 drift 校正
+- `FHS_System_Logic_Overview.md` §5.3 多個成本 key 記載值與 live 不符（`material_cost_keychain_stainless` 文件寫 $95 / live 115；`necklace_silver/gold` 文件寫 $260/$316 / live 均 465）已校正並補 §5.4 成本傳播鏈說明
+- `finance-gatekeeper/SKILL.md` 路由表加 drift 檢查指引；§四補死碼移除記錄
+
+### Phase 2（未排程）
+- 成本組裝單一真源重構（收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵），另開 `/cl-flow`
+
 ## [2026-06-20] 🔧 Session 111 — IG 看門狗 v2 重建（修正 Session 110 v1 架構）+ cl-flow PX 靜默失敗修復
 
 **範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`（重寫）、`scripts/cl-flow-runner.js`（修復）、n8n workflow `FHS_IGWatchdog_DriveWatch`（重建，ID D4LK6VrQbiXlju0V）
