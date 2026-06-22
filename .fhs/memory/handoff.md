@@ -1,6 +1,6 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-20（Session 112 — 鎖匙扣成本誤判事故根因排查 + 成本傳播 Phase 1 止血，見下方 Session 112 區塊）
+> 上次更新：2026-06-22（Session 113 — learnings.md 70→50 超量整理 + kgov stale flag 清理）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -13,6 +13,14 @@
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 113 核實 — learnings.md 超量整理）
+- ✅ **learnings.md 70→50 條整理**：退役 17 條 Pitfalls（已入 AGENTS 規則 / 被更新版本取代 / 過細一次性 bug）+ 退役 2 條 Patterns（單次特定用 / 過細 JS 內部）+ 合併 #12+#14（kgov 雙條合一）；標頭更新整理日期為 2026-06-22（Session 113）
+- ✅ **stale .kgov-pending flag 清理**：Session 112（2026-06-21）殘留 flag；確認 FHS_System_Logic_Overview.md §5.3（migration 0042 drift 函式）已在 Session 112 更新，flag 為未清除殘留，安全刪除
+
+【交付前雙紀律自檢】
+驗收：純文件維護（無代碼/財務/RPC 改動），不觸發 finance-auditor 或 code-reviewer；learnings.md 計數確認 12+5+25+8=50 = ✅
+Subagent：❌ 未使用（Read/Write/Grep/PowerShell 直接完成）
 
 ### 已確認完成（Session 112 核實 — 鎖匙扣成本誤判事故根因排查 + Phase 1 止血）
 - ✅ **事故結論**：訂單 06001008 `order_items.subtotal_cost=185` **本身正確**，無需資料校正。185 = 組裝 base cost（繪圖60+物料115+環扣10），非裸物料費；Fat Mo 原假設「物料改115，base就該≈115」為誤讀，已記錄防再犯

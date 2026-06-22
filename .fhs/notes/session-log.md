@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-22 (Session 113 — learnings.md 超量整理 + kgov stale flag 清理): 🧹 ✅
+
+**Scope**：learnings.md 累積至 70 條（含兩個重複編號 #15/#21）超出 50 條上限；逐條分析後退役 20 條（17 Pitfalls + 2 Patterns + 合併 kgov 兩條為一）；同時清理 Session 112（2026-06-21）遺留的 stale `.kgov-pending` flag（Session 112 已正確更新 FHS_System_Logic_Overview.md，flag 未自動清除）
+**Result**：learnings.md 70→50 條（12 Patterns + 5 財務核心 + 25 Pitfalls + 8 Preferences）；.kgov-pending 已刪除；無代碼/財務/RPC 改動
+
 ## 2026-06-20 (Session 112 — 鎖匙扣成本誤判事故根因排查 + 成本傳播 Phase 1 止血): 🔧 ✅
 
 **Scope**：Fat Mo 改 `cost_configurations.material_cost_keychain_stainless`→115 後，發現訂單 06001008 `order_items.subtotal_cost`仍為185，懷疑未同步；live SQL查證+4支RPC反編譯+migration 0026/schema文件還原組裝公式，確認185=繪圖60+物料115(已是新值)+環扣10，**185本身正確，誤判源於把組裝值當單一原子比對**；同時確認真實缺口——`cost_configurations`改值無任何機制回算`products.total_base_cost`，死碼RPC`recalculate_product_costs`（引用v1 schema不存在欄位）從未真正運作過
