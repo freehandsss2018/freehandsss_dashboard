@@ -6411,11 +6411,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         // --- V31 分段複製引擎 ---
-        function showToast(msg) {
+        function showToast(msg, duration) {
             const t = document.getElementById("toast");
             t.innerText = msg;
             t.className = "show";
-            setTimeout(() => { t.className = t.className.replace("show", ""); }, 2500);
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, duration || 2500);
         }
 
         function copyMessageA() {
@@ -9383,7 +9383,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         // F3 v2: Order detail modal — dual-mode (Mode 1 text + Mode 2 structured items)
         // catFilter: 'A'=手模擺設, 'B'=金屬產品, undefined=全訂單
-        function openOrderModal(orderId, catFilter) {
+        // initialTab (optional): 'text'|'detail'|'finance' — 開啟後自動切換到指定分頁（預設停留訊息文本）
+        function openOrderModal(orderId, catFilter, initialTab) {
             var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
             var o = _go.find(function(x){ return x.id === orderId; });
             if (!o) { console.warn('[FHS Modal] order not found:', orderId); return; }
@@ -9461,6 +9462,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             document.getElementById('fhsModalBody').innerHTML = msgHtml;
             document.getElementById('fhsOrderModal').classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // Optional initial tab（如 bottom-sheet「核對帳單」捷徑 → 財務分頁）；DOM 已同步建好，可直接切
+            if (initialTab && typeof switchModalTab === 'function') switchModalTab(initialTab);
 
             // iOS visualViewport: shrink modal when virtual keyboard appears (Session 28 pattern)
             if (window.visualViewport && !window._fhsVVResize) {
@@ -13736,7 +13740,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     setTimeout(function() {
                         btn.textContent = '儲存'; btn.style.cssText = btnStyle; btn.disabled = false;
                     }, 1800);
-                    if (window.showToast) window.showToast('✅ ' + (meta.display_name || key) + ' 已更新為 ' + val);
+                    if (window.showToast) window.showToast('✅ ' + (meta.display_name || key) + ' 已更新為 ' + val + '；⚠️ products 成本表不會自動同步，請另行執行 drift 檢查確認受影響品項', 6000);
                 })
                 .catch(function(e) {
                     var msg = e && e.message ? e.message : String(e);
@@ -14177,7 +14181,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         if (starBtn) starBtn.onclick = function() { closeBsSheet(); toggleFavorite(orderId); };
         if (archiveBtn) archiveBtn.onclick = function() { closeBsSheet(); triggerArchiveOrder(orderId); };
         if (btnDel) btnDel.onclick = function() { closeBsSheet(); if (go && typeof openDeleteModal === 'function') openDeleteModal(orderId, go.Order_ID); };
-        if (btnAudit) btnAudit.onclick = function() { closeBsSheet(); if (typeof openOrderModal === 'function') openOrderModal(orderId, 'finance'); };
+        if (btnAudit) btnAudit.onclick = function() { closeBsSheet(); if (typeof openOrderModal === 'function') openOrderModal(orderId, '', 'finance'); };
 
         /* Show */
         var overlay = document.getElementById('bsOverlay');

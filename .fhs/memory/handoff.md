@@ -1,18 +1,59 @@
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-22（Session 113 — learnings.md 70→50 超量整理 + kgov stale flag 清理）
+> 上次更新：2026-06-23（Session 117 — IG 看門狗 v3 部署完成，等待首次 Cron 驗證）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| 🟡 中 | **IG 看門狗 v3 首次 Cron 驗證** | ⏳ 等候 2026-06-24 06:00 HKT | PUT 已完成（2026-06-23）；versionId=9430f1b1；7 Drive cred + Telegram cred 全部正確；預計明早收到 v3 格式 Telegram |
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
-| 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | ⏳ 待確認 | 若仍高 → 查 n8n 訂單量 |
-| 🟡 中 | **NAS 重部署（核對帳單路由修復 + 成本設定存檔 toast 提示）** | ⏳ 待授權 | V42 dev 已修（Session 109 路由 + Session 112 toast）；current.html（線上）同步缺，需 Fat Mo 授權升格覆蓋 |
-| 🟡 中 | **IG 看門狗 v2：等待首次真實 Cron 排程跑（06:00 UTC）並收到 Telegram** | ⏳ 待驗證 | Phase 0 實測 + 端到端測試（拋棄式副本）皆通過，真實找到 1 個🟡候選（Charmaine SIN）；credential 已補上（見下方已確認完成），待今晚排程實跑驗證真的收到通知 |
+| 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | 🔍 n8n 側 CONDITIONAL PASS | CacheSync inactive（0 執行記錄）；sysCheckN8n 修復消除最大來源；估算平日 6–10 calls，忙碌日 20–30；**需登入 Airtable Billing 頁確認官方數字** |
 | 🟡 中 | **鋁合金嬰兒層鎖匙扣成本來源排查** | 📝 已記入待辦 | `material_cost_keychain_alloy`（嬰兒層）live `cost_configurations` 不存在此 key，但對應 SKU（base=212）確實在售，成本來源不明，與本次 stainless 修復案無關，獨立排查（Session 112）|
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 117 — IG 看門狗 v3 部署上線，2026-06-23）
+- ✅ **PUT 成功**：workflow D4LK6VrQbiXlju0V 已更新至 v3，versionId=9430f1b1，active=True
+- ✅ **Credentials 驗證**：7 Google Drive（`zQHavrW0ElfaKGxG`）+ Telegram（`tSbXz97PKmdPpDNq`）全部正確
+- ✅ **v3 邏輯確認**：live 節點 8/8 marker（normalizeOrderId/buildOrderIndex/classifyMessage/isV42Confirm/created_full/not_created/sideBySide/v3）全部存在；Parse Inbox orderMsgs/hasReceipt/sender_name 正確
+- ⏳ **首次 Cron 驗證**：預計 2026-06-24 06:00 HKT，收到 v3 格式 Telegram 即完整確認
+
+【交付前雙紀律自檢】
+驗收：PUT HTTP 200 + credentials GET 核查全通 + live Code 節點 8/8 v3 marker = ✅；唯讀偵測無財務/schema 改動
+Subagent：未使用（n8n API curl 直查，無需 subagent）
+
+### 已確認完成（Session 116 — IG 看門狗 v3 訂號偵測，代碼完成）
+- ✅ **偵測模型反轉**：v1/v2 付款證據🔴🟡⚪+排除商家訊息 → v3 **訂號(order_id)主鍵 + 反轉納入商家 V42 確認**為主訊號
+- ✅ **三分類 + 情況2合併通知**（Fat Mo 決策）：①V42制式+DB命中=已建立靜默 ②鬆散+DB命中=資訊不齊通知 ③有可信訂號+DB查無=未建立通知；弱訊號(無號)不即時警報、報價語意抑制
+- ✅ **訂號 regex live 校準**：31 單真樣本=leading-0 的 7–8 位數（非假設 FHS- 前綴），錨定 `/(?<!\d)0\d{6,7}(?!\d)/` 天然防撞電話/金額/日期
+- ✅ **單一真源 + diff-guard**：`lib/order-match.mjs` build 內嵌進 n8n Code 節點（strip export），`order-match.diffguard.test.mjs` 斷言逐字一致防漂移
+- ✅ **方案 A 收據**：只標記 hasReceipt 布林（photos metadata），零下載零 OCR，守 OOM+隱私
+- ✅ **測試**：單元 15/15 + diff-guard 1/1 + 全套 35/35 PASS；6 情況功能模擬全正確
+- ✅ **文件同步**：SOP.md v3 行為、repo-map、CHANGELOG、完成記錄 `.fhs/reports/completion/2026-06-23_ig-watchdog-v3-order-id-detection_completion_report.md`
+- ✅ **附帶**：cl-flow-runner Gemini 切 gemini-2.5-flash（.env）+ PX 改 curl（Cloudflare 指紋）已修並記錄
+
+【交付前雙紀律自檢】
+驗收：代碼/邏輯 — 單元 15/15 + diff-guard 1/1 + 全套 35/35 node --test PASS（附測試輸出）+ 6 情況功能模擬正確 = ✅；唯讀無財務/schema 改動不觸發 finance-auditor；部署 Phase 待授權未假裝完成
+Subagent：前置評估 database-reviewer（order_id 格式，已用 live SELECT 31 單直接校準，未派）、tdd-guide（已自行 write-tests 15+1 案，未派）、code-reviewer（純 lib+測試，diff-guard 自證，可於部署前補派 G1–G8）；本階段主 agent 直接執行（live 校準 + 寫 lib + 測試 + 改 build + 文件）
+
+### 已確認完成（Session 116 核實 — IG 看門狗 v2 Cron 驗證）
+- ✅ **IG 看門狗 v2 首次真實 Cron 排程驗證 CONFIRMED**：
+  - **Exec 4003（2026-06-21 06:00 HKT）= 第一次真實跑**：16/16 節點全 success，59 秒完成；掃描 31 threads / 35 檔案（覆蓋 6/10~6/20）；發現 🟡1 候選 Charmaine SIN；Telegram message_id=657 已送達 Edwin Li chat（confirmed ok:true）
+  - **Exec 4005（2026-06-22 06:00 HKT）= 第二次跑**：16/16 節點全 success，11 秒（快速路徑）；只掃 3 threads（staticData cursor 正確記住已處理）；0 新候選；Telegram 送出「本次無待跟進項目」
+  - **Cron 實際運行**：cron `0 6 * * *` 在 NAS HKT 時區 = 06:00 HKT（22:00 UTC 前晚）；workflow active=True；第三次預計 2026-06-23 06:00 HKT 跑
+  - **關鍵驗證**：靜默 cursor 去重正常、Telegram 送達、第二次跑快速路徑、0 重複掃描
+
+【交付前雙紀律自檢】
+驗收：n8n API 直查兩次執行紀錄 + 節點追蹤 + Telegram `ok:true` = ✅；read-only 驗證無任何改動
+Subagent：❌ 未使用（n8n API curl 直查，無需 subagent）
+
+### 已確認完成（Session 115 核實 — NAS 重部署）
+- ✅ **NAS 重部署 current.html 升格**：V42 dev（含 Session 109 核對帳單路由修復 + Session 112 成本設定存檔 toast 提示）升格為 `Freehandsss_dashboard_current.html`（839,325 bytes，SHA256 FDBE7633...B4171）並部署至 NAS，三關驗證 PASS
+
+【交付前雙紀律自檢】
+驗收：升格流程（cp + WebDAV PUT）三關 PASS（HTTP 204 / 大小 = local / SHA256 吻合）= ✅；無財務/schema 改動，不觸發 finance-auditor
+Subagent：❌ 未使用（PowerShell 直接執行）
 
 ### 已確認完成（Session 113 核實 — learnings.md 超量整理）
 - ✅ **learnings.md 70→50 條整理**：退役 17 條 Pitfalls（已入 AGENTS 規則 / 被更新版本取代 / 過細一次性 bug）+ 退役 2 條 Patterns（單次特定用 / 過細 JS 內部）+ 合併 #12+#14（kgov 雙條合一）；標頭更新整理日期為 2026-06-22（Session 113）
@@ -61,7 +102,7 @@ Subagent：❌ 未使用。前置評估 finance-auditor（live對賬，本案非
   Session 110 即用過）；直接在 PUT body 帶入該 ID 重新覆寫即可，GET 驗證 7 個節點 + Telegram 節點
   credential 皆正確掛上。**修正前序判斷**：日後遇到「PUT 洗掉 credential」情境，若 credential ID
   已知，可直接 API 補回，不必每次都要求人工去 UI 重新指派。
-- ⏳ **待驗證**：今晚首次真實 Cron 排程跑（06:00 UTC）+ 收到 Telegram 通知（見上方 MASTER 表）。
+- ✅ **Cron 驗證 CONFIRMED（Session 116，2026-06-23）**：首兩次真實排程 Exec 4003（2026-06-21 06:00 HKT）+ Exec 4005（2026-06-22 06:00 HKT）均 16/16 節點 success；Telegram message_id=657 送達；cursor 去重正常（第二次只掃 3 新 threads）。
 - ✅ **runner 基礎設施修復（附帶發現）**：`scripts/cl-flow-runner.js` 的 Perplexity 呼叫因
   `sonar-reasoning-pro` 推理模型 `max_tokens:3072` 過低靜默回空白報告，已修復為 8000 + 空 content
   偵測 throw（影響 `/cl-flow`、`/ag-flow`，`/cl-flow-fast` 因跳過 PX 不受影響）；learnings #39。

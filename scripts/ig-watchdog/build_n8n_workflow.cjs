@@ -44,6 +44,14 @@
 const CONTAINER_FOLDER_ID = '1eqlGpQuaTt23gLhjm5UBYYxE0QC8pdQ0'; // meta-2026-Jun-18-06-12-02
 
 const fs = require('fs');
+const nodePath = require('path');
+
+// ── 單一真源：訂號偵測邏輯內嵌自 lib/order-match.mjs（v3，非手抄）──────────────
+// build 時讀取 ESM 原始碼、strip `export ` 後嵌入 Classify Code 節點。diff-guard 測試
+// （order-match.diffguard.test.mjs）斷言此嵌入與 lib 來源逐字一致，防雙處漂移。
+const ORDER_MATCH_SRC = fs
+  .readFileSync(nodePath.join(__dirname, 'lib', 'order-match.mjs'), 'utf8')
+  .replace(/^export\s+/gm, '');
 
 // ── Filter New + Quiet Window ──────────────────────────────────────────────
 // 讀 staticData.processedFolderIds（已處理過的 instagram-* 資料夾 id 集合，F6：用 id 非名稱）。
@@ -187,6 +195,7 @@ for (let __i = 0; __i < __items.length; __i++) {
 }
 
 const candidates = [];
+const orderMsgs = [];
 let minTs = Infinity, maxTs = -Infinity;
 for (const [threadKey, t] of threads) {
   const cursor = sd.threadCursors[threadKey] || 0;
@@ -200,6 +209,19 @@ for (const [threadKey, t] of threads) {
     if (m.timestamp_ms > maxTs) maxTs = m.timestamp_ms;
   }
   const customer = [...t.participants].find((n) => !isBusiness(n)) || t.title || threadKey;
+  // v3 訂號偵測：收集所有新訊息（含商家自發的 V42 確認，v1 曾排除，v3 反轉納入）。
+  // hasReceipt = 訊息含 photos metadata（DYI JSON 內的 uri 參照，方案 A 零下載/零 OCR）。
+  for (const m of newMsgs) {
+    if (!m.content && !(m.photos && m.photos.length)) continue;
+    orderMsgs.push({
+      text: m.content || '',
+      sender: m.sender_name || '',
+      customer,
+      thread: threadKey,
+      ts: m.timestamp_ms || 0,
+      hasReceipt: !!(m.photos && m.photos.length),
+    });
+  }
   const custMsgs = newMsgs.filter((m) => m.content && !isBusiness(m.sender_name));
   const intentMsgs = custMsgs.filter((m) => hasOrderIntent(m.content) || hasPaymentProof(m.content));
   if (intentMsgs.length === 0) continue;
@@ -211,6 +233,7 @@ for (const [threadKey, t] of threads) {
 
 return [{ json: {
   candidates,
+  orderMsgs,
   scannedThreads: threads.size,
   scannedFiles,
   minTs: minTs === Infinity ? null : minTs,
@@ -218,81 +241,17 @@ return [{ json: {
 } }];
 `.trim();
 
-// ── Classify & Report ───────────────────────────────────────────────────────
-// 沿用已驗證的 match.mjs 邏輯（CJK 模糊比對 + 🔴🟡⚪ 分級），新增健全計數器
-// （scannedThreads/scannedFiles）讓 Telegram 摘要本身能自我揭穿異常數字（F4 教訓）。
+// ── Classify & Report（v3 訂號主鍵偵測）─────────────────────────────────────
+// 內嵌 lib/order-match.mjs 原始碼（單一真源，strip export），再接 v3 編排：
+// 以訂號比對 Supabase orders → 情況1靜默 / 情況2資訊不齊通知 / 情況3未建立通知 /
+// 弱訊號(無號)不即時警報。付款證據 🔴🟡⚪ 降 Phase 2（本期不計，候選保留供日後）。
+// 健全計數器（scannedThreads/scannedFiles/訊息數）讓 Telegram 摘要自我揭穿異常（F4 教訓）。
 const classifyCode = `
-function normalizeName(s) {
-  if (typeof s !== 'string') return '';
-  return s.replace(/[^\\p{L}\\p{N}]/gu, '').toLowerCase();
-}
-function levenshtein(a, b) {
-  const s = [...a], t = [...b];
-  const m = s.length, n = t.length;
-  if (m === 0) return n;
-  if (n === 0) return m;
-  let prev = Array.from({ length: n + 1 }, (_, i) => i);
-  let cur = new Array(n + 1);
-  for (let i = 1; i <= m; i++) {
-    cur[0] = i;
-    for (let j = 1; j <= n; j++) {
-      const cost = s[i - 1] === t[j - 1] ? 0 : 1;
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
-    }
-    [prev, cur] = [cur, prev];
-  }
-  return prev[n];
-}
-function nameSimilarity(a, b) {
-  const na = normalizeName(a), nb = normalizeName(b);
-  if (!na || !nb) return 0;
-  if (na === nb) return 1;
-  if (na.includes(nb) || nb.includes(na)) {
-    const ratio = Math.min(na.length, nb.length) / Math.max(na.length, nb.length);
-    return Math.max(ratio, 0.6);
-  }
-  const dist = levenshtein(na, nb);
-  return 1 - dist / Math.max(na.length, nb.length);
-}
-const INTENT_RE = /訂金|落單|下單|預訂|訂購|匯款|轉帳|轉數|過數|入數|留位|留俾|落訂|訂咗|想訂|要訂|deposit|order/i;
-const PAYMENT_PROOF_RE = /已轉|已匯|已過數|過咗數|入咗|已入數|已付|已$|轉咗|付咗|後五碼|後5碼|尾五碼|轉左|過左數/i;
-function hasOrderIntent(text) { return typeof text === 'string' && INTENT_RE.test(text); }
-function hasPaymentProof(text) { return typeof text === 'string' && PAYMENT_PROOF_RE.test(text); }
-function withinDays(tsMs, isoDate, days) {
-  if (!tsMs || !isoDate) return false;
-  const t2 = new Date(isoDate).getTime();
-  if (!Number.isFinite(t2)) return false;
-  return Math.abs(tsMs - t2) <= days * 86400000;
-}
-function scoreAgainst(candidate, rec, amountField, dateField, timeWindowDays) {
-  const sim = nameSimilarity(candidate.name, rec.customer_name || '');
-  const amts = candidate.amounts || [];
-  const recAmt = Number(rec[amountField]);
-  const amountHit = Number.isFinite(recAmt) && recAmt > 0 && amts.some((a) => a === recAmt);
-  const timeHit = withinDays(candidate.ts, rec[dateField], timeWindowDays);
-  return { sim, amountHit, timeHit, rec };
-}
-function best(arr, key) {
-  return arr.reduce((b, x) => (x[key] > (b ? b[key] : -1) ? x : b), null);
-}
-function classify(candidate, orders, pipeline, opts) {
-  const threshold = opts.threshold, timeWindowDays = opts.timeWindowDays;
-  const oScores = orders.map((o) => scoreAgainst(candidate, o, 'deposit', 'created_at', timeWindowDays));
-  const pScores = pipeline.map((p) => scoreAgainst(candidate, p, 'estimated_amount', 'created_at', timeWindowDays));
-  const bestO = best(oScores, 'sim');
-  const bestP = best(pScores, 'sim');
-  const orderHit = bestO && (bestO.sim >= threshold || (bestO.amountHit && bestO.timeHit && bestO.sim >= 0.4));
-  const pipeHit = bestP && (bestP.sim >= threshold || (bestP.amountHit && bestP.timeHit && bestP.sim >= 0.4));
-  if (orderHit) return { status: 'matched_order', tier: null, reason: '名字相似 ' + bestO.sim.toFixed(2) + ' → ' + (bestO.rec.order_id || bestO.rec.customer_name) };
-  if (pipeHit) return { status: 'in_pipeline', tier: null, reason: '在 pipeline → ' + bestP.rec.customer_name };
-  let tier = '⚪';
-  if (hasPaymentProof(candidate.content)) tier = '🔴';
-  else if (hasOrderIntent(candidate.content)) tier = '🟡';
-  return { status: 'leak', tier, reason: tier === '🔴' ? '有付款證據語且無訂單/不在 pipeline' : tier === '🟡' ? '有下單意圖但無付款證據' : '低信心（模糊）' };
-}
+${ORDER_MATCH_SRC}
 
+// ── v3 編排 ──────────────────────────────────────────────────
 const parsed = $('Parse Inbox').first().json;
-const candidates = parsed.candidates || [];
+const orderMsgs = parsed.orderMsgs || [];
 function flattenItems(items) {
   const out = [];
   for (const it of items) {
@@ -302,39 +261,42 @@ function flattenItems(items) {
   return out;
 }
 const orders = flattenItems($('Fetch Orders').all());
-const pipeline = flattenItems($input.all());
+const orderIndex = buildOrderIndex(orders);
 
-const results = [];
-for (const c of candidates) {
-  const cls = classify(c, orders, pipeline, { threshold: 0.6, timeWindowDays: 3 });
-  results.push({ cand: c, cls });
+const notifyItems = [];
+let cFull = 0, cIncomplete = 0, cNotCreated = 0, cWeak = 0;
+for (const om of orderMsgs) {
+  const cls = classifyMessage({ text: om.text, hasReceipt: om.hasReceipt }, orderIndex);
+  if (cls.category === 'created_full') cFull++;
+  else if (cls.category === 'created_incomplete') { cIncomplete++; notifyItems.push({ om, cls, kind: '資訊不齊' }); }
+  else if (cls.category === 'not_created') { cNotCreated++; notifyItems.push({ om, cls, kind: '未建立' }); }
+  else if (cls.category === 'weak_no_id') cWeak++;
 }
 
-const byTier = { '🔴': [], '🟡': [], '⚪': [] };
-let matched = 0, inPipe = 0;
-for (const r of results) {
-  if (r.cls.status === 'matched_order') matched++;
-  else if (r.cls.status === 'in_pipeline') inPipe++;
-  else byTier[r.cls.tier].push(r);
-}
-
-const lines = [];
-for (const tier of ['🔴', '🟡']) {
-  for (const r of byTier[tier]) {
-    lines.push(tier + ' ' + r.cand.name + '｜' + r.cls.reason + '｜thread:' + r.cand.thread);
-  }
+function sideBySide(it) {
+  const om = it.om, cls = it.cls;
+  const rec = orderIndex.get(cls.orderId);
+  const dbSide = rec
+    ? 'DB：✅有單 ' + (rec.customer_name || '') + (rec.deposit != null ? ' 訂金$' + rec.deposit : '')
+    : 'DB：❌查無此單';
+  const head = (it.kind === '未建立' ? '🆕 未建立' : '📝 資訊不齊') + '｜訂號 ' + (cls.orderId || '?');
+  const snippet = (om.text || '').slice(0, 40).replace(/\\s+/g, ' ');
+  const msgSide = '訊息：' + (om.customer || om.sender || '') + '「' + snippet + '」' + (cls.hasReceipt ? ' 📎收據' : '');
+  return head + '\\n  ' + msgSide + '\\n  ' + dbSide + '\\n  thread:' + om.thread;
 }
 
 const coverage = (parsed.minTs && parsed.maxTs)
   ? new Date(parsed.minTs).toLocaleDateString() + ' ~ ' + new Date(parsed.maxTs).toLocaleDateString()
   : '（本次無新訊息）';
 
-const summary = '🐶 IG漏單看門狗\\n覆蓋：' + coverage
-  + '\\n掃描：' + (parsed.scannedThreads || 0) + ' threads / ' + (parsed.scannedFiles || 0) + ' 個檔案'
-  + '\\n🔴' + byTier['🔴'].length + ' 🟡' + byTier['🟡'].length + ' ⚪' + byTier['⚪'].length + ' ｜✅已對齊' + matched + ' 📋pipeline' + inPipe
-  + '\\n候選總數：' + candidates.length + '\\n\\n' + (lines.slice(0, 15).join('\\n') || '（本次無待跟進項目）');
+const detailLines = notifyItems.slice(0, 15).map(sideBySide);
+const summary = '🐶 IG漏單看門狗 v3（訂號偵測）\\n覆蓋：' + coverage
+  + '\\n掃描：' + (parsed.scannedThreads || 0) + ' threads / ' + (parsed.scannedFiles || 0) + ' 檔 / ' + orderMsgs.length + ' 則訊息'
+  + '\\n✅已建立 ' + cFull + ' ｜📝資訊不齊 ' + cIncomplete + ' ｜🆕未建立 ' + cNotCreated + ' ｜⚠️弱訊號(無號) ' + cWeak
+  + '\\n需核對：' + notifyItems.length + '\\n\\n'
+  + (detailLines.join('\\n\\n') || '（本次無需核對項目）');
 
-return [{ json: { summary, red: byTier['🔴'].length, yellow: byTier['🟡'].length, gray: byTier['⚪'].length, matched, inPipe, total: candidates.length } }];
+return [{ json: { summary, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length } }];
 `.trim();
 
 // ── Build Empty Summary（無新匯出資料夾時的分支）──────────────────────────

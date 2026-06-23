@@ -74,4 +74,5 @@
 | 2026-06-19 | 2026-06-19_n8n-nas-code-node-buffer-compression-capabilities.md | NAS Code節點能力邊界精確化 | n8n, nas, code-node, buffer, compression, filesystem-v2, alwaysOutputData | Buffer/Compression節點可用（require/fetch/process仍鎖），filesystem-v2讀檔法+空陣列跳過節點兩個踩坑 |
 | 2026-06-20 | 2026-06-20_n8n-google-drive-search-query-mechanics.md | Google Drive Search 查詢機制精確化 | n8n, google-drive, search, query, pairedItem, fan-out, ig-watchdog-v2 | searchMethod:query才是原始q查詢(filter.query靜默忽略)、fields須陣列、全域query接多輸入下游N倍暴增為拓樸問題非bug、pairedItem在fan-out後可靠 |
 | 2026-06-20 | 2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap.md | 鎖匙扣成本誤判+傳播缺口 | cost, keychain, drift, products, cost_configurations, pitfall, migration-0042 | order_items成本是組裝值非單一原子,直接比對設定中心key必假性誤判;cost_configurations改值無自動回算products機制,死碼RPC已移除 |
+| 2026-06-23 | 2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md | cl-flow runner 雙API故障修復 | cl-flow, perplexity, cloudflare, fingerprinting, curl, gemini, socket-hang-up, infra | Cloudflare指紋reset Node https/urllib只放行curl(PX改curl子程序);Gemini過載走.env切model不改代碼;curl成功而Node失敗=必為指紋勿調timeout |
 <!-- kgov sync confirmed: Session 112 -->

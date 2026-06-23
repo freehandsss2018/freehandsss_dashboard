@@ -10,7 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const { validateAgPlan } = require('./validate-ag-plan');
 
 // ─── Environment Check ───────────────────────────────────────────────────────
@@ -52,6 +52,11 @@ function writeFile(filePath, content) {
 //       (2) resolve 前檢查 content 是否為空，空字串視為失敗 throw，交給 withRetry 重試/最終拋錯，
 //           不再讓空白悄悄寫入 px-report.md
 //       (3) finish_reason==='length'（被截斷）僅 warn，不視為失敗（內容仍可用，只是結尾可能不完整）
+// NOTE (2026-06-23 fix): Cloudflare（Perplexity 前置）對 client TLS/HTTP 指紋做 fingerprinting，
+// 會直接 reset Node https 與 python-urllib 連線（症狀：socket hang up / RemoteDisconnected），
+// 只放行 curl —— 與 reference memory「Supabase Management API 用 curl 非 urllib」同一機制。
+// sonar-reasoning-pro 的長 <think> 階段靜默無數據流更易被 idle reset，curl 的指紋可通過。
+// 故 PX 呼叫改走 curl 子程序（body 寫臨時檔，--data @file），不再用 https.request。
 function callPerplexity(prompt) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
@@ -59,46 +64,45 @@ function callPerplexity(prompt) {
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 8000
     });
+    const tmpFile = path.join(ARTIFACTS_DIR, `.px_body_${Date.now()}.json`);
+    try {
+      fs.mkdirSync(ARTIFACTS_DIR, { recursive: true });
+      fs.writeFileSync(tmpFile, body, 'utf8');
+      const res = spawnSync('curl', [
+        '-s', '--max-time', '180',
+        '-X', 'POST', 'https://api.perplexity.ai/chat/completions',
+        '-H', `Authorization: Bearer ${PERPLEXITY_API_KEY}`,
+        '-H', 'Content-Type: application/json',
+        '--data', `@${tmpFile}`
+      ], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
 
-    const options = {
-      hostname: 'api.perplexity.ai',
-      path: '/chat/completions',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
-        'Content-Length': Buffer.byteLength(body)
+      if (res.error) return reject(new Error('Perplexity curl spawn error: ' + res.error.message));
+      if (res.status !== 0) {
+        return reject(new Error('Perplexity curl exit ' + res.status + ': ' + String(res.stderr || '').slice(0, 200)));
       }
-    };
-
-    let data = '';
-    const req = https.request(options, res => {
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          if (json.error) return reject(new Error('Perplexity API error: ' + json.error.message));
-          const choice = json.choices && json.choices[0];
-          const content = choice && choice.message && choice.message.content;
-          if (!content || !content.trim()) {
-            return reject(new Error(
-              'Perplexity returned empty content (finish_reason=' + (choice && choice.finish_reason) +
-              ') — reasoning model likely exhausted max_tokens in <think> phase before producing an answer.'
-            ));
-          }
-          if (choice.finish_reason === 'length') {
-            console.warn('[cl-flow-runner] ⚠️  Perplexity response truncated (finish_reason=length) — content may be incomplete near the end.');
-          }
-          resolve(content);
-        } catch (e) {
-          reject(new Error('Perplexity parse error: ' + e.message + '\nRaw: ' + data.substring(0, 300)));
-        }
-      });
-    });
-    req.on('error', reject);
-    req.setTimeout(180000, () => { req.destroy(); reject(new Error('Perplexity timeout')); });
-    req.write(body);
-    req.end();
+      const data = res.stdout;
+      if (!data || !data.trim()) {
+        return reject(new Error('Perplexity curl returned empty (likely connection reset / timeout from upstream)'));
+      }
+      const json = JSON.parse(data);
+      if (json.error) return reject(new Error('Perplexity API error: ' + json.error.message));
+      const choice = json.choices && json.choices[0];
+      const content = choice && choice.message && choice.message.content;
+      if (!content || !content.trim()) {
+        return reject(new Error(
+          'Perplexity returned empty content (finish_reason=' + (choice && choice.finish_reason) +
+          ') — reasoning model likely exhausted max_tokens in <think> phase before producing an answer.'
+        ));
+      }
+      if (choice.finish_reason === 'length') {
+        console.warn('[cl-flow-runner] ⚠️  Perplexity response truncated (finish_reason=length) — content may be incomplete near the end.');
+      }
+      resolve(content);
+    } catch (e) {
+      reject(new Error('Perplexity parse/call error: ' + e.message));
+    } finally {
+      try { fs.unlinkSync(tmpFile); } catch (_) { /* best effort */ }
+    }
   });
 }
 

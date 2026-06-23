@@ -3,6 +3,12 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-23] (Session 116) cl-flow-runner API 雙修：Gemini 模型切換（.env）+ PX 改走 curl — 修復 /cl-flow 全模式不可用
+
+決策：(1) Gemini A2「high demand」過載 → 依 Preference #6 改 `.env GEMINI_A2_MODEL_DEFAULT` 由 `gemini-3.5-flash` 切 `gemini-2.5-flash`（不改代碼，probe 確認 200/1s）；(2) PX A1「socket hang up」→ 將 `callPerplexity` 從 Node `https.request` 改走 **curl 子程序**（body 寫臨時檔 `--data @file`）。
+原因：PX 端點前置 Cloudflare 對 client TLS/HTTP 指紋 fingerprinting，直接 reset Node https 與 python-urllib 連線（socket hang up / RemoteDisconnected），只放行 curl——與 reference memory「Supabase Management API 用 curl 非 urllib（觸 1010）」同一機制；`sonar-reasoning-pro` 長 `<think>` 階段靜默無數據流更易被 idle reset。直接 curl probe 三次皆 200，Node/urllib 三次皆斷，根因坐實。改 curl 後 FULL 模式 px-report.md（9436 bytes）正常產出。Gemini 模型切換走 .env 而非改代碼，符合「模型切換不改代碼」偏好，日後過載只需再換一個 model id。
+影響檔案：`.env`（GEMINI_A2_MODEL_DEFAULT）、`scripts/cl-flow-runner.js`（callPerplexity 改 curl + 引入 spawnSync）
+
 [2026-06-16] (Session 109) openOrderModal 加 initialTab 第三參數（選項 B）— 修復「核對帳單」捷徑落錯分頁
 
 決策：給共用函式 `openOrderModal(orderId, catFilter)` 新增可選第三參數 `initialTab`，而非在 btnAudit 端串接 `openOrderModal(); switchModalTab('finance')`（選項 A）。

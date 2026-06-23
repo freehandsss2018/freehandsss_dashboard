@@ -95,7 +95,13 @@
       "Bash(rm -rf artifacts/2026-06-01-0111 artifacts/2026-06-01-0119)",
       "Bash(grep -rniE \"FHS_Memory_Engine|Obsidian/Freehandsss|Obsidian\\\\\\\\\\\\\\\\\" --include=\"*.md\" --include=\"*.js\" --include=\"*.json\" --include=\"*.html\" .)",
       "Bash(mkdir -p docs/assets)",
-      "Bash(cp \"Obsidian/Freehandsss/FHS_Memory_Engine.png\" \"docs/assets/FHS_Memory_Engine.png\")"
+      "Bash(cp \"Obsidian/Freehandsss/FHS_Memory_Engine.png\" \"docs/assets/FHS_Memory_Engine.png\")",
+      "Bash(python -c ' *)",
+      "Bash(grep \"^N8N_KEY=\" .env)",
+      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('ID:', r.get\\('id','ERR'\\)\\); print\\('Name:', r.get\\('name',''\\)\\); print\\('Error:', r.get\\('message',''\\)\\)\")",
+      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('active:', r.get\\('active',''\\)\\); print\\('err:', r.get\\('message',''\\)\\)\")",
+      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('deleted:', r\\)\")",
+      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('id:', r.get\\('id',''\\)\\); print\\('name:', r.get\\('name',''\\)\\); print\\('active:', r.get\\('active',''\\)\\); print\\('versionId:', r.get\\('versionId',''\\)\\); print\\('err:', r.get\\('message',''\\)\\)\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

@@ -274,7 +274,8 @@ freehandsss_dashboard/
 │       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）
 │       ├── lib/decoder.mjs(+.test)      ← Meta mojibake 解碼（latin1→utf8 + U+FFFD 守衛，邏輯亦移植進n8n Code節點）
-│       ├── lib/match.mjs(+.test)        ← CJK fuzzy + 🔴🟡⚪ 訊號分層（邏輯亦移植進n8n Code節點）
+│       ├── lib/match.mjs(+.test)        ← CJK fuzzy + 🔴🟡⚪ 訊號分層（Phase 2 付款證據層，v3 降為次要）
+│       ├── lib/order-match.mjs(+.test)  ← v3 訂號主鍵偵測單一真源：訂號抽取/正規化/三分類/報價守衛（build 內嵌進n8n Code節點，diffguard.test 防漂移）
 │       ├── fixtures/                    ← 合成自測資料（_gen.mjs 產生，無真實客人）
 │       ├── hooks/pre-commit             ← 隱私守衛：擋含 sender_name/participants 的 JSON
 │       ├── SOP.md                       ← Fat Mo 操作指南（架構說明 + 日常=看Telegram即可）

@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-06-23] 🐶 Session 116 — IG 漏單看門狗 v3：訂號主鍵偵測（偵測模型反轉）
+
+**範圍**：`scripts/ig-watchdog/lib/order-match.mjs`（新增）、`lib/order-match.test.mjs`（新增）、`lib/order-match.diffguard.test.mjs`（新增）、`scripts/ig-watchdog/build_n8n_workflow.cjs`（MODIFY）、`SOP.md`、`docs/repo-map.md`、`.env`（Gemini 模型）、`scripts/cl-flow-runner.js`（PX curl 修復）
+
+### [FEAT] 偵測核心由「付款證據 🔴🟡⚪」反轉為「訂號比對：對話談成的訂單是否真的建進 Supabase」
+- **核心反轉**：v1/v2 以客人付款證據為訊號、且**刻意排除商家自發的訂單確認**（Session 111 K 媽媽案）；v3 改以**訂單編號 order_id 為主鍵**，並**反轉納入商家發出的 V42 制式確認文本**（`Freehandsss 訂單確認(訂單編號# …)`）為主訊號
+- **三分類**（Fat Mo 決策：情況 2 合併通知）：① V42制式+DB命中＝已建立(齊)靜默 ② 鬆散+DB命中＝資訊不齊→通知核對 ③ 有可信訂號+DB查無＝未建立→通知補單；另：弱訊號(成交語意無號)不即時警報、報價/草稿語意抑制
+- **訂號 regex live 校準**（31 單真樣本）：實際格式＝leading-0 的 7–8 位數（`06xxxxx`/`05xxxxx`/`06001xxx`），非假設的 FHS- 前綴；錨定 `/(?<!\d)0\d{6,7}(?!\d)/` + 訂單上下文守衛，天然防撞 HK 電話（8 位起 2/3/5/6/9）/金額/日期
+- **圖片收據佐證（方案 A）**：只標記 `hasReceipt` 存在性布林（DYI JSON photos metadata），**零下載零 OCR**，守媒體零下載 OOM 防護 + 隱私零外送紅線
+- **單一真源 + diff-guard**：`build_n8n_workflow.cjs` build 時內嵌 `order-match.mjs` 原始碼（strip export，非手抄），`order-match.diffguard.test.mjs` 斷言 n8n 節點與 lib 逐字一致，根治雙處漂移
+- **通知改雙側對照**：Telegram 文案訊息側 vs Supabase 側並列，Fat Mo 一眼判斷去 V42 補單
+- **唯讀**：零寫業務表，不觸 captureFormState/raw_form_state/確收三欄/HTML ID；付款證據邏輯保留為 Phase 2（暫不計）
+- **驗收**：單元測試 15/15 + diff-guard 1/1 PASS；6 情況功能模擬全部正確分類
+- **⏳ 待部署**：n8n workflow（D4LK6VrQbiXlju0V）PUT 上線 + Google Drive credential 重掛 + 拋棄式副本端到端測試（Phase 3，待 Fat Mo 授權部署）
+
+### [FIX] cl-flow-runner 雙 API 故障修復（附帶）
+- **Gemini A2 過載**：`.env GEMINI_A2_MODEL_DEFAULT` `gemini-3.5-flash`→`gemini-2.5-flash`（不改代碼，Preference #6）
+- **PX A1 socket hang up**：根因 Cloudflare 對 Node https/urllib 指紋 reset 只放行 curl；`callPerplexity` 改 curl 子程序，FULL 模式恢復
+
 ## [2026-06-20] 🔧 Session 112 — 鎖匙扣成本誤判事故根因排查 + 成本傳播 Phase 1 止血
 
 **範圍**：`supabase/migrations/0042_drop_dead_recalc_and_cost_drift_check.sql`（新增並已部署）、`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（dev，showToast 擴充 + 存檔提示）、`docs/repo-map.md`、`.fhs/notes/FHS_System_Logic_Overview.md` §5.3/§5.4、`.fhs/ai/skills/finance-gatekeeper/SKILL.md`（v1.2.0→v1.3.0）
