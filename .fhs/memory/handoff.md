@@ -1,10 +1,25 @@
+```handoff
+【FHS 交接摘要 — 更新: 2026-06-23 / S118】
+🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=IG 看門狗 v3 Cron 驗收 + Task A 成本寫入修復
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/`(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段，SOP_NOW 改指標(S118)
+🔬 驗證: 已證實=IG v3 PUT+8/8 marker+cred全掛(S117)；v2 Cron 2次16/16 success(S116)；cost drift=0 40 SKU(S112)；未驗=v3首次真實Cron(預計2026-06-24 06:00 HKT)
+📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡IG v3首次Cron驗(2026-06-24 06:00 HKT) 🟡Airtable billing日均驗 🟡鋁合金嬰兒層成本排查
+➡️ 下一步: 確認 2026-06-24 06:00 HKT Telegram 收到 v3 格式通知（IG v3 首次 Cron 驗收）；通過後排程 Task A
+─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
+⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用axios/HTTP節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)便攜塊=版本/狀態單一真源，不得另開第二份版本維護檔
+🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
+```
+
+> 📌 **此便攜塊為 FHS 交接 SSOT（S118 起）**：人類複製整塊貼新聊天；SessionStart hook 只注入動態段（邊界以上）。每次 `/commit` 時更新此塊六類欄位。
+
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-23（Session 117 — IG 看門狗 v3 部署完成，等待首次 Cron 驗證）
+> 上次更新：2026-06-23（Session 118 — handoff SSOT v2 機制建立，等待 2026-06-24 06:00 HKT v3 首次 Cron）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🟡 中 | **IG 看門狗 v3 首次 Cron 驗證** | ⏳ 等候 2026-06-24 06:00 HKT | PUT 已完成（2026-06-23）；versionId=9430f1b1；7 Drive cred + Telegram cred 全部正確；預計明早收到 v3 格式 Telegram |
+| ⚪ 低 | **[V42 功能] IG 看門狗警報整合** | 📝 已記入待辦 | 現況：看門狗 Telegram 通知與 V42 完全獨立，靠人手記憶補單。可行方案：①Supabase 加 `ig_watchdog_alerts` 表，n8n 在 Classify & Report 節點額外寫入警報記錄；②V42 加「IG 看門狗」頁顯示歷史警報+已處理狀態；③Telegram 訊息加訂單 ID 直連 V42 modal。需 `/cl-flow` 評估後才動。 |
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | 🔍 n8n 側 CONDITIONAL PASS | CacheSync inactive（0 執行記錄）；sysCheckN8n 修復消除最大來源；估算平日 6–10 calls，忙碌日 20–30；**需登入 Airtable Billing 頁確認官方數字** |
@@ -12,6 +27,19 @@
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 118 — handoff SSOT v2 機制建立，2026-06-23）
+- ✅ **[FIX] 漏洞 1（殭屍待辦）**：`session-start-sop.sh` v1→v2，awk 改唯一 fenced tag `\`\`\`handoff` 邊界抽取，不再匹配 line 3760 Session 63 殭屍區
+- ✅ **[FIX] 漏洞 2（SOP_NOW 版本 drift）**：`SOP_NOW.md` 版本格改指標（→ 見 handoff.md 便攜塊 / AGENTS.md），v2-C 版本收斂
+- ✅ **[FIX] 漏洞 3（底部配置過期）**：`handoff.md` 底部殭屍段加 `[ARCHIVED 2026-06-23 / S118]` 封存標記
+- ✅ **[FEAT] 頂部便攜塊（SSOT）**：六類欄位（🎯✅🔬📋➡️⚠️）+ `─── 便攜邊界` 雙深度切片；hook 動態注入 + 人類複製同源
+- ✅ **[FEAT] commit.md P0.7**：每次 `/commit` 強制更新便攜塊六類欄位
+- ✅ **[FEAT] v2-A 過期偵測**：hook 比對塊頭日期 vs 今日，超 3 天印警告
+- ✅ **learnings.md Pitfall #23**：Shell hook 勿用通用 `## X` 標題，改唯一 fence tag
+
+【交付前雙紀律自檢】
+驗收：文件治理任務 — 三漏洞修復 + 便攜塊六類欄位齊 + P0.7 存在 + 完成記錄 8 檔確認 = ✅
+Subagent：❌ 未使用（純文件/hook 層 Edit/Write，零業務/財務/schema 改動）
 
 ### 已確認完成（Session 117 — IG 看門狗 v3 部署上線，2026-06-23）
 - ✅ **PUT 成功**：workflow D4LK6VrQbiXlju0V 已更新至 v3，versionId=9430f1b1，active=True
@@ -3755,6 +3783,8 @@ n8n Workflow：V47.10（Mirror to Supabase — Axios & Order_ID rename 支援）
 - implicit memory 殘留路徑：接受為殘留風險，靠使用習慣管理（A2 仍可能從 IDE 開啟檔案推斷工作意圖）
 
 ---
+
+> ⚠️ **[ARCHIVED 2026-06-23 / S118]** 以下「待辦」「已完成」「核心配置」三區塊為 Session 63 前初期格式，已由 **handoff.md 頂部便攜塊**取代。SessionStart hook 已更新不再讀取此區塊。資料全部過期，保留為歷史考古參考，禁止更新。
 
 ## 待辦 ⏳ 項目
 > ⚠️ 此待辦清單僅供狀態備份。未經 Fat Mo 明確指派任務，AI 嚴禁主動「寫入」或「執行」業務檔案；但允許在 /read 初始化後，主動引用 `.fhs/memory/learnings.md` 條目提示相關 pattern 或 pitfall（純文字提示，不觸發任何寫入）。

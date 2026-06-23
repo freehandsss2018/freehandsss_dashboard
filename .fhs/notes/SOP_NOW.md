@@ -13,14 +13,14 @@
 
 ---
 
-## 系統快照（2026-05-17 更新）
+## 系統快照（版本見 handoff.md 便攜塊；以下保留結構常量，2026-06-23 v2-C 收斂）
+
+> ⚠️ **版本真源已收斂（Session 118 SSOT 機制）**：憲法版本 / 生產版 / 開發版 均以 `handoff.md` 頂部便攜塊為單一真源，不在此手動維護，避免多處 drift。
 
 | 項目 | 現況 |
 |------|------|
-| 憲法版本 | AGENTS.md v1.4.10（Rule 3.16 財務規則前置讀取強制律，收款確收守護語義修正，2026-06-03）|
-| 穩定生產版 | Freehandsss_dashboard_current.html (V41) |
-| 開發版（新）| freehandsss_dashboardV42.html (Planned) |
-| 開發版（舊）| freehandsss_dashboardV41.html (Released) |
+| 憲法版本 | → 見 `AGENTS.md` 頂部 `Version:` 欄（單一真源）|
+| 生產版 / 開發版 | → 見 `handoff.md` 頂部便攜塊 `✅ 已定決策` 欄（S118 起為單一真源）|
 | n8n Workflow | V47.4（Supabase-First 邏輯啟用） |
 | Airtable Base | app9GuLsW9frN4xaT |
 | 數據源 | **Supabase (Primary Lead) + Airtable (Fallback Backup)** |

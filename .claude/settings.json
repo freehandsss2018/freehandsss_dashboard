@@ -101,7 +101,10 @@
       "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('ID:', r.get\\('id','ERR'\\)\\); print\\('Name:', r.get\\('name',''\\)\\); print\\('Error:', r.get\\('message',''\\)\\)\")",
       "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('active:', r.get\\('active',''\\)\\); print\\('err:', r.get\\('message',''\\)\\)\")",
       "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('deleted:', r\\)\")",
-      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('id:', r.get\\('id',''\\)\\); print\\('name:', r.get\\('name',''\\)\\); print\\('active:', r.get\\('active',''\\)\\); print\\('versionId:', r.get\\('versionId',''\\)\\); print\\('err:', r.get\\('message',''\\)\\)\")"
+      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('id:', r.get\\('id',''\\)\\); print\\('name:', r.get\\('name',''\\)\\); print\\('active:', r.get\\('active',''\\)\\); print\\('versionId:', r.get\\('versionId',''\\)\\); print\\('err:', r.get\\('message',''\\)\\)\")",
+      "Bash(node scripts/cl-flow-runner.js \"設計一套系統無關的「交接單一真源」機制：任何新 session（任何 AI/工具/聊天）開啟後都能完整接手六類資訊——目標、待辦與優先序、過往討論結論與已定決策、踩過的錯誤地雷、已做的驗證狀態、待跟進項。需同時滿足人類可一鍵複製貼進新聊天且1分鐘讀完的便攜摘要\\(A\\)，與AI新session自動載入的結構化狀態\\(B\\)，兩者同源不drift。順帶修復現有交接鏈三漏洞（hook awk讀到殭屍待辦、SOP_NOW快照停留V41、handoff底部核心配置表過期）。採分層方案：頂層便攜精華+下鑽完整檔。純文件/hook層零業務代碼。\")",
+      "Bash(ls ~/.claude/agents/freehandsss/)",
+      "Bash(ls \"C:/Users/Edwin/.claude/agents/freehandsss/\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

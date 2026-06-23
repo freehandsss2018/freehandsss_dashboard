@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-23 (Session 118 — handoff SSOT v2 機制建立 + 三漏洞修復): 🏗️ ✅
+
+**Scope**：診斷 FHS 跨 session 交接鏈三大漏洞（殭屍待辦 hook 匹配 S63 舊段、SOP_NOW 版本過期、handoff 底部配置 stale），設計並實施 v2 SSOT 機制：`\`\`\`handoff` fenced 便攜塊（六類欄位 + 雙深度切片），`─── 便攜邊界` 分隔人工複製vs hook動態注入，commit.md 加 P0.7 防腐步驟
+**Result**：7 檔 MODIFY + 2 NEW（完成記錄 + cl-final-plan）；hook v2 精確抽取動態段；SOP_NOW 版本格改指標；底部殭屍段 ARCHIVE；learnings.md Pitfall #23；decisions.md S118 條目；零業務/財務/schema 改動
+
 ## 2026-06-22 (Session 113 — learnings.md 超量整理 + kgov stale flag 清理): 🧹 ✅
 
 **Scope**：learnings.md 累積至 70 條（含兩個重複編號 #15/#21）超出 50 條上限；逐條分析後退役 20 條（17 Pitfalls + 2 Patterns + 合併 kgov 兩條為一）；同時清理 Session 112（2026-06-21）遺留的 stale `.kgov-pending` flag（Session 112 已正確更新 FHS_System_Logic_Overview.md，flag 未自動清除）

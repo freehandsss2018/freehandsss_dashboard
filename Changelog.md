@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-06-23] 🔧 Session 118 — handoff 交接機制 SSOT 化（v2 便攜塊 + 三漏洞修復）
+
+**範圍**：`scripts/hooks/session-start-sop.sh`（v2 重寫）、`.fhs/memory/handoff.md`（頂部便攜塊新增 + 底部殭屍段 ARCHIVE）、`.fhs/notes/SOP_NOW.md`（版本格改指標）、`.fhs/ai/commands/commit.md`（P0.7 新增）、`.fhs/memory/learnings.md`（Pitfall #23）、`.fhs/notes/decisions.md`（Session 118 條目）
+
+### [FIX] SessionStart Hook 三漏洞修復
+- **漏洞 1（殭屍待辦）**：`session-start-sop.sh` 的 `awk '/^## 待辦/'` 匹配到 handoff.md line 3760 的 Session 63 前舊格式殭屍待辦（Anti-Idle Ping / pg_cron 等 Session 67/87 已完成項），真正「MASTER 持續待辦」用單 `#` 標題 hook 永遠讀不到。改以唯一 ` ```handoff ` fenced 塊動態段 awk 精確抽取，根治。
+- **漏洞 2（SOP_NOW 版本過期）**：SOP_NOW.md 快照表仍寫 V41 production，實際 Session 115 升格 V42。改為版本指標（指向 handoff.md 便攜塊 + AGENTS.md），v2-C 版本收斂：版本字串只在一處維護。
+- **漏洞 3（handoff 底部配置過期）**：底部 `## 待辦 ⏳ 項目` / `## 核心配置` 區塊仍顯示 V41 + 舊 versionId。已加 `[ARCHIVED 2026-06-23]` 標記並說明已由頂部便攜塊取代。
+
+### [FEAT] v2 雙深度便攜塊（handoff.md 頂部）
+- 新增 ` ```handoff ` fenced 塊，含六類不可省略欄位（目標/決策/驗證/待辦/下一步/地雷）
+- `─── 便攜邊界` 分隔線實現雙深度切片：hook 只注入動態段（~120 tokens）；人類複製整塊（含靜態地雷，適合貼外部聊天）
+- v2-A 過期偵測：hook 比對塊頭日期與今日，不符時印警告
+- SSOT 原則：人類貼用版與 AI 自動注入版同源，結構上不可能 drift
+
+### [FEAT] commit.md P0.7 防腐步驟
+- 每次 `/commit` 強制更新便攜塊六類欄位 + 日期，解決 PX 3.3「沒人用」落地風險
+
 ## [2026-06-23] 🐶 Session 116 — IG 漏單看門狗 v3：訂號主鍵偵測（偵測模型反轉）
 
 **範圍**：`scripts/ig-watchdog/lib/order-match.mjs`（新增）、`lib/order-match.test.mjs`（新增）、`lib/order-match.diffguard.test.mjs`（新增）、`scripts/ig-watchdog/build_n8n_workflow.cjs`（MODIFY）、`SOP.md`、`docs/repo-map.md`、`.env`（Gemini 模型）、`scripts/cl-flow-runner.js`（PX curl 修復）

@@ -3,6 +3,12 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-23] (Session 118) handoff 交接機制 SSOT 化 — 修復三漏洞 + v2 雙深度便攜塊
+
+決策：handoff.md 頂部新增唯一 ` ```handoff ` fenced 便攜塊（六類不可省略欄位：目標/決策/驗證/待辦/下一步/地雷），以 `─── 便攜邊界` 分隔線實現雙深度切片。hook 只抽動態段（邊界以上，~120 tokens），人類複製整塊（含靜態地雷段）。過期偵測：hook 比對塊頭 YYYY-MM-DD 與今日，不符印警告。SOP_NOW.md 版本格改指標（v2-C，不再自帶版本字串）。commit.md 加 P0.7 強制更新便攜塊（防腐）。
+原因（三漏洞）：(1) hook `awk '/^## 待辦/'` 匹配 handoff.md 底部 line 3760 殭屍待辦（Session 63 以前，Anti-Idle/pg_cron 等已 S67/87 完成），真正「# MASTER 持續待辦」用單 `#` hook 永遠讀不到；(2) SOP_NOW 快照仍 V41，實際 S115 升格 V42；(3) handoff 底部核心配置表仍 V41 舊 versionId。v2 核心洞見：以「同一 fenced 塊同源」解決人類版/AI 版雙寫 drift 根因（PX 3.1 風險）；靠分層（動態/靜態分隔）同時達到 token 節約與外部貼用完整兩個對立目標。
+影響檔案：scripts/hooks/session-start-sop.sh（v2）、.fhs/memory/handoff.md（頂部新增便攜塊+底部 ARCHIVE）、.fhs/notes/SOP_NOW.md（版本格改指標）、.fhs/ai/commands/commit.md（P0.7）、.fhs/memory/learnings.md（Pitfall #23）
+
 [2026-06-23] (Session 116) cl-flow-runner API 雙修：Gemini 模型切換（.env）+ PX 改走 curl — 修復 /cl-flow 全模式不可用
 
 決策：(1) Gemini A2「high demand」過載 → 依 Preference #6 改 `.env GEMINI_A2_MODEL_DEFAULT` 由 `gemini-3.5-flash` 切 `gemini-2.5-flash`（不改代碼，probe 確認 200/1s）；(2) PX A1「socket hang up」→ 將 `callPerplexity` 從 Node `https.request` 改走 **curl 子程序**（body 寫臨時檔 `--data @file`）。

@@ -57,6 +57,8 @@
 19. **focusin 清空前必保存原值**：focusin 無條件清空 input 而不先 `dataset.preFocusVal = e.target.value`，focusout 只能 fallback 半訂，全付/自訂值被錯誤覆蓋。每個清空 focusin 必加兩行 save — Session 97
 20. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取 — Session 103
 21. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 後從 fetch 結果重建 — Session 105
+23. **Shell hook 勿用通用標題 `## X` 抓取，改唯一 fence tag**：`awk '/^## 待辦/'` 匹配「檔案內第一個同名段」，若歷史 session 有舊同名 section 則讀錯。交接欄位應以唯一 fenced tag（如 ` ```handoff `）+ awk 邊界精確抽取（`found` flag + 分隔線 exit）；fence tag 需確認全檔唯一 — Session 118
+
 22. **【高頻 ⚠️】split 還原被 generate() auto-fill 污染（P33 時序升級）**：restoreFormState 內 generate() 無條件 auto-fill 污染 hidden 欄；renderPaymentSplits prevData 優先讀污染值 → 存檔值被忽略。根治：快照隔離（pollute 前快照存 JSON 為權威）+ `_fhsPaymentSyncing=true` 壓 cross-sync + finally 清快照 + 四點清除防污染新單 — Session 107
 23. **openOrderModal 第二參數是 catFilter 非 tab**：第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁必須用**第三參數 initialTab**（內部呼 switchModalTab）。誤把 'finance' 當第二參數 → 捷徑永遠停訊息文本分頁 — Session 109
 24. **【高頻 ⚠️】cl-flow runner Perplexity 推理模型靜默空白**：`sonar-reasoning-pro` 低 `max_tokens`（舊值3072）吃光 think 階段，HTTP 200 + finish_reason:'stop' 卻 content 空，px-report.md 恆寫空白。修復：`max_tokens`→8000 + 空 content 視為失敗 throw 交 withRetry — Session 110
