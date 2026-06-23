@@ -104,7 +104,13 @@
       "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('id:', r.get\\('id',''\\)\\); print\\('name:', r.get\\('name',''\\)\\); print\\('active:', r.get\\('active',''\\)\\); print\\('versionId:', r.get\\('versionId',''\\)\\); print\\('err:', r.get\\('message',''\\)\\)\")",
       "Bash(node scripts/cl-flow-runner.js \"設計一套系統無關的「交接單一真源」機制：任何新 session（任何 AI/工具/聊天）開啟後都能完整接手六類資訊——目標、待辦與優先序、過往討論結論與已定決策、踩過的錯誤地雷、已做的驗證狀態、待跟進項。需同時滿足人類可一鍵複製貼進新聊天且1分鐘讀完的便攜摘要\\(A\\)，與AI新session自動載入的結構化狀態\\(B\\)，兩者同源不drift。順帶修復現有交接鏈三漏洞（hook awk讀到殭屍待辦、SOP_NOW快照停留V41、handoff底部核心配置表過期）。採分層方案：頂層便攜精華+下鑽完整檔。純文件/hook層零業務代碼。\")",
       "Bash(ls ~/.claude/agents/freehandsss/)",
-      "Bash(ls \"C:/Users/Edwin/.claude/agents/freehandsss/\")"
+      "Bash(ls \"C:/Users/Edwin/.claude/agents/freehandsss/\")",
+      "Bash(node scripts/cl-flow-runner.js \"打通 IG 看門狗警報與 V42 單向資料鏈：① Supabase 新增 ig_watchdog_alerts 表（migration 0043，冪等鍵/RLS anon），n8n 在 Classify & Report 後以 HTTP Request 節點寫入每筆警報（NAS Code 節點 fetch 禁用、業務表零寫入原則僅放寬至此專用表）；② V42 新增「IG 看門狗」檢視（switchMode 接入、lazy fetch、已處理開關回寫 Supabase、Desktop+手機雙版）；③ Telegram 訊息每筆警報附訂單 ID + V42 深連結（V42 為 NAS WebDAV 靜態 HTML，深連結須靠 URL query/hash + onload 解析，不可行則降級純文字訂號）。約束：禁改 lib/order-match.mjs 分類語義、Code 節點改動須過 diff-guard、禁改 HTML ID/captureFormState/raw_form_state。\")",
+      "Bash(sed -E 's/\\(KEY|TOKEN|SECRET\\)=.*/\\\\1=***REDACTED***/')",
+      "PowerShell(\"Copy done\")",
+      "PowerShell(powershell -ExecutionPolicy Bypass -File \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\scripts\\\\upload-web.ps1\" current -Force)",
+      "PowerShell(@\\(\"session-start-sop.sh\",\"prompt-router.js\",\"pre-tool-guard.js\"\\) | ForEach-Object { $p = \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\scripts\\\\hooks\\\\$_\"; if \\(Test-Path $p\\) { \"✅ $_\" } else { \"❌ MISSING: $_\" } }; if \\(Test-Path \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\.claude\\\\settings.json\"\\) { \"✅ settings.json\" } else { \"❌ MISSING: settings.json\" })",
+      "PowerShell(git -C \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\" add -- \".claude/settings.json\" \".fhs/memory/handoff.md\" \".fhs/notes/FHS_System_Logic_Overview.md\" \".fhs/notes/session-log.md\" \"Changelog.md\" \"Freehandsss_Dashboard/Freehandsss_dashboard_current.html\" \"Freehandsss_Dashboard/freehandsss_dashboardV42.html\" \"docs/repo-map.md\" \"scripts/cl-flow-runner.js\" \".fhs/reports/completion/2026-06-23_igwatch-alerts-phase1a-2_completion_report.md\" \"supabase/migrations/0043_ig_watchdog_alerts.sql\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

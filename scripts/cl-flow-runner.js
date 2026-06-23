@@ -59,8 +59,14 @@ function writeFile(filePath, content) {
 // 故 PX 呼叫改走 curl 子程序（body 寫臨時檔，--data @file），不再用 https.request。
 function callPerplexity(prompt) {
   return new Promise((resolve, reject) => {
+    // NOTE (2026-06-23 fix): sonar-reasoning-pro 的 <think> 階段在 node spawnSync(curl)
+    // 上下文會「靜默無數據流 ~60s」→ Windows Schannel curl 被 idle-reset，curl exit 56
+    // （len 0，stderr 空）。互動 shell 的 curl 偶能存活，但 node-spawned 子程序確定性失敗。
+    // 實測（同一 heavy prompt，node spawnSync）：sonar-reasoning-pro=exit56；sonar-pro=status0
+    // 15876 chars/36s；sonar=status0 5150 chars/9s。改用非推理 sonar-pro：即時串流無 idle、
+    // 內容更豐富。keepalive/--http1.1/-4 皆無效（根因是 think 階段無數據流，非傳輸層）。
     const body = JSON.stringify({
-      model: 'sonar-reasoning-pro',
+      model: 'sonar-pro',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 8000
     });
@@ -273,7 +279,7 @@ ${task}
 
       writeFile(
         path.join(ARTIFACTS_DIR, 'px-report.md'),
-        `# PX Report (A1)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: sonar-reasoning-pro\n\n---\n\n${pxResult}\n`
+        `# PX Report (A1)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: sonar-pro\n\n---\n\n${pxResult}\n`
       );
     }
 

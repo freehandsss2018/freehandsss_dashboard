@@ -3074,6 +3074,8 @@
             <button id="modeFinanceBtn" onclick="switchMode('finance')">財務</button>
             <!-- 系統監控按鈕（V46.1） -->
             <button id="modeSystemBtn" onclick="switchMode('system')" title="系統狀態監控">⚙️</button>
+            <!-- IG 看門狗模式按鈕（S119） -->
+            <button id="modeIgWatchBtn" onclick="switchMode('igwatch')" title="IG 看門狗警報">🐶</button>
         </div>
     </div>
 
@@ -4440,6 +4442,26 @@
     </div>
     <!-- End systemModeContainer -->
 
+    <!-- IG 看門狗警報面板（S119 Phase 2）-->
+    <div id="igwatchModeContainer" style="display:none; width:100%; padding: var(--space-4); box-sizing:border-box;">
+        <div class="card" style="margin:0 0 12px 0; padding:16px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <span style="font-size:1.25rem;">🐶</span>
+                <span style="font-size:15px; font-weight:700; color:var(--fhs-text-primary);">IG 看門狗警報</span>
+                <span id="igwatchBadge" style="margin-left:auto; font-size:11px; color:var(--fhs-text-secondary);"></span>
+                <button id="igwatchRefreshBtn" onclick="loadIgWatchAlerts()" style="background:none;border:1px solid var(--fhs-border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;">↻ 刷新</button>
+            </div>
+            <div id="igwatchSegCtrl" style="display:flex; gap:4px; margin-bottom:12px;">
+                <button class="fhs-seg-btn is-active" data-igwatch-filter="pending" onclick="setIgWatchFilter('pending')">未處理</button>
+                <button class="fhs-seg-btn" data-igwatch-filter="resolved" onclick="setIgWatchFilter('resolved')">已處理</button>
+                <button class="fhs-seg-btn" data-igwatch-filter="all" onclick="setIgWatchFilter('all')">全部</button>
+            </div>
+            <div id="igwatchStatus" style="font-size:13px; color:var(--fhs-text-secondary); min-height:20px;"></div>
+            <div id="igwatchList"></div>
+        </div>
+    </div>
+    <!-- End igwatchModeContainer -->
+
     </div> <!-- End v40-main-col -->
 
     <!-- 右欄：Desktop Side Panel -->
@@ -5001,6 +5023,7 @@
                 const editP = document.querySelectorAll('#editModeContainer');
                 const finances = document.querySelectorAll('#financeModeContainer');
                 const systems = document.querySelectorAll('#systemModeContainer');
+                const igwatchs = document.querySelectorAll('#igwatchModeContainer');
 
                 // 🎯 隱藏所有
                 forms.forEach(f => f.style.display = 'none');
@@ -5008,6 +5031,7 @@
                 editP.forEach(e => e.style.display = 'none');
                 finances.forEach(fi => fi.style.display = 'none');
                 systems.forEach(s => s.style.display = 'none');
+                igwatchs.forEach(ig => ig.style.display = 'none');
 
                 // Mode body classes
                 document.body.classList.toggle('v40-finance-active', mode === 'finance');
@@ -5064,29 +5088,34 @@
                 } else if (mode === 'system') {
                     systems.forEach(s => s.style.display = 'block');
                     forms.forEach(f => f.style.display = 'none');
+                } else if (mode === 'igwatch') {
+                    igwatchs.forEach(ig => ig.style.display = 'block');
+                    forms.forEach(f => f.style.display = 'none');
                 }
 
                 // 更新按鈕樣式
-                ['modeCreateBtn','modeEditBtn','modeReviewBtn','modeFinanceBtn','modeSystemBtn'].forEach(id => {
+                ['modeCreateBtn','modeEditBtn','modeReviewBtn','modeFinanceBtn','modeSystemBtn','modeIgWatchBtn'].forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) { btn.classList.remove('active'); btn.style.cssText = ''; }
                 });
-                const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn', system:'modeSystemBtn' };
+                const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn', system:'modeSystemBtn', igwatch:'modeIgWatchBtn' };
                 const activeBtn = document.getElementById(activeMap[mode]);
                 if (activeBtn) activeBtn.classList.add('active');
 
                 // --- V36.1 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
-                if (bbar) bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system') ? 'none' : 'flex';
+                if (bbar) bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system' || mode === 'igwatch') ? 'none' : 'flex';
 
                 // V40 Bottom Bar: hide order actions in review/finance/system mode
                 const v40bbar = document.getElementById('v40-bottom-bar');
-                if (v40bbar) v40bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system') ? 'none' : '';
+                if (v40bbar) v40bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system' || mode === 'igwatch') ? 'none' : '';
 
                 if (mode === 'finance') {
                     setTimeout(foInitAll, 50);
                 } else if (mode === 'system') {
                     setTimeout(sysRefreshPanel, 50);
+                } else if (mode === 'igwatch') {
+                    setTimeout(loadIgWatchAlerts, 50);
                 }
             }
             /* review fetch: 每次切入均重新載入，不受 currentMode 保護限制 */
@@ -7479,6 +7508,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 renderLimbGrid();
                 updateFamilyParts();
                 generate();
+                // IG 看門狗深連結（S119）：?view=igwatch 直接進入警報頁；
+                // ?view=igwatch&orderId=xxx 同時開對應訂單 modal（kind=created_incomplete 場景）
+                const _igwParams = new URLSearchParams(location.search);
+                if (_igwParams.get('view') === 'igwatch') {
+                    await switchMode('igwatch');
+                    const _igwOId = _igwParams.get('orderId');
+                    if (_igwOId) setTimeout(function() { openOrderModal(_igwOId, '', 'finance'); }, 300);
+                }
                 console.log("✅ V30 Dashboard Ready.");
             } catch (e) {
                 console.error("❌ V30 Dashboard Init Failed:", e);
@@ -12515,6 +12552,120 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (!res.ok) throw new Error('RPC ' + fn + ': ' + res.status);
             return res.json();
         }
+
+        // ── IG 看門狗警報（S119 Phase 2）───────────────────────────────
+        let _igwFilter = 'pending';
+
+        function setIgWatchFilter(f) {
+            _igwFilter = f;
+            document.querySelectorAll('[data-igwatch-filter]').forEach(function(b) {
+                b.classList.toggle('is-active', b.dataset.igwatchFilter === f);
+            });
+            _renderIgWatchList(window._igwAllAlerts || []);
+        }
+
+        async function loadIgWatchAlerts() {
+            const statusEl = document.getElementById('igwatchStatus');
+            const listEl = document.getElementById('igwatchList');
+            const badgeEl = document.getElementById('igwatchBadge');
+            if (!statusEl || !listEl) return;
+            statusEl.textContent = '載入中…';
+            listEl.innerHTML = '';
+            try {
+                const rows = await sbFetch('ig_watchdog_alerts', {
+                    select: '*',
+                    order: 'alert_date.desc,created_at.desc',
+                    limit: '200'
+                });
+                window._igwAllAlerts = rows || [];
+                const pending = (rows || []).filter(function(r) { return !r.resolved; }).length;
+                if (badgeEl) badgeEl.textContent = (rows || []).length + ' 筆警報｜' + pending + ' 待處理';
+                statusEl.textContent = '';
+                _renderIgWatchList(rows || []);
+            } catch (e) {
+                statusEl.textContent = '❌ 載入失敗：' + e.message;
+            }
+        }
+
+        function _renderIgWatchList(rows) {
+            const listEl = document.getElementById('igwatchList');
+            if (!listEl) return;
+            const filtered = rows.filter(function(r) {
+                if (_igwFilter === 'pending') return !r.resolved;
+                if (_igwFilter === 'resolved') return r.resolved;
+                return true;
+            });
+            if (!filtered.length) {
+                listEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--fhs-text-secondary);font-size:13px;">'
+                    + (_igwFilter === 'pending' ? '✅ 目前無待處理警報' : '（無記錄）') + '</div>';
+                return;
+            }
+            listEl.innerHTML = filtered.map(function(r) {
+                var kindLabel = r.kind === 'not_created' ? '🆕 未建立' : '📝 資訊不齊';
+                var kindColor = r.kind === 'not_created' ? '#ef4444' : '#f59e0b';
+                var resolvedBadge = r.resolved
+                    ? '<span style="font-size:11px;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:9px;margin-left:4px;">✓ 已處理</span>'
+                    : '';
+                // kind 感知動作（v2 修正：not_created 單不存在，禁止 openOrderModal 會靜默失敗）
+                var actionBtn = '';
+                if (r.kind === 'created_incomplete' && r.order_id) {
+                    actionBtn = '<button onclick="openOrderModal(' + JSON.stringify(r.order_id) + ',\'\',\'finance\')" style="font-size:12px;background:var(--fhs-primary,#2A9D8F);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">開訂單</button>';
+                } else if (r.kind === 'not_created' && r.order_id) {
+                    actionBtn = '<button onclick="_igwCopyOrderId(' + JSON.stringify(r.order_id) + ')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">複製訂號</button>';
+                }
+                var resolveLabel = r.resolved ? '標回未處理' : '標記已處理';
+                var resolveBg = r.resolved ? '#e5e7eb' : '#059669';
+                var resolveColor = r.resolved ? '#374151' : '#fff';
+                var resolveBtn = '<button onclick="_igwToggleResolve(' + JSON.stringify(r.id) + ',' + !r.resolved + ')" style="font-size:12px;background:' + resolveBg + ';color:' + resolveColor + ';border:none;border-radius:6px;padding:4px 10px;cursor:pointer;">' + resolveLabel + '</button>';
+                var cardBg = r.resolved ? 'var(--fhs-bg-secondary,#f9fafb)' : '#fff';
+                var dbBadge = r.order_id
+                    ? (r.db_matched ? ' <span style="color:#059669;font-size:11px;">DB✓</span>' : ' <span style="color:#ef4444;font-size:11px;">DB✗</span>')
+                    : '';
+                return '<div style="border:1px solid var(--fhs-border);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:' + cardBg + ';">'
+                    + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+                    + '<span style="font-size:12px;font-weight:700;color:' + kindColor + ';">' + kindLabel + '</span>'
+                    + (r.order_id ? '<span style="font-size:12px;font-family:monospace;background:#f3f4f6;padding:1px 6px;border-radius:4px;">' + r.order_id + '</span>' : '<span style="font-size:11px;color:#9ca3af;">（無訂號）</span>')
+                    + resolvedBadge
+                    + '<span style="margin-left:auto;font-size:11px;color:var(--fhs-text-secondary);">' + (r.alert_date || '—') + '</span>'
+                    + '</div>'
+                    + '<div style="font-size:13px;color:var(--fhs-text-secondary);margin:6px 0 2px;">'
+                    + (r.customer_name ? '<strong>' + r.customer_name + '</strong>｜' : '') + (r.snippet || '（無摘要）')
+                    + (r.has_receipt ? ' 📎' : '') + dbBadge
+                    + '</div>'
+                    + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' + actionBtn + resolveBtn + '</div>'
+                    + '</div>';
+            }).join('');
+        }
+
+        async function _igwToggleResolve(id, resolved) {
+            try {
+                await sbRpc('fhs_resolve_ig_alert', { p_id: id, p_resolved: resolved, p_by: 'operator' });
+                // 樂觀更新（失敗 → alert，不靜默）
+                if (window._igwAllAlerts) {
+                    var r = window._igwAllAlerts.find(function(a) { return a.id === id; });
+                    if (r) {
+                        r.resolved = resolved;
+                        r.resolved_at = resolved ? new Date().toISOString() : null;
+                        r.resolved_by = resolved ? 'operator' : null;
+                    }
+                }
+                _renderIgWatchList(window._igwAllAlerts || []);
+            } catch (e) { alert('❌ 更新失敗：' + e.message); }
+        }
+
+        function _igwCopyOrderId(orderId) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(orderId)
+                    .then(function() { showToast('訂號已複製：' + orderId, 2000); })
+                    .catch(function() { alert('訂號：' + orderId); });
+            } else { alert('訂號：' + orderId); }
+        }
+
+        window.loadIgWatchAlerts = loadIgWatchAlerts;
+        window.setIgWatchFilter = setIgWatchFilter;
+        window._igwToggleResolve = _igwToggleResolve;
+        window._igwCopyOrderId = _igwCopyOrderId;
+        // ── End IG 看門狗警報 ────────────────────────────────────────
 
         /* ── PGC-ODAT: Audit Toggle + Item Drawer (Phase 1) ────────── */
         function toggleAuditMode() {

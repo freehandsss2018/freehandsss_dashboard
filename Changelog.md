@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-06-23] 🐶 Session 119 — IG 看門狗警報整合 Phase 1a+2（Supabase 持久化 + V42 igwatch 模式）
+
+**範圍**：`supabase/migrations/0043_ig_watchdog_alerts.sql`（新增並已部署）、`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（igwatch 模式 10 項 HTML/JS 改動）、`docs/repo-map.md`（migration 0043 + V42 狀態更新）
+
+### [FEAT] Supabase ig_watchdog_alerts 表（migration 0043）
+- **新表** `public.ig_watchdog_alerts`：儲存 IG 看門狗 v3 每日警報（alert_date / order_id / kind / customer_name / snippet / thread / has_receipt / db_matched / raw / resolved 三欄）
+- **冪等鍵**：expression UNIQUE INDEX `ix_igwatch_alerts_dedup (alert_date, thread, COALESCE(order_id,''), kind)`，允許 NULL order_id 參與唯一比對
+- **RLS**：anon/authenticated 只讀 SELECT；無 anon INSERT policy（防偽造 alert）；service_role 預設 bypass（n8n 批量寫入用）
+- **SECURITY DEFINER RPC** `fhs_resolve_ig_alert(uuid, boolean, text)`：V42 anon 前端唯一寫入點，只改 resolved/resolved_at/resolved_by 三欄，防橫向逾越
+- **pg_cron TTL**：`delete-old-resolved-igwatch-alerts` 每日 03:00 UTC，清理已處理且 >90 天的警報（複用 S87 error_logs 模式）
+
+### [FEAT] V42 igwatch 模式（IG 看門狗警報查看）
+- **模式按鈕**：🐶 `modeIgWatchBtn`，整合至 mode switcher array + activeMap，符合 V42 現有 switchMode 模式管理
+- **警報容器** `#igwatchModeContainer`：三 filter tab（未處理/已處理/全部）+ badge 計數器 + 狀態行 + 卡片列表
+- **Lazy load**：`switchMode('igwatch')` 觸發 `setTimeout(loadIgWatchAlerts, 50)`，首次點擊才查 Supabase
+- **kind-aware 動作**（v2 mapOrder pitfall 修正）：`created_incomplete` → `openOrderModal()`（訂單存在DB）；`not_created` → `_igwCopyOrderId()`（訂單**不**存在DB，禁用 openOrderModal 防靜默失敗）
+- **resolve 回寫**：`_igwToggleResolve()` 呼叫 `sbRpc('fhs_resolve_ig_alert', ...)` + 樂觀更新，失敗 alert 不靜默吞
+- **URL 深連結**：`?view=igwatch[&orderId=xxx]`，`window.onload` 解析自動切模式並觸發 `openOrderModal`（Phase 3 TG 訊息附連結用）
+- **bottomBar 隱藏**：`igwatch` 模式正確隱藏 bottomBar/v40bbar（對齊 system/finance 模式行為）
+
+### [BLOCKED] Phase 1b + Phase 3（依決策 Q3 延後）
+- **Phase 1b**（n8n write node）：等待 2026-06-24 06:00 HKT v3 首次 Cron 驗收 PASS 後執行
+- **Phase 3**（TG 深連結）：Phase 1b 完成後，在 `Classify & Report` node 加入 V42 URL 到 Telegram 訊息
+
+---
+
 ## [2026-06-23] 🔧 Session 118 — handoff 交接機制 SSOT 化（v2 便攜塊 + 三漏洞修復）
 
 **範圍**：`scripts/hooks/session-start-sop.sh`（v2 重寫）、`.fhs/memory/handoff.md`（頂部便攜塊新增 + 底部殭屍段 ARCHIVE）、`.fhs/notes/SOP_NOW.md`（版本格改指標）、`.fhs/ai/commands/commit.md`（P0.7 新增）、`.fhs/memory/learnings.md`（Pitfall #23）、`.fhs/notes/decisions.md`（Session 118 條目）

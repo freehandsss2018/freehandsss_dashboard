@@ -57,7 +57,8 @@ freehandsss_dashboard/
 │   │   ├── 0037_add_item_sale_price_and_backfill.sql ← order_items 加 item_sale_price NUMERIC + balanceSplitData 存量補填（Session 90/91）✅ 已部署
 │   │   ├── 0038_update_rpc_item_sale_price_3layer.sql ← get_financial_kpis 3-layer fallback（item_sale_price→成本比例→平均分） + data_quality 欄位（Session 90/91，applied via MCP，本地檔待補）✅ 已部署
 │   │   ├── (0039-0041 本地檔缺漏，Session 90-99 applied via MCP 未補建，待後續任務補登 repo-map)
-│   │   └── 0042_drop_dead_recalc_and_cost_drift_check.sql ← DROP 死碼 recalculate_product_costs（v1 schema 遺留，引用不存在欄位必報錯）+ CREATE fhs_check_product_cost_drift()（唯讀比對 products.total_base_cost 與成本原子組裝值，範圍限定嬰兒S/P不銹鋼鎖匙扣，Session 112）✅ 已部署
+│   │   ├── 0042_drop_dead_recalc_and_cost_drift_check.sql ← DROP 死碼 recalculate_product_costs（v1 schema 遺留，引用不存在欄位必報錯）+ CREATE fhs_check_product_cost_drift()（唯讀比對 products.total_base_cost 與成本原子組裝值，範圍限定嬰兒S/P不銹鋼鎖匙扣，Session 112）✅ 已部署
+│   │   └── 0043_ig_watchdog_alerts.sql ← IG 看門狗警報表（Session 119）：ig_watchdog_alerts 表 + SECURITY DEFINER RPC fhs_resolve_ig_alert + RLS anon 只讀 + expression UNIQUE INDEX dedup + pg_cron 90天 TTL ✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -86,7 +87,7 @@ freehandsss_dashboard/
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── README.md                           ← Dashboard 目錄說明
 │   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V41 一致）
-│   ├── freehandsss_dashboardV42.html       ← 🚧 開發版（Session 64 起）：手機訂單總覽 WhatsApp/Threads 視覺觸控改造；V41 凍結期間 hotfix 須 cherry-pick 至此
+│   ├── freehandsss_dashboardV42.html       ← ✅ Production（Session 115 升格）：手機訂單總覽 WhatsApp/Threads 視覺觸控改造；Session 119 加入 igwatch 模式（IG 看門狗警報查看 + resolve 回寫 + URL 深連結 ?view=igwatch&orderId=）
 │   ├── freehandsss_dashboardV41.html       ← ⛔ 已凍結（V42 開發期間禁止改動）；穩定生產基準；成本引擎 B1+B2+Task A 完成版
 │   ├── freehandsss_dashboardV36.html       # 舊版穩定基準 (Legacy Stable)
 │   ├── freehandsss_dashboardV37.html       # 展示/試用版本 (Trial / Legacy)

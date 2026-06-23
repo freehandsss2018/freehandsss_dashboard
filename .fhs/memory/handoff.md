@@ -1,12 +1,12 @@
 ```handoff
-【FHS 交接摘要 — 更新: 2026-06-23 / S118】
-🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=IG 看門狗 v3 Cron 驗收 + Task A 成本寫入修復
-✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/`(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段，SOP_NOW 改指標(S118)
-🔬 驗證: 已證實=IG v3 PUT+8/8 marker+cred全掛(S117)；v2 Cron 2次16/16 success(S116)；cost drift=0 40 SKU(S112)；未驗=v3首次真實Cron(預計2026-06-24 06:00 HKT)
-📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡IG v3首次Cron驗(2026-06-24 06:00 HKT) 🟡Airtable billing日均驗 🟡鋁合金嬰兒層成本排查
-➡️ 下一步: 確認 2026-06-24 06:00 HKT Telegram 收到 v3 格式通知（IG v3 首次 Cron 驗收）；通過後排程 Task A
+【FHS 交接摘要 — 更新: 2026-06-23 / S119】
+🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=IG 看門狗 v3 首次 Cron 驗收（2026-06-24 06:00 HKT）+ Phase 1b n8n write node + Task A 成本寫入修復
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)
+🔬 驗證: 已證實=IG v3 PUT D4LK6VrQbiXlju0V active+8/8 marker(S117)；v2 Cron 16/16×2(S116)；migration 0043 deployed+RPC live(S119)；V42 igwatch 🐶 模式部署 849,679 bytes NAS SHA256=666991CA(S119)；未驗=v3首次真實Cron(2026-06-24 06:00 HKT)；Phase 1b n8n write node尚未接入
+📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡IG v3首次Cron驗(2026-06-24 06:00 HKT) 🟡Phase 1b n8n write→ig_watchdog_alerts 🟡Airtable billing日均驗 🟡鋁合金嬰兒層成本排查
+➡️ 下一步: 等待 2026-06-24 06:00 HKT Telegram v3 格式通知；Cron 驗收 PASS 後接 Phase 1b（n8n HTTP Request write node）→ Phase 3（TG 深連結）
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
-⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用axios/HTTP節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)便攜塊=版本/狀態單一真源，不得另開第二份版本維護檔
+⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
 ```
 
@@ -14,12 +14,13 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-23（Session 118 — handoff SSOT v2 機制建立，等待 2026-06-24 06:00 HKT v3 首次 Cron）
+> 上次更新：2026-06-23（Session 119 — IG 看門狗警報整合 Phase 1a+2 完成，等待 2026-06-24 06:00 HKT v3 首次 Cron）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | 🟡 中 | **IG 看門狗 v3 首次 Cron 驗證** | ⏳ 等候 2026-06-24 06:00 HKT | PUT 已完成（2026-06-23）；versionId=9430f1b1；7 Drive cred + Telegram cred 全部正確；預計明早收到 v3 格式 Telegram |
-| ⚪ 低 | **[V42 功能] IG 看門狗警報整合** | 📝 已記入待辦 | 現況：看門狗 Telegram 通知與 V42 完全獨立，靠人手記憶補單。可行方案：①Supabase 加 `ig_watchdog_alerts` 表，n8n 在 Classify & Report 節點額外寫入警報記錄；②V42 加「IG 看門狗」頁顯示歷史警報+已處理狀態；③Telegram 訊息加訂單 ID 直連 V42 modal。需 `/cl-flow` 評估後才動。 |
+| 🟡 中 | **[Phase 1b] n8n write node → ig_watchdog_alerts** | ⏳ 等 v3 Cron 驗收 PASS | Cron 驗收通過後，在 D4LK6VrQbiXlju0V `Classify & Report` 後加 HTTP Request 節點，批量寫入警報（service_role key）；json.alerts 陣列打包防 TG fan-out |
+| ⚪ 低 | **[Phase 3] Telegram 訊息附 V42 deep-link URL** | ⏳ Phase 1b 後 | TG 訊息每筆加 `?view=igwatch&orderId=xxx` 連結，直達 V42 igwatch 模式 |
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | 🔍 n8n 側 CONDITIONAL PASS | CacheSync inactive（0 執行記錄）；sysCheckN8n 修復消除最大來源；估算平日 6–10 calls，忙碌日 20–30；**需登入 Airtable Billing 頁確認官方數字** |
@@ -27,6 +28,17 @@
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 119 — IG 看門狗警報整合 Phase 1a+2，2026-06-23）
+- ✅ **[Phase 1a] migration 0043 部署**：`ig_watchdog_alerts` 表 + RLS anon 只讀 + SECURITY DEFINER RPC `fhs_resolve_ig_alert` + expression UNIQUE INDEX 冪等鍵（COALESCE NULL 處理）+ pg_cron 90 天 TTL；已部署並驗證
+- ✅ **[Phase 2] V42 igwatch 🐶 模式**：mode button/container/switchMode 接入/lazy load/filter tabs/kind-aware 動作（created_incomplete→openOrderModal；not_created→copyOrderId 防 mapOrder 靜默失敗）/resolve 回寫 RPC/URL 深連結解析
+- ✅ **NAS 部署**：V42（849,679 bytes）升格 current.html，WebDAV PUT HTTP 204，SHA256=666991CA...D3E9BD，三關 PASS
+- ✅ **文件同步**：CHANGELOG.md、docs/repo-map.md、FHS_System_Logic_Overview.md §5.1+§10.7+§十一、completion report
+- ⏳ **Phase 1b + Phase 3 BLOCKED**：等 2026-06-24 06:00 HKT v3 首次 Cron 驗收 PASS
+
+【交付前雙紀律自檢】
+驗收：migration 0043 live（Supabase MCP confirm）+ V42 igwatch 🐶 存在 + NAS SHA256 三關 PASS = ✅；無財務欄位/raw_form_state/HTML ID 改動
+Subagent：❌ 未使用（所有 Edit/Write/PowerShell 在主對話直接執行）
 
 ### 已確認完成（Session 118 — handoff SSOT v2 機制建立，2026-06-23）
 - ✅ **[FIX] 漏洞 1（殭屍待辦）**：`session-start-sop.sh` v1→v2，awk 改唯一 fenced tag `\`\`\`handoff` 邊界抽取，不再匹配 line 3760 Session 63 殭屍區

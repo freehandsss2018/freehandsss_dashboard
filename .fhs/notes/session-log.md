@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-06-23 (Session 119 — IG 看門狗警報整合 Phase 1a+2): 🐶 ✅
+
+**Scope**：打通 IG 看門狗警報與 V42 單向資料鏈。Phase 1a：Supabase migration 0043（ig_watchdog_alerts 表 + SECURITY DEFINER RPC fhs_resolve_ig_alert + RLS anon 只讀 + expression UNIQUE INDEX 冪等鍵 + pg_cron TTL 90天）。Phase 2：V42 新增 igwatch 🐶 模式（mode button/container/filter tabs/lazy load/kind-aware 動作/resolve RPC/URL 深連結）。Phase 1b（n8n write node）+ Phase 3（TG 深連結）依決策 Q3 延後至 v3 首次 Cron 驗收 PASS 後。附帶：migration SQL 本地 CONSTRAINT→UNIQUE INDEX bugfix；cl-flow-runner PX model sonar-reasoning-pro→sonar-pro（60s silent phase Schannel reset 根治）
+**Result**：10 檔 MODIFY（V42.html / CHANGELOG / repo-map / FHS_System_Logic_Overview / handoff / settings.json / scripts/cl-flow-runner.js 等）+ 2 NEW（migration 0043 + completion report）；NAS WebDAV PUT 849,679 bytes SHA256=666991CA PASS；igwatch 模式 live；Phase 1b/3 BLOCKED 等 Cron 驗收
+
 ## 2026-06-23 (Session 118 — handoff SSOT v2 機制建立 + 三漏洞修復): 🏗️ ✅
 
 **Scope**：診斷 FHS 跨 session 交接鏈三大漏洞（殭屍待辦 hook 匹配 S63 舊段、SOP_NOW 版本過期、handoff 底部配置 stale），設計並實施 v2 SSOT 機制：`\`\`\`handoff` fenced 便攜塊（六類欄位 + 雙深度切片），`─── 便攜邊界` 分隔人工複製vs hook動態注入，commit.md 加 P0.7 防腐步驟

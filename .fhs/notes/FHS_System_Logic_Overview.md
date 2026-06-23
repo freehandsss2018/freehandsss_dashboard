@@ -166,6 +166,7 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 | `order_items` | 訂單子項（每件商品一行）|
 | `products` | 產品目錄（SKU + `total_base_cost`）|
 | `cost_configurations` | 原子成本 key-value（前端讀取）|
+| `ig_watchdog_alerts` | IG 看門狗 v3 每日警報記錄（S119，見 §11）|
 
 ### 5.2 order_items 關鍵欄位
 
@@ -406,6 +407,7 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 | 0040 | metal 3-layer + charts deleted_at 守衛 + STABLE 補回 + data_quality 擴充 |
 | 0041 | previous 期移除 IS NULL（F4）+ trend 3-layer 口徑對齊（F3） |
 | 0042 | `order_items` 加 `precomplete_status text`；新增 RPC `fhs_complete_order` / `fhs_uncomplete_order`（Session 104，2026-06-15）|
+| 0043 | `ig_watchdog_alerts` 表 + RLS anon 只讀 + SECURITY DEFINER RPC `fhs_resolve_ig_alert` + expression UNIQUE INDEX dedup + pg_cron 90天 TTL（Session 119，2026-06-23）|
 
 ---
 
@@ -461,4 +463,73 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§十一 由 Session 119 補入（2026-06-23）。*
+
+---
+
+## 十一、IG 看門狗警報整合（Session 119，2026-06-23）
+
+### 11.1 資料流向（單向）
+
+```
+IG Drive Export
+   ↓ n8n workflow D4LK6VrQbiXlju0V（Cron 06:00 HKT）
+   ↓ Classify & Report 節點（cr1）
+   ↓  種類：not_created / created_incomplete（created_full 靜默）
+   ↓ [Phase 1b] HTTP Request write node → ig_watchdog_alerts INSERT（service_role key，冪等）
+   ↓ Telegram 推播
+   ↓
+V42 igwatch 模式（anon SELECT）← ig_watchdog_alerts
+V42 igwatch 模式（anon RPC）  → fhs_resolve_ig_alert（resolved 回寫）
+```
+
+### 11.2 ig_watchdog_alerts 表設計
+
+| 欄位 | 說明 |
+|------|------|
+| `id` | UUID 主鍵 |
+| `alert_date` | Cron 跑日（匯出覆蓋日）|
+| `order_id` | FHS 訂單編號字串（**非 UUID**），NULL = 弱訊號/無訂號 |
+| `kind` | `not_created` / `created_incomplete`（CHECK 約束）|
+| `customer_name` | 顧客名（classifyMessage 輸出）|
+| `snippet` | om.text 前 40 字摘要 |
+| `thread` | IG thread 資料夾名稱 |
+| `has_receipt` | photo metadata 收據布林（零下載偵測）|
+| `db_matched` | order_id 是否在 Supabase orders 找到 |
+| `raw` | 完整事件 payload JSONB（人工雙確認用）|
+| `resolved` | 操作員已處理標記（DEFAULT false）|
+| `resolved_at / resolved_by` | resolve 時間戳 + 操作員 |
+
+**冪等鍵**：`CREATE UNIQUE INDEX ix_igwatch_alerts_dedup ON ig_watchdog_alerts (alert_date, thread, COALESCE(order_id,''), kind)`
+— 同一 Cron 日 + thread + order_id + kind 最多一筆；COALESCE 允許 NULL order_id 參與比對
+
+**RLS**：anon SELECT 只讀；無 anon INSERT（防偽造）；service_role bypass（n8n 寫入用）
+
+### 11.3 SECURITY DEFINER RPC
+
+```sql
+fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator')
+```
+- 只修改 `resolved / resolved_at / resolved_by` 三欄
+- anon + authenticated 可呼叫；owner 身份執行
+- GRANT EXECUTE TO anon, authenticated
+
+### 11.4 V42 igwatch 模式
+
+| 元素 | 說明 |
+|------|------|
+| 模式按鈕 | 🐶 `modeIgWatchBtn`，整合 switchMode array + activeMap |
+| 容器 | `#igwatchModeContainer`（filter tabs / badge / list）|
+| Lazy load | switchMode('igwatch') → `loadIgWatchAlerts()` |
+| kind-aware 動作 | `created_incomplete` → `openOrderModal()`；`not_created` → `_igwCopyOrderId()`（禁用 openOrderModal，訂單不在 DB，靜默失敗）|
+| Resolve 回寫 | `_igwToggleResolve()` → `sbRpc('fhs_resolve_ig_alert', ...)` + 樂觀更新 |
+| URL 深連結 | `?view=igwatch[&orderId=xxx]`，window.onload 解析 |
+
+### 11.5 Phase 狀態
+
+| Phase | 內容 | 狀態 |
+|-------|------|------|
+| 1a | Migration 0043（表 + RPC + RLS）| ✅ 已部署 |
+| 2 | V42 igwatch 模式 | ✅ 已上線 |
+| 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ⏳ 等 2026-06-24 06:00 HKT Cron 驗收 |
+| 3 | Telegram 訊息附 V42 deep-link URL | ⏳ Phase 1b 後 |
