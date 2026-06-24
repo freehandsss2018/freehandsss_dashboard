@@ -1,5 +1,9 @@
-# Session Log
+﻿# Session Log
 
+## 2026-06-23 (Session 120 — 鋁合金嬰兒層成本修正): 🔧 ✅
+
+**Scope**：排查 `material_cost_keychain_alloy`（嬰兒層）config key 缺失問題。Live Supabase 診斷：確認 config key 不存在；products 現有 $212/$262 反推物料 $142/$132 不一致；order_items 零鋁合金嬰兒訂單。Fat Mo 確認：嬰兒鋁合金物料 = 嬰兒不銹鋼 = $115。
+**Result**：INSERT `material_cost_keychain_alloy`=115（1行）+ UPDATE 嬰兒S alloy $212→$185（20行）+ UPDATE 嬰兒P alloy $262→$245（20行）+ decisions.md S120 條目。零代碼/schema 改動，純 Supabase data fix。
 ## 2026-06-23 (Session 119 — IG 看門狗警報整合 Phase 1a+2): 🐶 ✅
 
 **Scope**：打通 IG 看門狗警報與 V42 單向資料鏈。Phase 1a：Supabase migration 0043（ig_watchdog_alerts 表 + SECURITY DEFINER RPC fhs_resolve_ig_alert + RLS anon 只讀 + expression UNIQUE INDEX 冪等鍵 + pg_cron TTL 90天）。Phase 2：V42 新增 igwatch 🐶 模式（mode button/container/filter tabs/lazy load/kind-aware 動作/resolve RPC/URL 深連結）。Phase 1b（n8n write node）+ Phase 3（TG 深連結）依決策 Q3 延後至 v3 首次 Cron 驗收 PASS 後。附帶：migration SQL 本地 CONSTRAINT→UNIQUE INDEX bugfix；cl-flow-runner PX model sonar-reasoning-pro→sonar-pro（60s silent phase Schannel reset 根治）

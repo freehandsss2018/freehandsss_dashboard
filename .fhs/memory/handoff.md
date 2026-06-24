@@ -1,10 +1,10 @@
-```handoff
-【FHS 交接摘要 — 更新: 2026-06-23 / S119】
+﻿```handoff
+【FHS 交接摘要 — 更新: 2026-06-23 / S120】
 🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=IG 看門狗 v3 首次 Cron 驗收（2026-06-24 06:00 HKT）+ Phase 1b n8n write node + Task A 成本寫入修復
-✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)
-🔬 驗證: 已證實=IG v3 PUT D4LK6VrQbiXlju0V active+8/8 marker(S117)；v2 Cron 16/16×2(S116)；migration 0043 deployed+RPC live(S119)；V42 igwatch 🐶 模式部署 849,679 bytes NAS SHA256=666991CA(S119)；未驗=v3首次真實Cron(2026-06-24 06:00 HKT)；Phase 1b n8n write node尚未接入
-📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡IG v3首次Cron驗(2026-06-24 06:00 HKT) 🟡Phase 1b n8n write→ig_watchdog_alerts 🟡Airtable billing日均驗 🟡鋁合金嬰兒層成本排查
-➡️ 下一步: 等待 2026-06-24 06:00 HKT Telegram v3 格式通知；Cron 驗收 PASS 後接 Phase 1b（n8n HTTP Request write node）→ Phase 3（TG 深連結）
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）
+🔬 驗證: 已證實=IG v3 PUT D4LK6VrQbiXlju0V active+8/8 marker(S117)；v2 Cron 16/16×2(S116)；migration 0043 deployed+RPC live(S119)；V42 igwatch 🐶 模式部署 849,679 bytes NAS SHA256=666991CA(S119)；嬰兒鋁合金 config key + products 40行修正(S120)；未驗=v3首次真實Cron(2026-06-24 06:00 HKT)；Phase 1b n8n write node尚未接入
+📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡IG v3首次Cron驗(2026-06-24 06:00 HKT) 🟡Phase 1b n8n write→ig_watchdog_alerts 🟡Airtable billing日均驗
+➡️ 下一步: 等待 2026-06-24 06:00 HKT Telegram v3 格式通知；Cron 驗收 PASS 後接 Phase 1b；鋁合金修正完成，下輪處理 Task A（/cl-flow 規劃）
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
@@ -14,7 +14,7 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-23（Session 119 — IG 看門狗警報整合 Phase 1a+2 完成，等待 2026-06-24 06:00 HKT v3 首次 Cron）
+> 上次更新：2026-06-24（Session 120 — 鋁合金嬰兒層成本修正完成）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -24,10 +24,16 @@
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | 🔍 n8n 側 CONDITIONAL PASS | CacheSync inactive（0 執行記錄）；sysCheckN8n 修復消除最大來源；估算平日 6–10 calls，忙碌日 20–30；**需登入 Airtable Billing 頁確認官方數字** |
-| 🟡 中 | **鋁合金嬰兒層鎖匙扣成本來源排查** | 📝 已記入待辦 | `material_cost_keychain_alloy`（嬰兒層）live `cost_configurations` 不存在此 key，但對應 SKU（base=212）確實在售，成本來源不明，與本次 stainless 修復案無關，獨立排查（Session 112）|
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 120 — 鋁合金嬰兒層成本修正，2026-06-24）
+- ✅ [FIX] material_cost_keychain_alloy config key 補建：INSERT 115（嬰兒/大寶，與不銹鋼同層；原缺失）
+- ✅ [FIX] products.total_base_cost 錯值修正（40行）：嬰兒S鋁合金 212→185 / 嬰兒P鋁合金 262→245
+- ✅ [DIAG] order_items 零鋁合金嬰兒訂單，無回改需要
+
+【雙紀律自檢】驗收：RETURNING 確認 INSERT 1行 + UPDATE 40行 = ✅；Subagent：❌ 未使用
 
 ### 已確認完成（Session 119 — IG 看門狗警報整合 Phase 1a+2，2026-06-23）
 - ✅ **[Phase 1a] migration 0043 部署**：`ig_watchdog_alerts` 表 + RLS anon 只讀 + SECURITY DEFINER RPC `fhs_resolve_ig_alert` + expression UNIQUE INDEX 冪等鍵（COALESCE NULL 處理）+ pg_cron 90 天 TTL；已部署並驗證

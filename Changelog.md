@@ -1,5 +1,17 @@
-# Changelog
+﻿# Changelog
 
+## [2026-06-23] 🔧 Session 120 — 鋁合金嬰兒層成本修正（Supabase live 修復）
+
+**範圍**：Supabase `cost_configurations`（INSERT 1行）、`products`（UPDATE 40行）
+
+### [FIX] 鋁合金嬰兒/大寶層 config key 補建 + products 錯值修正
+- INSERT `material_cost_keychain_alloy` = $115（嬰兒/大寶，與 `material_cost_keychain_stainless` 同層對齊）
+- UPDATE `嬰兒鎖匙扣 - 鋁合金` 所有飾數變體（20行）：$212 → **$185**（= 繪圖$60 + 物料$115 + 環扣$10）
+- UPDATE `嬰兒(P)鎖匙扣 - 鋁合金` 所有飾數變體（20行）：$262 → **$245**（= 繪圖$120 + 物料$115 + 環扣$10）
+- 診斷：原值 $212/$262 為 migration 0023 手填 flat 數字，反推物料 $142/$132 前後不一致；Fat Mo 確認應與不銹鋼同層（$115）
+- Live 查詢確認：order_items 零鋁合金嬰兒訂單，無既有訂單需回改
+
+---
 ## [2026-06-23] 🐶 Session 119 — IG 看門狗警報整合 Phase 1a+2（Supabase 持久化 + V42 igwatch 模式）
 
 **範圍**：`supabase/migrations/0043_ig_watchdog_alerts.sql`（新增並已部署）、`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（igwatch 模式 10 項 HTML/JS 改動）、`docs/repo-map.md`（migration 0043 + V42 狀態更新）

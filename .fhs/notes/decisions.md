@@ -1,8 +1,13 @@
-# Decisions — 決策記錄
+﻿# Decisions — 決策記錄
 > 本文件記錄「為什麼這樣設計」，不是規則文件。
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-23] (Session 120) 鋁合金嬰兒層成本修正 — config key 補建 + products 錯值修正
+
+決策：INSERT `material_cost_keychain_alloy` = 115 至 `cost_configurations`；UPDATE `products.total_base_cost`：嬰兒S型 $212→$185（20行）、嬰兒P型 $262→$245（20行）。
+原因：config key `material_cost_keychain_alloy`（嬰兒/大寶層）從未建立，與 `material_cost_keychain_stainless`（$115）不對稱；products 原值 $212/$262 為手填 flat 數字，反推物料成本 $142/$132 不一致；Fat Mo 確認嬰兒鋁合金物料成本 = 嬰兒不銹鋼 = $115，正確總成本 $185（S）/ $245（P）。Live 查詢確認 order_items 零鋁合金嬰兒訂單，無既有訂單需回改。
+影響：`cost_configurations`（INSERT 1行）、`products`（UPDATE 40行，嬰兒S/P鋁合金所有飾數變體）
 [2026-06-23] (Session 118) handoff 交接機制 SSOT 化 — 修復三漏洞 + v2 雙深度便攜塊
 
 決策：handoff.md 頂部新增唯一 ` ```handoff ` fenced 便攜塊（六類不可省略欄位：目標/決策/驗證/待辦/下一步/地雷），以 `─── 便攜邊界` 分隔線實現雙深度切片。hook 只抽動態段（邊界以上，~120 tokens），人類複製整塊（含靜態地雷段）。過期偵測：hook 比對塊頭 YYYY-MM-DD 與今日，不符印警告。SOP_NOW.md 版本格改指標（v2-C，不再自帶版本字串）。commit.md 加 P0.7 強制更新便攜塊（防腐）。
