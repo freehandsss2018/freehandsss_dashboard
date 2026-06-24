@@ -1,5 +1,10 @@
 ﻿# Session Log
 
+## 2026-06-24 (Session 121 — IG 看門狗 v3 Supabase URL 修復): 🔧 ✅
+
+**Scope**：診斷 v3 首次 Cron Exec 4009 失敗（2026-06-24 06:00 HKT）。根因：S117 build 時 process.env.SUPABASE_URL 未載入 .env，字串拼接得字面量 `undefined/rest/v1/...` 嵌入 workflow JSON。外科手術：GET workflow → Python 替換 undefined URL/key/apikey → 精簡 PUT body（4 核心欄）→ HTTP 200；versionId=a2e6c8c7；Drive cred 14/14 完整。附帶：build_n8n_workflow.cjs 補 .env loader 6 行防再犯。
+**Result**：2 檔 MODIFY（build_n8n_workflow.cjs / FHS_System_Logic_Overview.md §11.5）+ handoff/CHANGELOG/session-log 更新；n8n workflow 已修復 active=true；真正的 v3 驗收等 2026-06-25 06:00 HKT Cron
+
 ## 2026-06-23 (Session 120 — 鋁合金嬰兒層成本修正): 🔧 ✅
 
 **Scope**：排查 `material_cost_keychain_alloy`（嬰兒層）config key 缺失問題。Live Supabase 診斷：確認 config key 不存在；products 現有 $212/$262 反推物料 $142/$132 不一致；order_items 零鋁合金嬰兒訂單。Fat Mo 確認：嬰兒鋁合金物料 = 嬰兒不銹鋼 = $115。

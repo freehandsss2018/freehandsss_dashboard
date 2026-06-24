@@ -110,7 +110,10 @@
       "PowerShell(\"Copy done\")",
       "PowerShell(powershell -ExecutionPolicy Bypass -File \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\scripts\\\\upload-web.ps1\" current -Force)",
       "PowerShell(@\\(\"session-start-sop.sh\",\"prompt-router.js\",\"pre-tool-guard.js\"\\) | ForEach-Object { $p = \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\scripts\\\\hooks\\\\$_\"; if \\(Test-Path $p\\) { \"✅ $_\" } else { \"❌ MISSING: $_\" } }; if \\(Test-Path \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\.claude\\\\settings.json\"\\) { \"✅ settings.json\" } else { \"❌ MISSING: settings.json\" })",
-      "PowerShell(git -C \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\" add -- \".claude/settings.json\" \".fhs/memory/handoff.md\" \".fhs/notes/FHS_System_Logic_Overview.md\" \".fhs/notes/session-log.md\" \"Changelog.md\" \"Freehandsss_Dashboard/Freehandsss_dashboard_current.html\" \"Freehandsss_Dashboard/freehandsss_dashboardV42.html\" \"docs/repo-map.md\" \"scripts/cl-flow-runner.js\" \".fhs/reports/completion/2026-06-23_igwatch-alerts-phase1a-2_completion_report.md\" \"supabase/migrations/0043_ig_watchdog_alerts.sql\")"
+      "PowerShell(git -C \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\" add -- \".claude/settings.json\" \".fhs/memory/handoff.md\" \".fhs/notes/FHS_System_Logic_Overview.md\" \".fhs/notes/session-log.md\" \"Changelog.md\" \"Freehandsss_Dashboard/Freehandsss_dashboard_current.html\" \"Freehandsss_Dashboard/freehandsss_dashboardV42.html\" \"docs/repo-map.md\" \"scripts/cl-flow-runner.js\" \".fhs/reports/completion/2026-06-23_igwatch-alerts-phase1a-2_completion_report.md\" \"supabase/migrations/0043_ig_watchdog_alerts.sql\")",
+      "Bash(grep \"^N8N_API_KEY=\" \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.env\")",
+      "Bash(python -m json.tool --no-ensure-ascii)",
+      "Bash(# P0.4 Ghost detection: Master vs Bridge commands *)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

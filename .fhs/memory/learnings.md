@@ -50,7 +50,7 @@
 12. **單一配件 filter 假設靜默失效**：`_woolKey` 只過濾一種配件，新增第二配件後 Badge 靜默遺失。每次新增配件必查：① 前端 filter 函式 ② n8n getItemCategory() — 源自 2026-05-27
 13. **【高頻 ⚠️】Migration 部分執行靜默失敗**：`CREATE TABLE IF NOT EXISTS` 在表已存在時靜默跳過，後續 PART（ALTER/INSERT/RPC）不執行無報錯。預防：各 PART 必須有獨立 smoke-test 查詢 — 源自 2026-05-29
 14. **批量 UPDATE 前必先 SELECT 記錄原始值**：直接 UPDATE 無法回滾（Supabase 無交易歷史），Airtable 備份不保證有值。每次批量改狀態前先 `SELECT ... RETURNING` 存快照 — 源自 2026-06-11
-15. **n8n API `POST /workflows` active 欄位 read-only**：建立 Workflow 含 `"active":true` → 400。正確流程：POST（不含 active）→ 得 ID → 單獨 `POST /api/v1/workflows/{id}/activate`。亦無 /run 端點 — Session 67
+15. **n8n API 欄位限制（POST+PUT）**：①POST 建立含 `"active":true` → 400，正確：POST→得ID→單獨 activate；②PUT 更新只接受 `{name,nodes,connections,settings}` 四欄，GET 回傳的 active/versionId/isArchived/shared 等全部觸發 400 "must NOT have additional properties"；③build script 讀 `process.env.X` 前須先載 .env，否則字串拼接得字面量 `"undefined/..."` 嵌入 JSON — Session 67/121
 16. **新增 order_items 欄位必須同步 n8n 寫入鏈**：新單主寫入走 n8n sync_order_to_mirror RPC（非前端 sbSyncOrder）。新欄位若未改 (a)Mirror Prep items.map + (b)RPC INSERT/VALUES/ON CONFLICT 三處 → 永遠 NULL — Session 84
 17. **【CRITICAL】Mirror Prep final_sale_price 必用確收三欄，禁用 Total_Revenue**：`Total_Revenue` 是系統建議售價，≠ 操作者確收金額。`final_sale_price` 必須 = `Deposit + Balance + Additional_Fee`；使用 Total_Revenue 導致 9 單偏差最高 $2,880 — Session 89
 18. **generate() else 分支 hide box 必須同時 clear value**：`display='none'` 只隱藏 UI，`output-preview-a.value` 保留舊值，被 _igpmRefresh 等讀取路徑讀到。凡 hide textarea 必同時 `.value=""` — Session 92

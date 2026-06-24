@@ -531,5 +531,5 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 |-------|------|------|
 | 1a | Migration 0043（表 + RPC + RLS）| ✅ 已部署 |
 | 2 | V42 igwatch 模式 | ✅ 已上線 |
-| 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ⏳ 等 2026-06-24 06:00 HKT Cron 驗收 |
+| 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ⏳ 等 2026-06-25 06:00 HKT Cron 驗收（S121：Exec 4009 FAILED Supabase URL=undefined，已修 versionId=a2e6c8c7）|
 | 3 | Telegram 訊息附 V42 deep-link URL | ⏳ Phase 1b 後 |

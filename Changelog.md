@@ -1,5 +1,18 @@
 ﻿# Changelog
 
+## [2026-06-24] 🔧 Session 121 — IG 看門狗 v3 Supabase URL 修復（外科 GET→PUT）
+
+**範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`（.env loader 補建）、n8n workflow D4LK6VrQbiXlju0V（Supabase URL/key 外科 PUT 修復）
+
+### [FIX] v3 Cron Exec 4009 根因診斷 + 外科修復
+- **根因**：S117 build 時 `process.env.SUPABASE_URL/SUPABASE_ANON_KEY` 未從 `.env` 載入（未 dotenv），JS 字串拼接 `undefined + "/rest/v1/"` 得字面量 `"undefined/rest/v1/..."` 嵌入 workflow JSON
+- **症狀**：Exec 4009（2026-06-24 06:00 HKT，v3 首次 Cron）35 秒後在 `Fetch Orders` 節點拋 `Invalid URL: undefined/rest/v1/...`；Telegram 未發出
+- **外科手術**：GET 現有 workflow JSON → Python 替換 `undefined/rest/v1/` + `Bearer undefined` + apikey 空 key → 精簡 PUT body（`name/nodes/connections/settings` 四欄）→ PUT HTTP 200；versionId 更新至 `a2e6c8c7`；active=True；Drive cred 14/14 完整保留；undefined 殘留 = 0
+
+### [FIX] build_n8n_workflow.cjs 補 .env loader
+- 新增 6 行 .env 自載入邏輯（讀 `../../.env`，跳已設 env var），防未來 rebuild 再嵌 undefined
+
+---
 ## [2026-06-23] 🔧 Session 120 — 鋁合金嬰兒層成本修正（Supabase live 修復）
 
 **範圍**：Supabase `cost_configurations`（INSERT 1行）、`products`（UPDATE 40行）

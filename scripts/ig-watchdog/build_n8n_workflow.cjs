@@ -37,6 +37,10 @@
 // 沒有透過 API 拿到 ID（n8n Public API 不提供 credential 列表），套用後務必回 n8n 編輯器
 // 手動重新指派這些節點的 Google Drive credential（Telegram credential 已知 ID 可保留）。
 //
+// ⚠️ 若採用「GET 現有 workflow → 修改 → PUT 回去」的外科手術方式，PUT body 只能包含
+// { name, nodes, connections, settings } 四個核心欄位；GET 回傳的 active / versionId /
+// isArchived / shared 等欄位會導致 HTTP 400 "must NOT have additional properties"。
+//
 // ⚠️ 容器資料夾 ID（CONTAINER_FOLDER_ID）目前是寫死常數。Meta 官方文件未保證此容器長期
 // 穩定（PX 研究結論：folder structure 無穩定性保證），僅憑本帳號已觀察到 2 次匯出
 // （6-18、6-19）皆落在同一容器佐證。heartbeat（4.1）會在容器真的輪替/改名時，因「連續
@@ -45,6 +49,15 @@ const CONTAINER_FOLDER_ID = '1eqlGpQuaTt23gLhjm5UBYYxE0QC8pdQ0'; // meta-2026-Ju
 
 const fs = require('fs');
 const nodePath = require('path');
+
+// Load .env from repo root so SUPABASE_URL / SUPABASE_ANON_KEY are available
+const envPath = nodePath.join(__dirname, '../../.env');
+if (fs.existsSync(envPath)) {
+  fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+    const m = line.match(/^([^#=]+)=(.*)$/);
+    if (m && !process.env[m[1].trim()]) process.env[m[1].trim()] = m[2].trim();
+  });
+}
 
 // ── 單一真源：訂號偵測邏輯內嵌自 lib/order-match.mjs（v3，非手抄）──────────────
 // build 時讀取 ESM 原始碼、strip `export ` 後嵌入 Classify Code 節點。diff-guard 測試
