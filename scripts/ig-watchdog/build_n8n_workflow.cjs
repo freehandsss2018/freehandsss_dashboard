@@ -309,7 +309,19 @@ const summary = '🐶 IG漏單看門狗 v3（訂號偵測）\\n覆蓋：' + cove
   + '\\n需核對：' + notifyItems.length + '\\n\\n'
   + (detailLines.join('\\n\\n') || '（本次無需核對項目）');
 
-return [{ json: { summary, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length } }];
+const alerts = notifyItems.map(it => ({
+  alert_date: new Date().toISOString().slice(0, 10),
+  order_id: it.cls.orderId || null,
+  kind: it.cls.category,
+  category: it.cls.category,
+  customer_name: it.om.customer || it.om.sender || null,
+  snippet: (it.om.text || '').slice(0, 40),
+  thread: it.om.thread || null,
+  has_receipt: it.om.hasReceipt || false,
+  db_matched: it.cls.category === 'created_incomplete',
+  raw: { om: it.om, cls: it.cls },
+}));
+return [{ json: { summary, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts } }];
 `.trim();
 
 // ── Build Empty Summary（無新匯出資料夾時的分支）──────────────────────────
@@ -328,6 +340,7 @@ return [{ json: { summary, red: 0, yellow: 0, gray: 0, matched: 0, inPipe: 0, to
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const workflow = {
   name: 'FHS_IGWatchdog_DriveWatch',
@@ -345,7 +358,7 @@ const workflow = {
         options: { fields: ['id', 'name', 'modifiedTime'] },
       },
       id: 'find_export_folders', name: 'Find New Export Folders', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [420, 300],
-      credentials: {},
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
       parameters: { mode: 'runOnceForAllItems', jsCode: filterNewCode },
@@ -374,7 +387,7 @@ const workflow = {
         returnAll: false, limit: 5, filter: {}, options: { fields: ['id', 'name'] },
       },
       id: 'find_activity', name: 'Find your_instagram_activity', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [1080, 420],
-      credentials: {},
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
       parameters: {
@@ -383,7 +396,7 @@ const workflow = {
         returnAll: false, limit: 5, filter: {}, options: { fields: ['id', 'name'] },
       },
       id: 'find_messages_folder', name: 'Find messages', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [1300, 420],
-      credentials: {},
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
       parameters: {
@@ -392,7 +405,7 @@ const workflow = {
         returnAll: false, limit: 5, filter: {}, options: { fields: ['id', 'name'] },
       },
       id: 'find_inbox', name: 'Find inbox', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [1520, 420],
-      credentials: {},
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
       // F5: scoped 列 inbox 下所有 thread 資料夾，直接拿到名稱（取代 v1 的檔名路徑反推，F7）
@@ -402,7 +415,7 @@ const workflow = {
         returnAll: true, filter: {}, options: { fields: ['id', 'name'] },
       },
       id: 'list_threads', name: 'List Thread Folders', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [1740, 420],
-      credentials: {},
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
       // F2: mimeType=json 排除媒體；F3: options.fields 須陣列
@@ -412,7 +425,7 @@ const workflow = {
         returnAll: true, filter: {}, options: { fields: ['id', 'name', 'parents', 'modifiedTime'] },
       },
       id: 'find_message_files', name: 'Find Message Files', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [1960, 420],
-      credentials: {},
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
       // F7: pairedItem 在 fan-out 後可靠，用 $('NodeName').item 把 thread 名稱/匯出資料夾名稱帶下去
@@ -422,7 +435,7 @@ const workflow = {
     {
       parameters: { operation: 'download', fileId: { __rl: true, mode: 'id', value: '={{$json.id}}' }, options: { binaryPropertyName: 'data' } },
       id: 'download_msg', name: 'Download File', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [2400, 420],
-      credentials: {},
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
       parameters: { mode: 'runOnceForAllItems', jsCode: parseInboxCode },
@@ -461,8 +474,38 @@ const workflow = {
       id: 'cr1', name: 'Classify & Report', type: 'n8n-nodes-base.code', typeVersion: 2, position: [3280, 420],
     },
     {
+      // Phase 1b: 批量寫入 ig_watchdog_alerts（service_role key，冪等 UPSERT ON CONFLICT DO NOTHING）
+      parameters: {
+        method: 'POST',
+        url: SUPABASE_URL + '/rest/v1/ig_watchdog_alerts',
+        authentication: 'none',
+        sendHeaders: true,
+        specifyHeaders: 'keypair',
+        headerParameters: { parameters: [
+          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
+          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'Content-Type', value: 'application/json' },
+          { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
+        ] },
+        sendBody: true,
+        contentType: 'json',
+        specifyBody: 'string',
+        body: '={{ JSON.stringify($json.alerts || []) }}',
+        options: {},
+      },
+      id: 'wa1', name: 'Write Alerts', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3500, 420],
+      alwaysOutputData: true,
+    },
+    {
+      // 空資料夾路徑（Build Empty Summary）接的 Telegram
       parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: '={{$json.summary}}', replyMarkup: 'none', additionalFields: {} },
       id: 'tg1', name: 'Telegram Notify', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3280, 300],
+      credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
+    },
+    {
+      // 資料路徑（Classify & Report → Write Alerts）接的 Telegram，讀 cr1 的 summary
+      parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: "={{ $('Classify & Report').first().json.summary }}", replyMarkup: 'none', additionalFields: {} },
+      id: 'tg2', name: 'Telegram Notify (Data)', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3500, 300],
       credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
     },
   ],
@@ -487,7 +530,8 @@ const workflow = {
     'Parse Inbox': { main: [[{ node: 'Fetch Orders', type: 'main', index: 0 }]] },
     'Fetch Orders': { main: [[{ node: 'Fetch Pipeline', type: 'main', index: 0 }]] },
     'Fetch Pipeline': { main: [[{ node: 'Classify & Report', type: 'main', index: 0 }]] },
-    'Classify & Report': { main: [[{ node: 'Telegram Notify', type: 'main', index: 0 }]] },
+    'Classify & Report': { main: [[{ node: 'Write Alerts', type: 'main', index: 0 }]] },
+    'Write Alerts': { main: [[{ node: 'Telegram Notify (Data)', type: 'main', index: 0 }]] },
   },
   settings: {},
 };

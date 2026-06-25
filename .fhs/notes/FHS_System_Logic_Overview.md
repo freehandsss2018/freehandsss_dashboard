@@ -195,7 +195,7 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 | `material_cost_keychain_stainless` | **$115** | 鎖匙扣不銹鋼（嬰兒/大寶）物料費（前版誤記 $95，2026-06-16 改值，本次事故起因）|
 | `material_cost_keychain_stainless_adult` | $125 | 鎖匙扣不銹鋼（成人）物料費（前版誤記 $135）|
 | `material_cost_keychain_alloy_adult` | $135 | 鎖匙扣鋁合金（成人）物料費 |
-| `material_cost_keychain_alloy`（嬰兒層） | **不存在** | ⚠️ 前版文件記載 $122，但此 key 在 live `cost_configurations` 完全不存在；嬰兒鋁合金鎖匙扣 SKU（`products.total_base_cost=212`）成本來源不明，**獨立發現，非本次修復範圍**，待後續排查 |
+| `material_cost_keychain_alloy` | **$115** | 鎖匙扣鋁合金（嬰兒/大寶）物料費（S120 2026-06-23 補建；前版誤記 $122 且 key 不存在）；`products.total_base_cost` 同步更正：嬰兒S $212→$185 / 嬰兒P $262→$245（40 SKU）|
 | `necklace_chain_cost` | $100 | 吊飾頸鏈費（每條）|
 | `keychain_clasp_cost` | $10 | 鎖匙扣環扣費（每件）|
 | `keychain_shipping_deduction_per_extra` | $20 | 鎖匙扣多件運費扣減（每件）|
@@ -531,5 +531,5 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 |-------|------|------|
 | 1a | Migration 0043（表 + RPC + RLS）| ✅ 已部署 |
 | 2 | V42 igwatch 模式 | ✅ 已上線 |
-| 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ⏳ 等 2026-06-25 06:00 HKT Cron 驗收（S121：Exec 4009 FAILED Supabase URL=undefined，已修 versionId=a2e6c8c7）|
+| 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ✅ 已部署（S122）versionId=f881031c；Classify & Report → Write Alerts（wa1 POST service_role）→ Telegram Notify (Data)（tg2）；Prefer=ignore-duplicates；首次寫入待 2026-06-26 Cron 驗證 |
 | 3 | Telegram 訊息附 V42 deep-link URL | ⏳ Phase 1b 後 |

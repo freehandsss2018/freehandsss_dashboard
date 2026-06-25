@@ -1,10 +1,10 @@
 ﻿```handoff
-【FHS 交接摘要 — 更新: 2026-06-24 / S121】
-🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=IG 看門狗 v3 Supabase URL 修復已部署（versionId=a2e6c8c7）等待 2026-06-25 06:00 HKT 真正驗收 + Phase 1b n8n write node + Task A 成本寫入修復
-✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄，GET回傳的active/versionId等字段會觸發400(S121)
-🔬 驗證: 已證實=IG v3 PUT D4LK6VrQbiXlju0V active+8/8 marker(S117)；v2 Cron 16/16×2(S116)；migration 0043 deployed+RPC live(S119)；V42 igwatch 🐶 模式部署 849,679 bytes NAS SHA256=666991CA(S119)；嬰兒鋁合金 config key + products 40行修正(S120)；v3 Exec 4009 FAILED（Supabase URL=undefined，S121）→修復 PUT versionId=a2e6c8c7（S121）；未驗=v3真實Cron成功(待2026-06-25 06:00 HKT)；Phase 1b n8n write node尚未接入
-📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡IG v3真實Cron驗(2026-06-25 06:00 HKT) 🟡Phase 1b n8n write→ig_watchdog_alerts 🟡Airtable billing日均驗
-➡️ 下一步: 等待 2026-06-25 06:00 HKT Telegram v3 格式通知（Supabase URL已修）；Cron 驗收 PASS 後接 Phase 1b；下輪處理 Task A（/cl-flow 規劃）
+【FHS 交接摘要 — 更新: 2026-06-25 / S123】
+🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=Phase 1b 已部署（S122）等明早 Cron 首次寫入 ig_watchdog_alerts 驗證 + Task A 成本寫入修復
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄，GET回傳的active/versionId等字段會觸發400(S121)
+🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（2026-06-25 06:00 HKT，16/16 success，Fetch Orders 31筆，Telegram送達，S122）；Phase 1b PUT versionId=f881031c（19節點，S122）；Airtable billing 723/1000 calls（Jun 1-25），修復後(Jun 16-25)≈17/day ≤20目標PASS（S123）；v3 PUT versionId=a2e6c8c7(S121)；migration 0043 deployed+RPC live(S119)；V42 igwatch 🐶 模式部署 849,679 bytes NAS SHA256=666991CA(S119)；未驗=Phase 1b 首次實際寫入ig_watchdog_alerts（待2026-06-26 06:00 HKT Cron）
+📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡Phase 1b Cron寫入驗證(2026-06-26 06:00 HKT)
+➡️ 下一步: 等待 2026-06-26 06:00 HKT Cron 驗收 ig_watchdog_alerts 是否有新記錄寫入；驗收 PASS 後可接 Phase 3（TG 深連結）；下輪另規劃 Task A
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
@@ -14,19 +14,31 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-24（Session 121 — IG v3 Supabase URL 修復）
+> 上次更新：2026-06-25（Session 123 — Airtable billing 日均 PASS）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🟡 中 | **IG 看門狗 v3 首次 Cron 驗證** | ⏳ 等候 2026-06-25 06:00 HKT | Exec 4009（2026-06-24 06:00）FAILED：Supabase URL="undefined/..."（S117 build 未載 .env）→ S121 外科修復 PUT（versionId=a2e6c8c7）；build script 已補 .env loader；Drive cred 14/14 完整；明晨等驗收 |
-| 🟡 中 | **[Phase 1b] n8n write node → ig_watchdog_alerts** | ⏳ 等 v3 Cron 驗收 PASS（2026-06-25） | Cron 驗收通過後，在 D4LK6VrQbiXlju0V `Classify & Report` 後加 HTTP Request 節點，批量寫入警報（service_role key）；json.alerts 陣列打包防 TG fan-out |
+| ✅ 完成 | **[Phase 1b] n8n write node → ig_watchdog_alerts** | ✅ 已部署（S122） | 19節點，wa1（Write Alerts POST）+ tg2（Telegram Data path）；Classify & Report → Write Alerts → Telegram Notify (Data)；build script 補 Drive cred ID + SUPABASE_SERVICE_KEY；versionId=f881031c |
 | ⚪ 低 | **[Phase 3] Telegram 訊息附 V42 deep-link URL** | ⏳ Phase 1b 後 | TG 訊息每筆加 `?view=igwatch&orderId=xxx` 連結，直達 V42 igwatch 模式 |
 | 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
-| 🟡 中 | **6/19 驗證**：Airtable billing 日均是否從 37 降至 ≤20 | 🔍 n8n 側 CONDITIONAL PASS | CacheSync inactive（0 執行記錄）；sysCheckN8n 修復消除最大來源；估算平日 6–10 calls，忙碌日 20–30；**需登入 Airtable Billing 頁確認官方數字** |
+| ✅ 完成 | **Airtable billing 日均驗證** | ✅ PASS（S123） | 官方數字：723/1000 calls（Jun 1-25）；修復後(Jun 16-25)≈17/day；月底預測~810，不超標；sysCheckN8n 修復效果確認 |
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 123 — Airtable billing 日均驗收 PASS，2026-06-25）
+- ✅ **[VERIFY] Airtable billing 官方數字確認**：截圖讀取 723/1,000 API calls（Jun 1-25，25天）；全部來自 PAT（Other PAT 欄），FHS_Order_Processor 主庫 723 calls；修復前(Jun 1-15)估算 ~555 calls(37/day)，修復後(Jun 16-25)= 168 calls ≈ **17/day ✅ 目標 ≤20 PASS**；月底預測 ~810，不超 1,000 限額；Records 649/1,000（65%，健康）
+
+【雙紀律自檢】驗收：截圖官方數字直讀（非估算），修復後日均 17 < 20 = ✅；唯讀驗收，無任何代碼/schema 改動
+Subagent：❌ 未使用（截圖直讀分析，主 agent 直接完結）
+
+### 已確認完成（Session 122 — IG 看門狗 v3 Cron 驗收 PASS，2026-06-25）
+- ✅ **[VERIFY] Exec 4012（2026-06-25 06:00 HKT）16/16 nodes success**：Schedule Trigger → Find New Export Folders（7個）→ Filter New + Quiet Window（1個通過）→ Find your_instagram_activity/messages/inbox → List Thread Folders（17個）→ Find Message Files（8個）→ Tag Thread Context → Download File → Parse Inbox → **Fetch Orders（31筆 ✅）** → Fetch Pipeline（1筆）→ Classify & Report → **Telegram Notify（已送達）**
+- ✅ **v3 Cron 完整驗收**：23 秒完成；Supabase 查詢正常；Telegram 送達；Phase 1b 已解鎖
+
+【雙紀律自檢】驗收：curl API 直查 Exec 4012 = status:success + 16/16 節點 success + Telegram Notify items=1 = ✅；唯讀驗收，無任何代碼/schema 改動
+Subagent：❌ 未使用（curl API 直查，主 agent 直接執行）
 
 ### 已確認完成（Session 121 — IG 看門狗 v3 Supabase URL 修復，2026-06-24）
 - ✅ **[DIAG] Exec 4009 根因確認**：2026-06-24 06:00 HKT v3 首次 Cron 在 `Fetch Orders` 節點失敗（URL=`undefined/rest/v1/...`）；根因=S117 build 時 `process.env.SUPABASE_URL/SUPABASE_ANON_KEY` 未從 .env 載入，`undefined` 被硬嵌入 workflow JSON

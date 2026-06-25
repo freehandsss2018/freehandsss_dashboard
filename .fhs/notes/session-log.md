@@ -1,5 +1,15 @@
 ﻿# Session Log
 
+## 2026-06-25 (Session 123 — Airtable billing 日均驗收 PASS): 🔍 ✅
+
+**Scope**：官方截圖確認 Airtable Public API calls 723/1,000（Jun 1–25）；全部來自 PAT（Other PAT）；拆段分析修復前(Jun 1-15)~37/day、修復後(Jun 16-25)≈17/day；月底預測~810不超標。sysCheckN8n 修復（S106）效果確認，CONDITIONAL PASS → 正式 PASS。
+**Result**：handoff.md MASTER 表 billing 項標 ✅ 完成 + 便攜塊更新（S123）+ session-log 新增；純驗收 session，零代碼/schema 改動。
+
+## 2026-06-25 (Session 122 — IG 看門狗 v3 Cron 驗收 + Phase 1b 部署): ✅🐶
+
+**Scope**：驗收 2026-06-25 06:00 HKT Cron（Exec 4012）= v3 首次 PASS（16/16 nodes success，Fetch Orders 31筆，Telegram 送達）；Phase 1b 解鎖並部署：build_n8n_workflow.cjs 加入 wa1（Write Alerts POST → ig_watchdog_alerts）+ tg2（Telegram Notify Data）+ alerts array 構建；Drive cred replace_all 修復（7個節點 credentials:{}→真實 ID）；PUT HTTP 200 versionId=f881031c；19節點 active=true；undefined=0；Drive cred 14/14。
+**Result**：1 檔 MODIFY（build_n8n_workflow.cjs）+ handoff/CHANGELOG/session-log/FHS_System_Logic_Overview §11.5 更新；n8n workflow Phase 1b live；Phase 1b 首次寫入待 2026-06-26 06:00 HKT Cron 驗證
+
 ## 2026-06-24 (Session 121 — IG 看門狗 v3 Supabase URL 修復): 🔧 ✅
 
 **Scope**：診斷 v3 首次 Cron Exec 4009 失敗（2026-06-24 06:00 HKT）。根因：S117 build 時 process.env.SUPABASE_URL 未載入 .env，字串拼接得字面量 `undefined/rest/v1/...` 嵌入 workflow JSON。外科手術：GET workflow → Python 替換 undefined URL/key/apikey → 精簡 PUT body（4 核心欄）→ HTTP 200；versionId=a2e6c8c7；Drive cred 14/14 完整。附帶：build_n8n_workflow.cjs 補 .env loader 6 行防再犯。

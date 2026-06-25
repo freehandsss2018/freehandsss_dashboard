@@ -1,5 +1,21 @@
 ﻿# Changelog
 
+## [2026-06-25] 🐶 Session 122 — IG 看門狗 v3 Cron 驗收 PASS + Phase 1b 部署
+
+**範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`（wa1/tg2/alerts 加入 + Drive cred replace_all）、n8n workflow D4LK6VrQbiXlju0V（Phase 1b PUT，versionId=f881031c）
+
+### [VERIFY] v3 Cron Exec 4012 PASS（2026-06-25 06:00 HKT）
+- 16/16 nodes success；Fetch Orders 31筆；Classify & Report 送達 Telegram；23秒完成
+- Phase 1b 決策門（S119 Q3）正式解鎖
+
+### [FEAT] Phase 1b — n8n write node 部署（ig_watchdog_alerts POST）
+- **wa1（Write Alerts）**：`Classify & Report` → HTTP POST → `ig_watchdog_alerts`（service_role key，Prefer: resolution=ignore-duplicates）；`alwaysOutputData=true`
+- **tg2（Telegram Notify Data）**：wa1 後讀 `$('Classify & Report').first().json.summary` 送 Telegram
+- **alerts array**：`Classify & Report` code 節點新增 alerts 構建（alert_date / order_id / kind / customer_name / snippet / thread / has_receipt / db_matched / raw）
+- **Drive cred 修復**：build script 7 個 Google Drive 節點從 `credentials: {}` 改為真實 credential ID（replace_all）
+- PUT HTTP 200；versionId=f881031c；19 節點；Drive cred 14/14；Telegram cred 4/4；undefined 0
+
+---
 ## [2026-06-24] 🔧 Session 121 — IG 看門狗 v3 Supabase URL 修復（外科 GET→PUT）
 
 **範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`（.env loader 補建）、n8n workflow D4LK6VrQbiXlju0V（Supabase URL/key 外科 PUT 修復）
