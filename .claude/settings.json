@@ -114,7 +114,13 @@
       "Bash(grep \"^N8N_API_KEY=\" \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.env\")",
       "Bash(python -m json.tool --no-ensure-ascii)",
       "Bash(# P0.4 Ghost detection: Master vs Bridge commands *)",
-      "Bash(node scripts/cl-flow-runner.js --quick \"優化 Audit Ledger（核對帳單）財務呈現四項：\\(1\\) 將 ① 確收鏈/② 成本快照鏈/③ 利潤結算 三區塊視覺更清晰分隔；\\(2\\) ② 成本快照品項成本小計（如鎖匙扣 \\\\$185）改為可點按展開，呈現細項成本運算（繪圖/物料/環扣/加購/數量）；\\(3\\) 明確標示金額為單件 per-unit 或小計 total，數量>1 時呈現運算式 單件×數量=小計；\\(4\\) Live 核實 嬰兒鎖匙扣-不銹鋼-2飾\\(加購\\)×2 成本小計 \\\\$185 是否正確（疑似漏算第二件加購）。純前端呈現層改動 V42 dev，禁改 HTML ID/captureFormState/raw_form_state，不回寫財務計算。\")"
+      "Bash(node scripts/cl-flow-runner.js --quick \"優化 Audit Ledger（核對帳單）財務呈現四項：\\(1\\) 將 ① 確收鏈/② 成本快照鏈/③ 利潤結算 三區塊視覺更清晰分隔；\\(2\\) ② 成本快照品項成本小計（如鎖匙扣 \\\\$185）改為可點按展開，呈現細項成本運算（繪圖/物料/環扣/加購/數量）；\\(3\\) 明確標示金額為單件 per-unit 或小計 total，數量>1 時呈現運算式 單件×數量=小計；\\(4\\) Live 核實 嬰兒鎖匙扣-不銹鋼-2飾\\(加購\\)×2 成本小計 \\\\$185 是否正確（疑似漏算第二件加購）。純前端呈現層改動 V42 dev，禁改 HTML ID/captureFormState/raw_form_state，不回寫財務計算。\")",
+      "Bash(cat \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/.kgov-pending\" 2>/dev/null; echo \"---STAT---\"; stat -c '%y' \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/.kgov-pending\" 2>/dev/null)",
+      "Read(//d/SynologyDrive/Free_handsss/freehandsss_dashboard/**)",
+      "Bash(ls -la .fhs/.kgov-pending)",
+      "Bash(cat .fhs/.kgov-pending)",
+      "Bash(node scripts/cl-flow-runner.js \"FHS Dashboard V42 兩塊交付（建議拆分）：\\(A\\) 將既有「📒 記錄中心 Log Sheet」升級為綜合審計日誌——沿用 expense_logs.log_type+payload JSONB 通用容器與既有可擴充 Tab 架構，新增分類記錄建立/修改/查詢事件（至少涵蓋 cost_configurations 參數變更與訂單財務修改），提供按類別/訂號/日期的查詢篩選 UI（桌面 Modal + 手機 bottom-sheet）。\\(B\\) 在「💰 財務參數設定中心」追加「指定訂號→訂單層修改+訂單日誌」功能，針對特定 order_id 做訂單層財務/成本調整並寫入該訂單變更歷史（who/when/before→after），須與既有 financial_batch_logs 批量重算引擎（已支援指定訂單ID）界定邊界不衝突。硬約束：Supabase-First；禁改 HTML ID/captureFormState/Raw_Form_State；收款確收三欄 final_sale_price=Deposit+Balance+Additional_Fee 為真理 n8n 嚴禁覆蓋；改 cost_configurations 不自動回算舊單；最小改動優先擴充既有設施非新建；migration 先套用再加 SELECT/PATCH；RLS service_role 寫入 anon 只讀沿用 ig_watchdog_alerts 範式；修改事件須在實際寫入路徑落盤非僅 UI 旁註；mapOrder 不含 deposit/balance 需 fresh fetch。\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const s=JSON.parse\\(fs.readFileSync\\('state.json','utf8'\\)\\);s.cl_status='done';s.status='awaiting_approval';s.execution_status='locked';s.verdict='CONDITIONAL_READY';fs.writeFileSync\\('state.json',JSON.stringify\\(s,null,2\\)\\);console.log\\('updated:',s.cl_status,s.status,s.verdict\\);\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
