@@ -77,4 +77,5 @@
 | 2026-06-23 | 2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md | cl-flow runner 雙API故障修復 | cl-flow, perplexity, cloudflare, fingerprinting, curl, gemini, socket-hang-up, infra | Cloudflare指紋reset Node https/urllib只放行curl(PX改curl子程序);Gemini過載走.env切model不改代碼;curl成功而Node失敗=必為指紋勿調timeout |
 | 2026-06-23 | 2026-06-23_pitfall_cost_config_key_gap.md | 成本 Config Key 缺漏 | cost_configurations, alloy, baby, migration, pitfall, products | 新物料遷移未建 config key，products 硬碼平數無三層錨定；修復須同步建 key+更新 total_base_cost+查既有訂單 |
 | 2026-06-25 | 2026-06-25_keychain_addon_subtotal_ignores_quantity.md | 加購鎖匙扣成本無視數量 | cost, keychain, subtotal_cost, quantity, addon, task-a, n8n, pitfall | 加購鎖匙扣 subtotal_cost/keychain_cost 停在單件$185無視quantity(qty3/4全185);正解=首件全價+加購件×N;前端禁做185×N假乘法,屬n8n計算bug歸Task A |
-<!-- kgov sync confirmed: Session 122 -->
+| 2026-06-26 | 2026-06-26_audit_ledger_honest_cost_presentation.md | Audit Ledger 誠實成本呈現 | audit-ledger, cost, honest, qty-warn, single-source, v42, pitfall, preference | 前端遇成本資料異常(未隨件數累加/四欄空)只誠實警示不製造假數(禁base×qty假乘法);展開只列真實欄位禁前端用cost_configurations重算(守單一真源);呈現vs資料分線 |
+<!-- kgov sync confirmed: Session 124 -->
