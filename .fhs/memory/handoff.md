@@ -2,9 +2,9 @@
 【FHS 交接摘要 — 更新: 2026-06-26 / S124】
 🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=Phase 1b Cron 首次寫入 ig_watchdog_alerts 驗證（2026-06-26 06:00 HKT 已到期待查）+ Task A 成本寫入修復（含加購鎖匙扣數量漏算）
 ✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）
-🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（2026-06-25 06:00 HKT，16/16，S122）；audit_logs migration 0044 部署+RPC live（S124 Phase A）；Audit Ledger 呈現優化 node smoke test 全綠+NAS current.html部署 870,991 bytes SHA256=731CD79C(S124)；點4 live核實=加購鎖匙扣 0600905/0600908 qty=2 記$185 應≈$310（n8n漏算件數，全庫qty2/3/4多數低估）；Airtable billing 修復後≈17/day PASS(S123)；未驗=Phase 1b 首次實際寫入ig_watchdog_alerts（2026-06-26 06:00 HKT Cron 已到期，待查執行紀錄）；Audit Ledger/audit_logs 兩項 live 視覺驗收待 Fat Mo 實機
+🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（2026-06-25 06:00 HKT，16/16，S122）；audit_logs migration 0044 部署+RPC live（S124 Phase A）；Audit Ledger 呈現優化 node smoke test 全綠+NAS current.html部署 870,991 bytes SHA256=731CD79C(S124)；點4 live核實=加購鎖匙扣 0600905/0600908 qty=2 記$185 應≈$310（n8n漏算件數，全庫qty2/3/4多數低估）；Airtable billing 修復後≈17/day PASS(S123)；Audit Ledger + 審計日誌 tab live 視覺驗收 PASS（Fat Mo 實機 2026-06-26）；未驗=Phase 1b 首次實際寫入ig_watchdog_alerts（2026-06-26 06:00 HKT Cron 已到期，待查執行紀錄）
 📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄+加購鎖匙扣數量漏算修復(點4) 🟡Phase 1b Cron寫入驗證(2026-06-26 06:00 HKT已到期) 🟡審計日誌 Phase B(orders.cost_override_locked+fhs_adjust_order_cost+設定中心訂單層修改)
-➡️ 下一步: 查 2026-06-26 06:00 HKT Cron 是否寫入 ig_watchdog_alerts 新記錄；Fat Mo 實機驗收 Audit Ledger 三卡片/展開/警示 + 審計日誌 tab；點4(加購鎖匙扣數量)修復另開 `/cl-flow`（n8n + 歷史回填，Task A 同源）
+➡️ 下一步: 查 2026-06-26 06:00 HKT Cron 是否寫入 ig_watchdog_alerts 新記錄；點4(加購鎖匙扣數量)修復另開 `/cl-flow`（n8n + 歷史回填，Task A 同源）
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
@@ -35,7 +35,7 @@
 - ✅ **[DATA 點4] live 核實成本低估 bug**：0600905/0600908「嬰兒鎖匙扣-不銹鋼-2飾(加購)×2」記$185 應≈$310；全庫 qty2/3/4 多數低估 = n8n 未按件數累加（→ Task A，前端只揭露不回寫）
 - ✅ **驗證**：node 抽函式 smoke test 全綠（無語法錯+三卡片+details展開+qty2警示+空欄提示+div37/37+details2/2）；NAS current.html 部署 PASS 870,991 bytes SHA256=731CD79C
 - ✅ **文件**：Changelog（S124 Audit Ledger 條目）、FHS_System_Logic_Overview §九（②可展開明細+數量警示+已知bug）
-- ⏳ **待 Fat Mo**：實機視覺驗收（開 0600905 財務分頁）
+- ✅ **Fat Mo 實機視覺驗收 PASS**（2026-06-26）：Audit Ledger 三卡片/展開/警示 + 審計日誌 tab 外觀確認通過
 
 【交付前雙紀律自檢】驗收：純前端呈現層改動（無回寫財務/schema/RPC，不觸發 finance-auditor 對賬型）；node smoke test 強制斷言渲染正確 + live SQL 數學坐實點4 = ✅；HTML ID/captureFormState/raw_form_state 零改動；live 視覺驗收誠實標記待 Fat Mo
 Subagent：❌ 未使用（live SQL + 定點 Edit + node 驗證，主 agent 直接執行）
