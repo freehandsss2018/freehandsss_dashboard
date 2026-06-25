@@ -76,4 +76,5 @@
 | 2026-06-20 | 2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap.md | 鎖匙扣成本誤判+傳播缺口 | cost, keychain, drift, products, cost_configurations, pitfall, migration-0042 | order_items成本是組裝值非單一原子,直接比對設定中心key必假性誤判;cost_configurations改值無自動回算products機制,死碼RPC已移除 |
 | 2026-06-23 | 2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md | cl-flow runner 雙API故障修復 | cl-flow, perplexity, cloudflare, fingerprinting, curl, gemini, socket-hang-up, infra | Cloudflare指紋reset Node https/urllib只放行curl(PX改curl子程序);Gemini過載走.env切model不改代碼;curl成功而Node失敗=必為指紋勿調timeout |
 | 2026-06-23 | 2026-06-23_pitfall_cost_config_key_gap.md | 成本 Config Key 缺漏 | cost_configurations, alloy, baby, migration, pitfall, products | 新物料遷移未建 config key，products 硬碼平數無三層錨定；修復須同步建 key+更新 total_base_cost+查既有訂單 |
-<!-- kgov sync confirmed: Session 120 -->
+| 2026-06-25 | 2026-06-25_keychain_addon_subtotal_ignores_quantity.md | 加購鎖匙扣成本無視數量 | cost, keychain, subtotal_cost, quantity, addon, task-a, n8n, pitfall | 加購鎖匙扣 subtotal_cost/keychain_cost 停在單件$185無視quantity(qty3/4全185);正解=首件全價+加購件×N;前端禁做185×N假乘法,屬n8n計算bug歸Task A |
+<!-- kgov sync confirmed: Session 122 -->

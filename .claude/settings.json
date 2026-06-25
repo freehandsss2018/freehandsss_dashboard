@@ -113,7 +113,8 @@
       "PowerShell(git -C \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\" add -- \".claude/settings.json\" \".fhs/memory/handoff.md\" \".fhs/notes/FHS_System_Logic_Overview.md\" \".fhs/notes/session-log.md\" \"Changelog.md\" \"Freehandsss_Dashboard/Freehandsss_dashboard_current.html\" \"Freehandsss_Dashboard/freehandsss_dashboardV42.html\" \"docs/repo-map.md\" \"scripts/cl-flow-runner.js\" \".fhs/reports/completion/2026-06-23_igwatch-alerts-phase1a-2_completion_report.md\" \"supabase/migrations/0043_ig_watchdog_alerts.sql\")",
       "Bash(grep \"^N8N_API_KEY=\" \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.env\")",
       "Bash(python -m json.tool --no-ensure-ascii)",
-      "Bash(# P0.4 Ghost detection: Master vs Bridge commands *)"
+      "Bash(# P0.4 Ghost detection: Master vs Bridge commands *)",
+      "Bash(node scripts/cl-flow-runner.js --quick \"優化 Audit Ledger（核對帳單）財務呈現四項：\\(1\\) 將 ① 確收鏈/② 成本快照鏈/③ 利潤結算 三區塊視覺更清晰分隔；\\(2\\) ② 成本快照品項成本小計（如鎖匙扣 \\\\$185）改為可點按展開，呈現細項成本運算（繪圖/物料/環扣/加購/數量）；\\(3\\) 明確標示金額為單件 per-unit 或小計 total，數量>1 時呈現運算式 單件×數量=小計；\\(4\\) Live 核實 嬰兒鎖匙扣-不銹鋼-2飾\\(加購\\)×2 成本小計 \\\\$185 是否正確（疑似漏算第二件加購）。純前端呈現層改動 V42 dev，禁改 HTML ID/captureFormState/raw_form_state，不回寫財務計算。\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
