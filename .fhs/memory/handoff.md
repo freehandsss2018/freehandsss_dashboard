@@ -1,10 +1,10 @@
 ﻿```handoff
-【FHS 交接摘要 — 更新: 2026-06-25 / S123】
-🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=Phase 1b 已部署（S122）等明早 Cron 首次寫入 ig_watchdog_alerts 驗證 + Task A 成本寫入修復
-✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄，GET回傳的active/versionId等字段會觸發400(S121)
-🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（2026-06-25 06:00 HKT，16/16 success，Fetch Orders 31筆，Telegram送達，S122）；Phase 1b PUT versionId=f881031c（19節點，S122）；Airtable billing 723/1000 calls（Jun 1-25），修復後(Jun 16-25)≈17/day ≤20目標PASS（S123）；v3 PUT versionId=a2e6c8c7(S121)；migration 0043 deployed+RPC live(S119)；V42 igwatch 🐶 模式部署 849,679 bytes NAS SHA256=666991CA(S119)；未驗=Phase 1b 首次實際寫入ig_watchdog_alerts（待2026-06-26 06:00 HKT Cron）
-📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄 🟡Phase 1b Cron寫入驗證(2026-06-26 06:00 HKT)
-➡️ 下一步: 等待 2026-06-26 06:00 HKT Cron 驗收 ig_watchdog_alerts 是否有新記錄寫入；驗收 PASS 後可接 Phase 3（TG 深連結）；下輪另規劃 Task A
+【FHS 交接摘要 — 更新: 2026-06-26 / S124】
+🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=Phase 1b Cron 首次寫入 ig_watchdog_alerts 驗證（2026-06-26 06:00 HKT 已到期待查）+ Task A 成本寫入修復（含加購鎖匙扣數量漏算）
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）
+🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（2026-06-25 06:00 HKT，16/16，S122）；audit_logs migration 0044 部署+RPC live（S124 Phase A）；Audit Ledger 呈現優化 node smoke test 全綠+NAS current.html部署 870,991 bytes SHA256=731CD79C(S124)；點4 live核實=加購鎖匙扣 0600905/0600908 qty=2 記$185 應≈$310（n8n漏算件數，全庫qty2/3/4多數低估）；Airtable billing 修復後≈17/day PASS(S123)；未驗=Phase 1b 首次實際寫入ig_watchdog_alerts（2026-06-26 06:00 HKT Cron 已到期，待查執行紀錄）；Audit Ledger/audit_logs 兩項 live 視覺驗收待 Fat Mo 實機
+📋 待辦: 🔴Task A 四欄寫入+72舊品subtotal補錄+加購鎖匙扣數量漏算修復(點4) 🟡Phase 1b Cron寫入驗證(2026-06-26 06:00 HKT已到期) 🟡審計日誌 Phase B(orders.cost_override_locked+fhs_adjust_order_cost+設定中心訂單層修改)
+➡️ 下一步: 查 2026-06-26 06:00 HKT Cron 是否寫入 ig_watchdog_alerts 新記錄；Fat Mo 實機驗收 Audit Ledger 三卡片/展開/警示 + 審計日誌 tab；點4(加購鎖匙扣數量)修復另開 `/cl-flow`（n8n + 歷史回填，Task A 同源）
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
@@ -14,18 +14,37 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-25（Session 123 — Airtable billing 日均 PASS）
+> 上次更新：2026-06-26（Session 124 — Audit Ledger 呈現優化 + 綜合審計日誌 Phase A）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
 | ✅ 完成 | **[Phase 1b] n8n write node → ig_watchdog_alerts** | ✅ 已部署（S122） | 19節點，wa1（Write Alerts POST）+ tg2（Telegram Data path）；Classify & Report → Write Alerts → Telegram Notify (Data)；build script 補 Drive cred ID + SUPABASE_SERVICE_KEY；versionId=f881031c |
 | ⚪ 低 | **[Phase 3] Telegram 訊息附 V42 deep-link URL** | ⏳ Phase 1b 後 | TG 訊息每筆加 `?view=igwatch&orderId=xxx` 連結，直達 V42 igwatch 模式 |
-| 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示 |
+| 🔴 高 | **[Task A] 四欄寫入修復 + 72 舊品項 subtotal_cost 補錄 + 加購鎖匙扣數量漏算(點4)** | ⏳ 待排程 | 91% 空欄問題根治；影響 ② 成本快照品項層明細顯示。**S124 新增**：加購鎖匙扣 subtotal_cost/keychain_cost 未按 quantity 累加（qty2/3/4 多記 $185 應 ≈ 首件185+加購125×(N−1)），n8n 計算 bug，另開 `/cl-flow` 修 + 歷史回填 |
+| 🟡 中 | **[審計日誌 Phase B] 訂單層成本修改 + 變更歷史** | ⏳ 待排程（S124 Phase A 已完成） | 新 migration `orders.cost_override_locked` + RPC `fhs_adjust_order_cost`；設定中心「指定訂號→訂單層成本修改」區塊；Audit Ledger Modal 本單變更歷史 collapsible |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | ✅ 完成 | **Airtable billing 日均驗證** | ✅ PASS（S123） | 官方數字：723/1000 calls（Jun 1-25）；修復後(Jun 16-25)≈17/day；月底預測~810，不超標；sysCheckN8n 修復效果確認 |
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
+
+### 已確認完成（Session 124 — Audit Ledger 財務呈現優化，2026-06-26）
+- ✅ **[UI 點1] ①②③④ 區塊卡片化**：四區塊各包 `.fhsAudit_section`（圓角外框 + 色彩左邊條 ①棕②橙③綠④灰 + 底色 + 間距），解決三區塊難辨識
+- ✅ **[UI 點2] 品項成本小計可展開（降級版）**：原生 `<details>`，只列真實欄位（單件base/數量/>0繪圖打印環扣運費），四欄空顯「明細未記錄（n8n 未寫入）」，禁前端重算拆解
+- ✅ **[UI 點3] 數量誠實警示**：`qty>1 && subtotal==base` → 紅色 `fhsAudit_qtyWarn`「疑漏算加購 N−1 件」，不做假乘法
+- ✅ **[DATA 點4] live 核實成本低估 bug**：0600905/0600908「嬰兒鎖匙扣-不銹鋼-2飾(加購)×2」記$185 應≈$310；全庫 qty2/3/4 多數低估 = n8n 未按件數累加（→ Task A，前端只揭露不回寫）
+- ✅ **驗證**：node 抽函式 smoke test 全綠（無語法錯+三卡片+details展開+qty2警示+空欄提示+div37/37+details2/2）；NAS current.html 部署 PASS 870,991 bytes SHA256=731CD79C
+- ✅ **文件**：Changelog（S124 Audit Ledger 條目）、FHS_System_Logic_Overview §九（②可展開明細+數量警示+已知bug）
+- ⏳ **待 Fat Mo**：實機視覺驗收（開 0600905 財務分頁）
+
+【交付前雙紀律自檢】驗收：純前端呈現層改動（無回寫財務/schema/RPC，不觸發 finance-auditor 對賬型）；node smoke test 強制斷言渲染正確 + live SQL 數學坐實點4 = ✅；HTML ID/captureFormState/raw_form_state 零改動；live 視覺驗收誠實標記待 Fat Mo
+Subagent：❌ 未使用（live SQL + 定點 Edit + node 驗證，主 agent 直接執行）
+
+### 已確認完成（Session 124 — 綜合審計日誌 Phase A，2026-06-25，前一輪執行）
+- ✅ **[MIGRATION] 0044_audit_logs.sql 部署**：audit_logs 通用審計表 + RLS anon 只讀 + 3 索引 + RPC `fhs_query_audit_logs`（6 param）+ `fhs_upsert_cost_config` 4-param overload（同交易加寫 audit）
+- ✅ **[HTML] Log Sheet「📋 審計日誌」tab**：篩選 UI（類別/訂號/日期）+ 實作 Session 69 遺留 stub（switchLogTab/saveExpenseOperator/submitExpenseLog/loadExpenseLogs/loadAuditLogs）+ saveSingleCostConfig actor 改讀 localStorage
+- ⏳ **Phase B 待排程**：見 MASTER 表
+- 📌 **注**：此批由前一輪 session 執行並寫 Changelog/repo-map，未 commit；S124 本輪 /commit 一併推送（V42.html 與本輪 Audit Ledger 改動共存於同檔，current.html 已捆綁兩者部署）
 
 ### 已確認完成（Session 123 — Airtable billing 日均驗收 PASS，2026-06-25）
 - ✅ **[VERIFY] Airtable billing 官方數字確認**：截圖讀取 723/1,000 API calls（Jun 1-25，25天）；全部來自 PAT（Other PAT 欄），FHS_Order_Processor 主庫 723 calls；修復前(Jun 1-15)估算 ~555 calls(37/day)，修復後(Jun 16-25)= 168 calls ≈ **17/day ✅ 目標 ≤20 PASS**；月底預測 ~810，不超 1,000 限額；Records 649/1,000（65%，健康）

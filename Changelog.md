@@ -1,5 +1,56 @@
 ﻿# Changelog
 
+## [2026-06-26] 💰 Session 124 — Audit Ledger 財務呈現優化（三區塊分隔 + 品項可展開明細 + 數量誠實警示）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS 1 處 + `buildAuditLedgerHtml` 5 處）、`.fhs/notes/FHS_System_Logic_Overview.md`（§九）
+**流程**：`/cl-flow-fast`（flow 2026-06-25-1222）→ 路線① → `/upload-web` 升格部署
+
+### [UI] 點1 — ①②③④ 區塊卡片化
+- 四區塊各包入 `.fhsAudit_section`（圓角外框 + 色彩左邊條：①棕 ②橙 ③綠 ④灰 + 底色 + 間距），解決截圖中三區塊難以辨識問題
+
+### [UI] 點2 — 品項成本小計可點按展開（降級版）
+- 每筆品項成本小計改原生 `<details>/<summary>`，展開**只列真實存在欄位**（單件基礎成本/數量/>0 的繪圖打印環扣運費）
+- 四欄全空時顯示「明細未記錄（n8n 未寫入）」，**禁止前端用 cost_configurations 自行重算拆解**（守成本單一真源）
+
+### [UI] 點3 — 數量誠實警示（取代假乘法）
+- `qty>1 && subtotal_cost == item_base_cost`（成本未隨件數累加）→ 紅色 `fhsAudit_qtyWarn`「疑漏算加購 N−1 件」
+- **不顯示 `單件×數量=小計`**（DB 存值與真值皆非乘積，避免製造假數）
+
+### [DATA] 點4 — Live 核實成本低估 bug（確認，待修）
+- 截圖訂單 0600905/0600908「嬰兒鎖匙扣-不銹鋼-2飾(加購)×2」記 $185 **錯誤**，正解 ≈ $310（首件185 + 加購125）
+- 全庫掃描：qty=2/3/4 多數仍只記 $185 = **n8n 成本計算未按件數累加**（歸 Task A，前端僅誠實揭露不回寫）
+- 修復另開 `/cl-flow`（n8n + 歷史回填）
+
+### [VERIFY] node 抽函式 smoke test
+- mock 截圖訂單跑 `buildAuditLedgerHtml`：無語法錯 + 三卡片 + details 展開 + qty=2 觸發警示 + 空欄提示 + `<div>` 37/37 / `<details>` 2/2 平衡 = 全綠
+- NAS 部署 current.html PASS：870,991 bytes，SHA256 `731CD79C29230DC8B716FDCFA67ABE6A21251FB2A09C3F2917382A623EF979C1`
+
+---
+
+## [2026-06-25] 📋 Session 124 — 綜合審計日誌 Phase A（audit_logs + Log Sheet 審計 tab）
+
+**範圍**：`supabase/migrations/0044_audit_logs.sql`（新建）、`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（4 處編輯）
+
+### [MIGRATION] 0044_audit_logs.sql（已部署 ✅）
+- **audit_logs 表**：通用審計容器（id/created_at/log_type/action/actor/entity_type/entity_id/before_val/after_val/summary/source）
+- **RLS**：anon SELECT only；anon 不可直接 INSERT（寫入只經 SECURITY DEFINER RPC）
+- **索引**：`(log_type, created_at DESC)`、`(entity_id, created_at DESC)`、`(created_at DESC)`
+- **RPC `fhs_query_audit_logs`**（6 params）：篩選查詢，GRANT EXECUTE TO anon, authenticated
+- **`fhs_upsert_cost_config` 升級**（4-param overload）：在同一交易內 INSERT audit_logs（原子寫入，有改必有記錄）
+
+### [HTML] freehandsss_dashboardV42.html
+- **Edit 1**：Log Sheet tab bar 新增「📋 審計日誌」按鈕
+- **Edit 2**：新增 `logTabAuditContent` div（篩選 UI：類別 / 訂號 / 日期範圍 + 查詢按鈕 + 結果列表）
+- **Edit 3**：`saveSingleCostConfig` actor 改從 `localStorage.fhs_expense_operator` 讀取（取代硬編碼 'dashboard'）
+- **Edit 4**：實作 Log Sheet 全部 JS（Session 69 遺留 HTML stub）：`switchLogTab`、`saveExpenseOperator`、`submitExpenseLog`、`loadExpenseLogs`、`loadAuditLogs`
+
+### [PENDING] Phase B — 財務參數設定中心訂單層修改（下輪另批）
+- 新 migration：`orders.cost_override_locked` + RPC `fhs_adjust_order_cost`
+- 設定中心新增「指定訂號 → 訂單層成本修改」區塊
+- Audit Ledger Modal：本單變更歷史（collapsible）
+
+---
+
 ## [2026-06-25] 🐶 Session 122 — IG 看門狗 v3 Cron 驗收 PASS + Phase 1b 部署
 
 **範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`（wa1/tg2/alerts 加入 + Drive cred replace_all）、n8n workflow D4LK6VrQbiXlju0V（Phase 1b PUT，versionId=f881031c）

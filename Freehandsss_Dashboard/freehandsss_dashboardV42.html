@@ -2333,7 +2333,27 @@
         .fhsAudit_catTag.necklace{background:#e8eaf6;color:#303f9f;}
         .fhsAudit_itemHdr{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#333;padding:6px 0 2px;}
         .fhsAudit_pendingNote{font-size:11px;color:#5c6e8a;background:#edf4ff;border:1px solid #c1d9f5;border-radius:4px;padding:6px 10px;margin:8px 0 2px;}
+        /* ① ② ③ 區塊卡片化（點1 視覺分隔） */
+        .fhsAudit_section{border:1px solid #E6E0D6;border-radius:10px;padding:6px 12px 12px;margin-bottom:14px;background:#fff;}
+        .fhsAudit_section.sec1{border-left:4px solid #B07D4C;background:#fffdfa;}
+        .fhsAudit_section.sec2{border-left:4px solid #E0A96D;background:#fffcf7;}
+        .fhsAudit_section.sec3{border-left:4px solid #7CB342;background:#fbfdf7;}
+        .fhsAudit_section.sec4{border-left:4px solid #BDBDBD;background:#fafafa;}
+        .fhsAudit_section .fhsAudit_sectionHdr{margin-top:6px;font-size:12px;}
+        /* 品項成本可展開明細（點2 降級版 + 點3 誠實警示） */
+        .fhsAudit_itemDetail{margin:2px 0 6px;border:1px solid #ece6dc;border-radius:6px;overflow:hidden;background:#fcfbf9;}
+        .fhsAudit_itemDetail>summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;list-style:none;cursor:pointer;padding:6px 10px;font-size:12px;font-weight:600;color:#555;user-select:none;}
+        .fhsAudit_itemDetail>summary::-webkit-details-marker{display:none;}
+        .fhsAudit_itemDetail>summary::before{content:'▶';font-size:9px;color:#B07D4C;margin-right:4px;transition:transform .15s;flex-shrink:0;}
+        .fhsAudit_itemDetail[open]>summary::before{transform:rotate(90deg);}
+        .fhsAudit_itemDetail>summary .fhsAudit_sumLabel{flex:1;min-width:0;}
+        .fhsAudit_itemDetail>summary .fhsAudit_amount{flex-shrink:0;}
+        .fhsAudit_detailBody{padding:4px 12px 10px 22px;border-top:1px dashed #e0d9cc;background:#fff;}
+        .fhsAudit_detailRow{display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:11.5px;color:#555;}
+        .fhsAudit_detailRow .v{font-family:var(--fhs-font-mono,monospace);color:#333;}
+        .fhsAudit_qtyWarn{font-size:11px;color:#7a1a1a;background:#fff5f5;border:1px solid #ffcdd2;border-radius:5px;padding:5px 9px;margin:6px 0 2px;line-height:1.45;}
         @media (max-width:767px){
+            .fhsAudit_section{padding:5px 9px 10px;}
             .fhsAudit_wrap{padding:10px 10px 16px;font-size:12.5px;}
             .fhsAudit_amount{min-width:60px;font-size:12.5px;}
             .fhsAudit_profitAmt{font-size:18px;}
@@ -4314,11 +4334,15 @@
                 <span style="font-size:11px; color:var(--fhs-text-secondary); white-space:nowrap;">已儲存本機</span>
             </div>
 
-            <!-- Tab 列（通用容器，未來可擴充） -->
+            <!-- Tab 列（通用容器，Session 124 加審計日誌 tab） -->
             <div style="border-bottom:2px solid var(--fhs-border); margin-bottom:12px; display:flex; gap:0;">
                 <button id="logTabExpenseBtn" onclick="window.switchLogTab('expense')"
                     style="padding:6px 16px; font-size:13px; border:none; border-bottom:2px solid #6366F1; margin-bottom:-2px; background:transparent; color:#6366F1; font-weight:700; cursor:pointer;">
                     💸 手動支出
+                </button>
+                <button id="logTabAuditBtn" onclick="window.switchLogTab('audit')"
+                    style="padding:6px 16px; font-size:13px; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; background:transparent; color:var(--fhs-text-secondary); font-weight:600; cursor:pointer;">
+                    📋 審計日誌
                 </button>
             </div>
 
@@ -4377,6 +4401,46 @@
                     </div>
                     <div id="expenseLogList" style="font-size:12px; color:var(--fhs-text-secondary);">點擊「刷新」載入記錄…</div>
                 </div>
+            </div>
+
+            <!-- 📋 審計日誌 tab content (Session 124) -->
+            <div id="logTabAuditContent" style="display:none;">
+                <!-- 篩選區 -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">事件類型</label>
+                        <select id="auditFilterType" style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                            <option value="">— 全部 —</option>
+                            <option value="cost_config_change">成本參數變更</option>
+                            <option value="order_cost_adjust">訂單成本調整</option>
+                            <option value="batch_recalc">批量重算</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">訂單/參數 ID</label>
+                        <input type="text" id="auditFilterEntityId" placeholder="e.g. 0600001 或 drawing_cost_base"
+                            style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">由日期</label>
+                        <input type="date" id="auditFilterFrom" style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">至日期</label>
+                        <input type="date" id="auditFilterTo" style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <button onclick="window.loadAuditLogs()"
+                        style="padding:6px 18px; border-radius:5px; border:none; background:#6366F1; color:#fff; font-size:13px; font-weight:600; cursor:pointer;">🔍 查詢</button>
+                    <button onclick="document.getElementById('auditFilterType').value='';document.getElementById('auditFilterEntityId').value='';document.getElementById('auditFilterFrom').value='';document.getElementById('auditFilterTo').value='';window.loadAuditLogs();"
+                        style="padding:6px 12px; border-radius:5px; border:1px solid var(--fhs-border); background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-size:12px; cursor:pointer;">清除</button>
+                    <span id="auditLogStatus" style="font-size:11px; color:var(--fhs-text-secondary);"></span>
+                </div>
+                <!-- 結果列表 -->
+                <div id="auditLogList" style="font-size:12px; color:var(--fhs-text-secondary);">點擊「查詢」載入審計記錄…</div>
             </div>
         </div>
 
@@ -9884,6 +9948,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             h += '</div>';
 
             // ① 確收鏈
+            h += '<div class="fhsAudit_section sec1">';
             h += '<div class="fhsAudit_sectionHdr"><span>① 確收鏈</span>' +
                 '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">財務真理 · 最終以此為準</span></div>';
             h += _row('訂金',  _f(deposit),  'income', 1);
@@ -9902,8 +9967,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 h += _row(adjAmt < 0 ? '調整（折讓）' : '調整（追加）', _fNeg(adjAmt), adjAmt < 0 ? 'deduct' : 'income', 1, 'ADJ', n8nNotes || null);
             }
 
+            h += '</div>'; // close sec1
             // ② 成本快照鏈
-            h += '<div class="fhsAudit_sectionHdr" style="margin-top:14px;"><span>② 成本快照鏈</span>' +
+            h += '<div class="fhsAudit_section sec2">';
+            h += '<div class="fhsAudit_sectionHdr"><span>② 成本快照鏈</span>' +
                 '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">n8n 自動記帳 · 快照時間點</span></div>';
 
             // Main: order-level category breakdown (30/30 reliable — single source of truth)
@@ -9964,9 +10031,32 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             var cCls2  = cat2 === '頸鏈' ? 'necklace' : cat2 === '鎖匙扣' ? 'keychain' : '';
                             var cTag2  = '<span class="fhsAudit_catTag ' + cCls2 + '">' + cat2 + '</span>';
                             var sub2   = parseFloat(it.subtotal_cost ?? 0) || 0;
+                            var base2  = parseFloat(it.item_base_cost ?? 0) || 0;
+                            var draw2  = parseFloat(it.drawing_cost ?? 0) || 0;
+                            var print2 = parseFloat(it.printing_cost ?? 0) || 0;
+                            var chain2c= parseFloat(it.chain_cost ?? 0) || 0;
+                            var ship2  = parseFloat(it.shipping_cost ?? 0) || 0;
+                            var hasBreakdown = (draw2 > 0 || print2 > 0 || chain2c > 0 || ship2 > 0);
+                            // 點3：數量>1 但成本小計＝單件 base（完全未隨件數累加）= 疑漏算加購
+                            var qtyUnscaled = (qty2 > 1 && base2 > 0 && Math.abs(sub2 - base2) < 0.01);
                             h += '<div class="fhsAudit_itemHdr"><span>' + lbl2 + (qty2 > 1 ? ' ×' + qty2 : '') + '</span>' + cTag2 + '</div>';
                             if (sub2 > 0) {
-                                h += _row('成本小計', _f(sub2), 'cost', 1);
+                                // 點2 降級版：只列真實存在欄位，缺則註明未記錄，不臆造拆解
+                                var dh = '';
+                                if (base2 > 0) dh += '<div class="fhsAudit_detailRow"><span>單件基礎成本</span><span class="v">' + _f(base2) + '</span></div>';
+                                dh += '<div class="fhsAudit_detailRow"><span>數量</span><span class="v">×' + qty2 + '</span></div>';
+                                if (draw2  > 0) dh += '<div class="fhsAudit_detailRow"><span>繪圖</span><span class="v">' + _f(draw2) + '</span></div>';
+                                if (print2 > 0) dh += '<div class="fhsAudit_detailRow"><span>打印/物料</span><span class="v">' + _f(print2) + '</span></div>';
+                                if (chain2c> 0) dh += '<div class="fhsAudit_detailRow"><span>環扣/頸鏈</span><span class="v">' + _f(chain2c) + '</span></div>';
+                                if (ship2  > 0) dh += '<div class="fhsAudit_detailRow"><span>運費</span><span class="v">' + _f(ship2) + '</span></div>';
+                                if (!hasBreakdown) dh += '<div class="fhsAudit_detailRow" style="color:#aaa;"><span>繪圖/物料/環扣明細</span><span class="v">明細未記錄（n8n 未寫入）</span></div>';
+                                dh += '<div class="fhsAudit_detailRow" style="font-weight:700;border-top:1px solid #eee;margin-top:3px;padding-top:4px;"><span>成本小計（記錄值）</span><span class="v">' + _f(sub2) + '</span></div>';
+                                if (qtyUnscaled) dh += '<div class="fhsAudit_qtyWarn">⚠ 此品項數量 ×' + qty2 + '，但成本小計＝單件成本（' + _f(base2) + '），未按件數累加。疑漏算加購 ' + (qty2 - 1) + ' 件，實際成本待 n8n 修正（不影響確收金額）。</div>';
+                                h += '<details class="fhsAudit_itemDetail">' +
+                                    '<summary><span class="fhsAudit_sumLabel">成本小計' + (qtyUnscaled ? ' <span style="color:#E63946;">⚠</span>' : '') + '</span>' +
+                                    '<span class="fhsAudit_amount cost">' + _f(sub2) + '</span></summary>' +
+                                    '<div class="fhsAudit_detailBody">' + dh + '</div>' +
+                                '</details>';
                             } else {
                                 h += '<div class="fhsAudit_note" style="padding-left:16px;color:#aaa;">—（明細未記錄）</div>';
                             }
@@ -9975,8 +10065,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
 
+            h += '</div>'; // close sec2
             // ③ 利潤結算
-            h += '<div class="fhsAudit_sectionHdr" style="margin-top:16px;"><span>③ 利潤結算</span></div>';
+            h += '<div class="fhsAudit_section sec3">';
+            h += '<div class="fhsAudit_sectionHdr"><span>③ 利潤結算</span></div>';
             h += _row('確收金額',    _f(finalSale), 'income');
             h += _row('(−) 總成本', '(−' + _f(totalCost) + ')', 'deduct');
             var profitNeg = netProfit < 0;
@@ -9996,10 +10088,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 h += '<div class="fhsAudit_note" style="padding-left:0;">KPI口徑利潤 = 淨利潤 ' + _f(netProfit) + ' − 調整 ' + _f(adjAmt) + ' = ' + _f(kpiProfit) + '</div>';
             }
 
+            h += '</div>'; // close sec3
             // ④ 建議售價對照（有 item_sale_price 才顯示）
             var hasSug = items.some(function(it){ return it.item_sale_price != null && parseFloat(it.item_sale_price) > 0; });
             if (hasSug) {
-                h += '<div class="fhsAudit_sectionHdr fhsAudit_dimSection" style="margin-top:14px;"><span>④ 建議售價對照</span>' +
+                h += '<div class="fhsAudit_section sec4">';
+                h += '<div class="fhsAudit_sectionHdr fhsAudit_dimSection"><span>④ 建議售價對照</span>' +
                     '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">參考用 · 非確收</span></div>';
                 h += '<div class="fhsAudit_dimSection">';
                 items.forEach(function(it) {
@@ -10020,7 +10114,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     var pct = sumSug > 0 ? Math.round(Math.abs(sugDiff / sumSug) * 100) : 0;
                     h += '<div class="fhsAudit_note" style="padding-left:0;">建議 ' + _f(sumSug) + ' vs 確收 ' + _f(finalSale) + '（' + (sugDiff < 0 ? '折讓' : '追加') + ' ' + pct + '%）</div>';
                 }
-                h += '</div>';
+                h += '</div>'; // close dimSection
+                h += '</div>'; // close sec4
             }
 
             h += '</div>';
@@ -13874,7 +13969,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var btnStyle = 'padding:4px 10px;border-radius:5px;border:1px solid #2A9D8F;background:#f0faf8;color:#2A9D8F;font-size:12px;cursor:pointer;white-space:nowrap;';
             btn.disabled = true; btn.textContent = '…';
 
-            var rpcBody = { p_key: key, p_value: val, p_updated_by: 'dashboard' };
+            var _actor = (localStorage.getItem('fhs_expense_operator') || 'dashboard').trim() || 'dashboard';
+            var rpcBody = { p_key: key, p_value: val, p_updated_by: _actor };
             if (expectedVersion != null) rpcBody.p_expected_version = expectedVersion;
 
             _fsRpc('fhs_upsert_cost_config', rpcBody)
@@ -14041,6 +14137,191 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.getOrderCost = function(key, fallback) {
             var val = window._fhsCostConfig[key];
             return (val !== undefined && val !== null) ? val : (fallback !== undefined ? fallback : 0);
+        };
+
+        // ══════════════════════════════════════════════════════
+        // 📒 Log Sheet — Session 124 完整實作
+        // Tab 切換 + 支出登記 + 審計日誌查詢
+        // ══════════════════════════════════════════════════════
+
+        // ── switchLogTab ─────────────────────────────────────
+        window.switchLogTab = function(tab) {
+            var tabs = ['expense', 'audit'];
+            var colors = { expense: '#6366F1', audit: '#6366F1' };
+            tabs.forEach(function(t) {
+                var btn  = document.getElementById('logTab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
+                var cont = document.getElementById('logTab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Content');
+                var active = (t === tab);
+                if (btn) {
+                    btn.style.borderBottomColor = active ? colors[t] : 'transparent';
+                    btn.style.color             = active ? colors[t] : 'var(--fhs-text-secondary)';
+                    btn.style.fontWeight        = active ? '700' : '600';
+                }
+                if (cont) cont.style.display = active ? 'block' : 'none';
+            });
+            if (tab === 'audit') window.loadAuditLogs();
+        };
+
+        // ── saveExpenseOperator ───────────────────────────────
+        window.saveExpenseOperator = function() {
+            var v = (document.getElementById('logSheetOperator') || {}).value || '';
+            localStorage.setItem('fhs_expense_operator', v.trim());
+        };
+
+        // restore operator on load
+        (function() {
+            var saved = localStorage.getItem('fhs_expense_operator') || '';
+            var el = document.getElementById('logSheetOperator');
+            if (el && saved) el.value = saved;
+        })();
+
+        // ── submitExpenseLog ──────────────────────────────────
+        window.submitExpenseLog = function() {
+            var date     = (document.getElementById('expDate')     || {}).value || '';
+            var category = (document.getElementById('expCategory') || {}).value || '';
+            var item     = (document.getElementById('expItem')     || {}).value || '';
+            var amount   = parseFloat((document.getElementById('expAmount') || {}).value || '');
+            var remarks  = (document.getElementById('expRemarks')  || {}).value || '';
+            var operator = (localStorage.getItem('fhs_expense_operator') || 'dashboard').trim() || 'dashboard';
+            var status   = document.getElementById('expSubmitStatus');
+
+            if (!date || !category || !item || isNaN(amount) || amount <= 0) {
+                if (status) { status.textContent = '⚠️ 請填寫所有必填欄位（日期、大分類、項目說明、金額）'; status.style.color = '#ef4444'; }
+                return;
+            }
+            var btn = document.getElementById('btnSubmitExpense');
+            if (btn) { btn.disabled = true; btn.textContent = '…'; }
+            if (status) { status.textContent = ''; }
+
+            _fsRpc('fhs_write_expense_log', {
+                p_log_type:   'expense',
+                p_entry_date: date,
+                p_category:   category,
+                p_item_name:  item,
+                p_amount:     amount,
+                p_remarks:    remarks || null,
+                p_operator:   operator
+            })
+            .then(function() {
+                if (status) { status.textContent = '✅ 已記錄'; status.style.color = '#059669'; }
+                ['expDate','expCategory','expItem','expAmount','expRemarks'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.value = (id === 'expCategory') ? '' : '';
+                });
+                setTimeout(function() { if (status) status.textContent = ''; }, 3000);
+                window.loadExpenseLogs();
+            })
+            .catch(function(e) {
+                // Fallback: direct PostgREST insert if RPC not available
+                var sbUrl = (window._sbUrl || '') + '/rest/v1/expense_logs';
+                fetch(sbUrl, {
+                    method: 'POST',
+                    headers: Object.assign({}, window._sbHdr || {}, { 'Prefer': 'return=minimal' }),
+                    body: JSON.stringify({
+                        log_type: 'expense', entry_date: date, category: category,
+                        item_name: item, amount: amount,
+                        remarks: remarks || null, operator: operator
+                    })
+                })
+                .then(function(r) {
+                    if (!r.ok) throw new Error('POST ' + r.status);
+                    if (status) { status.textContent = '✅ 已記錄'; status.style.color = '#059669'; }
+                    window.loadExpenseLogs();
+                    setTimeout(function() { if (status) status.textContent = ''; }, 3000);
+                })
+                .catch(function(e2) {
+                    if (status) { status.textContent = '❌ 儲存失敗：' + e2.message; status.style.color = '#ef4444'; }
+                });
+            })
+            .finally(function() {
+                if (btn) { btn.disabled = false; btn.textContent = '💾 記錄支出'; }
+            });
+        };
+
+        // ── loadExpenseLogs ───────────────────────────────────
+        window.loadExpenseLogs = function() {
+            var list   = document.getElementById('expenseLogList');
+            var badge  = document.getElementById('logSheetBadge');
+            if (!list) return;
+            list.innerHTML = '<span style="color:var(--fhs-text-secondary);">載入中…</span>';
+
+            _fsSelect('expense_logs',
+                'select=id,entry_date,category,item_name,amount,remarks,operator,created_at' +
+                '&log_type=eq.expense&order=created_at.desc&limit=50')
+            .then(function(rows) {
+                if (badge) { badge.textContent = '已載入'; badge.style.background = '#d1fae5'; badge.style.color = '#065f46'; }
+                if (!rows || !rows.length) {
+                    list.innerHTML = '<div style="color:var(--fhs-text-secondary);padding:6px 0;">尚無支出記錄</div>';
+                    return;
+                }
+                list.innerHTML = rows.map(function(r) {
+                    return '<div style="display:flex;align-items:baseline;gap:6px;padding:5px 0;border-bottom:1px solid var(--fhs-border);">'
+                        + '<span style="color:var(--fhs-text-secondary);white-space:nowrap;font-size:11px;">' + (r.entry_date || '') + '</span>'
+                        + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (r.item_name||'') + '">[' + (r.category||'') + '] ' + (r.item_name||'') + '</span>'
+                        + '<span style="font-weight:700;white-space:nowrap;">$' + parseFloat(r.amount||0).toFixed(0) + '</span>'
+                        + (r.operator ? '<span style="font-size:10px;color:var(--fhs-text-secondary);">' + r.operator + '</span>' : '')
+                        + '</div>';
+                }).join('');
+            })
+            .catch(function(e) {
+                list.innerHTML = '<span style="color:#ef4444;">載入失敗：' + e.message + '</span>';
+                if (badge) { badge.textContent = '載入失敗'; badge.style.background = '#fee2e2'; badge.style.color = '#991b1b'; }
+            });
+        };
+
+        // ── loadAuditLogs ─────────────────────────────────────
+        window.loadAuditLogs = function() {
+            var list   = document.getElementById('auditLogList');
+            var status = document.getElementById('auditLogStatus');
+            if (!list) return;
+            list.innerHTML = '<span style="color:var(--fhs-text-secondary);">查詢中…</span>';
+            if (status) status.textContent = '';
+
+            var logType  = (document.getElementById('auditFilterType')     || {}).value || null;
+            var entityId = ((document.getElementById('auditFilterEntityId') || {}).value || '').trim() || null;
+            var fromDate = (document.getElementById('auditFilterFrom')     || {}).value || null;
+            var toDate   = (document.getElementById('auditFilterTo')       || {}).value || null;
+
+            _fsRpc('fhs_query_audit_logs', {
+                p_log_type:  logType,
+                p_entity_id: entityId,
+                p_from:      fromDate,
+                p_to:        toDate,
+                p_limit:     50,
+                p_offset:    0
+            })
+            .then(function(result) {
+                var rows = (result && result.rows) ? result.rows : (Array.isArray(result) ? result : []);
+                var count = rows.length;
+                if (status) status.textContent = count + ' 筆';
+                if (!count) {
+                    list.innerHTML = '<div style="color:var(--fhs-text-secondary);padding:6px 0;">無符合條件的審計記錄</div>';
+                    return;
+                }
+                var TYPE_LABELS = {
+                    cost_config_change:   '成本參數變更',
+                    order_cost_adjust:    '訂單成本調整',
+                    batch_recalc:         '批量重算'
+                };
+                list.innerHTML = rows.map(function(r) {
+                    var ts    = r.created_at ? r.created_at.replace('T',' ').substring(0,16) : '';
+                    var label = TYPE_LABELS[r.log_type] || r.log_type;
+                    var bv    = r.before_val ? (r.before_val.config_value || JSON.stringify(r.before_val)) : '—';
+                    var av    = r.after_val  ? (r.after_val.config_value  || JSON.stringify(r.after_val))  : '—';
+                    var summary = r.summary || (r.entity_id + ': ' + bv + ' → ' + av);
+                    return '<div style="padding:6px 0;border-bottom:1px solid var(--fhs-border);">'
+                        + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+                        + '<span style="font-size:10px;color:var(--fhs-text-secondary);white-space:nowrap;">' + ts + '</span>'
+                        + '<span style="font-size:11px;background:#ede9fe;color:#5b21b6;padding:1px 6px;border-radius:3px;">' + label + '</span>'
+                        + (r.actor ? '<span style="font-size:10px;color:var(--fhs-text-secondary);">by ' + r.actor + '</span>' : '')
+                        + '</div>'
+                        + '<div style="font-size:12px;color:var(--fhs-text-primary);margin-top:2px;">' + summary + '</div>'
+                        + '</div>';
+                }).join('');
+            })
+            .catch(function(e) {
+                list.innerHTML = '<span style="color:#ef4444;">查詢失敗：' + e.message + '</span>';
+            });
         };
 
     })();

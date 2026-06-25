@@ -120,7 +120,14 @@
       "Bash(ls -la .fhs/.kgov-pending)",
       "Bash(cat .fhs/.kgov-pending)",
       "Bash(node scripts/cl-flow-runner.js \"FHS Dashboard V42 兩塊交付（建議拆分）：\\(A\\) 將既有「📒 記錄中心 Log Sheet」升級為綜合審計日誌——沿用 expense_logs.log_type+payload JSONB 通用容器與既有可擴充 Tab 架構，新增分類記錄建立/修改/查詢事件（至少涵蓋 cost_configurations 參數變更與訂單財務修改），提供按類別/訂號/日期的查詢篩選 UI（桌面 Modal + 手機 bottom-sheet）。\\(B\\) 在「💰 財務參數設定中心」追加「指定訂號→訂單層修改+訂單日誌」功能，針對特定 order_id 做訂單層財務/成本調整並寫入該訂單變更歷史（who/when/before→after），須與既有 financial_batch_logs 批量重算引擎（已支援指定訂單ID）界定邊界不衝突。硬約束：Supabase-First；禁改 HTML ID/captureFormState/Raw_Form_State；收款確收三欄 final_sale_price=Deposit+Balance+Additional_Fee 為真理 n8n 嚴禁覆蓋；改 cost_configurations 不自動回算舊單；最小改動優先擴充既有設施非新建；migration 先套用再加 SELECT/PATCH；RLS service_role 寫入 anon 只讀沿用 ig_watchdog_alerts 範式；修改事件須在實際寫入路徑落盤非僅 UI 旁註；mapOrder 不含 deposit/balance 需 fresh fetch。\")",
-      "Bash(node -e \"const fs=require\\('fs'\\);const s=JSON.parse\\(fs.readFileSync\\('state.json','utf8'\\)\\);s.cl_status='done';s.status='awaiting_approval';s.execution_status='locked';s.verdict='CONDITIONAL_READY';fs.writeFileSync\\('state.json',JSON.stringify\\(s,null,2\\)\\);console.log\\('updated:',s.cl_status,s.status,s.verdict\\);\")"
+      "Bash(node -e \"const fs=require\\('fs'\\);const s=JSON.parse\\(fs.readFileSync\\('state.json','utf8'\\)\\);s.cl_status='done';s.status='awaiting_approval';s.execution_status='locked';s.verdict='CONDITIONAL_READY';fs.writeFileSync\\('state.json',JSON.stringify\\(s,null,2\\)\\);console.log\\('updated:',s.cl_status,s.status,s.verdict\\);\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const s=JSON.parse\\(fs.readFileSync\\('state.json','utf8'\\)\\);s.cl_status='done';s.status='approved_phase_a';s.execution_status='executing_phase_a';s.verdict='CONDITIONAL_READY_v2';s.approved_by='FatMo_先批Phase0+1=A';fs.writeFileSync\\('state.json',JSON.stringify\\(s,null,2\\)\\);console.log\\('OK'\\);\")",
+      "Bash(ls n8n/)",
+      "Bash(ls Freehandsss_dashboard/n8n/)",
+      "Bash(grep -n \"}\\)\\(\\);\\\\s*$\" \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/freehandsss_dashboardV42.html\")",
+      "Bash(python -m json.tool)",
+      "PowerShell(powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force)",
+      "PowerShell(git -C \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard\" status --short)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
