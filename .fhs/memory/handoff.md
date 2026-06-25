@@ -33,12 +33,13 @@
 【雙紀律自檢】驗收：截圖官方數字直讀（非估算），修復後日均 17 < 20 = ✅；唯讀驗收，無任何代碼/schema 改動
 Subagent：❌ 未使用（截圖直讀分析，主 agent 直接完結）
 
-### 已確認完成（Session 122 — IG 看門狗 v3 Cron 驗收 PASS，2026-06-25）
-- ✅ **[VERIFY] Exec 4012（2026-06-25 06:00 HKT）16/16 nodes success**：Schedule Trigger → Find New Export Folders（7個）→ Filter New + Quiet Window（1個通過）→ Find your_instagram_activity/messages/inbox → List Thread Folders（17個）→ Find Message Files（8個）→ Tag Thread Context → Download File → Parse Inbox → **Fetch Orders（31筆 ✅）** → Fetch Pipeline（1筆）→ Classify & Report → **Telegram Notify（已送達）**
-- ✅ **v3 Cron 完整驗收**：23 秒完成；Supabase 查詢正常；Telegram 送達；Phase 1b 已解鎖
+### 已確認完成（Session 122 — IG 看門狗 v3 Cron 驗收 PASS + Phase 1b 部署，2026-06-25）
+- ✅ **[VERIFY] Exec 4012（2026-06-25 06:00 HKT）16/16 nodes success**：Schedule Trigger → Find New Export Folders（7個）→ Filter New + Quiet Window（1個通過）→ Find your_instagram_activity/messages/inbox → List Thread Folders（17個）→ Find Message Files（8個）→ Tag Thread Context → Download File → Parse Inbox → **Fetch Orders（31筆 ✅）** → Fetch Pipeline（1筆）→ Classify & Report → **Telegram Notify（已送達）**；23秒；Phase 1b 解鎖
+- ✅ **[FEAT] Phase 1b 部署**：build_n8n_workflow.cjs 新增 wa1（Write Alerts HTTP POST → ig_watchdog_alerts，service_role key，Prefer=ignore-duplicates）+ tg2（Telegram Notify Data，讀 `$('Classify & Report').first().json.summary`）+ alerts array 構建（10欄）；Drive cred replace_all（7節點 credentials:{}→真實 ID `zQHavrW0ElfaKGxG`）；PUT HTTP 200；versionId=f881031c；19 節點；Drive cred 14/14；undefined 0；active=True
+- ✅ **[DOC] FHS_System_Logic_Overview.md §11.5** Phase 1b 狀態 ⏳→✅
 
-【雙紀律自檢】驗收：curl API 直查 Exec 4012 = status:success + 16/16 節點 success + Telegram Notify items=1 = ✅；唯讀驗收，無任何代碼/schema 改動
-Subagent：❌ 未使用（curl API 直查，主 agent 直接執行）
+【雙紀律自檢】驗收：curl API 直查 Exec 4012 = status:success + 16/16 節點 success + Telegram Notify items=1 = ✅；Phase 1b：GET workflow 確認 versionId=f881031c + 19 節點 + Drive cred 14/14 = ✅；無財務欄位/raw_form_state/HTML ID 改動
+Subagent：❌ 未使用（curl API 直查 + bash PUT + PowerShell，主 agent 直接執行）
 
 ### 已確認完成（Session 121 — IG 看門狗 v3 Supabase URL 修復，2026-06-24）
 - ✅ **[DIAG] Exec 4009 根因確認**：2026-06-24 06:00 HKT v3 首次 Cron 在 `Fetch Orders` 節點失敗（URL=`undefined/rest/v1/...`）；根因=S117 build 時 `process.env.SUPABASE_URL/SUPABASE_ANON_KEY` 未從 .env 載入，`undefined` 被硬嵌入 workflow JSON
