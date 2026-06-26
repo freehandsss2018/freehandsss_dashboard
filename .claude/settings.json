@@ -127,7 +127,9 @@
       "Bash(grep -n \"}\\)\\(\\);\\\\s*$\" \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/freehandsss_dashboardV42.html\")",
       "Bash(python -m json.tool)",
       "PowerShell(powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force)",
-      "PowerShell(git -C \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard\" status --short)"
+      "PowerShell(git -C \"d:/SynologyDrive/Free_handsss/freehandsss_dashboard\" status --short)",
+      "Bash(node scripts/cl-flow-runner.js \"修復 n8n 加購鎖匙扣成本未按件數累加 + 9張歷史訂單財務回填。根因：n8n FHS_Core_OrderProcessor『Calculate Profit & Pack Items』\\(V47.17\\) 的 totalBaseCost+=itemCost / keychainCostTotal+=itemKeychainCost 從不×Original_Qty（qty只用於運費扣減），且未實作 Finance Bible §G2\\(同部位首件全成本含畫圖、第2件起加購免畫圖\\)/§G3\\(跨產品同部位已畫過圖則加購首件亦免畫圖\\)，改用 flat products.total_base_cost×1。權威公式=G2/G3：加購鎖匙扣\\(同部位已由主立體擺設畫過圖\\)每件免畫圖=物料\\(嬰兒不銹鋼=115 live\\)+環扣\\(10\\)+運費\\(20\\)，訂單層再\\(件數-1\\)×20扣運費。範圍：9訂單16個金屬鎖匙扣order_items行\\(subtotal_cost一律停單件185/235無視qty\\)，影響keychain_cost/total_cost/net_profit/KPI利潤多報。需求:\\(1\\)修n8n按件數×qty並套G2/G3免畫圖,決定成本單一真源\\(前端calculatePricing四分量透傳為權威 vs n8n自算\\);\\(2\\)9單回填SQL重算keychain_cost/total_cost/net_profit+SELECT快照+RETURNING驗證+回滾。硬約束:final_sale_price/deposit/balance/additional_fee=真理n8n與回填SQL嚴禁覆蓋;net_profit=final_sale_price-total_cost只動成本側;NAS Code節點fetch/require/process禁用,PUT body僅name/nodes/connections/settings四欄;Supabase-First;併修Finance Bible範例stale數字\\(95→115\\)+統一subtotal_cost含不含運費慣例;界定與financial_batch_logs/audit_logs邊界。建議finance-auditor回填前後三端對賬附訂單號。\")",
+      "Bash(node \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\scripts\\\\Sync_Notion_Brain.js\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

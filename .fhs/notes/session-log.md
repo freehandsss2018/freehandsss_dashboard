@@ -1,5 +1,10 @@
 ﻿# Session Log
 
+## 2026-06-26 (Session 124 /commit — doc sync + ig-watchdog guard): 📋 ✅
+
+**Scope**：/commit post-context-compaction 收尾。(1) `FHS_System_Logic_Overview.md §5.5` 審計日誌新章節（audit_logs schema/RLS/RPC/前端 tab 架構文件）；(2) `build_n8n_workflow.cjs` 加 Has Alerts? IF 守衛節點（防 PostgREST 空陣列報 "Could not find '[]' column"）；(3) `.claude/settings.json` 新增 cl-flow-runner allowlist 條目；kgov-pending flag 清除。
+**Result**：3 檔 MODIFY（settings/FHS_System_Logic_Overview/build_n8n_workflow）；learnings #26 新增 PostgREST 空陣列 pitfall；Notion 同步完成；Phase A 全部落盤。
+
 ## 2026-06-25 (Session 123 — Airtable billing 日均驗收 PASS): 🔍 ✅
 
 **Scope**：官方截圖確認 Airtable Public API calls 723/1,000（Jun 1–25）；全部來自 PAT（Other PAT）；拆段分析修復前(Jun 1-15)~37/day、修復後(Jun 16-25)≈17/day；月底預測~810不超標。sysCheckN8n 修復（S106）效果確認，CONDITIONAL PASS → 正式 PASS。

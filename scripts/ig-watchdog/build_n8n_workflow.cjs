@@ -474,7 +474,21 @@ const workflow = {
       id: 'cr1', name: 'Classify & Report', type: 'n8n-nodes-base.code', typeVersion: 2, position: [3280, 420],
     },
     {
+      // 守衛：alerts 為空時跳過寫入，直接發 Telegram 摘要；防止 POST [] 到 Supabase（PostgREST 無法
+      // 從空陣列讀取欄位名稱，報 "Could not find the '[]' column" 導致 workflow 中斷）
+      parameters: {
+        conditions: {
+          options: { caseSensitive: true, leftValue: '', typeValidation: 'strict' },
+          conditions: [{ leftValue: '={{$json.alerts.length}}', rightValue: 0, operator: { type: 'number', operation: 'gt' } }],
+          combinator: 'and',
+        },
+        options: {},
+      },
+      id: 'if_alerts', name: 'Has Alerts?', type: 'n8n-nodes-base.if', typeVersion: 2, position: [3500, 420],
+    },
+    {
       // Phase 1b: 批量寫入 ig_watchdog_alerts（service_role key，冪等 UPSERT ON CONFLICT DO NOTHING）
+      // 只在 alerts.length > 0 時執行（Has Alerts? true 分支），防空陣列 POST
       parameters: {
         method: 'POST',
         url: SUPABASE_URL + '/rest/v1/ig_watchdog_alerts',
@@ -490,10 +504,10 @@ const workflow = {
         sendBody: true,
         contentType: 'json',
         specifyBody: 'string',
-        body: '={{ JSON.stringify($json.alerts || []) }}',
+        body: "={{ JSON.stringify($('Classify & Report').first().json.alerts) }}",
         options: {},
       },
-      id: 'wa1', name: 'Write Alerts', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3500, 420],
+      id: 'wa1', name: 'Write Alerts', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3720, 420],
       alwaysOutputData: true,
     },
     {
@@ -503,9 +517,9 @@ const workflow = {
       credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
     },
     {
-      // 資料路徑（Classify & Report → Write Alerts）接的 Telegram，讀 cr1 的 summary
+      // 資料路徑接的 Telegram，讀 cr1 的 summary（從 Has Alerts? true/false 兩分支皆可到達）
       parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: "={{ $('Classify & Report').first().json.summary }}", replyMarkup: 'none', additionalFields: {} },
-      id: 'tg2', name: 'Telegram Notify (Data)', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3500, 300],
+      id: 'tg2', name: 'Telegram Notify (Data)', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3720, 300],
       credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
     },
   ],
@@ -530,7 +544,13 @@ const workflow = {
     'Parse Inbox': { main: [[{ node: 'Fetch Orders', type: 'main', index: 0 }]] },
     'Fetch Orders': { main: [[{ node: 'Fetch Pipeline', type: 'main', index: 0 }]] },
     'Fetch Pipeline': { main: [[{ node: 'Classify & Report', type: 'main', index: 0 }]] },
-    'Classify & Report': { main: [[{ node: 'Write Alerts', type: 'main', index: 0 }]] },
+    'Classify & Report': { main: [[{ node: 'Has Alerts?', type: 'main', index: 0 }]] },
+    'Has Alerts?': {
+      main: [
+        [{ node: 'Write Alerts', type: 'main', index: 0 }],          // true: 有警報 → 寫入 + Telegram
+        [{ node: 'Telegram Notify (Data)', type: 'main', index: 0 }], // false: 無警報 → 直接 Telegram
+      ],
+    },
     'Write Alerts': { main: [[{ node: 'Telegram Notify (Data)', type: 'main', index: 0 }]] },
   },
   settings: {},
