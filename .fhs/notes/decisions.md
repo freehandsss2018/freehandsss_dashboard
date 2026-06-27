@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-06-26] (Session 124) S124 v2 加購鎖匙扣成本 N飾維度修復 — 雙根因消除 + 9單回填
+
+決策：修復「加購鎖匙扣 subtotal_cost 無視 quantity（N飾）」雙根因：(a) products.total_base_cost 全 N飾 variant 存 flat 185/235，未按 item_per_set 縮放；(b) Finance Bible §G2 範例 stale（物料$95→$115）。
+方案（七步）：
+1. 線D: Finance Bible §G2 範例校正（物料$115，subtotal不含運費）
+2. Migration 0045: CREATE fhs_compute_keychain_cost(material, qty, drawing_fee) — 單一成本真源 RPC
+3. 線B: UPDATE products.total_base_cost = fhs_compute_keychain_cost(115, item_per_set, drawing_fee) — 41 rows
+4. 線C: 9單歷史回填（UPDATE order_items 14行嬰兒鎖匙扣 + UPDATE orders 9行 + 9條 audit_logs）
+5. n8n V47.18: Calculate Profit & Pack Items 注釋記錄語義確認（無功能改動）
+6. finance-auditor: 三端對賬驗證
+7. Migration 0046: fhs_check_product_cost_drift() N飾維度擴充
+不變：final_sale_price / deposit / balance — 真理欄位全程未動；家庭(S2)1飾(加購)超出範圍保留原值275
+影響：cost_configurations（讀取）、products（41行）、order_items（14行）、orders（9行）、audit_logs（9行）、n8n workflow V47.18、migrations 0045/0046
+
 [2026-06-23] (Session 120) 鋁合金嬰兒層成本修正 — config key 補建 + products 錯值修正
 
 決策：INSERT `material_cost_keychain_alloy` = 115 至 `cost_configurations`；UPDATE `products.total_base_cost`：嬰兒S型 $212→$185（20行）、嬰兒P型 $262→$245（20行）。

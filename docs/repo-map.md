@@ -59,7 +59,9 @@ freehandsss_dashboard/
 │   │   ├── (0039-0041 本地檔缺漏，Session 90-99 applied via MCP 未補建，待後續任務補登 repo-map)
 │   │   ├── 0042_drop_dead_recalc_and_cost_drift_check.sql ← DROP 死碼 recalculate_product_costs（v1 schema 遺留，引用不存在欄位必報錯）+ CREATE fhs_check_product_cost_drift()（唯讀比對 products.total_base_cost 與成本原子組裝值，範圍限定嬰兒S/P不銹鋼鎖匙扣，Session 112）✅ 已部署
 │   │   ├── 0043_ig_watchdog_alerts.sql ← IG 看門狗警報表（Session 119）：ig_watchdog_alerts 表 + SECURITY DEFINER RPC fhs_resolve_ig_alert + RLS anon 只讀 + expression UNIQUE INDEX dedup + pg_cron 90天 TTL ✅ 已部署
-│   │   └── 0044_audit_logs.sql ← 綜合審計日誌（Session 124）：audit_logs 表 + RLS anon 只讀 + 3 索引 + RPC fhs_query_audit_logs + 升級 fhs_upsert_cost_config 加寫 audit（原子同交易）✅ 已部署
+│   │   ├── 0044_audit_logs.sql ← 綜合審計日誌（Session 124）：audit_logs 表 + RLS anon 只讀 + 3 索引 + RPC fhs_query_audit_logs + 升級 fhs_upsert_cost_config 加寫 audit（原子同交易）✅ 已部署
+│   │   ├── 0045_keychain_cost_rpc.sql ← S124 v2：fhs_compute_keychain_cost(material, qty, drawing_fee) RPC，加購鎖匙扣成本單一真源（N飾維度，Session 124）✅ 已部署
+│   │   └── 0046_drift_function_n_figurines.sql ← S124 v2：fhs_check_product_cost_drift() N飾擴充，比對公式由 flat(185/235) 改為 fhs_compute_keychain_cost 動態計算（Session 124）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

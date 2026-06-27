@@ -14,6 +14,40 @@ note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Ar
 > - **Dashboard Proto**: V36–V42（前端介面）
 > - **System Architecture**: v1.4.x（AGENTS.md 憲法層）
 
+## [S125] — 2026-06-27 (Session 125 — Task A 收斂結案 + S124 v2 落盤)
+
+### Task A 架構分析與收斂決策
+
+**八維度分析結果（S125 cl-flow 規劃）**：
+- **品項層四欄（drawing/printing/chain/shipping_cost）→ 正式廢欄**：live查實80列中74-76列為0/NULL，Audit Ledger S103起已改用訂單層分類欄（handmodel/keychain/necklace_cost），無有效消費者。保留欄位不DROP（n8n Mirror Prep仍INSERT），停止補寫投資。
+- **21裸列NULL-subtotal → defer**：2026-05-10~05-24早期列，product_sku/item_base_cost/subtotal_cost全NULL；財務真理於訂單層完整；Audit Ledger已誠實顯示藍色待補錄。Phase 2重構時一併處理。
+- **點4加購鎖匙扣 → 結案**：S124 v2已完成（migration 0045/0046 live + 9單回填 + finance-auditor PASS）；前向路徑對所有已發生訂單正確（全為嬰兒不銹鋼，products已為per-set值）。
+- **非嬰兒不銹鋼家族products flat → 預防backlog**：降級為觸發式backlog（等真實訂單出現或Fat Mo確認各tier公式，再擴fhs_check_product_cost_drift覆蓋）。
+
+**S124 v2 落盤**：migration 0045/0046 + completion report + 後效稽核文件（Finance Bible/System Logic/decisions/repo-map/CHANGELOG）一併提交。
+
+---
+
+## [S124-v2] — 2026-06-26 (Session 124 — 加購鎖匙扣成本 N飾維度修復)
+
+### Supabase migrations 0045/0046 + products 線B + 9單線C回填 + n8n V47.18
+
+**根因（雙根因）**：
+- `products.total_base_cost` 全 N飾 variant 存 flat 185/235，未依 item_per_set 縮放
+- Finance Bible §G2 範例 stale（物料 $95→應為 $115，subtotal 含/不含運費語義不清）
+
+**修復**：
+- `FHS_Finance_Bible.md` §G2 例子校正：物料 $115，subtotal_cost 不含運費，附 4 件訂單完整對賬示例
+- `migration 0045`：CREATE `fhs_compute_keychain_cost(material, qty, drawing_fee)` RPC — 加購鎖匙扣成本單一真源
+- 線B `products` UPDATE：41 rows 嬰兒不銹鋼 S/P N飾，`total_base_cost` 改為 `fhs_compute_keychain_cost` 動態值（1飾加購=125, 4飾加購=500 等）
+- 線C 9單回填：14 rows `order_items`（嬰兒鎖匙扣）+ 9 rows `orders`（keychain_cost/total_cost/net_profit） + 9 rows `audit_logs`；家庭(S2)超出範圍保留原值
+- `n8n V47.18`：Calculate Profit & Pack Items 注釋確認 per-set 語義，無功能改動
+- `migration 0046`：`fhs_check_product_cost_drift()` N飾維度擴充，比對公式由 flat→`fhs_compute_keychain_cost(material, item_per_set, drawing_fee)`
+
+**安全守護**（全程無違反）：`final_sale_price / deposit / balance / additional_fee` 真理欄位未動
+
+---
+
 ## [V42-patch4] — 2026-06-12 (Session 97 — split box focusout restore + 全部半訂 force fix)
 
 ### Dashboard V42 — 支付拆格 UX Bug 修復
