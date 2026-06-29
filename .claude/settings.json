@@ -141,7 +141,8 @@
       "Bash(node scripts/cl-flow-runner.js --quick \"修改 _buildSplitIgLine\\(prefix,field,total,pureNumeric\\)：當 window._fhsPaySimpMode===true 時，改用 _fhsAggregateByCat\\(field\\) 三類小計格式輸出付款行（P→手模+配件、K→鎖匙扣、M→頸鏈吊飾），三類全0則 fallback 原逐件格式；pureNumeric=true 只輸出數字，false 輸出類別名稱+金額\")",
       "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('artifacts/2026-06-29-2036/state.json','utf8'\\); const j=JSON.parse\\(s\\); j.execution_status='locked'; require\\('fs'\\).writeFileSync\\('artifacts/2026-06-29-2036/state.json', JSON.stringify\\(j, null, 2\\)\\); console.log\\('locked'\\);\")",
       "Bash(grep -v \"//\\\\|window\\\\._fhsPaySimpMode\\\\|_fhsPaySimpMode =\")",
-      "Bash(grep -v \"//\\\\|window\\\\._fhsPaySimpMode\\\\|_fhsPaySimpMode =\\\\|comment\\\\|注\")"
+      "Bash(grep -v \"//\\\\|window\\\\._fhsPaySimpMode\\\\|_fhsPaySimpMode =\\\\|comment\\\\|注\")",
+      "PowerShell(cd \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\"; powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
