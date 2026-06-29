@@ -95,6 +95,42 @@ Suggested_Price_Manual, Drawing_Cost, Printing_Cost, Chain_Cost, Shipping_Cost
 
 `captureFormState()` 核心邏輯**不可修改**（n8n webhook 掛鉤 + Raw_Form_State 不可侵犯）。
 
+### 2.5 付款分攤 UI — 三大類簡化模式（Session 126，2026-06-29）
+
+**函式**：`renderPaymentSplits` / `_fhsAllocateSimplified` / `_fhsAggregateByCat` / `_fhsTogglePaySimpMode` / `_fhsBuildCatFormula` / `_fhsRefreshSimplifiedView`
+
+**兩種輸入模式**（toggle 按鈕切換，UI-only，不影響序列化）：
+- **細分（預設）**：每件逐部位 split-box（box-cat-P/K/M），現有邏輯不變
+- **三大類**：① 手模擺設+配件（cat-P）② 鎖匙扣（cat-K）③ 頸鏈吊飾（cat-M）各一格；預設**唯讀鏡像**顯示三類聚合現值；✏️ 解鎖 → inline 確認 → 整百最大餘數分攤回填底層 box
+
+**分攤演算法（`_fhsAllocateSimplified`）**：
+- $100 單位 largest-remainder：`floor(raw/100)*100` → 按小數部分遞減分配 $100 剩餘 → 不足百補至最大分數 box
+- Σ 精確守衛（`allocs[0] += total - Σallocs`）
+- 零權重 fallback：等權整百分攤
+
+**序列化契約（不變）**：
+- 寫穿走 `dispatchEvent('input')` → `recalcSplitSum` → `serializeSplits` → `#depositSplitData`/`#balanceSplitData` JSON
+- `captureFormState`/`raw_form_state`/n8n/舊單還原零感知
+- 簡化 input 無 id/name/非 `.split-box-input`（防 recalcSplitSum 雙計）
+
+**守衛繼承**：S92 isDefault 載入保護、S97 force、S101 restoreSplits innerHTML 清空、S107 `_fhsSplitRestoreSnapshot`
+
+**算式顯示（`_fhsBuildCatFormula`，Session 126 追加）**：
+- 三大類模式下，每個類別標籤下方顯示建議價組成算式，如 `$860×4`（同值合併）或 `$2380+$860`（異值展開）
+- 資料來源：`depositSplitContainer .split-box.box-cat-{P/K/M} .quick-half-btn[data-suggested]`（建議價，非已付值）
+- 算式為純顯示層（`<span class="fhsPaySimp_formula">`），無 id/name/input，captureFormState 零感知
+- `_fhsRefreshSimplifiedView` 更新時同步刷新算式
+
+**IG 訊息【付款資料】格式（`_buildSplitIgLine` 分支，Session 126 追加）**：
+- 簡化模式啟用時，付款行改為三類小計：`pureNumeric=false` → `已付訂金：手模+配件$X+鎖匙扣$Y+頸鏈吊飾$Z=$T`；`pureNumeric=true` → `X+Y+Z=$T`
+- 三類全 0 時 fallback 原逐件格式；細分模式行為不變
+
+**UI 標籤與顏色（Session 126 追加）**：
+- Toggle 按鈕：`⊞ 簡化`（進入簡化模式）/ `≡ 逐件`（返回逐件明細）——操作者語言，取代「三大類/細分」
+- 鎖匙扣（box-cat-K）配色：`#E3F2FD` / `#1565C0`（鋼藍）；P=橙、M=紫、K=藍，三類視覺分離
+
+**kgov 同步點**：修改 `renderPaymentSplits`/`_quickHalfFillAllSplits`/`_quickFillAllSplits`/`restoreSplits` 時需補呼 `_fhsRefreshSimplifiedView()`。
+
 ---
 
 ## 三、n8n 工作流邏輯（V47.16）
@@ -581,5 +617,5 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 |-------|------|------|
 | 1a | Migration 0043（表 + RPC + RLS）| ✅ 已部署 |
 | 2 | V42 igwatch 模式 | ✅ 已上線 |
-| 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ✅ 已部署修復（S125）versionId=3c270179；新增 Has Alerts? IF 守衛（alerts.length > 0），防空陣列 POST → PostgREST "Could not find the '[]' column" 錯誤；Exec 4022（2026-06-26 06:00 HKT）因此 bug 失敗已確認；修復後首次驗證待 2026-06-27 06:00 HKT Cron |
-| 3 | Telegram 訊息附 V42 deep-link URL | ⏳ Phase 1b 後 |
+| 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ✅ 已驗收（S125）Exec 4034（2026-06-29 06:00 HKT）17/17節點全通過；OAuth 根因=Google Cloud OAuth app 處於 Testing 模式（refresh token 7天失效）→ 已發布為 Production；versionId=1a2632e1 |
+| 3 | Telegram 訊息附 V42 deep-link URL | ✅ 已完成（S125）tg2 text 加深連結：alerts>0時每個 created_incomplete/not_created alert 附 `🔗 order_id: https://.../current.html?view=igwatch&orderId=xxx`；versionId=1a2632e1 |

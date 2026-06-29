@@ -1,10 +1,10 @@
 ﻿```handoff
-【FHS 交接摘要 — 更新: 2026-06-27 / S125】
-🎯 目標: FHS 業務 POS+財務系統日常維護，現重點=Phase 1b Cron ig_watchdog_alerts 寫入驗證 + 審計日誌 Phase B（訂單層成本修改）
-✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）；(10)Task A四欄(drawing/printing/chain/shipping_cost)=正式廢欄（保留欄位不DROP，停止補寫投資，Audit Ledger已改用訂單層分類欄，S125）；(11)21裸列NULL-subtotal=defer（財務真理於訂單層完整，S125）
-🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（2026-06-25 06:00 HKT，16/16，S122）；audit_logs migration 0044 部署+RPC live（S124 Phase A）；Audit Ledger 呈現優化+NAS current.html 870,991 bytes SHA256=731CD79C(S124)；S124 v2 DONE=migration 0045(fhs_compute_keychain_cost)+0046(drift N飾擴充)+線B products UPDATE 41行+線C 9單回填+audit_logs 9行+finance-auditor三端對賬 9/9 PASS（2026-06-26）；Airtable billing ≈17/day PASS(S123)；Audit Ledger + 審計日誌 tab 視覺驗收 PASS（Fat Mo 實機 2026-06-26）；未驗=Phase 1b 2026-06-26 06:00 HKT Cron 寫入 ig_watchdog_alerts（待查）
-📋 待辦: 🟡Phase 1b Cron寫入驗證（2026-06-26 06:00 HKT已到期，待查執行紀錄） 🟡審計日誌 Phase B(orders.cost_override_locked+fhs_adjust_order_cost+設定中心訂單層修改) ⚪[預防backlog]非嬰兒不銹鋼鎖匙扣家族products flat→等Fat Mo確認各tier公式再擴fhs_check_product_cost_drift覆蓋範圍
-➡️ 下一步: 查 n8n ig_watchdog Phase 1b Cron 執行紀錄（2026-06-26 06:00 HKT是否寫入ig_watchdog_alerts）；之後排審計日誌 Phase B
+【FHS 交接摘要 — 更新: 2026-06-29 / S126】
+🎯 目標: FHS 業務 POS+財務系統日常維護，V42 付款 UI 簡化模式（S126）已落盤；下一重點=NAS 上線驗收 + Phase 1b Cron ig_watchdog_alerts 寫入驗證 + 審計日誌 Phase B
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）；(10)Task A四欄(drawing/printing/chain/shipping_cost)=正式廢欄（保留欄位不DROP，停止補寫投資，Audit Ledger已改用訂單層分類欄，S125）；(11)21裸列NULL-subtotal=defer（財務真理於訂單層完整，S125）；(12)V42 簡化付款按鈕=「⊞ 簡化/≡ 逐件」操作者語言（非三大類/細分），P=橙/K=藍/M=紫，IG訊息付款行三類小計格式（S126）
+🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（2026-06-25 06:00 HKT，16/16，S122）；audit_logs migration 0044 部署+RPC live（S124 Phase A）；Audit Ledger 呈現優化+NAS current.html 870,991 bytes SHA256=731CD79C(S124)；S124 v2 DONE=migration 0045(fhs_compute_keychain_cost)+0046(drift N飾擴充)+線B products UPDATE 41行+線C 9單回填+audit_logs 9行+finance-auditor三端對賬 9/9 PASS（2026-06-26）；Airtable billing ≈17/day PASS(S123)；Audit Ledger + 審計日誌 tab 視覺驗收 PASS（Fat Mo 實機 2026-06-26）；未驗=Phase 1b 2026-06-26 06:00 HKT Cron 寫入 ig_watchdog_alerts（待查）；V42 S126 簡化付款 UI 待 Fat Mo 瀏覽器驗收後 /upload-web
+📋 待辦: 🟡V42 S126 Fat Mo 瀏覽器驗收→/upload-web NAS 上線 🟡Phase 1b Cron寫入驗證（2026-06-26 06:00 HKT已到期，待查執行紀錄） 🟡審計日誌 Phase B(orders.cost_override_locked+fhs_adjust_order_cost+設定中心訂單層修改) ⚪[預防backlog]非嬰兒不銹鋼鎖匙扣家族products flat→等Fat Mo確認各tier公式再擴fhs_check_product_cost_drift覆蓋範圍
+➡️ 下一步: Fat Mo 瀏覽器開 V42 驗收 S126 簡化付款 UI（算式/格式/顏色/標籤）→ /upload-web；之後查 Phase 1b Cron 執行紀錄
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
@@ -18,6 +18,7 @@
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| ✅ 完成 | **[S126] V42 簡化付款 UI** | ✅ 落盤（S126）— 待 Fat Mo 驗收→/upload-web NAS 上線 | ⊞ 簡化/≡ 逐件 toggle；算式顯示；IG訊息付款行三類小計；K藍色；序列化契約零改動 |
 | ✅ 完成 | **[Phase 1b] n8n write node → ig_watchdog_alerts** | ✅ 已部署（S122） | 19節點，wa1（Write Alerts POST）+ tg2（Telegram Data path）；Classify & Report → Write Alerts → Telegram Notify (Data)；build script 補 Drive cred ID + SUPABASE_SERVICE_KEY；versionId=f881031c |
 | ⚪ 低 | **[Phase 3] Telegram 訊息附 V42 deep-link URL** | ⏳ Phase 1b 後 | TG 訊息每筆加 `?view=igwatch&orderId=xxx` 連結，直達 V42 igwatch 模式 |
 | ✅ 結案 | **[Task A] 加購鎖匙扣 N飾成本（點4）** | ✅ S124 v2 完成 | migration 0045(fhs_compute_keychain_cost)+0046(drift N飾)+線B products 41行+線C 9單回填+audit_logs；前向：n8n直讀per-set products值，所有已發生訂單（全為嬰兒不銹鋼）正確 |

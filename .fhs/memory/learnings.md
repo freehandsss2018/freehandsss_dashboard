@@ -77,3 +77,4 @@
 6. **cl-flow A2 模型策略**：統一使用 `gemini-3.5-flash`；模型切換一律透過 `.env GEMINI_A2_MODEL_DEFAULT`，不改代碼 — 源自 2026-05-30
 7. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30
 8. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01
+9. **UI toggle 標籤用操作者語言，技術代號留文件**：「三大類/細分」是實作代號，操作者看不懂；按鈕文字改「簡化/逐件」等口語詞，技術名稱只在 §2.5 文件保留 — S126

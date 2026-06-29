@@ -1,5 +1,10 @@
 ﻿# Session Log
 
+## 2026-06-29 (Session 126 — V42 付款 UI 簡化模式 + 系列優化): 💳 ✅
+
+**Scope**：V42 付款 UI 新增「⊞ 簡化/≡ 逐件」三大類付款模式（v2 唯讀鏡像+明示分攤）：(1) 算式顯示 `_fhsBuildCatFormula`（`$860×4` 同值合併）；(2) IG 訊息【付款資料】三類小計格式（`_buildSplitIgLine` 分支）；(3) 按鈕標籤改為操作者語言（三大類→簡化，細分→逐件）；(4) 鎖匙扣 K 配色改藍（`#E3F2FD/#1565C0`）。§2.5 補 3 項增補。
+**Result**：1 檔 MODIFY（freehandsss_dashboardV42.html）+ Changelog/FHS_System_Logic_Overview/handoff 更新；序列化契約零回歸；待 Fat Mo 瀏覽器驗收→/upload-web。
+
 ## 2026-06-26 (Session 124 /commit — doc sync + ig-watchdog guard): 📋 ✅
 
 **Scope**：/commit post-context-compaction 收尾。(1) `FHS_System_Logic_Overview.md §5.5` 審計日誌新章節（audit_logs schema/RLS/RPC/前端 tab 架構文件）；(2) `build_n8n_workflow.cjs` 加 Has Alerts? IF 守衛節點（防 PostgREST 空陣列報 "Could not find '[]' column"）；(3) `.claude/settings.json` 新增 cl-flow-runner allowlist 條目；kgov-pending flag 清除。

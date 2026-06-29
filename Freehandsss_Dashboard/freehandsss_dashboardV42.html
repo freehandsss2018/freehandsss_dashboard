@@ -270,8 +270,8 @@
             border-bottom: 2px solid #E65100; padding: 2px 5px; border-radius: 3px 3px 0 0;
         }
         .box-cat-K .split-box-label {
-            background: #ECEFF1; color: #37474F;
-            border-bottom: 2px solid #37474F; padding: 2px 5px; border-radius: 3px 3px 0 0;
+            background: #E3F2FD; color: #1565C0;
+            border-bottom: 2px solid #1565C0; padding: 2px 5px; border-radius: 3px 3px 0 0;
         }
         .box-cat-M .split-box-label {
             background: #EDE7F6; color: #4527A0;
@@ -288,6 +288,67 @@
         @media (max-width: 480px) {
             .split-box { min-width: 75px; max-width: 110px; }
             .split-box-input { width: 60px; }
+        }
+
+        /* ── fhsPaySimp: Simplified 3-category payment mode (S126) ── */
+        .fhsPaySimp_toggleBtn {
+            background: #37474F; border: 1px solid #37474F; border-radius: 5px;
+            color: #fff; font-size: 12px; cursor: pointer; padding: 2px 8px;
+        }
+        .fhsPaySimp_toggleBtn:hover { filter: brightness(0.88); }
+        .fhsPaySimp_view {
+            background: #F3F4F6; border: 1px solid #D1D5DB; border-radius: 8px;
+            padding: 10px 12px; margin: 6px 0;
+        }
+        .fhsPaySimp_grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 10px;
+        }
+        .fhsPaySimp_catLabel {
+            font-size: 12px; font-weight: 600; color: #374151;
+            grid-column: 1 / -1; margin-top: 6px; padding-bottom: 2px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .fhsPaySimp_catLabel:first-of-type { margin-top: 0; }
+        .fhsPaySimp_fieldHead {
+            font-size: 11px; color: #6B7280; font-weight: 600; text-align: center;
+        }
+        .fhsPaySimp_cell { display: flex; align-items: center; gap: 3px; }
+        .fhsPaySimp_dollar { font-size: 13px; color: #555; }
+        .fhsPaySimp_input {
+            width: 80px; padding: 4px 5px; border: 1px solid #D1D5DB; border-radius: 4px;
+            font-size: 14px; background: #E9ECEF; color: #555; cursor: default;
+        }
+        .fhsPaySimp_input:not([readonly]) {
+            background: #fff; color: #111; cursor: text; border-color: #2563EB;
+        }
+        .fhsPaySimp_input:disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+        .fhsPaySimp_editBtn {
+            background: #F3F4F6; border: 1px solid #D1D5DB; border-radius: 4px;
+            font-size: 12px; cursor: pointer; padding: 2px 5px; color: #374151; line-height: 1.4;
+        }
+        .fhsPaySimp_editBtn:hover:not(:disabled) { background: #E5E7EB; }
+        .fhsPaySimp_editBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .fhsPaySimp_confirmBar {
+            display: none; margin-top: 8px; padding: 7px 10px; background: #FEF3C7;
+            border: 1px solid #F59E0B; border-radius: 6px; gap: 8px; align-items: center;
+            font-size: 12px; flex-wrap: wrap;
+        }
+        .fhsPaySimp_confirmMsg { flex: 1; color: #92400E; }
+        .fhsPaySimp_confirmOk {
+            background: #D97706; border: 1px solid #B45309; border-radius: 4px;
+            color: #fff; font-size: 12px; cursor: pointer; padding: 3px 10px;
+        }
+        .fhsPaySimp_confirmCancel {
+            background: #F3F4F6; border: 1px solid #D1D5DB; border-radius: 4px;
+            color: #374151; font-size: 12px; cursor: pointer; padding: 3px 10px;
+        }
+        .fhsPaySimp_formula {
+            display: block; font-size: 11px; font-weight: 400; color: #9CA3AF;
+            margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        @media (max-width: 480px) {
+            .fhsPaySimp_grid { grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+            .fhsPaySimp_input { width: 68px; }
         }
 
         .toggle-row {
@@ -3907,11 +3968,75 @@
                 <button type="button" id="fhsHalfFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickHalfFillAllSplits('deposit', true)" style="background:#558B2F;border:1px solid #558B2F;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;">全部半訂</button>
                 <button type="button" id="fhsFullFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickFillAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#666;font-size:12px;cursor:pointer;padding:2px 8px;">全部付清</button>
                 <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
+                <button type="button" id="fhsPaySimpToggle" class="fhsPaySimp_toggleBtn" onclick="_fhsTogglePaySimpMode()">⊞ 簡化</button>
             </div>
             <div id="depositSplitContainer" class="payment-split-row"></div>
             <input type="hidden" id="deposit" value="0">
             <input type="hidden" id="depositSplitData" value="">
         </div>
+
+        <!-- fhsPaySimp: Simplified 3-category view (S126) — hidden by default -->
+        <div id="fhsPaySimp_view" class="fhsPaySimp_view" style="display:none">
+            <div class="fhsPaySimp_grid">
+                <div></div>
+                <div class="fhsPaySimp_fieldHead">已付訂金</div>
+                <div class="fhsPaySimp_fieldHead">未付尾數</div>
+
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelP" style="background:#FFF3E0;color:#E65100;padding:2px 6px;border-radius:3px;border-bottom:none;">① 手模擺設 + 配件<span id="fhsPaySimp_formula_P" class="fhsPaySimp_formula"></span></div>
+                <div class="fhsPaySimp_cell">
+                    <span class="fhsPaySimp_dollar">$</span>
+                    <input type="number" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="deposit" inputmode="numeric" readonly placeholder="0"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
+                        onblur="_fhsSimpInputBlur(this)">
+                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="P" data-simpfield="deposit" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
+                </div>
+                <div class="fhsPaySimp_cell">
+                    <span class="fhsPaySimp_dollar">$</span>
+                    <input type="number" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="balance" inputmode="numeric" readonly placeholder="0"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
+                        onblur="_fhsSimpInputBlur(this)">
+                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="P" data-simpfield="balance" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
+                </div>
+
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelK" style="background:#E3F2FD;color:#1565C0;padding:2px 6px;border-radius:3px;border-bottom:none;">② 鎖匙扣<span id="fhsPaySimp_formula_K" class="fhsPaySimp_formula"></span></div>
+                <div class="fhsPaySimp_cell">
+                    <span class="fhsPaySimp_dollar">$</span>
+                    <input type="number" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="deposit" inputmode="numeric" readonly placeholder="0"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
+                        onblur="_fhsSimpInputBlur(this)">
+                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="K" data-simpfield="deposit" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
+                </div>
+                <div class="fhsPaySimp_cell">
+                    <span class="fhsPaySimp_dollar">$</span>
+                    <input type="number" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="balance" inputmode="numeric" readonly placeholder="0"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
+                        onblur="_fhsSimpInputBlur(this)">
+                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="K" data-simpfield="balance" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
+                </div>
+
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelM" style="background:#EDE7F6;color:#4527A0;padding:2px 6px;border-radius:3px;border-bottom:none;">③ 頸鏈吊飾<span id="fhsPaySimp_formula_M" class="fhsPaySimp_formula"></span></div>
+                <div class="fhsPaySimp_cell">
+                    <span class="fhsPaySimp_dollar">$</span>
+                    <input type="number" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="deposit" inputmode="numeric" readonly placeholder="0"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
+                        onblur="_fhsSimpInputBlur(this)">
+                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="M" data-simpfield="deposit" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
+                </div>
+                <div class="fhsPaySimp_cell">
+                    <span class="fhsPaySimp_dollar">$</span>
+                    <input type="number" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="balance" inputmode="numeric" readonly placeholder="0"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
+                        onblur="_fhsSimpInputBlur(this)">
+                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="M" data-simpfield="balance" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
+                </div>
+            </div>
+            <div id="fhsPaySimp_confirmBar" class="fhsPaySimp_confirmBar">
+                <span class="fhsPaySimp_confirmMsg"></span>
+                <button type="button" class="fhsPaySimp_confirmOk" onclick="_fhsSimpConfirmAlloc()">確認分攤</button>
+                <button type="button" class="fhsPaySimp_confirmCancel" onclick="_fhsSimpCancelAlloc()">取消</button>
+            </div>
+        </div>
+
         <div class="form-group">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                 <label style="font-weight:600;margin:0;">未付尾數</label>
@@ -5734,6 +5859,23 @@
 
         // v2：新版精簡格式（只影響 Category A，不碰共用 custInfo/finInfo/disclaimer）
         function _buildSplitIgLine(prefix, field, total, pureNumeric) {
+            if (window._fhsPaySimpMode && typeof _fhsAggregateByCat === 'function') {
+                const agg = _fhsAggregateByCat(field);
+                const catMap = [
+                    { cat: 'P', label: '手模+配件' },
+                    { cat: 'K', label: '鎖匙扣' },
+                    { cat: 'M', label: '頸鏈吊飾' }
+                ];
+                const simpParts = [];
+                catMap.forEach(function(c) {
+                    const v = agg[c.cat] || 0;
+                    if (v > 0) simpParts.push(pureNumeric ? String(v) : c.label + '$' + v);
+                });
+                if (simpParts.length > 0) {
+                    if (simpParts.length === 1) return prefix + '：$' + total;
+                    return prefix + '：' + simpParts.join('+') + '=$' + total;
+                }
+            }
             const container = document.getElementById(field + 'SplitContainer');
             if (!container) return prefix + '：' + (total && total !== '0' ? '$' + total : '');
             const parts = [];
@@ -11067,6 +11209,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             container.innerHTML = '';
             container.appendChild(frag);
             recalcSplitSum(field);
+            if (window._fhsPaySimpMode && typeof _fhsRefreshSimplifiedView === 'function') {
+                setTimeout(_fhsRefreshSimplifiedView, 0);
+            }
         }
 
         var _fhsPaymentSyncing = false;
@@ -11288,6 +11433,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 c.querySelectorAll('.quick-fill-btn').forEach(function(b) {
                     if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(c, b.dataset.boxkey, 'full');
                 });
+                if (window._fhsPaySimpMode && typeof _fhsRefreshSimplifiedView === 'function') _fhsRefreshSimplifiedView();
             }, 0);
         }
         window._quickFillAllSplits = _quickFillAllSplits;
@@ -11364,6 +11510,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 c.querySelectorAll('.quick-half-btn').forEach(function(b) {
                     if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(c, b.dataset.boxkey, 'half');
                 });
+                if (window._fhsPaySimpMode && typeof _fhsRefreshSimplifiedView === 'function') _fhsRefreshSimplifiedView();
             }, 0);
         }
         window._quickHalfFillAllSplits = _quickHalfFillAllSplits;
@@ -11377,6 +11524,266 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             });
         }
         window._quickClearAllSplits = _quickClearAllSplits;
+
+        // ═══════════════════════════════════════════════════════════
+        // fhsPaySimp — Simplified 3-category payment mode (S126)
+        // Readonly mirror by default; explicit edit → $100-unit
+        // largest-remainder allocation → writes through to split boxes
+        // via dispatchEvent('input') → existing serialize/sync untouched.
+        // ═══════════════════════════════════════════════════════════
+
+        window._fhsPaySimpMode = false;
+        window._fhsPaySimpPending = null;
+
+        // Aggregate current box values by CSS category class
+        function _fhsAggregateByCat(field) {
+            var result = { P: 0, K: 0, M: 0 };
+            var container = document.getElementById(field + 'SplitContainer');
+            if (!container) return result;
+            container.querySelectorAll('.split-box').forEach(function(box) {
+                var inp = box.querySelector('.split-box-input');
+                if (!inp) return;
+                var val = Number(inp.value) || 0;
+                if (box.classList.contains('box-cat-P')) result.P += val;
+                else if (box.classList.contains('box-cat-K')) result.K += val;
+                else if (box.classList.contains('box-cat-M')) result.M += val;
+            });
+            return result;
+        }
+        window._fhsAggregateByCat = _fhsAggregateByCat;
+
+        // $100-unit largest-remainder allocation; Σ exactly equals total
+        function _fhsAllocateSimplified(field, cat, total) {
+            total = Math.round(Number(total)) || 0;
+            if (total < 0) total = 0;
+            var container = document.getElementById(field + 'SplitContainer');
+            if (!container) return;
+            var catClass = 'box-cat-' + cat;
+            var boxes = [];
+            container.querySelectorAll('.split-box.' + catClass).forEach(function(box) {
+                var inp = box.querySelector('.split-box-input');
+                if (!inp) return;
+                var suggested = 0;
+                var halfBtn = box.querySelector('.quick-half-btn');
+                if (halfBtn) suggested = Number(halfBtn.dataset.suggested) || 0;
+                boxes.push({ inp: inp, suggested: suggested });
+            });
+            if (!boxes.length) return;
+            var N = boxes.length;
+            var totalW = boxes.reduce(function(s, b) { return s + b.suggested; }, 0);
+            var allocs;
+            if (totalW === 0) {
+                // Equal weight, $100 unit
+                var base = Math.floor(total / 100 / N) * 100;
+                var rem = total - base * N;
+                allocs = boxes.map(function() { return base; });
+                var unit = rem >= 100 ? 100 : 1;
+                var steps = unit > 0 ? Math.round(rem / unit) : 0;
+                for (var i = 0; i < steps && i < N; i++) allocs[i] += unit;
+            } else {
+                // $100-unit largest remainder
+                var raws = boxes.map(function(b) { return total * b.suggested / totalW; });
+                var floors = raws.map(function(r) { return Math.floor(r / 100) * 100; });
+                var floorSum = floors.reduce(function(s, v) { return s + v; }, 0);
+                var remainder = total - floorSum;
+                var rem100 = Math.floor(remainder / 100) * 100;
+                var residue = remainder - rem100;
+                var fracParts = raws.map(function(r, idx) { return { idx: idx, frac: r - floors[idx] }; });
+                fracParts.sort(function(a, b) { return b.frac - a.frac; });
+                allocs = floors.slice();
+                var steps100 = Math.round(rem100 / 100);
+                for (var j = 0; j < steps100 && j < N; j++) allocs[fracParts[j].idx] += 100;
+                if (residue > 0) allocs[fracParts[0].idx] += residue;
+            }
+            // Guarantee Σ = total (float guard)
+            var allocSum = allocs.reduce(function(s, v) { return s + v; }, 0);
+            if (allocSum !== total) allocs[0] += (total - allocSum);
+            // Write through existing split-box inputs → triggers recalcSplitSum/serializeSplits
+            boxes.forEach(function(b, i) {
+                b.inp.value = allocs[i];
+                b.inp.dataset.isDefault = 'false';
+                b.inp.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        }
+        window._fhsAllocateSimplified = _fhsAllocateSimplified;
+
+        // Refresh readonly mirrors from aggregated box values (focus guard: skip active input)
+        function _fhsRefreshSimplifiedView() {
+            if (!window._fhsPaySimpMode) return;
+            var active = document.activeElement;
+            ['deposit', 'balance'].forEach(function(field) {
+                var agg = _fhsAggregateByCat(field);
+                ['P', 'K', 'M'].forEach(function(cat) {
+                    var inp = document.querySelector('.fhsPaySimp_input[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
+                    if (!inp || inp === active) return;
+                    if (inp.readOnly) inp.value = agg[cat] || '';
+                });
+            });
+            _fhsUpdateSimpCatAvailability();
+            ['P', 'K', 'M'].forEach(function(cat) {
+                var fEl = document.getElementById('fhsPaySimp_formula_' + cat);
+                if (fEl) fEl.textContent = _fhsBuildCatFormula(cat);
+            });
+        }
+        window._fhsRefreshSimplifiedView = _fhsRefreshSimplifiedView;
+
+        function _fhsUpdateSimpCatAvailability() {
+            var container = document.getElementById('depositSplitContainer');
+            if (!container) return;
+            ['P', 'K', 'M'].forEach(function(cat) {
+                var hasBoxes = container.querySelectorAll('.split-box.box-cat-' + cat).length > 0;
+                ['deposit', 'balance'].forEach(function(field) {
+                    var inp = document.querySelector('.fhsPaySimp_input[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
+                    var btn = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
+                    if (!inp) return;
+                    inp.disabled = !hasBoxes;
+                    inp.placeholder = hasBoxes ? '0' : '（無此類）';
+                    if (!hasBoxes) inp.value = '';
+                    if (btn) btn.disabled = !hasBoxes;
+                });
+            });
+        }
+        window._fhsUpdateSimpCatAvailability = _fhsUpdateSimpCatAvailability;
+
+        // Build suggested-price formula string for a category, e.g. "$860×4" or "$2380+$860"
+        function _fhsBuildCatFormula(cat) {
+            var container = document.getElementById('depositSplitContainer');
+            if (!container) return '';
+            var btns = container.querySelectorAll('.split-box.box-cat-' + cat + ' .quick-half-btn[data-suggested]');
+            if (!btns.length) return '';
+            var vals = Array.from(btns).map(function(b) {
+                return parseInt(b.dataset.suggested, 10) || 0;
+            }).filter(function(v) { return v > 0; });
+            if (!vals.length) return '';
+            var groups = [];
+            vals.forEach(function(v) {
+                var last = groups[groups.length - 1];
+                if (last && last.val === v) { last.count++; }
+                else { groups.push({ val: v, count: 1 }); }
+            });
+            return '$' + groups.map(function(g) {
+                return g.count > 1 ? g.val + '×' + g.count : '' + g.val;
+            }).join('+$');
+        }
+        window._fhsBuildCatFormula = _fhsBuildCatFormula;
+
+        // Toggle between detail (細分) and simplified (三大類) mode
+        function _fhsTogglePaySimpMode() {
+            window._fhsPaySimpMode = !window._fhsPaySimpMode;
+            var simpView = document.getElementById('fhsPaySimp_view');
+            var depCont = document.getElementById('depositSplitContainer');
+            var balCont = document.getElementById('balanceSplitContainer');
+            var toggleBtn = document.getElementById('fhsPaySimpToggle');
+            if (window._fhsPaySimpMode) {
+                if (simpView) simpView.style.display = '';
+                if (depCont) depCont.style.display = 'none';
+                if (balCont) balCont.style.display = 'none';
+                if (toggleBtn) { toggleBtn.textContent = '≡ 逐件'; toggleBtn.style.background = '#1565C0'; toggleBtn.style.borderColor = '#1565C0'; }
+                _fhsRefreshSimplifiedView();
+            } else {
+                _fhsSimpCancelAlloc();
+                if (simpView) simpView.style.display = 'none';
+                if (depCont) depCont.style.display = '';
+                if (balCont) balCont.style.display = '';
+                if (toggleBtn) { toggleBtn.textContent = '⊞ 簡化'; toggleBtn.style.background = '#37474F'; toggleBtn.style.borderColor = '#37474F'; }
+            }
+        }
+        window._fhsTogglePaySimpMode = _fhsTogglePaySimpMode;
+
+        // Unlock a simplified input for editing
+        function _fhsSimpEditToggle(btn) {
+            var cat = btn.dataset.simpcat;
+            var field = btn.dataset.simpfield;
+            var inp = document.querySelector('.fhsPaySimp_input[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
+            if (!inp || inp.disabled) return;
+            if (!inp.readOnly) {
+                // Already editing → cancel
+                _fhsSimpCancelAlloc();
+                return;
+            }
+            _fhsSimpCancelAlloc(); // cancel any other pending
+            inp.readOnly = false;
+            inp.style.background = '';
+            inp.focus();
+            btn.textContent = '↩';
+            btn.style.background = '#E53935';
+            btn.style.color = '#fff';
+            btn.style.borderColor = '#E53935';
+        }
+        window._fhsSimpEditToggle = _fhsSimpEditToggle;
+
+        // Called on blur; show confirm bar if value changed
+        function _fhsSimpInputBlur(inp) {
+            if (inp.readOnly) return;
+            // Small delay so confirm button click fires before blur closes
+            setTimeout(function() {
+                if (inp.readOnly) return; // already cancelled
+                _fhsSimpInputCommit(inp);
+            }, 120);
+        }
+        window._fhsSimpInputBlur = _fhsSimpInputBlur;
+
+        function _fhsSimpInputCommit(inp) {
+            if (inp.readOnly) return;
+            var cat = inp.dataset.simpcat;
+            var field = inp.dataset.simpfield;
+            var total = Math.round(Number(inp.value)) || 0;
+            var container = document.getElementById(field + 'SplitContainer');
+            var catCount = container ? container.querySelectorAll('.split-box.box-cat-' + cat).length : 0;
+            if (!catCount) { _fhsSimpCancelAlloc(); return; }
+            var catNames = { P: '手模擺設+配件', K: '鎖匙扣', M: '頸鏈吊飾' };
+            var fieldNames = { deposit: '已付訂金', balance: '未付尾數' };
+            window._fhsPaySimpPending = { cat: cat, field: field, total: total, inp: inp };
+            var bar = document.getElementById('fhsPaySimp_confirmBar');
+            if (bar) {
+                bar.querySelector('.fhsPaySimp_confirmMsg').textContent =
+                    '⚠️ 將按整百比例重新分攤「' + catNames[cat] + ' · ' + fieldNames[field] + '」共 ' + catCount + ' 件，覆蓋現有逐件';
+                bar.style.display = 'flex';
+            }
+        }
+        window._fhsSimpInputCommit = _fhsSimpInputCommit;
+
+        function _fhsSimpConfirmAlloc() {
+            var p = window._fhsPaySimpPending;
+            if (!p) return;
+            _fhsAllocateSimplified(p.field, p.cat, p.total);
+            // Lock back to readonly mirror
+            if (p.inp) {
+                p.inp.readOnly = true;
+                p.inp.style.background = '';
+                var agg = _fhsAggregateByCat(p.field);
+                p.inp.value = agg[p.cat] || '';
+            }
+            var editBtn = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + p.cat + '"][data-simpfield="' + p.field + '"]');
+            if (editBtn) { editBtn.textContent = '✏️'; editBtn.style.background = ''; editBtn.style.color = ''; editBtn.style.borderColor = ''; }
+            window._fhsPaySimpPending = null;
+            var bar = document.getElementById('fhsPaySimp_confirmBar');
+            if (bar) bar.style.display = 'none';
+        }
+        window._fhsSimpConfirmAlloc = _fhsSimpConfirmAlloc;
+
+        function _fhsSimpCancelAlloc() {
+            var p = window._fhsPaySimpPending;
+            if (p && p.inp) {
+                p.inp.readOnly = true;
+                p.inp.style.background = '';
+                var agg = _fhsAggregateByCat(p.field);
+                p.inp.value = agg[p.cat] || '';
+                var editBtn = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + p.cat + '"][data-simpfield="' + p.field + '"]');
+                if (editBtn) { editBtn.textContent = '✏️'; editBtn.style.background = ''; editBtn.style.color = ''; editBtn.style.borderColor = ''; }
+            }
+            window._fhsPaySimpPending = null;
+            var bar = document.getElementById('fhsPaySimp_confirmBar');
+            if (bar) bar.style.display = 'none';
+            // Re-lock any other unlocked inputs
+            document.querySelectorAll('.fhsPaySimp_input:not([readonly])').forEach(function(inp) {
+                inp.readOnly = true; inp.style.background = '';
+            });
+            document.querySelectorAll('.fhsPaySimp_editBtn').forEach(function(b) {
+                b.textContent = '✏️'; b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
+            });
+        }
+        window._fhsSimpCancelAlloc = _fhsSimpCancelAlloc;
 
         function serializeSplits(field) {
             const container = document.getElementById(field + 'SplitContainer');
@@ -11404,6 +11811,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             } finally {
                 _fhsPaymentSyncing = _prevSyncing;
                 window._fhsSplitRestoreSnapshot = null; // 還原閉區間結束，清快照
+            }
+            if (window._fhsPaySimpMode && typeof _fhsRefreshSimplifiedView === 'function') {
+                setTimeout(_fhsRefreshSimplifiedView, 0);
             }
         }
 

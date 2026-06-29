@@ -1,5 +1,84 @@
 ﻿# Changelog
 
+## [2026-06-29] 🎨 Session 126 追加 — 付款 UI 標籤優化 + 鎖匙扣藍色
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS 2 處 + HTML 2 處 + JS 2 處）
+
+### [UX] 按鈕文字改為操作者語言
+- `⊞ 三大類` → `⊞ 簡化`（切換到分類付款模式）
+- `≡ 細分` → `≡ 逐件`（切換回逐件明細模式）
+- confirm bar 警告文字「覆蓋現有細分」→「覆蓋現有逐件」
+
+### [STYLE] 鎖匙扣（box-cat-K）配色改為藍色
+- 原：`#ECEFF1` bg / `#37474F` 文字+邊框（灰）
+- 改：`#E3F2FD` bg / `#1565C0` 文字+邊框（鋼藍）
+- 同步更新 simpView catLabel K inline style
+
+---
+
+## [2026-06-29] 💬 Session 126 追加 — 三大類模式【付款資料】訊息格式
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`_buildSplitIgLine` 單函式分支）
+**流程**：`/cl-flow-fast`（flow 2026-06-29-2036）→ `/execute`
+
+### [FEAT] IG 訊息【付款資料】跟隨三大類模式
+- 三大類模式啟用時，Category A/B 訊息的付款行改為三類小計格式：
+  - `pureNumeric=false`：`已付訂金：手模+配件$1190+鎖匙扣$1720+頸鏈吊飾$2980=$5890`
+  - `pureNumeric=true`：`已付訂金：1190+1720+2980=$5890`
+- 三類金額均為 0 時 fallback 回原逐件格式
+- 細分模式（`_fhsPaySimpMode=false`）行為完全不變
+
+---
+
+## [2026-06-29] 🔢 Session 126 追加 — 三大類算式顯示（建議價組成）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS + HTML + JS，純顯示層加法）
+**流程**：`/cl-flow-fast`（flow 2026-06-29-1956）→ Option A 選定 → `/execute`
+
+### [FEAT] 三大類類別標籤下顯示算式
+- 每個類別標籤下新增灰色算式 sub-text（`fhsPaySimp_formula_P/K/M`）
+- 算式顯示建議價組成：同值合併 `$860×4`，異值展開 `$2380+$860`，混合 `$860×2+$2380`
+- 資料來源：`depositSplitContainer` 內 `.quick-half-btn[data-suggested]`（建議價，非已付值）
+- 算式零值 box 自動過濾（data-suggested=0 不顯示）
+- 長算式 `text-overflow: ellipsis` 防破版
+- `_fhsRefreshSimplifiedView` 更新時同步刷新算式
+
+---
+
+## [2026-06-29] 💳 Session 126 — 付款 UI 簡化三大類模式（v2 唯讀鏡像 + 明示分攤）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS + HTML + JS，純加法）
+**流程**：`/cl-flow-fast`（flow 2026-06-28-2309）→ 八維度分析 v2 定案 → `/execute`
+
+### [FEAT] 付款 UI 新增「⊞ 三大類」切換模式
+- 「全部半訂」旁新增 **⊞ 三大類** / **≡ 細分** toggle 按鈕
+- 切換後顯示三格×2（已付訂金/未付尾數）精簡輸入區，免逐部位（左手/右手/左腳/右腳）細分
+- 三大類歸屬：① 手模擺設+配件（box-cat-P）② 鎖匙扣（box-cat-K）③ 頸鏈吊飾（box-cat-M）
+
+### [DESIGN] v2 唯讀鏡像 + 明示式分攤（自我批評 3 弱點修正）
+- **預設唯讀**：簡化框灰底只讀，顯示三類聚合現值（鏡像，非破壞）
+- **明示編輯**：✏️ 按鈕解鎖該類，輸入後 inline 黃色確認條「⚠️ 將按整百比例重新分攤 N 件，覆蓋現有細分」→ 確認才分攤
+- **聚焦守衛**：`_fhsRefreshSimplifiedView` 跳過 `document.activeElement`（防 auto 覆寫用戶輸入，S92 精神延伸）
+- **無此類自動 disabled**：本單無該類 box → 對應格 disabled + 顯示「（無此類）」
+
+### [ALGO] $100-unit 整百最大餘數分攤（`_fhsAllocateSimplified`）
+- 先按 $100 單位依建議價比例 floor 分攤；餘額以 $100 步進補至最大小數部分 box；不足百剩餘補至同 box
+- 零權重 fallback：等權整百分攤
+- Σ 浮點修正守衛（`allocs[0] += diff`）
+- **寫穿走 `dispatchEvent('input')`**→ 復用既有 `recalcSplitSum`/`serializeSplits`/deposit↔balance sync，序列化契約不變
+
+### [COMPAT] 既有守衛全繼承
+- `captureFormState`/`raw_form_state`/`#depositSplitData`/`#balanceSplitData` 零感知
+- S92 isDefault 載入保護、S97 force、S101 restoreSplits、S107 `_fhsSplitRestoreSnapshot` 全繼承
+- 新函式皆 `window.fn=fn` 暴露（P9 IIFE 規則）；`fhsPaySimp_input` 無 id/name/非 `.split-box-input`（防雙計）
+
+### [VERIFY] Node smoke test 11/11 PASS
+- T7 坐實：4件×$860，total=$1000 → [300,300,200,200]（整百且 Σ=1000）
+- T2：混合權重 2380+4×860，$3000 → [1200,500,500,400,400] Σ=3000
+- 零權重/單件/total=0/奇數尾差 全通
+
+---
+
 ## [2026-06-26] 💰 Session 124 — Audit Ledger 財務呈現優化（三區塊分隔 + 品項可展開明細 + 數量誠實警示）
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS 1 處 + `buildAuditLedgerHtml` 5 處）、`.fhs/notes/FHS_System_Logic_Overview.md`（§九）

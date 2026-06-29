@@ -517,8 +517,8 @@ const workflow = {
       credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
     },
     {
-      // 資料路徑接的 Telegram，讀 cr1 的 summary（從 Has Alerts? true/false 兩分支皆可到達）
-      parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: "={{ $('Classify & Report').first().json.summary }}", replyMarkup: 'none', additionalFields: {} },
+      // 資料路徑接的 Telegram，讀 cr1 的 summary + Phase 3 深連結（alerts > 0 時附 V42 igwatch 連結）
+      parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: "={{ $('Classify & Report').first().json.summary + $('Classify & Report').first().json.alerts.filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created')).map(a => '\\n🔗 ' + a.order_id + ': https://yanhei.synology.me:5006/web/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id).join('') }}", replyMarkup: 'none', additionalFields: {} },
       id: 'tg2', name: 'Telegram Notify (Data)', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3720, 300],
       credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
     },
