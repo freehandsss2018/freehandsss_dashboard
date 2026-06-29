@@ -142,7 +142,8 @@
       "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('artifacts/2026-06-29-2036/state.json','utf8'\\); const j=JSON.parse\\(s\\); j.execution_status='locked'; require\\('fs'\\).writeFileSync\\('artifacts/2026-06-29-2036/state.json', JSON.stringify\\(j, null, 2\\)\\); console.log\\('locked'\\);\")",
       "Bash(grep -v \"//\\\\|window\\\\._fhsPaySimpMode\\\\|_fhsPaySimpMode =\")",
       "Bash(grep -v \"//\\\\|window\\\\._fhsPaySimpMode\\\\|_fhsPaySimpMode =\\\\|comment\\\\|注\")",
-      "PowerShell(cd \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\"; powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force)"
+      "PowerShell(cd \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\"; powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force)",
+      "Bash(grep -v \"//\\\\|fhs-fill-mode-btn\\\\|fhsHalf\\\\|fhsFull\\\\|clearBtn\\\\|igFmt\\\\|btn-category\\\\|copy-btn\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

@@ -1,5 +1,25 @@
 ﻿# Changelog
 
+## [2026-06-30] 🔧 Session 126 追加 — 簡化付款 UI 三項修正
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（HTML + CSS + JS）
+
+### [FIX] Fix 1 — 取消 ✏️ 編輯按鈕，改為直接點方格進入編輯
+- 移除 6 個 `<button class="fhsPaySimp_editBtn">✏️</button>` HTML 元素
+- 移除 `.fhsPaySimp_editBtn` CSS 規則；替換為 `.fhsPaySimp_input[readonly]:not([disabled]) { cursor: pointer; }`
+- 6 個 `fhsPaySimp_input` 加 `onclick="_fhsSimpClickToEdit(this)"`
+- 新增 `_fhsSimpClickToEdit(inp)` JS 函式（邏輯與原 `_fhsSimpEditToggle` 一致，但不需 btn 引數）
+
+### [FIX] Fix 2 — 修正「已付訂金」/「未付尾數」標題與方格不對齊
+- CSS grid 從 3 欄（`1fr 1fr 1fr`）改為 2 欄（`1fr 1fr`）
+- 移除 header row 首格空白 `<div></div>` 佔位元素
+- `.fhsPaySimp_catLabel` 已有 `grid-column: 1 / -1`，跨全寬，兩輸入框自然對齊兩欄標題
+
+### [FIX] Fix 3 — 修復簡化模式下「清除」按鈕失效
+- `_quickClearAllSplits(field)` 末尾加入：若 `_fhsPaySimpMode` 為 true，執行 `_fhsSimpCancelAlloc()` + `_fhsRefreshSimplifiedView()` 同步更新簡化檢視
+
+---
+
 ## [2026-06-29] 🎨 Session 126 追加 — 付款 UI 標籤優化 + 鎖匙扣藍色
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS 2 處 + HTML 2 處 + JS 2 處）

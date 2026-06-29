@@ -1,5 +1,11 @@
 ﻿# Session Log
 
+## 2026-06-30 (Session 126 追加 — 簡化付款 UI 三項 UX 修正): 🔧 ✅
+
+**Scope**：修復 Fat Mo 回報的 3 項簡化付款模式 UI 問題。Fix1：移除 6 個 ✏️ 編輯按鈕，改為直接點方格觸發 `_fhsSimpClickToEdit(inp)`（CSS cursor:pointer + onclick）；Fix2：移除 header 空白佔位 `<div>`，grid 改 2 欄（catLabel 已有 `grid-column:1/-1`），「已付訂金/未付尾數」標題現對齊兩欄；Fix3：`_quickClearAllSplits` 加 `_fhsPaySimpMode` 分支，清除後同步執行 `_fhsSimpCancelAlloc + _fhsRefreshSimplifiedView`。
+**Result**：1 檔 MODIFY（freehandsss_dashboardV42.html）+ Changelog + handoff；JS editBtn 殘餘 querySelector 均已 null-guard；序列化契約零回歸；待 /upload-web NAS 部署。
+Subagent：❌ 未使用（定點 Edit，主 agent 直接執行）
+
 ## 2026-06-29 (Session 126 — V42 付款 UI 簡化模式 + 系列優化): 💳 ✅
 
 **Scope**：V42 付款 UI 新增「⊞ 簡化/≡ 逐件」三大類付款模式（v2 唯讀鏡像+明示分攤）：(1) 算式顯示 `_fhsBuildCatFormula`（`$860×4` 同值合併）；(2) IG 訊息【付款資料】三類小計格式（`_buildSplitIgLine` 分支）；(3) 按鈕標籤改為操作者語言（三大類→簡化，細分→逐件）；(4) 鎖匙扣 K 配色改藍（`#E3F2FD/#1565C0`）。§2.5 補 3 項增補。
