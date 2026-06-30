@@ -3964,15 +3964,15 @@
                 <label style="font-weight:600;margin:0;white-space:nowrap;">已付訂金</label>
                 <button type="button" id="fhsDepositFillToggle" onclick="_toggleDepositFillMode()" style="background:#388E3C;border:1px solid #388E3C;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;white-space:nowrap;">全部半訂</button>
                 <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;white-space:nowrap;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
-                <button type="button" id="fhsPaySimpToggle" class="fhsPaySimp_toggleBtn" onclick="_fhsTogglePaySimpMode()" style="margin-left:auto;">⊞ 簡化</button>
+                <button type="button" id="fhsPaySimpToggle" class="fhsPaySimp_toggleBtn" onclick="_fhsTogglePaySimpMode()" style="margin-left:auto;background:#1565C0;border-color:#1565C0;">≡ 逐件</button>
             </div>
-            <div id="depositSplitContainer" class="payment-split-row"></div>
+            <div id="depositSplitContainer" class="payment-split-row" style="display:none"></div>
             <input type="hidden" id="deposit" value="0">
             <input type="hidden" id="depositSplitData" value="">
         </div>
 
-        <!-- fhsPaySimp: Simplified 3-category view (S126) — hidden by default -->
-        <div id="fhsPaySimp_view" class="fhsPaySimp_view" style="display:none">
+        <!-- fhsPaySimp: Simplified 3-category view (S126) — shown by default -->
+        <div id="fhsPaySimp_view" class="fhsPaySimp_view" style="display:block">
             <div class="fhsPaySimp_grid">
                 <!-- header row -->
                 <div></div>
@@ -4046,7 +4046,7 @@
                 <label style="font-weight:600;margin:0;">未付尾數</label>
                 <button type="button" onclick="_quickClearAllSplits('balance')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
             </div>
-            <div id="balanceSplitContainer" class="payment-split-row"></div>
+            <div id="balanceSplitContainer" class="payment-split-row" style="display:none"></div>
             <input type="hidden" id="balance" value="0">
             <input type="hidden" id="balanceSplitData" value="">
         </div>
@@ -11442,30 +11442,33 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window._quickFillAllSplits = _quickFillAllSplits;
 
-        window._depositMode = 'half';
+        window._depositMode = null;
         window._balanceMode = 'half';
         window._fhsSplitRestoreSnapshot = null; // S107 方案A: 還原期 split 快照（權威來源，防 generate() 污染存檔值）
 
         function _syncGlobalDepositBtnUI() {
             var btn = document.getElementById('fhsDepositFillToggle');
             if (!btn) return;
-            var mode = window._depositMode || 'half';
+            var mode = window._depositMode;
+            // Action-based: button shows what will happen on next click
+            // mode='half' means half was just applied → next action is full → show 全部付清 (blue)
+            // mode=null/full → next action is half → show 全部半訂 (green)
             if (mode === 'half') {
-                btn.textContent = '全部半訂';
-                btn.style.background  = '#388E3C';
-                btn.style.borderColor = '#388E3C';
-                btn.style.color       = '#fff';
-            } else {
                 btn.textContent = '全部付清';
                 btn.style.background  = '#1565C0';
                 btn.style.borderColor = '#1565C0';
+                btn.style.color       = '#fff';
+            } else {
+                btn.textContent = '全部半訂';
+                btn.style.background  = '#388E3C';
+                btn.style.borderColor = '#388E3C';
                 btn.style.color       = '#fff';
             }
         }
         window._syncGlobalDepositBtnUI = _syncGlobalDepositBtnUI;
 
         function _toggleDepositFillMode() {
-            if ((window._depositMode || 'half') === 'half') {
+            if (window._depositMode === 'half') {
                 _quickFillAllSplits('deposit');
             } else {
                 _quickHalfFillAllSplits('deposit', true);
@@ -11509,9 +11512,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, bk, 'half');
             });
             if (field === 'deposit') {
-                window._depositMode  = 'half';
-                window._depositDirty = false;
-                _syncGlobalDepositBtnUI();
+                if (force) {
+                    window._depositMode  = 'half';
+                    window._depositDirty = false;
+                    _syncGlobalDepositBtnUI();
+                }
             }
             if (field === 'balance') {
                 window._balanceMode = 'half';
@@ -11550,7 +11555,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // via dispatchEvent('input') → existing serialize/sync untouched.
         // ═══════════════════════════════════════════════════════════
 
-        window._fhsPaySimpMode = false;
+        window._fhsPaySimpMode = true;
         window._fhsPaySimpPending = null;
 
         // Aggregate current box values by CSS category class

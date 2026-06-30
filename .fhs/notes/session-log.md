@@ -1,5 +1,11 @@
 ﻿# Session Log
 
+## 2026-06-30 (Session 126 Issue 1+2 — 簡化 default + toggle sync 修正): 🔧 ✅
+
+**Scope**：V42 簡化付款 UI 最終兩項修正。Issue1：`_fhsPaySimpMode=true` 改 default；HTML 初始狀態改為 simpView visible / split containers hidden / 按鈕「≡ 逐件」藍色。Issue2：全部半訂/付清改動作語義（顯示下次執行）；`_depositMode` 初始值 `null`；auto-fill（no force）不再設 `_depositMode`/按鈕；只有用戶手動 force 才更新。
+**Result**：1 檔 MODIFY（dashboardV42.html，8處改動）；Changelog+handoff+learnings 同步；待 /upload-web NAS 驗收。
+Subagent：❌ 未使用
+
 ## 2026-06-30 (Session 127 — Phase 1b Write Alerts body bug 修復): 🔧 ✅
 
 **Scope**：Phase 1b Cron 寫入驗證。診斷 exec 4022 根因（PGRST204，`specifyBody:"string"` + `JSON.stringify([])` 誤序列化）；外科 GET→fix→PUT 修復 wa1 節點 contentType→raw；build_n8n_workflow.cjs 同步修正；mock alert probe HTTP 201 PASS；ig_watchdog_alerts 空=正常（notify=0 無漏單）。

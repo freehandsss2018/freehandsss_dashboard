@@ -1,5 +1,24 @@
 ﻿# Changelog
 
+## [2026-06-30] 🔧 Session 126 Issue 1+2 — 簡化模式 default + 全部半訂/付清同步修正
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（HTML + JS）
+
+### [FIX] 簡化模式改為預設啟動（Issue 1）
+- `window._fhsPaySimpMode = true`（原 false）
+- HTML 初始狀態：`fhsPaySimp_view` visible，`depositSplitContainer`/`balanceSplitContainer` hidden
+- `#fhsPaySimpToggle` 初始文字改「≡ 逐件」(藍 #1565C0)
+
+### [FIX] 全部半訂/全部付清 與簡化視圖同步協調（Issue 2）
+- 按鈕改為「動作語義」：按鈕顯示下次點擊將執行的操作（非當前狀態）
+  - mode=`null`/`'full'` → 按鈕「全部半訂」(綠)；mode=`'half'` → 按鈕「全部付清」(藍)
+- `_depositMode` 初始值改 `null`（原 `'half'`）
+- `_quickHalfFillAllSplits` 自動填充（no force）不再設 `_depositMode` 也不觸發 `_syncGlobalDepositBtnUI`
+  - 只有用戶手動點擊（`force=true`）才更新按鈕標籤
+- 結果：載入訂單後按鈕永遠顯示「全部半訂」(綠)；點擊後正確填半價 → 按鈕切換為「全部付清」
+
+---
+
 ## [2026-06-30] 🎨 Session 126 追加 — 簡化視圖 UX 優化（按鈕 + 排版）
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS + HTML + JS）
