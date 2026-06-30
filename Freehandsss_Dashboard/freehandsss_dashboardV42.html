@@ -3961,9 +3961,9 @@
 
         <div class="form-group">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-                <label style="font-weight:600;margin:0;white-space:nowrap;">已付訂金</label>
+                <label id="depositSectionLabel" style="font-weight:600;margin:0;white-space:nowrap;display:none;">已付訂金</label>
                 <button type="button" id="fhsDepositFillToggle" onclick="_toggleDepositFillMode()" style="background:#388E3C;border:1px solid #388E3C;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;white-space:nowrap;">全部半訂</button>
-                <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;white-space:nowrap;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
+                <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:5px;color:#C62828;font-size:12px;cursor:pointer;padding:2px 8px;white-space:nowrap;" onmouseover="this.style.background='#FFCDD2';this.style.borderColor='#E57373'" onmouseout="this.style.background='#FFEBEE';this.style.borderColor='#EF9A9A'">✕ 清除</button>
                 <button type="button" id="fhsPaySimpToggle" class="fhsPaySimp_toggleBtn" onclick="_fhsTogglePaySimpMode()" style="margin-left:auto;background:#1565C0;border-color:#1565C0;">≡ 逐件</button>
             </div>
             <div id="depositSplitContainer" class="payment-split-row" style="display:none"></div>
@@ -4042,9 +4042,9 @@
         </div>
 
         <div class="form-group">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div id="balanceLabelRow" style="display:none;align-items:center;gap:8px;margin-bottom:4px;">
                 <label style="font-weight:600;margin:0;">未付尾數</label>
-                <button type="button" onclick="_quickClearAllSplits('balance')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
+                <button type="button" onclick="_quickClearAllSplits('balance')" style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:5px;color:#C62828;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFCDD2';this.style.borderColor='#E57373'" onmouseout="this.style.background='#FFEBEE';this.style.borderColor='#EF9A9A'">✕ 清除</button>
             </div>
             <div id="balanceSplitContainer" class="payment-split-row" style="display:none"></div>
             <input type="hidden" id="balance" value="0">
@@ -4724,8 +4724,8 @@
     ===================================================== -->
     <div id="v40-bottom-bar" class="fhs-bottom-bar">
         <button class="fhs-btn-secondary" style="min-width:64px;"
-            onclick="openDrawer(); document.getElementById('v40-drawer').classList.add('is-open'); document.getElementById('v40-drawer-overlay').classList.add('is-visible');">
-            ⚙️ 設定
+            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ setTimeout(function(){ var cb = document.querySelector('.order-row-cb[data-order-id=&quot;'+oid+'&quot;]'); if(cb){ var row=cb.closest('tr'); if(row){ row.style.background='#FFF9C4'; row.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){row.style.background='';},2000); } } },800); } })()">
+            ← 返回總覧
         </button>
         <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
             onclick="openIgPreviewModal()">
@@ -11693,21 +11693,27 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // Toggle between detail (細分) and simplified (三大類) mode
         function _fhsTogglePaySimpMode() {
             window._fhsPaySimpMode = !window._fhsPaySimpMode;
-            var simpView = document.getElementById('fhsPaySimp_view');
-            var depCont = document.getElementById('depositSplitContainer');
-            var balCont = document.getElementById('balanceSplitContainer');
+            var simpView  = document.getElementById('fhsPaySimp_view');
+            var depCont   = document.getElementById('depositSplitContainer');
+            var depLabel  = document.getElementById('depositSectionLabel');
+            var balCont   = document.getElementById('balanceSplitContainer');
+            var balLabel  = document.getElementById('balanceLabelRow');
             var toggleBtn = document.getElementById('fhsPaySimpToggle');
             if (window._fhsPaySimpMode) {
-                if (simpView) simpView.style.display = '';
-                if (depCont) depCont.style.display = 'none';
-                if (balCont) balCont.style.display = 'none';
+                if (simpView)  simpView.style.display  = '';
+                if (depCont)   depCont.style.display   = 'none';
+                if (depLabel)  depLabel.style.display  = 'none';
+                if (balCont)   balCont.style.display   = 'none';
+                if (balLabel)  balLabel.style.display  = 'none';
                 if (toggleBtn) { toggleBtn.textContent = '≡ 逐件'; toggleBtn.style.background = '#1565C0'; toggleBtn.style.borderColor = '#1565C0'; }
                 _fhsRefreshSimplifiedView();
             } else {
                 _fhsSimpCancelAlloc();
-                if (simpView) simpView.style.display = 'none';
-                if (depCont) depCont.style.display = '';
-                if (balCont) balCont.style.display = '';
+                if (simpView)  simpView.style.display  = 'none';
+                if (depCont)   depCont.style.display   = '';
+                if (depLabel)  depLabel.style.display  = '';
+                if (balCont)   balCont.style.display   = '';
+                if (balLabel)  balLabel.style.display  = 'flex';
                 if (toggleBtn) { toggleBtn.textContent = '⊞ 簡化'; toggleBtn.style.background = '#37474F'; toggleBtn.style.borderColor = '#37474F'; }
             }
         }

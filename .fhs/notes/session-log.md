@@ -1,5 +1,11 @@
 ﻿# Session Log
 
+## 2026-06-30 (Session 126 追加 — UX 細節：清除顏色+Label重疊+返回總覧): 🎨 ✅
+
+**Scope**：V42 手機介面 UX 修正。✕清除按鈕改淡紅色（已付訂金+未付尾數）；簡化模式隱藏重複「已付訂金」label（depositSectionLabel）+ balanceLabelRow；手機底部「設定」改「← 返回總覧」（switchMode review + scrollIntoView 黃色高亮定位）。
+**Result**：1 檔 MODIFY（dashboardV42.html）；Changelog 更新；待 /upload-web NAS 部署。
+Subagent：❌ 未使用
+
 ## 2026-06-30 (Session 126 Issue 1+2 — 簡化 default + toggle sync 修正): 🔧 ✅
 
 **Scope**：V42 簡化付款 UI 最終兩項修正。Issue1：`_fhsPaySimpMode=true` 改 default；HTML 初始狀態改為 simpView visible / split containers hidden / 按鈕「≡ 逐件」藍色。Issue2：全部半訂/付清改動作語義（顯示下次執行）；`_depositMode` 初始值 `null`；auto-fill（no force）不再設 `_depositMode`/按鈕；只有用戶手動 force 才更新。

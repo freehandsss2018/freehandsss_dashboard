@@ -1,5 +1,24 @@
 ﻿# Changelog
 
+## [2026-06-30] 🎨 Session 126 追加 — UX 細節修正（清除顏色、重疊Label、返回總覧按鈕）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（HTML + JS）
+
+### [UX] ✕ 清除 按鈕改為淡紅色（已付訂金 + 未付尾數）
+- 預設：`background:#FFEBEE; border:#EF9A9A; color:#C62828`（破壞性操作視覺語義）
+- Hover：加深至 `#FFCDD2`
+
+### [FIX] 簡化模式下「已付訂金」label 重疊問題
+- `depositSectionLabel` 初始 `display:none`（簡化模式 grid 已有欄標題，label 冗餘）
+- 切換到逐件模式 → label 顯示；切回簡化 → 隱藏
+- `balanceLabelRow`（未付尾數標題列）同樣在簡化模式隱藏（上次 Issue 遺漏的完整修正）
+
+### [UX] 手機底部「設定」按鈕改為「← 返回總覧」
+- `switchMode('review')` 切換到訂單總覧
+- 800ms 後定位至當前訂單列（`.order-row-cb[data-order-id]`）→ `scrollIntoView` + 黃色高亮 2 秒
+
+---
+
 ## [2026-06-30] 🔧 Session 126 Issue 1+2 — 簡化模式 default + 全部半訂/付清同步修正
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（HTML + JS）
