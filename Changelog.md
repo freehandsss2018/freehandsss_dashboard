@@ -1,5 +1,28 @@
 ﻿# Changelog
 
+## [2026-06-30] 🎨 Session 128 — Audit Ledger 財務視覺優化（成本扣減 inline badge + 品項明細重排版）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS + JS），`.fhs/notes/FHS_System_Logic_Overview.md`
+
+### [UX] ② 成本快照鏈：成本扣減 inline badge
+- `n8nAdjItems` 保留結構化扣減陣列（含 `amount`/`desc`/`basis`）
+- 各類別成本行旁顯示 **綠色 `(−$X)`**（`#2E9E5B`，節省語義，非成本紅色）
+- 旁附小圓形 **ⓘ**（`fhsAudit_dedDot`），**點按才展開**解說含 `basis` 依據，預設收起
+- 以關鍵字（手模/鎖匙扣/吊飾）將 n8n 扣減 note 對應到正確類別行；未對應者 fallback inline 顯示
+- helper：`_dedBadge(keyword)` / `_costRow(label, costNum, keyword)` / `_consumedAdj` 防重複映射
+- 頂部摘要卡「💰 成本扣減說明」維持總覽不變
+
+### [UX] 品項明細重排版（4 項優化）
+1. **分類色標頭**：P橙 `#FFF3E0/#E65100` / K藍 `#E3F2FD/#1565C0` / M紫 `#EDE7F6/#4527A0`（對齊 S126 簡化付款）
+2. **固定次序**：手模擺設 → 鎖匙扣 → 頸鏈吊飾（對齊訂單總覽；組內按部位 rank 排序）
+3. **左右手腳精簡標籤**：由 `item_key` 後綴 `_LH/_RH/_LF/_RF/_MAIN` 解析（`_limbName`）；非手模類附材質 hint（銀/金/鋼/鋁，`_matName`）
+4. **刻字不顯示**：`[上排]LUCA` 等 `specification`/`engraving_text` 內容一律不顯示（非成本核對所需）
+- 分類碼由 `item_key` 的 `_P_/_K_/_M_` 解析（`_catCode`），fallback `item_category` 關鍵字
+- 新 CSS：`.fhsAudit_catHdr` / `.fhsAudit_matHint` / `.fhsAudit_itemFlat`
+- 以訂單 0600721 真實 Supabase 資料 smoke test 驗證（node 渲染輸出 PASS）
+
+---
+
 ## [2026-06-30] 🎨 Session 126 追加 — UX 細節修正（清除顏色、重疊Label、返回總覧按鈕）
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（HTML + JS）

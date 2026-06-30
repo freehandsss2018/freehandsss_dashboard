@@ -144,7 +144,8 @@
       "Bash(grep -v \"//\\\\|window\\\\._fhsPaySimpMode\\\\|_fhsPaySimpMode =\\\\|comment\\\\|注\")",
       "PowerShell(cd \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\"; powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force)",
       "Bash(grep -v \"//\\\\|fhs-fill-mode-btn\\\\|fhsHalf\\\\|fhsFull\\\\|clearBtn\\\\|igFmt\\\\|btn-category\\\\|copy-btn\")",
-      "PowerShell(Start-Process \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\790e82ee-3aa9-43ff-8eb2-08d40c6d7afc\\\\scratchpad\\\\layout_preview.html\")"
+      "PowerShell(Start-Process \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\790e82ee-3aa9-43ff-8eb2-08d40c6d7afc\\\\scratchpad\\\\layout_preview.html\")",
+      "PowerShell(python \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\a26054f6-ac8c-419a-8668-e0728f9c4de6\\\\scratchpad\\\\fix_wa1.py\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

@@ -1,10 +1,10 @@
 ﻿```handoff
-【FHS 交接摘要 — 更新: 2026-06-30 / S126】
-🎯 目標: FHS 業務 POS+財務系統日常維護；V42 簡化付款 UX + 手機 UX 全部修正完成；下一重點=/upload-web V42 NAS 上線 + 審計日誌 Phase B
-✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）；(10)Task A四欄(drawing/printing/chain/shipping_cost)=正式廢欄（保留欄位不DROP，停止補寫投資，Audit Ledger已改用訂單層分類欄，S125）；(11)21裸列NULL-subtotal=defer（財務真理於訂單層完整，S125）；(12)V42 簡化付款按鈕=「⊞ 簡化/≡ 逐件」操作者語言（非三大類/細分），P=橙/K=藍/M=紫，IG訊息付款行三類小計格式（S126）；(13)n8n HTTP Request v4 POST JSON array=用contentType:"raw"，禁specifyBody:"string"+JSON.stringify組合（PGRST204，S127）；(14)V42 簡化模式=default；全部半訂/付清按鈕=動作語義（顯示下次將執行），_depositMode初始=null，auto-fill不改按鈕（S126）
-🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（S122）；Phase 1b Write Alerts body bug修復 versionId=2353e4da + mock alert POST HTTP 201 + DELETE probe ✅（S127）；ig_watchdog_alerts空白=正常（所有Cron notify=0，無漏單）；audit_logs 0044+RPC live（S124）；Audit Ledger+審計日誌視覺驗收PASS（S124）；S124 v2 DONE 9/9 finance-auditor PASS；Airtable billing ≈17/day PASS(S123)；S126 全5項UI修正落盤（含Issue1+2）；未驗=下次Cron notify>0時Write Alerts實戰驗證（預計自動）；V42 Issue1+2 待NAS驗收
-📋 待辦: 🟡/upload-web V42 NAS 上線（S126全部5項修正完成，含簡化default+toggle sync） 🟡審計日誌 Phase B(orders.cost_override_locked+fhs_adjust_order_cost+設定中心訂單層修改) ⚪Phase 1b 下次Cron若notify>0→自動驗收Write Alerts實戰
-➡️ 下一步: /upload-web 部署 V42 至 NAS（Issue1+2 已在本 commit）；之後排審計日誌 Phase B
+【FHS 交接摘要 — 更新: 2026-06-30 / S128】
+🎯 目標: FHS 業務 POS+財務系統日常維護；V42 Audit Ledger 財務視覺優化完成（S128）；下一重點=/upload-web V42 NAS 上線 + 審計日誌 Phase B
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）；(10)Task A四欄(drawing/printing/chain/shipping_cost)=正式廢欄（保留欄位不DROP，停止補寫投資，Audit Ledger已改用訂單層分類欄，S125）；(11)21裸列NULL-subtotal=defer（財務真理於訂單層完整，S125）；(12)V42 簡化付款按鈕=「⊞ 簡化/≡ 逐件」操作者語言（非三大類/細分），P=橙/K=藍/M=紫，IG訊息付款行三類小計格式（S126）；(13)n8n HTTP Request v4 POST JSON array=用contentType:"raw"，禁specifyBody:"string"+JSON.stringify組合（PGRST204，S127）；(14)V42 簡化模式=default；全部半訂/付清按鈕=動作語義（顯示下次將執行），_depositMode初始=null，auto-fill不改按鈕（S126）；(15)Audit Ledger 品項明細=左右手腳精簡標籤(item_key後綴)，刻字engraving不顯示，次序P→K→M固定，色標頭對齊S126簡化付款(S128)
+🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（S122）；Phase 1b Write Alerts body bug修復 versionId=2353e4da + mock alert POST HTTP 201 + DELETE probe ✅（S127）；ig_watchdog_alerts空白=正常（所有Cron notify=0，無漏單）；audit_logs 0044+RPC live（S124）；Audit Ledger+審計日誌視覺驗收PASS（S124）；S124 v2 DONE 9/9 finance-auditor PASS；Airtable billing ≈17/day PASS(S123)；S126 全5項UI修正落盤（含Issue1+2）；S128 Audit Ledger視覺優化 node smoke test 0600721 PASS；未驗=S128 NAS實機視覺確認（/upload-web後）；未驗=下次Cron notify>0時Write Alerts實戰驗證（預計自動）
+📋 待辦: 🟡/upload-web V42 NAS 上線（S128 Audit Ledger優化已在本commit） 🟡審計日誌 Phase B(orders.cost_override_locked+fhs_adjust_order_cost+設定中心訂單層修改) ⚪Phase 1b 下次Cron若notify>0→自動驗收Write Alerts實戰
+➡️ 下一步: /upload-web 部署 V42 至 NAS（S128 Audit Ledger優化）；之後排審計日誌 Phase B
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
@@ -14,10 +14,11 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-30（Session 127 — Phase 1b Write Alerts body bug 修復）
+> 上次更新：2026-06-30（Session 128 — Audit Ledger 財務視覺優化）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| ✅ 完成 | **[S128] Audit Ledger 財務視覺優化** | ✅ 落盤（S128）— 待 /upload-web NAS 實機確認 | ②成本快照鏈：成本扣減inline badge綠色(−$X)+點按圓形ⓘ展開；品項明細：分類色標頭P橙/K藍/M紫+次序固定+左右手腳標籤+刻字不顯示；Supabase 0600721 smoke test PASS |
 | ✅ 完成 | **[S126] V42 簡化付款 UI** | ✅ 全5項修正落盤（S126）— 待 /upload-web NAS 上線 | ⊞ 簡化/≡ 逐件 toggle；算式顯示；IG訊息三類小計；K藍色；Fix1點入編輯；Fix2標題對齊；Fix3清除按鈕；Issue1簡化=default；Issue2全部半訂/付清動作語義sync |
 | ✅ 完成 | **[Phase 1b] n8n write node → ig_watchdog_alerts** | ✅ 部署（S122）+ Write Alerts body bug修復（S127）| 19節點，wa1 contentType改raw，versionId=2353e4da；mock alert HTTP 201 PASS；ig_watchdog_alerts空=正常（所有Cron notify=0無漏單）；下次notify>0時自動實戰驗收 |
 | ⚪ 低 | **[Phase 3] Telegram 訊息附 V42 deep-link URL** | ⏳ Phase 1b 後 | TG 訊息每筆加 `?view=igwatch&orderId=xxx` 連結，直達 V42 igwatch 模式 |
