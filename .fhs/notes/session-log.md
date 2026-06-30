@@ -1,5 +1,11 @@
 ﻿# Session Log
 
+## 2026-06-30 (Session 127 — Phase 1b Write Alerts body bug 修復): 🔧 ✅
+
+**Scope**：Phase 1b Cron 寫入驗證。診斷 exec 4022 根因（PGRST204，`specifyBody:"string"` + `JSON.stringify([])` 誤序列化）；外科 GET→fix→PUT 修復 wa1 節點 contentType→raw；build_n8n_workflow.cjs 同步修正；mock alert probe HTTP 201 PASS；ig_watchdog_alerts 空=正常（notify=0 無漏單）。
+**Result**：2 檔 MODIFY（build_n8n_workflow.cjs + handoff.md + CHANGELOG）+ runtime workflow PUT（versionId=2353e4da）；待下次 notify>0 Cron 自動實戰驗收。
+Subagent：❌ 未使用
+
 ## 2026-06-30 (Session 126 追加 — 簡化視圖 UX 優化 Round 2): 🎨 ✅
 
 **Scope**：(1) 全部半訂/全部付清 兩鍵合併為單一 toggle（`_toggleDepositFillMode`），綠=#388E3C 半訂、藍=#1565C0 付清，⊞ 簡化 推右（margin-left:auto）分組；(2) 簡化視圖排版改為方案 A 3 欄表格式：`minmax(0,1.5fr) 1fr 1fr`，catLabel 在 col 1 同行，標題行永遠對齊 col 2/3，類別間加 `<hr>` 分隔。

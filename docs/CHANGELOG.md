@@ -14,6 +14,24 @@ note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Ar
 > - **Dashboard Proto**: V36–V42（前端介面）
 > - **System Architecture**: v1.4.x（AGENTS.md 憲法層）
 
+## [S127] — 2026-06-30 (Session 127 — Phase 1b Write Alerts body bug 修復)
+
+### Phase 1b IG Watchdog Write Alerts body bug 修復
+
+**根因診斷（exec 4022）**：Phase 1b 部署後首次 Cron 執行（2026-06-26 06:00 HKT），Write Alerts 節點以 `specifyBody: "string"` + `contentType: "json"` + `JSON.stringify([])` 傳送空陣列；n8n HTTP Request v4 將字串 `"[]"` 誤序列化為 `{"[]":""}` 送至 PostgREST → PGRST204 error。
+
+**修復（GET → fix → PUT 外科手術）**：
+- `wa1` Write Alerts 節點：`contentType: "json"` → `"raw"`，移除 `specifyBody: "string"`
+- n8n raw mode 直送 `JSON.stringify(alerts)` 字串，不做二次序列化
+- versionId 更新至 `2353e4da-18a8-4b16-bcca-334e24c50ce5`
+- `build_n8n_workflow.cjs` 同步修正（單一真源防回退）
+
+**端到端驗證**：mock alert JSON array POST → Supabase ig_watchdog_alerts → HTTP 201 ✅ → DELETE probe ✅
+
+**業務說明**：ig_watchdog_alerts 表空白 = 正常（所有 Cron 執行 notify=0，無實際漏單）。"Has Alerts?" guard 正確阻止空陣列路徑；Write Alerts body bug 為 notify>0 時的潛在故障點，現已修復。
+
+---
+
 ## [S125] — 2026-06-27 (Session 125 — Task A 收斂結案 + S124 v2 落盤)
 
 ### Task A 架構分析與收斂決策
