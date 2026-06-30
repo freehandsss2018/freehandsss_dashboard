@@ -1,5 +1,11 @@
 ﻿# Session Log
 
+## 2026-06-30 (Session 126 追加 — 簡化視圖 UX 優化 Round 2): 🎨 ✅
+
+**Scope**：(1) 全部半訂/全部付清 兩鍵合併為單一 toggle（`_toggleDepositFillMode`），綠=#388E3C 半訂、藍=#1565C0 付清，⊞ 簡化 推右（margin-left:auto）分組；(2) 簡化視圖排版改為方案 A 3 欄表格式：`minmax(0,1.5fr) 1fr 1fr`，catLabel 在 col 1 同行，標題行永遠對齊 col 2/3，類別間加 `<hr>` 分隔。
+**Result**：1 檔 MODIFY（V42.html）+ Changelog；待 /upload-web。
+Subagent：❌ 未使用
+
 ## 2026-06-30 (Session 126 追加 — 簡化付款 UI 三項 UX 修正): 🔧 ✅
 
 **Scope**：修復 Fat Mo 回報的 3 項簡化付款模式 UI 問題。Fix1：移除 6 個 ✏️ 編輯按鈕，改為直接點方格觸發 `_fhsSimpClickToEdit(inp)`（CSS cursor:pointer + onclick）；Fix2：移除 header 空白佔位 `<div>`，grid 改 2 欄（catLabel 已有 `grid-column:1/-1`），「已付訂金/未付尾數」標題現對齊兩欄；Fix3：`_quickClearAllSplits` 加 `_fhsPaySimpMode` 分支，清除後同步執行 `_fhsSimpCancelAlloc + _fhsRefreshSimplifiedView`。

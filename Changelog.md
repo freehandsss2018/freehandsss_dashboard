@@ -1,5 +1,23 @@
 ﻿# Changelog
 
+## [2026-06-30] 🎨 Session 126 追加 — 簡化視圖 UX 優化（按鈕 + 排版）
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS + HTML + JS）
+
+### [UX] 全部半訂/全部付清 合併為單一 toggle 按鈕
+- 兩個獨立按鈕合併為 `#fhsDepositFillToggle` 單鍵切換，操作模式與 ⊞ 簡化/≡ 逐件 相同
+- 半訂狀態：深灰 #37474F → 改綠 #388E3C（操作類視覺區分）；付清狀態：藍 #1565C0
+- 新增 `_toggleDepositFillMode()` JS 函式；`_syncGlobalDepositBtnUI` 更新為單鍵邏輯
+- ⊞ 簡化 按鈕推至右側（`margin-left:auto`），與操作類按鈕分組清晰
+
+### [LAYOUT] 簡化視圖改為方案 A — 3 欄表格式
+- `fhsPaySimp_grid` 改 `grid-template-columns: minmax(0,1.5fr) 1fr 1fr`
+- catLabel 移至 col 1（同行排列），不再跨欄；標題行「已付訂金/未付尾數」永遠對齊 col 2/3
+- 類別間加 `<hr class="fhsPaySimp_divider">` 分隔線
+- input 加 `text-align:right`；移除 cellLabel/cellRow 包裝層
+
+---
+
 ## [2026-06-30] 🔧 Session 126 追加 — 簡化付款 UI 三項修正
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（HTML + CSS + JS）
