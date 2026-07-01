@@ -14,6 +14,71 @@ note: "Versions track different subsystems: n8n (V47.x), Dashboard (V39-V42), Ar
 > - **Dashboard Proto**: V36–V42（前端介面）
 > - **System Architecture**: v1.4.x（AGENTS.md 憲法層）
 
+## [S130 Phase B] — 2026-07-01 (Audit Ledger Phase B — 訂單層成本覆蓋鎖)
+
+### Supabase Migration 0047 — `cost_override_locked` + 2 新 RPC + 2 RPC 守衛
+
+**目標**：人工修改訂單成本後，防止 `fhs_batch_recalc_execute` / `fhs_apply_financial_batch_update` 自動覆蓋，保證「人工覆蓋優先」語義。
+
+**PART 1 — `orders.cost_override_locked` 欄位**：
+- `ALTER TABLE orders ADD COLUMN IF NOT EXISTS cost_override_locked BOOLEAN NOT NULL DEFAULT false`
+- `false` = n8n 批次可更新；`true` = 人工鎖定，批次跳過
+
+**PART 2 — `fhs_adjust_order_cost(p_order_id, p_new_total_cost, p_reason, p_actor)` SECURITY DEFINER RPC**：
+- 原子操作：UPDATE `total_cost` + `net_profit` + `cost_override_locked=true` + `recalc_requested_at=NULL`
+- 同交易寫 `audit_logs`（`log_type='order_cost_adjust'`, `action='update'`, before/after JSONB）
+- GRANT EXECUTE TO anon, authenticated
+
+**PART 3 — `fhs_unlock_order_cost(p_order_id, p_actor)` SECURITY DEFINER RPC**：
+- 原子操作：SET `cost_override_locked=false`
+- 同交易寫 `audit_logs`（`action='unlock'`）
+- GRANT EXECUTE TO anon, authenticated
+
+**PART 4 — `fhs_apply_financial_batch_update` 守衛**（覆寫原函數保持同名參數 `p_target_orders`、日期用 `confirmed_at`）：
+- 三個 UPDATE 分支均加 `AND (cost_override_locked IS NULL OR cost_override_locked = false)`
+
+**PART 5 — `fhs_batch_recalc_execute` 守衛**：
+- ARRAY_AGG 收集加 `AND (cost_override_locked IS NULL OR cost_override_locked = false)`
+- 新增 `v_skipped_locked` 計數回報
+
+**Smoke tests（8/8 PASS）**：column exists, both RPCs exist, grants applied, guards present.
+
+### Dashboard V42 Phase B — 設定中心訂單層成本修改 + Audit Ledger 本單變更歷史
+
+**loadAuditLedger SELECT**：加 `cost_override_locked` 欄位取回
+
+**buildAuditLedgerHtml ② 成本快照鏈 header**：`cost_override_locked=true` 時顯示橙色「🔒 人工覆蓋」badge
+
+**設定中心新增「訂單層成本修改」區塊**（`id="orderCostAdjSection"`）：
+- 輸入欄：訂號、新成本（數字）、修改原因
+- 確認按鈕（橙色）→ `window.fhsAdjustOrderCost()`
+- 解鎖按鈕（灰色）→ `window.fhsUnlockOrderCost()`
+
+**Audit Ledger Modal 新增 ⑤ 本單變更歷史**（`<details>` 摺疊）：
+- `ontoggle` 懶載：`window._fhsLoadAuditHistory(orderId, detailsId)`
+- 調用 `fhs_query_audit_logs({p_log_type:'order_cost_adjust', p_entity_id:orderId, p_limit:20})`
+- 渲染 HTML 表格：時間 / 動作 / 修改前 / 修改後 / 原因
+
+---
+
+## [S130] — 2026-07-01 (Session 130 — 訂單總覽日期優先次序修正)
+
+### Dashboard V42 — 取模日期優先顯示 + 排序對齊
+
+**問題**：訂單總覽 Date 欄以 `confirmed_at` 為優先，有取模日期（appointment_at）時仍顯示確認日期，排序也按確認日期。
+
+**修改（兩處前端，無 Supabase 改動）**：
+- `mapOrder()` L13773：`Date: confirmed_at || appointment_at` → `Date: appointment_at || confirmed_at`
+- `sbFetchGlobalReview()` L13825：SQL `order` → `appointment_at.asc.nullslast,confirmed_at.asc`
+
+**邏輯說明**：
+- 有取模日期：Date 欄顯示取模日期，預設排序以取模日期升序
+- 無取模日期：fallback 顯示確認日期，排序按確認日期
+- 「日期 — 最新/最舊」下拉排序、年月篩選器均透過 `o.Date` 運作，自動跟從新優先次序
+- 逾期計算：後端 `v_delivery_reminders` 已實現 `COALESCE(appointment_at, created_at) + 90天`，無需改動
+
+---
+
 ## [S127] — 2026-06-30 (Session 127 — Phase 1b Write Alerts body bug 修復)
 
 ### Phase 1b IG Watchdog Write Alerts body bug 修復

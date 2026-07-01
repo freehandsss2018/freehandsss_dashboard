@@ -66,6 +66,7 @@
 25. **order_items 成本是組裝值非單一原子**：勿拿 `subtotal_cost` 直接比對 `cost_configurations` 單一 key 判斷「未同步」；改值後 products 表無自動回算機制，唯一檢查工具 `fhs_check_product_cost_drift()` 範圍有限 — Session 112
 26. **PostgREST POST 空陣列 → "Could not find '[]' column"**：向 Supabase REST 端點 POST 空 JSON 陣列 `[]`，PostgREST 無法推斷欄位名稱而報錯。n8n 寫入前必加 IF 守衛判斷 `alerts.length > 0`，空則跳過寫入直送 Telegram — Session 124
 27. **Python json.dump emoji → n8n surrogate pair "invalid syntax"**：用 Python 序列化含 emoji（如 🔗）的 n8n workflow JSON 時，若 `ensure_ascii=False` 且環境 CP950，emoji 被寫成 surrogate pair（`\udcfx...`）；n8n 求值表達式時 "invalid syntax" 靜默失敗。修法：`json.dump(..., ensure_ascii=True)` 強制 ASCII escape，或改用純 ASCII 替代符號（`>` 代替 🔗）— Session 128
+28. **【Pitfall #28】Postgres `CREATE OR REPLACE FUNCTION` 不能改參數名**：`CREATE OR REPLACE` 替換函數時若參數名與原函數不同，報 `42P13: cannot change name of input parameter`。解法：保留原參數名，或先 `DROP` 再建。改函數前必須讀原 migration SQL 確認 param names — Session 130 Phase B
 
 ---
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-HK">
 
 <head>
@@ -4452,6 +4452,36 @@
                     <input type="text" id="nextSeqIdInput" style="width:90px; padding:5px 8px; border:1px solid #ccc; border-radius:4px; font-size:13px;" placeholder="例如 06990">
                     <button type="button" class="seq-btn" style="background:#52B788; color:white; border:none; border-radius:4px; padding:5px 12px; font-size:13px; cursor:pointer;" onclick="saveSeqSettings()">套用</button>
                 </div>
+            </div>
+
+            <!-- 🔧 訂單層成本修改（Audit Ledger Phase B, Session 130） -->
+            <div id="orderCostAdjSection" style="border-top:1px solid var(--fhs-border); padding-top:14px; margin-top:14px;">
+                <div style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">🔧 指定訂號成本修改</div>
+                <div style="font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:7px 10px; margin-bottom:12px; line-height:1.5;">
+                    ⚠️ 直接修改訂單 <code>total_cost</code>，並鎖定防批量重算覆蓋（<code>cost_override_locked=true</code>）。修改記錄寫入審計日誌。
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">訂單號 *</label>
+                        <input type="text" id="adjOrderId" placeholder="例如 0600721" maxlength="20"
+                            style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box; font-family:monospace;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">新成本金額 (HKD) *</label>
+                        <input type="number" id="adjNewCost" placeholder="例如 310" min="0" step="1"
+                            style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:11px; color:var(--fhs-text-secondary); display:block; margin-bottom:3px;">修改原因 *</label>
+                    <input type="text" id="adjReason" placeholder="例如：n8n 加購件數未累加，手動修正"
+                        style="width:100%; padding:5px 8px; border:1px solid var(--fhs-border); border-radius:5px; font-size:13px; background:var(--fhs-bg-elevated); color:var(--fhs-text-primary); box-sizing:border-box;">
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                    <button onclick="window.fhsAdjustOrderCost()" style="flex:1; padding:7px 0; border-radius:6px; border:none; background:#E07A2F; color:#fff; font-size:13px; font-weight:700; cursor:pointer;">執行成本修改 + 鎖定</button>
+                    <button onclick="window.fhsUnlockOrderCost()" style="flex:1; padding:7px 0; border-radius:6px; border:1px solid #94a3b8; background:var(--fhs-bg-elevated); color:var(--fhs-text-secondary); font-size:13px; font-weight:600; cursor:pointer;">解鎖此訂單（允許重算）</button>
+                </div>
+                <div id="adjResult" style="font-size:12px; min-height:22px; padding:0 2px;"></div>
             </div>
         </div>
 
@@ -9958,7 +9988,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var results = await Promise.all([
                     fetch(
                         _V41_SB_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId) +
-                        '&select=n8n_adjustment_notes,deposit,balance,handmodel_cost,keychain_cost,necklace_cost&limit=1',
+                        '&select=n8n_adjustment_notes,deposit,balance,handmodel_cost,keychain_cost,necklace_cost,cost_override_locked&limit=1',
                         { headers: hdr }
                     ),
                     fetch(
@@ -10055,6 +10085,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var kpiProfit    = netProfit - adjAmt;
 
             // Order-level category costs (30/30 reliable — v2 cost structure)
+            var costOverrideLocked = !!(extra && extra.cost_override_locked);
             var handmodelCost = parseFloat(o.Handmodel_Cost ?? o.handmodel_cost ?? extra.handmodel_cost ?? 0) || 0;
             var keychainCost  = parseFloat(o.Keychain_Cost  ?? o.keychain_cost  ?? extra.keychain_cost  ?? 0) || 0;
             var necklaceCost  = parseFloat(o.Necklace_Cost  ?? o.necklace_cost  ?? extra.necklace_cost  ?? 0) || 0;
@@ -10116,7 +10147,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // ② 成本快照鏈
             h += '<div class="fhsAudit_section sec2">';
             h += '<div class="fhsAudit_sectionHdr"><span>② 成本快照鏈</span>' +
-                '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">n8n 自動記帳 · 快照時間點</span></div>';
+                '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">n8n 自動記帳 · 快照時間點</span>' +
+                (costOverrideLocked ? '<span style="margin-left:auto;display:inline-flex;align-items:center;gap:3px;background:#E07A2F;color:#fff;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;text-transform:none;letter-spacing:0;">🔒 人工覆蓋</span>' : '') +
+                '</div>';
 
             // Inline deduction badge: map each adjustment note to its category row.
             // (−$X) shows next to the cost amount in green (saving, NOT a cost); a small
@@ -10329,6 +10362,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 h += '</div>'; // close dimSection
                 h += '</div>'; // close sec4
             }
+
+            // ⑤ 本單變更歷史（Phase B，audit_logs log_type='order_cost_adjust'）
+            var _histId = 'fhsAuditHist_' + (o.id || o._uuid || 'x');
+            h += '<details id="' + _histId + '" style="margin-top:10px;" ' +
+                 'ontoggle="if(this.open)window._fhsLoadAuditHistory(' + JSON.stringify(o.id || '') + ',\'' + _histId + '\')">' +
+                 '<summary style="cursor:pointer;font-size:12px;font-weight:600;color:#6366F1;padding:4px 0;list-style:none;display:flex;align-items:center;gap:5px;">' +
+                 '<span style="font-size:11px;">▶</span> 📋 本單成本變更歷史</summary>' +
+                 '<div id="' + _histId + '_body" style="margin-top:6px;font-size:12px;color:#444;"></div>' +
+                 '</details>';
 
             h += '</div>';
             return h;
@@ -13770,7 +13812,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 _uuid:            row.id || '',
                 Order_ID:         orderId,
                 Customer:         row.customer_name || '',
-                Date:             row.confirmed_at  || row.appointment_at || '',
+                Date:             row.appointment_at || row.confirmed_at   || '',
                 Appointment_Date: row.appointment_at || '',
                 Final_Sale_Price: Number(row.final_sale_price) || 0,
                 Additional_Fee:   Number(row.additional_fee) || 0,
@@ -13822,7 +13864,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // Only pass status values that exist in Supabase ENUM; manufacturing-step values cause errors
             const SB_ORDER_STATUSES = new Set(['待確認','製作中','完成','已取件','已取消']);
             // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
-            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b,is_archived', deleted_at: 'is.null', order: 'confirmed_at.asc', limit: 200 };
+            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b,is_archived', deleted_at: 'is.null', order: 'appointment_at.asc.nullslast,confirmed_at.asc', limit: 200 };
 
             if (status && SB_ORDER_STATUSES.has(status)) qs['process_status'] = 'eq.' + status;
             if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';
@@ -14678,6 +14720,96 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // ══════════════════════════════════════════════════════
 
         // ── switchLogTab ─────────────────────────────────────
+        // ── Phase B: 訂單層成本修改 ───────────────────────────────
+        window.fhsAdjustOrderCost = async function() {
+            var orderId = (document.getElementById('adjOrderId').value || '').trim();
+            var newCost = document.getElementById('adjNewCost').value;
+            var reason  = (document.getElementById('adjReason').value || '').trim();
+            var resEl   = document.getElementById('adjResult');
+            if (!orderId || !reason || newCost === '') {
+                resEl.innerHTML = '<span style="color:#E63946;">⚠ 請填寫訂單號、新成本、原因</span>'; return;
+            }
+            resEl.innerHTML = '⏳ 執行中...';
+            try {
+                var resp = await fetch(_V41_SB_URL + '/rest/v1/rpc/fhs_adjust_order_cost', {
+                    method: 'POST',
+                    headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ p_order_id: orderId, p_new_total_cost: parseFloat(newCost), p_reason: reason, p_actor: localStorage.getItem('fhs_log_operator') || 'dashboard' })
+                });
+                var data = await resp.json();
+                if (!resp.ok || (data && data.success === false)) throw new Error(data.message || data.hint || resp.status);
+                resEl.innerHTML = '<span style="color:#2E9E5B;">✅ 成功：' + orderId + ' total_cost → $' + parseFloat(newCost) + '，已鎖定</span>';
+            } catch(e) {
+                resEl.innerHTML = '<span style="color:#E63946;">❌ ' + String(e.message).substring(0, 120) + '</span>';
+            }
+        };
+
+        window.fhsUnlockOrderCost = async function() {
+            var orderId = (document.getElementById('adjOrderId').value || '').trim();
+            var resEl   = document.getElementById('adjResult');
+            if (!orderId) { resEl.innerHTML = '<span style="color:#E63946;">⚠ 請填寫訂單號</span>'; return; }
+            if (!confirm('確定解鎖 ' + orderId + ' 的成本鎖定？下次批量重算將覆蓋人工修正值。')) return;
+            resEl.innerHTML = '⏳ 執行中...';
+            try {
+                var resp = await fetch(_V41_SB_URL + '/rest/v1/rpc/fhs_unlock_order_cost', {
+                    method: 'POST',
+                    headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ p_order_id: orderId, p_actor: localStorage.getItem('fhs_log_operator') || 'dashboard' })
+                });
+                var data = await resp.json();
+                if (!resp.ok) throw new Error(data.message || resp.status);
+                if (data && data.success === false) { resEl.innerHTML = '<span style="color:#888;">ℹ ' + (data.message || '未知') + '</span>'; return; }
+                resEl.innerHTML = '<span style="color:#2E9E5B;">✅ ' + orderId + ' 已解鎖，下次批量重算將重新計算</span>';
+            } catch(e) {
+                resEl.innerHTML = '<span style="color:#E63946;">❌ ' + String(e.message).substring(0, 120) + '</span>';
+            }
+        };
+
+        window._fhsLoadAuditHistory = async function(orderId, detailsId) {
+            var bodyEl = document.getElementById(detailsId + '_body');
+            if (!bodyEl || !orderId) return;
+            bodyEl.innerHTML = '⏳ 載入...';
+            try {
+                var resp = await fetch(_V41_SB_URL + '/rest/v1/rpc/fhs_query_audit_logs', {
+                    method: 'POST',
+                    headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ p_log_type: 'order_cost_adjust', p_entity_id: orderId, p_limit: 20 })
+                });
+                var data = await resp.json();
+                var rows = (data && data.rows) ? data.rows : [];
+                if (!rows.length) { bodyEl.innerHTML = '<span style="color:#aaa;font-size:11px;">無成本修改記錄</span>'; return; }
+                var html = '<table style="width:100%;border-collapse:collapse;font-size:11px;">' +
+                    '<thead><tr style="border-bottom:1px solid #e0e0e0;color:#888;">' +
+                    '<th style="text-align:left;padding:3px 4px;font-weight:600;">時間</th>' +
+                    '<th style="text-align:left;padding:3px 4px;font-weight:600;">動作</th>' +
+                    '<th style="text-align:right;padding:3px 4px;font-weight:600;">修改前</th>' +
+                    '<th style="text-align:right;padding:3px 4px;font-weight:600;">修改後</th>' +
+                    '<th style="text-align:left;padding:3px 4px;font-weight:600;">原因</th>' +
+                    '</tr></thead><tbody>';
+                rows.forEach(function(r) {
+                    var dt = new Date(r.created_at).toLocaleString('zh-HK',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+                    var bv = r.before_val || {};
+                    var av = r.after_val  || {};
+                    var actionLabel = r.action === 'unlock' ? '🔓 解鎖' : '✏️ 修改';
+                    var before = bv.total_cost != null ? '$' + Math.round(bv.total_cost) : '—';
+                    var after  = av.total_cost != null ? '$' + Math.round(av.total_cost) : '—';
+                    var reason = av.reason || (r.action === 'unlock' ? '解鎖批量重算' : '');
+                    html += '<tr style="border-bottom:1px solid #f0f0f0;">' +
+                        '<td style="padding:3px 4px;white-space:nowrap;color:#888;">' + dt + '</td>' +
+                        '<td style="padding:3px 4px;">' + actionLabel + '</td>' +
+                        '<td style="padding:3px 4px;text-align:right;font-family:monospace;color:#E63946;">' + before + '</td>' +
+                        '<td style="padding:3px 4px;text-align:right;font-family:monospace;color:#2E9E5B;">' + after + '</td>' +
+                        '<td style="padding:3px 4px;color:#555;">' + (reason || '') + '</td>' +
+                        '</tr>';
+                });
+                html += '</tbody></table>';
+                bodyEl.innerHTML = html;
+            } catch(e) {
+                bodyEl.innerHTML = '<span style="color:#E63946;">❌ ' + e.message + '</span>';
+            }
+        };
+        // ── End Phase B ───────────────────────────────────────────
+
         window.switchLogTab = function(tab) {
             var tabs = ['expense', 'audit'];
             var colors = { expense: '#6366F1', audit: '#6366F1' };

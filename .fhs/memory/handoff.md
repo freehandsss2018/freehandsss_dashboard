@@ -1,10 +1,10 @@
 ﻿```handoff
-【FHS 交接摘要 — 更新: 2026-07-01 / S129】
-🎯 目標: FHS 業務 POS+財務系統日常維護；S129 修復 IG 看門狗 tg2 emoji surrogate bug；下一重點=/upload-web V42 NAS 上線 + 審計日誌 Phase B
-✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）；(10)Task A四欄(drawing/printing/chain/shipping_cost)=正式廢欄（保留欄位不DROP，停止補寫投資，Audit Ledger已改用訂單層分類欄，S125）；(11)21裸列NULL-subtotal=defer（財務真理於訂單層完整，S125）；(12)V42 簡化付款按鈕=「⊞ 簡化/≡ 逐件」操作者語言（非三大類/細分），P=橙/K=藍/M=紫，IG訊息付款行三類小計格式（S126）；(13)n8n HTTP Request v4 POST JSON array=用contentType:"raw"，禁specifyBody:"string"+JSON.stringify組合（PGRST204，S127）；(14)V42 簡化模式=default；全部半訂/付清按鈕=動作語義（顯示下次將執行），_depositMode初始=null，auto-fill不改按鈕（S126）；(15)Audit Ledger 品項明細=左右手腳精簡標籤(item_key後綴)，刻字engraving不顯示，次序P→K→M固定，色標頭對齊S126簡化付款(S128)；(16)n8n workflow JSON序列化用ensure_ascii=True，禁emoji直接嵌入字串（surrogate pair silent fail，S129）
-🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（S122）；Phase 1b Write Alerts body bug修復 versionId=2353e4da（S127）；tg2 emoji fix versionId=bb683165（S129）；ig_watchdog_alerts空白=正常；audit_logs 0044+RPC live（S124）；S124 v2 DONE 9/9 PASS；Airtable billing ≈17/day PASS(S123)；S128 Audit Ledger視覺優化 node smoke test PASS；未驗=S128 NAS實機視覺確認（/upload-web後）；未驗=下次Cron notify>0時Telegram深連結實戰（tg2已修）
-📋 待辦: 🟡/upload-web V42 NAS 上線（S128 Audit Ledger優化已在commit） 🟡審計日誌 Phase B(orders.cost_override_locked+fhs_adjust_order_cost+設定中心訂單層修改) ⚪Phase 1b 下次Cron若notify>0→自動驗收Write Alerts+Telegram深連結實戰
-➡️ 下一步: /upload-web 部署 V42 至 NAS；之後排審計日誌 Phase B
+【FHS 交接摘要 — 更新: 2026-07-01 / S130 Phase B】
+🎯 目標: FHS 業務 POS+財務系統日常維護；S130b 日期優先次序修正（appointment_at優先，L13773+L13825）；S130 Phase B 審計日誌 Phase B 完成（migration 0047 + RPC + Dashboard UI + 設定中心 + Audit Modal）；下一步=/upload-web 部署 S130b+Phase B 至 NAS
+✅ 已定決策: (1)V42=production(S115)；(2)Supabase-First，Airtable 僅備援；(3)IG 看門狗訂號 regex `/(?<!\d)0\d{6,7}(?!\d)/` leading-0 7-8位(S116)；(4)handoff SSOT=頂部便攜塊，hook 讀動態段(S118)；(5)ig_watchdog_alerts anon只讀+SECURITY DEFINER resolve RPC+service_role寫入(S119 Q2/Q4)；(6)Phase 1b 等 v3 Cron 驗收通過後才上(S119 Q3)→已解鎖(S122)；(7)嬰兒鋁合金物料=$115（同不銹鋼，S120）；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）；(10)Task A四欄(drawing/printing/chain/shipping_cost)=正式廢欄（保留欄位不DROP，停止補寫投資，Audit Ledger已改用訂單層分類欄，S125）；(11)21裸列NULL-subtotal=defer（財務真理於訂單層完整，S125）；(12)V42 簡化付款按鈕=「⊞ 簡化/≡ 逐件」操作者語言（非三大類/細分），P=橙/K=藍/M=紫，IG訊息付款行三類小計格式（S126）；(13)n8n HTTP Request v4 POST JSON array=用contentType:"raw"，禁specifyBody:"string"+JSON.stringify組合（PGRST204，S127）；(14)V42 簡化模式=default；全部半訂/付清按鈕=動作語義（顯示下次將執行），_depositMode初始=null，auto-fill不改按鈕（S126）；(15)Audit Ledger 品項明細=左右手腳精簡標籤(item_key後綴)，刻字engraving不顯示，次序P→K→M固定，色標頭對齊S126簡化付款(S128)；(16)n8n workflow JSON序列化用ensure_ascii=True，禁emoji直接嵌入字串（surrogate pair silent fail，S129）；(17)cost_override_locked=true時批次跳過該訂單（fhs_batch_recalc_execute+fhs_apply_financial_batch_update雙守衛），人工覆蓋優先於n8n批次（S130 Phase B）
+🔬 驗證: 已證實=IG v3 Cron PASS Exec 4012（S122）；Phase 1b Write Alerts body bug修復 versionId=2353e4da（S127）；tg2 emoji fix versionId=bb683165（S129）；ig_watchdog_alerts空白=正常；audit_logs 0044+RPC live（S124）；S124 v2 DONE 9/9 PASS；Airtable billing ≈17/day PASS(S123)；S128 Audit Ledger視覺優化 node smoke test PASS；V42 NAS部署 SHA256 MATCH 903747bytes（S130，過期任務確認）；待視覺確認=Fat Mo瀏覽NAS實機確認Audit Ledger；S130b L13773+L13825 已改（本機）；0047 migration smoke test 8/8 PASS（S130 Phase B）；fhs_adjust_order_cost+fhs_unlock_order_cost RPCs live；cost_override_locked 雙守衛已部署；未驗=NAS部署S130b+Phase B；下次Cron notify>0時Telegram深連結實戰
+📋 待辦: ✅/upload-web V42 NAS 上線（S130確認已部署，SHA256 MATCH） ✅S130b 日期優先次序修正（L13773+L13825）✅審計日誌 Phase B（migration 0047+RPC+Dashboard UI全交付）🟡/upload-web 部署S130b+Phase B至NAS ⚪Phase 1b 下次Cron若notify>0→自動驗收Write Alerts+Telegram深連結實戰
+➡️ 下一步: /upload-web 部署（S130b+Phase B更新，含current.html升格）至NAS
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目（搜尋「Session 1XX 完結」）
@@ -14,7 +14,7 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-06-30（Session 128 — Audit Ledger 財務視覺優化）
+> 上次更新：2026-07-01（S130 Phase B — 審計日誌 Phase B 完成）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
@@ -25,7 +25,7 @@
 | ✅ 結案 | **[Task A] 加購鎖匙扣 N飾成本（點4）** | ✅ S124 v2 完成 | migration 0045(fhs_compute_keychain_cost)+0046(drift N飾)+線B products 41行+線C 9單回填+audit_logs；前向：n8n直讀per-set products值，所有已發生訂單（全為嬰兒不銹鋼）正確 |
 | ⚪ 廢欄 | **[Task A] 品項層四欄（drawing/printing/chain/shipping_cost）** | ✅ 廢欄決策(S125) | live查實：80列中74-76列為0/NULL，無有效消費者（Audit Ledger S103已改訂單層分類欄）；保留欄位不DROP（n8n Mirror Prep仍寫），停止補寫投資 |
 | ⚪ defer | **[Task A] 21裸列 NULL-subtotal 補錄** | ⏸ defer(S125) | product_sku/item_base_cost/subtotal_cost全NULL（2026-05-10~05-24早期列）；財務真理完整（訂單層欄populated）；Audit Ledger已誠實顯示藍色待補錄條；補錄高工低值，Phase 2重構時一併處理 |
-| 🟡 中 | **[審計日誌 Phase B] 訂單層成本修改 + 變更歷史** | ⏳ 待排程（S124 Phase A 已完成） | 新 migration `orders.cost_override_locked` + RPC `fhs_adjust_order_cost`；設定中心「指定訂號→訂單層成本修改」區塊；Audit Ledger Modal 本單變更歷史 collapsible |
+| ✅ 完成 | **[審計日誌 Phase B] 訂單層成本修改 + 變更歷史** | ✅ 落盤（S130 Phase B）— 待 /upload-web NAS 部署 | migration 0047：`cost_override_locked` + `fhs_adjust_order_cost` + `fhs_unlock_order_cost` + 雙批次守衛；設定中心「訂單層成本修改」UI；Audit Ledger ② badge + ⑤ 變更歷史 `<details>`；smoke test 8/8 PASS |
 | 🟡 中 | **舊訂單品項層類別明細補錄（Fat Mo 人工）** | ⏳ 待補 | `order_items.subtotal_cost` 全空舊單顯示藍色 info 條，待 Fat Mo 手動補 |
 | ✅ 完成 | **Airtable billing 日均驗證** | ✅ PASS（S123） | 官方數字：723/1000 calls（Jun 1-25）；修復後(Jun 16-25)≈17/day；月底預測~810，不超標；sysCheckN8n 修復效果確認 |
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂 `cost_configurations`/`products`/n8n 硬編碼 COST_MAP 三套並存表徵，n8n 改讀同一 Supabase 函式取代自帶 COST_MAP；另開 `/cl-flow`（Session 112 v2 規劃 Phase 2）|

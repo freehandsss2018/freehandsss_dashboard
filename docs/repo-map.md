@@ -61,7 +61,8 @@ freehandsss_dashboard/
 │   │   ├── 0043_ig_watchdog_alerts.sql ← IG 看門狗警報表（Session 119）：ig_watchdog_alerts 表 + SECURITY DEFINER RPC fhs_resolve_ig_alert + RLS anon 只讀 + expression UNIQUE INDEX dedup + pg_cron 90天 TTL ✅ 已部署
 │   │   ├── 0044_audit_logs.sql ← 綜合審計日誌（Session 124）：audit_logs 表 + RLS anon 只讀 + 3 索引 + RPC fhs_query_audit_logs + 升級 fhs_upsert_cost_config 加寫 audit（原子同交易）✅ 已部署
 │   │   ├── 0045_keychain_cost_rpc.sql ← S124 v2：fhs_compute_keychain_cost(material, qty, drawing_fee) RPC，加購鎖匙扣成本單一真源（N飾維度，Session 124）✅ 已部署
-│   │   └── 0046_drift_function_n_figurines.sql ← S124 v2：fhs_check_product_cost_drift() N飾擴充，比對公式由 flat(185/235) 改為 fhs_compute_keychain_cost 動態計算（Session 124）✅ 已部署
+│   │   ├── 0046_drift_function_n_figurines.sql ← S124 v2：fhs_check_product_cost_drift() N飾擴充，比對公式由 flat(185/235) 改為 fhs_compute_keychain_cost 動態計算（Session 124）✅ 已部署
+│   │   └── 0047_order_cost_override.sql ← S130 Phase B：orders.cost_override_locked(BOOLEAN) + fhs_adjust_order_cost RPC + fhs_unlock_order_cost RPC + fhs_apply_financial_batch_update 守衛 + fhs_batch_recalc_execute 守衛（Session 130）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
