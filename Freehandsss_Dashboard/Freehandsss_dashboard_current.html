@@ -301,33 +301,30 @@
             padding: 10px 12px; margin: 6px 0;
         }
         .fhsPaySimp_grid {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 10px;
+            display: grid; grid-template-columns: minmax(0,1.5fr) 1fr 1fr;
+            gap: 6px 10px; align-items: center;
+        }
+        .fhsPaySimp_fieldHead {
+            font-size: 10px; font-weight: 700; color: #6B7280; text-align: center;
         }
         .fhsPaySimp_catLabel {
-            font-size: 12px; font-weight: 600; color: #374151;
-            grid-column: 1 / -1; margin-top: 6px; padding-bottom: 2px;
-            border-bottom: 1px solid #E5E7EB;
+            font-size: 12px; font-weight: 600; line-height: 1.35;
+            padding: 3px 6px; border-radius: 3px;
         }
-        .fhsPaySimp_catLabel:first-of-type { margin-top: 0; }
-        .fhsPaySimp_fieldHead {
-            font-size: 11px; color: #6B7280; font-weight: 600; text-align: center;
+        .fhsPaySimp_divider {
+            grid-column: 1 / -1; border: none; border-top: 1px solid #E5E7EB; margin: 2px 0;
         }
-        .fhsPaySimp_cell { display: flex; align-items: center; gap: 3px; }
+        .fhsPaySimp_cell { display: flex; align-items: center; gap: 3px; justify-content: center; }
         .fhsPaySimp_dollar { font-size: 13px; color: #555; }
         .fhsPaySimp_input {
-            width: 80px; padding: 4px 5px; border: 1px solid #D1D5DB; border-radius: 4px;
-            font-size: 14px; background: #E9ECEF; color: #555; cursor: default;
+            width: 75px; padding: 4px 5px; border: 1px solid #D1D5DB; border-radius: 4px;
+            font-size: 14px; background: #E9ECEF; color: #555; cursor: default; text-align: right;
         }
         .fhsPaySimp_input:not([readonly]) {
             background: #fff; color: #111; cursor: text; border-color: #2563EB;
         }
         .fhsPaySimp_input:disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
-        .fhsPaySimp_editBtn {
-            background: #F3F4F6; border: 1px solid #D1D5DB; border-radius: 4px;
-            font-size: 12px; cursor: pointer; padding: 2px 5px; color: #374151; line-height: 1.4;
-        }
-        .fhsPaySimp_editBtn:hover:not(:disabled) { background: #E5E7EB; }
-        .fhsPaySimp_editBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .fhsPaySimp_input[readonly]:not([disabled]) { cursor: pointer; }
         .fhsPaySimp_confirmBar {
             display: none; margin-top: 8px; padding: 7px 10px; background: #FEF3C7;
             border: 1px solid #F59E0B; border-radius: 6px; gap: 8px; align-items: center;
@@ -347,8 +344,8 @@
             margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         @media (max-width: 480px) {
-            .fhsPaySimp_grid { grid-template-columns: 1fr 1fr; gap: 6px 8px; }
-            .fhsPaySimp_input { width: 68px; }
+            .fhsPaySimp_grid { grid-template-columns: minmax(0,1.2fr) 1fr 1fr; gap: 4px 6px; }
+            .fhsPaySimp_input { width: 60px; font-size: 13px; }
         }
 
         .toggle-row {
@@ -2377,6 +2374,14 @@
         .fhsAudit_amount.profit{color:#558B2F;font-weight:700;}
         .fhsAudit_amount.muted{color:#aaa;font-weight:400;}
         .fhsAudit_amount.deduct{color:#E63946;}
+        /* 成本扣減 inline badge（綠＝節省，非成本）+ 點按圓形展開解說 */
+        .fhsAudit_dedBadge{display:inline-flex;align-items:center;gap:3px;flex-shrink:0;cursor:pointer;color:#2E9E5B;font-family:var(--fhs-font-mono,monospace);font-weight:600;font-size:12px;user-select:none;}
+        .fhsAudit_dedDot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#2E9E5B;color:#fff;font-size:9px;font-style:italic;font-weight:700;line-height:1;font-family:Georgia,serif;}
+        .fhsAudit_dedExpl{font-size:10.5px;color:#555;background:#f1faf4;border-left:2px solid #2E9E5B;border-radius:0 4px 4px 0;padding:4px 9px;margin:1px 0 4px 16px;line-height:1.5;}
+        /* 品項明細：分類色標頭（對齊簡化付款 P橙/K藍/M紫）+ 左右手腳精簡標籤 */
+        .fhsAudit_catHdr{display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:5px;margin:9px 0 3px;letter-spacing:.5px;}
+        .fhsAudit_matHint{color:#999;font-weight:400;font-size:11px;}
+        .fhsAudit_itemFlat{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:5px 10px;font-size:12px;font-weight:600;color:#888;}
         .fhsAudit_chk{font-size:12px;flex-shrink:0;width:16px;text-align:center;}
         .fhsAudit_chk.pass{color:#558B2F;font-weight:700;}
         .fhsAudit_chk.fail{color:#E63946;font-weight:700;}
@@ -3963,71 +3968,78 @@
         </div>
 
         <div class="form-group">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-                <label style="font-weight:600;margin:0;">已付訂金</label>
-                <button type="button" id="fhsHalfFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickHalfFillAllSplits('deposit', true)" style="background:#558B2F;border:1px solid #558B2F;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;">全部半訂</button>
-                <button type="button" id="fhsFullFillAllBtn" class="fhs-fill-mode-btn" onclick="_quickFillAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#666;font-size:12px;cursor:pointer;padding:2px 8px;">全部付清</button>
-                <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
-                <button type="button" id="fhsPaySimpToggle" class="fhsPaySimp_toggleBtn" onclick="_fhsTogglePaySimpMode()">⊞ 簡化</button>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <label id="depositSectionLabel" style="font-weight:600;margin:0;white-space:nowrap;display:none;">已付訂金</label>
+                <button type="button" id="fhsDepositFillToggle" onclick="_toggleDepositFillMode()" style="background:#388E3C;border:1px solid #388E3C;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;padding:2px 8px;white-space:nowrap;">全部半訂</button>
+                <button type="button" onclick="_quickClearAllSplits('deposit')" style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:5px;color:#C62828;font-size:12px;cursor:pointer;padding:2px 8px;white-space:nowrap;" onmouseover="this.style.background='#FFCDD2';this.style.borderColor='#E57373'" onmouseout="this.style.background='#FFEBEE';this.style.borderColor='#EF9A9A'">✕ 清除</button>
+                <button type="button" id="fhsPaySimpToggle" class="fhsPaySimp_toggleBtn" onclick="_fhsTogglePaySimpMode()" style="margin-left:auto;background:#1565C0;border-color:#1565C0;">≡ 逐件</button>
             </div>
-            <div id="depositSplitContainer" class="payment-split-row"></div>
+            <div id="depositSplitContainer" class="payment-split-row" style="display:none"></div>
             <input type="hidden" id="deposit" value="0">
             <input type="hidden" id="depositSplitData" value="">
         </div>
 
-        <!-- fhsPaySimp: Simplified 3-category view (S126) — hidden by default -->
-        <div id="fhsPaySimp_view" class="fhsPaySimp_view" style="display:none">
+        <!-- fhsPaySimp: Simplified 3-category view (S126) — shown by default -->
+        <div id="fhsPaySimp_view" class="fhsPaySimp_view" style="display:block">
             <div class="fhsPaySimp_grid">
+                <!-- header row -->
                 <div></div>
                 <div class="fhsPaySimp_fieldHead">已付訂金</div>
                 <div class="fhsPaySimp_fieldHead">未付尾數</div>
 
-                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelP" style="background:#FFF3E0;color:#E65100;padding:2px 6px;border-radius:3px;border-bottom:none;">① 手模擺設 + 配件<span id="fhsPaySimp_formula_P" class="fhsPaySimp_formula"></span></div>
+                <!-- ① 手模擺設 + 配件 -->
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelP" style="background:#FFF3E0;color:#E65100;">① 手模擺設 + 配件<span id="fhsPaySimp_formula_P" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="number" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="deposit" inputmode="numeric" readonly placeholder="0"
+                        onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
-                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="P" data-simpfield="deposit" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="number" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="balance" inputmode="numeric" readonly placeholder="0"
+                        onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
-                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="P" data-simpfield="balance" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
                 </div>
 
-                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelK" style="background:#E3F2FD;color:#1565C0;padding:2px 6px;border-radius:3px;border-bottom:none;">② 鎖匙扣<span id="fhsPaySimp_formula_K" class="fhsPaySimp_formula"></span></div>
+                <hr class="fhsPaySimp_divider">
+
+                <!-- ② 鎖匙扣 -->
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelK" style="background:#E3F2FD;color:#1565C0;">② 鎖匙扣<span id="fhsPaySimp_formula_K" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="number" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="deposit" inputmode="numeric" readonly placeholder="0"
+                        onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
-                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="K" data-simpfield="deposit" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="number" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="balance" inputmode="numeric" readonly placeholder="0"
+                        onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
-                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="K" data-simpfield="balance" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
                 </div>
 
-                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelM" style="background:#EDE7F6;color:#4527A0;padding:2px 6px;border-radius:3px;border-bottom:none;">③ 頸鏈吊飾<span id="fhsPaySimp_formula_M" class="fhsPaySimp_formula"></span></div>
+                <hr class="fhsPaySimp_divider">
+
+                <!-- ③ 頸鏈吊飾 -->
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelM" style="background:#EDE7F6;color:#4527A0;">③ 頸鏈吊飾<span id="fhsPaySimp_formula_M" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="number" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="deposit" inputmode="numeric" readonly placeholder="0"
+                        onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
-                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="M" data-simpfield="deposit" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="number" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="balance" inputmode="numeric" readonly placeholder="0"
+                        onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
-                    <button type="button" class="fhsPaySimp_editBtn" data-simpcat="M" data-simpfield="balance" onclick="_fhsSimpEditToggle(this)" title="編輯並分攤此類">✏️</button>
                 </div>
             </div>
             <div id="fhsPaySimp_confirmBar" class="fhsPaySimp_confirmBar">
@@ -4038,11 +4050,11 @@
         </div>
 
         <div class="form-group">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div id="balanceLabelRow" style="display:none;align-items:center;gap:8px;margin-bottom:4px;">
                 <label style="font-weight:600;margin:0;">未付尾數</label>
-                <button type="button" onclick="_quickClearAllSplits('balance')" style="background:#f5f5f5;border:1px solid #ddd;border-radius:5px;color:#999;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFEBEE';this.style.color='#C62828';this.style.borderColor='#EF9A9A'" onmouseout="this.style.background='#f5f5f5';this.style.color='#999';this.style.borderColor='#ddd'">✕ 清除</button>
+                <button type="button" onclick="_quickClearAllSplits('balance')" style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:5px;color:#C62828;font-size:12px;cursor:pointer;padding:2px 8px;display:flex;align-items:center;gap:3px;" onmouseover="this.style.background='#FFCDD2';this.style.borderColor='#E57373'" onmouseout="this.style.background='#FFEBEE';this.style.borderColor='#EF9A9A'">✕ 清除</button>
             </div>
-            <div id="balanceSplitContainer" class="payment-split-row"></div>
+            <div id="balanceSplitContainer" class="payment-split-row" style="display:none"></div>
             <input type="hidden" id="balance" value="0">
             <input type="hidden" id="balanceSplitData" value="">
         </div>
@@ -4720,8 +4732,8 @@
     ===================================================== -->
     <div id="v40-bottom-bar" class="fhs-bottom-bar">
         <button class="fhs-btn-secondary" style="min-width:64px;"
-            onclick="openDrawer(); document.getElementById('v40-drawer').classList.add('is-open'); document.getElementById('v40-drawer-overlay').classList.add('is-visible');">
-            ⚙️ 設定
+            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ setTimeout(function(){ var cb = document.querySelector('.order-row-cb[data-order-id=&quot;'+oid+'&quot;]'); if(cb){ var row=cb.closest('tr'); if(row){ row.style.background='#FFF9C4'; row.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){row.style.background='';},2000); } } },800); } })()">
+            ← 返回總覧
         </button>
         <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
             onclick="openIgPreviewModal()">
@@ -4802,6 +4814,12 @@
             var _valid = new Set(['待製作', '製作中', '完成', '已取件', '需進行補打', '已book日期', '已取模', '待交收']);
             if (_valid.has(s)) return s;
             if (!s) return '待製作';
+            if (s.startsWith('hm:')) {
+                var _pts = s.substring(3).split('|').filter(Boolean);
+                if (_pts.length >= 3) return '完成';
+                if (_pts.length >= 1) return '已book日期';
+                return '待製作';
+            }
             var _u = (s || '').toLowerCase();
             if (_u.includes('done') || _u.includes('完成')) return '完成';
             if (_u.includes('已取件')) return '已取件';
@@ -4830,6 +4848,39 @@
         window._getItemStatus = function(orderId, item) {
             var _k = orderId + '|' + (item.Item_ID || item.Order_Item_Key || '');
             return window._fhsStatusStore[_k] || item.Status || item.Process_Status || '';
+        };
+
+        // 手模擺設 checklist helpers
+        window._fhsHmParseState = function(v) {
+            if (!v || v === '待製作') return [false,false,false];
+            if (v === 'Done 已完成' || v === '待交收') return [true,true,true];
+            if (v.startsWith('hm:')) {
+                var pts = v.substring(3).split('|');
+                return [pts.indexOf('已book')!==-1, pts.indexOf('已做laser')!==-1, pts.indexOf('已做音訊')!==-1];
+            }
+            if (v === '已取模') return [true,true,false];
+            if (v.indexOf('book')!==-1) return [true,false,false];
+            return [false,false,false];
+        };
+        window._fhsHmCheckChange = function(orderId, itemIndex, pfx) {
+            var wrap = document.getElementById(pfx+'-wrap-'+orderId+'-'+itemIndex);
+            if (!wrap) return;
+            var cbs = wrap.querySelectorAll('input[type=checkbox]');
+            var labels = ['已book','已做laser','已做音訊'];
+            var parts = [];
+            cbs.forEach(function(cb, i) {
+                var lbl = cb.closest ? cb.closest('label') : cb.parentElement;
+                if (cb.checked) {
+                    parts.push(labels[i]);
+                    if (lbl) { lbl.style.textDecoration='line-through'; lbl.style.color='#aaa'; }
+                } else {
+                    if (lbl) { lbl.style.textDecoration=''; lbl.style.color=''; }
+                }
+            });
+            var newVal = (parts.length===3) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
+            var hid = document.getElementById(pfx+'-val-'+orderId+'-'+itemIndex);
+            if (hid) hid.value = newVal;
+            saveInlineEdit(orderId, 'Process_Status', pfx+'-val-'+orderId+'-'+itemIndex, itemIndex);
         };
 
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
@@ -8530,59 +8581,34 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 </div>
                                 <div class="acc-ctrl-status">
                                     <span class="acc-field-label">🚥 進度</span>
-                                    <select id="acc-status-${o.id}-${idx}"
-                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx});
-                                                  var _adj = document.getElementById('acc-adj-wrapper-${o.id}-${idx}');
-                                                  if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
-                                        ${(function(){
-                                            var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                            var _cat = (dimensions.category || item.Category || '').toString();
-                                            var _opts = [];
-                                            if (_cat.indexOf('手模擺設') !== -1) {
-                                                _opts = [
-                                                    ['已book日期','已book日期'],
-                                                    ['已取模','已取模'],
-                                                    ['待交收','待交收'],
-                                                    ['Done 已完成','Done ✅']
-                                                ];
-                                            } else if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
-                                                _opts = [
-                                                    ['0 什麼都未做','0 什麼都未做'],
-                                                    ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                    ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                    ['3 已交付廠家, 打印中','3 打印中'],
-                                                    ['需進行補打','需進行補打'],
-                                                    ['Done 已完成','Done ✅']
-                                                ];
-                                            } else {
-                                                _opts = [
-                                                    ['0 什麼都未做','0 什麼都未做'],
-                                                    ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                    ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                    ['3 已交付廠家, 打印中','3 打印中'],
-                                                    ['Done 已完成','Done ✅']
-                                                ];
-                                            }
-                                            return _opts.map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join('');
-                                        })()}
-                                    </select>
-                                    <div id="acc-adj-wrapper-${o.id}-${idx}" style="display:${(function(){
+                                    ${(function(){
                                         var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                        return _s === '需進行補打' ? 'flex' : 'none';
-                                    })()}; align-items:center; gap:4px; margin-top:6px;">
-                                        <span style="color:#e63946; font-size:12px; font-weight:bold;">$</span>
-                                        <input type="number" id="acc-adj-input-${o.id}-${idx}"
-                                               value="${o.Adjustment_Amount || ''}"
-                                               placeholder="金額"
-                                               style="border:1px solid #ccc; border-radius:4px; outline:none; width:80px; font-size:11px; text-align:center; padding:4px; background:#ffffff; color:#333333;"
-                                               oninput="updateFinancialsLocally('${o.id}', this.value)"
-                                               onblur="saveAdjustmentAmount('${o.id}', this.value)"
-                                               onkeydown="if(event.key==='Enter') { this.blur(); }">
-                                    </div>
+                                        var _cat = (dimensions.category || item.Category || '').toString();
+                                        if (_cat.indexOf('手模擺設') !== -1) {
+                                            var _st = window._fhsHmParseState ? window._fhsHmParseState(_s) : [false,false,false];
+                                            var _lbs = ['已book','已做laser','已做音訊'];
+                                            var _cks = _lbs.map(function(l,i){
+                                                var ck = _st[i];
+                                                return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
+                                                    +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+o.id+'\','+idx+',\'acc-hmck\')"> '+l+'</label>';
+                                            }).join('');
+                                            return '<div id="acc-hmck-wrap-'+o.id+'-'+idx+'" style="display:flex;flex-direction:column;gap:5px;">'
+                                                +_cks+'<input type="hidden" id="acc-hmck-val-'+o.id+'-'+idx+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>';
+                                        }
+                                        var _opts = [];
+                                        if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
+                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done ✅']];
+                                        } else {
+                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done ✅']];
+                                        }
+                                        var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'acc-status-'+o.id+'-'+idx+'\','+idx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+o.id+'-'+idx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
+                                        return '<select id="acc-status-'+o.id+'-'+idx+'" onchange="'+_oc+'">'
+                                            +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
+                                            +'<div id="acc-adj-wrapper-'+o.id+'-'+idx+'" style="display:'+(_s==='需進行補打'?'flex':'none')+';align-items:center;gap:4px;margin-top:6px;">'
+                                            +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
+                                            +'<input type="number" id="acc-adj-input-'+o.id+'-'+idx+'" value="'+(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:11px;text-align:center;padding:4px;background:#ffffff;color:#333333;" oninput="updateFinancialsLocally(\''+o.id+'\',this.value)" onblur="saveAdjustmentAmount(\''+o.id+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+                                            +'</div>';
+                                    })()}
                                 </div>
                             </div>
                             <div id="acc-save-${o.id}-${idx}" style="font-size:10px; color:#888; min-height:14px; margin-top:2px;"></div>
@@ -9014,61 +9040,37 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                        placeholder="批次">
                             </td>
                             <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
-                                <select id="status-select-${o.id}-${index}" class="review-status-select"
-                                        style="width:100%; max-width:92px; font-size:13px; margin:0 auto;"
-                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index});
-                                                  var _adj = document.getElementById('adj-wrapper-${o.id}-${index}');
-                                                  if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
-                                    ${(function(){
-                                        var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                        var _cat = (dimensions.category || item.Category || '').toString();
-                                        var _opts = [];
-                                        if (_cat.indexOf('手模擺設') !== -1) {
-                                            _opts = [
-                                                ['已book日期','已book日期'],
-                                                ['已取模','已取模'],
-                                                ['待交收','待交收'],
-                                                ['Done 已完成','Done ✅']
-                                            ];
-                                        } else if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
-                                            _opts = [
-                                                ['0 什麼都未做','0 什麼都未做'],
-                                                ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                ['3 已交付廠家, 打印中','3 打印中'],
-                                                ['需進行補打','需進行補打'],
-                                                ['Done 已完成','Done ✅']
-                                            ];
-                                        } else {
-                                            _opts = [
-                                                ['0 什麼都未做','0 什麼都未做'],
-                                                ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                ['3 已交付廠家, 打印中','3 打印中'],
-                                                ['Done 已完成','Done ✅']
-                                            ];
-                                        }
-                                        return _opts.map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join('');
-                                    })()}
-                                </select>
-                                <div id="adj-wrapper-${o.id}-${index}" style="display:${(function(){
+                                ${(function(){
                                     var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                    return _s === '需進行補打' ? 'flex' : 'none';
-                                })()}; align-items:center; justify-content:center; gap:4px; margin-top:6px;">
-                                    <span style="color:#e63946; font-size:12px; font-weight:bold;">$</span>
-                                    <input type="number" id="adj-input-${o.id}-${index}"
-                                           value="${o.Adjustment_Amount || ''}"
-                                           placeholder="金額"
-                                           style="border:1px solid #ccc; border-radius:4px; outline:none; width:80px; font-size:12px; text-align:center; padding:4px; background:#ffffff; color:#333333;"
-                                           oninput="updateFinancialsLocally('${o.id}', this.value)"
-                                           onblur="saveAdjustmentAmount('${o.id}', this.value)"
-                                           onkeydown="if(event.key==='Enter') { this.blur(); }">
-                                </div>
-                                <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
+                                    var _cat = (dimensions.category || item.Category || '').toString();
+                                    if (_cat.indexOf('手模擺設') !== -1) {
+                                        var _st = window._fhsHmParseState ? window._fhsHmParseState(_s) : [false,false,false];
+                                        var _lbs = ['已book','已做laser','已做音訊'];
+                                        var _cks = _lbs.map(function(l,i){
+                                            var ck = _st[i];
+                                            return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
+                                                +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+o.id+'\','+index+',\'hmck\')"> '+l+'</label>';
+                                        }).join('');
+                                        return '<div id="hmck-wrap-'+o.id+'-'+index+'" style="display:flex;flex-direction:column;gap:5px;text-align:left;padding:2px 0;">'
+                                            +_cks+'<input type="hidden" id="hmck-val-'+o.id+'-'+index+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>'
+                                            +'<div id="save-indicator-'+o.id+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                    }
+                                    var _opts = [];
+                                    if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
+                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done ✅']];
+                                    } else {
+                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done ✅']];
+                                    }
+                                    var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'status-select-'+o.id+'-'+index+'\','+index+');var _adj=document.getElementById(\'adj-wrapper-'+o.id+'-'+index+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
+                                    var _adjDisp = (_s === '需進行補打') ? 'flex' : 'none';
+                                    return '<select id="status-select-'+o.id+'-'+index+'" class="review-status-select" style="width:100%;max-width:92px;font-size:13px;margin:0 auto;" onchange="'+_oc+'">'
+                                        +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
+                                        +'<div id="adj-wrapper-'+o.id+'-'+index+'" style="display:'+_adjDisp+';align-items:center;justify-content:center;gap:4px;margin-top:6px;">'
+                                        +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
+                                        +'<input type="number" id="adj-input-'+o.id+'-'+index+'" value="'+(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:12px;text-align:center;padding:4px;background:#ffffff;color:#333333;" oninput="updateFinancialsLocally(\''+o.id+'\',this.value)" onblur="saveAdjustmentAmount(\''+o.id+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+                                        +'</div>'
+                                        +'<div id="save-indicator-'+o.id+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                })()}
                             </td>
                             ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:8px; background-color:${batchCol};">
                                 <textarea class="review-notes-textarea"
@@ -10025,7 +10027,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // n8n_adjustment_notes: filter to operator-relevant only (amount ≠ 0 = real deduction)
             // Audit/comparison notes (amount=0 or missing) are developer-internal — hide from operator
             var _rawNotes = extra && extra.n8n_adjustment_notes;
-            var n8nNotes = '', n8nBasis = '';
+            var n8nNotes = '', n8nBasis = '', n8nAdjItems = [];
             if (_rawNotes) {
                 if (typeof _rawNotes === 'string') {
                     n8nNotes = _rawNotes;
@@ -10036,6 +10038,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // Only show notes with a real monetary adjustment (amount exists and ≠ 0)
                         return typeof n === 'object' && n.amount != null && parseFloat(n.amount) !== 0;
                     });
+                    n8nAdjItems = _opNotes;
                     n8nNotes = _opNotes.map(function(n) {
                         if (n.basis) _bases.push(n.basis);
                         return n.desc || n.text || n.message || n.type || '';
@@ -10115,13 +10118,57 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             h += '<div class="fhsAudit_sectionHdr"><span>② 成本快照鏈</span>' +
                 '<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#B07D4C;opacity:.8;">n8n 自動記帳 · 快照時間點</span></div>';
 
+            // Inline deduction badge: map each adjustment note to its category row.
+            // (−$X) shows next to the cost amount in green (saving, NOT a cost); a small
+            // circle reveals the explanation only when tapped — keeps ② clean yet auditable.
+            var _dedSeq = 0, _consumedAdj = [];
+            function _dedBadge(keyword) {
+                var matched = n8nAdjItems.filter(function(a) {
+                    if (_consumedAdj.indexOf(a) !== -1) return false;
+                    var d = a.desc || a.text || a.message || a.type || '';
+                    return d.indexOf(keyword) !== -1;
+                });
+                if (matched.length === 0) return { badge: '', expl: '' };
+                matched.forEach(function(m) { _consumedAdj.push(m); });
+                var sumAdj = matched.reduce(function(s, a) { return s + (parseFloat(a.amount) || 0); }, 0);
+                var uid = 'fhsDed_' + (o.id || o._uuid || 'x') + '_' + (_dedSeq++);
+                var badge = '<span class="fhsAudit_dedBadge" onclick="var e=document.getElementById(\'' + uid + '\');e.style.display=e.style.display===\'block\'?\'none\':\'block\';">' +
+                    _fNeg(-Math.abs(sumAdj)) + '<span class="fhsAudit_dedDot">i</span></span>';
+                var expl = '<div id="' + uid + '" class="fhsAudit_dedExpl" style="display:none;">' +
+                    matched.map(function(a) {
+                        var d = a.desc || a.text || a.message || a.type || '';
+                        var b = a.basis ? '<span style="color:#999;"> · 依據 ' + a.basis + '</span>' : '';
+                        return d + b;
+                    }).join('<br>') + '</div>';
+                return { badge: badge, expl: expl };
+            }
+            function _costRow(label, costNum, keyword) {
+                var ded = _dedBadge(keyword);
+                return '<div class="fhsAudit_row indent1">' +
+                    '<span class="fhsAudit_label">' + label + '</span>' +
+                    ded.badge +
+                    '<span class="fhsAudit_amount cost">' + _f(costNum) + '</span>' +
+                '</div>' + ded.expl;
+            }
+
             // Main: order-level category breakdown (30/30 reliable — single source of truth)
-            if (handmodelCost > 0) h += _row('手模成本',   _f(handmodelCost), 'cost', 1);
-            if (keychainCost  > 0) h += _row('鎖匙扣成本', _f(keychainCost),  'cost', 1);
-            if (necklaceCost  > 0) h += _row('吊飾成本',   _f(necklaceCost),  'cost', 1);
+            if (handmodelCost > 0) h += _costRow('手模成本',   handmodelCost, '手模');
+            if (keychainCost  > 0) h += _costRow('鎖匙扣成本', keychainCost,  '鎖匙扣');
+            if (necklaceCost  > 0) h += _costRow('吊飾成本',   necklaceCost,  '吊飾');
             if (catSum === 0 && totalCost > 0) {
                 h += _row('成本（未分類）', _f(totalCost), 'cost', 1, null, '訂單層類別欄未記錄，以 total_cost 為準');
             }
+
+            // Any deduction note not matched to a category row — show inline so nothing is hidden
+            n8nAdjItems.forEach(function(a) {
+                if (_consumedAdj.indexOf(a) !== -1) return;
+                var d = a.desc || a.text || a.message || a.type || '';
+                var amt = parseFloat(a.amount) || 0;
+                h += '<div class="fhsAudit_row indent1">' +
+                    '<span class="fhsAudit_label">' + (d || '成本扣減') + '</span>' +
+                    '<span class="fhsAudit_amount" style="color:#2E9E5B;">' + _fNeg(-Math.abs(amt)) + '</span>' +
+                '</div>';
+            });
 
             // Problem E: catSum > totalCost = shipping deduction applied to total_cost but not category cols
             if (shippingDeductAmt > 0 && shippingDeductAmt <= 200) {
@@ -10143,35 +10190,58 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 } else {
                     h += '<hr class="fhsAudit_divider_sub" style="margin-top:8px;">';
                     h += '<div style="font-size:10.5px;color:#888;padding:2px 0 6px;">品項明細</div>';
-                    var catOrder2 = ['手模', '頸鏈', '鎖匙扣', '吊飾', '羊毛氈', '立體擺設'];
-                    var grouped2 = {}, orderedCats2 = [];
-                    items.forEach(function(it) {
-                        var c2 = it.item_category || '其他';
-                        if (!grouped2[c2]) grouped2[c2] = [];
-                        grouped2[c2].push(it);
-                    });
-                    catOrder2.forEach(function(c) { if (grouped2[c]) orderedCats2.push(c); });
-                    Object.keys(grouped2).forEach(function(c) { if (orderedCats2.indexOf(c) === -1) orderedCats2.push(c); });
-                    orderedCats2.forEach(function(cat2) {
-                        grouped2[cat2].forEach(function(it) {
-                            // Show direction/spec only — strip engraving names from legacy item_key
-                            var _sp2 = it.specification || '';
-                            var _ik2 = it.item_key || '';
+
+                    // item_key 格式 = {訂號}_{P|K|M}_{LH|RH|LF|RF|MAIN}；左右手腳藏於後綴，刻字（engraving）不顯示
+                    function _limbName(ik) {
+                        var m = (ik || '').match(/_(LH|RH|LF|RF|MAIN)$/);
+                        return m ? ({ LH: '左手', RH: '右手', LF: '左腳', RF: '右腳', MAIN: '主體' }[m[1]] || '') : '';
+                    }
+                    function _matName(sku) {
+                        sku = sku || '';
+                        if (/925金/.test(sku)) return '金';
+                        if (/925銀/.test(sku)) return '銀';
+                        if (/不[銹鏽]鋼/.test(sku)) return '鋼';
+                        if (/鋁/.test(sku)) return '鋁';
+                        return '';
+                    }
+                    function _catCode(it) {
+                        var ikm = (it.item_key || '').match(/_([PKM])_/);
+                        if (ikm) return ikm[1];
+                        var c = it.item_category || '';
+                        if (/手模|擺設|立體/.test(c)) return 'P';
+                        if (/鎖匙扣/.test(c)) return 'K';
+                        if (/頸鏈|吊飾/.test(c)) return 'M';
+                        return 'X';
+                    }
+                    // 分類色標（對齊 S126 簡化付款：P橙 / K藍 / M紫）+ 訂單總覽次序 P→K→M
+                    var _catMeta = {
+                        P: { label: '手模擺設', style: 'background:#FFF3E0;color:#E65100;' },
+                        K: { label: '鎖匙扣',   style: 'background:#E3F2FD;color:#1565C0;' },
+                        M: { label: '頸鏈吊飾', style: 'background:#EDE7F6;color:#4527A0;' },
+                        X: { label: '其他',     style: 'background:#f0f0f0;color:#666;' }
+                    };
+                    var _limbRank = { '主體': 0, '左手': 1, '右手': 2, '左腳': 3, '右腳': 4, '': 9 };
+                    var _grp = { P: [], K: [], M: [], X: [] };
+                    items.forEach(function(it) { _grp[_catCode(it)].push(it); });
+
+                    ['P', 'K', 'M', 'X'].forEach(function(code) {
+                        var list = _grp[code];
+                        if (!list.length) return;
+                        list.sort(function(a, b) {
+                            return (_limbRank[_limbName(a.item_key)] ?? 9) - (_limbRank[_limbName(b.item_key)] ?? 9);
+                        });
+                        var meta = _catMeta[code];
+                        h += '<div class="fhsAudit_catHdr" style="' + meta.style + '">' + meta.label + '</div>';
+                        list.forEach(function(it) {
+                            var limb = _limbName(it.item_key);
+                            var mat  = _matName(it.product_sku);
                             var lbl2;
-                            if (cat2 === '立體擺設') {
-                                lbl2 = _sp2 || it.product_sku || '手模擺設';
-                            } else if (_sp2) {
-                                var _dm = _sp2.match(/[左右][手腳]/);
-                                lbl2 = _dm ? _dm[0] : _sp2.split(/[\s·]/)[0];
-                            } else if (_ik2.includes(' | ')) {
-                                var _dm2 = _ik2.match(/[左右][手腳]/);
-                                lbl2 = _dm2 ? _dm2[0] : (it.product_sku || cat2 || '品項');
+                            if (code === 'P') {
+                                lbl2 = (limb && limb !== '主體' ? limb + ' ' : '') + (it.product_sku || '手模擺設');
                             } else {
-                                lbl2 = it.product_sku || cat2 || '品項';
+                                lbl2 = (limb || it.product_sku || '品項') + (mat ? '<span class="fhsAudit_matHint"> · ' + mat + '</span>' : '');
                             }
                             var qty2   = parseInt(it.quantity) || 1;
-                            var cCls2  = cat2 === '頸鏈' ? 'necklace' : cat2 === '鎖匙扣' ? 'keychain' : '';
-                            var cTag2  = '<span class="fhsAudit_catTag ' + cCls2 + '">' + cat2 + '</span>';
                             var sub2   = parseFloat(it.subtotal_cost ?? 0) || 0;
                             var base2  = parseFloat(it.item_base_cost ?? 0) || 0;
                             var draw2  = parseFloat(it.drawing_cost ?? 0) || 0;
@@ -10179,9 +10249,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             var chain2c= parseFloat(it.chain_cost ?? 0) || 0;
                             var ship2  = parseFloat(it.shipping_cost ?? 0) || 0;
                             var hasBreakdown = (draw2 > 0 || print2 > 0 || chain2c > 0 || ship2 > 0);
-                            // 點3：數量>1 但成本小計＝單件 base（完全未隨件數累加）= 疑漏算加購
+                            // 數量>1 但成本小計＝單件 base（完全未隨件數累加）= 疑漏算加購
                             var qtyUnscaled = (qty2 > 1 && base2 > 0 && Math.abs(sub2 - base2) < 0.01);
-                            h += '<div class="fhsAudit_itemHdr"><span>' + lbl2 + (qty2 > 1 ? ' ×' + qty2 : '') + '</span>' + cTag2 + '</div>';
+                            var sumLbl = lbl2 + (qty2 > 1 ? ' <span style="color:#888;">×' + qty2 + '</span>' : '');
                             if (sub2 > 0) {
                                 // 點2 降級版：只列真實存在欄位，缺則註明未記錄，不臆造拆解
                                 var dh = '';
@@ -10195,12 +10265,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 dh += '<div class="fhsAudit_detailRow" style="font-weight:700;border-top:1px solid #eee;margin-top:3px;padding-top:4px;"><span>成本小計（記錄值）</span><span class="v">' + _f(sub2) + '</span></div>';
                                 if (qtyUnscaled) dh += '<div class="fhsAudit_qtyWarn">⚠ 此品項數量 ×' + qty2 + '，但成本小計＝單件成本（' + _f(base2) + '），未按件數累加。疑漏算加購 ' + (qty2 - 1) + ' 件，實際成本待 n8n 修正（不影響確收金額）。</div>';
                                 h += '<details class="fhsAudit_itemDetail">' +
-                                    '<summary><span class="fhsAudit_sumLabel">成本小計' + (qtyUnscaled ? ' <span style="color:#E63946;">⚠</span>' : '') + '</span>' +
+                                    '<summary><span class="fhsAudit_sumLabel">' + sumLbl + (qtyUnscaled ? ' <span style="color:#E63946;">⚠</span>' : '') + '</span>' +
                                     '<span class="fhsAudit_amount cost">' + _f(sub2) + '</span></summary>' +
                                     '<div class="fhsAudit_detailBody">' + dh + '</div>' +
                                 '</details>';
                             } else {
-                                h += '<div class="fhsAudit_note" style="padding-left:16px;color:#aaa;">—（明細未記錄）</div>';
+                                h += '<div class="fhsAudit_itemFlat"><span class="fhsAudit_sumLabel">' + sumLbl + '</span><span class="fhsAudit_amount muted">—</span></div>';
                             }
                         });
                     });
@@ -11438,40 +11508,53 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window._quickFillAllSplits = _quickFillAllSplits;
 
-        window._depositMode = 'half';
+        window._depositMode = null;
         window._balanceMode = 'half';
         window._fhsSplitRestoreSnapshot = null; // S107 方案A: 還原期 split 快照（權威來源，防 generate() 污染存檔值）
 
         function _syncGlobalDepositBtnUI() {
-            var halfBtn = document.getElementById('fhsHalfFillAllBtn');
-            var fullBtn = document.getElementById('fhsFullFillAllBtn');
-            var mode = window._depositMode || 'half';
-            if (halfBtn) {
-                halfBtn.style.background   = (mode === 'half') ? '#558B2F' : '#f5f5f5';
-                halfBtn.style.color        = (mode === 'half') ? '#fff'    : '#666';
-                halfBtn.style.borderColor  = (mode === 'half') ? '#558B2F' : '#ddd';
-            }
-            if (fullBtn) {
-                fullBtn.style.background   = (mode === 'full') ? '#558B2F' : '#f5f5f5';
-                fullBtn.style.color        = (mode === 'full') ? '#fff'    : '#666';
-                fullBtn.style.borderColor  = (mode === 'full') ? '#558B2F' : '#ddd';
+            var btn = document.getElementById('fhsDepositFillToggle');
+            if (!btn) return;
+            var mode = window._depositMode;
+            // Action-based: button shows what will happen on next click
+            // mode='half' means half was just applied → next action is full → show 全部付清 (blue)
+            // mode=null/full → next action is half → show 全部半訂 (green)
+            if (mode === 'half') {
+                btn.textContent = '全部付清';
+                btn.style.background  = '#1565C0';
+                btn.style.borderColor = '#1565C0';
+                btn.style.color       = '#fff';
+            } else {
+                btn.textContent = '全部半訂';
+                btn.style.background  = '#388E3C';
+                btn.style.borderColor = '#388E3C';
+                btn.style.color       = '#fff';
             }
         }
         window._syncGlobalDepositBtnUI = _syncGlobalDepositBtnUI;
+
+        function _toggleDepositFillMode() {
+            if (window._depositMode === 'half') {
+                _quickFillAllSplits('deposit');
+            } else {
+                _quickHalfFillAllSplits('deposit', true);
+            }
+        }
+        window._toggleDepositFillMode = _toggleDepositFillMode;
 
         function _syncGlobalBalanceBtnUI() {
             var halfBtn = document.getElementById('fhsHalfFillAllBtnBal');
             var fullBtn = document.getElementById('fhsFullFillAllBtnBal');
             var mode = window._balanceMode || 'half';
             if (halfBtn) {
-                halfBtn.style.background  = (mode === 'half') ? '#558B2F' : '#f5f5f5';
-                halfBtn.style.color       = (mode === 'half') ? '#fff'    : '#666';
-                halfBtn.style.borderColor = (mode === 'half') ? '#558B2F' : '#ddd';
+                halfBtn.style.background  = (mode === 'half') ? '#37474F' : '#F3F4F6';
+                halfBtn.style.color       = (mode === 'half') ? '#fff'    : '#374151';
+                halfBtn.style.borderColor = (mode === 'half') ? '#37474F' : '#D1D5DB';
             }
             if (fullBtn) {
-                fullBtn.style.background  = (mode === 'full') ? '#558B2F' : '#f5f5f5';
-                fullBtn.style.color       = (mode === 'full') ? '#fff'    : '#666';
-                fullBtn.style.borderColor = (mode === 'full') ? '#558B2F' : '#ddd';
+                fullBtn.style.background  = (mode === 'full') ? '#37474F' : '#F3F4F6';
+                fullBtn.style.color       = (mode === 'full') ? '#fff'    : '#374151';
+                fullBtn.style.borderColor = (mode === 'full') ? '#37474F' : '#D1D5DB';
             }
         }
         window._syncGlobalBalanceBtnUI = _syncGlobalBalanceBtnUI;
@@ -11495,9 +11578,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, bk, 'half');
             });
             if (field === 'deposit') {
-                window._depositMode  = 'half';
-                window._depositDirty = false;
-                _syncGlobalDepositBtnUI();
+                if (force) {
+                    window._depositMode  = 'half';
+                    window._depositDirty = false;
+                    _syncGlobalDepositBtnUI();
+                }
             }
             if (field === 'balance') {
                 window._balanceMode = 'half';
@@ -11522,6 +11607,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 inp.value = '';
                 inp.dispatchEvent(new Event('input', { bubbles: true }));
             });
+            if (window._fhsPaySimpMode) {
+                if (typeof _fhsSimpCancelAlloc === 'function') _fhsSimpCancelAlloc();
+                if (typeof _fhsRefreshSimplifiedView === 'function') _fhsRefreshSimplifiedView();
+            }
         }
         window._quickClearAllSplits = _quickClearAllSplits;
 
@@ -11532,7 +11621,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // via dispatchEvent('input') → existing serialize/sync untouched.
         // ═══════════════════════════════════════════════════════════
 
-        window._fhsPaySimpMode = false;
+        window._fhsPaySimpMode = true;
         window._fhsPaySimpPending = null;
 
         // Aggregate current box values by CSS category class
@@ -11670,21 +11759,27 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // Toggle between detail (細分) and simplified (三大類) mode
         function _fhsTogglePaySimpMode() {
             window._fhsPaySimpMode = !window._fhsPaySimpMode;
-            var simpView = document.getElementById('fhsPaySimp_view');
-            var depCont = document.getElementById('depositSplitContainer');
-            var balCont = document.getElementById('balanceSplitContainer');
+            var simpView  = document.getElementById('fhsPaySimp_view');
+            var depCont   = document.getElementById('depositSplitContainer');
+            var depLabel  = document.getElementById('depositSectionLabel');
+            var balCont   = document.getElementById('balanceSplitContainer');
+            var balLabel  = document.getElementById('balanceLabelRow');
             var toggleBtn = document.getElementById('fhsPaySimpToggle');
             if (window._fhsPaySimpMode) {
-                if (simpView) simpView.style.display = '';
-                if (depCont) depCont.style.display = 'none';
-                if (balCont) balCont.style.display = 'none';
+                if (simpView)  simpView.style.display  = '';
+                if (depCont)   depCont.style.display   = 'none';
+                if (depLabel)  depLabel.style.display  = 'none';
+                if (balCont)   balCont.style.display   = 'none';
+                if (balLabel)  balLabel.style.display  = 'none';
                 if (toggleBtn) { toggleBtn.textContent = '≡ 逐件'; toggleBtn.style.background = '#1565C0'; toggleBtn.style.borderColor = '#1565C0'; }
                 _fhsRefreshSimplifiedView();
             } else {
                 _fhsSimpCancelAlloc();
-                if (simpView) simpView.style.display = 'none';
-                if (depCont) depCont.style.display = '';
-                if (balCont) balCont.style.display = '';
+                if (simpView)  simpView.style.display  = 'none';
+                if (depCont)   depCont.style.display   = '';
+                if (depLabel)  depLabel.style.display  = '';
+                if (balCont)   balCont.style.display   = '';
+                if (balLabel)  balLabel.style.display  = 'flex';
                 if (toggleBtn) { toggleBtn.textContent = '⊞ 簡化'; toggleBtn.style.background = '#37474F'; toggleBtn.style.borderColor = '#37474F'; }
             }
         }
@@ -11704,6 +11799,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             _fhsSimpCancelAlloc(); // cancel any other pending
             inp.readOnly = false;
             inp.style.background = '';
+            inp.dataset.preFocusVal = inp.value; // save before clear (mirrors 逐件 focusin)
+            inp.value = '';
             inp.focus();
             btn.textContent = '↩';
             btn.style.background = '#E53935';
@@ -11711,6 +11808,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             btn.style.borderColor = '#E53935';
         }
         window._fhsSimpEditToggle = _fhsSimpEditToggle;
+
+        // Click-to-edit handler (replaces ✏️ button flow)
+        function _fhsSimpClickToEdit(inp) {
+            if (inp.disabled) return;
+            if (!inp.readOnly) return; // already editing
+            _fhsSimpCancelAlloc();
+            inp.readOnly = false;
+            inp.style.background = '';
+            inp.dataset.preFocusVal = inp.value;
+            inp.value = '';
+            inp.focus();
+        }
+        window._fhsSimpClickToEdit = _fhsSimpClickToEdit;
 
         // Called on blur; show confirm bar if value changed
         function _fhsSimpInputBlur(inp) {
@@ -11728,6 +11838,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var cat = inp.dataset.simpcat;
             var field = inp.dataset.simpfield;
             var total = Math.round(Number(inp.value)) || 0;
+            // Empty/zero blur → restore pre-focus value (mirrors 逐件 focusout restore)
+            if (total === 0) {
+                var pfv = inp.dataset.preFocusVal;
+                inp.value = (pfv !== undefined && pfv !== '') ? pfv : '';
+                inp.readOnly = true;
+                inp.style.background = '';
+                var eb = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
+                if (eb) { eb.textContent = '✏️'; eb.style.background = ''; eb.style.color = ''; eb.style.borderColor = ''; }
+                window._fhsPaySimpPending = null;
+                var bar = document.getElementById('fhsPaySimp_confirmBar');
+                if (bar) bar.style.display = 'none';
+                return;
+            }
             var container = document.getElementById(field + 'SplitContainer');
             var catCount = container ? container.querySelectorAll('.split-box.box-cat-' + cat).length : 0;
             if (!catCount) { _fhsSimpCancelAlloc(); return; }

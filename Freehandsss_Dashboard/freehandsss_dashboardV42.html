@@ -4814,6 +4814,12 @@
             var _valid = new Set(['待製作', '製作中', '完成', '已取件', '需進行補打', '已book日期', '已取模', '待交收']);
             if (_valid.has(s)) return s;
             if (!s) return '待製作';
+            if (s.startsWith('hm:')) {
+                var _pts = s.substring(3).split('|').filter(Boolean);
+                if (_pts.length >= 3) return '完成';
+                if (_pts.length >= 1) return '已book日期';
+                return '待製作';
+            }
             var _u = (s || '').toLowerCase();
             if (_u.includes('done') || _u.includes('完成')) return '完成';
             if (_u.includes('已取件')) return '已取件';
@@ -4842,6 +4848,39 @@
         window._getItemStatus = function(orderId, item) {
             var _k = orderId + '|' + (item.Item_ID || item.Order_Item_Key || '');
             return window._fhsStatusStore[_k] || item.Status || item.Process_Status || '';
+        };
+
+        // 手模擺設 checklist helpers
+        window._fhsHmParseState = function(v) {
+            if (!v || v === '待製作') return [false,false,false];
+            if (v === 'Done 已完成' || v === '待交收') return [true,true,true];
+            if (v.startsWith('hm:')) {
+                var pts = v.substring(3).split('|');
+                return [pts.indexOf('已book')!==-1, pts.indexOf('已做laser')!==-1, pts.indexOf('已做音訊')!==-1];
+            }
+            if (v === '已取模') return [true,true,false];
+            if (v.indexOf('book')!==-1) return [true,false,false];
+            return [false,false,false];
+        };
+        window._fhsHmCheckChange = function(orderId, itemIndex, pfx) {
+            var wrap = document.getElementById(pfx+'-wrap-'+orderId+'-'+itemIndex);
+            if (!wrap) return;
+            var cbs = wrap.querySelectorAll('input[type=checkbox]');
+            var labels = ['已book','已做laser','已做音訊'];
+            var parts = [];
+            cbs.forEach(function(cb, i) {
+                var lbl = cb.closest ? cb.closest('label') : cb.parentElement;
+                if (cb.checked) {
+                    parts.push(labels[i]);
+                    if (lbl) { lbl.style.textDecoration='line-through'; lbl.style.color='#aaa'; }
+                } else {
+                    if (lbl) { lbl.style.textDecoration=''; lbl.style.color=''; }
+                }
+            });
+            var newVal = (parts.length===3) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
+            var hid = document.getElementById(pfx+'-val-'+orderId+'-'+itemIndex);
+            if (hid) hid.value = newVal;
+            saveInlineEdit(orderId, 'Process_Status', pfx+'-val-'+orderId+'-'+itemIndex, itemIndex);
         };
 
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
@@ -8542,59 +8581,34 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 </div>
                                 <div class="acc-ctrl-status">
                                     <span class="acc-field-label">🚥 進度</span>
-                                    <select id="acc-status-${o.id}-${idx}"
-                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'acc-status-${o.id}-${idx}', ${idx});
-                                                  var _adj = document.getElementById('acc-adj-wrapper-${o.id}-${idx}');
-                                                  if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
-                                        ${(function(){
-                                            var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                            var _cat = (dimensions.category || item.Category || '').toString();
-                                            var _opts = [];
-                                            if (_cat.indexOf('手模擺設') !== -1) {
-                                                _opts = [
-                                                    ['已book日期','已book日期'],
-                                                    ['已取模','已取模'],
-                                                    ['待交收','待交收'],
-                                                    ['Done 已完成','Done ✅']
-                                                ];
-                                            } else if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
-                                                _opts = [
-                                                    ['0 什麼都未做','0 什麼都未做'],
-                                                    ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                    ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                    ['3 已交付廠家, 打印中','3 打印中'],
-                                                    ['需進行補打','需進行補打'],
-                                                    ['Done 已完成','Done ✅']
-                                                ];
-                                            } else {
-                                                _opts = [
-                                                    ['0 什麼都未做','0 什麼都未做'],
-                                                    ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                    ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                    ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                    ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                    ['3 已交付廠家, 打印中','3 打印中'],
-                                                    ['Done 已完成','Done ✅']
-                                                ];
-                                            }
-                                            return _opts.map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join('');
-                                        })()}
-                                    </select>
-                                    <div id="acc-adj-wrapper-${o.id}-${idx}" style="display:${(function(){
+                                    ${(function(){
                                         var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                        return _s === '需進行補打' ? 'flex' : 'none';
-                                    })()}; align-items:center; gap:4px; margin-top:6px;">
-                                        <span style="color:#e63946; font-size:12px; font-weight:bold;">$</span>
-                                        <input type="number" id="acc-adj-input-${o.id}-${idx}"
-                                               value="${o.Adjustment_Amount || ''}"
-                                               placeholder="金額"
-                                               style="border:1px solid #ccc; border-radius:4px; outline:none; width:80px; font-size:11px; text-align:center; padding:4px; background:#ffffff; color:#333333;"
-                                               oninput="updateFinancialsLocally('${o.id}', this.value)"
-                                               onblur="saveAdjustmentAmount('${o.id}', this.value)"
-                                               onkeydown="if(event.key==='Enter') { this.blur(); }">
-                                    </div>
+                                        var _cat = (dimensions.category || item.Category || '').toString();
+                                        if (_cat.indexOf('手模擺設') !== -1) {
+                                            var _st = window._fhsHmParseState ? window._fhsHmParseState(_s) : [false,false,false];
+                                            var _lbs = ['已book','已做laser','已做音訊'];
+                                            var _cks = _lbs.map(function(l,i){
+                                                var ck = _st[i];
+                                                return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
+                                                    +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+o.id+'\','+idx+',\'acc-hmck\')"> '+l+'</label>';
+                                            }).join('');
+                                            return '<div id="acc-hmck-wrap-'+o.id+'-'+idx+'" style="display:flex;flex-direction:column;gap:5px;">'
+                                                +_cks+'<input type="hidden" id="acc-hmck-val-'+o.id+'-'+idx+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>';
+                                        }
+                                        var _opts = [];
+                                        if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
+                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done ✅']];
+                                        } else {
+                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done ✅']];
+                                        }
+                                        var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'acc-status-'+o.id+'-'+idx+'\','+idx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+o.id+'-'+idx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
+                                        return '<select id="acc-status-'+o.id+'-'+idx+'" onchange="'+_oc+'">'
+                                            +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
+                                            +'<div id="acc-adj-wrapper-'+o.id+'-'+idx+'" style="display:'+(_s==='需進行補打'?'flex':'none')+';align-items:center;gap:4px;margin-top:6px;">'
+                                            +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
+                                            +'<input type="number" id="acc-adj-input-'+o.id+'-'+idx+'" value="'+(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:11px;text-align:center;padding:4px;background:#ffffff;color:#333333;" oninput="updateFinancialsLocally(\''+o.id+'\',this.value)" onblur="saveAdjustmentAmount(\''+o.id+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+                                            +'</div>';
+                                    })()}
                                 </div>
                             </div>
                             <div id="acc-save-${o.id}-${idx}" style="font-size:10px; color:#888; min-height:14px; margin-top:2px;"></div>
@@ -9026,61 +9040,37 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                        placeholder="批次">
                             </td>
                             <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
-                                <select id="status-select-${o.id}-${index}" class="review-status-select"
-                                        style="width:100%; max-width:92px; font-size:13px; margin:0 auto;"
-                                        onchange="saveInlineEdit('${o.id}', 'Process_Status', 'status-select-${o.id}-${index}', ${index});
-                                                  var _adj = document.getElementById('adj-wrapper-${o.id}-${index}');
-                                                  if (_adj) _adj.style.display = this.value === '需進行補打' ? 'flex' : 'none';">
-                                    ${(function(){
-                                        var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                        var _cat = (dimensions.category || item.Category || '').toString();
-                                        var _opts = [];
-                                        if (_cat.indexOf('手模擺設') !== -1) {
-                                            _opts = [
-                                                ['已book日期','已book日期'],
-                                                ['已取模','已取模'],
-                                                ['待交收','待交收'],
-                                                ['Done 已完成','Done ✅']
-                                            ];
-                                        } else if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
-                                            _opts = [
-                                                ['0 什麼都未做','0 什麼都未做'],
-                                                ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                ['3 已交付廠家, 打印中','3 打印中'],
-                                                ['需進行補打','需進行補打'],
-                                                ['Done 已完成','Done ✅']
-                                            ];
-                                        } else {
-                                            _opts = [
-                                                ['0 什麼都未做','0 什麼都未做'],
-                                                ['1 已繪圖 或 已取相','1 已繪圖/取相'],
-                                                ['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
-                                                ['2 已修3D圖, 但未核對','2 已修3D圖'],
-                                                ['2.5 已核對3D圖, 準備打印','2.5 準備打印'],
-                                                ['3 已交付廠家, 打印中','3 打印中'],
-                                                ['Done 已完成','Done ✅']
-                                            ];
-                                        }
-                                        return _opts.map(function(p){ return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>'; }).join('');
-                                    })()}
-                                </select>
-                                <div id="adj-wrapper-${o.id}-${index}" style="display:${(function(){
+                                ${(function(){
                                     var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
-                                    return _s === '需進行補打' ? 'flex' : 'none';
-                                })()}; align-items:center; justify-content:center; gap:4px; margin-top:6px;">
-                                    <span style="color:#e63946; font-size:12px; font-weight:bold;">$</span>
-                                    <input type="number" id="adj-input-${o.id}-${index}"
-                                           value="${o.Adjustment_Amount || ''}"
-                                           placeholder="金額"
-                                           style="border:1px solid #ccc; border-radius:4px; outline:none; width:80px; font-size:12px; text-align:center; padding:4px; background:#ffffff; color:#333333;"
-                                           oninput="updateFinancialsLocally('${o.id}', this.value)"
-                                           onblur="saveAdjustmentAmount('${o.id}', this.value)"
-                                           onkeydown="if(event.key==='Enter') { this.blur(); }">
-                                </div>
-                                <div id="save-indicator-${o.id}-${index}" class="review-save-indicator" style="font-size:10px;"></div>
+                                    var _cat = (dimensions.category || item.Category || '').toString();
+                                    if (_cat.indexOf('手模擺設') !== -1) {
+                                        var _st = window._fhsHmParseState ? window._fhsHmParseState(_s) : [false,false,false];
+                                        var _lbs = ['已book','已做laser','已做音訊'];
+                                        var _cks = _lbs.map(function(l,i){
+                                            var ck = _st[i];
+                                            return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
+                                                +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+o.id+'\','+index+',\'hmck\')"> '+l+'</label>';
+                                        }).join('');
+                                        return '<div id="hmck-wrap-'+o.id+'-'+index+'" style="display:flex;flex-direction:column;gap:5px;text-align:left;padding:2px 0;">'
+                                            +_cks+'<input type="hidden" id="hmck-val-'+o.id+'-'+index+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>'
+                                            +'<div id="save-indicator-'+o.id+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                    }
+                                    var _opts = [];
+                                    if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
+                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done ✅']];
+                                    } else {
+                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done ✅']];
+                                    }
+                                    var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'status-select-'+o.id+'-'+index+'\','+index+');var _adj=document.getElementById(\'adj-wrapper-'+o.id+'-'+index+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
+                                    var _adjDisp = (_s === '需進行補打') ? 'flex' : 'none';
+                                    return '<select id="status-select-'+o.id+'-'+index+'" class="review-status-select" style="width:100%;max-width:92px;font-size:13px;margin:0 auto;" onchange="'+_oc+'">'
+                                        +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
+                                        +'<div id="adj-wrapper-'+o.id+'-'+index+'" style="display:'+_adjDisp+';align-items:center;justify-content:center;gap:4px;margin-top:6px;">'
+                                        +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
+                                        +'<input type="number" id="adj-input-'+o.id+'-'+index+'" value="'+(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:12px;text-align:center;padding:4px;background:#ffffff;color:#333333;" oninput="updateFinancialsLocally(\''+o.id+'\',this.value)" onblur="saveAdjustmentAmount(\''+o.id+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+                                        +'</div>'
+                                        +'<div id="save-indicator-'+o.id+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                })()}
                             </td>
                             ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:8px; background-color:${batchCol};">
                                 <textarea class="review-notes-textarea"

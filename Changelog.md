@@ -1,5 +1,17 @@
 ﻿# Changelog
 
+## [2026-07-01] 🐛 Session 129 — IG 看門狗 tg2 emoji 亂碼修復
+
+**範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`，n8n workflow `D4LK6VrQbiXlju0V`（versionId=bb683165）
+
+### [FIX] tg2 Telegram 訊息 emoji surrogate pair "invalid syntax"
+- **根因**：Phase 3 深連結用 Python `json.dump(..., ensure_ascii=False)` 序列化含 🔗 emoji → CP950 環境生成 surrogate pair `\udcfx...`；n8n 求值 invalid syntax，Telegram 通知失敗（Exec 4038/4046 error）
+- **修復**：`ensure_ascii=True` 強制 ASCII escape + 改用純文字 `>` 替代 🔗
+- **新格式**：`> 0601234: https://.../current.html?view=igwatch&orderId=0601234`
+- **learnings**：Pitfall #27 補建
+
+---
+
 ## [2026-06-30] 🎨 Session 128 — Audit Ledger 財務視覺優化（成本扣減 inline badge + 品項明細重排版）
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS + JS），`.fhs/notes/FHS_System_Logic_Overview.md`

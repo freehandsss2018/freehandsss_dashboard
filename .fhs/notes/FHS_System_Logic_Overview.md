@@ -620,4 +620,4 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 | 1a | Migration 0043（表 + RPC + RLS）| ✅ 已部署 |
 | 2 | V42 igwatch 模式 | ✅ 已上線 |
 | 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ✅ 已驗收（S125）Exec 4034（2026-06-29 06:00 HKT）17/17節點全通過；OAuth 根因=Google Cloud OAuth app 處於 Testing 模式（refresh token 7天失效）→ 已發布為 Production；versionId=1a2632e1 |
-| 3 | Telegram 訊息附 V42 deep-link URL | ✅ 已完成（S125）tg2 text 加深連結：alerts>0時每個 created_incomplete/not_created alert 附 `🔗 order_id: https://.../current.html?view=igwatch&orderId=xxx`；versionId=1a2632e1 |
+| 3 | Telegram 訊息附 V42 deep-link URL | ✅ 已完成（S125）；S128 修復 emoji surrogate bug（🔗→`>`，ensure_ascii=True）；versionId=bb683165 |

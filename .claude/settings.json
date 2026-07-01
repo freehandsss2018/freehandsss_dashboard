@@ -145,7 +145,10 @@
       "PowerShell(cd \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\"; powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force)",
       "Bash(grep -v \"//\\\\|fhs-fill-mode-btn\\\\|fhsHalf\\\\|fhsFull\\\\|clearBtn\\\\|igFmt\\\\|btn-category\\\\|copy-btn\")",
       "PowerShell(Start-Process \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\790e82ee-3aa9-43ff-8eb2-08d40c6d7afc\\\\scratchpad\\\\layout_preview.html\")",
-      "PowerShell(python \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\a26054f6-ac8c-419a-8668-e0728f9c4de6\\\\scratchpad\\\\fix_wa1.py\")"
+      "PowerShell(python \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\a26054f6-ac8c-419a-8668-e0728f9c4de6\\\\scratchpad\\\\fix_wa1.py\")",
+      "PowerShell(Copy-Item \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\freehandsss_dashboardV42.html\" \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\Freehandsss_dashboard_current.html\" -Force; \\(Get-Item \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\Freehandsss_dashboard_current.html\"\\).Length)",
+      "Bash(curl -sk -X PUT -H 'X-N8N-API-KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YmQ0NWY3Ni0zMDdkLTQ2ZmItYmU0Ny1kNzExZTMxMjAzZmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdjOTQ2NjItMjI5Mi00NTQ3LTkwN2MtMmEwMjQ0OTkxYjVhIiwiaWF0IjoxNzc0Njc1MDcyfQ.kEDQ_sk2wWKU9bwWbN3yXJOLK1PNr1EjJwl2qUXOqIQ' -H 'Content-Type: application/json' --data-binary @C:/Users/Edwin/AppData/Local/Temp/claude/d--SynologyDrive-Free-handsss-freehandsss-dashboard/59a53de9-7d1c-4e92-9ac1-982f84c57bcb/scratchpad/igwatchdog_wf2_fixed.json https://yanhei.synology.me:8443/api/v1/workflows/D4LK6VrQbiXlju0V)",
+      "Bash(rm \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\.fhs\\\\.kgov-pending\" && echo \"flag cleared\")"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
