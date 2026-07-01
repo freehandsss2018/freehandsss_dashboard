@@ -1,5 +1,11 @@
 ﻿# Session Log
 
+## 2026-07-02 (Session 131 — 簡化付款 auto-fill 按鈕狀態修正): 🐛 ✅
+
+**Scope**：V42 `_quickHalfFillAllSplits()` 函式。新增 `filledAny` flag 追蹤是否實際填格；條件由 `if (force)` 改為 `if (force || (!window._fhsSplitRestoreSnapshot && filledAny))`，確保新訂單預設 auto-fill 後 `_depositMode` 同步為 `'half'`，「全部半訂」按鈕正確切換至「全部付清」。`_fhsSplitRestoreSnapshot` guard 保留 S107 舊訂單還原保護。
+**Result**：1 檔 MODIFY（dashboardV42.html +3行）；CHANGELOG S131 條目；handoff 更新（決策#14 更新）；待 /upload-web NAS 部署。
+Subagent：❌ 未使用（Grep + Read 定位根因，單函式 Edit 修復）
+
 ## 2026-07-01 (Session 130b — 訂單總覽日期優先次序修正): 🔧 ✅
 
 **Scope**：V42 訂單總覽 Date 欄優先次序修正。`mapOrder()` L13773：`Date = appointment_at || confirmed_at`（原 confirmed_at 優先）；`sbFetchGlobalReview` L13825：SQL order → `appointment_at.asc.nullslast,confirmed_at.asc`。後端 v_delivery_reminders 已正確使用 COALESCE(appointment_at, created_at)+90天，無需改動。kgov [G] §10.11 已由 Antigravity Phase B commit 補入。

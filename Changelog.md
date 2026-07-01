@@ -1,5 +1,17 @@
 ﻿# Changelog
 
+## [2026-07-02] 🐛 Session 131 — 簡化付款預設半訂按鈕狀態修正
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`
+
+### [FIX] 簡化模式 auto-fill 後「全部半訂」按鈕未切換至「全部付清」
+- **根因**：`_quickHalfFillAllSplits()` 在 `generate()` auto-fill 路徑（non-force）從不執行 `_depositMode = 'half'`；新訂單預設填入 $1190/$1190 但按鈕仍顯示「全部半訂」，操作語義不符
+- **修復**：新增 `filledAny` flag 追蹤是否實際填了格；條件 `if (force)` → `if (force || (!window._fhsSplitRestoreSnapshot && filledAny))`
+- **守衛**：`!window._fhsSplitRestoreSnapshot` 確保 S107 還原舊訂單時不誤觸（`_fhsSplitRestoreSnapshot != null` → 跳過 mode 更新）
+- **修改位置**：`_quickHalfFillAllSplits()` L11607/L11620/L11627（+3 行）
+
+---
+
 ## [2026-07-01] 🐛 Session 129 — IG 看門狗 tg2 emoji 亂碼修復
 
 **範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`，n8n workflow `D4LK6VrQbiXlju0V`（versionId=bb683165）

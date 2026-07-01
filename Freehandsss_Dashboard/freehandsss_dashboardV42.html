@@ -11604,6 +11604,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function _quickHalfFillAllSplits(field, force) {
             var container = document.getElementById(field + 'SplitContainer');
             if (!container) return;
+            var filledAny = false;
             container.querySelectorAll('.quick-half-btn').forEach(function(btn) {
                 var bk  = btn.dataset.boxkey;
                 var inp = container.querySelector('.split-box-input[data-boxkey="' + bk + '"]');
@@ -11616,11 +11617,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 inp.value = Math.ceil(suggested / 2);
                 inp.style.color = '#999';
                 inp.dataset.isDefault = 'true';
+                filledAny = true;
                 inp.dispatchEvent(new Event('input', { bubbles: true }));
                 if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, bk, 'half');
             });
             if (field === 'deposit') {
-                if (force) {
+                // Update mode when: (a) user explicitly clicked button (force), or
+                // (b) auto-fill actually filled boxes AND we're not mid-restore of an existing order
+                if (force || (!window._fhsSplitRestoreSnapshot && filledAny)) {
                     window._depositMode  = 'half';
                     window._depositDirty = false;
                     _syncGlobalDepositBtnUI();
