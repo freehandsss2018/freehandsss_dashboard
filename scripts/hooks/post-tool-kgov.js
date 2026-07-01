@@ -62,6 +62,14 @@ const CLEAR_PATH_PATTERNS = [
   /lessons[/\\]INDEX\.md$/i
 ];
 
+// Paths that are documentation/memory only — never trigger the flag
+const SAFE_PATH_PATTERNS = [
+  /\.fhs[/\\]memory[/\\]/i,
+  /\.fhs[/\\]notes[/\\]session-log\.md$/i,
+  /docs[/\\]CHANGELOG\.md$/i,
+  /\.fhs[/\\]notes[/\\]decisions\.md$/i
+];
+
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 function writeFlag() {
   try {
@@ -123,6 +131,10 @@ process.stdin.on('end', () => {
 
     // ── Write/Edit tool: check file path + content ────────────────────────
     if (isWriteTool && filePath) {
+      // Memory/docs files: never trigger even if content contains financial terms
+      const isSafe = SAFE_PATH_PATTERNS.some(p => p.test(filePath));
+      if (isSafe) { process.exit(0); }
+
       const pathHit = HIT_PATH_PATTERNS.some(p => p.test(filePath));
       const content = toolInput.content || toolInput.new_string || '';
       const contentHit = HIT_CONTENT_PATTERNS.some(p => p.test(content));
