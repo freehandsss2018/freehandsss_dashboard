@@ -1,5 +1,17 @@
 ﻿# Session Log
 
+## 2026-07-01 (Session 130b — 訂單總覽日期優先次序修正): 🔧 ✅
+
+**Scope**：V42 訂單總覽 Date 欄優先次序修正。`mapOrder()` L13773：`Date = appointment_at || confirmed_at`（原 confirmed_at 優先）；`sbFetchGlobalReview` L13825：SQL order → `appointment_at.asc.nullslast,confirmed_at.asc`。後端 v_delivery_reminders 已正確使用 COALESCE(appointment_at, created_at)+90天，無需改動。kgov [G] §10.11 已由 Antigravity Phase B commit 補入。
+**Result**：2 處 V42 改動；current.html 同步；CHANGELOG S130 條目；NAS /upload-web PASS（SHA256=AC3C4C00 915065bytes，與 Phase B 合包部署）。
+Subagent：❌ 未使用（兩行精準定位修改，不需要 subagent）
+
+## 2026-07-01 (Session 130 Phase B — 審計日誌 Phase B 完成): 🏗️ ✅
+
+**Scope**：Supabase migration 0047 + Dashboard V42 設定中心「訂單層成本修改」+ Audit Ledger §5 本單變更歷史。`cost_override_locked` BOOLEAN；`fhs_adjust_order_cost` + `fhs_unlock_order_cost` SECURITY DEFINER RPCs；`fhs_batch_recalc_execute` + `fhs_apply_financial_batch_update` 雙守衛（locked 訂單跳過）。smoke test 8/8 PASS。
+**Result**：migration 0047（453行）；V42 +142行；CHANGELOG Phase B；FHS_System_Logic_Overview §10.11；NAS 合包部署 PASS。
+Subagent：Antigravity 執行
+
 ## 2026-06-30 (Session 126 追加 — UX 細節：清除顏色+Label重疊+返回總覧): 🎨 ✅
 
 **Scope**：V42 手機介面 UX 修正。✕清除按鈕改淡紅色（已付訂金+未付尾數）；簡化模式隱藏重複「已付訂金」label（depositSectionLabel）+ balanceLabelRow；手機底部「設定」改「← 返回總覧」（switchMode review + scrollIntoView 黃色高亮定位）。
