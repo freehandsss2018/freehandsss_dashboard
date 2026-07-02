@@ -1,5 +1,45 @@
 ﻿# Changelog
 
+## [2026-07-02] 🐛 Session 133 — IG 看門狗 tg2 invalid syntax 根因修復
+
+**範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`，n8n workflow `D4LK6VrQbiXlju0V`（versionId=683ed8e5）
+
+### [FIX] tg2 Telegram `invalid syntax` — 複雜 JS 移出 expression evaluator
+
+- **根因**：n8n expression evaluator（tmpl）不支援複雜 JS 鏈式語法（`.filter().map().join()`）→ 每次 Exec 4038/4046/4061/4062 全部 error；S129 的 emoji→ASCII 修法治標未治本
+- **修復 1（expression 簡化）**：深連結邏輯從 tg2 Text 欄位移至 `Classify & Report` Code 節點，輸出 `telegramText` 欄位；tg2 改用 `={{ $('Classify & Report').first().json.telegramText }}` 簡單引用
+- **修復 2（Write Alerts 容錯）**：Write Alerts 加 `continueOnFail: true`；防止 duplicate key（`ix_igwatch_alerts_dedup`）造成 workflow 中斷
+- **驗證**：Exec #4065 手動 trigger success，Telegram 收到空摘要訊息（tg1 路線）；Write Alerts + tg2 error=none；Cron 已恢復 `0 6 * * *`
+- **learnings**：Pitfall #28 補建（n8n expression evaluator 禁複雜 JS 鏈，必移 Code 節點）
+
+---
+
+## [2026-07-02] ✨ Session 132 — 概覽篩選 UI 四項優化
+
+**範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`
+
+### [FEAT] Task 1 — 手模擺設狀態篩選
+- `#reviewStatus` 新增 `<optgroup label="── 手模擺設 ──">` 含 4 個選項（`hm_pending/hm_booked/hm_laser/hm_done`）
+- `fetchGlobalReview`：`hm_*` 值不送 n8n URL，改為 client-side 篩選
+- `applyReviewFilters()`：插入 hm_ 分支，以 `_getItemStatus()` 辨別 Category（擺設/木框/玻璃瓶）+ process_status 字串比對
+
+### [FEAT] Task 2 — 重新載入後自動縮收篩選
+- 重新載入按鈕 `onclick` 改為 `fhsRefreshAndCollapse()`
+- `fhsRefreshAndCollapse()`：等待 `fetchGlobalReview` Promise resolve 後呼叫 `fhsCollapseFilter()`
+
+### [FEAT] Task 3 — 全尺寸篩選摺疊 + localStorage 持久化
+- `.filter-toggle-bar` 從 `display:none`（手機專用）改為 `display:flex`（全域常顯）
+- `.filter-body` collapse CSS 移至全域（`max-height/overflow/transition`）
+- localStorage `fhs_filter_open` 持久保存展開/收起狀態，下次載入自動還原
+- `window.fhsCollapseFilter()` 暴露供外部呼叫
+
+### [FEAT] Task 4 — 時限警示排序
+- `#reviewSortSelect` 新增 `<option value="Deadline_asc">⏰ 時限警示 — 最緊迫優先</option>`
+- `applyReviewFilters()` sort block 加入 `Deadline` case：按 `Appointment_Date` 升序，null 排末
+- `updateAccSortStatus()` labels 加入 `Deadline:'時限警示'`
+
+---
+
 ## [2026-07-02] 🐛 Session 131 — 簡化付款預設半訂按鈕狀態修正
 
 **範圍**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`

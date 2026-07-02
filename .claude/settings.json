@@ -156,7 +156,18 @@
       "Bash(grep -v \"^\\\\s*//\")",
       "PowerShell(Copy-Item \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\freehandsss_dashboardV42.html\" \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\Freehandsss_dashboard_current.html\" -Force; $v42 = \\(Get-FileHash \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\freehandsss_dashboardV42.html\" -Algorithm SHA256\\).Hash; $cur = \\(Get-FileHash \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\Freehandsss_dashboard_current.html\" -Algorithm SHA256\\).Hash; $size = \\(Get-Item \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\Freehandsss_dashboard_current.html\"\\).Length; Write-Host \"V42 SHA256: $v42\"; Write-Host \"CUR SHA256: $cur\"; Write-Host \"Size: $size bytes\"; Write-Host \"Match: $\\($v42 -eq $cur\\)\")",
       "Bash(node -e \"require\\('./scripts/hooks/post-tool-kgov.js'\\)\")",
-      "Bash(echo \"syntax OK: $?\")"
+      "Bash(echo \"syntax OK: $?\")",
+      "PowerShell(Copy-Item \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\freehandsss_dashboardV42.html\" \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\Freehandsss_dashboard_current.html\" -Force; $sz = \\(Get-Item \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\Freehandsss_dashboard_current.html\"\\).Length; \"Copy done, size: $sz bytes\")",
+      "PowerShell(Test-NetConnection -ComputerName \"yanhei.synology.me\" -Port 5006 -InformationLevel Quiet)",
+      "PowerShell(Test-NetConnection -ComputerName \"yanhei.synology.me\" -Port 443 -InformationLevel Quiet)",
+      "PowerShell(Test-NetConnection -ComputerName \"yanhei.synology.me\" -Port 8443 -InformationLevel Quiet)",
+      "PowerShell(\\(Get-Content \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\freehandsss_dashboardV42.html\" -Raw -Encoding UTF8\\) -replace '\\\\.filter-toggle-bar \\\\{ display:none;', '.filter-toggle-bar { display:flex;' | Set-Content \"d:\\\\SynologyDrive\\\\Free_handsss\\\\freehandsss_dashboard\\\\Freehandsss_Dashboard\\\\freehandsss_dashboardV42.html\" -Encoding UTF8)",
+      "Bash(curl -s \"https://yanhei.synology.me:8443/api/v1/executions?workflowId=D4LK6VrQbiXlju0V&limit=5&includeData=false\" -H \"X-N8N-API-KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YmQ0NWY3Ni0zMDdkLTQ2ZmItYmU0Ny1kNzExZTMxMjAzZmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdjOTQ2NjItMjI5Mi00NTQ3LTkwN2MtMmEwMjQ0OTkxYjVhIiwiaWF0IjoxNzc0Njc1MDcyfQ.kEDQ_sk2wWKU9bwWbN3yXJOLK1PNr1EjJwl2qUXOqIQ\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(f'Exec {e[\\\\\"id\\\\\"]}: {e[\\\\\"status\\\\\"]} @ {e[\\\\\"startedAt\\\\\"]}'\\) for e in d.get\\('data',[]\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); nodes={n['id']:n['name'] for n in d.get\\('nodes',[]\\)}; print\\('versionId:', d.get\\('versionId',''\\)\\); print\\('nodes:', list\\(nodes.values\\(\\)\\)\\)\")",
+      "Bash(node \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\59a53de9-7d1c-4e92-9ac1-982f84c57bcb\\\\scratchpad\\\\put_igwatch.mjs\")",
+      "Bash(date /t)",
+      "Bash(time /t)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

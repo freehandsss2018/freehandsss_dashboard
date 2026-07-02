@@ -868,7 +868,7 @@
 
         /* === review-filters-v2 ─ Filter Bar 增強版 === */
         .review-filters-v2 { background:var(--fhs-bg-elevated); border:1px solid var(--fhs-border); border-radius:var(--radius-lg); margin-bottom:24px; overflow:hidden; }
-        .filter-toggle-bar { display:none; align-items:center; justify-content:space-between; padding:0 16px; height:44px; cursor:pointer; background:transparent; border:none; width:100%; user-select:none; -webkit-tap-highlight-color:transparent; transition:background .15s; }
+        .filter-toggle-bar { display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:44px; cursor:pointer; background:transparent; border:none; width:100%; user-select:none; -webkit-tap-highlight-color:transparent; transition:background .15s; }
         .filter-toggle-bar:active { background:var(--fhs-border); }
         .filter-toggle-summary { display:flex; align-items:center; gap:8px; }
         .filter-icon { color:var(--fhs-accent); flex-shrink:0; }
@@ -877,7 +877,8 @@
         .filter-active-hint.visible { display:inline-block; }
         .filter-chevron { color:var(--fhs-text-muted); flex-shrink:0; transition:transform .2s; }
         .filter-toggle-bar.expanded .filter-chevron { transform:rotate(180deg); }
-        .filter-body { padding:16px 20px 20px; display:flex; flex-direction:column; gap:12px; }
+        .filter-body { display:flex; flex-direction:column; gap:12px; max-height:0; overflow:hidden; padding:0 20px; transition:max-height .3s ease,padding .3s ease; }
+        .filter-body.open { max-height:800px; padding:16px 20px 20px; }
         .filter-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px 16px; }
         .filter-row-secondary { padding-top:12px; border-top:1px solid var(--fhs-border); align-items:center; }
         .filter-group { display:flex; align-items:center; gap:8px; min-height:36px; }
@@ -933,7 +934,7 @@
         @media (max-width:767px) {
             .review-filters-v2 { border-radius:var(--radius-md); margin-bottom:16px; }
             .filter-toggle-bar { display:flex; }
-            .filter-body { max-height:0; overflow:hidden; padding:0 16px; transition:max-height .3s ease,padding .3s ease; }
+            .filter-body { padding:0 16px; }
             .filter-body.open { max-height:700px; padding:12px 16px 16px; }
             .fhs-select, .fhs-input { height:44px; font-size:var(--fhs-text-sm); }
             .fhs-select { padding-right:32px; }
@@ -3230,7 +3231,7 @@
             <div class="review-filters-v2" id="reviewFiltersV2">
 
                 <!-- Mobile Only：Filter 收合 Toggle Bar -->
-                <div class="filter-toggle-bar" id="reviewFilterToggle" role="button" aria-expanded="false" aria-controls="reviewFilterBody">
+                <div class="filter-toggle-bar expanded" id="reviewFilterToggle" role="button" aria-expanded="true" aria-controls="reviewFilterBody">
                     <div class="filter-toggle-summary">
                         <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
@@ -3244,7 +3245,7 @@
                 </div>
 
                 <!-- Filter Body（Desktop 常駐，Mobile 收合） -->
-                <div class="filter-body" id="reviewFilterBody">
+                <div class="filter-body open" id="reviewFilterBody">
 
                     <!-- 第一行：日期 + 狀態 + 批次 + 搜尋 -->
                     <div class="filter-row filter-row-primary">
@@ -3282,6 +3283,12 @@
                                 <option value="2.5 已核對3D圖, 準備打印">2.5 準備打印</option>
                                 <option value="3 已交付廠家, 打印中">3 打印中</option>
                                 <option value="Done 已完成">Done ✅</option>
+                                <optgroup label="── 手模擺設 ──">
+                                    <option value="hm_pending">待Book日期</option>
+                                    <option value="hm_booked">已Book日期</option>
+                                    <option value="hm_laser">已做Laser</option>
+                                    <option value="hm_done">完成（音訊）</option>
+                                </optgroup>
                             </select>
                         </div>
                         <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
@@ -3337,12 +3344,15 @@
                                     <option value="Status_asc">進度 — 0→Done</option>
                                     <option value="Status_desc">進度 — Done→0</option>
                                 </optgroup>
+                                <optgroup label="時限警示">
+                                    <option value="Deadline_asc">⏰ 時限警示 — 最緊迫優先</option>
+                                </optgroup>
                             </select>
                         </div>
                         <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓">🔍 顯示項目財務</button>
                         <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()">💾 儲存篩選</button>
                         <button class="fhs-btn-refresh" type="button"
-                            onclick="(window.fetchGlobalReview || fetchGlobalReview)(true)">
+                            onclick="fhsRefreshAndCollapse()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
@@ -8235,7 +8245,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const params = [];
             if(year) params.push(`year=${year}`);
             if(month) params.push(`month=${month}`);
-            if(status) params.push(`status=${encodeURIComponent(status)}`);
+            if(status && !status.startsWith('hm_')) params.push(`status=${encodeURIComponent(status)}`);
             if(batch) params.push(`batch=${encodeURIComponent(batch)}`);
             if(search) params.push(`search=${encodeURIComponent(search)}`);
 
@@ -9461,6 +9471,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (reviewCategoryFilter) {
                 filtered = filtered.filter(function(o) { return matchesOrderCategory(o, reviewCategoryFilter); });
             }
+            // Client-side hm_ (手模擺設) checklist status filter
+            var _stSel = document.getElementById('reviewStatus');
+            var _stVal = _stSel ? _stSel.value : '';
+            if (_stVal && _stVal.startsWith('hm_')) {
+                filtered = filtered.filter(function(o) {
+                    var items = o.items || [];
+                    return items.some(function(it) {
+                        var cat = it.Category || '';
+                        if (!cat.includes('擺設') && !cat.includes('木框') && !cat.includes('玻璃瓶')) return false;
+                        var s = (window._getItemStatus ? window._getItemStatus(o.id, it) : (it.Status || it.status || it.Process_Status || it.process_status || '')).toLowerCase();
+                        if (_stVal === 'hm_pending') return !s || s === '待製作' || s === '';
+                        if (_stVal === 'hm_booked') return s.includes('book');
+                        if (_stVal === 'hm_laser') return s.includes('laser');
+                        if (_stVal === 'hm_done') return s.includes('音訊') || s === 'done 已完成' || s === '待交收';
+                        return false;
+                    });
+                });
+            }
             // Sort
             if (sortField) {
                 const _field = sortField, _dir = sortDir;
@@ -9499,6 +9527,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         bVal = parseSafeDate(bVal);
                         return _dir === 'asc' ? aVal - bVal : bVal - aVal;
                     }
+                    if (_field === 'Deadline') {
+                        var _now = Date.now();
+                        var _aD = a.Appointment_Date ? new Date(a.Appointment_Date).getTime() : null;
+                        var _bD = b.Appointment_Date ? new Date(b.Appointment_Date).getTime() : null;
+                        if (_aD === null && _bD === null) return 0;
+                        if (_aD === null) return 1;
+                        if (_bD === null) return -1;
+                        return _dir === 'asc' ? _aD - _bD : _bD - _aD;
+                    }
                     aVal = String(aVal || '').toLowerCase();
                     bVal = String(bVal || '').toLowerCase();
                     if (aVal < bVal) return _dir === 'asc' ? -1 : 1;
@@ -9534,7 +9571,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const el = document.getElementById('accSortStatus');
             if (!el) return;
             if (!sortField) { el.classList.remove('visible'); el.textContent = ''; return; }
-            const labels = { Order_ID:'單號', Date:'日期', Customer:'客人', Total_Cost:'成本', Net_Profit:'利潤', Status:'進度' };
+            const labels = { Order_ID:'單號', Date:'日期', Customer:'客人', Total_Cost:'成本', Net_Profit:'利潤', Status:'進度', Deadline:'時限警示' };
             el.textContent = '↕ 按 ' + (labels[sortField] || sortField) + (sortDir === 'asc' ? ' 升序' : ' 降序') + ' 排列';
             el.classList.add('visible');
         }
@@ -9560,16 +9597,38 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             else { hint.classList.remove('visible'); }
         }
 
-        // ── Mobile filter toggle + chip + sort select init ──────────
+        // ── Collapse helpers ──────────────────────────────────────────
+        window.fhsCollapseFilter = function() {
+            var fb = document.getElementById('reviewFilterBody');
+            var ft = document.getElementById('reviewFilterToggle');
+            if (fb) fb.classList.remove('open');
+            if (ft) { ft.classList.remove('expanded'); ft.setAttribute('aria-expanded', 'false'); }
+            try { localStorage.setItem('fhs_filter_open', '0'); } catch(e) {}
+        };
+        window.fhsRefreshAndCollapse = function() {
+            var p = (window.fetchGlobalReview || fetchGlobalReview)(true);
+            if (p && typeof p.then === 'function') p.then(window.fhsCollapseFilter);
+        };
+
+        // ── Filter toggle + chip + sort select init ──────────────────
         (function() {
-            // Mobile filter toggle
+            // Filter toggle (all screen sizes) with localStorage persistence
             const toggle = document.getElementById('reviewFilterToggle');
             const filterBody = document.getElementById('reviewFilterBody');
             if (toggle && filterBody) {
+                // Restore last state; default open (HTML already has .open)
+                var _saved = null;
+                try { _saved = localStorage.getItem('fhs_filter_open'); } catch(e) {}
+                if (_saved === '0') {
+                    filterBody.classList.remove('open');
+                    toggle.classList.remove('expanded');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
                 toggle.addEventListener('click', function() {
                     const isOpen = filterBody.classList.toggle('open');
                     toggle.classList.toggle('expanded', isOpen);
                     toggle.setAttribute('aria-expanded', String(isOpen));
+                    try { localStorage.setItem('fhs_filter_open', isOpen ? '1' : '0'); } catch(e) {}
                 });
             }
             // Chip filter
@@ -15572,3 +15631,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+

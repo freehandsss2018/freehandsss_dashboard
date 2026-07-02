@@ -321,7 +321,12 @@ const alerts = notifyItems.map(it => ({
   db_matched: it.cls.category === 'created_incomplete',
   raw: { om: it.om, cls: it.cls },
 }));
-return [{ json: { summary, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts } }];
+// Phase 3: 深連結在 Code 節點組合（n8n expression evaluator 不支援複雜 JS 鏈式語法）
+const telegramText = summary + alerts
+  .filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created'))
+  .map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me:5006/web/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id)
+  .join('');
+return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts } }];
 `.trim();
 
 // ── Build Empty Summary（無新匯出資料夾時的分支）──────────────────────────
@@ -507,7 +512,7 @@ const workflow = {
         options: {},
       },
       id: 'wa1', name: 'Write Alerts', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3720, 420],
-      alwaysOutputData: true,
+      alwaysOutputData: true, continueOnFail: true,
     },
     {
       // 空資料夾路徑（Build Empty Summary）接的 Telegram
@@ -516,8 +521,8 @@ const workflow = {
       credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
     },
     {
-      // 資料路徑接的 Telegram，讀 cr1 的 summary + Phase 3 深連結（alerts > 0 時附 V42 igwatch 連結）
-      parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: "={{ $('Classify & Report').first().json.summary + $('Classify & Report').first().json.alerts.filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created')).map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me:5006/web/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id).join('') }}", replyMarkup: 'none', additionalFields: {} },
+      // 資料路徑接的 Telegram，讀 cr1 的 telegramText（summary + Phase 3 深連結，在 Code 節點預組合）
+      parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: "={{ $('Classify & Report').first().json.telegramText }}", replyMarkup: 'none', additionalFields: {} },
       id: 'tg2', name: 'Telegram Notify (Data)', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3720, 300],
       credentials: { telegramApi: { id: 'tSbXz97PKmdPpDNq', name: 'Telegram account' } },
     },
