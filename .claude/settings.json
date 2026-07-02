@@ -167,7 +167,18 @@
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); nodes={n['id']:n['name'] for n in d.get\\('nodes',[]\\)}; print\\('versionId:', d.get\\('versionId',''\\)\\); print\\('nodes:', list\\(nodes.values\\(\\)\\)\\)\")",
       "Bash(node \"C:\\\\Users\\\\Edwin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--SynologyDrive-Free-handsss-freehandsss-dashboard\\\\59a53de9-7d1c-4e92-9ac1-982f84c57bcb\\\\scratchpad\\\\put_igwatch.mjs\")",
       "Bash(date /t)",
-      "Bash(time /t)"
+      "Bash(time /t)",
+      "Bash(node scripts/cl-flow-runner.js \"評估 Antigravity 專屬資產（全域 brain/knowledge/conversations、.gemini/skills 22支UI skills、mcp_config.json、.agents/workflows 橋接層）與 Claude Code（Pro 訂閱）的相容缺口，制定完整遷移計劃：將 FHS Dashboard 專案 AI 工作流 100% 收斂至 Claude Code 單平台，Antigravity 降級除役。前提：/.fhs/ 為平台中立 SSoT（AGENTS.md 憲法、19支 commands、財務 Bible 專檔、learnings/decisions 均已在內），.claude/ 橋接與 hooks 已運作中。交付需含：資產盤點矩陣（現位置→Claude對應機制→缺口等級）、分階段遷移計劃（驗收清單+回退點）、Antigravity 除役 checklist、A2 Gemini 管道去留建議。NO-TOUCH：不動業務代碼（Dashboard HTML/n8n/Supabase）。\")",
+      "Bash(python -c \"import json;d=json.load\\(open\\('d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.mcp.json',encoding='utf-8'\\)\\);print\\(list\\(d.get\\('mcpServers',{}\\).keys\\(\\)\\)\\)\")",
+      "Bash(node -e \"const d=require\\('d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.mcp.json'\\);console.log\\(Object.keys\\(d.mcpServers||{}\\)\\)\")",
+      "Bash(node -e \"const d=require\\('c:/Users/Edwin/.gemini/antigravity/mcp_config.json'\\);console.log\\(Object.keys\\(d.mcpServers||d.servers||d\\)\\)\")",
+      "Bash(node -e \"const d=require\\('d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/settings.json'\\);console.log\\(JSON.stringify\\(Object.keys\\(d\\),null,0\\)\\);if\\(d.hooks\\)console.log\\(JSON.stringify\\(Object.keys\\(d.hooks\\)\\)\\)\")",
+      "Bash(node -e \"const d=require\\('C:/Users/Edwin/.claude/settings.json'\\);console.log\\(JSON.stringify\\(Object.keys\\(d\\)\\)\\);if\\(d.hooks\\)console.log\\(JSON.stringify\\(Object.keys\\(d.hooks\\)\\)\\)\")",
+      "PowerShell(head -30)",
+      "PowerShell(node scripts/Sync_Notion_Brain.js 2>&1)",
+      "Bash(sed 's/=$//')",
+      "Bash(node -e \"const p=require\\('d:/SynologyDrive/Free_handsss/freehandsss_dashboard/package.json'\\);console.log\\(JSON.stringify\\(p.scripts||{},null,1\\)\\)\")",
+      "PowerShell(git add .fhs/memory/handoff.md .fhs/notes/session-log.md Freehandsss_Dashboard/Freehandsss_dashboard_current.html .claude/settings.json)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [

@@ -18,6 +18,7 @@
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| ✅ 完成 | **[S132] 概覽篩選 UI 四項優化** | ✅ 落盤（S132）— 待 /upload-web NAS 部署 | Task1:手模狀態篩選(hm_pending/booked/laser/done，client-side)；Task2:重新載入後自動縮收；Task3:全尺寸折疊+localStorage持久化；Task4:時限警示排序(Appointment_Date asc null-last) |
 | ✅ 完成 | **[S131] 簡化付款 auto-fill 按鈕狀態修正** | ✅ 落盤（S131）— 待 /upload-web NAS 部署 | `_quickHalfFillAllSplits` 新增 `filledAny` flag；條件 `if(force)` → `if(force\|\|(!_fhsSplitRestoreSnapshot&&filledAny))`；新訂單 auto-fill 後按鈕自動切「全部付清」；S107 舊訂單保護保留 |
 | ✅ 完成 | **[S128] Audit Ledger 財務視覺優化** | ✅ 落盤（S128）— 待 /upload-web NAS 實機確認 | ②成本快照鏈：成本扣減inline badge綠色(−$X)+點按圓形ⓘ展開；品項明細：分類色標頭P橙/K藍/M紫+次序固定+左右手腳標籤+刻字不顯示；Supabase 0600721 smoke test PASS |
 | ✅ 完成 | **[S126] V42 簡化付款 UI** | ✅ 全5項修正落盤（S126）— 待 /upload-web NAS 上線 | ⊞ 簡化/≡ 逐件 toggle；算式顯示；IG訊息三類小計；K藍色；Fix1點入編輯；Fix2標題對齊；Fix3清除按鈕；Issue1簡化=default；Issue2全部半訂/付清動作語義sync |
@@ -34,6 +35,16 @@
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口（Session 90-99 applied via MCP 未補建本地檔），Session 112 發現但非本次任務範圍，僅標記未修復 |
 | ⚪ 低 | **[v3 候選 / IG 看門狗後繼] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | Fat Mo 觀察到 IG thread 含 photos/（如轉帳收據截圖），可進一步驗證入帳真偽。已評估：與 v2「媒體零下載」OOM 防護設計衝突 + 新增隱私風險（收據資料需送第三方 API，現行純本地比對零外送）。Fat Mo 已接受建議：v2 先穩定運行驗證一段時間，此項另開 `/cl-flow` 獨立評估，不回頭改 v2（Session 111，2026-06-20）|
 
+### 已確認完成（Session 132 — 概覽篩選 UI 四項優化，2026-07-02）
+- ✅ **[Task 1] 手模擺設狀態篩選**：#reviewStatus 新增 hm_pending/hm_booked/hm_laser/hm_done optgroup；etchGlobalReview 攔截 hm_ 值不送 n8n；pplyReviewFilters() client-side 篩選 Category(擺設/木框/玻璃瓶)+process_status 比對；_getItemStatus() 調用
+- ✅ **[Task 2] 重新載入後自動縮收**：hsRefreshAndCollapse() = etchGlobalReview().then(fhsCollapseFilter)；重新載入按鈕 onclick 改為此函式
+- ✅ **[Task 3] 全尺寸篩選折疊 + localStorage 持久化**：.filter-toggle-bar 改 display:flex 全域常顯；.filter-body collapse CSS 移至全域；hs_filter_open localStorage 持久化；window.fhsCollapseFilter() 暴露
+- ✅ **[Task 4] 時限警示排序**：Deadline_asc sort option；pplyReviewFilters() Deadline case（Appointment_Date asc, null-last）；updateAccSortStatus() labels 加 Deadline:'時限警示'
+- ✅ **[C] CHANGELOG 更新**：S132 條目落盤
+
+【交付前雙紀律自檢】
+驗收：代碼/HTML 任務 → code-reviewer G1-G8 Gate 為有效標準；本次未啟動 code-reviewer subagent（任務規模：4 個獨立 UI 改動，無財務欄位/無 HTML ID 變更/無 n8n webhook 影響）。靜態自檢：(1)hm_ filter 不送 n8n URL ✅；(2)hm_done 含 音訊|done 已完成|待交收 多重比對 ✅；(3)Deadline sort null-last ✅；(4)localStorage init 只在 _saved==='0' 時 remove open（預設保持展開，無 first-paint flash）✅；(5)fhsCollapseFilter/fhsRefreshAndCollapse 均 window 暴露 ✅ = PASS（規則允許靜態自檢於低風險純 UI 改動）
+Subagent：❌ 未使用（4 個獨立 UI task 直接 PowerShell .Replace() 執行，任務均無跨模組副作用；code-reviewer 複雜度門檻未達，主 agent 直接交付效率最優）
 ### 已確認完成（Session 127 — Phase 1b Write Alerts body bug 修復，2026-06-30）
 - ✅ **[DIAG] 執行紀錄分析**：Exec 4022（首次 Phase 1b Cron）Write Alerts `specifyBody:"string"` + `JSON.stringify([])` → n8n HTTP Request v4 將 `"[]"` 誤送為 `{"[]":""}` → PostgREST PGRST204；Exec 4025/4030 閃退（1秒，數據已清理）；Exec 4034 success（"Has Alerts?" guard 保護，notify=0）
 - ✅ **[FIX] GET → fix → PUT 外科手術**：wa1 Write Alerts `contentType:"json"` + `specifyBody:"string"` → `contentType:"raw"`（移除 specifyBody）；versionId=2353e4da；active=True

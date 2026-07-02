@@ -1,5 +1,17 @@
 ﻿# Session Log
 
+## 2026-07-02 (Session 133 — IG 看門狗 tg2 invalid syntax 根因修復): 🔧 ✅
+
+**Scope**：n8n IG Watchdog tg2 Telegram 節點。`telegramText` Code 節點前置文字處理 + `continueOnFail:true` 防止單筆失敗阻塞整批；versionId=683ed8e5。
+**Result**：n8n workflow 外科修改；handoff S133 條目；CHANGELOG S133 條目；build_n8n_workflow.cjs 同步。
+Subagent：❌ 未使用
+
+## 2026-07-02 (Session 132 — 概覽篩選 UI 四項優化): ✨ ✅
+
+**Scope**：V42 訂單概覽篩選面板。Task1：手模擺設狀態篩選（hm_pending/booked/laser/done，client-side，不送 n8n）；Task2：重新載入後自動縮收篩選欄；Task3：全尺寸折疊 + localStorage 持久化（fhs_filter_open）；Task4：時限警示排序（Appointment_Date asc null-last）+ updateAccSortStatus labels。
+**Result**：dashboardV42.html 多處修改；CHANGELOG S132 條目；handoff S132 session 條目 + 雙紀律自檢；/upload-web PASS SHA256=DCF266F11C961F865F3DC6F16A91F46CD89480EF744870697BAE02E78D2812C0 919443bytes。
+Subagent：❌ 未使用（PowerShell .Replace() 直接執行，4 項獨立 UI task）
+
 ## 2026-07-02 (Session 131 — 簡化付款 auto-fill 按鈕狀態修正): 🐛 ✅
 
 **Scope**：V42 `_quickHalfFillAllSplits()` 函式。新增 `filledAny` flag 追蹤是否實際填格；條件由 `if (force)` 改為 `if (force || (!window._fhsSplitRestoreSnapshot && filledAny))`，確保新訂單預設 auto-fill 後 `_depositMode` 同步為 `'half'`，「全部半訂」按鈕正確切換至「全部付清」。`_fhsSplitRestoreSnapshot` guard 保留 S107 舊訂單還原保護。
