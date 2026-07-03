@@ -1,5 +1,12 @@
 # /ag-stitch-sync
 
+> ## ⚠️ [DEPRECATED]（2026-07-04，Session 134，Desktop App 平台收斂 Phase 4.2）
+> **原因**：本指令依賴「執行方：Antigravity」呼叫 `mcp__magic__21st_magic_component_builder`——
+> 但 `ui-designer` subagent 在 Claude Code / Desktop App 內**已原生擁有同一個 MCP 工具**存取權，
+> 不需要繞經 Antigravity 執行。直接請 `ui-designer` 產出設計規格 + 生成組件即可，無需此橋接流程。
+> `/ag-ui-import`（其下游步驟）一併棄用，見該檔案。
+> 本檔案內容保留作歷史參考，不再是建議用法。
+
 **用途 (Purpose)**：讓 Antigravity 開啟 Google Stitch MCP，檢視並擷取 Stitch 生成的 UI snippet，識別外部依賴，為後續 `/ag-ui-import` 轉換做準備。
 **Added in**：v1.4.2（2026-05-03 Stitch 整合）
 **執行方**：Antigravity (A2)

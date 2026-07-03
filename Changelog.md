@@ -1,5 +1,54 @@
 ﻿# Changelog
 
+## [2026-07-04] Session 134 — AGENTS.md v1.5.0：Desktop App 平台收斂 Phase 4（計劃完結）
+
+**範圍**：`AGENTS.md`、`docs/FHS_Prompts.md`、`.fhs/ai/commands/{ag-flow,ag-stitch-sync,ag-ui-import,cl-flow}.md`、`.claude/commands/{ag-flow,ag-stitch-sync,ag-ui-import}.md`
+
+### [CONSTITUTION] AGENTS.md v1.4.13 → v1.5.0：新增 §1.2 平台定位與多工具共存治理
+
+- **Desktop App 主介面**：Code 分頁+Cowork 雙模式，實機探針 P1-P5 全通過，遷移成本趨近零
+- **三模式決策卡**（`.fhs/notes/FHS_Mode_Card.md`）+ 單一寫者矩陣正式引用進憲法層
+- **CLI/VSCode**：永久 fallback（非過渡）
+- **Antigravity**：永久共存備援（無除役時間表，2026-07-03 決策）、入場條件、緊急寫入事後覆核義務
+- **Cursor**：休眠藍圖（未安裝、C1 探針前置）
+- **n8n 三腦**：休眠藍圖——與 `/cl-flow` 對照後確認不對等（`/cl-flow` 更優：裁決免費、直接落 repo、全套 hook 治理），workflow 保留停用
+
+### [DEPRECATED] 指令族裁決
+
+- `/ag-flow`：改用 `/cl-flow`（同等能力且免費）；AG 裁決需求請直開 Antigravity
+- `/ag-stitch-sync` `/ag-ui-import`：`ui-designer` subagent 已原生擁有 `mcp__magic__21st_magic_component_builder`，不需 Antigravity 橋接
+- `ag-plan.md`（A2 規格源）不受影響
+
+### [SYNC] FHS_Prompts.md v1.7 → v1.8
+
+- `compatible_with` 對齊 AGENTS v1.5.0；情境二十四（/ag-flow）加棄用標註改指 `/cl-flow`
+
+**里程碑**：至此 Claude Desktop App 平台收斂計劃（Flow ID 2026-07-03-0014，執行依據 `cl-final-plan-v2.md` v2.3）Phase 0-4 全數完成。Phase 5（Antigravity 存檔）維持可選、永不強制。
+
+## [2026-07-03] Session 134 — n8n 三腦介接規格交付（Phase 3.1）
+
+**範圍**：`.fhs/reports/planning/fhs_n8n_3brain_spec.md`（新增，規劃文件，不涉業務代碼）
+
+### [PLANNING] A1 GPT / A2 Gemini / A3 Claude 三腦 n8n workflow 規格
+
+- 節點圖、檔案契約（`artifacts/{flow_id}/` 五檔案+狀態機）、寫入所有權規則、四項歷史地雷（Cloudflare/S121/S129/S127）、System Prompt 範例、成本表、Fat Mo 駁接檢查清單
+- **誠實揭露**：Anthropic/OpenAI API 是否受 Cloudflare 指紋封鎖尚未實測（P10-B/C 待補），規格內建最小驗證步驟供駁接前先確認，不假設安全
+- 設計原則：A3（Claude API）在此管道中只產草案，真正裁決仍在 Desktop Code 分頁——防止 API 端自審
+- 定位：與現有 `scripts/cl-flow-runner.js`（2 腦版）互不排斥，依「電腦前」vs「手機外出」情境選用
+
+## [2026-07-03] Session 134 — Claude Desktop App 平台收斂 Phase 0-2
+
+**範圍**：AI 工作流平台收斂（不涉業務代碼）— `.claude/skills/`, `.fhs/notes/FHS_Mode_Card.md`, `.fhs/reports/planning/`, `claude_desktop_config.json`
+
+### [WORKFLOW] Claude Desktop App 收斂為主介面，Antigravity 轉永久備援
+
+- **定性**：收斂（加入 Desktop App 為主介面），非遷移/除役——Antigravity 與 Desktop App 技術上完全共存，無除役時間表
+- **Phase 0**：11 項實機探針（P1–P8, P11 已測）——Code 分頁 5/5 hooks/commands/MCP/subagent/auto-memory 全通過，與 VSCode ext 完全等同；Cowork 需每 session 授權資料夾、不繼承 `.mcp.json`（需 remote connector）
+- **Phase 1**：`.env` 補 OPENAI_API_KEY/ANTHROPIC_API_KEY；claude.ai Supabase remote connector 授權（Cowork+手機雙享）；`claude_desktop_config.json` 新建（n8n-mcp-server）
+- **Phase 2**：Skills 收斂——22 支 `.gemini/skills` 複製至 `.claude/skills/`（原目錄凍結為 AG 快照）；`.fhs/ai/skills` 4 支橋接（finance-calculator 因 DEPRECATED、ui-ux-pro-max 因非 Skill 格式，均不橋接）；產出 `fhs_cowork_governance.md` + `FHS_Mode_Card.md`（單一寫者矩陣：治理/財務/生產檔僅 hook 守護側可寫）
+- **Cursor**：條件式輕整合設計已備（v2.3），C1 探針確認未安裝/近期不用 → 整項擱置，休眠藍圖保留
+- **影響使用方式**：新增 Skill 工具清單（26 支）；三模式決策卡為日後開工判斷依據；README/repo-map 已同步
+
 ## [2026-07-02] 🐛 Session 133 — IG 看門狗 tg2 invalid syntax 根因修復
 
 **範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`，n8n workflow `D4LK6VrQbiXlju0V`（versionId=683ed8e5）

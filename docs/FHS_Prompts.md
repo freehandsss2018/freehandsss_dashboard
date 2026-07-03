@@ -1,15 +1,15 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.7
-compatible_with: AGENTS.md v1.4.13
-last_updated: 2026-06-12
-last_audited_session: S100
+version: v1.8
+compatible_with: AGENTS.md v1.5.0
+last_updated: 2026-07-04
+last_audited_session: S134
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.7
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.8
 >
-> 最後更新：2026-06-12（v1.7 S100 同步：情境五加 KPI/混合單/3-layer/get_financial_* 觸發詞 + §十路由；AGENTS v1.4.13）
+> 最後更新：2026-07-04（v1.8 S134 同步：情境二十四 `/ag-flow` 標註 [DEPRECATED]，改指 `/cl-flow`；AGENTS v1.5.0，Desktop App 平台收斂 Phase 4）
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
 >
@@ -205,7 +205,10 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 ---
 
-## 【情境二十四：/ag-flow AG 裁決管道 (v1.0.0)】
+## 【情境二十四：/ag-flow AG 裁決管道 (v1.0.0)】⚠️ [DEPRECATED 2026-07-04]
+
+> **改用 `/cl-flow`**——Desktop App 內 Claude（Pro 訂閱，免費）裁決已覆蓋同等能力，直接落 repo 並銜接 `/execute`。
+> 若真的想要 AG（Gemini）作最終裁決，請直接開 Antigravity 原生操作，不透過此橋接指令。詳見 `.fhs/ai/commands/ag-flow.md` 頂部棄用說明。
 
 - 觸發：用戶輸入 `/ag-flow [task]`
 - 執行邏輯：載入並遵循 `.fhs/ai/commands/ag-flow.md`（v1.0.0）

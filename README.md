@@ -20,7 +20,7 @@
 
 ## 給 AI 助理的話
 >
-> 如果你是 Claude Code 或 Antigravity，請立即執行：
+> 如果你是 Claude Code、Claude Desktop App（Code 分頁或 Cowork）或 Antigravity，請立即執行：
 >
 > 1. 讀取 `docs/GLOBAL_AI_SOP.md`（v2.0 多代理協作協議）
 > 2. 讀取 `/.fhs/ai/AGENTS.md`（憲法層，系統最高準則）

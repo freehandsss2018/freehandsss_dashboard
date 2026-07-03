@@ -1,5 +1,16 @@
 ﻿# Session Log
 
+## 2026-07-04 (Session 134 — Claude Desktop App 平台收斂計劃 Phase 0-4): 🏗️ ✅
+
+**Scope**：`/cl-flow` 制定 + `/execute Phase 0-4`。Flow ID 2026-07-03-0014。Desktop App 收斂為主介面（非遷移/除役），Antigravity/Cursor/n8n 三腦定性為永久共存或休眠藍圖。
+**Phase 0**：11 項實機探針清單產出，Fat Mo 實測 P1-P8/P10/P11（P9 待補）；AG 全量安全快照（zip+SHA256）。
+**Phase 1**：`.env` 補 OPENAI/ANTHROPIC key；claude.ai Supabase remote connector 授權；`claude_desktop_config.json` 建立（n8n-mcp-server）。
+**Phase 2**：`.gemini/skills` 22 支複製至 `.claude/skills/`（原目錄凍結）；`.fhs/ai/skills` 4/6 支橋接（2 支因 deprecated/非 skill 格式不橋接）；`fhs_cowork_governance.md` + `FHS_Mode_Card.md` 產出；Cursor C1 探針＝未安裝，休眠藍圖。
+**Phase 3**：`fhs_n8n_3brain_spec.md` 規格產出；P10 三腦 API 連線透過真實建置 n8n workflow（id iTKmxBapcoJXSGLh）實測，三者皆未被 Cloudflare 擋；正式協作 workflow「FHS AI 開發團隊」（id cztGsFXZYtvBUDA6）建成部署；與 `/cl-flow` 對照後裁定休眠（`/cl-flow` 更優，非技術缺陷）。
+**Phase 4**：`AGENTS.md` v1.4.13→v1.5.0（新增 §1.2 平台定位與多工具共存治理）；`ag-flow`/`ag-stitch-sync`/`ag-ui-import` 標 DEPRECATED；`docs/FHS_Prompts.md` v1.7→v1.8 同步。
+**Result**：11 個檔案修改 + 9 個新增檔案；3 份 completion reports；Lesson 沉積（n8n API 建置手法 + Cloudflare 封鎖範圍修正）；decisions.md 6 條記錄；handoff.md 全欄位更新。
+Subagent：❌ 全程未使用（架構規劃+文件治理+n8n API 直接操作，主 agent 執行效率最優，AskUserQuestion 多次用於關鍵決策點澄清）
+
 ## 2026-07-02 (Session 133 — IG 看門狗 tg2 invalid syntax 根因修復): 🔧 ✅
 
 **Scope**：n8n IG Watchdog tg2 Telegram 節點。`telegramText` Code 節點前置文字處理 + `continueOnFail:true` 防止單筆失敗阻塞整批；versionId=683ed8e5。

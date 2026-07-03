@@ -3,6 +3,53 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-03] (Session 134) Desktop App 平台收斂方向確認 — 收斂非除役
+
+決策：FHS 主介面從 Antigravity → Claude Desktop App（Cowork + Code 雙模式），定性為「**收斂**」而非「遷移/除役」。
+核心：Antigravity 與 Desktop App **技術上完全共存**——設定檔/skills 目錄/hook 系統各自獨立，`.fhs/` SSoT 雙邊皆可讀。
+Antigravity 退為**永久備援**，無除役時間表；Phase 5 存檔步驟改為可選，由 Fat Mo 未來自主決定。
+約束：禁止兩端同時對同一檔案寫入（工作習慣，非技術限制）。
+執行依據：`artifacts/2026-07-03-0014/cl-final-plan-v2.md`（已更新至 v2.2）；等待 `/execute Phase 0`。
+v2.2 追加（共存前提八維度重跑後三修正）：(1) **單一寫者矩陣**——`.fhs/memory+notes`/財務六檔/`.claude/skills` 唯一寫者=hook 守護側（Desktop Code/CLI），AG 只讀；緊急寫入須事後 git diff 覆核（AG 寫入不經 5 hook 守護）；`/read` 加 Synology 衝突副本掃描。(2) **Skills 凍結**——複製後 `.gemini/skills` 凍結為 AG 快照，`.claude/skills` 為活體 master，新技能只落 `.claude`，不做雙向同步。(3) **AG 備援守則入 AGENTS.md v1.5.0**——入場條件=Claude 生態故障/需 Gemini 視角。
+v2.3 追加（Cursor 融入八維度分析，Fat Mo 選方案 A）：Cursor **條件式輕整合**——(1) C1–C3 探針前置，未證實安裝/實用前零配置（守 V0 紀律）；(2) **預設不建 `.cursor/mcp.json`**——Cursor 無 hook 守護，不發 n8n/Supabase 寫入鑰匙（同 AG 規約：無守護不拿寫入級工具）；(3) `.cursorrules` 改橋接模式指向 AGENTS.md（防第三規則源漂移）；(4) Cursor 定位=代碼編輯強化（inline 補全/多檔重構/diff 審查），一般代碼=Cursor 主場，治理/財務/生產檔 AI-agent 絕對禁寫；(5) 決策卡頂部一句 heuristic：「凡 AI 要寫治理/財務/生產檔→只准 hook 守護側，其他按順手選工具」。
+**C1 探針結果（同日）：Cursor 未安裝、近期不用 → 2.5 整項擱置，零配置遺留**。設計保留為休眠藍圖（矩陣 Cursor 欄+決策卡行=純文件層預留），日後試用時從 C1 重新入場。當前焦點=Claude Desktop App + Antigravity 融合（Phase 2 核心）。
+
+[2026-07-03] (Session 134 續) P10 三腦 API 實測結果——n8n 伺服器端無 Cloudflare 封鎖，原計劃假設過度保守
+
+決策/發現：透過 n8n Public API（`.env` N8N_KEY）實際建立測試 workflow「3brain API Probe (P10 test)」（id `iTKmxBapcoJXSGLh`）驗證 Anthropic/OpenAI/Perplexity 三腦連線，**非紙上模擬**。
+結果：三者皆從 n8n 伺服器端直連成功，**均未被 Cloudflare 指紋擋**——Perplexity 完整成功；Anthropic HTTP 400（信用額度不足，帳務問題非封鎖）；OpenAI HTTP 429（rate limit，非封鎖）。
+**關鍵修正**：`cl-flow-runner.js` 需要 curl 繞過 Cloudflare 的問題，是**本機** Node.js/Python client 呼叫 Perplexity 時的指紋辨識，n8n 伺服器端 HTTP Request 節點是不同執行環境，不能一概而論——`fhs_n8n_3brain_spec.md` Pitfall 1 的 Execute Command+curl 備案目前不需啟用，保留作未來真遇到封鎖時的後備。
+**副產物發現**：n8n 透過 API 建立的 webhook 節點需額外補 `webhookId`（UUID）欄位，且 API 啟動 workflow 不會自動註冊 webhook 路由，需在 n8n UI 手動存檔一次才生效——純 API `activate` 端點不觸發路由表更新，此為 n8n 本身行為特性，已記入 spec 供未來駁接參考。
+待辦：Anthropic 帳號加值、OpenAI 額度確認後可重測完整成功案例；測試 workflow 已停用保留，credentials 保留供正式 3-brain workflow 沿用。
+已更新：`fhs_v0_desktop_probe.md`（P10 結果區）、`fhs_n8n_3brain_spec.md`（§零 前提聲明改寫）。
+
+[2026-07-03] (Session 134 續) n8n 三腦定位修正 + 正式 workflow 建立（規劃/草案型，非直寫代碼）
+
+決策：Fat Mo 澄清「三腦在同一畫面工作」教學原意，修正先前口頭誤述——n8n 三腦**不是**「離開電腦的手機備用觸發」，而是 Fat Mo 坐在電腦前手動按 Execute、在 n8n 畫布上直接看三個 AI 節點依序接力的協作介面（教學：「4 步打造你的 AI 開發團隊」，Gemini 資料統整→Claude 主力工程師→ChatGPT QA 審查）。原 spec §一 節點圖 Trigger 本就把「手動」排第一位，設計方向無誤，僅口頭優先度定位講錯。
+已建正式 workflow：「FHS AI 開發團隊（A2 Gemini→A3 Claude→A1 ChatGPT）」（id `cztGsFXZYtvBUDA6`），透過 n8n Public API 部署（同 P10 手法），Manual Trigger→Set 任務輸入→Code 組 Prompt→HTTP Gemini→Code 解析+組 Prompt→HTTP Claude→Code 解析+組 Prompt→HTTP ChatGPT→Code 組合最終成品，9 節點全鏈；credentials 沿用 P10 建立的 `3brain-anthropic`/`3brain-openai`，新增 `3brain-gemini`（Query Auth，Gemini API key 走 URL query）。
+**刻意偏離教學原文兩處並經 Fat Mo 確認保留**：A3 Claude 不直接輸出可執行代碼（改輸出「實作草案」），A1 ChatGPT 不做字面 code review（改審草案風險/遺漏）——原因：若讓 API 端直接吐出可貼上即跑的代碼，等於三腦管道繞過 Desktop Code 分頁 5-hook 守護，牴觸 NO-TOUCH 硬約束與「A3 裁決權不外包給 API」既定治理原則。
+Fat Mo 確認：此 workflow 定位＝規劃/草案型任務（非生產代碼直寫）；若未來需要教學原版「直寫代碼」用法，須**另建第二個 workflow**（僅限不碰 Dashboard/n8n/Supabase 的獨立小工具），不得修改本 workflow 安全邊界。
+不寫檔案落地——Fat Mo 確認「n8n 畫布直接看就夠」，`artifacts/{flow_id}/` 檔案契約方案保留但未啟用（留待未來若改 Telegram 觸發時複用）。
+狀態：workflow 已部署未執行——Anthropic 帳戶餘額 $0，等 Fat Mo 加值後首次觸發驗證。
+已更新：`fhs_n8n_3brain_spec.md` §十 實作記錄（含完整教學對照表）。
+
+[2026-07-04] (Session 134 續) n8n 三腦降級休眠藍圖——與 /cl-flow 對照後確認架構重疊
+
+決策：逐項對照 `/cl-flow` 與 n8n 三腦後，Fat Mo 確認「想不出具體用途」→ n8n 三腦**降級為休眠藍圖**（比照 Cursor Phase 2.5 休眠模式）。
+對照結論：FHS 系統相關任務 `/cl-flow` 全面勝出——裁決免費（走 Pro 訂閱）、直接落 repo、全套 hook 治理；n8n 三腦每步花 API 錢、無治理、產出仍須帶回 Desktop Code 分頁才算數。n8n 三腦唯一未被覆蓋的優勢＝排程/無人值守/非 FHS 外部任務，目前無此類具體需求。
+處置：workflow「FHS AI 開發團隊」（id `cztGsFXZYtvBUDA6`）保留但停用，零成本；3 組 credentials（gemini/anthropic/openai）保留供未來沿用；不再投入時間優化；Phase 3.2/3.3 不再推進——本輪對照分析已實質達成「對等驗收」目的（結論：不對等，`/cl-flow` 更優，非技術缺陷而是架構定位重疊）。
+Phase 3 至此收尾。
+
+[2026-07-04] (Session 134 續) Phase 4 完成——AGENTS.md v1.5.0 + 指令族裁決，Desktop App 平台收斂計劃實質完成
+
+決策：Phase 4.1-4.4 全數執行完畢。
+(1) **4.1 對等驗收裁定**：不對等，`/cl-flow` 更優，機制維持現狀不變；記錄追加至 `cl-flow.md` 頂部。
+(2) **4.2 指令族裁決**：`ag-flow`（改用 `/cl-flow`，AG 裁決需求請直開 Antigravity）、`ag-stitch-sync`／`ag-ui-import`（`ui-designer` subagent 已原生擁有 `mcp__magic__21st_magic_component_builder`，不需 Antigravity 橋接）三支標記 [DEPRECATED]（master + bridge 雙層皆註記，內容保留作歷史參考不刪除）；`ag-plan.md`（A2 規格源）不受影響。
+(3) **4.3 AGENTS.md → v1.5.0**：新增 §1.2「平台定位與多工具共存治理」——Desktop App 主介面定位、三模式決策卡引用、單一寫者矩陣、CLI/VSCode 永久 fallback、AG 永久備援守則、Cursor 休眠藍圖定位、n8n 三腦休眠藍圖定位，一次性彙整本輪（S134）全部平台收斂決策至憲法層。
+(4) **[F] FHS_Prompts.md 同步**：v1.7→v1.8，`compatible_with` 對齊 AGENTS v1.5.0；情境二十四（/ag-flow）加棄用標註改指 `/cl-flow`；情境七（Stitch UI 翻新協議）核查後確認為通用設計準則、非指令路由，不受影響、不需修改。
+影響檔案：`AGENTS.md`、`docs/FHS_Prompts.md`、`.fhs/ai/commands/{ag-flow,ag-stitch-sync,ag-ui-import,cl-flow}.md`、`.claude/commands/{ag-flow,ag-stitch-sync,ag-ui-import}.md`。
+**至此，Desktop App 平台收斂計劃（Flow ID 2026-07-03-0014）Phase 0-4 全數完成**，Phase 5（AG 存檔）維持可選、永不強制。執行依據 `cl-final-plan-v2.md`（v2.3）全部條款已落實。
+
 [2026-06-26] (Session 124) S124 v2 加購鎖匙扣成本 N飾維度修復 — 雙根因消除 + 9單回填
 
 決策：修復「加購鎖匙扣 subtotal_cost 無視 quantity（N飾）」雙根因：(a) products.total_base_cost 全 N飾 variant 存 flat 185/235，未按 item_per_set 縮放；(b) Finance Bible §G2 範例 stale（物料$95→$115）。

@@ -86,6 +86,12 @@ freehandsss_dashboard/
 │   │   ├── ag-flow.md          ← /ag-flow Bridge（精煉內建→A1+A2，AG裁決，2026-05-30）
 │   │   └── upload-web.md       ← /upload-web Bridge（WebDAV 部署至 NAS /web，2026-06-08；AG 橋接亦在 .agents/workflows/）
 │   │   [已退役] tdd-guide / debug-guide / five / mermaid / code-analysis（方法論移植至 subagent，2026-05-30）
+│   ├── skills/                  ← Claude Skills 發現層（2026-07-03 新增，Desktop App 收斂 Phase 2.1）
+│   │   ├── [22 支] normalize/onboard/polish/animate/clarify/audit/... ← 複製自 .gemini/skills/（活體 master，新技能只落此處）
+│   │   ├── fhs-bug-triage/          ← 橋接 .fhs/ai/skills/fhs-bug-triage/SKILL.md
+│   │   ├── fhs-p-product-display/   ← 橋接 .fhs/ai/skills/fhs-p-product-display/SKILL.md
+│   │   ├── fhs-overview-badge-layout/ ← 橋接 .fhs/ai/skills/fhs-overview-badge-layout/SKILL.md
+│   │   └── finance-gatekeeper/      ← 橋接 .fhs/ai/skills/finance-gatekeeper/SKILL.md（description 欄位橋接層新增）
 │   └── settings.json           ← hooks 配置（SessionStart/UserPromptSubmit/PreToolUse）
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
@@ -174,6 +180,7 @@ freehandsss_dashboard/
 │   ├── notes/
 │   │   ├── README.md                    ← 筆記層總綱
 │   │   ├── decisions.md
+│   │   ├── FHS_Mode_Card.md              ← 三模式決策卡 + 單一寫者矩陣（Desktop/Cowork/AG/Cursor，Phase 2.3，2026-07-03）
 │   │   ├── todo.md
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
@@ -183,6 +190,9 @@ freehandsss_dashboard/
 │   │   ├── README.md                    ← 報告區總綱
 │   │   ├── completion/                  ← 制度任務完成記錄（含歷史備份）
 │   │   ├── planning/                    ← /cl-flow 與實施計劃暫存區
+│   │   │   ├── fhs_v0_desktop_probe.md  ← Desktop App 實機探針清單（11 項，Phase 0，2026-07-03）
+│   │   │   ├── fhs_cowork_governance.md ← Cowork 模式治理替代方案（Phase 2.2，2026-07-03）
+│   │   │   └── fhs_n8n_3brain_spec.md   ← n8n 三腦（A1 GPT/A2 Gemini/A3 Claude）介接規格，Fat Mo 人手駁接依據（Phase 3.1，2026-07-03；§十一 2026-07-04 休眠決策）
 │   │   └── audits/                      ← 架構衛生與自動稽核報告區
 │   ├── memory/
 │   │   ├── README.md                   ← 記憶層與同步規範
@@ -298,7 +308,8 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 備份與歸檔政策
 │   ├── v39-aom.md                       ← 已廢棄的 V39 AOM 指令（原 .fhs/ai/commands/）
 │   ├── v33_original_script.js           ← V33 原始腳本（歷史參考，從 Maintenance_Tools 封存）
-│   └── test_audit_0695346.py            ← 訂單審計一次性測試腳本（封存）
+│   ├── test_audit_0695346.py            ← 訂單審計一次性測試腳本（封存）
+│   └── antigravity-backup-20260703.sha256.txt ← AG 全量安全快照 checksum（zip 本體 gitignored，Phase 0.1，2026-07-03）
 └── tmp/                                 ← 臨時檔案（不納入 git）
 
 註：node_modules/、tmp/ 與 .* 開頭之隱藏檔案為系統環境自動生成，禁止 AI 任意修改或刪除。

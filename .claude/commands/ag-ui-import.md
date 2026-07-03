@@ -1,5 +1,6 @@
 # /ag-ui-import（Claude Code Bridge）
 
+> ## ⚠️ [DEPRECATED]（2026-07-04）— 前置步驟 `/ag-stitch-sync` 已棄用，改用 `ui-designer` + `frontend-developer` 原生流程
 > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
 
 **執行步驟**：

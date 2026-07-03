@@ -178,7 +178,26 @@
       "PowerShell(node scripts/Sync_Notion_Brain.js 2>&1)",
       "Bash(sed 's/=$//')",
       "Bash(node -e \"const p=require\\('d:/SynologyDrive/Free_handsss/freehandsss_dashboard/package.json'\\);console.log\\(JSON.stringify\\(p.scripts||{},null,1\\)\\)\")",
-      "PowerShell(git add .fhs/memory/handoff.md .fhs/notes/session-log.md Freehandsss_Dashboard/Freehandsss_dashboard_current.html .claude/settings.json)"
+      "PowerShell(git add .fhs/memory/handoff.md .fhs/notes/session-log.md Freehandsss_Dashboard/Freehandsss_dashboard_current.html .claude/settings.json)",
+      "Read(//c/Program Files/**)",
+      "Bash(powershell -NoProfile -Command 'Get-StartApps | Where-Object {$_.Name -like '\\\\''*Claude*'\\\\''} | Select-Object -ExpandProperty Name')",
+      "PowerShell(git push)",
+      "Bash(node scripts/cl-flow-runner.js \"制定 FHS「Claude Pro Desktop App 為主介面」平台收斂計劃（前次 flow 2026-07-02-2201 標的誤判為 Claude Code CLI，本次修正重跑）。目標平台=Claude Desktop App（已安裝，claude_desktop_config.json 不存在=Desktop 層 MCP 未駁接），看重 Cowork+Code 兩模式。關鍵事實：\\(a\\) Desktop App Code 分頁=Claude Code 同 harness，開同一資料夾即繼承 .claude/commands+5 hooks+.mcp.json+.fhs SSoT，遷移成本趨近零；\\(b\\) Cowork 模式不執行專案 hooks/slash commands→handoff 注入/kgov 治理/pre-tool 守護失效，需替代設計=最大真缺口；\\(c\\) Fat Mo 將自行以 n8n 重建三腦管道（A1 ChatGPT 審查/A2 Gemini 資料統整/A3 Claude 建置），cl-flow-runner.js 去留成決策點，.env 無 OPENAI_API_KEY/ANTHROPIC_API_KEY；\\(d\\) Antigravity 除役：.agents/workflows+.gemini/skills 22支+全域 brain/conversations（專有格式只歸檔）；\\(e\\) 記憶 6 系統中 5 個平台中立（repo+Notion），僅 auto-memory 綁 Claude Code harness。交付：\\(1\\) V0 Desktop App 實機能力探針清單（過/不過分支）；\\(2\\) 資產矩陣 v2（6 記憶系統×Cowork/Code/CLI 三模式適用性）；\\(3\\) claude_desktop_config.json MCP 駁接規格草案；\\(4\\) Cowork 治理替代方案；\\(5\\) n8n 三腦介接規格（節點圖+System Prompts+artifacts 檔案契約，Fat Mo 人手駁接）；\\(6\\) cl-flow 指令族去留+AGENTS.md 升版範圍；\\(7\\) Antigravity 除役 checklist 含回退。硬約束：V0 探針先行（AI 知識可能過時）；NO-TOUCH 業務代碼（Dashboard HTML/業務 n8n workflow/Supabase）；n8n 三腦=新增獨立 workflow；.fhs SSoT 單源不可分叉；財務六檔 checksum 零損失；治理鏈不得靜默消失；除役 archive 搬移非刪除；三腦由 Fat Mo 人手駁接計劃只交介接規格。\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const p='artifacts/2026-07-03-0014/state.json';const s=JSON.parse\\(fs.readFileSync\\(p,'utf8'\\)\\);s.cl_status='done';s.status='awaiting_approval';s.execution_status='locked';s.verdict='CONDITIONAL_READY';fs.writeFileSync\\(p,JSON.stringify\\(s,null,2\\)\\);console.log\\('state:',s.cl_status,s.status,s.verdict\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const p='artifacts/2026-07-03-0014/state.json';const s=JSON.parse\\(fs.readFileSync\\(p,'utf8'\\)\\);s.plan_version='v2';s.final_plan='cl-final-plan-v2.md';fs.writeFileSync\\(p,JSON.stringify\\(s,null,2\\)\\);console.log\\('state updated: plan_version=v2'\\)\")",
+      "Bash(mkdir -p \"/d/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/skills\")",
+      "Bash(cp -r \"/d/SynologyDrive/Free_handsss/freehandsss_dashboard/.gemini/skills/\"* \"/d/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/skills/\")",
+      "Bash(mkdir -p \"/d/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/skills/fhs-bug-triage\" \"/d/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/skills/fhs-p-product-display\" \"/d/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/skills/fhs-overview-badge-layout\" \"/d/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/skills/finance-gatekeeper\" *)",
+      "Bash(curl -s --max-time 60 \"https://yanhei.synology.me:8443/webhook/3brain-test\" -w \"\\\\nHTTP:%{http_code}\\\\n\")",
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('active:',d.get\\('active'\\)\\)\")",
+      "Bash(curl -s --max-time 90 \"https://yanhei.synology.me:8443/webhook/3brain-test\" -w \"\\\\nHTTP:%{http_code}\\\\n\")",
+      "Bash(python -c \"import uuid; print\\(uuid.uuid4\\(\\)\\)\")",
+      "Bash(python -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\('deactivated, active:',d.get\\('active'\\)\\)\")",
+      "Bash(xargs -n1 basename)",
+      "Bash(awk '/^## Patterns/{s=1} /^## 財務核心/{s=0} s' .fhs/memory/learnings.md)",
+      "Bash(awk '/^## 財務核心/{s=1} /^## Pitfalls/{s=0} s' .fhs/memory/learnings.md)",
+      "Bash(awk '/^## Pitfalls/{s=1} /^## Preferences/{s=0} s' .fhs/memory/learnings.md)",
+      "Bash(awk '/^## Preferences/{s=1} s' .fhs/memory/learnings.md)"
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
@@ -187,7 +206,9 @@
       "d:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\Freehandsss_Dashboard",
       "d:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\.fhs\\ai\\commands",
       "C:\\Users\\Edwin\\.claude\\agents\\freehandsss",
-      "d:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\.fhs"
+      "d:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\.fhs",
+      "C:\\Users\\Edwin\\AppData\\Roaming",
+      "D:\\SynologyDrive\\Free_handsss\\freehandsss_dashboard\\.claude\\skills"
     ]
   },
   "hooks": {

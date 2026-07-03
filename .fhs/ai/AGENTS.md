@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.4.13
-> Last updated: 2026-06-12
+> Version: v1.5.0
+> Last updated: 2026-07-04
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,7 +18,7 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.4.13 (Rule 3.16 任務型路由加 §十 RPC KPI 條目；execute.md [G] 運算邏輯變動稽核觸發；Session 99-100 知識治理落地)
+- **版本**：v1.5.0 (§1.2 平台定位與多工具共存治理新增：Desktop App 主介面、三模式決策卡、單一寫者矩陣、AG 永久備援守則、Cursor/n8n三腦休眠藍圖；Session 134 Desktop App 平台收斂 Phase 4)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
@@ -32,6 +32,26 @@
 | **Fallback Backup**（事故後備） | Airtable | Supabase SSoT 翻轉後 Airtable 仍保留作為冷備援 |
 
 > **語義要點**：Supabase 為**運行時主導**（Lead），Airtable 為**過渡期權威快照**（Snapshot）。兩者職責不重疊，不衝突。
+
+### 1.2 平台定位與多工具共存治理（2026-07-04 新增，Desktop App 平台收斂 Phase 4.3）
+
+**Claude Desktop App 為主介面**（Code 分頁 + Cowork 雙模式）。Code 分頁與 Claude Code CLI 同 harness，開同一資料夾即完整繼承 `.claude/commands`、5 個 hooks、`.mcp.json`、`.fhs` SSoT、9 支 subagents、Skills（見下）——遷移成本趨近零，已於 Phase 0 實機探針（P1-P5）驗證 5/5 全通過。
+
+**三模式決策卡**（`.fhs/notes/FHS_Mode_Card.md`）為日常「開什麼工具」的唯一判斷依據，開場一句 heuristic：
+> 凡 AI 要寫治理/財務/生產檔 → 只准 hook 守護側（Desktop Code 分頁 / CLI）。其他一切按順手選工具。
+
+**單一寫者矩陣**（同見 `FHS_Mode_Card.md`）：`.fhs/memory/`+`.fhs/notes/`、財務六檔、Dashboard HTML、migrations、`.claude/skills/`（活體 master）唯一寫者＝hook 守護側（Desktop Code 分頁 / CLI）；Cowork/Antigravity/Cursor 對這些類別**一律唯讀**。
+
+**CLI / VSCode Extension**：永久 fallback（非過渡），配置與 Desktop App 同源，Desktop App 故障時無縫切換。
+
+**Antigravity（AG）備援守則**：AG 與 Desktop App **技術上完全共存**（設定檔/skills 目錄/hook 系統各自獨立，`.fhs/` SSoT 雙邊可讀），2026-07-03 決策為**永久備援，無除役時間表**（非遷移/除役關係，是收斂關係）。
+- **入場條件**：Claude 生態故障、或需要 Gemini 視角時
+- **原則**：只讀分析為主；AG 寫入不經 5 hook 守護（PreToolUse 財務守衛/kgov 全旁路），故緊急寫入後**第一件事**＝回 Desktop Code 分頁 `git diff` 覆核 + 補跑落盤
+- **Skills 資產**：`.gemini/skills/` 22 支已於 Phase 2.1 複製至 `.claude/skills/` 並凍結原目錄（AG 只讀取執行，新技能/修訂只落 `.claude/skills/`）
+
+**Cursor 定位（休眠藍圖，2026-07-04 確認未安裝/近期不用）**：若未來啟用，定位為**代碼編輯器強化**（inline 補全/多檔重構/diff 審查），非治理執行端。預設**不建** `.cursor/mcp.json`（無 hook 守護不發寫入級 MCP 鑰匙，同 AG 邏輯）；`.cursorrules` 走橋接模式指向本文件（SSoT 不分叉）。入場前置 C1-C3 探針，詳見 `artifacts/2026-07-03-0014/cl-final-plan-v2.md` Phase 2.5。
+
+**n8n 三腦（A2 Gemini→A3 Claude→A1 GPT）＝休眠藍圖**（2026-07-04 確認）：與 `/cl-flow` 對照後，FHS 系統相關任務 `/cl-flow` 全面勝出（裁決免費、直接落 repo、全套 hook 治理）；n8n 三腦每步花 API 錢、無治理，產出仍須帶回 Desktop Code 分頁才算數。workflow（id `cztGsFXZYtvBUDA6`）保留但停用，唯一未覆蓋優勢＝排程/無人值守/非 FHS 外部任務，目前無具體需求。詳見 `.fhs/reports/planning/fhs_n8n_3brain_spec.md` §十一。
 
 
 ***

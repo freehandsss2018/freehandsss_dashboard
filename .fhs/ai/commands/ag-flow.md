@@ -1,5 +1,13 @@
 # /ag-flow — AG 裁決規劃管道
 
+> ## ⚠️ [DEPRECATED]（2026-07-04，Session 134，Desktop App 平台收斂 Phase 4.2）
+> **原因**：本指令在 Claude Code / Desktop App 內執行，卻把裁決權讓給 AG（跳過 A3 Claude 審閱）——
+> Desktop App 現有 `/cl-flow` 已提供同等（甚至更強）能力：PX+AG 平行研究 + Claude（Pro 訂閱，免費）裁決，
+> 直接落 repo 並銜接 `/execute`。在 Claude Code 內繞一圈讓 AG 裁決已無實質優勢。
+> **若你真的想要 AG（Gemini）作最終裁決**：請直接打開 Antigravity IDE 原生操作，不透過此橋接指令。
+> Antigravity 本身依 2026-07-03 決策為**永久共存備援**，未除役，此處僅棄用「從 Claude Code 橋接呼叫 AG 裁決」這條路徑。
+> 本檔案內容保留作歷史參考，不再是建議用法。
+
 **用途**：精煉任務描述後，自動執行 A1 Perplexity 外部研究 + A2 Gemini ag-plan，由 AG 作最終裁決。跳過 A3 Claude 審閱。
 **版本**：v1.0.0 (2026-05-30)
 **平台**：Claude Code (CL) · Antigravity/Gemini (AG)

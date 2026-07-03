@@ -1,5 +1,6 @@
 # /ag-stitch-sync（Claude Code Bridge）
 
+> ## ⚠️ [DEPRECATED]（2026-07-04）— 改請 `ui-designer` subagent 直接用 mcp__magic 工具，無需 Antigravity 橋接
 > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
 
 **執行步驟**：

@@ -7,6 +7,8 @@
 
 > 精煉（/rp）為預設第一步，不可跳過。名稱含義：cl = Claude 作最終裁決。
 
+> **2026-07-04 對等驗收記錄**（Desktop App 平台收斂 Phase 4.1）：曾評估以 n8n 三腦 workflow（A2 Gemini→A3 Claude→A1 GPT）取代本指令 Step 1 觸發機制。對照結論：**不對等，本指令更優**——裁決免費（走 Pro 訂閱）、直接落 repo、全套 hook 治理；n8n 三腦每步花 API 錢、無治理。維持現狀，Step 1 觸發機制不變。詳見 `.fhs/reports/planning/fhs_n8n_3brain_spec.md` §十一。
+
 ---
 
 ## Step 0 — /rp 精煉（預設，不可跳過）

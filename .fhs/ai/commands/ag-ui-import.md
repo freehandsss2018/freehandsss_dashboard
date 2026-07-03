@@ -1,5 +1,11 @@
 # /ag-ui-import
 
+> ## ⚠️ [DEPRECATED]（2026-07-04，Session 134，Desktop App 平台收斂 Phase 4.2）
+> **原因**：前置步驟 `/ag-stitch-sync` 已棄用（見該檔案），本指令的輸入草稿來源不再產生。
+> UI 組件生成請直接透過 `ui-designer` subagent（原生擁有 `mcp__magic__21st_magic_component_builder`），
+> 產出後交 `frontend-developer` 整合，不需此轉換橋接步驟。
+> 本檔案內容保留作歷史參考，不再是建議用法。
+
 **用途 (Purpose)**：將 Stitch 生成的 UI 草稿標準化為 FHS-compliant 的 Vanilla HTML/CSS，去除所有外部框架依賴，並封裝至 V[N] prototype 中。
 **Added in**：v1.4.2（2026-05-03 Stitch 整合）
 **執行方**：Antigravity (A2) + frontend-developer

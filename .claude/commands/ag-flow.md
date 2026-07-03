@@ -1,5 +1,6 @@
 # /ag-flow (Claude Code Bridge)
 
+> ## ⚠️ [DEPRECATED]（2026-07-04）— 改用 `/cl-flow`（Claude 裁決，免費，落 repo）；若要 AG 裁決請直接開 Antigravity 原生操作
 > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
 
 **執行步驟**：
