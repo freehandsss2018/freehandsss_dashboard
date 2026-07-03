@@ -3,6 +3,11 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-04] (Session 136) learnings.md 超量整理 — 59→49 條
+
+決策：`.fhs/memory/learnings.md` 累積至 59 條，超過文件自訂 50 條上限（上次整理 Session 113 為 70→50）。執行退役 3 條 + 合併 4 組（節省 9 條）：退役「Smart Cache COST_MAP 遺漏」（已入 `/new-product` SOP 強制執行）、「單一配件 filter 假設」（已被 Pattern #6 `_isAddon()`/`_addonType()` 架構取代）、「generate() else 忘記清值」（窄範圍一次性 bug 已修復）；合併 ENUM cast+PostgREST 括號語法、SELECT/PATCH 未套用欄位+Migration 部分執行、focusin 清空+split auto-fill 污染、n8n POST/PUT 四欄限制+contentType raw+空陣列 guard+expression 禁鏈式（四合一）四組同主題條目；同時修正 Pitfalls 區塊因多次併發追加造成的編號亂序（曾出現重複 #22/#23/#24）。
+驗證：`grep -cE "^[0-9]+\. "` 確認全檔 49 條數字編號項目，低於 50 條上限；退役/合併項目均以 📌 附註保留可追溯性（指向取代機制），未遺失任何知識內容。
+
 [2026-07-04] (Session 136) IG 看門狗 Telegram 深連結 URL 修復 — 5006/web/ 401 → 公開網址 200
 
 決策：Telegram 深連結驗收待辦（notify>0 才能測）在觸發前先做唯讀 curl 診斷，發現 n8n `Classify & Report` 節點硬編碼的深連結網址 `https://yanhei.synology.me:5006/web/Freehandsss_dashboard_current.html` 實測 HTTP 401（無法對外使用），而正式公開網址 `https://yanhei.synology.me/Freehandsss_dashboard_current.html` 實測 HTTP 200。判斷即使真的觸發警報，深連結也必然失效，屬於需立即修的真實 bug，非等待即可解決。
