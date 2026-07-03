@@ -1,5 +1,17 @@
 ﻿# Changelog
 
+## [2026-07-04] Session 136 — IG 看門狗 Telegram 深連結 URL 修復
+
+**範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`、n8n workflow `FHS_IGWatchdog_DriveWatch`（D4LK6VrQbiXlju0V）
+
+### [FIX] Telegram 深連結 URL 錯誤（Phase B NAS 實機確認後續發現）
+
+- **症狀**：Telegram 深連結驗收待辦標示「需等實際 notify>0 觸發才能測」；唯讀診斷發現即使觸發，連結也會失敗（HTTP 401）
+- **根因**：`Classify & Report` Code 節點硬編碼 `https://yanhei.synology.me:5006/web/Freehandsss_dashboard_current.html?view=igwatch&orderId=...`，port 5006 + `/web/` 路徑非對外實際服務網址（curl 實測 401）；正式公開網址為 `https://yanhei.synology.me/Freehandsss_dashboard_current.html`（curl 實測 200，同 S136 Fat Mo 實機驗收網址）
+- **修復**：`build_n8n_workflow.cjs` 單一真源改正網址常數；GET→Python 字串替換→PUT 外科手術部署至正式 workflow（body 僅含 name/nodes/connections/settings 四欄）；versionId `683ed8e5`→`05740bb4`，active=True
+- **驗證**：GET 回傳確認壞網址出現次數 0、正確網址 1；9 個帶 credential 節點（7 Google Drive + 2 Telegram）完整保留；curl 對修正後網址（含 `?view=igwatch&orderId=` 參數）實測 HTTP 200
+- **前端**：deep-link 解析邏輯（`freehandsss_dashboardV42.html` L7810-7815）本身無誤，問題僅在 n8n 端組出的網址錯誤
+
 ## [2026-07-04] Session 134 — AGENTS.md v1.5.0：Desktop App 平台收斂 Phase 4（計劃完結）
 
 **範圍**：`AGENTS.md`、`docs/FHS_Prompts.md`、`.fhs/ai/commands/{ag-flow,ag-stitch-sync,ag-ui-import,cl-flow}.md`、`.claude/commands/{ag-flow,ag-stitch-sync,ag-ui-import}.md`

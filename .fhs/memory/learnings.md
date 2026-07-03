@@ -68,6 +68,7 @@
 27. **Python json.dump emoji → n8n surrogate pair "invalid syntax"**：用 Python 序列化含 emoji（如 🔗）的 n8n workflow JSON 時，若 `ensure_ascii=False` 且環境 CP950，emoji 被寫成 surrogate pair（`\udcfx...`）；n8n 求值表達式時 "invalid syntax" 靜默失敗。修法：`json.dump(..., ensure_ascii=True)` 強制 ASCII escape，或改用純 ASCII 替代符號（`>` 代替 🔗）— Session 128
 28. **【Pitfall #28】Postgres `CREATE OR REPLACE FUNCTION` 不能改參數名**：`CREATE OR REPLACE` 替換函數時若參數名與原函數不同，報 `42P13: cannot change name of input parameter`。解法：保留原參數名，或先 `DROP` 再建。改函數前必須讀原 migration SQL 確認 param names — Session 130 Phase B
 29. **【高頻 ⚠️】n8n expression evaluator 禁複雜 JS 鏈式語法**：Text/URL 等表達式欄位用 `tmpl` 求值，不支援 `.filter().map().join()` 等複雜鏈式 → `invalid syntax` 靜默失敗。修法：複雜邏輯移至 Code 節點輸出簡單欄位，表達式只做 `$('NodeName').first().json.field` 簡單引用 — Session 133
+30. **n8n Code 節點內嵌 dashboard 網址禁憑印象寫死**：Telegram 深連結硬編碼 `yanhei.synology.me:5006/web/`（NAS 內網路徑）實測 401，正確應為 decisions.md 記載之公開網址。修法：任何嵌入網址一律對照 decisions.md + curl 實測 200 才寫入，勿假設內網 port/路徑對外可達 — Session 136
 
 ---
 

@@ -3,6 +3,19 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-04] (Session 136) IG 看門狗 Telegram 深連結 URL 修復 — 5006/web/ 401 → 公開網址 200
+
+決策：Telegram 深連結驗收待辦（notify>0 才能測）在觸發前先做唯讀 curl 診斷，發現 n8n `Classify & Report` 節點硬編碼的深連結網址 `https://yanhei.synology.me:5006/web/Freehandsss_dashboard_current.html` 實測 HTTP 401（無法對外使用），而正式公開網址 `https://yanhei.synology.me/Freehandsss_dashboard_current.html` 實測 HTTP 200。判斷即使真的觸發警報，深連結也必然失效，屬於需立即修的真實 bug，非等待即可解決。
+執行：`scripts/ig-watchdog/build_n8n_workflow.cjs` 單一真源改正網址常數；GET 現有 workflow → Python 字串替換 → PUT 精簡 body（name/nodes/connections/settings）部署至 `FHS_IGWatchdog_DriveWatch`（D4LK6VrQbiXlju0V）。
+驗證：versionId `683ed8e5`→`05740bb4`，active=True；GET 回傳確認壞網址 0 次/正確網址 1 次；9 個 credential 節點（7 Drive+2 Telegram）完整保留；curl 對含 query string 的修正網址實測 HTTP 200。
+備註：前端 deep-link 解析邏輯（V42 L7810-7815）本身正確，問題純粹是 n8n 端組出的網址錯誤；Telegram 深連結完整端到端驗收（真實觸發+人工點擊）仍待 notify>0 事件發生。
+
+[2026-07-04] (Session 136) Phase B NAS 實機確認 — 簡化付款按鈕切換行為 PASS
+
+決策：Fat Mo 於生產環境 NAS（`https://yanhei.synology.me/Freehandsss_dashboard_current.html`）親自實機操作驗收 S131 filledAny guard 修正（新訂單 auto-fill 填格後，簡化付款按鈕自動由「全部半訂」切換至「全部付清」）以及 S132 概覽篩選 UI 四項優化，結果 PASS。
+驗證：人工實機操作驗收（非自動化測試），確認按鈕狀態切換符合 S131/S107 設計預期，無回歸。
+備註：待辦剩餘 Telegram 深連結驗收（需實際 IG 看門狗 notify>0 觸發才能測，目前所有 Cron 執行均 notify=0）。
+
 [2026-07-04] (Session 135) /upload-web 部署 S131+S132+S133 至 NAS — V42 升格 current
 
 決策：執行 `/upload-web` 無參數升格流程，偵測最新開發版 `freehandsss_dashboardV42.html`，經 Fat Mo 二次確認後 cp 升格為 `Freehandsss_dashboard_current.html` 並上傳 NAS WebDAV。

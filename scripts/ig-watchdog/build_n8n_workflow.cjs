@@ -324,7 +324,7 @@ const alerts = notifyItems.map(it => ({
 // Phase 3: 深連結在 Code 節點組合（n8n expression evaluator 不支援複雜 JS 鏈式語法）
 const telegramText = summary + alerts
   .filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created'))
-  .map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me:5006/web/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id)
+  .map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id)
   .join('');
 return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts } }];
 `.trim();

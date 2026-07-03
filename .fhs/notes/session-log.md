@@ -1,5 +1,14 @@
 ﻿# Session Log
 
+## 2026-07-04 (Session 136 — Phase B NAS 實機確認 + Telegram 深連結 URL 修復): 🔧 ✅
+
+**Scope**：Fat Mo NAS 實機確認簡化付款按鈕切換行為（S131 filledAny guard + S132 概覽篩選 UI）；接續處理 Telegram 深連結驗收待辦時，唯讀 curl 診斷先於真實觸發發現根因 bug 並修復。
+**Result 1（Phase B 實機確認）**：Fat Mo 於生產環境 NAS 親自操作驗收 PASS，無回歸。
+**Result 2（URL bug 修復）**：n8n `Classify & Report` 節點硬編碼深連結網址 `yanhei.synology.me:5006/web/...` 實測 HTTP 401；正確公開網址 `yanhei.synology.me/Freehandsss_dashboard_current.html` 實測 200。修正 `build_n8n_workflow.cjs` 單一真源 → GET→字串替換→PUT 外科手術部署至 `FHS_IGWatchdog_DriveWatch`（D4LK6VrQbiXlju0V），versionId `683ed8e5`→`05740bb4`；9 個 credential 節點（7 Drive+2 Telegram）完整保留；含 query string 的修正網址 curl 實測 200。
+**剩餘**：Telegram 深連結完整端到端驗收（真實觸發+人工點擊）仍待實際 notify>0 事件，URL bug 已排除。
+**Learnings**：新增 Pitfall #30（n8n Code 節點內嵌 dashboard 網址禁憑印象寫死，須對照 decisions.md + curl 驗證）。
+Subagent：❌ 未使用（curl 唯讀診斷 + Python 外科修改 + n8n API PUT + 純文件更新，主 agent 直接執行）
+
 ## 2026-07-04 (Session 135 — /upload-web 部署 S131+S132+S133 至 NAS): 🚀 ✅
 
 **Scope**：`/upload-web` 無參數升格流程。偵測最新開發版 V42，Fat Mo 二次確認後 cp 升格為 `Freehandsss_dashboard_current.html`，WebDAV 上傳 NAS。
