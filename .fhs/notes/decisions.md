@@ -3,6 +3,13 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-04] (Session 135) /upload-web 部署 S131+S132+S133 至 NAS — V42 升格 current
+
+決策：執行 `/upload-web` 無參數升格流程，偵測最新開發版 `freehandsss_dashboardV42.html`，經 Fat Mo 二次確認後 cp 升格為 `Freehandsss_dashboard_current.html` 並上傳 NAS WebDAV。
+驗證：三關全 PASS（HTTP 204 PUT / 大小 919,443 bytes remote=local / SHA256=`DCF266F11C961F865F3DC6F16A91F46CD89480EF744870697BAE02E78D2812C0`）。
+備註：本次 SHA256/大小與 S130 合包部署記錄（`AC3C4C00...` 915065bytes）不同但與 S133 handoff 提及之先前上傳結果一致，代表 S131（filledAny guard）+S132（概覽篩選 UI）+S133（tg2 根因修復）三批變更已完整包含於這次部署的 V42 內容中，無需額外動作。
+公開網址：https://yanhei.synology.me/Freehandsss_dashboard_current.html
+
 [2026-07-03] (Session 134) Desktop App 平台收斂方向確認 — 收斂非除役
 
 決策：FHS 主介面從 Antigravity → Claude Desktop App（Cowork + Code 雙模式），定性為「**收斂**」而非「遷移/除役」。

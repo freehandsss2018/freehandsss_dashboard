@@ -1,5 +1,11 @@
 ﻿# Session Log
 
+## 2026-07-04 (Session 135 — /upload-web 部署 S131+S132+S133 至 NAS): 🚀 ✅
+
+**Scope**：`/upload-web` 無參數升格流程。偵測最新開發版 V42，Fat Mo 二次確認後 cp 升格為 `Freehandsss_dashboard_current.html`，WebDAV 上傳 NAS。
+**Result**：三關驗證全 PASS（HTTP 204 PUT / 919,443 bytes remote=local / SHA256=DCF266F11C961F865F3DC6F16A91F46CD89480EF744870697BAE02E78D2812C0）；部署內容涵蓋 S131（簡化付款 auto-fill 按鈕狀態）+ S132（概覽篩選 UI 四項優化）+ S133（IG 看門狗 tg2 根因修復）；decisions.md + handoff.md（便攜塊 + MASTER 待辦表）同步更新。
+Subagent：❌ 未使用（純部署腳本執行 + 文件同步，主 agent 直接完成）
+
 ## 2026-07-04 (Session 134 — Claude Desktop App 平台收斂計劃 Phase 0-4): 🏗️ ✅
 
 **Scope**：`/cl-flow` 制定 + `/execute Phase 0-4`。Flow ID 2026-07-03-0014。Desktop App 收斂為主介面（非遷移/除役），Antigravity/Cursor/n8n 三腦定性為永久共存或休眠藍圖。
