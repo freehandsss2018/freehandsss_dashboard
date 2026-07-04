@@ -248,7 +248,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit|mcp__supabase__apply_migration|mcp__n8n-mcp-server__update_node_code",
+        "matcher": "Write|Edit|MultiEdit|mcp__.*__apply_migration|mcp__.*__update_node_code|mcp__.*__execute_sql",
         "hooks": [
           {
             "type": "command",

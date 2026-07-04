@@ -32,29 +32,11 @@ const G_REMINDER = [
 // Tools that write files
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit']);
 
-// MCP tool suffixes that imply finance/RPC changes.
-// Suffix match (not exact Set) so this survives connector renames — e.g. Desktop
-// App's claude.ai Supabase connector exposes the same capability under
-// `mcp__<uuid>__apply_migration` instead of `mcp__supabase__apply_migration`.
-const MCP_HIT_SUFFIXES = [
-  '__apply_migration',
-  '__update_node_code'
-];
-
-// execute_sql-shaped tools are hit only when the query both (a) writes (not a
-// bare SELECT) and (b) touches finance/RPC content — a read-only audit query
-// must not flag every session.
-const MCP_EXECUTE_SQL_SUFFIX = '__execute_sql';
-const SQL_WRITE_VERB_PATTERN = /\b(CREATE|ALTER|DROP|INSERT|UPDATE|DELETE)\b/i;
-
-function isMcpHit(tool, toolInput) {
-  if (MCP_HIT_SUFFIXES.some(s => tool.endsWith(s))) return true;
-  if (tool.endsWith(MCP_EXECUTE_SQL_SUFFIX)) {
-    const query = (toolInput && (toolInput.query || toolInput.sql)) || '';
-    return SQL_WRITE_VERB_PATTERN.test(query) && HIT_CONTENT_PATTERNS.some(p => p.test(query));
-  }
-  return false;
-}
+// MCP tools that imply finance/RPC changes
+const MCP_HIT_TOOLS = new Set([
+  'mcp__supabase__apply_migration',
+  'mcp__n8n-mcp-server__update_node_code'
+]);
 
 // File path patterns that indicate finance/RPC domain
 const HIT_PATH_PATTERNS = [
@@ -133,15 +115,15 @@ process.stdin.on('end', () => {
     }
 
     // ── Fast-path: non-write, non-MCP-hit tools exit immediately ──────────
-    const mcpHit = isMcpHit(tool, toolInput);
+    const isMcpHit = MCP_HIT_TOOLS.has(tool);
     const isWriteTool = WRITE_TOOLS.has(tool);
 
-    if (!mcpHit && !isWriteTool) {
+    if (!isMcpHit && !isWriteTool) {
       process.exit(0);
     }
 
     // ── MCP tool direct hit ───────────────────────────────────────────────
-    if (mcpHit) {
+    if (isMcpHit) {
       writeFlag();
       emitAdditionalContext(G_REMINDER);
       process.exit(0);

@@ -23,10 +23,6 @@ last_updated: 2026-05-16
 Step 1: Read .fhs/ai/FHS_Finance_Bible.md       ← 雙層成本架構 + 欄位歸屬
 Step 2: Read n8n/Quadruple_Sync_Field_Map.md    ← 四端欄位映射（最新版）
 Step 3: Read supabase/migrations/0001_initial_schema.sql ← Supabase 表結構
-Step 4: [按需] 任務涉及 RPC KPI / 混合單 / 3-layer fallback /
-        get_financial_kpis / get_financial_charts 時，使用 Grep 定位後
-        讀取 .fhs/notes/FHS_System_Logic_Overview.md §十
-        （RPC 財務計算層 SSoT；禁全量讀取，只讀 §十 章節範圍）
 ```
 
 > ❌ 禁止使用 `n8n/Triple_Sync_Field_Map.md` 作為財務架構參考（已過時，Quadruple 版本已取代）
@@ -220,8 +216,7 @@ get_node("Parse Items & Generate SKU")    ← 確認 SKU 正規化邏輯、Layer
 
 ---
 
-*FHS database-reviewer v2.2.0 — 2026-06-12*
-*v2.1.0 → v2.2.0：啟動前置 Step 4 — 涉及 RPC KPI / 混合單 / 3-layer 時按需讀取 §十（Session 99-100 知識治理落地）*
+*FHS database-reviewer v2.1.0 — 2026-05-16*
 *v2.0.0 → v2.1.0：優先順序重組（Supabase Layer 1/2 主導），新增 Phase B 過渡文檔，反模式增強*
 *核心升級：Triple Sync → Quadruple Sync；Airtable 為主 → Supabase 為主；新增 Finance Bible 強制前置*
 *授權來源：Fat Mo — Supabase-First 財務架構優化*

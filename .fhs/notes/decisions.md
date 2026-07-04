@@ -1244,3 +1244,29 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **驗證方式**：先建 `scripts/hooks/test/` 特徵化夾具對修補前行為建立基線（12組，含4項已知缺口），修補後重跑，3項known_gap正確翻轉+1項PowerShell文件記錄項升級為可執行斷言，12/12 PASS。此為本專案 guard hook 首次擁有回歸測試保護。
 
 **完整報告**：`.fhs/reports/completion/2026-07-04_harness-hardening-execute_completion_report.md`
+
+---
+
+## 2026-07-04（Session 140）— 稽核修復（矛盾/死洞/session log 痛點）C1-C4 落地
+
+### D7：C1 密鑰輪換——終局裁決不做（Fat Mo 承擔風險）
+
+**背景**：本 session 獨立稽核 Claude Code 環境（settings/hooks/skills），發現 `.claude/settings.json`（git-tracked）allowlist 內嵌完整 n8n API key JWT ×3，`.claude/settings.local.json`（未進 git 但明文散落）內嵌 Supabase `sb_secret_` service_role key ×3。兩者均已在稽核對話過程中被完整貼出（用於呈現證據），已流入 session log/transcript。
+
+**決策**：Fat Mo 兩次明確確認（第一次：「這個不用處理，我明白當中風險」；第二次覆核：「我已決定承擔當中風險不替換，可以當作是已完成它」）——**不輪換 key，不清 allowlist 條目，維持現狀**。與 D5-A2（`.mcp.json` PAT 遷移不做）同類性質：非破洞被忽視，而是 Fat Mo 已完整知悉風險（git 歷史留底、session log 外流兩點）後主動選擇接受。
+
+**與 A2 的差異**：A2 是「未發現漏洞、防禦深度加分項」；D7 是「已確認發生外洩（session log），但 Fat Mo 判斷風險可接受」——性質更接近「已知風險、拍板不處理」而非「無風險」。若未來需要重新評估，觸發條件建議：(a) n8n/Supabase 出現異常存取記錄 (b) repo 有計畫轉為公開/多人協作 (c) Fat Mo 主動要求。
+
+**guard.js R2 補洞照常執行**：`sb_secret_` pattern 缺口（F13）與本決策無關，屬「防未來新增同類洩漏」而非「處理已洩漏的舊 key」，已修復（見下方 D8）。
+
+### D8：Guard/kgov 補洞 + Deploy 授權機制 + 治理層對齊（C1-C4）
+
+**範圍**：對話內稽核（v1→自我批評→v2，非經 `/cl-flow-runner.js`）發現 14 項文件↔程式碼矛盾/死洞（F1-F14）+ 4 項 session log 溝通痛點（L1-L4），Fat Mo 看過完整 v2 方案（4 個裁決點）後 `/execute` 口頭批准。
+
+**核心新增**：
+- Deploy 授權機制（F8）：`.fhs/.deploy-ok` 由 Fat Mo 手動 touch 建立，10 分鐘 TTL，一次性消耗，AI 自建會被 R10 硬攔截，放行事件落審計於 `deploy-log.md`——解決過去「口頭批准後 AI 仍永遠被 R1/R9 硬攔截」的死鎖
+- kgov 後綴匹配（F10/F11）：`MCP_HIT_TOOLS` 固定 Set 改後綴函式，修復 Desktop connector UUID 前綴工具名 + `execute_sql` 財務路徑兩個盲區
+- R11-observe（F12）：shell 財務寫入 warn-only 觀察期（~2週後複查 `.fhs/.kgov-observe.log` 決定轉正）
+- 7 項文件對齊（F1/F4/F5/F6/F7/F9/F14）+ 2 項行為層治本（L1 UI 意圖複述閘、L2/L3 governance 反例、L4 調度教訓）
+
+**完整報告**：`.fhs/reports/completion/2026-07-04_s140-guard-kgov-governance-hardening_completion_report.md`

@@ -170,46 +170,6 @@
     "note": "S140 稽核發現 F13：sb_secret_ 為 Supabase 新版 secret key 格式，S139 只補了 sbp_/JWT，漏了此格式；已於本次補洞"
   },
   {
-    "name": "R10: AI 以 Write 建立 deploy-ok 旗標應攔截",
-    "tool_name": "Write",
-    "tool_input": {
-      "file_path": ".fhs/.deploy-ok",
-      "content": "2026-07-04T00:00:00.000Z"
-    },
-    "expected_exit": 2,
-    "expected_stderr_contains": [
-      "R10"
-    ],
-    "known_gap": false,
-    "note": "S140 新增（F8）：AI 不得自我授權 deploy 旗標，只能由 Fat Mo 手動建立"
-  },
-  {
-    "name": "R10: AI 以 Bash 指令建立 deploy-ok 旗標應攔截",
-    "tool_name": "Bash",
-    "tool_input": {
-      "command": "touch .fhs/.deploy-ok"
-    },
-    "expected_exit": 2,
-    "expected_stderr_contains": [
-      "R10"
-    ],
-    "known_gap": false,
-    "note": "S140 新增（F8）：shell 變體同樣攔截"
-  },
-  {
-    "name": "R11-observe: Shell 寫入財務關鍵字應警告但不攔截（觀察期）",
-    "tool_name": "Bash",
-    "tool_input": {
-      "command": "echo \"cost_configurations\" >> notes.txt"
-    },
-    "expected_exit": 0,
-    "expected_stderr_contains": [
-      "R11-observe"
-    ],
-    "known_gap": false,
-    "note": "S140 新增（F12）：warn-only 觀察期，兩週後複查是否轉正為攔截（見 governance/05 §4）"
-  },
-  {
     "name": "正常安全寫入不應觸發任何規則",
     "tool_name": "Write",
     "tool_input": {

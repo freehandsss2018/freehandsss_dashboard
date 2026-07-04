@@ -1,5 +1,34 @@
 ﻿# Changelog
 
+## [2026-07-04] Session 140 — 稽核修復（矛盾/死洞/session log 痛點）v2 落地
+
+**範圍**：`scripts/hooks/pre-tool-guard.js`、`scripts/hooks/post-tool-kgov.js`、`scripts/hooks/prompt-router.js`、`scripts/hooks/test/guard-fixtures.json`、`.claude/settings.json`、`.gitignore`、`.fhs/ai/AGENTS.md`、`.fhs/notes/SOP_NOW.md`、`.fhs/ai/governance/`（00/02/03）、`.fhs/ai/subagents/freehandsss/`（7檔）+ `~/.claude/agents/freehandsss/`（同步）
+
+### [FEAT] Guard/kgov 補洞
+- R2 新增 `sb_secret_`（Supabase 新版 secret key 格式）偵測 pattern，S139 只補了 sbp_/JWT
+- 新增 **R10**：攔截 AI 自行建立 `.fhs/.deploy-ok` 授權旗標（Write/Edit 與 Bash/PowerShell 兩變體）
+- 新增 **deploy 授權旁路**：`.fhs/.deploy-ok` 存在且 10 分鐘 TTL 內 → R1/R9 放行一次 current.html 覆蓋，消耗 flag 並落審計至 `.fhs/notes/deploy-log.md`——解決過去「Fat Mo 口頭批准後 AI 仍永遠被硬攔截」的死鎖
+- 新增 **R11-observe**：shell 寫入指令命中財務關鍵字 → warn-only 記錄至 `.fhs/.kgov-observe.log`（觀察期方案，暫不攔截）
+- `post-tool-kgov.js`：`MCP_HIT_TOOLS` 固定 Set 改後綴匹配，修復 Desktop App claude.ai connector（UUID 前綴工具名）與最常用的 `execute_sql` 財務改動路徑從未觸發 [G] 稽核的兩個盲區
+- Fixtures：12→16 組，全數 PASS
+
+### [FIX] 文件矛盾與漂移對齊
+- `AGENTS.md` §1 生產版聲明 V41→V42（與實測 hash 一致）
+- Mid-Session 脈衝條文加「任務結束交接」豁免，消除與 §3 交接強制的字面矛盾
+- `SOP_NOW.md` 版本號類行改指向單一真源；subagent 數量 8→9；ag-* 三指令補 DEPRECATED 標記
+- `database-reviewer.md`/`finance-auditor.md` installed→master 反向回灌（消除反向 drift）
+- 3 支殘留 `model:` 釘選改浮動 alias `haiku`
+- `.gitignore` 補 `logs/`；`prompt-router.js` 清除死引用 `/px-audit`，`ui-ux-pro-max` 改為 `reference:` 欄位（非 Skill-tool 註冊項）
+
+### [FEAT] 行為層治本（session log 挖掘 61 次打斷後的具體修法）
+- `ui-designer.md`/`frontend-developer.md` 新增「意圖複述閘」：排版任務動手前先複述理解
+- `governance/03_judgment-rubrics.md` 追加 2 條反例：視覺修復禁純讀碼宣告完成、斷言外部工具能力前必驗證
+- `governance/02_model-dispatch.md` §7 追加 2 條實戰修正錄：guard 新規則的中文說明文字可能誤觸自身 pattern、長任務應主動分段報告
+
+詳見完成記錄：[.fhs/reports/completion/2026-07-04_s140-guard-kgov-governance-hardening_completion_report.md](.fhs/reports/completion/2026-07-04_s140-guard-kgov-governance-hardening_completion_report.md)
+
+---
+
 ## [2026-07-04] Session 139 — Harness 治理硬化執行（八維度分析→v2實施）
 
 **範圍**：`.claude/settings.json`、`~/.claude/settings.json`、`.claude/settings.local.json`、`.env`、`scripts/hooks/pre-tool-guard.js`、`scripts/hooks/prompt-router.js`、`scripts/hooks/test/`（新建）、`.fhs/memory/handoff.md`（輪轉）、`.fhs/ai/subagents/freehandsss/`（6檔）+ `~/.claude/agents/freehandsss/`（同步）、`.cursorrules`、`.agents/workflows/`（3檔）、`~/.gemini/antigravity/mcp_config.json`

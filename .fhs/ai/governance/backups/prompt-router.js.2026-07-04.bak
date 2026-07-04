@@ -22,8 +22,7 @@ process.stdin.on('end', () => {
 
   // Skip routing suggestions for slash commands (they're self-descriptive)
   const slashCommands = ['/read', '/commit', '/execute', '/cl-flow', '/cl-flow-fast',
-    '/fhs-check', '/fhs-audit', '/guardian', '/error-eye', '/rg', '/rp',
-    '/db-query', '/new-product', '/upload-web', '/fhs-cost-audit'];
+    '/fhs-check', '/fhs-audit', '/guardian', '/error-eye', '/px-audit'];
   if (slashCommands.some(cmd => rawPrompt.trim().startsWith(cmd))) {
     process.exit(0);
   }
@@ -45,8 +44,7 @@ process.stdin.on('end', () => {
       patterns: ['ui改', 'ui設計', '設計稿', 'wireframe', '視覺設計', '設計系統',
         'phase a', '介面設計', '排版', '色彩系統', '設計語言', '設計風格', '響應式設計'],
       subagent: 'ui-designer',
-      skill: null,
-      reference: '.fhs/ai/skills/ui-ux-pro-max/（設計規格參考文件，非 Skill-tool，由 ui-designer 在 Phase A 讀取）',
+      skill: 'ui-ux-pro-max',
       model: 'sonnet',
       reason: '偵測到 UI/設計任務'
     },
@@ -136,9 +134,6 @@ process.stdin.on('end', () => {
   }
   if (matched.skill) {
     parts.push(`→ 載入 skill: ${matched.skill}`);
-  }
-  if (matched.reference) {
-    parts.push(`→ 參考文件: ${matched.reference}`);
   }
   if (matched.model) {
     parts.push(`→ 建議 model: ${matched.model}  (切換：/model ${matched.model})`);

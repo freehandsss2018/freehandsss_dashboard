@@ -21,7 +21,7 @@
 - **版本**：v1.5.0 (§1.2 平台定位與多工具共存治理新增：Desktop App 主介面、三模式決策卡、單一寫者矩陣、AG 永久備援守則、Cursor/n8n三腦休眠藍圖；Session 134 Desktop App 平台收斂 Phase 4)
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
-- **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（生產版，`Freehandsss_dashboard_current.html` 與其同步；見 handoff 便攜塊決策(1)）
+- **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV41.html` (穩定生產版 = current)
 
 ### 1.1 數據主導權矩陣（消除「Primary」與「SSoT」並列歧義）
 
@@ -93,7 +93,7 @@
 
 ### 記憶同步強制
 - **Notion 雲端同步**：凡完成以下任一項，必須執行 `/commit` 指令（及 `node scripts/Sync_Notion_Brain.js`）：重大架構變更 / 新增 Lesson Learned / 版本迭代完成。嚴禁在未同步情況下宣告任務結束。
-- **Mid-Session 脈衝（重定義）**：廢止「每 10 則對話自動存檔」（LLM 無法可靠計數，空規則製造虛假安全感）。新機制：Fat Mo 輸入「checkpoint」或「存檔」→ 只更新 handoff.md（無 git push）。AI 不得在此兩種情況以外單獨寫入 handoff.md，**唯一例外：§3「交接強制」要求的任務結束交接**（S140 修正：消除與 §3 的字面矛盾——任務結束寫入 handoff.md 屬第三種豁免情境，非「額外」單獨寫入）。
+- **Mid-Session 脈衝（重定義）**：廢止「每 10 則對話自動存檔」（LLM 無法可靠計數，空規則製造虛假安全感）。新機制：Fat Mo 輸入「checkpoint」或「存檔」→ 只更新 handoff.md（無 git push）。AI 不得在此兩種情況以外單獨寫入 handoff.md。
 - **會話初始化與 Token 節約原則（Rule 3.11）**：
   1. **Session 絕對起點**：任何新 Session 開啟後，AI 必須確保已獲取當前狀態資訊。未完成初始化前，嚴禁執行代碼寫入。優先使用 `scripts/hooks/session-start-sop.sh` Hook 的輕量快照（~300 tokens）；遇重大決策或遺漏風險時，使用 `/read` 進行全量重載（~2000 tokens）。
   2. **輕量化優先**：一般情況下，依賴 Hook 自動注入的狀態快照。僅在以下情況升級至全量重載：複雜架構決策 / 跨長時間 session 的風險評估 / 需驗證所有 handoff 細節。

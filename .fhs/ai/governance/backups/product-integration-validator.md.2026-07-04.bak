@@ -6,7 +6,7 @@ description: >
   UI strings ↔ Supabase ENUM ↔ n8n hardcoded tables. Outputs PASS/FAIL audit report.
   Read-only mode — does NOT modify any files.
 tools: ["Read", "Grep", "Glob", "Bash"]
-model: haiku
+model: claude-haiku-4-5-20251001
 version: v1.0.0
 compatible_with: AGENTS.md v1.4.12
 last_updated: 2026-05-21

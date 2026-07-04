@@ -11,55 +11,6 @@
 
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
-
-// ── Deploy authorization flag (S140, F8) ────────────────────────────────────
-// Fat Mo manually `touch`es this file in his own terminal (never via an AI
-// tool call — R10 below blocks the AI from creating it) to grant ONE current.html
-// promote. 10-minute TTL: stale flags left over from an earlier approval must
-// not silently authorize an unrelated later write.
-const DEPLOY_FLAG_FILE = path.join(__dirname, '../../.fhs/.deploy-ok');
-const DEPLOY_LOG_FILE = path.join(__dirname, '../../.fhs/notes/deploy-log.md');
-const DEPLOY_TTL_MS = 10 * 60 * 1000;
-
-// ── kgov shell-write observation log (S140, F12) ────────────────────────────
-// Warn-only for now: log shell writes that touch finance content so we can
-// measure real hit rate before promoting this to a hard PostToolUse flag.
-const KGOV_OBSERVE_LOG = path.join(__dirname, '../../.fhs/.kgov-observe.log');
-
-function checkDeployAuthorization() {
-  try {
-    if (!fs.existsSync(DEPLOY_FLAG_FILE)) return false;
-    const ts = fs.readFileSync(DEPLOY_FLAG_FILE, 'utf8').trim();
-    const flagTime = new Date(ts).getTime();
-    if (isNaN(flagTime) || Date.now() - flagTime > DEPLOY_TTL_MS) {
-      try { fs.unlinkSync(DEPLOY_FLAG_FILE); } catch (_) { /* silent */ }
-      return false;
-    }
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
-function consumeDeployAuthorization(target) {
-  try { fs.unlinkSync(DEPLOY_FLAG_FILE); } catch (_) { /* silent */ }
-  try {
-    const dir = path.dirname(DEPLOY_LOG_FILE);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | R1/R9 bypass | ${String(target).slice(0, 80)}\n`, 'utf8');
-  } catch (_) { /* silent */ }
-}
-
-function logKgovObserve(commandHead) {
-  try {
-    const dir = path.dirname(KGOV_OBSERVE_LOG);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(KGOV_OBSERVE_LOG, `${new Date().toISOString()} | ${String(commandHead).slice(0, 80)}\n`, 'utf8');
-  } catch (_) { /* silent */ }
-}
-
 let input = '';
 process.stdin.on('data', chunk => { input += chunk; });
 process.stdin.on('end', () => {
@@ -88,23 +39,10 @@ process.stdin.on('end', () => {
 
     // ── Rule 1: Protect production file ────────────────────────
     if (filePath.includes('Freehandsss_dashboard_current.html')) {
-      if (checkDeployAuthorization()) {
-        consumeDeployAuthorization(filePath);
-      } else {
-        blocking.push(
-          '🚫 [R1] 禁止覆蓋正式環境 Freehandsss_dashboard_current.html',
-          '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 如需更新，請明確告知 Fat Mo 並獲授權（Fat Mo 可在自己 terminal touch .fhs/.deploy-ok 授權一次，10 分鐘內有效）'
-        );
-      }
-    }
-
-    // ── Rule 10: Block AI from self-creating the deploy-ok flag ──
-    if ((tool === 'Write' || tool === 'Edit' || tool === 'MultiEdit' || tool === 'NotebookEdit') &&
-        filePath.includes('.deploy-ok')) {
       blocking.push(
-        '🚫 [R10] 禁止 AI 自行建立/寫入 .deploy-ok 授權旗標',
-        '   → 此旗標只能由 Fat Mo 在自己的 terminal 手動 touch 建立（防 AI 自我授權）'
+        '🚫 [R1] 禁止覆蓋正式環境 Freehandsss_dashboard_current.html',
+        '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
+        '   → 如需更新，請明確告知 Fat Mo 並獲授權'
       );
     }
 
@@ -168,35 +106,10 @@ process.stdin.on('end', () => {
     // appearing alongside a write-shaped command/cmdlet.
     if (/current\.html/i.test(command) &&
         /(?:^|\s)(?:cp|mv|sed\s+-i|cat\s+.*>|>{1,2}|tee|Set-Content|Copy-Item|Move-Item|Out-File)\b/i.test(command)) {
-      if (checkDeployAuthorization()) {
-        consumeDeployAuthorization(command);
-      } else {
-        blocking.push(
-          '🚫 [R9] 偵測到 Bash 指令疑似寫入 current.html',
-          '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 如需更新，請明確告知 Fat Mo 並獲授權（Fat Mo 可在自己 terminal touch .fhs/.deploy-ok 授權一次，10 分鐘內有效，或改用 Write/Edit 走 R1 守衛）'
-        );
-      }
-    }
-
-    // ── Rule 10 (shell variant): block AI from self-creating deploy-ok ──
-    if (/\.deploy-ok\b/i.test(command) &&
-        /(?:^|\s)(?:touch|echo\s.*>|Set-Content|New-Item|Out-File)\b/i.test(command)) {
       blocking.push(
-        '🚫 [R10] 禁止 AI 自行建立/寫入 .deploy-ok 授權旗標',
-        '   → 此旗標只能由 Fat Mo 在自己的 terminal 手動建立（防 AI 自我授權）'
-      );
-    }
-
-    // ── Rule 11 (observe-only, S140 F12): shell write touching finance content ──
-    // Not blocking yet — logs to .fhs/.kgov-observe.log for a ~2-week hit-rate
-    // review before this graduates to a hard flag (see governance/05 §4).
-    if ((/(?:^|\s)(?:Set-Content|Out-File|tee|sed\s+-i)\b/i.test(command) || />>?/.test(command)) &&
-        /handmodel_cost|keychain_cost|necklace_cost|cost_configurations|final_sale_price|total_cost|net_profit|calculatePricing|CREATE\s+OR\s+REPLACE\s+FUNCTION/i.test(command)) {
-      logKgovObserve(command);
-      warnings.push(
-        '⚠️  [R11-observe] 偵測到 Shell 寫入指令疑似涉及財務欄位（觀察期，未攔截）',
-        '   → 已記錄至 .fhs/.kgov-observe.log，觀察期後複查決定是否轉正為攔截'
+        '🚫 [R9] 偵測到 Bash 指令疑似寫入 current.html',
+        '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
+        '   → 如需更新，請明確告知 Fat Mo 並獲授權（或改用 Write/Edit 走 R1 守衛）'
       );
     }
 

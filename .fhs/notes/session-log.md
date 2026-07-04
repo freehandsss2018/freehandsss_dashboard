@@ -1,5 +1,13 @@
 ﻿# Session Log
 
+## 2026-07-04 (Session 140 — 稽核修復：guard/kgov 補洞 + Deploy 授權機制 + 治理層對齊): 🔧 ✅
+
+**Scope**：獨立稽核 Claude Code 環境（CLAUDE.md/settings/hooks/skills），找出文件↔程式碼互相矛盾、宣稱有自動檢查但實際冇跑之處，另挖 session log 找重複糾正痛點；出 v1→自我批評→v2 方案後 Fat Mo `/execute`，分 C1-C4 四批落地。
+**Result**：C1 guard 補 `sb_secret_` pattern（F13）；C2 kgov 修 `execute_sql`/UUID connector 兩盲區（F10/F11）、新增 `.fhs/.deploy-ok` 一次性授權機制（10分鐘TTL + R10 防AI自建 + `deploy-log.md` 審計，解決口頭批准後 AI 仍永遠被 R1/R9 硬攔截的死鎖，F8）、R11-observe 財務 shell 寫入觀察期（F12 降級方案）；C3 文件對齊七項（AGENTS 生產版聲明/handoff 語義矛盾/SOP_NOW 版本去重/subagent 反向 drift 回灌/model 釘選改浮動 alias/gitignore 補洞/router 死引用清理，F1/F4/F5/F6/F7/F9/F14）；C4 行為層（ui-designer/frontend-developer 加意圖複述閘、governance 03 追加2反例、02§7 追加2實戰教訓，L1-L4）。C1 密鑰輪換部分（settings.json/settings.local.json 內嵌 n8n JWT + Supabase `sb_secret_`）Fat Mo 兩次明確確認終局裁決不做，風險自負，非待辦已結案（D7）。
+**驗證**：guard fixtures 12→16 組全 PASS；kgov F10/F11 共4案例（含既有行為迴歸）全 PASS；deploy-ok 三態端到端（無flag攔截/有效flag放行消耗+落log/過期flag自動清理）全 PASS；F1-F14/L1-L4 逐項 grep 驗證符合期望值；`node --check` 三個 hook 語法全過。
+**Learnings**：本次發現屬調度/流程層（guard 對自身規則的 prose 誤判、長任務分段交付），已記入 [[02_model-dispatch]] §7 實戰修正錄，非 FHS 業務域 pitfall，不寫 learnings.md（依 governance/05 §2 落點分流表判斷）。
+Subagent：❌ 未使用（全程精準定位的小幅編輯，regex新增/prose對齊/frontmatter修正，派工開銷大於直接執行）
+
 ## 2026-07-04 (Session 138 — docs/CHANGELOG.md 重複檔案清理): 🧹 ✅
 
 **Scope**：S137 記憶系統審視時意外發現的重複檔案問題，另開 session 處理，非主線任務。

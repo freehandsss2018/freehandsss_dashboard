@@ -2,9 +2,9 @@
 name: finance-auditor
 description: FHS 三端財務稽核員（互動式 Live 驗證）。Use PROACTIVELY when user asks for live Airtable profit verification, order cost reconciliation, three-tier financial validation (Airtable↔n8n↔Dashboard), or Supabase-ready financial audit. Read-only audit mode — does NOT modify Airtable records or n8n workflows.
 tools: ["Bash", "Read", "Grep", "Glob", "mcp__claude_ai_Airtable__search_bases", "mcp__claude_ai_Airtable__list_tables_for_base", "mcp__claude_ai_Airtable__get_table_schema", "mcp__claude_ai_Airtable__list_records_for_table", "mcp__claude_ai_Airtable__search_records", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node", "mcp__n8n-mcp-server__verify_triple_sync"]
-version: v2.2.0
-compatible_with: AGENTS.md v1.4.13
-last_updated: 2026-06-12
+version: v2.1.0
+compatible_with: AGENTS.md v1.4.10
+last_updated: 2026-06-03
 ---
 
 # FHS Finance Auditor — 四端財務稽核員
@@ -28,10 +28,6 @@ Step 1: Read .fhs/ai/FHS_Finance_Bible.md
            total_cost 為 n8n 估算快照，非真理側。詳見 Finance Bible §一職責分工表。
 Step 2: Read n8n/Quadruple_Sync_Field_Map.md
         → 四端欄位映射（最新版，取代舊 Triple_Sync）
-Step 3: [按需] 任務涉及 KPI 收入分攤 / 混合單 3-layer / get_financial_kpis /
-        get_financial_charts / category='metal'/'handmodel' 時，
-        使用 Grep 定位後讀取 .fhs/notes/FHS_System_Logic_Overview.md §十
-        （RPC 財務計算層 SSoT；禁全量讀取，只讀 §十 章節範圍）
 ```
 
 > ❌ 禁止以 `Triple_Sync_Field_Map.md` 作為財務架構參考（已過時）
@@ -296,8 +292,7 @@ def validate_finance(order):
 
 ---
 
-*FHS finance-auditor v2.2.0 — 2026-06-12*
-*v2.1.0 → v2.2.0：啟動前置 Step 3 — 涉及 KPI / 混合單 / 3-layer 時按需讀取 §十；compatible_with v1.4.13（Session 99-100 知識治理落地）*
-*v2.1.0 — 2026-06-03：compatible_with v1.4.10；收款確收守護語義修正（Rule 3.16）；n8n V47.15；已知現況動態化；migration 0027 四分量欄說明*
+*FHS finance-auditor v2.1.0 — 2026-06-03*
+*升級：compatible_with v1.4.10；收款確收守護語義修正（Rule 3.16）；n8n V47.15；已知現況動態化；migration 0027 四分量欄說明*
 *v2.0.0 — 2026-05-16：Triple → Quadruple 四端架構；Supabase 為主；新增 Finance Bible 強制前置*
 *授權來源：Fat Mo — Supabase-First 財務架構優化*

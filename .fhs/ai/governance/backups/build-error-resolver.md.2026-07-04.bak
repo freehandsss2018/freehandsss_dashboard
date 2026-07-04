@@ -2,7 +2,7 @@
 name: build-error-resolver
 description: FHS error diagnostics specialist. Use PROACTIVELY when n8n workflow fails, JavaScript runtime errors appear in Dashboard, or Python Maintenance_Tools scripts crash. Root-cause-first diagnostics, then surgical fixes with minimal code changes. Reads execution logs via n8n MCP.
 tools: ["Read", "Grep", "Glob", "Bash"]
-model: haiku
+model: claude-haiku-4-5-20251001
 skills: [fhs-bug-triage]
 version: v1.0.0
 compatible_with: AGENTS.md v1.4.12
