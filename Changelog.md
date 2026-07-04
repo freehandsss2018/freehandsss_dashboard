@@ -1,5 +1,27 @@
 ﻿# Changelog
 
+## [2026-07-04] Session 137 — Governance 治理層建立（Fable 5 立制度）+ Obsidian D1 推翻
+
+**範圍**：`.fhs/ai/governance/`（新建）、`CLAUDE.md`、`docs/FHS_Knowledge_Map.md`、`.fhs/notes/decisions.md`、`.fhs/memory/learnings.md`、`.fhs/memory/lessons/`（6檔）、`.obsidian/plugins/`、`docs/repo-map.md`、`README.md`
+
+### [FEAT] Governance 治理層新建（`.fhs/ai/governance/00-06`，7 檔）
+
+- Fat Mo 明確要求「唯一一次用 Fable 5 的機會，把判斷力轉成弱模型可沿用制度」，交付：01 harness 診斷（token洩漏/失焦/出錯前三名）、02 模型調度守則（指揮官不下場+派工三件套+升降級規則+驗證不自驗）、03 判斷力 rubric（六組，附 FHS 史正反例）、04 派工模板×5、05 維護協議（權限矩陣+輪轉SOP）、06 給未來 session 的信
+- fresh-context opus 對抗審查 PASS-with-fixes（2 中級 findings 已修正）
+- `CLAUDE.md` 重寫為路由層（原檔備份於 `.fhs/ai/governance/backups/`）
+
+### [ARCHITECTURE] Obsidian D1（2026-06-01 Session 51）技術限制推翻
+
+- 原判定「`.fhs/` 為 dot-directory，Obsidian 永遠不可見」經 pilot 實測推翻：外掛 `hidden-folders-access` 白名單 `.fhs` 後，FileExplorer/Graph/metadata cache 正常索引，含大檔（handoff.md 3,918行）與多檔資料夾（lessons/ 70檔）皆無效能問題
+- D2（三層記憶職責邊界：Notion 人類真相源/AI 唯一寫入 `.fhs/memory`/Obsidian 視覺層不參與衝突解析）**維持不變**，僅解除 D1 技術限制認定
+- 補建 `[[wikilink]]`：`docs/FHS_Knowledge_Map.md`、governance 7 檔互連、`decisions.md` S51+新增D4條目、`learnings.md`↔`lessons/` 5 條配對（44條因證據不足寧缺勿配）
+- 驗證：Graph View `path:.fhs` 篩選由「4 孤立點」變為「約12節點密集互連」
+
+### [SYNC] 完成記錄 + repo-map + README
+
+- `.fhs/reports/completion/2026-07-04_governance-layer-and-memory-system-audit_completion_report.md`
+- `docs/repo-map.md` 加入 governance/ 目錄結構；`README.md` 資料夾結構表補一行
+
 ## [2026-07-04] Session 136 — IG 看門狗 Telegram 深連結 URL 修復
 
 **範圍**：`scripts/ig-watchdog/build_n8n_workflow.cjs`、n8n workflow `FHS_IGWatchdog_DriveWatch`（D4LK6VrQbiXlju0V）

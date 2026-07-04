@@ -3,13 +3,14 @@ name: FHS Business Scenarios Library
 version: v1.8
 compatible_with: AGENTS.md v1.5.0
 last_updated: 2026-07-04
-last_audited_session: S134
+last_audited_session: S137
 description: Business situation detection and command routing for AI execution
 ---
 
 # FHS 業務情境劇本庫 (Scenarios Library) - v1.8
 >
 > 最後更新：2026-07-04（v1.8 S134 同步：情境二十四 `/ag-flow` 標註 [DEPRECATED]，改指 `/cl-flow`；AGENTS v1.5.0，Desktop App 平台收斂 Phase 4）
+> **S137 稽核（2026-07-04）**：`.fhs/ai/governance/` 新增 7 檔（模型調度制度層）觸發 [F] 稽核義務。結論：**不新增情境**——governance 為 AI 自身調度守則（何時升級模型/何時算完成/怎麼派工），非業務觸發情境，與本文件「業務情境路由」定位正交，見 `.fhs/ai/governance/00_INDEX.md` 職責邊界表。版本/日期/稽核 session 三欄已同步更新以反映本次稽核已執行。
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
 >

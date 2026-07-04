@@ -1,5 +1,7 @@
 # NAS n8n Code 節點能力邊界精確化（Buffer/Compression 可用，補充 2026-05-18 教訓）
 
+> 對應 learnings.md 教訓：「【更正】n8n Code 節點 NAS 限制」 [[learnings]]
+
 ## 背景
 2026-05-18 教訓記錄了 NAS n8n Code 節點 `fetch`/`require`/`process.env` 靜默失敗，
 當時結論是「Code 節點不可靠，改用 HTTP Request 節點」。Session 110（IG 漏單看門狗

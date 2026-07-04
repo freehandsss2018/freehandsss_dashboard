@@ -4,6 +4,8 @@ date: 2026-06-12
 sessions: S93, S94
 ---
 
+> 對應 learnings.md 教訓：「付款 split UX 清空/污染雙雷」 [[learnings]]
+
 ## Pattern: Mutual Zeroing Boundary via isDefault Guard
 
 When A inputs non-standard amount → B auto-zeros (B.isDefault='true').

@@ -1,4 +1,7 @@
 # Lesson: HK$20 鎖匙扣跨部位運費共享扣減 — 深度診斷與案例
+
+> 對應 learnings.md 教訓：「運費扣減公式必用件數而非行數」 [[learnings]]
+
 **日期**: 2026-05-16
 **關聯文件**: `docs/FHS_Product_Bible_V3.7.md §2.5`、`.fhs/ai/FHS_Finance_Bible.md §4`
 **前置 Lesson**: `.fhs/memory/lessons/2026-05-04_keychain-shipping-deduction.md`（規則首次發現）

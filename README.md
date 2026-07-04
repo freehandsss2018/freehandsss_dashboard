@@ -57,6 +57,7 @@
 | 資料夾 | 用途 |
 |***|***|
 | `.fhs/ai/` | AI 共用配置（憲法 + 指令）|
+| `.fhs/ai/governance/` | 模型調度制度層（Session 137，2026-07-04）：診斷/派工守則/判斷力 rubric/模板/維護協議，CLAUDE.md 路由指向此 |
 | `.fhs/memory/` | AI session 交接記憶 |
 | `.fhs/notes/` | 決策記錄、待辦、工作日誌、AI 報告 |
 | `docs/` | 技術文件、產品聖經、網頁地圖 |

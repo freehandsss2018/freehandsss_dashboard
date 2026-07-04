@@ -1,5 +1,16 @@
 ﻿# Session Log
 
+## 2026-07-04 (Session 137 — Governance 治理層建立 + Obsidian D1 推翻，Fable 5 立制度 session): 🏛️ ✅
+
+**Scope**：Fat Mo 要求「唯一一次用 Fable 5 的機會，把判斷力轉成弱模型可沿用制度」；同時處理 Fat Mo 認為混亂的記憶系統審視需求，意外查出 Session 51 Obsidian D1 決策已被 Fat Mo 認定不健全，推翻並補建 wikilink。
+**Result 1（Governance 治理層）**：新建 `.fhs/ai/governance/00-06` 七檔（診斷/模型調度守則/判斷力rubric/派工模板×5/維護協議/未來信）；`CLAUDE.md` 重寫為路由層；fresh-context opus 對抗審查 PASS-with-fixes（2中級findings已修正，read-back驗證）。
+**Result 2（Obsidian D1 推翻）**：Pilot 實測 `hidden-folders-access` 外掛白名單 `.fhs` 可解除 S51 認定的「永遠不可見」限制；最大風險項（handoff.md 3918行/lessons 70檔）皆無效能問題；D2 三層記憶職責邊界維持不變。
+**Result 3（wikilink 補建）**：`docs/FHS_Knowledge_Map.md`、governance 7檔互連、`decisions.md`（S51條目更新提示+新增D4）由主 agent 直接執行；`learnings.md`↔`lessons/` 配對派 subagent，49條中5條成功配對（44條證據不足寧缺勿配），git diff 逐行核對零誤改原文。Graph View 驗證由「4孤立點」→「12節點密集互連」。
+**Result 4（後效稽核）**：/execute A/B/C/F 四項全數執行——repo-map.md+README.md（[A]）、完成記錄（[B]）、Changelog.md（[C]）、FHS_Prompts.md 稽核（[F]，結論不新增情境但更新 metadata）；[G] 不觸發。
+**意外發現（另開追蹤）**：`Changelog.md`（git實際追蹤）與 `docs/CHANGELOG.md`（298行，2026-06-05後未更新）疑似重複檔案，已建 spawn_task chip，本次未動。
+**Learnings**：新增 Pitfall #24（既有「不可配置」平台限制認定需定期複驗，見 decisions.md D4）；learnings.md 49→50 條。
+Subagent：✅ 已使用（general-purpose ×4：對抗審查opus 1次、Obsidian技術研究sonnet 2次[第1次失敗重派]、learnings↔lessons wikilink配對sonnet 1次）
+
 ## 2026-07-04 (Session 136 — Phase B NAS 實機確認 + Telegram 深連結 URL 修復 + learnings.md 整理): 🔧 ✅
 
 **Scope**：Fat Mo NAS 實機確認簡化付款按鈕切換行為（S131 filledAny guard + S132 概覽篩選 UI）；接續處理 Telegram 深連結驗收待辦時，唯讀 curl 診斷先於真實觸發發現根因 bug 並修復；`/commit` 後續應 Fat Mo 要求處理 learnings.md 超量待辦。

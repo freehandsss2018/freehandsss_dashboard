@@ -1,5 +1,7 @@
 # Lesson: 鎖匙扣成本誤判 + cost_configurations→products 傳播缺口
 
+> 對應 learnings.md 教訓：「order_items 成本是組裝值非單一原子」 [[learnings]]
+
 **日期**：2026-06-20（Session 112）
 **類型**：Pitfall（重複踩雷風險高）
 

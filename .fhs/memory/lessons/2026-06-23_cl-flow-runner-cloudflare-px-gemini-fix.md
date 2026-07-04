@@ -1,5 +1,7 @@
 # Lesson — cl-flow-runner 雙 API 故障：Cloudflare 擋 Node https + Gemini 過載
 
+> 對應 learnings.md 教訓：「cl-flow runner Perplexity 推理模型靜默空白」 [[learnings]]
+
 **日期**：2026-06-23（Session 116）
 **範疇**：基礎設施 / `/cl-flow` 規劃管道 / 外部 API 韌性
 

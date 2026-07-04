@@ -1,4 +1,7 @@
 # Lesson: n8n NAS Code Node Limits + Telegram Debug Workflow
+
+> 對應 learnings.md 教訓：「【更正】n8n Code 節點 NAS 限制」 [[learnings]]
+
 **Date**: 2026-05-18
 **Session Type**: Production Bug Fix + Architecture Deep Dive
 

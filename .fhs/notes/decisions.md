@@ -327,6 +327,8 @@ decisions.md 生效日記錄：material_cost_necklace_silver/gold 由 0→260/31
 
 [2026-06-01] (Session 51) Obsidian 整合架構決策 — D1 vault 範圍 + D2 三層記憶職責邊界
 
+> ⚠️ **2026-07-04（Session 137）後續更新**：D1 的「`.fhs/` 對 Obsidian 永遠不可見」已被推翻——實測 `hidden-folders-access` 外掛可讓 `.fhs/` 正常索引（含大檔/多檔皆無效能問題）。D2 的三層職責邊界**維持不變**（Notion 人類真相源、AI 唯一寫入 `.fhs/memory`），僅 D1 的技術限制段落過時。詳見本檔下方 2026-07-04 條目與 [[00_INDEX]]。
+
 決策：
 
 **D1：Vault 範圍 = repo root (freehandsss_dashboard/)**
@@ -1182,3 +1184,37 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **決策**：`/new-product` 五步流程補第六步（知識落盤），Gate 5 PASS 後強制執行。
 
 **原因**：B4 斷點——缺 Step 6 意味著每次新產品上線後不會自動寫 Product_Definition 條目或登 Pricing_Bible §10 沿革，AI 仍需事後補救或問回 Fat Mo。Gate 6 PASS 條件：FHS_Product_Definition.md 條目存在 + database-reviewer 確認 SKU 連結真值 + §10 有對應沿革行。
+
+---
+
+## 2026-07-04（Session 137）— Governance 治理層建立（Fable 5 立制度 session）
+
+### D1：新建 `.fhs/ai/governance/` 治理層（00–06 七檔）
+
+**決策**：一次性 Fable 5 session 產出模型調度制度：[[01_diagnosis]]（token 洩漏/失焦/出錯 前三名，全部實測數字）、[[02_model-dispatch]]（指揮官不下場、派工三件套、升降級、驗證不自驗）、[[03_judgment-rubrics]]（升級/完成/問人/換路/品質底線，各附 FHS 史正反例）、[[04_delegation-templates]] 派工模板 ×5、[[05_maintenance-protocol]]（權限矩陣+輪轉SOP）、[[06_letter-to-future-sessions]]。索引見 [[00_INDEX]]。
+
+**原因**：此後長期由 Sonnet 等級模型運作；把高階模型的調度判斷外化為可機械執行的判準。歷史 session 三大結構問題：handoff.md 121K tokens 無輪轉、主對話親自下場（Subagent ❌ 未使用為常態）、自驗豁免漂移。
+
+**職責邊界**：AGENTS.md=業務憲法不變；governance 只管「怎麼派工、怎麼驗收」；learnings.md=業務教訓、02 §7=調度教訓，不交叉。
+
+### D2：CLAUDE.md 重寫為「路由層」
+
+**決策**：CLAUDE.md 從 4 條靜態指示改為：Rule 3.11 開工原則 + 治理路由表（做 X 前讀 Y）+ 三條免查紅線（禁全檔 Read / 巨檔替換三步 / 驗收不自驗）。原檔備份 `.fhs/ai/governance/backups/CLAUDE.md.2026-07-04.bak`。
+
+**原因**：CLAUDE.md 是唯一每 session 必然載入的檔案，路由表讓弱模型知道「何時該查哪份」——歷史翻車多為不知道查哪裡，而非查了不懂。
+
+### D3：待 Fat Mo 授權項（本 session 按授權範圍未動）
+
+- 6 支 subagent frontmatter 釘舊模型 ID `claude-sonnet-4-6`（[[02_model-dispatch]] §0 現況表），建議更新或改繼承。
+- AGENTS.md 本體未動（僅診斷）。
+- handoff.md 首次輪轉屬可自行級，留給下個 session 執行（[[05_maintenance-protocol]] §4 SOP）。
+
+### D4：Obsidian D1（Session 51）技術限制推翻 + `.fhs/` 側 wikilink 補建
+
+**決策**：實測 `hidden-folders-access` 外掛（GitHub: dsebastien/obsidian-hidden-folders-access）白名單 `.fhs`，證實 S51 D1 認定的「dot-directory 對 Obsidian 永遠不可見」已可解除；且大檔（handoff.md 3,918 行）與多檔資料夾（lessons/ 70 檔）皆無效能問題。同步為 `docs/FHS_Knowledge_Map.md`、governance 7 檔、本檔（S51/S137 條目）、`learnings.md`↔`lessons/` 補上 `[[wikilink]]`，讓 Obsidian Graph View 對 `.fhs/` 內容產生真實關聯線（而非僅可見但零連結）。
+
+**原因**：Fat Mo 指出 S51 方案「不健全，因讀不到 project 核心檔 `.fhs/`，根本不能構建整體視覺關聯圖」——此為推翻既有決策的正當理由（技術前提改變），非隨意重議。
+
+**未動範圍**：D2 三層記憶職責邊界維持不變（Notion 人類真相源最高優先、AI 唯一寫入 `.fhs/memory`、Obsidian 視覺層不參與衝突解析）；只解除 D1 的技術限制認定，AI 讀寫邊界規則不變。
+
+**風險**：外掛為第三方社群套件（非官方），若未來停止維護或行為變更，`.fhs` 可見性可能回退——不影響底層資料完整性（純顯示層），一旦異常可停用外掛或改用 [[05_maintenance-protocol]] 定義的降級路徑。

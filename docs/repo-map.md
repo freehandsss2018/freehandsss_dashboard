@@ -138,6 +138,15 @@ freehandsss_dashboard/
 │   │   │   ├── upload-web.md            ← /upload-web 部署 Dashboard 至 NAS Web Station（WebDAV，2026-06-08）
 │   │   │   ├── ag-flow.md               ← /ag-flow 精煉內建→A1+A2，AG裁決（跳A3，2026-05-30）
 │   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導 v1.2.0（6步 atomic 流程 + Step 6 知識落盤 Gate，2026-06-05）
+│   │   ├── governance/                  ← 模型調度制度層（Session 137，2026-07-04 新增，Fable 5 立制度）
+│   │   │   ├── 00_INDEX.md              ← 索引 + 與既有制度職責邊界
+│   │   │   ├── 01_diagnosis.md          ← Harness 診斷：token 洩漏/失焦/出錯 前三名（實測數字）
+│   │   │   ├── 02_model-dispatch.md     ← 模型調度守則：指揮官不下場、派工三件套、model 對照表、升降級、驗證不自驗
+│   │   │   ├── 03_judgment-rubrics.md   ← 判斷力外化：升級/完成/問人/換路/品質底線 五組 rubric
+│   │   │   ├── 04_delegation-templates.md ← 派工 prompt 模板 ×5（搜尋/實作/重構/研究/審查）
+│   │   │   ├── 05_maintenance-protocol.md ← 維護協議：權限矩陣、教訓落點、輪轉SOP
+│   │   │   ├── 06_letter-to-future-sessions.md ← 給未來 session 的信
+│   │   │   └── backups/                 ← 修改既有檔案前的備份副本（帶日期）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）
 │   │   │   ├── README.md                ← subagents 目錄說明與雙層架構
@@ -213,6 +222,7 @@ freehandsss_dashboard/
 ├── .vscode/                             ← VS Code 設定
 ├── .obsidian/                           ← Obsidian vault（人類視覺化圖譜，vault root = repo root，2026-06-01）
 │                                            machine-specific 檔已 gitignore（workspace*.json、graph.json）
+│   └── plugins/hidden-folders-access/   ← 社群外掛（2026-07-04 新增，Session 137）：白名單 `.fhs` 讓 dot-directory 於 FileExplorer/Graph/metadata cache 可見，推翻 2026-06-01 D1「.fhs 永遠不可見」限制認定，詳見 decisions.md
 │
 ├── docs/                                ← 技術文件
 │   ├── assets/                          ← 靜態資產（2026-06-01 新增）

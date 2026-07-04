@@ -1,0 +1,95 @@
+# 01 — Harness 快速診斷（token 洩漏 / 失焦 / 出錯 前三名）
+
+> **Version**: v1.0.1（2026-07-04，Session 137，Fable 5 立制度 session 產出；同日對抗審查修正 F1/F2）
+> **讀者**：未來每一個 session 的主模型（Sonnet 等級為基準）。
+> **地位**：本檔是 `02/03/04/05` 各守則的「為什麼」。規則本體在那四份檔；本檔提供依據與數字。
+> **數字查證方式**：以下全部數字為 2026-07-04 實測（`wc -l` / Read token 計數 / grep），非印象。引用前若懷疑過期，重測一次再引用。
+
+---
+
+## 一、Token 洩漏 前三名
+
+### 🥇 #1 handoff.md 無限增生（實測 3,918 行 ≈ 121,000 tokens）
+
+**症狀**：`.fhs/memory/handoff.md` 每個 session 追加「已確認完成」條目，從不刪除。目前單檔 121K tokens——**超過 Read 工具單次上限（25K）近 5 倍**，也超過多數模型半個 context window。任何「保險起見全檔讀一次」的動作直接燒掉整個 session 的預算。
+
+**為什麼弱模型特別容易踩**：弱模型傾向「多讀一點求安心」。它不知道這檔案尾部 90% 是 2026 年 3-6 月的歷史快照，便攜塊（頂部 11 行）+ MASTER 表（前 ~45 行）已含全部現役狀態。
+
+**修法（可立即執行）**：
+1. **讀取紀律**：任何 session 只准讀 handoff.md 前 120 行（組成：頂部 ~11 行便攜塊 + ~45 行 MASTER 表，其餘為緩衝；此範圍已含全部現役狀態，不需要「多讀補齊」）。需要歷史 session 細節時，先 Grep 關鍵詞取行號，再開 ≤60 行窗口。
+2. **輪轉制度**（寫入 `05_maintenance-protocol.md` §輪轉）：handoff.md 超過 800 行即觸發輪轉——保留便攜塊 + MASTER 表 + 最近 5 個 session 條目，其餘剪貼到 `.fhs/memory/archive/handoff-<起訖年月>.md`。輪轉屬「可自行執行」級別（見 05 權限矩陣），但輪轉前必須留備份。
+3. 同類患者：`CHANGELOG.md`（4,330 行）、`session-log.md`（1,457 行）、`decisions.md`（1,184 行）。同樣紀律：**只 Grep + 窗口讀，永不全讀；只追加，精簡需 Fat Mo 授權**。
+
+### 🥈 #2 主對話親自下場（歷史 session 幾乎全部「Subagent：❌ 未使用」）
+
+**症狀**：handoff.md 的雙紀律自檢記錄顯示，S110–S136 絕大多數 session 由主對話直接執行全部讀取、掃描、curl、SQL。單次 n8n `GET workflow` JSON dump 可達數萬 tokens、Supabase 查詢結果、HTML 掃描輸出——全部堆進主對話 context，擠壓後續推理空間，且是 context 被迫 summarize（資訊有損）的主因。
+
+**為什麼過去沒爆**：過去由高階模型主駕，靠大 context + 強抗噪撐住。Sonnet/Haiku 等級在被灌入 3 萬 tokens 的 workflow JSON 後，後續推理明顯劣化（撿錯重點、忘記早前約束）。
+
+**修法**：見 `02_model-dispatch.md` 門檻表。一句話版：**預期中間產物超過 ~150 行的讀取/掃描/dump，派 subagent 消化，主對話只收結論 + 檔案:行號**。n8n workflow JSON 一律先落檔（scratchpad）再由 subagent 或 grep 針對性提取，禁止整份進主對話。
+
+### 🥉 #3 巨檔無讀取紀律（V42 HTML 實測 919,443 bytes ≈ 15,000+ 行）
+
+**症狀**：`Freehandsss_Dashboard/` 目錄下的 `.html`（current / V41 / V42）是單檔 POS 系統。歷史操作已有正確慣例（Grep 定位 → 窗口讀 → PowerShell `.Replace()` 或錨定 Edit），但這慣例**只存在於歷史 session 的肌肉記憶，沒有落成規則**——新 session 的弱模型不知道，第一反應就是 Read 全檔（會失敗或截斷，然後亂猜）。
+
+**修法**（規則本體在 `02_model-dispatch.md` §巨檔紀律）：
+- **禁全讀名單**：`Freehandsss_Dashboard/` 目錄下**所有** `.html`（含 current / V41 / V42；檔名大小寫混用，勿以字面 glob 自我豁免）、`CHANGELOG.md`、`.fhs/memory/handoff.md`、`session-log.md`、`decisions.md`、任何 n8n workflow JSON。
+- 一律 Grep 定位行號 → `Read offset/limit`（≤250 行/窗）。
+- 字串替換改動巨檔：改前先 count 匹配數（唯一才動手），改後再 count 驗證（見出錯 #2）。
+
+---
+
+## 二、失焦 前三名
+
+### 🥇 #1 長任務只在 /commit 落檔——中斷即全丟
+
+**症狀**：多階段任務（規劃→改檔→部署→驗證）的中間成果只存在對話裡；session 中斷（斷線/context 耗盡/Fat Mo 離開）時，下個 session 從 handoff 便攜塊重來，中間推理全部重付。
+
+**修法**：**隨做隨寫**。每完成一個可獨立驗收的階段，立即把產物寫進目標檔案或 `artifacts/{flow_id}/`。注意：AGENTS.md 禁止 AI 在 checkpoint/commit 以外單獨寫 handoff.md——所以中途落檔的載體是**任務自己的產出檔與 artifacts/**，不是 handoff.md。
+
+### 🥈 #2 順路修 bug（scope creep）
+
+**症狀**：執行 A 任務途中發現 B bug，現場修 B → 主線 context 被 B 的調查污染，A 的驗收被稀釋，最後 A、B 都只做半套。FHS 環境尤其危險：財務/n8n 領域「看起來三行的修改」經常牽動四端同步。
+
+**修法**：發現無關問題 → 一行記入 `.fhs/notes/todo.md`（或 spawn_task chip），繼續主線。唯一例外：B 直接阻斷 A 的驗收（此時 B 就是主線的一部分）。判準見 `03_judgment-rubrics.md` §R4。
+
+### 🥉 #3 開場過量初始化
+
+**症狀**：SessionStart hook 已注入 ~300 tokens 便攜塊快照，足夠 80% 任務起步；弱模型仍傾向「先 /read 全量再說」（~2,000+ tokens，且誘發繼續深挖歷史）。
+
+**修法**：Rule 3.11 已有，重申判準——只有三種情況升級全量 /read：複雜架構決策、跨長時間斷檔的風險評估、需驗證 handoff 細節。其餘一律 hook 快照直接開工。
+
+---
+
+## 三、出錯 前三名
+
+### 🥇 #1 自驗自證 + 「靜態自檢」豁免被習慣性擴大
+
+**症狀**：寫改動的同一個 context 自己宣佈驗收通過。歷史 session 的雙紀律自檢裡「靜態自檢 = PASS（規則允許）」出現頻率越來越高——豁免本來只給「低風險純 UI 改動」，但「低風險」由執行者自己認定，天然向寬鬆漂移。已有事故型態：「代碼已寫 ≠ bug 已修復」（fhs-bug-triage skill 因此而生）。
+
+**修法**：驗收改由**沒寫過這段改動的 fresh-context agent** 執行（read-back / 測試 / 實跑）。哪些改動必須送外驗、哪些可自檢，判準表在 `03_judgment-rubrics.md` §R2，不再由執行者臨場心證。
+
+### 🥈 #2 巨檔字串替換誤中/漏中
+
+**症狀**：對 15,000 行 HTML 做 `.Replace()` 或 Edit 時，目標字串在檔內有多處相似匹配 → 改錯位置或多改；或 old_string 與實際內容有一個空白差異 → 靜默零替換，執行者以為改了。
+
+**修法（機械三步，無例外）**：
+1. 改前：`grep -c` 精確計數目標字串——**必須 =1** 才可替換；>1 就擴大錨點直到唯一。
+2. 改後：count 舊字串=0、新字串=1。
+3. 用 PowerShell `.Replace()` 時，比較改前後檔案 bytes 差值是否等於預期字串長度差。
+
+### 🥉 #3 過時記載被當現況沿用
+
+**症狀（實測抓到的現行案例）**：9 個 FHS subagent 的 frontmatter `model:` 全部釘在 `claude-sonnet-4-6` / `claude-haiku-4-5-*`——sonnet-4-6 已是舊世代 ID。文件寫下的瞬間開始腐化：模型 ID、版本號、成本值、live 欄位值，任何一項被弱模型「照文件辦事」直接沿用就是錯的。（成本值 drift 已有前科：S112 文件 $95 vs live $115。）
+
+**修法**：
+1. **凡引用「會變的值」（模型 ID / live 資料 / 版本號 / SHA），先實測再寫**，並在寫下時標註查證 session（如「2026-07-04 實測」）。
+2. 讀到帶日期標註的值且日期 > 30 天：視為待驗證，不直接依賴。
+3. subagent 模型釘選的修正建議已列入 `02_model-dispatch.md` §現況表（動 subagent 檔案需 Fat Mo 授權，屬 05 權限矩陣「先問」級）。
+
+---
+
+## 四、本診斷的使用方式
+
+- 新 session 不需要每次讀本檔。`CLAUDE.md` 路由表 + `02`/`03` 的規則本體已內化以上修法。
+- 只有兩種情況回來讀：(a) 質疑某條規則為什麼存在；(b) 按 `05_maintenance-protocol.md` 做季度健檢時核對數字是否惡化。
