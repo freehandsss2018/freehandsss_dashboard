@@ -197,6 +197,8 @@ freehandsss_dashboard/
 │   │   └── product_pricing_reference.md ← [DEPRECATED 2026-06-01] 已合併至 FHS_Pricing_Bible.md（現位於 .fhs/ai/）
 │   ├── reports/                         ← AI 產出正式報告與計劃區（2026-05-23 新增規則）
 │   │   ├── README.md                    ← 報告區總綱
+│   │   ├── backups/                     ← 高風險改動前的完整備份區
+│   │   │   └── auto-memory-2026-07-04/  ← auto-memory 目錄瘦身前全量備份（31檔，2026-07-04 E2 新增，repo外檔案回退機制）
 │   │   ├── completion/                  ← 制度任務完成記錄（含歷史備份）
 │   │   ├── planning/                    ← /cl-flow 與實施計劃暫存區
 │   │   │   ├── fhs_v0_desktop_probe.md  ← Desktop App 實機探針清單（11 項，Phase 0，2026-07-03）
@@ -207,7 +209,9 @@ freehandsss_dashboard/
 │   │   ├── README.md                   ← 記憶層與同步規範
 │   │   ├── handoff.md                  ← 2026-07-04 S139 首次輪轉：3949→106行（僅存便攜塊+MASTER表+近5個session）
 │   │   ├── archive/                    ← handoff.md 輪轉歸檔區（2026-07-04 S139 新增）
-│   │   │   └── handoff-full-until-2026-07-04.md  ← 輪轉前完整備份（3949行）
+│   │   │   ├── handoff-full-until-2026-07-04.md  ← 輪轉前完整備份（3949行）
+│   │   │   ├── handoff-portable-block-decisions-pre-2026-07-04.md ← 便攜塊瘦身：3條無他處收錄的決策全文歸檔（2026-07-04 S141）
+│   │   │   └── handoff-portable-block-verified-pre-2026-07-04.md  ← 便攜塊瘦身：較舊「已證實」清單歸檔（2026-07-04 S141）
 │   │   ├── learnings.md                ← Pattern / Pitfall / Preference distill（/read Step 3，2026-05-20 新增）
 │   │   ├── pitfalls.yaml               ← Machine-readable 跨層整合 pitfall 知識庫（2026-05-21 新增，product-integration-validator 使用）
 │   │   └── lessons/

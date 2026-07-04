@@ -3,10 +3,9 @@ name: code-reviewer
 description: FHS V39 品質守門員，稽核 HTML 原型是否符合 AGENTS.md 硬規則，評估是否可進入功能接回階段。Use immediately after frontend-developer completes a prototype (Phase C). Outputs PASS/FAIL verdict with audit report. Read-only mode — does NOT modify any files.
 tools: Read, Grep, Glob, Bash, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: haiku
-version: v1.0.0
+version: v1.1.0
 compatible_with: AGENTS.md v1.4.12
 last_updated: 2026-05-16
-version: 1.1.0
 ---
 
 # Code Reviewer — FHS Edition

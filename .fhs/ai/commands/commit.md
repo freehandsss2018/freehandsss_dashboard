@@ -56,6 +56,12 @@
 - **🟡 警告**：便攜塊若不存在，依 decisions.md Session 118 SSOT 機制補建後繼續。
 - 目的：確保人類複製（外部聊天）與 hook 自動注入（AI session）始終同源不 drift。
 
+### P0.7.1 便攜塊體積預算（新，2026-07-04 Session 141 防回胖）
+- **背景**：便攜塊設計初衷為 hook 每 session 輕量注入（原估 ~300 tokens），但因「✅ 已定決策」逐 session 只追加不精簡，Session 140 實測動態段已膨脹至 7,787 bytes（~3,500 tokens），超出設計值 10 倍以上。
+- **預算**：動態段（hook 抽取的邊界以上部分）目標 **≤ 4,000 bytes**。
+- **輪轉規則**：`/commit` 執行 P0.7 時，若「✅ 已定決策」條目數 > 20 條，將**最舊**且已於 `decisions.md`/`AGENTS.md`/本檔 MASTER 待辦表**有完整記錄**的決策，壓縮為「一行摘要＋連結」；若查無其他完整記錄，搬移全文至 `.fhs/memory/archive/handoff-portable-block-decisions-<日期>.md` 並留一行摘要＋連結（禁止直接刪除不留痕）。「🔬 驗證」欄同理，只留最近 3 個 session 的「已證實」項，較舊者搬移至 `.fhs/memory/archive/handoff-portable-block-verified-<日期>.md`；「未驗」項無論哪個 session 一律保留（代表仍是待辦）。「📋 待辦」欄已完成（✅）項若下方 MASTER 表已有對應記錄，直接移除（非歸檔，因 MASTER 表本身即完整記錄，同檔內重複才需清除而非搬移）。
+- **不得壓縮**：「⚠️ 易猜錯」欄（踩坑教訓性質，全保留）；本 session 產生的新決策/驗證/待辦（只精簡「舊」的，不精簡「當次」的）。
+
 ---
 
 ## 【Phase 1: Memory Engine 同步】

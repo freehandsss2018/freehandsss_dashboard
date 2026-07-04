@@ -1,6 +1,6 @@
 # FHS Dashboard — Claude Code 入口
 
-1. 啟動時以 SessionStart hook 快照（~300 tokens）為準開工；僅遇複雜架構決策 / 跨長時間斷檔 / 需驗證交接細節時才 `/read` 全量重載（Rule 3.11）。
+1. 啟動時以 SessionStart hook 快照（便攜塊動態段，體積預算 ≤4,000 bytes，見 commit.md P0.7.1 防回胖機制；2026-07-04 實測 ~2,300 tokens，非舊稱 ~300 tokens）為準開工；僅遇複雜架構決策 / 跨長時間斷檔 / 需驗證交接細節時才 `/read` 全量重載（Rule 3.11）。
 2. 規則本體在 `/.fhs/ai/AGENTS.md`（憲法層，最高優先）與 `/.fhs/ai/commands/`（指令層）。
 3. 任何架構改動先提出方案，等待 Fat Mo 確認後才動手；完成後同步更新 `/.fhs/notes/decisions.md`。
 4. 不要自作主張改專案結構。
