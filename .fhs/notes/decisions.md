@@ -1232,7 +1232,8 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 ### D5：Stage A 四項裁決（Fat Mo 明確授權，AskUserQuestion 逐項確認）
 
 - **A1 權限策略**：`bypassPermissions` → `default`（專案+全域 `settings.json` 雙檔）。**原因**：allowlist 620+197+55 條在 bypass 下形同虛設，guard hook 是唯一防線；財務生產系統值得每次寫入前多一道確認。**風險**：需重啟 session 生效，本 session 內未能驗證 allowlist 實際運作是否過嚴/過鬆，留待下次 session 觀察。
-- **A2 密鑰處置**：`.mcp.json`/`settings.local.json` 明文密鑰遷入 `.env`。**執行範圍**：`settings.local.json` 冗餘 `N8N_KEY` 已移除（.env 本有同值 + dotenv 路徑已驗證不受影響）；`.mcp.json` 本體**未動**——實測 OS 環境變數層級無 `SUPABASE_ACCESS_TOKEN`，`${VAR}` 展開讀行程環境非 `.env` 檔案本身，貿然改動會打斷本 session 正在使用的 Supabase MCP 連線，列為開放待辦。
+- **A2 密鑰處置**：`.mcp.json`/`settings.local.json` 明文密鑰遷入 `.env`。**執行範圍**：`settings.local.json` 冗餘 `N8N_KEY` 已移除（.env 本有同值 + dotenv 路徑已驗證不受影響）；`.mcp.json` 本體**未動**——實測 OS 環境變數層級無 `SUPABASE_ACCESS_TOKEN`，`${VAR}` 展開讀行程環境非 `.env` 檔案本身，貿然改動會打斷本 session 正在使用的 Supabase MCP 連線。
+  **後續裁決（同日）**：Fat Mo 權衡風險/效益後決定**維持現狀，不遷移**。理由：`.mcp.json` 本就未進 git（已 gitignore，不會外流）、純本機檔案（非多人存取伺服器）、改動需設定 Windows 系統環境變數+重啟才能驗證，屬「防禦深度加分項」而非「當下有漏洞」；不做不代表破洞，只是少一層縱深防禦。`.env` 內的 `SUPABASE_ACCESS_TOKEN` 保留供未來參考。
 - **A3 subagent model**：回應 [[02_model-dispatch]] §0 現況表待辦，6 支 `claude-sonnet-4-6` 舊 ID 改為**刪除 `model:` 行改繼承**（而非更新為新 ID）。**原因**：釘選具體 ID 的過期問題會反覆發生；派工時用 Agent tool `model` 參數按分派表覆蓋，過期問題永久消失。同步修正 master（`.fhs/ai/subagents/freehandsss/`）+ `~/.claude/agents/freehandsss/` 共 12 檔 + 1 處 body footer stale 引用。
 - **A4 AG Airtable PAT scope**：查證後**無需動作**——安全探測（PATCH 不存在 record，非破壞性）顯示 AG 手中 PAT 對 `Main_Orders` 回 403 INVALID_PERMISSIONS，證實**無寫入 scope**。原診斷疑慮（AG 可能繞過單一寫者矩陣直寫 Airtable）實測未成立，AGENTS §1.2 條文與現實一致，無需補記例外。
 
