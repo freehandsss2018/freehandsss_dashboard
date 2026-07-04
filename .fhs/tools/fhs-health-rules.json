@@ -76,7 +76,8 @@
       "scan_dirs": [".fhs", "docs", "scripts"],
       "scan_glob": "*.md",
       "allowlist_basenames": ["README.md", "INDEX.md", "SKILL.md"],
-      "note": "只比對 basename 跨路徑重複，不做內容相似度比對。真實案例：S138 docs/CHANGELOG.md 分岔複本。"
+      "exclude_dir_names": ["backups", "archive", "vendor"],
+      "note": "只比對 basename 跨路徑重複，不做內容相似度比對。真實案例：S138 docs/CHANGELOG.md 分岔複本。exclude_dir_names 排除 backups/archive（本來就設計成正本複本，重複是預期行為，非病灶）與 vendor（S143 實測發現：獨立第三方原版追蹤目錄，非drift，另待評估是否需要專屬 vendor-sync 檢查）。"
     },
     {
       "id": "auto_memory_vs_repo_memory",
