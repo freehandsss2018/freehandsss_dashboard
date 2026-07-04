@@ -79,7 +79,7 @@
 
 ## §7 季度健檢（每 ~90 天或 Fat Mo 呼叫時）
 
-1. 重測 [[01_diagnosis]] 的實測數字（wc -l 五個大檔、grep subagent model 釘選），數字惡化 → 觸發 §4。
+1. 重測 [[01_diagnosis]] 的實測數字（wc -l 五個大檔、grep subagent model 釘選），數字惡化 → 觸發 §4。可先跑 `node scripts/hooks/fhs-health-check.js` 取得過肥/沉積孤兒/過時漂移/同名重複/歸檔斷鏈五項程式化結果（S142 新增，`.fhs/.health-report.json`），異常項用 `/fhs-slim` 出清理方案。
 2. 抽查最近 5 個 session 的雙紀律自檢：自驗豁免使用率是否又漂移（>3/5 全自驗 = 向 Fat Mo 報告制度失效）。
 3. 驗證 CLAUDE.md 路由表每條路徑仍存在。
 4. 產出 ≤20 行健檢報告，追加到本檔尾部 §8。
