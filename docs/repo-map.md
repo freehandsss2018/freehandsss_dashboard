@@ -11,7 +11,7 @@ freehandsss_dashboard/
 ├── .gitignore                           ← Git 忽略規則
 ├── .gitmodules                          ← Git submodule 登錄（perplexity-mcp-server，2026-06-11 補建）
 ├── .mcp.json                            ← Claude Code MCP server 註冊（n8n-mcp-server）
-├── Changelog.md                         ← 系統版本變更記錄
+├── Changelog.md                         ← 系統版本變更記錄（唯一活躍版本；docs/CHANGELOG.md 分岔複本已於 2026-07-04 刪除）
 ├── package.json / package-lock.json     ← Node.js 依賴
 ├── .env.supabase.example                ← Supabase 連線變數範本（2026-05-10 新增）
 ├── supabase/                            ← Supabase Schema 文件區（2026-05-10 新增）
@@ -229,6 +229,7 @@ freehandsss_dashboard/
 │   │   └── FHS_Memory_Engine.png        ← FHS 記憶引擎架構圖（從 Obsidian/ 保全搬入）
 │   ├── README.md                        ← 技術文件索引
 │   ├── repo-map.md                      ← 本文件
+│   ├── [已刪除] CHANGELOG.md             ← S63 建立的分岔複本，末條 S130 Phase B 後停更，2026-07-04 確認無獨立價值後刪除（備份於 .fhs/reports/backups/）
 │   ├── FHS_Blueprint.md
 │   ├── DESIGN.md                        ← 大地溫潤 (Earthy Warm) 設計系統規範（2026-05-17 新增）
 │   ├── FHS_Product_Bible_V3.7.md        ← [DEPRECATED 2026-06-01] 多項定價規則已過時，現行定價請讀 .fhs/ai/FHS_Pricing_Bible.md

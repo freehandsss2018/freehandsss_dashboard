@@ -1,5 +1,12 @@
 ﻿# Session Log
 
+## 2026-07-04 (Session 138 — docs/CHANGELOG.md 重複檔案清理): 🧹 ✅
+
+**Scope**：S137 記憶系統審視時意外發現的重複檔案問題，另開 session 處理，非主線任務。
+**Result**：確認 `docs/CHANGELOG.md`（298行，S63建立）為根目錄 `Changelog.md` 的過時分岔複本——最後條目停在 S130 Phase B（2026-07-01），S131-S137 完全缺漏；frontmatter last_updated 比自己內文還舊。Grep 全 repo 確認僅 `.fhs/ai/FHS_Product_Cost_Operations.md` Stage 4 草案表格一處活引用，已改向根目錄版本。備份後 `git rm -f` 刪除；`docs/repo-map.md`（原本連此檔都沒列入樹狀圖）補上 `[已刪除]` 條目；`decisions.md` 補記錄。
+**Learnings**：新增 Pitfall #25（frontmatter last_updated 判斷停更不可靠，需比對內文實際最新日期）；learnings.md 50→51 條。
+Subagent：❌ 未使用（Grep/Read/git log 直接調查 + Edit 定點修改，任務規模小，主 agent 直接執行）
+
 ## 2026-07-04 (Session 137 — Governance 治理層建立 + Obsidian D1 推翻，Fable 5 立制度 session): 🏛️ ✅
 
 **Scope**：Fat Mo 要求「唯一一次用 Fable 5 的機會，把判斷力轉成弱模型可沿用制度」；同時處理 Fat Mo 認為混亂的記憶系統審視需求，意外查出 Session 51 Obsidian D1 決策已被 Fat Mo 認定不健全，推翻並補建 wikilink。

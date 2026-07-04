@@ -3,6 +3,12 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-04] docs/CHANGELOG.md 分岔複本刪除 — 確認無獨立價值
+
+決策：另一 session 做記憶系統/治理層審視時意外發現 `docs/CHANGELOG.md`（298行，Session 63 建立）與根目錄 `Changelog.md`（4352行，持續更新至 S137）內容重疊但非同步——docs 版最後條目停在 S130 Phase B (2026-07-01)，S131-S137 六個 session 完全缺漏；frontmatter `last_updated: 2026-06-05` 甚至早於自己內文的 S130 條目，編輯紀律低。判定為過時分岔複本，非獨立用途摘要版。
+執行：檢查 `docs/repo-map.md`、`README.md` 均無引用；唯一活引用為 `.fhs/ai/FHS_Product_Cost_Operations.md` Stage 4 計畫表（未執行草案），已改指向根目錄 `Changelog.md`。改動前備份於 `.fhs/reports/backups/docs_CHANGELOG.md.bak_20260704_150415`，經 Fat Mo 確認後 `git rm -f docs/CHANGELOG.md` 刪除；`docs/repo-map.md` 同步更新為 `[已刪除]` 標記。
+驗證：`git status` 確認僅 1 檔刪除（D docs/CHANGELOG.md），無其他非預期變動；根目錄 `Changelog.md` 未受影響。
+
 [2026-07-04] (Session 136) learnings.md 超量整理 — 59→49 條
 
 決策：`.fhs/memory/learnings.md` 累積至 59 條，超過文件自訂 50 條上限（上次整理 Session 113 為 70→50）。執行退役 3 條 + 合併 4 組（節省 9 條）：退役「Smart Cache COST_MAP 遺漏」（已入 `/new-product` SOP 強制執行）、「單一配件 filter 假設」（已被 Pattern #6 `_isAddon()`/`_addonType()` 架構取代）、「generate() else 忘記清值」（窄範圍一次性 bug 已修復）；合併 ENUM cast+PostgREST 括號語法、SELECT/PATCH 未套用欄位+Migration 部分執行、focusin 清空+split auto-fill 污染、n8n POST/PUT 四欄限制+contentType raw+空陣列 guard+expression 禁鏈式（四合一）四組同主題條目；同時修正 Pitfalls 區塊因多次併發追加造成的編號亂序（曾出現重複 #22/#23/#24）。

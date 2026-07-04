@@ -10,6 +10,7 @@
 
 | 日期 | 檔案 | 主題 | 關鍵字 | 摘要 |
 |------|------|------|--------|------|
+| 2026-07-04 | 2026-07-04_docs-changelog-duplicate-cleanup.md | docs/CHANGELOG.md 重複檔案清理 | changelog, duplicate, frontmatter, repo-map | 分岔複本判斷法：metadata 可能比內容還舊，需比對實際內文最新日期 |
 | 2026-03-20 | 20260320_1358_Memory_Engine_2.0_Architecture.md | Memory Engine 2.0 架構 | memory, notion, sync, architecture | Memory Engine V2 自動掃描 lessons/ 同步 Notion 大腦的設計決策 |
 | 2026-03-21 | 20260321_History_Indexing_Fix.md | 歷史索引修復 | indexing, history, fix | 修復歷史訊息索引失效問題 |
 | 2026-03-21 | 20260321_Full_Check_Report.md | 全系統核查報告 | audit, full-check, report | 全系統核查後的問題清單與修復建議 |

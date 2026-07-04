@@ -1,5 +1,18 @@
 ﻿# Changelog
 
+## [2026-07-04] Session 138 — docs/CHANGELOG.md 重複檔案清理
+
+**範圍**：`docs/CHANGELOG.md`（刪除）、`docs/repo-map.md`、`.fhs/ai/FHS_Product_Cost_Operations.md`、`.fhs/notes/decisions.md`
+
+### [CLEANUP] 過時分岔複本刪除
+
+- **背景**：S137 記憶系統審視時意外發現 `docs/CHANGELOG.md`（298行，Session 63 建立）與根目錄 `Changelog.md`（持續更新）長期並存，另開本 session 處理
+- **判定**：`docs/CHANGELOG.md` 最後條目停在 S130 Phase B（2026-07-01），S131-S137 六個 session 完全缺漏；frontmatter `last_updated: 2026-06-05` 比自己內文的 S130 條目還舊。確認為過時分岔複本，非獨立用途摘要版
+- **引用檢查**：`docs/repo-map.md`、`README.md` 均無引用（孤兒檔案）；唯一活引用為 `.fhs/ai/FHS_Product_Cost_Operations.md` Stage 4 計畫表（未執行草案），已改指向根目錄 `Changelog.md`
+- **執行**：改動前備份至 `.fhs/reports/backups/`，經 Fat Mo 確認後 `git rm -f docs/CHANGELOG.md`；`docs/repo-map.md` 補上該檔案缺席的樹狀圖條目（標 `[已刪除]`）
+- **副產品發現**：`docs/repo-map.md` 本身此前未把 `docs/CHANGELOG.md` 列入樹狀圖——地圖本身不完整，不只是缺跨連結
+- **learnings**：Pitfall #25 補建（frontmatter last_updated 可能比內容本身還舊，判斷停更需比對實際內文最新日期）
+
 ## [2026-07-04] Session 137 — Governance 治理層建立（Fable 5 立制度）+ Obsidian D1 推翻
 
 **範圍**：`.fhs/ai/governance/`（新建）、`CLAUDE.md`、`docs/FHS_Knowledge_Map.md`、`.fhs/notes/decisions.md`、`.fhs/memory/learnings.md`、`.fhs/memory/lessons/`（6檔）、`.obsidian/plugins/`、`docs/repo-map.md`、`README.md`

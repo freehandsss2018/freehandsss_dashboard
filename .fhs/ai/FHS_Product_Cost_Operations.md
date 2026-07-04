@@ -335,7 +335,7 @@ WHERE config_key IN ('printing_cost_per_cm2','shipping_cost_standard','shipping_
 | `Freehandsss_dashboardV41.html` | 17-key 分組 UI + 樂觀鎖 + 衝突 banner | Stage 3 |
 | n8n V47.x Mirror Prep 節點 | 加互鎖檢查 | Stage 3.1 |
 | `docs/repo-map.md` | 新增 3 份 v2.1 文件指引 | Stage 4 |
-| `docs/CHANGELOG.md` | 記錄 v2.1 schema + 樂觀鎖上線 | Stage 4 |
+| `Changelog.md`（根目錄；`docs/CHANGELOG.md` 分岔複本已於 2026-07-04 刪除） | 記錄 v2.1 schema + 樂觀鎖上線 | Stage 4 |
 | `.fhs/notes/decisions.md` | 記 α / γ / 樂觀鎖 / Advisory lock 決策 | Stage 4 |
 | `.fhs/memory/handoff.md` | 更新 session 狀態 | Stage 4 |
 | `.fhs/memory/learnings.md` | v1→v2 設計教訓 + 衝突邊界補完經驗 | Stage 4 |
