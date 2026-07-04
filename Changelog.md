@@ -1,5 +1,27 @@
 ﻿# Changelog
 
+## [2026-07-05] Session 142 — FHS 三層式系統健康機制（L1偵測/L2清理/L3紀律）
+
+**範圍**：`scripts/hooks/fhs-health-check.js`（新）、`.fhs/tools/fhs-health-rules.json`（新）、`scripts/hooks/session-start-sop.sh`（末尾掛載）、`.fhs/ai/commands/fhs-slim.md`（新）+ `.claude/commands/fhs-slim.md`（新）、`scripts/hooks/test/health-fixtures*`（新，10案）、`.fhs/ai/commands/fhs-audit.md`、`.fhs/ai/governance/05_maintenance-protocol.md`、`docs/FHS_Prompts.md`
+
+**分支**：`feature/fhs-health-check`（未合併，待 Fat Mo 確認）
+
+### [FEAT] L1 零 token 五病偵測
+- `fhs-health-check.js`：SessionStart hook 末尾呼叫，零外部依賴，偵測過肥（體積/行數/條目數，各帶明確 unit）、沉積孤兒（索引↔實檔雙向比對）、過時漂移（複用 canonical_keys.yml，不信 frontmatter last_updated）、同名重複（basename跨路徑，排除backups/archive/vendor/health-fixtures）、歸檔斷鏈
+- fail-open 三原則：全包 try-catch、永遠 exit 0、內部錯誤只落 `.fhs/.health-check-error.log`，絕不擋 session 啟動
+- 正常沉默、異常 ≤2 行警示；live 實測 24ms（<2s 預算），首次上線即抓到 3 項真實問題（便攜塊超標/learnings超額/1個孤兒檔）
+
+### [FEAT] L2 `/fhs-slim` 清理管道
+- 讀 L1 報告 → 逐項核實+出方案（壓縮索引/歸檔/安全刪除/修正漂移/去重）→ 停等 Fat Mo 批准 → S141 執行紀律（備份→只歸檔不刪→每步一commit→視範圍派fresh-context核對）
+- 與 `/fhs-audit`（30項深稽核）分界：/fhs-slim 為輕量快檢清理，互相在指令檔內註明，不重複造輪
+
+### [TEST] 10 案測試夾具
+- env var 沙盒隔離（`FHS_HEALTH_ROOT`/`FHS_HEALTH_RULES`/`FHS_HEALTH_REPORT_OUT`/`FHS_HEALTH_ERROR_LOG`），涵蓋健康沉默/五病各一/外部路徑讀取/canonical_keys.yml真檔解析/rules.json損毀fail-open/entries精確計數，10/10 PASS；guard fixtures 16/16 迴歸無破壞
+
+詳見完成記錄：[.fhs/reports/completion/2026-07-05_s142-fhs-health-check-system_completion_report.md](.fhs/reports/completion/2026-07-05_s142-fhs-health-check-system_completion_report.md)
+
+---
+
 ## [2026-07-04] Session 141 — 固定載入文件瘦身（Context Slimming）
 
 **範圍**：`.fhs/memory/handoff.md`（便攜塊）、`.fhs/ai/commands/commit.md`（P0.7.1新增）、`CLAUDE.md`、`.fhs/ai/subagents/freehandsss/`（3檔bug修復）+ `~/.claude/agents/freehandsss/`（同步）、auto-memory 目錄（repo外）、`docs/repo-map.md`、`.fhs/memory/README.md`

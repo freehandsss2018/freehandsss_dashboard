@@ -1286,3 +1286,26 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **結果**：便攜塊動態段 7,787→5,066 bytes（−35%）；auto-memory 目錄 56,849→41,308 bytes（−27%，含清理2個已確認合併未刪的舊檔+2個孤兒記錄+1個誤存過時快照）；副產品修復 3 支 subagent frontmatter 重複 `version:` key bug。完整報告：`.fhs/reports/completion/2026-07-04_s141-context-slimming_completion_report.md`。
 
 **未合併**：本次改動於 `feature/context-slimming` 分支，尚未合併 main，依規劃停等 Fat Mo 確認後才 merge。
+
+---
+
+## 2026-07-05（Session 142）— FHS 三層式系統健康機制（L1偵測/L2清理/L3紀律）
+
+### D10：偵測與清理分層——死程式偵測零token，AI判斷+人批准才寫入
+
+**背景**：S141 完成後 Fat Mo 追問「有沒有機制防止過肥/沉積/過時/重複/衝突」，誠實盤點後確認**沒有**——S141 的清理是一次性人工判斷，無制度化偵測。
+
+**決策**：建三層機制，職責嚴格分離：
+- **L1（偵測，全自動零token）**：`scripts/hooks/fhs-health-check.js`，純 Node 死腳本（零依賴），掛 SessionStart hook 末尾，五病偵測規則放 `.fhs/tools/fhs-health-rules.json`（每條規則明確 unit + 出處，不發明新數字，全部沿用既有制度預算）。正常沉默、異常才印 ≤2 行。
+- **L2（判斷，按需）**：`/fhs-slim` 指令，讀 L1 報告 → 逐項出清理方案 → **停等 Fat Mo 批准**才可動手，不得自行判斷「看起來安全就做」。
+- **L3（執行紀律）**：固化 S141 已驗證模式（備份→只歸檔不刪→每步一commit→視改動範圍派 fresh-context 零損失核對）。
+
+**原因**：偵測「該不該警示」是機械比對（量體積/比對索引/比對真理值/比對basename/查連結存在），不需要 AI 判斷力，適合零成本常駐；但「這條該怎麼清」需要脈絡判斷，「要不要真的動手」永遠需要人的授權——這條界線對應 lessons_2026-04-28 對 hook 常駐成本的顧慮（拒絕會產生持續 token 開銷的常駐模式），L1 用死程式而非 LLM 呼叫解決了這個顧慮。
+
+**明確排除的替代方案**：全自動排程清理（技術上可行，`schedule` 功能存在）——但會在 Fat Mo 不在場時改動 handoff/memory/governance 命脈檔案，直接牴觸 S137-S140 建立的守護體系（單一寫者矩陣、驗收不自驗、決策記錄強制）。**偵測可以無人值守，寫入永遠要過人的手**。
+
+**範圍誠實聲明**：本機制**不是**全面防護網——只覆蓋 L1 規則檔明確定義的檢查項；跨文件語意矛盾（如兩份文件對同一規則有不同定義）仍需 `/fhs-audit` A7-4（AI仲裁，非程式化）；新增文件類型/新的病灶模式需要人工擴充 rules.json 才會被涵蓋。防回胖不等於零維護，是把腐化速度壓低、把人的角色從「自己發現問題」降到「看到警示→按批准」。
+
+**完整報告**：`.fhs/reports/completion/2026-07-05_s142-fhs-health-check-system_completion_report.md`
+
+**未合併**：本次改動於 `feature/fhs-health-check` 分支，尚未合併 main，依規劃停等 Fat Mo 確認後才 merge。
