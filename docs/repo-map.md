@@ -205,7 +205,9 @@ freehandsss_dashboard/
 │   │   └── audits/                      ← 架構衛生與自動稽核報告區
 │   ├── memory/
 │   │   ├── README.md                   ← 記憶層與同步規範
-│   │   ├── handoff.md
+│   │   ├── handoff.md                  ← 2026-07-04 S139 首次輪轉：3949→106行（僅存便攜塊+MASTER表+近5個session）
+│   │   ├── archive/                    ← handoff.md 輪轉歸檔區（2026-07-04 S139 新增）
+│   │   │   └── handoff-full-until-2026-07-04.md  ← 輪轉前完整備份（3949行）
 │   │   ├── learnings.md                ← Pattern / Pitfall / Preference distill（/read Step 3，2026-05-20 新增）
 │   │   ├── pitfalls.yaml               ← Machine-readable 跨層整合 pitfall 知識庫（2026-05-21 新增，product-integration-validator 使用）
 │   │   └── lessons/
@@ -293,9 +295,12 @@ freehandsss_dashboard/
 │   ├── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │   │   ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
 │   │   ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）
-│   │   ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/Bash）
+│   │   ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/MultiEdit/PowerShell/Bash/NotebookEdit，2026-07-04 S139 補洞：current.html Bash/PowerShell目標偵測 R9、sbp_/eyJ key pattern）
 │   │   ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
-│   │   └── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
+│   │   ├── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
+│   │   └── test/                        ← guard hook 特徵化測試夾具（2026-07-04 S139 新增）
+│   │       ├── guard-fixtures.json      ← 12 組 tool_input 樣本 + 期望行為（含已修復缺口的回歸標記）
+│   │       └── run-fixtures.js          ← 夾具執行器：spawn guard.js 逐組斷言 exit code + stderr
 │   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110）
 │       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）

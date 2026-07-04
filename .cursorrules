@@ -57,6 +57,7 @@ Do not add new rules here. This file will be removed in a future cleanup.
 - **AI 助理自律**：若 AI 助理發現代碼中存在硬編碼秘密，必須立即主動提出警告並引導進入環境變數遷移流程。
 
 ---
-**神速喚醒指令 (/read)**：當用戶輸入 `/read` 時，AI 必須立即重新讀取 `/.fhs/ai/AGENTS.md`、`docs/SOP_NOW.md` 與 `n8n/Quadruple_Sync_Field_Map.md`。此指令為「純記憶校準 (Calibration Only)」，嚴禁在此階段執行任何實施計劃。
+**神速喚醒指令 (/read)**：當用戶輸入 `/read` 時，AI 必須立即重新讀取 `/.fhs/ai/AGENTS.md`、`.fhs/notes/SOP_NOW.md`（路徑已於 2026-07-04 修正，原 `docs/SOP_NOW.md` 為 stale 路徑）與 `n8n/Quadruple_Sync_Field_Map.md`。此指令為「純記憶校準 (Calibration Only)」，嚴禁在此階段執行任何實施計劃。
+> ⚠️ Cursor 本身於本專案屬「休眠藍圖」（AGENTS.md §1.2，2026-07-04 確認未安裝/近期不用）。此檔為啟用時的橋接備用，正常情況下不會被讀取。
 
 **SOUL Active. 系統靈魂已啟動 (V45.7.5 Updated with Secret Shield).**

@@ -1224,3 +1224,22 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **未動範圍**：D2 三層記憶職責邊界維持不變（Notion 人類真相源最高優先、AI 唯一寫入 `.fhs/memory`、Obsidian 視覺層不參與衝突解析）；只解除 D1 的技術限制認定，AI 讀寫邊界規則不變。
 
 **風險**：外掛為第三方社群套件（非官方），若未來停止維護或行為變更，`.fhs` 可見性可能回退——不影響底層資料完整性（純顯示層），一旦異常可停用外掛或改用 [[05_maintenance-protocol]] 定義的降級路徑。
+
+---
+
+## 2026-07-04（Session 139）— Harness 治理硬化執行（回應 S137 D3 待授權項）
+
+### D5：Stage A 四項裁決（Fat Mo 明確授權，AskUserQuestion 逐項確認）
+
+- **A1 權限策略**：`bypassPermissions` → `default`（專案+全域 `settings.json` 雙檔）。**原因**：allowlist 620+197+55 條在 bypass 下形同虛設，guard hook 是唯一防線；財務生產系統值得每次寫入前多一道確認。**風險**：需重啟 session 生效，本 session 內未能驗證 allowlist 實際運作是否過嚴/過鬆，留待下次 session 觀察。
+- **A2 密鑰處置**：`.mcp.json`/`settings.local.json` 明文密鑰遷入 `.env`。**執行範圍**：`settings.local.json` 冗餘 `N8N_KEY` 已移除（.env 本有同值 + dotenv 路徑已驗證不受影響）；`.mcp.json` 本體**未動**——實測 OS 環境變數層級無 `SUPABASE_ACCESS_TOKEN`，`${VAR}` 展開讀行程環境非 `.env` 檔案本身，貿然改動會打斷本 session 正在使用的 Supabase MCP 連線，列為開放待辦。
+- **A3 subagent model**：回應 [[02_model-dispatch]] §0 現況表待辦，6 支 `claude-sonnet-4-6` 舊 ID 改為**刪除 `model:` 行改繼承**（而非更新為新 ID）。**原因**：釘選具體 ID 的過期問題會反覆發生；派工時用 Agent tool `model` 參數按分派表覆蓋，過期問題永久消失。同步修正 master（`.fhs/ai/subagents/freehandsss/`）+ `~/.claude/agents/freehandsss/` 共 12 檔 + 1 處 body footer stale 引用。
+- **A4 AG Airtable PAT scope**：查證後**無需動作**——安全探測（PATCH 不存在 record，非破壞性）顯示 AG 手中 PAT 對 `Main_Orders` 回 403 INVALID_PERMISSIONS，證實**無寫入 scope**。原診斷疑慮（AG 可能繞過單一寫者矩陣直寫 Airtable）實測未成立，AGENTS §1.2 條文與現實一致，無需補記例外。
+
+### D6：guard.js 補洞範圍與克制（Stage D）
+
+**決策**：只修復已具體診斷出的 3 個缺口（matcher 缺 PowerShell/MultiEdit、Bash 不查 current.html 目標、apiKeyPatterns 缺 sbp_/eyJ），不做 P2 提出的 `guard-rules.json` 抽離重構——後者屬「錦上添花」而非本次授權範圍，且 A1 已將 allowlist 設為第一道防線後，guard 的補洞優先級隨之下修（Fat Mo A1 裁決時的原話：「guard 補洞可以做得較輕」）。
+
+**驗證方式**：先建 `scripts/hooks/test/` 特徵化夾具對修補前行為建立基線（12組，含4項已知缺口），修補後重跑，3項known_gap正確翻轉+1項PowerShell文件記錄項升級為可執行斷言，12/12 PASS。此為本專案 guard hook 首次擁有回歸測試保護。
+
+**完整報告**：`.fhs/reports/completion/2026-07-04_harness-hardening-execute_completion_report.md`

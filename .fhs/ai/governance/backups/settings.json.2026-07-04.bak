@@ -199,7 +199,7 @@
       "Bash(awk '/^## Pitfalls/{s=1} /^## Preferences/{s=0} s' .fhs/memory/learnings.md)",
       "Bash(awk '/^## Preferences/{s=1} s' .fhs/memory/learnings.md)"
     ],
-    "defaultMode": "default",
+    "defaultMode": "bypassPermissions",
     "additionalDirectories": [
       "C:\\Users\\Edwin\\AppData\\Local\\Temp",
       "\\tmp",

@@ -2,7 +2,6 @@
 name: blender-3d-modeler
 description: FHS Blender 3D modeling specialist for FDM 3D print preparation. Use when any task involves STL import, mesh repair, printability check, boolean cavity operations, floating fragment removal, shell offset, Z-slice analysis, or artistic/sculptural modeling. Requires Blender MCP addon (port 9876).
 tools: ["mcp__blender__execute_blender_code", "mcp__blender__get_scene_info", "mcp__blender__get_viewport_screenshot", "Read", "Bash"]
-model: claude-sonnet-4-6
 version: v2.0.0
 compatible_with: AGENTS.md v1.4.12
 last_updated: 2026-05-16
@@ -292,5 +291,5 @@ fdm_prep     → Step 0 → Triage → Step 2 Printability → 方向建議 → 
 *FHS native v2.0.0 — 2026-05-07*
 *v1.0.0 → v2.0.0：新增 Triage 決策樹、FDM printability check、HANDOFF 工具清單、標準路徑規則、開放藝術建模*
 *知識來源：2026-05-05 心形凹槽手模 session（實際驗證配方）*
-*Model: claude-sonnet-4-6*
+*Model: 繼承主對話（frontmatter model 行已於 S139 移除，見 governance/02 §0）*
 *授權：Fat Mo /execute — Flow 2026-05-07-1007*

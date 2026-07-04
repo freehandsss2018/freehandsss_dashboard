@@ -30,9 +30,12 @@ process.stdin.on('end', () => {
   // ═══════════════════════════════════════════════════════════════
   // Guard: Write / Edit
   // ═══════════════════════════════════════════════════════════════
-  if (tool === 'Write' || tool === 'Edit') {
-    const filePath = (toolInput.file_path || '').replace(/\\/g, '/');
-    const content = toolInput.content || toolInput.new_string || '';
+  if (tool === 'Write' || tool === 'Edit' || tool === 'MultiEdit' || tool === 'NotebookEdit') {
+    const filePath = (toolInput.file_path || toolInput.notebook_path || '').replace(/\\/g, '/');
+    // MultiEdit carries an `edits` array instead of a single new_string; NotebookEdit
+    // carries `new_source`. Flatten whichever shape is present into one string to scan.
+    const content = toolInput.content || toolInput.new_string || toolInput.new_source ||
+      (Array.isArray(toolInput.edits) ? toolInput.edits.map(e => e.new_string || '').join('\n') : '') || '';
 
     // ── Rule 1: Protect production file ────────────────────────
     if (filePath.includes('Freehandsss_dashboard_current.html')) {
@@ -48,6 +51,8 @@ process.stdin.on('end', () => {
       { re: /sk-[a-zA-Z0-9]{32,}/, label: 'OpenAI-style key (sk-...)' },
       { re: /pplx-[a-zA-Z0-9]{32,}/, label: 'Perplexity key (pplx-...)' },
       { re: /pat[a-zA-Z0-9]{20,}\.[a-zA-Z0-9]{40,}/, label: 'Airtable PAT' },
+      { re: /sbp_[a-zA-Z0-9]{20,}/, label: 'Supabase access token (sbp_...)' },
+      { re: /eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/, label: 'JWT (eyJ...)' },
       { re: /(?:api_key|apikey|api-key)\s*[:=]\s*["'][a-zA-Z0-9\-_]{20,}["']/i, label: 'API key assignment' },
       { re: /(?:GEMINI_API_KEY|PERPLEXITY_API_KEY|N8N_KEY)\s*=\s*["'][a-zA-Z0-9\-_.]{20,}["']/, label: 'FHS env key' }
     ];
@@ -90,8 +95,22 @@ process.stdin.on('end', () => {
   // ═══════════════════════════════════════════════════════════════
   // Guard: Bash
   // ═══════════════════════════════════════════════════════════════
-  if (tool === 'Bash') {
+  if (tool === 'Bash' || tool === 'PowerShell') {
     const command = toolInput.command || '';
+
+    // ── Rule 9: Block Bash/PowerShell commands targeting current.html ──
+    // R1 above only checks Write/Edit file_path; commands like `cp`, `sed -i`,
+    // shell redirection, or PowerShell Set-Content/Copy-Item can overwrite
+    // current.html without ever going through Write/Edit. Catch the filename
+    // appearing alongside a write-shaped command/cmdlet.
+    if (/current\.html/i.test(command) &&
+        /(?:^|\s)(?:cp|mv|sed\s+-i|cat\s+.*>|>{1,2}|tee|Set-Content|Copy-Item|Move-Item|Out-File)\b/i.test(command)) {
+      blocking.push(
+        '🚫 [R9] 偵測到 Bash 指令疑似寫入 current.html',
+        '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
+        '   → 如需更新，請明確告知 Fat Mo 並獲授權（或改用 Write/Edit 走 R1 守衛）'
+      );
+    }
 
     // ── Rule 5: Block git add .env ──────────────────────────────
     if (/git\s+add\s+[^-]*\.env(?!\.example)/.test(command)) {
@@ -117,13 +136,15 @@ process.stdin.on('end', () => {
       );
     }
 
-    // ── Rule 8: Warn on rm -rf targeting project subdirs ────────
-    if (/rm\s+-rf\s+(?!tmp\/|artifacts\/)/.test(command)) {
+    // ── Rule 8: Warn on rm -rf / Remove-Item -Recurse -Force targeting project subdirs ──
+    const isRmRf = /rm\s+-rf\s+(?!tmp\/|artifacts\/)/.test(command);
+    const isRemoveItemForce = /Remove-Item\b/i.test(command) && /-Recurse\b/i.test(command) && /-Force\b/i.test(command);
+    if (isRmRf || isRemoveItemForce) {
       const safeExceptions = ['node_modules', '/tmp/', 'artifacts/'];
       const isSafe = safeExceptions.some(s => command.includes(s));
       if (!isSafe) {
         warnings.push(
-          '⚠️  [R8] 偵測到 rm -rf，請確認目標目錄安全',
+          '⚠️  [R8] 偵測到 rm -rf / Remove-Item -Recurse -Force，請確認目標目錄安全',
           '   → 安全目標：node_modules/、tmp/、artifacts/ 以外需謹慎'
         );
       }

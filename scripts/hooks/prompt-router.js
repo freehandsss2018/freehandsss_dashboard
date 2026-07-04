@@ -56,6 +56,14 @@ process.stdin.on('end', () => {
       model: 'sonnet',
       reason: '偵測到原型建立任務'
     },
+    // ── Complex Architecture (Opus) — 移至 Quality Review 之前，避免「架構審查」類 prompt 被審查關鍵詞先攔截 ──
+    {
+      patterns: ['架構', '技術選型', '系統設計', '新系統', '引入外部', '新api', 'new architecture', 'harness'],
+      subagent: null,
+      skill: null,
+      model: 'opus',
+      reason: '偵測到複雜架構決策任務'
+    },
     // ── Quality Review / Audit ──
     {
       patterns: ['稽核', '審查', '品質', 'code review', 'phase c', '守門', 'audit check', 'fhs audit'],
@@ -96,17 +104,9 @@ process.stdin.on('end', () => {
       patterns: ['利潤', 'profit', '毛利', 'gross margin', 'revenue', '收入', 'aov',
         '財務計算', 'financial', '售價', '成本計算'],
       subagent: null,
-      skill: 'finance-calculator',
+      skill: 'finance-gatekeeper',
       model: 'sonnet',
       reason: '偵測到財務計算相關任務'
-    },
-    // ── Complex Architecture (Opus) ──
-    {
-      patterns: ['架構設計', '技術選型', '系統設計', '新系統', '引入外部', '新api', 'new architecture'],
-      subagent: null,
-      skill: null,
-      model: 'opus',
-      reason: '偵測到複雜架構決策任務'
     }
   ];
 

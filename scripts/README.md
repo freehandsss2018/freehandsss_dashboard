@@ -55,7 +55,7 @@
 |------|---------|------|
 | `hooks/session-start-sop.sh` | `SessionStart` | 自動注入 SOP_NOW 快照 + handoff 待辦，取代手動 `/read` |
 | `hooks/prompt-router.js` | `UserPromptSubmit` | 分析任務描述，建議最適 subagent / skill / model（建議模式，不強制）|
-| `hooks/pre-tool-guard.js` | `PreToolUse (Write\|Edit\|Bash)` | 守護 AGENTS.md 硬規則：阻止覆蓋 current.html、硬編碼 API key、git add .env 等違規操作 |
+| `hooks/pre-tool-guard.js` | `PreToolUse (Write\|Edit\|MultiEdit\|PowerShell\|Bash\|NotebookEdit)` | 守護 AGENTS.md 硬規則：阻止覆蓋 current.html（含 Bash/PowerShell 目標偵測 R9）、硬編碼 API key（含 sbp_/eyJ，2026-07-04）、git add .env 等違規操作；回歸測試見 `hooks/test/`（2026-07-04 新增） |
 | `hooks/post-tool-kgov.js` | `PostToolUse (Write\|Edit\|mcp__supabase\|mcp__n8n)` | 知識治理自動捕捉：命中財務/RPC/Migration 改動 → 寫 `.fhs/.kgov-pending` flag + 注入 [G] 提醒（2026-06-12）|
 | `hooks/stop-kgov.js` | `Stop` | session 結束知識治理守衛：flag 存在時提醒未結案的 §十/lessons 更新（HARD_BLOCK=false 第一階段，2026-06-12）|
 

@@ -1,5 +1,6 @@
 # /ag-flow (Antigravity Bridge)
 
+> ## ⚠️ [DEPRECATED]（2026-07-04，Session 134，Desktop App 平台收斂 Phase 4.2）— 詳見 Master 檔案原因說明
 > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
 
 **執行步驟**：

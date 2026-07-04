@@ -1,5 +1,39 @@
 ﻿# Changelog
 
+## [2026-07-04] Session 139 — Harness 治理硬化執行（八維度分析→v2實施）
+
+**範圍**：`.claude/settings.json`、`~/.claude/settings.json`、`.claude/settings.local.json`、`.env`、`scripts/hooks/pre-tool-guard.js`、`scripts/hooks/prompt-router.js`、`scripts/hooks/test/`（新建）、`.fhs/memory/handoff.md`（輪轉）、`.fhs/ai/subagents/freehandsss/`（6檔）+ `~/.claude/agents/freehandsss/`（同步）、`.cursorrules`、`.agents/workflows/`（3檔）、`~/.gemini/antigravity/mcp_config.json`
+
+### [FEAT] guard.js 補洞（P0-2診斷項全數關閉）
+- R2 新增 `sbp_`（Supabase token）與 `eyJ`（JWT）硬編碼偵測 pattern
+- 新增 R9：Bash/PowerShell 指令內容含 `current.html` + 寫入類指令（cp/mv/sed -i/tee/重定向/Set-Content/Copy-Item 等）→ 攔截，補齊 R1 只查 Write/Edit file_path 的缺口
+- R8 擴充支援 PowerShell `Remove-Item -Recurse -Force`
+- `settings.json` PreToolUse matcher：`Write|Edit|Bash` → `Write|Edit|MultiEdit|PowerShell|Bash|NotebookEdit`
+- 新建 `scripts/hooks/test/`（guard-fixtures.json 12組 + run-fixtures.js）作為特徵化回歸測試基線，12/12 PASS
+
+### [FIX] 權限與密鑰治理
+- `defaultMode`：`bypassPermissions` → `default`（專案+全域雙檔，Fat Mo 裁決 A1），需重啟 session 生效
+- `.env` 新增 `SUPABASE_ACCESS_TOKEN`（單一真源文件化）；`settings.local.json` 移除冗餘硬編碼 `N8N_KEY`（已驗證 dotenv 路徑不受影響）
+- `.mcp.json` 本體暫緩改動（OS環境變數未設定，貿然改會打斷本session使用中的Supabase MCP連線，列待辦）
+
+### [FIX] Subagent 調度層
+- 6支 subagent（database-reviewer/finance-auditor/frontend-developer/tdd-guide/ui-designer/blender-3d-modeler）刪除 `model:` frontmatter 行改為繼承（Fat Mo 裁決 A3，過期問題永久消失，取代重複釘選新ID）
+- 清理 `~/.claude/agents/freehandsss/` 誤入的 2 個非 subagent 檔案（cl-flow.md/execute.md）
+
+### [FIX] Router 與多腦橋接
+- `prompt-router.js`：`finance-calculator`→`finance-gatekeeper`（Skill可呼叫名對齊）；架構類 route 移至審查類之前（原「架構顧問+審查」誤判案例重測後正確命中 opus）
+- `.cursorrules` 修正 stale 路徑（`docs/SOP_NOW.md`→`.fhs/notes/SOP_NOW.md`）+ 補休眠藍圖聲明
+- `.agents/workflows/` 三支 DEPRECATED 指令（ag-flow/ag-stitch-sync/ag-ui-import）補標記，與 `.claude/commands/` 側對齊
+- `~/.gemini/antigravity/mcp_config.json` 去 BOM
+
+### [MAINT] handoff.md 首次輪轉
+- 3949 → 106 行，去除開頭 BOM（修復 SessionStart hook 動態抽取失效問題），備份至 `.fhs/memory/archive/handoff-full-until-2026-07-04.md`
+
+### [VERIFY] Airtable PAT scope 查證
+- 安全探測（PATCH 不存在 record，非破壞性）確認 AG 手中 Airtable PAT 對 `Main_Orders` **無寫入 scope**（403 INVALID_PERMISSIONS），原診斷疑慮 F-AG1 實測未成立
+
+**完整報告**：`.fhs/reports/completion/2026-07-04_harness-hardening-execute_completion_report.md`
+
 ## [2026-07-04] Session 138 — docs/CHANGELOG.md 重複檔案清理
 
 **範圍**：`docs/CHANGELOG.md`（刪除）、`docs/repo-map.md`、`.fhs/ai/FHS_Product_Cost_Operations.md`、`.fhs/notes/decisions.md`

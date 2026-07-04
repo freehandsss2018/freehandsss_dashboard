@@ -1,0 +1,169 @@
+[
+  {
+    "name": "R1: Write 直寫 current.html 應攔截",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "D:/SynologyDrive/Free_handsss/freehandsss_dashboard/Freehandsss_Dashboard/Freehandsss_dashboard_current.html",
+      "content": "<html>test</html>"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R1",
+      "current.html"
+    ],
+    "known_gap": false,
+    "note": "既有防護，應持續有效"
+  },
+  {
+    "name": "R9: Bash cp 覆蓋 current.html 應攔截（S139修復前為缺口）",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cp Freehandsss_dashboard_V42.html Freehandsss_Dashboard/Freehandsss_dashboard_current.html"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R9",
+      "current.html"
+    ],
+    "known_gap": false,
+    "note": "S139 Stage D 已補洞（R9：Bash current.html 目標偵測），2026-07-04 起此fixture轉為正向防護驗證"
+  },
+  {
+    "name": "R2: 硬編碼 API key pattern 應攔截",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "test.js",
+      "content": "const key = 'pplx-0000000000000000000000000000000000AAAA';"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R2",
+      "Perplexity"
+    ],
+    "known_gap": false,
+    "note": "本次S139執行B7時實測觸發，確認此規則現行有效"
+  },
+  {
+    "name": "R2: 硬編碼 Supabase PAT (sbp_開頭) 應攔截（S139修復前為缺口）",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "test.js",
+      "content": "const token = 'sbp_0000000000000000000000000000AAAA';"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R2",
+      "Supabase"
+    ],
+    "known_gap": false,
+    "note": "S139 Stage D 已補洞（R2新增sbp_ pattern），2026-07-04 起此fixture轉為正向防護驗證"
+  },
+  {
+    "name": "R2: 硬編碼 JWT (eyJ開頭) 應攔截（S139修復前為缺口）",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "test.js",
+      "content": "const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.FAKESIGNATURE1234567890';"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R2",
+      "JWT"
+    ],
+    "known_gap": false,
+    "note": "S139 Stage D 已補洞（R2新增eyJ pattern），2026-07-04 起此fixture轉為正向防護驗證"
+  },
+  {
+    "name": "R3: 修改受保護符號應警告但不攔截",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "test.html",
+      "old_string": "x",
+      "new_string": "function captureFormState() { return {}; }"
+    },
+    "expected_exit": 0,
+    "expected_stderr_contains": [
+      "R3"
+    ],
+    "known_gap": false,
+    "note": "警告類規則，設計上就是exit 0+stderr提示"
+  },
+  {
+    "name": "R5: git add .env 應攔截",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git add .env"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R5"
+    ],
+    "known_gap": false,
+    "note": "既有防護，應持續有效"
+  },
+  {
+    "name": "R6: git add -A 應警告但不攔截",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git add -A"
+    },
+    "expected_exit": 0,
+    "expected_stderr_contains": [
+      "R6"
+    ],
+    "known_gap": false,
+    "note": "警告類規則"
+  },
+  {
+    "name": "R7: git push --force 應攔截",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git push origin main --force"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R7"
+    ],
+    "known_gap": false,
+    "note": "既有防護，應持續有效"
+  },
+  {
+    "name": "R8: rm -rf 非安全目錄應警告但不攔截",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "rm -rf some_important_folder/"
+    },
+    "expected_exit": 0,
+    "expected_stderr_contains": [
+      "R8"
+    ],
+    "known_gap": false,
+    "note": "警告類規則（非硬攔截，設計如此）"
+  },
+  {
+    "name": "R9: PowerShell Set-Content 覆蓋 current.html 應攔截（S139修復前為缺口）",
+    "tool_name": "PowerShell",
+    "tool_input": {
+      "command": "Set-Content -Path Freehandsss_Dashboard/Freehandsss_dashboard_current.html -Value 'test'"
+    },
+    "expected_exit": 2,
+    "expected_stderr_contains": [
+      "R9",
+      "current.html"
+    ],
+    "known_gap": false,
+    "note": "S139 Stage D 已補洞：settings.json matcher 加入 PowerShell + guard.js 邏輯層一併支援 PowerShell 命令掃描"
+  },
+  {
+    "name": "正常安全寫入不應觸發任何規則",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "scripts/some_normal_file.js",
+      "content": "console.log('hello');"
+    },
+    "expected_exit": 0,
+    "expected_stderr_contains": null,
+    "known_gap": false,
+    "note": "陰性對照組，確保guard不誤傷正常操作"
+  }
+]
