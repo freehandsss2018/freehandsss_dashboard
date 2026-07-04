@@ -1,15 +1,16 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.8
+version: v1.9
 compatible_with: AGENTS.md v1.5.0
-last_updated: 2026-07-04
-last_audited_session: S137
+last_updated: 2026-07-05
+last_audited_session: S142
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.8
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.9
 >
-> 最後更新：2026-07-04（v1.8 S134 同步：情境二十四 `/ag-flow` 標註 [DEPRECATED]，改指 `/cl-flow`；AGENTS v1.5.0，Desktop App 平台收斂 Phase 4）
+> 最後更新：2026-07-05（v1.9 S142 同步：新增 `/fhs-slim` 指令，情境八補「深度分流」— 快檢清理走 fhs-slim，全套深稽核維持走 fhs-audit）
+> **S142 稽核（2026-07-05）**：`.fhs/ai/commands/` 新增 `fhs-slim.md`，觸發 [F] 稽核義務。結論：**情境八（Internal Patrol）內補分流子句，不新增獨立情境**——/fhs-slim 與 /fhs-audit 同屬「內部巡邏/清理」語意範疇，差異僅在深度與觸發機制（hook自動 vs 人工按需），沿用既有觸發詞集合即可涵蓋，另開情境會製造第二套幾乎重疊的關鍵詞路由。
 > **S137 稽核（2026-07-04）**：`.fhs/ai/governance/` 新增 7 檔（模型調度制度層）觸發 [F] 稽核義務。結論：**不新增情境**——governance 為 AI 自身調度守則（何時升級模型/何時算完成/怎麼派工），非業務觸發情境，與本文件「業務情境路由」定位正交，見 `.fhs/ai/governance/00_INDEX.md` 職責邊界表。版本/日期/稽核 session 三欄已同步更新以反映本次稽核已執行。
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
 > 定位：業務入口路由總機——負責偵測情境並調用對應 command 執行。
@@ -84,6 +85,7 @@ Mobile phone 介面專屬設計準則（強制執行）：
 - **動作**：執行內部巡邏，檢查是否存在孤立檔案、過時版本或路由斷層。
 - **kgov 觸發**：識別為 FHS 知識治理框架（Session 63）再優化任務 → 稽核 `.fhs/ai/FHS_Product_Definition.md` + `FHS_Pricing_Bible.md §10` + `AGENTS Rule 3.17` + `/new-product Step 6`。
 - **執行邏輯**：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/fhs-audit.md。
+- **深度分流（2026-07-05 S142 新增）**：若用戶意圖明確是「文件健康快檢/瘦身」而非全套 30 項深稽核（例如提及「便攜塊超標」「health-check」「/fhs-slim」「過肥」「孤兒檔」），改載入 `.fhs/ai/commands/fhs-slim.md`（輕量、對接 SessionStart hook 自動偵測的 `.fhs/.health-report.json`）；語意模糊時預設仍走 `/fhs-audit`（較全面，寧可多做不漏做）。
 
 ## 【情境九：記憶引擎 3.0 (Memory Engine)】
 

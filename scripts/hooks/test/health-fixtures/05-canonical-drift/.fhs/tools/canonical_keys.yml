@@ -1,0 +1,6 @@
+# test canonical keys
+test_version:
+  source_of_truth: src/truth.md
+  pattern: '^Version:\s*(v\d+\.\d+\.\d+)'
+  allowed_references:
+    - ref/copy.md

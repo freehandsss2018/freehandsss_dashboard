@@ -1,0 +1,9 @@
+{
+  "auto_memory_dir": { "path": "AUTO_MEMORY_PLACEHOLDER:ext-memory" },
+  "volume_budgets": [],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [
+    { "id": "auto_memory_vs_repo_memory", "compare_a_source": "auto_memory_dir", "compare_b_dir": ".fhs/memory", "compare_b_glob": "*.md" }
+  ],
+  "archive_link_checks": []
+}

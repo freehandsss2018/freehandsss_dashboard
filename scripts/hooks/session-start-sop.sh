@@ -43,4 +43,11 @@ fi
 echo ""
 echo "💡 /read 完整初始化 | /cl-flow [任務] 開始規劃 | /cl-flow-fast 快速規劃"
 echo "═══════════════════════════════════════════════════"
+
+# L1 文件健康快檢（S142 新增）：零 token 死腳本，正常沉默，異常才印 ≤2 行。
+# fail-open：node 不存在或腳本出錯都不得擋 session 啟動，故加 timeout + || true 雙保險。
+if command -v node >/dev/null 2>&1; then
+  timeout 5 node "$PROJECT_DIR/scripts/hooks/fhs-health-check.js" 2>/dev/null || true
+fi
+
 exit 0

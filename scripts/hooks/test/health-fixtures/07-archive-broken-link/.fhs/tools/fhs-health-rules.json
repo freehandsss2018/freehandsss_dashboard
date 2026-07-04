@@ -1,0 +1,9 @@
+{
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": [
+    { "id": "handoff_archive_links", "scan_file": ".fhs/memory/handoff.md", "link_pattern": "archive/[\\w.\\-]+\\.md", "resolve_base": ".fhs/memory" }
+  ]
+}

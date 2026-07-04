@@ -31,6 +31,11 @@ artifacts/
 # deploy authorization flag (S140, F8) — one-time, Fat Mo-created, TTL 10min
 .fhs/.deploy-ok
 
+# health check L1 runtime output (S142) — regenerated every session, not version controlled
+.fhs/.health-report.json
+.fhs/.health-check-error.log
+scripts/hooks/test/.health-fixtures-scratch/
+
 # Generated code snapshot (repomix tool output)
 repomix-output.txt
 

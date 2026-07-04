@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+// scripts/hooks/test/run-health-fixtures.js
+// Characterization test harness for scripts/hooks/fhs-health-check.js
+// Each fixture is a self-contained sandbox dir under health-fixtures/<name>/
+// with its own .fhs/tools/fhs-health-rules.json. The script is run with
+// FHS_HEALTH_ROOT pointed at the sandbox and FHS_HEALTH_REPORT_OUT/
+// FHS_HEALTH_ERROR_LOG redirected to a scratch dir so fixtures never
+// pollute the real repo's .fhs/.health-report.json.
+//
+// "AUTO_MEMORY_PLACEHOLDER:<dirname>" in a fixture's rules.json is resolved
+// to an absolute path (fixture-dir/<dirname>) before each run, so fixtures
+// stay portable across machines.
+
+'use strict';
+
+const { spawnSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const FIXTURES_DIR = path.join(__dirname, 'health-fixtures');
+const MANIFEST_PATH = path.join(__dirname, 'health-fixtures.json');
+const SCRIPT_PATH = path.join(__dirname, '..', 'fhs-health-check.js');
+const SCRATCH_DIR = path.join(__dirname, '.health-fixtures-scratch');
+
+const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
+
+fs.mkdirSync(SCRATCH_DIR, { recursive: true });
+
+let pass = 0;
+let fail = 0;
+
+for (const fx of manifest) {
+  const fixtureDir = path.join(FIXTURES_DIR, fx.name);
+  const origRulesPath = path.join(fixtureDir, '.fhs/tools/fhs-health-rules.json');
+  const resolvedRulesPath = path.join(SCRATCH_DIR, `${fx.name}.rules.json`);
+  const reportPath = path.join(SCRATCH_DIR, `${fx.name}.report.json`);
+  const errorLogPath = path.join(SCRATCH_DIR, `${fx.name}.error.log`);
+
+  // Clean scratch outputs from any previous run
+  [reportPath, errorLogPath].forEach(p => { try { fs.unlinkSync(p); } catch (_) {} });
+
+  let rulesRaw = fs.readFileSync(origRulesPath, 'utf8');
+  if (fx.uses_auto_memory_placeholder) {
+    const absTarget = path.join(fixtureDir, fx.uses_auto_memory_placeholder);
+    rulesRaw = rulesRaw.replace(
+      `"AUTO_MEMORY_PLACEHOLDER:${fx.uses_auto_memory_placeholder}"`,
+      JSON.stringify(absTarget)
+    );
+  }
+  fs.writeFileSync(resolvedRulesPath, rulesRaw, 'utf8');
+
+  const env = Object.assign({}, process.env, {
+    FHS_HEALTH_ROOT: fixtureDir,
+    FHS_HEALTH_RULES: resolvedRulesPath,
+    FHS_HEALTH_REPORT_OUT: reportPath,
+    FHS_HEALTH_ERROR_LOG: errorLogPath
+  });
+
+  const startedAt = Date.now();
+  const result = spawnSync('node', [SCRIPT_PATH], { encoding: 'utf8', env });
+  const durationMs = Date.now() - startedAt;
+
+  const problems = [];
+
+  if (fx.expect_exit_zero !== false && result.status !== 0) {
+    problems.push(`exit code = ${result.status}, expected 0`);
+  }
+
+  if (fx.expect_stdout_empty && result.stdout.trim() !== '') {
+    problems.push(`expected empty stdout, got: ${JSON.stringify(result.stdout)}`);
+  }
+
+  const reportExists = fs.existsSync(reportPath);
+  if (fx.expect_no_report && reportExists) {
+    problems.push('expected no report file, but one was written');
+  }
+
+  if (typeof fx.expected_issue_count === 'number') {
+    if (!reportExists) {
+      problems.push('expected a report file but none was written');
+    } else {
+      const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+      if (report.issue_count !== fx.expected_issue_count) {
+        problems.push(`issue_count = ${report.issue_count}, expected ${fx.expected_issue_count} — issues: ${JSON.stringify(report.issues)}`);
+      }
+      const allIssuesText = (report.issues || []).join(' | ');
+      for (const sub of fx.expected_substrings || []) {
+        if (!allIssuesText.includes(sub)) problems.push(`expected issues to mention "${sub}", got: ${allIssuesText}`);
+      }
+      for (const sub of fx.expected_absent_substrings || []) {
+        if (allIssuesText.includes(sub)) problems.push(`expected issues to NOT mention "${sub}", got: ${allIssuesText}`);
+      }
+    }
+  }
+
+  if (fx.expect_error_log && !fs.existsSync(errorLogPath)) {
+    problems.push('expected an error log to be written, but none found');
+  }
+
+  if (durationMs > 2000) {
+    problems.push(`took ${durationMs}ms, expected <2000ms`);
+  }
+
+  if (problems.length === 0) {
+    pass++;
+    console.log(`PASS  ${fx.name}  (${durationMs}ms)`);
+  } else {
+    fail++;
+    console.log(`FAIL  ${fx.name}`);
+    problems.forEach(p => console.log(`      ${p}`));
+  }
+}
+
+console.log('');
+console.log(`${pass} passed, ${fail} failed (of ${manifest.length} fixtures)`);
+process.exit(fail > 0 ? 1 : 0);

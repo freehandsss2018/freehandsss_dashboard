@@ -132,6 +132,7 @@ freehandsss_dashboard/
 │   │   │   ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
 │   │   │   [已退役] px-audit（外部研究已內建至 cl-flow A1，2026-05-30）
 │   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
+│   │   │   ├── fhs-slim.md              ← /fhs-slim 文件健康清理（L1健檢報告→方案→批准→S141紀律執行，2026-07-05 S142新增）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
 │   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.3（精煉引擎，獨立可用，2026-05-30）
@@ -219,7 +220,8 @@ freehandsss_dashboard/
 │   │       └── *.md                    ← 59 個教訓記錄（Notion Auto-Discovery 自動同步）
 │   └── tools/                          ← 稽核工具腳本（2026-05-17 v2.1 新增）
 │       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測 MVP
-│       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等）
+│       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等），亦供 fhs-health-check.js 過時漂移偵測共用
+│       ├── fhs-health-rules.json       ← L1 健康檢查規則資料檔（預算值+單位+出處，2026-07-05 S142 新增，不與 canonical_keys.yml 重複維護）
 │       └── deprecated_terms.txt        ← 已廢棄詞黑名單（Triple_Sync_Field_Map / 三端同步 等）
 │
 │
@@ -302,9 +304,13 @@ freehandsss_dashboard/
 │   │   ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/MultiEdit/PowerShell/Bash/NotebookEdit，2026-07-04 S139 補洞：current.html Bash/PowerShell目標偵測 R9、sbp_/eyJ key pattern）
 │   │   ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
 │   │   ├── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
-│   │   └── test/                        ← guard hook 特徵化測試夾具（2026-07-04 S139 新增）
+│   │   ├── fhs-health-check.js          ← L1 文件健康快檢（零依賴，五病偵測，2026-07-05 S142 新增，session-start-sop.sh 末尾呼叫）
+│   │   └── test/                        ← guard/health hook 特徵化測試夾具（2026-07-04 S139 新增；2026-07-05 S142 擴充）
 │   │       ├── guard-fixtures.json      ← 12 組 tool_input 樣本 + 期望行為（含已修復缺口的回歸標記）
-│   │       └── run-fixtures.js          ← 夾具執行器：spawn guard.js 逐組斷言 exit code + stderr
+│   │       ├── run-fixtures.js          ← 夾具執行器：spawn guard.js 逐組斷言 exit code + stderr
+│   │       ├── health-fixtures.json     ← 10 案期望結果清單（fhs-health-check.js 五病+邊界案例）
+│   │       ├── health-fixtures/         ← 10 個自足沙盒目錄，各含專屬 rules.json（2026-07-05 S142 新增）
+│   │       └── run-health-fixtures.js   ← 夾具執行器：env var 沙盒隔離（FHS_HEALTH_ROOT等），10/10 PASS
 │   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110）
 │       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）
