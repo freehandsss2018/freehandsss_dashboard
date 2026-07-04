@@ -4,6 +4,7 @@
 | 路徑 | 用途 |
 |---|---|
 | handoff.md | 跨 Session 核心狀態快照，每次 /commit 更新 |
+| archive/ | handoff.md 輪轉/瘦身歸檔區（只歸檔不刪，原處留連結） |
 | lessons/ | AI 教訓庫，所有學習記錄存放於此 |
 | lessons/INDEX.md | **Lessons 唯一檢索入口**（一行式索引表，含日期/主題/關鍵字/摘要） |
 

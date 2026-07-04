@@ -1,5 +1,28 @@
 ﻿# Changelog
 
+## [2026-07-04] Session 141 — 固定載入文件瘦身（Context Slimming）
+
+**範圍**：`.fhs/memory/handoff.md`（便攜塊）、`.fhs/ai/commands/commit.md`（P0.7.1新增）、`CLAUDE.md`、`.fhs/ai/subagents/freehandsss/`（3檔bug修復）+ `~/.claude/agents/freehandsss/`（同步）、auto-memory 目錄（repo外）、`docs/repo-map.md`、`.fhs/memory/README.md`
+
+**分支**：`feature/context-slimming`（未合併，待 Fat Mo 確認）
+
+### [FEAT] 便攜塊瘦身 + 防回胖機制
+- `handoff.md` 便攜塊動態段 7,787→5,066 bytes（−35%）：「✅已定決策」28條中25條壓縮為一行索引+連結（指向AGENTS.md/decisions.md/MASTER表既有記錄），3條無他處收錄者全文歸檔至新建 `archive/handoff-portable-block-decisions-pre-2026-07-04.md`；「🔬驗證」只留近3個session，較舊12項歸檔至 `archive/handoff-portable-block-verified-pre-2026-07-04.md`；「📋待辦」已完成項改指向下方MASTER表，去除同檔重複
+- `commit.md` 新增 **P0.7.1**：便攜塊體積預算≤4,000 bytes，決策條目>20條時強制輪轉（治本，防止本次瘦身效果如CLAUDE.md舊聲稱般自然腐化回胖）
+
+### [FIX] 過時數據與潛藏 bug
+- `CLAUDE.md`：修正「hook快照~300 tokens」嚴重失真聲稱（實測膨脹至10倍以上）
+- 3支subagent frontmatter（code-reviewer/frontend-developer/ui-designer）修復重複 `version:` YAML key（後者靜默覆蓋前者）
+- auto-memory：MEMORY.md索引去重（`project_cost_calculation_rules.md`原索引兩次）；清理5個孤兒/過時檔（2個已確認合併未刪的舊feedback檔、2個從未索引的孤兒記錄、1個誤存的V41時代過時handoff.md快照）；目錄總量56,849→41,308 bytes（−27%）
+
+### [VERIFY] 零損失稽核
+- fresh-context subagent 對抗核對：28條決策+驗證/待辦交叉檢查+6個刪除檔理由，**38/38 PASS，0 FAIL**
+- guard fixtures 16/16 回歸 PASS（無回歸）；hooks 語法全過；SessionStart hook 實跑輸出正常
+
+詳見完成記錄：[.fhs/reports/completion/2026-07-04_s141-context-slimming_completion_report.md](.fhs/reports/completion/2026-07-04_s141-context-slimming_completion_report.md)
+
+---
+
 ## [2026-07-04] Session 140 — 稽核修復（矛盾/死洞/session log 痛點）v2 落地
 
 **範圍**：`scripts/hooks/pre-tool-guard.js`、`scripts/hooks/post-tool-kgov.js`、`scripts/hooks/prompt-router.js`、`scripts/hooks/test/guard-fixtures.json`、`.claude/settings.json`、`.gitignore`、`.fhs/ai/AGENTS.md`、`.fhs/notes/SOP_NOW.md`、`.fhs/ai/governance/`（00/02/03）、`.fhs/ai/subagents/freehandsss/`（7檔）+ `~/.claude/agents/freehandsss/`（同步）

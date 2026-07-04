@@ -1270,3 +1270,19 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 - 7 項文件對齊（F1/F4/F5/F6/F7/F9/F14）+ 2 項行為層治本（L1 UI 意圖複述閘、L2/L3 governance 反例、L4 調度教訓）
 
 **完整報告**：`.fhs/reports/completion/2026-07-04_s140-guard-kgov-governance-hardening_completion_report.md`
+
+---
+
+## 2026-07-04（Session 141）— 固定載入文件瘦身（Context Slimming）
+
+### D9：便攜塊壓縮策略 = 「已有他處記錄→連結，否則歸檔全文」，不做無備份刪除
+
+**決策**：`handoff.md` 便攜塊「✅已定決策」28條逐一核實，25條確認在 `AGENTS.md`/`decisions.md`/handoff 自身 MASTER 待辦表已有完整記錄者，原處壓縮為一行索引+連結；僅 3 條（ig_watchdog_alerts RLS設計、Phase 1b時序、3支subagent haiku alias原因）查無他處收錄，全文歸檔至新建 `.fhs/memory/archive/handoff-portable-block-decisions-pre-2026-07-04.md`。「🔬驗證」欄同理，只留近3個session，較舊12項歸檔。5項高風險操作型規則（n8n PUT body限4欄、qty warn禁假乘法、contentType raw、ensure_ascii=True、cost_override_locked）判定為「無他處完整收錄+高遺忘風險」，維持全文不壓縮。
+
+**原因**：Fat Mo 要求「功能零變動、資訊零損失」——壓縮前逐條核實比對，比批次無差別刪減更花時間，但換來 fresh-context subagent 事後對抗核對 38/38 PASS 的可驗證結果。governance/05 §1 權限矩陣將「刪除任何既有規則/條目」列為需先問 Fat Mo 事項；本次透過 `/cl-flow-fast` Verdict 明確列出 handoff.md 為修改目標、Fat Mo 對該檔案清單回覆 Y，視為已完成該項確認。
+
+**同步新增防回胖機制（D9 附屬）**：`commit.md` P0.7.1 訂立便攜塊體積預算 ≤4,000 bytes + 決策>20條強制輪轉規則，避免本次瘦身效果隨後續 session 累加而自然回胖（CLAUDE.md 曾宣稱 hook 快照 ~300 tokens，實測已膨脹至 10 倍以上，證實無預算機制的必然結果）。
+
+**結果**：便攜塊動態段 7,787→5,066 bytes（−35%）；auto-memory 目錄 56,849→41,308 bytes（−27%，含清理2個已確認合併未刪的舊檔+2個孤兒記錄+1個誤存過時快照）；副產品修復 3 支 subagent frontmatter 重複 `version:` key bug。完整報告：`.fhs/reports/completion/2026-07-04_s141-context-slimming_completion_report.md`。
+
+**未合併**：本次改動於 `feature/context-slimming` 分支，尚未合併 main，依規劃停等 Fat Mo 確認後才 merge。
