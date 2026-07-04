@@ -1,0 +1,15 @@
+{
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [
+    {
+      "id": "repo_wide_basename",
+      "scan_dirs": ["dirA", "dirB"],
+      "scan_glob": "*.md",
+      "allowlist_basenames": ["README.md"],
+      "exclude_dir_names": ["backups"]
+    }
+  ],
+  "archive_link_checks": []
+}

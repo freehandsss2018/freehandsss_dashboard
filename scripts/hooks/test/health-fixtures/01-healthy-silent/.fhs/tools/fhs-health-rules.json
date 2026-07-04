@@ -1,0 +1,9 @@
+{
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [
+    { "id": "handoff_portable_block", "path": ".fhs/memory/handoff.md", "scope": "portable_block", "unit": "bytes", "budget": 4000, "source": "test" }
+  ],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": []
+}

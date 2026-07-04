@@ -14,11 +14,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const REPO_ROOT = path.resolve(__dirname, '../..');
-const RULES_FILE = path.join(REPO_ROOT, '.fhs/tools/fhs-health-rules.json');
+// 測試沙盒覆寫（fixtures 用，正常執行不設定這些環境變數）
+const REPO_ROOT = process.env.FHS_HEALTH_ROOT || path.resolve(__dirname, '../..');
+const RULES_FILE = process.env.FHS_HEALTH_RULES || path.join(REPO_ROOT, '.fhs/tools/fhs-health-rules.json');
 const CANONICAL_KEYS_FILE = path.join(REPO_ROOT, '.fhs/tools/canonical_keys.yml');
-const REPORT_FILE = path.join(REPO_ROOT, '.fhs/.health-report.json');
-const ERROR_LOG = path.join(REPO_ROOT, '.fhs/.health-check-error.log');
+const REPORT_FILE = process.env.FHS_HEALTH_REPORT_OUT || path.join(REPO_ROOT, '.fhs/.health-report.json');
+const ERROR_LOG = process.env.FHS_HEALTH_ERROR_LOG || path.join(REPO_ROOT, '.fhs/.health-check-error.log');
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 

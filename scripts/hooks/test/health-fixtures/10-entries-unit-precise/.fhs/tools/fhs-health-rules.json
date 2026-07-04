@@ -1,0 +1,9 @@
+{
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [
+    { "id": "learnings_entries", "path": ".fhs/memory/learnings.md", "scope": "full_file", "unit": "entries", "count_method": "line_regex_count", "count_pattern": "^\\d+\\.\\s", "budget": 2, "source": "test (precision check: decoys must not be counted)" }
+  ],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": []
+}

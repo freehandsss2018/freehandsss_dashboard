@@ -1,0 +1,16 @@
+{
+  "auto_memory_dir": { "path": "AUTO_MEMORY_PLACEHOLDER:auto-memory-sim" },
+  "volume_budgets": [],
+  "index_orphan_checks": [
+    {
+      "id": "auto_memory_index",
+      "index_source": "auto_memory_dir",
+      "index_file": "MEMORY.md",
+      "index_type": "markdown_link_list",
+      "index_link_pattern": "\\[([\\w.\\-]+\\.md)\\]\\(([\\w.\\-]+\\.md)\\)",
+      "exclude_files": ["MEMORY.md"]
+    }
+  ],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": []
+}
