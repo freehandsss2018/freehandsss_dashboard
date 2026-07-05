@@ -1,5 +1,28 @@
 ﻿# Changelog
 
+## [2026-07-05] Session 143 — 衛生指令記憶負擔歸零（週期到期提醒 + 部署前置檢查）
+
+**範圍**：`.fhs/tools/fhs-health-rules.json`、`scripts/hooks/fhs-health-check.js`（新增第6檢查）、`scripts/hooks/test/health-fixtures*`（10→12案）、`.fhs/ai/commands/upload-web.md` v1.1.0→v1.2.0 + `.claude/commands/upload-web.md`
+
+**分支**：`feature/fhs-audit-cadence`（未合併，待 Fat Mo 確認）
+
+### [FEAT] L1 第6檢查：週期稽核到期偵測
+- `checkCadenceOverdue()`：讀 `/fhs-audit` 既有報告產物（`.fhs/reports/audits/system/audit_*.md`）**檔名日期**推斷上次執行時間（不用mtime避免git/sync污染，不建新marker機制），逾90天（governance/05 §7）才印提醒，找不到報告視為「從未執行」同樣提醒
+- day-one 實測：現存最新報告 49 天前 < 90 天門檻，live 跑確認靜默，符合預期
+
+### [FEAT] `/upload-web` Step 0 部署前置
+- 預設先跑 `/fhs-check`（全系統功能壓力測試），FAIL 則停止部署；Fat Mo 可明示 skip（不做成硬性 exit 1，避免每次小部署都被迫跑重量級測試）
+
+### [背景] 記憶負擔盤點
+- 四支既有稽核指令（fhs-audit/fhs-check/guardian/error-eye）逐一檢視：`/guardian`、`/error-eye` 已被 prompt-router 關鍵詞覆蓋無缺口；真缺口只有 `/fhs-audit` 週期無提醒（本次補）與 `/fhs-check` 未掛部署前置（本次補）
+
+### [TEST] fixtures 10→12
+- 新增 11-cadence-overdue／12-cadence-fresh；後者證據檔在測試執行當下動態產生今日日期，避免套件未來自然變假陽性；12/12 PASS，guard 16/16 無回歸
+
+詳見完成記錄：[.fhs/reports/completion/2026-07-05_s143-cadence-reminder_completion_report.md](.fhs/reports/completion/2026-07-05_s143-cadence-reminder_completion_report.md)
+
+---
+
 ## [2026-07-05] Session 142 — FHS 三層式系統健康機制（L1偵測/L2清理/L3紀律）
 
 **範圍**：`scripts/hooks/fhs-health-check.js`（新）、`.fhs/tools/fhs-health-rules.json`（新）、`scripts/hooks/session-start-sop.sh`（末尾掛載）、`.fhs/ai/commands/fhs-slim.md`（新）+ `.claude/commands/fhs-slim.md`（新）、`scripts/hooks/test/health-fixtures*`（新，10案）、`.fhs/ai/commands/fhs-audit.md`、`.fhs/ai/governance/05_maintenance-protocol.md`、`docs/FHS_Prompts.md`

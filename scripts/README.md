@@ -58,7 +58,7 @@
 | `hooks/pre-tool-guard.js` | `PreToolUse (Write\|Edit\|MultiEdit\|PowerShell\|Bash\|NotebookEdit)` | 守護 AGENTS.md 硬規則：阻止覆蓋 current.html（含 Bash/PowerShell 目標偵測 R9，可用 Fat Mo 手動 `touch .fhs/.deploy-ok` 授權放行一次，10分鐘TTL）、硬編碼 API key（sbp_/eyJ/sb_secret_）、git add .env 等違規操作；R10 阻止 AI 自建 deploy-ok 旗標；R11-observe 對財務相關 shell 寫入 warn-only 記錄（觀察期，2026-07-04）；回歸測試見 `hooks/test/`（16組 fixtures） |
 | `hooks/post-tool-kgov.js` | `PostToolUse (Write\|Edit\|MultiEdit\|mcp__.*__apply_migration\|mcp__.*__update_node_code\|mcp__.*__execute_sql)` | 知識治理自動捕捉：命中財務/RPC/Migration 改動（含後綴匹配，涵蓋 Desktop connector UUID 工具名；execute_sql 需寫入動詞+財務關鍵字雙命中）→ 寫 `.fhs/.kgov-pending` flag + 注入 [G] 提醒（2026-06-12，2026-07-04 擴充盲區）|
 | `hooks/stop-kgov.js` | `Stop` | session 結束知識治理守衛：flag 存在時提醒未結案的 §十/lessons 更新（HARD_BLOCK=false 第一階段，2026-06-12）|
-| `hooks/fhs-health-check.js` | 由 `session-start-sop.sh` 末尾呼叫（非獨立 hook 掛載） | L1 文件健康快檢：零依賴，偵測過肥/沉積孤兒/過時漂移/同名重複/歸檔斷鏈五種病，規則資料在 `.fhs/tools/fhs-health-rules.json`，正常沉默、異常 ≤2 行警示，<2 秒；報告見 `.fhs/.health-report.json`；清理走 `/fhs-slim` 指令；fail-open（node不存在/腳本出錯絕不擋 session 啟動）；回歸測試見 `hooks/test/`（10組 fixtures，2026-07-05 S142）|
+| `hooks/fhs-health-check.js` | 由 `session-start-sop.sh` 末尾呼叫（非獨立 hook 掛載） | L1 文件健康快檢：零依賴，偵測過肥/沉積孤兒/過時漂移/同名重複/歸檔斷鏈五種病 + 週期稽核到期（第6檢查，2026-07-05 S143：`/fhs-audit` 逾90天未跑才提醒，記憶負擔歸零），規則資料在 `.fhs/tools/fhs-health-rules.json`，正常沉默、異常 ≤2 行警示，<2 秒；報告見 `.fhs/.health-report.json`；清理走 `/fhs-slim` 指令；fail-open（node不存在/腳本出錯絕不擋 session 啟動）；回歸測試見 `hooks/test/`（12組 fixtures，S142建10組+S143加cadence 2組）|
 
 **回滾方法**：刪除 `.claude/settings.json` 中的 `hooks` 區段即可停用所有 hooks，腳本檔案不受影響。`fhs-health-check.js` 掛載於 `session-start-sop.sh` 末尾，單獨移除該行即可停用，不影響其餘 hook。
 

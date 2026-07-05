@@ -136,7 +136,7 @@ freehandsss_dashboard/
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
 │   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.3（精煉引擎，獨立可用，2026-05-30）
-│   │   │   ├── upload-web.md            ← /upload-web 部署 Dashboard 至 NAS Web Station（WebDAV，2026-06-08）
+│   │   │   ├── upload-web.md            ← /upload-web 部署 Dashboard 至 NAS Web Station（WebDAV，2026-06-08；v1.2.0新增Step0部署前置/fhs-check檢查，2026-07-05 S143）
 │   │   │   ├── ag-flow.md               ← /ag-flow 精煉內建→A1+A2，AG裁決（跳A3，2026-05-30）
 │   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導 v1.2.0（6步 atomic 流程 + Step 6 知識落盤 Gate，2026-06-05）
 │   │   ├── governance/                  ← 模型調度制度層（Session 137，2026-07-04 新增，Fable 5 立制度）
@@ -305,12 +305,12 @@ freehandsss_dashboard/
 │   │   ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
 │   │   ├── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
 │   │   ├── fhs-health-check.js          ← L1 文件健康快檢（零依賴，五病偵測，2026-07-05 S142 新增，session-start-sop.sh 末尾呼叫）
-│   │   └── test/                        ← guard/health hook 特徵化測試夾具（2026-07-04 S139 新增；2026-07-05 S142 擴充）
+│   │   └── test/                        ← guard/health hook 特徵化測試夾具（2026-07-04 S139 新增；2026-07-05 S142/S143 擴充）
 │   │       ├── guard-fixtures.json      ← 12 組 tool_input 樣本 + 期望行為（含已修復缺口的回歸標記）
 │   │       ├── run-fixtures.js          ← 夾具執行器：spawn guard.js 逐組斷言 exit code + stderr
-│   │       ├── health-fixtures.json     ← 10 案期望結果清單（fhs-health-check.js 五病+邊界案例）
-│   │       ├── health-fixtures/         ← 10 個自足沙盒目錄，各含專屬 rules.json（2026-07-05 S142 新增）
-│   │       └── run-health-fixtures.js   ← 夾具執行器：env var 沙盒隔離（FHS_HEALTH_ROOT等），10/10 PASS
+│   │       ├── health-fixtures.json     ← 12 案期望結果清單（fhs-health-check.js 五病+週期到期+邊界案例，2026-07-05 S143 加cadence 2案）
+│   │       ├── health-fixtures/         ← 12 個自足沙盒目錄，各含專屬 rules.json（S142新增10案+S143加cadence 2案）
+│   │       └── run-health-fixtures.js   ← 夾具執行器：env var 沙盒隔離（FHS_HEALTH_ROOT等）+ generates_fresh_evidence 動態日期夾具支援（S143），12/12 PASS
 │   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110）
 │       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）

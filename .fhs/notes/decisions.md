@@ -1309,3 +1309,24 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **完整報告**：`.fhs/reports/completion/2026-07-05_s142-fhs-health-check-system_completion_report.md`
 
 **未合併**：本次改動於 `feature/fhs-health-check` 分支，尚未合併 main，依規劃停等 Fat Mo 確認後才 merge。
+
+---
+
+## 2026-07-05（Session 143）— 衛生指令記憶負擔歸零
+
+### D11：週期型指令用既有產物推斷「上次執行」，不建新記錄機制；事件型指令現況已無缺口
+
+**背景**：Fat Mo 追問能否不必記憶何時該跑 `/fhs-audit`/`/fhs-check`/`/guardian`/`/error-eye` 這幾支衛生指令。評估 agent 常駐、loop 排程、合併成單一指令三個方案：agent 仍要人觸發等於沒解決；loop 燒 API 錢且寫入仍要批准（D10 鐵律），跟免費死腳本比較不划算；合併指令會把檢查不同層（文件/功能/單次改動/錯誤事件）的四支工具硬湊成一支誰都看不懂的巨獸，違反最小改動偏好。三案皆否決。
+
+**決策**：延伸 S142 L1 架構，只加最小增量：
+- `/fhs-audit`（週期型，90天，governance/05 §7）→ L1 新增 `checkCadenceOverdue()`，讀既有報告產物 `.fhs/reports/audits/system/audit_*.md` **檔名日期**推斷上次執行時間，不建 marker 檔、不用 mtime（避免 git/sync 操作污染判斷，S138 Pitfall #25 教訓延伸應用），逾期才印一行提醒
+- `/fhs-check`（事件型，部署前）→ 掛入 `/upload-web` Step 0 前置，預設執行、Fat Mo 可明示 skip（不做硬性 exit 1，因該指令會建立/刪除測試訂單，屬重量級測試，每次小部署強制跑不合理）
+- `/guardian`、`/error-eye` → 盤點後確認 prompt-router 關鍵詞已覆蓋（「重構/大改」「錯誤/掛了」），無缺口，不動
+
+**原因**：問題本質是「週期性任務缺乏觸發信號」，而非「缺乏執行意願」——`/fhs-audit` 制度規定 90 天一次，實際上從未被記得執行過。解法應該讓系統在該提醒時自己開口，而非要求人記憶排程表。與 D10 一致的偵測/執行分層：偵測到期是機械日期比對（零判斷力需求），適合死腳本；要不要真的跑、要不要 skip，仍是人的決定。
+
+**驗證**：day-one 實測——現存最新報告 49 天前，尚未達 90 天門檻，live 跑動確認完全靜默，證實機制正確安裝但尚未進入告警窗口（非未生效）。fixture `12-cadence-fresh` 的證據檔在測試執行當下動態產生今日日期，避免測試套件在未來某天自然變成假陽性——這是本次執行中對「測試自身的時間相依脆弱性」的主動修正。
+
+**完整報告**：`.fhs/reports/completion/2026-07-05_s143-cadence-reminder_completion_report.md`
+
+**未合併**：本次改動於 `feature/fhs-audit-cadence` 分支，尚未合併 main，依規劃停等 Fat Mo 確認後才 merge。
