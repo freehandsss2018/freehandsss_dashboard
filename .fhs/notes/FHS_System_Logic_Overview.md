@@ -2,6 +2,7 @@
 > 版本：v1.0.0（2026-06-05 Session 60 建立）
 > 目的：完整記錄 Freehandsss Dashboard 的運作邏輯，讓任何人讀完就知道整套系統在幹嘛。
 > 更新規則：每次改動涉及以下任一層，必須同步更新本文件。
+> 與 `docs/FHS_Blueprint.md` 分工：本文件記錄即時運作細節（函式簽名/RPC/migration編號）；Blueprint 定架構規格與定位。兩者互為 See-Also，非重複。
 
 ---
 
@@ -219,6 +220,7 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 ### 5.3 cost_configurations 關鍵 key
 
 > ⚠️ **2026-06-20（Session 112）live 值校正**：本表前版多個值已與 Supabase live 不符（文件 drift 本身即是本次事故的同類案例）。以下為本次查證之 live 值，校正時間以 `cost_configurations.updated_at` 為準。
+> **2026-07-05（Session 147）新增約束**：migration `0048_cost_config_value_check_constraint` 已上線 `chk_config_value_numeric_nonneg` CHECK 約束——`data_type='number'` 的 row，`config_value` 必須符合 `^\d+(\.\d+)?$`（非負數字字串），寫入負數或非數字值會直接被 DB 拒絕（error 23514）。詳細設計見 `.fhs/ai/FHS_Product_Cost_Operations.md` §OP-1.2。
 
 | Key | Live 值 | 說明 |
 |-----|----|------|

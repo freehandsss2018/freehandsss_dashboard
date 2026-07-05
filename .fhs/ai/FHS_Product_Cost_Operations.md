@@ -33,19 +33,28 @@ status: v2.1 draft — pending code-reviewer + database-reviewer audit
 ```sql
 ALTER TABLE cost_configurations
   ADD COLUMN IF NOT EXISTS version          INTEGER DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS schema_version   TEXT    DEFAULT 'v2',
+  ADD COLUMN IF NOT EXISTS schema_version   TEXT    DEFAULT 'v1',  -- 對齊 0022a 實際 migration；新欄位預設 v1，逐 key UPDATE 後才轉 v2
   ADD COLUMN IF NOT EXISTS display_group    TEXT    DEFAULT 'misc'
     CHECK (display_group IN ('drawing','material_3d','material_jewelry','shipping','addon','misc')),
   ADD COLUMN IF NOT EXISTS is_deprecated    BOOLEAN DEFAULT FALSE;
+
+-- Stage 3 新增（2026-07-05 database-reviewer 審計 F4，雙保險設計）：
+-- DB 層硬底線 CHECK：config_value 若標記為 number，必須是非負數字字串
+-- （regex 本身天然排除負數與非數字，^\d+(\.\d+)?$ 不含負號）
+ALTER TABLE cost_configurations
+  ADD CONSTRAINT chk_config_value_numeric_nonneg
+  CHECK (data_type <> 'number' OR config_value ~ '^\d+(\.\d+)?$');
 ```
+
+> **RPC 層第二道防線**：`fhs_upsert_cost_config`（見 §OP-2）應在寫入前先驗證數值格式，回傳友善錯誤訊息（如「成本值需為非負數字」），而非讓呼叫方直接撞到 DB CHECK 的原始 constraint violation 錯誤。DB CHECK 是硬底線，RPC 驗證是使用者體驗層——兩者互補，缺一則要嘛體驗差要嘛可被繞過。
 
 **策略 C-A — UI 鎖定**：
 - 前端載入頁時 SELECT financial_batch_logs WHERE n8n_status IN ('pending','submitted','processing')
 - 若有結果 → 全欄位 disabled + 顯示 banner（見 UI Spec §UI-3.3）
 
-**策略 C-B — Advisory Lock**：
+**策略 C-B — Advisory Lock（共享鎖，見 §OP-3 詳細設計）**：
 - `fhs_sync_products_from_config` RPC 取 `pg_try_advisory_xact_lock(hashtext('cost_sync'))`
-- n8n Mirror Prep 寫入 products 前查 `cost_configurations.updated_at`，若在最近 5 分鐘內被改 → skip（讓 sync RPC 接手）
+- n8n Mirror Prep 改透過 `fhs_mirror_write_product_cost` RPC 寫入 products，該 RPC 內部搶同一把鎖，與 sync RPC 互斥（取代舊版 5 分鐘時間窗判斷，見 §OP-3.2 修正說明）
 
 **策略 C-D — 樂觀鎖**：
 - `fhs_upsert_cost_config` 改 4 參數版本：`(p_key, p_value, p_expected_version, p_updated_by)`
@@ -198,25 +207,33 @@ GRANT EXECUTE ON FUNCTION fhs_sync_products_from_config() TO service_role;
 
 n8n V47.x 的 Mirror Prep 節點會從 Airtable 反向寫 `products.total_base_cost`。若與 Supabase RPC 並發 → 競爭條件。
 
-### 3.2 解決方案
+### 3.2 解決方案（2026-07-05 code-reviewer 審計 F3 修正：改用共享 Advisory Lock，取代純時間窗判斷）
 
-在 n8n Mirror Prep Code 節點開頭加防護：
+> **問題**：原始 5 分鐘時間窗判斷是 TOCTOU（Time-of-check to time-of-use）漏洞——n8n 讀到「6 分鐘前」決定寫入的瞬間，Fat Mo 剛好在 UI 改 config，兩者仍會對 `products.total_base_cost` 雙寫，last-write-wins 蓋掉手動值。時間窗只能降低機率，無法消除競態。
+> **修法**：n8n 不再直接 PATCH `products` 表，改呼叫新 RPC `fhs_mirror_write_product_cost`，此 RPC 內部搶與 `fhs_sync_products_from_config`**同一把** advisory lock（`hashtext('cost_sync')`），與 UI 手動觸發的 sync RPC 互斥，徹底消除競態而非僅降低機率。
 
-```javascript
-// Mirror Prep — 互鎖檢查
-const recentSync = await axios.get(
-  `${SUPABASE_URL}/rest/v1/cost_configurations?select=updated_at&order=updated_at.desc&limit=1`,
-  { headers: { apikey: SUPABASE_KEY } }
-);
-const lastConfigUpdate = new Date(recentSync.data[0]?.updated_at || 0);
-const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+**Stage 3 新增 RPC**（`supabase/migrations/` 待 Stage 3 落地時建立）：
 
-if (lastConfigUpdate > fiveMinAgo) {
-  // 最近 5 分鐘 cost_config 被改過 → 讓 fhs_sync_products 接手，這次 skip
-  return [{ json: { skipped: true, reason: 'cost_config_recently_updated' } }];
-}
-// ... 既有 Mirror Prep 邏輯
+```sql
+CREATE OR REPLACE FUNCTION fhs_mirror_write_product_cost(
+  p_sku TEXT,
+  p_total_base_cost NUMERIC
+) RETURNS JSONB AS $$
+BEGIN
+  -- 與 fhs_sync_products_from_config 搶同一把鎖，非時間窗判斷
+  IF NOT pg_try_advisory_xact_lock(hashtext('cost_sync')) THEN
+    RETURN jsonb_build_object('skipped', true, 'reason', 'sync_in_progress_retry_later');
+  END IF;
+
+  UPDATE products SET total_base_cost = p_total_base_cost, updated_at = NOW()
+  WHERE sku = p_sku;
+
+  RETURN jsonb_build_object('skipped', false, 'sku', p_sku);
+END;
+$$ LANGUAGE plpgsql;
 ```
+
+**n8n Mirror Prep Code 節點改動**：不再直接 REST PATCH `products` 表，改呼叫上述 RPC；若回傳 `skipped:true`，n8n 排入下一輪重試（不視為錯誤）。
 
 ---
 
@@ -246,7 +263,7 @@ n8n `Smart Cache Strategist` 持有 BASE_PREFIXES 與 hardcoded 預設值。若 
 > **執行順序**：必須先回滾 V41 HTML 變更，再執行以下 SQL，避免前端依賴 `display_group` 但欄位已刪除。
 
 ```sql
--- Step 0：回滾 HTML（在 git 還原後才執行此段）
+-- Step 0：回滾 HTML（見 §5.3 git 還原步驟；本 SQL 段必須在 HTML 還原完成後才執行）
 
 -- Step 1：遷移 v1 舊 key 名稱（0022a 若已重命名，還原回原名）
 UPDATE cost_configurations SET config_key = 'wool_felt_addon_cost'  WHERE config_key = 'addon_cost_wool_felt';
@@ -300,19 +317,24 @@ DROP FUNCTION IF EXISTS fhs_sync_products_from_config();
 
 0020 seed 資料的 key 名稱與 v2.1 不同，必須在 0022a 執行重命名遷移，避免平行幽靈 key：
 
+> **冪等性聲明**（2026-07-05 code-reviewer 審計 F2 修正）：以下每條 rename UPDATE 皆加 `AND NOT EXISTS` 守衛。原因：若 migration 中途失敗後重跑（例如 rename 成功但後續 INSERT 新 key 因故中斷），無守衛的版本會因新名已存在而在重複執行時嘗試二次 rename，可能撞 PRIMARY KEY 衝突導致整段 migration abort。加守衛後，重跑時 `WHERE` 條件對已完成的 rename 一律命中 0 列，安全跳過。
+
 ```sql
 -- 0022a 中必須包含（在 INSERT 新 key 之前執行）
 UPDATE cost_configurations
 SET config_key = 'addon_cost_wool_felt', updated_at = NOW()
-WHERE config_key = 'wool_felt_addon_cost';
+WHERE config_key = 'wool_felt_addon_cost'
+  AND NOT EXISTS (SELECT 1 FROM cost_configurations WHERE config_key = 'addon_cost_wool_felt');
 
 UPDATE cost_configurations
 SET config_key = 'addon_cost_light', updated_at = NOW()
-WHERE config_key = 'light_addon_cost';
+WHERE config_key = 'light_addon_cost'
+  AND NOT EXISTS (SELECT 1 FROM cost_configurations WHERE config_key = 'addon_cost_light');
 
 UPDATE cost_configurations
 SET config_key = 'drawing_cost_fixed_per_order', updated_at = NOW()
-WHERE config_key = 'drawing_cost_per_order';
+WHERE config_key = 'drawing_cost_per_order'
+  AND NOT EXISTS (SELECT 1 FROM cost_configurations WHERE config_key = 'drawing_cost_fixed_per_order');
 
 -- v1 剩餘 key（printing_cost_per_cm2 / shipping_cost_standard / shipping_cost_sf）命名不變，標記繼承
 UPDATE cost_configurations
@@ -328,12 +350,16 @@ WHERE config_key IN ('printing_cost_per_cm2','shipping_cost_standard','shipping_
 
 ## §OP-6. 受影響檔案總清單
 
-| 檔案 | 變更內容 | Stage |
-|------|---------|-------|
-| `supabase/migrations/0022a_cost_config_v2_keys.sql` | 加 4 欄位、INSERT 10 keys、INSERT 加購到 products | Stage 3 |
-| `supabase/migrations/0022b_sync_rpc_and_optimistic_lock.sql` | 新 RPC + 改 fhs_upsert_cost_config | Stage 3 |
-| `Freehandsss_dashboardV41.html` | 17-key 分組 UI + 樂觀鎖 + 衝突 banner | Stage 3 |
-| n8n V47.x Mirror Prep 節點 | 加互鎖檢查 | Stage 3.1 |
+> **2026-07-05 現況核實**（Stage 3 開工前發現）：以下多項早於本次審計已是 live 狀態，非待辦。表格狀態欄已更新反映實況。
+
+| 檔案 | 變更內容 | Stage | 狀態 |
+|------|---------|-------|------|
+| `supabase/migrations/0022a_cost_config_v2_schema.sql` | 加 4 欄位、rename keys | Stage 3 | ✅ 已上線（早於本次審計） |
+| `supabase/migrations/0022b_cost_config_v2_rpc.sql` | `fhs_upsert_cost_config`／`fhs_sync_products_from_config`／樂觀鎖 | Stage 3 | ✅ 已上線（早於本次審計） |
+| `supabase/migrations/0048_cost_config_value_check_constraint.sql` | `chk_config_value_numeric_nonneg` CHECK 約束 | Stage 3 | ✅ 已上線（2026-07-05，live 驗證：插入負數已實測擋下） |
+| `supabase/migrations/`（待編號） | 新 RPC `fhs_mirror_write_product_cost`（見 §OP-3.2） | Stage 3 | ⏳ 待辦——下個 session 處理，需 opus + fresh-context 審查 |
+| `Freehandsss_dashboard_current.html` | 23-key 分組 UI + 樂觀鎖 + 衝突 banner | Stage 3 | ✅ 已上線（早於本次審計，見 UI Spec §UI-4） |
+| n8n `FHS_Core_OrderProcessor_live.json` Mirror Prep 節點 | 改呼叫 `fhs_mirror_write_product_cost` RPC，取代現行 5 分鐘時間窗判斷（見 §OP-3.2） | Stage 3.1 | ⏳ 待辦——**改動 live 訂單處理 workflow**，下個 session 依 n8n 部署規格（GET→定點改→PUT，opus + fresh-context + live 驗證附訂單號）處理，本次不動 |
 | `docs/repo-map.md` | 新增 3 份 v2.1 文件指引 | Stage 4 |
 | `Changelog.md`（根目錄；`docs/CHANGELOG.md` 分岔複本已於 2026-07-04 刪除） | 記錄 v2.1 schema + 樂觀鎖上線 | Stage 4 |
 | `.fhs/notes/decisions.md` | 記 α / γ / 樂觀鎖 / Advisory lock 決策 | Stage 4 |

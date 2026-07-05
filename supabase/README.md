@@ -1,7 +1,8 @@
 # FHS Supabase Setup
 **目的**：FHS 四端永久雙系統共存（Airtable ↔ n8n ↔ Dashboard ↔ Supabase）
 **方案**：Supabase Free Tier（$0/月）
-**Phase**：Phase 1 ✅ Complete (Schema 建立 2026-05-10)、Phase 2 ✅ Complete (n8n 雙寫機制 2026-05-10)、Phase 3 ✅ Complete (Dashboard V41 2026-05-10)、Phase 4 ⏳ Pending (雙系統穩定共存確認)
+**Phase**：Phase 1-3 ✅ Complete（2026-05-10）、Phase 4 ✅ Superseded（Supabase 現為 Read/Write Lead，非僅雙系統共存，見 `.fhs/notes/FHS_System_Logic_Overview.md`）
+> ⚠️ 本文件 Step 1-5 為 2026-05-10 初始設定歷史記錄，予以保留；「目錄結構」「當前狀態」兩節已過時——實際 migration 現已至 **0047**（含 `0043_ig_watchdog_alerts.sql`、`0044_audit_logs.sql` 等 46 個後續檔案），完整清單見 `supabase/migrations/` 目錄本身，不在此文件逐一列出。
 
 ---
 
@@ -69,7 +70,7 @@ supabase/
 |------|------|
 | 禁止 trigger 重算財務 | `final_sale_price` / `net_profit` / `*_cost` 由 n8n 寫入，Supabase 不可有 trigger 重算 |
 | raw_form_state 不可刪 | `orders.raw_form_state JSONB NOT NULL` — 訂單還原生命線 |
-| 雙系統架構 | V41起 Supabase 轉為主導核心，Airtable 轉為後備方案。待完全復核後 Supabase 成為正式 SSoT |
+| 雙系統架構 | Supabase 現為 Read/Write Lead（正式 SSoT），Airtable 僅為過渡期快照/冷備援（見 AGENTS.md §1.1） |
 | Free Tier 警戒線 | 資料庫 400 MB / 月頻寬 1.5 GB 超出須提示 Fat Mo |
 | 防閒置必須 | 每 6 天 ping，否則 Free Tier 暫停 |
 

@@ -95,7 +95,7 @@
 - **Notion 雲端同步**：凡完成以下任一項，必須執行 `/commit` 指令（及 `node scripts/Sync_Notion_Brain.js`）：重大架構變更 / 新增 Lesson Learned / 版本迭代完成。嚴禁在未同步情況下宣告任務結束。
 - **Mid-Session 脈衝（重定義）**：廢止「每 10 則對話自動存檔」（LLM 無法可靠計數，空規則製造虛假安全感）。新機制：Fat Mo 輸入「checkpoint」或「存檔」→ 只更新 handoff.md（無 git push）。AI 不得在此兩種情況以外單獨寫入 handoff.md，**唯一例外：§3「交接強制」要求的任務結束交接**（S140 修正：消除與 §3 的字面矛盾——任務結束寫入 handoff.md 屬第三種豁免情境，非「額外」單獨寫入）。
 - **會話初始化與 Token 節約原則（Rule 3.11）**：
-  1. **Session 絕對起點**：任何新 Session 開啟後，AI 必須確保已獲取當前狀態資訊。未完成初始化前，嚴禁執行代碼寫入。優先使用 `scripts/hooks/session-start-sop.sh` Hook 的輕量快照（~300 tokens）；遇重大決策或遺漏風險時，使用 `/read` 進行全量重載（~2000 tokens）。
+  1. **Session 絕對起點**：任何新 Session 開啟後，AI 必須確保已獲取當前狀態資訊。未完成初始化前，嚴禁執行代碼寫入。優先使用 `scripts/hooks/session-start-sop.sh` Hook 的輕量快照（2026-07-04 實測 ~2,300 tokens，非舊稱 ~300 tokens）；遇重大決策或遺漏風險時，使用 `/read` 進行全量重載。
   2. **輕量化優先**：一般情況下，依賴 Hook 自動注入的狀態快照。僅在以下情況升級至全量重載：複雜架構決策 / 跨長時間 session 的風險評估 / 需驗證所有 handoff 細節。
   3. **Anti-Stale 防腐（限制範圍澄清）**：在 **session 內**，若檔案時間戳未變，可禁止重複讀取以節省 token。**但此限制僅適用於 session 內的重複讀取**；**新 session 的首次初始化不受時間戳限制，必須執行**。每個新 session 都是全新的 AI context，無法依賴前一個 session 的讀取狀態。
 
@@ -277,7 +277,7 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 
 | 指令 | 中文說明 | 執行方 | 備註 |
 |------|---------|-------|------|
-| `/px-plan` | px 出 plan | Perplexity | 產出 `a1_implementation_plan.md` 到 `.fhs/reports/planning/` |
+| `/px-plan` | 已退役（2026-05-30，Perplexity 已內建至 /cl-flow A1） | N/A | 改用 `/cl-flow` |
 | `/ag-plan` | ag 出 plan | Antigravity | 產出 `a2_implementation_plan.md` 到 `.fhs/reports/planning/` |
 | `/cl-plan` | cl 出 plan | Claude | Claude 產出計畫 |
 | `/cl-review` | cl 給我審視報告 | Claude | 技術審視，不執行寫入 |
@@ -287,7 +287,7 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | `/fhs-check` | 全系統健康檢查（核心功能、壓力、驗收） | Claude | `.fhs/ai/commands/fhs-check.md` |
 | `/fhs-audit` | 內部巡邏、架構衛生稽核、版本噪音清理 | Claude | `.fhs/ai/commands/fhs-audit.md` |
 | `/fhs-cost-audit` | 財務成本完整性稽核（Total_Cost vs rollup 比對） | Claude | `.fhs/ai/commands/fhs-cost-audit.md` |
-| `/px-audit` | 外部研究與全域架構審查（Perplexity） | Perplexity Pro | `.fhs/ai/commands/px-audit.md` |
+| `/px-audit` | 已退役（2026-05-30，同上原因） | N/A | 改用 `/cl-flow` |
 | `v39-aom.md` | 已遷移至 `archive/v39-aom.md`，內容見 subagents/OPERATING_MODEL.md | N/A | Archived |
 
 ### Subagent 決定性路由規則（強制調用，不得以 Claude 直接處理替代）

@@ -74,7 +74,7 @@
 |---|---|---|
 | read.md | /read | 讀取系統文件，執行系統初始化 |
 | fhs-check.md | /fhs-check | 全系統活測（建立/刪除真實測試訂單）|
-| fhs-audit.md | /fhs-audit | 系統架構衛生稽核（30 項，7 大檢查）|
+| fhs-audit.md | /fhs-audit | 系統架構衛生稽核（33 項，7 大檢查；S145 2026-07-05 實測數字）|
 | guardian.md | /guardian | 全端守護稽核（大動作前 4 點確認）|
 | fhs-cost-audit.md | /fhs-cost-audit | 財務成本完整性稽核 |
 | error-eye.md | /error-eye | 錯誤監控（Catch-Push-Diagnose）|

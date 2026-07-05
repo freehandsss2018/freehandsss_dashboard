@@ -6,6 +6,15 @@
 
 ---
 
+## 相關部署記錄
+
+- `.fhs/reports/completion/2026-06-17_ig-watchdog_completion_report.md`（v1 初版）
+- `.fhs/reports/completion/2026-06-23_igwatch-alerts-phase1a-2_completion_report.md`（migration 0043 + Dashboard igwatch UI 實際部署）
+- `.fhs/reports/completion/2026-06-23_ig-watchdog-v3-order-id-detection_completion_report.md`（v3 order-id 偵測邏輯）
+- n8n workflow 條目：`n8n/README.md`（`FHS_IGWatchdog_DriveWatch`）
+
+---
+
 ## 〇、架構演進（為何長這樣）
 
 | 版本 | 觸發 | 分析跑在哪 | 狀態 |

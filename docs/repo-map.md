@@ -69,7 +69,8 @@ freehandsss_dashboard/
 │   │   ├── 0044_audit_logs.sql ← 綜合審計日誌（Session 124）：audit_logs 表 + RLS anon 只讀 + 3 索引 + RPC fhs_query_audit_logs + 升級 fhs_upsert_cost_config 加寫 audit（原子同交易）✅ 已部署
 │   │   ├── 0045_keychain_cost_rpc.sql ← S124 v2：fhs_compute_keychain_cost(material, qty, drawing_fee) RPC，加購鎖匙扣成本單一真源（N飾維度，Session 124）✅ 已部署
 │   │   ├── 0046_drift_function_n_figurines.sql ← S124 v2：fhs_check_product_cost_drift() N飾擴充，比對公式由 flat(185/235) 改為 fhs_compute_keychain_cost 動態計算（Session 124）✅ 已部署
-│   │   └── 0047_order_cost_override.sql ← S130 Phase B：orders.cost_override_locked(BOOLEAN) + fhs_adjust_order_cost RPC + fhs_unlock_order_cost RPC + fhs_apply_financial_batch_update 守衛 + fhs_batch_recalc_execute 守衛（Session 130）✅ 已部署
+│   │   ├── 0047_order_cost_override.sql ← S130 Phase B：orders.cost_override_locked(BOOLEAN) + fhs_adjust_order_cost RPC + fhs_unlock_order_cost RPC + fhs_apply_financial_batch_update 守衛 + fhs_batch_recalc_execute 守衛（Session 130）✅ 已部署
+│   │   └── 0048_cost_config_value_check_constraint.sql ← S147：cost_configurations 新增 chk_config_value_numeric_nonneg CHECK 約束（number 型 config_value 須為非負數字字串），Phase 3 治理優化 Stage 3 pre-Stage-3-A 審計 F4 修正（Session 147）✅ 已部署，live 驗證通過
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -103,7 +104,7 @@ freehandsss_dashboard/
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
 │   ├── README.md                           ← Dashboard 目錄說明
-│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中，內容與 V41 一致）
+│   ├── Freehandsss_dashboard_current.html  ← ⚠️ 正式環境（穩定運行中；2026-07-05 grep 實測含 igwatch 標記 29 處，內容已含 V42 功能，非 V41）
 │   ├── freehandsss_dashboardV42.html       ← ✅ Production（Session 115 升格）：手機訂單總覽 WhatsApp/Threads 視覺觸控改造；Session 119 加入 igwatch 模式（IG 看門狗警報查看 + resolve 回寫 + URL 深連結 ?view=igwatch&orderId=）
 │   ├── freehandsss_dashboardV41.html       ← ⛔ 已凍結（V42 開發期間禁止改動）；穩定生產基準；成本引擎 B1+B2+Task A 完成版
 │   ├── freehandsss_dashboardV36.html       # 舊版穩定基準 (Legacy Stable)

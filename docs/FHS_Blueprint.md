@@ -16,6 +16,7 @@ description: Core logic and technical specifications for FHS system architecture
 > - 現行**定價規則**唯一真理：`.fhs/ai/FHS_Pricing_Bible.md`（L2 HEAD，取代 FHS_Product_Bible_V3.7.md）
 > - 現行**產品定義**唯一真理：`.fhs/ai/FHS_Product_Definition.md`（取代 FHS_Product_Bible_V3.7.md）
 > - `FHS_Product_Bible_V3.7.md` 已 DEPRECATED（2026-06-01），僅作歷史參考，禁止用於任何計算
+> - 現行**運作流程/RPC 財務計算細節**：`.fhs/notes/FHS_System_Logic_Overview.md`（本文件聚焦架構規格與定位，實際函式簽名/migration編號等即時細節以該文件為準，見其 §十）
 
 ## 1. 公司背景與人員定義 (Business Context)
 
@@ -88,19 +89,23 @@ description: Core logic and technical specifications for FHS system architecture
 * **Raw_Form_State**：系統將前端表單的所有選項序列化為 JSON 並存入 Airtable，實現 0.1 秒極速還原舊單。
 * **Upsert Shield**：任何寫入 Airtable 的動作必須具備 Upsert 邏輯，避免產生重複數據。
 
-## 7. Airtable 數據架構 (Data Schema)
+## 7. 數據架構 (Data Schema) — 2026-07-05 更新：Supabase 為 Read/Write Lead
 
-* **Main_Orders**：訂單主表。
-* **Order_Items**：訂單細項表（對應多個產品）。
-* **Product_Database**：SKU 基礎資料與成本資料。
-* **Error_Logs**：系統錯誤與監控日誌。
+> ⚠️ 現行架構已非 Airtable 為主：Supabase 是**正式 SSoT**（Read/Write Lead），Airtable 僅為過渡期快照/冷備援。完整 47 個 migration 清單見 `supabase/migrations/`；欄位級細節見 `.fhs/notes/FHS_System_Logic_Overview.md` §5。
+
+* **orders / order_items**：訂單主表與細項表（原 Main_Orders/Order_Items 的 Supabase 對應）。
+* **products / cost_configurations**：SKU 基礎資料與 17-key 成本設定（見 `FHS_Product_Cost_Schema_v2.md`）。
+* **ig_watchdog_alerts**：IG 看門狗警報（migration 0043）。
+* **audit_logs**：稽核日誌（migration 0044）。
+* **Airtable**（歷史/冷備援）：`Main_Orders` / `Order_Items` / `Product_Database` / `Error_Logs` 四表繼續存在，僅作過渡期快照，不再是查詢/寫入首選。
 
 ## 8. 雲端之眼監控系統 (The Cloud Eye)
 
-* **Catch-Push-Diagnose**：
+* **Catch-Push-Diagnose**（錯誤監控，原始機制）：
   1. **Catch**：n8n 捕捉工作流錯誤。
   2. **Push**：將錯誤日誌推送到 Airtable `Error_Logs`。
   3. **Diagnose**：AI 助理透過 MCP 定期掃描日誌並向 Fat Mo 提出診斷建議。
+* **財務 RPC 計算層**（2026-07-05 補充，此前遺漏）：`get_financial_kpis` / `get_financial_charts` 等 RPC 為 Dashboard Financial Overview 的即時財務數據來源，含 KPI 收入分攤與混合單 3-layer fallback 邏輯。完整規格為 SSoT：`.fhs/notes/FHS_System_Logic_Overview.md` §十。
 
 ## 9. Antigravity 執行協議 (Execution Protocol)
 

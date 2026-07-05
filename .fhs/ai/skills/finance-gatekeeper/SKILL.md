@@ -25,6 +25,9 @@ compatible_with: AGENTS.md v1.4.13
 | 成本 key 實際數值（material_cost_* / keychain_* / chain 等）| **L2a** `.fhs/ai/FHS_Product_Cost_Schema_v2.md` |
 | 折扣 / adjustment_amount 機制 | **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §7 |
 | 品牌禁止邏輯（禁成人單買、嬰兒核心原則）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §0 |
+| 產品身份/結構定義（WHAT，非成本/定價；SKU 依附關係、加購配件清單）| `.fhs/ai/FHS_Product_Definition.md` |
+| 成本 RPC / 並發 / 升級 / 回滾 SOP | `.fhs/ai/FHS_Product_Cost_Operations.md`（⚠️ status: draft，pending audit） |
+| 成本設定中心 UI 規範（Desktop/Mobile） | `.fhs/ai/FHS_Product_Cost_UI_Spec.md`（⚠️ status: draft，pending audit） |
 | 架構規則（Layer 1/2 快照 / 誰寫哪個欄位 / 禁 trigger）| **L1** `.fhs/ai/FHS_Finance_Bible.md` |
 | 四端同步欄位映射 | `n8n/Quadruple_Sync_Field_Map.md` |
 | KPI 收入分攤 / 混合單 3-layer fallback / get_financial_kpis / get_financial_charts | §十 `.fhs/notes/FHS_System_Logic_Overview.md` §十（RPC 財務計算層 SSoT） |

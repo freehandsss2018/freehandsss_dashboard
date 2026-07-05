@@ -1,5 +1,13 @@
 ﻿# Session Log
 
+## 2026-07-05 (Session 147 — Phase 3 全域治理優化 + Stage 3 CHECK 約束上線): 🔧 ✅
+
+**摘要**：全文見完成報告 [.fhs/reports/completion/2026-07-05_s147-phase3-governance-optimization_completion_report.md](../reports/completion/2026-07-05_s147-phase3-governance-optimization_completion_report.md)（本行僅摘要指回，依 Phase 1.6 規則(a)）。方案書 15 項執行 + 財務三份成本文件三方審計（database-reviewer/code-reviewer/ui-designer）PASS-with-fixes 修正 + fresh-context 複審確認 + Stage 3 CHECK 約束（migration 0048）live 上線並驗證。n8n Mirror Prep 共享鎖延後下個 session。guard/health 未重跑（本次為文件+單一schema變動，非代碼邏輯改動）。
+
+## 2026-07-05 (Session 146 — /fhs-slim 清理：learnings.md 輪轉 + 孤兒索引修復): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S146 條目（無完成報告的小改動，Changelog 為唯一全文居所）。learnings.md 51→50條輪轉（退役 Pitfall #7）；孤兒 lesson 檔補索引。guard 16/16無回歸；health issue_count 2→0。已merge main（fbd3a0c）。
+
 ## 2026-07-05 (Session 145b — /fhs-audit 全量稽核 10 項待辦全面處理): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S145「/fhs-audit 全量稽核 10 項待辦全面處理」條目（無完成報告，Changelog 為唯一全文居所）。10項全部處理：版本號批次同步/scripts歸檔46檔/移除孤立worktree/canonical_keys.yml+semantic_audit.py工具bug修復/repo-map補漏/命名cross-reference/todo優先級對齊/V42 title修正/FHS_Prompts補路由。guard 16/16+health 12/12無回歸。

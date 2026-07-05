@@ -1,5 +1,29 @@
 ﻿# Changelog
 
+## [2026-07-05] Session 147 — Phase 3 全域治理優化：方案書 + 15 項執行
+
+`/rp` → `/cl-flow`（4 路 sonnet subagent 域掃描：制度層/藍圖知識層/財務六專檔/運行系統文檔，24+ 項發現）→ Step 3 fresh-context 抽驗（5 條指控，3 CONFIRMED/1修正/1推翻降級）→ 產出方案書，Fat Mo「全批准處理」後執行 15 項中的 14 項（詳見 [完成報告](.fhs/reports/completion/2026-07-05_s147-phase3-governance-optimization_completion_report.md)）：
+
+- **P0（5項）**：current.html 生產版本認定 4 處矛盾修正（grep 實測 igwatch 標記確認 V42 內容已存在）；財務欄位拼法 `addon_cost_lights`→`addon_cost_light` + 章節引用修正；AGENTS.md §7 移除已退役 `/px-plan`/`/px-audit` 指令引用；Cost_Schema_v2/Pricing_Bible 對已退役 `Product_Bible_V3.7` 的權威引用改指向現行 Pricing_Bible §5；n8n/supabase README 更新至現況
+- **P1（5項，1項標記待決）**：finance-gatekeeper 路由表補 3 份缺漏財務文件；FHS_Blueprint.md §7/§8 內容重寫（反映 Supabase Read/Write Lead）；IG Watchdog 規格互加交叉連結；CLAUDE.md 三紅線改摘要+連結消除全文重複；**成本文件家族審計逾期一項僅標記回報，未代為決策**
+- **P2（6項）**：fhs-audit.md 自稱項目數 30→33（S145實測）；AGENTS.md Rule 3.11 token 數字修正（~300→實測~2,300）；CLAUDE.md 補 06_letter-to-future-sessions 路由；.fhs/notes/README.md 移除 58 行死內容；Cost_Schema_v2 版本號三處統一 v2.2.0；Blueprint↔System_Logic_Overview 互加 See-Also
+
+全程零修改 migrations/n8n workflow/Dashboard HTML 本體，[G]運算邏輯稽核不觸發。
+
+【交付前雙紀律自檢】
+驗收：文件治理 — 逐項編輯後 grep 核對關鍵字無殘留；P0-1 版本判定附 grep 實測證據非猜測
+Subagent：❌ 未使用（機械文件修正，範圍小可自行核對）；本輪掃描階段前置已派 4 個 sonnet 域掃描 + 1 個 fresh-context 抽驗 agent
+
+### 追加（同日）— P1-3 三方審計 + Stage 3 CHECK 約束上線
+
+Fat Mo 授權推進成本文件家族（Cost_Schema_v2/Operations/UI_Spec）審計：database-reviewer 初審 FAIL（3 Blocker）→ 修正 → 複審 PASS-with-fixes（複審抓出 F1 殘留，二次修正後 grep 清零）；code-reviewer、ui-designer 皆 PASS-with-fixes 並修正。核實後發現 Operations.md 描述的多數「Stage 3待辦」（0022a/0022b migration、Dashboard 23-key UI、n8n 時間窗互鎖）早已上線，真正缺口僅 2 項：CHECK 約束（本次完成）、n8n 共享鎖 RPC（留待下 session，因改動 live 訂單 workflow 需 opus+fresh-context 規格）。
+
+**Migration `0048_cost_config_value_check_constraint` 已上線並 live 驗證**：`cost_configurations.config_value` 新增非負數字 CHECK 約束，套用前查詢確認 0 筆違反、套用後實測負數插入被拒（error 23514）。
+
+【追加交付前雙紀律自檢】
+驗收：財務/schema 變動 — live 查詢預檢 + apply_migration + pg_constraint 驗證 + 交易級負數插入實測（附 error code）+ 測試列未殘留確認
+Subagent：三方審計 database-reviewer/code-reviewer(opus)/ui-designer(sonnet) + fresh-context database-reviewer 複審；CHECK 約束執行為單一 SQL 操作，主線程直接執行並自帶 live 驗證證據
+
 ## [2026-07-05] Session 146 — /fhs-slim 清理（learnings.md 輪轉 + 孤兒索引修復）
 
 L1 健檢（S145 尾聲跑出）發現2項：`learnings.md` 51條超50條上限；孤兒 lesson 檔 `2026-07-05_git-checkout-carries-uncommitted-changes-silent-merge-noop.md` 未被 `INDEX.md` 索引。`/fhs-slim` 出方案經 Fat Mo 批准後執行：
