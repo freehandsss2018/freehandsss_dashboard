@@ -1329,4 +1329,20 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 **完整報告**：`.fhs/reports/completion/2026-07-05_s143-cadence-reminder_completion_report.md`
 
-**未合併**：本次改動於 `feature/fhs-audit-cadence` 分支，尚未合併 main，依規劃停等 Fat Mo 確認後才 merge。
+**未合併**：本次改動於 `feature/fhs-audit-cadence` 分支，尚未合併 main，依規劃停等 Fat Mo 確認後才 merge。（已於同日 merge main，見D12前一輪對話）
+
+---
+
+## 2026-07-05（Session 143 追記）— 系統命名：`fhs-health` / 健檢
+
+### D12：S141-143 三層式文件衛生機制正式命名為 `fhs-health`（中文口語：健檢）
+
+**決策**：S141（瘦身）→S142（L1/L2/L3建置）→S143（週期提醒）三個 session 累積出的整套文件健康機制，正式定名 **`fhs-health`**，中文口語召喚詞為**健檢**。比照 `kgov`（知識治理召喚詞，Session 63）的先例，讓 Fat Mo 用口語詞就能讓任何 session 立即對應到具體系統，不需重新解釋。
+
+**命名依據**：不另造新詞，直接扶正既有程式碼中已通用的字首——`fhs-health-check.js`、`fhs-health-rules.json`、`.fhs/.health-report.json` 三個檔案本來就叫這個名字；「健檢」對應「health check」語意一致、簡短好記。此舉避免「代號叫A、檔名卻是B」的錯位（該錯位本身正是本系統五病之一「過時漂移」的範例）。
+
+**召喚詞對照**（供未來 session 辨識）：
+- 「health」/「健檢」→ 指 `fhs-health` 整套機制：`scripts/hooks/fhs-health-check.js`（L1偵測）+ `/fhs-slim`（L2清理）+ S141紀律（L3執行）
+- 「health 乾不乾淨」→ 查 `.fhs/.health-report.json` 現況或重跑 `node scripts/hooks/fhs-health-check.js`
+- 「跑 health 清理」/「跑健檢清理」→ 執行 `/fhs-slim`
+- 與 `kgov`（財務/RPC知識治理）並列，兩者職責正交不重疊：kgov管財務知識治理，health管文件衛生
