@@ -11,6 +11,13 @@ freehandsss_dashboard/
 ├── .gitignore                           ← Git 忽略規則
 ├── .gitmodules                          ← Git submodule 登錄（perplexity-mcp-server，2026-06-11 補建）
 ├── .mcp.json                            ← Claude Code MCP server 註冊（n8n-mcp-server）
+├── .eslintrc.json / .markdownlint.json  ← Lint 規則設定
+├── .fhs-local/                          ← IG看門狗本機運算快取（gitignored，config/coverage/n8n_workflow快照，2026-07-05補列）
+├── .trash/                              ← Obsidian vault 刪除項回收桶（空，非git追蹤，2026-07-05補列）
+├── airtable-database/                   ← Airtable quota耗盡時的CSV遷移備援來源（gitignored，見scripts/migrate_from_csv.js，2026-07-05補列）
+├── scratch/                             ← 個人查詢工具暫存（query_runner.html，gitignored，2026-07-05補列）
+├── Temp 33/                             ← 個人3D建模工作暫存（.ztl Zbrush檔，與repo業務無關，gitignored，2026-07-05補列，建議另尋位置存放）
+├── repomix-output.txt                   ← repomix 打包輸出（gitignored，供cl-flow-runner.js AG代碼上下文提升用，2026-07-05補列）
 ├── Changelog.md                         ← 系統版本變更記錄（唯一活躍版本；docs/CHANGELOG.md 分岔複本已於 2026-07-04 刪除）
 ├── package.json / package-lock.json     ← Node.js 依賴
 ├── .env.supabase.example                ← Supabase 連線變數範本（2026-05-10 新增）
@@ -243,6 +250,8 @@ freehandsss_dashboard/
 │   ├── DESIGN.md                        ← 大地溫潤 (Earthy Warm) 設計系統規範（2026-05-17 新增）
 │   ├── FHS_Product_Bible_V3.7.md        ← [DEPRECATED 2026-06-01] 多項定價規則已過時，現行定價請讀 .fhs/ai/FHS_Pricing_Bible.md
 │   ├── FHS_Legacy_Migration_Notes.md    ← Excel 舊訂單遷移注意事項（缺失問題與處理方法）
+│   ├── FHS_Knowledge_Map.md             ← Obsidian wikilink 圖譜索引（S137，供Graph View關聯導覽；⚠️ 勿與 `.fhs/notes/knowledge-map.md`（S144查詢路由表）混淆，兩者用途不同，2026-07-05補列）
+│   ├── plan_0004_supabase_cost_migration.md ← Supabase 成本架構完整遷移計畫（2026-07-05補列）
 │   ├── FHS_Prompts.md                   ← 11個業務情境劇本庫（入口路由總機，AI遇業務問題必讀）
 │   ├── GLOBAL_AI_SOP.md                ← v2.2 跨環境與多代理協作協議（⚠️ 被 AGENTS.md v1.4.5 憲法層超越，保留作歷史參考）
 │   └── archive/
@@ -332,10 +341,13 @@ freehandsss_dashboard/
 │       ├── ag-plan.md
 │       └── cl-final-plan.md
 ├── archive/                             ← 專案層級舊版備份
-│   ├── README.md                        ← 備份與歸檔政策
+│   ├── README.md                        ← 備份與歸檔政策（2026-07-05補建，repo-map舊有引用曾指向不存在檔案）
 │   ├── v39-aom.md                       ← 已廢棄的 V39 AOM 指令（原 .fhs/ai/commands/）
 │   ├── v33_original_script.js           ← V33 原始腳本（歷史參考，從 Maintenance_Tools 封存）
 │   ├── test_audit_0695346.py            ← 訂單審計一次性測試腳本（封存）
+│   ├── freehandsss_financial_overview.html.deprecated ← 已停用的獨立財務總覽頁（2026-07-05補列）
+│   ├── n8n_scripts/                     ← n8n workflow 建立腳本歷史版本（2026-07-05補列）
+│   ├── scripts-scratch-2026-07/         ← `/fhs-audit` S145歸檔：46個一次性除錯/驗證腳本（原scripts/根目錄，2026-05-22~06-03建立，逾月無更新未列README，2026-07-05新增）
 │   └── antigravity-backup-20260703.sha256.txt ← AG 全量安全快照 checksum（zip 本體 gitignored，Phase 0.1，2026-07-03）
 └── tmp/                                 ← 臨時檔案（不納入 git）
 

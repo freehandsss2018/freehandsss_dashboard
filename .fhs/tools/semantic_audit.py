@@ -39,6 +39,7 @@ REPORT_PATH = REPO_ROOT / ".fhs" / "reports" / "semantic_audit_candidates.json"
 EXCLUDE_DIRS = {
     "node_modules", "archive", ".git", "artifacts",
     "perplexity-mcp-server", "n8n-mcp-server",
+    "worktrees",  # 2026-07-05 S145：git worktree 快照（如 .claude/worktrees/*）非現行檔案，掃描會重複計數/產生假性孤兒
 }
 EXCEPTION_PATH_FRAGMENTS = [
     ".fhs/reports/completion",
@@ -175,7 +176,10 @@ def build_ref_graph() -> dict:
         for pat in (md_link_pat, inline_path_pat):
             for m in pat.finditer(text):
                 target = m.group(1).split("#")[0]
-                target = target.lstrip("./")
+                # 2026-07-05 S145 修正：str.lstrip("./") 是「字元集合」剝除，非「字串前綴」剝除，
+                # 會把 "/.fhs/ai/AGENTS.md" 的 "/." 兩個字元都吃掉變成 "fhs/ai/AGENTS.md"（少一個點，比對必定找不到檔案）
+                if target.startswith("./"):
+                    target = target[2:]
                 if target.startswith("/"):
                     target = target[1:]
                 targets.add(target)

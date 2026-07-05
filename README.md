@@ -1,6 +1,6 @@
 # Freehandsss Dashboard (FHS)
 
-> 本專案已升級至 **Supabase-First 架構** (V41+)。所有 AI 必須優先遵循 `/.fhs/ai/AGENTS.md` v1.4.6 憲法層規則。
+> 本專案已升級至 **Supabase-First 架構** (V41+)。所有 AI 必須優先遵循 `/.fhs/ai/AGENTS.md` v1.5.0 憲法層規則。
 
 一套為 Freehandsss 手工嬰兒紀念品業務設計的全端同步管理系統。
 主要架構：Dashboard UI ↔ n8n Workflow ↔ **Supabase (Primary Lead) + Airtable (Fallback)**
@@ -76,11 +76,11 @@
 
 ## 版本
 
-- **系統版本**：v1.4.6（見 `/.fhs/ai/AGENTS.md` — 憲法層，所有規則最高準則）
-- **Dashboard UI 版本**：V41 (Active Production — Supabase-First)
+- **系統版本**：v1.5.0（見 `/.fhs/ai/AGENTS.md` — 憲法層，所有規則最高準則）
+- **Dashboard UI 版本**：V42 (Active Production，Session 115 升格)
   - 響應式設計（iPhone <768px / Desktop ≥768px）
   - Supabase 主導讀取層（localStorage flag `fhs_supabase_read` 控制）
   - Airtable 自動降級路徑（quota 超限時觸發）
   - Financial Overview 內嵌模式
   - Mirror to Supabase 雙寫機制（n8n 主導）
-- **最後更新**：2026-05-17（Supabase-First 財務遷移完成，AGENTS.md v1.4.6 發佈）
+- **最後更新**：2026-05-17（Supabase-First 財務遷移完成，AGENTS.md v1.4.6 發佈）；2026-07-05（/fhs-audit 版本號同步至 v1.5.0，S145）

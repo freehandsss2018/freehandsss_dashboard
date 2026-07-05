@@ -1,15 +1,16 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.9
+version: v1.10
 compatible_with: AGENTS.md v1.5.0
 last_updated: 2026-07-05
-last_audited_session: S142
+last_audited_session: S145
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.9
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.10
 >
-> 最後更新：2026-07-05（v1.9 S142 同步：新增 `/fhs-slim` 指令，情境八補「深度分流」— 快檢清理走 fhs-slim，全套深稽核維持走 fhs-audit）
+> 最後更新：2026-07-05（v1.10 S145 `/fhs-audit` 修復：新增情境二十六`/fhs-check`路由，補齊A4-3缺口；`/rg`比照read/execute慣例不列情境）
+> 前次更新：2026-07-05（v1.9 S142 同步：新增 `/fhs-slim` 指令，情境八補「深度分流」— 快檢清理走 fhs-slim，全套深稽核維持走 fhs-audit）
 > **S142 稽核（2026-07-05）**：`.fhs/ai/commands/` 新增 `fhs-slim.md`，觸發 [F] 稽核義務。結論：**情境八（Internal Patrol）內補分流子句，不新增獨立情境**——/fhs-slim 與 /fhs-audit 同屬「內部巡邏/清理」語意範疇，差異僅在深度與觸發機制（hook自動 vs 人工按需），沿用既有觸發詞集合即可涵蓋，另開情境會製造第二套幾乎重疊的關鍵詞路由。
 > **S137 稽核（2026-07-04）**：`.fhs/ai/governance/` 新增 7 檔（模型調度制度層）觸發 [F] 稽核義務。結論：**不新增情境**——governance 為 AI 自身調度守則（何時升級模型/何時算完成/怎麼派工），非業務觸發情境，與本文件「業務情境路由」定位正交，見 `.fhs/ai/governance/00_INDEX.md` 職責邊界表。版本/日期/稽核 session 三欄已同步更新以反映本次稽核已執行。
 > 使命：確保 AI 在任何業務場景下都能「帶腦執行」，而非盲目修改。
@@ -237,6 +238,15 @@ Mobile phone 介面專屬設計準則（強制執行）：
 - 平台：CL + AG 雙端通用（需本機 shell + curl + WebDAV；2026-06-08 Fat Mo 授權開放 AG）
 - 通道：WebDAV over HTTPS（`yanhei.synology.me:5006` → `/web`）；憑證存 gitignored `.env`
 - 護欄：`current` 生產版需二次確認 + `-Force`；密碼永不回顯；驗證三關（HTTP 200 + 大小 + SHA256）
+
+## 【情境二十六：全系統健康檢查與壓力測試 (/fhs-check)】（2026-07-05 `/fhs-audit` S145 補列，原缺路由）
+
+- 觸發詞：「健康檢查」「全系統測試」「壓力測試」「fhs-check」「生命週期測試」「上線前檢查」
+- 執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 `.fhs/ai/commands/fhs-check.md`（環境檢查→本地邏輯稽核→生命週期測試→壓力/驗收測試→結案報告五階段）
+- 與情境八（Internal Patrol）的區別：情境八處理**文件/知識治理**一致性（孤立檔案、版本漂移、路由斷層）；此情境處理**系統功能面**的健康與壓力測試，非文件層問題
+- 已知使用場景：`/upload-web` Step 0 部署前置預設執行（v1.2.0，S143）
+
+> 📝 **`/rg`（Ripgrep 全專案搜尋）不在此路由表**：它與 `/read`、`/execute` 同屬**明確 slash 指令直接呼叫**類別（用戶已知確切指令名稱才會用），非需要「自然語言意圖偵測」的業務情境，比照既有慣例不另立情境條目。
 
 ---
 

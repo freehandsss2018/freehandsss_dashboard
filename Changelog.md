@@ -1,5 +1,22 @@
 ﻿# Changelog
 
+## [2026-07-05] Session 145 — /fhs-audit 全量稽核 10 項待辦全面處理
+
+`/fhs-audit` 全量30項稽核（17✅16🟡0🔴，見 [audit_2026-07-05.md](.fhs/reports/audits/system/audit_2026-07-05.md)）發現的10項🟡待辦，Fat Mo初步裁決交下一輪`/fhs-slim`或`/execute`，隨後改變主意要求本session全面處理。逐項處理如下：
+
+1. **版本號批次同步**：`README.md`／`.fhs/ai/README.md`／9個subagent frontmatter／`FHS_Blueprint.md`／`FHS_Legacy_Migration_Notes.md`／`plan_0004_supabase_cost_migration.md` 全部 `compatible_with` 同步至 AGENTS.md v1.5.0；`README.md` 額外修正 Dashboard UI 版本聲明（V41→V42）。`verify_repo_map.sh`／`generate_version_manifest.py` 重跑確認 0 errors/0 warnings。
+2. **scripts/ 47個沉積腳本歸檔**：核對每個候選檔無現行引用（`scratch_pull_and_save_workflow.js` 經查證仍在 `scripts/README.md` 有正式用途說明，排除在外，故實際46個）後 `git mv` 至新建 `archive/scripts-scratch-2026-07/`；新建 `archive/README.md`（repo-map 舊稱存在但實際不存在，一併補建）；`scripts/README.md` 補一段去向說明。
+3. **移除孤立git worktree**：確認 `.claude/worktrees/elastic-gates-ee5944`（分支已完全併入main）無未提交變更後 `git worktree remove`；分支本體保留未刪除。
+4. **`canonical_keys.yml` 3條過時regex修復**：`n8n_version` source_of_truth 改指向 AGENTS.md 並改抓 Workflow ID 格式（原抓「VX.Y.Z」格式已停用）；`supabase_role` pattern 欄序修正；`production_html` 移除已不存在的「穩定」二字要求。重跑 `semantic_audit.py` 確認 6/6 canonical keys 全部 `ok`（原3個 no_match）。
+5. **`semantic_audit.py` 2個bug修復**：① `target.lstrip("./")` 誤用字元集合剝除而非前綴剝除，導致 `/.fhs/...` 類路徑被吃掉開頭的點造成假性孤兒，改為顯式前綴判斷；② `EXCLUDE_DIRS` 新增 `worktrees`，避免git worktree快照重複計數。修復後：deprecated hits 126→59、dangling links 1197→249（-79%）。剩餘249筆屬另一類MVP解析器限制（裸檔名無路徑前綴／`file://` URI／範本佔位符），非本次2個已知bug範圍，留待未來獨立評估。
+6. **`docs/repo-map.md` 補列缺漏項**：新增 `docs/FHS_Knowledge_Map.md`／`docs/plan_0004_supabase_cost_migration.md`／`archive/` 下3個既存未列項（`freehandsss_financial_overview.html.deprecated`／`n8n_scripts/`／新建的`scripts-scratch-2026-07/`）；根目錄6個用途不明項目（`Temp 33/`／`.fhs-local/`／`.trash/`／`airtable-database/`／`scratch/`／`repomix-output.txt`）依 Fat Mo 裁決「只補文件不刪除」，逐一加註用途與gitignore狀態。
+7. **`FHS_Knowledge_Map.md`／`knowledge-map.md` 互相cross-reference**：兩檔互加警語說明彼此用途差異（Obsidian圖譜索引 vs AI查詢路由表），降低命名相近造成的混淆風險。
+8. **`todo.md` 優先級對齊**：「Plan 0004」項目優先級由🔴改為⚪，對齊 handoff.md MASTER表既有的低優先判定，避免同一件事在兩份準SSoT文件呈現矛盾優先級。
+9. **V42 HTML `<title>` 標籤修正**：`freehandsss_dashboardV42.html` 的 `<title>` 由「V40 - Responsive Prototype」改為「V42 - Responsive Prototype」（替換三步計數驗證：改前count=1，改後舊字串count=0/新字串count=1）；內部設計系統註解（`V40 FHS Design Token System`）因描述的是token系統真實歷史命名而非目前版本聲明，判斷保留不動，避免引入新的不準確。
+10. **`FHS_Prompts.md` 新增情境二十六**：補 `/fhs-check`（全系統健康檢查/壓力測試）路由，含與情境八（Internal Patrol，文件治理）的區別說明；`/rg` 比照 `/read`／`/execute` 屬明確slash指令直接呼叫類別，不另立情境條目（附理由註記於文件內）。version v1.9→v1.10。
+
+**驗證**：guard fixtures 16/16 PASS 無回歸；health fixtures 12/12 PASS 無回歸；`verify_repo_map.sh`／`generate_version_manifest.py`／`semantic_audit.py` 三隻自動化工具全部重跑通過。live health check 額外發現1項本次修復範圍外的新問題（`learnings.md` 因本session稍早新增1條記錄達51條，超過50條上限）與1項既有孤兒lesson檔問題，均非本次10項任務範圍，留待下次 `/fhs-slim`。
+
 ## [2026-07-05] Session 145 — kgov SAFE_PATH_PATTERNS 補 auto-memory 外部路徑盲區
 
 `scripts/hooks/post-tool-kgov.js`：`SAFE_PATH_PATTERNS` 原僅認 repo 內 `.fhs/memory/`，未認 auto-memory 實際外部路徑（S140/S141 已發現、範圍外未修），導致寫入 auto-memory 財務類記憶檔（如 `project_cost_calculation_rules.md`）時被誤判為財務邏輯變動觸發 [G] flag。修法：直接讀取 `fhs-health-check.js` 已用的同一份 `.fhs/tools/fhs-health-rules.json` 的 `auto_memory_dir.path`（顯式設定，不猜測 pattern），做前綴比對；讀取失敗 fail-open（不新增誤判）。手測驗證：auto-memory 路徑含財務詞不觸發（改前會誤觸發）；一般路徑含財務詞仍正確觸發（無回歸）；guard fixtures 16/16 PASS（未受影響的另一支 hook，僅確認連坐測試無誤）。

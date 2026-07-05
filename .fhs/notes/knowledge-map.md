@@ -1,5 +1,7 @@
 # Knowledge Map — 知識檢索路由表
 
+> ⚠️ **與 `docs/FHS_Knowledge_Map.md` 不同**（命名相近，2026-07-05 `/fhs-audit` S145 標註）：本檔是 **AI 查詢路由表**（按檔案類別，回答「這類問題該去哪找」）；`docs/FHS_Knowledge_Map.md` 是 **Obsidian wikilink 圖譜索引**（給 Graph View 用，人類視覺化導覽）。兩者職責不重疊，互不取代。
+>
 > **用途**：回答「這個舊知識/決策/教訓該去哪找」，不是「規則本體」。
 > **維護規則**：只在**新檔案類別誕生**時加一行（預期頻率~每季）；**禁止**列個別檔案/日期——那是路由表自己會漂移的病灶，見 [[../ai/governance/01_diagnosis]]。
 > Added: 2026-07-05（Session 144，知識工作流程健檢 M1'）

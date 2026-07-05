@@ -27,6 +27,10 @@
 | `test_edit_order.js` | 測試 Supabase 環境下的訂單編輯同步 |
 | `test_final_verify.js` | 上線前的最終全系統驗證 |
 
+## 已歸檔的一次性除錯腳本（2026-07-05，`/fhs-audit` S145）
+
+46 個未文件化的一次性 n8n 節點探查/驗證腳本（`scratch_*.js` ×42、`apply_rls_policies.js`、`verify_b1_all.js`、`verify_ui_temp.js`、`test_old_order.js`；2026-05-22~06-03 建立，逾一個月無更新）已 `git mv` 至 `archive/scripts-scratch-2026-07/`，詳見該目錄 README 條目與 `.fhs/reports/audits/system/audit_2026-07-05.md`。`scratch_pull_and_save_workflow.js` 因仍在下方表中有正式用途說明，不在此次歸檔範圍。
+
 ## repair/ — 財務與資料修補腳本
 
 > ⚠️ 此目錄內腳本為一次性修補操作，執行前必須確認前置條件，並建議先跑 `--dry-run`。

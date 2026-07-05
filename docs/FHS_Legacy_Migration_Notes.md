@@ -1,7 +1,7 @@
 ---
 name: FHS Legacy Migration Notes
 version: v1.0
-compatible_with: AGENTS.md v1.4.11
+compatible_with: AGENTS.md v1.5.0
 last_updated: 2026-06-05
 domain: Historical Data Migration
 description: Record of Excel-to-Airtable migration issues and solutions for legacy orders

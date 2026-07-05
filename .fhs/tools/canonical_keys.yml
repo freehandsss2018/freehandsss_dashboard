@@ -23,11 +23,12 @@ agents_version:
     - .fhs/reports/audits/system/audit_*.md
 
 n8n_version:
-  source_of_truth: .fhs/notes/SOP_NOW.md
-  pattern: 'n8n\s+Workflow\s*\|\s*(V\d+\.\d+(?:\.\d+)?)'
+  source_of_truth: .fhs/ai/AGENTS.md
+  pattern: '\*\*Workflow ID\*\*[：:]\s*`([A-Za-z0-9]+)`'
   allowed_references:
     - .fhs/memory/handoff.md
     - .fhs/notes/decisions.md
+  note: "2026-07-05 S145 修正：n8n 已改記 Workflow ID（非 VX.Y.Z 版本號），SOP_NOW.md 亦已收斂改指向 AGENTS.md，source_of_truth 同步改指到位"
 
 ssot_owner:
   source_of_truth: .fhs/ai/AGENTS.md
@@ -39,18 +40,20 @@ ssot_owner:
 
 supabase_role:
   source_of_truth: .fhs/ai/AGENTS.md
-  pattern: 'Supabase.*?(Primary Lead|Read/Write Lead)'
+  pattern: 'Read/Write Lead.*?\*\*(\w+)\*\*'
   allowed_references:
     - .fhs/notes/SOP_NOW.md
     - .fhs/memory/handoff.md
+  note: "2026-07-05 S145 修正：原 pattern 假設「Supabase」字樣出現在角色名之前，但 AGENTS.md §1.1 表格實際欄序是角色名在前、承擔者在後，pattern 方向對調"
 
 production_html:
   source_of_truth: .fhs/ai/AGENTS.md
-  pattern: '(freehandsss_dashboardV\d+\.html).*穩定生產版'
+  pattern: '(freehandsss_dashboardV\d+\.html)`（生產版'
   allowed_references:
     - .fhs/notes/SOP_NOW.md
     - .fhs/memory/handoff.md
     - docs/repo-map.md
+  note: "2026-07-05 S145 修正：AGENTS.md 現行用語是「生產版」，原 pattern 多要求「穩定」二字（已不存在於現行文字），造成 no_match"
 
 field_map_authority:
   source_of_truth: .fhs/ai/AGENTS.md

@@ -3,7 +3,7 @@ name: ui-designer
 description: FHS V40 視覺架構師，負責定義 iPhone vs Desktop 響應式視覺語言與設計原則。Use PROACTIVELY for V40+ Phase A design sprints, responsive visual system definition, and wireframe/component specification. Do NOT use for any functional JavaScript or n8n integration work.
 tools: Read, Grep, Glob, Bash, LS, WebSearch, WebFetch, TodoWrite, mcp__magic__21st_magic_component_builder, mcp__magic__21st_magic_component_refiner, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 version: v2.0.0
-compatible_with: AGENTS.md v1.4.12
+compatible_with: AGENTS.md v1.5.0
 last_updated: 2026-05-16
 ---
 

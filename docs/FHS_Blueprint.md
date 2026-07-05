@@ -1,7 +1,7 @@
 ---
 name: FHS System Blueprint
 version: v4.8
-compatible_with: AGENTS.md v1.4.11
+compatible_with: AGENTS.md v1.5.0
 last_updated: 2026-06-05
 description: Core logic and technical specifications for FHS system architecture
 ---
