@@ -1,0 +1,19 @@
+{
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": [],
+  "cadence_checks": [
+    {
+      "id": "fhs_audit_cadence",
+      "command": "/fhs-audit",
+      "evidence_dir": ".fhs/reports/audits/system",
+      "evidence_glob": "audit_*.md",
+      "date_regex": "(\\d{4}-\\d{2}-\\d{2})",
+      "max_age_days": 90,
+      "source": "test (report dated today, well within 90 days)",
+      "no_evidence_message": "從未有 /fhs-audit 報告記錄"
+    }
+  ]
+}
