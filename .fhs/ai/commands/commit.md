@@ -1,5 +1,5 @@
 # /commit (任務完成 · 全包一條龍)
-> Version: v2.1.0 (2026-04-28) | Optimized for Token Efficiency
+> Version: v2.2.0 (2026-07-05, Session 144) | 新增 Phase 1 敘事單源分級合約（治 S142/S143 MASTER 表 drift 事故根因）
 > 本指令為任務完成之單一入口：包含掃描、同步、備份與推送。
 
 ## 🧩 執行標準 (General Rules)
@@ -71,6 +71,15 @@
 3. **Notion**: 執行 `node scripts/Sync_Notion_Brain.js`。
 4. **Logs**: 更新 `.fhs/notes/session-log.md`。
 5. **Learnings Distillation**: 自動判斷本次會話是否需要 distill Lesson 至 `.fhs/memory/learnings.md`（見 Phase 1.5）。
+
+### 【Phase 1.6 敘事單源分級合約（新，2026-07-05 Session 144）】
+> **背景**：同一件事同時寫進 handoff session 條目、MASTER 表、session-log、Changelog、completion report 五處，是 S142「MASTER 表遺留 drift」與 S143「/commit 補跑」兩次事故的根因——寫得越多處，越容易漏同步。本節不免除 §3「交接強制」的寫入義務，只約束**寫多細**。
+
+**分級規則**（二選一，依任務規模判斷）：
+- **(a) 有 `.fhs/reports/completion/` 完成報告的任務**（制度層變動/[B]觸發）：完成報告＝**唯一全文居所**。`Changelog.md`、`session-log.md`、handoff MASTER 表對應行，一律**≤3 行摘要 + 連結指回該報告**，不得重複展開細節。
+- **(b) 無完成報告的小改動**（如純清理、單點修復）：`Changelog.md` 條目本身即**全文居所**（不設行數上限），其餘處（session-log/handoff）只需一行摘要 + 連結指回 Changelog 對應條目。
+
+**判準**：先問「這件事有沒有觸發 execute.md [B]（制度層變動）」→ 有 → 走 (a)；沒有 → 走 (b)。不存在「兩處都寫全文」的第三種情況。
 
 ## 【Phase 1.5: Lesson Distillation 自動判斷】
 

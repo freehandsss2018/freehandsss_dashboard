@@ -1,6 +1,6 @@
 # 02 — 模型調度守則（Model Dispatch Doctrine）
 
-> **Version**: v1.0.2（2026-07-04，Session 140；§7 追加 4 條實戰修正錄：guard 對自身 pattern 的 prose 誤判、長任務分段交付、kgov 對 hook 檔案自身的預期自我觸發）
+> **Version**: v1.0.3（2026-07-05，Session 144；§0 subagent 釘選表修正：對齊 S139 A3 已執行的實況，消除文件漂移）
 > **讀者**：主對話模型（任何等級）。每逢「大量讀取 / 掃 repo / 查網頁 / 批次改檔 / 選模型」先讀本檔。
 > **依據**：[[01_diagnosis]] token 洩漏 #2/#3。
 > **與 AGENTS.md 關係**：本檔管「怎麼派工」；業務硬規則（財務/HTML ID/raw_form_state）仍以 AGENTS.md 為準。
@@ -18,16 +18,16 @@
 2. 其他 agent：在 prompt 裡寫明步驟預算與深度（「最多開 10 個檔」「找到 3 個一致證據即停」）——這就是 effort 控制，沒有別的。
 
 **內建 agent**：`Explore`（唯讀搜索）、`Plan`（規劃）、`general-purpose`（全工具）、`claude`（catch-all）。
-**FHS subagents（9 支）frontmatter 釘選現況（2026-07-04 grep 實測）**：
+**FHS subagents（9 支）frontmatter 釘選現況（2026-07-05 grep 實測，取代 2026-07-04 舊表——S139 A3 已執行但本檔未同步更新，屬純文件漂移，非功能問題）**：
 
 | Subagent | 現釘模型 | 狀態 |
 |---|---|---|
-| code-reviewer, build-error-resolver, product-integration-validator | claude-haiku-4-5(-20251001) | ✅ 現役 ID |
-| database-reviewer, finance-auditor, frontend-developer, tdd-guide, ui-designer, blender-3d-modeler | claude-sonnet-4-6 | ⚠️ **舊世代 ID**（現役為 claude-sonnet-5）|
+| code-reviewer, build-error-resolver, product-integration-validator | `model: haiku`（短名） | ✅ 刻意釘選（低成本機械任務），S139 保留 |
+| database-reviewer, finance-auditor, frontend-developer, tdd-guide, ui-designer, blender-3d-modeler | 無 `model:` 行 | ✅ S139 A3 已刪除，繼承主對話模型 |
 
-⚠️ 待辦（需 Fat Mo 授權，屬 05 權限矩陣「先問」級）：把 6 支 `claude-sonnet-4-6` 更新為 `claude-sonnet-5`，或刪除 `model:` 行改為繼承。過渡期解法（免改檔）：派工時用 Agent tool `model` 參數覆蓋，如 `subagent_type: finance-auditor, model: sonnet`。
+> 📌 待辦已結案：舊表所稱「6 支釘 claude-sonnet-4-6 舊世代 ID」為過期資訊，S139 已將該 6 支 `model:` 行整行刪除（非改名），現況即為終態，無殘留待辦。
 
-⚠️ **兩套命名系統，不可混用**：subagent frontmatter 的 `model:` 用**全名 ID**（如 `claude-haiku-4-5`、`claude-sonnet-5`）；Agent tool 的 `model` 參數用**短名 enum**（`sonnet`/`opus`/`haiku`/`fable`）。把短名寫進 frontmatter、或把全名塞進 Agent tool 參數，都會失敗。
+**命名系統澄清（推翻舊版錯誤警語）**：3 支現役釘選案例（code-reviewer 等）皆使用**短名 enum**（`model: haiku`）寫入 frontmatter，且已隨多個 session 正常派工運作、無模型解析失敗記錄——舊表宣稱「frontmatter 必須用全名 ID，短名會失敗」與此實況矛盾，屬未經查證的臆測，予以刪除。**結論：frontmatter `model:` 與 Agent tool `model` 參數共用同一組短名 enum**（`sonnet`/`opus`/`haiku`/`fable`），不存在兩套命名系統。
 
 ---
 
