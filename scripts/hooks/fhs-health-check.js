@@ -322,6 +322,44 @@ function checkArchiveLinks(rules) {
   return issues;
 }
 
+// ── CHECK 6: 週期稽核到期 cadence_checks ────────────────────────────────────────
+// 記憶負擔歸零：不要求 Fat Mo 記得多久沒跑 /fhs-audit 這類週期指令，改由既有
+// 報告產物（檔名含日期）推斷「上次執行時間」，不建新 marker 機制。
+
+function checkCadenceOverdue(rules) {
+  const issues = [];
+  for (const rule of rules.cadence_checks || []) {
+    try {
+      const dir = path.join(REPO_ROOT, rule.evidence_dir);
+      const dateRe = new RegExp(rule.date_regex);
+      let latestDate = null;
+
+      if (fs.existsSync(dir)) {
+        const files = globFiles(rule.evidence_glob, dir);
+        for (const f of files) {
+          const m = path.basename(f).match(dateRe);
+          if (!m) continue;
+          const d = new Date(m[1]);
+          if (!isNaN(d) && (!latestDate || d > latestDate)) latestDate = d;
+        }
+      }
+
+      if (!latestDate) {
+        issues.push(`週期: ${rule.command} ${rule.no_evidence_message || '從未執行過'}（規定上限 ${rule.max_age_days} 天，${rule.source}）`);
+        continue;
+      }
+
+      const ageDays = Math.floor((Date.now() - latestDate.getTime()) / 86400000);
+      if (ageDays > rule.max_age_days) {
+        issues.push(`週期: ${rule.command} 已 ${ageDays} 天未執行（規定上限 ${rule.max_age_days} 天，${rule.source}）`);
+      }
+    } catch (err) {
+      logError(`cadence[${rule.id}]`, err);
+    }
+  }
+  return issues;
+}
+
 // ── MAIN ─────────────────────────────────────────────────────────────────────
 
 function main() {
@@ -346,6 +384,7 @@ function main() {
   try { issues = issues.concat(checkCanonicalDrift()); } catch (err) { logError('checkCanonicalDrift', err); }
   try { issues = issues.concat(checkDuplicateBasenames(rules, autoMemoryDir)); } catch (err) { logError('checkDuplicateBasenames', err); }
   try { issues = issues.concat(checkArchiveLinks(rules)); } catch (err) { logError('checkArchiveLinks', err); }
+  try { issues = issues.concat(checkCadenceOverdue(rules)); } catch (err) { logError('checkCadenceOverdue', err); }
 
   const durationMs = Date.now() - startedAt;
 
