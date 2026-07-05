@@ -14,6 +14,7 @@
 | 要派工給 subagent（搜尋/實作/重構/研究/審查） | `.fhs/ai/governance/04_delegation-templates.md` 直接套模板 |
 | 要修改 governance / learnings / handoff 等制度檔案 | `.fhs/ai/governance/05_maintenance-protocol.md` 查權限矩陣 |
 | 涉及財務 / 成本 / 定價 | 先載 `finance-gatekeeper` skill（既有硬規則） |
+| 想找舊知識 / 過往決策為什麼這樣定 / 教訓在哪份文件 | `.fhs/notes/knowledge-map.md`（查詢路由表，非規則） |
 
 ## 三條免查即生效的紅線（細節與依據見 governance/01_diagnosis.md）
 

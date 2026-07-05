@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## [2026-07-05] Session 144 — 知識工作流程健檢（查詢路由 + 模型分派文件對齊 + 敘事單源合約 + 降級交接膠囊）
+
+新增 `.fhs/notes/knowledge-map.md` 查詢路由表；修正 governance/02 subagent 模型釘選表文件漂移；commit.md 新增敘事單源分級合約（治 S142/S143 MASTER 表 drift 根因）；governance/04 新增 T6 降級交接膠囊模板。guard 16/16 + health 12/12 無回歸。詳見完成記錄：[.fhs/reports/completion/2026-07-05_s144-knowledge-workflow-hygiene_completion_report.md](.fhs/reports/completion/2026-07-05_s144-knowledge-workflow-hygiene_completion_report.md)
+
+---
+
 ## [2026-07-05] Session 143 — 衛生指令記憶負擔歸零（週期到期提醒 + 部署前置檢查）
 
 **範圍**：`.fhs/tools/fhs-health-rules.json`、`scripts/hooks/fhs-health-check.js`（新增第6檢查）、`scripts/hooks/test/health-fixtures*`（10→12案）、`.fhs/ai/commands/upload-web.md` v1.1.0→v1.2.0 + `.claude/commands/upload-web.md`

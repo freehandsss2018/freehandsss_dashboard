@@ -191,6 +191,7 @@ freehandsss_dashboard/
 │   │   ├── README.md                    ← 筆記層總綱
 │   │   ├── decisions.md
 │   │   ├── FHS_Mode_Card.md              ← 三模式決策卡 + 單一寫者矩陣（Desktop/Cowork/AG/Cursor，Phase 2.3，2026-07-03）
+│   │   ├── knowledge-map.md              ← 知識檢索路由表（查X該去哪找，按檔案類別非個別檔案，2026-07-05 Session 144 新增）
 │   │   ├── todo.md
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
