@@ -1,5 +1,18 @@
 ﻿# Changelog
 
+## [2026-07-05] Session 146 — /fhs-slim 清理（learnings.md 輪轉 + 孤兒索引修復）
+
+L1 健檢（S145 尾聲跑出）發現2項：`learnings.md` 51條超50條上限；孤兒 lesson 檔 `2026-07-05_git-checkout-carries-uncommitted-changes-silent-merge-noop.md` 未被 `INDEX.md` 索引。`/fhs-slim` 出方案經 Fat Mo 批准後執行：
+
+1. **learnings.md 輪轉 51→50**：退役 Pitfall #7「IIFE 閉包函式 onclick 靜默失效」（2026-05-27，修復手法已是本專案標準慣例，未來復發風險低，判準比照 S144 退役先例）；Pitfalls #8-26 重編號為 #7-25，含內文行內標籤 #20→#19 同步修正、關聯 lesson 檔交叉引用 #21→#20 同步修正。
+2. **INDEX.md 補孤兒索引**：於表格末尾新增該 lesson 檔一行索引記錄。
+
+**驗證**：重跑 `fhs-health-check.js`，issue_count 2→0；guard fixtures 16/16 PASS 無回歸；分支 `feature/fhs-slim-s146` 完成後 `git merge --no-ff` 進 main（本次 merge 正確輸出 diffstat，驗證未重蹈 S144 git-checkout-carries-uncommitted-changes 教訓的覆轍）。
+
+【交付前雙紀律自檢】
+驗收：文件治理任務 — health fixtures 重跑 issue_count 2→0；guard fixtures 16/16 無回歸 = ✅
+Subagent：❌ 未使用 — 2檔定點編輯+程式化重編號，範圍小可程式驗證，比照 governance/04 §1 主對話直接執行判準
+
 ## [2026-07-05] Session 145 — /fhs-audit 全量稽核 10 項待辦全面處理
 
 `/fhs-audit` 全量30項稽核（17✅16🟡0🔴，見 [audit_2026-07-05.md](.fhs/reports/audits/system/audit_2026-07-05.md)）發現的10項🟡待辦，Fat Mo初步裁決交下一輪`/fhs-slim`或`/execute`，隨後改變主意要求本session全面處理。逐項處理如下：
