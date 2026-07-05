@@ -25,4 +25,4 @@
 
 **「建了分支」≠「東西已經進分支」**。用 Edit/Write 工具做完一批改動後，只要打算切分支或宣告完工，**先 commit 再說**——不要等到 merge 前才做。判斷 merge 是否為空操作的訊號：`--no-ff` 模式下若輸出只有 `Already up to date`（沒有 diffstat），必須立即 `git log <branch> --oneline` 核對該分支是否真有獨立 commit，不能只看「merge 指令沒報錯」就當作合併成功。
 
-見 [[2026-07-05_git-checkout-carries-uncommitted-changes-silent-merge-noop]] learnings.md Pitfall #21（新增，因 #21 起原有 Pitfall 需檢視是否需退役維持 50 條上限）。
+見 [[2026-07-05_git-checkout-carries-uncommitted-changes-silent-merge-noop]] learnings.md Pitfall #20（S146 `/fhs-slim` 退役 IIFE onclick 條目後重編號，原為 #21）。

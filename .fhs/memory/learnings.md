@@ -3,7 +3,7 @@
 > 由 /commit 結尾手動 distill，每條上限 150 字元含日期來源。
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-05（Session 144 `/commit` Lesson Distillation，對等替換：退役 Pitfall 1 條 [Shell hook 標題抓取，修復已結構化] + 新增 Pitfall 1 條 [git checkout 攜帶未提交修改導致 merge 空操作]，維持50條；歷史：Session 143 對等替換、Session 142 `/fhs-slim` 51→50、Session 136 整合 59→49）
+> 上次整理：2026-07-05（Session 146 `/fhs-slim` 觸發，退役 Pitfall 1 條 [IIFE onclick 靜默失效，修復已結構化]，51→50條；歷史：Session 144 對等替換、Session 143 對等替換、Session 142 `/fhs-slim` 51→50、Session 136 整合 59→49）
 
 ---
 
@@ -44,32 +44,33 @@
 4. **RPC GRANT 安全層級**：SECURITY DEFINER 函式若寫業務表（如 products），GRANT 應給 service_role 而非 anon；否則任何持 anon key 的人可觸發 — 源自 2026-05-28
 5. **【更正】n8n Code 節點 NAS 限制**：`fetch`/`require`/`process` 三者皆鎖（require('axios') 同樣失敗），改用 HTTP Request 節點；但 `Buffer` 全域物件、`compression` 節點（解壓ZIP）可用；HTTP Request 回應空陣列時下游 0-item 節點被跳過，須設 `alwaysOutputData` — 源自 2026-05-22，2026-06-19 修正補充 [[2026-05-18_n8n-nas-code-node-limits-telegram-debug]] [[2026-06-19_n8n-nas-code-node-buffer-compression-capabilities]]
 6. **【高頻 ⚠️】Chrome Date Parsing + 排序還原失效**：`new Date("DD/MM/YYYY")` → Invalid Date；載入時還原 filters 繞過 applyReviewFilters()。解法：正則手動解析 DD/MM/YYYY；fetch callback 尾端強制呼叫 applyReviewFilters() — 源自 2026-05-25
-7. **【P9】IIFE 閉包函式 onclick 靜默失效**：函式在 IIFE `(function(){'use strict';})()` 內，`onclick="fn()"` 全域找不到，完全靜默。修復：IIFE 末尾明確 `window.fn = fn` 暴露 — 源自 2026-05-27
-8. **Migration 套用時序與可見性**：①新欄位加入 SELECT 或 PATCH body 前必確認 migration 已套用，否則 PostgREST 400（順序：migration 套用→加 SELECT→加 PATCH）；②`CREATE TABLE IF NOT EXISTS` 在表已存在時靜默跳過，後續 PART（ALTER/INSERT/RPC）不執行無報錯，各 PART 必須有獨立 smoke-test 查詢 — 源自 2026-05-26，2026-05-29
-9. **批量 UPDATE 前必先 SELECT 記錄原始值**：直接 UPDATE 無法回滾（Supabase 無交易歷史），Airtable 備份不保證有值。每次批量改狀態前先 `SELECT ... RETURNING` 存快照 — 源自 2026-06-11
-10. **n8n workflow API 送出限制集**：①POST 建立含 `"active":true` → 400，正確：POST→得ID→單獨 activate；②PUT 更新只接受 `{name,nodes,connections,settings}` 四欄；③`process.env.X` 須先載 .env 否則得字面量 `"undefined/..."`；④POST JSON array body 須 `contentType:"raw"`（`specifyBody:"string"`+`JSON.stringify`會被誤序列化成 `{"[...]":""}` → PGRST204）；⑤POST 空陣列 `[]` 觸發 PostgREST "Could not find '[]' column"，寫入前必加 `alerts.length > 0` guard；⑥expression 欄位（Text/URL）不支援 `.filter().map().join()` 鏈式語法，複雜邏輯移至 Code 節點輸出簡單欄位 — Session 67/121/124/127/133
-11. **新增 order_items 欄位必須同步 n8n 寫入鏈**：新單主寫入走 n8n sync_order_to_mirror RPC（非前端 sbSyncOrder）。新欄位若未改 (a)Mirror Prep items.map + (b)RPC INSERT/VALUES/ON CONFLICT 三處 → 永遠 NULL — Session 84
-12. **【CRITICAL】Mirror Prep final_sale_price 必用確收三欄，禁用 Total_Revenue**：`Total_Revenue` 是系統建議售價，≠ 操作者確收金額。`final_sale_price` 必須 = `Deposit + Balance + Additional_Fee`；使用 Total_Revenue 導致 9 單偏差最高 $2,880 — Session 89
-13. **付款 split UX 清空/污染雙雷**：①focusin 無條件清空 input 而不先 `dataset.preFocusVal = e.target.value`，focusout 只能 fallback 半訂，全付/自訂值被錯誤覆蓋；②【高頻⚠️】restoreFormState 內 generate() 無條件 auto-fill 污染 hidden 欄，renderPaymentSplits prevData 優先讀污染值使存檔值被忽略。根治：focusin 必先 save 原值 + 快照隔離（pollute 前存 JSON 為權威）+ `_fhsPaymentSyncing=true` 壓 cross-sync + finally 清快照 — Session 97/107 [[2026-06-12_split-box-ux-and-zeroing-boundary]]
-14. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取 — Session 103
-15. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 後從 fetch 結果重建 — Session 105
-16. **openOrderModal 第二參數是 catFilter 非 tab**：第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁必須用**第三參數 initialTab**（內部呼 switchModalTab）。誤把 'finance' 當第二參數 → 捷徑永遠停訊息文本分頁 — Session 109
-17. **【高頻 ⚠️】cl-flow runner Perplexity 推理模型靜默空白**：`sonar-reasoning-pro` 低 `max_tokens`（舊值3072）吃光 think 階段，HTTP 200 + finish_reason:'stop' 卻 content 空，px-report.md 恆寫空白。修復：`max_tokens`→8000 + 空 content 視為失敗 throw 交 withRetry — Session 110 [[2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix]]
-18. **order_items 成本是組裝值非單一原子**：勿拿 `subtotal_cost` 直接比對 `cost_configurations` 單一 key 判斷「未同步」；改值後 products 表無自動回算機制，唯一檢查工具 `fhs_check_product_cost_drift()` 範圍有限 — Session 112 [[2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap]]
-19. **Python json.dump emoji → n8n surrogate pair "invalid syntax"**：用 Python 序列化含 emoji（如 🔗）的 n8n workflow JSON 時，若 `ensure_ascii=False` 且環境 CP950，emoji 被寫成 surrogate pair（`\udcfx...`）；n8n 求值表達式時 "invalid syntax" 靜默失敗。修法：`json.dump(..., ensure_ascii=True)` 強制 ASCII escape，或改用純 ASCII 替代符號（`>` 代替 🔗）— Session 128
-20. **【Pitfall #20】Postgres `CREATE OR REPLACE FUNCTION` 不能改參數名**：`CREATE OR REPLACE` 替換函數時若參數名與原函數不同，報 `42P13: cannot change name of input parameter`。解法：保留原參數名，或先 `DROP` 再建。改函數前必須讀原 migration SQL 確認 param names — Session 130 Phase B
-21. **【git】checkout 會靜默攜帶未提交修改跨分支，merge 因而空操作**：編輯完檔案後忘記 commit 就 `git checkout main`，修改內容原封不動跟過去（不報錯不提示）；此時對原分支 `merge --no-ff` 只會輸出 `Already up to date`（無 diffstat）——這個異常平淡的訊息就是空合併的訊號，需 `git log <branch> --oneline` 核對該分支是否真有獨立 commit。切分支/宣告完工前先 commit，不要等到 merge 前才做 — Session 144
-22. **n8n Code 節點內嵌 dashboard 網址禁憑印象寫死**：Telegram 深連結硬編碼 `yanhei.synology.me:5006/web/`（NAS 內網路徑）實測 401，正確應為 decisions.md 記載之公開網址。修法：任何嵌入網址一律對照 decisions.md + curl 實測 200 才寫入，勿假設內網 port/路徑對外可達 — Session 136
-23. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
-24. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
-25. **【自我遞迴陷阱】健檢/lint 工具的測試夾具會被自己的即時掃描邏輯掃到，產生假陽性**：`fhs-health-check.js` 上線後對 repo 做同名檔案重複掃描，10 個測試夾具目錄裡故意合成的同名檔案（`handoff.md`/`fhs-health-rules.json` 等）被自己掃到，炸出 3 個假重複警報。任何「掃描整個 repo」的工具，其測試夾具目錄必須明確排除在該工具自身的即時掃描範圍外 — Session 142
-26. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
+7. **Migration 套用時序與可見性**：①新欄位加入 SELECT 或 PATCH body 前必確認 migration 已套用，否則 PostgREST 400（順序：migration 套用→加 SELECT→加 PATCH）；②`CREATE TABLE IF NOT EXISTS` 在表已存在時靜默跳過，後續 PART（ALTER/INSERT/RPC）不執行無報錯，各 PART 必須有獨立 smoke-test 查詢 — 源自 2026-05-26，2026-05-29
+8. **批量 UPDATE 前必先 SELECT 記錄原始值**：直接 UPDATE 無法回滾（Supabase 無交易歷史），Airtable 備份不保證有值。每次批量改狀態前先 `SELECT ... RETURNING` 存快照 — 源自 2026-06-11
+9. **n8n workflow API 送出限制集**：①POST 建立含 `"active":true` → 400，正確：POST→得ID→單獨 activate；②PUT 更新只接受 `{name,nodes,connections,settings}` 四欄；③`process.env.X` 須先載 .env 否則得字面量 `"undefined/..."`；④POST JSON array body 須 `contentType:"raw"`（`specifyBody:"string"`+`JSON.stringify`會被誤序列化成 `{"[...]":""}` → PGRST204）；⑤POST 空陣列 `[]` 觸發 PostgREST "Could not find '[]' column"，寫入前必加 `alerts.length > 0` guard；⑥expression 欄位（Text/URL）不支援 `.filter().map().join()` 鏈式語法，複雜邏輯移至 Code 節點輸出簡單欄位 — Session 67/121/124/127/133
+10. **新增 order_items 欄位必須同步 n8n 寫入鏈**：新單主寫入走 n8n sync_order_to_mirror RPC（非前端 sbSyncOrder）。新欄位若未改 (a)Mirror Prep items.map + (b)RPC INSERT/VALUES/ON CONFLICT 三處 → 永遠 NULL — Session 84
+11. **【CRITICAL】Mirror Prep final_sale_price 必用確收三欄，禁用 Total_Revenue**：`Total_Revenue` 是系統建議售價，≠ 操作者確收金額。`final_sale_price` 必須 = `Deposit + Balance + Additional_Fee`；使用 Total_Revenue 導致 9 單偏差最高 $2,880 — Session 89
+12. **付款 split UX 清空/污染雙雷**：①focusin 無條件清空 input 而不先 `dataset.preFocusVal = e.target.value`，focusout 只能 fallback 半訂，全付/自訂值被錯誤覆蓋；②【高頻⚠️】restoreFormState 內 generate() 無條件 auto-fill 污染 hidden 欄，renderPaymentSplits prevData 優先讀污染值使存檔值被忽略。根治：focusin 必先 save 原值 + 快照隔離（pollute 前存 JSON 為權威）+ `_fhsPaymentSyncing=true` 壓 cross-sync + finally 清快照 — Session 97/107 [[2026-06-12_split-box-ux-and-zeroing-boundary]]
+13. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取 — Session 103
+14. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 後從 fetch 結果重建 — Session 105
+15. **openOrderModal 第二參數是 catFilter 非 tab**：第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁必須用**第三參數 initialTab**（內部呼 switchModalTab）。誤把 'finance' 當第二參數 → 捷徑永遠停訊息文本分頁 — Session 109
+16. **【高頻 ⚠️】cl-flow runner Perplexity 推理模型靜默空白**：`sonar-reasoning-pro` 低 `max_tokens`（舊值3072）吃光 think 階段，HTTP 200 + finish_reason:'stop' 卻 content 空，px-report.md 恆寫空白。修復：`max_tokens`→8000 + 空 content 視為失敗 throw 交 withRetry — Session 110 [[2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix]]
+17. **order_items 成本是組裝值非單一原子**：勿拿 `subtotal_cost` 直接比對 `cost_configurations` 單一 key 判斷「未同步」；改值後 products 表無自動回算機制，唯一檢查工具 `fhs_check_product_cost_drift()` 範圍有限 — Session 112 [[2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap]]
+18. **Python json.dump emoji → n8n surrogate pair "invalid syntax"**：用 Python 序列化含 emoji（如 🔗）的 n8n workflow JSON 時，若 `ensure_ascii=False` 且環境 CP950，emoji 被寫成 surrogate pair（`\udcfx...`）；n8n 求值表達式時 "invalid syntax" 靜默失敗。修法：`json.dump(..., ensure_ascii=True)` 強制 ASCII escape，或改用純 ASCII 替代符號（`>` 代替 🔗）— Session 128
+19. **【Pitfall #19】Postgres `CREATE OR REPLACE FUNCTION` 不能改參數名**：`CREATE OR REPLACE` 替換函數時若參數名與原函數不同，報 `42P13: cannot change name of input parameter`。解法：保留原參數名，或先 `DROP` 再建。改函數前必須讀原 migration SQL 確認 param names — Session 130 Phase B
+20. **【git】checkout 會靜默攜帶未提交修改跨分支，merge 因而空操作**：編輯完檔案後忘記 commit 就 `git checkout main`，修改內容原封不動跟過去（不報錯不提示）；此時對原分支 `merge --no-ff` 只會輸出 `Already up to date`（無 diffstat）——這個異常平淡的訊息就是空合併的訊號，需 `git log <branch> --oneline` 核對該分支是否真有獨立 commit。切分支/宣告完工前先 commit，不要等到 merge 前才做 — Session 144
+21. **n8n Code 節點內嵌 dashboard 網址禁憑印象寫死**：Telegram 深連結硬編碼 `yanhei.synology.me:5006/web/`（NAS 內網路徑）實測 401，正確應為 decisions.md 記載之公開網址。修法：任何嵌入網址一律對照 decisions.md + curl 實測 200 才寫入，勿假設內網 port/路徑對外可達 — Session 136
+22. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
+23. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
+24. **【自我遞迴陷阱】健檢/lint 工具的測試夾具會被自己的即時掃描邏輯掃到，產生假陽性**：`fhs-health-check.js` 上線後對 repo 做同名檔案重複掃描，10 個測試夾具目錄裡故意合成的同名檔案（`handoff.md`/`fhs-health-rules.json` 等）被自己掃到，炸出 3 個假重複警報。任何「掃描整個 repo」的工具，其測試夾具目錄必須明確排除在該工具自身的即時掃描範圍外 — Session 142
+25. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >
 > 📌 **退役**（Session 142，`/fhs-slim` 觸發，全檔滿50條上限）：「try-catch 靜默吞掉 TDZ 錯誤」——條目本身無 session/日期來源（僅標「源自 memory」），同一教訓已完整記錄於 auto-memory `feedback_tdz_silent_catch.md`，此處純重複佔位，退役騰出額度。
 >
 > 📌 **退役**（Session 144，`/commit` Lesson Distillation，全檔滿50條需對等替換）：「Shell hook 勿用通用標題抓取」（原 Pitfall #21，Session 118）——修復已是結構性（fence tag 格式已固化進 handoff.md 設計本身），非需要每次靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（git checkout 攜帶未提交修改導致 merge 空操作）。
+>
+> 📌 **退役**（Session 146，`/fhs-slim` 觸發，全檔滿51條超50上限）：「IIFE 閉包函式 onclick 靜默失效」（原 Pitfall #7，Session 2026-05-27）——修復手法（IIFE 末尾明確 `window.fn = fn` 暴露）已是本專案標準寫法慣例，非需靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度使全檔回落至50條上限（本輪無新教訓對等替換）。
 
 ---
 
