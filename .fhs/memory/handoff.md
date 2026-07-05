@@ -1,10 +1,10 @@
 ```handoff
-【FHS 交接摘要 — 更新: 2026-07-05 / S142】
-🎯 目標: FHS 業務 POS+財務系統日常維護；S142 建FHS三層式系統健康機制（L1零token偵測+L2 /fhs-slim清理+L3紀律），詳見decisions.md D10；已merge main（26b5005），跑首戰/fhs-slim清理3項發現中
+【FHS 交接摘要 — 更新: 2026-07-05 / S143】
+🎯 目標: FHS 業務 POS+財務系統日常維護；S143 衛生指令記憶負擔歸零——L1加第6檢查(/fhs-audit週期到期)+upload-web加Step0前置檢查，詳見decisions.md D11；分支待merge
 ✅ 已定決策（完整原文索引，25/28 條已於別處有完整記錄改連結，3 條無他處收錄故歸檔）: (1)V42=production，見AGENTS.md§1現況(S115)；(2)Supabase-First，Airtable僅備援，見AGENTS.md§1.1(S)；(3)IG看門狗regex leading-0 7-8位，見.fhs/reports/completion/2026-06-23_ig-watchdog-v3-order-id-detection_completion_report.md(S116)；(4)handoff SSOT=頂部便攜塊，見decisions.md[2026-06-23](Session118)條目(S118)；【(5)(6)無他處收錄，原文見archive/handoff-portable-block-decisions-pre-2026-07-04.md：ig_watchdog_alerts RLS設計(S119)、Phase1b時序已解鎖(S122)】；(7)嬰兒鋁合金物料=$115，見decisions.md[2026-06-23]嬰兒鋁合金條目(S120)；(8)n8n PUT body只能含{name,nodes,connections,settings}四欄(S121)；(9)前端遇成本未隨件數累加只`fhsAudit_qtyWarn`誠實警示，禁做`單件×數量`假乘法（DB存值與真值皆非乘積，S124）；(10)(11)(12)(14)(15)Task A四欄廢欄/21裸列defer/V42簡化付款UI/depositMode邏輯/Audit Ledger標籤規則，均見下方MASTER持續待辦表對應S125/S126/S128/S131條目；(13)n8n HTTP Request v4 POST JSON array=用contentType:"raw"，禁specifyBody:"string"+JSON.stringify組合（PGRST204，S127）；(16)n8n workflow JSON序列化用ensure_ascii=True，禁emoji直接嵌入字串（surrogate pair silent fail，S129）；(17)cost_override_locked=true時批次跳過該訂單，人工覆蓋優先於n8n批次（S130 Phase B）；(18)-(28)S134-S140共11項治理/平台決策（Desktop App主介面/governance建層/Obsidian D1推翻/權限模式/subagent model策略/deploy-ok機制/handoff寫入規則/key洩漏裁決等），全文見AGENTS.md§1.2+§3與decisions.md S137/S139/S140各D編號條目（不逐條展開，(27)無他處收錄部分見archive/handoff-portable-block-decisions-pre-2026-07-04.md）
 🔬 驗證（僅留近3 session已證實+全部未驗，較舊已證實見archive/handoff-portable-block-verified-pre-2026-07-04.md）: 已證實=S138 docs/CHANGELOG.md 刪除已驗證；S139 guard.js補洞 12/12 PASS；S139 handoff輪轉三方驗證PASS；S139 router修正3組case重測無回歸；S139 Airtable PAT scope安全探測非破壞性驗證；S140 guard fixtures全量迴歸16/16 PASS（新增4組：sb_secret_/R10×2/R11-observe）；S140 kgov F10(execute_sql財務DDL觸發+純SELECT不誤觸)/F11(UUID connector觸發+既有update_node_code迴歸無破壞)共4案例全PASS；S140 deploy-ok三態端到端測試（無flag攔截/有效flag放行+消耗+落log/過期11分鐘flag自動清理攔截）全PASS；S140 F1/F4/F5/F6/F7/F9/F14/L1/L2/L3 逐項grep驗證全數符合期望值；未驗=Telegram 深連結完整端到端驗收（待實際notify>0）；S134 Cowork P9手機查單未測；S139 A1權限模式切換未能在本session內驗證allowlist實際運作（需重啟）；S140 R11-observe warn-only觀察期尚未開始累積真實命中數據（需~2週真實使用）
-📋 待辦（已完成項均見下方MASTER表，此處僅列尚未完成）: ⚪A1權限模式下次session驗證allowlist運作 ⚪Telegram深連結完整端到端驗收（待notify>0觸發）⚪R11-observe觀察期~2週後複查.fhs/.kgov-observe.log ⚪kgov SAFE_PATH_PATTERNS補auto-memory外部路徑盲區（S141發現，範圍外未修復）⚪22支設計skills裁減=暫緩（介面未定案會中斷迭代；待V43定案再問）
-➡️ 下一步: 下次session開場觀察健康檢查是否持續乾淨（L1應無警示）+ A1權限模式驗證allowlist運作
+📋 待辦（已完成項均見下方MASTER表，此處僅列尚未完成）: ⚪S143 feature/fhs-audit-cadence分支待merge main ⚪A1權限模式下次session驗證allowlist運作 ⚪Telegram深連結完整端到端驗收（待notify>0觸發）⚪R11-observe觀察期~2週後複查.fhs/.kgov-observe.log ⚪kgov SAFE_PATH_PATTERNS補auto-memory外部路徑盲區（S141發現，範圍外未修復）⚪22支設計skills裁減=暫緩（待V43定案再問）
+➡️ 下一步: Fat Mo確認feature/fhs-audit-cadence後merge main；下次session觀察健康檢查是否持續乾淨
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔 (7)Obsidian dot-directory「不可配置」認定已推翻(S137)，`.fhs`可經外掛白名單顯示，但D2職責邊界不變（AI仍唯一寫入.fhs/memory） (8)pre-tool-guard.js的R2/R3只掃Write/Edit的content/new_string，不掃old_string；Bash只查R5-R9 command字串不掃API key pattern——寫測試夾具/legit密鑰檔時可用此差異避免guard誤傷(S139) (9).mcp.json的${VAR}展開讀行程OS環境變數，不會讀.env檔案本身，兩者是不同機制(S139) (10)guard新規則上線後，撰寫該規則的中文說明文字（fixture name/note）本身可能連續出現觸發詞而被自身規則誤攔——用拆字/無dot前綴口語描述繞開，改用Bash寫入避開Write/Edit的content掃描(S140) (11).fhs/.deploy-ok只能Fat Mo手動touch建立，AI用任何工具嘗試建立都會被R10攔截，10分鐘TTL過期自動失效(S140)
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目 + 制度層見 `.fhs/ai/governance/00_INDEX.md` + 更早記錄見 `.fhs/memory/archive/handoff-full-until-2026-07-04.md`
@@ -14,11 +14,12 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-07-05（S142 — FHS三層式系統健康機制，待merge main）
+> 上次更新：2026-07-05（S143 — 衛生指令記憶負擔歸零，待merge main）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
-| 🟡 待確認 | **[S142] FHS三層式系統健康機制**（L1 fhs-health-check.js偵測+L2 /fhs-slim清理+L3 S141紀律） | ⏳ 分支待merge | `feature/fhs-health-check`；完成記錄`.fhs/reports/completion/2026-07-05_s142-fhs-health-check-system_completion_report.md`；health fixtures 10/10 PASS；guard fixtures 16/16無回歸；live首戰抓到3項真實問題留給/fhs-slim處理 |
+| 🟡 待確認 | **[S143] 衛生指令記憶負擔歸零**（L1加第6檢查/fhs-audit週期到期+/upload-web加Step0部署前置檢查） | ⏳ 分支待merge | `feature/fhs-audit-cadence`；完成記錄`.fhs/reports/completion/2026-07-05_s143-cadence-reminder_completion_report.md`；health fixtures 12/12 PASS；guard 16/16無回歸；day-one live靜默符合預期（現存報告49天<90天門檻） |
+| ✅ 完成 | **[S142] FHS三層式系統健康機制**（L1 fhs-health-check.js偵測+L2 /fhs-slim清理+L3 S141紀律） | ✅ 全交付+已merge（26b5005）+首戰/fhs-slim清理完成（1f9e7bc） | 完成記錄`.fhs/reports/completion/2026-07-05_s142-fhs-health-check-system_completion_report.md`；3項首戰發現已清（便攜塊/learnings/孤兒檔皆歸零） |
 | ✅ 完成 | **[S141] 固定載入文件瘦身**（便攜塊−42%+防回胖機制+auto-memory−27%+3支subagent bug修復） | ✅ 全交付+已merge（0f6d5be） | 完成記錄`.fhs/reports/completion/2026-07-04_s141-context-slimming_completion_report.md`；fresh-context零損失核對38/38 PASS；guard fixtures 16/16 PASS |
 | ✅ 完成 | **[S140] 稽核修復 C1-C4**（guard/kgov補洞+deploy授權機制+文件對齊七項+行為層治本） | ✅ 全交付（S140） | 完成記錄`.fhs/reports/completion/2026-07-04_s140-guard-kgov-governance-hardening_completion_report.md`；guard fixtures 16/16 PASS；kgov 4案例PASS；deploy-ok三態端到端PASS |
 | ✅ 已裁決 | **[S140] C1 密鑰輪換（n8n JWT + Supabase `sb_secret_`）** | ✅ 裁決：不做（2026-07-04） | Fat Mo 明確承擔風險，終局決定不輪換；`settings.json`/`settings.local.json` 內嵌 key 的 allowlist 條目維持現狀不清，非待辦、已結案 |
@@ -50,6 +51,21 @@
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂三套並存表徵，另開 `/cl-flow` |
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口，僅標記未修復 |
 | ⚪ 低 | **[v3 候選] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | 另開 `/cl-flow` 獨立評估，不回頭改 v2 |
+
+### 已確認完成（Session 143 — 衛生指令記憶負擔歸零，2026-07-05）
+- ✅ **[背景]** Fat Mo 追問能否不必記憶何時該跑 `/fhs-audit`/`/fhs-check`/`/guardian`/`/error-eye`；評估 agent常駐/loop排程/合併指令三方案皆否決（理由見decisions.md D11）；延伸S142 L1架構做最小增量
+- ✅ **[C1]** rules.json 新增 `cadence_checks`（/fhs-audit，90天，出處governance/05 §7）
+- ✅ **[C2]** `fhs-health-check.js` 新增第6檢查 `checkCadenceOverdue()`：讀既有報告**檔名日期**推斷上次執行（不用mtime避免git/sync污染，不建新marker）
+- ✅ **[C3]** fixtures 補2案（11-overdue/12-fresh），12-fresh證據檔測試執行當下動態產生今日日期，避免套件未來自然變假陽性；10→12案全過
+- ✅ **[C4]** `upload-web.md` v1.1.0→v1.2.0，加Step0部署前置`/fhs-check`（預設執行，Fat Mo可明示skip，不做硬性exit 1）
+- ✅ **[C5]** day-one實測：現存最新報告49天前<90天門檻，live跑確認靜默符合預期（機制已裝好，尚未進告警窗口）
+- ✅ **[C6]** 後效稽核：repo-map/scripts README、完成記錄、Changelog、decisions.md D11；**同步修正S142 MASTER表遺留drift**（該行早已merge卻一直停在「待merge main」未回填）
+
+【交付前雙紀律自檢】
+驗收：治理層工具擴充 — health fixtures 12/12 PASS（含day-one行為實測驗證，非臆測）；guard fixtures 16/16無回歸；live實跑計時0.354s<2s = ✅
+Subagent：❌ 未使用 — 延伸既有架構的小範圍增量，範圍明確可直接程式驗證
+
+【未合併提醒】分支`feature/fhs-audit-cadence`尚未merge main，等待Fat Mo確認後執行`git checkout main && git merge feature/fhs-audit-cadence --no-ff`
 
 ### 已確認完成（Session 142 — FHS三層式系統健康機制，2026-07-05）
 - ✅ **[背景]** S141完成後Fat Mo追問「有無機制持續防止過肥/沉積/過時/重複/衝突」，誠實盤點確認**沒有**；`/cl-flow-fast`八維度分析v1（AG誤把FHS指令想像成Node程式生態，Verdict階段修正回markdown指令+Claude執行工具）→自我批評（canonical_keys.yml實為巢狀結構非flat/預算單位不一致/腳本故障模式未定義）→v2→`/execute`
