@@ -18,6 +18,17 @@ const path = require('path');
 
 const FLAG_FILE = path.join(__dirname, '../../.fhs/.kgov-pending');
 
+// auto-memory lives outside the repo (path varies per user/machine) — read the
+// same explicit path fhs-health-check.js uses, rather than guessing via regex.
+// (S141 lesson: external paths must be configured, not pattern-matched.)
+const RULES_FILE = path.join(__dirname, '../../.fhs/tools/fhs-health-rules.json');
+let AUTO_MEMORY_DIR = null;
+try {
+  const rules = JSON.parse(fs.readFileSync(RULES_FILE, 'utf8'));
+  const p = rules.auto_memory_dir && rules.auto_memory_dir.path;
+  if (p) AUTO_MEMORY_DIR = p.replace(/\\/g, '/').replace(/\/$/, '').toLowerCase();
+} catch (_) { /* fail-open: no auto-memory safe-path recognition */ }
+
 // ── Reminder text (verbatim from execute.md [G]) ────────────────────────────
 const G_REMINDER = [
   '⚠️ [kgov-hook] [G] 運算邏輯變動稽核 已觸發',
@@ -150,7 +161,8 @@ process.stdin.on('end', () => {
     // ── Write/Edit tool: check file path + content ────────────────────────
     if (isWriteTool && filePath) {
       // Memory/docs files: never trigger even if content contains financial terms
-      const isSafe = SAFE_PATH_PATTERNS.some(p => p.test(filePath));
+      const isSafe = SAFE_PATH_PATTERNS.some(p => p.test(filePath)) ||
+        (AUTO_MEMORY_DIR && filePath.toLowerCase().startsWith(AUTO_MEMORY_DIR));
       if (isSafe) { process.exit(0); }
 
       const pathHit = HIT_PATH_PATTERNS.some(p => p.test(filePath));

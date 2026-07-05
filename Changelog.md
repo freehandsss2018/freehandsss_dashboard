@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## [2026-07-05] Session 145 — kgov SAFE_PATH_PATTERNS 補 auto-memory 外部路徑盲區
+
+`scripts/hooks/post-tool-kgov.js`：`SAFE_PATH_PATTERNS` 原僅認 repo 內 `.fhs/memory/`，未認 auto-memory 實際外部路徑（S140/S141 已發現、範圍外未修），導致寫入 auto-memory 財務類記憶檔（如 `project_cost_calculation_rules.md`）時被誤判為財務邏輯變動觸發 [G] flag。修法：直接讀取 `fhs-health-check.js` 已用的同一份 `.fhs/tools/fhs-health-rules.json` 的 `auto_memory_dir.path`（顯式設定，不猜測 pattern），做前綴比對；讀取失敗 fail-open（不新增誤判）。手測驗證：auto-memory 路徑含財務詞不觸發（改前會誤觸發）；一般路徑含財務詞仍正確觸發（無回歸）；guard fixtures 16/16 PASS（未受影響的另一支 hook，僅確認連坐測試無誤）。
+
+附帶：本 session 首次真實查詢驗證 `knowledge-map.md`（S144 新增）——本次任務屬性未落入既有 9 類任何一類（inline code comment/config note 記錄的已知 gap），符合路由表本身「只在新類別誕生時加行」設計，本次判定尚不足以構成新類別，暫不改表，留待未來累積更多同類查詢再評估。
+
 ## [2026-07-05] Session 144 — 知識工作流程健檢（查詢路由 + 模型分派文件對齊 + 敘事單源合約 + 降級交接膠囊）
 
 新增 `.fhs/notes/knowledge-map.md` 查詢路由表；修正 governance/02 subagent 模型釘選表文件漂移；commit.md 新增敘事單源分級合約（治 S142/S143 MASTER 表 drift 根因）；governance/04 新增 T6 降級交接膠囊模板。guard 16/16 + health 12/12 無回歸。詳見完成記錄：[.fhs/reports/completion/2026-07-05_s144-knowledge-workflow-hygiene_completion_report.md](.fhs/reports/completion/2026-07-05_s144-knowledge-workflow-hygiene_completion_report.md)

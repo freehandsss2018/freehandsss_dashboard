@@ -63,6 +63,7 @@
 23. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
 24. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
 25. **【自我遞迴陷阱】健檢/lint 工具的測試夾具會被自己的即時掃描邏輯掃到，產生假陽性**：`fhs-health-check.js` 上線後對 repo 做同名檔案重複掃描，10 個測試夾具目錄裡故意合成的同名檔案（`handoff.md`/`fhs-health-rules.json` 等）被自己掃到，炸出 3 個假重複警報。任何「掃描整個 repo」的工具，其測試夾具目錄必須明確排除在該工具自身的即時掃描範圍外 — Session 142
+26. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >
