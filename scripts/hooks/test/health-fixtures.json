@@ -8,5 +8,7 @@
   { "name": "07-archive-broken-link", "expected_issue_count": 1, "expected_substrings": ["斷鏈"] },
   { "name": "08-external-auto-memory", "expected_issue_count": 1, "expected_substrings": ["重複"], "uses_auto_memory_placeholder": "ext-memory" },
   { "name": "09-rules-json-corrupted", "expect_exit_zero": true, "expect_stdout_empty": true, "expect_no_report": true, "expect_error_log": true },
-  { "name": "10-entries-unit-precise", "expected_issue_count": 0, "expect_stdout_empty": true }
+  { "name": "10-entries-unit-precise", "expected_issue_count": 0, "expect_stdout_empty": true },
+  { "name": "11-cadence-overdue", "expected_issue_count": 1, "expected_substrings": ["週期"] },
+  { "name": "12-cadence-fresh", "expected_issue_count": 0, "expect_stdout_empty": true, "generates_fresh_evidence": ".fhs/reports/audits/system" }
 ]

@@ -101,5 +101,17 @@
       "link_pattern": "archive/[\\w.\\-]+\\.md",
       "resolve_base": ".fhs/memory"
     }
+  ],
+  "cadence_checks": [
+    {
+      "id": "fhs_audit_cadence",
+      "command": "/fhs-audit",
+      "evidence_dir": ".fhs/reports/audits/system",
+      "evidence_glob": "audit_*.md",
+      "date_regex": "(\\d{4}-\\d{2}-\\d{2})",
+      "max_age_days": 90,
+      "source": "governance/05_maintenance-protocol.md §7（季度健檢，~90天）",
+      "no_evidence_message": "從未有 /fhs-audit 報告記錄"
+    }
   ]
 }

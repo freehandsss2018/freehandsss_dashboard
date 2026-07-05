@@ -1,7 +1,7 @@
 # /upload-web — 上傳 Dashboard 至 NAS Web Station
 
 **用途 (Purpose)**：自動偵測最新開發版，升格為 current，並上傳至 NAS Web Station `/web` 共用資料夾，三關驗證完整性。
-**版本**：v1.1.0 (2026-06-15)
+**版本**：v1.2.0 (2026-07-05，新增 Step 0 部署前置 /fhs-check 檢查)
 **通用平台**：Claude Code (CL) · Antigravity/Gemini (AG) — 雙端通用（需本機 shell + curl；2026-06-08 Fat Mo 授權開放 AG）
 **觸發**：`/upload-web` 或 `/upload-web [目標]`
 
@@ -24,6 +24,16 @@
 | `V43` / `V42` 等 | 只上傳該指定版本至 NAS（dev 版，**不 cp 不升格**） |
 | `current` | 只上傳現有 current.html（**不 cp**，需二次確認） |
 | 其他字串 | 視為 `Freehandsss_Dashboard\` 下的字面檔名 |
+
+---
+
+## Step 0 — 部署前置檢查（S143 新增，記憶負擔歸零機制）
+
+**預設執行** `/fhs-check`（全系統健康檢查，`Maintenance_Tools/run_all.py`）作為部署前置：任一 Red Flag 或測試 FAIL → 停止部署，回報失敗階段，等待 Fat Mo 指示。
+
+Fat Mo 可**明示 skip**（例如「跳過檢查直接上傳」）跳過此步——僅限小改動/緊急修復場景；skip 事件記入本次部署回報（不落獨立審計檔，口頭記錄即可）。
+
+不與 L1 `fhs-health-check.js` 混淆：L1 是文件健康快檢（零 token，SessionStart 自動跑），`/fhs-check` 是功能/資料層壓力測試（重量級，會建立+刪除測試訂單），兩者互補不重複。
 
 ---
 

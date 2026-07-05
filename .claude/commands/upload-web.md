@@ -8,6 +8,8 @@
 
 ### 簡化流程：
 
+**Step 0（S143新增）**：預設先跑 `/fhs-check` 部署前置檢查；FAIL 停止部署；Fat Mo 可明示 skip。
+
 **無參數（預設 — 升格流程）：**
 1. 掃描 `Freehandsss_Dashboard/` 找最高版本號的 `freehandsss_dashboardV*.html`
 2. 向 Fat Mo 二次確認（「偵測到最新版：VXX，確認升格 current 並部署？」）
