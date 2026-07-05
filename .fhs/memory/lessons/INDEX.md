@@ -80,4 +80,5 @@
 | 2026-06-25 | 2026-06-25_keychain_addon_subtotal_ignores_quantity.md | 加購鎖匙扣成本無視數量 | cost, keychain, subtotal_cost, quantity, addon, task-a, n8n, pitfall | 加購鎖匙扣 subtotal_cost/keychain_cost 停在單件$185無視quantity(qty3/4全185);正解=首件全價+加購件×N;前端禁做185×N假乘法,屬n8n計算bug歸Task A |
 | 2026-06-26 | 2026-06-26_audit_ledger_honest_cost_presentation.md | Audit Ledger 誠實成本呈現 | audit-ledger, cost, honest, qty-warn, single-source, v42, pitfall, preference | 前端遇成本資料異常(未隨件數累加/四欄空)只誠實警示不製造假數(禁base×qty假乘法);展開只列真實欄位禁前端用cost_configurations重算(守單一真源);呈現vs資料分線 |
 | 2026-07-04 | 2026-07-04_n8n_api_workflow_build_pattern.md | n8n API 建置手法 | n8n, api, workflow, webhook, credentials, cloudflare, pattern, pitfall | n8n workflow可全靠REST API建置測試免UI；webhook需補webhookId+人工存檔一次才註冊路由；Cloudflare封鎖屬執行環境非API服務商屬性 |
+| 2026-07-05 | 2026-07-05_git-checkout-carries-uncommitted-changes-silent-merge-noop.md | Git checkout 攜帶未提交修改 | git, checkout, merge, silent, commit, pitfall | checkout會靜默帶走未commit修改跨分支，merge回報Already up to date即空合併訊號 |
 <!-- kgov sync confirmed: Session 124 -->
