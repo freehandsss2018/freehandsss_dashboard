@@ -1,6 +1,12 @@
-# 便攜塊「🔬 驗證」已證實清單歸檔（2026-07-04 E3 瘦身）
+# 便攜塊「🔬 驗證」已證實清單歸檔（2026-07-04 E3 瘦身；2026-07-05 S144 追加 S138-140）
 
-> 來源：`.fhs/memory/handoff.md` 頂部便攜塊「🔬 驗證」欄。保留規則（見 commit.md P0.7）：只留最近 3 個 session（S138-S140）的「已證實」項於便攜塊，較舊者搬移至此；「未驗」項無論哪個 session 一律保留在便攜塊（代表仍是待辦，需要持續可見）。
+> 來源：`.fhs/memory/handoff.md` 頂部便攜塊「🔬 驗證」欄。保留規則（見 commit.md P0.7）：只留最近 3 個 session 的「已證實」項於便攜塊，較舊者搬移至此；「未驗」項無論哪個 session 一律保留在便攜塊（代表仍是待辦，需要持續可見）。S144 起便攜塊只留 S142/S143/S144。
+
+## 已證實（S138-S140，2026-07-05 S144 從便攜塊輪轉出）
+
+- S138 docs/CHANGELOG.md 刪除已驗證
+- S139 guard.js 補洞 12/12 PASS；handoff 輪轉三方驗證 PASS；router 修正 3 組 case 重測無回歸；Airtable PAT scope 安全探測非破壞性驗證
+- S140 guard fixtures 全量迴歸 16/16 PASS（新增4組：sb_secret_/R10×2/R11-observe）；kgov F10/F11 共4案例全PASS；deploy-ok 三態端到端測試全PASS；F1/F4/F5/F6/F7/F9/F14/L1/L2/L3 逐項grep驗證全數符合期望值
 
 ## 已證實（S122-S137，較舊，供歷史查核）
 

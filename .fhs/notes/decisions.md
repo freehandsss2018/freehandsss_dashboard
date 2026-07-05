@@ -1346,3 +1346,11 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 - 「health 乾不乾淨」→ 查 `.fhs/.health-report.json` 現況或重跑 `node scripts/hooks/fhs-health-check.js`
 - 「跑 health 清理」/「跑健檢清理」→ 執行 `/fhs-slim`
 - 與 `kgov`（財務/RPC知識治理）並列，兩者職責正交不重疊：kgov管財務知識治理，health管文件衛生
+
+### D13：敘事單源分級合約——同一事件禁止在多處寫全文
+
+**決策**：Fat Mo 請求「知識工作流程健檢」（資料怎麼找/記憶怎麼分層/任務怎麼交接便宜模型），量測後發現 S142/S143 兩次 MASTER 表 drift 事故的根因，是同一件事同時寫進 handoff session 條目、MASTER 表、session-log、Changelog、completion report 五處，寫得越多處越容易漏同步。`commit.md` Phase 1.6 新增規則：**(a)** 觸發 execute.md [B]（有完成報告）的任務→完成報告為全文唯一居所，其餘各處≤3行+連結；**(b)** 無完成報告的小改動→Changelog 條目本身為全文居所。本次 S144 自身即為規則 (a) 的第一個實例（本 decisions.md 條目、handoff、session-log、Changelog 皆為精簡版，全文在完成記錄）。
+
+**附帶修正**：`.fhs/ai/governance/02_model-dispatch.md` §0 subagent 模型釘選表對齊實況（S139 A3 已刪 6 支 model 行，該檔文件漂移未同步）；新增 `.fhs/notes/knowledge-map.md`（查詢路由表，只路由到檔案類別不列個別檔案，避免自己變成新的漂移點）；`governance/04` 新增 T6 降級交接膠囊模板（opus/fable 裁決完畢後交棒 sonnet/haiku 的標準格式）。
+
+詳見完成記錄：`.fhs/reports/completion/2026-07-05_s144-knowledge-workflow-hygiene_completion_report.md`
