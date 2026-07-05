@@ -1,5 +1,20 @@
 ﻿# Session Log
 
+## 2026-07-05 (Session 143 — 衛生指令記憶負擔歸零：週期到期提醒 + 部署前置檢查): 🔧 ✅
+
+**Scope**：Fat Mo 追問能否不必記憶何時該跑 `/fhs-audit`/`/fhs-check`/`/guardian`/`/error-eye`；評估 agent常駐/loop排程/合併指令三方案皆否決；延伸 S142 L1 架構做最小增量。
+**Result**：L1 新增第6檢查 `checkCadenceOverdue()`（讀既有報告檔名日期推斷上次執行，逾90天才提醒，不建新marker）；`upload-web.md` v1.1.0→v1.2.0 加 Step0 部署前置 `/fhs-check`（預設執行可明示skip）；`/guardian`/`/error-eye` 盤點後確認 router 已覆蓋無缺口。day-one 實測：現存報告49天<90天門檻，live跑靜默符合預期。health fixtures 10→12案全過，guard 16/16無回歸。分支 `feature/fhs-audit-cadence` 待merge。decisions.md D11。
+
+## 2026-07-05 (Session 142 — FHS 三層式系統健康機制：L1偵測/L2清理/L3紀律): 🔧 ✅
+
+**Scope**：S141瘦身後 Fat Mo 追問有無機制持續防止過肥/沉積/過時/重複/衝突，誠實盤點確認沒有；八維度分析v1→自我批評→v2→`/execute`建置。
+**Result**：L1 `fhs-health-check.js`（零依賴fail-open五病偵測，掛SessionStart末尾）；L2 `/fhs-slim` 指令（讀報告出方案，停等批准）；L3固化S141紀律。live首戰抓到3項真實問題（便攜塊超標/learnings超額/1個孤兒檔），已用 `/fhs-slim` 首戰清理完畢。health fixtures 10/10、guard 16/16。已merge main（26b5005）。decisions.md D10。
+
+## 2026-07-04 (Session 141 — 固定載入文件瘦身 Context Slimming): 🔧 ✅
+
+**Scope**：CLAUDE.md/auto-memory/subagent description/handoff便攜塊每次對話固定載入，過肥造成token浪費；八維度分析v1→自我批評→v2→`/execute`。
+**Result**：handoff便攜塊 7,787→4,550 bytes（−42%，25/28決策壓縮為索引+連結，3條無他處收錄歸檔）；commit.md新增P0.7.1防回胖預算機制；CLAUDE.md修正「~300 tokens」失真聲稱；auto-memory目錄56,849→41,308 bytes（−27%，清5個孤兒/過時檔）；順手修3支subagent frontmatter重複version:key bug。fresh-context零損失對抗核對38/38 PASS。已merge main（0f6d5be）。decisions.md D9。
+
 ## 2026-07-04 (Session 140 — 稽核修復：guard/kgov 補洞 + Deploy 授權機制 + 治理層對齊): 🔧 ✅
 
 **Scope**：獨立稽核 Claude Code 環境（CLAUDE.md/settings/hooks/skills），找出文件↔程式碼互相矛盾、宣稱有自動檢查但實際冇跑之處，另挖 session log 找重複糾正痛點；出 v1→自我批評→v2 方案後 Fat Mo `/execute`，分 C1-C4 四批落地。

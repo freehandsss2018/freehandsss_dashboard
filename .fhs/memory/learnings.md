@@ -3,7 +3,7 @@
 > 由 /commit 結尾手動 distill，每條上限 150 字元含日期來源。
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-05（Session 142 `/fhs-slim`，51→50 條，退役 Pitfall 1 條 [TDZ，已存於auto-memory]，修正 Pitfalls 編號連續性；歷史：Session 136 整合 59→49 條）
+> 上次整理：2026-07-05（Session 143 `/commit` Lesson Distillation，對等替換：退役 Pattern 1 條 [Supabase MCP繞過，已存於auto-memory] + 新增 Pitfall 1 條 [健檢工具自我遞迴陷阱]，維持50條；歷史：Session 142 `/fhs-slim` 51→50、Session 136 整合 59→49）
 
 ---
 
@@ -18,10 +18,11 @@
 7. **`_fhsCostReady` flag 競態防護**：page-load 讀 Supabase 後才設 true；calculatePricing 入口 guard 若 false 拒絕計算，防空值算出 0 — 源自 2026-06-02
 8. **`chargedPositions Set` 跨陣列追蹤**：PartDesc trim+toLowerCase 正規化，同部位跨產品第 2 件 baseDrawing=0；新產品類型必查是否需擴充 Set — 源自 2026-06-02
 9. **Phase 0 payload 流向前置查證**：前端改動影響財務計算前，先 get_node 確認 n8n 是否實際讀取該欄位，再決定隔離策略 — 源自 2026-06-03
-10. **Supabase MCP 掉線用 Management API 繞過**：`POST api.supabase.com/v1/projects/{ref}/database/query` + `Bearer PAT` 跑任意 SQL/DDL；⚠️ 必用 curl（python-urllib 觸 Cloudflare 1010）— Session 84
-11. **n8n PUT credential 若 ID 已知可直接 API 補回**：API 限制是「無列表端點」（探索不到未知 ID），但若 credential ID 早已知，可直接寫進 PUT body 覆寫，GET 驗證即可；只有 ID 真的未知時才需人工 UI 點選 — Session 111
+10. **n8n PUT credential 若 ID 已知可直接 API 補回**：API 限制是「無列表端點」（探索不到未知 ID），但若 credential ID 早已知，可直接寫進 PUT body 覆寫，GET 驗證即可；只有 ID 真的未知時才需人工 UI 點選 — Session 111
 
 > 📌 **退役**（Session 136）：kgov 知識治理框架 Pattern 已升格為憲法層規則，完整定義見 `AGENTS.md`（Session 63/100），不再需要於此重複記錄。
+>
+> 📌 **退役**（Session 143，`/commit` Lesson Distillation，全檔滿50條需替換）：「Supabase MCP 掉線用 Management API 繞過」——與 auto-memory `reference_supabase_mcp_dropout_workaround.md` 內容重複，該處為專屬記錄，此處純占位，退役騰出額度給本次新教訓。
 
 ---
 
@@ -61,6 +62,7 @@
 22. **n8n Code 節點內嵌 dashboard 網址禁憑印象寫死**：Telegram 深連結硬編碼 `yanhei.synology.me:5006/web/`（NAS 內網路徑）實測 401，正確應為 decisions.md 記載之公開網址。修法：任何嵌入網址一律對照 decisions.md + curl 實測 200 才寫入，勿假設內網 port/路徑對外可達 — Session 136
 23. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
 24. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
+25. **【自我遞迴陷阱】健檢/lint 工具的測試夾具會被自己的即時掃描邏輯掃到，產生假陽性**：`fhs-health-check.js` 上線後對 repo 做同名檔案重複掃描，10 個測試夾具目錄裡故意合成的同名檔案（`handoff.md`/`fhs-health-rules.json` 等）被自己掃到，炸出 3 個假重複警報。任何「掃描整個 repo」的工具，其測試夾具目錄必須明確排除在該工具自身的即時掃描範圍外 — Session 142
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >
