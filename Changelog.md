@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-07-07] Session 153（續，Sonnet 5 執行）— /fhs-usage-audit 制度化（審 AI 使用行為）
+
+Fat Mo 提出「審計自己嘅 Claude Code 使用方式」需求，複製 S141-143 `fhs-health`（文件衛生）成功樣板，落成三層架構：
+
+- **L1 掃描器** `scripts/usage-audit/scan.js`：掃 `~/.claude/projects/*.jsonl`，per-file mtime+size 快取增量掃描，JWT/Airtable PAT/API KEY 一律正則替換為 `[REDACTED_*]` 後才落盤，輸出 `.fhs/.usage-report.json`（gitignore）。目標目錄明確設定於 `.fhs/tools/usage-audit-config.json`（同 S140 kgov 外部路徑教訓一致，不用 cwd 猜測）。
+- **L2 指令層** `/fhs-usage-audit`（`.fhs/ai/commands/usage-audit.md` + bridge）：跑 L1 → 讀上次快照做趨勢對比 → 產出「可 Skill 化清單／重複 Prompt 清單／浪費模式清單」→ 只存聚合數字快照，不存長文本。明確與 `/fhs-audit`（架構衛生）、`/fhs-slim`（文件五病）三方正交，資料源（transcript vs repo 檔案）不重疊。
+- **L3 紀律接線** `fhs-health-rules.json` 新增 `usage_audit_cadence`（借既有 `cadence_checks` 機制，30天週期），零新增 SessionStart hook，避免防回胖預算被再度佔用。
+- **首份快照**：`.fhs/memory/usage-audit/2026-07-07.json`（91 sessions）。發現手打「八維度分析」長 prompt 重複 36 次（此制度最高價值單一發現），待另立 `/8d` 類 skill 追蹤處理。
+- **驗證**：3 個獨立 commit（c1660c2/afb9728/8bb2ce0），fresh-context general-purpose subagent 做零損失核對 8/8 PASS（JSON 語法/腳本可執行/脫敏 0 洩漏/gitignore 生效/decisions.md 條目完整/knowledge-map 路由/cadence 無回歸/Master-Bridge 一致性）。`node scripts/hooks/fhs-health-check.js` 重跑 issue_count=1（learnings.md 51/50 條既存異常，非本次引入）。
+
 ## [2026-07-07] Session 152-followup（Sonnet 5 執行）— 接線稽核與三項裁決執行
 
 S152 完成後 Fat Mo 追問全系統有無「無讀者/無觸發/重複/衝突」情況，先自查修復 ui-designer 未接 Vercel 規則+code-reviewer 重複觸控規則（已於前一輪 commit）；再派 subagent 做全系統接線稽核，主對話第一手複核後執行三項裁決：AGENTS.md Rule 3.15 加熔斷數字消歧註記；歸檔孤兒 `vendor/awesome-cc/hooks-setup-guide.md`；`prompt-router.js` 補 finance-auditor/product-integration-validator/blender-3d-modeler 三支缺漏路由——過程中抓到並修復真實 bug（新規則因陣列順序被更早的關鍵字路由搶先攔截，「財務稽核」「新sku」原本會誤路由）。router 實跑5條測試PASS；guard 16/16無回歸。全文見完成記錄 [2026-07-07_s152-followup-wiring-audit_completion_report.md](.fhs/reports/completion/2026-07-07_s152-followup-wiring-audit_completion_report.md)。

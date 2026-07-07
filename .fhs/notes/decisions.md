@@ -1373,10 +1373,4 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 ### D17：S153 usage-audit 制度化——三層架構，審 AI 使用行為，與 fhs-health 正交
 
-**決策**：Fat Mo 提出「審計自己嘅 Claude Code 使用方式」需求，落成 `/fhs-usage-audit`，複製 S141-143 `fhs-health`（審文件衛生）成功樣板——三層架構：L1 零 token 掃描器（`scripts/usage-audit/scan.js`，掃 `~/.claude/projects/*.jsonl`，per-file mtime+size 快取增量、JWT/PAT/KEY 一律脫敏後才落盤）、L2 指令層（`/fhs-usage-audit`，跑 L1→讀上次快照→產出可 Skill 化清單/重複 Prompt 清單/浪費模式清單→只存聚合快照）、L3 紀律接線（`fhs-health-rules.json` 新增 `usage_audit_cadence` 借用既有 `cadence_checks` 機制，30天週期，零新 SessionStart hook）。
-
-**自我批評修正**：草案 v1 曾打算加獨立 SessionStart 提醒（違反防回胖預算）與快照存原文（transcript 含明文 key，17+ 次出現），v2 改為借既有健檢通道 + 落盤前強制脫敏，兩者皆已在 Phase 1 實測驗證（0 個明文 secret 落盤，`grep -icE` 核實）。
-
-**與既有制度分界**：`/fhs-audit`=架構衛生、`/fhs-slim`=文件五病、`/fhs-usage-audit`=**AI 使用行為**（資料源 transcript，非 repo 檔案），三者正交不共用邏輯，見 `knowledge-map.md` 新增路由行。首份快照 `.fhs/memory/usage-audit/2026-07-07.json` 已存（91 sessions，發現 36 次重複手打「八維度分析」prompt 待另立 `/8d` skill 追蹤）。
-
-本決策無正式完成報告，全文居所依 D13 規則(b)為本條目。
+**決策**：新建 `/fhs-usage-audit`（審 Claude Code transcript 使用行為，複製 S141-143 `fhs-health` 三層樣板），與 `/fhs-audit`（架構衛生）、`/fhs-slim`（文件五病）三方正交。無正式完成報告，全文居所依 D13 規則(b)為 Changelog——詳見 [Changelog.md](../../Changelog.md) 2026-07-07 Session 153（續）條目。
