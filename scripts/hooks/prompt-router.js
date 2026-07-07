@@ -66,6 +66,15 @@ process.stdin.on('end', () => {
       model: 'opus',
       reason: '偵測到複雜架構決策任務'
     },
+    // ── Financial Audit（須排在 Quality Review 之前，避免「稽核」字樣被品質審查路由搶先攔截）──
+    {
+      patterns: ['財務稽核', '利潤核對', 'triple sync 稽核', '三端核對', 'finance audit',
+        '對帳', '訂單利潤驗證'],
+      subagent: 'finance-auditor',
+      skill: null,
+      model: 'sonnet',
+      reason: '偵測到財務稽核任務（2026-07-07 S152-followup 補鏈）'
+    },
     // ── Quality Review / Audit ──
     {
       patterns: ['稽核', '審查', '品質', 'code review', 'phase c', '守門', 'audit check', 'fhs audit'],
@@ -73,6 +82,15 @@ process.stdin.on('end', () => {
       skill: null,
       model: 'haiku',
       reason: '偵測到品質審查任務'
+    },
+    // ── New Product / SKU Integration（須排在 Database 之前，避免「sku」字樣被資料庫路由搶先攔截）──
+    {
+      patterns: ['新產品', '新sku', 'new sku', 'item_status', '新款式', '新品項類型',
+        '跨層融入', '新增下拉選項'],
+      subagent: 'product-integration-validator',
+      skill: null,
+      model: 'sonnet',
+      reason: '偵測到新產品跨層融入任務（2026-07-07 S152-followup 補鏈），另見 /new-product 指令'
     },
     // ── Database / Airtable / n8n Data ──
     {
@@ -109,6 +127,14 @@ process.stdin.on('end', () => {
       skill: 'finance-gatekeeper',
       model: 'sonnet',
       reason: '偵測到財務計算相關任務'
+    },
+    // ── 3D Print / Blender ──
+    {
+      patterns: ['blender', '3d列印', '3d 列印', 'stl', 'fdm', '手模', '立體擺設建模', '網格修復'],
+      subagent: 'blender-3d-modeler',
+      skill: null,
+      model: 'sonnet',
+      reason: '偵測到 3D 建模/列印任務（2026-07-07 S152-followup 補鏈）'
     }
   ];
 

@@ -1,13 +1,19 @@
 # Changelog
 
+## [2026-07-07] Session 152-followup（Sonnet 5 執行）— 接線稽核與三項裁決執行
+
+S152 完成後 Fat Mo 追問全系統有無「無讀者/無觸發/重複/衝突」情況，先自查修復 ui-designer 未接 Vercel 規則+code-reviewer 重複觸控規則（已於前一輪 commit）；再派 subagent 做全系統接線稽核，主對話第一手複核後執行三項裁決：AGENTS.md Rule 3.15 加熔斷數字消歧註記；歸檔孤兒 `vendor/awesome-cc/hooks-setup-guide.md`；`prompt-router.js` 補 finance-auditor/product-integration-validator/blender-3d-modeler 三支缺漏路由——過程中抓到並修復真實 bug（新規則因陣列順序被更早的關鍵字路由搶先攔截，「財務稽核」「新sku」原本會誤路由）。router 實跑5條測試PASS；guard 16/16無回歸。全文見完成記錄 [2026-07-07_s152-followup-wiring-audit_completion_report.md](.fhs/reports/completion/2026-07-07_s152-followup-wiring-audit_completion_report.md)。
+
 ## [2026-07-07] Session 153（Sonnet 5 執行）— 訂單總覽與部位標籤 100% SVG 向量化與底部導覽重疊 BUG 修復
 
 針對 UI 各處殘留的 Emoji 進行無死角 SVG 圖標替換，修復手機版底部返回操作列的固定重疊 BUG，並將最新生產版發布部署：
 
 - **手機版底部操作列固定 BUG 修復**：修正行動裝置（<768px）下 `.fhs-bottom-bar` 樣式，由 `position: fixed !important` 改為 `position: static !important`。使其作為卡片自然排列在表單容器 `#formContainer` 之下隨頁滾動，徹底解決遮擋與重疊問題。同步將 body `padding-bottom` 縮減為 `88px`，`fhs-toast` Spacing 相應下移至導覽列上方。
-- **訂單卡片與部位標籤 100% 向量化**：重構 `getProductDimensions()` 維度解析引擎，將原本回傳的 CJK 肢體（左手/右手/左腳/右腳/合成）、產品材質（不銹鋼/925金/925銀）、款式與主題（木框/玻璃瓶/粉紅/海洋）及肢數統計中的 Emoji 全部替換為 Lucide 風格的 SVG 線條向量圖標，包括新增 `icon-crown`（皇冠）、`icon-bottle`（玻璃瓶）、`icon-heart`（心形）、`icon-waves`（波浪線條）圖標。
+- **訂單卡片與部位標籤 100% 向量化**：重構 `getProductDimensions()` 維度解析引擎，將 CJK 肢體、產品材質、款式與主題及統計中的 Emoji 替換為 SVG 線條向量圖標，包括新增 `icon-crown`（皇冠）、`icon-bottle`（玻璃瓶）、`icon-heart`（心形）、`icon-waves`（波浪線條）圖標。
 - **手與腳圖標精細化**：重寫 `icon-hand` 與 `icon-footprint` 壞軌的 SVG 路徑。`icon-hand` 使用 Lucide 標準多路徑手掌；`icon-footprint` 採用標準成對腳印，使其在 12px 小尺寸下依然精確居中且可清晰識別。
 - **動態 UI Emojis 清除**：修改審閱 Modal `_updateIgCopyUI()`，複製成功與否以 `innerHTML` 動態寫入綠色向量 `icon-check` 與夾具圖標；同步修復 `toggleIgFormatA()` 格式切換按鈕文字 `innerHTML` 含 `icon-refresh-cw` 的同步複製行為。
+- **展開折疊訂單卡片與詳情彈窗 100% 向量化 (追加)**：將 expanded accordion card（Review mode）內的 `備註`、`產品明細`、`刻字`、`批次`、`進度` 標題、狀態下拉選項及 `手模`/`金屬` 詳情按鈕中的 Emoji 全部替換為對應的 SVG 圖標；將詳情 Modal 的分頁標籤（訊息文本、訂單明細、財務、已人工編輯、重新生成、編輯）及動態 Title 徹底向量化，實現完全零 Emoji 的標準化 UI。
+- **逾期狀態指示器向量化 (追加)**：將 delivery status badge 的 `🔴 逾期`、`🔴 今日到期`、`⚠️ 剩` 轉換為 Lucide 線條圖標 `icon-shield-alert`與`icon-bell`。
 - **全案測試與 WebDAV 部署**：執行全生命週期與壓力測試套件（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）共 4 項全部 PASS。以 `/upload-web` 成功部署 current 生產版 HTML 至 Synology NAS (PUT HTTP 204 通過)。
 
 ## [2026-07-07] Session 152（Fable 5 規劃 → Sonnet 5 執行）— 十大框架條款吸收（Skills Absorption）

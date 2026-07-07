@@ -171,7 +171,7 @@
 ### 根因調查強制律（Rule 3.15）
 - **遇任何 bug / 錯誤 / 測試失敗，AI 必須先完成根因調查，嚴禁在根因確認前提出任何代碼修改或修復方案。**
 - 根因調查遵循 4 階段法（詳見 `.fhs/ai/skills/vendor/superpowers/systematic-debugging.md`）：Phase 1 現象確認 → Phase 2 模式比對 → Phase 3 假設測試 → Phase 4 實作。
-- 若 3 次根因假設全部失敗，方可輸出「假設性過渡修復方案」，並明確標注「ASSUMPTION-BASED，根因未確認」。
+- 若 3 次根因假設全部失敗，方可輸出「假設性過渡修復方案」，並明確標注「ASSUMPTION-BASED，根因未確認」。（此為根因**假設迭代**次數；修復**重試**輪次仍受 `governance/02_model-dispatch.md` §4 兩輪熔斷約束——兩者是不同軸，不可互代，2026-07-07 S152-followup 註記）
 - **財務欄位豁免**：涉及 `net_profit / total_cost / final_sale_price` 等財務欄位的修復，不適用假設性修復，必須確認根因並獲 Fat Mo 人工確認後方可執行（遵守財務真理守護原則）。
 - 此律適用所有 AI（Claude / Antigravity）及所有 subagent（含 build-error-resolver / code-reviewer）。
 

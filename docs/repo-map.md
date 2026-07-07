@@ -193,8 +193,8 @@ freehandsss_dashboard/
 │   │           │   └── systematic-debugging.md     ← 四階段根因調查法
 │   │           └── awesome-cc/          ← 來源：hesreallyhim/awesome-claude-code
 │   │               ├── read-only-postgres.md  ← 唯讀 PostgreSQL/Supabase 查詢（Supabase 遷移驗證）
-│   │               ├── supabase-query.md      ← Supabase Management API CLI skill
-│   │               └── hooks-setup-guide.md   ← Dippy + parry hooks 安裝指南（需手動安裝）
+│   │               └── supabase-query.md      ← Supabase Management API CLI skill
+│   │               [已刪除] hooks-setup-guide.md → `.fhs/reports/backups/hooks-setup-guide.md.2026-07-07-archived.md`（2026-07-07 S152-followup，確認孤兒無活讀者）
 │   ├── notes/
 │   │   ├── README.md                    ← 筆記層總綱
 │   │   ├── decisions.md
