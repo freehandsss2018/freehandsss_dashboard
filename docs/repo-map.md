@@ -316,12 +316,14 @@ freehandsss_dashboard/
 │   │   ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
 │   │   ├── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
 │   │   ├── fhs-health-check.js          ← L1 文件健康快檢（零依賴，五病偵測，2026-07-05 S142 新增，session-start-sop.sh 末尾呼叫）
-│   │   └── test/                        ← guard/health hook 特徵化測試夾具（2026-07-04 S139 新增；2026-07-05 S142/S143 擴充）
+│   │   └── test/                        ← guard/health/kgov hook 特徵化測試夾具（S139 新增，S148 擴充）
 │   │       ├── guard-fixtures.json      ← 12 組 tool_input 樣本 + 期望行為（含已修復缺口的回歸標記）
 │   │       ├── run-fixtures.js          ← 夾具執行器：spawn guard.js 逐組斷言 exit code + stderr
 │   │       ├── health-fixtures.json     ← 12 案期望結果清單（fhs-health-check.js 五病+週期到期+邊界案例，2026-07-05 S143 加cadence 2案）
 │   │       ├── health-fixtures/         ← 12 個自足沙盒目錄，各含專屬 rules.json（S142新增10案+S143加cadence 2案）
-│   │       └── run-health-fixtures.js   ← 夾具執行器：env var 沙盒隔離（FHS_HEALTH_ROOT等）+ generates_fresh_evidence 動態日期夾具支援（S143），12/12 PASS
+│   │       ├── run-health-fixtures.js   ← 夾具執行器：env var 沙盒隔離（FHS_HEALTH_ROOT等）+ generates_fresh_evidence 動態日期夾具支援（S143），12/12 PASS
+│   │       ├── kgov-fixtures.json       ← 10 組 post-tool-kgov.js 測試夾具（S148 新增）
+│   │       └── run-kgov-fixtures.js     ← 夾具執行器：隔離 temp flag 檔案，10/10 PASS（S148 新增）
 │   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110）
 │       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）

@@ -79,3 +79,9 @@ docs/jwks/
 .fhs-local/
 scripts/ig-watchdog/output/
 *.zip
+
+# Local User / Obsidian Temp files
+Free_recorder/
+*.base
+*.canvas
+

@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-07-08] Session 154（Gemini 3.5 Flash 執行）— S148 迴圈硬化（Loop Hardening）防誤觸與預防機制治理
+
+完成 S148 迴圈硬化（Loop Hardening）計畫，針對 [G] 財務邏輯稽核進行物理特徵對齊，徹底根治 Session 147 頻繁誤觸問題，並補全預防端與制度層三小件：
+
+- **Phase 0 & 1（fhs-slim + R11 觀察止血）**：`learnings.md` Preference #10 退役（51→50 條），使體積預算達標；`pre-tool-guard.js` 及 `run-fixtures.js` 引入 `FHS_GUARD_FIXTURE=1` 環境變數隔離測試夾具，徹底杜絕 observe log 被夾具測試污染；清洗原污染日誌（33 行全夾具污染），標記觀察期從今日重啟（c: `b66ae6a`）。
+- **Phase 2（[G] 物理特徵判準對齊）**：重寫 `post-tool-kgov.js`（v2.0.0）並對齊 `execute.md` 真值表（migrations .sql/MCP/Dashboard HTML+財務才落 flag；其餘 md/js 文字編輯僅 warn），防 md/js 編輯誤觸；flag 檔案支援 `FHS_KGOV_FLAG_FILE` 環境變數以便測試隔離；建立 `kgov-fixtures.json`（10 組夾具）與 `run-kgov-fixtures.js` 測試執行器，對抗審查 PASS；`learnings.md` Pitfall #26 壓縮為 ≤2 行歷史摘要，`02_model-dispatch.md` §7 補治本註記（c: `b7df3b5`）。
+- **Phase 3（預防端三小件）**：
+  - **T6 budget gate**：`post-tool-kgov.js` 每次寫入 `learnings.md` (>50 條) 或 `handoff.md` 便攜區 (>4000 bytes) 後即時進行條目與體積檢查並警示。
+  - **T5 commit 漏跑偵測**：`session-start-sop.sh` 中比對最新 git commit 日期 vs 便攜塊日期，若 commit 日期晚於塊日期且 ≥1 天則發出警告。
+  - **T7 router 排除**：`prompt-router.js` 大改路由的「大範圍改動」路由加入 `excludes` 排除詞（「只規劃」、「實施計畫」等），匹配時自動跳過，防止規劃型 prompt 誤觸 guardian 建議（c: `439b29c`）。
+- **Phase 4（制度層收尾）**：
+  - **教訓熔斷條款**：`05_maintenance-protocol.md` v1.1.0 新增第 5 項「教訓熔斷條款」，當 `02 §7` 或 `learnings.md` 中出現 ≥3 條同型 workaround 則必須治本，不再允許無限累積 workaround。
+  - **governance 健檢偵測**：`fhs-health-rules.json` v1.1.0 加入 `governance_health_cadence` 季度健檢偵測（90 天週期，以 backups 中 `05` 備份檔名日期為證）。
+  - **健檢記錄**：`05` §8 記錄首次季度健檢成果，消除 cadence 偵測警示（c: `d80a349`）。
+- **驗證**：4 個獨立 commit。guard 16/16 PASS，kgov 10/10 PASS，health-check 0 issues。對抗審查由 fresh-context research subagent 執行判定為 PASS。
+
 ## [2026-07-07] Session 153（續，Sonnet 5 執行）— /fhs-usage-audit 制度化（審 AI 使用行為）
 
 Fat Mo 提出「審計自己嘅 Claude Code 使用方式」需求，複製 S141-143 `fhs-health`（文件衛生）成功樣板，落成三層架構：
