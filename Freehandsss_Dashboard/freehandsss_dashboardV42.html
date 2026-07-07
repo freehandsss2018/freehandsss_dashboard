@@ -3405,6 +3405,13 @@
   <symbol id="icon-bell" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
   </symbol>
+  <symbol id="icon-tag" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.41 0l7.29-7.29a1 1 0 0 0 0-1.42L12 2Z"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M7 7h.01"/>
+  </symbol>
+  <symbol id="icon-activity" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+  </symbol>
 </svg>
 <!-- ===== /V42 Lucide SVG Sprite ===== -->
 
@@ -3608,7 +3615,7 @@
                             </div>
                         </div>
                         <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
-                        <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
+                        <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-list"/></svg>SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
                         <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-save"/></svg>儲存篩選</button>
                         <button class="fhs-btn-refresh" type="button"
                             onclick="fhsRefreshAndCollapse()">
@@ -8430,10 +8437,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var r = window._dlvMap && window._dlvMap.get(orderId);
             if (!r) return '';
             var d = Math.abs(Number(r.days_remaining));
-            if (r.urgency === 'overdue')   return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')">🔴 逾期' + d + '天</span>';
-            if (r.urgency === 'due_today') return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')">🔴 今日到期</span>';
-            if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow" style="cursor:pointer;" onclick="jumpToDlvCard(\'yellow\')">⚠️ 剩' + d + '天</span>';
-            return '<span class="dlv-badge dlv-badge-green" style="cursor:pointer;" onclick="jumpToDlvCard(\'green\')">✓ 正常(剩' + Number(r.days_remaining) + '天)</span>';
+            if (r.urgency === 'overdue')   return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>逾期' + d + '天</span>';
+            if (r.urgency === 'due_today') return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>今日到期</span>';
+            if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow" style="cursor:pointer;" onclick="jumpToDlvCard(\'yellow\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-bell"/></svg>剩' + d + '天</span>';
+            return '<span class="dlv-badge dlv-badge-green" style="cursor:pointer;" onclick="jumpToDlvCard(\'green\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>正常(剩' + Number(r.days_remaining) + '天)</span>';
         }
         // 手機 accordion header card：回傳 urgency CSS class
         function _dlvCardClass(orderId) {
@@ -8443,15 +8450,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (r.urgency === 'warn') return 'dlv-card-yellow';
             return 'dlv-card-green';
         }
-        // 手機 accordion header card：回傳狀態純文字（不含 HTML span）
+        // 手機 accordion header card：回傳狀態 HTML / 純文字
         function _dlvStatusText(orderId) {
             var r = window._dlvMap && window._dlvMap.get(orderId);
             if (!r) return '';
             var d = Math.abs(Number(r.days_remaining));
-            if (r.urgency === 'overdue')   return '🔴 逾期' + d + '天';
-            if (r.urgency === 'due_today') return '🔴 今日到期';
-            if (r.urgency === 'warn')      return '⚠️ 剩' + d + '天';
-            return '✓ 正常(剩' + Number(r.days_remaining) + '天)';
+            if (r.urgency === 'overdue')   return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>逾期' + d + '天';
+            if (r.urgency === 'due_today') return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>今日到期';
+            if (r.urgency === 'warn')      return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-bell"/></svg>剩' + d + '天';
+            return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>正常(剩' + Number(r.days_remaining) + '天)';
         }
 
         async function initDeliveryStatsCard() {
@@ -8698,9 +8705,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const _accEngEsc = _accEngStrip.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                         if (_accEngStrip && _accEngStrip !== '待定' && _accEngStrip !== '不適用') {
                             engText = `<div class="acc-eng-row">
-                                <span class="acc-field-label">✂️ 刻字</span>
+                                <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-edit"/></svg>刻字</span>
                                 <span class="acc-eng-text">${_accEngStrip}</span>
-                                <button class="acc-eng-edit" onclick="inlineEditEngraving('${o.id}','${_accItemKeyEsc}','${_accEngEsc}')" title="快速編輯刻字">✏</button>
+                                <button class="acc-eng-edit" onclick="inlineEditEngraving('${o.id}','${_accItemKeyEsc}','${_accEngEsc}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button>
                             </div>`;
                         }
 
@@ -8714,12 +8721,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 <div class="ifd-row"><span class="ifd-label">SKU建議價</span><span class="ifd-val" style="color:#2A9D8F;">$${_accAuditEntry.price}</span></div>
                                 <div class="ifd-row"><span class="ifd-label">SKU建議利潤</span><span class="ifd-val" style="color:#1D3557;">$${_accProfit}</span></div>
                                 <div class="ifd-row" style="margin-top:2px;"><button onclick="openAuditModal('${o.id}','${idx}','${_accAuditSku.replace(/'/g,"\\'")}',${_accAuditEntry.price},${_accAuditEntry.cost})" style="font-size:11px;background:#e8f0fe;border:1px solid #b1c9ef;border-radius:4px;padding:2px 8px;color:#1d3557;cursor:pointer;">💡 對賬試算</button></div>
-                                <div class="ifd-footnote">📋 SKU參考價，不含整單優惠／折讓</div>
+                                <div class="ifd-footnote"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-list"/></svg>SKU參考價，不含整單優惠／折讓</div>
                             </div>`;
                         } else if (_accAuditSku) {
                             _accDrawerHtml = `<div id="item-drawer-${_accDrawerKey}" class="item-financial-drawer"><span style="color:#bbb;font-size:11px;">— 未列入價目表</span></div>`;
                         }
-                        var _accFinBtn = (_accAuditEntry || _accAuditSku) ? `<button onclick="toggleItemDrawer('${_accDrawerKey}')" style="background:none;border:none;font-size:14px;cursor:pointer;padding:0 4px;color:#4A90D9;" title="項目財務">💰</button>` : '';
+                        var _accFinBtn = (_accAuditEntry || _accAuditSku) ? `<button onclick="toggleItemDrawer('${_accDrawerKey}')" style="background:none;border:none;font-size:14px;cursor:pointer;padding:0 4px;color:#4A90D9;" title="項目財務"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;color:var(--fhs-accent);"><use href="#icon-wallet"/></svg></button>` : '';
 
                         itemsHtml += `
                         <div class="acc-item-card" style="border-left: 3px solid ${rowBatchCol};">
@@ -8727,7 +8734,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${engText}
                             <div class="acc-item-controls">
                                 <div class="acc-ctrl-batch">
-                                    <span class="acc-field-label">🏷️ 批次</span>
+                                    <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-tag"/></svg>批次</span>
                                     <input type="text"
                                         id="acc-batch-${o.id}-${idx}"
                                         value="${rowBatch}"
@@ -8738,7 +8745,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'acc-batch-${o.id}-${idx}', ${idx})">
                                 </div>
                                 <div class="acc-ctrl-status">
-                                    <span class="acc-field-label">🚥 進度</span>
+                                    <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-activity"/></svg>進度</span>
                                     ${(function(){
                                         var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
                                         var _cat = (dimensions.category || item.Category || '').toString();
@@ -8755,9 +8762,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         }
                                         var _opts = [];
                                         if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
-                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done ✅']];
+                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done 已完成']];
                                         } else {
-                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done ✅']];
+                                            _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done 已完成']];
                                         }
                                         var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'acc-status-'+o.id+'-'+idx+'\','+idx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+o.id+'-'+idx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
                                         return '<select id="acc-status-'+o.id+'-'+idx+'" onchange="'+_oc+'">'
@@ -8778,9 +8785,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 const _catFlagsM = _getOrderCatFlags(o);
                 let _detailBtnsM = '';
-                if (_catFlagsM.hasA) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;margin-right:2px;">📋</button>';
-                if (_catFlagsM.hasB) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;">📝</button>';
-                if (!_detailBtnsM) _detailBtnsM = '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="font-size:14px;vertical-align:middle;">📋</button>';
+                if (_catFlagsM.hasA) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;margin-right:2px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-image"/></svg></button>';
+                if (_catFlagsM.hasB) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-settings"/></svg></button>';
+                if (!_detailBtnsM) _detailBtnsM = '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="font-size:14px;vertical-align:middle;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-list"/></svg></button>';
 
                 html += `
                 <div class="swipe-row-wrapper" id="swipe-row-${o.id}">
@@ -8806,7 +8813,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         if (_isArch) {
                                             var _ref = o.Appointment_Date || o.Date;
                                             var _days = _ref ? Math.round((Date.now() - new Date(_ref).getTime()) / 86400000) : null;
-                                            var _txt = _days !== null ? (_days >= 0 ? '✅ 完成 · ' + _days + 'd 前' : '✅ 完成 · ' + Math.abs(_days) + 'd 後') : '✅ 已完成';
+                                            var _txt = _days !== null ? (_days >= 0 ? '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>完成 · ' + _days + 'd 前' : '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>完成 · ' + Math.abs(_days) + 'd 後') : '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>已完成';
                                             _badgeHtml = '<span class="acc-dlv-status">' + _txt + '</span>';
                                         } else if (_dlvStatusText(o.Order_ID)) {
                                             _badgeHtml = '<span class="acc-dlv-status" onclick="event.stopPropagation();jumpToDlvCard(\'' + _dlvCardClass(o.Order_ID).replace('dlv-card-','') + '\')">' + _dlvStatusText(o.Order_ID) + '</span>';
@@ -8827,14 +8834,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             <div class="acc-order-body">
                                 <div class="acc-order-body-inner">
                                     <div class="acc-field-row">
-                                        <span class="acc-field-label">📝 備註</span>
+                                        <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-message-square"/></svg>備註</span>
                                         <textarea class="acc-notes-textarea"
                                             id="acc-notes-${o.id}"
                                             onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'acc-notes-${o.id}')"
                                             placeholder="備註...">${o.Admin_Notes || ''}</textarea>
                                     </div>
                                     <div class="acc-field-row">
-                                        <span class="acc-field-label">📦 產品明細</span>
+                                        <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-shopping-bag"/></svg>產品明細</span>
                                         <div class="acc-items-list">${itemsHtml}</div>
                                     </div>
                                     <div class="acc-action-row">
@@ -8954,9 +8961,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
                 const _catFlagsD = _getOrderCatFlags(o);
                 let _detailBtns = '';
-                if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="margin-top:4px; display:block; font-size:11px; padding:2px 6px;">📋 手模</button>';
-                if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;">📝 金屬</button>';
-                if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;">📋</button>';
+                if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="margin-top:4px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-image"/></svg>手模</button>';
+                if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-settings"/></svg>金屬</button>';
+                if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-list"/></svg></button>';
 
                 // PGC-ODAT: per-item audit data (price lookup per SKU)
                 // Built from _renderItemsFinal (not o.items) to stay index-aligned with forEach loop
@@ -9144,7 +9151,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // Phase 3: wrap with inline edit button (hover to reveal ✏)
                         const _itemKeyEscT = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
                         const _engEscT = _engStripped.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${o.id}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字">✏</button></div>`;
+                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${o.id}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button></div>`;
 
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
@@ -9215,9 +9222,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     }
                                     var _opts = [];
                                     if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
-                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done ✅']];
+                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['需進行補打','需進行補打'],['Done 已完成','Done 已完成']];
                                     } else {
-                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done ✅']];
+                                        _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done 已完成']];
                                     }
                                     var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'status-select-'+o.id+'-'+index+'\','+index+');var _adj=document.getElementById(\'adj-wrapper-'+o.id+'-'+index+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
                                     var _adjDisp = (_s === '需進行補打') ? 'flex' : 'none';
@@ -9848,8 +9855,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window._fhsMode2Hash   = '';      // dirty-diff baseline hash
             window._fhsAuditLoaded = false;   // lazy-load flag: audit ledger not yet fetched
 
-            var titleLabel = catFilter === 'A' ? '📋 手模擺設訊息' : catFilter === 'B' ? '📝 金屬產品訊息' : '📋 訂單詳情';
-            document.getElementById('fhsModalTitle').textContent = titleLabel + '  ' + (o.Order_ID || orderId);
+            var titleLabel = catFilter === 'A' ? '<svg class="ba-icon" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><use href="#icon-image"/></svg>手模擺設訊息' : catFilter === 'B' ? '<svg class="ba-icon" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><use href="#icon-settings"/></svg>金屬產品訊息' : '<svg class="ba-icon" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><use href="#icon-list"/></svg>訂單詳情';
+            document.getElementById('fhsModalTitle').innerHTML = titleLabel + '  ' + (o.Order_ID || orderId);
 
             var _rawText = o.Full_Order_Text || '';
             var currentText = catFilter === 'A'
@@ -9867,20 +9874,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 '<div class="fhs-modal-drag"></div>' +
                 // Tab bar
                 '<div class="fhs-modal-tabs">' +
-                    '<button class="fhs-modal-tab active" id="fhsTabBtn-text"   onclick="switchModalTab(\'text\')">📝 訊息文本</button>' +
-                    '<button class="fhs-modal-tab"        id="fhsTabBtn-detail" onclick="switchModalTab(\'detail\')">🛠 訂單明細</button>' +
-                    '<button class="fhs-modal-tab"        id="fhsTabBtn-finance" onclick="switchModalTab(\'finance\')">💰 財務</button>' +
+                    '<button class="fhs-modal-tab active" id="fhsTabBtn-text"   onclick="switchModalTab(\'text\')"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-message-square"/></svg>訊息文本</button>' +
+                    '<button class="fhs-modal-tab"        id="fhsTabBtn-detail" onclick="switchModalTab(\'detail\')"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-list"/></svg>訂單明細</button>' +
+                    '<button class="fhs-modal-tab"        id="fhsTabBtn-finance" onclick="switchModalTab(\'finance\')"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-wallet"/></svg>財務</button>' +
                 '</div>' +
 
                 // ── Tab 0: Mode 1 — text snapshot (existing edit path) ──────────────
                 '<div class="fhs-modal-tab-pane active" id="fhsTabPane-text">' +
                     '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:10px 12px 6px;">' +
-                        '<span id="fhsOverrideBadge" style="display:' + (isOverridden ? 'inline-flex' : 'none') + ';align-items:center;gap:4px;padding:3px 8px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:4px;font-size:11px;font-weight:600;" title="文本已人工編輯，與訂單明細可能不一致">⚠ 已人工編輯</span>' +
+                        '<span id="fhsOverrideBadge" style="display:' + (isOverridden ? 'inline-flex' : 'none') + ';align-items:center;gap:4px;padding:3px 8px;background:#fff3cd;border:1px solid #ffc107;color:#856404;border-radius:4px;font-size:11px;font-weight:600;" title="文本已人工編輯，與訂單明細可能不一致"><svg class="ba-icon" width="11" height="11" style="vertical-align:middle;margin-right:2px;"><use href="#icon-shield-alert"/></svg>已人工編輯</span>' +
                         '<button id="fhsRegenBtn" onclick="regenerateFromItems(\'' + eid + '\')" ' +
                             'style="display:' + (isOverridden ? 'inline-block' : 'none') + ';padding:3px 10px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:5px;cursor:pointer;font-size:12px;color:#3a5fc8;flex-shrink:0;" ' +
-                            'title="以訂單明細重建文本快照（清除人工編輯旗標）">🔄 重新生成</button>' +
+                            'title="以訂單明細重建文本快照（清除人工編輯旗標）"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-refresh-cw"/></svg>重新生成</button>' +
                         '<button id="fhsEditOrderBtn" onclick="enterEditMode(\'' + eid + '\',\'' + cf + '\')" ' +
-                            'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;margin-left:auto;">✏️ 編輯</button>' +
+                            'style="padding:5px 14px;background:#f0f4ff;border:1px solid #c7d3f7;border-radius:6px;cursor:pointer;font-size:13px;color:#3a5fc8;font-weight:500;flex-shrink:0;margin-left:auto;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-edit"/></svg>編輯</button>' +
                     '</div>' +
                     '<div id="fhsOrderViewDiv" style="padding:12px;white-space:pre-wrap;color:#222;font-family:var(--fhs-font-mono,monospace);font-size:14px;background:#fcfcfc;border:1px solid var(--fhs-border);border-radius:8px;max-height:58dvh;overflow-y:auto;text-align:left;line-height:1.6;margin:0 12px 12px;">' +
                         (currentText ? escapedText : '<span style="color:#aaa;">（無原始訊息）</span>') +
