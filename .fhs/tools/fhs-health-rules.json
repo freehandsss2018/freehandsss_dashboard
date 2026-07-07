@@ -1,7 +1,7 @@
 {
   "_readme": "FHS 文件健康偵測規則資料檔。scripts/hooks/fhs-health-check.js 消費此檔，規則變動不需改程式碼。每條規則的 budget/unit 都附 source 出處，禁止發明未經制度確認的新數字。",
-  "version": "1.0.0",
-  "last_updated": "2026-07-05",
+  "version": "1.1.0",
+  "last_updated": "2026-07-08",
   "auto_memory_dir": {
     "_note": "auto-memory 目錄在 repo 之外，路徑隨使用者/機器而定，無法用相對路徑推導（S140 kgov SAFE_PATH_PATTERNS 盲區教訓：外部路徑必須顯式設定，不可用 pattern 猜測）。若專案搬遷或使用者變更，需手動更新此值。",
     "path": "C:/Users/Edwin/.claude/projects/D--SynologyDrive-Free-handsss-freehandsss-dashboard/memory"
@@ -122,6 +122,16 @@
       "max_age_days": 30,
       "source": "S153 usage-audit 制度化（審 AI 使用行為，與 /fhs-audit 90天週期正交；用量模式變化較快，訂30天）",
       "no_evidence_message": "從未執行過 /fhs-usage-audit"
+    },
+    {
+      "id": "governance_health_cadence",
+      "command": "05 §7 governance 季度健檢（手動執行，產出 §8 記錄 + backup）",
+      "evidence_dir": ".fhs/ai/governance/backups",
+      "evidence_glob": "05_maintenance-protocol.md.*.bak",
+      "date_regex": "(\\d{4}-\\d{2}-\\d{2})",
+      "max_age_days": 90,
+      "source": "governance/05_maintenance-protocol.md §7（季度健檢）+ §8（記錄區）；S148 Phase 4 新增；evidence=backup 檔名含日期",
+      "no_evidence_message": "governance/05 §7 季度健檢從未執行（無 backup 記錄），請執行 §7 清單並產出報告追加至 §8"
     }
   ]
 }

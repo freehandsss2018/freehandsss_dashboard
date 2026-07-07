@@ -1,6 +1,6 @@
 # 05 — 維護協議（governance 檔案怎麼安全地演化）
 
-> **Version**: v1.1.0（2026-07-08，Session S148；§7 新增第 5 項教訓熔斷條款 A4）
+> **Version**: v1.0.0（2026-07-04，Session 137）
 > **讀者**：任何想修改 CLAUDE.md、governance/、learnings、handoff 的未來 session。
 > **原則**：制度檔的價值在「穩定可預期」。寧可慢半拍，不可讓兩個 session 讀到互相矛盾的規則。
 
@@ -83,22 +83,7 @@
 2. 抽查最近 5 個 session 的雙紀律自檢：自驗豁免使用率是否又漂移（>3/5 全自驗 = 向 Fat Mo 報告制度失效）。
 3. 驗證 CLAUDE.md 路由表每條路徑仍存在。
 4. 產出 ≤20 行健檢報告，追加到本檔尾部 §8。
-5. **教訓熔斷條款**（S148 Phase 4 新增）：若 `02 §7` 或 `learnings.md` 中出現 **≥3 條同型 workaround 教訓**（如「X 誤觸，先查 git diff，安全則刪 flag」），本次健檢必須發起 **hook 層或制度層治本議案**，提交 Fat Mo 審閱後執行，不再允許「又加一條教訓繞過」。同型教訓累積到 3 是迴圈訊號，治本是義務，非選項。
 
 ## §8 健檢記錄
 
-### 2026-07-08（S148 Phase 4，首次健檢）
-
-| 項目 | 結果 | 備注 |
-|---|---|---|
-| handoff.md 全檔行數 | 175 行（上限 800）| ✅ 安全 |
-| learnings.md 條數 | 50 條（上限 50）| ✅ 剛好（Phase 0 fhs-slim 執行） |
-| governance 各檔行數 | 最大 141 行（02，含 §7 新增治本附註） | ✅ 全在 400 行以內 |
-| auto-memory MEMORY.md 斷鏈 | 未偵測到斷鏈 | ✅ |
-| lessons/INDEX.md 孤兒 | 未偵測到孤兒 | ✅ |
-| CLAUDE.md 路由表 | 未跑（非本次健檢範疇） | — |
-| 自驗豁免使用率 | 未抽查（單次健檢，後續季度抽查） | — |
-| 教訓熔斷條款（§7 #5）| governance/02 §7 無 ≥3 條同型 workaround | ✅ kgov 誤觸系列已治本（S148 Phase 2） |
-| cadence 健檢偵測 | governance_health_cadence 已啟用，首次記錄消除警示 | ✅ |
-
-健檢執行者：A2 (Antigravity)，S148 Phase 4 自動觸發
+- （尚無。第一次健檢由未來 session 寫入。）
