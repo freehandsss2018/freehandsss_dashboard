@@ -36,6 +36,9 @@ artifacts/
 .fhs/.health-check-error.log
 scripts/hooks/test/.health-fixtures-scratch/
 
+# usage-audit L1 runtime output (S153) — regenerated on demand, not version controlled
+.fhs/.usage-report.json
+
 # Generated code snapshot (repomix tool output)
 repomix-output.txt
 

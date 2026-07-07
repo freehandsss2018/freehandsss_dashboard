@@ -1,0 +1,12 @@
+{
+  "_readme": "FHS 使用行為審計（/fhs-usage-audit）掃描目標設定檔。Claude Code transcript 目錄命名規則不穩定（大小寫/底線轉橫線/worktree後綴皆不一致），無法用 cwd 動態推導（S140 kgov SAFE_PATH_PATTERNS 外部路徑盲區同一教訓），故此處明確列出，專案搬遷或使用者變更需手動更新。",
+  "version": "1.0.0",
+  "last_updated": "2026-07-07",
+  "claude_projects_dirs": [
+    "C:/Users/Edwin/.claude/projects/d--SynologyDrive-Free-handsss-freehandsss-dashboard",
+    "C:/Users/Edwin/.claude/projects/d--SynologyDrive-Free-handsss-freehandsss-dashboard-Freehandsss-Dashboard",
+    "C:/Users/Edwin/.claude/projects/D--SynologyDrive-Free-handsss-freehandsss-dashboard--claude-worktrees-elastic-gates-ee5944"
+  ],
+  "cursor_file": "C:/Users/Edwin/.claude/fhs-usage-cursor.json",
+  "sources_note": "S153 設計預留 sources 欄位供未來 Antigravity/VSCode/Codex adapter 擴充；三者目前皆不落在 ~/.claude/projects/，屬已知掃描邊界，非 bug。"
+}
