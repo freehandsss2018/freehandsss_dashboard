@@ -1358,3 +1358,9 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 ### D14：S150 審計修復計畫執行序——Phase 1-3 先行，Phase 4-6 留待 S148/S149 後接續
 
 **決策**：S150 審計修復計畫（[.fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md](../reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md)）Fat Mo 核准後，依規劃期已定的建議序（§4.9，與 S148/S149 零檔案交集）只執行 Phase 1-3（F1 igwatch 按鈕/F2 記錄中心 RPC/F3 seg control desktop），Phase 4-6 留待 S148/S149 完成後由後續 session 接續（可直接續讀計畫檔 §4.5）。本決策無正式完成報告，全文居所依 D13 規則(b)為 Changelog——詳見 Changelog.md 2026-07-07 Session 150（續）條目。
+
+### D15：S152 十大框架條款吸收——凍結快照制，不自動跟隨上游更新
+
+**決策**：Fat Mo 提供「Codex 必裝十大技能」榜單，經 4 支 subagent 原文研究後裁決：不裝任何整包框架，只吸收條款級規則融入既有治理（A-M，見計畫檔）。吸收物為**上游某時點的凍結快照**（各條款尾註來源+日期），刻意不設自動同步機制——上游是為無代碼級攔截的通用 agent 補課，FHS 已有 PreToolUse 硬 gate，只要知識不要其執行機制。三處衝突裁決 FHS 贏（批量問 vs 一次一題／兩輪熔斷 vs 三次／44px 觸控 vs 24px）。過程中發現 C 項（systematic-debugging 四階段）與 A 項（TDD 鐵律本體）早於 2026-05-09 已 vendor-in，本次修正為補鏈而非重複造輪。
+
+詳見完成記錄：`.fhs/reports/completion/2026-07-07_s152-skills-absorption_completion_report.md`

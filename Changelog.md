@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-07-07] Session 152（Fable 5 規劃 → Sonnet 5 執行）— 十大框架條款吸收（Skills Absorption）
+
+Fat Mo 提供「Codex 必裝十大技能」榜單，經 4 支 subagent 原文研究裁決：不裝整包框架，只吸收條款級規則（A-M）融入既有治理。完成：tdd-guide.md 補鏈既有 TDD vendor 檔（發現 A/C 項早於 2026-05-09 已部分吸收，避免重複造輪）；03 R2/R4 補證據新鮮度+紅綠revert+人類訊號；02 補外部內容隔離+context動態節流；04 T2/T5 補兩verdict審查+BLOCKED四狀態+落盤紀律；cl-flow.md 補計畫反佔位條款；ui-ux-pro-max/FHS_INTEGRATION.md+code-reviewer 補 Vercel 框架無關前端規則。fresh-context 情境測試+haiku smoke test 各一次 PASS；guard 16/16 無回歸。webapp-testing plugin 安裝因需互動式操作標記 BLOCKED 待 Fat Mo 手動處理。全文見完成記錄 [2026-07-07_s152-skills-absorption_completion_report.md](.fhs/reports/completion/2026-07-07_s152-skills-absorption_completion_report.md)。
+
 ## [2026-07-07] Session 151（Sonnet 5 執行）— 手機版 Threads 底部導覽列與 Supabase 狀態列對位優化
 
 針對手機版（橫寬 <767px）底部 Threads 風格半透明圓角浮動導覽列進行滾動防剪裁與位置防覆蓋優化：

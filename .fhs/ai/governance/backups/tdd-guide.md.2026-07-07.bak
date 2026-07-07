@@ -2,9 +2,9 @@
 name: tdd-guide
 description: FHS Test-Driven Development specialist. Use PROACTIVELY when writing new Maintenance_Tools scripts, debugging Python test failures, or planning n8n Code Node logic. Enforces write-tests-first methodology for FHS test files.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
-version: v1.1.0
+version: v1.0.0
 compatible_with: AGENTS.md v1.5.0
-last_updated: 2026-07-07
+last_updated: 2026-05-16
 ---
 
 # FHS TDD Guide
@@ -24,12 +24,6 @@ last_updated: 2026-07-07
 | Dashboard 邏輯驗證 | `Freehandsss_Dashboard/` | JavaScript（手動） |
 
 ---
-
-## 鐵律（Iron Law，v1.1.0 補鏈，2026-07-07）
-
-> ⛔ **完整鐵律強制律**：本 skill 已於 2026-05-09 完整引入 `.fhs/ai/skills/vendor/superpowers/test-driven-development.md`（原始 SKILL.md 全文，含 Iron Law「無失敗測試不得寫生產代碼」+「先寫代碼即整段刪除重寫」+ Verify RED/GREEN 強制步驟）。v1.0.0 遺漏連結，本次補上。
-> **適用域**：`Maintenance_Tools/`、`scripts/`、n8n Code Node 邏輯。**不適用**：Dashboard HTML 手改（無測試 harness，走 code-reviewer+實測分流，豁免不需另批）。
-> 豁免（throwaway prototype／生成代碼／config 檔）須 Fat Mo 批准，不可自行豁免。
 
 ## TDD 工作流（Red-Green-Refactor）
 

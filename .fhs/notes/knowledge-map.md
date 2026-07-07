@@ -21,3 +21,11 @@
 | 某條 session 的逐條敘事（誰做了什麼、按時間序） | `.fhs/notes/session-log.md`（Grep session 編號，只窗口讀） |
 
 **判準**：查到的是「當前狀態」→ 便攜塊；查到的是「怎麼做/怎麼派工」→ governance；查到的是「過去某次事件的完整來龍去脈」→ 對應完成報告或 decisions.md；查到的是「反覆驗證的通則」→ learnings.md。四者互不重疊，找錯類別是最常見的查詢失敗模式。
+
+## 外部框架吸收書籤（2026-07-07，S152）
+
+| 資源 | 用途 |
+|---|---|
+| `artifacts/2026-07-07-1851-skills-research/` | 十大 coding-agent skills 框架原文研究筆記+統一裁決表（00-verdict-summary.md） |
+| Awesome Agent Skills（VoltAgent/awesome-agent-skills，1,497+ skills 索引） | 通用 skill 目錄查找；治理/財務/POS 類已確認查無 |
+| Vercel web-interface-guidelines（`ui-ux-pro-max/FHS_INTEGRATION.md` Section 五） | 框架無關前端品質規則全表 |
