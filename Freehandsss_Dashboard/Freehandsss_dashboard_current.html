@@ -1659,6 +1659,16 @@
             .fhs-top-bar { gap: 4px; padding: 0 8px; }
         }
 
+        .fhs-header-icon {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+            margin-right: 6px;
+            color: inherit;
+            display: inline-block;
+            stroke-width: 2px;
+        }
+
         /* --- FHS Layout --- */
         .v40-layout {
             padding: var(--space-4);
@@ -1857,6 +1867,9 @@
                 gap: var(--space-3);
                 box-sizing: border-box;
                 width: 100%;
+            }
+            .fhs-toast {
+                bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
             }
             /* S150 F6（2026-07-07）：模式切換按鈕移至底部常駐列，仿 Threads 底部導覽 */
             .fhs-top-bar__actions {
@@ -2904,7 +2917,7 @@
         .fhs-toast {
             position: fixed;
             left: 16px; right: 16px;
-            bottom: calc(156px + env(safe-area-inset-bottom, 0px));
+            bottom: 24px;
             border-radius: var(--radius-lg);
             background: var(--fhs-toast-bg);
             color: #FAF7F4;
@@ -3254,6 +3267,45 @@
   <symbol id="icon-bell" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
   </symbol>
+  <symbol id="icon-clipboard-list" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 12h6M9 16h6M9 8h6"/>
+  </symbol>
+  <symbol id="icon-shopping-bag" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M3 6h18M16 10a4 4 0 0 1-8 0"/>
+  </symbol>
+  <symbol id="icon-message-square" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </symbol>
+  <symbol id="icon-image" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+    <circle cx="9" cy="9" r="2" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+  </symbol>
+  <symbol id="icon-book-open" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  </symbol>
+  <symbol id="icon-truck" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="1" y="3" width="15" height="13" rx="2" ry="2"/>
+    <polygon stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+    <circle cx="5.5" cy="18.5" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/>
+    <circle cx="18.5" cy="18.5" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/>
+  </symbol>
+  <symbol id="icon-banknote" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="2" y="5" width="20" height="14" rx="2"/>
+    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 12h.01M18 12h.01"/>
+  </symbol>
+  <symbol id="icon-wrench" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </symbol>
+  <symbol id="icon-lightbulb" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/>
+  </symbol>
+  <symbol id="icon-shield-alert" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/>
+  </symbol>
 </svg>
 <!-- ===== /V42 Lucide SVG Sprite ===== -->
 
@@ -3539,14 +3591,14 @@
     <!-- 原有表單區域 -->
     <div id="formContainer">
         <div class="verification-list card">
-        <h2 style="color: #457B9D;">📋 本單產品核對清單 (生產專用)</h2>
+        <h2 style="color: #457B9D; display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-clipboard-list"/></svg>本單產品核對清單 (生產專用)</h2>
         <div id="v-list-container">
             <p style="color:#888; text-align:center;">(尚未選擇產品)</p>
         </div>
     </div>
 
     <div class="card card-info">
-        <h2>📝 基本資訊</h2>
+        <h2 style="display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-square-pen"/></svg>基本資訊</h2>
         
         <!-- Order_ID Override UI - V31.1 -->
         <div class="form-group" style="margin-bottom: 25px;">
@@ -3577,11 +3629,11 @@
     </div>
 
     <div class="card card-product">
-        <h2>🛍️ 產品選購</h2>
+        <h2 style="display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-shopping-bag"/></svg>產品選購</h2>
 
         <!-- ── 方案B：訂單類型確認區塊 ── -->
         <div class="order-type-confirm" id="orderTypeConfirm">
-            <div class="confirm-title">📋 訂單類型確認</div>
+            <div class="confirm-title" style="display: flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px;"><use href="#icon-clipboard-list"/></svg>訂單類型確認</div>
             <div class="confirm-desc">此訂單是否包含「手模擺設」取模服務？</div>
             <div class="confirm-options">
                 <div class="confirm-option selected-yes" id="confirmOptNo" onclick="selectOrderType('no')">
@@ -4063,16 +4115,16 @@
     </div>
 
     <div class="card card-finance">
-        <h2>💰 財務結算</h2>
+        <h2 style="display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-wallet"/></svg>財務結算</h2>
         
         <!-- V32 Ling Au Quote Engine UI -->
         <div id="pricingEngineUI" style="margin-bottom: 20px; padding: 15px; background: rgba(82, 183, 136, 0.1); border: 2px dashed #52B788; border-radius: 12px; transition: all 0.3s ease;">
             <div style="font-size: 18px; font-weight: bold; color: #2D6A4F; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>💡 系統精算建議報價：$<span id="suggestedPrice">0</span><span id="priceBreakdown" style="font-size:13px; font-weight:normal; color:#457B9D; margin-left:5px;"></span></span>
+                <span style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="color: #d97706; margin-right: 4px;"><use href="#icon-lightbulb"/></svg>系統精算建議報價：$<span id="suggestedPrice">0</span><span id="priceBreakdown" style="font-size:13px; font-weight:normal; color:#457B9D; margin-left:5px;"></span></span>
                 <span style="font-size: 12px; font-weight: normal; color: #666; background: white; padding: 2px 8px; border-radius: 12px; border: 1px solid #ddd;" class="fat-only">畫圖成本: $<span id="drawingCost">0</span></span>
             </div>
             <!-- Scenario O: Adult Wood Force Hint -->
-            <div id="adultWoodForceHint" style="display:none; font-size:11px; color:#D32F2F; margin-bottom:5px; font-weight:bold;">🛡️ 成人+木框：系統已強制鎖定為 P (照片建模) 模式</div>
+            <div id="adultWoodForceHint" style="display:none; font-size:11px; color:#D32F2F; margin-bottom:5px; font-weight:bold;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-shield-alert"/></svg>成人+木框：系統已強制鎖定為 P (照片建模) 模式</div>
             <div style="font-size: 12px; color: #555; line-height: 1.6; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
         </div>
 
@@ -4180,18 +4232,18 @@
     </div>
 
     <div class="card preview-card" id="legacyPreviewCard" style="display:none;" aria-hidden="true">
-        <h2>📱 IG 訊息分段預覽</h2>
+        <h2 style="display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-message-square"/></svg>IG 訊息分段預覽</h2>
 
         <div id="preview-box-a" class="preview-box">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-                <h3 style="margin:0;">🖼️ Category A: 手模擺設訊息</h3>
+                <h3 style="margin:0; display: flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-image"/></svg>Category A: 手模擺設訊息</h3>
                 <button type="button" id="igFmtToggleA" onclick="toggleIgFormatA()" style="font-size:12px;padding:4px 10px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;white-space:nowrap;">🔄 格式：新版</button>
             </div>
             <textarea id="output-preview-a" readonly></textarea>
         </div>
 
         <div id="preview-box-b" class="preview-box">
-            <h3>⚙️ Category B: 金屬產品訊息</h3>
+            <h3 style="display: flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-settings"/></svg>Category B: 金屬產品訊息</h3>
             <textarea id="output-preview-b" readonly></textarea>
         </div>
 
@@ -4414,7 +4466,7 @@
         <!-- Row 0: IG 看門狗警報 (S119 Phase 2 - merged from separate tab) -->
         <div class="card" style="margin:0 0 12px 0; padding:16px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                <span style="font-size:1.25rem;">🐶</span>
+                <svg class="fhs-header-icon" width="18" height="18" style="color:var(--fhs-accent); margin-right: 4px; vertical-align: middle;"><use href="#icon-bell"/></svg>
                 <span style="font-size:15px; font-weight:700; color:var(--fhs-text-primary);">IG 看門狗警報</span>
                 <span id="igwatchBadge" style="margin-left:auto; font-size:11px; color:var(--fhs-text-secondary);"></span>
                 <button id="igwatchRefreshBtn" onclick="loadIgWatchAlerts()" style="background:none;border:1px solid var(--fhs-border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;">↻ 刷新</button>
@@ -4431,7 +4483,7 @@
         <!-- 💰 財務參數設定中心 (Session 34) -->
         <div id="financialSettingsCard" class="card" style="border-top: 5px solid #2A9D8F; margin: 0 0 16px 0; padding:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h2 style="color:#2A9D8F; margin:0; font-size:15px; font-weight:700;">💰 財務參數設定中心</h2>
+                <h2 style="color:#2A9D8F; margin:0; font-size:15px; font-weight:700; display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-wallet"/></svg>財務參數設定中心</h2>
                 <span id="finSettingsBadge" class="sys-badge sys-badge-checking" style="font-size:11px;">載入中</span>
             </div>
 
@@ -4494,7 +4546,7 @@
 
             <!-- 🔧 訂單層成本修改（Audit Ledger Phase B, Session 130） -->
             <div id="orderCostAdjSection" style="border-top:1px solid var(--fhs-border); padding-top:14px; margin-top:14px;">
-                <div style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">🔧 指定訂號成本修改</div>
+                <div style="font-size:11px; color:var(--fhs-text-secondary); margin-bottom:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-wrench"/></svg>指定訂號成本修改</div>
                 <div style="font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:7px 10px; margin-bottom:12px; line-height:1.5;">
                     ⚠️ 直接修改訂單 <code>total_cost</code>，並鎖定防批量重算覆蓋（<code>cost_override_locked=true</code>）。修改記錄寫入審計日誌。
                 </div>
@@ -4526,7 +4578,7 @@
         <!-- 📒 Log Sheet 記錄中心 (Session 69) -->
         <div id="logSheetCard" class="card" style="border-top:5px solid #6366F1; margin:0 0 16px 0; padding:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h2 style="color:#6366F1; margin:0; font-size:15px; font-weight:700;">📒 記錄中心 (Log Sheet)</h2>
+                <h2 style="color:#6366F1; margin:0; font-size:15px; font-weight:700; display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-book-open"/></svg>記錄中心 (Log Sheet)</h2>
                 <span id="logSheetBadge" class="sys-badge" style="font-size:11px; background:#ede9fe; color:#6366F1;">未載入</span>
             </div>
 
@@ -4542,12 +4594,12 @@
             <!-- Tab 列（通用容器，Session 124 加審計日誌 tab） -->
             <div style="border-bottom:2px solid var(--fhs-border); margin-bottom:12px; display:flex; gap:0;">
                 <button id="logTabExpenseBtn" onclick="window.switchLogTab('expense')"
-                    style="padding:6px 16px; font-size:13px; border:none; border-bottom:2px solid #6366F1; margin-bottom:-2px; background:transparent; color:#6366F1; font-weight:700; cursor:pointer;">
-                    💸 手動支出
+                    style="padding:6px 16px; font-size:13px; border:none; border-bottom:2px solid #6366F1; margin-bottom:-2px; background:transparent; color:#6366F1; font-weight:700; cursor:pointer; display: inline-flex; align-items: center;">
+                    <svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-banknote"/></svg>手動支出
                 </button>
                 <button id="logTabAuditBtn" onclick="window.switchLogTab('audit')"
-                    style="padding:6px 16px; font-size:13px; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; background:transparent; color:var(--fhs-text-secondary); font-weight:600; cursor:pointer;">
-                    📋 審計日誌
+                    style="padding:6px 16px; font-size:13px; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; background:transparent; color:var(--fhs-text-secondary); font-weight:600; cursor:pointer; display: inline-flex; align-items: center;">
+                    <svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-clipboard-list"/></svg>審計日誌
                 </button>
             </div>
 
@@ -4652,7 +4704,7 @@
         <!-- 🚚 交貨期進度統計卡 (Session 82) -->
         <div id="dlvStatsCard" class="card" style="border-top:5px solid #ef4444; margin:0 0 16px 0; padding:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h2 style="color:#ef4444; margin:0; font-size:15px; font-weight:700;">🚚 交貨期進度</h2>
+                <h2 style="color:#ef4444; margin:0; font-size:15px; font-weight:700; display: flex; align-items: center;"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-truck"/></svg>交貨期進度</h2>
                 <span id="dlvStatsLoading" style="display:none; font-size:11px; color:#9ca3af; background:#f5f5f5; padding:2px 8px; border-radius:9px;">載入中…</span>
             </div>
             <p style="font-size:11px; color:var(--fhs-text-secondary); margin:0 0 10px 0;">點擊色塊展開該狀態訂單清單 · 點訂單查詳情</p>
@@ -4686,7 +4738,7 @@
         <!-- NOTE: fatmoConfigPanel ID 保留在原位（formContainer 內），此處為 Desktop side panel 入口 -->
         <div class="fhs-card" style="margin-bottom: var(--space-3);">
             <div class="fhs-card__header">
-                <span style="font-weight:700; color: var(--fhs-text-primary);">⚙️ Fat Mo 設定</span>
+                <span style="font-weight:700; color: var(--fhs-text-primary); display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-settings"/></svg>Fat Mo 設定</span>
             </div>
             <p style="font-size: var(--fhs-text-sm); color: var(--fhs-text-secondary); margin:0;">
                 設定面板位於上方訂單區內。
@@ -4698,7 +4750,7 @@
         <!-- Desktop 訂單總覽摘要 -->
         <div class="fhs-card" id="v40-audit-summary">
             <div class="fhs-card__header">
-                <span style="font-weight:700; color: var(--fhs-text-primary);">📊 訂單總覽</span>
+                <span style="font-weight:700; color: var(--fhs-text-primary); display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-list"/></svg>訂單總覽</span>
             </div>
             <table class="audit-table" id="v40-audit-summary-table" style="margin-top: var(--space-3);">
                 <thead>
@@ -4742,9 +4794,8 @@
     <div id="v40-drawer" class="fhs-drawer">
         <div class="fhs-drawer__handle"></div>
         <div class="fhs-drawer__tabs">
-            <button class="fhs-drawer__tab is-active" onclick="showDrawerTab('settings', event)">⚙️ 設定</button>
-            <button class="fhs-drawer__tab" onclick="showDrawerTab('qa', event)">🧪 QA</button>
-            <button class="fhs-drawer__tab" onclick="showDrawerTab('audit', event)">📊 訂單</button>
+            <button class="fhs-drawer__tab is-active" onclick="showDrawerTab('settings', event)"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-settings"/></svg>設定</button>
+            <button class="fhs-drawer__tab" onclick="showDrawerTab('audit', event)"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-list"/></svg>訂單</button>
         </div>
         <div id="v40-drawer-settings" class="fhs-drawer__content is-active">
             <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-3);">
@@ -4753,10 +4804,6 @@
             </div>
             <!-- fatmoConfigPanel 鏡像容器（由 JS 動態複製） -->
             <div id="v40-drawer-settings-mirror"></div>
-        </div>
-        <div id="v40-drawer-qa" class="fhs-drawer__content">
-            <!-- qaCenter 鏡像容器（由 JS 動態複製） -->
-            <div id="v40-drawer-qa-mirror"></div>
         </div>
         <div id="v40-drawer-audit" class="fhs-drawer__content">
             <p style="font-size: var(--fhs-text-sm); color: var(--fhs-text-secondary); margin-bottom: var(--space-3);">
