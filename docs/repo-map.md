@@ -152,9 +152,10 @@ freehandsss_dashboard/
 │   │   │   ├── 01_diagnosis.md          ← Harness 診斷：token 洩漏/失焦/出錯 前三名（實測數字）
 │   │   │   ├── 02_model-dispatch.md     ← 模型調度守則：指揮官不下場、派工三件套、model 對照表、升降級、驗證不自驗
 │   │   │   ├── 03_judgment-rubrics.md   ← 判斷力外化：升級/完成/問人/換路/品質底線 五組 rubric
-│   │   │   ├── 04_delegation-templates.md ← 派工 prompt 模板 ×5（搜尋/實作/重構/研究/審查）
+│   │   │   ├── 04_delegation-templates.md ← 派工 prompt 模板 ×7（搜尋/實作/重構/研究/審查/交接膠囊/fan-out）
 │   │   │   ├── 05_maintenance-protocol.md ← 維護協議：權限矩陣、教訓落點、輪轉SOP
 │   │   │   ├── 06_letter-to-future-sessions.md ← 給未來 session 的信
+│   │   │   ├── 07_compounding-loop.md   ← 複利迴圈：教訓五階段門檻、Skills複利、平行工作流、worktree（S156 blocktempo 凍結快照）
 │   │   │   └── backups/                 ← 修改既有檔案前的備份副本（帶日期）
 │   │   ├── subagents/                   ← FHS Subagent 文件層（2026-04-05 新增）
 │   │   │   ├── OPERATING_MODEL.md       ← FHS Subagent 運作模型 v2.0（5-Layer Stack）

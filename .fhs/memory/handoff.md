@@ -1,10 +1,10 @@
 ```handoff
-【FHS 交接摘要 — 更新: 2026-07-08 / S154】
-🎯 目標: FHS 業務 POS+財務系統日常維護；S154 迴圈硬化（Loop Hardening）已完成，成功止血 kgov 污染並對齊 [G] 物理特徵判準，加入防回胖預算閘、commit 漏跑偵測與健檢熔斷機制
-✅ 已定決策（完整原文索引見別處連結）: (1)V42=production(S115)；(2)Supabase-First(S)；(3)IG看門狗regex(S116)；(4)handoff SSOT=便攜塊(S118)；(5)(6)ig_watchdog_alerts設計(S119/S122)；(7)嬰兒鋁合金=$115(S120)；(8)n8n PUT body四欄(S121)；(9)成本禁假乘法(S124)；(10)(11)(12)(14)(15)Task A/廢欄/簡化付款/depositMode/Audit Ledger，見MASTER表S125/126/128/131；(13)n8n POST用raw(S127)；(16)n8n禁emoji(S129)；(17)cost_override_locked優先(S130)；(18)-(28)S134-S140共11項治理/平台決策，見AGENTS§1.2+decisions.md；(29)敘事單源合約(S144)；(30)成本文件Stage3核實(S147)；(31)S148迴圈硬化v2=4-Phase獨立commit，§4.0b五授權，計畫檔見MASTER表(S148)；(32)S149治理可攜化v2=架構A′原位抽取+guard引擎/規則拆分，6-Phase獨立commit，FHS subagents安裝層級一律專案級，§4.0b八授權，計畫檔見MASTER表(S149)；(33)S150審計修復v2=7-Phase獨立commit，Phase1-3已於2026-07-07執行完成(migration0049+code-reviewer PASS)，Phase4-6待S148/S149後接續，§4.0b八授權(S150)；(34)exec 4069結論=Telegram markdown解析失敗非資料夾漏處理，不觸發授權7補掃(S151)；(35)手機版 fixed 子元素 transform Containing Block 裁剪防護（JS 動態移至 body）(S151)；(36)S152十大框架吸收=凍結快照不跟上游，A-M融入治理，K項BLOCKED待手動(S152)；(37)S153向量圖標100%與底部固定BUG=所有維度Emoji、多維標籤、詳情彈窗與折疊卡片改用標準向量圖標，.fhs-bottom-bar 手機版改 static 以免重疊(S153)；(38)S148迴圈硬化=R11測試隔離避免觀察數據污染，重寫post-tool-kgov v2.0.0對齊[G]物理特徵真值表（md/js只warn不落flag），T6 budget gate、T5 commit漏跑偵測、T7 router排除詞、05維護協議教訓熔斷、health健檢 governance 季度偵測，對抗審查 PASS (S154)
-🔬 驗證: S148 4 Phase 獨立 commit 完工；guard 16/16 + kgov 10/10 PASS；fhs-health-check 0 issues (首次 quarterly 健檢成功產出記錄)；fresh-context subagent 對抗審查 PASS
-📋 待辦: 🔴[S149]治理可攜化待執行 🔴[S150]Phase4-6待S149後接續（verified_ok+DELETE撤除=先問級） ⚪[S152]webapp-testing BLOCKED待手動 ⚪P2訊息入庫另開/cl-flow ⚪n8n Mirror Prep改RPC(需opus+live) ⚪22skills裁減暫緩(待V43)
-➡️ 下一步: 執行 S149 治理系統可攜化（S149 已無 S148 阻擋）
+【FHS 交接摘要 — 更新: 2026-07-08 / S156】
+🎯 目標: FHS 業務 POS+財務系統日常維護；S156 blocktempo 吸收完成（governance/07 複利迴圈新檔+七處接線）；S155 YouTube+NFC 工作流計畫待批；S154 迴圈硬化已完成
+✅ 已定決策（完整原文索引見別處連結）: (1)V42=production(S115)；(2)Supabase-First(S)；(3)IG看門狗regex(S116)；(4)handoff SSOT=便攜塊(S118)；(5)(6)ig_watchdog_alerts設計(S119/S122)；(7)嬰兒鋁合金=$115(S120)；(8)n8n PUT body四欄(S121)；(9)成本禁假乘法(S124)；(10)(11)(12)(14)(15)Task A/廢欄/簡化付款/depositMode/Audit Ledger，見MASTER表S125/126/128/131；(13)n8n POST用raw(S127)；(16)n8n禁emoji(S129)；(17)cost_override_locked優先(S130)；(18)-(28)S134-S140共11項治理/平台決策，見AGENTS§1.2+decisions.md；(29)敘事單源合約(S144)；(30)成本文件Stage3核實(S147)；(31)S148迴圈硬化v2=4-Phase獨立commit，§4.0b五授權，計畫檔見MASTER表(S148)；(32)S149治理可攜化v2=架構A′原位抽取+guard引擎/規則拆分，6-Phase獨立commit，FHS subagents安裝層級一律專案級，§4.0b八授權，計畫檔見MASTER表(S149)；(33)S150審計修復v2=7-Phase獨立commit，Phase1-3已於2026-07-07執行完成(migration0049+code-reviewer PASS)，Phase4-6待S148/S149後接續，§4.0b八授權(S150)；(34)exec 4069結論=Telegram markdown解析失敗非資料夾漏處理，不觸發授權7補掃(S151)；(35)手機版 fixed 子元素 transform Containing Block 裁剪防護（JS 動態移至 body）(S151)；(36)S152十大框架吸收=凍結快照不跟上游，A-M融入治理，K項BLOCKED待手動(S152)；(37)S153向量圖標100%與底部固定BUG=所有維度Emoji、多維標籤、詳情彈窗與折疊卡片改用標準向量圖標，.fhs-bottom-bar 手機版改 static 以免重疊(S153)；(38)S148迴圈硬化=R11測試隔離避免觀察數據污染，重寫post-tool-kgov v2.0.0對齊[G]物理特徵真值表（md/js只warn不落flag），T6 budget gate、T5 commit漏跑偵測、T7 router排除詞、05維護協議教訓熔斷、health健檢 governance 季度偵測，對抗審查 PASS (S154)；(39)S156 blocktempo吸收=凍結快照沿D15，五項增量入governance/07複利迴圈（教訓stage-3落盤門檻/Skills複利/fan-out T7+loop四停止條件/worktree風險註記/評分者rubric前置降haiku），60%已覆蓋明細見07§0防重吸，D18（S155計畫檔D18已消歧為D19）(S156)
+🔬 驗證: S156 opus對抗審查4F修畢+haiku read-back 13/13；S148 4 Phase 獨立 commit 完工；guard 16/16 + kgov 10/10 PASS；fhs-health-check 0 issues (首次 quarterly 健檢成功產出記錄)
+📋 待辦: 🔴[S155]YouTube+NFC計畫待Fat Mo批准（批准=授權七項，migration編號協調見計畫檔） 🔴[S149]治理可攜化待執行 🔴[S150]Phase4-6待S149後接續（verified_ok+DELETE撤除=先問級） ⚪[S156]guard learnings warn提案待裁決 ⚪[S152]webapp-testing BLOCKED待手動 ⚪P2訊息入庫另開/cl-flow ⚪n8n Mirror Prep改RPC(需opus+live) ⚪22skills裁減暫緩(待V43)
+➡️ 下一步: Fat Mo 批 S155 計畫 →Sonnet 5 執行；或先執行 S149 治理可攜化（兩者無依賴）
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔 (7)Obsidian dot-directory「不可配置」認定已推翻(S137)，`.fhs`可經外掛白名單顯示，但D2職責邊界不變（AI仍唯一寫入.fhs/memory） (8)pre-tool-guard.js的R2/R3只掃Write/Edit的content/new_string, 不掃old_string；Bash只查R5-R9 command字串不掃API key pattern——寫測試夾具/legit密鑰檔時可用此差異避免guard誤傷(S139) (9).mcp.json的${VAR}展開讀行程OS環境變數，不會讀.env檔案本身，兩者是不同機制(S139) (10)guard新規則上線後，撰寫該規則的中文說明文字（fixture name/note）本身可能連續出現觸發詞而被自身規則誤攔——用拆字/無dot前綴口語描述繞開，改用Bash寫入避開Write/Edit的content掃描(S140) (11).fhs/.deploy-ok只能Fat Mo手動touch建立，AI用任何工具嘗試建立都會被R10攔截，10分鐘TTL過期自動失效(S140)
 🗺 下鑽: 完整明細見下方「MASTER 持續待辦」表 + 各 Session 條目 + 制度層見 `.fhs/ai/governance/00_INDEX.md` + 更早記錄見 `.fhs/memory/archive/handoff-full-until-2026-07-04.md`
@@ -14,10 +14,13 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-07-08（S148 執行完成；S149 治理可攜化待執行；S150 Phase 4-6 待 S149 後接續）
+> 上次更新：2026-07-08（S156 blocktempo 吸收完成；S155 YouTube+NFC 工作流計畫新增待批；S148 執行完成；S149 待執行；S150 Phase 4-6 待 S149 後接續）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| ✅ 完成 | **[S156] blocktempo fable-5-2 條款吸收（governance/07 複利迴圈）** | ✅ 全交付，opus 對抗審查+haiku read-back 過 | 五項增量入新檔 `07_compounding-loop.md`+七處接線；60% 已覆蓋明細凍結於 07 §0 防重複吸收。全文見完成報告 [2026-07-08_s156-blocktempo-absorption_completion_report.md](../reports/completion/2026-07-08_s156-blocktempo-absorption_completion_report.md)；決策 D18。注意：S155 計畫檔的 D18 已消歧為 D19 |
+| ⚪ 低 | **[S156] pre-tool-guard learnings warn 提案** | ⏳ 待 Fat Mo 裁決 | /8d v2-1(b)：Write/Edit 目標為 learnings.md 時 warn 提示 stage-3 自檢句（不 block，沿 kgov v2.0.0 md-only-warn 哲學）；hook 改動=先問級，批准後任一 session 按 02 §7 慣例實作+fixtures 驗證 |
+| 🔴 高 | **[S155] YouTube+NFC 記念影片工作流實施計畫（W1–W4）** | ⏳ 待 Fat Mo 批准 → Sonnet 5 執行 | 純規劃 session 產出，零代碼改動。緣起：記念短片現行 Spotify 需客人裝 app，改上傳 YouTube（Unlisted）+NFC 貼紙貼木框一拍即播。計畫檔 [.fhs/reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md](../reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md)（敘事單源，含 12 問裁決+設計規格+SOP 草稿附錄A）。P0 依賴閘＋4 Phase 獨立 commit：P1 orders.video_url+RPC fhs_write_video_url（migration 動態編號預期 0052，0050/0051 讓路 S150）、P2 V42 詳情 modal 欄位+向量 badge、P3 生成上傳資料按鈕、P4 SOP 落盤+D18+/upload-web 部署。§4.0b 七項授權，批准=一併授權。與 S148/S149/S150 無硬依賴，唯一協調點=migration 編號 |
 | ⚪ 低 | **[S152] webapp-testing plugin 安裝** | ⏳ BLOCKED，待 Fat Mo 手動 | 需互動式 `/plugin install`，本 session 無對應工具；其餘 A-M 條款已全部落地，見完成記錄 [2026-07-07_s152-skills-absorption_completion_report.md](../reports/completion/2026-07-07_s152-skills-absorption_completion_report.md) |
 | ✅ 完成 | **[S152-followup] 接線稽核與三項裁決執行** | ✅ 全交付，guard16/16無回歸 | AGENTS.md Rule 3.15 熔斷數字消歧註記；歸檔孤兒 `vendor/awesome-cc/hooks-setup-guide.md`；router.js 補 finance-auditor/product-integration-validator/blender-3d-modeler 三支路由，過程中抓到並修復 first-match-wins 順序 bug（財務稽核/新SKU 原本會被更早的關鍵字路由誤攔）。全文見完成記錄 [2026-07-07_s152-followup-wiring-audit_completion_report.md](../reports/completion/2026-07-07_s152-followup-wiring-audit_completion_report.md) |
 | ✅ 完成 | **[S153] 訂單總覽與詳情圖標 100% 向量化與底部導覽重疊 BUG 修復** | ✅ 執行完成，WebDAV 部署 NAS 通過 | 所有 CJK 肢體、定價材質、款式主題、詳情 Modal、折疊卡片、逾期指示器中的 Emoji 已替換為標準 SVG 向量圖標，手機底部返回列設為 static 防固定重疊。 |
@@ -68,6 +71,20 @@
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂三套並存表徵，另開 `/cl-flow` |
 | ⚪ 低 | **`docs/repo-map.md` migration 0039-0041 本地檔缺漏補登** | 📝 已記入待辦 | pre-existing 缺口，僅標記未修復 |
 | ⚪ 低 | **[v3 候選] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | 另開 `/cl-flow` 獨立評估，不回頭改 v2 |
+
+### 已完成（Session 156 — blocktempo fable-5-2 條款吸收，2026-07-08，Fable 5）
+全文見完成報告（敘事單源 (a) 級）[2026-07-08_s156-blocktempo-absorption_completion_report.md](../reports/completion/2026-07-08_s156-blocktempo-absorption_completion_report.md)。一句話：文章 14 步差分後五項增量入 `governance/07_compounding-loop.md`（教訓五階段門檻/Skills複利/平行工作流/worktree/評分者降級），七處接線，決策 D18；過程處置 S155/D18 撞號與備份誤覆寫（均已修復）。
+
+【交付前雙紀律自檢】
+驗收：制度層變動 — fresh-context opus 對抗審查（spec PASS/品質 PASS-with-fixes，4F 全修）+ fresh haiku read-back 13/13 + /8d 迭代 3 弱點修正 = ✅（02 §5 分流表「文件/制度檔」外驗達標）
+Subagent：✅ 使用 2 支 — opus 對抗審查、haiku read-back；派工均按 T5/read-back 模板三件套
+
+### 規劃中（Session 155 — YouTube+NFC 記念影片工作流計畫，2026-07-08，Fable 5）
+計畫內容不重複展開（敘事單源分級合約），全文見 [S155計畫](../reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md)。緣起：Fat Mo 想將客人記念短片由 Spotify（需客人裝 app）遷移至 YouTube Unlisted＋NFC 貼紙木框一拍即播；規劃期 12 問 12 答定案（5–15支/月、半自動上傳免 API 稽核、直連 youtu.be、新單 only、已有 NFC 貼紙+手機寫入；第3輪：頻道=@Free_handsss、標題=`{客人名} - {刻字}`自動取 `order_items.engraving_text`、描述=固定文案含 IG/WhatsApp placeholder、封面=Canva 每單自訂存一客一專檔）。系統盲區確認：V42 僅有「已做音訊」狀態、零影片連結欄位、`.fhs` 零 Spotify 記錄。方案＝`orders.video_url`+RPC `fhs_write_video_url`（鏡 0049 模式+audit_logs）＋V42 modal 欄位/向量 badge＋生成上傳資料按鈕＋SOP 落盤。規劃期已定錨前端錨點（`_fsRpc`／`mapOrder._uuid`／`openOrderModal`）與 migration 編號協調規則。注意：本計畫原以 S154 命名，因迴圈硬化執行 session 同日已佔用 S154，改編號 S155。
+
+【交付前雙紀律自檢】
+驗收：純規劃型 — 機械驗收標準（live probe 四連／grep 三步留痕／playwright round-trip／fixtures 無回歸／Fat Mo 實機一單全流程）已寫入計畫檔 §5 供執行 session 使用；本次僅新增計畫檔+更新 handoff，`git status` 確認零生產代碼改動 = ✅
+Subagent：❌ 未使用 — 規劃期為 8 問澄清（AskUserQuestion×2）+定點 grep 錨定，按 governance/02 §1 主對話可直接做清單執行；方案設計材料全在對話 context 內
 
 ### 規劃中（Session 150 — 全面審視審計＋審計修復計畫，2026-07-06，Fable 5）
 兩交付物（敘事單源分級合約，本條目不重複展開細節）：(a) 審視報告與 (b) 實施計畫，路徑見上方 MASTER 表兩列。規劃期三項預查直接改寫方案：E1 `ig_watchdog_alerts.kind` CHECK constraint 只允許兩舊值（v1 直寫 verified_ok 會 500，v2 改先 migration 擴充）；E2/E3 去重 index＋n8n ignore-duplicates 已存在（冪等免費）。執行 session 注意：計畫 §4.0 執行紀律含 fresh-context opus 批審合併為單次派工（省 2 次 spawn）；Phase 4 順序鎖死＝0050 先 apply 才動 n8n。

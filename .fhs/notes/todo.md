@@ -16,6 +16,10 @@
 - [ ] ⚪ Plan 0004 執行：Supabase 成本架構完整遷移 → 參見 `docs/plan_0004_supabase_cost_migration.md`（優先級對齊 handoff.md MASTER 表「成本組裝單一真源重構（Phase 2）」= ⚪ 低，2026-07-05 `/fhs-audit` S145 修正：原標🔴與 handoff SSoT 不一致，另開 `/cl-flow` 評估）
 - [ ] 📋 Plan 0004 完成後：更新 Airtable 定義備存（歷史訂單成本分析用）
 
+## 未解待驗證 (Open Failures — 未過 stage-3 驗證的假設停放區，格式與規則見 `.fhs/ai/governance/07_compounding-loop.md` §1)
+
+（目前無條目）
+
 ## 長期掛起與技術債 (Backlog)
 
 - [ ] 定期追蹤 Supabase Free Tier 使用量 (警戒線: Database 400MB / 頻寬 1.5GB)

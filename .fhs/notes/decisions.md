@@ -1374,3 +1374,7 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 ### D17：S153 usage-audit 制度化——三層架構，審 AI 使用行為，與 fhs-health 正交
 
 **決策**：新建 `/fhs-usage-audit`（審 Claude Code transcript 使用行為，複製 S141-143 `fhs-health` 三層樣板），與 `/fhs-audit`（架構衛生）、`/fhs-slim`（文件五病）三方正交。無正式完成報告，全文居所依 D13 規則(b)為 Changelog——詳見 [Changelog.md](../../Changelog.md) 2026-07-07 Session 153（續）條目。
+
+### D18：S156 blocktempo fable-5-2 條款吸收——新建 governance/07 複利迴圈，凍結快照制（沿 D15）
+
+**決策**：Fat Mo 提供 blocktempo《自我改進 agent · Fable 5》第二篇（14 步），由 Fable 5 session 審閱後裁定：約 60% 已被 S137 governance 覆蓋（明細見 07 §0 吸收邊界表，防未來重複吸收），只吸收五項增量入新檔 `.fhs/ai/governance/07_compounding-loop.md`：(1) 教訓五階段落盤門檻（未過 stage-3 驗證的猜測禁入 learnings，落 todo.md Open-failure 格式）；(2) Skills 複利條款（skill 執行域教訓寫進 skill 本體 Known failure modes 節，05 §2 分流表+§1 權限矩陣已接線）；(3) 平行工作流三模式（fan-out 新增 T7 模板；loop-until-done 四停止條件，與兩輪熔斷按 D16 精神消歧）；(4) worktree 平行安全（含 SynologyDrive 同步與 AG worktreeConfig 崩潰兩項本環境風險註記）；(5) 評分者 rubric 前置可降 haiku。CLAUDE.md 路由表加一行指向 07。改動檔案均先備份於 governance/backups/（2026-07-08.bak）。本次為 Fat Mo 明示授權的自主吸收 session（用戶指示：新內容寫新檔、CLAUDE.md 只放路由、隨做隨寫）。

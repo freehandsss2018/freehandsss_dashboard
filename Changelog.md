@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-07-08] Session 156（Fable 5）— blocktempo fable-5-2 條款吸收：新建 governance/07 複利迴圈
+
+- 審閱 blocktempo《自我改進 agent · Fable 5》第二篇，60% 已覆蓋不重吸，五項增量入新檔 `07_compounding-loop.md`（教訓五階段門檻/Skills複利/平行工作流/worktree/評分者降級），接線 CLAUDE.md 路由+04 T7+05 權限與分流+INDEX+repo-map；opus 對抗審查 4F 修畢+haiku read-back 13/13。
+- 過程處置：S155 撞號改 S156、S155 計畫檔 D18→D19 消歧、誤覆寫 S148 備份已 git restore。
+- 全文見完成報告 [.fhs/reports/completion/2026-07-08_s156-blocktempo-absorption_completion_report.md](.fhs/reports/completion/2026-07-08_s156-blocktempo-absorption_completion_report.md)；決策 D18。
+
 ## [2026-07-08] Session 154（Gemini 3.5 Flash 執行）— S148 迴圈硬化（Loop Hardening）防誤觸與預防機制治理
 
 完成 S148 迴圈硬化（Loop Hardening）計畫，針對 [G] 財務邏輯稽核進行物理特徵對齊，徹底根治 Session 147 頻繁誤觸問題，並補全預防端與制度層三小件：

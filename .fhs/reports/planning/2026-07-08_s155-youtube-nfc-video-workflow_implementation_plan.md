@@ -1,7 +1,8 @@
-# S154 — YouTube + NFC 記念影片工作流實施計畫
+# S155 — YouTube + NFC 記念影片工作流實施計畫
 
 > **日期**：2026-07-08
 > **規劃**：Fable 5（本檔為敘事單源，全文唯一居所，依 D13 合約）
+> **編號註記**：原以 S154 命名，因迴圈硬化執行 session 同日已佔用 S154，改編號 S155（不影響內容）
 > **執行**：Sonnet 5 — 開新 session 只需開本計畫檔，不需重跑規劃期澄清
 > **狀態**：⏳ 待 Fat Mo 批准
 > **範圍**：W1–W4（W5 明文不做，見 §7）
@@ -29,13 +30,22 @@ FHS 為客人製作記念短片（客人 WhatsApp 傳原片 → Fat Mo 用 Canva
 | 7 | Spotify 去留 | **新單只做 YouTube**，舊單不回溯 |
 | 8 | NFC 硬體 | 已有 NFC 貼紙 + 手機寫入（NFC Tools 類 app） |
 
+### 0.2b 補充裁決（第 3 輪 4 問，Fat Mo 2026-07-08）
+
+| # | 問題 | 裁決 |
+|---|------|------|
+| 9 | 上傳頻道 | **@Free_handsss**（freehandsss2018@gmail.com），不另開頻道 |
+| 10 | 標題格式 | **`{客人名} - {刻字}`**（如 `Andrea - Our bundle of joy`）；刻字係 IG/WhatsApp 對話問客人想刻喺木框嘅字，已存於訂單 `order_items.engraving_text` |
+| 11 | 描述 | 固定文案（見 §2.3 模板；IG/WhatsApp 帳號正確寫法執行時問 Fat Mo） |
+| 12 | 封面圖 | **Canva 生成、每單自訂**，與影片同存「一客一專檔」資料夾（片+封面） |
+
 ### 0.3 規劃期現場盤點（2026-07-08 快照；行號執行時以 grep 重定位，勿直接信行號）
 
 | 事實 | 證據 |
 |------|------|
 | 本地 migration 最大 = `0048`；**0049 已 live**（S150 F2 `fhs_write_expense_log`）但本地缺檔——本地資料夾有滯後前科（0039-0041 亦曾缺漏） | `supabase/migrations/` glob + handoff S150 條目 |
 | **0050/0051 已預留**俾 S150 Phase 4-6（P1a verified_ok / P1b anon 權限收斂） | S150 計畫檔 §4.5 起 |
-| decisions.md 最大編號 = **D17** → 本計畫用 **D18** | decisions.md grep |
+| decisions.md 最大編號 = ~~D17~~ **D18**（前提過期：D18 已被同日 S156 blocktempo 吸收 session 佔用）→ 本計畫用 **D19**，執行時仍以「檔尾最新編號+1」為準 | decisions.md grep（2026-07-08 S156 更新） |
 | 前端有現成泛用 RPC helper `_fsRpc(fn, body)` | V42 約 L14597 |
 | `mapOrder`：`o.id` = FHS 訂單字串、`o._uuid = row.id` = Supabase UUID | V42 約 L14023；auto-memory pitfall 已載 |
 | 詳情 modal 入口 = `openOrderModal(orderId, catFilter, initialTab)` | V42 約 L9847，`window` 已暴露 L13635 |
@@ -48,7 +58,7 @@ FHS 為客人製作記念短片（客人 WhatsApp 傳原片 → Fat Mo 用 Canva
 
 **「半自動上傳 SOP + V42 影片連結欄位 + NFC 手機直寫」**：檔案上傳呢一下人手做（免 API 稽核），其餘（標題描述生成、連結入庫、複製、狀態可見）全部系統化。零 n8n workflow 改動。
 
-每單營運流程（5 步，約 6–8 分鐘人手）與一次性設置，全文見附錄 A（SOP 草稿，P4 落地後以 `.fhs/notes/youtube_nfc_video_sop.md` 為活體）。
+每單營運流程（5 步，約 8–10 分鐘人手，含 Canva 封面）與一次性設置，全文見附錄 A（SOP 草稿，P4 落地後以 `.fhs/notes/youtube_nfc_video_sop.md` 為活體）。
 
 ```
 客人WhatsApp原片 → Canva製作 → 匯出MP4存固定資料夾(NAS自動備份)
@@ -105,29 +115,44 @@ fhs_write_video_url(p_order_uuid uuid, p_url text) returns json
 
 ### 2.3 W3 —「生成上傳資料」按鈕
 
-modal 內按鈕 `fhsVideoUrlGenBtn`：由訂單資料生成標題+描述，顯示於 textarea 供複製（同樣帶 clipboard fallback）。
+modal 內按鈕 `fhsVideoUrlGenBtn`：由訂單資料生成標題+描述，顯示於**可編輯 textarea** 供覆核修改後複製（帶 clipboard fallback）。
 
-**模板常數**（落地後 Fat Mo 微調字眼唔使重批，見授權 5）：
+**標題規則**（裁決 10）：
+- 格式 `{客人名} - {刻字}`，如 `Andrea - Our bundle of joy`
+- 刻字來源：`order_items.engraving_text`（REST 錨點見 V42 約 L7247 現成 select 模式，`order_fhs_id` 對番 FHS 訂單字串）；多品項多刻字時**取第一個非空**，生成落 textarea 由 Fat Mo 手改——唔使做複雜揀選 UI
+- 冇刻字 fallback：`{客人名} - Freehandsss 記念影片`
+- 客人名來源：`orders.customer_name`
+
+**描述模板**（固定文案，Fable 5 起草；落地後 Fat Mo 微調字眼唔使重批，見授權 5）：
 
 ```
-標題: Freehandsss 記念影片 | {order_id}
-描述:
-Freehandsss 手工記念影片
-訂單編號：{order_id}
-製作日期：{YYYY-MM-DD 當日}
-本影片為客人專屬記念作品，請勿轉載。
+{客人名} 的專屬記念影片｜Freehandsss
+
+每一個小手模、每一段片刻，都值得被好好保存。
+這是 Freehandsss 為客人親手製作的專屬記念影片，
+配合 NFC 感應木框——手機輕輕一貼，回憶即刻重現。
+
+🤍 手腳模訂製｜記念木框｜專屬記念影片
+📷 Instagram：{IG帳號}
+💬 WhatsApp 查詢：{WhatsApp號碼}
+
+訂單編號：{訂單編號}
+本影片為客人專屬作品，請勿轉載。
 ```
 
-**私隱規則**：標題描述一律**不放客人全名**——Unlisted = 有連結即可睇，metadata 不應載私隱；連結不發客人，標題純粹係 Fat Mo 自己搵片用，訂單編號最實用。
+`{IG帳號}` `{WhatsApp號碼}` 為未定常數，**執行 session P0 問 Fat Mo 攞正確寫法**先落 code。
+
+**私隱註記**：Fat Mo 2026-07-08 明確裁決標題用客人名+刻字（辨識度+人情味優先，接受名字現於 Unlisted metadata），取代規劃初稿「不放全名」建議——此為拍板決定，執行者不需重新質疑。
 
 ### 2.4 W4 — SOP 落盤 + 制度收尾
 
 1. 新檔 `.fhs/notes/youtube_nfc_video_sop.md`（全文 = 附錄 A，落地後該檔為活體，本計畫附錄轉為歷史快照）
-2. `decisions.md` 新增 **D18**（YouTube+NFC 工作流架構決策：半自動/Unlisted/直連/orders 層單欄/RPC 模式，連結本計畫檔）
-3. `Changelog.md` S154 執行條目
+2. `decisions.md` 新增 **D19**（YouTube+NFC 工作流架構決策：半自動/Unlisted/直連/orders 層單欄/RPC 模式，連結本計畫檔）
+3. `Changelog.md` 執行條目（引用本 S155 計畫；執行 session 屆時用自身 session 號）
 4. `docs/repo-map.md` 補新 SOP 檔 + 新 migration
-5. `/commit`（更新 handoff 便攜塊 + Notion 同步）
-6. `/upload-web` 部署 NAS（Step0 `/fhs-check` 前置；`.fhs/.deploy-ok` **只能 Fat Mo 手動 touch**，AI 任何工具嘗試建立都會被 R10 攔——執行時記得問 Fat Mo 攞）
+5. `.fhs/notes/FHS_System_Logic_Overview.md` 登記新 RPC `fhs_write_video_url` 與 `orders.video_url` 欄（鏡 0049 `fhs_write_expense_log` 條目格式：migration 編號＋SECURITY DEFINER＋GRANT 範圍）——**kgov [G] 治理要求，落此檔即結案，勿漏**（S155 規劃期 stop-hook 核實時發現原稿漏此項）
+6. `/commit`（更新 handoff 便攜塊 + Notion 同步）
+7. `/upload-web` 部署 NAS（Step0 `/fhs-check` 前置；`.fhs/.deploy-ok` **只能 Fat Mo 手動 touch**，AI 任何工具嘗試建立都會被 R10 攔——執行時記得問 Fat Mo 攞）
 
 ---
 
@@ -160,7 +185,7 @@ P2/P3 同觸 V42 巨檔，仍分開 commit（獨立可 revert）。
 3. Migration 編號執行時動態取（預期 0052；0050/0051 永久讓路 S150）
 4. V42 生產 HTML 修改：詳情 modal 新元素（`fhsVideoUrl*` 新 ID）+ 訂單卡向量 badge + mapOrder/select 補欄
 5. 標題/描述模板常數落地（日後純字眼微調唔使重批）
-6. 新檔 `.fhs/notes/youtube_nfc_video_sop.md` + `decisions.md` D18
+6. 新檔 `.fhs/notes/youtube_nfc_video_sop.md` + `decisions.md` D19
 7. `/upload-web` 部署 NAS（`.deploy-ok` 屆時由 Fat Mo 手動 touch）
 
 ---
@@ -220,24 +245,26 @@ P2/P3 同觸 V42 巨檔，仍分開 commit（獨立可 revert）。
 
 ### A.1 一次性設置（做一次永遠受益）
 
+- [ ] 確認登入 **@Free_handsss** 頻道（freehandsss2018@gmail.com；裁決 9）
 - [ ] YouTube Studio → 設定 → 上傳預設值：可見度預設 **Unlisted** + 貼上描述模板（防漏設意外公開；marketing 片屆時手動較 Public）
-- [ ] 頻道電話驗證（解鎖 >15 分鐘影片）
+- [ ] 頻道電話驗證（**必須**——自訂封面同 >15 分鐘影片都要呢個）
 - [ ] 建立不公開播放清單「客人記念影片」（內部搵片用）
+- [ ] 建立客人媒體根資料夾（**建議放 repo 以外**，如 `D:\SynologyDrive\Free_handsss\FHS_Customer_Media\`——影片/封面唔應該入 git repo；Fat Mo 口頭俾嘅路徑係 repo 根目錄，判定為近似指向，**執行時同 Fat Mo 確認最終落點**，如堅持放 repo 內須同步補 `.gitignore`）
 - [ ] 手機裝 NFC Tools（或同類）app；NTAG213 貼紙備貨
 
-### A.2 每單流程（約 6–8 分鐘人手，唔計上傳等候）
+### A.2 每單流程（約 8–10 分鐘人手，唔計上傳等候）
 
 | 步 | 動作 | 時間 |
 |---|------|------|
-| 1 | Canva 匯出 MP4 → 存固定資料夾，檔名 = FHS 訂單編號（如 `0600805.mp4`）；Synology Drive 自動同步 NAS = 備份完成 | 1 分鐘 |
-| 2 | V42 訂單詳情 →「生成上傳資料」→ 複製標題+描述 | 10 秒 |
-| 3 | YouTube Studio 拖檔上傳 → 貼標題描述 → **核對可見度 = Unlisted** → 入「客人記念影片」清單 | 2 分鐘 |
+| 1 | Canva 匯出 **MP4 + 封面圖（1280×720）** → 存入該客人專檔資料夾 `FHS_Customer_Media\{訂單編號}_{客人名}\`（一客一檔：`video.mp4` + `cover.jpg`）；Synology Drive 自動同步 NAS = 備份完成 | 3 分鐘 |
+| 2 | V42 訂單詳情 →「生成上傳資料」→ 覆核/微調自動生成嘅標題（客人名+刻字）同描述 → 複製 | 20 秒 |
+| 3 | YouTube Studio 拖檔上傳 → 貼標題描述 → 設自訂封面（專檔 `cover.jpg`）→ **「是否為兒童打造」必答「否」**（BB 手模內容≠目標觀眾係兒童；剔錯會封留言/限功能）→ **核對可見度 = Unlisted** → 入「客人記念影片」清單 | 3 分鐘 |
 | 4 | 複製 youtu.be 短連結（分享按鈕）→ 貼入 V42「影片連結」欄 → 儲存 | 30 秒 |
 | 5 | 手機開 V42 → 複製連結 → NFC Tools 寫入貼紙（URL/URI record）→ **自己手機拍卡實測** → Lock tag（⚠️ 鎖咗永久改唔返，必須先測後鎖）→ 貼入木框 | 2 分鐘 |
 
 ### A.3 規則與貼士
 
-- **標題私隱**：格式 `Freehandsss 記念影片 | {訂單編號}`，一律不放客人全名
+- **標題格式**：`{客人名} - {刻字}`（如 `Andrea - Our bundle of joy`）；冇刻字用 `{客人名} - Freehandsss 記念影片`（Fat Mo 2026-07-08 裁決：接受客人名現於 metadata，辨識度+人情味優先）
 - **NFC**：寫 youtu.be 短連結（NTAG213 容量綽綽有餘）；貼紙避開金屬部件；木框感應位可加小印仔「請用手機感應」
 - **客人體驗預期**：iPhone 一拍彈通知要撳一下先開；Android 直開——交收時示範一次
 - **配樂**：優先揀 Canva royalty-free 曲目，減 Content ID claim（中咗都只係出廣告，不封不刪）
@@ -247,4 +274,4 @@ P2/P3 同觸 V42 巨檔，仍分開 commit（獨立可 revert）。
 
 - 影片連結欄：V42 訂單詳情 modal「影片連結」（寫入 `orders.video_url`，經 RPC `fhs_write_video_url`）
 - 變更歷史：audit_logs 自動記錄每次連結改動
-- 架構決策：decisions.md D18；實施計畫：本檔所在 `.fhs/reports/planning/2026-07-08_s154-*.md`
+- 架構決策：decisions.md D19；實施計畫：本檔所在 `.fhs/reports/planning/2026-07-08_s155-*.md`

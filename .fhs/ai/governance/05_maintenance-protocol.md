@@ -1,6 +1,6 @@
 # 05 — 維護協議（governance 檔案怎麼安全地演化）
 
-> **Version**: v1.1.0（2026-07-08，Session S148；§7 新增第 5 項教訓熔斷條款 A4）
+> **Version**: v1.2.0（2026-07-08，Session 156；§2 分流表加 skill 落點行、§7 加 2b stage-1 污染抽查，均指向 [[07_compounding-loop]]；S148 同日曾加 §7 第 5 項教訓熔斷條款 A4）
 > **讀者**：任何想修改 CLAUDE.md、governance/、learnings、handoff 的未來 session。
 > **原則**：制度檔的價值在「穩定可預期」。寧可慢半拍，不可讓兩個 session 讀到互相矛盾的規則。
 
@@ -17,7 +17,8 @@
 | `04` 追加新模板變體 | 新增檔尾，不改既有 T1–T5 |
 | [[00_INDEX]] 狀態欄更新 | 事實同步 |
 | 修 typo / 修失效路徑引用 | 引用目標確實已遷移，且在同 commit 註明 |
-| `learnings.md` 追加條目 | 遵其自身規則（≤150字元/條、50條上限）|
+| `learnings.md` 追加條目 | 遵其自身規則（≤150字元/條、50條上限）**+ 過 stage-3 驗證門檻（[[07_compounding-loop]] §1）** |
+| skill/command 檔追加 `Known failure modes`/`Anti-patterns` 條目 | 純追加不改流程本體，改前備份，格式見 [[07_compounding-loop]] §2 |
 | handoff.md 輪轉 | 嚴格照 §4 SOP，先備份 |
 
 ### ⛔ 動之前必先問 Fat Mo（提案→等確認）
@@ -43,6 +44,7 @@
 | FHS 業務/技術 pitfall（財務、n8n、Supabase、HTML） | `.fhs/memory/learnings.md`（既有制度） | 「PUT body 只能 4 欄」 |
 | **調度/流程層**教訓（派工翻車、驗證漏洞、token 事故） | [[02_model-dispatch]] §7 實戰修正錄 | 「haiku 批次替換漏了轉義字元，改規格必附 raw string」 |
 | 判斷失誤（該問沒問/該停沒停/假完成） | `03` 對應 rubric 追加正/反例 | 某 session 的假完成案例 → R2 反例 |
+| **關於某個 skill/command 執行方式**的教訓 | 該 skill 檔本體「Known failure modes」節（格式與權限見 [[07_compounding-loop]] §2），learnings 至多留一行指標 | 「/execute 部署 PUT body 只能 4 欄」→ 部署 command 檔 |
 | 一次性事故全記錄 | `.fhs/memory/lessons/`（既有，帶日期檔名） | 完整 post-mortem |
 | 與 Fat Mo 的架構決策 | `.fhs/notes/decisions.md`（既有硬規則） | — |
 
@@ -81,6 +83,7 @@
 
 1. 重測 [[01_diagnosis]] 的實測數字（wc -l 五個大檔、grep subagent model 釘選），數字惡化 → 觸發 §4。可先跑 `node scripts/hooks/fhs-health-check.js` 取得過肥/沉積孤兒/過時漂移/同名重複/歸檔斷鏈五項程式化結果（S142 新增，`.fhs/.health-report.json`），異常項用 `/fhs-slim` 出清理方案。
 2. 抽查最近 5 個 session 的雙紀律自檢：自驗豁免使用率是否又漂移（>3/5 全自驗 = 向 Fat Mo 報告制度失效）。
+2b. 抽查最近 5 條新增 learnings/`02 §7` 條目的「診斷核實證據」（stage-1 污染偵測，判準與處置見 [[07_compounding-loop]] §6）。
 3. 驗證 CLAUDE.md 路由表每條路徑仍存在。
 4. 產出 ≤20 行健檢報告，追加到本檔尾部 §8。
 5. **教訓熔斷條款**（S148 Phase 4 新增）：若 `02 §7` 或 `learnings.md` 中出現 **≥3 條同型 workaround 教訓**（如「X 誤觸，先查 git diff，安全則刪 flag」），本次健檢必須發起 **hook 層或制度層治本議案**，提交 Fat Mo 審閱後執行，不再允許「又加一條教訓繞過」。同型教訓累積到 3 是迴圈訊號，治本是義務，非選項。

@@ -2,6 +2,7 @@
 
 > 由 /commit 結尾手動 distill，每條上限 150 字元含日期來源。
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
+> 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
 > 上次整理：2026-07-08（Session 154/S148 Phase 0 `/fhs-slim` 觸發，退役 Preference 1 條 [Toggle 按鈕動作語義，窄場景 S126 UI 偏好，已是本專案慣例]，51→50條；歷史：S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 

@@ -15,7 +15,6 @@
 | 要修改 governance / learnings / handoff 等制度檔案 | `.fhs/ai/governance/05_maintenance-protocol.md` 查權限矩陣 |
 | 涉及財務 / 成本 / 定價 | 先載 `finance-gatekeeper` skill（既有硬規則） |
 | 想找舊知識 / 過往決策為什麼這樣定 / 教訓在哪份文件 | `.fhs/notes/knowledge-map.md`（查詢路由表，非規則） |
-| 要落盤教訓（learnings/skill）/ 平行派工（fan-out/loop 迭代）/ 想用 worktree | `.fhs/ai/governance/07_compounding-loop.md` |
 | 想了解制度退化模式 / 給未來 session 的提醒 | `.fhs/ai/governance/06_letter-to-future-sessions.md` |
 
 ## 三條免查即生效的紅線（規則本體與完整版見 `.fhs/ai/governance/02_model-dispatch.md` §5-§6；診斷依據見 01_diagnosis.md）
