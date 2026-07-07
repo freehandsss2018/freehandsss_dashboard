@@ -4,10 +4,8 @@
 // Detects finance/RPC/migration edits → injects [G] reminder via additionalContext
 // Detects FHS_System_Logic_Overview.md or lessons/INDEX.md update → clears pending flag
 //
-// Version: 2.0.0 | 2026-07-08 S148 Phase 2
-// Change: [G] 判準對齊 execute.md diff 物理特徵真值表（舊版：任何 .md 含財務詞即落 flag → 大量誤觸）
-//         新判準：migrations .sql / MCP apply_migration|update_node_code / execute_sql+write+finance
-//                 / Dashboard HTML + 財務 → flag；.md / hooks.js 含財務 → warn（不落 flag）
+// Version: 1.0.0 | 2026-06-12
+// Design: cl-final-plan.md 2026-06-12-1845 §6 D-10
 //
 // Exit codes:
 //   0 = pass (allow), with optional additionalContext JSON on stdout
@@ -18,9 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// FLAG_FILE: supports env var override for testability (kgov fixture isolation)
-const FLAG_FILE = process.env.FHS_KGOV_FLAG_FILE ||
-  path.join(__dirname, '../../.fhs/.kgov-pending');
+const FLAG_FILE = path.join(__dirname, '../../.fhs/.kgov-pending');
 
 // auto-memory lives outside the repo (path varies per user/machine) — read the
 // same explicit path fhs-health-check.js uses, rather than guessing via regex.
@@ -43,30 +39,44 @@ const G_REMINDER = [
   '   → flag 已寫入 .fhs/.kgov-pending，Stop hook 將於 session 結束時提醒'
 ].join('\n');
 
-// ── Warn text (non-flagging, for .md / code file edits with finance keywords) ─
-const G_WARN = [
-  '⚠️ [kgov-hook] 文件/代碼層財務內容編輯（未落 flag）',
-  '   → 若本次為財務規則「語義」變更（非錯字/排版/註解），請照 execute.md [G] 手動更新',
-  '     FHS_System_Logic_Overview.md 對應章節；純文字修正可忽略本提示'
-].join('\n');
-
-// ── PATTERNS ─────────────────────────────────────────────────────────────────
+// ── HIT PATTERNS ────────────────────────────────────────────────────────────
 // Tools that write files
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit']);
 
-// MCP tool suffixes that directly trigger flag (finance/RPC/migration)
-// Suffix match (not exact Set) so this survives connector renames
-const MCP_FLAG_SUFFIXES = [
+// MCP tool suffixes that imply finance/RPC changes.
+// Suffix match (not exact Set) so this survives connector renames — e.g. Desktop
+// App's claude.ai Supabase connector exposes the same capability under
+// `mcp__<uuid>__apply_migration` instead of `mcp__supabase__apply_migration`.
+const MCP_HIT_SUFFIXES = [
   '__apply_migration',
   '__update_node_code'
 ];
 
-// execute_sql: only flag when BOTH write verb AND finance content present
+// execute_sql-shaped tools are hit only when the query both (a) writes (not a
+// bare SELECT) and (b) touches finance/RPC content — a read-only audit query
+// must not flag every session.
 const MCP_EXECUTE_SQL_SUFFIX = '__execute_sql';
 const SQL_WRITE_VERB_PATTERN = /\b(CREATE|ALTER|DROP|INSERT|UPDATE|DELETE)\b/i;
 
-// Finance content keywords (used for execute_sql check AND warn on .md/code)
-const FINANCE_CONTENT_PATTERNS = [
+function isMcpHit(tool, toolInput) {
+  if (MCP_HIT_SUFFIXES.some(s => tool.endsWith(s))) return true;
+  if (tool.endsWith(MCP_EXECUTE_SQL_SUFFIX)) {
+    const query = (toolInput && (toolInput.query || toolInput.sql)) || '';
+    return SQL_WRITE_VERB_PATTERN.test(query) && HIT_CONTENT_PATTERNS.some(p => p.test(query));
+  }
+  return false;
+}
+
+// File path patterns that indicate finance/RPC domain
+const HIT_PATH_PATTERNS = [
+  /supabase[/\\]migrations[/\\].+\.sql$/i,
+  /FHS_Finance_Bible\.md$/i,
+  /FHS_System_Logic_Overview\.md$/i,
+  /calculatePricing/i
+];
+
+// Content patterns that indicate finance/RPC logic changes
+const HIT_CONTENT_PATTERNS = [
   /CREATE\s+OR\s+REPLACE\s+FUNCTION/i,
   /get_financial_kpis|get_financial_charts/i,
   /handmodel_cost|keychain_cost|necklace_cost/i,
@@ -75,25 +85,18 @@ const FINANCE_CONTENT_PATTERNS = [
   /cost_configurations/i
 ];
 
-// ── TRUE VALUE TABLE (S148 §4.2) ─────────────────────────────────────────────
-// #1: Write/Edit → supabase/migrations/*.sql (any content) → FLAG
-const SQL_MIGRATION_PATTERN = /supabase[/\\]migrations[/\\].+\.sql$/i;
+// Paths whose update CLEARS the flag (work is done)
+const CLEAR_PATH_PATTERNS = [
+  /FHS_System_Logic_Overview\.md$/i,
+  /lessons[/\\]INDEX\.md$/i
+];
 
-// #4: Write/Edit → Freehandsss_Dashboard/*.html WITH finance content → FLAG
-const DASHBOARD_HTML_PATTERN = /Freehandsss_Dashboard[/\\][^/\\]+\.html$/i;
-
-// #8: Safe paths — never trigger even if content contains finance terms
+// Paths that are documentation/memory only — never trigger the flag
 const SAFE_PATH_PATTERNS = [
   /\.fhs[/\\]memory[/\\]/i,
   /\.fhs[/\\]notes[/\\]session-log\.md$/i,
   /docs[/\\]CHANGELOG\.md$/i,
   /\.fhs[/\\]notes[/\\]decisions\.md$/i
-];
-
-// #9: Paths whose update CLEARS the flag (work is done)
-const CLEAR_PATH_PATTERNS = [
-  /FHS_System_Logic_Overview\.md$/i,
-  /lessons[/\\]INDEX\.md$/i
 ];
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -116,23 +119,8 @@ function flagExists() {
 }
 
 function emitAdditionalContext(message) {
+  // PostToolUse additionalContext: output JSON with additionalContext key
   process.stdout.write(JSON.stringify({ additionalContext: message }) + '\n');
-}
-
-function hasFinanceContent(text) {
-  return FINANCE_CONTENT_PATTERNS.some(p => p.test(text));
-}
-
-// ── MCP HIT LOGIC ─────────────────────────────────────────────────────────────
-function isMcpFlag(tool, toolInput) {
-  // #2: MCP apply_migration / update_node_code → always flag
-  if (MCP_FLAG_SUFFIXES.some(s => tool.endsWith(s))) return true;
-  // #3: execute_sql with write verb + finance content → flag; SELECT only → silent (#10)
-  if (tool.endsWith(MCP_EXECUTE_SQL_SUFFIX)) {
-    const query = (toolInput && (toolInput.query || toolInput.sql)) || '';
-    return SQL_WRITE_VERB_PATTERN.test(query) && hasFinanceContent(query);
-  }
-  return false;
 }
 
 // ── MAIN ─────────────────────────────────────────────────────────────────────
@@ -143,8 +131,9 @@ process.stdin.on('end', () => {
     const data = JSON.parse(input);
     const tool = data.tool_name || '';
     const toolInput = data.tool_input || {};
+    const toolResponse = data.tool_response || {};
 
-    // ── Check if this edit CLEARS the flag (#9) ───────────────────────────
+    // ── Check if this edit CLEARS the flag (SSoT or INDEX updated) ────────
     const filePath = (toolInput.file_path || toolInput.path || '').replace(/\\/g, '/');
     if (WRITE_TOOLS.has(tool) && filePath) {
       const isClear = CLEAR_PATH_PATTERNS.some(p => p.test(filePath));
@@ -155,15 +144,15 @@ process.stdin.on('end', () => {
     }
 
     // ── Fast-path: non-write, non-MCP-hit tools exit immediately ──────────
-    const mcpFlag = isMcpFlag(tool, toolInput);
+    const mcpHit = isMcpHit(tool, toolInput);
     const isWriteTool = WRITE_TOOLS.has(tool);
 
-    if (!mcpFlag && !isWriteTool) {
+    if (!mcpHit && !isWriteTool) {
       process.exit(0);
     }
 
-    // ── MCP tool direct flag (#2, #3) ─────────────────────────────────────
-    if (mcpFlag) {
+    // ── MCP tool direct hit ───────────────────────────────────────────────
+    if (mcpHit) {
       writeFlag();
       emitAdditionalContext(G_REMINDER);
       process.exit(0);
@@ -171,42 +160,23 @@ process.stdin.on('end', () => {
 
     // ── Write/Edit tool: check file path + content ────────────────────────
     if (isWriteTool && filePath) {
-      // #8: Safe paths → silent
+      // Memory/docs files: never trigger even if content contains financial terms
       const isSafe = SAFE_PATH_PATTERNS.some(p => p.test(filePath)) ||
         (AUTO_MEMORY_DIR && filePath.toLowerCase().startsWith(AUTO_MEMORY_DIR));
       if (isSafe) { process.exit(0); }
 
-      const content = toolInput.content || toolInput.new_string ||
-        (Array.isArray(toolInput.edits) ? toolInput.edits.map(e => e.new_string || '').join('\n') : '') || '';
+      const pathHit = HIT_PATH_PATTERNS.some(p => p.test(filePath));
+      const content = toolInput.content || toolInput.new_string || '';
+      const contentHit = HIT_CONTENT_PATTERNS.some(p => p.test(content));
 
-      // #1: migrations .sql → always flag (regardless of content)
-      if (SQL_MIGRATION_PATTERN.test(filePath)) {
+      if (pathHit || contentHit) {
+        // Don't re-flag if this edit is itself the SSoT update
         const isSelf = CLEAR_PATH_PATTERNS.some(p => p.test(filePath));
         if (!isSelf) {
           writeFlag();
           emitAdditionalContext(G_REMINDER);
         }
-        process.exit(0);
       }
-
-      // #4: Dashboard HTML + finance content → flag; without finance → silent (#5)
-      if (DASHBOARD_HTML_PATTERN.test(filePath)) {
-        if (hasFinanceContent(content)) {
-          const isSelf = CLEAR_PATH_PATTERNS.some(p => p.test(filePath));
-          if (!isSelf) {
-            writeFlag();
-            emitAdditionalContext(G_REMINDER);
-          }
-        }
-        // #5: Dashboard HTML without finance content → silent (no warn)
-        process.exit(0);
-      }
-
-      // #6 & #7: .md files / code files (hooks.js etc.) with finance content → warn only (not flag)
-      if (hasFinanceContent(content)) {
-        emitAdditionalContext(G_WARN);
-      }
-      // No flag written for .md / code files
     }
 
     process.exit(0);

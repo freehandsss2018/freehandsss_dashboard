@@ -1,0 +1,108 @@
+[
+  {
+    "name": "#1 migrations .sql 寫入 → 應落 flag",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "supabase/migrations/0050_test_migration.sql",
+      "content": "ALTER TABLE orders ADD COLUMN test_col TEXT;"
+    },
+    "expected_flag": true,
+    "expected_warn": false,
+    "note": "真值表 #1：任何 migrations/*.sql 寫入，不論內容，一律落 flag"
+  },
+  {
+    "name": "#2 MCP apply_migration → 應落 flag",
+    "tool_name": "mcp__supabase__apply_migration",
+    "tool_input": {
+      "sql": "CREATE TABLE test_tbl (id SERIAL);"
+    },
+    "expected_flag": true,
+    "expected_warn": false,
+    "note": "真值表 #2：MCP apply_migration 直接落 flag"
+  },
+  {
+    "name": "#2b MCP update_node_code → 應落 flag",
+    "tool_name": "mcp__n8n__update_node_code",
+    "tool_input": {
+      "code": "return items;"
+    },
+    "expected_flag": true,
+    "expected_warn": false,
+    "note": "真值表 #2：MCP update_node_code 直接落 flag"
+  },
+  {
+    "name": "#3 MCP execute_sql 寫動詞 + 財務 → 應落 flag",
+    "tool_name": "mcp__supabase__execute_sql",
+    "tool_input": {
+      "query": "UPDATE orders SET total_cost = 100 WHERE id = 1;"
+    },
+    "expected_flag": true,
+    "expected_warn": false,
+    "note": "真值表 #3：execute_sql 含 UPDATE + total_cost（財務詞）→ flag"
+  },
+  {
+    "name": "#4 Dashboard HTML + 財務內容 → 應落 flag",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "Freehandsss_Dashboard/freehandsss_dashboardV42.html",
+      "content": "function calculatePricing() { var total_cost = 0; }"
+    },
+    "expected_flag": true,
+    "expected_warn": false,
+    "note": "真值表 #4：Dashboard HTML 含財務 pattern（total_cost）→ flag"
+  },
+  {
+    "name": "#5 Dashboard HTML 無財務內容 → 應靜默",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "Freehandsss_Dashboard/freehandsss_dashboardV42.html",
+      "content": "<div class=\"order-card\">Hello</div>"
+    },
+    "expected_flag": false,
+    "expected_warn": false,
+    "note": "真值表 #5：Dashboard HTML 無財務詞 → 靜默，不落 flag 也不 warn"
+  },
+  {
+    "name": "#6 .md 檔含財務關鍵字 → 應 warn 不落 flag",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": ".fhs/ai/FHS_Finance_Bible.md",
+      "content": "final_sale_price = Deposit + Balance + Additional_Fee"
+    },
+    "expected_flag": false,
+    "expected_warn": true,
+    "note": "真值表 #6：.md 含財務詞 → warn（降級，不落 flag）；S147 三次誤觸的根治"
+  },
+  {
+    "name": "#7 hooks .js 含財務關鍵字 → 應 warn 不落 flag",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "scripts/hooks/post-tool-kgov.js",
+      "content": "const PATTERNS = [/total_cost/i, /final_sale_price/i];"
+    },
+    "expected_flag": false,
+    "expected_warn": true,
+    "note": "真值表 #7：hooks.js 自身包含財務 pattern 字面值（合法），不落 flag，只 warn"
+  },
+  {
+    "name": "#8 safe path memory → 應靜默",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": ".fhs/memory/handoff.md",
+      "content": "total_cost = 500, final_sale_price = 800"
+    },
+    "expected_flag": false,
+    "expected_warn": false,
+    "note": "真值表 #8：.fhs/memory/ 路徑一律靜默（safe path），即使含財務詞"
+  },
+  {
+    "name": "#10 execute_sql 純 SELECT 含財務詞 → 應靜默",
+    "tool_name": "mcp__supabase__execute_sql",
+    "tool_input": {
+      "query": "SELECT total_cost, net_profit FROM orders WHERE id = 1;"
+    },
+    "expected_flag": false,
+    "expected_warn": false,
+    "note": "真值表 #10：execute_sql 只有 SELECT（無寫動詞）→ 靜默，唯讀稽核不觸發"
+  }
+]
