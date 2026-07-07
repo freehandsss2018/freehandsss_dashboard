@@ -53,6 +53,7 @@ function consumeDeployAuthorization(target) {
 }
 
 function logKgovObserve(commandHead) {
+  if (process.env.FHS_GUARD_FIXTURE === '1') return; // 夾具測試不污染觀察數據（S148 B1）
   try {
     const dir = path.dirname(KGOV_OBSERVE_LOG);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });

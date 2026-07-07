@@ -3,7 +3,7 @@
 > 由 /commit 結尾手動 distill，每條上限 150 字元含日期來源。
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-05（Session 146 `/fhs-slim` 觸發，退役 Pitfall 1 條 [IIFE onclick 靜默失效，修復已結構化]，51→50條；歷史：Session 144 對等替換、Session 143 對等替換、Session 142 `/fhs-slim` 51→50、Session 136 整合 59→49）
+> 上次整理：2026-07-08（Session 154/S148 Phase 0 `/fhs-slim` 觸發，退役 Preference 1 條 [Toggle 按鈕動作語義，窄場景 S126 UI 偏好，已是本專案慣例]，51→50條；歷史：S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -86,4 +86,5 @@
 7. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30
 8. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01
 9. **UI toggle 標籤用操作者語言，技術代號留文件**：「三大類/細分」是實作代號，操作者看不懂；按鈕文字改「簡化/逐件」等口語詞，技術名稱只在 §2.5 文件保留 — S126
-10. **Toggle 按鈕用動作語義（顯示下次執行），非狀態語義（顯示當前狀態）**：「全部半訂」應代表「點擊後將填半價」；auto-fill 不得改按鈕標籤（只有用戶手動 force 才更新），避免載入訂單後按鈕誤報當前狀態 — S126
+
+> 📌 **退役**（Session 154/S148，Phase 0 `/fhs-slim`，全檔滿51條超50上限）：「Toggle 按鈕用動作語義」（原 Preference #10，S126）——已是本專案 POS UI 的設計慣例，無需靠記憶提醒，窄場景低復發風險，退役騰出額度給 S148 Phase 2 改寫 Pitfall #26 的空間。

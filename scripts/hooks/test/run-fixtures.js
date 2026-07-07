@@ -35,7 +35,7 @@ for (const fx of fixtures) {
   }
 
   const input = JSON.stringify({ tool_name: fx.tool_name, tool_input: fx.tool_input });
-  const result = spawnSync('node', [GUARD_PATH], { input, encoding: 'utf8' });
+  const result = spawnSync('node', [GUARD_PATH], { input, encoding: 'utf8', env: { ...process.env, FHS_GUARD_FIXTURE: '1' } });
 
   const exitOk = result.status === fx.expected_exit;
   let stderrOk = true;
