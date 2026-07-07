@@ -19,6 +19,7 @@
 | 當前系統現況快照（版本/待辦/驗證狀態） | `.fhs/memory/handoff.md` 頂部便攜塊（只讀前120行） |
 | 制度層規則怎麼運作（派工/模型/巨檔紀律） | `.fhs/ai/governance/00_INDEX.md` 先查索引再進對應章節 |
 | 某條 session 的逐條敘事（誰做了什麼、按時間序） | `.fhs/notes/session-log.md`（Grep session 編號，只窗口讀） |
+| 自己（AI）用量模式、哪些 prompt 該做 skill/hook | `/fhs-usage-audit`（審 transcript 行為，與文件衛生 `/fhs-slim` 正交），快照見 `.fhs/memory/usage-audit/` |
 
 **判準**：查到的是「當前狀態」→ 便攜塊；查到的是「怎麼做/怎麼派工」→ governance；查到的是「過去某次事件的完整來龍去脈」→ 對應完成報告或 decisions.md；查到的是「反覆驗證的通則」→ learnings.md。四者互不重疊，找錯類別是最常見的查詢失敗模式。
 

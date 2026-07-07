@@ -112,6 +112,16 @@
       "max_age_days": 90,
       "source": "governance/05_maintenance-protocol.md §7（季度健檢，~90天）",
       "no_evidence_message": "從未有 /fhs-audit 報告記錄"
+    },
+    {
+      "id": "usage_audit_cadence",
+      "command": "/fhs-usage-audit",
+      "evidence_dir": ".fhs/memory/usage-audit",
+      "evidence_glob": "*.json",
+      "date_regex": "(\\d{4}-\\d{2}-\\d{2})",
+      "max_age_days": 30,
+      "source": "S153 usage-audit 制度化（審 AI 使用行為，與 /fhs-audit 90天週期正交；用量模式變化較快，訂30天）",
+      "no_evidence_message": "從未執行過 /fhs-usage-audit"
     }
   ]
 }

@@ -1,0 +1,192 @@
+{
+ "date": "2026-07-07",
+ "sessions_total": 91,
+ "commands": [
+  [
+   "/model",
+   141
+  ],
+  [
+   "/rp",
+   111
+  ],
+  [
+   "/read",
+   88
+  ],
+  [
+   "/execute",
+   79
+  ],
+  [
+   "/commit",
+   64
+  ],
+  [
+   "/cl-flow",
+   24
+  ],
+  [
+   "/upload-web",
+   16
+  ],
+  [
+   "/clear",
+   10
+  ],
+  [
+   "/cl-flow-fast",
+   10
+  ],
+  [
+   "/compact",
+   4
+  ],
+  [
+   "/update-config",
+   1
+  ],
+  [
+   "/fhs-slim",
+   1
+  ],
+  [
+   "/schedule",
+   1
+  ],
+  [
+   "/fhs-audit",
+   1
+  ]
+ ],
+ "tools_top10": [
+  [
+   "Read",
+   2540
+  ],
+  [
+   "Bash",
+   2316
+  ],
+  [
+   "Edit",
+   1714
+  ],
+  [
+   "Grep",
+   822
+  ],
+  [
+   "PowerShell",
+   406
+  ],
+  [
+   "mcp__supabase__execute_sql",
+   266
+  ],
+  [
+   "Write",
+   238
+  ],
+  [
+   "Glob",
+   216
+  ],
+  [
+   "ToolSearch",
+   168
+  ],
+  [
+   "TaskUpdate",
+   152
+  ]
+ ],
+ "themes": [
+  [
+   "fix_bug",
+   251
+  ],
+  [
+   "test_verify",
+   219
+  ],
+  [
+   "finance_cost",
+   176
+  ],
+  [
+   "paste_error_log",
+   117
+  ],
+  [
+   "deploy_upload_nas",
+   99
+  ],
+  [
+   "mobile_375_iphone",
+   87
+  ],
+  [
+   "supabase_sql",
+   81
+  ],
+  [
+   "n8n",
+   80
+  ],
+  [
+   "screenshot_look",
+   79
+  ],
+  [
+   "continue",
+   57
+  ],
+  [
+   "ig",
+   48
+  ]
+ ],
+ "repeated_prompts_top10": [
+  {
+   "count": 112,
+   "sample": "# /rp (Claude Code Bridge) /  / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。 /  / **執行步驟**： / 請立即"
+  },
+  {
+   "count": 92,
+   "sample": "# /read (Claude Code Bridge) /  / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。 /  / **執行步驟**： / 請"
+  },
+  {
+   "count": 83,
+   "sample": "# /commit（Claude Code Bridge） /  / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。 /  / **執行步驟**： / "
+  },
+  {
+   "count": 81,
+   "sample": "讀取 `.fhs/ai/commands/execute.md` 並依照定義執行任務。 /  / 前置確認： / 1. 確認 Fat Mo 已明確授權（本指令即為授權信號）"
+  },
+  {
+   "count": 51,
+   "sample": "[Request interrupted by user]"
+  },
+  {
+   "count": 37,
+   "sample": "Y"
+  },
+  {
+   "count": 32,
+   "sample": "繼續"
+  },
+  {
+   "count": 30,
+   "sample": "上述需要基於八維度架構分析實施草案→實施計畫草案 → 自我批評（3 個弱點） →更好的版本（v2）, 系統效能 perf, 直觀管理 ux_mgmt, 衝突避免"
+  },
+  {
+   "count": 27,
+   "sample": "# /cl-flow (Claude Code Bridge) /  / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。 /  / **執行步驟**"
+  },
+  {
+   "count": 25,
+   "sample": "Continue from where you left off."
+  }
+ ]
+}
