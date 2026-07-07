@@ -1841,11 +1841,22 @@
         @media (max-width: 767px) {
             body {
                 padding: 0 !important;
-                padding-bottom: calc(var(--bottom-bar-height) + var(--mode-nav-height) + 64px + env(safe-area-inset-bottom, 0px)) !important;
+                padding-bottom: calc(56px + 32px + env(safe-area-inset-bottom, 0px)) !important;
             }
             .fhs-bottom-bar {
                 display: flex;
-                bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+                position: static !important;
+                height: auto;
+                margin-top: var(--space-4);
+                margin-bottom: var(--space-4);
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--fhs-border);
+                background: var(--fhs-bg-surface);
+                box-shadow: none;
+                padding: var(--space-3);
+                gap: var(--space-3);
+                box-sizing: border-box;
+                width: 100%;
             }
             /* S150 F6（2026-07-07）：模式切換按鈕移至底部常駐列，仿 Threads 底部導覽 */
             .fhs-top-bar__actions {
@@ -4192,6 +4203,20 @@
     </div> <!-- End formContainer -->
 
     <!-- =====================================================
+         V40 Bottom Bar（iPhone 專用，Desktop display:none）
+    ===================================================== -->
+    <div id="v40-bottom-bar" class="fhs-bottom-bar">
+        <button class="fhs-btn-secondary" style="min-width:64px;"
+            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ setTimeout(function(){ var cb = document.querySelector('.order-row-cb[data-order-id=&quot;'+oid+'&quot;]'); if(cb){ var row=cb.closest('tr'); if(row){ row.style.background='#FFF9C4'; row.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){row.style.background='';},2000); } } },800); } })()">
+            ← 返回總覧
+        </button>
+        <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
+            onclick="openIgPreviewModal()">
+            ✅ 審閱並完成
+        </button>
+    </div>
+
+    <!-- =====================================================
          Financial Overview 模式容器（V40.3 全面優化）
     ===================================================== -->
     <div id="financeModeContainer" style="display:none; width:100%;">
@@ -4385,6 +4410,23 @@
          系統監控面板 (V46.1) — System Mode Container
          ══════════════════════════════════════════════════════ -->
     <div id="systemModeContainer" style="display:none; width:100%; padding: var(--space-4); box-sizing:border-box;">
+
+        <!-- Row 0: IG 看門狗警報 (S119 Phase 2 - merged from separate tab) -->
+        <div class="card" style="margin:0 0 12px 0; padding:16px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <span style="font-size:1.25rem;">🐶</span>
+                <span style="font-size:15px; font-weight:700; color:var(--fhs-text-primary);">IG 看門狗警報</span>
+                <span id="igwatchBadge" style="margin-left:auto; font-size:11px; color:var(--fhs-text-secondary);"></span>
+                <button id="igwatchRefreshBtn" onclick="loadIgWatchAlerts()" style="background:none;border:1px solid var(--fhs-border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;">↻ 刷新</button>
+            </div>
+            <div id="igwatchSegCtrl" style="display:flex; gap:4px; margin-bottom:12px;">
+                <button class="fhs-seg-btn is-active" data-igwatch-filter="pending" onclick="setIgWatchFilter('pending')">未處理</button>
+                <button class="fhs-seg-btn" data-igwatch-filter="resolved" onclick="setIgWatchFilter('resolved')">已處理</button>
+                <button class="fhs-seg-btn" data-igwatch-filter="all" onclick="setIgWatchFilter('all')">全部</button>
+            </div>
+            <div id="igwatchStatus" style="font-size:13px; color:var(--fhs-text-secondary); min-height:20px;"></div>
+            <div id="igwatchList"></div>
+        </div>
 
         <!-- 💰 財務參數設定中心 (Session 34) -->
         <div id="financialSettingsCard" class="card" style="border-top: 5px solid #2A9D8F; margin: 0 0 16px 0; padding:16px;">
@@ -4631,22 +4673,7 @@
             <div id="dlvExpandList" class="dlv-expand-list"></div>
         </div>
 
-        <!-- Row 0: IG 看門狗警報 (S119 Phase 2 - merged from separate tab) -->
-        <div class="card" style="margin:0 0 12px 0; padding:16px;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                <span style="font-size:1.25rem;">🐶</span>
-                <span style="font-size:15px; font-weight:700; color:var(--fhs-text-primary);">IG 看門狗警報</span>
-                <span id="igwatchBadge" style="margin-left:auto; font-size:11px; color:var(--fhs-text-secondary);"></span>
-                <button id="igwatchRefreshBtn" onclick="loadIgWatchAlerts()" style="background:none;border:1px solid var(--fhs-border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;">↻ 刷新</button>
-            </div>
-            <div id="igwatchSegCtrl" style="display:flex; gap:4px; margin-bottom:12px;">
-                <button class="fhs-seg-btn is-active" data-igwatch-filter="pending" onclick="setIgWatchFilter('pending')">未處理</button>
-                <button class="fhs-seg-btn" data-igwatch-filter="resolved" onclick="setIgWatchFilter('resolved')">已處理</button>
-                <button class="fhs-seg-btn" data-igwatch-filter="all" onclick="setIgWatchFilter('all')">全部</button>
-            </div>
-            <div id="igwatchStatus" style="font-size:13px; color:var(--fhs-text-secondary); min-height:20px;"></div>
-            <div id="igwatchList"></div>
-        </div>
+
 
     </div>
     <!-- End systemModeContainer -->
@@ -4707,19 +4734,7 @@
         <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D; display:none;">🚀 同步至後台</button>
     </div>
 
-    <!-- =====================================================
-         V40 Bottom Bar（iPhone 專用，Desktop display:none）
-    ===================================================== -->
-    <div id="v40-bottom-bar" class="fhs-bottom-bar">
-        <button class="fhs-btn-secondary" style="min-width:64px;"
-            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ setTimeout(function(){ var cb = document.querySelector('.order-row-cb[data-order-id=&quot;'+oid+'&quot;]'); if(cb){ var row=cb.closest('tr'); if(row){ row.style.background='#FFF9C4'; row.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){row.style.background='';},2000); } } },800); } })()">
-            ← 返回總覧
-        </button>
-        <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
-            onclick="openIgPreviewModal()">
-            ✅ 審閱並完成
-        </button>
-    </div>
+
 
     <!-- =====================================================
          V40 Drawer（iPhone 次要面板，底部向上滑出）
