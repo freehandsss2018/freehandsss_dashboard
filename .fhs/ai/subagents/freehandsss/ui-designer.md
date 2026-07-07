@@ -140,6 +140,7 @@ Phase A 期間，按以下順序使用設計 intelligence 工具：
 - Section 一：確認色彩 token 符合 `--fhs-*` Style Library
 - Section 二：對照 UX Heuristics Checklist（iPhone / Desktop 分列）
 - Section 三：排除所有設計反模式（特別是角色驅動樣式切換）
+- Section 五：對照 Vercel 框架無關規則精選（動畫只動 transform/opacity、觸控 44px、表單/a11y）——設計階段先行預防，勿留給 code-reviewer Phase C 事後抓（2026-07-07 S152 補鏈）
 
 完成 **FHS Design Spec** 文件，正式交接給 `frontend-developer`。
 

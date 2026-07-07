@@ -84,5 +84,6 @@
 | 2026-07-07 | 2026-07-07_onclick-json-stringify-double-quote-collision.md | onclick 雙引號衝突 | onclick, json-stringify, html-attribute, quote-collision, pitfall, igwatch | JSON.stringify輸出雙引號嵌入同樣雙引號分隔的HTML屬性會截斷斷裂，靜默失效不報錯；解法換單引號包裹（前提字元集安全） |
 | 2026-07-07 | 2026-07-07_frontend-rpc-call-probe-before-trust.md | 前端呼叫RPC先探針 | rpc, probe, frontend, backend, supabase, pattern | 前端呼叫程式碼看起來正確不代表被呼叫的RPC存在；稽核順序應先探針後端物件存在性再信任前端邏輯 |
 | 2026-07-07 | 2026-07-07_fixed-positioning-inside-transformed-parent-clipping-pitfall.md | CSS transform 容器裁剪 | transform, fixed, containing-block, clip, css, pitfall | transform 會改變 fixed 包含塊，導致滾動收合時子控制項隨之移動裁剪 |
+| 2026-07-07 | 2026-07-07_micro-vector-scaling-semantic-preservation.md | 微型向量縮放語意保留 | micro-icon, vector, scale, semantic, emoji, pitfall | 轉換 CJK Emojis 為向量時，避免使用過簡化開路徑，以防微尺寸縮放下遺失手指/腳板細節與語意 |
 <!-- kgov sync confirmed: Session 124 -->
 

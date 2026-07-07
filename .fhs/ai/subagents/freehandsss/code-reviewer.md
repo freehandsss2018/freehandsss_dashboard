@@ -67,7 +67,6 @@ last_updated: 2026-05-16
 | 設計反模式 | 無濫用 glassmorphism；`!important` 總數 <10 | ⚠️ WARNING |
 | `transition: all` 使用 | 零容忍，逐一列屬性 | ⚠️ WARNING |
 | 動畫是否只動 transform/opacity | 動 layout 屬性（top/left/width/height）視為反模式 | ⚠️ WARNING |
-| 觸控目標尺寸 | ≥44×44px（FHS 自家標準，比業界 24px 嚴） | ⚠️ WARNING |
 | 手機 `<input>` font-size | ≥16px（防 iOS 自動縮放） | ⚠️ WARNING |
 
 *參考標準：`.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` Section 三+五（Vercel 精選規則全表，2026-07-07）*

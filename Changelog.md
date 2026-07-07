@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-07-07] Session 153（Sonnet 5 執行）— 訂單總覽與部位標籤 100% SVG 向量化與底部導覽重疊 BUG 修復
+
+針對 UI 各處殘留的 Emoji 進行無死角 SVG 圖標替換，修復手機版底部返回操作列的固定重疊 BUG，並將最新生產版發布部署：
+
+- **手機版底部操作列固定 BUG 修復**：修正行動裝置（<768px）下 `.fhs-bottom-bar` 樣式，由 `position: fixed !important` 改為 `position: static !important`。使其作為卡片自然排列在表單容器 `#formContainer` 之下隨頁滾動，徹底解決遮擋與重疊問題。同步將 body `padding-bottom` 縮減為 `88px`，`fhs-toast` Spacing 相應下移至導覽列上方。
+- **訂單卡片與部位標籤 100% 向量化**：重構 `getProductDimensions()` 維度解析引擎，將原本回傳的 CJK 肢體（左手/右手/左腳/右腳/合成）、產品材質（不銹鋼/925金/925銀）、款式與主題（木框/玻璃瓶/粉紅/海洋）及肢數統計中的 Emoji 全部替換為 Lucide 風格的 SVG 線條向量圖標，包括新增 `icon-crown`（皇冠）、`icon-bottle`（玻璃瓶）、`icon-heart`（心形）、`icon-waves`（波浪線條）圖標。
+- **手與腳圖標精細化**：重寫 `icon-hand` 與 `icon-footprint` 壞軌的 SVG 路徑。`icon-hand` 使用 Lucide 標準多路徑手掌；`icon-footprint` 採用標準成對腳印，使其在 12px 小尺寸下依然精確居中且可清晰識別。
+- **動態 UI Emojis 清除**：修改審閱 Modal `_updateIgCopyUI()`，複製成功與否以 `innerHTML` 動態寫入綠色向量 `icon-check` 與夾具圖標；同步修復 `toggleIgFormatA()` 格式切換按鈕文字 `innerHTML` 含 `icon-refresh-cw` 的同步複製行為。
+- **全案測試與 WebDAV 部署**：執行全生命週期與壓力測試套件（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）共 4 項全部 PASS。以 `/upload-web` 成功部署 current 生產版 HTML 至 Synology NAS (PUT HTTP 204 通過)。
+
 ## [2026-07-07] Session 152（Fable 5 規劃 → Sonnet 5 執行）— 十大框架條款吸收（Skills Absorption）
 
 Fat Mo 提供「Codex 必裝十大技能」榜單，經 4 支 subagent 原文研究裁決：不裝整包框架，只吸收條款級規則（A-M）融入既有治理。完成：tdd-guide.md 補鏈既有 TDD vendor 檔（發現 A/C 項早於 2026-05-09 已部分吸收，避免重複造輪）；03 R2/R4 補證據新鮮度+紅綠revert+人類訊號；02 補外部內容隔離+context動態節流；04 T2/T5 補兩verdict審查+BLOCKED四狀態+落盤紀律；cl-flow.md 補計畫反佔位條款；ui-ux-pro-max/FHS_INTEGRATION.md+code-reviewer 補 Vercel 框架無關前端規則。fresh-context 情境測試+haiku smoke test 各一次 PASS；guard 16/16 無回歸。webapp-testing plugin 安裝因需互動式操作標記 BLOCKED 待 Fat Mo 手動處理。全文見完成記錄 [2026-07-07_s152-skills-absorption_completion_report.md](.fhs/reports/completion/2026-07-07_s152-skills-absorption_completion_report.md)。

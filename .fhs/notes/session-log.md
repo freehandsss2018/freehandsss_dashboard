@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-07-07 (Session 153 — 訂單總覽與部位標籤 100% SVG 向量化與底部導覽重疊 BUG 修復): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S153 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。把手機版底部操作列 `.fhs-bottom-bar` 設為 `position: static !important` 以自然排列在表單容器 `#formContainer` 之下隨頁滾動，徹底解決遮擋與重疊問題；重寫 `icon-hand` 與 `icon-footprint` 壞軌的 SVG 向量路徑為標準 Lucide 多路徑圖標；重構 `getProductDimensions()` 及 dynamic 渲染引擎，將部位標籤、定價材質、款式與主題中的 Emoji 全面 100% 替換為標準 SVG 向量線條圖標；完成 WebDAV 部署 current 生產版至 NAS (HTTP 204) 並通過 LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT 全套健康測試。
+
 ## 2026-07-07 (Session 151 — 手機版 Threads 底部導覽列與 Supabase 狀態列對位優化): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S151 條目（無完成報告的小改動，Changelog 為唯一全文居所）。透過 `DOMContentLoaded` JS 動態重組將手機版底部導覽按鈕群 `.fhs-top-bar__actions` 掛載至 `<body>` 根節點，防止向下滑動時因父元素 transform 而被隱藏，實現常駐固定；將 `#v41-supabase-toggle` 設為相對定位並移回頂端 `#v40-top-bar` 內，與訂單數量徽章自然並排，滾動時正常收合。
