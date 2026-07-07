@@ -1,6 +1,6 @@
 # /rp — Rewrite Prompt
 
-**用途 (Purpose)**：將用戶的原始問題重寫為具備架構思維與明確任務指令的結構化 Prompt，以 XML Tag 格式輸出供審閱；並執行 8 維度架構掃描 + 自我批評，作為任務前置入口。
+**用途 (Purpose)**：將用戶的原始問題重寫為具備架構思維與明確任務指令的結構化 Prompt，以 XML Tag 格式輸出供審閱；並執行 8 維度架構掃描，作為任務前置入口（自我批評不在此階段，見 Step 3 說明與理由）。
 **版本**：v2.3 (2026-05-30)
 **通用平台**：Claude Code (CL) · Antigravity/Gemini (AG) · Perplexity (PL)
 **觸發**：`/rp [你的原始問題]` 或 `/rp cl-flow [task]` 或 `/rp cl-flow-fast [task]`
