@@ -81,4 +81,8 @@
 | 2026-06-26 | 2026-06-26_audit_ledger_honest_cost_presentation.md | Audit Ledger 誠實成本呈現 | audit-ledger, cost, honest, qty-warn, single-source, v42, pitfall, preference | 前端遇成本資料異常(未隨件數累加/四欄空)只誠實警示不製造假數(禁base×qty假乘法);展開只列真實欄位禁前端用cost_configurations重算(守單一真源);呈現vs資料分線 |
 | 2026-07-04 | 2026-07-04_n8n_api_workflow_build_pattern.md | n8n API 建置手法 | n8n, api, workflow, webhook, credentials, cloudflare, pattern, pitfall | n8n workflow可全靠REST API建置測試免UI；webhook需補webhookId+人工存檔一次才註冊路由；Cloudflare封鎖屬執行環境非API服務商屬性 |
 | 2026-07-05 | 2026-07-05_git-checkout-carries-uncommitted-changes-silent-merge-noop.md | Git checkout 攜帶未提交修改 | git, checkout, merge, silent, commit, pitfall | checkout會靜默帶走未commit修改跨分支，merge回報Already up to date即空合併訊號 |
+| 2026-07-07 | 2026-07-07_onclick-json-stringify-double-quote-collision.md | onclick 雙引號衝突 | onclick, json-stringify, html-attribute, quote-collision, pitfall, igwatch | JSON.stringify輸出雙引號嵌入同樣雙引號分隔的HTML屬性會截斷斷裂，靜默失效不報錯；解法換單引號包裹（前提字元集安全） |
+| 2026-07-07 | 2026-07-07_frontend-rpc-call-probe-before-trust.md | 前端呼叫RPC先探針 | rpc, probe, frontend, backend, supabase, pattern | 前端呼叫程式碼看起來正確不代表被呼叫的RPC存在；稽核順序應先探針後端物件存在性再信任前端邏輯 |
+| 2026-07-07 | 2026-07-07_fixed-positioning-inside-transformed-parent-clipping-pitfall.md | CSS transform 容器裁剪 | transform, fixed, containing-block, clip, css, pitfall | transform 會改變 fixed 包含塊，導致滾動收合時子控制項隨之移動裁剪 |
 <!-- kgov sync confirmed: Session 124 -->
+

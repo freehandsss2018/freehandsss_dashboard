@@ -1,6 +1,15 @@
-﻿# Session Log
+# Session Log
+
+## 2026-07-07 (Session 151 — 手機版 Threads 底部導覽列與 Supabase 狀態列對位優化): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S151 條目（無完成報告的小改動，Changelog 為唯一全文居所）。透過 `DOMContentLoaded` JS 動態重組將手機版底部導覽按鈕群 `.fhs-top-bar__actions` 掛載至 `<body>` 根節點，防止向下滑動時因父元素 transform 而被隱藏，實現常駐固定；將 `#v41-supabase-toggle` 設為相對定位並移回頂端 `#v40-top-bar` 內，與訂單數量徽章自然並排，滾動時正常收合。
+
+## 2026-07-07 (Session 150 — 審計修復 Phase 1-3 + 篩選面板響應式重設計): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S150 條目（無完成報告的小改動，Changelog 為唯一全文居所）。Phase 1-3 審計修復完成（F1 內嵌引號衝突 onclick 修復；F2 新建 expense_logs 寫入 RPC 0049；F3 開啟 desktop 分頁篩選且 80=74+6 數據吻合）。後續依 Fat Mo 兩輪截圖反饋：重組篩選控制面板、手機版預設摺疊面板、雙欄控制項強制同行、`↕ 排序` 與 `🔍 搜尋` 同行配對、精簡排序選項、移除重疊標題、手機模式按鈕移至底部常駐。
 
 ## 2026-07-05 (Session 147 — Phase 3 全域治理優化 + Stage 3 CHECK 約束上線): 🔧 ✅
+
 
 **摘要**：全文見完成報告 [.fhs/reports/completion/2026-07-05_s147-phase3-governance-optimization_completion_report.md](../reports/completion/2026-07-05_s147-phase3-governance-optimization_completion_report.md)（本行僅摘要指回，依 Phase 1.6 規則(a)）。方案書 15 項執行 + 財務三份成本文件三方審計（database-reviewer/code-reviewer/ui-designer）PASS-with-fixes 修正 + fresh-context 複審確認 + Stage 3 CHECK 約束（migration 0048）live 上線並驗證。n8n Mirror Prep 共享鎖延後下個 session。guard/health 未重跑（本次為文件+單一schema變動，非代碼邏輯改動）。
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-HK">
 
 <head>
@@ -88,6 +88,8 @@
 
             /* === Bottom Bar 高度（iPhone 專用）=== */
             --bottom-bar-height: 64px;
+            /* === S150 F6：Mode Nav Bar 高度（iPhone 專用，模式切換按鈕移至底部）=== */
+            --mode-nav-height: 52px;
 
             /* === V37 Legacy tokens (kept for backward compat with existing CSS) === */
             --primary: #C9714A;
@@ -881,6 +883,7 @@
         .filter-body.open { max-height:800px; padding:16px 20px 20px; }
         .filter-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px 16px; }
         .filter-row-secondary { padding-top:12px; border-top:1px solid var(--fhs-border); align-items:center; }
+        .filter-pair-row { display:flex; align-items:center; gap:12px 16px; }
         .filter-group { display:flex; align-items:center; gap:8px; min-height:36px; }
         .filter-label { font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
         .fhs-select { height:36px; padding:0 28px 0 10px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); background:var(--fhs-bg-surface); color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); cursor:pointer; transition:border-color .15s,box-shadow .15s; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A6A55' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; }
@@ -942,6 +945,11 @@
             .fhs-input--md { width:100%; max-width:180px; }
             .filter-row { gap:10px 12px; }
             .filter-row-secondary { padding-top:10px; }
+            /* S150 F3.3：狀態+批次（及年度+月份）配對並列同一行，label 上/控制項下確保窄欄不擠壓 */
+            .filter-row-divider { display:none; }
+            .filter-pair-row { width:100%; gap:10px 12px; }
+            .filter-pair-row .filter-group { flex:1 1 0; min-width:0; flex-direction:column; align-items:stretch; gap:4px; }
+            .filter-pair-row .fhs-select, .filter-pair-row .fhs-input { width:100%; max-width:none; }
             .fhs-btn-refresh { margin-left:0; width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
             .fhs-btn-save-filter { width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
             .fhs-select--sort { min-width:0; width:100%; max-width:260px; }
@@ -1614,6 +1622,9 @@
             flex-shrink: 0;
         }
         .fhs-top-bar__actions button {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             white-space: nowrap;
             flex-shrink: 0;
             padding: 6px 10px;
@@ -1631,6 +1642,8 @@
             color: #fff;
             border-color: var(--fhs-accent);
         }
+        .ba-icon { font-size: 14px; line-height: 1; }
+        .ba-label { line-height: 1; }
         @media (max-width: 480px) {
             .fhs-top-bar__order-id { flex: 1; font-size: 10px; }
             .fhs-top-bar__logo { font-size: 13px; }
@@ -1821,10 +1834,64 @@
         /* iPhone: single column, Bottom Bar visible, Drawer active */
         @media (max-width: 767px) {
             body {
-                padding-bottom: var(--bottom-bar-height) !important;
+                padding-bottom: calc(var(--bottom-bar-height) + var(--mode-nav-height) + 24px) !important;
             }
             .fhs-bottom-bar {
                 display: flex;
+                bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+            }
+            /* S150 F6（2026-07-07）：模式切換按鈕（新增/修改/訂單/財務/⚙️/🐶）移至底部常駐列，仿 Threads 底部導覽 */
+            .fhs-top-bar__actions {
+                position: fixed;
+                left: 16px; right: 16px;
+                bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+                z-index: 2000;
+                height: 56px;
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(224, 216, 204, 0.6);
+                border-radius: 9999px;
+                box-shadow: 0 8px 32px rgba(44, 36, 22, 0.1), 0 1px 2px rgba(44, 36, 22, 0.04);
+                padding: 4px 12px;
+                gap: 4px;
+                justify-content: space-around;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            .fhs-top-bar__actions button {
+                flex: 1;
+                flex-direction: column;
+                gap: 2px;
+                min-width: 0;
+                padding: 4px 2px;
+                font-size: 9px;
+                font-weight: 500;
+                border: none;
+                border-radius: 9999px;
+                background: transparent;
+                color: var(--fhs-text-secondary);
+                transition: color 0.15s ease, background-color 0.15s ease;
+            }
+            .fhs-top-bar__actions button .ba-icon {
+                width: 20px;
+                height: 20px;
+                display: block;
+                color: inherit;
+            }
+            .fhs-top-bar__actions button.active {
+                background: transparent;
+                color: var(--fhs-accent);
+            }
+            #v41-supabase-toggle {
+                position: relative !important;
+                top: auto !important;
+                right: auto !important;
+                left: auto !important;
+                bottom: auto !important;
+                z-index: auto !important;
+                margin-left: 6px;
+                flex-shrink: 0;
             }
             .fhs-drawer {
                 display: flex;
@@ -2813,7 +2880,7 @@
         .fhs-toast {
             position: fixed;
             left: 16px; right: 16px;
-            bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+            bottom: calc(156px + env(safe-area-inset-bottom, 0px));
             border-radius: var(--radius-lg);
             background: var(--fhs-toast-bg);
             color: #FAF7F4;
@@ -2902,15 +2969,14 @@
         }
 
         /* ================================================================
-           V42 P4 — Segmented Control Wrapper (mobile only)
+           V42 P4 — Segmented Control Wrapper (all devices, S150 F3)
+           位置：篩選面板內，與 filter-toggle-bar 同組（.filter-toggle-row）
+           S150 F3.4（2026-07-07）：Desktop 統一跟隨 Mobile 排位——icon-only + tabs 同一行
            ================================================================ */
-        #fhsSegWrapper {
-            display: none;
-            padding: 12px 16px 4px;
-        }
-        @media (max-width: 767px) {
-            #fhsSegWrapper { display: block; }
-        }
+        .filter-toggle-row { display: flex; flex-direction: row; align-items: center; gap: 4px; padding: 0 4px; }
+        .filter-toggle-bar { width: auto; flex-shrink: 0; padding: 0 8px; }
+        .filter-toggle-label, .filter-active-hint { display: none; }
+        #fhsSegWrapper { flex: 1; min-width: 0; padding: 6px 8px 6px 0; }
 
         /* ================================================================
            V42 AG Stitch Snippets — 組件 1: 左滑卡片背景色修正
@@ -3145,6 +3211,25 @@
   <symbol id="icon-x" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M18 6 6 18M6 6l12 12"/>
   </symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M5 12h14M12 5v14"/>
+  </symbol>
+  <symbol id="icon-edit" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+  </symbol>
+  <symbol id="icon-list" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+  </symbol>
+  <symbol id="icon-wallet" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3M3 10h18M16 14h.01"/>
+  </symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+  </symbol>
+  <symbol id="icon-bell" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+  </symbol>
 </svg>
 <!-- ===== /V42 Lucide SVG Sprite ===== -->
 
@@ -3152,17 +3237,20 @@
     <div class="fhs-top-bar" id="v40-top-bar">
         <span class="fhs-top-bar__logo">FHS</span>
         <span class="fhs-top-bar__order-id" id="v40-top-order-id">訂單 #—</span>
+        <span id="reviewCountBadge"
+            class="review-count-badge"
+            style="display:none; flex-shrink:0; padding:2px 10px; background:var(--fhs-success); color:#fff; border-radius:var(--radius-pill); font-size:11px; font-weight:700; white-space:nowrap;">0 筆</span>
         <div class="fhs-top-bar__actions">
-            <!-- 模式切換按鈕：contract-critical IDs 保留 -->
-            <button id="modeCreateBtn" onclick="switchMode('create')">新增</button>
-            <button id="modeEditBtn" onclick="switchMode('edit')">修改</button>
-            <button id="modeReviewBtn" onclick="switchMode('review')">訂單</button>
+            <!-- 模式切換按鈕：contract-critical IDs 保留（S150 F6.1：icon+label 結構，手機底部導覽用） -->
+            <button id="modeCreateBtn" onclick="switchMode('create')"><svg class="ba-icon" width="20" height="20"><use href="#icon-plus"/></svg><span class="ba-label">新增</span></button>
+            <button id="modeEditBtn" onclick="switchMode('edit')"><svg class="ba-icon" width="20" height="20"><use href="#icon-edit"/></svg><span class="ba-label">修改</span></button>
+            <button id="modeReviewBtn" onclick="switchMode('review')"><svg class="ba-icon" width="20" height="20"><use href="#icon-list"/></svg><span class="ba-label">訂單</span></button>
             <!-- Financial Overview 模式按鈕（V40.2 整合版） -->
-            <button id="modeFinanceBtn" onclick="switchMode('finance')">財務</button>
+            <button id="modeFinanceBtn" onclick="switchMode('finance')"><svg class="ba-icon" width="20" height="20"><use href="#icon-wallet"/></svg><span class="ba-label">財務</span></button>
             <!-- 系統監控按鈕（V46.1） -->
-            <button id="modeSystemBtn" onclick="switchMode('system')" title="系統狀態監控">⚙️</button>
+            <button id="modeSystemBtn" onclick="switchMode('system')" title="系統狀態監控"><svg class="ba-icon" width="20" height="20"><use href="#icon-settings"/></svg><span class="ba-label">系統</span></button>
             <!-- IG 看門狗模式按鈕（S119） -->
-            <button id="modeIgWatchBtn" onclick="switchMode('igwatch')" title="IG 看門狗警報">🐶</button>
+            <button id="modeIgWatchBtn" onclick="switchMode('igwatch')" title="IG 看門狗警報"><svg class="ba-icon" width="20" height="20"><use href="#icon-bell"/></svg><span class="ba-label">看門狗</span></button>
         </div>
     </div>
 
@@ -3200,15 +3288,8 @@
 
             <!-- Zone 2：標題列（fixed at top:48px） -->
             <div id="reviewZone2">
-            <div class="review-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:12px 24px 8px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <h2 class="review-title" style="margin:0; padding:0; display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:1.875rem;">📊</span> 訂單總覽
-                    </h2>
-                    <span id="reviewCountBadge"
-                        class="review-count-badge"
-                        style="display:none; padding:4px 16px; background:var(--fhs-success); color:#fff; border-radius:var(--radius-pill); font-size:var(--fhs-text-xs); font-weight:700;">0 筆</span>
-                </div>
+            <div class="review-header" style="display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:8px; padding:12px 24px 8px;">
+                <!-- S150 F5：「📊 訂單總覽」大標題與 Top Bar「📋 訂單總覽」重疊，已刪除；reviewCountBadge 移至 Top Bar -->
                 <span id="reviewLoading"
                     style="display:none; color:var(--fhs-warning); font-weight:700; font-size:var(--fhs-text-sm); background:var(--fhs-warning-bg); padding:4px 16px; border-radius:var(--radius-pill); border:1px solid var(--fhs-border);">
                     <svg style="width:16px; height:16px; display:inline; vertical-align:middle;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -3230,81 +3311,119 @@
             <!-- Zone 3 filter：篩選列（fixed at top:48px+zone2H，由 JS 動態計算） -->
             <div class="review-filters-v2" id="reviewFiltersV2">
 
-                <!-- Mobile Only：Filter 收合 Toggle Bar -->
-                <div class="filter-toggle-bar expanded" id="reviewFilterToggle" role="button" aria-expanded="true" aria-controls="reviewFilterBody">
-                    <div class="filter-toggle-summary">
-                        <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+                <!-- S150 F3.1：Toggle Bar + Segmented Control 同組（Desktop 上下疊，Mobile 同行） -->
+                <div class="filter-toggle-row">
+                    <!-- Mobile Only：Filter 收合 Toggle Bar -->
+                    <div class="filter-toggle-bar expanded" id="reviewFilterToggle" role="button" aria-expanded="true" aria-controls="reviewFilterBody" aria-label="篩選條件">
+                        <div class="filter-toggle-summary">
+                            <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+                            </svg>
+                            <span class="filter-toggle-label">篩選條件</span>
+                            <span class="filter-active-hint" id="filterActiveHint"></span>
+                        </div>
+                        <svg class="filter-chevron" id="filterChevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
                         </svg>
-                        <span class="filter-toggle-label">篩選條件</span>
-                        <span class="filter-active-hint" id="filterActiveHint"></span>
                     </div>
-                    <svg class="filter-chevron" id="filterChevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>
+
+                    <!-- V42 Segmented Control: 全部 / 進行中 / 已完成（S150 F3：常駐於篩選列旁） -->
+                    <div id="fhsSegWrapper">
+                        <div class="fhs-seg-ctrl" id="fhsSegCtrl" role="tablist" aria-label="訂單分類">
+                            <button class="fhs-seg-btn" type="button" role="tab" data-tab="all" onclick="setSegTab('all')">全部</button>
+                            <button class="fhs-seg-btn is-active" type="button" role="tab" data-tab="active" onclick="setSegTab('active')">進行中</button>
+                            <button class="fhs-seg-btn" type="button" role="tab" data-tab="archived" onclick="setSegTab('archived')">已完成</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Filter Body（Desktop 常駐，Mobile 收合） -->
                 <div class="filter-body open" id="reviewFilterBody">
 
-                    <!-- 第一行：日期 + 狀態 + 批次 + 搜尋 -->
+                    <!-- 第一行：日期 + 狀態 + 批次 + 搜尋（S150 F3.3：狀態+批次配對，手機保證同行） -->
                     <div class="filter-row filter-row-primary">
-                        <div class="filter-group">
-                            <label class="filter-label" for="reviewYear">📅 年度</label>
-                            <select id="reviewYear" class="fhs-select" onchange="fetchGlobalReview(); updateFilterActiveHint();"></select>
+                        <div class="filter-pair-row">
+                            <div class="filter-group">
+                                <label class="filter-label" for="reviewYear">📅 年度</label>
+                                <select id="reviewYear" class="fhs-select" onchange="fetchGlobalReview(); updateFilterActiveHint();"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label" for="reviewMonth">📆 月份</label>
+                                <select id="reviewMonth" class="fhs-select" onchange="fetchGlobalReview(); updateFilterActiveHint();">
+                                    <option value="">全部</option>
+                                    <option value="01">1月</option>
+                                    <option value="02">2月</option>
+                                    <option value="03">3月</option>
+                                    <option value="04">4月</option>
+                                    <option value="05">5月</option>
+                                    <option value="06">6月</option>
+                                    <option value="07">7月</option>
+                                    <option value="08">8月</option>
+                                    <option value="09">9月</option>
+                                    <option value="10">10月</option>
+                                    <option value="11">11月</option>
+                                    <option value="12">12月</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="filter-group">
-                            <label class="filter-label" for="reviewMonth">📆 月份</label>
-                            <select id="reviewMonth" class="fhs-select" onchange="fetchGlobalReview(); updateFilterActiveHint();">
-                                <option value="">全部</option>
-                                <option value="01">1月</option>
-                                <option value="02">2月</option>
-                                <option value="03">3月</option>
-                                <option value="04">4月</option>
-                                <option value="05">5月</option>
-                                <option value="06">6月</option>
-                                <option value="07">7月</option>
-                                <option value="08">8月</option>
-                                <option value="09">9月</option>
-                                <option value="10">10月</option>
-                                <option value="11">11月</option>
-                                <option value="12">12月</option>
-                            </select>
+                        <div class="filter-row-divider" style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
+                        <div class="filter-pair-row">
+                            <div class="filter-group">
+                                <label class="filter-label" for="reviewStatus">🚥 狀態</label>
+                                <select id="reviewStatus" class="fhs-select fhs-select--wide" onchange="fetchGlobalReview(); updateFilterActiveHint();">
+                                    <option value="">全部狀態</option>
+                                    <option value="0 什麼都未做">0 什麼都未做</option>
+                                    <option value="1 已繪圖 或 已取相">1 已繪圖/取相</option>
+                                    <option value="1.5 已交付建模師, 等3D圖中">1.5 等3D圖中</option>
+                                    <option value="2 已修3D圖, 但未核對">2 已修3D圖</option>
+                                    <option value="2.5 已核對3D圖, 準備打印">2.5 準備打印</option>
+                                    <option value="3 已交付廠家, 打印中">3 打印中</option>
+                                    <option value="Done 已完成">Done ✅</option>
+                                    <optgroup label="── 手模擺設 ──">
+                                        <option value="hm_pending">待Book日期</option>
+                                        <option value="hm_booked">已Book日期</option>
+                                        <option value="hm_laser">已做Laser</option>
+                                        <option value="hm_done">完成（音訊）</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label" for="reviewBatch">🏷️ 批次</label>
+                                <input type="text" id="reviewBatch" class="fhs-input fhs-input--sm" placeholder="第X批"
+                                    oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
+                            </div>
                         </div>
-                        <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
-                        <div class="filter-group">
-                            <label class="filter-label" for="reviewStatus">🚥 狀態</label>
-                            <select id="reviewStatus" class="fhs-select fhs-select--wide" onchange="fetchGlobalReview(); updateFilterActiveHint();">
-                                <option value="">全部狀態</option>
-                                <option value="0 什麼都未做">0 什麼都未做</option>
-                                <option value="1 已繪圖 或 已取相">1 已繪圖/取相</option>
-                                <option value="1.5 已交付建模師, 等3D圖中">1.5 等3D圖中</option>
-                                <option value="2 已修3D圖, 但未核對">2 已修3D圖</option>
-                                <option value="2.5 已核對3D圖, 準備打印">2.5 準備打印</option>
-                                <option value="3 已交付廠家, 打印中">3 打印中</option>
-                                <option value="Done 已完成">Done ✅</option>
-                                <optgroup label="── 手模擺設 ──">
-                                    <option value="hm_pending">待Book日期</option>
-                                    <option value="hm_booked">已Book日期</option>
-                                    <option value="hm_laser">已做Laser</option>
-                                    <option value="hm_done">完成（音訊）</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
-                        <div class="filter-group">
-                            <label class="filter-label" for="reviewBatch">🏷️ 批次</label>
-                            <input type="text" id="reviewBatch" class="fhs-input fhs-input--sm" placeholder="第X批"
-                                oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label" for="reviewSearch">🔍 搜尋</label>
-                            <input type="text" id="reviewSearch" class="fhs-input fhs-input--md" placeholder="姓名/單號"
-                                oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
+                        <div class="filter-pair-row">
+                            <div class="filter-group">
+                                <label class="filter-label" for="reviewSearch">🔍 搜尋</label>
+                                <input type="text" id="reviewSearch" class="fhs-input fhs-input--md" placeholder="姓名/單號"
+                                    oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label" for="reviewSortSelect">↕ 排序</label>
+                                <select id="reviewSortSelect" class="fhs-select fhs-select--sort">
+                                    <option value="">預設（載入順序）</option>
+                                    <optgroup label="時限警示">
+                                        <option value="Deadline_asc">⏰ 時限警示 — 最緊迫優先</option>
+                                    </optgroup>
+                                    <optgroup label="日期">
+                                        <option value="Date_desc">日期 — 最新優先</option>
+                                        <option value="Date_asc">日期 — 最舊優先</option>
+                                    </optgroup>
+                                    <optgroup label="單號">
+                                        <option value="Order_ID_desc">單號 — 降序</option>
+                                        <option value="Order_ID_asc">單號 — 升序</option>
+                                    </optgroup>
+                                    <optgroup label="客人">
+                                        <option value="Customer_asc">客人 — A→Z</option>
+                                        <option value="Customer_desc">客人 — Z→A</option>
+                                    </optgroup>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 第二行：產品類別 Chip + 排序下拉 + 重新載入 -->
+                    <!-- 第二行：產品類別 Chip + 重新載入 -->
                     <div class="filter-row filter-row-secondary">
                         <div class="filter-group">
                             <label class="filter-label">📦 類別</label>
@@ -3316,39 +3435,6 @@
                             </div>
                         </div>
                         <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
-                        <div class="filter-group">
-                            <label class="filter-label" for="reviewSortSelect">↕ 排序</label>
-                            <select id="reviewSortSelect" class="fhs-select fhs-select--sort">
-                                <option value="">預設（載入順序）</option>
-                                <optgroup label="日期">
-                                    <option value="Date_desc">日期 — 最新優先</option>
-                                    <option value="Date_asc">日期 — 最舊優先</option>
-                                </optgroup>
-                                <optgroup label="單號">
-                                    <option value="Order_ID_desc">單號 — 降序</option>
-                                    <option value="Order_ID_asc">單號 — 升序</option>
-                                </optgroup>
-                                <optgroup label="客人">
-                                    <option value="Customer_asc">客人 — A→Z</option>
-                                    <option value="Customer_desc">客人 — Z→A</option>
-                                </optgroup>
-                                <optgroup label="成本">
-                                    <option value="Total_Cost_desc">成本 — 高→低</option>
-                                    <option value="Total_Cost_asc">成本 — 低→高</option>
-                                </optgroup>
-                                <optgroup label="利潤">
-                                    <option value="Net_Profit_desc">利潤 — 高→低</option>
-                                    <option value="Net_Profit_asc">利潤 — 低→高</option>
-                                </optgroup>
-                                <optgroup label="進度">
-                                    <option value="Status_asc">進度 — 0→Done</option>
-                                    <option value="Status_desc">進度 — Done→0</option>
-                                </optgroup>
-                                <optgroup label="時限警示">
-                                    <option value="Deadline_asc">⏰ 時限警示 — 最緊迫優先</option>
-                                </optgroup>
-                            </select>
-                        </div>
                         <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓">🔍 顯示項目財務</button>
                         <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()">💾 儲存篩選</button>
                         <button class="fhs-btn-refresh" type="button"
@@ -3416,15 +3502,6 @@
                         </tr>
                     </tbody>
                 </table>
-            </div>
-
-            <!-- V42 Segmented Control: 全部 / 進行中 / 已完成 (mobile only) -->
-            <div id="fhsSegWrapper">
-                <div class="fhs-seg-ctrl" id="fhsSegCtrl" role="tablist" aria-label="訂單分類">
-                    <button class="fhs-seg-btn" type="button" role="tab" data-tab="all" onclick="setSegTab('all')">全部</button>
-                    <button class="fhs-seg-btn is-active" type="button" role="tab" data-tab="active" onclick="setSegTab('active')">進行中</button>
-                    <button class="fhs-seg-btn" type="button" role="tab" data-tab="archived" onclick="setSegTab('archived')">已完成</button>
-                </div>
             </div>
 
             <!-- V40 iPhone Accordion 容器（< 768px 顯示，Desktop 隱藏） -->
@@ -9616,10 +9693,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const toggle = document.getElementById('reviewFilterToggle');
             const filterBody = document.getElementById('reviewFilterBody');
             if (toggle && filterBody) {
-                // Restore last state; default open (HTML already has .open)
+                // Restore last state; default open on Desktop, default collapsed on Mobile first-visit（S150 F3.2）
                 var _saved = null;
                 try { _saved = localStorage.getItem('fhs_filter_open'); } catch(e) {}
-                if (_saved === '0') {
+                var _shouldCollapse = (_saved === '0') || (_saved === null && window.matchMedia('(max-width:767px)').matches);
+                if (_shouldCollapse) {
                     filterBody.classList.remove('open');
                     toggle.classList.remove('expanded');
                     toggle.setAttribute('aria-expanded', 'false');
@@ -12151,19 +12229,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (layout) {
                 layout.classList.toggle('v40-review-active', mode === 'review');
             }
-            // V40: Top Bar 模式按鈕高亮
-            ['modeCreateBtn','modeEditBtn','modeReviewBtn'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (!btn) return;
-                const isActive = (
-                    (id === 'modeCreateBtn' && mode === 'create') ||
-                    (id === 'modeEditBtn' && mode === 'edit') ||
-                    (id === 'modeReviewBtn' && mode === 'review')
-                );
-                btn.style.background = isActive ? 'var(--fhs-accent)' : 'var(--fhs-bg-elevated)';
-                btn.style.color = isActive ? 'white' : 'var(--fhs-text-secondary)';
-                btn.style.border = isActive ? 'none' : '1px solid var(--fhs-border)';
-            });
+            // V40: Top Bar 模式按鈕高亮 —— 已改由 _origSwitchMode 內的 classList('active') 統一處理（S150 F6.2：
+            // 移除本段舊版 inline style 覆寫，避免疊加互相打架、並阻擋手機底部導覽列的扁平化樣式）
 
             // V40.4: Finance Mode Header Optimization
             const topEl = document.getElementById('v40-top-order-id');
@@ -12174,6 +12241,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 } else {
                     topEl.style.color = 'inherit';
                     syncTopBarOrderId();
+                    // S150 F5：離開訂單總覽模式時隱藏 reviewCountBadge（原容器 display:none 連帶遮蔽，搬至 Top Bar 後需手動控制）
+                    var _rcb = document.getElementById('reviewCountBadge');
+                    if (_rcb) _rcb.style.display = 'none';
                 }
             }
         };
@@ -13342,14 +13412,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // kind 感知動作（v2 修正：not_created 單不存在，禁止 openOrderModal 會靜默失敗）
                 var actionBtn = '';
                 if (r.kind === 'created_incomplete' && r.order_id) {
-                    actionBtn = '<button onclick="openOrderModal(' + JSON.stringify(r.order_id) + ',\'\',\'finance\')" style="font-size:12px;background:var(--fhs-primary,#2A9D8F);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">開訂單</button>';
+                    actionBtn = '<button onclick="openOrderModal(\'' + r.order_id + '\',\'\',\'finance\')" style="font-size:12px;background:var(--fhs-primary,#2A9D8F);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">開訂單</button>';
                 } else if (r.kind === 'not_created' && r.order_id) {
-                    actionBtn = '<button onclick="_igwCopyOrderId(' + JSON.stringify(r.order_id) + ')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">複製訂號</button>';
+                    actionBtn = '<button onclick="_igwCopyOrderId(\'' + r.order_id + '\')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">複製訂號</button>';
                 }
                 var resolveLabel = r.resolved ? '標回未處理' : '標記已處理';
                 var resolveBg = r.resolved ? '#e5e7eb' : '#059669';
                 var resolveColor = r.resolved ? '#374151' : '#fff';
-                var resolveBtn = '<button onclick="_igwToggleResolve(' + JSON.stringify(r.id) + ',' + !r.resolved + ')" style="font-size:12px;background:' + resolveBg + ';color:' + resolveColor + ';border:none;border-radius:6px;padding:4px 10px;cursor:pointer;">' + resolveLabel + '</button>';
+                var resolveBtn = '<button onclick="_igwToggleResolve(\'' + r.id + '\',' + !r.resolved + ')" style="font-size:12px;background:' + resolveBg + ';color:' + resolveColor + ';border:none;border-radius:6px;padding:4px 10px;cursor:pointer;">' + resolveLabel + '</button>';
                 var cardBg = r.resolved ? 'var(--fhs-bg-secondary,#f9fafb)' : '#fff';
                 var dbBadge = r.order_id
                     ? (r.db_matched ? ' <span style="color:#059669;font-size:11px;">DB✓</span>' : ' <span style="color:#ef4444;font-size:11px;">DB✗</span>')
@@ -13387,11 +13457,28 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         function _igwCopyOrderId(orderId) {
+            function fallbackCopy() {
+                try {
+                    var ta = document.createElement('textarea');
+                    ta.value = orderId;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    var ok = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    if (ok) { showToast('訂號已複製：' + orderId, 2000); }
+                    else { alert('訂號：' + orderId); }
+                } catch (e) { alert('訂號：' + orderId); }
+            }
             if (navigator.clipboard) {
+                var _igwCopyDone = false;
+                var _igwCopyTimer = setTimeout(function() { _igwCopyDone = true; fallbackCopy(); }, 1500);
                 navigator.clipboard.writeText(orderId)
-                    .then(function() { showToast('訂號已複製：' + orderId, 2000); })
-                    .catch(function() { alert('訂號：' + orderId); });
-            } else { alert('訂號：' + orderId); }
+                    .then(function() { if (!_igwCopyDone) { clearTimeout(_igwCopyTimer); _igwCopyDone = true; showToast('訂號已複製：' + orderId, 2000); } })
+                    .catch(function() { if (!_igwCopyDone) { clearTimeout(_igwCopyTimer); _igwCopyDone = true; fallbackCopy(); } });
+            } else { fallbackCopy(); }
         }
 
         window.loadIgWatchAlerts = loadIgWatchAlerts;
@@ -14941,10 +15028,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             })
             .catch(function(e) {
                 // Fallback: direct PostgREST insert if RPC not available
-                var sbUrl = (window._sbUrl || '') + '/rest/v1/expense_logs';
+                var sbUrl = _FS_SB_URL + '/rest/v1/expense_logs';
                 fetch(sbUrl, {
                     method: 'POST',
-                    headers: Object.assign({}, window._sbHdr || {}, { 'Prefer': 'return=minimal' }),
+                    headers: {
+                        'apikey': _FS_SB_ANON,
+                        'Authorization': 'Bearer ' + _FS_SB_ANON,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
                     body: JSON.stringify({
                         log_type: 'expense', entry_date: date, category: category,
                         item_name: item, amount: amount,
@@ -15623,6 +15715,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 firstContent.style.transform  = '';
             }, 60);
         }).observe(container, { childList: true });
+    });
+
+    /* ── Mobile layout DOM adjustments (S150 F6.3) ── */
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth < 768) {
+            const actions = document.querySelector('.fhs-top-bar__actions');
+            if (actions) {
+                // Move actions group to body so it stays fixed and isn't translated with the header on scroll
+                document.body.appendChild(actions);
+                
+                // Keep the supabase toggle pill inside the sticky top bar at the top
+                const sbToggle = document.getElementById('v41-supabase-toggle');
+                const topBar = document.getElementById('v40-top-bar');
+                if (sbToggle && topBar) {
+                    topBar.appendChild(sbToggle);
+                }
+            }
+        }
     });
 
 })();

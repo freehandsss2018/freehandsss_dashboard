@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fhs-dashboard",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "Freehandsss_Dashboard", "-l", "5500"],
+      "port": 5500
+    }
+  ]
+}

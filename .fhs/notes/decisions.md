@@ -1354,3 +1354,7 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **附帶修正**：`.fhs/ai/governance/02_model-dispatch.md` §0 subagent 模型釘選表對齊實況（S139 A3 已刪 6 支 model 行，該檔文件漂移未同步）；新增 `.fhs/notes/knowledge-map.md`（查詢路由表，只路由到檔案類別不列個別檔案，避免自己變成新的漂移點）；`governance/04` 新增 T6 降級交接膠囊模板（opus/fable 裁決完畢後交棒 sonnet/haiku 的標準格式）。
 
 詳見完成記錄：`.fhs/reports/completion/2026-07-05_s144-knowledge-workflow-hygiene_completion_report.md`
+
+### D14：S150 審計修復計畫執行序——Phase 1-3 先行，Phase 4-6 留待 S148/S149 後接續
+
+**決策**：S150 審計修復計畫（[.fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md](../reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md)）Fat Mo 核准後，依規劃期已定的建議序（§4.9，與 S148/S149 零檔案交集）只執行 Phase 1-3（F1 igwatch 按鈕/F2 記錄中心 RPC/F3 seg control desktop），Phase 4-6 留待 S148/S149 完成後由後續 session 接續（可直接續讀計畫檔 §4.5）。本決策無正式完成報告，全文居所依 D13 規則(b)為 Changelog——詳見 Changelog.md 2026-07-07 Session 150（續）條目。

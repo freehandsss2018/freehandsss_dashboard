@@ -197,7 +197,13 @@
       "Bash(awk '/^## Patterns/{s=1} /^## 財務核心/{s=0} s' .fhs/memory/learnings.md)",
       "Bash(awk '/^## 財務核心/{s=1} /^## Pitfalls/{s=0} s' .fhs/memory/learnings.md)",
       "Bash(awk '/^## Pitfalls/{s=1} /^## Preferences/{s=0} s' .fhs/memory/learnings.md)",
-      "Bash(awk '/^## Preferences/{s=1} s' .fhs/memory/learnings.md)"
+      "Bash(awk '/^## Preferences/{s=1} s' .fhs/memory/learnings.md)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 34586 -ErrorAction SilentlyContinue | Select-Object -Property OwningProcess,State\")",
+      "Bash(powershell -Command \"Get-Process -Id 27908 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,Path,StartTime\")",
+      "Bash(powershell -Command \"Get-CimInstance Win32_Process -Filter 'ProcessId=27908' | Select-Object ProcessId,CommandLine | Format-List\")",
+      "Bash(powershell -Command \"Stop-Process -Id 27908 -Force; Start-Sleep -Milliseconds 500; Get-NetTCPConnection -LocalPort 34586 -ErrorAction SilentlyContinue\")",
+      "Bash(powershell -Command \"try { Get-NetTCPConnection -LocalPort 34586 -ErrorAction Stop } catch { 'PORT_FREE' }\")",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -match 'mcp-remote' } | Select-Object ProcessId,CommandLine | Format-List)"
     ],
     "defaultMode": "default",
     "additionalDirectories": [

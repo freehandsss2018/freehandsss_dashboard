@@ -1,4 +1,76 @@
-﻿# Changelog
+# Changelog
+
+## [2026-07-07] Session 151（Sonnet 5 執行）— 手機版 Threads 底部導覽列與 Supabase 狀態列對位優化
+
+針對手機版（橫寬 <767px）底部 Threads 風格半透明圓角浮動導覽列進行滾動防剪裁與位置防覆蓋優化：
+
+- **手機版底部導覽列常駐固定**：新增 `DOMContentLoaded` 偵測，若為手機寬度，自動將按鈕群 `.fhs-top-bar__actions` 從頂部標題列移動到 `<body>` 根節點下。這樣一來，它就脫離了頂部標題列的 transform 隱藏範圍與 `overflow: hidden` 裁切範圍，能夠**長期且穩定地固定在畫面底部**（向上滾動時不再被隨之隱藏）。
+- **Supabase 狀態指示器移至頂部右側**：移除手機版下對 `#v41-supabase-toggle` 的 `position: absolute` 定位，改回相對定位 `position: relative !important; right: auto !important;`。在手機載入時動態將其掛回頂部標題列 `#v40-top-bar` 內。這樣它作為標題列內的 Flex 子元素，與綠色的訂單數量徽章（`#reviewCountBadge` - "33 筆"）**自然並排且無重疊**，且會隨著標題列的滾動隱藏正常收合。
+- **已同步兩份檔案**：確認 `freehandsss_dashboardV42.html` 同步複製至 `Freehandsss_dashboard_current.html`。
+- **文件同步**：新增 1 篇 lesson（CSS transform 容器對 fixed 子元素 Containing Block 之影與 clipping 裁剪 pitfall）。
+
+【交付前雙紀律自檢】
+驗收：手機版 375px 滾動測試，確認底部半透明 Threads 導覽列常駐且沒有在向下滾動時消失；頂部 Supabase 狀態燈位置與綠色「33筆」徽章並列，無遮擋覆蓋；健康檢查 `fhs-health-check.js` 執行無代碼錯誤，結果為 PASS = ✅
+Subagent：✅ 已使用（frontend-developer×2：第一輪處理 DOM 掛載移出以避免 transform 動態收合隱藏；第二輪修正 position 使其與綠色徽章自然並排，按計畫§1 派工矩陣 HTML 修改慣例）
+
+## [2026-07-07] Session 150（續，Sonnet 5 執行）— 審計修復 Phase 1-3（生產 POS 止血）
+
+
+S150 規劃期產出的審計修復計畫（[.fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md](.fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md)）經 Fat Mo 核准後，按建議序先執行 Phase 1-3（與 S148/S149 零檔案交集，優先止血生產 POS）：
+
+- **Phase 0（唯讀基線）**：確認 migration 0048 仍最新；`ig_watchdog_alerts_kind_check` 現值僅允許 `not_created`/`created_incomplete`；orders 兩條 anon UPDATE 政策 qual 皆 `true`（等價，留 Phase 5 處理）；exec 4069 診斷（curl+jq 落 scratchpad）確認錯誤為 Telegram markdown 解析失敗（byte offset 568），`Write Alerts` 節點在此之前已成功寫入、`processedFolderIds` 標記邏輯在更早的 Code 節點完成——**資料夾未漏處理**，比規劃期預期樂觀，不觸發授權項 7 的補掃
+- **Phase 1（F1）**：修復 IG 看門狗三顆按鈕（開訂單/複製訂號/標記已處理）onclick 屬性斷裂——`JSON.stringify()` 輸出雙引號嵌入同樣雙引號分隔的 HTML 屬性導致解析截斷；改手動單引號包裹（order_id/alert id 經 `normalizeOrderId()` 保證僅含英數+連字號，無需 escape）。`_igwCopyOrderId()` 加 `execCommand('copy')` textarea fallback + 1.5s 逾時保護（實測發現 `navigator.clipboard` 權限 pending 會永久卡住，非規劃期原案，屬 live 測試中新發現的防護需求）
+- **Phase 2（F3）**：`#fhsSegWrapper`（全部/進行中/已完成 分頁）CSS 基樣式由 `display:none` 改 `display:block`，新增 `@media (min-width:768px)` 桌面樣式，767px 以下零改動。實測 1280px：進行中 74 列 + 已完成 6 列 = 全部 80 列完全吻合——修復前這 6 筆歸檔訂單在 Desktop 完全不可見
+- **Phase 3（F2）**：新建 `fhs_write_expense_log` RPC（migration 0049，SECURITY DEFINER + 固定 search_path + GRANT anon/authenticated），修復記錄中心「支出記錄」tab 寫入 404 問題；前端 fallback 同步修正為使用同 IIFE 內的 `_FS_SB_URL`/`_FS_SB_ANON` 常數（原引用未定義的 `window._sbUrl`/`window._sbHdr`，是二層斷裂的根因之一）
+- **文件同步**：`FHS_System_Logic_Overview.md` 新增 §5.6（expense_logs 修復）、§10.12（seg control desktop）、§11.4 補充（onclick 修復）；新增 2 篇 lessons（onclick 雙引號衝突 pitfall；前端呼叫 RPC 先探針再信任 pattern）
+- **驗收**：guard fixtures 16/16 + health fixtures 12/12 皆 PASS 無回歸；code-reviewer（haiku）對 Phase 1-3 diff 審查 PASS（零阻塞問題，2 項非阻塞建議）；所有 live 探針資料（expense_logs probe、igwatch resolved 狀態）皆已復原/刪除零殘留
+- **中止點**：Phase 4-6（verified_ok 正向記錄、orders anon 權限收斂、制度收尾）留待 S148/S149 完成後接續，執行者可直接續讀計畫檔 §4.5 起；本次未部署 NAS（`/upload-web`+`.deploy-ok` 留待 Fat Mo 批准）；git commit 尚未建立，留待 Fat Mo 檢視後定粒度
+
+【交付前雙紀律自檢】
+驗收：生產 HTML + schema 改動 — code-reviewer(haiku) PASS；guard 16/16 + health 12/12 無回歸；migration 0049 curl 探針 200 + UI 表單實跑 200；F3 desktop 篩選數字吻合（74+6=80）；所有 live 測試資料已清除零殘留 = ✅
+Subagent：✅ 已使用（code-reviewer haiku×1：Phase 1-3 diff 品質 gate，按計畫§1 派工矩陣「HTML 改動品質 gate」慣例）；其餘（基線探查/程式碼修復/migration/live 驗證）為已知路徑定點操作，按 governance/02 §1 主對話直接執行
+
+### 追加（同日）— 篩選面板 + Segmented Control 響應式重新設計（Fat Mo 截圖反饋）
+
+Fat Mo 對 Phase 2（F3）成果反饋：Desktop 版「全部/進行中/已完成」置於表格下方不方便，附三張截圖提出四項具體要求。載入 `/arrange` skill 取方法論後執行：
+
+- **R1**：`#fhsSegWrapper` 從表格上緣移入 `.review-filters-v2` 面板內，與 `.filter-toggle-bar`（篩選條件 toggle）同組包在新 `.filter-toggle-row` 內；Desktop 呈 `flex-direction:column` 上下疊放，緊貼篩選條件列
+- **R2**：手機首次訪問（`localStorage['fhs_filter_open']` 無值）預設收縮篩選面板；Desktop 預設仍展開；已有使用者偏好一律優先
+- **R3**：手機收縮態下 `.filter-toggle-row` 轉 `flex-direction:row`，隱藏「篩選條件」文字與已選提示（僅留 icon），`#fhsSegWrapper` 佔滿剩餘寬度（`flex:1`），與 icon 同一行左右並排
+- **R4**：篩選欄位「年度+月份」「狀態+批次」各自包一層新 `.filter-pair-row`，手機版強制 `width:100%` 均分兩欄且改 label-上/控制項-下堆疊排版，保證同一行不受內容寬度影響而被擠到下一行
+- 順手補 `#reviewFilterToggle` `aria-label="篩選條件"`（code-reviewer 建議項，圖示替代文字後的無障礙補強）
+
+【交付前雙紀律自檢】
+驗收：純響應式 CSS/HTML 佈局改動 — code-reviewer(haiku) PASS（零阻塞，1 項非阻塞 a11y 建議已同步採納）；guard 16/16 無回歸；preview 375px/1280px 雙尺寸實測：手機首訪確認預設收縮+icon 與 tabs 同行+展開後狀態批次同行；Desktop 確認 seg control 貼齊篩選列+80=74+6 篩選數字不變；console 零錯誤 = ✅
+Subagent：✅ 已使用（code-reviewer haiku×1，同上慣例）；載入 `/arrange` skill 取版面/間距方法論（非派工，主對話直接依 skill 指引執行 CSS 重構）
+
+### 追加（同日，第二輪）— Desktop 統一跟隨手機排位 + 搜尋/排序同行 + 排序選項精簡（Fat Mo 再次截圖反饋）
+
+Fat Mo 看過第一輪重設計後再提四項要求：
+
+- **R1'**：`.filter-toggle-row` 由「Desktop 上下疊/Mobile 同行」改為**全裝置統一同行**——移除 `@media (min-width:768px)` 例外，icon-only + tabs 同行規則變成基礎樣式（無條件套用），Desktop 視覺與 Mobile 一致
+- **R2'/R3'**：`↕ 排序` 從 filter-row-secondary 搬到 filter-row-primary，與 `🔍 搜尋` 包成新 `.filter-pair-row`（比照年度+月份、狀態+批次同套配對機制），手機版同樣保證同行、與上方欄位對齊
+- **R4'**：`↕ 排序` 下拉選單移除「成本」「利潤」「進度」三個 optgroup（純 UI 選項刪除，`applyReviewFilters()` 排序比較邏輯是通用 field/dir 解析、非逐選項寫死，無需同步刪程式碼；`⏰ 時限警示` optgroup 移至清單最頂，僅次於「預設」）
+
+【交付前雙紀律自檢】
+驗收：純響應式 CSS/HTML 佈局改動 + UI 選項刪減（無邏輯層改動）— code-reviewer 判斷同上輪對等改動性質、未重新派工（純位置搬移+CSS層級調整+靜態選項刪除，範圍與上輪相同、風險對等）；guard 16/16 無回歸；preview_inspect 量測 computed style 驗證（非螢幕截圖，因 preview_screenshot 本輪多次逾時，改用更精確的 inspect 量測）：Desktop 1280px `.filter-toggle-row` display:flex/flex-direction:row/`.filter-toggle-label` display:none 與 Mobile 375px 一致；搜尋(x≈902)與排序(x≈1166)、手機搜尋(x≈30-169)與排序(x≈204+)皆同一行左右並排；下拉選單文字序確認「預設→⏰時限警示→日期→單號→客人」；點選/切換皆零 console error = ✅
+Subagent：❌ 未使用（沿用同 session 已建立的重構模式，範圍與風險對等前一輪已審查改動，主對話直接執行+量測驗證）
+
+### 追加（同日，第三輪）— 移除重複標題 + 模式導覽列移至手機底部（仿 Threads，Fat Mo 第三次截圖反饋）
+
+Fat Mo 指出兩個新問題並附截圖：(1) 手機/Desktop 下「📊 訂單總覽」大標題與 Top Bar「📋 訂單總覽」文字重疊；(2) 參考 Threads app 底部導覽列風格，建議把「新增/修改/訂單/財務/⚙️/🐶」按鈕列移到手機版底部：
+
+- **重複標題移除**：刪除 `.review-header` 內的 `<h2>📊 訂單總覽</h2>`（與 Top Bar `#v40-top-order-id` 的「📋 訂單總覽」重複）；`#reviewCountBadge`（顯示「N 筆 · 時間」）搬到 Top Bar、緊接在 `#v40-top-order-id` 之後常駐顯示；因原容器 `#reviewModeContainer` 的 `display:none` 連帶遮蔽效果不再適用，於既有 `switchMode` 覆寫邏輯內補一行：離開 review 模式時顯式 `display:none` 隱藏 badge（S150 F5）
+- **意外發現＋一併修復**：實測量測到手機 375px 下 `.fhs-top-bar__actions`（6 顆模式按鈕＋Supabase 狀態膠囊）需要 317px 寬度但只有 222px 可用空間——按鈕已被 `.fhs-top-bar` 的 `overflow:hidden` 裁切到螢幕外，這證實了 Fat Mo 提出底部導覽列需求的必要性（非純美觀考量）
+- **底部導覽列（S150 F6）**：於既有 `@media(max-width:767px)` 內把 `.fhs-top-bar__actions` 改 `position:fixed;bottom:0`（仿 Threads 常駐底部列），新增 CSS 變數 `--mode-nav-height:52px`；純 CSS 重定位，未搬動任何 DOM 節點/HTML ID（6 顆按鈕 ID 與 `v41-supabase-toggle` 皆原地不動，只是視覺上被固定到底部）。既有的 `#v40-bottom-bar`（create/edit 模式限定的「返回總覽/審閱並完成」提交列）`bottom` 偏移量改為 `var(--mode-nav-height)`，與新導覽列上下疊放零重疊（實測 696-760px / 760-812px）；`body` 手機版 `padding-bottom` 相應加總兩者高度。Desktop（≥768px）完全不受影響（`.fhs-top-bar__actions` 仍 `position:static`）
+
+【交付前雙紀律自檢】
+驗收：涉及主導覽結構改動（風險等級較前兩輪高）— code-reviewer(haiku) PASS（零阻塞、零警告）：確認 10 個 contract-critical ID 全數原封不動；`reviewCountBadge` 顯示洩漏風險逐路徑排查（currentMode 初始為 null、無自動顯示路徑、renderReviewTable 為唯一顯示觸發點）；z-index 疊放序（導覽列 2000 > drawer 200，與既有 top-bar 疊 drawer 慣例一致，非新回歸）；觸控目標尺寸達標。guard 16/16 無回歸；preview 實測：手機 375px 導覽列釘在螢幕底部（y:760-812）、7 個項目零裁切；create 模式下雙層底部列疊放零重疊零間隙；Desktop 1280px 確認 `.fhs-top-bar__actions` 仍 `position:static` 未受影響；切換模式功能正常（finance 面板正確顯示、badge 正確隱藏）；console 零錯誤 = ✅
+Subagent：✅ 已使用（code-reviewer haiku×1：本輪改動主導覽結構風險較高，明確請求仔細審查 z-index 疊放與 ID 完整性）
+
+【交付前雙紀律自檢】
+驗收：純響應式 CSS/HTML 佈局改動 — code-reviewer(haiku) PASS（零阻塞，1 項非阻塞 a11y 建議已同步採納）；guard 16/16 無回歸；preview 375px/1280px 雙尺寸實測：手機首訪確認預設收縮+icon 與 tabs 同行+展開後狀態批次同行；Desktop 確認 seg control 貼齊篩選列+80=74+6 篩選數字不變；console 零錯誤 = ✅
+Subagent：✅ 已使用（code-reviewer haiku×1，同上慣例）；載入 `/arrange` skill 取版面/間距方法論（非派工，主對話直接依 skill 指引執行 CSS 重構）
 
 ## [2026-07-05] Session 147 — Phase 3 全域治理優化：方案書 + 15 項執行
 
