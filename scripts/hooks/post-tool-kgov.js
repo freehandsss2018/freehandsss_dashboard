@@ -27,11 +27,20 @@ const FLAG_FILE = process.env.FHS_KGOV_FLAG_FILE ||
 // (S141 lesson: external paths must be configured, not pattern-matched.)
 const RULES_FILE = path.join(__dirname, '../../.fhs/tools/fhs-health-rules.json');
 let AUTO_MEMORY_DIR = null;
+let LEARNINGS_BUDGET = 50;        // default if rules file unreadable
+let PORTABLE_BLOCK_BUDGET = 4000; // default from commit.md P0.7.1
 try {
   const rules = JSON.parse(fs.readFileSync(RULES_FILE, 'utf8'));
   const p = rules.auto_memory_dir && rules.auto_memory_dir.path;
   if (p) AUTO_MEMORY_DIR = p.replace(/\\/g, '/').replace(/\/$/, '').toLowerCase();
-} catch (_) { /* fail-open: no auto-memory safe-path recognition */ }
+  // Read budgets from rules file (avoid hard-coding — S148 T6 principle)
+  const vb = rules.volume_budgets || [];
+  for (const item of vb) {
+    if (item.id === 'learnings_entries' && item.budget) LEARNINGS_BUDGET = item.budget;
+    if (item.id === 'handoff_portable_block' && item.budget) PORTABLE_BLOCK_BUDGET = item.budget;
+  }
+} catch (_) { /* fail-open: use defaults */ }
+
 
 // ── Reminder text (verbatim from execute.md [G]) ────────────────────────────
 const G_REMINDER = [
@@ -207,6 +216,9 @@ process.stdin.on('end', () => {
         emitAdditionalContext(G_WARN);
       }
       // No flag written for .md / code files
+
+      // T6: budget gate — check after any Write/Edit (S148 Phase 3)
+      checkBudgetGate(filePath);
     }
 
     process.exit(0);
@@ -215,3 +227,46 @@ process.stdin.on('end', () => {
     process.exit(0);
   }
 });
+
+// ── T6: Budget Gate (S148 Phase 3) ───────────────────────────────────────────
+// Called after each Write/Edit. Only activates when writing learnings.md or handoff.md.
+// Reads budgets from fhs-health-rules.json (same source as fhs-health-check.js).
+function checkBudgetGate(filePath) {
+  if (!filePath) return;
+  const normalPath = filePath.replace(/\\/g, '/');
+
+  try {
+    // learnings.md: count numbered entries (^d+. pattern)
+    if (normalPath.endsWith('learnings.md')) {
+      const learnPath = path.join(__dirname, '../../.fhs/memory/learnings.md');
+      if (!fs.existsSync(learnPath)) return;
+      const lines = fs.readFileSync(learnPath, 'utf8').split('\n');
+      const count = lines.filter(l => /^\d+\.\s/.test(l)).length;
+      if (count > LEARNINGS_BUDGET) {
+        emitAdditionalContext(
+          `⚠️ [kgov-hook T6] learnings.md 本次寫入後 ${count} 條 > 預算 ${LEARNINGS_BUDGET} 條\n` +
+          `   → 請當場對等替換（合併/退役一條），勿留給 /fhs-slim（見 commit.md 防回胖機制）`
+        );
+      }
+      return;
+    }
+
+    // handoff.md: measure portable block bytes (```handoff ... ─── 便攜邊界)
+    if (normalPath.endsWith('handoff.md')) {
+      const handoffPath = path.join(__dirname, '../../.fhs/memory/handoff.md');
+      if (!fs.existsSync(handoffPath)) return;
+      const raw = fs.readFileSync(handoffPath, 'utf8');
+      // Extract content between ```handoff and ─── 便攜邊界 (or closing ```)
+      const m = raw.match(/```handoff[\r\n]([\s\S]*?)(?:─── 便攜邊界|```)/);
+      if (!m) return;
+      const blockBytes = Buffer.byteLength(m[1], 'utf8');
+      if (blockBytes > PORTABLE_BLOCK_BUDGET) {
+        emitAdditionalContext(
+          `⚠️ [kgov-hook T6] handoff.md 便攜塊本次寫入後 ${blockBytes} bytes > 預算 ${PORTABLE_BLOCK_BUDGET} bytes\n` +
+          `   → 請依 commit.md P0.7.1 壓縮（決策 >20 條強制輪轉，壓縮至 ≤4000 bytes）`
+        );
+      }
+    }
+  } catch (_) { /* fail-open: budget gate never blocks */ }
+}
+

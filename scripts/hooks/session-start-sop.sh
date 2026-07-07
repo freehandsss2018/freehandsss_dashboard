@@ -44,6 +44,17 @@ echo ""
 echo "💡 /read 完整初始化 | /cl-flow [任務] 開始規劃 | /cl-flow-fast 快速規劃"
 echo "═══════════════════════════════════════════════════"
 
+# T5 /commit 漏跑偵測（S148 Phase 3）：比較最新 commit 日期 vs 便攜塊日期
+# 僅當 commit 日期「晚於」塊日期 ≥1天才 warn-only（同日多 commit 不誤報）
+if [ -n "$BLOCK_DATE" ]; then
+  LAST_COMMIT=$(git -C "$PROJECT_DIR" log -1 --format=%cs 2>/dev/null || echo "")
+  if [ -n "$LAST_COMMIT" ] && [ "$LAST_COMMIT" \> "$BLOCK_DATE" ]; then
+    echo ""
+    echo "⚠️  最新 commit（$LAST_COMMIT）晚於便攜塊更新日（$BLOCK_DATE）— 疑似上個 session 漏跑 /commit"
+    echo "   → 自查：git log --oneline -5 對照 Changelog.md 最新條目；確認漏跑則先補 /commit"
+  fi
+fi
+
 # L1 文件健康快檢（S142 新增）：零 token 死腳本，正常沉默，異常才印 ≤2 行。
 # fail-open：node 不存在或腳本出錯都不得擋 session 啟動，故加 timeout + || true 雙保險。
 if command -v node >/dev/null 2>&1; then

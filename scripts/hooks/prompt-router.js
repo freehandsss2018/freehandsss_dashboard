@@ -34,6 +34,7 @@ process.stdin.on('end', () => {
     // ── Large change warning (check before general categories) ──
     {
       patterns: ['大改', '重構', '翻新', '多個節點', '重寫', 'refactor', '全部改'],
+      excludes: ['不要改', '先不改', '唯讀', '只分析', '只盤點', '只規劃', '製作計畫', '實施計畫', 'implementation plan', '先讀取', '稽核報告'],
       subagent: null,
       skill: null,
       model: 'opus',
@@ -142,6 +143,10 @@ process.stdin.on('end', () => {
   let matched = null;
   for (const route of routes) {
     if (route.patterns.some(p => prompt.includes(p))) {
+      // T7: if route has excludes and any exclude word is in prompt, skip this route (S148 Phase 3)
+      if (route.excludes && route.excludes.some(e => prompt.includes(e))) {
+        continue; // skip — user indicated read-only/plan-only intent
+      }
       matched = route;
       break;
     }
