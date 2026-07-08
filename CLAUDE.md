@@ -17,6 +17,7 @@
 | 想找舊知識 / 過往決策為什麼這樣定 / 教訓在哪份文件 | `.fhs/notes/knowledge-map.md`（查詢路由表，非規則） |
 | 要落盤教訓（learnings/skill）/ 平行派工（fan-out/loop 迭代）/ 想用 worktree | `.fhs/ai/governance/07_compounding-loop.md` |
 | 想了解制度退化模式 / 給未來 session 的提醒 | `.fhs/ai/governance/06_letter-to-future-sessions.md` |
+| 改 V42 排版/UI 骨架（表格對齊/字體/Loader/樣式鐵律） | `.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` Section 六（排版鐵律唯一居所） |
 
 ## 三條免查即生效的紅線（規則本體與完整版見 `.fhs/ai/governance/02_model-dispatch.md` §5-§6；診斷依據見 01_diagnosis.md）
 

@@ -2859,6 +2859,9 @@
             will-change: transform;
             border-top: 1px solid var(--fhs-border);
             box-shadow: 0 -4px 24px rgba(44, 36, 22, 0.10);
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
         }
         .bs-sheet.is-open { transform: translateY(0); }
         .bs-handle {
@@ -3004,6 +3007,9 @@
         @media (max-width: 767px) {
             .fhs-btn-order-detail { display: none !important; }
             .acc-action-row { display: none !important; }
+            .bs-safe-area {
+                height: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+            }
         }
 
         /* ================================================================
@@ -3035,6 +3041,8 @@
             list-style: none;
             margin: 0;
             padding: 8px 0;
+            overflow-y: auto;
+            flex: 1;
         }
         .bs-item {
             width: 100%;
@@ -4368,6 +4376,10 @@
             onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ setTimeout(function(){ var cb = document.querySelector('.order-row-cb[data-order-id=&quot;'+oid+'&quot;]'); if(cb){ var row=cb.closest('tr'); if(row){ row.style.background='#FFF9C4'; row.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){row.style.background='';},2000); } } },800); } })()">
             ← 返回總覧
         </button>
+        <button class="fhs-btn-secondary bs-item--danger" id="v40-delete-btn" style="display:none; color:var(--fhs-danger); border-color:var(--fhs-danger);"
+            onclick="handleFormDeleteOrder()">
+            <svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-trash-2"/></svg>刪除
+        </button>
         <button class="fhs-btn-primary" id="v40-submit-btn" style="flex:1;"
             onclick="openIgPreviewModal()">
             ✅ 審閱並完成
@@ -4889,6 +4901,7 @@
         <button id="btnCopyA" class="copy-btn btn-category-a" style="display:none;" onclick="copyMessageA()"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-clipboard-list"/></svg>複製：手模擺設訊息</button>
         <button id="btnCopyB" class="copy-btn btn-category-b" style="display:none;" onclick="copyMessageB()"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-clipboard-list"/></svg>複製：金屬產品訊息</button>
         <button id="btnReviewIgMsg" class="copy-btn" onclick="openIgPreviewModal()" style="background-color:#2a9d8f;" title="進入後審閱訂單，確認無誤即可複製並同步至後台完成訂單"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-check"/></svg>審閱並完成訂單</button>
+        <button id="btnDeleteOrder" class="copy-btn" onclick="handleFormDeleteOrder()" style="background-color:var(--fhs-danger); display:none; border:1px solid var(--fhs-danger);"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-trash-2"/></svg>刪除此訂單</button>
         <button id="syncBtn" class="copy-btn" onclick="syncToAirtable()" style="background-color: #457B9D; display:none;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-send"/></svg>同步至後台</button>
     </div>
 
@@ -4999,22 +5012,48 @@
         };
 
         // 手模擺設 checklist helpers
-        window._fhsHmParseState = function(v) {
-            if (!v || v === '待製作') return [false,false,false];
-            if (v === 'Done 已完成' || v === '待交收') return [true,true,true];
-            if (v.startsWith('hm:')) {
-                var pts = v.substring(3).split('|');
-                return [pts.indexOf('已book')!==-1, pts.indexOf('已做laser')!==-1, pts.indexOf('已做音訊')!==-1];
+        window._fhsHmParseState = function(v, isGlass) {
+            var isG = (isGlass === undefined || isGlass === true);
+            if (isG) {
+                if (!v || v === '待製作') return [false,false,false];
+                if (v === 'Done 已完成' || v === '待交收') return [true,true,true];
+                if (v.startsWith('hm:')) {
+                    var pts = v.substring(3).split('|');
+                    return [pts.indexOf('已book')!==-1, pts.indexOf('已做laser')!==-1, pts.indexOf('已做音訊')!==-1];
+                }
+                if (v === '已取模') return [true,true,false];
+                if (v.indexOf('book')!==-1) return [true,false,false];
+                return [false,false,false];
+            } else {
+                if (!v || v === '待製作') return [false,false];
+                if (v === 'Done 已完成' || v === '待交收') return [true,true];
+                if (v.startsWith('hm:')) {
+                    var pts = v.substring(3).split('|');
+                    return [pts.indexOf('已book')!==-1, pts.indexOf('已完成')!==-1];
+                }
+                if (v.indexOf('book')!==-1) return [true,false];
+                return [false,false];
             }
-            if (v === '已取模') return [true,true,false];
-            if (v.indexOf('book')!==-1) return [true,false,false];
-            return [false,false,false];
         };
         window._fhsHmCheckChange = function(orderId, itemIndex, pfx) {
             var wrap = document.getElementById(pfx+'-wrap-'+orderId+'-'+itemIndex);
             if (!wrap) return;
             var cbs = wrap.querySelectorAll('input[type=checkbox]');
-            var labels = ['已book','已做laser','已做音訊'];
+            
+            var _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var orderIndex = _gOrders.findIndex(function(o) { return o.id === orderId; });
+            var isGlass = true;
+            var o = null;
+            if (orderIndex !== -1) {
+                o = _gOrders[orderIndex];
+                var itemObj = o.items && o.items[itemIndex];
+                if (itemObj) {
+                    var dims = getProductDimensions(itemObj);
+                    isGlass = dims.style && dims.style.indexOf('玻璃瓶') !== -1;
+                }
+            }
+            
+            var labels = isGlass ? ['已book','已做laser','已做音訊'] : ['已book','已完成'];
             var parts = [];
             cbs.forEach(function(cb, i) {
                 var lbl = cb.closest ? cb.closest('label') : cb.parentElement;
@@ -5025,10 +5064,44 @@
                     if (lbl) { lbl.style.textDecoration=''; lbl.style.color=''; }
                 }
             });
-            var newVal = (parts.length===3) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
+            
+            var newVal;
+            if (isGlass) {
+                newVal = (parts.length===3) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
+            } else {
+                newVal = (parts.length===2 || parts.indexOf('已完成')!==-1) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
+            }
+            
             var hid = document.getElementById(pfx+'-val-'+orderId+'-'+itemIndex);
             if (hid) hid.value = newVal;
+            
             saveInlineEdit(orderId, 'Process_Status', pfx+'-val-'+orderId+'-'+itemIndex, itemIndex);
+
+            // Pop up prompt if order has only hand mold items and all are completed
+            if (o && !window._fhsArchivedIds.has(orderId)) {
+                var allItems = o.items || [];
+                if (allItems.length > 0) {
+                    var allHm = allItems.every(function(item) {
+                        return getProductDimensions(item).category === '手模擺設';
+                    });
+                    
+                    if (allHm) {
+                        var allCompleted = allItems.every(function(item, idx) {
+                            var status = (idx === itemIndex) ? newVal : window._getItemStatus(orderId, item);
+                            return status === 'Done 已完成' || status === '完成' || status === '已取件' || status === '待交收';
+                        });
+                        
+                        if (allCompleted) {
+                            setTimeout(function() {
+                                var confirmArchive = confirm("此訂單之所有手模擺設已完成，是否將此訂單標記為「已完成」？");
+                                if (confirmArchive) {
+                                    triggerArchiveOrder(orderId);
+                                }
+                            }, 500);
+                        }
+                    }
+                }
+            }
         };
 
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
@@ -5303,6 +5376,31 @@
                 syncBtn.title = shouldDisable ? '單號重複，請修正後再同步' : '';
             }
         }
+
+        function updateDeleteButtonVisibility() {
+            const btnDelDesktop = document.getElementById('btnDeleteOrder');
+            const btnDelMobile = document.getElementById('v40-delete-btn');
+            const isEditing = (currentMode === 'edit' && !!editTargetOrderId);
+            if (btnDelDesktop) btnDelDesktop.style.display = isEditing ? 'inline-block' : 'none';
+            if (btnDelMobile) btnDelMobile.style.display = isEditing ? 'inline-block' : 'none';
+        }
+
+        function handleFormDeleteOrder() {
+            const orderId = document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : editTargetOrderId;
+            if (!orderId) {
+                alert("請先載入訂單！");
+                return;
+            }
+            const go = (window.globalOrders || []).find(function(o) { return o.Order_ID === orderId || o.id === orderId; });
+            if (!go) {
+                alert("找不到該訂單記錄，無法刪除！");
+                return;
+            }
+            if (typeof openDeleteModal === 'function') {
+                openDeleteModal(go.id, go.Order_ID);
+            }
+        }
+
         let currentRole = 'ling';
 
         function setRole(role) {
@@ -5357,6 +5455,7 @@
                 orderID = "";
             }
             editTargetOrderId = null;
+            if (typeof updateDeleteButtonVisibility === 'function') updateDeleteButtonVisibility();
             lastFetchedState = null; // 🚨 清除讀取紀錄
             window._fhsSplitRestoreSnapshot = null; // S107 方案A: 開新單清快照，防失敗還原殘留污染新單
             document.getElementById('output-preview-a').value = "";
@@ -5492,6 +5591,8 @@
                 // V40 Bottom Bar: hide order actions in review/finance/system mode
                 const v40bbar = document.getElementById('v40-bottom-bar');
                 if (v40bbar) v40bbar.style.display = (mode === 'review' || mode === 'finance' || mode === 'system') ? 'none' : '';
+
+                if (typeof updateDeleteButtonVisibility === 'function') updateDeleteButtonVisibility();
 
                 if (mode === 'finance') {
                     setTimeout(foInitAll, 50);
@@ -7120,6 +7221,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                         // Always lock edit mode first
                         editTargetOrderId = oId;
+                        if (typeof updateDeleteButtonVisibility === 'function') updateDeleteButtonVisibility();
                         orderID = oId;
                         isIdValid = true;
                         const _d = document.getElementById('orderIdDisplay');
@@ -7169,6 +7271,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 // Restore form
                 editTargetOrderId = oId; // 🚨 只要找到單，就標註為當前編輯對象，防止更新時變成新增
+                if (typeof updateDeleteButtonVisibility === 'function') updateDeleteButtonVisibility();
                 orderID = oId; // 同步內部變數 [V31.1]
                 const idDisp = document.getElementById('orderIdDisplay');
                 if (idDisp) idDisp.value = oId;
@@ -8750,8 +8853,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
                                         var _cat = (dimensions.category || item.Category || '').toString();
                                         if (_cat.indexOf('手模擺設') !== -1) {
-                                            var _st = window._fhsHmParseState ? window._fhsHmParseState(_s) : [false,false,false];
-                                            var _lbs = ['已book','已做laser','已做音訊'];
+                                            var _isGlass = dimensions.style && dimensions.style.indexOf('玻璃瓶') !== -1;
+                                            var _st = window._fhsHmParseState ? window._fhsHmParseState(_s, _isGlass) : [false,false,false];
+                                            var _lbs = _isGlass ? ['已book','已做laser','已做音訊'] : ['已book','已完成'];
                                             var _cks = _lbs.map(function(l,i){
                                                 var ck = _st[i];
                                                 return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
@@ -11187,6 +11291,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 closeDeleteModal();
                 alert("🗑️ 訂單已成功從資料庫中刪除。");
+                if (currentMode === 'edit') {
+                    switchMode('review');
+                }
                 // 任務三：從 Supabase 重新拉取最新訂單列表（確保數據最新）
                 if (window.fetchGlobalReview) {
                     await window.fetchGlobalReview(true);

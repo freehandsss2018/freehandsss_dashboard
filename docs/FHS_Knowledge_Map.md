@@ -15,7 +15,6 @@
 
 ## 系統文件
 
-- [[FHS_Blueprint]] — 系統整體藍圖
 - [[DESIGN]] — 大地溫潤 Earthy Warm 視覺系統
 - [[FHS_Prompts]] — 11 個業務情境，AI 遇業務問題必讀
 - [[FHS_Legacy_Migration_Notes]] — Excel 遷移缺失問題處理

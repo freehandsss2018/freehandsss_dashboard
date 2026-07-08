@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-07-08 (Session 158 — FHS_Blueprint 13處過時→Fat Mo二次裁決整檔刪除+接線): 🧹 ✅
+
+**Scope**：Fat Mo 以 `@docs/FHS_Blueprint.md` 指出 13 處內容過時（含 2026-06-03 財務事故誤讀源頭寫法仍在檔），追問「十幾個 session 為何無人發現」與防再發生方案。
+**Result**：根因三條（零讀取路徑/無寫回合約/`/fhs-audit` A6-3 寫死版本反向認證）；初裁方案 A（降級改定位）經 `/8d` 出 v2 執行後，Fat Mo 二次裁決「不要為留而留」→ **整檔刪除**：§5 排版鐵律遷 `ui-ux-pro-max/FHS_INTEGRATION.md` Section 六（有真讀者 ui-designer/frontend-developer）、§1 業務背景遷 auto-memory（同 canva/youtube/spotify 記憶機制）；八處反向引用清理；備份 `.fhs/reports/backups/`。
+**Learnings**：核心原則——文件權威＝被使用（路由）＋被保養（合約），非自我聲明；完成記錄 `.fhs/reports/completion/2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md`；決策 D20。
+**呈批未動**：AGENTS.md 兩行過時引用（L77 亂碼自癒／L251-252 參考清單）等 Fat Mo 批准。
+Subagent：❌ 未使用（定點 grep+編輯，主 agent 直接執行）
+
 ## 2026-07-08 (Session 154 — S148 迴圈硬化 Loop Hardening): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S154 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。完成 S148 迴圈硬化，將 [G] 財務稽核 flag 誤觸判準與 `execute.md` 物理特徵真值表對齊（.md/.js 只 warn 不落 flag），引入 `FHS_GUARD_FIXTURE` 隔離測試夾具防日誌污染並重啟觀察期。上線 T6 budget gate 即時預算檢查、T5 commit 漏跑警告、T7 router 唯讀排除詞。制度上於 `05_maintenance-protocol.md` v1.1.0 加入教訓熔斷條款，並在 `fhs-health-rules.json` v1.1.0 新增 `governance_health_cadence` 季度健檢，完成首期健檢記錄（0 issues）。guard 16/16 + kgov 10/10 PASS，對抗審查 PASS。

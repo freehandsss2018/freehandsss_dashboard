@@ -79,16 +79,13 @@ A6-2 Subagent 標準化檢查 (.fhs/ai/subagents/freehandsss/)
   - ui-designer.md (v2.0.0)
 
 A6-3 docs/ 文件夾版本標記 (深度掃描)
-- 確認關鍵文檔包含版本聲明：
-  - FHS_Blueprint.md (v4.8)
-  - FHS_Product_Bible_V3.7.md (v3.7)
-  - FHS_Prompts.md (v1.5)
+- 確認關鍵文檔包含版本聲明——**只驗「frontmatter version/日期欄存在」＋「compatible_with 與 AGENTS.md 現行版本一致」，禁止在本清單寫死具體版本號**（S158 教訓：寫死 v4.8 令本稽核反向認證咗一份過時檔案；docs/CHANGELOG.md 亦曾在 S138 刪除後仍留在此清單）：
+  - FHS_Prompts.md
   - FHS_Finance_Bible.md
-  - FHS_Legacy_Migration_Notes.md (v1.0)
-  - plan_0004_supabase_cost_migration.md (v1.0)
-  - CHANGELOG.md (v1.0)
+  - FHS_Legacy_Migration_Notes.md
+  - plan_0004_supabase_cost_migration.md
   - repo-map.md (最新日期)
-- 確認 GLOBAL_AI_SOP.md 正確標記為過時 (⛔ 廢棄標記)
+- 確認 DEPRECATED 檔案警示標記完好（已廢棄檔不驗版本，只驗標記存在）：GLOBAL_AI_SOP.md（⛔ 廢棄標記）、FHS_Product_Bible_V3.7.md（DEPRECATED 標記）
 
 A6-4 自動化驗證工具運行 (Phase 4)
 - 執行 verify_repo_map.sh → 驗證 repo-map 與實際結構一致性

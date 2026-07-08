@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-07-08] Session 158（Fable 5）— FHS_Blueprint 13 處過時修正＋v5.0 降級改定位＋全系統接線
+
+Fat Mo 發現「必讀核心檔」Blueprint 腐爛一個月無 session 發現（含 2026-06-03 財務事故誤讀源頭寫法仍在檔）。v4.9 修 13 處 → `/8d` 自我批評 → v5.0 降級為「系統導覽＋UI 排版規範（§5 唯一居所）」非規則源；接線 CLAUDE.md 路由/knowledge-map/兩支 UI subagent；修 `/fhs-audit` A6-3 寫死版本反向認證問題。根因（零路由/無寫回合約/稽核反向認證）、M4-lite 盤點、AGENTS.md 兩行呈批項全文見完成記錄 [2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md](.fhs/reports/completion/2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md)；決策 D20。
+
+**同日追加（Fat Mo 二次裁決）**：「不要為留而留」→ v5.0 降級方案作廢，Blueprint **整檔刪除**（備份 backups/）；§5 排版鐵律遷 `ui-ux-pro-max/FHS_INTEGRATION.md` Section 六、§1 業務背景遷 auto-memory；八處反向引用全部清理。詳見完成記錄 §八與 D20 同日追加段。
+
+## [2026-07-08] Session 157（Antigravity 執行）— 編輯模式新增刪除訂單按鈕與 actions menu 遮擋優化
+
+- **編輯模式新增「刪除訂單」按鈕**：為了解決在修改舊單（Edit Mode）時，無法直接在表單頁面刪除訂單的問題，我們在桌面版底部動作列（`bottomActionBar`）新增了紅色的「刪除此訂單」按鈕，並在行動版底部動作列（`v40-bottom-bar`）新增了紅色的「刪除」按鈕。這兩個按鈕僅在表單加載了現有訂單（`editTargetOrderId` 存在）時才會動態顯示。點選後會彈出二次確認視窗，刪除成功後會自動清空表單並引導切換回「訂單總覽（review mode）」。
+- **手機版 actions menu 刪除按鈕防遮擋優化**：修復行動版底部 actions menu（Bottom Sheet）中「刪除訂單」按鈕被 Threads 風格底部常駐導覽列覆蓋 of UI Bug。將 `.bs-sheet` 設定 `max-height: 85vh` 且使 `.bs-list` 支援垂直滾動 (`overflow-y: auto`)，並在手機版下調整 `.bs-safe-area` 的高度為 `calc(80px + env(safe-area-inset-bottom, 0px))`。這能將 Bottom Sheet 底部的「刪除訂單」按鈕及分隔線安全地推高到常駐導覽列上方，確保其在手機版上 100% 可視與可點擊。
+- **手模擺設進度檢核與自動完成**：優化了折疊面板（Accordion）和表格（Table）中的手模擺設進度檢核渲染邏輯。根據產品的 `Style`（如是否包含「玻璃瓶」），動態區分 3 階段（`已book`、`已做laser`、`已做音訊`）或 2 階段（`已book`、`已完成`）複選框，並在 `_fhsHmCheckChange` 中動態儲存至 `Process_Status` 欄位；此外，當訂單內僅含手模擺設項目且全數完成時，新增自動彈出確認視窗，提醒用戶是否將該訂單標記為「已完成」（自動封存）。
+- **檔案同步與驗證**：已同步修改 `freehandsss_dashboardV42.html` 與 `Freehandsss_dashboard_current.html`；執行全系統 Lifecycle 測試、壓力測試與結案驗收測試等共 4 項（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）均全數通過（PASS）。
+
 ## [2026-07-08] Session 156（Fable 5）— blocktempo fable-5-2 條款吸收：新建 governance/07 複利迴圈
 
 - 審閱 blocktempo《自我改進 agent · Fable 5》第二篇，60% 已覆蓋不重吸，五項增量入新檔 `07_compounding-loop.md`（教訓五階段門檻/Skills複利/平行工作流/worktree/評分者降級），接線 CLAUDE.md 路由+04 T7+05 權限與分流+INDEX+repo-map；opus 對抗審查 4F 修畢+haiku read-back 13/13。

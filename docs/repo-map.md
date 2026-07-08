@@ -248,7 +248,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 技術文件索引
 │   ├── repo-map.md                      ← 本文件
 │   ├── [已刪除] CHANGELOG.md             ← S63 建立的分岔複本，末條 S130 Phase B 後停更，2026-07-04 確認無獨立價值後刪除（備份於 .fhs/reports/backups/）
-│   ├── FHS_Blueprint.md
+│   ├── [已刪除] FHS_Blueprint.md         ← 自稱必讀核心但零路由零寫回合約，13處過時腐爛無人發現；2026-07-08 S158 D20 裁決刪除（業務背景→auto-memory、§5排版鐵律→ui-ux-pro-max FHS_INTEGRATION.md Section 六；備份於 .fhs/reports/backups/）
 │   ├── DESIGN.md                        ← 大地溫潤 (Earthy Warm) 設計系統規範（2026-05-17 新增）
 │   ├── FHS_Product_Bible_V3.7.md        ← [DEPRECATED 2026-06-01] 多項定價規則已過時，現行定價請讀 .fhs/ai/FHS_Pricing_Bible.md
 │   ├── FHS_Legacy_Migration_Notes.md    ← Excel 舊訂單遷移注意事項（缺失問題與處理方法）

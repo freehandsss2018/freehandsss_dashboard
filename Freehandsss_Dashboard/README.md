@@ -34,4 +34,4 @@
 ## 相關文件
 
 - 四端欄位映射：`/n8n/Quadruple_Sync_Field_Map.md`（v1.1，2026-05-13，取代 Triple_Sync）
-- 架構說明：`/docs/FHS_Blueprint.md`
+- 架構定位與數據主導權：`.fhs/ai/AGENTS.md` §1；運作細節：`.fhs/notes/FHS_System_Logic_Overview.md`（原 `/docs/FHS_Blueprint.md` 已於 2026-07-08 S158 刪除，見 decisions.md D20）

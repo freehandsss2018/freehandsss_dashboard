@@ -1,0 +1,144 @@
+---
+name: FHS System Blueprint
+version: v5.0
+compatible_with: AGENTS.md v1.5.0
+last_updated: 2026-07-08
+description: FHS system tour guide + UI layout standards (NOT a rule source since v5.0)
+---
+
+# FHS 系統藍圖 (FHS System Blueprint) - V5.0
+
+> [!IMPORTANT]
+> **本文件定位（v5.0 起，2026-07-08 降級改定位）＝「系統導覽 ＋ UI 排版規範」，非規則來源。**
+> - **系統導覽**：新 session／新 AI／新協作者想一頁理解 FHS 業務背景與架構全貌 → 讀本檔 §1–§2。
+> - **UI 排版規範唯一居所**：§5 排版守則（td rowspan 對齊定律／字體標準／Global Loader／review-jump-pill）——經查證（2026-07-08）此規格不存在於任何 skill/subagent 檔，僅此一份，改 V42 排版前必讀。
+> - **規則本體一律住** `AGENTS.md`（憲法）／`.fhs/ai/governance/`（調度）／Bibles（財務知識）——本檔其餘各節僅作指針，與 SSoT 衝突時**以 SSoT 為準**。
+> - 降級緣由：v4.8 自稱「必讀核心真相」但零路由零寫回合約指向，腐爛一個月無 session 發現（根因與修復見 decisions.md D20）。文件權威來自被使用與被保養，非自我聲明。
+>
+> ⚠️ **文件定位更新（2026-06-05）**：
+> - 現行**定價規則**唯一真理：`.fhs/ai/FHS_Pricing_Bible.md`（L2 HEAD，取代 FHS_Product_Bible_V3.7.md）
+> - 現行**產品定義**唯一真理：`.fhs/ai/FHS_Product_Definition.md`（取代 FHS_Product_Bible_V3.7.md）
+> - `FHS_Product_Bible_V3.7.md` 已 DEPRECATED（2026-06-01），僅作歷史參考，禁止用於任何計算
+> - 現行**運作流程/RPC 財務計算細節**：`.fhs/notes/FHS_System_Logic_Overview.md`（本文件聚焦架構規格與定位，實際函式簽名/migration編號等即時細節以該文件為準，見其 §十）
+>
+> 📝 **v4.9 修訂（2026-07-08）**：修正 13 處與現行制度矛盾/過時內容（§4 財務語義、§7 SSoT 措辭、§2/§9 平台角色、§5 UI 現況等），詳見 Changelog 2026-07-08 條目。本檔原則：**只寫「架構定位級」事實，即時細節（數字/版本號/節點數）一律指向對應 SSoT 文件，不在本檔寫死。**
+
+## 1. 公司背景與人員定義 (Business Context)
+
+* **品牌名稱**：Freehandsss
+* **核心業務**：嬰兒手足立體石膏倒模紀念品工作室。提供木框、玻璃瓶以及客製化金屬飾品（鎖匙扣、頸鏈）等服務。
+* **記念影片產品線**（2026-07-08 補錄）：客人經 WhatsApp 傳原片 → Canva 製作記念短片 → 平台發佈。Spotify 為舊渠道（新單已停用）；2026-07 起新單改行 **YouTube Unlisted + NFC 木框感應播放**（見 S155 計畫 `.fhs/reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md`）。V42 訂單狀態「已做音訊」即此產品線。
+* **技術定位**：傳統手工倒模技術與現代 3D 渲染/金屬鑄造技術的結合。
+* **角色分工**：
+  * **前端使用者 (Mobile phone 介面)**：負責銷售、IG 經營、客情維護。操作 Dashboard 程度為核心使用者，因此前端介面必須極度防呆、直觀。
+  * **Fat Mo (後台/總架構師)**：負責技術架構、工作流維護、財務數據精算與系統除錯。
+
+## 2. 系統架構 (Technical Architecture)
+
+* **Dashboard (The Heart)**：**Freehandsss 智能中樞 (AI Smart Hub)**
+  * **角色**：系統的「中央神經系統」與「財務自動化中樞」。
+  * **功能**：
+    * **守護者**：強制所有邏輯變更符合 `FHS_Blueprint.md` 準則。
+    * **財務執行**：確收金額的唯一輸入端（見 §4 職責分工；成本計算屬 n8n 端）。
+    * **引導導購**：確保 UI 始終維持「智能菜單」防呆水平。
+    * **持續記憶**：透過 `.fhs/memory/`（handoff 便攜塊 SSOT + lessons/learnings）、SessionStart hooks 與 `Changelog.md` 實現跨 session 記憶與持續進化。（原 `.cursorrules` 已 DEPRECATED，S139，僅存橋接殘檔）
+    * **n8n 靈魂守護**：生產 workflow（`6Ljih0hSKr9RpYNm`）只准經 n8n API `curl -X PUT` 修改（嚴禁 Import From File），並實施四端對齊稽核（§10）。（「24 節點 Gold Master」為 2026-03 V45.7.4 靈魂修復時代快照，節點數已隨版本演進，現以 `Changelog.md` 版本紀錄為準）
+
+## 3. 下單與產品 SKU 定義 (SKU & Ordering)
+
+* **五維度產品查找邏輯 (The 5-Dimension Lookup Logic)**：
+  系統維護數百個 SKU（實際數量以 Supabase `products`/`cost_configurations` 表為準，不在本檔寫死），透過五個維度組成的 Key 進行精準匹配：`[對象] & [類別] & [部位] & [材質] & [數量]`。這確保了從前端選擇到後端計價的數據一致性。
+* **產品維度詳解**：
+  1. **對象 (Subject)**：區分「嬰兒 (Infant)」、「小童」、「成人」或「家庭」。
+  2. **類別 (Category)**：區分「手模 (Hand)」、「腳模 (Foot)」、「手腳綜合」或「金屬產品」。
+  3. **材質 (Material)**：區分「白石膏」、「金色石膏」、「銀色石膏」或「925純銀/鍍金」。
+  4. **部位 (Part)**：具體描述部位，如「左手」、「右手」或「單隻」。
+  5. **數量 (Quantity)**：如「單件」、「一对」或「四肢套裝」。
+
+### 3.1 定價與成本結構 (Pricing & Cost Structure)
+
+系統嚴格執行 **五維度查找邏輯 (5D Lookup Logic)**，所有的基礎售價、畫圖成本以及階梯加購規則，統一由 `.fhs/ai/FHS_Pricing_Bible.md`（L2 HEAD）作為唯一真理來源。
+
+* **圖紙費規則**：
+  * **同部位**：邏輯定義於 Pricing Bible。
+  * **不同部位 (一手一腳)**：每個「新部位」額外加收圖紙費（具體金額參閱 Pricing Bible）。
+  * **頸鏈豁免**：特定條件下免收圖紙費之邏輯。
+* **3D 擺設基準**：
+  * 區分「木框裝」與「玻璃瓶」，成本與售價由系統自動從資料庫提取。
+
+## 4. 核心財務邏輯 (Core Financial Logic) — 2026-07-08 對齊「收款確收守護」
+
+> ⚠️ **歷史警示**：本節 v4.8 前的舊寫法（「前端 Live Quote Engine 即時精算成本與售價…全面取代舊版公式層」）正是 **2026-06-03 財務事故的誤讀源頭**（令 AI 誤以為前端 `calculatePricing()` 估算成本亦為真理），已於 v4.9 按 AGENTS.md「財務真理守護」修正，**禁止回退至舊寫法**。
+
+* **確收側（前端為真理）**：操作者手動輸入的確收金額（`final_sale_price` = Deposit + Balance + Additional_Fee）為絕對真理，n8n 嚴禁覆蓋或重算這三個欄位。
+* **成本側（n8n 為真源）**：成本（`total_cost` 及各分量）由 **n8n 從 Supabase `cost_configurations` 計算**後寫入 Supabase（並鏡像至 Airtable），屬後台記帳快照。前端 `calculatePricing()` 僅為**報價參考預算**，不是成本真源。
+* **利潤**：`net_profit` = `final_sale_price` − `total_cost`，由 n8n 計算寫入。
+* **完整職責分工**：見 `.fhs/ai/FHS_Finance_Bible.md` §一（職責分工表）與 `AGENTS.md`「財務真理守護」節。
+
+## 5. 前端 UI/UX 規範 (Frontend UI/UX Rules)
+
+* **視覺風格**：全系統採用 V31.0 (Historical Reference) 定案的 Premium 玻璃擬態 (Glassmorphism) 設計，包含漸層背景與平滑過渡動畫。
+* **雙端分流架構 (Dual-Experience UI)**：
+  * **📱 Mobile phone 介面模式 (行動端 < 768px)**：定位為「Point-of-Sale 點餐機」。卡片式步進引導 (Wizard flow)、加大觸控區域 (大於 44px)，並強制隱藏複雜的財務數據網格。**底部操作列現為 static 卡片式隨頁滾動**（S153 決策 37 修正 fixed 重疊 BUG；S151/S157 再調 safe-area 與刪除按鈕），舊「固定底部導覽列」規定已廢止。
+  * **💻 Desktop 介面 (桌面端 > 1200px)**：定位為「Data Cockpit 決策座艙」。必須實作側邊導覽列 (Sidebar)、最大化全域核對中心的螢幕寬度（嚴格遵守 td rowspan 對齊定律），並於頂部新增「動態財務看板」(自動結算總收入、總成本與最終利潤)。
+* **UI 開發與邏輯防護守則**：
+  * UI 外殼翻新現行流程：**ui-designer（Phase A 設計）→ frontend-developer（Phase B 原型）→ code-reviewer（Phase C 稽核）** subagent 三段流程。（Stitch MCP 已隨 ag-* 指令 DEPRECATED，S134）
+  * 絕對嚴禁修改既有的 Element IDs (如 `momName`, `syncBtn`, `reviewTableBody`)。
+  * 必須 100% 保留 `captureFormState()` 的數據擷取結構與現有的 `onclick`/`onchange` 綁定，以確保 n8n 與 Supabase 寫入鏈路不被破壞。
+  * 圖標規範：**全向量 SVG，禁 Emoji**（S153 決策 37 全面向量化）。
+* **排版守則**：
+  * **全域核對中心**：強制使用 HTML `<td rowspan>` 結構進行多品項排列。
+  * **字體標準**：數據網格內容統一 13px，Header 12px 加粗。
+  * **對齊定律**：所有主屬性（單號、日期）必須設定 `vertical-align: top;`。
+  * **全域載入指示器 (Global Loader)**：任何涉及 API 呼叫的動作必須包裹在 `showLoader()` / `hideLoader()` 中，並提供對應的動態文字提示。
+  * **單號快跳 (Quick-Jump)**：核對中心單號必須使用 `.review-jump-pill` 樣式並具備一鍵切換模式並讀取的功能。
+
+## 6. Dashboard CRUD 與狀態保持 (Form State Preservation)
+
+* **Raw_Form_State**：系統將前端表單的所有選項序列化為 JSON 存入 **Supabase `orders.raw_form_state`**（Airtable 為過渡期鏡像），實現極速還原舊單。此欄位不可侵犯（AGENTS.md 資料結構守護：嚴禁為修單點 Bug 而刪除或破壞）。
+* **Upsert Shield**：任何寫入動作（Supabase RPC / n8n sync / Airtable mirror）必須具備 Upsert/冪等邏輯，避免產生重複數據。
+
+## 7. 數據架構 (Data Schema) — 2026-07-08 措辭對齊 AGENTS §1.1
+
+> ⚠️ 數據主導權以 `AGENTS.md` §1.1 矩陣為唯一真源：**Supabase = Read/Write Lead**（讀寫主流程）；**Airtable = 過渡期 Authoritative Snapshot 兼冷備援**（SSoT 正式翻轉條件＝雙寫驗證連續 30 天無事故＋Dashboard 全功能除錯完成，達成前不得聲稱「Supabase 已是正式 SSoT」）。migration 清單見 `supabase/migrations/`（不在本檔寫死數量；本地檔可能滯後 live，以 `list_migrations` 為準——0049 本地缺檔教訓）；欄位級細節見 `.fhs/notes/FHS_System_Logic_Overview.md` §5。
+
+* **orders / order_items**：訂單主表與細項表（原 Main_Orders/Order_Items 的 Supabase 對應）。
+* **products / cost_configurations**：SKU 基礎資料與 17-key 成本設定（見 `FHS_Product_Cost_Schema_v2.md`）。
+* **ig_watchdog_alerts**：IG 看門狗警報（migration 0043）。
+* **audit_logs**：稽核日誌（migration 0044）。
+* **Airtable**（過渡期快照/冷備援）：`Main_Orders` / `Order_Items` / `Product_Database` / `Error_Logs` 四表繼續存在，不再是查詢/寫入首選。
+
+## 8. 雲端之眼監控系統 (The Cloud Eye)
+
+* **Catch-Push-Diagnose**（錯誤監控，原始機制）：
+  1. **Catch**：n8n 捕捉工作流錯誤。
+  2. **Push**：將錯誤日誌推送到 Airtable `Error_Logs`。
+  3. **Diagnose**：AI 助理透過 MCP 定期掃描日誌並向 Fat Mo 提出診斷建議。
+  > 📌 2026-07-08 註記：現行警報主力為 **IG 看門狗 → `ig_watchdog_alerts` + Telegram**（migration 0043，S116-S127 建成）。Airtable `Error_Logs` 鏈路是否仍活躍**待 live 核實**，若已停用應於下次修訂移除本節原始機制描述。
+* **財務 RPC 計算層**（2026-07-05 補充）：`get_financial_kpis` / `get_financial_charts` 等 RPC 為 Dashboard Financial Overview 的即時財務數據來源，含 KPI 收入分攤與混合單 3-layer fallback 邏輯。完整規格為 SSoT：`.fhs/notes/FHS_System_Logic_Overview.md` §十。
+
+## 9. 執行協議 (Execution Protocol) — 2026-07-08 對齊 AGENTS §1.2 平台矩陣
+
+* **執行端現況（S134 平台收斂起）**：**Claude Desktop App Code 分頁 / Claude Code CLI** 為 hook 守護執行端（治理/財務/生產檔唯一寫者）；**Antigravity 為永久備援**——AG 寫入不經 5-hook 守護，緊急寫入後第一件事＝回守護側 `git diff` 覆核＋補跑落盤。（本節原標題「Antigravity 執行協議」為舊時代命名，其 `-y`/`-f` 解封、腳本自刪、沙盒 `runAllAudits()` 等條目僅適用於 AG 備援情境）
+* **部署與同步授權**：正式環境檔案 `Freehandsss_dashboard_current.html` 受 **R10 guard** 嚴格保護：部署須 Fat Mo 手動 touch `.fhs/.deploy-ok`（10 分鐘 TTL，AI 任何工具嘗試建立都會被攔）＋ `/upload-web` 三關流程（S140/S143 機制）。任何新功能開發初始僅能實施於開發版本文件，未獲 Fat Mo 明確授權前，AI 禁止覆寫 `current`。
+
+## 10. 全端變更控制與除錯憲法 (Change Control & Debugging Constitution)
+
+* **防隧道視野 (Anti-Tunnel Vision)**：處理任何 Bug 或新增功能時，AI 必須從「系統全局」視角思考。修好的 A 功能（如 Telegram 顯示）的同時，若破壞了 B 功能（如表單讀取），視為「嚴重失職」。
+* **四端對齊稽核 (Quadruple-Sync Audit)**：前端 (Dashboard Payload) → 中介層 (n8n JSON) → **Supabase（Primary）＋ Airtable（mirror）** 必須維持絕對映射，映射表以 `n8n/Quadruple_Sync_Field_Map.md` 為準。任何一端的增刪改，必須同步審計其餘各端，確保牽一髮動全身的數據不遺失。（原「三端對齊」以 Airtable 為儲存端的寫法已隨 Supabase-First 過時）
+* **經驗傳承鐵律 (Mandatory Memory Retrieval)**：發生問題時，必須優先檢索 `.fhs/memory/lessons/`，確認是否犯過類似錯誤。絕對禁止憑空盲目試錯，無視過往已建立的穩定版基石。
+
+## 11. SKU 正規化與補丁守則 (SKU Normalization)
+
+* **規則優先**：任何與 Bible 不符之前端輸入，必須在 n8n `Parse Items` 節點進行「收斂」。
+* **典型補丁**：
+  * `3肢` -> `4肢` (計價與成本對齊)。
+  * `款式` -> `套裝` (SKU 字符標準化)。
+* **API 唯一路徑**：生產環境修改僅限 `curl -X PUT`，嚴禁 `Import From File`。
+
+---
+**版本紀錄與日誌同步**：每次修改核心代碼後，必須同步更新 `Changelog.md`。
+
+
+---
+[[FHS_Knowledge_Map]]

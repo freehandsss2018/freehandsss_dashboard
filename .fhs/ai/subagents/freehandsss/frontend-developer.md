@@ -35,6 +35,7 @@ last_updated: 2026-05-16
 - **必須**：所有未來功能接回點使用 `// TODO[hookup]:` 標記
 - **必須**：HTML ID 命名確保不與現有 n8n webhook 掛鉤衝突（執行前對比 current.html）
 - **必須**：原型可在瀏覽器直接開啟（`file://` 協議可用，無需本地 server）
+- **必須**：排版實作遵循 `.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` **Section 六** 排版鐵律（td rowspan 對齊定律／字體標準／Global Loader／review-jump-pill——該節為此規格唯一明文居所，2026-07-08 S158 自已刪除的 Blueprint §5 遷入）
 - **憲法層**：AGENTS.md（最高優先級）
 
 ---

@@ -2,7 +2,7 @@
 > 版本：v1.0.0（2026-06-05 Session 60 建立）
 > 目的：完整記錄 Freehandsss Dashboard 的運作邏輯，讓任何人讀完就知道整套系統在幹嘛。
 > 更新規則：每次改動涉及以下任一層，必須同步更新本文件。
-> 與 `docs/FHS_Blueprint.md` 分工：本文件記錄即時運作細節（函式簽名/RPC/migration編號）；Blueprint 定架構規格與定位。兩者互為 See-Also，非重複。
+> 架構定位與數據主導權見 `.fhs/ai/AGENTS.md` §1；本文件記錄即時運作細節（函式簽名/RPC/migration編號）。（原 See-Also 檔 `docs/FHS_Blueprint.md` 已於 2026-07-08 S158 刪除：業務背景遷 auto-memory、§5 排版鐵律遷 `ui-ux-pro-max/FHS_INTEGRATION.md` Section 六，見 decisions.md D20）
 
 ---
 

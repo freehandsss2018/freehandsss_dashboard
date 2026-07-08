@@ -1378,3 +1378,11 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 ### D18：S156 blocktempo fable-5-2 條款吸收——新建 governance/07 複利迴圈，凍結快照制（沿 D15）
 
 **決策**：Fat Mo 提供 blocktempo《自我改進 agent · Fable 5》第二篇（14 步），由 Fable 5 session 審閱後裁定：約 60% 已被 S137 governance 覆蓋（明細見 07 §0 吸收邊界表，防未來重複吸收），只吸收五項增量入新檔 `.fhs/ai/governance/07_compounding-loop.md`：(1) 教訓五階段落盤門檻（未過 stage-3 驗證的猜測禁入 learnings，落 todo.md Open-failure 格式）；(2) Skills 複利條款（skill 執行域教訓寫進 skill 本體 Known failure modes 節，05 §2 分流表+§1 權限矩陣已接線）；(3) 平行工作流三模式（fan-out 新增 T7 模板；loop-until-done 四停止條件，與兩輪熔斷按 D16 精神消歧）；(4) worktree 平行安全（含 SynologyDrive 同步與 AG worktreeConfig 崩潰兩項本環境風險註記）；(5) 評分者 rubric 前置可降 haiku。CLAUDE.md 路由表加一行指向 07。改動檔案均先備份於 governance/backups/（2026-07-08.bak）。本次為 Fat Mo 明示授權的自主吸收 session（用戶指示：新內容寫新檔、CLAUDE.md 只放路由、隨做隨寫）。
+
+### D20：S158 Blueprint 降級改定位——「文件權威＝流量＋合約」原則（D19 預留 S155 計畫用，跳號）
+
+**決策**：Fat Mo 發現 docs/FHS_Blueprint.md 自稱「必讀核心真相」但 13 處內容過時（含 2026-06-03 財務事故誤讀源頭寫法），十幾個 session 無人發現。根因三條：(1) 零讀取路徑（hook／/read／CLAUDE.md 路由／knowledge-map 全不指向）；(2) 無寫回合約（有合約的文件生存、無合約的腐爛）；(3) /fhs-audit A6-3 寫死 v4.8 期望值反向認證過時。Fat Mo 追問「佢重有冇用」後裁決方案 A（經 /8d 自我批評出 v2）：v4.9 修 13 處 → v5.0 降級為「系統導覽＋UI 排版規範（§5 唯一居所，grep 實證無第二份）」非規則源；接線 CLAUDE.md 路由＋knowledge-map＋ui-designer/frontend-developer subagent §5 必讀；修 A6-3 禁寫死版本號。M2/M3 重型保養合約裁決不做（導覽檔過時殺傷力低）。AGENTS.md 兩行過時引用（L77 亂碼自癒指向無 NEL 內容之檔／L251-252 列 DEPRECATED Bible）呈 Fat Mo 另批。
+
+**同日追加（Fat Mo 二次裁決：刪檔取代降級）**：Fat Mo 質疑「若真係非必要，不如直接刪，用最簡單直接，不要為留而留——當初認它重要，係因為它寫低業務背景令我不必重覆解說，該用途等同 auto-memory 中 canva/youtube/spotify 記憶與財務專檔」。裁決：v5.0 降級方案作廢，**整檔刪除**（備份 `.fhs/reports/backups/FHS_Blueprint.md.bak_20260708_v5.0_final`）。兩件唯一居所內容遷至有真讀者的地方：§5 排版鐵律 → `ui-ux-pro-max/FHS_INTEGRATION.md` **Section 六**（ui-designer Phase A 本來就讀此 skill；兩支 subagent 引用已改指）；§1 業務背景 → auto-memory `project_fhs_business_context`（session 自動載入，正正係 Fat Mo 要的「唔使重覆解說」機制）。八處反向引用全部清理（CLAUDE.md／knowledge-map／兩支 subagent／fhs-audit A6-3／System_Logic_Overview 檔頭／docs/FHS_Knowledge_Map／Dashboard README／repo-map 標[已刪除]）。AGENTS.md 呈批項更新：L251 建議直接刪 Blueprint 行＋DEPRECATED V3.7 行。
+
+詳見完成記錄：`.fhs/reports/completion/2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md`

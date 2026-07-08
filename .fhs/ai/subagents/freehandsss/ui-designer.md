@@ -39,6 +39,7 @@ last_updated: 2026-05-16
 - **Stitch 協同**：可使用 `mcp__magic__21st_magic_component_builder` 輔助生成 UI 組件，但必須透過 `/ag-stitch-sync` → `/ag-ui-import` 管線轉換，嚴禁 Stitch 輸出直接進入 Spec 或主核心
 - **必須**：`roleLingBtn` / `roleFatBtn` ID 保留（webhook contract），但不驅動視覺主題
 - **必須**：設計輸出可由 frontend-developer 直接轉化為靜態 HTML 原型
+- **必須**：排版鐵律遵循 `.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` **Section 六**（td rowspan 對齊定律／數據網格 13px、Header 12px 加粗／Global Loader／review-jump-pill——該節為此規格唯一明文居所，2026-07-08 S158 自已刪除的 Blueprint §5 遷入）
 - **憲法層**：AGENTS.md（最高優先級）
 
 ---
