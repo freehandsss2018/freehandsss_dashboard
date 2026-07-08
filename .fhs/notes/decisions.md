@@ -1385,4 +1385,6 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 **同日追加（Fat Mo 二次裁決：刪檔取代降級）**：Fat Mo 質疑「若真係非必要，不如直接刪，用最簡單直接，不要為留而留——當初認它重要，係因為它寫低業務背景令我不必重覆解說，該用途等同 auto-memory 中 canva/youtube/spotify 記憶與財務專檔」。裁決：v5.0 降級方案作廢，**整檔刪除**（備份 `.fhs/reports/backups/FHS_Blueprint.md.bak_20260708_v5.0_final`）。兩件唯一居所內容遷至有真讀者的地方：§5 排版鐵律 → `ui-ux-pro-max/FHS_INTEGRATION.md` **Section 六**（ui-designer Phase A 本來就讀此 skill；兩支 subagent 引用已改指）；§1 業務背景 → auto-memory `project_fhs_business_context`（session 自動載入，正正係 Fat Mo 要的「唔使重覆解說」機制）。八處反向引用全部清理（CLAUDE.md／knowledge-map／兩支 subagent／fhs-audit A6-3／System_Logic_Overview 檔頭／docs/FHS_Knowledge_Map／Dashboard README／repo-map 標[已刪除]）。AGENTS.md 呈批項更新：L251 建議直接刪 Blueprint 行＋DEPRECATED V3.7 行。
 
+**再追加（2026-07-08，Fat Mo 批准呈批項）**：AGENTS.md 兩行過時引用修正落地——§3「亂碼自癒」改指 `.fhs/memory/lessons/20260324_System_Management_Chaos_Reflection.md`（真實記錄所在）；§5「系統真理庫」移除已刪除的 `FHS_Blueprint.md` 行與已 DEPRECATED 的 `Product_Bible_V3.7.md` 行。憲法版本 v1.5.0→**v1.5.1**（patch，小修正）。S158 全案結案，無餘留呈批項。
+
 詳見完成記錄：`.fhs/reports/completion/2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md`

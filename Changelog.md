@@ -6,11 +6,13 @@ Fat Mo 發現「必讀核心檔」Blueprint 腐爛一個月無 session 發現（
 
 **同日追加（Fat Mo 二次裁決）**：「不要為留而留」→ v5.0 降級方案作廢，Blueprint **整檔刪除**（備份 backups/）；§5 排版鐵律遷 `ui-ux-pro-max/FHS_INTEGRATION.md` Section 六、§1 業務背景遷 auto-memory；八處反向引用全部清理。詳見完成記錄 §八與 D20 同日追加段。
 
+**三度追加（Fat Mo 批准呈批項）**：AGENTS.md 兩行過時引用修正落地——§3 亂碼自癒改指真實記錄的 lesson 檔；§5 系統真理庫移除已刪除的 Blueprint 行與已 DEPRECATED 的 Product_Bible_V3.7 行。憲法版本 v1.5.0→**v1.5.1**。S158 全案結案。
+
 ## [2026-07-08] Session 157（Antigravity 執行）— 編輯模式新增刪除訂單按鈕與 actions menu 遮擋優化
 
 - **編輯模式新增「刪除訂單」按鈕**：為了解決在修改舊單（Edit Mode）時，無法直接在表單頁面刪除訂單的問題，我們在桌面版底部動作列（`bottomActionBar`）新增了紅色的「刪除此訂單」按鈕，並在行動版底部動作列（`v40-bottom-bar`）新增了紅色的「刪除」按鈕。這兩個按鈕僅在表單加載了現有訂單（`editTargetOrderId` 存在）時才會動態顯示。點選後會彈出二次確認視窗，刪除成功後會自動清空表單並引導切換回「訂單總覽（review mode）」。
 - **手機版 actions menu 刪除按鈕防遮擋優化**：修復行動版底部 actions menu（Bottom Sheet）中「刪除訂單」按鈕被 Threads 風格底部常駐導覽列覆蓋 of UI Bug。將 `.bs-sheet` 設定 `max-height: 85vh` 且使 `.bs-list` 支援垂直滾動 (`overflow-y: auto`)，並在手機版下調整 `.bs-safe-area` 的高度為 `calc(80px + env(safe-area-inset-bottom, 0px))`。這能將 Bottom Sheet 底部的「刪除訂單」按鈕及分隔線安全地推高到常駐導覽列上方，確保其在手機版上 100% 可視與可點擊。
-- **手模擺設進度檢核與自動完成**：優化了折疊面板（Accordion）和表格（Table）中的手模擺設進度檢核渲染邏輯。根據產品的 `Style`（如是否包含「玻璃瓶」），動態區分 3 階段（`已book`、`已做laser`、`已做音訊`）或 2 階段（`已book`、`已完成`）複選框，並在 `_fhsHmCheckChange` 中動態儲存至 `Process_Status` 欄位；此外，當訂單內僅含手模擺設項目且全數完成時，新增自動彈出確認視窗，提醒用戶是否將該訂單標記為「已完成」（自動封存）。
+- **手模擺設進度檢核與自動完成**：優化了折疊面板（Accordion）和表格（Table）中的手模擺設進度檢核渲染邏輯。根據產品的 `Style` 動態區分進度步驟：**玻璃瓶 (`玻璃瓶`)** 為 2 階段（`已book`、`已完成`），其餘如 **木框 (`木框`)** 等為 3 階段（`已book`、`已做laser`、`已做音訊`）。複選框進度會在 `_fhsHmCheckChange` 中動態以 piped string 形式儲存至 `Process_Status` 欄位；此外，當訂單內僅含手模擺設項目（忽略燈飾、羊毛氈等配件 addons）且全數完成時，新增自動彈出確認視窗，提醒用戶是否將該訂單標記為「已完成」（自動封存）。
 - **檔案同步與驗證**：已同步修改 `freehandsss_dashboardV42.html` 與 `Freehandsss_dashboard_current.html`；執行全系統 Lifecycle 測試、壓力測試與結案驗收測試等共 4 項（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）均全數通過（PASS）。
 
 ## [2026-07-08] Session 156（Fable 5）— blocktempo fable-5-2 條款吸收：新建 governance/07 複利迴圈

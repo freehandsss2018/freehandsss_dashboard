@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.5.0
-> Last updated: 2026-07-04
+> Version: v1.5.1
+> Last updated: 2026-07-08
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -18,7 +18,8 @@
 
 ## 1. 系統快照 (System Snapshot)
 
-- **版本**：v1.5.0 (§1.2 平台定位與多工具共存治理新增：Desktop App 主介面、三模式決策卡、單一寫者矩陣、AG 永久備援守則、Cursor/n8n三腦休眠藍圖；Session 134 Desktop App 平台收斂 Phase 4)
+- **版本**：v1.5.1（S158 修正兩處過時引用：§3 亂碼自癒改指真實記錄的 lesson 檔；§5 系統真理庫移除已刪除的 FHS_Blueprint.md 與已 DEPRECATED 的 Product_Bible_V3.7.md 行，patch 修正）
+- **v1.5.0**：§1.2 平台定位與多工具共存治理新增：Desktop App 主介面、三模式決策卡、單一寫者矩陣、AG 永久備援守則、Cursor/n8n三腦休眠藍圖；Session 134 Desktop App 平台收斂 Phase 4
 - **Workflow ID**：`6Ljih0hSKr9RpYNm`
 - **Airtable Base**：`app9GuLsW9frN4xaT`
 - **核心 UI 檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（生產版，`Freehandsss_dashboard_current.html` 與其同步；見 handoff 便攜塊決策(1)）
@@ -74,7 +75,7 @@
 - **決策記錄強制**：任何架構改動完成後，必須同步更新 `.fhs/notes/decisions.md`
 - **修改前必讀**：`.fhs/memory/handoff.md` 與 `n8n/Quadruple_Sync_Field_Map.md`
 - **提交前必查**：`.gitignore` 包含 `.env`、`*.xlsx`、`logs/`
-- **亂碼自癒**：發現 NEL/U+0085 問題，立即參考 `/docs/FHS_Blueprint.md` 修復
+- **亂碼自癒**：發現 NEL/U+0085 問題，立即參考 `.fhs/memory/lessons/20260324_System_Management_Chaos_Reflection.md` 修復
 
 ### 財務真理守護
 - **收款確收守護（原「前端利潤最高真理」，2026-06-03 語義修正）**：
@@ -248,8 +249,6 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 
 *需要詳細資訊時，按需讀取以下文件：*
 
-- `/docs/FHS_Blueprint.md`（架構 ID 命名、數據流）
-- `/docs/FHS_Product_Bible_V3.7.md`（SKU、售價、業務規則）
 - `/docs/FHS_Prompts.md`（11 個業務情境的入口路由與處理邏輯——擔任總機角色，遇特定任務調用對應 command，遇業務邏輯問題時必讀）
 - ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）
 - `/n8n/Quadruple_Sync_Field_Map.md`（四端欄位映射：Airtable ↔ n8n ↔ Dashboard ↔ Supabase）

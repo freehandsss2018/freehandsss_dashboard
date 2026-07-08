@@ -8,6 +8,12 @@
 **呈批未動**：AGENTS.md 兩行過時引用（L77 亂碼自癒／L251-252 參考清單）等 Fat Mo 批准。
 Subagent：❌ 未使用（定點 grep+編輯，主 agent 直接執行）
 
+## 2026-07-08 (Session 158 續 — AGENTS.md 呈批項批准落地): 🧹 ✅
+
+**Scope**：Fat Mo 批准上述 S158 呈批項。
+**Result**：AGENTS.md §3 亂碼自癒改指 `.fhs/memory/lessons/20260324_System_Management_Chaos_Reflection.md`（真實記錄所在）；§5 系統真理庫移除已刪除的 `FHS_Blueprint.md` 行與已 DEPRECATED 的 `Product_Bible_V3.7.md` 行；憲法版本 v1.5.0→v1.5.1（patch）。decisions.md D20 補追加段；S158 全案結案，無餘留呈批項。
+Subagent：❌ 未使用（兩處定點編輯，主 agent 直接執行）
+
 ## 2026-07-08 (Session 154 — S148 迴圈硬化 Loop Hardening): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S154 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。完成 S148 迴圈硬化，將 [G] 財務稽核 flag 誤觸判準與 `execute.md` 物理特徵真值表對齊（.md/.js 只 warn 不落 flag），引入 `FHS_GUARD_FIXTURE` 隔離測試夾具防日誌污染並重啟觀察期。上線 T6 budget gate 即時預算檢查、T5 commit 漏跑警告、T7 router 唯讀排除詞。制度上於 `05_maintenance-protocol.md` v1.1.0 加入教訓熔斷條款，並在 `fhs-health-rules.json` v1.1.0 新增 `governance_health_cadence` 季度健檢，完成首期健檢記錄（0 issues）。guard 16/16 + kgov 10/10 PASS，對抗審查 PASS。

@@ -5015,6 +5015,17 @@
         window._fhsHmParseState = function(v, isGlass) {
             var isG = (isGlass === undefined || isGlass === true);
             if (isG) {
+                // 玻璃瓶: 2 steps: 已book, 已完成
+                if (!v || v === '待製作') return [false,false];
+                if (v === 'Done 已完成' || v === '待交收') return [true,true];
+                if (v.startsWith('hm:')) {
+                    var pts = v.substring(3).split('|');
+                    return [pts.indexOf('已book')!==-1, pts.indexOf('已完成')!==-1];
+                }
+                if (v.indexOf('book')!==-1) return [true,false];
+                return [false,false];
+            } else {
+                // 木框: 3 steps: 已book, 已做laser, 已做音訊
                 if (!v || v === '待製作') return [false,false,false];
                 if (v === 'Done 已完成' || v === '待交收') return [true,true,true];
                 if (v.startsWith('hm:')) {
@@ -5024,15 +5035,6 @@
                 if (v === '已取模') return [true,true,false];
                 if (v.indexOf('book')!==-1) return [true,false,false];
                 return [false,false,false];
-            } else {
-                if (!v || v === '待製作') return [false,false];
-                if (v === 'Done 已完成' || v === '待交收') return [true,true];
-                if (v.startsWith('hm:')) {
-                    var pts = v.substring(3).split('|');
-                    return [pts.indexOf('已book')!==-1, pts.indexOf('已完成')!==-1];
-                }
-                if (v.indexOf('book')!==-1) return [true,false];
-                return [false,false];
             }
         };
         window._fhsHmCheckChange = function(orderId, itemIndex, pfx) {
@@ -5053,7 +5055,7 @@
                 }
             }
             
-            var labels = isGlass ? ['已book','已做laser','已做音訊'] : ['已book','已完成'];
+            var labels = isGlass ? ['已book','已完成'] : ['已book','已做laser','已做音訊'];
             var parts = [];
             cbs.forEach(function(cb, i) {
                 var lbl = cb.closest ? cb.closest('label') : cb.parentElement;
@@ -5067,9 +5069,9 @@
             
             var newVal;
             if (isGlass) {
-                newVal = (parts.length===3) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
-            } else {
                 newVal = (parts.length===2 || parts.indexOf('已完成')!==-1) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
+            } else {
+                newVal = (parts.length===3) ? 'Done 已完成' : (parts.length>0 ? 'hm:'+parts.join('|') : '待製作');
             }
             
             var hid = document.getElementById(pfx+'-val-'+orderId+'-'+itemIndex);
@@ -5081,12 +5083,22 @@
             if (o && !window._fhsArchivedIds.has(orderId)) {
                 var allItems = o.items || [];
                 if (allItems.length > 0) {
-                    var allHm = allItems.every(function(item) {
+                    var allHm = allItems.some(function(item) {
                         return getProductDimensions(item).category === '手模擺設';
+                    }) && allItems.every(function(item) {
+                        var dims = getProductDimensions(item);
+                        var isAddon = (item.Order_Item_Key || item.Item_ID || '').toUpperCase().indexOf('_W_WOOL') !== -1 ||
+                                      (item.Order_Item_Key || item.Item_ID || '').toUpperCase().indexOf('_L_LIGHTS') !== -1 ||
+                                      (item.Product_Name || item.Product || '').indexOf('羊毛氈') !== -1 ||
+                                      (item.Product_Name || item.Product || '').indexOf('燈飾') !== -1 ||
+                                      (item.Category || '') === '配件';
+                        return isAddon || dims.category === '手模擺設';
                     });
                     
                     if (allHm) {
                         var allCompleted = allItems.every(function(item, idx) {
+                            var dims = getProductDimensions(item);
+                            if (dims.category !== '手模擺設') return true;
                             var status = (idx === itemIndex) ? newVal : window._getItemStatus(orderId, item);
                             return status === 'Done 已完成' || status === '完成' || status === '已取件' || status === '待交收';
                         });
@@ -8854,8 +8866,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         var _cat = (dimensions.category || item.Category || '').toString();
                                         if (_cat.indexOf('手模擺設') !== -1) {
                                             var _isGlass = dimensions.style && dimensions.style.indexOf('玻璃瓶') !== -1;
-                                            var _st = window._fhsHmParseState ? window._fhsHmParseState(_s, _isGlass) : [false,false,false];
-                                            var _lbs = _isGlass ? ['已book','已做laser','已做音訊'] : ['已book','已完成'];
+                                            var _st = window._fhsHmParseState ? window._fhsHmParseState(_s, _isGlass) : (_isGlass ? [false,false] : [false,false,false]);
+                                            var _lbs = _isGlass ? ['已book','已完成'] : ['已book','已做laser','已做音訊'];
                                             var _cks = _lbs.map(function(l,i){
                                                 var ck = _st[i];
                                                 return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
@@ -9313,8 +9325,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
                                     var _cat = (dimensions.category || item.Category || '').toString();
                                     if (_cat.indexOf('手模擺設') !== -1) {
-                                        var _st = window._fhsHmParseState ? window._fhsHmParseState(_s) : [false,false,false];
-                                        var _lbs = ['已book','已做laser','已做音訊'];
+                                        var _isGlass = dimensions.style && dimensions.style.indexOf('玻璃瓶') !== -1;
+                                        var _st = window._fhsHmParseState ? window._fhsHmParseState(_s, _isGlass) : (_isGlass ? [false,false] : [false,false,false]);
+                                        var _lbs = _isGlass ? ['已book','已完成'] : ['已book','已做laser','已做音訊'];
                                         var _cks = _lbs.map(function(l,i){
                                             var ck = _st[i];
                                             return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
