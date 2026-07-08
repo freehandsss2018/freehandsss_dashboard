@@ -14,6 +14,12 @@ Subagent：❌ 未使用（定點 grep+編輯，主 agent 直接執行）
 **Result**：AGENTS.md §3 亂碼自癒改指 `.fhs/memory/lessons/20260324_System_Management_Chaos_Reflection.md`（真實記錄所在）；§5 系統真理庫移除已刪除的 `FHS_Blueprint.md` 行與已 DEPRECATED 的 `Product_Bible_V3.7.md` 行；憲法版本 v1.5.0→v1.5.1（patch）。decisions.md D20 補追加段；S158 全案結案，無餘留呈批項。
 Subagent：❌ 未使用（兩處定點編輯，主 agent 直接執行）
 
+## 2026-07-09 — /commit 收尾：S155 §7 補記 + 手機版底部導覽毛玻璃/標題欄視覺優化入庫: 🧹 ✅
+
+**Scope**：`/commit` 例行收尾。S155 計畫檔補記瀏覽器自動化上傳渠道暫緩決定（原承諾寫入 §7 但延後跟進，本次補上）；另一並行 session（Antigravity）已完成之手機版底部導覽列毛玻璃視覺（`backdrop-filter blur(24px) saturate(180%)` + 活躍項圓角卡片包覆）與 Header 標題居中放大優化一併入庫（Changelog 已於執行時記錄，4 項測試已 PASS）。
+**Result**：修復便攜塊兩次因並行 session 寫入產生的重複/亂碼段（P0.7 常規維護）；日期戳更新至 2026-07-09。
+Subagent：❌ 未使用（純收尾同步，主 agent 直接執行）
+
 ## 2026-07-08 (Session 154 — S148 迴圈硬化 Loop Hardening): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S154 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。完成 S148 迴圈硬化，將 [G] 財務稽核 flag 誤觸判準與 `execute.md` 物理特徵真值表對齊（.md/.js 只 warn 不落 flag），引入 `FHS_GUARD_FIXTURE` 隔離測試夾具防日誌污染並重啟觀察期。上線 T6 budget gate 即時預算檢查、T5 commit 漏跑警告、T7 router 唯讀排除詞。制度上於 `05_maintenance-protocol.md` v1.1.0 加入教訓熔斷條款，並在 `fhs-health-rules.json` v1.1.0 新增 `governance_health_cadence` 季度健檢，完成首期健檢記錄（0 issues）。guard 16/16 + kgov 10/10 PASS，對抗審查 PASS。

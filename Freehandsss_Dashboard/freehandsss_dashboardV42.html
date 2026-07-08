@@ -1599,17 +1599,22 @@
             overflow: hidden;
         }
         .fhs-top-bar__logo {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
             font-weight: 800;
-            font-size: 15px;
+            font-size: 16px;
             color: var(--fhs-accent);
             letter-spacing: 0.5px;
             flex-shrink: 0;
+            pointer-events: none;
         }
         .fhs-top-bar__order-id {
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            color: var(--fhs-text-secondary);
-            flex: 1;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--fhs-text-primary);
+            flex-shrink: 1;
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1645,8 +1650,8 @@
         .ba-icon { font-size: 14px; line-height: 1; }
         .ba-label { line-height: 1; }
         @media (max-width: 480px) {
-            .fhs-top-bar__order-id { flex: 1; font-size: 10px; }
-            .fhs-top-bar__logo { font-size: 13px; }
+            .fhs-top-bar__order-id { font-size: 14px; max-width: 35%; }
+            .fhs-top-bar__logo { font-size: 15px; }
         }
         @media (max-width: 400px) {
             .fhs-top-bar__actions button {
@@ -1879,14 +1884,14 @@
                 bottom: calc(16px + env(safe-area-inset-bottom, 0px));
                 z-index: 2000;
                 height: 56px;
-                background: rgba(255, 255, 255, 0.75);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                border: 1px solid rgba(224, 216, 204, 0.6);
+                background: rgba(255, 255, 255, 0.6) !important;
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
+                border: 1px solid rgba(224, 216, 204, 0.5);
                 border-radius: 9999px;
-                box-shadow: 0 8px 32px rgba(44, 36, 22, 0.1), 0 1px 2px rgba(44, 36, 22, 0.04);
-                padding: 4px 12px;
-                gap: 4px;
+                box-shadow: 0 8px 32px rgba(44, 36, 22, 0.08), 0 1px 2px rgba(44, 36, 22, 0.02);
+                padding: 4px 6px;
+                gap: 2px;
                 display: flex;
                 align-items: center;
                 justify-content: space-around;
@@ -1895,6 +1900,7 @@
             }
             .fhs-top-bar__actions button {
                 flex: 1;
+                height: 44px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -1904,12 +1910,13 @@
                 padding: 4px 2px;
                 font-size: 9px;
                 font-weight: 500;
-                border: none !important;
-                border-radius: 9999px;
+                border: 1px solid transparent !important;
+                border-radius: 22px;
                 background: transparent !important;
                 color: var(--fhs-text-secondary);
-                transition: color 0.15s ease;
+                transition: background 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
                 box-shadow: none !important;
+                cursor: pointer;
             }
             .fhs-top-bar__actions button .ba-icon {
                 width: 20px;
@@ -1918,7 +1925,11 @@
                 color: inherit;
             }
             .fhs-top-bar__actions button.active {
-                color: var(--fhs-accent) !important;
+                background: var(--fhs-bg-surface) !important;
+                color: var(--fhs-text-primary) !important;
+                font-weight: 700;
+                border: 1px solid var(--fhs-border) !important;
+                box-shadow: 0 2px 8px rgba(44, 36, 22, 0.08) !important;
             }
             #v41-supabase-toggle {
                 position: relative !important;
@@ -2350,7 +2361,7 @@
 
         /* V41 Supabase Status Chip - Integrated UI */
         .sb-status-chip {
-            display: inline-flex;
+            display: none !important;
             align-items: center;
             gap: 6px;
             padding: 4px 10px;
@@ -3425,7 +3436,7 @@
 
     <!-- V40 Top Bar（替換舊 role-bar，保留所有原有 ID） -->
     <div class="fhs-top-bar" id="v40-top-bar">
-        <span class="fhs-top-bar__logo">FHS</span>
+        <span class="fhs-top-bar__logo">freehandsss</span>
         <span class="fhs-top-bar__order-id" id="v40-top-order-id">訂單 #—</span>
         <span id="reviewCountBadge"
             class="review-count-badge"

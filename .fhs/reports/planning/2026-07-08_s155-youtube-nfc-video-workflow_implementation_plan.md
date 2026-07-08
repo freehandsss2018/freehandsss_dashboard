@@ -230,6 +230,7 @@ P2/P3 同觸 V42 巨檔，仍分開 commit（獨立可 revert）。
 | 舊單 Spotify 回溯補 YouTube | Fat Mo 主動要求 |
 | 一單多片（video_url 陣列/子表） | 業務出現一單多片真實訂單 |
 | NFC 貼紙入 cost_configurations | 另案走 finance-gatekeeper |
+| **瀏覽器自動化上傳**（我操作瀏覽器代 Fat Mo 拖檔上傳 YouTube Studio） | Fat Mo 2026-07-08 裁決暫緩：人已在電腦前，自動化淨係慳幾個撳掣動作，性價比不及 canva-auto（省大段人手製作時間）級別；重新評估觸發＝Fat Mo 主動提出，或月產量大幅上升令人手負擔明顯加重 |
 
 ---
 

@@ -13,6 +13,13 @@ Fat Mo 發現「必讀核心檔」Blueprint 腐爛一個月無 session 發現（
 - **編輯模式新增「刪除訂單」按鈕**：為了解決在修改舊單（Edit Mode）時，無法直接在表單頁面刪除訂單的問題，我們在桌面版底部動作列（`bottomActionBar`）新增了紅色的「刪除此訂單」按鈕，並在行動版底部動作列（`v40-bottom-bar`）新增了紅色的「刪除」按鈕。這兩個按鈕僅在表單加載了現有訂單（`editTargetOrderId` 存在）時才會動態顯示。點選後會彈出二次確認視窗，刪除成功後會自動清空表單並引導切換回「訂單總覽（review mode）」。
 - **手機版 actions menu 刪除按鈕防遮擋優化**：修復行動版底部 actions menu（Bottom Sheet）中「刪除訂單」按鈕被 Threads 風格底部常駐導覽列覆蓋 of UI Bug。將 `.bs-sheet` 設定 `max-height: 85vh` 且使 `.bs-list` 支援垂直滾動 (`overflow-y: auto`)，並在手機版下調整 `.bs-safe-area` 的高度為 `calc(80px + env(safe-area-inset-bottom, 0px))`。這能將 Bottom Sheet 底部的「刪除訂單」按鈕及分隔線安全地推高到常駐導覽列上方，確保其在手機版上 100% 可視與可點擊。
 - **手模擺設進度檢核與自動完成**：優化了折疊面板（Accordion）和表格（Table）中的手模擺設進度檢核渲染邏輯。根據產品的 `Style` 動態區分進度步驟：**玻璃瓶 (`玻璃瓶`)** 為 2 階段（`已book`、`已完成`），其餘如 **木框 (`木框`)** 等為 3 階段（`已book`、`已做laser`、`已做音訊`）。複選框進度會在 `_fhsHmCheckChange` 中動態以 piped string 形式儲存至 `Process_Status` 欄位；此外，當訂單內僅含手模擺設項目（忽略燈飾、羊毛氈等配件 addons）且全數完成時，新增自動彈出確認視窗，提醒用戶是否將該訂單標記為「已完成」（自動封存）。
+- **手機端底部常駐導覽列（Threads 風格毛玻璃）優化**：
+  - 將底部導覽列背景改為 `rgba(255, 255, 255, 0.6)` 半透明，並增強 backdrop-filter 模糊半徑至 `24px` 與 `saturate(180%)`，呈現極具現代感的毛玻璃透光視覺（滾動時後方內容可隱約透出）。
+  - 對齊頂部 Segmented Control（全部/進行中/已完成）的活躍選項演繹：底部的選中項目（新增/修改/訂單/財務/系統）新增白色圓角卡片包覆框架（`background: var(--fhs-bg-surface)`、`border: 1px solid var(--fhs-border)` 加上細緻陰影），活躍字體/圖示變更為深棕色 `var(--fhs-text-primary)` 粗體，並加入回彈動畫，提升整體的點擊質感。
+- **頂部標題列（Header）視覺最佳化**：
+  - **隱藏 Supabase 狀態按鈕**：移除無實質用途的 `Supabase 已開啟`（`.sb-status-chip`）狀態指示晶片，減少畫面多餘雜訊。
+  - **品牌標誌（Logo）居中與更名**：將原本靠左的 Logo 改名為 `freehandsss`（全小寫），並透過絕對定位使期水平居中置頂，展現精緻平衡的 Threads 微簡約品牌感。
+  - **分頁標籤靠左與放大**：將分頁標籤（`#v40-top-order-id`，例如「訂單 #0600404」、「訂單總覽」）維持靠左，並將字型大小放大至更顯眼且符合資訊階層的 `16px`（`font-weight: 700`，字型由等寬 Monospace 改為系統無襯線體 Sans-serif）；同時為手機版新增最大寬度安全限制，防止大字體與置中 Logo 發生文字重疊。
 - **檔案同步與驗證**：已同步修改 `freehandsss_dashboardV42.html` 與 `Freehandsss_dashboard_current.html`；執行全系統 Lifecycle 測試、壓力測試與結案驗收測試等共 4 項（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）均全數通過（PASS）。
 
 ## [2026-07-08] Session 156（Fable 5）— blocktempo fable-5-2 條款吸收：新建 governance/07 複利迴圈
