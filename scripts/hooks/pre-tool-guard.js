@@ -160,6 +160,15 @@ process.stdin.on('end', () => {
         '   → 請確認 .env 已在 .gitignore，禁止 commit 真實 key'
       );
     }
+
+    // ── Rule 12 (S156, Fat Mo 裁決同意): 寫 learnings.md 提醒雙紀律自檢 ──
+    // md-only-warn 哲學（同 kgov v2.0.0）：不 block，僅提醒 Rule 3.17 三個交付邊界之一。
+    if (filePath.endsWith('learnings.md')) {
+      warnings.push(
+        '⚠️  [R12] 正在寫入 learnings.md',
+        '   → 提交前請確認已依 AGENTS.md Rule 3.17 完成【交付前雙紀律自檢】兩行（驗收/Subagent）'
+      );
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════

@@ -1398,3 +1398,7 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 - 此條件無法由 hook 技術驗證（hook 無對話上下文），屬 **AI 行為層硬約束**，寫入 AGENTS.md §3 全域硬規則，違反視同違憲。
 - 每次 AI 自建旗標記入 `.fhs/notes/deploy-log.md` 供事後稽核（沿用既有 R1/R9 bypass 記錄機制）。
 - AGENTS.md v1.5.1→**v1.6.0**（minor，規則本體變更）；`pre-tool-guard.js` R10 兩變體（Write/Edit + Bash）由封鎖改為放行+記錄；`guard-fixtures.json` 對應兩案例改為 `expected_exit:0`；guard 回歸測試 16/16 PASS，無回歸。改動前已備份 `AGENTS.md`/`pre-tool-guard.js` 至 `governance/backups/*.2026-07-09.bak`。
+
+### D22：S156 pre-tool-guard learnings warn 提案——Fat Mo 裁決同意，R12 落地
+
+**決策**：S156 `/8d` v2-1(b) 提案（Write/Edit 目標為 `learnings.md` 時 warn 提示 Rule 3.17 雙紀律自檢句，不 block，沿用 kgov v2.0.0 md-only-warn 哲學）於本 session 交 Fat Mo 裁決，**同意**。落地為 `pre-tool-guard.js` 新增 **Rule 12**：Write/Edit/MultiEdit/NotebookEdit 目標檔名以 `learnings.md` 結尾時，輸出 warning（exit 0，不攔截）提醒「提交前請確認已依 AGENTS.md Rule 3.17 完成【交付前雙紀律自檢】兩行」。屬純工具層擴充（新增 warn-only 規則，非變更既有規則語意），不觸及 AGENTS.md 規則本體，故不隨此改動調整憲法版本號。`guard-fixtures.json` 新增 1 案例（R12 warn 應觸發），回歸測試 **17/17 PASS**，無回歸。

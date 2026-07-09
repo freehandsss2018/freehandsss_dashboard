@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-07-09] Session 159 續 II（Claude Code / Sonnet 5 執行）— 待辦清單澄清 + S156 guard learnings warn 提案裁決落地
+
+**待辦清單澄清（無代碼變動）**：Fat Mo 對 handoff 便攜塊四項提出疑問，逐一釐清：(1) 桌面版表頭對比度其實已是 Fat Mo 主動裁決的最終狀態，非待修項，便攜塊措辭誤把「已裁決維持原狀」寫成「問題仍未解決」的待辦式語氣，已改寫並移出待辦段；(2) [S156] 底下其實有兩個不同項目（blocktempo 條款吸收=已完成 vs guard learnings warn 提案=待裁決），便攜塊只寫了後者名稱易與前者混淆；(3) [S152] webapp-testing plugin 卡在需要互動式 `/plugin install`，本 session/hook 無對應工具可執行，需 Fat Mo 自行手動安裝；(4) [S149] 治理系統可攜化計畫已解除阻擋（S148 前置依賴已於 S154 完工），純規劃產出待執行，非新項目。
+
+**[S156] pre-tool-guard learnings warn 提案裁決同意並落地**：`/8d` v2-1(b) 提案（Write/Edit 目標為 `learnings.md` 時 warn 提醒 Rule 3.17 雙紀律自檢，不 block，沿用 kgov v2.0.0 md-only-warn 哲學）經 Fat Mo 裁決同意。`pre-tool-guard.js` 新增 **R12**：檔名以 `learnings.md` 結尾時輸出 warning（exit 0）提醒「提交前請確認已依 AGENTS.md Rule 3.17 完成【交付前雙紀律自檢】兩行」。`guard-fixtures.json` 新增 1 案例；回歸測試 **17/17 PASS**（原16+新1），無回歸。屬純工具層 warn-only 擴充，不變更 AGENTS.md 規則本體，憲法版本號不動。詳見 [decisions.md](.fhs/notes/decisions.md) D22。
+
 ## [2026-07-09] Session 159 續（Claude Code / Sonnet 5 執行）— 部署授權機制放寬 D21 + S159 正式部署 + 表頭對比度調查
 
 **current.html 部署授權放寬（D21）**：原規則要求 Fat Mo 必須親自於終端機 `touch .fhs/.deploy-ok` 才能授權 AI 覆寫正式版，Fat Mo 認為太麻煩，提案改為聊天室確認即代表授權。經提出安全權衡（原設計防外部資料注入誤導 AI 自我授權）後，Fat Mo 選擇「加防護版」：AI 可自行建立 `.fhs/.deploy-ok`，但僅限**直接回覆 AI 自己提出的升格確認問題**時才可建立，嚴禁從訂單備註/webhook/歷史訊息等其他資料來源推斷同意——此條件無法由 hook 技術驗證，屬 AI 行為層硬約束。`AGENTS.md` v1.5.1→**v1.6.0**（規則本體變更）；`pre-tool-guard.js` R10 兩變體（Write/Edit + Bash）由封鎖改為放行+記錄至 `deploy-log.md`；`guard-fixtures.json` 對應兩案例改為 `expected_exit:0`；`scripts/README.md` 同步更新規則說明；guard 回歸測試 16/16 PASS 無回歸。改動前備份 `AGENTS.md`/`pre-tool-guard.js` 至 `governance/backups/*.2026-07-09.bak`。詳見 [decisions.md](.fhs/notes/decisions.md) D21。

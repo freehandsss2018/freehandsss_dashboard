@@ -206,6 +206,21 @@
     "note": "S140 新增（F12）：warn-only 觀察期，兩週後複查是否轉正為攔截（見 governance/05 §4）"
   },
   {
+    "name": "R12: 寫入 learnings.md 應警告但不攔截（S156提案，Fat Mo裁決同意）",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": ".fhs/memory/learnings.md",
+      "old_string": "x",
+      "new_string": "y"
+    },
+    "expected_exit": 0,
+    "expected_stderr_contains": [
+      "R12"
+    ],
+    "known_gap": false,
+    "note": "S156 /8d v2-1(b) 提案：warn 提示 Rule 3.17 雙紀律自檢句，沿用 kgov v2.0.0 md-only-warn 哲學，不 block"
+  },
+  {
     "name": "正常安全寫入不應觸發任何規則",
     "tool_name": "Write",
     "tool_input": {
