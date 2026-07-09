@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-09 (Session 159續II — R12 learnings warn落地D22+重新升格+待辦清單澄清): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S159續II條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。(1) [S156] pre-tool-guard learnings warn 提案經 Fat Mo 裁決同意，落地為 Rule 12（Write/Edit 目標為 learnings.md 時 warn 提醒 Rule 3.17 雙紀律自檢，不 block），guard-fixtures 新增 1 案例，回歸測試 17/17 PASS，決策見 decisions.md D22。(2) 上次升格時開發版表頭已回退黑底漸層，本次補同步重新升格至正式檔案。(3) handoff.md 待辦清單四點疑問澄清（表頭對比度已裁決非待辦、[S156]兩項目易混淆、[S152]/[S149]現況），已裁決項移出待辦段避免重複詢問。
+Subagent：❌ 未使用（純制度落地+同步收尾，主 agent 執行）
+
 ## 2026-07-09 (Session 159續 — 部署授權放寬D21+正式部署+表頭對比度調查): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S159續條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。(1) Fat Mo 提案放寬 current.html 部署授權（原需終端機手動 touch .deploy-ok 太麻煩），經安全權衡討論後選「加防護版」：AI 可自建旗標但僅限直接回覆升格確認問題，寫入 AGENTS.md v1.6.0 + decisions.md D21，guard fixtures 同步更新 16/16 PASS。(2) 用新機制實際部署 S159 修復至 NAS，三關驗證 PASS。(3) 查證桌面版表頭對比度不足根因（11處 inline color 疊深底漸層），試修白字後 Fat Mo 不滿意，回退至 S157 改動前原狀（含背景漸層退回黑底）。教訓入 learnings.md Preference #10。
