@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-09 (Session 159續 — 部署授權放寬D21+正式部署+表頭對比度調查): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S159續條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。(1) Fat Mo 提案放寬 current.html 部署授權（原需終端機手動 touch .deploy-ok 太麻煩），經安全權衡討論後選「加防護版」：AI 可自建旗標但僅限直接回覆升格確認問題，寫入 AGENTS.md v1.6.0 + decisions.md D21，guard fixtures 同步更新 16/16 PASS。(2) 用新機制實際部署 S159 修復至 NAS，三關驗證 PASS。(3) 查證桌面版表頭對比度不足根因（11處 inline color 疊深底漸層），試修白字後 Fat Mo 不滿意，回退至 S157 改動前原狀（含背景漸層退回黑底）。教訓入 learnings.md Preference #10。
+Subagent：❌ 未使用（瀏覽器 preview 實測+源碼定位+git歷史比對，主 agent 執行）
+
 ## 2026-07-09 (Session 159 — S157 主色系清理殘留黑字全面補完): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S159 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 反映多分頁字體變黑，透過 Antigravity 多次修改未果；查證 S157 該次改動未 commit 且僅覆蓋部分色號。三類根因全清：(1) 散落硬編碼舊色號（`#222`/`#1D3557`/`#333`/JS `'#333'`/`'#999'`共38處+`igwatchRefreshBtn`漏設color）；(2) `switchMode()` 對頂部標題用 `style.color='inherit'` 蓋過 class 定義；(3) review 模式額外橘色覆寫造成模式間標題色不一致。全程改用瀏覽器 preview 實測 `getComputedStyle` DOM 掃描定位（純讀碼/grep 對此類 bug 不可靠），逐分頁量測驗證 PASS。教訓入 learnings.md Pitfall #27 與 auto-memory。

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-07-09] Session 159 續（Claude Code / Sonnet 5 執行）— 部署授權機制放寬 D21 + S159 正式部署 + 表頭對比度調查
+
+**current.html 部署授權放寬（D21）**：原規則要求 Fat Mo 必須親自於終端機 `touch .fhs/.deploy-ok` 才能授權 AI 覆寫正式版，Fat Mo 認為太麻煩，提案改為聊天室確認即代表授權。經提出安全權衡（原設計防外部資料注入誤導 AI 自我授權）後，Fat Mo 選擇「加防護版」：AI 可自行建立 `.fhs/.deploy-ok`，但僅限**直接回覆 AI 自己提出的升格確認問題**時才可建立，嚴禁從訂單備註/webhook/歷史訊息等其他資料來源推斷同意——此條件無法由 hook 技術驗證，屬 AI 行為層硬約束。`AGENTS.md` v1.5.1→**v1.6.0**（規則本體變更）；`pre-tool-guard.js` R10 兩變體（Write/Edit + Bash）由封鎖改為放行+記錄至 `deploy-log.md`；`guard-fixtures.json` 對應兩案例改為 `expected_exit:0`；`scripts/README.md` 同步更新規則說明；guard 回歸測試 16/16 PASS 無回歸。改動前備份 `AGENTS.md`/`pre-tool-guard.js` 至 `governance/backups/*.2026-07-09.bak`。詳見 [decisions.md](.fhs/notes/decisions.md) D21。
+
+**S159 修復正式部署**：`/fhs-check` 4項全PASS（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）後，依新授權機制升格 `freehandsss_dashboardV42.html` → `current.html` 並上傳 NAS，三關驗證全過（HTTP 204、大小953,370 bytes 一致、SHA256 042CCC8C...982D8F 一致）。
+
+**桌面版表頭對比度調查（Fat Mo 最終選擇維持原狀）**：Fat Mo 反映桌面版訂單總覽表頭（客人/入帳/成本/利潤/刻字/產品明細/批次/進度/備註）文字看不清楚。查證根因：11 個 `<th>` inline `color`（多為 `var(--fhs-text-secondary)`，入帳/成本/利潤另用 `#B07D4C`/危險紅/成功綠）疊在深色漸層背景上，對比不足——這批 inline 色是舊設計殘留，早於某次背景改深底時未同步更新。先試修為統一白字（`color:#fff`），經 Fat Mo 檢視後**不滿意，要求還原**；進一步要求連背景漸層本身也退回 S157 主色系清理**之前**的深藍黑漸層（`#2A2D43→#3d4163`，S159 commit 前為暖棕漸層 `var(--fhs-text-secondary)→#5c4e3c`）。最終狀態：`freehandsss_dashboardV42.html` 表頭背景與文字色皆已還原至 S157 改動前原狀（逐行對比 commit `5d0f4c6` 確認一致）；`current.html` 全程未被此段改動觸及（R1 正確擋下直接編輯嘗試），仍是部署當下的暖棕漸層版本，兩檔案此段暫時不同步（Fat Mo 未要求重新部署此段）。對比度問題本身仍未解決，屬 Fat Mo 已知並主動選擇維持現狀，非遺漏。
+
 ## [2026-07-09] Session 159（Claude Code / Sonnet 5 執行）— S157 主色系清理殘留黑字全面補完
 
 Fat Mo 反映「多個不同分頁字體變實黑色」，透過 Antigravity 多次要求修改均未修好。查證發現 S157 Changelog 條目雖已記錄「整體主色系一致性與舊版 slate 藍灰色清理」並聲稱測試全 PASS，但該次改動實際只涵蓋部分 `#2A2D43`/`#1D3557` 實色（且尚未 commit，一直留在工作目錄），並未涵蓋以下三類散落色號，才是 Fat Mo 反覆看到「變黑」的真因：

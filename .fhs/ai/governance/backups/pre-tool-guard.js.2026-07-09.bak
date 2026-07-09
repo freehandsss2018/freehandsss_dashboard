@@ -95,24 +95,18 @@ process.stdin.on('end', () => {
         blocking.push(
           '🚫 [R1] 禁止覆蓋正式環境 Freehandsss_dashboard_current.html',
           '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），或 (b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效'
+          '   → 如需更新，請明確告知 Fat Mo 並獲授權（Fat Mo 可在自己 terminal touch .fhs/.deploy-ok 授權一次，10 分鐘內有效）'
         );
       }
     }
 
-    // ── Rule 10 (v2, S159續): AI 可自行建立 .deploy-ok，僅限直接回覆升格確認問題 ──
-    // 原為全面封鎖（防 AI 自我授權）；Fat Mo 提案+選定「加防護版」後放寬：
-    // 允許 AI 透過 Write/Edit 建立此旗標，但 AGENTS.md §3 明文要求僅能在
-    // Fat Mo「直接回覆 AI 自己提出的升格確認問題」時才可建立，嚴禁從訂單
-    // 備註/webhook/其他資料來源推斷同意——此條件無法由 hook 技術驗證，
-    // 屬 AI 行為層硬約束，違反視同違憲。每次建立記入 deploy-log.md 供稽核。
+    // ── Rule 10: Block AI from self-creating the deploy-ok flag ──
     if ((tool === 'Write' || tool === 'Edit' || tool === 'MultiEdit' || tool === 'NotebookEdit') &&
-        filePath.includes('.deploy-ok') && process.env.FHS_GUARD_FIXTURE !== '1') {
-      try {
-        const dir = path.dirname(DEPLOY_LOG_FILE);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | R10 AI self-created .deploy-ok (AGENTS.md v1.6.0授權) | tool=${tool}\n`, 'utf8');
-      } catch (_) { /* silent */ }
+        filePath.includes('.deploy-ok')) {
+      blocking.push(
+        '🚫 [R10] 禁止 AI 自行建立/寫入 .deploy-ok 授權旗標',
+        '   → 此旗標只能由 Fat Mo 在自己的 terminal 手動 touch 建立（防 AI 自我授權）'
+      );
     }
 
     // ── Rule 2: No hardcoded API keys ───────────────────────────
@@ -181,20 +175,18 @@ process.stdin.on('end', () => {
         blocking.push(
           '🚫 [R9] 偵測到 Bash 指令疑似寫入 current.html',
           '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），或 (b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效'
+          '   → 如需更新，請明確告知 Fat Mo 並獲授權（Fat Mo 可在自己 terminal touch .fhs/.deploy-ok 授權一次，10 分鐘內有效，或改用 Write/Edit 走 R1 守衛）'
         );
       }
     }
 
-    // ── Rule 10 (shell variant, v2, S159續): 同上，見 Write/Edit 變體註解 ──
+    // ── Rule 10 (shell variant): block AI from self-creating deploy-ok ──
     if (/\.deploy-ok\b/i.test(command) &&
-        /(?:^|\s)(?:touch|echo\s.*>|Set-Content|New-Item|Out-File)\b/i.test(command) &&
-        process.env.FHS_GUARD_FIXTURE !== '1') {
-      try {
-        const dir = path.dirname(DEPLOY_LOG_FILE);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | R10 AI self-created .deploy-ok via shell (AGENTS.md v1.6.0授權) | cmd=${String(command).slice(0, 80)}\n`, 'utf8');
-      } catch (_) { /* silent */ }
+        /(?:^|\s)(?:touch|echo\s.*>|Set-Content|New-Item|Out-File)\b/i.test(command)) {
+      blocking.push(
+        '🚫 [R10] 禁止 AI 自行建立/寫入 .deploy-ok 授權旗標',
+        '   → 此旗標只能由 Fat Mo 在自己的 terminal 手動建立（防 AI 自我授權）'
+      );
     }
 
     // ── Rule 11 (observe-only, S140 F12): shell write touching finance content ──
