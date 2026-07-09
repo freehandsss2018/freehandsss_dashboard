@@ -1,8 +1,8 @@
 ```handoff
-【FHS 交接摘要 — 更新: 2026-07-09 / S158】
-🎯 目標: FHS 業務 POS+財務系統日常維護；S158 FHS_Blueprint 13處過時發現→Fat Mo二次裁決整檔刪除（非降級），§5排版鐵律遷ui-ux-pro-max Section六、§1業務背景遷auto-memory，八處反向引用清理；S157編輯模式刪除訂單按鈕+actions menu遮擋修復+手模擺設進度動態步驟檢核/自動封存、底部導覽列毛玻璃與 Header 標題居中放大優化完成；S156 blocktempo吸收完成；S155 YouTube+NFC工作流計畫待批
-✅ 已定決策（完整原文索引見別處連結）: (1)V42=production(S115)；(2)Supabase-First(S)；(3)IG看門狗regex(S116)；(4)handoff SSOT=便攜塊(S118)；(5)(6)ig_watchdog_alerts設計(S119/S122)；(7)嬰兒鋁合金=$115(S120)；(8)n8n PUT body四欄(S121)；(9)成本禁假乘法(S124)；(10)(11)(12)(14)(15)Task A/廢欄/簡化付款/depositMode/Audit Ledger，見MASTER表S125/126/128/131；(13)n8n POST用raw(S127)；(16)n8n禁emoji(S129)；(17)cost_override_locked優先(S130)；(18)-(28)S134-S140共11項治理/平台決策，見AGENTS§1.2+decisions.md；(29)敘事單源合約(S144)；(30)成本文件Stage3核實(S147)；(31)-(33)S148/S149/S150三計畫，見MASTER表；(34)-(37)S151-S153，見MASTER表；(38)S148迴圈硬化執行完成，對抗審查PASS(S154)；(39)S156 blocktempo吸收，D18（S155計畫D18已消歧為D19）(S156)；(40)S157刪除訂單按鈕+遮擋修復+手模進度動態標籤/封存提示+底部導覽毛玻璃與活躍項圓角卡片包覆、頂部 Logo 置中更名與標題放大(S157)；(41)S158文件權威=流量+合約原則，Blueprint整檔刪除，唯一居所遷移至有真讀者處，AGENTS.md兩行呈批項已批准落地v1.5.1，D20全案結案(S158)
-🔬 驗證: S157手模進度/刪除/導覽與標題欄視覺最佳化驗證通過，4項測試全PASS；S158八處反向引用grep覆查全清；S156 opus對抗審查4F修畢+haiku read-back 13/13；S148 4 Phase獨立commit完工；guard 16/16 + kgov 10/10 PASS；fhs-health-check 0 issues
+【FHS 交接摘要 — 更新: 2026-07-09 / S159】
+🎯 目標: FHS 業務 POS+財務系統日常維護；S159 補完 S157 主色系清理殘留黑字（硬編碼舊色號+JS inherit覆寫+模式間標題色不一致三類根因全清）；S158 FHS_Blueprint 13處過時發現→Fat Mo二次裁決整檔刪除（非降級），§5排版鐵律遷ui-ux-pro-max Section六、§1業務背景遷auto-memory，八處反向引用清理；S157編輯模式刪除訂單按鈕+actions menu遮擋修復+手模擺設進度動態步驟檢核/自動封存、底部導覽列毛玻璃優化完成；S156 blocktempo吸收完成；S155 YouTube+NFC工作流計畫待批
+✅ 已定決策（完整原文索引見別處連結）: (1)V42=production(S115)；(2)Supabase-First(S)；(3)IG看門狗regex(S116)；(4)handoff SSOT=便攜塊(S118)；(5)(6)ig_watchdog_alerts設計(S119/S122)；(7)嬰兒鋁合金=$115(S120)；(8)n8n PUT body四欄(S121)；(9)成本禁假乘法(S124)；(10)(11)(12)(14)(15)Task A/廢欄/簡化付款/depositMode/Audit Ledger，見MASTER表S125/126/128/131；(13)n8n POST用raw(S127)；(16)n8n禁emoji(S129)；(17)cost_override_locked優先(S130)；(18)-(28)S134-S140共11項治理/平台決策，見AGENTS§1.2+decisions.md；(29)敘事單源合約(S144)；(30)成本文件Stage3核實(S147)；(31)-(33)S148/S149/S150三計畫，見MASTER表；(34)-(37)S151-S153，見MASTER表；(38)S148迴圈硬化執行完成，對抗審查PASS(S154)；(39)S156 blocktempo吸收，D18（S155計畫D18已消歧為D19）(S156)；(40)S157刪除訂單按鈕+遮擋修復+手模進度動態標籤/封存提示+底部導覽毛玻璃與活躍項圓角卡片包覆、頂部 Logo 置中更名與標題放大(S157，主色系清理未完成部分見S159)；(41)S158文件權威=流量+合約原則，Blueprint整檔刪除，唯一居所遷移至有真讀者處，AGENTS.md兩行呈批項已批准落地v1.5.1，D20全案結案(S158)；(42)S159 top-bar inline style 覆寫規則：清空用`style.color=''`讓class接管，禁用`'inherit'`（會抓錯層級顏色）(S159)
+🔬 驗證: S159五分頁標題+核對帳單/IG訊息modal逐一getComputedStyle量測PASS，console無錯誤；S157手模進度/刪除/導覽視覺最佳化驗證通過，4項測試全PASS（主色系清理項見S159修正）；S158八處反向引用grep覆查全清；S156 opus對抗審查4F修畢+haiku read-back 13/13；S148 4 Phase獨立commit完工；guard 16/16 + kgov 10/10 PASS；fhs-health-check 0 issues
 📋 待辦: 🔴[S155]YouTube+NFC計畫待Fat Mo批准 🔴[S149]治理可攜化待執行 🔴[S150]Phase4-6待S149後接續（verified_ok+DELETE撤除=先問級） ⚪[S156]guard learnings warn提案待裁決 ⚪[S152]webapp-testing BLOCKED待手動 ⚪n8n Mirror Prep改RPC(需opus+live)
 ➡️ 下一步: Fat Mo 批 S155 計畫；或先執行 S149 治理可攜化（兩者無依賴）
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
@@ -14,10 +14,11 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-07-08（S158 Blueprint 降級+接線完成；S157 actions menu 刪除按鈕遮擋修復完成；S156 blocktempo 吸收完成；S155 YouTube+NFC 工作流計畫新增待批；S149 待執行；S150 Phase 4-6 待 S149 後接續）
+> 上次更新：2026-07-09（S159 補完 S157 主色系清理殘留黑字，全案結案；S158 Blueprint 降級+接線完成；S157 actions menu 刪除按鈕遮擋修復完成；S156 blocktempo 吸收完成；S155 YouTube+NFC 工作流計畫新增待批；S149 待執行；S150 Phase 4-6 待 S149 後接續）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| ✅ 完成 | **[S159] S157 主色系清理殘留黑字全面補完** | ✅ 全交付，已同步 V42 & current HTML | 三類根因：(1) 硬編碼舊色號未遷移（`#222`/`#1D3557`/`#333`/JS `'#333'`/`'#999'`共38處+`igwatchRefreshBtn`漏設color）；(2) `switchMode()` 對 `#v40-top-order-id` 動態指派 `style.color='inherit'` 蓋過 class 定義；(3) review 模式額外覆寫 accent 橘色造成模式間標題色不一致。全文見 [Changelog.md](../../Changelog.md) S159 條目；教訓見 auto-memory `feedback_visual_bug_measure_not_guess.md` |
 | ✅ 完成 | **[S158] FHS_Blueprint 13 處過時修正 → Fat Mo 二次裁決整檔刪除＋內容遷居** | ✅ 全交付（文件層，待 /commit 入庫） | 根因=零路由/無寫回合約/A6-3 反向認證；「不要為留而留」：§5 排版鐵律遷 ui-ux-pro-max FHS_INTEGRATION.md **Section 六**（唯一居所，兩支 UI subagent 已改指並同步 ~/.claude/agents/）、§1 業務背景遷 auto-memory；八處反向引用清理；備份 backups/；決策 D20（含同日追加段）。全文見完成記錄 [2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md](../reports/completion/2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md) |
 | ✅ 完成 | **[S158] AGENTS.md 兩行過時引用修正** | ✅ 已批准並落地，v1.5.0→v1.5.1 | §3 亂碼自癒改指真實記錄的 lesson 檔；§5 移除已刪除的 Blueprint 行+DEPRECATED V3.7 行。S158 全案結案 |
 | ✅ 完成 | **[S157] 手機版 actions menu 刪除按鈕遮擋修復** | ✅ 執行完成，已同步 V42 & current HTML，4項全系統測試通過 | 調整 bs-sheet max-height、bs-list overflow-y 及行動端 bs-safe-area，確保按鈕能顯示於常駐導覽列上方 |

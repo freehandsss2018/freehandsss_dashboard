@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-07-09] Session 159（Claude Code / Sonnet 5 執行）— S157 主色系清理殘留黑字全面補完
+
+Fat Mo 反映「多個不同分頁字體變實黑色」，透過 Antigravity 多次要求修改均未修好。查證發現 S157 Changelog 條目雖已記錄「整體主色系一致性與舊版 slate 藍灰色清理」並聲稱測試全 PASS，但該次改動實際只涵蓋部分 `#2A2D43`/`#1D3557` 實色（且尚未 commit，一直留在工作目錄），並未涵蓋以下三類散落色號，才是 Fat Mo 反覆看到「變黑」的真因：
+
+- **硬編碼舊色號未遷移**（純讀碼/單一 grep 查不全，逐一分頁 DOM 掃描才找齊）：`color:#222`（8處，核對帳單面板 `.fhsAudit_*`＋IG 訊息預覽 `#fhsOrderViewDiv`）、`color:#1D3557`（6處 CSS + 1處 JS 賦值，SKU利潤等財務強調值）、`color:#333`/`color:#333333`（8處，Review 篩選 badge/textarea/audit 明細）、JS 動態賦值 `style.color='#333'`/`'#999'`（15處，訂金/尾款 split-box 快填按鈕狀態），以及系統頁「↻ 刷新」按鈕（`#igwatchRefreshBtn`）完全漏設 `color`，退回瀏覽器預設純黑。全數改為對應主題變數 `var(--fhs-text-primary)`/`var(--fhs-text-secondary)`/`var(--fhs-text-muted)`。
+- **JS inline style 覆寫蓋掉 class 定義**（純看 CSS 定義查不出，需讀 `element.getAttribute('style')`）：`switchMode()` 覆寫邏輯（`freehandsss_dashboardV42.html:12423-12431`）在「新增/修改/財務/系統」模式對頂部標題 `#v40-top-order-id` 動態指派 `style.color='inherit'`，蓋過 class 原定的 `var(--fhs-text-secondary)`，改繼承外層較深的 `--fhs-text-primary`，配上 16px 粗體 700 視覺讀成純黑。改為 `style.color=''`（清空覆寫、讓 class 規則接管）。
+- **模式間標題色不一致**：「訂單」模式（review）額外覆寫 `style.color='var(--fhs-accent)'`（橘色），與其餘四個模式的暖灰棕色不同調，Fat Mo 截圖比對發現「訂單總覽」自成一色。移除該特例，五個模式頂部標題統一使用 class 預設色。
+
+**驗證方式**：純讀碼/grep 對此類 bug 不可靠（散落寫法不一、不同機制混雜），全程改用瀏覽器 preview 實測 `getComputedStyle` 逐分頁自動掃描（走訪全頁葉節點比對 computed color 是否落在暖棕主色 rgb(44,36,22) 之外），並對每個修復點量測前後數值坐實。同步套用於 `freehandsss_dashboardV42.html` 與 `Freehandsss_dashboard_current.html`；「新增/修改/訂單/財務/系統」五分頁標題與核對帳單/IG訊息 modal 均實測通過，console 無錯誤。教訓已寫入 auto-memory `feedback_visual_bug_measure_not_guess.md`（擴充涵蓋顏色類 bug 與 inline-style-覆寫陷阱）。
+
 ## [2026-07-08] Session 158（Fable 5）— FHS_Blueprint 13 處過時修正＋v5.0 降級改定位＋全系統接線
 
 Fat Mo 發現「必讀核心檔」Blueprint 腐爛一個月無 session 發現（含 2026-06-03 財務事故誤讀源頭寫法仍在檔）。v4.9 修 13 處 → `/8d` 自我批評 → v5.0 降級為「系統導覽＋UI 排版規範（§5 唯一居所）」非規則源；接線 CLAUDE.md 路由/knowledge-map/兩支 UI subagent；修 `/fhs-audit` A6-3 寫死版本反向認證問題。根因（零路由/無寫回合約/稽核反向認證）、M4-lite 盤點、AGENTS.md 兩行呈批項全文見完成記錄 [2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md](.fhs/reports/completion/2026-07-08_s158-blueprint-demotion-rewiring_completion_report.md)；決策 D20。
@@ -19,7 +29,11 @@ Fat Mo 發現「必讀核心檔」Blueprint 腐爛一個月無 session 發現（
 - **頂部標題列（Header）視覺最佳化**：
   - **隱藏 Supabase 狀態按鈕**：移除無實質用途的 `Supabase 已開啟`（`.sb-status-chip`）狀態指示晶片，減少畫面多餘雜訊。
   - **品牌標誌（Logo）居中與更名**：將原本靠左的 Logo 改名為 `freehandsss`（全小寫），並透過絕對定位使期水平居中置頂，展現精緻平衡的 Threads 微簡約品牌感。
-  - **分頁標籤靠左與放大**：將分頁標籤（`#v40-top-order-id`，例如「訂單 #0600404」、「訂單總覽」）維持靠左，並將字型大小放大至更顯眼且符合資訊階層的 `16px`（`font-weight: 700`，字型由等寬 Monospace 改為系統無襯線體 Sans-serif）；同時為手機版新增最大寬度安全限制，防止大字體與置中 Logo 發生文字重疊。
+  - **分頁標籤靠左與放大**：將分頁標籤（`#v40-top-order-id`，例如「訂單 #0600404」、「訂單總覽」）維持靠左，並將字型大小放大至更顯眼且符合資訊階層的 `16px`（`font-weight: 700`，字型由等寬 Monospace 改為系統無襯線體 Sans-serif，顏色為暖棕色 `var(--fhs-text-secondary)`）；同時為手機版新增最大寬度安全限制，且將綠色的訂單筆數 Badge 靠最右對齊，徹底消除文字重疊。
+- **整體主色系一致性與舊版 slate 藍灰色清理**：
+  - 將所有舊版 slate 藍灰色（`#2A2D43` 和 `#1D3557`）的實色標題與區塊進行回滾與替換，全面改用 FHS 暖色系變數（`var(--fhs-text-primary)` 暖碳棕、`var(--fhs-text-secondary)` 暖棕灰、`var(--fhs-accent)` 磚紅色、`var(--fhs-danger)` 警示紅）。
+  - **表頭漸層暖化**：將訂單列表表頭（`.review-table thead th`）的原有深藍色漸層改為精緻的暖巧克力色漸層（`linear-gradient(135deg, var(--fhs-text-secondary), #5c4e3c)`），維持高對比閱讀體驗的同時融入系統美學。
+  - **原始碼預覽區塊（Preview Card）整合**：將表單最下方的 output-preview 區塊從原本突兀的深黑藍色調改為系統一致的卡片風格（`var(--fhs-bg-surface)` 白底與 `var(--fhs-bg-base)` 暖米色文字框），大幅提升視覺連貫性。
 - **檔案同步與驗證**：已同步修改 `freehandsss_dashboardV42.html` 與 `Freehandsss_dashboard_current.html`；執行全系統 Lifecycle 測試、壓力測試與結案驗收測試等共 4 項（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）均全數通過（PASS）。
 
 ## [2026-07-08] Session 156（Fable 5）— blocktempo fable-5-2 條款吸收：新建 governance/07 複利迴圈

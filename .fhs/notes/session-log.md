@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-09 (Session 159 — S157 主色系清理殘留黑字全面補完): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S159 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 反映多分頁字體變黑，透過 Antigravity 多次修改未果；查證 S157 該次改動未 commit 且僅覆蓋部分色號。三類根因全清：(1) 散落硬編碼舊色號（`#222`/`#1D3557`/`#333`/JS `'#333'`/`'#999'`共38處+`igwatchRefreshBtn`漏設color）；(2) `switchMode()` 對頂部標題用 `style.color='inherit'` 蓋過 class 定義；(3) review 模式額外橘色覆寫造成模式間標題色不一致。全程改用瀏覽器 preview 實測 `getComputedStyle` DOM 掃描定位（純讀碼/grep 對此類 bug 不可靠），逐分頁量測驗證 PASS。教訓入 learnings.md Pitfall #27 與 auto-memory。
+Subagent：❌ 未使用（瀏覽器 preview 工具直接量測+源碼定位修復，主 agent 執行）
+
 ## 2026-07-08 (Session 158 — FHS_Blueprint 13處過時→Fat Mo二次裁決整檔刪除+接線): 🧹 ✅
 
 **Scope**：Fat Mo 以 `@docs/FHS_Blueprint.md` 指出 13 處內容過時（含 2026-06-03 財務事故誤讀源頭寫法仍在檔），追問「十幾個 session 為何無人發現」與防再發生方案。

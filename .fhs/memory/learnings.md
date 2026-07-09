@@ -65,6 +65,7 @@
 24. **【自我遞迴陷阱】健檢/lint 工具的測試夾具會被自己的即時掃描邏輯掃到，產生假陽性**：`fhs-health-check.js` 上線後對 repo 做同名檔案重複掃描，10 個測試夾具目錄裡故意合成的同名檔案（`handoff.md`/`fhs-health-rules.json` 等）被自己掃到，炸出 3 個假重複警報。任何「掃描整個 repo」的工具，其測試夾具目錄必須明確排除在該工具自身的即時掃描範圍外 — Session 142
 25. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
 26. **[G] 判準已於 S148 對齊 execute.md diff 物理特徵，.md 與 hooks.js 編輯只 warn 不落 flag**：舊版判準（任何 .md 含財務詞即落 flag）已替換為真值表驅動（migrations .sql / MCP apply_migration / Dashboard HTML 含財務 → flag；其他 → warn-only）；歷史誤觸模式見 governance/02 §7，治本見 planning/2026-07-06_s148-loop-hardening_implementation_plan.md §4.2 — Session 147/S148
+27. **【高頻 ⚠️】顏色 bug 純讀碼/grep 查不全，JS `style.color='inherit'` 非「還原」**：舊色號散落多分頁寫法不一致，grep 抓不齊；`inherit` 會抓外層色，應設 `''` 讓 class 接管。改用瀏覽器 DOM 掃描量測 computed color 找離群值 — S157(未修好)/S159(補完)
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >
