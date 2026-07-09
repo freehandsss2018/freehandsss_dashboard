@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-09 (Session 159續III — playwright plugin啟用+S152識別名更正): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S159續III條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。S152 遺留 BLOCKED 項「安裝 `anthropics/skills:webapp-testing`」由 Fat Mo 於互動式 Claude Code 實測解封：該識別名核實從未存在（regex/marketplace 均查無），改裝功能對等的 `playwright@claude-plugins-official`（project scope，寫入 `.claude/settings.json`），S152 完成記錄補後續更正段，handoff MASTER 表 K 項 BLOCKED→完成。教訓：規劃期引用外部套件名稱若無互動環境即時核實，應標註「未核實僅推測」，避免當成既定事實反覆卡關。
+Subagent：✅ 使用 1 支（claude-code-guide：查證 Claude Code plugin marketplace 安裝語法，因涉及 CLI/UI 操作細節需查證非臆測，按 04 派工模板）
+
 ## 2026-07-09 (Session 159續II — R12 learnings warn落地D22+重新升格+待辦清單澄清): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S159續II條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。(1) [S156] pre-tool-guard learnings warn 提案經 Fat Mo 裁決同意，落地為 Rule 12（Write/Edit 目標為 learnings.md 時 warn 提醒 Rule 3.17 雙紀律自檢，不 block），guard-fixtures 新增 1 案例，回歸測試 17/17 PASS，決策見 decisions.md D22。(2) 上次升格時開發版表頭已回退黑底漸層，本次補同步重新升格至正式檔案。(3) handoff.md 待辦清單四點疑問澄清（表頭對比度已裁決非待辦、[S156]兩項目易混淆、[S152]/[S149]現況），已裁決項移出待辦段避免重複詢問。
