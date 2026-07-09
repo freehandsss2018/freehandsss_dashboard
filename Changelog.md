@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-07-09] Session 159 續 III（互動式 Claude Code / Fat Mo 操作）— S152 webapp-testing 插件識別名更正為 playwright，已裝
+
+**[S152] 遺留 BLOCKED 項處理，順帶抓到規劃期臆測錯誤**：S152 完成記錄裡「待安裝 `anthropics/skills:webapp-testing`」一直卡在 BLOCKED（需互動式 `/plugin install`，非互動 session 無法代跑）。Fat Mo 在互動式 Claude Code 終端機實測時發現：`anthropics/skills:webapp-testing` 這個插件識別名**從未存在**——`/plugin marketplace add anthropics/skills` 加入後實際登記名稱是 `anthropic-agent-skills`，其下並無叫 `webapp-testing` 的插件，`/plugin install webapp-testing` 直接回報「not found in any marketplace」。透過 Discover 分頁關鍵字搜尋（`testing`/`web`）比對 S152 原始需求「補手機 viewport 的 Playwright 實測能力」，找到功能完全對等的插件 **`playwright`**（`claude-plugins-official` marketplace，Microsoft 出品，Browser automation and end-to-end testing MCP server），以 **project scope** 安裝完成（原因：此能力綁定 FHS Dashboard 這個 repo 的測試需求，project scope 讓設定隨 repo git 同步，任何機器/Desktop App clone 後自動繼承，符合 FHS 治理資產「SSOT 在 repo」原則）。
+
+S152 完成記錄、handoff.md MASTER 表、便攜塊已同步更正：K 項 ⏳ BLOCKED → ✅ 完成（以 `playwright` 取代原臆測名稱 `webapp-testing`）。教訓：規劃期若引用外部套件名稱卻無互動環境可即時核實，應在文件中明確標註「未核實，僅為推測」，避免後續 session 把猜測當成既定事實反覆卡關。
+
 ## [2026-07-09] Session 159 續 II（Claude Code / Sonnet 5 執行）— 待辦清單澄清 + S156 guard learnings warn 提案裁決落地
 
 **待辦清單澄清（無代碼變動）**：Fat Mo 對 handoff 便攜塊四項提出疑問，逐一釐清：(1) 桌面版表頭對比度其實已是 Fat Mo 主動裁決的最終狀態，非待修項，便攜塊措辭誤把「已裁決維持原狀」寫成「問題仍未解決」的待辦式語氣，已改寫並移出待辦段；(2) [S156] 底下其實有兩個不同項目（blocktempo 條款吸收=已完成 vs guard learnings warn 提案=待裁決），便攜塊只寫了後者名稱易與前者混淆；(3) [S152] webapp-testing plugin 卡在需要互動式 `/plugin install`，本 session/hook 無對應工具可執行，需 Fat Mo 自行手動安裝；(4) [S149] 治理系統可攜化計畫已解除阻擋（S148 前置依賴已於 S154 完工），純規劃產出待執行，非新項目。
