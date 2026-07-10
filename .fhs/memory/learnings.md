@@ -19,8 +19,6 @@
 7. **`_fhsCostReady` flag 競態防護**：page-load 讀 Supabase 後才設 true；calculatePricing 入口 guard 若 false 拒絕計算，防空值算出 0 — 源自 2026-06-02
 8. **`chargedPositions Set` 跨陣列追蹤**：PartDesc trim+toLowerCase 正規化，同部位跨產品第 2 件 baseDrawing=0；新產品類型必查是否需擴充 Set — 源自 2026-06-02
 9. **Phase 0 payload 流向前置查證**：前端改動影響財務計算前，先 get_node 確認 n8n 是否實際讀取該欄位，再決定隔離策略 — 源自 2026-06-03
-10. **n8n PUT credential 若 ID 已知可直接 API 補回**：API 限制是「無列表端點」（探索不到未知 ID），但若 credential ID 早已知，可直接寫進 PUT body 覆寫，GET 驗證即可；只有 ID 真的未知時才需人工 UI 點選 — Session 111
-
 > 📌 **退役**（Session 136）：kgov 知識治理框架 Pattern 已升格為憲法層規則，完整定義見 `AGENTS.md`（Session 63/100），不再需要於此重複記錄。
 >
 > 📌 **退役**（Session 143，`/commit` Lesson Distillation，全檔滿50條需替換）：「Supabase MCP 掉線用 Management API 繞過」——與 auto-memory `reference_supabase_mcp_dropout_workaround.md` 內容重複，該處為專屬記錄，此處純占位，退役騰出額度給本次新教訓。
@@ -50,7 +48,6 @@
 9. **n8n workflow API 送出限制集**：①POST 建立含 `"active":true` → 400，正確：POST→得ID→單獨 activate；②PUT 更新只接受 `{name,nodes,connections,settings}` 四欄；③`process.env.X` 須先載 .env 否則得字面量 `"undefined/..."`；④POST JSON array body 須 `contentType:"raw"`（`specifyBody:"string"`+`JSON.stringify`會被誤序列化成 `{"[...]":""}` → PGRST204）；⑤POST 空陣列 `[]` 觸發 PostgREST "Could not find '[]' column"，寫入前必加 `alerts.length > 0` guard；⑥expression 欄位（Text/URL）不支援 `.filter().map().join()` 鏈式語法，複雜邏輯移至 Code 節點輸出簡單欄位 — Session 67/121/124/127/133
 10. **新增 order_items 欄位必須同步 n8n 寫入鏈**：新單主寫入走 n8n sync_order_to_mirror RPC（非前端 sbSyncOrder）。新欄位若未改 (a)Mirror Prep items.map + (b)RPC INSERT/VALUES/ON CONFLICT 三處 → 永遠 NULL — Session 84
 11. **【CRITICAL】Mirror Prep final_sale_price 必用確收三欄，禁用 Total_Revenue**：`Total_Revenue` 是系統建議售價，≠ 操作者確收金額。`final_sale_price` 必須 = `Deposit + Balance + Additional_Fee`；使用 Total_Revenue 導致 9 單偏差最高 $2,880 — Session 89
-12. **付款 split UX 清空/污染雙雷**：①focusin 無條件清空 input 而不先 `dataset.preFocusVal = e.target.value`，focusout 只能 fallback 半訂，全付/自訂值被錯誤覆蓋；②【高頻⚠️】restoreFormState 內 generate() 無條件 auto-fill 污染 hidden 欄，renderPaymentSplits prevData 優先讀污染值使存檔值被忽略。根治：focusin 必先 save 原值 + 快照隔離（pollute 前存 JSON 為權威）+ `_fhsPaymentSyncing=true` 壓 cross-sync + finally 清快照 — Session 97/107 [[2026-06-12_split-box-ux-and-zeroing-boundary]]
 13. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取 — Session 103
 14. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 後從 fetch 結果重建 — Session 105
 15. **openOrderModal 第二參數是 catFilter 非 tab**：第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁必須用**第三參數 initialTab**（內部呼 switchModalTab）。誤把 'finance' 當第二參數 → 捷徑永遠停訊息文本分頁 — Session 109
@@ -84,12 +81,14 @@
 3. **橋接版禁止含邏輯**：.claude/commands/ 與 .agents/workflows/ 只做指向，邏輯只在 Master (.fhs/ai/commands/) — 源自 2026-05-19
 4. **表單新增 input 前必評估 captureFormState + n8n payload 影響**：新欄位進 captureFormState 會改 webhook payload 結構；先確認範圍，不確定就 defer — 源自 2026-05-29
 5. **反奉承守則內建於指令設計**：用戶每次輸入「不奉承」「專業」是設計缺口；守則寫入 Master 後永遠生效，用戶無需重複輸入 — 源自 2026-05-30
-6. **cl-flow A2 模型策略**：統一使用 `gemini-3.5-flash`；模型切換一律透過 `.env GEMINI_A2_MODEL_DEFAULT`，不改代碼 — 源自 2026-05-30
 7. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30
 8. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01
 9. **文件權威＝被使用（路由）＋被保養（合約），非自我聲明**：一份文件自稱「必讀/核心真相」不會令 AI 真的讀它——若無任何 hook/CLAUDE.md 路由表/查詢路由指向它，且無任何 execute.md 後效稽核合約要求同步它，它會腐爛而無人發現（FHS_Blueprint.md 案例：13 處過時、含財務事故誤讀源頭寫法，腐爛一個月無 session 察覺）。新建「必讀文件」前必須同時掛路由+寫回合約，否則寧可不留（S158 Fat Mo 裁決：無合約支撐的內容應遷至有真讀者處，而非降級留存） — S158
 10. **視覺改動若會犧牲原有語意（如財務科目色彩區分）需先問，不要單方面統一簡化**：表頭對比度不足，修法是統一改白字，犧牲了入帳/成本/利潤原本紅綠琥珀的語意色彩區分；Fat Mo 檢視後不滿意，要求整段回退（含背景漸層也退回更早版本）。下次遇到「有取捨」的視覺修復，先列選項問，別直接套一個方案上去 — S159續
+11. **3D 打印鎖匙扣生產規格（腳固定/手讀檔名/環唯一擺位/指甲可創作）**：腳=30.5mm固定；手尺寸無公式必由Fat Mo標籤於輸入檔名讀取，AI禁自行推算；掛環=固定標準件`3d/input/Ring-24545.obj`，pipeline只做擺位禁自造禁縮放；指甲類細節「創作可接受非還原」（石膏實物本身都冇清晰指甲），用參數化模板 stamp — S161
 
 > 📌 **退役**（Session 158，接續 S154/S148 Phase 0 慣例，全檔滿50條達上限）：「UI toggle 標籤用操作者語言」（原 Preference #9，S126）——經 S132/S153 等多個 UI session 反覆遵循已成本專案設計慣例，無需靠記憶提醒，窄場景低復發風險，退役騰出額度。
+>
+> 📌 **退役**（Session 161，`/commit` Lesson Distillation，全檔滿52條超50上限）：①「n8n PUT credential ID已知可直接補回」（原 Pattern #10，Session 111）——單一 credential 修復episode 早已結案，無持續復發風險；②「付款 split UX 清空/污染雙雷」（原 Pitfall #12，Session 97/107）——`_fhsPaymentSyncing` guard 已是結構性永久修復，機制本身即防護，非需記憶提醒的操作紀律；③「cl-flow A2 模型策略統一 gemini-3.5-flash」（原 Preference #6，Session 05-30）——env-var 切換機制本身已是慣例基礎設施，該教訓已內化於機制設計。三項退役騰出額度給本次新教訓（3D打印鎖匙扣生產規格）。
 
 > 📌 **退役**（Session 154/S148，Phase 0 `/fhs-slim`，全檔滿51條超50上限）：「Toggle 按鈕用動作語義」（原 Preference #10，S126）——已是本專案 POS UI 的設計慣例，無需靠記憶提醒，窄場景低復發風險，退役騰出額度給 S148 Phase 2 改寫 Pitfall #26 的空間。
