@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-07-10] Session 162（Antigravity 執行）— 訂單總覽 UI/UX 五項修復與功能擴充
+
+- **修復 1：Tooltip 溢位渲染 Bug**：`#fhsToggleAuditBtn` 按鈕的 `title` 屬性中內嵌 HTML 標籤（`<svg>`）與雙引號導致 HTML 語法損毀並在網頁上溢位顯示。已修復為純文字標記並採用 Emoji 示意：`title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"`.
+- **功能 2：雙端清除篩選按鈕**：在共用篩選面板（`#reviewFiltersV2`）增加「清除篩選」按鈕。點擊後將所有篩選欄位（年度、月份、狀態、批次、搜尋字串、排序等）重設為預設空值，重設選取類別的 Chip 狀態、清除 localStorage 儲存的篩選狀態，最後呼叫 `fetchGlobalReview(true)` 重新套用篩選並載入數據。
+- **功能 3：Desktop 版返回總覽按鈕**：在 Desktop 模式表單底部的按鈕列（`#bottomActionBar`）中增加「← 返回總覽」按鈕，對齊並採用與 Mobile 模式底部欄（`#v40-bottom-bar`）中相同的返回總覽並觸發高亮閃爍定位的邏輯。
+- **功能 4：n8n 同步等待遮罩與 Supabase Polling**：在進行訂單同步或刪除操作時，等候期間會啟動全網域 Loading 遮罩層（`#globalLoader`）並彈出提示，顯示毛玻璃背景防誤觸。針對同步操作，前端會啟動 Supabase 輪詢（`pollSupabaseSync`），每 1.5 秒查詢一次，至多 15 次，確保資料寫入成功後才關閉遮罩並切回總覽。若 n8n 發生網路或 Webhook 錯誤，會自動 fallback 直連 Supabase 寫入，完成後一樣執行切換與高亮。
+- **功能 5：返回總覽高亮閃爍動畫**：新增 CSS 動畫 `@keyframes fhs-row-flash`。在修改或新增完成返回總覽後，定位至該訂單所在的表格列（Desktop）或 Accordion 卡片（Mobile），使其閃爍黃色背景 3 下，提供即時的視覺更新回饋。
+- **驗證**：已執行全系統健檢套件 `python Maintenance_Tools/run_all.py`，全生命週期、壓力測試、結案驗收測試皆全數 PASS。
+
 ## [2026-07-10] Session 161續 III（Claude Code / Sonnet 5 執行）— 修復完成偵測漏判純鎖匙扣/純吊飾訂單
 
 - **問題**：Fat Mo 回報訂單完全沒有手模擺設、只有鎖匙扣和/或純銀吊飾且皆已完成時，完成提示沒有觸發。根因是判斷邏輯強制要求「至少 1 筆手模擺設」（變數 `hasHm`），未涵蓋純鎖匙扣/純吊飾訂單。

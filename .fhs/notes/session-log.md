@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-10 (Session 162 — 訂單總覽 UI/UX 五項修復與功能擴充): 🔧 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S162 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。修復 `#fhsToggleAuditBtn` 按鈕的 title Tooltip HTML 溢位 Bug；共用篩選面板增加「清除篩選」按鈕並重設儲存之 filter 狀態；於桌面版表頭/底部按鈕列新增「返回總覽」按鈕；同步/刪除等候期間全程啟用毛玻璃背景 Loading 遮罩防誤觸，並針對同步操作加入 Supabase poller 等候 n8n 同步成功；新增 CSS 閃爍動畫，在返回總覽後閃爍高亮目標 row/card 3 次。本地 `python Maintenance_Tools/run_all.py` 4 項全 PASS。
+Subagent：❌ 沒派。理由：本環境為 Antigravity (A2) 執行，不具備 Claude 專屬的 9 個 FHS 獨立子代理人；且本任務屬局部 HTML/JS 修改，由主代理人直接修改以達最高效率。
+
 ## 2026-07-10 (Session 161續III — 完成偵測漏判純鎖匙扣/純吊飾訂單修復): 🐛 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S161續III條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報訂單完全沒有手模擺設、只有鎖匙扣和/或純銀吊飾且皆已完成時，完成提示未觸發；根因是判斷邏輯變數 `hasHm` 強制要求至少 1 筆手模擺設，超出原始 4 情境範圍。改 `hasGated`，放寬為三類（手模擺設/鎖匙扣/純銀吊飾）至少存在一種即適用。單元測試 11 組+真實訂單 0600803 端到端驗證 PASS，已連同上輪「退回進行中」按鈕一併部署NAS三關PASS。

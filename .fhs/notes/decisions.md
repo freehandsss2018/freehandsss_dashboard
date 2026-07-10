@@ -1,7 +1,13 @@
-﻿# Decisions — 決策記錄
+# Decisions — 決策記錄
 > 本文件記錄「為什麼這樣設計」，不是規則文件。
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
+
+[2026-07-10] (Session 162) 訂單總覽 UI/UX 五項修復與功能擴充
+
+決策：為提升 Dashboard 之操作體驗與資料一致性，解決五項 UI/UX 回報問題：(1) Tooltip 溢位 Bug；(2) 雙端清除篩選功能；(3) Desktop 版返回總覽按鈕；(4) 同步/刪除等候期間毛玻璃遮罩與 Supabase Poller；(5) 變更完畢後返回總覽高亮行/卡片閃爍動畫。
+執行：修復 `#fhsToggleAuditBtn` 按鈕的 title Tooltip HTML 溢位 Bug。篩選面板新增 `#fhsClearFilterBtn` 並實作 `clearFilters()` 函式。於桌面 `#bottomActionBar` 新增 `#btnBackToOverview`，其行為與 mobile 底部按鈕對齊。在 `syncToAirtable` 中，webhook 成功後不關閉 loader，而是呼叫 `pollSupabaseSync()` 每 1.5 秒查詢一次 Supabase (至多 15 次) 待訂單更新完畢後才返回 review 模式，若失敗則直連 Supabase 寫入。新增 CSS 動畫 `@keyframes fhs-row-flash` 配合 `flashOrderRow()` 在返回總覽後高亮閃爍目標列/卡片 3 次。
+驗證：本地執行 `python Maintenance_Tools/run_all.py` 進行 FHS 全套件健檢，結果 4 passed, 1 skipped，Lifecycle、Stress、Acceptance、Price Audit 測試全部通過（PASS），無程式碼或語法錯誤。
 
 [2026-07-10] (Session 161續 III) 完成偵測 bug 修復 — 移除「必須有手模擺設」錯誤前提
 

@@ -3183,6 +3183,21 @@
             animation: fhsStarPop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
             transform-origin: center;
         }
+
+        /* ================================================================
+           FHS Row Flash Animation
+           ================================================================ */
+        @keyframes fhs-row-flash {
+            0%, 100% { background-color: transparent; }
+            25%, 75% { background-color: rgba(255, 249, 196, 0.85); }
+            50% { background-color: transparent; }
+        }
+        .fhs-row-flash {
+            animation: fhs-row-flash 1.2s ease-in-out 3 !important;
+        }
+        .fhs-row-flash td {
+            animation: fhs-row-flash 1.2s ease-in-out 3 !important;
+        }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -3651,7 +3666,8 @@
                             </div>
                         </div>
                         <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
-                        <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-list"/></svg>SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
+                        <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
+                        <button id="fhsClearFilterBtn" class="fhs-btn-save-filter" type="button" onclick="clearFilters()" style="background-color: #f5f5f5; color: #333; border: 1px solid #ccc; margin-right: 6px;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-trash-2"/></svg>清除篩選</button>
                         <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-save"/></svg>儲存篩選</button>
                         <button class="fhs-btn-refresh" type="button"
                             onclick="fhsRefreshAndCollapse()">
@@ -4401,7 +4417,7 @@
     ===================================================== -->
     <div id="v40-bottom-bar" class="fhs-bottom-bar">
         <button class="fhs-btn-secondary" style="min-width:64px;"
-            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ setTimeout(function(){ var cb = document.querySelector('.order-row-cb[data-order-id=&quot;'+oid+'&quot;]'); if(cb){ var row=cb.closest('tr'); if(row){ row.style.background='#FFF9C4'; row.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(function(){row.style.background='';},2000); } } },800); } })()">
+            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ flashOrderRow(oid); } })()">
             ← 返回總覧
         </button>
         <button class="fhs-btn-secondary bs-item--danger" id="v40-delete-btn" style="display:none; color:var(--fhs-danger); border-color:var(--fhs-danger);"
@@ -4926,6 +4942,10 @@
 
     <!-- V37 原有底部按鈕列（Desktop 保留，iPhone 隱藏） -->
     <div class="bottom-action-bar" id="bottomActionBar" style="display:none;">
+        <button id="btnBackToOverview" class="copy-btn" style="background-color:#757575; color: white;"
+            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ flashOrderRow(oid); } })()">
+            ← 返回總覧
+        </button>
         <button id="btnCopyA" class="copy-btn btn-category-a" style="display:none;" onclick="copyMessageA()"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-clipboard-list"/></svg>複製：手模擺設訊息</button>
         <button id="btnCopyB" class="copy-btn btn-category-b" style="display:none;" onclick="copyMessageB()"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-clipboard-list"/></svg>複製：金屬產品訊息</button>
         <button id="btnReviewIgMsg" class="copy-btn" onclick="openIgPreviewModal()" style="background-color:#2a9d8f;" title="進入後審閱訂單，確認無誤即可複製並同步至後台完成訂單"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-check"/></svg>審閱並完成訂單</button>
@@ -8008,7 +8028,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 });
 
                 if (response.ok) {
-                    alert("✅ 同步成功！訂單數據與商品明細已完美射入 NAS。");
+                    showLoader("🚀 數據已發射，正在等待後台同步中...");
 
                     // Set last sync info for visual sync progress indicator
                     window._fhsLastSyncTime = Date.now();
@@ -8021,30 +8041,56 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         saveSeqSettings('silent');
                     }
 
-                    if (currentMode === 'create') {
-                        editTargetOrderId = currentOrderId;
-                        document.getElementById('searchOrderId').value = currentOrderId;
-                        switchMode('edit');
-                        const fetchStatus = document.getElementById('fetchStatus');
-                        if (fetchStatus) fetchStatus.innerText = "✨ 新單已建立，現在處於「更新模式」。";
+                    const isCreate = (currentMode === 'create');
+                    const polledSuccess = await pollSupabaseSync(currentOrderId, payload, isCreate);
+
+                    hideLoader();
+                    switchMode('review');
+                    await fetchGlobalReview(true);
+                    flashOrderRow(currentOrderId);
+
+                    if (polledSuccess) {
+                        showToast("✅ 同步成功！訂單數據已完美同步。");
+                    } else {
+                        showToast("⚠️ 同步超時，請稍後下拉重整確認。");
                     }
                 } else {
-                    alert("❌ 同步失敗，請檢查 NAS 上的 n8n 節點是否運作正常。");
+                    alert("❌ 同步失敗，請檢查 NAS 上的 n8n 節點是否運作正常。正在切換為直連 Supabase 寫入...");
                     // Fallback: webhook 失敗時直接寫 Supabase
                     if (window.sbSyncOrder && localStorage.getItem('fhs_supabase_read') === '1') {
-                        window.sbSyncOrder(payload, orderItemsArray, currentMode).catch(function(e) {
+                        showLoader("正在直連寫入 Supabase...");
+                        try {
+                            await window.sbSyncOrder(payload, orderItemsArray, currentMode);
+                            hideLoader();
+                            switchMode('review');
+                            await fetchGlobalReview(true);
+                            flashOrderRow(currentOrderId);
+                            showToast("✅ 直連寫入 Supabase 成功");
+                        } catch (e) {
                             console.warn('[V41] sbSyncOrder fallback error:', e.message);
-                        });
+                            hideLoader();
+                            alert("❌ 直連寫入 Supabase 失敗：" + e.message);
+                        }
                     }
                 }
             } catch (error) {
                 console.error("Webhook 錯誤:", error);
-                alert("❌ 網路連線錯誤，無法連接至 NAS。請確認網路環境或 Port 8443 的對外連線。");
+                alert("❌ 網路連線錯誤，無法連接至 NAS。正在切換為直連 Supabase 寫入...");
                 // Fallback: 網路錯誤時直接寫 Supabase
                 if (window.sbSyncOrder && localStorage.getItem('fhs_supabase_read') === '1') {
-                    window.sbSyncOrder(payload, orderItemsArray, currentMode).catch(function(e) {
+                    showLoader("正在直連寫入 Supabase...");
+                    try {
+                        await window.sbSyncOrder(payload, orderItemsArray, currentMode);
+                        hideLoader();
+                        switchMode('review');
+                        await fetchGlobalReview(true);
+                        flashOrderRow(currentOrderId);
+                        showToast("✅ 直連寫入 Supabase 成功");
+                    } catch (e) {
                         console.warn('[V41] sbSyncOrder catch-fallback error:', e.message);
-                    });
+                        hideLoader();
+                        alert("❌ 直連寫入 Supabase 失敗：" + e.message);
+                    }
                 }
             } finally {
                 btn.innerText = originalText;
@@ -12777,6 +12823,115 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 lastScrollY = currentScrollY;
             }, { passive: true });
         })();
+
+        // ================================================================
+        // V42 Clear Filters, Sync Polling, and Highlighting
+        // ================================================================
+        window.clearFilters = function() {
+            var yr = document.getElementById('reviewYear');
+            var mo = document.getElementById('reviewMonth');
+            var st = document.getElementById('reviewStatus');
+            var bt = document.getElementById('reviewBatch');
+            var se = document.getElementById('reviewSearch');
+            var so = document.getElementById('reviewSortSelect');
+            if (yr) yr.value = '';
+            if (mo) mo.value = '';
+            if (st) st.value = '';
+            if (bt) bt.value = '';
+            if (se) se.value = '';
+            if (so) so.value = '';
+
+            reviewCategoryFilter = '';
+            document.querySelectorAll('.chip-btn[data-category]').forEach(function(btn) {
+                btn.classList.toggle('active', (btn.dataset.category || '') === '');
+            });
+
+            sortField = null;
+            sortDir = 'asc';
+            updateSortHeaderUI(null, null);
+            updateAccSortStatus();
+
+            try { localStorage.removeItem('fhs_saved_filter'); } catch(e) {}
+
+            updateFilterActiveHint();
+            fetchGlobalReview(true);
+            showToast('🧹 篩選已清除');
+        };
+
+        window.pollSupabaseSync = async function(orderId, expectedPayload, isCreate) {
+            const maxAttempts = 15;
+            const intervalMs = 1500;
+            
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                showLoader(`⏳ 正在等待後台數據同步 (${attempt}/${maxAttempts})…`);
+                await new Promise(resolve => setTimeout(resolve, intervalMs));
+                
+                try {
+                    const checkUrl = `${window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co'}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`;
+                    const checkRes = await fetch(checkUrl, {
+                        headers: { 
+                            apikey: window.SB_ANON_KEY || 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK', 
+                            Authorization: `Bearer ${window.SB_ANON_KEY || 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK'}` 
+                        }
+                    });
+                    if (checkRes.ok) {
+                        const rows = await checkRes.json();
+                        if (Array.isArray(rows) && rows.length > 0) {
+                            const row = rows[0];
+                            if (isCreate) {
+                                return true;
+                            } else {
+                                const expectedName = expectedPayload.Customer_Name || '';
+                                const expectedDeposit = Number(expectedPayload.Deposit) || 0;
+                                const expectedBalance = Number(expectedPayload.Balance) || 0;
+                                
+                                if (row.customer_name === expectedName &&
+                                    Number(row.deposit) === expectedDeposit &&
+                                    Number(row.balance) === expectedBalance) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("[Poll] Supabase check error:", e);
+                }
+            }
+            return false;
+        };
+
+        window.flashOrderRow = function(orderIdOrRecordId) {
+            if (!orderIdOrRecordId) return;
+            
+            let recordId = orderIdOrRecordId;
+            if (Array.isArray(globalOrders)) {
+                const found = globalOrders.find(o => o.Order_ID === orderIdOrRecordId || o.id === orderIdOrRecordId);
+                if (found) {
+                    recordId = found.id;
+                }
+            }
+
+            setTimeout(function() {
+                // Desktop Flash
+                var rows = document.querySelectorAll('.order-group-' + recordId);
+                rows.forEach(function(row) {
+                    row.classList.add('fhs-row-flash');
+                    setTimeout(function() { row.classList.remove('fhs-row-flash'); }, 4000);
+                });
+
+                // Mobile Flash
+                var mobileRow = document.getElementById('swipe-row-' + recordId);
+                if (mobileRow) {
+                    var swipeContent = mobileRow.querySelector('.swipe-content');
+                    var targetEl = swipeContent || mobileRow;
+                    targetEl.classList.add('fhs-row-flash');
+                    targetEl.scrollIntoView({behavior: 'smooth', block: 'center'});
+                    setTimeout(function() { targetEl.classList.remove('fhs-row-flash'); }, 4000);
+                } else if (rows.length > 0) {
+                    rows[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+                }
+            }, 800);
+        };
 
     </script>
 
