@@ -5110,7 +5110,7 @@
             window._fhsCheckHmOrderCompletion(orderId);
         };
 
-        // S161續: 訂單完成偵測 — 手模擺設(必要, checklist全踢) + 鎖匙扣/純銀吊飾(若存在則須選Done)
+        // S161續: 訂單完成偵測 — 手模擺設/鎖匙扣/純銀吊飾三類至少存在一種即適用，存在的種類都須全部完成
         // 羊毛氈公仔/燈飾等配件豁免，狀態不影響判斷。任何其他分類存在時整單不觸發（維持保守設計）。
         window._fhsCheckHmOrderCompletion = function(orderId) {
             if (window._fhsArchivedIds.has(orderId)) return;
@@ -5127,13 +5127,13 @@
                        (item.Category || '') === '配件';
             };
 
-            var hasHm = false;
+            var hasGated = false;
             var allRelevant = o.items.every(function(item) {
                 var cat = getProductDimensions(item).category;
-                if (cat === '手模擺設') hasHm = true;
+                if (GATED.indexOf(cat) !== -1) hasGated = true;
                 return GATED.indexOf(cat) !== -1 || isExemptAddon(item);
             });
-            if (!hasHm || !allRelevant) return;
+            if (!hasGated || !allRelevant) return;
 
             var isDone = function(status) {
                 return status === 'Done 已完成' || status === '完成' || status === '已取件' || status === '待交收';
@@ -9143,6 +9143,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffcccc; border-radius:4px; color:#cc4444; font-size:11px; cursor:pointer; display:block;">
                             <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-trash-2"/></svg>刪除
                         </button>
+                        ${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id)) ? `<button onclick="triggerArchiveOrder('${o.id}')" title="將此訂單退回進行中"
+                                style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffd699; border-radius:4px; color:#e08600; font-size:11px; cursor:pointer; display:block;">
+                            <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-undo-2"/></svg>退回進行中
+                        </button>` : ''}
                         ${_detailBtns}
                         ${_dlvBadgeHtml(o.Order_ID)}
                         <div id="sync-indicator-${o.id}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
