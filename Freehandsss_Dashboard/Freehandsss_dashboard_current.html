@@ -1898,7 +1898,24 @@
                 max-width: 500px;
                 margin: 0 auto;
             }
+            .fhs-nav-indicator {
+                position: absolute;
+                top: 5px;
+                bottom: 5px;
+                left: 0;
+                z-index: 0;
+                background: var(--fhs-bg-surface) !important;
+                border: 1px solid var(--fhs-border) !important;
+                border-radius: 22px;
+                box-shadow: 0 2px 8px rgba(44, 36, 22, 0.08) !important;
+                transition: transform 0.25s cubic-bezier(0.32, 0.94, 0.6, 1), width 0.25s cubic-bezier(0.32, 0.94, 0.6, 1);
+                will-change: transform, width;
+                pointer-events: none;
+                display: none;
+            }
             .fhs-top-bar__actions button {
+                position: relative;
+                z-index: 1;
                 flex: 1;
                 height: 44px;
                 display: flex;
@@ -1914,7 +1931,7 @@
                 border-radius: 22px;
                 background: transparent !important;
                 color: var(--fhs-text-secondary);
-                transition: background 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+                transition: color 0.2s ease;
                 box-shadow: none !important;
                 cursor: pointer;
             }
@@ -1925,11 +1942,11 @@
                 color: inherit;
             }
             .fhs-top-bar__actions button.active {
-                background: var(--fhs-bg-surface) !important;
                 color: var(--fhs-accent) !important;
                 font-weight: 700;
-                border: 1px solid var(--fhs-border) !important;
-                box-shadow: 0 2px 8px rgba(44, 36, 22, 0.08) !important;
+                background: transparent !important;
+                border: 1px solid transparent !important;
+                box-shadow: none !important;
             }
             #v41-supabase-toggle {
                 position: relative !important;
@@ -5606,6 +5623,7 @@
                 const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn', system:'modeSystemBtn' };
                 const activeBtn = document.getElementById(activeMap[mode]);
                 if (activeBtn) activeBtn.classList.add('active');
+                if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
 
                 // --- V36.1 Extra Polishing ---
                 const bbar = document.getElementById('bottomActionBar');
@@ -12557,6 +12575,38 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window.initSegmentedControls = initSegmentedControls;
 
+        function initBottomNavIndicator() {
+            const ctrl = document.querySelector('.fhs-top-bar__actions');
+            if (!ctrl) return;
+            let indicator = ctrl.querySelector('.fhs-nav-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'fhs-nav-indicator';
+                ctrl.insertBefore(indicator, ctrl.firstChild);
+            }
+            window.updateBottomNavIndicator = function() {
+                if (window.innerWidth >= 768) {
+                    indicator.style.display = 'none';
+                    return;
+                }
+                const activeBtn = ctrl.querySelector('button.active');
+                if (!activeBtn) {
+                    indicator.style.display = 'none';
+                    return;
+                }
+                indicator.style.display = 'block';
+                const ctrlRect = ctrl.getBoundingClientRect();
+                const btnRect = activeBtn.getBoundingClientRect();
+                requestAnimationFrame(() => {
+                    indicator.style.width = `${btnRect.width}px`;
+                    indicator.style.transform = `translateX(${btnRect.left - ctrlRect.left}px)`;
+                });
+            };
+            setTimeout(window.updateBottomNavIndicator, 50);
+            window.addEventListener('resize', window.updateBottomNavIndicator);
+        }
+        window.initBottomNavIndicator = initBottomNavIndicator;
+
         /* ================================================================
            V42 AG Stitch — 組件 4: animateStarToggle (Star 彈跳動畫)
            ================================================================ */
@@ -12664,7 +12714,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         })();
 
         // 初始化 Segmented Controls（DOMContentLoaded 後執行）
-        document.addEventListener('DOMContentLoaded', () => { initSegmentedControls(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            initSegmentedControls();
+            initBottomNavIndicator();
+        });
 
         // === 手機版智慧置頂欄 Smart Header ===
         (() => {

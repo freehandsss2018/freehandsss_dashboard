@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-10 (Session 160 — 手機模式底部導覽橫向滑動過渡): 🎨 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S160 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。手機版底部常駐列 `.fhs-top-bar__actions` 新增滑動指示器 `.fhs-nav-indicator`，利用 JS 量測 Rect 配合 `requestAnimationFrame` 與 CSS 進行橫向平滑漂移，並在 `switchMode`、resize 與旋轉事件中同步重新對位，實現高流暢性微互動視覺。
+Subagent：❌ 未使用（主線程直接以 Python 腳本安全更新完成）
+
 ## 2026-07-09 (Session 159續III — playwright plugin啟用+S152識別名更正): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S159續III條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。S152 遺留 BLOCKED 項「安裝 `anthropics/skills:webapp-testing`」由 Fat Mo 於互動式 Claude Code 實測解封：該識別名核實從未存在（regex/marketplace 均查無），改裝功能對等的 `playwright@claude-plugins-official`（project scope，寫入 `.claude/settings.json`），S152 完成記錄補後續更正段，handoff MASTER 表 K 項 BLOCKED→完成。教訓：規劃期引用外部套件名稱若無互動環境即時核實，應標註「未核實僅推測」，避免當成既定事實反覆卡關。

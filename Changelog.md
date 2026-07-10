@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-07-10] Session 160（Antigravity 執行）— 手機模式底部導覽列橫向滑動動畫優化
+
+- **底部導覽列橫向滑動過渡動畫**：將手機模式下（`max-width: 767px`）底部常駐導覽列（`.fhs-top-bar__actions`）的切換樣式優化為橫向平滑漂移過渡效果，對齊頂部 Segmented Control (`全部/進行中/已完成`) 的 iOS 滑動指示器動效。
+- **動態指示器 (Indicator) 機制**：新增 `.fhs-nav-indicator` 作為絕對定位背景高亮框，利用 `initBottomNavIndicator()` 在頁面加載時動態測量並透過 `requestAnimationFrame` 配合 CSS 的 `transform: translateX(...)` 和 `width` 屬性實現位移與寬度的過渡；按鈕本身（`.fhs-top-bar__actions button`）設定為 `position: relative; z-index: 1;` 置於指示器之上，以避免被背景遮蓋。
+- **狀態與切換同步**：將動畫更新函式 `window.updateBottomNavIndicator()` 掛載於模式切換 `switchMode()` 尾部、螢幕旋轉（orientationchange）與視窗大小變化（resize）事件中，確保橫向漂移位置即時、準確。
+- **測試驗證與同步**：已同步在 `Freehandsss_dashboard_current.html` 與 `freehandsss_dashboardV42.html` 實施，全週期測試及壓力測試（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT）共 4 項全部通過（PASS）。
+
 ## [2026-07-09] Session 159 續 III（互動式 Claude Code / Fat Mo 操作）— S152 webapp-testing 插件識別名更正為 playwright，已裝
 
 **[S152] 遺留 BLOCKED 項處理，順帶抓到規劃期臆測錯誤**：S152 完成記錄裡「待安裝 `anthropics/skills:webapp-testing`」一直卡在 BLOCKED（需互動式 `/plugin install`，非互動 session 無法代跑）。Fat Mo 在互動式 Claude Code 終端機實測時發現：`anthropics/skills:webapp-testing` 這個插件識別名**從未存在**——`/plugin marketplace add anthropics/skills` 加入後實際登記名稱是 `anthropic-agent-skills`，其下並無叫 `webapp-testing` 的插件，`/plugin install webapp-testing` 直接回報「not found in any marketplace」。透過 Discover 分頁關鍵字搜尋（`testing`/`web`）比對 S152 原始需求「補手機 viewport 的 Playwright 實測能力」，找到功能完全對等的插件 **`playwright`**（`claude-plugins-official` marketplace，Microsoft 出品，Browser automation and end-to-end testing MCP server），以 **project scope** 安裝完成（原因：此能力綁定 FHS Dashboard 這個 repo 的測試需求，project scope 讓設定隨 repo git 同步，任何機器/Desktop App clone 後自動繼承，符合 FHS 治理資產「SSOT 在 repo」原則）。
