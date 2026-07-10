@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-10 (Session 161續 — 訂單完成偵測擴大鎖匙扣/吊飾+桌面退回按鈕): 🐛 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S161續與S161續II條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。(1) 訂單總覽自動完成偵測（S157）擴大納入鎖匙扣/純銀吊飾，涵蓋4種完成情境；實機驗證抓到並修復2個真實bug（`_findOrder`跨script IIFE作用域錯誤導致onchange靜默失敗、鎖匙扣/吊飾「完成」值誤判只認`Done 已完成`漏判49筆真實資料）；已用真實訂單端到端驗證並部署NAS三關PASS。(2) 發現桌面稽核表格完全無完成/取消完成入口（只手機版有），補一顆「退回進行中」條件按鈕（僅已完成訂單顯示），已改V42+本地驗證PASS，待批准升格部署。
+Subagent：❌ 未使用（主線程直接讀碼、寫Node單元測試、起preview server用真實Supabase訂單端到端驗證）
+
 ## 2026-07-10 (Session 160 — 手機模式底部導覽橫向滑動過渡): 🎨 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S160 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。手機版底部常駐列 `.fhs-top-bar__actions` 新增滑動指示器 `.fhs-nav-indicator`，利用 JS 量測 Rect 配合 `requestAnimationFrame` 與 CSS 進行橫向平滑漂移，並在 `switchMode`、resize 與旋轉事件中同步重新對位，實現高流暢性微互動視覺。

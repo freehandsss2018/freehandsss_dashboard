@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-07-10] Session 161續 II（Claude Code / Sonnet 5 執行）— 訂單總覽桌面表格新增「退回進行中」按鈕
+
+- **問題**：既有完成⇄取消完成雙向切換只接在手機版（swipe-row + Bottom-Sheet），桌面稽核表格沒有任何入口可以把已完成訂單退回進行中——尤其剛上線的自動完成偵測若在桌面誤觸發就無法復原。
+- **修正**：桌面表格每列訂單資訊欄新增條件按鈕，僅在訂單已標記完成時顯示「退回進行中」，點擊直接呼叫既有的 `triggerArchiveOrder()`（沿用既有 `fhs_uncomplete_order` RPC 與狀態還原邏輯），未新增任何後端邏輯。只做退回單方向，正向完成仍靠既有自動偵測與手機版。
+- **驗證**：語法檢查全過；起 preview server（desktop 1280×900）用真實訂單資料驗證按鈕條件渲染、點擊後狀態正確翻轉、重繪後按鈕正確消失。
+- 決策詳見 [decisions.md](.fhs/notes/decisions.md)。
+
+## [2026-07-10] Session 161續（Claude Code / Sonnet 5 執行）— 訂單總覽自動完成偵測擴大納入鎖匙扣/純銀吊飾
+
+- **問題**：既有 S157 封存提示機制（`_fhsHmCheckChange`）只在訂單「全部品項」都是手模擺設或羊毛氈/燈飾配件時才會觸發完成提示；只要訂單裡混了真正的鎖匙扣或純銀吊飾商品，整單就永遠不會跳自動完成提示，即使三者實際都已完成。
+- **修正**：抽出共用函式 `window._fhsCheckHmOrderCompletion(orderId)`，涵蓋 4 種完成情境：純手模全踢／手模+鎖匙扣皆完成／手模+純銀吊飾皆完成／手模+鎖匙扣+純銀吊飾皆完成。訂單須至少含 1 筆手模擺設，且所有品項只能來自 {手模擺設/鎖匙扣/純銀吊飾/羊毛氈公仔·燈飾（豁免）} 白名單，混入其他分類則不觸發。同時把此函式掛到鎖匙扣/純銀吊飾狀態下拉選單的 `onchange`（table 版與手機 accordion 版皆補上，原本完全沒有觸發點），以及既有手模勾選格變動掛鉤。
+- **範圍**：僅修改 `freehandsss_dashboardV42.html`（生產原始碼 ~5110/8921/9382行），未動 `Freehandsss_dashboard_current.html`，待 Fat Mo 確認後另行升格部署。
+- **驗證**：6 個 script block 語法檢查全過；抽出實際函式跑 8 組單元測試（4 情境 + 4 邊界案例：鎖匙扣未完成不觸發、羊毛氈配件狀態不影響判斷、混入無關分類不觸發、無手模項目不觸發、已封存訂單不重複觸發）全數 PASS。
+- **實機驗證追加修復（2 bug）**：Fat Mo 本機實測「全踢無反應」回報後，起 preview server 用真實 Supabase 訂單重驗，發現 (a) 新函式誤用了定義在另一獨立 `<script>` IIFE 內的區域函式 `_findOrder`，拋 `ReferenceError` 被 onchange 靜默吞掉——改為 inline 查 `globalOrders`；(b) 鎖匙扣/純銀吊飾真實資料裡「完成」值主要是 `完成`（49筆）而非下拉選單的 `Done 已完成`（10筆），改為與手模擺設同一組完成值判斷。修復後用真實訂單（0700101 真實點擊三格、0650429 混合訂單）端到端重驗 PASS。
+- **部署**：`/fhs-check` 前置健檢 PASS，`/upload-web` 升格 V42→current 並上傳 NAS，三關驗證 PASS（HTTP 204 / 大小 971,995 bytes / SHA256=`9B3FB135...C5602`）。公開網址：https://yanhei.synology.me/Freehandsss_dashboard_current.html
+- 決策詳見 [decisions.md](.fhs/notes/decisions.md)。
+
 ## [2026-07-10] Session 160（Antigravity 執行）— 手機模式底部導覽列橫向滑動動畫優化
 
 - **底部導覽列橫向滑動過渡動畫**：將手機模式下（`max-width: 767px`）底部常駐導覽列（`.fhs-top-bar__actions`）的切換樣式優化為橫向平滑漂移過渡效果，對齊頂部 Segmented Control (`全部/進行中/已完成`) 的 iOS 滑動指示器動效。

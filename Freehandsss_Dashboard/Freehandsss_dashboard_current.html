@@ -5104,44 +5104,54 @@
             
             var hid = document.getElementById(pfx+'-val-'+orderId+'-'+itemIndex);
             if (hid) hid.value = newVal;
-            
+
             saveInlineEdit(orderId, 'Process_Status', pfx+'-val-'+orderId+'-'+itemIndex, itemIndex);
 
-            // Pop up prompt if order has only hand mold items and all are completed
-            if (o && !window._fhsArchivedIds.has(orderId)) {
-                var allItems = o.items || [];
-                if (allItems.length > 0) {
-                    var allHm = allItems.some(function(item) {
-                        return getProductDimensions(item).category === '手模擺設';
-                    }) && allItems.every(function(item) {
-                        var dims = getProductDimensions(item);
-                        var isAddon = (item.Order_Item_Key || item.Item_ID || '').toUpperCase().indexOf('_W_WOOL') !== -1 ||
-                                      (item.Order_Item_Key || item.Item_ID || '').toUpperCase().indexOf('_L_LIGHTS') !== -1 ||
-                                      (item.Product_Name || item.Product || '').indexOf('羊毛氈') !== -1 ||
-                                      (item.Product_Name || item.Product || '').indexOf('燈飾') !== -1 ||
-                                      (item.Category || '') === '配件';
-                        return isAddon || dims.category === '手模擺設';
-                    });
-                    
-                    if (allHm) {
-                        var allCompleted = allItems.every(function(item, idx) {
-                            var dims = getProductDimensions(item);
-                            if (dims.category !== '手模擺設') return true;
-                            var status = (idx === itemIndex) ? newVal : window._getItemStatus(orderId, item);
-                            return status === 'Done 已完成' || status === '完成' || status === '已取件' || status === '待交收';
-                        });
-                        
-                        if (allCompleted) {
-                            setTimeout(function() {
-                                var confirmArchive = confirm("此訂單之所有手模擺設已完成，是否將此訂單標記為「已完成」？");
-                                if (confirmArchive) {
-                                    triggerArchiveOrder(orderId);
-                                }
-                            }, 500);
-                        }
-                    }
+            window._fhsCheckHmOrderCompletion(orderId);
+        };
+
+        // S161續: 訂單完成偵測 — 手模擺設(必要, checklist全踢) + 鎖匙扣/純銀吊飾(若存在則須選Done)
+        // 羊毛氈公仔/燈飾等配件豁免，狀態不影響判斷。任何其他分類存在時整單不觸發（維持保守設計）。
+        window._fhsCheckHmOrderCompletion = function(orderId) {
+            if (window._fhsArchivedIds.has(orderId)) return;
+            var _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+            var o = _gOrders.find(function(x) { return x.id === orderId; });
+            if (!o || !o.items || o.items.length === 0) return;
+
+            var GATED = ['手模擺設', '鎖匙扣', '純銀吊飾'];
+            var isExemptAddon = function(item) {
+                var key = (item.Order_Item_Key || item.Item_ID || '').toUpperCase();
+                return key.indexOf('_W_WOOL') !== -1 || key.indexOf('_L_LIGHTS') !== -1 ||
+                       (item.Product_Name || item.Product || '').indexOf('羊毛氈') !== -1 ||
+                       (item.Product_Name || item.Product || '').indexOf('燈飾') !== -1 ||
+                       (item.Category || '') === '配件';
+            };
+
+            var hasHm = false;
+            var allRelevant = o.items.every(function(item) {
+                var cat = getProductDimensions(item).category;
+                if (cat === '手模擺設') hasHm = true;
+                return GATED.indexOf(cat) !== -1 || isExemptAddon(item);
+            });
+            if (!hasHm || !allRelevant) return;
+
+            var isDone = function(status) {
+                return status === 'Done 已完成' || status === '完成' || status === '已取件' || status === '待交收';
+            };
+            var allCompleted = o.items.every(function(item) {
+                var cat = getProductDimensions(item).category;
+                var status = window._getItemStatus(orderId, item);
+                if (cat === '手模擺設' || cat === '鎖匙扣' || cat === '純銀吊飾') return isDone(status);
+                return true; // 羊毛氈/燈飾等配件豁免
+            });
+            if (!allCompleted) return;
+
+            setTimeout(function() {
+                var confirmArchive = confirm("此訂單所有品項已完成，是否將此訂單標記為「已完成」？");
+                if (confirmArchive) {
+                    triggerArchiveOrder(orderId);
                 }
-            }
+            }, 500);
         };
 
         console.log("FHS Dashboard V36.2.2 Initialized (Supabase flag =", localStorage.getItem('fhs_supabase_read'), ")");
@@ -8911,7 +8921,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         } else {
                                             _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done 已完成']];
                                         }
-                                        var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'acc-status-'+o.id+'-'+idx+'\','+idx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+o.id+'-'+idx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
+                                        var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'acc-status-'+o.id+'-'+idx+'\','+idx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+o.id+'-'+idx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+o.id+'\');';
                                         return '<select id="acc-status-'+o.id+'-'+idx+'" onchange="'+_oc+'">'
                                             +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
                                             +'<div id="acc-adj-wrapper-'+o.id+'-'+idx+'" style="display:'+(_s==='需進行補打'?'flex':'none')+';align-items:center;gap:4px;margin-top:6px;">'
@@ -9372,7 +9382,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     } else {
                                         _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done 已完成']];
                                     }
-                                    var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'status-select-'+o.id+'-'+index+'\','+index+');var _adj=document.getElementById(\'adj-wrapper-'+o.id+'-'+index+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';';
+                                    var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'status-select-'+o.id+'-'+index+'\','+index+');var _adj=document.getElementById(\'adj-wrapper-'+o.id+'-'+index+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+o.id+'\');';
                                     var _adjDisp = (_s === '需進行補打') ? 'flex' : 'none';
                                     return '<select id="status-select-'+o.id+'-'+index+'" class="review-status-select" style="width:100%;max-width:92px;font-size:13px;margin:0 auto;" onchange="'+_oc+'">'
                                         +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'

@@ -3,6 +3,21 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-10] (Session 161續) 訂單總覽桌面表格新增「退回進行中」按鈕
+
+決策：既有完成⇄取消完成雙向切換（`toggleArchive()`，含 `fhs_complete_order`/`fhs_uncomplete_order` RPC）原本只接在手機版（swipe-row 更多按鈕 + Bottom-Sheet），桌面稽核表格完全沒有任何完成/取消完成/刪除以外的操作入口——尤其新上線的自動完成偵測若在桌面誤觸發，桌面使用者當下無法退回。Fat Mo 確認只需單方向（已完成→進行中），不需桌面版手動「標記完成」按鈕（正向完成仍靠自動偵測或手機版）。
+執行：`renderReviewTable`（V42.html ~9142行）左側訂單資訊欄，於既有刪除按鈕之後、`_detailBtns` 之前，新增條件渲染按鈕：僅當 `window._fhsArchivedIds.has(o.id)` 為真才顯示「退回進行中」（icon-undo-2），onclick 直接呼叫既有 `triggerArchiveOrder(o.id)`，不新增任何後端邏輯，純粹是既有雙向 toggle 在桌面補一個入口。
+驗證：語法檢查（6 script block）全過；起本地 preview server（desktop viewport 1280×900）用真實 globalOrders 資料測試——(a) 手動標記某訂單為已封存後重繪，桌面表格對應列正確顯示「退回進行中」按鈕；(b) 直接呼叫 `triggerArchiveOrder()` 確認 `_fhsArchivedIds` 正確從 has=true 轉為 has=false；(c) 重繪後按鈕正確消失（因條件不再成立）。
+備註：驗證過程中對真實訂單 0700101 做過真實 checkbox 互動與 archive/unarchive 呼叫（S161續完成偵測驗證與本次驗證共用同一測試訂單），寫入的狀態值經 `_sanitizeItemStatus` 正確映射回合法 ENUM，未觀察到資料損毀；該訂單目前狀態為「已book日期」/is_archived=false，時間點與本次驗證後續有其他變動重疊，不排除同時有真實業務操作介入，非測試造成的異常。
+
+[2026-07-10] (Session 161續) 訂單總覽自動完成偵測擴大範圍 — 納入鎖匙扣/純銀吊飾
+
+決策：既有 S157 封存提示機制（`_fhsHmCheckChange`）原本要求訂單「所有品項」必須全部是手模擺設或羊毛氈/燈飾配件才會觸發完成提示，導致訂單只要混了真正的鎖匙扣或純銀吊飾商品，整單就永遠不會跳出自動完成提示——即使手模擺設、鎖匙扣、純銀吊飾實際上都已完成。Fat Mo 明確要求擴大涵蓋以下 4 種完成情境：純手模全踢／手模+鎖匙扣皆完成／手模+純銀吊飾皆完成／手模+鎖匙扣+純銀吊飾皆完成；羊毛氈公仔/燈飾配件裁決維持豁免（狀態不影響判斷，經 AskUserQuestion 確認）。
+執行：抽出共用函式 `window._fhsCheckHmOrderCompletion(orderId)`（V42.html ~5110行），判斷邏輯＝訂單須至少含 1 筆手模擺設，且所有品項只能來自{手模擺設/鎖匙扣/純銀吊飾/羊毛氈公仔·燈飾豁免}白名單（混入其他分類則不觸發，維持保守設計）；手模擺設沿用 checklist 完成判斷，鎖匙扣/純銀吊飾（若存在）須為 `Done 已完成`。此函式同時掛到手模勾選格變動（沿用既有掛鉤）與鎖匙扣/純銀吊飾狀態下拉選單 onchange（table + 手機 accordion 兩處新增掛鉤，原本完全沒有觸發點）。僅改 V42.html（生產原始碼），未動 current.html（需 Fat Mo 另行確認升格）。
+驗證：`node --check` 等效語法檢查 6 個 script block 全過；抽出實際函式原始碼以 mock 資料跑 8 組單元測試（4 個情境 scenario + 4 個邊界案例：鎖匙扣未完成不觸發、羊毛氈配件狀態不影響判斷、混入無關分類不觸發、無手模項目不觸發、已封存訂單不重複觸發）全數 PASS。尚未升格部署至 current.html，待 Fat Mo 確認後執行。
+**追記（實機驗證發現並修正 2 個 bug）**：Fat Mo 在本機開 V42.html 實測「全踢」無反應回報後，起本地 preview server 用真實 Supabase 訂單（0700101/0650429）跑，發現：(a) 新函式誤用了 `_findOrder`，該函式其實定義在另一個獨立 `<script>` IIFE（P3/P4 Bottom-Sheet 區塊）內部，非全域函式，呼叫時拋 `ReferenceError` 並被 onchange handler 靜默吞掉——這正是「全踢無反應」的根因，改為 inline 查 `globalOrders` 修復；(b) 資料庫實測鎖匙扣/純銀吊飾的「完成」值主力其實是 `完成`（49筆）而非下拉選單唯一提供的 `Done 已完成`（僅10筆，推測歷史資料多半經其他寫入路徑產生），原邏輯只認後者會漏判大部分真實訂單，改為與手模擺設同一組完成值（`Done 已完成`/`完成`/`已取件`/`待交收`）判斷。修復後用真實訂單資料端到端重驗：0700101 真實點擊3個勾選格→提示正確跳出；0650429（手模+2鎖匙扣，模擬手模完成、鎖匙扣沿用真實「完成」值）→正確跳出；0650429 原始未完成狀態→正確不觸發。
+**部署**：Fat Mo 直接回覆升格確認問題確認部署，`/fhs-check` 前置健檢 PASS（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT，LOCAL_AUDIT skip）；`/upload-web` 執行 cp V42→current + NAS 上傳，三關驗證全 PASS（HTTP 204 PUT / 大小 971,995 bytes remote=local / SHA256=`9B3FB13543E2D501C2BFF3206DC7DA1CFC006AFA94CED0A54E95B94A23AC5602`）。公開網址：https://yanhei.synology.me/Freehandsss_dashboard_current.html
+
 [2026-07-04] docs/CHANGELOG.md 分岔複本刪除 — 確認無獨立價值
 
 決策：另一 session 做記憶系統/治理層審視時意外發現 `docs/CHANGELOG.md`（298行，Session 63 建立）與根目錄 `Changelog.md`（4352行，持續更新至 S137）內容重疊但非同步——docs 版最後條目停在 S130 Phase B (2026-07-01)，S131-S137 六個 session 完全缺漏；frontmatter `last_updated: 2026-06-05` 甚至早於自己內文的 S130 條目，編輯紀律低。判定為過時分岔複本，非獨立用途摘要版。
