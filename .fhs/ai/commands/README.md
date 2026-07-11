@@ -80,6 +80,8 @@
 | error-eye.md | /error-eye | 錯誤監控（Catch-Push-Diagnose）|
 | commit.md | /commit | 全包一條龍：Memory Engine + Notion 同步 + git push |
 | new-product.md | /new-product | 新產品跨層融入引導（5 步 atomic 流程）|
+| canva-auto.md | /canva-auto | 記念短片新單全流程（SOP v3 + diff-learning 迴圈，S164）|
+| 3d-print.md | /3d-print | 3D 手腳模打印新單全流程（pipeline v0 + diff-learning，/canva-auto 姊妹指令，S164）|
 
 ## 通用工具指令
 

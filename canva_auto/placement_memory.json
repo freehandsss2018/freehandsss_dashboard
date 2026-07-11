@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "purpose": "canva-auto diff-learning 案例庫：每單 Fat Mo 人手改正 = 一筆訓練數據。Stage③ 換 fill 前先查此庫預測 resize/position；Fat Mo 改正後把 delta 記錄落此檔。案例 >=3 單收斂的規律才升格寫入記憶檔規則層。座標系 = 1920x1080 頁面像素。",
+  "convergence_log": [
+    { "order": "0600906", "date": "2026-07-11", "corrected_slots": 5, "total_slots": 6, "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確" }
+  ],
+  "cases": [
+    {
+      "order": "0600906",
+      "customer": "hiumanthm",
+      "design_id": "DAHPDo49KcI",
+      "date": "2026-07-11",
+      "learned": true,
+      "slots": [
+        {
+          "slot": "page2_主圖_彩色",
+          "asset_px": { "w": 1024, "h": 1024 },
+          "ai_box": { "top": 156.66, "left": 564.27, "w": 777.28, "h": 615.26 },
+          "fatmo_box": { "top": 146.10, "left": 653.41, "w": 592.99, "h": 633.24 },
+          "note": "AI 錯在繼承 Pangonyi 闊扁裁格；正確=近原比例、高~633 貼 top146、水平中心 x~950"
+        },
+        {
+          "slot": "page2_主圖_黑白",
+          "asset_px": { "w": 2048, "h": 2048 },
+          "ai_box": { "top": 156.66, "left": 547.99, "w": 824.01, "h": 615.26 },
+          "fatmo_box": { "top": 146.10, "left": 653.41, "w": 613.18, "h": 633.24 },
+          "note": "同彩色疊齊：same top/left/h，黑白版稍闊 (613 vs 593)"
+        },
+        {
+          "slot": "page3_細圖_彩色",
+          "asset_px": { "w": 1024, "h": 1024 },
+          "ai_box": { "top": 726.84, "left": 1445.42, "w": 297.08, "h": 235.16 },
+          "fatmo_box": { "top": 741.85, "left": 1482.27, "w": 210.86, "h": 225.17 },
+          "note": "細版 = page2 組合 x ~0.356"
+        },
+        {
+          "slot": "page3_細圖_黑白",
+          "asset_px": { "w": 2048, "h": 2048 },
+          "ai_box": { "top": 726.84, "left": 1439.20, "w": 314.94, "h": 235.16 },
+          "fatmo_box": { "top": 741.85, "left": 1482.27, "w": 218.04, "h": 225.17 },
+          "note": "同彩色細版疊齊"
+        },
+        {
+          "slot": "page4_動畫",
+          "asset_px": { "w": 960, "h": 1920, "note": "AI 錯用原始直片 VAHPDrvaStI" },
+          "ai_box": { "top": 146.10, "left": 552.60, "w": 835.89, "h": 626.92 },
+          "fatmo_box": { "top": 146.10, "left": 666.51, "w": 632.23, "h": 632.23 },
+          "note": "最嚴重錯誤：page4 必須用 Fat Mo 另出的方形去背成品 asset（此單=VAHPF8LDnSs），非原始直片；正方格 ~632x632 貼 top146 中心 x~982"
+        },
+        {
+          "slot": "page3_直片",
+          "asset_px": { "w": 1024, "h": 576 },
+          "ai_box": { "top": 0, "left": 656.25, "w": 607.5, "h": 1080 },
+          "fatmo_box": { "top": 0, "left": 656.25, "w": 607.5, "h": 1080 },
+          "note": "正確無改：直片格 fill 裁切非拉伸，直接 update_fill 可接受"
+        }
+      ],
+      "text_notes": [
+        "Fat Mo 微調 page2 字句 box：top 791.81->779.34, left 626.09->607.98（字句與圖底距離）",
+        "page3 細版字句 Fat Mo 重拆行：'Stay kind, \\nstay happy, love life'（page2 維持 'Stay kind, stay \\nhappy, love life'）——page3 細位拆行可以同 page2 唔同"
+      ]
+    }
+  ]
+}

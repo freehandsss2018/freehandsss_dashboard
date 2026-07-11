@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "purpose": "3D 打印 pipeline diff-learning 案例庫（同 canva_auto/placement_memory.json 同一原理）：每單記錄 AI 產出參數 vs Fat Mo/師傅最終出貨參數，開新單前先查相似案例預測參數。規律 >=3 單收斂才升格寫入記憶檔規則層。單位=mm/度；params 鍵名對齊 3d/scripts/pipeline_v0_phase1_foot.py 的參數名。",
+  "convergence_log": [
+    { "order": "PILOT", "date": "2026-07-10", "corrected_params": 0, "total_params": 2, "note": "pilot 驗證單：自動轉向+縮放 30.50mm 一次過 PASS；紋理 k 經 PoC 迭代收斂（k=4 過度→k=2.5 可用）" }
+  ],
+  "rules_frozen": {
+    "note": "以下為 Fat Mo 已拍板鐵律，非學習所得，禁止被單一案例覆寫",
+    "foot_target_size_mm": 30.5,
+    "hand_target_size_mm": "讀檔名標籤，禁自行推算",
+    "size_axis": "最長軸=Y",
+    "ring_asset": "3d/input/Ring-24545.obj（固定標準件，只擺位禁縮放禁自造）",
+    "ring_and_engrave_order": "實物 mm 常數，必須縮放後才加",
+    "phase_gate": "Phase1 只做腳；Phase2 手須先 render 分析 7 個手 STL 歸納規格表交 Fat Mo",
+    "icp": "Level3 非剛體變換（有裁切），全域 ICP 禁再試",
+    "texture_method": "頻帶分離法（輕平滑 iter8 + 重平滑 iter120 抽摺痕層）；單頻 unsharp 禁用（放大噪聲成沙紙）"
+  },
+  "cases": [
+    {
+      "order": "PILOT-Amen-leftleg",
+      "part": "leftleg",
+      "date": "2026-07-10",
+      "learned": true,
+      "params_ai": { "texture_k": 4.0, "target_size_mm": 30.5 },
+      "params_final": { "texture_k": 2.5, "target_size_mm": 30.5 },
+      "note": "k=4 產生鱗片 artifact + 自交黑縫；k=2.5 乾淨可用。尺寸縮放一次過準（實測 30.50mm）。刻字/環擺位/裁切參數未入案例（pilot 未做全流程），Phase1 首單補齊。"
+    }
+  ]
+}
