@@ -1429,3 +1429,11 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 ### D22：S156 pre-tool-guard learnings warn 提案——Fat Mo 裁決同意，R12 落地
 
 **決策**：S156 `/8d` v2-1(b) 提案（Write/Edit 目標為 `learnings.md` 時 warn 提示 Rule 3.17 雙紀律自檢句，不 block，沿用 kgov v2.0.0 md-only-warn 哲學）於本 session 交 Fat Mo 裁決，**同意**。落地為 `pre-tool-guard.js` 新增 **Rule 12**：Write/Edit/MultiEdit/NotebookEdit 目標檔名以 `learnings.md` 結尾時，輸出 warning（exit 0，不攔截）提醒「提交前請確認已依 AGENTS.md Rule 3.17 完成【交付前雙紀律自檢】兩行」。屬純工具層擴充（新增 warn-only 規則，非變更既有規則語意），不觸及 AGENTS.md 規則本體，故不隨此改動調整憲法版本號。`guard-fixtures.json` 新增 1 案例（R12 warn 應觸發），回歸測試 **17/17 PASS**，無回歸。
+
+### D23：S163 — canva-auto SOP v2.1 三段式人機接力（Pangonyi 首單實戰修正）
+
+**決策**：S157 pilot 舊方案核心假設錯誤（以為 raw 素材可直接塞入母版格）。Pangonyi 訂單 0600907 首單實戰 + Fat Mo 六點工序修正 + 人手完成品（DAHO-t6d-Eo）對照後裁定：素材上頁前必須先加工——魔法抓取去背（黑白+彩色圖）、ColourMix 轉 Parakeet（黑白圖）、片去背（page4+page3 背景層）——三步全屬 Canva Apps 編輯器 UI 專屬，Connect API/MCP 結構性無入口（Canva 官方 help 確認）。自動化形態由「全自動換料」改為**三段式接力**：①AI 開單準備（搵最新母片→copy→update_title 改名→歸檔 Free_recorder (MM/26)→換字→交連結）→②Fat Mo 素材加工（上載/去背/調色/擺位）→③AI 收尾出貨（粗對位 pilot→刪殘留→QA→export MP4+page2 封面）。關鍵教訓：copy-design 的 title 參數不生效必須事務內補 update_title；page 根 video 元素 update_fill 報 invalid duration 屬人手位；縮圖 URL 帶 fallbackstale=T 為過時快取不可信（曾因此誤報 Fat Mo 完成品內容）。兩項 pilot 待下單驗證：P1 母版座標自動粗對位；P2 圖片加工本地化（rembg 去背+Parakeet LUT 反推，啟動條件=Fat Mo export 一張成品圖）。自動化次品 DAHO-PAbfUk 保留作對照。方案書：`.fhs/reports/planning/canva-auto-sop-v2_2026-07-10.md`；記憶檔 `project_canva_video_automation.md` 已同步。
+
+### D24：S163續 — canva-auto P2 本地加工 pilot 成功，正式落盤 `canva_auto/local_prep.py`
+
+**決策**：D23 canva-auto SOP v2.1 提出嘅 P2 選項（圖片加工本地化）經 pilot 驗證成功，正式落盤為可重用工具。魔法抓取去背改用 rembg（u2net 模型，本機執行，質素與 Canva 相當）；ColourMix→Parakeet 色譜經數值反推證實為**固定 preset**（非逐圖自動調整）——用兩張獨立訂單嘅 Canva 匯出樣本（`Free_Laser (0526)`／`(0529)`，皆 1563×1563 canvas）交叉擬合出幾乎一致嘅線性色相漸變公式（H(x,y) ≈ -0.1447x + 0.0994y + 0.00004 mod 360°，平均誤差 11-17°），肉眼比對高度吻合。工具落盤 `canva_auto/local_prep.py` + `canva_auto/README.md`（比照 `3d/` 資料夾慣例，新建頂層 `canva_auto/` 目錄），已用 Pangonyi 訂單 0600907 真實檔案端到端跑通。片去背（page4 動畫/page3 背景層）維持人手做（本地質素風險大，未搬）。Fat Mo Stage②人手步驟由 5 步減至 2 步（片去背+最終擺位對齊）。已知限制：任意輸入圖尺寸「拉伸貼合」去 1563×1563 座標系嘅假設只喺同尺寸樣本驗證過；Canva 若改版 Parakeet preset 公式會過時，需重新反推。詳見記憶檔 `project_canva_video_automation.md`。
