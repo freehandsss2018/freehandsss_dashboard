@@ -2,12 +2,25 @@
 FHS 3D shou jiao mo dayin zidonghua Pipeline v0 - Phase 1 (jiao, Amen-leftleg)
 方案書: .fhs/reports/planning/3d-print-pipeline-v0_2026-07-10.md
 
-執行順序 (已依方案書指示調整): P1 -> P2(+P2b跳過) -> P3 -> P4(併入P1的姿態對齊) -> P7 -> P5 -> P6 -> P8 -> P9
+本 script 有兩個模式 (共用同一套 P3/P5/P6/P7/P8/P9 函式庫):
 
-用法: 在 Blender (MCP addon, port 9876) 已連線狀態下:
-  exec(open(r"D:/SynologyDrive/Free_handsss/freehandsss_dashboard/3d/scripts/pipeline_v0_phase1_foot.py", encoding="utf-8").read())
+  FULL 模式 (原有, 不變): P1 -> P2(+P2b跳過) -> P3 -> P4(併入P1的姿態對齊) -> P7 -> P5 -> P6 -> P8 -> P9
+    用法: 在 Blender (MCP addon, port 9876) 已連線狀態下 (PIPELINE_ENTRY_MODE 預設 "FULL"):
+      exec(open(r"D:/SynologyDrive/Free_handsss/freehandsss_dashboard/3d/scripts/pipeline_v0_phase1_foot.py", encoding="utf-8").read())
 
-驗證環境: Blender 5.1.1 / 2026-07-11
+  MASTER 模式 (師傅版, 2026-07-12 Fat Mo 裁決新增): 紋理繼續由師傅手工做,
+  AI pipeline 只做機械部分。輸入 = 師傅已修好紋理、已裁切、已擺姿嘅 mesh
+  (即已有平切面; 偵測唔到平切面會直接 raise, 唔會自己亂切):
+    P1(純匯入, 預設不做PCA對齊/不做P3裁切) -> [detect_flat_cut_face 驗證關卡]
+    -> P7 -> P5 -> P6 -> P8 -> P9 (跳過 P2 紋理誇張化; P3/P4 做成可選開關,
+    由 MASTER_DO_BISECT / MASTER_DO_ALIGN 控制, 預設皆 False)
+    用法 (唔想觸發底部 __main__ 自動跑, 用自訂 globals):
+      g = {"__name__": "fhs_pipeline_lib"}
+      exec(open(r"D:/SynologyDrive/Free_handsss/freehandsss_dashboard/3d/scripts/pipeline_v0_phase1_foot.py", encoding="utf-8").read(), g)
+      g["run_pipeline_master"]()
+    或者直接改低本檔 PIPELINE_ENTRY_MODE = "MASTER" 再正常 exec 一次。
+
+驗證環境: Blender 5.1.1 / 2026-07-11 (FULL) / 2026-07-12 (MASTER 模式新增)
 """
 import bpy, bmesh, numpy as np, struct, os, math
 import mathutils
@@ -31,6 +44,21 @@ TEXT_SAFETY = 0.85           # P5 文字fit切面橢圓的安全係數
 CUSTOMER = "Amen"
 PART = "leftleg"
 QTY = 1
+
+# ---------------------------------------------------------------------------
+# 師傅版模式參數 (MASTER_MESH_MODE) — Fat Mo 2026-07-12 裁決:
+# 紋理繼續由師傅做, AI pipeline 只做機械部分 (縮放+刻字+加環+QC+出檔)。
+# 呢個模式假設輸入 mesh 已經係師傅修好紋理、已裁切、已擺姿 (已有平切面)。
+# ---------------------------------------------------------------------------
+MASTER_INPUT_OBJ = os.path.join(OUT_DIR, "master-mode", "_sim_master_input_Amen-leftleg.obj")
+MASTER_TARGET_MM = TARGET_MM
+MASTER_TEXT_BODY = TEXT_BODY
+MASTER_OUT_DIR = os.path.join(OUT_DIR, "master-mode")
+MASTER_DO_ALIGN = False    # 預設輸入已經擺好姿, 唔再做PCA對齊
+MASTER_DO_BISECT = False   # 預設輸入已經裁切好, 唔再自動裁切
+MASTER_CUT_Y = CUT_Y       # 若 MASTER_DO_BISECT=True 先會用到
+MASTER_REF_STL = REF_STL
+PIPELINE_ENTRY_MODE = "FULL"  # "FULL"(預設, 與原行為一致) | "MASTER" | "NONE"(只定義function不自動跑)
 
 
 def log(msg):
@@ -76,6 +104,20 @@ def set_local_coords(obj, coords):
 def bake_world_to_identity(obj, new_world_coords):
     obj.matrix_world = mathutils.Matrix.Identity(4)
     set_local_coords(obj, new_world_coords)
+
+
+def bake_current_transform(obj):
+    """將 obj 現有嘅 matrix_world 烘焙入 local coordinates, 令 matrix_world 變返 Identity。
+    純粹坐標系正規化 (唔係姿態/擺位決策): 教訓 (2026-07-12 MASTER模式debug) - OBJ
+    importer 有時會將檔案嘅 axis convention 轉換寫入 matrix_world (旋轉), 而唔係直接
+    改 vertex 座標, 令 local coords 同 world coords 唔一致。本 pipeline 大量函式
+    (mesh_direct_bbox/set_local_coords/detect_flat_cut_face 等) 假設 local coords ==
+    world coords (matrix_world=Identity), 所以每次匯入之後、任何幾何運算之前都必須
+    確保呢個假設成立, 唔理輸入檔案本身用緊邊種 axis convention。呢個操作本身喺
+    world-space 完全唔改變物件實際形狀/方向, 淨係將 transform 記帳方式改變。"""
+    world_co = get_world_coords(obj)
+    bake_world_to_identity(obj, world_co)
+    return obj
 
 
 def mesh_direct_bbox(obj):
@@ -179,12 +221,23 @@ def fhs_boolean(target, cutter, operation, mod_name="Bool_FHS"):
 # ---------------------------------------------------------------------------
 # P1 匯入 + PCA 姿態對齊 (=P4 提前做, 見方案書執行次序備註)
 # ---------------------------------------------------------------------------
-def step_p1_import_and_align():
-    log("P1: 匯入 OBJ")
-    bpy.ops.wm.obj_import(filepath=INPUT_OBJ)
-    obj = [o for o in bpy.context.scene.objects if o.type == 'MESH'][0]
-    obj.name = "Amen-leftleg"
+def import_obj_track(filepath, name):
+    """匯入 OBJ 並自動抓出新增嘅 object (適用於場景已有其他 object 嘅情況,
+    唔靠"scene 第一個 MESH"呢個假設)。供 FULL 模式與 MASTER 模式共用。"""
+    before = set(bpy.data.objects.keys())
+    bpy.ops.wm.obj_import(filepath=filepath)
+    after = set(bpy.data.objects.keys())
+    new_names = list(after - before)
+    assert len(new_names) >= 1, "import_obj_track: no new object created by import, filepath=" + filepath
+    obj = bpy.data.objects[new_names[0]]
+    obj.name = name
+    return obj
 
+
+def pca_align(obj):
+    """PCA 姿態對齊: 令最長軸=Y, toe-end/ankle-end 方向以斷面半徑判斷 (細=toe)。
+    抽取自原 step_p1_import_and_align, 供 FULL 模式(必做)與 MASTER 模式
+    (MASTER_DO_ALIGN=True 時可選)共用。"""
     world_co = get_world_coords(obj)
     centroid = world_co.mean(axis=0)
     centered = world_co - centroid
@@ -218,8 +271,14 @@ def step_p1_import_and_align():
     bake_world_to_identity(obj, new_co)
 
     ext = new_co.max(axis=0) - new_co.min(axis=0)
-    log("  P4 align bbox X=" + str(ext[0]) + " Y=" + str(ext[1]) + " Z=" + str(ext[2]))
+    log("  align bbox X=" + str(ext[0]) + " Y=" + str(ext[1]) + " Z=" + str(ext[2]))
     return obj
+
+
+def step_p1_import_and_align():
+    log("P1: 匯入 OBJ")
+    obj = import_obj_track(INPUT_OBJ, "Amen-leftleg")
+    return pca_align(obj)
 
 
 # ---------------------------------------------------------------------------
@@ -685,6 +744,186 @@ def step_p9_export_and_render(obj, qc_result):
 
 
 # ---------------------------------------------------------------------------
+# 師傅版模式 (MASTER_MESH_MODE) - Fat Mo 2026-07-12 裁決新增
+# 輸入 = 師傅已修好紋理、已裁切、已擺姿嘅 mesh。流程跳過 P2 紋理誇張化;
+# P3(裁切)/P4(擺姿) 視輸入而定, 做成可選開關 (MASTER_DO_BISECT/MASTER_DO_ALIGN),
+# 預設皆 False (假設輸入已經處理好)。
+# ---------------------------------------------------------------------------
+def detect_flat_cut_face(obj, min_coverage=0.3, flatness_ratio=0.6):
+    """驗證師傅版輸入 mesh 已經有平切面 (已裁切), 偵測唔到就直接 raise,
+    唔會自己嘗試裁切。做法 (全部向量化, 唔用逐點 loop, 1.1M面mesh都食得住):
+      1) 沿 bbox 最長軸搵去到極值嘅一個薄 band (band = 最長軸range * 1%)
+      2) coverage 檢查: band 內嘅頂點喺另外兩軸嘅覆蓋範圍要夠闊, 唔係得
+         一個尖角/單點
+      3) 平坦度檢查: band 內沿最長軸嘅座標標準差要遠細過 band 本身
+    任何一項唔過 -> raise RuntimeError, 停手, 唔嘗試自動修復。"""
+    co = mesh_direct_bbox(obj)
+    ranges = co.max(axis=0) - co.min(axis=0)
+    axis = int(np.argmax(ranges))
+    vals = co[:, axis]
+    vmax = float(vals.max())
+    band = float(ranges[axis] * 0.01)
+    mask = vals > (vmax - band)
+    n_hit = int(mask.sum())
+    if n_hit < 20:
+        raise RuntimeError(
+            "detect_flat_cut_face: axis-" + "XYZ"[axis] + " extreme band only has " +
+            str(n_hit) + " verts, does not look like a cut plane (maybe a curved tip). " +
+            "MASTER mode assumes input is already cut, will NOT auto-bisect. " +
+            "Confirm input mesh, or set MASTER_DO_BISECT=True explicitly.")
+
+    face = co[mask]
+    other = [i for i in range(3) if i != axis]
+    span0 = float(face[:, other[0]].max() - face[:, other[0]].min())
+    span1 = float(face[:, other[1]].max() - face[:, other[1]].min())
+    total0 = float(ranges[other[0]]) if ranges[other[0]] > 0 else 1e-9
+    total1 = float(ranges[other[1]]) if ranges[other[1]] > 0 else 1e-9
+    coverage = min(span0 / total0, span1 / total1)
+    if coverage < min_coverage:
+        raise RuntimeError(
+            "detect_flat_cut_face: coverage too low (coverage=" + str(round(coverage, 3)) +
+            " < " + str(min_coverage) + "), looks like a small tip not a wide cut face. " +
+            "MASTER mode will NOT auto-bisect, confirm input mesh manually.")
+
+    std_val = float(vals[mask].std())
+    if std_val > band * flatness_ratio:
+        raise RuntimeError(
+            "detect_flat_cut_face: std along axis-" + "XYZ"[axis] + "=" +
+            str(round(std_val, 5)) + " (band=" + str(round(band, 5)) + ") too large, " +
+            "not flat enough - maybe uncut. MASTER mode will NOT auto-bisect.")
+
+    log("  detect_flat_cut_face PASS: axis=" + "XYZ"[axis] + " vmax=" + str(round(vmax, 4)) +
+        " coverage=" + str(round(coverage, 3)) + " flat_std=" + str(round(std_val, 5)) +
+        " (band=" + str(round(band, 5)) + ")")
+    return axis, vmax, band
+
+
+def step_p9_export_and_render_generic(obj, out_dir, stl_name, ref_stl=None, ref_gap=20.0,
+                                        engrave_view='BACK'):
+    # 教訓 (2026-07-12 MASTER模式驗證): 刻字/環都擺喺 +Y max 切面, BACK 機位
+    # (location=+Y方向望向-Y) 先影得到平面正面, RIGHT 機位望到嘅係腳板側面
+    # (見唔到刻字)。engrave_view 預設must係 'BACK', 唔係 FULL模式舊有嘅 'RIGHT'。
+    """通用出檔+render, 供師傅版模式使用 (可自訂 out_dir/檔名, 唔綁死 module-level
+    OUT_DIR/CUSTOMER/PART/QTY)。渲染輸出: 1張刻字可讀正交視圖(較貼近) +
+    FRONT/RIGHT/TOP 三視圖 + (若有 ref_stl) 對比參考樣本圖。"""
+    os.makedirs(out_dir, exist_ok=True)
+    stl_path = os.path.join(out_dir, stl_name)
+
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.wm.stl_export(filepath=stl_path, export_selected_objects=True)
+    log("  STL exported: " + stl_path)
+
+    setup_render_common()
+    cam_data = bpy.data.cameras.new("QC_Cam")
+    cam_obj = bpy.data.objects.new("QC_Cam", cam_data)
+    bpy.context.scene.collection.objects.link(cam_obj)
+
+    sun_data = bpy.data.lights.new("Sun", type='SUN')
+    sun_obj = bpy.data.objects.new("Sun", sun_data)
+    bpy.context.scene.collection.objects.link(sun_obj)
+    sun_obj.rotation_euler = (math.radians(45), 0, math.radians(45))
+
+    frame_camera_ortho(cam_obj, [obj], view=engrave_view, margin=1.15)
+    render_view(cam_obj, os.path.join(out_dir, "qc_engrave_readable_" + engrave_view + ".png"))
+
+    for view in ['FRONT', 'RIGHT', 'TOP']:
+        frame_camera_ortho(cam_obj, [obj], view=view, margin=1.3)
+        render_view(cam_obj, os.path.join(out_dir, "qc_threeview_" + view + ".png"))
+
+    if ref_stl and os.path.exists(ref_stl):
+        ref_obj = import_binary_stl_numpy(ref_stl, "Level3_Reference")
+        ref_co = get_world_coords(ref_obj)
+        our_co = get_world_coords(obj)
+        shifted = ref_co.copy()
+        shifted[:, 0] += (our_co[:, 0].max() + ref_gap - ref_co[:, 0].min())
+        bake_world_to_identity(ref_obj, shifted)
+        frame_camera_ortho(cam_obj, [obj, ref_obj], view='RIGHT', margin=1.3)
+        render_view(cam_obj, os.path.join(out_dir, "qc_compare_vs_reference_RIGHT.png"))
+        log("  compare-vs-reference render done")
+    elif ref_stl:
+        log("  WARNING: reference STL not found: " + ref_stl)
+
+    return stl_path
+
+
+def build_simulated_master_input(out_path=None):
+    """驗證專用 (非正式流程一部分): 模擬師傅版已修好紋理、已裁切、已擺姿嘅
+    中間檔, 因為手上暫時冇真實嘅師傅版無環無字中間檔。
+
+    做法: 用原掃描行 P1(匯入+PCA對齊) -> clean_scan_slivers(退化幾何清理,
+    呢步淨係mesh衛生, 唔屬於P2紋理誇張化演算法) -> P3(bisect裁切), 然後
+    刻意跳過 P2 紋理誇張化, export做 OBJ 代表師傅完成紋理但未加環未刻字
+    嘅mesh, 拎嚟餵俾 run_pipeline_master() 做端對端驗證。"""
+    out_path = out_path or MASTER_INPUT_OBJ
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    clear_scene()
+    obj = step_p1_import_and_align()
+    clean_scan_slivers(obj, dissolve_thresh=0.005)
+    step_p3_bisect(obj, CUT_Y)
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.wm.obj_export(filepath=out_path, export_selected_objects=True)
+    log("  simulated master input exported (P2 skipped): " + out_path)
+    return out_path
+
+
+def run_pipeline_master(input_obj=None, target_mm=None, text_body=None, out_dir=None,
+                          do_align=None, do_bisect=None, cut_y=None, ref_stl=None, clear=True):
+    """師傅版模式入口: P1(匯入) -> [可選P4擺姿] -> [可選P3裁切]
+    -> detect_flat_cut_face(驗證關卡, 唔通過即raise停手) -> P7 -> P5 -> P6
+    -> K2 -> P8 -> P9。跳過 P2 紋理誇張化。"""
+    input_obj = MASTER_INPUT_OBJ if input_obj is None else input_obj
+    target_mm = MASTER_TARGET_MM if target_mm is None else target_mm
+    text_body = MASTER_TEXT_BODY if text_body is None else text_body
+    out_dir = MASTER_OUT_DIR if out_dir is None else out_dir
+    do_align = MASTER_DO_ALIGN if do_align is None else do_align
+    do_bisect = MASTER_DO_BISECT if do_bisect is None else do_bisect
+    cut_y = MASTER_CUT_Y if cut_y is None else cut_y
+    ref_stl = MASTER_REF_STL if ref_stl is None else ref_stl
+
+    log("=== master mode start ===")
+    log("  input=" + str(input_obj) + " target_mm=" + str(target_mm) + " text=" + str(text_body))
+    if clear:
+        clear_scene()
+
+    obj = import_obj_track(input_obj, "MasterMesh")
+    obj = bake_current_transform(obj)
+    log("  bake_current_transform done (normalize matrix_world -> Identity, 修正OBJ" +
+        " importer可能將axis convention轉換寫入matrix_world而非vertex data嘅情況)")
+
+    if do_align:
+        log("  MASTER_DO_ALIGN=True: run PCA align")
+        obj = pca_align(obj)
+    else:
+        log("  MASTER_DO_ALIGN=False: assume already posed, skip")
+
+    if do_bisect:
+        log("  MASTER_DO_BISECT=True: run P3 bisect Y=" + str(cut_y))
+        step_p3_bisect(obj, cut_y)
+    else:
+        log("  MASTER_DO_BISECT=False: assume already cut, skip")
+
+    detect_flat_cut_face(obj)
+
+    step_p7_scale(obj, target_mm)
+    step_p5_engrave_text(obj, text_body)
+    step_p6_ring(obj)
+    step_remove_floating_fragments(obj)
+    qc = step_p8_qc(obj, target_mm)
+
+    stl_name = CUSTOMER + "-" + PART + "-master-" + str(target_mm) + "mm-x" + str(QTY) + ".stl"
+    stl_path = step_p9_export_and_render_generic(obj, out_dir, stl_name, ref_stl=ref_stl)
+
+    log("=== master mode done ===")
+    log("STL: " + stl_path)
+    log("QC: " + str(qc))
+    return obj, qc, stl_path
+
+
+# ---------------------------------------------------------------------------
 # 主流程
 # ---------------------------------------------------------------------------
 def run_pipeline():
@@ -705,4 +944,9 @@ def run_pipeline():
 
 
 if __name__ == "__main__":
-    run_pipeline()
+    if PIPELINE_ENTRY_MODE == "FULL":
+        run_pipeline()
+    elif PIPELINE_ENTRY_MODE == "MASTER":
+        run_pipeline_master()
+    else:
+        log("PIPELINE_ENTRY_MODE=" + str(PIPELINE_ENTRY_MODE) + ": functions defined only, no auto-run")

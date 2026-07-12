@@ -3206,6 +3206,47 @@
 
 <body class="fhs-body">
 
+<!-- ═══ S165: 全域錯誤可見化（自足 script block，零跨 block 依賴；防「錯誤被靜默吞、UI 無反應」事故類）═══ -->
+<script>
+(function () {
+    var _recent = {}; // message → 上次顯示時間（5 秒內同文案唔重複彈）
+    function _show(kind, msg) {
+        try {
+            msg = String(msg || '未知錯誤').slice(0, 160);
+            if (/ResizeObserver loop/.test(msg)) return; // 瀏覽器已知無害噪音
+            var now = Date.now();
+            if (_recent[msg] && now - _recent[msg] < 5000) return;
+            _recent[msg] = now;
+            if (!document.body) return;
+            var host = document.getElementById('_fhsErrHost');
+            if (!host) {
+                host = document.createElement('div');
+                host.id = '_fhsErrHost';
+                host.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99990;display:flex;flex-direction:column;gap:8px;width:calc(100% - 24px);max-width:480px;pointer-events:none;';
+                document.body.appendChild(host);
+            }
+            while (host.children.length >= 3) host.removeChild(host.firstChild);
+            var card = document.createElement('div');
+            card.style.cssText = 'pointer-events:auto;cursor:pointer;background:rgba(146,64,14,0.96);color:#fff;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;min-height:44px;box-sizing:border-box;font-size:13px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,0.25);backdrop-filter:blur(6px);';
+            card.innerHTML = '<div style="font-weight:700;">⚠ 系統出錯，操作可能未生效</div>'
+                + '<div style="font-size:11px;opacity:0.85;margin-top:2px;word-break:break-all;">[' + kind + '] ' + msg.replace(/</g, '&lt;') + '</div>'
+                + '<div style="font-size:11px;opacity:0.7;margin-top:2px;">請截圖傳畀 Fat Mo · 撳一下關閉</div>';
+            card.onclick = function () { if (card.parentNode) card.parentNode.removeChild(card); };
+            host.appendChild(card);
+            setTimeout(function () { if (card.parentNode) card.parentNode.removeChild(card); }, 8000);
+        } catch (e) { /* 錯誤提示自身絕不可再拋錯 */ }
+    }
+    window.addEventListener('error', function (ev) {
+        _show('JS', ev && ev.message);
+    });
+    window.addEventListener('unhandledrejection', function (ev) {
+        var r = ev && ev.reason;
+        _show('Promise', (r && (r.message || r)) || '');
+    });
+    window._fhsErrToast = _show; // 供其他 block 手動報錯用（可選）
+})();
+</script>
+
 <!-- ===== V42 Bottom-Sheet 行動選單（單例，JS 動態填 orderId）===== -->
 <div class="bs-overlay" id="bsOverlay" aria-hidden="true"></div>
 <div class="bs-sheet"   id="bsSheet"   role="dialog" aria-modal="true" aria-label="訂單操作">
@@ -7088,6 +7129,105 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             return JSON.stringify(state);
         }
 
+        // ═══ S165: 新增訂單草稿自救 ═══════════════════════════════════════
+        // 目的：POS 手機輸入途中刷新/被殺 app/誤觸返回，唔使成張單由頭打過。
+        // 儲存：localStorage fhs_create_draft_v1 = { ts, state: captureFormState() JSON }
+        // 清除：create 同步成功（webhook ok / sbSyncOrder fallback ok）、用戶棄置、48 小時過期。
+        // 注意：只喺 currentMode==='create' 時寫入；edit 模式完全唔碰。
+        var _DRAFT_KEY = 'fhs_create_draft_v1';
+        var _DRAFT_MAX_AGE = 48 * 60 * 60 * 1000;
+        var _draftBaseline = null; // onload 初始化完成後嘅空表單快照（判斷「有冇實質內容」用）
+        var _draftTimer = null;
+
+        function _draftRead() {
+            try {
+                var raw = localStorage.getItem(_DRAFT_KEY);
+                if (!raw) return null;
+                var d = JSON.parse(raw);
+                if (!d || !d.state || !d.ts) return null;
+                if (Date.now() - d.ts > _DRAFT_MAX_AGE) { _draftClear(); return null; }
+                return d;
+            } catch (e) { return null; }
+        }
+        function _draftClear() {
+            try { localStorage.removeItem(_DRAFT_KEY); } catch (e) {}
+        }
+        function _draftMeaningful(stateStr) {
+            // 同 baseline 逐 key 比較；剔除自動生成單號/搜尋框後仲有差異，先算有實質內容
+            if (!_draftBaseline) return true;
+            try {
+                var s = JSON.parse(stateStr), b = JSON.parse(_draftBaseline);
+                var keys = Object.keys(s);
+                for (var i = 0; i < keys.length; i++) {
+                    var k = keys[i];
+                    if (k === 'orderIdDisplay' || k === 'searchOrderId') continue;
+                    if (String(s[k]) !== String(b[k])) return true;
+                }
+                return false;
+            } catch (e) { return true; }
+        }
+        function _draftSaveNow() {
+            if (currentMode !== 'create') return;
+            try {
+                var stateStr = captureFormState();
+                if (!_draftMeaningful(stateStr)) return;
+                localStorage.setItem(_DRAFT_KEY, JSON.stringify({ ts: Date.now(), state: stateStr }));
+                _draftBannerHide(); // 用戶已開始新輸入 → 舊草稿提示失效（內容已被覆寫）
+            } catch (e) { /* localStorage 唔可用（滿/私隱模式）→ 草稿失效，不影響主流程 */ }
+        }
+        function _draftScheduleSave() {
+            if (currentMode !== 'create') return;
+            clearTimeout(_draftTimer);
+            _draftTimer = setTimeout(_draftSaveNow, 800);
+        }
+        function _draftBannerHide() {
+            var b = document.getElementById('draftRestoreBanner');
+            if (b && b.parentNode) b.parentNode.removeChild(b);
+        }
+        async function _draftRestore() {
+            var d = _draftRead();
+            _draftBannerHide();
+            if (!d) return;
+            await switchMode('create');
+            try {
+                restoreFormState(d.state); // 行 edit-load 同一條實戰還原路徑（S107 split 快照保護內建）
+                generate();
+            } catch (e) {
+                alert('❌ 草稿還原失敗：' + e.message);
+            }
+        }
+        function _draftShowBanner(d) {
+            if (document.getElementById('draftRestoreBanner')) return;
+            var t = new Date(d.ts);
+            var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+            var when = pad(t.getMonth() + 1) + '/' + pad(t.getDate()) + ' ' + pad(t.getHours()) + ':' + pad(t.getMinutes());
+            var bar = document.createElement('div');
+            bar.id = 'draftRestoreBanner';
+            bar.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9500;width:calc(100% - 24px);max-width:480px;background:var(--fhs-bg-elevated, #fff);color:var(--fhs-text-primary, #333);border:1px solid var(--fhs-border, #ddd);border-left:4px solid #E07A2F;border-radius:10px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,0.18);backdrop-filter:blur(6px);font-size:13px;';
+            bar.innerHTML =
+                '<div style="font-weight:700;margin-bottom:8px;">📝 偵測到未完成嘅新增訂單草稿（' + when + '）</div>'
+                + '<div style="display:flex;gap:8px;">'
+                +     '<button id="draftRestoreYes" style="flex:1;min-height:44px;border:none;border-radius:8px;background:#E07A2F;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">繼續上次輸入</button>'
+                +     '<button id="draftRestoreNo" style="flex:1;min-height:44px;border:1px solid var(--fhs-border, #ccc);border-radius:8px;background:transparent;color:var(--fhs-text-secondary, #666);font-size:14px;font-weight:600;cursor:pointer;">棄置草稿</button>'
+                + '</div>';
+            document.body.appendChild(bar);
+            document.getElementById('draftRestoreYes').addEventListener('click', function () { _draftRestore(); });
+            document.getElementById('draftRestoreNo').addEventListener('click', function () {
+                if (confirm('確定棄置呢份草稿？棄置後無法復原。')) { _draftClear(); _draftBannerHide(); }
+            });
+        }
+        function _draftInit() {
+            try { _draftBaseline = captureFormState(); } catch (e) { _draftBaseline = null; }
+            var fc = document.getElementById('formContainer');
+            if (fc) {
+                fc.addEventListener('input', _draftScheduleSave, true);
+                fc.addEventListener('change', _draftScheduleSave, true);
+            }
+            var d = _draftRead();
+            if (d && _draftMeaningful(d.state)) _draftShowBanner(d);
+        }
+        // ═══ S165 草稿自救模組完 ═══════════════════════════════════════════
+
         function restoreFormState(data) {
             try {
                 window._fhsSplitRestoreSnapshot = null; // S107 方案A: 還原起點重置快照（防上次殘留）
@@ -8042,6 +8182,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     }
 
                     const isCreate = (currentMode === 'create');
+                    if (isCreate) _draftClear(); // S165: webhook 已接收 payload，草稿任務完成
                     const polledSuccess = await pollSupabaseSync(currentOrderId, payload, isCreate);
 
                     hideLoader();
@@ -8061,6 +8202,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         showLoader("正在直連寫入 Supabase...");
                         try {
                             await window.sbSyncOrder(payload, orderItemsArray, currentMode);
+                            if (currentMode === 'create') _draftClear(); // S165: fallback 直寫成功都要清草稿
                             hideLoader();
                             switchMode('review');
                             await fetchGlobalReview(true);
@@ -8081,6 +8223,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     showLoader("正在直連寫入 Supabase...");
                     try {
                         await window.sbSyncOrder(payload, orderItemsArray, currentMode);
+                        if (currentMode === 'create') _draftClear(); // S165: fallback 直寫成功都要清草稿
                         hideLoader();
                         switchMode('review');
                         await fetchGlobalReview(true);
@@ -8114,6 +8257,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 renderLimbGrid();
                 updateFamilyParts();
                 generate();
+                _draftInit(); // S165: 草稿自救 — baseline 快照 + formContainer 監聽 + 有草稿即彈還原提示
                 // IG 看門狗深連結（S119）：?view=igwatch 直接進入警報頁；
                 // ?view=igwatch&orderId=xxx 同時開對應訂單 modal（kind=created_incomplete 場景）
                 const _igwParams = new URLSearchParams(location.search);

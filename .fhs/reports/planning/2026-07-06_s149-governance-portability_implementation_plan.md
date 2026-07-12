@@ -4,7 +4,7 @@
 > **方法論**：八維度架構分析 → 實施計畫草案 v1 → 自我批評（3 弱點）→ v2 定稿（S148 慣例）
 > **執行**：Sonnet 5（≥2026-07-07，且必須在 S148 迴圈硬化計畫全部 4 Phase 完成之後）
 > **目標**：把 Fat Mo 長期沉積的 AI 工作流治理資產（rules / SOP / skills / roles / 多模型調度 / hooks 守護）做成可攜模板，日後任何非 Dashboard 新專案可完整繼承；原生支援 Claude Desktop App（主打）、VS Code ext / CLI、Antigravity（備援）、手機 App 多平台接入。
-> **狀態**：⏸ 待 Fat Mo 批准（§4.0b 授權清單）
+> **狀態**：🟢 待執行（v2 定稿 2026-07-06；**§5 v3.1 修訂 2026-07-12 已入檔，執行以「v2＋§5 覆寫」為準**；S148 前置閘已滿足）
 
 ---
 
@@ -73,6 +73,8 @@
 
 ## §4 實施計畫 v2（**定稿，Sonnet 5 照此執行**，各 Phase 獨立 commit）
 
+> ⚠️ **執行前先讀 §5 v3 修訂（2026-07-12 重審）**：以下 v2 條文凡被 §5 覆寫表命中者，一律以 §5 為準；未命中者照舊。
+
 ### §4.0 執行紀律（開工前必讀）
 
 - 前置閘：**S148 迴圈硬化計畫 4 Phase 全部完成**（讀該計畫檔「執行狀態」節確認）——S148 會改 guard.js（R11）與 execute.md/[G] 判準，本計畫必須基於其終態。
@@ -137,6 +139,38 @@ S148 計畫 4 Phase 全完成（硬閘）
 ```
 
 **明文排除（本計畫不做）**：不動 FHS 生產系統任何行為（guard 拆分行為等價除外）；不遷移 22 支設計 skills（待 V43）；不啟用 Cursor；不重寫 FHS 既有橋接；不搬動 `.fhs/` 現有檔案位置；Notion/Obsidian 同步不出碼只文件化；n8n 三腦僅以規格連結在模板 README 提及（休眠現狀不變）。
+
+---
+
+## §5 v3.1 修訂（2026-07-12 重審增量節，Fable 5，經 /8d 兩輪迭代）
+
+> **背景**：v2 定稿後兩週（S150–S164）系統演化重審。本節為**唯一有效 delta**：執行以「§4 v2＋本節覆寫」為準，未列於 §5.1 的 v2 條文一律照舊。v2 本文一字未動（追溯性保留）。
+
+### §5.1 逐條覆寫表
+
+| 位置 | 原句（v2） | 改為（v3.1） |
+|---|---|---|
+| §4.0 前置閘 | 「S148…全部完成（讀該計畫檔『執行狀態』節確認）」 | **前置閘已滿足**：S148 已於 2026-07-07/08 執行完成，客觀證據＝git commits `b66aea`(P0+1)/`b7df3b5`(P2)/`439b29c`(P3)/`d80a349`(P4)＋Changelog S154；S148 執行狀態節曾漏回填，已於 2026-07-12 補課回填 |
+| §4.0 執行紀律（追加一條） | — | **回填律（本計畫自身紀律）**：每 Phase commit 的前置條件＝本檔「執行狀態」節該 Phase 已回填；Phase 5 驗收含 `grep -c "⬜"` 本計畫檔＝0 |
+| §4.1 Phase 0 | 「確認 S148 計畫執行狀態節 4/4 完成」 | 改為建立**當日基線**：三套夾具全跑留輸出檔（guard/kgov/health 三支 runner，存 `.fhs-local/` 或 scratchpad）＋`grep -oE "R[0-9]+" scripts/hooks/pre-tool-guard.js \| sort -uV` 留規則清單基線 |
+| §4.3 Phase 2 紅線 1 | 「run-fixtures.js 16/16 PASS 且逐項結果與拆分前基線完全一致」 | 「**三套夾具全數 PASS 且與 Phase 0 當日基線逐項一致**；guard 規則清單拆分前後 grep 輸出相同」——計數不寫死（2026-07-12 實測快照僅供參考：R1–R12、guard 17／kgov 10／health 12） |
+| §4.3 Phase 2 | 「（現有 R1–R11 全部規則外置）」 | 「執行當日全部 R 規則外置（以 grep 清單為準；含 D21 放寬後的 R10 語義與 S156 新增的 R12）」 |
+| §4.4 模板內容集・governance | 「governance 6 檔通用版」 | 「governance 00–07 共 8 檔通用版（含 S156 新增 `07_compounding-loop.md`：fan-out／worktree／loop 純調度，U-class）」 |
+| §4.4 模板內容集・commands | 「commands 核心 7 支（read/execute/commit/cl-flow/cl-flow-fast/rp/rg）」 | 「commands 核心 **8 支**（＋`/8d`，S153 新建、純 in-chat 零外部依賴）；`/usage-audit` 列 M-class 由 Phase 1 manifest 判定」 |
+| §4.4 模板內容集（追加一項） | — | 「**domain param-memory 範式文件**（GENERIC-FORK 純文檔，**非 skeleton 代碼**）：rules_frozen 鐵律層＋cases 案例庫＋diff-learning＋補課檢查，源自 /canva-auto 與 /3d-print 姊妹指令；標記成熟度『2 實例未收斂』；模板 CHANGELOG 預留升格條件『≥3 單收斂後升 skeleton』——用範式自己的升格規則管自己」 |
+| §4.4 模板內容集（追加一項） | — | 「**模板指令頭部規範**：『依賴／不可攜平台』必填欄位（/canva-auto 已示範：AG 無 Canva MCP 不可攜）；`generate-bridges.js` 據此欄位決定是否橋接至 `.agents/workflows/`」 |
+| §4.2 Phase 1 枚舉範圍 | 原清單 | 追加：`.fhs/ai/commands/{8d,usage-audit,3d-print,canva-auto}.md`、`3d/`、`canva_auto/`（後三者預期 F-class，但為 param-memory 範式文件的來源材料） |
+| §4.4 黑名單 | 原 grep pattern | 追加 token：`Free_recorder\|Lovart\|canva_auto\|param_memory\|placement_memory\|freehandsss2018` |
+| §4.0b 授權清單（追加第 9 項） | — | 「9. 本 §5 增量節寫入＋S148 計畫檔執行狀態節回填補課（附 git log 證據；動另一份已完結計畫檔的唯一目的＝防未來讀者誤判）」——已於 2026-07-12 Fat Mo 口頭「繼續」授權執行 |
+| §4.6 Phase 5（追加一項收尾動作） | — | 「回填律**全域化**提案：按 05 §1 提案格式（現行條文→新條文→動機→影響面）獨立提交 Fat Mo 裁決，**不隨本計畫批准自動生效**（不挾帶修憲）」 |
+
+### §5.2 排序現實（2026-07-12）
+
+S148 已完成；S150 Phase 4-6 明文等 S149 → **S149 現為執行佇列 blocker**。與 3D pipeline Phase 1（S161）零檔案交集，先後由 Fat Mo 裁決。
+
+### §5.3 方法論記錄
+
+本節經 `/8d` 兩輪迭代：第一輪對 v2 找出 3 弱點（範式過早抽象／回填治標不治根／覆寫毀追溯）→ v3；第二輪對 v3 再找 3 弱點（v2+delta 雙源歧義／授權項挾帶全域制度變更／釘死計數重蹈過時）→ v3.1（覆寫表＋§4 banner／回填律收斂為本計畫自身紀律＋全域版走 05 §1 正門／計數改當日基線不變量）。
 
 ---
 

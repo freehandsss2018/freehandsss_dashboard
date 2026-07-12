@@ -196,6 +196,8 @@ Phase 4: 制度層 + /commit 收尾（commit #4）
 
 ## 執行狀態（執行 session 回填）
 
-- [ ] Phase 0　- [ ] Phase 1　- [ ] Phase 2　- [ ] Phase 3　- [ ] Phase 4
-- fresh-context 對抗審查 verdict：＿＿
-- 三套夾具最終基線：＿＿
+> ⚠️ 補課註記（2026-07-12，S149 重審 session 代回填）：本節於執行當時（2026-07-07/08）漏填，導致依賴本節作前置閘的 S149 計畫險些誤判「未完成」。以下依 git log 客觀證據補填；此遺漏已回饋為 S149 §5 的回填律條款。
+
+- [x] Phase 0　- [x] Phase 1　- [x] Phase 2　- [x] Phase 3　- [x] Phase 4（commits：`b66aea` Phase 0+1／`b7df3b5` Phase 2／`439b29c` Phase 3／`d80a349` Phase 4）
+- fresh-context 對抗審查 verdict：PASS（S154，見 handoff 決策(38)與 Changelog S154 條目）
+- 三套夾具最終基線：執行當時未記錄；2026-07-12 現況實測 guard 17／kgov 10／health 12（補課註記，非執行當日快照）

@@ -4,7 +4,7 @@
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-08（Session 154/S148 Phase 0 `/fhs-slim` 觸發，退役 Preference 1 條 [Toggle 按鈕動作語義，窄場景 S126 UI 偏好，已是本專案慣例]，51→50條；歷史：S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
+> 上次整理：2026-07-12（Session 166 `/commit` Lesson Distillation，對等替換 Preference 1 條 [反奉承守則內建於指令設計，已內化於機制設計]，維持50條；歷史：S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -81,14 +81,16 @@
 2. **最小改動優先**：能補一個釘子就不重做廚房，v2 優先於 v9 — 源自多次 cl-flow 對話
 3. **橋接版禁止含邏輯**：.claude/commands/ 與 .agents/workflows/ 只做指向，邏輯只在 Master (.fhs/ai/commands/) — 源自 2026-05-19
 4. **表單新增 input 前必評估 captureFormState + n8n payload 影響**：新欄位進 captureFormState 會改 webhook payload 結構；先確認範圍，不確定就 defer — 源自 2026-05-29
-5. **反奉承守則內建於指令設計**：用戶每次輸入「不奉承」「專業」是設計缺口；守則寫入 Master 後永遠生效，用戶無需重複輸入 — 源自 2026-05-30
 7. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30
 8. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01
 9. **文件權威＝被使用（路由）＋被保養（合約），非自我聲明**：一份文件自稱「必讀/核心真相」不會令 AI 真的讀它——若無任何 hook/CLAUDE.md 路由表/查詢路由指向它，且無任何 execute.md 後效稽核合約要求同步它，它會腐爛而無人發現（FHS_Blueprint.md 案例：13 處過時、含財務事故誤讀源頭寫法，腐爛一個月無 session 察覺）。新建「必讀文件」前必須同時掛路由+寫回合約，否則寧可不留（S158 Fat Mo 裁決：無合約支撐的內容應遷至有真讀者處，而非降級留存） — S158
 10. **視覺改動若會犧牲原有語意（如財務科目色彩區分）需先問，不要單方面統一簡化**：表頭對比度不足，修法是統一改白字，犧牲了入帳/成本/利潤原本紅綠琥珀的語意色彩區分；Fat Mo 檢視後不滿意，要求整段回退（含背景漸層也退回更早版本）。下次遇到「有取捨」的視覺修復，先列選項問，別直接套一個方案上去 — S159續
 11. **3D 打印鎖匙扣生產規格（腳固定/手讀檔名/環唯一擺位/指甲可創作）**：腳=30.5mm固定；手尺寸無公式必由Fat Mo標籤於輸入檔名讀取，AI禁自行推算；掛環=固定標準件`3d/input/Ring-24545.obj`，pipeline只做擺位禁自造禁縮放；指甲類細節「創作可接受非還原」（石膏實物本身都冇清晰指甲），用參數化模板 stamp — S161
+12. **3D 打印 v0 範圍降級：紋理留師傅、AI 只做機械部分**：Phase1腳全流程機械QC全PASS，但AI紋理誇張化(頻帶分離k=2.5)風格與師傅手工仍有差距（偏腫/線條不夠幼細）。Fat Mo裁決：v0實用範圍=師傅已修紋理mesh為輸入，AI只做縮放+刻字+加環+QC+出檔（MASTER模式），紋理功能日後再逐步加強，非放棄。Phase2（手）沿用同一降級範圍 — S166 2026-07-12
 
 > 📌 **退役**（Session 158，接續 S154/S148 Phase 0 慣例，全檔滿50條達上限）：「UI toggle 標籤用操作者語言」（原 Preference #9，S126）——經 S132/S153 等多個 UI session 反覆遵循已成本專案設計慣例，無需靠記憶提醒，窄場景低復發風險，退役騰出額度。
+>
+> 📌 **退役**（Session 166，`/commit` Lesson Distillation，維持50條上限）：「反奉承守則內建於指令設計」（原 Preference #5，S05-30）——守則本身已寫入 Master 指令設計自動生效（該教訓自述之機制即為永久修復），非需記憶提醒的操作紀律，退役騰出額度給本次新教訓（3D打印v0範圍降級決策）。
 >
 > 📌 **退役**（Session 161，`/commit` Lesson Distillation，全檔滿52條超50上限）：①「n8n PUT credential ID已知可直接補回」（原 Pattern #10，Session 111）——單一 credential 修復episode 早已結案，無持續復發風險；②「付款 split UX 清空/污染雙雷」（原 Pitfall #12，Session 97/107）——`_fhsPaymentSyncing` guard 已是結構性永久修復，機制本身即防護，非需記憶提醒的操作紀律；③「cl-flow A2 模型策略統一 gemini-3.5-flash」（原 Preference #6，Session 05-30）——env-var 切換機制本身已是慣例基礎設施，該教訓已內化於機制設計。三項退役騰出額度給本次新教訓（3D打印鎖匙扣生產規格）。
 

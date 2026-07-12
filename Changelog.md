@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-07-12] Session 166（Claude Code / Sonnet 5 執行）— 3D打印pipeline v0 Phase1（腳）執行完成+師傅版模式
+
+- **Phase 1 全流程跑通**：依方案書 `.fhs/reports/planning/3d-print-pipeline-v0_2026-07-10.md` 派 `blender-3d-modeler` agent 執行 P1→P9（樣本 Amen-leftleg），輸出 `3d/scripts/pipeline_v0_phase1_foot.py`。機械 QC 獨立覆核（自寫 numpy STL parser 重新解析，非只信 agent 自報）全 PASS：最長軸 30.5mm、0 boundary、0 non-manifold、島嶼數=1，刻字「KKH 0213」可讀。過程修復：原掃描 4,226 條退化碎邊要 `dissolve_degenerate` 先清理否則趾甲毀+白斑噪聲；腳踝橫紋摺痕經比對 raw scan 確認係原掃描真實特徵非 bug。
+- **Fat Mo 裁決（2026-07-12）降級**：AI 紋理誇張化(k=2.5頻帶分離)風格與師傅手工仍有差距（AI版偏腫、師傅版線條幼細）。v0 實用範圍改為：**紋理繼續由師傅做，AI 只負責縮放+刻字+加環+QC+出檔**。已加「MASTER 模式」入口至同一 script（`PIPELINE_ENTRY_MODE="MASTER"`，跳過 P2 紋理誇張化），驗證用模擬師傅版輸入跑通，QC 同樣全 PASS，輸出 `3d/output/pipeline-v0-phase1/master-mode/`（gitignore，不進版控）。原 FULL 模式邏輯經 diff 確認未改壞。附帶修復兩個真 bug：OBJ 匯入座標轉向誤烘焙落 object matrix、QC render 預設鏡頭角度睇錯面。
+- **文件同步**：`3d/README.md` 補目錄結構（scripts/、param_memory.json）與現有專案表；`.claude/commands/` 補建 `3d-print.md`、`canva-auto.md` 兩個橋接檔（Master 早於 S161/S164 已建但漏橋接，/commit P0.4 幽靈偵測發現）。
+- **待辦**：Phase 1 未經 Fat Mo 最終目測簽收前禁開 Phase 2（手）；MASTER 模式待真正師傅版樣本檔到手後再驗一次真實輸入（目前為模擬輸入驗證）。
+- **Subagent 使用記錄**：`blender-3d-modeler` × 3 次（Phase1全流程執行、紋理bug修復、MASTER模式改裝），主控負責獨立覆核 QC 數據 + 文件同步。
+
+## [2026-07-12] Session 165（同一延續 session，Claude Code / Fable 5 執行，較早階段補記）— Dashboard 全域錯誤可見化+新增訂單草稿自救 / S149治理可攜化計畫§5重審修訂
+
+- **全域錯誤可見化**：`freehandsss_dashboardV42.html` 新增自足 `<script>` block，監聽 `window.error`/`unhandledrejection`，靜默失敗的 JS/Promise 錯誤改為右上角浮動提示卡（同一文案 5 秒防重複彈、ResizeObserver 噪音過濾、最多疊 3 張），提示用戶截圖回報 Fat Mo。目的：防「錯誤被靜默吞、UI 無反應」此類事故（呼應 Pitfall #28 `_findOrder` IIFE 作用域錯誤等歷史案例）。
+- **新增訂單草稿自救**：POS 手機新增訂單流程加入 `localStorage`（`fhs_create_draft_v1`）自動快照，表單有實質內容變動 800ms 後防抖存檔；頁面重載偵測到未過期（48小時）草稿彈出還原/棄置提示；webhook 或 Supabase fallback 寫入成功即清除草稿。只在 `currentMode==='create'` 生效，edit 模式不受影響，沿用既有 `captureFormState()`/`restoreFormState()` 還原路徑（含 S107 split 快照保護）。
+- **S149 治理可攜化計畫重審**：`.fhs/reports/planning/2026-07-06_s149-governance-portability_implementation_plan.md` 新增 §5 v3.1 修訂（經 `/8d` 兩輪迭代），以逐條覆寫表方式更新 v2 前置閘現況（S148 已完成客觀證據）、驗收標準（改當日基線而非釘死計數）、模板內容集（追加 `/8d`/`/usage-audit`/param-memory 範式文件）；v2 本文不動，執行以「v2＋§5 覆寫」為準。狀態由「待批准」改「待執行」。
+- **S148 計畫回填**：`.fhs/reports/planning/2026-07-06_s148-loop-hardening_implementation_plan.md`「執行狀態」節於當時（S148執行時）漏填，因依賴此節作前置閘的 S149 重審險些誤判「未完成」；已依 git log 客觀證據（commits `b66aea`/`b7df3b5`/`439b29c`/`d80a349`）補填 4 Phase 全完成，並回饋為 S149 §5 的「回填律」條款。
+- **待辦**：S149 計畫現為執行佇列 blocker（S150 Phase4-6 等其後），待 Fat Mo 批准後執行；回填律全域化提案（獨立於本計畫）待走 05 §1 提案正門另行裁決。
+
 ## [2026-07-10] Session 162（Antigravity 執行）— 訂單總覽 UI/UX 五項修復與功能擴充
 
 - **修復 1：Tooltip 溢位渲染 Bug**：`#fhsToggleAuditBtn` 按鈕的 `title` 屬性中內嵌 HTML 標籤（`<svg>`）與雙引號導致 HTML 語法損毀並在網頁上溢位顯示。已修復為純文字標記並採用 Emoji 示意：`title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"`.
