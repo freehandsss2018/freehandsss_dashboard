@@ -4,7 +4,7 @@
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-12（Session 166 `/fhs-slim` L1健檢觸發，退役 Preference #3 [橋接版禁止含邏輯，已升格SOP_NOW.md治理規則]，51→50；同session稍早 `/commit` Lesson Distillation 已對等替換1條致51；歷史：S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
+> 上次整理：2026-07-12（Session 167 `/commit` Lesson Distillation，退役 Pitfall #24 [健檢工具自我遞迴掃描假陽性，已結構性修復]，對等替換1條新教訓（deploy-ok旗標格式），維持50條上限；歷史：S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -59,11 +59,11 @@
 21. **n8n Code 節點內嵌 dashboard 網址禁憑印象寫死**：Telegram 深連結硬編碼 `yanhei.synology.me:5006/web/`（NAS 內網路徑）實測 401，正確應為 decisions.md 記載之公開網址。修法：任何嵌入網址一律對照 decisions.md + curl 實測 200 才寫入，勿假設內網 port/路徑對外可達 — Session 136
 22. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
 23. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
-24. **【自我遞迴陷阱】健檢/lint 工具的測試夾具會被自己的即時掃描邏輯掃到，產生假陽性**：`fhs-health-check.js` 上線後對 repo 做同名檔案重複掃描，10 個測試夾具目錄裡故意合成的同名檔案（`handoff.md`/`fhs-health-rules.json` 等）被自己掃到，炸出 3 個假重複警報。任何「掃描整個 repo」的工具，其測試夾具目錄必須明確排除在該工具自身的即時掃描範圍外 — Session 142
-25. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
-26. **[G] 判準已於 S148 對齊 execute.md diff 物理特徵，.md 與 hooks.js 編輯只 warn 不落 flag**：舊版判準（任何 .md 含財務詞即落 flag）已替換為真值表驅動（migrations .sql / MCP apply_migration / Dashboard HTML 含財務 → flag；其他 → warn-only）；歷史誤觸模式見 governance/02 §7，治本見 planning/2026-07-06_s148-loop-hardening_implementation_plan.md §4.2 — Session 147/S148
-27. **【高頻 ⚠️】顏色 bug 純讀碼/grep 查不全，JS `style.color='inherit'` 非「還原」**：舊色號散落多分頁寫法不一致，grep 抓不齊；`inherit` 會抓外層色，應設 `''` 讓 class 接管。改用瀏覽器 DOM 掃描量測 computed color 找離群值 — S157(未修好)/S159(補完)
-28. **【高頻 ⚠️】Dashboard 巨檔多 `<script>` block，看似頂層 function 可能只是另一 IIFE 內的區域函式**：`_findOrder` 定義在獨立 `<script>(function(){...})()` （P3/P4 Bottom-Sheet 區塊）內，於較早 script block 呼叫得 `ReferenceError`，onchange handler 內被靜默吞掉、UI 無任何反應。新函式引用「看起來是全域」的 helper 前，grep 確認其宣告是否包在 IIFE 內；務必實機點擊驗證（confirm/console mock），不能只靠語法檢查 — Session 161續
+24. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
+25. **[G] 判準已於 S148 對齊 execute.md diff 物理特徵，.md 與 hooks.js 編輯只 warn 不落 flag**：舊版判準（任何 .md 含財務詞即落 flag）已替換為真值表驅動（migrations .sql / MCP apply_migration / Dashboard HTML 含財務 → flag；其他 → warn-only）；歷史誤觸模式見 governance/02 §7，治本見 planning/2026-07-06_s148-loop-hardening_implementation_plan.md §4.2 — Session 147/S148
+26. **【高頻 ⚠️】顏色 bug 純讀碼/grep 查不全，JS `style.color='inherit'` 非「還原」**：舊色號散落多分頁寫法不一致，grep 抓不齊；`inherit` 會抓外層色，應設 `''` 讓 class 接管。改用瀏覽器 DOM 掃描量測 computed color 找離群值 — S157(未修好)/S159(補完)
+27. **【高頻 ⚠️】Dashboard 巨檔多 `<script>` block，看似頂層 function 可能只是另一 IIFE 內的區域函式**：`_findOrder` 定義在獨立 `<script>(function(){...})()` （P3/P4 Bottom-Sheet 區塊）內，於較早 script block 呼叫得 `ReferenceError`，onchange handler 內被靜默吞掉、UI 無任何反應。新函式引用「看起來是全域」的 helper 前，grep 確認其宣告是否包在 IIFE 內；務必實機點擊驗證（confirm/console mock），不能只靠語法檢查 — Session 161續
+28. **`.fhs/.deploy-ok` 旗標內容必須是純 ISO timestamp 字串，寫描述文字會被靜默清空**：guard 用 `new Date(content)` 解析旗標檔，非合法時間格式 → `NaN` → 判定過期並自動刪除，下一步 cp 升格仍被攔截且無明確錯誤提示。建立旗標時只寫 `new Date().toISOString()` 輸出，不可夾帶說明文字 — Session 167
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >
@@ -87,6 +87,8 @@
 11. **3D 打印鎖匙扣生產規格（腳固定/手讀檔名/環唯一擺位/指甲可創作）**：腳=30.5mm固定；手尺寸無公式必由Fat Mo標籤於輸入檔名讀取，AI禁自行推算；掛環=固定標準件`3d/input/Ring-24545.obj`，pipeline只做擺位禁自造禁縮放；指甲類細節「創作可接受非還原」（石膏實物本身都冇清晰指甲），用參數化模板 stamp — S161
 12. **3D 打印 v0 範圍降級：紋理留師傅、AI 只做機械部分**：Phase1腳全流程機械QC全PASS，但AI紋理誇張化(頻帶分離k=2.5)風格與師傅手工仍有差距（偏腫/線條不夠幼細）。Fat Mo裁決：v0實用範圍=師傅已修紋理mesh為輸入，AI只做縮放+刻字+加環+QC+出檔（MASTER模式），紋理功能日後再逐步加強，非放棄。Phase2（手）沿用同一降級範圍 — S166 2026-07-12
 
+> 📌 **退役**（Session 167，`/commit` Lesson Distillation，全檔滿50條達上限）：「自我遞迴陷阱：健檢工具測試夾具被自身掃描邏輯掃到」（原 Pitfall #24，Session 142）——修復已是結構性（`fhs-health-check.js` 已內建排除測試夾具目錄），非需記憶提醒的操作紀律，退役騰出額度給本次新教訓（`.fhs/.deploy-ok` 旗標內容格式）。
+>
 > 📌 **退役**（Session 158，接續 S154/S148 Phase 0 慣例，全檔滿50條達上限）：「UI toggle 標籤用操作者語言」（原 Preference #9，S126）——經 S132/S153 等多個 UI session 反覆遵循已成本專案設計慣例，無需靠記憶提醒，窄場景低復發風險，退役騰出額度。
 >
 > 📌 **退役**（Session 166，`/commit` Lesson Distillation，維持50條上限）：「反奉承守則內建於指令設計」（原 Preference #5，S05-30）——守則本身已寫入 Master 指令設計自動生效（該教訓自述之機制即為永久修復），非需記憶提醒的操作紀律，退役騰出額度給本次新教訓（3D打印v0範圍降級決策）。
