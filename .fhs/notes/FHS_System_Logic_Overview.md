@@ -598,7 +598,7 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 IG Drive Export
    ↓ n8n workflow D4LK6VrQbiXlju0V（Cron 06:00 HKT）
    ↓ Classify & Report 節點（cr1）
-   ↓  種類：not_created / created_incomplete（created_full 靜默）
+   ↓  種類：not_created / created_incomplete（通知+寫入）｜created_full → verified_ok（S150 Phase 4 起僅寫入不通知，見 §11.6）
    ↓ [Phase 1b] Has Alerts?（IF守衛：alerts.length > 0）
    ↓   true  → Write Alerts HTTP POST → ig_watchdog_alerts INSERT（service_role key，冪等）→ Telegram Notify (Data)
    ↓   false → Telegram Notify (Data)（直接發摘要，跳過空陣列寫入）
@@ -614,7 +614,7 @@ V42 igwatch 模式（anon RPC）  → fhs_resolve_ig_alert（resolved 回寫）
 | `id` | UUID 主鍵 |
 | `alert_date` | Cron 跑日（匯出覆蓋日）|
 | `order_id` | FHS 訂單編號字串（**非 UUID**），NULL = 弱訊號/無訂號 |
-| `kind` | `not_created` / `created_incomplete`（CHECK 約束）|
+| `kind` | `not_created` / `created_incomplete` / `verified_ok`（CHECK 約束，S150 Phase 4 起三值；`resolved` 對 verified_ok 恆為 true，見 §11.6）|
 | `customer_name` | 顧客名（classifyMessage 輸出）|
 | `snippet` | om.text 前 40 字摘要 |
 | `thread` | IG thread 資料夾名稱 |
@@ -645,7 +645,8 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 | 模式按鈕 | 🐶 `modeIgWatchBtn`，整合 switchMode array + activeMap |
 | 容器 | `#igwatchModeContainer`（filter tabs / badge / list）|
 | Lazy load | switchMode('igwatch') → `loadIgWatchAlerts()` |
-| kind-aware 動作 | `created_incomplete` → `openOrderModal()`；`not_created` → `_igwCopyOrderId()`（禁用 openOrderModal，訂單不在 DB，靜默失敗）|
+| kind-aware 動作 | `created_incomplete` → `openOrderModal()`；`not_created` → `_igwCopyOrderId()`（禁用 openOrderModal，訂單不在 DB，靜默失敗）；`verified_ok` → 無動作按鈕（純展示，resolved 恆 true 天然排除於待處理）|
+| kindLabel/kindColor | `not_created`=🆕未建立/紅｜`created_incomplete`=📝資訊不齊/橙｜`verified_ok`=✓已核對/綠（S150 Phase 4，`_renderIgWatchList` 約 L13965-13966）|
 | Resolve 回寫 | `_igwToggleResolve()` → `sbRpc('fhs_resolve_ig_alert', ...)` + 樂觀更新 |
 | URL 深連結 | `?view=igwatch[&orderId=xxx]`，window.onload 解析 |
 
@@ -659,3 +660,22 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 | 2 | V42 igwatch 模式 | ✅ 已上線 |
 | 1b | n8n write node（HTTP Request → ig_watchdog_alerts）| ✅ 已驗收（S125）Exec 4034（2026-06-29 06:00 HKT）17/17節點全通過；OAuth 根因=Google Cloud OAuth app 處於 Testing 模式（refresh token 7天失效）→ 已發布為 Production；versionId=1a2632e1 |
 | 3 | Telegram 訊息附 V42 deep-link URL | ✅ 已完成（S125）；S128 修復 emoji surrogate bug（🔗→`>`，ensure_ascii=True）；versionId=bb683165 |
+
+### 11.6 S150 Phase 4-6：verified_ok 正向記錄 + orders anon 權限收斂（2026-07-12）
+
+**背景**：S150 全面審視計畫（[implementation plan](../reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md) §4.5-§4.7）Phase 1-3 已於 2026-07-07 完成止血；Phase 4-6 因排隊等 S148/S149 完成，延至 2026-07-12 由 Fat Mo 核准後接續執行。
+
+**Phase 4（P1a）— created_full 正向記錄**：
+- Migration `0050_ig_watchdog_verified_ok_check.sql`：`ig_watchdog_alerts.kind` CHECK 從二值（`not_created`/`created_incomplete`）擴充為三值，新增 `verified_ok`。
+- `scripts/ig-watchdog/build_n8n_workflow.cjs`（`classifyCode`，Classify & Report 節點 `cr1`）：新增 `verifiedItems` 收集 `cls.category==='created_full'` 的訊息，映射為 `kind:'verified_ok', resolved:true` 寫入 `alerts` 陣列，與既有 `notifyItems`（`created_incomplete`/`not_created`）並列但**不**進入 `notifyItems`——因此不進「需核對」計數，也不出現在 `telegramText`（TG 深連結 filter 只挑後兩類，維持零改動）。已用 curl 4 欄位（`name/nodes/connections/settings`）PUT 部署至 live n8n workflow `D4LK6VrQbiXlju0V`，versionId `05740bb4...`→`4a125f6b-a37c-46b0-a5b6-c7f8d14223d9`。
+- V42 UI（`_renderIgWatchList`，L13965-13966）：`kindLabel`/`kindColor` 補上 `verified_ok` → 綠色「✓ 已核對」。「待處理」計數 filter（`!r.resolved`）本身零改動，因 verified_ok 寫入時 `resolved` 已為 true，天然被既有邏輯排除。
+- **冪等保證**：既有 `ix_igwatch_alerts_dedup` UNIQUE INDEX `(alert_date, thread, COALESCE(order_id,''), kind)` 對 `kind` 值無特化，`verified_ok` 自動受同一去重機制保護，配合 PostgREST `Prefer: resolution=ignore-duplicates`，同一 Cron 日重跑同一 thread 不會產生重複列。
+- **已知限制**：n8n Public API 對 Schedule-Trigger workflow 無手動觸發端點（`POST /workflows/{id}/run` 回 405），故本次以本地 Node 模擬（`new Function` 包 mock `$()` 執行抽出的 jsCode）驗證邏輯，真正 live cron 端到端驗證留待下次排程（`0 6 * * *` HKT，即 2026-07-12T22:00Z 後）自然發生，可用 `get_execution_log` 或直接查 `ig_watchdog_alerts WHERE kind='verified_ok'` 覆核首批寫入。
+
+**Phase 5（P1b）— orders anon 權限收斂**：
+- Migration `0051_orders_anon_policy_cleanup.sql`：原計畫刪除 `orders_anon_delete`（判斷為「未使用」）+ 刪除重複的 `anon_update_orders`（與 `orders_anon_update` 逐字等價，保留後者）。
+- **⚠️ 事故與修正**：`orders_anon_delete` 判斷錯誤——Dashboard `executeDeleteOrder()`（L11515-11525，綁定 `#confirmDeleteBtn`）實際會以 anon key 對 `orders` 發 DELETE（"Supabase hard delete (primary)"）。原始 grep 稽核用單行 pattern 未命中，因為 `method:'DELETE'` 與 URL 分處不同行。政策移除後，該請求因 table 級 GRANT 仍在、但 RLS 無 permissive DELETE 政策而濾空 0 rows，仍回 **HTTP 200**（非 403），前端 `if (!sbDelRes.ok)` 判斷不到，UI 彈出「已成功刪除」但訂單實際未刪——靜默失敗。由 fresh-context code-reviewer(opus) 於同一 session 內抓出，即時以 `0052_restore_orders_anon_delete.sql` 回滾該政策。影響窗口 2026-07-12 約 12:34–12:41 UTC（~7 分鐘），經核實無真實訂單資料受影響（低流量內部後台工具，且失效模式是「刪不掉」而非「誤刪」）。
+- 最終生效狀態：`orders_anon_delete` 保留（原樣）；`anon_update_orders` 刪除，只留 `orders_anon_update`（UPDATE 去重部分判斷正確，經 fresh-context 二次核實 PASS）。
+- **教訓（見 lessons/INDEX.md 2026-07-12 條目）**：稽核「前端是否呼叫某端點」不能用單行 grep pattern 判斷不存在；HTTP method 與 URL 常因程式碼風格分行，且 anon-key 對有 RLS 保護表的寫入操作，權限不足時常「表面 2xx、實際 0 rows」而非顯式 403/404，兩者組合會讓移除政策的回歸長期潛伏不被發現。
+
+**Phase 6 — 制度收尾**：本節（§11.6）即落盤項之一；另見 `decisions.md`、`Changelog.md`、`.fhs/memory/lessons/INDEX.md` 對應條目、`.fhs/memory/handoff.md` 便攜塊更新。

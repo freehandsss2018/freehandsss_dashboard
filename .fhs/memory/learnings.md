@@ -64,6 +64,7 @@
 26. **【高頻 ⚠️】顏色 bug 純讀碼/grep 查不全，JS `style.color='inherit'` 非「還原」**：舊色號散落多分頁寫法不一致，grep 抓不齊；`inherit` 會抓外層色，應設 `''` 讓 class 接管。改用瀏覽器 DOM 掃描量測 computed color 找離群值 — S157(未修好)/S159(補完)
 27. **【高頻 ⚠️】Dashboard 巨檔多 `<script>` block，看似頂層 function 可能只是另一 IIFE 內的區域函式**：`_findOrder` 定義在獨立 `<script>(function(){...})()` （P3/P4 Bottom-Sheet 區塊）內，於較早 script block 呼叫得 `ReferenceError`，onchange handler 內被靜默吞掉、UI 無任何反應。新函式引用「看起來是全域」的 helper 前，grep 確認其宣告是否包在 IIFE 內；務必實機點擊驗證（confirm/console mock），不能只靠語法檢查 — Session 161續
 28. **`.fhs/.deploy-ok` 旗標內容必須是純 ISO timestamp 字串，寫描述文字會被靜默清空**：guard 用 `new Date(content)` 解析旗標檔，非合法時間格式 → `NaN` → 判定過期並自動刪除，下一步 cp 升格仍被攔截且無明確錯誤提示。建立旗標時只寫 `new Date().toISOString()` 輸出，不可夾帶說明文字 — Session 167
+29. **【高頻 ⚠️】移除 RLS 政策前必查真實呼叫+驗真實資料狀態，勿信 HTTP 200**：稽核「表是否有 anon 呼叫」不能只 grep 單行 pattern（`method:'DELETE'` 常與 URL 分行漏判）；移除政策後，若 table 級 GRANT 仍在但無 permissive RLS，PostgREST 回 HTTP 200+0 rows 而非 403，驗收只看 status code 會誤判成功。政策變更驗收須用真實（非 bogus）測試列，確認資料真的被改動 — Session 168 [[2026-07-12_rls-policy-removal-silent-2xx-write-failure]]
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >

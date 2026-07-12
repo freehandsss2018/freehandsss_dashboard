@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-07-12] Session 168（Claude Code / Sonnet 5 執行）— S150 Phase 4-6 執行完成（verified_ok正向記錄+orders anon權限收斂，含即時修復一則回歸）
+
+- **Phase 4（P1a）verified_ok 正向記錄**：Migration `0050`（`ig_watchdog_alerts.kind` CHECK 三值擴充）→ `scripts/ig-watchdog/build_n8n_workflow.cjs` 新增 `created_full`→`verified_ok` 映射（resolved=true，不進待處理計數、TG 不加噪音）→ curl 4 欄位 PUT 部署至 live n8n `D4LK6VrQbiXlju0V`（versionId `05740bb4...`→`4a125f6b...`）→ V42 `_renderIgWatchList` `kindLabel`/`kindColor` 補綠色「✓ 已核對」（L13965-13966）。冪等由既有 `ix_igwatch_alerts_dedup` UNIQUE INDEX 天然覆蓋。本地 Node 模擬（mock `$()` 執行抽出的 jsCode）驗證邏輯正確；live cron 端到端驗證留待下次排程（2026-07-12T22:00Z 後）。
+- **Phase 5（P1b）orders anon 權限收斂 + 即時修復回歸**：Migration `0051` 刪除重複的 anon UPDATE 政策（保留 `orders_anon_update`）判斷正確；但同批誤刪 `orders_anon_delete`（判斷「未使用」，實際 grep 因 `method:'DELETE'` 與 URL 分行漏判 `executeDeleteOrder()` 的真實呼叫），造成 Dashboard 刪除訂單按鈕靜默失效（RLS 濾空但仍回 HTTP 200，UI 誤報成功）。由 fresh-context code-reviewer(opus) 同一 session 內抓出，即以 Migration `0052` 回滾，真實列 anon DELETE 探針二次確認生效。影響窗口約 7 分鐘（12:34–12:41 UTC），無真實訂單資料受損。
+- **驗收**：fresh-context code-reviewer(opus) 兩輪獨立審查（初輪抓 CRITICAL → 修復 → 複驗 PASS），符合 AGENTS.md「驗收不自驗」紅線。
+- **文件同步**：`.fhs/notes/FHS_System_Logic_Overview.md` §11 全節更新（新增 §11.6）；`decisions.md` D25；新增教訓 `2026-07-12_rls-policy-removal-silent-2xx-write-failure.md` 並登記 `lessons/INDEX.md`；本地 migrations 資料夾同步補齊 0049（此前已 live 但本地缺檔的舊 drift）+ 0050-0052。
+- **待辦**：live cron 端到端驗證（首批 `verified_ok` 寫入）待 2026-07-12T22:00Z 後由後續 session 或 Fat Mo 覆核；本次變更尚未 `/commit`，git working tree 仍為未提交狀態。
+- **Subagent 使用記錄**：`code-reviewer`（opus，fresh-context）× 1 個 agent、2 輪對話（初審抓 CRITICAL 回歸 + 修復後複驗 PASS）。
+
 ## [2026-07-12] Session 167（Claude Code / Sonnet 5 執行）— S165 Dashboard 功能實機測試 PASS，升格 current 部署
 
 - **實機測試**：Browser preview 對 V42 實跑 S165 兩項功能：(1) 全域錯誤可見化——手動觸發 JS Error 與 Promise rejection，右上角提示卡正確彈出（文案/8秒消失/防重複皆符合設計）；(2) 訂單草稿自救——新增訂單模式輸入內容→重整頁面→草稿還原提示條正確出現→「繼續上次輸入」正確還原表單內容。Fat Mo 確認通過。

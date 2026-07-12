@@ -1437,3 +1437,15 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 ### D24：S163續 — canva-auto P2 本地加工 pilot 成功，正式落盤 `canva_auto/local_prep.py`
 
 **決策**：D23 canva-auto SOP v2.1 提出嘅 P2 選項（圖片加工本地化）經 pilot 驗證成功，正式落盤為可重用工具。魔法抓取去背改用 rembg（u2net 模型，本機執行，質素與 Canva 相當）；ColourMix→Parakeet 色譜經數值反推證實為**固定 preset**（非逐圖自動調整）——用兩張獨立訂單嘅 Canva 匯出樣本（`Free_Laser (0526)`／`(0529)`，皆 1563×1563 canvas）交叉擬合出幾乎一致嘅線性色相漸變公式（H(x,y) ≈ -0.1447x + 0.0994y + 0.00004 mod 360°，平均誤差 11-17°），肉眼比對高度吻合。工具落盤 `canva_auto/local_prep.py` + `canva_auto/README.md`（比照 `3d/` 資料夾慣例，新建頂層 `canva_auto/` 目錄），已用 Pangonyi 訂單 0600907 真實檔案端到端跑通。片去背（page4 動畫/page3 背景層）維持人手做（本地質素風險大，未搬）。Fat Mo Stage②人手步驟由 5 步減至 2 步（片去背+最終擺位對齊）。已知限制：任意輸入圖尺寸「拉伸貼合」去 1563×1563 座標系嘅假設只喺同尺寸樣本驗證過；Canva 若改版 Parakeet preset 公式會過時，需重新反推。詳見記憶檔 `project_canva_video_automation.md`。
+
+### D25：S150 Phase 4-6 執行完成——verified_ok 正向記錄 + orders anon 權限收斂（含即時修復一則回歸）
+
+**決策**：D14 排定「留待 S148/S149 後接續」的 S150 Phase 4-6，於 2026-07-12 由 Fat Mo 核准後接續執行（S148 已完成；S149 治理可攜化計畫仍待批准，但與 Phase 4-6 零檔案交集，不構成阻塞，Fat Mo 選擇不等 S149 直接放行）。
+
+執行內容：
+1. **Phase 4（P1a）**：Migration `0050`（`ig_watchdog_alerts.kind` CHECK 擴充三值）→ `scripts/ig-watchdog/build_n8n_workflow.cjs` 新增 `verifiedItems`/`verified_ok` 映射（created_full 正向記錄，resolved=true 不進待處理計數、TG 不加噪音）→ curl 4 欄位 PUT 部署至 live n8n `D4LK6VrQbiXlju0V` → V42 UI `kindLabel`/`kindColor` 補綠色「✓ 已核對」。冪等由既有 `ix_igwatch_alerts_dedup` UNIQUE INDEX（對 kind 值無特化）天然保護，無需額外機制。
+2. **Phase 5（P1b）**：Migration `0051` 收斂 orders anon 權限——**過程中發生一次即時修復的回歸**：`orders_anon_delete` 政策被誤判「未使用」而移除，實際 Dashboard `executeDeleteOrder()` 確有使用（grep 稽核因 `method:'DELETE'` 與 URL 分行未命中），移除後前端刪除訂單請求靜默失敗（RLS 濾空但仍回 HTTP 200，UI 誤報成功）。由 fresh-context code-reviewer(opus) 於同一 session 內抓出並要求修復，即以 Migration `0052` 回滾該政策，經真實列 anon DELETE 探針二次確認生效，影響窗口約 7 分鐘（2026-07-12 12:34–12:41 UTC），無真實訂單資料受損。UPDATE 政策去重（保留 `orders_anon_update`，刪除重複的 `anon_update_orders`）判斷正確，維持生效。
+3. **驗收機制**：本輪嚴格執行「驗收不自驗」——fresh-context code-reviewer(opus) 兩輪審查（初輪抓出 CRITICAL 回歸 → 修復 → 複驗 PASS），過程完整記錄於 `.fhs/notes/FHS_System_Logic_Overview.md` §11.6。
+4. **已知限制**：n8n Public API 對 Schedule-Trigger workflow 無手動觸發端點，live cron 端到端驗證（首批 `verified_ok` 寫入）留待下次自然排程（2026-07-12T22:00Z 後）由後續 session 或 Fat Mo 覆核。
+
+新增教訓：[[2026-07-12_rls-policy-removal-silent-2xx-write-failure]]（RLS 政策移除稽核的 grep 盲點 + anon 寫入失敗的靜默 2xx 模式）。詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.6、`supabase/migrations/0050-0052`。

@@ -277,10 +277,11 @@ const orders = flattenItems($('Fetch Orders').all());
 const orderIndex = buildOrderIndex(orders);
 
 const notifyItems = [];
+const verifiedItems = []; // S150 Phase 4 (P1a): created_full 正向記錄候選
 let cFull = 0, cIncomplete = 0, cNotCreated = 0, cWeak = 0;
 for (const om of orderMsgs) {
   const cls = classifyMessage({ text: om.text, hasReceipt: om.hasReceipt }, orderIndex);
-  if (cls.category === 'created_full') cFull++;
+  if (cls.category === 'created_full') { cFull++; verifiedItems.push({ om, cls }); }
   else if (cls.category === 'created_incomplete') { cIncomplete++; notifyItems.push({ om, cls, kind: '資訊不齊' }); }
   else if (cls.category === 'not_created') { cNotCreated++; notifyItems.push({ om, cls, kind: '未建立' }); }
   else if (cls.category === 'weak_no_id') cWeak++;
@@ -309,18 +310,34 @@ const summary = '🐶 IG漏單看門狗 v3（訂號偵測）\\n覆蓋：' + cove
   + '\\n需核對：' + notifyItems.length + '\\n\\n'
   + (detailLines.join('\\n\\n') || '（本次無需核對項目）');
 
-const alerts = notifyItems.map(it => ({
-  alert_date: new Date().toISOString().slice(0, 10),
-  order_id: it.cls.orderId || null,
-  kind: it.cls.category,
-  category: it.cls.category,
-  customer_name: it.om.customer || it.om.sender || null,
-  snippet: (it.om.text || '').slice(0, 40),
-  thread: it.om.thread || null,
-  has_receipt: it.om.hasReceipt || false,
-  db_matched: it.cls.category === 'created_incomplete',
-  raw: { om: it.om, cls: it.cls },
-}));
+const alerts = [
+  ...notifyItems.map(it => ({
+    alert_date: new Date().toISOString().slice(0, 10),
+    order_id: it.cls.orderId || null,
+    kind: it.cls.category,
+    category: it.cls.category,
+    customer_name: it.om.customer || it.om.sender || null,
+    snippet: (it.om.text || '').slice(0, 40),
+    thread: it.om.thread || null,
+    has_receipt: it.om.hasReceipt || false,
+    db_matched: it.cls.category === 'created_incomplete',
+    raw: { om: it.om, cls: it.cls },
+  })),
+  // S150 Phase 4 (P1a): created_full → verified_ok 正向記錄，resolved=true 預設不進待處理計數
+  ...verifiedItems.map(it => ({
+    alert_date: new Date().toISOString().slice(0, 10),
+    order_id: it.cls.orderId || null,
+    kind: 'verified_ok',
+    category: 'verified_ok',
+    customer_name: it.om.customer || it.om.sender || null,
+    snippet: (it.om.text || '').slice(0, 40),
+    thread: it.om.thread || null,
+    has_receipt: it.om.hasReceipt || false,
+    db_matched: true,
+    raw: { om: it.om, cls: it.cls },
+    resolved: true,
+  })),
+];
 // Phase 3: 深連結在 Code 節點組合（n8n expression evaluator 不支援複雜 JS 鏈式語法）
 const telegramText = summary + alerts
   .filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created'))
