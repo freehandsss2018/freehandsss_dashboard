@@ -13962,8 +13962,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 return;
             }
             listEl.innerHTML = filtered.map(function(r) {
-                var kindLabel = r.kind === 'not_created' ? '🆕 未建立' : '📝 資訊不齊';
-                var kindColor = r.kind === 'not_created' ? '#ef4444' : '#f59e0b';
+                var kindLabel = r.kind === 'not_created' ? '🆕 未建立' : (r.kind === 'verified_ok' ? '✓ 已核對' : '📝 資訊不齊');
+                var kindColor = r.kind === 'not_created' ? '#ef4444' : (r.kind === 'verified_ok' ? '#059669' : '#f59e0b');
                 var resolvedBadge = r.resolved
                     ? '<span style="font-size:11px;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:9px;margin-left:4px;">✓ 已處理</span>'
                     : '';
