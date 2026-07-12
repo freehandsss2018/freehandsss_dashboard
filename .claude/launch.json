@@ -4,8 +4,8 @@
     {
       "name": "fhs-dashboard",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "Freehandsss_Dashboard", "-l", "5500"],
-      "port": 5500
+      "runtimeArgs": ["serve", "Freehandsss_Dashboard"],
+      "autoPort": true
     }
   ]
 }

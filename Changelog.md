@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-07-12] Session 169（Claude Code / Sonnet 5 執行）— 開發預覽伺服器 port 5500 衝突修復
+
+- **問題**：`.claude/launch.json` 的 `fhs-dashboard` 設定寫死 `-l 5500` + `"port": 5500`，其他 chat session 已佔用該埠，導致本 session preview_start 失敗。
+- **修復**：`Freehandsss_Dashboard/` 純靜態檔案預覽伺服器，無 OAuth/webhook/CORS 依賴固定埠號，改 `"autoPort": true` 並移除 `runtimeArgs` 中硬編碼的 `-l 5500` 讓 `serve` 自行採用分配埠；驗證：`preview_start` 成功於 3000 埠啟動，`preview_logs` 無錯誤。
+- **待辦**：無。
+- **Subagent 使用記錄**：❌ 未使用——單檔設定修正+瀏覽器工具驗證，屬主對話可直接做的已知路徑操作。
+
 ## [2026-07-12] Session 168（Claude Code / Sonnet 5 執行）— S150 Phase 4-6 執行完成（verified_ok正向記錄+orders anon權限收斂，含即時修復一則回歸）
 
 - **Phase 4（P1a）verified_ok 正向記錄**：Migration `0050`（`ig_watchdog_alerts.kind` CHECK 三值擴充）→ `scripts/ig-watchdog/build_n8n_workflow.cjs` 新增 `created_full`→`verified_ok` 映射（resolved=true，不進待處理計數、TG 不加噪音）→ curl 4 欄位 PUT 部署至 live n8n `D4LK6VrQbiXlju0V`（versionId `05740bb4...`→`4a125f6b...`）→ V42 `_renderIgWatchList` `kindLabel`/`kindColor` 補綠色「✓ 已核對」（L13965-13966）。冪等由既有 `ix_igwatch_alerts_dedup` UNIQUE INDEX 天然覆蓋。本地 Node 模擬（mock `$()` 執行抽出的 jsCode）驗證邏輯正確；live cron 端到端驗證留待下次排程（2026-07-12T22:00Z 後）。
