@@ -95,7 +95,7 @@ process.stdin.on('end', () => {
         blocking.push(
           '🚫 [R1] 禁止覆蓋正式環境 Freehandsss_dashboard_current.html',
           '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），或 (b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效'
+          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），(b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效，或 (c) 本次是 /commit Phase 2.5 偵測到需要部署後的鏈式觸發（AGENTS.md v1.7.0）'
         );
       }
     }
@@ -190,7 +190,7 @@ process.stdin.on('end', () => {
         blocking.push(
           '🚫 [R9] 偵測到 Bash 指令疑似寫入 current.html',
           '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），或 (b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效'
+          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），(b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效，或 (c) 本次是 /commit Phase 2.5 偵測到需要部署後的鏈式觸發（AGENTS.md v1.7.0）'
         );
       }
     }

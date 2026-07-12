@@ -12,7 +12,7 @@
 
 **無參數（預設 — 升格流程）：**
 1. 掃描 `Freehandsss_Dashboard/` 找最高版本號的 `freehandsss_dashboardV*.html`
-2. 向 Fat Mo 二次確認（「偵測到最新版：VXX，確認升格 current 並部署？」）
+2. 向 Fat Mo 二次確認（「偵測到最新版：VXX，確認升格 current 並部署？」）——**例外（S168，AGENTS.md v1.7.0）**：若由 `/commit` Phase 2.5 條件觸發（已偵測到本次 commit 有改動 Dashboard HTML），跳過此步
 3. `Copy-Item` 最新版 → `Freehandsss_dashboard_current.html`
 4. 執行 `powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force`
 5. 回報 PASS/FAIL：偵測版本 + 公開網址 + 大小比對 + SHA256

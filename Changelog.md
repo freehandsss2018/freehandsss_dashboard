@@ -6,8 +6,14 @@
 - **Phase 5（P1b）orders anon 權限收斂 + 即時修復回歸**：Migration `0051` 刪除重複的 anon UPDATE 政策（保留 `orders_anon_update`）判斷正確；但同批誤刪 `orders_anon_delete`（判斷「未使用」，實際 grep 因 `method:'DELETE'` 與 URL 分行漏判 `executeDeleteOrder()` 的真實呼叫），造成 Dashboard 刪除訂單按鈕靜默失效（RLS 濾空但仍回 HTTP 200，UI 誤報成功）。由 fresh-context code-reviewer(opus) 同一 session 內抓出，即以 Migration `0052` 回滾，真實列 anon DELETE 探針二次確認生效。影響窗口約 7 分鐘（12:34–12:41 UTC），無真實訂單資料受損。
 - **驗收**：fresh-context code-reviewer(opus) 兩輪獨立審查（初輪抓 CRITICAL → 修復 → 複驗 PASS），符合 AGENTS.md「驗收不自驗」紅線。
 - **文件同步**：`.fhs/notes/FHS_System_Logic_Overview.md` §11 全節更新（新增 §11.6）；`decisions.md` D25；新增教訓 `2026-07-12_rls-policy-removal-silent-2xx-write-failure.md` 並登記 `lessons/INDEX.md`；本地 migrations 資料夾同步補齊 0049（此前已 live 但本地缺檔的舊 drift）+ 0050-0052。
-- **待辦**：live cron 端到端驗證（首批 `verified_ok` 寫入）待 2026-07-12T22:00Z 後由後續 session 或 Fat Mo 覆核；本次變更尚未 `/commit`，git working tree 仍為未提交狀態。
+- **待辦**：live cron 端到端驗證（首批 `verified_ok` 寫入）待 2026-07-12T22:00Z 後由後續 session 或 Fat Mo 覆核。
 - **Subagent 使用記錄**：`code-reviewer`（opus，fresh-context）× 1 個 agent、2 輪對話（初審抓 CRITICAL 回歸 + 修復後複驗 PASS）。
+
+## [2026-07-12] Session 168續（Claude Code / Sonnet 5 執行）— /commit 升格與部署，新增授權途徑(c)條件觸發自動部署
+
+- **部署**：Fat Mo 直接回覆同意升格確認問題，AI 自建 `.fhs/.deploy-ok`（AGENTS.md 授權途徑a）→ V42 升格 current.html（MD5一致）→ NAS WebDAV 三關驗證 PASS（PUT HTTP 204／989,490 bytes 相符／SHA256 `3AA00D31...D853D5`）→ `/commit` 全包完成，commit `b9e9dcd`（S150 Phase4-6）+ `b5aa013`（current.html部署）已 push。Step0 `/fhs-check`：LIFECYCLE/STRESS/ACCEPTANCE PASS，PRICE_AUDIT 仍 FAIL（Airtable 429 月額度用盡，比照 S167 先例不阻擋部署）。
+- **治理規則新增**：Fat Mo 對「commit→push→upload-web 逐步詢問」表達不耐，AI 提出兩種範圍請 Fat Mo 選擇後，Fat Mo 選定「任何時候 `/commit` 都自動一併部署」，隨即主動優化為「先自動偵測是否需要部署，需要才自動一併部署」（判斷依據＝本次 commit 是否包含 `Freehandsss_Dashboard/freehandsss_dashboardV*.html`）。AGENTS.md §3 授權途徑由二擇一擴充為三選一（v1.6.0→**v1.7.0**）；`commit.md`（v2.2.0→v2.3.0）新增 Phase 2.5 條件觸發部署鏈；`upload-web.md`（v1.2.0→v1.3.0）Step 1 新增鏈式觸發例外。三途徑對 Antigravity/VS Code 同樣適用（Master 檔案雙邊橋接）；AG 因不經 `pre-tool-guard.js` 守護，途徑(c)在 AG 端純屬行為層約束。部署三關驗證與 `/fhs-check` 前置檢查兩道機械防線不受影響，只移除「是否要部署」的人工確認層。決策見 [decisions.md](../notes/decisions.md) D26。
+- **Subagent 使用記錄**：❌ 未使用——既定 SOP（`/upload-web`、`/commit`）執行 + 憲法層文件直接編輯，屬主對話可直接做的已知路徑操作。
 
 ## [2026-07-12] Session 167（Claude Code / Sonnet 5 執行）— S165 Dashboard 功能實機測試 PASS，升格 current 部署
 

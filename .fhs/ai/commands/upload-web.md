@@ -1,7 +1,7 @@
 # /upload-web — 上傳 Dashboard 至 NAS Web Station
 
 **用途 (Purpose)**：自動偵測最新開發版，升格為 current，並上傳至 NAS Web Station `/web` 共用資料夾，三關驗證完整性。
-**版本**：v1.2.0 (2026-07-05，新增 Step 0 部署前置 /fhs-check 檢查)
+**版本**：v1.3.0 (2026-07-12，S168，新增 /commit 條件偵測後鏈式觸發時跳過 Step 1 二次確認的例外)
 **通用平台**：Claude Code (CL) · Antigravity/Gemini (AG) — 雙端通用（需本機 shell + curl；2026-06-08 Fat Mo 授權開放 AG）
 **觸發**：`/upload-web` 或 `/upload-web [目標]`
 
@@ -61,6 +61,8 @@ latest=$(ls Freehandsss_Dashboard/freehandsss_dashboardV*.html | sort -V | tail 
 > 「偵測到最新版：`{latest檔名}`，將升格為 current.html 並部署至 NAS，確定？」
 
 未確認不得繼續。
+
+> **例外（2026-07-12，S168，AGENTS.md v1.7.0 授權途徑c）**：若本次 `/upload-web` 是由 `/commit` Phase 2.5 鏈式觸發（即該 Phase 已偵測到本次 commit 確實改動 `Freehandsss_Dashboard/freehandsss_dashboardV*.html`，判定「需要部署」），此步驟**跳過**，視為已由 `/commit` 本身取得授權。獨立、非 `/commit` 鏈式觸發的 `/upload-web` 呼叫（Fat Mo 直接輸入 `/upload-web` 或單獨要求部署），仍必須走本步驟二次確認。
 
 #### Step 2 — cp 升格
 **PowerShell（CL）：**

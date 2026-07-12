@@ -4,7 +4,7 @@
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-12（Session 167 `/commit` Lesson Distillation，退役 Pitfall #24 [健檢工具自我遞迴掃描假陽性，已結構性修復]，對等替換1條新教訓（deploy-ok旗標格式），維持50條上限；歷史：S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
+> 上次整理：2026-07-12（Session 168 `/commit` Lesson Distillation，退役 Pitfall #21 [n8n網址硬編碼一次性事故，正確值已永久記錄於decisions.md，非需記憶提醒的操作紀律]，對等替換1條新教訓（RLS政策移除靜默2xx失敗），維持50條上限；歷史：S167 51→50、S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -56,7 +56,6 @@
 18. **Python json.dump emoji → n8n surrogate pair "invalid syntax"**：用 Python 序列化含 emoji（如 🔗）的 n8n workflow JSON 時，若 `ensure_ascii=False` 且環境 CP950，emoji 被寫成 surrogate pair（`\udcfx...`）；n8n 求值表達式時 "invalid syntax" 靜默失敗。修法：`json.dump(..., ensure_ascii=True)` 強制 ASCII escape，或改用純 ASCII 替代符號（`>` 代替 🔗）— Session 128
 19. **【Pitfall #19】Postgres `CREATE OR REPLACE FUNCTION` 不能改參數名**：`CREATE OR REPLACE` 替換函數時若參數名與原函數不同，報 `42P13: cannot change name of input parameter`。解法：保留原參數名，或先 `DROP` 再建。改函數前必須讀原 migration SQL 確認 param names — Session 130 Phase B
 20. **【git】checkout 會靜默攜帶未提交修改跨分支，merge 因而空操作**：編輯完檔案後忘記 commit 就 `git checkout main`，修改內容原封不動跟過去（不報錯不提示）；此時對原分支 `merge --no-ff` 只會輸出 `Already up to date`（無 diffstat）——這個異常平淡的訊息就是空合併的訊號，需 `git log <branch> --oneline` 核對該分支是否真有獨立 commit。切分支/宣告完工前先 commit，不要等到 merge 前才做 — Session 144
-21. **n8n Code 節點內嵌 dashboard 網址禁憑印象寫死**：Telegram 深連結硬編碼 `yanhei.synology.me:5006/web/`（NAS 內網路徑）實測 401，正確應為 decisions.md 記載之公開網址。修法：任何嵌入網址一律對照 decisions.md + curl 實測 200 才寫入，勿假設內網 port/路徑對外可達 — Session 136
 22. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
 23. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
 24. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
@@ -73,6 +72,8 @@
 > 📌 **退役**（Session 144，`/commit` Lesson Distillation，全檔滿50條需對等替換）：「Shell hook 勿用通用標題抓取」（原 Pitfall #21，Session 118）——修復已是結構性（fence tag 格式已固化進 handoff.md 設計本身），非需要每次靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（git checkout 攜帶未提交修改導致 merge 空操作）。
 >
 > 📌 **退役**（Session 146，`/fhs-slim` 觸發，全檔滿51條超50上限）：「IIFE 閉包函式 onclick 靜默失效」（原 Pitfall #7，Session 2026-05-27）——修復手法（IIFE 末尾明確 `window.fn = fn` 暴露）已是本專案標準寫法慣例，非需靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度使全檔回落至50條上限（本輪無新教訓對等替換）。
+>
+> 📌 **退役**（Session 168，`/commit` Lesson Distillation，全檔滿51條超50上限）：「n8n Code 節點內嵌 dashboard 網址禁憑印象寫死」（原 Pitfall #21，Session 136）——一次性歷史事故（硬編碼錯誤內網 URL），正確公開網址已永久記錄於 `decisions.md`，非需靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（RLS 政策移除稽核 grep 盲點 + anon 寫入靜默 2xx 失敗）。
 
 ---
 

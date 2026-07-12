@@ -1,6 +1,6 @@
 # /commit (任務完成 · 全包一條龍)
-> Version: v2.2.0 (2026-07-05, Session 144) | 新增 Phase 1 敘事單源分級合約（治 S142/S143 MASTER 表 drift 事故根因）
-> 本指令為任務完成之單一入口：包含掃描、同步、備份與推送。
+> Version: v2.3.0 (2026-07-12, Session 168) | 新增 Phase 2.5 條件觸發升格部署鏈（AGENTS.md v1.7.0 授權途徑c，先偵測 Dashboard HTML 是否有改動才部署）
+> 本指令為任務完成之單一入口：包含掃描、同步、備份、推送、（視偵測結果）升格部署。
 
 ## 🧩 執行標準 (General Rules)
 - **🔴 項目失敗**：立即中斷任務，輸出錯誤並等待修復。
@@ -113,6 +113,18 @@
 1. **Staging**: `git add .` -> `git status`。
 2. **Safety**: 若出現 `.env` 則立即 `git reset HEAD .env` 並警告。
 3. **Push**: `git commit -m "chore: sync [YYYY-MM-DD]"` -> `git push`。
+
+## 【Phase 2.5: 自動升格部署（條件觸發，2026-07-12 Session 168，AGENTS.md v1.7.0 授權途徑c）】
+> **先偵測、後執行、不再詢問**：Fat Mo 執行 `/commit` 本身即構成「有條件」授權（AGENTS.md §3 授權途徑 c）。AI 先自動判斷本次是否需要部署，需要則直接續走部署鏈，不需要則只做 commit+push——兩種結果皆不再另外詢問確認。
+
+1. **偵測是否需要部署**：`git diff --cached --name-only`（或本次已知改動清單）是否包含 `Freehandsss_Dashboard/freehandsss_dashboardV*.html`（dev 版原始檔，非 `current.html` 本身）。
+   - **有**改動該檔案 → 判定「需要部署」，繼續下方步驟 2-6。
+   - **沒有**改動（純文件/治理/migration/n8n/其他 scripts 改動）→ 判定「不需要部署」，Phase 2.5 到此結束，直接進 Phase 3 回報，並註明「本次未改動 Dashboard HTML，已跳過部署」。
+2. 依 `upload-web.md` 無參數流程執行：偵測 `Freehandsss_Dashboard/` 內版本號最高的 `freehandsss_dashboardV*.html` → **跳過該檔案原本的 Step 1 二次確認**（已由途徑c預先授權）→ AI 自建 `.fhs/.deploy-ok`（純 ISO timestamp 字串，見 learnings.md #28，禁夾帶說明文字）→ cp 升格為 `Freehandsss_dashboard_current.html`。
+3. 執行 `scripts/upload-web.ps1 current -Force` 完成 NAS 部署，三關驗證（HTTP 200 / Content-Length 相符 / SHA256 相符）不可省略——**任一關失敗則視為部署失敗**，回報 Fat Mo，不得回頭跳過驗證強行視為成功。
+4. 部署前置 `/fhs-check`（Step 0）仍需執行；若命中**已有先例裁決不阻擋部署的已知外部限制**（如 Airtable API 429 額度用盡類的 PRICE_AUDIT FAIL），比照先例繼續部署並在回報中註明；若是**新出現**的 Red Flag（非既有已裁決先例），停止部署並回報，不得比照舊例擅自放行。
+5. `git add` 補上 `Freehandsss_Dashboard/Freehandsss_dashboard_current.html` + `.fhs/notes/deploy-log.md`（hook 自動追加）→ 追加一個部署 commit → push。
+6. 回報格式併入 Phase 3（見下），額外附上傳三關結果 + 公開網址。
 
 ---
 

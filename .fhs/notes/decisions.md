@@ -1449,3 +1449,17 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 4. **已知限制**：n8n Public API 對 Schedule-Trigger workflow 無手動觸發端點，live cron 端到端驗證（首批 `verified_ok` 寫入）留待下次自然排程（2026-07-12T22:00Z 後）由後續 session 或 Fat Mo 覆核。
 
 新增教訓：[[2026-07-12_rls-policy-removal-silent-2xx-write-failure]]（RLS 政策移除稽核的 grep 盲點 + anon 寫入失敗的靜默 2xx 模式）。詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.6、`supabase/migrations/0050-0052`。
+
+### D26：S168續 — `/commit` 新增授權途徑(c)：條件觸發自動升格部署，AGENTS.md v1.6.0→v1.7.0
+
+**決策**：D25 執行完成後，Fat Mo 對「commit→push→upload-web 三步驟逐一詢問」的既有流程表達不耐（連續三次確認過於煩瑣），要求新增一條標準授權途徑：執行 `/commit`（或明確要求 commit）本身即代表同意連帶 push 與 upload-web，AI 不需再逐步詢問。
+
+**裁決過程**：AI 提出兩種範圍先請 Fat Mo 選擇：(1) 僅限同一輪對話內已明確提過部署字眼才視為連帶授權；(2) 任何時候講 `/commit` 都自動一併部署，不論改動內容是否與 Dashboard 相關。Fat Mo 首選 (2)（在被告知「純文件/治理改動也會觸發部署」風險後仍選定），隨後主動追加優化：改為「先自動偵測是否需要部署，需要才自動一併部署」——即不論對話有無提過部署字眼，AI 都應先判斷本次 commit 是否**實際改動** `Freehandsss_Dashboard/freehandsss_dashboardV*.html`（判斷依據＝`git diff --cached --name-only` 是否命中該路徑，非主觀判斷），有改動才續走部署鏈，沒有則只 commit+push。此為 Fat Mo 對自己第一版選擇的即時優化，非兩個獨立決策。
+
+**最終規則**（v1.7.0 生效）：
+- AGENTS.md §3「禁止覆蓋正式環境」授權途徑由「二擇一」擴充為「三選一」，新增途徑(c)：`/commit` 本身即構成有條件授權，AI 依 `git diff --cached --name-only` 是否包含 Dashboard dev 版 HTML 路徑自動判斷是否需要部署，兩種結果皆不再另外詢問確認。
+- `commit.md`（v2.2.0→v2.3.0）新增 Phase 2.5：先偵測、後執行（需要則續走 upload-web 升格部署流程 + 三關驗證；不需要則直接進 Phase 3 回報並註明跳過原因）。
+- `upload-web.md`（v1.2.0→v1.3.0）Step 1 二次確認新增例外：由 `/commit` Phase 2.5 鏈式觸發時跳過；獨立呼叫（Fat Mo 直接輸入 `/upload-web`）仍須二次確認。
+- 三途徑對 Antigravity/VS Code 同樣適用（AGENTS.md 為多工具共用憲法層，commit.md/upload-web.md 為 Master 檔案雙邊橋接）；AG 因寫入不經 `pre-tool-guard.js` 技術守護，途徑(c)在 AG 端純屬行為層約束。
+
+**風險與緩解**：仍保留部署三關驗證（HTTP 200/大小/SHA256）與 `/fhs-check` 前置檢查兩道機械防線，只移除「是否要部署」這一層人工確認；已知外部限制（如 Airtable 429）比照既有先例不阻擋部署，新出現的 Red Flag 仍會停止並回報，不因此規則而降低失敗容忍度。
