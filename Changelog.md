@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-07-12] Session 167（Claude Code / Sonnet 5 執行）— S165 Dashboard 功能實機測試 PASS，升格 current 部署
+
+- **實機測試**：Browser preview 對 V42 實跑 S165 兩項功能：(1) 全域錯誤可見化——手動觸發 JS Error 與 Promise rejection，右上角提示卡正確彈出（文案/8秒消失/防重複皆符合設計）；(2) 訂單草稿自救——新增訂單模式輸入內容→重整頁面→草稿還原提示條正確出現→「繼續上次輸入」正確還原表單內容。Fat Mo 確認通過。
+- **部署前置 `/fhs-check`**：LOCAL_AUDIT SKIP（測試檔不存在，與本次無關）、LIFECYCLE/STRESS/ACCEPTANCE 三項核心流程全 PASS；PRICE_AUDIT FAIL（Airtable API 429 `PUBLIC_API_BILLING_LIMIT_EXCEEDED`，本月額度用盡，屬外部服務限制，與 S165 前端改動無關）。Red Flag 記入 `.fhs/notes/session-log.md`，Fat Mo 裁決此 Red Flag 不阻擋部署，繼續執行。
+- **升格部署**：Fat Mo 直接回覆同意升格（AGENTS.md §3 授權途徑(a)），AI 自建 `.fhs/.deploy-ok`（記入 `deploy-log.md` 供稽核）→ `freehandsss_dashboardV42.html` → `Freehandsss_dashboard_current.html`（MD5 相符）→ `scripts/upload-web.ps1 current -Force` 上傳 NAS，三關驗證 PASS：PUT HTTP 204、檔案大小 989,402 bytes 本地/遠端相符、SHA256 `10B43DC7...5DC6420` 一致。公開端點：`https://yanhei.synology.me/Freehandsss_dashboard_current.html`。
+- **待辦**：無（S165 全案結案）。
+- **Subagent 使用記錄**：❌ 未使用——瀏覽器工具實機測試+既定 SOP（`/fhs-check`、`/upload-web`）執行，屬主對話可直接做的已知路徑操作。
+
 ## [2026-07-12] Session 166（Claude Code / Sonnet 5 執行）— 3D打印pipeline v0 Phase1（腳）執行完成+師傅版模式
 
 - **Phase 1 全流程跑通**：依方案書 `.fhs/reports/planning/3d-print-pipeline-v0_2026-07-10.md` 派 `blender-3d-modeler` agent 執行 P1→P9（樣本 Amen-leftleg），輸出 `3d/scripts/pipeline_v0_phase1_foot.py`。機械 QC 獨立覆核（自寫 numpy STL parser 重新解析，非只信 agent 自報）全 PASS：最長軸 30.5mm、0 boundary、0 non-manifold、島嶼數=1，刻字「KKH 0213」可讀。過程修復：原掃描 4,226 條退化碎邊要 `dissolve_degenerate` 先清理否則趾甲毀+白斑噪聲；腳踝橫紋摺痕經比對 raw scan 確認係原掃描真實特徵非 bug。

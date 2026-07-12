@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-12 (S166後續 — /fhs-check 部署前置檢查 Red Flag): 🔴 ⏳
+
+**摘要**：S165（Dashboard 全域錯誤可見化+訂單草稿自救）V42→current 升格部署前置 `/fhs-check`。核心三項 PASS：LOCAL_AUDIT SKIP（`test_audit_0695346.py` 不存在，非本次相關）、LIFECYCLE PASS(21.0s)、STRESS PASS(6.7s，5案全過)、ACCEPTANCE PASS(0.8s)。**Red Flag：PRICE_AUDIT FAIL** — `generate_fix_payload.py` 查詢 Airtable Product_Database 空白售價時收到 `429 PUBLIC_API_BILLING_LIMIT_EXCEEDED`（本月 Airtable API 額度用盡），與 S165 程式碼改動本身無關，屬外部服務配額限制。待 Fat Mo 裁決是否阻擋本次部署。
+Subagent：❌ 未使用（單純執行既定健康檢查腳本並記錄結果）
+
 ## 2026-07-10 (Session 162 — 訂單總覽 UI/UX 五項修復與功能擴充): 🔧 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S162 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。修復 `#fhsToggleAuditBtn` 按鈕的 title Tooltip HTML 溢位 Bug；共用篩選面板增加「清除篩選」按鈕並重設儲存之 filter 狀態；於桌面版表頭/底部按鈕列新增「返回總覽」按鈕；同步/刪除等候期間全程啟用毛玻璃背景 Loading 遮罩防誤觸，並針對同步操作加入 Supabase poller 等候 n8n 同步成功；新增 CSS 閃爍動畫，在返回總覽後閃爍高亮目標 row/card 3 次。本地 `python Maintenance_Tools/run_all.py` 4 項全 PASS。
