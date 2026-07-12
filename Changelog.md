@@ -1,5 +1,28 @@
 # Changelog
 
+## [2026-07-12] Session 170續（Claude Code / Sonnet 5 執行）— grilling 實戰示範：拷問修訂取模排程中心方案書
+
+- **緣起**：裝完拷問技能後 Fat Mo 要求即場實戰示範（唔淨止講解），避免工具裝咗但唔識用變裝飾。
+- **對象**：選用真實待辦「S159 取模排程中心方案書」（`mold-schedule-plan_2026-07-09.md`）做拷問標的，跟 `grilling` 紀律一問一答（AI 附建議答案，決策權在 Fat Mo）。
+- **產出**：6 條問答，抓出並修正 3 個原方案未問過嘅盲點——① `CLASH_WINDOW_MIN` 60→150分鐘（依 Fat Mo 親述實際攞模節奏：一日最多三單、每單連傾偈核對交通≥3小時）+ 文案由「撞正」軟化為請自行確認；② 執行分兩期（B月曆/C今日一覽/D過期/E未約 先做，A即時撞期提示降級簡化版後做，因 Fat Mo 對 A 完整判撞邏輯效果無信心）；③ B 月曆新增訂單總覽頁獨立入口（傾客途中查檔期唔使開草稿單），呼應 Fat Mo 描述嘅真實使用場景。
+- **文件同步**：方案書本文（設計/驗收條件/可調參數三處）已直接改寫；決策見 `decisions.md` D29。
+- **技術副發現**：`grill-me`/`grill-with-docs` 因原檔 `disable-model-invocation:true` 在此 harness 內完全無法被呼叫，但中文召喚詞設計上本就直接呼叫 `grilling` 本體，對使用體驗零影響（詳見 D27）。
+- **待辦**：方案書仍排在 S149/S155 之後，本次未落地代碼，下次執行 session 直接讀取修訂版即可。
+- **Subagent 使用記錄**：❌ 未使用——拷問過程為主對話直接與 Fat Mo 互動問答，`grilling` 技能本質為對人互動而非派工，方案書改寫屬已知路徑定點編輯。
+
+## [2026-07-12] Session 170（Claude Code / Fable 5→Sonnet 5 執行）— mattpocock/skills 選擇性吸收（拷問技能）
+
+- **緣起**：Fat Mo 讀完 aiposthub 導讀文章後想安裝 `mattpocock/skills`（47支技能包），要求先評估風險再裝，並要求設計「唔會變裝飾」的學習方案。
+- **查證**：逐支讀原始 SKILL.md（非文章二手轉述）後裁決只選裝 4 支：`grilling`/`grill-me`/`grill-with-docs`/`domain-modeling`。不裝 `code-review`（會拆走 FHS code-reviewer 財務/HTML ID 鐵律護欄）、`tdd`/`implement`/`diagnosing-bugs`（同既有 subagent 重疊）、`handoff`（同 FHS 交接制度撞名）、`triage`/`wayfinder`/`to-tickets`（需 ticket 文化，FHS 用 handoff.md MASTER 表代替）。
+- **安裝**：`npx skills add mattpocock/skills -s grilling,grill-me,grill-with-docs,domain-modeling -a claude-code --copy`，落地 `.claude/skills/`；`skills-lock.json` 記上游版本。
+- **FHS-FORK**：`domain-modeling` ADR 落點由原版 `docs/adr/` 改寫為 `.fhs/notes/adr/`，定位為 `decisions.md` D 表詳文層，避免兩套決策記錄系統 drift；Fork 註記寫入 `SKILL.md`/`ADR-FORMAT.md` 頭部供日後上游同步時人手 diff。
+- **未跑官方 setup 精靈**：`/8d` 自我批評抓出該精靈產出的配置檔（`docs/agents/*.md`）消費者為未安裝的 to-spec/triage/wayfinder，屬無效步驟，已移除；改以 `.fhs/notes/grilling-quickcard.md` 一頁速查卡代替。
+- **中文召喚詞**：「拷問我」＝逐條慢問模糊需求；「拷問落檔」＝同步寫 CONTEXT.md+ADR。不改英文技能名（`grill-me` 正文以原名互相引用，改名會斷鏈）。
+- **防裝飾機制**：新增行為層規則——AI 日後遇 Fat Mo 提出模糊需求時須主動問「要唔要拷問一輪先？」，不靠 Fat Mo 記得用；4 週試用閘（用過≥2次留低，冇用過拆走）。
+- **決策**：`.fhs/notes/decisions.md` D27。
+- **待辦**：4 週後（約 2026-08-09）覆核試用閘結果；如通過，評估第二批吸收 `to-spec` 格式。
+- **Subagent 使用記錄**：❌ 未使用——技能原文查證（WebFetch）+ `/8d` in-chat 自我批評+治理對照，屬主對話可直接完成的研究與文件工作，`/8d` 明文禁外部派工。
+
 ## [2026-07-12] Session 169（Claude Code / Sonnet 5 執行）— 開發預覽伺服器 port 5500 衝突修復
 
 - **問題**：`.claude/launch.json` 的 `fhs-dashboard` 設定寫死 `-l 5500` + `"port": 5500`，其他 chat session 已佔用該埠，導致本 session preview_start 失敗。

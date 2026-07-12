@@ -1463,3 +1463,51 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 - 三途徑對 Antigravity/VS Code 同樣適用（AGENTS.md 為多工具共用憲法層，commit.md/upload-web.md 為 Master 檔案雙邊橋接）；AG 因寫入不經 `pre-tool-guard.js` 技術守護，途徑(c)在 AG 端純屬行為層約束。
 
 **風險與緩解**：仍保留部署三關驗證（HTTP 200/大小/SHA256）與 `/fhs-check` 前置檢查兩道機械防線，只移除「是否要部署」這一層人工確認；已知外部限制（如 Airtable 429）比照既有先例不阻擋部署，新出現的 Red Flag 仍會停止並回報，不因此規則而降低失敗容忍度。
+
+### D27：S170 — mattpocock/skills 選擇性吸收（拷問技能），非整包安裝
+
+**決策**：Fat Mo 讀完 aiposthub 對 `mattpocock/skills`（47支 Claude Code 技能包）嘅導讀文章後想裝，經查證原文 4 支 SKILL.md 內容 + 對照 FHS 現有治理後，裁決**只選裝 4 支**（`grilling`/`grill-me`/`grill-with-docs`/`domain-modeling`），比照 S152 十大框架條款吸收先例——「條款融入既有治理，非整包安裝」。
+
+**唔裝嘅理由**（逐支見 `.fhs/notes/grilling-quickcard.md`）：`code-review`（會拆走 FHS code-reviewer 帶住嘅財務/HTML ID 鐵律護欄）、`tdd`/`implement`/`diagnosing-bugs`（同既有 subagent 重疊）、`handoff`（MP版，同 FHS 交接制度**撞名**，裝咗會誤觸發）、`triage`/`wayfinder`/`to-tickets`（需要 GitHub Issues/ticket 文化，FHS 用 handoff.md MASTER 表做同一件事）。
+
+**安裝方式**：`npx skills add mattpocock/skills -s grilling,grill-me,grill-with-docs,domain-modeling -a claude-code --copy`，落地 `.claude/skills/`（`--copy` 非 symlink，方便 FHS-FORK 本地修改不受上游同步影響）；`skills-lock.json` 記錄上游版本供日後 `skills update` 對照。
+
+**FHS-FORK 修改**：`domain-modeling` 原版 ADR 落點為 `docs/adr/`，改寫為 `.fhs/notes/adr/`，定位為本表（decisions.md D 表）條目的**詳文層**而非平行決策記錄系統——避免兩套 ADR 系統 drift（此為安裝前主動識別並修正嘅風險，非事後補救）。`CONTEXT.md` 維持 root 中立格式不改，保留 S149 可攜化方向。Fork 註記寫入兩份檔案頭部（`SKILL.md`、`ADR-FORMAT.md`），日後同步上游需人手 diff。
+
+**未跑官方 `/setup-matt-pocock-skills` 精靈**：查證後發現該精靈產出的 `docs/agents/{issue-tracker,triage-labels,domain}.md` 三份配置檔，消費者係 `to-spec`/`triage`/`wayfinder`——呢批全部冇裝，跑咗精靈屬無效步驟（原計畫嘅一個判斷失誤，經 `/8d` 自我批評抓出並移除）。改以 `.fhs/notes/grilling-quickcard.md` 一頁式中文速查卡代替。
+
+**中文召喚詞疊加層**（Fat Mo 明確要求：唔可以要佢記英文指令名）：「拷問我」＝`/grilling`／`/grill-me`；「拷問落檔」＝`/grill-with-docs`（同步寫 CONTEXT.md+ADR）。**行為層新增**：AI 日後遇 Fat Mo 提出模糊需求/新功能時，須主動問「要唔要拷問一輪先？」——防止工具裝咗但冇人記得用而淪為裝飾（Fat Mo 明確擔心點）。此條已落 auto-memory `feedback_grilling_proactive_prompt.md`。
+
+**唔改名理由**：`grill-me` 正文內容為「Run a `/grilling` session」，技能間用原名互相引用，改名會斷鏈；且保留原名方便日後對照上游文章/更新。
+
+**試用閘**：4 週內用過 ≥2 次 → 留低並評估吸收 `to-spec` 格式做第二批；冇用過 → 拆走 `.claude/skills/` 四支，見 handoff.md 待辦。
+
+**安裝後實測追記（同日）**：`grill-me`／`grill-with-docs` 因原檔 `disable-model-invocation: true`，喺 Claude Code harness 內完全無法被呼叫（AI 主動嘗試呼叫被系統拒絕）；`grilling`／`domain-modeling` 實測可正常呼叫。因兩個中文召喚詞設計上本來就直接呼叫 `grilling` 本體（唔經 `grill-me`/`grill-with-docs` 轉介），此技術限制對 Fat Mo 使用體驗零影響，僅記錄於 `grilling-quickcard.md` 供日後排查。
+
+### D28：S170 — `llm-council-skill`（GitHub `tenfoldmarc/llm-council-skill`）暫緩安裝
+
+**決策**：Fat Mo 提出想裝一個 Karpathy「LLM Council」方法論移植版 Claude 技能（5 顧問人格平行辯論+匿名互審+主席裁決，輸出 HTML 報告+MD 逐字稿）。經查證 GitHub repo 原文 `SKILL.md` 全文（Notion 導讀文章因重定向失敗未能直接讀取，但 repo 原文已足夠評估），對照 FHS 現有決策工具鏈後，Fat Mo 選擇方案 A：**暫緩安裝，等 2026-08-09 拷問技能試用閘覆核後再議**。
+
+**評估結論摘要**：
+- **安全面**：零風險。純 prompt-only skill，無外部 API/腳本/依賴，讀取範圍限本地 CLAUDE.md+memory（同 `grilling` 一致，不外傳）。
+- **成本面**：每次召喚 = 11 個 subagent（5 顧問+5 互審+1 主席），單次 token 消耗遠高於日常對話，且原檔未鎖模型。
+- **重疊面**：核心價值（獨立 fresh-context 視角+匿名互審修正錨定偏誤）與既有 `/8d`（同 context 自我批評，無 fresh-context）**互補而非取代**，但與拷問（grilling，問人類要料）唔重疊、與 `/cl-flow`/`/px`（真外部廠商模型交叉驗證）部分重疊且遜色（5 個顧問全部係 Claude 分身，冇 Karpathy 原版嘅跨廠模型多樣性）。
+- **若安裝需 FHS-FORK 改裝**：①輸出路徑改 `.fhs/notes/council/`（原版寫 root，會觸發 fhs-health 孤兒檔警報+可能被誤 commit）；②觸發詞收窄為明確中文召喚詞（原版含 "should I X or Y" 類自然句式易誤觸）；③顧問層鎖模型控制成本。
+
+**暫緩理由**：兩星期內連裝兩套「決策輔助 meta-skill」會互相攤薄用量，令 D27 拷問試用閘量測失準；`.claude/skills/` 已有 30 支，殭屍風險為 Fat Mo 自訂紅線。待 D27 試用閘結果證實拷問技能有真實使用量後，才評估 council 做第二批選裝。
+
+**待辦**：已登記 handoff.md 待辦，2026-08-09 拷問試用閘覆核時一併決定 council 技能去留。
+
+### D29：S170 — `grilling` 技能實戰示範，修訂取模排程中心方案書（S159規劃）
+
+**決策**：D27 安裝 `grilling`/`grill-me`/`grill-with-docs`/`domain-modeling` 後，Fat Mo 要求即場實戰示範（非純講解），選用真實待辦「S159 取模排程中心方案書」（`.fhs/reports/planning/mold-schedule-plan_2026-07-09.md`）做拷問對象，逐條一問一答（AI 每條附建議答案，決策權在 Fat Mo），共 6 條，抓出 3 個原方案書未問過嘅盲點，經 Fat Mo 確認後直接改寫方案書：
+
+1. **`CLASH_WINDOW_MIN` 60→150 分鐘**：原數字係 AI 揣測嘅預設值，實際攞模每單連傾偈核對交通至少 3 小時（Fat Mo 親述：一日最多三單，上午/下午/晚上各一），60 分鐘門檻嚴重偏低會漏判真實撞期風險；同時因「冇絕對」（交通方便時較近時段都接納），文案由「撞正時段」軟化為「請自行確認交通/檔期是否可行」，避免系統講死。
+2. **執行分兩期**：Fat Mo 對 A（即時撞期提示）嘅完整三色判級邏輯實際效果無信心，對 B（月曆睇成日）反而最有把握。裁決第一期只做 B+C+D+E（純顯示、無判斷邏輯風險）；A 降級為簡化版（淨顯示「呢日已有 N 張單」，不做三色判級/race guard/快取），第二期視第一期實際使用情況再決定是否升級做完整判撞邏輯。
+3. **B 月曆新增獨立入口**：拷問揭露原方案假設嘅使用場景有誤——操作者實際需求係傾客途中（尚未開單）就要查「未來邊幾日得閒」再建議俾客揀，唔淨止係開緊訂單表單嗰刻先睇月曆。故月曆邏輯抽出做共用 component，新增訂單總覽頁獨立「📅 查看檔期」掣（`bindMode:'view'`，不回填任何表單欄位），與原有表單內掣（`bindMode:'form'`）並存。
+
+**驗收條件同步修訂**：方案書【驗收條件】3-8 已改寫配合簡化版 A 範圍（不驗三色判級，改驗簡化計數顯示+雙入口行為）。
+
+**示範效果**：此為 D27 試用閘嘅首次真實使用（非測試探針），已產出真實方案書改動，非單純示範材料。技術驗證：`grill-me`/`grill-with-docs` 因原檔 `disable-model-invocation:true` 喺 harness 內實測完全無法呼叫，但因中文召喚詞設計上本來就直接呼叫 `grilling` 本體（不經轉介），對 Fat Mo 使用體驗零影響（詳見 D27 附錄）。
+
+**待辦**：方案書仍排喺 S149/S155 之後執行，非本次落地代碼；下次執行 session 直接讀取已修訂版方案書即可，毋須重新拷問。

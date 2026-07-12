@@ -20,6 +20,7 @@ freehandsss_dashboard/
 ├── repomix-output.txt                   ← repomix 打包輸出（gitignored，供cl-flow-runner.js AG代碼上下文提升用，2026-07-05補列）
 ├── Changelog.md                         ← 系統版本變更記錄（唯一活躍版本；docs/CHANGELOG.md 分岔複本已於 2026-07-04 刪除）
 ├── package.json / package-lock.json     ← Node.js 依賴
+├── skills-lock.json                     ← `npx skills` 安裝紀錄（S170 新增，記錄 mattpocock/skills 4支上游版本，供日後 update 對照）
 ├── .env.supabase.example                ← Supabase 連線變數範本（2026-05-10 新增）
 ├── supabase/                            ← Supabase Schema 文件區（2026-05-10 新增）
 │   ├── README.md                        ← Fat Mo 操作指南
@@ -99,7 +100,8 @@ freehandsss_dashboard/
 │   │   ├── fhs-bug-triage/          ← 橋接 .fhs/ai/skills/fhs-bug-triage/SKILL.md
 │   │   ├── fhs-p-product-display/   ← 橋接 .fhs/ai/skills/fhs-p-product-display/SKILL.md
 │   │   ├── fhs-overview-badge-layout/ ← 橋接 .fhs/ai/skills/fhs-overview-badge-layout/SKILL.md
-│   │   └── finance-gatekeeper/      ← 橋接 .fhs/ai/skills/finance-gatekeeper/SKILL.md（description 欄位橋接層新增）
+│   │   ├── finance-gatekeeper/      ← 橋接 .fhs/ai/skills/finance-gatekeeper/SKILL.md（description 欄位橋接層新增）
+│   │   └── [4支] grilling/grill-me/grill-with-docs/domain-modeling ← mattpocock/skills 選裝吸收（2026-07-12 S170，`--copy` 非 symlink），非整包安裝；domain-modeling 為 FHS-FORK（ADR 落點改指 .fhs/notes/adr/），召喚詞見 .fhs/notes/grilling-quickcard.md；決策 decisions.md D27
 │   └── settings.json           ← hooks 配置（SessionStart/UserPromptSubmit/PreToolUse）
 │
 ├── Freehandsss_Dashboard/               ← Dashboard UI 核心區（HTML + 產品快取）
@@ -201,6 +203,8 @@ freehandsss_dashboard/
 │   │   ├── decisions.md
 │   │   ├── FHS_Mode_Card.md              ← 三模式決策卡 + 單一寫者矩陣（Desktop/Cowork/AG/Cursor，Phase 2.3，2026-07-03）
 │   │   ├── knowledge-map.md              ← 知識檢索路由表（查X該去哪找，按檔案類別非個別檔案，2026-07-05 Session 144 新增）
+│   │   ├── grilling-quickcard.md         ← mattpocock/skills 拷問技能中文速查卡（S170 新增，召喚詞「拷問我」/「拷問落檔」）
+│   │   ├── adr/                          ← domain-modeling 技能 ADR 落點（S170 FHS-FORK，原版為 docs/adr/；lazy create，首篇 ADR 出現前不存在）
 │   │   ├── todo.md
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
