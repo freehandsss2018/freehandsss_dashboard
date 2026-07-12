@@ -4,7 +4,7 @@
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-12（Session 166 `/commit` Lesson Distillation，對等替換 Preference 1 條 [反奉承守則內建於指令設計，已內化於機制設計]，維持50條；歷史：S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
+> 上次整理：2026-07-12（Session 166 `/fhs-slim` L1健檢觸發，退役 Preference #3 [橋接版禁止含邏輯，已升格SOP_NOW.md治理規則]，51→50；同session稍早 `/commit` Lesson Distillation 已對等替換1條致51；歷史：S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -79,7 +79,6 @@
 
 1. **完成訂單唯一出口為 Modal 審閱**：桌面/手機均不設直接 syncToAirtable 按鈕，操作者必須進入 Modal 審閱後才能同步。Modal 入口永遠可點 — 源自 2026-05-31
 2. **最小改動優先**：能補一個釘子就不重做廚房，v2 優先於 v9 — 源自多次 cl-flow 對話
-3. **橋接版禁止含邏輯**：.claude/commands/ 與 .agents/workflows/ 只做指向，邏輯只在 Master (.fhs/ai/commands/) — 源自 2026-05-19
 4. **表單新增 input 前必評估 captureFormState + n8n payload 影響**：新欄位進 captureFormState 會改 webhook payload 結構；先確認範圍，不確定就 defer — 源自 2026-05-29
 7. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30
 8. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01
@@ -95,3 +94,5 @@
 > 📌 **退役**（Session 161，`/commit` Lesson Distillation，全檔滿52條超50上限）：①「n8n PUT credential ID已知可直接補回」（原 Pattern #10，Session 111）——單一 credential 修復episode 早已結案，無持續復發風險；②「付款 split UX 清空/污染雙雷」（原 Pitfall #12，Session 97/107）——`_fhsPaymentSyncing` guard 已是結構性永久修復，機制本身即防護，非需記憶提醒的操作紀律；③「cl-flow A2 模型策略統一 gemini-3.5-flash」（原 Preference #6，Session 05-30）——env-var 切換機制本身已是慣例基礎設施，該教訓已內化於機制設計。三項退役騰出額度給本次新教訓（3D打印鎖匙扣生產規格）。
 
 > 📌 **退役**（Session 154/S148，Phase 0 `/fhs-slim`，全檔滿51條超50上限）：「Toggle 按鈕用動作語義」（原 Preference #10，S126）——已是本專案 POS UI 的設計慣例，無需靠記憶提醒，窄場景低復發風險，退役騰出額度給 S148 Phase 2 改寫 Pitfall #26 的空間。
+>
+> 📌 **退役**（Session 166，`/fhs-slim` 觸發，全檔滿51條超50上限）：「橋接版禁止含邏輯」（原 Preference #3，S05-19）——該規則已升格為治理層成文規則，完整定義見 `.fhs/notes/SOP_NOW.md` §同步更新規則第2點，不再需要於此重複記錄（比照 Session 136 kgov 退役先例）。
