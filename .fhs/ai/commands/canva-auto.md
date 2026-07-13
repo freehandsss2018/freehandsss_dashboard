@@ -27,9 +27,11 @@
 4. 本地 `python canva_auto/local_prep.py --color 彩色圖.png --bw 黑白圖.png --out-dir {folder}/local_prep_out/`（勿漏——S164 曾漏做）
 5. 交編輯連結俾 Fat Mo
 
-## Stage ② — Fat Mo 人手（僅 2 步）
+## Stage ② — Fat Mo 人手
 
-片去背（page3 背景層 + **page4 須另出方形去背成品**，非原始直片）＋上載（圖 upload 即可；片必須拖落 design 任一頁先見到 asset id）。完成後話 AI 知。
+片去背（page3 背景層 + **page4 須另出方形去背成品**，非原始直片）＋上載（圖 upload 即可；片必須拖落 design 任一頁先見到 asset id）。
+⚠️**純音樂款額外必做**：上載客人真實音訊（`Free_recorder/已登記/{客人}/WhatsApp Audio *`）落設計音軌，取代母片繼承嘅預設音樂（S171續III 0800802 血訓：AI 全程冇問過音軌，Fat Mo 都冇上傳，出咗貨先發現）。
+完成後話 AI 知。
 
 ## Stage ③ — AI 換料＋比例校正
 
@@ -37,6 +39,11 @@
 2. 查 `placement_memory.json` 相似長寬比案例，計出各格目標 box（無案例時用最近似案例等比推算）
 3. **一氣呵成**：`update_fill` 換入四類格（page2 圖對/page3 細圖對+直片/page4 動畫）→ **逐格 `resize_element(preserve_aspect_ratio=true)` + `position_element` 校正**（⚠️ update_fill 繼承舊格裁法，繼承座標 ≠ 繼承正確比例，S164 血訓）→ `delete_element` 清 Fat Mo 臨時元素+上客殘留 → commit
 4. 縮圖眼證交 Fat Mo（draft 縮圖攞唔到就用 perform 回傳嘅 thumbnails url 或 commit 後 `get-design-pages`）
+
+### Stage③ 人手補完提醒（AI 做唔到，靠 Fat Mo 記得）
+
+- page2 圖對建議加「進場動畫」（例：黑白圖=墨水/汙漬，彩色圖=模糊類）——`perform-editing-operations` 冇 animation operation type，AI 完全掂唔到，純文字提示。
+- 音軌／過場／頁面時長：同上，MCP 掂唔到，全部人手。
 
 ## Stage ④ — 學習＋出貨
 
@@ -53,6 +60,7 @@
 - page 根 video 元素（背景模糊層）`update_fill` 報 invalid duration，屬人手位
 - export jpg 的 `quality` 為必填（報 `'quality' must not be null`）；mp4 用字串 `horizontal_1080p`
 - 本地檔案 MCP 上載不到（只收公開 URL）；上載區列不出 video
+- `resize_element` 嘅 `preserve_aspect_ratio=true` 保留嘅係**目前 element container 現有比例**，唔係 asset 原生像素比例！Fat Mo 拖入新素材時 Canva 預設 container 形狀（例：864x864 方形）可能同新 asset 原生比例（例：960x1920 直向）完全唔同，淨傳 height 靠 preserve_aspect_ratio 推算會保留錯咗嘅 container 舊比例，導致變形/重疊（S171續III 0800802 首見）。**凡新素材原生比例明顯異於現有 container 比例時，必須明確傳 width+height（preserve_aspect_ratio=false），唔可以淨靠 preserve_aspect_ratio 自動推算。**
 
 ## 執行規則
 

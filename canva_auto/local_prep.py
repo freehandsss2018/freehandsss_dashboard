@@ -9,17 +9,26 @@ canva-auto Stage2 素材本地加工工具
 用法：
     python local_prep.py --color 彩色圖.png --bw 黑白圖.png --out-dir 輸出資料夾/
 
-背景與已知限制（2026-07-10, canva-auto SOP v2.1 P2 pilot）：
-  - Parakeet 公式係由兩張 Canva ColourMix 匯出樣本（皆為 1563x1563 canvas）反推，
-    交叉驗證平均色相誤差 ~11-17 度。肉眼睇令人信服，但唔係逐像素同 Canva 一致。
-  - 假設任意尺寸輸入圖會「拉伸貼合」去返 1563x1563 參考 canvas 嘅座標系；
-    呢個假設只喺兩張同尺寸（1563x1563）樣本上驗證過，未測試過非正方形輸入圖，
-    如果套出嚟嘅漸變方向明顯歪咗，呢個假設係第一個要重新檢視嘅地方。
-  - 飽和度固定 0.32（樣本觀察平均值），原版有更多飽和度變化，成因未查。
-  - Canva App 冇 API，如果 Canva 側嘅 Parakeet preset 之後改版，呢條公式會過時，
-    需要重新用兩張新樣本反推（見 sample_gradient_fit.py）。
+背景與已知限制（2026-07-13 更新, S171續III 0800802 案）：
+  - v2 公式（本版）改用正規化座標 u=x/寬, v=y/高（0-1，闊高各自獨立正規化），
+    捨棄咗 v1「拉伸貼合 1563x1563 參考 canvas」嘅假設——v1 未驗證過非正方形
+    輸入圖；本版係用 Fat Mo 喺 Canva 原生 ColourMix 面板套用 **Parakeet 預設，
+    Hue offset=0.8／Saturation=0.3／Rainbow amount=0.2／Rainbow offset=0**
+    嘅實際輸出（0800802 黑白圖.png 1872x2048，非正方形）反推，用相位差分法
+    （見 sample_gradient_fit.py）擬合，Saturation 擬合中位數 0.3064 同 Fat Mo
+    嗰邊嘅滑桿讀數 0.3 幾乎完全吻合，交叉驗證通過。
+  - 呢組 A/B/C 淨係啱返 **呢一組**滑桿數值；Rainbow amount/Hue offset/Rainbow
+    offset 呢 3 個滑桿點樣個別影響公式仲未拆解（只用單一樣本，冇做參數掃描），
+    如果 Fat Mo 之後改用第二組滑桿數值，要攞新樣本重新跑 sample_gradient_fit.py。
+  - 擬合樣本用嘅係 Canva 縮圖 API 提供嘅 182x199 縮圖（冇搵到全解像度直接下載
+    途徑），非全解像度原圖。漸變係平滑低頻信號，理論上縮圖唔會影響斜率擬合，
+    但未用全解像度樣本交叉驗證過，如果套出嚟色帶方向明顯唔啱，呢個係第一個要
+    重新檢視嘅地方。
+  - Canva App 冇 API，如果 Canva 側嘅 Parakeet 滑桿數值之後再改，呢條公式會
+    過時，需要重新攞新樣本反推（見 sample_gradient_fit.py）。
 
-詳見方案書：.fhs/reports/planning/canva-auto-sop-v2_2026-07-10.md
+詳見方案書：.fhs/reports/planning/canva-auto-sop-v2_2026-07-10.md；
+呢次重新反推嘅記錄見 canva_auto/placement_memory.json order 0800802。
 """
 
 import argparse
@@ -30,12 +39,13 @@ import numpy as np
 from PIL import Image
 from rembg import remove
 
-# 主公式：喺 1563x1563 參考 canvas 上反推（Pangonyi 0600907 訂單 + 0526/0529 兩張舊樣本交叉驗證）
-REF_CANVAS = 1563.0
-HUE_A = -0.144686001       # 每 px（x 方向，參考 canvas）度數
-HUE_B = 0.0994223125       # 每 px（y 方向，參考 canvas）度數
-HUE_C = 0.0000372391224
-DEFAULT_SATURATION = 0.32
+# 主公式：正規化座標 u=x/寬, v=y/高（0-1）；由 0800802 訂單 Canva 原生
+# ColourMix Parakeet 輸出（Hue offset=0.8/Saturation=0.3/Rainbow amount=0.2/
+# Rainbow offset=0）反推，見 sample_gradient_fit.py
+HUE_A_DEG = -198.55       # 每單位 u（闊度 0->1）度數
+HUE_B_DEG = 213.21        # 每單位 v（高度 0->1）度數
+HUE_C_DEG = 313.79        # 截距
+DEFAULT_SATURATION = 0.30
 
 
 def remove_background(image_path: Path) -> Image.Image:
@@ -66,9 +76,9 @@ def apply_parakeet(rgba: Image.Image, saturation: float = DEFAULT_SATURATION) ->
     lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
 
     yy, xx = np.mgrid[0:h, 0:w]
-    x_ref = xx / w * REF_CANVAS
-    y_ref = yy / h * REF_CANVAS
-    hue = (HUE_A * x_ref + HUE_B * y_ref + HUE_C) % 360 / 360.0
+    u = xx / w
+    v = yy / h
+    hue = (HUE_A_DEG * u + HUE_B_DEG * v + HUE_C_DEG) % 360 / 360.0
     sat = np.full_like(hue, saturation)
 
     ro, go, bo = _hsv_to_rgb_vec(hue, sat, lum)

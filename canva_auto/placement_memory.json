@@ -2,9 +2,47 @@
   "version": 1,
   "purpose": "canva-auto diff-learning 案例庫：每單 Fat Mo 人手改正 = 一筆訓練數據。Stage③ 換 fill 前先查此庫預測 resize/position；Fat Mo 改正後把 delta 記錄落此檔。案例 >=3 單收斂的規律才升格寫入記憶檔規則層。座標系 = 1920x1080 頁面像素。",
   "convergence_log": [
-    { "order": "0600906", "date": "2026-07-11", "corrected_slots": 5, "total_slots": 6, "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確" }
+    { "order": "0600906", "date": "2026-07-11", "corrected_slots": 5, "total_slots": 6, "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確" },
+    { "order": "0800802", "date": "2026-07-13", "corrected_slots": 3, "total_slots": 3, "note": "首見雙直片page3新pattern，3個slot全被Fat Mo改（黑白圖仲被換走個asset，非純幾何微調）；另揭發2項AI能力外嘅缺口：進場動畫(墨水/汙漬、模糊)、客人音軌從未上載——已補落non_geometry_findings，未計入corrected_slots" }
   ],
   "cases": [
+    {
+      "order": "0800802",
+      "customer": "Janet",
+      "design_id": "DAHPRfw8RRw",
+      "date": "2026-07-13",
+      "learned": true,
+      "note": "首見 page3 雙直片版型（純音樂款、客人有2條Lovart動畫非1條，Fat Mo指定母片DAHN9LxGdEE參考——但母片本身係方形雙片疊放，同呢單直片來源唔同源，屬全新pattern，冇precedent可查）。Fat Mo 已人手修正並回報5點問題，已補記fatmo_box + 非幾何發現（見下）。收尾：(1)客人音訊 Fat Mo 已補上載並set好；(2)local_prep.py Parakeet 公式已用本單Canva原生ColourMix輸出樣本重新反推(v2，正規化座標)，見 canva_auto/sample_gradient_fit.py + local_prep.py 版本更新。全部收口，learned=true。",
+      "slots": [
+        {
+          "slot": "page2_主圖_彩色",
+          "asset_px": { "w": 1024, "h": 1024 },
+          "ai_box": { "top": 146.10, "left": 633.50, "w": 633.00, "h": 633.00 },
+          "fatmo_box": { "top": 162.94, "left": 647.96, "w": 575.53, "h": 575.53 },
+          "note": "asset不變(彩色圖_cutout.png去背版本身冇問題)，Fat Mo淨係校細+校位；正確錨點=top163/高576/中心x≈936（比AI原估細少少、企多少少落）"
+        },
+        {
+          "slot": "page2_主圖_黑白",
+          "asset_px": { "w": 1872, "h": 2048 },
+          "ai_box": { "top": 146.10, "left": 660.55, "w": 578.80, "h": 633.00 },
+          "fatmo_box": { "top": 184.84, "left": 700.61, "w": 501.70, "h": 553.64 },
+          "note": "⚠️asset本身被Fat Mo整個換走：由AI上載嘅local_prep.py v1版parakeet圖(MAHPRa2RZnA)換成Canva原生ColorMix效果重新生成嘅圖(MAHPRsueAPg，internal filename非人手命名，1872x2048即用返原始未加工黑白圖做底)。preset=Parakeet, Hue offset=0.8, Saturation=0.3, Rainbow amount=0.2, Rainbow offset=0。✅已收口：Fat Mo決定continue自動化，local_prep.py已用MAHPRsueAPg嘅182x199縮圖樣本反推v2公式（正規化座標u/v，捨棄v1嘅1563拉伸假設），Saturation擬合中位數0.3064同slider讀數0.3幾乎完全吻合，交叉驗證通過。詳見 canva_auto/sample_gradient_fit.py。"
+        },
+        {
+          "slot": "page3_直片_Video1+Video2",
+          "asset_px": { "w": 960, "h": 1920 },
+          "ai_box_wrong_pattern": "並排(side-by-side)：top150.24, left574.66/970, w375.34, h750.68 each",
+          "fatmo_box": { "top": 188.29, "left": 676.33, "w": 566.7, "h": 549.30 },
+          "note": "⚠️正確版型=兩段片疊放同一位置（同master DAHN9LxGdEE precedent一致，非AI首次猜嘅並排），box近方形(566.7x549.3，非直片原生aspect)即兩段片都經Canva人手裁切非單純preserve_aspect_ratio直縮；且top由150→188、右移少少，確保底部(188+549=737)企晒喺文字頂(top≈760)之上唔會蓋字，呼應Fat Mo『page3大小/排位都錯，唔好蓋字句』"
+        }
+      ],
+      "non_geometry_findings": [
+        "page2黑白圖(parakeet後)有加人手進場動畫：動畫類型=墨水(Ink)，風格=汙漬(Stain)，時機=進入時。此屬Canva UI-only功能，MCP `perform-editing-operations` 冇對應operation type，AI做唔到，純記錄俾Fat Mo/未來session知呢步唔可以跳過。",
+        "page2彩色圖(cutout)有加人手進場動畫：Fat Mo原話『彩色圖動畫不對，模糊化』——實際風格未100%確認(可能係『模糊』類entrance或指AI冇做而依家見到模糊嘅描述)，需下次向Fat Mo覆核實際style名。同上，AI做唔到，人手步驟。",
+        "✅已收口：設計音軌原本一直未換成客人真實音訊(WhatsApp Audio 2026-07-01)，Fat Mo原話『客人音訊都錯，我根本沒有上傳，你也沒有問我』；canva-auto.md Stage①-④全程未提步驟，已加落Stage②清單提醒未來單；Fat Mo已補上載並set好呢單嘅音軌。"
+      ],
+      "technique_lesson": "perform-editing-operations 嘅 resize_element preserve_aspect_ratio=true 保留嘅係『目前element container嘅現有比例』，唔係underlying asset原生像素比例！本單page3兩段片Fat Mo拖入時預設container係864x864方形（同960x1920直向asset完全唔同比例），第一次用preserve_aspect_ratio+單傳height=750.68，結果兩格都變返750.68x750.68正方形（繼承咗container嘅1:1，唔係asset嘅0.5），導致兩片大幅重疊。修正：container比例明顯異於asset原生比例時，必須明確傳width+height兩個值（preserve_aspect_ratio=false），唔可以淨靠preserve_aspect_ratio自動推。已在原地修正並commit。"
+    },
     {
       "order": "0600906",
       "customer": "hiumanthm",
