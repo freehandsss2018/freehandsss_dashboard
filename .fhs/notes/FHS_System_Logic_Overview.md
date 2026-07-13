@@ -636,8 +636,8 @@ V42 igwatch 模式（anon RPC）  → fhs_resolve_ig_alert（resolved 回寫）
 | `resolved` | 操作員已處理標記（DEFAULT false）|
 | `resolved_at / resolved_by` | resolve 時間戳 + 操作員 |
 
-**冪等鍵**：`CREATE UNIQUE INDEX ix_igwatch_alerts_dedup ON ig_watchdog_alerts (alert_date, thread, COALESCE(order_id,''), kind)`
-— 同一 Cron 日 + thread + order_id + kind 最多一筆；COALESCE 允許 NULL order_id 參與比對
+**冪等鍵**（Migration 0056 起，見 §11.9）：`order_id_key` generated column（`COALESCE(order_id,'')` 具現化）+ `CREATE UNIQUE INDEX ix_igwatch_alerts_dedup_v2 ON ig_watchdog_alerts (alert_date, thread, order_id_key, kind)`
+— 同一 Cron 日 + thread + order_id + kind 最多一筆；COALESCE 允許 NULL order_id 參與比對。**舊版**（migration 0043）曾直接用 `COALESCE(order_id,'')` expression index（`ix_igwatch_alerts_dedup`，已於 0056 淘汰）——PostgREST `on_conflict` 參數不支援 expression index 作 conflict target，故需具現化成純欄位（詳見 §11.9）。
 
 **RLS**：anon SELECT 只讀；無 anon INSERT（防偽造）；service_role bypass（n8n 寫入用）
 
@@ -681,7 +681,7 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 - Migration `0050_ig_watchdog_verified_ok_check.sql`：`ig_watchdog_alerts.kind` CHECK 從二值（`not_created`/`created_incomplete`）擴充為三值，新增 `verified_ok`。
 - `scripts/ig-watchdog/build_n8n_workflow.cjs`（`classifyCode`，Classify & Report 節點 `cr1`）：新增 `verifiedItems` 收集 `cls.category==='created_full'` 的訊息，映射為 `kind:'verified_ok', resolved:true` 寫入 `alerts` 陣列，與既有 `notifyItems`（`created_incomplete`/`not_created`）並列但**不**進入 `notifyItems`——因此不進「需核對」計數，也不出現在 `telegramText`（TG 深連結 filter 只挑後兩類，維持零改動）。已用 curl 4 欄位（`name/nodes/connections/settings`）PUT 部署至 live n8n workflow `D4LK6VrQbiXlju0V`，versionId `05740bb4...`→`4a125f6b-a37c-46b0-a5b6-c7f8d14223d9`。
 - V42 UI（`_renderIgWatchList`，L13965-13966）：`kindLabel`/`kindColor` 補上 `verified_ok` → 綠色「✓ 已核對」。「待處理」計數 filter（`!r.resolved`）本身零改動，因 verified_ok 寫入時 `resolved` 已為 true，天然被既有邏輯排除。
-- **冪等保證**：既有 `ix_igwatch_alerts_dedup` UNIQUE INDEX `(alert_date, thread, COALESCE(order_id,''), kind)` 對 `kind` 值無特化，`verified_ok` 自動受同一去重機制保護，配合 PostgREST `Prefer: resolution=ignore-duplicates`，同一 Cron 日重跑同一 thread 不會產生重複列。
+- **冪等保證**：既有 dedup UNIQUE INDEX（migration 0056 起為 `ix_igwatch_alerts_dedup_v2 (alert_date, thread, order_id_key, kind)`，見 §11.2/§11.9）對 `kind` 值無特化，`verified_ok` 自動受同一去重機制保護；`Prefer: resolution=ignore-duplicates` 配合 Write Alerts 節點 URL 的 `on_conflict` 參數（0056 起才真正生效，此前該參數缺席令仲裁鍵誤落 PRIMARY KEY，見 §11.9），同一 Cron 日重跑同一 thread 不會產生重複列。
 - **已知限制**：n8n Public API 對 Schedule-Trigger workflow 無手動觸發端點（`POST /workflows/{id}/run` 回 405），故本次以本地 Node 模擬（`new Function` 包 mock `$()` 執行抽出的 jsCode）驗證邏輯，真正 live cron 端到端驗證留待下次排程（`0 6 * * *` HKT，即 2026-07-12T22:00Z 後）自然發生，可用 `get_execution_log` 或直接查 `ig_watchdog_alerts WHERE kind='verified_ok'` 覆核首批寫入。
 
 **Phase 5（P1b）— orders anon 權限收斂**：
@@ -722,7 +722,7 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 
 **驗收方法**：`node --test order-match.test.mjs`（27/27，含 fresh-context review 抓出的 F2 繞過樣本回歸測試）+ diff-guard 逐字嵌入確認 + mock-execution harness（對已部署 jsCode 跑合成資料斷言）+ 兩次 live PUT 後 GET 核對 + fresh-context opus 獨立審查（PASS-WITH-CONCERNS，4 項發現 3 項即時修復，詳見 `decisions.md` D31）。真實 cron 端到端資料流證據留待下次自然排程（約 2026-07-13T22:00Z 後）覆核。
 
-**已知未解決**：既有 `Write Alerts` 節點（§11.1，Session 119 建立）同樣缺 `on_conflict` 參數，非本次 P2a 範圍未修，已 spawn_task 追蹤（`task_e3a60daa`）。
+**已解決**（Session 171 續，見 §11.9）：既有 `Write Alerts` 節點（§11.1，Session 119 建立）同樣缺 `on_conflict` 參數，當時非 P2a 範圍未修，已 spawn_task 追蹤（`task_e3a60daa`）——同 session 續接 P2b 後，於 migration 0056 修復並 live 部署驗證。
 
 **下一步**：P2b（內容比對層，`content_mismatch` 表）/ P2c（意圖標註+回覆範本庫）依 Verdict `artifacts/2026-07-13-1224/cl-final-plan.md` §8 分次執行策略排隊。
 
@@ -742,8 +742,27 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 
 **V42 UI**（`_renderIgWatchList`，L13965-13998）：`kindLabel`/`kindColor` 新增 `content_mismatch` → 橘色「⚠️ 疑似對不上」；新增「核對金額」action button（`openOrderModal(order_id,'','finance')`，同 `created_incomplete` 按鈕的呼叫模式）；卡片內新增一行顯示 `raw.mm` 內嘅 `ig_reported_amount`/`db_actual_amount`（fresh-context review F5 建議，避免操作員要另開訂單先睇到具體金額差）。此為本次 P2b 唯一觸及 Dashboard HTML 的一步。
 
-**fresh-context opus 獨立審查**（比照 §11.6/§11.7 先例）：PASS-WITH-CONCERNS，5 項發現：F1（曆年誤判，已修復）、F2（deposit fallback 系統性誤報，已修復）、F3（付款尾碼數字誤判，已修復）、F4（既有 `Write Alerts` 缺 `on_conflict` 令同批重複鏡像列可能 23505 打回整批——根因為 P2a 已發現並 spawn_task 追蹤的既有缺陷 `task_e3a60daa`，非 P2b 新增）、F5（金額差未顯示在卡片，已補充修復）。全部可修復項已修復並重新 live 部署 + 重跑 mock-execution harness 確認回歸不再發生。
+**fresh-context opus 獨立審查**（比照 §11.6/§11.7 先例）：PASS-WITH-CONCERNS，5 項發現：F1（曆年誤判，已修復）、F2（deposit fallback 系統性誤報，已修復）、F3（付款尾碼數字誤判，已修復）、F4（既有 `Write Alerts` 缺 `on_conflict` 令同批重複鏡像列可能 23505 打回整批——根因為 P2a 已發現並 spawn_task 追蹤的既有缺陷 `task_e3a60daa`，非 P2b 新增；**同 session 續接於 migration 0056 修復**，見 §11.9）、F5（金額差未顯示在卡片，已補充修復）。全部可修復項已修復並重新 live 部署 + 重跑 mock-execution harness 確認回歸不再發生。
 
 **驗收方法**：`node --test order-match.test.mjs`（35/35，含 F1/F2/F3 回歸測試）+ diff-guard 逐字嵌入確認 + mock-execution harness（合成資料含 V42 確認文本帶日期的 F1 迴歸場景 + 真實金額不符場景，全過）+ 兩次 live PUT 後 GET 核對（第二次含修復）+ 瀏覽器內注入合成 `content_mismatch` 列驗證 V42 UI 渲染正確（顏色/標籤/按鈕/金額顯示）+ fresh-context opus 獨立審查。真實 cron 端到端資料流證據留待下次自然排程（約 2026-07-13T22:00Z 後）覆核。
 
 **下一步**：P2c（意圖標註+回覆範本庫）依 Verdict §8 分次執行策略排隊。
+
+### 11.9 Write Alerts on_conflict 修復（Session 171 續，2026-07-13）
+
+**背景**：`Write Alerts` 節點（§11.1/§11.2，Session 119 建立）POST 到 `ig_watchdog_alerts` 時帶 `Prefer: resolution=ignore-duplicates,return=minimal`，但 URL 一直缺 `on_conflict` 參數。PostgREST 在缺參數時，UPSERT 仲裁鍵預設落在 PRIMARY KEY（`id`，POST body 從不帶值，永遠不會撞），令 migration 0043 定義的真正冪等鍵（expression unique index）完全沒被當成仲裁對象——若同一批次真的出現重複（例：同 thread 同日兩則訊息皆 classify 為 `not_created` 且皆查無訂號，兩者 `order_id` 皆 NULL），Postgres 仍會依該 expression index 擲出 `23505`，而非 `Prefer` 期待的靜默忽略；因節點設有 `continueOnFail:true` + `return=minimal`，整批警報會被靜默吞掉且無可見錯誤。此缺陷由 P2a fresh-context review（§11.7 F3，`decisions.md` D31）在修復同款「Write Messages」節點時發現既有 `Write Alerts` 節點同樣有此問題，因執行範圍紀律當時未動，spawn_task 追蹤（`task_e3a60daa`），P2b review（§11.8 F4）再次確認。本次同 session 續接修復。
+
+**為何不能直接補 `on_conflict=alert_date,thread,order_id,kind`**：PostgREST 的 `on_conflict` 參數只接受純欄位名清單去比對既有 unique/exclusion constraint，不支援 expression index（`COALESCE(order_id,'')`）——指了會撞 `42P10`（找不到匹配的 unique constraint）。
+
+**修法**（Migration `0056_igwatch_alerts_on_conflict_fix.sql`）：
+- 新增 `order_id_key text GENERATED ALWAYS AS (COALESCE(order_id, '')) STORED` generated column，把舊 expression index 的邏輯具現化成一個純欄位。
+- 淘汰舊 expression index `ix_igwatch_alerts_dedup`（migration 0043），改建純欄位 unique index `ix_igwatch_alerts_dedup_v2 (alert_date, thread, order_id_key, kind)`——語義完全等價，NULL order_id 一樣參與唯一性比對，但可被 PostgREST `on_conflict` 指到。
+- `build_n8n_workflow.cjs`（`id: 'wa1'`）URL 改為 `.../ig_watchdog_alerts?on_conflict=alert_date,thread,order_id_key,kind`，與 §11.7 `Write Messages` 節點（`on_conflict=thread,ig_message_id`）採一致模式；差異在於 `ig_messages.ig_message_id` 恆非 NULL 故毋須 generated column，`ig_watchdog_alerts.order_id` 可為 NULL 故需要。
+
+**驗收方法**：
+- `node scripts/ig-watchdog/build_n8n_workflow.cjs` 產出 URL 含正確 `on_conflict` 參數 + `node --test scripts/ig-watchdog/lib/*.test.mjs`（55/55，含 diff-guard）全過。
+- Live migration 套用後，用 service_role key 對正式環境連續 POST 兩次同一組測試資料（`thread='__test_dedup_thread__'`），第一次 `HTTP 201` 建立列，第二次 `HTTP 201` 但回傳空陣列（`Prefer:ignore-duplicates` 真正生效，無 `23505`），查詢確認列數維持 1，測試列已清除。
+- Live n8n workflow `D4LK6VrQbiXlju0V` PUT 部署後 GET 核對：node 數 24（不變）、`Write Alerts` URL 含新 `on_conflict`、`Write Messages`/`Write Mismatches` 等其餘節點與 credentials（7× Google Drive OAuth + 2× Telegram）不受影響。
+- fresh-context code-reviewer 獨立審查（見 `decisions.md` D33）。
+
+**流程教訓**：本次修復過程中，執行 session 誤在主 checkout（`D:\...\freehandsss_dashboard`）而非指派的 git worktree（`.claude\worktrees\brave-jennings-a47074`）下操作檔案，且與另一 session 同時在 main 分支 commit P2b（migration 0054/0055 `content_mismatch`）產生檔名衝突（本檔案因而從 0054 改號為 0056）。Live Supabase 因採 timestamp-based migration 版本（非檔名數字前綴）未受影響，但此為一次可避免的協作失誤，記錄於 `lessons/INDEX.md` 供未來 session 參考：**多 session/多 worktree 併行時，檔案系統操作前務必先確認 `pwd`/`git branch --show-current` 與指派路徑一致，migration 編號應以「套用前即時 `ls supabase/migrations/` 核對」而非記憶中的稽核快照為準**。

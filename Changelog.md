@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-07-13] Session 171續（Claude Code / Sonnet 5 執行）— Write Alerts on_conflict 缺陷修復（task_e3a60daa 執行，D31 F3/D32 F4 收尾）
+
+- **緣起**：既有 `Write Alerts` 節點（Session 119 建立）POST `ig_watchdog_alerts` 時缺 `on_conflict` 參數，PostgREST 缺參數時 UPSERT 仲裁鍵誤落 PRIMARY KEY（`id`，POST body 從不帶值，永遠不會撞），令 `Prefer:ignore-duplicates` 形同虛設——同批真實重複會擲 `23505` 整批打回，`continueOnFail:true` + `return=minimal` 令此靜默無感。此為 D31 F3（P2a 修復同款 `Write Messages` 節點時發現既有 `Write Alerts` 節點同病，spawn_task `task_e3a60daa` 追蹤）、D32 F4（P2b review 再次確認）已知既有缺陷，本次正式執行修復。
+- **根因**：PostgREST `on_conflict` 只接受純欄位名清單比對既有 unique/exclusion constraint，不支援 expression index——`ig_watchdog_alerts` 真正冪等鍵（migration 0043）係 `COALESCE(order_id,'')` expression unique index，無法直接補 `on_conflict=alert_date,thread,order_id,kind`（會撞 `42P10`）。`Write Messages` 節點因 `ig_message_id` 恆非 NULL 可直接修，`Write Alerts` 的 `order_id` 可為 NULL，需額外具現化步驟。
+- **執行**：新 migration `supabase/migrations/0056_igwatch_alerts_on_conflict_fix.sql`——新增 `order_id_key text GENERATED ALWAYS AS (COALESCE(order_id,'')) STORED` generated column，淘汰舊 expression index `ix_igwatch_alerts_dedup`，改建純欄位 unique index `ix_igwatch_alerts_dedup_v2 (alert_date, thread, order_id_key, kind)`；`build_n8n_workflow.cjs`（`id:'wa1'`）URL 補 `?on_conflict=alert_date,thread,order_id_key,kind`。Migration 已 live apply 至 production Supabase，workflow `D4LK6VrQbiXlju0V` 已 PUT 重新部署。
+- **驗收**：`node --test scripts/ig-watchdog/lib/*.test.mjs`（55/55，含 diff-guard）+ live 環境對測試 thread 連續 POST 兩次同一筆資料，第一次 `HTTP 201` 建立列，第二次 `HTTP 201` 但回傳空陣列（無 `23505`，dedup 真正生效），查詢確認列數維持 1，測試列已清除 + live GET 核對 node 數 24（不變）、URL 正確、其餘節點與 credentials（7× Google Drive OAuth + 2× Telegram）不受影響 + fresh-context code-reviewer（haiku）獨立審查。
+- **執行事故（同 session 自行發現並修正）**：本 session 誤在主 git checkout（非指派 worktree）下操作檔案，且與另一 session 併行在 `main` commit P2b（migration 0054/0055 `content_mismatch`）產生檔名衝突，本檔案因而由 0054 改號為 0056。Live Supabase 因採 timestamp-based migration 版本未受檔名衝突影響；本地檔案系統問題已修正（worktree fast-forward 同步至 main、誤植檔案移回正確路徑、主 checkout 恢復乾淨狀態）。教訓記入 `.fhs/memory/lessons/INDEX.md` 2026-07-13 條目。
+- **後效同步稽核**：[A] 已更新 `docs/repo-map.md`（migration 0056 補列）；[B] 不觸發；[C] 已更新本條目；[G] 已觸發並完成——`.fhs/notes/FHS_System_Logic_Overview.md` §11.9 新增 + §11.2/§11.6/§11.7/§11.8 相關過時引用同步訂正。
+- **Subagent 使用記錄**：✅ 已使用 1 支（code-reviewer，haiku，fresh-context 獨立審查，比照「n8n/schema 改動驗收不自驗」紅線；審查過程中額外抓出本 session 的 worktree/分支誤植問題）。
+
+【交付前雙紀律自檢】
+驗收：n8n/schema 改動 — 55 單元測試（含 diff-guard）+ live 環境真實重複 POST 端到端驗證 + live PUT/GET 核對 + fresh-context code-reviewer 獨立審查 = ✅；真實 cron 端到端資料流證據留待下次自然排程（約 2026-07-13T22:00Z 後）覆核
+Subagent：✅ 已使用 1 支（code-reviewer/haiku，migration SQL 正確性/PostgREST on_conflict 相容性/跨節點一致性/回歸風險獨立審查）
+
 ## [2026-07-13] Session 171續（Claude Code / Sonnet 5 執行）— P2b 內容比對層：金額比對（S150 §4.8 剝離範圍）
 
 - **緣起**：同 session 接續 P2a，執行 cl-final-plan §6.3 P2b。誠實收窄範圍：v1 僅做金額比對，品項比對因現行 pipeline 未攞 `order_items` 明細刻意不做。

@@ -569,9 +569,16 @@ const workflow = {
     {
       // Phase 1b: 批量寫入 ig_watchdog_alerts（service_role key，冪等 UPSERT ON CONFLICT DO NOTHING）
       // 只在 alerts.length > 0 時執行（Has Alerts? true 分支），防空陣列 POST
+      // v2（decisions.md D33）：url 補 on_conflict=alert_date,thread,order_id_key,kind——
+      // 沒有這個參數，PostgREST 的 UPSERT 仲裁鍵預設落在 PRIMARY KEY（id，body 從不帶，永遠
+      // 不會撞），真正的冪等鍵 migration 0043 expression index 反而變成「真撞到就 23505
+      // 整批打回」而非靜默忽略，Prefer:ignore-duplicates 形同虛設（同 Write Messages 節點
+      // P2a F3 教訓）。order_id_key 為 migration 0056 新增的 generated column，把
+      // COALESCE(order_id,'') 具現化成純欄位，因 PostgREST on_conflict 不支援 expression
+      // index 作 conflict target。
       parameters: {
         method: 'POST',
-        url: SUPABASE_URL + '/rest/v1/ig_watchdog_alerts',
+        url: SUPABASE_URL + '/rest/v1/ig_watchdog_alerts?on_conflict=alert_date,thread,order_id_key,kind',
         authentication: 'none',
         sendHeaders: true,
         specifyHeaders: 'keypair',

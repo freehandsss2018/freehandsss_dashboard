@@ -1564,3 +1564,21 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **下一步**：P2c（意圖標註+回覆範本庫）依 cl-final-plan §8 排隊，待 Fat Mo 另行 `/execute`。
 
 詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.8、Changelog.md S171續條目。
+
+### D33：S171續 — Write Alerts on_conflict 缺陷修復（task_e3a60daa 執行，D31 F3/D32 F4 收尾）
+
+**決策**：修復既有 `Write Alerts` 節點（Session 119 建立）POST `ig_watchdog_alerts` 時缺 `on_conflict` 參數的問題——PostgREST 在缺參數時 UPSERT 仲裁鍵落空（誤落 PRIMARY KEY，POST body 從不帶 `id`），令 `Prefer:ignore-duplicates` 形同虛設，同批真實重複會擲 `23505` 整批打回（`continueOnFail:true` + `return=minimal` 令此靜默無感）。此為 D31 F3（P2a 修復 `Write Messages` 節點同款缺陷時發現既有 `Write Alerts` 節點同病）、D32 F4（P2b review 再次確認）已知並 spawn_task 追蹤（`task_e3a60daa`）的既有缺陷，本次為該案正式執行。
+
+**根因**：PostgREST 的 `on_conflict` 參數只接受純欄位名清單比對既有 unique/exclusion constraint，不支援 expression index——而 `ig_watchdog_alerts` 的真正冪等鍵（migration 0043）是 `COALESCE(order_id,'')` expression unique index，無法直接補 `on_conflict=alert_date,thread,order_id,kind`（會撞 `42P10`）。`Write Messages` 節點（P2a）當初能直接修好，是因為 `ig_messages.ig_message_id` 恆非 NULL，其 dedup index 本就是純欄位；`Write Alerts` 的 `order_id` 可為 NULL，需要額外一步具現化。
+
+**執行內容**：新 migration `supabase/migrations/0056_igwatch_alerts_on_conflict_fix.sql`——新增 `order_id_key text GENERATED ALWAYS AS (COALESCE(order_id,'')) STORED` generated column，淘汰舊 expression index `ix_igwatch_alerts_dedup`，改建純欄位 unique index `ix_igwatch_alerts_dedup_v2 (alert_date, thread, order_id_key, kind)`；`build_n8n_workflow.cjs`（`id:'wa1'`）URL 補 `?on_conflict=alert_date,thread,order_id_key,kind`。Migration 已 live apply 至 production Supabase（`vpmwizzixnwilmzctdvu`），workflow `D4LK6VrQbiXlju0V` 已 PUT 重新部署。
+
+**驗收方法**：
+1. `node scripts/ig-watchdog/build_n8n_workflow.cjs` + `node --test scripts/ig-watchdog/lib/*.test.mjs`（55/55，含 diff-guard）全過。
+2. Live 環境用 service_role key 對測試 thread（`__test_dedup_thread__`）連續 POST 兩次同一筆資料：第一次 `HTTP 201` 建立列；第二次 `HTTP 201` 但回傳空陣列（無 `23505`，`ignore-duplicates` 真正生效）；查詢確認列數維持 1；測試列已清除，不留垃圾資料。
+3. Live n8n GET 核對：node 數 24（不變）、`Write Alerts` URL 含新 `on_conflict`、其餘節點（含 P2a `Write Messages`、P2b `Write Mismatches`）與 credentials（7× Google Drive OAuth + 2× Telegram）不受影響。
+4. fresh-context code-reviewer（haiku）獨立審查——過程中額外抓出本 session 的執行事故（見下）。
+
+**執行事故（同 session 自行發現並修正，非資料/生產事故）**：本 session 誤在主 git checkout（非指派 worktree）下操作檔案，且與另一 session 併行在 `main` commit P2b（migration 0054/0055 `content_mismatch`）產生檔名衝突，本檔案因而由 0054 改號為 0056。Live Supabase 因採 timestamp-based migration 版本，未受檔名衝突影響；本地檔案系統問題已修正（worktree fast-forward 同步至 main、誤植檔案移回正確路徑、主 checkout 恢復乾淨狀態）。詳見教訓記錄 `.fhs/memory/lessons/INDEX.md` 2026-07-13 條目。
+
+詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.9、Changelog.md S171續條目、`.fhs/memory/lessons/INDEX.md` 2026-07-13 條目。

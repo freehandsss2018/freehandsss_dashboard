@@ -78,7 +78,8 @@ freehandsss_dashboard/
 │   │   ├── 0052_restore_orders_anon_delete.sql ← 修正 0051 誤刪，回滾 orders_anon_delete 政策（Session 168，fresh-context opus 抓出 CRITICAL 回歸即時修復）✅ 已部署
 │   │   ├── 0053_create_ig_messages_table.sql ← P2a（S150 §4.8 剝離範圍獨立 /cl-flow flow_id 2026-07-13-1224）：ig_messages 表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，content 一律經 lib/order-match.mjs redactPii() 遮罩（Session 171）✅ 已部署
 │   │   ├── 0054_create_content_mismatch_table.sql ← P2b：content_mismatch 比對證據表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，僅 amount_mismatch（品項比對留待未來擴充 Fetch Orders 節點）（Session 171）✅ 已部署
-│   │   └── 0055_ig_watchdog_content_mismatch_check.sql ← P2b：ig_watchdog_alerts.kind CHECK 擴充第四值 content_mismatch（Session 171）✅ 已部署
+│   │   ├── 0055_ig_watchdog_content_mismatch_check.sql ← P2b：ig_watchdog_alerts.kind CHECK 擴充第四值 content_mismatch（Session 171）✅ 已部署
+│   │   └── 0056_igwatch_alerts_on_conflict_fix.sql ← Write Alerts on_conflict 修復（task_e3a60daa）：order_id_key generated column 具現化 COALESCE(order_id,'')，淘汰 expression index ix_igwatch_alerts_dedup 改建純欄位 unique index ix_igwatch_alerts_dedup_v2（Session 171續）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
