@@ -599,10 +599,16 @@ IG Drive Export
    ↓ n8n workflow D4LK6VrQbiXlju0V（Cron 06:00 HKT）
    ↓ Classify & Report 節點（cr1）
    ↓  種類：not_created / created_incomplete（通知+寫入）｜created_full → verified_ok（S150 Phase 4 起僅寫入不通知，見 §11.6）
-   ↓ [Phase 1b] Has Alerts?（IF守衛：alerts.length > 0）
-   ↓   true  → Write Alerts HTTP POST → ig_watchdog_alerts INSERT（service_role key，冪等）→ Telegram Notify (Data)
-   ↓   false → Telegram Notify (Data)（直接發摘要，跳過空陣列寫入）
+   ↓  P2a 起：同時輸出 messages 陣列（所有新訊息，不分類別，見 §11.7）
    ↓
+   ├─ Has Alerts?（IF守衛：alerts.length > 0）
+   │    true  → Write Alerts HTTP POST → ig_watchdog_alerts INSERT（service_role key，冪等）→ Telegram Notify (Data)
+   │    false → Telegram Notify (Data)（直接發摘要，跳過空陣列寫入）
+   │
+   └─ Has Messages?（IF守衛：messages.length > 0，P2a 新增，與 Has Alerts? 平行，不阻塞既有分支）
+        true  → Write Messages HTTP POST → ig_messages INSERT（service_role key，content 已 redactPii() 遮罩）
+        false → 終止（無下游節點）
+
 V42 igwatch 模式（anon SELECT）← ig_watchdog_alerts
 V42 igwatch 模式（anon RPC）  → fhs_resolve_ig_alert（resolved 回寫）
 ```
@@ -679,3 +685,37 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 - **教訓（見 lessons/INDEX.md 2026-07-12 條目）**：稽核「前端是否呼叫某端點」不能用單行 grep pattern 判斷不存在；HTTP method 與 URL 常因程式碼風格分行，且 anon-key 對有 RLS 保護表的寫入操作，權限不足時常「表面 2xx、實際 0 rows」而非顯式 403/404，兩者組合會讓移除政策的回歸長期潛伏不被發現。
 
 **Phase 6 — 制度收尾**：本節（§11.6）即落盤項之一；另見 `decisions.md`、`Changelog.md`、`.fhs/memory/lessons/INDEX.md` 對應條目、`.fhs/memory/handoff.md` 便攜塊更新。
+
+### 11.7 P2a：IG 訊息入庫 + PII 明文剝離（Session 171，2026-07-13）
+
+**背景**：S150 §4.8 明文剝離出去的獨立架構域（訊息入庫+內容比對+意圖標註+回覆範本庫+PII 政策），透過獨立 `/cl-flow`（flow_id `2026-07-13-1224`）規劃，分三期 P2a/P2b/P2c 分次執行。本節記錄已完成的 P2a。**此變更使「IG 看門狗全程唯讀不寫入客人 DM 內容」的舊敘述（原見 `scripts/README.md`，已同步訂正）不再成立**——P2a 起會把每則新訊息（遮罩後）持久化至 `ig_messages`。
+
+**ig_messages 表設計**（Migration `0053_create_ig_messages_table.sql`）：
+
+| 欄位 | 說明 |
+|------|------|
+| `id` | UUID 主鍵 |
+| `ig_message_id` | 冪等鍵組成之一，`hashId(thread+'\|'+ts+'\|'+sender)` 雜湊值（cyrb53 純 JS 算術，非明文組合字串）|
+| `thread` | IG thread 資料夾名稱（明文，結構性 join key，比照 §11.2 `ig_watchdog_alerts.thread` 既有先例，非本次新增缺口）|
+| `sender_is_business` | 是否商家自發（輕量 includes 判斷，與 `parseInboxCode` 的 `isBusiness()` 各自獨立實作但驗證同一字串集，非單一真源違規——僅屬雙處輕量重複）|
+| `customer_name` | `maskName()` 遮罩後（只留每詞首字，如 `Katrina Sui`→`K****** S**`），非明文 |
+| `content` | `redactPii()` 遮罩後訊息文字（電話/IG handle/地址門牌/付款尾碼），**嚴禁存未遮罩明文** |
+| `pii_policy_applied` | 遮罩策略版本字串（現行 `regex_v1`）|
+| `has_receipt` | photo metadata 收據布林（同 `ig_watchdog_alerts` 語義）|
+| `order_id` | `extractOrderIds()` 抽得訂號，NULL=無可信訂號（非 FK，訂號可能查無對應 order，同 §11.2 設計）|
+| `sent_at` | 訊息原始時間戳轉換 |
+
+**冪等鍵**：`UNIQUE INDEX ix_ig_messages_dedup (thread, ig_message_id)`；`Write Messages` 節點 POST URL 帶 `?on_conflict=thread,ig_message_id`，確保 PostgREST UPSERT 仲裁鍵真的落在此索引（而非預設落空的 PRIMARY KEY）。
+
+**RLS**：anon SELECT 只讀；無 anon INSERT（防偽造）；service_role bypass（n8n 寫入用）；90 天 TTL pg_cron 清理（`delete-old-ig-messages`）。
+
+**PII 明文剝離函式**（`lib/order-match.mjs`，單一真源，diff-guard 測試保護）：
+- `redactPii(text)`：regex best-effort，非 NER。遮罩電話（含分隔符/852國碼/新版7x-9x開頭）、IG handle、地址門牌（同時吃「數字在前」與「數字在後」語序）、付款尾碼。刻意不動訂號與短金額數字，保留 P2b 內容比對層所需訊號。
+- `maskName(name)`：姓名遮罩，只留每詞首字元。
+- `hashId(str)`：cyrb53 純 JS 算術雜湊（避開 n8n Code 節點 `require('crypto')` 靜默失敗的已知地雷，見 `.fhs/memory/learnings.md` 對應條目），供冪等鍵去識別化，非安全用途。
+
+**驗收方法**：`node --test order-match.test.mjs`（27/27，含 fresh-context review 抓出的 F2 繞過樣本回歸測試）+ diff-guard 逐字嵌入確認 + mock-execution harness（對已部署 jsCode 跑合成資料斷言）+ 兩次 live PUT 後 GET 核對 + fresh-context opus 獨立審查（PASS-WITH-CONCERNS，4 項發現 3 項即時修復，詳見 `decisions.md` D31）。真實 cron 端到端資料流證據留待下次自然排程（約 2026-07-13T22:00Z 後）覆核。
+
+**已知未解決**：既有 `Write Alerts` 節點（§11.1，Session 119 建立）同樣缺 `on_conflict` 參數，非本次 P2a 範圍未修，已 spawn_task 追蹤（`task_e3a60daa`）。
+
+**下一步**：P2b（內容比對層，`content_mismatch` 表）/ P2c（意圖標註+回覆範本庫）依 Verdict `artifacts/2026-07-13-1224/cl-final-plan.md` §8 分次執行策略排隊。

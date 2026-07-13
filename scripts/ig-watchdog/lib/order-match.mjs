@@ -137,3 +137,56 @@ export function buildOrderIndex(orders = []) {
   }
   return m;
 }
+
+// ── PII 明文剝離（P2a，S150 §4.8 剝離範圍）──────────────────
+// regex best-effort 遮罩，非 NER，僅覆蓋 FHS 已知常見洩漏型態（電話/IG handle/地址門牌/付款尾碼）。
+// 刻意不動訂號（0 開頭 7-8 位，NUM_ID_RE 互斥）與金額（多為 1-6 位，非本組 pattern 長度），
+// 確保 ig_messages.content 對 P2b 內容比對層仍保有可用的訂號/金額訊號。
+// v2（fresh-context opus review 2026-07-13 抓出 v1 漏網）：先 toHalfWidth 防全形繞過；
+// 電話容許 852 國碼/空白/連字號分隔與新版 7x-9x 開頭；地址同時吃「數字在前」（100號/5樓）
+// 與「數字在後」兩種語序；付款尾碼詞彙放寬（碼/位/個字/號）且計數詞可省略。
+const PHONE_RE = /(?<!\d)(?:\+?852[\s-]?)?[1-9]\d{3}[\s-]?\d{4}(?!\d)/g;
+const IG_HANDLE_RE = /(?<![\w@])@[A-Za-z0-9_.]{2,30}\b/g;
+const ADDR_MARK = '街道路邨苑樓座室廈號';
+const ADDR_UNIT_RE = new RegExp(
+  `[0-9A-Za-z\\-]{1,6}(?=[${ADDR_MARK}])|(?<=[${ADDR_MARK}])[0-9A-Za-z\\-]{1,6}`, 'g'
+);
+const PAYMENT_TAIL_RE = /(?:尾|後)\s*[0-9一二三四五六七八九十]*\s*(?:碼|位|個字|號)\s*[:：]?\s*\d{3,6}/g;
+
+/** PII 明文剝離：先正規化全形再遮罩電話/IG handle/地址門牌/付款尾碼，回傳處理後文字。 */
+export function redactPii(text) {
+  if (typeof text !== 'string' || !text) return text || '';
+  let out = toHalfWidth(text);
+  out = out.replace(PAYMENT_TAIL_RE, '[付款尾碼]');
+  out = out.replace(PHONE_RE, '[電話]');
+  out = out.replace(IG_HANDLE_RE, '[IG帳號]');
+  out = out.replace(ADDR_UNIT_RE, '[門牌]');
+  return out;
+}
+
+/** 姓名遮罩：只留每個詞首字元，其餘轉星號。非 NER，僅供已知為姓名的欄位（如 customer_name）使用。 */
+export function maskName(name) {
+  if (typeof name !== 'string' || !name) return null;
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return null;
+  return words.map((word) => {
+    const chars = [...word];
+    return chars[0] + '*'.repeat(Math.max(chars.length - 1, 1));
+  }).join(' ');
+}
+
+/** 非密碼學雜湊（cyrb53，純 JS 算術）：n8n Code 節點 require('crypto') 已知靜默失敗
+ *  （見 learnings feedback_n8n_code_node_nas_limits），故用純算術雜湊產生 ig_messages
+ *  冪等鍵，避免把 thread/sender 明文直接烤進 id 欄位。僅供去重用途，非安全用途。 */
+export function hashId(str) {
+  const s = String(str || '');
+  let h1 = 0xdeadbeef ^ s.length, h2 = 0x41c6ce57 ^ s.length;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}

@@ -71,7 +71,12 @@ freehandsss_dashboard/
 │   │   ├── 0045_keychain_cost_rpc.sql ← S124 v2：fhs_compute_keychain_cost(material, qty, drawing_fee) RPC，加購鎖匙扣成本單一真源（N飾維度，Session 124）✅ 已部署
 │   │   ├── 0046_drift_function_n_figurines.sql ← S124 v2：fhs_check_product_cost_drift() N飾擴充，比對公式由 flat(185/235) 改為 fhs_compute_keychain_cost 動態計算（Session 124）✅ 已部署
 │   │   ├── 0047_order_cost_override.sql ← S130 Phase B：orders.cost_override_locked(BOOLEAN) + fhs_adjust_order_cost RPC + fhs_unlock_order_cost RPC + fhs_apply_financial_batch_update 守衛 + fhs_batch_recalc_execute 守衛（Session 130）✅ 已部署
-│   │   └── 0048_cost_config_value_check_constraint.sql ← S147：cost_configurations 新增 chk_config_value_numeric_nonneg CHECK 約束（number 型 config_value 須為非負數字字串），Phase 3 治理優化 Stage 3 pre-Stage-3-A 審計 F4 修正（Session 147）✅ 已部署，live 驗證通過
+│   │   ├── 0048_cost_config_value_check_constraint.sql ← S147：cost_configurations 新增 chk_config_value_numeric_nonneg CHECK 約束（number 型 config_value 須為非負數字字串），Phase 3 治理優化 Stage 3 pre-Stage-3-A 審計 F4 修正（Session 147）✅ 已部署，live 驗證通過
+│   │   ├── 0049_fhs_write_expense_log_rpc.sql ← S150 F2：記錄中心寫入主路徑 RPC fhs_write_expense_log（Session 150，本地檔案 S168 依 live pg_proc 定義補回填）✅ 已部署
+│   │   ├── 0050_ig_watchdog_verified_ok_check.sql ← S150 Phase4 (P1a)：ig_watchdog_alerts.kind CHECK 擴充 'verified_ok'（Session 168）✅ 已部署
+│   │   ├── 0051_orders_anon_policy_cleanup.sql ← S150 Phase5 (P1b)：orders anon 權限收斂，(a)項誤刪 orders_anon_delete 已由 0052 回滾，僅 (b) UPDATE 去重生效（Session 168）✅ 已部署
+│   │   ├── 0052_restore_orders_anon_delete.sql ← 修正 0051 誤刪，回滾 orders_anon_delete 政策（Session 168，fresh-context opus 抓出 CRITICAL 回歸即時修復）✅ 已部署
+│   │   └── 0053_create_ig_messages_table.sql ← P2a（S150 §4.8 剝離範圍獨立 /cl-flow flow_id 2026-07-13-1224）：ig_messages 表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，content 一律經 lib/order-match.mjs redactPii() 遮罩（Session 171）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -329,12 +334,12 @@ freehandsss_dashboard/
 │   │       ├── run-health-fixtures.js   ← 夾具執行器：env var 沙盒隔離（FHS_HEALTH_ROOT等）+ generates_fresh_evidence 動態日期夾具支援（S143），12/12 PASS
 │   │       ├── kgov-fixtures.json       ← 10 組 post-tool-kgov.js 測試夾具（S148 新增）
 │   │       └── run-kgov-fixtures.js     ← 夾具執行器：隔離 temp flag 檔案，10/10 PASS（S148 新增）
-│   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110）
+│   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110；P2a Session 171 起會寫入 Supabase，見下方修正）
 │       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）
 │       ├── lib/decoder.mjs(+.test)      ← Meta mojibake 解碼（latin1→utf8 + U+FFFD 守衛，邏輯亦移植進n8n Code節點）
 │       ├── lib/match.mjs(+.test)        ← CJK fuzzy + 🔴🟡⚪ 訊號分層（Phase 2 付款證據層，v3 降為次要）
-│       ├── lib/order-match.mjs(+.test)  ← v3 訂號主鍵偵測單一真源：訂號抽取/正規化/三分類/報價守衛（build 內嵌進n8n Code節點，diffguard.test 防漂移）
+│       ├── lib/order-match.mjs(+.test)  ← v3 訂號主鍵偵測單一真源：訂號抽取/正規化/三分類/報價守衛 + P2a新增 redactPii()/maskName()/hashId()（PII遮罩/姓名遮罩/冪等鍵雜湊，Session 171）（build 內嵌進n8n Code節點，diffguard.test 防漂移）
 │       ├── fixtures/                    ← 合成自測資料（_gen.mjs 產生，無真實客人）
 │       ├── hooks/pre-commit             ← 隱私守衛：擋含 sender_name/participants 的 JSON
 │       ├── SOP.md                       ← Fat Mo 操作指南（架構說明 + 日常=看Telegram即可）

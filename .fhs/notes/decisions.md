@@ -1450,6 +1450,8 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 新增教訓：[[2026-07-12_rls-policy-removal-silent-2xx-write-failure]]（RLS 政策移除稽核的 grep 盲點 + anon 寫入失敗的靜默 2xx 模式）。詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.6、`supabase/migrations/0050-0052`。
 
+**2026-07-13 追覆核（點4已知限制結案）**：查 n8n execution API，workflow `D4LK6VrQbiXlju0V` 於 2026-07-12T22:00:00Z（部署後首次自然排程）成功執行（execution 4638，status success）。`Classify & Report` 節點輸出 `createdFull: 0, total: 4`——當日 4 則訊息掃描後零筆分類為 `created_full`，故 `Has Alerts?` 為 false、未觸發寫入節點，`ig_watchdog_alerts` 表內確認無新增 `verified_ok` 列。核對 live 部署的 `Classify & Report` 節點原始碼確認 `verifiedItems` 映射邏輯存在且與本地版本一致，判定為「當日無符合條件資料」的正常空結果，非部署失效或映射失敗；驗證方式=真實 execution JSON `runData` 逐節點核對（非口稱）。首批 `verified_ok` 實際寫入仍待下次出現 `created_full` 分類的真實訊息時自然觸發，非本次覆核範圍。
+
 ### D26：S168續 — `/commit` 新增授權途徑(c)：條件觸發自動升格部署，AGENTS.md v1.6.0→v1.7.0
 
 **決策**：D25 執行完成後，Fat Mo 對「commit→push→upload-web 三步驟逐一詢問」的既有流程表達不耐（連續三次確認過於煩瑣），要求新增一條標準授權途徑：執行 `/commit`（或明確要求 commit）本身即代表同意連帶 push 與 upload-web，AI 不需再逐步詢問。
@@ -1511,3 +1513,33 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **示範效果**：此為 D27 試用閘嘅首次真實使用（非測試探針），已產出真實方案書改動，非單純示範材料。技術驗證：`grill-me`/`grill-with-docs` 因原檔 `disable-model-invocation:true` 喺 harness 內實測完全無法呼叫，但因中文召喚詞設計上本來就直接呼叫 `grilling` 本體（不經轉介），對 Fat Mo 使用體驗零影響（詳見 D27 附錄）。
 
 **待辦**：方案書仍排喺 S149/S155 之後執行，非本次落地代碼；下次執行 session 直接讀取已修訂版方案書即可，毋須重新拷問。
+
+### D30：S171 — AI 助理團隊名冊（生成式盤點，非人手維護）
+
+**決策**：Fat Mo 引用 Threads @raymond0917「AI Agent Dashboard」概念（視像化 AI 助理團隊防遺忘），授權 AI 自行找方案「達成甚至更好」。裁決採**生成式名冊**架構而非人手畫一頁：`scripts/agent-dashboard.js`（零依賴 Node）掃描各資產自身 frontmatter/檔頭 → 生成 `artifacts/agent-dashboard.html`（人睇）＋ `agent-dashboard.json`（AI 讀），非檔案資產（MCP/n8n/cron/召喚詞）唯一登記點 `.fhs/ai/team-manifest.json`。制度本體 `.fhs/notes/ai-team-registry.md`（五條硬規則 R1-R5），執行入口 `/team`／「團隊名冊」。
+
+**點解唔跟原帖做法**：人手畫嘅 dashboard 上線即開始過期（同 FHS 文件漂移病灶同源）；生成式名冊嘅真源係資產本身，「存在／唔存在」永遠準確，且每次生成附勘誤表兼任漂移偵測器（與 fhs-health 文件衛生、/fhs-usage-audit 用量審計職責正交）。
+
+**實證**：上線首日勘誤表即抓到 4 項真漂移——finance-auditor 從未登記 MANIFEST.md 已安裝表；database-reviewer/tdd-guide/ui-designer 三支 frontmatter 版本高於 MANIFEST 記錄（v2.1.0≠v1.0.0 等）。另修復一隻通用 parser 蟲：CRLF frontmatter 末行 `\r` 殘留令最後一個 key 靜默消失（詳見 registry §5）。
+
+**待辦**：①4 項 MANIFEST 漂移待 Fat Mo 裁決點修（涉 subagent 雙寫規則，屬 05 §1 先問類）；②CLAUDE.md 路由表加一行「想知有咩 AI 資產／點召喚 → /team」待批（路由表增行屬 05 §1 先問類）；③/commit 流程加「資產有增減時重生成名冊」步驟待批。
+
+### D31：S171 — P2a IG 訊息入庫 + PII 明文剝離執行完成（S150 §4.8 剝離範圍，flow_id 2026-07-13-1224）
+
+**決策**：獨立 `/cl-flow` Verdict（`artifacts/2026-07-13-1224/cl-final-plan.md`，CONDITIONAL_READY）批准後，`/execute` 執行 P2a（三期分次執行策略的第一期）：`ig_messages` 表落地 + `lib/order-match.mjs` 新增 `redactPii()`/`maskName()`/`hashId()` + `build_n8n_workflow.cjs` 新增 `Has Messages?`/`Write Messages` 節點 + n8n live workflow `D4LK6VrQbiXlju0V` 部署。
+
+**驗收採雙軌**：機械證據（21→27 單元測試全過、diff-guard 逐字嵌入驗證、mock-execution harness 對真實部署 jsCode 跑合成資料斷言）+ fresh-context opus 獨立審查（比照 D25 先例，本次亦抓到真回歸）。
+
+**fresh-context 審查抓到 4 項發現，即時修復 3 項**：
+1. **[已修復]** v1 只遮罩 `content` 欄位，`customer_name`/`ig_message_id` 仍存明文姓名——加 `maskName()` 遮罩 customer_name、`ig_message_id` 改用 `hashId()`（cyrb53 純 JS 算術雜湊，避開 `require('crypto')` 在 n8n Code 節點靜默失敗的已知地雷，見 learnings `feedback_n8n_code_node_nas_limits`）。
+2. **[已修復]** `redactPii` v1 正則有實測可繞過樣本：電話含分隔符/新版 7x-8x 開頭/852 國碼/全形數字未轉換一律漏網；地址只吃「數字在後」語序，「100號」「5樓」型（數字在前，港式地址主流語序）漏網；付款尾碼詞彙過窄。v2 逐一補正則 + 補對應單元測試（v1 21 條 + v2 補強 6 條 = 27 條）。
+3. **[已修復]** `Write Messages` POST 未帶 `on_conflict` 參數，PostgREST UPSERT 仲裁鍵預設落 PRIMARY KEY（body 從不帶 `id`，永不觸發），令 dedup 唯一索引形同虛設——真撞號時會 23505 打回整批而非靜默忽略。已補 `?on_conflict=thread,ig_message_id`。
+4. **[已記錄未修復，另案處理]** 同一缺陷（缺 `on_conflict`）存在於既有 `Write Alerts` 節點（Session 119 建立，非本次 P2a 範圍），依 `execute.md` 「僅執行 Verdict 已批准範圍」紀律不在本次一併修——已用 spawn_task 開獨立追蹤，待 Fat Mo 決定是否授權修復。
+
+**接受的設計取捨（非缺口）**：`ig_messages.thread` 欄位維持明文（IG thread 資料夾名稱，性質近似客戶識別碼），未跟隨 `customer_name`/`ig_message_id` 一併遮罩/雜湊。理由：(a) `thread` 是整條 pipeline（含既有 `ig_watchdog_alerts`）的結構性 join key，遮罩會牽動去重/查詢邏輯改版，屬更大範圍架構決策非 P2a 快贏範圍；(b) `ig_watchdog_alerts`（migration 0043）本身已以明文存 `thread`/`customer_name`/未遮罩 `snippet`，是既有已接受先例，非本次新增缺口；(c) 若要收斂需同時處理兩表，另開獨立評估較合理。已記入 `scripts/README.md` 與本決策供未來覆核。
+
+**已知限制（比照 D25 模式）**：live cron 端到端驗證需待下次自然排程（約 2026-07-13T22:00Z 後）才會有真實資料流過 `Write Messages` 節點；本次驗收依賴 mock-execution harness + 直接查詢已部署 jsCode/連線結構，非真實 cron 觸發證據。
+
+**範圍**：P2b（內容比對層）/ P2c（意圖標註+回覆範本庫）依 cl-final-plan §8 分次執行策略，本次不動，待 Fat Mo 另行 `/execute`。
+
+詳見 `supabase/migrations/0053_create_ig_messages_table.sql`、`scripts/ig-watchdog/lib/order-match.mjs`、`scripts/ig-watchdog/build_n8n_workflow.cjs`、Changelog.md S171 條目。

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {
   toHalfWidth, normalizeOrderId, isV42Confirm,
   hasDealIntent, hasQuoteDraft, extractOrderIds,
-  classifyMessage, buildOrderIndex,
+  classifyMessage, buildOrderIndex, redactPii, maskName, hashId,
 } from './order-match.mjs';
 
 // ── 正規化 ──────────────────────────────────────────────
@@ -112,4 +112,88 @@ test('收據存在性透傳（方案 A，零下載）', () => {
   const r = classifyMessage({ text: '已收訂金，單號 0600999', hasReceipt: true }, idx);
   assert.equal(r.hasReceipt, true);
   assert.equal(r.notify, true);
+});
+
+// ── PII 明文剝離（P2a）────────────────────────────────────
+test('redactPii：電話遮罩', () => {
+  const out = redactPii('我電話係92345678，得閒打俾我');
+  assert.ok(out.includes('[電話]'));
+  assert.ok(!out.includes('92345678'));
+});
+
+test('redactPii：IG handle 遮罩', () => {
+  const out = redactPii('可以睇下我個IG @free_test_acc 有相');
+  assert.ok(out.includes('[IG帳號]'));
+  assert.ok(!out.includes('@free_test_acc'));
+});
+
+test('redactPii：地址門牌遮罩', () => {
+  const out = redactPii('旺角西洋菜街123號 3樓A室');
+  assert.ok(out.includes('[門牌]'));
+  assert.ok(!out.includes('123'));
+});
+
+test('redactPii：付款尾碼遮罩', () => {
+  const out = redactPii('已轉數，尾五碼12345，麻煩核對');
+  assert.ok(out.includes('[付款尾碼]'));
+  assert.ok(!out.includes('12345'));
+});
+
+test('redactPii：訂號與金額不受影響（P2b 比對層仍需要這些訊號）', () => {
+  const out = redactPii('Freehandsss 訂單確認\n(訂單編號# 0600101 手模擺設)，訂金$800');
+  assert.ok(out.includes('0600101'));
+  assert.ok(out.includes('800'));
+});
+
+test('redactPii：非字串輸入安全回傳', () => {
+  assert.equal(redactPii(null), '');
+  assert.equal(redactPii(undefined), '');
+  assert.equal(redactPii(''), '');
+});
+
+// v2 補強（fresh-context opus review 2026-07-13 F2 抓出的漏網樣本，逐一補測）
+test('redactPii v2：電話含分隔符/新版開頭/852國碼/全形數字', () => {
+  assert.ok(!redactPii('9234 5678').includes('9234'), '空白分隔');
+  assert.ok(!redactPii('9234-5678').includes('9234'), '連字號分隔');
+  assert.ok(!redactPii('71234567').includes('71234567'), '7x新版開頭');
+  assert.ok(!redactPii('81234567').includes('81234567'), '8x新版開頭');
+  assert.ok(!redactPii('85292345678').includes('92345678'), '852國碼無分隔');
+  assert.ok(!redactPii('+852 9234 5678').includes('9234'), '+852國碼有分隔');
+  assert.ok(!redactPii('９２３４５６７８').includes('9234'), '全形數字先轉半形再遮罩');
+});
+
+test('redactPii v2：地址「數字在前」語序（原版只吃數字在後）', () => {
+  const out = redactPii('西環德輔道西100號 5樓B室');
+  assert.ok(!out.includes('100'), '門牌號在前');
+  assert.ok(!out.includes('5樓') || !out.includes('5'), '樓層在前');
+});
+
+test('redactPii v2：付款尾碼詞彙放寬（無計數詞/號代替碼）', () => {
+  assert.ok(!redactPii('尾號1234').includes('1234'), '「尾號」無計數詞');
+  assert.ok(!redactPii('尾5個字 12345').includes('12345'), '「個字」詞彙');
+});
+
+test('redactPii v2：訂號/金額在新版規則下仍不受影響', () => {
+  const out = redactPii('Freehandsss 訂單確認\n(訂單編號# 0600101 手模擺設)，訂金$800');
+  assert.ok(out.includes('0600101'));
+  assert.ok(out.includes('800'));
+});
+
+// ── 姓名遮罩（P2a，F1 修復：customer_name 欄位不可存明文）───────
+test('maskName：只留首字，其餘轉星號', () => {
+  assert.equal(maskName('Katkat'), 'K*****');
+  assert.equal(maskName('Katrina Sui'), 'K****** S**');
+  assert.equal(maskName('陳大文'), '陳**');
+  assert.equal(maskName(null), null);
+  assert.equal(maskName(''), null);
+});
+
+// ── 冪等鍵雜湊（P2a，F1 修復：ig_message_id 不可烤入明文姓名）───
+test('hashId：確定性 + 不同輸入不同輸出', () => {
+  const a = hashId('thread1|1000|Katrina');
+  const b = hashId('thread1|1000|Katrina');
+  const c = hashId('thread1|1000|Katkat');
+  assert.equal(a, b, '同輸入同輸出（確定性，供冪等鍵使用）');
+  assert.notEqual(a, c, '不同輸入應給不同雜湊（碰撞機率低）');
+  assert.ok(!a.includes('Katrina'), '雜湊輸出不含原始明文');
 });

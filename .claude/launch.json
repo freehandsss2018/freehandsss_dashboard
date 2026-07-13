@@ -6,6 +6,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "Freehandsss_Dashboard"],
       "autoPort": true
+    },
+    {
+      "name": "fhs-artifacts",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "artifacts"],
+      "autoPort": true
     }
   ]
 }

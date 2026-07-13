@@ -4,7 +4,7 @@
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-12（Session 170 `/commit` Lesson Distillation，退役 Pitfall #11 [Mirror Prep final_sale_price 三欄規則，已完整升格為 AGENTS.md §財務真理守護「收款確收守護」憲法層硬規則，不再需要記憶層重複提醒]，對等替換1條新教訓（第三方技能 disable-model-invocation 呼叫限制），維持50條上限；歷史：S168 51→50、S167 51→50、S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
+> 上次整理：2026-07-13（Session 171 `/commit` Lesson Distillation，退役 Pitfall #24 [hook路徑安全判斷，修復已結構化不再需記憶提醒]，對等替換1條新教訓（PostgREST ignore-duplicates 缺 on_conflict 冪等假象），維持50條上限；歷史：S170 51→50、S168 51→50、S167 51→50、S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -57,13 +57,13 @@
 20. **【git】checkout 會靜默攜帶未提交修改跨分支，merge 因而空操作**：編輯完檔案後忘記 commit 就 `git checkout main`，修改內容原封不動跟過去（不報錯不提示）；此時對原分支 `merge --no-ff` 只會輸出 `Already up to date`（無 diffstat）——這個異常平淡的訊息就是空合併的訊號，需 `git log <branch> --oneline` 核對該分支是否真有獨立 commit。切分支/宣告完工前先 commit，不要等到 merge 前才做 — Session 144
 22. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
 23. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
-24. **hook 判斷「路徑是否安全」不可靠 regex 猜測外部路徑**：`post-tool-kgov.js` 的 `SAFE_PATH_PATTERNS` 原只認 repo 內 `.fhs/memory/`，不認 auto-memory 實際外部路徑（因人機而異、無法相對推導），導致寫入財務類 auto-memory 記憶檔被誤觸發 [G] flag。修法：改讀既有顯式設定值（`fhs-health-rules.json` 的 `auto_memory_dir.path`，`fhs-health-check.js` 已用同一份），讀取失敗時 fail-open 傾向「視為不安全仍觸發」而非「靜默放行」——寧可誤報也不要漏判 — Session 145
 25. **[G] 判準已於 S148 對齊 execute.md diff 物理特徵，.md 與 hooks.js 編輯只 warn 不落 flag**：舊版判準（任何 .md 含財務詞即落 flag）已替換為真值表驅動（migrations .sql / MCP apply_migration / Dashboard HTML 含財務 → flag；其他 → warn-only）；歷史誤觸模式見 governance/02 §7，治本見 planning/2026-07-06_s148-loop-hardening_implementation_plan.md §4.2 — Session 147/S148
 26. **【高頻 ⚠️】顏色 bug 純讀碼/grep 查不全，JS `style.color='inherit'` 非「還原」**：舊色號散落多分頁寫法不一致，grep 抓不齊；`inherit` 會抓外層色，應設 `''` 讓 class 接管。改用瀏覽器 DOM 掃描量測 computed color 找離群值 — S157(未修好)/S159(補完)
 27. **【高頻 ⚠️】Dashboard 巨檔多 `<script>` block，看似頂層 function 可能只是另一 IIFE 內的區域函式**：`_findOrder` 定義在獨立 `<script>(function(){...})()` （P3/P4 Bottom-Sheet 區塊）內，於較早 script block 呼叫得 `ReferenceError`，onchange handler 內被靜默吞掉、UI 無任何反應。新函式引用「看起來是全域」的 helper 前，grep 確認其宣告是否包在 IIFE 內；務必實機點擊驗證（confirm/console mock），不能只靠語法檢查 — Session 161續
 28. **`.fhs/.deploy-ok` 旗標內容必須是純 ISO timestamp 字串，寫描述文字會被靜默清空**：guard 用 `new Date(content)` 解析旗標檔，非合法時間格式 → `NaN` → 判定過期並自動刪除，下一步 cp 升格仍被攔截且無明確錯誤提示。建立旗標時只寫 `new Date().toISOString()` 輸出，不可夾帶說明文字 — Session 167
 30. **第三方 Claude Skill 若 frontmatter 含 `disable-model-invocation:true`，喺 Claude Code harness 內完全無法被呼叫**：唔止係「唔自動觸發」，AI 主動用 Skill 工具呼叫都會被系統拒絕。裝第三方技能包前應逐支查 frontmatter；若要設中文召喚詞疊加，改為直接呼叫其底層無此旗標嘅技能（如 `grill-me`→改叫 `grilling` 本體），使用者體驗不受影響 — Session 170 [[project_mattpocock_skills]]
 29. **【高頻 ⚠️】移除 RLS 政策前必查真實呼叫+驗真實資料狀態，勿信 HTTP 200**：稽核「表是否有 anon 呼叫」不能只 grep 單行 pattern（`method:'DELETE'` 常與 URL 分行漏判）；移除政策後，若 table 級 GRANT 仍在但無 permissive RLS，PostgREST 回 HTTP 200+0 rows 而非 403，驗收只看 status code 會誤判成功。政策變更驗收須用真實（非 bogus）測試列，確認資料真的被改動 — Session 168 [[2026-07-12_rls-policy-removal-silent-2xx-write-failure]]
+31. **PostgREST `Prefer:ignore-duplicates` 冪等假象**：POST body 不帶 PK 值時，UPSERT 仲裁鍵預設落 PRIMARY KEY（永不匹配），URL 未帶 `?on_conflict=<欄位>` 明確指定真正的 dedup UNIQUE INDEX 就不會生效——真撞號時 23505 打回整批，配合 `continueOnFail`+`return=minimal` 會靜默丟失整批資料。任何用 ignore-duplicates 模式的 POST 節點，必須確認 on_conflict 參數對齊真正的 dedup 索引欄位 — Session 171 [[project_p2a_ig_message_pii]]
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >
@@ -74,6 +74,8 @@
 > 📌 **退役**（Session 146，`/fhs-slim` 觸發，全檔滿51條超50上限）：「IIFE 閉包函式 onclick 靜默失效」（原 Pitfall #7，Session 2026-05-27）——修復手法（IIFE 末尾明確 `window.fn = fn` 暴露）已是本專案標準寫法慣例，非需靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度使全檔回落至50條上限（本輪無新教訓對等替換）。
 >
 > 📌 **退役**（Session 168，`/commit` Lesson Distillation，全檔滿51條超50上限）：「n8n Code 節點內嵌 dashboard 網址禁憑印象寫死」（原 Pitfall #21，Session 136）——一次性歷史事故（硬編碼錯誤內網 URL），正確公開網址已永久記錄於 `decisions.md`，非需靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（RLS 政策移除稽核 grep 盲點 + anon 寫入靜默 2xx 失敗）。
+>
+> 📌 **退役**（Session 171，`/commit` Lesson Distillation，全檔滿51條超50上限）：「hook 判斷路徑是否安全不可靠 regex 猜測外部路徑」（原 Pitfall #24，Session 145）——修復已是結構性（改讀 `fhs-health-rules.json` 顯式設定值，非需靠記憶提醒的操作紀律），未來復發風險低，退役騰出額度給本次新教訓（PostgREST `ignore-duplicates` 缺 `on_conflict` 冪等假象）。
 
 ---
 

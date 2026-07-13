@@ -1,0 +1,66 @@
+{
+  "_readme": "FHS AI 團隊手記 manifest。只登記『掃描器掃唔到的非檔案資產』（MCP 連接器/n8n workflow/cron/內建 agent/召喚詞）。檔案型資產（subagents/skills/commands/hooks）一律唔使寫入呢度——scripts/agent-dashboard.js 會由 frontmatter 自動掃描。維護規則見 .fhs/notes/ai-team-registry.md。",
+  "version": "1.0.0",
+  "updated": "2026-07-13",
+  "scan_roots": {
+    "subagents": "C:/Users/Edwin/.claude/agents/freehandsss",
+    "commands_master": ".fhs/ai/commands",
+    "commands_bridge": ".claude/commands",
+    "skills": ".claude/skills",
+    "hooks_dir": "scripts/hooks",
+    "settings": ".claude/settings.json",
+    "mcp_project": ".mcp.json",
+    "subagent_manifest": ".fhs/ai/subagents/MANIFEST.md"
+  },
+  "trigger_words": [
+    { "phrase": "拷問我", "target": "grilling / grill-me skill", "effect": "逼問式需求釐清，一次一題直到共識（mattpocock 吸收版，D27）" },
+    { "phrase": "拷問落檔", "target": "grill-with-docs + domain-modeling", "effect": "拷問結論寫入 .fhs/notes/adr/ 決策紀錄" },
+    { "phrase": "canva-auto 新單", "target": "/canva-auto", "effect": "Canva 記念短片全流程（SOP v3 零擺位 + diff-learning）" },
+    { "phrase": "kgov", "target": "知識治理框架", "effect": "Product_Definition SSoT + 規則ID表 + Rule 3.17" },
+    { "phrase": "fhs-health / 健檢", "target": "fhs-health-check.js + /fhs-slim", "effect": "文件衛生 L1 零token偵測 → L2 清理方案" },
+    { "phrase": "團隊名冊 / /team", "target": "scripts/agent-dashboard.js", "effect": "重新掃描全部 AI 資產，生成本名冊" },
+    { "phrase": "/3d-print", "target": "3D 手腳模打印 pipeline", "effect": "diff-learning 參數迴圈；v0=師傅版模式（縮放+刻字+加環）" },
+    { "phrase": "/cl-flow 任務描述", "target": "cl-flow-runner.js 三腦規劃", "effect": "PX 搜證 + AG 對案 + Claude 裁決出方案書" },
+    { "phrase": "/commit", "target": "session 收尾四同步", "effect": "handoff 便攜塊 + Changelog + decisions + git sync（條件觸發自動部署）" },
+    { "phrase": "/guardian", "target": "全端守護稽核", "effect": "大範圍改動四部曲前置檢查" },
+    { "phrase": "/px 問題", "target": "Perplexity 搜尋", "effect": "帶 FHS 系統脈絡的外部搜證" },
+    { "phrase": "/read", "target": "全量初始化", "effect": "跨長時間斷檔後重載完整記憶（平日靠 SessionStart 快照即可）" }
+  ],
+  "builtin_agents": [
+    { "name": "Explore", "desc": "唯讀搜索 agent——大範圍 fan-out 搜尋，只回結論不污染主 context；prompt 內指定 quick/medium/very thorough 控制深度" },
+    { "name": "Plan", "desc": "規劃 agent——出實施方案、關鍵檔案清單、架構取捨" },
+    { "name": "general-purpose", "desc": "全工具通用 agent——多步研究/搜碼/批次執行" },
+    { "name": "claude", "desc": "catch-all 預設 agent" },
+    { "name": "claude-code-guide", "desc": "Claude Code / Agent SDK / API 問答專家（Can Claude...? 類問題）" }
+  ],
+  "mcp_connectors": [
+    { "name": "supabase", "source": ".mcp.json", "desc": "生產 DB 唯一真源：live SQL/migration/advisors。工具缺此 MCP＝blocker 上報，禁止靜默降級 Airtable" },
+    { "name": "n8n-mcp-server", "source": ".mcp.json", "desc": "自建 n8n 工具箱：execution log / node 讀寫 / triple-sync 驗證（NAS yanhei.synology.me:8443）" },
+    { "name": "blender", "source": "外掛", "desc": "Blender 4.x MCP addon（port 9876）：3D 打印 pipeline 執行引擎" },
+    { "name": "Canva", "source": "claude.ai connector", "desc": "記念短片自動化（canva-auto）：copy-design/replace_text/update_fill/export" },
+    { "name": "airtable-user-mcp", "source": "claude.ai connector", "desc": "Airtable 後備（Supabase-First 紀律：只作 fallback；本月 API 429 中）" },
+    { "name": "Notion", "source": "claude.ai connector", "desc": "Notion Brain 同步（Sync_Notion_Brain.js 配套）" },
+    { "name": "Google Calendar / Drive", "source": "claude.ai connector", "desc": "行事曆與雲端檔案存取" },
+    { "name": "claude-in-chrome / Claude Browser", "source": "harness", "desc": "真 Chrome 登入態操作 / 內置瀏覽器驗證（preview + screenshot 實證）" },
+    { "name": "computer-use", "source": "harness", "desc": "桌面原生 app 自動化（截圖+滑鼠鍵盤）" },
+    { "name": "figma", "source": "claude.ai connector", "desc": "⚠️ 未授權——要用先去 claude.ai connector settings 授權" }
+  ],
+  "automations": [
+    { "name": "FHS_Core_OrderProcessor", "kind": "n8n workflow", "desc": "訂單同步主線：Webhook 收單 → 利潤計算（Calculate Profit & Pack Items）→ Airtable/Supabase Mirror（V45.7.x；D9 五項高風險規則管轄）", "home": "NAS n8n" },
+    { "name": "IG Watchdog（igwatch）", "kind": "n8n cron", "desc": "IG 對話看門狗：Schedule Trigger → 分類警報 → ig_watchdog_alerts → Telegram 深連結；S168 起含 verified_ok 正向記錄", "home": "NAS n8n（workflow D4LK6VrQbiXlju0V）" },
+    { "name": "3brain（規劃管道）", "kind": "node script", "desc": "cl-flow-runner.js：PX（Perplexity）+ AG（Gemini）+ Claude 三腦規劃，產出 artifacts/{flow_id}/ 方案書", "home": "scripts/cl-flow-runner.js" }
+  ],
+  "hook_descriptions": {
+    "session-start-sop.sh": "SessionStart — 注入 handoff 便攜塊快照 + 漏跑 /commit 偵測 + 健康警示",
+    "prompt-router.js": "UserPromptSubmit — 按任務類型建議 model / 前置指令（如 /guardian）",
+    "pre-tool-guard.js": "PreToolUse — 高危攔截：財務欄位改動 / 密鑰外洩 pattern / 部署旗標偽造（R1-R10）",
+    "post-tool-kgov.js": "PostToolUse — 財務知識治理偵測，落 .kgov-pending flag（v2 起 .js 檔只 warn）",
+    "stop-kgov.js": "Stop — session 收尾 kgov pending 檢查",
+    "fhs-health-check.js": "文件衛生 L1 零token偵測（過肥/孤兒/過時/重複/斷鏈五項）→ .fhs/.health-report.json"
+  },
+  "skill_categories": {
+    "fhs_core": ["finance-gatekeeper", "fhs-bug-triage", "fhs-p-product-display", "fhs-overview-badge-layout", "px"],
+    "grilling": ["grilling", "grill-me", "grill-with-docs", "domain-modeling"],
+    "_default": "design_pack"
+  }
+}

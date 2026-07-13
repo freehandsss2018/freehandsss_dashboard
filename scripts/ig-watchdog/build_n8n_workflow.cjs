@@ -287,6 +287,28 @@ for (const om of orderMsgs) {
   else if (cls.category === 'weak_no_id') cWeak++;
 }
 
+// P2a（S150 §4.8 剝離範圍，flow_id 2026-07-13-1224）：所有新訊息（不分類別）入庫，
+// content 一律經 redactPii() 遮罩後才落地，不存明文。
+// v2（fresh-context opus review 2026-07-13 F1 抓出 v1 漏網）：customer_name 用 maskName()
+// 遮罩（原版存明文姓名），ig_message_id 改用 hashId() 雜湊（原版把 thread+sender 明文烤進
+// id 欄位）。thread 欄位本身維持明文——這是既有 ig_watchdog_alerts（migration 0043）已採用
+// 的結構性 join key 設計，非本次 P2a 新增缺口，變更需另外評估（已記入 decisions.md/handoff）。
+function isBizSender(name) {
+  const n = String(name || '').toLowerCase();
+  return n.includes('free_handsss') || n.includes('freehandsss');
+}
+const messages = orderMsgs.map((om) => ({
+  ig_message_id: hashId((om.thread || '') + '|' + (om.ts || 0) + '|' + (om.sender || '')),
+  thread: om.thread || '',
+  sender_is_business: isBizSender(om.sender),
+  customer_name: maskName(om.customer),
+  content: redactPii(om.text || ''),
+  pii_policy_applied: 'regex_v1',
+  has_receipt: !!om.hasReceipt,
+  sent_at: om.ts ? new Date(om.ts).toISOString() : new Date().toISOString(),
+  order_id: extractOrderIds(om.text || '').ids[0] || null,
+}));
+
 function sideBySide(it) {
   const om = it.om, cls = it.cls;
   const rec = orderIndex.get(cls.orderId);
@@ -343,7 +365,7 @@ const telegramText = summary + alerts
   .filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created'))
   .map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id)
   .join('');
-return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts } }];
+return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts, messages } }];
 `.trim();
 
 // ── Build Empty Summary（無新匯出資料夾時的分支）──────────────────────────
@@ -532,6 +554,45 @@ const workflow = {
       alwaysOutputData: true, continueOnFail: true,
     },
     {
+      // P2a 守衛：messages 為空時不寫入，防止 POST [] 到 Supabase（同 Has Alerts? 理由）
+      parameters: {
+        conditions: {
+          options: { caseSensitive: true, leftValue: '', typeValidation: 'strict' },
+          conditions: [{ leftValue: '={{$json.messages.length}}', rightValue: 0, operator: { type: 'number', operation: 'gt' } }],
+          combinator: 'and',
+        },
+        options: {},
+      },
+      id: 'if_messages', name: 'Has Messages?', type: 'n8n-nodes-base.if', typeVersion: 2, position: [3500, 540],
+    },
+    {
+      // P2a：批量寫入 ig_messages（service_role key）。
+      // v2（fresh-context opus review 2026-07-13 F3）：url 補 on_conflict=thread,ig_message_id——
+      // 沒有這個參數，PostgREST 的 UPSERT 仲裁鍵預設落在 PRIMARY KEY（id，body 從不帶，永遠不會撞），
+      // 導致 dedup 唯一索引反而變成「真撞到就 23505 整批打回」而非靜默忽略，Prefer:ignore-duplicates
+      // 形同虛設。此為 Write Alerts（既有節點，非本次 P2a 範圍）同樣缺少的既有缺陷，已另行記錄
+      // 待 Fat Mo 決定是否一併修（decisions.md/handoff）。
+      parameters: {
+        method: 'POST',
+        url: SUPABASE_URL + '/rest/v1/ig_messages?on_conflict=thread,ig_message_id',
+        authentication: 'none',
+        sendHeaders: true,
+        specifyHeaders: 'keypair',
+        headerParameters: { parameters: [
+          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
+          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'Content-Type', value: 'application/json' },
+          { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
+        ] },
+        sendBody: true,
+        contentType: 'raw',
+        body: "={{ JSON.stringify($('Classify & Report').first().json.messages) }}",
+        options: {},
+      },
+      id: 'wm1', name: 'Write Messages', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3720, 540],
+      alwaysOutputData: true, continueOnFail: true,
+    },
+    {
       // 空資料夾路徑（Build Empty Summary）接的 Telegram
       parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: '={{$json.summary}}', replyMarkup: 'none', additionalFields: {} },
       id: 'tg1', name: 'Telegram Notify', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3280, 300],
@@ -565,7 +626,14 @@ const workflow = {
     'Parse Inbox': { main: [[{ node: 'Fetch Orders', type: 'main', index: 0 }]] },
     'Fetch Orders': { main: [[{ node: 'Fetch Pipeline', type: 'main', index: 0 }]] },
     'Fetch Pipeline': { main: [[{ node: 'Classify & Report', type: 'main', index: 0 }]] },
-    'Classify & Report': { main: [[{ node: 'Has Alerts?', type: 'main', index: 0 }]] },
+    'Classify & Report': {
+      main: [
+        [
+          { node: 'Has Alerts?', type: 'main', index: 0 },
+          { node: 'Has Messages?', type: 'main', index: 0 }, // P2a：平行分支，不阻塞既有警報/通知路徑
+        ],
+      ],
+    },
     'Has Alerts?': {
       main: [
         [{ node: 'Write Alerts', type: 'main', index: 0 }],          // true: 有警報 → 寫入 + Telegram
@@ -573,6 +641,12 @@ const workflow = {
       ],
     },
     'Write Alerts': { main: [[{ node: 'Telegram Notify (Data)', type: 'main', index: 0 }]] },
+    'Has Messages?': {
+      main: [
+        [{ node: 'Write Messages', type: 'main', index: 0 }], // true: 有新訊息 → 寫入 ig_messages
+        [],                                                    // false: 無新訊息 → 終止（不影響既有 Telegram 流程）
+      ],
+    },
   },
   settings: {},
 };

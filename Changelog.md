@@ -1,5 +1,25 @@
 # Changelog
 
+## [2026-07-13] Session 171（Claude Code / Sonnet 5 執行）— P2a IG 訊息入庫 + PII 明文剝離（S150 §4.8 剝離範圍，獨立 /cl-flow）
+
+- **緣起**：處理 S150 收尾時發現 §4.8 明文聲明 P2（訊息入庫+內容比對+意圖標註+回覆範本庫+PII政策）為全新架構域，未來需獨立 `/cl-flow` 規劃。Fat Mo 裁決現在開規劃。
+- **規劃**：`/cl-flow`（flow_id `2026-07-13-1224`）跑 PX（Perplexity 外部研究）+ AG（Gemini 本地方案），A3 審閱時抓到 AG 提案技術不可行處（Postgres Function 無法調用 `lib/order-match.mjs` Node ESM 模組）與架構不一致處（新增 4 個 Postgres Function 偏離既有 n8n HTTP Request 直寫 PostgREST 模式），已在 Verdict（`artifacts/2026-07-13-1224/cl-final-plan.md`，CONDITIONAL_READY）中修正，並補完 AG 原稿缺失的回滾計畫與風險章節。方案分三期（P2a/P2b/P2c）分次執行，本次只做 P2a。
+- **P2a 執行**：
+  - `supabase/migrations/0053_create_ig_messages_table.sql`（NEW，已部署）：`ig_messages` 表，RLS anon 只讀 + 無 anon 寫入政策（比照 `ig_watchdog_alerts` 先例）+ `(thread, ig_message_id)` 唯一 dedup 索引 + 90 天 TTL pg_cron 清理。
+  - `scripts/ig-watchdog/lib/order-match.mjs`：新增 `redactPii(text)`（正則遮罩電話/IG handle/地址門牌/付款尾碼）、`maskName(name)`（姓名遮罩，只留首字）、`hashId(str)`（cyrb53 純 JS 算術雜湊，避開 n8n Code 節點 `require('crypto')` 靜默失敗地雷）。因單一真源機制（build 時逐字內嵌進 n8n Code 節點），三函式自動隨既有 diff-guard 測試防漂移。
+  - `scripts/ig-watchdog/build_n8n_workflow.cjs`：`Classify & Report` 節點輸出新增 `messages` 陣列（每則新訊息，`content` 經 `redactPii()`、`customer_name` 經 `maskName()`、`ig_message_id` 經 `hashId()`）；新增 `Has Messages?`（空陣列守衛，同既有 `Has Alerts?` 模式）+ `Write Messages`（POST `ig_messages`，同既有 `Write Alerts` 模式）兩個節點，`Classify & Report` 輸出平行分流至 `Has Alerts?`/`Has Messages?`，既有警報/Telegram 分支未受影響。
+  - n8n live workflow `D4LK6VrQbiXlju0V`（`FHS_IGWatchdog_DriveWatch`）curl PUT 部署兩次（第二次含下方修復）。
+- **fresh-context opus 獨立審查**（比照 D25 先例）：抓到 4 項發現，3 項即時修復——(1) v1 只遮罩 `content`，`customer_name`/`ig_message_id` 仍存明文姓名/thread，已補 `maskName()`/`hashId()`；(2) `redactPii` 正則有實測可繞過樣本（電話含分隔符/新版7x-8x開頭/852國碼/全形數字/地址數字在前語序/付款尾碼詞彙過窄），已逐一補正則+補測試（21→27 條全過）；(3) `Write Messages` 缺 `on_conflict` 參數令 dedup 唯一索引形同虛設，已補 `?on_conflict=thread,ig_message_id`。第 4 項（既有 `Write Alerts` 節點同缺 `on_conflict`，Session 119 建立非本次範圍）依執行紀律未一併修，已 spawn_task 開獨立追蹤（task_e3a60daa）。決策詳見 `decisions.md` D31。
+- **接受的設計取捨**：`ig_messages.thread` 維持明文（結構性 join key，比照 `ig_watchdog_alerts` 既有先例），非本次缺口，已記入 `scripts/README.md`。
+- **驗收**：`node --test order-match.test.mjs`（27/27）+ `order-match.diffguard.test.mjs`（逐字嵌入確認）+ mock-execution harness（對已部署 jsCode 跑合成資料，含 fresh-context review 的 F2 repro 樣本，全過）+ 兩次 live PUT 後 GET 核對（credentials 完整、node 數正確、jsCode 內容確認）。真實 cron 端到端驗證留待下次自然排程（約 2026-07-13T22:00Z 後）。
+- **待辦**：P2b（內容比對層）/ P2c（意圖標註+回覆範本庫）依 cl-final-plan §8 分次執行策略排隊；`Write Alerts` on_conflict 修復另案追蹤。
+- **後效同步稽核**：[A] 已更新 `docs/repo-map.md`（migration 0049-0053 補列 + ig-watchdog 區塊更新）+ `scripts/README.md`（修正「永不寫入 Supabase」過時聲明）；[B] 不觸發（無制度層檔案改動）；[C] 已更新本條目；[G] 不觸發（無 CREATE OR REPLACE FUNCTION、無財務欄位語義變動）。
+- **Subagent 使用記錄**：✅ 已使用 1 支（general-purpose，opus，fresh-context 獨立審查，比照 D25「n8n/schema 改動驗收不自驗」紅線）。
+
+【交付前雙紀律自檢】
+驗收：n8n/schema 改動 — mock-execution harness + diff-guard + 27 單元測試 + live PUT/GET 核對 + fresh-context opus 獨立審查（PASS-WITH-CONCERNS，3/4 發現即時修復）= ✅；真實 cron 端到端驗證留待自然排程後覆核
+Subagent：✅ 已使用 1 支（general-purpose/opus，PII regex/RLS/wiring/idempotency 獨立審查，理由：n8n 部署 + PII 處理屬「驗收不自驗」紅線範圍）
+
 ## [2026-07-12] Session 170續（Claude Code / Sonnet 5 執行）— grilling 實戰示範：拷問修訂取模排程中心方案書
 
 - **緣起**：裝完拷問技能後 Fat Mo 要求即場實戰示範（唔淨止講解），避免工具裝咗但唔識用變裝飾。

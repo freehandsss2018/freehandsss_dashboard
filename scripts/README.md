@@ -66,20 +66,26 @@
 
 **回滾方法**：刪除 `.claude/settings.json` 中的 `hooks` 區段即可停用所有 hooks，腳本檔案不受影響。`fhs-health-check.js` 掛載於 `session-start-sop.sh` 末尾，單獨移除該行即可停用，不影響其餘 hook。
 
-## ig-watchdog/ — IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→109）
+## ig-watchdog/ — IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→109；P2a 寫入行為變更見下方，Session 171）
 
-唯讀工具，零人手介入。IG 設定每天自動匯出訊息到 Google Drive → n8n Google Drive Trigger
+IG 設定每天自動匯出訊息到 Google Drive → n8n Google Drive Trigger
 偵測新檔 → Compression 解壓 → Code 節點（mojibake 解碼 + CJK 模糊比對）→ 唯讀查 Supabase
-`orders`/`sales_pipeline` → 分級（🔴疑似漏單/🟡待查/⚪低信心）→ Telegram 推送摘要。
-**永不寫入** Supabase/Airtable；客人 DM 內容全程不落地本機/Git/第三方雲端，只在
-Drive↔NAS n8n 記憶體間流動。n8n workflow：`FHS_IGWatchdog_DriveWatch`（ID `D4LK6VrQbiXlju0V`）。
+`orders`/`sales_pipeline` → 分級（🔴疑似漏單/🟡待查/⚪低信心）→ Telegram 推送摘要 →
+寫入 `ig_watchdog_alerts`（Session 119 起）。
+⚠️ **「永不寫入 Supabase」已過時（P2a，Session 171 起不再成立）**：P2a 新增 `ig_messages`
+表持久化每則新訊息，寫入前一律經 `lib/order-match.mjs` `redactPii()` 遮罩（電話/IG handle/
+地址門牌/付款尾碼）+ `maskName()` 遮罩 `customer_name`，`ig_message_id` 以 `hashId()`
+雜湊組成（不落地明文姓名/thread於id欄位）；未遮罩明文訊息本體仍不落地（只在 Drive↔NAS n8n
+記憶體間流動），但已知結構性訊號（`thread` 資料夾名稱，性質近似客戶識別碼）比照既有
+`ig_watchdog_alerts` 先例仍以明文存放，屬已知且已記錄的設計取捨（見 decisions.md D31）。
+n8n workflow：`FHS_IGWatchdog_DriveWatch`（ID `D4LK6VrQbiXlju0V`）。
 完整操作/重建見 `ig-watchdog/SOP.md`。
 
 | 檔案/指令 | 用途 |
 |------|------|
 | `build_n8n_workflow.cjs` | **改規則的唯一入口**：產生 n8n workflow JSON（含 Code 節點移植邏輯），PUT 上 n8n 套用 |
 | `npm run watchdog`/`calibrate`/`selftest` | 本機手動工具，保留作 ad-hoc 深度分析/校準用，非日常必需（見 SOP §五）|
-| `npm test` | 單元測試（decoder mojibake 解碼 + match 分類，19 cases）|
+| `npm test` | 單元測試（decoder mojibake 解碼 + match 分類 + order-match v3/redactPii/maskName/hashId，Session 171 起 27 cases）|
 
 **演進**：原規劃本機常駐 `server.mjs`（方案A）已棄用並刪除——實測發現 NAS n8n 的 Code 節點
 其實能用 `Buffer`+`Compression` 節點完成全部解壓/解碼/比對，遂改為全 NAS 跑（方案C），
