@@ -78,6 +78,11 @@ IG 設定每天自動匯出訊息到 Google Drive → n8n Google Drive Trigger
 雜湊組成（不落地明文姓名/thread於id欄位）；未遮罩明文訊息本體仍不落地（只在 Drive↔NAS n8n
 記憶體間流動），但已知結構性訊號（`thread` 資料夾名稱，性質近似客戶識別碼）比照既有
 `ig_watchdog_alerts` 先例仍以明文存放，屬已知且已記錄的設計取捨（見 decisions.md D31）。
+**P2b（同 Session 171）新增金額比對**：`content_mismatch` 表記錄「IG 訊息提及金額 vs 訂單實際
+記錄金額」比對證據（僅 `amount_mismatch`，品項比對未做——現行 pipeline 未攞 order_items
+明細）；比對邏輯 `compareToOrder()`/`extractAmountsFromText()` 同樣在 `lib/order-match.mjs`。
+上線頭 2 週刻意不接 Telegram 通知（只寫表供人工覆核校準閾值），詳見 decisions.md D32、
+`.fhs/notes/FHS_System_Logic_Overview.md` §11.8。
 n8n workflow：`FHS_IGWatchdog_DriveWatch`（ID `D4LK6VrQbiXlju0V`）。
 完整操作/重建見 `ig-watchdog/SOP.md`。
 
@@ -85,7 +90,7 @@ n8n workflow：`FHS_IGWatchdog_DriveWatch`（ID `D4LK6VrQbiXlju0V`）。
 |------|------|
 | `build_n8n_workflow.cjs` | **改規則的唯一入口**：產生 n8n workflow JSON（含 Code 節點移植邏輯），PUT 上 n8n 套用 |
 | `npm run watchdog`/`calibrate`/`selftest` | 本機手動工具，保留作 ad-hoc 深度分析/校準用，非日常必需（見 SOP §五）|
-| `npm test` | 單元測試（decoder mojibake 解碼 + match 分類 + order-match v3/redactPii/maskName/hashId，Session 171 起 27 cases）|
+| `npm test` | 單元測試（decoder mojibake 解碼 + match 分類 + order-match v3/PII三函式/金額比對，Session 171 起 35 cases）|
 
 **演進**：原規劃本機常駐 `server.mjs`（方案A）已棄用並刪除——實測發現 NAS n8n 的 Code 節點
 其實能用 `Buffer`+`Compression` 節點完成全部解壓/解碼/比對，遂改為全 NAS 跑（方案C），

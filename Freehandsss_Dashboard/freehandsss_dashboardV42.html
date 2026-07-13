@@ -13962,8 +13962,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 return;
             }
             listEl.innerHTML = filtered.map(function(r) {
-                var kindLabel = r.kind === 'not_created' ? '🆕 未建立' : (r.kind === 'verified_ok' ? '✓ 已核對' : '📝 資訊不齊');
-                var kindColor = r.kind === 'not_created' ? '#ef4444' : (r.kind === 'verified_ok' ? '#059669' : '#f59e0b');
+                var kindLabel = r.kind === 'not_created' ? '🆕 未建立' : (r.kind === 'verified_ok' ? '✓ 已核對' : (r.kind === 'content_mismatch' ? '⚠️ 疑似對不上' : '📝 資訊不齊'));
+                var kindColor = r.kind === 'not_created' ? '#ef4444' : (r.kind === 'verified_ok' ? '#059669' : (r.kind === 'content_mismatch' ? '#f97316' : '#f59e0b'));
                 var resolvedBadge = r.resolved
                     ? '<span style="font-size:11px;background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:9px;margin-left:4px;">✓ 已處理</span>'
                     : '';
@@ -13971,6 +13971,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var actionBtn = '';
                 if (r.kind === 'created_incomplete' && r.order_id) {
                     actionBtn = '<button onclick="openOrderModal(\'' + r.order_id + '\',\'\',\'finance\')" style="font-size:12px;background:var(--fhs-primary,#2A9D8F);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">開訂單</button>';
+                } else if (r.kind === 'content_mismatch' && r.order_id) {
+                    actionBtn = '<button onclick="openOrderModal(\'' + r.order_id + '\',\'\',\'finance\')" style="font-size:12px;background:#f97316;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">核對金額</button>';
                 } else if (r.kind === 'not_created' && r.order_id) {
                     actionBtn = '<button onclick="_igwCopyOrderId(\'' + r.order_id + '\')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">複製訂號</button>';
                 }
@@ -13993,6 +13995,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     + (r.customer_name ? '<strong>' + r.customer_name + '</strong>｜' : '') + (r.snippet || '（無摘要）')
                     + (r.has_receipt ? ' 📎' : '') + dbBadge
                     + '</div>'
+                    + (r.kind === 'content_mismatch' && r.raw && r.raw.mm
+                        ? '<div style="font-size:13px;font-weight:700;color:#f97316;margin:2px 0 6px;">IG講$' + r.raw.mm.ig_reported_amount + ' vs 系統$' + r.raw.mm.db_actual_amount + '</div>'
+                        : '')
                     + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' + actionBtn + resolveBtn + '</div>'
                     + '</div>';
             }).join('');

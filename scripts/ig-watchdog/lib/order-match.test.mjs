@@ -6,6 +6,7 @@ import {
   toHalfWidth, normalizeOrderId, isV42Confirm,
   hasDealIntent, hasQuoteDraft, extractOrderIds,
   classifyMessage, buildOrderIndex, redactPii, maskName, hashId,
+  extractAmountsFromText, compareToOrder,
 } from './order-match.mjs';
 
 // ── 正規化 ──────────────────────────────────────────────
@@ -196,4 +197,64 @@ test('hashId：確定性 + 不同輸入不同輸出', () => {
   assert.equal(a, b, '同輸入同輸出（確定性，供冪等鍵使用）');
   assert.notEqual(a, c, '不同輸入應給不同雜湊（碰撞機率低）');
   assert.ok(!a.includes('Katrina'), '雜湊輸出不含原始明文');
+});
+
+// ── 內容比對層（P2b）──────────────────────────────────────
+test('extractAmountsFromText：抽取合理範圍金額，排除訂號/電話/日期', () => {
+  assert.deepEqual(extractAmountsFromText('訂金已收$800，尾數$1200'), [800, 1200]);
+  assert.deepEqual(extractAmountsFromText('訂單編號# 0600101'), [], '訂號形狀不算金額');
+  assert.deepEqual(extractAmountsFromText('我電話係92345678'), [], '電話（8位）超出金額合理範圍');
+  assert.deepEqual(extractAmountsFromText('日期20260623'), [], '日期（8位）超出金額合理範圍');
+  assert.deepEqual(extractAmountsFromText('$5'), [], '低於下限10');
+  assert.deepEqual(extractAmountsFromText(''), []);
+  assert.deepEqual(extractAmountsFromText(null), []);
+});
+
+test('compareToOrder：訊息金額明顯高於系統記錄 → amount_mismatch', () => {
+  const order = { order_id: '0600101', final_sale_price: 800 };
+  const r = compareToOrder('已比$1500，麻煩核對', order);
+  assert.ok(r);
+  assert.equal(r.mismatch_type, 'amount_mismatch');
+  assert.equal(r.ig_reported_amount, 1500);
+  assert.equal(r.db_actual_amount, 800);
+});
+
+test('compareToOrder：訊息金額低於/接近系統記錄 → 不觸發（避免定金/尾數誤報）', () => {
+  const order = { order_id: '0600101', final_sale_price: 800 };
+  assert.equal(compareToOrder('已比訂金$300', order), null, '訂金明顯低於全額，正常情況不觸發');
+  assert.equal(compareToOrder('已比$850', order), null, '10%容忍範圍內不觸發');
+});
+
+test('compareToOrder：無訂單記錄/無金額文字 → null', () => {
+  assert.equal(compareToOrder('已比$1500', null), null);
+  assert.equal(compareToOrder('多謝晒', { order_id: '0600101', final_sale_price: 800 }), null);
+});
+
+test('compareToOrder：final_sale_price 缺席時不 fallback 到 deposit（F2 修復）', () => {
+  // v2：created_incomplete 訂單常 final_sale_price 未填，deposit 只係全額約一半，
+  // 用 deposit 做基準會令客人提及全額/尾數時系統性誤判——冇 final_sale_price 就唔比對。
+  const order = { order_id: '0600101', deposit: 500 };
+  assert.equal(compareToOrder('已比$900', order), null, '冇 final_sale_price，唔應該 fallback 到 deposit 誤判');
+});
+
+// v2 補強（fresh-context opus review 2026-07-13 F1/F3 抓出的誤報樣本）
+test('extractAmountsFromText v2：曆年形狀數字冇貨幣標記唔算金額（F1 修復）', () => {
+  // 註：日/月片段（如「13」「07」）可能仍會殘留喺陣列入面，但因 compareToOrder 只取
+  // max() 且只喺「明顯高於」訂單價才觸發，呢啲細數值喺真實業務（訂單普遍數百元起）
+  // 唔可能成為誤判主因；本測試聚焦真正會造成誤判的曆年（大數值）本身。
+  assert.ok(!extractAmountsFromText('取模時間：2026/07/13').includes(2026), 'V42確認文本嘅取模日期年份唔應被當金額');
+  assert.ok(!extractAmountsFromText('2026年1月要').includes(2026), '純粹提及年份');
+  assert.deepEqual(extractAmountsFromText('已比$2026'), [2026], '曆年形狀但有$標記，當真金額');
+  assert.deepEqual(extractAmountsFromText('2026蚊都得'), [2026], '曆年形狀但有蚊標記，當真金額');
+});
+
+test('extractAmountsFromText v2：付款尾碼數字唔算金額（F3 修復，重用 redactPii 同一 pattern）', () => {
+  assert.deepEqual(extractAmountsFromText('已轉數，尾五碼12345，麻煩核對'), [], '付款尾碼非金額');
+  assert.deepEqual(extractAmountsFromText('尾五碼12345，已比$800'), [800], '尾碼被排除後，真金額仍抽得到');
+});
+
+test('compareToOrder：V42 制式確認文本（含取模日期）唔應觸發 F1 迴歸', () => {
+  const order = { order_id: '0600101', final_sale_price: 800 };
+  const v42Text = 'Freehandsss 訂單確認\n(訂單編號# 0600101 手模擺設)\n取模時間：2026/07/13';
+  assert.equal(compareToOrder(v42Text, order), null, 'V42確認文本嘅日期年份唔應被誤判為金額不符');
 });

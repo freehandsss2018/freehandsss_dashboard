@@ -1543,3 +1543,24 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **範圍**：P2b（內容比對層）/ P2c（意圖標註+回覆範本庫）依 cl-final-plan §8 分次執行策略，本次不動，待 Fat Mo 另行 `/execute`。
 
 詳見 `supabase/migrations/0053_create_ig_messages_table.sql`、`scripts/ig-watchdog/lib/order-match.mjs`、`scripts/ig-watchdog/build_n8n_workflow.cjs`、Changelog.md S171 條目。
+
+### D32：S171續 — P2b 內容比對層（金額比對）執行完成，fresh-context review 抓出並修復 3 項誤報邏輯缺陷
+
+**決策**：同 session 接續 P2a，執行 cl-final-plan §6.3 P2b（內容比對層）。誠實收窄範圍：v1 僅做金額比對（`amount_mismatch`），品項比對因現行 pipeline 未攞 `order_items` 明細而刻意不做假比對，留待未來擴充。
+
+**執行內容**：`supabase/migrations/0054_create_content_mismatch_table.sql`（比對證據表）+ `0055_ig_watchdog_content_mismatch_check.sql`（CHECK 擴充第四值）+ `lib/order-match.mjs` 新增 `extractAmountsFromText()`/`compareToOrder()` + `build_n8n_workflow.cjs` 新增 `Has Mismatches?`/`Write Mismatches` 節點（`Classify & Report` 輸出三向平行分流）+ `Freehandsss_Dashboard/freehandsss_dashboardV42.html` 首次觸及（igwatch UI 新增第四色+action button+金額顯示）。live 部署 workflow `D4LK6VrQbiXlju0V`。
+
+**fresh-context opus 獨立審查**（比照 D25/D31 先例）：PASS-WITH-CONCERNS，5 項發現，4 項即時修復：
+1. **[已修復] F1 曆年誤判**：v1 `extractAmountsFromText` 冇排除曆年形狀數字（1900-2099），V42 制式確認文本固定含取模日期（如「取模時間：2026/07/13」），「2026」落喺金額合理範圍（10-50000）內會被誤認金額——對訂單價低於約 $1842 的訂單，幾乎每張 V42 確認訊息都會誤判為金額不符，嚴重污染 2 週校準期資料。修法：曆年形狀數字需鄰近 `$`/元/蚊/HKD/港幣 等貨幣標記先當真金額。
+2. **[已修復] F2 deposit fallback 系統性誤報**：v1 `compareToOrder` 用 `final_sale_price ?? deposit` 做基準，`created_incomplete` 訂單常 `final_sale_price` 未填，`deposit` 只係全額約一半——客人提及全額/尾數會被系統性誤判。修法：移除 fallback，冇 `final_sale_price` 就唔比對（誠實收窄，寧可漏檢也不製造假警報）。
+3. **[已修復] F3 付款尾碼誤判**：付款尾碼數字（如「尾五碼12345」）落喺金額範圍內會被誤認金額。修法：重用 `redactPii` 已有嘅 `PAYMENT_TAIL_RE`（單一真源）排除。
+4. **[已記錄未修復，同一既有缺陷]** F4：既有 `Write Alerts` 節點缺 `on_conflict`（P2a D31 已發現並 spawn_task 追蹤 `task_e3a60daa`），P2b 令同批重複鏡像列觸發此既有缺陷的機率增加（尤其 F1-F3 修復前）；P2b 自己新開的 `Write Mismatches` 節點正確帶咗 `on_conflict`，無同一問題。
+5. **[已修復] F5 金額差未顯示**：V42 alert 卡片原本只顯示「⚠️疑似對不上」標籤，比對出嚟嘅具體金額只存在 DB 冇顯示，操作員要另開訂單先睇到差額。已補一行「IG講$X vs 系統$Y」直接讀 `raw.mm`。
+
+**修復後重新驗證**：單元測試 35/35（含 F1/F2/F3 回歸測試）+ mock-execution harness（合成 V42 確認文本含日期的 F1 迴歸場景，重跑對真實部署 jsCode 確認唔再誤判）+ 瀏覽器注入合成資料驗證 V42 UI 渲染 + 二次 live 部署確認修復生效。
+
+**已知限制**：真實 cron 端到端資料流證據留待下次自然排程（約 2026-07-13T22:00Z 後）。
+
+**下一步**：P2c（意圖標註+回覆範本庫）依 cl-final-plan §8 排隊，待 Fat Mo 另行 `/execute`。
+
+詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.8、Changelog.md S171續條目。

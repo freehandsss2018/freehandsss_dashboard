@@ -600,13 +600,19 @@ IG Drive Export
    ↓ Classify & Report 節點（cr1）
    ↓  種類：not_created / created_incomplete（通知+寫入）｜created_full → verified_ok（S150 Phase 4 起僅寫入不通知，見 §11.6）
    ↓  P2a 起：同時輸出 messages 陣列（所有新訊息，不分類別，見 §11.7）
+   ↓  P2b 起：同時輸出 mismatches 陣列（金額比對疑似不符，見 §11.8）+ alerts 陣列
+   ↓          追加 kind='content_mismatch' 鏡像列（複用 Write Alerts，非新開寫入路徑）
    ↓
    ├─ Has Alerts?（IF守衛：alerts.length > 0）
    │    true  → Write Alerts HTTP POST → ig_watchdog_alerts INSERT（service_role key，冪等）→ Telegram Notify (Data)
    │    false → Telegram Notify (Data)（直接發摘要，跳過空陣列寫入）
    │
-   └─ Has Messages?（IF守衛：messages.length > 0，P2a 新增，與 Has Alerts? 平行，不阻塞既有分支）
-        true  → Write Messages HTTP POST → ig_messages INSERT（service_role key，content 已 redactPii() 遮罩）
+   ├─ Has Messages?（IF守衛：messages.length > 0，P2a 新增，與 Has Alerts? 平行，不阻塞既有分支）
+   │    true  → Write Messages HTTP POST → ig_messages INSERT（service_role key，content 已 redactPii() 遮罩）
+   │    false → 終止（無下游節點）
+   │
+   └─ Has Mismatches?（IF守衛：mismatches.length > 0，P2b 新增，與上兩者平行）
+        true  → Write Mismatches HTTP POST → content_mismatch INSERT（service_role key，比對證據明細）
         false → 終止（無下游節點）
 
 V42 igwatch 模式（anon SELECT）← ig_watchdog_alerts
@@ -719,3 +725,25 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 **已知未解決**：既有 `Write Alerts` 節點（§11.1，Session 119 建立）同樣缺 `on_conflict` 參數，非本次 P2a 範圍未修，已 spawn_task 追蹤（`task_e3a60daa`）。
 
 **下一步**：P2b（內容比對層，`content_mismatch` 表）/ P2c（意圖標註+回覆範本庫）依 Verdict `artifacts/2026-07-13-1224/cl-final-plan.md` §8 分次執行策略排隊。
+
+### 11.8 P2b：內容比對層——金額比對（Session 171，2026-07-13）
+
+**背景**：P2a 完成後同 session 接續 P2b。v1 誠實收窄範圍：僅做**金額比對**（`amount_mismatch`）；品項比對（`item_mismatch`）需要 `order_items` 明細，現行 n8n「Fetch Orders」節點只攞訂單層欄位（`order_id/customer_name/deposit/final_sale_price/created_at/confirmed_at/full_order_text`），未攞品項——刻意不做假比對，留待未來擴充該節點查詢後才開放。
+
+**比對邏輯**（`lib/order-match.mjs` `compareToOrder(text, orderRecord)`，僅在 `classifyMessage` 已判定 `category=created_full`/`created_incomplete`（即訂號已在 DB 命中）時呼叫，`not_created` 已由既有分類覆蓋不重複比對）：
+- 只用 `orderRecord.final_sale_price` 做比對基準，**不 fallback 到 `deposit`**——`created_incomplete` 訂單常 `final_sale_price` 未填，`deposit` 只係全額約一半，用它做基準會令客人提及全額/尾數時系統性誤判（fresh-context opus review F2，2026-07-13 抓出後修正）。冇 `final_sale_price` 就視為資料不足以比對，不觸發。
+- 只抓「訊息提及金額明顯高於系統記錄」（`> final_sale_price × 1.1`）——真正的財務風險方向（潛在少收/漏記）；金額低於系統記錄視為正常（可能提及訂金/尾數），不觸發，減少誤報。
+- `extractAmountsFromText(text)` 抽取候選金額：先 `toHalfWidth`，範圍限定 10-50000（業務內全部係手模/鎖匙扣/吊飾小額訂單），排除訂號形狀（0開頭7-8位）、付款尾碼（重用 `redactPii` 的 `PAYMENT_TAIL_RE`，單一真源）、**未標記曆年**（1900-2099 形狀數字，如 V42 制式確認文本內嘅取模日期「2026/07/13」的「2026」，除非鄰近 `$`/元/蚊/HKD/港幣 等貨幣標記才當真金額——fresh-context opus review F1 抓出後修正，此前會令幾乎每張低價訂單的 V42 確認訊息都誤判為金額不符，污染 2 週校準期資料）。
+
+**寫入設計**：
+- `content_mismatch` 表（migration 0054）：比對證據明細（含具體金額數字），供人工追查。`order_id`/`message_ig_message_id` 皆為軟性參照（非 FK，比照 `ig_watchdog_alerts.order_id` 既有設計）；`message_ig_message_id` 與 P2a `ig_messages.ig_message_id` 用同一 `hashId(thread+ts+sender)` 公式計算，可跨表 join。
+- `ig_watchdog_alerts.kind` CHECK 擴充第四值 `content_mismatch`（migration 0055）——**不新開寫入節點**，鏡像列直接併入既有 `alerts` 陣列由既有 `Write Alerts` 節點寫入，複用既有 `fhs_resolve_ig_alert` RPC + V42 UI 工作流；`content_mismatch` 表本身不設 `resolved` 欄位，避免雙軌狀態 drift。
+- **Risk mitigation（cl-final-plan §6.5）**：mismatch 鏡像列刻意不進 `notifyItems`，故不進 `telegramText` 深連結、不推高 `summary`「需核對」計數——上線頭 2 週只寫表唔推 Telegram，待人工覆核閾值校準後才考慮接通知。
+
+**V42 UI**（`_renderIgWatchList`，L13965-13998）：`kindLabel`/`kindColor` 新增 `content_mismatch` → 橘色「⚠️ 疑似對不上」；新增「核對金額」action button（`openOrderModal(order_id,'','finance')`，同 `created_incomplete` 按鈕的呼叫模式）；卡片內新增一行顯示 `raw.mm` 內嘅 `ig_reported_amount`/`db_actual_amount`（fresh-context review F5 建議，避免操作員要另開訂單先睇到具體金額差）。此為本次 P2b 唯一觸及 Dashboard HTML 的一步。
+
+**fresh-context opus 獨立審查**（比照 §11.6/§11.7 先例）：PASS-WITH-CONCERNS，5 項發現：F1（曆年誤判，已修復）、F2（deposit fallback 系統性誤報，已修復）、F3（付款尾碼數字誤判，已修復）、F4（既有 `Write Alerts` 缺 `on_conflict` 令同批重複鏡像列可能 23505 打回整批——根因為 P2a 已發現並 spawn_task 追蹤的既有缺陷 `task_e3a60daa`，非 P2b 新增）、F5（金額差未顯示在卡片，已補充修復）。全部可修復項已修復並重新 live 部署 + 重跑 mock-execution harness 確認回歸不再發生。
+
+**驗收方法**：`node --test order-match.test.mjs`（35/35，含 F1/F2/F3 回歸測試）+ diff-guard 逐字嵌入確認 + mock-execution harness（合成資料含 V42 確認文本帶日期的 F1 迴歸場景 + 真實金額不符場景，全過）+ 兩次 live PUT 後 GET 核對（第二次含修復）+ 瀏覽器內注入合成 `content_mismatch` 列驗證 V42 UI 渲染正確（顏色/標籤/按鈕/金額顯示）+ fresh-context opus 獨立審查。真實 cron 端到端資料流證據留待下次自然排程（約 2026-07-13T22:00Z 後）覆核。
+
+**下一步**：P2c（意圖標註+回覆範本庫）依 Verdict §8 分次執行策略排隊。

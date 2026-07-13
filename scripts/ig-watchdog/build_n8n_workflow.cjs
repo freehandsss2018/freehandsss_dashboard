@@ -278,6 +278,7 @@ const orderIndex = buildOrderIndex(orders);
 
 const notifyItems = [];
 const verifiedItems = []; // S150 Phase 4 (P1a): created_full 正向記錄候選
+const mismatchItems = []; // P2b: 金額比對疑似不符候選（flow_id 2026-07-13-1224）
 let cFull = 0, cIncomplete = 0, cNotCreated = 0, cWeak = 0;
 for (const om of orderMsgs) {
   const cls = classifyMessage({ text: om.text, hasReceipt: om.hasReceipt }, orderIndex);
@@ -285,6 +286,13 @@ for (const om of orderMsgs) {
   else if (cls.category === 'created_incomplete') { cIncomplete++; notifyItems.push({ om, cls, kind: '資訊不齊' }); }
   else if (cls.category === 'not_created') { cNotCreated++; notifyItems.push({ om, cls, kind: '未建立' }); }
   else if (cls.category === 'weak_no_id') cWeak++;
+
+  // P2b：只喺訂號已在 DB 命中時比對金額（category=created_full/created_incomplete）——
+  // 查無訂號的情況已由 not_created 分類覆蓋，避免雙軌重複警報（見 cl-final-plan §6.3）。
+  if (cls.orderId && (cls.category === 'created_full' || cls.category === 'created_incomplete')) {
+    const mm = compareToOrder(om.text, orderIndex.get(cls.orderId));
+    if (mm) mismatchItems.push({ om, cls, mm });
+  }
 }
 
 // P2a（S150 §4.8 剝離範圍，flow_id 2026-07-13-1224）：所有新訊息（不分類別）入庫，
@@ -359,13 +367,41 @@ const alerts = [
     raw: { om: it.om, cls: it.cls },
     resolved: true,
   })),
+  // P2b：content_mismatch 鏡像列，複用既有 fhs_resolve_ig_alert RPC + V42 UI 工作流。
+  // resolved 預設 false（需人工覆核，不像 verified_ok 天然排除）；但刻意不進 notifyItems，
+  // 故不進 telegramText 深連結、不推高 summary「需核對」計數——risk mitigation：上線首 2 週
+  // 只寫表唔推 Telegram，避免閾值未校準時警報過吵（cl-final-plan §6.5）。
+  ...mismatchItems.map(it => ({
+    alert_date: new Date().toISOString().slice(0, 10),
+    order_id: it.cls.orderId || null,
+    kind: 'content_mismatch',
+    category: 'content_mismatch',
+    customer_name: it.om.customer || it.om.sender || null,
+    snippet: (it.om.text || '').slice(0, 40),
+    thread: it.om.thread || null,
+    has_receipt: it.om.hasReceipt || false,
+    db_matched: true,
+    raw: { om: it.om, cls: it.cls, mm: it.mm },
+    resolved: false,
+  })),
 ];
+
+// P2b：content_mismatch 證據表寫入陣列（獨立於上方 alerts，供 Write Mismatches 節點使用）
+const mismatches = mismatchItems.map(it => ({
+  alert_date: new Date().toISOString().slice(0, 10),
+  order_id: it.cls.orderId,
+  message_thread: it.om.thread || '',
+  message_ig_message_id: hashId((it.om.thread || '') + '|' + (it.om.ts || 0) + '|' + (it.om.sender || '')),
+  mismatch_type: it.mm.mismatch_type,
+  ig_reported_amount: it.mm.ig_reported_amount,
+  db_actual_amount: it.mm.db_actual_amount,
+}));
 // Phase 3: 深連結在 Code 節點組合（n8n expression evaluator 不支援複雜 JS 鏈式語法）
 const telegramText = summary + alerts
   .filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created'))
   .map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id)
   .join('');
-return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts, messages } }];
+return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts, messages, mismatches } }];
 `.trim();
 
 // ── Build Empty Summary（無新匯出資料夾時的分支）──────────────────────────
@@ -593,6 +629,42 @@ const workflow = {
       alwaysOutputData: true, continueOnFail: true,
     },
     {
+      // P2b 守衛：mismatches 為空時不寫入（同 Has Alerts?/Has Messages? 理由）
+      parameters: {
+        conditions: {
+          options: { caseSensitive: true, leftValue: '', typeValidation: 'strict' },
+          conditions: [{ leftValue: '={{$json.mismatches.length}}', rightValue: 0, operator: { type: 'number', operation: 'gt' } }],
+          combinator: 'and',
+        },
+        options: {},
+      },
+      id: 'if_mismatches', name: 'Has Mismatches?', type: 'n8n-nodes-base.if', typeVersion: 2, position: [3500, 660],
+    },
+    {
+      // P2b：批量寫入 content_mismatch（service_role key，on_conflict 對齊 migration 0054 dedup 索引，
+      // 吸取 P2a F3 教訓不重犯）。對應鏡像警報列已併入既有 alerts 陣列，由 Write Alerts 節點寫入，
+      // 本節點只負責比對證據明細（含具體金額數字）。
+      parameters: {
+        method: 'POST',
+        url: SUPABASE_URL + '/rest/v1/content_mismatch?on_conflict=alert_date,message_thread,message_ig_message_id,mismatch_type',
+        authentication: 'none',
+        sendHeaders: true,
+        specifyHeaders: 'keypair',
+        headerParameters: { parameters: [
+          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
+          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'Content-Type', value: 'application/json' },
+          { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
+        ] },
+        sendBody: true,
+        contentType: 'raw',
+        body: "={{ JSON.stringify($('Classify & Report').first().json.mismatches) }}",
+        options: {},
+      },
+      id: 'wmm1', name: 'Write Mismatches', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3720, 660],
+      alwaysOutputData: true, continueOnFail: true,
+    },
+    {
       // 空資料夾路徑（Build Empty Summary）接的 Telegram
       parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: '={{$json.summary}}', replyMarkup: 'none', additionalFields: {} },
       id: 'tg1', name: 'Telegram Notify', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3280, 300],
@@ -630,7 +702,8 @@ const workflow = {
       main: [
         [
           { node: 'Has Alerts?', type: 'main', index: 0 },
-          { node: 'Has Messages?', type: 'main', index: 0 }, // P2a：平行分支，不阻塞既有警報/通知路徑
+          { node: 'Has Messages?', type: 'main', index: 0 },   // P2a：平行分支，不阻塞既有警報/通知路徑
+          { node: 'Has Mismatches?', type: 'main', index: 0 }, // P2b：平行分支，同上
         ],
       ],
     },
@@ -645,6 +718,12 @@ const workflow = {
       main: [
         [{ node: 'Write Messages', type: 'main', index: 0 }], // true: 有新訊息 → 寫入 ig_messages
         [],                                                    // false: 無新訊息 → 終止（不影響既有 Telegram 流程）
+      ],
+    },
+    'Has Mismatches?': {
+      main: [
+        [{ node: 'Write Mismatches', type: 'main', index: 0 }], // true: 有金額不符 → 寫入 content_mismatch
+        [],                                                      // false: 無不符 → 終止
       ],
     },
   },

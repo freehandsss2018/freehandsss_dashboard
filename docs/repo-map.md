@@ -76,7 +76,9 @@ freehandsss_dashboard/
 │   │   ├── 0050_ig_watchdog_verified_ok_check.sql ← S150 Phase4 (P1a)：ig_watchdog_alerts.kind CHECK 擴充 'verified_ok'（Session 168）✅ 已部署
 │   │   ├── 0051_orders_anon_policy_cleanup.sql ← S150 Phase5 (P1b)：orders anon 權限收斂，(a)項誤刪 orders_anon_delete 已由 0052 回滾，僅 (b) UPDATE 去重生效（Session 168）✅ 已部署
 │   │   ├── 0052_restore_orders_anon_delete.sql ← 修正 0051 誤刪，回滾 orders_anon_delete 政策（Session 168，fresh-context opus 抓出 CRITICAL 回歸即時修復）✅ 已部署
-│   │   └── 0053_create_ig_messages_table.sql ← P2a（S150 §4.8 剝離範圍獨立 /cl-flow flow_id 2026-07-13-1224）：ig_messages 表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，content 一律經 lib/order-match.mjs redactPii() 遮罩（Session 171）✅ 已部署
+│   │   ├── 0053_create_ig_messages_table.sql ← P2a（S150 §4.8 剝離範圍獨立 /cl-flow flow_id 2026-07-13-1224）：ig_messages 表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，content 一律經 lib/order-match.mjs redactPii() 遮罩（Session 171）✅ 已部署
+│   │   ├── 0054_create_content_mismatch_table.sql ← P2b：content_mismatch 比對證據表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，僅 amount_mismatch（品項比對留待未來擴充 Fetch Orders 節點）（Session 171）✅ 已部署
+│   │   └── 0055_ig_watchdog_content_mismatch_check.sql ← P2b：ig_watchdog_alerts.kind CHECK 擴充第四值 content_mismatch（Session 171）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -339,7 +341,7 @@ freehandsss_dashboard/
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）
 │       ├── lib/decoder.mjs(+.test)      ← Meta mojibake 解碼（latin1→utf8 + U+FFFD 守衛，邏輯亦移植進n8n Code節點）
 │       ├── lib/match.mjs(+.test)        ← CJK fuzzy + 🔴🟡⚪ 訊號分層（Phase 2 付款證據層，v3 降為次要）
-│       ├── lib/order-match.mjs(+.test)  ← v3 訂號主鍵偵測單一真源：訂號抽取/正規化/三分類/報價守衛 + P2a新增 redactPii()/maskName()/hashId()（PII遮罩/姓名遮罩/冪等鍵雜湊，Session 171）（build 內嵌進n8n Code節點，diffguard.test 防漂移）
+│       ├── lib/order-match.mjs(+.test)  ← v3 訂號主鍵偵測單一真源：訂號抽取/正規化/三分類/報價守衛 + P2a新增 redactPii()/maskName()/hashId()（PII遮罩/姓名遮罩/冪等鍵雜湊）+ P2b新增 extractAmountsFromText()/compareToOrder()（金額比對，含曆年/付款尾碼誤報過濾，Session 171）（build 內嵌進n8n Code節點，diffguard.test 防漂移）
 │       ├── fixtures/                    ← 合成自測資料（_gen.mjs 產生，無真實客人）
 │       ├── hooks/pre-commit             ← 隱私守衛：擋含 sender_name/participants 的 JSON
 │       ├── SOP.md                       ← Fat Mo 操作指南（架構說明 + 日常=看Telegram即可）

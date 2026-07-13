@@ -190,3 +190,66 @@ export function hashId(str) {
   h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 }
+
+// ── 內容比對層（P2b，S150 §4.8 剝離範圍）────────────────────
+// v1 誠實收窄範圍：僅做金額比對（amount_mismatch）。品項比對（item_mismatch）需要
+// order_items 明細，現行 n8n「Fetch Orders」節點只攞訂單層欄位，未攞品項——刻意不做
+// 假的品項比對，留待未來擴充 Fetch Orders 查詢後再開放。
+// 金額合理範圍 10-50000（業務內全部係手模/鎖匙扣/吊飾小額訂單）雙重用途：
+// 排除電話（8位數值遠超上限）與日期（8位數值同樣遠超上限），不需分開判斷邏輯。
+// v2（fresh-context opus review 2026-07-13 抓出 v1 三個誤報源）：
+//   F1 曆年形狀數字（1900-2099，如 V42 制式確認文本「取模時間：2026/07/13」嘅「2026」）
+//      落喺合理範圍內會被誤認金額——加貨幣標記鄰近判斷，冇 $/元/蚊 等標記嘅曆年數字排除。
+//   F3 付款尾碼（「尾五碼12345」）非金額——重用 redactPii 已有嘅 PAYMENT_TAIL_RE 排除。
+const AMOUNT_ORDER_ID_SHAPE_RE = /^0\d{6,7}$/; // 訂號形狀（leading 0, 7-8位），非金額，需排除
+const YEAR_SHAPE_RE = /^(19|20)\d{2}$/; // 曆年形狀（1900-2099），需鄰近貨幣標記先當真金額
+const CURRENCY_MARK_RE = /[$＄元蚊]|HKD|港幣/;
+
+/** 從訊息文字抽取「疑似金額」數字陣列（先 toHalfWidth，排除付款尾碼/訂號形狀/業務不合理範圍/未標記曆年）。 */
+export function extractAmountsFromText(text) {
+  if (typeof text !== 'string' || !text) return [];
+  let t = toHalfWidth(text);
+  t = t.replace(PAYMENT_TAIL_RE, ''); // 付款尾碼數字非金額，排除（同 redactPii 用同一 pattern，單一真源）
+  const out = [];
+  for (const m of t.matchAll(/\d[\d,]*/g)) {
+    const raw = m[0];
+    if (AMOUNT_ORDER_ID_SHAPE_RE.test(raw)) continue;
+    const n = parseInt(raw.replace(/,/g, ''), 10);
+    if (!Number.isFinite(n) || n < 10 || n > 50000) continue;
+    if (YEAR_SHAPE_RE.test(raw)) {
+      const idx = m.index;
+      const before = t.slice(Math.max(0, idx - 3), idx);
+      const after = t.slice(idx + raw.length, idx + raw.length + 3);
+      if (!CURRENCY_MARK_RE.test(before) && !CURRENCY_MARK_RE.test(after)) continue;
+    }
+    out.push(n);
+  }
+  return out;
+}
+
+/**
+ * 比對訊息中提及嘅金額 vs 訂單實際記錄金額。只喺已知訂單存在時呼叫（category=
+ * created_full/created_incomplete）——查無訂號的情況已由既有 not_created 分類覆蓋，
+ * 避免雙軌重複警報。
+ * 刻意只抓「訊息講嘅金額明顯高於系統記錄」（潛在少收/漏記，真正的財務風險方向）；
+ * 訊息金額低於系統記錄視為正常（可能只提及訂金/尾數），不觸發，減少誤報。
+ * 容忍 10% 誤差，避免定金/尾數混淆造成雜訊。
+ * v2（fresh-context opus review F2）：只用 final_sale_price 做基準，**不再** fallback 到
+ * deposit——created_incomplete 訂單常係 final_sale_price 未填、deposit 只係全額約一半，
+ * 用 deposit 做基準會令客人提及全額/尾數時系統性誤判。冇 final_sale_price 就視為資料不足以
+ * 比對，寧可漏檢也不製造假警報（v1 誠實收窄，非漏洞）。
+ * @returns {null|{mismatch_type:string, ig_reported_amount:number, db_actual_amount:number}}
+ */
+export function compareToOrder(text, orderRecord) {
+  if (!orderRecord) return null;
+  const dbAmount = Number(orderRecord.final_sale_price);
+  if (!Number.isFinite(dbAmount) || dbAmount <= 0) return null;
+  const amounts = extractAmountsFromText(text);
+  if (amounts.length === 0) return null;
+  const maxMentioned = Math.max(...amounts);
+  const threshold = dbAmount * 1.1;
+  if (maxMentioned > threshold) {
+    return { mismatch_type: 'amount_mismatch', ig_reported_amount: maxMentioned, db_actual_amount: dbAmount };
+  }
+  return null;
+}

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-07-13] Session 171續（Claude Code / Sonnet 5 執行）— P2b 內容比對層：金額比對（S150 §4.8 剝離範圍）
+
+- **緣起**：同 session 接續 P2a，執行 cl-final-plan §6.3 P2b。誠實收窄範圍：v1 僅做金額比對，品項比對因現行 pipeline 未攞 `order_items` 明細刻意不做。
+- **執行**：`supabase/migrations/0054_create_content_mismatch_table.sql`（比對證據表，RLS anon 只讀+dedup 索引+90天TTL）+ `0055_ig_watchdog_content_mismatch_check.sql`（CHECK 擴充第四值 `content_mismatch`）+ `lib/order-match.mjs` 新增 `extractAmountsFromText()`/`compareToOrder()` + `build_n8n_workflow.cjs` 新增 `Has Mismatches?`/`Write Mismatches` 節點（`Classify & Report` 輸出三向平行分流）+ `Freehandsss_Dashboard/freehandsss_dashboardV42.html`（本次 P2b 首次觸及 Dashboard HTML）igwatch UI 新增橘色「⚠️ 疑似對不上」badge + 「核對金額」按鈕 + 金額差顯示行。live 部署 workflow `D4LK6VrQbiXlju0V`。
+- **fresh-context opus 獨立審查**（比照 D25/D31 先例）：PASS-WITH-CONCERNS，5 項發現 4 項即時修復——(1) F1 曆年誤判：V42 制式確認文本固定含取模日期（如「2026/07/13」），「2026」落喺金額合理範圍會被誤認金額，對訂單價低於約$1842的訂單幾乎每張確認訊息都會誤判，嚴重污染2週校準期資料，已修法「曆年形狀數字需鄰近貨幣標記先當真金額」；(2) F2 deposit fallback 系統性誤報：`created_incomplete` 訂單常 `final_sale_price` 未填、`deposit` 只係全額約一半，客人提及全額/尾數會被系統性誤判，已移除 fallback（冇 final_sale_price 就唔比對）；(3) F3 付款尾碼誤判：重用 `redactPii` 已有 `PAYMENT_TAIL_RE` 排除；(4) F5 金額差未顯示：已補「IG講$X vs 系統$Y」顯示行。第(4)項 F4（既有 `Write Alerts` 缺 `on_conflict`）為 P2a 已發現的既有缺陷（`task_e3a60daa`），P2b 自身新節點正確帶咗 `on_conflict`。
+- **修復後重新驗證**：`node --test order-match.test.mjs`（35/35，含 F1/F2/F3 回歸測試，含真實 V42 確認文本+日期的 F1 迴歸場景）+ diff-guard + mock-execution harness 重跑對真實部署 jsCode 確認 + 瀏覽器注入合成資料驗證 V42 UI 渲染 + 二次 live PUT/GET 核對修復生效。
+- **待辦**：P2c（意圖標註+回覆範本庫）依 cl-final-plan §8 排隊；真實 cron 端到端資料流驗證留待下次自然排程（約 2026-07-13T22:00Z 後）。
+- **後效同步稽核**：[A] 已更新 `docs/repo-map.md`（migration 0054-0055 補列 + order-match.mjs lib 描述更新）；[B] 不觸發；[C] 已更新本條目；[G] 不觸發（無 CREATE OR REPLACE FUNCTION、`_renderIgWatchList` 為顯示函式非財務計算函式）。
+- **Subagent 使用記錄**：✅ 已使用 1 支（general-purpose，opus，fresh-context 獨立審查，比照「n8n/schema 改動驗收不自驗」紅線）。
+
+【交付前雙紀律自檢】
+驗收：n8n/schema/UI 改動 — 35 單元測試（含 F1/F2/F3 回歸）+ diff-guard + mock-execution harness + 瀏覽器 DOM 注入驗證 UI 渲染 + 二次 live PUT/GET 核對 + fresh-context opus 獨立審查（PASS-WITH-CONCERNS，4/5 即時修復）= ✅；真實 cron 端到端驗證留待自然排程後覆核
+Subagent：✅ 已使用 1 支（general-purpose/opus，金額比對邏輯/wiring/dedup/跨表一致性/Dashboard diff 獨立審查）
+
 ## [2026-07-13] Session 171（Claude Code / Sonnet 5 執行）— P2a IG 訊息入庫 + PII 明文剝離（S150 §4.8 剝離範圍，獨立 /cl-flow）
 
 - **緣起**：處理 S150 收尾時發現 §4.8 明文聲明 P2（訊息入庫+內容比對+意圖標註+回覆範本庫+PII政策）為全新架構域，未來需獨立 `/cl-flow` 規劃。Fat Mo 裁決現在開規劃。
