@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-07-13] Session 171續II（Claude Code / Sonnet 5 執行）— task_e3a60daa 修復：Write Alerts on_conflict + 補記錄一筆未落文件的 live drift
+
+- **緣起**：Fat Mo 批准處理 D31/D32 F4 追蹤的既有缺陷（`ig_watchdog_alerts` 的 `Write Alerts` 節點缺 `on_conflict`，冪等形同虛設）。
+- **診斷發現**：`ig_watchdog_alerts` 的冪等鍵 `ix_igwatch_alerts_dedup` 是 `COALESCE(order_id,'')` **expression index**（因 `order_id` 可為 NULL），與 P2a/P2b 的 plain-column 索引結構不同——PostgREST `on_conflict` 參數不支援 expression 作 conflict target，不能照抄 P2a 修法。進一步查證發現 **DB 側已被修好**：一筆完全未落文件的 live migration（Supabase 內部版本 `20260713091833`／name `igwatch_alerts_on_conflict_fix`）已新增具現化欄位 `order_id_key`（`GENERATED ALWAYS AS (COALESCE(order_id,'')) STORED`）+ 新 plain-column 唯一索引 `ix_igwatch_alerts_dedup_v2`；GET live n8n workflow 確認 `Write Alerts` 節點 URL 也已帶 `?on_conflict=alert_date,thread,order_id_key,kind`——修復本體其實已全部 live 部署完成，但本地 `build_n8n_workflow.cjs`/`supabase/migrations/` 皆未同步，且全程零文件記錄。
+- **本次執行**（純補齊 SSOT，非新部署）：
+  - `scripts/ig-watchdog/build_n8n_workflow.cjs`：補回 `on_conflict` 參數 + 說明註解，與 live 狀態同步。
+  - 新建 `supabase/migrations/0056_igwatch_alerts_on_conflict_fix.sql`：照抄已 live 執行的 DDL（`IF NOT EXISTS`/`IF EXISTS` 冪等），關閉 migration 編號 drift。
+  - GET live workflow 與重新產生的本地 JSON 逐節點/連線 diff：24 個節點完全一致（僅 `settings.callerPolicy`/`availableInMCP` 兩個 n8n 自動附加欄位差異）——**未重新 PUT**，避免不必要的 Google Drive credential 重新指派負擔。
+- **驗證**：`EXPLAIN INSERT ... ON CONFLICT (alert_date, thread, order_id_key, kind) DO NOTHING` 對 live DB 執行（零寫入，僅 query plan），輸出確認 `Conflict Arbiter Indexes: ix_igwatch_alerts_dedup_v2` 正確命中。
+- **task_e3a60daa**：已確認修復（DB+n8n 皆已 live），dismiss 該背景任務 chip。
+- **後效同步稽核**：[A] `docs/repo-map.md` 待下次 `/fhs-slim`/`/commit` 週期補列 migration 0056；[B] 不觸發；[C] 已更新本條目；[G] 不觸發（無 CREATE OR REPLACE FUNCTION，本次為 index/generated column，非財務計算函式）。
+- **Subagent 使用記錄**：❌ 未使用——純診斷+對齊既有 live 狀態，無新邏輯需要獨立審查；驗證改以 live EXPLAIN query plan 證據替代。
+
+【交付前雙紀律自檢】
+驗收：schema/n8n 改動 — `EXPLAIN` query plan 證實 conflict arbiter 命中新索引 + GET live workflow 逐節點 diff 確認一致 = ✅（附運行證據，未額外派 fresh-context agent，因本次為「補記錄已 live 狀態」而非新邏輯）
+Subagent：❌ 未使用（診斷+文件同步性質，無新業務邏輯）
+
 ## [2026-07-13] Session 171續（Claude Code / Sonnet 5 執行）— P2b 內容比對層：金額比對（S150 §4.8 剝離範圍）
 
 - **緣起**：同 session 接續 P2a，執行 cl-final-plan §6.3 P2b。誠實收窄範圍：v1 僅做金額比對，品項比對因現行 pipeline 未攞 `order_items` 明細刻意不做。

@@ -747,3 +747,18 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 **驗收方法**：`node --test order-match.test.mjs`（35/35，含 F1/F2/F3 回歸測試）+ diff-guard 逐字嵌入確認 + mock-execution harness（合成資料含 V42 確認文本帶日期的 F1 迴歸場景 + 真實金額不符場景，全過）+ 兩次 live PUT 後 GET 核對（第二次含修復）+ 瀏覽器內注入合成 `content_mismatch` 列驗證 V42 UI 渲染正確（顏色/標籤/按鈕/金額顯示）+ fresh-context opus 獨立審查。真實 cron 端到端資料流證據留待下次自然排程（約 2026-07-13T22:00Z 後）覆核。
 
 **下一步**：P2c（意圖標註+回覆範本庫）依 Verdict §8 分次執行策略排隊。
+
+### 11.9 task_e3a60daa 修復：Write Alerts on_conflict 補記錄（Session 171續II，2026-07-13）
+
+**問題**：§11.7/§11.8 F4 追蹤的既有缺陷——`ig_watchdog_alerts` 舊冪等鍵 `ix_igwatch_alerts_dedup` 是 `COALESCE(order_id,'')` **expression index**（因 `order_id` 可為 NULL）。PostgREST 的 `on_conflict` 查詢參數只接受 plain column 名稱，不支援 expression 作 conflict target；`Write Alerts` 節點 URL 原本無此參數，令 UPSERT 仲裁鍵預設落在 PRIMARY KEY（`id`，body 從不帶，永遠不會撞），真撞到 dedup 鍵時是未處理的 `23505` 把整批 `INSERT` 打回，而非 `Prefer: resolution=ignore-duplicates` 預期的靜默忽略。
+
+**發現**：診斷時查出此問題**已於本 session 稍早、未落文件的情況下被修復**——Supabase 內部 migration 版本 `20260713091833`（name `igwatch_alerts_on_conflict_fix`）已新增具現化欄位 `order_id_key`（`GENERATED ALWAYS AS (COALESCE(order_id,'')) STORED`）+ plain-column 唯一索引 `ix_igwatch_alerts_dedup_v2 (alert_date, thread, order_id_key, kind)` 取代舊 expression index；且 GET live n8n workflow 確認 `Write Alerts` 節點 URL 已帶 `?on_conflict=alert_date,thread,order_id_key,kind`。本地 `supabase/migrations/` 與 `scripts/ig-watchdog/build_n8n_workflow.cjs` 皆未同步此變更，屬未落文件的 live drift。
+
+**本次執行**（純補齊 SSOT，非新部署）：
+- `build_n8n_workflow.cjs` 補回 `on_conflict` 參數與說明註解，與 live 狀態同步。
+- 新建 `supabase/migrations/0056_igwatch_alerts_on_conflict_fix.sql`，內容照抄已 live 執行的 DDL（`IF NOT EXISTS`/`IF EXISTS` 冪等）。
+- GET live workflow 與重新產生的本地 JSON 逐節點/連線 diff，確認 24 個節點完全一致（僅 `settings.callerPolicy`/`availableInMCP` 兩個 n8n 自動附加欄位差異，非本次修復範圍）——**未重新 PUT**，避免不必要的 Google Drive credential 重新指派負擔。
+
+**驗證**：`EXPLAIN INSERT ... ON CONFLICT (alert_date, thread, order_id_key, kind) DO NOTHING` 對 live DB 執行（零寫入，僅 query plan），輸出確認 `Conflict Arbiter Indexes: ix_igwatch_alerts_dedup_v2`，證實 on_conflict 目標與索引結構正確匹配。
+
+詳見 `decisions.md` D33。

@@ -569,9 +569,15 @@ const workflow = {
     {
       // Phase 1b: 批量寫入 ig_watchdog_alerts（service_role key，冪等 UPSERT ON CONFLICT DO NOTHING）
       // 只在 alerts.length > 0 時執行（Has Alerts? true 分支），防空陣列 POST
+      // task_e3a60daa 修復（2026-07-13）：url 補 on_conflict=alert_date,thread,order_id_key,kind——
+      // 原冪等鍵 ix_igwatch_alerts_dedup 是 COALESCE(order_id,'') expression index，PostgREST
+      // on_conflict 不支援 expression 作 conflict target，沒有這個參數時 UPSERT 仲裁鍵預設落在
+      // PRIMARY KEY（id，body 從不帶，永遠不會撞），導致真撞到 dedup 鍵時是未處理的 23505 整批
+      // 打回，而非靜默忽略。DB 側已加具現化欄位 order_id_key（= COALESCE(order_id,'')）與對應
+      // plain-column 唯一索引 ix_igwatch_alerts_dedup_v2，此處對齊該索引。
       parameters: {
         method: 'POST',
-        url: SUPABASE_URL + '/rest/v1/ig_watchdog_alerts',
+        url: SUPABASE_URL + '/rest/v1/ig_watchdog_alerts?on_conflict=alert_date,thread,order_id_key,kind',
         authentication: 'none',
         sendHeaders: true,
         specifyHeaders: 'keypair',

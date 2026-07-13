@@ -1564,3 +1564,22 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **下一步**：P2c（意圖標註+回覆範本庫）依 cl-final-plan §8 排隊，待 Fat Mo 另行 `/execute`。
 
 詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.8、Changelog.md S171續條目。
+
+### D33：S171續II — task_e3a60daa 修復（Write Alerts on_conflict）+ 補記錄一筆未落文件的 live drift
+
+**決策**：Fat Mo 批准處理 D31/D32 F4 追蹤的既有缺陷（`Write Alerts` 節點缺 `on_conflict`，冪等形同虛設）。
+
+**發現**：進場診斷時查出兩件事：
+1. `ig_watchdog_alerts` 的冪等鍵 `ix_igwatch_alerts_dedup` 是 `COALESCE(order_id,'')` **expression index**（因 `order_id` 可為 NULL），與 `ig_messages`/`content_mismatch` 的 plain-column 索引結構不同——PostgREST 的 `on_conflict` 參數不支援 expression 作 conflict target，不能照抄 P2a 的修法直接套用。
+2. **DB 側其實已經修好**：一筆完全沒有記錄在案的 live migration（Supabase 內部版本 `20260713091833`／name `igwatch_alerts_on_conflict_fix`，2026-07-13 09:18 UTC apply）已新增具現化欄位 `order_id_key`（`GENERATED ALWAYS AS (COALESCE(order_id,'')) STORED`）+ 新 plain-column 唯一索引 `ix_igwatch_alerts_dedup_v2`，正是解決上述限制的正確做法——但本地 repo 完全無此 migration 檔案、無任何 decisions.md/Changelog.md/session-log.md 記錄，屬未落文件的 live drift（來源不明，推測為某次未完整記錄的背景任務）。經 GET 現行 live workflow 核對，發現 **live n8n workflow 的 `Write Alerts` 節點 URL 也已經帶有 `?on_conflict=alert_date,thread,order_id_key,kind`**——即修復本體其實已經全部 live 部署完成，唯獨本地 `build_n8n_workflow.cjs` 原始碼未同步（違反 SOP.md「唯一真相來源」原則），且全程零文件記錄。
+
+**執行內容**：
+- `scripts/ig-watchdog/build_n8n_workflow.cjs`：補回 `Write Alerts` 節點 URL 的 `on_conflict` 參數 + 說明註解，使本地原始碼與 live 狀態同步（非新增行為，純補齊 SSOT drift）。
+- `supabase/migrations/0056_igwatch_alerts_on_conflict_fix.sql`：補建本地 migration 檔案，內容照抄已 live 執行的 DDL（`IF NOT EXISTS`/`IF EXISTS` 冪等，對已是此狀態的 DB 無副作用），關閉 migration 編號 drift。
+- 未重新 PUT n8n workflow——GET live workflow 與本地重新產生的 JSON 逐節點 diff 確認完全一致（僅 n8n 自動附加的 `settings.callerPolicy`/`availableInMCP` 欄位差異，屬 n8n 自身行為非本次修復範圍），故本次修復是「補記錄」而非「新部署」，不觸發 Google Drive credential 重新指派負擔。
+
+**驗證**：`EXPLAIN INSERT ... ON CONFLICT (alert_date, thread, order_id_key, kind) DO NOTHING` 對 live DB 執行（零寫入，僅 query plan），確認 `Conflict Arbiter Indexes: ix_igwatch_alerts_dedup_v2` 正確命中，證實 on_conflict 語法與索引結構相符，非空談。
+
+**task_e3a60daa**：狀態由「待授權追蹤」→「已確認修復（DB+n8n 皆已 live，本次補齊本地文件+SSOT 同步）」，dismiss 該背景任務 chip。
+
+詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.9、Changelog.md 本 session 條目。
