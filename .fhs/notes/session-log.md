@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-13 (Session 172 — canva-auto 訂單 0800802 執行 + Parakeet 公式 v2 重擬合 + SOP 缺口修補): 🎨 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S172 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。`/canva-auto` 執行 Janet 訂單 0800802（純音樂款，客人有 2 條 Lovart 動畫非慣常 1 條）。撞到 `resize_element` `preserve_aspect_ratio=true` 陷阱（保留 container 舊比例非 asset 原生比例）已修正記入 known failure modes；page3 雙片正確版型＝疊放同一位置（同母片 precedent 一致，非 AI 首猜嘅並排），已記落 `placement_memory.json`。page2 黑白圖 Parakeet 色調 Fat Mo 裁決繼續本地自動化路線，用 Fat Mo 呢單嘅 Canva 原生 ColourMix 輸出樣本反推 `local_prep.py` v2 公式（正規化座標，捨棄 v1「1563 拉伸」未驗證假設），新增 `sample_gradient_fit.py`，Saturation 擬合 0.3064 同滑桿讀數 0.3 吻合。揭發客人音訊全程未上載嘅 SOP 缺口，已補入 Stage②必做清單。全文見 Changelog.md S172 條目；決策見 decisions.md D34。
+Subagent：❌ 未使用（Canva MCP 主 session 限定，canva-auto.md 執行規則明文不派工）
+
 ## 2026-07-12 (S166後續 — /fhs-check 部署前置檢查 Red Flag): 🔴 ⏳
 
 **摘要**：S165（Dashboard 全域錯誤可見化+訂單草稿自救）V42→current 升格部署前置 `/fhs-check`。核心三項 PASS：LOCAL_AUDIT SKIP（`test_audit_0695346.py` 不存在，非本次相關）、LIFECYCLE PASS(21.0s)、STRESS PASS(6.7s，5案全過)、ACCEPTANCE PASS(0.8s)。**Red Flag：PRICE_AUDIT FAIL** — `generate_fix_payload.py` 查詢 Airtable Product_Database 空白售價時收到 `429 PUBLIC_API_BILLING_LIMIT_EXCEEDED`（本月 Airtable API 額度用盡），與 S165 程式碼改動本身無關，屬外部服務配額限制。待 Fat Mo 裁決是否阻擋本次部署。

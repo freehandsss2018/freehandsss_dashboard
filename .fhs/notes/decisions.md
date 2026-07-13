@@ -1583,3 +1583,15 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **task_e3a60daa**：狀態由「待授權追蹤」→「已確認修復（DB+n8n 皆已 live，本次補齊本地文件+SSOT 同步）」，dismiss 該背景任務 chip。
 
 詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.9、Changelog.md 本 session 條目。
+
+### D34：S172 — canva-auto 訂單 0800802（Janet）執行：page3 雙片新 pattern + local_prep.py Parakeet 公式 v2 重擬合 + SOP 缺口修補
+
+**背景**：`/canva-auto` 執行 Janet 訂單 0800802（純音樂款，特殊之處：客人有 2 條 Lovart 動畫 Video1/Video2，非慣常 1 條）。過程揭發 3 類問題，逐一收口。
+
+**問題① page3 雙片版型無 precedent**：AI Stage③ 首版猜「並排」，另撞到 `resize_element` 的 `preserve_aspect_ratio=true` 陷阱——保留嘅係「目前 element container 現有比例」而非 asset 原生像素比例，Fat Mo 拖入嘅預設 container（864×864 方形）同 Video 原生比例（960×1920 直向）差好遠，令兩段片變形重疊。已修正（改傳明確 width+height）並記入 canva-auto.md known failure modes。Fat Mo 人手最終修正版：兩段片疊放同一位置（同母片 DAHN9LxGdEE precedent 一致，非並排），已記落 `placement_memory.json` order 0800802，`learned: true`。
+
+**問題② page2 黑白圖 Parakeet 色調流程**：AI 用 `local_prep.py`（本地 Python 公式）生成，Fat Mo 認為不對，改用 **Canva 原生 ColourMix > Parakeet** 效果重新生成（Hue offset=0.8/Saturation=0.3/Rainbow amount=0.2/Rainbow offset=0）。Fat Mo 裁決：**繼續自動化路線**，要求把 `local_prep.py` 公式逼近呢組參數。執行：用 Fat Mo 呢單嘅 Canva 原生輸出（182×199 縮圖樣本）反推新公式，改用正規化座標（u=x/寬, v=y/高），捨棄 v1「拉伸貼合 1563×1563 參考 canvas」未驗證假設；新增 `canva_auto/sample_gradient_fit.py`（相位差分法反推工具，日後滑桿數值變更時重新擬合）。Saturation 擬合中位數 0.3064 同 Fat Mo 滑桿讀數 0.3 幾乎完全吻合，交叉驗證通過。**已知限制**：樣本為縮圖非全解像度，未做全解像度交叉驗證；新公式只啱返呢一組滑桿數值，換組數值需重新擬合。
+
+**問題③ SOP 缺口（客人音訊從未上載）**：Fat Mo 回報「客人音訊都錯，我根本沒有上傳，你也沒有問我」——`canva-auto.md` Stage①-④全程未有步驟提示上載/更換音軌，對純音樂款（音訊係核心交付物）係嚴重缺口。已補入 Stage②必做清單；另補 Stage③人手補完清單（進場動畫/音軌/過場/頁面時長皆屬 Canva MCP 掂唔到嘅範圍，純文字提醒非 AI 可執行）。Fat Mo 已補上載並 set 好本單音軌，訂單出貨。
+
+詳見 `canva_auto/placement_memory.json` order 0800802、`.fhs/ai/commands/canva-auto.md` known failure modes + Stage②/③、Changelog.md S172 條目。

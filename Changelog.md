@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-07-13] Session 172（Claude Code / Sonnet 5 執行）— /canva-auto 訂單 0800802（Janet）執行 + SOP 缺口修補 + Parakeet 公式 v2 重擬合
+
+- **緣起**：`/canva-auto` 執行 Janet 訂單 0800802（純音樂款，特殊之處：客人有 2 條 Lovart 動畫 Video1/Video2，非慣常 1 條），Fat Mo 指定母片 DAHN9LxGdEE 作參考。
+- **Stage①-③ 執行**：copy-design + 改名 + 換字句 + 歸檔；發現 Fat Mo 首次上載嘅 page2 圖對其實係未加工原始檔（非 `local_prep.py` 去背/Parakeet 版），退回重上載；page3 雙片首次無 precedent，AI 首版猜「並排」，另撞到 `resize_element` `preserve_aspect_ratio=true` 保留嘅係「目前 container 舊比例」而非 asset 原生比例嘅陷阱（864×864 方形 container 令 960×1920 直片變形重疊），已修正並記落 known failure modes。
+- **Fat Mo 人手修正 + 5 點回報**：page3 正確版型係「兩段片疊放同一位置」（非並排，同母片一致）；page2 黑白圖 Fat Mo 改用 **Canva 原生 ColourMix > Parakeet** 效果重新生成（Hue offset=0.8/Saturation=0.3/Rainbow amount=0.2/Rainbow offset=0），非本地公式版本；另加人手進場動畫（黑白圖=墨水/汙漬，彩色圖=模糊類）；揭發**客人音訊全程未上載**（AI SOP 從未提示呢步）。
+- **收口動作**：
+  - `canva_auto/placement_memory.json`：新增 order 0800802 案例，記錄 page2/page3 正確幾何、asset 替換、動畫需求、音訊缺口，`learned: true`。
+  - `canva_auto/local_prep.py`：Parakeet 色相公式改用**正規化座標**（u=x/寬, v=y/高）重新反推，取代 v1「拉伸貼合 1563×1563 參考 canvas」未驗證假設；新增 `canva_auto/sample_gradient_fit.py`（相位差分法反推工具，供日後滑桿數值變更時重新擬合）；`canva_auto/README.md` 同步更新已知限制章節。Saturation 擬合值 0.3064 同 Fat Mo 滑桿讀數 0.3 幾乎完全吻合，交叉驗證通過（樣本為 182×199 縮圖，未用全解像度驗證，已記錄為待覆核風險）。
+  - `.fhs/ai/commands/canva-auto.md`：Stage②補「純音樂款須上載客人音訊」必做提醒；新增 Stage③人手補完清單（進場動畫/音軌/過場/頁面時長皆屬 Canva MCP 掂唔到嘅範圍）；Known failure modes 追加 `resize_element` preserve_aspect_ratio 陷阱記錄。
+  - Fat Mo 已補上載客人音訊並 set 好，訂單出貨（MP4 + 封面 JPG）。
+- **驗證**：本地重跑 `local_prep.py` v2 公式，肉眼比對輸出色調方向同 Fat Mo 嘅 Canva 原生版本一致；Saturation 數值交叉驗證。
+- **後效同步稽核**：[A] 已更新 `canva_auto/README.md`（同目錄內文件同步，非 repo-map 範圍——`docs/repo-map.md` 本 repo 現無此檔，屬既有缺口非本次新增）；[B] 不觸發（產品線工具修復，非治理制度層變動）；[C] 已更新本條目；[G] 不觸發（無財務計算函式異動）。
+- **Subagent 使用記錄**：❌ 未使用（Canva MCP 在主 session，canva-auto.md 執行規則明文不派工）。
+
+【交付前雙紀律自檢】
+驗收：local_prep.py 公式改動 — 本地重跑肉眼比對 + Saturation 數值交叉驗證（0.3064 vs 0.3）= ✅；Canva 設計改動由 Fat Mo 親自驗收並確認出貨 = ✅
+Subagent：❌ 未使用（Canva MCP 主 session 限定，不派工）
+
 ## [2026-07-13] Session 171續II（Claude Code / Sonnet 5 執行）— task_e3a60daa 修復：Write Alerts on_conflict + 補記錄一筆未落文件的 live drift
 
 - **緣起**：Fat Mo 批准處理 D31/D32 F4 追蹤的既有缺陷（`ig_watchdog_alerts` 的 `Write Alerts` 節點缺 `on_conflict`，冪等形同虛設）。
