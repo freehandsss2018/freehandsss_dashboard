@@ -1,8 +1,8 @@
 # AI 團隊註冊制度（ai-team-registry）
 
-> **Version**: v1.0.0（2026-07-13，S171，決策 D30）
-> **讀者**：任何未來 AI session——Claude（Opus/Sonnet/Haiku）、Codex、或其他模型。呢份係**制度本體**；`artifacts/agent-dashboard.html` 只係佢嘅生成物。
-> **一句話用法**：`node scripts/agent-dashboard.js` → 生成 `artifacts/agent-dashboard.html`（人睇）+ `artifacts/agent-dashboard.json`（AI 讀）。召喚詞：`/team` 或「團隊名冊」。
+> **Version**: v1.1.0（2026-07-14；v1.0.0＝2026-07-13 S171 D30 初建；v1.1＝渲染層改白底卡片牆＋n8n 升級 live 實掃＋服務狀態 zone，Fat Mo 兩輪風格指定）
+> **讀者**：任何未來 AI session——Claude（Opus/Sonnet/Haiku）、Codex、或其他模型。呢份係**制度本體**；`artifacts/agent_dashboardV42.html` 只係佢嘅生成物。
+> **一句話用法**：`node scripts/agent_dashboardV42.js` → 生成 `artifacts/agent_dashboardV42.html`（人睇）+ `artifacts/agent_dashboardV42.json`（AI 讀）。召喚詞：`/team` 或「團隊名冊」。
 
 ---
 
@@ -27,7 +27,8 @@
 | Skills | `.claude/skills/*/SKILL.md` | frontmatter：`name`/`description` | 寫齊 frontmatter；FHS 自研/拷問系列要入 manifest `skill_categories`，否則歸「設計技能包」 |
 | Hooks | `scripts/hooks/*` ＋ `.claude/settings.json` 接線 | settings.json hooks 事件自動對應 | manifest `hook_descriptions` 補一句人話 |
 | MCP（專案級） | `.mcp.json` | server keys 自動掃 | manifest `mcp_connectors` 補描述（缺描述會上勘誤表） |
-| MCP（connector/harness）、n8n、cron、內建 agent | 無檔案可掃 | — | **同一個 session 內**登記 `team-manifest.json` |
+| n8n workflows | NAS n8n API（`.env` N8N_INSTANCE＋N8N_KEY） | **live 實掃**（v1.1，2026-07-14）：全部 workflow 名／active 狀態／最近 50 次執行結果 → 運行/異常/停止狀態燈 | 長期成員喺 manifest `automations` 用 `n8n_id` 補描述；分類規則喺 `n8n_categories`（regex→label）；離線時退回 manifest 條目標「未知」，生成不失敗 |
+| MCP（connector/harness）、內建 agent | 無檔案可掃 | — | **同一個 session 內**登記 `team-manifest.json` |
 | 召喚詞 | 無檔案可掃 | — | 登記 manifest `trigger_words`（phrase/target/effect 三欄） |
 
 ---
@@ -47,6 +48,7 @@
 - **出生日期**：repo 內檔案＝git 首次提交日；repo 外（user-level agents）＝MANIFEST 安裝史，退而求其次檔案 birthtime（同步盤上係近似值）。
 - **外掛 plugin skills**（`anthropic-skills:*`、`dataviz` 等）唔掃——屬 harness 層，逐 session 唔同，掃咗反而製造假象。
 - **MCP 欄以「configured」為準**，唔代表當前 session 已載入／已授權（如 figma 要 OAuth）。
+- **服務狀態＝生成時快照，非實時監控**：狀態燈（運行/異常/停止/待命）反映生成嗰刻 n8n active 旗標＋最近執行結果；要新鮮數據就重跑 `/team`。n8n 離線→狀態「未知」，生成照樣成功。守護狀態 tile＝fhs-health issue_count＋.kgov-pending 旗標＋hook `node --check` 三者合計。
 - **用量數據**未納入 v1——邊個技能真係有人用，屬 `/fhs-usage-audit` 職責（正交，勿重複建設）。
 
 ## §5 Known failure modes

@@ -1524,6 +1524,8 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 **待辦**：①4 項 MANIFEST 漂移待 Fat Mo 裁決點修（涉 subagent 雙寫規則，屬 05 §1 先問類）；②CLAUDE.md 路由表加一行「想知有咩 AI 資產／點召喚 → /team」待批（路由表增行屬 05 §1 先問類）；③/commit 流程加「資產有增減時重生成名冊」步驟待批。
 
+> 📌 更新（2026-07-14）：`scripts/agent-dashboard.js` 已改名 `scripts/agent_dashboardV42.js`（輸出同步為 `artifacts/agent_dashboardV42.html`／`.json`），呼應 V42 生產 Dashboard 命名慣例；上文原名保留為歷史記錄，非文件債。
+
 ### D31：S171 — P2a IG 訊息入庫 + PII 明文剝離執行完成（S150 §4.8 剝離範圍，flow_id 2026-07-13-1224）
 
 **決策**：獨立 `/cl-flow` Verdict（`artifacts/2026-07-13-1224/cl-final-plan.md`，CONDITIONAL_READY）批准後，`/execute` 執行 P2a（三期分次執行策略的第一期）：`ig_messages` 表落地 + `lib/order-match.mjs` 新增 `redactPii()`/`maskName()`/`hashId()` + `build_n8n_workflow.cjs` 新增 `Has Messages?`/`Write Messages` 節點 + n8n live workflow `D4LK6VrQbiXlju0V` 部署。
@@ -1595,3 +1597,25 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **問題③ SOP 缺口（客人音訊從未上載）**：Fat Mo 回報「客人音訊都錯，我根本沒有上傳，你也沒有問我」——`canva-auto.md` Stage①-④全程未有步驟提示上載/更換音軌，對純音樂款（音訊係核心交付物）係嚴重缺口。已補入 Stage②必做清單；另補 Stage③人手補完清單（進場動畫/音軌/過場/頁面時長皆屬 Canva MCP 掂唔到嘅範圍，純文字提醒非 AI 可執行）。Fat Mo 已補上載並 set 好本單音軌，訂單出貨。
 
 詳見 `canva_auto/placement_memory.json` order 0800802、`.fhs/ai/commands/canva-auto.md` known failure modes + Stage②/③、Changelog.md S172 條目。
+
+### D35：S173 — P2c：意圖標註 + 回覆範本庫執行完成（S150 §4.8 剝離範圍，flow_id 2026-07-13-1224）
+
+**決策**：Fat Mo 於用量緊繃（約5%剩餘）情境下明確批准 `/execute` P2c，先建代碼、驗收延後（三選一裁決，AskUserQuestion 取得）。
+
+**執行前查證發現的阻塞點**：cl-final-plan §7 要求「意圖 regex 對照既有真實 IG 對話樣本（至少 20 則，人工標記地面真相）量測覆蓋率 ≥70%、主標籤準確度 ≥80%，未達標不算 P2c 完成」。查證 live 資料：`ig_messages` 表（P2a 上線後）0 筆（cron 僅跑過一次，當日 0 筆符合條件）；`ig_watchdog_alerts` 現存 10 筆真實 snippet 全為訂單細節確認文本（倒模/木框/相框規格），無 cancel/complaint/payment_inquiry/modify_order 任何案例，多樣性不足。三選一問 Fat Mo（先建代碼驗收延後／Fat Mo現場提供真實樣本／暫緩整個P2c），裁決：**先建代碼，驗收延後**——量測項目明確標記為「待 `ig_messages` 自然累積足量真實訊息後補測」，不宣稱已達標（誠實收窄，比照既有 P2a F 修復/P2b v1 誠實收窄慣例）。
+
+**編號調整**：計畫書原文寫 migration `0056`，執行時發現已被同日另案 task_e3a60daa（D33）佔用，改用 `0057`。
+
+**設計調整**（比照 P2b/migration 0054 已審查通過的先例，非本次新開先例）：計畫書原文寫 `message_intents.message_id` 為 FK→`ig_messages`，但現行 n8n 寫入模式是 REST POST 批量 fire-and-forget（不取回 INSERT 產生的 UUID），P2b 已因同一理由改用 `message_thread`+`message_ig_message_id` 軟性參照，本表沿用同一模式，避免另開一套需要往返取 UUID 的寫入機制。
+
+**執行內容**：
+- `supabase/migrations/0057_create_message_intents_and_reply_templates.sql`：`message_intents` 表（5類 intent_label CHECK 約束 + dedup 唯一索引 + pg_cron 90天 TTL）+ `reply_templates` 表（5類意圖各1筆草稿種子，佔位文案待 Fat Mo 覆核）。已 apply 至 live DB。
+- `scripts/ig-watchdog/lib/order-match.mjs`：新增 `tagIntent(text)` 純函式（regex-first，INTENT_PATTERNS 5類：cancel/complaint/modify_order/payment_inquiry/place_order，優先序取消/投訴 > 改單/查詢/新單），單一真源不新開判斷邏輯。
+- `scripts/ig-watchdog/lib/order-match.test.mjs`：新增 8 組 tagIntent 單元測試（illustrative examples，非 §7 正式驗收樣本，測試檔內明確註記）。
+- `scripts/ig-watchdog/build_n8n_workflow.cjs`：Classify & Report 節點新增 `intents` 陣列組裝（只標註客人發出的訊息）；新增 `Has Intents?` IF 節點 + `Write Intents` HTTP Request 節點（on_conflict 對齊 dedup 索引，吸取 P2a F3 教訓不重犯）；`Classify & Report` 平行分支新增第 4 條（Has Alerts?/Has Messages?/Has Mismatches?/Has Intents?）。
+
+**部署與驗證**：node --test 43/43 PASS（含新增 8 組）；diff-guard 測試 PASS（lib 嵌入一致性）；build script 執行 + JS 語法檢查通過；GET live workflow → 與本地重建 JSON 結構化 diff（僅新增 2 節點 + Classify & Report 內容更新 + 對應 connections，無其餘節點/連線 drift）→ PUT 部署（HTTP 200）→ 再 GET 確認節點數/內容/連線與本地建構版本逐一比對零差異（26/26 節點一致，0 mismatch）。未做 §7 要求的覆蓋率/準確度量測（見上方阻塞點裁決）。
+
+**待辦**：`ig_messages` 自然累積足量真實訊息（多樣涵蓋 5 類意圖）後，補測 §7 覆蓋率≥70%/準確度≥80%量測，未達標需回頭調校 `INTENT_PATTERNS` regex 庫；`reply_templates` 5 筆草稿文案為佔位文案，正式對客使用前需 Fat Mo 覆核修訂。
+
+詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.10、Changelog.md 本 session 條目、`scripts/README.md` ig-watchdog 段。

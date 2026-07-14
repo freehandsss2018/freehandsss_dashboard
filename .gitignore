@@ -27,6 +27,7 @@ artifacts/
 
 # kgov runtime state flag (session-scoped, not version controlled)
 .fhs/.kgov-pending
+.fhs/.kgov-block-count
 
 # deploy authorization flag (S140, F8) — one-time, Fat Mo-created, TTL 10min
 .fhs/.deploy-ok

@@ -1,5 +1,40 @@
 # Changelog
 
+## [2026-07-14] Session 174（Claude Code / Sonnet 5 執行）— AI 助理團隊名冊（`/team`）v1.1：白底卡片牆 + n8n live 實掃 + 服務狀態 zone + 左側功能欄；生成器改名 `agent_dashboardV42.js`
+
+- **緣起**：Fat Mo 分享 Threads @raymond0917「AI Agent Dashboard」帖文，授權「找方案達成它，甚至更好」，指定讀者為未來 AI 模型（判斷/推理需轉成制度文件）。v1.0（D30）先落地生成式名冊架構；Fat Mo 隨後兩輪追加視覺與功能要求：①貼參考截圖要求改用白底卡片牆風格；②貼「自動化/服務狀態」參考圖要求補功能指標並分類；③要求改名呼應 V42 命名慣例並執行 `/commit`。
+- **v1.0 → v1.1 渲染層重寫**（`scripts/agent_dashboardV42.js`，原名 `agent-dashboard.js`）：
+  - 白底卡片牆風格：頁頭統計 4 tiles（成員總數/分類數/召喚詞/勘誤）、搜尋列+7 個 filter chips、每卡 emoji 圖示磚+彩色分類 pill（10 色系）、「⟳ 重新生成」複製指令掣。
+  - **n8n workflows 由「manifest 手記」升級為「API live 實掃」**：`.env` 讀 `N8N_INSTANCE`/`N8N_KEY`，`curl` 叩 `/api/v1/workflows`（全量 35 條自動發現）+ `/api/v1/executions?limit=50`（最近執行結果），active 旗標 × 最近執行狀態 → 運行/異常/停止/待命四態；離線時整批標「未知」，生成不失敗（`n8n_categories` regex 分類規則 + `n8n_id` 供長期成員補描述，皆登記於 `team-manifest.json`）。
+  - 新增「服務狀態」zone：4 個統計 tiles（自動化總數/常駐服務/守護狀態/執行紀錄，含最近成功/失敗次數）+ 9 個 `<details>` collapsible 分類清單（治理守護/交接路由/文件衛生 3 類 hooks；規劃管道/業務流水線/財務/查詢讀取/系統維運監控/其他實驗 6 類 n8n workflow），異常成員卡片自動粉紅底。守護狀態 tile＝`fhs-health-check.js` issue_count ＋ `.kgov-pending` 旗標 ＋ hook `node --check` 語法檢查三合一即時判定。
+  - 新增左側功能欄（sidebar，`>1120px` 顯示）：上層 8 個頁內錨點導航（含平滑滾動+ active 高亮）、下層 6 個外部工具入口（新視窗開）——🏪 V42 生產 Dashboard（`https://yanhei.synology.me/Freehandsss_dashboard_current.html`，URL 由 `upload-web.ps1` 部署慣例推導並實測 HTTP 200 後始落盤，非猜測）/🔩 n8n 後台/🐘 Supabase 後台/📋 Airtable/🎬 Canva/📺 YouTube @Free_handsss，登記於 `team-manifest.json` 新增之 `sidebar_links`。
+  - **實測即時抓到 3 個真問題**（非本次改動製造，工具上線即發現）：`FHS_Query_GlobalReview` workflow active 但最近一次執行 error；最近 50 次 n8n 執行有 15 次失敗（30%）；25 條 workflow 處於停止狀態，其中「其他/實驗」類 7 條（`Qqq`/`My workflow`/`TEMP_DELETEME_*`/多隻 `OrderProcessor` clone）疑為殭屍 workflow，待 Fat Mo 批准另開清理 session。
+- **改名同步**（Fat Mo 指定，呼應 `Freehandsss_dashboardV42.html` 命名慣例）：`scripts/agent-dashboard.js` → `scripts/agent_dashboardV42.js`；輸出 `artifacts/agent-dashboard.{html,json}` → `artifacts/agent_dashboardV42.{html,json}`。同步更新 6 處引用：`team-manifest.json`、`.fhs/notes/ai-team-registry.md`（升 v1.1.0）、`.fhs/notes/decisions.md`（D30 追加 📌 更新註記，原文保留不追溯改名）、`.fhs/ai/commands/team.md`＋`.claude/commands/team.md`（升 v1.1.0）、auto-memory `project_ai_team_dashboard.md`。
+- **文件同步補完**（`/commit` P0.2）：`scripts/README.md` 補 `agent_dashboardV42.js` 條目；`docs/repo-map.md` 補 `team.md` 條目（並標註該區塊既有缺口——2026-05 後新增指令未逐一補齊，非本次造成，留待 `/fhs-slim`）。
+- **驗證**：瀏覽器實測（Browser pane，`http://localhost:3000/agent_dashboardV42.html`）——桌面 1280px 截圖確認服務狀態 zone 4 tiles + 9 個分類 collapsible 正確渲染；`FHS_Query_GlobalReview` 異常卡粉紅底可見；sidebar 撳「服務狀態」icon 觸發平滑滾動+高亮；零 console error；HTML/JSON 密鑰洩漏掃描（`eyJhbGci` JWT 前綴）確認乾淨；重新生成後統計數字一致（121 成員，無因改名/重構產生數據漂移）。
+- **制度層**：無新增 D 編號（屬 D30 既定方向的迭代執行+使用者直接指示，非新架構決策）；`.fhs/notes/ai-team-registry.md` 升 v1.1.0（§2 補 n8n live 實掃行、§4 補服務狀態快照非實時邊界）。
+
+## [2026-07-13] Session 173（Claude Code / Sonnet 5 執行）— P2c：意圖標註 + 回覆範本庫執行完成（S150 §4.8 剝離範圍）
+
+- **緣起**：Fat Mo 於用量緊繃（約5%剩餘）情境下明確批准 `/execute` P2c（cl-final-plan §6.3 P2c 段，flow_id 2026-07-13-1224），依賴 P2a（訊息入庫），不依賴 P2b。
+- **執行前查證發現阻塞點**：計畫 §7 要求「意圖 regex 對照既有真實 IG 對話樣本（至少 20 則，人工標記地面真相）量測覆蓋率 ≥70%、主標籤準確度 ≥80%，未達標不算 P2c 完成」。查證 live 資料：`ig_messages` 表 0 筆（P2a 上線後 cron 僅跑過一次，當日 0 筆符合條件）；`ig_watchdog_alerts` 現存 10 筆真實 snippet 全為訂單細節確認文本，無 cancel/complaint/payment_inquiry/modify_order 案例，多樣性不足。三選一問 Fat Mo（AskUserQuestion），裁決：**先建代碼、驗收延後**，量測項目明確標記待自然累積後補測，不宣稱已達標（誠實收窄，比照既有 P2a/P2b 慣例）。
+- **編號調整**：計畫書原文 migration `0056` 已被同日另案 task_e3a60daa（D33）佔用，改用 `0057`。
+- **設計調整**（比照 P2b/migration 0054 已審查通過的先例）：計畫書原文 `message_intents.message_id` 為 FK→`ig_messages`，但現行 n8n REST POST 批量 fire-and-forget 寫入模式取不回 INSERT 產生的 UUID，改用 `message_thread`+`message_ig_message_id` 軟性參照，沿用 P2b 已定案模式。
+- **執行內容**：
+  - `supabase/migrations/0057_create_message_intents_and_reply_templates.sql`：`message_intents` 表（5類 `intent_label` CHECK 約束 + dedup 唯一索引 + pg_cron 90天 TTL）+ `reply_templates` 表（5類意圖各1筆草稿種子，佔位文案待 Fat Mo 覆核）。已 `apply_migration` 至 live DB。
+  - `scripts/ig-watchdog/lib/order-match.mjs`：新增 `tagIntent(text)` 純函式（`INTENT_PATTERNS` 5類 regex：cancel/complaint/modify_order/payment_inquiry/place_order，優先序取消/投訴 > 改單/查詢/新單），單一真源不新開判斷邏輯。
+  - `scripts/ig-watchdog/lib/order-match.test.mjs`：新增 8 組 `tagIntent` 單元測試（功能回歸用途，測試檔內明確註記非 §7 正式驗收樣本）。
+  - `scripts/ig-watchdog/build_n8n_workflow.cjs`：`Classify & Report` 節點新增 `intents` 陣列組裝（只標註客人發出的訊息，`isBizSender()` 過濾）；新增 `Has Intents?` IF 節點 + `Write Intents` HTTP Request 節點（`on_conflict` 對齊 dedup 索引，吸取 P2a F3 教訓不重犯）；`Classify & Report` 平行分支擴充為 4 條。
+  - `.gitignore`：補 `.fhs/.kgov-block-count`（hook 執行期新產生的 runtime 計數檔，比照既有 `.kgov-pending`/`.deploy-ok` 慣例排除版控）。
+- **部署與驗證**：`node --test` 43/43 PASS（含新增 8 組）；diff-guard 測試 PASS（lib 嵌入一致性）；build script 執行 + JS 語法檢查通過；GET live workflow → 與本地重建 JSON 結構化 diff（僅新增 2 節點 + `Classify & Report` 內容更新 + 對應 connections，無其餘節點/連線 drift）→ PUT 部署（HTTP 200）→ 再 GET 確認 26/26 節點與本地建構版本逐一比對零差異。live DB 查詢確認 `reply_templates` 5 筆種子資料、`message_intents` 索引/CHECK 約束全部正確建立。**未做** §7 要求的覆蓋率/準確度正式量測（見上方阻塞點裁決）。
+- **後效同步稽核**：[A] 已更新 `docs/repo-map.md`（新增 migration 0057 行）；[B] 不觸發（非制度層檔案變動）；[C] 已更新本條目；[G] 不觸發（無 `CREATE OR REPLACE FUNCTION`/財務欄位語義變動，新表為 IG 看門狗輔助資料，非財務主題）；[F] 不觸發（無 AGENTS.md 新 Rule/無 commands 增刪/無核心業務語義修正）。
+- **待辦**：`ig_messages` 自然累積足量真實訊息後補測 §7 覆蓋率/準確度；`reply_templates` 5 筆草稿文案正式對客使用前需 Fat Mo 覆核修訂。
+- **Subagent 使用記錄**：❌ 未使用——單一功能域（regex 純函式+schema+n8n節點）改動，範圍明確可直接程式驗證+live GET/PUT diff 核對，且 cl-final-plan §7 已明定 fresh-context opus 審查範圍為「P2b 完成後一次」（P2a+P2b+P2c 三期共用，已於 S171續執行），P2c 不重複觸發。
+
+【交付前雙紀律自檢】
+驗收：schema/n8n 部署 — live migration apply 確認 + GET/PUT/GET 三段 diff 零差異 + node --test 43/43 PASS + diff-guard PASS（附運行證據）= ✅；§7 量測項目誠實標記未達標/延後，非隱瞞 = ✅
+Subagent：❌ 未使用（理由見上，plan §7 已將 fresh-context opus 審查範圍定義為 P2 系列共用一次，非逐期重複）
+
 ## [2026-07-13] Session 172（Claude Code / Sonnet 5 執行）— /canva-auto 訂單 0800802（Janet）執行 + SOP 缺口修補 + Parakeet 公式 v2 重擬合
 
 - **緣起**：`/canva-auto` 執行 Janet 訂單 0800802（純音樂款，特殊之處：客人有 2 條 Lovart 動畫 Video1/Video2，非慣常 1 條），Fat Mo 指定母片 DAHN9LxGdEE 作參考。

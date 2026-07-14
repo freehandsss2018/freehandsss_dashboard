@@ -762,3 +762,17 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 **驗證**：`EXPLAIN INSERT ... ON CONFLICT (alert_date, thread, order_id_key, kind) DO NOTHING` 對 live DB 執行（零寫入，僅 query plan），輸出確認 `Conflict Arbiter Indexes: ix_igwatch_alerts_dedup_v2`，證實 on_conflict 目標與索引結構正確匹配。
 
 詳見 `decisions.md` D33。
+
+### 11.10 P2c：意圖標註 + 回覆範本庫（Session 173，2026-07-13）
+
+**設計**：`lib/order-match.mjs` 新增 `tagIntent(text)` 純函式，regex-first 零 LLM 起步，涵蓋 5 類業務意圖：`cancel`/`complaint`/`modify_order`/`payment_inquiry`/`place_order`（`INTENT_PATTERNS` 陣列，順序即優先序——取消/投訴優先於改單/查詢/新單，因屬業務最需即時人工介入類別）。一則訊息可能同時命中多個意圖，回傳陣列，`[0]` 供 `is_primary` 使用。只標註客人發出的訊息（`isBizSender()` 過濾），商家 V42 制式確認文本不參與標註。
+
+**落地**：`message_intents` 表（migration 0057）記錄命中結果（`intent_label`/`matched_regex`=`re.source`/`is_primary`）；`reply_templates` 表（同 migration）為人工維護靜態範本庫，5 類意圖各 1 筆草稿種子，非 pipeline 寫入對象，正式對客文案上線前需 Fat Mo 覆核。兩表皆用 `message_thread`+`message_ig_message_id` 軟性參照（比照 §11.8 `content_mismatch` 設計，非計畫書原文 `message_id` FK——現行 n8n REST POST fire-and-forget 寫入模式取不回 `ig_messages` INSERT 產生的 UUID）。
+
+**n8n 整合**：`Classify & Report` 節點輸出新增 `intents` 陣列；新增 `Has Intents?` IF 節點（守衛空陣列不寫入，同 `Has Messages?`/`Has Mismatches?` 理由）+ `Write Intents` HTTP Request 節點（REST POST + `on_conflict=alert_date,message_thread,message_ig_message_id,intent_label`，吸取 P2a F3 教訓不重犯）。`Classify & Report` 平行分支擴充為 4 條（Has Alerts?/Has Messages?/Has Mismatches?/Has Intents?）。
+
+**已知限制（誠實收窄）**：cl-final-plan §7 要求「≥20 真實樣本、覆蓋率≥70%、準確度≥80%」正式驗收，執行期查證 `ig_messages` 0 筆（P2a 上線後僅跑過一次 cron，當日 0 筆符合條件）、`ig_watchdog_alerts` 現存 10 筆真實 snippet 皆為訂單細節確認文本，無 5 類意圖的多樣真實樣本可測。Fat Mo 裁決先建代碼、驗收延後，待 `ig_messages` 自然累積足量真實訊息後補測；`node --test` 現有 8 組 `tagIntent` 測試為功能回歸用途（illustrative examples），非正式驗收樣本。
+
+**部署驗證**：GET live workflow → 本地重建 JSON 結構化 diff（僅新增 2 節點 + `Classify & Report` 內容 + 對應 connections，無其餘節點/連線 drift）→ PUT（HTTP 200）→ 再 GET 確認 26/26 節點與本地版本逐一一致。
+
+詳見 `decisions.md` D35、`scripts/README.md` ig-watchdog 段。

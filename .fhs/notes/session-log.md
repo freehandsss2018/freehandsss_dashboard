@@ -1,5 +1,14 @@
 # Session Log
 
+## 2026-07-14 (Session 174 — AI 助理團隊名冊 `/team` v1.1：白底卡片牆+n8n live實掃+服務狀態zone+左側功能欄；改名 agent_dashboardV42): 📇 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S174 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 分享 Threads AI Agent Dashboard 帖文授權「達成甚至更好」，v1.0（D30）落地生成式名冊架構後，兩輪視覺/功能追加：改白底卡片牆風格；n8n workflows 由手記升級 API live 實掃（35條自動發現+運行/異常/停止/待命狀態燈）；新增服務狀態 zone（4 tiles+9類 collapsible）；新增左側功能欄（頁內導航+V42生產Dashboard等6個外部入口）。實測即時抓到 `FHS_Query_GlobalReview` 異常、50次執行15次失敗、7條殭屍workflow 三個真問題。最後改名 `agent-dashboard.js`→`agent_dashboardV42.js` 呼應命名慣例，6處引用同步。
+Subagent：❌ 未使用——渲染層重寫+定點改檔+瀏覽器實證，主對話直接做符合 governance/02 §1 成本平衡判準。
+
+## 2026-07-13 (Session 173 — P2c 意圖標註+回覆範本庫執行完成，S150 §4.8 剝離範圍): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S173 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。`message_intents`+`reply_templates` 表落地（migration 0057）+ `tagIntent()` 5類意圖 regex + n8n `Has Intents?`/`Write Intents` 節點，GET/PUT/GET 三段 diff 零差異（26/26節點）。§7 要求 ≥20 真實樣本量測因 `ig_messages` 尚 0 筆、`alerts` 現存樣本無多樣性而無法達成，AskUserQuestion 問 Fat Mo 三選一，裁決先建代碼、驗收延後，誠實收窄不宣稱達標。決策見 decisions.md D35。
+
 ## 2026-07-13 (Session 172 — canva-auto 訂單 0800802 執行 + Parakeet 公式 v2 重擬合 + SOP 缺口修補): 🎨 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S172 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。`/canva-auto` 執行 Janet 訂單 0800802（純音樂款，客人有 2 條 Lovart 動畫非慣常 1 條）。撞到 `resize_element` `preserve_aspect_ratio=true` 陷阱（保留 container 舊比例非 asset 原生比例）已修正記入 known failure modes；page3 雙片正確版型＝疊放同一位置（同母片 precedent 一致，非 AI 首猜嘅並排），已記落 `placement_memory.json`。page2 黑白圖 Parakeet 色調 Fat Mo 裁決繼續本地自動化路線，用 Fat Mo 呢單嘅 Canva 原生 ColourMix 輸出樣本反推 `local_prep.py` v2 公式（正規化座標，捨棄 v1「1563 拉伸」未驗證假設），新增 `sample_gradient_fit.py`，Saturation 擬合 0.3064 同滑桿讀數 0.3 吻合。揭發客人音訊全程未上載嘅 SOP 缺口，已補入 Stage②必做清單。全文見 Changelog.md S172 條目；決策見 decisions.md D34。

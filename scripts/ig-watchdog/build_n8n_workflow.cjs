@@ -396,12 +396,34 @@ const mismatches = mismatchItems.map(it => ({
   ig_reported_amount: it.mm.ig_reported_amount,
   db_actual_amount: it.mm.db_actual_amount,
 }));
+
+// P2c：意圖標註寫入陣列（S150 §4.8 剝離範圍，flow_id 2026-07-13-1224）——只標註客人發出的
+// 訊息（商家自發的 V42 制式確認文本本身不含改單/取消/查詢等業務意圖詞彙，天然不會命中，
+// 但明確過濾避免未來規則庫調整後誤命中商家制式文案）。一則訊息可能命中多個意圖，各自一列。
+const intents = [];
+for (const om of orderMsgs) {
+  if (isBizSender(om.sender)) continue;
+  const hits = tagIntent(om.text || '');
+  if (hits.length === 0) continue;
+  const igMessageId = hashId((om.thread || '') + '|' + (om.ts || 0) + '|' + (om.sender || ''));
+  hits.forEach((label, idx) => {
+    const pat = INTENT_PATTERNS.find((p) => p.label === label);
+    intents.push({
+      alert_date: new Date().toISOString().slice(0, 10),
+      message_thread: om.thread || '',
+      message_ig_message_id: igMessageId,
+      intent_label: label,
+      matched_regex: pat ? pat.re.source : label,
+      is_primary: idx === 0,
+    });
+  });
+}
 // Phase 3: 深連結在 Code 節點組合（n8n expression evaluator 不支援複雜 JS 鏈式語法）
 const telegramText = summary + alerts
   .filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created'))
   .map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id)
   .join('');
-return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts, messages, mismatches } }];
+return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts, messages, mismatches, intents } }];
 `.trim();
 
 // ── Build Empty Summary（無新匯出資料夾時的分支）──────────────────────────
@@ -671,6 +693,41 @@ const workflow = {
       alwaysOutputData: true, continueOnFail: true,
     },
     {
+      // P2c 守衛：intents 為空時不寫入（同 Has Messages?/Has Mismatches? 理由）
+      parameters: {
+        conditions: {
+          options: { caseSensitive: true, leftValue: '', typeValidation: 'strict' },
+          conditions: [{ leftValue: '={{$json.intents.length}}', rightValue: 0, operator: { type: 'number', operation: 'gt' } }],
+          combinator: 'and',
+        },
+        options: {},
+      },
+      id: 'if_intents', name: 'Has Intents?', type: 'n8n-nodes-base.if', typeVersion: 2, position: [3500, 780],
+    },
+    {
+      // P2c：批量寫入 message_intents（service_role key，on_conflict 對齊 migration 0057
+      // dedup 索引，吸取 P2a F3 教訓不重犯——on_conflict 缺席會令 ignore-duplicates 形同虛設）。
+      parameters: {
+        method: 'POST',
+        url: SUPABASE_URL + '/rest/v1/message_intents?on_conflict=alert_date,message_thread,message_ig_message_id,intent_label',
+        authentication: 'none',
+        sendHeaders: true,
+        specifyHeaders: 'keypair',
+        headerParameters: { parameters: [
+          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
+          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'Content-Type', value: 'application/json' },
+          { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
+        ] },
+        sendBody: true,
+        contentType: 'raw',
+        body: "={{ JSON.stringify($('Classify & Report').first().json.intents) }}",
+        options: {},
+      },
+      id: 'wi1', name: 'Write Intents', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3720, 780],
+      alwaysOutputData: true, continueOnFail: true,
+    },
+    {
       // 空資料夾路徑（Build Empty Summary）接的 Telegram
       parameters: { resource: 'message', operation: 'sendMessage', chatId: '7620524971', text: '={{$json.summary}}', replyMarkup: 'none', additionalFields: {} },
       id: 'tg1', name: 'Telegram Notify', type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3280, 300],
@@ -710,6 +767,7 @@ const workflow = {
           { node: 'Has Alerts?', type: 'main', index: 0 },
           { node: 'Has Messages?', type: 'main', index: 0 },   // P2a：平行分支，不阻塞既有警報/通知路徑
           { node: 'Has Mismatches?', type: 'main', index: 0 }, // P2b：平行分支，同上
+          { node: 'Has Intents?', type: 'main', index: 0 },    // P2c：平行分支，同上
         ],
       ],
     },
@@ -730,6 +788,12 @@ const workflow = {
       main: [
         [{ node: 'Write Mismatches', type: 'main', index: 0 }], // true: 有金額不符 → 寫入 content_mismatch
         [],                                                      // false: 無不符 → 終止
+      ],
+    },
+    'Has Intents?': {
+      main: [
+        [{ node: 'Write Intents', type: 'main', index: 0 }], // true: 有意圖命中 → 寫入 message_intents
+        [],                                                    // false: 無命中 → 終止
       ],
     },
   },

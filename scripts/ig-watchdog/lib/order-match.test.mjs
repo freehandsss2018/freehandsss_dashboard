@@ -6,7 +6,7 @@ import {
   toHalfWidth, normalizeOrderId, isV42Confirm,
   hasDealIntent, hasQuoteDraft, extractOrderIds,
   classifyMessage, buildOrderIndex, redactPii, maskName, hashId,
-  extractAmountsFromText, compareToOrder,
+  extractAmountsFromText, compareToOrder, tagIntent,
 } from './order-match.mjs';
 
 // ── 正規化 ──────────────────────────────────────────────
@@ -257,4 +257,48 @@ test('compareToOrder：V42 制式確認文本（含取模日期）唔應觸發 F
   const order = { order_id: '0600101', final_sale_price: 800 };
   const v42Text = 'Freehandsss 訂單確認\n(訂單編號# 0600101 手模擺設)\n取模時間：2026/07/13';
   assert.equal(compareToOrder(v42Text, order), null, 'V42確認文本嘅日期年份唔應被誤判為金額不符');
+});
+
+// ── 意圖標註（P2c）──────────────────────────────────────────
+// ⚠️ 以下為功能回歸測試（illustrative examples），非 cl-final-plan §7 要求的「≥20 真實
+// 樣本量測覆蓋率/準確度」正式驗收——該量測 Fat Mo 裁決延後至 ig_messages 自然累積足量
+// 真實訊息後補做，見 lib 內 tagIntent 上方註記。
+test('tagIntent：cancel 意圖命中', () => {
+  assert.deepEqual(tagIntent('唔好意思，想取消訂單'), ['cancel']);
+  assert.deepEqual(tagIntent('我唔要喇，唔該'), ['cancel']);
+});
+
+test('tagIntent：complaint 意圖命中', () => {
+  assert.deepEqual(tagIntent('個貨好差，同我想像唔一樣'), ['complaint']);
+  assert.deepEqual(tagIntent('等咗好耐都仲未收到，係咪整錯咗'), ['complaint']);
+});
+
+test('tagIntent：modify_order 意圖命中', () => {
+  assert.deepEqual(tagIntent('想改單，想改埋個刻字'), ['modify_order']);
+});
+
+test('tagIntent：payment_inquiry 意圖命中', () => {
+  assert.deepEqual(tagIntent('已經過咗數喇，麻煩核對下'), ['payment_inquiry']);
+  assert.deepEqual(tagIntent('呢個幾多錢呀'), ['payment_inquiry']);
+});
+
+test('tagIntent：place_order 意圖命中', () => {
+  assert.deepEqual(tagIntent('我想落單，仲有貨嘛'), ['place_order']);
+});
+
+test('tagIntent：多重意圖同時命中，順序＝INTENT_PATTERNS 優先序', () => {
+  const hits = tagIntent('想改單，仲有幾錢未過畀你');
+  assert.deepEqual(hits, ['modify_order', 'payment_inquiry']);
+});
+
+test('tagIntent：cancel 優先序高於 complaint（同時命中時 cancel 排第一）', () => {
+  const hits = tagIntent('件貨好差，我想取消');
+  assert.equal(hits[0], 'cancel');
+});
+
+test('tagIntent：零命中回傳空陣列', () => {
+  assert.deepEqual(tagIntent('今日天氣好好'), []);
+  assert.deepEqual(tagIntent(''), []);
+  assert.deepEqual(tagIntent(null), []);
+  assert.deepEqual(tagIntent(undefined), []);
 });

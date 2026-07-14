@@ -1,7 +1,7 @@
 {
-  "_readme": "FHS AI 團隊手記 manifest。只登記『掃描器掃唔到的非檔案資產』（MCP 連接器/n8n workflow/cron/內建 agent/召喚詞）。檔案型資產（subagents/skills/commands/hooks）一律唔使寫入呢度——scripts/agent-dashboard.js 會由 frontmatter 自動掃描。維護規則見 .fhs/notes/ai-team-registry.md。",
-  "version": "1.0.0",
-  "updated": "2026-07-13",
+  "_readme": "FHS AI 團隊手記 manifest。只登記『掃描器掃唔到的非檔案資產』（MCP 連接器/召喚詞/內建 agent）同分類規則。檔案型資產（subagents/skills/commands/hooks）由 frontmatter 自動掃描；n8n workflows 由 API live 實掃（.env N8N_INSTANCE+N8N_KEY），本檔只補描述（用 n8n_id 對應）。維護規則見 .fhs/notes/ai-team-registry.md。",
+  "version": "1.1.0",
+  "updated": "2026-07-14",
   "scan_roots": {
     "subagents": "C:/Users/Edwin/.claude/agents/freehandsss",
     "commands_master": ".fhs/ai/commands",
@@ -10,7 +10,10 @@
     "hooks_dir": "scripts/hooks",
     "settings": ".claude/settings.json",
     "mcp_project": ".mcp.json",
-    "subagent_manifest": ".fhs/ai/subagents/MANIFEST.md"
+    "subagent_manifest": ".fhs/ai/subagents/MANIFEST.md",
+    "env": ".env",
+    "health_report": ".fhs/.health-report.json",
+    "kgov_flag": ".fhs/.kgov-pending"
   },
   "trigger_words": [
     { "phrase": "拷問我", "target": "grilling / grill-me skill", "effect": "逼問式需求釐清，一次一題直到共識（mattpocock 吸收版，D27）" },
@@ -18,7 +21,7 @@
     { "phrase": "canva-auto 新單", "target": "/canva-auto", "effect": "Canva 記念短片全流程（SOP v3 零擺位 + diff-learning）" },
     { "phrase": "kgov", "target": "知識治理框架", "effect": "Product_Definition SSoT + 規則ID表 + Rule 3.17" },
     { "phrase": "fhs-health / 健檢", "target": "fhs-health-check.js + /fhs-slim", "effect": "文件衛生 L1 零token偵測 → L2 清理方案" },
-    { "phrase": "團隊名冊 / /team", "target": "scripts/agent-dashboard.js", "effect": "重新掃描全部 AI 資產，生成本名冊" },
+    { "phrase": "團隊名冊 / /team", "target": "scripts/agent_dashboardV42.js", "effect": "重新掃描全部 AI 資產，生成本名冊" },
     { "phrase": "/3d-print", "target": "3D 手腳模打印 pipeline", "effect": "diff-learning 參數迴圈；v0=師傅版模式（縮放+刻字+加環）" },
     { "phrase": "/cl-flow 任務描述", "target": "cl-flow-runner.js 三腦規劃", "effect": "PX 搜證 + AG 對案 + Claude 裁決出方案書" },
     { "phrase": "/commit", "target": "session 收尾四同步", "effect": "handoff 便攜塊 + Changelog + decisions + git sync（條件觸發自動部署）" },
@@ -46,10 +49,34 @@
     { "name": "figma", "source": "claude.ai connector", "desc": "⚠️ 未授權——要用先去 claude.ai connector settings 授權" }
   ],
   "automations": [
-    { "name": "FHS_Core_OrderProcessor", "kind": "n8n workflow", "desc": "訂單同步主線：Webhook 收單 → 利潤計算（Calculate Profit & Pack Items）→ Airtable/Supabase Mirror（V45.7.x；D9 五項高風險規則管轄）", "home": "NAS n8n" },
-    { "name": "IG Watchdog（igwatch）", "kind": "n8n cron", "desc": "IG 對話看門狗：Schedule Trigger → 分類警報 → ig_watchdog_alerts → Telegram 深連結；S168 起含 verified_ok 正向記錄", "home": "NAS n8n（workflow D4LK6VrQbiXlju0V）" },
-    { "name": "3brain（規劃管道）", "kind": "node script", "desc": "cl-flow-runner.js：PX（Perplexity）+ AG（Gemini）+ Claude 三腦規劃，產出 artifacts/{flow_id}/ 方案書", "home": "scripts/cl-flow-runner.js" }
+    { "name": "FHS_Core_OrderProcessor", "kind": "n8n workflow", "n8n_id": "6Ljih0hSKr9RpYNm", "desc": "訂單同步主線：Webhook 收單 → 利潤計算（Calculate Profit & Pack Items）→ Airtable/Supabase Mirror（V45.7.x；D9 五項高風險規則管轄）", "home": "NAS n8n" },
+    { "name": "FHS_IGWatchdog_DriveWatch", "kind": "n8n cron", "n8n_id": "D4LK6VrQbiXlju0V", "desc": "IG 對話看門狗：Schedule Trigger → 分類警報 → ig_watchdog_alerts → Telegram 深連結；S168 起含 verified_ok 正向記錄", "home": "NAS n8n" },
+    { "name": "3brain（規劃管道）", "kind": "node script（待命）", "desc": "cl-flow-runner.js：PX（Perplexity）+ AG（Gemini）+ Claude 三腦規劃，產出 artifacts/{flow_id}/ 方案書", "home": "scripts/cl-flow-runner.js", "svc_cat": "規劃管道" }
   ],
+  "sidebar_links": [
+    { "icon": "🏪", "label": "V42 POS Dashboard（生產）", "url": "https://yanhei.synology.me/Freehandsss_dashboard_current.html" },
+    { "icon": "🔩", "label": "n8n 後台（NAS）", "url": "https://yanhei.synology.me:8443" },
+    { "icon": "🐘", "label": "Supabase 後台", "url": "https://supabase.com/dashboard/project/vpmwizzixnwilmzctdvu" },
+    { "icon": "📋", "label": "Airtable（後備）", "url": "https://airtable.com" },
+    { "icon": "🎬", "label": "Canva", "url": "https://www.canva.com" },
+    { "icon": "📺", "label": "YouTube @Free_handsss", "url": "https://www.youtube.com/@Free_handsss" }
+  ],
+  "hook_categories": {
+    "pre-tool-guard.js": "治理守護",
+    "post-tool-kgov.js": "治理守護",
+    "stop-kgov.js": "治理守護",
+    "session-start-sop.sh": "交接／路由",
+    "prompt-router.js": "交接／路由",
+    "fhs-health-check.js": "文件衛生"
+  },
+  "n8n_categories": [
+    { "pattern": "3brain|AI 開發團隊", "label": "規劃管道" },
+    { "pattern": "OrderProcessor|Order_Processor|DeliveryReminder|IGWatchdog|Update_Order", "label": "業務流水線（n8n）" },
+    { "pattern": "Financial|財務|💰", "label": "財務（n8n）" },
+    { "pattern": "Query|Fetch|Review", "label": "查詢／讀取（n8n）" },
+    { "pattern": "System|Error|Anti_Idle|Cache|Diagnostic|Deploy|Metadata|Sync", "label": "系統維運／監控（n8n）" }
+  ],
+  "n8n_default_category": "其他／實驗（n8n）",
   "hook_descriptions": {
     "session-start-sop.sh": "SessionStart — 注入 handoff 便攜塊快照 + 漏跑 /commit 偵測 + 健康警示",
     "prompt-router.js": "UserPromptSubmit — 按任務類型建議 model / 前置指令（如 /guardian）",

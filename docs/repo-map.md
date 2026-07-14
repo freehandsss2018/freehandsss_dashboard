@@ -79,7 +79,8 @@ freehandsss_dashboard/
 │   │   ├── 0053_create_ig_messages_table.sql ← P2a（S150 §4.8 剝離範圍獨立 /cl-flow flow_id 2026-07-13-1224）：ig_messages 表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，content 一律經 lib/order-match.mjs redactPii() 遮罩（Session 171）✅ 已部署
 │   │   ├── 0054_create_content_mismatch_table.sql ← P2b：content_mismatch 比對證據表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，僅 amount_mismatch（品項比對留待未來擴充 Fetch Orders 節點）（Session 171）✅ 已部署
 │   │   ├── 0055_ig_watchdog_content_mismatch_check.sql ← P2b：ig_watchdog_alerts.kind CHECK 擴充第四值 content_mismatch（Session 171）✅ 已部署
-│   │   └── 0056_igwatch_alerts_on_conflict_fix.sql ← task_e3a60daa 修復：order_id_key 具現化欄位 + ix_igwatch_alerts_dedup_v2 plain-column 唯一索引取代舊 expression index，補記錄一筆已 live 但本地缺檔的 drift（Session 171續II）✅ 已部署（live 更早，本檔補齊 SSOT）
+│   │   ├── 0056_igwatch_alerts_on_conflict_fix.sql ← task_e3a60daa 修復：order_id_key 具現化欄位 + ix_igwatch_alerts_dedup_v2 plain-column 唯一索引取代舊 expression index，補記錄一筆已 live 但本地缺檔的 drift（Session 171續II）✅ 已部署（live 更早，本檔補齊 SSOT）
+│   │   └── 0057_create_message_intents_and_reply_templates.sql ← P2c：message_intents 意圖標註表（軟性參照 message_thread+message_ig_message_id，比照 P2b 設計，非計畫書原文 message_id FK）+ reply_templates 回覆範本庫（5類意圖各1筆草稿種子），RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL（Session 173）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -156,7 +157,9 @@ freehandsss_dashboard/
 │   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.3（精煉引擎，獨立可用，2026-05-30）
 │   │   │   ├── upload-web.md            ← /upload-web 部署 Dashboard 至 NAS Web Station（WebDAV，2026-06-08；v1.2.0新增Step0部署前置/fhs-check檢查，2026-07-05 S143）
 │   │   │   ├── ag-flow.md               ← /ag-flow 精煉內建→A1+A2，AG裁決（跳A3，2026-05-30）
-│   │   │   └── new-product.md           ← /new-product 新產品跨層融入引導 v1.2.0（6步 atomic 流程 + Step 6 知識落盤 Gate，2026-06-05）
+│   │   │   ├── new-product.md           ← /new-product 新產品跨層融入引導 v1.2.0（6步 atomic 流程 + Step 6 知識落盤 Gate，2026-06-05）
+│   │   │   └── team.md                  ← /team AI 助理團隊名冊生成式盤點（v1.1.0，2026-07-13 S171 新建 D30；生成器 scripts/agent_dashboardV42.js）
+│   │   │       ⚠️ 本區塊未逐一補齊 2026-05 後新增指令（3d-print/canva-auto/8d/usage-audit/db-query/rg/cl-flow-fast 等），完整清單以 `.fhs/ai/commands/README.md` 為準；team.md 為本次改動直接新增，其餘欠項留待 /fhs-slim 全面補齊
 │   │   ├── governance/                  ← 模型調度制度層（Session 137，2026-07-04 新增，Fable 5 立制度）
 │   │   │   ├── 00_INDEX.md              ← 索引 + 與既有制度職責邊界
 │   │   │   ├── 01_diagnosis.md          ← Harness 診斷：token 洩漏/失焦/出錯 前三名（實測數字）

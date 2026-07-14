@@ -17,6 +17,7 @@
 | `deploy_batch_recalc_workflow.js` | **n8n 自動化**：建立並啟動 `💰 Financial Batch Recalculate` workflow（2026-05-28）|
 | `scratch_pull_and_save_workflow.js` | **n8n 工具**：從 NAS 下載並儲存完整的 n8n live 工作流備份 |
 | `backfill_deposit.js` | **數據回填**：修復舊訂單缺失的訂金欄位 |
+| `agent_dashboardV42.js` | **AI 助理團隊名冊生成器**（`/team`）：掃描 subagents/commands/skills/hooks/MCP frontmatter + n8n API live 實掃 → 生成 `artifacts/agent_dashboardV42.html`（人睇）+ `.json`（AI 讀），制度見 `.fhs/notes/ai-team-registry.md` |
 
 ## 🧪 測試與驗證腳本 (Test Suite)
 
@@ -83,6 +84,16 @@ IG 設定每天自動匯出訊息到 Google Drive → n8n Google Drive Trigger
 明細）；比對邏輯 `compareToOrder()`/`extractAmountsFromText()` 同樣在 `lib/order-match.mjs`。
 上線頭 2 週刻意不接 Telegram 通知（只寫表供人工覆核校準閾值），詳見 decisions.md D32、
 `.fhs/notes/FHS_System_Logic_Overview.md` §11.8。
+**P2c（同 Session 173）新增意圖標註 + 回覆範本庫**：`message_intents` 表記錄
+`tagIntent()`（regex-first，5類：cancel/complaint/modify_order/payment_inquiry/place_order）
+命中結果，只標註客人發出的訊息；`reply_templates` 為人工維護靜態範本表（5類各1筆草稿種子，
+非 pipeline 寫入對象）。兩表皆用 `message_thread`+`message_ig_message_id` 軟性參照（比照
+P2b `content_mismatch` 設計，非計畫書原文 `message_id` FK——現行 n8n REST POST fire-and-forget
+寫入模式取不回 INSERT 產生的 UUID，見 migration 0057 註記）。⚠️ 執行期無足量真實多樣樣本
+（`ig_messages` 0 筆、`ig_watchdog_alerts` 現存 10 筆真實 snippet 皆為訂單細節確認，無
+cancel/complaint/payment_inquiry/modify_order 案例），cl-final-plan §7「≥20真實樣本/
+覆蓋率≥70%/準確度≥80%」量測 Fat Mo 裁決延後，待 `ig_messages` 自然累積足量後補測（誠實收窄，
+比照 P2a/P2b v1 慣例），詳見 decisions.md D34。
 n8n workflow：`FHS_IGWatchdog_DriveWatch`（ID `D4LK6VrQbiXlju0V`）。
 完整操作/重建見 `ig-watchdog/SOP.md`。
 
@@ -90,7 +101,7 @@ n8n workflow：`FHS_IGWatchdog_DriveWatch`（ID `D4LK6VrQbiXlju0V`）。
 |------|------|
 | `build_n8n_workflow.cjs` | **改規則的唯一入口**：產生 n8n workflow JSON（含 Code 節點移植邏輯），PUT 上 n8n 套用 |
 | `npm run watchdog`/`calibrate`/`selftest` | 本機手動工具，保留作 ad-hoc 深度分析/校準用，非日常必需（見 SOP §五）|
-| `npm test` | 單元測試（decoder mojibake 解碼 + match 分類 + order-match v3/PII三函式/金額比對，Session 171 起 35 cases）|
+| `npm test` | 單元測試（decoder mojibake 解碼 + match 分類 + order-match v3/PII三函式/金額比對/意圖標註，Session 173 起 43 cases）|
 
 **演進**：原規劃本機常駐 `server.mjs`（方案A）已棄用並刪除——實測發現 NAS n8n 的 Code 節點
 其實能用 `Buffer`+`Compression` 節點完成全部解壓/解碼/比對，遂改為全 NAS 跑（方案C），

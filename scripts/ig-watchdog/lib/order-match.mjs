@@ -253,3 +253,36 @@ export function compareToOrder(text, orderRecord) {
   }
   return null;
 }
+
+// ── 意圖標註（P2c，S150 §4.8 剝離範圍）────────────────────────
+// regex-first 意圖分類，零 LLM 起步（cl-final-plan §6.5 風險緩解：覆蓋率不足時才評估升級）。
+// 涵蓋 5 類業務意圖：cancel/complaint/modify_order/payment_inquiry/place_order。
+// 一則訊息可能同時命中多個意圖（如「想改單，仲有幾錢未過畀你」= modify_order + payment_inquiry），
+// tagIntent() 回傳陣列而非單值；INTENT_PATTERNS 順序＝優先序，第一個命中者供呼叫端取作
+// is_primary——取消/投訴屬業務最需即時人工介入的類別，優先於改單/查詢/新單。
+// ⚠️ 執行紀律（2026-07-13）：本期未有足量真實多樣樣本（ig_messages 表 0 筆、
+// ig_watchdog_alerts 現存 10 筆真實 snippet 皆為訂單細節確認，無 cancel/complaint/
+// payment_inquiry/modify_order 案例）——cl-final-plan §7「≥20 真實樣本、覆蓋率≥70%、
+// 準確度≥80%」量測項目 Fat Mo 裁決延後，待 ig_messages 自然累積足量真實訊息後補測，
+// 不在本次宣稱達標（誠實收窄，比照既有 P2a/P2b v1 慣例）。
+const INTENT_PATTERNS = [
+  { label: 'cancel', re: /取消|唔要喇|唔要嘞|唔想要喇|唔做喇|唔訂喇|退訂|cancel/i },
+  { label: 'complaint', re: /唔滿意|有問題|好差|太耐|遲咗|仲未收到|未收到|爛咗|壞咗|唔啱|整壞|整錯|錯咗|差評|投訴/i },
+  { label: 'modify_order', re: /改單|想改|改吓|改一改|想加多|想改地址|想改刻字|想改肢體|加單|想再加/i },
+  { label: 'payment_inquiry', re: /點畀錢|點過數|邊個戶口|已經入數|過咗數|畀咗錢|已轉數|轉數快|payme|幾錢|幾多錢|點解未扣錢|收唔收到錢|轉咗數未|入咗數未/i },
+  { label: 'place_order', re: /落單|落咗單|想落單|想訂|訂購|想要一份|落單喇|我要落單|想落訂/i },
+];
+
+/**
+ * 意圖標註：回傳訊息命中的意圖標籤陣列（依 INTENT_PATTERNS 優先序排列，[0] 供 is_primary 使用）。
+ * 零命中回傳空陣列（呼叫端決定是否落地 message_intents 列）。
+ */
+export function tagIntent(text) {
+  if (typeof text !== 'string' || !text) return [];
+  const t = toHalfWidth(text);
+  const hits = [];
+  for (const { label, re } of INTENT_PATTERNS) {
+    if (re.test(t)) hits.push(label);
+  }
+  return hits;
+}
