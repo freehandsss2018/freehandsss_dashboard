@@ -1,5 +1,28 @@
 # Changelog
 
+## [2026-07-15] Session 175（Claude Code / Sonnet 5 執行）— llm-council-skill 查證+暫緩安裝（D28）+ `/rp`／`/cl-flow`／`/ag-flow` 拷問掛鉤機械化（D36）
+
+- **緣起①**：Fat Mo 分享 Notion 導讀文章 + GitHub `tenfoldmarc/llm-council-skill` 連結（Karpathy「LLM Council」方法論移植版技能：5顧問人格平行辯論+匿名互審+主席裁決），問要唔要裝。
+- **查證與裁決**：WebFetch 讀取 GitHub repo 原文 `SKILL.md` 全文（Notion 文章因重定向失敗未能直讀，repo 原文已足夠評估），對照 FHS 現有決策工具鏈（`/8d`/`/cl-flow`/`/px`/grilling）逐項比較後，俾 Fat Mo 三選一方案，Fat Mo 選方案 A：**暫緩安裝**，理由是同期已有拷問技能（D27）在 4 週試用觀察期，同時裝兩套「決策輔助 meta-skill」會攤薄量測。
+- **`/8d` 自我迭代**：Fat Mo 後續打 `/8d` 對「暫緩安裝」方案本身跑自我批評，抓出原案用「拷問用量」單一判準裁決 council 去留屬 proxy 錯配（兩者使用場景唔同）。v2 修訂：判準解耦（拷問按原 D27 判準；council 改用「過去4週 decisions.md 新增大架構/治理決策 D 條目 ≥2 單」自己嘅需求證據）、補記「鎖模型」屬 prompt 層指示非 hook 機械強制、成本結構預案（若日後安裝由 5+5+1=11 subagent 砍為 3+1=4 subagent）、設一次性 scheduled task（taskId `fhs-2026-08-09-skill-trial-gate-review`，fireAt 2026-08-09T09:00+08:00）自動覆核，避免重演 S168 live cron 覆核飄移嘅同款模式。
+- **緣起②**：Fat Mo 追問「點解拷問技能唔自動掛入日常 `任務→/rp→cl-flow` 工作流」。查證 `rp.md`/`cl-flow.md` 原文設計理由後答覆：全自動執行違反 grilling 核心原則（決策權在人類非 AI 代答）、`rp.md` 明文「精煉階段無參照物，強制批評是表演」、Compatibility Map 明文禁止 AI 主動在管道指令前插精煉層——三者皆指向不可強制自動化。但識別出真缺口：D27 承諾嘅「AI 主動問要唔要拷問」一直靠行為層記憶落地，未機械化掛在 `/rp`/`/cl-flow` 既有嘅模糊度判斷點（`structural_warning`／Gate 1）上。
+- **執行內容**（純提議掛鉤，`structural_warning` 未觸發時零改動零摩擦）：
+  - `.fhs/ai/commands/rp.md`（v2.3→v2.4）：Step 3 `structural_warning` 有實際觸發時，XML 輸出後加一行主動提議「要唔要『拷問我』一輪」。
+  - `.fhs/ai/commands/cl-flow.md`（v2.2.0→v2.2.1）：Gate 1 審閱框新增「拷問我」回覆選項，選咗先跑 grilling 逐條釐清，問完返回同一個 Gate 供最終確認，不自動略過。
+  - `.fhs/ai/commands/ag-flow.md`：同步補齊對應 Gate 1 選項（該檔案 2026-07-04 起已 DEPRECATED，僅歷史一致性，非新建議用法）。
+  - `.fhs/ai/commands/cl-flow-fast.md` 不改動——其設計本身已跳過 `structural_warning`，掛鉤天然不適用。
+  - `docs/repo-map.md`：同步修正 `rp.md`/`cl-flow.md` 版本號標記（P0.2 文件同步），順手訂正 `cl-flow.md` 一處已存在嘅舊 `v2.1.0` 標記漂移（非本次造成）。
+- **順帶發現**：`/team` 重生成時撈到 4 項舊有 subagent 版本漂移勘誤（`database-reviewer`/`tdd-guide`/`ui-designer` frontmatter 版本號 ≠ MANIFEST 記錄、`finance-auditor` 未登記 MANIFEST 已安裝表），與本次任務無關但依 R4 規則禁靜默忽略，已記入 handoff MASTER 表待處理，非本次範圍修復。
+- **`.fhs/ai/team-manifest.json`**：新增 `fhs-2026-08-09-skill-trial-gate-review` scheduled task 做非檔案資產登記（`automations` 陣列），重跑 `agent_dashboardV42.js` 確認同步（121→122 成員）。
+- **驗證**：純文件/治理層改動，無 runtime 代碼異動，非 browser/live 驗證範圍；scheduled task 建立由工具回傳確認生效；`/team` 重生成成員數字變化符合預期（新增 1 項自動化資產）。
+- **後效同步稽核**：[A] 已更新 `docs/repo-map.md`；[B] 觸發（Master 指令檔 `rp.md`/`cl-flow.md`/`ag-flow.md` 屬治理層變動，已同步 decisions.md D28/D36+本條目+handoff MASTER 表三處）；[C] 已更新本條目；[G] 不觸發（無財務函式異動）。
+- **待辦**：2026-08-09 09:00 scheduled task 自動覆核拷問試用閘＋council 判準；4 項 subagent 版本漂移待處理。
+- **Subagent 使用記錄**：❌ 未使用——純本地文件查證（WebFetch 讀 GitHub repo 原文）+ 治理檔案落盤，範圍明確可直接驗證，無需獨立 fresh-context 審查。
+
+【交付前雙紀律自檢】
+驗收：純文件/治理層改動，無業務邏輯/財務/生產 HTML 異動 = 免驗收門檻適用；scheduled task 建立已由工具回傳確認、`/team` 重生成確認資產同步 = ✅
+Subagent：❌ 未使用（純文件查證+治理落盤，範圍明確，理由見上）
+
 ## [2026-07-14] Session 174（Claude Code / Sonnet 5 執行）— AI 助理團隊名冊（`/team`）v1.1：白底卡片牆 + n8n live 實掃 + 服務狀態 zone + 左側功能欄；生成器改名 `agent_dashboardV42.js`
 
 - **緣起**：Fat Mo 分享 Threads @raymond0917「AI Agent Dashboard」帖文，授權「找方案達成它，甚至更好」，指定讀者為未來 AI 模型（判斷/推理需轉成制度文件）。v1.0（D30）先落地生成式名冊架構；Fat Mo 隨後兩輪追加視覺與功能要求：①貼參考截圖要求改用白底卡片牆風格；②貼「自動化/服務狀態」參考圖要求補功能指標並分類；③要求改名呼應 V42 命名慣例並執行 `/commit`。

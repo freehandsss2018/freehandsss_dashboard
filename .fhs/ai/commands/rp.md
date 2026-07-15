@@ -1,7 +1,7 @@
 # /rp — Rewrite Prompt
 
 **用途 (Purpose)**：將用戶的原始問題重寫為具備架構思維與明確任務指令的結構化 Prompt，以 XML Tag 格式輸出供審閱；並執行 8 維度架構掃描，作為任務前置入口（自我批評不在此階段，見 Step 3 說明與理由）。
-**版本**：v2.3 (2026-05-30)
+**版本**：v2.4 (2026-07-15，新增拷問掛鉤：structural_warning 觸發時主動提議「拷問我」)
 **通用平台**：Claude Code (CL) · Antigravity/Gemini (AG) · Perplexity (PL)
 **觸發**：`/rp [你的原始問題]` 或 `/rp cl-flow [task]` 或 `/rp cl-flow-fast [task]`
 
@@ -96,6 +96,14 @@
        → 每條觸發只輸出一行說明，不強制湊 3 點 -->
 </structural_warning>
 ```
+
+**拷問掛鉤**（2026-07-15，D27 延伸，非新決策編號）：若上方 `<structural_warning>` 有實際觸發（非省略整個 tag），XML 輸出後另起一行主動提議：
+
+```
+⚠️ 呢個任務觸發咗 structural_warning，睇落有啲模糊。要唔要「拷問我」一輪，逐條問清楚先繼續？
+```
+
+此為 AI 主動建議層級（D27 既定行為的機械化落地），非強制流程：用戶回覆「拷問我」則轉入 `grilling` skill 逐條釐清，問完返回原本審閱點；回覆「Y」/其他或忽略則照原流程繼續，不阻擋。若 `<structural_warning>` 未觸發（省略整個 tag），**不輸出此句**，維持現行零摩擦——避免 `/8d` 已識別過的「無參照物強制表演」問題重演在提議層。
 
 ### Step 4 — Pipe 模式補充（僅 /rp cl-flow 適用）
 

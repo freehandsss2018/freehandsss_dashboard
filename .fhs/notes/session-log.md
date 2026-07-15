@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-15 (Session 175 — llm-council-skill 查證+暫緩安裝 D28 + `/rp`/`/cl-flow`/`/ag-flow` 拷問掛鉤機械化 D36): 🎛️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S175 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 貼 llm-council-skill（GitHub tenfoldmarc）文章問要唔要裝，查證原文後裁決方案A暫緩安裝，`/8d` 自我迭代抓出判準錯配並修正為 council 自己嘅需求證據判準，設 2026-08-09 scheduled task 自動覆核。Fat Mo 追問點解拷問技能唔自動掛入 `/rp`→`/cl-flow` 工作流，查證後在 `rp.md`（v2.4）/`cl-flow.md`（v2.2.1）/`ag-flow.md` 新增 structural_warning 觸發時主動提議「拷問我」機制，只自動化提醒不自動化代答。決策見 decisions.md D28、D36。
+Subagent：❌ 未使用——純本地文件查證（WebFetch 讀 GitHub repo 原文）+ 治理檔案落盤，範圍明確可直接驗證。
+
 ## 2026-07-14 (Session 174 — AI 助理團隊名冊 `/team` v1.1：白底卡片牆+n8n live實掃+服務狀態zone+左側功能欄；改名 agent_dashboardV42): 📇 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S174 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 分享 Threads AI Agent Dashboard 帖文授權「達成甚至更好」，v1.0（D30）落地生成式名冊架構後，兩輪視覺/功能追加：改白底卡片牆風格；n8n workflows 由手記升級 API live 實掃（35條自動發現+運行/異常/停止/待命狀態燈）；新增服務狀態 zone（4 tiles+9類 collapsible）；新增左側功能欄（頁內導航+V42生產Dashboard等6個外部入口）。實測即時抓到 `FHS_Query_GlobalReview` 異常、50次執行15次失敗、7條殭屍workflow 三個真問題。最後改名 `agent-dashboard.js`→`agent_dashboardV42.js` 呼應命名慣例，6處引用同步。

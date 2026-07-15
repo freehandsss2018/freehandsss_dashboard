@@ -2,7 +2,7 @@
 
 **用途 (Purpose)**：精煉任務描述後，自動執行 A1 Perplexity 外部研究 + A2 Gemini ag-plan + A3 Claude Verdict，由 Claude 作最終裁決，等待 `/execute` 授權。
 **對應 Agent**：A3 (Claude Code)
-**Version**: v2.2.0 (2026-05-30)
+**Version**: v2.2.1 (2026-07-15，Gate 1 新增「拷問我」選項，同步 rp.md v2.4 拷問掛鉤)
 **NO-TOUCH GUARDRAIL**：全程禁止任何業務代碼寫入，直到 Fat Mo 輸入 `/execute`。
 
 > 精煉（/rp）為預設第一步，不可跳過。名稱含義：cl = Claude 作最終裁決。
@@ -28,10 +28,13 @@
 │  輸入修改指示 → AI 修正 XML 後重顯示（可重複）         │
 │  回覆「Y」    → 繼續進入路徑判斷與管道執行             │
 │  回覆「取消」  → 停止，保留 XML 供手動使用             │
+│  回覆「拷問我」→ 僅當上方有 structural_warning 提議時  │
+│               出現此選項；先跑 grilling 逐條釐清，     │
+│               問完返回本 Gate 供最終確認               │
 └──────────────────────────────────────────────────────┘
 ```
 
-Fat Mo 回覆「Y」後，以精煉後 `<objective>` 作為任務輸入，進入以下路徑判斷。
+Fat Mo 回覆「Y」後，以精煉後 `<objective>` 作為任務輸入，進入以下路徑判斷。回覆「拷問我」（僅 Step 0 觸發 `structural_warning` 拷問提議時可用，見 `rp.md`「拷問掛鉤」段）後，先完成 grilling 逐條釐清，待雙方達成共識，重新顯示本 Gate 供最終確認，不自動略過。
 
 ---
 

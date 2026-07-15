@@ -1486,7 +1486,7 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 **安裝後實測追記（同日）**：`grill-me`／`grill-with-docs` 因原檔 `disable-model-invocation: true`，喺 Claude Code harness 內完全無法被呼叫（AI 主動嘗試呼叫被系統拒絕）；`grilling`／`domain-modeling` 實測可正常呼叫。因兩個中文召喚詞設計上本來就直接呼叫 `grilling` 本體（唔經 `grill-me`/`grill-with-docs` 轉介），此技術限制對 Fat Mo 使用體驗零影響，僅記錄於 `grilling-quickcard.md` 供日後排查。
 
-### D28：S170 — `llm-council-skill`（GitHub `tenfoldmarc/llm-council-skill`）暫緩安裝
+### D28：S175 — `llm-council-skill`（GitHub `tenfoldmarc/llm-council-skill`）暫緩安裝
 
 **決策**：Fat Mo 提出想裝一個 Karpathy「LLM Council」方法論移植版 Claude 技能（5 顧問人格平行辯論+匿名互審+主席裁決，輸出 HTML 報告+MD 逐字稿）。經查證 GitHub repo 原文 `SKILL.md` 全文（Notion 導讀文章因重定向失敗未能直接讀取，但 repo 原文已足夠評估），對照 FHS 現有決策工具鏈後，Fat Mo 選擇方案 A：**暫緩安裝，等 2026-08-09 拷問技能試用閘覆核後再議**。
 
@@ -1499,6 +1499,13 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **暫緩理由**：兩星期內連裝兩套「決策輔助 meta-skill」會互相攤薄用量，令 D27 拷問試用閘量測失準；`.claude/skills/` 已有 30 支，殭屍風險為 Fat Mo 自訂紅線。待 D27 試用閘結果證實拷問技能有真實使用量後，才評估 council 做第二批選裝。
 
 **待辦**：已登記 handoff.md 待辦，2026-08-09 拷問試用閘覆核時一併決定 council 技能去留。
+
+**v2 修訂（同日，`/8d` 自我迭代 3 弱點後 Fat Mo 已確認）**：
+
+1. **判準解耦**：原案「拷問用量」單一判準裁決 council 去留屬 proxy 錯配（兩者使用場景不同）。改為兩條獨立判準——拷問仍按原 D27 判準（4 週 ≥2 次真實使用）；council 改用**自己嘅需求證據**：覆核當下回溯過去 4 週 `decisions.md` 新增 D 條目中屬「大架構/治理決策」性質者，若 ≥2 單 → council 有真實場景，准入第二批評估；<2 單 → 延一期或結案。
+2. **誠實註記**：原案「顧問層鎖模型控制成本」屬 SKILL.md prompt 層指示，非 `pre-tool-guard.js` 機械強制（該 hook R2/R3 只掃 Write/Edit content，不掃 Task 參數）——同 `.deploy-ok` 授權機制「無法由 hook 技術驗證，屬行為層硬約束」為同一類表述，此處補記避免日後誤解為有機械保證。
+3. **成本結構預案**：若日後安裝，FHS-FORK 由原案 5 顧問+5 互審+1 主席（11 subagent／次）**砍為 3 顧問+1 主席（4 subagent／次，去除互審輪）**，成本直減約 2/3；互審層留待實際使用後證明有需要才加返，不預先假設需要。
+4. **覆核提醒機械化**：已設一次性 scheduled task（taskId `fhs-2026-08-09-skill-trial-gate-review`，fireAt 2026-08-09），到期自動提示覆核拷問試用閘＋本條 council 判準，避免重演 S168 live cron 覆核待辦飄移（掛至 S174 仍未覆核）嘅同款模式。
 
 ### D29：S170 — `grilling` 技能實戰示範，修訂取模排程中心方案書（S159規劃）
 
@@ -1619,3 +1626,17 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **待辦**：`ig_messages` 自然累積足量真實訊息（多樣涵蓋 5 類意圖）後，補測 §7 覆蓋率≥70%/準確度≥80%量測，未達標需回頭調校 `INTENT_PATTERNS` regex 庫；`reply_templates` 5 筆草稿文案為佔位文案，正式對客使用前需 Fat Mo 覆核修訂。
 
 詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §11.10、Changelog.md 本 session 條目、`scripts/README.md` ig-watchdog 段。
+
+### D36：S175 — `/rp`／`/cl-flow`／`/ag-flow` 新增拷問掛鉤：structural_warning 觸發時機械化提議「拷問我」
+
+**決策**：Fat Mo 問點解拷問技能（D27）唔自動掛入日常 `任務→/rp→cl-flow` 工作流。經 `/8d` 查證 `rp.md`／`cl-flow.md` 原文設計理由後答覆：**全自動執行違反 grilling 技能核心原則**（決策權在人類，非 AI 代答）、且 `/rp` 已明文規定「精煉階段無參照物，強制批評是表演」、Compatibility Map 亦明文禁止 AI 主動在管道指令前插入額外精煉層——三者皆指向「不可強制自動化」。但識別出真正缺口：D27 承諾嘅「AI 主動問要唔要拷問一輪」一直靠行為層記憶落地，未機械化掛在 `/rp`／`/cl-flow` 既有嘅模糊度判斷點（`structural_warning`／Gate 1）上。Fat Mo 確認方案後執行落盤。
+
+**執行內容**（純提議掛鉤，非強制流程，`structural_warning` 未觸發時零改動零摩擦）：
+- `rp.md`（v2.3→v2.4）：Step 3 `<structural_warning>` 有實際觸發時，XML 輸出後加一行主動提議「要唔要『拷問我』一輪」；未觸發則不輸出，維持現行零摩擦。
+- `cl-flow.md`（v2.2.0→v2.2.1）：Gate 1 審閱框新增「拷問我」回覆選項（僅 structural_warning 觸發時出現），選咗會先跑 grilling 逐條釐清，問完返回同一個 Gate 供最終確認，不自動略過。
+- `ag-flow.md`：同步加對應 Gate 1 選項（該檔案 2026-07-04 起已 DEPRECATED，僅為歷史一致性補齊，非新建議用法）。
+- `cl-flow-fast.md` 不改動——其設計本身已明文跳過 structural_warning（「⚡ 輕掃描 ❌ 跳過」），此掛鉤天然不適用，維持原有快速通道特性。
+
+**設計取捨**：只自動化「提醒」動作，不自動化「回答」動作——grilling 逐條問答仍 100% 由 Fat Mo 決定，AI 唔會代答任何一條。此掛鉤本質是將 D27 既有承諾的觸發時機從「AI 記唔記得主動問」改為「規則檔機械判斷該問未問」，冇新增自主行為範圍。
+
+詳見 `.fhs/ai/commands/rp.md` Step 3「拷問掛鉤」段、`.fhs/ai/commands/cl-flow.md` Gate 1、`.fhs/ai/commands/ag-flow.md` Gate 1。

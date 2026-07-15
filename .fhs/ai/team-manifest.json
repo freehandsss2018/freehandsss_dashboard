@@ -1,7 +1,7 @@
 {
   "_readme": "FHS AI 團隊手記 manifest。只登記『掃描器掃唔到的非檔案資產』（MCP 連接器/召喚詞/內建 agent）同分類規則。檔案型資產（subagents/skills/commands/hooks）由 frontmatter 自動掃描；n8n workflows 由 API live 實掃（.env N8N_INSTANCE+N8N_KEY），本檔只補描述（用 n8n_id 對應）。維護規則見 .fhs/notes/ai-team-registry.md。",
   "version": "1.1.0",
-  "updated": "2026-07-14",
+  "updated": "2026-07-15",
   "scan_roots": {
     "subagents": "C:/Users/Edwin/.claude/agents/freehandsss",
     "commands_master": ".fhs/ai/commands",
@@ -51,7 +51,8 @@
   "automations": [
     { "name": "FHS_Core_OrderProcessor", "kind": "n8n workflow", "n8n_id": "6Ljih0hSKr9RpYNm", "desc": "訂單同步主線：Webhook 收單 → 利潤計算（Calculate Profit & Pack Items）→ Airtable/Supabase Mirror（V45.7.x；D9 五項高風險規則管轄）", "home": "NAS n8n" },
     { "name": "FHS_IGWatchdog_DriveWatch", "kind": "n8n cron", "n8n_id": "D4LK6VrQbiXlju0V", "desc": "IG 對話看門狗：Schedule Trigger → 分類警報 → ig_watchdog_alerts → Telegram 深連結；S168 起含 verified_ok 正向記錄", "home": "NAS n8n" },
-    { "name": "3brain（規劃管道）", "kind": "node script（待命）", "desc": "cl-flow-runner.js：PX（Perplexity）+ AG（Gemini）+ Claude 三腦規劃，產出 artifacts/{flow_id}/ 方案書", "home": "scripts/cl-flow-runner.js", "svc_cat": "規劃管道" }
+    { "name": "3brain（規劃管道）", "kind": "node script（待命）", "desc": "cl-flow-runner.js：PX（Perplexity）+ AG（Gemini）+ Claude 三腦規劃，產出 artifacts/{flow_id}/ 方案書", "home": "scripts/cl-flow-runner.js", "svc_cat": "規劃管道" },
+    { "name": "fhs-2026-08-09-skill-trial-gate-review", "kind": "Claude Code scheduled task（一次性）", "desc": "拷問技能4週試用閘（D27）＋llm-council-skill暫緩安裝判準（D28 v2）自動覆核，2026-08-09 09:00 fire後自動disable，結論寫回 handoff.md MASTER 表", "home": "C:/Users/Edwin/.claude/scheduled-tasks/fhs-2026-08-09-skill-trial-gate-review", "svc_cat": "治理守護" }
   ],
   "sidebar_links": [
     { "icon": "🏪", "label": "V42 POS Dashboard（生產）", "url": "https://yanhei.synology.me/Freehandsss_dashboard_current.html" },

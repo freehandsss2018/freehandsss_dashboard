@@ -100,7 +100,7 @@ freehandsss_dashboard/
 ├── .claude/                             ← Claude Code 專屬配置（含橋接指令）
 │   ├── commands/
 │   │   ├── db-query.md         ← /db-query Bridge → vendor/awesome-cc/read-only-postgres（2026-05-09）
-│   │   ├── rp.md               ← /rp Bridge v2.3（精煉引擎，獨立可用，2026-05-30）
+│   │   ├── rp.md               ← /rp Bridge v2.4（精煉引擎+拷問掛鉤，獨立可用，2026-05-30；v2.4見2026-07-15）
 │   │   ├── ag-flow.md          ← /ag-flow Bridge（精煉內建→A1+A2，AG裁決，2026-05-30）
 │   │   └── upload-web.md       ← /upload-web Bridge（WebDAV 部署至 NAS /web，2026-06-08；AG 橋接亦在 .agents/workflows/）
 │   │   [已退役] tdd-guide / debug-guide / five / mermaid / code-analysis（方法論移植至 subagent，2026-05-30）
@@ -141,7 +141,7 @@ freehandsss_dashboard/
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
-│   │   │   ├── cl-flow.md               ← /cl-flow 全自動規劃協調（v2.1.0 重心）
+│   │   │   ├── cl-flow.md               ← /cl-flow 全自動規劃協調（v2.2.1，Gate1新增拷問掛鉤2026-07-15；訂正舊v2.1.0標記漂移）
 │   │   │   ├── ag-plan.md               ← /ag-plan 本地實施計畫（A2 專用）
 │   │   │   [已退役] px-plan（外部研究已內建至 cl-flow A1，2026-05-30）
 │   │   │   ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
@@ -154,7 +154,7 @@ freehandsss_dashboard/
 │   │   │   ├── fhs-slim.md              ← /fhs-slim 文件健康清理（L1健檢報告→方案→批准→S141紀律執行，2026-07-05 S142新增）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
-│   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.3（精煉引擎，獨立可用，2026-05-30）
+│   │   │   ├── rp.md                    ← /rp Prompt 結構化重寫 v2.4（精煉引擎+拷問掛鉤，獨立可用，2026-05-30；v2.4見2026-07-15）
 │   │   │   ├── upload-web.md            ← /upload-web 部署 Dashboard 至 NAS Web Station（WebDAV，2026-06-08；v1.2.0新增Step0部署前置/fhs-check檢查，2026-07-05 S143）
 │   │   │   ├── ag-flow.md               ← /ag-flow 精煉內建→A1+A2，AG裁決（跳A3，2026-05-30）
 │   │   │   ├── new-product.md           ← /new-product 新產品跨層融入引導 v1.2.0（6步 atomic 流程 + Step 6 知識落盤 Gate，2026-06-05）
