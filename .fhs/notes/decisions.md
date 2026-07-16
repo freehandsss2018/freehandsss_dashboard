@@ -1523,6 +1523,8 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 > 📌 更新（2026-07-16，monthly-calendar-empty-slots worktree）：Fat Mo 執行前要求多輪覆核（重新核實10個錨點/Supabase schema/排版鐵律），過程中發現方案書兩個未預見落差——(a) `mapOrder()` 輸出物件冇 `enableP`/取模時間欄位，(b) D/E 依賴嘅8值狀態集（已book日期/已取模等）實質係品項層私有詞彙，同 `orders.process_status` Supabase ENUM（僅5值）唔同層級，一單多品項點聚合未定義。Fat Mo 裁決：**本次只做 B（迷你月曆，兩入口），C/D/E 另日再議**（跳過落差(b)，落差(a)對B無影響因B直接fetch Supabase冇用globalOrders）。B 已完成並驗收：CSS/HTML/JS 五處插入全部三步計數驗證（0→1）；playwright 實測——月曆日計數與 Supabase REST 交叉核對完全一致（2026-07-08/07-14 各1單，07-15 因 enableP=false 正確排除）；入口一（表單內）撳日子回填 `appDate`+關閉，入口二（查看檔期）撳日子純高亮唔寫欄位；375px 手機兩入口皆為 bottom-sheet；桌面入口一實測發現原定位邏輯（估算高度）會遮住 appDate input，已改為 render 完成後量真實高度先錨定，修復後零重疊；全程零新增 console error。C/D/E 維持未做狀態。
 
+> 📌 更新（2026-07-16，S179續）：B 部署後 Fat Mo 回饋「不夠用」，指出兩痛點——日格只有點冇得撳落去查、操作者需要時常查近期排期評估重新安排。先出 mockup 示意圖，經三條 AskUserQuestion 拍板（表單入口改二段式「先睇明細再揀日」/PM6起算晚上/近期排期睇成個月）後重新設計 v2：日格改三時段（上午/下午/晚上）、撳日展開當日明細（查看檔期入口明細行可撳開單）、新增「近期排期」tab（成月list+跳去下一個全日空檔）。實測再抓到 1 個桌面錨定二次 overlap bug（撳日展開明細令 popup 長高遮返appDate），已改為方向感知 top/bottom 錨定修復。全文見 Changelog.md S179續條目。
+
 ### D30：S171 — AI 助理團隊名冊（生成式盤點，非人手維護）
 
 **決策**：Fat Mo 引用 Threads @raymond0917「AI Agent Dashboard」概念（視像化 AI 助理團隊防遺忘），授權 AI 自行找方案「達成甚至更好」。裁決採**生成式名冊**架構而非人手畫一頁：`scripts/agent-dashboard.js`（零依賴 Node）掃描各資產自身 frontmatter/檔頭 → 生成 `artifacts/agent-dashboard.html`（人睇）＋ `agent-dashboard.json`（AI 讀），非檔案資產（MCP/n8n/cron/召喚詞）唯一登記點 `.fhs/ai/team-manifest.json`。制度本體 `.fhs/notes/ai-team-registry.md`（五條硬規則 R1-R5），執行入口 `/team`／「團隊名冊」。

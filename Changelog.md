@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-07-16] Session 179續（Claude Code / Sonnet 5 執行，worktree `monthly-calendar-empty-slots`）— 取模排程中心 B：迷你月曆 v2 重新設計（吸引力升級）
+
+- **緣起**：S179 B 落地並部署後，Fat Mo 回饋「不夠用」，指出兩個真實使用痛點：(1) 月曆日格只有點點提示，冇得一步步查閱內容；(2) 操作者除咗開緊訂單睇日期，仲會時常打開月曆查睇未來近期排期狀況，評估可否重新安排。
+- **設計示意先行**：先用 mockup HTML 產出兩版本示意圖（月曆撳日明細 + 近期排期 list）送俾 Fat Mo 睇，再落實裝三條 AskUserQuestion 拍板細節，避免對住盲做完先發現方向錯。
+- **三項拍板**：① 表單入口撳日子改為「先睇當日明細，撳大掣『✓ 揀呢日做取模日』先回填關閉」（非再係即撳即回填）；② 上午/下午/晚上時段分界＝PM 6:00 起算晚上；③「近期排期」tab 預設睇成個月（非 7/14 日窗）。
+- **v2 新增三項能力**（同一檔案 `freehandsss_dashboardV42.html` 內擴充，非新開檔）：
+  1. **日格三時段**：每日格改為三細格（上午/下午/晚上），實色=已book、灰=空檔、右上黃點=有單時間待定；時段由 `raw_form_state.appTimeHour`/`appTimeAmPm` 拆算（`classifySlot()`），已取消訂單（`process_status=已取消`）於查詢層直接濾走唔佔時段。
+  2. **撳日明細**：`_moldCalDayClick()` 撳任何一日 → 月曆下方展開當日名單（時間·客名·單號·狀態chip）+ 空檔行（綠色）；開月曆即預選基準日並自動展開（表單入口=已揀日期或今日，查看檔期入口=今日）。查看檔期入口明細行可撳 → 關月曆 + `openOrderModal(orderId)` 開該單詳情（FHS 字串單號，非 UUID）。
+  3. **近期排期 tab**：新增 `mcTabCal`/`mcTabAgenda` 分頁切換；agenda 由今日列到月底，連續全日空檔自動摺一行（如「今日 7月16（四）— 7月31（五）全日空」），頂部「⚡跳去下一個全日空檔」掣（`_moldCalJump()`，捲動+閃爍動畫定位）。
+- **實測過程抓到並修復 1 個真 bug**：表單入口 desktop 錨定定位喺撳日展開明細後，popup 向下生長會反過來遮住 `appDate` input（S179 首版只處理咗初始定位，未考慮動態長高場景）。修復：`_moldCalPositionAnchored()` 改為方向感知——放喺下面用 `top` 錨定向下生長（`appDate` 喺上面天然安全）；放喺上面改用 `bottom` 錨定向上生長 + 以 `appDate` 頂邊封頂 `maxHeight`，確保無論點展開都唔會伸入 `appDate` 範圍。複測（撳日展開後）零重疊確認。
+- **驗收證據**：全部 JS 改動經 `node -e "new Function(...)"` 對 8 個 `<script>` 區塊語法檢查零錯誤；playwright 實測——① 時段分類與 Supabase 原始資料交叉核對正確（`5:30 PM`→下午、`11:00 AM`→上午）；② 已取消訂單正確唔入時段計算；③ 查看檔期入口撳明細行成功開啟 `#fhsOrderModal` 並顯示正確訂單內容（07001006）；④ 表單入口「撳日展開明細→撳揀日掣」二段式回填流程行為正確（`appDate` 展開前為空、撳揀日掣後正確寫入並關閉）；⑤ 桌面錨定定位展開後零重疊（原 bug 複測確認修復）；⑥ 375px 手機視窗兩入口仍為 bottom-sheet、tabs 正常顯示；⑦ 近期排期 tab 內容與月曆 tab 資料一致（同一份 fetch 結果）；⑧ 全程零新增 console error。
+- **未做範圍**：C/D/E 三個名單面板、A（撞期即時提示）維持未做（同 S179 一致，非本次範圍）。
+- **決策脈絡**：非新架構決策，屬 D29 既定方向嘅同日迭代優化，執行紀錄併入 decisions.md D29 段落（未編新 D 號）。
+- **Subagent 使用記錄**：❌ 未使用 — 全程主對話（Sonnet 5）直接執行：定點改檔（同一檔案內擴充，非跨檔探索）+ mockup 設計示意 + AskUserQuestion 拍板 + playwright 實測，按 governance/02 §1「主對話可直接做」清單執行，未達派工門檻。
+
+【交付前雙紀律自檢】
+驗收：巨檔 HTML 改動（Freehandsss_Dashboard/**）— playwright 八項實測（時段分類交叉核對/已取消訂單過濾/開單modal/二段式回填/桌面錨定零重疊/mobile bottom-sheet/雙tab資料一致/零console error）= ✅（02 §5 分流表「巨檔 HTML 改動」達標；非財務/schema/n8n 類別，不強制 fresh-context 第二意見）
+Subagent：❌ 未使用 — 判斷理由見上
+
 ## [2026-07-16] Session 179（Claude Code / Sonnet 5 執行，worktree `monthly-calendar-empty-slots`）— 取模排程中心 B：迷你月曆落地（D29 第一期部分執行）
 
 - **緣起**：S159 規劃、S170 `/grilling` 拷問修訂的取模排程中心方案書（決策 D29）長期排隊未執行（見 [mold-schedule-plan_2026-07-09.md](.fhs/reports/planning/mold-schedule-plan_2026-07-09.md)）。Fat Mo 本次要求「審視多次先進行執行」，故執行前先做一輪覆核而非直接照方案書動手。
