@@ -3198,6 +3198,161 @@
         .fhs-row-flash td {
             animation: fhs-row-flash 1.2s ease-in-out 3 !important;
         }
+
+        /* ================================================================
+           V42 — 取模排程中心 B：迷你月曆（S159規劃/S170拷問修訂，決策見 decisions.md D29；
+           本次僅落地 B，C/D/E 延後）
+           ================================================================ */
+        #moldCalOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 12000;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        #moldCalOverlay.is-open { display: flex; }
+        #moldCalOverlay.mc-anchored {
+            background: transparent;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+        #moldCalPopup {
+            background: var(--fhs-bg-surface);
+            border-radius: 14px;
+            width: 100%;
+            max-width: min(320px, 95vw);
+            max-height: 90dvh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        #moldCalOverlay.mc-anchored #moldCalPopup {
+            position: fixed;
+            max-width: 320px;
+        }
+        #moldCalPopup .mc-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 12px 14px 8px;
+            border-bottom: 1px solid var(--fhs-border);
+            flex-shrink: 0;
+        }
+        #moldCalPopup .mc-hdr-title {
+            flex: 1;
+            text-align: center;
+            font-weight: 700;
+            font-size: var(--fhs-text-base);
+            color: var(--fhs-text-primary);
+        }
+        #moldCalPopup .mc-nav-btn,
+        #moldCalPopup .mc-close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--fhs-text-secondary);
+            padding: 2px 8px;
+            line-height: 1;
+        }
+        #moldCalPopup .mc-body {
+            padding: 10px 14px 14px;
+            overflow-y: auto;
+        }
+        #moldCalPopup .mc-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        #moldCalPopup .mc-dow {
+            font-size: var(--fhs-text-xs);
+            color: var(--fhs-text-muted);
+            text-align: center;
+            font-weight: 700;
+            padding: 4px 0;
+        }
+        #moldCalPopup .mc-day {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+            cursor: pointer;
+            background: var(--fhs-bg-base);
+        }
+        #moldCalPopup .mc-day:hover { background: var(--fhs-bg-elevated); }
+        #moldCalPopup .mc-day.mc-empty { visibility: hidden; cursor: default; }
+        #moldCalPopup .mc-day.mc-today { outline: 2px solid var(--fhs-accent); outline-offset: -2px; font-weight: 700; }
+        #moldCalPopup .mc-day.mc-selected { background: var(--fhs-accent-light); }
+        #moldCalPopup .mc-day .mc-dot {
+            position: absolute;
+            bottom: 3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        #moldCalPopup .mc-day .mc-dot.mc-dot-1 { background: var(--fhs-warning); }
+        #moldCalPopup .mc-day .mc-dot.mc-dot-2 { background: var(--fhs-danger); }
+        #moldCalPopup .mc-legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            font-size: var(--fhs-text-xs);
+            color: var(--fhs-text-secondary);
+            padding-top: 10px;
+        }
+        #moldCalPopup .mc-legend span { display: inline-flex; align-items: center; gap: 4px; }
+        #moldCalPopup .mc-legend .mc-dot { position: static; width: 6px; height: 6px; border-radius: 50%; }
+        #moldCalPopup .mc-error {
+            text-align: center;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-danger);
+            padding: 20px 0;
+        }
+        .mc-trigger-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 4px;
+            color: var(--fhs-accent);
+            vertical-align: middle;
+        }
+        #btnViewMoldCal {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            margin: 12px 24px 0;
+            border-radius: var(--radius-pill, 999px);
+            border: 1px solid var(--fhs-border);
+            background: var(--fhs-bg-surface);
+            color: var(--fhs-text-primary);
+            font-size: var(--fhs-text-sm);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            #moldCalOverlay, #moldCalOverlay.mc-anchored {
+                background: rgba(0,0,0,0.6);
+                align-items: flex-end;
+                justify-content: center;
+                padding: 0;
+            }
+            #moldCalPopup, #moldCalOverlay.mc-anchored #moldCalPopup {
+                position: static;
+                border-radius: 18px 18px 0 0;
+                max-width: 100%;
+                max-height: 80dvh;
+            }
+        }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -3558,6 +3713,9 @@
         style="display:none; width:100%; max-width:100%; margin:0; padding:0;">
         <div class="card" style="padding:0; width:100%; overflow:visible;">
 
+            <!-- 取模排程中心 B（S159/S170/D29，本次僅落地B）：獨立入口，唔綁定任何表單欄位 -->
+            <button type="button" id="btnViewMoldCal" onclick="openMoldCalendar({bindMode:'view'})"><svg class="ba-icon" width="14" height="14" style="vertical-align:middle;"><use href="#icon-calendar"/></svg>查看檔期</button>
+
             <!-- Zone 2：標題列（fixed at top:48px） -->
             <div id="reviewZone2" style="display:none;">
             <div class="review-header" style="display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:8px; padding:12px 24px 8px;">
@@ -3815,7 +3973,7 @@
 
         <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
                 oninput="generate()"></div>
-        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
+        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"><button type="button" class="mc-trigger-btn" onclick="openMoldCalendar({bindMode:'form',triggerEl:this})" title="查看月曆"><svg class="ba-icon" width="14" height="14" style="vertical-align:middle;"><use href="#icon-calendar"/></svg></button></div>
         <div class="form-group"><label>取模時間</label>
             <div class="grid-2-col">
                 <select id="appTimeHour" onchange="generate()"></select>
@@ -15906,6 +16064,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         </div>
     </div>
 
+    <!-- 取模排程中心 B：迷你月曆 popup（S159/S170/D29，本次僅落地B） -->
+    <div id="moldCalOverlay" role="dialog" aria-modal="true" aria-labelledby="moldCalTitle"
+         onclick="if(event.target===this)closeMoldCalendar()">
+        <div id="moldCalPopup">
+            <div class="mc-hdr">
+                <button type="button" class="mc-nav-btn" onclick="_moldCalNav(-1)" aria-label="上一月">‹</button>
+                <span class="mc-hdr-title" id="moldCalTitle"></span>
+                <button type="button" class="mc-nav-btn" onclick="_moldCalNav(1)" aria-label="下一月">›</button>
+                <button type="button" class="mc-close-btn" onclick="closeMoldCalendar()" aria-label="關閉">✕</button>
+            </div>
+            <div class="mc-body" id="moldCalBody"></div>
+        </div>
+    </div>
+
 
 <!-- ================================================================
      V42 P3/P4 — Bottom-Sheet + Archive/Favorite persistence
@@ -16313,6 +16485,190 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const banner = document.getElementById('syncProgressBanner');
             const isVisible = (loading && loading.style.display !== 'none') || (banner && banner.style.display !== 'none');
             zone2.style.display = isVisible ? 'block' : 'none';
+        }
+    });
+
+})();
+</script>
+
+<!-- ================================================================
+     V42 — 取模排程中心 B：迷你月曆邏輯（S159規劃/S170拷問修訂，決策見 decisions.md D29；
+     本次僅落地 B，C/D/E 延後）
+     Injected as standalone script (zero IIFE dependency)
+     ================================================================ -->
+<script>
+(function() {
+    'use strict';
+
+    var MOLD_CAL_CACHE_TTL = 30000; // 同一個月查詢結果快取 30 秒（S170拷問裁決）
+    var DOW_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+
+    window._moldCal = window._moldCal || { year: 0, month: 0, bindMode: 'form', cache: {}, selectedDate: null };
+
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+    function monthKey(y, m) { return y + '-' + pad2(m + 1); }
+    function monthStartStr(y, m) { return y + '-' + pad2(m + 1) + '-01'; }
+    function nextMonthStartStr(y, m) {
+        var ny = (m === 11) ? y + 1 : y;
+        var nm = (m === 11) ? 0 : m + 1;
+        return monthStartStr(ny, nm);
+    }
+    function todayStr() {
+        var d = new Date();
+        return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    }
+
+    // Read-only Supabase SELECT — 只讀 appointment_at/raw_form_state 做計數，唔寫任何欄位
+    async function _moldCalFetchMonth(y, m) {
+        var key = monthKey(y, m);
+        var cached = window._moldCal.cache[key];
+        if (cached && (Date.now() - cached.ts) < MOLD_CAL_CACHE_TTL) return cached.counts;
+        var url = window.SB_URL + '/rest/v1/orders?appointment_at=gte.' + monthStartStr(y, m)
+            + '&appointment_at=lt.' + nextMonthStartStr(y, m)
+            + '&deleted_at=is.null&select=order_id,appointment_at,raw_form_state';
+        var resp = await fetch(url, { headers: { apikey: window.SB_ANON_KEY, Authorization: 'Bearer ' + window.SB_ANON_KEY } });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        var rows = await resp.json();
+        var counts = {};
+        rows.forEach(function(r) {
+            var rfs = r.raw_form_state || {};
+            var enableP = rfs.enableP === true || rfs.enableP === 'true';
+            if (!enableP || !r.appointment_at) return;
+            counts[r.appointment_at] = (counts[r.appointment_at] || 0) + 1;
+        });
+        window._moldCal.cache[key] = { ts: Date.now(), counts: counts };
+        return counts;
+    }
+
+    function _moldCalBuildGrid(y, m, counts) {
+        var first = new Date(y, m, 1);
+        var startDow = first.getDay();
+        var daysInMonth = new Date(y, m + 1, 0).getDate();
+        var today = todayStr();
+        var sel = window._moldCal.selectedDate;
+        var html = '<div class="mc-grid">';
+        DOW_LABELS.forEach(function(d) { html += '<div class="mc-dow">' + d + '</div>'; });
+        for (var i = 0; i < startDow; i++) html += '<div class="mc-day mc-empty"></div>';
+        for (var day = 1; day <= daysInMonth; day++) {
+            var dateStr = y + '-' + pad2(m + 1) + '-' + pad2(day);
+            var n = counts[dateStr] || 0;
+            var cls = 'mc-day';
+            if (dateStr === today) cls += ' mc-today';
+            if (dateStr === sel) cls += ' mc-selected';
+            var dot = '';
+            if (n === 1) dot = '<span class="mc-dot mc-dot-1"></span>';
+            else if (n >= 2) dot = '<span class="mc-dot mc-dot-2"></span>';
+            html += '<div class="' + cls + '" title="' + dateStr + '：' + n + ' 張取模單" onclick="_moldCalDayClick(\'' + dateStr + '\')">' + day + dot + '</div>';
+        }
+        html += '</div>';
+        html += '<div class="mc-legend"><span><span class="mc-dot mc-dot-1"></span>1 單</span><span><span class="mc-dot mc-dot-2"></span>2 單或以上</span></div>';
+        return html;
+    }
+
+    window._moldCalRender = async function() {
+        var st = window._moldCal;
+        var titleEl = document.getElementById('moldCalTitle');
+        var bodyEl = document.getElementById('moldCalBody');
+        if (titleEl) titleEl.textContent = st.year + ' 年 ' + (st.month + 1) + ' 月';
+        if (!bodyEl) return;
+        bodyEl.innerHTML = '<div class="mc-error" style="color:var(--fhs-text-muted);">載入中...</div>';
+        try {
+            var counts = await _moldCalFetchMonth(st.year, st.month);
+            bodyEl.innerHTML = _moldCalBuildGrid(st.year, st.month, counts);
+        } catch (e) {
+            console.warn('moldCal fetch failed:', e);
+            bodyEl.innerHTML = '<div class="mc-error">⚠ 未能載入，請自行核對</div>';
+        }
+    };
+
+    window._moldCalNav = function(delta) {
+        var st = window._moldCal;
+        st.month += delta;
+        if (st.month > 11) { st.month = 0; st.year++; }
+        if (st.month < 0) { st.month = 11; st.year--; }
+        window._moldCalRender();
+    };
+
+    // bindMode:'form' → 回填 appDate + generate() + 關閉；bindMode:'view' → 純高亮，唔寫任何表單欄位
+    window._moldCalDayClick = function(dateStr) {
+        var st = window._moldCal;
+        st.selectedDate = dateStr;
+        if (st.bindMode === 'form') {
+            var appDateEl = document.getElementById('appDate');
+            if (appDateEl) {
+                appDateEl.value = dateStr;
+                if (typeof window.generate === 'function') window.generate();
+            }
+            window.closeMoldCalendar();
+        } else {
+            window._moldCalRender();
+        }
+    };
+
+    window.openMoldCalendar = function(opts) {
+        opts = opts || {};
+        var st = window._moldCal;
+        st.bindMode = opts.bindMode === 'view' ? 'view' : 'form';
+        var baseDate = new Date();
+        if (st.bindMode === 'form') {
+            var appDateEl = document.getElementById('appDate');
+            if (appDateEl && appDateEl.value) {
+                var parts = appDateEl.value.split('-');
+                if (parts.length === 3) baseDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+            }
+        }
+        st.year = baseDate.getFullYear();
+        st.month = baseDate.getMonth();
+        st.selectedDate = null;
+
+        var overlay = document.getElementById('moldCalOverlay');
+        var popup = document.getElementById('moldCalPopup');
+        var isDesktop = window.innerWidth >= 769;
+        var doAnchor = (st.bindMode === 'form' && isDesktop && !!opts.triggerEl);
+        // 入口一（表單內）desktop：錨定喺觸發掣附近，唔用置中 dark overlay 遮住 appDate 輸入框本身
+        if (overlay) overlay.classList.toggle('mc-anchored', doAnchor);
+        if (!doAnchor && popup) { popup.style.top = ''; popup.style.left = ''; }
+        if (overlay) overlay.classList.add('is-open');
+
+        // 內容 render 完成先量真實高度先擺位（唔靠估高度，先至保證唔會遮住 appDate）
+        window._moldCalRender().then(function() {
+            if (doAnchor) _moldCalPositionAnchored(popup, opts.triggerEl);
+        });
+    };
+
+    function _moldCalPositionAnchored(popup, trigger) {
+        if (!popup || !trigger) return;
+        var appDateEl = document.getElementById('appDate');
+        var avoidRect = appDateEl ? appDateEl.getBoundingClientRect() : trigger.getBoundingClientRect();
+        var r = trigger.getBoundingClientRect();
+        popup.style.visibility = 'hidden';
+        popup.style.top = '0px';
+        popup.style.left = '0px';
+        var h = popup.offsetHeight;
+        var w = popup.offsetWidth;
+        var top;
+        if (r.bottom + 6 + h <= window.innerHeight) {
+            top = r.bottom + 6; // 下方放得落 → 放落面
+        } else if (avoidRect.top - 6 - h >= 0) {
+            top = avoidRect.top - 6 - h; // 下方放唔落 → 反轉放上面，以 appDate 真實邊界計，保證唔遮住
+        } else {
+            top = Math.max(8, window.innerHeight - h - 8); // 上下都唔夠位先兜底
+        }
+        var left = Math.min(r.left, window.innerWidth - w - 8);
+        popup.style.top = Math.max(8, top) + 'px';
+        popup.style.left = Math.max(8, left) + 'px';
+        popup.style.visibility = '';
+    }
+
+    window.closeMoldCalendar = function() {
+        var overlay = document.getElementById('moldCalOverlay');
+        if (overlay) overlay.classList.remove('is-open');
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            var overlay = document.getElementById('moldCalOverlay');
+            if (overlay && overlay.classList.contains('is-open')) window.closeMoldCalendar();
         }
     });
 
