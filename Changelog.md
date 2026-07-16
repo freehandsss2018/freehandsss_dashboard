@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-16] Session 178（Claude Code / Sonnet 5 執行）— `/upload-web` 新增 `team` 目標：AI 助理團隊名冊取得公開網址
+
+- **緣起**：Fat Mo 呼叫 `/upload-web`，意圖係將 AI 助理團隊名冊（`artifacts/agent_dashboardV42.html`，S174 建立）上載 NAS 取得公開網址。但既有 `/upload-web` 邏輯（`scripts/upload-web.ps1`）寫死只認 `Freehandsss_Dashboard/` 資料夾內嘅 POS Dashboard 檔案，AI 誤判執行咗重新部署 POS 生產版 V42（內容零改動，屬冪等重推，PRICE_AUDIT Red Flag 因 Airtable 429 額度牆經 Fat Mo 確認後繼續部署，無副作用）。查明誤會後，先以人手一次性 WebDAV PUT（重用 `.env` 同一組憑證，三關驗證同款）達成即時需求，並提案擴充腳本使其成為正式可重複指令；Fat Mo：「接納 /upload-web team」。
+- **執行內容**：
+  - `scripts/upload-web.ps1` 升 v1.4.0：新增 `$artifactsDir` 變數 + switch case `'^(?i)team$'` 覆寫 `$sourceDir` 指向 `artifacts/`（非 `Freehandsss_Dashboard/`），檔名 `agent_dashboardV42.html`；因非 POS 生產系統，不受 `current` 目標嘅二次確認/`-Force` 限制；其餘 4 個既有目標（省略/V42/V41/current）路徑解析邏輯零改動。
+  - `.fhs/ai/commands/upload-web.md`＋`.claude/commands/upload-web.md` 同步文件（升 v1.4.0，目標代稱對照表新增 `team` 行 + 常用範例）。
+  - `.fhs/ai/team-manifest.json` 新增召喚詞「`/upload-web team`」，升 v1.1.1。
+  - `scripts/README.md` 補齊 `upload-web.ps1` 條目（既有長期文件缺口，本次一併補上）。
+- **決策**：見 `decisions.md` D38（架構層決策：擴充生產部署腳本新增非生產目標）。
+- **驗證**：改動前備份 `.fhs/ai/governance/backups/upload-web.ps1.2026-07-16.bak`；PowerShell 乾跑（不觸網路）驗證全 5 個目標路徑解析正確（`exists=True`），確認舊 4 個目標零回歸；實跑 `team` 目標兩次（改動後即測 + 名冊重新生成後正式推送），三關驗證（PUT 201/204 + 公開端點 200 + 大小 + SHA256）皆 PASS；重新生成名冊確認「✨ 零勘誤」。
+- **公開網址**：https://yanhei.synology.me/agent_dashboardV42.html
+
 ## [2026-07-16] Session 177續（Claude Code / Sonnet 5 執行，`/grilling` 六輪拷問後執行）— n8n 殭屍 workflow 清理（22 條）
 
 - **緣起**：S174 `/team` live 實掃揭露 25 條停用 n8n workflow 中疑似 7 條殭屍待批准清理；本 session 追查 `FHS_Query_GlobalReview` 執行異常時一併全量重新盤點。

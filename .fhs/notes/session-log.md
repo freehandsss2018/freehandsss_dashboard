@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-07-16 (Session 178 — `/upload-web` 新增 `team` 目標：AI 助理團隊名冊取得公開網址): 🌐 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S178 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 呼叫 `/upload-web` 意圖上載 AI 助理團隊名冊，因既有腳本寫死只認 POS Dashboard 路徑，誤觸發咗 POS V42 冪等重推（無害）；查明後擴充 `scripts/upload-web.ps1` 新增 `team` 目標（來源改指 `artifacts/`，非生產系統不受二次確認限制），5 個目標路徑解析回歸測試 PASS，`team` 目標實跑兩次三關驗證皆 PASS。名冊現有專屬公開網址 https://yanhei.synology.me/agent_dashboardV42.html 。決策見 decisions.md D38。
+Subagent：❌ 未使用——腳本擴充+文件同步+實測驗證，主對話直接做符合 governance/02 §1 成本判準。
+
+## 2026-07-16 (Session 177續 — n8n 殭屍 workflow 清理（22 條）+ FHS_Query_GlobalReview 異常根因查明，`/grilling` 六輪拷問後執行): 🧟 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S177續條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。追查 `FHS_Query_GlobalReview` 異常時全量重新盤點 25 條停用 workflow：根因為 Airtable API 429 額度牆（同 PRICE_AUDIT 病灶同源，非新故障）；22 條確認可刪（垃圾件+OrderProcessor 前身+V22/V25 舊管線），3 條保留。`/grilling` 六輪拷問定案刪除紀律（備份先行/一次過做完/三重驗證），22 條全 GET 備份至 `n8n/archive/zombies-2026-07-16/` 後刪除，三重驗證 PASS（停用 25→3、活躍 10 條不變、生成器零勘誤）。非架構決策，不編新 D 號。
+Subagent：❌ 未使用。
+
 ## 2026-07-16 (Session 177 — `/team` R4 勘誤跟進：4 項 subagent 版本漂移修復): 🗂️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S177 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。S175 `/team` 撈到的 4 項 MANIFEST 版本漂移（database-reviewer/tdd-guide/ui-designer 版本號+finance-auditor 未登記）已修復；Fable 5 先審視方案確認 frontmatter 為真源、MANIFEST 追上即可，派 sonnet 執行，重跑生成器驗證零勘誤。順帶修正 `docs/repo-map.md` 同款漂移。

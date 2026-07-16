@@ -17,9 +17,9 @@
 4. 執行 `powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force`
 5. 回報 PASS/FAIL：偵測版本 + 公開網址 + 大小比對 + SHA256
 
-**指定目標（`/upload-web V43` / `current` 等）：**
+**指定目標（`/upload-web V43` / `current` / `team` 等）：**
 1. 解析目標代稱
-2. 若目標為 `current` → 先向 Fat Mo 二次確認，執行時加 `-Force`
+2. 若目標為 `current` → 先向 Fat Mo 二次確認，執行時加 `-Force`；若為 `team`（AI 助理團隊名冊，2026-07-16 新增）→ 非生產系統不需二次確認，建議執行前先跑 `node scripts/agent_dashboardV42.js` 重新生成
 3. 執行 `powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 [目標] [-Force]`
 4. 回報 PASS/FAIL：公開網址 + 大小比對 + SHA256
 

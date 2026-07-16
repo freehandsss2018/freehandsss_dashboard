@@ -18,6 +18,7 @@
 | `scratch_pull_and_save_workflow.js` | **n8n 工具**：從 NAS 下載並儲存完整的 n8n live 工作流備份 |
 | `backfill_deposit.js` | **數據回填**：修復舊訂單缺失的訂金欄位 |
 | `agent_dashboardV42.js` | **AI 助理團隊名冊生成器**（`/team`）：掃描 subagents/commands/skills/hooks/MCP frontmatter + n8n API live 實掃 → 生成 `artifacts/agent_dashboardV42.html`（人睇）+ `.json`（AI 讀），制度見 `.fhs/notes/ai-team-registry.md` |
+| `upload-web.ps1` | **NAS Web Station 部署器**（`/upload-web`）：WebDAV 上傳 + 三關驗證（HTTP 200/大小/SHA256）。目標代稱 `V42`/`V41`/`V40`/`current`（POS Dashboard，來源 `Freehandsss_Dashboard/`）＋ `team`（AI 助理團隊名冊，來源 `artifacts/`，2026-07-16 新增），憑證讀 repo 根 `.env` |
 
 ## 🧪 測試與驗證腳本 (Test Suite)
 

@@ -1656,6 +1656,16 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 **驗收**：fresh-context code-reviewer 讀 diff + 語法平衡檢查 + 用訂單 0600724 已知數據手動追蹤邏輯路徑，PASS，判定「可部署」。發現一項非阻塞殘留：CSS class `.fhsAudit_qtyWarn` 樣式表仍在但零元素引用，純死代碼，列入日後衛生清理範圍不即時處理。
 
+### D38：S178 — `/upload-web` 新增 `team` 目標，AI 助理團隊名冊取得公開網址
+
+**背景**：Fat Mo 起初直接呼叫 `/upload-web`，意圖係將 AI 助理團隊名冊（`artifacts/agent_dashboardV42.html`）上載 NAS 取得公開網址；但 `/upload-web` 既有邏輯（`scripts/upload-web.ps1`）寫死只認 `Freehandsss_Dashboard/` 資料夾內嘅 POS Dashboard 檔案，實際執行咗嘅係重新部署 POS 生產版 V42（內容無變動，屬冪等重推，無副作用，已於同 session 澄清）。查明誤會後，先以人手一次性 WebDAV PUT（重用 `.env` 同一組憑證，三關驗證同款）達成即時需求，並提案擴充腳本使其成為正式可重複指令；Fat Mo：「接納 /upload-web team」。
+
+**決策**：`scripts/upload-web.ps1` 新增 `team` 目標——來源改指向 `artifacts/` 資料夾（非 `Freehandsss_Dashboard/`），上傳 `agent_dashboardV42.html` 至 `https://yanhei.synology.me/agent_dashboardV42.html`；因非 POS 生產系統，不受 `current` 目標嘅二次確認/`-Force`限制。腳本改動：新增 `$artifactsDir` 變數 + switch case 覆寫 `$sourceDir`，其餘 4 個既有目標（省略/V42/V41/current）行為零改動。
+
+**執行內容**：`scripts/upload-web.ps1` v1.4.0；`.fhs/ai/commands/upload-web.md`＋`.claude/commands/upload-web.md` 同步文件；`.fhs/ai/team-manifest.json` 新增召喚詞「`/upload-web team`」升 v1.1.1。
+
+**驗證**：改動前備份 `.fhs/ai/governance/backups/upload-web.ps1.2026-07-16.bak`；PowerShell 乾跑（不觸網路）驗證全 5 個目標（含新舊）路徑解析正確、`exists=True`；實跑 `team` 目標兩次（改動後即測 + 名冊重新生成後正式推送），三關驗證（PUT 201/204＋公開端點 200＋大小＋SHA256）皆 PASS；重新生成名冊確認「✨ 零勘誤」，既有 V42/V41/current 目標路徑解析未受影響（回歸測試 PASS）。
+
 **教訓**：`item_base_cost` 欄位語意不可靠（同一 category 不同訂單，有時單件有時整套），任何以此欄位為前提的前端判斷式都不可信；未來若要真正修這個資料源頭問題，須動 n8n Code Node，屬獨立範圍，這次刻意不做。
 
 詳見 [freehandsss_dashboardV42.html:10817-10836](Freehandsss_Dashboard/freehandsss_dashboardV42.html:10817)、Changelog.md S176 條目、auto-memory `project_keychain_addon_qty_cost_bug.md`（已更新修正）。

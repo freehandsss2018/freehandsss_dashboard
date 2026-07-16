@@ -1,7 +1,7 @@
 {
   "_readme": "FHS AI 團隊手記 manifest。只登記『掃描器掃唔到的非檔案資產』（MCP 連接器/召喚詞/內建 agent）同分類規則。檔案型資產（subagents/skills/commands/hooks）由 frontmatter 自動掃描；n8n workflows 由 API live 實掃（.env N8N_INSTANCE+N8N_KEY），本檔只補描述（用 n8n_id 對應）。維護規則見 .fhs/notes/ai-team-registry.md。",
-  "version": "1.1.0",
-  "updated": "2026-07-15",
+  "version": "1.1.1",
+  "updated": "2026-07-16",
   "scan_roots": {
     "subagents": "C:/Users/Edwin/.claude/agents/freehandsss",
     "commands_master": ".fhs/ai/commands",
@@ -22,6 +22,7 @@
     { "phrase": "kgov", "target": "知識治理框架", "effect": "Product_Definition SSoT + 規則ID表 + Rule 3.17" },
     { "phrase": "fhs-health / 健檢", "target": "fhs-health-check.js + /fhs-slim", "effect": "文件衛生 L1 零token偵測 → L2 清理方案" },
     { "phrase": "團隊名冊 / /team", "target": "scripts/agent_dashboardV42.js", "effect": "重新掃描全部 AI 資產，生成本名冊" },
+    { "phrase": "/upload-web team", "target": "scripts/upload-web.ps1 team", "effect": "上傳團隊名冊至公開網址 https://yanhei.synology.me/agent_dashboardV42.html（建議先重新生成）" },
     { "phrase": "/3d-print", "target": "3D 手腳模打印 pipeline", "effect": "diff-learning 參數迴圈；v0=師傅版模式（縮放+刻字+加環）" },
     { "phrase": "/cl-flow 任務描述", "target": "cl-flow-runner.js 三腦規劃", "effect": "PX 搜證 + AG 對案 + Claude 裁決出方案書" },
     { "phrase": "/commit", "target": "session 收尾四同步", "effect": "handoff 便攜塊 + Changelog + decisions + git sync（條件觸發自動部署）" },

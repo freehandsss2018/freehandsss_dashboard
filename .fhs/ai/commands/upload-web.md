@@ -1,7 +1,7 @@
 # /upload-web — 上傳 Dashboard 至 NAS Web Station
 
 **用途 (Purpose)**：自動偵測最新開發版，升格為 current，並上傳至 NAS Web Station `/web` 共用資料夾，三關驗證完整性。
-**版本**：v1.3.0 (2026-07-12，S168，新增 /commit 條件偵測後鏈式觸發時跳過 Step 1 二次確認的例外)
+**版本**：v1.4.0 (2026-07-16，S178，新增 `team` 目標——上傳 AI 助理團隊名冊 `artifacts/agent_dashboardV42.html` 至公開網址，非 POS Dashboard 生產系統不受 current 生產版守護限制)
 **通用平台**：Claude Code (CL) · Antigravity/Gemini (AG) — 雙端通用（需本機 shell + curl；2026-06-08 Fat Mo 授權開放 AG）
 **觸發**：`/upload-web` 或 `/upload-web [目標]`
 
@@ -23,6 +23,7 @@
 | （省略）| **升格流程**：自動偵測最新版 → cp → current → 上傳 current（見下方步驟） |
 | `V43` / `V42` 等 | 只上傳該指定版本至 NAS（dev 版，**不 cp 不升格**） |
 | `current` | 只上傳現有 current.html（**不 cp**，需二次確認） |
+| `team` | 上傳 `artifacts/agent_dashboardV42.html`（AI 助理團隊名冊，2026-07-16 新增）至 `https://yanhei.synology.me/agent_dashboardV42.html`；非生產系統，不受 current 二次確認限制；**執行前建議先跑 `node scripts/agent_dashboardV42.js` 重新生成確保最新** |
 | 其他字串 | 視為 `Freehandsss_Dashboard\` 下的字面檔名 |
 
 ---
@@ -124,6 +125,7 @@ powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 [目標] [-Force
 /upload-web              # 自動偵測最新版 → 升格 current → 部署（最常用）
 /upload-web V43          # 只上傳 V43 dev 版至 NAS（不升格）
 /upload-web current      # 只上傳現有 current（不 cp，先確認）
+/upload-web team         # 上傳 AI 助理團隊名冊（建議先 node scripts/agent_dashboardV42.js 重新生成）
 ```
 
 ---
