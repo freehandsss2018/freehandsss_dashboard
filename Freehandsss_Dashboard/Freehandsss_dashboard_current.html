@@ -1649,6 +1649,75 @@
         }
         .ba-icon { font-size: 14px; line-height: 1; }
         .ba-label { line-height: 1; }
+
+        /* ===== S180 快捷列自訂（手機長按 / Desktop 右鍵進入編輯） ===== */
+        .fhs-top-bar__actions { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .fhs-top-bar__actions button { position: relative; }
+        .fhs-top-bar__actions button.sb-hidden { display: none !important; }
+        #sbAddBtn, #sbDoneBtn { display: none; }
+        .fhs-top-bar__actions.sb-editing #sbAddBtn:not(.sb-hidden),
+        .fhs-top-bar__actions.sb-editing #sbDoneBtn { display: inline-flex; }
+        .fhs-top-bar__actions.sb-editing {
+            outline: 2px dashed var(--fhs-accent);
+            outline-offset: 2px;
+        }
+        .fhs-top-bar__actions.sb-editing button[data-sb-key] {
+            animation: sb-wiggle 0.35s ease-in-out infinite alternate;
+        }
+        .fhs-top-bar__actions.sb-editing button[data-sb-key]::after {
+            content: '\2715';
+            position: absolute;
+            top: -5px; right: -3px;
+            width: 16px; height: 16px;
+            line-height: 16px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 700;
+            border-radius: 50%;
+            background: var(--fhs-danger);
+            color: #fff;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .fhs-top-bar__actions.sb-editing .fhs-nav-indicator { display: none !important; }
+        @keyframes sb-wiggle {
+            from { transform: rotate(-1.5deg); }
+            to   { transform: rotate(1.5deg); }
+        }
+        #sbPalette {
+            display: none;
+            position: fixed;
+            top: 56px; right: 16px;   /* Desktop：top bar 下方 */
+            z-index: 2100;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 168px;
+            padding: 8px;
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px rgba(44, 36, 22, 0.16);
+        }
+        #sbPalette.is-open { display: flex; }
+        #sbPalette .sb-pal-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-md);
+            background: var(--fhs-bg-elevated);
+            color: var(--fhs-text-primary);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+        }
+        #sbPalette .sb-pal-item:hover { background: var(--fhs-bg-surface); border-color: var(--fhs-accent); }
+        @media (max-width: 767px) {
+            #sbPalette {
+                top: auto;
+                left: 16px; right: 16px;
+                bottom: calc(84px + env(safe-area-inset-bottom, 0px));   /* 貼喺底部導覽列上方 */
+            }
+        }
         @media (max-width: 480px) {
             .fhs-top-bar__order-id { font-size: 14px; max-width: 35%; }
             .fhs-top-bar__logo { font-size: 15px; }
@@ -3425,27 +3494,23 @@
             color: var(--fhs-danger);
             padding: 20px 0;
         }
-        .mc-trigger-btn {
-            background: none;
-            border: none;
+        .date-field-wrap { position: relative; cursor: pointer; }
+        .date-field-wrap input[type="date"] {
             cursor: pointer;
-            padding: 2px 4px;
-            color: var(--fhs-accent);
-            vertical-align: middle;
+            padding-right: 40px;
+            background-color: #FFFFFF;
         }
-        #btnViewMoldCal {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            margin: 12px 24px 0;
-            border-radius: var(--radius-pill, 999px);
-            border: 1px solid var(--fhs-border);
-            background: var(--fhs-bg-surface);
-            color: var(--fhs-text-primary);
-            font-size: var(--fhs-text-sm);
-            font-weight: 600;
-            cursor: pointer;
+        .date-field-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+            display: none;
+            -webkit-appearance: none;
+        }
+        .date-field-wrap .date-field-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--fhs-accent);
+            pointer-events: none;
         }
         @media (max-width: 768px) {
             #moldCalOverlay, #moldCalOverlay.mc-anchored {
@@ -3779,15 +3844,23 @@
             style="display:none; flex-shrink:0; padding:2px 10px; background:var(--fhs-success); color:#fff; border-radius:var(--radius-pill); font-size:11px; font-weight:700; white-space:nowrap;">0 筆</span>
         <div class="fhs-top-bar__actions">
             <!-- 模式切換按鈕：contract-critical IDs 保留（S150 F6.1：icon+label 結構，手機底部導覽用） -->
-            <button id="modeCreateBtn" onclick="switchMode('create')"><svg class="ba-icon" width="20" height="20"><use href="#icon-plus"/></svg><span class="ba-label">新增</span></button>
-            <button id="modeEditBtn" onclick="switchMode('edit')"><svg class="ba-icon" width="20" height="20"><use href="#icon-edit"/></svg><span class="ba-label">修改</span></button>
-            <button id="modeReviewBtn" onclick="switchMode('review')"><svg class="ba-icon" width="20" height="20"><use href="#icon-list"/></svg><span class="ba-label">訂單</span></button>
+            <!-- S180：快捷列可自訂（手機長按/Desktop右鍵或✎），顯示與排序由 initShortcutBar() 按 localStorage['fhsShortcutBarV1'] 控制；預設隱「修改」顯「月曆」 -->
+            <button id="modeCreateBtn" data-sb-key="create" onclick="switchMode('create')"><svg class="ba-icon" width="20" height="20"><use href="#icon-plus"/></svg><span class="ba-label">新增</span></button>
+            <button id="modeEditBtn" data-sb-key="edit" onclick="switchMode('edit')"><svg class="ba-icon" width="20" height="20"><use href="#icon-edit"/></svg><span class="ba-label">修改</span></button>
+            <button id="modeCalendarBtn" data-sb-key="calendar" onclick="openMoldCalendar({bindMode:'view'})" title="查看取模檔期"><svg class="ba-icon" width="20" height="20"><use href="#icon-calendar"/></svg><span class="ba-label">月曆</span></button>
+            <button id="modeReviewBtn" data-sb-key="review" onclick="switchMode('review')"><svg class="ba-icon" width="20" height="20"><use href="#icon-list"/></svg><span class="ba-label">訂單</span></button>
             <!-- Financial Overview 模式按鈕（V40.2 整合版） -->
-            <button id="modeFinanceBtn" onclick="switchMode('finance')"><svg class="ba-icon" width="20" height="20"><use href="#icon-wallet"/></svg><span class="ba-label">財務</span></button>
+            <button id="modeFinanceBtn" data-sb-key="finance" onclick="switchMode('finance')"><svg class="ba-icon" width="20" height="20"><use href="#icon-wallet"/></svg><span class="ba-label">財務</span></button>
             <!-- 系統監控按鈕（V46.1） -->
-            <button id="modeSystemBtn" onclick="switchMode('system')" title="系統狀態監控"><svg class="ba-icon" width="20" height="20"><use href="#icon-settings"/></svg><span class="ba-label">系統</span></button>
+            <button id="modeSystemBtn" data-sb-key="system" onclick="switchMode('system')" title="系統狀態監控"><svg class="ba-icon" width="20" height="20"><use href="#icon-settings"/></svg><span class="ba-label">系統</span></button>
+            <!-- S180 快捷列編輯工具：＋/完成 只喺編輯模式現身（Desktop 右鍵 bar 進入編輯，冇獨立 ✎ 掣） -->
+            <button id="sbAddBtn" type="button" title="加入快捷鍵"><svg class="ba-icon" width="20" height="20"><use href="#icon-plus"/></svg><span class="ba-label">加入</span></button>
+            <button id="sbDoneBtn" type="button" title="完成編輯"><svg class="ba-icon" width="20" height="20"><use href="#icon-check"/></svg><span class="ba-label">完成</span></button>
         </div>
     </div>
+
+    <!-- S180 快捷列編輯調色盤（列出未顯示嘅快捷鍵，JS 動態填充） -->
+    <div id="sbPalette" role="menu" aria-label="加入快捷鍵"></div>
 
     <!-- V37 原有 role-bar 保留（隱藏，保持 ID 合約） -->
     <!-- NOTE: roleLingBtn / roleFatBtn 保留 ID，但不驅動視覺主題（V40 廢除雙模式） -->
@@ -3821,8 +3894,7 @@
         style="display:none; width:100%; max-width:100%; margin:0; padding:0;">
         <div class="card" style="padding:0; width:100%; overflow:visible;">
 
-            <!-- 取模排程中心 B（S159/S170/D29，本次僅落地B）：獨立入口，唔綁定任何表單欄位 -->
-            <button type="button" id="btnViewMoldCal" onclick="openMoldCalendar({bindMode:'view'})"><svg class="ba-icon" width="14" height="14" style="vertical-align:middle;"><use href="#icon-calendar"/></svg>查看檔期</button>
+            <!-- 取模排程中心 B（S159/S170/D29）：S180 起入口移至快捷列「月曆」掣（modeCalendarBtn），原「查看檔期」獨立掣已取消 -->
 
             <!-- Zone 2：標題列（fixed at top:48px） -->
             <div id="reviewZone2" style="display:none;">
@@ -4081,7 +4153,13 @@
 
         <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
                 oninput="generate()"></div>
-        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"><button type="button" class="mc-trigger-btn" onclick="openMoldCalendar({bindMode:'form',triggerEl:this})" title="查看月曆"><svg class="ba-icon" width="14" height="14" style="vertical-align:middle;"><use href="#icon-calendar"/></svg></button></div>
+        <div class="form-group">
+            <label>約定日期</label>
+            <div class="date-field-wrap" onclick="openMoldCalendar({bindMode:'form',triggerEl:this})" title="撳開月曆揀日（可睇檔期）">
+                <input type="date" id="appDate" onchange="generate()" readonly>
+                <svg class="ba-icon date-field-icon" width="16" height="16"><use href="#icon-calendar"/></svg>
+            </div>
+        </div>
         <div class="form-group"><label>取模時間</label>
             <div class="grid-2-col">
                 <select id="appTimeHour" onchange="generate()"></select>
@@ -13056,7 +13134,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     indicator.style.display = 'none';
                     return;
                 }
-                const activeBtn = ctrl.querySelector('button.active');
+                const activeBtn = ctrl.querySelector('button.active:not(.sb-hidden)');
                 if (!activeBtn) {
                     indicator.style.display = 'none';
                     return;
@@ -13073,6 +13151,173 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window.addEventListener('resize', window.updateBottomNavIndicator);
         }
         window.initBottomNavIndicator = initBottomNavIndicator;
+
+        /* ================================================================
+           S180 快捷列自訂系統（Fat Mo 2026-07-16）
+           - 顯示/排序存 localStorage['fhsShortcutBarV1']；預設隱「修改」顯「月曆」
+           - 手機：長按 600ms 進入編輯；Desktop：右鍵 bar 或 hover ✎
+           - 編輯模式：撳快捷鍵=移除（最少保留2粒）、＋=加入、✓/Esc/撳出面=完成
+           - 顯示/隱藏用 class（switchMode 會抹 inline style，見 ~L5958）
+           ================================================================ */
+        (function() {
+            const SB_KEY = 'fhsShortcutBarV1';
+            const SB_MIN = 2;
+            const SB_REGISTRY = [
+                { key: 'create',   id: 'modeCreateBtn',   label: '新增', icon: 'icon-plus' },
+                { key: 'edit',     id: 'modeEditBtn',     label: '修改', icon: 'icon-edit' },
+                { key: 'calendar', id: 'modeCalendarBtn', label: '月曆', icon: 'icon-calendar' },
+                { key: 'review',   id: 'modeReviewBtn',   label: '訂單', icon: 'icon-list' },
+                { key: 'finance',  id: 'modeFinanceBtn',  label: '財務', icon: 'icon-wallet' },
+                { key: 'system',   id: 'modeSystemBtn',   label: '系統', icon: 'icon-settings' }
+            ];
+            const SB_DEFAULT = ['create', 'calendar', 'review', 'finance', 'system'];
+            let sbEditing = false;
+            let sbEnteredAt = 0;
+
+            function sbLoad() {
+                try {
+                    const raw = JSON.parse(localStorage.getItem(SB_KEY) || 'null');
+                    if (!Array.isArray(raw)) return SB_DEFAULT.slice();
+                    const seen = {};
+                    const valid = raw.filter(function(k) {
+                        if (seen[k]) return false;
+                        seen[k] = true;
+                        return SB_REGISTRY.some(function(r) { return r.key === k; });
+                    });
+                    return valid.length >= SB_MIN ? valid : SB_DEFAULT.slice();
+                } catch (e) { return SB_DEFAULT.slice(); }
+            }
+            function sbSave(keys) {
+                try { localStorage.setItem(SB_KEY, JSON.stringify(keys)); } catch (e) {}
+            }
+            function sbBar() { return document.querySelector('.fhs-top-bar__actions'); }
+            function sbApply() {
+                const bar = sbBar();
+                if (!bar) return;
+                const keys = sbLoad();
+                SB_REGISTRY.forEach(function(r) {
+                    const btn = document.getElementById(r.id);
+                    if (btn) btn.classList.toggle('sb-hidden', keys.indexOf(r.key) === -1);
+                });
+                // 按 config 順序重排（只移動節點，contract ID 不變；工具掣恆喺尾）
+                const anchor = document.getElementById('sbAddBtn');
+                keys.forEach(function(k) {
+                    const reg = SB_REGISTRY.filter(function(r) { return r.key === k; })[0];
+                    const btn = reg && document.getElementById(reg.id);
+                    if (btn && anchor) bar.insertBefore(btn, anchor);
+                });
+                const addBtn = document.getElementById('sbAddBtn');
+                if (addBtn) addBtn.classList.toggle('sb-hidden', keys.length >= SB_REGISTRY.length);
+                if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
+            }
+            function sbClosePalette() {
+                const pal = document.getElementById('sbPalette');
+                if (pal) pal.classList.remove('is-open');
+            }
+            function sbRenderPalette() {
+                const pal = document.getElementById('sbPalette');
+                if (!pal) return;
+                const keys = sbLoad();
+                const hidden = SB_REGISTRY.filter(function(r) { return keys.indexOf(r.key) === -1; });
+                if (!hidden.length) { sbClosePalette(); return; }
+                pal.innerHTML = hidden.map(function(r) {
+                    return '<button type="button" class="sb-pal-item" data-sb-add="' + r.key + '">'
+                        + '<svg class="ba-icon" width="16" height="16"><use href="#' + r.icon + '"/></svg>'
+                        + '<span>' + r.label + '</span></button>';
+                }).join('');
+            }
+            function sbEnter() {
+                if (sbEditing) return;
+                const bar = sbBar();
+                if (!bar) return;
+                sbEditing = true;
+                sbEnteredAt = Date.now();
+                bar.classList.add('sb-editing');
+                if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+                if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
+            }
+            function sbExit() {
+                if (!sbEditing) return;
+                sbEditing = false;
+                const bar = sbBar();
+                if (bar) bar.classList.remove('sb-editing');
+                sbClosePalette();
+                if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
+            }
+            function initShortcutBar() {
+                const bar = sbBar();
+                const pal = document.getElementById('sbPalette');
+                if (!bar || bar._sbBound) return;
+                bar._sbBound = true;
+
+                // 編輯模式下 capture 攔截所有掣（先過 inline onclick，唔會誤切模式）
+                bar.addEventListener('click', function(e) {
+                    if (!sbEditing) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (Date.now() - sbEnteredAt < 350) return;   // 長按鬆手嘅 click 吞掉
+                    const btn = e.target.closest('button');
+                    if (!btn) return;
+                    if (btn.id === 'sbDoneBtn') { sbExit(); return; }
+                    if (btn.id === 'sbAddBtn') {
+                        if (pal && pal.classList.contains('is-open')) { sbClosePalette(); }
+                        else { sbRenderPalette(); if (pal) pal.classList.add('is-open'); }
+                        return;
+                    }
+                    if (!btn.hasAttribute('data-sb-key')) return;
+                    const keys = sbLoad();
+                    const key = btn.getAttribute('data-sb-key');
+                    if (keys.indexOf(key) === -1) return;
+                    if (keys.length <= SB_MIN) {
+                        if (typeof showToast === 'function') showToast('至少要保留 ' + SB_MIN + ' 個快捷鍵');
+                        return;
+                    }
+                    sbSave(keys.filter(function(k) { return k !== key; }));
+                    sbApply();
+                    if (pal && pal.classList.contains('is-open')) sbRenderPalette();
+                }, true);
+
+                // 調色盤：撳項目 = 加入
+                if (pal) pal.addEventListener('click', function(e) {
+                    const item = e.target.closest('[data-sb-add]');
+                    if (!item) return;
+                    const keys = sbLoad();
+                    const k = item.getAttribute('data-sb-add');
+                    if (keys.indexOf(k) === -1) keys.push(k);
+                    sbSave(keys);
+                    sbApply();
+                    sbRenderPalette();
+                });
+
+                // 手機：長按 600ms 進入編輯（移動 >10px 取消；mouse 唔算長按）
+                let lpTimer = null, lpX = 0, lpY = 0;
+                function lpCancel() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } }
+                bar.addEventListener('pointerdown', function(e) {
+                    if (sbEditing || e.pointerType === 'mouse') return;
+                    lpX = e.clientX; lpY = e.clientY;
+                    lpCancel();
+                    lpTimer = setTimeout(sbEnter, 600);
+                });
+                bar.addEventListener('pointermove', function(e) {
+                    if (lpTimer && (Math.abs(e.clientX - lpX) > 10 || Math.abs(e.clientY - lpY) > 10)) lpCancel();
+                });
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(ev) { bar.addEventListener(ev, lpCancel); });
+
+                // Desktop：右鍵 bar 進入編輯（Android 長按觸發嘅 contextmenu 一併食咗，防雙重觸發）
+                bar.addEventListener('contextmenu', function(e) { e.preventDefault(); if (!sbEditing) sbEnter(); });
+
+                // 完成：Esc / 撳 bar 同調色盤以外
+                document.addEventListener('keydown', function(e) { if (e.key === 'Escape') sbExit(); });
+                document.addEventListener('click', function(e) {
+                    if (!sbEditing) return;
+                    if (e.target.closest('.fhs-top-bar__actions') || e.target.closest('#sbPalette')) return;
+                    sbExit();
+                });
+
+                sbApply();
+            }
+            window.initShortcutBar = initShortcutBar;
+        })();
 
         /* ================================================================
            V42 AG Stitch — 組件 4: animateStarToggle (Star 彈跳動畫)
@@ -13184,6 +13429,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         document.addEventListener('DOMContentLoaded', () => {
             initSegmentedControls();
             initBottomNavIndicator();
+            initShortcutBar();
         });
 
         // === 手機版智慧置頂欄 Smart Header ===
@@ -16182,10 +16428,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 <button type="button" class="mc-nav-btn" onclick="_moldCalNav(1)" aria-label="下一月">›</button>
                 <button type="button" class="mc-close-btn" onclick="closeMoldCalendar()" aria-label="關閉">✕</button>
             </div>
-            <div class="mc-tabs">
-                <button type="button" id="mcTabCal" class="mc-tab is-on" onclick="_moldCalSwitchTab('cal')">📅 月曆</button>
-                <button type="button" id="mcTabAgenda" class="mc-tab" onclick="_moldCalSwitchTab('agenda')">📋 近期排期</button>
-            </div>
+            <!-- S180：Fat Mo 唔用「近期排期」功能，tab bar 已取消，只留月曆視圖（_moldCalSwitchTab/agenda 相關 JS 保留但不可達，st.tab 恆為 'cal'） -->
             <div class="mc-body" id="moldCalBody"></div>
         </div>
     </div>
@@ -16681,14 +16924,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     }
 
     function bookingRowHtml(b) {
-        var isView = window._moldCal.bindMode === 'view';
-        var open = isView ? ' onclick="_moldCalOpenOrder(\'' + esc(b.orderId) + '\')"' : '';
-        return '<div class="mc-row' + (isView ? ' mc-row-link' : '') + '"' + open + '>'
+        // S180 修復：撳 row 跳去該單詳情兩個入口（view/form）統一開放，唔再按 bindMode 分岔
+        // （form 模式：淨係開一個疊喺上面嘅 read-only 詳情 modal，唔影響底下正編輯緊嘅草稿表單）
+        return '<div class="mc-row mc-row-link" onclick="_moldCalOpenOrder(\'' + esc(b.orderId) + '\')">'
             + '<span class="mc-row-t' + (b.slot === 'tbd' ? ' mc-row-tbd' : '') + '">' + esc(b.timeLabel) + '</span>'
             + '<span class="mc-row-who">' + esc(b.name) + '</span>'
             + '<span class="mc-row-oid">' + esc(b.orderId) + '</span>'
             + statusChip(b.status)
-            + (isView ? '<span class="mc-row-go">›</span>' : '')
+            + '<span class="mc-row-go">›</span>'
             + '</div>';
     }
 
