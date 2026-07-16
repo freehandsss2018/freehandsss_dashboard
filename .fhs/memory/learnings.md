@@ -19,6 +19,7 @@
 7. **`_fhsCostReady` flag 競態防護**：page-load 讀 Supabase 後才設 true；calculatePricing 入口 guard 若 false 拒絕計算，防空值算出 0 — 源自 2026-06-02
 8. **`chargedPositions Set` 跨陣列追蹤**：PartDesc trim+toLowerCase 正規化，同部位跨產品第 2 件 baseDrawing=0；新產品類型必查是否需擴充 Set — 源自 2026-06-02
 9. **Phase 0 payload 流向前置查證**：前端改動影響財務計算前，先 get_node 確認 n8n 是否實際讀取該欄位，再決定隔離策略 — 源自 2026-06-03
+10. **本地測試 Dashboard HTML 一律起 http server，禁用 file://**：Browser pane 沙盒下 `file://` 阻擋 `localStorage`，未包 try-catch 嘅呼叫會累到整個 `<script>` block 冇執行（連 hoisted function 都揾唔到），令診斷完全失真；改用 `python -m http.server <port>` 起本地伺服器再 navigate 去 `http://localhost:<port>/...html` 即可正常運作 — 已於 S179續同 S180 兩次獨立場景驗證（分別由不同 subagent/主對話撞到同一陷阱） — 源自 2026-07-16
 > 📌 **退役**（Session 136）：kgov 知識治理框架 Pattern 已升格為憲法層規則，完整定義見 `AGENTS.md`（Session 63/100），不再需要於此重複記錄。
 >
 > 📌 **退役**（Session 143，`/commit` Lesson Distillation，全檔滿50條需替換）：「Supabase MCP 掉線用 Management API 繞過」——與 auto-memory `reference_supabase_mcp_dropout_workaround.md` 內容重複，該處為專屬記錄，此處純占位，退役騰出額度給本次新教訓。

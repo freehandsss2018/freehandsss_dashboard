@@ -13,3 +13,7 @@
 ## S179（2026-07-16）取模排程中心B落地（初版）
 
 執行前四項覆核（10個錨點grep全中/Supabase orders schema核對/排版鐵律讀取確認bottom-sheet可沿用/`mapOrder()`落差查明：缺enableP+取模時間，D/E品項層狀態集同orders.process_status ENUM不同層級）+playwright五項實測（零新增console error/月曆日計數與Supabase REST交叉核對完全一致/入口一撳日子回填appDate並關閉/入口二撳日子不寫欄位僅高亮/375px手機兩入口皆bottom-sheet）；實測抓到桌面錨定定位用估算高度導致overlap真bug，改為render後量真實高度先擺位，複測零重疊。全文見 Changelog.md S179條目。
+
+## S179續（2026-07-16）取模排程中心B月曆v2重新設計
+
+Fat Mo回饋B「不夠用」後先出mockup示意圖+3條AskUserQuestion拍板（二段式回填/PM6起算晚上/排期睇成月），新增日格三時段+撳日明細+近期排期tab；playwright驗證時段分類與Supabase交叉核對正確、已取消訂單正確濾走、查看檔期入口撳明細行成功開單modal、桌面錨定展開後零重疊（實測抓到並修復撳日展開令popup長高反遮appDate嘅二次bug，改方向感知top/bottom錨定）、375px手機bottom-sheet+tabs正常、零新增console error。全文見 Changelog.md S179續條目；決策見 decisions.md D29附錄。

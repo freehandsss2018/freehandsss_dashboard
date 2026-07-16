@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-16 (Session 180 — V42快捷列優化：月曆入列+查看檔期掣取消+快捷列自訂系統+約定日期簡化+row bug修復): 🔘 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S180 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 直接指示 UI 優化，方案書落盤（`shortcut-bar-custom-plan_2026-07-16.md`）分四批派 sonnet 機械執行+playwright 本地伺服器實測：①快捷「修改」改「月曆」+查看檔期獨立掣取消+快捷列自訂系統（長按/右鍵編輯，localStorage持久化）②約定日期原生+自訂雙日曆重疊問題簡化為單一自訂日曆③近期排期tab取消④現場回報 bug 修復：表單模式月曆明細row撳唔到，根因bookingRowHtml()淨view模式綁click，已修復且不影響表單草稿。已同步部署V42+current.html。
+Subagent：✅ 使用 4 支 — general-purpose（sonnet，T2模板）分批執行 4 項改動+playwright驗證；規劃、根因診斷、AskUserQuestion定案由主對話負責。
+
 ## 2026-07-16 (Session 177 — `/team` R4 勘誤跟進：4 項 subagent 版本漂移修復): 🗂️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S177 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。S175 `/team` 撈到的 4 項 MANIFEST 版本漂移（database-reviewer/tdd-guide/ui-designer 版本號+finance-auditor 未登記）已修復；Fable 5 先審視方案確認 frontmatter 為真源、MANIFEST 追上即可，派 sonnet 執行，重跑生成器驗證零勘誤。順帶修正 `docs/repo-map.md` 同款漂移。

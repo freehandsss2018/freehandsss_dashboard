@@ -1,5 +1,25 @@
 # Changelog
 
+## [2026-07-16] Session 180（Claude Code / Sonnet 5 執行，worktree `v42-shortcut-bar-optimize`）— 快捷列優化：月曆入列 + 查看檔期掣取消 + 快捷列自訂系統
+
+- **緣起**：Fat Mo 直接指示 UI 優化，方案書由上游規劃並落盤（`.fhs/reports/planning/shortcut-bar-custom-plan_2026-07-16.md`），本次為機械執行，設計取捨已全部裁決。
+- **三項改動**（`freehandsss_dashboardV42.html` 內完成，8 處精確改動 E1-E8）：
+  1. **月曆入快捷列**：新增 `modeCalendarBtn`（`data-sb-key="calendar"`，撳掣 `openMoldCalendar({bindMode:'view'})`），預設顯示於快捷列，預設隱藏「修改」（`modeEditBtn`）——可經編輯模式加返。
+  2. **取消訂單總覽頁頂獨立「查看檔期」掣**：`#btnViewMoldCal` 按鈕與其 CSS 塊移除，功能併入快捷列「月曆」掣。
+  3. **快捷列自訂系統**（`initShortcutBar()` IIFE）：手機長按 600ms／Desktop 右鍵 bar 或 hover `#sbEditTrigger` 進入編輯模式；編輯模式下撳快捷鍵＝移除（最少保留 2 粒）、`#sbAddBtn`（＋）開 `#sbPalette` 選未顯示快捷鍵加入、`#sbDoneBtn`（✓）／Esc／點擊外部＝退出；配置存 `localStorage['fhsShortcutBarV1']`，reload 後保持。
+- **禁區遵守**：五粒 mode 掣 ID（`modeCreateBtn/modeEditBtn/modeReviewBtn/modeFinanceBtn/modeSystemBtn`）與 inline `onclick` 原樣保留；`switchMode()` 函式本體零改動；顯示/隱藏一律用 `.sb-hidden` class（因 `switchMode()` 會 `btn.style.cssText=''` 抹走 inline style）。
+- **追加調整（同一 session 內，Fat Mo 覆核後修訂）**：
+  4. **Desktop 觸發方式簡化**：取消 hover 出現 `#sbEditTrigger` ✎ 掣方案，Desktop 只保留**右鍵快捷列**進入編輯模式（`#sbEditTrigger` 連 CSS/HTML/JS 三處移除，重排錨點改用 `#sbAddBtn`）。
+  5. **取消月曆 popup 「近期排期」tab bar**：`moldCalOverlay` 內 `.mc-tabs`（月曆／近期排期切換）已移除，只留月曆視圖；`_moldCalSwitchTab`/`_moldCalBuildAgenda` 等 agenda 相關 JS 保留但不可達（唔影響運作）。
+  6. **約定日期／取模時間欄位簡化**：「約定日期」欄位原同時存在兩套日曆機制（瀏覽器原生 `<input type=date>` 圖示 + 自訂 `.mc-trigger-btn` 睇檔期掣）造成視覺重疊，經 AskUserQuestion 拍板後只留自訂月曆——`input` 改 `readonly`、隱藏原生日曆圖示、撳欄位任何位置都開 `openMoldCalendar({bindMode:'form'})`（保留 S159/D29 睇檔期功能）；「取模時間」兩個 `<select>` 邏輯零改動，視覺本已一致毋須額外 polish。
+  7. **BUG 修復：月曆 form 模式明細 row 撳唔到**——Fat Mo 回報喺表單撳「約定日期」揭開嘅月曆入面，撳有預約日子嘅明細 row（如「上午11:00 Eugenia 07001011」）冇反應。根因：`bookingRowHtml()` 淨係 view 模式（快捷列「月曆」/查看檔期入口）先加 `onclick`/`mc-row-link`/箭嘴，form 模式冇綁任何 click 事件，非 crash 而係漏做咗呢個入口嘅功能。已本地用 43 張真實 Supabase 訂單測試排除咗係 `openOrderModal`/`globalOrders` 查表問題。修復：兩個入口統一都可以撳 row 跳去該單 read-only 詳情 modal，唔影響底下正編輯緊嘅表單草稿（實測驗證表單欄位值撳完不變）。
+- **已知限制（記錄不即改）**：`_moldCalOpenOrder`→`openOrderModal` 依賴 `globalOrders` 快取已完整載入先揾到該單；`sbFetchGlobalReview` 有 `limit:200` 篩選，理論上生產環境訂單量夠大時，某啲單有機會漏喺快取之外，令撳 row 出現「揾唔到」靜默失效。非本次回報症狀，留待日後獨立評估是否加 fallback 補抓。
+- **決策脈絡**：Fat Mo 直接指示的 UI 優化 + 現場回報 bug 修復，非新架構決策，屬既定方案書機械執行 + 確診後修復。方案書全文：`.fhs/reports/planning/shortcut-bar-custom-plan_2026-07-16.md`。
+
+【交付前雙紀律自檢】
+驗收：巨檔 HTML 改動（`Freehandsss_Dashboard/freehandsss_dashboardV42.html` + 同步鏡像至 `Freehandsss_dashboard_current.html`）— 詳見方案書與執行報告；三項 UI 改動 + 一項 bug 修復均經 playwright 本地伺服器實測（非 file:// 沙盒，避開 localStorage 被擋累到整個 script block 冇執行嘅陷阱）
+Subagent：✅ 已使用 — 四次任務（快捷列自訂系統／約定日期簡化／月曆row bug修復）均派 general-purpose（model: sonnet）機械執行方案書 + playwright 驗證；規劃、根因診斷、AskUserQuestion 定案由主對話負責
+
 ## [2026-07-16] Session 179續（Claude Code / Sonnet 5 執行，worktree `monthly-calendar-empty-slots`）— 取模排程中心 B：迷你月曆 v2 重新設計（吸引力升級）
 
 - **緣起**：S179 B 落地並部署後，Fat Mo 回饋「不夠用」，指出兩個真實使用痛點：(1) 月曆日格只有點點提示，冇得一步步查閱內容；(2) 操作者除咗開緊訂單睇日期，仲會時常打開月曆查睇未來近期排期狀況，評估可否重新安排。
