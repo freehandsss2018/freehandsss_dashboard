@@ -1,0 +1,624 @@
+{
+  "updatedAt": "2026-03-21T15:17:08.000Z",
+  "createdAt": "2026-02-15T09:45:08.037Z",
+  "id": "iENE5STmHCw3jmEj",
+  "name": "freehandsss-IG",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "n8n-freehandsss-IG",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbldEfrN6EL2y3tUA",
+          "mode": "list",
+          "cachedResultName": "Sales Pipeline",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tbldEfrN6EL2y3tUA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $node[\"Clean IG Data\"].json.customer_name_final }}",
+            "Total Amount": "=",
+            "Source": "={{ $json.source_final || \"Telegram\" }}",
+            "Stage": "01. 新查詢",
+            "Raw Message": "={{ $node[\"Clean IG Data\"].json.text }}",
+            "AI Status": "待處理"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Stage",
+              "displayName": "Stage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "01. 新查詢",
+                  "value": "01. 新查詢"
+                },
+                {
+                  "name": "02. AI已推介",
+                  "value": "02. AI已推介"
+                },
+                {
+                  "name": "03. 考慮中",
+                  "value": "03. 考慮中"
+                },
+                {
+                  "name": "04. ✅ 已成交",
+                  "value": "04. ✅ 已成交"
+                },
+                {
+                  "name": "05. ❌ 已流失",
+                  "value": "05. ❌ 已流失"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order Type",
+              "displayName": "Order Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "📦 套餐 (模+飾)",
+                  "value": "📦 套餐 (模+飾)"
+                },
+                {
+                  "name": "🖼️ 純擺設",
+                  "value": "🖼️ 純擺設"
+                },
+                {
+                  "name": "💎 純飾品",
+                  "value": "💎 純飾品"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "IG",
+                  "value": "IG"
+                },
+                {
+                  "name": "Referral",
+                  "value": "Referral"
+                },
+                {
+                  "name": "FB",
+                  "value": "FB"
+                },
+                {
+                  "name": "Website",
+                  "value": "Website"
+                },
+                {
+                  "name": "Cold Call",
+                  "value": "Cold Call"
+                },
+                {
+                  "name": "Event",
+                  "value": "Event"
+                },
+                {
+                  "name": "Email Campaign",
+                  "value": "Email Campaign"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order Items",
+              "displayName": "Order Items",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Total Amount",
+              "displayName": "Total Amount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Next Step Suggestion",
+              "displayName": "AI Next Step Suggestion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Raw Message",
+              "displayName": "Raw Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Status",
+              "displayName": "AI Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "待處理",
+                  "value": "待處理"
+                },
+                {
+                  "name": "已完成",
+                  "value": "已完成"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": false
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        -432
+      ],
+      "id": "c91c085a-af5e-4657-8f46-bffc6eb2cc42",
+      "name": "Create order in Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "applM5ld15XkmvALP",
+          "mode": "list",
+          "cachedResultName": "n8n-freehandsss",
+          "cachedResultUrl": "https://airtable.com/applM5ld15XkmvALP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblREwwfBs1dTxuqG",
+          "mode": "list",
+          "cachedResultName": "Product Database",
+          "cachedResultUrl": "https://airtable.com/applM5ld15XkmvALP/tblREwwfBs1dTxuqG"
+        },
+        "filterByFormula": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        -32
+      ],
+      "id": "2e26e5ad-1398-4e7d-87e6-5a916ab88674",
+      "name": "Search product in Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        -336
+      ],
+      "id": "354a8999-010c-4887-a6c1-27b0bb09a453",
+      "name": "Receive Telegram Message",
+      "webhookId": "551bb860-8250-4ca1-9aa3-24a255b1577b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Receive Telegram Message\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        -144
+      ],
+      "id": "ee5ee89f-791b-4f44-8ba6-5900c807c697",
+      "name": "Reply via Telegram",
+      "webhookId": "25a27ffe-2730-4738-ada2-85e5dccd66c4",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -32
+      ],
+      "id": "884fd21f-ea60-4386-9c44-482ec8dbcb69",
+      "name": "Gemini AI Engine",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WAKRzj3PTgb5iKdV",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "=🔔 【Freehandsss 新訂單通報】 👤 客人姓名：{{ $node[\"Create order in Airtable\"].json[\"fields\"][\"Customer Name\"] }} 💰 預約金額：HK${{ $node[\"Create order in Airtable\"].json[\"fields\"][\"Total Amount\"] }} 📅 建立時間：{{ $node[\"Create order in Airtable\"].json[\"createdTime\"] }} --------------------------- ✅ 請記得回覆客人並確認預約時間！",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        -432
+      ],
+      "id": "1d83ac35-36a6-4e61-936f-00b41ee11441",
+      "name": "Notify Owner via Telegram",
+      "webhookId": "fdb06346-e45f-4547-a522-945862c0691b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=你是一個專業的業務助理。你的任務是閱讀 Ling Au 發出的訂單確認模板，並將其結構化。\n\n## 提取邏輯:\n1. order_id: 提取 # 後的數字。\n2. mom_name: 提取「媽媽名」後的文字。\n3. items: 提取「倒BB」後的文字。\n4. casting_time: 提取「倒模日期時間」後的內容（如 17/7 11:30）。\n5. leather_engraving: 提取「皮革刻制」後的內容（若為空則填 \"待填寫\"）。\n6. booking_suggestion: \n   - 掃描對話上下文。\n   - 若提到寶寶月齡（如：14天大、3星期），請計算其出生日(DOB)。\n   - 回傳「DOB + 20天」的日期，格式為 YYYY-MM-DD。\n\n## 輸出格式 (JSON):\n{\n  \"order_id\": \"字串\",\n  \"ig_handle\": \"字串\",\n  \"mom_name\": \"字串\",\n  \"casting_time\": \"字串\",\n  \"items\": \"字串\",\n  \"leather_engraving\": \"字串\",\n  \"ideal_date\": \"YYYY-MM-DD\"\n}\n\n## Input:\n{{ $json.text }}\n\n## Output:\n只輸出純 JSON，不要 Markdown 標記。",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        304,
+        -144
+      ],
+      "id": "25810bf7-3b89-463d-93ed-7365dd9e4430",
+      "name": "Freehandsss Business Brain"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        960,
+        -128
+      ],
+      "id": "452472da-f601-464b-8b13-8066ae908da4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instagram-msg",
+        "options": {}
+      },
+      "id": "a51296cf-39ba-4f24-919d-f0954ca9ad9f",
+      "name": "Webhook-IG",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -512
+      ],
+      "webhookId": "instagram-msg"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "90d68879-9db6-4fec-8c80-b28d4e72f35a",
+              "name": "chat_id",
+              "value": "={{ $json.body.entry[0].messaging[0].sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "38e2d056-1e9d-49bc-95ab-ebe10c0ae74e",
+              "name": "text",
+              "value": "={{ $json.body.entry[0].messaging[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "f6d0833d-3598-430d-92b5-c366278dfbea",
+              "name": "source",
+              "value": "IG",
+              "type": "string"
+            },
+            {
+              "id": "e16abd79-2e91-4c4a-9020-76e086a0cf2c",
+              "name": "sender_id",
+              "value": "={{ $json.body.entry[0].messaging[0].sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "582af33a-24fe-4859-bdc9-a4b54b25dceb",
+              "name": "=customer_name_final",
+              "value": "={{ $json.body.entry[0].messaging[0].sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "5dfa010e-e437-467e-85c5-24054b0795c2",
+              "name": "source_final",
+              "value": "IG",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -432
+      ],
+      "id": "fe3f2e8a-77d4-460c-a450-c6329be22ec6",
+      "name": "Clean IG Data"
+    }
+  ],
+  "connections": {
+    "Search product in Airtable": {
+      "ai_tool": [
+        [
+          {
+            "node": "Freehandsss Business Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Clean IG Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini AI Engine": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Freehandsss Business Brain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create order in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner via Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Freehandsss Business Brain": {
+      "main": [
+        [
+          {
+            "node": "Reply via Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook-IG": {
+      "main": [
+        [
+          {
+            "node": "Clean IG Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean IG Data": {
+      "main": [
+        [
+          {
+            "node": "Create order in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e09c2ed2-ec9a-4783-8f5e-7c1cf3f5287f",
+  "activeVersionId": null,
+  "versionCounter": 390,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-02-15T09:45:08.045Z",
+      "createdAt": "2026-02-15T09:45:08.045Z",
+      "role": "workflow:owner",
+      "workflowId": "iENE5STmHCw3jmEj",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

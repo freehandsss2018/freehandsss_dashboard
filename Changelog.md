@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-07-16] Session 177續（Claude Code / Sonnet 5 執行，`/grilling` 六輪拷問後執行）— n8n 殭屍 workflow 清理（22 條）
+
+- **緣起**：S174 `/team` live 實掃揭露 25 條停用 n8n workflow 中疑似 7 條殭屍待批准清理；本 session 追查 `FHS_Query_GlobalReview` 執行異常時一併全量重新盤點。
+- **`FHS_Query_GlobalReview` 異常根因**：直查該 workflow 最近 10 次執行（2026-07-12~07-14）100% 失敗，錯誤均為「Search Main_Orders」節點打 Airtable API 回傳 `429 PUBLIC_API_BILLING_LIMIT_EXCEEDED`——與 handoff.md 已記錄嘅「Airtable API 本月額度用盡」係同一個額度牆打在另一條 workflow 上，非新故障，AI 端無法修復，只能等額度重置或升級方案。
+- **殭屍盤點**：25 條停用 workflow 全查，非 7 條而係 22 條判定可刪（4 條測試垃圾件 + 6 條 `FHS_Core_OrderProcessor` 版本演化前身 + 12 條 V22/V25 世代舊管線），3 條保留（`FHS_Deploy_Webhook`／`3brain API Probe`／`FHS AI 開發團隊`——AGENTS.md §1.2 明文休眠藍圖，非殭屍）。
+- **依賴查核（刪除前四項事實驗證）**：① 10 條活躍 workflow 全定義掃描，零 Execute Workflow 子呼叫節點依賴；② 全 repo grep 22 個 ID，命中僅生成物快照 + 現行活躍件殘留嘅前身 `id` 欄位（非依賴，反而證實 2 條演化血緣：`Fetch_V25_Order`→`FHS_Query_OrderHistory`、`FHS_Error_Monitor`→`FHS_System_ErrorMonitor`）；③ 22 條執行紀錄查詢全部「從無執行紀錄」。
+- **`/grilling` 六輪拷問定案**：Q1 備份 commit 入 git（非本地暫存）；Q2 全部 22 條先備份完、覆核齊全先開始刪（非逐條原子處理）；Q3 任何一條備份失敗即全部停低零刪除（非跳過繼續）；Q4 備份+刪除一次過做完唔再停低問（非分階段確認）；Q5 三重驗證（API 重查停用數／活躍不變／重跑生成器）；Q6 index.md 記錄前身推斷血緣。
+- **執行**：22 條全 GET 備份成功（`n8n/archive/zombies-2026-07-16/`，22 JSON + index.md）→ 22 條 DELETE 全數成功（HTTP 200，其中 1 條因 Windows curl `/dev/null` 寫入 quirk 誤判失敗、重跑後確認 404＝已刪成功，非資料損失）。
+- **三重驗證結果**：① 停用 workflow 總數 25→3，與預期保留名單完全一致；② 活躍 10 條 workflow ID/active 狀態零變動；③ 重跑 `agent_dashboardV42.js` 顯示「✨ 零勘誤」（此 worktree 缺 `.env`，n8n live 探測本身 skip，非迴歸——實際 n8n 狀態已由①②直查確認）。
+- **決策脈絡**：非架構決策，不編新 D 號，同 S177 先例一致；純例行技術債清理。
+- **Subagent 使用記錄**：❌ 未使用 subagent — 全程主對話（Sonnet 5）直接用 n8n API 執行，屬單純 API 查詢/刪除操作，非需要獨立驗證視角的財務/HTML/schema 改動。
+
+【交付前雙紀律自檢】
+驗收：n8n 生產系統刪除操作（不可逆）— 刪除前已完整備份存檔 + 四項事實依賴查核 + `/grilling` 六輪拷問取得 Fat Mo 逐項明確同意 = ✅（非財務/HTML/schema 類別，不落入 02 §5 fresh-context 強制驗收分流，但已用查證+備份+拷問三重把關替代）
+Subagent：❌ 未使用 — 判斷理由見上
+
 ## [2026-07-16] Session 177（Claude Code / Fable 5 裁決 + Sonnet 5 執行）— `/team` R4 勘誤跟進：4 項 subagent 版本漂移修復
 
 - **緣起**：S174 `/team` 重生成撈到 4 項 MANIFEST 漂移（`database-reviewer`/`tdd-guide`/`ui-designer` frontmatter 版本號 ≠ MANIFEST 記錄、`finance-auditor` 未登記於 MANIFEST），已記入 S175 待辦，`ai-team-registry.md` R4 禁止靜默忽略。

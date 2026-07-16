@@ -1,0 +1,92 @@
+{
+  "updatedAt": "2026-03-09T15:01:46.000Z",
+  "createdAt": "2026-02-10T10:02:25.339Z",
+  "id": "KH44LSfD-kaDaP6T5Y_1Y",
+  "name": "My workflow",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9511cba7-2ea9-4c62-bfcd-448fede1f4e5",
+  "activeVersionId": null,
+  "versionCounter": 5,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-10T10:02:25.343Z",
+      "createdAt": "2026-02-10T10:02:25.343Z",
+      "role": "workflow:owner",
+      "workflowId": "KH44LSfD-kaDaP6T5Y_1Y",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

@@ -1,0 +1,514 @@
+{
+  "updatedAt": "2026-03-21T15:17:05.000Z",
+  "createdAt": "2026-02-11T09:17:33.198Z",
+  "id": "R5YbC0UHAkpU0zBKm9tZw",
+  "name": "freehandsss",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "applM5ld15XkmvALP",
+          "mode": "list",
+          "cachedResultName": "n8n-freehandsss",
+          "cachedResultUrl": "https://airtable.com/applM5ld15XkmvALP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbldEfrN6EL2y3tUA",
+          "mode": "list",
+          "cachedResultName": "Sales Pipeline",
+          "cachedResultUrl": "https://airtable.com/applM5ld15XkmvALP/tbldEfrN6EL2y3tUA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ $('Receive Telegram Message').item.json.message.from.first_name }}",
+            "Stage": "01. 新查詢",
+            "Total Amount": "={{ $node[\"Freehandsss Sales Agent\"].json[\"output\"].match(/\\d{1,3}(,\\d{3})*(\\.\\d+)?/g)?.find(n => n.includes(',') || n.length >= 4)?.replace(/,/g, '') || 0 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Stage",
+              "displayName": "Stage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "01. 新查詢",
+                  "value": "01. 新查詢"
+                },
+                {
+                  "name": "02. AI已推介",
+                  "value": "02. AI已推介"
+                },
+                {
+                  "name": "03. 考慮中",
+                  "value": "03. 考慮中"
+                },
+                {
+                  "name": "04. ✅ 已成交",
+                  "value": "04. ✅ 已成交"
+                },
+                {
+                  "name": "05. ❌ 已流失",
+                  "value": "05. ❌ 已流失"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order Type",
+              "displayName": "Order Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "📦 套餐 (模+飾)",
+                  "value": "📦 套餐 (模+飾)"
+                },
+                {
+                  "name": "🖼️ 純擺設",
+                  "value": "🖼️ 純擺設"
+                },
+                {
+                  "name": "💎 純飾品",
+                  "value": "💎 純飾品"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "IG",
+                  "value": "IG"
+                },
+                {
+                  "name": "Referral",
+                  "value": "Referral"
+                },
+                {
+                  "name": "FB",
+                  "value": "FB"
+                },
+                {
+                  "name": "Website",
+                  "value": "Website"
+                },
+                {
+                  "name": "Cold Call",
+                  "value": "Cold Call"
+                },
+                {
+                  "name": "Event",
+                  "value": "Event"
+                },
+                {
+                  "name": "Email Campaign",
+                  "value": "Email Campaign"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order Items",
+              "displayName": "Order Items",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total Amount",
+              "displayName": "Total Amount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total Cost",
+              "displayName": "Total Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Total Profit",
+              "displayName": "Total Profit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Customer Email",
+              "displayName": "Customer Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Next Step Suggestion",
+              "displayName": "AI Next Step Suggestion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        864,
+        -432
+      ],
+      "id": "e39961a6-4f96-459f-bf86-093426982997",
+      "name": "Create order in Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "applM5ld15XkmvALP",
+          "mode": "list",
+          "cachedResultName": "n8n-freehandsss",
+          "cachedResultUrl": "https://airtable.com/applM5ld15XkmvALP"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblREwwfBs1dTxuqG",
+          "mode": "list",
+          "cachedResultName": "Product Database",
+          "cachedResultUrl": "https://airtable.com/applM5ld15XkmvALP/tblREwwfBs1dTxuqG"
+        },
+        "filterByFormula": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        704,
+        -144
+      ],
+      "id": "d2ea1493-c9a4-470c-b990-586d64d11a15",
+      "name": "Search product in Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        -256
+      ],
+      "id": "bec485a7-6afa-44aa-b682-1c88196acf95",
+      "name": "Receive Telegram Message",
+      "webhookId": "73c24f24-5705-4432-9a05-91bdf91a5b04",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Receive Telegram Message\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        -256
+      ],
+      "id": "e7c8b231-bc77-4cf7-a2b0-1566eced01a0",
+      "name": "Reply via Telegram",
+      "webhookId": "abc55880-4640-4096-a1a4-ae1f57ff8eb1",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -144
+      ],
+      "id": "5cebe825-a7c2-4cf0-8c9f-600e996bcdd7",
+      "name": "Gemini AI Engine",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WAKRzj3PTgb5iKdV",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=你現在是 Freehandsss 的專業客服助手，專門協助父母製作珍貴的嬰兒手足模紀念品。你的目標是提供溫馨、專業的諮詢，並在適當時機引導客戶預約。\n\n【核心任務與工具調用規則】\n\n查詢產品價格：\n\n當客人詢問任何產品的價格（例如：木框套裝、手足模、尺寸差異）時，請務必呼叫 Search product in Airtable 工具。\n\n回覆時請明確列出產品名稱與 HK$ 金額，並針對三個月大或以下的新生兒家長給予溫暖的建議。\n\n自動建立訂單/預約：\n\n當客人表現出強烈意願（例如說：「我要預約」、「幫我登記」、「想直接下單」）時，請執行 Create order in Airtable 工具。\n\n你必須傳遞以下參數給該工具：\n\nCustomer Name: 客人的名字。\n\nTotal Amount: 該產品的純數字售價（例如：2380，絕對不要帶 $ 或逗號等符號）。\n\n開單成功後，請回覆：「已為您登記預約！稍後會有專人聯絡您確認細節。」\n\n【對話行為準則】\n\n語氣：親切、專業、富有同理心。\n\n語言：使用繁體中文回覆。\n\n引導：如果客人問完價但沒反應，請主動詢問是否需要預約時間到工作室記錄這份禮物。\n\n【格式嚴格限制 (極度重要)】\n回覆內容請一律使用「純文字」。絕對禁止使用任何 Markdown 格式符號（例如：禁止使用 ** 標示粗體，禁止使用 * 或 - 作為項目符號）。若需要條列重點，請使用一般全形數字 (１、２、３) 或阿拉伯數字加頓號 (1. 2. 3.)。\n\n【當前客人訊息內容】：\n{{ $json.message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        432,
+        -256
+      ],
+      "id": "fdc508ea-cc6a-4992-9ce2-b2193f21a09e",
+      "name": "Freehandsss Sales Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "=🔔 【Freehandsss 新訂單通報】 👤 客人姓名：{{ $node[\"Create order in Airtable\"].json[\"fields\"][\"Customer Name\"] }} 💰 預約金額：HK${{ $node[\"Create order in Airtable\"].json[\"fields\"][\"Total Amount\"] }} 📅 建立時間：{{ $node[\"Create order in Airtable\"].json[\"createdTime\"] }} --------------------------- ✅ 請記得回覆客人並確認預約時間！",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        -432
+      ],
+      "id": "918814cd-0dba-4747-a406-9d60bfbe51a1",
+      "name": "Notify Owner via Telegram",
+      "webhookId": "d18ad4ab-036b-4e63-89a5-78b3858b2d2d",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Search product in Airtable": {
+      "ai_tool": [
+        [
+          {
+            "node": "Freehandsss Sales Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Freehandsss Sales Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini AI Engine": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Freehandsss Sales Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Freehandsss Sales Agent": {
+      "main": [
+        [
+          {
+            "node": "Reply via Telegram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create order in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create order in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Notify Owner via Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "402f2077-1ce9-44ee-8834-aad40d880729",
+  "activeVersionId": null,
+  "versionCounter": 213,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-11T09:17:33.201Z",
+      "createdAt": "2026-02-11T09:17:33.201Z",
+      "role": "workflow:owner",
+      "workflowId": "R5YbC0UHAkpU0zBKm9tZw",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

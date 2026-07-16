@@ -1,0 +1,1079 @@
+{
+  "updatedAt": "2026-03-24T05:21:28.000Z",
+  "createdAt": "2026-03-22T03:09:51.691Z",
+  "id": "PLAOaoFbpV9DFrKE",
+  "name": "FHS_Core_OrderProcessor(Error)",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🚀 【FHS 基礎核心引擎 V43.0 Ultimate】\n\n**全向型架構對接版：完美還原了 Deposit, Balance, Raw_Form_State 映射。**\n支援：1. 正常開訂  2. 完美修單 (含前端重構記憶) 3. 刪單 (若前端開通)\n並同時推播精密的 Telegram 財務通知。",
+        "height": 200,
+        "width": 550
+      },
+      "id": "61c1afdf-20d9-4b51-936f-859bf44fdc98",
+      "name": "Workflow Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5680,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1444800b-1397-4154-b2da-a4d328c6c51b",
+        "options": {}
+      },
+      "id": "d5bad739-3824-4326-b5d4-ae7702df7f74",
+      "name": "Receive Dashboard Order",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        4976,
+        1184
+      ],
+      "webhookId": "fa7ff205-a034-41f0-a14a-ef4eb549d87f"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeCast": false
+          },
+          "conditions": [
+            {
+              "id": "action-is-delete",
+              "leftValue": "={{ ($json.body && ($json.body.Action || $json.body.action)) ? ($json.body.Action || $json.body.action).toString().toLowerCase() : (($json.Action || $json.action) ? ($json.Action || $json.action).toString().toLowerCase() : 'create') }}",
+              "rightValue": "delete",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "35e6c4ce-0b54-44c0-afe6-0f38ee192c2d",
+      "name": "Action Is Delete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        5232,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "filterByFormula": "=TRIM({Order_ID}) = '{{ ($json.body && $json.body.Order_ID) ? $json.body.Order_ID : $json.Order_ID }}'",
+        "options": {}
+      },
+      "id": "83fcc37c-11fa-4083-9cb3-84ccf0e8eabb",
+      "name": "Search Record to Delete",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        5488,
+        1392
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        }
+      },
+      "id": "93326144-9691-4292-a6a3-71db4e1639f3",
+      "name": "Delete Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        5728,
+        1392
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "🚮 【訂單已永久刪除】\n📝 單號：{{ $('Receive Dashboard Order').first().json.body?.Order_ID || $('Receive Dashboard Order').first().json.Order_ID }}\n✅ 數據庫已完成清理。",
+        "additionalFields": {}
+      },
+      "id": "05c30157-a02b-4654-bbfd-5c0603c4ac5c",
+      "name": "Notify Telegram (Delete)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5984,
+        1392
+      ],
+      "webhookId": "d5bfa1f3-51b1-4974-9759-7d292a55255c",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst body = ($json.body && $json.body.Order_ID) ? $json.body : ($json.Order_ID ? $json : ($json.body || $json));\nconst orderId = (body.Order_ID || \"未獲取單號\").toString().trim();\nconst customer = body.Customer_Name || \"未獲取客戶名\";\nconst rawAction = body.Action || body.action || \"create\";\nconst action = rawAction.toString().toLowerCase();\nconst revenue = Number(body.System_Final_Sale_Price || body.Final_Sale_Price || (Number(body.Deposit||0) + Number(body.Balance||0) + Number(body.Additional_Fee||0) + Number(body.Adjustment_Amount||0)));\n\n// Restore ALL missing payload fields!\nconst deposit = Number(body.Deposit || 0);\nconst balance = Number(body.Balance || 0);\nconst additionalFee = Number(body.Additional_Fee || Number(body.System_Additional_Fee) || 0);\nconst adjustmentAmount = Number(body.Adjustment_Amount || 0);\nconst rawFormState = body.Raw_Form_State || \"\";\nconst processStatus = body.Process_Status || \"\";\n\nlet outputItems = [];\nconst itemList = body.Order_Items_List || [];\nif (itemList.length === 0) {\n    outputItems.push({\n        json: {\n            Action: action, Order_ID: orderId, Customer_Name: customer, \n            App_Date: body.Appointment_Date || null, Full_Text: body.Full_Order_Text || \"\",\n            Total_Revenue: revenue, Product_Name: \"手動輸入\", Search_SKU: \"\", Qty: 1,\n            Deposit: deposit, Balance: balance, Additional_Fee: additionalFee,\n            Adjustment_Amount: adjustmentAmount, Raw_Form_State: rawFormState, Process_Status: processStatus\n        }\n    });\n} else {\n    itemList.forEach(item => {\n        let name = item.Product_Name || \"\";\n        let mode = item.Production_Mode || \"\";\n        let sku = `${name} ${mode}`.trim();\n        if (name.includes(\"客製化\")) sku = \"客製化 1\";\n        if (name.includes(\"立體擺設\")) sku = `${item.Product_Style || \"\"} ${item.Product_Theme || \"\"} ${item.Limb_Count || \"\"}`.trim().replace(/\\s+/g, ' ');\n        \n        outputItems.push({\n            json: {\n                Action: action, Order_ID: orderId, Customer_Name: customer, \n                App_Date: body.Appointment_Date || null, Full_Text: body.Full_Order_Text || \"\",\n                Total_Revenue: revenue, Product_Name: name, Search_SKU: sku, \n                Qty: Number(item.Quantity) || 1,\n                Deposit: deposit, Balance: balance, Additional_Fee: additionalFee,\n                Adjustment_Amount: adjustmentAmount, Raw_Form_State: rawFormState, Process_Status: processStatus\n            }\n        });\n    });\n}\nreturn outputItems;\n"
+      },
+      "id": "0ae25764-de4b-456f-932d-4f23c4bc7978",
+      "name": "Parse Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5488,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\nconst skus = [...new Set(items.map(i => i.json.Search_SKU).filter(s => s && s !== \"無\"))];\nconst formulaParts = skus.map(s => `TRIM({Product_Name}) = \"${s}\"`);\nconst finalFormula = skus.length > 1 ? `OR(${formulaParts.join(',')})` : (formulaParts[0] || \"RECORD_ID()='INVALID'\");\nreturn { json: { batchFormula: finalFormula } };\n"
+      },
+      "id": "faf0c5a2-1aee-4f4e-8171-80d551ec1cd8",
+      "name": "Batch SKU",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5680,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblC3HDJAz9W0OF6R",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ $('Batch SKU').first().json.batchFormula }}",
+        "options": {}
+      },
+      "id": "ecb41660-730e-411b-ab30-464ebdf25aa9",
+      "name": "Fetch Cost",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        5888,
+        1040
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $('Parse Items').all();\nconst costData = $('Fetch Cost').all();\nconst meta = items[0].json;\n\nlet totalCost = 0;\nitems.forEach(it => {\n    const match = costData.find(c => (c.json.fields?.Product_Name || c.json.Product_Name) === it.json.Search_SKU);\n    const base = Number(match ? (match.json.fields?.Total_Base_Cost || match.json.Total_Base_Cost) : 0) || 0;\n    totalCost += (base * it.json.Qty);\n});\n\nconst profit = meta.Total_Revenue - totalCost;\nconst actLabel = meta.Action === \"update\" ? \"📝 【訂單已修改】\" : \"🆕 【新開單】\";\nconst text = actLabel + \"\\n\" + (meta.Full_Text || \"\") + \"\\n\\n💰 【內部戰報】\\n👤 客人：\" + meta.Customer_Name + \"\\n📝 單號：\" + meta.Order_ID + \"\\n總成本：$\" + totalCost + \"\\n🏆 淨利潤：$\" + profit;\n\nreturn [{ json: { ...meta, Total_Cost: totalCost, Final_Profit: profit, Updated_Text: text } }];\n"
+      },
+      "id": "bca86987-755c-4103-bd78-4c4cbef1842c",
+      "name": "Calc Profit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6080,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "filterByFormula": "=TRIM({Order_ID}) = '{{ $json.Order_ID }}'",
+        "options": {}
+      },
+      "id": "ddbd47ef-2bca-48db-ab79-c727342d85e0",
+      "name": "Search Existing",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        6288,
+        1040
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeCast": false
+          },
+          "conditions": [
+            {
+              "id": "record-exists-bool",
+              "leftValue": "={{ $json.id ? true : false }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e9b2a362-64fe-4b1b-b3c4-d4e58ccd512b",
+      "name": "Record Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        6480,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order_ID": "={{ $('Calc Profit').first().json.Order_ID }}",
+            "Customer_Name": "={{ $('Calc Profit').first().json.Customer_Name }}",
+            "Final_Sale_Price": "={{ Number($('Calc Profit').first().json.Total_Revenue) }}",
+            "Total_Cost": "={{ Number($('Calc Profit').first().json.Total_Cost) }}",
+            "Net_Profit": "={{ Number($('Calc Profit').first().json.Final_Profit) }}",
+            "Full_Order_Text": "={{ $('Calc Profit').first().json.Updated_Text }}",
+            "Appointment_Date": "={{ $('Calc Profit').first().json.App_Date }}",
+            "Deposit": "={{ Number($('Calc Profit').first().json.Deposit || 0) }}",
+            "Balance": "={{ Number($('Calc Profit').first().json.Balance || 0) }}",
+            "Additional_Fee": "={{ Number($('Calc Profit').first().json.Additional_Fee || 0) }}",
+            "Adjustment_Amount": "={{ Number($('Calc Profit').first().json.Adjustment_Amount || 0) }}",
+            "Raw_Form_State": "={{ $('Calc Profit').first().json.Raw_Form_State || '' }}",
+            "Process_Status": "={{ $('Calc Profit').first().json.Process_Status || '1 已繪圖 或 已取相' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Order_ID",
+              "displayName": "Order_ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer_Name",
+              "displayName": "Customer_Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Appointment_Date",
+              "displayName": "Appointment_Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deposit",
+              "displayName": "Deposit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Balance",
+              "displayName": "Balance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Additional_Fee",
+              "displayName": "Additional_Fee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Adjustment_Amount",
+              "displayName": "Adjustment_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Final_Sale_Price",
+              "displayName": "Final_Sale_Price",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total_Cost",
+              "displayName": "Total_Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Net_Profit",
+              "displayName": "Net_Profit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full_Order_Text",
+              "displayName": "Full_Order_Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order_Items",
+              "displayName": "Order_Items",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Raw_Form_State",
+              "displayName": "Raw_Form_State",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Batch_Number",
+              "displayName": "Batch_Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Admin_Notes",
+              "displayName": "Admin_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Process_Status",
+              "displayName": "Process_Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "0 什麼都未做",
+                  "value": "0 什麼都未做"
+                },
+                {
+                  "name": "1 已繪圖 或 已取相",
+                  "value": "1 已繪圖 或 已取相"
+                },
+                {
+                  "name": "1.5 已交付建模師, 等3D圖中",
+                  "value": "1.5 已交付建模師, 等3D圖中"
+                },
+                {
+                  "name": "2 已修3D圖, 但未核對",
+                  "value": "2 已修3D圖, 但未核對"
+                },
+                {
+                  "name": "2.5 已核對3D圖, 準備打印",
+                  "value": "2.5 已核對3D圖, 準備打印"
+                },
+                {
+                  "name": "3 已交付廠家, 打印中",
+                  "value": "3 已交付廠家, 打印中"
+                },
+                {
+                  "name": "Done 已完成",
+                  "value": "Done 已完成"
+                },
+                {
+                  "name": "Cancel 已取消",
+                  "value": "Cancel 已取消"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "19e60dbe-ff1e-403d-a65e-539d74a3e51a",
+      "name": "Update Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        6688,
+        928
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order_ID": "={{ $('Calc Profit').first().json.Order_ID }}",
+            "Customer_Name": "={{ $('Calc Profit').first().json.Customer_Name }}",
+            "Final_Sale_Price": "={{ Number($('Calc Profit').first().json.Total_Revenue) }}",
+            "Total_Cost": "={{ Number($('Calc Profit').first().json.Total_Cost) }}",
+            "Net_Profit": "={{ Number($('Calc Profit').first().json.Final_Profit) }}",
+            "Full_Order_Text": "={{ $('Calc Profit').first().json.Updated_Text }}",
+            "Appointment_Date": "={{ $('Calc Profit').first().json.App_Date }}",
+            "Deposit": "={{ Number($('Calc Profit').first().json.Deposit || 0) }}",
+            "Balance": "={{ Number($('Calc Profit').first().json.Balance || 0) }}",
+            "Additional_Fee": "={{ Number($('Calc Profit').first().json.Additional_Fee || 0) }}",
+            "Adjustment_Amount": "={{ Number($('Calc Profit').first().json.Adjustment_Amount || 0) }}",
+            "Raw_Form_State": "={{ $('Calc Profit').first().json.Raw_Form_State || '' }}",
+            "Process_Status": "={{ $('Calc Profit').first().json.Process_Status || '1 已繪圖 或 已取相' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Order_ID",
+              "displayName": "Order_ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer_Name",
+              "displayName": "Customer_Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Appointment_Date",
+              "displayName": "Appointment_Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deposit",
+              "displayName": "Deposit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Balance",
+              "displayName": "Balance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Additional_Fee",
+              "displayName": "Additional_Fee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Adjustment_Amount",
+              "displayName": "Adjustment_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Final_Sale_Price",
+              "displayName": "Final_Sale_Price",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total_Cost",
+              "displayName": "Total_Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Net_Profit",
+              "displayName": "Net_Profit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full_Order_Text",
+              "displayName": "Full_Order_Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order_Items",
+              "displayName": "Order_Items",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Raw_Form_State",
+              "displayName": "Raw_Form_State",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Batch_Number",
+              "displayName": "Batch_Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Admin_Notes",
+              "displayName": "Admin_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Process_Status",
+              "displayName": "Process_Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "0 什麼都未做",
+                  "value": "0 什麼都未做"
+                },
+                {
+                  "name": "1 已繪圖 或 已取相",
+                  "value": "1 已繪圖 或 已取相"
+                },
+                {
+                  "name": "1.5 已交付建模師, 等3D圖中",
+                  "value": "1.5 已交付建模師, 等3D圖中"
+                },
+                {
+                  "name": "2 已修3D圖, 但未核對",
+                  "value": "2 已修3D圖, 但未核對"
+                },
+                {
+                  "name": "2.5 已核對3D圖, 準備打印",
+                  "value": "2.5 已核對3D圖, 準備打印"
+                },
+                {
+                  "name": "3 已交付廠家, 打印中",
+                  "value": "3 已交付廠家, 打印中"
+                },
+                {
+                  "name": "Done 已完成",
+                  "value": "Done 已完成"
+                },
+                {
+                  "name": "Cancel 已取消",
+                  "value": "Cancel 已取消"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "e17daa6a-7c30-4ba5-9c36-b096e75f9b2d",
+      "name": "Create Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        6688,
+        1136
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "={{ $('Calc Profit').first().json.Updated_Text }}",
+        "additionalFields": {}
+      },
+      "id": "a631e600-462a-4c88-82a6-d355f20d9483",
+      "name": "Notify Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        6928,
+        1040
+      ],
+      "webhookId": "bb02613c-d967-4072-b488-f3c2fb857a10",
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Receive Dashboard Order": {
+      "main": [
+        [
+          {
+            "node": "Action Is Delete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Is Delete?": {
+      "main": [
+        [
+          {
+            "node": "Search Record to Delete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Record to Delete": {
+      "main": [
+        [
+          {
+            "node": "Delete Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Record": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram (Delete)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Items": {
+      "main": [
+        [
+          {
+            "node": "Batch SKU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch SKU": {
+      "main": [
+        [
+          {
+            "node": "Fetch Cost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Cost": {
+      "main": [
+        [
+          {
+            "node": "Calc Profit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calc Profit": {
+      "main": [
+        [
+          {
+            "node": "Search Existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Existing": {
+      "main": [
+        [
+          {
+            "node": "Record Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Exists?": {
+      "main": [
+        [
+          {
+            "node": "Update Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Record": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Record": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "89c3ca4b-3961-4948-aa7b-9c7612757094",
+  "activeVersionId": null,
+  "versionCounter": 158,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-22T03:09:51.694Z",
+      "createdAt": "2026-03-22T03:09:51.694Z",
+      "role": "workflow:owner",
+      "workflowId": "PLAOaoFbpV9DFrKE",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

@@ -1,0 +1,463 @@
+{
+  "updatedAt": "2026-03-21T15:17:12.000Z",
+  "createdAt": "2026-02-20T02:14:35.235Z",
+  "id": "Q1iR3tKsWiadmaTp",
+  "name": "freehandsss-Stage2-AI-Batch",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "n8n-freehandsss-IG",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbldEfrN6EL2y3tUA",
+          "mode": "list",
+          "cachedResultName": "Sales Pipeline",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tbldEfrN6EL2y3tUA"
+        },
+        "filterByFormula": "{AI Status}='待處理'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        -960
+      ],
+      "id": "d0ae5ff0-6ac7-42b7-bbb9-43bef70819d4",
+      "name": "Search records",
+      "retryOnFail": false,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        -960
+      ],
+      "id": "0e1199e8-7dad-4a2e-ab02-11c9a28e3787",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=「分析訊息：{{ $json[\"Raw Message\"] }}，提取產品與預算，回傳 JSON：{\"items\": \"產品\", \"amount\": 數字}」"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -960
+      ],
+      "id": "86e8a386-db8c-4325-a526-c3a6d022ea96",
+      "name": "Message a model",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WAKRzj3PTgb5iKdV",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "n8n-freehandsss-IG",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbldEfrN6EL2y3tUA",
+          "mode": "list",
+          "cachedResultName": "Sales Pipeline",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tbldEfrN6EL2y3tUA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $node[\"Search records\"].json.id }}",
+            "Order Items": "={{ $json.items }}",
+            "Total Amount": "={{ $json.amount }}",
+            "AI Status": "已完成"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Stage",
+              "displayName": "Stage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "01. 新查詢",
+                  "value": "01. 新查詢"
+                },
+                {
+                  "name": "02. AI已推介",
+                  "value": "02. AI已推介"
+                },
+                {
+                  "name": "03. 考慮中",
+                  "value": "03. 考慮中"
+                },
+                {
+                  "name": "04. ✅ 已成交",
+                  "value": "04. ✅ 已成交"
+                },
+                {
+                  "name": "05. ❌ 已流失",
+                  "value": "05. ❌ 已流失"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order Type",
+              "displayName": "Order Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "📦 套餐 (模+飾)",
+                  "value": "📦 套餐 (模+飾)"
+                },
+                {
+                  "name": "🖼️ 純擺設",
+                  "value": "🖼️ 純擺設"
+                },
+                {
+                  "name": "💎 純飾品",
+                  "value": "💎 純飾品"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "IG",
+                  "value": "IG"
+                },
+                {
+                  "name": "Referral",
+                  "value": "Referral"
+                },
+                {
+                  "name": "FB",
+                  "value": "FB"
+                },
+                {
+                  "name": "Website",
+                  "value": "Website"
+                },
+                {
+                  "name": "Cold Call",
+                  "value": "Cold Call"
+                },
+                {
+                  "name": "Event",
+                  "value": "Event"
+                },
+                {
+                  "name": "Email Campaign",
+                  "value": "Email Campaign"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order Items",
+              "displayName": "Order Items",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total Amount",
+              "displayName": "Total Amount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Next Step Suggestion",
+              "displayName": "AI Next Step Suggestion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Raw Message",
+              "displayName": "Raw Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Status",
+              "displayName": "AI Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "待處理",
+                  "value": "待處理"
+                },
+                {
+                  "name": "已完成",
+                  "value": "已完成"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        -960
+      ],
+      "id": "31f400ff-af52-46aa-abdf-90df969081b8",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7fc05188-725a-47ce-a021-0412bd0736f3",
+  "activeVersionId": null,
+  "versionCounter": 48,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-20T02:14:35.251Z",
+      "createdAt": "2026-02-20T02:14:35.251Z",
+      "role": "workflow:owner",
+      "workflowId": "Q1iR3tKsWiadmaTp",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
