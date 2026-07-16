@@ -1,0 +1,142 @@
+{
+  "updatedAt": "2026-03-11T11:00:13.000Z",
+  "createdAt": "2026-03-11T02:48:38.485Z",
+  "id": "5pw6EJO8Jo2KpmTS",
+  "name": "FHS_System_Diagnostic_V2",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🔍 【系統診斷工具 V2 - 腳本版】\n\n**核心用途：** 由於 `Execute Command` 被停用，我們改用 JavaScript 來檢查路徑。\n\n**執行步驟：**\n1. 點擊「Execute Workflow」。\n2. 點開「Path Tester」節點看 Output。\n\n這會測試多個可能的路徑，直接告訴我們哪一個是可以寫入產品緩存的。",
+        "height": 280,
+        "width": 500
+      },
+      "id": "bce6e68b-7270-4ff5-a1aa-bd18d94dbcad",
+      "name": "Diagnostic Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        384
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        784
+      ],
+      "id": "6c690e89-b4c7-451b-b29c-dbd5ca6a3ae2",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst pathsToTest = [\n  './products.json',\n  './data/products.json',\n  './files/products.json',\n  './.n8n/products.json',\n  '/home/node/.n8n/products.json'\n];\n\nconst results = [];\n\nfor (const p of pathsToTest) {\n  let writable = false;\n  let error = null;\n  try {\n    const absPath = path.resolve(p);\n    const dir = path.dirname(absPath);\n    // Check if directory exists and is writable\n    fs.accessSync(dir, fs.constants.W_OK);\n    writable = true;\n  } catch (e) {\n    error = e.message;\n  }\n  results.push({ path: p, absPath: path.resolve(p), writable, error });\n}\n\nreturn { \n  whoami: process.env.USER || 'unknown', \n  cwd: process.cwd(),\n  results \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        784
+      ],
+      "id": "fc2cb5dc-e6b0-48a4-91ba-bf86eaf057a6",
+      "name": "Path Tester"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Path Tester",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "324615f1-7e9b-4689-916f-2646a87df89f",
+  "activeVersionId": null,
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-11T02:48:38.488Z",
+      "createdAt": "2026-03-11T02:48:38.488Z",
+      "role": "workflow:owner",
+      "workflowId": "5pw6EJO8Jo2KpmTS",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

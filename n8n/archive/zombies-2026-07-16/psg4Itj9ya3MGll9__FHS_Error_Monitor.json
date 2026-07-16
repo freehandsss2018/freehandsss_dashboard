@@ -1,0 +1,232 @@
+{
+  "updatedAt": "2026-03-21T15:18:16.000Z",
+  "createdAt": "2026-03-09T12:33:16.855Z",
+  "id": "psg4Itj9ya3MGll9",
+  "name": "FHS_Error_Monitor",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5d5344d9-96f5-401d-86db-1eb065818b32",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得當下時間\nconst now = new Date().toISOString();\n\n// 取得前面節點傳過來的各種錯誤訊息\nconst workflowName = $node[\"Error Trigger\"].json.workflow.name || \"Unknown Workflow\";\nconst errorMessage = $node[\"Error Trigger\"].json.execution.error.message || \"Unknown Error\";\nconst errorNode = $node[\"Error Trigger\"].json.execution.lastNodeExecuted || \"Unknown Node\";\n\n// 組合出我們要寫入的文字格式\nconst logText = `--- [${now}] ---\\nWorkflow: ${workflowName}\\nError: ${errorMessage}\\nNode: ${errorNode}\\n\\n`;\n\n// 最關鍵的一步：把這段字串，強行轉化成名叫 \"data\" 的 Binary 檔案 (Base64格式)\nconst buf = Buffer.from(logText, 'utf8');\n\nreturn {\n  json: {},\n  binary: {\n    data: {  // 這個 data 就是 Write File 節點要找的東西\n      data: buf.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: 'debug.log'\n    }\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "8bdd6aa5-a687-421a-ad72-740cff8f2ae1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLeQv831Oc2hgNt",
+          "mode": "list",
+          "cachedResultName": "Error_Logs",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tblLeQv831Oc2hgNt"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Time": "={{ $now }}",
+            "Workflow_Name": "={{ $workflow.name }}",
+            "Error_Message": "={{ $json.execution.error.message }}",
+            "Node": "={{ $json.execution.lastNodeExecuted }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Workflow_Name",
+              "displayName": "Workflow_Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error_Message",
+              "displayName": "Error_Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Node",
+              "displayName": "Node",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "5571fad0-4dcd-4b88-a723-4f8817e860d9",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "40adbcc1-ca75-4a77-a565-d84555792a2a",
+  "activeVersionId": null,
+  "versionCounter": 57,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-09T12:33:16.859Z",
+      "createdAt": "2026-03-09T12:33:16.859Z",
+      "role": "workflow:owner",
+      "workflowId": "psg4Itj9ya3MGll9",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

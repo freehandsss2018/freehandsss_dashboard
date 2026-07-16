@@ -1,0 +1,762 @@
+{
+  "updatedAt": "2026-03-21T15:17:44.000Z",
+  "createdAt": "2026-03-01T09:09:23.625Z",
+  "id": "gYiFsE3J4JmCCKiA",
+  "name": "FHS_Order_Processor",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "7620524971",
+        "text": "=✅ 【Freehandsss 新訂單建檔成功】\n\n👤 客人：{{ $('Calculate Profit & Pack Items').first().json.Customer_Name }}\n📝 單號：{{ $('Calculate Profit & Pack Items').first().json.Order_ID }}\n💰 總入帳：${{ $('Calculate Profit & Pack Items').first().json.Total_Revenue }}\n📊 預估總成本：${{ $('Calculate Profit & Pack Items').first().json.Total_Base_Cost }}\n🏆 終極淨利潤：${{ $('Calculate Profit & Pack Items').first().json.Final_Profit }}\n\n💡 系統提示：子項目已完美拆解並同步至 Airtable 資料庫！",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4832,
+        560
+      ],
+      "id": "f19093c4-f81d-4948-8db8-e9ba61d3e32a",
+      "name": "Send Profit Report",
+      "webhookId": "a53f87ee-99c3-42e1-b4e5-f98060758559",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "tSbXz97PKmdPpDNq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbljkptnNcUEyDRFH",
+          "mode": "list",
+          "cachedResultName": "Order_Items",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tbljkptnNcUEyDRFH"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product_Link": "={{ [$json.Product_ID] }}",
+            "Quantity": "={{ Number($json.Quantity) }}",
+            "Engraving_Text": "={{ $json.Notes }}",
+            "Order_Link": "={{ [$json.Main_Order_ID] }}",
+            "Order_Item_Key": "={{ $json.Order_Item_Key }}"
+          },
+          "matchingColumns": [
+            "Order_Item_Key"
+          ],
+          "schema": [
+            {
+              "id": "Order_Item_ID",
+              "displayName": "Order_Item_ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Item_ID",
+              "displayName": "Item_ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Order_Link",
+              "displayName": "Order_Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Product_Link",
+              "displayName": "Product_Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Item_Category",
+              "displayName": "Item_Category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Item_BaseCost",
+              "displayName": "Item_BaseCost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Engraving_Text",
+              "displayName": "Engraving_Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reference_Image",
+              "displayName": "Reference_Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Specification",
+              "displayName": "Specification",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "AI_Engraving_Suggestion",
+              "displayName": "AI_Engraving_Suggestion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Subtotal Cost",
+              "displayName": "Subtotal Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Order_Item_Key",
+              "displayName": "Order_Item_Key",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        4624,
+        560
+      ],
+      "id": "d823fc55-177b-4b16-934a-b0e5442e282f",
+      "name": "Create Sub Items",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 抓取剛剛建好的「主訂單 ID」\nconst recordId = $input.first().json.id;\n\n// 2. 獲取打包好的子項目清單\nconst subItems = $('Calculate Profit & Pack Items').first().json.Sub_Items || [];\n\n// 3. 轉換為 n8n 資料格式\nreturn subItems.map(item => ({\n  json: {\n    Product_ID: item.Product_Record_ID,\n    Quantity: item.Quantity,\n    Notes: item.Notes,\n    Main_Order_ID: recordId,\n    Order_Item_Key: item.Order_Item_Key\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4416,
+        560
+      ],
+      "id": "935a0673-c744-4a4f-bb7e-1716023a2f90",
+      "name": "Bind Main Order ID"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "list",
+          "cachedResultName": "Main_Orders",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tbltCH0I9fknVCtmV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order_ID": "={{ $json.Order_ID }}",
+            "Customer_Name": "={{ $json.Customer_Name }}",
+            "Deposit": "={{ $json.Deposit }}",
+            "Balance": "={{ $json.Balance }}",
+            "Additional_Fee": "={{ $json.Additional_Fee }}",
+            "Final_Sale_Price": "={{ $json.Total_Revenue }}",
+            "Total_Cost": "={{ $json.Total_Cost }}",
+            "Net_Profit": "={{ $json.Final_Profit }}",
+            "Full_Order_Text": "={{ $json.Order_Text }}",
+            "Raw_Form_State": "={{ $json.Raw_Form_State }}",
+            "Appointment_Date": "={{ $json.Appointment_Date }}"
+          },
+          "matchingColumns": [
+            "Order_ID"
+          ],
+          "schema": [
+            {
+              "id": "Order_ID",
+              "displayName": "Order_ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer_Name",
+              "displayName": "Customer_Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Appointment_Date",
+              "displayName": "Appointment_Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deposit",
+              "displayName": "Deposit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Balance",
+              "displayName": "Balance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Additional_Fee",
+              "displayName": "Additional_Fee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Adjustment_Amount",
+              "displayName": "Adjustment_Amount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Final_Sale_Price",
+              "displayName": "Final_Sale_Price",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Total_Cost",
+              "displayName": "Total_Cost",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Net_Profit",
+              "displayName": "Net_Profit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full_Order_Text",
+              "displayName": "Full_Order_Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Order_Items",
+              "displayName": "Order_Items",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Raw_Form_State",
+              "displayName": "Raw_Form_State",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        4208,
+        560
+      ],
+      "id": "8b3dc16f-bb12-47c6-8acc-0af72f06831d",
+      "name": "Create Main Order",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Freehandsss V22: 大腦 2 號 (利潤精算與雙重數據融合) ===\n\nconst firstNodeItems = $('Parse Items & Generate SKU').all();\nconst firstNodeData = firstNodeItems[0].json;\nconst totalRevenue = firstNodeData.Total_Revenue || 0;\nconst rawFormState = firstNodeData.Raw_Form_State || \"\";\n\nlet deposit = 0;\nlet balance = 0;\nlet additionalFee = 0;\n\ntry {\n    const triggerBody = $('Receive Dashboard Order').first().json.body || $('Receive Dashboard Order').first().json;\n    deposit = triggerBody.Deposit || 0;\n    balance = triggerBody.Balance || 0;\n    additionalFee = triggerBody.Additional_Fee || 0;\n} catch (error) { }\n\nlet totalBaseCost = 0;\nlet packedItems = [];\n\nconst items = $input.all(); \nfor (let i = 0; i < items.length; i++) {\n    let itemCost = items[i].json.Total_Base_Cost || items[i].json.Base_Cost || 0;\n    totalBaseCost += itemCost;\n\n    let originalItemData = firstNodeItems[i] ? firstNodeItems[i].json : {};\n\n    packedItems.push({\n        Product_Record_ID: items[i].json.id, // THE RECORD ID FROM AIRTABLE database\n        Product_Name: items[i].json.Product_Name || originalItemData.Search_SKU,\n        Total_Base_Cost: itemCost,\n        Quantity: originalItemData.Original_Qty || 1,\n        Notes: originalItemData.Item_Notes || \"\",\n        Order_Item_Key: originalItemData.Order_Item_Key\n    });\n}\n\nconst finalProfit = totalRevenue - totalBaseCost;\n\nreturn [{\n    json: {\n        ...firstNodeData,              \n        Total_Revenue: totalRevenue,   \n        Total_Cost: totalBaseCost,     \n        Final_Profit: finalProfit,     \n        Deposit: deposit,              \n        Balance: balance,              \n        Additional_Fee: additionalFee, \n        Raw_Form_State: rawFormState,\n        Sub_Items: packedItems         \n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4832,
+        336
+      ],
+      "id": "c5ee52cf-9684-476d-b0da-40e7b808fc4f",
+      "name": "Calculate Profit & Pack Items"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "list",
+          "cachedResultName": "FHS_Order_Processor",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblC3HDJAz9W0OF6R",
+          "mode": "list",
+          "cachedResultName": "Product_Database",
+          "cachedResultUrl": "https://airtable.com/app9GuLsW9frN4xaT/tblC3HDJAz9W0OF6R"
+        },
+        "filterByFormula": "={Product_Name} = '{{ $json.Search_SKU }}'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        4624,
+        336
+      ],
+      "id": "6c60db72-7892-4adc-8e58-772efd25c59b",
+      "name": "Fetch Exact Base Cost",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1444800b-1397-4154-b2da-a4d328c6c51b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        4208,
+        336
+      ],
+      "id": "cd5d8683-cb9a-4156-96d7-53c893a0fe5e",
+      "name": "Receive Dashboard Order",
+      "webhookId": "1444800b-1397-4154-b2da-a4d328c6c51b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst orderId = body.Order_ID || \"未命名\";\nconst customer = body.Customer_Name || \"未命名\";\nconst appDate = body.Appointment_Date || null;\nconst revenue = (body.Deposit || 0) + (body.Balance || 0) + (body.Additional_Fee || 0);\nconst rawText = body.Full_Order_Text || \"\";\nconst rawState = body.Raw_Form_State || \"\";\n\nlet outputItems = [];\n\nif (body.Order_Items_List && Array.isArray(body.Order_Items_List)) {\n    for (const item of body.Order_Items_List) {\n        // 拼湊與 Product_Database_V2 完全一致的 SKU 名稱\n        let sku = item.Product_Name;\n        if (item.Mode) sku = `${item.Product_Name} - ${item.Quantity}飾 ${item.Mode}`;\n\n        // 計算定律扣減\n        let shipping_saved = (sku.includes(\"鎖匙扣\") && item.Quantity > 1) ? (item.Quantity - 1) * 20 : 0;\n        let necklace_saved = (sku.includes(\"吊飾\")) ? Math.floor(item.Quantity / 2) * 220 : 0;\n\n        outputItems.push({\n            json: {\n                Order_ID: orderId,\n                Customer_Name: customer,\n                Appointment_Date: appDate,\n                Total_Revenue: revenue,\n                Order_Text: rawText,\n                Raw_Form_State: rawState,\n                Search_SKU: sku,\n                Original_Qty: item.Quantity,\n                Item_Notes: item.Notes || \"\",\n                Order_Item_Key: item.Order_Item_Key,\n                Shipping_Deduction: shipping_saved,\n                Necklace_Deduction: necklace_saved\n            }\n        });\n    }\n} else {\n    outputItems.push({ json: { Order_ID: orderId, Customer_Name: customer, Total_Revenue: revenue, Order_Text: rawText, Raw_Form_State: rawState, Search_SKU: \"無商品\", Shipping_Deduction: 0, Necklace_Deduction: 0 }});\n}\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4416,
+        336
+      ],
+      "id": "0e433450-803a-41b5-b62a-5ae9bbd221bf",
+      "name": "Parse Items & Generate SKU"
+    }
+  ],
+  "connections": {
+    "Create Sub Items": {
+      "main": [
+        [
+          {
+            "node": "Send Profit Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bind Main Order ID": {
+      "main": [
+        [
+          {
+            "node": "Create Sub Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Main Order": {
+      "main": [
+        [
+          {
+            "node": "Bind Main Order ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Profit & Pack Items": {
+      "main": [
+        [
+          {
+            "node": "Create Main Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Exact Base Cost": {
+      "main": [
+        [
+          {
+            "node": "Calculate Profit & Pack Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Dashboard Order": {
+      "main": [
+        [
+          {
+            "node": "Parse Items & Generate SKU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Items & Generate SKU": {
+      "main": [
+        [
+          {
+            "node": "Fetch Exact Base Cost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Receive Dashboard Order": [
+      {
+        "json": {
+          "headers": {
+            "connection": "close",
+            "host": "yanhei.synology.me:8443",
+            "x-real-ip": "192.168.50.1",
+            "x-forwarded-for": "192.168.50.1",
+            "x-forwarded-proto": "https",
+            "content-length": "2027",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"",
+            "content-type": "application/json",
+            "sec-ch-ua-mobile": "?0",
+            "accept": "*/*",
+            "origin": "https://yanhei.synology.me",
+            "sec-fetch-site": "same-site",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            "referer": "https://yanhei.synology.me/",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+            "priority": "u=1, i"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Order_ID": "FHS-LHRKK03AY",
+            "Customer_Name": "FatMo",
+            "Appointment_Date": "2026-03-02",
+            "Deposit": 1000,
+            "Balance": 3000,
+            "Additional_Fee": 20,
+            "Full_Order_Text": "📝 freehandsss 訂單核對表\n(編號：FHS-LHRKK03AY)\n\n【排程資訊】\n聯絡人：FatMo\n取模時間：2026/03/02 3:30 PM\n\n【產品資訊】\n產品類別：立體擺設 (玻璃瓶款式)\n底座顏色：仿古木\n【嬰兒】\n - 左手(香檳金)、右手(待定)\n - 左腳(待定)、右腳(香檳金)\n【父母】\n - 左手(香檳金)、右手(珍珠白)\n客製化刻字：love you baby\n\n【選購/加購項目】\n產品類別：金屬鎖匙扣 (不鏽鋼)\n - 嬰兒左手(共1隻)\n   上排：T | 下排：L\n - 嬰兒右手(共2隻)\n   上排：T | 下排：L\n - 嬰兒左腳(共3隻)\n   上排：T | 下排：L\n - 嬰兒右腳(共4隻)\n   上排：T | 下排：L\n\n【選購/加購項目】\n產品類別：純銀頸鏈吊飾\n - 嬰兒左手(共1條) | 顏色：925金\n   刻字：不適用\n - 嬰兒左腳(共1條) | 顏色：925銀\n   刻字：T\n\n【財務結算】\n已付訂金/全數：$ 1000\n未付產品尾數：$ 3000\n附加費用(車費/其它)：$ 20\n\n💡 溫馨提示：作品全人手製作（不含相片），無法如機器般完美。BB取模時郁動難免產生微瑕，若需重新倒模將收取$150附加費。另外，手工鑄造難免有體積縮減、微細刮痕或凹點，屬正常工藝非瑕疵。製作期最少需3個月，感謝您的理解與耐心等候。",
+            "Order_Items_List": [
+              {
+                "Product_Name": "玻璃瓶套裝 (4肢)",
+                "Quantity": 1
+              },
+              {
+                "Product_Name": "嬰兒鎖匙扣 - 不銹鋼",
+                "Mode": "(加購)",
+                "Quantity": 1
+              },
+              {
+                "Product_Name": "嬰兒鎖匙扣 - 不銹鋼",
+                "Mode": "(加購)",
+                "Quantity": 2
+              },
+              {
+                "Product_Name": "嬰兒鎖匙扣 - 不銹鋼",
+                "Mode": "(加購)",
+                "Quantity": 3
+              },
+              {
+                "Product_Name": "嬰兒鎖匙扣 - 不銹鋼",
+                "Mode": "(加購)",
+                "Quantity": 4
+              },
+              {
+                "Product_Name": "嬰兒吊飾 - 925金",
+                "Mode": "(加購)",
+                "Quantity": 1
+              },
+              {
+                "Product_Name": "嬰兒吊飾 - 925銀",
+                "Mode": "(加購)",
+                "Quantity": 1
+              }
+            ]
+          },
+          "webhookUrl": "https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "0f03c632-b953-404f-a65e-81199c6ac20b",
+  "activeVersionId": null,
+  "versionCounter": 314,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-01T09:09:23.631Z",
+      "createdAt": "2026-03-01T09:09:23.631Z",
+      "role": "workflow:owner",
+      "workflowId": "gYiFsE3J4JmCCKiA",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

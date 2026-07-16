@@ -1,0 +1,218 @@
+{
+  "updatedAt": "2026-03-11T11:00:10.000Z",
+  "createdAt": "2026-03-11T02:27:58.174Z",
+  "id": "Y8gNyxKiNIvEjsdL",
+  "name": "FHS_System_CacheSync",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 🔄 【緩存同步服務 - v40.14 最終修正版】\n\n**核心用途：** 定期同步 Airtable `Product_Database` 至 NAS 本地 `products.json`。\n\n**重要動作 (必做)：**\n1. **重新選取憑證**：導入後，請點開「Fetch Product Database」節點，重新選擇您的 **Airtable 憑證**。\n2. **存儲路徑校準**：此版本將檔案寫入 `.n8n/data/products.json` (對應 NAS 的 `docker/n8n/data` 資料夾)。\n3. **權限必備**：請確保已在 NAS 執行過 `chmod -R 777 /volume1/docker/n8n`。\n\n**執行驗證**：\n點擊下方「Execute Workflow」，若看到綠色 Success 即代表大功告成！",
+        "height": 300,
+        "width": 550
+      },
+      "id": "835456db-b35f-40b3-8eaf-f4063482ca51",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        14128,
+        2432
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hour"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        14688,
+        2896
+      ],
+      "id": "0c74fbe7-336a-4d65-81ff-d5625f35b4bf",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblC3HDJAz9W0OF6R",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        14880,
+        2896
+      ],
+      "id": "4940d1dd-b5cc-4f3d-b328-ca2c9d2711eb",
+      "name": "Fetch Product Database",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const products = $input.all();\nconst simplified = products.map(p => ({\n  id: p.json.id,\n  fields: {\n    Product_Name: p.json.Product_Name,\n    Main_Category: p.json.Main_Category,\n    Total_Base_Cost: p.json.Total_Base_Cost || 0\n  }\n}));\n\nreturn {\n  json: { simplified },\n  binary: {\n    data: {\n        data: Buffer.from(JSON.stringify(simplified, null, 2)).toString('base64'),\n        mimeType: \"application/json\",\n        fileName: \"products.json\"\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        15088,
+        2896
+      ],
+      "id": "95d808ed-0892-494d-81f5-03ce0177bbe8",
+      "name": "Format to JSON"
+    },
+    {
+      "parameters": {
+        "fileName": ".n8n/data/products.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        15328,
+        2896
+      ],
+      "id": "cc0b8524-066f-4dca-b818-da04418f3005",
+      "name": "Write to NAS Disk"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Product Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Product Database": {
+      "main": [
+        [
+          {
+            "node": "Format to JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format to JSON": {
+      "main": [
+        [
+          {
+            "node": "Write to NAS Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b75c46b7-0bc2-4125-bc4c-84b30cb77338",
+  "activeVersionId": null,
+  "versionCounter": 51,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-11T02:27:58.178Z",
+      "createdAt": "2026-03-11T02:27:58.178Z",
+      "role": "workflow:owner",
+      "workflowId": "Y8gNyxKiNIvEjsdL",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}

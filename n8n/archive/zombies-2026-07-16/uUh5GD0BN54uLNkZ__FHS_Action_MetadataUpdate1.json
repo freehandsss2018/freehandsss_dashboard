@@ -1,0 +1,197 @@
+{
+  "updatedAt": "2026-03-21T15:18:13.000Z",
+  "createdAt": "2026-03-09T17:49:22.321Z",
+  "id": "uUh5GD0BN54uLNkZ",
+  "name": "FHS_Action_MetadataUpdate1",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### 📝 【全域核對 - 原地更新引擎】\n\n**核心用途：** 專用於 V27 全域核對中心的「原地修改」功能。\n\n**主要功能：**\n1. **快速更新：** 接收 Record_ID、批次編號、進度狀態與行政備註。\n2. **即時同步：** 直接更新 Airtable 主訂單，實現「邊核對邊修正」的高效管理流程。",
+        "height": 280,
+        "width": 550
+      },
+      "id": "01a90eb1-8097-4af0-8b3d-098251ebbe43",
+      "name": "Workflow Description",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { success: true, message: 'Updated successfully in Airtable' } };"
+      },
+      "id": "65eac4bc-7c3e-436d-ba5c-d0f5d9d60768",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2704,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Batch_Number": "={{ $json.Batch_Number || $json.body?.Batch_Number }}",
+            "Process_Status": "={{ $json.Process_Status || $json.body?.Process_Status }}",
+            "Admin_Notes": "={{ $json.Admin_Notes || $json.body?.Admin_Notes }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "7c056ab2-0739-4851-bf53-98e6afbde65e",
+      "name": "Update Airtable Main_Orders",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2496,
+        1408
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "update-order-meta",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5d93783f-405c-4bd9-aa54-3ab4ed857323",
+      "name": "Webhook (Update Meta)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        1408
+      ],
+      "webhookId": "fhs-update-order-meta-v27"
+    }
+  ],
+  "connections": {
+    "Update Airtable Main_Orders": {
+      "main": [
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook (Update Meta)": {
+      "main": [
+        [
+          {
+            "node": "Update Airtable Main_Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "89fb9bed-a031-481a-8699-a867d3899771",
+  "activeVersionId": null,
+  "versionCounter": 18,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-09T17:49:22.325Z",
+      "createdAt": "2026-03-09T17:49:22.325Z",
+      "role": "workflow:owner",
+      "workflowId": "uUh5GD0BN54uLNkZ",
+      "projectId": "PusL5vFUw7BMC2xH",
+      "project": {
+        "updatedAt": "2026-02-10T09:32:56.368Z",
+        "createdAt": "2026-02-10T07:48:52.904Z",
+        "id": "PusL5vFUw7BMC2xH",
+        "name": "Edwin Li <edwinli1030@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-10T07:48:52.905Z",
+            "createdAt": "2026-02-10T07:48:52.905Z",
+            "userId": "6bd45f76-307d-46fb-be47-d711e31203fb",
+            "projectId": "PusL5vFUw7BMC2xH",
+            "user": {
+              "updatedAt": "2026-07-16T01:05:57.000Z",
+              "createdAt": "2026-02-10T07:48:45.501Z",
+              "id": "6bd45f76-307d-46fb-be47-d711e31203fb",
+              "email": "edwinli1030@gmail.com",
+              "firstName": "Edwin",
+              "lastName": "Li",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-02-10T09:34:48.396Z",
+                "personalization_survey_n8n_version": "2.6.4",
+                "companyIndustryExtended": [
+                  "marketing-industry"
+                ],
+                "companySize": "<20",
+                "companyType": "other",
+                "automationGoalSm": [
+                  "customer-communication",
+                  "ad-campaign"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "R5YbC0UHAkpU0zBKm9tZw",
+                "userActivatedAt": 1770830267292,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1781854409855
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
