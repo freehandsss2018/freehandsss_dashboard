@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-16 (Session 177 — `/team` R4 勘誤跟進：4 項 subagent 版本漂移修復): 🗂️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S177 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。S175 `/team` 撈到的 4 項 MANIFEST 版本漂移（database-reviewer/tdd-guide/ui-designer 版本號+finance-auditor 未登記）已修復；Fable 5 先審視方案確認 frontmatter 為真源、MANIFEST 追上即可，派 sonnet 執行，重跑生成器驗證零勘誤。順帶修正 `docs/repo-map.md` 同款漂移。
+Subagent：✅ 使用 1 支 — general-purpose（sonnet，T2 模板）執行修復。
+
 ## 2026-07-16 (Session 176 — Audit Ledger「疑漏算加購」假警示移除，`/grilling` 拷問確認後執行 D37): 🧾 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S176 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 報訂單 0600724 財務分頁鎖匙扣品項紅色「疑漏算加購」警示疑似邏輯錯誤，AI 三輪查證（前兩輪皆誤判）後用 live Supabase 交叉比對 `orders.keychain_cost`（運費扣減公式反推）坐實 subtotal_cost/keychain_cost/total_cost 從未算錯，純屬 item_base_cost 輔助欄位語意不一致觸發前端假警示（24筆樣本零真陽性）。`/grilling` 五輪拷問確認方案（完全移除警示+icon、標籤問題本次不動、V42+current.html一起改、fresh-context驗收）後執行，code-reviewer 覆核 PASS。決策見 decisions.md D37。

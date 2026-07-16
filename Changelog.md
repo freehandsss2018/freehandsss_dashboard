@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-07-16] Session 177（Claude Code / Fable 5 裁決 + Sonnet 5 執行）— `/team` R4 勘誤跟進：4 項 subagent 版本漂移修復
+
+- **緣起**：S174 `/team` 重生成撈到 4 項 MANIFEST 漂移（`database-reviewer`/`tdd-guide`/`ui-designer` frontmatter 版本號 ≠ MANIFEST 記錄、`finance-auditor` 未登記於 MANIFEST），已記入 S175 待辦，`ai-team-registry.md` R4 禁止靜默忽略。
+- **方案審視（執行前，Fable 5）**：先核實 master（`.fhs/ai/subagents/freehandsss/`）與已安裝（`~/.claude/agents/freehandsss/`）兩邊 frontmatter 完全一致，非雙目錄失同步；真正過時的只有 `MANIFEST.md`。按 registry §1「frontmatter 為真源」原則裁決：修復方向＝MANIFEST 追上 frontmatter，不得反向改動 frontmatter；本次不觸及 `model:`/`tools:` 欄，屬 governance/05 §1「可自行改」範圍的例行同步，非需 Fat Mo 事先批准的規則變更。
+- **執行內容**：`.fhs/ai/subagents/MANIFEST.md`「已安裝 Agents」表更新 database-reviewer(1.0.0→2.1.0)/tdd-guide(1.0.0→1.1.0)/ui-designer(1.1.0→2.0.0)，新增 finance-auditor(2.2.0) 一行；「版本歷史」表尾補齊對應歷史條目（附 git commit hash 或 last_updated 註記）。順帶 P0.2 文件同步掃描抓到 `docs/repo-map.md` 同款漂移（finance-auditor 標註 v2.1.0、tdd-guide 標註 v1.0.0），一併修正至 v2.2.0/v1.1.0。
+- **驗證**：重跑 `node scripts/agent_dashboardV42.js`，console 顯示「✨ 零勘誤」、`artifacts/agent_dashboardV42.json` `warnings: []`，原 4 項全清；9 支 subagent 版本逐一與 frontmatter 核對相符；`git status` 確認未手改任何 frontmatter 或生成物（R1）。
+- **待確認**：`finance-auditor.md` frontmatter 缺 `model` key，MANIFEST 新增行暫填 `claude-sonnet-4-6`（比照同類 native subagent 慣例外推，非真源欄位），待 Fat Mo 確認是否需要補回 frontmatter 的 model 欄。
+- **未納入本次範圍**：`/fhs-audit` 掃描順帶偵測到 `learnings.md` 52 條超出 governance/05 §4 上限 50 條，非本任務範圍，只記錄不處理，留待 `/fhs-slim`。
+- **後效同步稽核**：[A] 觸發（`docs/repo-map.md` 已同步）；[B] 不適用（無制度層規則變更，純資料勘誤）；[C] 已更新本條目；[G] 不適用（無財務欄位異動）。
+- **Subagent 使用記錄**：✅ 使用 1 支 — general-purpose（sonnet，T2 模板）執行 MANIFEST 修復；方案審視由主對話（Fable 5）完成。
+
+【交付前雙紀律自檢】
+驗收：低風險文件層修正 — 生成器機械驗證（零勘誤）非自驗 = ✅（02 §5 分流表「文件/勘誤修正」豁免中高風險雙 verdict）
+Subagent：✅ 使用 1 支 — general-purpose 執行修復，按 governance/04 T2 模板派工
+
 ## [2026-07-16] Session 176（Claude Code / Sonnet 5 執行）— Audit Ledger「疑漏算加購」假警示移除（`/grilling` 拷問確認後執行，D37）
 
 - **緣起**：Fat Mo 回報訂單 0600724 財務分頁鎖匙扣品項出現紅色「⚠ 疑漏算加購」警示，並質疑該訊息本身邏輯有錯（誤把已 ×qty 的打印/環扣/運費金額當單件金額顯示）。
