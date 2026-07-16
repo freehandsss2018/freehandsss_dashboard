@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 // scripts/cl-flow-runner.js
-// FHS True 1-Click /cl-flow Coordinator Runner
-// Version: v1.0.0
-// Purpose: Headless orchestrator — calls Perplexity + Gemini in parallel,
-//          writes real artifacts to artifacts/{flow_id}/, then hands off to Claude.
+// FHS /cl-flow Coordinator Runner — A3-first Review Pipeline
+// Version: v2.0.0 (2026-07-15, D37)
+// Purpose: Two-stage headless orchestrator.
+//   --init   : create flow_id + task-brief.md + state.json (no API calls, no A1/A2 involvement)
+//   --review : send A3's draft (written by Claude in-session as artifacts/{flow_id}/a3-draft.md)
+//              to Gemini (AG, always) and Perplexity (PX, unless --fast) as ADVERSARIAL REVIEWERS
+//              of that draft — not as blind authors. Writes ag-review.md / px-review.md.
+// Rationale (D37): A1/A2 producing plans from scratch with no repo access hallucinated
+// repeatedly (fabricated file paths, invented Postgres Functions, misread domain terms).
+// A3 (Claude Code, has repo access) now writes the first draft; A1/A2 critique it instead.
 
 'use strict';
 
@@ -11,32 +17,27 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { execSync, spawnSync } = require('child_process');
-const { validateAgPlan } = require('./validate-ag-plan');
 
-// ─── Environment Check ───────────────────────────────────────────────────────
+// ─── Environment ─────────────────────────────────────────────────────────────
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.5-flash';
+const ROOT_DIR = path.join(__dirname, '..');
 
-if (!PERPLEXITY_API_KEY || !GEMINI_API_KEY) {
-  console.error('[cl-flow-runner] ERROR: Missing required API keys.');
-  if (!PERPLEXITY_API_KEY) console.error('  Missing: PERPLEXITY_API_KEY');
-  if (!GEMINI_API_KEY)     console.error('  Missing: GEMINI_API_KEY');
-  console.error('  Add both keys to .env and retry.');
+// ─── CLI Parsing ─────────────────────────────────────────────────────────────
+const args = process.argv.slice(2);
+const mode = args[0];
+
+function usageAndExit() {
+  console.error('[cl-flow-runner] Usage:');
+  console.error('  node scripts/cl-flow-runner.js --init "[task description]"');
+  console.error('  node scripts/cl-flow-runner.js --review {flow_id} [--fast]');
   process.exit(1);
 }
 
-// ─── Config ──────────────────────────────────────────────────────────────────
-const args = process.argv.slice(2);
-const quickMode = args[0] === '--quick';
-const task = (quickMode ? args[1] : args[0]) || 'No task specified';
-const now = new Date();
-const pad = n => String(n).padStart(2, '0');
-const flow_id = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
-const ROOT_DIR = path.join(__dirname, '..');
-const ARTIFACTS_DIR = path.join(ROOT_DIR, 'artifacts', flow_id);
+if (mode !== '--init' && mode !== '--review') usageAndExit();
 
 // ─── File Utils ──────────────────────────────────────────────────────────────
 function writeFile(filePath, content) {
@@ -44,35 +45,30 @@ function writeFile(filePath, content) {
   fs.writeFileSync(filePath, content, 'utf8');
 }
 
+function readFileOrNull(filePath) {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    return content.trim() ? content : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 // ─── API: Perplexity ─────────────────────────────────────────────────────────
-// NOTE (2026-06-20 fix): sonar-reasoning-pro 是推理模型，<think> 階段會消耗 max_tokens 配額。
-// 舊版 max_tokens:3072 在較長/較複雜的研究 prompt 下會被推理階段吃光，導致 message.content 回傳
-// 空字串——且 API 回 HTTP 200 + finish_reason:'stop'，不拋錯，是「靜默失敗」。
-// 修正：(1) max_tokens 提高至 8000（與 Gemini maxOutputTokens:8192 對齊量級）
-//       (2) resolve 前檢查 content 是否為空，空字串視為失敗 throw，交給 withRetry 重試/最終拋錯，
-//           不再讓空白悄悄寫入 px-report.md
-//       (3) finish_reason==='length'（被截斷）僅 warn，不視為失敗（內容仍可用，只是結尾可能不完整）
-// NOTE (2026-06-23 fix): Cloudflare（Perplexity 前置）對 client TLS/HTTP 指紋做 fingerprinting，
-// 會直接 reset Node https 與 python-urllib 連線（症狀：socket hang up / RemoteDisconnected），
-// 只放行 curl —— 與 reference memory「Supabase Management API 用 curl 非 urllib」同一機制。
-// sonar-reasoning-pro 的長 <think> 階段靜默無數據流更易被 idle reset，curl 的指紋可通過。
-// 故 PX 呼叫改走 curl 子程序（body 寫臨時檔，--data @file），不再用 https.request。
-function callPerplexity(prompt) {
+// NOTE (2026-06-23 fix, kept from v1.0.0): Cloudflare (Perplexity front) fingerprints
+// client TLS/HTTP and resets Node https/urllib connections — only curl is let through.
+// PX calls go through a curl subprocess (body written to temp file, --data @file).
+function callPerplexity(promptText, tmpDir) {
   return new Promise((resolve, reject) => {
-    // NOTE (2026-06-23 fix): sonar-reasoning-pro 的 <think> 階段在 node spawnSync(curl)
-    // 上下文會「靜默無數據流 ~60s」→ Windows Schannel curl 被 idle-reset，curl exit 56
-    // （len 0，stderr 空）。互動 shell 的 curl 偶能存活，但 node-spawned 子程序確定性失敗。
-    // 實測（同一 heavy prompt，node spawnSync）：sonar-reasoning-pro=exit56；sonar-pro=status0
-    // 15876 chars/36s；sonar=status0 5150 chars/9s。改用非推理 sonar-pro：即時串流無 idle、
-    // 內容更豐富。keepalive/--http1.1/-4 皆無效（根因是 think 階段無數據流，非傳輸層）。
+    const artifactsDir = tmpDir || path.join(ROOT_DIR, 'artifacts', '.tmp');
     const body = JSON.stringify({
       model: 'sonar-pro',
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user', content: promptText }],
       max_tokens: 8000
     });
-    const tmpFile = path.join(ARTIFACTS_DIR, `.px_body_${Date.now()}.json`);
+    const tmpFile = path.join(artifactsDir, `.px_body_${Date.now()}.json`);
     try {
-      fs.mkdirSync(ARTIFACTS_DIR, { recursive: true });
+      fs.mkdirSync(artifactsDir, { recursive: true });
       fs.writeFileSync(tmpFile, body, 'utf8');
       const res = spawnSync('curl', [
         '-s', '--max-time', '180',
@@ -97,11 +93,11 @@ function callPerplexity(prompt) {
       if (!content || !content.trim()) {
         return reject(new Error(
           'Perplexity returned empty content (finish_reason=' + (choice && choice.finish_reason) +
-          ') — reasoning model likely exhausted max_tokens in <think> phase before producing an answer.'
+          ') — reasoning model likely exhausted max_tokens before producing an answer.'
         ));
       }
       if (choice.finish_reason === 'length') {
-        console.warn('[cl-flow-runner] ⚠️  Perplexity response truncated (finish_reason=length) — content may be incomplete near the end.');
+        console.warn('[cl-flow-runner] ⚠️  Perplexity response truncated (finish_reason=length).');
       }
       resolve(content);
     } catch (e) {
@@ -113,10 +109,10 @@ function callPerplexity(prompt) {
 }
 
 // ─── API: Gemini ─────────────────────────────────────────────────────────────
-function callGemini(prompt) {
+function callGemini(promptText) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [{ parts: [{ text: promptText }] }],
       generationConfig: { maxOutputTokens: 8192 }
     });
 
@@ -163,164 +159,234 @@ async function withRetry(fn, label, retries = 3) {
   }
 }
 
-// ─── Codebase Context (Repomix) ───────────────────────────────────────────────
-function getCodebaseContext() {
-  try {
-    const result = execSync(
-      'npx repomix --style plain' +
-      ' --include "scripts/,supabase/migrations/,.fhs/notes/SOP_NOW.md,.fhs/memory/handoff.md"' +
-      ' --ignore "artifacts/,node_modules/,*.xlsx,*.log,.git/,Obsidian/,.obsidian/"',
-      { cwd: ROOT_DIR, timeout: 60000, maxBuffer: 800 * 1024 }
-    );
-    const raw = result.toString('utf8');
-    // Cap at 25k chars to avoid Gemini token overflow
-    return raw.length > 25000 ? raw.substring(0, 25000) + '\n...(truncated)' : raw;
-  } catch (e) {
-    console.warn('[cl-flow-runner] repomix unavailable, using minimal context');
-    return `Project: FHS Dashboard (freehandsss_dashboard)\nTask: ${task}\n(Full codebase context unavailable — repomix not installed or failed)`;
-  }
+// ─── Review Prompt Builders (D37) ────────────────────────────────────────────
+// PX (A1): external validator. No repo access — forbidden to comment on repo internals.
+function buildPxReviewPrompt(task, draft) {
+  return `你是外部技術驗證員（A1 角色）。以下是本地工程師（A3）針對 FHS 系統寫嘅基礎分析＋部署方案草案。
+
+你嘅任務：從外部技術視角（業界標準／已知風險／相似系統經驗／技術限制）逐條驗證草案入面嘅技術假設，
+搵出草案未察覺嘅外部風險。
+
+**嚴格限制**：
+- 你冇 repo 存取權限，**禁止評論 repo 內部結構、檔案是否存在、程式碼邏輯對錯**——呢啲你見唔到，
+  評咗就係幻覺，會被直接丟棄，唔計入 Severity。
+- 只評「呢個技術假設喺業界係咪站得住腳」「呢個做法有冇已知陷阱」「有冇更成熟嘅業界慣例／已知風險」。
+
+**輸出格式**（逐條編號，最多 8 條；如全部站得住腳，寫「本草案外部假設均可站立，無批評」）：
+## 批評 #1
+- **標的**：草案第幾節／邊個假設
+- **Severity**：BLOCKER / MAJOR / MINOR
+- **問題**：具體講乜錯／乜風險
+- **依據**：業界慣例／已知案例／技術限制（禁止用「可能」「或許」軟化）
+
+任務背景：
+${task}
+
+草案內容：
+<draft>
+${draft}
+</draft>
+
+請以繁體中文回答。`;
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-async function main() {
-  console.log(`[cl-flow-runner] ═══════════════════════════════════`);
-  console.log(`[cl-flow-runner] Flow ID : ${flow_id}`);
-  console.log(`[cl-flow-runner] Mode    : ${quickMode ? 'QUICK (AG only, no PX)' : 'FULL (PX + AG)'}`);
-  console.log(`[cl-flow-runner] Task    : ${task}`);
-  console.log(`[cl-flow-runner] ═══════════════════════════════════`);
+// AG (A2): adversarial red-team. Forbidden to author a replacement plan.
+function buildAgReviewPrompt(task, draft) {
+  return `你是本地對抗式評審員（A2 角色，red-team）。以下是 A3 針對 FHS 系統寫嘅基礎分析＋部署方案草案，
+草案已包含實際檔案路徑／現況引用。
 
-  // ── Phase 0: Initialize ───────────────────────────────────────────────────
+你嘅任務：**專職挑錯**，唔係重寫方案。逐條搵出：
+- 邏輯漏洞
+- 遺漏嘅 edge case
+- 更優嘅替代做法（如有，一句話簡述方向，唔展開全新方案）
+- 若草案有違反 FHS 硬規則（AGENTS.md）嘅地方
+
+強制自問：「如果我要整死呢個方案，我會攻擊邊度？」每條攻擊點都要落成一條批評。
+
+**嚴格限制**：
+- 你**唔准**輸出一份完整嘅替代實作計劃——你嘅角色係批判，唔係代筆
+- 每條批評必須具體到可驗證（檔案名／行為／規則編號），唔准籠統
+
+**輸出格式**（逐條編號，最多 8 條；如冇可攻擊點，寫「無法找到可攻擊點，本草案通過 red-team」）：
+## 批評 #1
+- **標的**：草案第幾節／邊個步驟
+- **Severity**：BLOCKER / MAJOR / MINOR
+- **問題**：具體攻擊點
+- **建議**：一句話方向，唔展開全新方案
+
+任務背景：
+${task}
+
+草案內容：
+<draft>
+${draft}
+</draft>
+
+請以繁體中文回答。`;
+}
+
+// ─── Mode: --init ─────────────────────────────────────────────────────────────
+function runInit() {
+  const task = args[1] || 'No task specified';
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const flow_id = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const artifactsDir = path.join(ROOT_DIR, 'artifacts', flow_id);
+
   const state = {
     flow_id,
     task,
-    status: 'planning',
-    px_status: 'pending',
-    ag_status: 'pending',
+    status: 'awaiting_a3_draft',
+    a3_draft_status: 'pending',
+    px_review_status: 'not_started',
+    ag_review_status: 'not_started',
     cl_status: 'pending',
     execution_status: 'locked',
+    degraded: false,
     created_at: now.toISOString()
   };
 
-  writeFile(path.join(ARTIFACTS_DIR, 'state.json'), JSON.stringify(state, null, 2));
+  writeFile(path.join(artifactsDir, 'state.json'), JSON.stringify(state, null, 2));
   writeFile(
-    path.join(ARTIFACTS_DIR, 'task-brief.md'),
-    `# Task Brief\n\n**Flow ID**: ${flow_id}\n**Date**: ${now.toISOString()}\n\n## Task\n\n${task}\n\n## Execution Lock\n\nStatus: \`locked\` — awaiting \`/execute\` from Fat Mo.\n`
+    path.join(artifactsDir, 'task-brief.md'),
+    `# Task Brief\n\n**Flow ID**: ${flow_id}\n**Date**: ${now.toISOString()}\n\n## Task\n\n${task}\n\n` +
+    `## Pipeline (v2.0.0, A3-first)\n\n1. [DONE] Runner --init — this file + state.json\n` +
+    `2. [NEXT] Claude writes \`artifacts/${flow_id}/a3-draft.md\` (基礎分析 + 部署方案，引用實際檔案路徑)\n` +
+    `3. Runner --review ${flow_id} [--fast] — AG (+PX unless --fast) critique the draft\n` +
+    `4. Claude writes \`cl-final-plan.md\`（含批評處理表）\n\n` +
+    `## Execution Lock\n\nStatus: \`locked\` — awaiting \`/execute\` from Fat Mo.\n`
   );
 
+  console.log(`[cl-flow-runner] ═══════════════════════════════════`);
+  console.log(`[cl-flow-runner] Mode    : INIT`);
+  console.log(`[cl-flow-runner] Flow ID : ${flow_id}`);
+  console.log(`[cl-flow-runner] Task    : ${task}`);
+  console.log(`[cl-flow-runner] ═══════════════════════════════════`);
   console.log(`[cl-flow-runner] Phase 0 complete — artifacts/${flow_id}/ initialized`);
-
-  // ── Phase 1: PX + AG (or AG-only in quick mode) ──────────────────────────
-  if (quickMode) {
-    console.log('[cl-flow-runner] Phase 1 — QUICK MODE: launching AG only (PX skipped)...');
-  } else {
-    console.log('[cl-flow-runner] Phase 1 — FULL MODE: launching PX + AG in parallel...');
-  }
-
-  const pxPrompt =
-`你是一位外部技術研究員，專門研究業界最佳實踐、技術風險與類似系統案例。
-請針對以下軟體開發任務，從**外部技術視角**（業界標準、已知風險、相似系統經驗）產出研究報告。
-不需要分析任何內部代碼，只需基於你的技術知識與業界經驗作答。
-
-報告必須包含以下 6 個章節（缺一不可）：
-## 1. 目標 (Objective) — 用業界標準語言重新描述此任務的本質
-## 2. 限制 (Constraints) — 此類系統通常面臨的技術與環境限制
-## 3. 風險 (Risks) — 至少 3 項業界已知風險，每項說明影響等級（High/Med/Low）
-## 4. 假設 (Assumptions) — 此方案成立的前提假設
-## 5. 成功標準 (Success Criteria) — 可量化的驗收標準
-## 6. 範圍外項目 (Out of Scope) — 明確排除哪些常見擴充
-
-任務描述：
-${task}
-
-請以繁體中文回答，每節清晰標題，內容基於業界經驗，具體可操作。`;
-
-  const codebaseContext = getCodebaseContext();
-
-  const agPrompt =
-`你是 FHS 系統的本地技術實作規劃師（Antigravity A2 角色）。
-以下是當前專案代碼庫的上下文（供你理解現有架構）：
-
-<codebase>
-${codebaseContext}
-</codebase>
-
-請針對以下任務，產出完整的本地技術實作計劃。
-
-計劃必須包含以下 6 個章節（缺一不可）：
-## 1. 總結 (Executive Summary)
-## 2. 任務拆解 (Task Breakdown) — 分 Phase，每步驟有 checkbox
-## 3. 影響檔案 (Impacted Files) — 每項標記 [NEW] / [MODIFY] / [DELETE]
-## 4. 驗證計畫 (Verification Plan) — 包含測試步驟與預期結果
-## 5. 回滾計畫 (Rollback Plan)
-## 6. 風險及緩解措施 (Risks & Mitigations) — 表格格式
-
-任務描述：
-${task}
-
-請以繁體中文回答，結構清晰，內容精準可執行。`;
-
-  try {
-    let pxResult = null;
-    let agResult;
-
-    if (quickMode) {
-      // Quick mode: AG only
-      agResult = await withRetry(() => callGemini(agPrompt), 'Gemini');
-      state.px_status = 'skipped';
-    } else {
-      // Full mode: PX + AG in parallel
-      const [px, ag] = await Promise.all([
-        withRetry(() => callPerplexity(pxPrompt), 'Perplexity'),
-        withRetry(() => callGemini(agPrompt), 'Gemini')
-      ]);
-      pxResult = px;
-      agResult = ag;
-      state.px_status = 'done';
-
-      writeFile(
-        path.join(ARTIFACTS_DIR, 'px-report.md'),
-        `# PX Report (A1)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: sonar-pro\n\n---\n\n${pxResult}\n`
-      );
-    }
-
-    // ── Write AG Artifact ──────────────────────────────────────────────────
-    writeFile(
-      path.join(ARTIFACTS_DIR, 'ag-plan.md'),
-      `# AG Plan (A2)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: Gemini\n**Mode**: ${quickMode ? 'quick (no PX)' : 'full'}\n\n---\n\n${agResult}\n`
-    );
-
-    // ── Validate AG Plan Format ────────────────────────────────────────────
-    const agPlanPath = path.join(ARTIFACTS_DIR, 'ag-plan.md');
-    if (!validateAgPlan(agPlanPath)) {
-      console.warn('[cl-flow-runner] ⚠️  ag-plan format incomplete — Verdict chain may be affected. Continuing.');
-    }
-
-    // ── Update State ───────────────────────────────────────────────────────
-    state.ag_status = 'done';
-    state.status = 'awaiting_cl_review';
-    writeFile(path.join(ARTIFACTS_DIR, 'state.json'), JSON.stringify(state, null, 2));
-
-    console.log('[cl-flow-runner] Phase 1 complete.');
-    if (!quickMode) console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/px-report.md`);
-    console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/ag-plan.md`);
-    console.log('[cl-flow-runner] ═══════════════════════════════════');
-    console.log('[cl-flow-runner] READY FOR CLAUDE REVIEW');
-    console.log(`[cl-flow-runner] Read: artifacts/${flow_id}/task-brief.md`);
-    if (!quickMode) console.log(`[cl-flow-runner] Read: artifacts/${flow_id}/px-report.md`);
-    console.log(`[cl-flow-runner] Read: artifacts/${flow_id}/ag-plan.md`);
-    console.log(`[cl-flow-runner] Output: artifacts/${flow_id}/cl-final-plan.md`);
-    console.log('[cl-flow-runner] ═══════════════════════════════════');
-    // Machine-readable marker for Claude to extract flow_id
-    console.log(`FLOW_ID=${flow_id}`);
-
-  } catch (err) {
-    state.status = 'error';
-    state.error = err.message;
-    writeFile(path.join(ARTIFACTS_DIR, 'state.json'), JSON.stringify(state, null, 2));
-    console.error('[cl-flow-runner] FATAL ERROR:', err.message);
-    console.error('[cl-flow-runner] Check state.json for details.');
-    process.exit(1);
-  }
+  console.log(`[cl-flow-runner] NEXT: Claude must write artifacts/${flow_id}/a3-draft.md, then run:`);
+  console.log(`[cl-flow-runner]   node scripts/cl-flow-runner.js --review ${flow_id} [--fast]`);
+  console.log(`FLOW_ID=${flow_id}`);
 }
 
-main();
+// ─── Mode: --review ───────────────────────────────────────────────────────────
+async function runReview() {
+  const flow_id = args[1];
+  const fastMode = args.includes('--fast');
+  if (!flow_id) usageAndExit();
+
+  const artifactsDir = path.join(ROOT_DIR, 'artifacts', flow_id);
+  const statePath = path.join(artifactsDir, 'state.json');
+  const draftPath = path.join(artifactsDir, 'a3-draft.md');
+
+  let state;
+  try {
+    state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  } catch (e) {
+    console.error(`[cl-flow-runner] FATAL: cannot read ${statePath} — did you run --init first? (${e.message})`);
+    process.exit(1);
+  }
+
+  const draft = readFileOrNull(draftPath);
+  if (!draft) {
+    console.error(`[cl-flow-runner] FATAL: artifacts/${flow_id}/a3-draft.md missing or empty.`);
+    console.error('[cl-flow-runner] Claude must write the A3 draft before running --review.');
+    process.exit(1);
+  }
+
+  console.log(`[cl-flow-runner] ═══════════════════════════════════`);
+  console.log(`[cl-flow-runner] Mode    : REVIEW ${fastMode ? '(--fast, AG only)' : '(AG + PX)'}`);
+  console.log(`[cl-flow-runner] Flow ID : ${flow_id}`);
+  console.log(`[cl-flow-runner] ═══════════════════════════════════`);
+
+  state.a3_draft_status = 'done';
+
+  if (!fastMode && !PERPLEXITY_API_KEY) {
+    console.error('[cl-flow-runner] ERROR: PERPLEXITY_API_KEY missing (required for non --fast review). Add to .env or use --fast.');
+    process.exit(1);
+  }
+  if (!GEMINI_API_KEY) {
+    console.error('[cl-flow-runner] ERROR: GEMINI_API_KEY missing (AG review is required in every mode).');
+    process.exit(1);
+  }
+
+  const pxPrompt = buildPxReviewPrompt(state.task, draft);
+  const agPrompt = buildAgReviewPrompt(state.task, draft);
+
+  const results = { ag: null, px: null };
+  const tasks = [];
+
+  tasks.push(
+    withRetry(() => callGemini(agPrompt), 'Gemini-Review')
+      .then(text => { results.ag = { ok: true, text }; })
+      .catch(err => { results.ag = { ok: false, error: err.message }; })
+  );
+
+  if (!fastMode) {
+    tasks.push(
+      withRetry(() => callPerplexity(pxPrompt, artifactsDir), 'Perplexity-Review')
+        .then(text => { results.px = { ok: true, text }; })
+        .catch(err => { results.px = { ok: false, error: err.message }; })
+    );
+  }
+
+  await Promise.all(tasks);
+
+  const degradedReasons = [];
+
+  if (results.ag && results.ag.ok) {
+    writeFile(
+      path.join(artifactsDir, 'ag-review.md'),
+      `# AG Review (A2 — adversarial critique of A3 draft)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: Gemini\n\n---\n\n${results.ag.text}\n`
+    );
+    state.ag_review_status = 'done';
+    console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/ag-review.md`);
+  } else {
+    state.ag_review_status = 'error';
+    const msg = results.ag ? results.ag.error : 'unknown error';
+    degradedReasons.push(`ag_review_failed: ${msg}`);
+    console.error(`[cl-flow-runner] ✗ AG review failed: ${msg}`);
+  }
+
+  if (fastMode) {
+    state.px_review_status = 'skipped';
+  } else if (results.px && results.px.ok) {
+    writeFile(
+      path.join(artifactsDir, 'px-review.md'),
+      `# PX Review (A1 — external validation of A3 draft)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: sonar-pro\n\n---\n\n${results.px.text}\n`
+    );
+    state.px_review_status = 'done';
+    console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/px-review.md`);
+  } else {
+    state.px_review_status = 'error';
+    const msg = results.px ? results.px.error : 'unknown error';
+    degradedReasons.push(`px_review_failed: ${msg}`);
+    console.error(`[cl-flow-runner] ✗ PX review failed: ${msg}`);
+  }
+
+  state.degraded = degradedReasons.length > 0;
+  state.degraded_reason = degradedReasons.length ? degradedReasons.join('; ') : undefined;
+  state.status = 'awaiting_cl_verdict';
+  state.cl_status = 'pending';
+
+  writeFile(statePath, JSON.stringify(state, null, 2));
+
+  console.log('[cl-flow-runner] ═══════════════════════════════════');
+  if (state.degraded) {
+    console.log(`[cl-flow-runner] ⚠️  DEGRADED — ${state.degraded_reason}`);
+    console.log('[cl-flow-runner] Claude must declare degraded status prominently in cl-final-plan.md.');
+  }
+  console.log('[cl-flow-runner] READY FOR CLAUDE (A3) FINAL VERDICT');
+  console.log(`[cl-flow-runner] Output: artifacts/${flow_id}/cl-final-plan.md`);
+  console.log('[cl-flow-runner] ═══════════════════════════════════');
+  console.log(`FLOW_ID=${flow_id}`);
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+if (mode === '--init') {
+  runInit();
+} else {
+  runReview().catch(err => {
+    console.error('[cl-flow-runner] FATAL ERROR:', err.message);
+    process.exit(1);
+  });
+}

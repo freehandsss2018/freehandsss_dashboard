@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-16 (Session 176 — `/cl-flow`／`/cl-flow-fast` A3-first 重組 D37 + Fat Mo 操作手冊落地): 🔀 ✅
+
+**摘要**：全文見完成記錄 [2026-07-15_s176-cl-flow-a3-first_completion_report.md](../reports/completion/2026-07-15_s176-cl-flow-a3-first_completion_report.md) + [2026-07-16_s176-fatmo-ops-quickcard_completion_report.md](../reports/completion/2026-07-16_s176-fatmo-ops-quickcard_completion_report.md)（制度層變動，完成記錄為唯一全文居所，本行僅摘要指回）。Fat Mo 觀察 A1/A2 盲寫計劃反覆錯誤大，拷問 7 條問答定案 A3-first 重組：A3 先寫草案，A1/A2 改做評審，`cl-flow-runner.js` 兩段式 `--init`/`--review[--fast]`。乾測+真實試點雙重驗證，fresh agent 覆核批評處理表抓到 1 條假採納並修正。試點副產品 Fat Mo 操作手冊 `fatmo-ops-quickcard.md` 落地，Phase 4 三場景可用性測試 3/3 PASS，另加 `/team` dashboard sidebar 連結。決策見 decisions.md D37。
+Subagent：✅ 已使用三次——① fresh-context agent 覆核批評處理表；② fresh-context agent 扮演 Fat Mo 做 Phase 4 可用性測試；③（本次 D37 重組本身無額外派工，主 session 直接執行）。
+
 ## 2026-07-15 (Session 175 — llm-council-skill 查證+暫緩安裝 D28 + `/rp`/`/cl-flow`/`/ag-flow` 拷問掛鉤機械化 D36): 🎛️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S175 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 貼 llm-council-skill（GitHub tenfoldmarc）文章問要唔要裝，查證原文後裁決方案A暫緩安裝，`/8d` 自我迭代抓出判準錯配並修正為 council 自己嘅需求證據判準，設 2026-08-09 scheduled task 自動覆核。Fat Mo 追問點解拷問技能唔自動掛入 `/rp`→`/cl-flow` 工作流，查證後在 `rp.md`（v2.4）/`cl-flow.md`（v2.2.1）/`ag-flow.md` 新增 structural_warning 觸發時主動提議「拷問我」機制，只自動化提醒不自動化代答。決策見 decisions.md D28、D36。

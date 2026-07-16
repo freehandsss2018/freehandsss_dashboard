@@ -60,7 +60,8 @@
     { "icon": "🐘", "label": "Supabase 後台", "url": "https://supabase.com/dashboard/project/vpmwizzixnwilmzctdvu" },
     { "icon": "📋", "label": "Airtable（後備）", "url": "https://airtable.com" },
     { "icon": "🎬", "label": "Canva", "url": "https://www.canva.com" },
-    { "icon": "📺", "label": "YouTube @Free_handsss", "url": "https://www.youtube.com/@Free_handsss" }
+    { "icon": "📺", "label": "YouTube @Free_handsss", "url": "https://www.youtube.com/@Free_handsss" },
+    { "icon": "📖", "label": "Fat Mo 操作手冊（速查卡）", "url": "../.fhs/notes/fatmo-ops-quickcard.md" }
   ],
   "hook_categories": {
     "pre-tool-guard.js": "治理守護",
