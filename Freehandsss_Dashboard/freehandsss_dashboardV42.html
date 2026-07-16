@@ -1000,6 +1000,14 @@
         .badge-cat-鎖匙扣   { background:#E3F2FD; color:#01579B; border-color: #B3E5FC; }
         .badge-cat-純銀吊飾 { background:#E8F5E9; color:#1B5E20; border-color: #C8E6C9; }
         .badge-cat-default  { background:#F5F5F5; color:#455A64; border-color: #CFD8DC; }
+        .badge-cat-羊毛氈   { background:#FFF3E0; color:#E65100; border-color: #FFCC80; }
+        .badge-cat-燈飾     { background:#FFFDE7; color:#F57F17; border-color: #FFF59D; }
+
+        /* 摺疊卡產品組成 chips（取代無意義的「N 件」） */
+        .acc-cat-chips { display:flex; flex-wrap:wrap; gap:3px; margin-top:1px; }
+        .acc-cat-chips .review-badge { margin:0; padding:1px 7px; font-size:10.5px; font-weight:600; gap:3px; }
+        .acc-cat-chips .review-badge .ba-icon { margin-right:1px; vertical-align:-1px; }
+        .acc-cat-chips .review-badge b { font-weight:800; margin-left:1px; }
         
         /* 材質配色 (Material) */
         .badge-mat-不銹鋼 { background: #ECEFF1; color: #455A64; border-color: #CFD8DC; }
@@ -8963,6 +8971,27 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const profitColor = displayedProfit > 0 ? 'var(--fhs-success)' : 'var(--fhs-danger)';
                 const itemCount = _accRenderFinal.length;
 
+                // 摺疊卡產品組成 chips：單看「N 件」無意義，直接在卡面列出買咗乜（分類沿用 getProductDimensions，唯一真源）
+                var _chipAgg = {};
+                var _chipOrder = ['手模擺設', '鎖匙扣', '純銀吊飾', '羊毛氈公仔', '燈飾', '其他'];
+                (o.items || []).forEach(function (it) {
+                    var _cName = getProductDimensions(it).category;
+                    if (_chipOrder.indexOf(_cName) === -1) _cName = '其他';
+                    _chipAgg[_cName] = (_chipAgg[_cName] || 0) + (Number(it.Qty) || 1);
+                });
+                var _chipMeta = {
+                    '手模擺設':   ['icon-palette',   '手模',   'badge-cat-立體擺設'],
+                    '鎖匙扣':     ['icon-key',       '鎖匙扣', 'badge-cat-鎖匙扣'],
+                    '純銀吊飾':   ['icon-gem',       '吊飾',   'badge-cat-純銀吊飾'],
+                    '羊毛氈公仔': ['icon-smile',     '羊毛氈', 'badge-cat-羊毛氈'],
+                    '燈飾':       ['icon-lightbulb', '燈飾',   'badge-cat-燈飾'],
+                    '其他':       ['icon-package',   '其他',   'badge-cat-default']
+                };
+                const _catChipsHtml = _chipOrder.filter(function (c) { return _chipAgg[c]; }).map(function (c) {
+                    var _m = _chipMeta[c];
+                    return '<span class="review-badge ' + _m[2] + '"><svg class="ba-icon" width="11" height="11"><use href="#' + _m[0] + '"/></svg>' + _m[1] + '<b>×' + _chipAgg[c] + '</b></span>';
+                }).join('');
+
                 // Build items badges HTML
                 let itemsHtml = '';
                 if (_accRenderFinal && _accRenderFinal.length > 0) {
@@ -9163,7 +9192,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         } else if (_dlvStatusText(o.Order_ID)) {
                                             _badgeHtml = '<span class="acc-dlv-status" onclick="event.stopPropagation();jumpToDlvCard(\'' + _dlvCardClass(o.Order_ID).replace('dlv-card-','') + '\')">' + _dlvStatusText(o.Order_ID) + '</span>';
                                         }
-                                        return '<div class="acc-dlv-card ' + _cardCls + '"><span class="acc-order-id">' + (o.Order_ID || 'N/A') + ' ➜</span><div class="acc-meta-row"><span class="acc-order-meta">' + cDate + ' · ' + (o.Customer || '-') + ' · ' + itemCount + ' 件</span>' + _badgeHtml + '</div></div>';
+                                        var _metaTxt = cDate + ' · ' + (o.Customer || '-') + (_catChipsHtml ? '' : ' · ' + itemCount + ' 件');
+                                        var _chipsRow = _catChipsHtml ? '<div class="acc-cat-chips">' + _catChipsHtml + '</div>' : '';
+                                        return '<div class="acc-dlv-card ' + _cardCls + '"><span class="acc-order-id">' + (o.Order_ID || 'N/A') + ' ➜</span><div class="acc-meta-row"><span class="acc-order-meta">' + _metaTxt + '</span>' + _badgeHtml + '</div>' + _chipsRow + '</div>';
                                     })()}
                                 </div>
                                 <div class="acc-order-header-right">

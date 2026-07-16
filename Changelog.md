@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-17] Session 179（Claude Code / Fable 5 執行）— 手機版訂單卡「N 件」改產品組成 chips
+
+- **緣起**：Fat Mo 指訂單卡（例 0600721）只顯示「9 件」根本無意思、唔知買咗乜，要求用最簡化直白嘅圖像呈現。
+- **執行內容**：`renderReviewAccordion` 摺疊卡 meta 行移除「· N 件」，卡面新增 `.acc-cat-chips` 產品組成行——按類別聚合逐個 chip 顯示 icon＋名＋×數量（手模紫/鎖匙扣藍/吊飾綠/羊毛氈橙/燈飾黃/其他灰）；分類直接重用 `getProductDimensions()`（與展開後產品明細 badge 同一真源，零新增判斷邏輯），數量按每項 `Qty` 加總，加購配件（羊毛氈/燈飾）一併計入；新增 CSS `badge-cat-羊毛氈`/`badge-cat-燈飾` 色階與 chips 樣式；`items` 空（舊資料無明細）時 fallback 顯示原「N 件」。改動範圍：`freehandsss_dashboardV42.html` 兩處（render 邏輯＋CSS），desktop 表格版不受影響。
+- **驗證**：Playwright 375px 手機闊度注入模擬訂單實測——9 件混合單拆解正確（手模×1｜鎖匙扣×3｜吊飾×3｜羊毛氈×1｜燈飾×1）、Qty>1 加總正確、空明細 fallback 正常；截圖交 Fat Mo 過目後獲明確「部署」授權（構成升格確認，`.deploy-ok` 授權途徑 a）。
+- **部署**：`/fhs-check` 前置（LIFECYCLE/STRESS/ACCEPTANCE 全 PASS；PRICE_AUDIT FAIL＝已知 Airtable 429 額度牆，按 commit.md Phase 2.5 先例不阻擋並註明）；升格 `current.html` → NAS 三關驗證 PASS（HTTP 204/大小相符/SHA256 `CBA303BF...` 相符）。
+- **Subagent 使用記錄**：❌ 未使用 — 單點 UI 改動主線程直接完成；生產 HTML 驗收以 Playwright 運行證據＋截圖交 Fat Mo 目測替代 fresh-context agent。
+
+【交付前雙紀律自檢】
+驗收：生產 HTML 改動 — 已附運行證據（Playwright 手機闊度實測截圖 + NAS 三關驗證）+ Fat Mo 目測截圖後親自授權部署 = ✅
+Subagent：❌ 未使用 — 判斷理由見上
+
 ## [2026-07-16] Session 178（Claude Code / Sonnet 5 執行）— `/upload-web` 新增 `team` 目標：AI 助理團隊名冊取得公開網址
 
 - **緣起**：Fat Mo 呼叫 `/upload-web`，意圖係將 AI 助理團隊名冊（`artifacts/agent_dashboardV42.html`，S174 建立）上載 NAS 取得公開網址。但既有 `/upload-web` 邏輯（`scripts/upload-web.ps1`）寫死只認 `Freehandsss_Dashboard/` 資料夾內嘅 POS Dashboard 檔案，AI 誤判執行咗重新部署 POS 生產版 V42（內容零改動，屬冪等重推，PRICE_AUDIT Red Flag 因 Airtable 429 額度牆經 Fat Mo 確認後繼續部署，無副作用）。查明誤會後，先以人手一次性 WebDAV PUT（重用 `.env` 同一組憑證，三關驗證同款）達成即時需求，並提案擴充腳本使其成為正式可重複指令；Fat Mo：「接納 /upload-web team」。
