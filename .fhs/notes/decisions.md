@@ -1640,3 +1640,22 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **設計取捨**：只自動化「提醒」動作，不自動化「回答」動作——grilling 逐條問答仍 100% 由 Fat Mo 決定，AI 唔會代答任何一條。此掛鉤本質是將 D27 既有承諾的觸發時機從「AI 記唔記得主動問」改為「規則檔機械判斷該問未問」，冇新增自主行為範圍。
 
 詳見 `.fhs/ai/commands/rp.md` Step 3「拷問掛鉤」段、`.fhs/ai/commands/cl-flow.md` Gate 1、`.fhs/ai/commands/ag-flow.md` Gate 1。
+
+### D37：S176 — Audit Ledger「疑漏算加購」假警示移除（`/grilling` 拷問確認後執行）
+
+**背景**：Fat Mo 回報訂單 0600724 財務分頁鎖匙扣品項出現紅色「⚠ 疑漏算加購」警示，懷疑警示訊息本身錯誤（誤把已 ×qty 的打印/環扣/運費金額當單件金額）。AI 兩輪查證均先後推翻自己前一輪的診斷（第一輪誤判「數字都對，警示是誤報」；第二輪誤判「n8n 真的漏算，需開 Task A 修復」），第三輪用 live Supabase 交叉比對 `orders.keychain_cost`（用已知運費扣減公式 `(總片數-1)×$20` 反推）才坐實：**`subtotal_cost`／`keychain_cost`／`total_cost` 全部正確，錢從未算少**；唯一有問題嘅係 `order_items.item_base_cost` 這個輔助欄位，n8n 寫入時不一致（有時存「單件charm價」，有時存「整套catalog價」），此觸發咗前端 `qtyUnscaled` 判斷式（`subtotal_cost === item_base_cost` 時 fire）——但呢個判準對 24 筆活資料樣本測試,凡是「有明細分解（drawing/printing/chain/shipping 四欄有值）」嘅正常訂單全部誤報,零真陽性。
+
+**決策**（`/grilling` 逐條拷問，Fat Mo 五輪確認）：
+1. 完全移除警示文案（非改字），Fat Mo：「直接拿掉」
+2. 連帶移除收合狀態嘅紅色 ⚠ icon（同一 `qtyUnscaled` 旗標驅動），Fat Mo：「一起拿掉」
+3. 「單件基礎成本」標籤語意問題（item_base_cost 不可靠）本次不動，留待日後獨立處理 n8n 那條線，Fat Mo：「同意」
+4. dev（V42）+ production（current.html）一次過改埋，Fat Mo：「一起改」（構成 AGENTS.md §3 路徑(a)升格授權，AI 自建 `.fhs/.deploy-ok` 執行）
+5. 驗收方式：fresh-context subagent（code-reviewer）覆核，非自驗
+
+**執行內容**：`buildAuditLedgerHtml()` 內刪除 `qtyUnscaled` 變數宣告 + 警示文案行 + summary 紅色 ⚠ 三元運算式，兩檔（`freehandsss_dashboardV42.html`／`Freehandsss_dashboard_current.html`）同步刪除，無任何金額計算邏輯改動。
+
+**驗收**：fresh-context code-reviewer 讀 diff + 語法平衡檢查 + 用訂單 0600724 已知數據手動追蹤邏輯路徑，PASS，判定「可部署」。發現一項非阻塞殘留：CSS class `.fhsAudit_qtyWarn` 樣式表仍在但零元素引用，純死代碼，列入日後衛生清理範圍不即時處理。
+
+**教訓**：`item_base_cost` 欄位語意不可靠（同一 category 不同訂單，有時單件有時整套），任何以此欄位為前提的前端判斷式都不可信；未來若要真正修這個資料源頭問題，須動 n8n Code Node，屬獨立範圍，這次刻意不做。
+
+詳見 [freehandsss_dashboardV42.html:10817-10836](Freehandsss_Dashboard/freehandsss_dashboardV42.html:10817)、Changelog.md S176 條目、auto-memory `project_keychain_addon_qty_cost_bug.md`（已更新修正）。

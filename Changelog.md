@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-07-16] Session 176（Claude Code / Sonnet 5 執行）— Audit Ledger「疑漏算加購」假警示移除（`/grilling` 拷問確認後執行，D37）
+
+- **緣起**：Fat Mo 回報訂單 0600724 財務分頁鎖匙扣品項出現紅色「⚠ 疑漏算加購」警示，並質疑該訊息本身邏輯有錯（誤把已 ×qty 的打印/環扣/運費金額當單件金額顯示）。
+- **查證過程（三輪反覆，最終用 live Supabase 交叉比對坐實）**：
+  - 第一輪：AI 只看單一訂單 0600724 的 order_items 欄位，誤判「數字都對，警示是誤報」。
+  - 第二輪：AI 擴大查詢範圍到 24 筆同類活資料，誤判「n8n 真的漏算 quantity，是 Task A 舊病灶重現」。
+  - 第三輪（正確）：交叉比對 `orders.keychain_cost` 用已知運費扣減公式 `(總片數-1)×$20` 反推——`250+250-60=440`，精準對上 0600724 的 `keychain_cost=440`；07001007（`360+360-60=660`）同樣對上。證實 **`subtotal_cost`／`keychain_cost`／`total_cost` 從未算錯**，真正不一致的只有 `item_base_cost` 這個輔助欄位（n8n 寫入時有時存單件charm價、有時存整套catalog價），此觸發了前端 `qtyUnscaled` 判斷式的系統性誤報（對 24 筆樣本中所有「有明細分解」的正常訂單全部誤報，零真陽性）。
+- **`/grilling` 拷問確認方案**（五輪逐條確認，Fat Mo 全部作答）：完全移除警示文案（非改字）→ 連帶移除收合狀態的紅色 ⚠ icon → 「單件基礎成本」標籤語意問題本次不動 → dev（V42）+ production（current.html）一次過改 → fresh-context subagent 覆核。
+- **執行內容**：`buildAuditLedgerHtml()` 刪除 `qtyUnscaled` 變數宣告 + 警示文案行 + summary 紅色 ⚠ 三元運算式，`freehandsss_dashboardV42.html` 與 `Freehandsss_dashboard_current.html` 同步刪除，純顯示層改動，無任何金額計算邏輯異動。Fat Mo 直接回覆「一起改」構成 AGENTS.md §3 路徑(a)升格確認，AI 自建 `.fhs/.deploy-ok` 執行 current.html 部署。
+- **驗證**：fresh-context code-reviewer 覆核（讀 diff + 語法平衡檢查 + 用訂單 0600724 已知數據手動追蹤邏輯路徑），PASS，判定可部署；發現一項非阻塞殘留（CSS class `.fhsAudit_qtyWarn` 樣式表仍在但零元素引用，純死代碼，留待日後衛生清理）。
+- **教訓**：`item_base_cost` 欄位語意不可靠（同一 category 不同訂單，有時單件有時整套），任何以此欄位為前提的前端判斷式都不可信；根治需動 n8n Code Node（資料源頭），屬獨立範圍本次刻意不做。已更新 auto-memory `project_keychain_addon_qty_cost_bug.md` 修正舊有誤解。
+- **後效同步稽核**：[A] 不適用（無 repo-map 相關新增）；[B] 觸發（生產 HTML 財務顯示邏輯異動，已同步 decisions.md D37 + 本條目 + handoff MASTER 表）；[C] 已更新本條目；[G] 觸發但核實為誤報修復非財務計算異動，已於本條目說明。
+- **Subagent 使用記錄**：✅ 使用 1 支 — code-reviewer（fresh-context 驗收，diff + 語法 + 邏輯路徑追蹤，PASS）。
+
+【交付前雙紀律自檢】
+驗收：生產 HTML 顯示層改動 — fresh-context code-reviewer 覆核 PASS（非自驗）= ✅（02 §5 分流表適用）
+Subagent：✅ 使用 1 支 — code-reviewer 驗收，按 governance/02 §1 及既定驗收流程派工
+
 ## [2026-07-15] Session 175（Claude Code / Sonnet 5 執行）— llm-council-skill 查證+暫緩安裝（D28）+ `/rp`／`/cl-flow`／`/ag-flow` 拷問掛鉤機械化（D36）
 
 - **緣起①**：Fat Mo 分享 Notion 導讀文章 + GitHub `tenfoldmarc/llm-council-skill` 連結（Karpathy「LLM Council」方法論移植版技能：5顧問人格平行辯論+匿名互審+主席裁決），問要唔要裝。

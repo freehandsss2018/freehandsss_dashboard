@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-16 (Session 176 — Audit Ledger「疑漏算加購」假警示移除，`/grilling` 拷問確認後執行 D37): 🧾 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S176 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 報訂單 0600724 財務分頁鎖匙扣品項紅色「疑漏算加購」警示疑似邏輯錯誤，AI 三輪查證（前兩輪皆誤判）後用 live Supabase 交叉比對 `orders.keychain_cost`（運費扣減公式反推）坐實 subtotal_cost/keychain_cost/total_cost 從未算錯，純屬 item_base_cost 輔助欄位語意不一致觸發前端假警示（24筆樣本零真陽性）。`/grilling` 五輪拷問確認方案（完全移除警示+icon、標籤問題本次不動、V42+current.html一起改、fresh-context驗收）後執行，code-reviewer 覆核 PASS。決策見 decisions.md D37。
+Subagent：✅ 使用 1 支 — code-reviewer（fresh-context 驗收 diff+語法+邏輯路徑追蹤）。
+
 ## 2026-07-15 (Session 175 — llm-council-skill 查證+暫緩安裝 D28 + `/rp`/`/cl-flow`/`/ag-flow` 拷問掛鉤機械化 D36): 🎛️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S175 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 貼 llm-council-skill（GitHub tenfoldmarc）文章問要唔要裝，查證原文後裁決方案A暫緩安裝，`/8d` 自我迭代抓出判準錯配並修正為 council 自己嘅需求證據判準，設 2026-08-09 scheduled task 自動覆核。Fat Mo 追問點解拷問技能唔自動掛入 `/rp`→`/cl-flow` 工作流，查證後在 `rp.md`（v2.4）/`cl-flow.md`（v2.2.1）/`ag-flow.md` 新增 structural_warning 觸發時主動提議「拷問我」機制，只自動化提醒不自動化代答。決策見 decisions.md D28、D36。
