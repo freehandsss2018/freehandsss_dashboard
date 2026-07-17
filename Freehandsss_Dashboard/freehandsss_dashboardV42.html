@@ -4838,6 +4838,11 @@
         <!-- Main Content -->
         <main id="fo-main">
 
+            <!-- 離線示範數據警示（雙重降級至 MOCK 時顯示） -->
+            <div id="fo-mock-data-banner" style="display:none; background:#C62828; color:#fff; font-size:13px; font-weight:600; padding:8px 14px; border-radius:6px; margin-bottom:10px; text-align:center;">
+                ⚠️ 離線示範數據，非真實財務 — Supabase 及備援皆無法連線
+            </div>
+
             <!-- 數據來源 + 對比基準說明 -->
             <div id="fo-data-source">
                 數據來源：<span>Supabase</span>
@@ -13958,7 +13963,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             /* 數據來源同步時間 */
             var syncEl = document.getElementById('fo-last-sync');
-            if (syncEl) syncEl.textContent = FO_LIVE_DATA ? new Date().toLocaleDateString('zh-HK') + ' (即時)' : '2026-04-26 (快取)';
+            if (syncEl) syncEl.textContent = FO_LIVE_DATA ? new Date().toLocaleDateString('zh-HK') + ' (即時)' : '—（示範數據，未連線）';
 
             /* KPI Breakdown rows */
             var bkd = (d.breakdown && d.breakdown[foCurrentCategory]) ? d.breakdown[foCurrentCategory] : null;
@@ -14370,6 +14375,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             foDrawPie(tab);
         }
 
+        /* === MOCK DATA BANNER === */
+        function showFoMockDataBanner() {
+            var el = document.getElementById('fo-mock-data-banner');
+            if (el) el.style.display = 'block';
+        }
+        function hideFoMockDataBanner() {
+            var el = document.getElementById('fo-mock-data-banner');
+            if (el) el.style.display = 'none';
+        }
+
         /* === FETCH LIVE DATA === */
         function foFetchLive() {
             if (FO_DATA_LOADING) return;
@@ -14383,6 +14398,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (data && data.current && data.monthly && data.yearly &&
                         (data.current.revenue > 0 || data.monthly.revenue > 0 || data.yearly.revenue > 0)) {
                         FO_LIVE_DATA = data;
+                        hideFoMockDataBanner();
                         foRenderAll(foCurrentTab);
                     } else {
                         throw new Error('Invalid or empty data (all revenues=0), using mock');
@@ -14390,6 +14406,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 })
                 .catch(function(err) {
                     console.warn('[FHS Financial] Webhook unavailable, using mock data. Reason:', err.message);
+                    showFoMockDataBanner();
+                    foUpdateKPI(foCurrentTab);
                 })
                 .finally(function() { FO_DATA_LOADING = false; });
         }
@@ -15343,6 +15361,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     .then(function(data) {
                         if (data && data.current && data.monthly) {
                             window.FO_LIVE_DATA = data;
+                            if (window.hideFoMockDataBanner) window.hideFoMockDataBanner();
                             if (window.foRenderAll) window.foRenderAll(window.foCurrentTab || 'monthly');
                             sbBadge('📡 Supabase', '#2E7D32');
                         }
@@ -15350,6 +15369,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     .catch(function(err) {
                         console.warn('[V41 Supabase] foFetchLive fallback:', err.message);
                         sbBadge('⚠️ n8n 備援', '#E65100');
+                        window.FO_DATA_LOADING = false; // 先解鎖，否則 origFn 自身嘅 loading guard 會誤判為進行中而靜默 no-op
                         if (origFn) origFn.apply(this, arguments);
                     })
                     .finally(function() { window.FO_DATA_LOADING = false; });

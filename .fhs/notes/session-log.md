@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-17 (Session 181 — 財務版面雙重降級 MOCK 靜默警示修復，worktree `epic-cartwright-3aafcb`): 🚨 ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S181 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 四路財務審查發現 Supabase+n8n webhook 雙重失敗時靜默降級至硬編碼 MOCK 數據；新增頂部紅色警示 banner（雙重失敗顯示/任一成功隱藏）+ `fo-last-sync` 死日期改動態。實測期間額外修復一個原有隱藏 bug：`patchFoFetchLive()` fallback 因 loading-flag collision 而靜默 no-op，webhook 路徑喺 Supabase-flag-ON 環境下從未真正執行過。Browser pane 本地伺服器 + `window.fetch` override 雙路徑（失敗/回復）複測 PASS。
+Subagent：❌ 未使用——全程主對話直接定位改檔 + Browser pane 實測完成。
+
 ## 2026-07-17 (Session 179 — 手機版訂單卡「N 件」改產品組成 chips + worktree 並行部署衝突補救，五單完成品歸隊): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S179 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 指訂單卡只顯示「N 件」無意思；摺疊卡新增 `.acc-cat-chips` 產品組成行，分類重用 `getProductDimensions()` 單一真源。Playwright 375px 實測後截圖交 Fat Mo，親覆「部署」授權升格。部署後 Fat Mo 發現手機上其餘功能倒退，查明係另兩個 worktree session（`v42-shortcut-bar-optimize-5cf31c` S180 快捷列/月曆v2、`cl-flow-instructions-a03768` S176 cl-flow A3-first）長期未 merge 落 main，本次部署用舊 main 做底覆蓋咗佢哋。兩單 merge 補救後（HTML 自動合併零衝突，D37→D39 撞號改編）重新升格部署。Fat Mo 要求順手清理已完成使命 worktree，清理前逐一核實乾淨時再揪出 3 個未 commit 改動：訂單總覽肢體方向 badge 重複顯示 bug 修復（原 S178，21張訂單/50件品項受影響，曾部署過但從未 commit 畀後續部署覆蓋）、交付摘要三段式格式機械化（S176續II，同樣從未commit）皆抽取diff clean apply落main補救；1個純deploy-log噪音捨棄。全程三輪部署，NAS三關驗證皆PASS。
