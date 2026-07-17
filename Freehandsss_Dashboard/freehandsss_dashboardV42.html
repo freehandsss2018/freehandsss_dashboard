@@ -1657,6 +1657,75 @@
         }
         .ba-icon { font-size: 14px; line-height: 1; }
         .ba-label { line-height: 1; }
+
+        /* ===== S180 快捷列自訂（手機長按 / Desktop 右鍵進入編輯） ===== */
+        .fhs-top-bar__actions { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        .fhs-top-bar__actions button { position: relative; }
+        .fhs-top-bar__actions button.sb-hidden { display: none !important; }
+        #sbAddBtn, #sbDoneBtn { display: none; }
+        .fhs-top-bar__actions.sb-editing #sbAddBtn:not(.sb-hidden),
+        .fhs-top-bar__actions.sb-editing #sbDoneBtn { display: inline-flex; }
+        .fhs-top-bar__actions.sb-editing {
+            outline: 2px dashed var(--fhs-accent);
+            outline-offset: 2px;
+        }
+        .fhs-top-bar__actions.sb-editing button[data-sb-key] {
+            animation: sb-wiggle 0.35s ease-in-out infinite alternate;
+        }
+        .fhs-top-bar__actions.sb-editing button[data-sb-key]::after {
+            content: '\2715';
+            position: absolute;
+            top: -5px; right: -3px;
+            width: 16px; height: 16px;
+            line-height: 16px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 700;
+            border-radius: 50%;
+            background: var(--fhs-danger);
+            color: #fff;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .fhs-top-bar__actions.sb-editing .fhs-nav-indicator { display: none !important; }
+        @keyframes sb-wiggle {
+            from { transform: rotate(-1.5deg); }
+            to   { transform: rotate(1.5deg); }
+        }
+        #sbPalette {
+            display: none;
+            position: fixed;
+            top: 56px; right: 16px;   /* Desktop：top bar 下方 */
+            z-index: 2100;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 168px;
+            padding: 8px;
+            background: var(--fhs-bg-surface);
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px rgba(44, 36, 22, 0.16);
+        }
+        #sbPalette.is-open { display: flex; }
+        #sbPalette .sb-pal-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--fhs-border);
+            border-radius: var(--radius-md);
+            background: var(--fhs-bg-elevated);
+            color: var(--fhs-text-primary);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+        }
+        #sbPalette .sb-pal-item:hover { background: var(--fhs-bg-surface); border-color: var(--fhs-accent); }
+        @media (max-width: 767px) {
+            #sbPalette {
+                top: auto;
+                left: 16px; right: 16px;
+                bottom: calc(84px + env(safe-area-inset-bottom, 0px));   /* 貼喺底部導覽列上方 */
+            }
+        }
         @media (max-width: 480px) {
             .fhs-top-bar__order-id { font-size: 14px; max-width: 35%; }
             .fhs-top-bar__logo { font-size: 15px; }
@@ -3206,6 +3275,265 @@
         .fhs-row-flash td {
             animation: fhs-row-flash 1.2s ease-in-out 3 !important;
         }
+
+        /* ================================================================
+           V42 — 取模排程中心 B：迷你月曆（S159規劃/S170拷問修訂，決策見 decisions.md D29；
+           本次僅落地 B，C/D/E 延後）
+           ================================================================ */
+        #moldCalOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 12000;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        #moldCalOverlay.is-open { display: flex; }
+        #moldCalOverlay.mc-anchored {
+            background: transparent;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+        #moldCalPopup {
+            background: var(--fhs-bg-surface);
+            border-radius: 14px;
+            width: 100%;
+            max-width: min(320px, 95vw);
+            max-height: 90dvh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        #moldCalOverlay.mc-anchored #moldCalPopup {
+            position: fixed;
+            max-width: 320px;
+        }
+        #moldCalPopup .mc-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 12px 14px 8px;
+            border-bottom: 1px solid var(--fhs-border);
+            flex-shrink: 0;
+        }
+        #moldCalPopup .mc-hdr-title {
+            flex: 1;
+            text-align: center;
+            font-weight: 700;
+            font-size: var(--fhs-text-base);
+            color: var(--fhs-text-primary);
+        }
+        #moldCalPopup .mc-nav-btn,
+        #moldCalPopup .mc-close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--fhs-text-secondary);
+            padding: 2px 8px;
+            line-height: 1;
+        }
+        #moldCalPopup .mc-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 8px 14px 0;
+            flex-shrink: 0;
+        }
+        #moldCalPopup .mc-tab {
+            flex: 1;
+            text-align: center;
+            font-size: var(--fhs-text-sm);
+            font-weight: 700;
+            padding: 7px 0;
+            border: none;
+            border-radius: var(--radius-pill, 999px);
+            color: var(--fhs-text-secondary);
+            background: var(--fhs-bg-elevated);
+            cursor: pointer;
+        }
+        #moldCalPopup .mc-tab.is-on { background: var(--fhs-accent); color: var(--fhs-text-on-accent); }
+        #moldCalPopup .mc-body {
+            flex: 1;
+            padding: 10px 14px 14px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #moldCalPopup .mc-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        #moldCalPopup .mc-dow {
+            font-size: var(--fhs-text-xs);
+            color: var(--fhs-text-muted);
+            text-align: center;
+            font-weight: 700;
+            padding: 4px 0;
+        }
+        #moldCalPopup .mc-day {
+            position: relative;
+            min-height: 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 4px 0 5px;
+            border-radius: 8px;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+            cursor: pointer;
+            background: var(--fhs-bg-base);
+        }
+        #moldCalPopup .mc-day:hover { background: var(--fhs-bg-elevated); }
+        #moldCalPopup .mc-day.mc-empty { visibility: hidden; cursor: default; }
+        #moldCalPopup .mc-day.mc-past { opacity: 0.45; }
+        #moldCalPopup .mc-day.mc-today { outline: 2px solid var(--fhs-accent); outline-offset: -2px; font-weight: 700; }
+        #moldCalPopup .mc-day.mc-selected { background: var(--fhs-accent-light); opacity: 1; }
+        #moldCalPopup .mc-slots { display: flex; gap: 2px; }
+        #moldCalPopup .mc-slot {
+            display: inline-block;
+            width: 9px;
+            height: 5px;
+            border-radius: 2px;
+            background: var(--fhs-bg-elevated);
+            border: 1px solid var(--fhs-border);
+        }
+        #moldCalPopup .mc-slot.on { background: var(--fhs-accent); border-color: var(--fhs-accent); }
+        #moldCalPopup .mc-tbd-dot {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--fhs-warning);
+        }
+        #moldCalPopup .mc-legend {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-size: var(--fhs-text-xs);
+            color: var(--fhs-text-secondary);
+            padding-top: 10px;
+        }
+        #moldCalPopup .mc-legend span { display: inline-flex; align-items: center; gap: 4px; }
+        #moldCalPopup .mc-detail { border-top: 1px solid var(--fhs-border); margin-top: 10px; padding-top: 10px; }
+        #moldCalPopup .mc-detail-hd { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        #moldCalPopup .mc-detail-d { font-weight: 800; font-size: var(--fhs-text-base); color: var(--fhs-text-primary); }
+        #moldCalPopup .mc-detail-hint {
+            text-align: center;
+            font-size: var(--fhs-text-xs);
+            color: var(--fhs-text-muted);
+            padding: 12px 0 4px;
+        }
+        #moldCalPopup .mc-chip {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: var(--radius-pill, 999px);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        #moldCalPopup .mc-free-chip { font-size: 11px; font-weight: 700; color: var(--fhs-success); background: var(--fhs-success-bg); padding: 2px 10px; border-radius: var(--radius-pill, 999px); white-space: nowrap; }
+        #moldCalPopup .mc-some-chip { font-size: 11px; font-weight: 700; color: var(--fhs-warning); background: var(--fhs-warning-bg); padding: 2px 10px; border-radius: var(--radius-pill, 999px); white-space: nowrap; }
+        #moldCalPopup .mc-full-chip { font-size: 11px; font-weight: 700; color: var(--fhs-danger); background: var(--fhs-danger-bg); padding: 2px 10px; border-radius: var(--radius-pill, 999px); white-space: nowrap; }
+        #moldCalPopup .mc-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 9px;
+            border-radius: 10px;
+            background: var(--fhs-bg-base);
+            margin-bottom: 5px;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-text-primary);
+        }
+        #moldCalPopup .mc-row-link { cursor: pointer; }
+        #moldCalPopup .mc-row-link:hover { background: var(--fhs-bg-elevated); }
+        #moldCalPopup .mc-row-t { font-weight: 800; color: var(--fhs-accent); min-width: 62px; font-size: 12px; }
+        #moldCalPopup .mc-row-t.mc-row-tbd { color: var(--fhs-warning); }
+        #moldCalPopup .mc-row-who { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #moldCalPopup .mc-row-oid { color: var(--fhs-text-secondary); font-size: 11px; }
+        #moldCalPopup .mc-row-go { color: var(--fhs-text-muted); }
+        #moldCalPopup .mc-row-free { background: var(--fhs-success-bg); }
+        #moldCalPopup .mc-row-free .mc-row-t, #moldCalPopup .mc-row-free .mc-row-who { color: var(--fhs-success); font-weight: 700; }
+        #moldCalPopup .mc-pick-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 12px 0;
+            border: none;
+            border-radius: 12px;
+            background: var(--fhs-accent);
+            color: var(--fhs-text-on-accent);
+            font-size: var(--fhs-text-base);
+            font-weight: 800;
+            cursor: pointer;
+        }
+        #moldCalPopup .mc-pick-btn:hover { background: var(--fhs-accent-hover); }
+        #moldCalPopup .mc-agenda { padding-top: 2px; }
+        #moldCalPopup .mc-aday { margin-bottom: 10px; }
+        #moldCalPopup .mc-aday-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+        #moldCalPopup .mc-aday-d { font-weight: 800; font-size: var(--fhs-text-sm); color: var(--fhs-text-primary); }
+        #moldCalPopup .mc-jumpfree {
+            width: 100%;
+            padding: 10px 0;
+            border: 1.5px solid var(--fhs-accent);
+            border-radius: 12px;
+            background: var(--fhs-bg-surface);
+            color: var(--fhs-accent);
+            font-size: var(--fhs-text-sm);
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        @keyframes mc-flash-kf {
+            0%, 100% { background-color: transparent; }
+            30%, 70% { background-color: var(--fhs-accent-light); }
+        }
+        #moldCalPopup .mc-flash { animation: mc-flash-kf 0.8s ease-in-out 2; border-radius: 10px; }
+        #moldCalPopup .mc-error {
+            text-align: center;
+            font-size: var(--fhs-text-sm);
+            color: var(--fhs-danger);
+            padding: 20px 0;
+        }
+        .date-field-wrap { position: relative; cursor: pointer; }
+        .date-field-wrap input[type="date"] {
+            cursor: pointer;
+            padding-right: 40px;
+            background-color: #FFFFFF;
+        }
+        .date-field-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+            display: none;
+            -webkit-appearance: none;
+        }
+        .date-field-wrap .date-field-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--fhs-accent);
+            pointer-events: none;
+        }
+        @media (max-width: 768px) {
+            #moldCalOverlay, #moldCalOverlay.mc-anchored {
+                background: rgba(0,0,0,0.6);
+                align-items: flex-end;
+                justify-content: center;
+                padding: 0;
+            }
+            #moldCalPopup, #moldCalOverlay.mc-anchored #moldCalPopup {
+                position: static;
+                border-radius: 18px 18px 0 0;
+                max-width: 100%;
+                max-height: 80dvh;
+            }
+        }
     </style>
 
     <!-- Impeccable V34 Glassmorphism Overrides block removed per V40 fix (FAIL #2) -->
@@ -3524,15 +3852,23 @@
             style="display:none; flex-shrink:0; padding:2px 10px; background:var(--fhs-success); color:#fff; border-radius:var(--radius-pill); font-size:11px; font-weight:700; white-space:nowrap;">0 筆</span>
         <div class="fhs-top-bar__actions">
             <!-- 模式切換按鈕：contract-critical IDs 保留（S150 F6.1：icon+label 結構，手機底部導覽用） -->
-            <button id="modeCreateBtn" onclick="switchMode('create')"><svg class="ba-icon" width="20" height="20"><use href="#icon-plus"/></svg><span class="ba-label">新增</span></button>
-            <button id="modeEditBtn" onclick="switchMode('edit')"><svg class="ba-icon" width="20" height="20"><use href="#icon-edit"/></svg><span class="ba-label">修改</span></button>
-            <button id="modeReviewBtn" onclick="switchMode('review')"><svg class="ba-icon" width="20" height="20"><use href="#icon-list"/></svg><span class="ba-label">訂單</span></button>
+            <!-- S180：快捷列可自訂（手機長按/Desktop右鍵或✎），顯示與排序由 initShortcutBar() 按 localStorage['fhsShortcutBarV1'] 控制；預設隱「修改」顯「月曆」 -->
+            <button id="modeCreateBtn" data-sb-key="create" onclick="switchMode('create')"><svg class="ba-icon" width="20" height="20"><use href="#icon-plus"/></svg><span class="ba-label">新增</span></button>
+            <button id="modeEditBtn" data-sb-key="edit" onclick="switchMode('edit')"><svg class="ba-icon" width="20" height="20"><use href="#icon-edit"/></svg><span class="ba-label">修改</span></button>
+            <button id="modeCalendarBtn" data-sb-key="calendar" onclick="openMoldCalendar({bindMode:'view'})" title="查看取模檔期"><svg class="ba-icon" width="20" height="20"><use href="#icon-calendar"/></svg><span class="ba-label">月曆</span></button>
+            <button id="modeReviewBtn" data-sb-key="review" onclick="switchMode('review')"><svg class="ba-icon" width="20" height="20"><use href="#icon-list"/></svg><span class="ba-label">訂單</span></button>
             <!-- Financial Overview 模式按鈕（V40.2 整合版） -->
-            <button id="modeFinanceBtn" onclick="switchMode('finance')"><svg class="ba-icon" width="20" height="20"><use href="#icon-wallet"/></svg><span class="ba-label">財務</span></button>
+            <button id="modeFinanceBtn" data-sb-key="finance" onclick="switchMode('finance')"><svg class="ba-icon" width="20" height="20"><use href="#icon-wallet"/></svg><span class="ba-label">財務</span></button>
             <!-- 系統監控按鈕（V46.1） -->
-            <button id="modeSystemBtn" onclick="switchMode('system')" title="系統狀態監控"><svg class="ba-icon" width="20" height="20"><use href="#icon-settings"/></svg><span class="ba-label">系統</span></button>
+            <button id="modeSystemBtn" data-sb-key="system" onclick="switchMode('system')" title="系統狀態監控"><svg class="ba-icon" width="20" height="20"><use href="#icon-settings"/></svg><span class="ba-label">系統</span></button>
+            <!-- S180 快捷列編輯工具：＋/完成 只喺編輯模式現身（Desktop 右鍵 bar 進入編輯，冇獨立 ✎ 掣） -->
+            <button id="sbAddBtn" type="button" title="加入快捷鍵"><svg class="ba-icon" width="20" height="20"><use href="#icon-plus"/></svg><span class="ba-label">加入</span></button>
+            <button id="sbDoneBtn" type="button" title="完成編輯"><svg class="ba-icon" width="20" height="20"><use href="#icon-check"/></svg><span class="ba-label">完成</span></button>
         </div>
     </div>
+
+    <!-- S180 快捷列編輯調色盤（列出未顯示嘅快捷鍵，JS 動態填充） -->
+    <div id="sbPalette" role="menu" aria-label="加入快捷鍵"></div>
 
     <!-- V37 原有 role-bar 保留（隱藏，保持 ID 合約） -->
     <!-- NOTE: roleLingBtn / roleFatBtn 保留 ID，但不驅動視覺主題（V40 廢除雙模式） -->
@@ -3565,6 +3901,8 @@
         class="review-container"
         style="display:none; width:100%; max-width:100%; margin:0; padding:0;">
         <div class="card" style="padding:0; width:100%; overflow:visible;">
+
+            <!-- 取模排程中心 B（S159/S170/D29）：S180 起入口移至快捷列「月曆」掣（modeCalendarBtn），原「查看檔期」獨立掣已取消 -->
 
             <!-- Zone 2：標題列（fixed at top:48px） -->
             <div id="reviewZone2" style="display:none;">
@@ -3823,7 +4161,13 @@
 
         <div class="form-group"><label>聯絡人稱呼</label><input type="text" id="momName" placeholder="待定"
                 oninput="generate()"></div>
-        <div class="form-group"><label>約定日期</label><input type="date" id="appDate" onchange="generate()"></div>
+        <div class="form-group">
+            <label>約定日期</label>
+            <div class="date-field-wrap" onclick="openMoldCalendar({bindMode:'form',triggerEl:this})" title="撳開月曆揀日（可睇檔期）">
+                <input type="date" id="appDate" onchange="generate()" readonly>
+                <svg class="ba-icon date-field-icon" width="16" height="16"><use href="#icon-calendar"/></svg>
+            </div>
+        </div>
         <div class="form-group"><label>取模時間</label>
             <div class="grid-2-col">
                 <select id="appTimeHour" onchange="generate()"></select>
@@ -12821,7 +13165,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     indicator.style.display = 'none';
                     return;
                 }
-                const activeBtn = ctrl.querySelector('button.active');
+                const activeBtn = ctrl.querySelector('button.active:not(.sb-hidden)');
                 if (!activeBtn) {
                     indicator.style.display = 'none';
                     return;
@@ -12838,6 +13182,173 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window.addEventListener('resize', window.updateBottomNavIndicator);
         }
         window.initBottomNavIndicator = initBottomNavIndicator;
+
+        /* ================================================================
+           S180 快捷列自訂系統（Fat Mo 2026-07-16）
+           - 顯示/排序存 localStorage['fhsShortcutBarV1']；預設隱「修改」顯「月曆」
+           - 手機：長按 600ms 進入編輯；Desktop：右鍵 bar 或 hover ✎
+           - 編輯模式：撳快捷鍵=移除（最少保留2粒）、＋=加入、✓/Esc/撳出面=完成
+           - 顯示/隱藏用 class（switchMode 會抹 inline style，見 ~L5958）
+           ================================================================ */
+        (function() {
+            const SB_KEY = 'fhsShortcutBarV1';
+            const SB_MIN = 2;
+            const SB_REGISTRY = [
+                { key: 'create',   id: 'modeCreateBtn',   label: '新增', icon: 'icon-plus' },
+                { key: 'edit',     id: 'modeEditBtn',     label: '修改', icon: 'icon-edit' },
+                { key: 'calendar', id: 'modeCalendarBtn', label: '月曆', icon: 'icon-calendar' },
+                { key: 'review',   id: 'modeReviewBtn',   label: '訂單', icon: 'icon-list' },
+                { key: 'finance',  id: 'modeFinanceBtn',  label: '財務', icon: 'icon-wallet' },
+                { key: 'system',   id: 'modeSystemBtn',   label: '系統', icon: 'icon-settings' }
+            ];
+            const SB_DEFAULT = ['create', 'calendar', 'review', 'finance', 'system'];
+            let sbEditing = false;
+            let sbEnteredAt = 0;
+
+            function sbLoad() {
+                try {
+                    const raw = JSON.parse(localStorage.getItem(SB_KEY) || 'null');
+                    if (!Array.isArray(raw)) return SB_DEFAULT.slice();
+                    const seen = {};
+                    const valid = raw.filter(function(k) {
+                        if (seen[k]) return false;
+                        seen[k] = true;
+                        return SB_REGISTRY.some(function(r) { return r.key === k; });
+                    });
+                    return valid.length >= SB_MIN ? valid : SB_DEFAULT.slice();
+                } catch (e) { return SB_DEFAULT.slice(); }
+            }
+            function sbSave(keys) {
+                try { localStorage.setItem(SB_KEY, JSON.stringify(keys)); } catch (e) {}
+            }
+            function sbBar() { return document.querySelector('.fhs-top-bar__actions'); }
+            function sbApply() {
+                const bar = sbBar();
+                if (!bar) return;
+                const keys = sbLoad();
+                SB_REGISTRY.forEach(function(r) {
+                    const btn = document.getElementById(r.id);
+                    if (btn) btn.classList.toggle('sb-hidden', keys.indexOf(r.key) === -1);
+                });
+                // 按 config 順序重排（只移動節點，contract ID 不變；工具掣恆喺尾）
+                const anchor = document.getElementById('sbAddBtn');
+                keys.forEach(function(k) {
+                    const reg = SB_REGISTRY.filter(function(r) { return r.key === k; })[0];
+                    const btn = reg && document.getElementById(reg.id);
+                    if (btn && anchor) bar.insertBefore(btn, anchor);
+                });
+                const addBtn = document.getElementById('sbAddBtn');
+                if (addBtn) addBtn.classList.toggle('sb-hidden', keys.length >= SB_REGISTRY.length);
+                if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
+            }
+            function sbClosePalette() {
+                const pal = document.getElementById('sbPalette');
+                if (pal) pal.classList.remove('is-open');
+            }
+            function sbRenderPalette() {
+                const pal = document.getElementById('sbPalette');
+                if (!pal) return;
+                const keys = sbLoad();
+                const hidden = SB_REGISTRY.filter(function(r) { return keys.indexOf(r.key) === -1; });
+                if (!hidden.length) { sbClosePalette(); return; }
+                pal.innerHTML = hidden.map(function(r) {
+                    return '<button type="button" class="sb-pal-item" data-sb-add="' + r.key + '">'
+                        + '<svg class="ba-icon" width="16" height="16"><use href="#' + r.icon + '"/></svg>'
+                        + '<span>' + r.label + '</span></button>';
+                }).join('');
+            }
+            function sbEnter() {
+                if (sbEditing) return;
+                const bar = sbBar();
+                if (!bar) return;
+                sbEditing = true;
+                sbEnteredAt = Date.now();
+                bar.classList.add('sb-editing');
+                if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+                if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
+            }
+            function sbExit() {
+                if (!sbEditing) return;
+                sbEditing = false;
+                const bar = sbBar();
+                if (bar) bar.classList.remove('sb-editing');
+                sbClosePalette();
+                if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
+            }
+            function initShortcutBar() {
+                const bar = sbBar();
+                const pal = document.getElementById('sbPalette');
+                if (!bar || bar._sbBound) return;
+                bar._sbBound = true;
+
+                // 編輯模式下 capture 攔截所有掣（先過 inline onclick，唔會誤切模式）
+                bar.addEventListener('click', function(e) {
+                    if (!sbEditing) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (Date.now() - sbEnteredAt < 350) return;   // 長按鬆手嘅 click 吞掉
+                    const btn = e.target.closest('button');
+                    if (!btn) return;
+                    if (btn.id === 'sbDoneBtn') { sbExit(); return; }
+                    if (btn.id === 'sbAddBtn') {
+                        if (pal && pal.classList.contains('is-open')) { sbClosePalette(); }
+                        else { sbRenderPalette(); if (pal) pal.classList.add('is-open'); }
+                        return;
+                    }
+                    if (!btn.hasAttribute('data-sb-key')) return;
+                    const keys = sbLoad();
+                    const key = btn.getAttribute('data-sb-key');
+                    if (keys.indexOf(key) === -1) return;
+                    if (keys.length <= SB_MIN) {
+                        if (typeof showToast === 'function') showToast('至少要保留 ' + SB_MIN + ' 個快捷鍵');
+                        return;
+                    }
+                    sbSave(keys.filter(function(k) { return k !== key; }));
+                    sbApply();
+                    if (pal && pal.classList.contains('is-open')) sbRenderPalette();
+                }, true);
+
+                // 調色盤：撳項目 = 加入
+                if (pal) pal.addEventListener('click', function(e) {
+                    const item = e.target.closest('[data-sb-add]');
+                    if (!item) return;
+                    const keys = sbLoad();
+                    const k = item.getAttribute('data-sb-add');
+                    if (keys.indexOf(k) === -1) keys.push(k);
+                    sbSave(keys);
+                    sbApply();
+                    sbRenderPalette();
+                });
+
+                // 手機：長按 600ms 進入編輯（移動 >10px 取消；mouse 唔算長按）
+                let lpTimer = null, lpX = 0, lpY = 0;
+                function lpCancel() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } }
+                bar.addEventListener('pointerdown', function(e) {
+                    if (sbEditing || e.pointerType === 'mouse') return;
+                    lpX = e.clientX; lpY = e.clientY;
+                    lpCancel();
+                    lpTimer = setTimeout(sbEnter, 600);
+                });
+                bar.addEventListener('pointermove', function(e) {
+                    if (lpTimer && (Math.abs(e.clientX - lpX) > 10 || Math.abs(e.clientY - lpY) > 10)) lpCancel();
+                });
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(ev) { bar.addEventListener(ev, lpCancel); });
+
+                // Desktop：右鍵 bar 進入編輯（Android 長按觸發嘅 contextmenu 一併食咗，防雙重觸發）
+                bar.addEventListener('contextmenu', function(e) { e.preventDefault(); if (!sbEditing) sbEnter(); });
+
+                // 完成：Esc / 撳 bar 同調色盤以外
+                document.addEventListener('keydown', function(e) { if (e.key === 'Escape') sbExit(); });
+                document.addEventListener('click', function(e) {
+                    if (!sbEditing) return;
+                    if (e.target.closest('.fhs-top-bar__actions') || e.target.closest('#sbPalette')) return;
+                    sbExit();
+                });
+
+                sbApply();
+            }
+            window.initShortcutBar = initShortcutBar;
+        })();
 
         /* ================================================================
            V42 AG Stitch — 組件 4: animateStarToggle (Star 彈跳動畫)
@@ -12949,6 +13460,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         document.addEventListener('DOMContentLoaded', () => {
             initSegmentedControls();
             initBottomNavIndicator();
+            initShortcutBar();
         });
 
         // === 手機版智慧置頂欄 Smart Header ===
@@ -15937,6 +16449,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         </div>
     </div>
 
+    <!-- 取模排程中心 B：迷你月曆 popup（S159/S170/D29，本次僅落地B） -->
+    <div id="moldCalOverlay" role="dialog" aria-modal="true" aria-labelledby="moldCalTitle"
+         onclick="if(event.target===this)closeMoldCalendar()">
+        <div id="moldCalPopup">
+            <div class="mc-hdr">
+                <button type="button" class="mc-nav-btn" onclick="_moldCalNav(-1)" aria-label="上一月">‹</button>
+                <span class="mc-hdr-title" id="moldCalTitle"></span>
+                <button type="button" class="mc-nav-btn" onclick="_moldCalNav(1)" aria-label="下一月">›</button>
+                <button type="button" class="mc-close-btn" onclick="closeMoldCalendar()" aria-label="關閉">✕</button>
+            </div>
+            <!-- S180：Fat Mo 唔用「近期排期」功能，tab bar 已取消，只留月曆視圖（_moldCalSwitchTab/agenda 相關 JS 保留但不可達，st.tab 恆為 'cal'） -->
+            <div class="mc-body" id="moldCalBody"></div>
+        </div>
+    </div>
+
 
 <!-- ================================================================
      V42 P3/P4 — Bottom-Sheet + Archive/Favorite persistence
@@ -16344,6 +16871,372 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const banner = document.getElementById('syncProgressBanner');
             const isVisible = (loading && loading.style.display !== 'none') || (banner && banner.style.display !== 'none');
             zone2.style.display = isVisible ? 'block' : 'none';
+        }
+    });
+
+})();
+</script>
+
+<!-- ================================================================
+     V42 — 取模排程中心 B：迷你月曆邏輯（S159規劃/S170拷問修訂，決策見 decisions.md D29；
+     本次僅落地 B，C/D/E 延後）
+     Injected as standalone script (zero IIFE dependency)
+     ================================================================ -->
+<script>
+(function() {
+    'use strict';
+
+    var MOLD_CAL_CACHE_TTL = 30000; // 同一個月查詢結果快取 30 秒（S170拷問裁決）
+    var DOW_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+    var SLOT_DEFS = [
+        { key: 'morning', label: '上午' },
+        { key: 'afternoon', label: '下午' },
+        { key: 'evening', label: '晚上' }
+    ];
+    var EVENING_FROM_PM_HOUR = 6; // PM 6:00 起算「晚上」時段（Fat Mo 2026-07-16 拍板）
+
+    window._moldCal = window._moldCal || { year: 0, month: 0, bindMode: 'form', cache: {}, selectedDate: null, tab: 'cal' };
+
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+    function monthKey(y, m) { return y + '-' + pad2(m + 1); }
+    function monthStartStr(y, m) { return y + '-' + pad2(m + 1) + '-01'; }
+    function nextMonthStartStr(y, m) {
+        var ny = (m === 11) ? y + 1 : y;
+        var nm = (m === 11) ? 0 : m + 1;
+        return monthStartStr(ny, nm);
+    }
+    function todayStr() {
+        var d = new Date();
+        return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    }
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    // raw_form_state 取模時間 → 三時段：AM=上午；PM 12,1–5=下午；PM 6+=晚上；待定/缺值=tbd
+    function classifySlot(rfs) {
+        var hourRaw = (rfs.appTimeHour == null ? '' : String(rfs.appTimeHour)).trim();
+        var ampm = (rfs.appTimeAmPm == null ? 'PM' : String(rfs.appTimeAmPm)).trim().toUpperCase();
+        if (!hourRaw || hourRaw === '待定') return { slot: 'tbd', label: '待定', sort: 9999 };
+        var h = parseInt(hourRaw, 10);
+        if (isNaN(h)) return { slot: 'tbd', label: '待定', sort: 9999 };
+        var mm = 0;
+        var mIdx = hourRaw.indexOf(':');
+        if (mIdx > -1) mm = parseInt(hourRaw.substring(mIdx + 1), 10) || 0;
+        var h24 = h;
+        if (ampm === 'PM' && h !== 12) h24 = h + 12;
+        if (ampm === 'AM' && h === 12) h24 = 0;
+        var slot = (ampm === 'AM') ? 'morning' : (h !== 12 && h >= EVENING_FROM_PM_HOUR) ? 'evening' : 'afternoon';
+        var slotLabel = slot === 'morning' ? '上午' : slot === 'evening' ? '晚上' : '下午';
+        return { slot: slot, label: slotLabel + ' ' + h + ':' + pad2(mm), sort: h24 * 60 + mm };
+    }
+
+    // 一日內三時段佔用/空檔/待定摘要
+    function daySummary(list) {
+        var occ = { morning: 0, afternoon: 0, evening: 0 }, tbd = 0;
+        (list || []).forEach(function(b) { if (b.slot === 'tbd') tbd++; else occ[b.slot]++; });
+        var free = SLOT_DEFS.filter(function(s) { return !occ[s.key]; }).map(function(s) { return s.label; });
+        return { occ: occ, tbd: tbd, free: free, total: (list || []).length };
+    }
+
+    function statusChip(st) {
+        var bg = 'var(--fhs-warning-bg)', fg = 'var(--fhs-warning)';
+        if (st === '完成' || st === '已取件') { bg = 'var(--fhs-success-bg)'; fg = 'var(--fhs-success)'; }
+        else if (st === '製作中') { bg = 'var(--fhs-info-bg)'; fg = 'var(--fhs-info)'; }
+        return '<span class="mc-chip" style="background:' + bg + ';color:' + fg + ';">' + esc(st) + '</span>';
+    }
+
+    function weekdayLabel(ds) {
+        var p = ds.split('-');
+        return '日一二三四五六'.charAt(new Date(+p[0], +p[1] - 1, +p[2]).getDay());
+    }
+
+    function bookingRowHtml(b) {
+        // S180 修復：撳 row 跳去該單詳情兩個入口（view/form）統一開放，唔再按 bindMode 分岔
+        // （form 模式：淨係開一個疊喺上面嘅 read-only 詳情 modal，唔影響底下正編輯緊嘅草稿表單）
+        return '<div class="mc-row mc-row-link" onclick="_moldCalOpenOrder(\'' + esc(b.orderId) + '\')">'
+            + '<span class="mc-row-t' + (b.slot === 'tbd' ? ' mc-row-tbd' : '') + '">' + esc(b.timeLabel) + '</span>'
+            + '<span class="mc-row-who">' + esc(b.name) + '</span>'
+            + '<span class="mc-row-oid">' + esc(b.orderId) + '</span>'
+            + statusChip(b.status)
+            + '<span class="mc-row-go">›</span>'
+            + '</div>';
+    }
+
+    // Read-only Supabase SELECT — 只讀唔寫；已取消訂單唔佔時段
+    async function _moldCalFetchMonth(y, m) {
+        var key = monthKey(y, m);
+        var cached = window._moldCal.cache[key];
+        if (cached && (Date.now() - cached.ts) < MOLD_CAL_CACHE_TTL) return cached.days;
+        var url = window.SB_URL + '/rest/v1/orders?appointment_at=gte.' + monthStartStr(y, m)
+            + '&appointment_at=lt.' + nextMonthStartStr(y, m)
+            + '&deleted_at=is.null&process_status=neq.' + encodeURIComponent('已取消')
+            + '&select=order_id,customer_name,appointment_at,process_status,raw_form_state';
+        var resp = await fetch(url, { headers: { apikey: window.SB_ANON_KEY, Authorization: 'Bearer ' + window.SB_ANON_KEY } });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        var rows = await resp.json();
+        var days = {};
+        rows.forEach(function(r) {
+            var rfs = r.raw_form_state || {};
+            var enableP = rfs.enableP === true || rfs.enableP === 'true';
+            if (!enableP || !r.appointment_at) return;
+            var cls = classifySlot(rfs);
+            (days[r.appointment_at] = days[r.appointment_at] || []).push({
+                orderId: r.order_id,
+                name: r.customer_name || '(未記名)',
+                status: r.process_status || '待確認',
+                slot: cls.slot, timeLabel: cls.label, sort: cls.sort
+            });
+        });
+        Object.keys(days).forEach(function(k) { days[k].sort(function(a, b) { return a.sort - b.sort; }); });
+        window._moldCal.cache[key] = { ts: Date.now(), days: days };
+        return days;
+    }
+
+    function _moldCalBuildGrid(y, m, days) {
+        var first = new Date(y, m, 1);
+        var startDow = first.getDay();
+        var daysInMonth = new Date(y, m + 1, 0).getDate();
+        var today = todayStr();
+        var sel = window._moldCal.selectedDate;
+        var html = '<div class="mc-grid">';
+        DOW_LABELS.forEach(function(d) { html += '<div class="mc-dow">' + d + '</div>'; });
+        for (var i = 0; i < startDow; i++) html += '<div class="mc-day mc-empty"></div>';
+        for (var day = 1; day <= daysInMonth; day++) {
+            var dateStr = y + '-' + pad2(m + 1) + '-' + pad2(day);
+            var sm = daySummary(days[dateStr]);
+            var cls = 'mc-day';
+            if (dateStr === today) cls += ' mc-today';
+            else if (dateStr < today) cls += ' mc-past';
+            if (dateStr === sel) cls += ' mc-selected';
+            var slots = '<span class="mc-slots">' + SLOT_DEFS.map(function(s) {
+                return '<span class="mc-slot' + (sm.occ[s.key] ? ' on' : '') + '"></span>';
+            }).join('') + '</span>';
+            var tbdDot = sm.tbd ? '<span class="mc-tbd-dot"></span>' : '';
+            html += '<div class="' + cls + '" title="' + dateStr + '：' + sm.total + ' 張取模單" onclick="_moldCalDayClick(\'' + dateStr + '\')"><span class="mc-day-n">' + day + '</span>' + slots + tbdDot + '</div>';
+        }
+        html += '</div>';
+        html += '<div class="mc-legend"><span><span class="mc-slot on"></span>已book</span><span><span class="mc-slot"></span>空檔</span><span><span class="mc-tbd-dot" style="position:static;"></span>時間待定</span><span>三格＝上午/下午/晚上</span></div>';
+        html += '<div id="moldCalDetail"></div>';
+        return html;
+    }
+
+    function _moldCalRenderDetail(ds, days) {
+        var el = document.getElementById('moldCalDetail');
+        if (!el) return;
+        if (!ds) { el.innerHTML = '<div class="mc-detail-hint">撳日子睇當日排期詳情</div>'; return; }
+        var list = days[ds] || [];
+        var sm = daySummary(list);
+        var p = ds.split('-');
+        var summaryChip;
+        if (!sm.total) summaryChip = '<span class="mc-free-chip">全日空</span>';
+        else if (sm.free.length) summaryChip = '<span class="mc-some-chip">仲有' + sm.free.join('/') + '空檔</span>';
+        else summaryChip = '<span class="mc-full-chip">三段全滿</span>';
+        var tbdNote = sm.tbd ? '<span class="mc-some-chip">' + sm.tbd + ' 單時間待定</span>' : '';
+        var html = '<div class="mc-detail"><div class="mc-detail-hd"><span class="mc-detail-d">' + (+p[1]) + '月' + (+p[2]) + '日（' + weekdayLabel(ds) + '）</span>' + summaryChip + tbdNote + '</div>';
+        list.forEach(function(b) { html += bookingRowHtml(b); });
+        sm.free.forEach(function(lab) {
+            html += '<div class="mc-row mc-row-free"><span class="mc-row-t">' + lab + '</span><span class="mc-row-who">空檔</span></div>';
+        });
+        if (window._moldCal.bindMode === 'form') {
+            html += '<button type="button" class="mc-pick-btn" onclick="_moldCalPickDate(\'' + ds + '\')">✓ 揀呢日做取模日</button>';
+        }
+        html += '</div>';
+        el.innerHTML = html;
+    }
+
+    function _moldCalBuildAgenda(y, m, days) {
+        var today = todayStr();
+        var mn = m + 1;
+        var curMonth = today.substring(0, 7) === monthKey(y, m);
+        var startDay = curMonth ? parseInt(today.substring(8), 10) : 1;
+        var daysInMonth = new Date(y, m + 1, 0).getDate();
+        var html = '<div class="mc-agenda">';
+        var nextFree = null;
+        for (var d0 = startDay; d0 <= daysInMonth; d0++) {
+            var ds0 = y + '-' + pad2(mn) + '-' + pad2(d0);
+            if (!(days[ds0] || []).length) { nextFree = ds0; break; }
+        }
+        if (nextFree) {
+            html += '<button type="button" class="mc-jumpfree" onclick="_moldCalJump(\'' + nextFree + '\')">⚡ 跳去下一個全日空檔（' + mn + '月' + (+nextFree.substring(8)) + '日）</button>';
+        }
+        var d = startDay;
+        while (d <= daysInMonth) {
+            var ds = y + '-' + pad2(mn) + '-' + pad2(d);
+            var list = days[ds] || [];
+            if (!list.length) {
+                var end = d;
+                while (end + 1 <= daysInMonth && !((days[y + '-' + pad2(mn) + '-' + pad2(end + 1)] || []).length)) end++;
+                var lab = mn + '月' + d + '（' + weekdayLabel(ds) + '）';
+                if (end > d) lab += ' — ' + mn + '月' + end + '（' + weekdayLabel(y + '-' + pad2(mn) + '-' + pad2(end)) + '）';
+                html += '<div class="mc-aday" id="mcA-' + ds + '"><div class="mc-aday-hd"><span class="mc-aday-d">' + (ds === today ? '今日 ' : '') + lab + '</span><span class="mc-free-chip">全日空</span></div></div>';
+                d = end + 1;
+            } else {
+                var sm = daySummary(list);
+                var chip = sm.free.length ? '<span class="mc-some-chip">仲有' + sm.free.join('/') + '空檔</span>' : '<span class="mc-full-chip">三段全滿</span>';
+                html += '<div class="mc-aday" id="mcA-' + ds + '"><div class="mc-aday-hd"><span class="mc-aday-d">' + (ds === today ? '今日 ' : '') + mn + '月' + d + '（' + weekdayLabel(ds) + '）</span>' + chip + '</div>';
+                list.forEach(function(b) { html += bookingRowHtml(b); });
+                html += '</div>';
+                d++;
+            }
+        }
+        html += '</div>';
+        return html;
+    }
+
+    window._moldCalRender = async function() {
+        var st = window._moldCal;
+        var titleEl = document.getElementById('moldCalTitle');
+        var bodyEl = document.getElementById('moldCalBody');
+        if (titleEl) titleEl.textContent = st.year + ' 年 ' + (st.month + 1) + ' 月';
+        if (!bodyEl) return;
+        bodyEl.innerHTML = '<div class="mc-error" style="color:var(--fhs-text-muted);">載入中...</div>';
+        try {
+            var days = await _moldCalFetchMonth(st.year, st.month);
+            if (st.tab === 'agenda') {
+                bodyEl.innerHTML = _moldCalBuildAgenda(st.year, st.month, days);
+            } else {
+                bodyEl.innerHTML = _moldCalBuildGrid(st.year, st.month, days);
+                _moldCalRenderDetail(st.selectedDate, days);
+            }
+        } catch (e) {
+            console.warn('moldCal fetch failed:', e);
+            bodyEl.innerHTML = '<div class="mc-error">⚠ 未能載入，請自行核對</div>';
+        }
+    };
+
+    window._moldCalSwitchTab = function(tab) {
+        var st = window._moldCal;
+        st.tab = (tab === 'agenda') ? 'agenda' : 'cal';
+        var tc = document.getElementById('mcTabCal');
+        var ta = document.getElementById('mcTabAgenda');
+        if (tc) tc.classList.toggle('is-on', st.tab === 'cal');
+        if (ta) ta.classList.toggle('is-on', st.tab === 'agenda');
+        window._moldCalRender();
+    };
+
+    window._moldCalNav = function(delta) {
+        var st = window._moldCal;
+        st.month += delta;
+        if (st.month > 11) { st.month = 0; st.year++; }
+        if (st.month < 0) { st.month = 11; st.year--; }
+        st.selectedDate = null;
+        window._moldCalRender();
+    };
+
+    // 兩個入口撳日子行為一致：先展示當日明細；表單入口再經「✓ 揀呢日」先回填（Fat Mo 2026-07-16 拍板）
+    window._moldCalDayClick = function(dateStr) {
+        var st = window._moldCal;
+        st.selectedDate = dateStr;
+        window._moldCalRender().then(function() {
+            var det = document.getElementById('moldCalDetail');
+            if (det) det.scrollIntoView({ block: 'nearest' });
+        });
+    };
+
+    // 表單入口明細內「✓ 揀呢日做取模日」→ 回填 appDate + generate() + 關閉
+    window._moldCalPickDate = function(dateStr) {
+        var appDateEl = document.getElementById('appDate');
+        if (appDateEl) {
+            appDateEl.value = dateStr;
+            if (typeof window.generate === 'function') window.generate();
+        }
+        window.closeMoldCalendar();
+    };
+
+    // 查看檔期入口：明細行可撳 → 關月曆 + 開該單詳情（FHS 字串單號，非 UUID）
+    window._moldCalOpenOrder = function(orderId) {
+        window.closeMoldCalendar();
+        if (typeof window.openOrderModal === 'function') window.openOrderModal(orderId);
+    };
+
+    window._moldCalJump = function(dateStr) {
+        var el = document.getElementById('mcA-' + dateStr);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('mc-flash');
+        setTimeout(function() { el.classList.remove('mc-flash'); }, 1700);
+    };
+
+    window.openMoldCalendar = function(opts) {
+        opts = opts || {};
+        var st = window._moldCal;
+        st.bindMode = opts.bindMode === 'view' ? 'view' : 'form';
+        var baseDate = new Date();
+        if (st.bindMode === 'form') {
+            var appDateEl = document.getElementById('appDate');
+            if (appDateEl && appDateEl.value) {
+                var parts = appDateEl.value.split('-');
+                if (parts.length === 3) baseDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+            }
+        }
+        st.year = baseDate.getFullYear();
+        st.month = baseDate.getMonth();
+        // 開月曆即預選基準日（表單入口=已揀日期或今日；查看檔期入口=今日），當日明細即刻可見
+        st.selectedDate = baseDate.getFullYear() + '-' + pad2(baseDate.getMonth() + 1) + '-' + pad2(baseDate.getDate());
+        st.tab = 'cal';
+        var tc = document.getElementById('mcTabCal');
+        var ta = document.getElementById('mcTabAgenda');
+        if (tc) tc.classList.add('is-on');
+        if (ta) ta.classList.remove('is-on');
+
+        var overlay = document.getElementById('moldCalOverlay');
+        var popup = document.getElementById('moldCalPopup');
+        var isDesktop = window.innerWidth >= 769;
+        var doAnchor = (st.bindMode === 'form' && isDesktop && !!opts.triggerEl);
+        // 入口一（表單內）desktop：錨定喺觸發掣附近，唔用置中 dark overlay 遮住 appDate 輸入框本身
+        if (overlay) overlay.classList.toggle('mc-anchored', doAnchor);
+        if (!doAnchor && popup) { popup.style.top = ''; popup.style.bottom = ''; popup.style.left = ''; popup.style.maxHeight = ''; }
+        if (overlay) overlay.classList.add('is-open');
+
+        // 內容 render 完成先量真實高度先擺位（唔靠估高度，先至保證唔會遮住 appDate）
+        window._moldCalRender().then(function() {
+            if (doAnchor) _moldCalPositionAnchored(popup, opts.triggerEl);
+        });
+    };
+
+    function _moldCalPositionAnchored(popup, trigger) {
+        if (!popup || !trigger) return;
+        var appDateEl = document.getElementById('appDate');
+        var avoidRect = appDateEl ? appDateEl.getBoundingClientRect() : trigger.getBoundingClientRect();
+        var r = trigger.getBoundingClientRect();
+        popup.style.visibility = 'hidden';
+        popup.style.top = '0px';
+        popup.style.bottom = '';
+        popup.style.left = '0px';
+        var h = popup.offsetHeight;
+        var w = popup.offsetWidth;
+        var left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+        // 撳日後明細會令 popup 長高——所以錨定方向必須令「生長」唔會遮住 appDate：
+        // 放下面=top 錨定向下生長（appDate 喺上面，安全）；放上面=bottom 錨定向上生長+以 appDate 頂邊封頂
+        if (r.bottom + 6 + h <= window.innerHeight) {
+            var top = Math.max(8, r.bottom + 6);
+            popup.style.top = top + 'px';
+            popup.style.maxHeight = Math.max(260, window.innerHeight - top - 8) + 'px';
+        } else if (avoidRect.top - 6 - 260 >= 8) {
+            popup.style.top = 'auto';
+            popup.style.bottom = (window.innerHeight - (avoidRect.top - 6)) + 'px';
+            popup.style.maxHeight = (avoidRect.top - 6 - 8) + 'px';
+        } else {
+            popup.style.top = '8px'; // 上下都唔夠位先兜底（極矮視窗；手機另走 bottom-sheet 唔入呢支）
+            popup.style.maxHeight = (window.innerHeight - 16) + 'px';
+        }
+        popup.style.left = left + 'px';
+        popup.style.visibility = '';
+    }
+
+    window.closeMoldCalendar = function() {
+        var overlay = document.getElementById('moldCalOverlay');
+        if (overlay) overlay.classList.remove('is-open');
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            var overlay = document.getElementById('moldCalOverlay');
+            if (overlay && overlay.classList.contains('is-open')) window.closeMoldCalendar();
         }
     });
 

@@ -24,6 +24,67 @@ Subagent：❌ 未使用 — 判斷理由見上
 - **驗證**：改動前備份 `.fhs/ai/governance/backups/upload-web.ps1.2026-07-16.bak`；PowerShell 乾跑（不觸網路）驗證全 5 個目標路徑解析正確（`exists=True`），確認舊 4 個目標零回歸；實跑 `team` 目標兩次（改動後即測 + 名冊重新生成後正式推送），三關驗證（PUT 201/204 + 公開端點 200 + 大小 + SHA256）皆 PASS；重新生成名冊確認「✨ 零勘誤」。
 - **公開網址**：https://yanhei.synology.me/agent_dashboardV42.html
 
+## [2026-07-16] Session 180（Claude Code / Sonnet 5 執行，worktree `v42-shortcut-bar-optimize`）— 快捷列優化：月曆入列 + 查看檔期掣取消 + 快捷列自訂系統
+
+- **緣起**：Fat Mo 直接指示 UI 優化，方案書由上游規劃並落盤（`.fhs/reports/planning/shortcut-bar-custom-plan_2026-07-16.md`），本次為機械執行，設計取捨已全部裁決。
+- **三項改動**（`freehandsss_dashboardV42.html` 內完成，8 處精確改動 E1-E8）：
+  1. **月曆入快捷列**：新增 `modeCalendarBtn`（`data-sb-key="calendar"`，撳掣 `openMoldCalendar({bindMode:'view'})`），預設顯示於快捷列，預設隱藏「修改」（`modeEditBtn`）——可經編輯模式加返。
+  2. **取消訂單總覽頁頂獨立「查看檔期」掣**：`#btnViewMoldCal` 按鈕與其 CSS 塊移除，功能併入快捷列「月曆」掣。
+  3. **快捷列自訂系統**（`initShortcutBar()` IIFE）：手機長按 600ms／Desktop 右鍵 bar 或 hover `#sbEditTrigger` 進入編輯模式；編輯模式下撳快捷鍵＝移除（最少保留 2 粒）、`#sbAddBtn`（＋）開 `#sbPalette` 選未顯示快捷鍵加入、`#sbDoneBtn`（✓）／Esc／點擊外部＝退出；配置存 `localStorage['fhsShortcutBarV1']`，reload 後保持。
+- **禁區遵守**：五粒 mode 掣 ID（`modeCreateBtn/modeEditBtn/modeReviewBtn/modeFinanceBtn/modeSystemBtn`）與 inline `onclick` 原樣保留；`switchMode()` 函式本體零改動；顯示/隱藏一律用 `.sb-hidden` class（因 `switchMode()` 會 `btn.style.cssText=''` 抹走 inline style）。
+- **追加調整（同一 session 內，Fat Mo 覆核後修訂）**：
+  4. **Desktop 觸發方式簡化**：取消 hover 出現 `#sbEditTrigger` ✎ 掣方案，Desktop 只保留**右鍵快捷列**進入編輯模式（`#sbEditTrigger` 連 CSS/HTML/JS 三處移除，重排錨點改用 `#sbAddBtn`）。
+  5. **取消月曆 popup 「近期排期」tab bar**：`moldCalOverlay` 內 `.mc-tabs`（月曆／近期排期切換）已移除，只留月曆視圖；`_moldCalSwitchTab`/`_moldCalBuildAgenda` 等 agenda 相關 JS 保留但不可達（唔影響運作）。
+  6. **約定日期／取模時間欄位簡化**：「約定日期」欄位原同時存在兩套日曆機制（瀏覽器原生 `<input type=date>` 圖示 + 自訂 `.mc-trigger-btn` 睇檔期掣）造成視覺重疊，經 AskUserQuestion 拍板後只留自訂月曆——`input` 改 `readonly`、隱藏原生日曆圖示、撳欄位任何位置都開 `openMoldCalendar({bindMode:'form'})`（保留 S159/D29 睇檔期功能）；「取模時間」兩個 `<select>` 邏輯零改動，視覺本已一致毋須額外 polish。
+  7. **BUG 修復：月曆 form 模式明細 row 撳唔到**——Fat Mo 回報喺表單撳「約定日期」揭開嘅月曆入面，撳有預約日子嘅明細 row（如「上午11:00 Eugenia 07001011」）冇反應。根因：`bookingRowHtml()` 淨係 view 模式（快捷列「月曆」/查看檔期入口）先加 `onclick`/`mc-row-link`/箭嘴，form 模式冇綁任何 click 事件，非 crash 而係漏做咗呢個入口嘅功能。已本地用 43 張真實 Supabase 訂單測試排除咗係 `openOrderModal`/`globalOrders` 查表問題。修復：兩個入口統一都可以撳 row 跳去該單 read-only 詳情 modal，唔影響底下正編輯緊嘅表單草稿（實測驗證表單欄位值撳完不變）。
+- **已知限制（記錄不即改）**：`_moldCalOpenOrder`→`openOrderModal` 依賴 `globalOrders` 快取已完整載入先揾到該單；`sbFetchGlobalReview` 有 `limit:200` 篩選，理論上生產環境訂單量夠大時，某啲單有機會漏喺快取之外，令撳 row 出現「揾唔到」靜默失效。非本次回報症狀，留待日後獨立評估是否加 fallback 補抓。
+- **決策脈絡**：Fat Mo 直接指示的 UI 優化 + 現場回報 bug 修復，非新架構決策，屬既定方案書機械執行 + 確診後修復。方案書全文：`.fhs/reports/planning/shortcut-bar-custom-plan_2026-07-16.md`。
+
+【交付前雙紀律自檢】
+驗收：巨檔 HTML 改動（`Freehandsss_Dashboard/freehandsss_dashboardV42.html` + 同步鏡像至 `Freehandsss_dashboard_current.html`）— 詳見方案書與執行報告；三項 UI 改動 + 一項 bug 修復均經 playwright 本地伺服器實測（非 file:// 沙盒，避開 localStorage 被擋累到整個 script block 冇執行嘅陷阱）
+Subagent：✅ 已使用 — 四次任務（快捷列自訂系統／約定日期簡化／月曆row bug修復）均派 general-purpose（model: sonnet）機械執行方案書 + playwright 驗證；規劃、根因診斷、AskUserQuestion 定案由主對話負責
+
+## [2026-07-16] Session 179續（Claude Code / Sonnet 5 執行，worktree `monthly-calendar-empty-slots`）— 取模排程中心 B：迷你月曆 v2 重新設計（吸引力升級）
+
+- **緣起**：S179 B 落地並部署後，Fat Mo 回饋「不夠用」，指出兩個真實使用痛點：(1) 月曆日格只有點點提示，冇得一步步查閱內容；(2) 操作者除咗開緊訂單睇日期，仲會時常打開月曆查睇未來近期排期狀況，評估可否重新安排。
+- **設計示意先行**：先用 mockup HTML 產出兩版本示意圖（月曆撳日明細 + 近期排期 list）送俾 Fat Mo 睇，再落實裝三條 AskUserQuestion 拍板細節，避免對住盲做完先發現方向錯。
+- **三項拍板**：① 表單入口撳日子改為「先睇當日明細，撳大掣『✓ 揀呢日做取模日』先回填關閉」（非再係即撳即回填）；② 上午/下午/晚上時段分界＝PM 6:00 起算晚上；③「近期排期」tab 預設睇成個月（非 7/14 日窗）。
+- **v2 新增三項能力**（同一檔案 `freehandsss_dashboardV42.html` 內擴充，非新開檔）：
+  1. **日格三時段**：每日格改為三細格（上午/下午/晚上），實色=已book、灰=空檔、右上黃點=有單時間待定；時段由 `raw_form_state.appTimeHour`/`appTimeAmPm` 拆算（`classifySlot()`），已取消訂單（`process_status=已取消`）於查詢層直接濾走唔佔時段。
+  2. **撳日明細**：`_moldCalDayClick()` 撳任何一日 → 月曆下方展開當日名單（時間·客名·單號·狀態chip）+ 空檔行（綠色）；開月曆即預選基準日並自動展開（表單入口=已揀日期或今日，查看檔期入口=今日）。查看檔期入口明細行可撳 → 關月曆 + `openOrderModal(orderId)` 開該單詳情（FHS 字串單號，非 UUID）。
+  3. **近期排期 tab**：新增 `mcTabCal`/`mcTabAgenda` 分頁切換；agenda 由今日列到月底，連續全日空檔自動摺一行（如「今日 7月16（四）— 7月31（五）全日空」），頂部「⚡跳去下一個全日空檔」掣（`_moldCalJump()`，捲動+閃爍動畫定位）。
+- **實測過程抓到並修復 1 個真 bug**：表單入口 desktop 錨定定位喺撳日展開明細後，popup 向下生長會反過來遮住 `appDate` input（S179 首版只處理咗初始定位，未考慮動態長高場景）。修復：`_moldCalPositionAnchored()` 改為方向感知——放喺下面用 `top` 錨定向下生長（`appDate` 喺上面天然安全）；放喺上面改用 `bottom` 錨定向上生長 + 以 `appDate` 頂邊封頂 `maxHeight`，確保無論點展開都唔會伸入 `appDate` 範圍。複測（撳日展開後）零重疊確認。
+- **驗收證據**：全部 JS 改動經 `node -e "new Function(...)"` 對 8 個 `<script>` 區塊語法檢查零錯誤；playwright 實測——① 時段分類與 Supabase 原始資料交叉核對正確（`5:30 PM`→下午、`11:00 AM`→上午）；② 已取消訂單正確唔入時段計算；③ 查看檔期入口撳明細行成功開啟 `#fhsOrderModal` 並顯示正確訂單內容（07001006）；④ 表單入口「撳日展開明細→撳揀日掣」二段式回填流程行為正確（`appDate` 展開前為空、撳揀日掣後正確寫入並關閉）；⑤ 桌面錨定定位展開後零重疊（原 bug 複測確認修復）；⑥ 375px 手機視窗兩入口仍為 bottom-sheet、tabs 正常顯示；⑦ 近期排期 tab 內容與月曆 tab 資料一致（同一份 fetch 結果）；⑧ 全程零新增 console error。
+- **未做範圍**：C/D/E 三個名單面板、A（撞期即時提示）維持未做（同 S179 一致，非本次範圍）。
+- **決策脈絡**：非新架構決策，屬 D29 既定方向嘅同日迭代優化，執行紀錄併入 decisions.md D29 段落（未編新 D 號）。
+- **Subagent 使用記錄**：❌ 未使用 — 全程主對話（Sonnet 5）直接執行：定點改檔（同一檔案內擴充，非跨檔探索）+ mockup 設計示意 + AskUserQuestion 拍板 + playwright 實測，按 governance/02 §1「主對話可直接做」清單執行，未達派工門檻。
+
+【交付前雙紀律自檢】
+驗收：巨檔 HTML 改動（Freehandsss_Dashboard/**）— playwright 八項實測（時段分類交叉核對/已取消訂單過濾/開單modal/二段式回填/桌面錨定零重疊/mobile bottom-sheet/雙tab資料一致/零console error）= ✅（02 §5 分流表「巨檔 HTML 改動」達標；非財務/schema/n8n 類別，不強制 fresh-context 第二意見）
+Subagent：❌ 未使用 — 判斷理由見上
+
+## [2026-07-16] Session 179（Claude Code / Sonnet 5 執行，worktree `monthly-calendar-empty-slots`）— 取模排程中心 B：迷你月曆落地（D29 第一期部分執行）
+
+- **緣起**：S159 規劃、S170 `/grilling` 拷問修訂的取模排程中心方案書（決策 D29）長期排隊未執行（見 [mold-schedule-plan_2026-07-09.md](.fhs/reports/planning/mold-schedule-plan_2026-07-09.md)）。Fat Mo 本次要求「審視多次先進行執行」，故執行前先做一輪覆核而非直接照方案書動手。
+- **執行前覆核（4項）**：① 重新 grep 方案書列出嘅 10 個錨點，全部命中，行號普遍位移 +70~+220 行但邏輯內容一致；② 核對 Supabase `orders` 表 schema，`appointment_at`/`deleted_at`/`raw_form_state` 三欄與方案書假設一致；③ 讀 V42 排版鐵律（ui-ux-pro-max Section 六），發現既有 `#igPreviewModal` 已有可直接沿用嘅 bottom-sheet CSS pattern；④ 綜合風險評估搵到兩個方案書未預見嘅落差。
+- **搵到嘅落差**：(a) `mapOrder()` 輸出物件冇 `enableP`/取模時間欄位（純補漏，唔影響決策）；(b) 方案書 D/E 倚賴嘅 8 值狀態集（已book日期/已取模等）實質係品項層（`order_items.process_status`）私有詞彙，同訂單層 `orders.process_status`（Supabase ENUM 僅5值）唔同層級，一單多品項點聚合未定義——此落差已上報 Fat Mo。
+- **範圍裁決**：Fat Mo 決定本次只做 **B（迷你月曆，兩入口）**，C（今日取模一覽）/D（過期未更新）/E（未約日期）另日再議（跳過落差(b)）。
+- **B 實作內容**（單一檔案 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`，五處插入）：
+  1. CSS（`</style>` 前）：`#moldCalOverlay`/`#moldCalPopup` 骨架樣式 + 月曆 grid/dot + desktop 錨定模式（`.mc-anchored`）+ mobile bottom-sheet override，全用 `--fhs-*` token。
+  2. 入口一：`約定日期` 表單欄旁小 icon 掣（`onclick="openMoldCalendar({bindMode:'form',triggerEl:this})"`），撳日子回填 `appDate` + 觸發 `generate()` + 自動關閉。
+  3. 入口二：`reviewModeContainer` 頂部獨立「查看檔期」掣（`bindMode:'view'`），撳日子純高亮，唔寫任何表單欄位。
+  4. HTML 骨架：overlay + popup + 月曆頭（月份標題/上下月箭嘴/關閉掣）+ body 容器。
+  5. JS（獨立 IIFE，`</body>` 前）：`openMoldCalendar`/`closeMoldCalendar`/`_moldCalRender`/`_moldCalNav`/`_moldCalDayClick`；read-only Supabase SELECT（`orders?appointment_at=gte...&select=order_id,appointment_at,raw_form_state`），30 秒快取（`MOLD_CAL_CACHE_TTL`），client 端按 `enableP` 過濾後計數；fetch 失敗顯示「⚠ 未能載入，請自行核對」而非空白（沿用方案書「寧可顯示未能檢查都唔可以假綠色」原則）。
+- **實測過程抓到並修復 1 個真 bug**：桌面入口一原定位邏輯用**估算高度**（`estH=360`）計算「反轉放上面」擺位，playwright 實測發現估算值同實際 render 高度有落差，導致 popup 底部仍伸入 `appDate` input 範圍（overlap）。修復：改為等 `_moldCalRender()` 完成、量真實 `offsetHeight` 後先擺位（`_moldCalPositionAnchored()`），且改以 `appDate` 本身真實邊界（非觸發掣邊界）做避讓基準，修復後 playwright 複測零重疊。
+- **驗收證據**：5 處插入全部三步計數驗證（改前 grep 1 或 0 → 改後對應變化）；`node -e "new Function(...)"` 對全檔 8 個 `<script>` 區塊語法檢查零錯誤；playwright 實測——① 頁面載入全程 0 個新增 console error；② 月曆日計數與 Supabase REST 直接查詢交叉核對完全一致（2026-07-08/07-14 各 1 單，07-15 因 `enableP=false` 正確排除）；③ 入口一撳日子回填 `appDate='2026-07-20'` + 自動關閉；④ 入口二撳日子 `appDate` 保持空白、popup 保持開啟、僅高亮；⑤ 375px 手機視窗兩入口皆為 bottom-sheet（`align-items:flex-end`/`border-radius:18px 18px 0 0`/`position:static`/全寬）。
+- **未做範圍**：C/D/E 三個名單面板、A（撞期即時提示，簡化版）維持未做，落差(b) 品項層狀態聚合問題留待日後執行 C/D/E 時先解決。
+- **決策脈絡**：非新架構決策，屬 D29 既定方向嘅分期執行，執行紀錄已附加至 decisions.md D29 段落（未編新 D 號）。
+- **Subagent 使用記錄**：✅ 使用 1 支 — `Explore`（quick/medium，重新核實方案書 10 個錨點 + `mapOrder()` 欄位名，因涉及 16337 行巨檔多處定點查找符合派工門檻）；其餘（CSS/HTML/JS 撰寫、Supabase schema 查詢、playwright 實測、定位 bug 修復）由主對話（Sonnet 5）直接執行。
+
+【交付前雙紀律自檢】
+驗收：巨檔 HTML 改動（Freehandsss_Dashboard/**）— 替換三步計數證據 + playwright 實測（console/回填行為/雙入口/375px bottom-sheet/Supabase 交叉核對）= ✅（02 §5 分流表「巨檔 HTML 改動」達標；非財務/schema/n8n 類別，不強制 fresh-context 第二意見，但已有 Fat Mo 執行前多輪覆核 + playwright 實測把關）
+Subagent：✅ 使用 1 支 — Explore（錨點核實），按 governance/02 §1 大檔多點查找門檻派工
+
 ## [2026-07-16] Session 177續（Claude Code / Sonnet 5 執行，`/grilling` 六輪拷問後執行）— n8n 殭屍 workflow 清理（22 條）
 
 - **緣起**：S174 `/team` live 實掃揭露 25 條停用 n8n workflow 中疑似 7 條殭屍待批准清理；本 session 追查 `FHS_Query_GlobalReview` 執行異常時一併全量重新盤點。
