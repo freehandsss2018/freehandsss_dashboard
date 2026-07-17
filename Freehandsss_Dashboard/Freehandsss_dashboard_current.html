@@ -13940,7 +13940,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 foSetChange('fo-kpi-revenue-change', 'fo-kpi-revenue-pct', d.revenueChange, false, false);
                 foSetChange('fo-kpi-cost-change',    'fo-kpi-cost-pct',    d.costChange,    false, true);
                 foSetChange('fo-kpi-profit-change',  'fo-kpi-profit-pct',  d.profitChange,  false, false);
-                foSetChange('fo-kpi-orders-change',  'fo-kpi-orders-pct',  d.ordersChange,  true,  false);
+                foSetChange('fo-kpi-orders-change',  'fo-kpi-orders-pct',  d.ordersChange,  false,  false);
                 /* margin/aov 變化：若有前期數據則顯示，否則顯示 N/A */
                 if (d.marginChange !== undefined && d.marginChange !== null) {
                     foSetChange('fo-kpi-margin-change', 'fo-kpi-margin-pct', d.marginChange, false, false, 'pp');
@@ -14275,91 +14275,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 btn.setAttribute('aria-selected', String(t === tab));
             });
             foRenderAll(tab);
-        }
-
-        function showConnectingBanner() {
-            if (document.getElementById('v41-connect-banner')) return;
-            const b = document.createElement('div');
-            b.id = 'v41-connect-banner';
-            b.style.cssText = 'position:fixed; top:54px; left:50%; transform:translateX(-50%); background:#2E7D32; color:white; padding:6px 16px; border-radius:20px; font-size:12px; font-weight:700; z-index:2100; transition:opacity 0.4s; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.2);';
-            b.innerHTML = '⏳ 正在切換至 Supabase 實時數據流...';
-            document.body.appendChild(b);
-        }
-
-        function hideConnectingBanner() {
-            const b = document.getElementById('v41-connect-banner');
-            if (b) { b.style.opacity = '0'; setTimeout(function() { b.remove(); }, 400); }
-        }
-
-        /* ── Auto-refresh (every 5 min while Supabase flag ON) ───── */
-        const AUTO_REFRESH_MS = 5 * 60 * 1000;
-        let _v41RefreshTimer = null;
-
-        function startAutoRefresh() {
-            if (_v41RefreshTimer) clearInterval(_v41RefreshTimer);
-            _v41RefreshTimer = setInterval(function() {
-                if (!isSupabaseRead()) { stopAutoRefresh(); return; }
-                sbBadge('🔄 更新中...', '#90CAF9');
-                if (window.foFetchLive) window.foFetchLive();
-                if (window.fetchGlobalReview) window.fetchGlobalReview(true);
-            }, AUTO_REFRESH_MS);
-        }
-
-        function stopAutoRefresh() {
-            if (_v41RefreshTimer) { clearInterval(_v41RefreshTimer); _v41RefreshTimer = null; }
-        }
-
-        /* ── Toggle UI injection ─────────────────────────────────── */
-        function injectToggle() {
-            // Check if top bar actions group exists for injection
-            const actions = document.querySelector('.fhs-top-bar__actions');
-            
-            const pill = document.createElement('div');
-            pill.id = 'v41-supabase-toggle';
-            pill.className = 'sb-status-chip';
-            // If top bar is missing, fallback to floating (but higher to avoid obstruction)
-            if (!actions) {
-                pill.style.cssText = 'position:fixed; top:70px; right:16px; z-index:9999; box-shadow:0 2px 8px rgba(0,0,0,0.15);';
-            }
-
-            function updatePill() {
-                const on = isSupabaseRead();
-                const labelFull = on ? 'Supa 已開啟' : 'Supa 已關閉';
-                const labelShort = on ? 'Supa 開' : 'Supa 關';
-                
-                pill.className = 'sb-status-chip' + (on ? ' is-active' : '');
-                pill.innerHTML = `
-                    <span class="sb-status-dot"></span>
-                    <span class="sb-label-full">${labelFull}</span>
-                    <span class="sb-label-short">${labelShort}</span>
-                    <span id="v41-sb-status" class="sb-status-msg"></span>
-                `;
-            }
-
-            pill.addEventListener('click', function() {
-                const next = isSupabaseRead() ? '0' : '1';
-                localStorage.setItem(FLAG_KEY, next);
-                updatePill();
-                if (next === '1') {
-                    showConnectingBanner();
-                    sbBadge('⏳ 連線中...', '#2E7D32');
-                    startAutoRefresh();
-                } else {
-                    stopAutoRefresh();
-                    hideConnectingBanner(); // Just in case
-                }
-                if (window.fetchGlobalReview) window.fetchGlobalReview(true);
-                if (window.foFetchLive)       window.foFetchLive();
-            });
-
-            updatePill();
-            
-            if (actions) {
-                // Prepend to actions to be visible but not at the very end
-                actions.prepend(pill);
-            } else {
-                document.body.appendChild(pill);
-            }
         }
 
         /* === RENDER ALL === */
@@ -15264,6 +15179,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     costChange:    pct(cur.cost,    prev.cost),
                     profitChange:  pct(cur.profit,  prev.profit),
                     ordersChange:  pct(cur.orders,  prev.orders),
+                    marginChange:  (cur.revenue && prev.revenue) ? ((cur.profit/cur.revenue*100) - (prev.profit/prev.revenue*100)) : null,
+                    aovChange:     pct(cur.orders ? (cur.revenue/cur.orders) : null, prev.orders ? (prev.revenue/prev.orders) : null),
                     isNewBusiness: !prev.revenue,
                     groups: {
                         all:       { revenue: cur.revenue,   cost: cur.cost,   orders: cur.orders,   orders_inclusive: cur.orders_inclusive   || cur.orders   },
