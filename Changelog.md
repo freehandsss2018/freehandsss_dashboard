@@ -7,9 +7,11 @@
 - **驗證**：Playwright 375px 手機闊度注入模擬訂單實測——9 件混合單拆解正確（手模×1｜鎖匙扣×3｜吊飾×3｜羊毛氈×1｜燈飾×1）、Qty>1 加總正確、空明細 fallback 正常；截圖交 Fat Mo 過目後獲明確「部署」授權（構成升格確認，`.deploy-ok` 授權途徑 a）。
 - **部署**：`/fhs-check` 前置（LIFECYCLE/STRESS/ACCEPTANCE 全 PASS；PRICE_AUDIT FAIL＝已知 Airtable 429 額度牆，按 commit.md Phase 2.5 先例不阻擋並註明）；升格 `current.html` → NAS 三關驗證 PASS（HTTP 204/大小相符/SHA256 `CBA303BF...` 相符）。
 - **Subagent 使用記錄**：❌ 未使用 — 單點 UI 改動主線程直接完成；生產 HTML 驗收以 Playwright 運行證據＋截圖交 Fat Mo 目測替代 fresh-context agent。
+- **部署後發現並補救 worktree 並行部署衝突**：Fat Mo 部署後截圖回報手機上另外幾項功能（快捷列月曆掣、月曆v2三時段、約定日期簡化）倒退。查證發現：本 session 部署時用嘅係「舊 main」（分支點 `72d3f17`）做底，而另外兩個 worktree session（`v42-shortcut-bar-optimize-5cf31c` S180 快捷列自訂+月曆v2+row bug修復、`cl-flow-instructions-a03768` S176 `/cl-flow` A3-first 重組）長期未 merge 落 main，各自獨立部署過同一 NAS 端點，本次部署把佢哋嘅成果靜靜覆蓋咗。Fat Mo 確認「做埋呢兩個 merge」後執行：兩條分支逐一 merge 落 main（HTML 自動合併零衝突，D37→D39 撞號改編因 cl-flow A3-first 與同日 Audit Ledger 決策碰號），8 個 `<script>` 區塊語法檢查零錯誤，playwright 複測三大功能集（chips／快捷列自訂／月曆v2）共存正常，重新升格 `current.html` → NAS 三關驗證 PASS（HTTP 204/大小相符/SHA256 `F6897724...`）。
+- **教訓**：多個 worktree session 同時改 Dashboard HTML 時，各自獨立部署同一 NAS 端點會互相覆蓋（無 git 層面衝突偵測，因部署動作在 git 之外）；日後應先 merge 落 main 再部署，不應在未合併的 worktree 分支上各自跑 `/upload-web`。
 
 【交付前雙紀律自檢】
-驗收：生產 HTML 改動 — 已附運行證據（Playwright 手機闊度實測截圖 + NAS 三關驗證）+ Fat Mo 目測截圖後親自授權部署 = ✅
+驗收：生產 HTML 改動 — 已附運行證據（Playwright 手機闊度實測截圖 + NAS 三關驗證）+ Fat Mo 目測截圖後親自授權部署 = ✅；worktree merge補救部分——8個script區塊語法檢查+playwright三功能集共存複測+NAS三關驗證 = ✅（非財務/schema類別，此為部署協調補救非新功能，未派fresh-context）
 Subagent：❌ 未使用 — 判斷理由見上
 
 ## [2026-07-16] Session 178（Claude Code / Sonnet 5 執行）— `/upload-web` 新增 `team` 目標：AI 助理團隊名冊取得公開網址
