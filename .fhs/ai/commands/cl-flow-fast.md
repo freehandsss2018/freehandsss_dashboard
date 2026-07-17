@@ -4,7 +4,7 @@
 **適用場景**：功能實作、UI 修改、Bug 修復、已定架構的改動（不涉及技術選型或新系統引入）
 **不適用場景**：引入全新 API / 外部服務、重大架構重組、技術選型決策 → 請改用 `/cl-flow`
 **對應 Agent**：A3 (Claude Code)
-**Version**: v2.0.0 (2026-07-15，D37：A3-first 鏡像縮水版，同步 cl-flow.md v3.0.0)
+**Version**: v2.0.0 (2026-07-15，D39：A3-first 鏡像縮水版，同步 cl-flow.md v3.0.0)
 **NO-TOUCH GUARDRAIL**：全程禁止任何業務代碼寫入，直到 Fat Mo 輸入 `/execute`。
 
 > 精煉（/rp 輕量版）為預設第一步，不可跳過。名稱含義：cl = Claude 裁決，fast = 跳過 PX（不是跳過評審——評審一步保留，只跳外部研究）。

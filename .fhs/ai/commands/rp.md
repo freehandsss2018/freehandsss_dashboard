@@ -132,9 +132,9 @@
 
 ```
 /rp [task]            ← 只精煉，Fat Mo 決定下一步（無副作用）
-/cl-flow [task]       ← 精煉（內建）→ A3 草案 → A1+A2 評審 → A3 終審裁決（D37 A3-first）
-/cl-flow-fast [task]  ← 精煉（內建）→ A3 草案 → A2 評審 → A3 精簡終審（跳 A1，D37 鏡像縮水版）
-/ag-flow [task]       ← 精煉（內建）→ A1+A2，AG 裁決（跳 A3，未隨 D37 改動）
+/cl-flow [task]       ← 精煉（內建）→ A3 草案 → A1+A2 評審 → A3 終審裁決（D39 A3-first）
+/cl-flow-fast [task]  ← 精煉（內建）→ A3 草案 → A2 評審 → A3 精簡終審（跳 A1，D39 鏡像縮水版）
+/ag-flow [task]       ← 精煉（內建）→ A1+A2，AG 裁決（跳 A3，未隨 D39 改動）
 ```
 
 **何時用 /rp 獨立呼叫**：

@@ -19,7 +19,7 @@
 | 想了解制度退化模式 / 給未來 session 的提醒 | `.fhs/ai/governance/06_letter-to-future-sessions.md` |
 | 改 V42 排版/UI 骨架（表格對齊/字體/Loader/樣式鐵律） | `.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` Section 六（排版鐵律唯一居所） |
 | 需求模糊想「拷問」問清楚先做決定 | `.fhs/notes/grilling-quickcard.md`（mattpocock/skills 吸收版，召喚詞「拷問我」/「拷問落檔」） |
-| 想知道日常操作/召喚詞速查（人讀，非規則） | `.fhs/notes/fatmo-ops-quickcard.md`（D37，harness 內建能力 + FHS 自建指令核心集） |
+| 想知道日常操作/召喚詞速查（人讀，非規則） | `.fhs/notes/fatmo-ops-quickcard.md`（D39，harness 內建能力 + FHS 自建指令核心集） |
 
 ## 三條免查即生效的紅線（規則本體與完整版見 `.fhs/ai/governance/02_model-dispatch.md` §5-§6；診斷依據見 01_diagnosis.md）
 

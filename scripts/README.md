@@ -5,8 +5,8 @@
 | 檔案 | 用途 |
 |---|---|
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
-| `cl-flow-runner.js` | `/cl-flow` A3-first 協調器（v2.0.0，D37）— `--init` 開檔（不叫 API）／`--review [--fast]` 送 A3 草案俾 A1 Perplexity + A2 Gemini 評審（模型由 `GEMINI_A2_MODEL_DEFAULT` 控制）|
-| `validate-ag-plan.js` | ⚠️ 舊版 ag-plan 作者格式驗證器（D37 前）— 現行評審格式（`ag-review.md`）已不再呼叫此驗證器，檔案保留但未接線於當前 Verdict 鏈 |
+| `cl-flow-runner.js` | `/cl-flow` A3-first 協調器（v2.0.0，D39）— `--init` 開檔（不叫 API）／`--review [--fast]` 送 A3 草案俾 A1 Perplexity + A2 Gemini 評審（模型由 `GEMINI_A2_MODEL_DEFAULT` 控制）|
+| `validate-ag-plan.js` | ⚠️ 舊版 ag-plan 作者格式驗證器（D39 前）— 現行評審格式（`ag-review.md`）已不再呼叫此驗證器，檔案保留但未接線於當前 Verdict 鏈 |
 | `migrate_airtable_to_supabase.js` | **Supabase 遷移**：批量將 Airtable 資料同步至 Supabase (Phase 1)，需 Airtable API |
 | `migrate_from_csv.js` | **CSV 遷移備援**：當 Airtable API quota 耗盡時，改從 `airtable-database/*.csv` 讀取並遷移至 Supabase（支援 multiline quoted fields）|
 | `run_supabase_migration.js` | **遷移啟動器**：自動化執行 Supabase 遷移流程 |
@@ -113,7 +113,7 @@ DYI 每日自動匯出是唯一合法免驗證途徑。詳見 `artifacts/2026-06
 
 **回滾**：n8n 停用/刪除 `FHS_IGWatchdog_DriveWatch` workflow 即可，零線上業務系統影響。
 
-## cl-flow-runner.js 使用說明（v2.0.0，D37 A3-first）
+## cl-flow-runner.js 使用說明（v2.0.0，D39 A3-first）
 
 **兩段式**（Claude 會自動觸發，通常不需手動執行）：
 

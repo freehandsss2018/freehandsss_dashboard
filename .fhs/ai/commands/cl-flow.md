@@ -2,12 +2,12 @@
 
 **用途 (Purpose)**：精煉任務描述後，由 Claude（A3）先寫基礎分析＋部署方案草案，交 Perplexity（A1）+ Gemini（A2）作對抗評審，Claude 綜合評審意見作最終裁決，等待 `/execute` 授權。
 **對應 Agent**：A3 (Claude Code)
-**Version**: v3.0.0 (2026-07-15，D37：A3-first 重組——A1/A2 由「盲寫作者」改為「有料評審」)
+**Version**: v3.0.0 (2026-07-15，D39：A3-first 重組——A1/A2 由「盲寫作者」改為「有料評審」)
 **NO-TOUCH GUARDRAIL**：全程禁止任何業務代碼寫入，直到 Fat Mo 輸入 `/execute`。
 
 > 精煉（/rp）為預設第一步，不可跳過。名稱含義：cl = Claude 作最終裁決。
 
-> **2026-07-15 重組背景（D37）**：抽驗 2026-07-02／07-05／07-13 三次歷史 flow 的 `cl-final-plan.md`「衝突/遺漏」章節，A1/A2 盲寫模式反覆出現同一病徵——幻覺檔案路徑、幻覺 Postgres Function、誤讀術語、幻覺不存在的角色/結構。根因是 context 飢餓（A1/A2 均無 repo 存取），非推理能力問題。改法：A3（有 repo 存取）先寫草案，A1/A2 對草案作 red-team／外部驗證，錯誤殺傷力由「作者錯 = 全盤重寫」降級為「評審錯 = A3 睇完唔採納就算」。詳見 `.fhs/notes/decisions.md` D37。
+> **2026-07-15 重組背景（D39）**：抽驗 2026-07-02／07-05／07-13 三次歷史 flow 的 `cl-final-plan.md`「衝突/遺漏」章節，A1/A2 盲寫模式反覆出現同一病徵——幻覺檔案路徑、幻覺 Postgres Function、誤讀術語、幻覺不存在的角色/結構。根因是 context 飢餓（A1/A2 均無 repo 存取），非推理能力問題。改法：A3（有 repo 存取）先寫草案，A1/A2 對草案作 red-team／外部驗證，錯誤殺傷力由「作者錯 = 全盤重寫」降級為「評審錯 = A3 睇完唔採納就算」。詳見 `.fhs/notes/decisions.md` D39。
 >
 > **2026-07-04 對等驗收記錄**（Desktop App 平台收斂 Phase 4.1，沿用）：曾評估以 n8n 三腦 workflow 取代本指令觸發機制，結論本指令更優（裁決免費、直接落 repo、全套 hook 治理）。維持指令驅動，不遷移 n8n。詳見 `.fhs/reports/planning/fhs_n8n_3brain_spec.md` §十一。
 
@@ -122,7 +122,7 @@ Claude 必須實際讀取並逐條回應：
 - `artifacts/{flow_id}/px-review.md`（若存在）
 - `artifacts/{flow_id}/ag-review.md`
 
-**批評處理表規格**（D37 防做戲條款，逐條強制，不可籠統帶過）：
+**批評處理表規格**（D39 防做戲條款，逐條強制，不可籠統帶過）：
 
 | 批評來源 | 批評內容摘要 | Severity | 裁決 | 證據 |
 |---|---|---|---|---|
@@ -197,7 +197,7 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 
 ## 與舊版 /cl-flow 的差異
 
-| v2.2.1（盲寫模式） | v3.0.0（A3-first，D37） |
+| v2.2.1（盲寫模式） | v3.0.0（A3-first，D39） |
 |------------|--------------|
 | A1/A2 盲寫作者，各自從零產出計劃 | A3 先寫草案，A1/A2 對草案作對抗評審 |
 | Runner 一次執行完成 PX+AG | Runner 兩段式：`--init`（開檔）／`--review`（評審） |

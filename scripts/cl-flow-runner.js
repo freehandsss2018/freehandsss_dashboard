@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // scripts/cl-flow-runner.js
 // FHS /cl-flow Coordinator Runner — A3-first Review Pipeline
-// Version: v2.0.0 (2026-07-15, D37)
+// Version: v2.0.0 (2026-07-15, D39)
 // Purpose: Two-stage headless orchestrator.
 //   --init   : create flow_id + task-brief.md + state.json (no API calls, no A1/A2 involvement)
 //   --review : send A3's draft (written by Claude in-session as artifacts/{flow_id}/a3-draft.md)
 //              to Gemini (AG, always) and Perplexity (PX, unless --fast) as ADVERSARIAL REVIEWERS
 //              of that draft — not as blind authors. Writes ag-review.md / px-review.md.
-// Rationale (D37): A1/A2 producing plans from scratch with no repo access hallucinated
+// Rationale (D39): A1/A2 producing plans from scratch with no repo access hallucinated
 // repeatedly (fabricated file paths, invented Postgres Functions, misread domain terms).
 // A3 (Claude Code, has repo access) now writes the first draft; A1/A2 critique it instead.
 
@@ -159,7 +159,7 @@ async function withRetry(fn, label, retries = 3) {
   }
 }
 
-// ─── Review Prompt Builders (D37) ────────────────────────────────────────────
+// ─── Review Prompt Builders (D39) ────────────────────────────────────────────
 // PX (A1): external validator. No repo access — forbidden to comment on repo internals.
 function buildPxReviewPrompt(task, draft) {
   return `你是外部技術驗證員（A1 角色）。以下是本地工程師（A3）針對 FHS 系統寫嘅基礎分析＋部署方案草案。

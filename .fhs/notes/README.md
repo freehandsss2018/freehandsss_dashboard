@@ -7,7 +7,7 @@
 | `SOP_NOW.md` | **系統喚醒起點**：由 `/read` 指令調用，同步當前狀態 |
 | `decisions.md` | **架構決策紀錄**：記錄「為什麼」這樣改，維護技術債備忘 |
 | `knowledge-map.md` | **知識檢索路由表**：查「舊知識/決策/教訓該去哪找」，按檔案類別非個別檔案（2026-07-05 S144 新增） |
-| `fatmo-ops-quickcard.md` | **Fat Mo 人讀操作速查卡**：日常操作/召喚詞速查，harness 內建能力+FHS 指令核心集（2026-07-16 S176 新增，決策 D37） |
+| `fatmo-ops-quickcard.md` | **Fat Mo 人讀操作速查卡**：日常操作/召喚詞速查，harness 內建能力+FHS 指令核心集（2026-07-16 S176 新增，決策 D39） |
 | `todo.md` | **任務清單**：當前 Pending 任務與未來計畫 |
 | `session-log.md` | **對話日誌**：記錄每次 session 的達成事項與交接點 |
 | `ai_reports/` | **AI 分析報告區**：存放長篇深度分析或優化提案 |

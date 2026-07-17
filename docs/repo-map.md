@@ -141,8 +141,8 @@ freehandsss_dashboard/
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
-│   │   │   ├── cl-flow.md               ← /cl-flow A3-first 規劃協調（v3.0.0，D37 2026-07-16：A3 先寫草案，A1/A2 改做評審）
-│   │   │   ├── cl-flow-fast.md          ← /cl-flow-fast A3-first 鏡像縮水版（v2.0.0，D37 2026-07-16：跳 A1 外部研究，評審一步保留）
+│   │   │   ├── cl-flow.md               ← /cl-flow A3-first 規劃協調（v3.0.0，D39 2026-07-16：A3 先寫草案，A1/A2 改做評審）
+│   │   │   ├── cl-flow-fast.md          ← /cl-flow-fast A3-first 鏡像縮水版（v2.0.0，D39 2026-07-16：跳 A1 外部研究，評審一步保留）
 │   │   │   ├── ag-plan.md               ← /ag-plan 本地實施計畫（A2 專用）
 │   │   │   [已退役] px-plan（外部研究已內建至 cl-flow A1，2026-05-30）
 │   │   │   ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
@@ -216,7 +216,7 @@ freehandsss_dashboard/
 │   │   ├── FHS_Mode_Card.md              ← 三模式決策卡 + 單一寫者矩陣（Desktop/Cowork/AG/Cursor，Phase 2.3，2026-07-03）
 │   │   ├── knowledge-map.md              ← 知識檢索路由表（查X該去哪找，按檔案類別非個別檔案，2026-07-05 Session 144 新增）
 │   │   ├── grilling-quickcard.md         ← mattpocock/skills 拷問技能中文速查卡（S170 新增，召喚詞「拷問我」/「拷問落檔」）
-│   │   ├── fatmo-ops-quickcard.md        ← Fat Mo 人讀操作速查卡（S176 新增，D37 cl-flow A3-first 試點產出；harness 內建能力+FHS 指令核心集）
+│   │   ├── fatmo-ops-quickcard.md        ← Fat Mo 人讀操作速查卡（S176 新增，D39 cl-flow A3-first 試點產出；harness 內建能力+FHS 指令核心集）
 │   │   ├── adr/                          ← domain-modeling 技能 ADR 落點（S170 FHS-FORK，原版為 docs/adr/；lazy create，首篇 ADR 出現前不存在）
 │   │   ├── todo.md
 │   │   ├── session-log.md

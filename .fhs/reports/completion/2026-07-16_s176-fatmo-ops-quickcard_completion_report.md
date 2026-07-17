@@ -1,10 +1,10 @@
-# S176 完成記錄 — Fat Mo 操作手冊 `/execute` 落地（D37 試點 Verdict）
+# S176 完成記錄 — Fat Mo 操作手冊 `/execute` 落地（D39 試點 Verdict）
 
-> 日期：2026-07-16｜執行：Claude Code / Sonnet 5｜決策：D37（延續）｜本檔為全文唯一居所（D13 規則(a)）
+> 日期：2026-07-16｜執行：Claude Code / Sonnet 5｜決策：D39（延續）｜本檔為全文唯一居所（D13 規則(a)）
 
 ## 一、緣起
 
-D37 cl-flow A3-first 管道試點（flow_id `2026-07-15-2330`，任務：Fat Mo 操作手冊）已於前一輪產出 `APPROVED_READY` Verdict，但當時明確標註「手冊實際內容產出為獨立待批項，未在本輪一併執行」。Fat Mo 先派 fresh-context agent 覆核批評處理表（抓到 1 條假採納，已修正），確認機制可信後，對此 Verdict 下達獨立 `/execute`。
+D39 cl-flow A3-first 管道試點（flow_id `2026-07-15-2330`，任務：Fat Mo 操作手冊）已於前一輪產出 `APPROVED_READY` Verdict，但當時明確標註「手冊實際內容產出為獨立待批項，未在本輪一併執行」。Fat Mo 先派 fresh-context agent 覆核批評處理表（抓到 1 條假採納，已修正），確認機制可信後，對此 Verdict 下達獨立 `/execute`。
 
 ## 二、執行內容（Verdict 第 5 節 Phase 1-6，僅批准範圍）
 

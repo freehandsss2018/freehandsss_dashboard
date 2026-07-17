@@ -12,7 +12,7 @@
 | 情境 | 講咩 | 會發生咩 | FHS 實例 |
 |---|---|---|---|
 | 需求模糊，想先整理思路先決定點做 | 「/rp [你嘅問題]」 | AI 重寫做結構化 XML（context/objective/constraints/8維度掃描），停喺度等你審閱，唔會自動執行任何嘢 | 「/rp 我想加一個付款欄位」 |
-| AI 提出模糊需求，或你自己有個計畫想俾人逐條質問清楚先做決定 | 「拷問我」 | 轉入 grilling 技能，逐條問你，你答完先問下條，每條有建議答案 | D37 cl-flow 重組七條問答收口先執行（詳情見 `grilling-quickcard.md`，本卡不重列） |
+| AI 提出模糊需求，或你自己有個計畫想俾人逐條質問清楚先做決定 | 「拷問我」 | 轉入 grilling 技能，逐條問你，你答完先問下條，每條有建議答案 | D39 cl-flow 重組七條問答收口先執行（詳情見 `grilling-quickcard.md`，本卡不重列） |
 | 完成一輪工作要交接/存檔 | 「/commit」 | 整理 handoff.md、同步 Notion、寫 session-log | 每次 session 尾聲 |
 | 想直接查 Supabase 數據 *(暫定，待用量驗證)* | 「/db-query [問題]」 | AI 用 Supabase MCP 執行唯讀查詢 | 查某張訂單嘅確收金額 |
 
@@ -20,7 +20,7 @@
 
 | 情境 | 講咩 | 會發生咩 | FHS 實例 |
 |---|---|---|---|
-| 架構決策/新系統/重大改動，想有外部視角把關 | 「/cl-flow [任務]」 | A3 先寫草案，A1（Perplexity）+A2（Gemini）評審，A3 出 Verdict，停喺度等 `/execute` | 本次 cl-flow 管道重組（D37）本身 |
+| 架構決策/新系統/重大改動，想有外部視角把關 | 「/cl-flow [任務]」 | A3 先寫草案，A1（Perplexity）+A2（Gemini）評審，A3 出 Verdict，停喺度等 `/execute` | 本次 cl-flow 管道重組（D39）本身 |
 | 功能實作/UI改動/Bug修復，架構已定，唔想使咁多 token | 「/cl-flow-fast [任務]」 | 同上但跳 A1 外部研究（評審一步保留），較快 | 改個表單欄位 |
 | 想睇齊晒 AI 有邊啲隊員/指令/自動化存在 | 「/team」 | 重生成名冊，出 `agent_dashboardV42.html`+`.json` | 想知邊個 subagent 識審財務 |
 
@@ -39,7 +39,7 @@
 | 能力 | 一句話 |
 |---|---|
 | ScheduleWakeup | 排程未來喚醒（例如「4 週後自動覆核」），已用於 D28 llm-council-skill 試用閘 |
-| EnterWorktree / ExitWorktree | 隔離工作區，本次 D37 執行本身就運行喺 worktree `cl-flow-instructions-a03768` |
+| EnterWorktree / ExitWorktree | 隔離工作區，本次 D39 執行本身就運行喺 worktree `cl-flow-instructions-a03768` |
 | `/loop` | 定時重複執行某個 prompt/指令 |
 | spawn_task | 背景任務 chip，唔打斷主線，適合順手發現嘅技術債 |
 
