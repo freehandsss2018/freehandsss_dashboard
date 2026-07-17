@@ -73,6 +73,40 @@ Subagent：✅ 使用 1 支 — general-purpose 執行修復，按 governance/04
 驗收：生產 HTML 顯示層改動 — fresh-context code-reviewer 覆核 PASS（非自驗）= ✅（02 §5 分流表適用）
 Subagent：✅ 使用 1 支 — code-reviewer 驗收，按 governance/02 §1 及既定驗收流程派工
 
+## [2026-07-16] Session 176續（Claude Code / Sonnet 5 執行）— Fat Mo 操作手冊 `/execute`：D39 試點 Verdict 落地
+
+- **緣起**：D39 cl-flow A3-first 管道試點（flow_id `2026-07-15-2330`，任務：Fat Mo 操作手冊）已產出 `APPROVED_READY` Verdict，先前輪僅完成規劃未落地。Fat Mo 派 fresh-context agent 覆核批評處理表後（抓到 1 條假採納：`/db-query` 承諾嘅「(暫定，待用量驗證)」標註未落實於第 5 節，已修正 `cl-final-plan.md`），對此 Verdict 下達獨立 `/execute`。
+- **執行內容**（按 Verdict 第 5 節 Phase 1-6，僅批准範圍）：
+  - `.fhs/notes/fatmo-ops-quickcard.md`（`[NEW]`）：核心集 10 條（日常操作 4／規劃與查詢 3／驗收抽查 3，Phase 2 量化標準 ≤12 條）、擴展集 4 項（ScheduleWakeup/EnterWorktree/`/loop`/spawn_task）、角色速查表（6 列，Phase 3）、進階/高風險警示卡（Workflow/RemoteTrigger，Phase 6）、重疊沉積盤點附錄（`/team` 非完全正交需人手覆核同步、記錄既有 4 項 subagent 版本漂移待清）。
+  - `CLAUDE.md`（`[MODIFY]`）：治理路由表新增一行「想知道日常操作/召喚詞速查 → `.fhs/notes/fatmo-ops-quickcard.md`」（Phase 5 同步機制，路由指標非新規則）。
+- **Phase 4 驗收設計實際執行**（Verdict 驗證清單強制項，非僅寫入文件）：派 fresh-context agent 扮演「Fat Mo」，只餵手冊本文（唔餵本 session 對話），測 3 個真實場景（財務改動驗收／排程未來提醒／懷疑 AI 求其講嘢想核實）。**3/3 PASS，信心皆「高」**，agent 逐條引用文件原文對應到答案。唯一發現：擴展集項目（如 ScheduleWakeup）只確認「存在」唔教實際語法，agent 主動指出呢個限制——此為 Phase 6/擴展集嘅刻意設計取捨（「存在，一句話連結，唔喺本卡教學」），非缺陷，測試證明呢個設計選擇對讀者係透明可辨識嘅（唔會誤以為冇答案）。
+- **後效同步稽核**：[A] 觸發（新增檔案）— 已更新 `docs/repo-map.md`（`.fhs/notes/` 區塊新增一行）+ `.fhs/notes/README.md`（表格新增一行）；[B] 觸發（`CLAUDE.md` 路由層 + 新增規劃產出物屬制度層產出）— 已產出 `.fhs/reports/completion/2026-07-16_s176-fatmo-ops-quickcard_completion_report.md`；[C] 已更新本條目（新產出物影響 Fat Mo 未來日常操作方式）；[F] 不觸發（`.fhs/ai/commands/` 無增刪，`AGENTS.md` 無新 Rule，新檔案位於 `.fhs/notes/` 非 `.fhs/ai/`）；[G] 不觸發。
+- **待辦**：`fatmo-ops-quickcard.md` 與 `/team` manifest 之間暫無自動同步機制（人手覆核依賴），已於附錄記錄為已知限制；既有 4 項 subagent 版本漂移勘誤仍待清（非本次範圍，僅順手記錄避免重複發現）。
+- **Subagent 使用記錄**：✅ 已使用兩次——① 派 fresh-context agent（general-purpose，zero 本 session 背景）覆核批評處理表，抓到 1 條假採納並已修正（見上一輪 Changelog D39 條目後續）；② 派 fresh-context agent 扮演 Fat Mo 做 Phase 4 三場景可用性測試（Verdict 驗證清單強制項，非自驗）。
+
+【交付前雙紀律自檢】
+驗收：文件治理（人讀操作手冊+CLAUDE.md 路由）— Phase 4 驗收設計已實際執行（非僅寫入文件），fresh-context agent 3/3 場景 PASS 附測試逐字記錄 = ✅；批評處理表本身已由獨立 fresh agent 抽查覆核（抓到並修正 1 條問題）= ✅
+Subagent：✅ 已使用（兩次，理由見上）
+
+## [2026-07-15] Session 176（Claude Code / Sonnet 5 執行）— `/cl-flow`／`/cl-flow-fast` A3-first 重組（D39）
+
+- **緣起**：Fat Mo 觀察「A1/A2 時常錯誤很大，根本幫助不到 A3」，提議改流程為「A3 先做基礎分析部署方案 → A1/A2 評分 → A3 最終決定」。經 `/rp` 精煉觸發 `structural_warning`，拷問一輪（7 條問答）逐項釐清方向/分工/降級規則/防做戲條款/驗收方式後定案，詳見 `.fhs/notes/decisions.md` D39。
+- **查證支持**：抽驗 2026-07-02／07-05／07-13 三次歷史 flow 的 `cl-final-plan.md`「衝突/遺漏」章節，A1/A2 盲寫模式反覆出現同一病徵——幻覺 Postgres Function、誤讀術語、幻覺檔案路徑同不存在角色。根因診斷為 context 飢餓（A1/A2 均無 repo 存取），非推理能力問題。
+- **執行內容**：
+  - `scripts/cl-flow-runner.js`（v1.0.0→v2.0.0）：拆 `--init`（開檔，不叫 API）／`--review [--fast]`（評審）兩段式；移除舊有 PX/AG 盲寫 prompt，改為 `buildPxReviewPrompt`（A1 外部驗證，禁評 repo 內部結構）/`buildAgReviewPrompt`（A2 對抗 red-team，禁重寫方案），統一輸出逐條編號 + Severity（BLOCKER/MAJOR/MINOR）格式；PX/AG 各自獨立 try/catch，單邊失敗寫入 `state.json.degraded`，不再互相拖累；移除舊 `validateAgPlan` 呼叫（作者格式驗證器不適用新評審格式，檔案保留不刪）。
+  - `.fhs/ai/commands/cl-flow.md`（v2.2.1→v3.0.0）：全文重寫為 A3-first 8 步流程，新增批評處理表規格（採納須引落點、拒絕須附反證、Severity 由評審方原文決定 A3 無權調整、拒絕 BLOCKER 強制降級 CONDITIONAL_READY）、degraded 聲明規則、Fat Mo 隨查 fresh-context agent 條款；退役靜態備援模式分支（`a1_implementation_plan.md`/`a2_implementation_plan.md`），留遷移註記。
+  - `.fhs/ai/commands/cl-flow-fast.md`（v1.1.0→v2.0.0）：鏡像縮水版同步重寫——跳嘅係「外部研究」（A1）唔係「評審」（A2 保留）。
+  - `.fhs/ai/commands/rp.md`：「/rp 與管道指令的關係」段兩行描述同步更新，反映 A3-first 語義。
+- **乾測驗證**（真實 API 呼叫，非模擬）：`--init` 正常生成 `flow_id`/`task-brief.md`/`state.json`；`--review --fast` 正常運作，AG **準確揪出植入嘅假陳述**（乾測草案刻意植入唔存在嘅 `validateReview()` 函式陳述，AG 批評 #1 直接指出並標 MAJOR，同時守住「唔准重寫方案」邊界）；`--review` 全模式（AG+PX）正常運作，withRetry 喺真實 Gemini timeout 情況下成功自動恢復重試；PX 守住「唔評 repo 內部結構」邊界（只評業界慣例層面）。過程中發現並修復一個真實 bug：`callPerplexity`/`callGemini` 原設計試圖喺字串 primitive（`prompt.__outFile`）掛屬性，strict mode 下拋 `TypeError: Cannot create property`——已簡化為傳純字串 + 明確 `tmpDir` 參數。乾測用假 flow（`2026-07-15-2326`）驗證後已清理，不留存 `artifacts/`。
+- **真實試點**（flow_id `2026-07-15-2330`，任務：Fat Mo 操作手冊）：A3 草案含 4 個真實檔案查證表 + 2 份已查證能力清單（harness 內建 + FHS 25 個自建指令）→ AG 6 條批評（1 BLOCKER：可用性驗收方式未定）+ PX 8 條批評（單一事實來源風險、分類軸不足以承載複合角色、高風險能力應以警示卡標記而非完全排除等）→ 批評處理表逐條採納/拒絕，含一個拒絕案例（PX 提議三軸分類，以 `user_fatmo.md`「Fat Mo 為單一決策者非多角色協作團隊」反證拒絕，風險層級面向獨立採納另一條批評處理）→ Verdict `APPROVED_READY`（唯一 BLOCKER 已採納折入計劃第 5 節，無拒絕 BLOCKER 案例，不觸發降級規則）。手冊實際內容產出（`fatmo-ops-quickcard.md`）為獨立待批項，未在本輪一併 `/execute`——本 flow 目的僅驗證管道機制本身是否可用。
+- **後效同步稽核**：[A] 不觸發（僅編輯既有 4 個檔案，`artifacts/` 為既有 gitignore 模式的新實例，非新結構，`docs/repo-map.md` 無需更新）；[B] 觸發（`.fhs/ai/commands/` 內 3 個指令檔屬制度層變動，已產出 `.fhs/reports/completion/2026-07-15_s176-cl-flow-a3-first_completion_report.md`，同步 decisions.md D39）；[C] 已更新本條目；[F] 不觸發（本次僅編輯既有指令檔內容，未增刪 `.fhs/ai/commands/` 檔案數量，AGENTS.md 未新增 Rule）；[G] 不觸發（無財務/n8n/schema 相關函式異動）。
+- **待辦**：「Fat Mo 操作手冊」（`fatmo-ops-quickcard.md`）待 Fat Mo 對 `artifacts/2026-07-15-2330/cl-final-plan.md` 下達獨立 `/execute` 方會落實際檔案。
+- **Subagent 使用記錄**：❌ 未使用——文件重寫+腳本改造+乾測+試點全程屬單一貫穿脈絡（拷問共識直接對應到程式碼與文件改動，範圍明確可直接驗證），且試點本身已產出可供 Fat Mo 檢視嘅完整 Verdict artifact；批評處理表逐條帶證據設計，令未來若有疑心可低成本派 fresh-context agent 抽查（機制已寫入 `cl-flow.md`），本輪執行階段判斷無需額外派工。
+
+【交付前雙紀律自檢】
+驗收：制度層改動（指令檔+腳本）— 乾測（`--init`/`--review`/`--review --fast` 三路徑真實 API 呼叫）+ 真實試點（完整管道跑通產出 Verdict）雙重驗證，非口稱 = ✅；「Fat Mo 操作手冊」本身內容產出待獨立 `/execute`，不計入本輪驗收範圍
+Subagent：❌ 未使用（理由見上）
+
 ## [2026-07-15] Session 175（Claude Code / Sonnet 5 執行）— llm-council-skill 查證+暫緩安裝（D28）+ `/rp`／`/cl-flow`／`/ag-flow` 拷問掛鉤機械化（D36）
 
 - **緣起①**：Fat Mo 分享 Notion 導讀文章 + GitHub `tenfoldmarc/llm-council-skill` 連結（Karpathy「LLM Council」方法論移植版技能：5顧問人格平行辯論+匿名互審+主席裁決），問要唔要裝。

@@ -5,8 +5,8 @@
 | 檔案 | 用途 |
 |---|---|
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
-| `cl-flow-runner.js` | `/cl-flow` 協調器核心 — 並行調用 Perplexity + Gemini API，生成真實 artifact（模型由 `GEMINI_A2_MODEL_DEFAULT` 控制）|
-| `validate-ag-plan.js` | ag-plan 輸出格式守護 — 驗證 Gemini 產出的 `ag-plan.md` 結構完整性，保護 Verdict 鏈 |
+| `cl-flow-runner.js` | `/cl-flow` A3-first 協調器（v2.0.0，D37）— `--init` 開檔（不叫 API）／`--review [--fast]` 送 A3 草案俾 A1 Perplexity + A2 Gemini 評審（模型由 `GEMINI_A2_MODEL_DEFAULT` 控制）|
+| `validate-ag-plan.js` | ⚠️ 舊版 ag-plan 作者格式驗證器（D37 前）— 現行評審格式（`ag-review.md`）已不再呼叫此驗證器，檔案保留但未接線於當前 Verdict 鏈 |
 | `migrate_airtable_to_supabase.js` | **Supabase 遷移**：批量將 Airtable 資料同步至 Supabase (Phase 1)，需 Airtable API |
 | `migrate_from_csv.js` | **CSV 遷移備援**：當 Airtable API quota 耗盡時，改從 `airtable-database/*.csv` 讀取並遷移至 Supabase（支援 multiline quoted fields）|
 | `run_supabase_migration.js` | **遷移啟動器**：自動化執行 Supabase 遷移流程 |
@@ -113,26 +113,34 @@ DYI 每日自動匯出是唯一合法免驗證途徑。詳見 `artifacts/2026-06
 
 **回滾**：n8n 停用/刪除 `FHS_IGWatchdog_DriveWatch` workflow 即可，零線上業務系統影響。
 
-## cl-flow-runner.js 使用說明
+## cl-flow-runner.js 使用說明（v2.0.0，D37 A3-first）
 
-**直接使用**（Claude 會自動觸發，通常不需手動執行）：
+**兩段式**（Claude 會自動觸發，通常不需手動執行）：
 
 ```bash
-node scripts/cl-flow-runner.js "你的任務描述"
+# 第一段：開檔（不叫 API）
+node scripts/cl-flow-runner.js --init "你的任務描述"
+
+# ——中間 Claude 撰寫 artifacts/{flow_id}/a3-draft.md——
+
+# 第二段：送草案俾 A1/A2 評審
+node scripts/cl-flow-runner.js --review {flow_id}          # 完整版：A1 Perplexity + A2 Gemini
+node scripts/cl-flow-runner.js --review {flow_id} --fast   # 精簡版：淨 A2 Gemini（/cl-flow-fast 用）
 ```
 
 **環境需求**：
 
 - Node.js 16+
-- `.env` 含 `PERPLEXITY_API_KEY` + `GEMINI_API_KEY`
-- （選用）`repomix` 已安裝，可提升 AG 代碼上下文質量
+- `.env` 含 `GEMINI_API_KEY`（`--review` 非 `--fast` 模式另需 `PERPLEXITY_API_KEY`）
+- 不再依賴 `repomix`——A3 草案由 Claude 直接用 Grep/Read 查證 repo，evidence 已內嵌於草案本身
 
 **輸出**：
 
 ```text
 artifacts/{flow_id}/
-  ├── task-brief.md   ← 任務說明
-  ├── state.json      ← 流程狀態
-  ├── px-report.md    ← Perplexity 外部研究報告
-  └── ag-plan.md      ← Gemini 本地實作計劃
+  ├── task-brief.md   ← 任務說明（--init 產出）
+  ├── state.json      ← 流程狀態（degraded 欄位標記單邊評審失敗）
+  ├── a3-draft.md      ← Claude 撰寫的基礎分析＋部署方案草案
+  ├── px-review.md    ← A1 外部驗證評審（--review，非 --fast 時產出）
+  └── ag-review.md    ← A2 對抗 red-team 評審（--review 兩種模式皆產出）
 ```

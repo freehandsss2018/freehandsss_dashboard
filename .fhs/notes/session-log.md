@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-17 (Session 179 — 手機版訂單卡「N 件」改產品組成 chips): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S179 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 指訂單卡只顯示「N 件」無意思；摺疊卡新增 `.acc-cat-chips` 產品組成行，分類重用 `getProductDimensions()` 單一真源。Playwright 375px 實測後截圖交 Fat Mo，親覆「部署」授權升格。同 session 另發現並補救 worktree 並行部署衝突（S180 快捷列/月曆 v2 一度被覆蓋、S176 cl-flow A3-first 長期未 merge），merge 落 main 時 D37→D39 撞號改編（見 decisions.md）。
+Subagent：❌ 未使用。
+
 ## 2026-07-16 (Session 178 — `/upload-web` 新增 `team` 目標：AI 助理團隊名冊取得公開網址): 🌐 ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S178 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 呼叫 `/upload-web` 意圖上載 AI 助理團隊名冊，因既有腳本寫死只認 POS Dashboard 路徑，誤觸發咗 POS V42 冪等重推（無害）；查明後擴充 `scripts/upload-web.ps1` 新增 `team` 目標（來源改指 `artifacts/`，非生產系統不受二次確認限制），5 個目標路徑解析回歸測試 PASS，`team` 目標實跑兩次三關驗證皆 PASS。名冊現有專屬公開網址 https://yanhei.synology.me/agent_dashboardV42.html 。決策見 decisions.md D38。
@@ -19,6 +24,11 @@ Subagent：✅ 使用 1 支 — general-purpose（sonnet，T2 模板）執行修
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S176 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 報訂單 0600724 財務分頁鎖匙扣品項紅色「疑漏算加購」警示疑似邏輯錯誤，AI 三輪查證（前兩輪皆誤判）後用 live Supabase 交叉比對 `orders.keychain_cost`（運費扣減公式反推）坐實 subtotal_cost/keychain_cost/total_cost 從未算錯，純屬 item_base_cost 輔助欄位語意不一致觸發前端假警示（24筆樣本零真陽性）。`/grilling` 五輪拷問確認方案（完全移除警示+icon、標籤問題本次不動、V42+current.html一起改、fresh-context驗收）後執行，code-reviewer 覆核 PASS。決策見 decisions.md D37。
 Subagent：✅ 使用 1 支 — code-reviewer（fresh-context 驗收 diff+語法+邏輯路徑追蹤）。
+
+## 2026-07-16 (Session 176 — `/cl-flow`／`/cl-flow-fast` A3-first 重組 D39 + Fat Mo 操作手冊落地，worktree `cl-flow-instructions-a03768` merge 落 main 補救於 S179): 🔀 ✅
+
+**摘要**：全文見完成記錄 [2026-07-15_s176-cl-flow-a3-first_completion_report.md](../reports/completion/2026-07-15_s176-cl-flow-a3-first_completion_report.md) + [2026-07-16_s176-fatmo-ops-quickcard_completion_report.md](../reports/completion/2026-07-16_s176-fatmo-ops-quickcard_completion_report.md)（制度層變動，完成記錄為唯一全文居所，本行僅摘要指回）。Fat Mo 觀察 A1/A2 盲寫計劃反覆錯誤大，拷問 7 條問答定案 A3-first 重組：A3 先寫草案，A1/A2 改做評審，`cl-flow-runner.js` 兩段式 `--init`/`--review[--fast]`。乾測+真實試點雙重驗證，fresh agent 覆核批評處理表抓到 1 條假採納並修正。試點副產品 Fat Mo 操作手冊 `fatmo-ops-quickcard.md` 落地，Phase 4 三場景可用性測試 3/3 PASS，另加 `/team` dashboard sidebar 連結。決策見 decisions.md D39（原分支內編號 D37，merge 時因與 Audit Ledger 決策撞號改編）。
+Subagent：✅ 已使用三次——① fresh-context agent 覆核批評處理表；② fresh-context agent 扮演 Fat Mo 做 Phase 4 可用性測試；③（本次 D39 重組本身無額外派工，主 session 直接執行）。
 
 ## 2026-07-15 (Session 175 — llm-council-skill 查證+暫緩安裝 D28 + `/rp`/`/cl-flow`/`/ag-flow` 拷問掛鉤機械化 D36): 🎛️ ✅
 

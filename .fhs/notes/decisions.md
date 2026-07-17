@@ -1669,3 +1669,32 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **教訓**：`item_base_cost` 欄位語意不可靠（同一 category 不同訂單，有時單件有時整套），任何以此欄位為前提的前端判斷式都不可信；未來若要真正修這個資料源頭問題，須動 n8n Code Node，屬獨立範圍，這次刻意不做。
 
 詳見 [freehandsss_dashboardV42.html:10817-10836](Freehandsss_Dashboard/freehandsss_dashboardV42.html:10817)、Changelog.md S176 條目、auto-memory `project_keychain_addon_qty_cost_bug.md`（已更新修正）。
+
+### D39：S176 — `/cl-flow`／`/cl-flow-fast` A3-first 重組：A1/A2 由「盲寫作者」改為「有料評審」
+
+> **編號說明**：本決策原於 `cl-flow-instructions-a03768` worktree 分支獨立編號為 D37，因與 Audit Ledger 修復（同日、不同並行 session）撞號，merge 落 main 時改編為 D39（S179 merge 補救，見 handoff.md）。
+
+**背景**：Fat Mo 觀察「A1/A2 時常錯誤很大，根本幫助不到 A3」，提議改流程為「A3 先做基礎分析部署方案 → A1/A2 評分 → A3 最終決定」。經拷問（7 條問答）釐清方向、分工、降級規則、防做戲條款、驗收方式後定案。
+
+**查證支持**：抽驗 2026-07-02／07-05／07-13 三次歷史 flow 的 `cl-final-plan.md`「衝突/遺漏」章節，A1/A2 盲寫模式反覆出現同一病徵——AG 提案調用 Node ESM 模組嘅唔存在 Postgres Function、A1 誤讀 token 語義、AG 虛構檔案路徑同治理委員會等唔存在嘅角色/結構。診斷：根因係 context 飢餓（A1/A2 均無 repo 存取），非推理能力問題。
+
+**決策內容**（拷問 Q1-Q7 逐項）：
+1. 方向：A3 先寫草案（基礎分析＋部署方案，附真實檔案路徑/行號）→ A1（Perplexity，外部驗證）+ A2（Gemini，對抗 red-team）評審草案 → A3 綜合評審產出批評處理表作最終裁決
+2. 評審分工：A1 禁評 repo 內部結構（佢見唔到），只驗業界假設；A2 禁重寫方案，專職 red-team 挑錯；兩者輸出格式統一逐條編號 + Severity（BLOCKER/MAJOR/MINOR）
+3. `/cl-flow-fast` 鏡像縮水：草案 → 淨 A2 評審 → A3 精簡終審，跳嘅係「外部研究」唔係「評審」
+4. Runner 兩段式：`--init`（開檔，唔叫 API）／`--review [--fast]`（評審），開檔動作留喺 runner 由 deterministic gate 把關，唔靠模型自律
+5. 降級規則：評審 API 掛咗唔硬停，單邊 degraded 標記＋Verdict 顯眼聲明，唔再整條路徑降級到靜態備援；舊靜態備援模式（讀 `a1_implementation_plan.md`/`a2_implementation_plan.md`）退役
+6. 防做戲條款：拒絕 BLOCKER 批評 → Verdict 最高只能 `CONDITIONAL_READY`；「採納」須引用 final plan 落點章節號、「拒絕」須附真實反證（路徑/行號/規則編號）、Severity 由評審方原文決定 A3 無權調整；Fat Mo 可隨時一句話派 fresh-context agent 抽查批評處理表（隨查權，非強制步驟）
+7. 驗收：乾測兩段（`--init`／`--review`／`--review --fast`）→ 真實試點（用「Fat Mo 操作手冊」任務跑完整新管道）→ Fat Mo 驗貨後方算上線
+
+**執行內容**：
+- `scripts/cl-flow-runner.js`（v1.0.0→v2.0.0）：拆 `--init`/`--review [--fast]` 兩段式；移除舊有 PX/AG 盲寫 prompt（分別產出 `px-report.md`/`ag-plan.md`），改為 `buildPxReviewPrompt`/`buildAgReviewPrompt` 兩條評審 prompt（產出 `px-review.md`/`ag-review.md`）；PX/AG 各自獨立 try/catch，單邊失敗寫入 `state.json.degraded`，不再互相拖累；移除舊 `validateAgPlan` 呼叫（作者格式驗證器已不適用新的評審格式，檔案本身保留不刪，僅停止呼叫）。
+- `.fhs/ai/commands/cl-flow.md`（v2.2.1→v3.0.0）：全文重寫為 A3-first 8 步流程，新增批評處理表規格、degraded 聲明規則、fresh agent 隨查權條款；退役靜態備援模式分支，留遷移註記。
+- `.fhs/ai/commands/cl-flow-fast.md`（v1.1.0→v2.0.0）：鏡像縮水版同步重寫。
+- `.fhs/ai/commands/rp.md`：「/rp 與管道指令的關係」段兩行描述同步更新，反映 A3-first 語義。
+
+**乾測驗證**（真實 API 呼叫，非模擬）：`--init` 正常生成 `flow_id`/`task-brief.md`/`state.json`；`--review --fast` 正常運作，AG **準確揪出植入嘅假陳述**（乾測草案刻意植入唔存在嘅 `validateReview()` 函式陳述，AG 批評 #1 直接指出並標 MAJOR）；`--review` 全模式（AG+PX）正常運作，withRetry 喺真實 Gemini timeout 情況下成功自動恢復重試；PX 守住「唔評 repo 內部」邊界。過程中發現並修復一個真實 bug（`callPerplexity`/`callGemini` 原設計用 `prompt.__outFile` 在字串 primitive 上掛屬性，strict mode 下拋 TypeError）——已簡化為傳純字串 + 明確 `tmpDir` 參數，此為乾測抓出嘅真實案例，非假設性風險。
+
+**真實試點**（flow_id `2026-07-15-2330`）：以「Fat Mo 操作手冊」任務跑完整新管道，A3 草案 4 個真實檔案查證表 + 2 份已查證清單 → AG 6 條批評（1 BLOCKER：可用性驗收未定）+ PX 8 條批評（單一事實來源風險、分類軸不足、高風險能力警示缺失等）→ 批評處理表逐條採納/拒絕（拒絕案例：PX 提議三軸分類，以 `user_fatmo.md` 「Fat Mo 為單一決策者非多角色團隊」反證拒絕）→ Verdict `APPROVED_READY`（唯一 BLOCKER 已採納折入計劃，無拒絕 BLOCKER 案例）。「Fat Mo 操作手冊」實際內容產出（`fatmo-ops-quickcard.md`）為獨立待批項，未在本輪一併執行——此 flow 目的僅為驗證管道機制本身。
+
+詳見 `scripts/cl-flow-runner.js`、`.fhs/ai/commands/cl-flow.md`、`.fhs/ai/commands/cl-flow-fast.md`、`artifacts/2026-07-15-2330/cl-final-plan.md`、Changelog.md 本 session 條目、`.fhs/reports/completion/2026-07-15_s176-cl-flow-a3-first_completion_report.md`。

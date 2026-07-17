@@ -1,13 +1,13 @@
 # /cl-flow-fast
 
-**用途 (Purpose)**：精煉任務描述後，跳過 Perplexity 外部研究，直接以 Gemini（AG）產出本地實作計劃，Claude 審閱後輸出精簡 Verdict，等待 `/execute` 授權。
+**用途 (Purpose)**：精煉任務描述後，由 Claude（A3）先寫基礎分析＋部署方案草案，交 Gemini（A2）作對抗評審（跳過 A1 Perplexity 外部研究），Claude 審閱後輸出精簡 Verdict，等待 `/execute` 授權。
 **適用場景**：功能實作、UI 修改、Bug 修復、已定架構的改動（不涉及技術選型或新系統引入）
 **不適用場景**：引入全新 API / 外部服務、重大架構重組、技術選型決策 → 請改用 `/cl-flow`
 **對應 Agent**：A3 (Claude Code)
-**Version**: v1.1.0 (2026-05-30)
+**Version**: v2.0.0 (2026-07-15，D37：A3-first 鏡像縮水版，同步 cl-flow.md v3.0.0)
 **NO-TOUCH GUARDRAIL**：全程禁止任何業務代碼寫入，直到 Fat Mo 輸入 `/execute`。
 
-> 精煉（/rp 輕量版）為預設第一步，不可跳過。名稱含義：cl = Claude 裁決，fast = 跳過 PX。
+> 精煉（/rp 輕量版）為預設第一步，不可跳過。名稱含義：cl = Claude 裁決，fast = 跳過 PX（不是跳過評審——評審一步保留，只跳外部研究）。
 
 ---
 
@@ -25,7 +25,7 @@
 │  ⏸ Gate 1 — 精煉 XML 審閱                            │
 │                                                      │
 │  輸入修改指示 → AI 修正後重顯示                        │
-│  回覆「Y」    → 繼續執行 Runner（--quick 模式）        │
+│  回覆「Y」    → 繼續執行 Step 1（Runner --init）        │
 │  回覆「取消」  → 停止                                 │
 └──────────────────────────────────────────────────────┘
 ```
@@ -38,12 +38,14 @@ Fat Mo 回覆「Y」後，以精煉後 `<objective>` 進入 Step 1。
 
 | 項目 | /cl-flow | /cl-flow-fast |
 |------|---------|--------------|
-| Perplexity A1 外部研究 | ✅ 執行 | ❌ 跳過 |
-| Gemini A2 本地實作計劃 | ✅ 執行 | ✅ 執行 |
-| Claude A3 審閱 + Verdict | ✅ 完整版 | ✅ 精簡版 |
-| repomix codebase context | ✅ | ✅ |
+| A3 草案階段 | ✅ 執行 | ✅ 執行 |
+| Perplexity A1 外部驗證 | ✅ 執行 | ❌ 跳過 |
+| Gemini A2 對抗評審 | ✅ 執行 | ✅ 執行 |
+| Claude A3 終審 + Verdict | ✅ 完整版（含批評處理表） | ✅ 精簡版（含批評處理表） |
 | 適合任務 | 架構決策、新系統 | 功能實作、UI、Bug |
 | token 消耗 | ~30,000–40,000 | ~15,000–20,000 |
+
+> Fast 跳的是「外部研究」，不是「評審」——A2 對抗評審一步保留，兩版共用同一套批評處理表規格，只是 fast 少一個評審方、Verdict 章節精簡。
 
 ---
 
@@ -55,42 +57,59 @@ Fat Mo 回覆「Y」後，以精煉後 `<objective>` 進入 Step 1。
 - `docs/repo-map.md` — 確認相關文件位置，避免重複搜索或漏查
 - 若已執行 `/read`，跳過此步驟，直接進入 Step 1。
 
-### Step 1 — 執行 Runner 腳本（quick 模式）
+### Step 1 — 初始化 Flow（Runner --init）
 
 ```bash
-node scripts/cl-flow-runner.js --quick "[任務描述]"
+node scripts/cl-flow-runner.js --init "[任務描述]"
 ```
 
-- `--quick` flag 跳過 Perplexity，只調用 Gemini
-- 腳本自動生成 `flow_id`（格式：`YYYY-MM-DD-HHmm`）
-- 從 stdout 最後一行讀取 `FLOW_ID=xxx`
+- 純本地操作，不呼叫任何 API
+- 自動生成 `flow_id`（格式：`YYYY-MM-DD-HHmm`），從 stdout 最後一行讀取 `FLOW_ID=xxx`
 - 若腳本報錯（exit code ≠ 0），立即停止並回報錯誤
 
-### Step 2 — 確認 Artifact 存在
+### Step 2 — Claude 撰寫基礎分析＋部署方案草案
 
-腳本完成後，確認以下 3 個檔案皆存在且非空：
+同 `/cl-flow` Step 2 規格（不因 fast 而降低草案品質——草案品質決定 A2 評審質素）：
+
+```
+artifacts/{flow_id}/a3-draft.md
+```
+
+必要章節：基礎分析（附路徑＋行號）、部署方案（含影響檔案 `[NEW]`/`[MODIFY]`/`[DELETE]`）、已知風險與開放問題。禁止「TBD」等佔位語句。
+
+### Step 3 — 觸發評審（Runner --review --fast）
+
+```bash
+node scripts/cl-flow-runner.js --review {flow_id} --fast
+```
+
+- `--fast` flag 跳過 Perplexity，只調用 Gemini（A2 對抗評審）
+- Runner 讀取 `a3-draft.md`，若缺失或為空 → 立即報錯停止
+- 產出 `artifacts/{flow_id}/ag-review.md`（逐條標 Severity：BLOCKER/MAJOR/MINOR）
+- 若 Gemini 呼叫失敗，`state.json` 標 `degraded: true`——fast 版只有 A2 一個評審方，AG 失敗等同零外部評審，**不硬停**，但 Verdict 必須顯眼聲明
+
+### Step 4 — 確認 Artifact 存在
+
+Runner 完成後，確認以下檔案皆存在且非空：
 
 ```
 artifacts/{flow_id}/task-brief.md
-artifacts/{flow_id}/ag-plan.md
-artifacts/{flow_id}/state.json
+artifacts/{flow_id}/a3-draft.md
+artifacts/{flow_id}/ag-review.md
 ```
 
-注意：quick 模式**不產出** `px-report.md`，此為正常現象。
+注意：fast 模式**不產出** `px-review.md`，此為正常現象，非異常。若 `ag-review.md` 亦缺失（AG 失敗），依 Step 3 degraded 規則處理，不停止流程。
 
-### Step 3 — 審閱 AG 計劃
+### Step 5 — 審閱 AG 評審 + 產出批評處理表
 
-Claude 必須實際讀取：
+Claude 必須實際讀取 `artifacts/{flow_id}/ag-review.md`，逐條回應（規格同 `/cl-flow` Step 5，此處不重複定義，僅精簡輸出）：
 
-- `artifacts/{flow_id}/task-brief.md`
-- `artifacts/{flow_id}/ag-plan.md`（A2 本地實作計劃）
+- 每條批評標「採納」（引落點）或「拒絕」（附反證）
+- Severity 照抄 A2 原文，Claude 無權調整
+- 任一 BLOCKER 被拒絕 → Verdict 最高 `CONDITIONAL_READY`
+- Fat Mo 隨時可派 fresh-context agent 抽查本表
 
-審閱重點：
-- 影響檔案清單是否完整（有無漏掉的依賴檔）
-- 步驟是否違反 AGENTS.md 硬規則（HTML ID、API Key、三端同步）
-- 驗證計劃是否可操作
-
-### Step 4 — 產出精簡 Verdict
+### Step 6 — 產出精簡 Verdict
 
 **路徑**：`artifacts/{flow_id}/cl-final-plan.md`
 
@@ -102,8 +121,10 @@ Claude 必須實際讀取：
 ## 1. 判決
 APPROVED_READY / CONDITIONAL_READY / BLOCKED
 
-## 2. 風險 / 違規（若有）
-- [列出問題，若無則寫「無」]
+## 2. 批評處理表
+| 批評 | Severity | 裁決 | 證據/落點 |
+|---|---|---|---|
+（AG 逐條，見上方規格；若 degraded，第一行寫「⚠️ DEGRADED：AG 評審失敗，本次零外部評審」）
 
 ## 3. 執行確認清單
 - [ ] 影響檔案 1 — 改動說明
@@ -114,9 +135,9 @@ APPROVED_READY / CONDITIONAL_READY / BLOCKED
 輸入 `/execute` 開始執行。
 ```
 
-> 注意：精簡格式不要求重複複述 ag-plan 全文，只需列出確認清單與異常。
+> 注意：精簡格式不要求重複複述 a3-draft 全文，只需列出批評處理表與確認清單。
 
-### Step 5 — 更新 state.json
+### Step 7 — 更新 state.json
 
 ```json
 {
@@ -126,7 +147,7 @@ APPROVED_READY / CONDITIONAL_READY / BLOCKED
 }
 ```
 
-### Step 6 — 停止等待
+### Step 8 — 停止等待
 
 輸出 Verdict 後**強制停止**，等待 Fat Mo 輸入 `/execute`。
 
@@ -137,7 +158,8 @@ APPROVED_READY / CONDITIONAL_READY / BLOCKED
 | 情況 | 行動 |
 |------|------|
 | `GEMINI_API_KEY` 缺失 | 報錯，提示填入 `.env` |
-| 腳本 exit code ≠ 0 | 停止，顯示 stderr |
-| ag-plan.md 為空 | 停止，回報異常 |
-| repomix 不可用 | 繼續（AG context 降級至最小） |
+| `--init` 腳本 exit code ≠ 0 | 停止，顯示 stderr |
+| `a3-draft.md` 缺失或為空（`--review` 前） | 停止，Claude 必須先完成 Step 2 |
+| `--review --fast` 腳本 exit code ≠ 0 | 停止，顯示 stderr |
+| `ag-review.md` 缺失（AG 失敗，fast 版零評審） | **不停止** — Step 3/6 degraded 聲明流程接手 |
 | 任務明顯需要外部研究 | 警告 Fat Mo 改用 `/cl-flow` |
