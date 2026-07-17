@@ -9,9 +9,14 @@
 - **Subagent 使用記錄**：❌ 未使用 — 單點 UI 改動主線程直接完成；生產 HTML 驗收以 Playwright 運行證據＋截圖交 Fat Mo 目測替代 fresh-context agent。
 - **部署後發現並補救 worktree 並行部署衝突**：Fat Mo 部署後截圖回報手機上另外幾項功能（快捷列月曆掣、月曆v2三時段、約定日期簡化）倒退。查證發現：本 session 部署時用嘅係「舊 main」（分支點 `72d3f17`）做底，而另外兩個 worktree session（`v42-shortcut-bar-optimize-5cf31c` S180 快捷列自訂+月曆v2+row bug修復、`cl-flow-instructions-a03768` S176 `/cl-flow` A3-first 重組）長期未 merge 落 main，各自獨立部署過同一 NAS 端點，本次部署把佢哋嘅成果靜靜覆蓋咗。Fat Mo 確認「做埋呢兩個 merge」後執行：兩條分支逐一 merge 落 main（HTML 自動合併零衝突，D37→D39 撞號改編因 cl-flow A3-first 與同日 Audit Ledger 決策碰號），8 個 `<script>` 區塊語法檢查零錯誤，playwright 複測三大功能集（chips／快捷列自訂／月曆v2）共存正常，重新升格 `current.html` → NAS 三關驗證 PASS（HTTP 204/大小相符/SHA256 `F6897724...`）。
 - **教訓**：多個 worktree session 同時改 Dashboard HTML 時，各自獨立部署同一 NAS 端點會互相覆蓋（無 git 層面衝突偵測，因部署動作在 git 之外）；日後應先 merge 落 main 再部署，不應在未合併的 worktree 分支上各自跑 `/upload-web`。
+- **worktree 清理時再揪出兩單未 commit 完成品**：Fat Mo 要求清理已完成使命嘅 worktree 前，逐一核實工作目錄乾淨（非直接強制刪除），發現 3 個 worktree 尚有未 commit 改動：
+  1. **`nifty-engelbart-8e5d6a`（原 S178，與 upload-web team 撞號）— 訂單總覽肢體方向 badge 重複顯示 bug 修復**：Fat Mo 曾回報訂單 0600721（Akira）兩件鎖匙扣同時顯示「左手」；根因係 `mapOrder()`/`getProductDimensions()` 舊邏輯將 item_key 後綴（`_LH/_RH/_LF/_RF`）同 specification 自由文字 OR 在同一優先級，刻字文本可能誤含方向字令錯派覆蓋正確 badge。SQL 掃描全庫揭發 **21 張訂單/50 件品項**受影響。修復：`mapOrder()` 新增 Step 0（item_key 後綴 regex，prefix-agnostic，優先於 pool 邏輯）+ `getProductDimensions()` 部位解析同步改後綴優先，legacy pipe-format 單保留原 fallback。此修復當時已 fresh-context code-reviewer 覆核 PASS + 部署過 NAS，但**從未 git commit**，只留喺 worktree 工作目錄，畀之後幾輪其他 worktree 部署靜靜覆蓋咗（同上述 chips/快捷列衝突同一根因）。本次：抽取該檔 diff（`git diff` 匯出）直接 apply 落 main 現有 V42（clean apply 零衝突），8 個 script 區塊語法檢查零錯誤，playwright 用 Akira 訂單真實情境複測——4 件鎖匙扣（`_K_LF/_K_LH/_K_RF/_K_RH`）各自正確顯示左腳/左手/右腳/右手（非全部「左手」），同 chips/快捷列/月曆三大功能集共存零回歸。
+  2. **`cl-flow-instructions-a03768`（S176續II）— 交付摘要三段式格式機械化**：Fat Mo 早前指示完成收尾要「已完成／點運作／點維護」三段式簡短直白（已落 auto-memory `feedback_session_completion_summary_style.md`），但發現規定未落實於指令檔本身（同 D36 拷問掛鉤一樣嘅「靠 AI 記得」漂移模式）。修復：`.fhs/ai/commands/commit.md`／`.fhs/ai/commands/execute.md`／兩個 `.claude/commands/` bridge 檔新增強制三段式條款。同樣從未 commit，本次抽取 diff apply 落 main。
+  3. **`read-command-8fa397`**：僅 deploy-log.md 幾行歷史記錄殘留，無實質內容，捨棄。
+- **部署（第三輪）**：`/fhs-check` 前置（同前，PRICE_AUDIT FAIL 已知先例不阻擋）；重新升格 `current.html` → NAS 三關驗證 PASS。
 
 【交付前雙紀律自檢】
-驗收：生產 HTML 改動 — 已附運行證據（Playwright 手機闊度實測截圖 + NAS 三關驗證）+ Fat Mo 目測截圖後親自授權部署 = ✅；worktree merge補救部分——8個script區塊語法檢查+playwright三功能集共存複測+NAS三關驗證 = ✅（非財務/schema類別，此為部署協調補救非新功能，未派fresh-context）
+驗收：生產 HTML 改動 — 已附運行證據（Playwright 手機闊度實測截圖 + NAS 三關驗證）+ Fat Mo 目測截圖後親自授權部署 = ✅；worktree merge補救部分——8個script區塊語法檢查+playwright三功能集共存複測+NAS三關驗證 = ✅；肢體方向bug修復——patch clean apply+8 script零錯誤+playwright真實情境複測（4件鎖匙扣方向各異）= ✅（非財務/schema類別，此為部署協調補救非新功能，未派fresh-context，但原修復本身已有fresh-context code-reviewer歷史覆核紀錄可查）
 Subagent：❌ 未使用 — 判斷理由見上
 
 ## [2026-07-16] Session 178（Claude Code / Sonnet 5 執行）— `/upload-web` 新增 `team` 目標：AI 助理團隊名冊取得公開網址

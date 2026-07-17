@@ -17,6 +17,6 @@
 1.5 **Lesson Distillation 自動判斷**（Pattern / Pitfall / Preference 清單式判斷）
 2. **Phase 2 — Git 推送**（add → status 安全確認 → commit → push）
 2.5 **Phase 2.5 — 條件觸發升格部署**（新，S168，AGENTS.md v1.7.0 授權途徑c）：自動偵測本次 commit 是否改動 `Freehandsss_Dashboard/freehandsss_dashboardV*.html`，有改動才續走 upload-web 升格部署（跳過二次確認）+ 三關驗證；沒有則跳過，兩種結果皆不再詢問
-3. **Phase 3 — 完成回報**（格式化輸出）
+3. **Phase 3 — 完成回報**（格式化輸出＋強制三段式摘要：已完成／點運作／點維護，簡短直白）
 
 異常處理：🔴 停止修復 → 🟡 詢問 Fat Mo → ✅ 繼續執行

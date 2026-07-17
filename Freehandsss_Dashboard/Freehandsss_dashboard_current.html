@@ -8677,11 +8677,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
 
             // 2. 解析部位 (Part)
+            // rawID suffix (machine-generated item_key) is authoritative and MUST be checked
+            // before combinedSearch text: spec/engraving is free-text (customer names/addresses)
+            // that can legitimately contain "左手"/"右腳" as ordinary words, and previously being
+            // OR'd at equal priority let a mis-assigned spec override a correct rawID suffix.
             let part = "";
-            if (rawID.includes('_LH') || combinedSearch.includes('左手')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-hand"/></svg>左手`;
-            else if (rawID.includes('_RH') || combinedSearch.includes('右手')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-hand"/></svg>右手`;
-            else if (rawID.includes('_LF') || combinedSearch.includes('左腳')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-footprint"/></svg>左腳`;
-            else if (rawID.includes('_RF') || combinedSearch.includes('右腳')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-footprint"/></svg>右腳`;
+            const _partSuffix = rawID.match(/_(LH|RH|LF|RF)$/);
+            if (_partSuffix) {
+                part = {
+                    LH: `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-hand"/></svg>左手`,
+                    RH: `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-hand"/></svg>右手`,
+                    LF: `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-footprint"/></svg>左腳`,
+                    RF: `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-footprint"/></svg>右腳`,
+                }[_partSuffix[1]];
+            }
+            else if (combinedSearch.includes('左手')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-hand"/></svg>左手`;
+            else if (combinedSearch.includes('右手')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-hand"/></svg>右手`;
+            else if (combinedSearch.includes('左腳')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-footprint"/></svg>左腳`;
+            else if (combinedSearch.includes('右腳')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-footprint"/></svg>右腳`;
             else if (target.includes('家庭')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-users"/></svg>合成`;
             // Generic fallback: spec contains 手 or 腳 without direction qualifier
             else if (spec.includes('手')) part = `<svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><use href="#icon-hand"/></svg>手`;
@@ -14943,8 +14956,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const _cat    = it.item_category || '';
                 let _spec     = it.specification || '';
 
-                // Step 1: Assign direction from raw_form_state pool
-                // Only supplement if spec currently lacks a direction qualifier (左/右)
+                // Step 0: New-format item_key suffix is authoritative — direction is baked into
+                // the machine-generated key structure, independent of category prefix (K/K_E/M/M_E/...)
+                // and MUST take priority over specification text: spec often holds free-text engraving
+                // (customer names/addresses) that can legitimately contain "左"/"右" as ordinary words,
+                // which previously blocked this check and let pool-assignment mis-order limbs.
+                const _dirMatch = _ik.match(/_(LH|RH|LF|RF)$/);
+                if (_dirMatch) {
+                    _spec = { LH: '左手', RH: '右手', LF: '左腳', RF: '右腳' }[_dirMatch[1]];
+                }
+
+                // Step 1: Assign direction from raw_form_state pool (legacy pipe-format items only —
+                // new-format items already resolved by Step 0 above)
                 if (!_spec.includes('左') && !_spec.includes('右')) {
                     // Elder detection: for legacy pipe-format keys, check for text indicators
                     const _isElder = _ik.includes('_K_E_') || _ik.includes('_M_E_')
@@ -14983,13 +15006,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     }
                 }
 
-                // Step 2: Fallback — try item_key suffix (for future new-format items in Supabase)
-                if (!_spec.includes('左') && !_spec.includes('右')) {
-                    if      (_ik.includes('_K_LH') || _ik.includes('_M_LH')) _spec = '左手';
-                    else if (_ik.includes('_K_RH') || _ik.includes('_M_RH')) _spec = '右手';
-                    else if (_ik.includes('_K_LF') || _ik.includes('_M_LF')) _spec = '左腳';
-                    else if (_ik.includes('_K_RF') || _ik.includes('_M_RF')) _spec = '右腳';
-                }
+                // Step 2 removed — superseded by Step 0's prefix-agnostic suffix match, which
+                // already covers every new-format key (including _K_E_/_M_E_ elder variants
+                // this old list never handled) before Step 1's pool logic even runs.
+
                 // Step 3: Last-resort fallback for legacy undirected specs (e.g. spec="腳" with no 左/右)
                 // MUST match the same fallback logic used in reconstructOrderFromSupabase
                 // so overview and edit mode show consistent direction info
