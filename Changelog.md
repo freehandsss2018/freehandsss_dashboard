@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-07-18] Session 181（Claude Code / Fable 5 定方案+Sonnet 5 執行）— 吊飾成本雙數簿漂移修復 + 頸鏈規則補件（D40）
+
+- **緣起**：Fat Mo 回報訂單 Akira（0600721）吊飾成本計錯，懷疑漏計頸鏈成本；另指舊訂單（如 KateSo）成本顯示「未明」。
+- **審計**：全庫 46 張訂單唯讀審計（`.fhs/notes/ai_reports/2026-07-17_order_cost_audit.md`）。初步發現 7 張吊飾單漏計頸鏈規則（`necklace_chain_cost` = 每 2 條吊飾共用 1 條 $100，`Math.ceil(N/2)×100`，存在於 `cost_configurations` 及前端 `calculatePricing()`，從未回寫 `orders.necklace_cost`）；KateSo 等 6 張舊式訂單經 `raw_form_state` 重建核對，訂單層數字正確，僅品項層顯示缺明細（非計錯）。
+- **深挖推翻初步結論金額**：第一次「純加 $100 頸鏈」patch 經 fresh-context opus 對抗式審查揪出雙重計算風險——`products.total_base_cost`（n8n 實際成本源）凍結咗吊飾材料舊值（銀 $365／金 $421），同即時 `cost_configurations`（銀/金已拉平 $465，Fat Mo 確認屬有意）長期漂移未同步，凍結值入面已包舊版約 $70 頸鏈估算。此為「雙數簿」問題，同鎖匙扣（migration 0045 已修）、立體擺設（migration 0030 已修）曾出現過嘅同一 drift 模式第三次重演。
+- **執行（migration 0046）**：建 `fhs_compute_charm_cost(drawing_fee, material_per_piece, qty=1)` RPC（仿 `fhs_compute_keychain_cost` 結構，無 clasp/chain 項），回填 242 行吊飾 SKU `total_base_cost`（銀/金材料 365/421 → 465/465）。已上線，僅改價目表，未動任何既有訂單，零風險。
+- **執行（n8n `Calculate Profit & Pack Items` V47.18→V47.19）**：新增 `necklaceChainCost = Math.ceil(charmItemCount/2)×100`，計入 `Total_Cost` 與 `Necklace_Cost_Total`，並寫入 `n8nAdjustmentNotes` 供審計追溯（type: `necklace_chain_cost`）。獨立重算，不信任前端傳入值（延續 Session 57 B2 原則）。Fat Mo 落 `/execute` 後部署（versionId `a057ec7b`，備份於 `.fhs/notes/aireports/n8n-mcp-backups/2026-07-17/`）。
+- **驗證**：dry-run 語法驗證 → fresh-context opus 對抗式審查（首輪 NEEDS_REVISION，揪出雙計問題）→ migration 0046 執行後重新人手覆算 7 張 flag 單數字自洽 → 部署後 `get_node` 讀回代碼逐字核對整合性 PASS。n8n mock test trigger（`trigger_test_execution`）因既有 webhook 端點 405 基礎設施問題未能觸發（與本次 code 改動無關，Code node 內部邏輯不影響 webhook HTTP method），改以人手覆算＋整合性核對替代。
+- **待辦**：7 張歷史單（Akira/Dede/Kathleen/Amen/Selina Lai/Lokyi_C/DebbieHo）需 Fat Mo 親自於 Dashboard 載入→sync 補正（AI 不代做，因等同重交真實客戶訂單，錯咗會產生新嘅已確認錯誤快照）。
+- **教訓**：`.fhs/memory/lessons/2026-07-17_charm_cost_ledger_drift_and_missing_chain_rule.md`；決策記錄：`decisions.md` D40。
+- **2026-07-18 續修（Fat Mo 定性嚴重過程缺陷後補正，migrations 0056/0057）**：Fat Mo 叫再核實後，發現 0046 殘留兩個結構缺口（N飾未按 item_per_set 倍增——§5.4.1 鎖匙扣舊 bug 重演；加購 SKU 未免畫圖），核實過程中一度誤用已被 S124 v2 裁決取代嘅 Pricing Bible §6.2 舊運費分解誤判「漏 $35 運費」（假警報，products 值按現行裁決不含運費，鎖匙扣單購 185 為 live 鐵證）。最終方程式經 fresh-context opus 八角度對抗審查 FORMULA_HOLDS 後執行：**0056** 回填 242 行（加購=465×N 免畫圖；單購=tier_drawing{60/110/240}+465×N；改後驗證 242/242 符合零違規；防禦性處理 1 行「加貼」typo SKU）；**0057** 將 `fhs_check_product_cost_drift()` 擴充覆蓋吊飾全 tier（鎖匙扣分支原封不動，總覆蓋 282 行，執行零漂移）。**Akira 定案數：total_cost $2605**（吊飾 1955 + 鎖匙扣 440 + 手模 210；現存 2357 計少 $248），由對抗審查獨立重算鎖定。防再錯機制：`finance-gatekeeper/SKILL.md` v1.4.0 新增 §三B「成本改動前置紀律」（完整方程式先行／對齊先例／drift 檢查零行收工）。
+
+【交付前雙紀律自檢】
+驗收：財務/n8n 部署類 — migration 0046 執行後 SQL 直接 SELECT 回讀 242 行新值核對 PASS；n8n patch 部署後 `get_node` 讀回整合性核對 PASS；`trigger_test_execution` 因 webhook 405 基礎設施問題未能取得 execution log（已在稽核中明確記錄未達成，非靜默跳過），改以人手覆算 7 張 flag 單數字自洽驗證替代 = DONE_WITH_CONCERNS（建議下次有真實訂單流量後，用 `get_execution_log` 抽查一次實際 webhook 執行結果補證）；0056/0057 續修 — opus 對抗審查 FORMULA_HOLDS + 改後 SQL 全量驗證 242/242 + drift 檢查 282 行零漂移 = PASS
+Subagent：✅ 已使用 — general-purpose(sonnet) 執行初步全量審計；general-purpose(opus)×3 分別做 n8n patch 對抗式第二意見審查（揪出雙計問題）+ 吊飾成本基礎重建調查（設計 0046 公式）+ 最終方程式八角度對抗審查（FORMULA_HOLDS 並揪出加貼 typo row）；財務/n8n 高風險類別依治理規則強制不降級 opus 第二意見
+
 ## [2026-07-17] Session 179（Claude Code / Fable 5 執行）— 手機版訂單卡「N 件」改產品組成 chips
 
 - **緣起**：Fat Mo 指訂單卡（例 0600721）只顯示「9 件」根本無意思、唔知買咗乜，要求用最簡化直白嘅圖像呈現。

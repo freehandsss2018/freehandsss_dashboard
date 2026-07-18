@@ -13,7 +13,7 @@
 
 ## 跨 Session 待辦 (Cross-Session Backlog)
 
-- [ ] ⚪ Plan 0004 執行：Supabase 成本架構完整遷移 → 參見 `docs/plan_0004_supabase_cost_migration.md`（優先級對齊 handoff.md MASTER 表「成本組裝單一真源重構（Phase 2）」= ⚪ 低，2026-07-05 `/fhs-audit` S145 修正：原標🔴與 handoff SSoT 不一致，另開 `/cl-flow` 評估）
+- [ ] 🔴 Plan 0004 執行：Supabase 成本架構完整遷移 → 參見 `docs/plan_0004_supabase_cost_migration.md`（2026-07-18 S181 D40 事故後優先級上修為🔴：鎖匙扣嬰兒層+吊飾全層已各自補完單一真源RPC並上線drift檢查，剩立體擺設/成人鎖匙扣/鋁合金三品類未覆蓋，需另開`/cl-flow`比照同一手術模式，詳見 handoff.md 待辦 [S181] 條目、decisions.md D40附錄）
 - [ ] 📋 Plan 0004 完成後：更新 Airtable 定義備存（歷史訂單成本分析用）
 
 ## 未解待驗證 (Open Failures — 未過 stage-3 驗證的假設停放區，格式與規則見 `.fhs/ai/governance/07_compounding-loop.md` §1)

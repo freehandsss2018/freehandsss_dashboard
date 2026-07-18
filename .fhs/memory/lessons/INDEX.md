@@ -10,6 +10,7 @@
 
 | 日期 | 檔案 | 主題 | 關鍵字 | 摘要 |
 |------|------|------|--------|------|
+| 2026-07-17 | 2026-07-17_charm_cost_ledger_drift_and_missing_chain_rule.md | 吊飾成本雙數簿漂移+頸鏈規則缺失 | finance, n8n, cost-drift, necklace-chain, migration-0046 | products.total_base_cost凍結舊值vs cost_configurations新值長期漂移；頸鏈$100規則從未落實n8n |
 | 2026-07-04 | 2026-07-04_docs-changelog-duplicate-cleanup.md | docs/CHANGELOG.md 重複檔案清理 | changelog, duplicate, frontmatter, repo-map | 分岔複本判斷法：metadata 可能比內容還舊，需比對實際內文最新日期 |
 | 2026-03-20 | 20260320_1358_Memory_Engine_2.0_Architecture.md | Memory Engine 2.0 架構 | memory, notion, sync, architecture | Memory Engine V2 自動掃描 lessons/ 同步 Notion 大腦的設計決策 |
 | 2026-03-21 | 20260321_History_Indexing_Fix.md | 歷史索引修復 | indexing, history, fix | 修復歷史訊息索引失效問題 |

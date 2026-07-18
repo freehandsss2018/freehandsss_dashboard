@@ -3,6 +3,16 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-17] (Session 181, D40) 吊飾成本全面追新數簿 — migration 0046 + n8n 頸鏈規則補件
+
+決策：Fat Mo 發現 Akira 訂單成本計錯後發起全量審計（46張訂單），揪出兩層問題：(1) 頸鏈成本規則（每2條吊飾共用1條$100，`necklace_chain_cost` config key）從未被 n8n `Calculate Profit & Pack Items` node 計入訂單成本，只存在於前端顯示層；(2) 更深層：`products.total_base_cost`（n8n 實際成本來源）凍結咗吊飾材料舊值（銀$365/金$421），同即時 `cost_configurations`（銀$465/金$465，Fat Mo 確認金銀拉平屬有意）長期漂移未同步——同鎖匙扣（migration 0045 已修）、立體擺設（migration 0030 已修）曾經出現過嘅同一種 drift 模式。第一次「純加$100頸鏈」patch 經 fresh-context opus 對抗式審查揪出會撞正凍結值入面已包嘅舊頸鏈估算造成雙重計算，故改用「先追新數簿、後加頸鏈」兩段式方案。
+執行：**migration 0046**（已上線，零風險——只改商品價目表未動任何訂單）建 `fhs_compute_charm_cost(drawing_fee, material_per_piece, qty=1)` RPC（仿 `fhs_compute_keychain_cost` 結構，無 clasp/chain 項），回填 242 行吊飾 SKU 嘅 `total_base_cost`。n8n patch（`necklaceChainCost = Math.ceil(charmItemCount/2)×100` 計入 `Necklace_Cost_Total`）已寫好、dry-run 驗證、opus 二次審核通過，**待 Fat Mo 落 `/execute` 部署**。7 張歷史單（Akira/Dede/Kathleen/Amen/Selina/Lokyi_C/DebbieHo）需 Fat Mo 親自於 Dashboard 載入→sync 補正，AI 不代做（等同重交真實客戶訂單，錯咗會產生新嘅已確認錯誤快照）。
+詳見：`.fhs/notes/ai_reports/2026-07-17_order_cost_audit.md`、`.fhs/memory/lessons/2026-07-17_charm_cost_ledger_drift_and_missing_chain_rule.md`。
+
+【D40 附錄，2026-07-18】Fat Mo 定性「連環發現新漏洞」為嚴重過程缺陷後嘅補正與防止機制：
+決策：(1) migration 0056 補完吊飾 per-set 語義（加購=465×item_per_set 免畫圖；單購=tier_drawing{60/110/240}+465×item_per_set；對齊鎖匙扣 S124 v2 終態結構；改後 242/242 行驗證零違規）；(2) migration 0057 擴充 `fhs_check_product_cost_drift()` 覆蓋吊飾全 tier（總 282 行，零漂移），成為自動核數工具；(3) `finance-gatekeeper/SKILL.md` v1.4.0 新增 §三B「成本改動前置紀律」三步強制（完整方程式先行、對齊已驗證先例、drift 檢查零行先收工）。
+原因：本事故連環四錯（漏頸鏈→險雙計→誤用過時文件判漏運費→N飾未倍增）嘅共同根因＝逐忽修補、每次只驗改動嗰忽、且曾以文件（Pricing Bible §6.2 舊運費分解，已被 S124 v2 裁決取代但未標記）代替 live 數據做核數基準。防止機制以「live 數據唯一真相＋全式對齊＋自動 drift 檢查」三位一體堵截。Akira 重算定案數 $2605（opus 對抗審查獨立鎖定）；7 張歷史單待 Fat Mo Dashboard sync。
+
 [2026-07-10] (Session 162) 訂單總覽 UI/UX 五項修復與功能擴充
 
 決策：為提升 Dashboard 之操作體驗與資料一致性，解決五項 UI/UX 回報問題：(1) Tooltip 溢位 Bug；(2) 雙端清除篩選功能；(3) Desktop 版返回總覽按鈕；(4) 同步/刪除等候期間毛玻璃遮罩與 Supabase Poller；(5) 變更完畢後返回總覽高亮行/卡片閃爍動畫。

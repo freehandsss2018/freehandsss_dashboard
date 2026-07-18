@@ -222,6 +222,7 @@ freehandsss_dashboard/
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
 │   │   ├── FHS_System_Logic_Overview.md ← 系統運作總論 v1.0.0（2026-06-05 新增）前端成本/售價/畫圖費/n8n節點/IG訊息/B1標靶全記錄
+│   │   ├── ai_reports/                   ← AI 產出稽核報告存放區（2026-07-17 S181 新增，D40 全量成本審計報告首例）
 │   │   └── product_pricing_reference.md ← [DEPRECATED 2026-06-01] 已合併至 FHS_Pricing_Bible.md（現位於 .fhs/ai/）
 │   ├── reports/                         ← AI 產出正式報告與計劃區（2026-05-23 新增規則）
 │   │   ├── README.md                    ← 報告區總綱
@@ -244,7 +245,7 @@ freehandsss_dashboard/
 │   │   ├── pitfalls.yaml               ← Machine-readable 跨層整合 pitfall 知識庫（2026-05-21 新增，product-integration-validator 使用）
 │   │   └── lessons/
 │   │       ├── INDEX.md                ← Lessons 唯一檢索入口（一行式索引，2026-06-12 新增）
-│   │       └── *.md                    ← 59 個教訓記錄（Notion Auto-Discovery 自動同步）
+│   │       └── *.md                    ← 60 個教訓記錄（Notion Auto-Discovery 自動同步）
 │   └── tools/                          ← 稽核工具腳本（2026-05-17 v2.1 新增）
 │       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測 MVP
 │       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等），亦供 fhs-health-check.js 過時漂移偵測共用

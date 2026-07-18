@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-07-18 (Session 181 — D40：吊飾成本雙數簿漂移修復+頸鏈規則補件+防再錯機制+6單resync): 🏷️ ✅
+
+**摘要**：全文見完成記錄 [2026-07-18_charm_cost_dual_ledger_fix_completion_report.md](../reports/completion/2026-07-18_charm_cost_dual_ledger_fix_completion_report.md)（本行僅摘要指回）。Fat Mo 回報 Akira(0600721) 成本計錯，全量審計揪出吊飾成本四層系統性漏算（頸鏈規則從未落地n8n/products表凍結舊材料價/N飾未按item_per_set倍增/加購未免畫圖）。首次 patch 經 fresh-context opus 對抗審查攔截雙計風險；Fat Mo「再核實」後再揪出殘留缺口，二次 opus 八角度審查 FORMULA_HOLDS。修復：migration 0046(RPC仿鎖匙扣先例)+0056(補完per-set語義)+0057(drift檢查擴充覆蓋吊飾全層282行零漂移)+n8n V47.19(頸鏈訂單層獨立計算)。Fat Mo 授權 AI 經 Dashboard 真實 UI 操作 resync 6 張歷史單，final_sale_price 零損傷+公式全中；DebbieHo(0600727) 舊式單留 Fat Mo 親自做。過程攔截兩個前端 bug（付款自動填充陷阱、訂單載入產品勾選殘留），已排 task_0811eb3c 待修。防再錯機制：finance-gatekeeper v1.4.0 新增§三B成本改動前置紀律。Phase 2（立體擺設/成人鎖匙扣/鋁合金三品類 drift 覆蓋）已列入 handoff 待辦，待 Fat Mo 批 `/cl-flow`。
+
 ## 2026-07-17 (Session 179 — 手機版訂單卡「N 件」改產品組成 chips + worktree 並行部署衝突補救，五單完成品歸隊): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S179 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 指訂單卡只顯示「N 件」無意思；摺疊卡新增 `.acc-cat-chips` 產品組成行，分類重用 `getProductDimensions()` 單一真源。Playwright 375px 實測後截圖交 Fat Mo，親覆「部署」授權升格。部署後 Fat Mo 發現手機上其餘功能倒退，查明係另兩個 worktree session（`v42-shortcut-bar-optimize-5cf31c` S180 快捷列/月曆v2、`cl-flow-instructions-a03768` S176 cl-flow A3-first）長期未 merge 落 main，本次部署用舊 main 做底覆蓋咗佢哋。兩單 merge 補救後（HTML 自動合併零衝突，D37→D39 撞號改編）重新升格部署。Fat Mo 要求順手清理已完成使命 worktree，清理前逐一核實乾淨時再揪出 3 個未 commit 改動：訂單總覽肢體方向 badge 重複顯示 bug 修復（原 S178，21張訂單/50件品項受影響，曾部署過但從未 commit 畀後續部署覆蓋）、交付摘要三段式格式機械化（S176續II，同樣從未commit）皆抽取diff clean apply落main補救；1個純deploy-log噪音捨棄。全程三輪部署，NAS三關驗證皆PASS。

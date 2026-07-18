@@ -1,10 +1,10 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.4.0
+version: 1.3.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-07-18
+last_updated: 2026-06-20
 compatible_with: AGENTS.md v1.4.13
 ---
 
@@ -33,8 +33,7 @@ compatible_with: AGENTS.md v1.4.13
 | KPI 收入分攤 / 混合單 3-layer fallback / get_financial_kpis / get_financial_charts | §十 `.fhs/notes/FHS_System_Logic_Overview.md` §十（RPC 財務計算層 SSoT） |
 | Live 訂單成本/利潤驗證 | 啟動 `finance-auditor` subagent |
 | Supabase schema / SKU 成本資料 | 啟動 `database-reviewer` subagent |
-| `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`（Session 112，**範圍限定**僅嬰兒 S/P 不銹鋼鎖匙扣，見 `FHS_System_Logic_Overview.md` §5.4）；其餘 tier 無自動檢查工具，需人工用 atom 公式核算，禁止假設「改設定中心=products 自動同步」。吊飾（純銀頸鏈吊飾）已於 2026-07-17 migration 0046 一次性回填（非自動化 drift 檢查，見 §5.4.2），立體擺設已於 migration 0030 回填 |
-| 吊飾成本計錯 / 頸鏈成本 / `necklace_chain_cost` | `FHS_System_Logic_Overview.md` §5.4.2（D40，migration 0046 + n8n V47.19，雙數簿漂移修復先例）|
+| `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`（Session 112，**範圍限定**僅嬰兒 S/P 不銹鋼鎖匙扣，見 `FHS_System_Logic_Overview.md` §5.4）；其餘 tier 無自動檢查工具，需人工用 atom 公式核算，禁止假設「改設定中心=products 自動同步」|
 
 ---
 
@@ -67,19 +66,6 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 5. **HTML ID 禁止變更**：前端 Input/Button ID 是 n8n Webhook 掛鉤
 
 ---
-
-## 三B、成本改動前置紀律（v1.4.0 新增，2026-07-18 D40 事故後強制）
-
-> **背景**：2026-07-17~18 吊飾成本修復連環出錯四次（漏頸鏈→險雙計→誤用過時文件判「漏運費」→N飾未倍增），根因＝每次只驗「今次改嗰忽」，冇一次過寫低完整方程式對齊。以下三步，任何 `products.total_base_cost` / `cost_configurations` / n8n 成本節點改動前**強制執行，缺一不得動手**：
-
-1. **完整方程式先行**：動手前必須寫出該品類「per-SKU 成本方程式全式」（drawing/material/clasp/chain/shipping 每個分量：喺 SKU 層定訂單層？含定唔含？），並用 **live 數據**（非文件）驗證現狀符合——文件可以過時（本事故中 Pricing Bible §6.2 運費分解已被 S124 v2 裁決取代但仍留喺文件度），live 數據先係真相。
-2. **對齊已驗證先例**：同鎖匙扣終態（S124 v2，migration 0045）逐分量對照，任何結構性差異（如吊飾頸鏈共用 vs 鎖匙扣環扣獨立）要寫明點解唔同。
-3. **改完即跑 drift 檢查**：`SELECT * FROM fhs_check_product_cost_drift() WHERE drift <> 0;`（0057 起覆蓋鎖匙扣嬰兒層 + 吊飾全 tier 共 282 行）——必須零行先算收工；未覆蓋品類（立體擺設/成人鎖匙扣/鋁合金）改動需人工全式核算並記錄於改動記錄。
-
-**現行已定案方程式（live 驗證，2026-07-18）**：
-- 鎖匙扣：加購 = (material+clasp$10)×N；單購 = tier_drawing + 同上。運費不入 SKU（僅訂單層扣減 (N−1)×$20）。
-- 吊飾：加購 = material($465)×N；單購 = tier_drawing{60/110/240} + material×N。頸鏈不入 SKU（n8n 訂單層 `ceil(總件數/2)×$100`，V47.19）；運費同上不入 SKU（扣減 (N−1)×$35）。
-- 立體擺設：$210 flat（2肢/4肢同價，migration 0030）。
 
 ## 四、常見易錯點（快速提示）
 
