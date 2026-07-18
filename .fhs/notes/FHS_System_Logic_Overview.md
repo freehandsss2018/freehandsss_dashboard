@@ -603,10 +603,29 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 詳見 `.fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md` §4.3。
 
+### 10.13 財務版面全額錯誤事故審計（2026-07-17）
+
+**事故**：Fat Mo 報告財務版面所有金額錯誤。四路平行審查（前端映射/DB真值/git回歸/生產Playwright實測）+ opus fresh-context 驗收裁定為三個並存問題：
+
+| # | 問題 | 狀態 |
+|---|------|------|
+| 1 | **數據污染**：S179/S180（07-16）壓測單 test1001/test9999003/test1004/「未命名」寫入生產 orders 未清理，連同 `confirmed_at IS NULL` 條款被計入現期，monthly revenue 虛高近 50% | ✅ 已清（Fat Mo 批准改「已取消」，Layer 2 快照欄位零觸碰） |
+| 2 | **前端徽章 bug**：`buildTab()` 從未賦值 `marginChange`/`aovChange`（vs上期徽章恆 N/A）；orders 徽章 `isInt=true` 吞 % 後綴 | ✅ 已修（V42:15247-15248 百分點差配 'pp' + pct() 配 %；V42:13930）；current.html 待 /upload-web 升格同步 |
+| 3 | **RPC 死過濾器**：`get_financial_kpis`（15處）/`get_financial_charts`（5處）狀態過濾全部寫 `process_status::TEXT NOT IN ('cancelled', 'refunded')`，但 enum `order_status` 實際值係中文（待確認/製作中/完成/已取件/已取消）→ **過濾器從未生效，取消單一直計入財務 KPI** | ✅ 已修（Fat Mo 已批准，migration `fix_financial_rpc_status_filter_enum_mismatch` 已套用，20處替換 `NOT IN ('已取消')`；驗證 RPC 實跑=獨立SQL 對數分毫不差：monthly $29,570、yearly $156,120） |
+
+**已裁決並執行**：
+- 0600106（$5,680 未確認真單）Fat Mo 決定維持「待確認」唔郁，現正確排除喺兩個 RPC 財務統計之外，日後人手 confirm 先計入。
+- kpis 計未確認單 vs charts 唔計嘅口徑不一致——Fat Mo 裁決「kpis 統一收緊唔計未確認單」，migration `unify_financial_kpis_charts_unconfirmed_orders_scope` 已套用（移除 kpis current 期 4 處 `OR confirmed_at IS NULL`），驗證 kpis yearly revenue = charts trend 加總 = $150,440 分毫不差。
+- V42 前端三處修復已走 `/upload-web` 升格部署至 `current.html`，三關驗證PASS，正式上線生產。
+
+事故全案至此結案，最終 monthly revenue（真實已確認）= $23,890，yearly = $150,440。
+
+**審計陷阱（未來 session 注意）**：驗證 orders 狀態過濾嘅 SQL 唔可以照抄 RPC 源碼嘅英文字面值（會複製死碼得出假結論）；一律先 `SELECT unnest(enum_range(NULL::order_status))` 查實際 enum 值。
+
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 

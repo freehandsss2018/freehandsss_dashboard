@@ -16,6 +16,20 @@
 驗收：財務/n8n 部署類 — migration 0046 執行後 SQL 直接 SELECT 回讀 242 行新值核對 PASS；n8n patch 部署後 `get_node` 讀回整合性核對 PASS；`trigger_test_execution` 因 webhook 405 基礎設施問題未能取得 execution log（已在稽核中明確記錄未達成，非靜默跳過），改以人手覆算 7 張 flag 單數字自洽驗證替代 = DONE_WITH_CONCERNS（建議下次有真實訂單流量後，用 `get_execution_log` 抽查一次實際 webhook 執行結果補證）；0056/0057 續修 — opus 對抗審查 FORMULA_HOLDS + 改後 SQL 全量驗證 242/242 + drift 檢查 282 行零漂移 = PASS
 Subagent：✅ 已使用 — general-purpose(sonnet) 執行初步全量審計；general-purpose(opus)×3 分別做 n8n patch 對抗式第二意見審查（揪出雙計問題）+ 吊飾成本基礎重建調查（設計 0046 公式）+ 最終方程式八角度對抗審查（FORMULA_HOLDS 並揪出加貼 typo row）；財務/n8n 高風險類別依治理規則強制不降級 opus 第二意見
 
+## [2026-07-17] Session 181（Claude Code / Sonnet 5 執行，worktree `epic-cartwright-3aafcb`）— 財務版面雙重降級 MOCK 靜默警示修復
+
+- **緣起**：Fat Mo 四路財務審查（2026-07-17）發現一條靜默降級鏈（severity critical，但非當日事故根因）：`patchFoFetchLive` 嘅 `.catch`（Supabase 失敗）只 `console.warn` 就 fallback 到舊 `foFetchLive` webhook；webhook 再失敗其 `.catch` 一樣只 `console.warn`，`FO_LIVE_DATA` 維持 `null`，`foGetTabData()`（`var src = FO_LIVE_DATA || FO_MOCK_DATA;`）靜默改用 `FO_MOCK_DATA`（硬編碼 revenue:86819 等假數字）；旁證 `fo-last-sync` 文字死寫 `'2026-04-26 (快取)'`。
+- **執行內容**：
+  1. 財務版面頂部新增 `#fo-mock-data-banner`（紅底 `#C62828` 白字置中，預設隱藏）：`foFetchLive()` catch（雙重失敗）觸發 `showFoMockDataBanner()`，任一路徑（Supabase 或 webhook）成功攞到真數據觸發 `hideFoMockDataBanner()`。
+  2. `fo-last-sync` 唔再死寫舊日期，MOCK 狀態改顯示「—（示範數據，未連線）」，即時數據仍顯示動態當日日期。
+  3. **實測期間額外揪出並修復一個原有隱藏 bug**：`patchFoFetchLive()` 嘅 `.catch` 內調用 `origFn.apply(...)` 想 fallback 去 webhook，但外層早已將 `window.FO_DATA_LOADING` 設 `true`，令 `origFn`（raw `foFetchLive`）自身嘅 loading guard 誤判「進行中」而靜默 `return`——即係話喺 Supabase-flag-ON 環境（本專案預設）下，webhook fallback 從未真正被執行過，連帶新 banner 邏輯都唔會觸發。已喺 catch 內 `origFn.apply` 前先解鎖 `window.FO_DATA_LOADING = false` 修正。
+- **驗證**：本地 `python -m http.server` 起 V42（避開 `file://` 沙盒 localStorage 陷阱），Browser pane `javascript_tool` override `window.fetch` 令 Supabase + webhook 兩層皆拒絕，確認 console 完整鏈（`[V41 Supabase] foFetchLive fallback` → `[FHS Financial] Webhook unavailable`）、banner `display:block`（computed style 核實紅底 `rgb(198,40,40)`／白字／置中／`font-weight:600`）、sync 文字變示範提示、`FO_LIVE_DATA` 為 `null`；再模擬成功回應，確認 banner 自動 `display:none`、`FO_LIVE_DATA` 轉真、sync 文字回復即時日期。
+- **改動範圍**：純 `freehandsss_dashboardV42.html`（1 個新 HTML 區塊 + 3 處 JS），未動 `current.html`，未改任何現有 HTML ID。
+
+【交付前雙紀律自檢】
+驗收：巨檔 HTML 改動 — 已附 Browser pane 實測證據（console log 完整鏈 + DOM computed style 核實 + 失敗/回復雙路徑複測），非財務/schema/n8n 部署類別，主對話直接驗證符合 governance/02 §1
+Subagent：❌ 未使用 — 全程主對話（Sonnet 5）直接定位改檔 + Browser pane 實測完成
+
 ## [2026-07-17] Session 179（Claude Code / Fable 5 執行）— 手機版訂單卡「N 件」改產品組成 chips
 
 - **緣起**：Fat Mo 指訂單卡（例 0600721）只顯示「9 件」根本無意思、唔知買咗乜，要求用最簡化直白嘅圖像呈現。
