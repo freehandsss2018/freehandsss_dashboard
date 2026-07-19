@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-07-19 (Session 182續II — 🔴事故：PowerShell encoding令current.html全部中文亂碼，即時修復，worktree `epic-cartwright-3aafcb`): 🏷️ ✅
+
+**摘要**：一行摘要，全文見 [Changelog.md](../../Changelog.md) S182續II 條目；上一輪 upload-web.ps1 新增嘅時間戳注入用 `Get-Content -Raw`（冇明確 encoding）誤判 UTF-8 檔做系統 codepage，令 current.html 全部中文變亂碼並帶多餘 BOM，三關驗證（size/SHA256）驗唔出呢類內容語意損壞。改用 .NET UTF8Encoding(false) 明確讀寫修復，重新部署後本機+live雙重核實中文字元數對得上源檔。
+
 ## 2026-07-19 (Session 182續 — iOS「加入主畫面」cache-bust 自動更新機制，worktree `epic-cartwright-3aafcb`): 🏷️ ✅
 
 **摘要**：一行摘要，全文見 [Changelog.md](../../Changelog.md) S182續條目；Fat Mo 回報主畫面 icon 仍見舊 bug，查明係 NAS 無 Cache-Control header 導致舊快照；新增 `fhs-build` meta + 開頁自我更新偵測 script + 部署腳本自動注入時間戳，永久解決（非一次性清 cache）。

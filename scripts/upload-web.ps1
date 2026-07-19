@@ -54,12 +54,16 @@ if (-not (Test-Path $localFile)) { Fail "找不到本機檔案：$localFile" }
 # --- 2.5 生產版部署時間戳注入（S182，iOS「加入主畫面」cache-bust 修復，僅 current 目標）---
 # current.html 的 <meta name="fhs-build"> 注入真實部署時間戳，令頁內自我更新偵測腳本
 # 可比對出新版本並強制重新載入，避免 iOS 長期食舊快照。
+# 注意：Windows PowerShell 5.1 嘅 Get-Content/Set-Content 冇明確 encoding 時對冇 BOM 嘅
+# UTF-8 檔案會誤判做系統 ANSI codepage，令全部中文字亂碼；改用 .NET File 類別明確指定
+# UTF8Encoding($false)（無 BOM）讀寫，避免呢個陷阱（S182續事故：曾令 current.html 中文全爛）。
 if ($fileName -eq 'Freehandsss_dashboard_current.html') {
   $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-  $content = Get-Content $localFile -Raw
+  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  $content = [System.IO.File]::ReadAllText($localFile, $utf8NoBom)
   $newContent = $content -replace '<meta name="fhs-build" content="[^"]*">', "<meta name=`"fhs-build`" content=`"$ts`">"
   if ($newContent -ne $content) {
-    Set-Content -Path $localFile -Value $newContent -NoNewline -Encoding UTF8
+    [System.IO.File]::WriteAllText($localFile, $newContent, $utf8NoBom)
     Write-Host "  🕐 已注入部署時間戳 fhs-build=$ts（iOS home-screen cache-bust）"
   }
 }

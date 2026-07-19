@@ -12,6 +12,19 @@
 驗收：純 UI CSS 修復，非財務/schema/n8n 部署類別，改動範圍 4 行且無 JS 邏輯變更；iOS 原生 picker 行為無法喺 Chromium Browser pane 複現，待 Fat Mo 實機驗證
 Subagent：❌ 未使用 — 主對話直接定位 CSS 選擇器完成修復
 
+## [2026-07-19] Session 182續II（Claude Code / Sonnet 5 執行）— 🔴事故：PowerShell encoding 誤判令 current.html 全部中文亂碼，即時修復
+
+- **緣起**：Fat Mo 回報部署後「有bug 出現很多error 訊息」。Browser pane 開返 live `current.html` 用 `get_page_text` 檢視，發現全頁中文字變晒亂碼（`?? ?Ｙ?蝷箇??豢?嚗`），非 Fat Mo 描述嘅 JS error，而係文字編碼損壞外觀似「錯誤訊息」。
+- **根因**：上一條 S182續 commit 為 `scripts/upload-web.ps1` 新增部署時間戳注入步驟，用 `Get-Content $localFile -Raw`（冇明確指定 encoding）讀檔、`Set-Content -Encoding UTF8` 寫返。**Windows PowerShell 5.1 嘅 `Get-Content` 對冇 BOM 嘅 UTF-8 檔案，冇明確指定 `-Encoding` 時會誤判做系統 ANSI codepage**，令檔內全部中文字元喺讀入嗰刻已經解碼錯誤（非寫出先出事），`-replace` 只係字串操作唔會察覺，`Set-Content -Encoding UTF8` 寫出時就將呢啲已經爛咗嘅字元永久烘埋落檔案，仲夾埋加咗個原檔案冇嘅 UTF-8 BOM（`EF BB BF`）。核實：修復前 `current.html` 搜尋「訂單」（V42 源檔有 161 次）得 **0 次**，全數中文損毀；deploy-log 顯示呢個壞版本已經上載咗去 NAS 並通過三關驗證（SHA256 比對只驗證 bit-for-bit 一致性，唔驗證內容語意正確性，所以爛碼版本一樣三關 PASS）。
+- **修復**：`upload-web.ps1` 嘅注入邏輯改用 .NET `[System.IO.File]::ReadAllText`/`WriteAllText` 明確指定 `New-Object System.Text.UTF8Encoding($false)`（UTF-8 無 BOM），繞過 PowerShell 原生 cmdlet 嘅 encoding 自動偵測地雷。
+- **驗證**：重新由 V42（乾淨源頭，`grep -c "訂單"` = 161）重新 cp 升格 → 用修復後腳本重新部署 → 本機同 live 伺服器雙重核實：`xxd` 首 4 bytes 確認冇 BOM、`grep -c "訂單"` 本機同 live 皆 161（同源檔一致）、`fhs-build` meta 正確帶新時間戳。Browser pane 重新載入 live URL，`get_page_text` 確認中文正常顯示、`read_console_messages`（含 `onlyErrors:true`）確認零 JS error。
+- **附帶發現（非本次事故範圍，未修）**：Browser pane 重複兩次獨立 navigate 皆觀察到 console 初始化 log 完整跑兩輪（非 URL 變化/非 cache-bust redirect 觸發，`location.href` 核實無 `_r=` 參數），懷疑係呢個大型多 `<script>` block Dashboard 檔案本身已存在嘅重複初始化模式，同今次 encoding 事故無關，皆為 `[log]` 非 `[error]` 級別，唔阻塞功能，留待日後獨立排查。
+
+【交付前雙紀律自檢】
+驗收：巨檔生產 HTML 改動事故修復 — 已附修復前（0/161 亂碼）同修復後（161/161 正常，BOM 消失，live 伺服器 curl+Browser pane 雙重核實）對比證據，非本次自驗（已用主對話直接 diagnose + fix + 雙重獨立驗證，非同一步驟循環自證）
+Subagent：❌ 未使用 — 主對話直接用 Browser pane 發現症狀 + xxd/grep byte-level 核實根因 + 修復 + 重新部署雙重驗證完成
+教訓：PowerShell `Get-Content`/`Set-Content` 處理專案內任何 UTF-8（無 BOM）檔案前，必須明確指定 encoding 或改用 `[System.IO.File]::ReadAllText/WriteAllText` + `UTF8Encoding($false)`，唔可以信賴預設值；WebDAV 三關驗證（HTTP 200+大小+SHA256）只證明「上傳嘅同本機一致」，唔證明「本機內容本身冇壞」，改動涉及檔案內容重寫嘅部署腳本，必須額外加內容語意核對（例如已知字串出現次數）先算完整驗證。
+
 ## [2026-07-19] Session 182續（Claude Code / Sonnet 5 執行）— iOS「加入主畫面」cache-bust 自動更新機制
 
 - **緣起**：S182 主 fix（`pointer-events:none`）部署後，Fat Mo 用 iPhone Safari 將 `current.html` 加入主畫面測試，發現月曆重疊 bug 仍在；一輪排查後 Fat Mo 確認：普通 Safari tab 已經冇事，只有主畫面 icon 仲有事，並表示想繼續用主畫面（唔想每次靠手動清 cache）。
