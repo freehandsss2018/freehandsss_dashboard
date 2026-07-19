@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-07-18] Session 181（Claude Code）— 成本架構 Phase 2：全品類漂移偵測網一次收網（D41）
+
+- **緣起**：`/cl-flow 成本架構 phase 2` 延續 D40 手術做法，一次收網覆蓋鋁合金鎖匙扣、成人/家庭鎖匙扣、家庭吊飾、立體擺設、配件（§5.4.1/§5.4.2 未觸及嘅品類）。cl-flow flow_id `2026-07-18-2105`，Verdict `CONDITIONAL_READY`（PX BLOCKER 被拒封頂，方案本身無缺陷）。
+- **拷问定案（Gate 1 前）**：①偵測＋修復＋覆蓋一條龍授權；②歷史單比照 D40 AI 經真 UI resync，邊界單留 Fat Mo；③盤點全部未覆蓋一次收網；④全式定案/修復/drift 擴充一律 opus 對抗審查。
+- **opus 首輪對抗審查揪出 A3 原定案兩個 BLOCKER**：(1) 家庭鎖匙扣 SKU 普查漏咗 N=2..10 梯階（~152 個 SKU 全部 flat 275/405，只查咗 item_per_set=1 就落結論）；(2) composite 畫圖式方向一度判斷錯——opus 用家庭吊飾現價反推「單一成人式」，同 A3 composite 假設矛盾。最終查證 Dashboard 前端 `calculatePricing()` 原始碼（`isFamily` 分支，`freehandsss_dashboardV42.html:7099-7110`）證實 **composite（成人份+每個嬰兒肢各計一次）先係 Fat Mo 現行實際業務邏輯**，`0600107` 訂單 `drawing_cost=230`（=110+2×60）為活證據，Fat Mo 直接確認。連帶發現 §5.4.2（D40）記錄嘅家庭吊飾同樣用錯單一成人式，一併喺本次修正（零歷史單受影響，純 catalog 修正）。
+- **四條拍板題**：alloy_adult $135→$125（對齊不銹鋼，證據傾向漏改非有意差價）；嬰兒(P)鋁合金用現行原子重算（原全 flat $245，對唔上任何原子組合）；家庭吊飾一併修（同根因）；零成本佔位row順手刪除（核實21/23行無引用安全，2行因仍被已取消測試單order_items引用動態排除）。
+- **執行（migration 0058）**：products 全量重算 composite 畫圖式（鋁合金嬰兒層+成人/家庭鎖匙扣不銹鋼/鋁合金+家庭吊飾）+ cost_configurations 原子修正 + 刪除零成本佔位row（`NOT EXISTS` 動態排除仍被引用者）。
+- **執行（migration 0059）**：`fhs_check_product_cost_drift()` 擴充至全品類共7個CTE（嬰兒鋁合金/成人家庭composite/吊飾全tier/立體擺設/配件/佔位row監測）。opus 第二輪審查揪出 STEP G DELETE 會撞 `order_items_product_sku_fkey` 外鍵嘅 BLOCKER，改用 `NOT EXISTS` 修復；apply後即時發現 base_row_monitor 初版誤將立體擺設/家庭吊飾(加貼) 當佔位row觸發假陽性，已收窄範圍二次修正。
+- **驗證**：`SELECT * FROM fhs_check_product_cost_drift() WHERE drift <> 0` = **零行**（全品類）。抽查關鍵數值全部命中預期（嬰兒(P)鋁合金單購N=1=235、家庭(S1)吊飾單購=635、家庭(S2)鎖匙扣加購=135/單購=365）。
+- **n8n 影響**：零改動——V47.19 訂單層規則以 category 字串判斷天然涵蓋本次品類，成本修正全部落 products 表即生效。
+- **歷史單影響**：僅 `0600107`（家庭(S2)鎖匙扣加購，2026-05-22）需二次 resync；因瀏覽器環境連唔到生產 Dashboard（`yanhei.synology.me` 連續兩次 timeout），Fat Mo 自行手動於 Dashboard 載入→sync。
+- **文件同步**：`FHS_System_Logic_Overview.md` §5.4.3 新章；`FHS_Product_Cost_Schema_v2.md` 原子值更新為 live 真源；`finance-gatekeeper/SKILL.md` v1.5.0 路由表+已定案方程式補全品類；`docs/repo-map.md` 補 0058/0059；決策見 `decisions.md` D41。
+- **教訓**：opus 對抗審查方向本身都可能一開始就錯（首輪誤判單一成人式），最終要查前端原始碼實測先定案，唔可以單靠反推歷史 SKU 定價下結論——同 D40「文件可過時，live 數據先係真相」教訓同源，但今次連「反推 live 數據」都唔夠，要查代碼實際運行邏輯。
+
 ## [2026-07-18] Session 181（Claude Code / Fable 5 定方案+Sonnet 5 執行）— 吊飾成本雙數簿漂移修復 + 頸鏈規則補件（D40）
 
 - **緣起**：Fat Mo 回報訂單 Akira（0600721）吊飾成本計錯，懷疑漏計頸鏈成本；另指舊訂單（如 KateSo）成本顯示「未明」。
