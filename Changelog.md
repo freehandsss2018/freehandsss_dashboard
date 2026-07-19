@@ -1,5 +1,44 @@
 # Changelog
 
+## [2026-07-19] Session 182續II（Claude Code / Sonnet 5 執行）— 🔴事故：PowerShell encoding 誤判令 current.html 全部中文亂碼，即時修復
+
+- **緣起**：Fat Mo 回報部署後「有bug 出現很多error 訊息」。Browser pane 開返 live `current.html` 用 `get_page_text` 檢視，發現全頁中文字變晒亂碼（`?? ?Ｙ?蝷箇??豢?嚗`），非 Fat Mo 描述嘅 JS error，而係文字編碼損壞外觀似「錯誤訊息」。
+- **根因**：上一條 S182續 commit 為 `scripts/upload-web.ps1` 新增部署時間戳注入步驟，用 `Get-Content $localFile -Raw`（冇明確指定 encoding）讀檔、`Set-Content -Encoding UTF8` 寫返。**Windows PowerShell 5.1 嘅 `Get-Content` 對冇 BOM 嘅 UTF-8 檔案，冇明確指定 `-Encoding` 時會誤判做系統 ANSI codepage**，令檔內全部中文字元喺讀入嗰刻已經解碼錯誤（非寫出先出事），`-replace` 只係字串操作唔會察覺，`Set-Content -Encoding UTF8` 寫出時就將呢啲已經爛咗嘅字元永久烘埋落檔案，仲夾埋加咗個原檔案冇嘅 UTF-8 BOM（`EF BB BF`）。核實：修復前 `current.html` 搜尋「訂單」（V42 源檔有 161 次）得 **0 次**，全數中文損毀；deploy-log 顯示呢個壞版本已經上載咗去 NAS 並通過三關驗證（SHA256 比對只驗證 bit-for-bit 一致性，唔驗證內容語意正確性，所以爛碼版本一樣三關 PASS）。
+- **修復**：`upload-web.ps1` 嘅注入邏輯改用 .NET `[System.IO.File]::ReadAllText`/`WriteAllText` 明確指定 `New-Object System.Text.UTF8Encoding($false)`（UTF-8 無 BOM），繞過 PowerShell 原生 cmdlet 嘅 encoding 自動偵測地雷。
+- **驗證**：重新由 V42（乾淨源頭，`grep -c "訂單"` = 161）重新 cp 升格 → 用修復後腳本重新部署 → 本機同 live 伺服器雙重核實：`xxd` 首 4 bytes 確認冇 BOM、`grep -c "訂單"` 本機同 live 皆 161（同源檔一致）、`fhs-build` meta 正確帶新時間戳。Browser pane 重新載入 live URL，`get_page_text` 確認中文正常顯示、`read_console_messages`（含 `onlyErrors:true`）確認零 JS error。
+- **附帶發現（非本次事故範圍，未修）**：Browser pane 重複兩次獨立 navigate 皆觀察到 console 初始化 log 完整跑兩輪（非 URL 變化/非 cache-bust redirect 觸發，`location.href` 核實無 `_r=` 參數），懷疑係呢個大型多 `<script>` block Dashboard 檔案本身已存在嘅重複初始化模式，同今次 encoding 事故無關，皆為 `[log]` 非 `[error]` 級別，唔阻塞功能，留待日後獨立排查。
+
+【交付前雙紀律自檢】
+驗收：巨檔生產 HTML 改動事故修復 — 已附修復前（0/161 亂碼）同修復後（161/161 正常，BOM 消失，live 伺服器 curl+Browser pane 雙重核實）對比證據，非本次自驗（已用主對話直接 diagnose + fix + 雙重獨立驗證，非同一步驟循環自證）
+Subagent：❌ 未使用 — 主對話直接用 Browser pane 發現症狀 + xxd/grep byte-level 核實根因 + 修復 + 重新部署雙重驗證完成
+教訓：PowerShell `Get-Content`/`Set-Content` 處理專案內任何 UTF-8（無 BOM）檔案前，必須明確指定 encoding 或改用 `[System.IO.File]::ReadAllText/WriteAllText` + `UTF8Encoding($false)`，唔可以信賴預設值；WebDAV 三關驗證（HTTP 200+大小+SHA256）只證明「上傳嘅同本機一致」，唔證明「本機內容本身冇壞」，改動涉及檔案內容重寫嘅部署腳本，必須額外加內容語意核對（例如已知字串出現次數）先算完整驗證。
+
+## [2026-07-19] Session 182續（Claude Code / Sonnet 5 執行）— iOS「加入主畫面」cache-bust 自動更新機制
+
+- **緣起**：S182 主 fix（`pointer-events:none`）部署後，Fat Mo 用 iPhone Safari 將 `current.html` 加入主畫面測試，發現月曆重疊 bug 仍在；一輪排查後 Fat Mo 確認：普通 Safari tab 已經冇事，只有主畫面 icon 仲有事，並表示想繼續用主畫面（唔想每次靠手動清 cache）。
+- **根因確認**：`curl -I` 查 NAS 回應完全冇 `Cache-Control` header（只有 `Last-Modified`/`ETag`，nginx 靜態檔案預設），加主畫面嘅 icon 本質係已儲存快照，Safari 唔會主動 revalidate；Fat Mo 部手機嘅 icon 可能係修復部署**之前**加落主畫面，所以食住舊快照。
+- **修復（永久性自動更新機制，非一次性清 cache）**：
+  1. `freehandsss_dashboardV42.html` `<head>` 新增 `<meta name="fhs-build" content="__DEPLOY_TS__">` + 一段開頁靜默執行嘅 IIFE：`fetch(location.pathname, {cache:'no-store'})` 攞返伺服器上最新 HTML，regex 抽取其 `fhs-build` 值同目前頁面比對；唔同就用 `location.replace(pathname+search+'&_r='+Date.now())` 強制重新導向攞真正最新版（保留原有 query string，例如 IG watchdog 深連結 `?view=igwatch&orderId=xxx`）。dev 版（V42 本檔）meta 值恆為佔位符 `__DEPLOY_TS__`，script 有 guard 見到佔位符即跳過檢查，唔會影響開發環境。
+  2. `scripts/upload-web.ps1` 新增部署時間戳注入步驟：僅 `current` 目標，upload 前將 `__DEPLOY_TS__`（或上次嘅舊時間戳）替換做本次部署嘅真實 UTC ISO 時間戳，寫入 `Freehandsss_dashboard_current.html`，注入後先計 size/SHA256 做三關驗證，確保「已驗證嘅版本」同「實際部署嘅版本」一致。
+- **驗證**：Node 單元測試覆蓋 regex 抽取邏輯 + 三種情境（dev 版跳過檢查／有更新則正確重新導向並保留深連結 query／版本相同唔誤觸發重載）全 PASS；PowerShell `-replace` 語法獨立驗證輸出格式正確；部署後 `curl` 直接讀取 live `current.html` 確認 `fhs-build` 已含真實時間戳（`2026-07-19T00:51:17Z`），非佔位符。NAS 三關驗證 PASS（PUT 204/大小相符/SHA256 `84C55686...`）。
+- **待驗**：iOS Safari 主畫面 icon 嘅實際「自動偵測+強制刷新」行為（fetch/location.replace 喺 webclip 模式下嘅執行時機）Chromium Browser pane 無法完整模擬，待 Fat Mo 實機刪除舊 icon 一次、重新加入後於下次部署時驗證機制生效。
+
+【交付前雙紀律自檢】
+驗收：純前端 cache-bust 機制 + 部署腳本改動，非財務/schema/n8n 部署類別；改動邏輯已附 Node 單元測試證據（4 種情境全 PASS）+ live curl 核實真實時間戳已注入；iOS webclip 實際觸發時機無法喺 Chromium 複現，待 Fat Mo 實機覆核（已在回報中明確聲明未達成，非靜默略過）
+Subagent：❌ 未使用 — 主對話直接診斷（curl 查 header）+ 設計 + Node/PowerShell 雙重邏輯驗證完成
+
+## [2026-07-19] Session 182（Claude Code / Sonnet 5 執行，worktree `epic-cartwright-3aafcb`）— iOS 約定日期月曆重疊 bug 修復
+
+- **緣起**：Fat Mo 於 iPhone 實機截圖回報，撳表單「約定日期」欄位時，iOS 原生日曆滾輪同 V42 自訂空檔期月曆（S180 月曆 v2）同時彈出，兩者疊埋一齊。
+- **根因**：`<input type="date" id="appDate" readonly>`（`freehandsss_dashboardV42.html` 約 L4167）外層 `.date-field-wrap` div 有 `onclick="openMoldCalendar(...)"` 負責開自訂月曆；桌面 Chrome 已用 `::-webkit-calendar-picker-indicator{display:none}` 隱藏原生日曆圖示。但 **iOS Safari 對 `type="date"` 輸入框，`readonly` 屬性唔會阻止原生日曆滾輪彈出**（同一般文字輸入框行為不同）——撳落個 input 表面本身仍會觸發原生 picker，同外層 div 嘅 `onclick` 一齊觸發，形成兩個月曆疊加。
+- **修復**：`.date-field-wrap input[type="date"]` CSS 新增 `pointer-events: none`（同旁邊 `.date-field-icon` 現有做法一致），令 input 純作顯示用，所有撳擊一律落喺外層 wrap div 嘅 `onclick`，只會開自訂月曆。純 CSS 改動，零 JS 邏輯改變。
+- **執行插曲**：本 session 首次改動誤用絕對路徑，落咗喺主 checkout（`D:\...\freehandsss_dashboard\Freehandsss_Dashboard\`，非 `.claude\worktrees\epic-cartwright-3aafcb\` 下嘅指派 worktree），該主 checkout 當時另有其他 session（分支 `claude/read-command-41dba1`）未 commit 嘅 D40 Phase2 成本schema在製品。察覺後已用 `git diff` 核實該檔案唯一改動即本次 CSS fix，`git checkout --` 乾淨還原主 checkout、fix 補做落正確 worktree，兩邊 `git status` 複核確認零污染。
+- **驗證**：CSS-only 改動，改動範圍極小（4 行）；因涉及 iOS Safari 原生行為，非 Browser pane（Chromium）可模擬複現，待 Fat Mo 實機覆核。
+
+【交付前雙紀律自檢】
+驗收：純 UI CSS 修復，非財務/schema/n8n 部署類別，改動範圍 4 行且無 JS 邏輯變更；iOS 原生 picker 行為無法喺 Chromium Browser pane 複現，待 Fat Mo 實機驗證
+Subagent：❌ 未使用 — 主對話直接定位 CSS 選擇器完成修復
+
 ## [2026-07-18] Session 181（Claude Code）— 成本架構 Phase 2：全品類漂移偵測網一次收網（D41）
 
 - **緣起**：`/cl-flow 成本架構 phase 2` 延續 D40 手術做法，一次收網覆蓋鋁合金鎖匙扣、成人/家庭鎖匙扣、家庭吊飾、立體擺設、配件（§5.4.1/§5.4.2 未觸及嘅品類）。cl-flow flow_id `2026-07-18-2105`，Verdict `CONDITIONAL_READY`（PX BLOCKER 被拒封頂，方案本身無缺陷）。
