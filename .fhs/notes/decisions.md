@@ -21,6 +21,12 @@
 原因：直接讀取生產版本 `Freehandsss_dashboard_current.html` 核實——L7053-66 已有 W1 pre-population（`enableP` 開啟時預先將主套裝選取肢體寫入 `chargedPositions`），L7111 已有 `item.Order_Item_Key !== "TEMP_P_MAIN"` 排除條件，兩個修復均已在生產版本存在並生效；`decisions.md` line 288-293（Session 66 條目）本身已記錄此修復，但 `FHS_Pricing_Bible.md`（活文件，非日誌）冇同步更新，導致查詢路由表（finance-gatekeeper）引導使用者讀到過時「未修」描述。
 影響：純文檔修正，零代碼改動。`decisions.md` 舊條目（line 306 附近「附帶發現（未修）」）維持不動（決策日誌屬 append-only 歷史記錄，該行寫於 Session 65 momento，chronologically 準確，緊接其後嘅 Session 66 條目已記錄修復，故不另行覆寫，僅加註指向本則更正）。
 
+[2026-07-18] (Session 181, D41) 成本架構 Phase 2：全品類漂移偵測網一次收網 — migrations 0058/0059
+
+決策：延續 D40 手術做法，`/cl-flow` 一次收網覆蓋 §5.4.1/§5.4.2 未觸及嘅品類（鋁合金鎖匙扣、成人/家庭鎖匙扣、家庭吊飾、立體擺設、配件）。拷问四條問答定案：①偵測＋修復＋覆蓋一條龍授權；②歷史單比照 D40 AI 經真 UI resync，邊界單留 Fat Mo；③盤點全部未覆蓋一次收網（唔止原定三品類）；④全式定案/修復/drift 擴充一律 opus 對抗審查。opus 首輪對抗審查揪出 A3 原定案兩個 BLOCKER：(1) 家庭鎖匙扣 SKU 普查漏咗 N=2..10 梯階（~152 個 SKU 全部 flat）；(2) composite 畫圖式方向一度判斷錯（opus 用家庭吊飾現價反推出「單一成人式」，同 A3 composite 假設矛盾）。最終查證 Dashboard 前端 `calculatePricing()` 原始碼（`isFamily` 分支）證實 composite（成人份+每個嬰兒肢各計一次）才係 Fat Mo 現行實際業務邏輯，`0600107` 訂單 `drawing_cost=230`（=110+2×60）為活證據，Fat Mo 直接確認。連帶發現 §5.4.2（D40）記錄嘅家庭吊飾同樣用錯單一成人式，一併喺本次修正（零歷史單受影響）。四條拍板題：alloy_adult 135→125（對齊不銹鋼，證據傾向漏改）；嬰兒(P)鋁合金用現行原子重算；零成本佔位row順手刪除（核實僅3張已取消測試單引用，安全）。
+執行：**migration 0058**（products 全量重算 composite 畫圖式 + cost_configurations 原子修正 + 刪除零成本佔位row）+ **migration 0059**（`fhs_check_product_cost_drift()` 擴充至全品類共7個CTE）。opus 第二輪審查揪出 STEP G DELETE 會撞 order_items 外鍵嘅 BLOCKER（2行仍被測試單引用），改用 `NOT EXISTS` 動態排除修復；apply 後即時發現 base_row_monitor 誤將立體擺設/家庭吊飾(加貼) 當佔位row觸發假陽性，已收窄範圍修正。`SELECT * FROM fhs_check_product_cost_drift() WHERE drift <> 0` = 零行（全品類）。n8n 零改動（V47.19 訂單層規則已 generic 涵蓋）。歷史單影響僅 `0600107`，因瀏覽器環境連唔到生產 Dashboard，Fat Mo 自行手動 resync。
+詳見：`artifacts/2026-07-18-2105/cl-final-plan.md`、`.fhs/notes/FHS_System_Logic_Overview.md` §5.4.3。
+
 [2026-07-17] (Session 181, D40) 吊飾成本全面追新數簿 — migration 0046 + n8n 頸鏈規則補件
 
 決策：Fat Mo 發現 Akira 訂單成本計錯後發起全量審計（46張訂單），揪出兩層問題：(1) 頸鏈成本規則（每2條吊飾共用1條$100，`necklace_chain_cost` config key）從未被 n8n `Calculate Profit & Pack Items` node 計入訂單成本，只存在於前端顯示層；(2) 更深層：`products.total_base_cost`（n8n 實際成本來源）凍結咗吊飾材料舊值（銀$365/金$421），同即時 `cost_configurations`（銀$465/金$465，Fat Mo 確認金銀拉平屬有意）長期漂移未同步——同鎖匙扣（migration 0045 已修）、立體擺設（migration 0030 已修）曾經出現過嘅同一種 drift 模式。第一次「純加$100頸鏈」patch 經 fresh-context opus 對抗式審查揪出會撞正凍結值入面已包嘅舊頸鏈估算造成雙重計算，故改用「先追新數簿、後加頸鏈」兩段式方案。

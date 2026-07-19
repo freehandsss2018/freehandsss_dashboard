@@ -80,7 +80,9 @@ freehandsss_dashboard/
 │   │   ├── 0054_create_content_mismatch_table.sql ← P2b：content_mismatch 比對證據表，RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL，僅 amount_mismatch（品項比對留待未來擴充 Fetch Orders 節點）（Session 171）✅ 已部署
 │   │   ├── 0055_ig_watchdog_content_mismatch_check.sql ← P2b：ig_watchdog_alerts.kind CHECK 擴充第四值 content_mismatch（Session 171）✅ 已部署
 │   │   ├── 0056_igwatch_alerts_on_conflict_fix.sql ← task_e3a60daa 修復：order_id_key 具現化欄位 + ix_igwatch_alerts_dedup_v2 plain-column 唯一索引取代舊 expression index，補記錄一筆已 live 但本地缺檔的 drift（Session 171續II）✅ 已部署（live 更早，本檔補齊 SSOT）
-│   │   └── 0057_create_message_intents_and_reply_templates.sql ← P2c：message_intents 意圖標註表（軟性參照 message_thread+message_ig_message_id，比照 P2b 設計，非計畫書原文 message_id FK）+ reply_templates 回覆範本庫（5類意圖各1筆草稿種子），RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL（Session 173）✅ 已部署
+│   │   ├── 0057_create_message_intents_and_reply_templates.sql ← P2c：message_intents 意圖標註表（軟性參照 message_thread+message_ig_message_id，比照 P2b 設計，非計畫書原文 message_id FK）+ reply_templates 回覆範本庫（5類意圖各1筆草稿種子），RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL（Session 173）✅ 已部署
+│   │   ├── 0058_keychain_family_adult_alloy_and_charm_composite_refresh.sql ← 成本架構 Phase 2（D41）：鋁合金/成人/家庭鎖匙扣+家庭吊飾 composite 畫圖式回填、alloy_adult原子135→125、刪除零成本佔位row（動態排除仍被order_items引用者）（Session 181）✅ 已部署
+│   │   └── 0059_drift_check_full_category_coverage.sql ← 成本架構 Phase 2（D41）：fhs_check_product_cost_drift() 擴充覆蓋全品類（鋁合金/成人/家庭鎖匙扣+吊飾全tier+立體擺設+配件+佔位row監測），全品類零漂移驗證通過（Session 181）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

@@ -87,13 +87,13 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 | 4 | `drawing_cost_adult_p` | drawing | 成人 照片建模 (P) 繪圖費 | 240 | Bible §1 第 4 行 |
 | 5 | `material_cost_woodframe` | material_3d | 木框套裝物料成本 | 210 | 木框 2肢/4肢 同成本 |
 | 6 | `material_cost_glassjar` | material_3d | 玻璃瓶套裝物料成本 | 210 | 玻璃瓶 2肢/4肢 同成本 |
-| 7 | `material_cost_keychain_stainless` | material_jewelry | 鎖匙扣 - 不銹鋼物料（嬰兒） | **95** | 嬰兒層；**0026 display_name 補（嬰兒）** |
-| 8 | `material_cost_keychain_alloy` | material_jewelry | 鎖匙扣 - 鋁合金物料（嬰兒） | **122** | 嬰兒層；**0026 display_name 補（嬰兒）** |
-| 9 | `material_cost_necklace_silver` | material_jewelry | 吊飾 - 925銀物料 | **260** | **0026 更新 0→260**；吊飾銀打印/鑄造費 |
-| 10 | `material_cost_necklace_gold` | material_jewelry | 吊飾 - 925金物料 | **316** | **0026 更新 0→316**；比銀多 $56（鍍金工序）|
+| 7 | `material_cost_keychain_stainless` | material_jewelry | 鎖匙扣 - 不銹鋼物料（嬰兒） | **115** | 嬰兒層；live 值（2026-06-16 更新，本表舊值 95 已過時，live 為真源） |
+| 8 | `material_cost_keychain_alloy` | material_jewelry | 鎖匙扣 - 鋁合金物料（嬰兒） | **115** | 嬰兒層；live 值（2026-06-23 更新同不銹鋼收斂同價，本表舊值 122 已過時） |
+| 9 | `material_cost_necklace_silver` | material_jewelry | 吊飾 - 925銀物料 | **465** | live 值（D40，migration 0046，本表舊值 260 已過時）|
+| 10 | `material_cost_necklace_gold` | material_jewelry | 吊飾 - 925金物料 | **465** | live 值（D40，migration 0046，同銀拉平，本表舊值 316 已過時）|
 | 11 | `necklace_chain_cost` | material_jewelry | 吊飾頸鏈成本 / 條 | 100 | **0025 新增**；P0 奇偶規則：Math.ceil(N/2)×$100 |
-| 12 | `material_cost_keychain_stainless_adult` | material_jewelry | 鎖匙扣 - 不銹鋼物料（成人） | **135** | **0026 新增**；成人/家庭層 |
-| 13 | `material_cost_keychain_alloy_adult` | material_jewelry | 鎖匙扣 - 鋁合金物料（成人） | **135** | **0026 新增**；成人/家庭層（兩材質相同）|
+| 12 | `material_cost_keychain_stainless_adult` | material_jewelry | 鎖匙扣 - 不銹鋼物料（成人/家庭） | **125** | 成人/家庭層；live 值（2026-06-16 更新，本表舊值 135 已過時） |
+| 13 | `material_cost_keychain_alloy_adult` | material_jewelry | 鎖匙扣 - 鋁合金物料（成人/家庭） | **125** | 成人/家庭層；**2026-07-18 Phase 2（D41）修正 135→125**，對齊不銹鋼同價 |
 | 14 | `keychain_clasp_cost` | material_jewelry | 鎖匙扣環扣成本 / 件 | **10** | **0026 新增**；每件鎖匙扣金屬環扣 |
 | 15 | `shipping_cost_standard` | shipping | 標準運費成本 | 0 | 既有 v1 key |
 | 16 | `shipping_cost_sf` | shipping | 順豐運費成本 | 0 | 既有 v1 key |
@@ -143,6 +143,8 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 | 家庭(P2) — β 混型 | adult_p + 2 × baby_s | $240 + $120 | **$360**（Phase 2 defer） |
 
 > ⚠️ **β 混型聲明**：成人 P + 嬰兒 S 混搭目前不在自動計算範圍，遇到時由 Fat Mo 手動調整 `orders.net_profit`。Phase 2 才正式建模。
+>
+> ✅ **2026-07-18 補充（D41）**：家庭(S1/S2/P1/P2) α 純式（170/230/350/460）已用 Dashboard 前端 `calculatePricing()` 原始碼證實為現行真實邏輯，並已於 migrations 0058/0059 回填至 `products.total_base_cost`（鎖匙扣+吊飾兩品類），`fhs_check_product_cost_drift()` 已擴充覆蓋驗證零漂移。見 `FHS_System_Logic_Overview.md` §5.4.3。
 
 ### 3.4 飾數對繪圖費的影響
 
