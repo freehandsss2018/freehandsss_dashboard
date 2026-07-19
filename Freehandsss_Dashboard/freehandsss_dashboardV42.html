@@ -7036,6 +7036,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 return;
             }
 
+            // 立體擺設：父母已勾但嬰兒肢體全部「無」— 同違反 §0 品牌核心（禁止單獨成人），但唔會反映喺上面 hasAdult
+            // （P_MAIN 品名/comboNote 從不含「父母」字樣，全靠 en_parent checkbox 判定，故獨立補一道防呆）
+            if (hasMainProduct) {
+                const _pMainHasParent = document.getElementById("en_parent") && document.getElementById("en_parent").checked;
+                const _pMainHasBaby = Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                if (_pMainHasParent && !_pMainHasBaby) {
+                    logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 立體擺設已勾選父母但未選任何嬰兒肢體，違反品牌核心原則（禁止單獨成人）。請先選擇嬰兒手/腳。系統拒絕報價。</div>`);
+                    if (uiPrice) uiPrice.innerText = "0";
+                    if (uiCost) uiCost.innerText = "0";
+                    if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+                    return;
+                }
+            }
+
             if (enableP && pSubCat === "木框款式" && hasAdult) {
                 logs.push(`<div style="color:#D32F2F; font-weight:bold; background:#FFEBEE; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆鎖死] 木框不支援成人實體倒模！系統已強制判定為成人的「照片(P)」模式，適用高階報價基礎。</div>`);
             }
@@ -7159,21 +7173,23 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 // --- 2. 主商品報價 ---
                 if (item.Order_Item_Key === "TEMP_P_MAIN") {
+                    let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
+                    let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
+                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
+                    let isGlassJar = name.includes("玻璃");
+
                     let price = 0;
                     if (name.includes("木框")) price = name.includes("4肢") ? 2380 : 2080;
-                    else if (name.includes("玻璃")) price = name.includes("4肢") ? 1680 : 1380;
-                    
+                    else if (isGlassJar) price = (hasAdultInSet && hasBabyInSet) ? 2580 : (name.includes("4肢") ? 1680 : 1380);
+
                     totalSuggestedPrice += price;
                     breakdownParts.push(price);
                     totalDrawingCost += item.FatMoCost;
                     item.CalculatedPrice = price;
-                    logs.push(`<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>: $${price}`);
+                    logs.push(`<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>${(isGlassJar && hasAdultInSet && hasBabyInSet) ? ' <span style="color:#D32F2F;">(含父母，套用家庭定價 $2,580)</span>' : ''}: $${price}`);
 
-                    let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
-                    let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
-                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
-
-                    if (hasAdultInSet && hasBabyInSet) {
+                    // 玻璃瓶套裝含父母：家庭定價 $2,580 已含混合模式差異，不再疊加附加費（2026-07-19 Fat Mo 定案，參考單號 0600107）
+                    if (hasAdultInSet && hasBabyInSet && !isGlassJar) {
                         const _mixedSurcharge = _cc.mixed_member_surcharge ?? 300; // 讀 config，fallback $300
                         totalSuggestedPrice += _mixedSurcharge;
                         totalSystemAdditionalFee += _mixedSurcharge;

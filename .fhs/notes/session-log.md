@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-19 (Session 183 — 立體擺設玻璃瓶套裝新增「含父母」家庭定價$2,580+防呆補強，worktree `unruffled-hypatia-a71507`): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S183 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 修正玻璃瓶套裝定價定義：純嬰兒2肢/4肢原價不變，新增「含父母」一律$2,580 flat（先例單0600107）；並指出防呆缺口（唔會有得父母冇嬰兒），AI補強獨立防呆區塊。首輪驗證 harness 有變數遮蔽 bug，已發現並用修正版重驗 7 組情境全過。`current.html` 升格經 Fat Mo 對話直接確認授權。
+Subagent：❌ 未使用——全程主對話直接查 Supabase live 數據 + 改代碼 + node harness 驗證。
+
 ## 2026-07-18 (Session 181 — D40：吊飾成本雙數簿漂移修復+頸鏈規則補件+防再錯機制+6單resync): 🏷️ ✅
 
 **摘要**：全文見完成記錄 [2026-07-18_charm_cost_dual_ledger_fix_completion_report.md](../reports/completion/2026-07-18_charm_cost_dual_ledger_fix_completion_report.md)（本行僅摘要指回）。Fat Mo 回報 Akira(0600721) 成本計錯，全量審計揪出吊飾成本四層系統性漏算（頸鏈規則從未落地n8n/products表凍結舊材料價/N飾未按item_per_set倍增/加購未免畫圖）。首次 patch 經 fresh-context opus 對抗審查攔截雙計風險；Fat Mo「再核實」後再揪出殘留缺口，二次 opus 八角度審查 FORMULA_HOLDS。修復：migration 0046(RPC仿鎖匙扣先例)+0056(補完per-set語義)+0057(drift檢查擴充覆蓋吊飾全層282行零漂移)+n8n V47.19(頸鏈訂單層獨立計算)。Fat Mo 授權 AI 經 Dashboard 真實 UI 操作 resync 6 張歷史單，final_sale_price 零損傷+公式全中；DebbieHo(0600727) 舊式單留 Fat Mo 親自做。過程攔截兩個前端 bug（付款自動填充陷阱、訂單載入產品勾選殘留），已排 task_0811eb3c 待修。防再錯機制：finance-gatekeeper v1.4.0 新增§三B成本改動前置紀律。Phase 2（立體擺設/成人鎖匙扣/鋁合金三品類 drift 覆蓋）已列入 handoff 待辦，待 Fat Mo 批 `/cl-flow`。

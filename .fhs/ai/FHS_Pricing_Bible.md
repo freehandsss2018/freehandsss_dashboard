@@ -1,8 +1,8 @@
 # FHS 定價聖經 (FHS Pricing Bible)
 
 > **Authority Level**: L2 — 現行定價 HEAD
-> **Version**: v1.2.0
-> **更新日期**: 2026-06-05 (Session 63 — §10 重構為規則 ID 表)
+> **Version**: v1.3.0
+> **更新日期**: 2026-07-19 (§2.1 玻璃瓶套裝新增「含父母」家庭定價 $2,580；§6 footnote 修正已過時技術債描述)
 > **衝突規則**: 若本文件與 L1（`.fhs/ai/FHS_Finance_Bible.md`）衝突，以 L1 為準；本文件取代所有舊版定價文件（pricing_reference / Product_Bible_V3.7）
 > **Source of Truth**: `freehandsss_dashboardV41.html` → `calculatePricing()` 函式（代碼為最終裁決者）
 > **警告**: 計價邏輯變更後，本文件必須同步修訂，否則將成為誤導來源。
@@ -35,23 +35,27 @@
 
 ### 2.1 主產品售價（`item.Order_Item_Key === "TEMP_P_MAIN"`）
 
-| 款式 | 肢數 | 建議售價 |
+| 款式 | 條件 | 建議售價 |
 |------|------|---------|
 | 木框套裝 | 4肢 | **$2,380** |
 | 木框套裝 | 非4肢（1–3肢）| **$2,080** |
-| 玻璃瓶套裝 | 4肢 | **$1,680** |
-| 玻璃瓶套裝 | 非4肢 | **$1,380** |
+| 玻璃瓶套裝 | 4肢（純嬰兒，無父母）| **$1,680** |
+| 玻璃瓶套裝 | 非4肢（純嬰兒，無父母）| **$1,380** |
+| 玻璃瓶套裝 | **倒模對象含父母**（不論嬰兒肢數）| **$2,580** flat（2026-07-19 Fat Mo 定案，先例單號 0600107）|
 
-判定依據：`name.includes("木框") && name.includes("4肢")`
+判定依據：`name.includes("木框") && name.includes("4肢")`；玻璃瓶「4肢/2肢」判定同木框一樣只睇**嬰兒**有冇腳（`hasFoot`，父母/大寶肢體不影響此判定）——但玻璃瓶一旦 `hasAdultInSet`（`en_parent` 已勾）即直接覆蓋為 $2,580，不再依 4肢/2肢分級。SKU 命名不變（仍顯示 `玻璃瓶套裝 (4肢)`，parent 只影響售價非品名，見 §2.1 先例）。
+木框套裝暫無對應「含父母」flat 價規則，維持 §2.1 原表 + §2.2 附加費邏輯。
 
 ### 2.2 成員混合模式附加費
 
 | 條件 | 附加費 |
 |------|-------|
-| 同一訂單中同時有**成人 + 嬰兒**（`hasAdultInSet && hasBabyInSet`）| ~~+$300~~ **$0（2026-06-11 Fat Mo 決定豁免）** |
+| 同一訂單中同時有**成人 + 嬰兒**（`hasAdultInSet && hasBabyInSet`），**且非玻璃瓶套裝** | ~~+$300~~ **$0（2026-06-11 Fat Mo 決定豁免）** |
+| 玻璃瓶套裝含父母 | **不適用**本附加費——$2,580 flat 已內含混合模式差異，避免與 §2.1 疊加 |
 
 > 觸發條件：`en_parent` checkbox 已勾（含父母肢體「待定」亦觸發）AND 至少一個嬰兒肢體 ≠「無」。
-> 邏輯保留（UI 仍顯示 +$0）。如需恢復收費，改 `cost_configurations.mixed_member_surcharge` 數值即可。
+> 邏輯保留（UI 仍顯示 +$0，木框套裝適用）。如需恢復收費，改 `cost_configurations.mixed_member_surcharge` 數值即可。
+> 玻璃瓶套裝自 2026-07-19 起於 `calculatePricing()` 明確排除本附加費（`!isGlassJar` guard），防止未來 `mixed_member_surcharge` 改回非 0 時誤疊加在 $2,580 之上。
 
 ### 2.3 配件（`item.isAccessory === true`）
 
@@ -222,7 +226,7 @@ total_base_cost = Drawing_Cost + Printing_Cost + Clasp_Cost + Shipping_Cost
 
 > **立體擺設繪圖費補充**：$60 per 訂單（不論 2肢/4肢），整套一次性計算，由 GROUP B material_cost 承擔（非逐肢累加）。2肢/4肢售價不同（§2.1）但生產成本相同。三重數據確認：Airtable Base_Costs ✅ + cost_configurations `material_cost_woodframe/glassjar=210` ✅ + V41 HTML 確認對話框「$210 已計入」✅。已由 **migration 0030** 更新至 Supabase products 表（修復 migration 0023 的 placeholder=0 問題）。
 >
-> ⚠️ **附帶技術債（Task A 範疇）**：chargedPositions Set 不追蹤 P_MAIN 肢（P_MAIN PartDesc 為空），混合訂單（立體擺設 + K/M 同部位）前端顯示可能雙計繪圖費。DB 層成本已由 migration 0030 修正；前端顯示層待 Task A 修復。
+> ✅ **chargedPositions 雙計繪圖費技術債已修復**（原標記 Task A 範疇，現已解決）：DB 層成本由 migration 0030 修正；前端顯示層分兩步修復完畢——(1) Session 55（2026-06-03）W1 pre-population 已令主套裝（P_MAIN）選取嘅肢體部位預先寫入 chargedPositions，令同部位鎖匙扣/吊飾免收重複畫圖費；(2) Session 66（2026-06-07）再排除 `item.Order_Item_Key !== "TEMP_P_MAIN"`，修正 P_MAIN 自己因 `PartDesc` 為空而誤入 K/M 畫圖費分支、虛增 `totalDrawingCost` 顯示的問題。兩處均已在生產版本（`Freehandsss_dashboard_current.html`）核實存在。2026-07-19 更新本節前此處誤留「待 Task A 修復」字眼。
 
 ### 6.3 cost_configurations 待填項目
 

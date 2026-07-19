@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-07-19] Session 183（Claude Code / Sonnet 5 執行，worktree `unruffled-hypatia-a71507`）— 立體擺設玻璃瓶套裝新增「含父母」家庭定價 $2,580 + 防呆補強
+
+- **緣起**：Fat Mo 要求修正玻璃瓶套裝定義：2肢/4肢分級只講述嬰兒手腳（原$1,380/$1,680不變）；新增規則——若倒模對象包含父母，售價一律改 $2,580 flat（不論嬰兒肢數），提供歷史單號 **0600107** 作先例（玻璃瓶套裝(4肢)+父母手+嬰兒左手左腳，`item_sale_price=2580`）。
+- **執行**：`calculatePricing()` TEMP_P_MAIN 區塊改動——`hasAdultInSet`/`hasBabyInSet` 判定提前；玻璃瓶價格公式 `(hasAdultInSet && hasBabyInSet) ? 2580 : (4肢1680/2肢1380)`；混合模式附加費加 `!isGlassJar` guard 防重複疊加。木框套裝完全不受影響。SKU 命名不變（仍顯示「玻璃瓶套裝 (4肢)」，parent 只影響售價非品名，對齊 0600107 先例）。`current.html`/`freehandsss_dashboardV42.html` 同步改。
+- **防呆補強**：Fat Mo 指出「唔會有得父母冇嬰兒」，AI 核查發現現有 `hasAdult && !hasBaby` 頂層防呆冇覆蓋 P_MAIN 入口（P_MAIN 品名/comboNote 從不含「父母」字樣，全靠獨立 `en_parent` checkbox）。補：`calculatePricing()` 新增獨立防呆區塊（立體擺設已勾父母但嬰兒肢體全「無」→ 紅字阻擋、報價歸零）；$2,580 formula 本身加 `hasBabyInSet` 雙重防守；log 顯示條件同步。
+- **文件同步**：`FHS_Pricing_Bible.md` 升至 v1.3.0（§2.1/§2.2 更新 + §6 footnote 順手修正一句過時技術債描述——chargedPositions 雙計繪圖費實際已於 Session 66 修復，文件誤留「待 Task A 修復」字眼）。
+- **驗證**：首輪 node harness 驗證腳本本身有 bug（函式參數 `name` 遮蔽外層同名變數，實際測嘅係場景標籤字串非真正產品名，因標籤碰巧含「玻璃/木框/4肢/2肢」等字先啱啱撞中正確答案，屬巧合非真驗證）；已用修正版（`productName` 獨立參數避免遮蔽）重新驗證 7 組情境（含新防呆邊界）全數正確；本地起 `python -m http.server` 試過完整 UI 走查，因觸發離線 MOCK 降級（Supabase 連唔到示範數據）改用抽取代碼片段驗證分支邏輯。`current.html` 升格經 Fat Mo 對話中直接回覆確認（授權途徑 a），AI 自建 `.deploy-ok` 三次完成同步，事後 `diff` 確認兩檔完全一致。
+
+【交付前雙紀律自檢】
+驗收：財務定價類改動 — 非全 UI E2E（本地 http.server 因離線 MOCK 降級無法完整模擬），改用抽取修改後代碼片段跑 7 組情境驗證（含防呆邊界），非同一步驟循環自證；首輪驗證 harness 曾有變數遮蔽 bug，已發現並用修正版重驗，過程透明記錄於 decisions.md
+Subagent：❌ 未使用 — 全程主對話（Sonnet 5）直接查 Supabase live 數據定位先例單號 + grep/edit 代碼 + node harness 驗證 + AskUserQuestion 確認假設
+教訓：驗證 harness 函式參數命名不可以同外層要驗證嘅變數同名（shadowing），即使邏輯睇落合理都要留意；已落 memory `project_glass_jar_parent_pricing.md`（learnings.md 已滿50條上限，本次判斷為 Pitfall 但暫緩加入，留待 /fhs-slim 一併處理，避免倉促決定退役對象）
+
 ## [2026-07-18] Session 181（Claude Code / Fable 5 定方案+Sonnet 5 執行）— 吊飾成本雙數簿漂移修復 + 頸鏈規則補件（D40）
 
 - **緣起**：Fat Mo 回報訂單 Akira（0600721）吊飾成本計錯，懷疑漏計頸鏈成本；另指舊訂單（如 KateSo）成本顯示「未明」。
