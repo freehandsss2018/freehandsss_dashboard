@@ -6912,7 +6912,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
                 let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
                 let type = hasFoot ? "4肢" : "2肢";
-                let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+                let isGlassSub = !subCat.includes("木框");
+                let hasParentGlass = isGlassSub && document.getElementById("en_parent") && document.getElementById("en_parent").checked
+                    && Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                let pName = subCat.includes("木框") ? `木框套裝 (${type})` : (hasParentGlass ? `玻璃瓶套裝 (家庭)` : `玻璃瓶套裝 (${type})`);
                 orderItemsArray.push({
                     "Order_Item_Key": "TEMP_P_MAIN",
                     "Product_Name": pName,
@@ -7212,7 +7215,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     breakdownParts.push(price);
                     totalDrawingCost += item.FatMoCost;
                     item.CalculatedPrice = price;
-                    logs.push(`<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>${(isGlassJar && hasAdultInSet && hasBabyInSet) ? ' <span style="color:#D32F2F;">(含父母，套用家庭定價 $2,580)</span>' : ''}: $${price}`);
+                    logs.push(`<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>: $${price}`);
 
                     // 玻璃瓶套裝含父母：家庭定價 $2,580 已含混合模式差異，不再疊加附加費（2026-07-19 Fat Mo 定案，參考單號 0600107）
                     if (hasAdultInSet && hasBabyInSet && !isGlassJar) {
@@ -8278,7 +8281,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
                     let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
                     let type = hasFoot ? "4肢" : "2肢";
-                    let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+                    let isGlassSub = !subCat.includes("木框");
+                    let hasParentGlass = isGlassSub && document.getElementById("en_parent") && document.getElementById("en_parent").checked
+                        && Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                    let pName = subCat.includes("木框") ? `木框套裝 (${type})` : (hasParentGlass ? `玻璃瓶套裝 (家庭)` : `玻璃瓶套裝 (${type})`);
                     orderItemsArray.push({
                         "Order_Item_Key": `${currentOrderId}_P_MAIN`,
                         "Product_Name": pName,

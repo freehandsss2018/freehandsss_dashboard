@@ -4,6 +4,7 @@
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S183 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 修正玻璃瓶套裝定價定義：純嬰兒2肢/4肢原價不變，新增「含父母」一律$2,580 flat（先例單0600107）；並指出防呆缺口（唔會有得父母冇嬰兒），AI補強獨立防呆區塊。首輪驗證 harness 有變數遮蔽 bug，已發現並用修正版重驗 7 組情境全過。`current.html` 升格經 Fat Mo 對話直接確認授權。
 Subagent：❌ 未使用——全程主對話直接查 Supabase live 數據 + 改代碼 + node harness 驗證。
+**追加（部署後續修）**：Fat Mo 實測揪出兩件事——live未同步（部署時序問題，已redeploy解決）+ SKU沿用舊品名令獨立`fhsSuggestedPriceMap`稽核面板顯示舊價（真bug）。改用獨立SKU「玻璃瓶套裝 (家庭)」+ products表新增catalog行(migration 0060)修復，重新部署+live核實。
 
 ## 2026-07-19 (Session 182續II — 🔴事故：PowerShell encoding令current.html全部中文亂碼，即時修復，worktree `epic-cartwright-3aafcb`): 🏷️ ✅
 

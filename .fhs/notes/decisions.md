@@ -15,6 +15,11 @@
 驗證方法更正：首輪回報嘅「6組情境node harness驗證」測試腳本本身有 bug（函式參數 `name` 遮蔽咗外層同名變數，實際檢查嘅係場景標籤字串非真正產品名，因標籤碰巧含「玻璃/木框/4肢/2肢」等字先啱啱撞中正確答案）——已修正 harness（productName 改用獨立參數名避免遮蔽）重新驗證 7 組情境（含新防呆邊界「父母已勾但baby全無」→ formula 層 fallback 正確 1380，真實流程會被上游防呆更早攔截），全數正確。
 `current.html` 升格：Fat Mo 於對話中直接回覆確認升格（授權途徑 (a)），AI 自建 `.fhs/.deploy-ok` 三次（三次獨立 Edit 各消費一次 flag，見 `deploy-log.md` 2026-07-19T05:47-05:48 三筆 R1/R9 bypass 記錄）完成 `current.html` 同步，事後 diff 確認兩檔完全一致（exit 0）。
 
+**追記（同日，/commit 後）— SKU 改名「玻璃瓶套裝 (家庭)」，推翻「SKU 命名不變」原決定**：`/commit` 完成部署後 Fat Mo 實測回報兩件事：(1) 「系統精算建議報價」仍顯示 $1,680——查證後發現係部署時序問題：先前嘅「current.html 已同步」只係 git worktree 本機檔案同步，實際 NAS 部署（`scripts/upload-web.ps1`）要到本次 `/commit` Phase 2.5 先執行，Fat Mo 測試時網站仲跑緊部署前舊代碼，非邏輯錯誤（NAS 部署後 Browser pane 直接喺 live 網站測試 `en_parent` 切換，$1,680↔$2,580 正確反應）；(2) Fat Mo 進一步指出沿用同一 SKU 品名「玻璃瓶套裝 (4肢)」會混淆——查證屬實且揭發真實 bug：Dashboard 另有一套獨立嘅「SKU建議價」稽核面板（`fhsSuggestedPriceMap`，讀 `products.suggested_price` 靜態逐 SKU 對照表，用於訂單總覽「顯示項目財務」），呢個表**冇辦法**區分同一 SKU 名底下「含父母」定價，會恆顯示 catalog 舊值 $1,680，同 `calculatePricing()` 即時結果不符——證明沿用舊品名唔止係命名混淆問題，而係結構性令第二套顯示邏輯必然出錯。
+決策：改用獨立 SKU「玻璃瓶套裝 (家庭)」（AskUserQuestion 三選一 Fat Mo 選定，對齊既有「家庭(S1)/(S2)」鎖匙扣/吊飾命名慣例；不再標肢數，因家庭定價 flat 不分 2肢/4肢）。**推翻本則決策較早部份「SKU 命名不變」嘅判斷**。
+執行：`calculatePricing()`/`buildOrderItemsForPricing()` 兩處 pName 生成邏輯新增 `hasParentGlass` 判定（`isGlassSub && en_parent.checked && 至少一個嬰兒肢體≠無`），為真時品名輸出「玻璃瓶套裝 (家庭)」取代「玻璃瓶套裝 (N肢)」；價格計算分支不變（原有 `hasAdultInSet && hasBabyInSet` 邏輯與新品名判定條件一致，天然吻合）；suggested-price log 移除原「(含父母，套用家庭定價)」附註（品名已自我說明，避免重複）。`products` 表新增第 5 行 SKU「玻璃瓶套裝 (家庭)」（`total_base_cost=210` 不變、`suggested_price=2580`），對應 **migration 0060**（`ON CONFLICT (sku) DO NOTHING` 冪等）。歷史單 0600107 之 `product_sku` 保留原文「玻璃瓶套裝 (4肢)」不回填（Layer 2 快照精神，非本次範圍）。
+驗證：node harness（distinct 參數名避免上輪 shadowing 覆轍）7 組情境全過，含品名輸出核對；`SELECT * FROM fhs_check_product_cost_drift() WHERE drift<>0` 新 SKU 插入後仍零行；current.html/V42.html 三次 `.deploy-ok` 同步改動後 diff 僅剩預期嘅 `fhs-build` 時間戳差異；重新 NAS 部署 + live curl 核實中文編碼 161/161 無損、"2580" 字串存在。
+
 [2026-07-19] FHS_Pricing_Bible.md §6 footnote 修正 — chargedPositions 雙計繪圖費技術債已修復字眼過時
 
 決策：`FHS_Pricing_Bible.md` §6 footnote 原文「⚠️ 附帶技術債（Task A 範疇）...前端顯示層待 Task A 修復」改為「✅ ...已修復」，並補充修復時序（Session 55 W1 pre-population + Session 66 P_MAIN 排除分支）同代碼行號依據。
