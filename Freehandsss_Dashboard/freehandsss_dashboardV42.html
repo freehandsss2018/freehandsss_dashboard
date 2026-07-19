@@ -3507,6 +3507,10 @@
             cursor: pointer;
             padding-right: 40px;
             background-color: #FFFFFF;
+            /* iOS Safari 無視 readonly 對 type=date 生效，撳落去仍會彈原生月曆滾輪，
+               同底下自訂 openMoldCalendar() 疊埋一齊 → 兩個月曆重疊。
+               封殺 input 本身接觸事件，全部撳擊都落喺 .date-field-wrap 嘅 onclick。 */
+            pointer-events: none;
         }
         .date-field-wrap input[type="date"]::-webkit-calendar-picker-indicator {
             display: none;

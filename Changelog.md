@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-19] Session 182（Claude Code / Sonnet 5 執行，worktree `epic-cartwright-3aafcb`）— iOS 約定日期月曆重疊 bug 修復
+
+- **緣起**：Fat Mo 於 iPhone 實機截圖回報，撳表單「約定日期」欄位時，iOS 原生日曆滾輪同 V42 自訂空檔期月曆（S180 月曆 v2）同時彈出，兩者疊埋一齊。
+- **根因**：`<input type="date" id="appDate" readonly>`（`freehandsss_dashboardV42.html` 約 L4167）外層 `.date-field-wrap` div 有 `onclick="openMoldCalendar(...)"` 負責開自訂月曆；桌面 Chrome 已用 `::-webkit-calendar-picker-indicator{display:none}` 隱藏原生日曆圖示。但 **iOS Safari 對 `type="date"` 輸入框，`readonly` 屬性唔會阻止原生日曆滾輪彈出**（同一般文字輸入框行為不同）——撳落個 input 表面本身仍會觸發原生 picker，同外層 div 嘅 `onclick` 一齊觸發，形成兩個月曆疊加。
+- **修復**：`.date-field-wrap input[type="date"]` CSS 新增 `pointer-events: none`（同旁邊 `.date-field-icon` 現有做法一致），令 input 純作顯示用，所有撳擊一律落喺外層 wrap div 嘅 `onclick`，只會開自訂月曆。純 CSS 改動，零 JS 邏輯改變。
+- **執行插曲**：本 session 首次改動誤用絕對路徑，落咗喺主 checkout（`D:\...\freehandsss_dashboard\Freehandsss_Dashboard\`，非 `.claude\worktrees\epic-cartwright-3aafcb\` 下嘅指派 worktree），該主 checkout 當時另有其他 session（分支 `claude/read-command-41dba1`）未 commit 嘅 D40 Phase2 成本schema在製品。察覺後已用 `git diff` 核實該檔案唯一改動即本次 CSS fix，`git checkout --` 乾淨還原主 checkout、fix 補做落正確 worktree，兩邊 `git status` 複核確認零污染。
+- **驗證**：CSS-only 改動，改動範圍極小（4 行）；因涉及 iOS Safari 原生行為，非 Browser pane（Chromium）可模擬複現，待 Fat Mo 實機覆核。
+
+【交付前雙紀律自檢】
+驗收：純 UI CSS 修復，非財務/schema/n8n 部署類別，改動範圍 4 行且無 JS 邏輯變更；iOS 原生 picker 行為無法喺 Chromium Browser pane 複現，待 Fat Mo 實機驗證
+Subagent：❌ 未使用 — 主對話直接定位 CSS 選擇器完成修復
+
 ## [2026-07-18] Session 181（Claude Code / Fable 5 定方案+Sonnet 5 執行）— 吊飾成本雙數簿漂移修復 + 頸鏈規則補件（D40）
 
 - **緣起**：Fat Mo 回報訂單 Akira（0600721）吊飾成本計錯，懷疑漏計頸鏈成本；另指舊訂單（如 KateSo）成本顯示「未明」。

@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-07-19 (Session 182 — iOS 約定日期月曆重疊 bug 修復，worktree `epic-cartwright-3aafcb`): 🏷️ ✅
+
+**摘要**：一行摘要，全文見 [Changelog.md](../../Changelog.md) S182 條目；`appDate` input（type=date, readonly）於 iOS Safari 唔受 readonly 阻擋原生 picker，同自訂空檔期月曆疊加；修復加 `pointer-events: none`。
+
 ## 2026-07-18 (Session 181 — D40：吊飾成本雙數簿漂移修復+頸鏈規則補件+防再錯機制+6單resync): 🏷️ ✅
 
 **摘要**：全文見完成記錄 [2026-07-18_charm_cost_dual_ledger_fix_completion_report.md](../reports/completion/2026-07-18_charm_cost_dual_ledger_fix_completion_report.md)（本行僅摘要指回）。Fat Mo 回報 Akira(0600721) 成本計錯，全量審計揪出吊飾成本四層系統性漏算（頸鏈規則從未落地n8n/products表凍結舊材料價/N飾未按item_per_set倍增/加購未免畫圖）。首次 patch 經 fresh-context opus 對抗審查攔截雙計風險；Fat Mo「再核實」後再揪出殘留缺口，二次 opus 八角度審查 FORMULA_HOLDS。修復：migration 0046(RPC仿鎖匙扣先例)+0056(補完per-set語義)+0057(drift檢查擴充覆蓋吊飾全層282行零漂移)+n8n V47.19(頸鏈訂單層獨立計算)。Fat Mo 授權 AI 經 Dashboard 真實 UI 操作 resync 6 張歷史單，final_sale_price 零損傷+公式全中；DebbieHo(0600727) 舊式單留 Fat Mo 親自做。過程攔截兩個前端 bug（付款自動填充陷阱、訂單載入產品勾選殘留），已排 task_0811eb3c 待修。防再錯機制：finance-gatekeeper v1.4.0 新增§三B成本改動前置紀律。Phase 2（立體擺設/成人鎖匙扣/鋁合金三品類 drift 覆蓋）已列入 handoff 待辦，待 Fat Mo 批 `/cl-flow`。
