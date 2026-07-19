@@ -1,7 +1,7 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.4.0
+version: 1.5.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
 last_updated: 2026-07-18
@@ -33,8 +33,9 @@ compatible_with: AGENTS.md v1.4.13
 | KPI 收入分攤 / 混合單 3-layer fallback / get_financial_kpis / get_financial_charts | §十 `.fhs/notes/FHS_System_Logic_Overview.md` §十（RPC 財務計算層 SSoT） |
 | Live 訂單成本/利潤驗證 | 啟動 `finance-auditor` subagent |
 | Supabase schema / SKU 成本資料 | 啟動 `database-reviewer` subagent |
-| `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`（Session 112，**範圍限定**僅嬰兒 S/P 不銹鋼鎖匙扣，見 `FHS_System_Logic_Overview.md` §5.4）；其餘 tier 無自動檢查工具，需人工用 atom 公式核算，禁止假設「改設定中心=products 自動同步」。吊飾（純銀頸鏈吊飾）已於 2026-07-17 migration 0046 一次性回填（非自動化 drift 檢查，見 §5.4.2），立體擺設已於 migration 0030 回填 |
+| `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`——**2026-07-18 Phase 2 起已覆蓋全品類**（嬰兒/成人/家庭鎖匙扣不銹鋼+鋁合金、吊飾全 tier、立體擺設、配件、佔位 row 監測），見 `FHS_System_Logic_Overview.md` §5.4.3。禁止假設「改設定中心=products 自動同步」|
 | 吊飾成本計錯 / 頸鏈成本 / `necklace_chain_cost` | `FHS_System_Logic_Overview.md` §5.4.2（D40，migration 0046 + n8n V47.19，雙數簿漂移修復先例）|
+| 家庭套裝（鎖匙扣/吊飾）畫圖成本計錯 / composite 畫圖式 | `FHS_System_Logic_Overview.md` §5.4.3（D41，migrations 0058/0059）：家庭套裝畫圖成本 = **成人份 + 每個嬰兒肢各計一次**，非單一成人式；Dashboard 前端 `calculatePricing()` isFamily 分支為真源 |
 
 ---
 
@@ -76,10 +77,13 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 2. **對齊已驗證先例**：同鎖匙扣終態（S124 v2，migration 0045）逐分量對照，任何結構性差異（如吊飾頸鏈共用 vs 鎖匙扣環扣獨立）要寫明點解唔同。
 3. **改完即跑 drift 檢查**：`SELECT * FROM fhs_check_product_cost_drift() WHERE drift <> 0;`（0057 起覆蓋鎖匙扣嬰兒層 + 吊飾全 tier 共 282 行）——必須零行先算收工；未覆蓋品類（立體擺設/成人鎖匙扣/鋁合金）改動需人工全式核算並記錄於改動記錄。
 
-**現行已定案方程式（live 驗證，2026-07-18）**：
-- 鎖匙扣：加購 = (material+clasp$10)×N；單購 = tier_drawing + 同上。運費不入 SKU（僅訂單層扣減 (N−1)×$20）。
-- 吊飾：加購 = material($465)×N；單購 = tier_drawing{60/110/240} + material×N。頸鏈不入 SKU（n8n 訂單層 `ceil(總件數/2)×$100`，V47.19）；運費同上不入 SKU（扣減 (N−1)×$35）。
+**現行已定案方程式（live 驗證，2026-07-18，Phase 2 已擴充覆蓋全品類）**：
+- 嬰兒鎖匙扣（不銹鋼/鋁合金）：加購 = (material+clasp$10)×N；單購 = tier_drawing{嬰兒60/嬰兒(P)110} + 同上。運費不入 SKU（訂單層扣減 (N−1)×$20）。
+- 成人/家庭鎖匙扣（不銹鋼/鋁合金，material 已同價 $125）：加購 = (material+clasp$10)×N；單購 = **composite_drawing** + 同上。composite_drawing＝成人份+每個嬰兒肢各計一次：成人(P)=240、家庭(S1)=170、家庭(S2)=230、家庭(P1)=350、家庭(P2)=460。
+- 吊飾（嬰兒/成人）：加購 = material($465)×N；單購 = tier_drawing{60/110/240} + material×N。頸鏈不入 SKU（n8n 訂單層 `ceil(總件數/2)×$100`，V47.19）；運費同上不入 SKU（扣減 (N−1)×$35）。
+- 家庭吊飾（單購）：composite_drawing（同鎖匙扣，D41 修正原單一成人式錯誤）+ material×N；加購 = material×N（無畫圖，不變）。
 - 立體擺設：$210 flat（2肢/4肢同價，migration 0030）。
+- 配件（羊毛氈/燈飾加購）：$30 flat。
 
 ## 四、常見易錯點（快速提示）
 
@@ -88,7 +92,8 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 - 「鎖匙扣定價」：每個**身體部位**獨立計階梯；S mode 和 P mode 有不同費率
 - 「adjustment_amount」：FHS 無百分比折扣，唯一調整方式是金額差值（正數=追費，負數=折讓）
 - 「products.total_base_cost」：目前為 migration 0023 硬編碼值，Task A 完成前不是動態 roll-up；**`cost_configurations` 改值不會自動回算此欄位**（無傳播機制，Session 112 確認），舊單 base cost 不變屬正常快照語義，非錯誤
-- 「`recalculate_product_costs(text)` RPC」：**已於 migration 0042 移除**（v1 schema 死碼，引用不存在欄位必報錯），不存在替代品——目前無任何 RPC 能批量回算 products 表，僅 `fhs_check_product_cost_drift()` 可唯讀比對（範圍受限，見上）
+- 「`recalculate_product_costs(text)` RPC」：**已於 migration 0042 移除**（v1 schema 死碼，引用不存在欄位必報錯），不存在替代品——目前無任何 RPC 能批量回算 products 表，僅 `fhs_check_product_cost_drift()` 可唯讀比對（2026-07-18 起已覆蓋全品類）
+- 「家庭套裝畫圖成本」：**唔係單一成人式**——每個嬰兒肢都各自要計畫圖費，成人+2嬰兒肢 = 成人份+2×嬰兒份，唔係淨計成人嗰份（D41 教訓，opus 首輪對抗審查方向都判斷錯，最終要查 Dashboard 前端原始碼先定案）
 
 ---
 

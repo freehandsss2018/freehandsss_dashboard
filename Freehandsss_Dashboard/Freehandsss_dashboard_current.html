@@ -4,7 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="fhs-build" content="2026-07-19T07:04:23Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
+    <script>
+    // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
+    // 開頁靜默去 no-store fetch 自己嘅最新版本，同目前已載入嘅 fhs-build 比對，
+    // 唔同就用 cache-bust query string 強制重新導向攞返最新版（保留原有 query 如 ?view=igwatch）。
+    // 部署佔位符 __DEPLOY_TS__ 由 scripts/upload-web.ps1 於升格 current.html 時自動注入真實時間戳，
+    // dev 版（V42 本檔）維持佔位符不變 → 下方 guard 令 dev 版跳過檢查。
+    (function () {
+        try {
+            var m0 = document.querySelector('meta[name="fhs-build"]');
+            var CURRENT_BUILD = m0 ? m0.content : '';
+            if (!CURRENT_BUILD || CURRENT_BUILD === '__DEPLOY_TS__') return;
+            fetch(location.pathname, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (html) {
+                var m = html.match(/<meta name="fhs-build" content="([^"]*)">/);
+                if (m && m[1] && m[1] !== CURRENT_BUILD) {
+                    var freshUrl = location.pathname + location.search + (location.search ? '&' : '?') + '_r=' + Date.now();
+                    location.replace(freshUrl);
+                }
+            }).catch(function () { /* 靜默失敗，唔阻頁面正常運作 */ });
+        } catch (e) { /* 靜默失敗 */ }
+    })();
+    </script>
     <!-- V40: Zero external dependencies. Tailwind removed. Pure HTML5+CSS3+VanillaJS -->
     <style>
         /* =====================================================
@@ -3507,6 +3529,10 @@
             cursor: pointer;
             padding-right: 40px;
             background-color: #FFFFFF;
+            /* iOS Safari 無視 readonly 對 type=date 生效，撳落去仍會彈原生月曆滾輪，
+               同底下自訂 openMoldCalendar() 疊埋一齊 → 兩個月曆重疊。
+               封殺 input 本身接觸事件，全部撳擊都落喺 .date-field-wrap 嘅 onclick。 */
+            pointer-events: none;
         }
         .date-field-wrap input[type="date"]::-webkit-calendar-picker-indicator {
             display: none;
@@ -6886,7 +6912,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
                 let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
                 let type = hasFoot ? "4肢" : "2肢";
-                let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+                let isGlassSub = !subCat.includes("木框");
+                let hasParentGlass = isGlassSub && document.getElementById("en_parent") && document.getElementById("en_parent").checked
+                    && Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                let pName = subCat.includes("木框") ? `木框套裝 (${type})` : (hasParentGlass ? `玻璃瓶套裝 (家庭)` : `玻璃瓶套裝 (${type})`);
                 orderItemsArray.push({
                     "Order_Item_Key": "TEMP_P_MAIN",
                     "Product_Name": pName,
@@ -7036,6 +7065,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 return;
             }
 
+            // 立體擺設：父母已勾但嬰兒肢體全部「無」— 同違反 §0 品牌核心（禁止單獨成人），但唔會反映喺上面 hasAdult
+            // （P_MAIN 品名/comboNote 從不含「父母」字樣，全靠 en_parent checkbox 判定，故獨立補一道防呆）
+            if (hasMainProduct) {
+                const _pMainHasParent = document.getElementById("en_parent") && document.getElementById("en_parent").checked;
+                const _pMainHasBaby = Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                if (_pMainHasParent && !_pMainHasBaby) {
+                    logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 立體擺設已勾選父母但未選任何嬰兒肢體，違反品牌核心原則（禁止單獨成人）。請先選擇嬰兒手/腳。系統拒絕報價。</div>`);
+                    if (uiPrice) uiPrice.innerText = "0";
+                    if (uiCost) uiCost.innerText = "0";
+                    if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+                    return;
+                }
+            }
+
             if (enableP && pSubCat === "木框款式" && hasAdult) {
                 logs.push(`<div style="color:#D32F2F; font-weight:bold; background:#FFEBEE; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆鎖死] 木框不支援成人實體倒模！系統已強制判定為成人的「照片(P)」模式，適用高階報價基礎。</div>`);
             }
@@ -7159,21 +7202,23 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 // --- 2. 主商品報價 ---
                 if (item.Order_Item_Key === "TEMP_P_MAIN") {
+                    let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
+                    let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
+                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
+                    let isGlassJar = name.includes("玻璃");
+
                     let price = 0;
                     if (name.includes("木框")) price = name.includes("4肢") ? 2380 : 2080;
-                    else if (name.includes("玻璃")) price = name.includes("4肢") ? 1680 : 1380;
-                    
+                    else if (isGlassJar) price = (hasAdultInSet && hasBabyInSet) ? 2580 : (name.includes("4肢") ? 1680 : 1380);
+
                     totalSuggestedPrice += price;
                     breakdownParts.push(price);
                     totalDrawingCost += item.FatMoCost;
                     item.CalculatedPrice = price;
                     logs.push(`<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>: $${price}`);
 
-                    let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
-                    let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
-                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
-
-                    if (hasAdultInSet && hasBabyInSet) {
+                    // 玻璃瓶套裝含父母：家庭定價 $2,580 已含混合模式差異，不再疊加附加費（2026-07-19 Fat Mo 定案，參考單號 0600107）
+                    if (hasAdultInSet && hasBabyInSet && !isGlassJar) {
                         const _mixedSurcharge = _cc.mixed_member_surcharge ?? 300; // 讀 config，fallback $300
                         totalSuggestedPrice += _mixedSurcharge;
                         totalSystemAdditionalFee += _mixedSurcharge;
@@ -8236,7 +8281,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
                     let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
                     let type = hasFoot ? "4肢" : "2肢";
-                    let pName = subCat.includes("木框") ? `木框套裝 (${type})` : `玻璃瓶套裝 (${type})`;
+                    let isGlassSub = !subCat.includes("木框");
+                    let hasParentGlass = isGlassSub && document.getElementById("en_parent") && document.getElementById("en_parent").checked
+                        && Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                    let pName = subCat.includes("木框") ? `木框套裝 (${type})` : (hasParentGlass ? `玻璃瓶套裝 (家庭)` : `玻璃瓶套裝 (${type})`);
                     orderItemsArray.push({
                         "Order_Item_Key": `${currentOrderId}_P_MAIN`,
                         "Product_Name": pName,
