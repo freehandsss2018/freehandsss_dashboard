@@ -12,6 +12,20 @@
 驗收：純 UI CSS 修復，非財務/schema/n8n 部署類別，改動範圍 4 行且無 JS 邏輯變更；iOS 原生 picker 行為無法喺 Chromium Browser pane 複現，待 Fat Mo 實機驗證
 Subagent：❌ 未使用 — 主對話直接定位 CSS 選擇器完成修復
 
+## [2026-07-19] Session 182續（Claude Code / Sonnet 5 執行）— iOS「加入主畫面」cache-bust 自動更新機制
+
+- **緣起**：S182 主 fix（`pointer-events:none`）部署後，Fat Mo 用 iPhone Safari 將 `current.html` 加入主畫面測試，發現月曆重疊 bug 仍在；一輪排查後 Fat Mo 確認：普通 Safari tab 已經冇事，只有主畫面 icon 仲有事，並表示想繼續用主畫面（唔想每次靠手動清 cache）。
+- **根因確認**：`curl -I` 查 NAS 回應完全冇 `Cache-Control` header（只有 `Last-Modified`/`ETag`，nginx 靜態檔案預設），加主畫面嘅 icon 本質係已儲存快照，Safari 唔會主動 revalidate；Fat Mo 部手機嘅 icon 可能係修復部署**之前**加落主畫面，所以食住舊快照。
+- **修復（永久性自動更新機制，非一次性清 cache）**：
+  1. `freehandsss_dashboardV42.html` `<head>` 新增 `<meta name="fhs-build" content="__DEPLOY_TS__">` + 一段開頁靜默執行嘅 IIFE：`fetch(location.pathname, {cache:'no-store'})` 攞返伺服器上最新 HTML，regex 抽取其 `fhs-build` 值同目前頁面比對；唔同就用 `location.replace(pathname+search+'&_r='+Date.now())` 強制重新導向攞真正最新版（保留原有 query string，例如 IG watchdog 深連結 `?view=igwatch&orderId=xxx`）。dev 版（V42 本檔）meta 值恆為佔位符 `__DEPLOY_TS__`，script 有 guard 見到佔位符即跳過檢查，唔會影響開發環境。
+  2. `scripts/upload-web.ps1` 新增部署時間戳注入步驟：僅 `current` 目標，upload 前將 `__DEPLOY_TS__`（或上次嘅舊時間戳）替換做本次部署嘅真實 UTC ISO 時間戳，寫入 `Freehandsss_dashboard_current.html`，注入後先計 size/SHA256 做三關驗證，確保「已驗證嘅版本」同「實際部署嘅版本」一致。
+- **驗證**：Node 單元測試覆蓋 regex 抽取邏輯 + 三種情境（dev 版跳過檢查／有更新則正確重新導向並保留深連結 query／版本相同唔誤觸發重載）全 PASS；PowerShell `-replace` 語法獨立驗證輸出格式正確；部署後 `curl` 直接讀取 live `current.html` 確認 `fhs-build` 已含真實時間戳（`2026-07-19T00:51:17Z`），非佔位符。NAS 三關驗證 PASS（PUT 204/大小相符/SHA256 `84C55686...`）。
+- **待驗**：iOS Safari 主畫面 icon 嘅實際「自動偵測+強制刷新」行為（fetch/location.replace 喺 webclip 模式下嘅執行時機）Chromium Browser pane 無法完整模擬，待 Fat Mo 實機刪除舊 icon 一次、重新加入後於下次部署時驗證機制生效。
+
+【交付前雙紀律自檢】
+驗收：純前端 cache-bust 機制 + 部署腳本改動，非財務/schema/n8n 部署類別；改動邏輯已附 Node 單元測試證據（4 種情境全 PASS）+ live curl 核實真實時間戳已注入；iOS webclip 實際觸發時機無法喺 Chromium 複現，待 Fat Mo 實機覆核（已在回報中明確聲明未達成，非靜默略過）
+Subagent：❌ 未使用 — 主對話直接診斷（curl 查 header）+ 設計 + Node/PowerShell 雙重邏輯驗證完成
+
 ## [2026-07-18] Session 181（Claude Code / Fable 5 定方案+Sonnet 5 執行）— 吊飾成本雙數簿漂移修復 + 頸鏈規則補件（D40）
 
 - **緣起**：Fat Mo 回報訂單 Akira（0600721）吊飾成本計錯，懷疑漏計頸鏈成本；另指舊訂單（如 KateSo）成本顯示「未明」。

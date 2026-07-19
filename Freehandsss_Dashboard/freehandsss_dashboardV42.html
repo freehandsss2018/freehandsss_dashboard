@@ -4,7 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="fhs-build" content="__DEPLOY_TS__">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
+    <script>
+    // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
+    // 開頁靜默去 no-store fetch 自己嘅最新版本，同目前已載入嘅 fhs-build 比對，
+    // 唔同就用 cache-bust query string 強制重新導向攞返最新版（保留原有 query 如 ?view=igwatch）。
+    // 部署佔位符 __DEPLOY_TS__ 由 scripts/upload-web.ps1 於升格 current.html 時自動注入真實時間戳，
+    // dev 版（V42 本檔）維持佔位符不變 → 下方 guard 令 dev 版跳過檢查。
+    (function () {
+        try {
+            var m0 = document.querySelector('meta[name="fhs-build"]');
+            var CURRENT_BUILD = m0 ? m0.content : '';
+            if (!CURRENT_BUILD || CURRENT_BUILD === '__DEPLOY_TS__') return;
+            fetch(location.pathname, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (html) {
+                var m = html.match(/<meta name="fhs-build" content="([^"]*)">/);
+                if (m && m[1] && m[1] !== CURRENT_BUILD) {
+                    var freshUrl = location.pathname + location.search + (location.search ? '&' : '?') + '_r=' + Date.now();
+                    location.replace(freshUrl);
+                }
+            }).catch(function () { /* 靜默失敗，唔阻頁面正常運作 */ });
+        } catch (e) { /* 靜默失敗 */ }
+    })();
+    </script>
     <!-- V40: Zero external dependencies. Tailwind removed. Pure HTML5+CSS3+VanillaJS -->
     <style>
         /* =====================================================

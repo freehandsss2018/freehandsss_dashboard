@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-07-19 (Session 182續 — iOS「加入主畫面」cache-bust 自動更新機制，worktree `epic-cartwright-3aafcb`): 🏷️ ✅
+
+**摘要**：一行摘要，全文見 [Changelog.md](../../Changelog.md) S182續條目；Fat Mo 回報主畫面 icon 仍見舊 bug，查明係 NAS 無 Cache-Control header 導致舊快照；新增 `fhs-build` meta + 開頁自我更新偵測 script + 部署腳本自動注入時間戳，永久解決（非一次性清 cache）。
+
 ## 2026-07-19 (Session 182 — iOS 約定日期月曆重疊 bug 修復，worktree `epic-cartwright-3aafcb`): 🏷️ ✅
 
 **摘要**：一行摘要，全文見 [Changelog.md](../../Changelog.md) S182 條目；`appDate` input（type=date, readonly）於 iOS Safari 唔受 readonly 阻擋原生 picker，同自訂空檔期月曆疊加；修復加 `pointer-events: none`。

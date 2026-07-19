@@ -50,6 +50,20 @@ if ($fileName -eq 'Freehandsss_dashboard_current.html' -and -not $Force) {
 
 $localFile = Join-Path $sourceDir $fileName
 if (-not (Test-Path $localFile)) { Fail "找不到本機檔案：$localFile" }
+
+# --- 2.5 生產版部署時間戳注入（S182，iOS「加入主畫面」cache-bust 修復，僅 current 目標）---
+# current.html 的 <meta name="fhs-build"> 注入真實部署時間戳，令頁內自我更新偵測腳本
+# 可比對出新版本並強制重新載入，避免 iOS 長期食舊快照。
+if ($fileName -eq 'Freehandsss_dashboard_current.html') {
+  $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+  $content = Get-Content $localFile -Raw
+  $newContent = $content -replace '<meta name="fhs-build" content="[^"]*">', "<meta name=`"fhs-build`" content=`"$ts`">"
+  if ($newContent -ne $content) {
+    Set-Content -Path $localFile -Value $newContent -NoNewline -Encoding UTF8
+    Write-Host "  🕐 已注入部署時間戳 fhs-build=$ts（iOS home-screen cache-bust）"
+  }
+}
+
 $localSize = (Get-Item $localFile).Length
 
 # --- 3. 讀 .env 憑證 ---
