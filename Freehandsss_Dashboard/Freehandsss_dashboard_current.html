@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-21T14:24:44Z">
+    <meta name="fhs-build" content="2026-07-21T14:35:18Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -11143,18 +11143,42 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // (−$X) shows next to the cost amount in green (saving, NOT a cost); a small
             // circle reveals the explanation only when tapped — keeps ② clean yet auditable.
             var _dedSeq = 0, _consumedAdj = [];
+            // 2026-07-21 修正：keyword 比對曾經唔分正負值一齊撈（如「吊飾」同時撞中運費扣減同頸鏈加項兩張
+            // 筆記），再用 -Math.abs() 強制當扣減顯示，令 -105+200=+95 嘅淨值被印成誤導性嘅「(-$95)」。
+            // 拆做 _dedBadge（只認負值＝真扣減，綠色）同 _addBadge（只認正值＝真加項，另一底色），逐張筆記顯示
+            // 真實金額同符號，唔再合併淨值。
             function _dedBadge(keyword) {
                 var matched = n8nAdjItems.filter(function(a) {
                     if (_consumedAdj.indexOf(a) !== -1) return false;
                     var d = a.desc || a.text || a.message || a.type || '';
-                    return d.indexOf(keyword) !== -1;
+                    return d.indexOf(keyword) !== -1 && (parseFloat(a.amount) || 0) < 0;
                 });
                 if (matched.length === 0) return { badge: '', expl: '' };
                 matched.forEach(function(m) { _consumedAdj.push(m); });
                 var sumAdj = matched.reduce(function(s, a) { return s + (parseFloat(a.amount) || 0); }, 0);
                 var uid = 'fhsDed_' + (o.id || o._uuid || 'x') + '_' + (_dedSeq++);
                 var badge = '<span class="fhsAudit_dedBadge" onclick="var e=document.getElementById(\'' + uid + '\');e.style.display=e.style.display===\'block\'?\'none\':\'block\';">' +
-                    _fNeg(-Math.abs(sumAdj)) + '<span class="fhsAudit_dedDot">i</span></span>';
+                    _fNeg(sumAdj) + '<span class="fhsAudit_dedDot">i</span></span>';
+                var expl = '<div id="' + uid + '" class="fhsAudit_dedExpl" style="display:none;">' +
+                    matched.map(function(a) {
+                        var d = a.desc || a.text || a.message || a.type || '';
+                        var b = a.basis ? '<span style="color:#999;"> · 依據 ' + a.basis + '</span>' : '';
+                        return d + b;
+                    }).join('<br>') + '</div>';
+                return { badge: badge, expl: expl };
+            }
+            function _addBadge(keyword) {
+                var matched = n8nAdjItems.filter(function(a) {
+                    if (_consumedAdj.indexOf(a) !== -1) return false;
+                    var d = a.desc || a.text || a.message || a.type || '';
+                    return d.indexOf(keyword) !== -1 && (parseFloat(a.amount) || 0) > 0;
+                });
+                if (matched.length === 0) return { badge: '', expl: '' };
+                matched.forEach(function(m) { _consumedAdj.push(m); });
+                var sumAdj = matched.reduce(function(s, a) { return s + (parseFloat(a.amount) || 0); }, 0);
+                var uid = 'fhsAdd_' + (o.id || o._uuid || 'x') + '_' + (_dedSeq++);
+                var badge = '<span class="fhsAudit_dedBadge" style="background:#FFF3E0;color:#B26A00;" onclick="var e=document.getElementById(\'' + uid + '\');e.style.display=e.style.display===\'block\'?\'none\':\'block\';">' +
+                    '+' + _f(sumAdj) + '<span class="fhsAudit_dedDot">i</span></span>';
                 var expl = '<div id="' + uid + '" class="fhsAudit_dedExpl" style="display:none;">' +
                     matched.map(function(a) {
                         var d = a.desc || a.text || a.message || a.type || '';
@@ -11165,11 +11189,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
             function _costRow(label, costNum, keyword) {
                 var ded = _dedBadge(keyword);
+                var add = _addBadge(keyword);
                 return '<div class="fhsAudit_row indent1">' +
                     '<span class="fhsAudit_label">' + label + '</span>' +
-                    ded.badge +
+                    ded.badge + add.badge +
                     '<span class="fhsAudit_amount cost">' + _f(costNum) + '</span>' +
-                '</div>' + ded.expl;
+                '</div>' + ded.expl + add.expl;
             }
 
             // Main: order-level category breakdown (30/30 reliable — single source of truth)
@@ -11180,14 +11205,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 h += _row('成本（未分類）', _f(totalCost), 'cost', 1, null, '訂單層類別欄未記錄，以 total_cost 為準');
             }
 
-            // Any deduction note not matched to a category row — show inline so nothing is hidden
+            // Any note not matched to a category row — show inline so nothing is hidden
+            // （2026-07-21 修正：零值審計筆記如 convergence_note 唔顯示；正值加項唔再被强制扮成負值扣減）
             n8nAdjItems.forEach(function(a) {
                 if (_consumedAdj.indexOf(a) !== -1) return;
-                var d = a.desc || a.text || a.message || a.type || '';
                 var amt = parseFloat(a.amount) || 0;
+                if (amt === 0) return;
+                var d = a.desc || a.text || a.message || a.type || '';
+                var isDed = amt < 0;
                 h += '<div class="fhsAudit_row indent1">' +
-                    '<span class="fhsAudit_label">' + (d || '成本扣減') + '</span>' +
-                    '<span class="fhsAudit_amount" style="color:#2E9E5B;">' + _fNeg(-Math.abs(amt)) + '</span>' +
+                    '<span class="fhsAudit_label">' + (d || (isDed ? '成本扣減' : '成本加項')) + '</span>' +
+                    '<span class="fhsAudit_amount" style="color:' + (isDed ? '#2E9E5B' : '#B26A00') + ';">' +
+                        (isDed ? _fNeg(amt) : ('+' + _f(amt))) +
+                    '</span>' +
                 '</div>';
             });
 

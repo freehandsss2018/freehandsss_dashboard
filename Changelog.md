@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-21] Session 187續（Claude Code / Sonnet 5 執行）— Audit Ledger「吊飾成本(-$95)」誤導 badge 修復（同一單 Fat Mo 追報）
+
+- **緣起**：S187 主段修復前端估算器雙計後，Fat Mo 截圖回報訂單總覽「財務」帳單核對面板本身仍顯示「吊飾成本 (-$95)」，睇落不合理。
+- **查證**：直接查 Akira（0600721）`n8n_adjustment_notes` 實際存 4 張筆記：頸鏈成本 **+$200**（加項）、吊飾運費扣減 **−$105**（扣減）、鎖匙扣運費扣減 −$60、零值審計筆記一張。Audit Ledger 嘅 `_dedBadge(keyword)` 用 desc 子字串比對（keyword='吊飾'），兩張吊飾相關筆記（+200 同 −105）**同時撞中**同一 keyword，被加埋一齊變 `-105+200=+95`，再經 `_fNeg(-Math.abs(x))` 強制當扣減顯示，印出誤導性「(-$95)」——同 Fat Mo 原話「105+200=305」嘅心算方向一致，只係呈現層將兩張筆記錯誤合併兼強制轉負號。
+- **修復**：`_dedBadge` 拆出 `_addBadge`，前者只認負值（真扣減，綠色 badge），後者只認正值（真加項，橙色 badge），同一 keyword 撞中嘅正負筆記分開顯示唔再合併淨值；未歸類筆記嘅 fallback 迴圈同步修正（零值審計筆記唔顯示、正值加項唔再被強制扮成負值扣減）。Node harness 用 Akira 真實 4 張筆記驗證：吊飾成本行變 `(-$105)` + `+$200` 兩個獨立 badge，鎖匙扣 `(-$60)` 不變，手模無 badge，零值筆記正確隱藏。
+- 兩檔（V42/current.html）同步，NAS 三關驗證 PASS。
+
+【交付前雙紀律自檢】
+驗收：財務前端顯示類改動 — Node harness 用該訂單 Supabase 實際存值（非虛構樣本）逐 keyword 驗證修復後輸出，非同一步驟循環自證
+Subagent：❌ 未使用 — 主對話直接查 Supabase `n8n_adjustment_notes` 原始 JSON 定位 keyword 撞正根因並修復
+教訓：desc 子字串比對唔可以假設「同一 keyword 只會撞中一種語意（扣減）」，凡設計「筆記→分類」映射，須先確認同一分類底下係咪會同時存在正負兩種筆記類型
+
 ## [2026-07-21] Session 187（Claude Code / Sonnet 5 執行）— 吊飾/鎖匙扣成本預估器 BaseShippingCost 雙計修復（Akira 0600721 回報）
 
 - **緣起**：Fat Mo 回報訂單 Akira（0600721）吊飾成本折扣運算有錯，涉及帳單核對成本快照與重新/修訂單財務結算不一致。
