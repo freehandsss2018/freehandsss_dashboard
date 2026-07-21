@@ -7404,13 +7404,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
 
-            // --- 成本合計（B1: Drawing + Printing + NecklaceChain + KeychainClasp + BaseShipping − ShippingDeduction）---
+            // --- 成本合計（B1: Drawing + Printing + NecklaceChain + KeychainClasp − ShippingDeduction）---
+            // 2026-07-21 修正：BaseShippingCost 錯誤複用咗「每件運費扣減率」當「每件運費成本」疊加，
+            // 令估算多計一次運費（Akira 0600721 實測多$220），真實 n8n 公式從無 baseShipping 加項，只有扣減，故移除。
             const _totalCostNew = Math.max(0,
                 totalDrawingCost
                 + _totalPrintingCost
                 + _totalNecklaceChainCost
                 + _totalKeychainClaspCost
-                + _totalBaseShipping
                 - _totalShippingDeduction
             ); // G8: 防負數
 
@@ -9785,7 +9786,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         ${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id)) ? `<button onclick="triggerArchiveOrder('${o.id}')" title="將此訂單退回進行中"
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffd699; border-radius:4px; color:#e08600; font-size:11px; cursor:pointer; display:block;">
                             <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-undo-2"/></svg>退回進行中
-                        </button>` : ''}
+                        </button>` : `<button onclick="triggerArchiveOrder('${o.id}')" title="將此訂單標記為已完成"
+                                style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #b7e4c7; border-radius:4px; color:#2a9d8f; font-size:11px; cursor:pointer; display:block;">
+                            <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-check"/></svg>標記完成
+                        </button>`}
                         ${_detailBtns}
                         ${_dlvBadgeHtml(o.Order_ID)}
                         <div id="sync-indicator-${o.id}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
@@ -13658,13 +13662,23 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         window.flashOrderRow = function(orderIdOrRecordId) {
             if (!orderIdOrRecordId) return;
-            
+
             let recordId = orderIdOrRecordId;
+            let _foundOrder = null;
             if (Array.isArray(globalOrders)) {
                 const found = globalOrders.find(o => o.Order_ID === orderIdOrRecordId || o.id === orderIdOrRecordId);
                 if (found) {
                     recordId = found.id;
+                    _foundOrder = found;
                 }
+            }
+
+            // S186-fix: 目標訂單可能唔喺當前分頁 (全部/進行中/已完成) 顯示範圍內
+            // （例如停留喺「已完成」分頁但編輯緊嘅係進行中訂單），令列根本唔存在於 DOM，flash 靜默失效
+            if (_foundOrder && window._fhsSegTab && window._fhsSegTab !== 'all') {
+                var _isArchived = window._fhsArchivedIds && window._fhsArchivedIds.has(_foundOrder.id);
+                var _tabHasIt = (window._fhsSegTab === 'archived') ? _isArchived : !_isArchived;
+                if (!_tabHasIt && window.setSegTab) window.setSegTab('all');
             }
 
             setTimeout(function() {

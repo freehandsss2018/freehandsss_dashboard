@@ -1,9 +1,9 @@
 ```handoff
-【FHS 交接摘要 — 更新: 2026-07-21 / S186（`/fhs-check` 測試單清理假 PASS 修復 + 發現 Airtable 額度耗盡疑似卡住落單流程）】
-🎯 目標: 測試腳本清理驗證修復已上線；🔴新緊急待辦：Airtable 月度額度已用盡，可能影響現行落單流程（新單/刪單皆可能卡住），待 Fat Mo 查 n8n UI + Airtable 帳單頁；S185 立體擺設肢數判定修復與S184/S183/S182系列繼續運作
-✅ 已定決策（(1)-(66)收錄於decisions.md/MASTER表/Logic_Overview.md）：S186 測試腳本改用 wait_for_order_state() 雙態輪詢取代信任 webhook 200（未編D號，屬測試工具修復）；S185 肢數判定改用實際總肢數計算；S184 V42底部按鈕簡化+數字鍵盤修復；S183 玻璃瓶套裝含父母$2,580定價；D41 成本架構Phase2全品類drift一次收網
-🔬 驗證: S186 — 驗證邏輯已喺實跑（test1001）證實可正確攔截真實清理失敗；兩張殘留測試單（test9999003/test1004）已 DELETE 確認 0 剩；S185/S184/D41 驗證項續生效
-📋 待辦: 🔴🆕[S186]Airtable API 月度額度已耗盡（PUBLIC_API_BILLING_LIMIT_EXCEEDED），懷疑落單流程受影響（test5001 執行卡running 5分鐘未落地 Supabase），待 Fat Mo 查 n8n UI + Airtable 帳單頁+處理後記得清理可能遲延落地嘅 test5001 🔴[S181]D41 0600107 需二次 resync 🔴[S181]DebbieHo(0600727)舊式單 resync 🟡[S182]iOS 約定日期月曆重疊修復+cache-bust機制待 Fat Mo 實機覆核 🔴[S161/S166]3D打印 Phase1 待 Fat Mo 最終目測簽收後開 Phase2 🔴[S155]YouTube+NFC計畫待批 🔴[S149]治理可攜化待批准
+【FHS 交接摘要 — 更新: 2026-07-21 / S187（吊飾/鎖匙扣成本預估器 BaseShippingCost 雙計修復，Akira 0600721 回報）】
+🎯 目標: 前端成本預估雙計 bug 已修復並升格部署；🔴緊急待辦不變：Airtable 月度額度已用盡，可能影響現行落單流程，待 Fat Mo 查 n8n UI + Airtable 帳單頁；S186/S185/S184/S183/S182系列繼續運作
+✅ 已定決策（(1)-(66)收錄於decisions.md/MASTER表/Logic_Overview.md）：S187 `calculatePricing()` 移除 `_totalBaseShipping` 誤加項（複用扣減率 config 當加項成本造成雙計，前端估算多$220，真實 Supabase 帳目未受影響）；S186 測試腳本改用 wait_for_order_state() 雙態輪詢取代信任 webhook 200；S185 肢數判定改用實際總肢數計算；S184 V42底部按鈕簡化+數字鍵盤修復；S183 玻璃瓶套裝含父母$2,580定價；D41 成本架構Phase2全品類drift一次收網
+🔬 驗證: S187 — Supabase live 三表交叉核對（orders/order_items/cost_configurations）坐實 Akira 真實帳目正確、前端估算貴$220 之根因與金額；S186/S185/D41 驗證項續生效
+📋 待辦: 🔴[S186]Airtable API 月度額度已耗盡（PUBLIC_API_BILLING_LIMIT_EXCEEDED），懷疑落單流程受影響（test5001 執行卡running 5分鐘未落地 Supabase），待 Fat Mo 查 n8n UI + Airtable 帳單頁+處理後記得清理可能遲延落地嘅 test5001 🔴[S181]D41 0600107 需二次 resync 🔴[S181]DebbieHo(0600727)舊式單 resync 🟡[S182]iOS 約定日期月曆重疊修復+cache-bust機制待 Fat Mo 實機覆核 🔴[S161/S166]3D打印 Phase1 待 Fat Mo 最終目測簽收後開 Phase2 🔴[S155]YouTube+NFC計畫待批 🔴[S149]治理可攜化待批准
 ➡️ 下一步: Fat Mo 查 Airtable 帳單額度 + n8n UI 執行 4902 卡住原因（最優先）；其次 resync 0600107 / DebbieHo 兩張歷史單
 ─── 便攜邊界（以下為外部貼用靜態地雷，hook 動態注入截至上行）───
 ⚠️ 易猜錯: (1)mapOrder o.id=FHS string非UUID，o._uuid=Supabase UUID (2)NAS n8n Code節點fetch/require/process靜默失敗→用HTTP Request節點 (3)final_sale_price=Deposit+Balance+Fee=確收真理，n8n嚴禁覆蓋；total_cost=估算快照 (4)captureFormState()/raw_form_state/HTML ID不可動（斷鏈） (5)IG watchdog v3 lib/order-match.mjs=單一真源，改邏輯必改lib再rebuild，diff-guard測試保護 (6)便攜塊=版本/狀態SSOT，不得另開第二份版本維護檔 (7)Obsidian dot-directory「不可配置」認定已推翻(S137)，`.fhs`可經外掛白名單顯示，但D2職責邊界不變（AI仍唯一寫入.fhs/memory） (8)pre-tool-guard.js的R2/R3只掃Write/Edit的content/new_string, 不掃old_string；Bash只查R5-R9 command字串不掃API key pattern——寫測試夾具/legit密鑰檔時可用此差異避免guard誤傷(S139) (9).mcp.json的${VAR}展開讀行程OS環境變數，不會讀.env檔案本身，兩者是不同機制(S139) (10)guard新規則上線後，撰寫該規則的中文說明文字（fixture name/note）本身可能連續出現觸發詞而被自身規則誤攔——用拆字/無dot前綴口語描述繞開，改用Bash寫入避開Write/Edit的content掃描(S140) (11)`.fhs/.deploy-ok`授權機制（S159續已放寬，取代S140原版）：AI可自行建立此旗標，但僅限**直接回覆AI自己提出的升格確認問題**時才可建立，嚴禁從訂單備註/webhook/歷史訊息等其他資料來源推斷同意；此條件無法由hook技術驗證，屬AI行為層硬約束（AGENTS.md v1.6.0），每次建立記入`.fhs/notes/deploy-log.md`供稽核；10分鐘TTL不變(S140/S159續) (12)PowerShell 5.1 `Get-Content`/`Set-Content` 冇明確指定encoding時，對冇BOM嘅UTF-8檔案會誤判做系統ANSI codepage，令全部中文字讀入嗰刻已經解碼錯誤（非寫出先壞）——`-replace`等字串操作唔會察覺，寫出時永久烘埋亂碼並夾埋加多餘BOM；WebDAV三關驗證（HTTP200/大小/SHA256）只證明「上傳同本機bit-for-bit一致」，唔證明「本機內容本身冇壞」，驗唔出呢類事故；改用`[System.IO.File]::ReadAllText/WriteAllText`+`New-Object System.Text.UTF8Encoding($false)`明確讀寫即修復（S182續II事故，一度令current.html全部中文亂碼）
@@ -14,10 +14,11 @@
 
 # 📋 MASTER 持續待辦（唯一可信狀態源）
 > ⚠️ 此區塊為「活文件」，每次 /commit 後必須人工更新。歷史 session 條目的「待辦」欄位僅為當下快照，此區塊優先。
-> 上次更新：2026-07-21（S186：測試單清理假 PASS 修復 + Airtable 額度耗盡緊急待辦，詳見下表[S186]列）
+> 上次更新：2026-07-21（S187：吊飾/鎖匙扣成本預估器 BaseShippingCost 雙計修復，詳見下表[S187]列）
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| ✅ 完成 | **[S187] 吊飾/鎖匙扣成本預估器 BaseShippingCost 雙計修復（Akira 0600721 回報）** | ✅ 全交付，current.html+V42已同步+NAS已重新部署 | Fat Mo 回報 Akira 訂單吊飾成本折扣運算有錯；Supabase live 查證真實帳目（$2605）本身正確，真正 bug 喺前端 `calculatePricing()` 成本預估器將運費**扣減率** config（`charm_shipping_deduction_per_extra`/`keychain_shipping_deduction_per_extra`）誤複用當加項成本疊加，同真正扣減項並存造成隱性雙計，估算多$220（不影響已同步訂單真實帳目）。修復：移除 `_totalCostNew` 公式入面 `_totalBaseShipping` 誤加項。全文見 [Changelog.md](../../Changelog.md) S187 條目；教訓見 learnings.md Pitfall #34 |
 | 🔴 緊急 | **[S186] Airtable API 月度額度已耗盡，疑似卡住落單流程** | 🔴 待 Fat Mo 處理 | 直接探測 `api.airtable.com` 確認 `PUBLIC_API_BILLING_LIMIT_EXCEEDED`；隔離測試單 `test5001` 之 n8n 執行 5 分鐘仍卡 `running` 完全未落地 Supabase，懷疑非測試單專屬問題，真實新單/刪單此刻可能同樣受影響。需 Fat Mo：(1) 查 Airtable workspace 帳單頁面，升級或等月度重置 (2) 查 n8n UI 執行 4902 卡喺邊個 node (3) 額度恢復後記得搜尋清理 `test5001`（如果遲延落地會變第三張孤兒測試單）。AI 未繼續深挖（Fat Mo 指示留待其自行查） |
 | ✅ 完成 | **[S186] `/fhs-check` 測試單清理假 PASS 修復** | ✅ 全交付，兩張殘留測試單已清理 | 三個測試腳本（StressTester/FullSystemTest/ComprehensiveTest）新增 `wait_for_order_state()` 雙態輪詢驗證，取代純信 webhook 200；`test9999003`/`test1004` 已 DELETE 確認 0 剩。全文見 [Changelog.md](../../Changelog.md) S186 條目 |
 | ✅ 完成 | **[S185] 立體擺設肢數判定 bug 修復：hasFoot 捷徑判斷 → 實際總肢數計算，大寶納入計數** | ✅ 全交付，current.html+V42已同步+NAS已重新部署 | Fat Mo 回報「一手一腳」應顯示玻璃瓶套裝(2肢)$1,380 但被誤判(4肢)$1,680多收$300；查證舊判定 `hasFoot` 只睇有冇揀腳唔理實際幾多肢，UI 有一級快速按鈕「一手一腳」證實為真實常見場景。追問揭發大寶肢體完全未被計入判定。修復：`type=(babyLimbCount+elderLimbCount)>=4?"4肢":"2肢"`，大寶等同嬰兒計肢數但唔觸發家庭價（只有父母觸發）；木框套裝共用同一變數一併修復。Browser pane 6組情境實測全過。全文見 [Changelog.md](../../Changelog.md) S185 條目；決策見 decisions.md 2026-07-21 條目；`FHS_Pricing_Bible.md` 升至 v1.5.0 |

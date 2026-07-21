@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-07-21] Session 187（Claude Code / Sonnet 5 執行）— 吊飾/鎖匙扣成本預估器 BaseShippingCost 雙計修復（Akira 0600721 回報）
+
+- **緣起**：Fat Mo 回報訂單 Akira（0600721）吊飾成本折扣運算有錯，涉及帳單核對成本快照與重新/修訂單財務結算不一致。
+- **查證**：Supabase live 數據核實 `orders.necklace_cost=$1955`／`total_cost=$2605` 本身完全正確，同 D40（2026-07-17/18）審計定案公式 `465×4(物料)+2×100(頸鏈,ceil(4/2))−105(運費扣減,(4−1)×35)=1955` 一致，真實帳目冇被污染。真正 bug 喺 `calculatePricing()`（Dashboard 前端新單/重開編輯時嘅成本預估器）：`raw_form_state.__System_Total_Cost` 實測記錄 `$2615`（未計手模），比真實吊飾+鎖匙扣 `$2395` 貴 `$220`。
+- **根因**：`freehandsss_dashboardV42.html`／`Freehandsss_dashboard_current.html` 同一段（`calculatePricing()` 內 `_isM`/`_isK` 分支）將 `charm_shipping_deduction_per_extra`（$35，吊飾每件運費**扣減率**）同 `keychain_shipping_deduction_per_extra`（$20，鎖匙扣每件運費**扣減率**）錯誤複用寫入 `item.BaseShippingCost`，再累加做 `_totalBaseShipping` 加落 `_totalCostNew` 總成本——同時真正嘅 `_totalShippingDeduction`（`(件數−1)×單價`）又照計一次，變成「運費全額加咗、淨扣返 N−1 件」嘅隱性雙計（吊飾組多 $140、鎖匙扣組多 $80）。真實 n8n 公式從無 baseShipping 加項，只有扣減。
+- **附帶發現（非阻塞）**：帳單核對（Audit Ledger）品項明細每件會顯示「環扣/頸鏈」「運費」兩行，但底下「成本小計」冇包呢兩個訂單層合計數字，人手核對時容易睇錯以為計錯數，實為顯示排版問題，本次未動。
+- **修復**：兩檔同步移除 `_totalCostNew` 公式入面嘅 `+ _totalBaseShipping` 加項，只保留 `_totalShippingDeduction` 扣減，令前端預估同 n8n 真實公式一致。純前端「參考預算」估算修正，唔涉 Supabase/n8n 改動，已同步訂單（如 Akira）真實帳目不受影響。
+
+【交付前雙紀律自檢】
+驗收：財務前端估算類改動 — Supabase live 數據直接查證 Akira 訂單真實帳目（`orders`/`order_items`/`cost_configurations` 三表交叉核對）先坐實 bug 位置同金額（$220），非同一步驟循環自證
+Subagent：❌ 未使用 — 主對話（Sonnet 5）直接用 Supabase MCP 查 live 數據 + Grep/Read 對照前端源碼定位根因並修復
+教訓：已落 [[learnings.md]] Pitfall #34「每件扣減率 config 唔可複用做加項成本」
+
 ## [2026-07-21] Session 186（Claude Code / Sonnet 5 執行）— `/fhs-check` 測試單清理假 PASS 修復 + 發現 Airtable 額度耗盡疑似卡住落單流程
 
 - **緣起**：Fat Mo 回報 `/commit` 執行測試訂單後 Telegram 通知「已刪除」，但實際訂單總覽仍保留該測試單。
