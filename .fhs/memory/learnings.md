@@ -4,7 +4,7 @@
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-13（Session 171 `/commit` Lesson Distillation，退役 Pitfall #24 [hook路徑安全判斷，修復已結構化不再需記憶提醒]，對等替換1條新教訓（PostgREST ignore-duplicates 缺 on_conflict 冪等假象），維持50條上限；歷史：S170 51→50、S168 51→50、S167 51→50、S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
+> 上次整理：2026-07-21（Session 185 `/fhs-slim`，54→50超預算4條，全數退役無新教訓對等替換：Preference #11/#12（3D打印生產規格/v0降級裁決，與 auto-memory `project_3d_print_pipeline.md` 完全重複）、Pitfall #26（顏色bug量測手法，與 auto-memory `feedback_visual_bug_measure_not_guess.md` 完全重複）、Pitfall #25（[G]判準已結構化寫死於 `scripts/hooks/post-tool-kgov.js`，非需記憶提醒的操作紀律）；歷史：S171 對等替換、S170 51→50、S168 51→50、S167 51→50、S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -58,8 +58,6 @@
 20. **【git】checkout 會靜默攜帶未提交修改跨分支，merge 因而空操作**：編輯完檔案後忘記 commit 就 `git checkout main`，修改內容原封不動跟過去（不報錯不提示）；此時對原分支 `merge --no-ff` 只會輸出 `Already up to date`（無 diffstat）——這個異常平淡的訊息就是空合併的訊號，需 `git log <branch> --oneline` 核對該分支是否真有獨立 commit。切分支/宣告完工前先 commit，不要等到 merge 前才做 — Session 144
 22. **既有「不可配置」的平台限制認定需定期複驗**：S51 判定「Obsidian dot-directory 永遠不可見」為不可配置硬限制，S137 實測外掛 `hidden-folders-access` 白名單機制即可解除（含大檔 handoff.md/多檔 lessons/ 皆無效能問題），限制認定已推翻。過往結論標「不可配置」時應附查證日期，逾期重大決策前先花 10 分鐘 WebSearch 複驗，見 decisions.md D4 — Session 137
 23. **文件是否停更不能只看 frontmatter `last_updated`**：`docs/CHANGELOG.md` frontmatter 標 `last_updated: 2026-06-05`，但內文實際含 2026-07-01 的 S130 條目——metadata 比內容還舊，若只讀 frontmatter 會誤判停更時間點。判斷任一文件是否過時，須比對其**最新一條實際內文日期**，而非宣稱的 metadata 欄位 — Session 138
-25. **[G] 判準已於 S148 對齊 execute.md diff 物理特徵，.md 與 hooks.js 編輯只 warn 不落 flag**：舊版判準（任何 .md 含財務詞即落 flag）已替換為真值表驅動（migrations .sql / MCP apply_migration / Dashboard HTML 含財務 → flag；其他 → warn-only）；歷史誤觸模式見 governance/02 §7，治本見 planning/2026-07-06_s148-loop-hardening_implementation_plan.md §4.2 — Session 147/S148
-26. **【高頻 ⚠️】顏色 bug 純讀碼/grep 查不全，JS `style.color='inherit'` 非「還原」**：舊色號散落多分頁寫法不一致，grep 抓不齊；`inherit` 會抓外層色，應設 `''` 讓 class 接管。改用瀏覽器 DOM 掃描量測 computed color 找離群值 — S157(未修好)/S159(補完)
 27. **【高頻 ⚠️】Dashboard 巨檔多 `<script>` block，看似頂層 function 可能只是另一 IIFE 內的區域函式**：`_findOrder` 定義在獨立 `<script>(function(){...})()` （P3/P4 Bottom-Sheet 區塊）內，於較早 script block 呼叫得 `ReferenceError`，onchange handler 內被靜默吞掉、UI 無任何反應。新函式引用「看起來是全域」的 helper 前，grep 確認其宣告是否包在 IIFE 內；務必實機點擊驗證（confirm/console mock），不能只靠語法檢查 — Session 161續
 28. **`.fhs/.deploy-ok` 旗標內容必須是純 ISO timestamp 字串，寫描述文字會被靜默清空**：guard 用 `new Date(content)` 解析旗標檔，非合法時間格式 → `NaN` → 判定過期並自動刪除，下一步 cp 升格仍被攔截且無明確錯誤提示。建立旗標時只寫 `new Date().toISOString()` 輸出，不可夾帶說明文字 — Session 167
 30. **第三方 Claude Skill 若 frontmatter 含 `disable-model-invocation:true`，喺 Claude Code harness 內完全無法被呼叫**：唔止係「唔自動觸發」，AI 主動用 Skill 工具呼叫都會被系統拒絕。裝第三方技能包前應逐支查 frontmatter；若要設中文召喚詞疊加，改為直接呼叫其底層無此旗標嘅技能（如 `grill-me`→改叫 `grilling` 本體），使用者體驗不受影響 — Session 170 [[project_mattpocock_skills]]
@@ -79,6 +77,8 @@
 > 📌 **退役**（Session 168，`/commit` Lesson Distillation，全檔滿51條超50上限）：「n8n Code 節點內嵌 dashboard 網址禁憑印象寫死」（原 Pitfall #21，Session 136）——一次性歷史事故（硬編碼錯誤內網 URL），正確公開網址已永久記錄於 `decisions.md`，非需靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（RLS 政策移除稽核 grep 盲點 + anon 寫入靜默 2xx 失敗）。
 >
 > 📌 **退役**（Session 171，`/commit` Lesson Distillation，全檔滿51條超50上限）：「hook 判斷路徑是否安全不可靠 regex 猜測外部路徑」（原 Pitfall #24，Session 145）——修復已是結構性（改讀 `fhs-health-rules.json` 顯式設定值，非需靠記憶提醒的操作紀律），未來復發風險低，退役騰出額度給本次新教訓（PostgREST `ignore-duplicates` 缺 `on_conflict` 冪等假象）。
+>
+> 📌 **退役**（Session 185，`/fhs-slim`，全檔滿54條超50上限）：「[G] 判準已於S148對齊execute.md diff物理特徵」（原 Pitfall #25，Session 147/S148）——核實 `scripts/hooks/post-tool-kgov.js`（L8/139/191/201/214）證實此判準已結構化寫死於 hook 程式碼本身（真值表直接判斷，非文件約定），非需記憶提醒的操作紀律；「顏色bug純讀碼查不全」（原 Pitfall #26，S157/S159）——與 auto-memory `feedback_visual_bug_measure_not_guess.md` 完全重複且該處記錄更詳盡（含兩案例+4條How-to-apply），此處純占位。兩項退役無新教訓對等替換，純降額度。
 
 ---
 
@@ -90,8 +90,6 @@
 8. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01
 9. **文件權威＝被使用（路由）＋被保養（合約），非自我聲明**：一份文件自稱「必讀/核心真相」不會令 AI 真的讀它——若無任何 hook/CLAUDE.md 路由表/查詢路由指向它，且無任何 execute.md 後效稽核合約要求同步它，它會腐爛而無人發現（FHS_Blueprint.md 案例：13 處過時、含財務事故誤讀源頭寫法，腐爛一個月無 session 察覺）。新建「必讀文件」前必須同時掛路由+寫回合約，否則寧可不留（S158 Fat Mo 裁決：無合約支撐的內容應遷至有真讀者處，而非降級留存） — S158
 10. **視覺改動若會犧牲原有語意（如財務科目色彩區分）需先問，不要單方面統一簡化**：表頭對比度不足，修法是統一改白字，犧牲了入帳/成本/利潤原本紅綠琥珀的語意色彩區分；Fat Mo 檢視後不滿意，要求整段回退（含背景漸層也退回更早版本）。下次遇到「有取捨」的視覺修復，先列選項問，別直接套一個方案上去 — S159續
-11. **3D 打印鎖匙扣生產規格（腳固定/手讀檔名/環唯一擺位/指甲可創作）**：腳=30.5mm固定；手尺寸無公式必由Fat Mo標籤於輸入檔名讀取，AI禁自行推算；掛環=固定標準件`3d/input/Ring-24545.obj`，pipeline只做擺位禁自造禁縮放；指甲類細節「創作可接受非還原」（石膏實物本身都冇清晰指甲），用參數化模板 stamp — S161
-12. **3D 打印 v0 範圍降級：紋理留師傅、AI 只做機械部分**：Phase1腳全流程機械QC全PASS，但AI紋理誇張化(頻帶分離k=2.5)風格與師傅手工仍有差距（偏腫/線條不夠幼細）。Fat Mo裁決：v0實用範圍=師傅已修紋理mesh為輸入，AI只做縮放+刻字+加環+QC+出檔（MASTER模式），紋理功能日後再逐步加強，非放棄。Phase2（手）沿用同一降級範圍 — S166 2026-07-12
 13. **多代理管道應派缺 context 存取嘅模型做評審／red-team，唔好派佢做作者**：A1/A2 從零盲寫計劃反覆幻覺（假路徑/假角色/假 API），改做評審已有真實草案的角色後準確率大升——錯誤殺傷力亦由「作者錯要重寫」降為「評審錯唔採納就算」。日後設計任何多模型協作管道，先問邊個模型有 repo/現況存取，冇存取嘅只可以做評審唔可以做作者 — D39/S176 2026-07-16
 14. **反推歷史 SKU 定價都可能誤導，要查前端實際運行代碼先定案**：opus 對抗審查用家庭吊飾現價反推出「單一成人畫圖式」，同原定案 composite 假設矛盾，兩者都係「推論」非實測。最終查 Dashboard `calculatePricing()` 原始碼先揭盅 composite 先啱。日後遇到方程式爭議，live 數據反推只係次選，查前端/後端實際運行邏輯先係終極真相 — D41/S181 2026-07-18
 
@@ -108,3 +106,5 @@
 > 📌 **退役**（Session 154/S148，Phase 0 `/fhs-slim`，全檔滿51條超50上限）：「Toggle 按鈕用動作語義」（原 Preference #10，S126）——已是本專案 POS UI 的設計慣例，無需靠記憶提醒，窄場景低復發風險，退役騰出額度給 S148 Phase 2 改寫 Pitfall #26 的空間。
 >
 > 📌 **退役**（Session 166，`/fhs-slim` 觸發，全檔滿51條超50上限）：「橋接版禁止含邏輯」（原 Preference #3，S05-19）——該規則已升格為治理層成文規則，完整定義見 `.fhs/notes/SOP_NOW.md` §同步更新規則第2點，不再需要於此重複記錄（比照 Session 136 kgov 退役先例）。
+>
+> 📌 **退役**（Session 185，`/fhs-slim`，全檔滿54條超50上限）：「3D打印鎖匙扣生產規格」（原 Preference #11，S161）同「3D打印v0範圍降級」（原 Preference #12，S166）——兩項均與 auto-memory `project_3d_print_pipeline.md` 完全重複且該處記錄更完整（含 Fat Mo 原話+方案書連結），此處純占位，退役騰出額度（無新教訓對等替換，純降額度）。
