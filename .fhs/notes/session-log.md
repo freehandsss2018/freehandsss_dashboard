@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-21 (Session 186 — `/fhs-check` 測試單清理假 PASS 修復 + 發現 Airtable 額度耗盡疑似卡住落單流程): 🏷️ ✅🔴
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S186 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報測試單刪除 Telegram 通知咗但訂單總覽仍見到；查證係 n8n `onReceived` 異步架構下測試腳本淨信 webhook 200 嘅假 PASS 設計缺陷。已修復三個測試腳本加真實 Supabase 驗證，清理兩張殘留測試單。過程中意外發現 Airtable API 月度額度已耗盡，懷疑現正影響真實落單流程（🔴緊急，留待 Fat Mo 自行查 n8n UI + Airtable 帳單）。
+Subagent：❌ 未使用——全程主對話直接查 n8n workflow JSON + Supabase execute_sql + execution log + curl 探測完成。
+
 ## 2026-07-21 (Session 185 — 立體擺設肢數判定 bug 修復：hasFoot 捷徑判斷→實際總肢數計算，大寶納入計數): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S185 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報「一手一腳」誤判做4肢多收$300；修復判定式改用實際總肢數計算，大寶肢體納入計數但不觸發家庭價；同一修復自動涵蓋木框套裝。Browser pane 6組情境實測全過，current.html+V42已同步部署。

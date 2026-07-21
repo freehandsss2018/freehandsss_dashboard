@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-07-21] Session 186（Claude Code / Sonnet 5 執行）— `/fhs-check` 測試單清理假 PASS 修復 + 發現 Airtable 額度耗盡疑似卡住落單流程
+
+- **緣起**：Fat Mo 回報 `/commit` 執行測試訂單後 Telegram 通知「已刪除」，但實際訂單總覽仍保留該測試單。
+- **根因**：n8n 主 webhook（`Receive Dashboard Order`）用 `responseMode: onReceived`，HTTP 回應同實際處理完全脫鉤；三個測試腳本（`FHS_System_StressTester.py`/`FHS_Full_System_Test.py`/`FHS_Comprehensive_Test.py`）淨係信 webhook 200 就當清理成功，從未回頭查 Supabase 實際狀態。`run_all.py` 判 PASS/FAIL 又純睇 `returncode==0`，令呢個假綠燈長期未被 `/fhs-check` 揪出。實測揪出兩張今日殘留：`test9999003`（LIFECYCLE，`FHS_System_StressTester.py` create/delete 零等待直接race）、`test1004`（STRESS，同類 race）。查全庫確認冇歷史累積，只呢兩張。
+- **修復**：兩張殘留測試單已 `DELETE FROM orders`（`order_items` 經 `ON DELETE CASCADE` 自動清除，核實 0 剩）。三個測試腳本新增 `wait_for_order_state()` 雙態輪詢（先確認建立落地先確認刪除落地，避免「未建立」同「已刪除」淨睇 row 存在與否分唔到），Supabase 狀態未達預期時腳本真正 `SystemExit(1)`，令 `run_all.py` 正確回報 FAIL 而非假 PASS。
+- **插曲**：驗證邏輯首次實跑（TC-01/`test1001`）已證實正確攔截到真實問題（30s 內未確認刪除），但 print 語句用中文撞 Windows CP950 console 編碼崩潰——三個腳本嘅新增訊息已全部改回 ASCII/英文，對齊呢批既有腳本原本嘅純英文 print 慣例。
+- **⚠️ 附帶重大發現（本次未處理，Fat Mo 指示留待其自行查）**：驗證過程直接探測 Airtable API 確認**月度帳單額度已用盡**（`PUBLIC_API_BILLING_LIMIT_EXCEEDED`）；另手動發出一張全新獨立測試單 `test5001`，其 n8n 執行（ID `4901`→`4902` 系列）5 分鐘後仍卡喺 `running` 狀態且完全未落地 Supabase——懷疑現時整條落單流程（不限測試單）可能因 Airtable 額度耗盡而卡住/失敗，需 Fat Mo 直接查 n8n UI 執行細節同 Airtable 帳單頁面。`test5001` 若事後遲延落地會變成第三張孤兒測試單，需另行清理。
+
+【交付前雙紀律自檢】
+驗收：測試工具修復 + Supabase 資料清理 — 修復後嘅驗證邏輯已喺實跑中證實可正確攔截真實問題（非同一步驟循環自證）；Supabase DELETE 已用 RETURNING + 事後 count 查詢雙重核實 0 剩
+Subagent：❌ 未使用 — 主對話直接查 n8n workflow JSON 連線圖 + Supabase execute_sql + n8n execution log + curl 直接探測 Airtable API 完成全部診斷
+教訓：測試腳本靠 HTTP 200 判斷「動作已完成」在 `responseMode:onReceived` 架構下係假訊號，任何自動化測試若聲稱「已清理/已刪除」必須回頭查資料層實際狀態先算數，唔可以淨信 webhook 回應碼
+
 ## [2026-07-21] Session 185（Claude Code / Sonnet 5 執行）— 立體擺設肢數判定 bug 修復：hasFoot 捷徑判斷 → 實際總肢數計算，大寶納入計數
 
 - **緣起**：Fat Mo 回報介面「系統精算建議報價」對手模擺置（立體擺設）唔係全部劃一4肢：嬰兒一手一腳應顯示玻璃瓶套裝(2肢)$1,380、二手二腳應顯示(4肢)$1,680、嬰兒及父母應顯示(家庭)$2,580。
