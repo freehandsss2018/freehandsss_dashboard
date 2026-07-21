@@ -6914,13 +6914,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 擷取立體擺設
             if (hasMainProduct) {
                 let subCat = getValSafe("pSubCat", "");
-                let lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]');
-                let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
-                let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
-                let type = hasFoot ? "4肢" : "2肢";
                 let isGlassSub = !subCat.includes("木框");
+                let babyLimbSels = Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]'));
+                let babyLimbCount = babyLimbSels.filter(s => s.value !== "無").length;
+                let elderChecked = isGlassSub && document.getElementById("en_elder") && document.getElementById("en_elder").checked;
+                let elderLimbCount = elderChecked ? Array.from(document.querySelectorAll('.limb-sel[data-who="大寶"]')).filter(s => s.value !== "無").length : 0;
+                let type = (babyLimbCount + elderLimbCount) >= 4 ? "4肢" : "2肢";
                 let hasParentGlass = isGlassSub && document.getElementById("en_parent") && document.getElementById("en_parent").checked
-                    && Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                    && babyLimbSels.some(s => s.value !== "無");
                 let pName = subCat.includes("木框") ? `木框套裝 (${type})` : (hasParentGlass ? `玻璃瓶套裝 (家庭)` : `玻璃瓶套裝 (${type})`);
                 orderItemsArray.push({
                     "Order_Item_Key": "TEMP_P_MAIN",
@@ -8283,13 +8284,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             try {
                 if (hasMainProduct) {
                     let subCat = getValSafe("pSubCat", "");
-                    let lf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="左腳"]');
-                    let rf = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="右腳"]');
-                    let hasFoot = (lf && lf.value !== "無") || (rf && rf.value !== "無");
-                    let type = hasFoot ? "4肢" : "2肢";
                     let isGlassSub = !subCat.includes("木框");
+                    let babyLimbSels = Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]'));
+                    let babyLimbCount = babyLimbSels.filter(s => s.value !== "無").length;
+                    let elderChecked = isGlassSub && document.getElementById("en_elder") && document.getElementById("en_elder").checked;
+                    let elderLimbCount = elderChecked ? Array.from(document.querySelectorAll('.limb-sel[data-who="大寶"]')).filter(s => s.value !== "無").length : 0;
+                    let type = (babyLimbCount + elderLimbCount) >= 4 ? "4肢" : "2肢";
                     let hasParentGlass = isGlassSub && document.getElementById("en_parent") && document.getElementById("en_parent").checked
-                        && Array.from(document.querySelectorAll('.limb-sel[data-who="嬰兒"]')).some(s => s.value !== "無");
+                        && babyLimbSels.some(s => s.value !== "無");
                     let pName = subCat.includes("木框") ? `木框套裝 (${type})` : (hasParentGlass ? `玻璃瓶套裝 (家庭)` : `玻璃瓶套裝 (${type})`);
                     orderItemsArray.push({
                         "Order_Item_Key": `${currentOrderId}_P_MAIN`,

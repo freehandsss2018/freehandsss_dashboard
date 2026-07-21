@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-07-21 (Session 185 — 立體擺設肢數判定 bug 修復：hasFoot 捷徑判斷→實際總肢數計算，大寶納入計數): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S185 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報「一手一腳」誤判做4肢多收$300；修復判定式改用實際總肢數計算，大寶肢體納入計數但不觸發家庭價；同一修復自動涵蓋木框套裝。Browser pane 6組情境實測全過，current.html+V42已同步部署。
+Subagent：❌ 未使用——全程主對話直接查代碼 + grep 定位 UI 快速按鈕 + AskUserQuestion 三輪確認業務規則 + Browser pane javascript_tool 驗證。
+（附註：Session 184 未見對應 session-log 條目，該 session 由 Antigravity/Gemini 執行，詳情僅存於 Changelog.md S184 條目，本次未回填，留待 /fhs-slim 或下次盤點處理）
+
 ## 2026-07-19 (Session 183 — 立體擺設玻璃瓶套裝新增「含父母」家庭定價$2,580+防呆補強，worktree `unruffled-hypatia-a71507`): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S183 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 修正玻璃瓶套裝定價定義：純嬰兒2肢/4肢原價不變，新增「含父母」一律$2,580 flat（先例單0600107）；並指出防呆缺口（唔會有得父母冇嬰兒），AI補強獨立防呆區塊。首輪驗證 harness 有變數遮蔽 bug，已發現並用修正版重驗 7 組情境全過。`current.html` 升格經 Fat Mo 對話直接確認授權。

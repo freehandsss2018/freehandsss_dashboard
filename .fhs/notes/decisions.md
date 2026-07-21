@@ -3,6 +3,14 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-21] 立體擺設肢數判定 bug 修復：hasFoot 捷徑判斷 → 實際總肢數計算，大寶納入計數但不觸發家庭價
+
+決策：`buildOrderItemsForPricing()` 與儲存路徑同名判定區塊（`Freehandsss_dashboard_current.html`/`freehandsss_dashboardV42.html` 各 2 處）之「2肢/4肢」判定，由 `hasFoot = 嬰兒左腳或右腳其中一隻≠無`（只睇有冇揀腳）改為 `type = (babyLimbCount + elderLimbCount) >= 4 ? "4肢" : "2肢"`（實際數總共選咗幾多肢，4肢先算4肢，1–3肢一律2肢）。`elderLimbCount` 只喺 `en_elder` 已勾先計入，且大寶肢體同嬰兒肢體同等地位一齊計總數；`hasParentGlass`（家庭 $2,580 flat）判定不變，僅睇 `en_parent`，大寶本身不觸發家庭價。此修復同時套用木框套裝（共用同一 `type` 變數），木框無大寶/父母 UI，故 `elderLimbCount` 恆為 0。
+原因：Fat Mo 回報「嬰兒選一手一腳應顯示玻璃瓶套裝(2肢)$1,380、二手二腳應顯示(4肢)$1,680、嬰兒及父母應顯示(家庭)$2,580」，但實測發現「一手一腳」被誤判做「4肢」多收 $300——查證代碼發現舊判定只要「有揀任何一隻腳」就算 4肢，唔理實際揀咗幾多手，而 UI 本身有個一級快速按鈕 `babySetMode('left'/'right')` 專門設定「一手一腳」（左手+左腳或右手+右腳共 2 肢），代表呢個組合係常見真實場景非邊緣案例。追問揭發第二個缺口：玻璃瓶款式表單其實支援【大寶】對象（`en_elder` 開關 + 4 個 `.limb-sel[data-who="大寶"]`，見 castingHtml `sub === "玻璃瓶款式"` 分支），但肢數判定同家庭判定均只睇嬰兒，大寶肢體完全未被計入——Fat Mo 確認「大寶等同嬰兒，只要不涉及父母，用肢數 tier 邏輯計」。
+執行：4 處代碼改動（兩檔 × 兩個判定區塊）以 `babyLimbCount + elderLimbCount` 取代 `hasFoot`；`FHS_Pricing_Bible.md` §2.1 同步更新至 v1.5.0，記錄新判定式同舊 bug 根因。
+驗證：Browser pane 直接喺兩檔（V42 開發版 + current.html 生產版）execute JS 呼叫 `buildOrderItemsForPricing()`/`calculatePricing()` 驗證 6 組情境（嬰兒1手1腳/2手2腳、嬰兒+父母家庭、嬰兒2肢+大寶4肢冇父母／應4肢非家庭、只大寶2肢／應2肢、木框1手1腳/2手2腳），全數輸出正確品名同金額。
+`current.html` 升格：Fat Mo 於對話中直接回覆確認升格（授權途徑 (a)），AI 自建 `.fhs/.deploy-ok` 兩次（兩次獨立 Edit 各消費一次 flag，見 `deploy-log.md` 2026-07-21T10:53/11:02 兩筆 R1/R9 bypass 記錄）完成同步，事後 diff 確認兩檔改動完全一致。過程中一次意外：第一次嘗試同時編輯兩檔時，current.html 第二處 Edit 被 R1 guard 攔截（未及時建 flag），令 current.html 一度處於「只修咗一半」嘅不一致狀態，已即時用 `git checkout` revert 返 clean state，再重新走完整授權流程補做。
+
 [2026-07-19] 玻璃瓶套裝新增「含父母」家庭定價 $2,580
 
 決策：立體擺設（Category P）玻璃瓶套裝售價定義修正：(1) 明確定案「2肢/4肢」判定只講述**嬰兒**手腳（`hasFoot` 只查嬰兒左右腳，父母/大寶肢體不影響此判定），維持原價 $1,380（2肢）/ $1,680（4肢）不變；(2) 新增規則——只要訂單倒模對象包含**父母**（`hasAdultInSet`，即 `en_parent` 已勾），玻璃瓶套裝售價一律改為 **$2,580 flat**，不論嬰兒 2肢/4肢，且不再疊加 §2.2 既有嘅「成員混合模式附加費」（現時該附加費已為 $0，但為防未來改回非 0 時對玻璃瓶重複疊加，明確於代碼加 `!isGlassJar` guard 排除）。木框套裝定價不變（本次僅修玻璃瓶套裝定義）。

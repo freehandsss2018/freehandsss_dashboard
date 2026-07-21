@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-07-21] Session 185（Claude Code / Sonnet 5 執行）— 立體擺設肢數判定 bug 修復：hasFoot 捷徑判斷 → 實際總肢數計算，大寶納入計數
+
+- **緣起**：Fat Mo 回報介面「系統精算建議報價」對手模擺置（立體擺設）唔係全部劃一4肢：嬰兒一手一腳應顯示玻璃瓶套裝(2肢)$1,380、二手二腳應顯示(4肢)$1,680、嬰兒及父母應顯示(家庭)$2,580。
+- **查證**：`buildOrderItemsForPricing()` 與儲存路徑同名判定區塊（`current.html`/`freehandsss_dashboardV42.html` 各 2 處）之肢數判定 `hasFoot = 嬰兒左腳或右腳其中一隻≠無` 只睇「有冇揀腳」，唔理實際揀咗幾多手——UI 本身有個一級快速按鈕 `babySetMode('left'/'right')` 專門設「一手一腳」（2 肢），該場景會被誤判做 4肢 多收 $300。追問揭發第二缺口：玻璃瓶款式表單支援【大寶】對象（`en_elder` + 4 個獨立 `.limb-sel[data-who="大寶"]`），但肢數/家庭判定均只睇嬰兒，大寶肢體完全未計入。Fat Mo 確認「大寶等同嬰兒計肢數，但唔觸發家庭價（只有父母先觸發）」。
+- **修復**：判定式改為 `type = (babyLimbCount + elderLimbCount) >= 4 ? "4肢" : "2肢"`（實際數總共選咗幾多肢，4肢先算4肢，1–3肢一律2肢）；`elderLimbCount` 只喺 `en_elder` 已勾先計入；家庭 $2,580 flat 判定不變（僅睇 `en_parent`）。此修復同時套用木框套裝（共用同一 `type` 變數，木框無大寶/父母 UI 故 `elderLimbCount` 恆為 0）。
+- **驗證**：Browser pane 直接喺兩檔 execute JS 呼叫 `buildOrderItemsForPricing()`/`calculatePricing()` 驗證 6 組情境（嬰兒1手1腳→2肢$1,380、2手2腳→4肢$1,680、嬰兒+父母→家庭$2,580、嬰兒2肢+大寶4肢冇父母→4肢非家庭、只大寶2肢→2肢、木框1手1腳/2手2腳→對應2080/2380），全數輸出正確品名同金額。
+- **插曲**：首次同時編輯兩檔時，`current.html` 第二處 Edit 因 R1 guard 未及時建 `.deploy-ok` 被攔截，令該檔一度處於「只修一半」不一致狀態，已即時 `git checkout --` revert 乾淨後重新走完整授權流程（Fat Mo 對話直接確認升格）補做，事後 diff 確認兩檔改動完全一致。
+- **文件同步**：`FHS_Pricing_Bible.md` 升至 v1.5.0（§2.1 新判定式 + 舊 bug 根因記錄）。
+
+【交付前雙紀律自檢】
+驗收：財務定價類改動（前端 suggested-price，非成本/RPC）— 已用 Browser pane 直接喺兩檔實測 6 組情境（非同一步驟循環自證），非自驗
+Subagent：❌ 未使用 — 主對話（Sonnet 5）直接查代碼 + grep 定位 UI 快速按鈕證實「一手一腳」為真實場景 + AskUserQuestion 三輪確認大寶處理規則 + Browser pane javascript_tool 驗證
+教訓：肢數/tier 類判定邏輯，凡涉及「有冇某部位」嘅捷徑判斷（`hasFoot`/`hasX`），要留意是否同時隱含「總數」語意——捷徑喺最常見組合（全選或全不選）啱啱好，但一撞到部分選取（UI 若有對應嘅一級快速按鈕，代表呢個部分選取係真實常見場景）就會出錯
+
 ## [2026-07-21] Session 184（Antigravity / Gemini 3.5 Flash 執行）— V42 介面底部按鈕溢位簡化 + 財務金額框數字鍵盤與洗 0 行為修復
 
 - **緣起**：Fat Mo 回報 V42 介面 3 項 BUG：修改介面底部按鈕走位與溢位（「← 返回總覽」截切成「← 返回總」）、按鈕名稱過長，以及手機模式下點擊財務金額框未能彈出數字鍵盤。
