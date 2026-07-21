@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-07-21] Session 187續II（Claude Code / Sonnet 5 執行）— 新/修訂單「財務結算」卡收埋成本拆解運算，只留建議報價
+
+- **緣起**：Fat Mo 裁決：新/修訂單嘅「財務結算」卡純作報價用途，成本/利潤運算已由「核對訂單」（Audit Ledger）功能負責，兩者顯示重複且逐行成本log（頸鏈成本/運費扣減等）容易被誤讀（即 S187/S187續兩個修復嘅根源），決定整個成本拆解區塊收埋。
+- **執行**：`freehandsss_dashboardV42.html`／`Freehandsss_dashboard_current.html` 同步——`#pricingEngineUI` 卡入面「畫圖成本」徽章（`#drawingCost`，原 `fat-only` class）同逐行成本拆解log（`#pricingLogicDetails`）改 `display:none`，只保留「系統精算建議報價」標題行（`#suggestedPrice`+`#priceBreakdown`）。純顯示層改動，`calculatePricing()` 運算邏輯本身、underlying DOM 元素 id 完全不變（JS 仍寫入呢兩個隱藏元素，不影響 `captureFormState()`/webhook payload）。
+- **驗證**：本機起 `http.server` 用真實 Supabase 資料載入新增訂單表單，`javascript_tool` 直接查 `#drawingCost`/`#pricingLogicDetails` computed style 確認 `display:none`，`#suggestedPrice` 保持 `display:block`。
+
+【交付前雙紀律自檢】
+驗收：純前端顯示層改動（隱藏既有元素，零計算邏輯改動）— 本機起伺服器用真實資料實測 computed style 確認隱藏生效，非同一步驟循環自證
+Subagent：❌ 未使用 — 主對話直接 Edit HTML + Browser pane javascript_tool 驗證
+教訓：（無新教訓，純 UI 範圍裁決執行）
+
 ## [2026-07-21] Session 187續（Claude Code / Sonnet 5 執行）— Audit Ledger「吊飾成本(-$95)」誤導 badge 修復（同一單 Fat Mo 追報）
 
 - **緣起**：S187 主段修復前端估算器雙計後，Fat Mo 截圖回報訂單總覽「財務」帳單核對面板本身仍顯示「吊飾成本 (-$95)」，睇落不合理。

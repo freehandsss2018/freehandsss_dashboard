@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-21T14:35:18Z">
+    <meta name="fhs-build" content="2026-07-21T15:48:02Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -4698,11 +4698,12 @@
         <div id="pricingEngineUI" style="margin-bottom: 20px; padding: 15px; background: rgba(82, 183, 136, 0.1); border: 2px dashed #52B788; border-radius: 12px; transition: all 0.3s ease;">
             <div style="font-size: 18px; font-weight: bold; color: #2D6A4F; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
                 <span style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="color: #d97706; margin-right: 4px;"><use href="#icon-lightbulb"/></svg>系統精算建議報價：$<span id="suggestedPrice">0</span><span id="priceBreakdown" style="font-size:13px; font-weight:normal; color:#457B9D; margin-left:5px;"></span></span>
-                <span style="font-size: 12px; font-weight: normal; color: #666; background: white; padding: 2px 8px; border-radius: 12px; border: 1px solid #ddd;" class="fat-only">畫圖成本: $<span id="drawingCost">0</span></span>
+                <!-- 2026-07-21 Fat Mo 裁決：新/修訂單財務結算純作報價用途，成本/利潤運算已有「核對訂單」功能負責，畫圖成本徽章與成本拆解log一併收埋 -->
+                <span id="drawingCost" style="display:none;">0</span>
             </div>
             <!-- Scenario O: Adult Wood Force Hint -->
             <div id="adultWoodForceHint" style="display:none; font-size:11px; color:#D32F2F; margin-bottom:5px; font-weight:bold;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-shield-alert"/></svg>成人+木框：系統已強制鎖定為 P (照片建模) 模式</div>
-            <div style="font-size: 12px; color: #555; line-height: 1.6; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
+            <div style="display:none;" id="pricingLogicDetails">請選擇對象、產品與數量以計算報價。</div>
         </div>
 
         <div class="form-group">
