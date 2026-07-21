@@ -3,6 +3,13 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-22] (Session 187, D42) 吊飾頸鏈成本：前端估算雙計 + Audit Ledger badge 誤導修復 + n8n 記帳格式對齊鎖匙扣模式
+
+決策：Fat Mo 核對 Akira（0600721）帳單揪出三層問題，逐一定案：(1) 前端 `calculatePricing()` 成本預估器將運費**扣減率** config 誤複用做**成本**疊加（`_totalBaseShipping`），造成新/修訂單成本預估器雙計，貴 $220，已移除該加項；(2) 核對帳單「成本快照鏈」畫面 `_dedBadge(keyword)` 用 desc 子字串比對將吊飾嘅 +$200（頸鏈加項）同 -$105（運費扣減）兩張筆記夾埋顯示做誤導性「(-$95)」，已拆做 `_dedBadge`/`_addBadge` 按正負值分流；(3) Fat Mo 裁決吊飾頸鏈成本記帳格式應比照鎖匙扣環扣模式對齊——由「訂單層單一 +$200 加項」改為「品項層對稱 $100/件 + 訂單層共用折扣 -$200」，數學等價（`100×N−floor(N/2)×100=ceil(N/2)×100`），總成本 $2,605 不變。
+執行：(1)(2) 純前端顯示層改動，`freehandsss_dashboardV42.html`/`Freehandsss_dashboard_current.html` 同步，已部署 NAS 三關驗證 PASS。(3) n8n `FHS_Core_OrderProcessor` 節點 `Calculate Profit & Pack Items`（V47.19→V47.20）：per-item loop 吊飾類別新增 `itemChainCost=100×qty` 對稱摺入自身成本並覆寫 `Chain_Cost` 為 n8n 權威值（非吊飾類別不受影響）；訂單層 `charmChainSharingDiscount=floor(charmItemCount/2)×100` 取代舊式加項；`n8n_adjustment_notes` 新增 `necklace_chain_sharing_discount`（負數）取代 `necklace_chain_cost`（正數）。經 Plan Mode 完整方程式驗證（N=1..5 逐一核對恆等）+ Node harness 用 Akira 真實情境重算完全吻合（totalBaseCost=2605/necklaceCostTotal=1955/keychainCostTotal=440/handmodelCostTotal=210）+ n8n `update_node_code` dry-run 通過，待 Fat Mo `/execute` 確認後正式部署。
+範圍：只影響新落單／未來人手 resync；現存 8 張含吊飾歷史訂單（16 行品項）不強制 backfill，維持舊格式，Fat Mo 明確裁決。
+教訓：同一成本分量喺前端估算層／顯示邏輯層／後端權威計算層三處各自表達方式唔一致，單獨睇每層都「啱」，夾埋對照先暴露矛盾——查「畫面睇落唔對數」類 bug 須逐層追到底，唔可以修完一層就當收工。詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.5、`Changelog.md` S187 系列條目。
+
 [2026-07-21] 立體擺設肢數判定 bug 修復：hasFoot 捷徑判斷 → 實際總肢數計算，大寶納入計數但不觸發家庭價
 
 決策：`buildOrderItemsForPricing()` 與儲存路徑同名判定區塊（`Freehandsss_dashboard_current.html`/`freehandsss_dashboardV42.html` 各 2 處）之「2肢/4肢」判定，由 `hasFoot = 嬰兒左腳或右腳其中一隻≠無`（只睇有冇揀腳）改為 `type = (babyLimbCount + elderLimbCount) >= 4 ? "4肢" : "2肢"`（實際數總共選咗幾多肢，4肢先算4肢，1–3肢一律2肢）。`elderLimbCount` 只喺 `en_elder` 已勾先計入，且大寶肢體同嬰兒肢體同等地位一齊計總數；`hasParentGlass`（家庭 $2,580 flat）判定不變，僅睇 `en_parent`，大寶本身不觸發家庭價。此修復同時套用木框套裝（共用同一 `type` 變數），木框無大寶/父母 UI，故 `elderLimbCount` 恆為 0。

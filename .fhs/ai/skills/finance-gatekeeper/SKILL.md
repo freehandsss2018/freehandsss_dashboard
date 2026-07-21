@@ -1,10 +1,10 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.5.0
+version: 1.5.1
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-07-18
+last_updated: 2026-07-22
 compatible_with: AGENTS.md v1.4.13
 ---
 
@@ -34,7 +34,7 @@ compatible_with: AGENTS.md v1.4.13
 | Live 訂單成本/利潤驗證 | 啟動 `finance-auditor` subagent |
 | Supabase schema / SKU 成本資料 | 啟動 `database-reviewer` subagent |
 | `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`——**2026-07-18 Phase 2 起已覆蓋全品類**（嬰兒/成人/家庭鎖匙扣不銹鋼+鋁合金、吊飾全 tier、立體擺設、配件、佔位 row 監測），見 `FHS_System_Logic_Overview.md` §5.4.3。禁止假設「改設定中心=products 自動同步」|
-| 吊飾成本計錯 / 頸鏈成本 / `necklace_chain_cost` | `FHS_System_Logic_Overview.md` §5.4.2（D40，migration 0046 + n8n V47.19，雙數簿漂移修復先例）|
+| 吊飾成本計錯 / 頸鏈成本 / `necklace_chain_cost` | `FHS_System_Logic_Overview.md` §5.4.2（D40，migration 0046 + n8n V47.19，雙數簿漂移修復先例）+ §5.4.5（D42，2026-07-22，V47.19→V47.20 記帳格式對齊鎖匙扣環扣模式，部署狀態見§三B） |
 | 家庭套裝（鎖匙扣/吊飾）畫圖成本計錯 / composite 畫圖式 | `FHS_System_Logic_Overview.md` §5.4.3（D41，migrations 0058/0059）：家庭套裝畫圖成本 = **成人份 + 每個嬰兒肢各計一次**，非單一成人式；Dashboard 前端 `calculatePricing()` isFamily 分支為真源 |
 
 ---
@@ -80,7 +80,7 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 **現行已定案方程式（live 驗證，2026-07-18，Phase 2 已擴充覆蓋全品類）**：
 - 嬰兒鎖匙扣（不銹鋼/鋁合金）：加購 = (material+clasp$10)×N；單購 = tier_drawing{嬰兒60/嬰兒(P)110} + 同上。運費不入 SKU（訂單層扣減 (N−1)×$20）。
 - 成人/家庭鎖匙扣（不銹鋼/鋁合金，material 已同價 $125）：加購 = (material+clasp$10)×N；單購 = **composite_drawing** + 同上。composite_drawing＝成人份+每個嬰兒肢各計一次：成人(P)=240、家庭(S1)=170、家庭(S2)=230、家庭(P1)=350、家庭(P2)=460。
-- 吊飾（嬰兒/成人）：加購 = material($465)×N；單購 = tier_drawing{60/110/240} + material×N。頸鏈不入 SKU（n8n 訂單層 `ceil(總件數/2)×$100`，V47.19）；運費同上不入 SKU（扣減 (N−1)×$35）。
+- 吊飾（嬰兒/成人）：加購 = material($465)×N；單購 = tier_drawing{60/110/240} + material×N。運費不入 SKU（扣減 (N−1)×$35）。**頸鏈成本**：V47.19（現行 live）＝訂單層單一加項 `ceil(總件數/2)×$100`；**V47.20（2026-07-22 D42，已通過dry-run，待 Fat Mo `/execute` 確認部署）**＝改為品項層對稱摺入每件 $100（連 `order_items.chain_cost`/`subtotal_cost` 都會反映），訂單層改用共用折扣 `floor(N/2)×$100` 扣減，數學同 V47.19 等價（`100N−floor(N/2)×100=ceil(N/2)×100`），總數不變，純記帳格式對齊鎖匙扣環扣模式。**部署後**：查 order_items.chain_cost 若吊飾每件對稱 $100 即代表已升級 V47.20；仍係 100/100/0/0 唔對稱代表未部署，適用 V47.19 判斷（訂單層 `n8n_adjustment_notes` type=`necklace_chain_cost` 正數 vs `necklace_chain_sharing_discount` 負數，可用嚟分辨新舊格式）。見 `FHS_System_Logic_Overview.md` §5.4.5、decisions.md D42。
 - 家庭吊飾（單購）：composite_drawing（同鎖匙扣，D41 修正原單一成人式錯誤）+ material×N；加購 = material×N（無畫圖，不變）。
 - 立體擺設：$210 flat（2肢/4肢同價，migration 0030）。
 - 配件（羊毛氈/燈飾加購）：$30 flat。
