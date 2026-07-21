@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-07-21] Session 187續III（Claude Code / Sonnet 5 執行）— 修正上一版本過度收埋：改為只除成本行，建議售價明細原樣保留
+
+- **緣起**：Fat Mo 指出 S187續II 做過頭——連細項嘅「建議售價明細」（吊飾4個/2條頸鏈$5,960、鎖匙扣各件$860 等報價拆解）都一併隱藏咗，但要求只係刪成本部份。
+- **修正**：撤回 `#pricingLogicDetails` 整個 div 嘅 `display:none`，改為喺 `calculatePricing()` 源頭精準移除 3 處成本專屬 `logs.push()`（「頸鏈成本 ×N條」header+明細、「鎖匙扣多件運費優惠 -$X」、「吊飾多件運費優惠 -$X」、footer「成本估算已含打印/環扣/運費」提示），底層 `_totalNecklaceChainCost`/`_totalShippingDeduction` 計算數值完全不變，只係唔再 push 落顯示log。畫圖成本徽章（`#drawingCost`）維持隱藏（呢個本身就係成本數字，S187續II 判斷正確冇改）。
+- **驗證**：本機 `http.server` 載入 Akira（0600721）真實資料，`fetchOldOrder()` 觸發後直接查 `#pricingLogicDetails.innerText`，確認只剩「手模擺設 $2,380 / 鎖匙扣各件 $860 / 吊飾4個2條頸鏈$5,960」報價行，「頸鏈成本」「運費優惠」「成本估算」字眼全部消失，`#suggestedPrice=11780` 不變。
+
+【交付前雙紀律自檢】
+驗收：純前端顯示層改動（僅移除 3 個 logs.push 呼叫，零運算邏輯改動）— 本機起伺服器用真實訂單資料觸發 `fetchOldOrder()`+`calculatePricing()` 實測 innerText 內容確認，非同一步驟循環自證
+Subagent：❌ 未使用 — 主對話直接 Edit HTML + Browser pane javascript_tool 驗證
+教訓：「收埋成本」類 UI 指令唔可以用「隱藏整個容器」嘅捷徑，容器入面可能夾雜價格同成本兩種語意嘅內容（同 S187 keyword 撞正嘅教訓同源），要落到內容產生源頭逐行分類先安全
+
 ## [2026-07-21] Session 187續II（Claude Code / Sonnet 5 執行）— 新/修訂單「財務結算」卡收埋成本拆解運算，只留建議報價
 
 - **緣起**：Fat Mo 裁決：新/修訂單嘅「財務結算」卡純作報價用途，成本/利潤運算已由「核對訂單」（Audit Ledger）功能負責，兩者顯示重複且逐行成本log（頸鏈成本/運費扣減等）容易被誤讀（即 S187/S187續兩個修復嘅根源），決定整個成本拆解區塊收埋。
