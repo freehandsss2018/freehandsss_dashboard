@@ -61,4 +61,30 @@ if command -v node >/dev/null 2>&1; then
   timeout 5 node "$PROJECT_DIR/scripts/hooks/fhs-health-check.js" 2>/dev/null || true
 fi
 
+# T-並行 session 偵測（S183 D41撞單事故後新增，2026-07-21，見 02_model-dispatch.md §7）
+# 根因：多條 worktree 並行時，本地 handoff/todo 只反映開工當刻快照，其他 session 完成的工作
+# 直到 merge 才會被看見——曾導致 AI 用過時本地狀態答「未做」，實際 main 已由並行 session 做完。
+# fail-open：任何步驟失敗都不得擋 session 啟動；git 網路操作加 timeout 防卡死。
+if command -v git >/dev/null 2>&1 && [ -d "$PROJECT_DIR/.git" -o -f "$PROJECT_DIR/.git" ]; then
+  timeout 8 git -C "$PROJECT_DIR" fetch origin main --quiet 2>/dev/null || true
+  AHEAD_COUNT=$(git -C "$PROJECT_DIR" rev-list --count HEAD..origin/main 2>/dev/null || echo "")
+  if [ -n "$AHEAD_COUNT" ] && [ "$AHEAD_COUNT" -gt 0 ] 2>/dev/null; then
+    echo ""
+    echo "🔴 main 領先本分支 $AHEAD_COUNT 個 commit——你嘅視野可能過時，其他並行 session 已做咗嘢："
+    git -C "$PROJECT_DIR" log HEAD..origin/main --oneline 2>/dev/null | head -10
+    echo "   → 答「做咗未／進度點／有冇人跟進緊」呢類問題前，先用上面清單核對，唔好單靠本地 handoff/todo 記憶"
+  fi
+
+  CURRENT_BRANCH=$(git -C "$PROJECT_DIR" branch --show-current 2>/dev/null)
+  OTHER_ACTIVE=$(git -C "$PROJECT_DIR" for-each-ref --sort=-committerdate refs/remotes/origin/claude/ \
+    --format='%(refname:short)|%(committerdate:relative)|%(subject)' 2>/dev/null \
+    | grep -v "^origin/${CURRENT_BRANCH}|" \
+    | awk -F'|' '$2 ~ /second|minute|hour|^1 day |^2 days /' | head -5)
+  if [ -n "$OTHER_ACTIVE" ]; then
+    echo ""
+    echo "🔀 近48小時有動靜嘅其他並行分支（可能同你撞工，落手前留意）："
+    echo "$OTHER_ACTIVE" | awk -F'|' '{printf "   • %s（%s）：%s\n", $1, $2, $3}'
+  fi
+fi
+
 exit 0

@@ -1,6 +1,6 @@
 # 02 — 模型調度守則（Model Dispatch Doctrine）
 
-> **Version**: v1.0.5（2026-07-21，Session 183 續；§7 追加並行 worktree 視野盲區教訓一條，純追加不改舊條；同步 session-start-sop.sh 新增機制層防護）
+> **Version**: v1.0.4（2026-07-13，Session 171；§7 追加 CRLF frontmatter 解析教訓一條，純追加不改舊條）
 > **讀者**：主對話模型（任何等級）。每逢「大量讀取 / 掃 repo / 查網頁 / 批次改檔 / 選模型」先讀本檔。
 > **依據**：[[01_diagnosis]] token 洩漏 #2/#3。
 > **與 AGENTS.md 關係**：本檔管「怎麼派工」；業務硬規則（財務/HTML ID/raw_form_state）仍以 AGENTS.md 為準。
@@ -138,5 +138,4 @@
 - 【情境】修改 `pre-tool-guard.js`/`post-tool-kgov.js` 本身（如新增財務關鍵字 regex pattern）後，`post-tool-kgov.js` 的 [G] flag 被自己剛加的內容觸發——`SAFE_PATH_PATTERNS` 排除了 `.fhs/memory/`、`CHANGELOG.md`、`decisions.md`，但沒排除 `scripts/hooks/*.js`，而這些檔案的合法用途正是包含 `cost_configurations`/`final_sale_price` 等字面 pattern 作為偵測依據。【修正】此為預期中的自我觸發，非真財務邏輯變動：先核查 `git diff --name-only` 確認未觸及 `calculatePricing`/migrations/Dashboard HTML/`cost_configurations` 實際資料，核實後可安全刪 `.fhs/.kgov-pending` 並在交付摘要註明「G 觸發：核實為 guard/kgov 自身規則檔案的預期自我觸發，非財務邏輯變動，已刪除 flag」。不建議把 `scripts/hooks/` 加入 SAFE_PATH_PATTERNS——那樣會製造真正的盲區（若未來有人真的在 hook 檔案裡動真財務邏輯就偵測不到）。【日期】2026-07-04
   > 📌 已治本（S148 判準對齊，2026-07-08）：`post-tool-kgov.js` v2.0.0 起，.js 檔案編輯含財務詞只觸發 warn，不再落 flag——此類誤觸已結構性消滅，本條保留為歷史記錄，見 planning/2026-07-06_s148-loop-hardening_implementation_plan.md §4.2。
 - 【情境】S171 團隊名冊生成器用 `indexOf('\n---')` 切 CRLF 檔嘅 frontmatter block，末行殘留 `\r`，而 JS regex 嘅 `.` 唔匹配 `\r`（`\r` 屬 line terminator），`(.*)$` 靜默 fail——**最後一個 frontmatter key 消失**（grilling 嘅 description 啱好排最後）；且逐步裁切 debug 時因 bash 轉義污染出假結果，誤診咗兩輪（先疑 BOM、再疑隱藏字元）。【修正】任何行錨點/frontmatter 解析必須逐行 `replace(/\r+$/,'')`（BOM 防禦同上 2026-07-04 條）；debug regex 一律寫入獨立 .js 檔跑，唔好經 bash -e 內嵌（雙層轉義會製造假 NOMATCH）。【日期】2026-07-13
-- 【情境】【重要】S181 D40/D41 期間，多條 worktree 並行改成本邏輯，主對話單靠本地 handoff.md/todo.md 記憶答 Fat Mo「Phase 2 未做」，實情係另一 worktree（D41）已完成並 merge 落 main，只係本地未 fetch 睇唔到——連續兩輪答錯先由 Fat Mo 反問揭發，屬第 4 次同型「並行視野盲區」事故（此前 3 次：S179 部署互相覆蓋、handoff drift、S181 Changelog/session-log merge 衝突），達 05 §7 熔斷條款門檻。【修正】治本兩層：(a) 機制層——`session-start-sop.sh` 新增並行偵測區塊：開場自動 `fetch origin/main` 比對落後 commit 數並列出標題、掃近48h有動靜嘅其他 `claude/*` 分支，兩者皆列印警示，唔靠 AI 記得主動查；(b) 行為規則——答任何「做咗未／進度點／有冇人跟進緊」類狀態問題前，強制先睇 hook 輸出或手動 `git fetch`＋查 live 數據源（DB/API），禁止純用本地文件或對話記憶推斷現況，本規則同 finance-gatekeeper §三B「live數據唯一真相」原則同源，適用範圍擴至一切狀態查詢非僅財務。【日期】2026-07-21
 
