@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-21T04:25:07Z">
+    <meta name="fhs-build" content="2026-07-21T04:29:06Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -4729,16 +4729,16 @@
                 <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelP" style="background:#FFF3E0;color:#E65100;">① 手模擺設 + 配件<span id="fhsPaySimp_formula_P" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="deposit" placeholder="0"
-                        onfocus="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="deposit" readonly placeholder="0"
+                        onpointerdown="_fhsSimpClickToEdit(this)"
                         onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="balance" placeholder="0"
-                        onfocus="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="balance" readonly placeholder="0"
+                        onpointerdown="_fhsSimpClickToEdit(this)"
                         onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
@@ -4750,16 +4750,16 @@
                 <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelK" style="background:#E3F2FD;color:#1565C0;">② 鎖匙扣<span id="fhsPaySimp_formula_K" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="deposit" placeholder="0"
-                        onfocus="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="deposit" readonly placeholder="0"
+                        onpointerdown="_fhsSimpClickToEdit(this)"
                         onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="balance" placeholder="0"
-                        onfocus="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="balance" readonly placeholder="0"
+                        onpointerdown="_fhsSimpClickToEdit(this)"
                         onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
@@ -4771,16 +4771,16 @@
                 <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelM" style="background:#EDE7F6;color:#4527A0;">③ 頸鏈吊飾<span id="fhsPaySimp_formula_M" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="deposit" placeholder="0"
-                        onfocus="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="deposit" readonly placeholder="0"
+                        onpointerdown="_fhsSimpClickToEdit(this)"
                         onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="balance" placeholder="0"
-                        onfocus="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="balance" readonly placeholder="0"
+                        onpointerdown="_fhsSimpClickToEdit(this)"
                         onclick="_fhsSimpClickToEdit(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
@@ -12837,31 +12837,32 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window._fhsSimpEditToggle = _fhsSimpEditToggle;
 
-        // Click/Focus-to-edit handler (replaces ✏️ button flow)
+        // Click/Touch-to-edit handler (replaces ✏️ button flow)
         function _fhsSimpClickToEdit(inp) {
             if (inp.disabled) return;
-            if (inp.dataset.isEditing === "1") return; // already in active edit session
+            if (!inp.readOnly) return; // already in active edit session
             _fhsSimpCancelAlloc();
-            inp.dataset.isEditing = "1";
-            inp.style.background = '';
             inp.dataset.preFocusVal = inp.value;
             inp.value = ''; // 自動洗0，方便操作者直接輸入數字
+            inp.readOnly = false;
+            inp.style.background = '';
+            inp.focus();
         }
         window._fhsSimpClickToEdit = _fhsSimpClickToEdit;
 
         // Called on blur; show confirm bar if value changed
         function _fhsSimpInputBlur(inp) {
-            if (inp.dataset.isEditing !== "1") return;
+            if (inp.readOnly) return;
             // Small delay so confirm button click fires before blur closes
             setTimeout(function() {
-                if (inp.dataset.isEditing !== "1") return; // already cancelled
+                if (inp.readOnly) return; // already cancelled
                 _fhsSimpInputCommit(inp);
             }, 120);
         }
         window._fhsSimpInputBlur = _fhsSimpInputBlur;
 
         function _fhsSimpInputCommit(inp) {
-            if (inp.dataset.isEditing !== "1") return;
+            if (inp.readOnly) return;
             var cat = inp.dataset.simpcat;
             var field = inp.dataset.simpfield;
             var total = Math.round(Number(inp.value)) || 0;
@@ -12869,7 +12870,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (total === 0) {
                 var pfv = inp.dataset.preFocusVal;
                 inp.value = (pfv !== undefined && pfv !== '') ? pfv : '';
-                delete inp.dataset.isEditing;
+                inp.readOnly = true;
                 inp.style.background = '';
                 var eb = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
                 if (eb) { eb.textContent = '✏️'; eb.style.background = ''; eb.style.color = ''; eb.style.borderColor = ''; }
@@ -12898,7 +12899,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (!p) return;
             _fhsAllocateSimplified(p.field, p.cat, p.total);
             if (p.inp) {
-                delete p.inp.dataset.isEditing;
+                p.inp.readOnly = true;
                 p.inp.style.background = '';
                 var agg = _fhsAggregateByCat(p.field);
                 p.inp.value = agg[p.cat] || '';
@@ -12914,7 +12915,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function _fhsSimpCancelAlloc() {
             var p = window._fhsPaySimpPending;
             if (p && p.inp) {
-                delete p.inp.dataset.isEditing;
+                p.inp.readOnly = true;
                 p.inp.style.background = '';
                 var agg = _fhsAggregateByCat(p.field);
                 p.inp.value = agg[p.cat] || '';
@@ -12924,9 +12925,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window._fhsPaySimpPending = null;
             var bar = document.getElementById('fhsPaySimp_confirmBar');
             if (bar) bar.style.display = 'none';
-            // Reset editing flag on all inputs
-            document.querySelectorAll('.fhsPaySimp_input').forEach(function(inp) {
-                delete inp.dataset.isEditing; inp.style.background = '';
+            document.querySelectorAll('.fhsPaySimp_input:not([readonly])').forEach(function(inp) {
+                inp.readOnly = true; inp.style.background = '';
             });
             document.querySelectorAll('.fhsPaySimp_editBtn').forEach(function(b) {
                 b.textContent = '✏️'; b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
