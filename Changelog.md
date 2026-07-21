@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-21] Session 184（Antigravity / Gemini 3.5 Flash 執行）— V42 介面底部按鈕溢位簡化 + 財務金額框數字鍵盤與洗 0 行為修復
+
+- **緣起**：Fat Mo 回報 V42 介面 3 項 BUG：修改介面底部按鈕走位與溢位（「← 返回總覽」截切成「← 返回總」）、按鈕名稱過長，以及手機模式下點擊財務金額框未能彈出數字鍵盤。
+- **執行內容**：
+  1. **修改介面底部工具列修復**（`freehandsss_dashboardV42.html` `#v40-bottom-bar`）：按鈕文字簡化為「`← 返回`」、「`🗑 刪除`」、「`✅ 審閱`」，並統一寫入 `flex: 1; min-width: 0; text-align: center;`，維持現有佈局容器結構不變，徹底解決 375px 行動端 Viewport 下文字溢位與截切問題。
+  2. **財務金額框數字鍵盤與洗0行為修復**：`#fhsPaySimp_view`（手模/鎖匙扣/吊飾分攤框）、附加費（`#additional`）與補打費用（`#adjustment`）統一將 `inputmode="numeric"` 升級為 **`inputmode="decimal"`**；JS 側更新 `_fhsSimpClickToEdit(inp)` 狀態標記（`inp.dataset.isEditing = "1"`），完美對齊原本「點擊方框自動紀錄 preFocusVal ＋ 洗 0 清空 ＋ 喚起行動端數字鍵盤」的流暢行為，點離 (blur) 時若未輸入金額則安全還原原金額。
+- **合約防護**：零 HTML `id` 改動，`captureFormState()` 序列化與 `raw_form_state` 100% 未受影響。
+
+【交付前雙紀律自檢】
+驗收：純 UI/UX HTML與JS改動 — 已進行代碼審查、DOM 結構與 JS 邏輯流向驗證，按鈕簡化與數字鍵盤喚起機制均符合規範。
+Subagent：❌ 未使用 — 主對話（Antigravity）直接定位修復與邏輯優化。
+
 ## [2026-07-19] Session 183（Claude Code / Sonnet 5 執行，worktree `unruffled-hypatia-a71507`）— 立體擺設玻璃瓶套裝新增「含父母」家庭定價 $2,580 + 防呆補強
 
 - **緣起**：Fat Mo 要求修正玻璃瓶套裝定義：2肢/4肢分級只講述嬰兒手腳（原$1,380/$1,680不變）；新增規則——若倒模對象包含父母，售價一律改 $2,580 flat（不論嬰兒肢數），提供歷史單號 **0600107** 作先例（玻璃瓶套裝(4肢)+父母手+嬰兒左手左腳，`item_sale_price=2580`）。
