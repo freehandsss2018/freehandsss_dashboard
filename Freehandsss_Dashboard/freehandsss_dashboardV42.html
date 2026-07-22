@@ -15187,17 +15187,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const refDate = new Date().toISOString().split('T')[0];
 
             // 12 parallel RPC calls: KPIs per tab+category, charts per tab
+            // tab_mode 對齊 RPC 定義（decisions.md D43續，2026-07-22 修正）：
+            //   current = 本月迄今 vs 去年同期 ｜ monthly = 本月完整 vs 上月 ｜ yearly = 本年迄今 vs 去年同期
             const results = await Promise.all([
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }), // current tab = YTD (Jan->now) vs 去年同期
+                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'handmodel', ref_date: refDate }), // current tab = YTD
+                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'handmodel', ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'handmodel', ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'handmodel', ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'metal',     ref_date: refDate }), // current tab = YTD
+                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'metal',     ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'metal',     ref_date: refDate }),
                 sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'metal',     ref_date: refDate }),
-                sbRpc('get_financial_charts', { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }), // current tab chart = YTD monthly trend
+                sbRpc('get_financial_charts', { tab_mode: 'current',  category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_charts', { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
                 sbRpc('get_financial_charts', { tab_mode: 'yearly',   category: 'all',       ref_date: refDate })
             ]);

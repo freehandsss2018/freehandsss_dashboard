@@ -668,8 +668,23 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 ---
 
+### 10.14 Financial Overview 前端有兩套並存實作 + `get_financial_overview_full` 整合 RPC（D43續完成，2026-07-22）
+
+**架構澄清（易誤判陷阱）**：Dashboard「💰 財務」Financial Overview 面板實際有**兩條獨立資料路徑**，唔係只得 n8n webhook 一條：
+
+1. **前端直呼 Supabase**（`sbFetchFinancial()`，`current.html`/`V42.html` ~line 15186，"V41 Supabase Read Layer"）——`localStorage.fhs_supabase_read` 預設自動設 `'1'`（見 line 5441-5442），**呢條先係實際生效路徑**。前端直接 12 個 `sbRpc()` 呼叫（`get_financial_kpis` × 9 + `get_financial_charts` × 3，涵蓋 3 個 tab_mode × 3 個 category）組裝出 `groups`/`barChart`/`pieChart`/`breakdown` 形狀。
+2. **n8n webhook**（`fetchFinancialOverview()` / `FINANCIAL_WEBHOOK_URL`，n8n workflow `FHS_Financial_Overview` `uQKtGDupMBnSygr3`）——僅當 `isSupabaseRead()===false` 或路徑 1 呼叫失敗時 fallback 使用。
+
+**bug 歷史（D43續完成）**：路徑 1 嘅 12 個呼叫入面，4 個原本用嚟組「Current 分頁」嘅呼叫寫死 `tab_mode:'yearly'`（同「Yearly 分頁」完全一樣），令 Current/Yearly 兩個分頁顯示相同數字。已修正為 `tab_mode:'current'`，令三個分頁對齊本節 §10.1 定義（current=本月迄今 vs 去年同期／monthly=本月完整 vs 上月／yearly=本年迄今 vs 去年同期）。
+
+**新增**：路徑 2（n8n fallback）原本嘅 `Financial Aggregator` Code node 係一套獨立 JS 聚合邏輯（直接 `SUM()` 冇任何 3-layer 邏輯，`groups` 分類鍵完全唔存在），已改為呼叫新建 RPC `get_financial_overview_full(ref_date)`（migration `0061_get_financial_overview_full.sql`）——組合現有 `get_financial_kpis`/`get_financial_charts`（call 9 次 kpis + 3 次 charts，SQL 內部完成），一次回傳前端要嘅完整 `{current,monthly,yearly}×{groups,lineChart,barChart,pieChart,breakdown,data_quality}` 形狀，零重複 3-layer 邏輯。
+
+**教訓（診斷紀律）**：分析呢類「畫面數字錯」bug，必須先用 browser 讀 `window.FO_LIVE_DATA._source` 確認邊條路徑真正生效，唔可以單靠 grep/讀碼假設「n8n workflow 就係入口」——本次事故最初深入分析咗路徑 2（已經係 fallback dead path），量化埋一份錯誤方向嘅偏差報告，後期 browser 實測先發現路徑 1 先係真正影響用戶畫面嗰條。詳見 `decisions.md`「D43續完成」條目、`.fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md`（已加更正註記）。
+
+---
+
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 

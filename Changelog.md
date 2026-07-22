@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-07-22] Session 187續XI（Claude Code / Sonnet 5 執行）— Financial Overview 3-layer 落差修復（真正 bug 喺前端 sbFetchFinancial()）
+
+- **緣起**：D43 完成記錄列為技術債，Fat Mo 明確指定新 session 優先處理「Financial Overview 財務總覽數字未對齊 3-layer revenue fallback RPC」。
+- **初步分析（後證實方向錯咗）**：查 live n8n workflow `uQKtGDupMBnSygr3` 嘅 `Financial Aggregator` Code node，發現完全冇 `groups` 分類邏輯，量化偏差最多 +286%，寫成分析報告 + 3 個轉換層方案，Fat Mo 選定方案 C（新整合 RPC）。
+- **關鍵轉折（browser 實測揭發真相）**：實作完方案 C 後用 Browser pane 開真實 Dashboard 驗證，發現 `window.FO_LIVE_DATA._source === 'supabase'`——Dashboard 實際渲染 Financial Overview 用嘅係另一套獨立實作 `sbFetchFinancial()`（"V41 Supabase Read Layer"，`localStorage.fhs_supabase_read` 預設自動開啟，前端直接呼叫 Supabase RPC，完全繞過 n8n webhook），最初分析嘅 n8n 層其實已經係 dead fallback path。呢套實際用緊嘅實作分類 groups 本身正確，真正 bug 係佢 12 個 RPC 呼叫入面 4 個「current tab」呼叫全部寫死 `tab_mode:'yearly'`（source 註解直認「current tab = YTD」），令 Current 同 Yearly 兩個分頁顯示完全相同數字。
+- **修復（兩部分）**：
+  1. **Option C（原定方案，作為 n8n fallback path 正確性改善）**：新建 Supabase RPC `get_financial_overview_full(ref_date)`（migration `0061_get_financial_overview_full.sql`，組合現有 `get_financial_kpis`/`get_financial_charts`，零重複 3-layer 邏輯），n8n `Financial Aggregator` 節點改為一次呼叫呢個新 RPC；舊 `Fetch Orders/Items (Supabase)`/`Collect Main Orders`/`Merge Datasets` 節點斷開保留（同 D43 手法一致）；repo 追蹤嘅 `n8n/FHS_Financial_Overview_workflow.json`（原 stale V40.4 版）同步更新至新 live 狀態，修復咗長期未同步嘅漂移問題。
+  2. **真正修復**：`sbFetchFinancial()`（`current.html`+`V42.html`）4 個「current tab」RPC 呼叫由 `tab_mode:'yearly'` 改 `tab_mode:'current'`，令 Current 分頁對齊 RPC 定義（本月迄今 vs 去年同期）。
+- **驗證**：Browser pane 驅動真實 V42 頁面，直接讀 `window.FO_LIVE_DATA` 同步呼叫 Supabase RPC 直查結果交叉核對（非自驗）：Current=$31,030（月迄今）、Monthly=$31,030（本月完整，今日適逢窗口重疊）、Yearly=$154,860（全年）三個分頁數字正確區分；`groups.handmodel`=$67,068.57／`groups.metal`=$71,750.33 同直查結果零誤差。
+- **部署**：Fat Mo 直接確認「升格 V42→current.html」，`.deploy-ok` 授權 + `scripts/upload-web.ps1 current -Force` 三關驗證（HTTP 204/大小/SHA256）全 PASS。
+- **教訓**：分析 bug 前必須先確認緊分析緊嘅係咪真係活躍代碼路徑——呢個 Dashboard 有兩套獨立嘅 Financial Overview 實作並存（n8n webhook fallback + 前端直呼 Supabase 嘅 V41 Read Layer），單靠讀碼/grep 推斷入口唔夠，必須 browser 實測 `window.FO_LIVE_DATA._source` 先知邊套代碼真正輸出咗畫面睇到嘅數字。全文見 `decisions.md`「D43續完成」條目、`.fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md`（已加更正註記）。
+
+【交付前雙紀律自檢】
+驗收：財務相關改動 — fresh-context general-purpose agent 獨立覆核（非自驗）：重新直查 Supabase RPC + 起本機 static server 實測 browser render + curl 直查 production 已部署檔案三重交叉核對，PASS，零discrepancy
+Subagent：✅ general-purpose（fresh-context 財務改動獨立驗收，finance-gatekeeper §5 強制要求）
+
 ## [2026-07-22] Session 187續X（Claude Code / Sonnet 5 執行）— 財務結算報價明細行距收貼 + 粗體範圍補齊
 
 - **緣起**：Fat Mo 續回報 S187續IX 配色改動未完整——① 分類標頭（如「鎖匙扣」）同其下第一件品項之間多咗一行空白，睇落標頭同內容脫節；分類與分類之間反而應該保留呢個空白行區隔。② 「吊飾 4個 / 2條頸鏈: $5960」得「吊飾」兩個字粗體，同其他行（如「木框套裝(4肢)」全句粗體）唔一致。

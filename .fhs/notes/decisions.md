@@ -3,6 +3,16 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-22] (D43續完成) Financial Overview 3-layer 落差修復——真正 bug 喺前端 sbFetchFinancial()，非最初分析嗰個 n8n 層
+
+**重要更正**：本檔較早前「D43續」條目（見下方，緊接住呢條之後）分析嘅係 n8n `Financial Aggregator`（workflow `uQKtGDupMBnSygr3`），發現該層完全冇 `groups` 分類邏輯，量化偏差最多 +286%。**Live browser 實測後發現呢個分析對象係錯嘅**——Dashboard 實際渲染 Financial Overview 用嘅係另一套獨立實作 `sbFetchFinancial()`（`Freehandsss_dashboard_current.html`/`freehandsss_dashboardV42.html` ~line 15186，"V41 Supabase Read Layer"，`localStorage.fhs_supabase_read` 預設 `'1'` 自動啟用，前端直接呼叫 Supabase RPC，完全繞過 n8n webhook），呢套實作**分類 groups 本身已經正確**（`kCurHm`/`kCurMt` 等分開呼叫 `get_financial_kpis` per category）。真正嘅 bug 喺呢套實作嘅 `current`/`yearly` 兩個分頁**都呼叫 `tab_mode:'yearly'`**（source code 註解直寫「current tab = YTD」），令兩個分頁顯示完全相同數字（yearly 期實測：current 應顯示 $31,030 月迄今，實際顯示 $154,860 全年總額）。n8n 層先前分析嘅「分類完全缺失」問題，只存在於已經係 dead code 嘅 fallback path（`isSupabaseRead()===false` 或 Supabase RPC 失敗時先會 fallback 到 n8n webhook），對 Fat Mo 實際睇到嘅畫面冇影響。
+教訓：分析 bug 前必須先確認緊分析緊嘅係咪真係活躍代碼路徑（呢個 dashboard 有兩套獨立嘅 Financial Overview 實作並存），單靠 grep/讀碼推斷「呢個 workflow 應該係入口」唔夠，必須用 browser 實測 `window.FO_LIVE_DATA._source` 先知邊套代碼真正輸出咗畫面睇到嘅數字。
+執行（兩部分）：
+1. **Option C（Fat Mo 選定）**：新建 Supabase RPC `get_financial_overview_full(ref_date)`（migration `0061_get_financial_overview_full.sql`，組合現有 `get_financial_kpis`/`get_financial_charts`，零重複 3-layer 邏輯），n8n `Financial Aggregator` 節點改為一次呼叫呢個新 RPC 取代自製 JS 聚合（舊 `Fetch Orders/Items (Supabase)`/`Collect Main Orders`/`Merge Datasets` 節點斷開保留，同 D43 手法一致）。呢部分修嘅係 fallback path，唔係用戶實際睇到嗰套，但屬正確嘅技術債清償。
+2. **真正修復**：`sbFetchFinancial()` 12 個 RPC 呼叫入面，4 個原本寫死 `tab_mode:'yearly'` 嘅「current tab」呼叫（KPIs all/handmodel/metal + charts）改為 `tab_mode:'current'`，令 Current 分頁對齊 RPC 定義（本月迄今 vs 去年同期），同 Yearly 分頁（本年迄今）區分開。`current.html`+`V42.html` 同步改動。
+驗證：browser 實測（逐步截取 `window.FO_LIVE_DATA` 對比 Supabase RPC 直查結果）：Current=$31,030（月迄今）、Monthly=$31,030（本月完整，今日適逢兩者窗口重疊）、Yearly=$154,860（全年）——三個分頁數字正確區分；`groups.handmodel`=$67,068.57／`groups.metal`=$71,750.33，同直查 RPC 結果零誤差。V42 修復後經 Fat Mo 直接確認「升格 V42→current.html」，`.deploy-ok` 授權 + `scripts/upload-web.ps1 current -Force` 三關驗證（HTTP204/大小/SHA256）全 PASS。**fresh-context general-purpose agent 獨立覆核**（finance-gatekeeper §5 強制，非自驗）：重新直查 Supabase RPC 得出同一組 ground truth、獨立起本機 static server 實測 browser render 得出完全吻合數字、curl 直查 production 已部署嘅 `https://yanhei.synology.me/Freehandsss_dashboard_current.html` 確認 line 15193-15204 四個呼叫皆為 `tab_mode:'current'`，三重交叉核對零 discrepancy，總體 verdict：PASS。
+相關檔案：`.fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md`（原始量化，部分結論已被本條目更正）、`supabase/migrations/0061_get_financial_overview_full.sql`、`n8n/FHS_Financial_Overview_workflow.json`（已同步至新 live 狀態）。
+
 [2026-07-22] (D43) Airtable 全面剝離停用（月度 API 額度問題）——6 個 n8n workflow + Dashboard 前端改駁 Supabase，SSoT 正式翻轉
 
 決策：Airtable 月度 API 額度爆（HTTP 429，已阻塞落單流程逾 12 小時），Fat Mo 裁決全面剝離 Airtable、只保留可重連設定，直至另行通知。經 cl-flow 規劃（flow_id `2026-07-22-1058`，Verdict CONDITIONAL_READY，3 條 BLOCKER 全採納）後 `/execute` 執行。手法：n8n workflow 一律「斷 connection 保留 node/credential」（唔刪唔清），改駁現成嘅 Supabase 鏡射資料（`orders`/`order_items`/`products`，已完整覆蓋 Airtable Main_Orders/Order_Items/Product_Database）。AGENTS.md §1 角色表 + §Supabase 共存規則同步改寫：Airtable 由「過渡期 SSoT」降級「已剝離停用」，Supabase 正式成為唯一 SSoT（v1.7.0→v1.7.1）。
@@ -18,6 +28,12 @@
 技術債（已記錄，非本次處理）：(a) `Financial Aggregator` 未實作 3-layer revenue fallback，同 RPC 存在數字分歧風險——**Fat Mo 2026-07-22 明確裁定呢項「得重要」，要求新 session 優先處理，完整技術交代（現況/根因/建議路徑/相關檔案）已寫入 `handoff.md` MASTER 待辦表首列，唔止呢句摘要**；(b) Supabase Service Key 直接寫喺多個 n8n HTTP node（非本次新增，Phase 1 已有先例，屬全系統既有模式，key rotation/least-privilege 屬獨立安全強化專案）。
 教訓：呢類「剝離某個資料源」嘅任務唔係機械式換 API endpoint——實測揪出 5 個獨立 pre-existing bug（`?.` 表達式缺 `=` 前綴、HTTP node 零結果唔觸發落游、n8n 平行 Code node 崩潰、enum 值域唔啱累街整批、前端 `o.id` 語意早已假設咗未來狀態），全部係「改緊嗰段代碼順手發現」，唔係預先規劃到嘅——證明 cl-flow 嘅「A3 有 repo 存取先寫草案」設計原則有效，但實際執行仍然需要每一步都 live 驗證，唔可以靠讀碼/寫方案就假設正確。詳見 `artifacts/2026-07-22-1058/`（task-brief/a3-draft/ag-review/px-review/id-coupling-scan/cl-final-plan）。
 **驗證（fresh-context opus，finance-gatekeeper §5 強制）**：獨立 agent 唔信本記錄字面、重新 live 觸發全部 6 個 workflow webhook + 直查 Supabase 交叉核對（含新建測試單、GlobalReview 44 單/103 品項全核、Financial Overview 年度總額零誤差、`system_config` RLS 實測擋住直接 anon UPDATE 但放行 RPC），5 大項全 PASS，總體 verdict：完整正確，Airtable 確實已離開全部 live path。揪出 2 個純顯示層殘留（`syncToAirtable()` loader 文字、`sysTrackAtCall` label 仍寫 "Airtable"，唔影響功能）已順手清理。
+
+[2026-07-22] (D43續) Financial Overview 3-layer 落差量化 + 轉換層設計提案（未實作，等 Fat Mo 揀方案）
+
+決策：跟進 D43 技術債第一項，直查 live n8n workflow `uQKtGDupMBnSygr3`（REST API，因 MCP Phase 1 allowlist 只放 Core_OrderProcessor）+ 直呼 Supabase RPC 交叉核對，發現實況比原技術債描述更嚴重——`Financial Aggregator` 現行代碼完全冇 `groups` 分類鍵（非「未實作 3-layer」咁簡單），前端「全部/手模擺設/金屬產品」3 個常駐按鈕撳邊個都係顯示同一組「全部」數字（fallback 到 `d` 而非 `d.groups[cat]`）。量化偏差（yearly 期）：手模擺設 revenue 應 $67,068.57 顯示 $154,860（+130.9%）、cost 應 $6,930 顯示 $26,791（+286.6%）；金屬產品 revenue 應 $71,750.33 顯示 $154,860（+115.8%）、cost 應 $19,821 顯示 $26,791（+35.2%）；`all` 分頁本身零誤差（3-layer 只影響分類切分）。附帶發現：`current`/`monthly`/`yearly` 三分頁語義同 RPC 定義位移（live 邏輯 current=本月完整/monthly=本年迄今/yearly=歷來全部總和，同 UI 標籤字面 Current/Monthly/Yearly 唔對應），非本次待辦範疇但一併記錄。根因：`n8n/FHS_Financial_Overview_workflow.json`（repo 追蹤檔）仍係 V40.4 Airtable 舊版，production 代碼多次直接喺 n8n UI 改動從未同步備份返 repo。
+轉換層設計 3 選項（詳見 `.fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md`）：A) n8n 內 Adapter Code Node 呼叫現有 RPC（較快較保守，18 次 round-trip）；B) 本地重寫 3-layer JS 邏輯（不推薦，雙來源漂移風險，違反 finance-gatekeeper §三B 精神）；C) 新建單一整合 RPC 一次回傳完整形狀（長期最乾淨，需新寫 SQL function 過 review）。推薦 A 過渡後升 C，不推薦 B。
+**本次僅完成量化+設計，未動任何代碼**（CLAUDE.md Rule 3：架構改動先提案，等 Fat Mo 確認方案 + 語義位移問題點處理後先動手）。
 
 [2026-07-22] (Session 187, D42) 吊飾頸鏈成本：前端估算雙計 + Audit Ledger badge 誤導修復 + n8n 記帳格式對齊鎖匙扣模式
 

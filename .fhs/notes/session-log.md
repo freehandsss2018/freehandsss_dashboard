@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-22 (Session 187續XI — Financial Overview 3-layer 落差修復，真正 bug 喺前端 sbFetchFinancial()): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S187續XI 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。跟進 D43 技術債，最初分析 n8n `Financial Aggregator` 方向錯咗——browser 實測揭發 Dashboard 實際用另一套前端直呼 Supabase 嘅獨立實作 `sbFetchFinancial()`，真正 bug 係 Current/Yearly 兩個分頁都 call `tab_mode:'yearly'`。已修正 + 順手新建整合 RPC `get_financial_overview_full` 取代 n8n fallback path 舊邏輯，V42→current.html 已升格部署，NAS三關驗證PASS。
+Subagent：✅ general-purpose model 預設（fresh-context 財務改動獨立驗收，finance-gatekeeper §5 強制）。
+
 ## 2026-07-22 (Session 187 — D43：Airtable 全面剝離停用，Supabase 正式翻轉唯一 SSoT): 🏷️ ✅
 
 **摘要**：全文見完成記錄 [2026-07-22_d43-airtable-decoupling_completion_report.md](../reports/completion/2026-07-22_d43-airtable-decoupling_completion_report.md)（[B] 觸發，完成報告為唯一全文居所，本行僅摘要指回）。Airtable 月度 API 額度爆阻塞落單流程逾12小時，Fat Mo 裁決全面剝離；6個n8n workflow+Dashboard前端改駁Supabase，順手修復5個獨立bug，fresh-context opus獨立驗收全PASS。

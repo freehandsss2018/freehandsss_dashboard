@@ -1,75 +1,136 @@
 {
   "name": "FHS_Financial_Overview",
-  "_comment": "匯入步驟: n8n UI → Import from JSON → 選此檔案 → 儲存 → 啟用。匯入後需在兩個 Airtable 節點設定 Credential（與 FHS_Core_OrderProcessor 相同帳號）。",
   "nodes": [
     {
+      "id": "576cd4ba-ffa2-47aa-9a35-e69c1df86845",
       "parameters": {
         "httpMethod": "GET",
-        "path": "financial-overview",
+        "path": "financial-overview-fhs",
         "responseMode": "responseNode",
         "options": {}
       },
       "name": "FO Webhook",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
-      "position": [240, 300]
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "c8ab5056-0650-4392-8ee0-62137dd3a2a1"
     },
     {
+      "id": "de407ca4-9d24-470a-a6d9-fb3c680aeaeb",
       "parameters": {
-        "operation": "list",
-        "application": "app9GuLsW9frN4xaT",
-        "table": "tbltCH0I9fknVCtmV",
-        "additionalOptions": {
-          "fields": ["Order_ID", "Appointment_Date", "Final_Sale_Price", "Total_Cost", "Net_Profit"]
-        }
+        "operation": "search",
+        "base": {
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "value": "tbltCH0I9fknVCtmV",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "options": {}
       },
       "name": "Fetch All Main Orders",
       "type": "n8n-nodes-base.airtable",
-      "typeVersion": 1,
-      "position": [460, 300],
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ],
       "credentials": {
-        "airtableApi": {
-          "_comment": "請在此選擇與 FHS_Core_OrderProcessor 相同的 Airtable Credential"
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
         }
       }
     },
     {
+      "id": "4054076a-cef0-409b-b77f-058dd4210610",
       "parameters": {
-        "operation": "list",
-        "application": "app9GuLsW9frN4xaT",
-        "table": "tbljkptnNcUEyDRFH",
-        "additionalOptions": {
-          "fields": ["Order_Item_Key", "Product_Link", "Quantity", "Order_Link", "Item_Category", "Subtotal Cost"]
-        }
+        "jsCode": "const items = $input.all();\nconst mainOrders = items.map(i => i.json.fields || i.json);\nreturn [{json: {mainOrders}}];"
+      },
+      "name": "Collect Main Orders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "id": "8d2da0ba-c7f5-43a2-89fb-fcef23ab47b0",
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "value": "app9GuLsW9frN4xaT",
+          "mode": "id"
+        },
+        "table": {
+          "value": "tbljkptnNcUEyDRFH",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "options": {}
       },
       "name": "Fetch All Order Items",
       "type": "n8n-nodes-base.airtable",
-      "typeVersion": 1,
-      "position": [460, 480],
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ],
       "credentials": {
-        "airtableApi": {
-          "_comment": "請在此選擇與 FHS_Core_OrderProcessor 相同的 Airtable Credential"
+        "airtableTokenApi": {
+          "id": "lON99lpYk558mFdA",
+          "name": "Airtable Personal Access Token account"
         }
       }
     },
     {
+      "id": "fc6f4d84-5f56-4756-8cfc-d5f4b02e5058",
       "parameters": {
-        "jsCode": "// =====================================================\n// FHS Financial Overview — Financial Aggregator (V40.4)\n// =====================================================\n\nconst orders = $('Fetch All Main Orders').all().map(i => i.json);\nconst orderItems = $('Fetch All Order Items').all().map(i => i.json);\n\nconst now = new Date();\nconst currentYear = now.getFullYear();\nconst currentMonth = now.getMonth();\n\nfunction parseDate(str) { if (!str) return null; const d = new Date(str); return isNaN(d.getTime()) ? null : d; }\nfunction sum(arr, field) { return arr.reduce((s, o) => s + (Number(o[field]) || 0), 0); }\nfunction pct(cur, prev) { if (!prev) return 0; return Math.round(((cur - prev) / Math.abs(prev)) * 1000) / 10; }\n\nconst MONTH_ZH = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];\nfunction ordersInMonth(y, m) { return orders.filter(o => { const d = parseDate(o.Appointment_Date); return d && d.getFullYear() === y && d.getMonth() === m; }); }\nfunction ordersInYear(y) { return orders.filter(o => { const d = parseDate(o.Appointment_Date); return d && d.getFullYear() === y; }); }\n\n// === CATEGORY KPI AGGREGATOR ===\nfunction getGroupStats(targetOrders) {\n  const orderIds = new Set(targetOrders.map(o => o.id));\n  const items = orderItems.filter(item => {\n    const links = item.Order_Link || [];\n    const id = (Array.isArray(links) ? links[0] : links);\n    return orderIds.has(id);\n  });\n\n  const stats = {\n    all: { revenue: sum(targetOrders, 'Final_Sale_Price'), cost: sum(targetOrders, 'Total_Cost'), orders: targetOrders.length },\n    handmodel: { revenue: 0, cost: 0, orders: 0 },\n    metal: { revenue: 0, cost: 0, orders: 0 },\n    accessories: { revenue: 0, cost: 0, orders: 0 }\n  };\n\n  // Calculate category ratios based on Item Costs (since we don't have per-item price)\n  let totalItemCost = 0;\n  const catCosts = { handmodel: 0, metal: 0, accessories: 0 };\n  \n  items.forEach(item => {\n    const cat = item.Item_Category || '';\n    const cost = Number(item['Subtotal Cost']) || 0;\n    totalItemCost += cost;\n    if (cat.includes('木框') || cat.includes('玻璃') || cat.includes('立體')) catCosts.handmodel += cost;\n    else if (cat.includes('鎖匙') || cat.includes('吊飾')) catCosts.metal += cost;\n    else catCosts.accessories += cost;\n  });\n\n  // Estimate Revenue based on Cost Ratios (Better than quantity ratio)\n  const denom = totalItemCost || 1;\n  stats.handmodel.revenue = Math.round((catCosts.handmodel / denom) * stats.all.revenue);\n  stats.handmodel.cost = Math.round(catCosts.handmodel);\n  stats.metal.revenue = Math.round((catCosts.metal / denom) * stats.all.revenue);\n  stats.metal.cost = Math.round(catCosts.metal);\n  stats.accessories.revenue = stats.all.revenue - stats.handmodel.revenue - stats.metal.revenue;\n  stats.accessories.cost = stats.all.cost - stats.handmodel.cost - stats.metal.cost;\n\n  return stats;\n}\n\n// === PERIOD DATA GENERATION ===\nconst curOrders = ordersInMonth(currentYear, currentMonth);\nconst prevM = currentMonth === 0 ? 11 : currentMonth - 1;\nconst prevMY = currentMonth === 0 ? currentYear - 1 : currentYear;\nconst prevMOrders = ordersInMonth(prevMY, prevM);\n\n// Summary for Charts\nconst monthLabelsZH = []; const monthRevenues = []; const monthProfits = [];\nfor (let i = 7; i >= 0; i--) {\n  let m = currentMonth - i, y = currentYear; while (m < 0) { m += 12; y--; }\n  const mo = ordersInMonth(y, m);\n  monthLabelsZH.push(MONTH_ZH[m]);\n  monthRevenues.push(sum(mo, 'Final_Sale_Price'));\n  monthProfits.push(sum(mo, 'Net_Profit'));\n}\n\n// Category Breakdown for Bar Chart\nconst CATEGORIES = ['木框套裝','玻璃瓶套裝','鎖匙扣','吊飾','配件'];\nconst catQty = { '木框套裝': 0, '玻璃瓶套裝': 0, '鎖匙扣': 0, '吊飾': 0, '配件': 0 };\norderItems.forEach(item => {\n  const cat = item.Item_Category || '';\n  const qty = Number(item.Quantity) || 1;\n  if (cat.includes('木框')) catQty['木框套裝'] += qty;\n  else if (cat.includes('玻璃')) catQty['玻璃瓶套裝'] += qty;\n  else if (cat.includes('鎖匙')) catQty['鎖匙扣'] += qty;\n  else if (cat.includes('吊飾')) catQty['吊飾'] += qty;\n  else catQty['配件'] += qty;\n});\n\nconst curStats = getGroupStats(curOrders);\nconst prevStats = getGroupStats(prevMOrders);\n\nconst result = {\n  current: {\n    revenue: curStats.all.revenue, cost: curStats.all.cost, profit: curStats.all.revenue - curStats.all.cost, orders: curStats.all.orders,\n    revenueChange: pct(curStats.all.revenue, prevStats.all.revenue),\n    costChange: pct(curStats.all.cost, prevStats.all.cost),\n    groups: curStats,\n    lineChart: { labels: monthLabelsZH, revenue: monthRevenues, profit: monthProfits },\n    barChart: { \n       all: { labels: CATEGORIES, values: CATEGORIES.map(c => catQty[c]) },\n       handmodel: { labels: ['木框套裝','玻璃瓶套裝'], values: [catQty['木框套裝'], catQty['玻璃瓶套裝']] },\n       metal: { labels: ['鎖匙扣','吊飾','配件'], values: [catQty['鎖匙扣'], catQty['吊飾'], catQty['配件']] }\n    },\n    pieChart: { labels: ['手模擺設','金屬產品','配件'], values: [curStats.handmodel.cost, curStats.metal.cost, curStats.accessories.cost], colors: ['#C9714A','#D4956E','#7A6A55'] }\n  },\n  monthly: { /* Similar structure... */ },\n  yearly: { /* Similar structure... */ }\n};\n\n// For brevity, monthly and yearly will mirror current structure for now\nresult.monthly = JSON.parse(JSON.stringify(result.current));\nresult.yearly = JSON.parse(JSON.stringify(result.current));\n\nreturn [{ json: result }];\n"
+        "jsCode": "const items = $input.all();\nconst orderItems = items.map(i => i.json.fields || i.json);\nconst mainOrders = $('Collect Main Orders').first().json.mainOrders || [];\nreturn [{json: {mainOrders, orderItems}}];"
+      },
+      "name": "Merge Datasets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        300
+      ]
+    },
+    {
+      "id": "6b895cf9-18d8-4504-ab4b-ef00b33dce60",
+      "parameters": {
+        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\nconst resp = await axios.post(\n  `${SUPABASE_URL}/rest/v1/rpc/get_financial_overview_full`,\n  {},\n  { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, timeout: 15000 }\n);\nreturn [{ json: resp.data }];\n"
       },
       "name": "Financial Aggregator",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [700, 380]
+      "position": [
+        1340,
+        300
+      ]
     },
     {
+      "id": "a4c1981b-e3ef-4a68-8127-5a742bc4bf13",
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify($json) }}",
         "options": {
           "responseHeaders": {
             "entries": [
-              { "name": "Access-Control-Allow-Origin", "value": "*" },
-              { "name": "Content-Type", "value": "application/json" }
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
             ]
           }
         }
@@ -77,27 +138,115 @@
       "name": "Respond with JSON",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [940, 380]
+      "position": [
+        1560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\nconst PAGE_SIZE = 1000;\nlet all = [];\nlet offset = 0;\nwhile (true) {\n  const resp = await axios.get(\n    `${SUPABASE_URL}/rest/v1/orders?select=order_id,appointment_at,final_sale_price,total_cost,net_profit&deleted_at=is.null&order=id.asc&limit=${PAGE_SIZE}&offset=${offset}`,\n    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, timeout: 15000 }\n  );\n  const rows = resp.data || [];\n  all = all.concat(rows);\n  if (rows.length < PAGE_SIZE) break;\n  offset += PAGE_SIZE;\n}\nreturn all.map(r => ({\n  json: {\n    order_id: r.order_id,\n    Appointment_Date: r.appointment_at,\n    Final_Sale_Price: Number(r.final_sale_price) || 0,\n    Total_Cost: Number(r.total_cost) || 0,\n    Net_Profit: Number(r.net_profit) || 0\n  }\n}));\n",
+        "notice": ""
+      },
+      "id": "a1b1c1d1-e1f1-4111-8111-911111111111",
+      "name": "Fetch Orders (Supabase)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\nconst PAGE_SIZE = 1000;\n\nconst mainOrders = $('Collect Main Orders').first().json.mainOrders || [];\nconst orderIds = mainOrders.map(o => o.order_id).filter(Boolean);\n\nif (orderIds.length === 0) {\n  return [];\n}\n\nconst idList = orderIds.map(id => `\"${id}\"`).join(',');\nlet all = [];\nlet offset = 0;\nwhile (true) {\n  const resp = await axios.get(\n    `${SUPABASE_URL}/rest/v1/order_items?select=product_sku,quantity&order_fhs_id=in.(${idList})&order=id.asc&limit=${PAGE_SIZE}&offset=${offset}`,\n    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, timeout: 15000 }\n  );\n  const rows = resp.data || [];\n  all = all.concat(rows);\n  if (rows.length < PAGE_SIZE) break;\n  offset += PAGE_SIZE;\n}\nreturn all.map(r => ({\n  json: {\n    Product_Link: r.product_sku,\n    Quantity: r.quantity\n  }\n}));\n",
+        "notice": ""
+      },
+      "id": "a2b2c2d2-e2f2-4222-8222-922222222222",
+      "name": "Fetch Items (Supabase)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        150
+      ]
     }
   ],
   "connections": {
     "FO Webhook": {
-      "main": [[
-        { "node": "Fetch All Main Orders", "type": "main", "index": 0 },
-        { "node": "Fetch All Order Items", "type": "main", "index": 0 }
-      ]]
+      "main": [
+        [
+          {
+            "node": "Financial Aggregator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Fetch All Main Orders": {
-      "main": [[{ "node": "Financial Aggregator", "type": "main", "index": 0 }]]
+    "Collect Main Orders": {
+      "main": [
+        [
+          {
+            "node": "Fetch Items (Supabase)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Fetch All Order Items": {
-      "main": [[{ "node": "Financial Aggregator", "type": "main", "index": 0 }]]
+    "Merge Datasets": {
+      "main": [
+        [
+          {
+            "node": "Financial Aggregator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Financial Aggregator": {
-      "main": [[{ "node": "Respond with JSON", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Respond with JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Orders (Supabase)": {
+      "main": [
+        [
+          {
+            "node": "Collect Main Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Items (Supabase)": {
+      "main": [
+        [
+          {
+            "node": "Merge Datasets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   }
 }
