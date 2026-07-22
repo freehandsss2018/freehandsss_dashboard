@@ -11084,7 +11084,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var flags = [];
             if (!chainMatch)  flags.push({ cls: 'red', msg: '✗ 確收鏈不平衡：訂金+尾款+附加費（' + _f(confirmedRev) + '） ≠ 確收金額（' + _f(finalSale) + '）' });
             if (!profitMatch) flags.push({ cls: '',    msg: '⚠ 利潤驗算：確收−成本=' + _f(profitCalc) + '，DB=' + _f(netProfit) });
-            if (n8nNotes) flags.push({ cls: '', msg: '💰 成本扣減說明：' + n8nNotes + (n8nBasis ? '<br><span style="font-size:10px;color:#888;padding-left:18px;">依據：' + n8nBasis + '</span>' : '') });
+            // 2026-07-22 移除：呢個「💰 成本扣減說明」摘要行同②成本快照鏈入面逐個 badge 嘅
+            // 「i」展開說明完全重複，Fat Mo 要求收埋頂部摘要卡呢個重複提示，資訊已喺 badge 度睇到。
 
             var hasError  = flags.some(function(f){ return f.cls === 'red'; });
             var overallOk = !hasError;
