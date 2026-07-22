@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-07-22] Session 187續IV（Claude Code / Sonnet 5 執行）— D42 落地：n8n V47.20 部署 + 7 張歷史吊飾單 backfill
+
+- **背景**：接續 S187 系列（見前 3 則），Fat Mo 確認吊飾頸鏈成本記帳格式對齊鎖匙扣環扣模式（品項層對稱 $100/件 + 訂單層共用折扣，取代訂單層單一 +$200 加項），並追加決定：**連 7 張既有歷史單都要一併修改**（推翻早前「只新單」嘅決定）。
+- **執行 Plan Mode**：先完整方程式驗證（`100N−floor(N/2)×100=ceil(N/2)×100`，N=1..5 逐一核對）+ 對齊鎖匙扣先例 + Node harness 用 Akira 真實情境（4吊飾+4鎖匙扣+1手模）重算完全吻合現行 $2,605/$1,955/$440/$210，方案經 Fat Mo Plan Mode 批准。
+- **n8n 部署**：`FHS_Core_OrderProcessor` 節點 `Calculate Profit & Pack Items` V47.19→V47.20，`update_node_code` 先 dry-run 通過（揪出並修正一個草稿 bug——原草稿誤將鎖匙扣嘅 `Chain_Cost`（環扣顯示值）一併清零，已修正為只影響吊飾類別），確認後 `dryRun=false` 正式寫入，自動備份至 `.fhs/notes/aireports/n8n-mcp-backups/2026-07-22/`。
+- **歷史單 backfill（7 張，非 8——第 8 張 `test1001` 為殘留壓測 fixture，$0成本非真實訂單，已排除）**：Dede(0600107)/Kathleen(0600710)/Akira(0600721)/DebbieHo(0600727)/Amen(0600800)/Selina Lai(0600803)/Lokyi_C(0600903)。直接 Supabase UPDATE（非重新 resync，避免觸發 D40 曾踩過嘅 resync 副作用如付款自動填充陷阱）：`order_items` 吊飾行 `item_base_cost`/`subtotal_cost`/`necklace_cost` 各 +$100、`chain_cost` 統一改 100（對稱）；`orders.n8n_adjustment_notes` 將 `necklace_chain_cost`（正數）換成 `necklace_chain_sharing_discount`（負數，DebbieHo N=1 個案 floor(1/2)=0 故直接移除該筆記，無替代）。**驗證核心**：UPDATE 前後逐單核對 `orders.necklace_cost`/`total_cost`/`net_profit`/`final_sale_price` 完全不變（7 張全部核對 PASS），證明純屬記帳格式重分配、零財務數字改動。
+- **⚠️ 端對端 live 驗證受阻**：建測試單 `test9002`（4吊飾模擬 Akira 情境）經真實 webhook 提交，但 n8n 執行卡喺 `running`（execution 4906）遲遲未落地 Supabase——重新探測 Airtable API 確認 `HTTP 429` 仍然存在，同 S186 已回報嘅「Airtable 月度額度耗盡」係同一個未解決嘅外部阻塞（`test5001`／execution 4902 至今超過 12 小時仍卡 running）。**此阻塞早於本次改動存在，非本次 n8n 程式碼改動引入**（新舊 code 同樣會卡在此步驟）。`test9002` 已送出 delete 指令但同樣可能卡住；核實 Supabase 兩張測試單均未落地（`test5001`/`test9002` 皆 0 筆），故資料庫層面無孤兒記錄需清理，但 n8n 執行歷史遺留兩個 `running` 殭屍執行待 Airtable 額度恢復後自然完成或由 Fat Mo 手動處理。
+- **後續**：待 Airtable 額度恢復後，補做一次真實測試單端對端驗證（確認 order_items.chain_cost 對稱、adjustment note 為負數），完成後即時清理測試單。
+
+【交付前雙紀律自檢】
+驗收：財務架構改動（n8n + Supabase 歷史資料）— dry-run 語法驗證 + Node harness 數值重算吻合 + 7張歷史單 UPDATE 前後 order-level 財務欄位逐一比對零變動（非同一步驟循環自證）；端對端 live webhook 驗證因外部 Airtable 額度阻塞未能完成，已誠實記錄而非假裝驗證通過
+Subagent：❌ 未使用 — 主對話（Sonnet 5）全程：Plan Mode 設計 + n8n MCP dry-run/deploy + Supabase MCP 直接查詢與 UPDATE + Python webhook 測試腳本 + curl 探測 Airtable
+教訓：deploy 完成 ≠ 驗證完成——外部依賴（Airtable 額度）可以喺完全唔相關嘅改動下阻擋端對端測試，發現阻塞時必須如實回報「未能驗證」，不可用「dry-run 已過」矇混當作「已驗證」
+
 ## [2026-07-21] Session 187續III（Claude Code / Sonnet 5 執行）— 修正上一版本過度收埋：改為只除成本行，建議售價明細原樣保留
 
 - **緣起**：Fat Mo 指出 S187續II 做過頭——連細項嘅「建議售價明細」（吊飾4個/2條頸鏈$5,960、鎖匙扣各件$860 等報價拆解）都一併隱藏咗，但要求只係刪成本部份。
