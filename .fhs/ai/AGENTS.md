@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.7.0
-> Last updated: 2026-07-12
+> Version: v1.7.1
+> Last updated: 2026-07-22
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -29,10 +29,10 @@
 | 角色 | 目前承擔者 | Sunset 條件 |
 |------|----------|-----------|
 | **Read/Write Lead**（讀寫主流程） | **Supabase** | 永久角色 |
-| **Authoritative Snapshot**（權威快照、SSoT 過渡期） | **Airtable** | Supabase 雙寫驗證連續 30 天無事故 + Dashboard 全功能除錯完成後正式翻轉至 Supabase |
-| **Fallback Backup**（事故後備） | Airtable | Supabase SSoT 翻轉後 Airtable 仍保留作為冷備援 |
+| **Authoritative Snapshot**（權威快照、SSoT） | **Supabase** | 永久角色（D43，2026-07-22 起，Airtable 過渡期正式結束） |
+| **Fallback Backup**（事故後備） | 已剝離停用（Airtable，node/credential 於 n8n 保留） | 直至另行通知（Fat Mo 解決月度 API 額度問題後可重連） |
 
-> **語義要點**：Supabase 為**運行時主導**（Lead），Airtable 為**過渡期權威快照**（Snapshot）。兩者職責不重疊，不衝突。
+> **語義要點**：Supabase 為**唯一 SSoT**（D43 起）。Airtable 因月度 API 額度問題（HTTP 429）全面剝離停用，n8n workflow 內 Airtable node/credential 只斷 connection、不刪除，供未來重連。詳見 `.fhs/notes/decisions.md` D43。
 
 ### 1.2 平台定位與多工具共存治理（2026-07-04 新增，Desktop App 平台收斂 Phase 4.3）
 
@@ -232,16 +232,14 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 3. **Airtable**：欄位讀寫一致性是否受影響？
 4. **Supabase**：雙寫邏輯是否同步受影響？（2026-05-10 新增）
 
-### Supabase 雙系統共存規則（v1.4.5 更新）
+### Supabase 單一 SSoT 規則（v1.7.1 更新，D43 Airtable 剝離）
 
-- **Supabase-First**：Supabase 為主導數據核心（Read/Write/Update），Airtable 為備援。
-- **過渡期 SSoT**：Airtable 目前仍為 SSoT，待 Supabase 方案完全複核且 Dashboard 完成除bug 後，正式轉換 SSoT 至 Supabase。
+- **Supabase-Only**：Supabase 為唯一數據核心（Read/Write/Update）。Airtable 已於 D43（2026-07-22）因月度 API 額度問題（HTTP 429）全面剝離停用，直至另行通知。
+- **Airtable 保留重連能力**：n8n workflow 內 Airtable node/credential 原封不動保留（只斷 connection，唔刪除），未來重連只需重新接駁 edge，唔使重建 credential。
 - **Supabase Free Tier**：使用 Free Tier（$0/月）。用量警戒線：資料庫 400 MB / 月頻寬 1.5 GB。超出則提示 Fat Mo 評估升級，不自動升級。
 - **防閒置強制**：Supabase Free Tier 7 天不活動即暫停。n8n 必須維持每 6 天定時 ping（Anti-Idle node）。
-- **雙寫隔離**：n8n 寫入 Supabase（主流程），同步鏡像至 Airtable（後備鏈路）。Supabase 寫入失敗，不得中斷 Airtable 後備鏈路；Airtable 寫入失敗，不得中斷 Supabase 主流程。使用 try-catch 隔離，失敗記入 Error_Logs。
-- **Feature Flag**：雙寫開關透過 n8n Workflow Static Data `supabase_mirror_enabled` 控制，無需改代碼。
 - **Supabase 禁止重算**：Supabase 禁止使用 trigger 或 generated column 重算財務欄位（final_sale_price / net_profit / *_cost）。
-- **Quadruple_Sync 文件**：欄位映射參考 `/n8n/Quadruple_Sync_Field_Map.md`。
+- **已退役文件**：`/n8n/Quadruple_Sync_Field_Map.md`（雙寫欄位映射參考）因雙寫已停用，內容僅供歷史查閱，唔再是現行規則來源。
 
 ***
 

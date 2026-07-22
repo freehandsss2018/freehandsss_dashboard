@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-07-22] Session 187續VII（Claude Code / Sonnet 5 執行）— D43：Airtable 全面剝離停用，Supabase 正式翻轉為唯一 SSoT
+
+- **緣起**：Airtable 月度 API 額度爆（HTTP 429），已阻塞落單流程逾 12 小時。Fat Mo 裁決全面剝離 Airtable、只保留可重連設定，直至另行通知。經 `/cl-flow` 規劃（`artifacts/2026-07-22-1058/`，Verdict CONDITIONAL_READY，3 條 BLOCKER 全採納）後 `/execute` 執行。
+- **手法**：n8n workflow 一律「斷 connection 保留 node/credential」，改駁現成嘅 Supabase 鏡射資料。6 個 n8n workflow 逐一處理：`FHS_Core_OrderProcessor`（SKU 查詢+落單+刪單三分支）、`FHS_Query_OrderHistory`、`FHS_System_ErrorMonitor`、`FHS_Financial_Overview`（加分頁保護，保留現有 JS 聚合邏輯唔遷 RPC）、`FHS_Action_MetadataUpdate`（判斷邏輯由 Airtable ID 格式改用業務欄位判斷）、`FHS_Query_GlobalReview`（`id` 語意由 Airtable rec ID 改為 Supabase 業務字串，全案最高風險步驟）。Dashboard 前端（`current.html`+`V42.html` 同步）拆走 429 重試邏輯、額度面板改顯示「已停用」。
+- **範圍外新建**：Supabase `system_config` 表 + `update_system_config()` RPC（migration `0060`），取代原借位喺 Airtable Main_Orders 一條記錄嘅系統設定儲存。
+- **順手修復 5 個獨立 pre-existing bug**（過程中發現，非預先規劃）：`Mirror Delete to Supabase` 表達式缺 `=` 前綴（一直靜默 0-row match）、n8n HTTP node 零結果唔觸發落游 node、n8n 兩個 Code node 平行打 axios 令 task runner 崩潰、`orders.process_status` enum 值域同 `order_items` 唔同累街整批、前端 `saveAdjustmentAmount()` 早已誤當 `o.id`=Supabase order_id。
+- **制度同步**：`AGENTS.md` v1.7.0→v1.7.1（§1 角色表 Airtable 由「過渡期SSoT」改「已剝離停用」，Supabase 正式為唯一 SSoT）；`docs/FHS_Prompts.md` v1.10→v1.11（情境二十一「三端」措辭同步，觸發 [F] 稽核）；`decisions.md` 落 D43 完整記錄。
+- **驗證**：每個 workflow 都用真實 webhook 觸發 + Supabase 直查交叉核對（非讀碼臆測）。完成後派 fresh-context opus agent 獨立覆核（唔信本記錄字面，重新 live 觸發全部 6 個 workflow + 直查 Supabase），5 大項全 PASS：訂單數/品項數/年度財務總額全部零誤差吻合，`system_config` RLS 實測擋住直接 anon UPDATE 但放行 RPC，文件版本號同步確認。
+
+【交付前雙紀律自檢】
+驗收：n8n 部署 + 財務相關（Financial Overview）→ fresh-context opus agent 獨立 live 驗證，5 大項全 PASS（詳見 decisions.md D43「驗證」段）
+Subagent：✅ 使用 Explore（初期調查）+ general-purpose model:opus（finance-gatekeeper §5 強制第二意見，獨立 live 驗證非讀碼複查）
+教訓：詳見 decisions.md D43「教訓」段——資料源剝離類任務揭發嘅 bug 幾乎全部係執行時 live 測試先發現，唔係規劃階段睇碼可以預見
+
 ## [2026-07-22] Session 187續VI（Claude Code / Sonnet 5 執行）— Audit Ledger 移除頂部重複「成本扣減說明」提示
 
 - **緣起**：Fat Mo 指出頂部「✓核對通過」摘要卡入面嘅「💰 成本扣減說明」逐句列文字，同②成本快照鏈入面各 badge 嘅「i」展開說明內容完全重複，要求收埋。

@@ -10,6 +10,7 @@
 
 | 日期 | 檔案 | 主題 | 關鍵字 | 摘要 |
 |------|------|------|--------|------|
+| 2026-07-22 | 2026-07-22_n8n-code-node-and-expression-pitfalls.md | n8n Code node 平行崩潰+表達式`=`前綴+HTTP零結果 | n8n, expression, code-node, axios, task-runner | url等字串參數缺`=`前綴會靜默送純文字；HTTP node 0筆結果落游不執行需alwaysOutputData；兩個Code node平行打axios可致task runner崩潰改行序列鏈 |
 | 2026-07-17 | 2026-07-17_charm_cost_ledger_drift_and_missing_chain_rule.md | 吊飾成本雙數簿漂移+頸鏈規則缺失 | finance, n8n, cost-drift, necklace-chain, migration-0046 | products.total_base_cost凍結舊值vs cost_configurations新值長期漂移；頸鏈$100規則從未落實n8n |
 | 2026-07-04 | 2026-07-04_docs-changelog-duplicate-cleanup.md | docs/CHANGELOG.md 重複檔案清理 | changelog, duplicate, frontmatter, repo-map | 分岔複本判斷法：metadata 可能比內容還舊，需比對實際內文最新日期 |
 | 2026-03-20 | 20260320_1358_Memory_Engine_2.0_Architecture.md | Memory Engine 2.0 架構 | memory, notion, sync, architecture | Memory Engine V2 自動掃描 lessons/ 同步 Notion 大腦的設計決策 |

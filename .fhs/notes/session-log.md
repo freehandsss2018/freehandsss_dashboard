@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-22 (Session 187 — D43：Airtable 全面剝離停用，Supabase 正式翻轉唯一 SSoT): 🏷️ ✅
+
+**摘要**：全文見完成記錄 [2026-07-22_d43-airtable-decoupling_completion_report.md](../reports/completion/2026-07-22_d43-airtable-decoupling_completion_report.md)（[B] 觸發，完成報告為唯一全文居所，本行僅摘要指回）。Airtable 月度 API 額度爆阻塞落單流程逾12小時，Fat Mo 裁決全面剝離；6個n8n workflow+Dashboard前端改駁Supabase，順手修復5個獨立bug，fresh-context opus獨立驗收全PASS。
+Subagent：✅ Explore（初期調查）+ general-purpose model:opus（finance-gatekeeper §5 強制第二意見）。
+
 ## 2026-07-21 (Session 186 — `/fhs-check` 測試單清理假 PASS 修復 + 發現 Airtable 額度耗盡疑似卡住落單流程): 🏷️ ✅🔴
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S186 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報測試單刪除 Telegram 通知咗但訂單總覽仍見到；查證係 n8n `onReceived` 異步架構下測試腳本淨信 webhook 200 嘅假 PASS 設計缺陷。已修復三個測試腳本加真實 Supabase 驗證，清理兩張殘留測試單。過程中意外發現 Airtable API 月度額度已耗盡，懷疑現正影響真實落單流程（🔴緊急，留待 Fat Mo 自行查 n8n UI + Airtable 帳單）。

@@ -1,15 +1,16 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.10
-compatible_with: AGENTS.md v1.5.0
-last_updated: 2026-07-05
-last_audited_session: S145
+version: v1.11
+compatible_with: AGENTS.md v1.7.1
+last_updated: 2026-07-22
+last_audited_session: D43
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.10
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.11
 >
-> 最後更新：2026-07-05（v1.10 S145 `/fhs-audit` 修復：新增情境二十六`/fhs-check`路由，補齊A4-3缺口；`/rg`比照read/execute慣例不列情境）
+> 最後更新：2026-07-22（v1.11 D43 稽核：AGENTS.md Airtable SSoT 角色翻轉至 Supabase 觸發 [F] 稽核義務。結論：情境二十一「三端財務稽核」觸發詞/說明改「Live Airtable 數據」為「Live Supabase 數據」，「三端」定義由 Airtable↔n8n↔Dashboard 改 Supabase↔n8n↔Dashboard，不新增/刪除情境——路由結構不變，僅反映資料源現況）
+> 前次更新：2026-07-05（v1.10 S145 `/fhs-audit` 修復：新增情境二十六`/fhs-check`路由，補齊A4-3缺口；`/rg`比照read/execute慣例不列情境）
 > 前次更新：2026-07-05（v1.9 S142 同步：新增 `/fhs-slim` 指令，情境八補「深度分流」— 快檢清理走 fhs-slim，全套深稽核維持走 fhs-audit）
 > **S142 稽核（2026-07-05）**：`.fhs/ai/commands/` 新增 `fhs-slim.md`，觸發 [F] 稽核義務。結論：**情境八（Internal Patrol）內補分流子句，不新增獨立情境**——/fhs-slim 與 /fhs-audit 同屬「內部巡邏/清理」語意範疇，差異僅在深度與觸發機制（hook自動 vs 人工按需），沿用既有觸發詞集合即可涵蓋，另開情境會製造第二套幾乎重疊的關鍵詞路由。
 > **S137 稽核（2026-07-04）**：`.fhs/ai/governance/` 新增 7 檔（模型調度制度層）觸發 [F] 稽核義務。結論：**不新增情境**——governance 為 AI 自身調度守則（何時升級模型/何時算完成/怎麼派工），非業務觸發情境，與本文件「業務情境路由」定位正交，見 `.fhs/ai/governance/00_INDEX.md` 職責邊界表。版本/日期/稽核 session 三欄已同步更新以反映本次稽核已執行。
@@ -164,8 +165,9 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 ## 【情境二十一：三端財務稽核 (Finance Auditor)】
 
-觸發：用戶提及「對帳」「Live 驗證」「Airtable 利潤驗證」「訂單成本比對」「三端財務」「財務稽核」「Total_Cost 不對」「利潤差異」「成本差了」
-> 與情境五的區別：情境五處理靜態財務規則確認（n8n 格式、利潤守護規則）；此情境**查詢 Live Airtable 數據**，執行三端（Airtable↔n8n↔Dashboard）互動式驗證。
+觸發：用戶提及「對帳」「Live 驗證」「訂單成本比對」「三端財務」「財務稽核」「Total_Cost 不對」「利潤差異」「成本差了」
+> ⚠️ D43（2026-07-22）起 Airtable 已剝離停用，Supabase 為唯一 SSoT——「三端」現指 Supabase↔n8n↔Dashboard，非舊稱 Airtable↔n8n↔Dashboard。Airtable 相關比對僅適用於未來重連後。
+> 與情境五的區別：情境五處理靜態財務規則確認（n8n 格式、利潤守護規則）；此情境**查詢 Live Supabase 數據**，執行三端互動式驗證。
 > 與情境十六的區別：情境十六跑全域批次 Python 腳本掃描；此情境針對**指定訂單的互動式深入稽核**。
 > ⚠️ 若差異來自 `final_sale_price` vs 系統建議價（`__System_Final_Sale_Price`），請先走**情境二十二**查 `admin_notes`，確認非授權優惠後才在此情境執行三端比對。
 執行邏輯：此情境已獨立為 Subagent，請立即調用 `finance-auditor` Subagent 執行三端財務稽核。

@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-22] (D43) Airtable 全面剝離停用（月度 API 額度問題）——6 個 n8n workflow + Dashboard 前端改駁 Supabase，SSoT 正式翻轉
+
+決策：Airtable 月度 API 額度爆（HTTP 429，已阻塞落單流程逾 12 小時），Fat Mo 裁決全面剝離 Airtable、只保留可重連設定，直至另行通知。經 cl-flow 規劃（flow_id `2026-07-22-1058`，Verdict CONDITIONAL_READY，3 條 BLOCKER 全採納）後 `/execute` 執行。手法：n8n workflow 一律「斷 connection 保留 node/credential」（唔刪唔清），改駁現成嘅 Supabase 鏡射資料（`orders`/`order_items`/`products`，已完整覆蓋 Airtable Main_Orders/Order_Items/Product_Database）。AGENTS.md §1 角色表 + §Supabase 共存規則同步改寫：Airtable 由「過渡期 SSoT」降級「已剝離停用」，Supabase 正式成為唯一 SSoT（v1.7.0→v1.7.1）。
+執行範圍（全部 live webhook 觸發 + Supabase 直查交叉驗證，非讀碼臆測）：
+1. `FHS_Core_OrderProcessor`（`6Ljih0hSKr9RpYNm`）：`Smart Cache Strategist`→`Local Data Mapper` 直連跳過 SKU 查詢 Airtable node；`Create Main Order`/`Create Sub Items` 分支斷開（Supabase Mirror 為並行分支不受影響）；刪單分支改駁 Supabase。順手修復 `Mirror Delete to Supabase` 的 `url` 欄位缺 n8n 表達式前綴 `=`（一直當純文字送出，PATCH 打中 `order_id=eq.undefined` 靜默 0-row match）。
+2. `FHS_Query_OrderHistory`（`4m864MZ6pp1FjWu2`）：改駁 Supabase `orders` 表；順手發現並修復 n8n HTTP node 響應 0 筆時唔觸發落游 node 嘅通病（加 `alwaysOutputData`）。
+3. `FHS_System_ErrorMonitor`（`8WbbEqZpiWu0CB1o`）：`Log to Airtable`→`Log to Supabase`（`error_logs` 表，欄位一對一對應）。
+4. `FHS_Financial_Overview`（`uQKtGDupMBnSygr3`）：保留現有 `Financial Aggregator` JS 聚合邏輯（唔遷去 `get_financial_kpis`/`get_financial_charts` RPC——shape 唔匹配 `groups`/`lineChart`/`barChart`/`pieChart` 前端結構，列為技術債），只換 Airtable→Supabase 資料源，加分頁保護。年度總額同 Supabase `SUM()` 直查零誤差吻合（revenue=169,440/cost=28,876/profit=137,704/訂單=44）。
+5. `FHS_Action_MetadataUpdate`（`RPbUmSVvfVEvlyX4`）：判斷邏輯由 `.startsWith('rec')`（Airtable ID 格式猜測）改用「payload 有冇 `Order_Item_Key` 業務欄位」判斷；順手修復 `Chunk Main_Orders` 孤兒連線（Main_Orders metadata 更新從未生效嘅舊 bug）。過程中發現 n8n 兩個 Code node 平行分支同時打 axios 會令 NAS task runner 崩潰，改行序列鏈解決；加 try/catch 令單筆錯誤（如 enum 值域唔啱）唔再累街整批。深挖後發現 Global Review 表格嘅逐格編輯（`saveInlineEdit`）早已改用直連 Supabase，呢個 webhook 而家淨係俾兩個「批量」功能用，前端零額外改動需求。
+6. `FHS_Query_GlobalReview`（`9c5hQNzSfjSOIZ1Q`，全案風險最高一步）：`id` 語意由 Airtable rec ID 改為 Supabase 業務字串（`order_id`/`item_key`），棄用 `Order_Items_Links` linked-record 陣列匹配，改用 `order_fhs_id` 分組（Supabase 原生外鍵設計）；`Read Product Cache` 本地檔案快取棄用（`order_items` 已直存 `product_sku`/`item_category`/`subtotal_cost`）。訂單數/品項數/已刪除訂單排除/search/year+month 篩選全部同 Supabase 直查精確吻合（44 單/103 品項）。副作用：修復咗前端 `saveAdjustmentAmount()` 一個舊 bug（早已誤當 `o.id`=Supabase order_id，Step E 前一直靜默 0-row match）。
+7. Dashboard 前端（`Freehandsss_dashboard_current.html` + `freehandsss_dashboardV42.html` 同步）：`fetchGlobalReview()` 拆走 Airtable 429 重試分支（保留一般網路錯誤重試）；`sysRefreshPanel()` Airtable 額度面板改顯示靜態「已停用」狀態。
+8. **範圍外新發現+已處理**：`systemConfig.recordId`（Dashboard「下一個訂單序號」設定，原借位喺 Airtable Main_Orders 一條特定記錄嘅 `Admin_Notes`）——Fat Mo 選擇方案 1 徹底解決，新建 Supabase `system_config` 表（migration `0060_system_config_table`，RLS anon 只讀，寫入經 `update_system_config()` SECURITY DEFINER RPC，已驗證直接 anon UPDATE 被正確擋），`loadSystemConfig()`/`saveSeqSettings()` 改行 Supabase 直連（同「V41 Supabase Read Layer」`sbFetch`/`sbRpc` 手法一致）。`last_id` 暫存為 hardcode 預設值 `06000`（Airtable 429 期間無法查證原值），需 Fat Mo 經設定面板手動核實一次。
+技術債（已記錄，非本次處理）：(a) `Financial Aggregator` 未實作 3-layer revenue fallback，同 RPC 存在數字分歧風險；(b) Supabase Service Key 直接寫喺多個 n8n HTTP node（非本次新增，Phase 1 已有先例，屬全系統既有模式，key rotation/least-privilege 屬獨立安全強化專案）。
+教訓：呢類「剝離某個資料源」嘅任務唔係機械式換 API endpoint——實測揪出 5 個獨立 pre-existing bug（`?.` 表達式缺 `=` 前綴、HTTP node 零結果唔觸發落游、n8n 平行 Code node 崩潰、enum 值域唔啱累街整批、前端 `o.id` 語意早已假設咗未來狀態），全部係「改緊嗰段代碼順手發現」，唔係預先規劃到嘅——證明 cl-flow 嘅「A3 有 repo 存取先寫草案」設計原則有效，但實際執行仍然需要每一步都 live 驗證，唔可以靠讀碼/寫方案就假設正確。詳見 `artifacts/2026-07-22-1058/`（task-brief/a3-draft/ag-review/px-review/id-coupling-scan/cl-final-plan）。
+**驗證（fresh-context opus，finance-gatekeeper §5 強制）**：獨立 agent 唔信本記錄字面、重新 live 觸發全部 6 個 workflow webhook + 直查 Supabase 交叉核對（含新建測試單、GlobalReview 44 單/103 品項全核、Financial Overview 年度總額零誤差、`system_config` RLS 實測擋住直接 anon UPDATE 但放行 RPC），5 大項全 PASS，總體 verdict：完整正確，Airtable 確實已離開全部 live path。揪出 2 個純顯示層殘留（`syncToAirtable()` loader 文字、`sysTrackAtCall` label 仍寫 "Airtable"，唔影響功能）已順手清理。
+
 [2026-07-22] (Session 187, D42) 吊飾頸鏈成本：前端估算雙計 + Audit Ledger badge 誤導修復 + n8n 記帳格式對齊鎖匙扣模式
 
 決策：Fat Mo 核對 Akira（0600721）帳單揪出三層問題，逐一定案：(1) 前端 `calculatePricing()` 成本預估器將運費**扣減率** config 誤複用做**成本**疊加（`_totalBaseShipping`），造成新/修訂單成本預估器雙計，貴 $220，已移除該加項；(2) 核對帳單「成本快照鏈」畫面 `_dedBadge(keyword)` 用 desc 子字串比對將吊飾嘅 +$200（頸鏈加項）同 -$105（運費扣減）兩張筆記夾埋顯示做誤導性「(-$95)」，已拆做 `_dedBadge`/`_addBadge` 按正負值分流；(3) Fat Mo 裁決吊飾頸鏈成本記帳格式應比照鎖匙扣環扣模式對齊——由「訂單層單一 +$200 加項」改為「品項層對稱 $100/件 + 訂單層共用折扣 -$200」，數學等價（`100×N−floor(N/2)×100=ceil(N/2)×100`），總成本 $2,605 不變。
