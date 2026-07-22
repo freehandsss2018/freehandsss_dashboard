@@ -3,6 +3,25 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-22] 交貨期進度卡「已完成訂單仍顯示逾期」修復——`v_delivery_reminders` view 加 `is_archived` 過濾
+
+**背景**：Fat Mo 截圖回報手機版「交貨期進度」卡片顯示已完成訂單為逾期（如 0500509 逾期304天），懷疑不準確。
+
+**根因**（實測直查 Supabase，非讀碼臆測）：`v_delivery_reminders` view（migrations 0032/0033）從未引用 `orders.is_archived`（S161 自動完成偵測寫入的權威完成旗標），只查兩個實際上失效的過濾條件：(1) `orders.process_status NOT IN ('完成','已取件','已取消')`——但生產數據 `process_status` 實際只出現過「待確認」/「製作中」兩值，從未出現過該三個字面值，形同虛設；(2) `order_items.process_status NOT IN ('完成','已取件')`——但品項真實「完成」字面值主要係 `'Done 已完成'`（41筆，佔多數）同舊制 `'完成'`（26筆）並存，過濾器只揪到後者。實測：卡片顯示的 33 筆入面，16 筆（近一半）其實 `is_archived=true` 已完成，卻因兩層過濾器同時失效而漏網。同類病灶見 `project_financial_rpc_status_filter_bug.md`（字面值 vs 真實 enum 唔匹配）。
+
+決策：Fat Mo 確認照方案落 migration 修復。
+執行：`supabase/migrations/0063_delivery_reminders_is_archived_fix.sql`——view 加 `AND o.is_archived IS NOT TRUE` 做主要（權威）過濾，item 層過濾字面值集擴充為 `('完成','已取件','Done 已完成','待交收')` 做雙重保險；smoke test 內建 archived-leak 檢查（>0 即 RAISE EXCEPTION）。前端 `_dlvBadgeHtml()`/交貨期進度卡/總覽 badge 均直接讀此 view，故零 HTML/JS 改動即全修復。
+驗證：fresh-context agent 獨立覆核 5 項全 PASS——view 定義含新過濾條件；`is_archived=true` 洩漏筆數=0；4張原報異常單（0500509/0500703/0600100/0696216）已從 view 消失；`urgency` 值全部合法（33→17筆，減少16筆與診斷一致）；抽查仍在製作中嘅6張真實逾期單（0600721等）未被誤過濾。
+相關檔案：`supabase/migrations/0063_delivery_reminders_is_archived_fix.sql`。
+
+[2026-07-22] 三項待辦收尾確認（Fat Mo 直接回覆）
+
+決策：Fat Mo 一次過確認三項舊待辦狀態：
+1. **[S182] iOS 約定日期月曆重疊 bug**：實機覆核 PASS，正式結案。
+2. **[D43] system_config 下一個訂單序號**：Fat Mo 已經設定面板核實並更新 `system_config.seq_id.last_id` 由保守預設 `06000` 改為真實值 `060701`（Supabase 直查確認 `updated_at` 為本次操作時間），結案。
+3. **[S155] YouTube+NFC 記念影片工作流計畫**：Fat Mo 裁決暫停擱置，非現行待辦，日後如要重啟需另行提出，計畫文件保留唔刪（`.fhs/reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md`）。
+執行：純狀態更新，`handoff.md` MASTER 表 + 便攜塊同步反映，零代碼改動。
+
 [2026-07-22] (D43續二) Financial Overview 統一資料來源——sbFetchFinancial() 改叫單一整合RPC，淘汰120行JS重複邏輯
 
 **背景**：跟進上一則「D43續完成」修復後，Fat Mo 追問現行雙軌架構（前端JS組裝 vs SQL整合RPC）背後原因，要求先審視歷史再判斷是否值得統一。查證：`sbFetchFinancial()` 源自 2026-05-10 `Supabase Phase 3`（`.fhs/reports/completion/2026-05-10_supabase-phase-3_completion_report.md`），設計初衷係經典 strangler-fig 漸進遷移——Flag ON 直查 Supabase，Flag OFF/失敗 fallback 返 n8n webhook（嗰陣仲查緊 Airtable），計劃本身寫明 Phase 4「雙系統穩定共存確認」即設計上呢個雙軌就係過渡態，非終局。同 `/8d`（八維度分析）無關。**D43（07-22 全面剝離 Airtable）已令當初分裂嘅理由消失**——n8n fallback 而家都係查 Supabase，兩條路徑底層資料源已經一致，剩底嘅純粹係「shape 組裝邏輯喺兩處各自維護」嘅歷史遺留，非刻意保留嘅設計。

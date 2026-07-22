@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-22 (Session 187續XIII — 交貨期進度卡「已完成訂單仍顯示逾期」修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S187續XIII 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 手機截圖回報「交貨期進度」卡片顯示已完成訂單為逾期（如0500509逾期304天）。查證 `v_delivery_reminders` view 從未引用權威完成旗標 `orders.is_archived`，靠嘅兩個 process_status 字面值過濾器皆因唔匹配生產真實值而失效，33筆入面16筆已完成單漏網。migration 0063 加 `is_archived` 過濾+擴充item層字面值集，前端零改動即全修復；fresh-context agent獨立覆核5項全PASS；補記 Logic_Overview.md §10.16 + learnings.md Pitfall #35（對等替換）。
+Subagent：✅ general-purpose model 預設（fresh-context schema改動獨立驗收）。
+
 ## 2026-07-22 (Session 187續XII — Financial Overview 兩條路徑統一資料來源): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S187續XII 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 追問 S187續XI 修復後現行雙軌架構背後原因，`git log -S` 查證源自 2026-05-10 Supabase Phase 3 strangler-fig 漸進遷移設計，D43剝離Airtable後分裂理由已消失，確認「現在做」統一。`sbFetchFinancial()` 由~130行前端組裝簡化為5行單一RPC call，migration 0062補齊marginChange/aovChange/isNewBusiness/orders_inclusive，同n8n fallback共用同一SQL實作。fresh-context agent獨立覆核PASS，已部署。

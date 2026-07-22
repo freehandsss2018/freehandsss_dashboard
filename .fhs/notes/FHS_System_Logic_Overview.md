@@ -689,10 +689,22 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 **現狀**：兩條路徑（前端直呼 + n8n fallback）現時都係呼叫同一個 `get_financial_overview_full(ref_date)` RPC，唯一差別係「邊個發起呼叫」（browser fetch vs n8n code node），shape 組裝邏輯零重複，單一 SQL 來源。日後任何 3-layer/tab_mode/欄位邏輯改動，只需要改 `fhs_build_financial_overview_tab()` 一處。
 
+### 10.16 `v_delivery_reminders` 遺漏 `is_archived` 過濾修復（S187續XIII，2026-07-22）
+
+**問題**：手機版「交貨期進度」統計卡（V42 line ~9234 `renderDeliveryStatsCard`）直接讀 `v_delivery_reminders` view（migrations 0032/0033），顯示已完成訂單為逾期（33筆入面16筆 `is_archived=true` 誤判逾期，部分逾期300+天）。
+
+**根因（同 §10.9 對照即現形的職責缺口）**：§10.9 記錄嘅 `_fhsArchivedIds` 前端守衛，只覆蓋「訂單總覽」逐行 badge（`mapOrder`/dlv badge 隱藏，V42 line 8362/8366），**從未覆蓋**「交貨期進度」統計卡——呢張卡係獨立走 `fetchDeliveryMap()` 直接 fetch `v_delivery_reminders` view，唔經過 `mapOrder`/`_fhsArchivedIds` 那條前端管線。而 view 本身（DB 層）從未引用 `orders.is_archived`（§10.8 `fhs_complete_order` 寫入嘅權威完成旗標），只靠兩個字面值過濾器且皆已失效：
+- Order 層 `process_status NOT IN ('完成','已取件','已取消')`——生產數據 `process_status` 全庫只出現「待確認」/「製作中」，從未見過該三值（`fhs_complete_order` 寫入嘅係 `'Done 已完成'`，同呢三個字面值都唔匹配）
+- Item 層 `process_status NOT IN ('完成','已取件')`——品項真實「完成」字面值主要係 `'Done 已完成'`（41筆，佔多數）同舊制 `'完成'`（26筆）並存，過濾器只揪到後者
+
+**修復**：migration `0063_delivery_reminders_is_archived_fix.sql`——view WHERE 子句加 `AND o.is_archived IS NOT TRUE` 做主要（權威）過濾，item 層過濾字面值集擴充為 `('完成','已取件','Done 已完成','待交收')` 做雙重保險；smoke test 新增 archived-leak 計數檢查。
+
+**教訓**：同一個「已完成」語義，DB 層（`orders.is_archived`）同前端顯示層（`_fhsArchivedIds` Set）如果分別各自實作過濾守衛，好容易漏一處——新增任何讀取訂單狀態嘅 view/查詢時，必須確認有冇引用 `is_archived`，唔可以淨係複製舊 `process_status` 字面值比對邏輯（尤其該邏輯本身已經係 dead filter，字面值同生產真實值長期不匹配都冇人發現）。
+
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 

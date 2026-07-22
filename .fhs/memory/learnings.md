@@ -4,7 +4,7 @@
 > 全檔上限 50 條；超過時必須合併或退役，嚴禁變成第二份 decisions.md。
 > 新條目須過 stage-3 驗證門檻（診斷有核實證據，見 `.fhs/ai/governance/07_compounding-loop.md` §1）；未驗證的猜測落 todo.md「未解待驗證」節，不入本檔。
 > 由 /read Phase 2.5 載入至工作記憶。
-> 上次整理：2026-07-21（Session 187 `/commit` Lesson Distillation，對等替換：退役 Pitfall #20「git checkout 靜默攜帶未提交修改」— 通用 Git 行為非 FHS 專屬操作紀律，換入本次新教訓「運費扣減率 config 被誤複用做加項成本」）；歷史：S185 54→50超預算4條全數退役、S171 對等替換、S170 51→50、S168 51→50、S167 51→50、S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
+> 上次整理：2026-07-22（Session 187續XIII `/commit` Lesson Distillation，對等替換：退役 Pitfall #14「前端client-side Set刷新即清空陷阱」— 已完整記錄於 Logic_Overview.md §10.9，換入本次新教訓「v_delivery_reminders view 遺漏 is_archived 權威旗標」）；歷史：2026-07-21（Session 187 對等替換：退役 Pitfall #20「git checkout 靜默攜帶未提交修改」— 通用 Git 行為非 FHS 專屬操作紀律，換入本次新教訓「運費扣減率 config 被誤複用做加項成本」）；S185 54→50超預算4條全數退役、S171 對等替換、S170 51→50、S168 51→50、S167 51→50、S166 51→50、S158 51→50、S146 51→50、S144 對等替換、S143 對等替換、S142 51→50、S136 59→49）
 
 ---
 
@@ -49,7 +49,6 @@
 9. **n8n workflow API 送出限制集**：①POST 建立含 `"active":true` → 400，正確：POST→得ID→單獨 activate；②PUT 更新只接受 `{name,nodes,connections,settings}` 四欄；③`process.env.X` 須先載 .env 否則得字面量 `"undefined/..."`；④POST JSON array body 須 `contentType:"raw"`（`specifyBody:"string"`+`JSON.stringify`會被誤序列化成 `{"[...]":""}` → PGRST204）；⑤POST 空陣列 `[]` 觸發 PostgREST "Could not find '[]' column"，寫入前必加 `alerts.length > 0` guard；⑥expression 欄位（Text/URL）不支援 `.filter().map().join()` 鏈式語法，複雜邏輯移至 Code 節點輸出簡單欄位 — Session 67/121/124/127/133
 10. **新增 order_items 欄位必須同步 n8n 寫入鏈**：新單主寫入走 n8n sync_order_to_mirror RPC（非前端 sbSyncOrder）。新欄位若未改 (a)Mirror Prep items.map + (b)RPC INSERT/VALUES/ON CONFLICT 三處 → 永遠 NULL — Session 84
 13. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取 — Session 103
-14. **前端 client-side Set 刷新即清空陷阱**：`window._fhsArchivedIds`（及類似 in-memory Set）初始化為 `new Set()`，session 內手動 add/delete，但刷新後全空。影響分類/過濾的 Set 必須在 `sbFetchGlobalReview` 後從 fetch 結果重建 — Session 105
 15. **openOrderModal 第二參數是 catFilter 非 tab**：第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁必須用**第三參數 initialTab**（內部呼 switchModalTab）。誤把 'finance' 當第二參數 → 捷徑永遠停訊息文本分頁 — Session 109
 16. **【高頻 ⚠️】cl-flow runner Perplexity 推理模型靜默空白**：`sonar-reasoning-pro` 低 `max_tokens`（舊值3072）吃光 think 階段，HTTP 200 + finish_reason:'stop' 卻 content 空，px-report.md 恆寫空白。修復：`max_tokens`→8000 + 空 content 視為失敗 throw 交 withRetry — Session 110 [[2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix]]
 17. **order_items 成本是組裝值非單一原子**：勿拿 `subtotal_cost` 直接比對 `cost_configurations` 單一 key 判斷「未同步」；改值後 products 表無自動回算機制，唯一檢查工具 `fhs_check_product_cost_drift()` 範圍有限 — Session 112 [[2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap]]
@@ -65,6 +64,7 @@
 32. **【高頻 ⚠️】Canva MCP `resize_element` 嘅 `preserve_aspect_ratio=true` 保留嘅係「目前 element container 現有比例」，唔係 asset 原生像素比例**：新素材（如客人上載嘅直向 960×1920 影片）拖入 Canva 時預設 container 形狀（如舊格 864×864 方形）可能同新 asset 完全唔同比例，淨傳一個維度（如 height）靠 `preserve_aspect_ratio` 自動推，實際保留嘅係 container 舊比例（1:1），唔係 asset 原生比例（0.5），導致嚴重變形/重疊。凡新素材原生比例明顯異於現有 container 比例時，必須明確傳 width+height（`preserve_aspect_ratio=false`），唔可以淨靠 `preserve_aspect_ratio` 自動推 — Session 172 [[project_canva_video_automation]]
 33. **【高頻 ⚠️】財務 bug 只查單一訂單/單一欄位會被巧合算術誤導，必須交叉比對訂單層聚合欄位**：`order_items.item_base_cost` 語意不一致（同一 SKU 不同訂單，有時存單件價有時存整套 catalog 價），前兩輪查證分別誤判「數字都對是前端誤報」同「n8n真的漏算quantity」，直到用 `orders.keychain_cost` 配合已知運費扣減公式 `(總片數-1)×$20` 反推交叉驗證，先坐實 subtotal_cost/keychain_cost/total_cost 從未算錯，問題純屬 item_base_cost 輔助欄位誤導前端假警示判斷式。查任何「數字對唔對」類 bug，必須反推對照上一層聚合欄位，唔可以單憑同層兩個欄位互相比較就下結論 — Session 176 [[project_keychain_addon_qty_cost_bug]]
 34. **【高頻 ⚠️】「每件扣減率」config key 唔可以複用嚟當「每件加項成本」**：`calculatePricing()` 將 `charm_shipping_deduction_per_extra`/`keychain_shipping_deduction_per_extra`（設計原意＝多件扣減單價）誤當 `BaseShippingCost` 逐件疊加落總成本，同真正嘅 `_totalShippingDeduction` 扣減項並存，變成「加咗全額、扣返N-1件」嘅隱性雙計——總數睇落唔算離譜（多$220/張），必須同 n8n 真實公式逐分量拆解先揪到。凡見到同一個 config value 被兩個唔同語意變數（加項 vs 扣減率）共用，要追查是否重複計算 — Session 187/2026-07-21 [[project_akira_shipping_double_count]]
+35. **【高頻 ⚠️】新增/沿用 status-filter 查詢前必查權威完成旗標 + 生產真實字面值**：`v_delivery_reminders` view 從未引用 `orders.is_archived`（S104 `fhs_complete_order` 寫入嘅權威完成旗標），只靠兩個已失效嘅 process_status 字面值過濾（order 層 `NOT IN('完成','已取件','已取消')`——生產數據從未出現過呢三值；item 層 `NOT IN('完成','已取件')`——漏咗佔多數嘅真實完成值 `'Done 已完成'`），令33筆入面16筆已完成單被誤判逾期。同一「已完成」語義若 DB層 view 同前端各自實作過濾守衛（見 Logic_Overview.md §10.9 `_fhsArchivedIds`），好易漏一處。任何新增讀取「訂單是否完成」嘅查詢，必須 (a) 確認有冇引用 `is_archived` (b) 實測（非假設）字面值是否等於生產真實值 — Session 187續XIII/2026-07-22 [[project_financial_rpc_status_filter_bug]]
 
 > 📌 **退役**（Session 136）：①「Smart Cache COST_MAP 硬編碼遺漏」已補入 `/new-product` Step 2.e 程序強制執行，不再需要靠此記錄提醒；②「單一配件 filter 假設靜默失效」已被 Pattern #6（`_isAddon()`/`_addonType()` 架構）永久取代；③「generate() else 分支忘記清值」為窄範圍一次性 bug，已修復且此函式模式無再犯風險。
 >
@@ -79,6 +79,8 @@
 > 📌 **退役**（Session 171，`/commit` Lesson Distillation，全檔滿51條超50上限）：「hook 判斷路徑是否安全不可靠 regex 猜測外部路徑」（原 Pitfall #24，Session 145）——修復已是結構性（改讀 `fhs-health-rules.json` 顯式設定值，非需靠記憶提醒的操作紀律），未來復發風險低，退役騰出額度給本次新教訓（PostgREST `ignore-duplicates` 缺 `on_conflict` 冪等假象）。
 >
 > 📌 **退役**（Session 185，`/fhs-slim`，全檔滿54條超50上限）：「[G] 判準已於S148對齊execute.md diff物理特徵」（原 Pitfall #25，Session 147/S148）——核實 `scripts/hooks/post-tool-kgov.js`（L8/139/191/201/214）證實此判準已結構化寫死於 hook 程式碼本身（真值表直接判斷，非文件約定），非需記憶提醒的操作紀律；「顏色bug純讀碼查不全」（原 Pitfall #26，S157/S159）——與 auto-memory `feedback_visual_bug_measure_not_guess.md` 完全重複且該處記錄更詳盡（含兩案例+4條How-to-apply），此處純占位。兩項退役無新教訓對等替換，純降額度。
+>
+> 📌 **退役**（Session 187續XIII，`/commit` Lesson Distillation，全檔滿50條達上限）：「前端 client-side Set 刷新即清空陷阱」（原 Pitfall #14，Session 105）——修復手法（`sbFetchGlobalReview` 後重建 `_fhsArchivedIds`）已完整記錄於 `.fhs/notes/FHS_System_Logic_Overview.md` §10.9（含順序陷阱細節），此處純重複佔位；退役騰出額度給本次新教訓（`v_delivery_reminders` view 遺漏 `is_archived` 權威旗標，主題同屬「已完成訂單狀態判斷」領域，對等替換）。
 
 ---
 

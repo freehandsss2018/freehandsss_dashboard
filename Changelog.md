@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-22] Session 187續XIII（Claude Code / Sonnet 5 執行）— 交貨期進度卡「已完成訂單仍顯示逾期」修復
+
+- **緣起**：Fat Mo 手機截圖回報「交貨期進度」卡片顯示已完成訂單為逾期（如 0500509 逾期304天、0500703 逾期226天等），懷疑數字不準確。
+- **診斷（實測直查Supabase，非讀碼臆測）**：`v_delivery_reminders` view（migrations 0032/0033）從未引用 `orders.is_archived`（S161自動完成偵測寫入嘅權威完成旗標），只靠兩個實際失效嘅過濾條件：(1) `orders.process_status NOT IN ('完成','已取件','已取消')`——生產數據 `process_status` 全庫只出現過「待確認」/「製作中」，從未出現過該三個字面值，形同虛設；(2) `order_items.process_status NOT IN ('完成','已取件')`——品項真實「完成」字面值主要係 `'Done 已完成'`（41筆，佔多數）同舊制 `'完成'`（26筆）並存，過濾器只揪到後者，漏咗多數案例。實測：卡片顯示嘅33筆入面，16筆（近一半）其實 `is_archived=true`（已完成），因兩層過濾器同時失效而漏網。同類病灶見 `project_financial_rpc_status_filter_bug.md`（字面值 vs 真實 enum 唔匹配）。
+- **修復**：migration `0063_delivery_reminders_is_archived_fix.sql`——view 加 `AND o.is_archived IS NOT TRUE` 做主要（權威）過濾，item層過濾字面值集擴充為 `('完成','已取件','Done 已完成','待交收')` 做雙重保險；smoke test 內建 archived-leak 檢查（>0即 RAISE EXCEPTION）。前端 `_dlvBadgeHtml()`/交貨期進度卡/總覽 badge 皆直接讀此 view，零 HTML/JS 改動即全修復。
+- **驗證**：fresh-context general-purpose agent 獨立覆核 5 項全 PASS——view 定義確認含新過濾條件；`is_archived=true` 洩漏筆數=0；4張原報異常單（0500509/0500703/0600100/0696216）已從 view 消失；`urgency` 值全部合法（33→17筆，減少16筆與診斷一致）；抽查仍在製作中嘅真實逾期單（0600721等6張）未被誤過濾。
+- **部署**：純 Supabase view 改動，前端零改動，故無需升格 current.html/NAS 部署。
+
+【交付前雙紀律自檢】
+驗收：schema 相關改動 — fresh-context general-purpose agent 獨立覆核（非自驗）：直查 view 定義 + is_archived 洩漏計數 + 4張原報異常單消失確認 + urgency 分佈健全性 + 反向抽查未過度過濾，5項全PASS
+Subagent：✅ general-purpose（fresh-context schema改動獨立驗收）
+
 ## [2026-07-22] Session 187續XII（Claude Code / Sonnet 5 執行）— Financial Overview 統一資料來源（淘汰前端120行重複組裝邏輯）
 
 - **緣起**：接續 S187續XI 修復後，Fat Mo 追問現行「前端JS組裝 + SQL整合RPC」雙軌架構背後原因，要求先審視歷史再判斷是否值得統一，工作量大就交接。
