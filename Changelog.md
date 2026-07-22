@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-07-22] Session 187續VIII（Claude Code / Sonnet 5 執行）— 財務結算卡片「系統精算建議報價」排版修復
+
+- **緣起**：Fat Mo 手機截圖回報，訂單編輯頁「財務結算」卡片頂部「系統精算建議報價：$11780」一行字喺窄螢幕（375px）逐字斷行，「系統/精算/建議/報/價：$」散開排列，「(2380+860+860+860+860+5960)」明細亦跟住斷行，唔乎合美觀。
+- **根因**：標籤／`$`金額／`priceBreakdown` 明細三段文字全部塞喺同一個 `display: inline-flex` 的 `<span>` 入面，肉眼睇似一行標籤，實際上係 flex container，文字節點變成 anonymous flex item，喺窄容器下 `min-width:auto` 令文字被逼到極窄寬度，觸發逐字換行。
+- **修復**：拆成三行獨立 block（`current.html` + `V42.html` 同步）：① 13px 半粗標籤「💡 系統精算建議報價」；② 26px 粗體大字金額「$11780」；③ 12px 明細「(2380+860+...)」。`suggestedPrice`/`priceBreakdown`/`drawingCost` 等既有 ID 全部不變，`calculatePricing()` JS 邏輯零改動。
+- **驗證**：Browser pane 375px 手機寬度下用 `switchMode('create')` 開表單、直接 `getClientRects()` 量度三段文字之 line 數，確認全部單行（非螢幕截圖，工具環境 screenshot 逾時，改用 DOM 量測法，符合 `feedback_visual_bug_measure_not_guess` 紀律）。
+- **部署**：`/upload-web` 三關驗證 PASS（HTTP 200 / 大小相符 1,043,518 bytes / SHA256 一致）；部署前置 `/fhs-check` 命中已知 PRICE_AUDIT FAIL（Airtable 429，D43 已剝離、腳本未遷移之既有限制，比照先例 Fat Mo 確認後 skip 繼續部署，LIFECYCLE/STRESS/ACCEPTANCE 三項功能測試皆 PASS）。
+
+【交付前雙紀律自檢】
+驗收：純 CSS/HTML 排版改動 — Browser pane DOM 量測（非螢幕截圖）+ NAS 三關驗證 PASS
+Subagent：❌ 未使用（單純 UI 排版修改）
+教訓：（無新教訓，既有量測紀律應用）
+
 ## [2026-07-22] Session 187續VII（Claude Code / Sonnet 5 執行）— D43：Airtable 全面剝離停用，Supabase 正式翻轉為唯一 SSoT
 
 - **緣起**：Airtable 月度 API 額度爆（HTTP 429），已阻塞落單流程逾 12 小時。Fat Mo 裁決全面剝離 Airtable、只保留可重連設定，直至另行通知。經 `/cl-flow` 規劃（`artifacts/2026-07-22-1058/`，Verdict CONDITIONAL_READY，3 條 BLOCKER 全採納）後 `/execute` 執行。
