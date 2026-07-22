@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-07-22] Session 187續V（Claude Code / Sonnet 5 執行）— Audit Ledger badge 優化：唔再合併同色，逐張筆記分開顯示+分類配色
+
+- **緣起**：D42 backfill 後，吊飾成本嘅運費扣減（-$105）同頸鏈共用折扣（-$200）雖然而家同屬負數，但 `_dedBadge` 會將同一 keyword 底下所有負值筆記加埋顯示做一個 -$305 badge——Fat Mo 反映想保留返之前嗰種「分開顯示、唔同顏色」嘅睇法，唔想淨值合併。
+- **修復**：`_dedBadge`/`_addBadge` 合併重寫做單一 `_noteBadges(keyword)`，每張筆記各自產生獨立 badge（唔再 sum 埋一齊），顏色按 `type` 分類：頸鏈相關（`necklace_chain_sharing_discount`/`necklace_chain_cost`）＝紫色（同②頸鏈吊飾分類主題色一致），一般運費類扣減＝綠色，未知/未來加項＝橙色 fallback。
+- **驗證**：本機起server直接呼叫 `openOrderModal(id,'B','finance')` 打開 Akira 財務tab截圖核實：吊飾成本行顯示「(-$105)綠」+「(-$200)紫」兩個獨立badge，鎖匙扣成本維持單一「(-$60)綠」badge不變。
+
+【交付前雙紀律自檢】
+驗收：純顯示層改動（badge產生邏輯，零財務數值改動）— 本機起server用 openOrderModal 直接開Akira真實財務tab截圖核實顏色同分拆效果，非同一步驟循環自證
+Subagent：❌ 未使用 — 主對話直接改代碼+Browser pane截圖驗證
+教訓：（無新教訓，UI偏好調整）
+
 ## [2026-07-22] Session 187續IV（Claude Code / Sonnet 5 執行）— D42 落地：n8n V47.20 部署 + 7 張歷史吊飾單 backfill
 
 - **背景**：接續 S187 系列（見前 3 則），Fat Mo 確認吊飾頸鏈成本記帳格式對齊鎖匙扣環扣模式（品項層對稱 $100/件 + 訂單層共用折扣，取代訂單層單一 +$200 加項），並追加決定：**連 7 張既有歷史單都要一併修改**（推翻早前「只新單」嘅決定）。

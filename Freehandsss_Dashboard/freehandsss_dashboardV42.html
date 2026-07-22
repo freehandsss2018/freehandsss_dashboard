@@ -11138,56 +11138,47 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var _dedSeq = 0, _consumedAdj = [];
             // 2026-07-21 修正：keyword 比對曾經唔分正負值一齊撈（如「吊飾」同時撞中運費扣減同頸鏈加項兩張
             // 筆記），再用 -Math.abs() 強制當扣減顯示，令 -105+200=+95 嘅淨值被印成誤導性嘅「(-$95)」。
-            // 拆做 _dedBadge（只認負值＝真扣減，綠色）同 _addBadge（只認正值＝真加項，另一底色），逐張筆記顯示
-            // 真實金額同符號，唔再合併淨值。
-            function _dedBadge(keyword) {
-                var matched = n8nAdjItems.filter(function(a) {
-                    if (_consumedAdj.indexOf(a) !== -1) return false;
-                    var d = a.desc || a.text || a.message || a.type || '';
-                    return d.indexOf(keyword) !== -1 && (parseFloat(a.amount) || 0) < 0;
-                });
-                if (matched.length === 0) return { badge: '', expl: '' };
-                matched.forEach(function(m) { _consumedAdj.push(m); });
-                var sumAdj = matched.reduce(function(s, a) { return s + (parseFloat(a.amount) || 0); }, 0);
-                var uid = 'fhsDed_' + (o.id || o._uuid || 'x') + '_' + (_dedSeq++);
-                var badge = '<span class="fhsAudit_dedBadge" onclick="var e=document.getElementById(\'' + uid + '\');e.style.display=e.style.display===\'block\'?\'none\':\'block\';">' +
-                    _fNeg(sumAdj) + '<span class="fhsAudit_dedDot">i</span></span>';
-                var expl = '<div id="' + uid + '" class="fhsAudit_dedExpl" style="display:none;">' +
-                    matched.map(function(a) {
-                        var d = a.desc || a.text || a.message || a.type || '';
-                        var b = a.basis ? '<span style="color:#999;"> · 依據 ' + a.basis + '</span>' : '';
-                        return d + b;
-                    }).join('<br>') + '</div>';
-                return { badge: badge, expl: expl };
+            // 2026-07-22 優化：Fat Mo 要求運費扣減（$105）同頸鏈共用折扣（$200）呢類唔同性質嘅
+            // 調整，即使而家兩者都係負數，都要分開顯示、用唔同顏色，唔好夾埋加成一個淨值——
+            // 逐張筆記各自一個 badge，按 type 分色（運費=綠、頸鏈=紫，同吊飾類別主題色呼應），
+            // 未知/未來新加項類型 fallback 橙色。
+            function _noteColor(type, isDed) {
+                if (type === 'necklace_chain_sharing_discount' || type === 'necklace_chain_cost') {
+                    return { bg: '#EDE7F6', fg: '#4527A0' }; // 頸鏈相關：紫色（同②頸鏈吊飾分類色一致）
+                }
+                if (isDed) return { bg: '#E8F5E9', fg: '#2E7D36' }; // 一般扣減（運費等）：綠色
+                return { bg: '#FFF3E0', fg: '#B26A00' }; // 其他加項：橙色 fallback
             }
-            function _addBadge(keyword) {
+            function _noteBadges(keyword) {
                 var matched = n8nAdjItems.filter(function(a) {
                     if (_consumedAdj.indexOf(a) !== -1) return false;
                     var d = a.desc || a.text || a.message || a.type || '';
-                    return d.indexOf(keyword) !== -1 && (parseFloat(a.amount) || 0) > 0;
+                    return d.indexOf(keyword) !== -1;
                 });
-                if (matched.length === 0) return { badge: '', expl: '' };
-                matched.forEach(function(m) { _consumedAdj.push(m); });
-                var sumAdj = matched.reduce(function(s, a) { return s + (parseFloat(a.amount) || 0); }, 0);
-                var uid = 'fhsAdd_' + (o.id || o._uuid || 'x') + '_' + (_dedSeq++);
-                var badge = '<span class="fhsAudit_dedBadge" style="background:#FFF3E0;color:#B26A00;" onclick="var e=document.getElementById(\'' + uid + '\');e.style.display=e.style.display===\'block\'?\'none\':\'block\';">' +
-                    '+' + _f(sumAdj) + '<span class="fhsAudit_dedDot">i</span></span>';
-                var expl = '<div id="' + uid + '" class="fhsAudit_dedExpl" style="display:none;">' +
-                    matched.map(function(a) {
-                        var d = a.desc || a.text || a.message || a.type || '';
-                        var b = a.basis ? '<span style="color:#999;"> · 依據 ' + a.basis + '</span>' : '';
-                        return d + b;
-                    }).join('<br>') + '</div>';
-                return { badge: badge, expl: expl };
+                if (matched.length === 0) return { badges: '', expl: '' };
+                var badgesHtml = '', explHtml = '';
+                matched.forEach(function(a) {
+                    _consumedAdj.push(a);
+                    var amt = parseFloat(a.amount) || 0;
+                    var isDed = amt < 0;
+                    var color = _noteColor(a.type, isDed);
+                    var uid = 'fhsDed_' + (o.id || o._uuid || 'x') + '_' + (_dedSeq++);
+                    var amtLabel = isDed ? _fNeg(amt) : ('+' + _f(amt));
+                    badgesHtml += '<span class="fhsAudit_dedBadge" style="background:' + color.bg + ';color:' + color.fg + ';" onclick="var e=document.getElementById(\'' + uid + '\');e.style.display=e.style.display===\'block\'?\'none\':\'block\';">' +
+                        amtLabel + '<span class="fhsAudit_dedDot">i</span></span>';
+                    var d = a.desc || a.text || a.message || a.type || '';
+                    var b = a.basis ? '<span style="color:#999;"> · 依據 ' + a.basis + '</span>' : '';
+                    explHtml += '<div id="' + uid + '" class="fhsAudit_dedExpl" style="display:none;">' + d + b + '</div>';
+                });
+                return { badges: badgesHtml, expl: explHtml };
             }
             function _costRow(label, costNum, keyword) {
-                var ded = _dedBadge(keyword);
-                var add = _addBadge(keyword);
+                var notes = _noteBadges(keyword);
                 return '<div class="fhsAudit_row indent1">' +
                     '<span class="fhsAudit_label">' + label + '</span>' +
-                    ded.badge + add.badge +
+                    notes.badges +
                     '<span class="fhsAudit_amount cost">' + _f(costNum) + '</span>' +
-                '</div>' + ded.expl + add.expl;
+                '</div>' + notes.expl;
             }
 
             // Main: order-level category breakdown (30/30 reliable — single source of truth)
