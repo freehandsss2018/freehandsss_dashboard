@@ -3,6 +3,16 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-22] (D43續二) Financial Overview 統一資料來源——sbFetchFinancial() 改叫單一整合RPC，淘汰120行JS重複邏輯
+
+**背景**：跟進上一則「D43續完成」修復後，Fat Mo 追問現行雙軌架構（前端JS組裝 vs SQL整合RPC）背後原因，要求先審視歷史再判斷是否值得統一。查證：`sbFetchFinancial()` 源自 2026-05-10 `Supabase Phase 3`（`.fhs/reports/completion/2026-05-10_supabase-phase-3_completion_report.md`），設計初衷係經典 strangler-fig 漸進遷移——Flag ON 直查 Supabase，Flag OFF/失敗 fallback 返 n8n webhook（嗰陣仲查緊 Airtable），計劃本身寫明 Phase 4「雙系統穩定共存確認」即設計上呢個雙軌就係過渡態，非終局。同 `/8d`（八維度分析）無關。**D43（07-22 全面剝離 Airtable）已令當初分裂嘅理由消失**——n8n fallback 而家都係查 Supabase，兩條路徑底層資料源已經一致，剩底嘅純粹係「shape 組裝邏輯喺兩處各自維護」嘅歷史遺留，非刻意保留嘅設計。
+決策：Fat Mo 確認「現在做」，統一為單一來源。
+執行：
+1. Migration `0062_financial_overview_full_parity_fields.sql`：喺 `fhs_build_financial_overview_tab()` 補齊原本淨係喺前端JS存在嘅 3 個衍生欄位——`marginChange`/`aovChange`（毛利率/客單價升跌）、`isNewBusiness`（冇上期數據時前端顯示「—」而非誤導性 0%）、`groups.*.orders_inclusive`，語義逐字對齊原 JS `buildTab()`（新增 helper `fhs_pct_or_null()`，同 `fhs_pct()` 分別在於 prev 為 0/null 時回傳 null 而非 0）；同時修正 subtitle 文案對齊原文（monthly='vs 上個月'、yearly='vs 上一年全年'，之前 migration 0061 寫錯咗）。
+2. `sbFetchFinancial()`（`current.html`+`V42.html`）由 ~130 行（12 個並行 RPC call + 自製 shape 組裝函式）簡化為 5 行，直接 `sbRpc('get_financial_overview_full', {ref_date})` 一次攞晒。
+驗證：fresh-context general-purpose agent 獨立覆核 PASS（finance-gatekeeper §5）——直查 RPC 同 browser `window.FO_LIVE_DATA` 數字逐項吻合（current/monthly/yearly 三分頁 revenue/cost/profit/orders/marginChange/aovChange/isNewBusiness 全部一致）；monthly 分頁（有真實上月數據）marginChange=+0.8pp／aovChange=-4.4%正確顯示；current/yearly 分頁（暫無去年同期數據）正確顯示「—」而非誤導性 0%；分類篩選（手模擺設/金屬產品）數字正確區分，無回歸。已升格部署，NAS三關驗證PASS。
+相關檔案：`supabase/migrations/0062_financial_overview_full_parity_fields.sql`。
+
 [2026-07-22] (D43續完成) Financial Overview 3-layer 落差修復——真正 bug 喺前端 sbFetchFinancial()，非最初分析嗰個 n8n 層
 
 **重要更正**：本檔較早前「D43續」條目（見下方，緊接住呢條之後）分析嘅係 n8n `Financial Aggregator`（workflow `uQKtGDupMBnSygr3`），發現該層完全冇 `groups` 分類邏輯，量化偏差最多 +286%。**Live browser 實測後發現呢個分析對象係錯嘅**——Dashboard 實際渲染 Financial Overview 用嘅係另一套獨立實作 `sbFetchFinancial()`（`Freehandsss_dashboard_current.html`/`freehandsss_dashboardV42.html` ~line 15186，"V41 Supabase Read Layer"，`localStorage.fhs_supabase_read` 預設 `'1'` 自動啟用，前端直接呼叫 Supabase RPC，完全繞過 n8n webhook），呢套實作**分類 groups 本身已經正確**（`kCurHm`/`kCurMt` 等分開呼叫 `get_financial_kpis` per category）。真正嘅 bug 喺呢套實作嘅 `current`/`yearly` 兩個分頁**都呼叫 `tab_mode:'yearly'`**（source code 註解直寫「current tab = YTD」），令兩個分頁顯示完全相同數字（yearly 期實測：current 應顯示 $31,030 月迄今，實際顯示 $154,860 全年總額）。n8n 層先前分析嘅「分類完全缺失」問題，只存在於已經係 dead code 嘅 fallback path（`isSupabaseRead()===false` 或 Supabase RPC 失敗時先會 fallback 到 n8n webhook），對 Fat Mo 實際睇到嘅畫面冇影響。

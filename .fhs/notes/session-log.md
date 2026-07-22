@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-22 (Session 187續XII — Financial Overview 兩條路徑統一資料來源): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) S187續XII 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 追問 S187續XI 修復後現行雙軌架構背後原因，`git log -S` 查證源自 2026-05-10 Supabase Phase 3 strangler-fig 漸進遷移設計，D43剝離Airtable後分裂理由已消失，確認「現在做」統一。`sbFetchFinancial()` 由~130行前端組裝簡化為5行單一RPC call，migration 0062補齊marginChange/aovChange/isNewBusiness/orders_inclusive，同n8n fallback共用同一SQL實作。fresh-context agent獨立覆核PASS，已部署。
+Subagent：✅ general-purpose model 預設（fresh-context 財務改動獨立驗收，finance-gatekeeper §5 強制）。
+
 ## 2026-07-22 (Session 187續XI — Financial Overview 3-layer 落差修復，真正 bug 喺前端 sbFetchFinancial()): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S187續XI 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。跟進 D43 技術債，最初分析 n8n `Financial Aggregator` 方向錯咗——browser 實測揭發 Dashboard 實際用另一套前端直呼 Supabase 嘅獨立實作 `sbFetchFinancial()`，真正 bug 係 Current/Yearly 兩個分頁都 call `tab_mode:'yearly'`。已修正 + 順手新建整合 RPC `get_financial_overview_full` 取代 n8n fallback path 舊邏輯，V42→current.html 已升格部署，NAS三關驗證PASS。

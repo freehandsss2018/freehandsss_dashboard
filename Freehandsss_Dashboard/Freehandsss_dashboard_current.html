@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-22T10:05:05Z">
+    <meta name="fhs-build" content="2026-07-22T10:36:21Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -15183,130 +15183,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         /* ── Supabase Financial Overview replacement ─────────────── */
+        // 統一資料來源（decisions.md D43續二，2026-07-22）：原本呢度用 12 個並行 RPC call
+        // 自己喺 JS 砌 shape，同 n8n fallback path 嘅 get_financial_overview_full() 各自維護
+        // 一份一模一樣嘅組裝邏輯，屬雙來源漂移風險。而家改為直接叫嗰個 SQL function，
+        // 前端只做一次 network round-trip，唔再有第二份重複邏輯。
         async function sbFetchFinancial() {
             const refDate = new Date().toISOString().split('T')[0];
-
-            // 12 parallel RPC calls: KPIs per tab+category, charts per tab
-            // tab_mode 對齊 RPC 定義（decisions.md D43續，2026-07-22 修正）：
-            //   current = 本月迄今 vs 去年同期 ｜ monthly = 本月完整 vs 上月 ｜ yearly = 本年迄今 vs 去年同期
-            const results = await Promise.all([
-                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'all',       ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'all',       ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'handmodel', ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'handmodel', ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'handmodel', ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'current',  category: 'metal',     ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'monthly',  category: 'metal',     ref_date: refDate }),
-                sbRpc('get_financial_kpis',   { tab_mode: 'yearly',   category: 'metal',     ref_date: refDate }),
-                sbRpc('get_financial_charts', { tab_mode: 'current',  category: 'all',       ref_date: refDate }),
-                sbRpc('get_financial_charts', { tab_mode: 'monthly',  category: 'all',       ref_date: refDate }),
-                sbRpc('get_financial_charts', { tab_mode: 'yearly',   category: 'all',       ref_date: refDate })
-            ]);
-
-            const kCurAll = results[0], kMonAll = results[1], kYrAll = results[2];
-            const kCurHm  = results[3], kMonHm  = results[4], kYrHm  = results[5];
-            const kCurMt  = results[6], kMonMt  = results[7], kYrMt  = results[8];
-            const chCur   = results[9], chMon   = results[10], chYr  = results[11];
-
-            function pct(a, b) {
-                if (!b || b === 0) return null;
-                return Math.round((a - b) / b * 1000) / 10;
-            }
-
-            function buildChartData(ch) {
-                const cr = ch.category_revenue || {};
-                const cb = ch.cost_breakdown   || {};
-                const tr = ch.trend            || [];
-
-                const lineLabels = tr.map(function(t) {
-                    const parts = (t.period || '').split('-');
-                    return parts[1] ? (parseInt(parts[1], 10) + '月') : t.period;
-                });
-
-                const barLabels  = ['手模擺設', '頸鏈吊飾', '鎖匙扣'];
-                const barAllVals = [cr.handmodel || 0, cr.necklace || 0, cr.keychain || 0];
-                const hmFrame = cr.handmodel_frame || 0;
-                const hmBottle = cr.handmodel_bottle || 0;
-                const barHmVals   = (hmFrame + hmBottle > 0) ? [hmFrame, hmBottle] : [cr.handmodel || 0];
-                const barHmLabels = (hmFrame + hmBottle > 0) ? ['木框手模擺設', '玻璃瓶手模擺設'] : ['手模擺設'];
-                const barMtVals  = [cr.necklace  || 0, cr.keychain || 0];
-
-                const pieAllCol = ['#7B1FA2', '#0288D1', '#26C6DA'];
-
-                return {
-                    lineChart: {
-                        labels:  lineLabels,
-                        revenue: tr.map(function(t) { return t.revenue || 0; }),
-                        cost:    tr.map(function(t) { return t.cost    || 0; }),
-                        profit:  tr.map(function(t) { return t.profit  || 0; })
-                    },
-                    barChart: {
-                        all:       { labels: barLabels,    values: barAllVals },
-                        handmodel: { labels: barHmLabels,  values: barHmVals  },
-                        metal:     { labels: ['頸鏈吊飾', '鎖匙扣'], values: barMtVals  }
-                    },
-                    pieChart: {
-                        all:       { labels: barLabels,                       values: [cb.handmodel || 0, cb.necklace || 0, cb.keychain || 0], colors: pieAllCol },
-                        handmodel: { labels: ['手模擺設'],                    values: [cb.handmodel || 0],                                     colors: ['#7B1FA2'] },
-                        metal:     { labels: ['頸鏈吊飾', '鎖匙扣'], values: [cb.necklace  || 0, cb.keychain || 0],                   colors: ['#0288D1', '#26C6DA'] }
-                    },
-                    breakdown: {
-                        all: {
-                            labels:  barLabels,
-                            revenue: barAllVals,
-                            cost:    [cb.handmodel || 0, cb.necklace || 0, cb.keychain || 0],
-                            profit:  [cr.handmodel_profit || 0, cr.necklace_profit || 0, cr.keychain_profit || 0],
-                            orders:  [cr.handmodel_orders || 0, cr.necklace_orders || 0, cr.keychain_orders || 0]
-                        },
-                        handmodel: {
-                            labels:  ['手模擺設'],
-                            revenue: [cr.handmodel || 0],
-                            cost:    [cb.handmodel || 0],
-                            profit:  [cr.handmodel_profit || 0],
-                            orders:  [cr.handmodel_orders || 0]
-                        },
-                        metal: {
-                            labels:  ['頸鏈吊飾', '鎖匙扣'],
-                            revenue: [cr.necklace || 0, cr.keychain || 0],
-                            cost:    [cb.necklace  || 0, cb.keychain || 0],
-                            profit:  [cr.necklace_profit || 0, cr.keychain_profit || 0],
-                            orders:  [cr.necklace_orders || 0, cr.keychain_orders || 0]
-                        }
-                    }
-                };
-            }
-
-            function buildTab(kAll, kHm, kMt, ch, subtitle) {
-                const cur = kAll.current, prev = kAll.previous || {};
-                const curHm = kHm.current, curMt = kMt.current;
-                const charts = buildChartData(ch);
-                return Object.assign({
-                    subtitle:      subtitle,
-                    revenue:       cur.revenue, cost:   cur.cost,   profit: cur.profit, orders: cur.orders,
-                    revenueChange: pct(cur.revenue, prev.revenue),
-                    costChange:    pct(cur.cost,    prev.cost),
-                    profitChange:  pct(cur.profit,  prev.profit),
-                    ordersChange:  pct(cur.orders,  prev.orders),
-                    marginChange:  (cur.revenue && prev.revenue) ? ((cur.profit/cur.revenue*100) - (prev.profit/prev.revenue*100)) : null,
-                    aovChange:     pct(cur.orders ? (cur.revenue/cur.orders) : null, prev.orders ? (prev.revenue/prev.orders) : null),
-                    isNewBusiness: !prev.revenue,
-                    groups: {
-                        all:       { revenue: cur.revenue,   cost: cur.cost,   orders: cur.orders,   orders_inclusive: cur.orders_inclusive   || cur.orders   },
-                        handmodel: { revenue: curHm.revenue, cost: curHm.cost, orders: curHm.orders, orders_inclusive: curHm.orders_inclusive || curHm.orders },
-                        metal:     { revenue: curMt.revenue, cost: curMt.cost, orders: curMt.orders, orders_inclusive: curMt.orders_inclusive || curMt.orders }
-                    },
-                    handmodel_qty: (curHm.handmodel_qty || cur.handmodel_qty || { frame: 0, bottle: 0 }),
-                    metal_qty: (curMt.metal_qty || cur.metal_qty || { keychain: 0, necklace: 0 })
-                }, charts);
-            }
-
-            return {
-                current: buildTab(kCurAll, kCurHm, kCurMt, chCur, 'vs 去年同期'),
-                monthly: buildTab(kMonAll, kMonHm, kMonMt, chMon, 'vs 上個月'),
-                yearly:  buildTab(kYrAll,  kYrHm,  kYrMt,  chYr,  'vs 上一年全年'),
-                _source: 'supabase'
-            };
+            const data = await sbRpc('get_financial_overview_full', { ref_date: refDate });
+            return Object.assign({}, data, { _source: 'supabase' });
         }
 
         /* ── Patch fetchGlobalReview ─────────────────────────────── */

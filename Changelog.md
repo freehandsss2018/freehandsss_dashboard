@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-07-22] Session 187續XII（Claude Code / Sonnet 5 執行）— Financial Overview 統一資料來源（淘汰前端120行重複組裝邏輯）
+
+- **緣起**：接續 S187續XI 修復後，Fat Mo 追問現行「前端JS組裝 + SQL整合RPC」雙軌架構背後原因，要求先審視歷史再判斷是否值得統一，工作量大就交接。
+- **歷史查證**：`git log -S` 追溯到 `sbFetchFinancial()` 源自 2026-05-10 `Supabase Phase 3`（strangler-fig 漸進遷移計劃，Flag ON查Supabase／Flag OFF或失敗fallback n8n，設計本身寫明「Phase 4 雙系統穩定共存確認」即雙軌係過渡態非終局），同 `/8d` 無關。D43（07-22全面剝離Airtable）已令當初分裂嘅理由消失——兩條路徑而家底層都係Supabase，剩底純粹係shape組裝邏輯喺兩處各自維護嘅歷史遺留。
+- **決策**：新舊對比後判定新系統（單一SQL RPC）全面優於現行雙軌（效能相若或更快、零重複邏輯漂移風險），工作量評估為當次session內可完成，Fat Mo確認「現在做」。
+- **執行**：(1) migration `0062_financial_overview_full_parity_fields.sql` 補齊 `marginChange`/`aovChange`/`isNewBusiness`/`groups.*.orders_inclusive` 4個原本淨係喺前端JS存在嘅衍生欄位，逐字對齊原語義（新增 `fhs_pct_or_null()` helper），順手修正 subtitle 文案錯字（monthly/yearly）。(2) `sbFetchFinancial()`（`current.html`+`V42.html`）由 ~130行簡化為5行，直接call `get_financial_overview_full` 一次攞晒。
+- **驗證**：fresh-context agent 獨立覆核 PASS——直查RPC同browser `window.FO_LIVE_DATA` 逐項數字吻合；monthly分頁（有真實上月數據）marginChange/aovChange正確顯示；current/yearly分頁（暫無去年同期數據）正確顯示「—」而非誤導性0%；分類篩選功能無回歸。
+- **部署**：V42→current.html升格，`/upload-web` 三關驗證PASS（HTTP204/大小1,037,473 bytes/SHA256一致）。
+
+【交付前雙紀律自檢】
+驗收：財務相關改動 — fresh-context general-purpose agent 獨立覆核（非自驗）：直查RPC+browser實測+production curl三重交叉核對，PASS
+Subagent：✅ general-purpose（fresh-context 財務改動獨立驗收，finance-gatekeeper §5 強制）
+
 ## [2026-07-22] Session 187續XI（Claude Code / Sonnet 5 執行）— Financial Overview 3-layer 落差修復（真正 bug 喺前端 sbFetchFinancial()）
 
 - **緣起**：D43 完成記錄列為技術債，Fat Mo 明確指定新 session 優先處理「Financial Overview 財務總覽數字未對齊 3-layer revenue fallback RPC」。

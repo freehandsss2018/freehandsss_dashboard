@@ -681,10 +681,18 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 **教訓（診斷紀律）**：分析呢類「畫面數字錯」bug，必須先用 browser 讀 `window.FO_LIVE_DATA._source` 確認邊條路徑真正生效，唔可以單靠 grep/讀碼假設「n8n workflow 就係入口」——本次事故最初深入分析咗路徑 2（已經係 fallback dead path），量化埋一份錯誤方向嘅偏差報告，後期 browser 實測先發現路徑 1 先係真正影響用戶畫面嗰條。詳見 `decisions.md`「D43續完成」條目、`.fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md`（已加更正註記）。
 
+### 10.15 兩條路徑統一資料來源（D43續二，2026-07-22）
+
+**歷史根因**（Fat Mo 追問後查證，`git log -S`）：§10.14 描述嘅「兩條並存路徑」源自 2026-05-10 `Supabase Phase 3`（`.fhs/reports/completion/2026-05-10_supabase-phase-3_completion_report.md`）——經典 strangler-fig 漸進遷移設計：Flag ON 直查 Supabase、Flag OFF/失敗 fallback n8n webhook（嗰陣仲查緊 Airtable），計劃本身寫明 Phase 4「雙系統穩定共存確認」，即雙軌設計上就係過渡態，非刻意永久保留嘅架構。同 `/8d`（八維度分析）無關。D43（2026-07-22 全面剝離 Airtable）令當初分裂嘅理由消失——路徑 2（n8n fallback）而家都係查 Supabase，同路徑 1 底層資料源已一致，剩底純粹係「shape 組裝邏輯喺兩處各自維護」嘅歷史遺留。
+
+**統一**：路徑 1 前端 `sbFetchFinancial()` 由 ~130 行（12 個並行 RPC call + client-side `buildTab()`/`buildChartData()` 組裝）簡化為 5 行，直接 `sbRpc('get_financial_overview_full', {ref_date})` 一次攞完整形狀，同路徑 2（n8n fallback）call 同一個 SQL function。Migration `0062_financial_overview_full_parity_fields.sql` 補齊咗 `fhs_build_financial_overview_tab()` 原本缺少嘅 3 個前端衍生欄位（`marginChange`/`aovChange`/`isNewBusiness`，`isNewBusiness` 語義＝冇上期數據時前端顯示「—」而非誤導性 0%）+ `groups.*.orders_inclusive`，逐字對齊原 JS 語義（新增 helper `fhs_pct_or_null()`，同 `fhs_pct()` 分別在於 prev 為 0/null 時回傳 null 而非 0）。
+
+**現狀**：兩條路徑（前端直呼 + n8n fallback）現時都係呼叫同一個 `get_financial_overview_full(ref_date)` RPC，唯一差別係「邊個發起呼叫」（browser fetch vs n8n code node），shape 組裝邏輯零重複，單一 SQL 來源。日後任何 3-layer/tab_mode/欄位邏輯改動，只需要改 `fhs_build_financial_overview_tab()` 一處。
+
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 
