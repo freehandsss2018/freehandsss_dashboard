@@ -7217,17 +7217,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     else if (isGlassJar) price = (hasAdultInSet && hasBabyInSet) ? 2580 : (name.includes("4肢") ? 1680 : 1380);
 
                     totalSuggestedPrice += price;
-                    breakdownParts.push(price);
+                    breakdownParts.push({v: price, c: '#E65100'});
                     totalDrawingCost += item.FatMoCost;
                     item.CalculatedPrice = price;
-                    logs.push(`<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>: $${price}`);
+                    logs.push(`<span style="color:#E65100;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>: $${price}</span>`);
 
                     // 玻璃瓶套裝含父母：家庭定價 $2,580 已含混合模式差異，不再疊加附加費（2026-07-19 Fat Mo 定案，參考單號 0600107）
                     if (hasAdultInSet && hasBabyInSet && !isGlassJar) {
                         const _mixedSurcharge = _cc.mixed_member_surcharge ?? 300; // 讀 config，fallback $300
                         totalSuggestedPrice += _mixedSurcharge;
                         totalSystemAdditionalFee += _mixedSurcharge;
-                        breakdownParts.push(_mixedSurcharge);
+                        breakdownParts.push({v: _mixedSurcharge, c: '#E65100'});
                         logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$${_mixedSurcharge}</div>`);
                     }
                 }
@@ -7236,9 +7236,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let price = name.includes("羊毛氈") ? 680 : name.includes("燈飾") ? 80 : 0;
                     price *= qty;
                     totalSuggestedPrice += price;
-                    breakdownParts.push(price);
+                    breakdownParts.push({v: price, c: '#E65100'});
                     item.CalculatedPrice = price;
-                    logs.push(`${name.includes("燈飾") ? '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#d97706;"><use href="#icon-lightbulb"/></svg>' : '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-smile"/></svg>'} <b>${name}</b> x${qty}: $${price}`);
+                    logs.push(`<span style="color:#E65100;">${name.includes("燈飾") ? '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#d97706;"><use href="#icon-lightbulb"/></svg>' : '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-smile"/></svg>'} <b>${name}</b> x${qty}: $${price}</span>`);
                     totalDrawingCost += item.FatMoCost;
                 }
             });
@@ -7290,11 +7290,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             .replace(/🦶/g, '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:2px;"><use href="#icon-footprint"/></svg>');
                         dispName += ` (${safePartDesc})`;
                     }
-                    logs.push(`${metalLogo} <b>${dispName}</b> x${qty}: $${price}`);
-                    
+                    let _tierColor = (productType === '純銀') ? '#4527A0' : '#37474F';
+                    logs.push(`<span style="color:${_tierColor};">${metalLogo} <b>${dispName}</b> x${qty}: $${price}</span>`);
+
                     item.CalculatedPrice = price;
                     totalSuggestedPrice += price;
-                    breakdownParts.push(price);
+                    breakdownParts.push({v: price, c: _tierColor});
                     totalDrawingCost      += item.FatMoCost;
                     _totalPrintingCost    += item.PrintingCost     || 0; // B1
                     _totalBaseShipping    += item.BaseShippingCost || 0; // B1
@@ -7326,7 +7327,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 silverItems[0].CalculatedPrice = silverPrice;
                 for (let si = 1; si < silverItems.length; si++) { silverItems[si].CalculatedPrice = 0; }
                 totalSuggestedPrice += silverPrice;
-                breakdownParts.push(silverPrice);
+                breakdownParts.push({v: silverPrice, c: '#4527A0'});
                 silverItems.forEach(function(item) {
                     totalDrawingCost   += item.FatMoCost;
                     _totalPrintingCost += item.PrintingCost     || 0; // B1
@@ -7353,7 +7354,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 const necklaces = Math.ceil(totalCharms / 2);
                 logs.push(_catHdr('#EDE7F6','#4527A0','#B39DDB','<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#4527A0;"><use href="#icon-gem"/></svg>頸鏈吊飾'));
-                logs.push(`<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-gem"/></svg> <b>吊飾</b> ${totalCharms}個 / ${necklaces}條頸鏈: $${silverPrice}`);
+                logs.push(`<span style="color:#4527A0;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-gem"/></svg> <b>吊飾 ${totalCharms}個 / ${necklaces}條頸鏈</b>: $${silverPrice}</span>`);
             }
             
             // --- 頸鏈成本（吊飾訂單，P0 奇偶規則：ceil(N/2)×$100）---
@@ -7431,13 +7432,29 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             if (uiPrice) uiPrice.innerText = totalSuggestedPrice;
             if (uiCost) uiCost.innerText = _systemTotalCost;
-            if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+            // S187續X：分類標頭（_catHdr）本身已係 block <div>，join('<br>') 會喺標頭後夾多一個 <br> 造成雙重換行（標頭同第一件品項之間多咗一行空白）。
+            // 改為：標頭後唔加 <br>（貼實上一行）；上一個唔係標頭、而家係標頭（新分類開始）先加 <br><br>（分類之間留一行空白）；其餘一律單 <br>。
+            if (uiDetails) {
+                const _isCatHdr = s => s.indexOf('<div style="margin:4px 0 2px;">') === 0;
+                let _detailsHtml = '';
+                logs.forEach((entry, i) => {
+                    if (i > 0) {
+                        const prevWasHdr = _isCatHdr(logs[i - 1]);
+                        const curIsHdr = _isCatHdr(entry);
+                        _detailsHtml += prevWasHdr ? '' : (curIsHdr ? '<br><br>' : '<br>');
+                    }
+                    _detailsHtml += entry;
+                });
+                uiDetails.innerHTML = _detailsHtml;
+            }
 
-            // V40.8: Show breakdown (e.g. "(2380+860)")
+            // V40.8: Show breakdown (e.g. "(2380+860)")；S187續IX：按分類上色（手模橙/鎖匙扣灰/頸鏈吊飾紫）
             const bkEl = document.getElementById('priceBreakdown');
             if (bkEl) {
-                const nonZero = breakdownParts.filter(p => p > 0);
-                bkEl.innerText = nonZero.length > 1 ? `(${nonZero.join('+')})` : '';
+                const nonZero = breakdownParts.filter(p => p.v > 0);
+                bkEl.innerHTML = nonZero.length > 1
+                    ? '(' + nonZero.map(p => `<span style="color:${p.c};font-weight:600;">${p.v}</span>`).join('<span style="color:#90A4AE;">+</span>') + ')'
+                    : '';
             }
 
             // Render payment split boxes after pricing items are updated
