@@ -7257,7 +7257,64 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             // --- 計算階梯價與重置邏輯 ---
             function processTierPricing(groupItems, productType) {
-                groupItems.forEach((item, index) => {
+                let _tierColor = (productType === '純銀') ? '#4E342E' : '#1565C0';
+                let metalLogo = (productType === '純銀')
+                    ? '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-gem"/></svg>'
+                    : '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-key"/></svg>';
+                let dispNameOf = (item) => {
+                    let dispName = item.Product_Name;
+                    if (item.PartDesc) {
+                        let safePartDesc = item.PartDesc
+                            .replace(/🖐️/g, '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:2px;"><use href="#icon-hand"/></svg>')
+                            .replace(/🦶/g, '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:2px;"><use href="#icon-footprint"/></svg>');
+                        dispName += ` (${safePartDesc})`;
+                    }
+                    return dispName;
+                };
+                let _accrueItemCosts = (item) => {
+                    totalDrawingCost      += item.FatMoCost;
+                    _totalPrintingCost    += item.PrintingCost     || 0; // B1
+                    _totalBaseShipping    += item.BaseShippingCost || 0; // B1
+                    _totalKeychainClaspCost += item.ClaspCost      || 0; // B1
+                };
+
+                // --- P mode 非家庭鎖匙扣：多部位合併計價（Fat Mo 2026-07-23 裁決，比照客戶售價表）---
+                // 核心公式：全部 P mode item 嘅 Quantity 加總做 totalQty，套同一張階梯表；
+                // 附加費：唔跟數量位置，跟「全新不同部位數」——第3個不同部位 +$100，第4個再 +$100（max 2 部位 = 兩手兩腳）
+                let pModeItems = groupItems.filter(item => !item.isFamily && (pModeState === "P" || item.Product_Name.includes("(P)")));
+                let restItems = groupItems.filter(item => !pModeItems.includes(item));
+
+                if (pModeItems.length > 0) {
+                    const totalQty = pModeItems.reduce((s, i) => s + i.Quantity, 0);
+                    const distinctParts = pModeItems.length;
+
+                    let price;
+                    if (totalQty === 1) price = 1580;
+                    else if (totalQty === 2) price = 2160;
+                    else if (totalQty === 3) price = 2940;
+                    else if (totalQty === 4) price = 3520;
+                    else price = 3520 + (totalQty - 4) * 880;
+
+                    const surcharge = Math.max(0, distinctParts - 2) * 100;
+                    price += surcharge;
+
+                    pModeItems[0].CalculatedPrice = price;
+                    for (let k = 1; k < pModeItems.length; k++) pModeItems[k].CalculatedPrice = 0;
+
+                    totalSuggestedPrice += price;
+                    breakdownParts.push({v: price, c: _tierColor});
+                    if (surcharge > 0) totalSystemAdditionalFee += surcharge;
+
+                    const combinedDispName = pModeItems.map(dispNameOf).join(' + ');
+                    let logLine = `<span style="color:${_tierColor};">${metalLogo} <b>${combinedDispName}</b> x${totalQty}: $${price}</span>`;
+                    if (surcharge > 0) logLine += `<span style="color:#D32F2F;font-size:11px;"> (含跨部位附加費 $${surcharge})</span>`;
+                    logs.push(logLine);
+
+                    pModeItems.forEach(_accrueItemCosts);
+                }
+
+                // --- S mode / 家庭連心：維持原有逐 item 獨立計價 ---
+                restItems.forEach((item) => {
                     let qty = item.Quantity;
                     let price = 0;
                     let surcharge = 0;
@@ -7270,48 +7327,27 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         else if (qty === 3) tempPrice = 2280;
                         else if (qty === 4) tempPrice = 2640;
                         else tempPrice = 2640 + (qty - 4) * 660;
-                        
+
                         if (item.Product_Name.includes("S2")) surcharge = 100;
                         if (item.Product_Name.includes("P1") || item.Product_Name.includes("P2") || isAdultItem || pModeState === "P") surcharge = 300;
-                        
+
                         price = tempPrice + surcharge;
                     } else {
-                        if (pModeState === "S" && !item.Product_Name.includes("(P)")) {
-                            if (qty === 1) price = 860;
-                            else if (qty === 2) price = 1200;
-                            else if (qty === 3) price = 1680;
-                            else if (qty === 4) price = 2000;
-                            else price = 2000 + (qty - 4) * 500;
-                        } else {
-                            if (qty === 1) price = 1580;
-                            else if (qty === 2) price = 2160;
-                            else if (qty === 3) price = 2940;
-                            else if (qty === 4) price = 3520;
-                            else price = 3520 + (qty - 4) * 880;
-                        }
-
-
+                        // 此分支現只剩 S mode（P mode 已於上方合併計價分流）
+                        if (qty === 1) price = 860;
+                        else if (qty === 2) price = 1200;
+                        else if (qty === 3) price = 1680;
+                        else if (qty === 4) price = 2000;
+                        else price = 2000 + (qty - 4) * 500;
                     }
-                    let metalLogo = (productType === '純銀') 
-                        ? '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-gem"/></svg>' 
-                        : '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-key"/></svg>';
-                    let dispName = item.Product_Name;
-                    if (item.PartDesc) {
-                        let safePartDesc = item.PartDesc
-                            .replace(/🖐️/g, '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:2px;"><use href="#icon-hand"/></svg>')
-                            .replace(/🦶/g, '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:2px;"><use href="#icon-footprint"/></svg>');
-                        dispName += ` (${safePartDesc})`;
-                    }
-                    let _tierColor = (productType === '純銀') ? '#4E342E' : '#1565C0';
+
+                    let dispName = dispNameOf(item);
                     logs.push(`<span style="color:${_tierColor};">${metalLogo} <b>${dispName}</b> x${qty}: $${price}</span>`);
 
                     item.CalculatedPrice = price;
                     totalSuggestedPrice += price;
                     breakdownParts.push({v: price, c: _tierColor});
-                    totalDrawingCost      += item.FatMoCost;
-                    _totalPrintingCost    += item.PrintingCost     || 0; // B1
-                    _totalBaseShipping    += item.BaseShippingCost || 0; // B1
-                    _totalKeychainClaspCost += item.ClaspCost      || 0; // B1
+                    _accrueItemCosts(item);
                 });
             }
 
@@ -7323,9 +7359,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const totalCharms = silverItems.reduce((sum, i) => sum + i.Quantity, 0);
                 let silverPrice = 0;
                 if (hasMainProduct) {
-                    const fullNecklaces = Math.floor(totalCharms / 2);
-                    const singleCharms = totalCharms % 2;
-                    silverPrice = fullNecklaces * 2980 + singleCharms * 1980;
+                    // S mode（倒模）：2026-07-23 Fat Mo 裁決——單獨1隻維持$1,980底價不變；
+                    // 2隻以上時，配對外嘅remainder單隻價由$1,980降至$1,490（=完整頸鏈$2,980之半，對齊 P mode extraSingle 結構）
+                    if (totalCharms === 1) {
+                        silverPrice = 1980;
+                    } else {
+                        const fullNecklaces = Math.floor(totalCharms / 2);
+                        const singleCharms = totalCharms % 2;
+                        silverPrice = fullNecklaces * 2980 + singleCharms * 1490;
+                    }
                 } else {
                     if (totalCharms === 1) {
                         silverPrice = 2280;
@@ -7355,7 +7397,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     const _inG = Math.min(2, _rem);
                     let _gp;
                     if (hasMainProduct) {
-                        _gp = _inG === 2 ? 2980 : 1980;
+                        // 對齊上方核心公式：單獨1隻（唯一分組）維持$1,980；配對外嘅remainder單隻降至$1,490
+                        _gp = _inG === 2 ? 2980 : (_gi === 0 ? 1980 : 1490);
                     } else {
                         _gp = _gi === 0 ? (_inG === 2 ? 3280 : 2280) : (_inG === 2 ? 3280 : 1640);
                     }
