@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— 財務「訂單數」KPI 四連環修復：品項數量語意 + migration drift 回歸 + 期間歸屬日期口徑統一 + 手模擺設拆木框/玻璃瓶
+
+- **緣起**：Fat Mo 回報財務總覽「訂單數」KPI 卡細項顯示「單」但應為「件」，追問過程中連環揭出訂單總覽（44/40筆）同財務 Yearly「訂單數」（41）長期對不齊。
+- **修復1（品項數量語意）**：`get_financial_charts()` `category_revenue` 內 `handmodel_orders`/`keychain_orders`/`necklace_orders` 由 `COUNT(訂單)` 改 `SUM(order_items.quantity)`，migration `0064`；前端 unit label「單」改「件」。
+- **意外回歸+熱修**：`0064` 以 repo 內舊版 0041 檔案重建函式時，意外打回 2026-07-17 已修復嘅 `已取消` 狀態過濾器（回退成英文死碼 `cancelled/refunded`，同中文 enum 永不匹配），根因係該次 2026-07-17 修復從未以 `.sql` 檔落 repo（純 MCP 直接套用 DB），造成 repo/DB drift。已用 `pg_get_functiondef()` 核對現行 live 定義後以 migration `0065` 熱修。
+- **修復2（期間歸屬日期口徑統一）**：查明訂單總覽前端一直用「約定日期優先，冇先用確認日期」判斷年度，財務 RPC 純用確認日期，兩者定義本來就不同。Fat Mo 裁決統一為「取兩者較早者」（`LEAST(confirmed_at, appointment_at)`）——避開「純約定日期優先」會令近期剛確認、約定日期未到嘅單被「迄今」上限截斷誤判跌出本期收入嘅陷阱。Migration `0066`，`get_financial_kpis`/`get_financial_charts` 共20處期間篩選改口徑。
+- **驗證+部署**：三次修復均先獨立 SQL 模擬預測、套用後 RPC 直查完全吻合，browser 實測訂單總覽（全部+2026）＝財務 Yearly「訂單數」＝40，兩邊對齊，無 console 錯誤。Fat Mo 回覆「一起做」授權，`current.html` 同步 + NAS 三關驗證 PASS（SHA256 `6F1D3482...`）。
+- **修復3（手模擺設拆木框/玻璃瓶）**：Fat Mo 追加要求「訂單數」卡（唯獨呢張，收入/成本/毛利三卡維持合併不變）「手模擺設」細項再拆「木框」/「玻璃瓶」。發現純 `product_sku` 比對會少計 2 件（avg_split 舊單 0500719/0600722 的 `product_sku` 為 NULL），改用 product_sku 為主、NULL 時 fallback 讀 `specification`（正確寫「木框款式」）補齊，令 25+7=32 同原總數吻合。Migration `0067` 新增 `handmodel_frame_orders`/`handmodel_bottle_orders` + `breakdown.ordersLabels`（僅 orders metric 用 4 行標籤，revenue/cost/profit 維持 3 行不變）。過程中遇本機 dev preview server 快取陳舊 JS 陷阱（重啟 server 後確認係環境問題非代碼 bug）。Browser 實測本機 + production 兩邊全部正確，`current.html` 再次同步部署，NAS 三關驗證 PASS（SHA256 `B00A768B...`）。
+- **附帶發現**：部署過程順手發現一個獨立既有 bug——財務總覽「離線示範數據」紅色 banner 疑似 race condition 誤顯示（實際數字正確），已用 `spawn_task` 標記為獨立背景任務（task_643b7281），非本次範圍。
+
+【交付前雙紀律自檢】
+驗收：財務 RPC 改動 — 每次改動均先獨立 SQL 模擬預測、套用後 RPC 直查交叉核對、browser 實測前端渲染三重驗證（非純自驗文字記錄）
+Subagent：❌ 未使用（本次全程互動式 SQL 查證，非委派）
+
+全文見 `.fhs/notes/decisions.md`「D43續三」「D43續四」條目、`.fhs/notes/FHS_System_Logic_Overview.md` §10.17-10.20、auto-memory `project_appointment_vs_confirmed_date_semantics.md`／`feedback_migration_repo_db_drift.md`。
+
 ## [2026-07-22] Session 187續XIII（Claude Code / Sonnet 5 執行）— 交貨期進度卡「已完成訂單仍顯示逾期」修復
 
 - **緣起**：Fat Mo 手機截圖回報「交貨期進度」卡片顯示已完成訂單為逾期（如 0500509 逾期304天、0500703 逾期226天等），懷疑數字不準確。

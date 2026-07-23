@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-22T10:36:21Z">
+    <meta name="fhs-build" content="2026-07-23T04:39:26Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -14060,15 +14060,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             ['revenue','cost','profit','orders'].forEach(function(metric) {
                 var el = document.getElementById('fo-kpi-' + metric + '-bkd');
                 if (!el) return;
-                if (!bkd || !bkd.labels || bkd.labels.length === 0) { el.style.display = 'none'; return; }
+                /* orders 專用細項標籤（手模擺設拆木框/玻璃瓶），冇 ordersLabels 就沿用共用 labels */
+                var labels = (metric === 'orders' && bkd && bkd.ordersLabels) ? bkd.ordersLabels : (bkd ? bkd.labels : null);
+                if (!bkd || !labels || labels.length === 0) { el.style.display = 'none'; return; }
                 var vals = bkd[metric] || [];
                 var maxVal = Math.max.apply(null, vals.concat([1]));
                 var color = bkdColors[metric];
                 el.style.display = 'block';
-                el.innerHTML = bkd.labels.map(function(lbl, i) {
+                el.innerHTML = labels.map(function(lbl, i) {
                     var v = vals[i] || 0;
                     var pct = maxVal > 0 ? Math.round((v / maxVal) * 100) : 0;
-                    var fmt = (metric === 'orders') ? (v + ' 單') : ('HK$' + Math.round(v).toLocaleString());
+                    var fmt = (metric === 'orders') ? (v + ' 件') : ('HK$' + Math.round(v).toLocaleString());
                     return '<div class="fo-kpi-bkd-row">' +
                         '<span class="fo-kpi-bkd-label" title="' + lbl + '">' + lbl + '</span>' +
                         '<div class="fo-kpi-bkd-bar-wrap"><div class="fo-kpi-bkd-bar-fill" style="width:' + pct + '%;background:' + color + ';opacity:' + (v > 0 ? 1 : 0.25) + ';"></div></div>' +

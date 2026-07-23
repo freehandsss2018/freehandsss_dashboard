@@ -88,5 +88,6 @@
 | 2026-07-07 | 2026-07-07_fixed-positioning-inside-transformed-parent-clipping-pitfall.md | CSS transform 容器裁剪 | transform, fixed, containing-block, clip, css, pitfall | transform 會改變 fixed 包含塊，導致滾動收合時子控制項隨之移動裁剪 |
 | 2026-07-07 | 2026-07-07_micro-vector-scaling-semantic-preservation.md | 微型向量縮放語意保留 | micro-icon, vector, scale, semantic, emoji, pitfall | 轉換 CJK Emojis 為向量時，避免使用過簡化開路徑，以防微尺寸縮放下遺失手指/腳板細節與語意 |
 | 2026-07-12 | 2026-07-12_rls-policy-removal-silent-2xx-write-failure.md | RLS 政策移除靜默 2xx 失敗 | rls, policy, grep-blind-spot, silent-failure, supabase, delete, pitfall | 移除anon DELETE政策後前端請求仍回200但0 rows；grep單行漏判method與URL分行呼叫；驗收須測真實資料狀態非status code |
+| 2026-07-22 | 2026-07-22_migration-repo-db-drift-create-or-replace-regression.md | Migration Repo/DB Drift 回歸事故 | migration, drift, supabase, create-or-replace, pitfall, financial-rpc | apply_migration套用嘅修復未同步落repo檔案，令後續CREATE OR REPLACE照抄repo舊檔打回死碼；改RPC前須核對pg_get_functiondef同repo是否一致 |
 <!-- kgov sync confirmed: Session 124 -->
 

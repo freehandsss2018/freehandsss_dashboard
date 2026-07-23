@@ -3,6 +3,38 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-23] (D43續四) 財務總覽「訂單數」KPI 卡「手模擺設」細項再拆木框／玻璃瓶
+
+**背景**：Fat Mo 要求「訂單數」KPI 卡（唯獨呢張卡，收入/成本/毛利三卡維持合併不變——手模擺設 cost 固定 $210 flat，木框/玻璃瓶冇清晰嘅收入拆分基礎，但品項數量可以直接拆）的「手模擺設」細項再拆為「木框」及「玻璃瓶」兩行。
+
+**資料品質發現**：單純用 `product_sku ILIKE '%木框%'/'%玻璃瓶%'` 比對會少計 2 件（Yearly 2026 實測：23+7=30，但『立體擺設』分類真實總數係 32）。查證漏咗嗰 2 件屬於已知嘅 avg_split fallback 訂單（0500719/0600722），呢兩件 `order_items.product_sku` 係 NULL，但 `specification` 欄位正確寫住「木框款式」。故 product_sku 為主，NULL 時 fallback 用 specification 補齊分類，令 25+7=32 同「手模擺設」原有總數完全吻合。
+
+**執行**：`supabase/migrations/0067_handmodel_orders_frame_bottle_split.sql`——`get_financial_charts()` category_revenue 新增 `handmodel_frame_orders`/`handmodel_bottle_orders`（品項數量，同 0064 手法）；`fhs_build_financial_overview_tab()` breakdown.all／breakdown.handmodel 新增 `ordersLabels` 欄位（只有 orders 呢個 metric 用 4 行標籤['木框','玻璃瓶','頸鏈吊飾','鎖匙扣']，revenue/cost/profit 三個 metric 嘅 'labels' 保持 3 行不變）；前端渲染迴圈相應改動，'orders' metric 優先讀 `bkd.ordersLabels`，其餘 metric 讀 `bkd.labels`。
+
+**驗證**：RPC 直查 `orders:[25,7,15,92]`／`ordersLabels:[木框,玻璃瓶,頸鏈吊飾,鎖匙扣]`；browser 實測 V42 開發版 Current/Yearly/手模擺設分類篩選三種情境全部正確、revenue/cost/profit 三卡維持合併顯示不受影響、console 零錯誤；production `current.html` 部署後直接驗證 Current tab 顯示「木框6件玻璃瓶0件頸鏈吊飾0件鎖匙扣4件」正確。
+
+相關檔案：`supabase/migrations/0067_handmodel_orders_frame_bottle_split.sql`、`.fhs/notes/FHS_System_Logic_Overview.md` §10.20。
+
+---
+
+[2026-07-23] (D43續三) 財務 RPC「期間歸屬」日期口徑統一：confirmed_at → LEAST(confirmed_at, appointment_at)
+
+**背景**：Fat Mo 回報訂單總覽「全部」筆數（44→更新0600106後40）同財務 Yearly「訂單數」（41）長期對不齊，追查後發現訂單總覽本身一直用「約定日期優先，冇約定日期先用確認日期」（`o.Date = appointment_at || confirmed_at`）判斷「年度」歸屬，財務 RPC 卻純用 `confirmed_at`。Fat Mo 裁決兩者應統一口徑，且進一步裁決：「確認日期新過約定日期，就以約定日期作判決；相反約定日期新過確認日期，就以確認日期作判決」——即取兩者較早者（`LEAST`），任一方為 NULL 就用另一方，兩者皆 NULL（純草稿單）先排除。
+
+**技術陷阱（實作前發現，已避開）**：最初考慮「純 appointment_at 優先，冇先用 confirmed_at」的方案，模擬後發現會令**最近先確認、但約定日期未到嘅訂單**（如 0600037/07001009/070010010/0700101，本週先確認，交收約定喺未來）因為 Current/Yearly 分頁「迄今」語義（`cur_end = 今天`）而被誤判跌出本期收入——約定日期未來 > cur_end，令剛成交嘅真實收入消失。改用 `LEAST(confirmed_at, appointment_at)` 後，呢類單改用較早嘅 confirmed_at 歸屬，不受影響；只有「confirmed_at 遲過 appointment_at」嘅歷史遷移單（Airtable→Supabase 時序落差，如 0500509/0500703）先會改用較早嘅 appointment_at 歸屬去正確年份。
+
+**決策**：`get_financial_kpis()`／`get_financial_charts()` 全部期間篩選（current/previous 兩期、trend 月度分組、orders_inclusive、metal_qty/handmodel_qty、data_quality）由 `confirmed_at BETWEEN cur_start AND cur_end` 改為 `LEAST(confirmed_at, appointment_at) BETWEEN cur_start AND cur_end`。
+
+**執行**：`supabase/migrations/0066_financial_period_earliest_date_unification.sql`，共 20 處取代，兩個函式完整 `CREATE OR REPLACE`（已核對 live `pg_get_functiondef()` 為底本，避開 §10.18 同類 repo/DB drift 陷阱）。
+
+**驗證**：獨立 SQL 模擬先行預測（40 單／$155,380／$27,001），套用後 RPC 直查完全吻合；itemized diff 核對僅 3 張單移動（+0600106 未確認但有約定日期、−0500509/0500703 遷移時序落差歷史單），4 張未來約定日期單維持計入不受影響；browser 實測訂單總覽（全部＋2026年度）＝40筆，財務 Yearly「訂單數」＝40、收入 $155,380，兩邊完全對齊，console 無錯誤。
+
+**教訓**：兩個系統（操作排程視圖 vs 財務收入認列）各自用唔同日期欄位定義「期間」係合理設計，但業務規則變更（統一口徑）必須連 edge case（未來約定日期 vs「迄今」上限截斷）一併模擬驗證，唔可以只套用字面指令就直接改 SQL——本案若直接套用「appointment_at 純優先」會製造新 bug（少計近期真實成交）。
+
+相關檔案：`supabase/migrations/0066_financial_period_earliest_date_unification.sql`、`.fhs/notes/FHS_System_Logic_Overview.md` §10.19、auto-memory `project_appointment_vs_confirmed_date_semantics.md`。
+
+---
+
 [2026-07-22] 交貨期進度卡「已完成訂單仍顯示逾期」修復——`v_delivery_reminders` view 加 `is_archived` 過濾
 
 **背景**：Fat Mo 截圖回報手機版「交貨期進度」卡片顯示已完成訂單為逾期（如 0500509 逾期304天），懷疑不準確。

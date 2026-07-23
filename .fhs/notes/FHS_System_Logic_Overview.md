@@ -703,8 +703,62 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 ---
 
+### 10.17 「訂單數」KPI 卡細項語意修正：訂單計數 → 品項數量（2026-07-22）
+
+**問題**：Fat Mo 回報財務總覽「訂單數」KPI 卡三行細項（手模擺設/頸鏈吊飾/鎖匙扣）顯示單位「單」，實際應以「件」（品項數量）呈現；頂層「訂單數」大數字本身沿用訂單號計算，不受影響。
+
+**根因**：`get_financial_charts()`（§10.1 表列）`category_revenue` 內 `handmodel_orders`/`keychain_orders`/`necklace_orders` 三個欄位一直是 `COUNT(CASE WHEN xxx_cost > 0 THEN 1 END)`——數「有此分類成本的訂單數」，語意上長期是訂單計數，同「件」單位標籤不符。例：2 張鎖匙扣訂單各含 4 件 → 舊值顯示 2 單，應顯示 8 件。
+
+**修復**：migration `0064_financial_charts_category_qty_breakdown.sql`——三個欄位改為 `COALESCE(SUM(oi.quantity), 0)`（`order_items.quantity` 按分類 `item_category` 篩選加總），key 名稱維持不變（下游 `get_financial_overview_full()` §10.14 `breakdown.orders` 陣列沿用同一組 key，零改動）；前端 `sbFetchFinancial()` breakdown render（V42 line ~14071）unit label 由「單」改「件」。Browser 實測 Current（鎖匙扣 2→8件）+ Yearly（33/15/88件）兩個分頁皆正確，`get_financial_kpis` 頂層 `orders` 值不受影響（12/41 不變）。
+
+**教訓**：KPI 卡片細項欄位命名（`xxx_orders`）同其實際顯示單位（單位標籤寫死喺前端 render 迴圈，唔隨後端欄位改名）可以長期脫鉤而不被發現——改動任何 breakdown 欄位語意前，須同時檢查前端 unit 格式化邏輯是否隨之更新。
+
+---
+
+### 10.18 Migration Repo/DB Drift 導致 `get_financial_charts()` 回歸事故 + hotfix（2026-07-22）
+
+**問題**：§10.17 的 `0064` 改動套用後，交叉核對 `get_financial_kpis`（未觸碰）現行定義時發現同 `get_financial_charts`（`0064` 剛重建）不一致：前者用 `process_status::TEXT NOT IN ('已取消')`，後者卻是 `NOT IN ('cancelled', 'refunded')`（英文死碼，同中文 enum 永不匹配，見 `project_financial_rpc_status_filter_bug.md`）。
+
+**根因**：`0064` 以 repo 內 `0041_fix_unconfirmed_doublecount_and_trend_3layer.sql`（2026-06-12）全文為底本重建 `get_financial_charts()`。但 2026-07-17 線上已套用嘅 `fix_financial_rpc_status_filter_enum_mismatch` migration（`list_migrations` 版本 `20260717121508`）只存在於 Supabase migration history，**從未以 `.sql` 檔形式落 repo**——repo 檔案同 live DB 之間存在未被發現的 drift。`0064` 嘅 `CREATE OR REPLACE FUNCTION` 全量覆蓋，令 5 處已修復嘅 `已取消` 過濾器打回英文死碼，靜默令「已取消」訂單重新計入 `category_revenue`/`cost_breakdown`/`trend` 嘅收入/成本/毛利數字（頂層「訂單數」由 `get_financial_kpis` 計算，不受影響）。
+
+**修復**：`0065_hotfix_revert_charts_status_filter_regression.sql`——僅將 5 處字面值改回 `已取消`，`0064` 嘅品項數量改動原樣保留；smoke test 用 `pg_get_functiondef(...) NOT LIKE '%cancelled%'` 斷言死碼不再存在。
+
+**教訓**：透過 Supabase MCP `apply_migration` 套用嘅修復，若冇同時 `Write` 對應 `.sql` 檔落 `supabase/migrations/`，repo 就會漏收，形成 live DB 領先 repo 嘅隱形 drift；下一次任何人以「repo 內最後一個同名函式 migration」為底本做 `CREATE OR REPLACE` 全量重建時，就會把 repo 冇收錄嘅修復全部打回。**改動任何 RPC 前，應先用 `pg_get_functiondef(oid)` 核對 live 定義同 repo 最新檔案是否一致**，不能假設 repo 檔案就是真源。全文見 lesson `2026-07-22_migration-repo-db-drift-create-or-replace-regression.md`。
+
+---
+
+### 10.19 財務 RPC「期間歸屬」日期口徑統一：confirmed_at → LEAST(confirmed_at, appointment_at)（2026-07-23）
+
+**問題**：訂單總覽「全部」筆數同財務 Yearly「訂單數」長期對不齊（44 vs 41，更新單一訂單後變 40 vs 41）。追查發現訂單總覽前端一直用「約定日期（`appointment_at`）優先，冇約定日期先用確認日期（`confirmed_at`）」判斷年度歸屬，財務 RPC（`get_financial_kpis`/`get_financial_charts`）卻純用 `confirmed_at`——兩套系統各自用唔同日期欄位定義「期間」。
+
+**Fat Mo 裁決**：統一口徑，且明確規則為「確認日期新過約定日期 → 用約定日期；約定日期新過確認日期 → 用確認日期」，即取兩者**較早者**（`LEAST`），任一方 NULL 用另一方，兩者皆 NULL（純草稿單）排除。
+
+**實作前發現的技術陷阱（已避開）**：若直接改用「純 appointment_at 優先」（唔取較早者），會令**最近先確認、但約定日期未到（未來）**嘅訂單，因 Current/Yearly 分頁「迄今」語義（`cur_end = 今天`）而被誤判跌出本期收入——appointment_at 係未來日期 > cur_end，令剛成交嘅真實收入消失（模擬實測抓到 4 張本週剛確認嘅單會因此消失）。改用 `LEAST(confirmed_at, appointment_at)` 後：近期確認、未來約定嘅單改用較早嘅 `confirmed_at` 歸屬（不受影響）；只有「`confirmed_at` 遲過 `appointment_at`」嘅 Airtable→Supabase 遷移時序落差歷史單，先會改用較早嘅 `appointment_at` 歸屬去正確年份。
+
+**修復**：`supabase/migrations/0066_financial_period_earliest_date_unification.sql`——`get_financial_kpis()`／`get_financial_charts()` 全部 20 處期間篩選（current/previous 兩期、trend 月度分組、orders_inclusive、metal_qty/handmodel_qty、data_quality）由 `confirmed_at BETWEEN cur_start AND cur_end` 改為 `LEAST(confirmed_at, appointment_at) BETWEEN cur_start AND cur_end`；改動前先用 `pg_get_functiondef()` 核對 live 定義為底本（避開 §10.18 同類 drift 陷阱）。
+
+**驗證**：獨立 SQL 模擬預測（40單／$155,380／$27,001）同套用後 RPC 直查完全吻合；itemized diff 確認僅 3 張單移動符合預期；browser 實測訂單總覽（全部＋2026）＝財務 Yearly「訂單數」＝40，兩邊對齊，無 console 錯誤。
+
+**教訓**：業務規則統一口徑類改動，必須連 edge case（未來日期 vs「迄今」上限截斷）一併模擬驗證，唔可以只字面套用指令就直接改 SQL——直接套用「appointment_at 純優先」呢個看似合理嘅字面指令，會製造新 bug（少計近期真實成交）。
+
+---
+
+### 10.20 財務總覽「訂單數」KPI 卡「手模擺設」細項再拆木框／玻璃瓶（2026-07-23）
+
+**問題**：Fat Mo 要求「訂單數」卡（唯獨呢張，收入/成本/毛利三卡「手模擺設」維持合併不變）的「手模擺設」細項再拆為「木框」及「玻璃瓶」兩行。
+
+**資料品質陷阱（已避開）**：純用 `product_sku ILIKE '%木框%'/'%玻璃瓶%'` 比對會少計 2 件（Yearly 實測 23+7=30 vs 真實總數 32）——漏咗嗰 2 件係已知 avg_split fallback 訂單（0500719/0600722），`product_sku` 為 NULL 但 `specification` 正確寫住「木框款式」。改用 product_sku 為主、NULL 時 fallback 讀 specification，令 25+7=32 完全吻合。
+
+**修復**：`supabase/migrations/0067_handmodel_orders_frame_bottle_split.sql`——`get_financial_charts()` 新增 `handmodel_frame_orders`/`handmodel_bottle_orders`（品項數量，手法同 §10.17 的 0064）；`fhs_build_financial_overview_tab()` breakdown.all／handmodel 新增 `ordersLabels`（僅 orders metric 用 4 行標籤，revenue/cost/profit 仍用 3 行 `labels`）；前端渲染迴圈 'orders' metric 優先讀 `bkd.ordersLabels`。
+
+**驗證**：RPC 直查 `orders:[25,7,15,92]` 吻合；browser 實測 Current/Yearly/手模擺設分類篩選三情境全部正確，revenue/cost/profit 三卡不受影響；production 部署後直接驗證正確。
+
+**教訓**：任何以 `product_sku` 做分類統計時，先查有冇 NULL SKU 的 avg_split 舊單（`data_quality.avg_split_ids`），唔可以假設 product_sku 永遠有值——`specification` 欄位係呢類舊單嘅可靠 fallback 分類來源。
+
+---
+
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 
