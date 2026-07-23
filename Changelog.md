@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— 訂單總覽品項排序/標籤/配色四連環優化
+
+- **緣起**：Fat Mo 以 Akira 訂單（0600721）為例回報訂單總覽鎖匙扣品項次序錯亂（應跟新/修訂單表單填寫次序：左手→右手→左腳→右腳），並連環追加三項介面優化要求。
+- **修復1（品項肢位排序）**：`renderReviewTable`/`renderReviewAccordion` 兩處渲染引擎原本只按產品類型排序（立體擺設→鎖匙扣→吊飾），同類別內部完全冇再排序，直接洩漏 Supabase 回傳次序（非固定）。新增 `_lp()` 肢位排序函式（讀 item_key 後綴 `_LH/_RH/_LF/_RF` 或文字 fallback），同分類排序組合成單一排序鍵，令鎖匙扣/吊飾同類別內肢位固定跟返左手→右手→左腳→右腳。Supabase 直查 Akira 單證實資料庫本身次序混亂（`K_RF` 排喺 `P_MAIN` 之後）純屬正常現象，非資料錯誤。
+- **修復2（摺疊卡 chips 標籤精簡）**：手模擺設按款式拆做「木框」／「玻璃」兩個獨立 chip（原只顯示籠統「手模」），鎖匙扣標籤縮短做「鎖匙」，羊毛氈公仔縮短做「毛氈」。
+- **修復3（逾期徽章移位）**：mobile Accordion「逾期N天」徽章由日期·客人那一行上移一行，同訂單號同列顯示，訂單概覽一眼睇晒。
+- **修復4（產品代表色重新定義，全站四輪迭代）**：Fat Mo 多輪回饋（頸鏈吊飾先後由紫→玫瑰粉「撞紅色」→藍綠 Teal→最終棕色 Brown；順手發現財務結算報價明細嘅鎖匙扣一直獨立用灰色同全站藍色不一致，一併統一）。最終定案：①手模擺設+配件=紫色 `#4A148C`／②鎖匙扣=藍色 `#1565C0`（全站統一，含財務結算報價明細，不再灰色）／③頸鏈吊飾=棕色 `#4E342E`／燈飾=橙色 `#E65100`／羊毛氈=綠色 `#1B5E20`。改動涵蓋訂單總覽 badge、財務結算報價明細（`_catHdr`分類頭+逐項文字+階梯價tier color）、逐件分帳格（`box-cat-P/K/M`）、簡化付款標籤（`fhsPaySimp_label*`）、核對帳單訂單詳情（`_catMeta`）共 9+ 處色彩定義點。
+- **驗證**：Browser pane 對 Akira（0600721）、PrinceCheng（0600723）等多張真實訂單，desktop 表格版+mobile Accordion 兩種版面逐一實測（DOM computed style 直讀 RGB 值核對），全部色碼/排序/標籤符合最終定案。
+- **附帶發現**：Overview 表格版有個別純銀吊飾 badge 因 `item.Category` 欄位判斷漏配跌落 default 灰色，屬**既有** class 指派邏輯 bug（非本次改動引起），未修復，供日後追蹤。
+- **同步**：本次直接改動 `Freehandsss_dashboard_current.html`，事後用 `git diff` 補 patch 回 `freehandsss_dashboardV42.html`（dev source）防止下次 `/upload-web` 升格覆寫流失本次修復；兩檔已核對內容一致（僅 `fhs-build` 部署佔位符差異，屬預期）。
+
+【交付前雙紀律自檢】
+驗收：純前端排序/樣式/配色改動 — Browser pane DOM computed style 直讀多張真實訂單交叉核對（非純自驗文字記錄）
+Subagent：❌ 未使用（全程互動式改碼+Supabase查證+browser實測）
+
 ## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— 訂單編輯「返回/審閱」閃爍效果消失 race condition 修復
 
 - **緣起**：Fat Mo 回報 Desktop 及手模版新/修訂單畫面，撳「返回」（或走完「審閱」送出流程）返回訂單總覽後，原本應該高亮該筆訂單的閃爍效果（`fhs-row-flash`）消失。

@@ -290,16 +290,16 @@
         .quick-fill-btn:hover { opacity: 1; }
         .fhs-fill-mode-btn:hover { filter: brightness(0.92); }
         .box-cat-P .split-box-label {
-            background: #FFF3E0; color: #E65100;
-            border-bottom: 2px solid #E65100; padding: 2px 5px; border-radius: 3px 3px 0 0;
+            background: #F3E5F5; color: #4A148C;
+            border-bottom: 2px solid #4A148C; padding: 2px 5px; border-radius: 3px 3px 0 0;
         }
         .box-cat-K .split-box-label {
             background: #E3F2FD; color: #1565C0;
             border-bottom: 2px solid #1565C0; padding: 2px 5px; border-radius: 3px 3px 0 0;
         }
         .box-cat-M .split-box-label {
-            background: #EDE7F6; color: #4527A0;
-            border-bottom: 2px solid #4527A0; padding: 2px 5px; border-radius: 3px 3px 0 0;
+            background: #EFEBE9; color: #4E342E;
+            border-bottom: 2px solid #4E342E; padding: 2px 5px; border-radius: 3px 3px 0 0;
         }
         .split-plus {
             font-size: 18px; color: #888; padding: 0 2px; align-self: flex-end; margin-bottom: 4px;
@@ -1020,10 +1020,10 @@
         /* 類別配色 (Category) */
         .badge-cat-立體擺設 { background:#F3E5F5; color:#4A148C; border-color: #E1BEE7; }
         .badge-cat-鎖匙扣   { background:#E3F2FD; color:#01579B; border-color: #B3E5FC; }
-        .badge-cat-純銀吊飾 { background:#E8F5E9; color:#1B5E20; border-color: #C8E6C9; }
+        .badge-cat-純銀吊飾 { background:#EFEBE9; color:#4E342E; border-color: #D7CCC8; }
         .badge-cat-default  { background:#F5F5F5; color:#455A64; border-color: #CFD8DC; }
-        .badge-cat-羊毛氈   { background:#FFF3E0; color:#E65100; border-color: #FFCC80; }
-        .badge-cat-燈飾     { background:#FFFDE7; color:#F57F17; border-color: #FFF59D; }
+        .badge-cat-羊毛氈   { background:#E8F5E9; color:#1B5E20; border-color: #C8E6C9; }
+        .badge-cat-燈飾     { background:#FFF3E0; color:#E65100; border-color: #FFCC80; }
 
         /* 摺疊卡產品組成 chips（取代無意義的「N 件」） */
         .acc-cat-chips { display:flex; flex-wrap:wrap; gap:3px; margin-top:1px; }
@@ -4730,7 +4730,7 @@
                 <div class="fhsPaySimp_fieldHead">未付尾數</div>
 
                 <!-- ① 手模擺設 + 配件 -->
-                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelP" style="background:#FFF3E0;color:#E65100;">① 手模擺設 + 配件<span id="fhsPaySimp_formula_P" class="fhsPaySimp_formula"></span></div>
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelP" style="background:#F3E5F5;color:#4A148C;">① 手模擺設 + 配件<span id="fhsPaySimp_formula_P" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="deposit" readonly placeholder="0"
@@ -4772,7 +4772,7 @@
                 <hr class="fhsPaySimp_divider">
 
                 <!-- ③ 頸鏈吊飾 -->
-                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelM" style="background:#EDE7F6;color:#4527A0;">③ 頸鏈吊飾<span id="fhsPaySimp_formula_M" class="fhsPaySimp_formula"></span></div>
+                <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelM" style="background:#EFEBE9;color:#4E342E;">③ 頸鏈吊飾<span id="fhsPaySimp_formula_M" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
                     <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="deposit" readonly placeholder="0"
@@ -7127,7 +7127,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             };
 
             if (hasMainProduct || items.some(i => i.isAccessory)) {
-                logs.push(_catHdr('#FFF3E0','#E65100','#FFCC80','<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#E65100;"><use href="#icon-palette"/></svg>手模擺設 + 配件'));
+                logs.push(_catHdr('#F3E5F5','#4A148C','#E1BEE7','<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#4A148C;"><use href="#icon-palette"/></svg>手模擺設 + 配件'));
             }
 
             items.forEach((item, globalIndex) => {
@@ -7217,17 +7217,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     else if (isGlassJar) price = (hasAdultInSet && hasBabyInSet) ? 2580 : (name.includes("4肢") ? 1680 : 1380);
 
                     totalSuggestedPrice += price;
-                    breakdownParts.push({v: price, c: '#E65100'});
+                    breakdownParts.push({v: price, c: '#4A148C'});
                     totalDrawingCost += item.FatMoCost;
                     item.CalculatedPrice = price;
-                    logs.push(`<span style="color:#E65100;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>: $${price}</span>`);
+                    logs.push(`<span style="color:#4A148C;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-palette"/></svg> <b>${name}</b>: $${price}</span>`);
 
                     // 玻璃瓶套裝含父母：家庭定價 $2,580 已含混合模式差異，不再疊加附加費（2026-07-19 Fat Mo 定案，參考單號 0600107）
                     if (hasAdultInSet && hasBabyInSet && !isGlassJar) {
                         const _mixedSurcharge = _cc.mixed_member_surcharge ?? 300; // 讀 config，fallback $300
                         totalSuggestedPrice += _mixedSurcharge;
                         totalSystemAdditionalFee += _mixedSurcharge;
-                        breakdownParts.push({v: _mixedSurcharge, c: '#E65100'});
+                        breakdownParts.push({v: _mixedSurcharge, c: '#4A148C'});
                         logs.push(`<div style="color:#D32F2F; font-size:11px;">🔄 擺設成員混合模式附加費: +$${_mixedSurcharge}</div>`);
                     }
                 }
@@ -7236,9 +7236,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let price = name.includes("羊毛氈") ? 680 : name.includes("燈飾") ? 80 : 0;
                     price *= qty;
                     totalSuggestedPrice += price;
-                    breakdownParts.push({v: price, c: '#E65100'});
+                    // 毛氈=綠 / 燈飾=橙（獨立於手模擺設紫色分類色）
+                    const _accColor = name.includes("燈飾") ? '#E65100' : '#1B5E20';
+                    breakdownParts.push({v: price, c: _accColor});
                     item.CalculatedPrice = price;
-                    logs.push(`<span style="color:#E65100;">${name.includes("燈飾") ? '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#d97706;"><use href="#icon-lightbulb"/></svg>' : '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-smile"/></svg>'} <b>${name}</b> x${qty}: $${price}</span>`);
+                    logs.push(`<span style="color:${_accColor};">${name.includes("燈飾") ? '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#E65100;"><use href="#icon-lightbulb"/></svg>' : '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#1B5E20;"><use href="#icon-smile"/></svg>'} <b>${name}</b> x${qty}: $${price}</span>`);
                     totalDrawingCost += item.FatMoCost;
                 }
             });
@@ -7290,7 +7292,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             .replace(/🦶/g, '<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:2px;"><use href="#icon-footprint"/></svg>');
                         dispName += ` (${safePartDesc})`;
                     }
-                    let _tierColor = (productType === '純銀') ? '#4527A0' : '#37474F';
+                    let _tierColor = (productType === '純銀') ? '#4E342E' : '#1565C0';
                     logs.push(`<span style="color:${_tierColor};">${metalLogo} <b>${dispName}</b> x${qty}: $${price}</span>`);
 
                     item.CalculatedPrice = price;
@@ -7303,7 +7305,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 });
             }
 
-            if (metalItems.length > 0) logs.push(_catHdr('#ECEFF1','#37474F','#B0BEC5','<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#37474F;"><use href="#icon-key"/></svg>鎖匙扣'));
+            if (metalItems.length > 0) logs.push(_catHdr('#E3F2FD','#1565C0','#B3E5FC','<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#1565C0;"><use href="#icon-key"/></svg>鎖匙扣'));
             processTierPricing(metalItems, '金屬');
 
             // --- 純銀吊飾 頸鏈組計價（總吊飾數合併，不分部位）---
@@ -7327,7 +7329,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 silverItems[0].CalculatedPrice = silverPrice;
                 for (let si = 1; si < silverItems.length; si++) { silverItems[si].CalculatedPrice = 0; }
                 totalSuggestedPrice += silverPrice;
-                breakdownParts.push({v: silverPrice, c: '#4527A0'});
+                breakdownParts.push({v: silverPrice, c: '#4E342E'});
                 silverItems.forEach(function(item) {
                     totalDrawingCost   += item.FatMoCost;
                     _totalPrintingCost += item.PrintingCost     || 0; // B1
@@ -7353,8 +7355,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 window.fhsNecklaceGroups = _groups;
 
                 const necklaces = Math.ceil(totalCharms / 2);
-                logs.push(_catHdr('#EDE7F6','#4527A0','#B39DDB','<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#4527A0;"><use href="#icon-gem"/></svg>頸鏈吊飾'));
-                logs.push(`<span style="color:#4527A0;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-gem"/></svg> <b>吊飾 ${totalCharms}個 / ${necklaces}條頸鏈</b>: $${silverPrice}</span>`);
+                logs.push(_catHdr('#EFEBE9','#4E342E','#D7CCC8','<svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;color:#4E342E;"><use href="#icon-gem"/></svg>頸鏈吊飾'));
+                logs.push(`<span style="color:#4E342E;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><use href="#icon-gem"/></svg> <b>吊飾 ${totalCharms}個 / ${necklaces}條頸鏈</b>: $${silverPrice}</span>`);
             }
             
             // --- 頸鏈成本（吊飾訂單，P0 奇偶規則：ceil(N/2)×$100）---
@@ -9366,7 +9368,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         if (upperId.includes('_M_') || upperId.endsWith('_M') || upperId.includes('NECKLACE')) return 2;
                         return 99;
                     };
-                    o.items.sort((a, b) => _cp(a) - _cp(b));
+                    // 同分類內按肢位次序排：左手(0) > 右手(1) > 左腳(2) > 右腳(3)（跟返新/改單表單填寫次序）
+                    const _lp = (item) => {
+                        const rawKey = ((item.Item_ID || '') + ' ' + (item.OrderKey || item.Order_Item_Key || '')).toUpperCase();
+                        if (/_LH(_|$)/.test(rawKey)) return 0;
+                        if (/_RH(_|$)/.test(rawKey)) return 1;
+                        if (/_LF(_|$)/.test(rawKey)) return 2;
+                        if (/_RF(_|$)/.test(rawKey)) return 3;
+                        const txt = (item.Product_Name || '') + ' ' + (item.Specification || '') + ' ' + (item.Engraving || '');
+                        if (txt.includes('左手')) return 0;
+                        if (txt.includes('右手')) return 1;
+                        if (txt.includes('左腳')) return 2;
+                        if (txt.includes('右腳')) return 3;
+                        return 9;
+                    };
+                    o.items.sort((a, b) => (_cp(a) * 10 + _lp(a)) - (_cp(b) * 10 + _lp(b)));
                 }
                 // W_WOOL 合併至立體擺設同列，不獨立成 card
                 // 同時檢查 _W_WOOL（新格式）和 '羊毛氈'（n8n pipe 格式舊資料）
@@ -9390,20 +9406,29 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const itemCount = _accRenderFinal.length;
 
                 // 摺疊卡產品組成 chips：單看「N 件」無意義，直接在卡面列出買咗乜（分類沿用 getProductDimensions，唯一真源）
+                // 手模擺設按款式拆細：木框 / 玻璃瓶（無法辨識款式時 fallback 顯示「手模」）
                 var _chipAgg = {};
-                var _chipOrder = ['手模擺設', '鎖匙扣', '純銀吊飾', '羊毛氈公仔', '燈飾', '其他'];
+                var _chipOrder = ['木框', '玻璃瓶', '手模擺設', '鎖匙扣', '純銀吊飾', '羊毛氈公仔', '燈飾', '其他'];
                 (o.items || []).forEach(function (it) {
-                    var _cName = getProductDimensions(it).category;
-                    if (_chipOrder.indexOf(_cName) === -1) _cName = '其他';
+                    var _dim = getProductDimensions(it);
+                    var _cName = _dim.category;
+                    if (_cName === '手模擺設') {
+                        if (_dim.style && _dim.style.includes('木框')) _cName = '木框';
+                        else if (_dim.style && _dim.style.includes('玻璃')) _cName = '玻璃瓶';
+                    } else if (_chipOrder.indexOf(_cName) === -1) {
+                        _cName = '其他';
+                    }
                     _chipAgg[_cName] = (_chipAgg[_cName] || 0) + (Number(it.Qty) || 1);
                 });
                 var _chipMeta = {
-                    '手模擺設':   ['icon-palette',   '手模',   'badge-cat-立體擺設'],
-                    '鎖匙扣':     ['icon-key',       '鎖匙扣', 'badge-cat-鎖匙扣'],
-                    '純銀吊飾':   ['icon-gem',       '吊飾',   'badge-cat-純銀吊飾'],
-                    '羊毛氈公仔': ['icon-smile',     '羊毛氈', 'badge-cat-羊毛氈'],
-                    '燈飾':       ['icon-lightbulb', '燈飾',   'badge-cat-燈飾'],
-                    '其他':       ['icon-package',   '其他',   'badge-cat-default']
+                    '木框':       ['icon-image',      '木框',   'badge-cat-立體擺設'],
+                    '玻璃瓶':     ['icon-bottle',      '玻璃',   'badge-cat-立體擺設'],
+                    '手模擺設':   ['icon-palette',     '手模',   'badge-cat-立體擺設'],
+                    '鎖匙扣':     ['icon-key',         '鎖匙',   'badge-cat-鎖匙扣'],
+                    '純銀吊飾':   ['icon-gem',         '吊飾',   'badge-cat-純銀吊飾'],
+                    '羊毛氈公仔': ['icon-smile',       '毛氈',   'badge-cat-羊毛氈'],
+                    '燈飾':       ['icon-lightbulb',   '燈飾',   'badge-cat-燈飾'],
+                    '其他':       ['icon-package',     '其他',   'badge-cat-default']
                 };
                 const _catChipsHtml = _chipOrder.filter(function (c) { return _chipAgg[c]; }).map(function (c) {
                     var _m = _chipMeta[c];
@@ -9482,11 +9507,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // 加購配件 badge：合併至第一個立體擺設 card
                         if (_accHasWool && !_accWoolBadgeShown && dimensions.category.includes('手模擺設')) {
                             _accWoolBadgeShown = true;
-                            badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-smile"/></svg> 羊毛氈公仔</span>`;
+                            badgeHtml += `<span class="review-badge" style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-smile"/></svg> 羊毛氈公仔</span>`;
                         }
                         if (_accHasLight && !_accLightBadgeShown && dimensions.category.includes('手模擺設')) {
                             _accLightBadgeShown = true;
-                            badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-lightbulb"/></svg> 燈飾</span>`;
+                            badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FFCC80; color:#E65100; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-lightbulb"/></svg> 燈飾</span>`;
                         }
 
                         // Engraving (strip 合成: info for family combo)
@@ -9612,7 +9637,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         }
                                         var _metaTxt = cDate + ' · ' + (o.Customer || '-') + (_catChipsHtml ? '' : ' · ' + itemCount + ' 件');
                                         var _chipsRow = _catChipsHtml ? '<div class="acc-cat-chips">' + _catChipsHtml + '</div>' : '';
-                                        return '<div class="acc-dlv-card ' + _cardCls + '"><span class="acc-order-id">' + (o.Order_ID || 'N/A') + ' ➜</span><div class="acc-meta-row"><span class="acc-order-meta">' + _metaTxt + '</span>' + _badgeHtml + '</div>' + _chipsRow + '</div>';
+                                        return '<div class="acc-dlv-card ' + _cardCls + '"><div class="acc-meta-row"><span class="acc-order-id">' + (o.Order_ID || 'N/A') + ' ➜</span>' + _badgeHtml + '</div><span class="acc-order-meta">' + _metaTxt + '</span>' + _chipsRow + '</div>';
                                     })()}
                                 </div>
                                 <div class="acc-order-header-right">
@@ -9728,7 +9753,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         if (upperId.includes('_M_') || upperId.endsWith('_M') || upperId.includes('NECKLACE')) return 2;
                         return 99;
                     };
-                    o.items.sort((a, b) => _cp(a) - _cp(b));
+                    // 同分類內按肢位次序排：左手(0) > 右手(1) > 左腳(2) > 右腳(3)（跟返新/改單表單填寫次序）
+                    const _lp = (item) => {
+                        const rawKey = ((item.Item_ID || '') + ' ' + (item.OrderKey || item.Order_Item_Key || '')).toUpperCase();
+                        if (/_LH(_|$)/.test(rawKey)) return 0;
+                        if (/_RH(_|$)/.test(rawKey)) return 1;
+                        if (/_LF(_|$)/.test(rawKey)) return 2;
+                        if (/_RF(_|$)/.test(rawKey)) return 3;
+                        const txt = (item.Product_Name || '') + ' ' + (item.Specification || '') + ' ' + (item.Engraving || '');
+                        if (txt.includes('左手')) return 0;
+                        if (txt.includes('右手')) return 1;
+                        if (txt.includes('左腳')) return 2;
+                        if (txt.includes('右腳')) return 3;
+                        return 9;
+                    };
+                    o.items.sort((a, b) => (_cp(a) * 10 + _lp(a)) - (_cp(b) * 10 + _lp(b)));
                 }
                 // 加購配件（_W_WOOL 羊毛氈 / _L_LIGHTS 燈飾）合併至立體擺設同一列，不獨立成 row
                 const _isAddon = (it) => { const _k = (it.Order_Item_Key || it.Item_ID || '').toUpperCase(); const _n = it.Product_Name || it.Product || ''; return _k.includes('_W_WOOL') || _k.includes('_L_LIGHTS') || _n.includes('羊毛氈') || _n.includes('燈飾') || (it.Category || '') === '配件'; };
@@ -9892,11 +9931,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // 加購配件 badge：合併至第一個立體擺設列
                         if (_hasWool && !_woolBadgeShown && dimensions.category.includes('手模擺設')) {
                             _woolBadgeShown = true;
-                            badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FF9800; color:#E65100; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-smile"/></svg> 羊毛氈公仔</span>`;
+                            badgeHtml += `<span class="review-badge" style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-smile"/></svg> 羊毛氈公仔</span>`;
                         }
                         if (_hasLight && !_lightBadgeShown && dimensions.category.includes('手模擺設')) {
                             _lightBadgeShown = true;
-                            badgeHtml += `<span class="review-badge" style="background:#FFFDE7; border:1px solid #FBC02D; color:#F57F17; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-lightbulb"/></svg> 燈飾</span>`;
+                            badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FFCC80; color:#E65100; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-lightbulb"/></svg> 燈飾</span>`;
                         }
 
                         // 數量標籤：立體擺設是套裝，不顯示 x1
@@ -11151,7 +11190,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 未知/未來新加項類型 fallback 橙色。
             function _noteColor(type, isDed) {
                 if (type === 'necklace_chain_sharing_discount' || type === 'necklace_chain_cost') {
-                    return { bg: '#EDE7F6', fg: '#4527A0' }; // 頸鏈相關：紫色（同②頸鏈吊飾分類色一致）
+                    return { bg: '#EFEBE9', fg: '#4E342E' }; // 頸鏈相關：棕色（同②頸鏈吊飾分類色一致）
                 }
                 if (isDed) return { bg: '#E8F5E9', fg: '#2E7D36' }; // 一般扣減（運費等）：綠色
                 return { bg: '#FFF3E0', fg: '#B26A00' }; // 其他加項：橙色 fallback
@@ -11257,9 +11296,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     }
                     // 分類色標（對齊 S126 簡化付款：P橙 / K藍 / M紫）+ 訂單總覽次序 P→K→M
                     var _catMeta = {
-                        P: { label: '手模擺設', style: 'background:#FFF3E0;color:#E65100;' },
+                        P: { label: '手模擺設', style: 'background:#F3E5F5;color:#4A148C;' },
                         K: { label: '鎖匙扣',   style: 'background:#E3F2FD;color:#1565C0;' },
-                        M: { label: '頸鏈吊飾', style: 'background:#EDE7F6;color:#4527A0;' },
+                        M: { label: '頸鏈吊飾', style: 'background:#EFEBE9;color:#4E342E;' },
                         X: { label: '其他',     style: 'background:#f0f0f0;color:#666;' }
                     };
                     var _limbRank = { '主體': 0, '左手': 1, '右手': 2, '左腳': 3, '右腳': 4, '': 9 };

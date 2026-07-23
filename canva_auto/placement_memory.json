@@ -3,10 +3,51 @@
   "purpose": "canva-auto diff-learning 案例庫：每單 Fat Mo 人手改正 = 一筆訓練數據。Stage③ 換 fill 前先查此庫預測 resize/position；Fat Mo 改正後把 delta 記錄落此檔。案例 >=3 單收斂的規律才升格寫入記憶檔規則層。座標系 = 1920x1080 頁面像素。",
   "convergence_log": [
     { "order": "0600906", "date": "2026-07-11", "corrected_slots": 5, "total_slots": 6, "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確（此結論後被推翻，見下）" },
-    { "order": "0600906", "date": "2026-07-22", "corrected_slots": 1, "total_slots": 1, "note": "覆核追加：page3 直片格原判『正確無改』有誤，Fat Mo 事後再改闊（客人片較闊 16:9 源塞窄直向格）。連同首單合計 6/6 全部曾被修正——首單『零錯格』實際不存在，補課檢查制度的價值在此案例首次體現" }
-    { "order": "0800802", "date": "2026-07-13", "corrected_slots": 3, "total_slots": 3, "note": "首見雙直片page3新pattern，3個slot全被Fat Mo改（黑白圖仲被換走個asset，非純幾何微調）；另揭發2項AI能力外嘅缺口：進場動畫(墨水/汙漬、模糊)、客人音軌從未上載——已補落non_geometry_findings，未計入corrected_slots" }
+    { "order": "0600906", "date": "2026-07-22", "corrected_slots": 1, "total_slots": 1, "note": "覆核追加：page3 直片格原判『正確無改』有誤，Fat Mo 事後再改闊（客人片較闊 16:9 源塞窄直向格）。連同首單合計 6/6 全部曾被修正——首單『零錯格』實際不存在，補課檢查制度的價值在此案例首次體現" },
+    { "order": "0800802", "date": "2026-07-13", "corrected_slots": 3, "total_slots": 3, "note": "首見雙直片page3新pattern，3個slot全被Fat Mo改（黑白圖仲被換走個asset，非純幾何微調）；另揭發2項AI能力外嘅缺口：進場動畫(墨水/汙漬、模糊)、客人音軌從未上載——已補落non_geometry_findings，未計入corrected_slots" },
+    { "order": "0600718", "date": "2026-07-23", "corrected_slots": 4, "total_slots": 4, "note": "驗證咗『套用高度相似案例=零校正』呢個假設唔成立——4/4 slot 全部再被調整，即使 asset 形狀同precedent幾乎一樣。另外開單時發現母片 placeholder 元素會喺 Fat Mo 上載階段消失，需insert_fill頂替（非update_fill）；非幾何缺口（動畫/時序/時長）第3次穩定重現，列為永久限制。" }
   ],
   "cases": [
+    {
+      "order": "0600718",
+      "customer": "olibbvia",
+      "design_id": "DAHQL6lGRIE",
+      "date": "2026-07-23",
+      "learned": true,
+      "note": "開單時發現：copy 出嚟嘅母片（Janet 0800802 已改正版 DAHPRfw8RRw）入面原有嘅相/片 placeholder 元素喺 Fat Mo 上載階段整段消失咗（估計人手拖入新素材時順手刪咗舊嘅）——非update_fill可修，改用insert_fill按0800802案例嘅fatmo_box數值重新造格。結果：套用0800802精確數值嘅『零校正』假設**不成立**——雖然asset形狀高度吻合（彩色/黑白1024x1024、片1080x2160 aspect0.5），Fat Mo最終全部4個slot都再手動調整（見下）。結論：diff-learning 案例即使資產規格幾乎一樣，都唔可以假設『零校正』，母版本身嘅裝飾佈局(wreath/watercolor形狀)差異已經足夠令最佳位置唔同——每單都必須交 Fat Mo 眼證，唔可以因為『似曾相識』就跳過確認步驟。另確認 non_geometry_findings 第三次原樣重現（動畫效果/時序/片段時長），呢個結構性限制已經穩定重現3單，屬永久性MCP能力邊界唔會再變，毋須再等『收斂』，已當作既定事實處理。",
+      "slots": [
+        {
+          "slot": "page2_主圖_彩色",
+          "asset_px": { "w": 1024, "h": 1024 },
+          "ai_box": { "top": 162.94, "left": 647.96, "w": 575.53, "h": 575.53, "note": "insert_fill 沿用0800802 fatmo_box數值" },
+          "fatmo_box": { "top": 173.90, "left": 663.70, "w": 575.53, "h": 579.85 },
+          "note": "闊度啱好唔使改，高度加少少(+4.3)、位置右移+落多少少"
+        },
+        {
+          "slot": "page2_主圖_黑白",
+          "asset_px": { "w": 1254, "h": 1254 },
+          "ai_box": { "top": 184.84, "left": 700.61, "w": 501.70, "h": 553.64, "note": "insert_fill 沿用0800802 fatmo_box數值（但0800802原asset係1872x2048非正方，呢單1254x1254正方——形狀唔同已埋下伏線）" },
+          "fatmo_box": { "top": 184.06, "left": 660.90, "w": 581.13, "h": 569.68 },
+          "note": "闊度大幅加大(+79.4)、位置左移(-39.7)——正方形asset需要闊啲嘅框先夠，套用非正方precedent嘅闊度會太窄"
+        },
+        {
+          "slot": "page3_雙直片_Video1+Video2",
+          "asset_px": { "w": 1080, "h": 2160 },
+          "ai_box": { "top": 188.29, "left": 676.33, "w": "566.13~567.33", "h": 549.30, "note": "insert_fill 沿用0800802 fatmo_box數值" },
+          "fatmo_box": { "top": 213.65, "left": 688.98, "w": 542.03, "h": 528.40 },
+          "note": "兩格都縮細(w-25/h-21)+右移落多少少；同0800802嘅960x1920源相比，本單1080x2160長闊比一樣(0.5)但绝对像素大隻少少，縮細後嘅框先岩"
+        },
+        {
+          "slot": "page2+3_字句box",
+          "ai_box": { "top": 760.01, "left": 647.96, "w": 649.76, "h": 120.67 },
+          "fatmo_box": { "top": 765.88, "left": 626.58, "w": 649.76, "h": 120.67 },
+          "note": "闊高不變，純位置微調(top+5.9, left-21.4)——字句同上面圖案嘅間距要再闊少少"
+        }
+      ],
+      "non_geometry_findings": [
+        "第3次重現（繼Janet 0800802後）：圖片進場動畫效果+時序、影片進場動畫效果+時序、page 時長全部MCP做唔到，Fat Mo每單都要人手補。已穩定重現3單，列為永久性結構限制，唔使再等收斂。"
+      ]
+    },
     {
       "order": "0800802",
       "customer": "Janet",

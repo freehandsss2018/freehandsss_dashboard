@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-23 (Session — 訂單總覽品項排序/標籤/配色四連環優化): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-23「訂單總覽品項排序/標籤/配色四連環優化」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 以 Akira 訂單(0600721)回報鎖匙扣品項次序錯亂，追問連環追加：①同分類品項按肢位左手→右手→左腳→右腳排序（新增`_lp()`函式，desktop+mobile兩處渲染引擎）②摺疊卡chips標籤精簡（木框/玻璃/鎖匙/毛氈）③逾期徽章移同單號同行④產品代表色全站重新定義（多輪迭代定案：手模紫/鎖匙藍/頸鏈棕/燈飾橙/毛氈綠，含財務結算報價明細鎖匙扣一併統一藍色）。Browser pane多張真實訂單desktop+mobile兩版DOM computed style逐一核對PASS。本次直接改current.html，事後patch補回V42.html防升格覆寫流失。
+Subagent：❌ 未使用（全程互動式改碼+Supabase查證+browser實測）。
+
 ## 2026-07-22 (Session 187續XIII — 交貨期進度卡「已完成訂單仍顯示逾期」修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) S187續XIII 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 手機截圖回報「交貨期進度」卡片顯示已完成訂單為逾期（如0500509逾期304天）。查證 `v_delivery_reminders` view 從未引用權威完成旗標 `orders.is_archived`，靠嘅兩個 process_status 字面值過濾器皆因唔匹配生產真實值而失效，33筆入面16筆已完成單漏網。migration 0063 加 `is_archived` 過濾+擴充item層字面值集，前端零改動即全修復；fresh-context agent獨立覆核5項全PASS；補記 Logic_Overview.md §10.16 + learnings.md Pitfall #35（對等替換）。
