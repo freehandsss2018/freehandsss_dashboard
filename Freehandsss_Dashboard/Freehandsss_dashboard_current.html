@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-23T11:53:30Z">
+    <meta name="fhs-build" content="2026-07-23T14:12:05Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -9508,7 +9508,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const cat = getSafeText(item.Category) || '';
                         if (cat.includes('立體擺設')) catClass = 'badge-cat-立體擺設';
                         else if (cat.includes('鎖匙扣')) catClass = 'badge-cat-鎖匙扣';
-                        else if (cat.includes('吊飾') || cat.includes('頸鏈')) catClass = 'badge-cat-純銀吊飾';
+                        else if (cat.includes('吊飾') || cat.includes('頸鏈') || cat.includes('銀飾')) catClass = 'badge-cat-純銀吊飾';
 
                         let badgeHtml = `<span class="review-badge ${catClass}">${dimensions.emoji} ${dimensions.category}</span>`;
                         if (dimensions.material) {
@@ -9926,7 +9926,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         let catClass = 'badge-cat-default';
                         if (category.includes('立體擺設')) catClass = 'badge-cat-立體擺設';
                         else if (category.includes('鎖匙扣')) catClass = 'badge-cat-鎖匙扣';
-                        else if (category.includes('吊飾') || category.includes('頸鏈')) catClass = 'badge-cat-純銀吊飾';
+                        else if (category.includes('吊飾') || category.includes('頸鏈') || category.includes('銀飾')) catClass = 'badge-cat-純銀吊飾';
 
                         // 構建多維度標籤 HTML
                         let badgeHtml = `<span class="review-badge ${catClass}">${dimensions.emoji} ${dimensions.category}</span>`;
@@ -14514,8 +14514,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     }
                 })
                 .catch(function(err) {
-                    console.warn('[FHS Financial] Webhook unavailable, using mock data. Reason:', err.message);
-                    showFoMockDataBanner();
+                    console.warn('[FHS Financial] Webhook unavailable. Reason:', err.message);
+                    if (!FO_LIVE_DATA) {
+                        // 從未成功連線過，畫面現正顯示 FO_MOCK_DATA，banner 如實反映
+                        showFoMockDataBanner();
+                    } else {
+                        // 已有上次成功連線嘅真實數據仍在顯示，呢次只係刷新失敗，
+                        // 唔應該打「非真實財務」banner 誤導（畫面數字依然真實，只係未及時更新）
+                        console.warn('[FHS Financial] Refresh failed, keeping last known live data on screen (not mock).');
+                    }
                     foUpdateKPI(foCurrentTab);
                 })
                 .finally(function() { FO_DATA_LOADING = false; });
