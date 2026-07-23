@@ -2,7 +2,8 @@
   "version": 1,
   "purpose": "canva-auto diff-learning 案例庫：每單 Fat Mo 人手改正 = 一筆訓練數據。Stage③ 換 fill 前先查此庫預測 resize/position；Fat Mo 改正後把 delta 記錄落此檔。案例 >=3 單收斂的規律才升格寫入記憶檔規則層。座標系 = 1920x1080 頁面像素。",
   "convergence_log": [
-    { "order": "0600906", "date": "2026-07-11", "corrected_slots": 5, "total_slots": 6, "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確" },
+    { "order": "0600906", "date": "2026-07-11", "corrected_slots": 5, "total_slots": 6, "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確（此結論後被推翻，見下）" },
+    { "order": "0600906", "date": "2026-07-22", "corrected_slots": 1, "total_slots": 1, "note": "覆核追加：page3 直片格原判『正確無改』有誤，Fat Mo 事後再改闊（客人片較闊 16:9 源塞窄直向格）。連同首單合計 6/6 全部曾被修正——首單『零錯格』實際不存在，補課檢查制度的價值在此案例首次體現" }
     { "order": "0800802", "date": "2026-07-13", "corrected_slots": 3, "total_slots": 3, "note": "首見雙直片page3新pattern，3個slot全被Fat Mo改（黑白圖仲被換走個asset，非純幾何微調）；另揭發2項AI能力外嘅缺口：進場動畫(墨水/汙漬、模糊)、客人音軌從未上載——已補落non_geometry_findings，未計入corrected_slots" }
   ],
   "cases": [
@@ -89,13 +90,15 @@
           "slot": "page3_直片",
           "asset_px": { "w": 1024, "h": 576 },
           "ai_box": { "top": 0, "left": 656.25, "w": 607.5, "h": 1080 },
-          "fatmo_box": { "top": 0, "left": 656.25, "w": 607.5, "h": 1080 },
-          "note": "正確無改：直片格 fill 裁切非拉伸，直接 update_fill 可接受"
+          "fatmo_box_round1": { "top": 0, "left": 656.25, "w": 607.5, "h": 1080 },
+          "fatmo_box_round2_2026-07-22": { "top": 0, "left": 412.55, "w": 1092.60, "h": 1080 },
+          "note": "⚠️首次驗收(round1)標錯『正確無改』——2026-07-22 覆核發現 Fat Mo 之後再改闊咗（客人 WhatsApp 片原生 1024x576=16:9 橫向源，塞入 607.5x1080 極窄直向格太窄）。round2 改成 w1092.6（幾乎翻倍），h/top不變仍全高1080，水平中心 left+w/2=958.85≈960（頁面正中，同round1嘅center=960一致，只係闊度加大）。教訓：唔可以只睇『首次 commit 後未改』就當呢格啱——客人素材原生 aspect 較闊時，直片格預設闊度會唔夠，需按闊度比例加闊，中心線固定x=960、top/h維持0/1080。呢個規律未收斂（只1個數據點），下次類似『客人片較闊』case 出現時參考呢組數字，累積至2-3單先計公式。"
         }
       ],
       "text_notes": [
         "Fat Mo 微調 page2 字句 box：top 791.81->779.34, left 626.09->607.98（字句與圖底距離）",
-        "page3 細版字句 Fat Mo 重拆行：'Stay kind, \\nstay happy, love life'（page2 維持 'Stay kind, stay \\nhappy, love life'）——page3 細位拆行可以同 page2 唔同"
+        "page3 細版字句 Fat Mo 重拆行：'Stay kind, \\nstay happy, love life'（page2 維持 'Stay kind, stay \\nhappy, love life'）——page3 細位拆行可以同 page2 唔同",
+        "2026-07-22 覆核：page2/3 字句改成單一句 'Stay kind, stay happy, \\nlove life.'（結尾加句號、拆行位再變），page2/4 字句 box 都輕微收窄（w 827.99/762.41 vs 原667.83），非本次重點但一併記錄"
       ]
     }
   ]

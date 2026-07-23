@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— 訂單編輯「返回/審閱」閃爍效果消失 race condition 修復
+
+- **緣起**：Fat Mo 回報 Desktop 及手模版新/修訂單畫面，撳「返回」（或走完「審閱」送出流程）返回訂單總覽後，原本應該高亮該筆訂單的閃爍效果（`fhs-row-flash`）消失。
+- **根因**：`switchMode('review')` 內部自帶一條 `fetchGlobalReview()` 呼叫，但從未 `await`（fire-and-forget）。所有呼叫端（兩個「返回」按鈕 + 三條「審閱」送出成功路徑：webhook 成功 / Supabase fallback ×2）都是呼叫完 `switchMode('review')` 就緊接 `flashOrderRow(oid)`，而 `switchMode` 內部那條未等待的 fetch 常常在 flash class 加上去之後才完成，重繪整個表格時把 class 一併洗走——race condition，非每次必現，視網路/渲染速度而定，故過去偶爾能撞對時機而「看似正常」。
+- **修復**：`switchMode` 內部 review-fetch 補上 `await`（[freehandsss_dashboardV42.html:6107](Freehandsss_Dashboard/freehandsss_dashboardV42.html:6107)），令呼叫方 `await switchMode('review')` 後保證表格已重繪完成；5 個呼叫點（v40-bottom-bar 返回、Desktop bottomActionBar 返回、審閱送出 webhook 成功/Supabase fallback ×2）同步補上 `await`。
+- **驗證**：瀏覽器對真實訂單 0600721 重現原始 race（未修復前連續 8 輪 3.2 秒內 flash class 持續 0），修復後穩定在 ~0.8–1.6s 內出現並維持完整動畫週期，桌面/手機兩種佈局各自獨立驗證，console 零錯誤。
+- **部署**：`/fhs-check` 前置檢查 LIFECYCLE/STRESS/ACCEPTANCE 全 PASS，PRICE_AUDIT 因 Airtable 429 額度已知外部限制 FAIL（比照既有先例不阻擋部署）；`current.html` 已同步 + NAS 三關驗證 PASS（SHA256 `30C1537A...`）。
+
+【交付前雙紀律自檢】
+驗收：純前端 race condition 修復 — 瀏覽器 DOM 實測（未修復前後對照）+ 兩種佈局（Desktop/Mobile）各自獨立重現驗證（非純自驗文字記錄）
+Subagent：❌ 未使用（全程互動式瀏覽器 JS 注入定位根因+驗證）
+
 ## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— 財務「訂單數」KPI 四連環修復：品項數量語意 + migration drift 回歸 + 期間歸屬日期口徑統一 + 手模擺設拆木框/玻璃瓶
 
 - **緣起**：Fat Mo 回報財務總覽「訂單數」KPI 卡細項顯示「單」但應為「件」，追問過程中連環揭出訂單總覽（44/40筆）同財務 Yearly「訂單數」（41）長期對不齊。

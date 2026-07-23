@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-23T04:39:26Z">
+    <meta name="fhs-build" content="2026-07-23T06:37:46Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -4846,7 +4846,7 @@
     ===================================================== -->
     <div id="v40-bottom-bar" class="fhs-bottom-bar">
         <button class="fhs-btn-secondary" style="flex:1; min-width:0; text-align:center;"
-            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ flashOrderRow(oid); } })()">
+            onclick="(async function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); await switchMode('review'); if(oid){ flashOrderRow(oid); } })()">
             ← 返回
         </button>
         <button class="fhs-btn-secondary bs-item--danger" id="v40-delete-btn" style="display:none; flex:1; min-width:0; text-align:center; color:var(--fhs-danger); border-color:var(--fhs-danger);"
@@ -5377,7 +5377,7 @@
     <!-- V37 原有底部按鈕列（Desktop 保留，iPhone 隱藏） -->
     <div class="bottom-action-bar" id="bottomActionBar" style="display:none;">
         <button id="btnBackToOverview" class="copy-btn" style="background-color:#757575; color: white;"
-            onclick="(function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); switchMode('review'); if(oid){ flashOrderRow(oid); } })()">
+            onclick="(async function(){ var oid = window.editTargetOrderId || (document.getElementById('orderIdDisplay') ? document.getElementById('orderIdDisplay').value.trim() : ''); await switchMode('review'); if(oid){ flashOrderRow(oid); } })()">
             ← 返回總覧
         </button>
         <button id="btnCopyA" class="copy-btn btn-category-a" style="display:none;" onclick="copyMessageA()"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-clipboard-list"/></svg>複製：手模擺設訊息</button>
@@ -6104,7 +6104,7 @@
             if (mode === 'review') {
                 initReviewYears();
                 loadFilters();
-                (window.fetchGlobalReview || fetchGlobalReview)();
+                await (window.fetchGlobalReview || fetchGlobalReview)();
 
                 // If a sync was triggered recently, start the polling interval if not already running
                 if (window._fhsLastSyncPayload && Date.now() - (window._fhsLastSyncTime || 0) < 20000) {
@@ -8607,7 +8607,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     const polledSuccess = await pollSupabaseSync(currentOrderId, payload, isCreate);
 
                     hideLoader();
-                    switchMode('review');
+                    await switchMode('review');
                     await fetchGlobalReview(true);
                     flashOrderRow(currentOrderId);
 
@@ -8625,7 +8625,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             await window.sbSyncOrder(payload, orderItemsArray, currentMode);
                             if (currentMode === 'create') _draftClear(); // S165: fallback 直寫成功都要清草稿
                             hideLoader();
-                            switchMode('review');
+                            await switchMode('review');
                             await fetchGlobalReview(true);
                             flashOrderRow(currentOrderId);
                             showToast("✅ 直連寫入 Supabase 成功");
@@ -8646,7 +8646,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         await window.sbSyncOrder(payload, orderItemsArray, currentMode);
                         if (currentMode === 'create') _draftClear(); // S165: fallback 直寫成功都要清草稿
                         hideLoader();
-                        switchMode('review');
+                        await switchMode('review');
                         await fetchGlobalReview(true);
                         flashOrderRow(currentOrderId);
                         showToast("✅ 直連寫入 Supabase 成功");
