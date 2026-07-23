@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-23 (Session — D44：純鎖匙扣/頸鏈訂單結單提示 + 交貨期警報三連環修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-23「D44：純鎖匙扣/頸鏈訂單結單提示 + 交貨期警報三連環修復」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報 0600801 已完成但無結單提示且警報起算日可疑，查證揪出三個獨立 bug：①結單提示只靠 onchange 事件觸發從無渲染時掃描，抽出 `_fhsIsOrderReadyToArchive()` 加「建議結單」徽章 ②`v_delivery_reminders` 對所有訂單一律用 appointment_at 當 SLA 起算日，migration 0068 改為只有手模擺設訂單才用 ③NULL 品項狀態因 SQL `NOT IN` 對 NULL 回傳 UNKNOWN 令整單於 view 消失，migration 0069 補 NULL 判斷。上線後 Fat Mo 用 0600105 抓到假陽性（殘留字面值「完成」不可信），裁決收緊 `isDone()` 只信「Done 已完成」，全庫 23 筆殘留品項授權批次歸零。追加：手模擺設未到取模日期前改顯示獨立提示不套用 SLA 倒數。
+Subagent：❌ 未使用（全程互動式 Supabase execute_sql 直查真實資料+改碼，含4輪 Fat Mo 拷問/裁決修正方向）。
+
 ## 2026-07-23 (Session — 訂單總覽品項排序/標籤/配色四連環優化): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-23「訂單總覽品項排序/標籤/配色四連環優化」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 以 Akira 訂單(0600721)回報鎖匙扣品項次序錯亂，追問連環追加：①同分類品項按肢位左手→右手→左腳→右腳排序（新增`_lp()`函式，desktop+mobile兩處渲染引擎）②摺疊卡chips標籤精簡（木框/玻璃/鎖匙/毛氈）③逾期徽章移同單號同行④產品代表色全站重新定義（多輪迭代定案：手模紫/鎖匙藍/頸鏈棕/燈飾橙/毛氈綠，含財務結算報價明細鎖匙扣一併統一藍色）。Browser pane多張真實訂單desktop+mobile兩版DOM computed style逐一核對PASS。本次直接改current.html，事後patch補回V42.html防升格覆寫流失。

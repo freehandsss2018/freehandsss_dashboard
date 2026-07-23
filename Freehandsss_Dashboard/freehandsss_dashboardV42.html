@@ -1049,6 +1049,7 @@
         .dlv-badge-red    { background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; }
         .dlv-badge-yellow { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
         .dlv-badge-green  { background:#dcfce7; color:#16a34a; border:1px solid #86efac; }
+        .dlv-badge-pending { background:#e0e7ff; color:#4338ca; border:1px solid #c7d2fe; padding:2px 7px; border-radius:9px; display:inline-block; }
         /* 手機 accordion：整個訂單資訊卡（單號＋日期/名稱＋狀態） */
         .acc-dlv-card { display:flex; flex-direction:column; gap:2px; border-radius:9px; padding:4px 8px; }
         .acc-dlv-card.dlv-card-green  { background:#dcfce7; border:1px solid #86efac; }
@@ -5566,11 +5567,13 @@
 
         // S161續: 訂單完成偵測 — 手模擺設/鎖匙扣/純銀吊飾三類至少存在一種即適用，存在的種類都須全部完成
         // 羊毛氈公仔/燈飾等配件豁免，狀態不影響判斷。任何其他分類存在時整單不觸發（維持保守設計）。
-        window._fhsCheckHmOrderCompletion = function(orderId) {
-            if (window._fhsArchivedIds.has(orderId)) return;
+        // [Session後續] 純判斷邏輯抽成 _fhsIsOrderReadyToArchive，供渲染時（非僅 onchange 事件）也能查詢，
+        // 修復純鎖匙扣/頸鏈訂單若狀態非經畫面下拉選單觸發（如資料匯入/n8n寫入）則永不彈提示的漏洞。
+        window._fhsIsOrderReadyToArchive = function(orderId) {
+            if (window._fhsArchivedIds.has(orderId)) return false;
             var _gOrders = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
             var o = _gOrders.find(function(x) { return x.id === orderId; });
-            if (!o || !o.items || o.items.length === 0) return;
+            if (!o || !o.items || o.items.length === 0) return false;
 
             var GATED = ['手模擺設', '鎖匙扣', '純銀吊飾'];
             var isExemptAddon = function(item) {
@@ -5587,19 +5590,26 @@
                 if (GATED.indexOf(cat) !== -1) hasGated = true;
                 return GATED.indexOf(cat) !== -1 || isExemptAddon(item);
             });
-            if (!hasGated || !allRelevant) return;
+            if (!hasGated || !allRelevant) return false;
 
+            // Fat Mo 裁決（2026-07-23，D44續）：完成判斷只信任畫面下拉選單/checkbox 全踢會產生的
+            // 唯一字面值「Done 已完成」（金屬鎖匙扣/純銀吊飾）或木框/玻璃瓶 checkbox 全踢後同樣寫入的
+            // 「Done 已完成」；已移除舊有對殘留字面值「完成」的信任——0600105 實測其 process_status
+            // 為「完成」但實際生產進度是「0 什麼都未做」，證明「完成」字面值在既有資料中不可靠（污染/殘留），
+            // 不能作為完成信號。「已取件」/「待交收」屬人手確認過的下游生命週期狀態，予以保留。
             var isDone = function(status) {
-                return status === 'Done 已完成' || status === '完成' || status === '已取件' || status === '待交收';
+                return status === 'Done 已完成' || status === '已取件' || status === '待交收';
             };
-            var allCompleted = o.items.every(function(item) {
+            return o.items.every(function(item) {
                 var cat = getProductDimensions(item).category;
                 var status = window._getItemStatus(orderId, item);
                 if (cat === '手模擺設' || cat === '鎖匙扣' || cat === '純銀吊飾') return isDone(status);
                 return true; // 羊毛氈/燈飾等配件豁免
             });
-            if (!allCompleted) return;
+        };
 
+        window._fhsCheckHmOrderCompletion = function(orderId) {
+            if (!window._fhsIsOrderReadyToArchive(orderId)) return;
             setTimeout(function() {
                 var confirmArchive = confirm("此訂單所有品項已完成，是否將此訂單標記為「已完成」？");
                 if (confirmArchive) {
@@ -9625,15 +9635,26 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     ${_detailBtnsM}
                                     ${(function(){
                                         var _isArch = window._fhsArchivedIds && window._fhsArchivedIds.has(o.id);
-                                        var _cardCls = _isArch ? 'dlv-card-done' : _dlvCardClass(o.Order_ID);
+                                        // 手模擺設訂單未到取模預約日期前，唔顯示 SLA 倒數／綠框（避免誤導成「已經開始跑鐘」）
+                                        var _apPending = false, _apDate = null;
+                                        if (!_isArch && _catFlagsM.hasA && o.Appointment_Date) {
+                                            var _apCheck = new Date(o.Appointment_Date);
+                                            if (!isNaN(_apCheck.getTime()) && _apCheck.getTime() > Date.now()) { _apPending = true; _apDate = _apCheck; }
+                                        }
+                                        var _cardCls = _isArch ? 'dlv-card-done' : (_apPending ? '' : _dlvCardClass(o.Order_ID));
                                         var _badgeHtml = '';
                                         if (_isArch) {
                                             var _ref = o.Appointment_Date || o.Date;
                                             var _days = _ref ? Math.round((Date.now() - new Date(_ref).getTime()) / 86400000) : null;
                                             var _txt = _days !== null ? (_days >= 0 ? '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>完成 · ' + _days + 'd 前' : '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>完成 · ' + Math.abs(_days) + 'd 後') : '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>已完成';
                                             _badgeHtml = '<span class="acc-dlv-status">' + _txt + '</span>';
+                                        } else if (_apPending) {
+                                            var _daysToAppt = Math.ceil((_apDate.getTime() - Date.now()) / 86400000);
+                                            _badgeHtml = '<span class="acc-dlv-status dlv-badge-pending"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-calendar"/></svg>取模日期' + (_daysToAppt > 0 ? '（' + _daysToAppt + '天後）' : '') + '</span>';
                                         } else if (_dlvStatusText(o.Order_ID)) {
                                             _badgeHtml = '<span class="acc-dlv-status" onclick="event.stopPropagation();jumpToDlvCard(\'' + _dlvCardClass(o.Order_ID).replace('dlv-card-','') + '\')">' + _dlvStatusText(o.Order_ID) + '</span>';
+                                        } else if (window._fhsIsOrderReadyToArchive && window._fhsIsOrderReadyToArchive(o.id)) {
+                                            _badgeHtml = '<span class="acc-dlv-status dlv-badge-green" style="cursor:pointer;padding:2px 7px;border-radius:9px;display:inline-block;" onclick="event.stopPropagation();window._fhsCheckHmOrderCompletion(\'' + o.id + '\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>建議結單</span>';
                                         }
                                         var _metaTxt = cDate + ' · ' + (o.Customer || '-') + (_catChipsHtml ? '' : ' · ' + itemCount + ' 件');
                                         var _chipsRow = _catChipsHtml ? '<div class="acc-cat-chips">' + _catChipsHtml + '</div>' : '';

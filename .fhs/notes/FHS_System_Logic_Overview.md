@@ -757,8 +757,54 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 
 ---
 
+### 10.21 純鎖匙扣/頸鏈訂單兩連環修復——結單提示漏判 + 警報起算日誤用 appointment_at（D44，2026-07-23）
+
+**問題**：Fat Mo 回報訂單 0600801（純鎖匙扣 x2，無手模擺設）已完成但無「是否結單」提示，且懷疑警報日期起算點有誤。Supabase `execute_sql` 直查 0600801 確認兩個獨立根因。
+
+**根因 1（結單提示漏判）**：`_fhsCheckHmOrderCompletion()`（[freehandsss_dashboardV42.html:5567](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:5567)）判斷邏輯本身正確（GATED 早於 S161續III 已含鎖匙扣/純銀吊飾），但只在使用者手動改動狀態下拉選單（onchange 事件）時觸發，從無頁面載入/資料刷新時的掃描。0600801 兩品項 `process_status='完成'` 是資料庫既有值（並非透過 V42 下拉選單觸發），故事件永不發生，提示永不彈出——這是「事件驅動 vs 靜態掃描」的架構缺口，不是判斷式寫錯。
+
+**根因 2（警報起算日誤用）**：`v_delivery_reminders` view（migrations 0032/0033/0063）對所有訂單一律用 `COALESCE(appointment_at, created_at)` 當起算日。`appointment_at`（預約手模日期）只對手模擺設訂單有業務意義，鎖匙扣/頸鏈訂單從不需要預約，其 `appointment_at` 屬無意義殘留值。0600801 實測：`appointment_at=2026-02-26` 早於 `created_at=2026-05-10` 達 74 天，令 SLA 起算日大幅提早、訂單被誤判逾期/告警。
+
+**修復**：
+- `_fhsCheckHmOrderCompletion` 純判斷邏輯抽成新函式 `window._fhsIsOrderReadyToArchive(orderId)`，供渲染時查詢（非僅 onchange）。訂單總覽 iPhone Accordion 卡片渲染時（[freehandsss_dashboardV42.html:9635](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:9635)）新增「建議結單」綠色徽章，符合條件但未封存的訂單即時顯示，點擊直接觸發既有 confirm() 結單流程——刻意不做成頁面載入時對大量既有訂單逐一彈 N 個 confirm() 疊加。
+- `supabase/migrations/0068_delivery_reminders_start_date_handmodel_only.sql`：新增 `has_handmodel`（`order_items.item_key LIKE '%_P_%'`）判斷，只有訂單內存在手模擺設品項才用 `appointment_at`，否則一律用 `created_at`。
+
+**驗證**：Supabase 直查確認純鎖匙扣/頸鏈訂單（0601100/0600101）修復後 `start_date` 正確改用 `created_at`；smoke test（urgency 合法值 + 無 archived 洩漏）PASS。current.html 因 pre-tool-guard 保護未同步，待走既有部署流程升格。
+
+**教訓**：任何「事件觸發式」偵測邏輯（onchange/onclick）對已存在於資料庫、但從未在本次瀏覽器 session 觸發過對應 UI 動作的資料一律失效——凡涉及「狀態偵測後提示」的功能，設計時須額外考慮「資料已經是目標狀態，但事件從未發生」這個路徑，不能只驗證判斷式本身。
+
+**D44續（同日）：徽章上線即抓到假陽性，`isDone()` 收緊為只信任「Done 已完成」**
+
+上線後 Fat Mo 立即用 0600105 抓到假陽性：該單兩個鎖匙扣品項 `process_status='完成'`，`isDone()` 判定已完成而顯示「建議結單」，但畫面「進度」下拉選單其實顯示「0 什麼都未做」——因為選單選項清單裡從無「完成」呢個字面值可匹配，瀏覽器自動退回顯示第一個選項，令畫面顯示同資料庫真實值不一致。
+
+Fat Mo 裁決完成信號的唯一真理：**鎖匙扣/純銀吊飾＝下拉選單揀「Done 已完成」；木框＝三個 checkbox（已book/已做laser/已做音訊）全踢；玻璃瓶＝兩個 checkbox（已book/已完成）全踢**——木框/玻璃瓶 checkbox 全踢後系統背後同樣寫入字面值「Done 已完成」，三類品項本質上共用同一判斷標準。舊資料殘留嘅字面值「完成」（非經此下拉/checkbox 產生）證實不可靠，不能作為完成信號；`已取件`/`待交收` 屬人手確認過的下游生命週期狀態予以保留。
+
+修復：[freehandsss_dashboardV42.html:5595](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:5595) `isDone()` 移除對字面值「完成」的信任，只保留 `'Done 已完成' || '已取件' || '待交收'`。全庫掃描確認：改嚴後現存未封存訂單無一符合（含最初回報的 0600801），因為 23 筆殘留「完成」品項都需人手逐一重新於畫面選過正確狀態才能通過嚴格判斷——這是刻意的保守選擇，寧願暫時零徽章都不可再對假陽性狀態亂提示。
+
+**D44續三（同日）：新單品項狀態 NULL 令整單於 `v_delivery_reminders` 完全消失**
+
+Fat Mo 回報 07001006/07001007（剛新開、品項從未被觸碰過）畫面完全無任何交貨期徽章（連綠色「正常」都無）。查證：`v_delivery_reminders` 品項層「未完成」過濾用 `oi2.process_status NOT IN ('完成','已取件','Done 已完成','待交收')`——SQL 的 `NULL NOT IN (...)` 結果係 UNKNOWN（非 TRUE），故品項 `process_status` 為 NULL 嘅訂單，EXISTS 子查詢完全唔命中，WHERE 子句 OR 兩個分支都失敗，整張訂單於 view 消失。全庫掃出 6 張現存訂單中招（07001006/07001007/07001009/070010010/0600037/一張未命名測試單），全部係品項狀態未觸碰過嘅新單。
+
+修復：`supabase/migrations/0069_delivery_reminders_null_status_fix.sql`——item-level 過濾加 `oi2.process_status IS NULL OR oi2.process_status NOT IN (...)`，明確將 NULL 視為「未完成」。驗證：修復後 07001006/07001007 正確顯示 `urgency='normal'`、`days_remaining` 81/82 天；smoke test 新增 `v_null_missing` 檢查（NULL 狀態訂單仍缺席即拋錯）PASS。
+
+**D44續四（同日）：手模擺設訂單未到取模日期前不顯示 SLA 倒數，改顯示「未到取模日期」提示**
+
+Fat Mo 確認 0600037（木框，appointment_at=2026-07-27，尚未到）正確顯示「正常剩94天」（SLA 起算日邏輯本身無錯），但提出：取模預約日期未到之前，訂單根本未開始生產，不應該顯示緊一個「已經開始跑鐘」嘅倒數——應該像「建議結單」同一手法，顯示一個獨立提示。
+
+修復：純前端判斷（[freehandsss_dashboardV42.html:9639](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:9639)），訂單總覽 Accordion 卡片渲染時，若訂單有立體擺設品項（`_catFlagsM.hasA`）且 `o.Appointment_Date` 仍在未來，優先顯示藍色「未到取模日期（X天後）」徽章，蓋過原本會顯示嘅正常 SLA 倒數；取模日一過即自動回復正常倒數。冇改 Supabase view（`v_delivery_reminders` 嘅 SLA 起算日邏輯本身正確，只係呢個情況下前端唔應該顯示緊倒數畫面）。
+
+**教訓 3**：SQL 的 `col NOT IN (...)` 對 `col IS NULL` 永遠回傳 UNKNOWN 而非 TRUE——任何「未完成/未觸碰」過濾條件如果用 `NOT IN` 排除已完成清單，必須明確加 `OR col IS NULL`，否則 NULL（通常代表「從未設定」，語意上最應該落入「未完成」分支）會被兩個分支一齊漏走，屬於 SQL NULL 三值邏輯嘅經典陷阱，與字串內容是否正確無關。
+
+**教訓 2**：舊系統遺留的字面值 ENUM（如「完成」vs「Done 已完成」）即使語意相近，也不能假設等價——同一字面值可能在不同訂單代表完全不同的真實狀態（0600801「完成」= 真完成，0600105「完成」= 未開始），已證實為不可靠的污染/殘留資料，任何完成判斷邏輯只能信任「當前 UI 唯一產出路徑」會寫入的字面值，不能信任歷史匯入或舊版系統留下的近義字串。
+
+**D44續二（同日）：Fat Mo 授權批次歸零全部殘留「完成」資料，改由人手逐張重新核實**
+
+`isDone()` 收緊後，全庫掃出 23 筆殘留字面值「完成」（12 張未封存訂單），既無法信任亦無法逐一自動判斷真偽。Fat Mo 明確授權批次改寫為各自類別的「未開始」初始值（非刪除、非猜測真實進度）：金屬鎖匙扣/純銀頸鏈吊飾（20 筆）→ `0 什麼都未做`；立體擺設（3 筆：06001007/0600718/0600721）→ `待製作`（此類走 checkbox 模式，「0 什麼都未做」不在其選項清單內，正確初始值為「待製作」）。執行後 `remaining_stale=0`，全庫已無殘留「完成」字面值。受影響訂單：0600101/0600105/0600106/0600107/0600718/0600721/0600723/0600809/0600903/0600905/0600908/0650429/06001007。後續由 Fat Mo 逐張在畫面重新核實並選擇正確進度。
+
+---
+
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 

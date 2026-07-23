@@ -73,6 +73,8 @@
 > 📌 **退役**（Session 142，`/fhs-slim` 觸發，全檔滿50條上限）：「try-catch 靜默吞掉 TDZ 錯誤」——條目本身無 session/日期來源（僅標「源自 memory」），同一教訓已完整記錄於 auto-memory `feedback_tdz_silent_catch.md`，此處純重複佔位，退役騰出額度。
 >
 > 📌 **退役**（Session 144，`/commit` Lesson Distillation，全檔滿50條需對等替換）：「Shell hook 勿用通用標題抓取」（原 Pitfall #21，Session 118）——修復已是結構性（fence tag 格式已固化進 handoff.md 設計本身），非需要每次靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（git checkout 攜帶未提交修改導致 merge 空操作）。
+
+38. **【高頻 ⚠️】SQL 用 `col NOT IN (已完成清單)` 過濾「未完成」項時，`col IS NULL` 永遠回傳 UNKNOWN 而非 TRUE，令 NULL 資料兩頭唔到岸**：`v_delivery_reminders` view 用 `oi2.process_status NOT IN ('完成','已取件',...)` 判斷品項未完成，但品項剛建立、狀態仍係 NULL（從未被觸碰過）嘅新訂單，NULL 三值邏輯令呢個 EXISTS 判斷完全唔命中，整張訂單就咁樣喺 view 消失（連「正常」都唔顯示）。任何用 `NOT IN` 排除已完成清單嘅過濾條件，必須明確加 `OR col IS NULL`（NULL 通常語意上最應該落入「未完成/未設定」分支），唔可以假設 NULL 會自然歸邊。同 session 亦證實：舊系統遺留嘅字面值 ENUM（如「完成」vs 畫面下拉選單/checkbox 產生嘅「Done 已完成」）即使語意相近都唔可以假設等價——同一字面值喺唔同訂單可能代表完全相反嘅真實狀態，任何完成判斷邏輯只應信任「當前 UI 唯一產出路徑」會寫入嘅字面值 — D44/2026-07-23
 >
 > 📌 **退役**（Session 146，`/fhs-slim` 觸發，全檔滿51條超50上限）：「IIFE 閉包函式 onclick 靜默失效」（原 Pitfall #7，Session 2026-05-27）——修復手法（IIFE 末尾明確 `window.fn = fn` 暴露）已是本專案標準寫法慣例，非需靠記憶提醒的操作紀律，未來復發風險低，退役騰出額度使全檔回落至50條上限（本輪無新教訓對等替換）。
 >

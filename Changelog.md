@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— D44：純鎖匙扣/頸鏈訂單結單提示 + 交貨期警報三連環修復
+
+- **緣起**：Fat Mo 回報訂單 0600801（純鎖匙扣，無手模擺設）已完成但無「是否結單」提示，且懷疑警報起算日有誤。Supabase `execute_sql` 直查真實資料逐一查證。
+- **修復1（結單提示漏判）**：`_fhsCheckHmOrderCompletion()` 判斷邏輯本身正確，但只在使用者手動改動狀態下拉選單（onchange）時觸發，從無頁面載入時掃描既有訂單。抽出純判斷函式 `window._fhsIsOrderReadyToArchive(orderId)`，訂單總覽 Accordion 卡片渲染時新增「建議結單」綠色徽章，符合條件但未封存的訂單即時顯示，點擊觸發既有 confirm() 流程（非頁面載入逐一彈 N 個 confirm）。
+- **修復2（警報起算日誤用 appointment_at）**：`v_delivery_reminders` view 對所有訂單一律用 `COALESCE(appointment_at, created_at)`。`appointment_at`（預約手模日期）只對手模擺設訂單有意義，鎖匙扣/頸鏈訂單無需預約，其值屬無意義殘留。0600801 實測 `appointment_at` 早於 `created_at` 74 天，令 SLA 起算日大幅提早。Migration `0068` 改為只有訂單內有手模擺設品項（`item_key LIKE '%_P_%'`）才用 `appointment_at`，否則一律用 `created_at`。
+- **上線即抓假陽性（0600105）**：徽章上線後 Fat Mo 用 0600105 抓到假陽性——該單品項 `process_status='完成'`，但畫面「進度」下拉選單顯示「0 什麼都未做」（選單選項清單無「完成」呢個字面值可匹配，瀏覽器自動退回顯示第一個選項）。Fat Mo 裁決完成信號唯一真理：鎖匙扣/純銀吊飾＝「Done 已完成」；木框＝三個 checkbox 全踢；玻璃瓶＝兩個 checkbox 全踢（checkbox 全踢後系統背後同樣寫入「Done 已完成」）。`isDone()` 收緊移除對殘留字面值「完成」的信任。全庫掃出 23 筆殘留「完成」品項（12 張訂單），Fat Mo 授權批次歸零：金屬鎖匙扣/純銀頸鏈吊飾（20筆）→`0 什麼都未做`；立體擺設（3筆）→`待製作`，改由人手逐張重新核實。
+- **修復3（NULL 狀態訂單於 view 完全消失）**：Fat Mo 回報 07001006/07001007（新開單、品項從未觸碰）畫面連綠色「正常」都無顯示。查證：view 的 `oi2.process_status NOT IN (...)` 過濾對 `NULL` 值回傳 UNKNOWN（非 TRUE），令品項狀態全為 NULL 的訂單完全從 view 消失。全庫 6 張新單中招。Migration `0069` 補 `OR process_status IS NULL` 明確判斷。
+- **追加優化（手模擺設未到取模日期）**：Fat Mo 提出手模擺設訂單喺取模預約日期未到之前，唔應該顯示緊 SLA 倒數（誤導成已開始跑鐘）。純前端加判斷：有立體擺設品項 + 預約日期仍在未來 → 顯示「取模日期（X天後）」提示，蓋過正常倒數；卡片背景保持中性（不套用綠框）。
+- **驗證**：Supabase 直查確認純鎖匙扣/頸鏈訂單修復後 `start_date` 正確改用 `created_at`；NULL 狀態訂單修復後正確顯示 `urgency='normal'`；兩個 migration smoke test 全 PASS；瀏覽器載入 V42.html console 零錯誤。
+- **未同步**：`current.html` 因 pre-tool-guard 保護未直接改動，需走本次 `/commit` Phase 2.5 升格部署鏈同步。
+
+【交付前雙紀律自檢】
+驗收：Supabase execute_sql 對真實訂單資料逐項交叉核對（非純自驗文字記錄）+ browser console 語法檢查
+Subagent：❌ 未使用（全程互動式查證+改碼，含 3 次 Fat Mo 拷問修正方向）
+
 ## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— 訂單總覽品項排序/標籤/配色四連環優化
 
 - **緣起**：Fat Mo 以 Akira 訂單（0600721）為例回報訂單總覽鎖匙扣品項次序錯亂（應跟新/修訂單表單填寫次序：左手→右手→左腳→右腳），並連環追加三項介面優化要求。

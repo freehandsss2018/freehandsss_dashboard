@@ -3,6 +3,23 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-23] (D44) 純鎖匙扣/頸鏈訂單兩連環修復——結單提示漏判 + 警報起算日誤用 appointment_at
+
+**背景**：Fat Mo 回報訂單 0600801（純鎖匙扣 x2，無手模擺設）已完成但無「是否結單」提示，且懷疑其警報日期起算點有誤。用真實資料查證（Supabase execute_sql 對 0600801）確認兩個獨立根因：
+
+1. **結單提示漏判**：`_fhsCheckHmOrderCompletion()` 判斷邏輯本身正確（GATED 已含鎖匙扣/純銀吊飾），但只在使用者於畫面上手動改動狀態下拉選單（onchange 事件）時觸發，從無頁面載入/資料刷新時的掃描。0600801 兩品項 `process_status='完成'` 是資料庫既有值（非透過 V42 下拉選單觸發），故事件永不發生，提示永不彈出。
+2. **警報起算日誤用**：`v_delivery_reminders` view 對所有訂單一律用 `COALESCE(appointment_at, created_at)` 當起算日。`appointment_at`（預約手模日期）只對手模擺設訂單有業務意義，鎖匙扣/頸鏈訂單不需要預約，其 `appointment_at` 屬無意義殘留值。0600801 實測：`appointment_at=2026-02-26` 早於 `created_at=2026-05-10` 達 74 天，令 SLA 起算日大幅提早、訂單被誤判逾期/告警。
+
+**執行**：
+- `_fhsCheckHmOrderCompletion` 純判斷邏輯抽成新函式 `window._fhsIsOrderReadyToArchive(orderId)`，供渲染時查詢（非僅 onchange）。訂單總覽 iPhone Accordion 卡片渲染時新增「建議結單」綠色徽章（`dlv-badge-green`），符合條件但未封存的訂單即時顯示，點擊直接觸發既有 confirm() 結單流程，避免頁面載入時對大量既有訂單逐一彈 N 個 confirm() 的體驗問題。詳見 [freehandsss_dashboardV42.html:5567](Freehandsss_Dashboard/freehandsss_dashboardV42.html:5567)、[freehandsss_dashboardV42.html:9635](Freehandsss_Dashboard/freehandsss_dashboardV42.html:9635)。current.html 因 pre-tool-guard 保護未同步，待走既有部署流程升格。
+- `supabase/migrations/0068_delivery_reminders_start_date_handmodel_only.sql`：`v_delivery_reminders` 新增 `has_handmodel`（`order_items.item_key LIKE '%_P_%'`）判斷，只有訂單內存在手模擺設品項才用 `appointment_at`，否則一律用 `created_at`。
+
+**驗證**：Supabase 直查確認修復後純鎖匙扣/頸鏈訂單（0601100/0600101）`start_date` 正確改用 `created_at`；smoke test（urgency 合法值 + 無 archived 洩漏）PASS。
+
+相關檔案：`supabase/migrations/0068_delivery_reminders_start_date_handmodel_only.sql`、`freehandsss_dashboardV42.html`。
+
+---
+
 [2026-07-23] (D43續四) 財務總覽「訂單數」KPI 卡「手模擺設」細項再拆木框／玻璃瓶
 
 **背景**：Fat Mo 要求「訂單數」KPI 卡（唯獨呢張卡，收入/成本/毛利三卡維持合併不變——手模擺設 cost 固定 $210 flat，木框/玻璃瓶冇清晰嘅收入拆分基礎，但品項數量可以直接拆）的「手模擺設」細項再拆為「木框」及「玻璃瓶」兩行。
