@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— 待辦清單三連環：current.html部署核實+財務Mock Banner race condition修復+純銀吊飾badge灰色bug修復
+
+- **待辦1核實（非重做）**：交接記錄顯示 current.html 尚未同步 D44+D45，但 git log 顯示兩次「deploy: NAS 升格部署」commit（`0b2dee5`/`0688add`）已實際發生，`Freehandsss_dashboard_current.html` 與 `freehandsss_dashboardV42.html` 逐位元比對僅 build timestamp 一行之差，`deploy-log.md` 亦有對應 NAS 部署紀錄。判定該待辦其實已完成，handoff.md 為舊快照未更新，本次一併修正記錄，不重複部署。
+- **待辦2修復（財務總覽離線示範數據 banner race condition）**：既有背景 session（`task_643b7281`，worktree `nervous-saha-9f1078`）已寫好正確修法但該 worktree 落後 main 19 個 commit 未合併、session 已閒置。核實修法本身邏輯正確且改動範圍獨立（僅 `foFetchLive()` 的 `.catch()` 區塊）後，直接移植同一修法到 main 最新 V42.html：webhook 刷新失敗時，若 `FO_LIVE_DATA` 已有上次成功連線嘅真實數據，改為只 console.warn 保留畫面現有真實數字，不再誤打「離線示範數據」banner；僅當從未成功連線過（`FO_LIVE_DATA` 為 null）先顯示 banner，語意同 fallback 行為不變。
+- **待辦3修復（Overview 表格版純銀吊飾 badge 跌落灰色）**：Supabase 查證揪出根因——`order_items.item_category` 真實值除 `純銀頸鏈吊飾`（含「吊飾」「頸鏈」關鍵字，比對正常）外，另有 `銀飾`（2筆，訂單 0600804）完全唔含呢兩個關鍵字，觸發桌面表格版兩處直讀 `item.Category` 字串嘅判色邏輯（V42.html 分別喺訂單詳情桌面表格渲染 + 另一表格渲染分支，各一處 `if/else if` 鏈）落入 `badge-cat-default` 灰色 fallback。手機 Accordion／chips 路徑因改用 `getProductDimensions()`（以 `item_key` 含 `_M_` 後綴為準）分類，不受影響，本次無需改動。修復：兩處判色條件加入 `cat.includes('銀飾')`。
+- **驗證**：本機 dev server 開 V42.html，console 零錯誤；財務總覽首次連線失敗（`FO_LIVE_DATA` 從未賦值）情境下 banner 仍正確顯示，行為同修復前一致（未破壞既有 fallback）；`document.querySelectorAll('.review-badge')` 逐一檢查全部「吊飾」相關 badge 皆命中 `badge-cat-純銀吊飾`（非 default），且全頁 `.badge-cat-default` 掃描結果為 0 個殘留灰色 badge。
+- **未同步**：本次三項改動已完成 `current.html` 部署（本 `/commit` Phase 2.5 鏈同步）。
+
+【交付前雙紀律自檢】
+驗收：Browser pane 實測（console 零錯誤 + DOM computed class 逐一核對零灰色殘留 + 首次連線失敗情境行為回歸測試）
+Subagent：❌ 未使用（全程互動式 git/worktree/session 考古 + Supabase execute_sql 交叉核對 + 改碼）
+
 ## [2026-07-23] Session（Claude Code / Sonnet 5 執行）— D45：鎖匙扣/頸鏈吊飾定價兩連環修訂
 
 - **緣起**：Fat Mo 提供客戶最新售價表 + 真實加購單（0600702：一對金手+一對銀腳），對照 `.fhs/ai/FHS_Pricing_Bible.md` §3/§4 逐項核對發現系統現行定價同對外報價脫節。
