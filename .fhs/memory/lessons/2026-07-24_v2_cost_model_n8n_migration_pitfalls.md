@@ -23,6 +23,11 @@
 `order_items` 新增 `position_code/drawing_waived/drawing_charged_count/cost_model_version` 四欄後（migration 0073），只改咗 n8n 寫入鏈（Supabase Mirror Prep + RPC），冇檢查 Dashboard 入面 6+ 處各自 hand-written 嘅 `rest/v1/order_items?select=...` fetch（財務彈窗 `buildAuditLedgerHtml()` 果句漏咗）——令財務彈窗完全冇資料可用（新欄位一律 undefined）但零報錯，表面睇好似邏輯bug，實際係 fetch 漏欄位。
 **點應用**：新增/改動任何表結構化欄位後，`grep "rest/v1/<table>?"` 列晒所有讀取點，逐一核對 select list 是否需要同步；呢個坑同「n8n 寫入鏈三處」（Pattern #10）係同一類問題嘅鏡像版本——讀寫兩端都要各自逐點核對，唔可以只查其中一端。
 
+## 附帶心得（Pattern）：歷史數據回填應「精準修單一分量」，唔應該「整行重套新目錄價」
+
+修復 S189 語義漂移期間，Fat Mo 追加要求回填23張歷史舊模型訂單嘅畫圖成本。做法上有兩個選擇：(a) 直接套用 Phase0 模擬RPC算出嚟嘅「新模型全套單件價」（會連帶改埋material/運費等假設）；(b) 只修正被證實有問題嘅單一分量（畫圖費），其餘已記錄分量原封不動。最終採用 (b)，原因：(a) 嘅material/運費數字帶住V2新目錄嘅假設，同「畫圖費呢個bug」完全無關，混入會令回填範圍失控、審計時難以解釋每一蚊嘅改動理由。執行前用SQL逐行掃描確認咗一個關鍵前提：cross-category（鎖匙扣+吊飾）同部位分組入面費率必然一致（唔會出現一組入面一個S一個P嘅衝突），先可以放心用「组內首件」嚟做bookkeeping tie-break，唔影響總金額只影響邊個分類欄位吸收呢筆錢。
+**點應用**：任何歷史財務數據回填，先問「呢次要修嘅係邊一個具體分量」，只動嗰個分量，唔好順手套用成套新公式；動手前用SQL/獨立查詢驗證會唔會撞到隱藏嘅費率/tier衝突，寫入`audit_logs`留返稽核軌跡，事後派獨立subagent重算驗證（唔可以自驗）。
+
 ## 附帶提醒（非新坑，但同場證實）
 
 `.fhs/.deploy-ok` 旗標係**一次性 consume**（每次成功寫入 current.html 後即被刪除），同一批次多個檔案改動要逐次重建；旗標內容必須係有效 ISO timestamp 字串，純 `touch` 空檔案會被 `new Date('').getTime()` 判 NaN 當無效（S187 已記錄，本次再度實測確認）。
