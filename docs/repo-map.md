@@ -89,7 +89,10 @@ freehandsss_dashboard/
 │   │   ├── 0072_fix_simulate_necklace_chain_cost.sql ← 修正 0071 吊飾類別漏計 D42 頸鏈成本（$100/件）之 bug（finance-auditor 獨立覆核揪出），修正後全 tier 差額轉正（Session 189）✅ 已部署
 │   │   ├── 0073_phase1_unified_sp_tier_skus.sql ← cl-flow Phase 1：新增16個統一S/P tier SKU（(V2)後綴避開命名撞名）+ order_items 4個結構化欄位（position_code/drawing_waived/drawing_charged_count/cost_model_version）+ fhs_verify_new_sku_costs()（Session 189）✅ 已部署
 │   │   ├── 0074_exclude_v2_skus_from_legacy_drift_monitor.sql ← 修正舊 fhs_check_product_cost_drift() 誤判V2新SKU做孤兒row（假陽性漂移），加排除條件兩監測範圍不重疊（Session 189）✅ 已部署
-│   │   └── 0075_sync_rpc_position_drawing_dedup_columns.sql ← cl-flow 2026-07-24-0213 Phase2：sync_order_to_mirror() RPC 擴充支援 position_code/drawing_waived/drawing_charged_count/cost_model_version 四個結構化欄位讀寫（Session 189）✅ 已部署
+│   │   ├── 0075_sync_rpc_position_drawing_dedup_columns.sql ← cl-flow 2026-07-24-0213 Phase2：sync_order_to_mirror() RPC 擴充支援 position_code/drawing_waived/drawing_charged_count/cost_model_version 四個結構化欄位讀寫（Session 189）✅ 已部署
+│   │   ├── 0076_backfill_baby_keychain_necklace_drawing_cost_s189.sql ← 歷史舊模型訂單畫圖成本回填（23張單，Fat Mo「全部都要」授權），只修drawing_cost分量本身，不重套V2目錄價；orders聚合總額淨增$2,000，finance-auditor獨立重算全量PASS（Session 189）✅ 已部署
+│   │   ├── 0077_backfill_orders_append_drawing_dedup_notes.sql ← 為0076涉及訂單補寫n8n_adjustment_notes（drawing_position_dedup_deduction筆記），令畫圖扣減以badge形式顯示喺財務彈窗②成本快照鏈（Session 189）✅ 已部署
+│   │   └── 0078_backfill_item_level_gross_drawing_cost_s189.sql ← 品項層（order_items）由淨額改回全額(gross)表示，訂單層total_cost/keychain_cost等聚合欄位完全不變（已驗證bit-for-bit一致），確立「品項全額/訂單淨額+badge」核心規則（Session 189）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
@@ -144,9 +147,12 @@ freehandsss_dashboard/
 │   ├── ai/                              ← 共用 AI 配置區
 │   │   ├── README.md                   ← AI 指揮系統說明
 │   │   ├── AGENTS.md                   ← 憲法層 v1.4.12（2026-06-05 Rule 3.17 雙紀律強制律；Rule 3.16 財務規則前置讀取）
-│   │   ├── FHS_Finance_Bible.md        ← 財務架構聖經 v1.1.0 L1（架構不變量：Layer 2 快照、欄位歸屬、禁 trigger；2026-06-01 加 Authority header）
-│   │   ├── FHS_Pricing_Bible.md        ← 定價聖經 v1.2.0 L2（§10 重構為規則 ID 可查表；2026-06-05）現行定價 HEAD
-│   │   ├── FHS_Product_Definition.md   ← 產品身份 SSoT v1.0.0 L2（NEW 2026-06-05）4 類產品：立體擺設/吊飾/鎖匙扣/加購配件；§0 狀態欄強制；只回答 WHAT
+│   │   ├── FHS_Finance_Bible.md        ← 財務架構聖經 v1.4.0 L1（架構不變量：Layer 2 快照、欄位歸屬、禁 trigger；2026-07-25 S189全面重寫：§四G2-G5改純position語言、單購/加購降歷史附錄、新增§五B架構責任+已知限制）
+│   │   ├── FHS_Pricing_Bible.md        ← 定價聖經 v1.7.0 L2（§10 重構為規則 ID 可查表；2026-07-25 §5/§6金額表改指針去Cost Schema v2，唯一SSoT不重複維護）現行定價 HEAD
+│   │   ├── FHS_Product_Cost_Schema_v2.md ← 產品成本Schema v2.3.0 L2a（2026-07-25升級active，NEW §10 V2統一成本模型SSoT，cost_configurations 23-key清單）
+│   │   ├── FHS_Product_Cost_Operations.md ← [已退役 2026-07-25] RPC/並發/升級SOP，內容已100%落地生產，僅供歷史參考
+│   │   ├── FHS_Product_Cost_UI_Spec.md ← [已退役 2026-07-25] 成本設定中心UI規範，內容已100%落地生產，僅供歷史參考
+│   │   ├── FHS_Product_Definition.md   ← 產品身份 SSoT v1.1.0 L2（NEW 2026-06-05；2026-07-25補入V2統一SKU完整子條目）4 類產品：立體擺設/吊飾/鎖匙扣/加購配件；§0 狀態欄強制；只回答 WHAT
 │   │   ├── commands/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
@@ -205,7 +211,7 @@ freehandsss_dashboard/
 │   │       │   ├── README.md            ← 用途、角色邊界、使用場景
 │   │       │   └── vendor/
 │   │       │       └── SKILL.md        ← 來源說明與角色邊界聲明
-│   │       ├── finance-gatekeeper/      ← 財務知識守門員 v1.1.0（2026-06-03 升級）L1+L2a+L2b 三層路由、收款確收語義修正、技術債備忘
+│   │       ├── finance-gatekeeper/      ← 財務知識守門員 v1.6.0（2026-07-25 S189更新）L1+L2a+L2b 三層路由指向正式權威章節（非session筆記）、收款確收語義修正、技術債備忘
 │   │       │   └── SKILL.md            ← 任何財務任務前強制載入（取代 finance-calculator）
 │   │       ├── finance-calculator/      ← [DEPRECATED 2026-06-01] 已整合至 finance-gatekeeper
 │   │       │   └── SKILL.md            ← 利潤公式、前端/n8n 優先規則（已過時，勿引用）
@@ -290,7 +296,7 @@ freehandsss_dashboard/
 │   ├── n8n/                                 ← n8n Workflow 配置區
 │   ├── README.md                        ← n8n 配置說明
 │   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）
-│   ├── Quadruple_Sync_Field_Map.md      ← v1.1 (2026-05-13) 四端欄位映射（Airtable ↔ n8n ↔ Dashboard ↔ Supabase，最新版本）
+│   ├── Quadruple_Sync_Field_Map.md      ← v2.0 (2026-07-25 S189全面重寫，原v1.1 2.5個月未更新) 四端欄位映射（Supabase主導Primary Core，Airtable歷史備援；n8n內部計算規則附精確公式；新增order_items 4個V2欄位）
 │   ├── Airtable_Schema_Snapshot_2026-05.md ← Airtable 6 表 schema 快照 + Postgres DDL 草稿（2026-05-10）
 │   ├── N8N_Node_Interaction_Map.md      ← n8n 26 nodes 工作流互動圖（FHS_Core_OrderProcessor v45.7.4，2026-05-10 新增）
 │   ├── FHS_Core_OrderProcessor.json     ← 核心訂單處理機
