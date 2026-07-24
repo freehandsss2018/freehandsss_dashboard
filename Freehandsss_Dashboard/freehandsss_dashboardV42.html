@@ -11440,14 +11440,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             // 2026-07-24 Fat Mo 反饋：品項細明要「純成本計算，不涉及任何折扣」——
                             // 已用真實資料核實 printing_cost + chain_cost + drawing_cost = item_base_cost
                             // （呢三個分量本身已完整組成單件成本，冇缺漏）；原本額外顯示「單件基礎成本」
-                            // 同呢三個分量重複，令人誤以為仲要再加一次先等於成本小計。運費(shipping_cost)
-                            // 係前端「假設呢件係唯一件」嘅估算值，唔屬於呢件品項嘅真實組成分量，且容易同
-                            // 訂單層運費共享折扣（已喺②成本快照鏈用badge獨立顯示）混淆，呢度唔再顯示。
+                            // 同呢三個分量重複，令人誤以為仲要再加一次先等於成本小計，呢部份移除。
                             // V2統一SKU冇分開儲存printing/chain（前端未populate），改以 base2−draw2 反推
-                            // 「物料成本」，令breakdown同樣可以純加總得返成本小計，唔靠估算折扣。
+                            // 「物料成本」，令breakdown同樣可以純加總得返成本小計。
+                            // 2026-07-24 續：Fat Mo 糾正——運費(shipping_cost)本身係成本嘅一種（S189最初
+                            // 裁決「運費視為成本一種計入總和但保留獨立欄位拆解」嘅原則），唔應該當「折扣」
+                            // 移除，加返顯示。運費暫時未計入 item_base_cost/subtotal_cost（呢個屬於現行
+                            // 訂單層共享折扣機制嘅既有架構限制，非本次顯示層修復範圍），故「成本小計」
+                            // 繼續以 n8n 權威記錄值（subtotal_cost）為準，運費行純供參考對照。
                             var hasComponentSplit = (print2 > 0 || chain2c > 0);
                             var pureMaterial2 = hasComponentSplit ? 0 : Math.max(0, base2 - draw2);
-                            var hasBreakdown = (pureMaterial2 > 0 || print2 > 0 || chain2c > 0 || draw2 > 0 || v2Waived);
+                            var hasBreakdown = (pureMaterial2 > 0 || print2 > 0 || chain2c > 0 || ship2 > 0 || draw2 > 0 || v2Waived);
                             var sumLbl = lbl2 + (qty2 > 1 ? ' <span style="color:#888;">×' + qty2 + '</span>' : '');
                             if (sub2 > 0) {
                                 // 點2 降級版：只列真實存在欄位，缺則註明未記錄，不臆造拆解
@@ -11458,6 +11461,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 else if (v2Waived) dh += '<div class="fhsAudit_detailRow" style="color:#2E9E5B;"><span>繪圖</span><span class="v">$0（同部位已收，本件豁免）</span></div>';
                                 if (print2 > 0) dh += '<div class="fhsAudit_detailRow"><span>打印/物料</span><span class="v">' + _f(print2) + '</span></div>';
                                 if (chain2c> 0) dh += '<div class="fhsAudit_detailRow"><span>環扣/頸鏈</span><span class="v">' + _f(chain2c) + '</span></div>';
+                                if (ship2  > 0) dh += '<div class="fhsAudit_detailRow"><span>運費</span><span class="v">' + _f(ship2) + '</span></div>';
                                 if (!hasBreakdown) dh += '<div class="fhsAudit_detailRow" style="color:#aaa;"><span>繪圖/物料/環扣明細</span><span class="v">明細未記錄（n8n 未寫入）</span></div>';
                                 dh += '<div class="fhsAudit_detailRow" style="font-weight:700;border-top:1px solid #eee;margin-top:3px;padding-top:4px;"><span>成本小計（記錄值）</span><span class="v">' + _f(sub2) + '</span></div>';
                                 h += '<details class="fhsAudit_itemDetail">' +
