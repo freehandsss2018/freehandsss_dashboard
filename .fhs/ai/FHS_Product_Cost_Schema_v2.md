@@ -247,9 +247,9 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 
 | 名詞 | 含義 | 必要前提 |
 |------|------|---------|
-| 加購配件 | 在主產品基礎上附加的裝飾件 | 必須先有立體擺設或飾品作為「主體」 |
-| 羊毛氈公仔 - 加購 | 手工羊毛氈造型配件 | 通常放入玻璃瓶或木框 |
-| 燈飾 - 加購 | LED 燈串配件 | 通常裝點立體擺設 |
+| 加購配件 | 在主產品基礎上附加的裝飾件 | **僅限立體擺設之下嘅玻璃瓶款式**（`pSubCat === '玻璃瓶款式'`），木框款式不適用（2026-07-25 cl-flow 2026-07-25-0148 糾正，前端 `Freehandsss_dashboard_current.html` 第4265/6194/6202行 `isGlass` gate 已核實） |
+| 羊毛氈公仔 - 加購 | 手工羊毛氈造型配件 | 放入玻璃瓶 |
+| 燈飾 - 加購 | LED 燈串配件 | 裝點玻璃瓶款式立體擺設 |
 
 ### 7.2 成本表
 
@@ -278,6 +278,10 @@ ON CONFLICT (sku) DO UPDATE SET total_base_cost = EXCLUDED.total_base_cost;
 
 加購配件 → products 表 → order_items.subtotal_cost → orders.total_cost → orders.net_profit
 
+### 7.5 訂單層獨立分類欄（migration 0079/0080，cl-flow 2026-07-25-0148）
+
+`orders.accessory_cost` / `order_items.accessory_cost`（`NUMERIC(10,2) DEFAULT 0`）：修復配件成本（itemCost，$30 flat）雖已正確計入 `total_cost`，但漏落訂單層三分類 rollup（`handmodel_cost`/`keychain_cost`/`necklace_cost`）嘅顯示缺口。n8n `Calculate Profit & Pack Items`（V47.23起）新增 `accessoryCostTotal` 累加分支，同 `Supabase Mirror Prep` 傳遞至 `sync_order_to_mirror` RPC（migration 0080 擴充支援）。Dashboard `buildAuditLedgerHtml()` 財務彈窗②成本快照鏈新增「配件成本」列，`catSum` 公式已納入。歷史3張單（0600107/0600723/0696216）已 backfill（動態 `SUM(item_base_cost)`，非硬編碼）。純分類標記修復，`total_cost`/`net_profit` 數值本身不變。
+
 ---
 
 ## §8. 計算規則 & 邊界聲明
@@ -294,7 +298,7 @@ cost_configurations  ←─ Fat Mo 透過 UI 更新（fhs_upsert_cost_config RPC
   order_items.item_base_cost / subtotal_cost
         │
         ▼ (fhs_batch_recalc_execute RPC — 0021 已上線)
-  orders.total_cost / handmodel_cost / keychain_cost / necklace_cost
+  orders.total_cost / handmodel_cost / keychain_cost / necklace_cost / accessory_cost
         │
         ▼ (純減法)
   orders.net_profit  =  orders.final_sale_price  −  orders.total_cost

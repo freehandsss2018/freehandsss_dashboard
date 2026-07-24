@@ -3,6 +3,30 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-25] (D47) finance-gatekeeper §三B 新增第4步「文件同步完整性 grep sweep」，防止成本欄位改動漏同步權威文件
+
+**背景**：D46（配件成本 accessory_cost 修復）執行完成後，Fat Mo 質詢「有更新權威財務或其他相關檔案嗎」，揪出 AI 漏同步 `FHS_Finance_Bible.md`（L1）同 `FHS_Product_Definition.md`（L2）——兩者逐字列出兄弟欄位但AI只跟自己寫低嘅執行計劃清單同步，冇機械化二次覆核。
+
+**裁決**：Fat Mo 選方案(a)+(c)組合——(a) §三B 加強制 grep sweep 步驟（機械化搜尋兄弟欄位喺邊啲文件出現，逐一核對新欄位是否跟齊）；(c) 大型/跨多份文件改動另派 fresh-context subagent 獨立覆核，防止自查盲點。
+
+**執行**：`finance-gatekeeper/SKILL.md` §三B 新增第4步，version 1.7.0→1.8.0；即場補齊 Finance Bible（v1.4.0→v1.4.1）+ Product_Definition 兩份遺漏文件。
+
+相關檔案：`.fhs/ai/skills/finance-gatekeeper/SKILL.md`、`.fhs/ai/FHS_Finance_Bible.md`、`.fhs/ai/FHS_Product_Definition.md`。詳見 Changelog.md 2026-07-25 條目。
+
+---
+
+[2026-07-25] (D46) 配件成本（羊毛氈/燈飾）新增獨立 `accessory_cost` 欄位（方案a），糾正依附範圍為「玻璃瓶款式」限定
+
+**背景**：2026-07-24 investigation report（`task_2d8d6b4f`）發現配件成本（$30 flat）雖正確計入 `total_cost`，但漏落訂單層三分類 rollup，Dashboard 財務彈窗顯示靜默缺口（全庫3張單/$60，金額本身無誤）。評估「新增獨立欄位」(a) vs「歸入 handmodel_cost」(b) 兩方案，Fat Mo 選 (a)，並指出配件加購（羊毛氈/燈飾）**只依附立體擺設之下嘅玻璃瓶款式**（非全部立體擺設）——實測 `Freehandsss_dashboard_current.html` 第4265/6194行 `isGlass` gate 確認正確，木框款式冇此加購選項。
+
+**執行**：走 `/cl-flow`（flow_id `2026-07-25-0148`，A1+A2對抗評審15條，Verdict CONDITIONAL_READY）+ `/execute`。Migration 0079（新增欄位）+ 0080（RPC擴充）+ n8n `Calculate Profit & Pack Items`/`Supabase Mirror Prep` live workflow 節點改動（V47.23/V47.15）+ Dashboard `buildAuditLedgerHtml()` 三處改動 + 歷史3張單動態backfill + 4份文件同步。
+
+**驗證**：finance-auditor 獨立覆核4項全PASS；過程揪出 migration 一度只套DB未落repo嘅漂移（已補齊）；synthetic 測試單驗證RPC路徑端對端正確。
+
+相關檔案：`supabase/migrations/0079_add_accessory_cost_column.sql`、`0080_sync_rpc_accessory_cost.sql`、`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（current.html 未升格，待 Fat Mo 另行授權）。詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.7、`artifacts/2026-07-25-0148/cl-final-plan.md`。
+
+---
+
 [2026-07-23] (D45) 鎖匙扣/頸鏈吊飾定價兩連環修訂——P mode 鎖匙扣改多部位合併計價、S mode 頸鏈 remainder 單隻價下修
 
 **背景**：Fat Mo 提供客戶最新售價表 + 真實加購單（0600702 一對金手+一對銀腳），對照 Pricing Bible §3/§4 發現兩處系統現行定價同對外報價脫節：

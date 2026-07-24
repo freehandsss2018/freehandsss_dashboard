@@ -2,8 +2,8 @@
 
 > **Authority Level**: L1 — 架構不變量（最高權威）
 > **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/ai/FHS_Pricing_Bible.md`。
-> **Version**: v1.4.0
-> **Created**: 2026-05-16 | **Updated**: 2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
+> **Version**: v1.4.1
+> **Created**: 2026-05-16 | **Updated**: 2026-07-25（cl-flow 2026-07-25-0148：新增「配件」（羊毛氈/燈飾加購）分類至 §一實體清單/§三彙總/§四 getItemCategory+成本分配規則/§四收斂驗證公式/§五責任表 x2，`accessory_cost` 欄位補齊 migration 0079/0080）；2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
 > **Path**: `.fhs/ai/FHS_Finance_Bible.md`
 >
 > ⚠️ **強制規則**：凡任何 AI（主 agent 或 subagent）涉及財務利潤、成本、折扣計算任務，
@@ -59,8 +59,8 @@ Airtable Base_Costs（人工維護）
 
 ```
 用途：訂單確認後鎖定成本，永久稽核依據
-實體：orders.total_cost / net_profit / handmodel_cost / keychain_cost / necklace_cost
-     order_items.item_base_cost / handmodel_cost / keychain_cost / necklace_cost
+實體：orders.total_cost / net_profit / handmodel_cost / keychain_cost / necklace_cost / accessory_cost
+     order_items.item_base_cost / handmodel_cost / keychain_cost / necklace_cost / accessory_cost
 特性：訂單確認後，任何產品漲價均不影響此值
 禁止：Trigger / Generated Column / View 動態重算這些欄位（等同財務造假）
 ```
@@ -86,7 +86,7 @@ Calculate Profit & Pack Items
       1. 將各 SKU 成本 × 數量 = item 成本
       2. 依 SKU 判斷 item_category → 分類成本
       3. 計算跨部位鎖匙扣運費共享扣減（V3.7 §2.5）
-      4. 彙總 order 層：total_cost、handmodel_cost、keychain_cost、necklace_cost
+      4. 彙總 order 層：total_cost、handmodel_cost、keychain_cost、necklace_cost、accessory_cost
     輸出：Total_Cost、Final_Profit、Sub_Items[]（含分類成本）
 
 Mirror to Supabase
@@ -101,6 +101,7 @@ Mirror to Supabase
 ```javascript
 // SKU 判斷規則（由 Search_SKU 字串推導）
 function getItemCategory(sku) {
+  if (sku.includes('羊毛氈') || sku.includes('燈飾')) return '配件';  // 僅限玻璃瓶款式立體擺設加購，見 Cost Schema v2 §7.1
   if (sku.includes('木框') || sku.includes('玻璃瓶')) return '立體擺設';
   if (sku.includes('鎖匙扣'))  return '金屬鎖匙扣';
   if (sku.includes('吊飾'))    return '純銀頸鏈吊飾';  // ⚠️ Supabase 實際儲存值，非 '銀飾'
@@ -108,9 +109,10 @@ function getItemCategory(sku) {
 }
 
 // 成本分配規則
-// item_category = '立體擺設'    → handmodel_cost = item_base_cost, keychain/necklace = 0
-// item_category = '金屬鎖匙扣'  → keychain_cost = item_base_cost, handmodel/necklace = 0
-// item_category = '純銀頸鏈吊飾'→ necklace_cost = item_base_cost, handmodel/keychain = 0
+// item_category = '立體擺設'    → handmodel_cost = item_base_cost, keychain/necklace/accessory = 0
+// item_category = '金屬鎖匙扣'  → keychain_cost = item_base_cost, handmodel/necklace/accessory = 0
+// item_category = '純銀頸鏈吊飾'→ necklace_cost = item_base_cost, handmodel/keychain/accessory = 0
+// item_category = '配件'        → accessory_cost = item_base_cost, handmodel/keychain/necklace = 0（migration 0079/0080，cl-flow 2026-07-25-0148）
 ```
 
 ### 跨部位鎖匙扣運費共享扣減（Bible V3.7 §2.5）
@@ -128,9 +130,10 @@ function getItemCategory(sku) {
   orders.keychain_cost = SUM(order_items.keychain_cost) - keychainShippingDeduction
   orders.handmodel_cost = SUM(order_items.handmodel_cost)（無扣減）
   orders.necklace_cost = SUM(order_items.necklace_cost) - necklaceShippingDeduction
+  orders.accessory_cost = SUM(order_items.accessory_cost)（無扣減，$30 flat，migration 0079/0080）
   orders.total_cost = SUM(all item costs) - keychainShippingDeduction - necklaceShippingDeduction
 
-驗證：orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost = orders.total_cost
+驗證：orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost + orders.accessory_cost = orders.total_cost
 ```
 
 ### 位置依賴成本規則（Per-Position Cost Rules）— 2026-06-02 Fat Mo 確認
@@ -241,6 +244,7 @@ V2統一SKU模型實作：見 `FHS_Product_Cost_Schema_v2.md` §10.4「同部位
 | `handmodel_cost` | n8n（Mirror to Supabase） | Supabase trigger 禁止 | Layer 2 快照 |
 | `keychain_cost` | n8n（Mirror to Supabase） | Supabase trigger 禁止 | 含運費扣減 |
 | `necklace_cost` | n8n（Mirror to Supabase） | Supabase trigger 禁止 | Layer 2 快照 |
+| `accessory_cost` | n8n（Mirror to Supabase） | Supabase trigger 禁止 | Layer 2 快照，$30 flat（migration 0079/0080） |
 | `deposit` | Dashboard（sbSyncOrder） | n8n 禁止覆蓋 | 用戶輸入 |
 | `balance` | Dashboard（sbSyncOrder） | n8n 禁止覆蓋 | 用戶輸入 |
 | `additional_fee` | Dashboard（sbSyncOrder） | n8n 禁止覆蓋 | 用戶輸入 |
@@ -255,6 +259,7 @@ V2統一SKU模型實作：見 `FHS_Product_Cost_Schema_v2.md` §10.4「同部位
 | `handmodel_cost` | n8n（Mirror to Supabase） | item 層：如類別=立體擺設則=item_base_cost，否則=0 |
 | `keychain_cost` | n8n（Mirror to Supabase） | item 層：如類別=金屿扣則=item_base_cost，否則=0 |
 | `necklace_cost` | n8n（Mirror to Supabase） | item 層：如類別=純銀頸鏈吊飾則=item_base_cost，否則=0 |
+| `accessory_cost` | n8n（Mirror to Supabase） | item 層：如類別=配件則=item_base_cost，否則=0（migration 0079/0080） |
 | `product_sku` | n8n（Mirror to Supabase） | 來自 Product_Name（matched SKU） |
 | `subtotal_cost` | n8n（Mirror to Supabase） | = item_base_cost（`item_base_cost` 本身已為該行 quantity 之全額 total，非單件價；quantity 欄位純展示用途，不參與相乘。2026-07-25 修正：舊版寫「×quantity」會誤導再乘一次） |
 

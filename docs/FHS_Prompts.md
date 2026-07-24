@@ -1,15 +1,16 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.12
+version: v1.13
 compatible_with: AGENTS.md v1.7.1
 last_updated: 2026-07-25
-last_audited_session: S189
+last_audited_session: S189（cl-flow 2026-07-25-0148）
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.12
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.13
 >
-> 最後更新：2026-07-25（v1.12 S189 稽核：核心業務語義修正（財務術語「單購/加購」降格為歷史對照，改用V2統一成本模型+品項全額/訂單淨額規則）觸發 [F] 稽核義務。結論：情境六補「單購」「加購」「畫圖費點計」「V2 SKU」「同部位豁免」觸發詞，路由指向 Cost Schema v2 §10（新SSoT章節）+ Finance Bible §四/§五B，不新增/刪除情境——路由結構不變，僅反映成本模型現況）
+> 最後更新：2026-07-25（v1.13 cl-flow 2026-07-25-0148 稽核：核心業務語義修正（配件加購依附範圍由「立體擺設」糾正為「玻璃瓶款式立體擺設」，新增 `accessory_cost` 獨立欄位）觸發 [F] 稽核義務。結論：情境六補「配件」「羊毛氈」「燈飾」「accessory_cost」觸發詞，路由指向 Cost Schema v2 §7 + System_Logic_Overview §5.4.7，不新增/刪除情境）
+> 前次更新：2026-07-25（v1.12 S189 稽核：核心業務語義修正（財務術語「單購/加購」降格為歷史對照，改用V2統一成本模型+品項全額/訂單淨額規則）觸發 [F] 稽核義務。結論：情境六補「單購」「加購」「畫圖費點計」「V2 SKU」「同部位豁免」觸發詞，路由指向 Cost Schema v2 §10（新SSoT章節）+ Finance Bible §四/§五B，不新增/刪除情境——路由結構不變，僅反映成本模型現況）
 > 最後更新：2026-07-22（v1.11 D43 稽核：AGENTS.md Airtable SSoT 角色翻轉至 Supabase 觸發 [F] 稽核義務。結論：情境二十一「三端財務稽核」觸發詞/說明改「Live Airtable 數據」為「Live Supabase 數據」，「三端」定義由 Airtable↔n8n↔Dashboard 改 Supabase↔n8n↔Dashboard，不新增/刪除情境——路由結構不變，僅反映資料源現況）
 > 前次更新：2026-07-05（v1.10 S145 `/fhs-audit` 修復：新增情境二十六`/fhs-check`路由，補齊A4-3缺口；`/rg`比照read/execute慣例不列情境）
 > 前次更新：2026-07-05（v1.9 S142 同步：新增 `/fhs-slim` 指令，情境八補「深度分流」— 快檢清理走 fhs-slim，全套深稽核維持走 fhs-audit）
@@ -61,6 +62,7 @@ description: Business situation detection and command routing for AI execution
 - 觸發（三叉路由，依問題性質選一）：
   - 「定價」「售價」「多少錢」「報價」「Bible」→ **定價**：讀 `.fhs/ai/FHS_Pricing_Bible.md`（L2 現行定價 HEAD）
   - 「成本」「cost」「這值多少成本」「單購」「加購」「畫圖費點計」「V2 SKU」「同部位豁免」→ **成本**：讀 `.fhs/ai/FHS_Product_Cost_Schema_v2.md` §10（V2統一成本模型SSoT）+ `FHS_Finance_Bible.md` §四/§五B
+  - 「配件」「羊毛氈」「燈飾」「accessory_cost」→ **配件成本**：讀 `.fhs/ai/FHS_Product_Cost_Schema_v2.md` §7（配件定義+§7.5獨立欄位）+ `FHS_System_Logic_Overview.md` §5.4.7；配件僅限**玻璃瓶款式**立體擺設，木框款式不適用
   - 「產品定義」「這是什麼產品」「§0」「WHAT」「這個產品的結構」→ **產品身份**：讀 `.fhs/ai/FHS_Product_Definition.md`（L2 產品身份 SSoT）
 - **查詢路由**：先讀 `.fhs/ai/skills/finance-gatekeeper/SKILL.md` 確認讀哪份文件。
 - **注意**：`FHS_Product_Bible_V3.7.md` 已退役，定義層已遷至 `FHS_Product_Definition.md`，定價已遷至 `FHS_Pricing_Bible.md`，勿引用舊檔。

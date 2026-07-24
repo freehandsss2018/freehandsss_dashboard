@@ -11078,7 +11078,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var results = await Promise.all([
                     fetch(
                         _V41_SB_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId) +
-                        '&select=n8n_adjustment_notes,deposit,balance,handmodel_cost,keychain_cost,necklace_cost,cost_override_locked&limit=1',
+                        '&select=n8n_adjustment_notes,deposit,balance,handmodel_cost,keychain_cost,necklace_cost,accessory_cost,cost_override_locked&limit=1',
                         { headers: hdr }
                     ),
                     fetch(
@@ -11208,7 +11208,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var handmodelCost = parseFloat(o.Handmodel_Cost ?? o.handmodel_cost ?? extra.handmodel_cost ?? 0) || 0;
             var keychainCost  = parseFloat(o.Keychain_Cost  ?? o.keychain_cost  ?? extra.keychain_cost  ?? 0) || 0;
             var necklaceCost  = parseFloat(o.Necklace_Cost  ?? o.necklace_cost  ?? extra.necklace_cost  ?? 0) || 0;
-            var catSum        = handmodelCost + keychainCost + necklaceCost;
+            var accessoryCost = parseFloat(o.Accessory_Cost ?? o.accessory_cost ?? extra.accessory_cost ?? 0) || 0;
+            var catSum        = handmodelCost + keychainCost + necklaceCost + accessoryCost;
             // Problem E: n8n deducts shipping from total_cost but NOT from category cols → catSum > totalCost
             var shippingDeductAmt = Math.round(catSum - totalCost);
 
@@ -11324,6 +11325,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (handmodelCost > 0) h += _costRow('手模成本',   handmodelCost, '手模');
             if (keychainCost  > 0) h += _costRow('鎖匙扣成本', keychainCost,  '鎖匙扣');
             if (necklaceCost  > 0) h += _costRow('吊飾成本',   necklaceCost,  '吊飾');
+            if (accessoryCost > 0) h += _costRow('配件成本',   accessoryCost, '配件');
             if (catSum === 0 && totalCost > 0) {
                 h += _row('成本（未分類）', _f(totalCost), 'cost', 1, null, '訂單層類別欄未記錄，以 total_cost 為準');
             }

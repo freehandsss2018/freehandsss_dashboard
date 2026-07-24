@@ -34,6 +34,7 @@
 | `handmodel_cost` | Main_Orders.Handmodel_Cost (rollup) | 計算 + 寫入 | 讀取顯示 | `orders.handmodel_cost` | **n8n** |
 | `keychain_cost` | Main_Orders.Keychain_Cost (rollup) | 計算 + 寫入 | 讀取顯示 | `orders.keychain_cost` | **n8n** |
 | `necklace_cost` | Main_Orders.Necklace_Cost (rollup) | 計算 + 寫入 | 讀取顯示 | `orders.necklace_cost` | **n8n** |
+| `accessory_cost` | — (Airtable已剝離停用，D43) | 計算 + 寫入 | 讀取顯示 | `orders.accessory_cost` | **n8n**（migration 0079/0080，cl-flow 2026-07-25-0148） |
 | `net_profit` | Main_Orders.Net_Profit | 計算 + 寫入 | 讀取顯示 | `orders.net_profit` | **n8n** |
 | `raw_form_state` | Main_Orders.Raw_Form_State | 讀取（不修改） | 序列化 + 寫入 | `orders.raw_form_state JSONB` | **Dashboard** ⛔ 不可刪除 |
 | `customer_name` | Main_Orders.Customer_Name | 讀取 / 傳遞 | 輸入 + 寫入 | `orders.customer_name` | Dashboard |
@@ -63,6 +64,7 @@
 | `handmodel_cost` | Order_Items.Handmodel_Cost (formula) | 計算 + 寫入 | — | `order_items.handmodel_cost NUMERIC` | **n8n** |
 | `keychain_cost` | Order_Items.Keychain_Cost (formula) | 計算 + 寫入 | — | `order_items.keychain_cost NUMERIC` | **n8n** |
 | `necklace_cost` | Order_Items.Necklace_Cost (formula) | 計算 + 寫入 | — | `order_items.necklace_cost NUMERIC` | **n8n** |
+| `accessory_cost` | — (Airtable已剝離停用，D43) | 計算 + 寫入 | — | `order_items.accessory_cost NUMERIC` | **n8n**（migration 0079/0080，cl-flow 2026-07-25-0148） |
 | `engraving_text` | Order_Items.Engraving_Text | 寫入 | 輸入 | `order_items.engraving_text TEXT` | Dashboard |
 | `specification` | Order_Items.Specification | 寫入 | 輸入 | `order_items.specification TEXT` | Dashboard |
 | `process_status` | Order_Items.Process_Status | 讀取 / 寫入 | 讀取 | `order_items.process_status` | Airtable |

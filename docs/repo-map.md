@@ -92,7 +92,9 @@ freehandsss_dashboard/
 │   │   ├── 0075_sync_rpc_position_drawing_dedup_columns.sql ← cl-flow 2026-07-24-0213 Phase2：sync_order_to_mirror() RPC 擴充支援 position_code/drawing_waived/drawing_charged_count/cost_model_version 四個結構化欄位讀寫（Session 189）✅ 已部署
 │   │   ├── 0076_backfill_baby_keychain_necklace_drawing_cost_s189.sql ← 歷史舊模型訂單畫圖成本回填（23張單，Fat Mo「全部都要」授權），只修drawing_cost分量本身，不重套V2目錄價；orders聚合總額淨增$2,000，finance-auditor獨立重算全量PASS（Session 189）✅ 已部署
 │   │   ├── 0077_backfill_orders_append_drawing_dedup_notes.sql ← 為0076涉及訂單補寫n8n_adjustment_notes（drawing_position_dedup_deduction筆記），令畫圖扣減以badge形式顯示喺財務彈窗②成本快照鏈（Session 189）✅ 已部署
-│   │   └── 0078_backfill_item_level_gross_drawing_cost_s189.sql ← 品項層（order_items）由淨額改回全額(gross)表示，訂單層total_cost/keychain_cost等聚合欄位完全不變（已驗證bit-for-bit一致），確立「品項全額/訂單淨額+badge」核心規則（Session 189）✅ 已部署
+│   │   ├── 0078_backfill_item_level_gross_drawing_cost_s189.sql ← 品項層（order_items）由淨額改回全額(gross)表示，訂單層total_cost/keychain_cost等聚合欄位完全不變（已驗證bit-for-bit一致），確立「品項全額/訂單淨額+badge」核心規則（Session 189）✅ 已部署
+│   │   ├── 0079_add_accessory_cost_column.sql ← 為配件成本（羊毛氈/燈飾加購，限玻璃瓶款式）新增 orders/order_items.accessory_cost 獨立欄位，修復訂單層分類rollup漏計顯示缺口（cl-flow 2026-07-25-0148）✅ 已部署
+│   │   └── 0080_sync_rpc_accessory_cost.sql ← sync_order_to_mirror() RPC 擴充支援 accessory_cost 讀寫（cl-flow 2026-07-25-0148）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

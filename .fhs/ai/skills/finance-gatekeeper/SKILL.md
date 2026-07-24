@@ -1,10 +1,10 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.6.0
+version: 1.8.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-07-25（S189財務文件全面審查：路由表「加購畫圖費」行改指向正式權威文件Cost Schema v2 §10+Finance Bible §五B，唔再指向session筆記；新增n8n節點名過時查詢行）
+last_updated: 2026-07-25（D46事故後：§三B新增第4步「文件同步完整性grep sweep」，防止成本欄位改動漏同步Finance Bible/Product_Definition等權威文件；大型改動另派fresh-context subagent覆核）
 compatible_with: AGENTS.md v1.4.13
 ---
 
@@ -38,6 +38,7 @@ compatible_with: AGENTS.md v1.4.13
 | 家庭套裝（鎖匙扣/吊飾）畫圖成本計錯 / composite 畫圖式 | `FHS_System_Logic_Overview.md` §5.4.3（D41，migrations 0058/0059）：家庭套裝畫圖成本 = **成人份 + 每個嬰兒肢各計一次**，非單一成人式；Dashboard 前端 `calculatePricing()` isFamily 分支為真源 |
 | 「加購」鎖匙扣/吊飾點解冇畫圖費 / V2統一SKU模型 / 品項全額訂單淨額規則 / 同部位畫圖共享豁免 | **規則家族「V2統一成本模型」（S189，2026-07-24~25，已落地生產，非待辦）**——正式權威：`FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，公式+16SKU清單+架構）+ `FHS_Finance_Bible.md` §五B（架構責任）+ §四附錄（「單購/加購」歷史命名對照，舊訂單專用）。事件時序/決策過程（點解由S55漂移到而家嘅裁決）留喺 `FHS_System_Logic_Overview.md` §5.4.6，唔再係查規則嘅終點——查「現行規則係咩」請直接讀上述兩份正式文件，唔使讀session筆記 |
 | n8n 四端欄位映射 / 「Node 14 – Cost Calculator」等舊節點名對唔上現行代碼 | `Quadruple_Sync_Field_Map.md` 已於 2026-07-25 大改版至 v2.0（原v1.1版本2.5個月未更新，「Node 14」等節點名已不存在），讀現行v2.0版本，唔好對照歷史記憶/舊版對話 |
+| 配件成本（羊毛氈/燈飾加購）點解冇獨立分類欄 / `accessory_cost` | `FHS_System_Logic_Overview.md` §5.4.7（D，cl-flow 2026-07-25-0148，✅已修復）：`orders`/`order_items.accessory_cost`（migration 0079/0080）已修訂單層分類rollup顯示缺口；配件僅限**玻璃瓶款式**立體擺設（非全部立體擺設），`FHS_Product_Cost_Schema_v2.md` §7.1/7.5 為正式定義 |
 
 ---
 
@@ -71,13 +72,18 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 
 ---
 
-## 三B、成本改動前置紀律（v1.4.0 新增，2026-07-18 D40 事故後強制）
+## 三B、成本改動前置紀律（v1.4.0 新增，2026-07-18 D40 事故後強制；v1.8.0 新增第4步，2026-07-25 D46 事故後強制）
 
-> **背景**：2026-07-17~18 吊飾成本修復連環出錯四次（漏頸鏈→險雙計→誤用過時文件判「漏運費」→N飾未倍增），根因＝每次只驗「今次改嗰忽」，冇一次過寫低完整方程式對齊。以下三步，任何 `products.total_base_cost` / `cost_configurations` / n8n 成本節點改動前**強制執行，缺一不得動手**：
+> **背景（三步版）**：2026-07-17~18 吊飾成本修復連環出錯四次（漏頸鏈→險雙計→誤用過時文件判「漏運費」→N飾未倍增），根因＝每次只驗「今次改嗰忽」，冇一次過寫低完整方程式對齊。
+> **背景（第4步新增）**：2026-07-25（D46）新增 `accessory_cost` 欄位後，AI 只跟自己寫低嘅執行計劃同步咗3份文件，漏咗 `FHS_Finance_Bible.md`（L1最高權威）同 `FHS_Product_Definition.md`（L2產品身份SSoT）——兩份文件入面都逐字列出兄弟欄位（`handmodel_cost`/`keychain_cost`/`necklace_cost`）但冇機制逼AI搜齊全部命中處。Fat Mo 事後質詢先發現。根因：文件同步靠「憑記憶/憑執行計劃寫低嘅清單」，唔靠機械化搜尋，清單本身可以就係漏嘅。
+>
+> 以下四步，任何 `products.total_base_cost` / `cost_configurations` / n8n 成本節點 / `orders`／`order_items` 成本欄位改動前**強制執行，缺一不得動手／不得宣告完成**：
 
 1. **完整方程式先行**：動手前必須寫出該品類「per-SKU 成本方程式全式」（drawing/material/clasp/chain/shipping 每個分量：喺 SKU 層定訂單層？含定唔含？），並用 **live 數據**（非文件）驗證現狀符合——文件可以過時（本事故中 Pricing Bible §6.2 運費分解已被 S124 v2 裁決取代但仍留喺文件度），live 數據先係真相。
 2. **對齊已驗證先例**：同鎖匙扣終態（S124 v2，migration 0045）逐分量對照，任何結構性差異（如吊飾頸鏈共用 vs 鎖匙扣環扣獨立）要寫明點解唔同。
 3. **改完即跑 drift 檢查**：`SELECT * FROM fhs_check_product_cost_drift() WHERE drift <> 0;`（0057 起覆蓋鎖匙扣嬰兒層 + 吊飾全 tier 共 282 行）——必須零行先算收工；未覆蓋品類（立體擺設/成人鎖匙扣/鋁合金）改動需人工全式核算並記錄於改動記錄。
+4. **文件同步完整性 grep sweep（新增，D46）**：宣告「文件已同步」前，必須執行 `grep -rn "<兄弟欄位名，如handmodel_cost>" .fhs/ai/ .fhs/notes/ n8n/*.md docs/`（兄弟欄位＝同一收斂公式/同一責任表入面已存在嘅同類欄位，例如加 `accessory_cost` 就搜 `handmodel_cost`/`keychain_cost`/`necklace_cost`），逐一列出命中檔案，核對新欄位是否已在**每一個**命中處同步出現（實體清單/彙總公式/責任表/收斂驗證式）——唔可以只跟執行計劃自己寫低嘅文件清單，因為嗰份清單本身可能就係漏嘅源頭。清單必須包含至少：`FHS_Finance_Bible.md`（L1）、`FHS_Product_Definition.md`（L2）、`FHS_Product_Cost_Schema_v2.md`（L2a）、`n8n/Quadruple_Sync_Field_Map.md`、`finance-gatekeeper/SKILL.md` 路由表。
+   - **大型/跨多份文件改動**（例如一次過改3份以上權威文件，或欄位新增涉及架構性決策）：grep sweep 後另派一個 **fresh-context subagent**（唔帶住本對話記憶）獨立覆核同一清單，防止「自己以為改晒」嘅盲點（今次事故正正係 Fat Mo 事後質詢先發現，非AI自查揪出）。
 
 **現行已定案方程式（live 驗證，2026-07-18，Phase 2 已擴充覆蓋全品類）**：
 - 嬰兒鎖匙扣（不銹鋼/鋁合金）：加購 = (material+clasp$10)×N；單購 = tier_drawing{嬰兒60/嬰兒(P)110} + 同上。運費不入 SKU（訂單層扣減 (N−1)×$20）。

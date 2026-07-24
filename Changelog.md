@@ -1,5 +1,29 @@
 # Changelog
 
+## [2026-07-25] Session（Claude Code / Sonnet 5 執行）— finance-gatekeeper §三B 補第4步：文件同步完整性 grep sweep（D46事故後）
+
+- **緣起**：上一條目（配件成本 accessory_cost 修復）執行完成後，Fat Mo 質詢「有更新權威財務或其他相關檔案嗎」，一問揪出 AI 淨係同步咗 `cl-final-plan.md` 執行計劃寫低嘅3份文件，漏咗 `FHS_Finance_Bible.md`（L1最高權威）同 `FHS_Product_Definition.md`（L2產品身份SSoT）——兩者都逐字列出兄弟欄位（`handmodel_cost`/`keychain_cost`/`necklace_cost`）但冇機制逼AI搜齊全部命中處。根因：文件同步靠「憑執行計劃寫低嘅清單」，該清單本身可以就係漏嘅源頭，冇機械化二次覆核。
+- **修復（Fat Mo 選方案(a)+(c)組合）**：`finance-gatekeeper/SKILL.md` §三B「成本改動前置紀律」新增第4步——任何成本欄位改動宣告「文件已同步」前，強制 `grep -rn "<兄弟欄位名>" .fhs/ai/ .fhs/notes/ n8n/*.md docs/` 逐一核對所有命中檔案；大型/跨多份文件改動另派 fresh-context subagent 獨立覆核同一清單，防止「自己以為改晒」嘅盲點。version 1.7.0→1.8.0。
+- **補做**：即場補齊 `FHS_Finance_Bible.md`（§一/§三/§四×2/§五×2，version v1.4.0→v1.4.1）+ `FHS_Product_Definition.md`（§3.4 身份定義糾正+已知限制段）兩份遺漏文件嘅 `accessory_cost` 同步。
+
+【交付前雙紀律自檢】
+驗收：文件治理型——grep sweep 全文核對 handmodel_cost/keychain_cost/necklace_cost 命中處，Finance Bible+Product_Definition 兩份遺漏文件已逐一補齊對應段落，斷鏈數=0
+Subagent：❌ 未使用（本次為小範圍治理文件補丁，互動式grep+改碼，未達§三B第4步定義嘅「大型/跨多份文件改動」門檻，故未派fresh-context subagent）
+
+## [2026-07-25] Session（Claude Code / Sonnet 5 執行）— 配件成本獨立欄位修復（accessory_cost）
+
+- **緣起**：Fat Mo 追問 2026-07-24 調查報告（S189 finance-auditor 全量成本審計附帶發現，`task_2d8d6b4f`）——配件（羊毛氈公仔/燈飾加購）成本已正確計入 `total_cost` 但漏落訂單層三分類 rollup（`handmodel_cost`/`keychain_cost`/`necklace_cost`），Dashboard 財務彈窗顯示靜默缺口。全庫僅3張單/$60，金額本身無誤。
+- **決策**：Fat Mo 選方案(a)新增獨立 `accessory_cost` 欄位（非歸入 handmodel_cost），並糾正配件依附範圍——僅限立體擺設之下**玻璃瓶款式**，非全部立體擺設（木框款式無此加購選項）。
+- **流程**：`/cl-flow`（flow_id `2026-07-25-0148`，A1 Perplexity + A2 Gemini 對抗評審共15條批評，Verdict CONDITIONAL_READY）+ `/execute` 正式流程，揪出草案2個事實錯誤（`extra.accessory_cost` fallback 根因、NULL/DEFAULT 語義誤植precedent）並修正。
+- **改動**：migration 0079（新增欄位）+ 0080（`sync_order_to_mirror` RPC 擴充）+ n8n `Calculate Profit & Pack Items`（V47.23）/`Supabase Mirror Prep`（V47.15）live workflow 節點改動（經 MCP `update_node_code`，dry-run 驗證後正式寫入）+ Dashboard `buildAuditLedgerHtml()` 三處改動（select 清單/catSum公式/新增顯示列，僅 dev 版 `freehandsss_dashboardV42.html`，`current.html` 升格待 Fat Mo 另行授權）+ 歷史3張單 backfill（動態SUM，非硬編碼）+ 4份文件同步（`FHS_Product_Cost_Schema_v2.md` §7.1/7.5、`addon_product_sop.md`、`Quadruple_Sync_Field_Map.md`、`finance-gatekeeper/SKILL.md` 路由表）。
+- **驗證**：finance-auditor 獨立覆核4項全PASS（3張單數值/品項層/收斂律/全庫掃描），過程中揪出 migration 檔案一度只套DB未落repo嘅漂移（已即時補齊），另用 synthetic 測試單驗證 RPC 路徑端對端正確（非純靠backfill直接UPDATE掩蓋）。
+- **已知未完成**：`n8n/FHS_Core_OrderProcessor_live.json` repo匯出檔仍過時（MCP工具限制，無法一次性完整重匯出）；配件-玻璃瓶款式後端驗證（防止非法組合入庫）未做，列入backlog；`current.html` 未升格部署。
+- 詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.7、`artifacts/2026-07-25-0148/cl-final-plan.md`。
+
+【交付前雙紀律自檢】
+驗收：財務/成本型——finance-auditor live三端獨立覆核PASS（訂單0600107/0600723/0696216），另加synthetic RPC測試單驗證端對端寫入正確
+Subagent：cl-flow內建A1(Perplexity)+A2(Gemini)對抗評審；執行階段派 finance-auditor 獨立驗證（揪出migration repo drift問題）
+
 ## [2026-07-25] Session（Claude Code / Sonnet 5 執行）— FHS 財務權威文件群全面重寫
 
 - Fat Mo 指出系統反覆未吸收V2成本模型討論邏輯，要求全面審查財務權威文件（過時/衝突/沉澱/重複/孤立）。經 `/cl-flow`（flow_id `2026-07-25-0058`，A1+A2對抗評審15條批評，Verdict CONDITIONAL_READY）+ `/execute` 正式流程，重寫8份文件：Finance Bible（§四G2-G5改純position語言、單購/加購降歷史附錄）、Cost Schema v2（升active、刪§5.2重複表、新增§10 V2模型SSoT）、Pricing Bible（§5/§6改指針）、Product_Definition（補V2 SKU條目）、Quadruple_Sync_Field_Map（v1.1→v2.0全面重寫）、finance-gatekeeper路由表、Cost_Operations+UI_Spec正式退役。

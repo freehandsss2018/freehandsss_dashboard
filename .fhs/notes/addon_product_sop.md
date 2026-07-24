@@ -10,7 +10,7 @@
 
 加購型配件（Add-on Product）是指：
 
-- 依附於主產品（通常是立體擺設 `_P_`）的選購附加品
+- 依附於立體擺設之下嘅**玻璃瓶款式**（`pSubCat === '玻璃瓶款式'`），木框款式不適用（2026-07-25 cl-flow 2026-07-25-0148 糾正：原文「通常是立體擺設」過於籠統，前端 `w_wool_en`/`l_light_en` checkbox 只喺 `isGlass` 為真時顯示啟用，見 `Freehandsss_dashboard_current.html` 第4265/6194/6202行）
 - 使用者在表單中以獨立 checkbox 勾選
 - 提交後以獨立 `Order_Item_Key`（如 `{orderId}_W_WOOL`）寫入訂單
 - **UI 呈現**：不獨立成行，應合併至父產品同列顯示為 inline badge
