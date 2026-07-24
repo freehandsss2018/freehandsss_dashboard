@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-24T12:24:39Z">
+    <meta name="fhs-build" content="2026-07-24T14:01:24Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -11437,18 +11437,27 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     : (_v2IsSMode ? (_v2cc.drawing_cost_baby_s  || 60)  : (_v2cc.drawing_cost_baby_p  || 110));
                                 draw2 = (parseInt(it.drawing_charged_count) || 0) * _v2Rate;
                             }
-                            var hasBreakdown = (draw2 > 0 || print2 > 0 || chain2c > 0 || ship2 > 0 || v2Waived);
+                            // 2026-07-24 Fat Mo 反饋：品項細明要「純成本計算，不涉及任何折扣」——
+                            // 已用真實資料核實 printing_cost + chain_cost + drawing_cost = item_base_cost
+                            // （呢三個分量本身已完整組成單件成本，冇缺漏）；原本額外顯示「單件基礎成本」
+                            // 同呢三個分量重複，令人誤以為仲要再加一次先等於成本小計。運費(shipping_cost)
+                            // 係前端「假設呢件係唯一件」嘅估算值，唔屬於呢件品項嘅真實組成分量，且容易同
+                            // 訂單層運費共享折扣（已喺②成本快照鏈用badge獨立顯示）混淆，呢度唔再顯示。
+                            // V2統一SKU冇分開儲存printing/chain（前端未populate），改以 base2−draw2 反推
+                            // 「物料成本」，令breakdown同樣可以純加總得返成本小計，唔靠估算折扣。
+                            var hasComponentSplit = (print2 > 0 || chain2c > 0);
+                            var pureMaterial2 = hasComponentSplit ? 0 : Math.max(0, base2 - draw2);
+                            var hasBreakdown = (pureMaterial2 > 0 || print2 > 0 || chain2c > 0 || draw2 > 0 || v2Waived);
                             var sumLbl = lbl2 + (qty2 > 1 ? ' <span style="color:#888;">×' + qty2 + '</span>' : '');
                             if (sub2 > 0) {
                                 // 點2 降級版：只列真實存在欄位，缺則註明未記錄，不臆造拆解
                                 var dh = '';
-                                if (base2 > 0) dh += '<div class="fhsAudit_detailRow"><span>單件基礎成本</span><span class="v">' + _f(base2) + '</span></div>';
+                                if (pureMaterial2 > 0) dh += '<div class="fhsAudit_detailRow"><span>物料成本</span><span class="v">' + _f(pureMaterial2) + '</span></div>';
                                 dh += '<div class="fhsAudit_detailRow"><span>數量</span><span class="v">×' + qty2 + '</span></div>';
                                 if (draw2 > 0) dh += '<div class="fhsAudit_detailRow"><span>繪圖</span><span class="v">' + _f(draw2) + '</span></div>';
                                 else if (v2Waived) dh += '<div class="fhsAudit_detailRow" style="color:#2E9E5B;"><span>繪圖</span><span class="v">$0（同部位已收，本件豁免）</span></div>';
                                 if (print2 > 0) dh += '<div class="fhsAudit_detailRow"><span>打印/物料</span><span class="v">' + _f(print2) + '</span></div>';
                                 if (chain2c> 0) dh += '<div class="fhsAudit_detailRow"><span>環扣/頸鏈</span><span class="v">' + _f(chain2c) + '</span></div>';
-                                if (ship2  > 0) dh += '<div class="fhsAudit_detailRow"><span>運費</span><span class="v">' + _f(ship2) + '</span></div>';
                                 if (!hasBreakdown) dh += '<div class="fhsAudit_detailRow" style="color:#aaa;"><span>繪圖/物料/環扣明細</span><span class="v">明細未記錄（n8n 未寫入）</span></div>';
                                 dh += '<div class="fhsAudit_detailRow" style="font-weight:700;border-top:1px solid #eee;margin-top:3px;padding-top:4px;"><span>成本小計（記錄值）</span><span class="v">' + _f(sub2) + '</span></div>';
                                 h += '<details class="fhsAudit_itemDetail">' +
