@@ -1,10 +1,10 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.5.1
+version: 1.5.2
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-07-22
+last_updated: 2026-07-24
 compatible_with: AGENTS.md v1.4.13
 ---
 
@@ -36,6 +36,7 @@ compatible_with: AGENTS.md v1.4.13
 | `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`——**2026-07-18 Phase 2 起已覆蓋全品類**（嬰兒/成人/家庭鎖匙扣不銹鋼+鋁合金、吊飾全 tier、立體擺設、配件、佔位 row 監測），見 `FHS_System_Logic_Overview.md` §5.4.3。禁止假設「改設定中心=products 自動同步」|
 | 吊飾成本計錯 / 頸鏈成本 / `necklace_chain_cost` | `FHS_System_Logic_Overview.md` §5.4.2（D40，migration 0046 + n8n V47.19，雙數簿漂移修復先例）+ §5.4.5（D42，2026-07-22，V47.19→V47.20 記帳格式對齊鎖匙扣環扣模式，部署狀態見§三B） |
 | 家庭套裝（鎖匙扣/吊飾）畫圖成本計錯 / composite 畫圖式 | `FHS_System_Logic_Overview.md` §5.4.3（D41，migrations 0058/0059）：家庭套裝畫圖成本 = **成人份 + 每個嬰兒肢各計一次**，非單一成人式；Dashboard 前端 `calculatePricing()` isFamily 分支為真源 |
+| 「加購」鎖匙扣/吊飾點解冇畫圖費 / `item_base_cost`×quantity≠subtotal_cost 睇落唔啱 | ⚠️ **§三B 現行方程式段落已被 Session 189 裁決部分推翻,待 Phase 1 執行**——`FHS_System_Logic_Overview.md` §5.4.6：現行「加購=$0畫圖」源自 2026-06-03 S55 (commit `4dbdef2`) 語義漂移（本意止跨產品重複收費，實際擴大成連線內首件都豁免），Fat Mo 已裁定改為三層模型（S/P tier 全費+n8n訂單層動態扣減）。**現行 Supabase 寫入邏輯尚未改動**，查現行訂單成本仍用本表其他行既有規則；查「新模型應該點計」先睇 §5.4.6 + cl-flow flow_id `2026-07-24-0213` |
 
 ---
 

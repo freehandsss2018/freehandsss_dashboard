@@ -24,6 +24,7 @@
 
 ## 當前版本
 
+- **2026-07-24（Session 189）**：`current.html`+`V42.html` 同步新增 V2 統一SKU支援（嬰兒tier限定，鎖匙扣+吊飾）——`syncToAirtable()`及`buildOrderItemsForPricing()`各2個區塊，`finalObj`由「僅冇主套裝先tag(P)」改「兩邊皆明確tag(S)/(P)」+ SKU尾加`(V2)`後綴，接駁 cl-flow `2026-07-24-0213` 新三層成本模型。大寶/家庭/成人tier未動，詳見 Changelog.md 同 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.6。
 - UI 層：**V42** (Active Production，2026-06-16 Session 107)
   - **split 還原快照隔離**：修復全付重載後 deposit/balance 顯示錯誤（P36）
   - **成本設定中心 A 區摺疊**：繪圖成本與 B/C/D/E/MISC 行為一致，預設摺疊

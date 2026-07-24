@@ -1,0 +1,30 @@
+# Lesson — V2 三層成本模型 n8n 遷移三個新坑（qty 乘法/雙重計算/工具狀態失準）
+
+**日期**：2026-07-24（Session 189，鎖匙扣/吊飾成本模型 S55 語義漂移修復期間實測發現）
+**類型**：Pitfall
+
+## 坑一：靜態 SKU 目錄改「單件價 × quantity」模型時，n8n 未必真的做呢個乘法
+
+舊系統慣性係「幾多件焗死喺 SKU 字串本身」（`total_base_cost` 已經係成套價，`item_per_set`=N，n8n 從未需要乘 quantity）。新 V2 模型改成「單件價，n8n 動態 × quantity」後，若只改 Supabase `products` 目錄唔改 n8n「Calculate Profit & Pack Items」計算節點，會**少計成本且完全唔會報錯**（qty=1 測試會 PASS，掩蓋咗呢個 bug，要用 qty>1 先揭發）。
+**點應用**：任何「單件價×quantity」模型嘅新 SKU/新產品線，落地前必須專門用 qty≥2 嘅測試單驗證，qty=1 唔足夠證明乘法邏輯正確。
+
+## 坑二：新增品類專屬固定成本（如頸鏈 $100）時，檢查係咪已經 baked 入單件價
+
+舊 code 對所有吊飾類別無條件加 $100 頸鏈費（獨立於 SKU 單價之外）。新 V2 吊飾 SKU 設計時已經將呢個成本 bake 入 `total_base_cost` 本身，若冇加 guard 排除，會被舊 code 同新 SKU 定價**雙重計算**。
+**點應用**：新增/重構任何 SKU 定價目錄前，先確認舊代碼有冇獨立於 SKU 之外嘅「品類固定加成」邏輯，新模型必須明確二選一（baked in SKU 或獨立加成），唔可以兩者並存。
+
+## 坑三：`get_execution_log` MCP 工具對已完成 execution 可能持續回報過時 "running" 狀態
+
+連續 4 次 regression 測試被此工具顯示 "running" 卡住，一度誤判為 NAS/axios 網絡層問題。實際上 execution 早已喺 958ms 內完成（Error），MCP 工具狀態失準。真正錯誤原因同表面症狀完全無關：測試訂單 ID 太長（`orders.order_id` 係 `varchar(20)`，22 字元測試 ID 觸發 Postgres `22001` 錯誤）。
+**點應用**：懷疑「卡單」時，唔可以單憑 `get_execution_log` 判斷因果關係，應改開瀏覽器直查 n8n UI `/workflow/{id}/executions/{id}` 核實真實狀態同錯誤訊息。
+
+## 附帶提醒（非新坑，但同場證實）
+
+`.fhs/.deploy-ok` 旗標係**一次性 consume**（每次成功寫入 current.html 後即被刪除），同一批次多個檔案改動要逐次重建；旗標內容必須係有效 ISO timestamp 字串，純 `touch` 空檔案會被 `new Date('').getTime()` 判 NaN 當無效（S187 已記錄，本次再度實測確認）。
+
+## 關聯
+
+- `.fhs/notes/decisions.md`「S55 語義漂移」條目
+- `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.6
+- `.fhs/memory/handoff.md` 便攜塊「⚠️ 易猜錯」(14)(15)(11)
+- `.fhs/reports/completion/2026-07-24_keychain_cost_model_semantic_drift_and_phase0_simulation_completion_report.md`

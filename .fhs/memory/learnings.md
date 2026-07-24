@@ -86,6 +86,8 @@
 >
 > 📌 **退役**（Session 187續XIII，`/commit` Lesson Distillation，全檔滿50條達上限）：「前端 client-side Set 刷新即清空陷阱」（原 Pitfall #14，Session 105）——修復手法（`sbFetchGlobalReview` 後重建 `_fhsArchivedIds`）已完整記錄於 `.fhs/notes/FHS_System_Logic_Overview.md` §10.9（含順序陷阱細節），此處純重複佔位；退役騰出額度給本次新教訓（`v_delivery_reminders` view 遺漏 `is_archived` 權威旗標，主題同屬「已完成訂單狀態判斷」領域，對等替換）。
 
+39. **【高頻 ⚠️】SKU 目錄由「整套價焗死件數」改「單件價 × quantity」模型時，必須專門用 qty≥2 測試單驗證 n8n 有冇真的做呢個乘法**：舊系統慣性係「幾多件焗死喺 SKU 字串本身」（`total_base_cost` 已係成套價，n8n 從未需要乘 quantity），新模型改用單件價後，若只改 Supabase 目錄唔改 n8n 計算節點，會少計成本且完全唔會報錯——qty=1 測試會 PASS 掩蓋呢個 bug，要 qty>1 先揭發。同場證實：新增品類專屬固定成本（如頸鏈費）時，必須檢查係咪已經 baked 入新 SKU 單件價，避免同舊有獨立加成邏輯雙重計算 — Session 189/2026-07-24 [[project_order_cost_audit_2026_07_17]]
+
 ---
 
 ## Preferences（Fat Mo 已確認的偏好）

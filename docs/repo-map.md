@@ -82,7 +82,14 @@ freehandsss_dashboard/
 │   │   ├── 0056_igwatch_alerts_on_conflict_fix.sql ← task_e3a60daa 修復：order_id_key 具現化欄位 + ix_igwatch_alerts_dedup_v2 plain-column 唯一索引取代舊 expression index，補記錄一筆已 live 但本地缺檔的 drift（Session 171續II）✅ 已部署（live 更早，本檔補齊 SSOT）
 │   │   ├── 0057_create_message_intents_and_reply_templates.sql ← P2c：message_intents 意圖標註表（軟性參照 message_thread+message_ig_message_id，比照 P2b 設計，非計畫書原文 message_id FK）+ reply_templates 回覆範本庫（5類意圖各1筆草稿種子），RLS anon 只讀 + dedup 唯一索引 + pg_cron 90天 TTL（Session 173）✅ 已部署
 │   │   ├── 0058_keychain_family_adult_alloy_and_charm_composite_refresh.sql ← 成本架構 Phase 2（D41）：鋁合金/成人/家庭鎖匙扣+家庭吊飾 composite 畫圖式回填、alloy_adult原子135→125、刪除零成本佔位row（動態排除仍被order_items引用者）（Session 181）✅ 已部署
-│   │   └── 0059_drift_check_full_category_coverage.sql ← 成本架構 Phase 2（D41）：fhs_check_product_cost_drift() 擴充覆蓋全品類（鋁合金/成人/家庭鎖匙扣+吊飾全tier+立體擺設+配件+佔位row監測），全品類零漂移驗證通過（Session 181）✅ 已部署
+│   │   ├── 0059_drift_check_full_category_coverage.sql ← 成本架構 Phase 2（D41）：fhs_check_product_cost_drift() 擴充覆蓋全品類（鋁合金/成人/家庭鎖匙扣+吊飾全tier+立體擺設+配件+佔位row監測），全品類零漂移驗證通過（Session 181）✅ 已部署
+│   │   ├── [0060–0069 — 既有缺口，本次未補（超出本次授權範圍，非本 session 產生）：0060_glassjar_family_pricing_sku / 0061_get_financial_overview_full / 0062_financial_overview_full_parity_fields / 0063_delivery_reminders_is_archived_fix / 0064_financial_charts_category_qty_breakdown / 0065_hotfix_revert_charts_status_filter_regression / 0066_financial_period_earliest_date_unification / 0067_handmodel_orders_frame_bottle_split / 0068_delivery_reminders_start_date_handmodel_only / 0069_delivery_reminders_null_status_fix]
+│   │   ├── 0070_backfill_table_column_descriptions.sql ← Fat Mo 要求「每個表每個欄都要有description」：補全 15 表欄位/表級 COMMENT 至 100% 覆蓋（Session 189）✅ 已部署
+│   │   ├── 0071_fhs_simulate_new_cost_model.sql ← cl-flow 2026-07-24-0213 Phase 0：唯讀模擬新三層成本模型（S/P tier全費+n8n訂單層扣減）vs 現行單購/加購模型差異，供 Q1/Q4 決策依據（Session 189）✅ 已部署
+│   │   ├── 0072_fix_simulate_necklace_chain_cost.sql ← 修正 0071 吊飾類別漏計 D42 頸鏈成本（$100/件）之 bug（finance-auditor 獨立覆核揪出），修正後全 tier 差額轉正（Session 189）✅ 已部署
+│   │   ├── 0073_phase1_unified_sp_tier_skus.sql ← cl-flow Phase 1：新增16個統一S/P tier SKU（(V2)後綴避開命名撞名）+ order_items 4個結構化欄位（position_code/drawing_waived/drawing_charged_count/cost_model_version）+ fhs_verify_new_sku_costs()（Session 189）✅ 已部署
+│   │   ├── 0074_exclude_v2_skus_from_legacy_drift_monitor.sql ← 修正舊 fhs_check_product_cost_drift() 誤判V2新SKU做孤兒row（假陽性漂移），加排除條件兩監測範圍不重疊（Session 189）✅ 已部署
+│   │   └── 0075_sync_rpc_position_drawing_dedup_columns.sql ← cl-flow 2026-07-24-0213 Phase2：sync_order_to_mirror() RPC 擴充支援 position_code/drawing_waived/drawing_charged_count/cost_model_version 四個結構化欄位讀寫（Session 189）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

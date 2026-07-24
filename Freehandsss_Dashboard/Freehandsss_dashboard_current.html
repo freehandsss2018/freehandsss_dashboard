@@ -6969,9 +6969,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     babyParts.forEach(p => {
                         if (getValSafe(`k_${p.id}_en`, false)) {
                             let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
-                            let finalObj = p.type;
-                            if (!hasMainProduct) finalObj = "嬰兒(P)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+                            // cl-flow 2026-07-24-0213 Phase3: V2統一SKU（同真實提交邏輯8396行一致）
+                            let finalObj = hasMainProduct ? "嬰兒(S)" : "嬰兒(P)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼 (V2)`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
                         }
                     });
                 }
@@ -7008,9 +7008,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             let qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
                             let color = getValSafe(`m_${p.id}_color`, "925銀") || "925銀";
                             if (color === "待定") color = "925銀";
-                            let finalObj = p.type;
-                            if (!hasMainProduct) finalObj = "嬰兒(P)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
+                            // cl-flow 2026-07-24-0213 Phase3: V2統一SKU（同真實提交邏輯8462行一致）
+                            let finalObj = hasMainProduct ? "嬰兒(S)" : "嬰兒(P)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color} (V2)`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "嬰兒" });
                         }
                     });
                 }
@@ -8393,11 +8393,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 let topEng = getValSafe(`k_${p.id}_top`, "");
                                 let botEng = getValSafe(`k_${p.id}_bot`, "");
                                 let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : '';
-                                let finalObj = p.type;
-                                if (!hasMainProduct) finalObj = "嬰兒(P)";
+                                // cl-flow 2026-07-24-0213 Phase3: V2統一SKU（嬰兒tier限定，見Phase1 migration 0073）
+                                let finalObj = hasMainProduct ? "嬰兒(S)" : "嬰兒(P)";
                                 orderItemsArray.push({
                                     "Order_Item_Key": `${currentOrderId}_K_${p.id.toUpperCase()}`,
-                                    "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`,
+                                    "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼 (V2)`,
                                     "Mode": modeTag,
                                     "Quantity": qty,
                                     "Notes": engNotes
@@ -8456,11 +8456,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 let color = getValSafe(`m_${p.id}_color`, "925銀");
                                 if (color === "待定" || color === "") color = "925銀";
                                 let engText = getValSafe(`m_${p.id}_eng`, "");
-                                let finalObj = p.type;
-                                if (!hasMainProduct) finalObj = "嬰兒(P)";
+                                // cl-flow 2026-07-24-0213 Phase3: V2統一SKU（嬰兒tier限定，見Phase1 migration 0073）
+                                let finalObj = hasMainProduct ? "嬰兒(S)" : "嬰兒(P)";
                                 orderItemsArray.push({
                                     "Order_Item_Key": `${currentOrderId}_M_${p.id.toUpperCase()}`,
-                                    "Product_Name": `${finalObj}吊飾 - ${color}`,
+                                    "Product_Name": `${finalObj}吊飾 - ${color} (V2)`,
                                     "Mode": modeTag,
                                     "Quantity": qty,
                                     "Notes": engText || ''

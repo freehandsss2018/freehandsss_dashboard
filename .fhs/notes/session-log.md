@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-24 (Session 189 — 鎖匙扣/吊飾成本模型 S55 語義漂移根因確認 + 三層模型重構 Phase0-3 嬰兒tier落地): 🏷️ ✅
+
+**摘要**：全文見完成報告 [2026-07-24_keychain_cost_model_semantic_drift_and_phase0_simulation_completion_report.md](../reports/completion/2026-07-24_keychain_cost_model_semantic_drift_and_phase0_simulation_completion_report.md)（制度層變動觸發[B]，完成報告為唯一全文居所，本行僅摘要指回）。Fat Mo 出示 2024-09-15 原始成本推演表推翻 AI 三次獨立驗證，揪出「加購=$0畫圖」係 2026-06-03(S55) 語義漂移非原始設計；經 `/8d`→`/cl-flow` 裁決新三層成本模型（成本表/產品層/訂單動態扣減），Phase0唯讀模擬→Phase1 Supabase新SKU目錄→Phase2 n8n三個核心bug修復（qty乘法/頸鏈雙重計算/同部位跨品類畫圖扣減）→Phase3 Dashboard嬰兒tier切換，每階段均經live webhook/browser UI真實測試PASS方進下一階段（Fat Mo明確要求）。current.html已升格部署。大寶/成人/家庭tier擴充列下個session待辦。
+Subagent：✅ finance-auditor 兩輪獨立覆核 Phase0 模擬邏輯（揪出吊飾頸鏈成本漏算bug）；✅ database-reviewer 獨立覆核 Phase1 新SKU（揪出n8n過度匹配阻斷項）；✅ Opus subagent 94檔案文件審計；cl-flow內建A1(Perplexity)+A2(Gemini)對抗評審；Phase2/3實作測試全程互動式n8n MCP+Supabase MCP+browser直接操作。
+
 ## 2026-07-23 (Session — D44：純鎖匙扣/頸鏈訂單結單提示 + 交貨期警報三連環修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-23「D44：純鎖匙扣/頸鏈訂單結單提示 + 交貨期警報三連環修復」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報 0600801 已完成但無結單提示且警報起算日可疑，查證揪出三個獨立 bug：①結單提示只靠 onchange 事件觸發從無渲染時掃描，抽出 `_fhsIsOrderReadyToArchive()` 加「建議結單」徽章 ②`v_delivery_reminders` 對所有訂單一律用 appointment_at 當 SLA 起算日，migration 0068 改為只有手模擺設訂單才用 ③NULL 品項狀態因 SQL `NOT IN` 對 NULL 回傳 UNKNOWN 令整單於 view 消失，migration 0069 補 NULL 判斷。上線後 Fat Mo 用 0600105 抓到假陽性（殘留字面值「完成」不可信），裁決收緊 `isDone()` 只信「Done 已完成」，全庫 23 筆殘留品項授權批次歸零。追加：手模擺設未到取模日期前改顯示獨立提示不套用 SLA 倒數。
