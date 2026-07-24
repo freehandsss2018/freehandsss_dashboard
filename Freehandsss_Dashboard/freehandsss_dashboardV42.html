@@ -11084,7 +11084,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     fetch(
                         _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
                         '&select=item_key,item_category,specification,product_sku,quantity,' +
-                        'item_base_cost,subtotal_cost,drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price' +
+                        'item_base_cost,subtotal_cost,drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price,' +
+                        'position_code,drawing_waived,drawing_charged_count,cost_model_version' +
                         '&order=item_category.asc,item_key.asc',
                         { headers: hdr }
                     )
@@ -11158,8 +11159,36 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // Only show notes with a real monetary adjustment (amount exists and ≠ 0)
                         return typeof n === 'object' && n.amount != null && parseFloat(n.amount) !== 0;
                     });
-                    n8nAdjItems = _opNotes;
-                    n8nNotes = _opNotes.map(function(n) {
+                    // 2026-07-24：drawing_position_dedup_deduction 係跨品類（鎖匙扣+吊飾）合併單一筆記，
+                    // desc 同時含「鎖匙扣」「吊飾」兩字，下方 keyword 比對只會被首個命中嘅 _costRow
+                    // 全數吞晒，令另一品類睇唔到自己嗰份扣減。用 detail[].item_key 嘅 _K_/_M_ 段
+                    // 拆返成兩張獨立筆記，各自歸位落鎖匙扣/吊飾成本行。
+                    var _opNotesSplit = [];
+                    _opNotes.forEach(function(n) {
+                        if (n.type === 'drawing_position_dedup_deduction' && Array.isArray(n.detail) && n.detail.length) {
+                            var _byCat = {};
+                            n.detail.forEach(function(d) {
+                                var m = (d.item_key || '').match(/_([KM])_/);
+                                var catKey = m ? m[1] : 'X';
+                                if (!_byCat[catKey]) _byCat[catKey] = { sum: 0, count: 0 };
+                                _byCat[catKey].sum   += (parseFloat(d.deduction) || 0);
+                                _byCat[catKey].count += 1;
+                            });
+                            Object.keys(_byCat).forEach(function(catKey) {
+                                var catLabel = catKey === 'K' ? '鎖匙扣' : (catKey === 'M' ? '吊飾' : '品項');
+                                _opNotesSplit.push({
+                                    type:   n.type,
+                                    amount: -_byCat[catKey].sum,
+                                    desc:   '同部位第2件起免畫圖費，' + _byCat[catKey].count + ' 個' + catLabel + '品項受惠，扣減 $' + _byCat[catKey].sum,
+                                    basis:  n.basis
+                                });
+                            });
+                        } else {
+                            _opNotesSplit.push(n);
+                        }
+                    });
+                    n8nAdjItems = _opNotesSplit;
+                    n8nNotes = _opNotesSplit.map(function(n) {
                         if (n.basis) _bases.push(n.basis);
                         return n.desc || n.text || n.message || n.type || '';
                     }).filter(Boolean).join(' · ');
@@ -11393,14 +11422,30 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             var print2 = parseFloat(it.printing_cost ?? 0) || 0;
                             var chain2c= parseFloat(it.chain_cost ?? 0) || 0;
                             var ship2  = parseFloat(it.shipping_cost ?? 0) || 0;
-                            var hasBreakdown = (draw2 > 0 || print2 > 0 || chain2c > 0 || ship2 > 0);
+                            // V2統一SKU（cost_model_version='v2_layered'）畫圖費 baked 入 item_base_cost，
+                            // n8n 無獨立寫 drawing_cost 欄位（見 Calculate Profit & Pack Items V47.22）。
+                            // 用同一份 cost_configurations 畫圖原子費率（同 n8n getDrawingRateForV2Sku 同一方程式）
+                            // 反推顯示用，純顯示層還原，唔改任何實際成本欄位/RPC寫入。
+                            var isV2Item = (it.cost_model_version === 'v2_layered');
+                            var v2Waived = isV2Item && it.drawing_waived === true;
+                            if (isV2Item && draw2 === 0 && it.drawing_charged_count != null) {
+                                var _v2cc = window._fhsCostConfig || {};
+                                var _v2IsAdult = (it.product_sku || '').includes('成人');
+                                var _v2IsSMode = (it.product_sku || '').includes('(S)');
+                                var _v2Rate = _v2IsAdult
+                                    ? (_v2IsSMode ? (_v2cc.drawing_cost_adult_s || 110) : (_v2cc.drawing_cost_adult_p || 240))
+                                    : (_v2IsSMode ? (_v2cc.drawing_cost_baby_s  || 60)  : (_v2cc.drawing_cost_baby_p  || 110));
+                                draw2 = (parseInt(it.drawing_charged_count) || 0) * _v2Rate;
+                            }
+                            var hasBreakdown = (draw2 > 0 || print2 > 0 || chain2c > 0 || ship2 > 0 || v2Waived);
                             var sumLbl = lbl2 + (qty2 > 1 ? ' <span style="color:#888;">×' + qty2 + '</span>' : '');
                             if (sub2 > 0) {
                                 // 點2 降級版：只列真實存在欄位，缺則註明未記錄，不臆造拆解
                                 var dh = '';
                                 if (base2 > 0) dh += '<div class="fhsAudit_detailRow"><span>單件基礎成本</span><span class="v">' + _f(base2) + '</span></div>';
                                 dh += '<div class="fhsAudit_detailRow"><span>數量</span><span class="v">×' + qty2 + '</span></div>';
-                                if (draw2  > 0) dh += '<div class="fhsAudit_detailRow"><span>繪圖</span><span class="v">' + _f(draw2) + '</span></div>';
+                                if (draw2 > 0) dh += '<div class="fhsAudit_detailRow"><span>繪圖</span><span class="v">' + _f(draw2) + '</span></div>';
+                                else if (v2Waived) dh += '<div class="fhsAudit_detailRow" style="color:#2E9E5B;"><span>繪圖</span><span class="v">$0（同部位已收，本件豁免）</span></div>';
                                 if (print2 > 0) dh += '<div class="fhsAudit_detailRow"><span>打印/物料</span><span class="v">' + _f(print2) + '</span></div>';
                                 if (chain2c> 0) dh += '<div class="fhsAudit_detailRow"><span>環扣/頸鏈</span><span class="v">' + _f(chain2c) + '</span></div>';
                                 if (ship2  > 0) dh += '<div class="fhsAudit_detailRow"><span>運費</span><span class="v">' + _f(ship2) + '</span></div>';

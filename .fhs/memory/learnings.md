@@ -50,7 +50,6 @@
 10. **新增 order_items 欄位必須同步 n8n 寫入鏈**：新單主寫入走 n8n sync_order_to_mirror RPC（非前端 sbSyncOrder）。新欄位若未改 (a)Mirror Prep items.map + (b)RPC INSERT/VALUES/ON CONFLICT 三處 → 永遠 NULL — Session 84
 13. **【高頻 ⚠️】mapOrder() return object 不含 deposit/balance**：`mapOrder()` 只映射 `Final_Sale_Price / Additional_Fee / Net_Profit / Total_Cost / Adjustment_Amount`，`Deposit`/`Balance` 完全缺席。凡需讀 deposit/balance，必須從 Supabase orders fresh fetch 的 `extra` 物件讀取 — Session 103
 15. **openOrderModal 第二參數是 catFilter 非 tab**：第二位 catFilter（'A'手模/'B'金屬/空=全訂單）控制標題與文本分段；要指定開啟分頁必須用**第三參數 initialTab**（內部呼 switchModalTab）。誤把 'finance' 當第二參數 → 捷徑永遠停訊息文本分頁 — Session 109
-16. **【高頻 ⚠️】cl-flow runner Perplexity 推理模型靜默空白**：`sonar-reasoning-pro` 低 `max_tokens`（舊值3072）吃光 think 階段，HTTP 200 + finish_reason:'stop' 卻 content 空，px-report.md 恆寫空白。修復：`max_tokens`→8000 + 空 content 視為失敗 throw 交 withRetry — Session 110 [[2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix]]
 17. **order_items 成本是組裝值非單一原子**：勿拿 `subtotal_cost` 直接比對 `cost_configurations` 單一 key 判斷「未同步」；改值後 products 表無自動回算機制，唯一檢查工具 `fhs_check_product_cost_drift()` 範圍有限 — Session 112 [[2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap]]
 18. **Python json.dump emoji → n8n surrogate pair "invalid syntax"**：用 Python 序列化含 emoji（如 🔗）的 n8n workflow JSON 時，若 `ensure_ascii=False` 且環境 CP950，emoji 被寫成 surrogate pair（`\udcfx...`）；n8n 求值表達式時 "invalid syntax" 靜默失敗。修法：`json.dump(..., ensure_ascii=True)` 強制 ASCII escape，或改用純 ASCII 替代符號（`>` 代替 🔗）— Session 128
 19. **【Pitfall #19】Postgres `CREATE OR REPLACE FUNCTION` 不能改參數名**：`CREATE OR REPLACE` 替換函數時若參數名與原函數不同，報 `42P13: cannot change name of input parameter`。解法：保留原參數名，或先 `DROP` 再建。改函數前必須讀原 migration SQL 確認 param names — Session 130 Phase B
@@ -87,6 +86,10 @@
 > 📌 **退役**（Session 187續XIII，`/commit` Lesson Distillation，全檔滿50條達上限）：「前端 client-side Set 刷新即清空陷阱」（原 Pitfall #14，Session 105）——修復手法（`sbFetchGlobalReview` 後重建 `_fhsArchivedIds`）已完整記錄於 `.fhs/notes/FHS_System_Logic_Overview.md` §10.9（含順序陷阱細節），此處純重複佔位；退役騰出額度給本次新教訓（`v_delivery_reminders` view 遺漏 `is_archived` 權威旗標，主題同屬「已完成訂單狀態判斷」領域，對等替換）。
 
 39. **【高頻 ⚠️】SKU 目錄由「整套價焗死件數」改「單件價 × quantity」模型時，必須專門用 qty≥2 測試單驗證 n8n 有冇真的做呢個乘法**：舊系統慣性係「幾多件焗死喺 SKU 字串本身」（`total_base_cost` 已係成套價，n8n 從未需要乘 quantity），新模型改用單件價後，若只改 Supabase 目錄唔改 n8n 計算節點，會少計成本且完全唔會報錯——qty=1 測試會 PASS 掩蓋呢個 bug，要 qty>1 先揭發。同場證實：新增品類專屬固定成本（如頸鏈費）時，必須檢查係咪已經 baked 入新 SKU 單件價，避免同舊有獨立加成邏輯雙重計算 — Session 189/2026-07-24 [[project_order_cost_audit_2026_07_17]]
+
+40. **新增資料表欄位後，除咗n8n寫入鏈，仲要逐一檢查前端所有獨立 fetch 呢個表嘅 SELECT query 有冇跟住補齊**：`order_items` 新增 `position_code/drawing_waived/drawing_charged_count/cost_model_version` 四欄後（migration 0073），Dashboard 入面同一個 `Freehandsss_dashboardV42.html` 有 6+ 處各自 hand-written 嘅 `rest/v1/order_items?select=...` fetch（訂單明細/財務彈窗/批次狀態等唔同用途），只改咗寫入鏈（n8n Mirror Prep + RPC）冇同步檢查所有讀取端，令財務彈窗完全冇資料可用（欄位值一律undefined）但零報錯——表面睇落似邏輯bug，實際係fetch漏欄位。修復手法：新增/改動任何表結構化欄位後，`grep "rest/v1/<table>?"` 列晒所有讀取點，逐一核對select list 是否需要同步 — Session 189/2026-07-24 [[project_order_cost_audit_2026_07_17]]
+
+> 📌 **退役**（Session 189，`/commit` Lesson Distillation，全檔滿50條達上限）：「cl-flow runner Perplexity 推理模型靜默空白」（原 Pitfall #16，Session 110）——修復已是結構性（`max_tokens`參數已永久調高+空content視為失敗已寫入runner程式碼本身），非需記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（新增表欄位須同步檢查所有前端fetch select list）。
 
 ---
 

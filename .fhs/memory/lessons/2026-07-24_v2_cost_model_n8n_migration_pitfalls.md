@@ -1,4 +1,4 @@
-# Lesson — V2 三層成本模型 n8n 遷移三個新坑（qty 乘法/雙重計算/工具狀態失準）
+# Lesson — V2 三層成本模型 n8n 遷移 + 財務彈窗顯示四個新坑（qty 乘法/雙重計算/工具狀態失準/fetch漏欄位）
 
 **日期**：2026-07-24（Session 189，鎖匙扣/吊飾成本模型 S55 語義漂移修復期間實測發現）
 **類型**：Pitfall
@@ -17,6 +17,11 @@
 
 連續 4 次 regression 測試被此工具顯示 "running" 卡住，一度誤判為 NAS/axios 網絡層問題。實際上 execution 早已喺 958ms 內完成（Error），MCP 工具狀態失準。真正錯誤原因同表面症狀完全無關：測試訂單 ID 太長（`orders.order_id` 係 `varchar(20)`，22 字元測試 ID 觸發 Postgres `22001` 錯誤）。
 **點應用**：懷疑「卡單」時，唔可以單憑 `get_execution_log` 判斷因果關係，應改開瀏覽器直查 n8n UI `/workflow/{id}/executions/{id}` 核實真實狀態同錯誤訊息。
+
+## 坑四：新增資料表欄位後，前端所有獨立 fetch 呢個表嘅 SELECT query 都要逐一補齊，唔淨係 n8n 寫入鏈
+
+`order_items` 新增 `position_code/drawing_waived/drawing_charged_count/cost_model_version` 四欄後（migration 0073），只改咗 n8n 寫入鏈（Supabase Mirror Prep + RPC），冇檢查 Dashboard 入面 6+ 處各自 hand-written 嘅 `rest/v1/order_items?select=...` fetch（財務彈窗 `buildAuditLedgerHtml()` 果句漏咗）——令財務彈窗完全冇資料可用（新欄位一律 undefined）但零報錯，表面睇好似邏輯bug，實際係 fetch 漏欄位。
+**點應用**：新增/改動任何表結構化欄位後，`grep "rest/v1/<table>?"` 列晒所有讀取點，逐一核對 select list 是否需要同步；呢個坑同「n8n 寫入鏈三處」（Pattern #10）係同一類問題嘅鏡像版本——讀寫兩端都要各自逐點核對，唔可以只查其中一端。
 
 ## 附帶提醒（非新坑，但同場證實）
 
