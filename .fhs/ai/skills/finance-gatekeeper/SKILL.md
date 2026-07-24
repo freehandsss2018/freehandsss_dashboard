@@ -1,10 +1,10 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.5.2
+version: 1.6.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-07-24
+last_updated: 2026-07-25（S189財務文件全面審查：路由表「加購畫圖費」行改指向正式權威文件Cost Schema v2 §10+Finance Bible §五B，唔再指向session筆記；新增n8n節點名過時查詢行）
 compatible_with: AGENTS.md v1.4.13
 ---
 
@@ -21,13 +21,13 @@ compatible_with: AGENTS.md v1.4.13
 |----------------|-----------|
 | 產品定價、售價公式（吊飾/鎖匙扣/立體擺設多少錢）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §2–§4 |
 | FatMo 繪圖成本（Drawing Cost）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §5 |
-| 產品生產成本組成邏輯（total_base_cost 有哪些分量）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §6 |
-| 成本 key 實際數值（material_cost_* / keychain_* / chain 等）| **L2a** `.fhs/ai/FHS_Product_Cost_Schema_v2.md` |
+| 產品生產成本組成邏輯（total_base_cost 有哪些分量）| **L2a** `.fhs/ai/FHS_Product_Cost_Schema_v2.md`（唯一SSoT，2026-07-25起 Pricing Bible §6 已改指針） |
+| 成本 key 實際數值（material_cost_* / keychain_* / chain 等）| **L2a** `.fhs/ai/FHS_Product_Cost_Schema_v2.md` §2.1（唯一SSoT，§5.2重複表已於2026-07-25刪除） |
 | 折扣 / adjustment_amount 機制 | **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §7 |
 | 品牌禁止邏輯（禁成人單買、嬰兒核心原則）| **L2b** `.fhs/ai/FHS_Pricing_Bible.md` §0 |
-| 產品身份/結構定義（WHAT，非成本/定價；SKU 依附關係、加購配件清單）| `.fhs/ai/FHS_Product_Definition.md` |
-| 成本 RPC / 並發 / 升級 / 回滾 SOP | `.fhs/ai/FHS_Product_Cost_Operations.md`（⚠️ status: draft，pending audit） |
-| 成本設定中心 UI 規範（Desktop/Mobile） | `.fhs/ai/FHS_Product_Cost_UI_Spec.md`（⚠️ status: draft，pending audit） |
+| 產品身份/結構定義（WHAT，非成本/定價；SKU 依附關係、加購配件清單、V2統一SKU）| `.fhs/ai/FHS_Product_Definition.md` |
+| 成本 RPC / 並發 / 升級 / 回滾 SOP（歷史參考） | `.fhs/ai/FHS_Product_Cost_Operations.md`（⚠️ 已於2026-07-25退役，唯一未完成項`fhs_mirror_write_product_cost` RPC見handoff.md待辦） |
+| 成本設定中心 UI 規範（歷史參考，內容已100%落地） | `.fhs/ai/FHS_Product_Cost_UI_Spec.md`（⚠️ 已於2026-07-25退役） |
 | 架構規則（Layer 1/2 快照 / 誰寫哪個欄位 / 禁 trigger）| **L1** `.fhs/ai/FHS_Finance_Bible.md` |
 | 四端同步欄位映射 | `n8n/Quadruple_Sync_Field_Map.md` |
 | KPI 收入分攤 / 混合單 3-layer fallback / get_financial_kpis / get_financial_charts | §十 `.fhs/notes/FHS_System_Logic_Overview.md` §十（RPC 財務計算層 SSoT） |
@@ -36,7 +36,8 @@ compatible_with: AGENTS.md v1.4.13
 | `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`——**2026-07-18 Phase 2 起已覆蓋全品類**（嬰兒/成人/家庭鎖匙扣不銹鋼+鋁合金、吊飾全 tier、立體擺設、配件、佔位 row 監測），見 `FHS_System_Logic_Overview.md` §5.4.3。禁止假設「改設定中心=products 自動同步」|
 | 吊飾成本計錯 / 頸鏈成本 / `necklace_chain_cost` | `FHS_System_Logic_Overview.md` §5.4.2（D40，migration 0046 + n8n V47.19，雙數簿漂移修復先例）+ §5.4.5（D42，2026-07-22，V47.19→V47.20 記帳格式對齊鎖匙扣環扣模式，部署狀態見§三B） |
 | 家庭套裝（鎖匙扣/吊飾）畫圖成本計錯 / composite 畫圖式 | `FHS_System_Logic_Overview.md` §5.4.3（D41，migrations 0058/0059）：家庭套裝畫圖成本 = **成人份 + 每個嬰兒肢各計一次**，非單一成人式；Dashboard 前端 `calculatePricing()` isFamily 分支為真源 |
-| 「加購」鎖匙扣/吊飾點解冇畫圖費 / `item_base_cost`×quantity≠subtotal_cost 睇落唔啱 | ⚠️ **§三B 現行方程式段落已被 Session 189 裁決部分推翻,待 Phase 1 執行**——`FHS_System_Logic_Overview.md` §5.4.6：現行「加購=$0畫圖」源自 2026-06-03 S55 (commit `4dbdef2`) 語義漂移（本意止跨產品重複收費，實際擴大成連線內首件都豁免），Fat Mo 已裁定改為三層模型（S/P tier 全費+n8n訂單層動態扣減）。**現行 Supabase 寫入邏輯尚未改動**，查現行訂單成本仍用本表其他行既有規則；查「新模型應該點計」先睇 §5.4.6 + cl-flow flow_id `2026-07-24-0213` |
+| 「加購」鎖匙扣/吊飾點解冇畫圖費 / V2統一SKU模型 / 品項全額訂單淨額規則 / 同部位畫圖共享豁免 | **規則家族「V2統一成本模型」（S189，2026-07-24~25，已落地生產，非待辦）**——正式權威：`FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，公式+16SKU清單+架構）+ `FHS_Finance_Bible.md` §五B（架構責任）+ §四附錄（「單購/加購」歷史命名對照，舊訂單專用）。事件時序/決策過程（點解由S55漂移到而家嘅裁決）留喺 `FHS_System_Logic_Overview.md` §5.4.6，唔再係查規則嘅終點——查「現行規則係咩」請直接讀上述兩份正式文件，唔使讀session筆記 |
+| n8n 四端欄位映射 / 「Node 14 – Cost Calculator」等舊節點名對唔上現行代碼 | `Quadruple_Sync_Field_Map.md` 已於 2026-07-25 大改版至 v2.0（原v1.1版本2.5個月未更新，「Node 14」等節點名已不存在），讀現行v2.0版本，唔好對照歷史記憶/舊版對話 |
 
 ---
 

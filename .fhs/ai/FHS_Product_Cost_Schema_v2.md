@@ -1,24 +1,26 @@
 ---
 name: FHS Product Cost Schema (Core)
-version: v2.2.0
+version: v2.3.0
 created: 2026-05-28
-updated: 2026-06-03
-authority: SSoT for cost_configurations 23-key schema (Core layer; 0026 B1 補入 3 個後現況)
+updated: 2026-07-25
+authority: SSoT for cost_configurations 23-key schema + V2統一SKU模型（Core layer；S189審查後升格）
 companion_docs:
-  - .fhs/ai/FHS_Product_Cost_UI_Spec.md       # Desktop + Mobile UI 規範
-  - .fhs/ai/FHS_Product_Cost_Operations.md    # RPC / 並發 / 升級 SOP
+  - .fhs/ai/FHS_Product_Cost_UI_Spec.md       # 已退役 2026-07-25，僅供歷史參考
+  - .fhs/ai/FHS_Product_Cost_Operations.md    # 已退役 2026-07-25，僅供歷史參考
 references:
-  - .fhs/ai/FHS_Pricing_Bible.md §5（現行 Drawing Cost 權威；docs/FHS_Product_Bible_V3.7.md 已退役，見 finance-gatekeeper/SKILL.md §二）
+  - .fhs/ai/FHS_Pricing_Bible.md §5（已改指針指回本文件，唔再重複維護金額表）
   - airtable-database/Base_Costs-Grid view.csv (歷史成本記錄)
   - .fhs/notes/addon_product_sop.md (加購配件 SOP)
   - supabase/migrations/0020_financial_settings_system.sql (v1 schema)
-status: v2.2.0 draft — pending 3 subagent audits → Fat Mo GO → Stage 3
+  - supabase/migrations/0073/0076-0078 (V2統一SKU模型 + 歷史回填，見§10)
+status: v2.3.0 active
+status_note: 原v2.2.0規劃嘅3-subagent audit鏈（database-reviewer/code-reviewer/ui-designer）從未正式完成即擱置逾7週；本次升格依據係§2.1內容已於S124/D40-D45/S189多個session實際生產驗證使用（非事後補簽審查記錄）——production-validated supersedes原定審查流程。此為誠實揭露，非假裝已審查。
 ---
 
-# 📜 FHS 產品成本 Schema v2.2.0 — Core 文件
+# 📜 FHS 產品成本 Schema v2.3.0 — Core 文件
 
 > **本文件用途**：所有 AI/人類查找「某產品定義／成本是多少／關聯是什麼」的唯一入口（Core 層）。
-> **配套文件**：UI 規範看 `FHS_Product_Cost_UI_Spec.md`；RPC/並發/升級 SOP 看 `FHS_Product_Cost_Operations.md`。
+> **配套文件**（均已於2026-07-25退役，僅供歷史參考，非現行規範）：`FHS_Product_Cost_UI_Spec.md`（UI規範，內容已100%落地生產）；`FHS_Product_Cost_Operations.md`（RPC/並發/升級SOP，大部分已上線，唯一未完成項`fhs_mirror_write_product_cost` RPC見handoff.md待辦）。
 > **核心使命**：清晰、可追查、可管理。
 > **嚴禁**：不得在他處硬編碼成本；所有成本必須回到 `cost_configurations` + `products` 兩張表的真理。
 
@@ -194,18 +196,9 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 | 925銀 / 925金 | 吊飾 2 種材質（金銀同價，Bible §3） | 同價但獨立 key 保留靈活性 |
 | 1飾 / 2飾 / ... 5+飾 | 同 SKU 內倒模件數 | 影響金屬用量 |
 
-### 5.2 成本表（現行值，見 §2.1 完整 23-key 清單）
+### 5.2 成本表
 
-| Key | 適用材質 | 涵蓋 SKU 前綴 |
-|-----|---------|--------------|
-| `material_cost_keychain_stainless` | 不銹鋼（嬰兒層 $95） | `嬰兒*鎖匙扣 - 不銹鋼*` |
-| `material_cost_keychain_alloy` | 鋁合金（嬰兒層 $122） | `嬰兒*鎖匙扣 - 鋁合金*` |
-| `material_cost_keychain_stainless_adult` | 不銹鋼（成人/家庭層 $135） | `成人/家庭*鎖匙扣 - 不銹鋼*` |
-| `material_cost_keychain_alloy_adult` | 鋁合金（成人/家庭層 $135） | `成人/家庭*鎖匙扣 - 鋁合金*` |
-| `material_cost_necklace_silver` | 925銀（$260） | `*吊飾 - 925銀*` |
-| `material_cost_necklace_gold` | 925金（$316） | `*吊飾 - 925金*` |
-| `necklace_chain_cost` | 吊飾頸鏈成本 / 條（$100） | 所有 `*吊飾*` SKU，Math.ceil(N/2)×$100 |
-| `keychain_clasp_cost` | 鎖匙扣環扣配件（$10 / 件） | 所有 `*鎖匙扣*` SKU（**取代已移除的 `clasp_cost`，見 §2.1 文件修正註記**） |
+> **2026-07-25 起本節不再重複列數字**（S189審查揪出本節同§2.1曾經各自維護一組材質成本，兩者一度出現舊值vs新值嘅內部矛盾——屬過時/衝突病徵，根治方式係刪除重複表，非同步兩份）。適用材質/涵蓋SKU前綴嘅**現行值**一律睇 §2.1 完整 23-key 清單（key: `material_cost_keychain_stainless`／`_alloy`／`_stainless_adult`／`_alloy_adult`／`material_cost_necklace_silver`／`_gold`／`necklace_chain_cost`／`keychain_clasp_cost`）。
 
 ### 5.3 SKU 命名規律（必須記憶）
 
@@ -244,7 +237,7 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 依 Bible §2.5：同一訂單有 N 個鎖匙扣時，扣減 `(N-1) × $20`。
 
 → 由 `keychain_shipping_deduction_per_extra` (預設 $20) 控制
-→ 計算在 `fhs_batch_recalc_execute` RPC 第 4 步、n8n Node 14
+→ 計算在 `fhs_batch_recalc_execute` RPC 第 4 步、n8n「Calculate Profit & Pack Items」節點（V47.22，`keychainShippingDeduction`，見 `n8n/Quadruple_Sync_Field_Map.md` 現行公式）
 
 ---
 
@@ -358,4 +351,61 @@ cost_configurations  ←─ Fat Mo 透過 UI 更新（fhs_upsert_cost_config RPC
 
 ---
 
-**Core 文件結束 — UI/Operations 細節見配套文件。**
+## §10. V2 統一 SKU 模型（S189，2026-07-24~25）
+
+> **背景**：2026-06-03(S55) 將「同部位第2件起免畫圖費」嘅豁免範圍誤擴大成「主套裝已選=成條線全免（含首件）」，2026-07-24 Fat Mo 出示 2024-09-15 原始設計文件糾正。裁決新三層模型，用「V2統一SKU」取代舊有「單購/加購」二分（舊命名體系見 `FHS_Finance_Bible.md` §四附錄，僅供對照舊單，新單一律用本節模型）。
+
+### 10.1 第四種計價路徑：products.total_base_cost 直接定值
+
+不同於 §2-§9 描述嘅「cost_configurations 逐個 key 組合」模式，V2 SKU 嘅 `products.total_base_cost` 係 migration 直接 INSERT 嘅**單件全費**（唔經 cost_configurations 逐項相加）：
+
+| SKU（`(V2)` 後綴） | total_base_cost |
+|---|---|
+| 嬰兒(S)鎖匙扣 - 不銹鋼/鋁合金 (V2) | $205 |
+| 嬰兒(P)鎖匙扣 - 不銹鋼/鋁合金 (V2) | $255 |
+| 嬰兒(S)吊飾 - 925銀/925金 (V2) | $660 |
+| 嬰兒(P)吊飾 - 925銀/925金 (V2) | $710 |
+
+> 現時僅覆蓋**嬰兒(baby) tier**（16個SKU，migration 0073）；大寶/成人/家庭仍用舊模型，V2擴展列為下個session待辦（見 `.fhs/memory/handoff.md` MASTER表）。
+
+### 10.2 order_items 新增 4 欄（migration 0073，sync_order_to_mirror() RPC 由 migration 0075 擴充支援）
+
+| 欄位 | 型別 | 用途 |
+|---|---|---|
+| `cost_model_version` | TEXT | `'v2_layered'`（V2品項）／`NULL`（舊模型品項） |
+| `position_code` | TEXT | 左手/右手/左腳/右腳，由 `item_key` 尾綴 `_LH/_RH/_LF/_RF` 推導 |
+| `drawing_waived` | BOOLEAN | 該行是否有單位被同部位共享豁免 |
+| `drawing_charged_count` | INTEGER | 該行實際收畫圖費嘅單位數（0或1） |
+
+### 10.3 核心規則（逐字，2026-07-24 Fat Mo 三度確認）
+
+> **品項層（`order_items`）= 全額**：`item_base_cost`/`subtotal_cost`/`drawing_cost` 恆為 `quantity × 單件全費`，唔理會呢件實際有冇被同部位另一件豁免。豁免資訊只存喺 `drawing_waived`/`drawing_charged_count` 呢類 metadata 欄位，唔影響 `item_base_cost` 本身數值。
+>
+> **訂單層（`orders`）= 淨額 + badge**：`keychain_cost`/`necklace_cost`/`total_cost` 為扣減後嘅真實總數，差額寫入 `n8n_adjustment_notes`（type=`drawing_position_dedup_deduction`），喺財務彈窗②成本快照鏈用 badge 顯示，同運費/頸鏈共享折扣同一視覺類別。
+
+### 10.4 同部位共享豁免公式
+
+同一訂單、同一身體部位（`position_code`），跨鎖匙扣/吊飾共享「首件收畫圖費」資格（同一部位3D掃描只需一次）：
+
+```
+組內第一件（按packedItems原始順序，鎖匙扣優先於吊飾）：
+  drawing_charged_count = 1，收 tier_drawing_rate 一次
+組內其餘所有品項（含同一行第2件起）：
+  drawing_charged_count = 0，豁免
+
+畫圖費率 tier_drawing_rate：
+  嬰兒(S) = $60　嬰兒(P) = $110　（見 §2.1 drawing_cost_baby_s/p）
+
+drawing_position_dedup_deduction（訂單層扣減，寫入n8n_adjustment_notes）
+  = Σ(每個非首件品項嘅 quantity × tier_drawing_rate)
+```
+
+實作：n8n workflow `FHS_Core_OrderProcessor`「Calculate Profit & Pack Items」節點 V47.22（現行 live）。歷史舊模型訂單回填見 migrations 0076-0078（架構責任分工見 `FHS_Finance_Bible.md` 新增章節「V2統一成本模型 — 架構責任」）。
+
+### 10.5 快照聲明
+
+以上金額為 **2026-07-25 live Supabase 查詢快照**（已用 `cost_configurations`/`products` 表核實）。如有疑問請重新查詢核實，唔好假設文件永遠反映最新值——本文件同其他markdown一樣冇自動同步機制（見 `FHS_Finance_Bible.md`「已知限制」章節）。
+
+---
+
+**Core 文件結束 — UI/Operations 細節見配套文件（已退役，僅供歷史參考）。**

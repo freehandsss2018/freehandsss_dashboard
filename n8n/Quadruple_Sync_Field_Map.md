@@ -1,25 +1,26 @@
 # Quadruple Sync Field Map
 
-**Version**: v1.1
+**Version**: v2.0
 **Created**: 2026-05-10 (Phase 0 盤點，升級自 Triple_Sync 概念)
-**Updated**: 2026-05-13 (新增成本計算雙層架構決策、sbSyncOrder 寫入邊界、raw_form_state 解碼)
+**Updated**: 2026-07-25（S189財務文件全面審查大改版——本文件2.5個月零更新，核心架構假設「Airtable過渡期SSoT」已被D43(2026-07-22~23)推翻，「n8n內部計算規則」整段描述嘅「Node 14 – Cost Calculator」節點自V47.4起已不存在，現行節點鏈完全改寫；新增order_items 4個V2欄位；已知問題表核對實際狀態）
 **四端**: Airtable ↔ n8n ↔ Dashboard ↔ Supabase
 
 > 本文件記錄 FHS 四端系統中每個核心欄位的「寫入方」「讀取方」「同步方向」與「真理來源」。
 > 任何改動此對應關係的操作，必須先更新本文件。
+> ⚠️ **v2.0 讀者須知**：本文件v1.1版本（2026-05-13）核心假設「Airtable過渡期SSoT」已於D43大幅剝離Airtable依賴後推翻；「n8n內部計算規則」章節描述嘅節點名/版本已對唔上現行V47.22——如果你係憑歷史記憶對照本文件，請以本次v2.0改版為準，唔好假設v1.1嘅框架仍然生效。
 
 ---
 
-## 核心原則
+## 核心原則（v2.0 更新）
 
 | 原則 | 內容 |
 |------|------|
 | **前端利潤真理** | `final_sale_price` 由 Dashboard 寫入，其餘三端只讀，n8n 禁止重算 |
 | **n8n 計算職責** | 所有成本 / 利潤欄位由 n8n 計算後優先確保 Supabase 寫入，Airtable 作為同步備援 |
-| **Supabase 角色** | **主導數據核心 (Primary Core)**：負責所有數據讀取、修改與新增；Airtable 為後備 |
-| **過渡期 SSoT** | 目前由 Airtable 擔任，待 Supabase 完全驗證後轉移 |
+| **Supabase 角色** | **主導數據核心 (Primary Core)**，D43(2026-07-22~23)後確立——負責所有數據讀取、修改與新增；Airtable 為歷史備援（非過渡期，係長期定位） |
+| **SKU 真源** | Supabase `products` 表（人工/migration 直接維護）——S189 Phase1（migration 0073）已示範16個V2 SKU直接寫入Supabase，完全無經Airtable，證明Airtable唔再係SKU嘅必經路徑；Airtable僅供舊SKU歷史對照 |
 | **Raw_Form_State 不可侵犯** | 只由 Dashboard 寫入，n8n / Supabase 只讀，禁止修改 |
-| **SKU 前置正規化** | 所有 SKU 必須先過 `Parse Items & Generate SKU` node 才能入庫 |
+| **SKU 前置正規化** | 所有 SKU 必須先過 `Parse Items & Generate SKU` node 才能入庫（V47.13起含isV2Sku guard，V2格式SKU跳過舊式後綴邏輯） |
 
 ---
 
@@ -66,6 +67,10 @@
 | `specification` | Order_Items.Specification | 寫入 | 輸入 | `order_items.specification TEXT` | Dashboard |
 | `process_status` | Order_Items.Process_Status | 讀取 / 寫入 | 讀取 | `order_items.process_status` | Airtable |
 | `batch_number` | Order_Items.Batch_Number | 寫入 | — | `order_items.batch_number` ⚠️ 冗餘，暫保留 | n8n |
+| `cost_model_version` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.cost_model_version TEXT` | **n8n**（migration 0073，2026-07-24起。`'v2_layered'`=V2品項／`NULL`=舊模型品項） |
+| `position_code` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.position_code TEXT` | **n8n**（左手/右手/左腳/右腳，由item_key尾綴`_LH/_RH/_LF/_RF`推導，僅V2品項有值） |
+| `drawing_waived` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.drawing_waived BOOLEAN` | **n8n**（該行是否有單位被同部位共享豁免） |
+| `drawing_charged_count` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.drawing_charged_count INTEGER` | **n8n**（該行實際收畫圖費嘅單位數，0或1） |
 
 > ⚠️ **FK 設計注意**（database-reviewer Issue #3）：
 > Supabase `order_items` 的 FK 需使用 `order_fhs_id VARCHAR(20)` 指向 `orders.order_id`，
@@ -78,7 +83,7 @@
 
 | 欄位 | Airtable | n8n 動作 | Dashboard | Supabase | 真理來源 |
 |-----|---------|---------|-----------|---------|---------|
-| `sku` | Product_Database.Product_Name | 正規化比對 | 選擇 | `products.sku UNIQUE NOT NULL` | **Airtable**（唯一 SKU 表） |
+| `sku` | Product_Database.Product_Name | 正規化比對 | 選擇 | `products.sku UNIQUE NOT NULL` | **Supabase**（2026-07-25起，S189 Phase1已示範16個V2 SKU直接寫入Supabase無經Airtable；Airtable僅供舊SKU歷史對照） |
 | `main_category` | Product_Database.Main_Category | 讀取 | 顯示 | `products.main_category` | Airtable |
 | `total_base_cost` | Product_Database.Total_Base_Cost (formula) | 讀取用於計算 | — | `products.total_base_cost NUMERIC` | n8n 維護 |
 | `cost_config_id` | via Linked_Base_Cost | — | — | `products.cost_config_id UUID → cost_configurations(id) ON DELETE SET NULL` | Airtable |
@@ -266,11 +271,19 @@ LEFT JOIN cost_configurations c ON p.cost_config_id = c.id;
 ## ⚠️ 已知問題待解（Phase 1 修正）
 
 來源：database-reviewer 稽核 (2026-05-10)
+> **2026-07-25 核對**：本表2.5個月未覆核，以下僅核實有直接證據嘅項目，其餘維持原狀非重新逐項驗證（非本次審查範圍，如需確認請重新派database-reviewer）。
+
+### 已解決
+
+| 優先級 | 問題 | 解決方式 |
+|-------|------|---------|
+| P0 | `order_items` FK 用 UUID 但 n8n 寫 VARCHAR order_id | ✅ 已改用 `order_fhs_id VARCHAR(20)` FK（`FHS_Finance_Bible.md` §六已確認現行架構） |
+
+### 待解（未重新核實，維持原狀）
 
 | 優先級 | 問題 | 修正方向 |
 |-------|------|---------|
 | P0 | `final_sale_price` 允許 NULL | 改為 `NOT NULL DEFAULT 0` |
-| P0 | `order_items` FK 用 UUID 但 n8n 寫 VARCHAR order_id | 改用 `order_fhs_id VARCHAR(20)` FK |
 | P1 | `process_status` 無強制約束 | 改為 ENUM 或 CHECK constraint |
 | P1 | 缺少 `idx_orders_customer_name` 索引 | 新增 text_pattern_ops 索引 |
 | P2 | `cost_configurations` 缺 `ON DELETE SET NULL` | 在 products FK 加上 |
@@ -279,50 +292,77 @@ LEFT JOIN cost_configurations c ON p.cost_config_id = c.id;
 
 ---
 
-## 🧮 n8n 內部計算規則（非持久化）
+## 🧮 n8n 內部計算規則（非持久化，2026-07-25 全面重寫）
 
-> 補完日期：2026-05-17（database-reviewer 驗證 Triple_Sync 遷移後新增）
-> 以下計算值僅存在於 n8n workflow 執行記憶體，**不寫入 Airtable / Supabase / Dashboard 任何持久層**。
+> 原「補完日期：2026-05-17」版本描述嘅係 `Node 14 – Cost Calculator`（V47.4 workflow），呢個節點已經唔存在——現行 workflow `FHS_Core_OrderProcessor`（workflowId `6Ljih0hSKr9RpYNm`）節點鏈同計算邏輯已升級到 V47.22，本段落完全重寫對齊現行代碼（非僅改節點名，公式亦已不同）。
+> 以下計算值僅存在於 n8n workflow 執行記憶體，寫入結果進入 `orders`/`order_items` 持久層，但中間扣減值（deduction）本身**不建獨立 column**。
 
-### Shipping_Deduction（運費扣減）
-
-- **節點**：`Node 14 – Cost Calculator`（V47.4 workflow 內計算）
-- **目的**：跨部位訂單運費分攤（單一訂單含多件商品時，運費按部位均攤）
-- **公式**（V40.6+）：
+### 現行節點鏈
 
 ```
-Shipping_Deduction = SUM(運費分攤額) per item
-  where 運費分攤額 = base_shipping_cost / number_of_parts_in_order
+Receive Dashboard Order（webhook觸發）
+    ↓
+Parse Items & Generate SKU（V47.13）
+    職責：SKU正規化，isV2Sku guard（V2格式SKU跳過舊式「-N飾 Mode」後綴/扣減邏輯）
+    ↓
+Batch SKU Collector → Smart Cache Strategist（Supabase v_products_with_costs 查詢）
+    ↓
+Local Data Mapper
+    ↓
+Calculate Profit & Pack Items（V47.22，核心計算節點）
+    ↓
+Supabase Mirror Prep → HTTP: Supabase Sync RPC（呼叫 sync_order_to_mirror()）
 ```
 
-- **使用方式**：在 `Total_Cost` 計算時扣減（避免重複計算運費），但**不存任何欄位**
-- **接收方**：僅供 Profit Auditor 中間驗算使用
-
-### Necklace_Deduction（頸鏈成本扣減）
-
-- **節點**：同 `Node 14 – Cost Calculator`
-- **目的**：純銀頸鏈的吊飾成本與鏈體成本分離計算
-- **公式**：
+### keychainShippingDeduction（鎖匙扣運費共享扣減）
 
 ```
-IF(Item_Category 含 "純銀頸鏈"):
-  Necklace_Deduction = Item_BaseCost × Quantity - 吊飾單獨成本
-ELSE:
-  Necklace_Deduction = 0
+keychainShippingDeduction = keychainItemCount > 1 ? (keychainItemCount - 1) × 20 : 0
 ```
 
-- **使用方式**：用於計算 `Necklace_Cost` 欄位前先扣除吊飾成本，避免重複入帳
-- **接收方**：寫入後續 `necklace_cost`（Supabase / Airtable）的中間步驟
+- **keychainItemCount** = SUM(quantity) across all 鎖匙扣 order_items（件數，非行數，P0修正見 Finance Bible §四）
+- **使用方式**：從 `orders.total_cost`／`orders.keychain_cost` 扣減，寫入 `n8n_adjustment_notes`（type=`keychain_shipping_deduction`）
+
+### charmShippingDeduction（吊飾運費共享扣減）
+
+```
+charmShippingDeduction = charmItemCount > 1 ? (charmItemCount - 1) × 35 : 0
+```
+
+- **charmItemCount** = SUM(quantity) across all 吊飾 order_items
+- 寫入 `n8n_adjustment_notes`（type=`charm_shipping_deduction`）
+
+### charmChainSharingDiscount（頸鏈共用折扣）
+
+```
+charmChainSharingDiscount = charmItemCount > 1 ? floor(charmItemCount / 2) × 100 : 0
+```
+
+- 每件吊飾已於品項層對稱計 $100 頸鏈費（`chain_cost`），此為「每2條共用1條頸鏈」嘅共用折扣（訂單層扣減，非額外收費），寫入 `n8n_adjustment_notes`（type=`necklace_chain_sharing_discount`）
+
+### drawingDedupDeduction（同部位畫圖動態扣減，V47.22 新增，僅V2 SKU適用）
+
+```
+按 position_code（左手/右手/左腳/右腳，由Order_Item_Key後綴推導）分組，
+跨鎖匙扣/吊飾共享豁免資格（同一部位3D掃描只需一次）：
+  組內第一件（按packedItems原始順序）：drawing_charged_count=1，收tier_drawing_rate
+  組內其餘所有品項：drawing_charged_count=0，豁免
+
+drawingDedupDeduction = Σ(每組waived_units × tier_drawing_rate)
+```
+
+- 寫入 `n8n_adjustment_notes`（type=`drawing_position_dedup_deduction`，含逐行 detail：position_code/item_key/waived_units/drawing_rate/deduction）
+- 同步寫入 `order_items.position_code`/`drawing_waived`/`drawing_charged_count`（migration 0073新欄位，非持久化中間值，實際落地欄位）
+- 完整公式同適用範圍見 `FHS_Product_Cost_Schema_v2.md` §10.4（唯一SSoT）
 
 ### 設計原則
 
 | 規則 | 說明 |
 |------|------|
-| **非持久化** | Deduction 類中間值禁止建立 column。每次 workflow 執行重新計算 |
-| **不入四端映射表** | 不出現在 Airtable / Supabase / Dashboard / n8n payload 欄位映射中 |
-| **改動觸發** | Cost Calculator 邏輯改動時，必須同步更新本段落，並在 CHANGELOG 標註 |
+| **Deduction中間值非持久化** | 上述4個deduction數字本身唔建獨立column，每次workflow執行重新計算；但計算結果（扣減後嘅keychain_cost/necklace_cost/total_cost）+ 審計筆記（n8n_adjustment_notes）+ V2 metadata（position_code等）會持久化 |
+| **改動觸發** | `Calculate Profit & Pack Items` 節點邏輯改動時，必須同步更新本段落，並在 CHANGELOG 標註 |
 
-> **歷史背景**：Triple_Sync_Field_Map.md 曾在 Node 14 章節描述這些計算值，但 Triple_Sync 文件已 [已廢棄]。本段落為遷移至 Quadruple_Sync 的補完，避免知識斷層。
+> **歷史背景**：Triple_Sync_Field_Map.md 曾在「Node 14」章節描述呢類計算值，Triple_Sync 文件已廢棄。本段落 2026-05-17 首次遷移補完，2026-07-25（S189）因節點鏈+公式整體升版（V47.4→V47.22）而全面重寫。
 
 
 ---

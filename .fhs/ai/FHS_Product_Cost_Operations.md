@@ -4,10 +4,16 @@ version: v2.1.0
 created: 2026-05-28
 parent: .fhs/ai/FHS_Product_Cost_Schema_v2.md
 authority: RPC / 並發 / 升級 / 回滾 SOP
-status: v2.1 draft — pending code-reviewer + database-reviewer audit
+status: retired
+retired_date: 2026-07-25
+retired_reason: 全面財務文件審查（S189）盤點確認 — §OP-6 狀態表本身已顯示大部分內容（0022a/0022b/0048 migrations、V42 樂觀鎖 UI）早已上線非draft，「pending code-reviewer+database-reviewer audit」標籤自2026-05-28起從未兌現，屬 S158 型文件腐爛（有內容無合約推進）。比照 S158 FHS_Blueprint.md 退役先例。
+retired_carry_forward: 唯一仍未完成嘅項目——`fhs_mirror_write_product_cost` RPC + n8n Mirror Prep advisory lock 整合（§OP-3.2，防Fat Mo UI改cost_config同n8n訂單處理並發寫入products.total_base_cost）——已轉記入 `.fhs/memory/handoff.md` MASTER 待辦表，非隨本文件消失。
 ---
 
-# ⚙️ FHS 產品成本 Operations SOP
+> ⚠️ **本文件已於 2026-07-25 正式退役，僅供歷史參考，不得作為現行規範依據。**
+> 內容大部分已於 migrations 0022a/0022b/0048 + `Freehandsss_dashboard_current.html`（財務設定中心）落地生產（見 §OP-6 狀態表），非真正 draft。唯一未完成項目已轉記 handoff.md 待辦，見上方 frontmatter `retired_carry_forward`。
+
+# ⚙️ FHS 產品成本 Operations SOP（已退役）
 
 > **本文件用途**：定義成本資料的並發控制、RPC 行為、效能規範、回滾流程。
 > **執行對象**：寫 SQL Migration 或修 n8n workflow 必須依此規範。

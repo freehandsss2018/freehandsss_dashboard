@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-07-25] Session（Claude Code / Sonnet 5 執行）— FHS 財務權威文件群全面重寫
+
+- Fat Mo 指出系統反覆未吸收V2成本模型討論邏輯，要求全面審查財務權威文件（過時/衝突/沉澱/重複/孤立）。經 `/cl-flow`（flow_id `2026-07-25-0058`，A1+A2對抗評審15條批評，Verdict CONDITIONAL_READY）+ `/execute` 正式流程，重寫8份文件：Finance Bible（§四G2-G5改純position語言、單購/加購降歷史附錄）、Cost Schema v2（升active、刪§5.2重複表、新增§10 V2模型SSoT）、Pricing Bible（§5/§6改指針）、Product_Definition（補V2 SKU條目）、Quadruple_Sync_Field_Map（v1.1→v2.0全面重寫）、finance-gatekeeper路由表、Cost_Operations+UI_Spec正式退役。
+- 全文見 [completion report](.fhs/reports/completion/2026-07-25_finance_authoritative_docs_full_rewrite_completion_report.md)（唯一全文居所）、`artifacts/2026-07-25-0058/cl-final-plan.md`。
+
+【交付前雙紀律自檢】
+驗收：文件治理型——grep sweep全文核對，揪出並修正3處殘留矛盾，修正後零殘留（詳見completion report §五）
+Subagent：cl-flow內建A1(Perplexity)+A2(Gemini)對抗評審；執行階段未額外派subagent，database-reviewer獨立覆核列為待Fat Mo決定嘅建議
+
 ## [2026-07-24] Session（Claude Code / Sonnet 5 + Opus 4.8 執行）— 鎖匙扣/吊飾成本模型 S55 語義漂移根因確認 + 三層模型 cl-flow 規劃 + Phase 0 唯讀模擬 + description 補全
 
 - **緣起**：Fat Mo 核對訂單 0600723「右手 鋼×4」財務分頁成本小計 $500，多輪質疑後，出示 2024-09-15 原始成本推演表 + 舊 Airtable Base_Costs 記錄，證明現行「加購=$0畫圖」並非原始設計。三方獨立驗證（AI自查/finance-auditor/D37舊結論）一致認定 $500 正確，但均未對照原始業務意圖，被 Fat Mo 出示嘅原始文件推翻。

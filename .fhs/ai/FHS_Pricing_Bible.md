@@ -1,8 +1,8 @@
 # FHS 定價聖經 (FHS Pricing Bible)
 
 > **Authority Level**: L2 — 現行定價 HEAD
-> **Version**: v1.6.0
-> **更新日期**: 2026-07-23（§3.2 純銀頸鏈吊飾 S mode remainder單隻價 $1,980→$1,490下修，N=1底價不變；§4.3 P mode 鎖匙扣改為多部位合併計價+新增跨部位附加費，取代原「各部位獨立計階梯」；兩項均為 Fat Mo 對照客戶最新售價表 + 真實訂單核實後裁決，決策見 decisions.md D45）；2026-07-21 (§2.1 修復肢數判定 bug：hasFoot 捷徑判斷→實際總肢數計算，並將大寶肢體納入嬰兒同等計數但不觸發家庭價；2026-07-19 §2.1 玻璃瓶套裝新增「含父母」家庭定價 $2,580 並改用獨立 SKU「玻璃瓶套裝 (家庭)」（推翻同日較早嘅「SKU不變」決定，修正稽核面板顯示舊價 bug）；§6 footnote 修正已過時技術債描述)
+> **Version**: v1.7.0
+> **更新日期**: 2026-07-25（S189財務文件全面審查：§5/§6 移除重複金額表，改為指向 `FHS_Product_Cost_Schema_v2.md`（唯一SSoT），消除同Cost Schema §2.1/§3.2 兩處各自維護同組數字嘅drift風險；§6.1過時公式+§6.3已填妥卻仍標「待填」嘅清單一併移除）；2026-07-23（§3.2 純銀頸鏈吊飾 S mode remainder單隻價 $1,980→$1,490下修，N=1底價不變；§4.3 P mode 鎖匙扣改為多部位合併計價+新增跨部位附加費，取代原「各部位獨立計階梯」；兩項均為 Fat Mo 對照客戶最新售價表 + 真實訂單核實後裁決，決策見 decisions.md D45）；2026-07-21 (§2.1 修復肢數判定 bug：hasFoot 捷徑判斷→實際總肢數計算，並將大寶肢體納入嬰兒同等計數但不觸發家庭價；2026-07-19 §2.1 玻璃瓶套裝新增「含父母」家庭定價 $2,580 並改用獨立 SKU「玻璃瓶套裝 (家庭)」（推翻同日較早嘅「SKU不變」決定，修正稽核面板顯示舊價 bug）；§6 footnote 修正已過時技術債描述)
 > **衝突規則**: 若本文件與 L1（`.fhs/ai/FHS_Finance_Bible.md`）衝突，以 L1 為準；本文件取代所有舊版定價文件（pricing_reference / Product_Bible_V3.7）
 > **Source of Truth**: `freehandsss_dashboardV41.html` → `calculatePricing()` 函式（代碼為最終裁決者）
 > **警告**: 計價邏輯變更後，本文件必須同步修訂，否則將成為誤導來源。
@@ -209,60 +209,24 @@ price += surcharge
 
 > 此為 FatMo 人工繪圖費用，作為訂單成本核算的前端參考值，不等同於產品生產成本。
 > 代碼位置：`calculatePricing()` L5128–5156
+> **2026-07-25 起金額表移除**：現行金額為 `FHS_Product_Cost_Schema_v2.md` §2.1／§3.2（唯一 SSoT，Group A drawing）之子集，本文件不再重複維護第二份副本以避免 drift（S189 審查揪出本節舊表同 Cost Schema §3.2 曾經各自維護同一組數字，屬過時/重複病徵）。查金額請直接讀 Cost Schema v2 §2.1/§3.2。
 
-### 5.1 計費規則（`item.FatMoCost = cost × qty`）
+### 5.1 計費規則
 
-| 對象 | 模式 | 每件成本 |
-|------|------|---------|
-| 嬰兒 / 大寶 | S mode（有主產品）| **$60** |
-| 嬰兒 / 大寶 | P mode（無主產品）| **$110** |
-| 成人 | S mode | **$110** |
-| 成人 | P mode / 木框成人（isPModeForce）| **$240** |
+`item.FatMoCost = cost（見 Cost Schema v2 §3.2）× qty`，按對象（嬰兒/大寶/成人）× 模式（S/P）四選一。
 
 ### 5.2 家庭連心成本分拆
 
-每個成員（`comboNote` 各項）獨立計費：
-- 父母/成人：`isPModeForce ? $240 : $110`
-- 嬰兒：依 (P)/(S) 標記或 `isPModeForce` 決定 $110 / $60
+每個成員（`comboNote` 各項）獨立計費，費率同上（依 (P)/(S) 標記或 `isPModeForce` 決定）。
 
 ---
 
 ## §6 產品生產成本結構（n8n + Supabase）
 
 > 此為實際生產成本，由 n8n 從 Supabase `products` 表查詢後寫入訂單。
+> **2026-07-25 起本節簡化為指針**：具體成本組成/代表性數值/23-key清單，唯一 SSoT 為 `FHS_Product_Cost_Schema_v2.md`（本文件不再重複維護，原 §6.1 公式已過時、原 §6.3「待填項目」四個 key 實際上早已填妥現行值 115/115/465/465，見 Cost Schema v2 §2.1）。V2 統一 SKU 模型（S189，2026-07-24起）另見 Cost Schema v2 §10。
 
-### 6.1 成本組成（per SKU）
-
-```
-total_base_cost = Drawing_Cost + Printing_Cost + Clasp_Cost + Shipping_Cost
-```
-
-> ⚠️ 注意：現行 migration 0023 為硬編碼 flat 值（非動態 roll-up）。
-> 三層顆粒化架構落實（Task A）完成後，此欄位將改為從 cost_configurations 動態計算。
-> 詳見：`.fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md`
-
-### 6.2 代表性數值
-
-| 類別 | 繪圖 | 鑄造/印刷 | 扣夾 | 運費 | total_base_cost |
-|------|------|---------|------|------|----------------|
-| 嬰兒吊飾 - 925銀 (S mode) | $60 | $260 | $70 | $35 | **$425** |
-| 嬰兒吊飾 - 925金 (S mode) | $60 | $316 | $70 | $35 | **$481** |
-| 嬰兒(P)吊飾 - 925銀 | $110 | $260 | $70 | $35 | **$475** |
-| 立體擺設 - 木框套裝（2肢或4肢）| $60（per set，不分肢數）| $150 | $0 | $0 | **$210** |
-| 立體擺設 - 玻璃瓶套裝（2肢或4肢）| $60（per set，不分肢數）| $150 | $0 | $0 | **$210** |
-
-> **立體擺設繪圖費補充**：$60 per 訂單（不論 2肢/4肢），整套一次性計算，由 GROUP B material_cost 承擔（非逐肢累加）。2肢/4肢售價不同（§2.1）但生產成本相同。三重數據確認：Airtable Base_Costs ✅ + cost_configurations `material_cost_woodframe/glassjar=210` ✅ + V41 HTML 確認對話框「$210 已計入」✅。已由 **migration 0030** 更新至 Supabase products 表（修復 migration 0023 的 placeholder=0 問題）。
->
-> ✅ **chargedPositions 雙計繪圖費技術債已修復**（原標記 Task A 範疇，現已解決）：DB 層成本由 migration 0030 修正；前端顯示層分兩步修復完畢——(1) Session 55（2026-06-03）W1 pre-population 已令主套裝（P_MAIN）選取嘅肢體部位預先寫入 chargedPositions，令同部位鎖匙扣/吊飾免收重複畫圖費；(2) Session 66（2026-06-07）再排除 `item.Order_Item_Key !== "TEMP_P_MAIN"`，修正 P_MAIN 自己因 `PartDesc` 為空而誤入 K/M 畫圖費分支、虛增 `totalDrawingCost` 顯示的問題。兩處均已在生產版本（`Freehandsss_dashboard_current.html`）核實存在。2026-07-19 更新本節前此處誤留「待 Task A 修復」字眼。
-
-### 6.3 cost_configurations 待填項目
-
-| config_key | 說明 | 狀態 |
-|------------|------|------|
-| `material_cost_necklace_silver` | 吊飾 925銀物料成本 | ⚠️ 待填（Task A 範疇）|
-| `material_cost_necklace_gold` | 吊飾 925金物料成本 | ⚠️ 待填（Task A 範疇）|
-| `material_cost_keychain_stainless` | 鎖匙扣不銹鋼物料成本 | ⚠️ 待填（Task A 範疇）|
-| `material_cost_keychain_alloy` | 鎖匙扣鋁合金物料成本 | ⚠️ 待填（Task A 範疇）|
+產品生產成本詳見 → `FHS_Product_Cost_Schema_v2.md`（全份，唯一 SSoT）
 
 ---
 

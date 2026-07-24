@@ -4,10 +4,15 @@ version: v2.1.0
 created: 2026-05-28
 parent: .fhs/ai/FHS_Product_Cost_Schema_v2.md
 authority: Desktop + Mobile 響應式視覺規範
-status: v2.1 draft — pending ui-designer audit
+status: retired
+retired_date: 2026-07-25
+retired_reason: 全面財務文件審查（S189）盤點確認 — §UI-4 本身已載明「2026-07-05 ui-designer審計確認已於V42實作完成」，「pending ui-designer audit」標籤自2026-05-28起早已過時未清。內容係「成本設定中心」管理面板規範（同 S189 V2 SKU 成本模型無關，屬另一功能），已完整落地生產，無未完成項目。
 ---
 
-# 🎨 FHS 產品成本設定 UI 規範
+> ⚠️ **本文件已於 2026-07-25 正式退役，僅供歷史參考，不得作為現行規範依據。**
+> 內容為「財務設定中心」管理面板 UI 規範，已於 V42/`current.html` 完整實作並經 2026-07-05 ui-designer 審計確認（見 §UI-4），無遺留待辦項目。
+
+# 🎨 FHS 產品成本設定 UI 規範（已退役）
 
 > **本文件用途**：定義財務設定面板在 Desktop (1280px+) 與 iPhone (375–414px) 的視覺與互動規範。
 > **執行對象**：frontend-developer 修 `Freehandsss_dashboardV41.html` 必須依此規範。
