@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-25] (D48) IG漏單看門狗容器輪替修復——CONTAINER_FOLDER_ID 寫死常數改動態偵測，並修正誤導性「OAuth失效」告警文字
+
+**背景**：Telegram 收到「距上次新匯出已168小時——疑似排程到期或OAuth失效，請查Meta Accounts Center」告警。Fat Mo 澄清系統匯出流程係「Meta每天自動匯出到Google Drive」（方案C，非人手DYI），排除OAuth猜測後，用 Google Drive 連結器實測發現：Meta 於 2026-07-18 把匯出目的地換咗一個新嘅父資料夾（`meta-2026-Jul-18-...`），而 `build_n8n_workflow.cjs` 嘅 `CONTAINER_FOLDER_ID` 寫死指向 06-18 建立嘅舊容器，導致連續7天（=168小時，數字完全吻合）零偵測——非OAuth/憑證問題，純粹查錯資料夾。開發者早於 2026-06-20 已在程式碼註解預判此情境，但 Telegram 告警文字寫成「OAuth失效」誤導方向。
+
+**裁決**：Fat Mo 選「1.重建動態偵測 2.授權清空staticData（如有需要）」。查證發現兩次容器（06-18/07-18）共享同一穩定上層 `0AF2K3iw4ozbhUk9PVA`，改用執行期動態查詢取代寫死常數；另查live `staticData.processedFolderIds` 確認乾淨無殘留（新7個資料夾ID未被誤標記），故未實際動用清空授權。
+
+**執行**：`scripts/ig-watchdog/build_n8n_workflow.cjs`——`CONTAINER_FOLDER_ID` 常數改 `STABLE_DRIVE_ID`；新增「Find Latest Meta Root」+「Pick Latest Container」兩個節點（動態取最新 `meta-*` 容器，輸出 `instagramQuery` 供下游引用，避免表達式巢狀單引號轉義問題）；「Find New Export Folders」queryString 改引用動態輸出；`emptySummaryCode` 誤導文字改為指向容器名稱+人手確認排程/credential 路徑。PUT 上正式 workflow `D4LK6VrQbiXlju0V`，8個 Google Drive 節點 credential 因 build script 本身寫死已知 ID 而完整保留，免手動重新指派。
+
+**驗證**：兩次真實觸發交叉對照——第一次（瀏覽器分頁載入部署前舊畫布）證實舊版查詢仍指向舊容器、零偵測；重新整理後第二次觸發，執行紀錄（execution 5134）證實「Pick Latest Container」正確動態解出新容器 `meta-2026-Jul-18-08-25-25`，「Find New Export Folders」精準抓到 07-18~07-24 積壓的7個資料夾（一個不多不少），Telegram 回報覆蓋範圍 `7/18~7/24`、需核對：0（此空窗期無真實漏單）。
+
+**教訓**：Meta 匯出目的地容器並非永久穩定，任何依賴「單一寫死 Google Drive 資料夾 ID」的自動化排程都要抓一個更穩定的祖先層動態查詢，而非人手更新常數。詳見 `.fhs/memory/lessons/2026-07-25_ig-watchdog-container-rotation-oauth-red-herring.md`。
+
+相關檔案：`scripts/ig-watchdog/build_n8n_workflow.cjs`、n8n workflow `D4LK6VrQbiXlju0V`（FHS_IGWatchdog_DriveWatch）。
+
+---
+
 [2026-07-25] (D47) finance-gatekeeper §三B 新增第4步「文件同步完整性 grep sweep」，防止成本欄位改動漏同步權威文件
 
 **背景**：D46（配件成本 accessory_cost 修復）執行完成後，Fat Mo 質詢「有更新權威財務或其他相關檔案嗎」，揪出 AI 漏同步 `FHS_Finance_Bible.md`（L1）同 `FHS_Product_Definition.md`（L2）——兩者逐字列出兄弟欄位但AI只跟自己寫低嘅執行計劃清單同步，冇機械化二次覆核。

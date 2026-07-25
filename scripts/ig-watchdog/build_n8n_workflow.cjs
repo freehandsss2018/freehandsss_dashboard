@@ -41,11 +41,13 @@
 // { name, nodes, connections, settings } 四個核心欄位；GET 回傳的 active / versionId /
 // isArchived / shared 等欄位會導致 HTTP 400 "must NOT have additional properties"。
 //
-// ⚠️ 容器資料夾 ID（CONTAINER_FOLDER_ID）目前是寫死常數。Meta 官方文件未保證此容器長期
-// 穩定（PX 研究結論：folder structure 無穩定性保證），僅憑本帳號已觀察到 2 次匯出
-// （6-18、6-19）皆落在同一容器佐證。heartbeat（4.1）會在容器真的輪替/改名時，因「連續
-// 48h 找不到新 instagram-* 子資料夾」而告警，屆時需手動更新此常數並重新產生 workflow。
-const CONTAINER_FOLDER_ID = '1eqlGpQuaTt23gLhjm5UBYYxE0QC8pdQ0'; // meta-2026-Jun-18-06-12-02
+// ⚠️ S189（2026-07-25）改版：CONTAINER_FOLDER_ID 曾是寫死常數，已於 2026-07-18 實測驗證
+// Meta 真的會輪替容器（06-18 首次匯出建立 `meta-2026-Jun-18-...` 容器，07-18 又自動建立
+// `meta-2026-Jul-18-...` 新容器），導致寫死值指向舊容器整整 7 天零偵測（168h 告警觸發，
+// 誤判為 OAuth 失效，實為看錯資料夾）。兩次容器共同上層皆為同一個穩定祖先
+// `STABLE_DRIVE_ID`，故改為執行期動態查詢「該祖先下最新建立的 meta-* 資料夾」，徹底解決
+// 容器輪替問題，不再需要人手更新此常數。
+const STABLE_DRIVE_ID = '0AF2K3iw4ozbhUk9PVA'; // meta-* 匯出容器共同上層，穩定錨點（06-18/07-18 兩次容器切換皆驗證共享此上層）
 
 const fs = require('fs');
 const nodePath = require('path');
@@ -65,6 +67,31 @@ if (fs.existsSync(envPath)) {
 const ORDER_MATCH_SRC = fs
   .readFileSync(nodePath.join(__dirname, 'lib', 'order-match.mjs'), 'utf8')
   .replace(/^export\s+/gm, '');
+
+// ── Pick Latest Container（S189 新增，動態取代寫死 CONTAINER_FOLDER_ID）───────────
+// 讀 STABLE_DRIVE_ID 下所有 meta-* 資料夾，取 createdTime 最新一個為現用容器。輸出
+// instagramQuery 讓下游「Find New Export Folders」直接引用整串查詢字串（避免表達式內
+// 巢狀單引號轉義問題，F1 教訓）。同時把 currentContainerId 寫回 staticData，容器真的
+// 輪替時可在此偵測到（containerRotated）供未來擴充告警使用。
+const pickLatestContainerCode = `
+const all = $input.all();
+if (!all.length) {
+  throw new Error('IGWatchdog: 在 STABLE_DRIVE_ID 下找不到任何 meta-* 容器資料夾——這不是容器輪替可自動修復的情況，可能是 Google Drive credential 失效、或 Meta 匯出目的地被改到別的雲端硬碟，需人手檢查');
+}
+let latest = all[0].json;
+for (const item of all) {
+  const j = item.json;
+  if (new Date(j.createdTime).getTime() > new Date(latest.createdTime).getTime()) latest = j;
+}
+const staticData = $getWorkflowStaticData('global');
+if (!staticData.igWatchdog) staticData.igWatchdog = {};
+const sd = staticData.igWatchdog;
+const containerRotated = !!(sd.currentContainerId && sd.currentContainerId !== latest.id);
+sd.currentContainerId = latest.id;
+sd.currentContainerName = latest.name;
+const instagramQuery = "'" + latest.id + "' in parents and name contains 'instagram-' and mimeType='application/vnd.google-apps.folder' and trashed=false";
+return [{ json: { containerFolderId: latest.id, containerName: latest.name, containerRotated, instagramQuery } }];
+`.trim();
 
 // ── Filter New + Quiet Window ──────────────────────────────────────────────
 // 讀 staticData.processedFolderIds（已處理過的 instagram-* 資料夾 id 集合，F6：用 id 非名稱）。
@@ -432,10 +459,11 @@ const staticData = $getWorkflowStaticData('global');
 const sd = (staticData.igWatchdog) || {};
 const lastNewFolderAt = sd.lastNewFolderAt ? new Date(sd.lastNewFolderAt) : null;
 const hoursSinceLastNewFolder = lastNewFolderAt ? Math.round((Date.now() - lastNewFolderAt.getTime()) / 3600000) : null;
+const containerName = $('Pick Latest Container').item.json.containerName;
 
-let summary = '🐶 IG漏單看門狗\\n本次掃描：0 個新匯出資料夾（無需處理）';
+let summary = '🐶 IG漏單看門狗\\n本次掃描：0 個新匯出資料夾（無需處理）\\n現用容器：' + containerName;
 if (hoursSinceLastNewFolder !== null && hoursSinceLastNewFolder >= 48) {
-  summary += '\\n⚠️ 距上次新匯出已 ' + hoursSinceLastNewFolder + ' 小時——疑似排程到期或 OAuth 失效，請查 Meta Accounts Center';
+  summary += '\\n⚠️ 距上次新匯出已 ' + hoursSinceLastNewFolder + ' 小時（已自動偵測最新容器，上方顯示）——若容器名稱合理但持續無新資料夾，請人手確認 Meta「下載你的資訊」每日排程是否仍在跑，或 Google Drive credential 是否需重新授權';
 }
 return [{ json: { summary, red: 0, yellow: 0, gray: 0, matched: 0, inPipe: 0, total: 0 } }];
 `.trim();
@@ -452,14 +480,29 @@ const workflow = {
       id: 'sched1', name: 'Schedule Trigger', type: 'n8n-nodes-base.scheduleTrigger', typeVersion: 1.2, position: [200, 300],
     },
     {
-      // F1+F6: scoped 到已知容器，只列 instagram-* 子資料夾；returnAll 安全（此層 fan-out 量小，每日新增僅 1 個）
+      // S189 新增：查 STABLE_DRIVE_ID 下所有 meta-* 容器，交給 Pick Latest Container 挑最新一個
       parameters: {
         authentication: 'oAuth2', resource: 'fileFolder', operation: 'search', searchMethod: 'query',
-        queryString: `='${CONTAINER_FOLDER_ID}' in parents and name contains 'instagram-' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+        queryString: `='${STABLE_DRIVE_ID}' in parents and name contains 'meta-' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+        returnAll: false, limit: 10, filter: {},
+        options: { fields: ['id', 'name', 'createdTime'] },
+      },
+      id: 'find_meta_root', name: 'Find Latest Meta Root', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [200, 460],
+      credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
+    },
+    {
+      parameters: { mode: 'runOnceForAllItems', jsCode: pickLatestContainerCode },
+      id: 'pick_latest_container', name: 'Pick Latest Container', type: 'n8n-nodes-base.code', typeVersion: 2, position: [420, 460],
+    },
+    {
+      // F1+F6: scoped 到 Pick Latest Container 動態解出的容器，只列 instagram-* 子資料夾
+      parameters: {
+        authentication: 'oAuth2', resource: 'fileFolder', operation: 'search', searchMethod: 'query',
+        queryString: "={{ $('Pick Latest Container').item.json.instagramQuery }}",
         returnAll: false, limit: 50, filter: {},
         options: { fields: ['id', 'name', 'modifiedTime'] },
       },
-      id: 'find_export_folders', name: 'Find New Export Folders', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [420, 300],
+      id: 'find_export_folders', name: 'Find New Export Folders', type: 'n8n-nodes-base.googleDrive', typeVersion: 3, position: [640, 300],
       credentials: { googleDriveOAuth2Api: { id: 'zQHavrW0ElfaKGxG', name: 'Google Drive account' } },
     },
     {
@@ -741,7 +784,9 @@ const workflow = {
     },
   ],
   connections: {
-    'Schedule Trigger': { main: [[{ node: 'Find New Export Folders', type: 'main', index: 0 }]] },
+    'Schedule Trigger': { main: [[{ node: 'Find Latest Meta Root', type: 'main', index: 0 }]] },
+    'Find Latest Meta Root': { main: [[{ node: 'Pick Latest Container', type: 'main', index: 0 }]] },
+    'Pick Latest Container': { main: [[{ node: 'Find New Export Folders', type: 'main', index: 0 }]] },
     'Find New Export Folders': { main: [[{ node: 'Filter New + Quiet Window', type: 'main', index: 0 }]] },
     'Filter New + Quiet Window': { main: [[{ node: 'No New Folders?', type: 'main', index: 0 }]] },
     'No New Folders?': {
