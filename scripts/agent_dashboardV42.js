@@ -609,6 +609,112 @@ function renderServiceZone() {
     tiles + catsHtml + '</section>';
 }
 
+// ---------- Canva 學習記錄 zone：canva_auto/placement_memory.json diff-learning 案例庫 ----------
+function loadCanvaLearning() {
+  const p = path.join(ROOT, 'canva_auto', 'placement_memory.json');
+  const raw = readIf(p);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { warnings.push('canva_auto/placement_memory.json 解析失敗：' + e.message); return null; }
+}
+const canvaData = loadCanvaLearning();
+
+function renderCanvaCase(c) {
+  const learned = c.learned === true;
+  const slotN = Array.isArray(c.slots) ? c.slots.length : 0;
+  const noteSrc = c.note || (Array.isArray(c.text_notes) ? c.text_notes.join(' ／ ') : '');
+  const note = esc(stripMd(noteSrc));
+  return '<article class="ccard' + (learned ? '' : ' ccard-pending') + '">' +
+    '<div class="chead"><span class="emo">' + (learned ? '✅' : '⏳') + '</span>' +
+    '<h3>' + esc(c.customer || '未具名') + '<span class="cord">#' + esc(c.order || '') + '</span></h3></div>' +
+    '<div class="cmeta"><span class="tag ' + (learned ? 'tg-cmd' : 'tg-summon') + '">' + (learned ? '已學習' : '待覆核') + '</span>' +
+    (c.date ? '<span class="ver">' + esc(c.date) + '</span>' : '') +
+    (slotN ? '<span class="ver" title="幾何格數">' + slotN + ' 格</span>' : '') +
+    '</div>' +
+    (note ? '<details class="cnote"><summary>' + clamp(note, 90) + '</summary><p>' + note + '</p></details>' : '') +
+    '</article>';
+}
+
+function renderCanvaLearningZone() {
+  if (!canvaData) return '';
+  const cases = Array.isArray(canvaData.cases) ? canvaData.cases.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
+  const learnedN = cases.filter(c => c.learned === true).length;
+  const pendingN = cases.length - learnedN;
+  const tiles =
+    '<div class="stats">' +
+    '<div class="stat"><div class="lb">🎨 案例總數</div><div class="nu teal">' + cases.length + '</div></div>' +
+    '<div class="stat"><div class="lb">✅ 已學習</div><div class="nu ok">' + learnedN + '</div></div>' +
+    '<div class="stat"><div class="lb">⏳ 待覆核</div><div class="nu ' + (pendingN ? 'orange' : 'ok') + '">' + pendingN + '</div></div>' +
+    '</div>';
+  const log = Array.isArray(canvaData.convergence_log) ? canvaData.convergence_log.slice().reverse() : [];
+  const logHtml = log.length ? '<div class="clog"><b>收斂追蹤</b><ul>' +
+    log.map(l => '<li>' + esc(l.date || '') + ' · #' + esc(l.order || '') + '　' + esc(l.corrected_slots) + '/' + esc(l.total_slots) + ' 格被修正——' + esc(stripMd(l.note || '')) + '</li>').join('') +
+    '</ul></div>' : '';
+  return '<section class="grp" id="canvazone" data-grp="canvazone">' +
+    '<div class="gh" style="font-size:15px;">🎨 Canva 學習記錄<span class="gn">' + cases.length + '</span>' +
+    '<span class="ghnote">canva_auto/placement_memory.json · diff-learning 案例庫，同 3D pipeline 樣本庫同一原理</span></div>' +
+    tiles +
+    '<div class="grid ccgrid">' + cases.map(renderCanvaCase).join('') + '</div>' +
+    logHtml +
+    '</section>';
+}
+
+// ---------- 3D 打印 學習記錄 zone：3d/param_memory.json diff-learning 案例庫 ----------
+function load3dLearning() {
+  const p = path.join(ROOT, '3d', 'param_memory.json');
+  const raw = readIf(p);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { warnings.push('3d/param_memory.json 解析失敗：' + e.message); return null; }
+}
+const threeDData = load3dLearning();
+
+function render3dCase(c) {
+  const learned = c.learned === true;
+  const note = esc(stripMd(c.note || ''));
+  const paramDiff = (c.params_ai && c.params_final) ?
+    Object.keys(c.params_final).map(k => {
+      const a = c.params_ai[k], f = c.params_final[k];
+      return '<li><b>' + esc(k) + '</b>：' + esc(a) + ' → ' + esc(f) + (a === f ? '（一次過準）' : '（已修正）') + '</li>';
+    }).join('') : '';
+  return '<article class="ccard' + (learned ? '' : ' ccard-pending') + '">' +
+    '<div class="chead"><span class="emo">' + (learned ? '✅' : '⏳') + '</span>' +
+    '<h3>' + esc(c.order || '未具名') + (c.part ? '<span class="cord">' + esc(c.part) + '</span>' : '') + '</h3></div>' +
+    '<div class="cmeta"><span class="tag ' + (learned ? 'tg-cmd' : 'tg-summon') + '">' + (learned ? '已學習' : '待覆核') + '</span>' +
+    (c.date ? '<span class="ver">' + esc(c.date) + '</span>' : '') + '</div>' +
+    (paramDiff ? '<ul class="cparams">' + paramDiff + '</ul>' : '') +
+    (note ? '<details class="cnote"><summary>' + clamp(note, 90) + '</summary><p>' + note + '</p></details>' : '') +
+    '</article>';
+}
+
+function render3dLearningZone() {
+  if (!threeDData) return '';
+  const cases = Array.isArray(threeDData.cases) ? threeDData.cases.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
+  const learnedN = cases.filter(c => c.learned === true).length;
+  const pendingN = cases.length - learnedN;
+  const frozen = threeDData.rules_frozen || {};
+  const frozenKeys = Object.keys(frozen).filter(k => k !== 'note');
+  const tiles =
+    '<div class="stats">' +
+    '<div class="stat"><div class="lb">🖨️ 案例總數</div><div class="nu teal">' + cases.length + '</div></div>' +
+    '<div class="stat"><div class="lb">✅ 已學習</div><div class="nu ok">' + learnedN + '</div></div>' +
+    '<div class="stat"><div class="lb">⏳ 待覆核</div><div class="nu ' + (pendingN ? 'orange' : 'ok') + '">' + pendingN + '</div></div>' +
+    '<div class="stat"><div class="lb">🔒 鐵律條目</div><div class="nu">' + frozenKeys.length + '</div></div>' +
+    '</div>';
+  const frozenHtml = frozenKeys.length ? '<div class="clog"><b>🔒 Fat Mo 拍板鐵律（禁學習覆寫）</b><ul>' +
+    frozenKeys.map(k => '<li><b>' + esc(k) + '</b>：' + esc(String(frozen[k])) + '</li>').join('') +
+    '</ul></div>' : '';
+  const log = Array.isArray(threeDData.convergence_log) ? threeDData.convergence_log.slice().reverse() : [];
+  const logHtml = log.length ? '<div class="clog"><b>收斂追蹤</b><ul>' +
+    log.map(l => '<li>' + esc(l.date || '') + ' · #' + esc(l.order || '') + '　' + esc(l.corrected_params) + '/' + esc(l.total_params) + ' 參數被修正——' + esc(stripMd(l.note || '')) + '</li>').join('') +
+    '</ul></div>' : '';
+  return '<section class="grp" id="threedzone" data-grp="threedzone">' +
+    '<div class="gh" style="font-size:15px;">🖨️ 3D 打印學習記錄<span class="gn">' + cases.length + '</span>' +
+    '<span class="ghnote">3d/param_memory.json · diff-learning 案例庫，同 Canva pipeline 同一原理</span></div>' +
+    tiles +
+    '<div class="grid ccgrid">' + cases.map(render3dCase).join('') + '</div>' +
+    frozenHtml + logHtml +
+    '</section>';
+}
+
 // 左側功能欄：上半＝頁內導航（自動生成），下半＝外部工具入口（manifest sidebar_links 登記，含 V42 生產 Dashboard）
 function renderSidebar() {
   const nav = [
@@ -620,6 +726,8 @@ function renderSidebar() {
     ['#svczone', '〽️', '服務狀態'],
     ['#grp-mcp', '🔌', 'MCP 連接器'],
   ];
+  if (canvaData) nav.push(['#canvazone', '🎨', 'Canva 學習記錄']);
+  if (threeDData) nav.push(['#threedzone', '🖨️', '3D 打印學習記錄']);
   if (warnings.length) nav.push(['#errata', '⚠️', '勘誤表']);
   const links = M.sidebar_links || [];
   return '<aside class="side">' +
@@ -756,6 +864,22 @@ const html = '<!DOCTYPE html>\n<html lang="zh-Hant">\n<head>\n<meta charset="UTF
 '.ver.src{border:1px solid var(--line);border-radius:5px;padding:0 5px;font-family:inherit;}\n' +
 '.card p{font-size:12.5px;color:var(--soft);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}\n' +
 '.csub{font-size:11px;color:var(--faint);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}\n' +
+'/* Canva 學習記錄 */\n' +
+'.ccgrid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}\n' +
+'.ccard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;}\n' +
+'.ccard-pending{background:#fdf3e4;border-color:#f0d9b0;}\n' +
+'.ccard .cord{font-size:11px;font-weight:400;color:var(--faint);margin-left:6px;font-family:Consolas,Menlo,monospace;}\n' +
+'.cnote{margin-top:8px;font-size:12px;}\n' +
+'.cnote summary{cursor:pointer;color:var(--soft);list-style:none;}\n' +
+'.cnote summary::-webkit-details-marker{display:none;}\n' +
+'.cnote summary::before{content:"▸ ";color:var(--faint);}\n' +
+'.cnote[open] summary::before{content:"▾ ";}\n' +
+'.cnote p{margin-top:6px;color:var(--soft);line-height:1.6;white-space:pre-wrap;}\n' +
+'.cparams{margin-top:8px;font-size:11.5px;color:var(--soft);padding-left:18px;}\n' +
+'.cparams li{margin:3px 0;}\n' +
+'.clog{margin-top:16px;font-size:12px;color:var(--soft);border-top:1px dashed var(--line);padding-top:12px;}\n' +
+'.clog b{font-size:12.5px;color:var(--ink);}\n' +
+'.clog li{margin:6px 0 6px 20px;line-height:1.6;}\n' +
 '/* 左側功能欄 */\n' +
 '.side{position:fixed;left:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px 6px;box-shadow:var(--shadow);z-index:50;}\n' +
 '.sicon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;text-decoration:none;transition:background .12s ease-out;}\n' +
@@ -804,6 +928,10 @@ renderTimeline(data.timeline) + '\n' +
 renderGroups() + '\n' +
 
 renderServiceZone() + '\n' +
+
+renderCanvaLearningZone() + '\n' +
+
+render3dLearningZone() + '\n' +
 
 '<footer class="end">\n' +
 '<div>本名冊由 <code>node scripts/agent_dashboardV42.js</code> 生成（召喚詞：<code>/team</code>／「團隊名冊」）。新增檔案型資產寫齊 frontmatter 會自動出現；n8n workflow 由 API 自動發現（長期成員請喺 manifest 補描述）；MCP／召喚詞請登記 <code>.fhs/ai/team-manifest.json</code>（更新於 ' + esc(data.manifest_updated) + '）。</div>\n' +
