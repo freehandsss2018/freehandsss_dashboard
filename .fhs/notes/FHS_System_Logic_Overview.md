@@ -931,8 +931,29 @@ Fat Mo 確認 0600037（木框，appointment_at=2026-07-27，尚未到）正確�
 
 ---
 
+### 10.22 訂單總覽篩選三連環修復：消失單 + 期間歸屬跟上 LEAST() + 已取消單預設隱藏（D50，2026-07-28）
+
+**問題**：Fat Mo 回報「篩選 2026年7月＝7張，同訂單總覽/財務 current/monthly 都對唔上」。Live Supabase 直查（非讀碼估）確認 §10.19 嘅「統一口徑」決策只落實咗財務 RPC 側，前端訂單總覽從未跟上，另外揪出一個更嚴重嘅獨立 bug。
+
+**Bug A（消失單）**：`sbFetchGlobalReview()`（V42.html）server 側用 `confirmed_at` 窄化抓取範圍（`confirmed_at BETWEEN start AND end OR confirmed_at IS NULL`），`applyReviewFilters()` client 側再用 `appointment_at` 優先做二次篩選（`o.Date = appointment_at || confirmed_at`）。兩個日期唔同月/年時，兩層互相篩甩——server 冇撈到就 client 見唔到，server 撈到但 client 用嘅係另一個日期又會篩走。實測全庫 51 張單有 14 張（27%）appointment_at 同 confirmed_at 唔同月，全部喺其「應該顯示」嘅月份篩選下完全消失（例：`0600908` appointment_at=5月8日、confirmed_at=4月23日，揀「4月」或「5月」都搵唔到）。
+
+**Bug B（同 Fat Mo 報嘅 mismatch，§10.19 遺留）**：訂單總覽期間歸屬用 `appointment_at` 優先，財務 Current/Monthly/Yearly 用 `LEAST(confirmed_at, appointment_at)`（§10.19 已裁決統一，但只有 `get_financial_kpis`/`get_financial_charts` 落實，前端訂單總覽嘅 server fetch + client 二次篩選都未跟上）。實測 2026年7月：訂單總覽 7 張 vs 財務 9 張，多咗嘅 `0600702`/`0700101` appointment_at 係 8 月但 confirmed_at 係 7 月，LEAST() 判佢哋屬 7 月。
+
+**Fat Mo 裁決（已取消單）**：九成已取消單係輸入錯誤/測試單，訂單總覽預設一律唔顯示唔計算（資料保留 Supabase 唔刪除），同財務 RPC `NOT IN ('已取消')` 口徑對齊。
+
+**修復**：
+1. `mapOrder()` 新增 `_periodDate = LEAST(confirmed_at, appointment_at)`（其中一方 NULL 用另一方，兩者皆 NULL 為 `''`），同財務 RPC 口徑完全對齊。`Date` 欄位（顯示/排序用）維持 `appointment_at` 優先不變，不影響現有排序/顯示行為。
+2. `sbFetchGlobalReview()` 移除 server 側 `confirmed_at` 窄化 WHERE（Bug A/B 共同根因），一律抓全部訂單（現時 51 張，`limit 200` 餘裕充足），年度/月份篩選 100% 交由 `applyReviewFilters()` 用 `_periodDate` 做 client 側篩選——單一日期判斷點，消除兩層互相篩甩的可能性。
+3. `sbFetchGlobalReview()` 新增：冇揀特定狀態時（`reviewStatus` 下拉選單本身冇「已取消」選項）預設加 `process_status=neq.已取消`。
+
+**驗證**：本機 dev server（`.claude/launch.json` 的 `fhs-dashboard`，`localhost:3000`）直連 live Supabase 瀏覽器實測——① 2026年7月訂單總覽 now＝9張，同財務 Current/Monthly 完全對齊；② `0600908`（Bug A 案例）`_periodDate` 正確算出 `2026-04-23`，脫離消失狀態；③ §10.19 原文提及嘅遷移時序落差案例 `0500509`（appointment 2025-06/confirmed 2026-07）`_periodDate` 正確歸 2025 年；④ 全庫現時零已取消單，Bug C 修復現時零視覺影響但已正確接線。Console 零錯誤。僅改 `V42.html`（dev 檔），`current.html` 未升格，待 Fat Mo 授權部署。
+
+**教訓**：「統一口徑」類決策落實時，若同一業務概念（呢度係「訂單所屬期間」）喺前端有多個獨立實作點（呢度係 server fetch WHERE + client 二次 filter 兩層），必須逐一確認全部落實，唔可以只改咗其中一個入口就假設全部對齊——§10.19 驗證時只測咗「全部+年度」冚唔中「揀月份」個 case，令呢個漏洞留咗 5 日先被 Fat Mo 用月份篩選撞破。
+
+---
+
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 

@@ -3,6 +3,29 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-28] (D50) 訂單總覽篩選三連環修復——期間歸屬同財務RPC統一用LEAST()、消失單bug、已取消單預設隱藏
+
+**背景**：Fat Mo回報「篩選2026年7月＝7張，同訂單總覽/財務current/monthly都對唔上」，要求全面翻查訂單總覽及財務嘅篩選功能。Live Supabase直查（非讀碼估）確認2個真實bug+1項Fat Mo裁決要收緊嘅設計：
+
+**Bug A（消失單，嚴重）**：`sbFetchGlobalReview()`（V42.html）server側用`confirmed_at`窄化抓取範圍，`applyReviewFilters()`client側用`appointment_at`優先做二次篩選，兩個日期跨月/跨年時兩層互相篩甩。全庫51張單中14張（27%）中招，例如`0600908`（appointment_at=5月8日，confirmed_at=4月23日）揀「4月」或「5月」都完全搵唔到。
+
+**Bug B（同Fat Mo報嘅mismatch）**：訂單總覽期間歸屬用`appointment_at`優先，財務Current/Monthly/Yearly用`LEAST(confirmed_at, appointment_at)`（2026-07-23已裁決「統一口徑」，見§10.19，但只有財務RPC側落實，前端訂單總覽從未跟上）。實測2026年7月：訂單總覽7張 vs 財務9張（多`0600702`/`0700101`，appointment_at係8月但confirmed_at係7月，LEAST()判佢哋屬7月）。
+
+**Fat Mo裁決（已取消單）**：已取消單九成係輸入錯誤/測試單，訂單總覽預設一律唔顯示唔計算（資料保留Supabase唔刪除），同財務RPC `NOT IN ('已取消')`口徑對齊。
+
+**修復**：
+1. `mapOrder()`新增`_periodDate = LEAST(confirmed_at, appointment_at)`（NULL用另一方，兩者皆NULL為''），同財務RPC口徑完全對齊；`Date`欄位維持`appointment_at`優先不變（僅供顯示/排序，非期間歸屬）。
+2. `sbFetchGlobalReview()`移除server側`confirmed_at`窄化WHERE（舊寫法係Bug A/B共同根因），改為一律抓全部（現時51張，limit 200餘裕足夠），年度/月份篩選100%交由`applyReviewFilters()`用`_periodDate`做client側篩選。
+3. `sbFetchGlobalReview()`新增：冇揀狀態時預設`process_status=neq.已取消`（有揀特定狀態時維持原狀，因下拉選單本身冇「已取消」選項）。
+
+**驗證**：本機dev server（`fhs-dashboard`，localhost:3000）直連live Supabase瀏覽器實測——① 2026年7月訂單總覽now顯示9張，同財務Current/Monthly完全對齊（`0700101`/`0600702`正確計入）；② `0600908`（Bug A案例）`_periodDate`正確算出2026-04-23，脫離消失狀態；③ 歷史遷移時序落差單`0500509`（appointment 2025-06/confirmed 2026-07，§10.19原文提及嘅根因案例）`_periodDate`正確歸2025年；④ 全庫現時零已取消單，Bug C修復現時零視覺影響但已正確接線，供未來測試單/輸入錯誤單出現時生效。Console零錯誤。
+
+**未部署**：僅改`V42.html`（dev檔），`current.html`未升格，待Fat Mo授權。
+
+詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §10.22、Changelog.md 2026-07-28條目。
+
+---
+
 [2026-07-28] (D49) 大寶/成人/家庭三對象轉V2三層成本模型——大寶standalone「升格家庭」規則廢止，家庭組合改單行+n8n動態畫圖
 
 **背景**：S189（D46附近，見§5.4.6）Phase3只將V2統一成本模型覆蓋嬰兒tier，Fat Mo明確要求下個session全面轉大寶/成人/家庭。

@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— D50：訂單總覽篩選三連環修復（消失單 + 期間歸屬統一LEAST() + 已取消單隱藏）
+
+- **緣起**：Fat Mo回報「篩選2026年7月＝7張，同訂單總覽/財務current/monthly都對唔上」，要求全面翻查訂單總覽及財務篩選功能。
+- **Bug A（消失單，嚴重）**：`sbFetchGlobalReview()` server側用`confirmed_at`窄化抓取，`applyReviewFilters()` client側用`appointment_at`優先二次篩選，兩者跨月時互相篩甩。全庫51張單14張（27%）中招，任何月份篩選下完全消失（例`0600908`）。
+- **Bug B**：訂單總覽期間歸屬用`appointment_at`優先，財務Current/Monthly/Yearly用`LEAST(confirmed_at, appointment_at)`（2026-07-23已裁決「統一口徑」，但只有財務RPC側落實）。實測2026年7月：訂單總覽7張 vs 財務9張。
+- **Fat Mo裁決**：已取消單（九成輸入錯誤/測試單）訂單總覽預設一律唔顯示唔計算，資料保留Supabase唔刪除。
+- **修復**：`mapOrder()`新增`_periodDate=LEAST(confirmed_at,appointment_at)`同財務RPC對齊；`sbFetchGlobalReview()`移除server側confirmed_at窄化WHERE，改一律抓全部由client側`_periodDate`篩選；新增冇揀狀態時預設`process_status=neq.已取消`。
+- **驗證**：本機dev server（`fhs-dashboard`）直連live Supabase瀏覽器實測——2026年7月訂單總覽=9張同財務對齊；`0600908`脫離消失狀態；歷史遷移落差單`0500509`正確歸2025年；Console零錯誤。
+- **未部署**：僅改`V42.html`，`current.html`未升格，待Fat Mo授權。
+- 詳見 `.fhs/notes/decisions.md` D50、`.fhs/notes/FHS_System_Logic_Overview.md` §10.22。
+
+【交付前雙紀律自檢】
+驗收：篩選/報表型——live Supabase直查全庫51張單根因驗證+本機dev server連live數據瀏覽器實測（3個具體案例逐一核對）+console零錯誤
+Subagent：❌ 未使用（全程互動式Supabase execute_sql直查+改碼+browser實測自驗）
+
 ## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— D49續：舊家庭靜態SKU清理 + 家庭吊飾死貨下架 + 配件玻璃瓶後端驗證
 
 - **範圍**：D49收尾時列的3項非阻擋backlog，本session接續處理。

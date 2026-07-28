@@ -10514,17 +10514,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             let filtered = _orders;
 
             // Client-side Year filter
+            // Bug A/B 修復（2026-07-28）：期間歸屬改用 _periodDate = LEAST(confirmed_at, appointment_at)，
+            // 同財務RPC口徑對齊；缺 _periodDate（如 n8n fallback 路徑舊資料）時退回 o.Date 保底。
             const yrSel = document.getElementById('reviewYear');
             const yrVal = yrSel ? yrSel.value : '';
             if (yrVal) {
                 filtered = filtered.filter(function(o) {
-                    if (!o.Date) return false;
-                    if (o.Date.includes('-')) {
-                        return o.Date.startsWith(yrVal);
-                    } else if (o.Date.includes('/')) {
-                        return o.Date.endsWith('/' + yrVal) || o.Date.endsWith('/' + yrVal + ' ');
+                    var d = o._periodDate || o.Date;
+                    if (!d) return false;
+                    if (d.includes('-')) {
+                        return d.startsWith(yrVal);
+                    } else if (d.includes('/')) {
+                        return d.endsWith('/' + yrVal) || d.endsWith('/' + yrVal + ' ');
                     }
-                    return o.Date.indexOf(yrVal) !== -1;
+                    return d.indexOf(yrVal) !== -1;
                 });
             }
 
@@ -10533,12 +10536,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const moVal = moSel ? moSel.value : '';
             if (moVal) {
                 filtered = filtered.filter(function(o) {
-                    if (!o.Date) return false;
-                    if (o.Date.includes('-')) {
-                        var parts = o.Date.split('-');
+                    var d = o._periodDate || o.Date;
+                    if (!d) return false;
+                    if (d.includes('-')) {
+                        var parts = d.split('-');
                         return parts[1] === moVal;
-                    } else if (o.Date.includes('/')) {
-                        var parts = o.Date.split('/');
+                    } else if (d.includes('/')) {
+                        var parts = d.split('/');
                         if (parts.length >= 2) {
                             var m = parts[1].padStart(2, '0');
                             return m === moVal;
@@ -15340,6 +15344,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 Customer:         row.customer_name || '',
                 Date:             row.appointment_at || row.confirmed_at   || '',
                 Appointment_Date: row.appointment_at || '',
+                // 期間歸屬用（Bug A/B 修復，2026-07-28）：同財務RPC LEAST(confirmed_at, appointment_at) 口徑對齊，
+                // 避免 appointment_at/confirmed_at 跨月時訂單總覽篩選漏單。Date 欄位維持 appointment_at 優先不變（僅供顯示/排序）。
+                _periodDate:      (row.confirmed_at && row.appointment_at)
+                                      ? (row.confirmed_at < row.appointment_at ? row.confirmed_at : row.appointment_at)
+                                      : (row.confirmed_at || row.appointment_at || ''),
                 Final_Sale_Price: Number(row.final_sale_price) || 0,
                 Additional_Fee:   Number(row.additional_fee) || 0,
                 Net_Profit:       Number(row.net_profit) || 0,
@@ -15392,19 +15401,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
             const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b,is_archived', deleted_at: 'is.null', order: 'appointment_at.asc.nullslast,confirmed_at.asc', limit: 200 };
 
-            if (status && SB_ORDER_STATUSES.has(status)) qs['process_status'] = 'eq.' + status;
+            // Bug C 修復（2026-07-28，Fat Mo 裁決）：已取消單九成係輸入錯誤/測試單，訂單總覽預設一律唔顯示唔計算
+            // （資料保留喺 Supabase 唔刪除），同財務RPC `NOT IN ('已取消')` 口徑對齊。
+            if (status && SB_ORDER_STATUSES.has(status)) {
+                qs['process_status'] = 'eq.' + status;
+            } else {
+                qs['process_status'] = 'neq.已取消';
+            }
             if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';
             if (search)  qs['or']              = '(customer_name.ilike.*' + search + '*,order_id.ilike.*' + search + '*)';
 
-            if (year && month) {
-                const m = month.padStart(2,'0');
-                const lastDay = new Date(Number(year), Number(month), 0).getDate();
-                const dEnd = year + '-' + m + '-' + String(lastDay).padStart(2,'0');
-                // Include orders with confirmed_at in range OR confirmed_at IS NULL (new/draft orders)
-                qs['and'] = '(or(confirmed_at.gte.' + year + '-' + m + '-01,confirmed_at.is.null),or(confirmed_at.lte.' + dEnd + ',confirmed_at.is.null))';
-            } else if (year) {
-                qs['and'] = '(or(confirmed_at.gte.' + year + '-01-01,confirmed_at.is.null),or(confirmed_at.lte.' + year + '-12-31,confirmed_at.is.null))';
-            }
+            // Bug A/B 修復（2026-07-28）：年度/月份唔再喺 server 側用 confirmed_at 窄化抓取範圍
+            // （舊寫法會漏走 appointment_at 同 confirmed_at 跨月/跨年嘅單，見 decisions.md 2026-07-28）。
+            // 改為一律抓全部（現時全庫 51 張，limit 200 足夠餘裕），期間歸屬統一喺 applyReviewFilters()
+            // 用 _periodDate = LEAST(confirmed_at, appointment_at) 做 client 側篩選，同財務RPC口徑對齊。
 
             const rows = await sbFetch('orders', qs);
             // Fetch items for all returned orders in one round-trip
