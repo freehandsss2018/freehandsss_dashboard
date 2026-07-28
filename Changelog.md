@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— D49續：舊家庭靜態SKU清理 + 家庭吊飾死貨下架 + 配件玻璃瓶後端驗證
+
+- **範圍**：D49收尾時列的3項非阻擋backlog，本session接續處理。
+- **①②舊家庭靜態SKU（S1/S2/P1/P2）清理 + 家庭吊飾死貨下架**：Supabase `products` 表精確323行（鎖匙扣162+吊飾161）。發現 `order_items.product_sku` FK 引用其中1行真實歷史訂單（`家庭(S2)鎖匙扣 - 不銹鋼 - 1飾 (加購)` $135），無法全刪。Fat Mo選定方案A：DELETE 322行、保留該1行。Migration `0083_cleanup_legacy_static_family_skus.sql` 已套用並驗證（count剩1）。
+- **③配件-玻璃瓶款式後端驗證**：核實全庫3筆配件行（羊毛氈公仔×1、燈飾×2），逐一確認同單皆有`%玻璃瓶%`產品行，限制在live資料零違規。後端`sync_order_to_mirror` RPC本身不做此驗證（純mirror寫入，信任前端`isGlass` gate），但因前端限制已於2026-07-25驗證生效且zero違規，判定不需新增後端trigger/CHECK（避免違反禁止trigger重算成本death line）。
+- 詳見 `.fhs/notes/decisions.md` 2026-07-28（D49續）條目。
+
 ## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— D49：大寶/成人/家庭三對象轉V2三層成本模型
 
 - **緣起**：S189 Phase3只將V2統一成本模型覆蓋嬰兒tier，Fat Mo明確要求全面轉大寶/成人/家庭三個對象。

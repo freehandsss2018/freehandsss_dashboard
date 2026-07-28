@@ -451,9 +451,19 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **Browser UI互動驗證**：真實DOM click切換玻璃瓶款式+勾選家庭combo/大寶區塊，`window.fhsCurrentPricingItems`檢視確認`Family_Member_Config`/SKU/`FatMoCost`全部正確；防呆（關閉主套裝）即時顯示紅色阻擋。全程console零錯誤。
 
-**已知未完成項**（記錄，非本次阻擋項）：舊家庭靜態SKU（S1/S2/P1/P2命名，~323行）保留未刪，列`/fhs-slim`遠期處理；家庭吊飾catalog SKU為死貨標記但未實際下架；配件-玻璃瓶款式後端驗證（S189已知backlog）仍未做。
+**已知未完成項（已於 §5.4.9 收工）**：~~舊家庭靜態SKU（S1/S2/P1/P2命名，~323行）保留未刪~~；~~家庭吊飾catalog SKU為死貨標記但未實際下架~~；~~配件-玻璃瓶款式後端驗證（S189已知backlog）仍未做~~。
 
 詳見 `.fhs/notes/decisions.md` 2026-07-28 條目、`artifacts/2026-07-28-1121/cl-final-plan.md`、`FHS_Product_Cost_Schema_v2.md` §10.6、`FHS_Product_Definition.md` §3.3a。
+
+### 5.4.9 舊家庭靜態SKU清理 + 家庭吊飾死貨下架 + 配件-玻璃瓶後端驗證（Session後續，2026-07-28 ✅ 已修復）
+
+**背景**：§5.4.8（D49）收尾時列的3項非阻擋backlog，本session接續處理。
+
+**①②舊家庭靜態SKU（S1/S2/P1/P2）清理 + 家庭吊飾死貨下架**：實測 Supabase `products` 表精確323行（鎖匙扣162+吊飾161，兩者合併同批處理）。發現 `order_items.product_sku` 有 FK 指向 `products.sku`，且有1行歷史訂單真實引用（`家庭(S2)鎖匙扣 - 不銹鋼 - 1飾 (加購)`，$135，即§5.4.8提及「舊模型下數字正確」那筆），無法整批DELETE。Fat Mo三選一選定方案A：DELETE 322行、保留該1行不動（前端V42.html/current.html本身冇hardcode呢批SKU名，天然唔會再被新單選中）。落盤 migration `0083_cleanup_legacy_static_family_skus.sql`，套用後Supabase live count驗證剩1行，`fhs_check_product_cost_drift()`覆核零漂移。
+
+**③配件-玻璃瓶款式後端驗證**：核實全庫3筆`item_category='配件'`行（羊毛氈公仔×1、燈飾×2），逐一比對同單是否存在`%玻璃瓶%`產品行——結果**PASS，零違規**，前端`isGlass`gate（2026-07-25 cl-flow 2026-07-25-0148已核實）在live資料中完全生效。發現後端`sync_order_to_mirror` RPC本身不做此驗證（純mirror寫入，信任前端傳入值），但因零違規未觸發修復需求，**刻意不新增trigger/CHECK**（避免違反 finance-gatekeeper §三死線「禁止trigger重算成本」精神——驗證性CHECK雖非重算，但此品類量少風險低，暫緩架構變動）。
+
+詳見 `.fhs/notes/decisions.md` 2026-07-28（D49續）條目、migration `0083_cleanup_legacy_static_family_skus.sql`。
 
 ### 5.5 綜合審計日誌（Session 124 新增）
 

@@ -22,9 +22,23 @@
 
 **驗證**：Live webhook對抗測試6項全PASS（測試單即時清理）——大寶(S)qty=4防漏乘($820)、**嬰兒左手+大寶左手同單各自獨立收費**（A2/#1 BLOCKER修復核心確認生效）、家庭S系($330)/β混型($460)/S2兩部位($390)三組數字逐位吻合Cost Schema、舊SKU regression($500)零回歸。過程中live測試即時揪出並修正兩個真實bug：(1) migration 0081 CHECK值域錯誤（見上）；(2) `Parse Items & Generate SKU`節點漏轉發`Family_Member_Config`欄位，令家庭組合畫圖費一度恆為0，即場修正（V47.14）。Browser UI互動驗證（真實DOM click+`window.fhsCurrentPricingItems`檢視）確認SKU/`Family_Member_Config`/防呆全部正確，console零錯誤。文件同步經fresh-context subagent（database-reviewer）獨立覆核，6份文件+Supabase live數據交叉核實一致，零缺口。
 
-**已知未完成項**（非阻擋，列backlog）：舊家庭靜態SKU（S1/S2/P1/P2命名，~323行）保留未刪；家庭吊飾catalog SKU死貨未下架；配件-玻璃瓶款式後端驗證（S189已知backlog）仍未做；`current.html`未升格（另需Fat Mo授權）。
+**已知未完成項**（非阻擋，列backlog）：~~舊家庭靜態SKU（S1/S2/P1/P2命名，~323行）保留未刪~~；~~家庭吊飾catalog SKU死貨未下架~~；~~配件-玻璃瓶款式後端驗證（S189已知backlog）仍未做~~——三項已於同日後續 session 收工（見下方 D49 續）；`current.html`未升格（另需Fat Mo授權，已於稍後升格，見handoff.md）。
 
 詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.8、`artifacts/2026-07-28-1121/cl-final-plan.md`、`FHS_Product_Cost_Schema_v2.md` §10.6、`FHS_Product_Definition.md` §3.3a、Changelog.md 2026-07-28條目。
+
+---
+
+[2026-07-28] (D49續) 舊家庭靜態SKU清理 + 家庭吊飾死貨下架 + 配件-玻璃瓶後端驗證（backlog收工）
+
+**背景**：D49 收尾時列 3 項非阻擋 backlog，本次 session 接續處理。
+
+**① 舊家庭靜態SKU（S1/S2/P1/P2）清理**：實測 Supabase `products` 表精確 323 行（鎖匙扣162+吊飾161，含家庭吊飾死貨，②同步處理）。發現 `order_items.product_sku` FK → `products.sku`，且有 1 行歷史訂單真實引用（`家庭(S2)鎖匙扣 - 不銹鋼 - 1飾 (加購)`，$135，即 D49 提及「舊模型下數字正確」那筆）。Fat Mo 選定方案A：DELETE 322 行、保留該 1 行（前端本身冇 hardcode 呢批 SKU 名，天然唔會再被選中）。Migration 0083 已套用，Supabase 現場 count 驗證剩 1 行、符合預期。
+
+**② 家庭吊飾死貨SKU下架**：與①同批 161 行吊飾一併 DELETE，達成下架效果（非另立deprecated欄位）。
+
+**③ 配件-玻璃瓶款式後端驗證**：核實結果＝**PASS，零違規**。全庫 3 筆配件行（羊毛氈公仔×1、燈飾×2）逐一核對，同單皆存在 `%玻璃瓶%` 產品行，限制在 live 資料中完全成立。後端（`sync_order_to_mirror` RPC）本身冇做此驗證（純mirror寫入，信任前端`isGlass` gate），但因前端限制早於 2026-07-25（cl-flow 2026-07-25-0148）已核實生效，故未發現需修復項，不新增 trigger/CHECK（避免違反 §三死線「禁止trigger重算成本」精神）。
+
+詳見 migration `0083_cleanup_legacy_static_family_skus.sql`。
 
 ---
 
