@@ -15,7 +15,9 @@
 
 **教訓**：Meta 匯出目的地容器並非永久穩定，任何依賴「單一寫死 Google Drive 資料夾 ID」的自動化排程都要抓一個更穩定的祖先層動態查詢，而非人手更新常數。詳見 `.fhs/memory/lessons/2026-07-25_ig-watchdog-container-rotation-oauth-red-herring.md`。
 
-相關檔案：`scripts/ig-watchdog/build_n8n_workflow.cjs`、n8n workflow `D4LK6VrQbiXlju0V`（FHS_IGWatchdog_DriveWatch）。
+**追加（同日）**：Fat Mo 追問「怎樣阻止再發生」，揪出更深一層漏洞——此 workflow（及全 n8n 實例其他 production workflow）皆未設定 `errorWorkflow`，節點真正拋錯時零通知，只能人手開後台才會發現。既有 `FHS_System_ErrorMonitor`（`8WbbEqZpiWu0CB1o`）已存在但全實例無人指向，形同虛設。修復：(1) 幫它加 Telegram 即時通知節點（原本只靜默落地 Airtable/Supabase）(2) `FHS_IGWatchdog_DriveWatch` 的 `settings.errorWorkflow` 接上 (3) 同步 `build_n8n_workflow.cjs` 的 `settings` 常數避免下次重新產生洗掉接線。其餘 production workflow（`FHS_Core_OrderProcessor` 等）尚未接上，列 backlog，非本次範圍。
+
+相關檔案：`scripts/ig-watchdog/build_n8n_workflow.cjs`、n8n workflow `D4LK6VrQbiXlju0V`（FHS_IGWatchdog_DriveWatch）、`8WbbEqZpiWu0CB1o`（FHS_System_ErrorMonitor）。
 
 ---
 

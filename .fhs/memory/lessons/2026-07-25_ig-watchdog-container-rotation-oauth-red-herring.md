@@ -27,3 +27,14 @@ Telegram 收到告警：「距上次新匯出已168小時——疑似排程到�
 - **任何自動化排程如果依賴「單一寫死的雲端資料夾/容器 ID」，都要假設它有一天會變**，尤其是第三方（Meta/Google）自動建立的容器，官方文件通常不承諾長期穩定
 - **告警文字的猜測性用詞會誤導未來排查方向**——「疑似 X」這種措辞如果沒有實際檢測邏輯支撐，寧可寫「查無新資料，請人手核實原因」這種不下定論的文字，也不要寫一個聽起來很篤定但其實只是隨便猜的具體原因
 - **執行紀錄全綠 ≠ 功能正常**——執行成功只代表「查詢沒有拋錯」，不代表「查詢的對象是對的」；本案 7 天全部 Succeeded，但每次都在查一個早已沒人寫入的資料夾
+
+## 追加（同日）：發現「真的報錯也沒人知道」的另一個漏洞
+
+修復容器輪替後，追問「怎樣阻止再發生」時發現：這個 workflow（以及全 n8n 實例其他 workflow）都沒有設定 `errorWorkflow`，代表萬一節點真的拋錯（例如 Google Drive credential 真的過期），**不會有任何通知**，只能靠人手開 n8n 後台才會發現——跟這次事件的盲點是同一種性質（安靜地失敗，沒人主動注意到）。
+
+發現既有的 `FHS_System_ErrorMonitor`（workflow ID `8WbbEqZpiWu0CB1o`，Error Trigger → Airtable/Supabase 落地）已存在，但**全 n8n 實例沒有任何 workflow 實際指向它**，形同虛設。修復：
+1. 幫它加一個 Telegram 即時通知節點（原本只有靜默落地，沒有即時推送）
+2. 把 `FHS_IGWatchdog_DriveWatch` 的 `settings.errorWorkflow` 接上去
+3. 同步更新 `build_n8n_workflow.cjs` 的 `settings` 常數，避免下次重新產生 workflow 時把這個接線洗掉（`settings: {}` → `settings: { errorWorkflow: '...' }`）
+
+**教訓**：建了「錯誤監控」機制不代表有在用——要定期確認實際有 workflow 指向它，否則等同沒建。其他 production workflow（`FHS_Core_OrderProcessor` 等）目前也還沒接上，是已知 backlog，非本次範圍。

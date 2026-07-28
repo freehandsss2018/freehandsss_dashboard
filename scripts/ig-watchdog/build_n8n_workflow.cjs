@@ -842,7 +842,10 @@ const workflow = {
       ],
     },
   },
-  settings: {},
+  // errorWorkflow：S189/D48 追加，任何節點失敗會轉呼叫 FHS_System_ErrorMonitor（8WbbEqZpiWu0CB1o，
+  // Error Trigger → Airtable/Supabase 落地 + Telegram 即時通知）。此值目前是透過 API 直接 PUT 上去
+  // 的（非本檔生成），若未來改本檔重新 PUT，務必保留此欄位，否則會靜默洗掉這條錯誤通知鏈。
+  settings: { errorWorkflow: '8WbbEqZpiWu0CB1o' },
 };
 
 const path = require('path');
