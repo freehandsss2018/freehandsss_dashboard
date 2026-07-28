@@ -1,9 +1,9 @@
 ---
 name: FHS Product Cost Schema (Core)
-version: v2.3.0
+version: v2.4.0
 created: 2026-05-28
-updated: 2026-07-25
-authority: SSoT for cost_configurations 23-key schema + V2統一SKU模型（Core layer；S189審查後升格）
+updated: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人tier V2覆蓋擴充+家庭組合鎖匙扣動態畫圖exception新增，§2.1新增24號key，§10.1/§10.2/§10.6）
+authority: SSoT for cost_configurations 24-key schema + V2統一SKU模型（Core layer；S189審查後升格）
 companion_docs:
   - .fhs/ai/FHS_Product_Cost_UI_Spec.md       # 已退役 2026-07-25，僅供歷史參考
   - .fhs/ai/FHS_Product_Cost_Operations.md    # 已退役 2026-07-25，僅供歷史參考
@@ -13,6 +13,7 @@ references:
   - .fhs/notes/addon_product_sop.md (加購配件 SOP)
   - supabase/migrations/0020_financial_settings_system.sql (v1 schema)
   - supabase/migrations/0073/0076-0078 (V2統一SKU模型 + 歷史回填，見§10)
+  - supabase/migrations/0081-0082 (大寶/家庭tier擴充+position_code CHECK擴充，見§10.6)
 status: v2.3.0 active
 status_note: 原v2.2.0規劃嘅3-subagent audit鏈（database-reviewer/code-reviewer/ui-designer）從未正式完成即擱置逾7週；本次升格依據係§2.1內容已於S124/D40-D45/S189多個session實際生產驗證使用（非事後補簽審查記錄）——production-validated supersedes原定審查流程。此為誠實揭露，非假裝已審查。
 ---
@@ -65,18 +66,18 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 
 ---
 
-## §2. GROUP 總覽（23-key 一覽表，DB 實測數字，見 §2.1）
+## §2. GROUP 總覽（24-key 一覽表，DB 實測數字，見 §2.1）
 
 | GROUP | display_group | Key 數 | 用途 |
 |-------|---------------|--------|------|
-| A | drawing | 4 | 繪圖成本（4 tier：嬰兒S / 嬰兒P / 成人S / 成人P） |
+| A | drawing | 4 | 繪圖成本（4 tier：嬰兒S / 嬰兒P / 成人S / 成人P；大寶與嬰兒共用同一組key） |
 | B | material_3d | 2 | 立體擺設物料（木框 / 玻璃瓶） |
-| C | material_jewelry | 8 | 飾品物料（鎖匙扣嬰兒/成人×2材質 + 吊飾2材質 + 頸鏈 + 環扣） |
+| C | material_jewelry | 9 | 飾品物料（鎖匙扣嬰兒/成人×2材質 + 吊飾2材質 + 頸鏈 + 環扣 + **家庭大牌**） |
 | D | shipping | 3 | 運費（標準 / 順豐 / 吊飾多件扣減） |
 | E | addon | 2 | 加購配件（羊毛氈 / 燈飾） |
 | MISC | misc | 4 | 印刷費、繪圖固定費、鎖匙扣多件扣減、混合成員附加費 |
 
-### 2.1 23 個 config_key 完整清單（0026 B1 補入 3 個，2026-06-03）
+### 2.1 24 個 config_key 完整清單（migration 0081 補入 1 個，2026-07-28）
 
 > **0026 變更**：UPDATE necklace_silver/gold 0→260/316；INSERT stainless_adult/alloy_adult=135、keychain_clasp_cost=10；UPDATE stainless/alloy display_name 補（嬰兒）。
 > **⚠️ 文件修正**：前版 row 12 `clasp_cost` 為 Airtable per-product column（非 config_key），已移除並由 `keychain_clasp_cost` 取代。
@@ -106,6 +107,7 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 | 21 | `drawing_cost_fixed_per_order` | misc | 繪圖固定費 / 單 | 0 | 既有 v1 key（每單一次性） |
 | 22 | `keychain_shipping_deduction_per_extra` | misc | 鎖匙扣多件運費扣減 / 件 | 20 | Bible §2.5（N-1）×$20；B1 引擎亦複用此值作 base shipping 單價 |
 | 23 | `mixed_member_surcharge` | misc | 混合成員附加費（成人+嬰兒） | 300 | **0025 新增**；立體擺設混合訂單加收 |
+| 24 | `material_cost_keychain_family` | material_jewelry | 家庭鎖匙扣大牌 物料/打印費 | **150** | **migration 0081 新增**（2026-07-28）；家庭組合大牌體積＞標準嬰兒/大寶牌（$115），Fat Mo口述定案；合計每飾 $160（+環扣$10），見 §10.6 |
 
 ---
 
@@ -144,9 +146,11 @@ v2 schema 現行 23 個 key（0026 B1 補入 3 個後之現況），分 6 個 GR
 | 家庭(P1) — β 混型 | adult_p + 1 × baby_s | $240 + $60 | **$300**（Phase 2 defer） |
 | 家庭(P2) — β 混型 | adult_p + 2 × baby_s | $240 + $120 | **$360**（Phase 2 defer） |
 
-> ⚠️ **β 混型聲明**：成人 P + 嬰兒 S 混搭目前不在自動計算範圍，遇到時由 Fat Mo 手動調整 `orders.net_profit`。Phase 2 才正式建模。
+> ⚠️ **β 混型聲明（僅適用舊模型靜態SKU，2026-07-28起新單不再適用）**：成人 P + 嬰兒 S 混搭喺**舊模型**（本節 S1/S2/P1/P2 靜態SKU）從未建過對應 catalog row，遇到時由 Fat Mo 手動調整 `orders.net_profit`。
 >
 > ✅ **2026-07-18 補充（D41）**：家庭(S1/S2/P1/P2) α 純式（170/230/350/460）已用 Dashboard 前端 `calculatePricing()` 原始碼證實為現行真實邏輯，並已於 migrations 0058/0059 回填至 `products.total_base_cost`（鎖匙扣+吊飾兩品類），`fhs_check_product_cost_drift()` 已擴充覆蓋驗證零漂移。見 `FHS_System_Logic_Overview.md` §5.4.3。
+>
+> **⚠️ 2026-07-28 起已被 §10.6 動態模型取代（新單一律用新模型）**：本節 S1/S2/P1/P2 靜態SKU（含上方β混型defer聲明）僅供**歷史舊單**參考，新單一律用 §10.6「家庭組合鎖匙扣 documented exception」動態畫圖模型（β混型已在新模型下正式支援，無需人手調整）。舊 SKU catalog rows 保留唔刪（歷史單FK依賴），列 `/fhs-slim` 遠期處理。
 
 ### 3.4 飾數對繪圖費的影響
 
@@ -369,17 +373,27 @@ cost_configurations  ←─ Fat Mo 透過 UI 更新（fhs_upsert_cost_config RPC
 | 嬰兒(P)鎖匙扣 - 不銹鋼/鋁合金 (V2) | $255 |
 | 嬰兒(S)吊飾 - 925銀/925金 (V2) | $660 |
 | 嬰兒(P)吊飾 - 925銀/925金 (V2) | $710 |
+| **大寶(S)鎖匙扣 - 不銹鋼/鋁合金 (V2)**（2026-07-28新增） | $205 |
+| **大寶(P)鎖匙扣 - 不銹鋼/鋁合金 (V2)**（2026-07-28新增） | $255 |
+| **大寶(S)吊飾 - 925銀/925金 (V2)**（2026-07-28新增） | $660 |
+| **大寶(P)吊飾 - 925銀/925金 (V2)**（2026-07-28新增） | $710 |
+| 成人(S)鎖匙扣 - 不銹鋼/鋁合金 (V2) | $265 |
+| 成人(P)鎖匙扣 - 不銹鋼/鋁合金 (V2) | $395 |
+| 成人(S)吊飾 - 925銀/925金 (V2) | $710 |
+| 成人(P)吊飾 - 925銀/925金 (V2) | $840 |
+| **家庭鎖匙扣 - 不銹鋼/鋁合金 (V2)**（2026-07-28新增，見 §10.6 exception） | $160（塊牌 only，畫圖費另計） |
 
-> 現時僅覆蓋**嬰兒(baby) tier**（16個SKU，migration 0073）；大寶/成人/家庭仍用舊模型，V2擴展列為下個session待辦（見 `.fhs/memory/handoff.md` MASTER表）。
+> **覆蓋範圍（2026-07-28起，cl-flow 2026-07-28-1121）**：嬰兒/大寶/成人 tier 全覆蓋（migrations 0073+0081，共24個標準SKU）+ 家庭組合鎖匙扣（2個exception SKU，見 §10.6）。家庭組合冇吊飾版本。大寶 tier 成本值＝嬰兒 tier（§3.1「大寶與嬰兒共享成本層」）。
 
 ### 10.2 order_items 新增 4 欄（migration 0073，sync_order_to_mirror() RPC 由 migration 0075 擴充支援）
 
 | 欄位 | 型別 | 用途 |
 |---|---|---|
 | `cost_model_version` | TEXT | `'v2_layered'`（V2品項）／`NULL`（舊模型品項） |
-| `position_code` | TEXT | 左手/右手/左腳/右腳，由 `item_key` 尾綴 `_LH/_RH/_LF/_RF` 推導 |
+| `position_code` | TEXT | 左手/右手/左腳/右腳（嬰兒）／大寶左手/大寶右手/大寶左腳/大寶右腳（大寶，migration 0082擴充CHECK）／NULL（家庭組合單行，唔參與跨行豁免） |
 | `drawing_waived` | BOOLEAN | 該行是否有單位被同部位共享豁免 |
 | `drawing_charged_count` | INTEGER | 該行實際收畫圖費嘅單位數（0或1） |
+| `family_member_config`（migration 0081新增） | JSONB | 家庭組合成員結構 `[{role,part,mode},...]`，供動態畫圖計算+審計顯示；NULL=非家庭組合品項 |
 
 ### 10.3 核心規則（逐字，2026-07-24 Fat Mo 三度確認）
 
@@ -408,7 +422,48 @@ drawing_position_dedup_deduction（訂單層扣減，寫入n8n_adjustment_notes�
 
 ### 10.5 快照聲明
 
-以上金額為 **2026-07-25 live Supabase 查詢快照**（已用 `cost_configurations`/`products` 表核實）。如有疑問請重新查詢核實，唔好假設文件永遠反映最新值——本文件同其他markdown一樣冇自動同步機制（見 `FHS_Finance_Bible.md`「已知限制」章節）。
+以上金額為 **2026-07-28 live Supabase 查詢快照**（已用 `cost_configurations`/`products` 表核實）。如有疑問請重新查詢核實，唔好假設文件永遠反映最新值——本文件同其他markdown一樣冇自動同步機制（見 `FHS_Finance_Bible.md`「已知限制」章節）。
+
+### 10.6 家庭組合鎖匙扣——documented exception（2026-07-28新增，cl-flow 2026-07-28-1121）
+
+> **同 §10.1「單件全費靜態定值」原則嘅唯一例外**：家庭組合鎖匙扣嘅畫圖費無法喺 SKU 層靜態定值（隨每張單嘅成員S/P組合變動），改由 n8n 訂單層動態計算。呢個係刻意設計嘅 exception，非漏洞。
+
+**products 表定值（塊牌物理成本 only）**：
+```
+家庭鎖匙扣 - 不銹鋼/鋁合金 (V2)：total_base_cost = $160
+  = material_cost_keychain_family($150，見§2.1新增key) + keychain_clasp_cost($10)
+```
+
+**訂單層動態畫圖費（n8n `Calculate Profit & Pack Items` V47.24，讀 `order_items.family_member_config`）**：
+```
+family_drawing = adult_rate(mode) + Σ 每個嬰兒/大寶部位 limb_rate(mode)
+
+adult_rate：S=$110　P=$240（同 adult tier drawing rate）
+limb_rate：S=$60　P=$110（同 baby/elder tier drawing rate，嬰兒大寶共用）
+
+單件總成本 = 160 × quantity + family_drawing（畫圖費一次過，唔隨 quantity 相乘——
+             qty 代表「同設計複製幾多塊牌」，畫圖只需設計一次）
+```
+
+**S/P 判定（Dashboard 全自動推導，操作者不干預）**：成人 mode 由「玻璃瓶(家庭)是否已選」決定；每個嬰兒/大寶部位 mode 由「該部位喺立體擺設主套裝是否已有倒模（`.limb-sel` 值非「無」）」逐個判定。實作見 Dashboard `getFamilyComboDetails()`/`_fhsFamilyLimbMode()`。
+
+**驗算範例**（Cost Schema §3.3 組合公式逐位對照，2026-07-28 live webhook 驗證PASS）：
+
+| 組合 | 成員 | family_drawing | 單件總成本(qty=1) |
+|---|---|---|---|
+| S1（全S） | adult(S)+baby(S) | 110+60=170 | 160+170=**330** |
+| S2（全S，2部位） | adult(S)+baby(S)+baby(S) | 110+60+60=230 | 160+230=**390** |
+| β混型 | adult(P)+baby(S) | 240+60=300 | 160+300=**460** |
+
+**β 混型正式啟用**：取代 §3.3 舊有「defer，人手調整 net_profit」聲明——動態模型下任意 S/P 組合均自動計算，無需人手介入。
+
+**大寶身份/standalone 語義（2026-07-28裁決，Q1/Q2）**：
+- 大寶建獨立 V2 SKU（非複用嬰兒SKU），成本值＝嬰兒 tier
+- 大寶 standalone（冇主套裝）用「大寶(P)」新語義（單件全費 $255/件鎖匙扣、$710/件吊飾）——**取代舊有「自動升格家庭(P1)」規則**，該舊規則核實三份權威文件（Finance Bible/Pricing Bible/Product_Definition）皆無記載，純代碼行為（V42.html 舊 8417/8482/6984/7026 行），正式廢止
+
+**歷史回填**：全庫實測受影響舊SKU僅1行（家庭(S2)鎖匙扣$135，舊模型下數字正確），Fat Mo裁決不回填。
+
+詳見 `.fhs/notes/decisions.md` 2026-07-28 條目、`artifacts/2026-07-28-1121/cl-final-plan.md`。
 
 ---
 

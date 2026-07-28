@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— D49：大寶/成人/家庭三對象轉V2三層成本模型
+
+- **緣起**：S189 Phase3只將V2統一成本模型覆蓋嬰兒tier，Fat Mo明確要求全面轉大寶/成人/家庭三個對象。
+- **拷問修正**：Fat Mo質詢「建議是否經財務專檔核實」，A3補做逐條核證後揪出自己兩個錯誤——誤讀 Cost Schema §3.3「N個肢」為「N個人」；Q3首輪「拆行複用SKU」方案物理前提錯誤（家庭組合係一件整合飾品非多件拼合）。經兩輪拷問後重新裁決。
+- **家庭組合鎖匙扣正式定義**（三份權威文件此前從缺，本次首次落檔）：只限鎖匙扣；嬰兒/大寶倒模為核心（冇主套裝拒單）；S系＝必選玻璃瓶(家庭)；成人一對手一次過計；每部位S/P全自動推導；大牌$150+環扣$10=$160；qty=複製塊數。
+- **裁決**：大寶建8個專屬V2 SKU（成本=嬰兒tier）；大寶standalone用新語義「大寶(P)」，**廢止**舊「自動升格家庭(P1)」規則；家庭組合單行+n8n動態畫圖（非拆行）；β混型（成人P+部位S）正式啟用；歷史不回填（僅1行受影響且原數字正確）。
+- **執行**：`/cl-flow`（flow_id `2026-07-28-1121`，A2對抗評審7條批評採納6拒絕1）+`/execute`。Migration 0081（8大寶SKU+2家庭SKU+`material_cost_keychain_family`鍵+`family_member_config`欄+RPC擴充）+0082（執行中即時發現並修正0081嘅CHECK值域錯誤）+n8n三節點升版（`Parse Items & Generate SKU`V47.14/`Calculate Profit & Pack Items`V47.24/`Supabase Mirror Prep`V47.16）+Dashboard V42.html 6處改動+5份權威文件同步。
+- **驗證**：Live webhook對抗測試6項全PASS——大寶qty=4防漏乘、**嬰兒左手+大寶左手同單各自獨立收費**（position_code BLOCKER修復確認生效）、家庭S系/β混型/S2三組數字逐位吻合Cost Schema、舊SKU regression零回歸。過程即時揪出並修正兩個真實bug（migration CHECK值域錯誤＋`Parse Items`節點漏轉發`Family_Member_Config`）。Browser UI互動驗證console零錯誤。文件同步經fresh-context subagent獨立覆核，零缺口。
+- **已知未完成**：舊家庭靜態SKU（~323行）未刪；家庭吊飾死貨SKU未下架；配件-玻璃瓶款式後端驗證未做；`current.html`未升格。
+- 詳見 `.fhs/notes/decisions.md` D49、`.fhs/notes/FHS_System_Logic_Overview.md` §5.4.8、`artifacts/2026-07-28-1121/cl-final-plan.md`。
+
+【交付前雙紀律自檢】
+驗收：財務/成本型——live webhook對抗測試6項PASS（含position_code核心修復驗證）+ browser UI互動驗證+fresh-context subagent文件覆核
+Subagent：✅ database-reviewer（fresh-context獨立覆核6份文件+Supabase live數據一致性，零缺口）；cl-flow內建A2 Gemini對抗評審（A1 Perplexity因quota超限degraded）
+
 ## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— /cl-flow A2 Gemini model 升級 gemini-2.5-flash → gemini-3.6-flash
 
 - **緣起**：Fat Mo 要求檢查 AG（cl-flow 內 A2 評審用嘅 Gemini API）有冇更新模型可用，融入前要求先確認 API 真正用得。

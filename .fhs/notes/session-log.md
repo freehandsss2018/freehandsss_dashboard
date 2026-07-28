@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-28 (D49 — 大寶/成人/家庭三對象轉V2三層成本模型): 🏷️ ✅
+
+**摘要**：全文見完成報告 [2026-07-28_d49_baby_adult_family_v2_cost_model_completion_report.md](../reports/completion/2026-07-28_d49_baby_adult_family_v2_cost_model_completion_report.md)（本行僅摘要指回）。S189 Phase3 只覆蓋嬰兒tier，本次全面轉大寶/成人/家庭。Fat Mo兩輪拷問揪出A3規劃階段兩個錯誤（誤讀Cost Schema§3.3語義、Q3首輪拆行方案物理前提錯誤），糾正後家庭組合正式定義首次落檔（單行+n8n動態畫圖，非拆件）。migration 0081+0082、n8n三節點升版（V47.14/24/16）、Dashboard 6處改動、6份權威文件同步。Live webhook對抗測試6項全PASS（含position_code BLOCKER修復核心驗證），過程即時揪出並修正兩個真實bug。
+Subagent：✅ database-reviewer（fresh-context獨立覆核6份文件+Supabase live數據一致性）；cl-flow內建A2(Gemini)對抗評審（A1因quota超限degraded）。
+
 ## 2026-07-24 (Session 189 — 鎖匙扣/吊飾成本模型 S55 語義漂移根因確認 + 三層模型重構 Phase0-3 嬰兒tier落地): 🏷️ ✅
 
 **摘要**：全文見完成報告 [2026-07-24_keychain_cost_model_semantic_drift_and_phase0_simulation_completion_report.md](../reports/completion/2026-07-24_keychain_cost_model_semantic_drift_and_phase0_simulation_completion_report.md)（制度層變動觸發[B]，完成報告為唯一全文居所，本行僅摘要指回）。Fat Mo 出示 2024-09-15 原始成本推演表推翻 AI 三次獨立驗證，揪出「加購=$0畫圖」係 2026-06-03(S55) 語義漂移非原始設計；經 `/8d`→`/cl-flow` 裁決新三層成本模型（成本表/產品層/訂單動態扣減），Phase0唯讀模擬→Phase1 Supabase新SKU目錄→Phase2 n8n三個核心bug修復（qty乘法/頸鏈雙重計算/同部位跨品類畫圖扣減）→Phase3 Dashboard嬰兒tier切換，每階段均經live webhook/browser UI真實測試PASS方進下一階段（Fat Mo明確要求）。current.html已升格部署。大寶/成人/家庭tier擴充列下個session待辦。**同日追加**：`buildAuditLedgerHtml()`財務彈窗配合V2模型修復（fetch欄位補齊+per-item畫圖費反推顯示+跨品類扣減筆記拆分歸位），全文見 [Changelog.md](../../Changelog.md) 2026-07-24條目追加段落，live webhook測試單+舊單0600723交叉核對PASS。**同日再追加**：歷史舊模型訂單畫圖成本回填（migration 0076，Fat Mo「全部都要」授權），23張單total_cost淨增$2,000，finance-auditor獨立重算全量PASS，全文見 Changelog.md 同條目追加段落。**同日三度追加**：migration 0077補寫`n8n_adjustment_notes`令畫圖扣減以badge形式顯示喺財務彈窗②成本快照鏈（同頸鏈/運費扣減視覺一致），純資料變更即時生效。

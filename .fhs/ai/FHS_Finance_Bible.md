@@ -2,8 +2,8 @@
 
 > **Authority Level**: L1 — 架構不變量（最高權威）
 > **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/ai/FHS_Pricing_Bible.md`。
-> **Version**: v1.4.1
-> **Created**: 2026-05-16 | **Updated**: 2026-07-25（cl-flow 2026-07-25-0148：新增「配件」（羊毛氈/燈飾加購）分類至 §一實體清單/§三彙總/§四 getItemCategory+成本分配規則/§四收斂驗證公式/§五責任表 x2，`accessory_cost` 欄位補齊 migration 0079/0080）；2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
+> **Version**: v1.4.2
+> **Created**: 2026-05-16 | **Updated**: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§五B架構責任圖擴充n8n版本號+Family_Member_Config欄位，新增歷史回填/大寶standalone規則廢止記錄）；2026-07-25（cl-flow 2026-07-25-0148：新增「配件」（羊毛氈/燈飾加購）分類至 §一實體清單/§三彙總/§四 getItemCategory+成本分配規則/§四收斂驗證公式/§五責任表 x2，`accessory_cost` 欄位補齊 migration 0079/0080）；2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
 > **Path**: `.fhs/ai/FHS_Finance_Bible.md`
 >
 > ⚠️ **強制規則**：凡任何 AI（主 agent 或 subagent）涉及財務利潤、成本、折扣計算任務，
@@ -272,19 +272,23 @@ V2統一SKU模型實作：見 `FHS_Product_Cost_Schema_v2.md` §10.4「同部位
 ```
 Dashboard（前端）
     ↓ 生成 V2 SKU 名（"(V2)" 後綴）+ Order_Item_Key（含position後綴 _LH/_RH/_LF/_RF）
-n8n「Parse Items & Generate SKU」（V47.13）
-    ↓ isV2Sku guard，跳過舊式「-N飾 Mode」後綴邏輯
-n8n「Calculate Profit & Pack Items」（V47.22）
+n8n「Parse Items & Generate SKU」（V47.14）
+    ↓ isV2Sku guard，跳過舊式「-N飾 Mode」後綴邏輯；透傳 Family_Member_Config
+n8n「Calculate Profit & Pack Items」（V47.24）
     ↓ 按position_code分組（跨鎖匙扣/吊飾），組內首件收畫圖費、其餘豁免
-    ↓ 寫入 packedItems：Position_Code / Drawing_Waived / Drawing_Charged_Count / Cost_Model_Version
-n8n「Supabase Mirror Prep」→「HTTP: Supabase Sync RPC」
-    ↓ 呼叫 sync_order_to_mirror()（migration 0075 已擴充支援4新欄位）
+    ↓ 大寶position_code用獨立字串（「大寶左手」等，同嬰兒「左手」區隔，防跨對象誤共享豁免）
+    ↓ 家庭組合鎖匙扣(V2)另走動態畫圖分支（讀family_member_config，唔入position分組）
+    ↓ 寫入 packedItems：Position_Code / Drawing_Waived / Drawing_Charged_Count / Cost_Model_Version / Family_Member_Config
+n8n「Supabase Mirror Prep」（V47.16）→「HTTP: Supabase Sync RPC」
+    ↓ 呼叫 sync_order_to_mirror()（migration 0075/0081 已擴充支援5新欄位）
 Supabase order_items（品項層=全額）+ orders（訂單層=淨額+badge，n8n_adjustment_notes）
 ```
 
 **歷史舊模型訂單回填**：migrations 0076（畫圖成本回填）+ 0077（badge筆記補寫）+ 0078（品項層改回全額表示）——只修正「畫圖成本」呢一個分量，唔重新套用V2目錄價（避免混入material/運費假設嘅不相關改動）。詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.6。
 
-**已知限制**（誠實揭露，非本次解決範圍）：現行成本規則嘅 SSoT 係 markdown 文件（本檔 + Cost Schema v2）而非機讀 config/schema，人手同步存在 drift 風險（S189 審查已發現多處歷史 drift 案例，如 Cost Schema v2 §2.1 vs 舊§5.2 材質成本數字曾經不一致）。長遠改善方向（schema-driven文件生成/CI一致性檢查）屬獨立基建議題，未在本次任務範圍內，列為未來考慮方向。
+**2026-07-28 擴充（cl-flow 2026-07-28-1121）**：覆蓋範圍由嬰兒tier擴至大寶/成人tier（migration 0081，8個大寶V2 SKU）+ 家庭組合鎖匙扣（2個exception SKU，塊牌成本靜態+畫圖費動態計算，見 Cost Schema v2 §10.6）。歷史回填：全庫實測受影響舊SKU僅1行（家庭(S2)鎖匙扣$135，舊模型下數字正確），Fat Mo裁決不回填。**大寶standalone「自動升格家庭(P1)」舊規則正式廢止**——核實三份權威文件（本檔/Pricing Bible/Product_Definition）皆無記載，純代碼行為，改用「大寶(P)」新語義（單件全費）。
+
+**已知限制**（誠實揭露，非本次解決範圍）：現行成本規則嘅 SSoT 係 markdown 文件（本檔 + Cost Schema v2）而非機讀 config/schema，人手同步存在 drift 風險（S189 審查已發現多處歷史 drift 案例，如 Cost Schema v2 §2.1 vs 舊§5.2 材質成本數字曾經不一致；本次任務本身亦揭發「大寶升格家庭」規則長期只存在於代碼、從未落文件——同類 pattern 反覆出現）。長遠改善方向（schema-driven文件生成/CI一致性檢查）屬獨立基建議題，未在本次任務範圍內，列為未來考慮方向。
 
 ---
 

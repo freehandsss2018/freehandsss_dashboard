@@ -416,6 +416,45 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **已知未完成項**（記錄，非本次阻擋項）：`n8n/FHS_Core_OrderProcessor_live.json` repo 匯出檔本身已嚴重過時（V47.12 vs live V47.22/23），本次冇完整重新匯出（MCP `get_workflow` 只返回節點清單/連線，唔含完整 `parameters`，冇工具可一次性完整重匯出）；後端 pSubCat 約束（防止配件掛喺非玻璃瓶款式）現時只喺前端 UI 層生效，未有 n8n/DB 層防線，已列入 backlog（見 `cl-final-plan.md` §6）。
 
+### 5.4.8 大寶/成人/家庭三對象轉V2三層成本模型（Session後續，2026-07-28，cl-flow 2026-07-28-1121 ✅ 已修復）
+
+**背景**：S189（§5.4.6）Phase3 只覆蓋嬰兒tier，大寶/成人/家庭三個對象維持舊「(單購/加購)+N飾」模型，Fat Mo 明確要求下個session全面轉V2。
+
+**核實依據（Fat Mo 質詢「建議是否經財務專檔核實」後，A3補做逐條核證）**：Q1（大寶身份）依據 Cost Schema v2 §2.1/§3.1「大寶與嬰兒共享成本層」明文；Q3首輪拆行方案依據 Pricing Bible §5.2「家庭連心成本分拆＝每成員獨立計費」——但經 Fat Mo 兩輪拷問，發現A3對「S1/S2」語義理解有誤（誤讀「N個人」應為「N個肢」）且拆行方案物理前提錯誤（家庭組合係一件整合飾品非多件獨立產品），Q3改裁「單行+n8n動態畫圖」。
+
+**家庭組合鎖匙扣正式定義（Fat Mo口述落檔，此前三份權威文件從缺）**：只限鎖匙扣（冇家庭吊飾）；嬰兒/大寶倒模為核心（冇主套裝拒單）；S系＝必選玻璃瓶(家庭)；成人一對手一次過計；每部位S/P由主套裝實際有冇倒模全自動推導；大牌物料$150（＞標準$125）+環扣$10=$160；qty=複製塊數（畫圖唔乘）。
+
+**裁決**（Q1/Q2/Q3/β/回填全部拍板）：
+- Q1：建8個大寶專屬V2 SKU（成本值=嬰兒tier）
+- Q2：大寶standalone用新語義「大寶(P)」（單件全費$255/710），**廢止**舊「自動升格家庭(P1)」規則（核實三份權威文件皆無記載，純代碼行為）
+- Q3：家庭組合單行+n8n動態畫圖（非拆行）
+- β混型：正式啟用（成人P+部位S任意組合自動計算），取代Cost Schema §3.3舊「defer人手調整」聲明
+- 回填：不回填（全庫實測受影響舊SKU僅1行，家庭(S2)$135舊模型下數字正確）
+
+**執行**：
+1. Migration 0081：8個大寶V2 SKU + 2個家庭V2 SKU（`total_base_cost=160`塊牌成本only）+ `material_cost_keychain_family=150`成本鍵 + `order_items.family_member_config` JSONB欄 + `fhs_verify_new_sku_costs()`擴充 + `sync_order_to_mirror()` RPC擴充
+2. Migration 0082（**執行中即時發現並修正嘅自身錯誤**）：0081原註解誤稱「position_code CHECK值域無需改動」，實測live CHECK僅准左手/右手/左腳/右腳四值，大寶新值（大寶左手等）會被拒絕，動手n8n代碼前即時補CHECK擴充
+3. n8n `Parse Items & Generate SKU`（V47.13→V47.14）：新增`Family_Member_Config`透傳——**live webhook測試（TESTV2C1）即時揪出真實bug**：本節點原漏轉發呢個新欄位，令下游動態畫圖分支永遠讀空陣列，畫圖費恆為0，即場修正
+4. n8n `Calculate Profit & Pack Items`（V47.23→V47.24）：`getPositionCode()`重寫（大寶輸出獨立字串「大寶左手」等，同嬰兒隔離，A2對抗評審#1 BLOCKER修復核心）+ `getDrawingRateForV2Sku()`新增大寶明確分支 + 家庭組合動態畫圖分支（`calcFamilyDrawing()`）
+5. n8n `Supabase Mirror Prep`（V47.15→V47.16）：新增`family_member_config`透傳
+6. Dashboard `freehandsss_dashboardV42.html`（dev版）：大寶K/M真實提交+估價鏡像4區塊轉V2（`finalObj=hasMainProduct?"大寶(S)":"大寶(P)"`）；家庭combo 2區塊改單行V2（`家庭鎖匙扣 - 材質 (V2)`+`Family_Member_Config`）；`getFamilyComboDetails()`全面改寫，新增`_fhsFamilyLimbMode()`做S/P全自動推導；新增防呆（`syncToAirtable()`硬阻擋+`calculatePricing()`估價側警示）取代舊S→P升格邏輯
+
+**A2對抗評審**（Gemini，A1 Perplexity因quota超限degraded）：7條批評，採納6拒絕1（#2有live代碼反證：費率函式收SKU字串非item_key，拒絕成立）。
+
+**Live webhook對抗測試**（6項，全部PASS，測試單即時清理）：
+- 大寶(S)鎖匙扣qty=4：`item_base_cost=820`（205×4，防漏乘）
+- **嬰兒左手+大寶左手同單（A2/#1核心案例）**：兩行各自`drawing_charged_count=1`獨立收費，冇跨對象撞位（position_code修復確認生效）
+- 家庭S系（adult S+baby S）：`item_base_cost=330`（160+110+60，同Cost Schema §10.6逐位吻合）
+- 家庭β混型（adult P+baby S）：`item_base_cost=460`（160+240+60）
+- 家庭S2兩部位：`item_base_cost=390`（160+110+60+60）
+- 舊SKU regression：`嬰兒鎖匙扣-不銹鋼-4飾(加購)` qty=4，`item_base_cost=500`不變（S189已知基準）
+
+**Browser UI互動驗證**：真實DOM click切換玻璃瓶款式+勾選家庭combo/大寶區塊，`window.fhsCurrentPricingItems`檢視確認`Family_Member_Config`/SKU/`FatMoCost`全部正確；防呆（關閉主套裝）即時顯示紅色阻擋。全程console零錯誤。
+
+**已知未完成項**（記錄，非本次阻擋項）：舊家庭靜態SKU（S1/S2/P1/P2命名，~323行）保留未刪，列`/fhs-slim`遠期處理；家庭吊飾catalog SKU為死貨標記但未實際下架；配件-玻璃瓶款式後端驗證（S189已知backlog）仍未做。
+
+詳見 `.fhs/notes/decisions.md` 2026-07-28 條目、`artifacts/2026-07-28-1121/cl-final-plan.md`、`FHS_Product_Cost_Schema_v2.md` §10.6、`FHS_Product_Definition.md` §3.3a。
+
 ### 5.5 綜合審計日誌（Session 124 新增）
 
 **`audit_logs` 表**（migration 0044，2026-06-25 部署 ✅）：

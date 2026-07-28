@@ -1,8 +1,9 @@
 ---
 name: FHS Product Definition
-version: v1.1.0
+version: v1.2.0
 created: 2026-06-05
-updated: 2026-07-25（S189財務文件全面審查：§3.2吊飾+§3.3鎖匙扣補入V2統一SKU完整子條目，履行本文件§五自訂「新SKU上線必須加條目」規則，原S189 Phase1新增16個SKU一直未落盤此處）
+updated: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§3.2/§3.3擴充覆蓋大寶tier；新增§3.3a家庭組合鎖匙扣完整定義，首次落檔Fat Mo口述業務規則；廢止「大寶standalone升格家庭(P1)」舊規則）
+[前次] 2026-07-25（S189財務文件全面審查：§3.2吊飾+§3.3鎖匙扣補入V2統一SKU完整子條目，履行本文件§五自訂「新SKU上線必須加條目」規則，原S189 Phase1新增16個SKU一直未落盤此處）
 compatible_with: AGENTS.md v1.4.13
 authority: L2 — 產品身份 SSoT
 status: active
@@ -109,8 +110,9 @@ description: 每個 FHS 產品的身份、部位構成、產品間關係、SKU �
 - 結構變化：不再分單購/加購兩條目（見 `FHS_Finance_Bible.md` §四附錄「單購/加購歷史對照」），統一單件全費SKU，`products.total_base_cost` 直接定值（非cost_configurations組合），quantity欄位獨立於SKU字串
 - `Order_Item_Key` 格式不變（`{orderId}_M_{部位碼}`）
 - 部位共享規則：同部位（跨鎖匙扣/吊飾）首件收畫圖費，其餘豁免，由 `order_items.position_code`/`drawing_waived`/`drawing_charged_count` 記錄
-- 現時僅覆蓋嬰兒tier；大寶/成人/家庭仍用舊模型
-- 完整16個SKU清單 + 公式 → `FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，本文件不重複列表）
+- **覆蓋範圍（2026-07-28起，cl-flow 2026-07-28-1121）**：嬰兒/大寶/成人 tier 全覆蓋；家庭組合冇吊飾版本（見 §3.3a）
+- **大寶 tier**：SKU `大寶(S/P)吊飾 - 材質 (V2)`，成本值＝嬰兒 tier（Cost Schema v2 §3.1「大寶與嬰兒共享成本層」）；大寶 standalone（冇立體擺設主套裝）用 `大寶(P)` 語義（單件全費，非舊有「升格家庭」語義，該舊規則三份權威文件皆無記載，已正式廢止）
+- 完整26個SKU清單 + 公式 → `FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，本文件不重複列表）
 
 ---
 
@@ -153,8 +155,56 @@ description: 每個 FHS 產品的身份、部位構成、產品間關係、SKU �
 - 結構變化：不再分單購/加購兩條目（見 `FHS_Finance_Bible.md` §四附錄「單購/加購歷史對照」），統一單件全費SKU，`products.total_base_cost` 直接定值（非cost_configurations組合）
 - `Order_Item_Key` 格式不變（`{orderId}_K_{部位碼}`）
 - 部位共享規則變化：由「每個部位獨立計階梯」延伸為「同部位（跨鎖匙扣/吊飾）首件收畫圖費，其餘豁免」，由 `order_items.position_code`/`drawing_waived`/`drawing_charged_count` 記錄
-- 現時僅覆蓋嬰兒tier；大寶/成人/家庭仍用舊模型
-- 完整16個SKU清單 + 公式 → `FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，本文件不重複列表）
+- **覆蓋範圍（2026-07-28起，cl-flow 2026-07-28-1121）**：嬰兒/大寶/成人 tier 全覆蓋
+- **大寶 tier**：SKU `大寶(S/P)鎖匙扣 - 材質 (V2)`，成本值＝嬰兒 tier；大寶 standalone 用 `大寶(P)` 語義（同上，取代舊「升格家庭」規則）
+- **`position_code` 唯一性**：大寶部位輸出獨立字串「大寶左手/大寶右手/大寶左腳/大寶右腳」（`order_items.position_code` CHECK 已於 migration 0082 擴充），同嬰兒「左手/右手/左腳/右腳」區隔，防止兩個唔同人嘅同名部位（如嬰兒左手同大寶左手）被誤判做同一豁免組
+- 完整26個SKU清單 + 公式 → `FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，本文件不重複列表）
+
+---
+
+### 3.3a 家庭組合鎖匙扣（Category K — Family Combo，2026-07-28正式落檔，cl-flow 2026-07-28-1121）
+
+> ⚠️ **本節為 Fat Mo 2026-07-28 口述定案首次落入權威文件**——此前家庭組合嘅完整業務定義從未存在於任何 L1/L2 文件，只散落喺 Dashboard 前端代碼（`k_family_combo`/`getFamilyComboDetails()`）同零散 session 記錄。
+
+**身份**：以「一對成人手 + N個嬰兒/大寶部位」組成嘅**單一整合飾品**（非多件獨立產品拼合）——成員全部倒模/照片建模印喺同一塊金屬牌上。
+
+**核心限制**：
+- **只限鎖匙扣，冇吊飾版本**（catalog 遺留嘅家庭吊飾 SKU 屬歷史死貨，已停用）
+- **嬰兒/大寶倒模核心必須**：訂單必須包含立體擺設主套裝（`enableP=true`），冇主套裝一律拒絕落單（Dashboard `syncToAirtable()` 硬阻擋 + `calculatePricing()` 防呆顯示），取代舊有「冇主套裝自動升格家庭(P1)」規則
+- **S 系＝全員有倒模**：即立體擺設款式必為「玻璃瓶(家庭)」（父母有倒模）
+- 成人部份＝一對手（可一人一對，或爸媽各一隻手夾埋一對）
+
+**組合結構**：
+| 組合代碼 | 白話 | 嬰兒/大寶部位數 |
+|---|---|---|
+| S1_B | 成人一對 + 1個嬰兒部位 | 1 |
+| S2_BB | 成人一對 + 2個嬰兒部位（一手一腳或一對手/腳） | 2 |
+| S2_BE | 成人一對 + 1個嬰兒部位 + 1個大寶部位 | 2 |
+
+**S/P 全自動推導**（操作者不干預，Dashboard `getFamilyComboDetails()`/`_fhsFamilyLimbMode()` 實作）：
+- 成人 mode：玻璃瓶(家庭)已選（`en_parent` 勾選）＝S；否則＝P
+- 每個嬰兒/大寶部位 mode：該部位喺立體擺設主套裝嘅 `.limb-sel` 是否已選（非「無」）＝S；否則＝P
+- **β 混型天然支援**：成人 P + 部位 S（或任意 S/P 混合）自動計算，取代 Cost Schema v2 §3.3 舊有「defer，人手調整」聲明
+
+**SKU 命名（V2，取代舊 S1/S2/P1/P2 命名）**：
+```
+家庭鎖匙扣 - 不銹鋼 (V2) / 家庭鎖匙扣 - 鋁合金 (V2)
+```
+無 S1/S2/P1/P2/N飾 變體——組合資訊移入結構化欄位。
+
+**訂單結構（單行＋n8n動態畫圖，非拆件）**：
+- `order_items` 維持**單行**（`{orderId}_K_FAM_COMBO`），物理上代表一件整合飾品
+- `products.total_base_cost=160`（塊牌物理成本 only：材質/打印 $150 + 環扣 $10）—— **documented exception**：V2「單件全費」原則喺呢個 SKU 唔適用（畫圖費隨成員結構變動，無法喺 SKU 層靜態定值）
+- 新增結構化欄位 `order_items.family_member_config`（JSONB，`[{role:'adult',mode},{role:'baby'|'elder',part,mode},...]`），由 n8n 訂單層動態計算畫圖費：`成人一對($110/$240一次過) + Σ每個部位($60/$110)`
+- `position_code` 恆為 NULL（單行唔參與跨行豁免分組）
+- qty＝同設計複製塊數（畫圖一次，物料成本×qty）
+
+**Order_Item_Key 格式**：`{orderId}_K_FAM_COMBO`
+
+**§0 狀態**：符合（嬰兒/大寶倒模為核心，冇主套裝拒單）
+
+→ 成本方程式：`FHS_Product_Cost_Schema_v2.md` §3.3（家庭組合動態畫圖式）+ §7.6（塊牌成本）
+→ 決策記錄：`.fhs/notes/decisions.md` 2026-07-28 條目
 
 ---
 

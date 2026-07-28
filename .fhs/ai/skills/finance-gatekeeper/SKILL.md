@@ -1,10 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.8.0
+version: 1.9.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-07-25（D46事故後：§三B新增第4步「文件同步完整性grep sweep」，防止成本欄位改動漏同步Finance Bible/Product_Definition等權威文件；大型改動另派fresh-context subagent覆核）
+last_updated: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§一路由表新增家庭組合(V2)/大寶standalone廢止規則兩行；§三B方程式段新增V2擴充+家庭動態畫圖式）
+[前次] 2026-07-25（D46事故後：§三B新增第4步「文件同步完整性grep sweep」，防止成本欄位改動漏同步Finance Bible/Product_Definition等權威文件；大型改動另派fresh-context subagent覆核）
 compatible_with: AGENTS.md v1.4.13
 ---
 
@@ -35,9 +36,11 @@ compatible_with: AGENTS.md v1.4.13
 | Supabase schema / SKU 成本資料 | 啟動 `database-reviewer` subagent |
 | `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`——**2026-07-18 Phase 2 起已覆蓋全品類**（嬰兒/成人/家庭鎖匙扣不銹鋼+鋁合金、吊飾全 tier、立體擺設、配件、佔位 row 監測），見 `FHS_System_Logic_Overview.md` §5.4.3。禁止假設「改設定中心=products 自動同步」|
 | 吊飾成本計錯 / 頸鏈成本 / `necklace_chain_cost` | `FHS_System_Logic_Overview.md` §5.4.2（D40，migration 0046 + n8n V47.19，雙數簿漂移修復先例）+ §5.4.5（D42，2026-07-22，V47.19→V47.20 記帳格式對齊鎖匙扣環扣模式，部署狀態見§三B） |
-| 家庭套裝（鎖匙扣/吊飾）畫圖成本計錯 / composite 畫圖式 | `FHS_System_Logic_Overview.md` §5.4.3（D41，migrations 0058/0059）：家庭套裝畫圖成本 = **成人份 + 每個嬰兒肢各計一次**，非單一成人式；Dashboard 前端 `calculatePricing()` isFamily 分支為真源 |
-| 「加購」鎖匙扣/吊飾點解冇畫圖費 / V2統一SKU模型 / 品項全額訂單淨額規則 / 同部位畫圖共享豁免 | **規則家族「V2統一成本模型」（S189，2026-07-24~25，已落地生產，非待辦）**——正式權威：`FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，公式+16SKU清單+架構）+ `FHS_Finance_Bible.md` §五B（架構責任）+ §四附錄（「單購/加購」歷史命名對照，舊訂單專用）。事件時序/決策過程（點解由S55漂移到而家嘅裁決）留喺 `FHS_System_Logic_Overview.md` §5.4.6，唔再係查規則嘅終點——查「現行規則係咩」請直接讀上述兩份正式文件，唔使讀session筆記 |
-| n8n 四端欄位映射 / 「Node 14 – Cost Calculator」等舊節點名對唔上現行代碼 | `Quadruple_Sync_Field_Map.md` 已於 2026-07-25 大改版至 v2.0（原v1.1版本2.5個月未更新，「Node 14」等節點名已不存在），讀現行v2.0版本，唔好對照歷史記憶/舊版對話 |
+| 家庭套裝（鎖匙扣/吊飾）畫圖成本計錯 / composite 畫圖式 | **⚠️ 2026-07-28起分岔**：舊模型靜態SKU（S1/S2/P1/P2命名）仍適用 `FHS_System_Logic_Overview.md` §5.4.3（D41，migrations 0058/0059，成人份+每個嬰兒肢各計一次），僅供**歷史舊單**參考；**新單一律用**家庭鎖匙扣(V2) 動態畫圖模型，見下一行 |
+| 家庭組合鎖匙扣(V2) 點計 / β混型 / Family_Member_Config | `FHS_Product_Cost_Schema_v2.md` §10.6（唯一SSoT，2026-07-28新增）：單行+n8n動態畫圖（成人一對$110/240一次過+每部位$60/110逐個計，S/P由Dashboard全自動推導）；業務定義（一件整合飾品/只限鎖匙扣/嬰兒大寶核心必須）見 `FHS_Product_Definition.md` §3.3a；決策記錄 `.fhs/notes/decisions.md` 2026-07-28 |
+| 大寶 standalone（冇主套裝）成本計錯 / 「升格家庭」規則 | **舊規則已廢止**（2026-07-28，核實三份權威文件皆無記載，純代碼行為）：大寶standalone用「大寶(P)」新語義（單件全費，非升格家庭(P1)）。詳見 `FHS_Product_Cost_Schema_v2.md` §10.6、`FHS_Finance_Bible.md` §五B |
+| 「加購」鎖匙扣/吊飾點解冇畫圖費 / V2統一SKU模型 / 品項全額訂單淨額規則 / 同部位畫圖共享豁免 | **規則家族「V2統一成本模型」（S189起，已落地生產，非待辦；2026-07-28擴充大寶/成人/家庭tier）**——正式權威：`FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，公式+26SKU清單+架構，含§10.6家庭exception）+ `FHS_Finance_Bible.md` §五B（架構責任）+ §四附錄（「單購/加購」歷史命名對照，舊訂單專用）。事件時序/決策過程（點解由S55漂移到而家嘅裁決）留喺 `FHS_System_Logic_Overview.md` §5.4.6，唔再係查規則嘅終點——查「現行規則係咩」請直接讀上述兩份正式文件，唔使讀session筆記 |
+| n8n 四端欄位映射 / 「Node 14 – Cost Calculator」等舊節點名對唔上現行代碼 | `Quadruple_Sync_Field_Map.md` 已於 2026-07-28 改版至 v2.1（新增`family_member_config`欄位映射；位置代碼值域擴充大寶），讀現行v2.1版本，唔好對照歷史記憶/舊版對話 |
 | 配件成本（羊毛氈/燈飾加購）點解冇獨立分類欄 / `accessory_cost` | `FHS_System_Logic_Overview.md` §5.4.7（D，cl-flow 2026-07-25-0148，✅已修復）：`orders`/`order_items.accessory_cost`（migration 0079/0080）已修訂單層分類rollup顯示缺口；配件僅限**玻璃瓶款式**立體擺設（非全部立體擺設），`FHS_Product_Cost_Schema_v2.md` §7.1/7.5 為正式定義 |
 
 ---
@@ -89,7 +92,9 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 - 嬰兒鎖匙扣（不銹鋼/鋁合金）：加購 = (material+clasp$10)×N；單購 = tier_drawing{嬰兒60/嬰兒(P)110} + 同上。運費不入 SKU（訂單層扣減 (N−1)×$20）。
 - 成人/家庭鎖匙扣（不銹鋼/鋁合金，material 已同價 $125）：加購 = (material+clasp$10)×N；單購 = **composite_drawing** + 同上。composite_drawing＝成人份+每個嬰兒肢各計一次：成人(P)=240、家庭(S1)=170、家庭(S2)=230、家庭(P1)=350、家庭(P2)=460。
 - 吊飾（嬰兒/成人）：加購 = material($465)×N；單購 = tier_drawing{60/110/240} + material×N。運費不入 SKU（扣減 (N−1)×$35）。**頸鏈成本（現行 live，V47.20，2026-07-22 D42）**＝品項層對稱摺入每件 $100（`order_items.chain_cost`/`item_base_cost`/`subtotal_cost`/`necklace_cost` 皆已反映，即每件吊飾對稱多 $100），訂單層用共用折扣 `floor(N/2)×$100` 扣減（`n8n_adjustment_notes` type=`necklace_chain_sharing_discount`，負數），取代已退役嘅 V47.19 訂單層單一加項式（`necklace_chain_cost` 正數，`ceil(N/2)×$100`）。數學等價（`100N−floor(N/2)×100=ceil(N/2)×100`），總數不變，純記帳格式對齊鎖匙扣環扣模式。**7 張真實歷史單已一併 backfill**（Dede/Kathleen/Akira/DebbieHo/Amen/Selina Lai/Lokyi_C），全庫現時已統一新格式，冇新舊並存問題。見 `FHS_System_Logic_Overview.md` §5.4.5、decisions.md D42。
-- 家庭吊飾（單購）：composite_drawing（同鎖匙扣，D41 修正原單一成人式錯誤）+ material×N；加購 = material×N（無畫圖，不變）。
+- 家庭吊飾（單購）：composite_drawing（同鎖匙扣，D41 修正原單一成人式錯誤）+ material×N；加購 = material×N（無畫圖，不變）。**⚠️ 以上鎖匙扣composite_drawing式僅適用歷史舊單（S1/S2/P1/P2靜態SKU）；新單見下方V2動態式。**
+- **V2統一SKU（2026-07-28擴充，大寶/成人tier）**：`大寶(S/P)鎖匙扣/吊飾 - 材質 (V2)`，成本值＝嬰兒tier同值（205/255鎖匙扣、660/710吊飾）；`成人(S/P)鎖匙扣/吊飾 - 材質 (V2)`＝265/395/710/840。大寶standalone用「大寶(P)」新語義，取代舊「升格家庭(P1)」規則（已核實三份權威文件皆無記載，正式廢止）。
+- **家庭鎖匙扣(V2) 動態畫圖式（2026-07-28新增，取代composite_drawing）**：`products.total_base_cost=$160`（塊牌物理成本only：material_cost_keychain_family$150+clasp$10）；畫圖費n8n訂單層動態計算＝adult_rate(S110/P240)+Σ每部位limb_rate(S60/P110)，唔隨qty相乘。S/P由Dashboard全自動推導（成人：玻璃瓶家庭已選=S；部位：主套裝該部位有冇倒模=S）。β混型（成人P+部位S混合）天然支援。只限鎖匙扣，冇家庭吊飾版本。完整公式見 `FHS_Product_Cost_Schema_v2.md` §10.6。
 - 立體擺設：$210 flat（2肢/4肢同價，migration 0030）。
 - 配件（羊毛氈/燈飾加購）：$30 flat。
 

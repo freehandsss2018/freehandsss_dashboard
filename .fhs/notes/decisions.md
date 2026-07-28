@@ -3,6 +3,31 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-07-28] (D49) 大寶/成人/家庭三對象轉V2三層成本模型——大寶standalone「升格家庭」規則廢止，家庭組合改單行+n8n動態畫圖
+
+**背景**：S189（D46附近，見§5.4.6）Phase3只將V2統一成本模型覆蓋嬰兒tier，Fat Mo明確要求下個session全面轉大寶/成人/家庭。
+
+**核實依據＋兩輪拷問修正**：Fat Mo質詢「建議是否經財務專檔核實」後，A3補做逐條核證揪出自己兩個錯誤——(1)誤讀Cost Schema v2 §3.3「成人1對+N個嬰兒/大寶肢」為「N個人」；(2)Q3首輪裁決「拆行複用SKU」方案物理前提錯誤（家庭組合係一件整合飾品，非多件獨立產品拼合，拆行會重複計物料）。經Fat Mo口述糾正後重新裁決。
+
+**家庭組合鎖匙扣正式定義**（此前三份權威文件從缺，本次首次落檔）：只限鎖匙扣（冇家庭吊飾）；嬰兒/大寶倒模為核心（冇主套裝拒單，取代舊「自動升格家庭(P1)」規則）；S系＝必選玻璃瓶(家庭)；成人一對手一次過計；每部位S/P由主套裝實際有冇倒模全自動推導（操作者不干預）；大牌物料$150（＞標準$125，體積較大）+環扣$10=$160；qty=複製塊數（畫圖唔乘）。
+
+**裁決（拷問後定案）**：
+1. 大寶身份：建8個大寶專屬V2 SKU（成本值=嬰兒tier，Cost Schema §3.1「大寶與嬰兒共享成本層」明文支持）
+2. 大寶standalone：新語義「大寶(P)」單件全費（$255/710），廢止舊升格規則
+3. 家庭組合：單行+n8n動態畫圖（非拆行），`products.total_base_cost=160`塊牌成本only，畫圖費按`family_member_config`動態計算
+4. β混型（成人P+部位S混合）正式啟用，取代Cost Schema §3.3舊「defer人手調整」聲明
+5. 歷史回填：不回填（全庫實測受影響舊SKU僅1行，家庭(S2)$135舊模型下數字正確）
+
+**執行**：走`/cl-flow`（flow_id `2026-07-28-1121`，A2 Gemini對抗評審7條批評採納6拒絕1，A1 Perplexity因quota超限degraded）+`/execute`。Migration 0081（8大寶SKU+2家庭SKU+`material_cost_keychain_family`鍵+`family_member_config`JSONB欄+RPC擴充）+0082（**執行中即時發現自身錯誤並修正**：0081原稱「position_code CHECK值域無需改動」，實測live CHECK只准四個舊值，大寶新值會被拒絕，動手n8n代碼前即時補CHECK擴充）+n8n三節點（`Parse Items & Generate SKU`V47.13→14、`Calculate Profit & Pack Items`V47.23→24、`Supabase Mirror Prep`V47.15→16，經MCP `update_node_code` dry-run驗證後正式寫入）+Dashboard V42.html 6處改動（大寶K/M四區塊轉V2、家庭combo兩區塊改單行V2、`getFamilyComboDetails()`全面改寫加S/P全自動推導、新增防呆取代舊升格邏輯）+5份權威文件同步（Product_Definition新增§3.3a/Cost Schema v2新增§10.6/Finance Bible§五B擴充/Quadruple_Sync_Field_Map新增欄位映射/finance-gatekeeper路由表+方程式段）。
+
+**驗證**：Live webhook對抗測試6項全PASS（測試單即時清理）——大寶(S)qty=4防漏乘($820)、**嬰兒左手+大寶左手同單各自獨立收費**（A2/#1 BLOCKER修復核心確認生效）、家庭S系($330)/β混型($460)/S2兩部位($390)三組數字逐位吻合Cost Schema、舊SKU regression($500)零回歸。過程中live測試即時揪出並修正兩個真實bug：(1) migration 0081 CHECK值域錯誤（見上）；(2) `Parse Items & Generate SKU`節點漏轉發`Family_Member_Config`欄位，令家庭組合畫圖費一度恆為0，即場修正（V47.14）。Browser UI互動驗證（真實DOM click+`window.fhsCurrentPricingItems`檢視）確認SKU/`Family_Member_Config`/防呆全部正確，console零錯誤。文件同步經fresh-context subagent（database-reviewer）獨立覆核，6份文件+Supabase live數據交叉核實一致，零缺口。
+
+**已知未完成項**（非阻擋，列backlog）：舊家庭靜態SKU（S1/S2/P1/P2命名，~323行）保留未刪；家庭吊飾catalog SKU死貨未下架；配件-玻璃瓶款式後端驗證（S189已知backlog）仍未做；`current.html`未升格（另需Fat Mo授權）。
+
+詳見 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.8、`artifacts/2026-07-28-1121/cl-final-plan.md`、`FHS_Product_Cost_Schema_v2.md` §10.6、`FHS_Product_Definition.md` §3.3a、Changelog.md 2026-07-28條目。
+
+---
+
 [2026-07-25] (D48) IG漏單看門狗容器輪替修復——CONTAINER_FOLDER_ID 寫死常數改動態偵測，並修正誤導性「OAuth失效」告警文字
 
 **背景**：Telegram 收到「距上次新匯出已168小時——疑似排程到期或OAuth失效，請查Meta Accounts Center」告警。Fat Mo 澄清系統匯出流程係「Meta每天自動匯出到Google Drive」（方案C，非人手DYI），排除OAuth猜測後，用 Google Drive 連結器實測發現：Meta 於 2026-07-18 把匯出目的地換咗一個新嘅父資料夾（`meta-2026-Jul-18-...`），而 `build_n8n_workflow.cjs` 嘅 `CONTAINER_FOLDER_ID` 寫死指向 06-18 建立嘅舊容器，導致連續7天（=168小時，數字完全吻合）零偵測——非OAuth/憑證問題，純粹查錯資料夾。開發者早於 2026-06-20 已在程式碼註解預判此情境，但 Telegram 告警文字寫成「OAuth失效」誤導方向。

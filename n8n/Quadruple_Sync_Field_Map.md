@@ -1,8 +1,9 @@
 # Quadruple Sync Field Map
 
-**Version**: v2.0
+**Version**: v2.1
 **Created**: 2026-05-10 (Phase 0 盤點，升級自 Triple_Sync 概念)
-**Updated**: 2026-07-25（S189財務文件全面審查大改版——本文件2.5個月零更新，核心架構假設「Airtable過渡期SSoT」已被D43(2026-07-22~23)推翻，「n8n內部計算規則」整段描述嘅「Node 14 – Cost Calculator」節點自V47.4起已不存在，現行節點鏈完全改寫；新增order_items 4個V2欄位；已知問題表核對實際狀態）
+**Updated**: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象V2模型——新增`family_member_config`欄位映射；position_code值域擴充大寶獨立字串；新增familyCombinDynamicDrawing計算段；節點版本V47.13/22→V47.14/24）
+[前次] 2026-07-25（S189財務文件全面審查大改版——本文件2.5個月零更新，核心架構假設「Airtable過渡期SSoT」已被D43(2026-07-22~23)推翻，「n8n內部計算規則」整段描述嘅「Node 14 – Cost Calculator」節點自V47.4起已不存在，現行節點鏈完全改寫；新增order_items 4個V2欄位；已知問題表核對實際狀態）
 **四端**: Airtable ↔ n8n ↔ Dashboard ↔ Supabase
 
 > 本文件記錄 FHS 四端系統中每個核心欄位的「寫入方」「讀取方」「同步方向」與「真理來源」。
@@ -70,9 +71,10 @@
 | `process_status` | Order_Items.Process_Status | 讀取 / 寫入 | 讀取 | `order_items.process_status` | Airtable |
 | `batch_number` | Order_Items.Batch_Number | 寫入 | — | `order_items.batch_number` ⚠️ 冗餘，暫保留 | n8n |
 | `cost_model_version` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.cost_model_version TEXT` | **n8n**（migration 0073，2026-07-24起。`'v2_layered'`=V2品項／`NULL`=舊模型品項） |
-| `position_code` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.position_code TEXT` | **n8n**（左手/右手/左腳/右腳，由item_key尾綴`_LH/_RH/_LF/_RF`推導，僅V2品項有值） |
+| `position_code` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.position_code TEXT` | **n8n**（左手/右手/左腳/右腳=嬰兒；大寶左手/大寶右手/大寶左腳/大寶右腳=大寶，migration 0082擴充CHECK；由item_key尾綴`_LH/_RH/_LF/_RF`+`_E_`段推導，僅V2品項有值；家庭組合單行恆為NULL） |
 | `drawing_waived` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.drawing_waived BOOLEAN` | **n8n**（該行是否有單位被同部位共享豁免） |
 | `drawing_charged_count` | 無對應（Supabase獨有） | 計算 + 寫入 | — | `order_items.drawing_charged_count INTEGER` | **n8n**（該行實際收畫圖費嘅單位數，0或1） |
+| `family_member_config` | 前端Dashboard `getFamilyComboDetails()`生成 | 讀取 + 寫入 | — | `order_items.family_member_config JSONB` | **Dashboard生成→n8n透傳**（migration 0081，2026-07-28起。`[{role,part,mode},...]`，供家庭組合鎖匙扣(V2)動態畫圖計算+審計顯示；NULL=非家庭組合品項） |
 
 > ⚠️ **FK 設計注意**（database-reviewer Issue #3）：
 > Supabase `order_items` 的 FK 需使用 `order_fhs_id VARCHAR(20)` 指向 `orders.order_id`，
@@ -342,11 +344,11 @@ charmChainSharingDiscount = charmItemCount > 1 ? floor(charmItemCount / 2) × 10
 
 - 每件吊飾已於品項層對稱計 $100 頸鏈費（`chain_cost`），此為「每2條共用1條頸鏈」嘅共用折扣（訂單層扣減，非額外收費），寫入 `n8n_adjustment_notes`（type=`necklace_chain_sharing_discount`）
 
-### drawingDedupDeduction（同部位畫圖動態扣減，V47.22 新增，僅V2 SKU適用）
+### drawingDedupDeduction（同部位畫圖動態扣減，V47.22 新增，僅V2 SKU適用；V47.24 擴充大寶獨立字串）
 
 ```
-按 position_code（左手/右手/左腳/右腳，由Order_Item_Key後綴推導）分組，
-跨鎖匙扣/吊飾共享豁免資格（同一部位3D掃描只需一次）：
+按 position_code（左手/右手/左腳/右腳=嬰兒；大寶左手/大寶右手/大寶左腳/大寶右腳=大寶，
+由Order_Item_Key後綴+`_E_`段推導）分組，跨鎖匙扣/吊飾共享豁免資格（同一部位3D掃描只需一次）：
   組內第一件（按packedItems原始順序）：drawing_charged_count=1，收tier_drawing_rate
   組內其餘所有品項：drawing_charged_count=0，豁免
 
@@ -357,14 +359,27 @@ drawingDedupDeduction = Σ(每組waived_units × tier_drawing_rate)
 - 同步寫入 `order_items.position_code`/`drawing_waived`/`drawing_charged_count`（migration 0073新欄位，非持久化中間值，實際落地欄位）
 - 完整公式同適用範圍見 `FHS_Product_Cost_Schema_v2.md` §10.4（唯一SSoT）
 
+### familyCombinDynamicDrawing（家庭組合動態畫圖，V47.24 新增，2026-07-28）
+
+```
+familyDrawing = adultRate(mode) + Σ 每個嬰兒/大寶部位 limbRate(mode)
+adultRate：S=$110　P=$240　　limbRate：S=$60　P=$110（嬰兒大寶共用）
+單件總成本 = products.total_base_cost($160) × quantity + familyDrawing（畫圖唔隨qty相乘）
+```
+
+- 成員結構讀 `order_items.family_member_config`（Dashboard全自動推導後傳入，n8n唔自行判斷S/P）
+- 寫入 `n8n_adjustment_notes`（type=`family_combo_dynamic_drawing`，amount=0純審計記錄非扣減，含逐成員 detail）
+- 唔入 position_code 分組（單行代表一件整合飾品，恆為NULL）
+- 完整公式見 `FHS_Product_Cost_Schema_v2.md` §10.6（唯一SSoT）
+
 ### 設計原則
 
 | 規則 | 說明 |
 |------|------|
-| **Deduction中間值非持久化** | 上述4個deduction數字本身唔建獨立column，每次workflow執行重新計算；但計算結果（扣減後嘅keychain_cost/necklace_cost/total_cost）+ 審計筆記（n8n_adjustment_notes）+ V2 metadata（position_code等）會持久化 |
+| **Deduction中間值非持久化** | 上述deduction數字本身唔建獨立column，每次workflow執行重新計算；但計算結果（扣減後嘅keychain_cost/necklace_cost/total_cost）+ 審計筆記（n8n_adjustment_notes）+ V2 metadata（position_code/family_member_config等）會持久化 |
 | **改動觸發** | `Calculate Profit & Pack Items` 節點邏輯改動時，必須同步更新本段落，並在 CHANGELOG 標註 |
 
-> **歷史背景**：Triple_Sync_Field_Map.md 曾在「Node 14」章節描述呢類計算值，Triple_Sync 文件已廢棄。本段落 2026-05-17 首次遷移補完，2026-07-25（S189）因節點鏈+公式整體升版（V47.4→V47.22）而全面重寫。
+> **歷史背景**：Triple_Sync_Field_Map.md 曾在「Node 14」章節描述呢類計算值，Triple_Sync 文件已廢棄。本段落 2026-05-17 首次遷移補完，2026-07-25（S189）因節點鏈+公式整體升版（V47.4→V47.22）而全面重寫；2026-07-28（cl-flow 2026-07-28-1121）因大寶/家庭tier擴充升版至V47.24而追加。
 
 
 ---

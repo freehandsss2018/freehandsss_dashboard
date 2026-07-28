@@ -29,8 +29,9 @@
 ## 財務核心（Fat Mo 確認，違反=嚴重過失）
 
 1. **運費扣減公式必用件數而非行數**：`(總件數-1)×單件運費`，總件數=SUM(quantity)；鎖匙扣$20/件，吊飾$35/件 — Fat Mo 確認 2026-06-02 [[2026-05-16_keychain_shipping_deduction]]
-2. **同部位首件含畫圖費，第 2 件起免畫圖（位置依賴成本）**：鎖匙扣/吊飾均適用；跨產品規則：部位已有任何產品，後加同部位其他類型亦免畫圖 — Fat Mo 確認 2026-06-02
 3. **吊飾 Clasp=頸鏈（非扣夾），奇偶規則**：成本=畫圖+打印+頸鏈+運費；奇數件加$100頸鏈，偶數件免頸鏈（共用同鏈） — Fat Mo 確認 2026-06-02
+
+> 📌 **退役**（D49/cl-flow 2026-07-28-1121，`/commit` Lesson Distillation，全檔滿50條達上限）：「同部位首件含畫圖費，第2件起免畫圖」（原此列#2，2026-06-02）——規則本身未變，但實作機制已由「粗略描述」升級為結構化欄位（`position_code`/`drawing_waived`/`drawing_charged_count`），完整公式+跨對象獨立字串處理已記錄於 `FHS_Product_Cost_Schema_v2.md` §10.4，此處純重複佔位；退役騰出額度給本次新教訓（n8n多節點鏈新增payload欄位必須逐節點檢查轉發，非只改頭尾兩端）。
 4. **`material_cost_*` = 打印/鑄造費（非原材料進價）**：necklace_silver=465、gold=465、keychain_stainless=115（嬰兒/大寶）、alloy=115（嬰兒/大寶）；命名問題 deferred 至 PRM v2 — 源自 2026-06-03，2026-06-25 更正
 5. **鎖匙扣打印費依嬰兒/家庭分層**：嬰兒：不鏽鋼$115/鋁$115；家庭(S/P)：$135（兩材質相同）；吊飾各對象一致（銀$465/金$465）— 源自 2026-06-03，2026-06-25 更正
 
@@ -88,6 +89,8 @@
 39. **【高頻 ⚠️】SKU 目錄由「整套價焗死件數」改「單件價 × quantity」模型時，必須專門用 qty≥2 測試單驗證 n8n 有冇真的做呢個乘法**：舊系統慣性係「幾多件焗死喺 SKU 字串本身」（`total_base_cost` 已係成套價，n8n 從未需要乘 quantity），新模型改用單件價後，若只改 Supabase 目錄唔改 n8n 計算節點，會少計成本且完全唔會報錯——qty=1 測試會 PASS 掩蓋呢個 bug，要 qty>1 先揭發。同場證實：新增品類專屬固定成本（如頸鏈費）時，必須檢查係咪已經 baked 入新 SKU 單件價，避免同舊有獨立加成邏輯雙重計算 — Session 189/2026-07-24 [[project_order_cost_audit_2026_07_17]]
 
 40. **新增資料表欄位後，除咗n8n寫入鏈，仲要逐一檢查前端所有獨立 fetch 呢個表嘅 SELECT query 有冇跟住補齊**：`order_items` 新增 `position_code/drawing_waived/drawing_charged_count/cost_model_version` 四欄後（migration 0073），Dashboard 入面同一個 `Freehandsss_dashboardV42.html` 有 6+ 處各自 hand-written 嘅 `rest/v1/order_items?select=...` fetch（訂單明細/財務彈窗/批次狀態等唔同用途），只改咗寫入鏈（n8n Mirror Prep + RPC）冇同步檢查所有讀取端，令財務彈窗完全冇資料可用（欄位值一律undefined）但零報錯——表面睇落似邏輯bug，實際係fetch漏欄位。修復手法：新增/改動任何表結構化欄位後，`grep "rest/v1/<table>?"` 列晒所有讀取點，逐一核對select list 是否需要同步 — Session 189/2026-07-24 [[project_order_cost_audit_2026_07_17]]
+
+41. **【高頻 ⚠️】n8n 多節點鏈新增 payload 欄位，必須逐個節點檢查轉發，唔可以淨改頭尾兩端**：Dashboard 新增 `Family_Member_Config` 傳入 webhook 後，只改咗最終寫入節點（`Supabase Mirror Prep`）同計算節點（`Calculate Profit & Pack Items`），漏改中間嘅 `Parse Items & Generate SKU`（負責正規化 SKU 並將原始 payload 逐項轉成內部格式）——呢個節點原本冇轉發呢個新欄位，令下游 `Calculate` 節點永遠讀到空值，計算恆為 $0，零報錯（因為 fallback 邏輯令空陣列合法運算出 0）。真實 live webhook 測試（非純代碼審查）先揭發呢個 bug。修復手法：改任何 n8n 多節點鏈嘅 payload schema 前，用 `get_node` 逐個列出鏈上每一個 Code 節點嘅 output json 結構，確認新欄位喺**每一個**轉手節點都有明確 `field: value` 一行，唔可以假設「頭尾兩端改咗中間自然透傳」 — D49/cl-flow 2026-07-28-1121
 
 > 📌 **退役**（Session 189，`/commit` Lesson Distillation，全檔滿50條達上限）：「cl-flow runner Perplexity 推理模型靜默空白」（原 Pitfall #16，Session 110）——修復已是結構性（`max_tokens`參數已永久調高+空content視為失敗已寫入runner程式碼本身），非需記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（新增表欄位須同步檢查所有前端fetch select list）。
 
