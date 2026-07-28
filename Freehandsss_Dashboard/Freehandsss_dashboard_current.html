@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-24T18:37:40Z">
+    <meta name="fhs-build" content="2026-07-28T08:32:35Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -6601,25 +6601,57 @@
             return parts.join('、');
         }
 
+        // cl-flow 2026-07-28-1121 Phase D: 家庭組合鎖匙扣(V2)——S/P 全自動推導（Fat Mo 2026-07-28口述定案）
+        // 成人 mode：玻璃瓶(家庭)已選（en_parent勾選）先有倒模=S，否則用相=P
+        // 每個嬰兒/大寶部位 mode：該部位喺主產品(P_MAIN)嘅 limb-sel 是否已選（非"無"）先有倒模=S，否則=P
+        // 操作者唔使揀，系統由主產品配置比對推導，避免人手判斷失誤
+        function _fhsFamilyLimbMode(who, part) {
+            if (!part) return 'P';
+            if (who === '嬰兒') {
+                const s = document.querySelector(`.limb-sel[data-who="嬰兒"][data-part="${part}"]`);
+                return (s && s.value !== '無') ? 'S' : 'P';
+            }
+            // 大寶：limb-sel 只喺 pSubCat=玻璃瓶款式 且 en_elder 已勾時先存在
+            const subCat = getValSafe("pSubCat", "");
+            const isGlassSub = !subCat.includes("木框");
+            const enElder = document.getElementById("en_elder");
+            const s = (isGlassSub && enElder && enElder.checked)
+                ? document.querySelector(`.limb-sel[data-who="大寶"][data-part="${part}"]`)
+                : null;
+            return (s && s.value !== '無') ? 'S' : 'P';
+        }
+
         function getFamilyComboDetails() {
             const combo = document.getElementById("k_family_combo")?.value;
             const p1 = document.getElementById("fam_p1_sel")?.value;
+            const subCat = getValSafe("pSubCat", "");
+            const isGlassSub = !subCat.includes("木框");
+            const enParent = document.getElementById("en_parent");
+            const adultMode = (isGlassSub && enParent && enParent.checked) ? 'S' : 'P';
+
             let note = "";
-            let sType = "";
+            let memberConfig = [{ role: 'adult', mode: adultMode }];
 
             if (combo === "S1_B") {
-                note = `父母手 + 嬰兒${p1}`;
-                sType = "家庭(S1)";
+                const m1 = _fhsFamilyLimbMode('嬰兒', p1);
+                note = `父母手(${adultMode}) + 嬰兒${p1}(${m1})`;
+                memberConfig.push({ role: 'baby', part: p1, mode: m1 });
             } else if (combo === "S2_BB") {
                 const p2 = document.getElementById("fam_p2_sel")?.value;
-                note = `父母手 + 嬰兒${p1} + 嬰兒${p2}`;
-                sType = "家庭(S2)";
+                const m1 = _fhsFamilyLimbMode('嬰兒', p1);
+                const m2 = _fhsFamilyLimbMode('嬰兒', p2);
+                note = `父母手(${adultMode}) + 嬰兒${p1}(${m1}) + 嬰兒${p2}(${m2})`;
+                memberConfig.push({ role: 'baby', part: p1, mode: m1 });
+                memberConfig.push({ role: 'baby', part: p2, mode: m2 });
             } else if (combo === "S2_BE") {
                 const p2 = document.getElementById("fam_p2_sel")?.value;
-                note = `父母手 + 嬰兒${p1} + 大寶${p2}`;
-                sType = "家庭(S2)";
+                const m1 = _fhsFamilyLimbMode('嬰兒', p1);
+                const m2 = _fhsFamilyLimbMode('大寶', p2);
+                note = `父母手(${adultMode}) + 嬰兒${p1}(${m1}) + 大寶${p2}(${m2})`;
+                memberConfig.push({ role: 'baby', part: p1, mode: m1 });
+                memberConfig.push({ role: 'elder', part: p2, mode: m2 });
             }
-            return { note, sType };
+            return { note, memberConfig };
         }
 
         function syncKcEngVisual() {
@@ -6867,7 +6899,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         let qty = document.getElementById(`k_family_qty`).value || "1";
                         let eng = document.getElementById(`k_family_eng`)?.value || "待定";
                         let comboInfo = getFamilyComboDetails();
-                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 [${comboInfo.sType}](x${qty})\n   部位：${comboInfo.note}\n   刻字：${eng}\n`;
+                        kDetails += ` - 👨‍👩‍👧‍👦 家庭連心 (x${qty})\n   部位：${comboInfo.note}\n   刻字：${eng}\n`;
                     }
                     detailsB += `產品類別：鎖匙扣 (不鏽鋼)\n${kDetails || " - (未選擇)\n"}`;
                 }
@@ -6980,21 +7012,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     elderParts.forEach(p => {
                         if (getValSafe(`k_${p.id}_en`, false)) {
                             let qty = Math.max(1, Math.floor(Number(getValSafe(`k_${p.id}_qty`, "1")) || 1));
-                            let finalObj = p.type;
-                            if (!hasMainProduct) finalObj = "家庭(P1)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
+                            // cl-flow 2026-07-28-1121 Phase D: V2統一SKU（大寶tier，同真實提交邏輯一致）
+                            let finalObj = hasMainProduct ? "大寶(S)" : "大寶(P)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_K_${p.id}`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼 (V2)`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
                         }
                     });
                 }
                 if (getValSafe('k_family_en', false)) {
+                    // cl-flow 2026-07-28-1121 Phase D: 家庭組合鎖匙扣(V2)——單行，冇主產品時 _familyMissingMain 標記供 calculatePricing() 防呆判斷
                     let qty = Math.max(1, Math.floor(Number(getValSafe('k_family_qty', '1')) || 1));
                     let comboInfo = getFamilyComboDetails();
-                    let finalObj = comboInfo.sType;
-                    if (!hasMainProduct) {
-                        if (finalObj === "家庭(S1)") finalObj = "家庭(P1)";
-                        if (finalObj === "家庭(S2)") finalObj = "家庭(P2)";
-                    }
-                    orderItemsArray.push({ "Order_Item_Key": `TEMP_K_FAM`, "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`, "Quantity": qty, "isFamily": true, "comboNote": comboInfo.note });
+                    orderItemsArray.push({
+                        "Order_Item_Key": `TEMP_K_FAM`,
+                        "Product_Name": `家庭鎖匙扣 - 不銹鋼 (V2)`,
+                        "Quantity": qty,
+                        "isFamily": true,
+                        "comboNote": comboInfo.note,
+                        "Family_Member_Config": comboInfo.memberConfig,
+                        "_familyMissingMain": !hasMainProduct
+                    });
                 }
             }
 
@@ -7022,9 +7058,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             let qty = Math.max(1, Math.floor(Number(qtyRaw) || 1));
                             let color = getValSafe(`m_${p.id}_color`, "925銀") || "925銀";
                             if (color === "待定") color = "925銀";
-                            let finalObj = p.type;
-                            if (!hasMainProduct) finalObj = "家庭(P1)";
-                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color}`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
+                            // cl-flow 2026-07-28-1121 Phase D: V2統一SKU（大寶tier，同真實提交邏輯一致）
+                            let finalObj = hasMainProduct ? "大寶(S)" : "大寶(P)";
+                            orderItemsArray.push({ "Order_Item_Key": `TEMP_M_${p.id}`, "Product_Name": `${finalObj}吊飾 - ${color} (V2)`, "PartDesc": partMap[p.id], "Quantity": qty, "part_id": p.id, "target": "大寶" });
                         }
                     });
                 }
@@ -7063,6 +7099,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             let hasBaby = items.some(i => i.Product_Name.includes("嬰兒") || i.Product_Name.includes("大寶") || i.Product_Name.includes("家庭"));
             let hasMainItem = items.some(i => !i.isAccessory);
             let hasAccessory = items.some(i => i.isAccessory);
+
+            // cl-flow 2026-07-28-1121: 家庭組合鎖匙扣必須包含嬰兒/大寶倒模核心（Fat Mo 2026-07-28口述定案）
+            let hasFamilyMissingMain = items.some(i => i._familyMissingMain);
+            if (hasFamilyMissingMain) {
+                logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 家庭組合鎖匙扣必須包含嬰兒/大寶倒模核心（立體擺設主套裝），不可獨立購買。系統拒絕報價。</div>`);
+                if (uiPrice) uiPrice.innerText = "0";
+                if (uiCost) uiCost.innerText = "0";
+                if (uiDetails) uiDetails.innerHTML = logs.join('<br>');
+                return;
+            }
 
             if (hasAccessory && !hasMainItem) {
                 logs.push(`<div style="color:#FFF; font-weight:bold; background:#b71c1c; padding:4px; border-radius:4px; margin-bottom:4px;">🚨 [防呆阻擋] 核心產品缺失：配件不可單獨購買，必須至少包含一個手模/鎖匙扣/首飾主項。系統拒絕報價。</div>`);
@@ -8252,6 +8298,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // 🚀 Dashboard V22 隱藏雙核發射引擎 (Fat Mo 智能判斷版)
         // ==========================================
         async function syncToAirtable() {
+            // cl-flow 2026-07-28-1121: 家庭組合鎖匙扣冇主套裝拒絕落單（Fat Mo 2026-07-28口述定案，硬阻擋非純估價警示）
+            if (getValSafe('k_family_en', false) && !getValSafe('enableP', false)) {
+                alert('🚨 家庭組合鎖匙扣必須包含嬰兒/大寶倒模核心（立體擺設主套裝），不可獨立購買。請先勾選立體擺設主套裝，或取消家庭組合鎖匙扣。');
+                return;
+            }
             // S93: split input validation guard (Q1-A / Q2-B)
             var _splitInvalid = [];
             ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
@@ -8413,11 +8464,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 let topEng = getValSafe(`k_${p.id}_top`, "");
                                 let botEng = getValSafe(`k_${p.id}_bot`, "");
                                 let engNotes = (topEng && botEng) ? `[上排]${topEng} [下排]${botEng}` : '';
-                                let finalObj = p.type;
-                                if (!hasMainProduct) finalObj = "家庭(P1)";
+                                // cl-flow 2026-07-28-1121 Phase D: V2統一SKU（大寶tier，Q2新語義=大寶(P) standalone）
+                                let finalObj = hasMainProduct ? "大寶(S)" : "大寶(P)";
                                 orderItemsArray.push({
                                     "Order_Item_Key": `${currentOrderId}_K_E_${p.id.replace('e_','').toUpperCase()}`,
-                                    "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`,
+                                    "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼 (V2)`,
                                     "Mode": modeTag,
                                     "Quantity": qty,
                                     "Notes": engNotes
@@ -8426,21 +8477,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         });
                     }
                     if (getValSafe('k_family_en', false)) {
-                        let qty = Number(getValSafe('k_family_qty', '1')) || 1;
-                        let engNotes = getValSafe('k_family_eng', '');
-                        let comboInfo = getFamilyComboDetails();
-                        let finalObj = comboInfo.sType;
-                        if (!hasMainProduct) {
-                            if (finalObj === "家庭(S1)") finalObj = "家庭(P1)";
-                            if (finalObj === "家庭(S2)") finalObj = "家庭(P2)";
+                        // cl-flow 2026-07-28-1121 Phase D: 家庭組合鎖匙扣(V2)——單行+n8n動態畫圖（Q3第二輪定案）
+                        // Fat Mo 2026-07-28口述：冇主產品(嬰兒/大寶倒模核心)拒絕落單，取代舊有S→P升格邏輯
+                        if (hasMainProduct) {
+                            let qty = Number(getValSafe('k_family_qty', '1')) || 1;
+                            let engNotes = getValSafe('k_family_eng', '');
+                            let comboInfo = getFamilyComboDetails();
+                            orderItemsArray.push({
+                                "Order_Item_Key": `${currentOrderId}_K_FAM_COMBO`,
+                                "Product_Name": `家庭鎖匙扣 - 不銹鋼 (V2)`,
+                                "Mode": modeTag,
+                                "Quantity": qty,
+                                "Notes": engNotes ? engNotes + ` | 合成: ${comboInfo.note}` : `合成: ${comboInfo.note}`,
+                                "Family_Member_Config": comboInfo.memberConfig
+                            });
                         }
-                        orderItemsArray.push({
-                            "Order_Item_Key": `${currentOrderId}_K_FAM_COMBO`,
-                            "Product_Name": `${finalObj}鎖匙扣 - 不銹鋼`,
-                            "Mode": modeTag,
-                            "Quantity": qty,
-                            "Notes": engNotes ? engNotes + ` | 合成: ${comboInfo.note}` : `合成: ${comboInfo.note}`
-                        });
                     }
                 }
 
@@ -8478,11 +8529,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 let color = getValSafe(`m_${p.id}_color`, "925銀");
                                 if (color === "待定" || color === "") color = "925銀";
                                 let engText = getValSafe(`m_${p.id}_eng`, "");
-                                let finalObj = p.type;
-                                if (!hasMainProduct) finalObj = "家庭(P1)";
+                                // cl-flow 2026-07-28-1121 Phase D: V2統一SKU（大寶tier，Q2新語義=大寶(P) standalone）
+                                let finalObj = hasMainProduct ? "大寶(S)" : "大寶(P)";
                                 orderItemsArray.push({
                                     "Order_Item_Key": `${currentOrderId}_M_E_${p.id.replace('e_','').toUpperCase()}`,
-                                    "Product_Name": `${finalObj}吊飾 - ${color}`,
+                                    "Product_Name": `${finalObj}吊飾 - ${color} (V2)`,
                                     "Mode": modeTag,
                                     "Quantity": qty,
                                     "Notes": engText || ''
