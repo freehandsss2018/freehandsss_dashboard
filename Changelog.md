@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— /cl-flow A2 Gemini model 升級 gemini-2.5-flash → gemini-3.6-flash
+
+- **緣起**：Fat Mo 要求檢查 AG（cl-flow 內 A2 評審用嘅 Gemini API）有冇更新模型可用，融入前要求先確認 API 真正用得。
+- **查證**：直接用現有 `GEMINI_API_KEY` call `GET /v1beta/models` 列出帳號實際可用模型，並用真實 `generateContent` 請求逐個測試（非只看清單）。結果：`gemini-3.6-flash`（3.6-flash-07-2026，目前最新）同 `gemini-3.5-flash` 都測試成功；`gemini-3.1-pro-preview` 等 Pro 系列因免費額度 429 quota exceeded 用唔到。現有設定為半年前舊版 `gemini-2.5-flash`。
+- **修復**：`.env`／`.env.example` 嘅 `GEMINI_A2_MODEL_DEFAULT` 同 `scripts/cl-flow-runner.js` line 26 code fallback 三處同步改為 `gemini-3.6-flash`。
+- **驗證**：跑一次真實 `node scripts/cl-flow-runner.js --init` + `--review --fast` 端對端流程（測試用 flow_id `2026-07-28-1128`，`artifacts/` 已 gitignore 不進 repo），`ag-review.md` 正確由新模型產出 5 條有效批評，非空/非錯誤。
+- **已知限制**：Flash preview 版本 Google 隨時可能下架，需定期用同一手法 re-probe；Pro 系列升級需先處理 billing plan。
+
+【交付前雙紀律自檢】
+驗收：純配置/工具鏈改動（非核心業務邏輯）——已用真實 API 請求 + 真實 runner 端對端跑通驗證，非假設
+Subagent：❌ 未使用（直接 curl 探測 API + Edit 改配置 + 跑真實 runner 驗證）
+
 ## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— IG看門狗接上錯誤通知鏈（D48追加）：啟用閒置嘅 FHS_System_ErrorMonitor
 
 - **緣起**：D48 容器輪替修復（07-25）後 Fat Mo 追問「怎樣阻止再發生」，揪出比容器輪替更深一層漏洞——`FHS_IGWatchdog_DriveWatch`（及全 n8n 實例其他 production workflow）都未設定 `settings.errorWorkflow`，節點真正拋錯時零通知，只能人手開後台先會發現，同容器輪替事件屬同一種盲點（安靜失敗，冇人主動注意）。

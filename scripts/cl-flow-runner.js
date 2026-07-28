@@ -23,7 +23,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.6-flash';
 const ROOT_DIR = path.join(__dirname, '..');
 
 // ─── CLI Parsing ─────────────────────────────────────────────────────────────
