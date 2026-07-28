@@ -1,5 +1,42 @@
 # Changelog
 
+## [2026-07-28] Session（Claude Code / Sonnet 5 執行）— IG看門狗接上錯誤通知鏈（D48追加）：啟用閒置嘅 FHS_System_ErrorMonitor
+
+- **緣起**：D48 容器輪替修復（07-25）後 Fat Mo 追問「怎樣阻止再發生」，揪出比容器輪替更深一層漏洞——`FHS_IGWatchdog_DriveWatch`（及全 n8n 實例其他 production workflow）都未設定 `settings.errorWorkflow`，節點真正拋錯時零通知，只能人手開後台先會發現，同容器輪替事件屬同一種盲點（安靜失敗，冇人主動注意）。
+- **查證**：既有 `FHS_System_ErrorMonitor`（`8WbbEqZpiWu0CB1o`，Error Trigger→Airtable/Supabase落地）早已建好，但全實例冇任何 workflow 指向佢，形同虛設。
+- **修復**：(1) `FHS_System_ErrorMonitor` 新增 Telegram 即時通知節點（原本只靜默落地）(2) `FHS_IGWatchdog_DriveWatch` 掛上 `settings.errorWorkflow` (3) `build_n8n_workflow.cjs` 同步更新 `settings` 常數，避免下次重新產生 workflow 時洗掉呢條接線（repo/live drift 防範）。
+- **已知未完成**：其餘 production workflow（`FHS_Core_OrderProcessor` 等）尚未接上 errorWorkflow，列 backlog，非本次範圍。
+- 詳見 `.fhs/notes/decisions.md` D48「追加（同日）」段、`.fhs/memory/lessons/2026-07-25_ig-watchdog-container-rotation-oauth-red-herring.md`。
+
+【交付前雙紀律自檢】
+驗收：n8n workflow 治理型——查證 FHS_System_ErrorMonitor 原無下游通知+全實例零指向，修復後兩條 workflow 正確接線
+Subagent：❌ 未使用（互動式 n8n MCP 直接操作+改碼，非大型/跨多份文件改動）
+
+## [2026-07-27] Session（Claude Code / Sonnet 5 執行）— canva-auto：零裁切鐵律 + Meika學習記錄 + dashboard Canva/3D學習區塊
+
+- **零裁切鐵律**：canva-auto SOP v1.1.0 新增——`resize_element` 唔夠，必須 `crop_media(0,0,W,H)` 明確歸零裁切，Meika 訂單（0600904）AI 自行發現並修正首例。
+- **母片搜尋優先序調整**：由純「最新單」改為「音長最接近→建立日期最接近」；設計標題新增音長標記（`mutagen` 讀 WhatsApp Audio 秒數）。
+- **Canva MCP API 大改版適配**：`edit-design`/`read-design` 取代舊 transaction 工具。
+- **案例記錄**：Meika（0600904）完整案例落 `canva_auto/placement_memory.json`，Fat Mo 覆核 PASS。
+- **Dashboard 新增區塊**：`agent_dashboardV42.js` 新增「Canva學習記錄」+「3D打印學習記錄」兩區塊，讀取 `canva_auto/placement_memory.json` + `3d/param_memory.json` 生成可展開案例卡片（客人/訂單/日期/學習內容）。
+- 涉及檔案：`.fhs/ai/commands/canva-auto.md`、`canva_auto/placement_memory.json`、`scripts/agent_dashboardV42.js`。
+
+【交付前雙紀律自檢】
+驗收：SOP/工具型——Meika真實訂單案例已由Fat Mo覆核PASS，dashboard新增區塊為生成式展示層非核心業務邏輯
+Subagent：❌ 未使用（互動式 Canva MCP 操作+SOP文件更新）
+
+## [2026-07-25] Session（Claude Code / Sonnet 5 執行）— D48：IG漏單看門狗容器輪替修復——動態偵測取代寫死ID
+
+- **緣起**：Telegram 收到「距上次新匯出已168小時——疑似排程到期或OAuth失效」告警。Fat Mo 澄清系統匯出流程係「Meta每天自動匯出到Google Drive」（方案C），排除OAuth猜測後，用 Google Drive 連結器實測發現：Meta 於 2026-07-18 把匯出目的地換咗一個新嘅父資料夾，而 `build_n8n_workflow.cjs` 嘅 `CONTAINER_FOLDER_ID` 寫死指向 06-18 建立嘅舊容器，導致連續7天（=168小時）零偵測——非OAuth/憑證問題，純粹查錯資料夾，Telegram 告警文字誤導方向。
+- **裁決**：Fat Mo 選「重建動態偵測」。查證兩次容器（06-18/07-18）共享同一穩定上層 `0AF2K3iw4ozbhUk9PVA`，改用執行期動態查詢取代寫死常數。
+- **執行**：`CONTAINER_FOLDER_ID` 常數改 `STABLE_DRIVE_ID`；新增「Find Latest Meta Root」+「Pick Latest Container」兩個節點（動態取最新 `meta-*` 容器）；`emptySummaryCode` 誤導文字改為指向容器名稱+人手確認排程/credential 路徑。PUT 上正式 workflow `D4LK6VrQbiXlju0V`。
+- **驗證**：兩次真實觸發交叉對照——重新整理後第二次觸發，execution 5134 證實「Pick Latest Container」正確動態解出新容器 `meta-2026-Jul-18-08-25-25`，「Find New Export Folders」精準抓到 07-18~07-24 積壓的7個資料夾，Telegram 回報覆蓋範圍 `7/18~7/24`、需核對：0（此空窗期無真實漏單）。
+- **教訓**：Meta 匯出目的地容器並非永久穩定，任何依賴「單一寫死 Google Drive 資料夾 ID」的自動化排程都要抓一個更穩定的祖先層動態查詢。詳見 `.fhs/notes/decisions.md` D48、`.fhs/memory/lessons/2026-07-25_ig-watchdog-container-rotation-oauth-red-herring.md`。
+
+【交付前雙紀律自檢】
+驗收：n8n workflow 生產型——兩次真實觸發交叉驗證PASS，execution log核實正確容器+資料夾範圍
+Subagent：❌ 未使用（互動式 n8n MCP + Google Drive 連結器直接操作+改碼）
+
 ## [2026-07-25] Session（Claude Code / Sonnet 5 執行）— finance-gatekeeper §三B 補第4步：文件同步完整性 grep sweep（D46事故後）
 
 - **緣起**：上一條目（配件成本 accessory_cost 修復）執行完成後，Fat Mo 質詢「有更新權威財務或其他相關檔案嗎」，一問揪出 AI 淨係同步咗 `cl-final-plan.md` 執行計劃寫低嘅3份文件，漏咗 `FHS_Finance_Bible.md`（L1最高權威）同 `FHS_Product_Definition.md`（L2產品身份SSoT）——兩者都逐字列出兄弟欄位（`handmodel_cost`/`keychain_cost`/`necklace_cost`）但冇機制逼AI搜齊全部命中處。根因：文件同步靠「憑執行計劃寫低嘅清單」，該清單本身可以就係漏嘅源頭，冇機械化二次覆核。
