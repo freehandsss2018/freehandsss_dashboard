@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-30 (D51 — 「產品選購」卡片 UI/UX 重新設計提案): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-30「D51：「產品選購」卡片 UI/UX 重新設計提案」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 要求優化「訂單產品內容與方案選擇」區操作體感，交付互動式 HTML 原型（Artifact 發佈，未觸碰 repo）。定案：三大類色沿用財務結算既有配色貫徹全部子元件；鎖匙扣嬰兒/大寶部位改「藥丸多選+共用欄位」設計；預設狀態對齊真實 `resetForm()`；保留底部功能列/財務結算卡片位置，112 項原版控制項零遺漏；逐行對照真實 `generate()` 訊息組字邏輯確認新介面 100% 相容 IG Category A/B 訊息。純設計提案，未實作落 repo，待 Fat Mo 審批。
+Subagent：❌ 未使用（全程互動式源碼查證 + HTML 原型迭代 + Fat Mo 多輪反饋修正）。
+
 ## 2026-07-28 (D49 — 大寶/成人/家庭三對象轉V2三層成本模型): 🏷️ ✅
 
 **摘要**：全文見完成報告 [2026-07-28_d49_baby_adult_family_v2_cost_model_completion_report.md](../reports/completion/2026-07-28_d49_baby_adult_family_v2_cost_model_completion_report.md)（本行僅摘要指回）。S189 Phase3 只覆蓋嬰兒tier，本次全面轉大寶/成人/家庭。Fat Mo兩輪拷問揪出A3規劃階段兩個錯誤（誤讀Cost Schema§3.3語義、Q3首輪拆行方案物理前提錯誤），糾正後家庭組合正式定義首次落檔（單行+n8n動態畫圖，非拆件）。migration 0081+0082、n8n三節點升版（V47.14/24/16）、Dashboard 6處改動、6份權威文件同步。Live webhook對抗測試6項全PASS（含position_code BLOCKER修復核心驗證），過程即時揪出並修正兩個真實bug。
