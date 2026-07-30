@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-30T15:59:35Z">
+    <meta name="fhs-build" content="2026-07-30T17:07:43Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -440,6 +440,18 @@
         .d51-override-row { display: none; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 9px; }
         .d51-override-row.show { display: block; }
         .d51-override-row-label { font-size: 12px; font-weight: 600; color: #444; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+        /* ---- D51 第二層群組標題（鎖匙扣/頸鏈吊飾入面嘅「嬰兒/大寶」小標題）：貫徹分類色，唔再淨係外層Tier1有色 ---- */
+        .d51-menu-title { display: inline-flex; align-items: center; gap: 6px; }
+        .d51-menu-tag { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .d51-menu-tag.cat-k { background: var(--d51-cat-k); }
+        .d51-menu-tag.cat-m { background: var(--d51-cat-m); }
+        .sec-title-row .limb-title.d51-menu-title.cat-k { color: var(--d51-cat-k); }
+        .sec-title-row .limb-title.d51-menu-title.cat-m { color: var(--d51-cat-m); }
+        /* ---- D51 頸鏈吊飾（M）部位列：由卡片式 part-item 拉直做 flat menu-row，貼近設計稿 ---- */
+        .d51-menu-row { background: transparent; border: none; border-bottom: 1px solid #eee; border-radius: 0; padding: 9px 2px; margin-bottom: 0; }
+        .d51-menu-row:last-child { border-bottom: none; }
+        .d51-menu-row .part-details { border-top: 1px dashed #eee; }
+        .limb-grid.d51-menu-block { background: #FBF8F3; border: 1px solid #eee; border-radius: 11px; }
 
         .switch {
             position: relative;
@@ -4371,9 +4383,9 @@
         <div id="contentK" class="addon-content">
             <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
 
-            <div class="limb-grid">
+            <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-baby"/></svg>嬰兒</span>
+                    <span class="limb-title d51-menu-title cat-k"><span class="d51-menu-tag cat-k"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒</span>
                     <label class="switch"><input type="checkbox" id="k_baby_sec_en" checked
                             onchange="togglePart('k_baby_sec_box', this); generate();"><span
                             class="slider"></span></label>
@@ -4434,9 +4446,9 @@
                 </div>
             </div>
 
-            <div class="limb-grid">
+            <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>大寶</span>
+                    <span class="limb-title d51-menu-title cat-k"><span class="d51-menu-tag cat-k"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶</span>
                     <label class="switch"><input type="checkbox" id="k_elder_sec_en"
                             onchange="togglePart('k_elder_sec_box', this); generate();"><span
                             class="slider"></span></label>
@@ -4560,15 +4572,15 @@
         <div id="contentM" class="addon-content">
             <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
 
-            <div class="limb-grid">
+            <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-baby"/></svg>【嬰兒部位】</span>
+                    <span class="limb-title d51-menu-title cat-m"><span class="d51-menu-tag cat-m"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒部位</span>
                     <label class="switch"><input type="checkbox" id="m_baby_sec_en" checked
                             onchange="togglePart('m_baby_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="m_baby_sec_box" class="part-details active" style="border:none; padding:0; margin:0;">
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>左手</span>
                             <label class="switch"><input type="checkbox" id="m_lh_en"
@@ -4587,7 +4599,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>右手</span>
                             <label class="switch"><input type="checkbox" id="m_rh_en"
@@ -4606,7 +4618,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>左腳</span>
                             <label class="switch"><input type="checkbox" id="m_lf_en"
@@ -4626,7 +4638,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>右腳</span>
                             <label class="switch"><input type="checkbox" id="m_rf_en"
@@ -4649,15 +4661,15 @@
                 </div>
             </div>
 
-            <div class="limb-grid">
+            <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>【大寶部位】</span>
+                    <span class="limb-title d51-menu-title cat-m"><span class="d51-menu-tag cat-m"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶部位</span>
                     <label class="switch"><input type="checkbox" id="m_elder_sec_en"
                             onchange="togglePart('m_elder_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="m_elder_sec_box" class="part-details" style="border:none; padding:0; margin:0;">
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶左手</span>
                             <label class="switch"><input type="checkbox" id="m_e_lh_en"
@@ -4676,7 +4688,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶右手</span>
                             <label class="switch"><input type="checkbox" id="m_e_rh_en"
@@ -4695,7 +4707,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶左腳</span>
                             <label class="switch"><input type="checkbox" id="m_e_lf_en"
@@ -4715,7 +4727,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
+                    <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶右腳</span>
                             <label class="switch"><input type="checkbox" id="m_e_rf_en"
