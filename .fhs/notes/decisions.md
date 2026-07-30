@@ -13,6 +13,8 @@
 
 全文見 Changelog.md 2026-07-30 條目（含 Artifact 連結）。**Subagent 使用記錄**：❌ 未使用（全程互動式源碼查證 + HTML 原型迭代 + Fat Mo 多輪反饋修正）。
 
+**【D51續，同日】實作+部署**：Fat Mo 審批「先實作D51落V42.html，再部署」。已按上述定案方向實作落 `V42.html`，**canonical 欄位 id/onchange 契約零改動**（`enableP`/`enableK`/`enableM`、32個鎖匙扣部位欄位、8個頸鏈吊飾部位欄位、`generate()`/`calculatePricing()` 全部未修改），新增橋接函式負責新 UI 讀寫呢啲既有欄位。Live browser 直接執行 JS 驗證三條路徑（pill選擇/共用欄位/分開填覆寫）產生嘅 `generate()` 輸出逐字核對正確，console 零錯誤。`/fhs-check` LIFECYCLE/STRESS/ACCEPTANCE 全 PASS（PRICE_AUDIT 因 Airtable API 429 額度用盡 FAIL，已知外部限制不阻擋）。升格部署 `current.html`，三關驗證 PASS（HTTP204/大小1,053,145 bytes/SHA256 `DF8071247072682152E018B5A06C9D2A70BAC2D516DCFC1BBDC82B73819BED9F`）。未實作「否＝純金屬單」Google相片上傳連結（需 Fat Mo 提供真實連結，列 backlog）。全文見 Changelog.md 2026-07-30「D51續」條目。
+
 ---
 
 [2026-07-28] (D50) 訂單總覽篩選三連環修復——期間歸屬同財務RPC統一用LEAST()、消失單bug、已取消單預設隱藏

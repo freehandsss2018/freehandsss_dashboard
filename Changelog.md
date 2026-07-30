@@ -1,5 +1,27 @@
 # Changelog
 
+## [2026-07-30] Session（Claude Code / Sonnet 5 執行）— D51續：「產品選購」卡片 UI/UX 重新設計實作落 V42.html + 升格部署
+
+- **緣起**：D51 設計提案（見下方條目）經 Fat Mo 審批「先實作D51落V42.html，再部署」，本次接續實作。
+- **實作範圍**（V42.html）：
+  - 三大類（手模擺設/鎖匙扣/頸鏈吊飾）toggle-row 重建為 Tier1 header：icon圓底色+標題文字+摘要chip+展開箭嘴，全部跟返「財務結算」既有配色（紫`#4A148C`/藍`#1565C0`/棕`#4E342E`）；header可點擊展開/收合，唔影響原有switch點擊行為（`event.stopPropagation()`隔離）。
+  - 鎖匙扣「嬰兒」「大寶」兩組由 4 個獨立開關各自輸入，改為藥丸式多選部位＋共用數量/上排/下排一次填，「如果有部位想唔同 → 分開填」連結展開個別覆寫列。
+  - `renderLimbGrid()` 新增「父母」旁「家庭專屬」徽章。
+  - **canonical 欄位契約零改動**：`enableP`/`enableK`/`enableM`、`k_lh_en`/`k_lh_qty`/`k_lh_top`/`k_lh_bot` 等 32 個鎖匙扣部位欄位、`k_baby_sec_en`/`k_elder_sec_en`/`k_family_en`、`m_*` 全部 8 個頸鏈吊飾部位欄位，id 同 onchange 契約完全不變——新 UI 只負責讀寫呢啲欄位，`generate()`/`calculatePricing()`/`buildOrderItemsForPricing()` 零改動。
+  - 新增橋接函式：`fhsD51HeaderClick`/`fhsD51UpdateHeader`/`fhsD51KPill`/`fhsD51KSharedChange`/`fhsD51KToggleOverride`（純新增，不修改任何既有函式）。
+  - **未實作**：D51 提案中「否＝純金屬單」Google相片上傳連結提示——需要 Fat Mo 提供真實連結，暫緩，列 backlog。
+- **Live browser 驗證**（本機 dev server `fhs-dashboard` + `switchMode('create')` 直達新單表單）：
+  - 撳 pill 選左手/右手 → 填共用數量/上排/下排 → `generate()` 產出嘅 Category B 訊息逐字正確列出兩個部位、正確數量、正確刻字。
+  - 撳「分開填」後單獨改右手刻字 → 左手保留共用值、右手正確變更，兩者互不污染。
+  - `calculatePricing()` 正常運作，價格正確計算。
+  - P/K/M 三個 header 摘要 chip 即時反映實際選擇狀態；Console 全程零 error（僅既有 `[FHS Cost Shadow]` 診斷 warn，與本次改動無關）。
+- **部署**：`/fhs-check` 前置健檢——LIFECYCLE/STRESS/ACCEPTANCE 全 PASS；PRICE_AUDIT 因 Airtable API 429（月度額度用盡）FAIL，屬 finance-gatekeeper 已知外部限制先例（非阻擋項，比照繼續部署）。升格 cp `V42.html`→`current.html`，`upload-web.ps1` 三關驗證全 PASS：HTTP 204 / 大小 1,053,145 bytes（remote=local）/ SHA256 `DF8071247072682152E018B5A06C9D2A70BAC2D516DCFC1BBDC82B73819BED9F`。公開網址：https://yanhei.synology.me/Freehandsss_dashboard_current.html
+- 全文設計背景見下方 D51 條目、`.fhs/notes/decisions.md` D51。
+
+【交付前雙紀律自檢】
+驗收：live browser 實測 pill+共用欄位+分開填三種路徑產生嘅 `generate()` 輸出逐字核對正確 + `calculatePricing()` 正常運作 + console 零錯誤 + `/fhs-check` 三項 PASS + 部署三關驗證 PASS
+Subagent：❌ 未使用（全程互動式源碼改動 + browser 直接執行 JS 驗證 + 部署腳本執行）
+
 ## [2026-07-30] Session（Claude Code / Sonnet 5 執行）— D51：「產品選購」卡片 UI/UX 重新設計提案（純設計交付，未寫入 current.html）
 
 - **緣起**：Fat Mo 要求優化「新增/修改訂單」表單「訂單產品內容與方案選擇」區塊嘅操作體感——家庭組合已綁定配件不應逐件勾選、鎖匙扣/吊飾部位逐件重複輸入等痛點。

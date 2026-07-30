@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-30 (D51續 — 「產品選購」卡片 UI/UX 重新設計實作落 V42.html + 升格部署): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-30「D51續」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 審批下方 D51 設計提案「先實作落V42.html，再部署」，本次接續實作：三大類 Tier1 header 重新設計、鎖匙扣藥丸多選+共用欄位、父母家庭專屬徽章，canonical 欄位 id/onchange 契約零改動。Live browser 直接執行 JS 驗證 pill/共用欄位/分開填三條路徑產生嘅 `generate()` 輸出逐字正確，console 零錯誤。`/fhs-check` 三項 PASS（PRICE_AUDIT 因 Airtable 429 已知限制不阻擋）。current.html 已升格部署三關驗證 PASS。
+Subagent：❌ 未使用（全程互動式源碼改動 + browser 直接執行 JS 驗證 + 部署腳本執行）。
+
 ## 2026-07-30 (D51 — 「產品選購」卡片 UI/UX 重新設計提案): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-30「D51：「產品選購」卡片 UI/UX 重新設計提案」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 要求優化「訂單產品內容與方案選擇」區操作體感，交付互動式 HTML 原型（Artifact 發佈，未觸碰 repo）。定案：三大類色沿用財務結算既有配色貫徹全部子元件；鎖匙扣嬰兒/大寶部位改「藥丸多選+共用欄位」設計；預設狀態對齊真實 `resetForm()`；保留底部功能列/財務結算卡片位置，112 項原版控制項零遺漏；逐行對照真實 `generate()` 訊息組字邏輯確認新介面 100% 相容 IG Category A/B 訊息。純設計提案，未實作落 repo，待 Fat Mo 審批。
