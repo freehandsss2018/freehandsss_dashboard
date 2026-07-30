@@ -381,6 +381,66 @@
             margin-bottom: 10px;
         }
 
+        /* ===== D51（2026-07-30）產品選購三大類配色 + Tier1 header 重新設計 =====
+           配色沿用「財務結算」逐件分攤表既有定案（fhsPaySimp_labelP/K/M），非新發明
+           決策記錄見 .fhs/notes/decisions.md D51 */
+        :root {
+            --d51-cat-p: #4A148C; --d51-cat-p-soft: #F3E5F5;
+            --d51-cat-k: #1565C0; --d51-cat-k-soft: #E3F2FD;
+            --d51-cat-m: #4E342E; --d51-cat-m-soft: #EFEBE9;
+        }
+        .toggle-row.tier1-row { cursor: pointer; padding: 6px 4px 6px 0; }
+        .tier1-left { display: flex; align-items: center; gap: 9px; }
+        .tier1-ic {
+            width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: #f5f0e8; color: #B0A090; transition: background .2s, color .2s;
+        }
+        .tier1-ic.cat-p { background: var(--d51-cat-p-soft); color: var(--d51-cat-p); }
+        .tier1-ic.cat-k { background: var(--d51-cat-k-soft); color: var(--d51-cat-k); }
+        .tier1-ic.cat-m { background: var(--d51-cat-m-soft); color: var(--d51-cat-m); }
+        .tier1-right { display: flex; align-items: center; gap: 8px; }
+        .tier1-name { transition: color .2s; }
+        .tier1-name.cat-p { color: var(--d51-cat-p); }
+        .tier1-name.cat-k { color: var(--d51-cat-k); }
+        .tier1-name.cat-m { color: var(--d51-cat-m); }
+        .tier1-summary { font-size: 11px; font-weight: 600; margin-top: 1px; color: #B0A090; transition: color .2s; }
+        .tier1-summary.cat-p { color: var(--d51-cat-p); }
+        .tier1-summary.cat-k { color: var(--d51-cat-k); }
+        .tier1-summary.cat-m { color: var(--d51-cat-m); }
+        .tier1-chevron { color: #B0A090; transition: transform .2s, color .2s; flex-shrink: 0; }
+        .tier1-chevron.open { transform: rotate(180deg); }
+        .tier1-chevron.cat-p { color: var(--d51-cat-p); }
+        .tier1-chevron.cat-k { color: var(--d51-cat-k); }
+        .tier1-chevron.cat-m { color: var(--d51-cat-m); }
+        .switch.d51-cat-p input:checked + .slider { background-color: var(--d51-cat-p); }
+        .switch.d51-cat-k input:checked + .slider { background-color: var(--d51-cat-k); }
+        .switch.d51-cat-m input:checked + .slider { background-color: var(--d51-cat-m); }
+        .d51-family-badge {
+            display: inline-flex; align-items: center; font-size: 10px; font-weight: 700;
+            color: #A9711E; background: #FBF1DD; padding: 2px 7px; border-radius: 5px; margin-left: 6px;
+        }
+        /* ---- 鎖匙扣「嬰兒/大寶」部位選擇：藥丸多選 + 共用欄位（D51，取代4個獨立開關逐個展開） ---- */
+        .d51-pill-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .d51-pill {
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            min-height: 40px; padding: 8px 10px; border: 1.5px solid #ddd; border-radius: 20px;
+            background: #fff; color: #888; font-size: 13px; font-family: inherit; cursor: pointer;
+        }
+        .d51-pill.sel { background: var(--d51-cat-k-soft); border-color: var(--d51-cat-k); color: var(--d51-cat-k); font-weight: 700; }
+        .d51-shared { margin-top: 4px; padding-top: 10px; border-top: 1px dashed #eee; display: none; }
+        .d51-shared.show { display: block; }
+        .d51-shared-label { font-size: 11px; font-weight: 700; color: var(--d51-cat-k); margin-bottom: 8px; }
+        .d51-link-btn {
+            background: none; border: none; padding: 0; margin-top: 8px; font-size: 12px;
+            color: var(--d51-cat-k); text-decoration: underline; cursor: pointer; font-family: inherit; text-align: left;
+        }
+        .d51-override-rows { margin-top: 10px; display: none; flex-direction: column; gap: 8px; }
+        .d51-override-rows.show { display: flex; }
+        .d51-override-row { display: none; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 9px; }
+        .d51-override-row.show { display: block; }
+        .d51-override-row-label { font-size: 12px; font-weight: 600; color: #444; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+
         .switch {
             position: relative;
             display: inline-block;
@@ -3675,6 +3735,9 @@
   <symbol id="icon-check" viewBox="0 0 24 24">
     <polyline stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" points="20 6 9 17 4 12"/>
   </symbol>
+  <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m6 9 6 6 6-6"/>
+  </symbol>
   <symbol id="icon-refresh-cw" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
   </symbol>
@@ -4239,16 +4302,25 @@
             <span>✓</span><span>手模擺設成本 $210 已計入</span>
         </div>
 
-        <div class="toggle-row" id="toggleRowP">
-            <strong style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-palette"/></svg>手模擺設款式</strong>
-            <label class="switch"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this); _syncOrderTypeUI(this.checked)"> <span
-                    class="slider"></span></label>
+        <div class="toggle-row tier1-row" id="toggleRowP" onclick="fhsD51HeaderClick(event,'enableP','contentP')">
+            <div class="tier1-left">
+                <div class="tier1-ic" id="d51IconP"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-palette"/></svg></div>
+                <div>
+                    <strong id="d51NameP">手模擺設款式</strong>
+                    <div class="tier1-summary" id="d51SummaryP">未選購</div>
+                </div>
+            </div>
+            <div class="tier1-right">
+                <svg class="ba-icon tier1-chevron" id="d51ChevronP" width="16" height="16"><use href="#icon-chevron-down"/></svg>
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableP" onchange="toggleAddon('contentP', this); _syncOrderTypeUI(this.checked); fhsD51UpdateHeader('P')"> <span
+                        class="slider"></span></label>
+            </div>
         </div>
         <div id="contentP" class="addon-content">
             <!-- A 組：款式類型 + 底座顏色 + 刻字 -->
             <div class="form-group">
                 <label>款式類型</label>
-                <select id="pSubCat" onchange="renderLimbGrid(); _applyGlassDefaults(); _syncAddonVisibility(); generate();">
+                <select id="pSubCat" onchange="renderLimbGrid(); _applyGlassDefaults(); _syncAddonVisibility(); generate(); fhsD51UpdateHeader('P');">
                     <option value="木框款式">木框款式</option>
                     <option value="玻璃瓶款式">玻璃瓶款式</option>
                 </select>
@@ -4282,176 +4354,145 @@
             </div>
         </div>
 
-        <div class="toggle-row">
-            <strong style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-key"/></svg>鎖匙扣</strong>
-            <label class="switch"><input type="checkbox" id="enableK" onchange="toggleAddon('contentK', this)"> <span
-                    class="slider"></span></label>
+        <div class="toggle-row tier1-row" id="toggleRowK" onclick="fhsD51HeaderClick(event,'enableK','contentK')">
+            <div class="tier1-left">
+                <div class="tier1-ic" id="d51IconK"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-key"/></svg></div>
+                <div>
+                    <strong id="d51NameK">鎖匙扣</strong>
+                    <div class="tier1-summary" id="d51SummaryK">未選購</div>
+                </div>
+            </div>
+            <div class="tier1-right">
+                <svg class="ba-icon tier1-chevron" id="d51ChevronK" width="16" height="16"><use href="#icon-chevron-down"/></svg>
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableK" onchange="toggleAddon('contentK', this); fhsD51UpdateHeader('K')"> <span
+                        class="slider"></span></label>
+            </div>
         </div>
         <div id="contentK" class="addon-content">
             <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
 
             <div class="limb-grid">
                 <div class="sec-title-row">
-                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-baby"/></svg>【嬰兒單一部位】</span>
+                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-baby"/></svg>嬰兒</span>
                     <label class="switch"><input type="checkbox" id="k_baby_sec_en" checked
                             onchange="togglePart('k_baby_sec_box', this); generate();"><span
                             class="slider"></span></label>
                 </div>
                 <div id="k_baby_sec_box" class="part-details active" style="border:none; padding:0; margin:0;">
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>左手</span><button
-                                    class="copy-same-btn" onclick="copyToOthers('k_lh')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_lh_en"
-                                    onchange="togglePart('k_lh_box', this)"><span class="slider"></span></label>
+                    <div class="d51-pill-row">
+                        <button type="button" class="d51-pill" id="d51PillK_lh" onclick="fhsD51KPill('','lh')"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>左手</button>
+                        <button type="button" class="d51-pill" id="d51PillK_rh" onclick="fhsD51KPill('','rh')"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>右手</button>
+                        <button type="button" class="d51-pill" id="d51PillK_lf" onclick="fhsD51KPill('','lf')"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>左腳</button>
+                        <button type="button" class="d51-pill" id="d51PillK_rf" onclick="fhsD51KPill('','rf')"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>右腳</button>
+                    </div>
+                    <div class="d51-shared" id="d51SharedK_">
+                        <div class="d51-shared-label" id="d51SharedLabelK_">已選 0 個部位 · 套用以下設定</div>
+                        <div class="grid-3-col">
+                            <div class="mini-col"><label>數量</label><input type="number" id="d51SharedQtyK_" value="1" min="1" oninput="fhsD51KSharedChange('')"></div>
+                            <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="d51SharedTopK_" maxlength="8" placeholder="待定" oninput="fhsD51KSharedChange('')"></div>
+                            <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="d51SharedBotK_" maxlength="8" placeholder="待定" oninput="fhsD51KSharedChange('')"></div>
                         </div>
-                        <div id="k_lh_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_lh_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_lh_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_lh_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                        <button type="button" class="d51-link-btn" onclick="fhsD51KToggleOverride('')">如果有部位想唔同 → 分開填</button>
+                        <div class="d51-override-rows" id="d51OverrideRowsK_">
+                            <div class="d51-override-row" id="d51OvK_lh">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>左手</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_lh_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_lh_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_lh_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
+                            </div>
+                            <div class="d51-override-row" id="d51OvK_rh">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>右手</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_rh_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_rh_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_rh_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
+                            </div>
+                            <div class="d51-override-row" id="d51OvK_lf">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>左腳</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_lf_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_lf_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_lf_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
+                            </div>
+                            <div class="d51-override-row" id="d51OvK_rf">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>右腳</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_rf_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_rf_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_rf_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>右手</span><button
-                                    class="copy-same-btn" onclick="copyToOthers('k_rh')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_rh_en"
-                                    onchange="togglePart('k_rh_box', this)"><span class="slider"></span></label>
-                        </div>
-                        <div id="k_rh_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_rh_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_rh_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_rh_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>左腳</span><button class="copy-same-btn"
-                                    onclick="copyToOthers('k_lf')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_lf_en"
-                                    onchange="togglePart('k_lf_box', this)"><span class="slider"></span></label>
-                        </div>
-                        <div id="k_lf_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_lf_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_lf_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_lf_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>右腳</span><button class="copy-same-btn"
-                                    onclick="copyToOthers('k_rf')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_rf_en"
-                                    onchange="togglePart('k_rf_box', this)"><span class="slider"></span></label>
-                        </div>
-                        <div id="k_rf_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_rf_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_rf_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_rf_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                            </div>
-                        </div>
+                    <div style="display:none;">
+                        <input type="checkbox" id="k_lh_en"><input type="checkbox" id="k_rh_en"><input type="checkbox" id="k_lf_en"><input type="checkbox" id="k_rf_en">
                     </div>
                 </div>
             </div>
 
             <div class="limb-grid">
                 <div class="sec-title-row">
-                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>【大寶單一部位】</span>
+                    <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>大寶</span>
                     <label class="switch"><input type="checkbox" id="k_elder_sec_en"
                             onchange="togglePart('k_elder_sec_box', this); generate();"><span
                             class="slider"></span></label>
                 </div>
                 <div id="k_elder_sec_box" class="part-details" style="border:none; padding:0; margin:0;">
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶左手</span><button
-                                    class="copy-same-btn" onclick="copyToOthers('k_e_lh')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_e_lh_en"
-                                    onchange="togglePart('k_e_lh_box', this)"><span class="slider"></span></label>
+                    <div class="d51-pill-row">
+                        <button type="button" class="d51-pill" id="d51PillK_e_lh" onclick="fhsD51KPill('e_','lh')"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>大寶左手</button>
+                        <button type="button" class="d51-pill" id="d51PillK_e_rh" onclick="fhsD51KPill('e_','rh')"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>大寶右手</button>
+                        <button type="button" class="d51-pill" id="d51PillK_e_lf" onclick="fhsD51KPill('e_','lf')"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>大寶左腳</button>
+                        <button type="button" class="d51-pill" id="d51PillK_e_rf" onclick="fhsD51KPill('e_','rf')"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>大寶右腳</button>
+                    </div>
+                    <div class="d51-shared" id="d51SharedK_e_">
+                        <div class="d51-shared-label" id="d51SharedLabelK_e_">已選 0 個部位 · 套用以下設定</div>
+                        <div class="grid-3-col">
+                            <div class="mini-col"><label>數量</label><input type="number" id="d51SharedQtyK_e_" value="1" min="1" oninput="fhsD51KSharedChange('e_')"></div>
+                            <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="d51SharedTopK_e_" maxlength="8" placeholder="待定" oninput="fhsD51KSharedChange('e_')"></div>
+                            <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="d51SharedBotK_e_" maxlength="8" placeholder="待定" oninput="fhsD51KSharedChange('e_')"></div>
                         </div>
-                        <div id="k_e_lh_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_lh_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_lh_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_lh_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
+                        <button type="button" class="d51-link-btn" onclick="fhsD51KToggleOverride('e_')">如果有部位想唔同 → 分開填</button>
+                        <div class="d51-override-rows" id="d51OverrideRowsK_e_">
+                            <div class="d51-override-row" id="d51OvK_e_lh">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>大寶左手</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_e_lh_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_lh_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_lh_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
+                            </div>
+                            <div class="d51-override-row" id="d51OvK_e_rh">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-hand"/></svg>大寶右手</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_e_rh_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_rh_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_rh_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
+                            </div>
+                            <div class="d51-override-row" id="d51OvK_e_lf">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>大寶左腳</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_e_lf_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_lf_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_lf_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
+                            </div>
+                            <div class="d51-override-row" id="d51OvK_e_rf">
+                                <div class="d51-override-row-label"><svg class="ba-icon" width="14" height="14"><use href="#icon-footprint"/></svg>大寶右腳</div>
+                                <div class="grid-3-col">
+                                    <div class="mini-col"><input type="number" id="k_e_rf_qty" value="1" min="1" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_rf_top" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                    <div class="mini-col"><input type="text" id="k_e_rf_bot" maxlength="8" placeholder="待定" oninput="generate()"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶右手</span><button
-                                    class="copy-same-btn" onclick="copyToOthers('k_e_rh')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_e_rh_en"
-                                    onchange="togglePart('k_e_rh_box', this)"><span class="slider"></span></label>
-                        </div>
-                        <div id="k_e_rh_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_rh_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_rh_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_rh_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶左腳</span><button
-                                    class="copy-same-btn" onclick="copyToOthers('k_e_lf')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_e_lf_en"
-                                    onchange="togglePart('k_e_lf_box', this)"><span class="slider"></span></label>
-                        </div>
-                        <div id="k_e_lf_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_lf_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_lf_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_lf_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="part-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div><span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶右腳</span><button
-                                    class="copy-same-btn" onclick="copyToOthers('k_e_rf')">套用至其他</button></div>
-                            <label class="switch"><input type="checkbox" id="k_e_rf_en"
-                                    onchange="togglePart('k_e_rf_box', this)"><span class="slider"></span></label>
-                        </div>
-                        <div id="k_e_rf_box" class="part-details">
-                            <div class="grid-3-col">
-                                <div class="mini-col"><label>數量</label><input type="number" id="k_e_rf_qty" value="1"
-                                        min="1" oninput="generate()"></div>
-                                <div class="mini-col"><label>上排(最多6字)</label><input type="text" id="k_e_rf_top"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                                <div class="mini-col"><label>下排(最多8字)</label><input type="text" id="k_e_rf_bot"
-                                        maxlength="8" placeholder="待定" oninput="generate()"></div>
-                            </div>
-                        </div>
+                    <div style="display:none;">
+                        <input type="checkbox" id="k_e_lh_en"><input type="checkbox" id="k_e_rh_en"><input type="checkbox" id="k_e_lf_en"><input type="checkbox" id="k_e_rf_en">
                     </div>
                 </div>
             </div>
@@ -4460,7 +4501,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="limb-title" style="border:none; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-users"/></svg>【家庭合成鎖匙扣】</span>
                     <label class="switch"><input type="checkbox" id="k_family_en"
-                            onchange="togglePart('k_family_box', this); generate();"><span
+                            onchange="togglePart('k_family_box', this); generate(); fhsD51UpdateHeader('K');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="k_family_box" class="part-details">
@@ -4502,10 +4543,19 @@
 
         </div>
 
-        <div class="toggle-row">
-            <strong style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-gem"/></svg>頸鏈吊飾</strong>
-            <label class="switch"><input type="checkbox" id="enableM" onchange="toggleAddon('contentM', this)"> <span
+        <div class="toggle-row tier1-row" id="toggleRowM" onclick="fhsD51HeaderClick(event,'enableM','contentM')">
+            <div class="tier1-left">
+                <div class="tier1-ic" id="d51IconM"><svg class="fhs-header-icon" width="18" height="18"><use href="#icon-gem"/></svg></div>
+                <div>
+                    <strong id="d51NameM">頸鏈吊飾</strong>
+                    <div class="tier1-summary" id="d51SummaryM">未選購</div>
+                </div>
+            </div>
+            <div class="tier1-right">
+                <svg class="ba-icon tier1-chevron" id="d51ChevronM" width="16" height="16"><use href="#icon-chevron-down"/></svg>
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableM" onchange="toggleAddon('contentM', this); fhsD51UpdateHeader('M')"> <span
                     class="slider"></span></label>
+            </div>
         </div>
         <div id="contentM" class="addon-content">
             <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
@@ -4514,7 +4564,7 @@
                 <div class="sec-title-row">
                     <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-baby"/></svg>【嬰兒部位】</span>
                     <label class="switch"><input type="checkbox" id="m_baby_sec_en" checked
-                            onchange="togglePart('m_baby_sec_box', this); generate();"><span
+                            onchange="togglePart('m_baby_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="m_baby_sec_box" class="part-details active" style="border:none; padding:0; margin:0;">
@@ -4522,7 +4572,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>左手</span>
                             <label class="switch"><input type="checkbox" id="m_lh_en"
-                                    onchange="togglePart('m_lh_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_lh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_lh_box" class="part-details">
                             <div class="grid-3-col">
@@ -4541,7 +4591,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>右手</span>
                             <label class="switch"><input type="checkbox" id="m_rh_en"
-                                    onchange="togglePart('m_rh_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_rh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_rh_box" class="part-details">
                             <div class="grid-3-col">
@@ -4560,7 +4610,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>左腳</span>
                             <label class="switch"><input type="checkbox" id="m_lf_en"
-                                    onchange="togglePart('m_lf_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_lf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_lf_box" class="part-details">
                             <div class="grid-3-col">
@@ -4580,7 +4630,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>右腳</span>
                             <label class="switch"><input type="checkbox" id="m_rf_en"
-                                    onchange="togglePart('m_rf_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_rf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_rf_box" class="part-details">
                             <div class="grid-3-col">
@@ -4603,7 +4653,7 @@
                 <div class="sec-title-row">
                     <span class="limb-title" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>【大寶部位】</span>
                     <label class="switch"><input type="checkbox" id="m_elder_sec_en"
-                            onchange="togglePart('m_elder_sec_box', this); generate();"><span
+                            onchange="togglePart('m_elder_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="m_elder_sec_box" class="part-details" style="border:none; padding:0; margin:0;">
@@ -4611,7 +4661,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶左手</span>
                             <label class="switch"><input type="checkbox" id="m_e_lh_en"
-                                    onchange="togglePart('m_e_lh_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_e_lh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_lh_box" class="part-details">
                             <div class="grid-3-col">
@@ -4630,7 +4680,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶右手</span>
                             <label class="switch"><input type="checkbox" id="m_e_rh_en"
-                                    onchange="togglePart('m_e_rh_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_e_rh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_rh_box" class="part-details">
                             <div class="grid-3-col">
@@ -4649,7 +4699,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶左腳</span>
                             <label class="switch"><input type="checkbox" id="m_e_lf_en"
-                                    onchange="togglePart('m_e_lf_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_e_lf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_lf_box" class="part-details">
                             <div class="grid-3-col">
@@ -4669,7 +4719,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶右腳</span>
                             <label class="switch"><input type="checkbox" id="m_e_rf_en"
-                                    onchange="togglePart('m_e_rf_box', this)"><span class="slider"></span></label>
+                                    onchange="togglePart('m_e_rf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_rf_box" class="part-details">
                             <div class="grid-3-col">
@@ -6255,6 +6305,122 @@
             generate();
         }
 
+        /* =====================================================================
+           D51（2026-07-30）產品選購 Tier1 header + 鎖匙扣藥丸選單 橋接層
+           決策記錄：.fhs/notes/decisions.md D51
+           原則：唔改動任何現有 canonical 欄位 id / onchange 契約，新UI只負責
+           讀寫呢啲欄位，generate()/calculatePricing()/webhook 全部零改動。
+           ===================================================================== */
+        function fhsD51HeaderClick(evt, chkId, contentId) {
+            var chk = document.getElementById(chkId);
+            if (!chk.checked) {
+                chk.checked = true;
+                toggleAddon(contentId, chk);
+                if (chkId === 'enableP' && typeof _syncOrderTypeUI === 'function') _syncOrderTypeUI(true);
+            } else {
+                document.getElementById(contentId).classList.toggle('active');
+            }
+            fhsD51UpdateHeader(chkId.replace('enable', ''));
+        }
+        function fhsD51UpdateHeader(letter) {
+            var chk = document.getElementById('enable' + letter);
+            if (!chk) return;
+            var on = chk.checked;
+            var catClass = on ? ('cat-' + letter.toLowerCase()) : '';
+            var icon = document.getElementById('d51Icon' + letter);
+            var name = document.getElementById('d51Name' + letter);
+            var summary = document.getElementById('d51Summary' + letter);
+            var chevron = document.getElementById('d51Chevron' + letter);
+            var switchLbl = chk.closest('.switch');
+            if (icon) icon.className = 'tier1-ic' + (catClass ? ' ' + catClass : '');
+            if (name) name.className = catClass;
+            if (switchLbl) switchLbl.className = 'switch' + (catClass ? ' d51-' + catClass : '');
+            var contentEl = document.getElementById('content' + letter);
+            var isOpen = contentEl && contentEl.classList.contains('active');
+            if (chevron) chevron.className = 'ba-icon tier1-chevron' + (isOpen ? ' open' : '') + (catClass ? ' ' + catClass : '');
+            if (!summary) return;
+            if (!on) { summary.textContent = '未選購'; summary.className = 'tier1-summary'; return; }
+            summary.className = 'tier1-summary' + (catClass ? ' ' + catClass : '');
+            if (letter === 'P') {
+                var subEl = document.getElementById('pSubCat');
+                summary.textContent = subEl ? subEl.value : '';
+            } else if (letter === 'K') {
+                var famChk = document.getElementById('k_family_en');
+                if (famChk && famChk.checked) {
+                    summary.textContent = '家庭套裝';
+                } else {
+                    var kCount = ['k_lh_en','k_rh_en','k_lf_en','k_rf_en','k_e_lh_en','k_e_rh_en','k_e_lf_en','k_e_rf_en']
+                        .filter(function (id) { var e = document.getElementById(id); return e && e.checked; }).length;
+                    summary.textContent = kCount > 0 ? ('單點選購 · ' + kCount + ' 部位') : '尚未選擇部位';
+                }
+            } else if (letter === 'M') {
+                var mCount = ['m_lh_en','m_rh_en','m_lf_en','m_rf_en','m_e_lh_en','m_e_rh_en','m_e_lf_en','m_e_rf_en']
+                    .filter(function (id) { var e = document.getElementById(id); return e && e.checked; }).length;
+                summary.textContent = mCount > 0 ? ('單點選購 · ' + mCount + ' 部位') : '尚未選擇部位';
+            }
+        }
+        /* ---- 鎖匙扣「嬰兒/大寶」部位：藥丸多選 + 共用數量/上排/下排（10%例外可分開填） ---- */
+        var FHS_D51_K_SEL = {};
+        var FHS_D51_K_OV = {};
+        function fhsD51KPill(prefix, part) {
+            var key = prefix + part;
+            var pill = document.getElementById('d51PillK_' + key);
+            var sel = !pill.classList.contains('sel');
+            pill.classList.toggle('sel', sel);
+            FHS_D51_K_SEL[key] = sel;
+            var enChk = document.getElementById('k_' + key + '_en');
+            enChk.checked = sel;
+            var count = ['lh', 'rh', 'lf', 'rf'].filter(function (p) { return FHS_D51_K_SEL[prefix + p]; }).length;
+            document.getElementById('d51SharedK_' + prefix).classList.toggle('show', count > 0);
+            document.getElementById('d51SharedLabelK_' + prefix).textContent = '已選 ' + count + ' 個部位 · 套用以下設定';
+            var ovRow = document.getElementById('d51OvK_' + key);
+            if (ovRow) ovRow.classList.toggle('show', sel);
+            if (sel) fhsD51KApplySharedToPart(prefix, part);
+            generate();
+            fhsD51UpdateHeader('K');
+        }
+        function fhsD51KApplySharedToPart(prefix, part) {
+            if (FHS_D51_K_OV[prefix]) return;
+            var key = prefix + part;
+            document.getElementById('k_' + key + '_qty').value = document.getElementById('d51SharedQtyK_' + prefix).value;
+            document.getElementById('k_' + key + '_top').value = document.getElementById('d51SharedTopK_' + prefix).value;
+            document.getElementById('k_' + key + '_bot').value = document.getElementById('d51SharedBotK_' + prefix).value;
+        }
+        function fhsD51KSharedChange(prefix) {
+            if (FHS_D51_K_OV[prefix]) return;
+            var q = document.getElementById('d51SharedQtyK_' + prefix).value;
+            var t = document.getElementById('d51SharedTopK_' + prefix).value;
+            var b = document.getElementById('d51SharedBotK_' + prefix).value;
+            ['lh', 'rh', 'lf', 'rf'].forEach(function (p) {
+                var key = prefix + p;
+                if (!FHS_D51_K_SEL[key]) return;
+                document.getElementById('k_' + key + '_qty').value = q;
+                document.getElementById('k_' + key + '_top').value = t;
+                document.getElementById('k_' + key + '_bot').value = b;
+            });
+            generate();
+        }
+        function fhsD51KToggleOverride(prefix) {
+            var rows = document.getElementById('d51OverrideRowsK_' + prefix);
+            var willOpen = !rows.classList.contains('show');
+            rows.classList.toggle('show', willOpen);
+            FHS_D51_K_OV[prefix] = willOpen;
+            if (willOpen) {
+                var q = document.getElementById('d51SharedQtyK_' + prefix).value;
+                var t = document.getElementById('d51SharedTopK_' + prefix).value;
+                var b = document.getElementById('d51SharedBotK_' + prefix).value;
+                ['lh', 'rh', 'lf', 'rf'].forEach(function (p) {
+                    var key = prefix + p;
+                    document.getElementById('k_' + key + '_qty').value = q;
+                    document.getElementById('k_' + key + '_top').value = t;
+                    document.getElementById('k_' + key + '_bot').value = b;
+                });
+            } else {
+                fhsD51KSharedChange(prefix);
+            }
+            generate();
+        }
+
         // 動態更新家庭合成下拉選單
         function updateFamilyParts() {
             const comboEl = document.getElementById("k_family_combo");
@@ -6339,7 +6505,7 @@
                 castingHtml += `
             <div class="limb-grid">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <span class="limb-title" style="margin:0; border:none;">【父母】</span>
+                    <span class="limb-title" style="margin:0; border:none;">【父母】<span class="d51-family-badge">家庭專屬</span></span>
                     <label class="switch"><input type="checkbox" id="en_parent" onchange="togglePart('box_parent', this)"><span class="slider"></span></label>
                 </div>
                 <div id="box_parent" class="part-details">
