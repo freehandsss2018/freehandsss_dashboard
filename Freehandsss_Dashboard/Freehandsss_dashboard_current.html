@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-31T10:23:14Z">
+    <meta name="fhs-build" content="2026-07-31T10:55:52Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -442,7 +442,8 @@
         .d51-override-row-label { font-size: 12px; font-weight: 600; color: #444; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
         /* ---- D51 第二層群組標題（鎖匙扣/頸鏈吊飾入面嘅「嬰兒/大寶」小標題）：貫徹分類色，唔再淨係外層Tier1有色 ---- */
         .d51-menu-title { display: inline-flex; align-items: center; gap: 6px; }
-        .d51-menu-tag { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .d51-menu-tag { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: #B0A090; transition: background .2s; }
+        .limb-title.d51-menu-title { color: #444; transition: color .2s; }
         .d51-menu-tag.cat-p { background: var(--d51-cat-p); }
         .d51-menu-tag.cat-k { background: var(--d51-cat-k); }
         .d51-menu-tag.cat-m { background: var(--d51-cat-m); }
@@ -4457,9 +4458,9 @@
 
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title d51-menu-title cat-k"><span class="d51-menu-tag cat-k"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒</span>
-                    <label class="switch d51-cat-k"><input type="checkbox" id="k_baby_sec_en" checked
-                            onchange="togglePart('k_baby_sec_box', this); generate();"><span
+                    <span class="limb-title d51-menu-title" id="d51TitleK_baby"><span class="d51-menu-tag" id="d51TagK_baby"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒</span>
+                    <label class="switch d51-cat-k"><input type="checkbox" id="k_baby_sec_en"
+                            onchange="togglePart('k_baby_sec_box', this); generate(); fhsD51SyncGroupColor('k_baby_sec_en','d51TitleK_baby','d51TagK_baby','cat-k');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="k_baby_sec_box" class="part-details active" style="border:none; padding:0; margin:0;">
@@ -4520,9 +4521,9 @@
 
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title d51-menu-title cat-k"><span class="d51-menu-tag cat-k"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶</span>
+                    <span class="limb-title d51-menu-title" id="d51TitleK_elder"><span class="d51-menu-tag" id="d51TagK_elder"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶</span>
                     <label class="switch d51-cat-k"><input type="checkbox" id="k_elder_sec_en"
-                            onchange="togglePart('k_elder_sec_box', this); generate();"><span
+                            onchange="togglePart('k_elder_sec_box', this); generate(); fhsD51SyncGroupColor('k_elder_sec_en','d51TitleK_elder','d51TagK_elder','cat-k');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="k_elder_sec_box" class="part-details" style="border:none; padding:0; margin:0;">
@@ -4667,9 +4668,9 @@
 
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title d51-menu-title cat-m"><span class="d51-menu-tag cat-m"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒部位</span>
-                    <label class="switch d51-cat-m"><input type="checkbox" id="m_baby_sec_en" checked
-                            onchange="togglePart('m_baby_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
+                    <span class="limb-title d51-menu-title" id="d51TitleM_baby"><span class="d51-menu-tag" id="d51TagM_baby"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒部位</span>
+                    <label class="switch d51-cat-m"><input type="checkbox" id="m_baby_sec_en"
+                            onchange="togglePart('m_baby_sec_box', this); generate(); fhsD51UpdateHeader('M'); fhsD51SyncGroupColor('m_baby_sec_en','d51TitleM_baby','d51TagM_baby','cat-m');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="m_baby_sec_box" class="part-details active" style="border:none; padding:0; margin:0;">
@@ -4756,9 +4757,9 @@
 
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
-                    <span class="limb-title d51-menu-title cat-m"><span class="d51-menu-tag cat-m"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶部位</span>
+                    <span class="limb-title d51-menu-title" id="d51TitleM_elder"><span class="d51-menu-tag" id="d51TagM_elder"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶部位</span>
                     <label class="switch d51-cat-m"><input type="checkbox" id="m_elder_sec_en"
-                            onchange="togglePart('m_elder_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
+                            onchange="togglePart('m_elder_sec_box', this); generate(); fhsD51UpdateHeader('M'); fhsD51SyncGroupColor('m_elder_sec_en','d51TitleM_elder','d51TagM_elder','cat-m');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="m_elder_sec_box" class="part-details" style="border:none; padding:0; margin:0;">
@@ -6159,6 +6160,10 @@
             fhsD51UpdateHeader('K');
             fhsD51UpdateHeader('M');
             fhsD51SyncComboCards();
+            fhsD51SyncGroupColor('k_baby_sec_en', 'd51TitleK_baby', 'd51TagK_baby', 'cat-k');
+            fhsD51SyncGroupColor('k_elder_sec_en', 'd51TitleK_elder', 'd51TagK_elder', 'cat-k');
+            fhsD51SyncGroupColor('m_baby_sec_en', 'd51TitleM_baby', 'd51TagM_baby', 'cat-m');
+            fhsD51SyncGroupColor('m_elder_sec_en', 'd51TitleM_elder', 'd51TagM_elder', 'cat-m');
         }
 
         let currentMode = null; // 🚨 改為 null 以確保首次 switchMode(create) 會觸發 resetForm()
@@ -6443,6 +6448,17 @@
              buildOrderItemsForPricing()嘅安全網（防section toggle關咗但子項目
              已勾選時漏單）繼續當呢啲部位有效——變成「畫面話未選購，財務結算仍計錢」。
              Master toggle嘅定義本身就係「呢個大類有冇購買」，撳OFF理應真係清空。 ---- */
+        /* ---- D51：第二層群組標題（嬰兒/大寶）顏色改做動態——只有自己個toggle開咗先變色，
+             關咗就同外層Tier1一樣跟返灰色。之前寫死cat-k/cat-m令未toggle on都已經係彩色，
+             同外層「開咗先有色」嘅行為唔一致（Fat Mo驗收揪出）。 ---- */
+        function fhsD51SyncGroupColor(checkboxId, titleId, tagId, catClass) {
+            var chk = document.getElementById(checkboxId);
+            var title = document.getElementById(titleId);
+            var tag = document.getElementById(tagId);
+            var on = chk && chk.checked;
+            if (title) title.classList.toggle(catClass, on);
+            if (tag) tag.classList.toggle(catClass, on);
+        }
         function fhsD51ClearCategory(letter) {
             if (letter === 'K') {
                 ['k_baby_sec_en', 'k_elder_sec_en', 'k_family_en',
@@ -6455,6 +6471,8 @@
                     var b = document.getElementById(id);
                     if (b) b.classList.remove('active');
                 });
+                fhsD51SyncGroupColor('k_baby_sec_en', 'd51TitleK_baby', 'd51TagK_baby', 'cat-k');
+                fhsD51SyncGroupColor('k_elder_sec_en', 'd51TitleK_elder', 'd51TagK_elder', 'cat-k');
                 ['', 'e_'].forEach(function (prefix) {
                     ['lh', 'rh', 'lf', 'rf'].forEach(function (part) {
                         var key = prefix + part;
@@ -6483,6 +6501,8 @@
                     var b = document.getElementById(id);
                     if (b) b.classList.remove('active');
                 });
+                fhsD51SyncGroupColor('m_baby_sec_en', 'd51TitleM_baby', 'd51TagM_baby', 'cat-m');
+                fhsD51SyncGroupColor('m_elder_sec_en', 'd51TitleM_elder', 'd51TagM_elder', 'cat-m');
             }
         }
         function fhsD51UpdateHeader(letter) {
@@ -8284,6 +8304,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (typeof fhsD51SyncPillsFromState === 'function') fhsD51SyncPillsFromState();
                 if (typeof fhsD51SyncComboCards === 'function') fhsD51SyncComboCards();
                 if (typeof fhsD51UpdateHeader === 'function') { fhsD51UpdateHeader('P'); fhsD51UpdateHeader('K'); fhsD51UpdateHeader('M'); }
+                if (typeof fhsD51SyncGroupColor === 'function') {
+                    fhsD51SyncGroupColor('k_baby_sec_en', 'd51TitleK_baby', 'd51TagK_baby', 'cat-k');
+                    fhsD51SyncGroupColor('k_elder_sec_en', 'd51TitleK_elder', 'd51TagK_elder', 'cat-k');
+                    fhsD51SyncGroupColor('m_baby_sec_en', 'd51TitleM_baby', 'd51TagM_baby', 'cat-m');
+                    fhsD51SyncGroupColor('m_elder_sec_en', 'd51TitleM_elder', 'd51TagM_elder', 'cat-m');
+                }
                 generate(); // 最後刷新文字預覽
                 setTimeout(function() { if (typeof restoreSplits === 'function') restoreSplits(); }, 80);
                 console.log("✅ Form state restoration complete.");
