@@ -4447,7 +4447,7 @@
             </div>
             <div class="tier1-right">
                 <svg class="ba-icon tier1-chevron" id="d51ChevronK" width="16" height="16"><use href="#icon-chevron-down"/></svg>
-                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableK" onchange="toggleAddon('contentK', this); fhsD51UpdateHeader('K')"> <span
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableK" onchange="if(!this.checked) fhsD51ClearCategory('K'); toggleAddon('contentK', this); fhsD51UpdateHeader('K')"> <span
                         class="slider"></span></label>
             </div>
         </div>
@@ -4657,7 +4657,7 @@
             </div>
             <div class="tier1-right">
                 <svg class="ba-icon tier1-chevron" id="d51ChevronM" width="16" height="16"><use href="#icon-chevron-down"/></svg>
-                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableM" onchange="toggleAddon('contentM', this); fhsD51UpdateHeader('M')"> <span
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableM" onchange="if(!this.checked) fhsD51ClearCategory('M'); toggleAddon('contentM', this); fhsD51UpdateHeader('M')"> <span
                     class="slider"></span></label>
             </div>
         </div>
@@ -6437,6 +6437,54 @@
             }
             fhsD51UpdateHeader(chkId.replace('enable', ''));
         }
+        /* ---- D51：master toggle 撳OFF時連鎖清空底層子項目 ----
+             真bug（訂單#0601100 Fat Mo實測揪出）：舊行為淨係collapse content顯示，
+             k_baby_sec_en/k_rh_en等底層checkbox完全冇跟住清，令
+             buildOrderItemsForPricing()嘅安全網（防section toggle關咗但子項目
+             已勾選時漏單）繼續當呢啲部位有效——變成「畫面話未選購，財務結算仍計錢」。
+             Master toggle嘅定義本身就係「呢個大類有冇購買」，撳OFF理應真係清空。 ---- */
+        function fhsD51ClearCategory(letter) {
+            if (letter === 'K') {
+                ['k_baby_sec_en', 'k_elder_sec_en', 'k_family_en',
+                 'k_lh_en', 'k_rh_en', 'k_lf_en', 'k_rf_en',
+                 'k_e_lh_en', 'k_e_rh_en', 'k_e_lf_en', 'k_e_rf_en'].forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) el.checked = false;
+                });
+                ['k_baby_sec_box', 'k_elder_sec_box', 'k_family_box'].forEach(function (id) {
+                    var b = document.getElementById(id);
+                    if (b) b.classList.remove('active');
+                });
+                ['', 'e_'].forEach(function (prefix) {
+                    ['lh', 'rh', 'lf', 'rf'].forEach(function (part) {
+                        var key = prefix + part;
+                        FHS_D51_K_SEL[key] = false;
+                        var pill = document.getElementById('d51PillK_' + key);
+                        if (pill) pill.classList.remove('sel');
+                        var ov = document.getElementById('d51OvK_' + key);
+                        if (ov) ov.classList.remove('show');
+                    });
+                    var sharedEl = document.getElementById('d51SharedK_' + prefix);
+                    if (sharedEl) sharedEl.classList.remove('show');
+                    var ovRows = document.getElementById('d51OverrideRowsK_' + prefix);
+                    if (ovRows) ovRows.classList.remove('show');
+                    FHS_D51_K_OV[prefix] = false;
+                });
+            } else if (letter === 'M') {
+                ['m_baby_sec_en', 'm_elder_sec_en',
+                 'm_lh_en', 'm_rh_en', 'm_lf_en', 'm_rf_en',
+                 'm_e_lh_en', 'm_e_rh_en', 'm_e_lf_en', 'm_e_rf_en'].forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) el.checked = false;
+                });
+                ['m_baby_sec_box', 'm_elder_sec_box',
+                 'm_lh_box', 'm_rh_box', 'm_lf_box', 'm_rf_box',
+                 'm_e_lh_box', 'm_e_rh_box', 'm_e_lf_box', 'm_e_rf_box'].forEach(function (id) {
+                    var b = document.getElementById(id);
+                    if (b) b.classList.remove('active');
+                });
+            }
+        }
         function fhsD51UpdateHeader(letter) {
             var chk = document.getElementById('enable' + letter);
             if (!chk) return;
@@ -6487,6 +6535,10 @@
             enChk.checked = sel;
             var count = ['lh', 'rh', 'lf', 'rf'].filter(function (p) { return FHS_D51_K_SEL[prefix + p]; }).length;
             document.getElementById('d51SharedK_' + prefix).classList.toggle('show', count > 0);
+            // D51：舊resetForm()會將數字input清空至''，令共用數量格顯示空白但計價仍fallback做1
+            // （Fat Mo實測揪出：畫面睇落冇填數字，但實際仍當1件計錢）——補顯示對齊實際計算值
+            var sharedQtyEl = document.getElementById('d51SharedQtyK_' + prefix);
+            if (sharedQtyEl && count > 0 && !sharedQtyEl.value) sharedQtyEl.value = '1';
             document.getElementById('d51SharedLabelK_' + prefix).textContent = '已選 ' + count + ' 個部位 · 套用以下設定';
             var ovRow = document.getElementById('d51OvK_' + key);
             if (ovRow) ovRow.classList.toggle('show', sel);
