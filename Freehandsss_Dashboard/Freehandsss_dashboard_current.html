@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-31T10:55:52Z">
+    <meta name="fhs-build" content="2026-07-31T11:29:01Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -4448,7 +4448,7 @@
             </div>
             <div class="tier1-right">
                 <svg class="ba-icon tier1-chevron" id="d51ChevronK" width="16" height="16"><use href="#icon-chevron-down"/></svg>
-                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableK" onchange="if(!this.checked) fhsD51ClearCategory('K'); toggleAddon('contentK', this); fhsD51UpdateHeader('K')"> <span
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableK" onchange="if(!this.checked) { fhsD51ClearCategory('K'); } else { fhsD51AutoOpenBaby('K'); } toggleAddon('contentK', this); fhsD51UpdateHeader('K')"> <span
                         class="slider"></span></label>
             </div>
         </div>
@@ -4658,7 +4658,7 @@
             </div>
             <div class="tier1-right">
                 <svg class="ba-icon tier1-chevron" id="d51ChevronM" width="16" height="16"><use href="#icon-chevron-down"/></svg>
-                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableM" onchange="if(!this.checked) fhsD51ClearCategory('M'); toggleAddon('contentM', this); fhsD51UpdateHeader('M')"> <span
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="enableM" onchange="if(!this.checked) { fhsD51ClearCategory('M'); } else { fhsD51AutoOpenBaby('M'); } toggleAddon('contentM', this); fhsD51UpdateHeader('M')"> <span
                     class="slider"></span></label>
             </div>
         </div>
@@ -6458,6 +6458,28 @@
             var on = chk && chk.checked;
             if (title) title.classList.toggle(catClass, on);
             if (tag) tag.classList.toggle(catClass, on);
+        }
+        /* ---- D51：Fat Mo 明確要求嘅預設設定——K/M master toggle 撳ON時，
+             連鎖自動開埋「嬰兒」子分類（大部分訂單都用得著，慳返一步）；
+             master OFF 時已有 fhsD51ClearCategory() 連鎖清晒，呢個係佢嘅鏡像對稱。 ---- */
+        function fhsD51AutoOpenBaby(letter) {
+            if (letter === 'K') {
+                var chk = document.getElementById('k_baby_sec_en');
+                if (chk && !chk.checked) {
+                    chk.checked = true;
+                    var box = document.getElementById('k_baby_sec_box');
+                    if (box) box.classList.add('active');
+                    fhsD51SyncGroupColor('k_baby_sec_en', 'd51TitleK_baby', 'd51TagK_baby', 'cat-k');
+                }
+            } else if (letter === 'M') {
+                var chkM = document.getElementById('m_baby_sec_en');
+                if (chkM && !chkM.checked) {
+                    chkM.checked = true;
+                    var boxM = document.getElementById('m_baby_sec_box');
+                    if (boxM) boxM.classList.add('active');
+                    fhsD51SyncGroupColor('m_baby_sec_en', 'd51TitleM_baby', 'd51TagM_baby', 'cat-m');
+                }
+            }
         }
         function fhsD51ClearCategory(letter) {
             if (letter === 'K') {
