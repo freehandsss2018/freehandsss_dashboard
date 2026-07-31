@@ -44,7 +44,19 @@
 
 1. 開 transaction 讀 fills 搵新 asset id → `get-assets` 查**檔名+原始 WxH**（勿靠估邊張係邊張）
 2. 查 `placement_memory.json` 相似長寬比案例，計出各格目標 box（無案例時用最近似案例等比推算）
-3. **一氣呵成**：`update_fill` 換入四類格（page2 圖對/page3 細圖對+直片/page4 動畫）→ **逐格校正**（見下方「零裁切鐵律」，2026-07-27 起取代舊嘅 preserve_aspect_ratio 做法）→ `delete_element` 清 Fat Mo 臨時元素+上客殘留 → commit
+3. **一氣呵成**：`update_fill` 換入四類格（page2 圖對/page3 細圖對+直片/page4 動畫）→ **逐格校正**（見下方「零裁切鐵律」，2026-07-27 起取代舊嘅 preserve_aspect_ratio 做法）→ `delete_element` **只准刪 Fat Mo 拖入嘅臨時元素**（見下方「元素保命鐵律」）→ commit
+
+### 🔴 元素保命鐵律（2026-07-31 HoKaSin 0601100 血訓，優先級高於下面任何一條）
+
+**動畫／元素顯示時間／頁面時長係附喺「元素」身上，唔係附喺「圖片素材」身上。** 母片 `copy-design` 落嚟嗰陣，連元素連動畫一齊繼承；一旦 `delete_element` 刪走母片元素，動畫就永久消失，而 **MCP 完全冇 API 補得返**（27 個 operation 冇一個掂到動畫／時長）。
+
+**鐵律：母片帶落嚟嘅素材元素，任何情況下都唔准刪。** 換料一律用 `update_fill` 喺原元素上換媒體。Fat Mo 拖入嘅新元素係「臨時件」——刪嗰啲，唔係刪母片嗰啲。
+
+判斷方法：`copy-design` 之後即刻 `read-design` 記低母片元素 locator_id（例 Meika 系：`LBxgyF0fd0WZbT7J`／`LB0wWsLNwJJf9lvB`／`LBcmP2V1RC2HlLDp`／`LBDXmPZS466VsHHW`）。Stage③ 再讀時，**ID 對得上嘅＝母片元素（保）；ID 對唔上嘅＝Fat Mo 臨時拖入（刪）**。
+
+血訓實錄：HoKaSin 連錯 3 次，每次都係保留咗 Fat Mo 新拖入嘅乾淨元素、刪走母片載住動畫嘅元素，令 Fat Mo 每次都要重新設動畫。Fat Mo 第一次已明示「**用代替的方法去取代新舊版，而不是先刪除舊片或圖，這樣能保留設定**」，AI 連續兩次再犯。對照組 Meika 0600904 全程 `update_fill` 母片元素、只刪臨時件 → Fat Mo 零人手、一次過完美。
+
+**順帶澄清（曾誤疑）**：`resize_element`／`position_element`／`crop_media` **唔會**清走動畫——Meika 做齊三樣，動畫照樣生還。真兇一直都係 `delete_element`。
 
 ### ⚠️ 零裁切鐵律（2026-07-27 Fat Mo 明文，Meika 0600904 定案，取代舊法）
 
@@ -58,8 +70,10 @@
 
 ### Stage③ 人手補完提醒（AI 做唔到，靠 Fat Mo 記得）
 
-- page2 圖對建議加「進場動畫」（例：黑白圖=墨水/汙漬，彩色圖=模糊類）——`perform-editing-operations` 冇 animation operation type，AI 完全掂唔到，純文字提示。
+- **片去背**：MCP 掂唔到。上載前必須自己去背。HoKaSin 0601100 就係 `Video 1.mp4` 未去背，出來一個灰色紙紋方框遮晒下層——**上載前用 get-assets 縮圖自查：見到硬邊方形底色＝未去背**。
+- page2 圖對建議加「進場動畫」（例：黑白圖=墨水/汙漬，彩色圖=模糊類）——`edit-design` 冇 animation operation type，AI 完全掂唔到，純文字提示。
 - 音軌／過場／頁面時長：同上，MCP 掂唔到，全部人手。
+- ⚠️ **但如果母片元素冇被刪**（見「元素保命鐵律」），以上動畫／時長全部由母片繼承，Fat Mo **唔使重做**——Meika 0600904 就係咁做到零人手。人手補做只係「母片本身未設過」或者「今次要改效果」先需要。
 
 ## Stage ④ — 學習＋出貨
 
@@ -89,4 +103,5 @@
 ## 版本更新日誌
 
 - v1.0.0（2026-07-11，S164）：初版。SOP v3 + diff-learning 迴圈 + /8d 迭代三修正（開單補課制、transaction 一氣呵成鐵律、數值唯一真理來源歸 JSON）
+- v1.2.0（2026-07-31，HoKaSin 0601100）：新增**元素保命鐵律**（母片元素永不可刪，動畫/時長附喺元素身上，刪咗 MCP 補唔返）——連錯 3 次先揪出，優先級最高；澄清 resize/position/crop 唔會清動畫（曾誤疑）；Stage② 補「片去背自查」（get-assets 縮圖見硬邊方底＝未去背）；澄清母片元素保住嘅話動畫/時長由母片繼承、Fat Mo 唔使重做
 - v1.1.0（2026-07-27，Meika 0600904）：Canva MCP API 大改版適配（edit-design/read-design 取代舊transaction工具）；新增零裁切鐵律（resize_element唔夠，必須加 crop_media 明確歸零）；母片搜尋優先序改為「音長最接近→建立日期最接近」取代純「最新單」政策；設計標題新增音長標記（`{DDMM}/26) {音長}sec`）

@@ -6,9 +6,54 @@
     { "order": "0600906", "date": "2026-07-22", "corrected_slots": 1, "total_slots": 1, "note": "覆核追加：page3 直片格原判『正確無改』有誤，Fat Mo 事後再改闊（客人片較闊 16:9 源塞窄直向格）。連同首單合計 6/6 全部曾被修正——首單『零錯格』實際不存在，補課檢查制度的價值在此案例首次體現" },
     { "order": "0800802", "date": "2026-07-13", "corrected_slots": 3, "total_slots": 3, "note": "首見雙直片page3新pattern，3個slot全被Fat Mo改（黑白圖仲被換走個asset，非純幾何微調）；另揭發2項AI能力外嘅缺口：進場動畫(墨水/汙漬、模糊)、客人音軌從未上載——已補落non_geometry_findings，未計入corrected_slots" },
     { "order": "0600718", "date": "2026-07-23", "corrected_slots": 4, "total_slots": 4, "note": "驗證咗『套用高度相似案例=零校正』呢個假設唔成立——4/4 slot 全部再被調整，即使 asset 形狀同precedent幾乎一樣。另外開單時發現母片 placeholder 元素會喺 Fat Mo 上載階段消失，需insert_fill頂替（非update_fill）；非幾何缺口（動畫/時序/時長）第3次穩定重現，列為永久限制。" },
-    { "order": "0600904", "date": "2026-07-27", "corrected_slots": "0(AI自行修正，非Fat Mo改)", "total_slots": 4, "note": "重大發現：AI 首次套用precedent座標仍然導致4/4圖片/影片元素被裁切（container比例同新素材原生比例唔完全一致+殘留舊crop offset）。Fat Mo定性新永久鐵律「零裁切」：resize_element唔夠，必須加crop_media(0,0,W,H)先歸零裁切。AI已自行修正並記錄，等Fat Mo最終覆核確認。另新增母片搜尋優先序規則（音長最接近→建立日期最接近）+ 標題音長標記慣例，Canva MCP同日API大改版（edit-design/read-design）。" }
+    { "order": "0600904", "date": "2026-07-27", "corrected_slots": "0(AI自行修正，非Fat Mo改)", "total_slots": 4, "note": "重大發現：AI 首次套用precedent座標仍然導致4/4圖片/影片元素被裁切（container比例同新素材原生比例唔完全一致+殘留舊crop offset）。Fat Mo定性新永久鐵律「零裁切」：resize_element唔夠，必須加crop_media(0,0,W,H)先歸零裁切。AI已自行修正並記錄，等Fat Mo最終覆核確認。另新增母片搜尋優先序規則（音長最接近→建立日期最接近）+ 標題音長標記慣例，Canva MCP同日API大改版（edit-design/read-design）。" },
+    { "order": "0601100", "date": "2026-07-31", "corrected_slots": "4/4（三次重做，非幾何問題）", "total_slots": 4, "note": "🔴 揪出本庫最大盲點：真兇係 delete_element 刪走母片載住動畫嘅元素，唔係之前懷疑嘅 resize/crop。連錯3次、Fat Mo 第一次已明示答案但AI再犯兩次。修正後由 Meika 重新 copy、全程 update_fill 原元素零刪除。同時首見 page3 兩片長寬比唔同（1:1 vs 1:2），Fat Mo 定案『各自原比例、高度對齊、中心對齊』。餘下 Video 1.mp4 未去背屬 Fat Mo Stage② 人手位。" }
   ],
   "cases": [
+    {
+      "order": "0601100",
+      "customer": "HoKaSin",
+      "design_id": "DAHQ9xmBQB4",
+      "date": "2026-07-31",
+      "learned": true,
+      "note": "🔴 本庫最重要一課：連錯3次先揪出真因——**動畫/元素顯示時間/頁面時長係附喺「元素」身上，唔係附喺「圖片素材」身上**。母片 copy-design 落嚟連元素連動畫一齊繼承；一旦 delete_element 刪走母片元素，動畫永久消失且 MCP 冇 API 補得返（27個operation冇一個掂到動畫/時長，read-design 個 CDF 亦完全冇 animation/duration 欄位，即係AI連「有冇動畫」都睇唔到，屬結構性盲區）。三次失敗都係同一個錯：保留咗 Fat Mo 新拖入嘅乾淨元素、刪走母片載住動畫嗰啲。Fat Mo 第一次已明示『用代替的方法去取代新舊版，而不是先刪除舊片或圖，這樣能保留設定』，AI 連續兩次再犯。診斷手法＝對比元素 locator_id：Meika母片系 LBxgyF0fd0WZbT7J/LB0wWsLNwJJf9lvB/LBcmP2V1RC2HlLDp/LBDXmPZS466VsHHW，而壞版 DAHQ9yIE2kQ 四個全部變成 LBqWy9RjkFNjZTHS/LBXWdGLtjPGNV0vn/LBRLKnTlbkBjjT9m/LB6jKF1hb0QxvzRn → 鐵證母片元素被刪。修復＝由 Meika 重新 copy，全程 update_fill 原元素、一個都唔刪。**順帶推翻舊懷疑：resize_element/position_element/crop_media 唔會清走動畫**（Meika 0600904 做齊三樣動畫照樣生還），真兇一直都係 delete_element。",
+      "slots": [
+        {
+          "slot": "page2_主圖_彩色",
+          "asset_px": { "w": 1024, "h": 1024 },
+          "element_id": "LB0wWsLNwJJf9lvB",
+          "ai_box": { "top": 175, "left": 662, "w": 577, "h": 577 },
+          "note": "母片元素原封保留，只 update_fill 換媒體。母片幾何已經啱（577×577 @175,662）無需 resize/position，只需 crop_media 歸零——實測 update_fill 會帶入 imageBox=(-11.34,-11.34 599.68²) 嘅 crop offset，必須明確 crop_media(0,0,577,577)"
+        },
+        {
+          "slot": "page2_主圖_黑白",
+          "asset_px": { "w": 2048, "h": 2048 },
+          "element_id": "LBxgyF0fd0WZbT7J",
+          "ai_box": { "top": 175, "left": 662, "w": 577, "h": 577 },
+          "note": "同上，同彩色疊放同一位置"
+        },
+        {
+          "slot": "page3_片1_正方",
+          "asset_px": { "w": 960, "h": 960, "aspect": 1.0 },
+          "element_id": "LBcmP2V1RC2HlLDp",
+          "ai_box": { "top": 175, "left": 671.5, "w": 577, "h": 577 },
+          "note": "⚠️首見 page3 兩條片長寬比唔同嘅情況（Meika兩條都係0.5直片可共用同一個框，今次唔得）。Fat Mo 裁決『各自按原比例，高度對齊、圖層中心對齊』：兩條片統一 h=577、top=175、中心 x=960，闊度各自按原比例計。此片1:1 → 577×577，left=960-288.5=671.5"
+        },
+        {
+          "slot": "page3_片3_直片",
+          "asset_px": { "w": 1080, "h": 2160, "aspect": 0.5 },
+          "element_id": "LBDXmPZS466VsHHW",
+          "ai_box": { "top": 175, "left": 815.75, "w": 288.5, "h": 577 },
+          "note": "同上規則：0.5比例 → 288.5×577，left=960-144.25=815.75。同片1 top/h/中心線完全對齊，兩條都零裁切零變形"
+        }
+      ],
+      "non_geometry_findings": [
+        "**片去背未做**：Video 1.mp4 原片帶灰色紙紋方形底，未去背就上載，render 出嚟係一個硬邊灰方框，仲要闊過旁邊直片所以遮晒下層。MCP 掂唔到片去背＝Fat Mo Stage② 人手位。**自查法已落 SOP：上載前用 get-assets 睇縮圖，見到硬邊方形底色＝未去背**。",
+        "音訊未上載（WhatsApp Audio 2026-07-31），純音樂款必做，否則會繼承母片 Meika 嘅音軌。",
+        "重要澄清：只要母片元素冇被刪，動畫/時長由母片繼承，Fat Mo **唔使每單重設**——Meika 0600904 就係咁做到零人手。之前4單一路記『動畫永遠要人手補』其實係被 delete_element 個 bug 掩蓋咗真相。"
+      ],
+      "technique_lesson": "元素保命鐵律：copy-design 之後即刻 read-design 記低母片元素 locator_id；Stage③ 再讀時 ID 對得上＝母片元素（必保），ID 對唔上＝Fat Mo 臨時拖入（可刪）。呢個係唯一分辨方法，因為兩者喺 CDF 入面外觀完全一樣。"
+    },
     {
       "order": "0600904",
       "customer": "Meika",
