@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-07-31] Session（Claude Code / Sonnet 5 執行）— D51續III：UI一致性修復 + Fat Mo指定新行為（master toggle連鎖開埋嬰兒）
+
+- **緣起**：D51續II（下方條目）部署後，Fat Mo再驗收揪出兩點：
+  1. **鎖匙扣/頸鏈吊飾「嬰兒」group 靜態預設不一致**：`k_baby_sec_en`/`m_baby_sec_en` HTML 靜態帶 `checked` 屬性，但 `k_elder_sec_en`/`m_elder_sec_en`（大寶）冇——造成兩者行為不一致（雖然 `resetForm()` 會 sweep 清空，但靜態預設本身係風險同不一致根源）。Fix：移除 `checked` 屬性。
+  2. **第二層群組標題色寫死唔跟開關狀態**：「嬰兒」「大寶」標題之前寫死 cat-k/cat-m 顏色，令未 toggle on 已經係彩色，同外層 Tier1 header「開咗先有色」嘅行為唔一致。Fix：新增 `fhsD51SyncGroupColor(checkboxId, titleId, tagId, catClass)`，改做動態——自己個 toggle 開咗先變色，關咗跟返灰色，喺 onchange/`resetForm()`/`restoreFormState()`/`fhsD51ClearCategory()` 全部路徑同步呼叫。
+- **Fat Mo 澄清第②項唔係bug，係要求新增行為**：K/M master toggle 撳 ON 時，連鎖自動開埋「嬰兒」子分類（大部分訂單都用得著，慳返一步）；master OFF 時已有 `fhsD51ClearCategory()`（見下方 D51續II 條目）連鎖清空，呢個係佢嘅鏡像對稱。新增 `fhsD51AutoOpenBaby('K'/'M')`，喺 `enableK`/`enableM` onchange 入面 `checked=true` 分支 call：check 返 `k_baby_sec_en`/`m_baby_sec_en`、開 box、同步標題色。
+- **驗證方式**：Live browser 直接喺 **production**（`yanhei.synology.me`）用真實 `.click()`（非手動 dispatch）驗證——K on→baby true+box active、K off→baby 清返 false、M on→baby true；`generate()`/`calculatePricing()` 正常。每次確認 `<meta name="fhs-build">` timestamp match 剛部署嘅版本先落 commit。
+- **canonical 欄位契約全程零改動**。
+- **對應 commit**：ecacfe8（UI一致性修復）→ 535b076（自動開埋嬰兒新行為）。
+- **Subagent 使用記錄**：❌ 未使用（全程互動式改碼 + production browser 直接執行 JS 驗證 + 部署腳本執行）。
+
+---
+
 ## [2026-07-31] Session（Claude Code / Sonnet 5 執行）— D51續II：Fat Mo live QA 揪出7個真bug全部修復 + 升格部署
 
 - **緣起**：D51 實作落 V42.html 並部署後（見下方 2026-07-30 條目），Fat Mo 分多輪對照真實生產頁面同 Artifact 原型逐項驗收，揪出以下真 bug：

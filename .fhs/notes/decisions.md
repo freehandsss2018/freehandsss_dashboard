@@ -17,6 +17,8 @@
 
 **【D51續II，2026-07-31】Fat Mo live QA bug修復輪**：Fat Mo 逐輪實測（含實單 #0601100）揪出 7 個真 bug，全部已修復＋production browser 驗證＋部署（commit 88f9d02→6d6e50d）：①`resetForm()` 初始化未 call `fhsD51UpdateHeader()`，令 P header 首次載入顯示灰色未同步真實已展開狀態 ②`fhsD51UpdateHeader()` 寫 `name.className` 漏咗 base class `tier1-name`，令 `.tier1-name.cat-k`/`.cat-m` CSS 選擇器永遠配唔中，K/M 標題色 toggle on 後停留喺預設深啡色（P 之前睇落啱色純屬巧合撞正 `.toggle-row.highlight-p strong` 另一條舊規則同色）③逐項對照 Artifact After panel 補回 7 項落漏：Google 相片連結提示、移除 $210 成本徽章、倒模對象按鈕 2×2 排位、群組開關跟分類色、家庭合成鎖匙扣改琥珀絲帶+S1/S2/S2 可選卡片取代下拉選單 ④嬰兒倒模 4 掣高度(42px/57px)字size(14px/13px)唔一致，統一 50px/13px ⑤草稿棄置掣 `window.confirm()` 喺 iOS Safari「加至主畫面」standalone PWA 模式已知會靜默唔彈出令撳掣冇反應，改頁內邏輯（Fat Mo明確要求撳咗即執行唔使二次確認）⑥**財務級 bug**：K/M master toggle 撳 OFF 只收埋畫面，底層 `k_baby_sec_en`/`k_rh_en` 等 checkbox 完全冇連鎖清空，`buildOrderItemsForPricing()` 入面舊安全網（comment 原文寫「防0601100類問題」——呢張單本身歷史上已撞過類似狀況）誤將已關閉分類仍計落報價；新增 `fhsD51ClearCategory()`，production 驗證 $3240→$2380 正確扣走 $860 ⑦共用數量格顯示空白但暗中當 1 件計價，補顯示對齊。**遺留**：訂單 #0601100 本身 record 如因此 bug 已錯存 $860，需另行查證 Supabase 手動修正（未做，待 Fat Mo 指示）。全文見 Changelog.md 2026-07-31 條目。
 
+**【D51續III，同日】UI一致性修復 + Fat Mo指定新行為**：Fat Mo再驗收揪出兩點：①鎖匙扣/頸鏈吊飾「嬰兒」group HTML 靜態帶 `checked` 屬性（大寶冇），造成兩者行為不一致，已移除；②「嬰兒/大寶」第二層標題之前寫死彩色，令未toggle on已經係彩色，同外層Tier1 header「開咗先有色」唔一致，改做動態（新增 `fhsD51SyncGroupColor()`）。之後 Fat Mo 澄清第②項唔係bug，係要求新增行為：**K/M master toggle 撳ON時，連鎖自動開埋「嬰兒」子分類**（大部分訂單用得著，慳返一步）——新增 `fhsD51AutoOpenBaby()`，同OFF時嘅 `fhsD51ClearCategory()`（見上）形成鏡像對稱。全部經 production browser 用真實 `.click()` 驗證。對應 commit：ecacfe8（UI一致性）→ 535b076（自動開埋嬰兒新行為）。
+
 ---
 
 [2026-07-28] (D50) 訂單總覽篩選三連環修復——期間歸屬同財務RPC統一用LEAST()、消失單bug、已取消單預設隱藏

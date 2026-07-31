@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-31 (D51續III — UI一致性修復 + Fat Mo指定新行為「master toggle連鎖開埋嬰兒」): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-31「D51續III」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo再驗收揪出鎖匙扣/頸鏈吊飾嬰兒group靜態checked預設不一致、第二層標題色寫死唔跟開關狀態兩點UI一致性問題已修復；並澄清要新增行為（非bug）：K/M master toggle撳ON時連鎖自動開埋嬰兒子分類，同OFF時嘅清空對稱。全部production browser用真實.click()驗證。2個commit：ecacfe8→535b076。
+Subagent：❌ 未使用（全程互動式改碼 + production browser 直接執行 JS 驗證 + 部署腳本執行）。
+
 ## 2026-07-31 (D51續II — Fat Mo live QA 揪出7個真bug全部修復 + 升格部署): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-31「D51續II」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 分多輪逐項對照production同Artifact原型驗收D51實作，揪出7個真bug（含財務級：K/M master toggle撳OFF冇連鎖清空底層checkbox，訂單#0601100仍計錯$860）全部修復，每個都經live production browser JS驗證（非本機推測）。canonical欄位契約全程零改動。5個commit：88f9d02→2ec5806→10e671d→a8ab52a→6d6e50d。遺留：#0601100本身record如已錯存需另行手動修正待Fat Mo指示；Google相片連結URL仍佔位符。
