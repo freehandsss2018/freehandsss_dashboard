@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-07-31] Session（Claude Code / Sonnet 5 執行）— D51續II：Fat Mo live QA 揪出7個真bug全部修復 + 升格部署
+
+- **緣起**：D51 實作落 V42.html 並部署後（見下方 2026-07-30 條目），Fat Mo 分多輪對照真實生產頁面同 Artifact 原型逐項驗收，揪出以下真 bug：
+  1. **Tier1 header 首次載入未同步**：`resetForm()` 程式化初始化唔會觸發 `enableP` 嘅 onchange，`fhsD51UpdateHeader()` 淨係掛喺 onchange 度，令 P 卡片首次載入時（其實已展開）仍顯示灰色「未選購」。Fix：`resetForm()` 尾段補 call `fhsD51UpdateHeader('P'/'K'/'M')`。
+  2. **className 漏 base class（真正嘅「顏色冇轉」根源）**：`fhsD51UpdateHeader()` 寫 `name.className = catClass` 只得 `"cat-k"`，完全冇包括 base class `"tier1-name"`，令 `.tier1-name.cat-k`/`.cat-m` CSS 選擇器永遠配唔中——鎖匙扣/頸鏈吊飾 toggle on 後標題文字色停留喺預設深啡色。P 之前睇落啱色純屬巧合（撞正另一條舊規則 `.toggle-row.highlight-p strong` 都係 `#4A148C`）。Fix：`className = 'tier1-name' + (catClass?' '+catClass:'')`。
+  3. **逐項對照 Artifact After panel 補回 7 項落漏**：Google 相片上傳連結提示（訂單類型＝否時顯示+複製掣，URL 仍為佔位符待 Fat Mo 提供）、移除 `$210 已計入` 成本徽章、倒模對象按鈕排位改 2×2（同次序：二手二腳/自訂/一手一腳左/右）、鎖匙扣/頸鏈吊飾/手模擺設全部第二層開關同標題跟返分類色、「單點選單」分區標題+「或改用家庭套裝」分隔線、家庭合成鎖匙扣改琥珀絲帶+S1/S2/S2 可選卡片（`fhsD51PickCombo`/`fhsD51SyncComboCards`）取代舊落拉選單（canonical `k_family_combo` select 保留為隱藏真值來源）。
+  4. **嬰兒倒模 4 掣大細唔一**：「一手一腳」兩行文字令個掣高 57px，另外兩個單行 42px；加上原本 active 掣 14px 粗體、其餘 13px。Fix：統一 `.d51-baby-mode-btn` class（固定 50px 高+13px 字），取代 4 顆掣各自 inline style。
+  5. **草稿棄置掣冇反應**：原用 `window.confirm()` 二次確認，iOS Safari「加至主畫面」standalone PWA 模式下 `confirm()`/`alert()` 有已知會被靜默吞掉唔彈出嘅情況，令撳掣睇落完全冇反應。Fix：移除 `confirm()` 依賴，改做撳咗即刻執行（Fat Mo 明確要求唔使二次確認）。
+  6. **財務級 bug（訂單 #0601100 實測揪出）**：鎖匙扣/頸鏈吊飾 master toggle 撳 OFF，畫面正確顯示「未選購」，但財務結算仍計「嬰兒(S)鎖匙扣-不銹鋼(V2)(右手)x1: $860」。根本原因：master switch onchange 淨係 `toggleAddon()` 收埋畫面，底層 `k_baby_sec_en`/`k_rh_en` 等 checkbox 完全冇跟住清；`buildOrderItemsForPricing()` 入面有段舊安全網（comment 原文寫「防0601100類問題」——即呢張單歷史上已經撞過類似問題），當 section toggle 關咗但子項目 checkbox 仍 checked 時繼續計落去防漏單，但依家反而造成「畫面話冇嘢，實際仲計緊錢」。Fix：新增 `fhsD51ClearCategory('K'/'M')`，master toggle 撳 OFF 時連鎖清空所有底層 checkbox+pill 視覺狀態+override rows。**遺留**：訂單 #0601100 本身 record 如已因此錯存 $860，需另行查證 Supabase 手動修正（未做，待 Fat Mo 指示）。
+  7. **共用數量格顯示同計價脫節**：`resetForm()` 會清空 number input 顯示值，令共用數量格顯示空白，但 `calculatePricing()` 嘅 `||1` fallback 令空白仍當 1 件計價。Fix：`fhsD51KPill()` 補：pill 首次選中時如共用數量格空白，自動填返 "1"。
+- **驗證方式**：每個 bug 修復都經 live browser 直接執行 **production**（`yanhei.synology.me`）JS 驗證，非本機推測——`getComputedStyle` 核對顏色值、`buildOrderItemsForPricing()` 核對 item 列表、`calculatePricing()` 核對報價金額（$3240→$2380 正確扣走 $860），每次確認 `<meta name="fhs-build">` timestamp match 剛部署嘅版本先落 commit。
+- **canonical 欄位契約全程零改動**。
+- **對應 commit**：88f9d02（header首次載入）→ 2ec5806（Artifact對齊7項）→ 10e671d（className+按鈕大細）→ a8ab52a（草稿confirm）→ 6d6e50d（財務bug）。
+- **Subagent 使用記錄**：❌ 未使用（全程互動式改碼 + production browser 直接執行 JS 驗證 + 部署腳本執行）。
+
+---
+
 ## [2026-07-30] Session（Claude Code / Sonnet 5 執行）— D51續：「產品選購」卡片 UI/UX 重新設計實作落 V42.html + 升格部署
 
 - **緣起**：D51 設計提案（見下方條目）經 Fat Mo 審批「先實作D51落V42.html，再部署」，本次接續實作。

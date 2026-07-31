@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-31 (D51續II — Fat Mo live QA 揪出7個真bug全部修復 + 升格部署): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-31「D51續II」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 分多輪逐項對照production同Artifact原型驗收D51實作，揪出7個真bug（含財務級：K/M master toggle撳OFF冇連鎖清空底層checkbox，訂單#0601100仍計錯$860）全部修復，每個都經live production browser JS驗證（非本機推測）。canonical欄位契約全程零改動。5個commit：88f9d02→2ec5806→10e671d→a8ab52a→6d6e50d。遺留：#0601100本身record如已錯存需另行手動修正待Fat Mo指示；Google相片連結URL仍佔位符。
+Subagent：❌ 未使用（全程互動式改碼 + production browser 直接執行 JS 驗證 + 部署腳本執行）。
+
 ## 2026-07-30 (D51續 — 「產品選購」卡片 UI/UX 重新設計實作落 V42.html + 升格部署): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-30「D51續」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 審批下方 D51 設計提案「先實作落V42.html，再部署」，本次接續實作：三大類 Tier1 header 重新設計、鎖匙扣藥丸多選+共用欄位、父母家庭專屬徽章，canonical 欄位 id/onchange 契約零改動。Live browser 直接執行 JS 驗證 pill/共用欄位/分開填三條路徑產生嘅 `generate()` 輸出逐字正確，console 零錯誤。`/fhs-check` 三項 PASS（PRICE_AUDIT 因 Airtable 429 已知限制不阻擋）。current.html 已升格部署三關驗證 PASS。
