@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-07-31 (IG看門狗警報 resolve 按鈕失效修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-31「IG看門狗警報『標記已處理/標回未處理』失效修復」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo回報系統監控頁按鈕失效，根因`sbRpc()`對`RETURNS void`的RPC呼叫一律`.json()`，空body拋例外令前端誤判失敗（後端其實已成功寫入）。改用`res.text()`判空修復，本機dev server連live Supabase驗證PASS。
+Subagent：❌ 未使用（全程互動式browser重現 + Supabase execute_sql直查根因 + 改碼 + live復驗）。
+
 ## 2026-07-31 (D51續III — UI一致性修復 + Fat Mo指定新行為「master toggle連鎖開埋嬰兒」): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-31「D51續III」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo再驗收揪出鎖匙扣/頸鏈吊飾嬰兒group靜態checked預設不一致、第二層標題色寫死唔跟開關狀態兩點UI一致性問題已修復；並澄清要新增行為（非bug）：K/M master toggle撳ON時連鎖自動開埋嬰兒子分類，同OFF時嘅清空對稱。全部production browser用真實.click()驗證。2個commit：ecacfe8→535b076。

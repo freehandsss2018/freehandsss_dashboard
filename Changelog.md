@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-07-31] Session（Claude Code / Sonnet 5 執行）— IG看門狗警報「標記已處理/標回未處理」失效修復
+
+- **緣起**：Fat Mo 回報系統監控頁 IG 看門狗警報卡片「標回未處理」及「標記已處理」按鈕失效。
+- **根因**：`sbRpc(fn, body)` helper（`freehandsss_dashboardV42.html`）對所有 RPC 呼叫一律 `res.json()`。`fhs_resolve_ig_alert` 定義為 `RETURNS void`（見 migration `0043_ig_watchdog_alerts.sql`），PostgREST 對 void 函式回傳空 body，`res.json()` 對空字串拋 `Unexpected end of JSON input`——RPC 本身在 Postgres 端**已成功寫入**，但前端 catch 區塊誤判為失敗，彈出「❌ 更新失敗」且因例外中斷,樂觀更新/重新渲染從未執行，令 UI 看起來完全冇反應。live browser 直接點擊 production 重現：console 捕獲該例外，同時 Supabase 查證對應 row 確實已 `resolved=true`。
+- **Fix**：`sbRpc()` 改用 `res.text()` 讀 body，空字串回傳 `null`，非空先 `JSON.parse()`（`freehandsss_dashboardV42.html` 約L15155-15170）。唯一另一個呼叫方 `get_financial_overview_full` 永遠有回傳資料不受影響。
+- **驗證**：本機 dev server（`fhs-dashboard`）直連 live Supabase，點擊「標記已處理」無錯誤、項目正確從「未處理」filter 消失，Supabase `execute_sql` 查證 `resolved_at` 已更新；測試用完即用 RPC 復原兩筆測試觸碰過的 row（`06001006`/`0700104`）為 `resolved=false`，冇污染真實資料。另發現 `07001009` 早於本次修復前已有一筆 `resolved=true`（13:28），研判係 Fat Mo 之前實際點擊時後端其實已成功寫入，只係前端錯誤彈窗令佢誤以為失效——**該筆未還原**，保留 Fat Mo 原本操作結果。
+- **對應 commit**：本次 commit（見下方 git log）。
+- **Subagent 使用記錄**：❌ 未使用（全程互動式 browser 重現 + Supabase execute_sql 直查根因 + 改碼 + live 復驗）。
+
+---
+
 ## [2026-07-31] Session（Claude Code / Sonnet 5 執行）— D51續III：UI一致性修復 + Fat Mo指定新行為（master toggle連鎖開埋嬰兒）
 
 - **緣起**：D51續II（下方條目）部署後，Fat Mo再驗收揪出兩點：

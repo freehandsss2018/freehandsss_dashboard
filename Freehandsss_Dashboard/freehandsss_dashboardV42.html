@@ -15164,7 +15164,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 body: JSON.stringify(body || {})
             });
             if (!res.ok) throw new Error('RPC ' + fn + ': ' + res.status);
-            return res.json();
+            const text = await res.text();
+            if (!text) return null; // RETURNS void 函式204/空body，唔可以直接.json()
+            return JSON.parse(text);
         }
 
         // ── IG 看門狗警報（S119 Phase 2）───────────────────────────────
