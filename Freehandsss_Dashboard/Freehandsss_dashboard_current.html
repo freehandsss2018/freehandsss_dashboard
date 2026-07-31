@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-30T17:07:43Z">
+    <meta name="fhs-build" content="2026-07-31T08:54:50Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -6060,6 +6060,11 @@
             updateFamilyParts();
             generate();
             selectOrderType('yes'); // default: 含取模服務
+            // D51：resetForm() 屬程式化初始化，唔會觸發 enableP/K/M 嘅 onchange，
+            // Tier1 header（icon色/名稱色/summary文字/chevron）必須手動同步一次，否則首次載入睇落成「未選購」灰色
+            fhsD51UpdateHeader('P');
+            fhsD51UpdateHeader('K');
+            fhsD51UpdateHeader('M');
         }
 
         let currentMode = null; // 🚨 改為 null 以確保首次 switchMode(create) 會觸發 resetForm()
@@ -6431,6 +6436,28 @@
                 fhsD51KSharedChange(prefix);
             }
             generate();
+        }
+        /* ---- D51：舊訂單經 restoreFormState() 還原時，k_*_en checkbox 值已正確，
+             但藥丸UI（.d51-pill）/共用欄位顯隱唔會自動跟——呢個 helper 純粹補視覺同步，唔碰資料、唔call generate() ---- */
+        function fhsD51SyncPillsFromState() {
+            ['', 'e_'].forEach(function (prefix) {
+                var count = 0;
+                ['lh', 'rh', 'lf', 'rf'].forEach(function (part) {
+                    var key = prefix + part;
+                    var enChk = document.getElementById('k_' + key + '_en');
+                    var sel = !!(enChk && enChk.checked);
+                    FHS_D51_K_SEL[key] = sel;
+                    var pill = document.getElementById('d51PillK_' + key);
+                    if (pill) pill.classList.toggle('sel', sel);
+                    var ovRow = document.getElementById('d51OvK_' + key);
+                    if (ovRow) ovRow.classList.toggle('show', sel);
+                    if (sel) count++;
+                });
+                var sharedEl = document.getElementById('d51SharedK_' + prefix);
+                if (sharedEl) sharedEl.classList.toggle('show', count > 0);
+                var labelEl = document.getElementById('d51SharedLabelK_' + prefix);
+                if (labelEl) labelEl.textContent = '已選 ' + count + ' 個部位 · 套用以下設定';
+            });
         }
 
         // 動態更新家庭合成下拉選單
@@ -8067,6 +8094,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 lastFetchedState = JSON.parse(captureFormState());
 
                 _syncOrderTypeUI(document.getElementById('enableP')?.checked || false);
+                // D51：舊訂單還原時 k_*_en checkbox 已經由上面 dispatchEvent('change') 還原正確，
+                // 但藥丸UI（d51PillK_*）同 FHS_D51_K_SEL 追蹤物件唔會自動同步，需要手動補一次視覺對齊
+                if (typeof fhsD51SyncPillsFromState === 'function') fhsD51SyncPillsFromState();
+                if (typeof fhsD51UpdateHeader === 'function') { fhsD51UpdateHeader('P'); fhsD51UpdateHeader('K'); fhsD51UpdateHeader('M'); }
                 generate(); // 最後刷新文字預覽
                 setTimeout(function() { if (typeof restoreSplits === 'function') restoreSplits(); }, 80);
                 console.log("✅ Form state restoration complete.");
