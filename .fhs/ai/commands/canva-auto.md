@@ -42,7 +42,7 @@
 
 ## Stage ③ — AI 換料＋比例校正
 
-1. 開 transaction 讀 fills 搵新 asset id → `get-assets` 查**檔名+原始 WxH**（勿靠估邊張係邊張）
+1. 開 transaction 讀 fills 搵新 asset id → `get-assets` 查**檔名**（勿靠估邊張係邊張）。⚠️ **但 `get-assets` 報嘅 video WxH 會錯**（HoKaSin 0601100：本地原檔 1440×1440 正方，Canva 報 1080×2160 直片）——尺寸一律以**本地原檔**為準：`python` 讀 mp4 `tkhd` atom 尾 8 bytes（32.16 定點）即得真值，唔使 ffprobe。次選核對法：同一回應內**縮圖 aspect vs metadata aspect 唔一致＝metadata 錯，信縮圖**。
 2. 查 `placement_memory.json` 相似長寬比案例，計出各格目標 box（無案例時用最近似案例等比推算）
 3. **一氣呵成**：`update_fill` 換入四類格（page2 圖對/page3 細圖對+直片/page4 動畫）→ **逐格校正**（見下方「零裁切鐵律」，2026-07-27 起取代舊嘅 preserve_aspect_ratio 做法）→ `delete_element` **只准刪 Fat Mo 拖入嘅臨時元素**（見下方「元素保命鐵律」）→ commit
 
@@ -87,6 +87,8 @@
 - editing transaction TTL 極短（分鐘級）：中途等用戶回覆即過期報 `not found`，全部 operations 重做——所有等待位必須在 transaction 之外
 - `get-design-thumbnail` 在 transaction 內報 `Not allowed`（本帳號系統性）：改用 get-assets 縮圖或 commit 後 get-design-pages
 - 縮圖 URL 帶 `fallbackstale=T` = 過時快取不可信，重攞或直接出 export
+- **`edit-design` 回傳嘅 draft 縮圖係 1:1 正方、而頁面係 16:9 → 水平壓縮咗，唔可以用嚟判斷比例**（HoKaSin 曾因此誤判「已改正嘅正方片仲係窄」）。驗比例一律 `export-design` 出真 JPG 1280×720。
+- **`get-assets` 嘅 video `metadata.width/height` 可以係錯**（HoKaSin `Video 3.mp4` 本地 1440×1440，Canva 報 1080×2160）。破綻＝同一回應內縮圖 aspect 同 metadata aspect 唔一致。尺寸真理源＝本地原檔 mp4 `tkhd` atom。
 - page 根 video 元素（背景模糊層）`update_fill` 報 invalid duration，屬人手位
 - export jpg 的 `quality` 為必填（報 `'quality' must not be null`）；mp4 用字串 `horizontal_1080p`
 - 本地檔案 MCP 上載不到（只收公開 URL）；上載區列不出 video

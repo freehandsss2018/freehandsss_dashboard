@@ -40,11 +40,13 @@
           "note": "⚠️首見 page3 兩條片長寬比唔同嘅情況（Meika兩條都係0.5直片可共用同一個框，今次唔得）。Fat Mo 裁決『各自按原比例，高度對齊、圖層中心對齊』：兩條片統一 h=577、top=175、中心 x=960，闊度各自按原比例計。此片1:1 → 577×577，left=960-288.5=671.5"
         },
         {
-          "slot": "page3_片3_直片",
-          "asset_px": { "w": 1080, "h": 2160, "aspect": 0.5 },
+          "slot": "page3_片3",
+          "asset_px": { "w": 1440, "h": 1440, "aspect": 1.0, "note": "本地原檔實測真值（mp4 tkhd atom）" },
+          "asset_px_canva_reported": { "w": 1080, "h": 2160, "aspect": 0.5, "note": "⚠️Canva get-assets 報錯" },
           "element_id": "LBDXmPZS466VsHHW",
-          "ai_box": { "top": 175, "left": 815.75, "w": 288.5, "h": 577 },
-          "note": "同上規則：0.5比例 → 288.5×577，left=960-144.25=815.75。同片1 top/h/中心線完全對齊，兩條都零裁切零變形"
+          "ai_box_wrong": { "top": 175, "left": 815.75, "w": 288.5, "h": 577, "note": "信咗 Canva metadata 嘅 0.5 比例 → 正方片被壓窄，Fat Mo 紅圈揪出" },
+          "ai_box": { "top": 175, "left": 671.5, "w": 577, "h": 577 },
+          "note": "🔴新教訓：**get-assets 報嘅 video 尺寸唔可信**。本地原檔 1440×1440 正方，Canva metadata 報 1080×2160 直片。破綻其實一早喺同一個回應入面——縮圖 360×360 正方 vs metadata 0.5 直，自相矛盾（Video 1 就兩者都 960×960 一致）。修正後同片1 完全重疊（同 top/left/size），兩條都正方零裁切。尺寸真理源＝本地原檔 mp4 tkhd atom（python 讀尾8 bytes 32.16定點，唔使ffprobe）。"
         }
       ],
       "non_geometry_findings": [
