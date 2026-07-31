@@ -443,15 +443,69 @@
         /* ---- D51 第二層群組標題（鎖匙扣/頸鏈吊飾入面嘅「嬰兒/大寶」小標題）：貫徹分類色，唔再淨係外層Tier1有色 ---- */
         .d51-menu-title { display: inline-flex; align-items: center; gap: 6px; }
         .d51-menu-tag { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .d51-menu-tag.cat-p { background: var(--d51-cat-p); }
         .d51-menu-tag.cat-k { background: var(--d51-cat-k); }
         .d51-menu-tag.cat-m { background: var(--d51-cat-m); }
-        .sec-title-row .limb-title.d51-menu-title.cat-k { color: var(--d51-cat-k); }
-        .sec-title-row .limb-title.d51-menu-title.cat-m { color: var(--d51-cat-m); }
+        .limb-title.d51-menu-title.cat-p { color: var(--d51-cat-p); }
+        .limb-title.d51-menu-title.cat-k { color: var(--d51-cat-k); }
+        .limb-title.d51-menu-title.cat-m { color: var(--d51-cat-m); }
+        /* ---- D51「單點選單」分區小標題（同 Artifact .group-label 一致） ---- */
+        .d51-group-label {
+            font-size: 11px; font-weight: 700; letter-spacing: .03em; color: #B0A090;
+            text-transform: uppercase; margin: 0 0 8px;
+        }
+        /* ---- D51 家庭合成鎖匙扣套裝卡（琥珀＝套裝色，獨立於三大類色，仍坐喺藍色鎖匙扣區內） ---- */
+        .d51-bundle-card {
+            background: #FBF1DD; border: 1.5px solid #A9711E; border-radius: 12px;
+            padding: 12px; margin-bottom: 15px;
+        }
+        .d51-bundle-ribbon {
+            display: inline-flex; align-items: center; gap: 5px; background: #A9711E; color: #fff;
+            font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 6px; margin-bottom: 9px;
+        }
+        .d51-bundle-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .d51-bundle-title { font-size: 14px; font-weight: 700; color: #7A5314; }
+        .d51-bundle-desc { font-size: 11.5px; color: #8A7A64; margin: 2px 0 10px; line-height: 1.5; }
+        .d51-combo-cards { display: flex; flex-direction: column; gap: 7px; margin-bottom: 11px; }
+        .d51-combo-card {
+            display: flex; gap: 9px; align-items: flex-start; background: #fff;
+            border: 1.5px solid #e0e0e0; border-radius: 9px; padding: 9px 10px; cursor: pointer;
+        }
+        .d51-combo-card.sel { border-color: #A9711E; box-shadow: 0 0 0 1px #A9711E inset; }
+        .d51-combo-badge {
+            flex-shrink: 0; width: 30px; height: 22px; border-radius: 6px; background: #FBF1DD;
+            color: #A9711E; font-size: 11px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .d51-combo-card.sel .d51-combo-badge { background: #A9711E; color: #fff; }
+        .d51-combo-txt-main { font-size: 12.5px; font-weight: 600; color: #444; }
+        .d51-combo-txt-sub { font-size: 11px; color: #8A7A64; margin-top: 1px; }
+        /* ---- D51「或改用家庭套裝」分隔線（同 Artifact .divider-jump 一致） ---- */
+        .d51-divider-jump {
+            display: flex; align-items: center; gap: 8px; margin: 14px 0;
+            color: #B0A090; font-size: 11px; font-weight: 600;
+        }
+        .d51-divider-jump::before, .d51-divider-jump::after {
+            content: ''; flex: 1; height: 1px; background: #eee;
+        }
         /* ---- D51 頸鏈吊飾（M）部位列：由卡片式 part-item 拉直做 flat menu-row，貼近設計稿 ---- */
         .d51-menu-row { background: transparent; border: none; border-bottom: 1px solid #eee; border-radius: 0; padding: 9px 2px; margin-bottom: 0; }
         .d51-menu-row:last-child { border-bottom: none; }
         .d51-menu-row .part-details { border-top: 1px dashed #eee; }
         .limb-grid.d51-menu-block { background: #FBF8F3; border: 1px solid #eee; border-radius: 11px; }
+        /* ---- D51：純金屬/吊飾單（訂單類型＝否）提示提供 Google 相片上傳連結俾客人 ---- */
+        .d51-photo-link-note {
+            display: none; align-items: flex-start; gap: 6px;
+            background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 4px;
+            padding: 8px 10px; font-size: 12px; color: #0D47A1; line-height: 1.5; margin-top: 10px;
+        }
+        .d51-photo-link-note.show { display: flex; }
+        .d51-photo-link-note .d51-pln-text { flex: 1; }
+        .d51-photo-link-btn {
+            flex-shrink: 0; font-size: 12px; padding: 4px 9px; border: 1px solid #64B5F6;
+            border-radius: 5px; background: #fff; color: #0D47A1; cursor: pointer;
+            font-family: inherit; white-space: nowrap;
+        }
 
         .switch {
             position: relative;
@@ -4310,8 +4364,13 @@
                 <span>若客人有預約取模，請必須選「是」</span>
             </div>
         </div>
-        <div class="cost-included-badge" id="costIncludedBadge" style="display:none;">
-            <span>✓</span><span>手模擺設成本 $210 已計入</span>
+        <!-- D51：成本徽章已按 Fat Mo 定案移除（改版提案 After panel 無此元素）；
+             保留 hidden stub 令 _syncOrderTypeUI() 既有 badge.style.display 寫入唔會 crash -->
+        <div id="costIncludedBadge" style="display:none;"></div>
+        <div class="d51-photo-link-note" id="d51PhotoLinkNote">
+            <span>📎</span>
+            <span class="d51-pln-text">代表客人僅提供照片畫圖，記得提供 Google 相片上傳連結俾客人</span>
+            <button type="button" class="d51-photo-link-btn" id="d51PhotoCopyBtn" onclick="fhsD51CopyPhotoLink()">複製連結</button>
         </div>
 
         <div class="toggle-row tier1-row" id="toggleRowP" onclick="fhsD51HeaderClick(event,'enableP','contentP')">
@@ -4354,14 +4413,14 @@
             <div class="part-item" id="woolAddonRow" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-weight: bold; color: #444; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>羊毛氈公仔 ($680)</span>
-                    <label class="switch"><input type="checkbox" id="w_wool_en"
+                    <label class="switch d51-cat-p"><input type="checkbox" id="w_wool_en"
                             onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
             <div class="part-item" id="lightAddonRow" style="display:none;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-weight: bold; color: #444; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-lightbulb"/></svg>燈飾 ($80)</span>
-                    <label class="switch"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
+                    <label class="switch d51-cat-p"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
         </div>
@@ -4381,12 +4440,13 @@
             </div>
         </div>
         <div id="contentK" class="addon-content">
-            <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
+            <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 12px; line-height:1.5;">先揀單點部位逐件加購，或者直接跳去下面嘅家庭套裝——兩者揀其一，唔使重複勾。</p>
+            <div class="d51-group-label">單點選單</div>
 
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
                     <span class="limb-title d51-menu-title cat-k"><span class="d51-menu-tag cat-k"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒</span>
-                    <label class="switch"><input type="checkbox" id="k_baby_sec_en" checked
+                    <label class="switch d51-cat-k"><input type="checkbox" id="k_baby_sec_en" checked
                             onchange="togglePart('k_baby_sec_box', this); generate();"><span
                             class="slider"></span></label>
                 </div>
@@ -4449,7 +4509,7 @@
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
                     <span class="limb-title d51-menu-title cat-k"><span class="d51-menu-tag cat-k"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶</span>
-                    <label class="switch"><input type="checkbox" id="k_elder_sec_en"
+                    <label class="switch d51-cat-k"><input type="checkbox" id="k_elder_sec_en"
                             onchange="togglePart('k_elder_sec_box', this); generate();"><span
                             class="slider"></span></label>
                 </div>
@@ -4509,17 +4569,37 @@
                 </div>
             </div>
 
-            <div class="limb-grid" style="border: 2px solid #D4A373; background-color: #fffaf0;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span class="limb-title" style="border:none; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-users"/></svg>【家庭合成鎖匙扣】</span>
-                    <label class="switch"><input type="checkbox" id="k_family_en"
+            <div class="d51-divider-jump">或改用家庭套裝</div>
+
+            <div class="d51-bundle-card">
+                <div class="d51-bundle-ribbon"><svg class="ba-icon" width="13" height="13"><use href="#icon-users"/></svg>一體成型套裝</div>
+                <div class="d51-bundle-head">
+                    <div>
+                        <div class="d51-bundle-title">家庭合成鎖匙扣</div>
+                        <div class="d51-bundle-desc">已包含父母雙手，一件成品，唔使再逐件加購單點部位</div>
+                    </div>
+                    <label class="switch d51-cat-k"><input type="checkbox" id="k_family_en"
                             onchange="togglePart('k_family_box', this); generate(); fhsD51UpdateHeader('K');"><span
                             class="slider"></span></label>
                 </div>
                 <div id="k_family_box" class="part-details">
+                    <div class="d51-combo-cards">
+                        <div class="d51-combo-card sel" id="d51ComboCard_S1_B" onclick="fhsD51PickCombo('S1_B')">
+                            <div class="d51-combo-badge">S1</div>
+                            <div><div class="d51-combo-txt-main">父母 ＋ 嬰兒 1 部位</div><div class="d51-combo-txt-sub">最精簡組合</div></div>
+                        </div>
+                        <div class="d51-combo-card" id="d51ComboCard_S2_BB" onclick="fhsD51PickCombo('S2_BB')">
+                            <div class="d51-combo-badge">S2</div>
+                            <div><div class="d51-combo-txt-main">父母 ＋ 嬰兒（一手一腳）</div><div class="d51-combo-txt-sub">兩個嬰兒部位</div></div>
+                        </div>
+                        <div class="d51-combo-card" id="d51ComboCard_S2_BE" onclick="fhsD51PickCombo('S2_BE')">
+                            <div class="d51-combo-badge">S2</div>
+                            <div><div class="d51-combo-txt-main">父母 ＋ 嬰兒 1部位 ＋ 大寶 1部位</div><div class="d51-combo-txt-sub">三代同框</div></div>
+                        </div>
+                    </div>
                     <div class="grid-3-col">
-                        <div class="mini-col" style="grid-column: span 3; margin-bottom: 5px;">
-                            <label style="color: #D4A373; font-weight: bold;">選擇合成款式 (已包含父母手)</label>
+                        <!-- canonical 欄位：套裝卡片只係外觀層，真正值仍然寫入呢個 select，updateFamilyParts()/generate() 讀佢 -->
+                        <div class="mini-col" style="grid-column: span 3; display:none;">
                             <select id="k_family_combo" onchange="updateFamilyParts(); generate();">
                                 <option value="S1_B">S1：父母 ➕ 嬰兒 (單一部位)</option>
                                 <option value="S2_BB">S2：父母 ➕ 嬰兒 (一手一腳)</option>
@@ -4570,12 +4650,13 @@
             </div>
         </div>
         <div id="contentM" class="addon-content">
-            <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 15px;">請先開啟欲購買的對象總開關：</p>
+            <p style="font-size: 13px; color: #888; margin-top: 0; margin-bottom: 12px;">請先開啟欲購買的對象總開關：</p>
+            <div class="d51-group-label">單點選單</div>
 
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
                     <span class="limb-title d51-menu-title cat-m"><span class="d51-menu-tag cat-m"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒部位</span>
-                    <label class="switch"><input type="checkbox" id="m_baby_sec_en" checked
+                    <label class="switch d51-cat-m"><input type="checkbox" id="m_baby_sec_en" checked
                             onchange="togglePart('m_baby_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
                             class="slider"></span></label>
                 </div>
@@ -4583,7 +4664,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>左手</span>
-                            <label class="switch"><input type="checkbox" id="m_lh_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_lh_en"
                                     onchange="togglePart('m_lh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_lh_box" class="part-details">
@@ -4602,7 +4683,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>右手</span>
-                            <label class="switch"><input type="checkbox" id="m_rh_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_rh_en"
                                     onchange="togglePart('m_rh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_rh_box" class="part-details">
@@ -4621,7 +4702,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>左腳</span>
-                            <label class="switch"><input type="checkbox" id="m_lf_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_lf_en"
                                     onchange="togglePart('m_lf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_lf_box" class="part-details">
@@ -4641,7 +4722,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>右腳</span>
-                            <label class="switch"><input type="checkbox" id="m_rf_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_rf_en"
                                     onchange="togglePart('m_rf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_rf_box" class="part-details">
@@ -4664,7 +4745,7 @@
             <div class="limb-grid d51-menu-block">
                 <div class="sec-title-row">
                     <span class="limb-title d51-menu-title cat-m"><span class="d51-menu-tag cat-m"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶部位</span>
-                    <label class="switch"><input type="checkbox" id="m_elder_sec_en"
+                    <label class="switch d51-cat-m"><input type="checkbox" id="m_elder_sec_en"
                             onchange="togglePart('m_elder_sec_box', this); generate(); fhsD51UpdateHeader('M');"><span
                             class="slider"></span></label>
                 </div>
@@ -4672,7 +4753,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶左手</span>
-                            <label class="switch"><input type="checkbox" id="m_e_lh_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_e_lh_en"
                                     onchange="togglePart('m_e_lh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_lh_box" class="part-details">
@@ -4691,7 +4772,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-hand"/></svg>大寶右手</span>
-                            <label class="switch"><input type="checkbox" id="m_e_rh_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_e_rh_en"
                                     onchange="togglePart('m_e_rh_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_rh_box" class="part-details">
@@ -4710,7 +4791,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶左腳</span>
-                            <label class="switch"><input type="checkbox" id="m_e_lf_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_e_lf_en"
                                     onchange="togglePart('m_e_lf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_lf_box" class="part-details">
@@ -4730,7 +4811,7 @@
                     <div class="part-item d51-menu-row">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight: bold; color: #444;"><svg class="ba-icon" width="16" height="16" style="vertical-align:middle;margin-right:4px;"><use href="#icon-footprint"/></svg>大寶右腳</span>
-                            <label class="switch"><input type="checkbox" id="m_e_rf_en"
+                            <label class="switch d51-cat-m"><input type="checkbox" id="m_e_rf_en"
                                     onchange="togglePart('m_e_rf_box', this); fhsD51UpdateHeader('M');"><span class="slider"></span></label>
                         </div>
                         <div id="m_e_rf_box" class="part-details">
@@ -6065,6 +6146,7 @@
             fhsD51UpdateHeader('P');
             fhsD51UpdateHeader('K');
             fhsD51UpdateHeader('M');
+            fhsD51SyncComboCards();
         }
 
         let currentMode = null; // 🚨 改為 null 以確保首次 switchMode(create) 會觸發 resetForm()
@@ -6239,6 +6321,8 @@
                 if (dotNo) dotNo.style.background = '#D1D1D6';
                 if (rcNo)  rcNo.style.borderColor  = '#D1D1D6';
                 badge.style.display = 'flex';
+                var _pln = document.getElementById('d51PhotoLinkNote');
+                if (_pln) _pln.classList.remove('show');
                 if (rowP) rowP.classList.add('highlight-p');
                 if (appDateEl) appDateEl.disabled = false;
                 if (appHourEl) appHourEl.disabled = false;
@@ -6250,6 +6334,8 @@
                 if (dotNo) dotNo.style.background = '#B0A090';
                 if (rcNo)  rcNo.style.borderColor  = '#ccc';
                 badge.style.display = 'none';
+                var _pln2 = document.getElementById('d51PhotoLinkNote');
+                if (_pln2) _pln2.classList.add('show');
                 if (rowP) rowP.classList.remove('highlight-p');
                 if (appDateEl) appDateEl.disabled = true;
                 if (appHourEl) appHourEl.disabled = true;
@@ -6437,6 +6523,41 @@
             }
             generate();
         }
+        /* ---- D51：家庭套裝三張卡片（S1/S2/S2）＝ k_family_combo select 嘅外觀層，
+             真正值仍然寫入 select 再交返 updateFamilyParts()/generate()，資料契約零改動 ---- */
+        function fhsD51PickCombo(comboVal) {
+            var sel = document.getElementById('k_family_combo');
+            if (!sel) return;
+            sel.value = comboVal;
+            fhsD51SyncComboCards();
+            updateFamilyParts();
+            generate();
+        }
+        function fhsD51SyncComboCards() {
+            var sel = document.getElementById('k_family_combo');
+            if (!sel) return;
+            ['S1_B', 'S2_BB', 'S2_BE'].forEach(function (v) {
+                var card = document.getElementById('d51ComboCard_' + v);
+                if (card) card.classList.toggle('sel', sel.value === v);
+            });
+        }
+        /* ---- D51：訂單類型＝否（純金屬/吊飾單）＝客人淨係提供照片畫圖，需要俾佢相片上傳連結 ----
+             ⚠️ FHS_D51_PHOTO_UPLOAD_URL 目前為佔位符，待 Fat Mo 提供真實 Google 相片資料夾連結後替換 */
+        var FHS_D51_PHOTO_UPLOAD_URL = 'https://drive.google.com/drive/folders/請填入相片上傳資料夾連結';
+        function fhsD51CopyPhotoLink() {
+            var btn = document.getElementById('d51PhotoCopyBtn');
+            function showCopied() {
+                if (!btn) return;
+                var original = btn.textContent;
+                btn.textContent = '已複製 ✓';
+                setTimeout(function () { btn.textContent = original; }, 1500);
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(FHS_D51_PHOTO_UPLOAD_URL).then(showCopied).catch(showCopied);
+            } else {
+                showCopied();
+            }
+        }
         /* ---- D51：舊訂單經 restoreFormState() 還原時，k_*_en checkbox 值已正確，
              但藥丸UI（.d51-pill）/共用欄位顯隱唔會自動跟——呢個 helper 純粹補視覺同步，唔碰資料、唔call generate() ---- */
         function fhsD51SyncPillsFromState() {
@@ -6513,16 +6634,16 @@
             const qcOptions = quickColors.map(c => `<option value="${c}"${c === '待定' ? ' selected' : ''}>${c}</option>`).join('');
             const limbOptions = colors.map(c => `<option value="${c}" ${c === '待定' ? 'selected' : ''}>${c}</option>`).join('');
             let castingHtml = '';
-            castingHtml += `<div class="limb-grid">
+            castingHtml += `<div class="limb-grid d51-menu-block">
               <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">
-                <span class="limb-title" style="margin:0; border:none;">【嬰兒】</span>
+                <span class="limb-title d51-menu-title cat-p" style="margin:0; border:none;"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒</span>
                 <button type="button" id="babyGlassCollapseBtn" onclick="babyReturnToGlassPending()" style="display:none; font-size:12px; padding:4px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer; white-space:nowrap; flex-shrink:0;">↩ 全部待定</button>
               </div>
-              <div id="babyModeBtnRow" style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:10px;">
+              <div id="babyModeBtnRow" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px;">
                 <button type="button" id="babyBtn_all"    onclick="babySetMode('all')"    style="font-size:14px; padding:10px 4px; border:1px solid #C9A96E; background:#C9A96E; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">二手二腳</button>
+                <button type="button" id="babyBtn_custom" onclick="babySetMode('custom')" style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">自訂 ↓</button>
                 <button type="button" id="babyBtn_left"   onclick="babySetMode('left')"   style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(左)</span></button>
                 <button type="button" id="babyBtn_right"  onclick="babySetMode('right')"  style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(右)</span></button>
-                <button type="button" id="babyBtn_custom" onclick="babySetMode('custom')" style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">自訂 ↓</button>
               </div>
               <div id="babyColorRow" class="mini-col" style="margin-bottom:4px;">
                 <label>顏色</label>
@@ -6542,10 +6663,10 @@
 
             if (sub === "玻璃瓶款式") {
                 castingHtml += `
-            <div class="limb-grid">
+            <div class="limb-grid d51-menu-block">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <span class="limb-title" style="margin:0; border:none;">【父母】<span class="d51-family-badge">家庭專屬</span></span>
-                    <label class="switch"><input type="checkbox" id="en_parent" onchange="togglePart('box_parent', this)"><span class="slider"></span></label>
+                    <span class="limb-title d51-menu-title cat-p" style="margin:0; border:none;"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-users"/></svg>父母<span class="d51-family-badge">家庭專屬</span></span>
+                    <label class="switch d51-cat-p"><input type="checkbox" id="en_parent" onchange="togglePart('box_parent', this)"><span class="slider"></span></label>
                 </div>
                 <div id="box_parent" class="part-details">
                     <div class="grid-2-col">`;
@@ -6557,10 +6678,10 @@
             </div>`;
 
                 castingHtml += `
-            <div class="limb-grid">
+            <div class="limb-grid d51-menu-block">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <span class="limb-title" style="margin:0; border:none;">【大寶】</span>
-                    <label class="switch"><input type="checkbox" id="en_elder" onchange="togglePart('box_elder', this)"><span class="slider"></span></label>
+                    <span class="limb-title d51-menu-title cat-p" style="margin:0; border:none;"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-smile"/></svg>大寶</span>
+                    <label class="switch d51-cat-p"><input type="checkbox" id="en_elder" onchange="togglePart('box_elder', this)"><span class="slider"></span></label>
                 </div>
                 <div id="box_elder" class="part-details">
                     <div class="grid-2-col">`;
@@ -8097,6 +8218,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // D51：舊訂單還原時 k_*_en checkbox 已經由上面 dispatchEvent('change') 還原正確，
                 // 但藥丸UI（d51PillK_*）同 FHS_D51_K_SEL 追蹤物件唔會自動同步，需要手動補一次視覺對齊
                 if (typeof fhsD51SyncPillsFromState === 'function') fhsD51SyncPillsFromState();
+                if (typeof fhsD51SyncComboCards === 'function') fhsD51SyncComboCards();
                 if (typeof fhsD51UpdateHeader === 'function') { fhsD51UpdateHeader('P'); fhsD51UpdateHeader('K'); fhsD51UpdateHeader('M'); }
                 generate(); // 最後刷新文字預覽
                 setTimeout(function() { if (typeof restoreSplits === 'function') restoreSplits(); }, 80);
