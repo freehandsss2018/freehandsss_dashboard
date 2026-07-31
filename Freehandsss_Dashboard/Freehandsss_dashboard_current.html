@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-31T11:29:01Z">
+    <meta name="fhs-build" content="2026-07-31T13:45:47Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -15164,7 +15164,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 body: JSON.stringify(body || {})
             });
             if (!res.ok) throw new Error('RPC ' + fn + ': ' + res.status);
-            return res.json();
+            const text = await res.text();
+            if (!text) return null; // RETURNS void 函式204/空body，唔可以直接.json()
+            return JSON.parse(text);
         }
 
         // ── IG 看門狗警報（S119 Phase 2）───────────────────────────────
