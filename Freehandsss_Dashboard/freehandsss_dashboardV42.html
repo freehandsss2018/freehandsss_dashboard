@@ -8064,8 +8064,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 + '</div>';
             document.body.appendChild(bar);
             document.getElementById('draftRestoreYes').addEventListener('click', function () { _draftRestore(); });
+            // ⚠️ 原本用 window.confirm()：iOS Safari「加至主畫面」standalone PWA 模式下
+            // confirm()/alert() 有已知會被靜默吞掉唔彈出嘅情況，令撳掣睇落「無反應」。
+            // Fat Mo 明確要求撳咗即刻執行，唔使二次確認。
             document.getElementById('draftRestoreNo').addEventListener('click', function () {
-                if (confirm('確定棄置呢份草稿？棄置後無法復原。')) { _draftClear(); _draftBannerHide(); }
+                _draftClear();
+                _draftBannerHide();
             });
         }
         function _draftInit() {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-31T09:44:09Z">
+    <meta name="fhs-build" content="2026-07-31T10:03:28Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -8064,8 +8064,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 + '</div>';
             document.body.appendChild(bar);
             document.getElementById('draftRestoreYes').addEventListener('click', function () { _draftRestore(); });
+            // ⚠️ 原本用 window.confirm()：iOS Safari「加至主畫面」standalone PWA 模式下
+            // confirm()/alert() 有已知會被靜默吞掉唔彈出嘅情況，令撳掣睇落「無反應」。
+            // Fat Mo 明確要求撳咗即刻執行，唔使二次確認。
             document.getElementById('draftRestoreNo').addEventListener('click', function () {
-                if (confirm('確定棄置呢份草稿？棄置後無法復原。')) { _draftClear(); _draftBannerHide(); }
+                _draftClear();
+                _draftBannerHide();
             });
         }
         function _draftInit() {
