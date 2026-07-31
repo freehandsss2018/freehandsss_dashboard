@@ -493,6 +493,18 @@
         .d51-menu-row:last-child { border-bottom: none; }
         .d51-menu-row .part-details { border-top: 1px dashed #eee; }
         .limb-grid.d51-menu-block { background: #FBF8F3; border: 1px solid #eee; border-radius: 11px; }
+        /* ---- D51：嬰兒倒模模式 4 掣（二手二腳/自訂/一手一腳左/右）——統一格仔大小+字體，
+             修復之前部分掣兩行文字令高度／字size唔一致嘅問題（Fat Mo驗收揪出） ---- */
+        .d51-baby-mode-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+        .d51-baby-mode-btn {
+            font-size: 13px; height: 50px; padding: 8px 6px; border: 1px solid #ddd;
+            background: #fff; color: #555; border-radius: 8px; cursor: pointer; font-family: inherit;
+            line-height: 1.3; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 1px; white-space: nowrap;
+        }
+        .d51-baby-mode-btn.active { background: #C9A96E; border-color: #C9A96E; color: #fff; font-weight: bold; }
+        .d51-baby-mode-sub { font-size: 11px; font-weight: 500; opacity: .75; }
+        .d51-baby-mode-btn.active .d51-baby-mode-sub { opacity: .9; }
         /* ---- D51：純金屬/吊飾單（訂單類型＝否）提示提供 Google 相片上傳連結俾客人 ---- */
         .d51-photo-link-note {
             display: none; align-items: flex-start; gap: 6px;
@@ -6436,7 +6448,7 @@
             var chevron = document.getElementById('d51Chevron' + letter);
             var switchLbl = chk.closest('.switch');
             if (icon) icon.className = 'tier1-ic' + (catClass ? ' ' + catClass : '');
-            if (name) name.className = catClass;
+            if (name) name.className = 'tier1-name' + (catClass ? ' ' + catClass : '');
             if (switchLbl) switchLbl.className = 'switch' + (catClass ? ' d51-' + catClass : '');
             var contentEl = document.getElementById('content' + letter);
             var isOpen = contentEl && contentEl.classList.contains('active');
@@ -6639,11 +6651,11 @@
                 <span class="limb-title d51-menu-title cat-p" style="margin:0; border:none;"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒</span>
                 <button type="button" id="babyGlassCollapseBtn" onclick="babyReturnToGlassPending()" style="display:none; font-size:12px; padding:4px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer; white-space:nowrap; flex-shrink:0;">↩ 全部待定</button>
               </div>
-              <div id="babyModeBtnRow" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px;">
-                <button type="button" id="babyBtn_all"    onclick="babySetMode('all')"    style="font-size:14px; padding:10px 4px; border:1px solid #C9A96E; background:#C9A96E; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">二手二腳</button>
-                <button type="button" id="babyBtn_custom" onclick="babySetMode('custom')" style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">自訂 ↓</button>
-                <button type="button" id="babyBtn_left"   onclick="babySetMode('left')"   style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(左)</span></button>
-                <button type="button" id="babyBtn_right"  onclick="babySetMode('right')"  style="font-size:13px; padding:10px 4px; border:1px solid #ddd; background:#fff; color:#555; border-radius:6px; cursor:pointer;">一手一腳<br><span style="font-size:11px; color:#888;">(右)</span></button>
+              <div id="babyModeBtnRow" class="d51-baby-mode-row">
+                <button type="button" id="babyBtn_all"    class="d51-baby-mode-btn" onclick="babySetMode('all')">二手二腳</button>
+                <button type="button" id="babyBtn_custom" class="d51-baby-mode-btn" onclick="babySetMode('custom')">自訂 ↓</button>
+                <button type="button" id="babyBtn_left"   class="d51-baby-mode-btn" onclick="babySetMode('left')">一手一腳<span class="d51-baby-mode-sub">(左)</span></button>
+                <button type="button" id="babyBtn_right"  class="d51-baby-mode-btn" onclick="babySetMode('right')">一手一腳<span class="d51-baby-mode-sub">(右)</span></button>
               </div>
               <div id="babyColorRow" class="mini-col" style="margin-bottom:4px;">
                 <label>顏色</label>
@@ -6728,11 +6740,7 @@
                 if (isGlassPending) { btn.style.display = 'none'; return; }
                 btn.style.display = '';
                 const isActive = m === babyFillMode;
-                const isCustom = m === 'custom';
-                btn.style.background  = isActive ? (isCustom ? '#FFF8F0' : '#C9A96E') : '#fff';
-                btn.style.color       = isActive ? (isCustom ? '#B07D4C' : '#fff')    : '#555';
-                btn.style.borderColor = isActive ? '#C9A96E' : '#ddd';
-                btn.style.fontWeight  = isActive ? 'bold' : 'normal';
+                btn.classList.toggle('active', isActive);
             });
             const isCustom = babyFillMode === 'custom';
             const grid = document.getElementById('babyCustomGrid');
