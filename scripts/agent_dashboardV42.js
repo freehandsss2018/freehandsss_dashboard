@@ -609,6 +609,76 @@ function renderServiceZone() {
     tiles + catsHtml + '</section>';
 }
 
+// ---------- IG 看門狗學習記錄 zone：Supabase ig_thread_rules 即時查詢（同 probeN8n() 同一手法，
+// 生成時 curl live DB，非本機 JSON 快照——資料源同 Canva/3D 學習記錄唔同，但顯示格式沿用同一套） ----------
+const SB_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';
+const SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK'; // publishable key，V42.html 本身已公開內嵌，同一把
+
+function probeIgWatchdog() {
+  const res = { reachable: false, rules: [], alertStats: { pending: 0, resolved: 0, byKind: {} }, note: '' };
+  const curlJson = (path) => JSON.parse(execSync(
+    'curl -sk -m 8 -H "apikey: ' + SB_ANON + '" -H "Authorization: Bearer ' + SB_ANON + '" "' + SB_URL + path + '"',
+    { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }
+  ));
+  try {
+    res.rules = curlJson('/rest/v1/ig_thread_rules?select=id,rule_type,from_kind,to_kind,note,active,created_at,applied_count,last_applied_at&order=created_at.desc&limit=200');
+    res.reachable = true;
+  } catch (e) {
+    res.note = 'Supabase ig_thread_rules 查詢失敗——離線生成，學習記錄未知';
+    return res;
+  }
+  try {
+    const alerts = curlJson('/rest/v1/ig_watchdog_alerts?select=kind,resolved&limit=1000');
+    for (const a of alerts) {
+      if (a.resolved) res.alertStats.resolved++; else res.alertStats.pending++;
+      res.alertStats.byKind[a.kind] = (res.alertStats.byKind[a.kind] || 0) + 1;
+    }
+  } catch (e) { res.note = '警報統計查詢失敗（規則清單正常）'; }
+  return res;
+}
+const igwProbe = probeIgWatchdog();
+
+function renderIgWatchRuleCard(r) {
+  const typeLabel = r.rule_type === 'false_alarm' ? '假警報' : '分類修正';
+  const detail = r.rule_type === 'kind_correction'
+    ? esc(r.from_kind || '') + ' → ' + esc(r.to_kind || '')
+    : ('全部抑制' + (r.from_kind ? '（限 ' + esc(r.from_kind) + '）' : ''));
+  const dateStr = r.created_at ? String(r.created_at).slice(0, 10) : '—';
+  const appliedStr = r.applied_count > 0 ? '生效 ' + r.applied_count + ' 次' : '未生效過';
+  const note = r.note ? '<details class="cnote"><summary>' + clamp(esc(r.note), 60) + '</summary><p>' + esc(r.note) + '</p></details>' : '';
+  return '<article class="ccard' + (r.active ? '' : ' ccard-pending') + '" data-rule-id="' + esc(r.id) + '">' +
+    '<div class="chead"><span class="emo">' + (r.active ? '🟢' : '⏸️') + '</span>' +
+    '<h3>' + typeLabel + '<span class="cord">' + dateStr + '</span></h3></div>' +
+    '<div class="cmeta"><span class="tag ' + (r.active ? 'tg-cmd' : 'tg-summon') + '" data-role="status">' + (r.active ? '生效中' : '已停用') + '</span>' +
+    '<span class="ver">' + appliedStr + '</span></div>' +
+    '<p>' + detail + '</p>' + note +
+    '<button class="igwtoggle" data-id="' + esc(r.id) + '" data-active="' + (r.active ? 'true' : 'false') + '">' + (r.active ? '停用' : '重啟') + '</button>' +
+    '</article>';
+}
+
+function renderIgWatchLearningZone() {
+  if (!igwProbe.reachable) return '';
+  const activeN = igwProbe.rules.filter(r => r.active).length;
+  const inactiveN = igwProbe.rules.length - activeN;
+  const as = igwProbe.alertStats;
+  const tiles =
+    '<div class="stats">' +
+    '<div class="stat"><div class="lb">🐕 規則總數</div><div class="nu teal">' + igwProbe.rules.length + '</div></div>' +
+    '<div class="stat"><div class="lb">🟢 生效中</div><div class="nu ok">' + activeN + '</div></div>' +
+    '<div class="stat"><div class="lb">⏸️ 已停用</div><div class="nu">' + inactiveN + '</div></div>' +
+    '<div class="stat"><div class="lb">📋 待處理警報</div><div class="nu ' + (as.pending ? 'orange' : 'ok') + '">' + as.pending + '</div>' +
+    '<div class="ssub">已處理 ' + as.resolved + '</div></div>' +
+    '</div>';
+  const rulesHtml = igwProbe.rules.length
+    ? '<div class="grid ccgrid">' + igwProbe.rules.map(renderIgWatchRuleCard).join('') + '</div>'
+    : '<div class="ssub" style="padding:8px 0;">暫時未有學習規則（Fat Mo 喺 V42 Dashboard IG 看門狗 thread 檢視標記假警報／分類判錯時會自動生成）</div>';
+  return '<section class="grp" id="igwzone" data-grp="igwzone">' +
+    '<div class="gh" style="font-size:15px;">🐕 IG看門狗學習記錄<span class="gn">' + igwProbe.rules.length + '</span>' +
+    '<span class="ghnote">Supabase ig_thread_rules 即時查詢（非本機JSON快照）· 停用掣直call fhs_toggle_ig_thread_rule，唔使重新生成</span></div>' +
+    tiles + rulesHtml +
+    '</section>';
+}
+
 // ---------- Canva 學習記錄 zone：canva_auto/placement_memory.json diff-learning 案例庫 ----------
 function loadCanvaLearning() {
   const p = path.join(ROOT, 'canva_auto', 'placement_memory.json');
@@ -726,6 +796,7 @@ function renderSidebar() {
     ['#svczone', '〽️', '服務狀態'],
     ['#grp-mcp', '🔌', 'MCP 連接器'],
   ];
+  if (igwProbe.reachable) nav.push(['#igwzone', '🐕', 'IG看門狗學習記錄']);
   if (canvaData) nav.push(['#canvazone', '🎨', 'Canva 學習記錄']);
   if (threeDData) nav.push(['#threedzone', '🖨️', '3D 打印學習記錄']);
   if (warnings.length) nav.push(['#errata', '⚠️', '勘誤表']);
@@ -777,7 +848,22 @@ const clientJS =
   "for(var s2=0;s2<sn.length;s2++){sn[s2].addEventListener('click',function(){" +
   "for(var y=0;y<sn.length;y++){sn[y].className=sn[y]===this?'sicon snav on':'sicon snav';}" +
   "var t=document.querySelector(this.getAttribute('href'));" +
-  "if(t){t.scrollIntoView({behavior:'smooth',block:'start'});}});}";
+  "if(t){t.scrollIntoView({behavior:'smooth',block:'start'});}});}" +
+  // IG看門狗學習記錄：停用/重啟掣直接 call fhs_toggle_ig_thread_rule（唯一喺呢個生成頁存在嘅
+  // live 互動；沿用現有安全RPC，唔開新寫入通道，Fat Mo 明確指定）
+  "var igwBtns=document.querySelectorAll('.igwtoggle');" +
+  "for(var ib=0;ib<igwBtns.length;ib++){igwBtns[ib].addEventListener('click',function(){" +
+  "var btn=this;var id=btn.getAttribute('data-id');var curActive=btn.getAttribute('data-active')==='true';" +
+  "btn.disabled=true;btn.textContent='處理中…';" +
+  "fetch('" + SB_URL + "/rest/v1/rpc/fhs_toggle_ig_thread_rule',{method:'POST',headers:{'apikey':'" + SB_ANON + "','Authorization':'Bearer " + SB_ANON + "','Content-Type':'application/json'},body:JSON.stringify({p_id:id,p_active:!curActive})})" +
+  ".then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);" +
+  "var newActive=!curActive;var card=btn.closest('.ccard');var tag=card.querySelector('[data-role=status]');var emo=card.querySelector('.emo');" +
+  "card.className=newActive?'ccard':'ccard ccard-pending';" +
+  "emo.textContent=newActive?'🟢':'⏸️';" +
+  "tag.className='tag '+(newActive?'tg-cmd':'tg-summon');tag.textContent=newActive?'生效中':'已停用';" +
+  "btn.setAttribute('data-active',newActive?'true':'false');btn.textContent=newActive?'停用':'重啟';btn.disabled=false;" +
+  "}).catch(function(e){btn.textContent='失敗，重試';btn.disabled=false;alert('操作失敗：'+e.message);});" +
+  "});}";
 
 const errataN = warnings.length;
 
@@ -877,6 +963,9 @@ const html = '<!DOCTYPE html>\n<html lang="zh-Hant">\n<head>\n<meta charset="UTF
 '.cnote p{margin-top:6px;color:var(--soft);line-height:1.6;white-space:pre-wrap;}\n' +
 '.cparams{margin-top:8px;font-size:11.5px;color:var(--soft);padding-left:18px;}\n' +
 '.cparams li{margin:3px 0;}\n' +
+'.igwtoggle{margin-top:10px;width:100%;border:1px solid var(--line);background:var(--tile);color:var(--soft);font-size:11.5px;padding:6px 0;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .12s ease-out;}\n' +
+'.igwtoggle:hover{color:var(--ink);box-shadow:var(--shadow);}\n' +
+'.igwtoggle:disabled{opacity:.6;cursor:not-allowed;}\n' +
 '.clog{margin-top:16px;font-size:12px;color:var(--soft);border-top:1px dashed var(--line);padding-top:12px;}\n' +
 '.clog b{font-size:12.5px;color:var(--ink);}\n' +
 '.clog li{margin:6px 0 6px 20px;line-height:1.6;}\n' +
@@ -928,6 +1017,8 @@ renderTimeline(data.timeline) + '\n' +
 renderGroups() + '\n' +
 
 renderServiceZone() + '\n' +
+
+renderIgWatchLearningZone() + '\n' +
 
 renderCanvaLearningZone() + '\n' +
 

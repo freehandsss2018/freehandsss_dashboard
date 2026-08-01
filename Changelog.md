@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— agent_dashboard 新增 IG看門狗學習記錄 zone
+
+- **緣起**：Fat Mo 提出「像 Canva 一樣能追查現在的資料庫，編輯/更新/刪除」，澄清後係想喺**現有**「AI 助理團隊名冊」（`agent_dashboardV42.html`，`/team` 召喚詞）加一個新 zone 追蹤 IG 看門狗學習系統（`ig_thread_rules`）；範圍限 IG 看門狗、寫入只沿用 Phase C 已建好嘅安全 RPC，唔開新寫入通道、唔擴展去 orders 等核心業務表。
+- **實作**：`scripts/agent_dashboardV42.js` 新增 `probeIgWatchdog()`（同 `probeN8n()` 同一手法，生成時 curl live Supabase，非本機JSON快照）+ `renderIgWatchLearningZone()`（沿用 Canva/3D 學習記錄同一套 stats tiles + 卡片牆視覺格式）。**首次喺呢個生成頁引入 live 互動**：每張規則卡「停用/重啟」掣直接 fetch `fhs_toggle_ig_thread_rule` RPC（Phase C 已建、已驗證安全），成功後即時更新 DOM 唔使重新生成頁面。刪除規則冇對應RPC（現有設計故意用「停用」保留審計歷史，非真刪除），故UI唔提供刪除選項，符合「唔開新寫入通道」原則。
+- **驗證**：本機生成器跑通零errata；本機 dev server 開生成頁，插入真實測試規則→verify卡片正確渲染→撳停用掣→DOM即時更新+DB核實`active=false`→撳返重啟→DB核實`active=true`；XSS測試（`note`欄位塞`<img onerror>`payload）確認`_igwEscapeHtml`（沿用同名手法）令佢渲染做純文字唔會執行。測試資料全部清理。
+- **對應 commit**：見下方 git log。
+- **待辦**：呢個改動只影響 `artifacts/agent_dashboardV42.html`（gitignored 生成物，唔隨 `/commit` Phase 2.5 自動部署），要公開俾人睇需另外 `/upload-web team` 手動發佈，等 Fat Mo 指示。
+- **Subagent 使用記錄**：❌ 未使用（互動式改碼+Supabase live驗證+browser實測）。
+
+---
+
 ## [2026-08-01] Session（Claude Code / Sonnet 5 執行）— IG看門狗警報 Phase B+C：IG訊息thread檢視 + 學習系統Phase1（cl-flow flow_id 2026-07-31-2332）
 
 - **緣起**：Phase A（下方條目）驗證通過後，Fat Mo 指示「等 Phase B/C 一齊先」，一次過完成餘下兩個 Phase 後先考慮部署。
