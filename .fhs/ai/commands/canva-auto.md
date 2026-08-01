@@ -91,7 +91,10 @@ page2 因為母片幾何本身已啱、唔使 resize/position，三項指標全�
 1. `get-assets` 查新素材原生 width/height，算出精確長寬比
 2. `resize_element(preserve_aspect_ratio=false)`，**width/height 都按新素材長寬比明確計算傳入**（唔准淨傳一個值靠 preserve_aspect_ratio 推算——見下面 Known failure modes 解釋點解會出事）
 3. `position_element` 置位（可沿用案例庫錨點嘅中心點，但闊高改晒）
-4. **`crop_media(top=0, left=0, width=<新寬>, height=<新高>)` 明確重設裁切**——實測證實純粹 resize 唔會自動清走舊 crop offset（母版本身殘留住舊素材嘅裁切變換，換咗新 asset 都唔會歸零），必須明確 crop_media 先至令 imageBox 變返 `(0,0 寬×高)` 即完全冇裁切
+4. **`crop_media` 重設裁切**——⚠️ **2026-08-01 重大更正：舊寫法 `crop_media(0,0,W,H)`（令 imageBox＝container）係錯嘅**，只喺 container 啱好等於媒體 aspect 時先啱。container 唔係媒體 aspect 時，強制 imageBox＝container 會**親手拉扁媒體**（HoKaSin Video 3 變窄嘅真兇）。
+   **正確理解**：`imageBox` 係「媒體喺 container 座標系入面嘅矩形」，媒體會被**拉伸**填滿呢個矩形。所以 **imageBox 嘅長寬比必須永遠等於媒體原生長寬比**，先至零變形。container 可以唔係同一個比例（多出／少咗嘅部分自然被裁或留白）——**Fat Mo 人手母片正正就係咁做**（例：olibbvia container 581.13×569.68 但 imageBox 581.13×581.13 正方）。
+   **實測行為**：`crop_media` 傳細過 cover 下限嘅值會被 Canva 自動 clamp 到 cover（contain 做唔到）。所以正確做法＝傳「維持媒體 aspect 嘅 cover box」，或者索性傳一個細值等 Canva 自己 clamp。
+   計法（正方媒體、container W×H）：`box = max(W,H)`，`left = (W-box)/2`，`top = (H-box)/2`（會係負數）。
 5. 縮圖眼證時檢查 imageBox 係咪 `(0,0 W×H)`——唔係就即係仲有裁切，要再 crop_media 一次
 4. 縮圖眼證交 Fat Mo（draft 縮圖攞唔到就用 perform 回傳嘅 thumbnails url 或 commit 後 `get-design-pages`）
 
