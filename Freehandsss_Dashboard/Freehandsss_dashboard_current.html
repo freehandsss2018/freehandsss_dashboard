@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-07-31T13:45:47Z">
+    <meta name="fhs-build" content="2026-08-01T18:51:25Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -2943,6 +2943,27 @@
                 max-height: 92dvh;
             }
         }
+
+        /* IG 看門狗 thread 檢視 overlay（Phase B，flow_id 2026-07-31-2332）——複用 igPreviewModal 同一 bottom-sheet 技法 */
+        #igwThreadOverlay {
+            display: flex; align-items: center; justify-content: center;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.46); z-index: 9700;
+        }
+        #igwThreadModal {
+            background: var(--fhs-bg-elevated,#fff); color: var(--fhs-text-primary,#333);
+            border-radius: 16px; width: 92%; max-width: 520px; max-height: 85dvh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+        @media (max-width: 768px) {
+            #igwThreadOverlay { align-items: flex-end; padding: 0; }
+            #igwThreadModal { width: 100%; max-width: 100%; border-radius: 18px 18px 0 0; max-height: 88dvh; }
+        }
+        .igw-bubble { max-width: 78%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.4; word-break: break-word; }
+        .igw-bubble.biz { align-self: flex-end; background: var(--fhs-primary,#2A9D8F); color: #fff; border-bottom-right-radius: 4px; }
+        .igw-bubble.cust { align-self: flex-start; background: var(--fhs-bg-secondary,#f1f1f1); color: var(--fhs-text-primary,#333); border-bottom-left-radius: 4px; }
+        .igw-bubble mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; }
+        .igw-pii-chip { display: inline-block; background: #e5e7eb; color: #6b7280; font-size: 11px; border-radius: 4px; padding: 0 4px; margin: 0 1px; }
 
         /* ================================================================
            V42 — Threads/WhatsApp 融合視覺系統（手機 max-width:767px）
@@ -5935,6 +5956,9 @@
         // --- Order ID Override Logic - V31.1 ---
         let isIdEditing = false;
         let isIdValid = true;
+        // Phase A (flow_id 2026-07-31-2332，A2/#2)：遲返 response race guard——
+        // 每次 checkOrderIDDuplicate 呼叫取一個遞增 token，response 返嚟時唔係最新 token 就棄權。
+        let _idCheckSeq = 0;
 
         function toggleIdEdit() {
             const input = document.getElementById('orderIdDisplay');
@@ -5959,6 +5983,8 @@
             if (currentMode === 'edit' && id === editTargetOrderId) return;
             if (currentMode !== 'create' && currentMode !== 'edit') return;
 
+            const _seq = ++_idCheckSeq; // A2/#2：本次呼叫嘅 token，response 返嚟時核對仍係最新先寫 UI
+
             updateIdStatus('checking', '正在檢查單號是否重複...');
             showLoader("正在驗證單號是否重複...");
 
@@ -5970,6 +5996,7 @@
                         { headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` } }
                     );
                     const rows = await r.json();
+                    if (_seq !== _idCheckSeq) return; // 已有更新嘅呼叫發出，棄過期 response
                     if (Array.isArray(rows) && rows.length > 0) {
                         updateIdStatus('duplicate', '🔴 重複：此單號已被其他客人使用，請修改！');
                         isIdValid = false;
@@ -5979,12 +6006,13 @@
                     }
                 } catch (error) {
                     console.error('Check ID Error (Supabase):', error);
+                    if (_seq !== _idCheckSeq) return;
                     updateIdStatus('available', '⚠️ 無法連接 Supabase，請手動確認。');
                     isIdValid = true;
                 } finally {
                     hideLoader();
                 }
-                updateSyncButtonState();
+                if (_seq === _idCheckSeq) updateSyncButtonState();
                 return;
             }
 
@@ -5994,6 +6022,7 @@
                 const _rawData = await response.json();
                 const data = Array.isArray(_rawData) ? _rawData[0] : _rawData;
 
+                if (_seq !== _idCheckSeq) return;
                 if (data && data.found) {
                     updateIdStatus('duplicate', '🔴 重複：此單號已被其他客人使用，請修改！');
                     isIdValid = false;
@@ -6003,12 +6032,13 @@
                 }
             } catch (error) {
                 console.error('Check ID Error:', error);
+                if (_seq !== _idCheckSeq) return;
                 updateIdStatus('available', '⚠️ 無法連接審核伺服器，請手動確認。');
                 isIdValid = true;
             } finally {
                 hideLoader();
             }
-            updateSyncButtonState();
+            if (_seq === _idCheckSeq) updateSyncButtonState();
         }
 
         function onIdInputBlur() {
@@ -9153,6 +9183,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                     const isCreate = (currentMode === 'create');
                     if (isCreate) _draftClear(); // S165: webhook 已接收 payload，草稿任務完成
+                    if (isCreate) _igwMaybeLinkNewOrder(currentOrderId); // Phase A A2/#5: no-op 除非由 IG 看門狗「仍要用新號開單」路徑觸發
                     const polledSuccess = await pollSupabaseSync(currentOrderId, payload, isCreate);
 
                     hideLoader();
@@ -9173,6 +9204,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         try {
                             await window.sbSyncOrder(payload, orderItemsArray, currentMode);
                             if (currentMode === 'create') _draftClear(); // S165: fallback 直寫成功都要清草稿
+                            if (currentMode === 'create') _igwMaybeLinkNewOrder(currentOrderId);
                             hideLoader();
                             await switchMode('review');
                             await fetchGlobalReview(true);
@@ -9194,6 +9226,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     try {
                         await window.sbSyncOrder(payload, orderItemsArray, currentMode);
                         if (currentMode === 'create') _draftClear(); // S165: fallback 直寫成功都要清草稿
+                        if (currentMode === 'create') _igwMaybeLinkNewOrder(currentOrderId);
                         hideLoader();
                         await switchMode('review');
                         await fetchGlobalReview(true);
@@ -15229,12 +15262,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 } else if (r.kind === 'content_mismatch' && r.order_id) {
                     actionBtn = '<button onclick="openOrderModal(\'' + r.order_id + '\',\'\',\'finance\')" style="font-size:12px;background:#f97316;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">核對金額</button>';
                 } else if (r.kind === 'not_created' && r.order_id) {
-                    actionBtn = '<button onclick="_igwCopyOrderId(\'' + r.order_id + '\')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">複製訂號</button>';
+                    actionBtn = '<button onclick="_igwCreateOrder(\'' + r.id + '\')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">➕ 開新訂單</button>'
+                        + '<button onclick="_igwCopyOrderId(\'' + r.order_id + '\')" style="font-size:11px;background:transparent;color:var(--fhs-text-secondary,#999);border:1px solid var(--fhs-border,#ddd);border-radius:6px;padding:4px 8px;cursor:pointer;margin-right:4px;">複製訂號</button>';
                 }
                 var resolveLabel = r.resolved ? '標回未處理' : '標記已處理';
                 var resolveBg = r.resolved ? '#e5e7eb' : '#059669';
                 var resolveColor = r.resolved ? '#374151' : '#fff';
                 var resolveBtn = '<button onclick="_igwToggleResolve(\'' + r.id + '\',' + !r.resolved + ')" style="font-size:12px;background:' + resolveBg + ';color:' + resolveColor + ';border:none;border-radius:6px;padding:4px 10px;cursor:pointer;">' + resolveLabel + '</button>';
+                // Phase B（flow_id 2026-07-31-2332）：thread 檢視入口，全部 kind 皆有（需 thread 存在先顯示）
+                var threadBtn = r.thread ? '<button onclick="_igwOpenThread(\'' + r.id + '\')" style="font-size:12px;background:transparent;color:var(--fhs-primary,#2A9D8F);border:1px solid var(--fhs-primary,#2A9D8F);border-radius:6px;padding:4px 10px;cursor:pointer;">💬 IG訊息</button>' : '';
                 var cardBg = r.resolved ? 'var(--fhs-bg-secondary,#f9fafb)' : '#fff';
                 var dbBadge = r.order_id
                     ? (r.db_matched ? ' <span style="color:#059669;font-size:11px;">DB✓</span>' : ' <span style="color:#ef4444;font-size:11px;">DB✗</span>')
@@ -15242,18 +15278,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 return '<div style="border:1px solid var(--fhs-border);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:' + cardBg + ';">'
                     + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
                     + '<span style="font-size:12px;font-weight:700;color:' + kindColor + ';">' + kindLabel + '</span>'
-                    + (r.order_id ? '<span style="font-size:12px;font-family:monospace;background:#f3f4f6;padding:1px 6px;border-radius:4px;">' + r.order_id + '</span>' : '<span style="font-size:11px;color:#9ca3af;">（無訂號）</span>')
+                    + (r.order_id ? '<span style="font-size:12px;font-family:monospace;background:#f3f4f6;padding:1px 6px;border-radius:4px;">' + _igwEscapeHtml(r.order_id) + '</span>' : '<span style="font-size:11px;color:#9ca3af;">（無訂號）</span>')
                     + resolvedBadge
                     + '<span style="margin-left:auto;font-size:11px;color:var(--fhs-text-secondary);">' + (r.alert_date || '—') + '</span>'
                     + '</div>'
                     + '<div style="font-size:13px;color:var(--fhs-text-secondary);margin:6px 0 2px;">'
-                    + (r.customer_name ? '<strong>' + r.customer_name + '</strong>｜' : '') + (r.snippet || '（無摘要）')
+                    + (r.customer_name ? '<strong>' + _igwEscapeHtml(r.customer_name) + '</strong>｜' : '') + _igwEscapeHtml(r.snippet || '（無摘要）')
                     + (r.has_receipt ? ' 📎' : '') + dbBadge
                     + '</div>'
                     + (r.kind === 'content_mismatch' && r.raw && r.raw.mm
                         ? '<div style="font-size:13px;font-weight:700;color:#f97316;margin:2px 0 6px;">IG講$' + r.raw.mm.ig_reported_amount + ' vs 系統$' + r.raw.mm.db_actual_amount + '</div>'
                         : '')
-                    + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' + actionBtn + resolveBtn + '</div>'
+                    + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' + actionBtn + threadBtn + resolveBtn + '</div>'
                     + '</div>';
             }).join('');
         }
@@ -15299,10 +15335,388 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             } else { fallbackCopy(); }
         }
 
+        // ── IG 看門狗警報：自動開單防重複（Phase A，flow_id 2026-07-31-2332）─────
+        function _igwEscapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        function _igwShowPanel(html) {
+            var old = document.getElementById('igwConflictPanel');
+            if (old) old.remove();
+            var bar = document.createElement('div');
+            bar.id = 'igwConflictPanel';
+            bar.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9600;width:calc(100% - 24px);max-width:480px;background:var(--fhs-bg-elevated, #fff);color:var(--fhs-text-primary, #333);border:1px solid var(--fhs-border, #ddd);border-left:4px solid #ef4444;border-radius:10px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,0.18);font-size:13px;';
+            bar.innerHTML = html;
+            document.body.appendChild(bar);
+            return bar;
+        }
+        function _igwClosePanel() {
+            var el = document.getElementById('igwConflictPanel');
+            if (el) el.remove();
+        }
+
+        // 查重①：訂號衝突面板——「開啟該訂單核對」/「仍要用新號開單」/「取消」
+        function _igwShowOrderIdConflict(alertRow, existing) {
+            var html =
+                '<div style="font-weight:700;margin-bottom:8px;">⚠️ 訂號 ' + _igwEscapeHtml(alertRow.order_id) + ' 已存在</div>'
+                + '<div style="margin-bottom:10px;color:var(--fhs-text-secondary,#666);">客人：' + _igwEscapeHtml(existing.customer_name || '（未記名）') + '｜建立：' + _igwEscapeHtml(existing.confirmed_at || '—') + '</div>'
+                + '<div style="display:flex;flex-direction:column;gap:8px;">'
+                + '<button id="igwConflictOpen" style="min-height:44px;border:none;border-radius:8px;background:var(--fhs-primary,#2A9D8F);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">開啟該訂單核對</button>'
+                + '<button id="igwConflictNewNum" style="min-height:44px;border:1px solid var(--fhs-border,#ccc);border-radius:8px;background:transparent;color:var(--fhs-text-primary,#333);font-size:14px;font-weight:600;cursor:pointer;">仍要用新號開單</button>'
+                + '<button id="igwConflictCancel" style="min-height:40px;border:none;background:transparent;color:var(--fhs-text-secondary,#999);font-size:13px;cursor:pointer;">取消</button>'
+                + '</div>';
+            _igwShowPanel(html);
+            document.getElementById('igwConflictOpen').addEventListener('click', function() {
+                _igwClosePanel();
+                openOrderModal(alertRow.order_id, '', 'finance');
+            });
+            document.getElementById('igwConflictNewNum').addEventListener('click', async function() {
+                _igwClosePanel();
+                try {
+                    await sbRpc('fhs_resolve_ig_alert', { p_id: alertRow.id, p_resolved: true, p_by: 'operator:reopened-as-new' });
+                    if (window._igwAllAlerts) {
+                        var r = window._igwAllAlerts.find(function(a) { return a.id === alertRow.id; });
+                        if (r) { r.resolved = true; r.resolved_by = 'operator:reopened-as-new'; }
+                    }
+                    _renderIgWatchList(window._igwAllAlerts || []);
+                } catch (e) { console.warn('[igw] resolve(reopened-as-new) 失敗:', e.message); }
+                window._igwLinkAlertId = alertRow.id; // 供開單成功後補寫實際新號（A2/#5）
+                await _igwCheckCustomerNameAndProceed(alertRow, true);
+            });
+            document.getElementById('igwConflictCancel').addEventListener('click', _igwClosePanel);
+        }
+
+        // 查重②：客名近30日已有單——提示唔硬擋
+        async function _igwCheckCustomerNameAndProceed(alertRow, useNewNumber) {
+            if (alertRow.customer_name) {
+                try {
+                    var since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+                    var rows = await sbFetch('orders', {
+                        select: 'order_id,customer_name,confirmed_at,final_sale_price',
+                        customer_name: 'ilike.*' + alertRow.customer_name + '*',
+                        deleted_at: 'is.null',
+                        order: 'confirmed_at.desc',
+                        limit: '5'
+                    });
+                    var recent = (rows || []).filter(function(r) { return r.confirmed_at && r.confirmed_at >= since; });
+                    if (recent.length > 0) {
+                        _igwShowCustomerNameConflict(alertRow, recent, useNewNumber);
+                        return;
+                    }
+                } catch (e) { console.warn('[igw] 客名查重失敗:', e.message); }
+            }
+            await _igwPrefillForm(alertRow, useNewNumber);
+        }
+
+        function _igwShowCustomerNameConflict(alertRow, recentOrders, useNewNumber) {
+            var listHtml = recentOrders.slice(0, 5).map(function(r) {
+                return '<div style="padding:4px 0;border-bottom:1px solid var(--fhs-border,#eee);">' + _igwEscapeHtml(r.order_id) + '｜' + _igwEscapeHtml(r.confirmed_at || '—') + '｜$' + (r.final_sale_price || 0) + '</div>';
+            }).join('');
+            var html =
+                '<div style="font-weight:700;margin-bottom:8px;">⚠️ 客人「' + _igwEscapeHtml(alertRow.customer_name) + '」近30日已有訂單</div>'
+                + '<div style="margin-bottom:10px;max-height:150px;overflow-y:auto;">' + listHtml + '</div>'
+                + '<div style="display:flex;flex-direction:column;gap:8px;">'
+                + '<button id="igwNameConflictProceed" style="min-height:44px;border:none;border-radius:8px;background:#059669;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">照開新單</button>'
+                + '<button id="igwNameConflictCancel" style="min-height:40px;border:none;background:transparent;color:var(--fhs-text-secondary,#999);font-size:13px;cursor:pointer;">取消</button>'
+                + '</div>';
+            _igwShowPanel(html);
+            document.getElementById('igwNameConflictProceed').addEventListener('click', async function() {
+                _igwClosePanel();
+                await _igwPrefillForm(alertRow, useNewNumber);
+            });
+            document.getElementById('igwNameConflictCancel').addEventListener('click', _igwClosePanel);
+        }
+
+        // ③ 預填：訂號+客名（結構化欄位直填）+ 產品類別三態同步（A2/#3：目標狀態 vs 當前狀態雙向同步，唔單向只加）
+        async function _igwPrefillForm(alertRow, useNewNumber) {
+            await switchMode('create');
+            if (!useNewNumber) {
+                orderID = alertRow.order_id;
+                var idEl = document.getElementById('orderIdDisplay');
+                if (idEl) idEl.value = orderID;
+                checkOrderIDDuplicate(orderID);
+            }
+            var momEl = document.getElementById('momName');
+            if (momEl) momEl.value = alertRow.customer_name || '';
+
+            // code-reviewer G4：product_cats=[]（偵測過但零命中）同 null（存量警報，未偵測）語意唔同——
+            // 都要跳過預勾，唔可以用 truthy 判斷（[] 係 truthy，會誤觸發下面嘅雙向同步將手動勾咗嘅 P 剷走）
+            var targetCats = (alertRow.raw && alertRow.raw.product_cats) || null;
+            var hasCats = !!(targetCats && targetCats.length > 0);
+            if (hasCats) {
+                var wantP = targetCats.indexOf('P') !== -1;
+                var enablePChk = document.getElementById('enableP');
+                if (enablePChk && enablePChk.checked !== wantP) {
+                    selectOrderType(wantP ? 'yes' : 'no');
+                    if (typeof fhsD51UpdateHeader === 'function') fhsD51UpdateHeader('P');
+                }
+                ['K', 'M'].forEach(function(cat) {
+                    var want = targetCats.indexOf(cat) !== -1;
+                    var cb = document.getElementById(cat === 'K' ? 'enableK' : 'enableM');
+                    if (cb && cb.checked !== want) cb.click(); // 真實 click 觸發 D51 onchange 鏈，唔手寫 checked
+                });
+            }
+            showToast(hasCats ? '已預填訂號+客名+產品類別，請補產品細節後人手送出' : '已預填訂號+客名，請補產品細節後人手送出', 3000);
+        }
+
+        // 開單成功後補寫實際新號（A2/#5，「仍要用新號開單」路徑專用；一般預填路徑冇設 _igwLinkAlertId，呢個 hook 係 no-op）
+        function _igwMaybeLinkNewOrder(finalOrderId) {
+            if (!window._igwLinkAlertId || !finalOrderId) return;
+            var alertId = window._igwLinkAlertId;
+            window._igwLinkAlertId = null;
+            sbRpc('fhs_resolve_ig_alert', { p_id: alertId, p_resolved: true, p_by: 'operator:reopened-as-' + finalOrderId })
+                .catch(function(e) { console.warn('[igw] 補寫新號 linkage 失敗（警報已resolve，僅追溯註記缺失）:', e.message); });
+        }
+
+        // 入口：查重①訂號 → 查重②客名 → 預填（絕不自動送出）
+        async function _igwCreateOrder(alertId) {
+            var alertRow = (window._igwAllAlerts || []).find(function(a) { return a.id === alertId; });
+            if (!alertRow) { showToast('❌ 警報資料遺失，請重新整理', 2000); return; }
+            if (!alertRow.order_id) { showToast('❌ 此警報無可信訂號，請用「複製訂號」手動處理', 2500); return; }
+            try {
+                var idRows = await sbFetch('orders', {
+                    select: 'order_id,customer_name,confirmed_at',
+                    order_id: 'eq.' + alertRow.order_id,
+                    deleted_at: 'is.null',
+                    limit: '1'
+                });
+                if (idRows && idRows.length > 0) {
+                    _igwShowOrderIdConflict(alertRow, idRows[0]);
+                    return;
+                }
+            } catch (e) { console.warn('[igw] 訂號查重失敗:', e.message); }
+            await _igwCheckCustomerNameAndProceed(alertRow, false);
+        }
+        // ── End 自動開單防重複 ──────────────────────────────────────
+
+        // ── IG 訊息 thread 檢視（Phase B，flow_id 2026-07-31-2332）───────
+        // 訊息渲染：先轉義全文 → 對已轉義文本高亮訂號 <mark> → 最後將 PII 遮罩 token 換做灰色 chip。
+        // 三步順序刻意：喺原始文字有 HTML meta 字元前就轉義晒，之後嘅字串操作全部只喺純文字層面做，
+        // 唔會有任何未轉義嘅 interpolation（A2/#1 BLOCKER 修復 + Phase B 新增內容同一紀律）。
+        function _igwRenderMessageHtml(text, orderId) {
+            var esc = _igwEscapeHtml(text || '');
+            if (orderId) {
+                var escId = _igwEscapeHtml(orderId);
+                if (escId) esc = esc.split(escId).join('<mark>' + escId + '</mark>');
+            }
+            esc = esc.replace(/\[(電話|IG帳號|門牌|付款尾碼)\]/g, '<span class="igw-pii-chip">[$1]</span>');
+            return esc;
+        }
+
+        function _igwCloseThread() {
+            var el = document.getElementById('igwThreadOverlay');
+            if (el) el.remove();
+        }
+
+        async function _igwOpenThread(alertId) {
+            var alertRow = (window._igwAllAlerts || []).find(function(a) { return a.id === alertId; });
+            if (!alertRow) { showToast('❌ 警報資料遺失，請重新整理', 2000); return; }
+            if (!alertRow.thread) { showToast('❌ 此警報無 thread 資料', 2000); return; }
+
+            var kindLabel = alertRow.kind === 'not_created' ? '🆕 未建立' : (alertRow.kind === 'verified_ok' ? '✓ 已核對' : (alertRow.kind === 'content_mismatch' ? '⚠️ 疑似對不上' : '📝 資訊不齊'));
+            var reason = (alertRow.raw && alertRow.raw.cls && alertRow.raw.cls.reason) || '（無 AI 判斷記錄）';
+            var dbBadge = alertRow.order_id
+                ? (alertRow.db_matched ? '<span style="color:#059669;font-size:11px;">DB✓</span>' : '<span style="color:#ef4444;font-size:11px;">DB✗</span>')
+                : '';
+
+            var old = document.getElementById('igwThreadOverlay');
+            if (old) old.remove();
+            var overlay = document.createElement('div');
+            overlay.id = 'igwThreadOverlay';
+            // R3（cl-final-plan §Phase B 6）：thread 原名（IG 資料夾名，含客人顯示名明文）唔顯示喺 UI，
+            // 只用作 API 查詢參數；畫面只展示已遮罩嘅 customer_name。
+            overlay.innerHTML =
+                '<div id="igwThreadModal">'
+                + '<div style="padding:12px 16px;border-bottom:1px solid var(--fhs-border,#eee);display:flex;align-items:center;gap:8px;">'
+                + '<span style="font-size:13px;font-weight:700;">' + kindLabel + '</span>'
+                + (alertRow.order_id ? '<span style="font-size:12px;font-family:monospace;background:#f3f4f6;padding:1px 6px;border-radius:4px;">' + _igwEscapeHtml(alertRow.order_id) + '</span>' : '')
+                + dbBadge
+                + '<button id="igwThreadClose" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;color:var(--fhs-text-secondary,#999);">✕</button>'
+                + '</div>'
+                + '<div style="padding:8px 16px;font-size:12px;color:var(--fhs-text-secondary,#666);background:var(--fhs-bg-secondary,#f9fafb);border-bottom:1px solid var(--fhs-border,#eee);">'
+                + '🤖 AI判斷依據：' + _igwEscapeHtml(reason)
+                + '</div>'
+                + '<div id="igwThreadMessages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">'
+                + '<div style="text-align:center;color:var(--fhs-text-secondary,#999);font-size:13px;padding:20px;">載入中…</div>'
+                + '</div>'
+                + '<div id="igwThreadFooter"></div>'
+                + '</div>';
+            document.body.appendChild(overlay);
+            document.getElementById('igwThreadClose').addEventListener('click', _igwCloseThread);
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) _igwCloseThread(); });
+            _igwRenderThreadFooter(alertRow); // Phase C：修正AI判斷區+已生效規則區（唔使等訊息載入完）
+
+            try {
+                var msgs = await sbFetch('ig_messages', {
+                    select: 'content,sender_is_business,sent_at,customer_name',
+                    thread: 'eq.' + alertRow.thread,
+                    order: 'sent_at.asc',
+                    limit: '200'
+                });
+                var msgsEl = document.getElementById('igwThreadMessages');
+                if (!msgsEl) return; // overlay 喺 fetch 期間已被關閉
+                if (!msgs || msgs.length === 0) {
+                    msgsEl.innerHTML = '<div style="text-align:center;color:var(--fhs-text-secondary,#999);font-size:13px;padding:20px;">⚠️ 此對話訊息未入庫或已過 90 日保留期</div>';
+                    return;
+                }
+                msgsEl.innerHTML = msgs.map(function(m) {
+                    var bubbleClass = m.sender_is_business ? 'biz' : 'cust';
+                    var html = _igwRenderMessageHtml(m.content, alertRow.order_id);
+                    var time = '';
+                    try { if (m.sent_at) time = new Date(m.sent_at).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) {}
+                    return '<div class="igw-bubble ' + bubbleClass + '">' + html + '<div style="font-size:10px;opacity:0.7;margin-top:3px;">' + _igwEscapeHtml(time) + '</div></div>';
+                }).join('');
+                msgsEl.scrollTop = msgsEl.scrollHeight;
+            } catch (e) {
+                var msgsElErr = document.getElementById('igwThreadMessages');
+                if (msgsElErr) msgsElErr.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:13px;padding:20px;">❌ 載入失敗：' + _igwEscapeHtml(e.message) + '</div>';
+            }
+        }
+        // ── 學習系統 Phase 1：修正 AI 判斷 + 已生效規則審計區（Phase C，flow_id 2026-07-31-2332）──
+        // 頁內二次確認（唔用 window.confirm，D51 iOS PWA standalone 靜默唔彈出教訓）：
+        // 喺觸發按鈕所在容器內插入一個「確定/取消」小條，確定先真正執行動作。
+        function _igwConfirmInline(container, message, onConfirm) {
+            var old = container.querySelector('.igw-inline-confirm');
+            if (old) old.remove();
+            var bar = document.createElement('div');
+            bar.className = 'igw-inline-confirm';
+            bar.style.cssText = 'margin-top:6px;padding:8px;background:var(--fhs-bg-secondary,#f9fafb);border-radius:8px;font-size:12px;';
+            bar.innerHTML = '<div style="margin-bottom:6px;">' + _igwEscapeHtml(message) + '</div>'
+                + '<div style="display:flex;gap:6px;">'
+                + '<button class="igw-confirm-yes" style="flex:1;min-height:32px;border:none;border-radius:6px;background:#ef4444;color:#fff;cursor:pointer;">確定</button>'
+                + '<button class="igw-confirm-no" style="flex:1;min-height:32px;border:1px solid var(--fhs-border,#ccc);border-radius:6px;background:transparent;cursor:pointer;">取消</button>'
+                + '</div>';
+            container.appendChild(bar);
+            bar.querySelector('.igw-confirm-yes').addEventListener('click', function() { bar.remove(); onConfirm(); });
+            bar.querySelector('.igw-confirm-no').addEventListener('click', function() { bar.remove(); });
+        }
+
+        async function _igwRenderRulesList(thread) {
+            var listEl = document.getElementById('igwRulesList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="color:var(--fhs-text-secondary,#999);">載入中…</div>';
+            try {
+                var rules = await sbFetch('ig_thread_rules', {
+                    select: 'id,rule_type,from_kind,to_kind,note,active,created_at,applied_count,last_applied_at',
+                    thread: 'eq.' + thread,
+                    order: 'created_at.desc'
+                });
+                if (!rules || rules.length === 0) {
+                    listEl.innerHTML = '<div style="color:var(--fhs-text-secondary,#999);">（呢個客人未有規則）</div>';
+                    return;
+                }
+                listEl.innerHTML = rules.map(function(r) {
+                    var typeLabel = r.rule_type === 'false_alarm' ? '假警報' : '分類修正';
+                    var detail = r.rule_type === 'kind_correction'
+                        ? _igwEscapeHtml(r.from_kind || '') + ' → ' + _igwEscapeHtml(r.to_kind || '')
+                        : ('全部抑制' + (r.from_kind ? '（限 ' + _igwEscapeHtml(r.from_kind) + '）' : ''));
+                    var dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('zh-HK') : '—';
+                    var appliedStr = r.applied_count > 0 ? '生效 ' + r.applied_count + ' 次' : '未生效過';
+                    var lastStr = r.last_applied_at ? '｜最後 ' + new Date(r.last_applied_at).toLocaleDateString('zh-HK') : '';
+                    var noteStr = r.note ? '<br>' + _igwEscapeHtml(r.note) : '';
+                    return '<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--fhs-border,#eee);">'
+                        + '<span style="flex:1;">' + typeLabel + '：' + detail + noteStr
+                        + '<br><span style="color:var(--fhs-text-secondary,#999);font-size:11px;">' + dateStr + '｜' + appliedStr + lastStr + '</span></span>'
+                        + '<button class="igw-rule-toggle" data-id="' + r.id + '" data-active="' + r.active + '" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--fhs-border,#ccc);background:' + (r.active ? '#d1fae5' : '#f3f4f6') + ';color:' + (r.active ? '#065f46' : '#6b7280') + ';cursor:pointer;flex-shrink:0;">' + (r.active ? '生效中' : '已停用') + '</button>'
+                        + '</div>';
+                }).join('');
+                listEl.querySelectorAll('.igw-rule-toggle').forEach(function(btn) {
+                    btn.addEventListener('click', async function() {
+                        var id = btn.getAttribute('data-id');
+                        var curActive = btn.getAttribute('data-active') === 'true';
+                        try {
+                            await sbRpc('fhs_toggle_ig_thread_rule', { p_id: id, p_active: !curActive });
+                            _igwRenderRulesList(thread);
+                        } catch (e) { showToast('❌ 操作失敗：' + e.message, 2000); }
+                    });
+                });
+            } catch (e) {
+                listEl.innerHTML = '<div style="color:#ef4444;">❌ 載入失敗：' + _igwEscapeHtml(e.message) + '</div>';
+            }
+        }
+
+        function _igwRenderThreadFooter(alertRow) {
+            var footerEl = document.getElementById('igwThreadFooter');
+            if (!footerEl) return;
+            footerEl.innerHTML =
+                '<div style="border-top:1px solid var(--fhs-border,#eee);padding:12px 16px;">'
+                + '<div style="font-size:12px;font-weight:700;margin-bottom:8px;">🎓 修正 AI 判斷</div>'
+                + '<div style="display:flex;gap:8px;">'
+                + '<button id="igwMarkFalseAlarm" style="flex:1;min-height:38px;border:1px solid #ef4444;border-radius:8px;background:transparent;color:#ef4444;font-size:12px;cursor:pointer;">呢個係假警報</button>'
+                + '<button id="igwMarkKindWrong" style="flex:1;min-height:38px;border:1px solid #f59e0b;border-radius:8px;background:transparent;color:#f59e0b;font-size:12px;cursor:pointer;">分類判錯咗</button>'
+                + '</div>'
+                + '<div id="igwKindChipRow" style="display:none;gap:6px;margin-top:8px;flex-wrap:wrap;"></div>'
+                + '<div id="igwCorrectionArea" style="margin-top:0;"></div>'
+                + '<button id="igwToggleRulesList" style="margin-top:12px;font-size:12px;background:none;border:none;color:var(--fhs-text-secondary,#999);cursor:pointer;padding:0;">📖 已生效規則 ▾</button>'
+                + '<div id="igwRulesList" style="display:none;margin-top:8px;font-size:12px;"></div>'
+                + '</div>';
+
+            var correctionArea = document.getElementById('igwCorrectionArea');
+
+            document.getElementById('igwMarkFalseAlarm').addEventListener('click', function() {
+                _igwConfirmInline(correctionArea, '確定將呢個標記做假警報？以後呢個客人相似訊息會自動抑制（唔會再彈同類警報）。', async function() {
+                    try {
+                        await sbRpc('fhs_add_ig_thread_rule', { p_source_alert_id: alertRow.id, p_rule_type: 'false_alarm', p_note: 'thread overlay 手動標記' });
+                        alertRow.resolved = true;
+                        var idx = (window._igwAllAlerts || []).findIndex(function(a) { return a.id === alertRow.id; });
+                        if (idx !== -1) window._igwAllAlerts[idx].resolved = true;
+                        showToast('✅ 已標記假警報，規則已生效', 2000);
+                        _renderIgWatchList(window._igwAllAlerts || []);
+                        var rulesListEl = document.getElementById('igwRulesList');
+                        if (rulesListEl && rulesListEl.style.display !== 'none') _igwRenderRulesList(alertRow.thread);
+                    } catch (e) { showToast('❌ 標記失敗：' + e.message, 2500); }
+                });
+            });
+
+            document.getElementById('igwMarkKindWrong').addEventListener('click', function() {
+                var row = document.getElementById('igwKindChipRow');
+                var kinds = [
+                    { value: 'not_created', label: '🆕 未建立' },
+                    { value: 'created_incomplete', label: '📝 資訊不齊' },
+                    { value: 'content_mismatch', label: '⚠️ 疑似對不上' },
+                ];
+                row.innerHTML = kinds.map(function(k) {
+                    return '<button class="igw-kind-chip" data-kind="' + k.value + '" data-label="' + k.label + '" style="font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--fhs-border,#ccc);background:transparent;cursor:pointer;">' + k.label + '</button>';
+                }).join('');
+                row.style.display = 'flex';
+                row.querySelectorAll('.igw-kind-chip').forEach(function(chip) {
+                    chip.addEventListener('click', function() {
+                        var toKind = chip.getAttribute('data-kind');
+                        var toLabel = chip.getAttribute('data-label');
+                        _igwConfirmInline(correctionArea, '確定將此警報分類改做「' + toLabel + '」？', async function() {
+                            try {
+                                await sbRpc('fhs_add_ig_thread_rule', { p_source_alert_id: alertRow.id, p_rule_type: 'kind_correction', p_from_kind: alertRow.kind, p_to_kind: toKind, p_note: 'thread overlay 手動修正' });
+                                alertRow.kind = toKind; alertRow.category = toKind;
+                                var idx = (window._igwAllAlerts || []).findIndex(function(a) { return a.id === alertRow.id; });
+                                if (idx !== -1) { window._igwAllAlerts[idx].kind = toKind; window._igwAllAlerts[idx].category = toKind; }
+                                showToast('✅ 分類已修正，規則已生效', 2000);
+                                _renderIgWatchList(window._igwAllAlerts || []);
+                                row.style.display = 'none';
+                                var rulesListEl = document.getElementById('igwRulesList');
+                                if (rulesListEl && rulesListEl.style.display !== 'none') _igwRenderRulesList(alertRow.thread);
+                            } catch (e) { showToast('❌ 修正失敗：' + e.message, 2500); }
+                        });
+                    });
+                });
+            });
+
+            document.getElementById('igwToggleRulesList').addEventListener('click', function() {
+                var listEl = document.getElementById('igwRulesList');
+                var isHidden = listEl.style.display === 'none';
+                listEl.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) _igwRenderRulesList(alertRow.thread);
+            });
+        }
+        // ── End IG 訊息 thread 檢視 ──────────────────────────────────
+
         window.loadIgWatchAlerts = loadIgWatchAlerts;
         window.setIgWatchFilter = setIgWatchFilter;
         window._igwToggleResolve = _igwToggleResolve;
         window._igwCopyOrderId = _igwCopyOrderId;
+        window._igwCreateOrder = _igwCreateOrder;
+        window._igwOpenThread = _igwOpenThread;
         // ── End IG 看門狗警報 ────────────────────────────────────────
 
         /* ── PGC-ODAT: Audit Toggle + Item Drawer (Phase 1) ────────── */
