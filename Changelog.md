@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-08-01] Session（Claude Code / Opus 5 執行）— canva-auto SOP v1.1.0→v1.4.0：連錯3次揪出動畫消失真因 + HoKaSin 0601100 完美交付
+
+- **緣起**：HoKaSin 0601100（純音樂款）page3 影片「元素顯示時間」同「動畫效果」連續三次做極都錯，每次做法唔同但 Fat Mo 三次都話「仲係錯」。Fat Mo 要求查明真因。
+- **根因 1（主因）— `delete_element` 刪走母片元素**：動畫／元素顯示時間／頁面時長係附喺**元素**身上，唔係附喺圖片素材身上。母片 `copy-design` 落嚟時連元素連動畫一齊繼承；一旦刪走母片元素、改為保留 Fat Mo 新拖入嘅乾淨元素，動畫即永久消失，而 MCP **冇任何 API 補得返**（`edit-design` 27 個 operation 冇一個掂到動畫／時長；`read-design` 個 CDF 亦完全冇 animation/duration 欄位＝AI 連「有冇動畫」都睇唔到，屬結構性盲區）。診斷手法＝對比 locator_id：Meika 母片系 `LBxgyF0fd0WZbT7J`/`LB0wWsLNwJJf9lvB`/`LBcmP2V1RC2HlLDp`/`LBDXmPZS466VsHHW`，壞版 `DAHQ9yIE2kQ` 四個全部變成新 ID＝鐵證。Fat Mo 第一次已明示「用代替的方法去取代新舊版，而不是先刪除舊片或圖，這樣能保留設定」，AI 連續兩次再犯。
+- **根因 2 — `resize_element`／`position_element` 會改爛動畫**（⚠️ 推翻同日早前寫落 SOP 嘅「唔會清動畫」結論）：同一 design 內乾淨對照——page2 只做 `update_fill`+`crop_media`（母片幾何本身已啱，冇 resize/position）→ Fat Mo 三項指標全對；page3 做齊 `update_fill`+`resize`+`position`+`crop` → 顯示時間同動畫全爛（動畫由「矇糊」變「湧出」）。時序更確診：Fat Mo 已驗收「動畫全部正常」**之後**，AI 再改一次 Video 3 幾何即刻爛。`crop_media` 未定罪（兩頁都做過，page2 冇事）。
+- **根因 3 — `crop_media(0,0,W,H)` 寫法本身會拉扁媒體**：`imageBox` 係「媒體喺 container 座標系嘅矩形」，媒體會被**拉伸**填滿佢，所以 imageBox 長寬比必須永遠等於**媒體原生 aspect**，唔係等於 container。Fat Mo 人手母片正正就係咁（olibbvia container 581.13×569.68 但 imageBox 581.13×581.13 正方）。實測 Canva 會將細過 cover 下限嘅值自動 clamp（contain 做唔到）。
+- **附帶發現**：(a) `get-assets` 報嘅 video 尺寸**會錯**——`Video 3.mp4` 本地原檔實測 1440×1440 正方，Canva metadata 報 1080×2160 直片，AI 信咗就將正方片壓成 0.5 窄框；破綻＝同一回應內縮圖 aspect 同 metadata aspect 自相矛盾；尺寸真理源改為本地原檔 mp4 `tkhd` atom（python 讀尾 8 bytes 32.16 定點，唔使 ffprobe）。(b) `edit-design` 回傳嘅 draft 縮圖係 1:1 而頁面 16:9＝水平壓縮，唔可以用嚟判斷比例，驗比例一律 export 真 JPG。(c) 字句水平置中應對齊**花環中心 960**（Fat Mo 原話「正中的意思是左右草框之間」），唔係對齊家庭圖 container 中心 951.46；export JPG 像素實測花環墨水左右完全對稱（左 294.0→697.5／右 1179.0→1626.0，外緣中點正好 960.0）。
+- **🏆 黃金參考做法（Fat Mo 判定「完美完成，可作日後參考SOP」）**：母片 olibbvia `DAHQL6lGRIE` → 成品 `DAHRBN0H_cg`，**只用 4 種 operation**：`copy-design` → `update_title` → `replace_text`×2 → `update_fill`×4（母片原元素）→ `crop_media`×4（imageBox 設成媒體原生 aspect 嘅 cover box）→ `position_element`×2（**只限字句**）。**零 `delete_element`、零 `resize_element`、媒體零 `position_element`** → 大小／顯示時間／動畫三項全部由母片繼承，Fat Mo 零重設。
+- **新制度**：canva-auto.md v1.1.0→v1.4.0，新增「元素保命鐵律」（優先級最高）、「幾何凍結鐵律」（動畫設定後禁郁幾何，正確次序＝幾何一次過做齊→驗收→設動畫→永久凍結）、「Fat Mo 驗收三項指標」（①大小 AI 可驗／②元素顯示時間 AI 盲／③動畫 AI 盲，逐頁逐項報，AI 須主動聲明②③自己睇唔到，禁講「應該冇問題」）、黃金參考案例、字句置中規則。三條核心鐵律同步升格入記憶檔 `project_canva_video_automation.md` 最頂「🔴 最高優先鐵律」段 + MEMORY.md 索引，令任何新 session 唔使召喚 `/canva-auto` 都 recall 得到（Fat Mo 明令「不論任何新 session 都要用得到，優先執行」）。
+- **案例庫**：`canva_auto/placement_memory.json` 新增 case `0601100`（HoKaSin）+ 2 條 convergence_log，含黃金配方、字句置中公式、驗收框架。
+- **交付狀態**：`DAHRBN0H_cg` 大小三項已驗；Fat Mo 已自行完成 Video 1 去背（`VAHQ-HAtFkg`）；**音訊仍未上載**（純音樂款必做），未出 MP4／封面。
+- **對應 commit**：83721ec → 5bcbefc → b120bf4 → 0d5c4c7 → 408bb86。
+- **Subagent 使用記錄**：❌ 未使用（Canva MCP 在主 session，派工會斷 context；全程互動式 CDF 對比 + export JPG 像素量度 + 本地 mp4 header 解析）。
+
+---
+
 ## [2026-07-31] Session（Claude Code / Sonnet 5 執行）— IG看門狗警報「標記已處理/標回未處理」失效修復
 
 - **緣起**：Fat Mo 回報系統監控頁 IG 看門狗警報卡片「標回未處理」及「標記已處理」按鈕失效。

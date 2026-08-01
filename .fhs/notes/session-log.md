@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-01 (canva-auto SOP v1.1.0→v1.4.0 — 動畫消失真因確診 + HoKaSin 0601100 交付): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-01「canva-auto SOP v1.1.0→v1.4.0」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。HoKaSin page3 影片動畫/顯示時間連錯3次，靠 locator_id 對比揪出真因＝`delete_element` 刪走母片元素（動畫附喺元素身上，MCP 冇 API 補得返）；同日再由 page2/page3 同design對照推翻自己早前結論，確認 `resize_element`/`position_element` 亦會改爛動畫。新增元素保命鐵律／幾何凍結鐵律／驗收三項指標／黃金參考做法／字句置中規則，三條核心鐵律已升格入 auto-memory + MEMORY.md 索引令任何新 session 都 recall 到。成品 `DAHRBN0H_cg` 經 Fat Mo 逐頁三項指標驗收「完美完成」。5個commit：83721ec→5bcbefc→b120bf4→0d5c4c7→408bb86。**遺留**：音訊未上載，未出 MP4/封面。
+Subagent：❌ 未使用（Canva MCP 在主 session，派工會斷 context；全程互動式 CDF 對比 + export JPG 像素量度 + 本地 mp4 header 解析）。
+
 ## 2026-07-31 (IG看門狗警報 resolve 按鈕失效修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-07-31「IG看門狗警報『標記已處理/標回未處理』失效修復」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo回報系統監控頁按鈕失效，根因`sbRpc()`對`RETURNS void`的RPC呼叫一律`.json()`，空body拋例外令前端誤判失敗（後端其實已成功寫入）。改用`res.text()`判空修復，本機dev server連live Supabase驗證PASS。
