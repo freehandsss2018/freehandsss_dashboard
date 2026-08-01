@@ -57,6 +57,8 @@
       ],
       "technique_lesson": "元素保命鐵律：copy-design 之後即刻 read-design 記低母片元素 locator_id；Stage③ 再讀時 ID 對得上＝母片元素（必保），ID 對唔上＝Fat Mo 臨時拖入（可刪）。呢個係唯一分辨方法，因為兩者喺 CDF 入面外觀完全一樣。",
       "technique_lesson_2_geometry_freeze": "⚠️**2026-08-01 更正本 case 早前寫嘅『resize/position/crop 唔會清動畫』——嗰句錯**。同一 design 內乾淨對照：page2 只做 update_fill+crop_media（母片幾何本身已啱，冇 resize/position）→ Fat Mo 三項指標全對；page3 做齊 update_fill+resize+position+crop → 顯示時間同動畫全爛（動畫由『矇糊』變『湧出』）。時序更確診：Fat Mo 已驗收『動畫全部正常』之後，AI 再改一次 Video 3 幾何，即刻爛。結論＝`resize_element`/`position_element` 會改動動畫同元素顯示時間；`crop_media` 未定罪（兩頁都做過，page2 冇事）。**幾何凍結鐵律：動畫一經設定（人手設或母片繼承），該元素禁止再做 resize/position。唯一安全次序＝AI一次過做齊幾何→Fat Mo驗收幾何→先設動畫→永久凍結。**",
+      "golden_reference_2026_08_01": "🏆 Fat Mo 判定「完美完成，可作日後參考SOP」。重做版 design_id=DAHRBN0H_cg（母片 olibbvia DAHQL6lGRIE）。成功配方＝只用4種 operation：copy-design → update_title → replace_text×2 → update_fill×4（母片原元素）→ crop_media×4 → position_element×2（只限字句）。**零 delete_element、零 resize_element、媒體零 position_element** → 大小/顯示時間/動畫三項全部由母片繼承，Fat Mo 零重設。關鍵理解：crop_media 嘅 imageBox 長寬比要跟『媒體原生 aspect』唔係跟 container（舊寫法 crop_media(0,0,W,H) 令 imageBox=container，喺 container 非媒體比例時會拉扁媒體——Video3 變窄嘅另一真兇）；Canva 會自動 clamp 到 cover 下限，contain 做唔到。",
+      "text_centring_rule": "字句水平置中＝對齊**花環中心 960**，唔係對齊家庭圖中心。Fat Mo 原話「正中的意思是左右草框之間」。實測（export JPG 像素分析）花環墨水左右完全對稱：左草框 design x 294.0→697.5，右草框 1179.0→1626.0，外緣中點 (294+1626)/2 = 960.0，同花環 container 中心完全吻合。公式：`字句 left = 960 - 字句box闊/2`（box 闊 649.7629 → left 635.1185）。曾錯對齊家庭圖 container 中心 951.46（=663.695+575.53/2）。此步用 position_element，受幾何凍結鐵律管，要改就趁未設動畫前改。",
       "fatmo_acceptance_framework": "Fat Mo 2026-08-01 明文驗收框架，日後逐頁逐項報告：①元素大小（AI 可驗，CDF size+imageBox）②元素顯示時間（AI 完全睇唔到，CDF 冇欄位）③動畫效果（同②）。AI 交付必須主動聲明②③自己盲、要 Fat Mo 眼證，唔准講『應該冇問題』。"
     },
     {
