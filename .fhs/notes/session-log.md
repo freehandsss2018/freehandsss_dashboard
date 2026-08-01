@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-02 (agent_dashboard 新增 IG看門狗學習記錄 zone): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-02「agent_dashboard 新增 IG看門狗學習記錄 zone」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo提「像Canva咁可以追查資料庫/編輯/更新/刪除」，拷問澄清係喺現有`agent_dashboardV42.html`（AI助理團隊名冊）加新zone，範圍限IG看門狗、寫入只沿用Phase C已建安全RPC。`scripts/agent_dashboardV42.js`新增`probeIgWatchdog()`（同`probeN8n()`同手法live curl）+`renderIgWatchLearningZone()`（沿用Canva/3D學習記錄同一視覺格式），規則卡「停用/重啟」掣係呢個生成頁首次live互動。本機生成器零errata+browser實測toggle雙向+DB核實+XSS payload安全渲染。生成物gitignored，公開發佈需另外`/upload-web team`。
+Subagent：❌ 未使用（互動式改碼+Supabase live驗證+browser實測）。
+
 ## 2026-08-02 (IG看門狗警報 Phase A+B+C — 自動開單防重複/thread檢視/學習系統Phase1): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-01「IG看門狗警報 Phase A」+「Phase B+C」兩條目、[FHS_System_Logic_Overview.md](FHS_System_Logic_Overview.md) §11.11-§11.13。Fat Mo 提出三項升級（自動開單防重複/thread檢視/學習系統）走 `/cl-flow`（flow_id 2026-07-31-2332，拷問8輪+A2對抗評審+fresh-context覆核），分 Phase A→B→C 逐階段 `/execute`。執行中連環揪出並修復3個真問題：(1)F3安全護欄（規則表thread參數改反查防批量靜默）(2)`fhs_touch_ig_thread_rules`意外對anon開放（Supabase預設GRANT+PostgreSQL PUBLIC繼承雙層REVOKE先鎖死，新增learnings#42）(3)n8n mismatches表null crash風險。77測試PASS+live Supabase端對端實測+n8n零漂移部署+`code-reviewer`G1-G8兩輪PASS（Phase A首輪FAIL揪出`product_cats=[]`邊界bug已修復）。
