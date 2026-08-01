@@ -1,5 +1,41 @@
 # Changelog
 
+## [2026-08-01] Session（Claude Code / Sonnet 5 執行）— IG看門狗警報 Phase B+C：IG訊息thread檢視 + 學習系統Phase1（cl-flow flow_id 2026-07-31-2332）
+
+- **緣起**：Phase A（下方條目）驗證通過後，Fat Mo 指示「等 Phase B/C 一齊先」，一次過完成餘下兩個 Phase 後先考慮部署。
+- **Phase B — IG 訊息 thread 檢視**：警報卡新增「💬 IG訊息」按鈕，按 thread 拉 `ig_messages` 全對話渲染成聊天氣泡 overlay（複用 `#igPreviewModal` bottom-sheet CSS 技法），頂部顯示 AI 判斷理由。**核心：BLOCKER 級 XSS 防禦**——新增 `_igwEscapeHtml()`，`_igwRenderMessageHtml()` 三步（轉義→訂號高亮→PII遮罩chip化）全程操作已轉義字串；順手修補 `_renderIgWatchList()` 存量同型 XSS 漏洞（`customer_name`/`snippet`/`order_id` 此前直插未轉義）。
+- **Phase C — 學習系統 Phase 1**：新表 `ig_thread_rules`（migration 0084）+ 3 支 RPC，Fat Mo 可喺 thread overlay 標記「假警報」或「分類判錯咗」，規則以 thread 為 key 覆寫未來同客判斷（`lib/order-match.mjs` 新增 `applyThreadRules()` 純函式）。n8n 新增 `Fetch Thread Rules`/`Touch Rules` 兩節點接入既有 Classify 鏈。
+- **執行中連環揪出並即場修復三個真問題（非設計階段預見）**：
+  1. **F3 安全護欄落地時發現原始 RPC 簽名有洞**——`fhs_add_ig_thread_rule` 若收自由 `p_thread` 文字參數，anon key 持有者可讀全部 thread 名批量建規則令看門狗永久靜默（cl-flow 覆核階段已預見，本次落地時嚴格執行：thread 一律由 `source_alert_id` 反查，加每 thread 3 條上限）。
+  2. **`fhs_touch_ig_thread_rules` 意外對 anon 開放**——apply 後即時用 `pg_proc.proacl`/`has_function_privilege()` 查證，發現 Supabase 專案級預設會自動 GRANT EXECUTE 俾 anon/authenticated；REVOKE 明確授權（migration 0084b）仍不足，因 PostgreSQL 另有 PUBLIC 偽角色預設授權，須連 PUBLIC 一齊 REVOKE（migration 0084c）先達成真正「service_role only」。全程用真實 anon-key REST 呼叫驗證（非 SQL 工具，避免超級用戶權限掩蓋真相）：修復後 anon 呼叫回 401，service_role 正常。
+  3. **n8n `mismatches` 證據表 null 存取風險**——規則改判成 `content_mismatch` 嘅項目冇具體金額數字（`mm=null`），若不過濾會喺 `mismatchItems.map(it => it.mm.mismatch_type)` crash；已加 `filter(it => it.mm)`。
+- **驗證**：`node --test` 77 個測試（含 diff-guard）PASS；本機 dev server 連 live Supabase 全流程實測（thread 渲染 74 則真實訊息、合成 XSS payload 零觸發、手機 375px bottom-sheet computed style、假警報/分類判錯兩條修正路徑、規則列表顯示/停用掣）；n8n rebuild 後 GET/本地 diff 零漂移（30/30 節點）PUT 成功；RPC 三支經真實 anon/service_role REST 呼叫驗證全部安全邊界；`code-reviewer` 最終 G1-G8 Gate（涵蓋 B+C 完整改動）一輪 PASS，順手修復 W1（規則 note 未渲染）。全部測試資料清理，零污染生產表。
+- **對應 commit**：見下方 git log；migration `0084`/`0084b`/`0084c`；`artifacts/2026-07-31-2332/cl-final-plan.md` §5 Phase B/C。
+- **待辦**：Phase A/B/C 三個 Phase 全部完成，等 Fat Mo 指示是否 `/commit` 部署到生產（current.html）。
+- **Subagent 使用記錄**：✅ code-reviewer（G1-G8 Gate，涵蓋 B+C 完整改動，一輪 PASS）。實作階段：❌ 未使用（互動式改碼+Supabase/n8n API 直接操作+browser live 驗證）。
+
+---
+
+## [2026-08-01] Session（Claude Code / Sonnet 5 執行）— IG看門狗警報 Phase A：自動開單防重複（cl-flow flow_id 2026-07-31-2332）
+
+- **緣起**：Fat Mo 提出 IG 看門狗警報卡三項升級——①`not_created` 警報「複製訂號」改「自動開新訂單」（先查重）②警報卡開 IG 訊息 thread 檢視 ③學習系統（觀察/修正 AI 判斷）。走 `/cl-flow`（拷問 8 輪鎖定十項決策）→ A3 草案 → A2 Gemini 對抗評審（A1 Perplexity 額度用盡，DEGRADED）→ Fat Mo 要求 fresh-context agent 從 /8d 角度覆核批評處理表，揪出 A3 自己兩處反證失實（誤把 customer_name 當 thread、虛構 AGENTS.md 條文）+ 一個 A2/A3 雙方皆漏嘅真漏洞（`fhs_add_ig_thread_rule` GRANT anon 收 text 參數可致看門狗永久靜默）→ 全部修訂納入 `cl-final-plan.md`。裁決 `CONDITIONAL_READY`，Fat Mo 選擇先執行 Phase A 驗證後再續 B/C。
+- **Phase A 交付**：
+  - `lib/order-match.mjs` 新增 `detectProductCategories(text)`（regex 偵測 P/K/M 產品類別，供預勾 checkbox）。
+  - `build_n8n_workflow.cjs` alerts 三段（notify/verified/mismatch）`raw` 附帶 `product_cats`；rebuild（69 測試全 PASS，含 diff-guard）→ API PUT 上線（`D4LK6VrQbiXlju0V`，credential 隨 build script 保留完整，零漂移）。
+  - `freehandsss_dashboardV42.html`：
+    - `not_created` 警報卡主按鈕改「➕ 開新訂單」（`_igwCreateOrder`），「複製訂號」降次按鈕保留。
+    - 查重①訂號直查 `orders`、查重②客名 30 日內模糊比對——命中彈頁內衝突面板（唔用 `window.confirm`，D51 iOS PWA 教訓），非硬擋。
+    - 預填：訂號+客名+產品類別三態同步（目標 vs 當前雙向比對，`selectOrderType`/`.click()` 觸發真實 D51 onchange 鏈，唔手寫 `checked`）；絕不自動送出。
+    - `checkOrderIDDuplicate` 加 sequence-token race guard（A2/#2，順帶修復現有「快速改單號」既有 race）。
+    - 撞號選「仍要用新號開單」：即場 `resolved_by='operator:reopened-as-new'`，開單成功後經 `_igwMaybeLinkNewOrder` hook（掛喺 `syncToAirtable` 三個成功分支）補寫實際新號做追溯（A2/#5，best-effort 非阻擋）。
+- **驗證**：本機 dev server 連 live Supabase，插入合成測試警報（訂號衝突/乾淨預填 P+K/單K反向取消P/`product_cats=[]`邊界case）逐一驗證面板內容、predfill 正確性、D51 header 顏色（`getComputedStyle`）、`captureFormState()` 輸出；race guard 用人工延遲 fetch 證明遲返 response 唔會覆蓋新狀態；測試警報全部清理，零污染 `orders` 表。n8n 側發現一個同本次改動無關嘅獨立間歇性錯誤（execution `5409`，`Filter New + Quiet Window` paired-item 遺失），已另開 backlog（`task_5309df2a`）追蹤，不阻擋本次部署。
+- **code-reviewer G1-G8 Gate 稽核**（AGENTS.md Rule 3.17 強制標準）：首輪 FAIL——揪出 G4 真缺陷：`_igwPrefillForm()` 用 `if (targetCats)` 判斷會令 `product_cats=[]`（偵測過但零命中，語意應=「跳過預勾」）被當 truthy 誤觸發，錯誤取消用戶已手動勾選嘅 P。已修（新增 `hasCats = targetCats && targetCats.length > 0` 明確判斷），重跑 69 測試 PASS + live browser 用該確切失敗場景復測 PASS，第二輪覆核確認修復生效。
+- **對應 commit**：見下方 git log；`artifacts/2026-07-31-2332/`（task-brief/a3-draft/ag-review/cl-final-plan）。
+- **待辦**：Phase B（IG 訊息 thread 檢視）+ Phase C（學習系統 Phase 1：`ig_thread_rules` 表+規則覆寫）尚未執行，等 Fat Mo 指示續做。
+- **Subagent 使用記錄**：✅ fresh-context opus agent（cl-flow 批評處理表覆核，只讀+live DB 實測+PostgREST 文檔查證）；cl-flow 內建 A2(Gemini) 對抗評審（A1 degraded）。實作階段（Phase A 本身）：❌ 未使用（互動式改碼+n8n API 直接操作+browser live 驗證）。
+
+---
+
 ## [2026-08-01] Session（Claude Code / Opus 5 執行）— canva-auto SOP v1.1.0→v1.4.0：連錯3次揪出動畫消失真因 + HoKaSin 0601100 完美交付
 
 - **緣起**：HoKaSin 0601100（純音樂款）page3 影片「元素顯示時間」同「動畫效果」連續三次做極都錯，每次做法唔同但 Fat Mo 三次都話「仲係錯」。Fat Mo 要求查明真因。

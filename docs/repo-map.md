@@ -96,7 +96,10 @@ freehandsss_dashboard/
 │   │   ├── 0079_add_accessory_cost_column.sql ← 為配件成本（羊毛氈/燈飾加購，限玻璃瓶款式）新增 orders/order_items.accessory_cost 獨立欄位，修復訂單層分類rollup漏計顯示缺口（cl-flow 2026-07-25-0148）✅ 已部署
 │   │   ├── 0080_sync_rpc_accessory_cost.sql ← sync_order_to_mirror() RPC 擴充支援 accessory_cost 讀寫（cl-flow 2026-07-25-0148）✅ 已部署
 │   │   ├── 0081_family_baby_v2_cost_model.sql ← 大寶/成人/家庭三對象轉V2模型：8個大寶V2 SKU+2個家庭V2 SKU（塊牌成本$160）+material_cost_keychain_family鍵+order_items.family_member_config欄+RPC擴充（D49，cl-flow 2026-07-28-1121）✅ 已部署
-│   │   └── 0082_expand_position_code_check_for_elder.sql ← 修正0081遺漏：position_code CHECK擴充容納大寶獨立字串（大寶左手/右手/左腳/右腳），防大寶落單時Mirror RPC寫入失敗（D49，動手n8n代碼前即時發現並修正）✅ 已部署
+│   │   ├── 0082_expand_position_code_check_for_elder.sql ← 修正0081遺漏：position_code CHECK擴充容納大寶獨立字串（大寶左手/右手/左腳/右腳），防大寶落單時Mirror RPC寫入失敗（D49，動手n8n代碼前即時發現並修正）✅ 已部署
+│   │   ├── 0084_ig_thread_rules.sql ← IG看門狗學習系統Phase1：ig_thread_rules表（thread級規則覆寫，F3護欄：thread由來源警報反查非自由參數+每thread上限3條active）+3支RPC（cl-flow 2026-07-31-2332 Phase C）✅ 已部署
+│   │   ├── 0084b_revoke_anon_touch_ig_thread_rules.sql ← 修正0084：REVOKE fhs_touch_ig_thread_rules嘅anon/authenticated明確授權（審計計數器唯service_role可寫）✅ 已部署
+│   │   └── 0084c_revoke_public_touch_ig_thread_rules.sql ← 修正0084b未夠徹底：連PostgreSQL函式預設PUBLIC授權都要REVOKE先真正做到service_role only（has_function_privilege()驗證揪出）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

@@ -92,6 +92,8 @@
 
 41. **【高頻 ⚠️】n8n 多節點鏈新增 payload 欄位，必須逐個節點檢查轉發，唔可以淨改頭尾兩端**：Dashboard 新增 `Family_Member_Config` 傳入 webhook 後，只改咗最終寫入節點（`Supabase Mirror Prep`）同計算節點（`Calculate Profit & Pack Items`），漏改中間嘅 `Parse Items & Generate SKU`（負責正規化 SKU 並將原始 payload 逐項轉成內部格式）——呢個節點原本冇轉發呢個新欄位，令下游 `Calculate` 節點永遠讀到空值，計算恆為 $0，零報錯（因為 fallback 邏輯令空陣列合法運算出 0）。真實 live webhook 測試（非純代碼審查）先揭發呢個 bug。修復手法：改任何 n8n 多節點鏈嘅 payload schema 前，用 `get_node` 逐個列出鏈上每一個 Code 節點嘅 output json 結構，確認新欄位喺**每一個**轉手節點都有明確 `field: value` 一行，唔可以假設「頭尾兩端改咗中間自然透傳」 — D49/cl-flow 2026-07-28-1121
 
+42. **【高頻 ⚠️】Supabase RPC 要限「service_role only」，單靠 `GRANT EXECUTE ... TO service_role` 唔夠，anon 依然叫得動**：Supabase 專案級 `pg_default_acl` 對 public schema 新函式自動 GRANT EXECUTE 俾 anon/authenticated/service_role（平台既有預設）；PostgreSQL 函式建立時另有 PUBLIC 偽角色預設授權（`proacl` 顯示 `=X/postgres`），所有角色自動係 PUBLIC 隱含成員會繼承——`has_function_privilege('anon',...,'EXECUTE')` 喺兩層都冇 REVOKE 前依然回傳 true。真正做到限制需要兩層都 REVOKE：`REVOKE EXECUTE ON FUNCTION ... FROM anon, authenticated;` **加埋** `REVOKE EXECUTE ON FUNCTION ... FROM PUBLIC;`（後者先係關鍵，前者淨係處理明確授權）。驗證方式必須用 `has_function_privilege()`（真實 effective 權限，非淨睇 `pg_proc.proacl` 表面有冇具名 grant）或直接用 anon-key REST 呼叫確認回 401——IG 看門狗學習系統 `fhs_touch_ig_thread_rules` 審計計數器 RPC 即場踩中，兩次 REVOKE 先真正鎖死 — IG看門狗Phase C/2026-08-01
+
 > 📌 **退役**（Session 189，`/commit` Lesson Distillation，全檔滿50條達上限）：「cl-flow runner Perplexity 推理模型靜默空白」（原 Pitfall #16，Session 110）——修復已是結構性（`max_tokens`參數已永久調高+空content視為失敗已寫入runner程式碼本身），非需記憶提醒的操作紀律，未來復發風險低，退役騰出額度給本次新教訓（新增表欄位須同步檢查所有前端fetch select list）。
 
 ---

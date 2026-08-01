@@ -303,16 +303,38 @@ function flattenItems(items) {
 const orders = flattenItems($('Fetch Orders').all());
 const orderIndex = buildOrderIndex(orders);
 
+// Phase C（學習系統 Phase 1，flow_id 2026-07-31-2332）：組 thread → rules[] 嘅 Map，
+// 供 applyThreadRules() 查表覆寫。1001 哨兵值（見 Fetch Thread Rules 節點 limit）判斷是否觸頂。
+const threadRulesRaw = flattenItems($('Fetch Thread Rules').all());
+const rulesMap = new Map();
+for (const r of threadRulesRaw) {
+  if (!r || !r.thread) continue;
+  if (!rulesMap.has(r.thread)) rulesMap.set(r.thread, []);
+  rulesMap.get(r.thread).push(r);
+}
+const rulesOverflow = threadRulesRaw.length > 1000;
+
 const notifyItems = [];
 const verifiedItems = []; // S150 Phase 4 (P1a): created_full 正向記錄候選
-const mismatchItems = []; // P2b: 金額比對疑似不符候選（flow_id 2026-07-13-1224）
-let cFull = 0, cIncomplete = 0, cNotCreated = 0, cWeak = 0;
+const mismatchItems = []; // P2b: 金額比對疑似不符候選（flow_id 2026-07-13-1224）+ Phase C: 規則改判 content_mismatch（mm=null）
+const overriddenIds = []; // Phase C: 本輪實際生效嘅規則 id，餵俾 Touch Rules 節點做審計計數
+let cFull = 0, cIncomplete = 0, cNotCreated = 0, cWeak = 0, cRuleOverride = 0;
 for (const om of orderMsgs) {
-  const cls = classifyMessage({ text: om.text, hasReceipt: om.hasReceipt }, orderIndex);
+  let cls = classifyMessage({ text: om.text, hasReceipt: om.hasReceipt }, orderIndex);
+  cls = applyThreadRules(cls, om.thread, rulesMap);
+  if (cls.overriddenBy) { overriddenIds.push(cls.overriddenBy); cRuleOverride++; }
+
   if (cls.category === 'created_full') { cFull++; verifiedItems.push({ om, cls }); }
   else if (cls.category === 'created_incomplete') { cIncomplete++; notifyItems.push({ om, cls, kind: '資訊不齊' }); }
   else if (cls.category === 'not_created') { cNotCreated++; notifyItems.push({ om, cls, kind: '未建立' }); }
   else if (cls.category === 'weak_no_id') cWeak++;
+  else if (cls.category === 'content_mismatch') {
+    // kind_correction 規則直接改判成 content_mismatch（to_kind 白名單允許值，見 migration 0084）。
+    // 呢個同下面 P2b compareToOrder() 原生偵測唔同源，冇具體金額比對數字（mm=null）——
+    // 刻意唔進 mismatches 證據表（果張表只記真金額比對），只進 alerts 鏡像列，前端卡片
+    // r.raw && r.raw.mm 判斷式會 fallback 唔顯示金額行，唔會 crash。
+    mismatchItems.push({ om, cls, mm: null });
+  }
 
   // P2b：只喺訂號已在 DB 命中時比對金額（category=created_full/created_incomplete）——
   // 查無訂號的情況已由 not_created 分類覆蓋，避免雙軌重複警報（見 cl-final-plan §6.3）。
@@ -361,9 +383,13 @@ const coverage = (parsed.minTs && parsed.maxTs)
   : '（本次無新訊息）';
 
 const detailLines = notifyItems.slice(0, 15).map(sideBySide);
+// Phase C：學習規則生效統計恆列（唔止觸頂先報，令規則變動可察覺——覆核 ux_mgmt 維度）
+const ruleStatsLine = '\\n🎓 active 規則 ' + threadRulesRaw.length + ' 條｜本次生效 ' + cRuleOverride + ' 次'
+  + (rulesOverflow ? '\\n⚠️ 規則數已達查詢上限（1000+），部分舊規則可能未載入，建議清理停用規則' : '');
 const summary = '🐶 IG漏單看門狗 v3（訂號偵測）\\n覆蓋：' + coverage
   + '\\n掃描：' + (parsed.scannedThreads || 0) + ' threads / ' + (parsed.scannedFiles || 0) + ' 檔 / ' + orderMsgs.length + ' 則訊息'
   + '\\n✅已建立 ' + cFull + ' ｜📝資訊不齊 ' + cIncomplete + ' ｜🆕未建立 ' + cNotCreated + ' ｜⚠️弱訊號(無號) ' + cWeak
+  + ruleStatsLine
   + '\\n需核對：' + notifyItems.length + '\\n\\n'
   + (detailLines.join('\\n\\n') || '（本次無需核對項目）');
 
@@ -378,7 +404,7 @@ const alerts = [
     thread: it.om.thread || null,
     has_receipt: it.om.hasReceipt || false,
     db_matched: it.cls.category === 'created_incomplete',
-    raw: { om: it.om, cls: it.cls },
+    raw: { om: it.om, cls: it.cls, product_cats: detectProductCategories(it.om.text || '') },
   })),
   // S150 Phase 4 (P1a): created_full → verified_ok 正向記錄，resolved=true 預設不進待處理計數
   ...verifiedItems.map(it => ({
@@ -391,7 +417,7 @@ const alerts = [
     thread: it.om.thread || null,
     has_receipt: it.om.hasReceipt || false,
     db_matched: true,
-    raw: { om: it.om, cls: it.cls },
+    raw: { om: it.om, cls: it.cls, product_cats: detectProductCategories(it.om.text || '') },
     resolved: true,
   })),
   // P2b：content_mismatch 鏡像列，複用既有 fhs_resolve_ig_alert RPC + V42 UI 工作流。
@@ -408,13 +434,14 @@ const alerts = [
     thread: it.om.thread || null,
     has_receipt: it.om.hasReceipt || false,
     db_matched: true,
-    raw: { om: it.om, cls: it.cls, mm: it.mm },
+    raw: { om: it.om, cls: it.cls, mm: it.mm, product_cats: detectProductCategories(it.om.text || '') },
     resolved: false,
   })),
 ];
 
-// P2b：content_mismatch 證據表寫入陣列（獨立於上方 alerts，供 Write Mismatches 節點使用）
-const mismatches = mismatchItems.map(it => ({
+// P2b：content_mismatch 證據表寫入陣列（獨立於上方 alerts，供 Write Mismatches 節點使用）。
+// Phase C 新增嘅規則改判項 mm=null（冇具體金額比對數字），唔屬於呢張證據表範圍，過濾走。
+const mismatches = mismatchItems.filter(it => it.mm).map(it => ({
   alert_date: new Date().toISOString().slice(0, 10),
   order_id: it.cls.orderId,
   message_thread: it.om.thread || '',
@@ -450,7 +477,7 @@ const telegramText = summary + alerts
   .filter(a => a.order_id && (a.kind === 'created_incomplete' || a.kind === 'not_created'))
   .map(a => '\\n> ' + a.order_id + ': https://yanhei.synology.me/Freehandsss_dashboard_current.html?view=igwatch&orderId=' + a.order_id)
   .join('');
-return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts, messages, mismatches, intents } }];
+return [{ json: { summary, telegramText, createdFull: cFull, incomplete: cIncomplete, notCreated: cNotCreated, weak: cWeak, notify: notifyItems.length, total: orderMsgs.length, alerts, messages, mismatches, intents, overriddenIds } }];
 `.trim();
 
 // ── Build Empty Summary（無新匯出資料夾時的分支）──────────────────────────
@@ -615,6 +642,23 @@ const workflow = {
       alwaysOutputData: true,
     },
     {
+      // Phase C（學習系統 Phase 1，flow_id 2026-07-31-2332）：讀 active 規則，供 Classify 節點
+      // applyThreadRules() 查表覆寫。anon key 唯讀；url 為靜態字串無表達式（避開 lessons
+      // 2026-07-22 動態 URL 陷阱）；limit=1001 為哨兵值（A2/#6 部分採納：>1000 觸頂警告）。
+      parameters: {
+        method: 'GET',
+        url: SUPABASE_URL + '/rest/v1/ig_thread_rules?active=eq.true&select=id,thread,rule_type,from_kind,to_kind,created_at&order=created_at.desc&limit=1001',
+        sendHeaders: true,
+        headerParameters: { parameters: [
+          { name: 'apikey', value: SUPABASE_ANON_KEY },
+          { name: 'Authorization', value: 'Bearer ' + SUPABASE_ANON_KEY },
+        ] },
+        options: {},
+      },
+      id: 'http3', name: 'Fetch Thread Rules', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3060, 300],
+      alwaysOutputData: true,
+    },
+    {
       parameters: { jsCode: classifyCode },
       id: 'cr1', name: 'Classify & Report', type: 'n8n-nodes-base.code', typeVersion: 2, position: [3280, 420],
     },
@@ -658,6 +702,30 @@ const workflow = {
         options: {},
       },
       id: 'wa1', name: 'Write Alerts', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3720, 420],
+      alwaysOutputData: true, continueOnFail: true,
+    },
+    {
+      // Phase C：規則生效審計計數器（service_role key，唔畀 anon 灌水——見 migration 0084b/0084c
+      // REVOKE FROM PUBLIC 修正）。RPC 命名參數 body（{p_ids:[...]}）唔同表格陣列 POST，
+      // 空陣列一樣合法（UPDATE...WHERE id=ANY('{}') = 0 行受影響，唔會報錯），故毋須 IF 空陣列守衛，
+      // 直接接喺 Write Alerts 之後，continueOnFail 令失敗不阻主鏈（審計係 best-effort，非關鍵路徑）。
+      parameters: {
+        method: 'POST',
+        url: SUPABASE_URL + '/rest/v1/rpc/fhs_touch_ig_thread_rules',
+        authentication: 'none',
+        sendHeaders: true,
+        specifyHeaders: 'keypair',
+        headerParameters: { parameters: [
+          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
+          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'Content-Type', value: 'application/json' },
+        ] },
+        sendBody: true,
+        contentType: 'raw',
+        body: "={{ JSON.stringify({ p_ids: $('Classify & Report').first().json.overriddenIds }) }}",
+        options: {},
+      },
+      id: 'tr1', name: 'Touch Rules', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [3940, 420],
       alwaysOutputData: true, continueOnFail: true,
     },
     {
@@ -805,7 +873,8 @@ const workflow = {
     'Download File': { main: [[{ node: 'Parse Inbox', type: 'main', index: 0 }]] },
     'Parse Inbox': { main: [[{ node: 'Fetch Orders', type: 'main', index: 0 }]] },
     'Fetch Orders': { main: [[{ node: 'Fetch Pipeline', type: 'main', index: 0 }]] },
-    'Fetch Pipeline': { main: [[{ node: 'Classify & Report', type: 'main', index: 0 }]] },
+    'Fetch Pipeline': { main: [[{ node: 'Fetch Thread Rules', type: 'main', index: 0 }]] },
+    'Fetch Thread Rules': { main: [[{ node: 'Classify & Report', type: 'main', index: 0 }]] },
     'Classify & Report': {
       main: [
         [
@@ -822,7 +891,14 @@ const workflow = {
         [{ node: 'Telegram Notify (Data)', type: 'main', index: 0 }], // false: 無警報 → 直接 Telegram
       ],
     },
-    'Write Alerts': { main: [[{ node: 'Telegram Notify (Data)', type: 'main', index: 0 }]] },
+    'Write Alerts': {
+      main: [
+        [
+          { node: 'Telegram Notify (Data)', type: 'main', index: 0 },
+          { node: 'Touch Rules', type: 'main', index: 0 }, // Phase C：平行分支，唔阻塞既有通知路徑
+        ],
+      ],
+    },
     'Has Messages?': {
       main: [
         [{ node: 'Write Messages', type: 'main', index: 0 }], // true: 有新訊息 → 寫入 ig_messages

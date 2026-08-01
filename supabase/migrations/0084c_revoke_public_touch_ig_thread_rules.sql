@@ -1,0 +1,14 @@
+-- Migration 0084c: 修正 0084b 未夠徹底——連 PUBLIC 授權都要 REVOKE
+-- Session 2026-08-01，cl-flow flow_id 2026-07-31-2332 Phase C（0084b apply 後即時用
+-- has_function_privilege() 驗證發現仍不足）
+--
+-- 根因：0084b 只 REVOKE 咗 anon/authenticated 嘅明確（named）授權，但 PostgreSQL 函式建立時
+-- 預設會授權俾 PUBLIC 偽角色（`GRANT EXECUTE ... TO PUBLIC`，proacl 顯示做 `=X/postgres`）。
+-- 所有 Postgres 角色（包括 anon/authenticated）自動係 PUBLIC 隱含成員，會透過 PUBLIC 繼承
+-- EXECUTE 權限——即使冇明確 named grant，`has_function_privilege('anon', ..., 'EXECUTE')`
+-- 依然回傳 true。必須連 PUBLIC 一齊 REVOKE 先可以真正做到「service_role only」。
+--
+-- 驗證（apply 後即時查證）：
+--   REVOKE 前：has_function_privilege('anon', 'fhs_touch_ig_thread_rules(uuid[])', 'EXECUTE') = true
+--   REVOKE 後：= false；'service_role' 版本 = true（不受影響，正確）
+REVOKE EXECUTE ON FUNCTION public.fhs_touch_ig_thread_rules(uuid[]) FROM PUBLIC;

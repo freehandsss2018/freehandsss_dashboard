@@ -7,6 +7,7 @@ import {
   hasDealIntent, hasQuoteDraft, extractOrderIds,
   classifyMessage, buildOrderIndex, redactPii, maskName, hashId,
   extractAmountsFromText, compareToOrder, tagIntent,
+  detectProductCategories, applyThreadRules,
 } from './order-match.mjs';
 
 // ── 正規化 ──────────────────────────────────────────────
@@ -257,6 +258,109 @@ test('compareToOrder：V42 制式確認文本（含取模日期）唔應觸發 F
   const order = { order_id: '0600101', final_sale_price: 800 };
   const v42Text = 'Freehandsss 訂單確認\n(訂單編號# 0600101 手模擺設)\n取模時間：2026/07/13';
   assert.equal(compareToOrder(v42Text, order), null, 'V42確認文本嘅日期年份唔應被誤判為金額不符');
+});
+
+// ── 產品類別偵測（Phase A，flow_id 2026-07-31-2332）─────────────
+test('detectProductCategories：P 類正例', () => {
+  assert.deepEqual(detectProductCategories('想整手模擺設'), ['P']);
+  assert.deepEqual(detectProductCategories('要木框定玻璃瓶好呢'), ['P']);
+});
+
+test('detectProductCategories：K 類正例', () => {
+  assert.deepEqual(detectProductCategories('想加個鎖匙扣'), ['K']);
+  assert.deepEqual(detectProductCategories('鑰匙扣幾錢'), ['K']);
+});
+
+test('detectProductCategories：M 類正例', () => {
+  assert.deepEqual(detectProductCategories('頸鏈吊飾要幾耐'), ['M']);
+  assert.deepEqual(detectProductCategories('想要條頸鍊'), ['M']);
+});
+
+test('detectProductCategories：口語正例（手仔/吊咀）', () => {
+  assert.deepEqual(detectProductCategories('BB手仔模'), ['P']);
+  assert.deepEqual(detectProductCategories('想整個吊咀'), ['M']);
+});
+
+test('detectProductCategories：混合訊息，多類命中順序固定 P/K/M', () => {
+  assert.deepEqual(detectProductCategories('手模擺設加鎖匙扣同頸鏈'), ['P', 'K', 'M']);
+});
+
+test('detectProductCategories：零命中/空值防禦', () => {
+  assert.deepEqual(detectProductCategories('幾錢呀'), []);
+  assert.deepEqual(detectProductCategories(''), []);
+  assert.deepEqual(detectProductCategories(null), []);
+  assert.deepEqual(detectProductCategories(undefined), []);
+});
+
+// ── 學習系統 Phase 1：thread 級規則覆寫層（Phase C，flow_id 2026-07-31-2332）───
+function baseCls(category) {
+  return { category, notify: category !== 'ignore', orderId: '0600101', fromV42: false, hasReceipt: false, reason: '原始判斷理由' };
+}
+
+test('applyThreadRules：Map miss（該 thread 冇規則）→ 原樣直通', () => {
+  const rules = new Map([['other_thread', [{ id: 'r1', rule_type: 'false_alarm', from_kind: null, created_at: '2026-01-01' }]]]);
+  const cls = baseCls('not_created');
+  const out = applyThreadRules(cls, 'my_thread', rules);
+  assert.deepEqual(out, cls);
+});
+
+test('applyThreadRules：false_alarm from_kind=null → 全抑制（唔理 category）', () => {
+  const rules = new Map([['t1', [{ id: 'r1', rule_type: 'false_alarm', from_kind: null, created_at: '2026-01-01' }]]]);
+  const out = applyThreadRules(baseCls('not_created'), 't1', rules);
+  assert.equal(out.category, 'ignore');
+  assert.equal(out.notify, false);
+  assert.equal(out.overriddenBy, 'r1');
+  assert.ok(out.reason.includes('[學習規則] r1'));
+});
+
+test('applyThreadRules：false_alarm 綁 from_kind → 只抑制相符 category，唔相符嘅原樣直通', () => {
+  const rules = new Map([['t1', [{ id: 'r1', rule_type: 'false_alarm', from_kind: 'not_created', created_at: '2026-01-01' }]]]);
+  const hit = applyThreadRules(baseCls('not_created'), 't1', rules);
+  assert.equal(hit.category, 'ignore');
+  const miss = applyThreadRules(baseCls('created_incomplete'), 't1', rules);
+  assert.equal(miss.category, 'created_incomplete', '唔相符嘅 category 唔應該被呢條規則影響');
+  assert.equal(miss.overriddenBy, undefined);
+});
+
+test('applyThreadRules：kind_correction 改判 category+notify=true', () => {
+  const rules = new Map([['t1', [{ id: 'r1', rule_type: 'kind_correction', from_kind: 'not_created', to_kind: 'created_incomplete', created_at: '2026-01-01' }]]]);
+  const out = applyThreadRules(baseCls('not_created'), 't1', rules);
+  assert.equal(out.category, 'created_incomplete');
+  assert.equal(out.notify, true);
+  assert.equal(out.overriddenBy, 'r1');
+});
+
+test('applyThreadRules：優先序 kind_correction > false_alarm（同 thread 同 category 都中）', () => {
+  const rules = new Map([['t1', [
+    { id: 'fa1', rule_type: 'false_alarm', from_kind: null, created_at: '2026-01-01' },
+    { id: 'kc1', rule_type: 'kind_correction', from_kind: 'not_created', to_kind: 'created_incomplete', created_at: '2026-01-02' },
+  ]]]);
+  const out = applyThreadRules(baseCls('not_created'), 't1', rules);
+  assert.equal(out.overriddenBy, 'kc1', 'kind_correction 應該優先於 false_alarm 生效');
+  assert.equal(out.category, 'created_incomplete');
+});
+
+test('applyThreadRules：同型多條命中，取 created_at 最新一條', () => {
+  const rules = new Map([['t1', [
+    { id: 'kc-old', rule_type: 'kind_correction', from_kind: 'not_created', to_kind: 'created_incomplete', created_at: '2026-01-01' },
+    { id: 'kc-new', rule_type: 'kind_correction', from_kind: 'not_created', to_kind: 'content_mismatch', created_at: '2026-01-05' },
+  ]]]);
+  const out = applyThreadRules(baseCls('not_created'), 't1', rules);
+  assert.equal(out.overriddenBy, 'kc-new', '應該生效最新建立嘅規則');
+  assert.equal(out.category, 'content_mismatch');
+});
+
+test('applyThreadRules：防禦——rulesByThread 為 null/undefined/非 Map 一律直通', () => {
+  const cls = baseCls('not_created');
+  assert.deepEqual(applyThreadRules(cls, 't1', null), cls);
+  assert.deepEqual(applyThreadRules(cls, 't1', undefined), cls);
+  assert.deepEqual(applyThreadRules(cls, 't1', {}), cls);
+});
+
+test('applyThreadRules：thread 有規則陣列但空陣列 → 直通', () => {
+  const rules = new Map([['t1', []]]);
+  const cls = baseCls('not_created');
+  assert.deepEqual(applyThreadRules(cls, 't1', rules), cls);
 });
 
 // ── 意圖標註（P2c）──────────────────────────────────────────

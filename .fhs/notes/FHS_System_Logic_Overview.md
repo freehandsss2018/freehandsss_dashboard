@@ -1143,3 +1143,47 @@ fhs_resolve_ig_alert(p_id uuid, p_resolved boolean, p_by text DEFAULT 'operator'
 **部署驗證**：GET live workflow → 本地重建 JSON 結構化 diff（僅新增 2 節點 + `Classify & Report` 內容 + 對應 connections，無其餘節點/連線 drift）→ PUT（HTTP 200）→ 再 GET 確認 26/26 節點與本地版本逐一一致。
 
 詳見 `decisions.md` D35、`scripts/README.md` ig-watchdog 段。
+
+### 11.11 Phase A：自動開單防重複（cl-flow flow_id 2026-07-31-2332，2026-08-01）
+
+**設計**：`not_created` 警報卡「複製訂號」動作改為「➕ 開新訂單」（`_igwCreateOrder`），送出前雙重查重：①訂號直查 `orders?order_id=eq.{alert.order_id}`；②客名 30 日內模糊比對 `orders?customer_name=ilike.*{name}*`（因歷史訂號無標準劃一，同號不代表真重複、同名亦不代表真撞單，兩查皆為**提示唔硬擋**）。任一命中 → 頁內衝突面板（比照 §D51 iOS PWA 教訓，唔用 `window.confirm`）列出既有訂單資訊供 Fat Mo 裁決；乾淨 → 走 `switchMode('create')` 後預填 `orderIdDisplay`/`momName` 兩個結構化欄位 + 按 `lib/order-match.mjs` 新增 `detectProductCategories(text)` 偵測結果雙向同步 P/K/M 三個 master toggle（目標狀態 vs 當前狀態逐一比對，唔單向只加唔減；P 走 `selectOrderType()`、K/M 用真實 `.click()` 觸發既有 D51 onchange 鏈）。**全程零觸碰 `captureFormState()`/`raw_form_state` 契約，絕不自動送出**——預填只是省返打訂號/客名/大類別呢幾步，最終落單仍要人手撳送出。
+
+**客名衝突面板顯示 `final_sale_price`**：`_igwShowCustomerNameConflict()` 列出該客近期訂單時附帶顯示 `final_sale_price`（唯讀，純供 Fat Mo 快速比對「係咪真係同一張單」），無任何寫入或計算邏輯改動，`final_sale_price=確收真理`既有規則不受影響。
+
+**撞號選「仍要用新號開單」嘅追溯機制（A2/#5）**：即場 `fhs_resolve_ig_alert(alertId, true, 'operator:reopened-as-new')` 令警報離開待處理清單（避免同一警報反覆出現喺清單度造成混淆），**唔改警報 `order_id` 本身**（該欄=「IG 訊息實際講咗乜」嘅史料證據，且 `order_id_key` 係 `ix_igwatch_alerts_dedup_v2` 具現化 dedup 鍵，改咗有撞索引風險）；掛喺 `syncToAirtable()` 三個成功分支（webhook 成功/兩個 fallback 直寫成功）加一句 `_igwMaybeLinkNewOrder(currentOrderId)`——若 `window._igwLinkAlertId` 有設定（僅「仍要用新號開單」路徑會設），開單成功後補一次 `fhs_resolve_ig_alert(alertId, true, 'operator:reopened-as-'+新號)`，`resolved_by` 文字欄位承載新舊訂號 linkage，best-effort 非阻擋（RPC 失敗只 console.warn，唔影響主流程）。
+
+**Race guard（A2/#2）**：`checkOrderIDDuplicate()` 加模組級 `_idCheckSeq` 遞增 token，四個分支（Supabase成功/catch、webhook成功/catch）寫 UI 前皆核對 `_seq === _idCheckSeq`，遲返 response 一律棄權——順帶修復現有「快速改單號」既有 race，非 IG 看門狗專屬修復。
+
+**n8n 側**：`build_n8n_workflow.cjs` alerts 三段（`notifyItems`/`verifiedItems`/`mismatchItems`）`raw` 統一附加 `product_cats: detectProductCategories(om.text||'')`，供前端預勾讀取；存量警報（無此欄位）視為 `null`，前端跳過預勾只填訂號/客名。**已修復邊界 case（code-reviewer G4 揪出）**：`product_cats=[]`（偵測過但零命中）同 `null`（未偵測，存量警報）語意唔同，前端須用 `hasCats = targetCats && targetCats.length > 0` 明確判斷，唔可以用 `if (targetCats)` truthy 判斷（`[]` 屬 truthy，會誤觸發雙向同步將用戶手動勾選咗嘅類別剷走）。
+
+**驗證**：`node --test` 69 個測試（含 diff-guard）PASS；本機 dev server 連 live Supabase 插入合成測試警報覆蓋撞號/乾淨預填/反向取消/`product_cats=[]`邊界四個場景，逐一 browser 實測 DOM 狀態 + `captureFormState()` 輸出 + D51 header 顏色（`getComputedStyle`）；race guard 用人工延遲 fetch 證明遲返 response 唔覆蓋新狀態；`code-reviewer` G1-G8 Gate 稽核兩輪（首輪 FAIL 揪出 G4，修復後二輪 PASS）；n8n 側 GET/rebuild diff 零漂移後 PUT（HTTP 200），credential 隨 build script 內嵌保留完整。
+
+**已知獨立問題（非本次改動導致）**：n8n execution `5409`（2026-07-31T22:00 UTC）報 `Filter New + Quiet Window` paired-item 遺失錯誤，波及 `Build Empty Summary`；A0 漂移核對已證實發生時 live code 與 repo 完全一致，屬部署前已存在嘅間歇性 bug，另開 backlog（`task_5309df2a`）追蹤，不阻擋本次部署。
+
+詳見 `Changelog.md` 2026-08-01「IG看門狗警報 Phase A」條目、`artifacts/2026-07-31-2332/`（task-brief/a3-draft/ag-review/cl-final-plan）。
+
+### 11.12 Phase B：IG 訊息 thread 檢視（同 flow_id，2026-08-01）
+
+**設計**：全部 kind 警報卡加「💬 IG訊息」按鈕（`_igwOpenThread`），按 `thread` 從 `ig_messages` 表拉成條對話（`order=sent_at.asc&limit=200`），overlay 複用 `#igPreviewModal` 同一 bottom-sheet CSS 技法（`#igwThreadOverlay`/`#igwThreadModal`，手機 `align-items:flex-end`+圓角 18px 18px 0 0）。氣泡樣式區分商家/客人（`sender_is_business`），頂部 context bar 顯示 kind 徽章+訂號+DB 徽章+`alert.raw.cls.reason`（AI 判斷理由）。R3 保守取態：thread 原名（IG 資料夾名，含客人顯示名明文）唔顯示喺 UI，只做 API 查詢參數，畫面只展示已遮罩嘅 `customer_name`。
+
+**XSS 防禦（A2/#1 BLOCKER，本 Phase 核心要求）**：新增 `_igwEscapeHtml(s)`（&<>"' 五實體轉義）。`_igwRenderMessageHtml(text, orderId)` 三步順序：①全文先轉義 ②喺轉義後文本對 `orderId`（本身 `[0-9A-Z-]` 形態，轉義後不變）做字串分段包 `<mark>` ③最後將 `[電話]/[IG帳號]/[門牌]/[付款尾碼]` 遮罩 token 換灰色 `.igw-pii-chip` span——三步操作全在「已轉義」字串上進行，唔會有任何未轉義 interpolation 重新引入風險。**存量 XSS 修補**：`_renderIgWatchList()` 對 `r.customer_name`/`r.snippet`/`r.order_id` 補 `_igwEscapeHtml()`（此前直插 innerHTML 屬同型漏洞，非本 Phase 新增而係修復）。
+
+**驗證**：真實 74 則訊息 thread 渲染（`eugenia_780833075116964`）零錯誤、自動捲到底；合成 XSS payload（`<img src=x onerror=alert(1)>`/`<svg onload=alert(2)>`/`<script>` 等塞入 `ig_messages.content`/`customer_name`/`snippet`/`raw.cls.reason` 多個欄位）用 `window.alert` spy 攔截證實零觸發，`hasImgTag`/`hasSvgTag`/`hasScriptTag` 全部偵測為 `false`；手機 viewport（375px）`getComputedStyle` 核對 `align-items:flex-end`+`border-radius:18px 18px 0 0`+全寬正確套用。測試資料全部清理，零污染 `ig_messages`/`ig_watchdog_alerts`。
+
+### 11.13 Phase C：學習系統 Phase 1（同 flow_id，2026-08-01）
+
+**設計**：Fat Mo 喺 Phase B thread overlay 底部可修正 AI 判斷，修正落 `ig_thread_rules` 表（migration `0084`），以 `thread` 為 key 做覆寫層。兩種修正類型：①「呢個係假警報」→ `rule_type='false_alarm'`，`from_kind=NULL` 全抑制或綁定 `from_kind` 精準抑制 ②「分類判錯咗」→ `rule_type='kind_correction'`，`to_kind` 白名單限 `not_created`/`created_incomplete`/`content_mismatch`（CHECK 約束）。純函式 `applyThreadRules(cls, thread, rulesByThread)`（`lib/order-match.mjs`）喺 `classifyMessage()` 之後、寫 alerts 之前查表覆寫：優先序 `kind_correction`＞`false_alarm`，同型多條取 `created_at` 最新，命中回傳 `{...cls, category, notify, reason:'...｜[學習規則] '+id, overriddenBy:id}`，唔命中原樣直通。
+
+**fresh-context 覆核揪出並已修復嘅安全護欄（F3）**：`fhs_add_ig_thread_rule` 原方案曾用 `p_thread text` 自由參數，anon key 持有者可讀 `ig_messages` 全部 thread 名批量建 `false_alarm` 規則令看門狗永久靜默（fail-open 攻擊面）。修正：**`thread` 參數取消，一律由 `p_source_alert_id` 反查 `ig_watchdog_alerts.thread` 取得**（規則只可綁真實存在嘅警報），加每 thread active 規則上限 3 條（超出 `RAISE EXCEPTION`）。
+
+**GRANT 矩陣連環修復（apply 後即時用 `has_function_privilege()` 驗證揪出，非事前設計）**：`fhs_touch_ig_thread_rules`（審計計數器，原意 service_role only）雖只寫 `GRANT ... TO service_role`，但 Supabase 專案級 `pg_default_acl` 對 public schema 新函式自動授予 anon/authenticated EXECUTE（平台既有預設，非本次引入）——`0084b` REVOKE 明確授權後仍不足，因 PostgreSQL 函式建立時另有 PUBLIC 偽角色預設授權（`proacl` 顯示 `=X/postgres`），所有角色自動係 PUBLIC 隱含成員會繼承——`0084c` 連 `REVOKE ... FROM PUBLIC` 先真正達成「service_role only」。三個 migration（`0084`/`0084b`/`0084c`）逐一用 `has_function_privilege('anon',...)`/真實 anon-key REST 呼叫（非 SQL 工具直查，避免超級用戶權限掩蓋真相）驗證：`fhs_touch_ig_thread_rules` 經 anon key 呼叫回 401 permission denied；`fhs_add_ig_thread_rule`/`fhs_toggle_ig_thread_rule`（設計上就係要 anon 可呼叫）經 anon key 正常運作。
+
+**n8n 接線**：新節點 `Fetch Thread Rules`（GET `ig_thread_rules?active=eq.true&...&limit=1001`，anon key，靜態 URL 無表達式，避開 2026-07-22 動態 URL 教訓）插喺 `Fetch Pipeline`→`Classify & Report` 之間；Classify 節點組 `rulesMap`（`Map<thread, rule[]>`）逐則 `cls = applyThreadRules(classifyMessage(...), om.thread, rulesMap)`，收集 `overriddenIds`；`kind_correction` 改判成 `content_mismatch` 嘅項目冇具體金額數字（`mm=null`），寫入 `alerts` 鏡像列但**過濾唔進** `mismatches` 證據表（`mismatchItems.filter(it => it.mm)`，防 null 存取 crash）；summary 恆列「🎓 active 規則 N 條｜本次生效 M 次」（規則變動可察覺，非只觸頂先報）。新節點 `Touch Rules`（POST RPC，service_role，`continueOnFail`）接喺 `Write Alerts` 之後，用 RPC 命名參數 body（`{p_ids:[...]}`）故空陣列一樣合法（UPDATE 0 行，唔會炸），毋須額外 IF 空陣列守衛。
+
+**V42 UI**：`_igwRenderThreadFooter()` 喺 thread overlay 底部渲染「🎓 修正 AI 判斷」（假警報/分類判錯兩掣）+「📖 已生效規則」摺疊審計區（型別/建立日/`applied_count`/`last_applied_at`/停用掣）。二次確認用 `_igwConfirmInline()`（頁內插入確定/取消小條，D51 iOS PWA `window.confirm` 靜默教訓一致做法），非彈窗。
+
+**驗證**：`node --test` 77 個測試（含 diff-guard）PASS；n8n rebuild 後 GET/本地 diff 零漂移（30/30 節點一致，含新 2 節點）PUT（HTTP 200）；RPC 三支經真實 anon/service_role REST 呼叫驗證（非 SQL 工具）：F3 上限 3 條/bogus source_alert_id/invalid to_kind CHECK 三個護欄全部真實觸發拒絕；V42 UI 端對端瀏覽器實測「假警報」「分類判錯」兩條路徑+規則列表顯示+停用掣，DB 側 `kind`/`resolved`/`applied_count` 全部核對相符；`code-reviewer` 最終 G1-G8 Gate（涵蓋 Phase B+C 完整改動）一輪 PASS。測試資料全部清理。
+
+**已知限制**：學習規則生效需要下次 n8n cron 執行（`0 6 * * *`）或 Fat Mo 手動喺編輯器觸發——public API 無 Schedule Trigger 手動執行端點（`POST .../run` 回 405），同 Phase A/C3 部署驗證一致嘅既有限制。`content_mismatch` 白名單值本質上係 P2b 原生偵測（有 `mm` 金額數據）同規則手動改判（`mm=null`）兩種唔同源嘅信號共用同一個 `kind` 值，前端已有 `r.raw && r.raw.mm` fallback 唔會 crash，但呢個語意疊加屬已知設計取捨（非缺陷）。
+
+詳見 `Changelog.md` 2026-08-01「IG看門狗警報 Phase B+C」條目、`artifacts/2026-07-31-2332/`（cl-final-plan.md §5 Phase B/C）。

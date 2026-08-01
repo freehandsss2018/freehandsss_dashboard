@@ -254,6 +254,67 @@ export function compareToOrder(text, orderRecord) {
   return null;
 }
 
+// ── 產品類別偵測（Phase A，flow_id 2026-07-31-2332）─────────────
+// 供 V42 自動開單流程預勾產品類別 checkbox 用。關鍵詞集憑業務常識草擬，
+// 未經真實訊息語料校準（cl-final-plan §7 R1，待累積真實樣本後補測）。
+const CAT_P_RE = /手模|擺設|倒模|木框|玻璃瓶|手仔|腳仔|BB手|BB腳/i;
+const CAT_K_RE = /鎖匙扣|鑰匙扣|锁匙扣/;
+const CAT_M_RE = /頸鏈|頸鍊|吊飾|吊咀|銀飾/;
+
+/** 偵測訊息文字提及嘅產品類別（P=手模擺設/K=鎖匙扣/M=頸鏈吊飾），回傳去重陣列。 */
+export function detectProductCategories(text) {
+  if (typeof text !== 'string' || !text) return [];
+  const t = toHalfWidth(text);
+  const out = [];
+  if (CAT_P_RE.test(t)) out.push('P');
+  if (CAT_K_RE.test(t)) out.push('K');
+  if (CAT_M_RE.test(t)) out.push('M');
+  return out;
+}
+
+// ── 學習系統 Phase 1：thread 級規則覆寫層（Phase C，flow_id 2026-07-31-2332）───
+// 純函式，喺 classifyMessage() 判斷之後、寫入 alerts 之前，套用 Fat Mo 修正過嘅規則。
+// rulesByThread：Map<thread, rule[]>（呼叫端已按 thread 分組；rule={id,rule_type,from_kind,to_kind,created_at}）。
+// 優先序：kind_correction（thread+from_kind 全符）> false_alarm（from_kind 為 null=全抑制，或相符先抑制）；
+// 同型多條命中時取 created_at 最新一條生效。冇命中原樣回傳 cls（唔動）。
+export function applyThreadRules(cls, thread, rulesByThread) {
+  if (!rulesByThread || typeof rulesByThread.get !== 'function') return cls;
+  const rules = rulesByThread.get(thread);
+  if (!rules || rules.length === 0) return cls;
+
+  const byCreatedDesc = (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+
+  const kindCorrections = rules
+    .filter((r) => r.rule_type === 'kind_correction' && r.from_kind === cls.category)
+    .sort(byCreatedDesc);
+  if (kindCorrections.length > 0) {
+    const r = kindCorrections[0];
+    return {
+      ...cls,
+      category: r.to_kind,
+      notify: true,
+      reason: cls.reason + '｜[學習規則] ' + r.id,
+      overriddenBy: r.id,
+    };
+  }
+
+  const falseAlarms = rules
+    .filter((r) => r.rule_type === 'false_alarm' && (r.from_kind == null || r.from_kind === cls.category))
+    .sort(byCreatedDesc);
+  if (falseAlarms.length > 0) {
+    const r = falseAlarms[0];
+    return {
+      ...cls,
+      category: 'ignore',
+      notify: false,
+      reason: cls.reason + '｜[學習規則] ' + r.id,
+      overriddenBy: r.id,
+    };
+  }
+
+  return cls;
+}
+
 // ── 意圖標註（P2c，S150 §4.8 剝離範圍）────────────────────────
 // regex-first 意圖分類，零 LLM 起步（cl-final-plan §6.5 風險緩解：覆蓋率不足時才評估升級）。
 // 涵蓋 5 類業務意圖：cancel/complaint/modify_order/payment_inquiry/place_order。

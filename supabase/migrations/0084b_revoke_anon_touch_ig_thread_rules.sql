@@ -1,0 +1,11 @@
+-- Migration 0084b: 修正 fhs_touch_ig_thread_rules 意外對 anon/authenticated 開放
+-- Session 2026-08-01，cl-flow flow_id 2026-07-31-2332 Phase C（0084 執行後即時發現並修正）
+--
+-- 根因：Supabase 專案級 pg_default_acl（`ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA
+-- public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role`）對 public schema
+-- 新建函式一律自動授予 anon/authenticated EXECUTE，此為平台既有預設（非本次改動引入）。
+-- 0084 建立 fhs_touch_ig_thread_rules 時雖只寫 `GRANT ... TO service_role`，但冇 REVOKE 呢個
+-- 自動授予嘅預設權限，令 anon 實際仍然可以呼叫（可灌水審計計數器 applied_count），完全違反
+-- 該函式原意「唯 n8n service_role 可寫審計欄」。0084 apply 後即時用 pg_proc.proacl 查證揪出，
+-- 即場補呢個 REVOKE 修正（見 cl-final-plan.md §5 Phase C C1 GRANT 矩陣聲明）。
+REVOKE EXECUTE ON FUNCTION public.fhs_touch_ig_thread_rules(uuid[]) FROM anon, authenticated;
