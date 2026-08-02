@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— n8n IG watchdog exec 5409 pairedItem 崩潰修復
+
+- **緣起**：Fat Mo 回報 n8n workflow「FHS_IGWatchdog_DriveWatch」（ID `D4LK6VrQbiXlju0V`）execution 5409（2026-07-31T22:00 UTC）失敗，錯誤 `Cannot assign to read only property 'name' of object 'Error: Paired item data for item from node 'Filter New + Quiet Window' is unavailable...'`，`lastNodeExecuted=Build Empty Summary`。同一 workflow 前 9 次執行（5129-5289）全部 success，屬間歇性失敗；已先排除同同日 IG 看門狗 Phase A 部署（product_cats 新增）相關——drift-check 證實錯誤發生時 live code 同 repo build 完全一致，屬部署前已存在嘅間歇性 bug。
+- **根因診斷**：用 n8n public API 直查 `GET /api/v1/executions/5409?includeData=true` 拉原始 execution 記錄，逐節點比對 `runData` 嘅 item 數量同 `pairedItem` 值。查明：`Find New Export Folders` 該次回傳 13 個資料夾（累積多日），全部已處理或喺靜止窗內，`Filter New + Quiet Window` 進入「無新資料夾」分支，回傳 sentinel item `{ __noNewFolders: true }` 時**冇顯式設 `pairedItem`**。n8n 只有喺 code node 輸入剛好 1 個 item 時先會自動推斷配對；輸入 13 個item時配對鏈路斷裂。三步後 `Build Empty Summary` 用表達式 `$('Pick Latest Container').item.json.containerName` 回溯配對鏈，行經斷鏈嘅 `Filter New + Quiet Window` 即拋錯——錯誤訊息點名呢個節點，即使 `Build Empty Summary` 代碼本身完全冇直接引用佢。同一個 bug pattern（回傳 item 冇設 `pairedItem`）喺「有合格新資料夾」分支（`qualifying.map(...)`）同樣存在，只係未觸發（typically 每日剛好 1 個新資料夾）。
+- **修復**：`scripts/ig-watchdog/build_n8n_workflow.cjs` 嘅 `filterNewCode`（`Filter New + Quiet Window` 節點嵌入代碼）兩個回傳分支都改為顯式標 `pairedItem`：sentinel 分支指返輸入陣列 index 0（安全，因為 `Pick Latest Container` 上游永遠得 1 個 item）；qualifying 分支逐項記低正確嘅來源 index。
+- **部署**：`node --test scripts/ig-watchdog/lib/*.test.mjs` 77 個測試（含 order-match diff-guard）PASS。用「GET 現有 production workflow → 只換 `Filter New + Quiet Window` 節點嘅 `jsCode` → PUT 返去」外科手術式部署（非整份 rebuild JSON 直接 PUT，因為 rebuild 過程中發現 worktree 環境冇 `SUPABASE_URL`/`SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_KEY` 環境變數會令其他節點嘅 URL/apikey 變成字面 `"undefined"`，以及 repo 內嵌 `lib/order-match.mjs` 有 CRLF/LF 換行符跨環境漂移，兩者都會製造大量無關 diff——外科手術式 patch 完全避開呢兩個風險）。部署前後兩次 GET 逐節點 diff 比對，確認 30 個節點入面**只有 `Filter New + Quiet Window` 改動**，`connections`/`settings`/`name` 全部 byte-identical。
+- **驗收**：fresh-context `build-error-resolver` subagent 獨立覆核——重新讀 exec 5409 原始資料、重新讀部署後嘅 live workflow jsCode、驗證修復邏輯正確覆蓋兩條分支（含 qualifying 分支同下游 `Tag Thread Context` 嘅 `$('Filter New + Quiet Window').item`）、重跑 77 個測試確認、抽查其他節點確認 Supabase 憑證冇被污染。結論：PASS，無殘留風險。
+- **已知殘留邊界**：如果 `Find New Export Folders` 本身回傳 0 個資料夾（非 0 個合格，而係查詢完全冇命中），`pairedItem: 0` 會指向不存在嘅輸入項；實務上容器底下資料夾只會累積唔會清零，機率極低，未特別加防禦，列為已知限制非阻擋項。
+- **對應 commit**：見下方 git log。
+- **Subagent 使用記錄**：✅ build-error-resolver（fresh-context 獨立覆核根因分析 + 修法邏輯 + 部署前後 diff）。
+
+---
+
 ## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— agent_dashboard 新增 IG看門狗學習記錄 zone
 
 - **緣起**：Fat Mo 提出「像 Canva 一樣能追查現在的資料庫，編輯/更新/刪除」，澄清後係想喺**現有**「AI 助理團隊名冊」（`agent_dashboardV42.html`，`/team` 召喚詞）加一個新 zone 追蹤 IG 看門狗學習系統（`ig_thread_rules`）；範圍限 IG 看門狗、寫入只沿用 Phase C 已建好嘅安全 RPC，唔開新寫入通道、唔擴展去 orders 等核心業務表。

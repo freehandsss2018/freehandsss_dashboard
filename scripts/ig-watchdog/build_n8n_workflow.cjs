@@ -99,6 +99,14 @@ return [{ json: { containerFolderId: latest.id, containerName: latest.name, cont
 // 永遠輸出至少 1 個 item：若無新資料夾合格，輸出 1 個 sentinel { __noNewFolders: true }，
 // 否則輸出每個合格資料夾各 1 項，並立即把該資料夾 id 標記為已處理（best-effort 語意：
 // 標記了「本次已嘗試處理」，不保證下游解析成功；避免下游失敗時無限重試同一資料夾）。
+//
+// ⚠️ exec 5409（2026-07-31）崩潰根因（S191 修復）：本節點輸出 item 若不顯式設
+// `pairedItem`，n8n 只有在輸入剛好 1 個 item 時才會自動推斷配對；一旦輸入 >1 個
+// item（累積多個 instagram-* 資料夾後常態），配對鏈路斷裂，下游 `Build Empty
+// Summary` 用 $('Pick Latest Container').item 回溯時就會拋
+// "Paired item data for item from node 'Filter New + Quiet Window' is
+// unavailable"（錯誤訊息點名本節點，即使它自己完全沒被直接引用）。修法：兩個
+// 分支都顯式標 pairedItem，指回本節點輸入陣列中對應的來源 index。
 const filterNewCode = `
 const staticData = $getWorkflowStaticData('global');
 if (!staticData.igWatchdog) staticData.igWatchdog = {};
@@ -111,27 +119,27 @@ const now = Date.now();
 
 const all = $input.all();
 const qualifying = [];
-for (const item of all) {
-  const j = item.json;
+for (let i = 0; i < all.length; i++) {
+  const j = all[i].json;
   if (!j || !j.id) continue;
   if (processedSet.has(j.id)) continue;
   const mtime = new Date(j.modifiedTime).getTime();
   if (!Number.isFinite(mtime)) continue;
   if (now - mtime < QUIET_WINDOW_MS) continue; // 仍可能在寫入中
-  qualifying.push(j);
+  qualifying.push({ json: j, pairedItem: i });
 }
 
 if (qualifying.length === 0) {
   sd.lastScanAt = new Date(now).toISOString();
-  return [{ json: { __noNewFolders: true } }];
+  return [{ json: { __noNewFolders: true }, pairedItem: 0 }];
 }
 
-for (const j of qualifying) processedSet.add(j.id);
+for (const q of qualifying) processedSet.add(q.json.id);
 sd.processedFolderIds = [...processedSet];
 sd.lastScanAt = new Date(now).toISOString();
 sd.lastNewFolderAt = new Date(now).toISOString();
 
-return qualifying.map((j) => ({ json: { ...j, __noNewFolders: false } }));
+return qualifying.map((q) => ({ json: { ...q.json, __noNewFolders: false }, pairedItem: q.pairedItem }));
 `.trim();
 
 // ── Tag Thread Context ─────────────────────────────────────────────────────
