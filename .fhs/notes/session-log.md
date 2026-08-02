@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-03 (Telegram Notify 擴大覆蓋「等緊你回覆」通知): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-03「Telegram Notify 擴大覆蓋「等緊你回覆」通知」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 反映 Notify 現時只喺任務完成先發通知，等緊佢回覆問題冇 ping。查明 `on-notification.js` 舊版硬過濾只放行 permission 批准提示、排除咗閒置等回覆（idle wait）。移除過濾改為兩類都發送，並帶出一個 Claude Code 上游已知限制：結構化 `AskUserQuestion`（選項卡）現時唔會觸發 Notification hook，只有純文字問題等回覆嘅閒置情況先覆蓋到。純全域 user-level hook 改動，非本 repo 追蹤範圍。
+Subagent：✅ claude-code-guide（查證 Notification hook 觸發類型）。
+
 ## 2026-08-02 (全站fetch逾時保護D53 + `_igwMaybeLinkNewOrder`漏exportD54，已部署production): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-02「`_igwMaybeLinkNewOrder` 漏 export 修復（D54）+ D53/D54 正式部署production」同「全站 fetch 逾時保護（D53）」兩條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo回報「同步」成功寫入Supabase後UI卡死喺表單畫面，查證係全站`fetch()`原生冇逾時保護，手機網路切換時可以永遠唔resolve都唔reject；新增`window.fetchWithTimeout()`用`AbortController`逾時（10秒）修復，全站50個呼叫點改用。部署前Fat Mo再測又撞到新錯誤`_igwMaybeLinkNewOrder is not defined`，查證係IIFE-local函式漏喺export名單一個（非系統性缺口），Fat Mo明確要求browser實測先可宣稱修好——修復前後皆用console直call重現/核實。兩個修復一併commit+push+`upload-web.ps1 current -Force`三關驗證正式部署production，獨立curl核實live HTML已反映兩個修復。

@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-03] Session（Claude Code / Sonnet 5 執行）— Telegram Notify 擴大覆蓋「等緊你回覆」通知
+
+- **緣起**：Fat Mo 反映 FHS Claude Notify（`C:\Users\Edwin\.claude\telegram-notify\`，S178 建立嘅 user-level hooks）現時只喺任務完成（Stop hook）先發 Telegram 通知，等緊佢回覆問題嗰陣冇收到 ping，要主動翻查 session 先知道 AI 卡咗喺等回覆。
+- **診斷**：`on-notification.js` 舊版硬過濾 `if (!message.toLowerCase().includes('permission')) return`，只喺 permission 批准提示先發送，明確排除咗閒置等待（idle wait，包括 Claude 純文字問問題後等回覆嘅情況）。委派 `claude-code-guide` agent 查證 Notification hook 實際行為：Notification hook 分兩類觸發——`permission_prompt`（工具批准提示）同 `idle_prompt`（閒置 60 秒等輸入），兩者都會觸發呢個 hook；但**結構化 `AskUserQuestion` 工具（彈選項卡嗰種）現時唔會觸發 Notification hook，屬 Claude Code 本身已知上游限制（[GitHub issue #59908](https://github.com/anthropics/claude-code/issues/59908)），非 hook 腳本可修復範圍**。
+- **修復**：`on-notification.js` 移除 `permission` 字串過濾，改為只要 `message` 非空就發送；按內容係咪含「permission」動態揀 emoji/文案（⚠️塔住等緊你批准 vs 💬塔住等緊你回覆），涵蓋 Claude 純文字問問題後閒置等回覆嘅主流情況。
+- **驗證**：`node --check` 語法驗證通過；獨立跑分支邏輯（permission case / idle case）文案輸出正確；未實際觸發真實 Telegram 發送測試（避免測試訊息污染 Fat Mo 手機，屬全域 user-level hook 非 repo 內程式碼，唔涉及 Supabase/n8n/生產 HTML）。
+- **範圍**：純 `C:\Users\Edwin\.claude\telegram-notify\on-notification.js` 一個檔案改動，屬 FHS 全域 CLI 工具鏈非本 repo 追蹤範圍，不涉 Dashboard/Supabase/n8n。
+- **Subagent 使用記錄**：✅ `claude-code-guide`（查證 Notification hook 觸發類型與 AskUserQuestion 限制）。
+
+---
+
 ## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— n8n 財務備援 webhook `financial-overview-fhs` 空 body 故障修復（D55）
 
 - **緣起**：D52（下方條目）修復咗 Supabase RPC 本身嘅崩潰，但 Fat Mo 記錄嘅另一條獨立故障——n8n 備援 webhook `financial-overview-fhs` 返 HTTP 200 但 body 完全空——一直未查，本次跟進。
