@@ -2008,3 +2008,17 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **真實試點**（flow_id `2026-07-15-2330`）：以「Fat Mo 操作手冊」任務跑完整新管道，A3 草案 4 個真實檔案查證表 + 2 份已查證清單 → AG 6 條批評（1 BLOCKER：可用性驗收未定）+ PX 8 條批評（單一事實來源風險、分類軸不足、高風險能力警示缺失等）→ 批評處理表逐條採納/拒絕（拒絕案例：PX 提議三軸分類，以 `user_fatmo.md` 「Fat Mo 為單一決策者非多角色團隊」反證拒絕）→ Verdict `APPROVED_READY`（唯一 BLOCKER 已採納折入計劃，無拒絕 BLOCKER 案例）。「Fat Mo 操作手冊」實際內容產出（`fatmo-ops-quickcard.md`）為獨立待批項，未在本輪一併執行——此 flow 目的僅為驗證管道機制本身。
 
 詳見 `scripts/cl-flow-runner.js`、`.fhs/ai/commands/cl-flow.md`、`.fhs/ai/commands/cl-flow-fast.md`、`artifacts/2026-07-15-2330/cl-final-plan.md`、Changelog.md 本 session 條目、`.fhs/reports/completion/2026-07-15_s176-cl-flow-a3-first_completion_report.md`。
+
+### D52：2026-08-02 — V42 財務分頁「離線示範數據」誤判修復（`get_financial_overview_full` RPC 22023 崩潰）
+
+**背景**：Fat Mo 回報 V42 財務分頁彈出「⚠️ 離線示範數據，非真實財務 — Supabase 及備援皆無法連線」，懷疑連唔到 Supabase。Live 直查（curl RPC + 逐層追蹤 function 定義）證實**唔係連線問題**——Supabase 連線/認證/路由全部正常，係 SQL function 本身炸咗（HTTP 400，Postgres 22023 `cannot extract elements from a scalar`）。
+
+**根因**：`get_financial_charts()` 嘅 `trend` 子查詢用 `json_agg(...)` over `GROUP BY`；當分組結果集為空（`current` tab 嘅日期窗口＝本月1號→今日，8/2 呢個窗口內訂單數＝0），聚合函式對零行返回 SQL NULL，經 `json_build_object` 包裝後變成 JSON **null 字面值**（非空陣列 `[]`）。下游 `fhs_build_financial_overview_tab()` 對 `c_all->'trend'` 跑 `jsonb_array_elements()`，餵到 JSON null 純量即拋 22023（`NULL::jsonb` 唔會炸，但 JSON null literal 會）。三個 tab（current/monthly/yearly）喺同一個 `get_financial_overview_full()` call 內一齊組裝，一炸全炸，monthly/yearly 本身有資料都攞唔到。前端 Supabase 失敗後 fallback 去 n8n webhook `financial-overview-fhs`，該 webhook 獨立故障（HTTP 200 但 body 完全空），兩條路徑同時斷先觸發雙重降級示範數據 banner——banner 文字冇講錯，只係原因唔係網路連線。
+
+**決策**：Fat Mo 確認「修復它」，範圍限定純讀取 RPC（唔涉任何成本/定價/寫入欄位，唔觸發 finance-gatekeeper §三B 成本改動紀律）。n8n 備援 webhook 空 body 問題判定為獨立故障，本次不動，留待後續單獨診斷。
+
+**執行內容**：migration `0085_fix_financial_overview_current_trend_null.sql`——(1) `get_financial_charts()` trend 子查詢改 `COALESCE(json_agg(...), '[]'::json)`，確保 `trend` 永遠係陣列唔會係 null（根因修復）；(2) `fhs_build_financial_overview_tab()` line_chart 組裝逐欄位加 `COALESCE(array_agg(...), ARRAY[]::...[])`，防止空 trend 情況下 labels/revenue/cost/profit 變成 JSON null（第二層防禦，同現有「IF line_chart IS NULL」死碼保底意圖對齊）。經 `mcp__supabase__apply_migration` 直接套用至生產 project，並同步落 repo `supabase/migrations/` 避免未來 `CREATE OR REPLACE` 覆蓋漂移。
+
+**驗證**：套用後直接用 REST 呼叫（同前端一致嘅 `apikey`/`Authorization` header）打 `get_financial_overview_full`，HTTP 200，`current.lineChart` 返回 `{labels:[], revenue:[], cost:[], profit:[]}`（非崩潰），`monthly`/`yearly` 資料維持正常（5/7 個月份 trend）。
+
+詳見 [0085_fix_financial_overview_current_trend_null.sql](supabase/migrations/0085_fix_financial_overview_current_trend_null.sql)、[freehandsss_dashboardV42.html:15086](Freehandsss_Dashboard/freehandsss_dashboardV42.html:15086)。

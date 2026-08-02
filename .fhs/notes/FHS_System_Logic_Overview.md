@@ -952,8 +952,24 @@ Fat Mo 確認 0600037（木框，appointment_at=2026-07-27，尚未到）正確�
 
 ---
 
+### 10.23 `get_financial_overview_full` 於 `current` tab 空月時拋 22023，觸發 V42 雙重降級示範數據 banner（D52，2026-08-02）
+
+**問題**：Fat Mo 回報 V42 財務分頁彈出「⚠️ 離線示範數據，非真實財務 — Supabase 及備援皆無法連線」，懷疑連唔到 Supabase。直接 curl RPC 端點證實**唔係連線問題**——回應 HTTP 400 + 清晰 Postgres 錯誤（非逾時/網路失敗），代表連線/認證/路由全部正常，係 function 內部炸咗。
+
+**根因**：`get_financial_charts()`（§10.1 表列）嘅 `trend` 子查詢用 `json_agg(row ORDER BY row.period)` 喺 `GROUP BY grp.period_month` 之上。當分組結果集為零行（`current` tab 日期窗口＝本月1號→今日，8/2 呢個 2 日窄窗口內訂單數實測＝0），聚合函式對空集合返回 SQL NULL，經外層 `json_build_object('trend', ...)` 包裝後變成 JSON **null 字面值**（`{"trend": null}`，非空陣列 `[]`）。下游 `fhs_build_financial_overview_tab()` 對 `c_all->'trend'` 跑 `jsonb_array_elements()` 抽 row 砌 lineChart，餵到 JSON null 純量即拋 `22023 cannot extract elements from a scalar`（實測驗證：`jsonb_array_elements(NULL::jsonb)` 唔會炸只返回空集，但 `jsonb_array_elements('null'::jsonb)` 會炸——SQL NULL 同 JSON null literal 唔係同一回事）。三個 tab（current/monthly/yearly）喺同一個 `get_financial_overview_full()` call 內一齊組裝（§10.14），一炸全炸，monthly/yearly 本身有資料都攞唔到。前端 `foFetchLive()` Supabase 失敗後 fallback 去 n8n webhook `financial-overview-fhs`，該 webhook 獨立故障（HTTP 200 但 body 完全空，另案追蹤，本次未修）——兩條路徑同時斷先觸發雙重降級示範數據 banner，banner 文字本身冇講錯，只係使用者誤讀「無法連線」為網路問題。
+
+**修復**：`supabase/migrations/0085_fix_financial_overview_current_trend_null.sql`——(1) `get_financial_charts()` trend 子查詢改 `COALESCE(json_agg(...), '[]'::json)`，根源確保 `trend` 永遠係陣列唔會係 null；(2) `fhs_build_financial_overview_tab()` line_chart 組裝逐欄位加 `COALESCE(array_agg(...), ARRAY[]::...[])`，第二層防禦令空 trend 情況下 labels/revenue/cost/profit 各自係 `[]` 而非 JSON null（同現有「IF line_chart IS NULL」死碼保底意圖對齊，該死碼本身喺呢個情境永遠唔會觸發，因為 line_chart 物件本身唔係 null，只係其內欄位曾經係 null）。純讀取查詢修復，未觸碰任何成本/定價/寫入欄位。
+
+**驗證**：套用後直接用同前端一致嘅 REST 呼叫（`apikey`/`Authorization` header）打 `get_financial_overview_full`，HTTP 200，`current.lineChart` 正確返回 `{labels:[], revenue:[], cost:[], profit:[]}`（非崩潰），`monthly`/`yearly` 資料同時維持正常（5/7 個月份 trend 不受影響）。
+
+**教訓**：任何用 `json_agg()`/`array_agg()` 喺 `GROUP BY` 之上組裝陣列欄位嘅 RPC，必須顯式 `COALESCE(..., '[]'::json)` 保底——聚合函式對空結果集嘅預設行為係 SQL NULL 而非空陣列，經 `json_build_object` 包裝後會變成 JSON null literal，同 SQL NULL 喺後續 `jsonb_array_elements()` 呢類函式嘅行為完全唔同（前者炸、後者唔炸），呢類 date-range 窄窗口（如「本月至今」）喺月初/低單量分類必然會撞到零行邊界，屬必然會發生嘅 edge case 而非罕見意外。
+
+詳見 [0085_fix_financial_overview_current_trend_null.sql](../../supabase/migrations/0085_fix_financial_overview_current_trend_null.sql)、[freehandsss_dashboardV42.html:15086](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:15086)、decisions.md D52。
+
+---
+
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 

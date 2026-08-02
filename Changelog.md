@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— V42 財務分頁「離線示範數據」誤判修復（D52）
+
+- **緣起**：Fat Mo 回報 V42 財務分頁彈出「⚠️ 離線示範數據，非真實財務 — Supabase 及備援皆無法連線」，懷疑連唔到 Supabase。
+- **診斷**：直接 curl RPC 端點證實**唔係連線問題**——回應 HTTP 400 + 清晰 Postgres 錯誤（22023），代表連線/認證/路由全部正常，係 SQL function 內部炸咗。逐層追蹤（`get_financial_overview_full` → `fhs_build_financial_overview_tab` → `get_financial_charts`）並逐 tab 直查，鎖定 `current` tab 專屬炸點。
+- **根因**：`get_financial_charts()` 嘅 `trend` 子查詢用 `json_agg()` 喺 `GROUP BY` 之上；`current` tab 日期窗口（本月1號→今日）8/2 呢日窗口內訂單數實測＝0，聚合函式對空結果集返回 SQL NULL，經 `json_build_object` 包裝變成 JSON **null 字面值**（非空陣列）。下游 `fhs_build_financial_overview_tab()` 對此跑 `jsonb_array_elements()`，餵到 JSON null 純量即拋 22023——三個 tab 喺同一個 call 內組裝，一炸全炸。前端 fallback 去 n8n webhook `financial-overview-fhs` 亦獨立故障（HTTP 200 但 body 完全空，未修，另案追蹤），兩條路徑同時斷先觸發雙重降級 banner。
+- **修復**：`supabase/migrations/0085_fix_financial_overview_current_trend_null.sql`——(1) `get_financial_charts()` trend 子查詢改 `COALESCE(json_agg(...), '[]'::json)` 根源修復；(2) `fhs_build_financial_overview_tab()` line_chart 逐欄位加 `COALESCE(array_agg(...), ARRAY[]::...[])` 第二層防禦。純讀取查詢修復，未觸碰任何成本/定價/寫入欄位。
+- **驗證**：套用後直接用同前端一致嘅 REST 呼叫（`apikey`/`Authorization` header）打 `get_financial_overview_full`，HTTP 200，`current.lineChart` 正確返回 `{labels:[], revenue:[], cost:[], profit:[]}`，`monthly`/`yearly` 資料同時維持正常。
+- **文件同步**：`decisions.md` D52、`.fhs/notes/FHS_System_Logic_Overview.md` §10.23（RPC 財務計算層 SSoT）。
+- **待辦**：n8n 備援 webhook `financial-overview-fhs` 空 body 故障未查，獨立於本次修復範圍，留待後續。
+- **Subagent 使用記錄**：❌ 未使用（互動式 Supabase MCP live 診斷+修復，全程本人直接操作）。
+
+---
+
 ## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— agent_dashboard 新增 IG看門狗學習記錄 zone
 
 - **緣起**：Fat Mo 提出「像 Canva 一樣能追查現在的資料庫，編輯/更新/刪除」，澄清後係想喺**現有**「AI 助理團隊名冊」（`agent_dashboardV42.html`，`/team` 召喚詞）加一個新 zone 追蹤 IG 看門狗學習系統（`ig_thread_rules`）；範圍限 IG 看門狗、寫入只沿用 Phase C 已建好嘅安全 RPC，唔開新寫入通道、唔擴展去 orders 等核心業務表。
