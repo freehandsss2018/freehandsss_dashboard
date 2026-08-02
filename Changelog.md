@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— n8n 財務備援 webhook `financial-overview-fhs` 空 body 故障修復（D55）
+
+- **緣起**：D52（下方條目）修復咗 Supabase RPC 本身嘅崩潰，但 Fat Mo 記錄嘅另一條獨立故障——n8n 備援 webhook `financial-overview-fhs` 返 HTTP 200 但 body 完全空——一直未查，本次跟進。
+- **診斷**：直接用同 n8n code node 一模一樣嘅呼叫（POST + 相同 headers/body）打 `get_financial_overview_full` RPC，證實 RPC 本身運作正常、返回完整 JSON（7,927 bytes）——排除 D52 修復後 RPC 側再度故障嘅可能。改查 n8n 執行記錄（`GET /api/v1/executions?workflowId=uQKtGDupMBnSygr3`），發現觸發呢個 webhook 嘅實際節點鏈只有 `FO Webhook`→`Financial Aggregator`（Code node）→`Respond with JSON`——workflow 內其餘 Airtable/Supabase 節點（`Fetch All Main Orders`/`Merge Datasets` 等）早已因 D43 Airtable 剝離而斷鏈成孤兒節點，非本次故障根源。近 50 筆執行記錄**100% status=error**，錯誤訊息為 n8n Task Runner `disconnect`（`InternalTaskRunnerDisconnectAnalyzer`），官方錯誤提示直指「increase memory available to the task runner (`N8N_RUNNERS_MAX_OLD_SPACE_SIZE`)」——即 `Financial Aggregator` node 入面 `require('axios')` 再發 HTTPS request 嘅記憶體開銷令 NAS 端外部 Task Runner 進程崩潰／斷線，屬同一類已有先例嘅「NAS Code node + require 唔穩」問題（`feedback_n8n_code_node_nas_limits.md`）。webhook trigger 喺下游 node 崩潰時仍以 HTTP 200 回應（但無 body），對前端表現為「連線正常但攞唔到數據」，同 Fat Mo 描述完全吻合。
+- **修復**：將 `Financial Aggregator`（`n8n-nodes-base.code` + axios/require）整個替換為原生 `n8n-nodes-base.httpRequest` node（POST 同一 RPC endpoint、相同 headers、`timeout:15000`），完全移除 Code node 內嘅 `require()` 依賴——同 codebase 已有先例（`feedback_n8n_code_node_nas_limits.md` 建議做法）一致。用「GET 現有 workflow → 只換呢一個節點 → PUT」外科手術式部署，前後 diff 確認 9 個節點只有 `Financial Aggregator` 變動，connections/settings 零漂移。
+- **驗證**：部署後連續 3 次直接 curl 呼叫 `https://yanhei.synology.me:8443/webhook/financial-overview-fhs`，全部 HTTP 200 + 一致 6,420 bytes 完整 JSON body；n8n 執行記錄同步核實對應 4 筆 execution 皆為 `status=success`（修復前對照組：同一 workflow 近 50 筆歷史記錄 100% `status=error`）。
+- **文件同步**：`decisions.md` D55、`handoff.md` 便攜塊。
+- **Subagent 使用記錄**：❌ 未使用（互動式 n8n API 直查診斷+修復，全程本人直接操作）。
+
+---
+
 ## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— `_igwMaybeLinkNewOrder` 漏 export 修復（D54）+ D53/D54 正式部署production
 
 - **緣起**：D53（下方條目）部署前 Fat Mo 再次實測「同步」，NAS webhook 又失敗 fallback 直連 Supabase，呢次彈出新錯誤「❌ 直連寫入 Supabase 失敗：Can't find variable: _igwMaybeLinkNewOrder」。Fat Mo 明確指示先用 browser 實測驗證，唔可以純憑代碼審閱就宣稱修好。

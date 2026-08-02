@@ -1865,3 +1865,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-07-23 — Session（D45，Claude Code / Sonnet 5）
 - 鎖匙扣/頸鏈吊飾定價兩連環修訂：Fat Mo提供客戶最新售價表+真實加購單，對照Pricing Bible §3/§4核對出脫節。P mode鎖匙扣由「每部位獨立計階梯」改「多部位合併計價」+新增跨部位附加費(第3/4個全新部位各+$100)；S mode純銀頸鏈吊飾remainder單隻價由$1,980降至$1,490(N=1底價不變)。Browser多組案例實測，N=4結果同真實發票0600702一致。Pricing Bible升版v1.6.0。current.html待部署。
 - 一行摘要，全文見 [Changelog.md](../../Changelog.md) 2026-07-23條目（D45）、[decisions.md](decisions.md)「D45」。
+
+## 2026-08-02 — Session（D55，Claude Code / Sonnet 5）
+- n8n財務備援webhook `financial-overview-fhs` 空body故障（D52遺留待辦）查明修復：`Financial Aggregator` Code node用`require('axios')`令NAS Task Runner崩潰斷線，換成原生httpRequest node解決，外科手術式GET→改一節點→PUT部署，連續3次curl驗證+n8n執行記錄核實皆success。另同session跟進：agent_dashboard已`/upload-web team`公開發佈、S190 HoKaSin音訊/封面Fat Mo已完成、handoff.md便攜塊按P0.7.1規則壓縮回收（9,432→6,220 bytes）。
+- 一行摘要，全文見 [Changelog.md](../../Changelog.md) 2026-08-02條目（D55）、[decisions.md](decisions.md)「D55」。

@@ -2052,3 +2052,19 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **部署**：D53 同 D54 兩個修復喺同一份工作目錄內完成，先後由本 session 同一個 Fat Mo 手動啟動嘅背景 task（`/commit`）一併 commit+push（commit `c3c862f`，兩個修復已一齊入庫）。之後執行 `scripts/upload-web.ps1 current -Force` 正式推上 NAS——**三關驗證 PASS**（PUT HTTP 204／大小 remote=local／SHA256 逐位元組比對），並以獨立 curl 直查公開網址核實 `fhs-build` 時間戳已更新、`window._igwMaybeLinkNewOrder` 同 `window.fetchWithTimeout`（51處）皆存在於 live HTML。**兩個修復現已正式部署 production**，Fat Mo 手機下次同步應唔會再重現呢兩個症狀。
 
 詳見 [freehandsss_dashboardV42.html:15744](Freehandsss_Dashboard/freehandsss_dashboardV42.html:15744)、Changelog.md 2026-08-02 條目。
+
+---
+
+### D55：2026-08-02 — n8n 財務備援 webhook `financial-overview-fhs` 空 body 故障修復（Code node → 原生 HTTP Request node）
+
+**背景**：D52（見上）已修復 Supabase RPC `get_financial_overview_full()` 本身喺 `current` tab 空月份嘅崩潰，但當時遺留一條獨立故障未查——n8n workflow `FHS_Financial_Overview`（`uQKtGDupMBnSygr3`）嘅備援 webhook `financial-overview-fhs` 一直返 HTTP 200 但 body 完全空，Fat Mo 手機端表現為前端雙路徑（Supabase 直連 + n8n fallback）同時斷、觸發示範數據 banner 嘅其中一條腿。本次跟進獨立追查。
+
+**診斷**：(1) 用同 n8n code node 一模一樣嘅 headers/body 直接 curl `get_financial_overview_full` RPC，證實 RPC 本身正常返回完整 JSON（7,927 bytes）——D52 修復未再退化，排除 RPC 側。(2) 用 n8n API（`GET /api/v1/executions?workflowId=uQKtGDupMBnSygr3`）查最近 50 筆執行記錄，**100% status=error**，錯誤堆疊為 n8n Task Runner `disconnect`（`InternalTaskRunnerDisconnectAnalyzer`），n8n 官方錯誤提示直指記憶體不足（`N8N_RUNNERS_MAX_OLD_SPACE_SIZE`）。(3) `GET` 該 workflow 完整定義後核對 `connections`，確認實際觸發鏈只有 `FO Webhook`→`Financial Aggregator`（Code node，內含 `require('axios')` 打 Supabase RPC）→`Respond with JSON`；workflow 內其餘 Airtable/Supabase 節點（`Fetch All Main Orders`/`Merge Datasets` 等）早已因 D43 Airtable 剝離而斷鏈成孤兒節點，唔喺呼叫路徑上，非本次故障根源。**結論**：`Financial Aggregator` node 用 `require('axios')` 發 HTTPS request 嘅記憶體開銷，令 NAS 端外部 Task Runner 進程反覆崩潰／斷線——同已有先例（`feedback_n8n_code_node_nas_limits.md`：NAS n8n Code node 用 `fetch`/`require`/`process.env` 唔穩定）屬同一類問題，只係呢次表現為進程崩潰（task runner disconnect）而非靜默失敗。webhook trigger 喺下游 node 崩潰時仍以 HTTP 200 回應但無 body，同 Fat Mo 描述完全吻合。
+
+**修復**：將 `Financial Aggregator`（`n8n-nodes-base.code` + `require('axios')`）整個替換為原生 `n8n-nodes-base.httpRequest` node（`typeVersion 4.1`，POST 同一 RPC endpoint、相同 `apikey`/`Authorization`/`Content-Type` headers、`options.timeout:15000`），完全移除 Code node 對 `require()` 嘅依賴——跟隨 codebase 已有先例建議做法（用 HTTP Request 節點取代 Code node 內嘅手動 HTTP client）。部署手法：「GET 現有 workflow → 只換呢一個節點 → PUT」外科手術式，改前後 diff 確認 9 個節點只有 `Financial Aggregator` 變動，`connections`/`settings` 零漂移。
+
+**驗證**：部署後連續 3 次直接 curl `https://yanhei.synology.me:8443/webhook/financial-overview-fhs`，全部 HTTP 200 + 一致 6,420 bytes 完整 JSON body（同直接呼叫 RPC 嘅 shape 一致）；n8n 執行記錄核實對應 4 筆最新 execution 皆為 `status=success`（對照組：修復前近 50 筆歷史記錄 100% `status=error`）。
+
+**範圍**：純 n8n workflow 節點類型替換，未觸碰任何 Supabase schema/RPC/成本定價欄位，未改動 workflow 內其餘孤兒節點（沿用 D43 既定「斷 connection 不刪除」處理方式）。
+
+詳見 Changelog.md 2026-08-02 條目、handoff.md 便攜塊。
