@@ -2036,3 +2036,19 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **驗證**：browser 實測正常請求零 regression；人工模擬斷網確認 abort 喺逾時窗口內正確觸發，UI 唔會卡死。
 
 詳見 Changelog.md 2026-08-02 條目、[freehandsss_dashboardV42.html:5641](Freehandsss_Dashboard/freehandsss_dashboardV42.html:5641)。
+
+### D54：2026-08-02 — `_igwMaybeLinkNewOrder` 漏 export 令直連 Supabase 寫入誤判「失敗」+ D53 現已部署production
+
+**背景**：D53 部署前 Fat Mo 再次實測「同步」，NAS webhook 又一次失敗 fallback 去直連 Supabase 寫入，呢次彈出新錯誤「❌ 直連寫入 Supabase 失敗：Can't find variable: _igwMaybeLinkNewOrder」。Fat Mo 明確要求先用 browser 實測驗證，唔可以純睇代碼就宣稱修好。
+
+**根因**：`_igwMaybeLinkNewOrder()` 定義喺 V41 Supabase Read Layer 嗰個 IIFE 入面（`function _igwMaybeLinkNewOrder(finalOrderId){...}`），但呢個 IIFE 底部嘅 export 名單（`window.loadIgWatchAlerts = ...` 等 6 行）漏咗佢一個。`syncToAirtable()` 喺主 script block 直接 bare call `_igwMaybeLinkNewOrder(currentOrderId)`（唔經 onclick=""，係其餘同類 `_igw*` 函式嘅共同呼叫方式，都靠呢份 export 名單先跨 script block 生效），跨 scope 搵唔到即拋 `ReferenceError`。呢個 hook 本身係 best-effort、非阻擋設計（`sbSyncOrder()` 寫入已經成功先會走到呢一步），但拋出嘅錯誤俾外層 `catch` 誤判成「Supabase 寫入失敗」，掩蓋咗寫入其實已成功嘅事實。
+
+**查證**：全面比對呢個 IIFE 入面全部 local function 嘅呼叫點（onclick="" 屬性 + 主 script block bare call），確認**只有呢一個**冇喺 export 名單入面——其餘 `toggleAuditMode`/`loadIgWatchAlerts`/`_igwCreateOrder`/`_igwOpenThread`/`toggleArchive`/`toggleFavorite`/`openBsSheet`/`setSegTab` 等全部有正確 export，非系統性缺口，純屬呢一個函式因為唔係經 onclick="" 呼叫（原實作者做 export 名單時嘅檢查方式漏咗呢類呼叫模式）而被漏。
+
+**修復**：喺 export 名單追加 `window._igwMaybeLinkNewOrder = _igwMaybeLinkNewOrder;`，一行改動，兩檔（V42/current.html）同步。
+
+**驗證**（browser 實測，非純代碼審閱）：修復前用瀏覽器 console 直接 call `_igwMaybeLinkNewOrder('TEST')` 重現 `ReferenceError: _igwMaybeLinkNewOrder is not defined`，同 Fat Mo 截圖錯誤訊息一致；修復後同一呼叫零錯誤、`typeof window._igwMaybeLinkNewOrder === 'function'`，兩檔皆確認。
+
+**部署**：D53 同 D54 兩個修復喺同一份工作目錄內完成，先後由本 session 同一個 Fat Mo 手動啟動嘅背景 task（`/commit`）一併 commit+push（commit `c3c862f`，兩個修復已一齊入庫）。之後執行 `scripts/upload-web.ps1 current -Force` 正式推上 NAS——**三關驗證 PASS**（PUT HTTP 204／大小 remote=local／SHA256 逐位元組比對），並以獨立 curl 直查公開網址核實 `fhs-build` 時間戳已更新、`window._igwMaybeLinkNewOrder` 同 `window.fetchWithTimeout`（51處）皆存在於 live HTML。**兩個修復現已正式部署 production**，Fat Mo 手機下次同步應唔會再重現呢兩個症狀。
+
+詳見 [freehandsss_dashboardV42.html:15744](Freehandsss_Dashboard/freehandsss_dashboardV42.html:15744)、Changelog.md 2026-08-02 條目。

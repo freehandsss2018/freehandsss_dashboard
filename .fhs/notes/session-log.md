@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-08-02 (全站fetch逾時保護D53 + `_igwMaybeLinkNewOrder`漏exportD54，已部署production): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-02「`_igwMaybeLinkNewOrder` 漏 export 修復（D54）+ D53/D54 正式部署production」同「全站 fetch 逾時保護（D53）」兩條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo回報「同步」成功寫入Supabase後UI卡死喺表單畫面，查證係全站`fetch()`原生冇逾時保護，手機網路切換時可以永遠唔resolve都唔reject；新增`window.fetchWithTimeout()`用`AbortController`逾時（10秒）修復，全站50個呼叫點改用。部署前Fat Mo再測又撞到新錯誤`_igwMaybeLinkNewOrder is not defined`，查證係IIFE-local函式漏喺export名單一個（非系統性缺口），Fat Mo明確要求browser實測先可宣稱修好——修復前後皆用console直call重現/核實。兩個修復一併commit+push+`upload-web.ps1 current -Force`三關驗證正式部署production，獨立curl核實live HTML已反映兩個修復。
+
 ## 2026-08-02 (V42 財務分頁「離線示範數據」誤判修復 D52): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-02「V42 財務分頁「離線示範數據」誤判修復（D52）」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo回報V42財務分頁「離線示範數據」警示，懷疑連唔到Supabase；live直查證實唔係連線問題，係`get_financial_charts()`嘅trend子查詢喺`current`tab空月份時`json_agg`返回JSON null，下游`jsonb_array_elements()`拋22023崩潰，連累monthly/yearly一齊攞唔到，加上n8n備援webhook獨立返空body，雙重降級觸發banner。修復migration `0085`（COALESCE兩層防禦），REST呼叫驗證HTTP 200正常返回。此為2026-07-23 session已spawn_task標記嘅獨立既有bug，本次正式修復並closure。文件同步decisions.md D52、FHS_System_Logic_Overview.md §10.23。

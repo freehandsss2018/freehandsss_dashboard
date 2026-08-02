@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— `_igwMaybeLinkNewOrder` 漏 export 修復（D54）+ D53/D54 正式部署production
+
+- **緣起**：D53（下方條目）部署前 Fat Mo 再次實測「同步」，NAS webhook 又失敗 fallback 直連 Supabase，呢次彈出新錯誤「❌ 直連寫入 Supabase 失敗：Can't find variable: _igwMaybeLinkNewOrder」。Fat Mo 明確指示先用 browser 實測驗證，唔可以純憑代碼審閱就宣稱修好。
+- **根因**：`_igwMaybeLinkNewOrder()` 定義喺 V41 Supabase Read Layer IIFE 入面，但該 IIFE 底部嘅 export 名單漏咗佢一個。`syncToAirtable()` 喺主 script block 直接 bare call 呢個函式（非經 onclick=""，係其餘同類 `_igw*` 函式嘅共同呼叫方式，都靠 export 名單先跨 script block 生效），搵唔到即拋 `ReferenceError`，令外層 `catch` 誤判成「Supabase 寫入失敗」——實際上寫入已經成功，只係呢個 best-effort 追溯 hook 冇執行到。
+- **查證範圍**：全面比對呢個 IIFE 入面全部 local function 嘅所有呼叫點（onclick="" 屬性 + 主 script block bare call），確認**只有呢一個**冇喺 export 名單——`toggleAuditMode`/`loadIgWatchAlerts`/`_igwCreateOrder`/`_igwOpenThread`/`toggleArchive`/`toggleFavorite`/`openBsSheet`/`setSegTab` 等全部正確 export，非系統性缺口。
+- **修復**：export 名單追加 `window._igwMaybeLinkNewOrder = _igwMaybeLinkNewOrder;`（一行），V42/current.html 同步。
+- **驗證**（browser 實測）：修復前用 console 直接 `_igwMaybeLinkNewOrder('TEST')` 重現一模一樣嘅 `ReferenceError`，同 Fat Mo 截圖訊息完全一致；修復後同一呼叫零錯誤、`typeof window._igwMaybeLinkNewOrder === 'function'`，兩檔皆確認。
+- **部署**：D53+D54 兩個修復由 Fat Mo 手動啟動嘅背景 `/commit` task 一併 commit+push（commit `c3c862f`）。隨後執行 `scripts/upload-web.ps1 current -Force` 正式推上 NAS，三關驗證 PASS（PUT 204／大小相符／SHA256 相符），並以獨立 curl 直查公開網址核實部署時間戳已更新、兩個修復內容皆存在於 live HTML。**兩個修復現已正式部署 production**。
+- **文件同步**：`decisions.md` D54。
+- **Subagent 使用記錄**：❌ 未使用（互動式改碼+browser live 實測+NAS部署驗證）。
+
+---
+
 ## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— 全站 fetch 逾時保護（D53）
 
 - **緣起**：Fat Mo 回報「同步」訂單成功寫入 Supabase 後，UI 卡死喺表單畫面唔會自動返返去訂單總覽，要強制重開 App 先解圍（寫入本身其實已成功，只係導航返去嗰一步卡咗）。
