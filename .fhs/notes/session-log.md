@@ -4,6 +4,11 @@
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-02「V42 財務分頁「離線示範數據」誤判修復（D52）」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo回報V42財務分頁「離線示範數據」警示，懷疑連唔到Supabase；live直查證實唔係連線問題，係`get_financial_charts()`嘅trend子查詢喺`current`tab空月份時`json_agg`返回JSON null，下游`jsonb_array_elements()`拋22023崩潰，連累monthly/yearly一齊攞唔到，加上n8n備援webhook獨立返空body，雙重降級觸發banner。修復migration `0085`（COALESCE兩層防禦），REST呼叫驗證HTTP 200正常返回。此為2026-07-23 session已spawn_task標記嘅獨立既有bug，本次正式修復並closure。文件同步decisions.md D52、FHS_System_Logic_Overview.md §10.23。
 
+## 2026-08-02 (n8n IG watchdog exec 5409 pairedItem 崩潰修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-02「n8n IG watchdog exec 5409 pairedItem 崩潰修復」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 回報 execution 5409 間歇性崩潰，經 n8n public API 直查原始執行記錄逐節點比對 `pairedItem`，查明 `Filter New + Quiet Window` code node 回傳 sentinel item 冇顯式設 `pairedItem`，輸入 >1 項時配對鏈斷裂，致下游 `Build Empty Summary` 回溯爆錯。修 `scripts/ig-watchdog/build_n8n_workflow.cjs` 兩個回傳分支補 `pairedItem`，77測試PASS，用「GET現有workflow→只換該節點jsCode→PUT」外科手術式部署（避開worktree環境缺Supabase env var + CRLF/LF漂移兩個會製造無關diff嘅陷阱），前後diff確認30節點僅1個變動。過程中一度誤將修改落錯主倉checkout（非worktree），已即時發現並git checkout還原、重做落正確worktree。
+Subagent：✅ build-error-resolver（fresh-context獨立覆核根因+修法邏輯+deploy diff）。
+
 ## 2026-08-02 (agent_dashboard 新增 IG看門狗學習記錄 zone): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-02「agent_dashboard 新增 IG看門狗學習記錄 zone」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo提「像Canva咁可以追查資料庫/編輯/更新/刪除」，拷問澄清係喺現有`agent_dashboardV42.html`（AI助理團隊名冊）加新zone，範圍限IG看門狗、寫入只沿用Phase C已建安全RPC。`scripts/agent_dashboardV42.js`新增`probeIgWatchdog()`（同`probeN8n()`同手法live curl）+`renderIgWatchLearningZone()`（沿用Canva/3D學習記錄同一視覺格式），規則卡「停用/重啟」掣係呢個生成頁首次live互動。本機生成器零errata+browser實測toggle雙向+DB核實+XSS payload安全渲染。生成物gitignored，公開發佈需另外`/upload-web team`。
