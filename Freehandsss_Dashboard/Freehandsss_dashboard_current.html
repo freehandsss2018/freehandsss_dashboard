@@ -5629,6 +5629,24 @@
         window.SB_URL = SB_URL;
         window.SB_ANON_KEY = SB_ANON;
 
+        // D53（2026-08-02）：全站 fetch 逾時保護。事故背景——「同步」成功寫入 Supabase 後，
+        // 導航返訂單總覽嗰條鏈（resetForm→generateOrderID→checkOrderIDDuplicate 等）全部係
+        // 原生 fetch() 冇設任何逾時，手機網路狀態切換（WiFi/流動數據交替）嗰刻其中一個 fetch
+        // 可以永遠唔 resolve 都唔 reject，令成個 UI 卡死喺當刻畫面，要強制重開 App 先解圍
+        // （寫入本身其實已經成功，只係導航返去嗰步卡咗）。修法：逾時就用 AbortController 主動
+        // abort，令 promise 一定會 settle（變成 reject，行返現有 catch/fallback 邏輯），唔改變
+        // 任何業務邏輯，純粹加一條「唔會永遠等落去」嘅底線。全站所有 fetch() 呼叫點已改用呢個
+        // wrapper 代替（唯一例外：line 20 iOS PWA 版本自檢，本身已有獨立 .catch() 靜默失敗、
+        // 從不阻塞任何 UI，維持原生 fetch）。
+        window.fetchWithTimeout = function(url, options, timeoutMs) {
+            timeoutMs = timeoutMs || 10000;
+            var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+            var opts = options ? Object.assign({}, options) : {};
+            if (controller) opts.signal = controller.signal;
+            var timer = setTimeout(function() { if (controller) controller.abort(); }, timeoutMs);
+            return fetch(url, opts).finally(function() { clearTimeout(timer); });
+        };
+
         // Global helper: maps any process_status UI string to valid Supabase item_status ENUM.
         // Used by both sbSyncOrder (INSERT) and saveInlineEdit (PATCH).
         window._sanitizeItemStatus = function(s) {
@@ -5829,7 +5847,7 @@
             try {
                 const _sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
                 const _sbKey = window.SB_ANON_KEY || '';
-                const res = await fetch(_sbUrl + '/rest/v1/system_config?key=eq.seq_id&select=value', {
+                const res = await window.fetchWithTimeout(_sbUrl + '/rest/v1/system_config?key=eq.seq_id&select=value', {
                     headers: { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey }
                 });
                 const rows = await res.json();
@@ -5873,7 +5891,7 @@
                 // [D43] Airtable 剝離：改用 Supabase update_system_config() RPC，取代 update-order-meta webhook
                 const _sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
                 const _sbKey = window.SB_ANON_KEY || '';
-                const response = await fetch(_sbUrl + '/rest/v1/rpc/update_system_config', {
+                const response = await window.fetchWithTimeout(_sbUrl + '/rest/v1/rpc/update_system_config', {
                     method: 'POST',
                     headers: { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ p_key: 'seq_id', p_value: { last_id: systemConfig.last_id, mode: systemConfig.mode } })
@@ -5905,7 +5923,7 @@
         async function _checkIdExists(id) {
             try {
                 const url = _sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(id) + '&select=order_id&limit=1';
-                const res = await fetch(url, { headers: { apikey: _sbKey, Authorization: 'Bearer ' + _sbKey } });
+                const res = await window.fetchWithTimeout(url, { headers: { apikey: _sbKey, Authorization: 'Bearer ' + _sbKey } });
                 const data = await res.json();
                 return Array.isArray(data) && data.length > 0;
             } catch(e) { return false; }
@@ -5991,7 +6009,7 @@
             // V41: use Supabase for duplicate check when flag is ON
             if (localStorage.getItem('fhs_supabase_read') === '1') {
                 try {
-                    const r = await fetch(
+                    const r = await window.fetchWithTimeout(
                         `${SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(id)}&select=order_id&limit=1`,
                         { headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` } }
                     );
@@ -6018,7 +6036,7 @@
 
             try {
                 const url = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=${id}`);
-                const response = await fetch(url);
+                const response = await window.fetchWithTimeout(url);
                 const _rawData = await response.json();
                 const data = Array.isArray(_rawData) ? _rawData[0] : _rawData;
 
@@ -8410,7 +8428,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 try {
                     const _sbUrl = 'https://vpmwizzixnwilmzctdvu.supabase.co';
                     const _sbKey = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
-                    const _res = await fetch(
+                    const _res = await window.fetchWithTimeout(
                         `${_sbUrl}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,final_sale_price,raw_form_state&limit=1`,
                         { headers: { apikey: _sbKey, Authorization: `Bearer ${_sbKey}` } }
                     );
@@ -8456,7 +8474,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const fetchUrl = `${getWebhookUrl('https://yanhei.synology.me:8443/webhook/fetch-fhs-order')}?orderId=${oId}`;
 
             try {
-                const res = await fetch(fetchUrl);
+                const res = await window.fetchWithTimeout(fetchUrl);
                 const responseData = await res.json();
                 const data = Array.isArray(responseData) ? responseData[0] : responseData;
 
@@ -8513,7 +8531,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             try {
                 const _sbUrl = _V41_SB_URL;
                 const _sbKey = _V41_SB_ANON;
-                const _res = await fetch(
+                const _res = await window.fetchWithTimeout(
                     `${_sbUrl}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,raw_form_state&limit=1`,
                     { headers: { apikey: _sbKey, Authorization: `Bearer ${_sbKey}` } }
                 );
@@ -8548,7 +8566,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
 
                 // Reconstruct from order + items (also supplements incomplete raw_form_state)
-                const _ir = await fetch(
+                const _ir = await window.fetchWithTimeout(
                     `${_sbUrl}/rest/v1/order_items?order_fhs_id=eq.${encodeURIComponent(oId)}&select=item_key,item_category,specification,engraving_text,quantity`,
                     { headers: { apikey: _sbKey, Authorization: `Bearer ${_sbKey}` } }
                 );
@@ -8837,14 +8855,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 try {
                     if (localStorage.getItem('fhs_supabase_read') === '1') {
                         const checkUrl = `${SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(currentOrderId)}&select=order_id&limit=1`;
-                        const r = await fetch(checkUrl, {
+                        const r = await window.fetchWithTimeout(checkUrl, {
                             headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` }
                         });
                         const rows = await r.json();
                         duplicateFound = Array.isArray(rows) && rows.length > 0;
                     } else {
                         const checkUrl = getWebhookUrl(`https://yanhei.synology.me:8443/webhook/fetch-fhs-order?orderId=${currentOrderId}`);
-                        const r = await fetch(checkUrl);
+                        const r = await window.fetchWithTimeout(checkUrl);
                         const _rawCheck = await r.json();
                         const data = Array.isArray(_rawCheck) ? _rawCheck[0] : _rawCheck;
                         duplicateFound = data && data.found;
@@ -9161,7 +9179,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             const webhookUrl = getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b");
             try {
-                const response = await fetch(webhookUrl, {
+                const response = await window.fetchWithTimeout(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -9493,11 +9511,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const start = Date.now();
             const tout = ms => new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms));
             const pingN8n = () => Promise.race([
-                fetch('https://yanhei.synology.me:8443/healthz', { method: 'GET' }).then(r => ({ ok: r.status < 500 })),
+                window.fetchWithTimeout('https://yanhei.synology.me:8443/healthz', { method: 'GET' }).then(r => ({ ok: r.status < 500 })),
                 tout(5000)
             ]).catch(e => ({ ok: false, err: e.message }));
             const pingSb = () => Promise.race([
-                fetch((window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co') + '/rest/v1/', {
+                window.fetchWithTimeout((window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co') + '/rest/v1/', {
                     method: 'GET', headers: { 'apikey': window.SB_ANON_KEY || '' }
                 }).then(r => ({ ok: r.status < 500 })),
                 tout(5000)
@@ -9743,7 +9761,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         tbody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">⏳ 重試中 (${attempt}/2)...</td></tr>`;
                         await new Promise(r => setTimeout(r, 1500));
                     }
-                    const res = await fetch(fetchUrl, { method: 'GET' });
+                    const res = await window.fetchWithTimeout(fetchUrl, { method: 'GET' });
                     const data = await res.json();
                     loading.style.display = "none";
                     if (data && data.orders) {
@@ -9775,7 +9793,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         async function fetchDeliveryMap() {
             try {
-                const res = await fetch(
+                const res = await window.fetchWithTimeout(
                     _V41_SB_URL + '/rest/v1/v_delivery_reminders?select=order_id,id,customer_name,days_remaining,start_date,due_date,sla_days,urgency',
                     { headers: { 'apikey': _V41_SB_ANON, 'Authorization': 'Bearer ' + _V41_SB_ANON } }
                 );
@@ -10798,7 +10816,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (progress) progress.textContent = `刪除 ${done + 1}/${ids.length}…`;
 
                 try {
-                    const sbDelRes = await fetch(
+                    const sbDelRes = await window.fetchWithTimeout(
                         `${_V41_SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(order.Order_ID)}`,
                         {
                             method: 'DELETE',
@@ -10814,7 +10832,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         errors.push(`${order.Order_ID}: Supabase 錯誤 (${sbDelRes.status})`);
                     } else {
                         // n8n async sync (best-effort)
-                        fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b"), {
+                        window.fetchWithTimeout(getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b"), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ Record_ID: recordId, Order_ID: order.Order_ID, action: 'delete' })
@@ -10877,7 +10895,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     Admin_Notes: order.Admin_Notes || ''
                 };
                 try {
-                    const res = await fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta"), {
+                    const res = await window.fetchWithTimeout(getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta"), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify([updateEntry])
@@ -10935,7 +10953,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     Admin_Notes: order.Admin_Notes || ''
                 };
                 try {
-                    const res = await fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta"), {
+                    const res = await window.fetchWithTimeout(getWebhookUrl("https://yanhei.synology.me:8443/webhook/update-order-meta"), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify([updateEntry])
@@ -11460,7 +11478,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var _newCustomerName = _nameMatch ? _nameMatch[1].trim() : null;
                 var _patchBody = { full_order_text: _fullCombined, is_text_overridden: true, full_order_text_a: _textA, full_order_text_b: _textB };
                 if (_newCustomerName) _patchBody.customer_name = _newCustomerName;
-                var r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId), {
+                var r = await window.fetchWithTimeout(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId), {
                     method: 'PATCH', headers: _sbHdr,
                     body: JSON.stringify(_patchBody)
                 });
@@ -11557,7 +11575,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (actionsEl) actionsEl.style.display = 'none';
 
             try {
-                var r = await fetch(
+                var r = await window.fetchWithTimeout(
                     _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
                     '&select=item_key,item_category,specification,engraving_text,quantity,product_sku,' +
                     'item_base_cost,subtotal_cost,handmodel_cost,keychain_cost,necklace_cost,batch_number,process_status' +
@@ -11607,12 +11625,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var hdr = { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON };
             try {
                 var results = await Promise.all([
-                    fetch(
+                    window.fetchWithTimeout(
                         _V41_SB_URL + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId) +
                         '&select=n8n_adjustment_notes,deposit,balance,handmodel_cost,keychain_cost,necklace_cost,accessory_cost,cost_override_locked&limit=1',
                         { headers: hdr }
                     ),
-                    fetch(
+                    window.fetchWithTimeout(
                         _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
                         '&select=item_key,item_category,specification,product_sku,quantity,' +
                         'item_base_cost,subtotal_cost,drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price,' +
@@ -12237,7 +12255,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window._sbSyncInFlight[orderId] = true;
 
             try {
-                var r = await fetch(_V41_SB_URL + '/rest/v1/rpc/save_structured_order_items', {
+                var r = await window.fetchWithTimeout(_V41_SB_URL + '/rest/v1/rpc/save_structured_order_items', {
                     method: 'POST',
                     headers: {
                         apikey: _V41_SB_ANON,
@@ -12345,7 +12363,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 'Content-Type': 'application/json', 'Prefer': 'return=representation'
             };
             try {
-                var r = await fetch(
+                var r = await window.fetchWithTimeout(
                     _V41_SB_URL + '/rest/v1/order_items?item_key=eq.' + encodeURIComponent(itemKey),
                     { method: 'PATCH', headers: _sbHdr, body: JSON.stringify({ engraving_text: newEng }) }
                 );
@@ -12533,7 +12551,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             const _itemKey = entry._item_key;
                             if (entry._is_item && _itemKey) {
                                 // item_key is stable across DELETE+INSERT; UUID (_sb_id) changes each sync
-                                const _r = await fetch(_sbUrl + '/rest/v1/order_items?item_key=eq.' + encodeURIComponent(_itemKey), {
+                                const _r = await window.fetchWithTimeout(_sbUrl + '/rest/v1/order_items?item_key=eq.' + encodeURIComponent(_itemKey), {
                                     method: 'PATCH', headers: _sbHeaders, body: JSON.stringify(_patch)
                                 });
                                 const _body = await _r.json().catch(function() { return []; });
@@ -12542,7 +12560,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 if (Array.isArray(_body) && _body.length === 0) throw new Error('item PATCH 0 rows matched item_key: ' + _itemKey);
                             } else {
                                 // Order-level fields (Admin_Notes, order process_status)
-                                const _r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(_orderId), {
+                                const _r = await window.fetchWithTimeout(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(_orderId), {
                                     method: 'PATCH', headers: _sbHeaders, body: JSON.stringify(_patch)
                                 });
                                 const _body = await _r.json().catch(function() { return []; });
@@ -12629,7 +12647,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const _sbKey  = window.SB_ANON_KEY || '';
                 const _sbHeaders = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
-                const _r = await fetch(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(recordId), {
+                const _r = await window.fetchWithTimeout(_sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(recordId), {
                     method: 'PATCH',
                     headers: _sbHeaders,
                     body: JSON.stringify({ adjustment_amount: numVal })
@@ -12685,7 +12703,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 showLoader("正在從系統中徹底刪除訂單...");
 
                 // Supabase hard delete (primary)
-                const sbDelRes = await fetch(
+                const sbDelRes = await window.fetchWithTimeout(
                     `${_V41_SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(currentDeleteOrderId)}`,
                     {
                         method: 'DELETE',
@@ -12702,7 +12720,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
 
                 // n8n webhook (async non-blocking, best-effort Airtable sync)
-                fetch(getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b"), {
+                window.fetchWithTimeout(getWebhookUrl("https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b"), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ Record_ID: currentDeleteId, Order_ID: currentDeleteOrderId, action: 'delete' })
@@ -14351,7 +14369,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 
                 try {
                     const checkUrl = `${window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co'}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`;
-                    const checkRes = await fetch(checkUrl, {
+                    const checkRes = await window.fetchWithTimeout(checkUrl, {
                         headers: { 
                             apikey: window.SB_ANON_KEY || 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK', 
                             Authorization: `Bearer ${window.SB_ANON_KEY || 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK'}` 
@@ -15097,7 +15115,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function foFetchLive() {
             if (FO_DATA_LOADING) return;
             FO_DATA_LOADING = true;
-            fetch(FINANCIAL_WEBHOOK_URL, { method: 'GET', headers: { 'Accept': 'application/json' } })
+            window.fetchWithTimeout(FINANCIAL_WEBHOOK_URL, { method: 'GET', headers: { 'Accept': 'application/json' } })
                 .then(function(res) {
                     if (!res.ok) throw new Error('HTTP ' + res.status);
                     return res.json();
@@ -15174,7 +15192,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         async function sbFetch(path, params) {
             const url = new URL(SB_URL + '/rest/v1/' + path);
             if (params) Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-            const res = await fetch(url.href, {
+            const res = await window.fetchWithTimeout(url.href, {
                 headers: {
                     'apikey': SB_ANON,
                     'Authorization': 'Bearer ' + SB_ANON,
@@ -15186,7 +15204,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         async function sbRpc(fn, body) {
-            const res = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {
+            const res = await window.fetchWithTimeout(SB_URL + '/rest/v1/rpc/' + fn, {
                 method: 'POST',
                 headers: {
                     'apikey': SB_ANON,
@@ -15717,6 +15735,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window._igwCopyOrderId = _igwCopyOrderId;
         window._igwCreateOrder = _igwCreateOrder;
         window._igwOpenThread = _igwOpenThread;
+        // D53續（2026-08-02）：_igwMaybeLinkNewOrder 呢個 IIFE-local function 一直漏咗喺呢個 export
+        // 名單——因為佢唔係經 onclick="" HTML attribute 呼叫（其餘 _igw* 都係，早已靠呢份名單
+        // 覆蓋），而係喺主 script block 嘅 syncToAirtable() 直接 bare call，跨 script block
+        // 全局作用域搵唔到就拋 ReferenceError。事發：Fat Mo「同步」失敗轉直連 Supabase 寫入
+        // 成功後，呢個 best-effort hook 一拋錯，就俾外層 catch 誤判成「直連寫入 Supabase 失敗」
+        // ——實際上寫入已經成功，只係呢個非關鍵嘅追溯 hook 冇執行到。
+        window._igwMaybeLinkNewOrder = _igwMaybeLinkNewOrder;
         // ── End IG 看門狗警報 ────────────────────────────────────────
 
         /* ── PGC-ODAT: Audit Toggle + Item Drawer (Phase 1) ────────── */
@@ -15899,7 +15924,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 raw_form_state:    rawFormObj,
                 ...(mode === 'create' ? { confirmed_at: new Date().toISOString().slice(0, 10) } : {})
             };
-            const upRes = await fetch(SB_URL + '/rest/v1/orders?on_conflict=order_id', {
+            const upRes = await window.fetchWithTimeout(SB_URL + '/rest/v1/orders?on_conflict=order_id', {
                 method: 'POST',
                 headers: Object.assign({}, sbH, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
                 body: JSON.stringify(orderRow)
@@ -15913,7 +15938,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 2. Preserve existing batch/progress before delete (edit mode: item_key stays same)
             let _prevItemMap = {};
             try {
-                const _pvRes = await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(effectiveOrderId) + '&select=item_key,batch_number,process_status,product_sku', { headers: sbH });
+                const _pvRes = await window.fetchWithTimeout(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(effectiveOrderId) + '&select=item_key,batch_number,process_status,product_sku', { headers: sbH });
                 if (_pvRes.ok) {
                     const _pvRows = await _pvRes.json();
                     if (Array.isArray(_pvRows)) _pvRows.forEach(function(r) { if (r.item_key) _prevItemMap[r.item_key] = { batch_number: r.batch_number || null, process_status: r.process_status || null, product_sku: r.product_sku || null }; });
@@ -15937,7 +15962,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             console.log('[sbSyncOrder] _prevItemMap after cache overlay:', JSON.stringify(_prevItemMap));
 
             // 3. Delete old items (removes both old-format and stale new-format)
-            await fetch(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(effectiveOrderId), {
+            await window.fetchWithTimeout(SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(effectiveOrderId), {
                 method: 'DELETE',
                 headers: sbH
             }).catch(function(e) { console.warn('[sbSyncOrder] delete items error:', e.message); });
@@ -15975,7 +16000,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     return _row;
                 });
                 console.log('[sbSyncOrder] INSERT payload:', JSON.stringify(newItems));
-                const insRes = await fetch(SB_URL + '/rest/v1/order_items', {
+                const insRes = await window.fetchWithTimeout(SB_URL + '/rest/v1/order_items', {
                     method: 'POST',
                     headers: Object.assign({}, sbH, { 'Prefer': 'return=minimal' }),
                     body: JSON.stringify(newItems)
@@ -16000,7 +16025,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     });
                     if (_restoreRows.length > 0) {
                         console.warn('[sbSyncOrder] Restoring', _restoreRows.length, 'previous items after INSERT failure');
-                        await fetch(SB_URL + '/rest/v1/order_items', {
+                        await window.fetchWithTimeout(SB_URL + '/rest/v1/order_items', {
                             method: 'POST',
                             headers: Object.assign({}, sbH, { 'Prefer': 'return=minimal' }),
                             body: JSON.stringify(_restoreRows)
@@ -16669,7 +16694,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window._fhsCostConfig = {};
 
         function _fsRpc(fn, body) {
-            return fetch(_FS_SB_URL + '/rest/v1/rpc/' + fn, {
+            return window.fetchWithTimeout(_FS_SB_URL + '/rest/v1/rpc/' + fn, {
                 method: 'POST',
                 headers: {
                     'apikey': _FS_SB_ANON,
@@ -16688,7 +16713,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         function _fsSelect(table, qs) {
             var url = _FS_SB_URL + '/rest/v1/' + table + '?' + (qs || 'select=*');
-            return fetch(url, {
+            return window.fetchWithTimeout(url, {
                 headers: {
                     'apikey': _FS_SB_ANON,
                     'Authorization': 'Bearer ' + _FS_SB_ANON,
@@ -16959,7 +16984,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 .then(function(result) {
                     // Notify n8n webhook if configured
                     if (_FS_N8N_WEBHOOK) {
-                        fetch(_FS_N8N_WEBHOOK, {
+                        window.fetchWithTimeout(_FS_N8N_WEBHOOK, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ batch_id: result.batch_id, scope: scope })
@@ -17016,7 +17041,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
             resEl.innerHTML = '⏳ 執行中...';
             try {
-                var resp = await fetch(_V41_SB_URL + '/rest/v1/rpc/fhs_adjust_order_cost', {
+                var resp = await window.fetchWithTimeout(_V41_SB_URL + '/rest/v1/rpc/fhs_adjust_order_cost', {
                     method: 'POST',
                     headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ p_order_id: orderId, p_new_total_cost: parseFloat(newCost), p_reason: reason, p_actor: localStorage.getItem('fhs_log_operator') || 'dashboard' })
@@ -17036,7 +17061,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (!confirm('確定解鎖 ' + orderId + ' 的成本鎖定？下次批量重算將覆蓋人工修正值。')) return;
             resEl.innerHTML = '⏳ 執行中...';
             try {
-                var resp = await fetch(_V41_SB_URL + '/rest/v1/rpc/fhs_unlock_order_cost', {
+                var resp = await window.fetchWithTimeout(_V41_SB_URL + '/rest/v1/rpc/fhs_unlock_order_cost', {
                     method: 'POST',
                     headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ p_order_id: orderId, p_actor: localStorage.getItem('fhs_log_operator') || 'dashboard' })
@@ -17055,7 +17080,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (!bodyEl || !orderId) return;
             bodyEl.innerHTML = '⏳ 載入...';
             try {
-                var resp = await fetch(_V41_SB_URL + '/rest/v1/rpc/fhs_query_audit_logs', {
+                var resp = await window.fetchWithTimeout(_V41_SB_URL + '/rest/v1/rpc/fhs_query_audit_logs', {
                     method: 'POST',
                     headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ p_log_type: 'order_cost_adjust', p_entity_id: orderId, p_limit: 20 })
@@ -17164,7 +17189,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             .catch(function(e) {
                 // Fallback: direct PostgREST insert if RPC not available
                 var sbUrl = _FS_SB_URL + '/rest/v1/expense_logs';
-                fetch(sbUrl, {
+                window.fetchWithTimeout(sbUrl, {
                     method: 'POST',
                     headers: {
                         'apikey': _FS_SB_ANON,
@@ -17524,7 +17549,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             body: JSON.stringify(params)
         };
         if (keepalive) opts.keepalive = true;
-        return fetch(sbUrl + '/rest/v1/rpc/' + rpcName, opts);
+        return window.fetchWithTimeout(sbUrl + '/rest/v1/rpc/' + rpcName, opts);
     }
 
     function _sbPatch(orderDisplayId, fields, keepalive) {
@@ -17541,7 +17566,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             body: JSON.stringify(fields)
         };
         if (keepalive) opts.keepalive = true;  // H1: keepalive 取代 sendBeacon
-        return fetch(sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderDisplayId), opts);
+        return window.fetchWithTimeout(sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderDisplayId), opts);
     }
 
     function _findOrder(orderId) {
@@ -18007,7 +18032,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             + '&appointment_at=lt.' + nextMonthStartStr(y, m)
             + '&deleted_at=is.null&process_status=neq.' + encodeURIComponent('已取消')
             + '&select=order_id,customer_name,appointment_at,process_status,raw_form_state';
-        var resp = await fetch(url, { headers: { apikey: window.SB_ANON_KEY, Authorization: 'Bearer ' + window.SB_ANON_KEY } });
+        var resp = await window.fetchWithTimeout(url, { headers: { apikey: window.SB_ANON_KEY, Authorization: 'Bearer ' + window.SB_ANON_KEY } });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         var rows = await resp.json();
         var days = {};

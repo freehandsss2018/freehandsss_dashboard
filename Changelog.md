@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— 全站 fetch 逾時保護（D53）
+
+- **緣起**：Fat Mo 回報「同步」訂單成功寫入 Supabase 後，UI 卡死喺表單畫面唔會自動返返去訂單總覽，要強制重開 App 先解圍（寫入本身其實已成功，只係導航返去嗰一步卡咗）。
+- **根因**：導航返總覽嗰條鏈（`resetForm`→`generateOrderID`→`checkOrderIDDuplicate` 等）全站所有 `fetch()` 呼叫點原生冇設任何逾時。手機網路狀態切換（WiFi/流動數據交替）嗰刻，其中一個 `fetch()` 可以永遠唔 resolve 都唔 reject，promise 卡住令成個 UI 凍結喺當刻畫面。
+- **修復**：新增 `window.fetchWithTimeout(url, options, timeoutMs)`（[freehandsss_dashboardV42.html:5641](Freehandsss_Dashboard/freehandsss_dashboardV42.html:5641)），用 `AbortController` 逾時（預設 10 秒）主動 abort，令 promise 一定會 settle（變成 reject，行返現有 catch/fallback 邏輯）——唔改變任何業務邏輯，純粹加一條「唔會永遠等落去」嘅底線。全站 50 個 `fetch()` 呼叫點已全部改用呢個 wrapper（唯一例外：iOS PWA 版本自檢 `fetch(location.pathname,...)`，本身已有獨立 `.catch()` 靜默失敗、從不阻塞任何 UI，保留原生 `fetch`）。`freehandsss_dashboardV42.html`（dev）同 `Freehandsss_dashboard_current.html`（生產）同步套用。
+- **驗證**：browser 實測正常請求零 regression；人工模擬斷網（DevTools throttling + 中斷連線）確認 abort 喺逾時窗口內正確觸發，UI 唔會卡死。
+- **文件同步**：`decisions.md` D53。
+- **Subagent 使用記錄**：❌ 未使用（互動式改碼+browser 實測）。
+
+---
+
 ## [2026-08-02] Session（Claude Code / Sonnet 5 執行）— V42 財務分頁「離線示範數據」誤判修復（D52）
 
 - **緣起**：Fat Mo 回報 V42 財務分頁彈出「⚠️ 離線示範數據，非真實財務 — Supabase 及備援皆無法連線」，懷疑連唔到 Supabase。

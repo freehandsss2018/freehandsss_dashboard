@@ -2022,3 +2022,17 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **驗證**：套用後直接用 REST 呼叫（同前端一致嘅 `apikey`/`Authorization` header）打 `get_financial_overview_full`，HTTP 200，`current.lineChart` 返回 `{labels:[], revenue:[], cost:[], profit:[]}`（非崩潰），`monthly`/`yearly` 資料維持正常（5/7 個月份 trend）。
 
 詳見 [0085_fix_financial_overview_current_trend_null.sql](supabase/migrations/0085_fix_financial_overview_current_trend_null.sql)、[freehandsss_dashboardV42.html:15086](Freehandsss_Dashboard/freehandsss_dashboardV42.html:15086)。
+
+### D53：2026-08-02 — 全站 fetch 逾時保護（防「同步」成功後 UI 卡死喺表單畫面）
+
+**背景**：Fat Mo 回報「同步」訂單成功寫入 Supabase 後，UI 有時卡死喺表單畫面唔會自動返返去訂單總覽，要強制重開 App 先解圍。查證確認寫入本身已成功，只係導航返總覽嗰一步（`resetForm`→`generateOrderID`→`checkOrderIDDuplicate` 等鏈）卡咗。
+
+**根因**：全站所有 `fetch()` 呼叫點原生冇設任何逾時。手機網路狀態切換（WiFi/流動數據交替）嗰刻，其中一個 `fetch()` 可以永遠唔 resolve 都唔 reject，令依賴佢嘅 promise 鏈永遠卡住，UI 凍結喺當刻畫面。
+
+**決策**：新增 `window.fetchWithTimeout(url, options, timeoutMs)` wrapper，用 `AbortController` 逾時（預設 10 秒）主動 abort，令 promise 一定會 settle（變成 reject，行返現有 catch/fallback 邏輯）——唔改變任何業務邏輯，純粹加一條「唔會永遠等落去」嘅底線。全站呼叫點一律改用呢個 wrapper，只有一個刻意例外唔改：iOS PWA 版本自檢 `fetch(location.pathname,...)` 本身已有獨立 `.catch()` 靜默失敗、從不阻塞任何 UI，維持原生 `fetch`。
+
+**執行內容**：`freehandsss_dashboardV42.html:5641` 新增 `fetchWithTimeout` 定義；全站 50 個 `fetch()` 呼叫點改用之。`Freehandsss_dashboard_current.html` 同步套用同一改動。純前端邏輯改動，未觸碰任何 Supabase schema/n8n。
+
+**驗證**：browser 實測正常請求零 regression；人工模擬斷網確認 abort 喺逾時窗口內正確觸發，UI 唔會卡死。
+
+詳見 Changelog.md 2026-08-02 條目、[freehandsss_dashboardV42.html:5641](Freehandsss_Dashboard/freehandsss_dashboardV42.html:5641)。
