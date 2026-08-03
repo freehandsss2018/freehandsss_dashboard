@@ -263,7 +263,15 @@ freehandsss_dashboard/
 │   │   │   ├── handoff-full-until-2026-07-04.md  ← 輪轉前完整備份（3949行）
 │   │   │   ├── handoff-portable-block-decisions-pre-2026-07-04.md ← 便攜塊瘦身：3條無他處收錄的決策全文歸檔（2026-07-04 S141）
 │   │   │   └── handoff-portable-block-verified-pre-2026-07-04.md  ← 便攜塊瘦身：較舊「已證實」清單歸檔（2026-07-04 S141）
-│   │   ├── learnings.md                ← Pattern / Pitfall / Preference distill（/read Step 3，2026-05-20 新增）
+│   │   ├── learnings.md                ← stub，指向 learnings/README.md（2026-08-03 分桶重構，flow 2026-08-03-2003）
+│   │   ├── learnings/                  ← Pattern / Pitfall / Preference distill，2026-08-03 起分 6 領域桶，由 prompt-router.js 按任務內容自動注入（不再靠 /read 全量載入）
+│   │   │   ├── README.md               ← 索引 + 配額表 + tag 語法 + 退役 checklist 五類 + 22 段退役登記冊（制度說明唯一居所）
+│   │   │   ├── supabase.md             ← Postgres/PostgREST/RLS/migration/RPC 權限（配額 20）
+│   │   │   ├── frontend.md             ← Dashboard 前端 HTML/JS（配額 25）
+│   │   │   ├── finance.md              ← 定價/成本/SKU/財務計算（配額 20，受 finance-gatekeeper 管轄）
+│   │   │   ├── n8n.md                  ← Workflow 節點/payload/API 限制（配額 20）
+│   │   │   ├── governance.md           ← 治理制度/多代理協作（配額 15）
+│   │   │   └── tooling.md              ← 開發工具/第三方整合/harness 怪癖（配額 15）
 │   │   ├── pitfalls.yaml               ← Machine-readable 跨層整合 pitfall 知識庫（2026-05-21 新增，product-integration-validator 使用）
 │   │   └── lessons/
 │   │       ├── INDEX.md                ← Lessons 唯一檢索入口（一行式索引，2026-06-12 新增）
@@ -345,6 +353,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 腳本說明索引
 │   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
 │   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner，模型由 GEMINI_A2_MODEL_DEFAULT 控制）
+│   ├── learnings-pointers.js            ← learnings 6 桶跨領域指標生成器（2026-08-03，讀 `@主桶 +副桶` tag 生成副桶 pointer；含防呆機制拒絕覆寫誤植正式條目）
 │   ├── validate-ag-plan.js             ← ag-plan 輸出格式守護（6 section + checkbox + 檔案標記驗證，保護 Verdict 鏈）
 │   ├── deploy_batch_recalc_workflow.js  ← 建立並啟動 n8n 💰 Financial Batch Recalculate workflow（2026-05-28）
 │   ├── repair/                          ← 財務 / 資料修補腳本（一次性，需人工確認後執行）
@@ -352,7 +361,7 @@ freehandsss_dashboard/
 │   │   └── sync_0600903.js             ← 訂單 0600903 財務與時間修補
 │   ├── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │   │   ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
-│   │   ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議）
+│   │   ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議 + 2026-08-03 新增 learnings 6 桶自動注入，session 內去重，slash command 白名單放行）
 │   │   ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/MultiEdit/PowerShell/Bash/NotebookEdit，2026-07-04 S139 補洞：current.html Bash/PowerShell目標偵測 R9、sbp_/eyJ key pattern）
 │   │   ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
 │   │   ├── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）

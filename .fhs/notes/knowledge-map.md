@@ -13,8 +13,8 @@
 | 某個架構決策「為什麼」這樣定 | `.fhs/notes/decisions.md`（Grep 決策關鍵詞或 D 編號） |
 | 某個 session 具體做了什麼、怎麼驗收的 | `.fhs/reports/completion/YYYY-MM-DD_*_completion_report.md`（Grep 檔名日期/slug） |
 | 某個功能的逐版本變更歷史 | `Changelog.md`（Grep 版本號或關鍵詞） |
-| 某個踩過的坑、避雷方法 | `.fhs/memory/learnings.md`（Pattern/Pitfall/Preference 三類） |
-| 工具/harness 環境怪癖（非業務財務邏輯） | auto-memory 索引 `MEMORY.md`（外部路徑，見 `.fhs/tools/fhs-health-rules.json` 的 `auto_memory_dir`） |
+| 某個踩過的坑、避雷方法 | `.fhs/memory/learnings/`（2026-08-03 起分 6 領域桶：supabase/frontend/finance/n8n/governance/tooling，索引見 `learnings/README.md`；各桶內仍分 Pattern/Pitfall/Preference 三類） |
+| 工具/harness 環境怪癖 | 依**可攜性**劃線（非「業務 vs 工具」二分）：跟這個 repo 流程走的（即使是工具怪癖，如 `learnings/tooling.md`）→ 留 repo 內 `learnings/`；純個人/跨專案/harness 本身偏好、不隨 repo 走 → auto-memory 索引 `MEMORY.md`（外部路徑，見 `.fhs/tools/fhs-health-rules.json` 的 `auto_memory_dir`） |
 | 某次 `/cl-flow` 規劃全過程（PX/AG/Verdict） | `artifacts/{flow_id}/`（按資料夾日期時間戳） |
 | 當前系統現況快照（版本/待辦/驗證狀態） | `.fhs/memory/handoff.md` 頂部便攜塊（只讀前120行） |
 | 制度層規則怎麼運作（派工/模型/巨檔紀律） | `.fhs/ai/governance/00_INDEX.md` 先查索引再進對應章節 |
@@ -22,7 +22,7 @@
 | 自己（AI）用量模式、哪些 prompt 該做 skill/hook | `/fhs-usage-audit`（審 transcript 行為，與文件衛生 `/fhs-slim` 正交），快照見 `.fhs/memory/usage-audit/` |
 | V42 排版鐵律（rowspan 對齊/字體/Loader/quick-jump pill） | `.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` Section 六（唯一明文居所；業務背景則在 auto-memory，session 自動載入不需查詢） |
 
-**判準**：查到的是「當前狀態」→ 便攜塊；查到的是「怎麼做/怎麼派工」→ governance；查到的是「過去某次事件的完整來龍去脈」→ 對應完成報告或 decisions.md；查到的是「反覆驗證的通則」→ learnings.md。四者互不重疊，找錯類別是最常見的查詢失敗模式。
+**判準**：查到的是「當前狀態」→ 便攜塊；查到的是「怎麼做/怎麼派工」→ governance；查到的是「過去某次事件的完整來龍去脈」→ 對應完成報告或 decisions.md；查到的是「反覆驗證的通則」→ `learnings/`。四者互不重疊，找錯類別是最常見的查詢失敗模式。
 
 ## 外部框架吸收書籤（2026-07-07，S152）
 

@@ -322,6 +322,73 @@ function checkArchiveLinks(rules) {
   return issues;
 }
 
+// ── CHECK 5b: 未註冊桶 unregistered_file_checks（2026-08-03 learnings 分桶重構）───
+// 偵測目錄下 .md 檔是否有任何一個未被 volume_budgets 任何 rule 的 path 覆蓋——
+// 防止未來新增領域桶時，配額與語法守護因 rule 未跟上而靜默失效（A2 對抗評審 #5）。
+
+function checkUnregisteredFiles(rules) {
+  const issues = [];
+  for (const rule of rules.unregistered_file_checks || []) {
+    try {
+      const dir = path.join(REPO_ROOT, rule.dir);
+      if (!fs.existsSync(dir)) continue;
+      const registeredPaths = new Set(
+        (rules[rule.registered_in] || [])
+          .filter(r => r.path)
+          .map(r => path.normalize(path.join(REPO_ROOT, r.path)))
+      );
+      const regex = new RegExp('^' + rule.glob.split('*').map(escapeRegex).join('.*') + '$');
+      const files = fs.readdirSync(dir)
+        .filter(f => regex.test(f) && !(rule.exclude_files || []).includes(f))
+        .map(f => path.join(dir, f));
+      for (const f of files) {
+        if (!registeredPaths.has(path.normalize(f))) {
+          issues.push(`未註冊: ${rel(f)} 存在於 ${rule.dir} 但未被任何 ${rule.registered_in} rule 覆蓋（${rule.note || ''}）`);
+        }
+      }
+    } catch (err) {
+      logError(`unregistered_file[${rule.id}]`, err);
+    }
+  }
+  return issues;
+}
+
+// ── CHECK 5c: 複驗逾期 last_verified_checks（2026-08-03 learnings 分桶重構）──────
+// 掃 <!-- v:YYYY-MM-DD --> 標記，超過 max_age_days 天未複驗則報異常（本系統健檢
+// 全域皆為 fail-open 非阻擋性質，故無需另設 INFO/ERROR 分級）。v:unknown 略過。
+
+function checkLastVerified(rules) {
+  const issues = [];
+  for (const rule of rules.last_verified_checks || []) {
+    try {
+      const dir = path.join(REPO_ROOT, rule.dir);
+      if (!fs.existsSync(dir)) continue;
+      const regex = new RegExp('^' + rule.glob.split('*').map(escapeRegex).join('.*') + '$');
+      const tagRe = new RegExp(rule.tag_pattern, 'g');
+      const files = fs.readdirSync(dir)
+        .filter(f => regex.test(f) && !(rule.exclude_files || []).includes(f))
+        .map(f => path.join(dir, f));
+      for (const f of files) {
+        const content = readText(f);
+        let m;
+        while ((m = tagRe.exec(content)) !== null) {
+          const val = m[1];
+          if (!val || val === rule.skip_value) continue;
+          const d = new Date(val);
+          if (isNaN(d)) continue;
+          const ageDays = Math.floor((Date.now() - d.getTime()) / 86400000);
+          if (ageDays > rule.max_age_days) {
+            issues.push(`複驗逾期: ${rel(f)} 有教訓標記 v:${val} 已 ${ageDays} 天未複驗（規定上限 ${rule.max_age_days} 天）`);
+          }
+        }
+      }
+    } catch (err) {
+      logError(`last_verified[${rule.id}]`, err);
+    }
+  }
+  return issues;
+}
+
 // ── CHECK 6: 週期稽核到期 cadence_checks ────────────────────────────────────────
 // 記憶負擔歸零：不要求 Fat Mo 記得多久沒跑 /fhs-audit 這類週期指令，改由既有
 // 報告產物（檔名含日期）推斷「上次執行時間」，不建新 marker 機制。
@@ -384,6 +451,8 @@ function main() {
   try { issues = issues.concat(checkCanonicalDrift()); } catch (err) { logError('checkCanonicalDrift', err); }
   try { issues = issues.concat(checkDuplicateBasenames(rules, autoMemoryDir)); } catch (err) { logError('checkDuplicateBasenames', err); }
   try { issues = issues.concat(checkArchiveLinks(rules)); } catch (err) { logError('checkArchiveLinks', err); }
+  try { issues = issues.concat(checkUnregisteredFiles(rules)); } catch (err) { logError('checkUnregisteredFiles', err); }
+  try { issues = issues.concat(checkLastVerified(rules)); } catch (err) { logError('checkLastVerified', err); }
   try { issues = issues.concat(checkCadenceOverdue(rules)); } catch (err) { logError('checkCadenceOverdue', err); }
 
   const durationMs = Date.now() - startedAt;

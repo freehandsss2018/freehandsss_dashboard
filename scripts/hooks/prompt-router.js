@@ -2,10 +2,20 @@
 // scripts/hooks/prompt-router.js
 // FHS UserPromptSubmit Hook — Intelligent Task Router
 // Analyzes the user's prompt and injects subagent/skill/model routing suggestions
-// Version: 1.0.0 | 2026-04-28
+// Version: 2.0.0 | 2026-08-03 (flow 2026-08-03-2003, learnings 分桶重構 P3)
+// Change: 新增獨立 learnings 領域路由（P3.1-P3.5）——按任務內容自動注入命中
+//         桶檔全文至工作記憶，同 session 內去重，slash command 白名單放行。
+//         舊有 12 條 subagent/model 路由（first-match-wins）完全不變、不受影響。
 // Output: plain text injected into Claude's context (suggestion mode, not enforcement)
 
 'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+const REPO_ROOT = path.resolve(__dirname, '../..');
+const LEARNINGS_DIR = path.join(REPO_ROOT, '.fhs/memory/learnings');
+const INJECTED_STATE_DIR = path.join(REPO_ROOT, '.fhs'); // gitignored 暫態檔慣例，見 .gitignore
 
 let input = '';
 process.stdin.on('data', chunk => { input += chunk; });
@@ -19,16 +29,34 @@ process.stdin.on('end', () => {
 
   const rawPrompt = data.prompt || '';
   const prompt = rawPrompt.toLowerCase();
+  const trimmedPrompt = rawPrompt.trim();
 
-  // Skip routing suggestions for slash commands (they're self-descriptive)
-  const slashCommands = ['/read', '/commit', '/execute', '/cl-flow', '/cl-flow-fast',
+  // ─── Slash command classification ──────────────────────────────────────
+  // 全部 slash command 一律不做 subagent/model 建議（自我描述已足夠）。
+  // 但 5 個「重活」指令仍放行 learnings 注入（P3.3，A2 對抗評審 #4 採納：
+  // 避免 /commit、/fhs-slim 等輕量維護指令被無關全文塞爆 context）。
+  const ALL_SLASH_COMMANDS = ['/read', '/commit', '/execute', '/cl-flow', '/cl-flow-fast',
     '/fhs-check', '/fhs-audit', '/guardian', '/error-eye', '/rg', '/rp',
     '/db-query', '/new-product', '/upload-web', '/fhs-cost-audit'];
-  if (slashCommands.some(cmd => rawPrompt.trim().startsWith(cmd))) {
-    process.exit(0);
+  const LEARNINGS_WHITELISTED_COMMANDS = ['/cl-flow', '/cl-flow-fast', '/execute', '/error-eye', '/guardian'];
+
+  const isSlashCommand = ALL_SLASH_COMMANDS.some(cmd => trimmedPrompt.startsWith(cmd));
+  const isLearningsWhitelisted = LEARNINGS_WHITELISTED_COMMANDS.some(cmd => trimmedPrompt.startsWith(cmd));
+
+  const outputParts = [];
+
+  // ─── Learnings 領域路由（P3，2026-08-03 flow 2026-08-03-2003）───────────
+  if (!isSlashCommand || isLearningsWhitelisted) {
+    const learningsOutput = buildLearningsInjection(prompt, data.session_id, data.transcript_path);
+    if (learningsOutput) outputParts.push(learningsOutput);
   }
 
-  // ─── Routing Rules ──────────────────────────────────────────────────────
+  if (isSlashCommand) {
+    if (outputParts.length) console.log(outputParts.join('\n\n'));
+    process.exit(0); // subagent/model 建議一律跳過（slash command 已自我描述）
+  }
+
+  // ─── Routing Rules（既有 12 條，完全不變）──────────────────────────────
   // Order matters: first match wins
   const routes = [
     // ── Large change warning (check before general categories) ──
@@ -152,29 +180,136 @@ process.stdin.on('end', () => {
     }
   }
 
-  if (!matched) {
-    process.exit(0); // No match, pass through silently
+  if (matched) {
+    const parts = [];
+    parts.push(`[FHS Router] ${matched.reason}`);
+    if (matched.guardian) {
+      parts.push('→ ⚠️  建議先執行 /guardian 稽核（大範圍改動四部曲）');
+    }
+    if (matched.subagent) {
+      parts.push(`→ 建議 subagent: ${matched.subagent}`);
+    }
+    if (matched.skill) {
+      parts.push(`→ 載入 skill: ${matched.skill}`);
+    }
+    if (matched.reference) {
+      parts.push(`→ 參考文件: ${matched.reference}`);
+    }
+    if (matched.model) {
+      parts.push(`→ 建議 model: ${matched.model}  (切換：/model ${matched.model})`);
+    }
+    outputParts.push(parts.join('\n'));
   }
 
-  // ─── Build Suggestion ────────────────────────────────────────────────────
-  const parts = [];
-  parts.push(`[FHS Router] ${matched.reason}`);
-  if (matched.guardian) {
-    parts.push('→ ⚠️  建議先執行 /guardian 稽核（大範圍改動四部曲）');
-  }
-  if (matched.subagent) {
-    parts.push(`→ 建議 subagent: ${matched.subagent}`);
-  }
-  if (matched.skill) {
-    parts.push(`→ 載入 skill: ${matched.skill}`);
-  }
-  if (matched.reference) {
-    parts.push(`→ 參考文件: ${matched.reference}`);
-  }
-  if (matched.model) {
-    parts.push(`→ 建議 model: ${matched.model}  (切換：/model ${matched.model})`);
-  }
-
-  console.log(parts.join('\n'));
+  if (outputParts.length) console.log(outputParts.join('\n\n'));
   process.exit(0);
 });
+
+// ── Learnings 領域路由實作（P3.1-P3.5）──────────────────────────────────────
+
+const LEARNINGS_ROUTES = [
+  {
+    bucket: 'supabase',
+    patterns: ['supabase', 'postgres', 'postgrest', 'rls', 'migration', '遷移',
+      'rpc', 'schema', '欄位', 'grant', 'revoke', 'sql']
+  },
+  {
+    bucket: 'frontend',
+    patterns: ['dashboard', 'html', '前端', '表單', 'modal', '手機版', 'dom',
+      'calculatepricing', '渲染', 'v42', 'current.html']
+  },
+  {
+    bucket: 'finance',
+    patterns: ['財務', '成本', '利潤', '定價', 'sku', '售價', 'cost', 'profit',
+      'pricing', '毛利', '報價', '折扣']
+  },
+  {
+    bucket: 'n8n',
+    patterns: ['n8n', 'workflow', 'webhook', '節點', 'node', 'workflow id']
+  },
+  {
+    bucket: 'governance',
+    patterns: ['治理', 'governance', 'subagent', '多代理', 'skill', '文件生命週期',
+      '退役', '派工', '調度']
+  },
+  {
+    bucket: 'tooling',
+    patterns: ['python', 'canva', '第三方', 'harness', 'blender', '腳本', 'script']
+  }
+];
+
+// 掃全部 6 桶，收集所有命中（不 break，與舊有 12 條 subagent 路由的
+// first-match-wins 邏輯完全獨立，互不干擾）。
+function matchLearningsBuckets(promptLower) {
+  const hit = [];
+  for (const route of LEARNINGS_ROUTES) {
+    if (route.patterns.some(p => promptLower.includes(p))) {
+      hit.push(route.bucket);
+    }
+  }
+  return hit;
+}
+
+// Session 去重鍵解析：優先 session_id（P3.0 探針已實測確認真實存在且穩定），
+// 缺席時 fallback transcript_path 的 hash，兩者皆缺則退化為全域單檔（無 session
+// 區隔，但仍不會同一輪內重複注入同一桶——見 state 檔本身即以 bucket 為 key）。
+function resolveSessionKey(sessionId, transcriptPath) {
+  if (sessionId) return String(sessionId);
+  if (transcriptPath) {
+    try {
+      const crypto = require('crypto');
+      return 'tp-' + crypto.createHash('sha1').update(String(transcriptPath)).digest('hex').slice(0, 12);
+    } catch (_) { /* fall through */ }
+  }
+  return 'global';
+}
+
+function loadInjectedState(stateFile) {
+  try {
+    if (fs.existsSync(stateFile)) {
+      return JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+    }
+  } catch (_) { /* corrupted state → treat as empty */ }
+  return {};
+}
+
+function saveInjectedState(stateFile, state) {
+  try {
+    fs.writeFileSync(stateFile, JSON.stringify(state), 'utf8');
+  } catch (_) { /* fail-open: injection still happened this turn, just dedup may retry next time */ }
+}
+
+// 抽取桶檔全文（去除 POINTERS 區塊的生成器 marker 註解，保留內容本身）
+function readBucketContent(bucket) {
+  try {
+    const p = path.join(LEARNINGS_DIR, `${bucket}.md`);
+    if (!fs.existsSync(p)) return null;
+    return fs.readFileSync(p, 'utf8').trim();
+  } catch (_) {
+    return null;
+  }
+}
+
+function buildLearningsInjection(promptLower, sessionId, transcriptPath) {
+  const buckets = matchLearningsBuckets(promptLower);
+  if (!buckets.length) return null;
+
+  const sessionKey = resolveSessionKey(sessionId, transcriptPath);
+  const stateFile = path.join(INJECTED_STATE_DIR, `.learnings-injected-${sessionKey}.json`);
+  const state = loadInjectedState(stateFile);
+
+  const toInject = buckets.filter(b => !state[b]);
+  if (!toInject.length) return null; // 全部命中桶本 session 已注入過
+
+  const sections = [];
+  for (const bucket of toInject) {
+    const content = readBucketContent(bucket);
+    if (!content) continue;
+    sections.push(`--- learnings/${bucket}.md（自動注入，本 session 首次命中此桶）---\n${content}`);
+    state[bucket] = true;
+  }
+  if (!sections.length) return null;
+
+  saveInjectedState(stateFile, state);
+  return sections.join('\n\n');
+}

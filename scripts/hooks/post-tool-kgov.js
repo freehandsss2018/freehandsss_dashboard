@@ -27,7 +27,12 @@ const FLAG_FILE = process.env.FHS_KGOV_FLAG_FILE ||
 // (S141 lesson: external paths must be configured, not pattern-matched.)
 const RULES_FILE = path.join(__dirname, '../../.fhs/tools/fhs-health-rules.json');
 let AUTO_MEMORY_DIR = null;
-let LEARNINGS_BUDGET = 50;        // default if rules file unreadable
+// 2026-08-03 learnings 分桶重構（flow 2026-08-03-2003）：單一 LEARNINGS_BUDGET 改為
+// 逐桶 map（path basename → budget），因應 6 桶差異化配額，不再是單一數字。
+let LEARNINGS_BUCKET_BUDGETS = {
+  'supabase.md': 20, 'frontend.md': 25, 'finance.md': 20,
+  'n8n.md': 20, 'governance.md': 15, 'tooling.md': 15
+}; // defaults if rules file unreadable — 對齊 README.md §2 配額表
 let PORTABLE_BLOCK_BUDGET = 4000; // default from commit.md P0.7.1
 try {
   const rules = JSON.parse(fs.readFileSync(RULES_FILE, 'utf8'));
@@ -35,8 +40,13 @@ try {
   if (p) AUTO_MEMORY_DIR = p.replace(/\\/g, '/').replace(/\/$/, '').toLowerCase();
   // Read budgets from rules file (avoid hard-coding — S148 T6 principle)
   const vb = rules.volume_budgets || [];
+  const bucketRuleIds = {
+    learnings_supabase_entries: 'supabase.md', learnings_frontend_entries: 'frontend.md',
+    learnings_finance_entries: 'finance.md', learnings_n8n_entries: 'n8n.md',
+    learnings_governance_entries: 'governance.md', learnings_tooling_entries: 'tooling.md'
+  };
   for (const item of vb) {
-    if (item.id === 'learnings_entries' && item.budget) LEARNINGS_BUDGET = item.budget;
+    if (bucketRuleIds[item.id] && item.budget) LEARNINGS_BUCKET_BUDGETS[bucketRuleIds[item.id]] = item.budget;
     if (item.id === 'handoff_portable_block' && item.budget) PORTABLE_BLOCK_BUDGET = item.budget;
   }
 } catch (_) { /* fail-open: use defaults */ }
@@ -180,6 +190,14 @@ process.stdin.on('end', () => {
 
     // ── Write/Edit tool: check file path + content ────────────────────────
     if (isWriteTool && filePath) {
+      // T6: budget gate — MUST run before #8 safe-path exit (2026-08-03 dead-code fix,
+      // discovered during learnings 分桶重構 flow 2026-08-03-2003 P2 acceptance test).
+      // SAFE_PATH_PATTERNS[0] matches ANY path under .fhs/memory/ — exactly where both
+      // learnings/*.md and handoff.md live, so T6 (below, at old line position) never
+      // fired for its own two intended targets since introduction (S148 Phase 3).
+      // T6 is orthogonal to the G-audit (financial) logic that #8 exists to skip.
+      checkBudgetGate(filePath);
+
       // #8: Safe paths → silent
       const isSafe = SAFE_PATH_PATTERNS.some(p => p.test(filePath)) ||
         (AUTO_MEMORY_DIR && filePath.toLowerCase().startsWith(AUTO_MEMORY_DIR));
@@ -216,9 +234,6 @@ process.stdin.on('end', () => {
         emitAdditionalContext(G_WARN);
       }
       // No flag written for .md / code files
-
-      // T6: budget gate — check after any Write/Edit (S148 Phase 3)
-      checkBudgetGate(filePath);
     }
 
     process.exit(0);
@@ -229,23 +244,27 @@ process.stdin.on('end', () => {
 });
 
 // ── T6: Budget Gate (S148 Phase 3) ───────────────────────────────────────────
-// Called after each Write/Edit. Only activates when writing learnings.md or handoff.md.
+// Called after each Write/Edit. Only activates when writing learnings/<bucket>.md or handoff.md.
 // Reads budgets from fhs-health-rules.json (same source as fhs-health-check.js).
 function checkBudgetGate(filePath) {
   if (!filePath) return;
   const normalPath = filePath.replace(/\\/g, '/');
 
   try {
-    // learnings.md: count numbered entries (^d+. pattern)
-    if (normalPath.endsWith('learnings.md')) {
-      const learnPath = path.join(__dirname, '../../.fhs/memory/learnings.md');
-      if (!fs.existsSync(learnPath)) return;
-      const lines = fs.readFileSync(learnPath, 'utf8').split('\n');
+    // learnings/<bucket>.md: count numbered entries (^d+. pattern), 2026-08-03 分桶重構
+    const learningsMatch = normalPath.match(/\.fhs\/memory\/learnings\/([a-z0-9_-]+\.md)$/);
+    if (learningsMatch) {
+      const bucketFile = learningsMatch[1];
+      const budget = LEARNINGS_BUCKET_BUDGETS[bucketFile];
+      if (budget === undefined) return; // README.md 或未註冊桶不受此條數守護（README 另有 bytes rule）
+      const bucketPath = path.join(__dirname, '../../.fhs/memory/learnings', bucketFile);
+      if (!fs.existsSync(bucketPath)) return;
+      const lines = fs.readFileSync(bucketPath, 'utf8').split('\n');
       const count = lines.filter(l => /^\d+\.\s/.test(l)).length;
-      if (count > LEARNINGS_BUDGET) {
+      if (count > budget) {
         emitAdditionalContext(
-          `⚠️ [kgov-hook T6] learnings.md 本次寫入後 ${count} 條 > 預算 ${LEARNINGS_BUDGET} 條\n` +
-          `   → 請當場對等替換（合併/退役一條），勿留給 /fhs-slim（見 commit.md 防回胖機制）`
+          `⚠️ [kgov-hook T6] learnings/${bucketFile} 本次寫入後 ${count} 條 > 預算 ${budget} 條\n` +
+          `   → 請當場對等替換（合併/退役一條，符合 learnings/README.md §5 退役 checklist 五類之一），勿留給 /fhs-slim`
         );
       }
       return;

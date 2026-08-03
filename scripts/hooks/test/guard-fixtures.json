@@ -221,6 +221,37 @@
     "note": "S156 /8d v2-1(b) 提案：warn 提示 Rule 3.17 雙紀律自檢句，沿用 kgov v2.0.0 md-only-warn 哲學，不 block"
   },
   {
+    "name": "R12: 寫入 learnings/supabase.md（分桶後）應警告但不攔截",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": ".fhs/memory/learnings/supabase.md",
+      "old_string": "x",
+      "new_string": "y"
+    },
+    "expected_exit": 0,
+    "expected_stderr_contains": [
+      "R12"
+    ],
+    "known_gap": false,
+    "note": "2026-08-03 learnings 分桶重構（flow 2026-08-03-2003）：R12 path 擴至 learnings/ 目錄，驗證分桶後仍受警告覆蓋"
+  },
+  {
+    "name": "R12: 寫入 learnings/finance.md 應額外提示財務桶特殊守護",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": ".fhs/memory/learnings/finance.md",
+      "old_string": "x",
+      "new_string": "y"
+    },
+    "expected_exit": 0,
+    "expected_stderr_contains": [
+      "R12",
+      "finance 桶特殊守護"
+    ],
+    "known_gap": false,
+    "note": "2026-08-03 learnings 分桶重構：finance.md 受 finance-gatekeeper 管轄，須額外提示引用 Bible 章節"
+  },
+  {
     "name": "正常安全寫入不應觸發任何規則",
     "tool_name": "Write",
     "tool_input": {

@@ -1,6 +1,6 @@
 # 05 — 維護協議（governance 檔案怎麼安全地演化）
 
-> **Version**: v1.2.0（2026-07-08，Session 156；§2 分流表加 skill 落點行、§7 加 2b stage-1 污染抽查，均指向 [[07_compounding-loop]]；S148 同日曾加 §7 第 5 項教訓熔斷條款 A4）
+> **Version**: v1.2.1（2026-08-03，learnings 分桶重構 flow 2026-08-03-2003；§1/§2/§4 三處 learnings.md 引用改為 learnings/<bucket>.md，§2 補 O1 已知張力備註）；v1.2.0（2026-07-08，Session 156；§2 分流表加 skill 落點行、§7 加 2b stage-1 污染抽查，均指向 [[07_compounding-loop]]；S148 同日曾加 §7 第 5 項教訓熔斷條款 A4）
 > **讀者**：任何想修改 CLAUDE.md、governance/、learnings、handoff 的未來 session。
 > **原則**：制度檔的價值在「穩定可預期」。寧可慢半拍，不可讓兩個 session 讀到互相矛盾的規則。
 
@@ -17,7 +17,7 @@
 | `04` 追加新模板變體 | 新增檔尾，不改既有 T1–T5 |
 | [[00_INDEX]] 狀態欄更新 | 事實同步 |
 | 修 typo / 修失效路徑引用 | 引用目標確實已遷移，且在同 commit 註明 |
-| `learnings.md` 追加條目 | 遵其自身規則（≤150字元/條、50條上限）**+ 過 stage-3 驗證門檻（[[07_compounding-loop]] §1）** |
+| `learnings/<bucket>.md` 追加條目 | 遵其自身規則（≤150字元/條、6桶差異化配額共115條，見 `learnings/README.md` §2）**+ 過 stage-3 驗證門檻（[[07_compounding-loop]] §1）** |
 | skill/command 檔追加 `Known failure modes`/`Anti-patterns` 條目 | 純追加不改流程本體，改前備份，格式見 [[07_compounding-loop]] §2 |
 | handoff.md 輪轉 | 嚴格照 §4 SOP，先備份 |
 
@@ -41,7 +41,7 @@
 
 | 教訓類型 | 落點 | 例 |
 |---|---|---|
-| FHS 業務/技術 pitfall（財務、n8n、Supabase、HTML） | `.fhs/memory/learnings.md`（既有制度） | 「PUT body 只能 4 欄」 |
+| FHS 業務/技術 pitfall（財務、n8n、Supabase、HTML） | `.fhs/memory/learnings/<bucket>.md`（2026-08-03 起 6 桶分域：supabase/frontend/finance/n8n/governance/tooling，見 `learnings/README.md`） | 「PUT body 只能 4 欄」→ `learnings/n8n.md` |
 | **調度/流程層**教訓（派工翻車、驗證漏洞、token 事故） | [[02_model-dispatch]] §7 實戰修正錄 | 「haiku 批次替換漏了轉義字元，改規格必附 raw string」 |
 | 判斷失誤（該問沒問/該停沒停/假完成） | `03` 對應 rubric 追加正/反例 | 某 session 的假完成案例 → R2 反例 |
 | **關於某個 skill/command 執行方式**的教訓 | 該 skill 檔本體「Known failure modes」節（格式與權限見 [[07_compounding-loop]] §2），learnings 至多留一行指標 | 「/execute 部署 PUT body 只能 4 欄」→ 部署 command 檔 |
@@ -49,6 +49,8 @@
 | 與 Fat Mo 的架構決策 | `.fhs/notes/decisions.md`（既有硬規則） | — |
 
 **判斷不了落哪：問「這教訓對非 FHS 專案有沒有用？」有 → governance（調度層）；沒有 → learnings（業務層）。**
+
+> ⚠️ **已知張力**（2026-08-03 learnings 分桶重構 O1，留待季度健檢裁決）：本表第 4 行規定「關於 skill/command 執行方式的教訓」應寫進該 skill 檔本體，`learnings` 至多留一行指標；但 `learnings/governance.md` + `learnings/tooling.md` 現時共 12 條教訓性質上正屬此類（多代理協作分工、第三方 Skill frontmatter 限制等）卻仍以全文形式存在。分桶重構階段刻意不處理此張力（維持現狀搬遷，不擴大改動範圍），下次季度健檢應裁決：(a) 補一句「已落 skill 者於 learnings 留指標即可，未落者暫存對應桶」或 (b) 兩桶降級為純指標桶。
 
 ## §3 條目格式（02 §7 / 03 例子通用）
 
@@ -64,7 +66,7 @@
 | 檔案 | 觸發 | 動作 |
 |---|---|---|
 | `.fhs/memory/handoff.md` | >800 行 | **輪轉 SOP**：(1) `cp` 全檔到 `.fhs/memory/archive/handoff-<起訖年月>.md`（archive/ 不存在先建）(2) 原檔保留：便攜塊 + MASTER 表 + 最近 5 個 session 條目 (3) 剪除段落的位置留一行指標「更早 session 見 archive/」(4) read-back 驗證便攜塊完整 + hook 仍能抽取（跑一次 `bash scripts/hooks/session-start-sop.sh` 確認輸出正常） |
-| `learnings.md` | >50 條 | 既有制度：合併/退役，附 📌 可追溯附註（S113/S136 慣例） |
+| `learnings/<bucket>.md` | 各桶超配額（supabase 20/frontend 25/finance 20/n8n 20/governance 15/tooling 15，見 README §2） | 依 `learnings/README.md` §5 退役 checklist 五類逐條核實才准退役，附 📌 附註搬入 README §8 登記冊（禁止純為騰額度退役，S113/S136 慣例延續） |
 | governance 各檔 | >400 行 | 提案精簡（走 §1「先問」——精簡=刪除） |
 | `02 §7` / `03` 例子 | 單節 >15 條 | 合併同型條目，退役已升格為規則本體的 |
 | `.fhs/ai/governance/backups/` | >20 檔 | 刪 90 天前的備份（git 歷史仍在） |

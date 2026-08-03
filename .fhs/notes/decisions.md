@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-03] (D57) FHS Telegram 訊息品質整治——Update_Note 改規則式解碼(88/102欄位原本會吐原始變數名) + 內部JSON/顯示鏡像skip + appendAttribution全域關閉(8節點) + 本日第2處中文腐蝕還原(Auditor Alert)
+
+[2026-08-03] (D56) learnings 系統領域分桶重構——單檔50條硬上限改6桶差異化配額115條 + prompt-router自動注入 + P3.0探針證實session_id存在
+
+**背景**：`.fhs/memory/learnings.md` 唯一載入點係 `/read` Step 3 全量載入，而 Rule 3.11 要求一般 session 依賴 hook 快照、不常執行 `/read`——兩條規則相乘令大部分 session 工作記憶內 learnings 條目數為 0，教訓寫咗但未被應用。同時全檔 35,337 bytes 中 22 段退役附註（10,539 bytes）+ 檔頭制度說明（1,466 bytes）= 34% 非教訓本體，每次全量載入都白吃呢啲體積。經 `/cl-flow`（flow `2026-08-03-2003`）+ `grilling` 九題拷問定案，Verdict `CONDITIONAL_READY`（A1 Perplexity 因配額用盡缺席，僅 A2 Gemini 單邊評審，7 條批評 1 BLOCKER 全採納、4 MAJOR 全採納/部分採納、2 MINOR 採納並改進）。
+
+**定案方向**：①儲存軸＝6 個領域桶（supabase/frontend/finance/n8n/governance/tooling），/8d 八維度降為路由觸發器而非儲存分類（實測 42/50 條無格可放）；②跨領域教訓全文只住主桶一份，副桶得一行自動生成 pointer（`scripts/learnings-pointers.js`，含防呆機制拒絕覆寫誤植正式條目）；③配額由 50 擴至 115（差異化：supabase 20/frontend 25/finance 20/n8n 20/governance 15/tooling 15）；④退役 checklist 五類明文化（升格憲法/已結構性修復/已在別處更完整/已被新條覆蓋/一次性低復發），唔符合任一類就唔准退役；⑤同 auto-memory 邊界改用「可攜性」劃線（入 git 跟 repo 走＝learnings），非「業務 vs 工具」二分；⑥每桶重新連續編號（`^\d+\.\s` regex 零改動）+ `` `@主桶 +副桶` `` tag + `<!-- v:日期 -->` 複驗標記。
+
+**P3.0 探針結果（Verdict 強制前置關卡）**：實查 `grep -rn "session_id" scripts/hooks/*.js` 為零結果（本 repo 5 個既有 hook 從未用過此欄位，零驗證基礎），故 Verdict 定為 `CONDITIONAL_READY` 非 `APPROVED_READY`。2026-08-03 於 `prompt-router.js` 加一次性診斷探針，實測真實 UserPromptSubmit stdin payload：`top_level_keys = [session_id, transcript_path, cwd, prompt_id, permission_mode, hook_event_name, prompt, session_title]`，`session_id` 為穩定 UUID（`e432a6a6-0edd-49bd-af42-ff356cdea4dd`），`transcript_path` 亦存在作為備援鍵。探針確認後即移除診斷代碼，P3 session 去重機制按 Verdict 分支一（含穩定 session_id）實作。
+
+**意外發現（P2 驗收時揪出，非本次搬遷造成）**：`post-tool-kgov.js` 的 T6 預算門（S148 Phase 3 引入）因 `SAFE_PATH_PATTERNS[0] = /\.fhs[/\\]memory[/\\]/i` 涵蓋整個 `.fhs/memory/` 目錄，早於 T6 檢查點提前 `process.exit(0)`——導致 T6 自引入以來對其兩個原始目標（`learnings.md` 條數 + `handoff.md` 便攜塊 bytes）皆從未真正執行過，屬既有 dead code。已將 T6 呼叫移至 safe-path 判斷之前修正（safe-path 語義是跳過財務 [G] 稽核，非跳過全部後續處理），兩個預算門現已實測確認正常觸發。
+
+**驗證**：50 條逐字內容比對零差異（含 22 段退役附註完整搬遷）；派 fresh-context agent 獨立覆核 PASS（僅發現 README 表格統計筆誤已修正）；19 guard fixtures + 10 kgov fixtures + 12 health fixtures 全數 PASS 零回歸；`fhs-health-check.js` `issue_count` 維持 1（同改動前一致，該項為既有 handoff.md 過肥，與本次無關）。P3 路由注入實作與驗收詳見 Changelog.md 2026-08-03 條目。
+
+**已知技術債（明確不做，留待另案）**：auto-memory 30+ 條純業務知識尚未依可攜性原則歸位；`07_compounding-loop.md §2`「教訓應寫入 skill 本體」規則與 `learnings/governance.md`+`tooling.md` 現存 12 條全文條目的張力，已於 `05_maintenance-protocol.md §2` 加註記，留待季度健檢裁決。
+
 [2026-07-30] (D51) 「產品選購」卡片 UI/UX 重新設計提案定案——三大類色沿用財務結算配色、鎖匙扣改藥丸多選+共用欄位、預設狀態對齊真實resetForm()
 
 **背景**：Fat Mo 要求優化「新增/修改訂單」表單「訂單產品內容與方案選擇」區操作體感——家庭組合已綁定配件不應逐件勾選、鎖匙扣/吊飾部位逐件重複輸入等痛點。純設計提案，交付互動式 HTML 原型（Artifact 發佈），全程未觸碰 repo 任何檔案，未實作落 `current.html`/`V42.html`，待 Fat Mo 審批後排入實作 session。
@@ -437,7 +453,7 @@ Phase 3 至此收尾。
 
 決策：handoff.md 頂部新增唯一 ` ```handoff ` fenced 便攜塊（六類不可省略欄位：目標/決策/驗證/待辦/下一步/地雷），以 `─── 便攜邊界` 分隔線實現雙深度切片。hook 只抽動態段（邊界以上，~120 tokens），人類複製整塊（含靜態地雷段）。過期偵測：hook 比對塊頭 YYYY-MM-DD 與今日，不符印警告。SOP_NOW.md 版本格改指標（v2-C，不再自帶版本字串）。commit.md 加 P0.7 強制更新便攜塊（防腐）。
 原因（三漏洞）：(1) hook `awk '/^## 待辦/'` 匹配 handoff.md 底部 line 3760 殭屍待辦（Session 63 以前，Anti-Idle/pg_cron 等已 S67/87 完成），真正「# MASTER 持續待辦」用單 `#` hook 永遠讀不到；(2) SOP_NOW 快照仍 V41，實際 S115 升格 V42；(3) handoff 底部核心配置表仍 V41 舊 versionId。v2 核心洞見：以「同一 fenced 塊同源」解決人類版/AI 版雙寫 drift 根因（PX 3.1 風險）；靠分層（動態/靜態分隔）同時達到 token 節約與外部貼用完整兩個對立目標。
-影響檔案：scripts/hooks/session-start-sop.sh（v2）、.fhs/memory/handoff.md（頂部新增便攜塊+底部 ARCHIVE）、.fhs/notes/SOP_NOW.md（版本格改指標）、.fhs/ai/commands/commit.md（P0.7）、.fhs/memory/learnings.md（Pitfall #23）
+影響檔案：scripts/hooks/session-start-sop.sh（v2）、.fhs/memory/handoff.md（頂部新增便攜塊+底部 ARCHIVE）、.fhs/notes/SOP_NOW.md（版本格改指標）、.fhs/ai/commands/commit.md（P0.7）、.fhs/memory/learnings.md（Pitfall #23，2026-08-03 分桶重構後現居 `learnings/governance.md` #2）
 
 [2026-06-23] (Session 116) cl-flow-runner API 雙修：Gemini 模型切換（.env）+ PX 改走 curl — 修復 /cl-flow 全模式不可用
 
@@ -545,7 +561,7 @@ Phase 3 至此收尾。
 [2026-06-11] (Session 87) 立體擺設款式管理 UI DEFERRED 項正式關閉
 
 決策：Fat Mo 選擇選項 A — 正式關閉此 DEFERRED 項。
-原因：Session 67 已降級（R1 關閉），動態款式管理 UI 功能取消；R2（Smart Cache COST_MAP 同步）降格為新增 SKU 時的 SOP checklist 提醒（已錄入 learnings.md Pitfall #10 + /new-product Step 2.e），無需獨立任務追蹤。
+原因：Session 67 已降級（R1 關閉），動態款式管理 UI 功能取消；R2（Smart Cache COST_MAP 同步）降格為新增 SKU 時的 SOP checklist 提醒（已錄入 learnings.md Pitfall #10 + /new-product Step 2.e），無需獨立任務追蹤。〔此 Pitfall #10 已於 Session 136 退役，見 `learnings/README.md` §8.3 退役登記冊；現行提醒唯一居所為 `/new-product` Step 2.e〕
 影響：MASTER 待辦移除此項；新增款式流程維持「Fat Mo 告知 Claude Code → 1 行 `<option>` + Smart Cache COST_MAP 同步」。
 
 [2026-06-10] (Session 83) 交貨期系統 v_delivery_reminders item-level filter + 雙向跳轉 UX
@@ -2068,3 +2084,29 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **範圍**：純 n8n workflow 節點類型替換，未觸碰任何 Supabase schema/RPC/成本定價欄位，未改動 workflow 內其餘孤兒節點（沿用 D43 既定「斷 connection 不刪除」處理方式）。
 
 詳見 Changelog.md 2026-08-02 條目、handoff.md 便攜塊。
+
+---
+
+### D57：2026-08-03 — FHS Telegram 訊息品質整治（術語/冗餘清理 + 英文尾巴全域關閉 + 兩處中文腐蝕還原）
+
+> **編號說明**：本日兩次 Telegram 修復（早上交貨期預警亂碼、下午修正訂單訊息優化）合併登記為 D57。早上 commit `2cc23d5` 嘅 message 誤用「D56」，而 D56 已由並行 session 登記為 learnings 領域分桶重構。`decisions.md` 為 D 編號 SSOT，故 D56 歸 learnings，本項為 D57；已推送嘅 commit message 無法改寫，Changelog 兩條目均已加註更正。
+
+**背景**：Fat Mo 截圖標紅「修正訂單」Telegram 訊息（單 #0601100），指出出現睇唔明嘅 `m_baby_sec_en`/`m_lh_en`/`depositSplitData`/`balanceSplitData` 同英文 n8n 尾巴，要求「不必要就刪除，否則用我明白的字句，而不是術語」，並要求檢查其他同類情況。
+
+**決策一：`Update_Note` 由「死表對照」改「規則式解碼」**。原實作逐個 `captureFormState()` 欄位比對報告，但 `labelMap` 只涵蓋 8 個欄位；browser 實測實際有 102 個欄位，即 86% 欄位一改動就吐原始英文變數名——係結構性缺陷而非個別漏譯。**選擇規則式解碼而非補全死表**，理由：FHS 部位欄位命名高度規律（`{k|m}_[e_]{lh|rh|lf|rf}_{en|qty|top|bot|color|eng}`），規則解碼可令將來新增同規則欄位自動有中文名，唔會隨產品線擴張再退化；補死表則每次加欄位都要記得補，必然重蹈覆轍。保留兜底：真係認唔到嘅欄位仍出原始名（寧可醜，唔好靜默漏報）。
+
+**決策二：內部欄位一律唔報，而非改名報**。`depositSplitData`/`balanceSplitData` 係內部分期 JSON，而訂金/尾數已各自單獨報一次；`orderIdDisplay`/`balance-eval-display` 係純顯示鏡像；`d51Shared*` 係 D51 共用輸入格，會寫穿落真實部位欄位。三類皆屬「同一個改動報兩次」或「非真實輸入」，故直接 skip 而非譯名——符合 Fat Mo「精簡及必要」嘅要求。
+
+**決策三：`appendAttribution:false` 全域套用**。survey 13 個 workflow 發現 5 個 workflow／8 個 Telegram 節點全部未設定此參數（n8n 預設 true），即每一則 FHS Telegram 訊息都帶英文廣告尾巴，非只 Fat Mo 截圖嗰則。故全域關閉而非單點修。
+
+**決策四：`FHS_System_ErrorMonitor` 有意不中文化**。該訊息含工作流程/節點/錯誤名等技術欄位，用途係俾 Fat Mo 定位邊個流程死咗；全中文化反而對唔返 n8n UI 上嘅節點名，搵唔到嘢。此為「術語 vs 人話」規則嘅明文例外。
+
+**連帶發現：本日第 2 處中文腐蝕**。`FHS_Core_OrderProcessor` 嘅 `Auditor Alert` 節點生產版本已腐蝕成 `=?? ?????????? ??...`，同早上修復嘅交貨期預警屬同一個 Windows curl inline 傳中文舊坑（見 auto-memory `feedback_n8n_deployment` 第 3 條）。確認方法：同一次 API dump 內兄弟節點 `Notify Telegram (Delete)` 中文正常，形成對照證明係真腐蝕而非終端機 codepage 顯示假象。已由 `n8n/FHS_Core_OrderProcessor.json` 還原（mojibake pattern 逐字元核對吻合）。**呢個係財務稽核警報**，即修復前若曾觸發，Fat Mo 收到嘅係一堆問號。
+
+**n8n PUT 400 診斷（新知識）**：首輪 5 個 workflow 有 2 個回 HTTP 400。元兇係 `settings.binaryMode`——成功嘅 3 個都冇此 key，失敗嘅 2 個都有；**唔係** `availableInMCP`（後者存在於全部 5 個且成功 PUT 後完整保留）。剝走 `binaryMode` 後皆 200，且 PUT 後 GET 確認 n8n 自動補回 `binaryMode:"separate"` 預設值，屬無損剝離。此點補充 auto-memory `feedback_n8n_deployment` 第 6 條（原文只泛稱「server-managed fields」，未點名 `binaryMode`）。
+
+**驗證**：Dashboard 側用 `fetch()` 抽出實際 shipped 嘅 `Update_Note` IIFE 原始碼（非手抄複製品）再 `new Function` 注入受控輸入執行，重現截圖情境確認全部符合預期，另測家庭套裝代號/未填值/無變動 fallback，fresh load console 零錯誤；n8n 側 5 workflow 全部 HTTP 200，重新 GET 獨立核實 8 節點 `appendAttribution=false`、`Auditor Alert` 中文正常、5 workflow 仍 active。
+
+**範圍**：Dashboard 只改 `Update_Note` IIFE 內部，`captureFormState()`/`raw_form_state`/欄位 ID/財務欄位全部零改動；n8n 只改 Telegram 節點參數，未觸碰任何業務邏輯節點。
+
+詳見 Changelog.md 2026-08-03 兩條目（D57 前半/後半）。

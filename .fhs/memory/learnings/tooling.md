@@ -1,0 +1,28 @@
+# Learnings — 工具 / Harness / 第三方整合
+
+> 由 `.fhs/memory/learnings.md` 分桶重構遷入（2026-08-03，flow `2026-08-03-2003`）。
+> 制度說明、配額規則、tag 語法、退役 checklist 全部見 [README.md](README.md)，本檔只放內容。
+> 全檔上限見 README 配額表（本桶：15）。
+>
+> **與 auto-memory 的邊界**（Q6 裁決，可攜性劃線）：本桶收「在 FHS repo 流程內撞到的工具怪癖」——跟 repo 走、可隨 S149 治理可攜化一併攜出。auto-memory（`~/.claude/.../memory/`）只留純個人/跨專案/harness 本身的偏好，不跟 repo 走。
+
+---
+
+## Patterns
+
+1. **本地測試 Dashboard HTML 一律起 http server，禁用 file://**：Browser pane 沙盒下 `file://` 阻擋 `localStorage`，未包 try-catch 嘅呼叫會累到整個 `<script>` block 冇執行（連 hoisted function 都揾唔到），令診斷完全失真；改用 `python -m http.server <port>` 起本地伺服器再 navigate 去 `http://localhost:<port>/...html` 即可正常運作 — 已於 S179續同 S180 兩次獨立場景驗證（分別由不同 subagent/主對話撞到同一陷阱） — 源自 2026-07-16 `@tooling` <!-- v:2026-07-16 -->
+
+## Pitfalls
+
+1. **Python json.dump emoji → n8n surrogate pair "invalid syntax"**：用 Python 序列化含 emoji（如 🔗）的 n8n workflow JSON 時，若 `ensure_ascii=False` 且環境 CP950，emoji 被寫成 surrogate pair（`\udcfx...`）；n8n 求值表達式時 "invalid syntax" 靜默失敗。修法：`json.dump(..., ensure_ascii=True)` 強制 ASCII escape，或改用純 ASCII 替代符號（`>` 代替 🔗）— Session 128 `@tooling` <!-- v:unknown -->
+2. **第三方 Claude Skill 若 frontmatter 含 `disable-model-invocation:true`，喺 Claude Code harness 內完全無法被呼叫**：唔止係「唔自動觸發」，AI 主動用 Skill 工具呼叫都會被系統拒絕。裝第三方技能包前應逐支查 frontmatter；若要設中文召喚詞疊加，改為直接呼叫其底層無此旗標嘅技能（如 `grill-me`→改叫 `grilling` 本體），使用者體驗不受影響 — Session 170 [[project_mattpocock_skills]] `@tooling` <!-- v:unknown -->
+3. **【高頻 ⚠️】Canva MCP `resize_element` 嘅 `preserve_aspect_ratio=true` 保留嘅係「目前 element container 現有比例」，唔係 asset 原生像素比例**：新素材（如客人上載嘅直向 960×1920 影片）拖入 Canva 時預設 container 形狀（如舊格 864×864 方形）可能同新 asset 完全唔同比例，淨傳一個維度（如 height）靠 `preserve_aspect_ratio` 自動推，實際保留嘅係 container 舊比例（1:1），唔係 asset 原生比例（0.5），導致嚴重變形/重疊。凡新素材原生比例明顯異於現有 container 比例時，必須明確傳 width+height（`preserve_aspect_ratio=false`），唔可以淨靠 `preserve_aspect_ratio` 自動推 — Session 172 [[project_canva_video_automation]] `@tooling` <!-- v:unknown -->
+
+## Preferences
+
+1. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30 `@tooling` <!-- v:2026-05-30 -->
+
+<!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
+### 跨領域指標（全文在別桶）
+（本桶目前無跨領域條目）
+<!-- POINTERS:END -->

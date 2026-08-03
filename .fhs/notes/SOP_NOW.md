@@ -8,7 +8,7 @@
 
 1. 讀取 `/.fhs/ai/AGENTS.md`（前 100 行）— 確認憲法版本號
 2. 讀取 `/.fhs/memory/handoff.md` — 同步上次 session 狀態與待辦
-3. 讀取 `/.fhs/memory/learnings.md` — 載入 pattern / pitfall / preference 至工作記憶
+3. 讀取 `/.fhs/memory/learnings/README.md` 索引（不讀 6 桶全文——2026-08-03 分桶重構後，全文由 `prompt-router.js` 依任務內容按需自動注入，`/read` 只需知道有邊 6 桶、去邊度查）
 4. 輸出系統狀態報告（版本號、當前基準版本、未解決項目）
 
 ---

@@ -7,6 +7,8 @@
 | archive/ | handoff.md 輪轉/瘦身歸檔區（只歸檔不刪，原處留連結） |
 | lessons/ | AI 教訓庫，所有學習記錄存放於此 |
 | lessons/INDEX.md | **Lessons 唯一檢索入口**（一行式索引表，含日期/主題/關鍵字/摘要） |
+| learnings/ | Pattern/Pitfall/Preference 教訓庫，2026-08-03 起分 6 領域桶（supabase/frontend/finance/n8n/governance/tooling），索引與制度說明見 `learnings/README.md`；由 `prompt-router.js` 按任務內容自動注入，不再靠 `/read` 全量載入 |
+| learnings.md | stub，指向 `learnings/README.md`（保留舊路徑防外部連結斷鏈） |
 
 ## 同步機制
 lessons/ 下所有 .md 檔案由 scripts/Sync_Notion_Brain.js V2.0

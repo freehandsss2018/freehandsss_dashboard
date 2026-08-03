@@ -329,7 +329,7 @@ Subagent：❌ 未使用（Grep/Read/git log 直接調查 + Edit 定點修改，
 **Result 3（wikilink 補建）**：`docs/FHS_Knowledge_Map.md`、governance 7檔互連、`decisions.md`（S51條目更新提示+新增D4）由主 agent 直接執行；`learnings.md`↔`lessons/` 配對派 subagent，49條中5條成功配對（44條證據不足寧缺勿配），git diff 逐行核對零誤改原文。Graph View 驗證由「4孤立點」→「12節點密集互連」。
 **Result 4（後效稽核）**：/execute A/B/C/F 四項全數執行——repo-map.md+README.md（[A]）、完成記錄（[B]）、Changelog.md（[C]）、FHS_Prompts.md 稽核（[F]，結論不新增情境但更新 metadata）；[G] 不觸發。
 **意外發現（另開追蹤）**：`Changelog.md`（git實際追蹤）與 `docs/CHANGELOG.md`（298行，2026-06-05後未更新）疑似重複檔案，已建 spawn_task chip，本次未動。
-**Learnings**：新增 Pitfall #24（既有「不可配置」平台限制認定需定期複驗，見 decisions.md D4）；learnings.md 49→50 條。
+**Learnings**：新增 Pitfall #24（既有「不可配置」平台限制認定需定期複驗，見 decisions.md D4）；learnings.md 49→50 條。〔2026-08-03 分桶重構後現居 `learnings/governance.md` #1〕
 Subagent：✅ 已使用（general-purpose ×4：對抗審查opus 1次、Obsidian技術研究sonnet 2次[第1次失敗重派]、learnings↔lessons wikilink配對sonnet 1次）
 
 ## 2026-07-04 (Session 136 — Phase B NAS 實機確認 + Telegram 深連結 URL 修復 + learnings.md 整理): 🔧 ✅
@@ -456,7 +456,7 @@ Subagent：❌ 未使用（定點 Edit，主 agent 直接執行）
 ## 2026-06-23 (Session 118 — handoff SSOT v2 機制建立 + 三漏洞修復): 🏗️ ✅
 
 **Scope**：診斷 FHS 跨 session 交接鏈三大漏洞（殭屍待辦 hook 匹配 S63 舊段、SOP_NOW 版本過期、handoff 底部配置 stale），設計並實施 v2 SSOT 機制：`\`\`\`handoff` fenced 便攜塊（六類欄位 + 雙深度切片），`─── 便攜邊界` 分隔人工複製vs hook動態注入，commit.md 加 P0.7 防腐步驟
-**Result**：7 檔 MODIFY + 2 NEW（完成記錄 + cl-final-plan）；hook v2 精確抽取動態段；SOP_NOW 版本格改指標；底部殭屍段 ARCHIVE；learnings.md Pitfall #23；decisions.md S118 條目；零業務/財務/schema 改動
+**Result**：7 檔 MODIFY + 2 NEW（完成記錄 + cl-final-plan）；hook v2 精確抽取動態段；SOP_NOW 版本格改指標；底部殭屍段 ARCHIVE；learnings.md Pitfall #23〔2026-08-03 分桶重構後現居 `learnings/governance.md` #2〕；decisions.md S118 條目；零業務/財務/schema 改動
 
 ## 2026-06-22 (Session 113 — learnings.md 超量整理 + kgov stale flag 清理): 🧹 ✅
 
@@ -1845,7 +1845,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 
 ## 2026-07-21 — Session 187（Claude Code / Sonnet 5）
 - 吊飾/鎖匙扣成本預估器 BaseShippingCost 雙計修復：Fat Mo 回報 Akira(0600721)吊飾成本折扣運算有錯；Supabase live 三表交叉核對坐實真實帳目正確，真正 bug 喺前端 calculatePricing() 誤將運費扣減率 config 當加項成本疊加，估算多$220，已修復。
-- 一行摘要，全文見 [Changelog.md](../../Changelog.md) S187條目；教訓見 [learnings.md](../memory/learnings.md) Pitfall #34。
+- 一行摘要，全文見 [Changelog.md](../../Changelog.md) S187條目；教訓見 [learnings/frontend.md](../memory/learnings/frontend.md) #6（原 Pitfall #34，2026-08-03 分桶重構後移居此處）。
 
 ## 2026-07-22 — Session 187續VIII（Claude Code / Sonnet 5）
 - 財務結算卡片「系統精算建議報價」排版修復：Fat Mo 回報手機窄螢幕逐字斷行，根因 inline-flex 令文字節點變 anonymous flex item 被逼窄，改三行 block 排版，DOM 量測確認單行、NAS 三關驗證 PASS。
@@ -1874,3 +1874,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-08-02 — Session（D55，Claude Code / Sonnet 5）
 - n8n財務備援webhook `financial-overview-fhs` 空body故障（D52遺留待辦）查明修復：`Financial Aggregator` Code node用`require('axios')`令NAS Task Runner崩潰斷線，換成原生httpRequest node解決，外科手術式GET→改一節點→PUT部署，連續3次curl驗證+n8n執行記錄核實皆success。另同session跟進：agent_dashboard已`/upload-web team`公開發佈、S190 HoKaSin音訊/封面Fat Mo已完成、handoff.md便攜塊按P0.7.1規則壓縮回收（9,432→6,220 bytes）。
 - 一行摘要，全文見 [Changelog.md](../../Changelog.md) 2026-08-02條目（D55）、[decisions.md](decisions.md)「D55」。
+
+## 2026-08-03 — Session（D57，Claude Code / Sonnet 5）
+- FHS Telegram 訊息品質整治：Fat Mo 截圖標紅「修正訂單」訊息出現 `m_baby_sec_en`/`depositSplitData` 等術語同英文 n8n 尾巴。查出根因遠大於截圖——`Update_Note` 產生器 labelMap 只得8條而 `captureFormState()` 實際有102欄位，即88個(86%)一改動就吐原始英文變數名。改規則式解碼(按 FHS 欄位命名規則自動譯，新欄位不再退化)+內部欄位skip+值人話化+版面由3行改單行(30行→12行)。另 survey 13個 workflow 揪出5workflow/8個 Telegram 節點全部帶英文尾巴已全域關閉，並發現本日第2處同源中文腐蝕 `Auditor Alert`(財務稽核警報)已還原。同 session 順帶按 P0.7.1 輪轉便攜塊（8,159→3,973 bytes，超支明細封存至 archive）並更正 D 編號撞號（早上 commit 誤用 D56，已改 D57）。
+- 一行摘要，全文見 [Changelog.md](../../Changelog.md) 2026-08-03條目（D57 前半/後半）、[decisions.md](decisions.md)「D57」。

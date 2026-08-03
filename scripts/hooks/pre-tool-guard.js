@@ -161,13 +161,18 @@ process.stdin.on('end', () => {
       );
     }
 
-    // ── Rule 12 (S156, Fat Mo 裁決同意): 寫 learnings.md 提醒雙紀律自檢 ──
+    // ── Rule 12 (S156, Fat Mo 裁決同意；2026-08-03 分桶重構後 path 擴至 learnings/ 目錄) ──
     // md-only-warn 哲學（同 kgov v2.0.0）：不 block，僅提醒 Rule 3.17 三個交付邊界之一。
-    if (filePath.endsWith('learnings.md')) {
+    if (filePath.endsWith('learnings.md') || filePath.includes('.fhs/memory/learnings/')) {
       warnings.push(
-        '⚠️  [R12] 正在寫入 learnings.md',
+        '⚠️  [R12] 正在寫入 learnings/',
         '   → 提交前請確認已依 AGENTS.md Rule 3.17 完成【交付前雙紀律自檢】兩行（驗收/Subagent）'
       );
+      if (filePath.endsWith('finance.md')) {
+        warnings.push(
+          '   → [finance 桶特殊守護] 新增/修改條目前，須引用對應 FHS_Pricing_Bible.md / FHS_Finance_Bible.md 章節，受 finance-gatekeeper 管轄'
+        );
+      }
     }
   }
 

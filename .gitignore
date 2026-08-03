@@ -40,6 +40,11 @@ scripts/hooks/test/.health-fixtures-scratch/
 # usage-audit L1 runtime output (S153) — regenerated on demand, not version controlled
 .fhs/.usage-report.json
 
+# learnings 分桶重構 P3 session 去重狀態檔（2026-08-03，flow 2026-08-03-2003）—
+# session-scoped，每次 prompt-router.js 注入時寫入，不需版本控制
+.fhs/.learnings-injected-*.json
+.fhs/.p3-probe-result.json
+
 # Generated code snapshot (repomix tool output)
 repomix-output.txt
 

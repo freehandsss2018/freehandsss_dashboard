@@ -1,6 +1,36 @@
 # Changelog
 
-## [2026-08-03] Session（Claude Code / Sonnet 5 執行）— FHS_DeliveryReminder_DailyPush Telegram 亂碼修復
+## [2026-08-03] Session（Claude Code / Sonnet 5 執行）— D57：修正訂單 Telegram 訊息術語化/冗餘清理 + n8n 英文尾巴全域關閉 + 第二處亂碼修復
+
+> ⚠️ **編號更正**：本日稍早 commit `2cc23d5`（交貨期預警亂碼修復）嘅 commit message 誤用「D56」，與並行 session 已登記入 `decisions.md` 嘅 D56（learnings 領域分桶重構）撞號。`decisions.md` 為 D 編號 SSOT，D56 歸 learnings；本日兩次 Telegram 修復合併登記為 **D57**（見 decisions.md D57）。commit message 屬已推送歷史無法改寫，以本註記為準。
+
+- **緣起**：Fat Mo 截圖標紅回報「修正訂單」Telegram 訊息（訂單 #0601100）出現睇唔明嘅內容——`m_baby_sec_en`／`m_lh_en` 原始欄位名、`depositSplitData`／`balanceSplitData` JSON 內部結構、英文 `This message was sent automatically with n8n` 尾巴。要求「若不是必要的資訊就刪除，否則應採用我明白的字句，而不是術語，我要的是精簡及必要的資訊及結果」，並要求檢查其他同類情況。
+- **根因（範圍遠大於截圖）**：訊息由 Dashboard 側 `Update_Note` 產生器（`freehandsss_dashboardV42.html:9144`）組裝，邏輯係「逐個 `captureFormState()` 欄位比對，有變就報」，但 `labelMap` 只得 **8 個**中文對照。Browser 實測 `captureFormState()` 實際回傳 **102 個**欄位，即 **88 個（86%）**一改動就會直接吐原始英文變數名。Fat Mo 今次只係啱啱撞中其中兩個，並非孤立個案。另 `depositSplitData`/`balanceSplitData` 係內部分期 JSON，而訂金/尾數本身已各自單獨報一次，屬純重複噪音。
+- **修復1（Dashboard `Update_Note` 重寫）**：(a)**skip 清單**——內部 JSON（`depositSplitData`/`balanceSplitData`）、純顯示鏡像（`orderIdDisplay`/`balance-eval-display`）、D51 共用輸入格（`d51Shared*`，會寫穿落真實部位欄位，報咗等於同一改動出兩次）一律唔報；(b)**規則式標籤還原**取代死表——按 FHS 既有命名規則解碼（`k_`=鎖匙扣／`m_`=頸鏈吊飾、`_e_`=大寶否則嬰兒、`lh/rh/lf/rf`=左手/右手/左腳/右腳、`_qty/_top/_bot/_color/_eng`=數量/上排字/下排字/顏色/刻字），例 `k_e_lh_top` → 「鎖匙扣·大寶左手 上排字」，將來新增同規則欄位自動有中文名，唔會再退化；(c)**值人話化**——`true/false` → `有/冇`、空值 → `未填`、`k_family_combo` 內部代號（`S1_B`/`S2_BB`/`S2_BE`）譯成單頁見到嘅組合名；(d)**版面精簡**——由每項 3 行（`更新項目:`/`原本:`/`修改:`）改為單行 `• 標籤：舊 → 新`。實測同一張單由 30 行縮到 12 行。**零契約改動**：只改呢個 IIFE 內部，`captureFormState()`/`raw_form_state`/欄位 ID 全部未郁。
+- **修復2（n8n 英文尾巴，全域）**：survey 全部 13 個 workflow 揪出 **5 個 workflow／8 個 Telegram 節點**全部 `appendAttribution` 未設定（n8n 預設 true），即係**每一則** FHS Telegram 訊息（交貨期預警／新訂單／修正訂單／刪除訂單／系統錯誤警報／IG看門狗×2／Supabase 監察）都帶英文廣告尾巴，非只截圖嗰則。全部改 `appendAttribution:false`。
+- **修復3（第二處亂碼，本日同源第2次）**：survey 過程揪出 `FHS_Core_OrderProcessor` 嘅 `Auditor Alert` 節點生產版本已腐蝕成 `=?? ?????????? ??\n??:{{ $json.orderId }}\n??:?????!`，同本日早上修復嘅 `FHS_DeliveryReminder_DailyPush` 屬同一個 Windows curl inline 中文腐蝕舊坑。**確認方法**：同一次 API dump 入面兄弟節點 `Notify Telegram (Delete)` 中文正常顯示，形成對照證明係真腐蝕而非終端機 codepage 假象；clean 原文由 `n8n/FHS_Core_OrderProcessor.json` 還原（逐字元核對 mojibake pattern 完全吻合），還原為 `🚨 【財務稽核異常警報】 🚨\n單號：…\n原因：稽核未通過！`。呢個係財務稽核警報，即修復前若曾觸發，Fat Mo 收到嘅係一堆問號。
+- **n8n 部署踩坑**：首輪 PUT 5 個 workflow 有 2 個回 HTTP 400。診斷確認唯一元兇係 `settings.binaryMode`（成功嘅 3 個都冇呢個 key，失敗嘅 2 個都有），**非** `availableInMCP`（後者存在於全部 5 個且成功 PUT 後仍完整保留）。剝走 `binaryMode` 後兩者皆 200；PUT 後重新 GET 確認 n8n 自動補回 `binaryMode:"separate"` 預設值，證實屬無損剝離，零 settings 遺失。
+- **驗證**：**Dashboard** — 用 `fetch()` 由 dev server 抽出**實際 shipped 嘅 `Update_Note` IIFE 原始碼**（非手抄複製品）再 `new Function` 注入受控 `currentMode`/`lastFetchedState`/`captureFormState` 執行，重現 Fat Mo 截圖情境：JSON blob／顯示鏡像／共用格全部消失、`m_baby_sec_en`→「頸鏈吊飾·嬰兒」、`m_lh_en`→「頸鏈吊飾·嬰兒左手」、`true/false`→`有/冇`；另測家庭套裝代號、未填值、無變動 fallback（顯示「ℹ️ 無明顯內容變動」）皆正確；fresh load console 零錯誤、102 欄位照常擷取。（過程中先試過直接驅動 `syncToAirtable()`，發現佢內部會 `switchMode('review')` 令 `currentMode`/`lastFetchedState` 被重置而測唔到，故改用抽取實際原始碼嘅方式，仍屬實際執行代碼非推斷。）**n8n** — 全部 5 workflow HTTP 200，重新 GET 獨立核實 8 個節點 `appendAttribution=false`、`Auditor Alert` 中文/emoji 正常、5 個 workflow 仍 `active=true`。
+- **未改動（有意）**：`FHS_System_ErrorMonitor` 訊息保留工作流程/節點/錯誤名等技術欄位——該訊息用途係俾 Fat Mo 定位邊個流程死咗，全中文化反而搵唔到對應節點。IG看門狗「（本次無需核對項目）」等文案本身已是中文白話，無需處理。
+- **Subagent 使用記錄**：❌ 未使用（互動式 browser 實測 + n8n API 直查/修復，全程主 session 處理）。
+
+---
+
+## [2026-08-03] Session（Claude Code / Opus 5 & Sonnet 5 混合執行）— learnings 系統領域分桶重構（D56）
+
+- **緣起**：Fat Mo 要求優化 learnings 系統，由「單檔 50 條硬上限」改成分類化知識庫，目標包括避免不必要刪除有用經驗、擴張容量、減低 token 消耗、處理跨類別範疇、從 `/8d` 方向導向出發。經 `/cl-flow`（flow `2026-08-03-2003`）+ `grilling` skill 九題拷問定案，Verdict `CONDITIONAL_READY`。
+- **核心診斷**：learnings.md 唯一載入點是 `/read` Step 3 全量載入，而 Rule 3.11 要求一般 session 依賴 hook 快照、不常執行 `/read`——兩條規則相乘令大部分 session 工作記憶內 learnings 條目數為 0。全檔 35,337 bytes 中 34%（10,539+1,466 bytes）是退役附註與制度說明，非教訓本體，卻每次全量載入。8 維度套 50 條實測 42 條無格可放（8d 為前瞻掃描視角，learnings 為回顧領域知識，物種不同）。
+- **方案**：6 領域桶（supabase/frontend/finance/n8n/governance/tooling）+ 差異化配額（50→115）+ 跨桶自動生成 pointer（防 SSoT 分叉）+ 退役附註移出注入路徑 + `prompt-router.js` 按任務內容自動注入命中桶全文（session 內去重，slash command 白名單放行）。分 P1（純搬遷）/P2（守衛接回）/P3（路由注入）三階段，各自獨立驗收。
+- **P1**：50 條逐字遷移零遺失零改寫（Python script 比對確認，過程中修正自身造成的 3 類格式偏差）；22 段退役附註完整搬入 README.md 登記冊；派 fresh-context agent 獨立覆核 PASS（僅 1 項統計筆誤已修正）。
+- **P2**：6 桶差異化配額規則 + 未註冊桶偵測 + 複驗逾期偵測（新增至 `fhs-health-check.js`）；`scripts/learnings-pointers.js` 新建（含防呆機制拒絕覆寫誤植正式條目）。**意外揪出既有 dead code bug**：`post-tool-kgov.js` T6 預算門因 `SAFE_PATH_PATTERNS` 涵蓋整個 `.fhs/memory/`，早於 T6 檢查點提前退出，令 T6（含 learnings 與 handoff.md 兩個原始目標）自 S148 引入以來從未真正執行過，已修正。19 guard fixtures + 10 kgov fixtures + 12 health fixtures 全數 PASS 零回歸。
+- **P3**：`prompt-router.js` 新增獨立 `LEARNINGS_ROUTES` 多重匹配（6 桶各一組關鍵詞，與既有 12 條 subagent 路由完全獨立、不受影響）；session 去重鍵優先用 `session_id`（探針實測確認 Claude Code UserPromptSubmit payload 含穩定 UUID）；slash command 白名單僅 `/cl-flow`/`/cl-flow-fast`/`/execute`/`/error-eye`/`/guardian` 放行注入。三種 prompt 實測（多重匹配/白名單放行/白名單外零注入/無關零注入）+ 去重測試全數通過。Token 實測：單桶命中 2,734–8,111 bytes（對比原檔 35,337 bytes，減幅 77–92%）。
+- **明確不做（技術債另案）**：auto-memory 30+ 條純業務知識歸位；`07_compounding-loop.md §2` 與 governance/tooling 兩桶現存全文條目的張力（已加註記留待季度健檢）。
+- **影響檔案**：NEW 8 個（6 桶 + README + pointer 生成器）；MODIFY 14 個（3 個 hook + health-rules.json + guard-fixtures.json + 5 個治理/制度文件 + settings.json + .gitignore + decisions.md + repo-map.md + memory/README.md）。零業務代碼改動（Dashboard HTML/n8n workflow/Supabase schema 全程 NO-TOUCH）。全文見完成記錄 `.fhs/reports/completion/2026-08-03_learnings_domain_buckets_completion_report.md`、決策記錄 `decisions.md` D56。
+- **Subagent 使用記錄**：✅ P1 驗收派 fresh-context agent（general-purpose）獨立覆核，結論 PASS WITH ISSUES；其餘階段主 session 直接執行（需頻繁交叉核對代碼與已完成產物）。
+
+## [2026-08-03] Session（Claude Code / Sonnet 5 執行）— D57(前半)：FHS_DeliveryReminder_DailyPush Telegram 亂碼修復
+
+> ⚠️ 本條原標「D56」，與並行 session 登記入 `decisions.md` 嘅 D56（learnings 領域分桶重構）撞號，現更正為 D57 前半（同日後半見本檔最頂 D57 條目）。
 
 - **緣起**：Fat Mo 截圖回報今日 09:00 HKT 交貨期預警 Telegram 推送全部中文/emoji 顯示為 `?`（如「?? FHS ?????」）。
 - **診斷**：定位到 workflow `FHS_DeliveryReminder_DailyPush`（ID `0nSXy6fqo8EL1ABm`）。經 API GET 直接讀取生產版本 `Format Message` Code node 同 `Workflow Description` sticky note，確認中文字面值在生產環境已被腐蝕（命中已知規則 [[feedback_n8n_deployment]] 第3條：Windows curl inline 傳中文會腐蝕成亂碼），而本地 `n8n/templates/fhs_delivery_reminder_push.json` 模板檔本身 UTF-8 完好無缺，判斷係過往某次用 inline `-d` 方式部署時腐蝕，未落實「寫檔案再 `curl -d @file.json`」規則。

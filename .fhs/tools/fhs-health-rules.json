@@ -33,14 +33,94 @@
       "source": "governance/05_maintenance-protocol.md §4"
     },
     {
-      "id": "learnings_entries",
-      "path": ".fhs/memory/learnings.md",
+      "id": "learnings_supabase_entries",
+      "path": ".fhs/memory/learnings/supabase.md",
       "scope": "full_file",
       "unit": "entries",
       "count_method": "line_regex_count",
       "count_pattern": "^\\d+\\.\\s",
-      "budget": 50,
-      "source": "learnings.md 檔頭自身規則 + governance/05 §4"
+      "budget": 20,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表"
+    },
+    {
+      "id": "learnings_frontend_entries",
+      "path": ".fhs/memory/learnings/frontend.md",
+      "scope": "full_file",
+      "unit": "entries",
+      "count_method": "line_regex_count",
+      "count_pattern": "^\\d+\\.\\s",
+      "budget": 25,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表"
+    },
+    {
+      "id": "learnings_finance_entries",
+      "path": ".fhs/memory/learnings/finance.md",
+      "scope": "full_file",
+      "unit": "entries",
+      "count_method": "line_regex_count",
+      "count_pattern": "^\\d+\\.\\s",
+      "budget": 20,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表；本桶受 finance-gatekeeper 管轄"
+    },
+    {
+      "id": "learnings_n8n_entries",
+      "path": ".fhs/memory/learnings/n8n.md",
+      "scope": "full_file",
+      "unit": "entries",
+      "count_method": "line_regex_count",
+      "count_pattern": "^\\d+\\.\\s",
+      "budget": 20,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表"
+    },
+    {
+      "id": "learnings_governance_entries",
+      "path": ".fhs/memory/learnings/governance.md",
+      "scope": "full_file",
+      "unit": "entries",
+      "count_method": "line_regex_count",
+      "count_pattern": "^\\d+\\.\\s",
+      "budget": 15,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表"
+    },
+    {
+      "id": "learnings_tooling_entries",
+      "path": ".fhs/memory/learnings/tooling.md",
+      "scope": "full_file",
+      "unit": "entries",
+      "count_method": "line_regex_count",
+      "count_pattern": "^\\d+\\.\\s",
+      "budget": 15,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表"
+    },
+    {
+      "id": "learnings_readme_bytes",
+      "path": ".fhs/memory/learnings/README.md",
+      "scope": "full_file",
+      "unit": "bytes",
+      "budget": 28000,
+      "source": "learnings 分桶重構（2026-08-03）；防退役登記冊無限膨脹，實測基準21,033 bytes，預算=實測×1.33緩衝"
+    }
+  ],
+  "unregistered_file_checks": [
+    {
+      "id": "learnings_unregistered_buckets",
+      "dir": ".fhs/memory/learnings",
+      "glob": "*.md",
+      "exclude_files": ["README.md"],
+      "registered_in": "volume_budgets",
+      "note": "偵測 learnings/ 目錄下未被任何 volume_budgets rule 的 path 覆蓋的 .md 檔——防止未來新增第7個桶時配額與語法守護靜默失效（A2 對抗評審 #5 採納，2026-08-03 flow 2026-08-03-2003）"
+    }
+  ],
+  "last_verified_checks": [
+    {
+      "id": "learnings_last_verified",
+      "dir": ".fhs/memory/learnings",
+      "glob": "*.md",
+      "exclude_files": ["README.md"],
+      "tag_pattern": "<!--\\s*v:(unknown|\\d{4}-\\d{2}-\\d{2})\\s*-->",
+      "max_age_days": 365,
+      "skip_value": "unknown",
+      "note": "教訓最後複驗日期逾期偵測，INFO級（本系統健檢全域皆為 fail-open 非阻擋性質，故無需額外標記層級）；v:unknown 不計入逾期（來源條目本身無可解析日期，A2 對抗評審 #7 採納）"
     }
   ],
   "index_orphan_checks": [
