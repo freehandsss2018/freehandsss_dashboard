@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-02T12:28:45Z">
+    <meta name="fhs-build" content="2026-08-03T14:00:14Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -9144,35 +9144,84 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 "Update_Note": (function () {
                     if (currentMode !== 'edit' || !lastFetchedState) return "";
                     const currentState = JSON.parse(captureFormState());
+
+                    // 唔報俾 Fat Mo 睇嘅欄位：內部 JSON 結構 / 純顯示鏡像 / D51 共用輸入格
+                    // （共用格會寫穿落真實部位欄位，報咗等於同一個改動出兩次）
+                    const skipKeys = new Set([
+                        'appTimeHour', 'appTimeAmPm',             // 已合併成「取模時間」單獨處理
+                        'depositSplitData', 'balanceSplitData',   // 內部分期 JSON，訂金/尾數已另行顯示
+                        'orderIdDisplay', 'balance-eval-display', // 純顯示鏡像，非真實輸入
+                        'd51SharedQtyK_', 'd51SharedTopK_', 'd51SharedBotK_',
+                        'd51SharedQtyK_e_', 'd51SharedTopK_e_', 'd51SharedBotK_e_'
+                    ]);
+
                     const labelMap = {
                         'momName': '聯絡人', 'appDate': '預約日期',
-                        'deposit': '訂金', 'balance': '尾數', 'additional': '附加費',
-                        'enableP': '石膏開關', 'enableK': '金屬開關', 'enableM': '銀飾開關'
+                        'deposit': '訂金', 'balance': '尾數',
+                        'additional': '附加費', 'adjustment': '補打費用',
+                        'enableP': '手模擺設', 'enableK': '鎖匙扣', 'enableM': '頸鏈吊飾',
+                        'pSubCat': '擺設款式', 'woodStyle': '木框色款', 'pEngraving': '木框刻字',
+                        'babyQuickColor': '石膏顏色', 'babyCustomColor': '石膏顏色(自訂)',
+                        'w_wool_en': '羊毛氈公仔', 'l_light_en': '燈飾',
+                        'k_family_en': '家庭合成鎖匙扣', 'k_family_combo': '家庭套裝組合',
+                        'k_family_qty': '家庭套裝數量', 'k_family_eng': '家庭套裝刻字',
+                        'fam_p1_sel': '家庭套裝部位1', 'fam_p2_sel': '家庭套裝部位2'
                     };
-                    const moneyFields = new Set(['deposit', 'balance', 'additional']);
+                    const moneyFields = new Set(['deposit', 'balance', 'additional', 'adjustment']);
+
+                    // 部位欄位由命名規則還原人話（例：k_e_lh_top → 鎖匙扣·大寶左手 上排字）
+                    const CAT = { k: '鎖匙扣', m: '頸鏈吊飾' };
+                    const POS = { lh: '左手', rh: '右手', lf: '左腳', rf: '右腳' };
+                    const ATTR = { en: '', qty: '數量', top: '上排字', bot: '下排字', color: '顏色', eng: '刻字' };
+
+                    function labelOf(k) {
+                        if (labelMap[k]) return labelMap[k];
+                        const p = k.match(/^([km])_(e_)?(lh|rh|lf|rf)_(en|qty|top|bot|color|eng)$/);
+                        if (p) {
+                            const attr = ATTR[p[4]];
+                            return CAT[p[1]] + '·' + (p[2] ? '大寶' : '嬰兒') + POS[p[3]] + (attr ? ' ' + attr : '');
+                        }
+                        const s = k.match(/^([km])_(baby|elder)_sec_en$/);
+                        if (s) return CAT[s[1]] + '·' + (s[2] === 'baby' ? '嬰兒' : '大寶');
+                        const l = k.match(/^limb_sel_(.+)_(左手|右手|左腳|右腳)$/);
+                        if (l) return '石膏顏色·' + l[1] + l[2];
+                        return k;   // 兜底：真係認唔到先出原始欄位名
+                    }
+
+                    // 家庭套裝組合值本身係內部代號，要譯返落單頁見到嘅字
+                    const COMBO = {
+                        'S1_B': '父母＋嬰兒(單一部位)',
+                        'S2_BB': '父母＋嬰兒(一手一腳)',
+                        'S2_BE': '父母＋嬰兒(1部位)＋大寶(1部位)'
+                    };
+
+                    function valueOf(k, v) {
+                        if (v === 'true') return '有';
+                        if (v === 'false') return '冇';
+                        if (k === 'k_family_combo' && COMBO[v]) return COMBO[v];
+                        if (moneyFields.has(k)) return '$' + v;
+                        return v === '' ? '未填' : v;
+                    }
+
                     const lines = [];
 
                     // 合拼取模時間 (appTimeHour + appTimeAmPm → 一條)
                     const oldTime = [lastFetchedState['appTimeHour'], lastFetchedState['appTimeAmPm']].filter(Boolean).join(' ');
                     const newTime = [currentState['appTimeHour'], currentState['appTimeAmPm']].filter(Boolean).join(' ');
                     if (oldTime !== newTime) {
-                        lines.push('取模時間\n原本: ' + (oldTime || '未設') + '\n修改: ' + (newTime || '未設'));
+                        lines.push('• 取模時間：' + (oldTime || '未填') + ' → ' + (newTime || '未填'));
                     }
 
-                    const skipKeys = new Set(['appTimeHour', 'appTimeAmPm']);
                     for (let k in currentState) {
                         if (skipKeys.has(k)) continue;
                         if (!(k in lastFetchedState)) continue;
                         const curr = String(currentState[k] ?? '');
                         const prev = String(lastFetchedState[k] ?? '');
                         if (curr === prev) continue;
-                        const label = labelMap[k] || k.replace('limb_sel_', '部位:');
-                        const prevVal = moneyFields.has(k) ? '$' + prev : (prev || '未設');
-                        const currVal = moneyFields.has(k) ? '$' + curr : (curr || '未設');
-                        lines.push(label + '\n原本: ' + prevVal + '\n修改: ' + currVal);
+                        lines.push('• ' + labelOf(k) + '：' + valueOf(k, prev) + ' → ' + valueOf(k, curr));
                     }
                     if (lines.length === 0) return "ℹ️ 無明顯內容變動";
-                    return "🔄 更新項目: " + lines.join('\n\n更新項目: ');
+                    return "🔄 修改內容：\n" + lines.join('\n');
                 })(),
                 "Order_Items_List": orderItemsArray
             };
