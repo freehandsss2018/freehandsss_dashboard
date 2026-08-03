@@ -99,7 +99,8 @@ freehandsss_dashboard/
 │   │   ├── 0082_expand_position_code_check_for_elder.sql ← 修正0081遺漏：position_code CHECK擴充容納大寶獨立字串（大寶左手/右手/左腳/右腳），防大寶落單時Mirror RPC寫入失敗（D49，動手n8n代碼前即時發現並修正）✅ 已部署
 │   │   ├── 0084_ig_thread_rules.sql ← IG看門狗學習系統Phase1：ig_thread_rules表（thread級規則覆寫，F3護欄：thread由來源警報反查非自由參數+每thread上限3條active）+3支RPC（cl-flow 2026-07-31-2332 Phase C）✅ 已部署
 │   │   ├── 0084b_revoke_anon_touch_ig_thread_rules.sql ← 修正0084：REVOKE fhs_touch_ig_thread_rules嘅anon/authenticated明確授權（審計計數器唯service_role可寫）✅ 已部署
-│   │   └── 0084c_revoke_public_touch_ig_thread_rules.sql ← 修正0084b未夠徹底：連PostgreSQL函式預設PUBLIC授權都要REVOKE先真正做到service_role only（has_function_privilege()驗證揪出）✅ 已部署
+│   │   ├── 0084c_revoke_public_touch_ig_thread_rules.sql ← 修正0084b未夠徹底：連PostgreSQL函式預設PUBLIC授權都要REVOKE先真正做到service_role only（has_function_privilege()驗證揪出）✅ 已部署
+│   │   └── 0086_ig_phrase_rules.sql ← IG看門狗學習系統Phase2a：ig_phrase_rules表（詞句級全域規則，跨客人生效，observe模式enforce恆false）+5支RPC+二段式狀態機（proposed/approved/rejected，DB CHECK約束enforce=true一定要status=approved）+G1-G12護欄（核心G3：phrase必須真實出現喺來源訊息，防anon塞字串癱瘓看門狗）（cl-flow 2026-08-04-0244，A2對抗評審BLOCKER修補）✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

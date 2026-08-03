@@ -2965,6 +2965,22 @@
         .igw-bubble mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; }
         .igw-pii-chip { display: inline-block; background: #e5e7eb; color: #6b7280; font-size: 11px; border-radius: 4px; padding: 0 4px; margin: 0 1px; }
 
+        /* IG 看門狗學習系統 Phase 2a：詞句級規則 UI（cl-flow flow_id 2026-08-04-0244） */
+        .igw-sent { cursor: pointer; border-radius: 3px; padding: 0 1px; }
+        .igw-sent.sel { background: #fde68a; box-shadow: 0 0 0 1px #f59e0b; }
+        .igw-bubble.biz .igw-sent.sel { color: #111; }
+        .igw-bubble .igw-time { user-select: none; -webkit-user-select: none; }
+        #igwPhraseBar { border-top: 1px solid var(--fhs-border,#eee); padding: 10px 16px; background: var(--fhs-bg-secondary,#f9fafb); font-size: 12px; }
+        #igwPhraseBar .igw-phrase-sel { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        #igwPhraseBar .igw-phrase-sel-text { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #igwPhraseBar .igw-phrase-clear { background: none; border: none; color: var(--fhs-text-secondary,#999); cursor: pointer; font-size: 12px; padding: 4px 6px; }
+        #igwPhraseBar .igw-phrase-label { margin-bottom: 6px; color: var(--fhs-text-secondary,#666); }
+        #igwPhraseBar .igw-phrase-chips { display: flex; gap: 6px; }
+        .igw-phrase-chip { flex: 1; min-height: 38px; border-radius: 8px; border: 1px solid var(--fhs-border,#ccc); background: transparent; font-size: 12px; cursor: pointer; }
+        #igwPhrasePreview { margin-top: 8px; }
+        #igwSelBar { position: fixed; z-index: 9800; background: var(--fhs-bg-elevated,#fff); color: var(--fhs-text-primary,#333); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); padding: 6px; display: flex; gap: 4px; }
+        #igwSelBar button { min-height: 32px; padding: 4px 10px; border: none; border-radius: 6px; background: var(--fhs-bg-secondary,#f1f1f1); font-size: 12px; cursor: pointer; }
+
         /* ================================================================
            V42 — Threads/WhatsApp 融合視覺系統（手機 max-width:767px）
            ui-designer 規格 2026-06-06 · database-reviewer PASS
@@ -15559,22 +15575,61 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // ── End 自動開單防重複 ──────────────────────────────────────
 
         // ── IG 訊息 thread 檢視（Phase B，flow_id 2026-07-31-2332）───────
-        // 訊息渲染：先轉義全文 → 對已轉義文本高亮訂號 <mark> → 最後將 PII 遮罩 token 換做灰色 chip。
+        // 訊息渲染：先分句（純文字，唔碰 HTML）→ 逐句轉義 → 對已轉義文本高亮訂號 <mark> →
+        // 最後將 PII 遮罩 token 換做灰色 chip → 逐句包 <span class="igw-sent"> 供 Phase 2a 點選。
         // 三步順序刻意：喺原始文字有 HTML meta 字元前就轉義晒，之後嘅字串操作全部只喺純文字層面做，
-        // 唔會有任何未轉義嘅 interpolation（A2/#1 BLOCKER 修復 + Phase B 新增內容同一紀律）。
-        function _igwRenderMessageHtml(text, orderId) {
-            var esc = _igwEscapeHtml(text || '');
-            if (orderId) {
-                var escId = _igwEscapeHtml(orderId);
-                if (escId) esc = esc.split(escId).join('<mark>' + escId + '</mark>');
+        // 唔會有任何未轉義嘅 interpolation（A2/#1 BLOCKER 修復 + Phase B 新增內容同一紀律；
+        // Phase 2a 分句改造沿用同一紀律，見 cl-flow flow_id 2026-08-04-0244 §5 Step 5）。
+
+        // 分句：切分符 。！？!?；;\n（刻意不含 ，/,——口語逗號會切得過碎，實測79%訊息≤40字，
+        // 唔切逗號後粒度仍可用，且多句連選本身已支援連續選取）。分隔符保留在前一句尾；
+        // 純分隔符/空白殘片合併返上一句，唔產生空 chip。不變式：parts.join('') === text
+        // （逐字元無損，否則 G3 護欄嘅 position() 比對會失敗）。四種 PII token（[電話]/[IG帳號]/
+        // [門牌]/[付款尾碼]）內部零標點，必然完整落喺單一 part 內，唔會被切斷（A2/#3 反證確認）。
+        function _igwSplitSentences(text) {
+            var s = String(text == null ? '' : text);
+            if (!s) return [''];
+            var re = /[^。！？!?；;\n]*[。！？!?；;\n]|[^。！？!?；;\n]+$/g;
+            var raw = s.match(re) || [s];
+            var merged = [];
+            for (var i = 0; i < raw.length; i++) {
+                var p = raw[i];
+                var stripped = p.replace(/[。！？!?；;\n]/g, '');
+                if (merged.length > 0 && /^\s*$/.test(stripped)) {
+                    merged[merged.length - 1] += p;
+                } else {
+                    merged.push(p);
+                }
             }
-            esc = esc.replace(/\[(電話|IG帳號|門牌|付款尾碼)\]/g, '<span class="igw-pii-chip">[$1]</span>');
-            return esc;
+            return merged;
         }
+
+        function _igwRenderMessageHtml(text, orderId) {
+            var parts = _igwSplitSentences(text || '');
+            var escId = orderId ? _igwEscapeHtml(orderId) : '';
+            return parts.map(function(part, i) {
+                var esc = _igwEscapeHtml(part);
+                if (escId) esc = esc.split(escId).join('<mark>' + escId + '</mark>');
+                esc = esc.replace(/\[(電話|IG帳號|門牌|付款尾碼)\]/g, '<span class="igw-pii-chip">[$1]</span>');
+                return '<span class="igw-sent" data-si="' + i + '">' + esc + '</span>';
+            }).join('');
+        }
+
+        // Phase 2a 選取狀態（cl-flow flow_id 2026-08-04-0244）：單則訊息內多句連選，
+        // 跨訊息選取直接禁止（拼出嚟嘅字串必然唔係任何一則 content 嘅子字串，過唔到 G3）。
+        var _igwSel = { mid: null, indices: [], text: '' };
+        var _igwSelAlertRow = null;
+        var _igwSelMsgs = [];
+        var _igwSelChangeHandler = null;
 
         function _igwCloseThread() {
             var el = document.getElementById('igwThreadOverlay');
             if (el) el.remove();
+            if (_igwSelChangeHandler) { document.removeEventListener('selectionchange', _igwSelChangeHandler); _igwSelChangeHandler = null; }
+            _igwHideSelBar();
+            _igwSel = { mid: null, indices: [], text: '' };
+            _igwSelAlertRow = null;
+            _igwSelMsgs = [];
         }
 
         async function _igwOpenThread(alertId) {
@@ -15617,7 +15672,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             try {
                 var msgs = await sbFetch('ig_messages', {
-                    select: 'content,sender_is_business,sent_at,customer_name',
+                    select: 'ig_message_id,content,sender_is_business,sent_at,customer_name',
                     thread: 'eq.' + alertRow.thread,
                     order: 'sent_at.asc',
                     limit: '200'
@@ -15631,16 +15686,298 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 msgsEl.innerHTML = msgs.map(function(m) {
                     var bubbleClass = m.sender_is_business ? 'biz' : 'cust';
                     var html = _igwRenderMessageHtml(m.content, alertRow.order_id);
+                    var mid = _igwEscapeHtml(m.ig_message_id || '');
                     var time = '';
                     try { if (m.sent_at) time = new Date(m.sent_at).toLocaleString('zh-HK', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) {}
-                    return '<div class="igw-bubble ' + bubbleClass + '">' + html + '<div style="font-size:10px;opacity:0.7;margin-top:3px;">' + _igwEscapeHtml(time) + '</div></div>';
+                    return '<div class="igw-bubble ' + bubbleClass + '" data-mid="' + mid + '">' + html + '<div class="igw-time" style="font-size:10px;opacity:0.7;margin-top:3px;">' + _igwEscapeHtml(time) + '</div></div>';
                 }).join('');
                 msgsEl.scrollTop = msgsEl.scrollHeight;
+
+                // Phase 2a：詞句選取互動掛鉤（cl-flow flow_id 2026-08-04-0244 §5 Step 6）
+                _igwSelMsgs = msgs;
+                _igwSel = { mid: null, indices: [], text: '' };
+                _igwBindSentenceSelection(msgsEl, alertRow);
             } catch (e) {
                 var msgsElErr = document.getElementById('igwThreadMessages');
                 if (msgsElErr) msgsElErr.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:13px;padding:20px;">❌ 載入失敗：' + _igwEscapeHtml(e.message) + '</div>';
             }
         }
+
+        // ── Phase 2a：詞句選取互動（手機主路徑：句子點選；desktop 加成：原生選字吸附）──
+        // cl-flow flow_id 2026-08-04-0244 §5 Step 6。手機/desktop 兩條路徑最終都寫入
+        // 同一個 _igwSel 狀態，行 _igwRecomputeSelText() 起共用同一驗證與渲染流程。
+        function _igwBindSentenceSelection(msgsEl, alertRow) {
+            _igwSelAlertRow = alertRow;
+
+            msgsEl.addEventListener('click', function(e) {
+                var span = e.target.closest ? e.target.closest('.igw-sent') : null;
+                if (!span) return;
+                var bubble = span.closest('.igw-bubble');
+                if (!bubble) return;
+                _igwToggleSentSelection(bubble, span, msgsEl);
+            });
+
+            // Desktop 加成路徑（A2/#5 修補：唔採信 getSelection().toString() 原始字串，
+            // 因為時間戳 <div> 同訊息文字同層於 .igw-bubble，selection 掃過會帶入時間文字/
+            // block 換行；改為「吸附」被 selection range 覆蓋到嘅 .igw-sent 節點，取其
+            // data-si 組合，行為同手機路徑一致）。手機唔綁呢個 listener。
+            if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+                _igwSelChangeHandler = function() { _igwHandleDesktopSelection(msgsEl); };
+                document.addEventListener('selectionchange', _igwSelChangeHandler);
+            }
+        }
+
+        function _igwToggleSentSelection(bubble, span, msgsEl) {
+            var mid = bubble.getAttribute('data-mid');
+            var si = parseInt(span.getAttribute('data-si'), 10);
+
+            if (_igwSel.mid && _igwSel.mid !== mid) {
+                _igwClearSentSelectionUi(msgsEl);
+                _igwSel = { mid: null, indices: [], text: '' };
+                showToast('一次只可以喺同一則訊息揀字', 1500);
+            }
+            _igwSel.mid = mid;
+
+            var pos = _igwSel.indices.indexOf(si);
+            if (pos === -1) { _igwSel.indices.push(si); } else { _igwSel.indices.splice(pos, 1); }
+            _igwSel.indices.sort(function(a, b) { return a - b; });
+
+            var spans = Array.prototype.slice.call(bubble.querySelectorAll('.igw-sent'));
+            spans.forEach(function(s) {
+                var sIdx = parseInt(s.getAttribute('data-si'), 10);
+                if (_igwSel.indices.indexOf(sIdx) !== -1) s.classList.add('sel'); else s.classList.remove('sel');
+            });
+
+            _igwRecomputeSelText(spans);
+        }
+
+        // 非連續選取（例如揀第1、3句跳過第2句）→ 拼出嚟嘅字串唔係原文子字串，必然過唔到
+        // G3 護欄，前端直接擋俾友善訊息（G3 仍係最終防線）。
+        function _igwRecomputeSelText(spans) {
+            if (_igwSel.indices.length === 0) { _igwSel.text = ''; _igwRenderPhraseBar(); return; }
+
+            var min = _igwSel.indices[0], max = _igwSel.indices[_igwSel.indices.length - 1];
+            var contiguous = true;
+            for (var k = min; k <= max; k++) {
+                if (_igwSel.indices.indexOf(k) === -1) { contiguous = false; break; }
+            }
+            if (!contiguous) {
+                showToast('揀嘅句子要連住', 1500);
+                _igwSel.text = '';
+                _igwRenderPhraseBar();
+                return;
+            }
+
+            var textParts = spans.filter(function(s) {
+                var sIdx = parseInt(s.getAttribute('data-si'), 10);
+                return _igwSel.indices.indexOf(sIdx) !== -1;
+            }).map(function(s) { return s.textContent; });
+            _igwSel.text = textParts.join('');
+            _igwRenderPhraseBar();
+        }
+
+        function _igwClearSentSelectionUi(msgsEl) {
+            msgsEl.querySelectorAll('.igw-sent.sel').forEach(function(s) { s.classList.remove('sel'); });
+        }
+
+        function _igwClearSentSelection() {
+            var msgsEl = document.getElementById('igwThreadMessages');
+            if (msgsEl) _igwClearSentSelectionUi(msgsEl);
+            _igwSel = { mid: null, indices: [], text: '' };
+            _igwRenderPhraseBar();
+        }
+
+        function _igwHandleDesktopSelection(msgsEl) {
+            var sel = window.getSelection ? window.getSelection() : null;
+            if (!sel || sel.isCollapsed || sel.rangeCount === 0) { _igwHideSelBar(); return; }
+            var range = sel.getRangeAt(0);
+            if (!msgsEl.contains(range.commonAncestorContainer)) { _igwHideSelBar(); return; }
+
+            var allSpans = Array.prototype.slice.call(msgsEl.querySelectorAll('.igw-sent'));
+            var covered = allSpans.filter(function(s) { return sel.containsNode(s, true); });
+            if (covered.length === 0) { _igwHideSelBar(); return; }
+
+            var bubbles = {};
+            covered.forEach(function(s) { var b = s.closest('.igw-bubble'); if (b) bubbles[b.getAttribute('data-mid')] = b; });
+            var midKeys = Object.keys(bubbles);
+            if (midKeys.length !== 1) { _igwHideSelBar(); return; } // 只允許單一訊息內選取
+
+            _igwShowSelBar(range, bubbles[midKeys[0]], covered);
+        }
+
+        function _igwShowSelBar(range, bubble, coveredSpans) {
+            _igwHideSelBar();
+            var bar = document.createElement('div');
+            bar.id = 'igwSelBar';
+            bar.innerHTML = '<button type="button">✅ 用呢段揀字</button>';
+            document.body.appendChild(bar);
+            var rect = range.getBoundingClientRect();
+            bar.style.left = Math.max(8, rect.left) + 'px';
+            bar.style.top = Math.max(8, rect.top - 44) + 'px';
+
+            bar.querySelector('button').addEventListener('click', function() {
+                var mid = bubble.getAttribute('data-mid');
+                var indices = coveredSpans.map(function(s) { return parseInt(s.getAttribute('data-si'), 10); })
+                    .sort(function(a, b) { return a - b; });
+                _igwSel = { mid: mid, indices: indices, text: '' };
+                var allSpansInBubble = Array.prototype.slice.call(bubble.querySelectorAll('.igw-sent'));
+                allSpansInBubble.forEach(function(s) {
+                    var sIdx = parseInt(s.getAttribute('data-si'), 10);
+                    if (indices.indexOf(sIdx) !== -1) s.classList.add('sel'); else s.classList.remove('sel');
+                });
+                _igwRecomputeSelText(allSpansInBubble);
+                _igwHideSelBar();
+                if (window.getSelection) window.getSelection().removeAllRanges();
+            });
+        }
+
+        function _igwHideSelBar() {
+            var el = document.getElementById('igwSelBar');
+            if (el) el.remove();
+        }
+
+        // ── Phase 2a：標籤條 + 影響預覽 + 二次確認 + 寫入 ──────────────────
+        function _igwRenderPhraseBar() {
+            var footerEl = document.getElementById('igwThreadFooter');
+            if (!footerEl) return;
+            var old = document.getElementById('igwPhraseBar');
+            if (old) old.remove();
+            if (!_igwSel.text) return; // 冇選取，唔顯示條
+
+            var bar = document.createElement('div');
+            bar.id = 'igwPhraseBar';
+            bar.innerHTML =
+                '<div class="igw-phrase-sel">'
+                + '<span class="igw-phrase-sel-text">你揀咗：「' + _igwEscapeHtml(_igwSel.text) + '」</span>'
+                + '<button class="igw-phrase-clear" type="button">清除</button>'
+                + '</div>'
+                + '<div class="igw-phrase-label">呢句係咩？</div>'
+                + '<div class="igw-phrase-chips">'
+                + '<button class="igw-phrase-chip" data-t="deal" type="button">✅ 成交</button>'
+                + '<button class="igw-phrase-chip" data-t="quote_draft" type="button">🚫 報價傾價</button>'
+                + '<button class="igw-phrase-chip" data-t="noise" type="button">🙈 唔關事</button>'
+                + '</div>'
+                + '<div id="igwPhrasePreview"></div>';
+
+            footerEl.insertBefore(bar, footerEl.firstChild);
+
+            bar.querySelector('.igw-phrase-clear').addEventListener('click', function() { _igwClearSentSelection(); });
+            bar.querySelectorAll('.igw-phrase-chip').forEach(function(chip) {
+                chip.addEventListener('click', function() { _igwHandlePhraseChipClick(chip.getAttribute('data-t'), bar); });
+            });
+        }
+
+        function _igwShowPhraseError(bar, msg) {
+            var previewEl = bar.querySelector('#igwPhrasePreview');
+            if (previewEl) previewEl.innerHTML = '<div style="color:#ef4444;font-size:12px;margin-top:6px;">❌ ' + _igwEscapeHtml(msg) + '</div>';
+        }
+
+        // 前端鏡像檢查（同 RPC 端 G4-G7 同一組規則，失敗即顯示原因唔打 RPC；G3/G8/G9/G11/G12
+        // 需要 DB 狀態，前端唔重複做，留俾 RPC 做最終防線）。
+        function _igwHandlePhraseChipClick(signalType, bar) {
+            var phrase = _igwSel.text;
+            var len = phrase.length;
+
+            if (len < 2 || len > 40) { _igwShowPhraseError(bar, '揀嘅字太短或太長（需 2-40 字）'); return; }
+            if (/^[0-9]+$/.test(phrase)) { _igwShowPhraseError(bar, '純數字唔可以做語意規則'); return; }
+            if (/[\[\]]/.test(phrase)) { _igwShowPhraseError(bar, '揀嘅字含遮罩符號，唔可以做規則'); return; }
+            if ((signalType === 'quote_draft' || signalType === 'noise') && len < 3) {
+                _igwShowPhraseError(bar, '抑制類規則（報價/唔關事）最少 3 字'); return;
+            }
+
+            _igwRunPhrasePreview(signalType, bar);
+        }
+
+        async function _igwRunPhrasePreview(signalType, bar) {
+            var previewEl = bar.querySelector('#igwPhrasePreview');
+            if (previewEl) previewEl.innerHTML = '<div style="color:var(--fhs-text-secondary,#999);font-size:12px;margin-top:6px;">載入預覽中…</div>';
+            var signalLabel = signalType === 'deal' ? '成交' : (signalType === 'quote_draft' ? '報價傾價' : '唔關事');
+            try {
+                var result = await sbRpc('fhs_preview_ig_phrase', { p_phrase: _igwSel.text });
+                if (!previewEl) return;
+                if (result && result.error === 'too_short') {
+                    previewEl.innerHTML = '<div style="color:#ef4444;font-size:12px;margin-top:6px;">❌ 揀嘅字太短</div>';
+                    return;
+                }
+                var samples = (result && result.samples) || [];
+                var sampleHtml = samples.map(function(s) {
+                    return '<div style="font-size:11px;color:var(--fhs-text-secondary,#999);margin-top:2px;">例：「' + _igwEscapeHtml(s.excerpt) + '」</div>';
+                }).join('');
+                previewEl.innerHTML =
+                    '<div style="font-size:12px;margin-top:6px;">📊 過去 90 日：命中 ' + ((result && result.hit_messages) || 0) + ' 則訊息 ／ ' + ((result && result.hit_threads) || 0) + ' 個客人</div>'
+                    + sampleHtml
+                    + '<div style="font-size:11px;color:#f59e0b;margin-top:4px;">🟡 觀察模式：規則只會記低，暫時唔會影響看門狗判斷；兩星期後一齊檢視再決定開唔開。</div>';
+
+                var confirmArea = document.createElement('div');
+                confirmArea.style.marginTop = '8px';
+                previewEl.appendChild(confirmArea);
+                _igwConfirmInline(confirmArea, '確定將呢句標記做「' + signalLabel + '」？', async function() {
+                    await _igwSubmitPhraseRule(signalType, previewEl);
+                });
+            } catch (e) {
+                if (previewEl) previewEl.innerHTML = '<div style="color:#ef4444;font-size:12px;margin-top:6px;">❌ 預覽失敗：' + _igwEscapeHtml(e.message) + '</div>';
+            }
+        }
+
+        async function _igwSubmitPhraseRule(signalType, previewEl) {
+            if (!_igwSelAlertRow) { showToast('❌ 遺失來源警報資料，請重新開啟', 2000); return; }
+            if (!_igwSel.mid) { showToast('❌ 遺失來源訊息資料，請重新選取', 2000); return; }
+            try {
+                await sbRpc('fhs_add_ig_phrase_rule', {
+                    p_source_alert_id: _igwSelAlertRow.id,
+                    p_source_ig_message_id: _igwSel.mid,
+                    p_phrase: _igwSel.text,
+                    p_signal_type: signalType,
+                    p_note: 'thread overlay 手動標記'
+                });
+                showToast('✅ 已記低，觀察中', 2000);
+                _igwClearSentSelection();
+                var listEl = document.getElementById('igwPhraseRulesList');
+                if (listEl && listEl.style.display !== 'none') _igwRenderPhraseRulesList();
+            } catch (e) {
+                if (previewEl) previewEl.innerHTML = '<div style="color:#ef4444;font-size:12px;margin-top:6px;">❌ 建立失敗：' + _igwEscapeHtml(e.message) + '</div>';
+                else showToast('❌ 建立失敗：' + e.message, 2500);
+                if (/上限/.test(e.message)) _igwShowPhraseLimitHelper(signalType, previewEl);
+            }
+        }
+
+        // 觸頂處理（G8/G9/G11/G12 任一拋錯時）：列出該 signal_type 零命中/最舊嘅規則供一鍵
+        // 停用，而非只彈錯誤（A2/#6 修補）。
+        async function _igwShowPhraseLimitHelper(signalType, previewEl) {
+            if (!previewEl) return;
+            try {
+                var rows = await sbFetch('ig_phrase_rules', {
+                    select: 'id,phrase,signal_type,applied_count,created_at',
+                    signal_type: 'eq.' + signalType,
+                    status: 'eq.approved',
+                    active: 'eq.true',
+                    order: 'applied_count.asc,created_at.asc',
+                    limit: '5'
+                });
+                if (!rows || rows.length === 0) return;
+                var helperEl = document.createElement('div');
+                helperEl.style.cssText = 'margin-top:8px;padding:8px;background:var(--fhs-bg-secondary,#f9fafb);border-radius:8px;font-size:11px;';
+                helperEl.innerHTML = '<div style="margin-bottom:6px;color:var(--fhs-text-secondary,#666);">已達上限，以下係零命中/最舊嘅規則，可以停用其中幾條再試：</div>'
+                    + rows.map(function(r) {
+                        return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;">'
+                            + '<span style="flex:1;">「' + _igwEscapeHtml(r.phrase) + '」（命中 ' + (r.applied_count || 0) + ' 次）</span>'
+                            + '<button class="igw-limit-disable" data-id="' + r.id + '" style="font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid var(--fhs-border,#ccc);background:transparent;cursor:pointer;">停用</button>'
+                            + '</div>';
+                    }).join('');
+                previewEl.appendChild(helperEl);
+                helperEl.querySelectorAll('.igw-limit-disable').forEach(function(btn) {
+                    btn.addEventListener('click', async function() {
+                        try {
+                            await sbRpc('fhs_disable_ig_phrase_rule', { p_id: btn.getAttribute('data-id') });
+                            var row = btn.closest('div');
+                            if (row) row.remove();
+                            showToast('✅ 已停用，可以重新試建規則', 1800);
+                        } catch (e2) { showToast('❌ 停用失敗：' + e2.message, 2000); }
+                    });
+                });
+            } catch (e) { /* 輔助功能，失敗唔應該阻擋主流程錯誤訊息顯示 */ }
+        }
+        // ── End Phase 2a 選取/標籤/預覽 ──────────────────────────────
         // ── 學習系統 Phase 1：修正 AI 判斷 + 已生效規則審計區（Phase C，flow_id 2026-07-31-2332）──
         // 頁內二次確認（唔用 window.confirm，D51 iOS PWA standalone 靜默唔彈出教訓）：
         // 喺觸發按鈕所在容器內插入一個「確定/取消」小條，確定先真正執行動作。
@@ -15716,8 +16053,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 + '</div>'
                 + '<div id="igwKindChipRow" style="display:none;gap:6px;margin-top:8px;flex-wrap:wrap;"></div>'
                 + '<div id="igwCorrectionArea" style="margin-top:0;"></div>'
-                + '<button id="igwToggleRulesList" style="margin-top:12px;font-size:12px;background:none;border:none;color:var(--fhs-text-secondary,#999);cursor:pointer;padding:0;">📖 已生效規則 ▾</button>'
+                + '<button id="igwToggleRulesList" style="margin-top:12px;font-size:12px;background:none;border:none;color:var(--fhs-text-secondary,#999);cursor:pointer;padding:0;">📖 呢個客人嘅規則 ▾</button>'
                 + '<div id="igwRulesList" style="display:none;margin-top:8px;font-size:12px;"></div>'
+                + '<button id="igwTogglePhraseRulesList" style="margin-top:8px;font-size:12px;background:none;border:none;color:var(--fhs-text-secondary,#999);cursor:pointer;padding:0;">🌐 全域詞句規則 ▾</button>'
+                + '<div id="igwPhraseRulesList" style="display:none;margin-top:8px;font-size:12px;"></div>'
                 + '</div>';
 
             var correctionArea = document.getElementById('igwCorrectionArea');
@@ -15775,6 +16114,91 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 listEl.style.display = isHidden ? 'block' : 'none';
                 if (isHidden) _igwRenderRulesList(alertRow.thread);
             });
+
+            document.getElementById('igwTogglePhraseRulesList').addEventListener('click', function() {
+                var listEl = document.getElementById('igwPhraseRulesList');
+                var isHidden = listEl.style.display === 'none';
+                listEl.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) _igwRenderPhraseRulesList(false);
+            });
+        }
+
+        // ── Phase 2a：全域詞句規則列表（cl-flow flow_id 2026-08-04-0244 §5 Step 8.2）──
+        // 預設只顯示 phrase 有出現喺當前 thread 已載入 _igwSelMsgs 內嘅規則（前端過濾已在
+        // 記憶體嘅陣列，零額外查詢，A2/#7 修補），另加「顯示全部」切換，渲染上限 50 條。
+        // observe 期 applied_count 恆為 0（引擎未接，無任何呼叫端）——狀態文案唔可以沿用
+        // thread 規則嘅「未生效過」，否則會被讀成壞咗（structural_warning #2 落地）。
+        function _igwPhraseRuleStatusLabel(r) {
+            if (r.status === 'rejected') return '⚫ 已否決';
+            if (!r.active) return '⚪ 已停用';
+            if (r.status === 'proposed') return '🟡 待審（觀察中）';
+            if (r.status === 'approved' && !r.enforce) return '🔵 已批准（未開生效）';
+            if (r.status === 'approved' && r.enforce) return '🟢 生效中 · 命中 ' + (r.applied_count || 0) + ' 次';
+            return '—';
+        }
+
+        async function _igwRenderPhraseRulesList(showAll) {
+            var listEl = document.getElementById('igwPhraseRulesList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="color:var(--fhs-text-secondary,#999);">載入中…</div>';
+            try {
+                var rules = await sbFetch('ig_phrase_rules', {
+                    select: 'id,phrase,signal_type,status,enforce,active,created_at,applied_count,last_applied_at',
+                    order: 'created_at.desc',
+                    limit: '200'
+                });
+                rules = rules || [];
+
+                var loadedContents = (_igwSelMsgs || []).map(function(m) { return (m.content || '').toLowerCase(); });
+                var relevant = rules.filter(function(r) {
+                    var p = (r.phrase || '').toLowerCase();
+                    return loadedContents.some(function(c) { return c.indexOf(p) !== -1; });
+                });
+                var showing = showAll ? rules : relevant;
+                var renderList = showing.slice(0, 50);
+
+                var headerHtml = '<div style="margin-bottom:8px;color:var(--fhs-text-secondary,#999);font-size:11px;">'
+                    + 'ℹ️ Phase 2a 觀察期：規則只記錄唔生效，2026-08-18 檢視命中率再決定開唔開。'
+                    + '</div>';
+
+                if (renderList.length === 0) {
+                    listEl.innerHTML = headerHtml
+                        + '<div style="color:var(--fhs-text-secondary,#999);">'
+                        + (showAll ? '（未有全域詞句規則）' : '（呢個對話未有相關嘅全域規則）')
+                        + '</div>'
+                        + (!showAll && rules.length > 0 ? '<button id="igwShowAllPhraseRules" style="margin-top:6px;font-size:11px;background:none;border:none;color:var(--fhs-primary,#2A9D8F);cursor:pointer;padding:0;">顯示全部（' + rules.length + '）▾</button>' : '');
+                } else {
+                    listEl.innerHTML = headerHtml
+                        + renderList.map(function(r) {
+                            var statusLabel = _igwPhraseRuleStatusLabel(r);
+                            var typeLabel = r.signal_type === 'deal' ? '成交' : (r.signal_type === 'quote_draft' ? '報價傾價' : '唔關事');
+                            var dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('zh-HK') : '—';
+                            var canDisable = r.active;
+                            return '<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--fhs-border,#eee);">'
+                                + '<span style="flex:1;">「' + _igwEscapeHtml(r.phrase) + '」' + typeLabel
+                                + '<br><span style="color:var(--fhs-text-secondary,#999);font-size:11px;">' + statusLabel + '｜' + dateStr + '</span></span>'
+                                + (canDisable
+                                    ? '<button class="igw-phrase-rule-disable" data-id="' + r.id + '" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--fhs-border,#ccc);background:transparent;cursor:pointer;flex-shrink:0;">停用</button>'
+                                    : '<span style="font-size:10px;color:var(--fhs-text-secondary,#999);flex-shrink:0;">重啟需管理員</span>')
+                                + '</div>';
+                        }).join('')
+                        + (!showAll && rules.length > relevant.length ? '<button id="igwShowAllPhraseRules" style="margin-top:6px;font-size:11px;background:none;border:none;color:var(--fhs-primary,#2A9D8F);cursor:pointer;padding:0;">顯示全部（' + rules.length + '）▾</button>' : '');
+                }
+
+                var showAllBtn = document.getElementById('igwShowAllPhraseRules');
+                if (showAllBtn) showAllBtn.addEventListener('click', function() { _igwRenderPhraseRulesList(true); });
+
+                listEl.querySelectorAll('.igw-phrase-rule-disable').forEach(function(btn) {
+                    btn.addEventListener('click', async function() {
+                        try {
+                            await sbRpc('fhs_disable_ig_phrase_rule', { p_id: btn.getAttribute('data-id') });
+                            _igwRenderPhraseRulesList(showAll);
+                        } catch (e) { showToast('❌ 操作失敗：' + e.message, 2000); }
+                    });
+                });
+            } catch (e) {
+                listEl.innerHTML = '<div style="color:#ef4444;">❌ 載入失敗：' + _igwEscapeHtml(e.message) + '</div>';
+            }
         }
         // ── End IG 訊息 thread 檢視 ──────────────────────────────────
 
@@ -15791,6 +16215,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // 成功後，呢個 best-effort hook 一拋錯，就俾外層 catch 誤判成「直連寫入 Supabase 失敗」
         // ——實際上寫入已經成功，只係呢個非關鍵嘅追溯 hook 冇執行到。
         window._igwMaybeLinkNewOrder = _igwMaybeLinkNewOrder;
+        // D54 export 核對（Phase 2a，cl-flow flow_id 2026-08-04-0244 §5 Step 9）：新增嘅
+        // _igwSplitSentences/_igwBindSentenceSelection/_igwToggleSentSelection/
+        // _igwRecomputeSelText/_igwClearSentSelectionUi/_igwClearSentSelection/
+        // _igwHandleDesktopSelection/_igwShowSelBar/_igwHideSelBar/_igwRenderPhraseBar/
+        // _igwShowPhraseError/_igwHandlePhraseChipClick/_igwRunPhrasePreview/
+        // _igwSubmitPhraseRule/_igwShowPhraseLimitHelper/_igwPhraseRuleStatusLabel/
+        // _igwRenderPhraseRulesList 全部逐一核對：零 onclick="" HTML attribute 呼叫、
+        // 零跨 script block bare call，一律 addEventListener 喺同一 IIFE 內互相呼叫，
+        // 故毋須加入呢份 export 名單。下次新增函式若改用 onclick="" 或跨 block bare call，
+        // 必須喺呢度補一行（D54 教訓）。
         // ── End IG 看門狗警報 ────────────────────────────────────────
 
         /* ── PGC-ODAT: Audit Toggle + Item Drawer (Phase 1) ────────── */

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-04 (IG看門狗學習系統 Phase 2a：詞句級規則，D58): 🏷️ ✅
+
+**摘要**：全文見完成記錄 [2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md](../reports/completion/2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md)（有完成報告，該報告為唯一全文居所，本行僅摘要指回）。新增 `ig_phrase_rules` 全域詞句規則表（migration `0086`），Fat Mo 喺 IG thread 訊息 highlight 句子標 `deal`/`quote_draft`/`noise` 三標籤，跨客人生效（vs 現行 0084 只影響單一客人）。`/cl-flow` A2 對抗評審揪出 2 條 BLOCKER（anon 可繞過護欄塞字串癱瘓看門狗），修補為二段式狀態機（DB CHECK 強制 `enforce=true` 須 `status=approved`）。observe 模式，`enforce` 恆 false，判斷引擎零改動。V42/current.html 已同步部署，全部驗證用獨立 curl/SQL/jsdom 交叉核實，非自驗。
+**Learnings**：新增 `learnings/supabase.md` #12（Pitfall：全域規則表擴展時原有「訊息存在」護欄失效，需二段式批准），跨桶 pointer 已同步 `governance.md`。
+
 ## 2026-08-03 (Telegram Notify 擴大覆蓋「等緊你回覆」通知): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-03「Telegram Notify 擴大覆蓋「等緊你回覆」通知」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 反映 Notify 現時只喺任務完成先發通知，等緊佢回覆問題冇 ping。查明 `on-notification.js` 舊版硬過濾只放行 permission 批准提示、排除咗閒置等回覆（idle wait）。移除過濾改為兩類都發送，並帶出一個 Claude Code 上游已知限制：結構化 `AskUserQuestion`（選項卡）現時唔會觸發 Notification hook，只有純文字問題等回覆嘅閒置情況先覆蓋到。純全域 user-level hook 改動，非本 repo 追蹤範圍。
