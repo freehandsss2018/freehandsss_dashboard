@@ -90,5 +90,6 @@
 | 2026-07-07 | 2026-07-07_micro-vector-scaling-semantic-preservation.md | 微型向量縮放語意保留 | micro-icon, vector, scale, semantic, emoji, pitfall | 轉換 CJK Emojis 為向量時，避免使用過簡化開路徑，以防微尺寸縮放下遺失手指/腳板細節與語意 |
 | 2026-07-12 | 2026-07-12_rls-policy-removal-silent-2xx-write-failure.md | RLS 政策移除靜默 2xx 失敗 | rls, policy, grep-blind-spot, silent-failure, supabase, delete, pitfall | 移除anon DELETE政策後前端請求仍回200但0 rows；grep單行漏判method與URL分行呼叫；驗收須測真實資料狀態非status code |
 | 2026-07-22 | 2026-07-22_migration-repo-db-drift-create-or-replace-regression.md | Migration Repo/DB Drift 回歸事故 | migration, drift, supabase, create-or-replace, pitfall, financial-rpc | apply_migration套用嘅修復未同步落repo檔案，令後續CREATE OR REPLACE照抄repo舊檔打回死碼；改RPC前須核對pg_get_functiondef同repo是否一致 |
+| 2026-07-24 | 2026-07-24_v2_cost_model_n8n_migration_pitfalls.md | V2成本模型n8n遷移四連環踩坑 | cost, v2-model, n8n, quantity, migration-0073, execution-log, pitfall | 單件價×quantity模型n8n未必真乘(qty=1測試會PASS掩蓋)；新增品類固定成本要check係咪已baked入SKU單價防雙計；get_execution_log對已完成execution可能持續回報過時running；新增表欄位前端所有fetch select list都要同步補齊 |
 <!-- kgov sync confirmed: Session 124 -->
 
