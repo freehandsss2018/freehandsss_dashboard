@@ -22,5 +22,6 @@
 <!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
 ### 跨領域指標（全文在別桶）
 - → `supabase.md` #1 雙層成本架構
+- → `supabase.md` #11 冪等去重索引唔可以含「寫入當日」欄位（如 `alert_date=today`），否則重跑當日不同即繞過去重
 - → `frontend.md` #1 Webhook payload 缺漏（Late Enrichment）
 <!-- POINTERS:END -->

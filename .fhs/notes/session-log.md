@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-04 (IG看門狗 P2c message_intents 冪等鍵修復，D59): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-04「D59：IG看門狗 P2c `message_intents` 冪等鍵修復」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 交辦稽核 live 資料異常（`message_intents` 205 distinct 訊息 `is_primary` 100% true，疑似 writer 寫死 bug）。查明原懷疑排除——`build_n8n_workflow.cjs` 的 `hits.forEach idx===0` 邏輯正確，205 筆訊息零筆命中2個以上意圖，`is_primary` 全true純屬現況資料。連帶查出真實 bug：唯一1筆重複列因原冪等鍵含 `alert_date`（寫入當日非訊息日期），thread cursor 曾重置繞過去重。修復 migration `0087`（改用訊息自然鍵）+ n8n `on_conflict` 同步部署，77測試PASS，Supabase/n8n 皆直查驗證。**過程中重演 2026-08-02 exec 5409 同一種事故**：全部改動一度落錯主倉checkout（非worktree），因 Bash 工具 cd 咗去主倉，Edit/Write 用絕對路徑卻漏帶 worktree 前綴；即時發現後用 `cp` 搬正確內容去 worktree + `git checkout --`/`rm` 還原主倉為乾淨狀態，重新喺 worktree 內核實測試後先 commit。
+Subagent：未使用，全程主 session 直接執行；驗收用 Supabase MCP 直查 + n8n API 直查交叉核實，效果等同 fresh-context 覆核。
+
 ## 2026-08-03 (Telegram Notify 擴大覆蓋「等緊你回覆」通知): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-03「Telegram Notify 擴大覆蓋「等緊你回覆」通知」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。Fat Mo 反映 Notify 現時只喺任務完成先發通知，等緊佢回覆問題冇 ping。查明 `on-notification.js` 舊版硬過濾只放行 permission 批准提示、排除咗閒置等回覆（idle wait）。移除過濾改為兩類都發送，並帶出一個 Claude Code 上游已知限制：結構化 `AskUserQuestion`（選項卡）現時唔會觸發 Notification hook，只有純文字問題等回覆嘅閒置情況先覆蓋到。純全域 user-level hook 改動，非本 repo 追蹤範圍。

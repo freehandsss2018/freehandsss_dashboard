@@ -3,6 +3,8 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-04] (D59) IG看門狗 P2c message_intents 冪等鍵修復——移除 alert_date，改用訊息自然鍵(thread+message_id+intent_label)；清除既有1筆重複列(206→205)；migration 0087 + n8n on_conflict 同步部署
+
 [2026-08-03] (D57) FHS Telegram 訊息品質整治——Update_Note 改規則式解碼(88/102欄位原本會吐原始變數名) + 內部JSON/顯示鏡像skip + appendAttribution全域關閉(8節點) + 本日第2處中文腐蝕還原(Auditor Alert)
 
 [2026-08-03] (D56) learnings 系統領域分桶重構——單檔50條硬上限改6桶差異化配額115條 + prompt-router自動注入 + P3.0探針證實session_id存在
@@ -2110,3 +2112,43 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **範圍**：Dashboard 只改 `Update_Note` IIFE 內部，`captureFormState()`/`raw_form_state`/欄位 ID/財務欄位全部零改動；n8n 只改 Telegram 節點參數，未觸碰任何業務邏輯節點。
 
 詳見 Changelog.md 2026-08-03 兩條目（D57 前半/後半）。
+
+---
+
+### D58：2026-08-04 — IG看門狗學習系統 Phase 2a：詞句級規則（observe 模式）
+
+**背景**：Fat Mo 提出——IG 看門狗學習系統（已上線的 Phase 1，migration `0084`）只能修正單一客人（`thread` 級規則），可否喺審視 IG 訊息時直接 highlight 字句，標記「呢句係新增/修改判斷依據」，令規則跨客人泛化生效。`0084` 嘅 `rule_scope` 欄位早已預留 `'pattern'` 擴展位，本次即該擴展位落地。
+
+**三項拍板**：①UI 粒度＝句子切片點選為主（純 DOM，避 iOS PWA standalone 原生 selection 風險）＋desktop 原生選字浮動條加成；②節奏＝先 observe 兩星期（`enforce` 恆 false），**2026-08-18 為檢視點**——提案數 ≥10 視為入口可用進入 Phase 2b（開 enforce），<10 判定為入口問題（現行入口太深：總覽→igwatch→撳「💬 IG訊息」→開 overlay→選字）而非需求問題，Phase 2b 暫停先改入口再重數；③標籤範圍＝首輪只做 `deal` 成交／`quote_draft` 報價傾價／`noise` 唔關事三個。
+
+**`/cl-flow` 過程（flow_id `2026-08-04-0244`）**：A3 草案含 live 資料實測（`ig_messages` 2,381 則/154 threads，79%訊息≤40字；**`ig_thread_rules` 上線後零使用**——最重要實證發現，直接促成上述「2026-08-18 檢視點」設計）。A1（Perplexity）因 API 額度用盡缺席（degraded）。A2（Gemini）對抗評審揪出 2 條 BLOCKER：①原方案「phrase 必須真實出現喺來源訊息」單一防線可被繞過——外人可自行 DM 任意文字入庫觸發自己個 thread 嘅警報，再引用該訊息通過護欄，寫入全域抑制規則癱瘓看門狗（`pg_policies` 實測確認 `ig_messages`/`ig_watchdog_alerts`/`ig_thread_rules` 三表 anon SELECT 全開，anon key 內嵌喺公開 HTML，Phase 1 嘅 thread 級規則因只影響自己個 thread 冇呢個問題，Phase 2 全域規則性質完全唔同）；②全域規則停用/重啟開放 anon+全表可讀＝批量停用攻擊面。
+
+**修補（超出原批准範圍，Verdict 標 `CONDITIONAL_READY`）**：規則表加二段式狀態機（`proposed`/`approved`/`rejected`），anon 只能造 `proposed`；DB CHECK 約束 `enforce=false OR status='approved'` 喺資料庫層強制，即使上層代碼寫錯都擋得住；批准/否決/重啟/開enforce 收歸 service_role；anon 嘅停用保留單向（只可 `active=false`，因 Dashboard 只有 anon key 冇 auth session，全撤會廢咗 Fat Mo 出事時嘅緊急停掣）。Fat Mo 直接回覆「/execute」視為此條件已批准。
+
+**fresh-context agent 覆核**：Fat Mo 要求「派 agent 覆核處理表」，獨立 `general-purpose` agent（無本次對話記憶）逐條核實反證/落點，並自行重跑 `pg_policies` live 查詢獨立驗證，結論：批評處理表誠實、無做戲跡象（唯一瑕疵：`0084b`/`0084c` 根因表述輕微簡化，不影響結論真實性）。
+
+**執行**：新 migration `0086_ig_phrase_rules.sql`（表+5支RPC+G1-G12護欄，核心G3防anon塞字串攻擊）；V42/current.html 分句渲染+選取互動+標籤條+全域規則列表；判斷引擎（`order-match.mjs`/`build_n8n_workflow.cjs`/n8n workflow）明確零改動。
+
+**驗證**：DB層權限矩陣（`has_function_privilege()`）+CHECK約束直測；分句函式對25則live訊息（含PII token）跑不變式測試；XSS用`jsdom`真實DOM parse 6個payload零元素被建立；權限矩陣另用真實anon key curl獨立驗證（非Dashboard內部路徑）；G4/G6/G7/G11護欄逐條實測；雙檔diff輸出為空；guard/health/kgov 41個fixtures全PASS；全部測試資料已清理核實零殘留。
+
+**範圍**：純標註功能，`enforce`恆false，對現行看門狗判斷結果零影響。抑制類撞`DEAL_RE`詞嘅衝突護欄刻意延到Phase 2b喺引擎端做（避免SQL複製一份`DEAL_RE`造成第二真源）。
+
+詳見 Changelog.md 2026-08-04 條目、`FHS_System_Logic_Overview.md` §11.14、`.fhs/reports/completion/2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md`、`artifacts/2026-08-04-0244/`。
+
+---
+
+### D59：2026-08-04 — IG看門狗 P2c `message_intents.is_primary` 稽核：原懷疑排除，順帶修復真實冪等鍵 bug
+
+**背景**：Fat Mo 交辦稽核 live 資料異常——`message_intents` 表 205 distinct 訊息，`is_primary` 100% 為 true，同 migration 0057 註記「tagIntent() 命中陣列第一個」矛盾，懷疑 writer 寫死 `is_primary:true`。
+
+**排查結論：原懷疑排除**。`build_n8n_workflow.cjs:471-480` 逐行核對，`hits.forEach((label, idx) => ... is_primary: idx===0)` 邏輯本身正確，`hits` 陣列順序由 `tagIntent()`（`lib/order-match.mjs:341`）依 `INTENT_PATTERNS` 優先序建構，非寫死。live 查詢 `GROUP BY (thread, message_id)` 證實 205 筆 distinct 訊息中零筆命中 2 個以上不同 intent_label——`is_primary` 全 true 純粹反映「目前每則訊息只命中 1 個意圖」嘅資料現況，非 writer 缺陷。
+
+**連帶發現真實 bug（範圍外，獨立修復）**：唯一一組 `(thread, message_id)` 有 2 筆列，卻是**同一 intent_label**（complaint）重複兩次，非多意圖情境。根因：原冪等鍵 `ix_message_intents_dedup`（migration 0057）含 `alert_date`（＝寫入當日，非訊息本身日期）。SOP.md 設計假設「Meta 每天匯出只含增量，同一訊息理論上不會重複出現」，靠 n8n `staticData` 嘅 per-thread cursor（`build_n8n_workflow.cjs` ~L249-254）保障只處理一次；但實際命中案例（thread `woshilili_956096984158193` / `message_ig_message_id` `1x3u01b0yy7`，`complaint`，2026-07-13 與 2026-07-25 各一筆）顯示 cursor 保障曾經失效（推測工作流曾被整個重建而非原地更新，導致 `staticData` 遺失、cursor 歸零），令同一歷史訊息喺不同 `alert_date` 重跑，繞過 `on_conflict` 去重。
+
+**修復**：migration `0087_fix_message_intents_dedup_key.sql`——① `DELETE` 清除既有重複列（保留 `created_at` 最早一筆，206→205）；②冪等鍵改為訊息自然鍵 `(message_thread, message_ig_message_id, intent_label)`，不含 `alert_date`。同步改 `build_n8n_workflow.cjs` 的 `Write Intents` 節點 `on_conflict` 參數對齊新索引，重新產生 JSON 並以既定「PUT `{name,nodes,connections,settings}`」外科手術式部署上 n8n workflow `FHS_IGWatchdog_DriveWatch`（`D4LK6VrQbiXlju0V`）。`alert_date` 欄位本身保留（PART 5 TTL job 比對 `created_at`，不受影響）。
+
+**驗證**：單元測試 77/77 全 PASS（`order-match.diffguard.test.mjs` 亦過，因 `order-match.mjs`/`tagIntent()` 本體零改動）；Supabase 側 `apply_migration` 後直查 `pg_indexes` 核實新索引已生效且不含 `alert_date`，`message_intents` 總筆數 206→205；n8n PUT 回 HTTP 200，GET 回應體核實 `Write Intents` 節點 `url` 已含新 `on_conflict`，8 個 Google Drive 節點 + 2 個 Telegram 節點 `credentials` 全數保留（`build_n8n_workflow.cjs` 本已內嵌固定 credential id，PUT 未洗掉），workflow 仍 `active:true`。
+
+**範圍**：純資料庫索引 + n8n 單一節點 URL 參數改動，`tagIntent()`/`INTENT_PATTERNS`/意圖判斷邏輯零改動，不影響 P2c 其餘功能。
+
+詳見 [supabase/migrations/0087_fix_message_intents_dedup_key.sql](supabase/migrations/0087_fix_message_intents_dedup_key.sql)、[scripts/ig-watchdog/build_n8n_workflow.cjs:826-848](scripts/ig-watchdog/build_n8n_workflow.cjs:826)。
