@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-03] Session（Claude Code / Sonnet 5 執行）— FHS_DeliveryReminder_DailyPush Telegram 亂碼修復
+
+- **緣起**：Fat Mo 截圖回報今日 09:00 HKT 交貨期預警 Telegram 推送全部中文/emoji 顯示為 `?`（如「?? FHS ?????」）。
+- **診斷**：定位到 workflow `FHS_DeliveryReminder_DailyPush`（ID `0nSXy6fqo8EL1ABm`）。經 API GET 直接讀取生產版本 `Format Message` Code node 同 `Workflow Description` sticky note，確認中文字面值在生產環境已被腐蝕（命中已知規則 [[feedback_n8n_deployment]] 第3條：Windows curl inline 傳中文會腐蝕成亂碼），而本地 `n8n/templates/fhs_delivery_reminder_push.json` 模板檔本身 UTF-8 完好無缺，判斷係過往某次用 inline `-d` 方式部署時腐蝕，未落實「寫檔案再 `curl -d @file.json`」規則。
+- **修復**：GET 生產 workflow → 用模板檔嘅乾淨 UTF-8 內容覆寫兩個節點 → 依 GET→PUT 4 欄位鐵律（`name/nodes/connections/settings`）組 PUT body → 寫入本地 UTF-8 檔案 → `curl -d @file.json` 部署（非 inline）。HTTP 200。
+- **驗證**：重新 GET 生產版本，寫入本地檔案後用 Read 工具核對（避開 Windows 終端機 codepage 顯示假象），`Format Message` jsCode 同 sticky note 中文/emoji 全部正常，`active:true` 未變動。下次自動觸發為明日 09:00 HKT；未手動觸發測試推送（避免對 Fat Mo 產生非預期 Telegram 訊息）。
+- **Subagent 使用記錄**：❌ 未使用（單一 workflow 定位+修復，主 session 直接處理）。
+
+---
+
 ## [2026-08-03] Session（Claude Code / Opus 5 & Sonnet 5 混合執行）— canva-auto yunggggm 0600303 長片款(78.0sec)首例出貨
 
 - **緣起**：Fat Mo 開新單 yunggggm 0600303（純音樂長片款,78.0sec,首次非 HoKaSin/Meika 短片母片家族），要求先分析長片母片再執行,並強調要跟過往學習庫手法一致以保留動畫/顯示時間。
