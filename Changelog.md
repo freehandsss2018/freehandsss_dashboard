@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-03] Session（Claude Code / Opus 5 & Sonnet 5 混合執行）— canva-auto yunggggm 0600303 長片款(78.0sec)首例出貨
+
+- **緣起**：Fat Mo 開新單 yunggggm 0600303（純音樂長片款,78.0sec,首次非 HoKaSin/Meika 短片母片家族），要求先分析長片母片再執行,並強調要跟過往學習庫手法一致以保留動畫/顯示時間。
+- **母片分析**（Canva MCP 未接通前用本地 ffmpeg/mutagen/tkhd 完成）：Kaki 0600906(74.1sec)為最接近音長母片,結構為固定 4 頁(P1 手模/P2 圖對+字句/P3 一頁疊 4 個 video 元素各自約 15.4sec 顯示時間/P4 手模)——同 HoKaSin「page3 兩段片」家族結構不同,首次記錄呢種「單頁疊多片」母片型態。
+- **執行**：Canva connector 中途接通後,全程只用 4 種 operation（copy-design→update_title→replace_text→update_fill/crop_media/position_element[僅字句]）,7 個母片元素(P2 圖對×2+字句、P3 片×4+字句)全部保留,零 `delete_element`。
+- **踩中並自行修正一個 bug（同 HoKaSin 血訓同源,第2次確認）**：`update_fill` 換入片後,Canva 自動生成嘅 imageBox 用咗錯誤嘅 960×1920 metadata 計算(同 `get-assets` 報值一致),令正方片被壓成直片形狀嘅裁切框；本地 tkhd 實測 4 條片皆 960×960 正方,用 `crop_media` 歸零修正,container 幾何全程未郁。確認呢個 bug 唔止喺讀值層(`get-assets`),連 `update_fill` 寫入 imageBox 嗰刻都會用錯值。
+- **Fat Mo 人手微調**：字距 letterSpacing 0.073(母片原值)→0.146(雙倍),因新句字數較少令間隙感覺過疏；P3 字句順道用 Canva UI 原生複製 P2 box 貼上(非 MCP delete_element,產生新 locator_id,風險與鐵律禁止嘅 MCP 手法不同)。
+- **驗收**：真圖 export(1280×720 JPG,非 draft 縮圖)確認零裁切變形;Fat Mo 眼證 P2「完美」,全案 OK 出貨,MP4(1080p)+封面 JPG(page2)已交付(連結 4 小時有效已過期)。
+- **文件同步**：`canva_auto/placement_memory.json` 新增 case(learned:true)+convergence_log 第 8 條,記錄長片款母片型態同 update_fill imageBox bug 復發證據,供下一單長片款直接參考。
+- **Subagent 使用記錄**：❌ 未使用（canva-auto 指令明文禁止派工，全程主 session 直接操作 Canva MCP）。
+
+---
+
 ## [2026-08-03] Session（Claude Code / Sonnet 5 執行）— Telegram Notify 擴大覆蓋「等緊你回覆」通知
 
 - **緣起**：Fat Mo 反映 FHS Claude Notify（`C:\Users\Edwin\.claude\telegram-notify\`，S178 建立嘅 user-level hooks）現時只喺任務完成（Stop hook）先發 Telegram 通知，等緊佢回覆問題嗰陣冇收到 ping，要主動翻查 session 先知道 AI 卡咗喺等回覆。

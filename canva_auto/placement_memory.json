@@ -2,15 +2,85 @@
   "version": 1,
   "purpose": "canva-auto diff-learning 案例庫：每單 Fat Mo 人手改正 = 一筆訓練數據。Stage③ 換 fill 前先查此庫預測 resize/position；Fat Mo 改正後把 delta 記錄落此檔。案例 >=3 單收斂的規律才升格寫入記憶檔規則層。座標系 = 1920x1080 頁面像素。",
   "convergence_log": [
-    { "order": "0600906", "date": "2026-07-11", "corrected_slots": 5, "total_slots": 6, "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確（此結論後被推翻，見下）" },
-    { "order": "0600906", "date": "2026-07-22", "corrected_slots": 1, "total_slots": 1, "note": "覆核追加：page3 直片格原判『正確無改』有誤，Fat Mo 事後再改闊（客人片較闊 16:9 源塞窄直向格）。連同首單合計 6/6 全部曾被修正——首單『零錯格』實際不存在，補課檢查制度的價值在此案例首次體現" },
-    { "order": "0800802", "date": "2026-07-13", "corrected_slots": 3, "total_slots": 3, "note": "首見雙直片page3新pattern，3個slot全被Fat Mo改（黑白圖仲被換走個asset，非純幾何微調）；另揭發2項AI能力外嘅缺口：進場動畫(墨水/汙漬、模糊)、客人音軌從未上載——已補落non_geometry_findings，未計入corrected_slots" },
-    { "order": "0600718", "date": "2026-07-23", "corrected_slots": 4, "total_slots": 4, "note": "驗證咗『套用高度相似案例=零校正』呢個假設唔成立——4/4 slot 全部再被調整，即使 asset 形狀同precedent幾乎一樣。另外開單時發現母片 placeholder 元素會喺 Fat Mo 上載階段消失，需insert_fill頂替（非update_fill）；非幾何缺口（動畫/時序/時長）第3次穩定重現，列為永久限制。" },
-    { "order": "0600904", "date": "2026-07-27", "corrected_slots": "0(AI自行修正，非Fat Mo改)", "total_slots": 4, "note": "重大發現：AI 首次套用precedent座標仍然導致4/4圖片/影片元素被裁切（container比例同新素材原生比例唔完全一致+殘留舊crop offset）。Fat Mo定性新永久鐵律「零裁切」：resize_element唔夠，必須加crop_media(0,0,W,H)先歸零裁切。AI已自行修正並記錄，等Fat Mo最終覆核確認。另新增母片搜尋優先序規則（音長最接近→建立日期最接近）+ 標題音長標記慣例，Canva MCP同日API大改版（edit-design/read-design）。" },
-    { "order": "0601100", "date": "2026-07-31", "corrected_slots": "4/4（三次重做，非幾何問題）", "total_slots": 4, "note": "🔴 揪出本庫最大盲點：真兇係 delete_element 刪走母片載住動畫嘅元素，唔係之前懷疑嘅 resize/crop。連錯3次、Fat Mo 第一次已明示答案但AI再犯兩次。修正後由 Meika 重新 copy、全程 update_fill 原元素零刪除。同時首見 page3 兩片長寬比唔同（1:1 vs 1:2），Fat Mo 定案『各自原比例、高度對齊、中心對齊』。餘下 Video 1.mp4 未去背屬 Fat Mo Stage② 人手位。" },
-    { "order": "0601100", "date": "2026-08-01", "corrected_slots": "page2 0/2（三項全對）· page3 2/2（顯示時間+動畫爛）", "total_slots": 4, "note": "🔴**推翻前一日結論**：resize_element/position_element 原來會改爛動畫同元素顯示時間。乾淨對照＝同一 design 內 page2 冇做 resize/position（母片幾何已啱）→ Fat Mo 三項指標全對；page3 做咗 → 顯示時間+動畫全爛（矇糊變湧出）。新增『幾何凍結鐵律』+ Fat Mo 三項驗收指標框架。另 get-assets 報嘅 video 尺寸實測會錯（Video3 本地 1440² 正方 vs Canva 報 1080×2160），尺寸真理源改為本地 mp4 tkhd atom。" }
+    {
+      "order": "0600303",
+      "date": "2026-08-03",
+      "corrected_slots": "1(letterSpacing, Fat Mo手動) + 1(imageBox, AI自行修正)",
+      "total_slots": 2,
+      "note": "長片款(78.0sec)首例。AI自行揪出並修正update_fill帶入嘅錯誤imageBox(960x1920誤判,同get-assets bug同源，第2次撞到)。Fat Mo人手僅微調letterSpacing(0.073→0.146,因新句字數少令間隙感覺過疏)。零resize_element/position_element(媒體)，動畫/顯示時間預期完整繼承。Fat Mo驗收P2\"完美\"，全案OK收貨。"
+    },
+    {
+      "order": "0600906",
+      "date": "2026-07-11",
+      "corrected_slots": 5,
+      "total_slots": 6,
+      "note": "首單無案例可查，全部繼承舊格致變形；僅 page3 直片格正確（此結論後被推翻，見下）"
+    },
+    {
+      "order": "0600906",
+      "date": "2026-07-22",
+      "corrected_slots": 1,
+      "total_slots": 1,
+      "note": "覆核追加：page3 直片格原判『正確無改』有誤，Fat Mo 事後再改闊（客人片較闊 16:9 源塞窄直向格）。連同首單合計 6/6 全部曾被修正——首單『零錯格』實際不存在，補課檢查制度的價值在此案例首次體現"
+    },
+    {
+      "order": "0800802",
+      "date": "2026-07-13",
+      "corrected_slots": 3,
+      "total_slots": 3,
+      "note": "首見雙直片page3新pattern，3個slot全被Fat Mo改（黑白圖仲被換走個asset，非純幾何微調）；另揭發2項AI能力外嘅缺口：進場動畫(墨水/汙漬、模糊)、客人音軌從未上載——已補落non_geometry_findings，未計入corrected_slots"
+    },
+    {
+      "order": "0600718",
+      "date": "2026-07-23",
+      "corrected_slots": 4,
+      "total_slots": 4,
+      "note": "驗證咗『套用高度相似案例=零校正』呢個假設唔成立——4/4 slot 全部再被調整，即使 asset 形狀同precedent幾乎一樣。另外開單時發現母片 placeholder 元素會喺 Fat Mo 上載階段消失，需insert_fill頂替（非update_fill）；非幾何缺口（動畫/時序/時長）第3次穩定重現，列為永久限制。"
+    },
+    {
+      "order": "0600904",
+      "date": "2026-07-27",
+      "corrected_slots": "0(AI自行修正，非Fat Mo改)",
+      "total_slots": 4,
+      "note": "重大發現：AI 首次套用precedent座標仍然導致4/4圖片/影片元素被裁切（container比例同新素材原生比例唔完全一致+殘留舊crop offset）。Fat Mo定性新永久鐵律「零裁切」：resize_element唔夠，必須加crop_media(0,0,W,H)先歸零裁切。AI已自行修正並記錄，等Fat Mo最終覆核確認。另新增母片搜尋優先序規則（音長最接近→建立日期最接近）+ 標題音長標記慣例，Canva MCP同日API大改版（edit-design/read-design）。"
+    },
+    {
+      "order": "0601100",
+      "date": "2026-07-31",
+      "corrected_slots": "4/4（三次重做，非幾何問題）",
+      "total_slots": 4,
+      "note": "🔴 揪出本庫最大盲點：真兇係 delete_element 刪走母片載住動畫嘅元素，唔係之前懷疑嘅 resize/crop。連錯3次、Fat Mo 第一次已明示答案但AI再犯兩次。修正後由 Meika 重新 copy、全程 update_fill 原元素零刪除。同時首見 page3 兩片長寬比唔同（1:1 vs 1:2），Fat Mo 定案『各自原比例、高度對齊、中心對齊』。餘下 Video 1.mp4 未去背屬 Fat Mo Stage② 人手位。"
+    },
+    {
+      "order": "0601100",
+      "date": "2026-08-01",
+      "corrected_slots": "page2 0/2（三項全對）· page3 2/2（顯示時間+動畫爛）",
+      "total_slots": 4,
+      "note": "🔴**推翻前一日結論**：resize_element/position_element 原來會改爛動畫同元素顯示時間。乾淨對照＝同一 design 內 page2 冇做 resize/position（母片幾何已啱）→ Fat Mo 三項指標全對；page3 做咗 → 顯示時間+動畫全爛（矇糊變湧出）。新增『幾何凍結鐵律』+ Fat Mo 三項驗收指標框架。另 get-assets 報嘅 video 尺寸實測會錯（Video3 本地 1440² 正方 vs Canva 報 1080×2160），尺寸真理源改為本地 mp4 tkhd atom。"
+    }
   ],
   "cases": [
+    {
+      "order": "0600303",
+      "customer": "yunggggm",
+      "design_id": "DAHROSEj30M",
+      "date": "2026-08-03",
+      "learned": true,
+      "note": "長片款(78.0sec)首例，母片改用 Kaki 0600906(74.1sec)，非同款音長嘅 HoKaSin/Meika 短片母片。母片結構同 HoKaSin 唔同：非「page3塞2段片」，而係 page3 一頁疊4個video元素、各自約15.4s顯示時間；page數固定4頁(P1手模/P2圖對+字句/P3四片/P4手模)。全程用足黃金參考4種operation，零delete_element/resize_element/媒體position_element，7個母片元素(P2圖對x2+字句、P3片x4+字句)全部保留。",
+      "slots": [
+        {
+          "slot": "page3_四片疊放",
+          "note": "update_fill換入4條片後,Canva自動生成嘅imageBox用錯誤嘅960x1920 metadata算(同get-assets報值一致),令imageBox變成W x 2W(正方片被拉成直片形狀嘅裁切框)。本地tkhd實測4條片皆960x960正方,同container aspect(1:1)完全一致。修正:crop_media(0,0,container_w,container_h)歸零,container本身zero碰。呢個係第二次撞到「get-assets/update_fill 自動幾何信咗錯誤嘅960x1920 metadata」,確認呢個bug唔止喺get-assets讀值層,連update_fill寫入imageBox嗰刻都會用錯值,每次換片一律要检查imageBox aspect同media真實aspect是否一致，唔可以假設update_fill自動算啱。"
+        },
+        {
+          "slot": "page2_page3_字句letterSpacing",
+          "note": "Fat Mo手動調字距：letterSpacing 0.073(母片原值)→0.146(Fat Mo改)，兩頁同步改。原因：新客字句字數較少(37字 vs 母片Kaki嘅41/53字)，母片letterSpacing套用喺短句上令字母間隙感覺過疏，Fat Mo手動加闊字距(剛好double)填補視覺密度。⚠️同時發現Fat Mo喺P3做咗「複製P2字句box貼落P3」嘅操作(非我方MCP做的)：P3字句locator_id由母片原有嘅LB6kg7fWDxByxhKR變成全新嘅LBrlmx99j6dPqpgz，fontSize/letterSpacing/position同P2完全一致。呢個係Fat Mo自己喺Canva UI內操作、非透過MCP delete_element，UI複製貼上手法可能唔受「元素保命鐵律」嘅MCP delete_element限制影響(UI原生複製通常帶埋動畫)，但下次若AI要模仿呢招要留意風險，不可用MCP delete_element+add_text替代。"
+        }
+      ],
+      "non_geometry_findings": [
+        "字句letterSpacing會因應字數多寡由Fat Mo人手微調,非固定值,母片0.073只係參考起點"
+      ]
+    },
     {
       "order": "0601100",
       "customer": "HoKaSin",
@@ -21,32 +91,78 @@
       "slots": [
         {
           "slot": "page2_主圖_彩色",
-          "asset_px": { "w": 1024, "h": 1024 },
+          "asset_px": {
+            "w": 1024,
+            "h": 1024
+          },
           "element_id": "LB0wWsLNwJJf9lvB",
-          "ai_box": { "top": 175, "left": 662, "w": 577, "h": 577 },
+          "ai_box": {
+            "top": 175,
+            "left": 662,
+            "w": 577,
+            "h": 577
+          },
           "note": "母片元素原封保留，只 update_fill 換媒體。母片幾何已經啱（577×577 @175,662）無需 resize/position，只需 crop_media 歸零——實測 update_fill 會帶入 imageBox=(-11.34,-11.34 599.68²) 嘅 crop offset，必須明確 crop_media(0,0,577,577)"
         },
         {
           "slot": "page2_主圖_黑白",
-          "asset_px": { "w": 2048, "h": 2048 },
+          "asset_px": {
+            "w": 2048,
+            "h": 2048
+          },
           "element_id": "LBxgyF0fd0WZbT7J",
-          "ai_box": { "top": 175, "left": 662, "w": 577, "h": 577 },
+          "ai_box": {
+            "top": 175,
+            "left": 662,
+            "w": 577,
+            "h": 577
+          },
           "note": "同上，同彩色疊放同一位置"
         },
         {
           "slot": "page3_片1_正方",
-          "asset_px": { "w": 960, "h": 960, "aspect": 1.0 },
+          "asset_px": {
+            "w": 960,
+            "h": 960,
+            "aspect": 1.0
+          },
           "element_id": "LBcmP2V1RC2HlLDp",
-          "ai_box": { "top": 175, "left": 671.5, "w": 577, "h": 577 },
+          "ai_box": {
+            "top": 175,
+            "left": 671.5,
+            "w": 577,
+            "h": 577
+          },
           "note": "⚠️首見 page3 兩條片長寬比唔同嘅情況（Meika兩條都係0.5直片可共用同一個框，今次唔得）。Fat Mo 裁決『各自按原比例，高度對齊、圖層中心對齊』：兩條片統一 h=577、top=175、中心 x=960，闊度各自按原比例計。此片1:1 → 577×577，left=960-288.5=671.5"
         },
         {
           "slot": "page3_片3",
-          "asset_px": { "w": 1440, "h": 1440, "aspect": 1.0, "note": "本地原檔實測真值（mp4 tkhd atom）" },
-          "asset_px_canva_reported": { "w": 1080, "h": 2160, "aspect": 0.5, "note": "⚠️Canva get-assets 報錯" },
+          "asset_px": {
+            "w": 1440,
+            "h": 1440,
+            "aspect": 1.0,
+            "note": "本地原檔實測真值（mp4 tkhd atom）"
+          },
+          "asset_px_canva_reported": {
+            "w": 1080,
+            "h": 2160,
+            "aspect": 0.5,
+            "note": "⚠️Canva get-assets 報錯"
+          },
           "element_id": "LBDXmPZS466VsHHW",
-          "ai_box_wrong": { "top": 175, "left": 815.75, "w": 288.5, "h": 577, "note": "信咗 Canva metadata 嘅 0.5 比例 → 正方片被壓窄，Fat Mo 紅圈揪出" },
-          "ai_box": { "top": 175, "left": 671.5, "w": 577, "h": 577 },
+          "ai_box_wrong": {
+            "top": 175,
+            "left": 815.75,
+            "w": 288.5,
+            "h": 577,
+            "note": "信咗 Canva metadata 嘅 0.5 比例 → 正方片被壓窄，Fat Mo 紅圈揪出"
+          },
+          "ai_box": {
+            "top": 175,
+            "left": 671.5,
+            "w": 577,
+            "h": 577
+          },
           "note": "🔴新教訓：**get-assets 報嘅 video 尺寸唔可信**。本地原檔 1440×1440 正方，Canva metadata 報 1080×2160 直片。破綻其實一早喺同一個回應入面——縮圖 360×360 正方 vs metadata 0.5 直，自相矛盾（Video 1 就兩者都 960×960 一致）。修正後同片1 完全重疊（同 top/left/size），兩條都正方零裁切。尺寸真理源＝本地原檔 mp4 tkhd atom（python 讀尾8 bytes 32.16定點，唔使ffprobe）。"
         }
       ],
@@ -71,23 +187,66 @@
       "slots": [
         {
           "slot": "page2_主圖_彩色",
-          "asset_px": { "w": 1024, "h": 1024 },
-          "ai_box_precedent": { "top": 173.90, "left": 663.70, "w": 575.53, "h": 579.85, "note": "沿用olibbvia fatmo_box，update_fill後仍見裁切" },
-          "ai_box_fixed": { "top": 175, "left": 662, "w": 577, "h": 577 },
+          "asset_px": {
+            "w": 1024,
+            "h": 1024
+          },
+          "ai_box_precedent": {
+            "top": 173.9,
+            "left": 663.7,
+            "w": 575.53,
+            "h": 579.85,
+            "note": "沿用olibbvia fatmo_box，update_fill後仍見裁切"
+          },
+          "ai_box_fixed": {
+            "top": 175,
+            "left": 662,
+            "w": 577,
+            "h": 577
+          },
           "note": "AI自行改正（非Fat Mo手改）：resize到精確正方形577x577 + crop_media(0,0,577,577)歸零裁切，Fat Mo覆核PASS"
         },
         {
           "slot": "page2_主圖_黑白",
-          "asset_px": { "w": 2048, "h": 2048 },
-          "ai_box_precedent": { "top": 184.06, "left": 660.90, "w": 581.13, "h": 569.68, "note": "沿用olibbvia fatmo_box，雖已接近正方但仍見殘留crop offset" },
-          "ai_box_fixed": { "top": 175, "left": 662, "w": 577, "h": 577 },
+          "asset_px": {
+            "w": 2048,
+            "h": 2048
+          },
+          "ai_box_precedent": {
+            "top": 184.06,
+            "left": 660.9,
+            "w": 581.13,
+            "h": 569.68,
+            "note": "沿用olibbvia fatmo_box，雖已接近正方但仍見殘留crop offset"
+          },
+          "ai_box_fixed": {
+            "top": 175,
+            "left": 662,
+            "w": 577,
+            "h": 577
+          },
           "note": "AI自行改正：同彩色圖統一用577x577正方 + crop_media歸零。教訓：即使container比例已經非常接近asset比例(1.0022 vs 1.0)，殘留crop offset仍可能存在，必須每次都明確crop_media，唔可以靠『比例夠接近應該冇事』嘅假設"
         },
         {
           "slot": "page3_雙直片_Video1+Video2",
-          "asset_px": { "w": 960, "h": 1920, "note": "Fat Mo呢單重新上載嘅版本係直向960x1920，同前一版960x960正方唔同——上載內容中途變過" },
-          "ai_box_precedent": { "top": 213.65, "left": 688.98, "w": 542.03, "h": 528.40, "note": "沿用olibbvia fatmo_box（源自960x960方形假設），套用去1920高嘅直向片變形嚴重" },
-          "ai_box_fixed": { "top": 188, "left": 815, "w": 290, "h": 580 },
+          "asset_px": {
+            "w": 960,
+            "h": 1920,
+            "note": "Fat Mo呢單重新上載嘅版本係直向960x1920，同前一版960x960正方唔同——上載內容中途變過"
+          },
+          "ai_box_precedent": {
+            "top": 213.65,
+            "left": 688.98,
+            "w": 542.03,
+            "h": 528.4,
+            "note": "沿用olibbvia fatmo_box（源自960x960方形假設），套用去1920高嘅直向片變形嚴重"
+          },
+          "ai_box_fixed": {
+            "top": 188,
+            "left": 815,
+            "w": 290,
+            "h": 580
+          },
           "note": "AI自行改正：aspect=0.5精確計算，闊290×高580，置中頁面（center x=960），crop_media歸零。Fat Mo覆核PASS"
         }
       ],
@@ -106,29 +265,81 @@
       "slots": [
         {
           "slot": "page2_主圖_彩色",
-          "asset_px": { "w": 1024, "h": 1024 },
-          "ai_box": { "top": 162.94, "left": 647.96, "w": 575.53, "h": 575.53, "note": "insert_fill 沿用0800802 fatmo_box數值" },
-          "fatmo_box": { "top": 173.90, "left": 663.70, "w": 575.53, "h": 579.85 },
+          "asset_px": {
+            "w": 1024,
+            "h": 1024
+          },
+          "ai_box": {
+            "top": 162.94,
+            "left": 647.96,
+            "w": 575.53,
+            "h": 575.53,
+            "note": "insert_fill 沿用0800802 fatmo_box數值"
+          },
+          "fatmo_box": {
+            "top": 173.9,
+            "left": 663.7,
+            "w": 575.53,
+            "h": 579.85
+          },
           "note": "闊度啱好唔使改，高度加少少(+4.3)、位置右移+落多少少"
         },
         {
           "slot": "page2_主圖_黑白",
-          "asset_px": { "w": 1254, "h": 1254 },
-          "ai_box": { "top": 184.84, "left": 700.61, "w": 501.70, "h": 553.64, "note": "insert_fill 沿用0800802 fatmo_box數值（但0800802原asset係1872x2048非正方，呢單1254x1254正方——形狀唔同已埋下伏線）" },
-          "fatmo_box": { "top": 184.06, "left": 660.90, "w": 581.13, "h": 569.68 },
+          "asset_px": {
+            "w": 1254,
+            "h": 1254
+          },
+          "ai_box": {
+            "top": 184.84,
+            "left": 700.61,
+            "w": 501.7,
+            "h": 553.64,
+            "note": "insert_fill 沿用0800802 fatmo_box數值（但0800802原asset係1872x2048非正方，呢單1254x1254正方——形狀唔同已埋下伏線）"
+          },
+          "fatmo_box": {
+            "top": 184.06,
+            "left": 660.9,
+            "w": 581.13,
+            "h": 569.68
+          },
           "note": "闊度大幅加大(+79.4)、位置左移(-39.7)——正方形asset需要闊啲嘅框先夠，套用非正方precedent嘅闊度會太窄"
         },
         {
           "slot": "page3_雙直片_Video1+Video2",
-          "asset_px": { "w": 1080, "h": 2160 },
-          "ai_box": { "top": 188.29, "left": 676.33, "w": "566.13~567.33", "h": 549.30, "note": "insert_fill 沿用0800802 fatmo_box數值" },
-          "fatmo_box": { "top": 213.65, "left": 688.98, "w": 542.03, "h": 528.40 },
+          "asset_px": {
+            "w": 1080,
+            "h": 2160
+          },
+          "ai_box": {
+            "top": 188.29,
+            "left": 676.33,
+            "w": "566.13~567.33",
+            "h": 549.3,
+            "note": "insert_fill 沿用0800802 fatmo_box數值"
+          },
+          "fatmo_box": {
+            "top": 213.65,
+            "left": 688.98,
+            "w": 542.03,
+            "h": 528.4
+          },
           "note": "兩格都縮細(w-25/h-21)+右移落多少少；同0800802嘅960x1920源相比，本單1080x2160長闊比一樣(0.5)但绝对像素大隻少少，縮細後嘅框先岩"
         },
         {
           "slot": "page2+3_字句box",
-          "ai_box": { "top": 760.01, "left": 647.96, "w": 649.76, "h": 120.67 },
-          "fatmo_box": { "top": 765.88, "left": 626.58, "w": 649.76, "h": 120.67 },
+          "ai_box": {
+            "top": 760.01,
+            "left": 647.96,
+            "w": 649.76,
+            "h": 120.67
+          },
+          "fatmo_box": {
+            "top": 765.88,
+            "left": 626.58,
+            "w": 649.76,
+            "h": 120.67
+          },
           "note": "闊高不變，純位置微調(top+5.9, left-21.4)——字句同上面圖案嘅間距要再闊少少"
         }
       ],
@@ -146,23 +357,57 @@
       "slots": [
         {
           "slot": "page2_主圖_彩色",
-          "asset_px": { "w": 1024, "h": 1024 },
-          "ai_box": { "top": 146.10, "left": 633.50, "w": 633.00, "h": 633.00 },
-          "fatmo_box": { "top": 162.94, "left": 647.96, "w": 575.53, "h": 575.53 },
+          "asset_px": {
+            "w": 1024,
+            "h": 1024
+          },
+          "ai_box": {
+            "top": 146.1,
+            "left": 633.5,
+            "w": 633.0,
+            "h": 633.0
+          },
+          "fatmo_box": {
+            "top": 162.94,
+            "left": 647.96,
+            "w": 575.53,
+            "h": 575.53
+          },
           "note": "asset不變(彩色圖_cutout.png去背版本身冇問題)，Fat Mo淨係校細+校位；正確錨點=top163/高576/中心x≈936（比AI原估細少少、企多少少落）"
         },
         {
           "slot": "page2_主圖_黑白",
-          "asset_px": { "w": 1872, "h": 2048 },
-          "ai_box": { "top": 146.10, "left": 660.55, "w": 578.80, "h": 633.00 },
-          "fatmo_box": { "top": 184.84, "left": 700.61, "w": 501.70, "h": 553.64 },
+          "asset_px": {
+            "w": 1872,
+            "h": 2048
+          },
+          "ai_box": {
+            "top": 146.1,
+            "left": 660.55,
+            "w": 578.8,
+            "h": 633.0
+          },
+          "fatmo_box": {
+            "top": 184.84,
+            "left": 700.61,
+            "w": 501.7,
+            "h": 553.64
+          },
           "note": "⚠️asset本身被Fat Mo整個換走：由AI上載嘅local_prep.py v1版parakeet圖(MAHPRa2RZnA)換成Canva原生ColorMix效果重新生成嘅圖(MAHPRsueAPg，internal filename非人手命名，1872x2048即用返原始未加工黑白圖做底)。preset=Parakeet, Hue offset=0.8, Saturation=0.3, Rainbow amount=0.2, Rainbow offset=0。✅已收口：Fat Mo決定continue自動化，local_prep.py已用MAHPRsueAPg嘅182x199縮圖樣本反推v2公式（正規化座標u/v，捨棄v1嘅1563拉伸假設），Saturation擬合中位數0.3064同slider讀數0.3幾乎完全吻合，交叉驗證通過。詳見 canva_auto/sample_gradient_fit.py。"
         },
         {
           "slot": "page3_直片_Video1+Video2",
-          "asset_px": { "w": 960, "h": 1920 },
+          "asset_px": {
+            "w": 960,
+            "h": 1920
+          },
           "ai_box_wrong_pattern": "並排(side-by-side)：top150.24, left574.66/970, w375.34, h750.68 each",
-          "fatmo_box": { "top": 188.29, "left": 676.33, "w": 566.7, "h": 549.30 },
+          "fatmo_box": {
+            "top": 188.29,
+            "left": 676.33,
+            "w": 566.7,
+            "h": 549.3
+          },
           "note": "⚠️正確版型=兩段片疊放同一位置（同master DAHN9LxGdEE precedent一致，非AI首次猜嘅並排），box近方形(566.7x549.3，非直片原生aspect)即兩段片都經Canva人手裁切非單純preserve_aspect_ratio直縮；且top由150→188、右移少少，確保底部(188+549=737)企晒喺文字頂(top≈760)之上唔會蓋字，呼應Fat Mo『page3大小/排位都錯，唔好蓋字句』"
         }
       ],
@@ -182,45 +427,129 @@
       "slots": [
         {
           "slot": "page2_主圖_彩色",
-          "asset_px": { "w": 1024, "h": 1024 },
-          "ai_box": { "top": 156.66, "left": 564.27, "w": 777.28, "h": 615.26 },
-          "fatmo_box": { "top": 146.10, "left": 653.41, "w": 592.99, "h": 633.24 },
+          "asset_px": {
+            "w": 1024,
+            "h": 1024
+          },
+          "ai_box": {
+            "top": 156.66,
+            "left": 564.27,
+            "w": 777.28,
+            "h": 615.26
+          },
+          "fatmo_box": {
+            "top": 146.1,
+            "left": 653.41,
+            "w": 592.99,
+            "h": 633.24
+          },
           "note": "AI 錯在繼承 Pangonyi 闊扁裁格；正確=近原比例、高~633 貼 top146、水平中心 x~950"
         },
         {
           "slot": "page2_主圖_黑白",
-          "asset_px": { "w": 2048, "h": 2048 },
-          "ai_box": { "top": 156.66, "left": 547.99, "w": 824.01, "h": 615.26 },
-          "fatmo_box": { "top": 146.10, "left": 653.41, "w": 613.18, "h": 633.24 },
+          "asset_px": {
+            "w": 2048,
+            "h": 2048
+          },
+          "ai_box": {
+            "top": 156.66,
+            "left": 547.99,
+            "w": 824.01,
+            "h": 615.26
+          },
+          "fatmo_box": {
+            "top": 146.1,
+            "left": 653.41,
+            "w": 613.18,
+            "h": 633.24
+          },
           "note": "同彩色疊齊：same top/left/h，黑白版稍闊 (613 vs 593)"
         },
         {
           "slot": "page3_細圖_彩色",
-          "asset_px": { "w": 1024, "h": 1024 },
-          "ai_box": { "top": 726.84, "left": 1445.42, "w": 297.08, "h": 235.16 },
-          "fatmo_box": { "top": 741.85, "left": 1482.27, "w": 210.86, "h": 225.17 },
+          "asset_px": {
+            "w": 1024,
+            "h": 1024
+          },
+          "ai_box": {
+            "top": 726.84,
+            "left": 1445.42,
+            "w": 297.08,
+            "h": 235.16
+          },
+          "fatmo_box": {
+            "top": 741.85,
+            "left": 1482.27,
+            "w": 210.86,
+            "h": 225.17
+          },
           "note": "細版 = page2 組合 x ~0.356"
         },
         {
           "slot": "page3_細圖_黑白",
-          "asset_px": { "w": 2048, "h": 2048 },
-          "ai_box": { "top": 726.84, "left": 1439.20, "w": 314.94, "h": 235.16 },
-          "fatmo_box": { "top": 741.85, "left": 1482.27, "w": 218.04, "h": 225.17 },
+          "asset_px": {
+            "w": 2048,
+            "h": 2048
+          },
+          "ai_box": {
+            "top": 726.84,
+            "left": 1439.2,
+            "w": 314.94,
+            "h": 235.16
+          },
+          "fatmo_box": {
+            "top": 741.85,
+            "left": 1482.27,
+            "w": 218.04,
+            "h": 225.17
+          },
           "note": "同彩色細版疊齊"
         },
         {
           "slot": "page4_動畫",
-          "asset_px": { "w": 960, "h": 1920, "note": "AI 錯用原始直片 VAHPDrvaStI" },
-          "ai_box": { "top": 146.10, "left": 552.60, "w": 835.89, "h": 626.92 },
-          "fatmo_box": { "top": 146.10, "left": 666.51, "w": 632.23, "h": 632.23 },
+          "asset_px": {
+            "w": 960,
+            "h": 1920,
+            "note": "AI 錯用原始直片 VAHPDrvaStI"
+          },
+          "ai_box": {
+            "top": 146.1,
+            "left": 552.6,
+            "w": 835.89,
+            "h": 626.92
+          },
+          "fatmo_box": {
+            "top": 146.1,
+            "left": 666.51,
+            "w": 632.23,
+            "h": 632.23
+          },
           "note": "最嚴重錯誤：page4 必須用 Fat Mo 另出的方形去背成品 asset（此單=VAHPF8LDnSs），非原始直片；正方格 ~632x632 貼 top146 中心 x~982"
         },
         {
           "slot": "page3_直片",
-          "asset_px": { "w": 1024, "h": 576 },
-          "ai_box": { "top": 0, "left": 656.25, "w": 607.5, "h": 1080 },
-          "fatmo_box_round1": { "top": 0, "left": 656.25, "w": 607.5, "h": 1080 },
-          "fatmo_box_round2_2026-07-22": { "top": 0, "left": 412.55, "w": 1092.60, "h": 1080 },
+          "asset_px": {
+            "w": 1024,
+            "h": 576
+          },
+          "ai_box": {
+            "top": 0,
+            "left": 656.25,
+            "w": 607.5,
+            "h": 1080
+          },
+          "fatmo_box_round1": {
+            "top": 0,
+            "left": 656.25,
+            "w": 607.5,
+            "h": 1080
+          },
+          "fatmo_box_round2_2026-07-22": {
+            "top": 0,
+            "left": 412.55,
+            "w": 1092.6,
+            "h": 1080
+          },
           "note": "⚠️首次驗收(round1)標錯『正確無改』——2026-07-22 覆核發現 Fat Mo 之後再改闊咗（客人 WhatsApp 片原生 1024x576=16:9 橫向源，塞入 607.5x1080 極窄直向格太窄）。round2 改成 w1092.6（幾乎翻倍），h/top不變仍全高1080，水平中心 left+w/2=958.85≈960（頁面正中，同round1嘅center=960一致，只係闊度加大）。教訓：唔可以只睇『首次 commit 後未改』就當呢格啱——客人素材原生 aspect 較闊時，直片格預設闊度會唔夠，需按闊度比例加闊，中心線固定x=960、top/h維持0/1080。呢個規律未收斂（只1個數據點），下次類似『客人片較闊』case 出現時參考呢組數字，累積至2-3單先計公式。"
         }
       ],
