@@ -3,6 +3,8 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-04] (D59) 壓測 Telegram 逐單騷擾整治 + Order_ID 缺失固定 fallback 撞單修復——n8n加Filter節點靜音測試單通知+彙總單一訊息、`未命名`固定字面值改每次獨立、PATCH中文值靜默0-rows另記learnings
+
 [2026-08-03] (D57) FHS Telegram 訊息品質整治——Update_Note 改規則式解碼(88/102欄位原本會吐原始變數名) + 內部JSON/顯示鏡像skip + appendAttribution全域關閉(8節點) + 本日第2處中文腐蝕還原(Auditor Alert)
 
 [2026-08-03] (D56) learnings 系統領域分桶重構——單檔50條硬上限改6桶差異化配額115條 + prompt-router自動注入 + P3.0探針證實session_id存在
@@ -2132,3 +2134,21 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **範圍**：純標註功能，`enforce`恆false，對現行看門狗判斷結果零影響。抑制類撞`DEAL_RE`詞嘅衝突護欄刻意延到Phase 2b喺引擎端做（避免SQL複製一份`DEAL_RE`造成第二真源）。
 
 詳見 Changelog.md 2026-08-04 條目、`FHS_System_Logic_Overview.md` §11.14、`.fhs/reports/completion/2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md`、`artifacts/2026-08-04-0244/`。
+
+### D59：2026-08-04 — 壓測 Telegram 逐單騷擾整治 + Order_ID 缺失固定 fallback 撞單修復
+
+**編號說明**：D-編號以 decisions.md 為 SSOT，此為首個推送落 main 嘅 D59 記錄；session-start hook 偵測到另一並行未合併分支（`origin/claude/ecstatic-poincare-3cc445`）commit message 亦自稱 D59（`message_intents 冪等鍵修復`），依 D56/D57 先例（見上方 D57 編號說明），該分支合併時須自行偵測撞號並重編號，本記錄不因此更動。
+
+**背景**：Fat Mo 反映 `FHS_System_StressTester.py` 壓測一次連環發 9+ 則 Telegram 通知（每個測試案例 create+delete 各發一則）過分騷擾，要求優化成一則彙總訊息。
+
+**修復（n8n `FHS_Core_OrderProcessor`）**：`Pack Telegram Data`（create/edit）加 guard，`Order_ID` 符合 `test\d+` 即靜音個別通知；新增 Filter 節點插喺 `Switch Action` delete 分支同 `Notify Telegram (Delete)` 之間（`Mirror Delete to Supabase` 平行邊完全唔受影響，真實刪除路徑保持不變）；新增 `test_summary` action 分支繞過訂單處理直接發彙總訊息。`FHS_System_StressTester.py` 新增 `send_test_summary()`，全部案例跑完一次性發送。
+
+**意外揭發並修復嘅獨立 bug**：驗收時 Fat Mo 發現多一則「未命名」幽靈新訂單通知。查證根因：`Parse Items & Generate SKU` 節點對缺 `Order_ID` 嘅請求 fallback 落固定字面值 `"未命名"`，下游 RPC 以 `order_id` 做 UPSERT 仲裁鍵，令任何缺 ID 請求都撞落同一筆兩日前殘留訂單並令其復活。改為 `"未命名_" + Date.now()` 每次獨立；壓測腳本 TC-05 亦補回 `test1005` 令其納入既有靜音+清理機制。
+
+**驗證**：n8n dry-run→diff 比對→apply 全程使用 `update_node_code`（含自動備份）；直接查 Supabase 確認 `test1001`/`test1004`/`test1005` 之 `deleted_at` 於測試期間正確寫入（Mirror Delete to Supabase 路徑未受破壞）；獨立 fresh-context general-purpose agent 覆核 n8n 拓撲改動（PASS，重點核實 Mirror Delete 邊未被誤截）；手動清理殘留「未命名」單時發現 PATCH 中文 Order_ID 返 HTTP 200 但 0 rows 命中，改用 `execute_sql` 直接 UPDATE。過程中一次 `update_node_code` 重貼長 code block 手誤漏兩個物件屬性，即時用 python `difflib` 程式化 diff 揪出並修正，最終確認部署版本與原版本僅相差預期一行。
+
+**範圍**：純 n8n 通知層 + 測試腳本改動，未觸碰財務計算欄位（`calculatePricing()`/`captureFormState()`/`total_cost` 等）或 Dashboard HTML。
+
+**未解**：驗證期間發現今日測試 create 呼叫（含理應成功嘅正常案例）均未見落地 Supabase `orders` 表新 row，最近一筆真實訂單為 2026-08-02；未能判斷係「今日未有真實客單」定係「真實訂單 sync 亦受影響」，已提醒 Fat Mo 自行核實，未在本次任務範圍內查明。
+
+詳見 Changelog.md 2026-08-04 條目、`.fhs/memory/lessons/2026-08-04_telegram-spam-and-orderid-fallback-collision.md`、`.fhs/memory/learnings/n8n.md` #6、`.fhs/memory/learnings/supabase.md` #13。

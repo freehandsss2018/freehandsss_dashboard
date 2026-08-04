@@ -10,6 +10,7 @@
 
 | 日期 | 檔案 | 主題 | 關鍵字 | 摘要 |
 |------|------|------|--------|------|
+| 2026-08-04 | 2026-08-04_telegram-spam-and-orderid-fallback-collision.md | Telegram壓測騷擾整治+未命名撞單 | n8n, telegram, order-id, upsert-collision, postgrest, diff-verification | 測試單Telegram彙總靜音；Order_ID缺失固定fallback撞單意外揭發；PATCH中文值靜默0-rows；完整重貼型工具改動須程式化diff驗證 |
 | 2026-07-25 | 2026-07-25_ig-watchdog-container-rotation-oauth-red-herring.md | IG看門狗容器輪替誤判OAuth | n8n, google-drive, container-rotation, misleading-alert, ig-watchdog | Meta匯出目的地容器非永久穩定會輪替；寫死資料夾ID致168h零偵測；告警文字猜測性用詞誤導排查方向 |
 | 2026-07-22 | 2026-07-22_n8n-code-node-and-expression-pitfalls.md | n8n Code node 平行崩潰+表達式`=`前綴+HTTP零結果 | n8n, expression, code-node, axios, task-runner | url等字串參數缺`=`前綴會靜默送純文字；HTTP node 0筆結果落游不執行需alwaysOutputData；兩個Code node平行打axios可致task runner崩潰改行序列鏈 |
 | 2026-07-17 | 2026-07-17_charm_cost_ledger_drift_and_missing_chain_rule.md | 吊飾成本雙數簿漂移+頸鏈規則缺失 | finance, n8n, cost-drift, necklace-chain, migration-0046 | products.total_base_cost凍結舊值vs cost_configurations新值長期漂移；頸鏈$100規則從未落實n8n |

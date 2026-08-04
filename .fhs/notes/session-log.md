@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-04 (壓測 Telegram 逐單騷擾整治 + Order_ID 缺失 fallback 撞單修復，D59): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-04「D59：壓測 Telegram 逐單騷擾整治」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。n8n `FHS_Core_OrderProcessor` 加 Filter 節點靜音測試單（`test\d+`）逐單 Telegram 通知，壓測腳本改發一則彙總訊息；驗收時意外揭發並修復獨立 bug——`Order_ID` 缺失時固定字面值 `"未命名"` fallback 令多個請求撞落同一筆殘留訂單，改為每次獨立（`+ Date.now()`）。獨立 fresh-context agent 覆核拓撲改動 PASS。
+**Learnings**：新增 `learnings/n8n.md` #6（Order_ID fallback 撞單）、`learnings/supabase.md` #13（PATCH 中文值靜默 0-rows）；完整 post-mortem 見 [2026-08-04_telegram-spam-and-orderid-fallback-collision.md](../memory/lessons/2026-08-04_telegram-spam-and-orderid-fallback-collision.md)。
+
 ## 2026-08-04 (IG看門狗學習系統 Phase 2a：詞句級規則，D58): 🏷️ ✅
 
 **摘要**：全文見完成記錄 [2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md](../reports/completion/2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md)（有完成報告，該報告為唯一全文居所，本行僅摘要指回）。新增 `ig_phrase_rules` 全域詞句規則表（migration `0086`），Fat Mo 喺 IG thread 訊息 highlight 句子標 `deal`/`quote_draft`/`noise` 三標籤，跨客人生效（vs 現行 0084 只影響單一客人）。`/cl-flow` A2 對抗評審揪出 2 條 BLOCKER（anon 可繞過護欄塞字串癱瘓看門狗），修補為二段式狀態機（DB CHECK 強制 `enforce=true` 須 `status=approved`）。observe 模式，`enforce` 恆 false，判斷引擎零改動。V42/current.html 已同步部署，全部驗證用獨立 curl/SQL/jsdom 交叉核實，非自驗。

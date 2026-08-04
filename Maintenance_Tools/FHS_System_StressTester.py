@@ -121,12 +121,40 @@ test_cases = [
         "name": "TC-05: Missing Main Info",
         "payload": {
             "action": "create",
+            # Order_ID 必須帶 test+數字（即使故意缺 Customer_Name/Deposit 等主資料測試 failsafe）：
+            # 冇 Order_ID 時系統會 fallback 落固定字串「未命名」，多次測試會共用同一筆殘留訂單，
+            # 逐單 Telegram 靜音 regex 亦冚唔到，且 cleanup 區塊要求 payload 有 Order_ID 先會刪除
+            # （見 2026-08-04 事故：orders 表發現一筆 order_id='未命名' 殘留兩日未清）
+            "Order_ID": "test1005",
             "Order_Items_List": [
                 {"Product_Name": "嬰兒鎖匙扣 - 不銹鋼", "Quantity": 1, "Order_Item_Key": "TEST_X_01"}
             ]
         }
     }
 ]
+
+def send_test_summary(results, cleanup_failures):
+    """所有測試案例跑完後,一次性發一則 Telegram 彙總,取代逐單 create/delete 通知
+    （n8n 側 Order_ID 符合 test+數字已靜音逐單訊息，見 Pack Telegram Data / Filter Test Delete Notify）。"""
+    lines = ["🧪 【Freehandsss 壓測報告】"]
+    for name, res in results.items():
+        mark = "✅" if res == "PASS" else "❌"
+        lines.append(f"{mark} {name}: {res}")
+    lines.append("------------------------")
+    if cleanup_failures:
+        lines.append(f"⚠️ Cleanup 未完成: {', '.join(cleanup_failures)}")
+    else:
+        lines.append("🧹 所有測試訂單已清理完成")
+    full_message = "\n".join(lines)
+
+    try:
+        data = json.dumps({"action": "test_summary", "Full_Message": full_message}).encode('utf-8')
+        req = urllib.request.Request(WEBHOOK_URL, data=data, headers={'Content-Type': 'application/json'}, method='POST')
+        with urllib.request.urlopen(req, context=ssl_context, timeout=15) as response:
+            print(f"\n[TEST SUMMARY] Sent to Telegram, status {response.getcode()}")
+    except Exception as e:
+        print(f"\n[TEST SUMMARY] Failed to send: {e}")
+
 
 def main():
     print("=== Freehandsss V40.5 System Stress Tester ===")
@@ -162,6 +190,8 @@ def main():
     for name, res in results.items():
         print(f"{name.ljust(40)}: {res}")
     print("="*50)
+
+    send_test_summary(results, cleanup_failures)
 
     if cleanup_failures:
         print(f"\n[FATAL] {len(cleanup_failures)} test order(s) failed cleanup verification (not actually deleted): {cleanup_failures}")

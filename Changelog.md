@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-04] Session（Claude Code / Sonnet 5 執行）— D59：壓測 Telegram 逐單騷擾整治 + Order_ID 缺失固定 fallback 撞單修復
+
+- **緣起**：Fat Mo 反映 `FHS_System_StressTester.py` 壓測一次連環發 9+ 則 Telegram 通知（每個測試案例 create+delete 各發一則）過分騷擾，要求優化成一則彙總訊息。
+- **修復（n8n `FHS_Core_OrderProcessor`）**：`Pack Telegram Data`（create/edit 分支）加 guard，`Order_ID` 符合 `/^test\d+$/i` 即靜音個別通知；新增 Filter 節點「Filter Test Delete Notify」插喺 `Switch Action` delete 分支同 `Notify Telegram (Delete)` 之間——`Mirror Delete to Supabase` 平行邊完全唔經過 Filter，真實刪除路徑不受影響；新增 `test_summary` action 分支（新節點「Send Test Summary」）繞過整條訂單處理鏈直接發送彙總訊息。`Maintenance_Tools/FHS_System_StressTester.py` 新增 `send_test_summary()`，所有案例跑完後一次性發送。
+- **意外揭發並修復嘅獨立 bug**：驗收時 Fat Mo 發現多一則「👤 未命名 | #未命名」幽靈新訂單通知，且從未被清理。查證根因：`Parse Items & Generate SKU` 節點對缺 `Order_ID` 嘅請求 fallback 落固定字面值 `"未命名"`（crash-defense 設計本意冇問題），但下游 `sync_order_to_mirror` RPC 以 `order_id` 做 UPSERT 仲裁鍵，令任何兩次缺 ID 請求都撞落**同一筆**殘留訂單——直接查 Supabase 證實該 row `created_at` 為 2026-08-02（兩日前），壓測腳本 TC-05（"Missing Main Info"，刻意唔帶 Order_ID）每次跑都令其復活。修復：改為 `"未命名_" + Date.now()` 每次獨立；`FHS_System_StressTester.py` TC-05 補回 `Order_ID: "test1005"`（保留原意仍唔帶 Customer_Name/Deposit 等主資料測 failsafe），納入既有靜音+清理機制。
+- **驗證**：n8n 全程 GET→dry-run→diff 比對→apply（`update_node_code` 含自動備份）；直接查 Supabase 確認 `test1001`/`test1004`/`test1005` 之 `deleted_at` 於測試期間正確寫入（證實 `Mirror Delete to Supabase` 路徑未受破壞）；獨立 fresh-context `general-purpose` agent 覆核 n8n 拓撲改動（PASS，逐項核實 delete 分支平行邊、fallback 路徑、regex 誤傷風險、execution log）；手動清理殘留「未命名」單時發現 PATCH 中文 `order_id` 值返 HTTP 200 但實際 0 rows 命中，改用 `execute_sql` 直接 UPDATE 才成功（另記 `learnings/supabase.md` #13，同 2026-07-12 RLS silent-2xx 教訓同型）。**操作過程自我修正**：一次 `update_node_code` 需重貼完整 ~95 行 jsCode，手誤漏咗 else 分支兩個物件屬性，即時用 python `difflib` 程式化 diff 原始碼 vs 部署版本揪出（非肉眼核對），確認後補一次 apply 修正，最終 diff 只含預期一行。
+- **範圍**：純 n8n 通知層 + 壓測腳本改動，未觸碰財務計算欄位（`calculatePricing()`/`captureFormState()`/`total_cost` 等）或 Dashboard HTML，Dashboard 未改動故本次跳過升格部署。
+- **未解事項**：驗證期間發現今日（2026-08-04）測試 create webhook 呼叫（包括理應成功嘅正常案例）均未見落地 Supabase `orders` 表新 row，最近一筆真實訂單為 2026-08-02——未能單憑測試數據判斷係「今日未有真實客單」定係「真實訂單 sync 亦受影響」，已提醒 Fat Mo 自行核實，未在本次任務範圍內查明。
+- **Lesson**：`.fhs/memory/lessons/2026-08-04_telegram-spam-and-orderid-fallback-collision.md`（完整 post-mortem，含「完整重貼型工具改動須程式化 diff 驗證」操作紀律教訓）；`.fhs/memory/learnings/n8n.md` #6、`.fhs/memory/learnings/supabase.md` #13。
+- **Subagent 使用記錄**：✅ general-purpose（fresh-context 獨立覆核 n8n 拓撲改動安全性）。
+
+詳見 `.fhs/notes/decisions.md` D59、`.fhs/memory/lessons/2026-08-04_telegram-spam-and-orderid-fallback-collision.md`。
+
 ## [2026-08-04] Session（Claude Code / Opus 5 執行）— D58：IG看門狗學習系統 Phase 2a——詞句級規則（observe 模式）
 
 - **緣起**：Fat Mo 提出「可否喺審視 IG 訊息時 highlight 字句，告知邊句係新增/修改、可以判定嘅句子」。現行學習系統（migration `0084`，Phase 1）只能表達「呢單判錯」——規則以 `thread` 為 key，只影響單一客人；判斷引擎嘅真正輸入係 `lib/order-match.mjs` 內硬編碼 regex（`DEAL_RE`/`QUOTE_RE`/`INTENT_PATTERNS`/`CAT_*_RE`），Fat Mo 無法喺唔改代碼、唔重部署 n8n 嘅情況下調整。`0084` 嘅 `rule_scope` 欄位早已預留 `'pattern'` 擴展位，本次即該擴展位嘅落地。
