@@ -3,6 +3,8 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-05] (D60) handoff 便攜塊「時限待辦漏帶」機制修復——新增 fhs-health-check.js 第7類機械偵測 + commit.md P0.7 新增「⏰時限待辦」欄（不受最高優先3條上限約束）+ MASTER表列混寫禁令，副作用：便攜塊預算超支9.6%待Fat Mo裁決
+
 [2026-08-04] (D59) 壓測 Telegram 逐單騷擾整治 + Order_ID 缺失固定 fallback 撞單修復——n8n加Filter節點靜音測試單通知+彙總單一訊息、`未命名`固定字面值改每次獨立、PATCH中文值靜默0-rows另記learnings
 
 [2026-08-03] (D57) FHS Telegram 訊息品質整治——Update_Note 改規則式解碼(88/102欄位原本會吐原始變數名) + 內部JSON/顯示鏡像skip + appendAttribution全域關閉(8節點) + 本日第2處中文腐蝕還原(Auditor Alert)
@@ -2135,6 +2137,22 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 
 詳見 Changelog.md 2026-08-04 條目、`FHS_System_Logic_Overview.md` §11.14、`.fhs/reports/completion/2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md`、`artifacts/2026-08-04-0244/`。
 
+### D60：2026-08-05 — handoff 便攜塊「時限待辦漏帶」機制修復
+
+**背景**：Fat Mo 質詢「為何 2026-08-09 拷問技能(mattpocock)4週試用閘 + llm-council-skill(D28) 判準覆核冇出現喺 `/read` 狀態報告」。查證發現：MASTER 持續待辦表第 77/80 行**確有記錄**（含 scheduled task `fhs-2026-08-09-skill-trial-gate-review`），但便攜塊「📋 待辦」欄只帶「MASTER 表最高優先 3 條」（commit.md P0.7 原規則），而優先度排序同時限迫切性係兩套獨立準則——日期近（2026-08-09）嘅項目優先度標籤（`🟡 中`）冪唔過其他 emoji 更醒目嘅積壓項，結構性擠出便攜塊動態段，令下個 session 開場完全睇唔到。
+
+**根因分析（四項）**：①「最高優先3條」過濾器對時限項無特別保護；②時限待辦同一般優先度待辦共用一張表一套排序，日期迫切性同優先度標籤唔係同一維度；③單一 MASTER 表列容許「✅完成主體 + 🟡未來尾巴」混寫，掃表時視覺上被歸類做完成項；④優先度 emoji 一符多義（同時表狀態同表優先度），令「最高優先3條」揀選本身不可機械重現。
+
+**修復**：①`fhs-health-check.js` 新增第7類檢查 `checkDeadlineSurfacing`（`deadline_surfacing_checks` 規則於 `fhs-health-rules.json`）——掃 MASTER 表非全✅完成列內嵌嘅未來日期（60天內），若便攜塊動態段未反映即報警，SessionStart hook 每 session 自動跑，零人手記憶負擔；②`commit.md` P0.7 新增第七欄「⏰ 時限待辦」，專放帶日期嘅待跟進項，不受「最高優先3條」上限約束，只受「過期即移除」約束；③`commit.md` P0.6 新增 MASTER 表列寫法禁令：完成主體與待跟進尾巴禁止混寫一列，須拆兩列；④handoff.md 便攜塊已補入 2026-08-09（連 scheduled task taskId）與 2026-08-18（D58 `ig_phrase_rules` 提案數覆核點）兩個時限項。
+
+**驗證**：`node scripts/hooks/fhs-health-check.js` 改動前跑一次，準確抓到「2026-08-09」缺失（`.fhs/.health-report.json` 含該筆 issue）；補入 handoff.md 後再跑，該 issue 消失，僅剩既有嘅便攜塊過肥警告。
+
+**已知副作用（留待 Fat Mo 裁決，未在本次授權範圍內處理）**：修復本身令便攜塊動態段由 4,071 bytes 升至 4,386 bytes（預算 4,000，超支 9.6%；改動前已超支 1.8%）。查證根因唔喺本次改動，而係「⚠️易猜錯」17條踩坑清單規則「全保留只增不減」，長遠必然同固定 4,000 bytes 預算結構性衝突，非本次授權處理範圍。已於 `commit.md` P0.7.1 明文記低此張力供未來裁決（調整預算數值 vs 為「易猜錯」另設輪轉規則）。
+
+詳見 Changelog.md 2026-08-05 條目。
+
+**2026-08-08 修正註記**：Fat Mo 要求處理上述「待裁決」項，覆查時發現數字已過時——實測（`node scripts/hooks/fhs-health-check.js`）動態段現為 3,280 bytes，budget 4,000 bytes，餘裕 720 bytes（18%），健檢腳本 0 項過肥 issue，並非超支狀態；判斷是本記錄寫成之後檔案又被進一步壓縮（`📋 待辦`／`⏰ 時限待辦` 兩行寫法比本條目描述更精簡），但追蹤標記未同步更新。另，上段「根因歸咎⚠️易猜錯清單只增不減」的診斷經查有誤：`fhs-health-rules.json` 的 `handoff_portable_block` 規則 `scope_note` 明確此 budget 只量測「便攜邊界」線**以上**的動態段，「⚠️易猜錯」清單寫在邊界線**以下**（SessionStart hook 本不注入此段），結構上不計入此 budget，故其增長無法造成此預算衝突。原文「調整預算數值 vs 為易猜錯另設輪轉規則」的裁決題目前提不成立，暫無需 Fat Mo 裁決；MASTER 表對應列與 handoff.md 便攜塊已同步更新為「✅ 完成」狀態。
+
 ### D59：2026-08-04 — 壓測 Telegram 逐單騷擾整治 + Order_ID 缺失固定 fallback 撞單修復
 
 **編號說明**：D-編號以 decisions.md 為 SSOT，此為首個推送落 main 嘅 D59 記錄；session-start hook 偵測到另一並行未合併分支（`origin/claude/ecstatic-poincare-3cc445`）commit message 亦自稱 D59（`message_intents 冪等鍵修復`），依 D56/D57 先例（見上方 D57 編號說明），該分支合併時須自行偵測撞號並重編號，本記錄不因此更動。
@@ -2152,3 +2170,44 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **未解**：驗證期間發現今日測試 create 呼叫（含理應成功嘅正常案例）均未見落地 Supabase `orders` 表新 row，最近一筆真實訂單為 2026-08-02；未能判斷係「今日未有真實客單」定係「真實訂單 sync 亦受影響」，已提醒 Fat Mo 自行核實，未在本次任務範圍內查明。
 
 詳見 Changelog.md 2026-08-04 條目、`.fhs/memory/lessons/2026-08-04_telegram-spam-and-orderid-fallback-collision.md`、`.fhs/memory/learnings/n8n.md` #6、`.fhs/memory/learnings/supabase.md` #13。
+
+### D61：2026-08-10 — V42 Dashboard XSS 整治 + Supabase 設定 SSoT + 死碼/race condition 清理
+
+**緣起**：Fat Mo 要求「從 /8d 方向檢查 V42 的 Code」。靜態掃描（grep 定位 + 窗口讀，符合巨檔紀律）發現 6 類問題（P1-P6），其中 P1 為 stored XSS：IG 看門狗 `_igwPrefillForm` 將 IG 對話方顯示名（外部可控）填入 `momName`，經 sync 寫落 Supabase `orders.customer_name`，再由訂單總覽 `renderReviewTable`/`renderReviewAccordion` 兩條渲染路徑直接拼入 `innerHTML`，未經任何轉義。
+
+**驗證方法（先實證後動手，符合 `feedback_verify_active_code_path_before_analysis` 紀律）**：browser 開 V42.html（file://），造 `<img src=x onerror=...>` payload 直接呼叫渲染函式，實測兩條路徑 `onerror` 均觸發，證實非假警報後先動手修復。
+
+**修復範圍（P1-P6，逐項見 Changelog 2026-08-10 條目）**：
+1. **P1 XSS**：新增全域 `window.fhsEscHtml()`（HTML 轉義）。
+2. **P2 設定 SSoT**：Supabase URL/anon key 由 13+6 份散落硬編碼收斂成單一來源（`window.SB_URL`/`window.SB_ANON_KEY`）。
+3. **P3 死碼**：SVG sprite 刪走 8 個重複 symbol 定義（第二份，經 browser 實測證實從未生效）。
+4. **P4 race condition**：`executeDeleteOrder` 補一處未 `await` 嘅 `switchMode('review')`。
+5. **P5 靜默失敗**：兩處 `JSON.parse(item.LimbParts)` 空 catch 加 `console.warn`。
+6. **P6 wrapper 副作用漏呼叫**：`fetchGlobalReview` 三層 wrapper（n8n 原始 → Side Panel 攔截器 → Supabase patch）之間，Side Panel 嘅 `v40UpdateAuditSummary()` 因 Supabase flag 恆開而永遠唔會被呼叫到，已補回並加 `window.fhsWhichImpl()` runtime 診斷器。
+
+**修復過程的自我修正（誠實記錄，過程比結果更有教訓價值）**：
+- 發現 `onclick="fn('值')"` 係【HTML 屬性 + JS 字串】雙重解析語境，淨用 `fhsEscHtml` 無效（HTML 剖析器會先解碼屬性值再交 JS 剖析器），新增 `window.fhsEscAttr()`（先 JS 跳脫、再 HTML 轉義，次序不可掉轉）。
+- 一度嘗試喺渲染入口「正規化」order_id（剝走非法字元）以解決屬性語境轉義問題，後經 browser 實測推翻——HTML 剖析器對屬性值嘅轉義完全透明，`getElementById` 用原值一樣搵到；而正規化反而令 DB `PATCH order_id=eq.<clean>` 命中 0 行（靜默無效）、`mapOrder` 嘅 `itemsMap[原始id]` 查唔到（成張單 items 變空）。已完全移除，改純轉義。
+- `fhsEscAttr` 換行處理一度寫成 `'\n'`（真 LF，等於 no-op）而非 `'\\n'`（反斜線+n），令多行值嘅 onclick 靜默 parse 失敗；另曾將 raw U+2028/U+2029 直接寫入 regex literal 觸發 SyntaxError。兩者皆以 `charCodeAt` 實測揪出並修正。
+- 上一輪加嘅 `.replace(/\*/g,'\\*')` PostgREST ilike 跳脫方向錯誤（PostgREST 對 `*` 做無條件字面替換成 `%`，backslash 喺呢層唔生效），改為 `window.fhsSanitizeLikeTerm()` 直接剝走 `* % _`（去重查詢用途，唔需要精確語義）。
+
+**驗收方式（六輪 fresh-context 對抗式審查，`code-reviewer`/opus，逐輪均獨立命中真問題，非橡皮圖章）**：
+1. 第1輪：揪出交付提醒清單漏轉義嘅第三個同源出口。
+2. 第2輪：推翻「IG 係唯一外部入口」前提——刻字亦由客人提供、經另一條路入 DOM，只做 JS 跳脫喺雙引號屬性語境突圍（browser 實測 `onfocus`/`autofocus` 真正 parse 落 DOM）。
+3. 第3輪：揪出換行修復 no-op（見上）。
+4. 第4輪：揪出正規化方案嘅 DB 副作用（見上），推翻並改用純轉義。
+5. 第5輪：揪出 10 處 select/textarea 嘅 onchange/onblur 內部有參數錯用 `fhsEscHtml` 而非 `fhsEscAttr`（同類漏洞第三次現身，另揪出取模日曆模組完全未納入前面掃描）。
+6. 第6輪：全檔機械窮舉 3 類已知 pattern（`getElementById(\'` 生成式 handler / `${o.*}` 未轉義 / ilike 查詢），揪出最後一處：3 個 `<textarea>` 內文（Admin_Notes）完全未轉義，同時具備 XSS 注入面同「靜默資料腐蝕」（含 `&`/`<` 嘅正常備註每次失焦會被腐蝕一次）雙重風險。修復後複測：`.value` 與注入字串 byte-exact round-trip，`fhsWhichImpl()` 確認 `bareBindingSameAsWindow: true`。
+
+**收工訊號**：非「審查話 PASS」，而係逐欄位注入實測全綠——16 個 DB/n8n 來源欄位 × 2 種 payload（屬性突圍/HTML節點）× 2 條渲染路徑（Desktop 表格/手機 Accordion）= 32 組合零注入；另附交付提醒清單、IG 警報清單、取模日曆、稽核扣減 badge 四個獨立模組個別覆核。9 個 `<script>` block 全部語法檢查通過，raw U+2028/2029 殘留 0。轉義實作由 4 套獨立複製收斂為 1 套（`_igwEscapeHtml`/`esc` 改為 `fhsEscHtml` 別名）。
+
+**未解／有意不做**：
+- `<textarea>` 半套轉義（僅擋 `<`/`"`）殘留 5 處（`renderMode2Items` 等），經逐點核實現況安全（純屬性值或 `<` 已擋），僅屬風格不統一，留待下輪。
+- Supabase 憑證 401（見 D59-follow）未解，DB 現存 `product_sku`/`Batch`/`order_id` 實際值域未查證，故「利用面」僅能以可能性計，非已確認發生。
+- `_accDrawerKey` 正規化理論上可致跨訂單 key 撞（`a'b`/`a_b` 撞同一 key），實務上 order_id 全數字故不會觸發，按比例不修。
+- 響應式/a11y/財務公式三類全程零覆蓋（超出本次 XSS 整治範圍）。
+- **只改 V42.html（dev source），本次 `/commit` 因改動命中 `Freehandsss_Dashboard/freehandsss_dashboardV*.html` 觸發 Phase 2.5 自動升格部署，見本次 commit 記錄。**
+
+**教訓落盤**：`learnings/frontend.md` #9-11（雙重解析語境、轉義不可替代正規化資料、多形式內插掃描）、`learnings/tooling.md` #4（跳脫層數必須實測、raw line separator 陷阱）、`learnings/governance.md` #4（安全類修復不可一輪收工，逐輪對抗式審查命中率 5/6）。
+
+詳見 Changelog.md 2026-08-10 條目。

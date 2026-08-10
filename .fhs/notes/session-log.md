@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-08-10 (V42 Dashboard XSS 整治 + Supabase 設定 SSoT + 死碼/race condition 清理，D61): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-10「D61」條目 + [decisions.md D61](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。回應「從 /8d 方向檢查 V42」，靜態掃描（grep+窗口讀，符合巨檔紀律）揪出 6 類問題，其中 P1 為 stored XSS（IG 客名經 sync 寫落 Supabase 再由訂單總覽拼入 innerHTML），browser 實測證實非假警報後修復。過程三度自我修正並如實記錄：屬性語境雙重解析需新增 `fhsEscAttr`（先 JS 跳脫再 HTML 轉義）；曾嘗試「正規化 order_id」解決屬性轉義問題，經實測推翻（HTML 轉義對 `getElementById` 完全透明，正規化反而致 DB PATCH 靜默命中 0 行）已移除；換行處理一度寫成 no-op，另 PostgREST ilike 跳脫方向錯誤，兩者皆以實測揪出修正。六輪 `code-reviewer`/opus fresh-context 對抗式審查，逐輪均獨立命中真問題（漏轉義出口→刻字亦係外部輸入→換行no-op→正規化DB副作用→getElementById參數錯用helper→備註textarea未轉義），非橡皮圖章。收工用 16 欄位×2 payload×2 路徑=32 組合零注入實測，非審查 PASS 即收工。只改 V42.html（dev source），本次 `/commit` 觸發 Phase 2.5 自動升格部署。
+**Learnings**：新增 `learnings/frontend.md` #9-11（屬性語境雙重解析、轉義不可替代正規化資料、多形式內插掃描）、`learnings/tooling.md` #4（跳脫層數必須 charCodeAt 實測）、`learnings/governance.md` #4（安全類修復不可一輪收工）。
+**Subagent 使用記錄**：✅ code-reviewer×6（opus，fresh-context，T5 對抗式模板，逐輪皆有實質發現）。
+
 ## 2026-08-04 (壓測 Telegram 逐單騷擾整治 + Order_ID 缺失 fallback 撞單修復，D59): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-04「D59：壓測 Telegram 逐單騷擾整治」條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。n8n `FHS_Core_OrderProcessor` 加 Filter 節點靜音測試單（`test\d+`）逐單 Telegram 通知，壓測腳本改發一則彙總訊息；驗收時意外揭發並修復獨立 bug——`Order_ID` 缺失時固定字面值 `"未命名"` fallback 令多個請求撞落同一筆殘留訂單，改為每次獨立（`+ Date.now()`）。獨立 fresh-context agent 覆核拓撲改動 PASS。
@@ -1888,3 +1894,13 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-08-03 — Session（D57，Claude Code / Sonnet 5）
 - FHS Telegram 訊息品質整治：Fat Mo 截圖標紅「修正訂單」訊息出現 `m_baby_sec_en`/`depositSplitData` 等術語同英文 n8n 尾巴。查出根因遠大於截圖——`Update_Note` 產生器 labelMap 只得8條而 `captureFormState()` 實際有102欄位，即88個(86%)一改動就吐原始英文變數名。改規則式解碼(按 FHS 欄位命名規則自動譯，新欄位不再退化)+內部欄位skip+值人話化+版面由3行改單行(30行→12行)。另 survey 13個 workflow 揪出5workflow/8個 Telegram 節點全部帶英文尾巴已全域關閉，並發現本日第2處同源中文腐蝕 `Auditor Alert`(財務稽核警報)已還原。同 session 順帶按 P0.7.1 輪轉便攜塊（8,159→3,973 bytes，超支明細封存至 archive）並更正 D 編號撞號（早上 commit 誤用 D56，已改 D57）。
 - 一行摘要，全文見 [Changelog.md](../../Changelog.md) 2026-08-03條目（D57 前半/後半）、[decisions.md](decisions.md)「D57」。
+
+## 2026-08-09 — Session（/fhs-check，Claude Code / Sonnet 5）
+- 🔴 **Red Flag（生產級，非測試腳本可自查）**：`python Maintenance_Tools/run_all.py` 本身回報「全部通過」，但 LIFECYCLE/STRESS/ACCEPTANCE 輸出內文有「testXXXX never appeared in Supabase」警告未被腳本判為 FAIL（腳本只認 HTTP exit code，唔驗實際落地）。手動 Supabase 直查揪出根因：**n8n workflow `FHS_Core_OrderProcessor` 嘅 `HTTP: Supabase Sync RPC`（create/update）+ `Mirror Delete to Supabase`（delete）兩個 httpRequest node，其 Supabase API 憑證全面回 401 Unauthorized**（Supabase api logs 核實：所有 axios 來源 PATCH `/orders`、GET `/products` 皆 401；同期 Python-urllib 用獨立 key 全部 200，排除項目級停用/RLS問題，鎖定為 n8n 憑證本身失效）。**影響範圍確認**：查 `orders` 表非 test 開頭訂單，最後一筆 `updated_at` 停留喺 `2026-08-04 13:15 UTC`——即由嗰時起至今（5日）**冇任何一張真實訂單成功同步入 Supabase**，同 D59-follow「今日測試create未見落地」為同一根因、非測試單獨立問題。**未修復**：credential 輪替/確認屬 Fat Mo 帳戶層操作，AI 依規不可代入 API key，已停在診斷層等 Fat Mo 決斷；建議檢查 n8n 該兩個 node 綁定嘅 Supabase 憑證是否過期/被撤銷/rotate 後未同步更新。
+- 全文見 [Changelog.md](../../Changelog.md)（待補）、對話記錄本身（無獨立 decisions.md 條目，屬待決策非已決策）。
+
+## 2026-08-09 — Session續（/fhs-check 覆核，Claude Code / Sonnet 5）
+- 同日內第二次執行 `/fhs-check`，覆核上述 Red Flag 是否已修復。結果：**未修復，狀態不變**。腳本本身再次「全部通過」（4 passed, 1 skipped），但 Supabase 直查 22:35 後仍無任何寫入；api logs 覆核同一時段 axios 來源請求（`GET /products`）仍全部 401，Python-urllib 獨立 key 仍全部 200，同上一輪特徵完全一致。n8n Supabase 憑證問題持續未解，繼續等 Fat Mo 決斷輪替。
+
+## 2026-08-09 — Session續II（單次輕量探測覆核，Claude Code / Sonnet 5）
+- Fat Mo 要求「查核一下MCP記錄是否已更新」，改用單次最小化 create+delete 探測（`testprobe01`，非重跑完整 run_all.py，避免第三次全套壓測+Telegram通知噪音）直打 webhook。**即時結果（22:46:03 UTC，查詢當刻）：axios 來源 `GET /products` 仍然 401，`testprobe01` 冇落地 `orders` 表**——實時確認憑證問題喺呢一刻依然未解，非歷史快照。狀態：持續等 Fat Mo 喺 n8n 憑證管理介面輪替/確認 Supabase API key（涉及節點：`HTTP: Supabase Sync RPC`、`Mirror Delete to Supabase`）。

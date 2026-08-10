@@ -4020,32 +4020,11 @@
     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>
   </symbol>
-  <symbol id="icon-plus" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M5 12h14M12 5v14"/>
-  </symbol>
-  <symbol id="icon-edit" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-  </symbol>
-  <symbol id="icon-list" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
-  </symbol>
-  <symbol id="icon-wallet" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7"/>
-  </symbol>
-  <symbol id="icon-settings" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-  </symbol>
-  <symbol id="icon-bell" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
-  </symbol>
-  <symbol id="icon-tag" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.41 0l7.29-7.29a1 1 0 0 0 0-1.42L12 2Z"/>
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M7 7h.01"/>
-  </symbol>
-  <symbol id="icon-activity" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-  </symbol>
+  <!-- 2026-08-09 移除：此處原有 icon-plus / edit / list / wallet / settings / bell / tag / activity
+       共 8 個 symbol 的第二份定義，與本 sprite 上半部的定義 id 完全相同。SVG `<use href="#id">`
+       依 getElementById 語意永遠解析到文件順序中的第一份，browser 實測（icon-edit 第一份 d 值
+       a2.121、第二份 a2.12，實際解析結果為 2.121）確認第二份從未生效 —— 屬純死碼，且會造成
+       「改咗第二份但畫面零反應」的排查陷阱。刪除為零視覺影響。 -->
 </svg>
 <!-- ===== /V42 Lucide SVG Sprite ===== -->
 
@@ -5637,7 +5616,16 @@
             }
         } catch(e) { console.warn('Supabase flag early-init skipped:', e); }
 
-        // Supabase connection constants — used by both Supabase path and n8n fallback reconstruction
+        // ══════════════════════════════════════════════════════════════════════════
+        // 🔑 FHS_SB_CONFIG — Supabase 連線設定的【唯一真理來源 SSoT】
+        // 全檔任何地方要用 Supabase URL / anon key，一律讀 window.SB_URL / window.SB_ANON_KEY，
+        // 禁止再寫任何字面值，亦禁止寫 `window.SB_URL || '硬編碼兜底'` 這種形式。
+        // 背景（2026-08-09 審查）：本檔曾同時存在 13 份 URL 字面值 + 6 份 key 字面值，散落 5 個
+        // 獨立作用域（_V41_SB_* / _sbKey / window.* 兜底 / IIFE 內 const / _FS_SB_*）。key 一旦
+        // 輪換而改漏其中一處，只有該條路徑靜默 401，其餘功能全部正常 —— 屬最難查的故障型態。
+        // 本 block 係第 3 個 script block（前兩個喺 line 9 / 3749，已核實完全冇讀 SB_*），
+        // 且係同步執行，因此其後所有 block / 函式讀 window.SB_* 時必定已就緒。
+        // ══════════════════════════════════════════════════════════════════════════
         const _V41_SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
         const _V41_SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
         const SB_URL = _V41_SB_URL;
@@ -5661,6 +5649,74 @@
             if (controller) opts.signal = controller.signal;
             var timer = setTimeout(function() { if (controller) controller.abort(); }, timeoutMs);
             return fetch(url, opts).finally(function() { clearTimeout(timer); });
+        };
+
+        // 全站 HTML 轉義工具。事故背景——IG 看門狗（_igwPrefillForm）會將 IG 對話方的顯示名
+        // 直接填入 momName，該值一路寫落 Supabase orders.customer_name，再由訂單總覽的
+        // renderReviewTable / renderReviewAccordion 以字串拼接進 innerHTML。IG 模組內部本身
+        // 有 _igwEscapeHtml 並用足 27 處，但跨去訂單表就斷咗防線 —— browser 實測（2026-08-09）
+        // 確認客名放 <img src=x onerror=...> 可於 Desktop 表格與手機 Accordion 兩條路徑執行任意 JS。
+        // 凡將「非本地輸入框直接讀出」嘅文字拼入 innerHTML，一律經此函式。
+        window.fhsEscHtml = function(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        };
+
+        // Order_ID 格式白名單 —— 單一真理來源，IG 自動帶入同人手輸入兩條路都要行呢個。
+        // 實際格式為 2 位前綴 + 5 位數字（例：0600303），此處放寬到英數/底線/連字號以容納
+        // 歷史格式，但排除引號、角括號、反斜線等會喺 onclick 屬性語境造成注入嘅字元。
+        // 空字串視為合法（＝「未填」，交由既有的重複檢查／自動生成邏輯處理）。
+        window.fhsIsValidOrderId = function(s) {
+            var v = String(s == null ? '' : s).trim();
+            return v === '' || /^[A-Za-z0-9_-]{1,32}$/.test(v);
+        };
+
+        // ⚠️ 曾經喺呢度加過一個 fhsNormalizeOrderIds()（渲染前剝走 order_id 嘅非法字元），
+        // 後來移除咗，原因記低以免有人再行同一條路：
+        //   (1) 當時嘅前提「id 入 id="acc-batch-<order_id>-0" 呢類屬性值時唔可以單邊轉義，
+        //       否則同 document.getElementById 對唔上」係**錯**嘅。實測證明 HTML 剖析器會將
+        //       屬性值嘅 &quot; / &lt; 解碼返原字元，所以 DOM 入面個 id 仍然係原值，
+        //       用原值 getElementById 照樣搵到 —— 屬性語境做 fhsEscHtml 係完全透明。
+        //   (2) 正規化反而製造新問題：DOM 用 clean id、DB 仍係原值，令 PATCH
+        //       `order_id=eq.<clean>` 命中 0 行（PostgREST 回 200 空陣列，靜默無效）；
+        //       喺 mapOrder 做仲會令 itemsMap[原始id] 查唔到，成張單 items 變空。
+        // 結論：屬性語境用 fhsEscHtml、onclick JS 字串語境用 fhsEscAttr，唔好改動資料本身。
+
+        // 屬性內 JS 字串專用轉義，即 onclick="fn('這裡')" 呢種【雙重解析】位置。
+        // 為何唔可以淨用 fhsEscHtml：HTML 剖析器會先將屬性值嘅 &#39; 解碼返 ' 之後，
+        // 先至輪到 JS 剖析器讀，所以單純 HTML 轉義喺呢個位置係無效嘅 —— 必須先做
+        // JS 層跳脫（\' 同 \\），再做 HTML 層轉義，兩層次序唔可以掉轉。
+        window.fhsEscAttr = function(s) {
+            return window.fhsEscHtml(
+                String(s == null ? '' : s)
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    // 必須連孤立 \r 同 U+2028/2029 一齊處理：HTML 前置處理會將 CR 正規化成
+                    // 換行，若果漏咗，JS 字面值就會出現真換行 → SyntaxError，成個 onclick 靜默失效
+                    // ⚠️ 兩個陷阱，兩個都親身踩過（2026-08-09）：
+                    //   (1) 替換結果必須係【反斜線 + n 兩個字元】而唔係真換行 —— 寫 '\n' 係錯，
+                    //       要寫 '\\n'。寫錯咗等於用換行換走換行（no-op），多行刻字嘅 onclick
+                    //       依然會 parse 失敗，撳 ✏️ 完全冇反應而且唔會有明顯錯誤訊息。
+                    //   (2) 唔可以喺源碼直接打 raw U+2028/U+2029 —— 佢哋本身就係 JS 行終止符，
+                    //       擺入 regex literal 會即刻 SyntaxError 整死成個 script block。
+                    //       所以用 String.fromCharCode 迴避，順便保留 round-trip 保真。
+                    .replace(/\r\n|\r|\n/g, '\\n')
+                    .replace(new RegExp(String.fromCharCode(0x2028), 'g'), '\\u2028')
+                    .replace(new RegExp(String.fromCharCode(0x2029), 'g'), '\\u2029')
+            );
+        };
+
+        // PostgREST ilike.*pattern* 查詢字詞消毒。
+        // 背景（2026-08-09）：原本用 `.replace(/\*/g, '\\*')` 想跳脫萬用字元，但呢個係錯嘅——
+        // PostgREST 對 `*` 做嘅係無條件字面替換成 SQL `%`（喺去到 Postgres 之前），唔提供
+        // escape 機制；`\*` 經 PostgREST 替換後變成 `\%`，落到 Postgres LIKE 反而變成「跳脫咗
+        // 嘅字面 %」，同「字面 *」完全唔係同一件事。而 SQL LIKE 本身嘅萬用字元 `%`／`_` 又完全
+        // 未跳脫，一樣可以令查重範圍失控放寬或縮窄到 0 命中。
+        // 呢個用途係「粗略去重掃描」，唔係全文搜尋，用戶唔需要真係搜到含 * % _ 嘅字面內容 ——
+        // 所以最簡單可靠嘅做法係直接剝走呢 3 個字元，唔嘗試橫跨兩層做精確轉義。
+        window.fhsSanitizeLikeTerm = function(s) {
+            return String(s == null ? '' : s).replace(/[*%_]/g, '');
         };
 
         // Global helper: maps any process_status UI string to valid Supabase item_status ENUM.
@@ -5861,7 +5917,7 @@
             // [D43] Airtable 剝離：改讀 Supabase system_config 表（anon key），取代 FHS-SYSTEM-CONFIG Airtable 借位記錄
             showLoader("正在讀取系統配置...");
             try {
-                const _sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+                const _sbUrl = window.SB_URL;
                 const _sbKey = window.SB_ANON_KEY || '';
                 const res = await window.fetchWithTimeout(_sbUrl + '/rest/v1/system_config?key=eq.seq_id&select=value', {
                     headers: { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey }
@@ -5905,7 +5961,7 @@
             
             try {
                 // [D43] Airtable 剝離：改用 Supabase update_system_config() RPC，取代 update-order-meta webhook
-                const _sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+                const _sbUrl = window.SB_URL;
                 const _sbKey = window.SB_ANON_KEY || '';
                 const response = await window.fetchWithTimeout(_sbUrl + '/rest/v1/rpc/update_system_config', {
                     method: 'POST',
@@ -6076,7 +6132,19 @@
         }
 
         function onIdInputBlur() {
-            const id = document.getElementById('orderIdDisplay').value.trim();
+            const el = document.getElementById('orderIdDisplay');
+            const id = el.value.trim();
+            // 人手輸入係 Order_ID 嘅第二條入口（✏️ 解鎖後可自由打字），必須同 IG 自動帶入
+            // 行同一條格式白名單 —— 否則守衛喺 IG 嗰邊擋咗，操作員照樣可以人手打返入去，
+            // 個值就會流入訂單總覽幾十個 onclick="fn('...')" 位置。
+            if (id !== '' && !window.fhsIsValidOrderId(id)) {
+                el.value = orderID || '';
+                // 復原返舊值之後要重新查一次，否則狀態列停留喺「格式不正確」紅字，
+                // 但欄位其實已經係一個合法舊訂號，操作員會誤以為卡死
+                if (orderID) checkOrderIDDuplicate(orderID);
+                else updateIdStatus('duplicate', '訂單編號格式不正確（只准英文/數字/_/-）');
+                return;
+            }
             if (id !== orderID) {
                 orderID = id;
                 checkOrderIDDuplicate(id);
@@ -8442,8 +8510,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 showLoader(`正在從 Supabase 尋找訂單 #${oId}...`);
                 if (fetchStatus) { fetchStatus.style.color = '#1565C0'; fetchStatus.innerText = '⏳ Supabase 讀取中...'; }
                 try {
-                    const _sbUrl = 'https://vpmwizzixnwilmzctdvu.supabase.co';
-                    const _sbKey = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+                    const _sbUrl = window.SB_URL;
+                    const _sbKey = window.SB_ANON_KEY;
                     const _res = await window.fetchWithTimeout(
                         `${_sbUrl}/rest/v1/orders?order_id=eq.${encodeURIComponent(oId)}&deleted_at=is.null&select=order_id,customer_name,appointment_at,deposit,balance,additional_fee,final_sale_price,raw_form_state&limit=1`,
                         { headers: { apikey: _sbKey, Authorization: `Bearer ${_sbKey}` } }
@@ -9580,7 +9648,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 tout(5000)
             ]).catch(e => ({ ok: false, err: e.message }));
             const pingSb = () => Promise.race([
-                window.fetchWithTimeout((window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co') + '/rest/v1/', {
+                window.fetchWithTimeout((window.SB_URL) + '/rest/v1/', {
                     method: 'GET', headers: { 'apikey': window.SB_ANON_KEY || '' }
                 }).then(r => ({ ok: r.status < 500 })),
                 tout(5000)
@@ -9952,12 +10020,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var sDate = (r.start_date || '').slice(0, 10) || '—';
                 var eDate = (r.due_date   || '').slice(0, 10) || '—';
                 var sla   = r.sla_days ? r.sla_days + '天' : '—';
-                return '<div class="dlv-expand-item" style="cursor:pointer;" onclick="openOrderModal(\'' + (r.order_id || '') + '\')">' +
+                // order_id 同 customer_name 一樣由 DB row 直出，喺 onclick 內屬「屬性 + JS 字串」雙重解析位置，要用 fhsEscAttr
+                return '<div class="dlv-expand-item" style="cursor:pointer;" onclick="openOrderModal(\'' + fhsEscAttr(r.order_id || '') + '\')">' +
                     '<div class="dlv-expand-item-row">' +
-                    '<span><strong>' + (r.order_id || '—') + '</strong> · ' + (r.customer_name || '-') + '</span>' +
+                    // customer_name 同訂單總覽嗰兩個出口係同一條 orders.customer_name（IG 顯示名可控），必須轉義
+                    '<span><strong>' + fhsEscHtml(r.order_id || '—') + '</strong> · ' + fhsEscHtml(r.customer_name || '-') + '</span>' +
                     '<div style="display:flex;gap:4px;align-items:center;">' +
                     '<span style="font-size:11px;color:' + colorStyle + ';">' + dText + '</span>' +
-                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="event.stopPropagation(); jumpToReviewOrder(\'' + (r.order_id || '') + '\')">↗ 跳至</button>' +
+                    '<button class="dlv-jump-btn" style="color:#4f46e5;" onclick="event.stopPropagation(); jumpToReviewOrder(\'' + fhsEscAttr(r.order_id || '') + '\')">↗ 跳至</button>' +
                     '</div></div>' +
                     '<div class="dlv-expand-item-sub">起: ' + sDate + ' → 到: ' + eDate + ' · SLA ' + sla + '</div>' +
                     '</div>';
@@ -10130,7 +10200,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         }
                         if (!dimensions.category.includes('手模擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
                         var _accLimbParsed = null;
-                        try { if (item.LimbParts) _accLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
+                        // 空 catch 會令 LimbParts 格式損壞時肢部靜默顯示空白、零訊號；一定要留痕
+                        try { if (item.LimbParts) _accLimbParsed = JSON.parse(item.LimbParts); }
+                        catch(e){ console.warn('[FHS] LimbParts JSON 解析失敗（Accordion），該筆肢部將顯示為空:', item.Order_Item_Key || item.Item_ID || '(無 key)', '| 原始值:', item.LimbParts, e); }
                         var _accIs立體 = dimensions.category.includes('手模擺設');
                         // Target badge: always suppressed for 立體擺設 (limb badges replace it)
                         if (dimensions.target && !_accIs立體) {
@@ -10180,13 +10252,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // Engraving (strip 合成: info for family combo)
                         let engText = '';
                         const _accEngStrip = item.Engraving ? item.Engraving.replace(/\s*\|?\s*合成:.*/, '').trim() : '';
-                        const _accItemKeyEsc = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                        const _accEngEsc = _accEngStrip.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                        // ⚠️ 舊寫法只做 JS 層跳脫（\\ 同 '），冇 HTML 層 —— 但呢兩個值係嵌喺
+                        // onclick="..." 呢個【雙引號】屬性入面，刻字一含 " 就即刻提早收口。
+                        // 實測（2026-08-09）刻字填 `Mama" onfocus=... autofocus x="` 會令瀏覽器
+                        // 真係 parse 出 onfocus/autofocus 屬性落真實元素。刻字係客人提供、經
+                        // IG/WhatsApp 轉手嘅外部資料，所以呢度必須用兩層都做齊嘅 fhsEscAttr。
+                        const _accItemKeyEsc = fhsEscAttr(item.Item_ID || '');
+                        const _accEngEsc = fhsEscAttr(_accEngStrip);
                         if (_accEngStrip && _accEngStrip !== '待定' && _accEngStrip !== '不適用') {
                             engText = `<div class="acc-eng-row">
                                 <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-edit"/></svg>刻字</span>
-                                <span class="acc-eng-text">${_accEngStrip}</span>
-                                <button class="acc-eng-edit" onclick="inlineEditEngraving('${o.id}','${_accItemKeyEsc}','${_accEngEsc}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button>
+                                <span class="acc-eng-text">${fhsEscHtml(_accEngStrip)}</span>
+                                <button class="acc-eng-edit" onclick="inlineEditEngraving('${fhsEscAttr(o.id)}','${_accItemKeyEsc}','${_accEngEsc}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button>
                             </div>`;
                         }
 
@@ -10199,7 +10276,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             _accDrawerHtml = `<div id="item-drawer-${_accDrawerKey}" class="item-financial-drawer">
                                 <div class="ifd-row"><span class="ifd-label">SKU建議價</span><span class="ifd-val" style="color:#2A9D8F;">$${_accAuditEntry.price}</span></div>
                                 <div class="ifd-row"><span class="ifd-label">SKU建議利潤</span><span class="ifd-val" style="color:var(--fhs-text-primary);">$${_accProfit}</span></div>
-                                <div class="ifd-row" style="margin-top:2px;"><button onclick="openAuditModal('${o.id}','${idx}','${_accAuditSku.replace(/'/g,"\\'")}',${_accAuditEntry.price},${_accAuditEntry.cost})" style="font-size:11px;background:#e8f0fe;border:1px solid #b1c9ef;border-radius:4px;padding:2px 8px;color:#1d3557;cursor:pointer;">💡 對賬試算</button></div>
+                                <div class="ifd-row" style="margin-top:2px;"><button onclick="openAuditModal('${fhsEscAttr(o.id)}','${idx}','${fhsEscAttr(_accAuditSku)}',${_accAuditEntry.price},${_accAuditEntry.cost})" style="font-size:11px;background:#e8f0fe;border:1px solid #b1c9ef;border-radius:4px;padding:2px 8px;color:#1d3557;cursor:pointer;">💡 對賬試算</button></div>
                                 <div class="ifd-footnote"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-list"/></svg>SKU參考價，不含整單優惠／折讓</div>
                             </div>`;
                         } else if (_accAuditSku) {
@@ -10215,13 +10292,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 <div class="acc-ctrl-batch">
                                     <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-tag"/></svg>批次</span>
                                     <input type="text"
-                                        id="acc-batch-${o.id}-${idx}"
-                                        value="${rowBatch}"
+                                        id="acc-batch-${fhsEscHtml(o.id)}-${idx}"
+                                        value="${fhsEscHtml(rowBatch || '')}"
                                         placeholder="批次"
                                         inputmode="numeric"
                                         onfocus="batchInputFocus(this)"
                                         oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
-                                        onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'acc-batch-${o.id}-${idx}', ${idx})">
+                                        onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Batch_Number', 'acc-batch-${fhsEscAttr(o.id)}-${idx}', ${idx})">
                                 </div>
                                 <div class="acc-ctrl-status">
                                     <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-activity"/></svg>進度</span>
@@ -10235,10 +10312,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                             var _cks = _lbs.map(function(l,i){
                                                 var ck = _st[i];
                                                 return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
-                                                    +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+o.id+'\','+idx+',\'acc-hmck\')"> '+l+'</label>';
+                                                    +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+fhsEscAttr(o.id)+'\','+idx+',\'acc-hmck\')"> '+l+'</label>';
                                             }).join('');
-                                            return '<div id="acc-hmck-wrap-'+o.id+'-'+idx+'" style="display:flex;flex-direction:column;gap:5px;">'
-                                                +_cks+'<input type="hidden" id="acc-hmck-val-'+o.id+'-'+idx+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>';
+                                            return '<div id="acc-hmck-wrap-'+fhsEscHtml(o.id)+'-'+idx+'" style="display:flex;flex-direction:column;gap:5px;">'
+                                                +_cks+'<input type="hidden" id="acc-hmck-val-'+fhsEscHtml(o.id)+'-'+idx+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>';
                                         }
                                         var _opts = [];
                                         if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
@@ -10246,17 +10323,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         } else {
                                             _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done 已完成']];
                                         }
-                                        var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'acc-status-'+o.id+'-'+idx+'\','+idx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+o.id+'-'+idx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+o.id+'\');';
-                                        return '<select id="acc-status-'+o.id+'-'+idx+'" onchange="'+_oc+'">'
+                                        // _oc 成個字串最終落喺 onchange="..." 屬性入面，內部所有 \'...\' 都係 JS 字串
+                                        // 分界，唔止最外層 2 個參數，中段兩個 getElementById 目標都要用 fhsEscAttr
+                                        var _oc = 'saveInlineEdit(\''+fhsEscAttr(o.id)+'\',\'Process_Status\',\'acc-status-'+fhsEscAttr(o.id)+'-'+idx+'\','+idx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+fhsEscAttr(o.id)+'-'+idx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+fhsEscAttr(o.id)+'\');';
+                                        return '<select id="acc-status-'+fhsEscHtml(o.id)+'-'+idx+'" onchange="'+_oc+'">'
                                             +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
-                                            +'<div id="acc-adj-wrapper-'+o.id+'-'+idx+'" style="display:'+(_s==='需進行補打'?'flex':'none')+';align-items:center;gap:4px;margin-top:6px;">'
+                                            +'<div id="acc-adj-wrapper-'+fhsEscHtml(o.id)+'-'+idx+'" style="display:'+(_s==='需進行補打'?'flex':'none')+';align-items:center;gap:4px;margin-top:6px;">'
                                             +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
-                                            +'<input type="number" id="acc-adj-input-'+o.id+'-'+idx+'" value="'+(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:11px;text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+o.id+'\',this.value)" onblur="saveAdjustmentAmount(\''+o.id+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+                                            +'<input type="number" id="acc-adj-input-'+fhsEscHtml(o.id)+'-'+idx+'" value="'+fhsEscHtml(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:11px;text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+fhsEscAttr(o.id)+'\',this.value)" onblur="saveAdjustmentAmount(\''+fhsEscAttr(o.id)+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
                                             +'</div>';
                                     })()}
                                 </div>
                             </div>
-                            <div id="acc-save-${o.id}-${idx}" style="font-size:10px; color:#888; min-height:14px; margin-top:2px;"></div>
+                            <div id="acc-save-${fhsEscHtml(o.id)}-${idx}" style="font-size:10px; color:#888; min-height:14px; margin-top:2px;"></div>
                         </div>`;
                     });
                 } else {
@@ -10265,25 +10344,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 const _catFlagsM = _getOrderCatFlags(o);
                 let _detailBtnsM = '';
-                if (_catFlagsM.hasA) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;margin-right:2px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-image"/></svg></button>';
-                if (_catFlagsM.hasB) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-settings"/></svg></button>';
-                if (!_detailBtnsM) _detailBtnsM = '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="font-size:14px;vertical-align:middle;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-list"/></svg></button>';
+                if (_catFlagsM.hasA) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'A\')" title="手模擺設訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;margin-right:2px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-image"/></svg></button>';
+                if (_catFlagsM.hasB) _detailBtnsM += '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'B\')" title="金屬產品訊息" style="font-size:12px;vertical-align:middle;padding:2px 5px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-settings"/></svg></button>';
+                if (!_detailBtnsM) _detailBtnsM = '<button class="fhs-btn-order-detail" onclick="event.stopPropagation();openOrderModal(\'' + fhsEscAttr(o.id) + '\')" title="訂單詳情" style="font-size:14px;vertical-align:middle;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-list"/></svg></button>';
 
                 html += `
-                <div class="swipe-row-wrapper" id="swipe-row-${o.id}">
+                <div class="swipe-row-wrapper" id="swipe-row-${fhsEscHtml(o.id)}">
                     <div class="swipe-underlay" aria-hidden="true">
-                        <button class="swipe-btn swipe-btn--more" type="button" onclick="event.stopPropagation(); openBsSheet('${o.id}', '${o.Order_ID}')">
+                        <button class="swipe-btn swipe-btn--more" type="button" onclick="event.stopPropagation(); openBsSheet('${fhsEscAttr(o.id)}', '${fhsEscAttr(o.Order_ID)}')">
                             <svg width="20" height="20" aria-hidden="true"><use href="#icon-more-horizontal"/></svg>
                             <span>更多</span>
                         </button>
-                        <button class="swipe-btn swipe-btn--archive" type="button" onclick="event.stopPropagation(); triggerArchiveOrder('${o.id}')">
+                        <button class="swipe-btn swipe-btn--archive" type="button" onclick="event.stopPropagation(); triggerArchiveOrder('${fhsEscAttr(o.id)}')">
                             <svg width="20" height="20" aria-hidden="true"><use href="#icon-archive"/></svg>
                             <span>${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id)) ? '取消完成' : '完成'}</span>
                         </button>
                     </div>
                     <div class="swipe-content">
-                        <div class="acc-order" id="acc-order-${o.id}">
-                            <div class="acc-order-header" onclick="toggleAccordion('${o.id}')">
+                        <div class="acc-order" id="acc-order-${fhsEscHtml(o.id)}">
+                            <div class="acc-order-header" onclick="toggleAccordion('${fhsEscAttr(o.id)}')">
                                 <div class="acc-order-header-left">
                                     ${_detailBtnsM}
                                     ${(function(){
@@ -10307,19 +10386,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         } else if (_dlvStatusText(o.Order_ID)) {
                                             _badgeHtml = '<span class="acc-dlv-status" onclick="event.stopPropagation();jumpToDlvCard(\'' + _dlvCardClass(o.Order_ID).replace('dlv-card-','') + '\')">' + _dlvStatusText(o.Order_ID) + '</span>';
                                         } else if (window._fhsIsOrderReadyToArchive && window._fhsIsOrderReadyToArchive(o.id)) {
-                                            _badgeHtml = '<span class="acc-dlv-status dlv-badge-green" style="cursor:pointer;padding:2px 7px;border-radius:9px;display:inline-block;" onclick="event.stopPropagation();window._fhsCheckHmOrderCompletion(\'' + o.id + '\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>建議結單</span>';
+                                            _badgeHtml = '<span class="acc-dlv-status dlv-badge-green" style="cursor:pointer;padding:2px 7px;border-radius:9px;display:inline-block;" onclick="event.stopPropagation();window._fhsCheckHmOrderCompletion(\'' + fhsEscAttr(o.id) + '\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>建議結單</span>';
                                         }
-                                        var _metaTxt = cDate + ' · ' + (o.Customer || '-') + (_catChipsHtml ? '' : ' · ' + itemCount + ' 件');
+                                        var _metaTxt = cDate + ' · ' + fhsEscHtml(o.Customer || '-') + (_catChipsHtml ? '' : ' · ' + itemCount + ' 件');
                                         var _chipsRow = _catChipsHtml ? '<div class="acc-cat-chips">' + _catChipsHtml + '</div>' : '';
-                                        return '<div class="acc-dlv-card ' + _cardCls + '"><div class="acc-meta-row"><span class="acc-order-id">' + (o.Order_ID || 'N/A') + ' ➜</span>' + _badgeHtml + '</div><span class="acc-order-meta">' + _metaTxt + '</span>' + _chipsRow + '</div>';
+                                        return '<div class="acc-dlv-card ' + _cardCls + '"><div class="acc-meta-row"><span class="acc-order-id">' + fhsEscHtml(o.Order_ID || 'N/A') + ' ➜</span>' + _badgeHtml + '</div><span class="acc-order-meta">' + _metaTxt + '</span>' + _chipsRow + '</div>';
                                     })()}
                                 </div>
                                 <div class="acc-order-header-right">
                                     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:1px;">
-                                        <span id="acc-profit-text-${o.id}" class="acc-profit" style="color:${profitColor};">$${displayedProfit}</span>
+                                        <span id="acc-profit-text-${fhsEscHtml(o.id)}" class="acc-profit" style="color:${profitColor};">$${displayedProfit}</span>
                                         <span style="font-size:10px; color:#B07D4C; font-weight:600;">入帳: ${o.Final_Sale_Price ? '$' + o.Final_Sale_Price : '—'}</span>
                                         ${o.Additional_Fee > 0 ? `<span style="font-size:10px; color:#888; font-weight:500;">附加: $${o.Additional_Fee}</span>` : ''}
-                                        <span id="acc-cost-text-${o.id}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${_baseCostA}${_adjAmtA > 0 ? `&nbsp;<span style="color:#FF8F00;font-size:9px;">+$${_adjAmtA}</span>` : ''}</span>
+                                        <span id="acc-cost-text-${fhsEscHtml(o.id)}" style="font-size:10px; color:var(--fhs-text-muted); font-weight:600;">成本: $${_baseCostA}${_adjAmtA > 0 ? `&nbsp;<span style="color:#FF8F00;font-size:9px;">+$${_adjAmtA}</span>` : ''}</span>
                                     </div>
                                     <span class="acc-chevron">▼</span>
                                 </div>
@@ -10329,17 +10408,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     <div class="acc-field-row">
                                         <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-message-square"/></svg>備註</span>
                                         <textarea class="acc-notes-textarea"
-                                            id="acc-notes-${o.id}"
-                                            onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'acc-notes-${o.id}')"
-                                            placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                                            id="acc-notes-${fhsEscHtml(o.id)}"
+                                            onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Admin_Notes', 'acc-notes-${fhsEscAttr(o.id)}')"
+                                            placeholder="備註...">${fhsEscHtml(o.Admin_Notes || '')}</textarea>
                                     </div>
                                     <div class="acc-field-row">
                                         <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-shopping-bag"/></svg>產品明細</span>
                                         <div class="acc-items-list">${itemsHtml}</div>
                                     </div>
                                     <div class="acc-action-row">
-                                        <button class="acc-jump-btn" onclick="jumpToEditOrder('${o.Order_ID}')" style="display:inline-flex; align-items:center; gap:4px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-edit"/></svg> 快跳修改</button>
-                                        <button class="acc-delete-btn" onclick="openDeleteModal('${o.id}', '${o.Order_ID}')"><svg class="ba-icon" width="14" height="14" style="vertical-align:middle;"><use href="#icon-trash-2"/></svg></button>
+                                        <button class="acc-jump-btn" onclick="jumpToEditOrder('${fhsEscAttr(o.Order_ID)}')" style="display:inline-flex; align-items:center; gap:4px;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-edit"/></svg> 快跳修改</button>
+                                        <button class="acc-delete-btn" onclick="openDeleteModal('${fhsEscAttr(o.id)}', '${fhsEscAttr(o.Order_ID)}')"><svg class="ba-icon" width="14" height="14" style="vertical-align:middle;"><use href="#icon-trash-2"/></svg></button>
                                     </div>
                                 </div>
                             </div>
@@ -10468,9 +10547,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
                 const _catFlagsD = _getOrderCatFlags(o);
                 let _detailBtns = '';
-                if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'A\')" title="手模擺設訊息" style="margin-top:4px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-image"/></svg>手模</button>';
-                if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-settings"/></svg>金屬</button>';
-                if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + o.id + '\')" title="訂單詳情" style="margin-top:4px; display:block;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-list"/></svg></button>';
+                if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'A\')" title="手模擺設訊息" style="margin-top:4px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-image"/></svg>手模</button>';
+                if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-settings"/></svg>金屬</button>';
+                if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\')" title="訂單詳情" style="margin-top:4px; display:block;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-list"/></svg></button>';
 
                 // PGC-ODAT: per-item audit data (price lookup per SKU)
                 // Built from _renderItemsFinal (not o.items) to stay index-aligned with forEach loop
@@ -10485,32 +10564,32 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // 入帳/成本/利潤 are now per-row <td> emitted inside forEach (D1-a)
                 const orderLeftColsHtml = `
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
-                        <input type="checkbox" class="order-row-cb" data-order-id="${o.id}" ${isChecked} onchange="toggleOrderSelection('${o.id}', this.checked)">
+                        <input type="checkbox" class="order-row-cb" data-order-id="${fhsEscHtml(o.id)}" ${isChecked} onchange="toggleOrderSelection('${fhsEscAttr(o.id)}', this.checked)">
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:13px; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">
-                        <div class="review-jump-pill" onclick="jumpToEditOrder('${o.Order_ID}')">
-                            ${o.Order_ID || 'N/A'} ➜
+                        <div class="review-jump-pill" onclick="jumpToEditOrder('${fhsEscAttr(o.Order_ID)}')">
+                            ${fhsEscHtml(o.Order_ID || 'N/A')} ➜
                         </div>
-                        <button onclick="openDeleteModal('${o.id}', '${o.Order_ID}')" title="刪除此訂單"
+                        <button onclick="openDeleteModal('${fhsEscAttr(o.id)}', '${fhsEscAttr(o.Order_ID)}')" title="刪除此訂單"
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffcccc; border-radius:4px; color:#cc4444; font-size:11px; cursor:pointer; display:block;">
                             <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-trash-2"/></svg>刪除
                         </button>
-                        ${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id)) ? `<button onclick="triggerArchiveOrder('${o.id}')" title="將此訂單退回進行中"
+                        ${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id)) ? `<button onclick="triggerArchiveOrder('${fhsEscAttr(o.id)}')" title="將此訂單退回進行中"
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffd699; border-radius:4px; color:#e08600; font-size:11px; cursor:pointer; display:block;">
                             <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-undo-2"/></svg>退回進行中
-                        </button>` : `<button onclick="triggerArchiveOrder('${o.id}')" title="將此訂單標記為已完成"
+                        </button>` : `<button onclick="triggerArchiveOrder('${fhsEscAttr(o.id)}')" title="將此訂單標記為已完成"
                                 style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #b7e4c7; border-radius:4px; color:#2a9d8f; font-size:11px; cursor:pointer; display:block;">
                             <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-check"/></svg>標記完成
                         </button>`}
                         ${_detailBtns}
                         ${_dlvBadgeHtml(o.Order_ID)}
-                        <div id="sync-indicator-${o.id}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
+                        <div id="sync-indicator-${fhsEscHtml(o.id)}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
                             <span class="fhs-spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;"></span>
                             同步中
                         </div>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${cDate}</td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${o.Customer || '-'}</td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${fhsEscHtml(o.Customer || '-')}</td>
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
@@ -10552,7 +10631,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         if (!dimensions.category.includes('手模擺設') || !dimensions.style) badgeHtml += `<span style="flex-basis:100%;height:0;"></span>`;
 
                         var _tblLimbParsed = null;
-                        try { if (item.LimbParts) _tblLimbParsed = JSON.parse(item.LimbParts); } catch(e){}
+                        // 同上：Desktop 表格路徑，損壞資料同樣要留痕唔可以靜默吞
+                        try { if (item.LimbParts) _tblLimbParsed = JSON.parse(item.LimbParts); }
+                        catch(e){ console.warn('[FHS] LimbParts JSON 解析失敗（表格），該筆肢部將顯示為空:', item.Order_Item_Key || item.Item_ID || '(無 key)', '| 原始值:', item.LimbParts, e); }
                         var _tblIs立體 = dimensions.category.includes('手模擺設');
 
                         // 對象標籤：立體擺設一律改以個別人物肢數 badge 取代
@@ -10622,8 +10703,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         var _auditSku = item.Product_SKU || '';
                         var _auditEntry = _auditSku ? fhsSuggestedPriceMap[_auditSku] : null;
                         var _auditPriceHtml = _auditEntry
-                            ? `<span class="audit-sku-price">$${_auditEntry.price}</span><span class="audit-sku-profit">$${(_auditEntry.price - _auditEntry.cost).toFixed(0)}<button class="audit-modal-btn" onclick="openAuditModal('${o.id}','${index}','${_auditSku.replace(/'/g,"\\'")}',${_auditEntry.price},${_auditEntry.cost})" title="對賬試算">💡</button></span>`
-                            : (_auditSku ? `<span class="audit-na" title="SKU: ${_auditSku}">—</span>` : `<span class="audit-na">—</span>`);
+                            ? `<span class="audit-sku-price">$${_auditEntry.price}</span><span class="audit-sku-profit">$${(_auditEntry.price - _auditEntry.cost).toFixed(0)}<button class="audit-modal-btn" onclick="openAuditModal('${fhsEscAttr(o.id)}','${index}','${fhsEscAttr(_auditSku)}',${_auditEntry.price},${_auditEntry.cost})" title="對賬試算">💡</button></span>`
+                            : (_auditSku ? `<span class="audit-na" title="SKU: ${fhsEscHtml(_auditSku)}">—</span>` : `<span class="audit-na">—</span>`);
                         let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height:42px;">
                             <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:13px; padding:2px 4px;">${badgeHtml}</div>
                         </div>`;
@@ -10657,15 +10738,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 top = raw.replace(/[\(\)\[\]（）]/g, '').trim();
                             }
 
+                            // 刻字係客人提供嘅外部文字，入 innerHTML 文字語境同樣要轉義
                             engHtml = `<div class="review-eng-container">
-                                ${top ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-top">TOP</span><span class="review-eng-text">${top}</span></div>` : ''}
-                                ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${bot}</span></div>` : ''}
+                                ${top ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-top">TOP</span><span class="review-eng-text">${fhsEscHtml(top)}</span></div>` : ''}
+                                ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${fhsEscHtml(bot)}</span></div>` : ''}
                             </div>`;
                         }
                         // Phase 3: wrap with inline edit button (hover to reveal ✏)
-                        const _itemKeyEscT = (item.Item_ID || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                        const _engEscT = _engStripped.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${o.id}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button></div>`;
+                        // 同 Accordion 路徑一樣：onclick 係雙引號屬性，只做 JS 跳脫唔夠，見該處註解
+                        const _itemKeyEscT = fhsEscAttr(item.Item_ID || '');
+                        const _engEscT = fhsEscAttr(_engStripped);
+                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${fhsEscAttr(o.id)}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button></div>`;
 
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
@@ -10689,17 +10772,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="cost-cell-${o.id}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
-                            ${index === 0 ? `<span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
+                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="profit-cell-${o.id}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
                             ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>`;
 
                         html += `
-                        <tr class="order-group-${o.id}" id="row-${o.id}-item-${index}">
+                        <tr class="order-group-${fhsEscHtml(o.id)}" id="row-${fhsEscHtml(o.id)}-item-${index}">
                             ${index === 0 ? orderLeftColsHtml : ''}
                             ${_finCells}
                             <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 70px; padding: 8px 3px; background-color:${rowBatchCol};">
@@ -10709,13 +10792,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 ${prodHtml}
                             </td>
                             <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 100px; background-color:${rowBatchCol};">
-                                <input type="text" id="batch-input-${o.id}-${index}" class="review-batch-input"
-                                       value="${rowBatch || ''}"
+                                <input type="text" id="batch-input-${fhsEscHtml(o.id)}-${index}" class="review-batch-input"
+                                       value="${fhsEscHtml(rowBatch || '')}"
                                        style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:13px;"
                                        inputmode="numeric"
                                        onfocus="batchInputFocus(this)"
                                        oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
-                                       onblur="saveInlineEdit('${o.id}', 'Batch_Number', 'batch-input-${o.id}-${index}', ${index})"
+                                       onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Batch_Number', 'batch-input-${fhsEscAttr(o.id)}-${index}', ${index})"
                                        placeholder="批次">
                             </td>
                             <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
@@ -10729,11 +10812,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         var _cks = _lbs.map(function(l,i){
                                             var ck = _st[i];
                                             return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
-                                                +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+o.id+'\','+index+',\'hmck\')"> '+l+'</label>';
+                                                +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+fhsEscAttr(o.id)+'\','+index+',\'hmck\')"> '+l+'</label>';
                                         }).join('');
-                                        return '<div id="hmck-wrap-'+o.id+'-'+index+'" style="display:flex;flex-direction:column;gap:5px;text-align:left;padding:2px 0;">'
-                                            +_cks+'<input type="hidden" id="hmck-val-'+o.id+'-'+index+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>'
-                                            +'<div id="save-indicator-'+o.id+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                        return '<div id="hmck-wrap-'+fhsEscHtml(o.id)+'-'+index+'" style="display:flex;flex-direction:column;gap:5px;text-align:left;padding:2px 0;">'
+                                            +_cks+'<input type="hidden" id="hmck-val-'+fhsEscHtml(o.id)+'-'+index+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>'
+                                            +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
                                     }
                                     var _opts = [];
                                     if (_cat.indexOf('鎖匙') !== -1 || _cat.indexOf('吊飾') !== -1 || _cat.indexOf('純銀') !== -1 || _cat.indexOf('銀') !== -1) {
@@ -10741,23 +10824,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     } else {
                                         _opts = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],['Done 已完成','Done 已完成']];
                                     }
-                                    var _oc = 'saveInlineEdit(\''+o.id+'\',\'Process_Status\',\'status-select-'+o.id+'-'+index+'\','+index+');var _adj=document.getElementById(\'adj-wrapper-'+o.id+'-'+index+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+o.id+'\');';
+                                    // 同 Accordion 路徑一樣：_oc 整段最終落喺 onchange="..." 屬性，中段兩個
+                                    // getElementById 目標都係 JS 字串分界內，要用 fhsEscAttr
+                                    var _oc = 'saveInlineEdit(\''+fhsEscAttr(o.id)+'\',\'Process_Status\',\'status-select-'+fhsEscAttr(o.id)+'-'+index+'\','+index+');var _adj=document.getElementById(\'adj-wrapper-'+fhsEscAttr(o.id)+'-'+index+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+fhsEscAttr(o.id)+'\');';
                                     var _adjDisp = (_s === '需進行補打') ? 'flex' : 'none';
-                                    return '<select id="status-select-'+o.id+'-'+index+'" class="review-status-select" style="width:100%;max-width:92px;font-size:13px;margin:0 auto;" onchange="'+_oc+'">'
+                                    return '<select id="status-select-'+fhsEscHtml(o.id)+'-'+index+'" class="review-status-select" style="width:100%;max-width:92px;font-size:13px;margin:0 auto;" onchange="'+_oc+'">'
                                         +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
-                                        +'<div id="adj-wrapper-'+o.id+'-'+index+'" style="display:'+_adjDisp+';align-items:center;justify-content:center;gap:4px;margin-top:6px;">'
+                                        +'<div id="adj-wrapper-'+fhsEscHtml(o.id)+'-'+index+'" style="display:'+_adjDisp+';align-items:center;justify-content:center;gap:4px;margin-top:6px;">'
                                         +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
-                                        +'<input type="number" id="adj-input-'+o.id+'-'+index+'" value="'+(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:12px;text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+o.id+'\',this.value)" onblur="saveAdjustmentAmount(\''+o.id+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+                                        +'<input type="number" id="adj-input-'+fhsEscHtml(o.id)+'-'+index+'" value="'+fhsEscHtml(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:12px;text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+fhsEscAttr(o.id)+'\',this.value)" onblur="saveAdjustmentAmount(\''+fhsEscAttr(o.id)+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
                                         +'</div>'
-                                        +'<div id="save-indicator-'+o.id+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                        +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+index+'" class="review-save-indicator" style="font-size:10px;"></div>';
                                 })()}
                             </td>
                             ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:8px; background-color:${batchCol};">
                                 <textarea class="review-notes-textarea"
-                                          id="notes-input-${o.id}"
+                                          id="notes-input-${fhsEscHtml(o.id)}"
                                           style="font-size:13px; background:#ffffff;"
-                                          onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
-                                          placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                                          onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Admin_Notes', 'notes-input-${fhsEscAttr(o.id)}')"
+                                          placeholder="備註...">${fhsEscHtml(o.Admin_Notes || '')}</textarea>
                             </td>` : ''}
                         </tr>`;
                     });
@@ -10766,15 +10851,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     const orderBatchCol = getBatchColor(o.Batch || "");
                     // D1-a fallback: single-row order needs 入帳/成本/利潤 cells with IDs for live update
                     html += `
-                    <tr class="order-group-${o.id}" id="row-${o.id}">
+                    <tr class="order-group-${fhsEscHtml(o.id)}" id="row-${fhsEscHtml(o.id)}">
                         ${orderLeftColsHtml}
                         <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
                             ${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                         </td>
-                        <td id="cost-cell-${o.id}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
-                            <span id="cost-val-${o.id}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
+                        <td id="cost-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            <span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
                         </td>
-                        <td id="profit-cell-${o.id}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                        <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
                             $${displayedProfit}
                         </td>
                         <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
@@ -10782,10 +10867,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         </td>
                         <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${orderBatchCol};">
                             <textarea class="review-notes-textarea"
-                                      id="notes-input-${o.id}"
+                                      id="notes-input-${fhsEscHtml(o.id)}"
                                       style="font-size:13px; background:transparent;"
-                                      onblur="saveInlineEdit('${o.id}', 'Admin_Notes', 'notes-input-${o.id}')"
-                                      placeholder="備註...">${o.Admin_Notes || ''}</textarea>
+                                      onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Admin_Notes', 'notes-input-${fhsEscAttr(o.id)}')"
+                                      placeholder="備註...">${fhsEscHtml(o.Admin_Notes || '')}</textarea>
                         </td>
                     </tr>`;
                 }
@@ -10920,11 +11005,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             }
 
             // 從 Supabase 重新拉取最新訂單列表
-            if (window.fetchGlobalReview) {
-                await window.fetchGlobalReview(true);
-            } else {
-                await fetchGlobalReview(true);
-            }
+            // （原本呢度寫 if (window.fetchGlobalReview) ... else fetchGlobalReview(...)，
+            //   實測兩者係同一個 function reference，分支永遠行第一條，屬誤導性死碼，已拉直）
+            await fetchGlobalReview(true);
         }
 
         async function executeBulkStatusUpdate() {
@@ -11375,7 +11458,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window._fhsAuditLoaded = false;   // lazy-load flag: audit ledger not yet fetched
 
             var titleLabel = catFilter === 'A' ? '<svg class="ba-icon" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><use href="#icon-image"/></svg>手模擺設訊息' : catFilter === 'B' ? '<svg class="ba-icon" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><use href="#icon-settings"/></svg>金屬產品訊息' : '<svg class="ba-icon" width="14" height="14" style="vertical-align:middle;margin-right:4px;"><use href="#icon-list"/></svg>訂單詳情';
-            document.getElementById('fhsModalTitle').innerHTML = titleLabel + '  ' + (o.Order_ID || orderId);
+            // titleLabel 係本地常量 HTML（含 svg），可以直接拼；Order_ID 係 DB 值，必須轉義
+            document.getElementById('fhsModalTitle').innerHTML = titleLabel + '  ' + fhsEscHtml(o.Order_ID || orderId);
 
             var _rawText = o.Full_Order_Text || '';
             var currentText = catFilter === 'A'
@@ -11383,10 +11467,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 : catFilter === 'B'
                     ? (o.Full_Order_Text_B || _extractOrderText(_rawText, 'B'))
                     : _rawText;
-            var escapedText = currentText.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+            // 訂單原始訊息文字：舊寫法只擋 & 同 <，漏咗 > " '，統一改用 fhsEscHtml
+            var escapedText = fhsEscHtml(currentText);
             var isOverridden = !!o.is_text_overridden;
-            var eid = orderId.replace(/'/g, "\\'");
-            var cf  = (catFilter || '').replace(/'/g, "\\'");
+            // eid / cf 係要拼入 onclick="fn('...')" 嘅屬性+JS 雙重解析語境，
+            // 舊寫法只做 JS 層跳脫（漏 HTML 層），統一改用 fhsEscAttr
+            var eid = fhsEscAttr(orderId);
+            var cf  = fhsEscAttr(catFilter || '');
 
             var msgHtml =
                 // Drag handle (visible only on mobile via CSS)
@@ -11519,7 +11606,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // Keep draft as insurance during the PATCH
             sessionStorage.setItem('fhs_draft_' + orderId, newText);
 
-            var _sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+            var _sbUrl = window.SB_URL;
             var _sbKey = window.SB_ANON_KEY || '';
             var _sbHdr = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
@@ -11916,12 +12003,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     var amt = parseFloat(a.amount) || 0;
                     var isDed = amt < 0;
                     var color = _noteColor(a.type, isDed);
-                    var uid = 'fhsDed_' + (o.id || o._uuid || 'x') + '_' + (_dedSeq++);
+                    // uid 純內部生成鍵（唔對齊 DB order_id），冇轉義成本，正規化最簡單安全
+                    var uid = 'fhsDed_' + String(o.id || o._uuid || 'x').replace(/[^a-zA-Z0-9_-]/g, '_') + '_' + (_dedSeq++);
                     var amtLabel = isDed ? _fNeg(amt) : ('+' + _f(amt));
                     badgesHtml += '<span class="fhsAudit_dedBadge" style="background:' + color.bg + ';color:' + color.fg + ';" onclick="var e=document.getElementById(\'' + uid + '\');e.style.display=e.style.display===\'block\'?\'none\':\'block\';">' +
                         amtLabel + '<span class="fhsAudit_dedDot">i</span></span>';
-                    var d = a.desc || a.text || a.message || a.type || '';
-                    var b = a.basis ? '<span style="color:#999;"> · 依據 ' + a.basis + '</span>' : '';
+                    // d/b 由 n8n adjustment notes 直出，非本地輸入，拼入 innerHTML 必須轉義
+                    var d = fhsEscHtml(a.desc || a.text || a.message || a.type || '');
+                    var b = a.basis ? '<span style="color:#999;"> · 依據 ' + fhsEscHtml(a.basis) + '</span>' : '';
                     explHtml += '<div id="' + uid + '" class="fhsAudit_dedExpl" style="display:none;">' + d + b + '</div>';
                 });
                 return { badges: badgesHtml, expl: explHtml };
@@ -12598,7 +12687,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                     try {
                         showLoader("正在更新資料...");
-                        const _sbUrl  = window.SB_URL  || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+                        const _sbUrl  = window.SB_URL;
                         const _sbKey  = window.SB_ANON_KEY || '';
                         const _sbHeaders = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
                         console.log('🔑 SB_URL:', _sbUrl, '| SB_ANON_KEY length:', _sbKey.length);
@@ -12708,7 +12797,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             try {
                 showLoader("正在更新補打金額...");
-                const _sbUrl  = window.SB_URL  || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+                const _sbUrl  = window.SB_URL;
                 const _sbKey  = window.SB_ANON_KEY || '';
                 const _sbHeaders = { 'apikey': _sbKey, 'Authorization': 'Bearer ' + _sbKey, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
@@ -12794,14 +12883,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 closeDeleteModal();
                 alert("🗑️ 訂單已成功從資料庫中刪除。");
                 if (currentMode === 'edit') {
-                    switchMode('review');
+                    // 必須 await：switchMode('review') 內部有一個已 await 嘅 fetchGlobalReview()，
+                    // 呢度唔 await 就會同下面嗰個 forceRefresh fetch 併發，兩次重繪爭先後，
+                    // 最後顯示邊份數據靠網速決定。同型問題見 learnings/frontend.md Pitfall #7。
+                    await switchMode('review');
                 }
                 // 任務三：從 Supabase 重新拉取最新訂單列表（確保數據最新）
-                if (window.fetchGlobalReview) {
-                    await window.fetchGlobalReview(true);
-                } else {
-                    await fetchGlobalReview(true);
-                }
+                // 註：切模式時已拉過一次（無 forceRefresh），此處 forceRefresh 為最終權威，
+                // 保留唔刪係因為 currentMode 非 'edit' 時上面唔會切模式，仍需要呢次刷新；
+                // 而且 forceRefresh=true 會繞過 fetchGlobalReview 嗰個 5 分鐘查詢快取
+                // （見該函式 `if (!forceRefresh) { const cached = getReviewCache(...) }`），
+                // 冇咗佢，n8n fallback 路徑刪完單可能由快取讀返舊資料、顯示返啱啱刪走嗰單。
+                await fetchGlobalReview(true);
             } catch (err) {
                 console.error("Delete Error:", err);
                 alert("❌ 刪除失敗：" + err.message);
@@ -14433,11 +14526,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 await new Promise(resolve => setTimeout(resolve, intervalMs));
                 
                 try {
-                    const checkUrl = `${window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co'}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`;
+                    const checkUrl = `${window.SB_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`;
                     const checkRes = await window.fetchWithTimeout(checkUrl, {
                         headers: { 
-                            apikey: window.SB_ANON_KEY || 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK', 
-                            Authorization: `Bearer ${window.SB_ANON_KEY || 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK'}` 
+                            apikey: window.SB_ANON_KEY, 
+                            Authorization: `Bearer ${window.SB_ANON_KEY}` 
                         }
                     });
                     if (checkRes.ok) {
@@ -15240,14 +15333,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     (function() {
         'use strict';
 
-        /* ── Config ──────────────────────────────────────────────── */
-        const SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
-        const SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+        /* ── Config（唯一真理來源在最早 script block 的 FHS_SB_CONFIG，此處只讀不寫）── */
+        const SB_URL  = window.SB_URL;
+        const SB_ANON = window.SB_ANON_KEY;
         const FLAG_KEY = 'fhs_supabase_read';
-
-        // Expose for testing
-        window.SB_URL = SB_URL;
-        window.SB_ANON_KEY = SB_ANON;
 
         function isSupabaseRead() {
             return localStorage.getItem(FLAG_KEY) === '1';
@@ -15341,19 +15430,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // kind 感知動作（v2 修正：not_created 單不存在，禁止 openOrderModal 會靜默失敗）
                 var actionBtn = '';
                 if (r.kind === 'created_incomplete' && r.order_id) {
-                    actionBtn = '<button onclick="openOrderModal(\'' + r.order_id + '\',\'\',\'finance\')" style="font-size:12px;background:var(--fhs-primary,#2A9D8F);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">開訂單</button>';
+                    actionBtn = '<button onclick="openOrderModal(\'' + fhsEscAttr(r.order_id) + '\',\'\',\'finance\')" style="font-size:12px;background:var(--fhs-primary,#2A9D8F);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">開訂單</button>';
                 } else if (r.kind === 'content_mismatch' && r.order_id) {
-                    actionBtn = '<button onclick="openOrderModal(\'' + r.order_id + '\',\'\',\'finance\')" style="font-size:12px;background:#f97316;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">核對金額</button>';
+                    actionBtn = '<button onclick="openOrderModal(\'' + fhsEscAttr(r.order_id) + '\',\'\',\'finance\')" style="font-size:12px;background:#f97316;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">核對金額</button>';
                 } else if (r.kind === 'not_created' && r.order_id) {
-                    actionBtn = '<button onclick="_igwCreateOrder(\'' + r.id + '\')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">➕ 開新訂單</button>'
-                        + '<button onclick="_igwCopyOrderId(\'' + r.order_id + '\')" style="font-size:11px;background:transparent;color:var(--fhs-text-secondary,#999);border:1px solid var(--fhs-border,#ddd);border-radius:6px;padding:4px 8px;cursor:pointer;margin-right:4px;">複製訂號</button>';
+                    actionBtn = '<button onclick="_igwCreateOrder(\'' + fhsEscAttr(r.id) + '\')" style="font-size:12px;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-right:4px;">➕ 開新訂單</button>'
+                        + '<button onclick="_igwCopyOrderId(\'' + fhsEscAttr(r.order_id) + '\')" style="font-size:11px;background:transparent;color:var(--fhs-text-secondary,#999);border:1px solid var(--fhs-border,#ddd);border-radius:6px;padding:4px 8px;cursor:pointer;margin-right:4px;">複製訂號</button>';
                 }
                 var resolveLabel = r.resolved ? '標回未處理' : '標記已處理';
                 var resolveBg = r.resolved ? '#e5e7eb' : '#059669';
                 var resolveColor = r.resolved ? '#374151' : '#fff';
-                var resolveBtn = '<button onclick="_igwToggleResolve(\'' + r.id + '\',' + !r.resolved + ')" style="font-size:12px;background:' + resolveBg + ';color:' + resolveColor + ';border:none;border-radius:6px;padding:4px 10px;cursor:pointer;">' + resolveLabel + '</button>';
+                var resolveBtn = '<button onclick="_igwToggleResolve(\'' + fhsEscAttr(r.id) + '\',' + !r.resolved + ')" style="font-size:12px;background:' + resolveBg + ';color:' + resolveColor + ';border:none;border-radius:6px;padding:4px 10px;cursor:pointer;">' + resolveLabel + '</button>';
                 // Phase B（flow_id 2026-07-31-2332）：thread 檢視入口，全部 kind 皆有（需 thread 存在先顯示）
-                var threadBtn = r.thread ? '<button onclick="_igwOpenThread(\'' + r.id + '\')" style="font-size:12px;background:transparent;color:var(--fhs-primary,#2A9D8F);border:1px solid var(--fhs-primary,#2A9D8F);border-radius:6px;padding:4px 10px;cursor:pointer;">💬 IG訊息</button>' : '';
+                var threadBtn = r.thread ? '<button onclick="_igwOpenThread(\'' + fhsEscAttr(r.id) + '\')" style="font-size:12px;background:transparent;color:var(--fhs-primary,#2A9D8F);border:1px solid var(--fhs-primary,#2A9D8F);border-radius:6px;padding:4px 10px;cursor:pointer;">💬 IG訊息</button>' : '';
                 var cardBg = r.resolved ? 'var(--fhs-bg-secondary,#f9fafb)' : '#fff';
                 var dbBadge = r.order_id
                     ? (r.db_matched ? ' <span style="color:#059669;font-size:11px;">DB✓</span>' : ' <span style="color:#ef4444;font-size:11px;">DB✗</span>')
@@ -15363,14 +15452,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     + '<span style="font-size:12px;font-weight:700;color:' + kindColor + ';">' + kindLabel + '</span>'
                     + (r.order_id ? '<span style="font-size:12px;font-family:monospace;background:#f3f4f6;padding:1px 6px;border-radius:4px;">' + _igwEscapeHtml(r.order_id) + '</span>' : '<span style="font-size:11px;color:#9ca3af;">（無訂號）</span>')
                     + resolvedBadge
-                    + '<span style="margin-left:auto;font-size:11px;color:var(--fhs-text-secondary);">' + (r.alert_date || '—') + '</span>'
+                    + '<span style="margin-left:auto;font-size:11px;color:var(--fhs-text-secondary);">' + _igwEscapeHtml(r.alert_date || '—') + '</span>'
                     + '</div>'
                     + '<div style="font-size:13px;color:var(--fhs-text-secondary);margin:6px 0 2px;">'
                     + (r.customer_name ? '<strong>' + _igwEscapeHtml(r.customer_name) + '</strong>｜' : '') + _igwEscapeHtml(r.snippet || '（無摘要）')
                     + (r.has_receipt ? ' 📎' : '') + dbBadge
                     + '</div>'
                     + (r.kind === 'content_mismatch' && r.raw && r.raw.mm
-                        ? '<div style="font-size:13px;font-weight:700;color:#f97316;margin:2px 0 6px;">IG講$' + r.raw.mm.ig_reported_amount + ' vs 系統$' + r.raw.mm.db_actual_amount + '</div>'
+                        // raw.mm 係 n8n 由 IG 訊息文字解析出嚟嘅 JSONB，金額有可能係字串
+                        // 甚至夾雜非數字內容，唔可以當可信數值直拼入 innerHTML
+                        ? '<div style="font-size:13px;font-weight:700;color:#f97316;margin:2px 0 6px;">IG講$' + _igwEscapeHtml(r.raw.mm.ig_reported_amount) + ' vs 系統$' + _igwEscapeHtml(r.raw.mm.db_actual_amount) + '</div>'
                         : '')
                     + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' + actionBtn + threadBtn + resolveBtn + '</div>'
                     + '</div>';
@@ -15419,11 +15510,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
 
         // ── IG 看門狗警報：自動開單防重複（Phase A，flow_id 2026-07-31-2332）─────
-        function _igwEscapeHtml(s) {
-            return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-            });
-        }
+        // 收斂為 fhsEscHtml 嘅別名（原本係一份逐字相同嘅複製）。
+        // 保留舊名係因為本 block 內有 29 個呼叫點，改名價值低過風險；
+        // 但實作只可以有一份 —— 兩份一模一樣嘅轉義函式一定會出現「改咗一邊漏另一邊」。
+        function _igwEscapeHtml(s) { return window.fhsEscHtml(s); }
 
         function _igwShowPanel(html) {
             var old = document.getElementById('igwConflictPanel');
@@ -15476,9 +15566,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (alertRow.customer_name) {
                 try {
                     var since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+                    var _safeName = window.fhsSanitizeLikeTerm(alertRow.customer_name);
                     var rows = await sbFetch('orders', {
                         select: 'order_id,customer_name,confirmed_at,final_sale_price',
-                        customer_name: 'ilike.*' + alertRow.customer_name + '*',
+                        customer_name: 'ilike.*' + _safeName + '*',
                         deleted_at: 'is.null',
                         order: 'confirmed_at.desc',
                         limit: '5'
@@ -15516,7 +15607,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         async function _igwPrefillForm(alertRow, useNewNumber) {
             await switchMode('create');
             if (!useNewNumber) {
-                orderID = alertRow.order_id;
+                // 🛡️ 邊界守衛：擋住「IG 來源嘅 order_id」直接變成本系統 Order_ID。
+                // ⚠️ 範圍講清楚，唔好當咗係全域保證：呢個閘只守【新輸入】兩條路
+                //    —— 本函式（IG 自動帶入）同 onIdInputBlur（人手打字），兩者共用
+                //    fhsIsValidOrderId 呢個白名單。**唔包括**由 DB 直接載入既有訂單
+                //    （fetchOldOrder / reconstructOrderFromSupabase 等），亦唔包括 n8n
+                //    直寫入 DB 嘅值。所以下游渲染仍然要自己用 fhsEscAttr，唔可以淨靠呢度。
+                // Order_ID 實際格式為 2 位前綴 + 5 位數字（例：0600303）；白名單放寬到
+                // 英數/底線/連字號、上限 32 字元，係為咗容納歷史格式同將來可能加前綴，
+                // 同時排除引號、角括號、反斜線等會喺屬性語境造成注入嘅字元。
+                var _rawId = String(alertRow.order_id == null ? '' : alertRow.order_id).trim();
+                if (!window.fhsIsValidOrderId(_rawId)) {
+                    // 刻意唔喺 alert 回顯原始值：回顯等於引導操作員複製貼上返入去，
+                    // 而人手輸入係另一條入口，咁樣就等於自己教人繞過呢個守衛。
+                    console.warn('[FHS][IG看門狗] order_id 格式不合法，已拒絕帶入表單:', _rawId);
+                    alert('⚠️ 呢張警報嘅訂單編號格式不正常，唔會自動帶入表單。\n請改用「開新訂單」重新產生訂號。');
+                    return;
+                }
+                orderID = _rawId;
                 var idEl = document.getElementById('orderIdDisplay');
                 if (idEl) idEl.value = orderID;
                 checkOrderIDDuplicate(orderID);
@@ -16286,7 +16394,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (_body) {
                 _body.innerHTML =
                     '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
-                    '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">SKU</td><td style="padding:6px 4px;font-weight:600;">' + sku + '</td></tr>' +
+                    '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">SKU</td><td style="padding:6px 4px;font-weight:600;">' + fhsEscHtml(sku) + '</td></tr>' +
                     '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">SKU 建議價</td><td style="padding:6px 4px;font-weight:700;color:#2A9D8F;">$' + skuPrice + '</td></tr>' +
                     '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">SKU 建議利潤</td><td style="padding:6px 4px;font-weight:700;color:var(--fhs-text-primary);">$' + _skuProfit + '</td></tr>' +
                     '<tr style="border-bottom:1px solid #eee;"><td style="padding:6px 4px;color:#888;">訂單實收</td><td style="padding:6px 4px;color:#B07D4C;font-weight:600;">$' + _orderSalePrice + '</td></tr>' +
@@ -16775,8 +16883,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             } else {
                 qs['process_status'] = 'neq.已取消';
             }
-            if (batch)   qs['batch_number']    = 'ilike.*' + batch + '*';
-            if (search)  qs['or']              = '(customer_name.ilike.*' + search + '*,order_id.ilike.*' + search + '*)';
+            if (batch)   qs['batch_number']    = 'ilike.*' + window.fhsSanitizeLikeTerm(batch) + '*';
+            if (search) {
+                // search 額外會落喺 PostgREST 嘅 or=(...) 邏輯運算子語法入面，
+                // 逗號／括號係該語法本身嘅分隔符，用戶輸入含呢啲字元會打斷 filter 解析
+                // （PostgREST 400，訂單總覽整頁載入失敗），一併剝走
+                var _s = window.fhsSanitizeLikeTerm(search).replace(/[,()]/g, '');
+                qs['or'] = '(customer_name.ilike.*' + _s + '*,order_id.ilike.*' + _s + '*)';
+            }
 
             // Bug A/B 修復（2026-07-28）：年度/月份唔再喺 server 側用 confirmed_at 窄化抓取範圍
             // （舊寫法會漏走 appointment_at 同 confirmed_at 跨月/跨年嘅單，見 decisions.md 2026-07-28）。
@@ -16801,9 +16915,31 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             return Object.assign({}, data, { _source: 'supabase' });
         }
 
-        /* ── Patch fetchGlobalReview ─────────────────────────────── */
+        /* ── Patch fetchGlobalReview ─────────────────────────────────────────────────
+         * ⚠️ 讀碼前必看（2026-08-09 審查記錄）：訂單總覽嘅讀取路徑有【兩套實作並存】——
+         *   ① n8n 舊實作：`async function fetchGlobalReview` 頂層宣告（本檔較早位置）
+         *   ② Supabase 新實作：即係下面呢個 wrapper，喺 init() 時覆蓋 window.fetchGlobalReview
+         * 兩套並存本身係刻意嘅（① 仍然係 ② 拋錯時嘅 fallback，唔可以刪），但代價係「靜態讀碼
+         * 分唔清邊套在跑」，過往已經因此出現分析對象搞錯。
+         *
+         * 已實測釐清（browser 實證，唔好再靠推論）：
+         *   • 頂層 `function` 宣告嘅 binding 本身就係 window 屬性，所以呢度覆蓋之後，
+         *     `fetchGlobalReview === window.fetchGlobalReview` 為 **true**。
+         *   • 即係話呼叫端寫 `fetchGlobalReview(...)`、`window.fetchGlobalReview(...)`、
+         *     `(window.fetchGlobalReview || fetchGlobalReview)(...)` 三者**完全等價**，
+         *     全部都會行到生效嗰套。過往嗰啲 `if (window.fetchGlobalReview) ... else ...`
+         *     防禦式寫法係多餘嘅，佢哋只會令人誤以為呢度真係有分歧。
+         *
+         * 想喺 runtime 知邊套生效，唔使讀碼——console 打 `fhsWhichImpl()`。
+         * ─────────────────────────────────────────────────────────────────────────── */
         function patchFetchGlobalReview() {
             const origFn = window.fetchGlobalReview;
+            // 必須守衛：origFn 未定義時直接寫屬性會拋 TypeError，而 init() 冇 try/catch，
+            // 一拋就連埋後面 patchFoFetchLive/injectToggle/preloadSuggestedPrices 全部唔執行。
+            // 標籤寫 'sidepanel-wrapped-n8n' 而唔係 'n8n-legacy'：origFn 實際係 Side Panel
+            // 攔截器（佢自己再包住 n8n 原始實作），寫 'n8n-legacy' 會令診斷器睇漏中間層 ——
+            // 而「睇漏中間層」正正就係今次 P6 呢個 bug 嘅成因。
+            if (origFn) origFn._fhsImpl = 'sidepanel-wrapped-n8n';
             window.fetchGlobalReview = async function(forceRefresh, silentPoll) {
                 if (!isSupabaseRead()) return origFn.apply(this, arguments);
 
@@ -16847,12 +16983,28 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const _syncT = new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'});
                 sbBadge('✅ 已同步 ' + _syncT, '#A5D6A7');
                 hideConnectingBanner();
+
+                // ⚠️ 2026-08-09 審查揪出嘅 wrapper 疊層漏洞：
+                // fetchGlobalReview 實際被包咗【三層】——n8n 原始實作 → Side Panel 攔截器
+                // （load time 包一層，負責喺每次拉完數據後叫 v40UpdateAuditSummary() 更新側板）
+                // → Supabase patch（DOMContentLoaded 時再包一層，即係呢個 function）。
+                // 但呢層只喺 `!isSupabaseRead()` 嗰行先會 call origFn，而 Supabase flag 係開檔
+                // 即強制設 '1'，等於正常運作下永遠唔會落到 Side Panel 攔截器嗰層 ——
+                // 結果側板稽核摘要靜默失效（唔報錯、唔崩，只係永遠唔更新）。
+                // 呢度補返呢個副作用；長遠應該收斂成單一實作，唔好再靠疊 wrapper。
+                if (typeof window.v40UpdateAuditSummary === 'function') {
+                    try { window.v40UpdateAuditSummary(); }
+                    catch (e) { console.warn('[FHS] v40UpdateAuditSummary 失敗（側板稽核摘要未更新）:', e); }
+                }
             };
+            window.fetchGlobalReview._fhsImpl = 'supabase-patched';
         }
 
         /* ── Patch foFetchLive ───────────────────────────────────── */
+        // 同 patchFetchGlobalReview 一樣係雙實作 wrapper，判別方法見上面嗰段註解。
         function patchFoFetchLive() {
             const origFn = window.foFetchLive;
+            if (origFn) origFn._fhsImpl = 'n8n-legacy';
             window.foFetchLive = function() {
                 if (!isSupabaseRead()) return origFn ? origFn.apply(this, arguments) : undefined;
                 if (window.FO_DATA_LOADING) return;
@@ -16874,7 +17026,28 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     })
                     .finally(function() { window.FO_DATA_LOADING = false; });
             };
+            window.foFetchLive._fhsImpl = 'supabase-patched';
         }
+
+        /* ── 雙實作診斷器 ─────────────────────────────────────────────
+         * 用途：唔使讀碼就知訂單總覽／財務兩條讀取路徑而家實際行緊邊一套。
+         * console 打 `fhsWhichImpl()` 即可。加呢個係因為 2026-08-09 審查指出，
+         * 「兩套實作並存但無 runtime 標記」係過往分析對象搞錯嘅結構成因。
+         * ─────────────────────────────────────────────────────────── */
+        window.fhsWhichImpl = function() {
+            const tag = function(fn) {
+                if (typeof fn !== 'function') return '(未定義)';
+                return fn._fhsImpl || '(未標記 — 可能 patch 未執行)';
+            };
+            const out = {
+                supabaseReadFlag: localStorage.getItem(FLAG_KEY) === '1' ? 'ON（行 Supabase）' : 'OFF（行 n8n 舊路徑）',
+                fetchGlobalReview: tag(window.fetchGlobalReview),
+                foFetchLive: tag(window.foFetchLive),
+                bareBindingSameAsWindow: (typeof fetchGlobalReview === 'function') && (fetchGlobalReview === window.fetchGlobalReview)
+            };
+            console.table(out);
+            return out;
+        };
 
         /* ── Status badge in System Health panel ─────────────────── */
         function sbBadge(text, color) {
@@ -17170,8 +17343,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     (function() {
         'use strict';
 
-        var _FS_SB_URL  = 'https://vpmwizzixnwilmzctdvu.supabase.co';
-        var _FS_SB_ANON = 'sb_publishable_ZDI9VLtyhgTBfyUWA65Unw_s-Zc1HwK';
+        var _FS_SB_URL  = window.SB_URL;      // SSoT：見最早 script block 的 FHS_SB_CONFIG
+        var _FS_SB_ANON = window.SB_ANON_KEY;
         var _FS_N8N_WEBHOOK = 'https://yanhei.synology.me:8443/webhook/fhs-financial-batch-recalc';
 
         window._fhsCostConfig = {};
@@ -18024,7 +18197,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
     /* ── Supabase helper ── */
     function _sbRpc(rpcName, params, keepalive) {
-        var sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+        var sbUrl = window.SB_URL;
         var sbKey = window.SB_ANON_KEY || '';
         var opts = {
             method: 'POST',
@@ -18036,7 +18209,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     }
 
     function _sbPatch(orderDisplayId, fields, keepalive) {
-        var sbUrl = window.SB_URL || 'https://vpmwizzixnwilmzctdvu.supabase.co';
+        var sbUrl = window.SB_URL;
         var sbKey = window.SB_ANON_KEY || '';
         var opts = {
             method: 'PATCH',
@@ -18450,11 +18623,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
     }
 
-    function esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-    }
+    // 同上：收斂為 fhsEscHtml 別名，實作只留一份
+    function esc(s) { return window.fhsEscHtml(s); }
 
     // raw_form_state 取模時間 → 三時段：AM=上午；PM 12,1–5=下午；PM 6+=晚上；待定/缺值=tbd
     function classifySlot(rfs) {
@@ -18497,7 +18667,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     function bookingRowHtml(b) {
         // S180 修復：撳 row 跳去該單詳情兩個入口（view/form）統一開放，唔再按 bindMode 分岔
         // （form 模式：淨係開一個疊喺上面嘅 read-only 詳情 modal，唔影響底下正編輯緊嘅草稿表單）
-        return '<div class="mc-row mc-row-link" onclick="_moldCalOpenOrder(\'' + esc(b.orderId) + '\')">'
+        // 呢個係屬性+JS 字串雙重解析語境（onclick），esc（=fhsEscHtml）淨做一層唔夠，
+        // 要用 fhsEscAttr；下面三個 esc(...) 係純文字語境，冇問題保留
+        return '<div class="mc-row mc-row-link" onclick="_moldCalOpenOrder(\'' + fhsEscAttr(b.orderId) + '\')">'
             + '<span class="mc-row-t' + (b.slot === 'tbd' ? ' mc-row-tbd' : '') + '">' + esc(b.timeLabel) + '</span>'
             + '<span class="mc-row-who">' + esc(b.name) + '</span>'
             + '<span class="mc-row-oid">' + esc(b.orderId) + '</span>'

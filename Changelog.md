@@ -1,5 +1,34 @@
 # Changelog
 
+## [2026-08-10] Session（Claude Code / Sonnet 5 執行）— D61：V42 Dashboard XSS 整治 + Supabase 設定 SSoT + 死碼/race condition 清理
+
+- **緣起**：Fat Mo 要求「從 /8d 方向檢查 V42 的 Code」。靜態掃描（grep 定位 + 窗口讀）發現 6 類問題，其中 P1 為 stored XSS，經 browser 實測（造 payload 直接呼叫渲染函式）證實非假警報。
+- **P1-P6 修復**：①新增 `window.fhsEscHtml()` 修 XSS；②Supabase URL/key 由 19 份硬編碼收斂成單一 SSoT（`window.SB_URL`/`SB_ANON_KEY`）；③刪走 SVG sprite 8 個重複死碼 symbol；④`executeDeleteOrder` 補一處未 `await` 嘅 race condition；⑤兩處 `LimbParts` 空 catch 加 `console.warn`；⑥`fetchGlobalReview` 三層 wrapper 之間漏呼叫嘅副作用（Side Panel 稽核摘要永遠唔更新）已補回，加 `window.fhsWhichImpl()` 診斷器。
+- **過程自我修正**：新增 `window.fhsEscAttr()` 處理 `onclick="fn('值')"` 雙重解析語境（先 JS 跳脫再 HTML 轉義，缺一不可）；一度嘗試「正規化 order_id」解決屬性語境轉義，經實測推翻（HTML 轉義對 `getElementById` 完全透明，正規化反而令 DB PATCH 靜默命中 0 行）已完全移除改純轉義；換行處理一度寫成 no-op（`'\n'` 應為 `'\\n'`）、raw U+2028 直入 regex 觸發 SyntaxError，兩者以 `charCodeAt` 實測揪出修正；PostgREST ilike 跳脫方向一度寫錯（`\*` 喺 PostgREST 層唔生效），改用 `window.fhsSanitizeLikeTerm()` 直接剝走萬用字元。
+- **六輪 fresh-context 對抗式審查**（`code-reviewer`/opus）：逐輪均獨立命中真問題（交付提醒清單漏轉義出口 → 刻字同樣係外部輸入 → 換行修復 no-op → 正規化方案的 DB 副作用 → 10 處 getElementById 參數錯用 helper+取模日曆漏檢 → 3 處 `<textarea>` 備註內文完全未轉義），第 6 輪為本次唯一命中且已修復（Admin_Notes 同時具備 XSS 注入面同「靜默資料腐蝕」雙重風險）。
+- **收工驗證**：16 個欄位 × 2 種 payload × 2 條渲染路徑 = 32 組合零注入實測（非審查 PASS 即收工）；9 個 script block 語法檢查全過；轉義實作 4 套收斂為 1 套。
+- **未解**：Supabase 憑證 401 未解，DB 現存值域未查證；`_accDrawerKey` 理論撞碼風險（實務不會觸發，未修）；響應式/a11y/財務公式零覆蓋（超出本次範圍）。
+- **教訓落盤**：`learnings/frontend.md` #9-11、`learnings/tooling.md` #4、`learnings/governance.md` #4。
+
+詳見 [decisions.md D61](.fhs/notes/decisions.md)。
+
+## [2026-08-05] Session（Claude Code / Sonnet 5 執行）— D60：handoff 便攜塊「時限待辦漏帶」機制修復
+
+- **緣起**：Fat Mo 對 `/read` 開場狀態報告提出質詢：「應該還有一個待辦，是去到8月9日檢視成果有關mattpocock-skill」。查證 `.fhs/memory/handoff.md` MASTER 持續待辦表第 77/80 行，確認 2026-08-09 拷問技能(mattpocock/skills)4週試用閘 + `llm-council-skill`(D28) 判準覆核**確有記錄**（含一次性 scheduled task `fhs-2026-08-09-skill-trial-gate-review`），但便攜塊「📋 待辦」欄未反映，令當次 `/read` 報告漏單。
+- **根因分析（四項）**：①`commit.md` P0.7 原規則「📋 待辦對應 MASTER 表最高優先3條」對含未來日期嘅待跟進項無特別保護，優先度標籤（🟡中）冪唔過其他更醒目積壓項，結構性擠出便攜塊；②時限迫切性同優先度係兩套獨立準則，共用一張表一套排序造成錯配；③MASTER 表單一列容許「✅完成主體 + 🟡未來尾巴」混寫，掃表時易被誤讀為純完成項；④優先度 emoji 一符多義（同時表狀態同表優先度），令「最高優先3條」揀選本身不可機械重現、每次 `/commit` 靠主觀判斷。
+- **修復**：
+  1. `scripts/hooks/fhs-health-check.js` 新增第7類機械偵測 `checkDeadlineSurfacing`：掃 handoff.md MASTER 表非全「✅完成」列（含🟡/🔴/⚪標記）內嵌嘅未來日期（規則 `max_days_ahead: 60` 天），若便攜塊動態段（```handoff 圍欄 ～「便攜邊界」分隔線之間）未含該日期字串即報警。規則資料落 `.fhs/tools/fhs-health-rules.json` 新增 `deadline_surfacing_checks` 陣列，程式不寫死規則值。SessionStart hook 每 session 自動觸發，零人手記憶負擔。
+  2. `.fhs/ai/commands/commit.md`（v2.3.0→v2.4.0）P0.7 便攜塊新增第七欄「⏰ 時限待辦」：專放帶具體日期嘅待跟進項（覆核點/scheduled task fireAt/deadline），**不受「最高優先3條」上限約束**，只受「日期已過期即移除」約束（P0.7.1 新增「⏰時限待辦自限規則」，此欄不豁免壓縮，過期直接清除，天然自限唔會像「⚠️易猜錯」咁只增不減）。
+  3. `commit.md` P0.6 新增 MASTER 表列寫法禁令：完成主體與待跟進尾巴禁止混寫一列，須拆兩列（完成主體維持 `✅ 完成`，尾巴另開一列標對應優先度 emoji，含日期則同步登記 P0.7 便攜塊）。
+  4. `handoff.md` 便攜塊補入「⏰ 時限待辦」欄：2026-08-09（拷問技能試用閘 + llm-council-skill D28 判準覆核，附 scheduled task taskId）、2026-08-18（D58 `ig_phrase_rules` 提案數決定 Phase 2b 去留），同步將 📋待辦 欄對應日期文字改為指回新欄，避免重複維護兩處日期。
+  5. `scripts/README.md` hooks 表 `fhs-health-check.js` 條目同步更新（原文字仍停留喺「五種病+第6檢查」時代，未反映 2026-08-03 分桶重構已加嘅未註冊桶/複驗逾期兩類檢查——本次一併補正，非本次修復範圍造成但同一行順手修）。
+- **驗證**：`node scripts/hooks/fhs-health-check.js` 改動前執行一次，`.fhs/.health-report.json` 準確產出 `時限待辦漏帶: ...MASTER表待辦項含日期 2026-08-09...` 該筆 issue；補入 handoff.md 便攜塊後再跑一次，該 issue 消失，僅剩既有嘅便攜塊過肥警告（見下）。屬對本次新增檢查邏輯嘅直接功能驗證（非另派 fresh-context agent，因改動範圍限於治理腳本+文件，無財務/schema/生產部署風險，符合 CLAUDE.md「驗收不自驗」紅線之豁免範圍：純治理工具本身，非財務/schema/n8n部署/生產HTML）。
+- **已知副作用（留待 Fat Mo 裁決，未在本次授權範圍內處理）**：修復本身令便攜塊動態段由 4,071 bytes 升至 4,386 bytes（`handoff_portable_block` 預算 4,000 bytes，超支 9.6%；改動前已超支 1.8%，屬本次session開場即偵測到嘅既有 1 項異常）。查證根因唔喺本次改動，而係「⚠️易猜錯」17條踩坑清單規則明文「全保留、只增不減」，長遠必然同固定 4,000 bytes 預算結構性衝突。本次未動「⚠️易猜錯」上限（超出 Fat Mo 本次批准嘅 A+B+C+D 範圍），已於 `commit.md` P0.7.1 新增「已知緊張」段落明文記低，供未來裁決係咪調整預算數值或為「易猜錯」另設獨立輪轉規則。
+- **未做**：MASTER 表現存嘅「✅完成主體+🟡尾巴」混寫舊列（如 D59/D58 兩列）未回頭拆分——新規則已生效於檢測邏輯本身（以行內是否含 🟡/🔴/⚪ 判斷 pending，不依賴是否已拆列），故舊列不影響檢測正確性，拆分留待該兩列下次自然編輯時處理，避免無謂改動風險。
+- **Subagent 使用記錄**：❌ 未使用 subagent，全程主 session 直接查證（grep MASTER 表 + 讀 memory 檔）、改代碼（Edit）、實測（Bash 執行 health-check 腳本兩次比對前後差異）。
+
+詳見 `.fhs/notes/decisions.md` D60。
+
 ## [2026-08-04] Session（Claude Code / Sonnet 5 執行）— D59：壓測 Telegram 逐單騷擾整治 + Order_ID 缺失固定 fallback 撞單修復
 
 - **緣起**：Fat Mo 反映 `FHS_System_StressTester.py` 壓測一次連環發 9+ 則 Telegram 通知（每個測試案例 create+delete 各發一則）過分騷擾，要求優化成一則彙總訊息。

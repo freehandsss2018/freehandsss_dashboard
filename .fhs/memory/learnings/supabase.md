@@ -28,6 +28,7 @@
 
 <!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
 ### 跨領域指標（全文在別桶）
+- → `frontend.md` #10 【高頻 ⚠️】屬性值做 HTML 轉義對 `getElementById` 係完全透明——唔好為咗「轉義會令查找對唔上」而去正規化資料本身
 - → `n8n.md` #1 【高頻 ⚠️】n8n + sbSyncOrder 雙寫競態
 - → `n8n.md` #6 【高頻 ⚠️】Order_ID 缺失時固定字面值 fallback 會令多個不同請求撞落同一筆訂單
 <!-- POINTERS:END -->

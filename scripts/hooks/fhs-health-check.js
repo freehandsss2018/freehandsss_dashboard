@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // scripts/hooks/fhs-health-check.js
 // FHS 文件健康快檢（L1）— SessionStart hook 呼叫，零 LLM token，零外部依賴。
-// 偵測五種文件病：過肥 / 沉積孤兒 / 過時漂移 / 同名重複 / 歸檔斷鏈。
+// 偵測文件病：過肥 / 沉積孤兒 / 過時漂移 / 同名重複 / 歸檔斷鏈 / 未註冊桶 /
+// 複驗逾期 / 週期稽核到期 / 時限待辦漏帶入便攜塊（2026-08-05 新增第7類）。
 // 規則資料在 .fhs/tools/fhs-health-rules.json，改規則不必改此檔。
 //
 // Fail-open 三原則：全包 try-catch、無論如何 exit 0、內部錯誤只落
@@ -427,6 +428,52 @@ function checkCadenceOverdue(rules) {
   return issues;
 }
 
+// ── CHECK 7: 時限待辦漏帶 deadline_surfacing_checks（2026-08-05）──────────────
+// MASTER 表非全✅完成列內嵌的未來日期，若便攜塊動態段（session 實際帶入 context
+// 的範圍）未提及，代表下個 session 開場看不到——過3條上限篩選機制的結構性盲區。
+
+function checkDeadlineSurfacing(rules) {
+  const issues = [];
+  for (const rule of rules.deadline_surfacing_checks || []) {
+    try {
+      const scanPath = path.join(REPO_ROOT, rule.scan_file);
+      if (!fs.existsSync(scanPath)) continue;
+      const lines = readText(scanPath).split(/\r?\n/);
+      const startIdx = lines.findIndex(l => l.includes(rule.dynamic_segment_start_marker));
+      const endIdx = lines.findIndex(l => l.includes(rule.dynamic_segment_end_marker));
+      if (startIdx === -1 || endIdx === -1) continue;
+      const dynamicSegment = lines.slice(startIdx, endIdx + 1).join('\n');
+
+      const pendingMarkers = rule.pending_markers || [];
+      const dateRe = new RegExp(rule.date_pattern, 'g');
+      const foundDates = new Set();
+      for (const line of lines.slice(endIdx + 1)) {
+        if (!line.startsWith('|')) continue;
+        if (!pendingMarkers.some(m => line.includes(m))) continue;
+        let m;
+        dateRe.lastIndex = 0;
+        while ((m = dateRe.exec(line)) !== null) foundDates.add(m[0]);
+      }
+
+      const now = Date.now();
+      for (const dateStr of foundDates) {
+        if (rule.max_days_ahead != null) {
+          const d = new Date(dateStr);
+          if (isNaN(d)) continue;
+          const daysAhead = (d.getTime() - now) / 86400000;
+          if (daysAhead < 0 || daysAhead > rule.max_days_ahead) continue;
+        }
+        if (!dynamicSegment.includes(dateStr)) {
+          issues.push(`時限待辦漏帶: ${rel(scanPath)} MASTER表待辦項含日期 ${dateStr}，便攜塊動態段未反映（${rule.note || ''}）`);
+        }
+      }
+    } catch (err) {
+      logError(`deadline_surfacing[${rule.id}]`, err);
+    }
+  }
+  return issues;
+}
+
 // ── MAIN ─────────────────────────────────────────────────────────────────────
 
 function main() {
@@ -454,6 +501,7 @@ function main() {
   try { issues = issues.concat(checkUnregisteredFiles(rules)); } catch (err) { logError('checkUnregisteredFiles', err); }
   try { issues = issues.concat(checkLastVerified(rules)); } catch (err) { logError('checkLastVerified', err); }
   try { issues = issues.concat(checkCadenceOverdue(rules)); } catch (err) { logError('checkCadenceOverdue', err); }
+  try { issues = issues.concat(checkDeadlineSurfacing(rules)); } catch (err) { logError('checkDeadlineSurfacing', err); }
 
   const durationMs = Date.now() - startedAt;
 
@@ -469,7 +517,7 @@ function main() {
   }
 
   if (issues.length > 0) {
-    process.stdout.write(`⚠️  健康檢查：${issues.length} 項異常（過肥/孤兒/過時/重複/斷鏈）\n`);
+    process.stdout.write(`⚠️  健康檢查：${issues.length} 項異常（過肥/孤兒/過時/重複/斷鏈/未註冊/複驗逾期/週期/時限待辦漏帶）\n`);
     process.stdout.write(`   → 詳情見 .fhs/.health-report.json，跑 /fhs-slim 看清理方案\n`);
   }
 

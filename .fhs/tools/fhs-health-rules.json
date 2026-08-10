@@ -182,6 +182,18 @@
       "resolve_base": ".fhs/memory"
     }
   ],
+  "deadline_surfacing_checks": [
+    {
+      "id": "handoff_master_table_deadlines",
+      "scan_file": ".fhs/memory/handoff.md",
+      "dynamic_segment_start_marker": "```handoff",
+      "dynamic_segment_end_marker": "便攜邊界",
+      "pending_markers": ["🟡", "🔴", "⚪"],
+      "date_pattern": "\\d{4}-\\d{2}-\\d{2}",
+      "max_days_ahead": 60,
+      "note": "MASTER表非全✅完成列（含🟡/🔴/⚪標記）內嵌的未來日期，若60天內到期但便攜塊動態段（人類複製/hook注入範圍）未提及，即為2026-08-05事故型（拷問技能2026-08-09試用閘漏帶入session context，Fat Mo質詢揭發）；commit.md P0.7 §⏰時限待辦 對應此規則"
+    }
+  ],
   "cadence_checks": [
     {
       "id": "fhs_audit_cadence",
