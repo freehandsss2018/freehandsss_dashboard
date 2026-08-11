@@ -56,9 +56,21 @@ CHECKS = [
 
 SEPARATOR = "─" * 60
 
+# ── D62 事故教訓（2026-08-10/11）：Supabase 憑證 401 令真實訂單斷同步 5 日，
+# 但 /fhs-check 連續多輪回報「全部通過」——子腳本輸出文字內確實印咗警告
+# （下列字串），卻從未影響 exit code，本聚合層對此類「靜默降級」完全無感知。
+# 呢個清單就係補呢個盲點：任一子腳本輸出含以下任何字串，即使 exit code = 0，
+# 亦標記為 DEGRADED（非 clean PASS），Health Report 一定會顯示、絕不會被
+# 「全部通過」蓋過。清單只做偵測，不改動任何子腳本既有嘅寬容式設計。
+DEGRADED_MARKERS = [
+    "never appeared in Supabase",
+    "did not appear in Supabase",
+    "Cleanup verification TIMEOUT",
+]
+
 
 def run_script(label, filepath, description):
-    """執行單一腳本，回傳 (passed: bool, output: str, elapsed: float)"""
+    """執行單一腳本，回傳 (status: 'PASS'|'DEGRADED'|'FAIL', output: str, elapsed: float)"""
     print(f"\n{SEPARATOR}")
     print(f"[{label}] {description}")
     print(f"  檔案: {os.path.basename(filepath)}")
@@ -76,21 +88,26 @@ def run_script(label, filepath, description):
         )
         elapsed = time.time() - start
         output = result.stdout + (f"\n[STDERR] {result.stderr}" if result.stderr.strip() else "")
-        passed = result.returncode == 0
         print(output)
-        status = "PASS" if passed else f"FAIL (exit {result.returncode})"
+
+        if result.returncode != 0:
+            status = f"FAIL (exit {result.returncode})"
+        else:
+            hits = [m for m in DEGRADED_MARKERS if m in output]
+            status = f"DEGRADED ({hits[0]})" if hits else "PASS"
+
         print(f"\n→ {label}: {status}  ({elapsed:.1f}s)")
-        return passed, output, elapsed
+        return status, output, elapsed
     except subprocess.TimeoutExpired:
         elapsed = time.time() - start
         msg = f"[TIMEOUT] 腳本超過 120s 未完成"
         print(msg)
-        return False, msg, elapsed
+        return "FAIL (timeout)", msg, elapsed
     except Exception as e:
         elapsed = time.time() - start
         msg = f"[ERROR] 無法執行腳本：{e}"
         print(msg)
-        return False, msg, elapsed
+        return f"FAIL ({e})", msg, elapsed
 
 
 def main():
@@ -108,8 +125,7 @@ def main():
             results.append((label, None, "SKIP", 0.0))
             continue
 
-        passed, output, elapsed = run_script(label, filepath, description)
-        status = "PASS" if passed else "FAIL"
+        status, output, elapsed = run_script(label, filepath, description)
         results.append((label, filename, status, elapsed))
 
     # ── 總結報告 ───────────────────────────────────────────────────────────
@@ -118,20 +134,40 @@ def main():
     print(f"{'═' * 60}")
 
     red_flags = []
+    degraded_flags = []
     for label, filename, status, elapsed in results:
-        icon = "✅" if status == "PASS" else ("⏭️" if status == "SKIP" else "🔴")
+        if status == "PASS":
+            icon = "✅"
+        elif status == "SKIP":
+            icon = "⏭️"
+        elif status.startswith("DEGRADED"):
+            icon = "🟡"
+        else:
+            icon = "🔴"
         elapsed_str = f"{elapsed:.1f}s" if elapsed else "—"
-        print(f"  {icon}  {label:<16} {status:<6}  {elapsed_str}")
-        if status == "FAIL":
+        print(f"  {icon}  {label:<16} {status:<40}  {elapsed_str}")
+        if status.startswith("DEGRADED"):
+            degraded_flags.append((label, status))
+        elif icon == "🔴":
             red_flags.append(label)
 
     print(f"{'─' * 60}")
 
-    if red_flags:
-        print(f"\n🔴 RED FLAGS ({len(red_flags)}):")
-        for flag in red_flags:
-            print(f"   • {flag}")
-        print("\n⚠️  系統未通過全部檢查，請在宣告 task success 前修復上述問題。")
+    # DEGRADED 一律視為 Red Flag 等級，不可再被「全部通過」蓋過（D62 教訓）——
+    # 差別只在訊息措辭：DEGRADED 代表「exit code 正常但實際資料落地有疑點」，
+    # 需要人手核實 Supabase 而非單靠腳本自報。
+    has_blocking_issue = bool(red_flags) or bool(degraded_flags)
+
+    if has_blocking_issue:
+        if red_flags:
+            print(f"\n🔴 RED FLAGS ({len(red_flags)}):")
+            for flag in red_flags:
+                print(f"   • {flag}")
+        if degraded_flags:
+            print(f"\n🟡 DEGRADED — exit code 正常但輸出內文有落地疑點，須人手核實 Supabase ({len(degraded_flags)}):")
+            for label, status in degraded_flags:
+                print(f"   • {label}: {status}")
+        print("\n⚠️  系統未通過全部檢查，請在宣告 task success 前修復上述問題（DEGRADED 亦不得視為 task success）。")
         sys.exit(1)
     else:
         passed_count = sum(1 for _, _, s, _ in results if s == "PASS")

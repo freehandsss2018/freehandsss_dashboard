@@ -465,6 +465,78 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 詳見 `.fhs/notes/decisions.md` 2026-07-28（D49續）條目、migration `0083_cleanup_legacy_static_family_skus.sql`。
 
+### 5.4.10 Supabase Mirror 憑證 401 事故：公開 Repo 洩漏遭自動撤銷（2026-08-10 ✅ 已修復）
+
+**背景**：`/fhs-check` 健檢腳本回報全部 PASS，但 LIFECYCLE/STRESS/ACCEPTANCE 輸出文字內藏「testXXXX never appeared in Supabase」警告未被判 FAIL。手動查 Supabase api logs 確認 n8n（axios 來源）`PATCH /orders`/`GET /products` 全部 401，追查真實訂單 `MAX(updated_at)` 停留喺 2026-08-04，即真實訂單同步已斷 5 日以上。
+
+**根因**：`Supabase Mirror Prep` node 原始碼用 `process.env.SUPABASE_SERVICE_KEY || '<寫死secret>'` 做 fallback；n8n Docker 環境從未設定該變數，故一直行緊寫死值。Fat Mo 質疑「無人改過任何 key」促使深入查證（非直接建議 rotate）：`git log --all -S"<secret前綴>"` 揪出該 secret 由 2026-05-16 首次寫入、經 12+ 次 commit（n8n workflow JSON 備份）持續明文存在於**公開** GitHub repo，`git show origin/main` 確認查證當下仍曝光——時序吻合 GitHub↔Supabase secret scanning 自動撤銷合作機制，非人為改動。
+
+**修復（3 個節點，經 `/execute` + 追加授權，逐個 dry-run 預覽後正式寫入，備份於 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-10/`）**：
+
+| 節點 | 類型 | 原問題 | 修法 |
+|------|------|--------|------|
+| `Supabase Mirror Prep` | Code | `process.env.X \|\| '<寫死secret>'` | 移除寫死 fallback，改 `$env`→`process.env` 兩路試讀 + 缺失時 throw 帶診斷訊息 |
+| `Smart Cache Strategist` | Code | 同上 + `require('axios')` | 同上；另棄用 axios 改 `this.helpers.httpRequest()` |
+| `Mirror Delete to Supabase` | httpRequest | secret 直接寫死喺 `headerParameters`，**無任何環境變數判斷** | header 改 `={{ $env.SUPABASE_SERVICE_KEY }}`；因非 Code node 須用 workflow PUT API（剝走 `settings.binaryMode`） |
+
+**實證**：live workflow 全份 JSON 掃描，硬編碼 secret 出現次數 = **0**；30 節點完好、workflow 仍 active。
+
+**兩個平台層根因（本次深入查證揭露，非代碼問題）**：
+1. **n8n Code node 預設封鎖環境變數**：實測 `typeof $env=object` 但讀取 throw `access to env vars denied`；`typeof process=undefined`。故單純喺 Docker 設 `SUPABASE_SERVICE_KEY` 不足夠，須另加 `N8N_BLOCK_ENV_ACCESS_IN_NODE=false`。此亦係當年開發者退而寫死 secret 嘅真正成因（原始碼防禦性 `try{process.env.X}catch{null}` 即實驗殘跡）。
+2. **`:latest` tag 令重啟＝無聲升級**：容器重啟後 n8n 新版 task runner 令 `require('axios')` 崩潰（`InternalTaskRunnerDisconnectAnalyzer` + `N8N_RUNNERS_MAX_OLD_SPACE_SIZE`，同 D55 症狀逐字吻合）。此崩潰屬進程級，節點內 try/catch 捉唔到，原設計嘅 Airtable fallback 完全冇生效。
+
+**驗收**：n8n REST API `GET /api/v1/executions/<id>?includeData=true` 逐節點讀取。修復前 exec 5949 `[ERROR] Smart Cache Strategist`；修復後 exec 5951/5953 Smart Cache `[ok]` 且推進至 `Supabase Mirror Prep` 吐出植入嘅診斷訊息，證明 axios 崩潰已解、環境變數封鎖為唯一剩餘阻斷點。
+
+**收尾（2026-08-11）**：Fat Mo 加 `N8N_BLOCK_ENV_ACCESS_IN_NODE=false` 並重啟，途中另撞兩個獨立故障（`gluetun-vpn` `/dev/net/tun` 裝置問題、Container Manager stale network reference）——皆用 project 層面「建立」（非個別容器啟動）重新部署解決，與本次密鑰事故根因無關。**端對端驗收**（探測單 `testprobe01` CREATE→DELETE 全鏈 `[ok]` + Supabase `orders` 表時間戳確認）：真實訂單同步正式恢復，事故完全收尾。
+
+詳見 `.fhs/notes/session-log.md` 2026-08-09/2026-08-10/2026-08-11 條目、`.fhs/notes/decisions.md` D62 + D62續、`.fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md`。
+
+### 5.4.11 Telegram Markdown entity 解析錯誤（D62 收尾追查所得，2026-08-11 ✅ 已修復）
+
+**背景**：D62 事故收尾驗收時，CREATE 執行鏈行到最後一步 `Send Profit Report`（Telegram 通知）報 `Bad Request: can't parse entities: Can't find end of the entity starting at byte offset 48`，與 Supabase 同步無關（訂單資料本身已正確寫入），純屬通知發送失敗。
+
+**根因**：`Pack Telegram Data` 組裝嘅 `Full_Message` 直接內插 `Customer_Name`/`Order_ID`/`Product_Name`/`Update_Note` 等動態文字，未轉義 Markdown 特殊符號。測試用嘅客人名 `Credential_Probe` 含單一底線 `_`，Telegram Bot API 將其解讀為未配對嘅斜體 entity 開始符，拒收成個訊息。
+
+**修復嘗試一（失敗，記錄以防重踩）**：先試喺 `Send Profit Report`（同 `Auditor Alert`/`Notify Telegram (Delete)`/`Send Test Summary` 三個同類 telegram sendMessage node）嘅 `additionalFields` 加 `parseMode: 'none'`，意圖直接停用 entity 解析。**實測無效**——同一錯誤原封不動重現，證實呢個字串值喺目前 n8n 版本唔會被識別為「停用解析」。
+
+**修復（生效）**：改喺源頭轉義——`Pack Telegram Data` 新增 `escMd()` 函式，對 `Customer_Name`/`Order_ID`/`Product_Name`/`Update_Note` 呢四個動態欄位逐個 `_ * \` [` 符號前加反斜線中和，靜態 emoji/標籤文字唔受影響。經 `update_node_code` dry-run 預覽後正式寫入。
+
+**驗收**：探測單完整 CREATE→DELETE 週期，兩個 execution 均 `status: success`（之前 CREATE 恆定卡喺 `Send Profit Report` 步驟）。
+
+詳見 `.fhs/notes/decisions.md` D62續II、`.fhs/notes/session-log.md` 2026-08-11 條目。
+
+### 5.4.12 `sync_order_to_mirror` UPSERT 漏 reset `deleted_at`（migration 0087，2026-08-11 ✅ 已修復）
+
+**發現經過**：D63 為 `/fhs-check` 加 DEGRADED 偵測層 + 修正 `FHS_Full_System_Test.py` 短路邏輯後，LIFECYCLE 測試**首次真正 FAIL**（此前因短路 bug 一直假 PASS），暴露呢個同 D62 憑證事故完全無關、更早存在嘅 RPC 邏輯缺陷。
+
+**Bug**：`sync_order_to_mirror` 嘅 `ON CONFLICT (order_id) DO UPDATE SET` 清單有 17 個欄位，唯獨冇 `deleted_at`。任何 order_id 一旦被軟刪除過（`deleted_at` 有值），之後重用同一 ID 建立新訂單時 `deleted_at` 保持舊值不變 → 新訂單永遠卡喺「已刪除」狀態，前端所有帶 `deleted_at=is.null` 過濾嘅查詢（訂單總覽 / 財務 / 交付提醒）全部睇唔到張單。實證：`test9999003` `updated_at=2026-08-11` 但 `deleted_at=2026-08-03`。
+
+**影響範圍實測**：全庫 58 筆訂單、6 筆有 `deleted_at`，其中 `updated_at` 明顯晚於 `deleted_at`（即實際命中此 bug）**僅 1 筆，且係測試單 `test9999003` 本身——真實客戶訂單零受影響**。原因：正常業務流程極少重用已刪除嘅 order_id，只有固定 ID 反覆跑嘅測試腳本會命中。
+
+**修法**（migration `0087_sync_order_to_mirror_reset_deleted_at.sql`）：UPDATE SET 清單加 `deleted_at = NULL`。語義正確性——走到此 RPC 就代表 n8n 收到 create/edit 動作（`Switch Action` 嘅 delete 分支走完全獨立嘅 `Mirror Delete to Supabase` httpRequest node，唔經此 RPC），故此處無條件清 `deleted_at` 成立：「有人 create/edit 呢張單」必然蘊含「呢張單而家生效」。
+
+**生成方式（防漂移）**：首版手抄時擅自加咗 live 版本根本冇嘅 `accessory_cost`（實測 `pg_get_functiondef` 確認 0 次出現），作廢重做，改為**程式化由 live 定義以單一錨點插入一行生成 + 程式驗證「除該行外逐字不變」**——`CREATE OR REPLACE` 係全量覆蓋，手抄漏一個欄位就會靜默打回舊版（見 `feedback_migration_repo_db_drift` 教訓）。
+
+**驗收**：`apply_migration` 成功後重跑 `FHS_Full_System_Test.py`（用返有殘留 `deleted_at` 嘅 `test9999003`），由 FAIL 變 **PASS**，「did not appear in Supabase」訊息消失。
+
+詳見 `.fhs/notes/decisions.md` D63續、migration `0087_sync_order_to_mirror_reset_deleted_at.sql`。
+
+### 5.4.13 `Smart Cache Strategist` 讀 key 路徑修正：`process.env` → `$env`（2026-08-11 ✅ 已修復）
+
+**背景**：D62 修復 `Smart Cache Strategist` 時（移除寫死 secret + 棄用 `require('axios')`），當時 `$env` 封鎖問題**尚未確診**，故 key 讀取保留咗 `process.env` 寫法。之後同一 session 內證實 n8n Code node 沙盒 `typeof process === 'undefined'`（見 §5.4.10 平台層根因 1），令該節點 `SUPABASE_KEY` 恆為 `null`。
+
+**症狀（唔會報錯，只會靜默降級）**：節點內 `if (... && SUPABASE_KEY)` 判斷失敗 → 跳過 Supabase `products` 查詢 → 直接走 fallback 分支回 `supabaseFetched: false` → 下游 `Cache Hit?` 轉去 `Fetch Exact Base Cost`（Airtable）取成本。功能上唔算壞（Airtable fallback 本身係原設計韌性），但 **D62 喺呢個節點嘅修復等於白做**，且成本查詢繼續消耗 Airtable API 額度。
+
+**發現途徑**：追查 `/fhs-check` 剩餘 DEGRADED 時，讀 n8n execution runData 見到 `Smart Cache flags: supabaseFetched=false | costKeys=0`。**呢個訊號淨睇節點 `[ok]` 狀態係完全睇唔到嘅**——節點成功執行 ≠ 行咗預期路徑。
+
+**修法**：key 讀取改為優先 `$env.SUPABASE_SERVICE_KEY`（n8n 原生，需 `N8N_BLOCK_ENV_ACCESS_IN_NODE=false`，已設），保留 `process.env` 作次要路徑以防未來 runtime 變更，兩者各自 try/catch 包裹。
+
+**驗收**：修復後 execution runData 顯示 `supabaseFetched=true | costKeys=2`，確認真正行 Supabase 查詢路徑。
+
+**教訓**：同一 session 內中途被新證據推翻嘅結論（「用 `process.env`」→「沙盒冇 `process`」），必須**主動回頭檢查早前基於舊結論寫落去嘅代碼**，唔好假設「當時改咗就 OK」。
+
+詳見 `.fhs/notes/decisions.md` D63續II、`.fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md` 追加五。
+
 ### 5.5 綜合審計日誌（Session 124 新增）
 
 **`audit_logs` 表**（migration 0044，2026-06-25 部署 ✅）：

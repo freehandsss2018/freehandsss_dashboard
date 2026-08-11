@@ -9,6 +9,34 @@ import { resolve } from 'path';
 import { getNode, updateNodeCode } from '../n8n-client.js';
 import config from '../config.js';
 
+// 2026-08-11 security fix (D62 事故教訓)：backupNode() 曾經逐字備份節點原始碼落
+// repo（.fhs/notes/aireports/n8n-mcp-backups/），若節點內嵌硬編碼密鑰（反模式，
+// 但當時真實存在），密鑰會一併被寫入 git-tracked 檔案並隨後續 commit 洩漏到公開
+// GitHub repo（3個月未察覺，觸發 Supabase 自動撤銷憑證，見 decisions.md D62）。
+// Pattern 清單同 scripts/hooks/pre-tool-guard.js Rule 2 保持一致（同一份威脅模型，
+// 兩處各自獨立攔截：Rule 2 擋 Claude Code 自己嘅 Write/Edit，呢度擋 MCP server
+// 內部繞過 hook 嘅 fs.writeFileSync）——改任一邊時應同步檢查另一邊。
+const SECRET_PATTERNS = [
+  /sk-[a-zA-Z0-9]{32,}/g,
+  /pplx-[a-zA-Z0-9]{32,}/g,
+  /pat[a-zA-Z0-9]{20,}\.[a-zA-Z0-9]{40,}/g,
+  /sbp_[a-zA-Z0-9]{20,}/g,
+  /sb_secret_[a-zA-Z0-9_-]{15,}/g,
+  /eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/g,
+];
+
+function redactSecrets(jsonText) {
+  let out = jsonText;
+  let hits = 0;
+  for (const re of SECRET_PATTERNS) {
+    out = out.replace(re, (m) => {
+      hits++;
+      return `[REDACTED-SECRET-${m.slice(0, 8)}...]`;
+    });
+  }
+  return { text: out, hits };
+}
+
 export const definition = {
   name: 'update_node_code',
   description:
@@ -46,7 +74,12 @@ function backupNode(workflowId, nodeName, nodeData) {
   const dir = resolve(config.backupBasePath, date, workflowId);
   mkdirSync(dir, { recursive: true });
   const filePath = resolve(dir, `${safeName}.json`);
-  writeFileSync(filePath, JSON.stringify(nodeData, null, 2), 'utf-8');
+  const { text, hits } = redactSecrets(JSON.stringify(nodeData, null, 2));
+  writeFileSync(filePath, text, 'utf-8');
+  if (hits > 0) {
+    // eslint-disable-next-line no-console
+    console.error(`[update-node-code] WARNING: redacted ${hits} secret-pattern match(es) from backup before writing to disk: ${filePath}`);
+  }
   return filePath;
 }
 

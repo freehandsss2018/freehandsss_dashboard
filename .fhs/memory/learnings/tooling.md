@@ -25,5 +25,5 @@
 
 <!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
 ### 跨領域指標（全文在別桶）
-（本桶目前無跨領域條目）
+- → `governance.md` #4 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
 <!-- POINTERS:END -->

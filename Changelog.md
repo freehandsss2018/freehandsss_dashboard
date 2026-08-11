@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-08-11] Session（Claude Code / Sonnet 5 執行）— D63：事故經驗落地為技術防線 + `/fhs-check` 判準修復 + migration 0087
+
+- **緣起**：Fat Mo 要求「學習今次經驗並優化，確保不再出現同類情況；審視 /fhs-check 是否需要更新」——明確要技術落地，非只寫教訓文件。審視 D62 lesson「防再犯」四點原則，發現多數只講方向未做，本輪補齊。
+- **四項防線**：①`run_all.py` 新增 `DEGRADED_MARKERS` 掃描層，子腳本 stdout 命中警告字串即使 exit 0 都唔可以標「全部通過」；②修正 `FHS_Full_System_Test.py` 確切邏輯 bug（`if created and not ...` 短路跳過 DELETE 驗證仲印假「Cleanup verified」+ exit 0，正是事故隱藏 5 日嘅代碼位置）；③`n8n-mcp-server/src/tools/update-node-code.js` 加 `redactSecrets()`——搵到**真正洩漏源頭**：`backupNode()` 用 `fs.writeFileSync` 寫節點原始碼落 repo，完全繞過 `pre-tool-guard.js`（MCP server 係獨立子進程唔經 hook）；④`pre-tool-guard.js` Rule 2 加互相參照註解防兩處 pattern 清單失同步。
+- **新防線即時見效，捕獲一個獨立既有 bug**：加完偵測後首跑，LIFECYCLE 首次真正 FAIL，暴露 `sync_order_to_mirror` 嘅 `ON CONFLICT DO UPDATE` 清單漏咗 `deleted_at`——重用已刪除 order_id 時新訂單永遠卡喺「已刪除」，前端所有 `deleted_at=is.null` 查詢都睇唔到。實測影響：58 筆訂單僅 1 筆命中且係測試單本身，**真實客戶訂單零受影響**。已落 migration `0087` 並端對端驗證（LIFECYCLE FAIL→PASS）。
+- **過程自我修正**：首版 0087 手抄時擅自加咗 live 版本根本冇嘅 `accessory_cost`（`pg_get_functiondef` 實測 0 次出現），作廢重做，改為程式化由 live 定義生成 + 驗證逐字不變（`CREATE OR REPLACE` 全量覆蓋，手抄漏欄位會靜默打回舊版）。另修 `FHS_Full_System_Test.py` 缺 UTF-8 stdout 包裝令中文 FATAL 訊息喺 Windows 亂碼。
+- **未處理（需 Fat Mo 定義）**：`FHS_System_StressTester.py`/`FHS_Comprehensive_Test.py` 有相同短路 pattern，但涉及故意測試 failsafe 嘅案例（TC-02~05／Test B 嘅 `created=False` 係咪預期行為屬產品語義問題），只喺 `run_all.py` 層加 DEGRADED 兜底，未動個案邏輯。
+- **追查剩餘 DEGRADED 唔就咁收貨**（恆定 DEGRADED = 恆定 PASS，同樣造成警報疲勞）：①計時探針實測 create→落地 = 3.6s，排除逾時假設；②`test2001`/`test2002` 真因係**測試夾具過時**——用緊舊格式品名 `金屬鎖匙扣 (不鏽鋼)`（且「不**鏽**鋼」vs 現行「不**銹**鋼」係不同字），FK `order_items_product_sku_fkey` 拒收，即 ACCEPTANCE 一直靜靜失敗被舊腳本吞咗，屬測試資料問題待 Fat Mo 決定；③**自我修正**：D63 改 `Smart Cache Strategist` 時保留 `process.env` 讀 key，但沙盒 `typeof process === 'undefined'`，令其每次靜默 fallback 落 Airtable，改用 `$env` 後實測 `supabaseFetched=true, costKeys=2`（順帶減少 Airtable API 用量）。
+- **元教訓**：寫低教訓 ≠ 落地防線；防線唔止防未來，會即刻照出過去被假 PASS 蓋住嘅問題；新警報第一次觸發必須逐個案追到底，否則迅速退化成背景噪音；session 中途被新證據推翻嘅結論，要回頭檢查基於舊結論寫落去嘅代碼。
+- **收尾**：Fat Mo 授權「你判斷，冇用/過時就刪除」，回應 TC-02~05／Test B 預期行為懸案——判斷唔刪任何測試（全部測緊有效防護），**唯一過時係 ACCEPTANCE Test A 硬寫嘅死品名**已修正；方法論唔憑猜測，逐個案直打 webhook 實測真實行為（`probe_edge_cases.py`），兩個測試腳本加 `EXPECT_LANDING` dict，cleanup 邏輯改為比對實測 vs 預期，只有唔符先觸發 DEGRADED。
+
+詳見 [decisions.md D63 + D63續 + D63續II + D63續III](.fhs/notes/decisions.md)、[FHS_System_Logic_Overview.md §5.4.12](.fhs/notes/FHS_System_Logic_Overview.md)、[lesson 追加四/五](.fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md)。
+
+## [2026-08-10] Session（Claude Code / Sonnet 5 執行）— D62：n8n Supabase Mirror 憑證 401 根因查明 + Code node 安全修復
+
+- **緣起**：`/fhs-check` 健檢腳本自報全部 PASS，但輸出文字內藏「testXXXX never appeared in Supabase」警告未被判 FAIL；連續兩輪一致，手動查 Supabase api logs 揪出 n8n（axios）`PATCH /orders`/`GET /products` 全部 401，真實訂單 `MAX(updated_at)` 停留喺 2026-08-04，同步已斷 5 日以上。
+- **根因**：`Supabase Mirror Prep` node 用 `process.env.SUPABASE_SERVICE_KEY || '<寫死secret>'` 做 fallback，n8n 環境從未設定該變數。Fat Mo 質疑「無人改過任何 key」促使深入查證（非直接建議 rotate）：`git log --all -S` 揪出該 secret 由 2026-05-16 起持續明文存在於**公開** GitHub repo，查證當下仍曝光——時序吻合 GitHub↔Supabase secret scanning 自動撤銷機制，非人為改動。
+- **修復 3 個節點**（全 workflow 掃描確認範圍，非逐個撞見）：`Supabase Mirror Prep`、`Smart Cache Strategist`（Code node，`update_node_code`）、`Mirror Delete to Supabase`（httpRequest node，須用 workflow PUT API + 剝走 `settings.binaryMode`）。**實證：live workflow 硬編碼 secret 出現次數 = 0**，30 節點完好、仍 active。
+- **深入查證揭露兩個平台層根因（非代碼問題）**：①**n8n Code node 預設封鎖環境變數**——實測 `$env` 讀取 throw `access to env vars denied`、`typeof process=undefined`，故單設 `SUPABASE_SERVICE_KEY` 不足夠，須另加 `N8N_BLOCK_ENV_ACCESS_IN_NODE=false`；此亦係當年開發者退而寫死 secret 嘅真正成因。②**`:latest` tag 令重啟＝無聲升級**——重啟後新版 task runner 令 `require('axios')` 進程級崩潰（`InternalTaskRunnerDisconnectAnalyzer`，同 D55 逐字吻合），節點內 try/catch 捉唔到故原設計 Airtable fallback 完全冇生效；已改用原生 `this.helpers.httpRequest()`。
+- **驗收**：n8n REST API 逐節點讀 execution data——修復前 exec 5949 `[ERROR] Smart Cache Strategist`，修復後 exec 5951/5953 `[ok]` 並推進至下游吐出植入嘅診斷訊息。
+- **唯一剩餘待辦**：Docker 加 `N8N_BLOCK_ENV_ACCESS_IN_NODE=false` + 重啟（AI 依規不可代入密鑰）。
+- **教訓落盤**：`.fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md`（含 3 條追加：全掃描紀律、平台層封鎖為硬編碼真因、`:latest` 無聲升級）。
+
+詳見 [decisions.md D62 + D62續](.fhs/notes/decisions.md)、[FHS_System_Logic_Overview.md §5.4.10](.fhs/notes/FHS_System_Logic_Overview.md)。
+
 ## [2026-08-10] Session（Claude Code / Sonnet 5 執行）— D61：V42 Dashboard XSS 整治 + Supabase 設定 SSoT + 死碼/race condition 清理
 
 - **緣起**：Fat Mo 要求「從 /8d 方向檢查 V42 的 Code」。靜態掃描（grep 定位 + 窗口讀）發現 6 類問題，其中 P1 為 stored XSS，經 browser 實測（造 payload 直接呼叫渲染函式）證實非假警報。

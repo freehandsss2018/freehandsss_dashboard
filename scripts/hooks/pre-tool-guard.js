@@ -116,6 +116,13 @@ process.stdin.on('end', () => {
     }
 
     // ── Rule 2: No hardcoded API keys ───────────────────────────
+    // 2026-08-11 (D62 事故教訓)：呢個 pattern 清單只擋 Claude Code 自己嘅
+    // Write/Edit 工具呼叫。D62 洩漏嘅實際路徑係 n8n-mcp-server 內部
+    // update-node-code.js 嘅 backupNode() 用 fs.writeFileSync 直寫落 repo，
+    // 完全繞過呢個 hook（MCP server 係獨立子進程，唔經 Claude Code 工具層）。
+    // 呢度已喺 update-node-code.js 加咗同款 redactSecrets()，兩處各自獨立
+    // 攔截同一威脅模型——改任一邊嘅 pattern 清單時，必須同步檢查另一邊
+    // （n8n-mcp-server/src/tools/update-node-code.js 頂部 SECRET_PATTERNS）。
     const apiKeyPatterns = [
       { re: /sk-[a-zA-Z0-9]{32,}/, label: 'OpenAI-style key (sk-...)' },
       { re: /pplx-[a-zA-Z0-9]{32,}/, label: 'Perplexity key (pplx-...)' },

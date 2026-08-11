@@ -1,8 +1,18 @@
 import urllib.request
 import json
 import os
+import sys
 import time
 import ssl
+
+# 2026-08-11 fix：呢個腳本一直由 run_all.py subprocess 呼叫，本身冇強制 UTF-8
+# 輸出（同 run_all.py 頂部同款修復缺咗一份），Windows 底下 pipe 輸出預設用
+# locale codepage（常見 CP950），令新加嘅中文 [FATAL] 訊息喺 Health Report
+# 顯示成亂碼。獨立執行（`python FHS_Full_System_Test.py`）一樣受惠。
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 try:
     from dotenv import load_dotenv
@@ -70,7 +80,15 @@ def full_cycle_test():
 
     created = wait_for_order_state(TEST_ID, want_deleted=False, timeout=20)
     if not created:
-        print(f"   [WARN] {TEST_ID} did not appear in Supabase within 20s, continuing anyway (may be plain network delay)")
+        # D62 事故教訓（2026-08-10/11）：呢個訂單係無爭議嘅「正常開單」，唔存在
+        # failsafe/crash-defense 情境，冇落地就係真實故障（同 5 日 Supabase 憑證
+        # 401 斷同步事故一致嘅徵狀）。原本淨係 [WARN] 繼續行落去，令後面第 95 行
+        # `if created and not wait_for_order_state(...)` 因為 created=False 直接
+        # 短路，連 DELETE 驗證都唔做就印「Cleanup verified」+ exit 0——即係「訂單
+        # 完全冇落地」呢個最嚴重情況，反而係腳本唯一唔會報錯嘅路徑。改為立即
+        # FATAL 停止，唔再假裝可以繼續驗證一張根本唔存在嘅訂單。
+        print(f"\n[FATAL] {TEST_ID} did not appear in Supabase within 20s — CREATE 路徑故障（webhook 回 200 但資料未落地，見 D62）。")
+        raise SystemExit(1)
 
     time.sleep(10) # 增加等待時間
 
@@ -92,7 +110,9 @@ def full_cycle_test():
         "Order_ID": TEST_ID
     })
 
-    if created and not wait_for_order_state(TEST_ID, want_deleted=True, timeout=30):
+    # created 呢個位必然係 True（否則已喺上面 CREATE 驗證失敗時 exit 咗），
+    # 唔再需要 `created and` 呢個現已恆真嘅前置判斷。
+    if not wait_for_order_state(TEST_ID, want_deleted=True, timeout=30):
         print(f"\n[FATAL] Cleanup verification TIMEOUT: {TEST_ID} still live in Supabase (deleted_at not set)")
         raise SystemExit(1)
 

@@ -1902,5 +1902,34 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-08-09 — Session續（/fhs-check 覆核，Claude Code / Sonnet 5）
 - 同日內第二次執行 `/fhs-check`，覆核上述 Red Flag 是否已修復。結果：**未修復，狀態不變**。腳本本身再次「全部通過」（4 passed, 1 skipped），但 Supabase 直查 22:35 後仍無任何寫入；api logs 覆核同一時段 axios 來源請求（`GET /products`）仍全部 401，Python-urllib 獨立 key 仍全部 200，同上一輪特徵完全一致。n8n Supabase 憑證問題持續未解，繼續等 Fat Mo 決斷輪替。
 
+## 2026-08-10 — Session續III（D62 全收斂 + 兩個平台層根因，Claude Code / Opus 5）
+- Fat Mo 質疑「點解越改越多」，查證結果：問題數目由頭到尾冇增加，係同一條 secret 被複製貼上喺 **3 個節點**，首次修復後即做全 workflow 掃描確認完整範圍（非逐個撞見）。三個節點現已全部修復，**live workflow 硬編碼 secret 出現次數 = 0**（API 全份 JSON 掃描實證）。`Mirror Delete to Supabase` 屬 httpRequest node，`update_node_code` 唔食，改用 workflow PUT API（剝走 `settings.binaryMode`）+ 事前全份備份。
+- **兩個平台層根因（真正阻斷點，非代碼問題）**：①**n8n Code node 預設封鎖環境變數**——實測 `typeof $env=object` 但讀取 throw `access to env vars denied`、`typeof process=undefined`；即 Fat Mo 設嘅 `SUPABASE_SERVICE_KEY` 大機會正確但 n8n 唔俾讀，須另加 `N8N_BLOCK_ENV_ACCESS_IN_NODE=false`。此發現反過來解釋咗當年點解會硬編碼 secret（原始碼防禦性 try/catch 即實驗殘跡）。②**`:latest` tag 令重啟＝無聲升級**——Fat Mo 重啟後新版 task runner 令 `require('axios')` 進程級崩潰（`InternalTaskRunnerDisconnectAnalyzer`，同 D55 逐字吻合），時序鐵證：同節點 15:24 仲成功發 request、15:52 重啟後零 request 直接死；已改用原生 `this.helpers.httpRequest()`。
+- **驗收方式升級**：改用 n8n REST API `GET /api/v1/executions/<id>?includeData=true` 逐節點讀狀態（取代之前不可靠嘅 MCP status 欄位），修復前後對照實證。
+- 全文見 [decisions.md D62 + D62續](decisions.md)、[CHANGELOG](../../CHANGELOG.md) 2026-08-10 D62、[lesson](../memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md)。
+
+## 2026-08-11 — Session續IV（事故正式收尾，Claude Code / Sonnet 5）
+- Fat Mo 加 `N8N_BLOCK_ENV_ACCESS_IN_NODE=false` 後重啟容器，另撞兩個獨立故障（`/dev/net/tun` 裝置揾唔到、Container Manager stale network reference 令 n8n 起唔到），Fat Mo 用 project 層面「建立」（非個別容器啟動）重新部署後解決，兩個容器恢復正常。**最終端對端驗收（10:07 UTC）**：探測單 `testprobe01` CREATE→DELETE 全鏈 `[ok]`，Supabase `orders` 表直查確認時間戳吻合——**真實訂單同步正式恢復，D62 事故完全收尾**。附帶發現一個不相關小問題：Telegram `Send Profit Report` 節點 Markdown 解析錯誤，未修，留待另一 session。
+- 全文見 [decisions.md D62續](decisions.md)。
+
+## 2026-08-11 — Session續V（Telegram 修復 + 版本鎖定，Claude Code / Sonnet 5）
+- Fat Mo 要求埋單「1及2項」（Telegram Markdown 錯誤 + n8n 版本鎖定）一齊處理。Telegram：先試 `parseMode:'none'` 停用解析，實測**完全無效**（同錯誤原封不動），改喺源頭轉義——`Pack Telegram Data` 新增 `escMd()` 對 4 個動態欄位（客人名/訂單號/貨品名/更新備註）轉義 Markdown 特殊符號，dry-run 後正式寫入，探測單 CREATE→DELETE 兩次 execution 均 `success`。版本鎖定：AI 冇 NAS 檔案系統寫入權限，已交付 Fat Mo 手動指示（`image: n8nio/n8n:latest` 改 `n8nio/n8n:2.7.5`），待其執行後覆核。
+- 全文見 [decisions.md D62續II](decisions.md)、[FHS_System_Logic_Overview.md §5.4.11](FHS_System_Logic_Overview.md)。
+
+## 2026-08-11 — Session續VI（版本鎖定完成 + D62 事故正式收工，Claude Code / Sonnet 5）
+- Fat Mo 完成 `image: n8nio/n8n:2.7.5` 鎖定並重啟（過程一度貼錯 YAML 混入 AI 解說文字，已由 AI 指出具體錯誤行修正）。最終端對端驗收（10:27 UTC）：探測單 CREATE→DELETE 兩個 execution 均 `success`，Supabase 落地時間戳吻合。**D62 事故連同兩項收尾追加問題（Telegram 解析錯誤、版本鎖定）全部完成，正式收工。**
+- 全文見 [decisions.md D62續II](decisions.md)。
+
+## 2026-08-11 — Session續VII（D63 學習經驗＋四項技術性防線，Claude Code / Sonnet 5）
+- Fat Mo 明確要求「學習今次經驗並優化，確保不再出現同類情況；審視 /fhs-check 是否需要更新」——唔止要教訓文件，要技術落地。逐一審視 D62 lesson「防再犯」四點，發現部分只講方向未做，本輪補齊：①`run_all.py` 新增 `DEGRADED_MARKERS` 掃描層，子腳本 stdout 命中警告字串即使 exit 0 都唔可以標「全部通過」；②揪出 `FHS_Full_System_Test.py` 確切邏輯 bug（`if created and not wait_for_order_state(...)` 短路跳過 DELETE 驗證仲印假成功訊息）並直接修正，係 D62 事故可以隱藏 5 日嘅確切代碼位置；③搵到真正洩漏源頭 `n8n-mcp-server/src/tools/update-node-code.js` 嘅 `backupNode()` 完全繞過 `pre-tool-guard.js`（獨立子進程唔經 hook），加 `redactSecrets()` 補漏；④`pre-tool-guard.js` Rule 2 加互相參照註解防兩處 pattern 清單日後失同步。StressTester/Comprehensive_Test 嘅同款 pattern 涉及故意測試 failsafe 案例（產品語義問題），未動，留返 `run_all.py` 層 DEGRADED 兜底。
+- **新防線即時見效**：加完 DEGRADED 偵測後首次跑 `run_all.py`，LIFECYCLE 首次真正 FAIL（此前假 PASS），暴露一個同 D62 無關、更早存在嘅 RPC bug——`sync_order_to_mirror` 嘅 `ON CONFLICT DO UPDATE` 清單漏咗 `deleted_at`，令重用已刪除 order_id 時新訂單永遠卡喺「已刪除」。實測影響範圍：58 筆訂單只有 1 筆命中且係測試單本身，**真實客戶訂單零受影響**。已落 migration `0087` 修復並端對端驗證（LIFECYCLE FAIL→PASS）。過程一度手抄 migration 時擅自加咗 live 版本根本冇嘅 `accessory_cost`，實測揪出後作廢重做，改為程式化由 live 定義生成 + 驗證逐字不變。
+- **追查剩餘 DEGRADED 唔就咁收貨**（恆定 DEGRADED = 恆定 PASS，一樣造成警報疲勞）：①計時探針實測 create→落地 = 3.6s，排除逾時窗口假設；②`test2001`/`test2002` 真因係**測試夾具過時**——用緊 `金屬鎖匙扣 (不鏽鋼)`（舊格式，且係「不**鏽**鋼」vs 現行「不**銹**鋼」不同字），FK `order_items_product_sku_fkey` 拒絕寫入，即 ACCEPTANCE 一直靜靜失敗緊被舊腳本吞咗，屬測試資料問題待 Fat Mo 決定；③**自我修正**：D63 改 `Smart Cache Strategist` 時保留咗 `process.env` 讀 key，但沙盒內 `typeof process === 'undefined'`，令佢每次靜默 fallback 落 Airtable（`supabaseFetched=false`），改用 `$env` 後實測 `supabaseFetched=true, costKeys=2`。
+- 全文見 [decisions.md D63 + D63續 + D63續II](decisions.md)、[lesson 追加四](../memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md)、migration `0087_sync_order_to_mirror_reset_deleted_at.sql`。
+
+## 2026-08-11 — Session續VIII（收尾剩餘 DEGRADED，Claude Code / Sonnet 5）
+- Fat Mo 授權「你幫我判斷，冇用/過時就刪除」，回應之前提出「TC-02~05／Test B 預期行為屬產品語義」嘅懸案。**判斷：唔刪任何測試**（全部測緊有效防護行為），**唯一過時嘅係 ACCEPTANCE Test A 硬寫嘅品名**（`金屬鎖匙扣 (不鏽鋼)`，全目錄搜尋 0 命中，觸發 FK 違反令 Test A 靜靜失敗咗）。方法論：唔憑猜測，逐個案直打 webhook 實測真實落地行為（`probe_edge_cases.py`）——TC-02/03/Test-B 確認拒收、TC-04/05 確認落地，全部符合先前基於命名/設計模式推斷嘅預測。修正 Test A 品名 + 兩個測試腳本新增 `EXPECT_LANDING` dict，cleanup 邏輯改為比對實測 vs 預期，只有唔符先觸發 DEGRADED。
+- 兩個測試腳本新加嘅全形破折號「—」喺 Windows 又撞返同一個 CP950 亂碼問題（同 `FHS_Full_System_Test.py` 早前撞過嘅一樣，漏咗一齊修），已補 UTF-8 stdout 包裝。最終驗收：跑完整 `run_all.py`，**四項全部真 PASS**，STRESS/ACCEPTANCE 由 DEGRADED 轉乾淨 PASS。**D62+D63 全系列完全收工，`/fhs-check` 回復可信。**
+- 全文見 [decisions.md D63續III](decisions.md)。
+
 ## 2026-08-09 — Session續II（單次輕量探測覆核，Claude Code / Sonnet 5）
 - Fat Mo 要求「查核一下MCP記錄是否已更新」，改用單次最小化 create+delete 探測（`testprobe01`，非重跑完整 run_all.py，避免第三次全套壓測+Telegram通知噪音）直打 webhook。**即時結果（22:46:03 UTC，查詢當刻）：axios 來源 `GET /products` 仍然 401，`testprobe01` 冇落地 `orders` 表**——實時確認憑證問題喺呢一刻依然未解，非歷史快照。狀態：持續等 Fat Mo 喺 n8n 憑證管理介面輪替/確認 Supabase API key（涉及節點：`HTTP: Supabase Sync RPC`、`Mirror Delete to Supabase`）。

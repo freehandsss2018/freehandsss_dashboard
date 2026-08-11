@@ -2,9 +2,17 @@ import urllib.request
 import urllib.parse
 import json
 import os
+import sys
 import time
 import uuid
 import ssl
+
+# 2026-08-11 fix：同 FHS_Full_System_Test.py 一致嘅 Windows CP950 亂碼修復——
+# 新加嘅 EXPECT_LANDING 訊息含全形破折號「—」，喺 pipe 輸出無強制 UTF-8 時亂碼。
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 try:
     from dotenv import load_dotenv
@@ -156,6 +164,22 @@ def send_test_summary(results, cleanup_failures):
         print(f"\n[TEST SUMMARY] Failed to send: {e}")
 
 
+# 2026-08-11 (D63續III): expect_landing 由 2026-08-11 現場實測結果定案（非猜測）——
+# 逐一直打 webhook 觀察真實落地行為，確認咗邊啲案例應該成功、邊啲應該被拒收：
+#   TC-01 正常單            → 落地（unambiguous）
+#   TC-02 Empty Items       → 實測拒收（空品項冇嘢好計，failsafe 正確攔截）
+#   TC-03 Unknown SKU       → 實測拒收（未知 SKU 唔應該靜默生成 $0 訂單）
+#   TC-04 Polluted Types    → 實測有落地（字串型數字容忍轉型成功）
+#   TC-05 Missing Main Info → 實測有落地（缺主資料 fallback 到預設值）
+EXPECT_LANDING = {
+    "test1001": True,
+    "test1002": False,
+    "test1003": False,
+    "test1004": True,
+    "test1005": True,
+}
+
+
 def main():
     print("=== Freehandsss V40.5 System Stress Tester ===")
     results = {}
@@ -170,8 +194,17 @@ def main():
 
             # Confirm the create actually landed before trusting the delete-verify step
             created = wait_for_order_state(order_id, want_deleted=False, timeout=20)
-            if not created:
-                print(f"   [SKIP CLEANUP] {order_id} never appeared in Supabase (likely rejected by failsafe), skipping delete verification")
+            expect = EXPECT_LANDING.get(order_id)
+            if expect is None:
+                if not created:
+                    print(f"   [SKIP CLEANUP] {order_id} never appeared in Supabase (unregistered case, no expectation set), skipping delete verification")
+            elif created == expect:
+                tag = "EXPECTED LAND" if created else "EXPECTED REJECT"
+                print(f"   [{tag}] {order_id} — matches known-good behaviour (see EXPECT_LANDING).")
+            elif expect and not created:
+                print(f"   [WARN] {order_id} was expected to land but never appeared in Supabase within 20s — possible real regression.")
+            else:
+                print(f"   [WARN] {order_id} unexpectedly landed despite invalid payload — failsafe may have regressed.")
 
             print(f"   [CLEANUP] Deleting {order_id}...")
             run_test_case(f"Cleanup {order_id}", {

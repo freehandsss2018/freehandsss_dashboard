@@ -31,4 +31,5 @@
 - → `frontend.md` #10 【高頻 ⚠️】屬性值做 HTML 轉義對 `getElementById` 係完全透明——唔好為咗「轉義會令查找對唔上」而去正規化資料本身
 - → `n8n.md` #1 【高頻 ⚠️】n8n + sbSyncOrder 雙寫競態
 - → `n8n.md` #6 【高頻 ⚠️】Order_ID 缺失時固定字面值 fallback 會令多個不同請求撞落同一筆訂單
+- → `n8n.md` #7 【高頻 ⚠️】n8n Code node 預設封鎖環境變數存取（`N8N_BLOCK_ENV_ACCESS_IN_NODE`）——見到「secret 硬編碼 + 防禦性 try/catch 包住 env 讀取」呢個組合，唔好當疏忽，要當「env 存取曾經失敗過」嘅訊號
 <!-- POINTERS:END -->

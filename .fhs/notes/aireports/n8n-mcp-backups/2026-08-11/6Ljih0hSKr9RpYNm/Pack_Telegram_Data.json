@@ -1,0 +1,16 @@
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "Pack Telegram Data",
+  "type": "n8n-nodes-base.code",
+  "typeVersion": 2,
+  "position": [
+    30480,
+    7680
+  ],
+  "parameters": {
+    "mode": "runOnceForAllItems",
+    "language": "javaScript",
+    "jsCode": "const calcItem = $('Calculate Profit & Pack Items').all()[0];\nconst calc = calcItem ? calcItem.json : {};\nconst trigger = $('Receive Dashboard Order').first().json;\nconst body = trigger.body || trigger;\n\nconst hasCostError = calc.Has_Cost_Error === true || calc.Total_Cost === 0;\nconst action = body.action || body.Action || 'create';\n\n// 測試訂單（Order_ID 符合 test+數字，如 test1001）不逐單發 Telegram，\n// 由 FHS_System_StressTester.py 收集全部案例後另發一則彙總訊息（避免騷擾）。\nconst orderId = calc.Order_ID || '';\nif (/^test\\d+$/i.test(orderId)) {\n  return [];\n}\n\n// When cost unavailable, omit '$' prefix to avoid '$⚠️ 待核算'\nconst costDisplay   = hasCostError ? '⚠️ 待核算' : '$' + calc.Total_Cost;\nconst profitDisplay = hasCostError ? '⚠️ 待核算' : '$' + calc.Final_Profit;\nconst revenueDisplay = '$' + (calc.Total_Revenue || 0);\n\nlet message = '';\n\nif (action === 'create') {\n  const subItems = calc.Sub_Items || [];\n  const orderLines = subItems.length > 0\n    ? subItems.map(item => {\n        const qty = item.Quantity > 1 ? ' x' + item.Quantity : '';\n        return '• ' + (item.Product_Name || '') + qty;\n      }).join('\\n')\n    : '  (無商品記錄)';\n\n  message = [\n    '📦 【Freehandsss 新訂單】',\n    '👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || ''),\n    '📅 ' + (calc.Appointment_Date || '未定'),\n    '------------------------',\n    '🛍️ 訂單商品：',\n    orderLines,\n    '------------------------',\n    '💰 入帳：' + revenueDisplay,\n    '💵 成本：' + costDisplay,\n    '🏆 利潤：' + profitDisplay\n  ].join('\\n');\n\n} else if (action === 'edit') {\n  const updateNote = body.Update_Note ? '\\n' + body.Update_Note : '';\n  message = [\n    '✏️ 【Freehandsss 修正訂單】',\n    '👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || ''),\n    '📅 ' + (calc.Appointment_Date || '未定') + updateNote,\n    '------------------------',\n    '💰 入帳：' + revenueDisplay,\n    '💵 成本：' + costDisplay,\n    '🏆 利潤：' + profitDisplay\n  ].join('\\n');\n\n} else {\n  message = '🗑️ 【Freehandsss 刪除訂單】\\n👤 ' + (calc.Customer_Name || '') + '  |  📝 #' + (calc.Order_ID || '') + '\\n⚠️ 此訂單已被刪除';\n}\n\nreturn [{ json: {\n  Action:         action,\n  Customer_Name:  calc.Customer_Name || '',\n  Order_ID:       calc.Order_ID || '',\n  Full_Message:   message,\n  Has_Cost_Error: hasCostError\n}}];",
+    "notice": ""
+  }
+}
