@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-15] Session（Claude Code / Opus 5 規劃 + Sonnet 5 執行）— D64：V42 多件手模擺設訂單支援（逃生口模式）+ 揪出獨立 RPC 回歸
+
+- **緣起**：真實訂單 `#0600901`（TW Ting，倒模日 2026-04-09，木框+玻璃瓶×2）因表單只支援單件手模擺設而從未入過系統，屬既有帳目缺口。Fat Mo 拷問八輪定案設計，走 `/cl-flow`（flow_id `2026-08-15-1944`）→ `/execute`。
+- **架構裁決（逃生口，非統一模型）**：主件 P 區零改動，新增獨立「追加擺設款式」摺疊區（最多 3 件，`p2_`/`p3_`/`p4_` 前綴），刻意只支援款式/底座色/嬰兒倒模/燈飾/刻字。拒絕統一模型：改主件 ID 會令既有 `raw_form_state` 全部對唔上，觸犯 AGENTS.md §3「Raw_Form_State 不可侵犯」。IG 訊息一切沿用 V42 現行輸出（Fat Mo 定案：手寫範本僅示意非規格），`_buildSplitIgLine()` 零改動。
+- **DEGRADED 評審**：A1 Perplexity quota 耗盡（3 次重試全失敗），A2 Gemini 首版 artifact 因 runner UTF-8 chunk 邊界截斷損壞，改用 curl 子程序同 prompt 重跑復原完整 7 條批評。Verdict `CONDITIONAL_READY`。
+- **A2 對抗評審揪出 2 個 A3 自評未覆蓋嘅真問題**：①【BLOCKER】`calculatePricing()` 對每個 P item 都讀同一組全域 `en_parent`/`嬰兒` selector，追加件會誤讀主件狀態（主件玻璃瓶+父母+嬰兒時，追加玻璃瓶件被誤判 $2,580 家庭價、混合附加費 $300 每件重複收）——加 `_isMainP` 守衛修復；②slot 刪除後重新分配同一 slot 號會令新件繼承已刪除舊件嘅批次/SKU（同 A3 原自評 Slot 制防護矛盾）——改用 `p_slot_seq` 單調遞增，永不重用。
+- **執行階段 live 實測再揪出 1 個計劃完全未預見嘅 bug**：`_pExtraSyncChrome()`（刷新件號標題用）原本對全部 active slot 逐一重建 `baseColorContainer`，令加第 3 件洗走第 2 件啱啱揀嘅底座色——抽出獨立 `_pExtraRefreshTitle()` 只更新標題文字。
+- **意外發現獨立既有缺陷（範圍外，未修復）**：live webhook 測試單顯示 `accessory_cost`（燈飾/羊毛氈成本 rollup）恆為 0，`total_cost` 本身正確。考古確認：`sync_order_to_mirror` RPC 喺 2026-07-25 migration 0080 加咗呢個欄位，但 3 日後 migration 0081（家庭V2模型）`CREATE OR REPLACE FUNCTION` 覆蓋時 base 版本源自更舊嘅 0075、跳過 0080，令欄位靜默消失；2 星期後 migration 0087（D63）首版手抄一度發現「live 版本 0 次出現」，但誤判為「本來就冇」而非「已回歸」，作廢重做並喺 migration 內寫低「刻意不順手補」——一個回歸被正式記錄成現狀。落盤制度教訓：`CREATE OR REPLACE FUNCTION` 落筆前必須用 `pg_get_functiondef()` 攞 live 定義做 base。
+- **驗證**：3 張真實舊單（純鎖匙扣/單件木框/單件玻璃瓶）經完整 `restoreFormState()` 鏈零回歸；`captureFormState()` 完整往返（含刪除追加件）通過；live webhook 測試單 Supabase 直查 3 筆 `order_items` + `handmodel_cost=$630`/`total_cost=$690` 正確；`/fhs-check` 4 PASS/1 SKIP；測試單已 soft-delete 清理。
+- **新財務規則落盤**：一單多件手模擺設逐件全額收費 $210，無第二件起減免——`FHS_Finance_Bible.md`、`learnings/finance.md`、`finance-gatekeeper/SKILL.md` 路由表已同步（並更正該路由表 `accessory_cost`「✅已修復」嘅過時聲明）。
+
+詳見 [decisions.md D64](.fhs/notes/decisions.md)、[FHS_System_Logic_Overview.md §5.4.14+§5.4.15](.fhs/notes/FHS_System_Logic_Overview.md)、[artifacts/2026-08-15-1944/cl-final-plan.md](artifacts/2026-08-15-1944/cl-final-plan.md)。
+
 ## [2026-08-15] Session（Claude Code / Sonnet 5 + Opus 5 執行）— canva-auto：TW_Ting 0600901 新單出貨 + SOP v1.5.0 五項修訂（AI 兩處錯誤經 Fat Mo 指正落盤）
 
 - **緣起**：Fat Mo「canva-auto 新單」+ TW_Ting 訂單 0600901（純音樂款，音長 59.0sec）。素材夾再次混入非本產品線檔案（`Free_Laser (0826).png`/UUID.jpg），同 Woodcyn 0600905 同一污染模式，已成常態非例外。

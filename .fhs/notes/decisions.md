@@ -2333,3 +2333,31 @@ Fat Mo 授權「你幫我判斷，如果冇用或過時就刪除」，回應先�
 **最終驗收**：跑完整 `run_all.py`，四項全部**真 PASS**（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT），STRESS/ACCEPTANCE 由 DEGRADED 轉乾淨 PASS，`[EXPECTED LAND]`/`[EXPECTED REJECT]` 標籤逐案例確認符合實測定案嘅預期。過程中新加嘅 `—` 全形破折號喺 `FHS_System_StressTester.py`/`FHS_Comprehensive_Test.py` 兩個腳本一樣觸發 Windows CP950 亂碼（同 `FHS_Full_System_Test.py` 早前撞過嘅同一問題，漏咗一齊修），已補上 UTF-8 stdout 包裝，重跑確認乾淨。
 
 **至此 D62（Supabase 憑證洩漏）+ D63（學習經驗防線落地）全系列完全收工，`/fhs-check` 回復可信。**
+
+### D64：V42 多件手模擺設訂單支援（逃生口模式，2026-08-15，cl-flow `2026-08-15-1944`）
+
+**緣起**：真實訂單 `#0600901`（TW Ting，倒模日 2026-04-09，木框+玻璃瓶×2）因表單只支援單件手模擺設而從未入過系統，屬既有帳目缺口（Fat Mo 自行確認並自行補入，範圍不含本次 flow）。Fat Mo 拷問八輪（拆分付款行格式改動範圍/架構深度/追加格功能面/編號策略/漏入單確認/specification 分辨/icon 風格/25 個編號缺口去留）逐條定案，走 `/cl-flow` → `/execute`。
+
+**架構裁決**：逃生口模式（主件 P 區零改動），拒絕統一模型——統一模型必改主件 ID，會令既有訂單 `raw_form_state` 全部對唔上，觸犯 AGENTS.md §3「Raw_Form_State 不可侵犯」。追加件刻意做細，唔支援父母/大寶/家庭組合/羊毛氈。IG 訊息一切沿用 V42 現行輸出（Fat Mo 明確裁定：手寫範本僅為稀有單示意，非格式規格）。
+
+**Slot 制**：`item_key` 用 `p_slot_seq` 單調遞增分配，永不重用已釋放嘅 slot 號——防止 `sbSyncOrder()` 靠 `_prevItemMap[item_key]` 保留批次/狀態嘅機制，令重排 slot 後新件靜默繼承已刪除舊件嘅製作進度與 SKU。
+
+**DEGRADED 評審**：A1 Perplexity quota 耗盡（3 次重試全失敗）；A2 Gemini 首版 artifact 因 `cl-flow-runner.js` UTF-8 chunk 邊界截斷損壞（`res.on('data')` 未 `setEncoding('utf8')`，多位元組中文喺 chunk 邊界斷開——非本次 flow 範圍嘅 runner 缺陷，另記錄唔修），改用 curl 子程序以同一 prompt 重跑復原完整 7 條批評。Verdict `CONDITIONAL_READY`，附 2 項強制執行條件（BLOCKER 修復須 live 實測、slot 修復須實測刪除後重加路徑）。
+
+**A2 對抗評審揪出 2 個 A3 自評未覆蓋嘅真問題（逐條處理見 `cl-final-plan.md` §4）**：
+1. 【BLOCKER】`calculatePricing()` 對每個 P item 都讀同一組全域 `en_parent`/`嬰兒` selector，追加件會誤讀主件狀態（主件玻璃瓶+父母+嬰兒時，追加玻璃瓶件被誤判 $2,580 家庭價、混合附加費 $300 每件重複收）。修法：加 `_isMainP` 守衛，令呢三個判斷只喺主件評估。
+2. slot 刪除後同次編輯再新增會重新分配同一 slot 號，令新件靜默繼承已刪除舊件嘅批次/SKU——直接推翻 A3 自評嘅 Slot 制防護承諾。修法：`p_slot_seq` 單調遞增。
+
+A2/#2（`_boxKey` TEMP↔正式格式不匹配）經 4 張真實訂單 `raw_form_state` 直查證實前提有誤（實際皆為 TEMP 格式，寫入讀取兩側一致）而拒絕；A2/#5（未實讀 n8n 就宣稱零改動）採納並補做實讀，證實 `Calculate Profit & Pack Items` rollup 為純累加、P 件 `positionCode` 恆 null 唔會被捲入免畫圖扣減，前提成立。
+
+**執行階段 live 實測再揪出 1 個計劃完全未預見嘅 bug**：`_pExtraSyncChrome()`（刷新件號標題用）原本對全部 active slot 逐一重建 `baseColorContainer`，令加第 3 件洗走第 2 件啱啱揀嘅底座色/木框色。抽出獨立 `_pExtraRefreshTitle()` 只更新標題文字，唔重建容器。
+
+**意外發現獨立既有缺陷（🔴 範圍外，未修復，見 `FHS_System_Logic_Overview.md` §5.4.15）**：live webhook 測試單顯示 `accessory_cost`（燈飾/羊毛氈成本 rollup）恆為 0，`total_cost` 本身正確（純分類顯示缺口）。用兩張測試單（3件P+2燈飾單、純主件+單一燈飾控制單）交叉確認同本次改動完全無關。考古根因鏈：`sync_order_to_mirror` RPC 喺 2026-07-25 migration 0080 加咗呢個欄位（finance-auditor 曾獨立覆核 PASS）；3 日後 migration 0081（家庭V2模型）`CREATE OR REPLACE FUNCTION` 覆蓋時 base 版本源自更舊嘅 0075、跳過 0080，令欄位靜默消失——真正回歸點；2 星期後 migration 0087（D63）首版手抄一度發現「live 版本 0 次出現」，但誤判為「本來就冇」而非「已回歸」，作廢重做並喺 migration 內寫低「刻意不順手補」嘅註解——一個回歸自此被正式記錄成現狀，比單純嘅 bug 更難被發現。制度教訓已落盤 `learnings/supabase.md`：`CREATE OR REPLACE FUNCTION` 落筆前必須用 `pg_get_functiondef()` 攞 live 定義做 base。
+
+**新財務規則**：一單多件手模擺設逐件全額收費 $210，無第二件起減免（Fat Mo 拍板，因 `orders.handmodel_cost=SUM(order_items.handmodel_cost)` rollup 公式本身從未有扣減邏輯，多件只係首次令佢實際發生）。已落盤 `FHS_Finance_Bible.md` §四、`learnings/finance.md`、`finance-gatekeeper/SKILL.md` 路由表（並更正該表 `accessory_cost`「✅已修復」嘅過時聲明）。
+
+**驗證**：3 張真實舊單（`0600103`純鎖匙扣/`0600900`單件木框/`06008013`單件玻璃瓶）經完整 `restoreFormState()` 鏈零回歸；`captureFormState()` 完整往返（含刪除追加件後）通過；live webhook 測試單（`testD64P0815`）Supabase 直查確認 3 筆 `order_items`、`handmodel_cost=$630`、`total_cost=$690` 正確；`/fhs-check` 4 PASS/1 SKIP（SKIP 為既有環境狀態，非本次引起）。測試單已 soft-delete 清理。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（開發版）。Supabase schema／n8n 皆零改動（前提經實讀證實成立）。`Freehandsss_dashboard_current.html`（生產版）本次未動，部署為另一授權關卡。
+
+詳見 `artifacts/2026-08-15-1944/`（task-brief/a3-draft/ag-review/cl-final-plan）、`FHS_System_Logic_Overview.md` §5.4.14/§5.4.15、Changelog.md 2026-08-15 條目。**Subagent 使用記錄**：❌ 未使用（跨 Supabase/n8n/browser 即時交叉驗證，委派會斷推理鏈；cl-flow 內建 A2 對抗評審已提供獨立視角）。

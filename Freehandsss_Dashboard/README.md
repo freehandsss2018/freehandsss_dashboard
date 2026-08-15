@@ -24,6 +24,7 @@
 
 ## 當前版本
 
+- **2026-08-15（D64，cl-flow 2026-08-15-1944）**：`V42.html` 新增多件手模擺設訂單支援（逃生口模式）——手模擺設區底新增「追加擺設款式」摺疊區，一單最多容納 1 主件 + 3 追加件（`p2_`/`p3_`/`p4_` 前綴），主件邏輯零改動。item_key 用 `p_slot_seq` 單調遞增防重排污染。IG 訊息沿用現行格式。Supabase schema／n8n 皆零改動。`current.html` 尚未同步，待 Fat Mo 授權部署。詳見 Changelog.md、decisions.md D64。
 - **2026-07-24（Session 189）**：`current.html`+`V42.html` 同步新增 V2 統一SKU支援（嬰兒tier限定，鎖匙扣+吊飾）——`syncToAirtable()`及`buildOrderItemsForPricing()`各2個區塊，`finalObj`由「僅冇主套裝先tag(P)」改「兩邊皆明確tag(S)/(P)」+ SKU尾加`(V2)`後綴，接駁 cl-flow `2026-07-24-0213` 新三層成本模型。大寶/家庭/成人tier未動，詳見 Changelog.md 同 `.fhs/notes/FHS_System_Logic_Overview.md` §5.4.6。
 - UI 層：**V42** (Active Production，2026-06-16 Session 107)
   - **split 還原快照隔離**：修復全付重載後 deposit/balance 顯示錯誤（P36）

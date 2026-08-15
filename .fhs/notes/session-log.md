@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-08-15 (V42 多件手模擺設訂單支援 — 逃生口模式，D64): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-15「D64」條目 + [decisions.md D64](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。真實訂單 `#0600901` 因表單只支援單件手模擺設而從未入過系統，Fat Mo 拷問八輪定案，走 `/cl-flow`（flow_id `2026-08-15-1944`，DEGRADED：A1 quota 耗盡、A2 首版 artifact 因 runner UTF-8 chunk 邊界截斷損壞已用 curl 復原）→ `/execute`。主件 P 區零改動，新增「追加擺設款式」摺疊區（最多 3 件），Slot 制（`p_slot_seq` 單調遞增）防重排污染。A2 對抗評審揪出 1 個 BLOCKER（`calculatePricing()` 追加件誤讀主件 `en_parent`/嬰兒狀態致誤判定價）+ 1 個 slot 重排風險，均已修復；執行階段 live 實測再揪出 1 個計劃未預見嘅 UI bug（`_pExtraSyncChrome()` 洗走其他 slot 底座色）。**意外發現獨立既有缺陷**（範圍外未修復，已 `spawn_task` task_e035fe64）：`sync_order_to_mirror` RPC 嘅 `accessory_cost` 欄位喺 2026-07-28 migration 0081 `CREATE OR REPLACE FUNCTION` 覆蓋時靜默消失，2026-08-11 D63 一度發現但誤判為「本來就冇」而非「已回歸」。3 張真實舊單零回歸 + `captureFormState()` 完整往返 + live webhook 測試單 Supabase 直查 `$690` 正確 + `/fhs-check` 4 PASS/1 SKIP。新財務規則（多件手模擺設逐件全額收費）已落盤 Finance Bible。
+**Learnings**：新增 `learnings/finance.md` #5（多件手模擺設逐件全額收費）、`learnings/supabase.md` #14（`CREATE OR REPLACE FUNCTION` base 版本選擇陷阱）。
+**Subagent 使用記錄**：❌ 未使用（跨 Supabase/n8n/browser 即時交叉驗證，委派會斷推理鏈；cl-flow 內建 A2 對抗評審已提供獨立視角）。
+
 ## 2026-08-10 (V42 Dashboard XSS 整治 + Supabase 設定 SSoT + 死碼/race condition 清理，D61): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-10「D61」條目 + [decisions.md D61](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。回應「從 /8d 方向檢查 V42」，靜態掃描（grep+窗口讀，符合巨檔紀律）揪出 6 類問題，其中 P1 為 stored XSS（IG 客名經 sync 寫落 Supabase 再由訂單總覽拼入 innerHTML），browser 實測證實非假警報後修復。過程三度自我修正並如實記錄：屬性語境雙重解析需新增 `fhsEscAttr`（先 JS 跳脫再 HTML 轉義）；曾嘗試「正規化 order_id」解決屬性轉義問題，經實測推翻（HTML 轉義對 `getElementById` 完全透明，正規化反而致 DB PATCH 靜默命中 0 行）已移除；換行處理一度寫成 no-op，另 PostgREST ilike 跳脫方向錯誤，兩者皆以實測揪出修正。六輪 `code-reviewer`/opus fresh-context 對抗式審查，逐輪均獨立命中真問題（漏轉義出口→刻字亦係外部輸入→換行no-op→正規化DB副作用→getElementById參數錯用helper→備註textarea未轉義），非橡皮圖章。收工用 16 欄位×2 payload×2 路徑=32 組合零注入實測，非審查 PASS 即收工。只改 V42.html（dev source），本次 `/commit` 觸發 Phase 2.5 自動升格部署。

@@ -136,6 +136,19 @@ function getItemCategory(sku) {
 驗證：orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost + orders.accessory_cost = orders.total_cost
 ```
 
+### 立體擺設（手模擺設）多件無共享扣減（D64，2026-08-15 新增）
+
+```
+規則：一張訂單含多件手模擺設（如木框+玻璃瓶×2），每件獨立收取完整基礎成本
+      $210，不設第二件起減免——與鎖匙扣/吊飾嘅運費共享扣減（§四上方）不同。
+
+原因：orders.handmodel_cost = SUM(order_items.handmodel_cost)（無扣減，見上）
+      本身由 §四 立體擺設 rollup 公式定義以來從未有扣減邏輯，D64（V42 逃生口模式
+      追加擺設款式功能）純粹係首次讓多件同時存在，並未改動此公式。
+
+範例：木框(4肢)$210 + 玻璃瓶(2肢)$210 + 玻璃瓶(2肢)$210 = handmodel_cost $630
+```
+
 ### 位置依賴成本規則（Per-Position Cost Rules）— 2026-06-02 Fat Mo 確認
 
 > ⚠️ 以下為成本(cost)計算核心規則。過去因未記錄，AI 反覆算錯。

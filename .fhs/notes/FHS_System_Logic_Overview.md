@@ -535,6 +535,43 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **教訓**：同一 session 內中途被新證據推翻嘅結論（「用 `process.env`」→「沙盒冇 `process`」），必須**主動回頭檢查早前基於舊結論寫落去嘅代碼**，唔好假設「當時改咗就 OK」。
 
+### 5.4.14 V42 多件手模擺設訂單支援（逃生口模式，cl-flow 2026-08-15-1944，D64 ✅ 已修復）
+
+**背景**：真實訂單 `#0600901`（TW Ting，倒模日 2026-04-09）於同一張訂單購買 3 件不同手模擺設（木框 + 玻璃瓶×2），因表單只支援單件而從未入過系統，屬既有帳目缺口。
+
+**架構裁決（逃生口，非統一模型）**：主件 P 區（`pSubCat`/`baseColor`/`woodStyle`/`pEngraving`/`limbContainer`）**零改動**，新增獨立「追加擺設款式」摺疊區，最多 3 追加件（`p2_`/`p3_`/`p4_` 前綴），刻意只支援款式/底座色/嬰兒倒模/燈飾/刻字（不支援父母/大寶/家庭組合/羊毛氈）。拒絕統一模型嘅理由：統一模型必改主件 ID，會令既有訂單 `raw_form_state` 全部對唔上，觸犯 AGENTS.md §3「Raw_Form_State 不可侵犯」。
+
+**Slot 制**：`item_key` 用 `p_slot_seq`（hidden input，受 `captureFormState()` 收錄）單調遞增分配，永不重用已釋放嘅 slot 號。原因：`sbSyncOrder()` 編輯模式靠 `_prevItemMap[item_key]` 保留 `batch_number`/`process_status`/`product_sku`，若 slot 號重排，新件會靜默繼承已刪除舊件嘅製作進度與 SKU。
+
+**IG 訊息**：一切沿用 V42 現行輸出（Fat Mo 拷問定案：手寫範本僅為示意，非格式規格）。`_buildSplitIgLine()` 零改動。唯一新增元素為件號標題（按顯示序 ②③④，與 slot 號脫鈎）。
+
+**執行階段揪出並修復兩個 A3 草案未覆蓋嘅問題**：
+1. **【BLOCKER，A2/#1 對抗評審揪出，範圍比自評更大】** `calculatePricing()` 嘅 `hasAdultInSet`/`hasBabyInSet`/`mixed_member_surcharge` 判斷式原本對每個 P item 都讀**同一組全域** `en_parent`/`嬰兒` selector，令追加件會誤讀主件狀態——主件玻璃瓶+父母+嬰兒時，追加件會被誤判做家庭定價 $2,580（應為 $1,380），且混合模式附加費 $300 會對每個追加件重複收。修法：加 `_isMainP` 守衛，令呢三個判斷只喺主件評估。Live 對抗測試：主件 $2,580（家庭）+ 追加木框 $2,380（零附加費）+ 追加玻璃瓶 $1,380（非 $2,580）— 通過。
+2. **【live browser 實測揪出，計劃完全未預見】** `_pExtraSyncChrome()`（加/刪任一追加件時刷新件號標題用）原本對全部 active slot 逐一 call `_pExtraSubCatChange()`，而後者會**重建**整個 `baseColorContainer`——即係話加第 3 件會洗走第 2 件啱啱揀嘅底座色/木框色。抽出獨立 `_pExtraRefreshTitle()`，只更新標題文字，唔重建容器。
+
+**已知獨立缺陷（發現但範圍外，見 5.4.15）**：live webhook 測試單顯示 `accessory_cost`（燈飾/羊毛氈成本 rollup）恆為 0，但 `total_cost` 本身正確。追查後確認同本次改動完全無關（純主件單一燈飾單一樣中招），係 `sync_order_to_mirror` RPC 嘅獨立既有回歸。
+
+**驗證**：browser live 實測——3 張真實舊單（`0600103`純鎖匙扣／`0600900`單件木框／`06008013`單件玻璃瓶）經完整 `restoreFormState()` 鏈零回歸；`captureFormState()` 完整往返（含刪除追加件後）Slot 制驗證通過；live webhook 測試單（`testD64P0815`）Supabase 直查確認 3 筆 `order_items` + `handmodel_cost=$630`/`total_cost=$690` 正確；`/fhs-check` 4 PASS/1 SKIP。測試單已 soft-delete 清理。
+
+**新財務規則**：一張訂單含多件手模擺設時，每件獨立收取完整基礎成本 $210，不設第二件起減免（Fat Mo 2026-08-15 拍板）。已落盤 `FHS_Finance_Bible.md` 與 `learnings/finance.md`。
+
+詳見 `.fhs/notes/decisions.md` D64、`artifacts/2026-08-15-1944/cl-final-plan.md`。
+
+### 5.4.15 `sync_order_to_mirror` RPC `accessory_cost` 欄位靜默回歸（發現於 D64 執行階段，🔴 未修復，範圍外）
+
+**症狀**：任何訂單只要含燈飾/羊毛氈（`item_category='配件'`）品項，`orders.accessory_cost` 與 `order_items.accessory_cost` 恆為 `0.00`。`total_cost`/`net_profit` 本身正確（配件成本有計入總數），純粹係分類 rollup 顯示缺口——同 §5.4.7 修復嗰次症狀完全一樣。
+
+**根因鏈（已考古確認，非推測）**：
+1. **2026-07-25（migration `0080_sync_rpc_accessory_cost.sql`，§5.4.7）**：`accessory_cost` 首次加入 `sync_order_to_mirror` RPC 嘅讀寫欄位清單，經 finance-auditor 獨立覆核 4 項全 PASS。
+2. **2026-07-28（migration `0081_family_baby_v2_cost_model.sql`，D49/§5.4.8）**：家庭 V2 模型改動同一個 RPC，用 `CREATE OR REPLACE FUNCTION` 全量覆蓋，**base 版本源自 0075（跳過咗 0080）**，`accessory_cost` 首次靜默消失。此為真正回歸點。
+3. **2026-08-11（migration `0087_sync_order_to_mirror_reset_deleted_at.sql`，D63/§5.4.12）**：修復 `deleted_at` reset bug 時，首版手抄一度擅自加返 `accessory_cost`，但 `pg_get_functiondef` 實測確認 live 版本 0 次出現 → 判斷為「本來就冇」→ 作廢重做，改為以 live 定義為準生成，並喺 migration 內寫低「刻意不順手補」嘅註解（見該檔第 24 行）。**呢一步嘅判斷本身審慎（單一改動原則、唔擅自夾帶不相關修復），但未進一步追查『點解會消失』，令一個回歸被正式記錄成『現狀』，比單純嘅 bug 更難被日後發現。**
+
+**制度啟示**：`CREATE OR REPLACE FUNCTION` 全量覆蓋型 migration，若 base 版本唔係嚴格意義嘅「最新完整版本」，會靜默吞噬任何一次獨立修復加落去嘅欄位——同 `feedback_migration_repo_db_drift`（repo/DB 版本漂移）屬同一家族嘅陷阱，但呢次係「DB 內部連續兩次 migration 之間嘅 base 版本選擇錯誤」，唔係 repo/DB 不同步。日後任何 `CREATE OR REPLACE FUNCTION` 型 migration，落筆前應該用 `pg_get_functiondef()` 攞返**當下 live 定義**做 base，而唔係假設某個較舊嘅 migration 檔案就係最新狀態。
+
+**發現方式**：D64 live webhook 測試單交叉驗證（一張 3 件 P + 2 件燈飾嘅單、一張純主件+單一燈飾嘅控制單），兩張都中招，確認同「多件手模擺設」功能本身無關。
+
+**處理狀態**：🔴 未修復。超出 D64 cl-final-plan 批准範圍（該 flow 明確裁定「Supabase schema 零改動」），依 execute.md「僅執行 Verdict 已批准內容」不得順手夾帶修復。待 Fat Mo 決定是否開新 cl-flow 處理。
+
 詳見 `.fhs/notes/decisions.md` D63續II、`.fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md` 追加五。
 
 ### 5.5 綜合審計日誌（Session 124 新增）
