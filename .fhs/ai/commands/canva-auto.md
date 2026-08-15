@@ -2,7 +2,7 @@
 
 **用途**：接到 Fat Mo 一句「canva-auto 新單」+ 訂單資料，走完 Canva 記念短片開殼→加工→換料→學習→出貨全流程。內建 diff-learning 校正回饋迴圈（同 3D pipeline 樣本庫同一原理）。
 **觸發指令**：`/canva-auto` 或對話講「canva-auto 新單」
-**版本**：v1.0.0（2026-07-11，S164 新建；經 /8d 自我迭代後落盤）
+**版本**：v1.5.0（2026-08-15，TW_Ting 0600901 五項修訂；初版 v1.0.0 2026-07-11 S164 建）
 **依賴**：Canva MCP（Claude Code 端配置；Antigravity 環境無此 MCP，本指令不可攜）、本地 python + rembg（`canva_auto/local_prep.py`）
 **數值唯一真理來源**：`canva_auto/placement_memory.json`——本檔與記憶檔只放流程，**不放任何座標/尺寸數值**；錨點一律開單時從 JSON 讀。
 
@@ -45,7 +45,9 @@
 
 ## Stage ① — AI 開殼
 
-1. **搵母片（2026-07-27 起優先序改變，Meika 0600904 定案）**：先用 `mutagen`（`from mutagen.mp3 import MP3; MP3(path).info.length`）讀本單 `WhatsApp Audio *` 音長（秒，1位小數）。`search-designs` 攞同款式全部母片後，**優先揀音長最接近嘅**；音長打平手先睇建立日期，揀**最接近**（唔係最新）嗰個——因為建立時間相近代表版式演進階段接近，比純粹「最新」更適合做母片。**排除 PILOT_/測試前綴/自動化次品**，優先 Fat Mo 人手正版。
+1. **搵母片（2026-08-15 起優先序再改，TW_Ting 0600901 定案）**：
+   ⚠️ **結構信號優先於音長距離**——先數本單素材：幾多條片、各自尺寸（本地 tkhd）、各自時長。母片家族由 page3 結構分辨（「兩片疊放」＝HoKaSin/Meika 系；「四片疊放」＝yunggggm/Kaki 系）。**揀錯家族會直接缺 slot，代價遠高於音長唔啱**（TW_Ting 4條片×960×960×15.04sec → 揀音長差19秒嘅 yunggggm，而非音長最近嘅 Meika/HoKaSin，證實正確）。
+   結構同級之後，先用 `mutagen`（`from mutagen.mp3 import MP3; MP3(path).info.length`）讀本單 `WhatsApp Audio *` 音長（秒，1位小數），`search-designs` 攞同款式全部母片後，**喺同結構家族內揀音長最接近嘅**；音長打平手先睇建立日期，揀**最接近**（唔係最新）嗰個——因為建立時間相近代表版式演進階段接近，比純粹「最新」更適合做母片。**排除 PILOT_/測試前綴/自動化次品**，優先 Fat Mo 人手正版。
 2. `copy-design` → **一氣呵成**開 transaction：`update_title` 改名 `{客人名} 全幅AI短片({DDMM}/26) {音長}sec`（例：`Meika 純音樂 (2707/26) 35.0sec`；copy-design 的 title 參數不生效）+ `replace_text` 換 page2/3/4 字句（拆行決策表見記憶檔）→ 即刻 commit，**不得中途停等**
 3. `move-item-to-folder` 歸檔 `Free_recorder (MM/26)`
 4. 本地 `python canva_auto/local_prep.py --color 彩色圖.png --bw 黑白圖.png --out-dir {folder}/local_prep_out/`（勿漏——S164 曾漏做）
@@ -112,6 +114,10 @@ page2 因為母片幾何本身已啱、唔使 resize/position，三項指標全�
    **正確理解**：`imageBox` 係「媒體喺 container 座標系入面嘅矩形」，媒體會被**拉伸**填滿呢個矩形。所以 **imageBox 嘅長寬比必須永遠等於媒體原生長寬比**，先至零變形。container 可以唔係同一個比例（多出／少咗嘅部分自然被裁或留白）——**Fat Mo 人手母片正正就係咁做**（例：olibbvia container 581.13×569.68 但 imageBox 581.13×581.13 正方）。
    **實測行為**：`crop_media` 傳細過 cover 下限嘅值會被 Canva 自動 clamp 到 cover（contain 做唔到）。所以正確做法＝傳「維持媒體 aspect 嘅 cover box」，或者索性傳一個細值等 Canva 自己 clamp。
    計法（正方媒體、container W×H）：`box = max(W,H)`，`left = (W-box)/2`，`top = (H-box)/2`（會係負數）。
+
+   🔴 **禁止沿用母片 imageBox 值（2026-08-15 TW_Ting 0600901 血訓）**：本鐵律開頭已寫明「母版舊格嘅寬高比係上一個客素材嘅裁法，唔係規格」——**呢句同樣適用於 imageBox，唔止 container**。AI 曾以為只需重算 container、imageBox 可以照抄母片 CDF 舊值，結果 Canva 收到後 clamp 並**放大 9%**，令兩張圖四邊各裁走 26–52px，Fat Mo 直接指正「你裁切部份圖片, 不完整, 大小也不對」。
+   反證強度：Fat Mo 獨立改正嘅值同上面公式差 **0.05%**（566.05 vs 565.78），即公式一直無誤、純粹係 AI 冇跟。
+   **每次 `update_fill` 後，`crop_media` 一律用公式即場重算，禁止從母片 CDF 複製舊 imageBox 數值。**
 5. 縮圖眼證時檢查 imageBox 係咪 `(0,0 W×H)`——唔係就即係仲有裁切，要再 crop_media 一次
 4. 縮圖眼證交 Fat Mo（draft 縮圖攞唔到就用 perform 回傳嘅 thumbnails url 或 commit 後 `get-design-pages`）
 
@@ -121,6 +127,36 @@ page2 因為母片幾何本身已啱、唔使 resize/position，三項指標全�
 - page2 圖對建議加「進場動畫」（例：黑白圖=墨水/汙漬，彩色圖=模糊類）——`edit-design` 冇 animation operation type，AI 完全掂唔到，純文字提示。
 - 音軌／過場／頁面時長：同上，MCP 掂唔到，全部人手。
 - ⚠️ **但如果母片元素冇被刪**（見「元素保命鐵律」），以上動畫／時長全部由母片繼承，Fat Mo **唔使重做**——Meika 0600904 就係咁做到零人手。人手補做只係「母片本身未設過」或者「今次要改效果」先需要。
+
+### 📐 page2 圖對必須統一 left + height（2026-08-15 TW_Ting 0600901 定案）
+
+母片本身兩張圖嘅 container **未必對齊**（yunggggm 母片：黑白 left 195.01/高 565.78 vs 彩色 left 188.29/高 572.50）。AI 沿用母片＝繼承呢個唔對齊，export 真圖會喺人物肩膊位置出現**明顯直線硬邊**。
+
+Fat Mo 修法：兩圖 **height 統一至小數位完全一致、left 統一至完全一致**（闊度可因應各自 asset 原生比例略有差異）。
+
+⚠️ AI 當時誤判呢條硬邊係「兩張 Lovart 圖像素位置冇對齊」並如此向 Fat Mo 匯報——**實際係 container 幾何唔對齊，全程喺 AI 可控範圍**。見到疊圖交界有直線，先查自己嘅 container 數值，唔好賴素材。
+
+### ✍️ `word.png` ＝字句幾何真理源，唔止係行數參考（2026-08-15 TW_Ting 0600901 定案）
+
+Fat Mo 原話：「**folder 裡已有 word 圖片, 可供你參考字型的大小及行數**」。過往 AI 只用嚟判行數，浪費咗一半資訊。
+
+**量度**（PIL threshold `<128` 取墨水，逐行切 gap）：行數 n、各行墨水寬 `w_i`、行距 `g`、拆行位置。
+
+**換算公式**（母片常數 `lineHeight=1.4` / `letterSpacing=0.146`）：
+```
+word隱含fontSize = g / lineHeight
+scale            = 目標fontSize / word隱含fontSize
+need_width(段)   = w_i × scale + 字數 × fontSize × letterSpacing
+box_width        = max(各段 need_width) × 1.005
+```
+⚠️ `letterSpacing` 項佔比極重（TW_Ting 最長段：基礎寬 582.00 + 字距 205.18 = 787.18，字距佔 26%），**絕不可略去**。
+
+**精度**：對「最長段」（即決定 box 寬嗰段）誤差 **0.61%**（算 787.18 vs Fat Mo 實設 791.98）；對短段有約 2% 高估（手寫體標點/撇號 flourish 令墨水寬 > advance width）。高估只影響短段、不影響 box 寬結果，但**仍須讀 CDF 核對行數收尾，唔可當精確值**。
+
+**起手 fontSize**：行數同母片一致 → 用母片值微調（TW_Ting 46.6666→45.3333，−2.9%）；行數多過母片 → 縮多啲（Woodcyn 3行單 →42.6667，−8.6%）。
+
+🔴 **`\n` 只保證「最少幾行」，唔保證「最多幾行」**：TW_Ting 嘅 `replace_text` 已傳咗正確 `\n`，但 box 寬沿用母片 649.76，最長段需要 810.33 → 該段自己再摺一截 → 2 段渲染成 **3 行**，Fat Mo 要求改返 2 行。
+**所以 `replace_text` 後必須讀 CDF 核對實際行數 vs `word.png` 目標行數，唔夾就 `resize_element` 加闊 text box**（趁 Fat Mo 未設動畫前做，受幾何凍結鐵律管）。
 
 ### 📐 字句水平置中＝對齊「花環」中心，唔係對齊「家庭圖」中心（2026-08-01 HoKaSin 定案）
 
@@ -134,6 +170,16 @@ Fat Mo 原話：「**正中的意思是左右草框之間**」。
 **所以規則好簡單：字句中心 = 960（頁面正中）**，即 `left = 960 - 字句box闊/2`。字句 box 闊 649.7629 時 → `left = 635.1185`。
 
 ⚠️ 呢個要用 `position_element`＝受「幾何凍結鐵律」管，所以**要改就趁 Fat Mo 未設動畫之前改**。
+
+⚠️ **960 置中規則唔跨家族適用**（2026-08-15 TW_Ting 補充）：yunggggm/Kaki 系嘅版式語言係「字句偏右側、配合左側圖」（TW_Ting 最終字句中心 1167.85），套 960 反而破壞原有平衡。**呢條規則只限 HoKaSin/Meika 系花環置中版式**。
+
+### 🔁 Fat Mo 喺 Canva UI 複製字句 box 跨頁貼上＝穩定手法（3 單收斂，已升格規則層）
+
+`page3` 字句 locator_id 每次都會由 AI 改嗰個變成全新 ID，數值同 page2 完全一致——**呢個係 Fat Mo 喺 Canva UI 刪走 AI 改嘅母片字句 element、複製 page2 嗰個貼過嚟**，非 bug、非 AI 做錯。
+
+歷史：`0600303` yunggggm 首見 → `0600905` Woodcyn 第 2 次 → `0600901` TW_Ting 第 3 次，**已達 3 單收斂門檻**。
+
+🔴 **AI 永不可模仿呢招**：UI 原生複製帶得埋動畫，MCP `delete_element` + `add_text` 會炸走動畫（見元素保命鐵律）。見到 page3 字句 ID 變咗就當正常，唔好「修正」。
 
 ### ✅ Fat Mo 驗收三項指標（2026-08-01 明文，日後一律照呢三項逐頁報告）
 
@@ -176,6 +222,7 @@ AI 交付時要主動講明：第 1 項我驗過（附數值），第 2、3 項�
 
 ## 版本更新日誌
 
+- v1.5.0（2026-08-15，TW_Ting 0600901）：Fat Mo 指正兩個 AI 錯誤 + 主動提示 `word.png` 用法後落盤五項。①**禁止沿用母片 imageBox**（零裁切鐵律補強，AI 抄母片值被 Canva clamp 放大 9% 造成四邊裁切，Fat Mo 改正值同公式差 0.05%）②新增 **`word.png` 幾何真理源**（可反推 box 寬，最長段誤差 0.61%；`\n` 只保證最少行數，須讀 CDF 核對）③新增 **page2 圖對統一 left+height**（母片本身唔對齊，AI 曾誤判硬邊為素材問題）④**母片選擇改結構信號優先於音長距離**（揀錯家族會缺 slot）⑤**Fat Mo UI 複製字句手法升格規則層**（3 單收斂）；另補 960 置中規則唔跨家族適用
 - v1.0.0（2026-07-11，S164）：初版。SOP v3 + diff-learning 迴圈 + /8d 迭代三修正（開單補課制、transaction 一氣呵成鐵律、數值唯一真理來源歸 JSON）
 - v1.4.0（2026-08-01，HoKaSin 0601100 完工）：新增**黃金參考案例**（Fat Mo 判定「完美完成」嘅 6 步做法，日後照跑）；新增**字句置中規則**＝對齊花環中心 960（唔係對齊家庭圖中心，實測花環墨水左右完全對稱 294→697.5 / 1179→1626，外緣中點正好 960）；更正 `crop_media` 用法（imageBox 跟媒體 aspect 唔跟 container）
 - v1.3.0（2026-08-01，HoKaSin 0601100 續）：⚠️**更正 v1.2.0 錯誤結論**——`resize_element`／`position_element` **會**改動動畫同元素顯示時間（v1.2.0 誤寫「唔會」）。新增**幾何凍結鐵律**（動畫設定後禁郁幾何）+ 正確次序（幾何做齊→驗收→設動畫→永久凍結）+ **Fat Mo 驗收三項指標**（大小/顯示時間/動畫，逐頁逐項報告，AI 要主動聲明第2、3項自己睇唔到）。對照證據：同一 design 內 page2 冇 resize/position＝三項全對，page3 做咗＝時間+動畫全爛。

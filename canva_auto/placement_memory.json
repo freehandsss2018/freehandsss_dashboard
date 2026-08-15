@@ -64,9 +64,217 @@
       "corrected_slots": "page2 0/2（三項全對）· page3 2/2（顯示時間+動畫爛）",
       "total_slots": 4,
       "note": "🔴**推翻前一日結論**：resize_element/position_element 原來會改爛動畫同元素顯示時間。乾淨對照＝同一 design 內 page2 冇做 resize/position（母片幾何已啱）→ Fat Mo 三項指標全對；page3 做咗 → 顯示時間+動畫全爛（矇糊變湧出）。新增『幾何凍結鐵律』+ Fat Mo 三項驗收指標框架。另 get-assets 報嘅 video 尺寸實測會錯（Video3 本地 1440² 正方 vs Canva 報 1080×2160），尺寸真理源改為本地 mp4 tkhd atom。"
+    },
+    {
+      "date": "2026-08-15",
+      "order": "0600901",
+      "entries": [
+        "【已收斂,可升格規則層】Fat Mo喺Canva UI複製字句box跨頁貼上＝穩定手法,第3次重現(0600303/0600905/0600901)。AI永不可用MCP delete_element+add_text模仿。",
+        "【新規則】crop_media值必須公式即場重算,禁止沿用母片imageBox——本單AI因沿用母片值被Canva clamp放大9%,造成四邊裁切,Fat Mo明確指正。Fat Mo改正值同公式吻合度99.95%。",
+        "【新規則】page2圖對必須統一left+height(小數位對齊),母片本身唔對齊亦要主動矯正,否則疊圖交界出現直線硬邊。",
+        "【新規則】replace_text後必須核對實際行數vs word.png目標行數,唔夾就加闊text box令自然reflow,唔好接受Canva自動摺行結果。",
+        "【新規則】母片選擇判準:結構信號(片數/尺寸/時長模式)優先於音長距離,選錯家族會缺slot。",
+        "【收斂計數重置】local_prep.py Parakeet色譜輸出本單獲接受(Woodcyn曾為2/3棄用),暫不升格棄用規則;rembg去背輸出連續第2次獲接受,可靠性確立。",
+        "【新方法,單一樣本已驗證】word.png 可反推 Canva text box 寬度（誤差0.61%）: scale=fontSize/(行距/lineHeight), need=墨水寬*scale+字數*fontSize*letterSpacing, box=max(need)*1.005。 Fat Mo 明示 word.png 可參考『字型大小及行數』，過往AI只用咗行數。"
+      ]
     }
   ],
   "cases": [
+    {
+      "order": "0600901",
+      "customer": "TW_Ting",
+      "design_id": "DAHSWoGL13E",
+      "date": "2026-08-15",
+      "learned": true,
+      "note": "母片＝yunggggm 0600303(DAHROSEj30M)，**首次以「結構信號」而非「音長距離」揀母片**：本單4條片皆960×960/15.04sec，同yunggggm嘅page3四片疊放家族吻合；音長59.0sec其實最接近Meika 35.0sec同HoKaSin 31.0sec，但嗰兩個係「兩片疊放」家族，套落去會缺slot。結構信號優先證實正確（Fat Mo冇質疑母片選擇）。🔴**本單AI犯咗一個真錯誤**：page2兩個圖slot嘅crop_media沿用母片舊imageBox值(588.46/595.18)而非按SOP零裁切鐵律step4公式重算，Canva收到細過cover下限嘅值後自動clamp並放大9%，令兩張圖四邊都被裁走約26-52px（Fat Mo原話「你裁切部份圖片, 不完整, 大小也不對」）。Fat Mo改正後嘅值同SOP公式max(W,H)幾乎完全吻合(×1.0005/×0.9939)，反證公式本身無誤、係AI冇跟。另字句replace_text後自動reflow成3行但word.png客人參考圖明示2行，AI接受咗3行未處理，Fat Mo要求改返2行。",
+      "slots": [
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "PBzFjBg9hQdFdWjW-LBfYQf6Rltxq8M9h",
+          "asset": "MAHSWzwf9nU (黑白圖_parakeet.png, local_prep.py輸出, 1254×1254, Fat Mo接受未換)",
+          "mother_box": {
+            "left": 195.0127302931001,
+            "top": 694.5768366159202,
+            "w": 514.0513062181811,
+            "h": 565.7801957239335,
+            "imageBox": 588.4573610782642
+          },
+          "ai_box": {
+            "left": 195.0127302931001,
+            "top": 694.5768366159202,
+            "w": 514.0513062181811,
+            "h": 565.7801957239335,
+            "imageBox": 617.5090852296859,
+            "imageBox_left": -51.72888950575236,
+            "imageBox_top": -25.86444475287618
+          },
+          "fatmo_box": {
+            "left": 188.29472207310897,
+            "top": 697.0947461697529,
+            "w": 533.7320955268405,
+            "h": 563.1291551198861,
+            "imageBox": 566.0479940931012,
+            "imageBox_left": 0,
+            "imageBox_top": -32.14399063740967
+          },
+          "delta": {
+            "left": -6.718,
+            "top": 2.5179,
+            "w": 19.6808,
+            "h": -2.651,
+            "imageBox_scale": 0.9167
+          },
+          "note": "🔴AI錯誤根因：傳咗母片舊值588.46（細過本container嘅cover下限565.78?不，588.46>565.78），Canva仍clamp並放大至617.51＝公式值嘅1.0914倍，四邊各裁走約26-52px。**正確做法＝每次都用公式重算：box=max(container_W,container_H)=565.78, left=(W-box)/2=-25.87, top=(H-box)/2=0**，Fat Mo最終值566.05同呢個公式差0.27px(0.05%)。教訓：母片imageBox值係為母片舊asset而設嘅裁法，**同container尺寸一樣屬於『上一個客嘅裁法、非規格』，唔可以沿用**——呢句SOP零裁切鐵律開頭已寫明container，本單證實imageBox同樣適用。"
+        },
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PBzFjBg9hQdFdWjW-LBtMk7rpw6MvqyZB",
+          "asset": "MAHSW9FiEWo (彩色圖_cutout.png, local_prep.py rembg去背, 1024×1024, Fat Mo接受未換)",
+          "ai_box": {
+            "left": 188.29472207310897,
+            "top": 702.889927064544,
+            "w": 522.5332363195357,
+            "h": 572.498203943925,
+            "imageBox": 622.4631715683141,
+            "imageBox_left": -49.9649676243892,
+            "imageBox_top": -24.982483812194573
+          },
+          "fatmo_box": {
+            "left": 188.29472207310903,
+            "top": 689.1731583034069,
+            "w": 526.1161539462223,
+            "h": 563.129155119886,
+            "imageBox": 569.0042146133735,
+            "imageBox_left": 0,
+            "imageBox_top": -27.78697708700298
+          },
+          "delta": {
+            "left": 0.0,
+            "top": -13.7168,
+            "w": 3.5829,
+            "h": -9.369,
+            "imageBox_scale": 0.9141
+          },
+          "note": "同黑白圖同一錯誤模式（AI值×1.0873公式值）。**local_prep.py嘅rembg去背輸出第2次連續獲接受**（Woodcyn 0600905亦接受），同Parakeet色譜功能形成穩定對照。⚠️**本單Parakeet輸出亦獲接受未被換走**，打破Woodcyn記錄嘅2/3棄用趨勢——收斂計數重置，暫不升格『棄用Parakeet』規則。"
+        },
+        {
+          "slot": "page2_圖對_對齊規律",
+          "note": "🆕**新規律（本單首次觀察）**：Fat Mo將兩張圖嘅**高度統一至563.129155119886（小數位完全一致）、left統一至188.2947（完全一致）**。母片本身兩圖係唔對齊嘅（黑白195.01/514.05×565.78 vs 彩色188.29/522.53×572.50），AI沿用母片故亦唔對齊，令export真圖喺男士右肩位置出現明顯直線硬邊。**AI當時誤判為『兩張Lovart圖像素位置冇對齊』並向Fat Mo如此匯報——實際係container幾何唔對齊，屬AI可控範圍**。下次page2圖對應主動統一left+height（闊度可因應各自asset原生比例略有差異：黑白533.73 vs 彩色526.12）。"
+        },
+        {
+          "slot": "page2_page3_字句_二行",
+          "element_id_page2": "PBzFjBg9hQdFdWjW-LBpSwN9yHKsvYrY4",
+          "element_id_page3_ai": "PBnkjDnf1dD8xC0x-LBrlmx99j6dPqpgz",
+          "element_id_page3_fatmo": "PBnkjDnf1dD8xC0x-LBJnll3GzkgmHVrS",
+          "ai_box": {
+            "left": 747.7528327957384,
+            "top": 626.7210257472776,
+            "w": 649.7629279554662,
+            "h": 185.66668,
+            "fontSize": 46.6666,
+            "lines": 3
+          },
+          "fatmo_box": {
+            "left": 771.8564357124856,
+            "top": 564.0101426597298,
+            "w": 791.9797146805403,
+            "h": 116.93334,
+            "fontSize": 45.3333,
+            "lines": 2
+          },
+          "delta": {
+            "left": 24.1036,
+            "top": -62.7109,
+            "w": 142.2168,
+            "h": -68.7333,
+            "fontSize": -1.3333
+          },
+          "note": "🆕**同Woodcyn 0600905三行單嘅處理手法相反，關鍵分野已釐清**：Woodcyn果次Fat Mo接受3行、靠縮fontSize壓低高度；本單Fat Mo明確要求「字句由三行, 改為二行」，做法係**加闊text box（649.76→791.98，+21.9%）令Canva自然reflow回2行**，fontSize只微降1.3333。**判準＝word.png客人參考圖嘅拆行方式就係目標行數**（本單word.png清楚顯示2行：『In your tiny hands, you've』/『captured my whole heart forever』）。AI開工時已讀出word.png係2行，但replace_text後見Canva自動摺成3行就接受咗，冇主動加闊box矯正——**下次規則：replace_text後必須核對實際行數 vs word.png目標行數，唔夾就resize_element加闊text box（趁Fat Mo未設動畫前做，受幾何凍結鐵律管）**。另本單字句中心＝771.86+791.98/2＝1167.85，非HoKaSin家族嘅960花環中心——**yunggggm家族版式語言唔同（字句偏右側配合左側圖），960置中規則唔跨家族適用**，AI本單有正確判斷未誤套。",
+          "fatmo_ui_copy_paste": "🔴**第3次重現（已達3單收斂門檻，可升格規則層）**：page3字句locator_id由AI改嘅LBrlmx99j6dPqpgz變成全新LBJnll3GzkgmHVrS，數值同page2完全一致＝Fat Mo喺Canva UI刪走AI改嘅母片字句element、複製page2嗰個貼過嚟。歷史：0600303 yunggggm首見→0600905 Woodcyn第2次→0600901 TW_Ting第3次。**確認為Fat Mo穩定手法**（UI原生複製帶得埋動畫，AI用MCP delete_element+add_text模仿會炸走動畫，永不可模仿）。"
+        },
+        {
+          "slot": "page3_四片疊放",
+          "element_ids": [
+            "PBnkjDnf1dD8xC0x-LBzd5H6SkDnrn2Q9",
+            "PBnkjDnf1dD8xC0x-LBv7ws4pnD27kgWM",
+            "PBnkjDnf1dD8xC0x-LB8hLTR3VDz0hWPc",
+            "PBnkjDnf1dD8xC0x-LBqn9C03WKKNkBbC"
+          ],
+          "asset_px_local_tkhd": {
+            "w": 960,
+            "h": 960,
+            "duration_sec": 15.04
+          },
+          "asset_px_canva_metadata_WRONG": {
+            "w": 960,
+            "h": 1920
+          },
+          "ai_box": {
+            "V1_V2": 583.6608939124275,
+            "V3": 582.6445047812917,
+            "V4": 606.4584475445396
+          },
+          "fatmo_box": {
+            "V1_V2": 566.0229203736333,
+            "V3": 565.0372460715824,
+            "V4": 588.131542038731,
+            "left_V1V2V3": 185.05237241367104,
+            "top_V1V2V3": 676.9885398131835
+          },
+          "delta": {
+            "scale": 0.96978,
+            "note": "四條片統一縮放×0.96978（縮細3%），比例完全一致"
+          },
+          "note": "AI沿用母片幾何（零resize/position）＝正確做法，imageBox零裁切校正亦正確（Fat Mo冇改aspect只等比縮）。Fat Mo縮細3%嘅動機推斷：**令page3片尺寸(566.02)同page2圖嘅imageBox(566.05)/container高(563.13)視覺統一**——三個數字收斂喺563-566區間，非巧合。⚠️**get-assets第4次報錯video尺寸960×1920**（本地tkhd實測960×960正方），AI開工即實測防守成功。Video4保持比其他三條大3.9%（母片本身就係606.46 vs 583.66，Fat Mo保留咗呢個差異）＝疑似刻意設計（最後一幕強調），勿擅自統一。"
+        }
+      ],
+      "non_geometry_findings": [
+        "🆕**母片選擇判準升級：結構信號 > 音長距離**。本單4條片×960×960×15.04sec嘅結構同yunggggm(四片疊放家族)吻合，故揀音長差19秒嘅yunggggm而非音長最接近嘅Meika/HoKaSin(兩片疊放家族)。選錯家族會直接缺slot，代價遠高於音長唔啱。SOP Stage①現行文字只講音長優先，建議補上結構信號前置判斷。",
+        "素材夾再次混入非本產品線檔案（Free_Laser (0826).png / UUID.jpg），同Woodcyn 0600905同一污染模式，已成常態非例外——開工前逐檔核對角色已係必要步驟",
+        "客人素材可以中途補齊：開工時只有3條片（母片有4個slot），AI主動向Fat Mo提出缺口後佢即補上Video 4.mp4。**提出缺口比自作主張重複用同一條片正確**",
+        "plaint.png＝花環參考圖（非上載素材）、word.png＝客人字句參考圖（決定目標行數），兩者皆為判斷依據非素材"
+      ],
+      "technique_lesson": "**『沿用母片值』嘅適用邊界必須收窄**：SOP零裁切鐵律開頭已明寫『母版舊格嘅寬高比係上一個客素材嘅裁法，唔係規格』，但AI過往理解為只針對container尺寸，本單證實**imageBox(crop_media)值同樣屬於「上一個客嘅裁法」，同樣唔可以沿用**。正確做法：每次update_fill後,crop_media嘅值一律用公式即場重算 box=max(container_W,container_H) / left=(W-box)/2 / top=(H-box)/2，**唔准從母片CDF複製舊imageBox數值**。反證強度：Fat Mo獨立改出嚟嘅值同公式差0.05%，而AI沿用母片值後被Canva clamp成公式值嘅1.09倍。",
+      "word_png_geometry_method": {
+        "status": "單一樣本已驗證（0600901），下次開工先套用、再讀CDF核對行數，未達收斂勿當精確值",
+        "why": "Fat Mo 明示『folder 裡已有 word 圖片, 可供你參考字型的大小及行數』——過往AI只用word.png判行數，浪費咗佢提供嘅幾何資訊。本單反推出可計算嘅換算關係。",
+        "measured_word_png": {
+          "canvas": "1563 x 1563",
+          "lines": 2,
+          "line1_ink_width_px": 700,
+          "line2_ink_width_px": 862,
+          "line_pitch_px": 94,
+          "text_centred": "兩行墨水中心x皆783.5，畫布中心781.5，差2px＝字句置中"
+        },
+        "formula": {
+          "step1_implied_font": "word_implied_fontSize = line_pitch / lineHeight  （本單 94 / 1.4 = 67.143）",
+          "step2_scale": "scale = target_fontSize / word_implied_fontSize  （本單 45.3333 / 67.143 = 0.67518）",
+          "step3_need": "need_width(seg) = word_line_ink_width * scale + nchar * fontSize * letterSpacing",
+          "step4_box": "box_width = max(所有段 need_width) * 1.005~1.01 安全係數",
+          "note": "letterSpacing 佔比極重（本單最長行 582.00 基礎寬 + 205.18 字距 = 787.18，字距佔26%），**絕不可略去**；母片 lineHeight=1.4 / letterSpacing=0.146 為現行版式常數"
+        },
+        "validation": {
+          "target_line": "captured my whole heart forever（最長段，即決定box寬嗰段）",
+          "formula_predicted": 787.18,
+          "fatmo_actual_box": 791.98,
+          "error": "+4.80 px (+0.61%)",
+          "accuracy_note": "🟢**對「最長段」預測誤差0.61%＝實用精度足夠**（box寬只由最長段決定）。🟡對短段有約2%高估（本單行1算663.67但實測未摺，即實際≤649.76）——推斷因手寫體標點/撇號flourish令墨水寬大於advance width。**高估只影響短段，不影響box寬結果**，故不阻礙使用。"
+        },
+        "root_cause_of_this_order_3line_bug": {
+          "ai_box": 649.7629279554662,
+          "ai_fontSize": 46.6666,
+          "explanation": "AI用母片box寬649.76 + 母片fontSize 46.6666。最長段需要810.33（母片fontSize下）遠超box寬 → 該段自己再摺一截 → explicit \\n嘅2段變成渲染3行。**AI嘅replace_text已經傳咗正確嘅\\n拆行位置，錯喺冇同步加闊box**。Fat Mo修法＝加闊box至791.98 + 微縮fontSize至45.3333（縮fontSize令需求由810.33降到787.18，box唔使咁闊）。",
+          "lesson": "explicit \\n 只保證『最少幾行』，唔保證『最多幾行』——box太窄時任何一段都會自己再摺。**replace_text後必須讀CDF核對實際行數，唔可以假設\\n就控制到行數**。"
+        },
+        "operational_recipe": [
+          "1. 開工即量 word.png：行數 n、各行墨水寬 w_i、行距 g、拆行位置（決定 replace_text 嘅 \\n 位）",
+          "2. 起手 fontSize：行數同母片一致 → 用母片值微調(本單母片46.6666→Fat Mo 45.3333，-2.9%)；行數多過母片 → 縮更多(Woodcyn 3行單縮至42.6667，-8.6%)",
+          "3. 用公式算 box_width = max(need_width) × 1.005",
+          "4. replace_text 傳含 \\n 嘅字句 + resize_element 設 box 寬（趁 Fat Mo 未設動畫前做，受幾何凍結鐵律管）",
+          "5. 讀 CDF 核對 lines 數 = n，唔夾就調 box 寬再核（唔好接受Canva摺行結果）"
+        ]
+      }
+    },
     {
       "order": "0600905",
       "customer": "Woodcyn",
@@ -78,16 +286,39 @@
         {
           "slot": "page2_字句_三行",
           "element_id": "LBpSwN9yHKsvYrY4",
-          "ai_box": { "left": 735.4055659147095, "top": 635.1185360222669, "w": 649.7629279554662, "h": 185.66668, "fontSize": 46.6666 },
-          "fatmo_box": { "left": 750.1080092175106, "top": 615.067683741635, "w": 649.7629279554662, "h": 168.46666, "fontSize": 42.6667 },
-          "delta": { "left": 14.7024, "top": -20.0509, "h": -17.2, "fontSize": -3.9999 },
+          "ai_box": {
+            "left": 735.4055659147095,
+            "top": 635.1185360222669,
+            "w": 649.7629279554662,
+            "h": 185.66668,
+            "fontSize": 46.6666
+          },
+          "fatmo_box": {
+            "left": 750.1080092175106,
+            "top": 615.067683741635,
+            "w": 649.7629279554662,
+            "h": 168.46666,
+            "fontSize": 42.6667
+          },
+          "delta": {
+            "left": 14.7024,
+            "top": -20.0509,
+            "h": -17.2,
+            "fontSize": -3.9999
+          },
           "note": "replace_text後Canva自動reflow成3行(母片為2行)，box高度由120.67→185.67。注意replace_text本身會令left由767.906自動飄到735.406(-32.5)，唔係AI主動position_element。Fat Mo最終縮fontSize至42.6667(×0.9143)令高度回落168.47，並上移20px。**三行字句嘅建議起手值＝fontSize 42.6667 / left 750.108 / top 615.068 / w 649.763**（單一樣本，未收斂，下次三行單先套此值再睇Fat Mo改幾多）。"
         },
         {
           "slot": "page3_字句_三行",
           "element_id_ai": "LBshPQCfX9k66G0P",
           "element_id_fatmo": "LBw4RRNgHf16Sx5W",
-          "fatmo_box": { "left": 750.1080092175106, "top": 615.067683741635, "w": 649.7629279554662, "h": 168.46666, "fontSize": 42.6667 },
+          "fatmo_box": {
+            "left": 750.1080092175106,
+            "top": 615.067683741635,
+            "w": 649.7629279554662,
+            "h": 168.46666,
+            "fontSize": 42.6667
+          },
           "note": "🔴locator_id變新＝Fat Mo喺Canva UI刪走AI改嘅母片字句element、複製page2嗰個貼過嚟(數值同page2完全一致)。**第2次重現**(0600303 yunggggm首見)，可視為Fat Mo穩定手法而非偶發。Fat Mo明示原因：『字句部份遮蓋了短片』——3行字句向下延伸壓到page3嘅片。AI唔可用MCP delete_element+add_text模仿呢招(會炸走動畫)，UI原生複製先帶得埋動畫。"
         },
         {
@@ -96,27 +327,79 @@
           "element_id_fatmo": "LB92FvgZHc33rxW7",
           "asset_ai": "MAHSVZ_Csq8 (黑白圖_parakeet.png, local_prep.py輸出)",
           "asset_fatmo": "MAHSVkSlMnc (Fat Mo喺Canva原生ColourMix重做)",
-          "ai_box": { "left": 184.05699966171028, "top": 660.8951658688659, "w": 581.1296682622685, "h": 569.6830744686671, "imageBox": 592.5763365245369 },
-          "fatmo_box": { "left": 178.34447495920756, "top": 672.235, "w": 575.5299999999999, "h": 564.4443499197431, "imageBox": 579.2252166934188 },
+          "ai_box": {
+            "left": 184.05699966171028,
+            "top": 660.8951658688659,
+            "w": 581.1296682622685,
+            "h": 569.6830744686671,
+            "imageBox": 592.5763365245369
+          },
+          "fatmo_box": {
+            "left": 178.34447495920756,
+            "top": 672.235,
+            "w": 575.5299999999999,
+            "h": 564.4443499197431,
+            "imageBox": 579.2252166934188
+          },
           "note": "🔴Fat Mo原話：『黑白圖的大小及變色處理效果不太好, 我用canva 修改』。**local_prep.py嘅Parakeet色譜輸出第2次被棄用**(0800802黑白圖asset同樣被換走)，已達2/3收斂門檻——再多一單就要升格為規則層，並重跑sample_gradient_fit.py重新擬合公式(現行v2公式只用單一樣本反推，見local_prep.py檔頭已知限制)。幾何上Fat Mo亦縮細約1%(581.13×569.68→575.53×564.44)。"
         },
         {
           "slot": "page2_彩色圖_去背",
           "element_id": "LB0wWsLNwJJf9lvB",
           "asset": "MAHSVTbiEcQ (彩色圖_cutout.png, local_prep.py去背，Fat Mo接受未換)",
-          "ai_box": { "left": 173.89499999999992, "top": 663.6950000000002, "w": 575.53, "h": 579.8450741303774 },
-          "fatmo_box": { "left": 162.9437507485734, "top": 672.235, "w": 575.53, "h": 579.8450741303774 },
-          "delta": { "left": -10.9512, "top": 8.54, "w": 0, "h": 0 },
+          "ai_box": {
+            "left": 173.89499999999992,
+            "top": 663.6950000000002,
+            "w": 575.53,
+            "h": 579.8450741303774
+          },
+          "fatmo_box": {
+            "left": 162.9437507485734,
+            "top": 672.235,
+            "w": 575.53,
+            "h": 579.8450741303774
+          },
+          "delta": {
+            "left": -10.9512,
+            "top": 8.54,
+            "w": 0,
+            "h": 0
+          },
           "note": "尺寸/imageBox完全冇改(即AI嘅零裁切校正啱)，Fat Mo只係移位。**local_prep.py嘅rembg去背輸出獲接受**——同黑白圖Parakeet被棄用成對照：去背功能可靠，色譜功能唔可靠。"
         },
         {
           "slot": "page3_短片x2_疊放",
-          "element_ids": ["LBcmP2V1RC2HlLDp", "LBDXmPZS466VsHHW"],
-          "asset_px_local_tkhd": { "w": 960, "h": 960 },
-          "asset_px_canva_metadata_WRONG": { "w": 960, "h": 1920 },
-          "ai_box": { "left": 213.64569339764466, "top": 688.9840665049659, "w": 542.0318669900685, "h": 528.3951915142375, "imageBox": 555.668633980137 },
-          "fatmo_box": { "left": 162.9437507485734, "top": 666.2447838521026, "w": 587.5104322957947, "h": 572.7295871245093, "imageBox": 602.2913766597152 },
-          "delta": { "left": -50.7019, "top": -22.7393, "scale": 1.0839 },
+          "element_ids": [
+            "LBcmP2V1RC2HlLDp",
+            "LBDXmPZS466VsHHW"
+          ],
+          "asset_px_local_tkhd": {
+            "w": 960,
+            "h": 960
+          },
+          "asset_px_canva_metadata_WRONG": {
+            "w": 960,
+            "h": 1920
+          },
+          "ai_box": {
+            "left": 213.64569339764466,
+            "top": 688.9840665049659,
+            "w": 542.0318669900685,
+            "h": 528.3951915142375,
+            "imageBox": 555.668633980137
+          },
+          "fatmo_box": {
+            "left": 162.9437507485734,
+            "top": 666.2447838521026,
+            "w": 587.5104322957947,
+            "h": 572.7295871245093,
+            "imageBox": 602.2913766597152
+          },
+          "delta": {
+            "left": -50.7019,
+            "top": -22.7393,
+            "scale": 1.0839
+          },
           "note": "Fat Mo原話：『因應第三行字句的調整, 短片的大小也相應調整』——**呢個係本案最重要嘅新規律**：字句由2行變3行唔係局部改動，會連鎖要求同頁媒體格放大+左移(避開右側變高嘅字句box)。AI原本沿用母片幾何(為2行字句而設)所以顯得細同偏右。另get-assets/update_fill第3次錯用960×1920 metadata(本地tkhd實測960×960正方)，AI開工即實測防守並用crop_media修正返正方cover box，Fat Mo未再改imageBox aspect(只等比放大)＝AI嘅零裁切判斷正確。"
         }
       ],

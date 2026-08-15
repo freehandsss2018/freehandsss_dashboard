@@ -1937,5 +1937,14 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 出貨 MP4(1080p)+封面 JPG。全文見 [Changelog.md](../../Changelog.md) 2026-08-15 條目、`canva_auto/placement_memory.json`（cases「0600905」）。
 - **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工）。
 
+## 2026-08-15 — canva-auto TW_Ting 0600901 出貨 + SOP v1.5.0 五項修訂（Claude Code / Sonnet 5 → Opus 5）
+- 純音樂款 59.0sec。**母片選擇新判準**：本單 4 條片皆 960×960/15.04sec，結構同 yunggggm 0600303「四片疊放」家族吻合；音長最近嘅 Meika/HoKaSin 屬「兩片疊放」家族會缺 slot → 裁定**結構信號優先於音長距離**。開工時素材只有 3 條片（母片 4 slot），主動提出缺口而非重複用同一條，Fat Mo 即補 Video 4。
+- **Fat Mo 指正 AI 兩處真錯誤**：①`crop_media` 沿用母片舊 imageBox 值而非按零裁切鐵律公式重算，Canva clamp 後放大 9%，兩圖四邊各裁走 26–52px（Fat Mo 改正值同公式差 **0.05%**＝公式一直無誤、純粹 AI 冇跟）；②`replace_text` 已傳正確 `\n` 但 box 寬沿用母片 649.76，最長段需 810.33 致該段再摺一截，2 段渲染成 3 行。
+- **AI 另有一次誤判**：把疊圖交界直線硬邊匯報為「兩張 Lovart 圖像素冇對齊」，實為兩個 container 嘅 left/height 唔對齊（母片本身就唔對齊）——屬 AI 可控範圍卻賴咗素材，已落 SOP 明文警示。
+- **Fat Mo 主動教學 → 新方法**：「folder 裡已有 word 圖片, 可供你參考字型的大小及行數」。實測 `word.png`(1563×1563/2行/行寬700·862/行距94) 反推出 box 寬計算公式（`scale=fontSize÷(行距÷lineHeight)`、`need=墨水寬×scale+字數×fontSize×letterSpacing`），用 Fat Mo 最終值驗證**最長段誤差 0.61%**，`letterSpacing` 項佔 26% 不可略；短段有約 2% 高估故仍須讀 CDF 核對收尾。
+- **收斂**：Fat Mo UI 複製字句 box 跨頁手法**第 3 次**重現（0600303→0600905→0600901）達門檻，升格規則層。反向：`local_prep.py` Parakeet 輸出本單獲接受，打破 Woodcyn 記錄嘅 2/3 棄用趨勢，**計數重置**暫不升格；rembg 去背連續第 2 次獲接受。
+- SOP `.fhs/ai/commands/canva-auto.md` v1.0.0→**v1.5.0**（五項修訂）。出貨 MP4(1080p)+封面 JPG。全文見 [Changelog.md](../../Changelog.md) 2026-08-15 第一條目、`canva_auto/placement_memory.json`（cases「0600901」+`word_png_geometry_method`）。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
 ## 2026-08-09 — Session續II（單次輕量探測覆核，Claude Code / Sonnet 5）
 - Fat Mo 要求「查核一下MCP記錄是否已更新」，改用單次最小化 create+delete 探測（`testprobe01`，非重跑完整 run_all.py，避免第三次全套壓測+Telegram通知噪音）直打 webhook。**即時結果（22:46:03 UTC，查詢當刻）：axios 來源 `GET /products` 仍然 401，`testprobe01` 冇落地 `orders` 表**——實時確認憑證問題喺呢一刻依然未解，非歷史快照。狀態：持續等 Fat Mo 喺 n8n 憑證管理介面輪替/確認 Supabase API key（涉及節點：`HTTP: Supabase Sync RPC`、`Mirror Delete to Supabase`）。

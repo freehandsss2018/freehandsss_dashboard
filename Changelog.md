@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-08-15] Session（Claude Code / Sonnet 5 + Opus 5 執行）— canva-auto：TW_Ting 0600901 新單出貨 + SOP v1.5.0 五項修訂（AI 兩處錯誤經 Fat Mo 指正落盤）
+
+- **緣起**：Fat Mo「canva-auto 新單」+ TW_Ting 訂單 0600901（純音樂款，音長 59.0sec）。素材夾再次混入非本產品線檔案（`Free_Laser (0826).png`/UUID.jpg），同 Woodcyn 0600905 同一污染模式，已成常態非例外。
+- **母片選擇改判準（新規則）**：本單 4 條片皆 960×960 / 15.04sec，結構同 yunggggm 0600303「四片疊放」家族吻合；音長最接近嘅 Meika(35.0sec)/HoKaSin(31.0sec) 屬「兩片疊放」家族，套落去會缺 slot。裁定**結構信號優先於音長距離**，實測正確。開工時素材夾只有 3 條片（母片 4 個 slot），AI 主動提出缺口而非重複用同一條片，Fat Mo 即補上 Video 4。
+- **🔴 AI 錯誤一：page2 圖對被裁切**。`crop_media` 沿用母片舊 imageBox 值（588.46/595.18）而非按「零裁切鐵律」公式重算，Canva 收到後 clamp 並**放大 9%**，兩張圖四邊各裁走 26–52px。Fat Mo 指正「你裁切部份圖片, 不完整, 大小也不對」。反證：Fat Mo 改正值 566.05 同公式 `max(W,H)=565.78` 差 **0.05%**——公式一直無誤，純粹 AI 冇跟。**同時 AI 曾把疊圖交界嘅直線硬邊誤判為「兩張 Lovart 圖像素冇對齊」並如此匯報，實際係兩個 container 嘅 left/height 唔對齊（母片本身就唔對齊），全程喺 AI 可控範圍——賴錯素材。**
+- **🔴 AI 錯誤二：字句渲染成 3 行**。`replace_text` 其實已傳咗正確 `\n`（拆行位置同 `word.png` 一致），但 box 寬沿用母片 649.76，最長段需要 810.33 → 該段自己再摺一截 → 2 段變 3 行。Fat Mo 要求改返 2 行，修法＝加闊 box 至 791.98 + 微縮 fontSize 至 45.3333。**教訓：`\n` 只保證「最少幾行」，唔保證「最多幾行」。**
+- **Fat Mo 主動教學 → 新方法落盤**：「folder 裡已有 word 圖片, 可供你參考字型的大小及行數」。實測 `word.png`（1563×1563，2 行，行寬 700/862，行距 94）反推出可計算公式：`scale = fontSize ÷ (行距 ÷ lineHeight)`、`need = 墨水寬 × scale + 字數 × fontSize × letterSpacing`、`box = max(need) × 1.005`。用 Fat Mo 最終值驗證，**最長段誤差 0.61%**（算 787.18 vs 實設 791.98）；`letterSpacing` 項佔 26% 絕不可略。短段有約 2% 高估（手寫體 flourish），不影響 box 寬結果但仍須讀 CDF 核對收尾。
+- **收斂達標**：Fat Mo 喺 Canva UI 複製字句 box 跨頁貼上手法**第 3 次重現**（0600303→0600905→0600901），已達 3 單門檻升格規則層（AI 永不可用 MCP `delete_element`+`add_text` 模仿，會炸走動畫）。反向收斂：`local_prep.py` Parakeet 色譜輸出本單**獲接受未被換走**，打破 Woodcyn 記錄嘅 2/3 棄用趨勢，**收斂計數重置**，暫不升格棄用規則；rembg 去背輸出連續第 2 次獲接受，可靠性確立。
+- **另**：`get-assets` 錯報 video 960×1920 第 4 次重現（本地 tkhd 實測 960×960），開工即實測防守成功。960 花環置中規則確認**唔跨家族適用**（yunggggm 系字句偏右，最終中心 1167.85），AI 本單有正確判斷未誤套。
+- **SOP 落盤**：`.fhs/ai/commands/canva-auto.md` v1.0.0 → **v1.5.0**，五項修訂（禁止沿用母片 imageBox／`word.png` 幾何真理源／page2 圖對統一 left+height／母片選擇結構信號優先／UI 複製手法升格規則層）。
+- **出貨**：Fat Mo 驗收三項指標通過，MP4（1080p）+ 封面 JPG（page2）已交付，連結約 4 小時有效期。
+
+詳見 [.fhs/ai/commands/canva-auto.md](.fhs/ai/commands/canva-auto.md) v1.5.0、[canva_auto/placement_memory.json](canva_auto/placement_memory.json)（cases「0600901」+ `word_png_geometry_method` + convergence_log）。
+
 ## [2026-08-15] Session（Claude Code / Sonnet 5 執行）— canva-auto：Woodcyn 0600905 新單全流程 + 三行字句首例學習
 
 - **緣起**：Fat Mo 一句「canva-auto 新單」+ Woodcyn 訂單 0600905（純音樂款，音長 25.5sec）。素材 folder 命名異於慣例（`sound.mp3`/`Video 1.mp4`/`Video 3.mp4`，無 WhatsApp 前綴，另混有 `Free_Laser (0826) .png`/`plaint.png`/`word.png`/UUID.jpg 等非本產品線檔案），開工前先問清素材角色，確認兩條片皆 Lovart 素材。
