@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-15] Session（Claude Code / Sonnet 5 執行）— canva-auto：Woodcyn 0600905 新單全流程 + 三行字句首例學習
+
+- **緣起**：Fat Mo 一句「canva-auto 新單」+ Woodcyn 訂單 0600905（純音樂款，音長 25.5sec）。素材 folder 命名異於慣例（`sound.mp3`/`Video 1.mp4`/`Video 3.mp4`，無 WhatsApp 前綴，另混有 `Free_Laser (0826) .png`/`plaint.png`/`word.png`/UUID.jpg 等非本產品線檔案），開工前先問清素材角色，確認兩條片皆 Lovart 素材。
+- **Stage①**：母片揀 HoKaSin 0601100 黃金參考案例（`DAHRBN0H_cg`，31.0sec，最接近本單音長），全程 4 種 operation（copy-design/update_title/replace_text/update_fill）零 delete_element。字句拆行跟客人提供嘅 `word.png` 三行參考版（此前全部案例皆兩行，本單為首例三行）。
+- **Stage③換料**：`update_fill` 後兩度撞正已知陷阱（Canva video metadata 報 960×1920，本地 mp4 tkhd 實測皆 960×960 正方），已用本地實測值主動防守 + `crop_media` 校正返正方 cover box，出真圖 export JPG 核對零裁切變形。
+- **Stage④學習（重點）**：Fat Mo 六格全部再調，性質有別於以往「AI 擺錯位」——**三行字句改變咗成頁構圖前提**：字句 box 高度膨脹（120.67→185.67）向下壓，Fat Mo 縮 fontSize（46.67→42.67）+ 微調位置，並**連鎖放大 page3 短片 ×1.084 + 左移**避開變高嘅字句 box。已記入 `canva_auto/placement_memory.json` 三行字句起手建議值，下次三行單先套用再睇 Fat Mo 改幾多。
+- **附帶收斂**：`local_prep.py` 嘅 Parakeet 變色輸出第 2 次被 Fat Mo 棄用改用 Canva 原生 ColourMix（0800802 首見，達 2/3 收斂門檻，去背功能同次獲接受未改）；Fat Mo 喺 Canva UI 複製字句 box 跨頁貼上手法第 2 次重現（0600303 首見），視為穩定人手位，AI 無對應安全 MCP 操作可模仿。
+- **出貨**：MP4（1080p）+ 封面 JPG（page2）已交付，連結 4 小時有效期。
+
+詳見 [canva_auto/placement_memory.json](canva_auto/placement_memory.json)（convergence_log + cases「0600905」條目）。
+
 ## [2026-08-11] Session（Claude Code / Sonnet 5 執行）— D63：事故經驗落地為技術防線 + `/fhs-check` 判準修復 + migration 0087
 
 - **緣起**：Fat Mo 要求「學習今次經驗並優化，確保不再出現同類情況；審視 /fhs-check 是否需要更新」——明確要技術落地，非只寫教訓文件。審視 D62 lesson「防再犯」四點原則，發現多數只講方向未做，本輪補齊。

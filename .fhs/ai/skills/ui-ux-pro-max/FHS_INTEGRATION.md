@@ -235,6 +235,13 @@ Claude Code 的 `ui-designer` agent 可直接 Read 以下路徑（已驗證可�
 - **單號快跳（Quick-Jump）**：核對中心單號必須使用 `.review-jump-pill` 樣式並具備一鍵切換模式並讀取的功能
 - **視覺風格基準**：Premium 玻璃擬態（Glassmorphism，V31.0 定案）——漸層背景＋平滑過渡動畫
 - **雙端定位**：手機（<768px）＝POS 點餐機（卡片步進／觸控 >44px／隱藏複雜財務網格／底部操作列 **static 隨頁滾動**，S153 決策 37）；Desktop（>1200px）＝Data Cockpit（側欄導覽／核對中心最大寬度／頂部動態財務看板，td rowspan 對齊定律嚴格遵守）
+- **Icon 鐵律（2026-08-10 加入，授權：Fat Mo 拷問裁決；2026-08-11 依 D61 P3 補第 5 點）**：
+  1. 所有 UI icon 一律使用 inline SVG sprite `<use href="#icon-*">`（sprite 定義於 V42.html `<symbol>` 區，現有 47 個 Lucide 線性描邊 icon），配 class `.ba-icon`（內文）或 `.fhs-header-icon`（標題／標籤）。
+  2. **禁止** emoji（🖼⚙💾⏳📩）作為 icon；**禁止**裸 Unicode 幾何字符（▼▲●○➜↕▓░）作為 icon 或視覺元件。
+  3. sprite 無合適 icon 時，須新增同風格 `<symbol>`（Lucide 線性描邊、`stroke-width:2`、`currentColor`）落 sprite，禁止就地 inline one-off SVG。
+  4. 純裝飾圖形（進度點／進度條／階段指示）一律 CSS 繪製（`border-radius`／`background`／`linear-gradient`），禁用字符 glyph（跨機跨字型會走位變形）。
+  5. **禁止重複 `<symbol id>` 定義**：新增 icon 前必先 `grep -c 'symbol id="icon-NAME"'` 確認 = 0。同一 id 出現多次時瀏覽器只認第一份，第二份為靜默死碼（源自實際事故：D61 從 V42.html 刪走 8 個重複 symbol 定義，經 browser 實測證實從未生效）。
+  6. 改動觸及的區域若有存量違規，一併清理；未觸及區域不主動改，避免範圍蔓延。
 
 ---
 

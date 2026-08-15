@@ -1931,5 +1931,11 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 兩個測試腳本新加嘅全形破折號「—」喺 Windows 又撞返同一個 CP950 亂碼問題（同 `FHS_Full_System_Test.py` 早前撞過嘅一樣，漏咗一齊修），已補 UTF-8 stdout 包裝。最終驗收：跑完整 `run_all.py`，**四項全部真 PASS**，STRESS/ACCEPTANCE 由 DEGRADED 轉乾淨 PASS。**D62+D63 全系列完全收工，`/fhs-check` 回復可信。**
 - 全文見 [decisions.md D63續III](decisions.md)。
 
+## 2026-08-15 — canva-auto Woodcyn 0600905 新單全流程（Claude Code / Sonnet 5）
+- Fat Mo 一句「canva-auto 新單」+訂單資料。素材 folder 命名異於慣例（`sound.mp3`/`Video 1.mp4`/`Video 3.mp4`，無 WhatsApp 前綴，混有非本產品線檔案），開工前先問清角色。母片揀 HoKaSin 0601100 黃金參考案例（音長最接近），全程零 `delete_element`；Stage③換料兩度撞正已知陷阱（Canva video metadata 報 960×1920，本地 tkhd 實測皆 960×960 正方），用本地實測值主動防守。
+- **Stage④學習重點**：Fat Mo 六格全部再調，但性質有別於以往「AI 擺錯位」——**三行字句（此前全部案例皆兩行）改變成頁構圖前提**：字句 box 高度膨脹向下壓，Fat Mo 縮 fontSize+微調位置，並**連鎖放大 page3 短片 ×1.084+移位**避開變高嘅字句 box。已記入 `canva_auto/placement_memory.json`。附帶：`local_prep.py` 嘅 Parakeet 變色第 2 次被棄用（去背功能同次獲接受），達 2/3 收斂門檻；Fat Mo Canva UI 複製字句 box 跨頁貼上手法第 2 次重現，視為穩定人手位。
+- 出貨 MP4(1080p)+封面 JPG。全文見 [Changelog.md](../../Changelog.md) 2026-08-15 條目、`canva_auto/placement_memory.json`（cases「0600905」）。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工）。
+
 ## 2026-08-09 — Session續II（單次輕量探測覆核，Claude Code / Sonnet 5）
 - Fat Mo 要求「查核一下MCP記錄是否已更新」，改用單次最小化 create+delete 探測（`testprobe01`，非重跑完整 run_all.py，避免第三次全套壓測+Telegram通知噪音）直打 webhook。**即時結果（22:46:03 UTC，查詢當刻）：axios 來源 `GET /products` 仍然 401，`testprobe01` 冇落地 `orders` 表**——實時確認憑證問題喺呢一刻依然未解，非歷史快照。狀態：持續等 Fat Mo 喺 n8n 憑證管理介面輪替/確認 Supabase API key（涉及節點：`HTTP: Supabase Sync RPC`、`Mirror Delete to Supabase`）。
