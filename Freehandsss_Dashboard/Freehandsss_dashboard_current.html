@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-10T10:19:08Z">
+    <meta name="fhs-build" content="2026-08-15T23:46:05Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -4452,6 +4452,14 @@
                     <label class="switch d51-cat-p"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
+
+            <!-- 多件手模擺設（追加件）逃生口，cl-flow 2026-08-15-1944 -->
+            <div class="ss-group-sep" id="pExtraSep" style="display:none;"></div>
+            <div id="pExtraContainer"></div>
+            <input type="hidden" id="p_slot_seq" value="1">
+            <button type="button" id="pExtraAddBtn" class="d51-link-btn" onclick="fhsPExtraAdd()">
+                <svg class="ba-icon" width="14" height="14"><use href="#icon-plus"/></svg>追加擺設款式（同一張單多件）
+            </button>
         </div>
 
         <div class="toggle-row tier1-row" id="toggleRowK" onclick="fhsD51HeaderClick(event,'enableK','contentK')">
@@ -6244,6 +6252,18 @@
                 if (el) el.classList.remove('active');
             });
 
+            // 3b. 清空追加擺設款式（多件手模擺設逃生口，cl-flow 2026-08-15-1944）
+            // 步驟1的通用 input/select 清空只清咗追加件欄位嘅值，唔會移除 DOM 節點本身，
+            // 亦會將 p_slot_seq（hidden input）誤清做空字串——必須喺此顯式重設。
+            const _pExtraC = document.getElementById('pExtraContainer');
+            if (_pExtraC) _pExtraC.innerHTML = '';
+            const _pSeqEl = document.getElementById('p_slot_seq');
+            if (_pSeqEl) _pSeqEl.value = '1';
+            const _pSep = document.getElementById('pExtraSep');
+            if (_pSep) _pSep.style.display = 'none';
+            const _pAddBtn = document.getElementById('pExtraAddBtn');
+            if (_pAddBtn) _pAddBtn.style.display = '';
+
             // 4. 重設 ID 與預覽
             if (!skipId) {
                 orderID = await generateOrderID();
@@ -6855,6 +6875,22 @@
             }
         }
 
+        // ── 多件手模擺設（追加件）：逃生口模式（cl-flow 2026-08-15-1944，D64）─────
+        // 追加件刻意不與主件統一：主件 ID 一改，既有訂單 raw_form_state 即對不上，
+        // 觸犯 AGENTS.md §3「Raw_Form_State 不可侵犯」。主件 renderLimbGrid() 一個字不動。
+        // ⚠️ 下列兩個選項陣列與主件 renderLimbGrid() 內 <option> 清單為兩份獨立來源
+        //    （cl-final-plan A2/#7 裁決：主件零改動優先於 DRY）。新增款式時必須同步兩處。
+        const FHS_P_EXTRA_MAX_CONCURRENT = 3;                        // 同時存在的追加件上限
+        const FHS_P_WOOD_STYLES  = ['待定', '粉紅款式', '草原款式'];
+        const FHS_P_BASE_COLORS  = ['待定', '仿古木', '淺木色'];
+        function _pns(slot)  { return 'p' + slot + '_'; }            // ID 前綴
+        function _pwho(slot) { return '嬰兒#' + slot; }               // limb-sel data-who
+        function _pActiveSlots() {
+            return Array.from(document.querySelectorAll('#pExtraContainer [data-p-slot]'))
+                .map(function(el) { return Number(el.getAttribute('data-p-slot')); })
+                .sort(function(a, b) { return a - b; });
+        }
+
         function renderLimbGrid() {
             const sub = document.getElementById("pSubCat").value;
             const container = document.getElementById("limbContainer");
@@ -6933,6 +6969,246 @@
 
             container.innerHTML = castingHtml;
             babyRestoreVisual();
+        }
+
+        // ── 追加件（多件手模擺設）渲染與互動 ──────────────────────────────
+        // 刻意做細：只支援款式/底座色/嬰兒倒模/燈飾/刻字，不做父母/大寶/家庭組合/羊毛氈
+        // （Fat Mo 2026-08-15 拷問 Q4 拍板）。
+        const FHS_P_ORDINAL_CHARS = { 2: '②', 3: '③', 4: '④' };
+        function _pOrdinalOf(slot) {
+            var idx = _pActiveSlots().indexOf(slot);
+            var ord = idx >= 0 ? idx + 2 : slot; // 主件視為①（不顯示），追加件由②起
+            return FHS_P_ORDINAL_CHARS[ord] || ('#' + ord);
+        }
+
+        function renderPExtraSlot(slot) {
+            if (document.querySelector('#pExtraContainer [data-p-slot="' + slot + '"]')) return;
+            var ns = _pns(slot);
+            var babyColors = colors.filter(function(c) { return c !== '無'; });
+            var babyColorOpts = babyColors.map(function(c) {
+                return '<option value="' + c + '"' + (c === '待定' ? ' selected' : '') + '>' + c + '</option>';
+            }).join('');
+            var limbOpts = colors.map(function(c) {
+                return '<option value="' + c + '"' + (c === '待定' ? ' selected' : '') + '>' + c + '</option>';
+            }).join('');
+
+            var wrap = document.createElement('div');
+            wrap.className = 'd51-menu-block';
+            wrap.setAttribute('data-p-slot', String(slot));
+            wrap.style.marginTop = '10px';
+            wrap.innerHTML = `
+                <div class="sec-title-row">
+                    <span class="limb-title d51-menu-title cat-p" id="${ns}title"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-image"/></svg>擺設</span>
+                    <button type="button" class="d51-link-btn" onclick="fhsPExtraRemove(${slot})" style="color:#c0392b;"><svg class="ba-icon" width="14" height="14"><use href="#icon-trash-2"/></svg>刪除</button>
+                </div>
+                <div class="form-group">
+                    <label>款式類型</label>
+                    <select id="${ns}pSubCat" onchange="_pExtraSubCatChange(${slot})">
+                        <option value="木框款式">木框款式</option>
+                        <option value="玻璃瓶款式">玻璃瓶款式</option>
+                    </select>
+                </div>
+                <div id="${ns}baseColorContainer"></div>
+                <div class="ss-group-sep"></div>
+                <div class="d51-baby-mode-row" id="${ns}babyModeBtnRow">
+                    <button type="button" id="${ns}babyBtn_all" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'all')">二手二腳</button>
+                    <button type="button" id="${ns}babyBtn_custom" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'custom')">自訂 ↓</button>
+                    <button type="button" id="${ns}babyBtn_left" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'left')">一手一腳<span class="d51-baby-mode-sub">(左)</span></button>
+                    <button type="button" id="${ns}babyBtn_right" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'right')">一手一腳<span class="d51-baby-mode-sub">(右)</span></button>
+                </div>
+                <input type="hidden" id="${ns}babyMode" value="all">
+                <div id="${ns}babyColorRow" class="mini-col" style="margin-bottom:4px;">
+                    <label>顏色</label>
+                    <select id="${ns}babyQuickColor" onchange="fhsPExtraBabyColorChanged(${slot})">${babyColorOpts}</select>
+                </div>
+                <div id="${ns}babyCustomGrid" style="display:none; margin-top:8px; padding:8px; background:#fafafa; border:1px solid #eee; border-radius:6px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <label style="font-size:12px; color:#888; margin:0;">顏色</label>
+                        <button type="button" onclick="fhsPExtraBabyApplyAllCustom(${slot})" style="font-size:12px; padding:5px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer;">全部同色</button>
+                    </div>
+                    <select id="${ns}babyCustomColor" style="width:100%; padding:8px; font-size:14px; border:1px solid #ddd; border-radius:6px; margin-bottom:10px;" onchange="fhsPExtraBabyApplyAllCustom(${slot})">${babyColorOpts}</select>
+                    <div class="grid-2-col">
+                        ${["左手", "右手", "左腳", "右腳"].map(function(l) {
+                            return '<div class="mini-col"><label>' + l + '</label><select class="limb-sel" data-who="' + _pwho(slot) + '" data-part="' + l + '" onchange="calculatePricing();generate();">' + limbOpts + '</select></div>';
+                        }).join('')}
+                    </div>
+                </div>
+                <div class="part-item" id="${ns}lightAddonRow" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight: bold; color: #444; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-lightbulb"/></svg>燈飾 ($80)</span>
+                        <label class="switch d51-cat-p"><input type="checkbox" id="${ns}light_en" onchange="calculatePricing();generate();"><span class="slider"></span></label>
+                    </div>
+                </div>
+                <div class="form-group"><label>客製化刻字</label><input type="text" id="${ns}pEngraving" placeholder="待定" oninput="generate()"></div>
+            `;
+            document.getElementById('pExtraContainer').appendChild(wrap);
+
+            // 預設：二手二腳・待定
+            _pExtraBabyApplyFill(slot, 'all');
+            _pExtraBabyRestoreVisual(slot);
+            _pExtraSubCatChange(slot);
+        }
+
+        function _pExtraSubCatChange(slot) {
+            var ns = _pns(slot);
+            var subEl = document.getElementById(ns + 'pSubCat');
+            if (!subEl) return;
+            var sub = subEl.value;
+            var isGlass = sub === '玻璃瓶款式';
+            var baseContainer = document.getElementById(ns + 'baseColorContainer');
+            var baseHtml = '';
+            if (sub === '木框款式') {
+                baseHtml = '<div class="form-group"><label>木框色款</label><select id="' + ns + 'woodStyle" onchange="generate()">' +
+                    FHS_P_WOOD_STYLES.map(function(c) { return '<option value="' + c + '"' + (c === '待定' ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
+                    '</select></div>';
+            } else {
+                baseHtml = '<div class="form-group"><label>底座顏色</label><select id="' + ns + 'baseColor" onchange="generate()">' +
+                    FHS_P_BASE_COLORS.map(function(c) { return '<option value="' + c + '"' + (c === '待定' ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
+                    '</select></div>';
+            }
+            if (baseContainer) baseContainer.innerHTML = baseHtml;
+
+            var lightRow = document.getElementById(ns + 'lightAddonRow');
+            if (lightRow) lightRow.style.display = isGlass ? '' : 'none';
+            if (!isGlass) {
+                var l = document.getElementById(ns + 'light_en');
+                if (l && l.checked) l.checked = false;
+            }
+
+            _pExtraRefreshTitle(slot);
+            calculatePricing(); generate();
+        }
+
+        // 只更新件號標題文字，唔重建 baseColorContainer（款式冇變，純顯示序更新用）。
+        // 抽出獨立函式係修復一個真實 bug：_pExtraSyncChrome() 原本喺加/刪任何一件時
+        // 對全部 active slot 逐一 call _pExtraSubCatChange()，會將其餘未變動嘅 slot
+        // 嘅 baseColor/woodStyle 選擇一併洗返做預設「待定」（browser live 實測揪出，
+        // cl-flow 2026-08-15-1944 執行階段）。
+        function _pExtraRefreshTitle(slot) {
+            var ns = _pns(slot);
+            var subEl = document.getElementById(ns + 'pSubCat');
+            if (!subEl) return;
+            var sub = subEl.value;
+            var titleEl = document.getElementById(ns + 'title');
+            if (titleEl) {
+                var iconId = sub.includes('木框') ? 'icon-image' : 'icon-bottle';
+                titleEl.innerHTML = '<span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#' + iconId + '"/></svg>擺設' + _pOrdinalOf(slot) + ' · ' + sub;
+            }
+        }
+
+        function fhsPExtraBabyMode(slot, mode) {
+            var ns = _pns(slot);
+            var modeEl = document.getElementById(ns + 'babyMode');
+            if (modeEl) modeEl.value = mode;
+            _pExtraBabyRestoreVisual(slot);
+            if (mode !== 'custom') {
+                _pExtraBabyApplyFill(slot, mode);
+            } else {
+                var customSelect = document.getElementById(ns + 'babyCustomColor');
+                if (customSelect) customSelect.value = '待定';
+                fhsPExtraBabyApplyAllCustom(slot);
+            }
+        }
+
+        function _pExtraBabyRestoreVisual(slot) {
+            var ns = _pns(slot);
+            var modeEl = document.getElementById(ns + 'babyMode');
+            var mode = modeEl ? modeEl.value : 'all';
+            ['all', 'left', 'right', 'custom'].forEach(function(m) {
+                var btn = document.getElementById(ns + 'babyBtn_' + m);
+                if (btn) btn.classList.toggle('active', m === mode);
+            });
+            var isCustom = mode === 'custom';
+            var grid = document.getElementById(ns + 'babyCustomGrid');
+            var colorRow = document.getElementById(ns + 'babyColorRow');
+            if (grid) grid.style.display = isCustom ? 'block' : 'none';
+            if (colorRow) colorRow.style.display = isCustom ? 'none' : 'block';
+        }
+
+        function _pExtraBabyApplyFill(slot, mode) {
+            var ns = _pns(slot);
+            var color = (document.getElementById(ns + 'babyQuickColor') || {}).value || '待定';
+            var config = {
+                all:   { set: ["左手", "右手", "左腳", "右腳"], clear: [] },
+                left:  { set: ["左手", "左腳"],                 clear: ["右手", "右腳"] },
+                right: { set: ["右手", "右腳"],                 clear: ["左手", "左腳"] }
+            };
+            var c = config[mode];
+            if (!c) return;
+            c.set.forEach(function(part) {
+                var s = document.querySelector('.limb-sel[data-who="' + _pwho(slot) + '"][data-part="' + part + '"]');
+                if (s) s.value = color;
+            });
+            c.clear.forEach(function(part) {
+                var s = document.querySelector('.limb-sel[data-who="' + _pwho(slot) + '"][data-part="' + part + '"]');
+                if (s) s.value = '無';
+            });
+            calculatePricing(); generate();
+        }
+
+        function fhsPExtraBabyColorChanged(slot) {
+            var modeEl = document.getElementById(_pns(slot) + 'babyMode');
+            var mode = modeEl ? modeEl.value : 'all';
+            if (mode !== 'custom') _pExtraBabyApplyFill(slot, mode);
+        }
+
+        function fhsPExtraBabyApplyAllCustom(slot) {
+            var ns = _pns(slot);
+            var color = (document.getElementById(ns + 'babyCustomColor') || {}).value || '待定';
+            ['左手', '右手', '左腳', '右腳'].forEach(function(part) {
+                var s = document.querySelector('.limb-sel[data-who="' + _pwho(slot) + '"][data-part="' + part + '"]');
+                if (s) s.value = color;
+            });
+            calculatePricing(); generate();
+        }
+
+        function _pExtraSyncChrome() {
+            var slots = _pActiveSlots();
+            var sep = document.getElementById('pExtraSep');
+            if (sep) sep.style.display = slots.length > 0 ? '' : 'none';
+            var addBtn = document.getElementById('pExtraAddBtn');
+            if (addBtn) addBtn.style.display = slots.length >= FHS_P_EXTRA_MAX_CONCURRENT ? 'none' : '';
+            // 顯示序可能因刪除而變動（slot 號不變但排位變），逐一重算件號標題（只更新標題文字，
+            // 不可 call _pExtraSubCatChange()——會連鎖清走其他未變動 slot 嘅底座色選擇）
+            slots.forEach(function(slot) { _pExtraRefreshTitle(slot); });
+        }
+
+        function fhsPExtraAdd() {
+            if (_pActiveSlots().length >= FHS_P_EXTRA_MAX_CONCURRENT) return;
+            var seqEl = document.getElementById('p_slot_seq');
+            var slot = Number(seqEl.value) + 1;   // 單調遞增，永不重用已釋放的 slot 號（cl-final-plan A2/#3）
+            seqEl.value = String(slot);
+            renderPExtraSlot(slot);
+            _pExtraSyncChrome();
+            calculatePricing(); generate();
+        }
+
+        function fhsPExtraRemove(slot) {
+            var box = document.querySelector('#pExtraContainer [data-p-slot="' + slot + '"]');
+            if (!box) return;
+            // D51 血訓（production 曾多收 $860）：刪除必須先連鎖清空全部欄位，再移除 DOM。
+            box.querySelectorAll('input, select').forEach(function(el) {
+                if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+                else el.value = '';
+            });
+            box.remove();   // p_slot_seq 不回退——A2/#3 修復核心：防止新增件重用已刪 slot 號
+            _pExtraSyncChrome();
+            calculatePricing(); generate();
+        }
+        window.fhsPExtraAdd = fhsPExtraAdd;
+        window.fhsPExtraRemove = fhsPExtraRemove;
+        window._pExtraSubCatChange = _pExtraSubCatChange;
+        window.fhsPExtraBabyMode = fhsPExtraBabyMode;
+        window.fhsPExtraBabyColorChanged = fhsPExtraBabyColorChanged;
+        window.fhsPExtraBabyApplyAllCustom = fhsPExtraBabyApplyAllCustom;
+
+        // 追加件 SKU 推導——刻意簡化版（永無父母/大寶/家庭），唔碰主件同款邏輯（:7766附近）
+        function _pSkuOf(slot) {
+            var ns = _pns(slot);
+            var subCat = getValSafe(ns + "pSubCat", "");
+            var babyLimbCount = Array.from(document.querySelectorAll('.limb-sel[data-who="' + _pwho(slot) + '"]')).filter(function(s) { return s.value !== "無"; }).length;
+            var type = babyLimbCount >= 4 ? "4肢" : "2肢";
+            return subCat.includes("木框") ? ("木框套裝 (" + type + ")") : ("玻璃瓶套裝 (" + type + ")");
         }
 
         function _applyGlassDefaults() {
@@ -7292,26 +7568,63 @@
             return prefix + '：' + parts.join('+') + '=$' + total;
         }
 
-        function buildCategoryA_v2(orderId, mom, date, timeStr, deposit, balance, additional) {
-            const sub = document.getElementById("pSubCat").value;
-            const _lightSuffix = document.getElementById('l_light_en')?.checked ? '+燈' : '';
-            const lines = [];
-            lines.push(`（訂單編號#${orderId}手模擺設）`);
-            const bbLine = formatBabyLimbsInline();
+        // 主件（slot=null/undefined）與追加件（slot=2..4）共用 block 產生邏輯。
+        // slot=null 時 ns=''，所有 getElementById 調用逐字對應原 ID，行為與改動前 byte-identical。
+        function _formatBabyLimbsInlineFor(slot) {
+            var modeEl = document.getElementById(_pns(slot) + 'babyMode');
+            var mode = modeEl ? modeEl.value : 'all';
+            var who = _pwho(slot);
+            var lh = document.querySelector('.limb-sel[data-who="' + who + '"][data-part="左手"]')?.value;
+            var rh = document.querySelector('.limb-sel[data-who="' + who + '"][data-part="右手"]')?.value;
+            var lf = document.querySelector('.limb-sel[data-who="' + who + '"][data-part="左腳"]')?.value;
+            var rf = document.querySelector('.limb-sel[data-who="' + who + '"][data-part="右腳"]')?.value;
+            var activeVals = [lh, rh, lf, rf].filter(function(v) { return v && v !== '無'; });
+            if (activeVals.length === 0) return '';
+            var color = activeVals[0];
+            if (mode === 'all') return '二手二腳（' + color + '）';
+            if (mode === 'left' || mode === 'right') return '一手一腳（' + color + '）';
+            var parts = [];
+            if (lh && lh !== '無') parts.push('左手(' + lh + ')');
+            if (rh && rh !== '無') parts.push('右手(' + rh + ')');
+            if (lf && lf !== '無') parts.push('左腳(' + lf + ')');
+            if (rf && rf !== '無') parts.push('右腳(' + rf + ')');
+            return parts.join('、');
+        }
+
+        function _pBlockLines(slot) {
+            var ns = slot ? _pns(slot) : '';
+            var sub = document.getElementById(ns + 'pSubCat')?.value || '';
+            var lightSuffix = document.getElementById(ns + 'light_en')?.checked ? '+燈' : '';
+            var lines = [];
+            var bbLine = slot ? _formatBabyLimbsInlineFor(slot) : formatBabyLimbsInline();
             if (sub === '玻璃瓶款式') {
                 lines.push(`*倒BB：${bbLine}`);
-                if (document.getElementById("en_parent")?.checked) lines.push(`*倒：爸媽各一手`);
-                lines.push(`*底座：${document.getElementById("baseColor")?.value || '待定'}${_lightSuffix}`);
-                if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
+                if (!slot && document.getElementById("en_parent")?.checked) lines.push(`*倒：爸媽各一手`);
+                lines.push(`*底座：${document.getElementById(ns + "baseColor")?.value || '待定'}${lightSuffix}`);
+                if (!slot && document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
             } else {
                 if (bbLine) lines.push(`*倒BB ：${bbLine}`);
-                if (sub === "木框款式") lines.push(`*木框：${document.getElementById("woodStyle")?.value || '待定'}${_lightSuffix}`);
-                if (document.getElementById("en_parent")?.checked) { const p = formatLimbsInline("父母"); if (p) lines.push(`*父母 ：${p}`); }
-                if (document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
+                if (sub === "木框款式") lines.push(`*木框：${document.getElementById(ns + "woodStyle")?.value || '待定'}${lightSuffix}`);
+                if (!slot && document.getElementById("en_parent")?.checked) { const p = formatLimbsInline("父母"); if (p) lines.push(`*父母 ：${p}`); }
+                if (!slot && document.getElementById("en_elder")?.checked) { const e = formatLimbsInline("大寶"); if (e) lines.push(`*大寶 ：${e}`); }
                 if (sub === "木框款式") lines.push(`*相+聲頻：`);
             }
-            const eng = document.getElementById("pEngraving")?.value;
+            const eng = document.getElementById(ns + "pEngraving")?.value;
             lines.push(`*皮革刻制：${(eng && eng.trim() !== '待定') ? eng : ''}`);
+            return lines;
+        }
+
+        function buildCategoryA_v2(orderId, mom, date, timeStr, deposit, balance, additional) {
+            const sub = document.getElementById("pSubCat").value; // 尾部免責分支沿用主件款式，不受追加件影響
+            const lines = [];
+            lines.push(`（訂單編號#${orderId}手模擺設）`);
+            _pBlockLines(null).forEach(function(l) { lines.push(l); });
+            _pActiveSlots().forEach(function(slot) {
+                lines.push(``);
+                const _slotSub = document.getElementById(_pns(slot) + 'pSubCat')?.value || '';
+                lines.push(`${_pOrdinalOf(slot)}${_slotSub}`);
+                _pBlockLines(slot).forEach(function(l) { lines.push(l); });
+            });
             lines.push(`（資料會於倒模當天填寫）`);
             lines.push(``);
             lines.push(`*媽媽名： ${mom}`);
@@ -7552,6 +7865,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
 
+            // 多件手模擺設追加件（cl-flow 2026-08-15-1944，D64 逃生口模式）
+            _pActiveSlots().forEach(function(slot) {
+                var ns = _pns(slot);
+                orderItemsArray.push({
+                    "Order_Item_Key": "TEMP_P_" + slot,
+                    "Product_Name": _pSkuOf(slot),
+                    "Quantity": 1,
+                    "Notes": getValSafe(ns + 'pEngraving', '')
+                });
+                if (getValSafe(ns + 'light_en', false)) {
+                    orderItemsArray.push({
+                        "Order_Item_Key": "TEMP_L_LIGHTS_" + slot,
+                        "Product_Name": "燈飾 - 加購",
+                        "Quantity": 1,
+                        "isAccessory": true
+                    });
+                }
+            });
+
             // 金屬鎖匙扣 擷取邏輯
             // 安全網：section toggle 關閉但子項目已勾選時仍納入 payload（防 0601100 類問題）
             const enableK = getValSafe("enableK", false);
@@ -7772,7 +8104,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             else cost += (!hasMainProduct) ? _dBP : _dBS;
                         }
                     });
-                } else if (!item.isAccessory && item.Order_Item_Key !== "TEMP_P_MAIN") {
+                } else if (!item.isAccessory && !/^TEMP_P_/.test(item.Order_Item_Key)) {
                     // 鎖匙扣 / 吊飾：按 P/S 模式與成人/嬰兒 tier 決定畫圖費
                     // TD-P-chargedPositions: P_MAIN 不在此計算畫圖費，其 $210 成本由 n8n Supabase total_base_cost 負責
                     let isAdultItem = name.includes("成人") || (item.comboNote && (item.comboNote.includes("父母") || item.comboNote.includes("成人")));
@@ -7822,10 +8154,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 item.FatMoCost = cost * qty;
 
                 // --- 2. 主商品報價 ---
-                if (item.Order_Item_Key === "TEMP_P_MAIN") {
-                    let hasAdultInSet = name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked);
+                if (/^TEMP_P_/.test(item.Order_Item_Key)) {
+                    // cl-final-plan 2026-08-15-1944 A2/#1 BLOCKER 修復：追加件恆無父母/大寶（Fat Mo Q4
+                    // 拍板不支援），若唔加 _isMainP 守衛，追加件會誤讀主件嘅 en_parent/嬰兒肢體，
+                    // 玻璃瓶追加件會被誤判做家庭價 $2,580 並重複收 mixed_member_surcharge。
+                    let _isMainP = (item.Order_Item_Key === "TEMP_P_MAIN");
+                    let hasAdultInSet = _isMainP && (name.includes("成人") || (document.getElementById("en_parent") && document.getElementById("en_parent").checked));
                     let babyParts = document.querySelectorAll('.limb-sel[data-who="嬰兒"]');
-                    let hasBabyInSet = Array.from(babyParts).some(s => s.value !== "無");
+                    let hasBabyInSet = _isMainP && Array.from(babyParts).some(s => s.value !== "無");
                     let isGlassJar = name.includes("玻璃");
 
                     let price = 0;
@@ -8347,6 +8683,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     balance: (state.balanceSplitData != null) ? state.balanceSplitData : null
                 };
 
+                // 🚨 步驟 0b：偵測並重建追加擺設款式（多件手模擺設逃生口，cl-flow 2026-08-15-1944 A2/#4 修復）
+                // 必須喺步驟1還原前完成，否則 p{N}_*／limb_sel_嬰兒#{N}_* 呢啲 key 會因 DOM 未存在
+                // 而被步驟1嘅 getElementById 靜默跳過。正則掃描鍵名，唔寫死比對某個固定 key（如 p2_pSubCat）。
+                (function() {
+                    var _slots = new Set();
+                    Object.keys(state).forEach(function(k) {
+                        var m = k.match(/^p(\d+)_/) || k.match(/^limb_sel_嬰兒#(\d+)_/);
+                        if (m) _slots.add(Number(m[1]));
+                    });
+                    var _sortedSlots = Array.from(_slots).sort(function(a, b) { return a - b; });
+                    _sortedSlots.forEach(function(slot) { renderPExtraSlot(slot); });
+                    var _seqEl = document.getElementById('p_slot_seq');
+                    if (_seqEl) {
+                        var _maxSlot = _sortedSlots.length > 0 ? _sortedSlots[_sortedSlots.length - 1] : 1;
+                        _seqEl.value = String((state['p_slot_seq'] != null) ? state['p_slot_seq'] : _maxSlot);
+                    }
+                    if (typeof _pExtraSyncChrome === 'function') _pExtraSyncChrome();
+                })();
+
                 // 🚨 步驟 1：先還原基本欄位 (有 ID 的靜態元素，例如開關、pSubCat)
                 for (let key in state) {
                     if (!key.startsWith('limb_sel_')) {
@@ -8434,6 +8789,28 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 });
                 if (document.getElementById("k_family_combo")) updateFamilyParts();
                 if (document.getElementById("m_family_combo")) updateFamilyParts();
+
+                // 追加件版 [Fix 4B]：_pExtraSubCatChange() 會依 pSubCat 重建 baseColorContainer
+                // 內容（木框色款 vs 底座顏色兩種互斥容器），步驟1嘅 dispatchEvent('change') 雖已
+                // 觸發過一次，但呢度要喺套用 baseColor/woodStyle 儲存值「之前」先確保容器類型正確，
+                // 否則會將啱啱套落嘅值又推翻返做預設（同主件 Fix 4B 同一成因，
+                // cl-flow 2026-08-15-1944 A2/#4）。
+                _pActiveSlots().forEach(function(slot) {
+                    var ns = _pns(slot);
+                    if (typeof _pExtraSubCatChange === 'function') _pExtraSubCatChange(slot); // 先令容器類型對齊已還原嘅 pSubCat
+                    ['baseColor', 'woodStyle', 'babyQuickColor', 'babyCustomColor'].forEach(function(f) {
+                        var k = ns + f;
+                        if (state[k] != null) { var _el = document.getElementById(k); if (_el) _el.value = state[k]; }
+                    });
+                    var lightKey = ns + 'light_en';
+                    if (state[lightKey] != null) { var _lel = document.getElementById(lightKey); if (_lel) _lel.checked = state[lightKey]; }
+                    var babyModeKey = ns + 'babyMode';
+                    if (state[babyModeKey] != null) {
+                        var _bmEl = document.getElementById(babyModeKey);
+                        if (_bmEl) _bmEl.value = state[babyModeKey];
+                        if (typeof _pExtraBabyRestoreVisual === 'function') _pExtraBabyRestoreVisual(slot);
+                    }
+                });
 
                 // 🚨 步驟 3：還原剛剛重新渲染的動態欄位 (limb_sel_)
                 for (let key in state) {
@@ -8673,12 +9050,40 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     const _mItems = _items.filter(i => i.item_category === '純銀頸鏈吊飾' || i.item_category === '銀飾' || (i.item_category || '').includes('吊飾'));
 
                     if (_pItems.length > 0) {
+                        // 主件：item_key 以 _P_MAIN 結尾（沿用現有邏輯，不變）
+                        const _mainPItem = _pItems.find(i => (i.item_key || '').toUpperCase().endsWith('_P_MAIN')) || _pItems[0];
                         _synth.enableP    = true;
-                        _synth.pEngraving = _pItems[0].engraving_text || '';
-                        const _pk = (_pItems[0].item_key || '').toLowerCase();
+                        _synth.pEngraving = _mainPItem.engraving_text || '';
+                        const _pk = (_mainPItem.item_key || '').toLowerCase();
                         // [Fix 4A] item_key is always TEMP_P_MAIN (no subtype info); prefer raw_form_state
                         _synth.pSubCat = (_fs && _fs.pSubCat) ? _fs.pSubCat : (_pk.includes('玻璃瓶') ? '玻璃瓶款式' : '木框款式');
                         if (_fs && _fs.baseColor) _synth.baseColor = _fs.baseColor;
+
+                        // 追加件（cl-flow 2026-08-15-1944 A2/#6 修復）：用 item_key 尾段 slot 號定位，
+                        // 禁止按陣列 index 順序填入——否則 slot2 被刪走剩 slot3 時會錯渲染入 slot2，
+                        // 破壞 Slot 制承諾（item_key 永不重排）。specification 格式「款式 · 底座色[+燈]」
+                        // 由本檔 Step 7 寫入（見 sbSyncOrder），此處逆向解析還原。
+                        _pItems.forEach(function(i) {
+                            const _m = (i.item_key || '').match(/_P_(\d+)$/i);
+                            if (!_m) return;
+                            const _slot = Number(_m[1]);
+                            const _ns = _pns(_slot);
+                            const _spec = i.specification || '';
+                            const _specParts = _spec.split(' · ');
+                            const _specSub = _specParts[0] || '';
+                            const _specDetail = _specParts[1] || '';
+                            const _ik = (i.item_key || '').toLowerCase();
+                            _synth[_ns + 'pSubCat'] = _specSub.includes('玻璃瓶') ? '玻璃瓶款式'
+                                : (_specSub.includes('木框') ? '木框款式' : (_ik.includes('玻璃') ? '玻璃瓶款式' : '木框款式'));
+                            _synth[_ns + 'pEngraving'] = i.engraving_text || '';
+                            if (_specDetail) {
+                                const _hasLight = _specDetail.includes('+燈');
+                                const _colorPart = _hasLight ? _specDetail.replace('+燈', '') : _specDetail;
+                                if (_synth[_ns + 'pSubCat'] === '玻璃瓶款式') _synth[_ns + 'baseColor'] = _colorPart;
+                                else _synth[_ns + 'woodStyle'] = _colorPart;
+                                _synth[_ns + 'light_en'] = _hasLight;
+                            }
+                        });
                     }
                     if (_kItems.length > 0) {
                         _synth.enableK = true;
@@ -8780,8 +9185,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (_fs.en_elder  != null) _synth.en_elder  = _fs.en_elder;
                     // Critical: carry all limb_sel_* so Step 3 of restoreFormState can restore them
                     // after renderLimbGrid() destroys and recreates the entire limbContainer DOM.
+                    // 同埋追加件 p{N}_* 靜態欄位（cl-flow 2026-08-15-1944）——_fs 為 raw_form_state
+                    // 真源，優先於上面由 specification 文字逆向解析嘅重建值。
                     Object.keys(_fs).forEach(function(k) {
-                        if (k.startsWith('limb_sel_')) _synth[k] = _fs[k];
+                        if (k.startsWith('limb_sel_') || /^p\d+_/.test(k)) _synth[k] = _fs[k];
                     });
                 }
 
@@ -9007,6 +9414,28 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         "Quantity": 1
                     });
                 }
+
+                // 多件手模擺設追加件（cl-flow 2026-08-15-1944，D64 逃生口模式）
+                _pActiveSlots().forEach(function(slot) {
+                    var ns = _pns(slot);
+                    var _pSub = getValSafe(ns + 'pSubCat', '');
+                    var _pSpec = _pSub.includes('木框')
+                        ? ('木框款式 · ' + getValSafe(ns + 'woodStyle', '待定'))
+                        : ('玻璃瓶款式 · ' + getValSafe(ns + 'baseColor', '待定') + (getValSafe(ns + 'light_en', false) ? '+燈' : ''));
+                    orderItemsArray.push({
+                        "Order_Item_Key": `${currentOrderId}_P_${slot}`,
+                        "Product_Name": _pSkuOf(slot),
+                        "Quantity": 1,
+                        "Specification": _pSpec
+                    });
+                    if (getValSafe(ns + 'light_en', false)) {
+                        orderItemsArray.push({
+                            "Order_Item_Key": `${currentOrderId}_L_LIGHTS_${slot}`,
+                            "Product_Name": "燈飾 - 加購",
+                            "Quantity": 1
+                        });
+                    }
+                });
 
                 // 金屬鎖匙扣 擷取邏輯
                 const enableK = document.getElementById("enableK");
@@ -16563,7 +16992,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const newItems = orderItemsArray.map(function(item) {
                     // For P items: store pSubCat in specification (no FK; _deriveSpec returns '')
                     var _spec = _deriveSpec(item.Order_Item_Key);
-                    if (!_spec && item.Product_Name) {
+                    if (!_spec && item.Specification) {
+                        // 追加件（cl-flow 2026-08-15-1944）：款式+底座色，唔含肢體字，
+                        // 防 getProductDimensions() 誤觸部位/肢數 badge（見 :9502/:9546 子字串比對）
+                        _spec = item.Specification;
+                    } else if (!_spec && item.Product_Name) {
                         if (item.Product_Name.includes('木框')) _spec = '木框款式';
                         else if (item.Product_Name.includes('玻璃')) _spec = '玻璃瓶款式';
                     }
