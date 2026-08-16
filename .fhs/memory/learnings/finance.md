@@ -23,6 +23,8 @@
 <!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
 ### 跨領域指標（全文在別桶）
 - → `supabase.md` #8 【高頻 ⚠️】新增/沿用 status-filter 查詢前必查權威完成旗標 + 生產真實字面值
+- → `supabase.md` #14 【高頻 ⚠️】`CREATE OR REPLACE FUNCTION` 全量覆蓋，base 版本揀錯會靜默吞噬之前獨立修復加落嘅欄位
 - → `frontend.md` #6 【高頻 ⚠️】「每件扣減率」config key 唔可以複用嚟當「每件加項成本」
 - → `n8n.md` #4 【高頻 ⚠️】SKU 目錄由「整套價焗死件數」改「單件價 × quantity」模型時，必須專門用 qty≥2 測試單驗證 n8n 有冇真的做呢個乘法
+- → `governance.md` #6 grep sweep 嘅「必查清單」本身可以就係漏嘅源頭，唔止靠記憶寫低嘅清單先會漏
 <!-- POINTERS:END -->

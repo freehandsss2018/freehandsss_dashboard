@@ -2,9 +2,9 @@
 name: database-reviewer
 description: FHS Airtable schema specialist and n8n data flow validator. Use PROACTIVELY when reviewing Airtable field mappings, n8n Code Node data structures, SKU normalization, or Triple_Sync field consistency. Read-only audit mode by default.
 tools: ["Read", "Grep", "Glob", "Bash", "mcp__claude_ai_Airtable__search_bases", "mcp__claude_ai_Airtable__list_tables_for_base", "mcp__claude_ai_Airtable__get_table_schema", "mcp__claude_ai_Airtable__list_records_for_table", "mcp__claude_ai_Airtable__search_records", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node", "mcp__n8n-mcp-server__get_workflow", "mcp__n8n-mcp-server__verify_triple_sync"]
-version: v2.1.0
+version: v2.2.1
 compatible_with: AGENTS.md v1.5.0
-last_updated: 2026-05-16
+last_updated: 2026-08-16
 ---
 
 # FHS Database Reviewer
@@ -53,8 +53,8 @@ Layer 1 — Supabase View（即時報價）
   ← 替代舊 Airtable Fetch Exact Base Cost
 
 Layer 2 — n8n 靜態寫入（歷史快照）
-  orders.total_cost / net_profit / handmodel_cost / keychain_cost / necklace_cost
-  order_items.item_base_cost / handmodel_cost / keychain_cost / necklace_cost
+  orders.total_cost / net_profit / handmodel_cost / keychain_cost / necklace_cost / accessory_cost
+  order_items.item_base_cost / handmodel_cost / keychain_cost / necklace_cost / accessory_cost
   ← 替代舊 Airtable rollup/formula 欄位
 ```
 
@@ -109,7 +109,7 @@ products (489 rows) ─── product_sku(TEXT) ──< order_items >── orde
 ### 2. Supabase Layer 2 驗證（歷史快照層）
 
 參考 `FHS_Finance_Bible.md` 第五節「成本欄位歸屬表」，檢查：
-- **orders 表**：`handmodel_cost/keychain_cost/necklace_cost` 是否由 n8n Mirror 寫入（非 NULL）
+- **orders 表**：`handmodel_cost/keychain_cost/necklace_cost/accessory_cost` 是否由 n8n Mirror 寫入（非 NULL）
 - **orders 表**：`final_sale_price` 是否只由 Dashboard 寫入（n8n 不可重算）
 - **order_items 表**：`product_sku` 是否有值（特殊品 NULL 除外，需備注）
 - **order_items 表**：`item_category` 是否正確對應 SKU 類型
@@ -134,6 +134,7 @@ return { field: value };
     - `木框/玻璃瓶` → `立體擺設` → `handmodel_cost`
     - `鎖匙扣` → `金屬鎖匙扣` → `keychain_cost`
     - `吊飾` → `銀飾` → `necklace_cost`
+    - `羊毛氈/燈飾` → `配件` → `accessory_cost`（僅限玻璃瓶款式立體擺設加購，migration 0079/0080）
 - **Calculate Profit & Pack Items** 節點：輸出是否包含完整的分類成本欄位
 - **Mirror to Supabase** 節點：feature flag `supabase_mirror_enabled` 是否開啟，upsert payload 是否完整
 
@@ -163,7 +164,7 @@ return { field: value };
 
 ```
 驗證 1：成本分類彙總
-  orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost = orders.total_cost
+  orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost + orders.accessory_cost = orders.total_cost
 
 驗證 2：利潤正確性
   orders.net_profit = orders.final_sale_price - orders.total_cost
@@ -215,12 +216,13 @@ get_node("Parse Items & Generate SKU")    ← 確認 SKU 正規化邏輯、Layer
 - 修改 `captureFormState()` 的任何邏輯
 - n8n 節點硬編碼 API Key
 - `Mirror to Supabase` 中 `product_sku: null`（應從 item.Product_Name 取值）
-- `orders` upsert 缺少 `handmodel_cost/keychain_cost/necklace_cost`
+- `orders` upsert 缺少 `handmodel_cost/keychain_cost/necklace_cost/accessory_cost`
 - 使用 Supabase trigger/generated column 計算財務欄位
 
 ---
 
-*FHS database-reviewer v2.2.0 — 2026-06-12*
+*FHS database-reviewer v2.2.1 — 2026-08-16*
+*v2.2.0 → v2.2.1：補漏 `accessory_cost`（配件成本，migration 0079/0080，2026-07-25 導入）第四分類——Layer 2 快照清單、驗證檢查項目、SKU 類別推導表、驗證1 rollup 公式、反模式常見bug清單共 5 處同步（此前只列三分類，finance-gatekeeper SKILL.md §5.4.7 grep sweep 事後揪出）；同步修正 frontmatter `version` 欄位漂移（此前停留 v2.1.0，落後於本footer已記錄嘅 v2.2.0）*
 *v2.1.0 → v2.2.0：啟動前置 Step 4 — 涉及 RPC KPI / 混合單 / 3-layer 時按需讀取 §十（Session 99-100 知識治理落地）*
 *v2.0.0 → v2.1.0：優先順序重組（Supabase Layer 1/2 主導），新增 Phase B 過渡文檔，反模式增強*
 *核心升級：Triple Sync → Quadruple Sync；Airtable 為主 → Supabase 為主；新增 Finance Bible 強制前置*

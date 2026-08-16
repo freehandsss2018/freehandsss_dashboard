@@ -393,7 +393,7 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
 
 ```
 驗證 1：訂單成本一致性
-  orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost = orders.total_cost
+  orders.handmodel_cost + orders.keychain_cost + orders.necklace_cost + orders.accessory_cost = orders.total_cost
   （keychain_cost 已含運費扣減）
 
 驗證 2：利潤正確性

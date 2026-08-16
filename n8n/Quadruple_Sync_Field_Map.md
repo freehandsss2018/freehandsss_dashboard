@@ -1,8 +1,9 @@
 # Quadruple Sync Field Map
 
-**Version**: v2.1
+**Version**: v2.1.1
 **Created**: 2026-05-10 (Phase 0 盤點，升級自 Triple_Sync 概念)
-**Updated**: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象V2模型——新增`family_member_config`欄位映射；position_code值域擴充大寶獨立字串；新增familyCombinDynamicDrawing計算段；節點版本V47.13/22→V47.14/24）
+**Updated**: 2026-08-16（§「❌ 嚴禁寫入」表補漏 `accessory_cost`——同 §四端映射表已列嘅配件成本欄位口徑不一，屬同批 grep sweep 事後揪出，見 finance-gatekeeper SKILL.md last_updated）
+[前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象V2模型——新增`family_member_config`欄位映射；position_code值域擴充大寶獨立字串；新增familyCombinDynamicDrawing計算段；節點版本V47.13/22→V47.14/24）
 [前次] 2026-07-25（S189財務文件全面審查大改版——本文件2.5個月零更新，核心架構假設「Airtable過渡期SSoT」已被D43(2026-07-22~23)推翻，「n8n內部計算規則」整段描述嘅「Node 14 – Cost Calculator」節點自V47.4起已不存在，現行節點鏈完全改寫；新增order_items 4個V2欄位；已知問題表核對實際狀態）
 **四端**: Airtable ↔ n8n ↔ Dashboard ↔ Supabase
 
@@ -232,7 +233,7 @@ LEFT JOIN cost_configurations c ON p.cost_config_id = c.id;
 |------|---------|---------|
 | `total_cost` | n8n 計算 | 覆蓋歷史成本快照 |
 | `net_profit` | n8n 計算 | 財務數字失真 |
-| `handmodel_cost` / `keychain_cost` / `necklace_cost` | n8n 計算 | 同上 |
+| `handmodel_cost` / `keychain_cost` / `necklace_cost` / `accessory_cost` | n8n 計算 | 同上 |
 | `process_status` | Airtable / n8n | 狀態混亂 |
 | `batch_number` | n8n | 批次管理混亂 |
 | `admin_notes` | Airtable 人工 | 覆蓋管理員備注 |

@@ -17,6 +17,7 @@
 3. **【高頻 ⚠️】互動式改 `current.html` 期間，`freehandsss_dashboardV42.html`（dev source）會悄悄漂移**：連續多輪功能改動全部直接寫落 `current.html`（因為即時 browser dev preview 只讀呢個檔），事後先發現 V42.html 完全冇跟住改——下次 `/upload-web` 無參數升格流程會 `cp V42.html → current.html`，一次過洗走全部本次修復。用 `git diff current.html | sed 改路徑 | patch -p1` 補回 V42 可行且快，但依賴人手記得做。凡連續多輪 Edit 只針對 `current.html`，`/commit` 前必須先 `diff` 兩檔確認同步，或改埋 V42.html 先算完工 — Session 2026-07-23 [[project_governance_portability_plan]] `@governance` <!-- v:2026-07-23 -->
 4. **健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code**：`/fhs-check` 連續多輪回報「全部通過」，但真因係測試腳本內部一個短路邏輯 bug（CREATE 驗證失敗會跳過後續驗證仲印假成功訊息 + exit 0），令 Supabase 憑證 401 嘅生產故障隱藏咗 5 日。加咗偵測層（掃 stdout 警告字串）後首跑即證實：**新警報第一次觸發必須逐個案追到底確認「係咪指向真問題」，唔可以見一個案例修好就收工**——恆定 DEGRADED 同恆定 PASS 一樣會造成警報疲勞（同一種失效模式）。逐案追查反而再揪出兩個獨立舊 bug（RPC 邏輯漏洞、測試夾具過時）。判斷「案例應唔應該落地」呢類語義問題，唔好憑猜測/命名推斷，直接寫探針逐個案實測真實行為，用實測結果定案 — D62/D63/2026-08-11 [[project_n8n_supabase_401_credential_incident]] `@governance +n8n +tooling` <!-- v:2026-08-11 -->
 5. **【高頻 ⚠️】安全類修復唔可以一輪收工——實測連續 4 輪對抗式審查，每一輪都揪到真問題，其中兩輪推翻咗主對話自己嘅核心設計前提**：V42 XSS 整治派咗 4 次 `code-reviewer`（opus/fresh context/T5 模板），命中率 4/4：第 1 輪揪出主對話漏咗第三個同源出口（交付提醒清單）；第 2 輪推翻「IG 係唯一外部入口」前提（刻字亦係客人提供，經另一條路入 DOM）；第 3 輪揪出主對話啱啱寫嘅換行修復係 **no-op**（源碼跳脫層數錯，睇代碼睇唔出）；第 4 輪揪出「正規化資料」方案會令 DB PATCH 靜默命中 0 行。**通則**：①「已修好」嘅自我判斷喺安全類任務上系統性偏樂觀，因為修復者同時係漏洞成因嘅共同作者，會沿用同一套錯誤前提；②每輪 prompt 要明寫「上一輪你揪到乜、我點修」，等審查員可以查修補本身而唔係重頭掃；③收工訊號唔係「審查話 PASS」，而係**逐欄位／逐語境嘅實測掃描全綠**（本次為 10 個 DB 欄位 × 2 條渲染路徑 = 零注入），審查只係用嚟揾出「你未諗到要掃邊個欄位」 — 2026-08-09 `@governance +frontend` <!-- v:2026-08-09 -->
+6. **grep sweep 嘅「必查清單」本身可以就係漏嘅源頭，唔止靠記憶寫低嘅清單先會漏**：finance-gatekeeper §三B 第4步（D46/D47 事故後新增）要求新增財務欄位時 grep 兄弟欄位確認同步，並列明至少必查 5 份文件（Finance Bible/Product_Definition/Cost Schema v2/Quadruple_Sync_Field_Map/finance-gatekeeper 路由表）——但呢張「機制化」清單本身冇列 `finance-auditor.md`/`database-reviewer.md` 兩個 subagent 定義檔案，令 `accessory_cost`（2026-07-25 導入）喺呢兩個稽核邏輯檔案入面漏咗超過 3 星期都冇被揪到，直至下一輪 grep sweep 意外掃到先發現。教訓：機制化清單本身要定期問「呢張清單漏咗邊類消費者」，唔可以將「已經寫成清單」當「已經窮盡」——尤其係「稽核邏輯本身」（subagent 定義、驗證腳本）呢類消費者，容易被漏因為佢哋唔屬於「業務規則文件」直覺分類。建議：finance-gatekeeper SKILL.md §三B 第4步清單補加「9支subagent定義檔」一項，待 Fat Mo 確認後執行（05_maintenance-protocol.md 權限矩陣未明確覆蓋此檔，保守起見未自行改動）。— 2026-08-16 見 decisions.md D46/D47、`FHS_System_Logic_Overview.md` §5.4.7 補記 `@governance +finance` <!-- v:2026-08-16 -->
 
 ## Preferences
 
@@ -28,4 +29,5 @@
 ### 跨領域指標（全文在別桶）
 - → `supabase.md` #12 【高頻 ⚠️】規則系統由「thread 級」擴展成「全域生效」時，原有嘅「訊息內容存在」防偽護欄唔再夠——要問清楚呢個護欄嘅資料源頭本身係咪受同一信任邊界保護
 - → `n8n.md` #7 【高頻 ⚠️】n8n Code node 預設封鎖環境變數存取（`N8N_BLOCK_ENV_ACCESS_IN_NODE`）——見到「secret 硬編碼 + 防禦性 try/catch 包住 env 讀取」呢個組合，唔好當疏忽，要當「env 存取曾經失敗過」嘅訊號
+- → `tooling.md` #6 【高頻 ⚠️】Git worktree session 入面，絕對路徑漏咗 worktree 前綴會靜默錯改主倉，Read/Edit 完全唔會報錯
 <!-- POINTERS:END -->

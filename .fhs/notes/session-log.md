@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-08-16 (accessory_cost 文件補漏 7 份 + Git Worktree 絕對路徑事故): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-16 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。補齊 `finance-auditor.md`/`database-reviewer.md`/`FHS_Pricing_Bible.md` §8 嘅 `accessory_cost` 第四分類缺口，grep sweep 額外揪出 `FHS_Finance_Bible.md`（L1 自相矛盾）/`finance-gatekeeper/SKILL.md`/`Quadruple_Sync_Field_Map.md` 三處同類缺口。過程中揪出 2 個獨立 spawn_task 範圍外 bug（Dashboard `loadMode2Items()` select 缺欄位、兩個 hook regex 缺 `accessory_cost`）。另意外自曝一次 Git worktree 絕對路徑事故：session 全程漏帶 worktree 前綴令改動落錯主倉，第一輪 fresh-context 覆核因此誤報「文件全部唔存在」，查明後relocate+還原修復，第二輪覆核 7/7 PASS。
+**Learnings**：新增 `learnings/tooling.md` #6（worktree 絕對路徑漏前綴）、`learnings/governance.md` #6（grep sweep 必查清單本身可以係漏嘅源頭）；完整 post-mortem 見 [2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md](../memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md)。
+**Subagent 使用記錄**：✅ 兩次 fresh-context `general-purpose` Agent（第一次因路徑錯誤誤報失敗，第二次 7/7 PASS）；✅ 兩次 `spawn_task`（Dashboard select 缺口、hook regex 缺口）。
+
 ## 2026-08-15 (V42 多件手模擺設訂單支援 — 逃生口模式，D64): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-15「D64」條目 + [decisions.md D64](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。真實訂單 `#0600901` 因表單只支援單件手模擺設而從未入過系統，Fat Mo 拷問八輪定案，走 `/cl-flow`（flow_id `2026-08-15-1944`，DEGRADED：A1 quota 耗盡、A2 首版 artifact 因 runner UTF-8 chunk 邊界截斷損壞已用 curl 復原）→ `/execute`。主件 P 區零改動，新增「追加擺設款式」摺疊區（最多 3 件），Slot 制（`p_slot_seq` 單調遞增）防重排污染。A2 對抗評審揪出 1 個 BLOCKER（`calculatePricing()` 追加件誤讀主件 `en_parent`/嬰兒狀態致誤判定價）+ 1 個 slot 重排風險，均已修復；執行階段 live 實測再揪出 1 個計劃未預見嘅 UI bug（`_pExtraSyncChrome()` 洗走其他 slot 底座色）。**意外發現獨立既有缺陷**（範圍外未修復，已 `spawn_task` task_e035fe64）：`sync_order_to_mirror` RPC 嘅 `accessory_cost` 欄位喺 2026-07-28 migration 0081 `CREATE OR REPLACE FUNCTION` 覆蓋時靜默消失，2026-08-11 D63 一度發現但誤判為「本來就冇」而非「已回歸」。3 張真實舊單零回歸 + `captureFormState()` 完整往返 + live webhook 測試單 Supabase 直查 `$690` 正確 + `/fhs-check` 4 PASS/1 SKIP。新財務規則（多件手模擺設逐件全額收費）已落盤 Finance Bible。

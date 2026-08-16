@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-16] Session（Claude Code / Sonnet 5）— accessory_cost 文件補漏（finance-auditor/database-reviewer/Pricing Bible 等 7 份）+ Git Worktree 絕對路徑事故修復
+
+- **緣起**：Fat Mo 指令 D64 修復 `sync_order_to_mirror` RPC 嘅 `accessory_cost` 回歸時，grep sweep 發現一個更早、獨立嘅文件缺口（2026-07-25 `accessory_cost` 首次導入時遺留，同 D64 RPC 回歸無關）——`finance-auditor.md`、`database-reviewer.md` 兩個 subagent 定義檔案，以及 `FHS_Pricing_Bible.md` §8，成本分類彙總公式/SKU 推導表/NULL 檢查清單/報告範本全部只列三分類，從未納入 `accessory_cost` 第四分類。
+- **依 finance-gatekeeper §三B 前置紀律執行**：完整方程式先行（讀 migration 0079/0080 定案 rollup 公式）→ 對齊已驗證先例（`FHS_Finance_Bible.md` 既有正確定義）→ 全 repo grep sweep。
+- **補齊 Fat Mo 指名 3 份文件**：`finance-auditor.md`（5處：SKU推導表/重點欄位清單/rollup公式/NULL檢查/報告範本）、`database-reviewer.md`（5處：Layer 2快照清單/驗證checklist/SKU推導表/rollup公式/反模式清單）、`FHS_Pricing_Bible.md` §8「成本分類小計」表。兩個 subagent 版本升 v2.2.0→v2.2.1。
+- **grep sweep 額外揪出 3 個唔喺原指名清單、但屬 §三B 第4步「必查清單」硬性要求嘅缺口**：`FHS_Finance_Bible.md`（L1 權威文件，§九「財務驗證公式」同 §三內部自相矛盾——§三已於 D46 補過 `accessory_cost`，§九仍停留三分類，同一份文件自打對台）、`finance-gatekeeper/SKILL.md`（§三「5條財務死線」第2條 Layer 2 不可變清單）、`n8n/Quadruple_Sync_Field_Map.md`（「❌ 嚴禁寫入」表）。
+- **驗證**：派 fresh-context subagent 獨立覆核全部 7 份文件。**第一輪覆核回報「7/7 FAIL，改動完全不存在」**——事後查明係主 agent 自己嘅路徑錯誤（見下方事故段落），並非文件本身有問題；修正路徑後重派第二輪，7/7 PASS，一個版本號漏升（`n8n/Quadruple_Sync_Field_Map.md` header）已補。
+- **另揪出 2 個確認嘅獨立 bug，範圍外未修，各自 `spawn_task` 交獨立 session**：(1) Dashboard `loadMode2Items()`（`current.html`/`V42.html` 約第12162行）REST select 漏咗 `accessory_cost`；(2) `scripts/hooks/pre-tool-guard.js`/`post-tool-kgov.js` 兩個財務內容偵測 regex 未包含 `accessory_cost`。
+
+### 事故：Git Worktree 絕對路徑漏前綴，全部改動一開始落錯主倉
+
+Session 由第一個 Read tool call 開始，就用主倉根路徑起頭嘅絕對路徑，完全冇加 system prompt 明確指定嘅 `Primary working directory` 前綴（`.claude\worktrees\<name>\`）。因為 worktree 同主倉係同一 repo 嘅兩個獨立 checkout，主倉路徑本身真實存在，Read/Edit/Grep 全部靜默成功、冇任何錯誤訊息——連續 7 個檔案、20+ 次 Edit 呼叫全部落錯咗去主倉（`main` branch）。派第一個 fresh-context subagent 覆核時同一錯誤重演，令第一輪覆核誤報「文件全部唔存在」。修復：確認主倉嗰批改動 100% 屬本 session 自己造成 → `cp` 內容搬去正確 worktree → `git checkout -- <files>`（精準列檔名）還原主倉 → 重派第二輪 subagent 並明確提供絕對路徑 + 要求 `git branch --show-current` 自證。已落盤 `learnings/tooling.md` #6、`learnings/governance.md` #6、完整 post-mortem `.fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md`。
+
 ## [2026-08-15] Session（Claude Code / Opus 5 規劃 + Sonnet 5 執行）— D64：V42 多件手模擺設訂單支援（逃生口模式）+ 揪出獨立 RPC 回歸
 
 - **緣起**：真實訂單 `#0600901`（TW Ting，倒模日 2026-04-09，木框+玻璃瓶×2）因表單只支援單件手模擺設而從未入過系統，屬既有帳目缺口。Fat Mo 拷問八輪定案設計，走 `/cl-flow`（flow_id `2026-08-15-1944`）→ `/execute`。

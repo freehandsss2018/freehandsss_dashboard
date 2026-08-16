@@ -416,6 +416,8 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **已知未完成項**（記錄，非本次阻擋項）：`n8n/FHS_Core_OrderProcessor_live.json` repo 匯出檔本身已嚴重過時（V47.12 vs live V47.22/23），本次冇完整重新匯出（MCP `get_workflow` 只返回節點清單/連線，唔含完整 `parameters`，冇工具可一次性完整重匯出）；後端 pSubCat 約束（防止配件掛喺非玻璃瓶款式）現時只喺前端 UI 層生效，未有 n8n/DB 層防線，已列入 backlog（見 `cl-final-plan.md` §6）。
 
+**補記（2026-08-16，D64 grep sweep 事後揪出，同 §5.4.15 RPC 回歸無關）**：本次上線嘅「finance-auditor 獨立覆核 4 項全 PASS」（見上方驗證段）用嘅係當次臨時驗證式，事後發現 `finance-auditor.md`／`database-reviewer.md` 兩份 subagent 定義檔案、`FHS_Pricing_Bible.md` §8 本身嘅 rollup 公式／SKU 類別推導表／NULL 檢查清單／稽核報告範本，從導入當日起就從未同步新增 `accessory_cost` 做第四分類，一直停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`）。根因：三B前置紀律第4步 grep sweep 嘅「必查清單」（`FHS_Finance_Bible.md`/`FHS_Product_Definition.md`/`FHS_Product_Cost_Schema_v2.md`/`Quadruple_Sync_Field_Map.md`/`finance-gatekeeper/SKILL.md`）本身冇列 subagent 定義檔案，令呢兩份稽核邏辑檔案落喺清單盲點。已於 2026-08-16 補齊 5 處（finance-auditor.md）+5 處（database-reviewer.md）+1 處（Pricing Bible §8），版本 v2.2.0→v2.2.1（兩個 subagent）。
+
 ### 5.4.8 大寶/成人/家庭三對象轉V2三層成本模型（Session後續，2026-07-28，cl-flow 2026-07-28-1121 ✅ 已修復）
 
 **背景**：S189（§5.4.6）Phase3 只覆蓋嬰兒tier，大寶/成人/家庭三個對象維持舊「(單購/加購)+N飾」模型，Fat Mo 明確要求下個session全面轉V2。
@@ -689,7 +691,7 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 > ✅ **S124 v2 修復（2026-06-26，已結案）**：加購鎖匙扣 N飾成本漏算 bug 已修 — migration 0045（`fhs_compute_keychain_cost` RPC）+ 線B products UPDATE 41 rows（嬰兒 S/P 不銹鋼 N飾改 per-set 值）+ 線C 9 單回填（order_items/orders/audit_logs）+ finance-auditor 三端對賬 9/9 PASS。前向路徑：n8n 直讀 `products.total_base_cost`（已為 per-set 值），所有已發生訂單正確。`fhsAudit_qtyWarn` 誠實警示仍保留（對未來可能的其他 tier 缺口）。
 >
 > 若 n8n **Calculate Profit & Pack Items** 或 **Supabase Mirror Prep** 或 **財務 RPC** 邏輯變動，必須同步檢查 V42 `buildAuditLedgerHtml` 函式：
-> - 訂單層類別欄映射（`handmodel_cost / keychain_cost / necklace_cost`）
+> - 訂單層類別欄映射（`handmodel_cost / keychain_cost / necklace_cost / accessory_cost`）
 > - `n8n_adjustment_notes` 顯示邏輯
 > - 確收鏈公式（`deposit + balance + additional_fee = final_sale_price`）
 > - KPI 口徑（`net_profit − adjustment_amount`）

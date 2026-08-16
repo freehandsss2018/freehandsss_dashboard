@@ -1,10 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.10.0
+version: 1.10.1
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-08-15（D64：多件手模擺設訂單新財務規則入表；更正 accessory_cost「已修復」過時聲明——已於2026-07-28回歸，見 §5.4.15）
+last_updated: 2026-08-16（§三「5條財務死線」第2條補漏 `accessory_cost`——此前只列三分類，屬同 finance-auditor.md/database-reviewer.md 文件缺口同一批 grep sweep 事後揪出；一併修復 `FHS_Finance_Bible.md` §九「驗證公式」自身內部漂移，同檔 §三 line 136 早有4分類但 §九 line 396 仍停留3分類）
+[前次] 2026-08-15（D64：多件手模擺設訂單新財務規則入表；更正 accessory_cost「已修復」過時聲明——已於2026-07-28回歸，見 §5.4.15）
 [前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§一路由表新增家庭組合(V2)/大寶standalone廢止規則兩行；§三B方程式段新增V2擴充+家庭動態畫圖式）
 [前次] 2026-07-25（D46事故後：§三B新增第4步「文件同步完整性grep sweep」，防止成本欄位改動漏同步Finance Bible/Product_Definition等權威文件；大型改動另派fresh-context subagent覆核）
 compatible_with: AGENTS.md v1.4.13
@@ -70,7 +71,7 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 ## 三、5 條財務死線（永不違反）
 
 1. **收款確收守護（v1.4.10 語義修正）**：操作者手動輸入的確收金額 `final_sale_price`（= Deposit + Balance + Additional_Fee）為絕對真理，n8n 不得重算（除非前端傳入值為 0）。成本 `total_cost` 由 n8n 從 Supabase 估算，屬後台快照，非「真理」。
-2. **Layer 2 歷史快照不可變**：`orders.total_cost` / `net_profit` / `handmodel_cost` / `keychain_cost` / `necklace_cost` 訂單確認後不可變更
+2. **Layer 2 歷史快照不可變**：`orders.total_cost` / `net_profit` / `handmodel_cost` / `keychain_cost` / `necklace_cost` / `accessory_cost` 訂單確認後不可變更
 3. **禁止 trigger 重算成本**：Postgres trigger / generated column 重算任何成本欄位是架構反模式
 4. **captureFormState() 禁止改動**：此函式是整個 POS 系統的數據根基
 5. **HTML ID 禁止變更**：前端 Input/Button ID 是 n8n Webhook 掛鉤
