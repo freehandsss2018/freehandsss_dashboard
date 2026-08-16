@@ -3,6 +3,13 @@
   "purpose": "canva-auto diff-learning 案例庫：每單 Fat Mo 人手改正 = 一筆訓練數據。Stage③ 換 fill 前先查此庫預測 resize/position；Fat Mo 改正後把 delta 記錄落此檔。案例 >=3 單收斂的規律才升格寫入記憶檔規則層。座標系 = 1920x1080 頁面像素。",
   "convergence_log": [
     {
+      "order": "0600506",
+      "date": "2026-08-16",
+      "corrected_slots": "1(page2彩色圖container對齊,AI自行修正) + 2(page2/page3字句font+位置,Fat Mo人手UI完成)",
+      "total_slots": 3,
+      "note": "🆕**新發現：兩張source圖(黑白/彩色)人物相對框架幾乎一致時,唯一裁切/對齊變因係container box本身唔統一**——像素bbox分析證實黑白圖_parakeet(1254²)同彩色圖_cutout(1024²)嘅人物中心frac(0.52/0.50 vs 0.52/0.50)、margin frac幾乎完全相同,故Fat Mo指出嘅『不太準確對齊重疊』唔係內容框差異,而係container嘅left/top/w/h(尤其top,差7.92px)未統一。Fat Mo自己人手nudge top(689.17→700.90)仍未夾啱(佢自己都覺得唔準),AI改用『彩色圖container完全複製去黑白圖container』(即left/top/w/h四值全部相等,唔止SOP原有嘅left+height)先徹底解決。⚠️**新bug**：`position_element`第一次呼叫將top/left參數對調寫入(傳top=697.09/left=188.29,結果卻寫成left=697.09/top=188.29),反向傳參數(把intended top值放入left欄、intended left值放入top欄)後先寫啱,懷疑係MCP工具異常,需留意日後是否重現。字句font/位置本單由Fat Mo自行喺Canva UI完成(45.3333→53.3331,+17.6%,同TW_Ting家族原值唔同),AI只需記錄diff。page3字句locator_id第4次變新(UI複製手法,已達收斂,純記錄唔再計入收斂門檻)。"
+    },
+    {
       "order": "0600905",
       "date": "2026-08-15",
       "corrected_slots": "6/6（字句x2 + 黑白圖 + 彩色圖 + 短片x2，全部Fat Mo人手再調）",
@@ -80,6 +87,49 @@
     }
   ],
   "cases": [
+    {
+      "order": "0600506",
+      "customer": "Kobekts",
+      "design_id": "DAHSdp-bPig",
+      "date": "2026-08-16",
+      "learned": true,
+      "note": "母片＝TW_Ting 0600901(DAHSWoGL13E,四片疊放家族,音長59.0sec最接近本單55.6sec,且係家族內最新Fat Mo已修正版)。Stage③換料零resize/position(4條片本地tkhd實測皆960×960正方,get-assets第5次錯報960×1920依然防守成功,母片container本身已係正方,crop_media歸零即完成),page2圖對沿用母片container直接update_fill+crop_media公式。Fat Mo驗收後回報3點問題，收口如下。",
+      "slots": [
+        {
+          "slot": "page2_黑白圖彩色圖_container對齊",
+          "element_id_bw": "PBzFjBg9hQdFdWjW-LBfYQf6Rltxq8M9h",
+          "element_id_color": "PBzFjBg9hQdFdWjW-LBtMk7rpw6MvqyZB",
+          "ai_stage3_box": {
+            "黑白圖": {"left": 188.29472207310897, "top": 697.0947461697529, "w": 533.7320955268405, "h": 563.1291551198861},
+            "彩色圖": {"left": 188.29472207310903, "top": 689.1731583034069, "w": 526.1161539462223, "h": 563.129155119886}
+          },
+          "fatmo_manual_attempt": {
+            "彩色圖_top": 700.9027169600621,
+            "note": "Fat Mo自己喺Canva UI手動nudge top(689.17→700.90),但仍向AI回報『不太準確對齊重疊位置』——證明純手感微調唔夠精準,需要公式化統一"
+          },
+          "ai_fix": {
+            "彩色圖_final": {"left": 188.29472207310897, "top": 697.0947461697529, "w": 533.7320955268401, "h": 563.1291551198861},
+            "method": "彩色圖container完全複製去黑白圖container(left/top/w/h四值全部相等,非只left+height),crop_media用公式重算:left=-14.6985297965228,top=0,box=563.1291551198861"
+          },
+          "root_cause": "像素bbox分析證實兩張source圖(黑白圖_parakeet 1254²/彩色圖_cutout 1024²)人物於各自畫布嘅相對中心frac(0.5207/0.5040 vs 0.5200/0.5034)、四邊margin frac幾乎完全一致——即兩張圖內容框本身冇差異,純粹係container box(尤其top)未統一導致視覺唔對齊。日後同一客兩張圖(黑白/彩色)若經同一local_prep.py流程產出,可預期content frac高度一致,直接統一container box(非只left+height,四值全部同步)。",
+          "tool_bug_found": "🔴`position_element`首次呼叫出現top/left參數對調寫入異常:傳{top:697.09,left:188.29}結果寫成pos(left=697.09,top=188.29)——懷疑MCP工具bug。反向傳參數{top:188.29,left:697.09}後結果先啱({left:188.29,top:697.09})。單一樣本,下次撞到position_element結果同預期唔符時,可嘗試反向傳參數驗證。"
+        },
+        {
+          "slot": "page2_page3_字句_Fat Mo人手完成",
+          "element_id_page2": "PBzFjBg9hQdFdWjW-LBpSwN9yHKsvYrY4",
+          "element_id_page3_fatmo": "PBnkjDnf1dD8xC0x-LB99HRlrR94sWWF5",
+          "ai_stage3_box": {"left": 771.8564357124856, "top": 564.0101426597298, "w": 791.9797146805403, "h": 116.93334, "fontSize": 45.3333},
+          "fatmo_final_box": {"left": 763.5861327957384, "top": 531.1611412895006, "w": 791.9797146805403, "h": 137.33338, "fontSize": 53.3331},
+          "delta": {"left": -8.2703, "top": -32.849, "h": 20.40004, "fontSize": 8.0}
+          ,
+          "note": "Fat Mo全程自行喺Canva UI完成:字句加大(45.33→53.33,+17.6%,同TW_Ting family自己嘅45.33唔同,單一樣本未收斂)+位置微調(向上移32.85px)+page3字句用UI複製手法貼過去(locator_id LBJnll3GzkgmHVrS→LB99HRlrR94sWWF5,第4次重現此手法,已達收斂門檻純記錄)+額外拉長page3元素顯示時間(MCP掂唔到,人手位)。AI冇動呢部分,純記錄diff。"
+        }
+      ],
+      "non_geometry_findings": [
+        "🆕字句font/位置類問題,本單Fat Mo選擇直接自己喺Canva UI改而非交比AI算,值得留意:當字句只係『加大+微調』(非3行reflow等結構性問題)時,Fat Mo可能傾向自己手動處理,AI應留意訊息用詞分辨『佢已經做咗』定係『要求AI去做』——本單靠對比commit前後CDF數值先確認係Fat Mo已完成嘅動作,而唔係下達指令。",
+        "page3元素顯示時間拉長(非geometry)：Fat Mo原話僅『拉長咗元素時間』,MCP完全冇對應operation,純人手位,同HoKaSin/Meika等past cases一致嘅結構性限制。"
+      ]
+    },
     {
       "order": "0600901",
       "customer": "TW_Ting",
