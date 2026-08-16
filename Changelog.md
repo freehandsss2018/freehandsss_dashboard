@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-16] Session（Claude Code / Sonnet 5 執行）— D64：`sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸修復（migration 0088）
+
+- **緣起**：Fat Mo 要求修復 `sync_order_to_mirror` RPC 漏咗 `accessory_cost` 欄位讀寫，已先行考古出根因鏈：migration `0080`（2026-07-25）首次加入 → `0081`（2026-07-28，V2成本模型）用 `CREATE OR REPLACE FUNCTION` 全量覆蓋、base 版本源自更舊嘅 `0075`，令欄位靜默消失 → `0087`（2026-08-11，D63續）首版手抄時已用 `pg_get_functiondef()` 實測到「live 版本 0 次出現」，但當時誤判為「本來就冇」而非「已回歸」，寫低註解固化呢個誤判。
+- **上游確認無恙**：經 `get_node` 直查 live n8n workflow，`Calculate Profit & Pack Items`（V47.24）同 `Supabase Mirror Prep` 兩個節點全程正確計算並傳送 `accessory_cost`，缺口 100% 卡喺 RPC 呢一層。`total_cost`/`net_profit` 本身完全冇受影響。
+- **修復**：`migration 0088_sync_rpc_accessory_cost_restore.sql`，沿用 `0087` 防漂移先例——`pg_get_functiondef()` 攞 live 定義做 base，Python 程式化單一錨點插入 6 行（`orders`/`order_items` 各 3 處），程式 diff 驗證除呢 6 行外逐字不變，`0087` 嘅 `deleted_at=NULL` 修復保留。Smoke test 加 `pg_get_functiondef() ILIKE '%accessory_cost%'` 斷言防再次靜默漏補。
+- **歷史回歸範圍實測**：全庫僅 3 張真實訂單命中配件 SKU（`0696216`/`0600107`/`0600723`），三張皆早於 `0081` 套用日期、回歸窗口內從未重新 sync 過，現值全部正確——**0 backfill 需要**（純屬配件品類使用率極低嘅運氣，非防線生效）。
+- **Live webhook 端對端驗證**：`test9999004`（玻璃瓶套裝(2肢)+羊毛氈公仔-加購）經正式 webhook 建立，`orders.accessory_cost=$30`、品項層同步正確、`total_cost=$240` 收斂正確，驗證後 soft-delete。
+- **教訓**：`pg_get_functiondef()` 讀到嘅係「當下 live 狀態」，唔等於「設計上應該冇」——一旦有獨立 migration 記錄過某欄位曾經存在，「0 次出現」應觸發「係咪回歸咗」嘅懷疑，唔可以直接下「本來冇」結論。
+- **附帶發現（未修，已標記待處理）**：grep sweep 發現 `finance-auditor.md`/`database-reviewer.md` 兩個 subagent 定義檔嘅成本分類彙總 checklist（rollup 公式、NULL 檢查、SKU 類別推導表）仍停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`），從未納入 `accessory_cost` 第四分類；`FHS_Pricing_Bible.md` 一個成本分類小計表列同款缺口。三處均為 2026-07-25 原始 `accessory_cost` 導入時遺留嘅舊缺口，非本次回歸引入，超出本次修復範圍，已另開追蹤任務。
+
+詳見 [decisions.md D64](.fhs/notes/decisions.md)、[FHS_System_Logic_Overview.md §5.4.14](.fhs/notes/FHS_System_Logic_Overview.md)、[learnings/supabase.md #14](.fhs/memory/learnings/supabase.md)。
+
 ## [2026-08-15] Session（Claude Code / Sonnet 5 + Opus 5 執行）— canva-auto：TW_Ting 0600901 新單出貨 + SOP v1.5.0 五項修訂（AI 兩處錯誤經 Fat Mo 指正落盤）
 
 - **緣起**：Fat Mo「canva-auto 新單」+ TW_Ting 訂單 0600901（純音樂款，音長 59.0sec）。素材夾再次混入非本產品線檔案（`Free_Laser (0826).png`/UUID.jpg），同 Woodcyn 0600905 同一污染模式，已成常態非例外。

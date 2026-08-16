@@ -2333,3 +2333,23 @@ Fat Mo 授權「你幫我判斷，如果冇用或過時就刪除」，回應先�
 **最終驗收**：跑完整 `run_all.py`，四項全部**真 PASS**（LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT），STRESS/ACCEPTANCE 由 DEGRADED 轉乾淨 PASS，`[EXPECTED LAND]`/`[EXPECTED REJECT]` 標籤逐案例確認符合實測定案嘅預期。過程中新加嘅 `—` 全形破折號喺 `FHS_System_StressTester.py`/`FHS_Comprehensive_Test.py` 兩個腳本一樣觸發 Windows CP950 亂碼（同 `FHS_Full_System_Test.py` 早前撞過嘅同一問題，漏咗一齊修），已補上 UTF-8 stdout 包裝，重跑確認乾淨。
 
 **至此 D62（Supabase 憑證洩漏）+ D63（學習經驗防線落地）全系列完全收工，`/fhs-check` 回復可信。**
+
+### D64：`sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸修復（migration 0088，2026-08-16）
+
+**根因鏈（三層 `CREATE OR REPLACE FUNCTION` 全量覆蓋接力踩中同一個坑）**：
+
+1. Migration `0080`（2026-07-25，cl-flow 2026-07-25-0148）首次為 `sync_order_to_mirror()` 加入 `accessory_cost` 讀寫（`orders` + `order_items` 兩表），finance-auditor 曾獨立覆核 PASS，見 §5.4.7。
+2. Migration `0081`（2026-07-28，大寶/成人/家庭 V2 成本模型）用 `CREATE OR REPLACE FUNCTION` 整個覆蓋同一 RPC，但其手抄 base 版本源自更舊嘅 `0075`（跳過咗 `0080`），令 `accessory_cost` 讀寫**靜默消失**——`0081` 本身完全無意改動配件成本邏輯，純粹係「手抄漏一個欄位就會整全覆蓋打回舊版」（呼應 [[feedback_migration_repo_db_drift]] 教訓）。
+3. Migration `0087`（2026-08-11，D63 續，修 `deleted_at` 冇 reset 嘅 bug）首版手抄時已經用 `pg_get_functiondef()` 攞 live 定義，並且**實測發現「live 版本 `accessory_cost` 0 次出現」**，但當時誤判為「本來就冇呢個欄位」而非「已經回歸」，於是喺 `0087` 註解寫低「刻意不順手補，維持單一改動原則」——呢個判斷令回歸被正式記錄成現狀，一直冇人跟進到 D64 先發現。
+
+**現況實測**：`orders.accessory_cost` / `order_items.accessory_cost` 喺 `0081` 後建立/更新嘅所有訂單恆為 `0.00`。`total_cost`/`net_profit` 本身完全唔受影響——配件成本一直有計入品項/訂單總數（n8n `Calculate Profit & Pack Items` + `Supabase Mirror Prep` 兩個節點全程正確計算並傳送 `accessory_cost`，經 `get_node` 直查 live workflow 確認），問題純粹卡喺 RPC 呢一層冇寫入 DB，屬分類 rollup 顯示缺口，非算錯錢。
+
+**修復**：`migration 0088_sync_rpc_accessory_cost_restore.sql`——沿用 `0087` 先例，用 `pg_get_functiondef()` 攞 live 定義做 base，Python 程式化單一錨點插入 6 行（`orders` 表 INSERT 欄位/VALUES/ON CONFLICT UPDATE 3 處 + `order_items` 表同款 3 處），邏輯與 `0080` 原始版本逐字一致（`COALESCE(...,0)` 保底），並經程式 diff 驗證「除呢 6 行外，其餘逐字不變」（`0087` 嘅 `deleted_at = NULL` 修復已保留）。Smoke test 除簽名檢查外，另加 `pg_get_functiondef() ILIKE '%accessory_cost%'` 斷言，防止同類靜默漏補再次發生。
+
+**歷史訂單回歸範圍實測（0 backfill 需要）**：查全庫 `product_sku IN ('羊毛氈公仔 - 加購','燈飾 - 加購')` 嘅 `order_items`，扣走本次驗證用嘅測試單，只有 3 張真實客戶訂單命中（`0696216`/`0600107`/`0600723`），三張全部 `created_at`/`updated_at` 早於 `0081` 套用日期（2026-07-28），從未喺回歸窗口內被重新 sync 過，`accessory_cost` 現值全部正確（`0696216` 本身成本 $0 唔受影響；`0600107`/`0600723` 各 $30 已正確落地）。回歸窗口（2026-07-28 ~ 2026-08-16）內**零真實訂單**新增或編輯過配件品項——純粹運氣（配件品類全庫使用率極低），非防線生效，**不需要 backfill**。
+
+**Live webhook 端對端驗證**：`test9999004`（玻璃瓶套裝(2肢) + 羊毛氈公仔-加購）經 `FHS_Core_OrderProcessor` 正式 webhook 建立，`orders.accessory_cost=$30.00`、`order_items` 品項層 `accessory_cost=$30.00` 且分類正確（`item_category='配件'`），`total_cost=$240`（$210 手模 + $30 配件）收斂正確；驗證完成後經同一 webhook `delete` action soft-delete，`deleted_at` 確認寫入。
+
+**教訓**：`0087` 嘅「live 版本 0 次出現 = 本來就冇」判斷邏輯本身有漏洞——`pg_get_functiondef()` 讀到嘅係「當下 live 狀態」，唔等於「設計上應該冇」；一旦手上有一份獨立 migration 檔案（`0080`）明確記載過呢個欄位曾經存在，「0 次出現」應該觸發「係咪回歸咗」嘅懷疑，而非直接下「本來冇」嘅結論並寫入註解固化。**日後任何 `pg_get_functiondef()` 診斷出「預期欄位缺席」，必須先 `git log`/grep migrations 目錄確認呢個欄位有冇獨立 migration 記錄過，先可以判斷係「從未存在」定係「已回歸」。**
+
+詳見 `FHS_System_Logic_Overview.md` §5.4.14、`.fhs/memory/learnings/supabase.md` #14、`supabase/migrations/0088_sync_rpc_accessory_cost_restore.sql`。

@@ -1948,3 +1948,13 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 
 ## 2026-08-09 — Session續II（單次輕量探測覆核，Claude Code / Sonnet 5）
 - Fat Mo 要求「查核一下MCP記錄是否已更新」，改用單次最小化 create+delete 探測（`testprobe01`，非重跑完整 run_all.py，避免第三次全套壓測+Telegram通知噪音）直打 webhook。**即時結果（22:46:03 UTC，查詢當刻）：axios 來源 `GET /products` 仍然 401，`testprobe01` 冇落地 `orders` 表**——實時確認憑證問題喺呢一刻依然未解，非歷史快照。狀態：持續等 Fat Mo 喺 n8n 憑證管理介面輪替/確認 Supabase API key（涉及節點：`HTTP: Supabase Sync RPC`、`Mirror Delete to Supabase`）。
+
+## 2026-08-16 — D64：`sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸修復（Claude Code / Sonnet 5）
+- Fat Mo 要求修復 `sync_order_to_mirror` RPC 漏咗 `accessory_cost` 欄位讀寫。考古出根因鏈：migration `0080`（2026-07-25）首次加入 → `0081`（2026-07-28，V2 成本模型）`CREATE OR REPLACE FUNCTION` 全量覆蓋、base 版本源自更舊嘅 `0075`（跳過咗 0080），令欄位靜默消失 → `0087`（2026-08-11，D63 續）首版手抄時已用 `pg_get_functiondef()` 實測到「live 版本 0 次出現」，但誤判為「本來就冇」而非「已回歸」，寫低註解固化呢個誤判，令回歸一直維持到今日先被跟進。
+- **上游確認無恙**：經 `get_node` 直查 live n8n workflow，`Calculate Profit & Pack Items`（V47.24）+ `Supabase Mirror Prep` 兩個節點全程正確計算並傳送 `accessory_cost`，缺口 100% 卡喺 RPC 呢一層，`total_cost`/`net_profit` 本身完全冇受影響。
+- **修復**：`migration 0088_sync_rpc_accessory_cost_restore.sql`，沿用 `0087` 防漂移先例——`pg_get_functiondef()` 攞 live 定義做 base，Python 程式化單一錨點插入 6 行（`orders`/`order_items` 各 3 處：INSERT 欄位/VALUES/ON CONFLICT UPDATE），程式 diff 驗證除呢 6 行外逐字不變（`0087` 嘅 `deleted_at=NULL` 修復保留）。Smoke test 加 `pg_get_functiondef() ILIKE '%accessory_cost%'` 斷言防再次靜默漏補。
+- **歷史回歸範圍實測（0 backfill）**：全庫僅 3 張真實訂單命中配件 SKU（`0696216`/`0600107`/`0600723`），三張皆早於 `0081` 套用日期、回歸窗口（2026-07-28~2026-08-16）內從未重新 sync 過，現值全部正確——純屬配件品類使用率極低嘅運氣，非防線生效。
+- **Live webhook 端對端驗證**：`test9999004`（玻璃瓶套裝(2肢)+羊毛氈公仔-加購）經正式 webhook 建立，`orders.accessory_cost=$30`、品項層同步正確、`total_cost=$240` 收斂正確，驗證後 soft-delete，`deleted_at` 確認寫入。
+- **附帶發現（未修，已開 task chip 追蹤）**：grep sweep 揪出 `finance-auditor.md`/`database-reviewer.md`/`FHS_Pricing_Bible.md` 三處成本分類 checklist 仍停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`），從未納入 `accessory_cost`，屬 2026-07-25 原始導入時遺留舊缺口，非本次回歸引入，超出本次修復範圍。
+- 全文見 [decisions.md D64](decisions.md)、[FHS_System_Logic_Overview.md §5.4.14](FHS_System_Logic_Overview.md)、[learnings/supabase.md #14](../memory/learnings/supabase.md)、[Changelog.md](../../Changelog.md) 2026-08-16 條目。
+- **Subagent 使用記錄**：❌未使用（Supabase MCP + n8n MCP + curl webhook 全程主 session 直接操作，需即時交叉驗證，委派會斷推理鏈）。
