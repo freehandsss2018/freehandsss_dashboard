@@ -1,10 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.10.0
+version: 1.10.1
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-08-15（D64：多件手模擺設訂單新財務規則入表；更正 accessory_cost「已修復」過時聲明——已於2026-07-28回歸，見 §5.4.15）
+last_updated: 2026-08-16（`sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸修復完成，migration 0088，狀態由「未修復」更新為「✅已修復」，見 §5.4.16）
+[前次] 2026-08-15（D64：多件手模擺設訂單新財務規則入表；曾記錄 accessory_cost「已修復」過時聲明——已於2026-07-28回歸，見 §5.4.15）
 [前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§一路由表新增家庭組合(V2)/大寶standalone廢止規則兩行；§三B方程式段新增V2擴充+家庭動態畫圖式）
 [前次] 2026-07-25（D46事故後：§三B新增第4步「文件同步完整性grep sweep」，防止成本欄位改動漏同步Finance Bible/Product_Definition等權威文件；大型改動另派fresh-context subagent覆核）
 compatible_with: AGENTS.md v1.4.13
@@ -42,7 +43,7 @@ compatible_with: AGENTS.md v1.4.13
 | 大寶 standalone（冇主套裝）成本計錯 / 「升格家庭」規則 | **舊規則已廢止**（2026-07-28，核實三份權威文件皆無記載，純代碼行為）：大寶standalone用「大寶(P)」新語義（單件全費，非升格家庭(P1)）。詳見 `FHS_Product_Cost_Schema_v2.md` §10.6、`FHS_Finance_Bible.md` §五B |
 | 「加購」鎖匙扣/吊飾點解冇畫圖費 / V2統一SKU模型 / 品項全額訂單淨額規則 / 同部位畫圖共享豁免 | **規則家族「V2統一成本模型」（S189起，已落地生產，非待辦；2026-07-28擴充大寶/成人/家庭tier）**——正式權威：`FHS_Product_Cost_Schema_v2.md` §10（唯一SSoT，公式+26SKU清單+架構，含§10.6家庭exception）+ `FHS_Finance_Bible.md` §五B（架構責任）+ §四附錄（「單購/加購」歷史命名對照，舊訂單專用）。事件時序/決策過程（點解由S55漂移到而家嘅裁決）留喺 `FHS_System_Logic_Overview.md` §5.4.6，唔再係查規則嘅終點——查「現行規則係咩」請直接讀上述兩份正式文件，唔使讀session筆記 |
 | n8n 四端欄位映射 / 「Node 14 – Cost Calculator」等舊節點名對唔上現行代碼 | `Quadruple_Sync_Field_Map.md` 已於 2026-07-28 改版至 v2.1（新增`family_member_config`欄位映射；位置代碼值域擴充大寶），讀現行v2.1版本，唔好對照歷史記憶/舊版對話 |
-| 配件成本（羊毛氈/燈飾加購）點解冇獨立分類欄 / `accessory_cost` | ⚠️ **2026-08-15 (D64) 發現已回歸，未修復**：§5.4.7（2026-07-25）曾修復，但 2026-07-28 migration 0081 `CREATE OR REPLACE FUNCTION` 覆蓋 `sync_order_to_mirror` RPC 時 base 版本跳過咗 0080，令 `accessory_cost` 靜默由 RPC 讀寫清單消失，`total_cost` 本身不受影響（純分類 rollup 顯示缺口）。完整根因鏈見 `FHS_System_Logic_Overview.md` §5.4.15。配件僅限**玻璃瓶款式**立體擺設（非全部立體擺設），`FHS_Product_Cost_Schema_v2.md` §7.1/7.5 為正式定義 |
+| 配件成本（羊毛氈/燈飾加購）點解冇獨立分類欄 / `accessory_cost` | `FHS_System_Logic_Overview.md` §5.4.7（cl-flow 2026-07-25-0148，✅已修復，schema+n8n+Dashboard）+ §5.4.16（migration 0088，2026-08-16，✅已修復，RPC讀寫回歸修復；發現過程見§5.4.15）：`orders`/`order_items.accessory_cost` 完整鏈路已修復（migration 0079/0080 建欄+首次RPC讀寫，0081 曾令RPC讀寫回歸，migration 0088 補回）；配件僅限**玻璃瓶款式**立體擺設（非全部立體擺設），`FHS_Product_Cost_Schema_v2.md` §7.1/7.5 為正式定義 |
 | 多件手模擺設訂單（一單多件木框/玻璃瓶）成本點計 | `FHS_System_Logic_Overview.md` §5.4.14（D64，2026-08-15）：逃生口模式，每件獨立收取完整基礎成本 $210，不設第二件起減免；追加件燈飾照計 $30/件 |
 
 ---

@@ -557,7 +557,7 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 詳見 `.fhs/notes/decisions.md` D64、`artifacts/2026-08-15-1944/cl-final-plan.md`。
 
-### 5.4.15 `sync_order_to_mirror` RPC `accessory_cost` 欄位靜默回歸（發現於 D64 執行階段，🔴 未修復，範圍外）
+### 5.4.15 `sync_order_to_mirror` RPC `accessory_cost` 欄位靜默回歸（發現於 D64 執行階段，✅ 已於 §5.4.16 修復）
 
 **症狀**：任何訂單只要含燈飾/羊毛氈（`item_category='配件'`）品項，`orders.accessory_cost` 與 `order_items.accessory_cost` 恆為 `0.00`。`total_cost`/`net_profit` 本身正確（配件成本有計入總數），純粹係分類 rollup 顯示缺口——同 §5.4.7 修復嗰次症狀完全一樣。
 
@@ -570,9 +570,25 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **發現方式**：D64 live webhook 測試單交叉驗證（一張 3 件 P + 2 件燈飾嘅單、一張純主件+單一燈飾嘅控制單），兩張都中招，確認同「多件手模擺設」功能本身無關。
 
-**處理狀態**：🔴 未修復。超出 D64 cl-final-plan 批准範圍（該 flow 明確裁定「Supabase schema 零改動」），依 execute.md「僅執行 Verdict 已批准內容」不得順手夾帶修復。待 Fat Mo 決定是否開新 cl-flow 處理。
+**處理狀態**：✅ 已修復。超出 D64 cl-final-plan 批准範圍（該 flow 明確裁定「Supabase schema 零改動」），依 execute.md「僅執行 Verdict 已批准內容」故獨立開分支處理，migration 0088 修復詳見 §5.4.16。
 
 詳見 `.fhs/notes/decisions.md` D63續II、`.fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md` 追加五。
+
+### 5.4.16 `sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸（migration 0088，2026-08-16 ✅ 已修復）
+
+**根因鏈**：`accessory_cost` 讀寫由 migration `0080`（2026-07-25，§5.4.7）首次加入 `sync_order_to_mirror()`，但 `0081`（2026-07-28，大寶/成人/家庭 V2 成本模型）用 `CREATE OR REPLACE FUNCTION` 整個覆蓋同一 RPC，手抄 base 版本源自更舊嘅 `0075`（跳過咗 `0080`），令 `accessory_cost` 讀寫靜默消失——`0081` 本身無意改動配件成本邏輯。更巧合嘅係，`0087`（§5.4.12）首版手抄時已經用 `pg_get_functiondef()` 實測發現「live 版本 `accessory_cost` 0 次出現」，但當時誤判為「本來就冇」而非「已回歸」，寫低註解「刻意不順手補」——呢個誤判令回歸被正式記錄成現狀，一直到 D64 先被跟進。
+
+**現況實測**：`orders.accessory_cost` / `order_items.accessory_cost` 喺 `0081` 後建立/更新嘅所有訂單恆為 `0.00`。**n8n 上游完全正常**——`Calculate Profit & Pack Items`（V47.24）同 `Supabase Mirror Prep` 兩個節點經 `get_node` 直查 live workflow 確認全程正確計算並傳送 `accessory_cost`，缺口純粹卡喺 RPC 呢一層冇寫入 DB。`total_cost`/`net_profit` 本身完全唔受影響，屬分類 rollup 顯示缺口，非算錯錢。
+
+**修復**：`migration 0088_sync_rpc_accessory_cost_restore.sql`，沿用 `0087` 防漂移先例——`pg_get_functiondef()` 攞 live 定義做 base，Python 程式化單一錨點插入 6 行（`orders`/`order_items` 各 3 處：INSERT 欄位/VALUES/ON CONFLICT UPDATE），邏輯與 `0080` 原始版本逐字一致（`COALESCE(...,0)` 保底），程式 diff 驗證「除呢 6 行外逐字不變」（`0087` 嘅 `deleted_at = NULL` 修復已保留）。Smoke test 額外加 `pg_get_functiondef() ILIKE '%accessory_cost%'` 斷言。
+
+**歷史訂單回歸範圍（0 backfill）**：全庫僅 3 張真實訂單命中 `product_sku IN ('羊毛氈公仔 - 加購','燈飾 - 加購')`（`0696216`/`0600107`/`0600723`），三張皆早於 `0081` 套用日期，回歸窗口（2026-07-28~2026-08-16）內零真實訂單新增/編輯過配件品項，純屬品類使用率極低嘅運氣，**不需要 backfill**。
+
+**Live webhook 端對端驗證**：`test9999004`（玻璃瓶套裝(2肢)+羊毛氈公仔-加購）經正式 webhook 建立，`orders.accessory_cost=$30`、品項層 `accessory_cost=$30`、`total_cost=$240` 收斂正確，驗證後同一 webhook soft-delete 確認 `deleted_at` 寫入。
+
+**教訓**：`pg_get_functiondef()` 讀到嘅係「當下 live 狀態」，唔等於「設計上應該冇」——一旦有獨立 migration 檔案（`0080`）明確記載過某欄位曾經存在，「0 次出現」應觸發「係咪回歸咗」嘅懷疑，而非直接下「本來冇」結論並寫入註解固化。日後 `pg_get_functiondef()` 診斷出「預期欄位缺席」，須先 `git log`/grep migrations 目錄確認有冇獨立 migration 記錄過，先可判斷「從未存在」定係「已回歸」。
+
+詳見 `.fhs/notes/decisions.md` D64、`.fhs/memory/learnings/supabase.md` #14、migration `0088_sync_rpc_accessory_cost_restore.sql`。
 
 ### 5.5 綜合審計日誌（Session 124 新增）
 
