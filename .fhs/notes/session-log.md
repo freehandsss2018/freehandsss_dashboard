@@ -1,5 +1,9 @@
 # Session Log
 
+## 2026-08-17 (cl-flow A2 Gemini 升 gemini-3.7-flash + runner UTF-8 chunk 截斷/thinking model 多 parts 靜默截尾雙修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17 條目（無完成報告的小改動，本行僅摘要指回）。Fat Mo「a2 更新了最新 model」+ 追加要求解決 D64 §DEGRADED 記錄嘅 A2 artifact UTF-8 亂碼缺陷（3 字元：還原→還�/共用→共�/訊息→訊�）。**升級**：`GET /v1beta/models` 列帳號實際清單 + 逐個真 `generateContent` 測試，`gemini-3.7-flash`/`gemini-3.6-flash` 皆 200，Pro 系列仍 429 quota exceeded；`.env`/`.env.example`/`cl-flow-runner.js` 三處同步。**修復一**：`res.on('data', chunk=>{data+=chunk})` 令每個 Buffer chunk 獨立解碼，多位元組中文喺 chunk 邊界斷開變 U+FFFD，改 `Buffer.concat(chunks).toString('utf8')`。**修復二**（同函式內同居未被發現嘅缺陷）：thinking model 回應可分多 `parts`，原碼淨取 `parts[0].text` 會靜默截走後半段評審，改 `parts.map(p=>p.text).join('')` + `finishReason!=='STOP'` 截斷警告。三層驗證：74/248 byte 切點掃描（舊碼分別 48/74、96/248 corrupted，新碼皆 0）+ 真實 API 端到端跑通零 `�` 殘留。**Subagent 使用記錄**：❌未使用（單一函式修復 + 文件同步，無需 fan-out）。
+
 ## 2026-08-15 (V42 多件手模擺設訂單支援 — 逃生口模式，D64): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-15「D64」條目 + [decisions.md D64](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。真實訂單 `#0600901` 因表單只支援單件手模擺設而從未入過系統，Fat Mo 拷問八輪定案，走 `/cl-flow`（flow_id `2026-08-15-1944`，DEGRADED：A1 quota 耗盡、A2 首版 artifact 因 runner UTF-8 chunk 邊界截斷損壞已用 curl 復原）→ `/execute`。主件 P 區零改動，新增「追加擺設款式」摺疊區（最多 3 件），Slot 制（`p_slot_seq` 單調遞增）防重排污染。A2 對抗評審揪出 1 個 BLOCKER（`calculatePricing()` 追加件誤讀主件 `en_parent`/嬰兒狀態致誤判定價）+ 1 個 slot 重排風險，均已修復；執行階段 live 實測再揪出 1 個計劃未預見嘅 UI bug（`_pExtraSyncChrome()` 洗走其他 slot 底座色）。**意外發現獨立既有缺陷**（範圍外未修復，已 `spawn_task` task_e035fe64）：`sync_order_to_mirror` RPC 嘅 `accessory_cost` 欄位喺 2026-07-28 migration 0081 `CREATE OR REPLACE FUNCTION` 覆蓋時靜默消失，2026-08-11 D63 一度發現但誤判為「本來就冇」而非「已回歸」。3 張真實舊單零回歸 + `captureFormState()` 完整往返 + live webhook 測試單 Supabase 直查 `$690` 正確 + `/fhs-check` 4 PASS/1 SKIP。新財務規則（多件手模擺設逐件全額收費）已落盤 Finance Bible。

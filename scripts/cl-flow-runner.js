@@ -23,7 +23,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.6-flash';
+const GEMINI_MODEL = process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.7-flash';
 const ROOT_DIR = path.join(__dirname, '..');
 
 // ─── CLI Parsing ─────────────────────────────────────────────────────────────
@@ -126,14 +126,36 @@ function callGemini(promptText) {
       }
     };
 
-    let data = '';
+    // NOTE (2026-08-17 fix, D64 §8): chunks MUST be buffered as Buffer and concat'd before
+    // decoding. `data += chunk` decodes each chunk independently, so any multi-byte UTF-8
+    // char (i.e. every Chinese char) straddling a chunk boundary is destroyed into U+FFFD.
+    // Observed in the wild: 還原→還�, 共用→共�, 訊息→訊� inside ag-review.md.
+    const chunks = [];
     const req = https.request(options, res => {
-      res.on('data', chunk => { data += chunk; });
+      res.on('data', chunk => { chunks.push(chunk); });
       res.on('end', () => {
+        const data = Buffer.concat(chunks).toString('utf8');
         try {
           const json = JSON.parse(data);
           if (json.error) return reject(new Error('Gemini API error: ' + json.error.message));
-          resolve(json.candidates[0].content.parts[0].text);
+
+          const cand = json.candidates && json.candidates[0];
+          if (!cand) throw new Error('no candidates in response');
+
+          // Thinking models emit multiple parts (thought signatures / segmented text);
+          // parts[0].text alone silently drops the tail of a long review.
+          const parts = (cand.content && cand.content.parts) || [];
+          const text = parts.map(p => p.text).filter(Boolean).join('');
+          if (!text.trim()) {
+            throw new Error('empty text (finishReason=' + cand.finishReason + ')');
+          }
+          if (cand.finishReason && cand.finishReason !== 'STOP') {
+            console.warn(`[cl-flow-runner] ⚠️  Gemini response incomplete (finishReason=${cand.finishReason}) — AG review may be truncated.`);
+          }
+          if (text.includes('�')) {
+            console.warn('[cl-flow-runner] ⚠️  Gemini response contains U+FFFD replacement chars — upstream encoding issue, verify ag-review.md.');
+          }
+          resolve(text);
         } catch (e) {
           reject(new Error('Gemini parse error: ' + e.message + '\nRaw: ' + data.substring(0, 300)));
         }
@@ -336,7 +358,7 @@ async function runReview() {
   if (results.ag && results.ag.ok) {
     writeFile(
       path.join(artifactsDir, 'ag-review.md'),
-      `# AG Review (A2 — adversarial critique of A3 draft)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: Gemini\n\n---\n\n${results.ag.text}\n`
+      `# AG Review (A2 — adversarial critique of A3 draft)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: ${GEMINI_MODEL}\n\n---\n\n${results.ag.text}\n`
     );
     state.ag_review_status = 'done';
     console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/ag-review.md`);

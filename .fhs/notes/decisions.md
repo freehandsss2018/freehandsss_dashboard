@@ -2344,6 +2344,8 @@ Fat Mo 授權「你幫我判斷，如果冇用或過時就刪除」，回應先�
 
 **DEGRADED 評審**：A1 Perplexity quota 耗盡（3 次重試全失敗）；A2 Gemini 首版 artifact 因 `cl-flow-runner.js` UTF-8 chunk 邊界截斷損壞（`res.on('data')` 未 `setEncoding('utf8')`，多位元組中文喺 chunk 邊界斷開——非本次 flow 範圍嘅 runner 缺陷，另記錄唔修），改用 curl 子程序以同一 prompt 重跑復原完整 7 條批評。Verdict `CONDITIONAL_READY`，附 2 項強制執行條件（BLOCKER 修復須 live 實測、slot 修復須實測刪除後重加路徑）。
 
+> **[2026-08-17 後續]** 上述 runner 缺陷已修復（見 Changelog 2026-08-17 條目）：`callGemini()` 改 `Buffer.concat(chunks).toString('utf8')`，並順帶修好同函式內另一個未被發現嘅靜默截斷（thinking model 多 `parts` 只取 `parts[0].text`）。248 個 chunk 切點掃描：舊碼 96 損壞 → 新碼 0。
+
 **A2 對抗評審揪出 2 個 A3 自評未覆蓋嘅真問題（逐條處理見 `cl-final-plan.md` §4）**：
 1. 【BLOCKER】`calculatePricing()` 對每個 P item 都讀同一組全域 `en_parent`/`嬰兒` selector，追加件會誤讀主件狀態（主件玻璃瓶+父母+嬰兒時，追加玻璃瓶件被誤判 $2,580 家庭價、混合附加費 $300 每件重複收）。修法：加 `_isMainP` 守衛，令呢三個判斷只喺主件評估。
 2. slot 刪除後同次編輯再新增會重新分配同一 slot 號，令新件靜默繼承已刪除舊件嘅批次/SKU——直接推翻 A3 自評嘅 Slot 制防護承諾。修法：`p_slot_seq` 單調遞增。

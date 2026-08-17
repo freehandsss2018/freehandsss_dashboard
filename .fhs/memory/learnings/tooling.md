@@ -21,6 +21,8 @@
 5. **【高頻 ⚠️】Canva MCP：母片嘅 `imageBox`(crop_media) 舊值同 container 一樣「係上一個客嘅裁法、唔係規格」，禁止沿用**：抄母片 CDF 舊 imageBox 落新 asset，Canva 會 clamp 並放大約 9%，令圖四邊各裁走數十 px；一律用 `box=max(container_W,container_H)`／`left=(W-box)/2`／`top=(H-box)/2` 即場重算（Fat Mo 人手改正值同此公式差 0.05%）。同源第 2 次（首次為 container 殘留 crop offset）— 2026-08-15 [[project_canva_video_automation]] `@tooling` <!-- v:2026-08-15 -->
 6. **【單一樣本，待收斂】Canva MCP `edit-design` 嘅 `position_element` operation 曾出現 top/left 參數對調寫入**：傳 `{top:697.09,left:188.29}`，CDF 讀返卻係 `pos(left=697.09,top=188.29)`——完全對調。反向傳參數（把想要嘅 top 值放入 `left` 欄、想要嘅 left 值放入 `top` 欄）後結果先啱。單次撞到，未知係咪必現 bug 定係偶發；下次 `position_element` 完成後讀 CDF 若見 left/top 同預期對調，可先試反向傳參數規避，唔使即刻假設係自己數值算錯 — 2026-08-16 [[project_canva_video_automation]] `@tooling` <!-- v:2026-08-16 -->
 
+7. **Node HTTP 收 response 用 `data += chunk` 會靜默劏爛中文；`parts[0].text` 會靜默截走 thinking model 後半段**：`cl-flow-runner.js` `callGemini()` 兩個同居一函式嘅收料缺陷，喺 D64 flow 令 A2 評審 artifact 損壞。①`data` 係 string 時 `data += chunk` 令**每個 Buffer chunk 各自獨立解碼**，任何橫跨 chunk 邊界嘅多位元組字元（即所有中文字）即場變 U+FFFD（實測 248 個切點中 96 個損壞，受害例 還原→還�）；修法係 `chunks.push(chunk)` + `Buffer.concat(chunks).toString('utf8')`，全份收齊先解碼一次（`res.setEncoding('utf8')` 亦可，內部行 StringDecoder）。②Gemini 3.x 係 thinking model，`content.parts` 可分多段，淨取 `parts[0].text` 會**靜靜哋切走後半段評審而唔報錯**；修法 `parts.map(p=>p.text).filter(Boolean).join('')`，並加 `finishReason !== 'STOP'` 截斷警告。**通則：外部 API 收料要問「chunk 邊界會唔會劏字」同「回應係咪只得一段」，兩者失敗都係無聲** — 2026-08-17 `@tooling` <!-- v:2026-08-17 -->
+
 ## Preferences
 
 1. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30 `@tooling` <!-- v:2026-05-30 -->

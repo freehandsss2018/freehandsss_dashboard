@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-17] Session（Claude Code / Opus 5 執行）— /cl-flow A2 Gemini 升 gemini-3.7-flash + runner 收料層兩個靜默損壞修復
+
+- **緣起**：Fat Mo「a2 更新了最新 model」，並追加要求解決 D64 §DEGRADED 記錄嘅 A2 artifact UTF-8 亂碼缺陷。
+- **模型升級**：用現有 `GEMINI_API_KEY` call `GET /v1beta/models` 列帳號實際清單，再逐個發真 `generateContent` 測試（非只看清單）。`gemini-3.7-flash` HTTP 200 ✅（清單內最新 flash）、`gemini-3.6-flash` 200 ✅（舊值）；`gemini-pro-latest`／`gemini-3.1-pro-preview` 依然 429 quota exceeded（同 2026-07-28 結論一致，Pro 系列免費額度仍唔通）。三處同步改為 `gemini-3.7-flash`：`.env`、`.env.example`（含清單註解）、`scripts/cl-flow-runner.js` line 26 code fallback。`.fhs/ai/commands/` 下所有 A2 相關指令均無寫死型號（早已 env 配置化），無需改動。
+- **🔴 修復一：UTF-8 chunk 邊界劏字**（D64 §8 記錄嘅缺陷，Fat Mo 本次再中一次，3 個亂碼字元 還原→還�／共用→共�／訊息→訊�）。根因：`res.on('data', chunk => { data += chunk })` 中 `data` 為 string，令**每個 Buffer chunk 各自獨立解碼**，任何橫跨 chunk 邊界嘅多位元組字元即場變 U+FFFD。修法：`chunks.push(chunk)` + `Buffer.concat(chunks).toString('utf8')`。
+- **🟠 修復二：thinking model 多 parts 靜默截尾**（原缺陷未被發現嘅同居問題，即「截斷陷阱」另一條路）。Gemini 3.x 係 thinking model，`content.parts` 可分多段，原碼淨取 `parts[0].text` 會靜靜哋切走後半段評審而唔報錯。修法：`parts.map(p => p.text).filter(Boolean).join('')`。
+- **附帶加固**：`finishReason !== 'STOP'` 出截斷警告（對齊 PX 邊 `finish_reason=length` 既有處理）；`candidates` 缺失／text 全空改為 reject 而非 crash；artifact 內若仍殘留 `�` 出警告；artifact header `**Model**: Gemini` 改印實際 model id（便於日後翻查邊個型號寫嘅評審）。
+- **驗證（三層）**：①**缺陷可重現**——74 個 byte 切點掃描，舊寫法 48/74 損壞、`Buffer.concat` 0/74，樣本 `批評 #3：��原邏輯…` 同實際觀察同類。②**真身函式測試**——直接由 `cl-flow-runner.js` 抽出 shipped 嘅 `callGemini()` 源碼（59 行），用 stub 喺**每一個 byte 位置**切開回應：248 切點 **0 corrupted**、多 parts 兩段皆完整返回；同一 harness 餵舊寫法得 **96/248 corrupted**（證明 harness 本身捉得到，0 唔係假陰性）。③**真實 API 端到端**——跑真 `--init` + `--review --fast` 走新 model，artifact `U+FFFD count: 0`、頭尾完整、10 個中文探針詞各 5-7 次全部正常還原、header 正確印 `gemini-3.7-flash`；測試 flow 已刪清。
+- **限制聲明**：真實 API 那次回應只 4KB，好可能單一 TLS record 內收晒，**證唔到多 chunk**；真正多 chunk 證據係 ② 嘅 248 切點掃描。過程中撞過一次 `This model is currently experiencing high demand`（2026-06-23 lesson 同一模式），重跑即過，屬暫時性過載非本次改動所致。
+
+詳見 [scripts/cl-flow-runner.js](scripts/cl-flow-runner.js) `callGemini()`、[learnings/tooling.md](.fhs/memory/learnings/tooling.md) Pitfall #7、[decisions.md D64](.fhs/notes/decisions.md)（§DEGRADED 已加後續註記）。
+
 ## [2026-08-15] Session（Claude Code / Opus 5 規劃 + Sonnet 5 執行）— D64：V42 多件手模擺設訂單支援（逃生口模式）+ 揪出獨立 RPC 回歸
 
 - **緣起**：真實訂單 `#0600901`（TW Ting，倒模日 2026-04-09，木框+玻璃瓶×2）因表單只支援單件手模擺設而從未入過系統，屬既有帳目缺口。Fat Mo 拷問八輪定案設計，走 `/cl-flow`（flow_id `2026-08-15-1944`）→ `/execute`。
