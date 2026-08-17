@@ -23,7 +23,25 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.7-flash';
+// A2 model 鏈（2026-08-17 新增）：主 model 連續失敗（HTTP 503 過載／socket hang up）時自動降級。
+// 背景：flow 2026-08-17-1916 撞到 gemini-3.7-flash 連續 6 次 HTTP 503「high demand」，
+// 而同一 API key 下 gemini-3.6-flash / gemini-flash-latest 即時回 200——即係 model 專屬過載，
+// 唔係 quota 亦唔係 key 問題。當時要人手用環境變數繞過，先攞到評審。
+// GEMINI_A2_MODEL_DEFAULT 仍然生效（覆蓋鏈首位），其餘備援自動接力。
+const GEMINI_MODEL_CHAIN = (
+  process.env.GEMINI_A2_MODEL_CHAIN
+    ? process.env.GEMINI_A2_MODEL_CHAIN.split(',').map(s => s.trim()).filter(Boolean)
+    : [
+        process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-flash-latest'
+      ]
+).filter((m, i, arr) => arr.indexOf(m) === i);   // 去重，防 env 指定值同備援重覆
+
+// thinking model 嘅 thinking tokens 一樣計入 maxOutputTokens。原值 8192 令 A2 評審長期
+// 喺第 2 條批評就 finishReason=MAX_TOKENS 截斷（2026-08-17-1916 兩次執行皆中，只攞到
+// 2/3 條批評，要人手合併兩次結果先儲返完整評審）。
+const GEMINI_MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_A2_MAX_OUTPUT_TOKENS) || 32768;
 const ROOT_DIR = path.join(__dirname, '..');
 
 // ─── CLI Parsing ─────────────────────────────────────────────────────────────
@@ -109,16 +127,16 @@ function callPerplexity(promptText, tmpDir) {
 }
 
 // ─── API: Gemini ─────────────────────────────────────────────────────────────
-function callGemini(promptText) {
+function callGemini(promptText, model) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       contents: [{ parts: [{ text: promptText }] }],
-      generationConfig: { maxOutputTokens: 8192 }
+      generationConfig: { maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS }
     });
 
     const options = {
       hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      path: `/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -150,12 +168,14 @@ function callGemini(promptText) {
             throw new Error('empty text (finishReason=' + cand.finishReason + ')');
           }
           if (cand.finishReason && cand.finishReason !== 'STOP') {
-            console.warn(`[cl-flow-runner] ⚠️  Gemini response incomplete (finishReason=${cand.finishReason}) — AG review may be truncated.`);
+            console.warn(`[cl-flow-runner] ⚠️  ${model} response incomplete (finishReason=${cand.finishReason}) — may be truncated.`);
           }
           if (text.includes('�')) {
             console.warn('[cl-flow-runner] ⚠️  Gemini response contains U+FFFD replacement chars — upstream encoding issue, verify ag-review.md.');
           }
-          resolve(text);
+          // 回傳 finishReason／model 俾上層 fallback 邏輯判斷：截斷唔算硬失敗（有半份好過冇），
+          // 但要保留資訊等上層可以試下一個 model 換一份完整嘅。
+          resolve({ text, finishReason: cand.finishReason || 'UNKNOWN', model });
         } catch (e) {
           reject(new Error('Gemini parse error: ' + e.message + '\nRaw: ' + data.substring(0, 300)));
         }
@@ -166,6 +186,45 @@ function callGemini(promptText) {
     req.write(body);
     req.end();
   });
+}
+
+// ─── Gemini Model Fallback 鏈（2026-08-17 新增）────────────────────────────────
+// 逐個 model 試，語義如下：
+//   • finishReason === 'STOP'  → 乾淨完整，即刻收貨返回
+//   • finishReason === 'MAX_TOKENS' → 截斷但有內容：**唔當失敗、唔丟棄**，記低做
+//     「目前最佳半成品」再試下一個 model，睇下有冇完整版本
+//   • 拋錯（503／hang up／timeout）→ 記低錯誤，試下一個 model
+// 全鏈行完仍然冇乾淨結果 → 交返最長嗰份半成品（有半份遠好過零份）；全部拋錯先真正失敗。
+// 設計理由：2026-08-17-1916 人手做過完全一樣嘅嘢（跑兩次、備份、合併），呢度將佢機械化。
+async function callGeminiWithFallback(promptText, label) {
+  let best = null;            // 最長嘅截斷結果
+  const errors = [];
+
+  for (const model of GEMINI_MODEL_CHAIN) {
+    try {
+      const res = await withRetry(() => callGemini(promptText, model), `${label}[${model}]`, 2);
+      if (res.finishReason === 'STOP') {
+        if (best) {
+          console.log(`[cl-flow-runner] ✓ ${model} 回傳完整結果，取代先前 ${best.model} 嘅截斷版本`);
+        }
+        return { text: res.text, model, truncated: false, errors };
+      }
+      // 截斷：留住最長嗰份，繼續試下一個 model
+      if (!best || res.text.length > best.text.length) {
+        best = { text: res.text, model, finishReason: res.finishReason };
+      }
+      console.warn(`[cl-flow-runner] ⚠️  ${model} 截斷（${res.finishReason}，${res.text.length} 字元），試下一個 model 睇有冇完整版本…`);
+    } catch (err) {
+      errors.push(`${model}: ${err.message}`);
+      console.error(`[cl-flow-runner] ✗ ${model} 全數重試失敗：${err.message}`);
+    }
+  }
+
+  if (best) {
+    console.warn(`[cl-flow-runner] ⚠️  全鏈無完整結果，採用 ${best.model} 嘅截斷版本（${best.finishReason}）——評審覆蓋度不完整，Verdict 必須聲明。`);
+    return { text: best.text, model: best.model, truncated: true, finishReason: best.finishReason, errors };
+  }
+  throw new Error(`所有 model 皆失敗 — ${errors.join(' | ')}`);
 }
 
 // ─── Retry Wrapper ───────────────────────────────────────────────────────────
@@ -338,8 +397,8 @@ async function runReview() {
   const tasks = [];
 
   tasks.push(
-    withRetry(() => callGemini(agPrompt), 'Gemini-Review')
-      .then(text => { results.ag = { ok: true, text }; })
+    callGeminiWithFallback(agPrompt, 'Gemini-Review')
+      .then(r => { results.ag = { ok: true, text: r.text, model: r.model, truncated: r.truncated, finishReason: r.finishReason }; })
       .catch(err => { results.ag = { ok: false, error: err.message }; })
   );
 
@@ -356,12 +415,21 @@ async function runReview() {
   const degradedReasons = [];
 
   if (results.ag && results.ag.ok) {
+    // 截斷警告寫入 artifact 本體（唔止 console）——console 訊息會隨 session 消失，
+    // 但 Verdict 撰寫者一定會讀 ag-review.md，覆蓋度缺口必須喺嗰度睇得到。
+    const truncBanner = results.ag.truncated
+      ? `\n> ⚠️ **本評審不完整**：全部備援 model 皆未能輸出完整結果，本檔為 \`${results.ag.model}\` 嘅截斷版本（finishReason=\`${results.ag.finishReason}\`）。**唔排除仲有未輸出嘅批評**，Verdict 必須顯眼聲明此覆蓋度缺口。\n`
+      : '';
     writeFile(
       path.join(artifactsDir, 'ag-review.md'),
-      `# AG Review (A2 — adversarial critique of A3 draft)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: ${GEMINI_MODEL}\n\n---\n\n${results.ag.text}\n`
+      `# AG Review (A2 — adversarial critique of A3 draft)\n\n**Flow ID**: ${flow_id}\n**Generated**: ${new Date().toISOString()}\n**Model**: ${results.ag.model}${results.ag.truncated ? '（截斷）' : ''}\n${truncBanner}\n---\n\n${results.ag.text}\n`
     );
-    state.ag_review_status = 'done';
-    console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/ag-review.md`);
+    state.ag_review_status = results.ag.truncated ? 'done_truncated' : 'done';
+    state.ag_review_model = results.ag.model;
+    if (results.ag.truncated) {
+      degradedReasons.push(`ag_review_truncated: ${results.ag.model} finishReason=${results.ag.finishReason}（覆蓋度不完整）`);
+    }
+    console.log(`[cl-flow-runner] ✓ artifacts/${flow_id}/ag-review.md（model=${results.ag.model}${results.ag.truncated ? '，截斷' : '，完整'}）`);
   } else {
     state.ag_review_status = 'error';
     const msg = results.ag ? results.ag.error : 'unknown error';

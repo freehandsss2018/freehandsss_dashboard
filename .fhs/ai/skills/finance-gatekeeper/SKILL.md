@@ -1,10 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.11.0
+version: 1.11.1
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-08-16（D65：父母/大寶升格訂單層一次性角色，§一路由表新增 owner 歸屬/家庭組合 S/P 全單判定一行，見 §5.4.17）
+last_updated: 2026-08-17（D65續II：立體擺設價錢真源抽為 `_pPriceOfSku()`，§一路由表加一行；純代碼重構，128組窮舉證實零財務規則變動，見 §5.4.18）
+[前次] 2026-08-16（D65：父母/大寶升格訂單層一次性角色，§一路由表新增 owner 歸屬/家庭組合 S/P 全單判定一行，見 §5.4.17）
 [前次] 2026-08-16（§三「5條財務死線」第2條補漏 `accessory_cost`——此前只列三分類，屬同 finance-auditor.md/database-reviewer.md 文件缺口同一批 grep sweep 事後揪出；一併修復 `FHS_Finance_Bible.md` §九「驗證公式」自身內部漂移，同檔 §三 line 136 早有4分類但 §九 line 396 仍停留3分類）
 [前次] 2026-08-16（`sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸修復完成，migration 0088，狀態由「未修復」更新為「✅已修復」，見 §5.4.16）
 [前次] 2026-08-15（D64：多件手模擺設訂單新財務規則入表；曾記錄 accessory_cost「已修復」過時聲明——已於2026-07-28回歸，見 §5.4.15）
@@ -48,6 +49,7 @@ compatible_with: AGENTS.md v1.4.13
 | 配件成本（羊毛氈/燈飾加購）點解冇獨立分類欄 / `accessory_cost` | `FHS_System_Logic_Overview.md` §5.4.7（cl-flow 2026-07-25-0148，✅已修復，schema+n8n+Dashboard）+ §5.4.16（migration 0088，2026-08-16，✅已修復，RPC讀寫回歸修復；發現過程見§5.4.15）：`orders`/`order_items.accessory_cost` 完整鏈路已修復（migration 0079/0080 建欄+首次RPC讀寫，0081 曾令RPC讀寫回歸，migration 0088 補回）；配件僅限**玻璃瓶款式**立體擺設（非全部立體擺設），`FHS_Product_Cost_Schema_v2.md` §7.1/7.5 為正式定義 |
 | 多件手模擺設訂單（一單多件木框/玻璃瓶）成本點計 | `FHS_System_Logic_Overview.md` §5.4.14（D64，2026-08-15）：逃生口模式，每件獨立收取完整基礎成本 $210，不設第二件起減免；追加件燈飾照計 $30/件 |
 | 父母/大寶唯一性規則 / 家庭瓶歸屬（owner）/ 家庭定價 $2,580 判斷歸邊件 / 家庭組合鎖匙扣 S/P 全單判定 | `FHS_System_Logic_Overview.md` §5.4.17（D65，2026-08-16）：父母/大寶升格「訂單層一次性角色」，全單最多一件家庭瓶，歸屬由 `#p_family_owner` 選擇器指定（`_isFamilyOwner()`）；業務規則七條+owner機制全文見 `FHS_Product_Definition.md` §3.1a；家庭組合鎖匙扣 S/P 語義＝「全單任何一件」倒模狀態（與立體擺設家庭定價「只讀 owner 件自身」刻意不同，見 §3.3a） |
+| 立體擺設價錢真源 / `_pPriceOfSku` 定義喺邊 / 卡片徽章顯示邏輯 | `FHS_System_Logic_Overview.md` §5.4.18（D65續II，2026-08-17）：`calculatePricing()` 原 inline 價錢判斷式抽為純函數 `_pPriceOfSku(name)`，卡片 owner 徽章與報價共讀同一函數（結構上不可能唔一致）；純代碼結構重構，128組窮舉證實零財務規則語義變動，七條業務規則本身不變 |
 
 ---
 

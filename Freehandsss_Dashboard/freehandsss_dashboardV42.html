@@ -420,6 +420,33 @@
             display: inline-flex; align-items: center; font-size: 10px; font-weight: 700;
             color: #A9711E; background: #FBF1DD; padding: 2px 7px; border-radius: 5px; margin-left: 6px;
         }
+        /* 玻璃瓶卡片 owner 狀態徽章（cl-flow 2026-08-17-1916 E9）。沿用 .d51-family-badge 同色系（amber），
+           唔用 P 分類本身嘅紫色——家庭係跨卡片概念，唔應該同「呢張卡屬於P分類」呢個既有色彩語義混淆。*/
+        .d51-family-badge--owner {
+            display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700;
+            color: #FFF; background: #B07D4C; padding: 3px 8px; border-radius: 5px; margin-left: 6px;
+        }
+        .d51-family-badge--muted {
+            display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600;
+            color: #A9711E; background: #FBF1DD; border: 1px solid #E4CFA0; padding: 2px 7px;
+            border-radius: 5px; margin-left: 6px;
+        }
+        /* 「設為家庭瓶」快捷掣：獨立 class，刻意唔用 review-jump-pill（該 class 係核對中心
+           跨單快跳＋模式切換嘅專屬語義契約，同頁內錨點/狀態切換語義唔同，唔可以混用）。
+           觸控目標 44x44px 由 padding 撐開，唔靠 10px 字級本身。*/
+        .d51-family-quicklink {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 44px; min-width: 44px; padding: 6px 10px; margin-left: 4px;
+            font-size: 11px; font-weight: 700; color: #B07D4C; background: #fff;
+            border: 1.5px solid #D4A373; border-radius: 6px; cursor: pointer; font-family: inherit;
+        }
+        .d51-family-quicklink:active { background: #FBF1DD; }
+        /* 孤兒回退提示：沿用 #priceDetails 紅字警示行慣例，唯讀、非 toast */
+        .d51-family-notice {
+            font-size: 12px; color: #D32F2F; font-weight: 600; background: #FFF3E0;
+            padding: 6px 8px; border-radius: 5px; margin-bottom: 8px; display: none;
+        }
+        .d51-family-notice.show { display: block; }
         /* ---- 鎖匙扣「嬰兒/大寶」部位選擇：藥丸多選 + 共用欄位（D51，取代4個獨立開關逐個展開） ---- */
         .d51-pill-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .d51-pill {
@@ -666,6 +693,8 @@
 
         .sec-title-row {
             display: flex;
+            flex-wrap: wrap;
+            row-gap: 6px;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #eee;
@@ -4419,7 +4448,7 @@
         <div id="contentP" class="addon-content">
             <!-- A 組：款式類型 + 底座顏色 + 刻字 -->
             <div class="form-group">
-                <label>款式類型</label>
+                <label>款式類型 <span id="pMainFamilyBadge"></span></label>
                 <select id="pSubCat" onchange="renderLimbGrid(); _applyGlassDefaults(); fhsFamilySyncVisibility(); _syncAddonVisibility(); generate(); fhsD51UpdateHeader('P');">
                     <option value="木框款式">木框款式</option>
                     <option value="玻璃瓶款式">玻璃瓶款式</option>
@@ -4465,6 +4494,7 @@
             <div class="ss-group-sep" id="pFamilySep" style="display:none;"></div>
             <div id="pFamilyContainer" style="display:none;">
                 <div class="ss-group-title">家庭成員（全單一次）</div>
+                <div id="pFamilyOwnerNotice" class="d51-family-notice"></div>
                 <div class="form-group">
                     <label>歸屬（邊一件玻璃瓶）</label>
                     <select id="p_family_owner" onchange="fhsFamilyOwnerChange()"></select>
@@ -6304,6 +6334,7 @@
             _fhsFamilyParentManualTouch = false;
             _fhsFamilyHadGlassBefore = false;
             _fhsFamilyOwnerFallbackNotice = null;
+            _pSyncFamilyOwnerNoticeDOM();
             const _pFamOwnerSel = document.getElementById('p_family_owner');
             if (_pFamOwnerSel) _pFamOwnerSel.innerHTML = '';
             fhsFamilySyncVisibility(true); // 開新單一律不觸發自動勾（此時零玻璃瓶件，函式本身亦會直接清空返回）
@@ -6743,8 +6774,16 @@
             if (!on) { summary.textContent = '未選購'; summary.className = 'tier1-summary'; return; }
             summary.className = 'tier1-summary' + (catClass ? ' ' + catClass : '');
             if (letter === 'P') {
+                // cl-flow 2026-08-17-1916 E2（A2/#1+#5 修法）：摘要後綴一律由 SKU 名推導
+                // （skuName.includes("家庭")），唔用 owner 身分／en_parent 判定——owner 但未勾
+                // 父母時唔應顯示「含家庭瓶」，否則同徽章一樣會出現自相矛盾嘅財務錯信號。
+                // 有追加件時加「+N件」，避免「木框款式 · 含家庭瓶」被誤讀成木框本身係家庭瓶
+                // （A2/#5：實際係主件木框、單內另一件追加玻璃瓶先係家庭瓶）。
                 var subEl = document.getElementById('pSubCat');
-                summary.textContent = subEl ? subEl.value : '';
+                var sub = subEl ? subEl.value : '';
+                var extraSlots = _pActiveSlots();
+                var hasFamily = _pMainSkuOf().includes('家庭') || extraSlots.some(function(s) { return _pSkuOf(s).includes('家庭'); });
+                summary.textContent = sub + (extraSlots.length > 0 ? (' +' + extraSlots.length + '件') : '') + (hasFamily ? ' · 含家庭瓶' : '');
             } else if (letter === 'K') {
                 var famChk = document.getElementById('k_family_en');
                 if (famChk && famChk.checked) {
@@ -6944,7 +6983,23 @@
         let _fhsFamilyRestoring = false;          // restoreFormState() 進行中——Q1「還原流程一律不觸發自動勾」
                                                    // 嘅保底旗標，防 pSubCat 還原時 dispatchEvent('change') 經
                                                    // onchange 鏈間接觸發 fhsFamilySyncVisibility() 漏帶抑制參數
-        let _fhsFamilyOwnerFallbackNotice = null; // A2/#5：孤兒回退一次性提示文字，由 calculatePricing() 消費後清空
+        let _fhsFamilyOwnerFallbackNotice = null; // A2/#5：孤兒回退提示文字，持續顯示直至下次 sync 判定非孤兒先清空（非一次性）
+
+        // 就地 echo（cl-flow 2026-08-17-1916 E8，A2/#3 修訂）：#p_family_owner 選單上方嘅固定
+        // placeholder，用 .textContent 設值/清空——唔用 insertBefore／父層 innerHTML，因為
+        // fhsFamilySyncVisibility() 一次操作內可能連續執行多次，插入式寫法會重複 append 節點。
+        // 呼叫時機同 _fhsFamilyOwnerFallbackNotice 本身嘅賦值點完全同步（見下方三個賦值處）。
+        function _pSyncFamilyOwnerNoticeDOM() {
+            var el = document.getElementById('pFamilyOwnerNotice');
+            if (!el) return;
+            if (_fhsFamilyOwnerFallbackNotice) {
+                el.textContent = '⚠️ ' + _fhsFamilyOwnerFallbackNotice;
+                el.classList.add('show');
+            } else {
+                el.textContent = '';
+                el.classList.remove('show');
+            }
+        }
 
         // 回傳全單所有玻璃瓶款式件的 slot（主件記為 1，追加件為其 p_slot_seq 值），已排序
         function _pGlassSlots() {
@@ -7006,6 +7061,7 @@
                 if (container) container.style.display = 'none';
                 _fhsFamilyHadGlassBefore = false;
                 _fhsFamilyOwnerFallbackNotice = null;
+                _pSyncFamilyOwnerNoticeDOM();
                 return;
             }
 
@@ -7014,7 +7070,10 @@
             var prevValue = ownerSel ? ownerSel.value : '';
             if (ownerSel) {
                 ownerSel.innerHTML = glassSlots.map(function(slot) {
-                    var label = slot === 1 ? '主件' : ('擺設' + _pOrdinalOf(slot));
+                    // E7：option label 同步加底座色 disambiguator，同卡片標題用同一個判準
+                    var sub = slot === 1 ? getValSafe('pSubCat', '') : getValSafe(_pns(slot) + 'pSubCat', '');
+                    var ns = slot === 1 ? '' : _pns(slot);
+                    var label = (slot === 1 ? '主件' : ('擺設' + _pOrdinalOf(slot))) + _pDisambiguator(sub, ns);
                     return '<option value="' + slot + '">' + label + '</option>';
                 }).join('');
             }
@@ -7046,6 +7105,7 @@
             _fhsFamilyOwnerFallbackNotice = ownerWasOrphan
                 ? ('家庭成員歸屬已自動變更至 ' + (resolvedOwner === 1 ? '主件' : ('擺設' + _pOrdinalOf(resolvedOwner))))
                 : null;
+            _pSyncFamilyOwnerNoticeDOM();
         }
 
         // #p_family_owner 下拉 onchange：操作員手動改變歸屬
@@ -7053,11 +7113,23 @@
             calculatePricing();
             generate();
         }
+
+        // 卡片「設為家庭瓶」快捷掣（cl-flow 2026-08-17-1916 E6）：薄封裝，唔重複實作 owner 切換
+        // 邏輯——直接設落拉值再呼叫現有 onchange handler。A2/#6 曾質疑呢種寫法會撞 `this` 綁定
+        // 問題，實碼核實 fhsFamilyOwnerChange() 零參數、函式體內零 `this` 引用（見上），
+        // programmatic 呼叫絕無綁定問題，故毋須 dispatchEvent 迂迴。
+        function fhsFamilySetOwner(slot) {
+            var sel = document.getElementById('p_family_owner');
+            if (!sel) return;
+            sel.value = String(slot);
+            fhsFamilyOwnerChange();
+        }
         window._pGlassSlots = _pGlassSlots;
         window._pFamilyOwnerSlot = _pFamilyOwnerSlot;
         window._isFamilyOwner = _isFamilyOwner;
         window.fhsFamilySyncVisibility = fhsFamilySyncVisibility;
         window.fhsFamilyOwnerChange = fhsFamilyOwnerChange;
+        window.fhsFamilySetOwner = fhsFamilySetOwner;
 
         // en_parent 專用 onchange 包裝：記錄操作員手動觸碰（Q1 約束核心），再照舊 toggle 顯隱 + 重算報價
         function fhsFamilyParentToggle(cb) {
@@ -7125,6 +7197,17 @@
             return FHS_P_ORDINAL_CHARS[ord] || ('#' + ord);
         }
 
+        // 底座色/木框色 disambiguator（cl-flow 2026-08-17-1916 E7，A2/#2 揪出）：_pOrdinalOf() 嘅
+        // 顯示序會隨刪除集體位移，操作員記低「家庭瓶=擺設③」幾次增刪之後可能已對應唔同產品。
+        // 補讀現有底座色/款式色令標題可辨識實物。值為「待定」時省略括號段（避免全部件都顯示
+        // 「（待定）」反而更難分辨）。ns='' 時對應主件（`#baseColor`/`#woodStyle`，冇前綴）。
+        function _pDisambiguator(sub, ns) {
+            var colorId = (sub && sub.includes('木框')) ? (ns + 'woodStyle') : (ns + 'baseColor');
+            var el = document.getElementById(colorId);
+            var color = el ? el.value : '';
+            return (color && color !== '待定') ? ('（' + color + '）') : '';
+        }
+
         function renderPExtraSlot(slot) {
             if (document.querySelector('#pExtraContainer [data-p-slot="' + slot + '"]')) return;
             var ns = _pns(slot);
@@ -7142,7 +7225,10 @@
             wrap.style.marginTop = '10px';
             wrap.innerHTML = `
                 <div class="sec-title-row">
-                    <span class="limb-title d51-menu-title cat-p" id="${ns}title"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-image"/></svg>擺設</span>
+                    <span style="display:flex; align-items:center; flex-wrap:wrap; flex:1; min-width:0;">
+                        <span class="limb-title d51-menu-title cat-p" id="${ns}title"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-image"/></svg>擺設</span>
+                        <span id="${ns}familyBadge"></span>
+                    </span>
                     <button type="button" class="d51-link-btn" onclick="fhsPExtraRemove(${slot})" style="color:#c0392b;"><svg class="ba-icon" width="14" height="14"><use href="#icon-trash-2"/></svg>刪除</button>
                 </div>
                 <div class="form-group">
@@ -7237,7 +7323,7 @@
             var titleEl = document.getElementById(ns + 'title');
             if (titleEl) {
                 var iconId = sub.includes('木框') ? 'icon-image' : 'icon-bottle';
-                titleEl.innerHTML = '<span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#' + iconId + '"/></svg>擺設' + _pOrdinalOf(slot) + ' · ' + sub;
+                titleEl.innerHTML = '<span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#' + iconId + '"/></svg>擺設' + _pOrdinalOf(slot) + ' · ' + sub + _pDisambiguator(sub, ns);
             }
         }
 
@@ -7373,6 +7459,70 @@
         function _pSkuOf(slot) {
             var ns = _pns(slot);
             return _pDeriveSkuName(getValSafe(ns + "pSubCat", ""), _pwho(slot), "TEMP_P_" + slot);
+        }
+
+        // 立體擺設 SKU → 建議售價，唯一真源（cl-flow 2026-08-17-1916 E1）。
+        // 刻意設計為純函數（只食 SKU 名，唔食任何 runtime 狀態）——因為 SKU 名本身已完整編碼
+        // 家庭狀態：_pDeriveSkuName() 要 owner + en_parent 已勾 + 該件有嬰兒肢體 三條件齊備
+        // 先會產出「玻璃瓶套裝 (家庭)」，同 calculatePricing() 原本嘅 (hasAdultInSet && hasBabyInSet)
+        // 邏輯等價（兩者讀同一組 DOM、同一次呼叫內無 DOM 變更，故必然一致）。
+        // 報價同卡片徽章共讀本函式，令兩者結構上不可能唔一致（延伸 D65 Step 3c / A2#4 手法）。
+        function _pPriceOfSku(name) {
+            if (name) {
+                if (name.includes("木框")) return name.includes("4肢") ? 2380 : 2080;
+                if (name.includes("玻璃")) return name.includes("家庭") ? 2580 : (name.includes("4肢") ? 1680 : 1380);
+            }
+            // 未命中任何已知型態：唔可以靜默回 0（本 repo 對靜默財務失敗有血訓）。
+            // SKU 命名一旦漂移，要即刻喺 console 吵住出聲，而唔係報價無聲無息變 $0。
+            console.warn('[FHS] _pPriceOfSku 未能辨識 SKU 型態，回傳 $0：', name);
+            return 0;
+        }
+
+        // 玻璃瓶卡片 owner 狀態徽章同步（cl-flow 2026-08-17-1916 E2/E3/E4/E11，ui-designer 方案A落實）。
+        // 由 calculatePricing() 掛鉤（唔掛 fhsFamilySyncVisibility()——見呼叫處註解）。
+        // E2 核心：徽章標籤一律由 SKU 名推導（skuName.includes("家庭")），唔用 owner 身分判定，
+        // 防止 owner 但未勾父母/未選肢體時渲染出「家庭瓶 · $1,380」呢種自相矛盾嘅財務錯信號
+        // （A2/#1 揪出嘅核心問題——D65 A3 自己喺開放問題度提出過「應該睇 en_parent」但漏咗帶入
+        // 步驟規格，A2 捉到呢個自相矛盾）。
+        function _pFamilyBadgeSync(items) {
+            // E11：restoreFormState() 進行中，欄位值仲未還原完成，呢一刻讀到嘅只係中途值——
+            // 唔渲染，等尾段解除旗標後 restoreFormState() 自己再觸發一次 calculatePricing() 刷新。
+            if (_fhsFamilyRestoring) return;
+
+            var pItemsByKey = {};
+            (items || []).forEach(function(i) {
+                if (/^TEMP_P_/.test(i.Order_Item_Key)) pItemsByKey[i.Order_Item_Key] = i;
+            });
+            var glassCount = _pGlassSlots().length;
+
+            function render(containerId, itemKey) {
+                var el = document.getElementById(containerId);
+                if (!el) return;
+                var item = pItemsByKey[itemKey];
+                // 木框件 / P 分類未啟用 / 該件已刪除：清空徽章（唔顯示，同木框冇家庭概念一致）
+                if (!item || !item.Product_Name.includes("玻璃")) { el.innerHTML = ''; return; }
+
+                var name = item.Product_Name;
+                var price = _pPriceOfSku(name);   // 同報價共讀同一真源，結構上不可能唔一致
+
+                if (name.includes("家庭")) {
+                    el.innerHTML = '<span class="d51-family-badge--owner">家庭瓶 · $' + price + '</span>';
+                    return;
+                }
+                // 淡色徽章顯示該件實際價（Q-1 裁決：顯示，兩件並排先睇到 $2,580 vs 差價）
+                var html = '<span class="d51-family-badge--muted">$' + price + '</span>';
+                // 「設為家庭瓶」快捷掣：只喺非 owner 且全單多過一件玻璃瓶時先出現（E6）
+                if (!_isFamilyOwner(itemKey) && glassCount > 1) {
+                    var slot = itemKey === 'TEMP_P_MAIN' ? 1 : Number(itemKey.slice(7));
+                    html += ' <button type="button" class="d51-family-quicklink" onclick="fhsFamilySetOwner(' + slot + ')">設為家庭瓶</button>';
+                }
+                el.innerHTML = html;
+            }
+
+            render('pMainFamilyBadge', 'TEMP_P_MAIN');
+            _pActiveSlots().forEach(function(slot) {
+                render(_pns(slot) + 'familyBadge', 'TEMP_P_' + slot);
+            });
         }
 
         function _applyGlassDefaults() {
@@ -8124,6 +8274,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         function calculatePricing() {
             let items = buildOrderItemsForPricing();
+            // cl-flow 2026-08-17-1916 E3/E4：徽章同步掛喺呢度（items 取得後、任何提前 return 之前），
+            // 令 calculatePricing() 嘅 6 條提前 return（items 空/家庭組合缺主套裝/配件無主項/純成人/
+            // 父母無嬰兒/_fhsCostReady 未就緒）全部路徑都會刷新徽章，唔會因為早退而漏更新。
+            // 唔掛 fhsFamilySyncVisibility()——A2/#2 實測揪出 en_parent/en_elder/嬰兒肢體 onchange
+            // 完全唔經該函式，只經呢度（見 _pFamilyBadgeSync 定義註解）。
+            _pFamilyBadgeSync(items);
             let totalSuggestedPrice = 0;
             let totalDrawingCost = 0;
             let _totalPrintingCost = 0;     // B1: 打印/鑄造費
@@ -8359,9 +8515,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let hasBabyInSet = _isFamOwner && Array.from(babyParts).some(s => s.value !== "無");
                     let isGlassJar = name.includes("玻璃");
 
-                    let price = 0;
-                    if (name.includes("木框")) price = name.includes("4肢") ? 2380 : 2080;
-                    else if (isGlassJar) price = (hasAdultInSet && hasBabyInSet) ? 2580 : (name.includes("4肢") ? 1680 : 1380);
+                    // 價錢改讀共用真源 _pPriceOfSku()（cl-flow 2026-08-17-1916 E1），令卡片徽章
+                    // 同報價結構上不可能唔一致。⚠️ 上方 hasAdultInSet(:8355) / hasBabyInSet(:8359)
+                    // 定義刻意保留不動——下方 mixed_member_surcharge 守衛仍然用緊，只係唔再參與價錢判斷。
+                    let price = _pPriceOfSku(name);
 
                     totalSuggestedPrice += price;
                     breakdownParts.push({v: price, c: '#4A148C'});
@@ -9065,6 +9222,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // 嘅 p_family_owner 重新確認一次（此時 <option> 已存在，_pFamilyOwnerSlot() 會讀返
                 // 步驟1賦值成功嘅真實 owner，非靜默回退）。解除還原旗標，容許之後嘅正常操作恢復自動勾判斷。
                 fhsFamilySyncVisibility(true);
+                // cl-flow 2026-08-17-1916 E10 live 實測揪出：追加件卡片標題嘅 disambiguator
+                // （_pExtraRefreshTitle() 內）喺步驟1嘅 _pExtraSubCatChange() 執行時，baseColor/
+                // woodStyle 仲未套用（依既有次序，容器類型必須先於顏色值確認），令標題讀到
+                // 底座色嘅還原前預設值（'待定'）而漏咗 disambiguator；option label 因為喺尾段
+                // fhsFamilySyncVisibility() 先重建，此時顏色已還原，故冇同一問題。呢度用最終
+                // 已還原嘅顏色值再刷新一次全部追加件標題，令兩者一致。
+                _pActiveSlots().forEach(function(slot) { _pExtraRefreshTitle(slot); });
                 _fhsFamilyRestoring = false;
 
                 generate(); // 最後刷新文字預覽

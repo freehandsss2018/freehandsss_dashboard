@@ -2408,3 +2408,23 @@ A2/#2（`_boxKey` TEMP↔正式格式不匹配）經 4 張真實訂單 `raw_form
 **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（開發版）；`FHS_Product_Definition.md`／`FHS_Product_Cost_Schema_v2.md`／`FHS_Pricing_Bible.md`／`finance-gatekeeper/SKILL.md` 文件同步。Supabase schema／n8n 皆零改動（`Family_Member_Config` 由前端計算後傳入，同 D64 前提一致）。`Freehandsss_dashboard_current.html`（生產版）本次未動，部署為另一授權關卡。
 
 詳見 `FHS_System_Logic_Overview.md` §5.4.17、`FHS_Product_Definition.md` §3.1a、`artifacts/2026-08-16-2355/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：❌ 未使用（跨代碼/browser 即時交叉驗證＋逐步修復，委派會斷推理鏈）。
+
+### D65 續II：owner 概念嘅介面配合——卡片狀態徽章（cl-flow `2026-08-17-1916`，2026-08-17）
+
+**緣起**：D65 完成後，操作員填緊追加件卡片時，卡片本身零視覺提示話俾佢知呢件係咪家庭瓶 owner，要跳去表單最底獨立區塊先知/先揀。派 `ui-designer` Phase A 審視，揪出 8 個因 owner 概念引入而生嘅認知斷層（G1–G8），推薦「卡片狀態徽章 + 就地快捷切換」最小介入方案（拒絕嘅方案B會重新引入 D65 Step 1a 剛修好嘅「家庭區塊唔再受 innerHTML 重建摧毀」架構脆弱點）。走 `/cl-flow-fast` → A2 對抗評審（`gemini-3.7-flash` 連續 HTTP 503 過載，由本次同步新增嘅 model fallback 鏈自動降級至 `gemini-3.6-flash`）→ Verdict `CONDITIONAL_READY` → Fat Mo 認可反證後 `/execute`。
+
+**A2 對抗評審批評處理**：完整版評審（修復截斷問題後）攞到 8 條批評（1 BLOCKER + 4 MAJOR + 3 MINOR），逐條實碼核對：**4 條事實指控錯誤予以拒絕**，包括唯一 BLOCKER（誤稱替換價錢三行會毀 `mixed_member_surcharge` 所需嘅 `hasAdultInSet`/`hasBabyInSet`——實碼證兩變數定義完全在替換範圍外）、誤稱 `fhsFamilyOwnerChange()` 有 `this` 綁定問題（實碼證零參數零 `this` 引用）、誤稱現行有 `jar` 類型代碼判斷（實碼證同樣係中文字串匹配）、誤稱標題行有拖曳 handle（實碼證唔存在）。其餘 4 條全數採納或部分採納（底層顧慮有效但事實前提有誤時，採納顧慮拒絕前提）。
+
+**核心改動**：①價錢真源抽取 `_pPriceOfSku(name)`，卡片徽章與報價共讀同一函數；②徽章同步掛 `calculatePricing()` 入口（A2 揪出 `en_parent`/`en_elder`/嬰兒肢體 onchange 完全唔經 `fhsFamilySyncVisibility()`），覆蓋六條提前 return；③徽章標籤一律由 SKU 名推導，唔用 owner 身分判定（防「家庭瓶 · $1,380」矛盾信號）；④孤兒回退提示就地 echo（固定 ID placeholder）；⑤標題/選單 disambiguator；⑥「設為家庭瓶」快捷掣。全文見 `FHS_System_Logic_Overview.md` §5.4.18。
+
+**執行階段揪出並修復 1 個規劃未預見嘅真實 bug**：追加件卡片標題 disambiguator 喺 `restoreFormState()` 還原流程入面讀到底座色**仲未套用**嘅預設值，同同一刻已用最終顏色值重建嘅 owner 選單 option 唔一致。修法：還原尾段解除 `_fhsFamilyRestoring` 旗標前，額外重跑全部追加件嘅 `_pExtraRefreshTitle()`。
+
+**執行後 `code-reviewer` 獨立稽核同一模式再現**：報 FAIL，指 `en_elder` onchange 缺 `calculatePricing()`——實碼查證該 onchange 經 `togglePart()` → `generate()` → `calculatePricing()` 三層間接鏈，用真實 DOM 事件 + 呼叫計數器直接量度（0→1）推翻。**三次獨立評審（A2 首輪、A2 次輪部分批評、code-reviewer）皆犯同一類錯誤——只查字面 onchange 屬性有冇直接寫住目標函式名，未追蹤間接呼叫鏈**，已記入 `FHS_System_Logic_Overview.md` §5.4.18 做評審方法論教訓。
+
+**驗證**：browser live 實測——C1（勾 `en_parent` 嗰一刻徽章與報價同步跳 $2,580）、C2（真身函式窮舉 128 組狀態逐分位 100% 相同）、C3（六條提前 return 逐條覆蓋）、快捷掣對調正確、375px 窄螢幕（快捷掣 77×44px 達標）、3 張真實舊單零回歸、全程零 console error、`/fhs-check` 4 PASS/1 SKIP。
+
+**支線任務（Fat Mo 同 session 追加授權）**：`scripts/cl-flow-runner.js` 新增 Gemini model fallback 鏈 + 修復 `maxOutputTokens`（8192→32768）導致嘅評審長期截斷問題。成效：同一份草案，截斷版評審得 3 條批評，修復後完整版得 8 條——藏起咗嘅 5 條入面 3 條為本次採納嘅真問題。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Verdict 批准範圍）+ `scripts/cl-flow-runner.js`（另行授權支線任務）。Supabase／n8n 零改動。
+
+詳見 `FHS_System_Logic_Overview.md` §5.4.18、`artifacts/2026-08-17-1916/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅ `ui-designer`（Phase A 設計診斷）+ `code-reviewer`（G1-G8，發現 1 個誤判已用實測推翻）。

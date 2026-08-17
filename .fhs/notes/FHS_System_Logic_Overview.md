@@ -615,6 +615,34 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 詳見 `.fhs/notes/decisions.md` D65、`FHS_Product_Definition.md` §3.1a、`artifacts/2026-08-16-2355/cl-final-plan.md`。
 
+### 5.4.18 D65 owner 概念嘅介面配合——卡片狀態徽章（cl-flow `2026-08-17-1916`，2026-08-17）
+
+**背景**：§5.4.17 完成後，操作員填緊追加件卡片時，卡片本身零視覺提示話俾佢知呢件係咪家庭瓶 owner，要跳去表單最底獨立區塊先知/先揀。ui-designer Phase A 審視揪出 8 個因 owner 概念引入而生嘅認知斷層，推薦「卡片狀態徽章 + 就地快捷切換」最小介入方案。走 `/cl-flow-fast`（A2 對抗評審，`gemini-3.7-flash` HTTP 503 過載觸發本次同步新增嘅 model fallback 鏈自動降級至 `gemini-3.6-flash`）。
+
+**⚠️ [G] 運算邏輯變動聲明**：本次改動觸及 `calculatePricing()`（見下），但**純屬代碼結構重構，零財務規則語義變動**——`_pPriceOfSku(name)` 抽出嘅價錢對照表逐字照抄原 inline 判斷式，並經 128 組窮舉測試（`_pDeriveSkuName()` × `_pPriceOfSku()` 真身函式）證實新舊邏輯在所有可達狀態下逐分位相同。§5.4.17 記載嘅七條業務規則本身完全不變，本節純為代碼異動存證。
+
+**核心改動**：
+1. **價錢真源抽取（A2 對抗評審拒絕其 BLOCKER 後定案）**：`calculatePricing()` 內 inline 寫死嘅價錢判斷式抽為純函數 `_pPriceOfSku(name)`（只食 SKU 名，唔食任何 runtime 狀態），卡片徽章與報價共讀同一函數，結構上不可能唔一致。A2 對抗評審首輪誤判抽取會破壞 `mixed_member_surcharge` 所需嘅 `hasAdultInSet`/`hasBabyInSet` 變數——實碼核對兩變數定義位置完全在替換範圍外，予以拒絕（詳見 `artifacts/2026-08-17-1916/cl-final-plan.md` §2.1）。
+2. **徽章同步掛 `calculatePricing()` 入口（唔掛 `fhsFamilySyncVisibility()`）**：A2 對抗評審實碼揪出 `en_parent`/`en_elder`/嬰兒肢體 onchange 完全唔經 `fhsFamilySyncVisibility()`，只經 `calculatePricing()`（直接或經 `generate()` 尾段間接）。徽章同步函式 `_pFamilyBadgeSync(items)` 掛喺 `let items = buildOrderItemsForPricing();` 之後、任何提前 return 之前，覆蓋該函式全部 6 條提前 return 路徑。
+3. **徽章標籤一律由 SKU 名推導**（`skuName.includes("家庭")`），唔用 owner 身分判定——防止 owner 但未勾父母/未選嬰兒肢體時渲染出「家庭瓶 · $1,380」呢種自相矛盾嘅財務錯信號。
+4. **孤兒回退提示就地 echo**：`#pFamilyOwnerNotice` 固定 ID placeholder（`.textContent` 設值，唔用 `insertBefore`/父層 `innerHTML`，防重複 append）。
+5. **Disambiguator**：卡片標題／owner 選單 option 補讀底座色，緩解 `_pOrdinalOf()` 顯示序隨刪除位移嘅辨識困難。
+6. **「設為家庭瓶」快捷掣**：`fhsFamilySetOwner(slot)` 薄封裝，設落拉值再呼叫既有 `fhsFamilyOwnerChange()`。
+
+**執行階段 live 實測揪出並修復 1 個規劃未預見嘅真實 bug**：追加件卡片標題嘅 disambiguator 喺 `restoreFormState()` 還原流程入面讀到底座色嘅**還原前預設值**（'待定'）——因為 `_pExtraSubCatChange()`（內部呼叫 `_pExtraRefreshTitle()`）依既有次序喺 baseColor/woodStyle 實際套值**之前**執行（容器類型必須先於顏色值確認），令標題漏咗 disambiguator，但同一刻 owner 選單 option（喺尾段 `fhsFamilySyncVisibility()` 重建，此時顏色已還原）就有——兩者不一致。修法：`restoreFormState()` 尾段解除 `_fhsFamilyRestoring` 旗標前，額外對全部 `_pActiveSlots()` 逐一重跑 `_pExtraRefreshTitle()`，用最終已還原嘅顏色值刷新。
+
+**A2 對抗評審批評處理**：8 條批評（1 BLOCKER + 4 MAJOR + 3 MINOR）逐條實碼核對，4 條事實指控錯誤（含唯一 BLOCKER，以及誤稱 `fhsFamilyOwnerChange()` 有 `this` 綁定問題、誤稱現行有 `jar` 類型代碼判斷、誤稱標題行有拖曳 handle）予以拒絕；其餘全數採納或部分採納（底層顧慮有效但事實前提有誤時，採納顧慮、拒絕前提）。Verdict 依協議封頂 `CONDITIONAL_READY`，Fat Mo 認可反證後執行。
+
+**執行後 `code-reviewer` 獨立稽核同一模式再現**：報 FAIL，指 `en_elder` checkbox onchange 缺 `calculatePricing()` 呼叫——實碼查證 `en_elder` onchange 為 `togglePart('box_elder', this)`，內部呼叫 `generate()`，`generate()` 尾段呼叫 `calculatePricing()`；用真實 DOM `dispatchEvent('change')` + 函式呼叫計數器（monkey-patch `calculatePricing`）直接量度：呼叫次數 0→1，證實鏈路完整、稽核誤判。**三次獨立評審（A2 首輪 BLOCKER、A2 次輪部分批評、code-reviewer）皆犯同一類錯誤——只查字面 onchange 屬性有冇直接寫住目標函式名，未追蹤 `wrapper→中介函式→目標函式` 嘅間接呼叫鏈**，值得記入日後評審方法論教訓。
+
+**驗證**：browser live 實測——C1（勾 `en_parent` 嗰一刻，徽章與報價同步由 $1,680 跳 $2,580）；C2（`_pDeriveSkuName`/`_pPriceOfSku` 真身函式窮舉 128 組狀態，逐分位 100% 相同）；C3（`calculatePricing()` 六條提前 return 逐條觸發，徽章皆正確）；快捷掣對調（owner 由主件切至追加件，兩張卡徽章正確互換）；375px 窄螢幕（`.sec-title-row` flex-wrap 生效，快捷掣實測 77×44px 達觸控標準，標題行無溢出、刪除掣無被擠出畫面）；3 張真實舊單零回歸（`0600103`/`0600900`/`06008013`）；還原期間 disambiguator 修復後驗證通過。全程零 console error。`/fhs-check` 4 PASS/1 SKIP（既有狀態）。
+
+**支線任務（同 session Fat Mo 追加授權）**：`scripts/cl-flow-runner.js` 新增 Gemini model fallback 鏈（`gemini-3.7-flash` 連續 HTTP 503 時自動降級至 `gemini-3.6-flash`/`gemini-flash-latest`）+ 修復 `maxOutputTokens` 過小（8192→32768）導致 A2 評審長期截斷嘅問題（thinking model 嘅思考 token 亦計入此額度）。成效鐵證：同一份 a3-draft 草案，修復前截斷版評審只得 3 條批評，修復後完整版得 8 條——截斷一直藏起咗 5 條，其中 3 條為本次 Verdict 採納嘅真問題。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Verdict 批准範圍）+ `scripts/cl-flow-runner.js`（Fat Mo 另行授權嘅支線任務，非本次 Verdict 範圍）。Supabase／n8n 皆零改動。
+
+詳見 `.fhs/notes/decisions.md` D65 續II、`artifacts/2026-08-17-1916/`（task-brief/a3-draft/ag-review/cl-final-plan）。
+
 ### 5.5 綜合審計日誌（Session 124 新增）
 
 **`audit_logs` 表**（migration 0044，2026-06-25 部署 ✅）：

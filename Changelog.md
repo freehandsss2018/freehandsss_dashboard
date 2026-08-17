@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-17] Session（Claude Code / Sonnet 5 執行）— D65 續II：owner 概念嘅介面配合（卡片狀態徽章）+ cl-flow-runner model fallback 修復
+
+- **緣起**：D65 完成後操作員填緊追加件卡片時，卡片本身零視覺提示話俾佢知呢件係咪家庭瓶 owner，要跳去表單最底獨立區塊先知/先揀。派 `ui-designer` Phase A 審視揪出 8 個認知斷層（G1–G8），推薦「卡片狀態徽章 + 就地快捷切換」最小介入方案。走 `/cl-flow-fast` → A2 對抗評審 → Verdict `CONDITIONAL_READY`（唯一 BLOCKER 經實碼核對前提有誤已拒絕，Fat Mo 認可反證）→ `/execute`。
+- **核心改動**：①`calculatePricing()` 原 inline 價錢判斷抽為純函數 `_pPriceOfSku(name)`，卡片徽章與報價共讀同一真源；②徽章同步掛 `calculatePricing()` 入口（A2 實碼揪出 `en_parent`/`en_elder`/嬰兒肢體 onchange 完全唔經 `fhsFamilySyncVisibility()`），覆蓋六條提前 return 路徑；③徽章標籤一律由 SKU 名推導（`skuName.includes("家庭")`），唔用 owner 身分判定，防「家庭瓶 · $1,380」自相矛盾嘅財務錯信號；④孤兒回退提示改用固定 ID placeholder 就地 echo；⑤卡片標題/owner選單加底座色 disambiguator；⑥「設為家庭瓶」快捷掣。
+- **⚠️ 純代碼重構聲明**：本次改動觸及 `calculatePricing()`，但零財務規則語義變動——`_pPriceOfSku()` 逐字照抄原判斷式，經 128 組窮舉測試（真身函式驅動）證實新舊邏輯在所有可達狀態下逐分位相同。
+- **live 實測揪出並修復 1 個規劃未預見嘅真實 bug**：`restoreFormState()` 還原期間，追加件卡片標題 disambiguator 讀到底座色仲未套用嘅預設值（'待定'），同同一刻已用最終顏色值重建嘅 owner 選單 option 唔一致。修法：還原尾段解除旗標前，額外重跑全部追加件嘅 `_pExtraRefreshTitle()`。
+- **三次獨立評審（A2 首輪、A2 次輪、`code-reviewer`）皆犯同一類方法論錯誤**：只查字面 onchange 屬性有冇直接寫住目標函式名，未追蹤 `wrapper→中介函式→目標函式` 嘅間接呼叫鏈。A2 首輪誤判 BLOCKER（`hasAdultInSet`/`hasBabyInSet` 會被替換破壞）、`code-reviewer` 誤判 `en_elder` 缺 `calculatePricing()` 呼叫——兩者均用實碼查證 + 真實 DOM 事件/呼叫計數器直接推翻。已記入 `FHS_System_Logic_Overview.md` §5.4.18 做評審方法論教訓。
+- **驗證**：browser live 實測——勾 `en_parent` 嗰一刻徽章與報價同步跳 $2,580；真身函式窮舉 128 組狀態逐分位 100% 相同；六條提前 return 逐條覆蓋；快捷掣對調正確；375px 窄螢幕快捷掣實測 77×44px 達觸控標準；3 張真實舊單零回歸；全程零 console error；`/fhs-check` 4 PASS/1 SKIP。
+- **支線任務（Fat Mo 同 session 追加授權）**：`scripts/cl-flow-runner.js` 新增 Gemini model fallback 鏈（`gemini-3.7-flash` 連續 HTTP 503 過載時自動降級）+ 修復 `maxOutputTokens`（8192→32768）導致嘅評審長期截斷（thinking model 思考 token 亦計入此額度）。成效鐵證：同一份草案，修復前截斷版評審得 3 條批評，修復後完整版得 8 條——截斷一直藏起咗 5 條，其中 3 條為本次採納嘅真問題。
+
+詳見 [decisions.md D65 續II](.fhs/notes/decisions.md)、[FHS_System_Logic_Overview.md §5.4.18](.fhs/notes/FHS_System_Logic_Overview.md)、[artifacts/2026-08-17-1916/cl-final-plan.md](artifacts/2026-08-17-1916/cl-final-plan.md)。
+
 ## [2026-08-17] Session（Claude Code / Sonnet 5 執行）— D65：父母/大寶升格為訂單層一次性角色（歸屬選擇器方案B）
 
 - **緣起**：D64（2026-08-15）交付「多件手模擺設」逃生口模式後，Fat Mo 檢查成品時口述澄清真實業務模型：父母/大寶並非「主件的屬性」，而是訂單層一次性角色——全單只可能出現一件「家庭瓶」。D64 本質功能完備但語義錯配（所有真實情境靠「家庭瓶放主件」已可達成，只是 UI/文件都無提示此隱性順序依賴）。Fat Mo 裁決走方案B（歸屬選擇器），走 `/cl-flow`（flow_id `2026-08-16-2355`）→ A2 對抗評審 → 五條開放問題裁決 → `/execute`。

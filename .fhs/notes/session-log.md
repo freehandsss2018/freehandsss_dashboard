@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-08-17 (D65續II：owner 概念嘅介面配合 + cl-flow-runner model fallback 修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17「D65 續II」條目 + [decisions.md D65續II](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。D65 完成後 `ui-designer` Phase A 審視揪出操作員填緊追加件卡片時零視覺提示知悉家庭瓶 owner 狀態嘅認知斷層（8項，G1-G8），走 `/cl-flow-fast`（flow_id `2026-08-17-1916`）→ A2 對抗評審 → Verdict `CONDITIONAL_READY`（唯一 BLOCKER 實碼核對前提有誤已拒絕，Fat Mo 認可反證）→ `/execute`。核心改動：`_pPriceOfSku()` 抽取價錢真源（純代碼重構，128組窮舉證實零財務規則變動）、徽章同步改掛 `calculatePricing()`（A2 揪出原設計掛錯函式）、徽章標籤一律由 SKU 名推導防矛盾信號、孤兒提示就地 echo、disambiguator、快捷掣。live 實測揪出並修復 1 個規劃未預見嘅真實 bug（還原期間 disambiguator 讀到未套用嘅底座色）。**三次獨立評審（A2首輪/A2次輪/code-reviewer）皆犯同一類方法論錯誤**——只查字面 onchange 冇追蹤間接呼叫鏈，兩次誤判已用實碼+呼叫計數器推翻。同 session 支線任務修復 `cl-flow-runner.js` model fallback + 截斷問題（成效：同一草案截斷版3條批評、修復後完整版8條）。全程零 console error，`/fhs-check` 4 PASS/1 SKIP。
+**Learnings**：三次獨立評審同一類「未追蹤間接呼叫鏈」誤判模式已落盤 `FHS_System_Logic_Overview.md` §5.4.18。
+**Subagent 使用記錄**：✅ `ui-designer`（Phase A 設計診斷）+ `code-reviewer`（G1-G8，1個誤判已用實測推翻）。
+
 ## 2026-08-17 (D65：父母/大寶升格為訂單層一次性角色，歸屬選擇器方案B): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17「D65」條目 + [decisions.md D65](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。Fat Mo 於 2026-08-16 檢查 D64 成品時口述澄清真實業務模型，父母/大寶由「主件屬性」升格「訂單層一次性角色」，走 `/cl-flow`（flow_id `2026-08-16-2355`，A2對抗評審＋五條開放問題裁決）→ `/execute`。Step 0 先合併兩條並行分支（accessory_cost RPC修復+文件補漏）解決8個文件衝突。核心改動：owner 管理函式組 + `#p_family_owner` 選擇器、`calculatePricing()` 家庭價判斷改讀 owner 件、SKU 推導 consolidate、IG 訊息輸出改到 owner block、家庭組合鎖匙扣 S/P 改「全單任何一件」語義、規則③防呆擴充僅警告。A2/#1 BLOCKER（`restoreFormState()` option 未建先賦值靜默失效）已修復。執行階段 live 實測再揪出 2 個規劃未預見嘅真實 bug（舊 `_applyGlassDefaults()` 遺留自動勾邏輯衝突、A2/#5 孤兒提示被自身消費邏輯洗走），均已修復。3 張真實舊單零回歸 + owner=追加件 BLOCKER 單元測試通過 + IG/家庭組合/Q1/Q4 全部驗證通過，全程零 console error。
