@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-18] Session（Claude Code / Sonnet 5 執行）— D65續III：立體擺設表單排版重整（父母/大寶歸位「倒模對象」+ 隱藏歸屬下拉）
+
+- **緣起**：Fat Mo 對 D65續II 嘅徽章功能截圖回饋三點不滿：①「加購配件」被插喺「嬰兒」同「家庭成員」中間，將同一組「倒模對象」劏開兩橛；②`#p_family_owner` 歸屬下拉喺得一個選項時完全冇作用，操作員睇唔明有咩用；③整體心智模型應該係「款式 → 倒模對象 → 配件」，新介面選項過多令操作員難以理解。三點全部接納，無反駁。
+- **排版重整**：`#pFamilyContainer`（父母/大寶）由原本擠喺「加購配件」與「多件手模擺設追加件」中間，移至緊貼 `#limbContainer`（嬰兒）之後——三者同屬「倒模對象」分區，順序回復「款式類型→底座色→刻字→**倒模對象（嬰兒/父母/大寶）**→加購配件→追加擺設款式」。⚠️ 刻意唔將父母/大寶塞入 `#limbContainer` 內部：`renderLimbGrid()` 會 `innerHTML` 重建該容器，塞入即被洗走——正正係 D65 Step 1a 搬出去嘅原因，只可維持做兄弟節點。
+- **歸屬下拉永久隱藏**：`#p_family_owner` 加 `style="display:none;"`，唔刪除 element（`raw_form_state` 契約唯一載體，n8n/舊單還原依賴其 ID 存在）。操作員改歸屬改用 D65續II 已有嘅「設為家庭瓶」卡片快捷掣（`fhsFamilySetOwner()`），一撳即轉，唔使睇落拉選單嘅「主件／擺設②」對應返實物邊件。
+- **清理**：`#pFamilySep`（原獨立分隔線，家庭成員今已併入倒模對象分區、不再需要自己嘅分隔）連同 `fhsFamilySyncVisibility()` 內 3 處殘留引用一併移除。
+- **驗證**：browser live 實測——`#contentP` 子元素可見順序程式化列舉確認「款式→倒模對象(嬰兒/父母/大寶)→加購配件→追加件」；`#p_family_owner` 隱藏後 `captureFormState()` 仍正確擷取其值（state 契約無斷）；快捷掣切換歸屬正常（$1,680→$2,580 即時反應，主/從徽章正確對調）；2 張真實舊單零回歸（`06008013` $1,380、`0600900` $2,380，價錢/顯隱/IG 訊息與改動前一致）；全程零 console error。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（純 DOM 位置調整 + 一個 element 隱藏，零計價邏輯改動，零 ID 增刪）。
+
+詳見 [decisions.md D65續III](.fhs/notes/decisions.md)。
+
 ## [2026-08-17] Session（Claude Code / Sonnet 5 執行）— D65 續II：owner 概念嘅介面配合（卡片狀態徽章）+ cl-flow-runner model fallback 修復
 
 - **緣起**：D65 完成後操作員填緊追加件卡片時，卡片本身零視覺提示話俾佢知呢件係咪家庭瓶 owner，要跳去表單最底獨立區塊先知/先揀。派 `ui-designer` Phase A 審視揪出 8 個認知斷層（G1–G8），推薦「卡片狀態徽章 + 就地快捷切換」最小介入方案。走 `/cl-flow-fast` → A2 對抗評審 → Verdict `CONDITIONAL_READY`（唯一 BLOCKER 經實碼核對前提有誤已拒絕，Fat Mo 認可反證）→ `/execute`。

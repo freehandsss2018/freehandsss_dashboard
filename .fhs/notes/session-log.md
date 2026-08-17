@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-18 (D65續III：立體擺設表單排版重整): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-18「D65續III」條目 + [decisions.md D65續III](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對象、歸屬下拉得一個選項無作用、選項過多難理解——三點全接納。父母/大寶移至緊貼嬰兒之後同屬「倒模對象」；`#p_family_owner` 永久隱藏（唔刪，`raw_form_state`契約載體），改用卡片快捷掣取代。browser live實測：DOM順序正確、state契約無斷、快捷掣正常、2張真實舊單零回歸、零console error。
+**Subagent 使用記錄**：❌ 未使用（互動式browser實測+直接改碼）。
+
 ## 2026-08-17 (D65續II：owner 概念嘅介面配合 + cl-flow-runner model fallback 修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17「D65 續II」條目 + [decisions.md D65續II](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。D65 完成後 `ui-designer` Phase A 審視揪出操作員填緊追加件卡片時零視覺提示知悉家庭瓶 owner 狀態嘅認知斷層（8項，G1-G8），走 `/cl-flow-fast`（flow_id `2026-08-17-1916`）→ A2 對抗評審 → Verdict `CONDITIONAL_READY`（唯一 BLOCKER 實碼核對前提有誤已拒絕，Fat Mo 認可反證）→ `/execute`。核心改動：`_pPriceOfSku()` 抽取價錢真源（純代碼重構，128組窮舉證實零財務規則變動）、徽章同步改掛 `calculatePricing()`（A2 揪出原設計掛錯函式）、徽章標籤一律由 SKU 名推導防矛盾信號、孤兒提示就地 echo、disambiguator、快捷掣。live 實測揪出並修復 1 個規劃未預見嘅真實 bug（還原期間 disambiguator 讀到未套用嘅底座色）。**三次獨立評審（A2首輪/A2次輪/code-reviewer）皆犯同一類方法論錯誤**——只查字面 onchange 冇追蹤間接呼叫鏈，兩次誤判已用實碼+呼叫計數器推翻。同 session 支線任務修復 `cl-flow-runner.js` model fallback + 截斷問題（成效：同一草案截斷版3條批評、修復後完整版8條）。全程零 console error，`/fhs-check` 4 PASS/1 SKIP。

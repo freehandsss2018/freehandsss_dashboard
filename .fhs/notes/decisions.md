@@ -2428,3 +2428,7 @@ A2/#2（`_boxKey` TEMP↔正式格式不匹配）經 4 張真實訂單 `raw_form
 **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Verdict 批准範圍）+ `scripts/cl-flow-runner.js`（另行授權支線任務）。Supabase／n8n 零改動。
 
 詳見 `FHS_System_Logic_Overview.md` §5.4.18、`artifacts/2026-08-17-1916/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅ `ui-designer`（Phase A 設計診斷）+ `code-reviewer`（G1-G8，發現 1 個誤判已用實測推翻）。
+
+### D65續III：立體擺設表單排版重整（2026-08-18）
+
+Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對象、歸屬下拉得一個選項無作用、整體選項過多難理解——三點全接納無反駁。父母/大寶移至緊貼嬰兒（`#limbContainer`）之後，同屬「倒模對象」分區；`#p_family_owner` 永久隱藏（唔刪除，`raw_form_state` 契約載體），改用已有嘅卡片「設為家庭瓶」快捷掣取代。屬純前端小改動（無完成報告，Changelog 為全文居所），全文見 [Changelog.md 2026-08-18「D65續III」條目](../../Changelog.md)。**Subagent 使用記錄**：❌ 未使用（互動式 browser 實測 + 直接改碼，委派會斷推理鏈）。
