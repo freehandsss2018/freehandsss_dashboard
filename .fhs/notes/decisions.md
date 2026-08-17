@@ -2383,3 +2383,28 @@ A2/#2（`_boxKey` TEMP↔正式格式不匹配）經 4 張真實訂單 `raw_form
 **教訓**：`0087` 嘅「live 版本 0 次出現 = 本來就冇」判斷邏輯本身有漏洞——`pg_get_functiondef()` 讀到嘅係「當下 live 狀態」，唔等於「設計上應該冇」；一旦手上有一份獨立 migration 檔案（`0080`）明確記載過呢個欄位曾經存在，「0 次出現」應該觸發「係咪回歸咗」嘅懷疑，而非直接下「本來冇」嘅結論並寫入註解固化。**日後任何 `pg_get_functiondef()` 診斷出「預期欄位缺席」，必須先 `git log`/grep migrations 目錄確認呢個欄位有冇獨立 migration 記錄過，先可以判斷係「從未存在」定係「已回歸」。**
 
 詳見 `FHS_System_Logic_Overview.md` §5.4.16、`.fhs/memory/learnings/supabase.md` #14、`supabase/migrations/0088_sync_rpc_accessory_cost_restore.sql`。
+
+### D65：父母/大寶升格為訂單層一次性角色（歸屬選擇器方案B，cl-flow `2026-08-16-2355`，2026-08-16）
+
+**緣起**：D64（2026-08-15）交付「多件手模擺設」逃生口模式後，Fat Mo 檢查成品時口述澄清真實業務模型：父母/大寶並非「主件的屬性」，而是**訂單層一次性角色**——全單只可能出現一件「家庭瓶」。D64 本質功能完備但語義錯配（所有真實情境靠「家庭瓶放主件」已可達成，只是 UI/文件都無提示此隱性順序依賴）。Fat Mo 在 A/B 方案對比後裁決走 B（歸屬選擇器），原話：「雖然性價比不高，但它最接近現實」。走 `/cl-flow` → A2（Gemini）對抗評審（DEGRADED：Perplexity quota 耗盡）→ Fat Mo 裁決五條開放問題 → `/execute`。
+
+**定案七條業務規則 + owner 機制**：全文見 `FHS_Product_Definition.md` §3.1a（唯一 SSoT，不在此重複列出，僅摘要要點）：父母/大寶各自全單只買一次、只能歸屬玻璃瓶件、若同存必屬同一件（owner）、owner 由 `#p_family_owner` 選擇器指定、家庭定價只在 owner 件評估、玻璃瓶件缺嬰兒肢體僅警告不阻擋、家庭組合鎖匙扣 S/P 用「全單任何一件」語義（與家庭定價「只讀 owner 件自身」刻意不同）。
+
+**Fat Mo 五條開放問題裁決**（2026-08-17）：
+- **Q1**（自動勾選）：保留「零→有玻璃瓶轉換」自動勾父母，但不覆蓋操作員手動取消，還原流程一律不觸發。
+- **Q2**（零玻璃瓶清值）：強制清空（由 A2/#3 定案，非 Fat Mo 裁決項）。
+- **Q3**（家庭組合 S/P 準則）：全單任何一件——石膏模一經倒出即實體存在，不論當初為邊件產品而倒。
+- **Q4**（規則③防呆）：僅警告，不阻擋報價與 `syncToAirtable()`。
+- **Q5**（並行分支處理）：先合併 `accessory_cost` 兩條分支（見 D64 續、本檔 2026-08-16 accessory_cost 文件補漏條目）再開工。
+
+**A2 對抗評審批評處理**（全文見 `artifacts/2026-08-16-2355/cl-final-plan.md` §4）：唯一 BLOCKER（A2/#1）——`restoreFormState()` 步驟1還原 `p_family_owner` 時 `<option>` 未建會靜默失效回退 Slot 1——已採納，修法為步驟0b之後、步驟1之前先呼叫 `fhsFamilySyncVisibility()` 建立完整 option 清單（此次呼叫抑制自動勾），尾段再做一次校驗回退。另 3 條 MAJOR（#2 嬰兒肢體歸屬、#3 零玻璃瓶清值、#5 靜默轉移禁止）全採納，#4（SKU 兩處平行實作）部分採納（事實指控不成立但重構建議採納，consolidate 為 `_pDeriveSkuName()`），MINOR #6 因 #3 修法消解、#7 因 Q5 先合併分支消解。
+
+**執行階段揪出並修復嘅缺陷（規劃階段未預見）**：
+1. **舊 `_applyGlassDefaults()` 遺留獨立自動勾邏輯**：D64/舊碼喺呢個函式內有一段獨立「父母 toggle On」邏輯，同新嘅 `fhsFamilySyncVisibility()` 自動勾機制並存但互不知情，令 Q1「手動取消後唔再自動勾回」約束失效。Browser live 實測直接撞中。修法：移除該段落，統一單一入口。
+2. **A2/#5 孤兒回退提示曾被自身消費邏輯洗走**：初版將提示訊息喺 `calculatePricing()` 讀取時即清空（一次性 toast 語意），但 `generate()` 內部會再呼叫一次 `calculatePricing()`，令提示喺同一次操作內已被第二次 render 洗走。修法：提示改為「持續顯示直至下次 sync 判定非孤兒狀態」語意。
+
+**驗證**：browser live 實測（本地 `preview_start` 伺服器，非 `file://`）——3 張真實舊單零回歸（`0600103` 純鎖匙扣、`0600900` 單件木框 $2380、`06008013` 單件玻璃瓶，其 `raw_form_state` 真實值 `en_parent:false` 還原後維持 false 唔被自動勾回）；owner=追加件 BLOCKER 直接單元測試通過（`p_family_owner:2` 還原後仍為 2，非靜默回退 1，對應件正確產出 `玻璃瓶套裝 (家庭)` $2,580）；IG 訊息父母/大寶行正確輸出喺 owner 件 block；家庭組合鎖匙扣「全單任何一件」語義驗證通過；Q1 手動取消不覆蓋驗證通過；Q4 防呆僅警告驗證通過（報價正常產出非歸零）。過程中揪出並修復 2 個規劃階段未預見嘅真實 bug（見上）。全程零 console error。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（開發版）；`FHS_Product_Definition.md`／`FHS_Product_Cost_Schema_v2.md`／`FHS_Pricing_Bible.md`／`finance-gatekeeper/SKILL.md` 文件同步。Supabase schema／n8n 皆零改動（`Family_Member_Config` 由前端計算後傳入，同 D64 前提一致）。`Freehandsss_dashboard_current.html`（生產版）本次未動，部署為另一授權關卡。
+
+詳見 `FHS_System_Logic_Overview.md` §5.4.17、`FHS_Product_Definition.md` §3.1a、`artifacts/2026-08-16-2355/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：❌ 未使用（跨代碼/browser 即時交叉驗證＋逐步修復，委派會斷推理鏈）。

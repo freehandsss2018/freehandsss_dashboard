@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-17] Session（Claude Code / Sonnet 5 執行）— D65：父母/大寶升格為訂單層一次性角色（歸屬選擇器方案B）
+
+- **緣起**：D64（2026-08-15）交付「多件手模擺設」逃生口模式後，Fat Mo 檢查成品時口述澄清真實業務模型：父母/大寶並非「主件的屬性」，而是訂單層一次性角色——全單只可能出現一件「家庭瓶」。D64 本質功能完備但語義錯配（所有真實情境靠「家庭瓶放主件」已可達成，只是 UI/文件都無提示此隱性順序依賴）。Fat Mo 裁決走方案B（歸屬選擇器），走 `/cl-flow`（flow_id `2026-08-16-2355`）→ A2 對抗評審 → 五條開放問題裁決 → `/execute`。
+- **Step 0 前置**：先合併兩條並行分支（`laughing-shamir-b47173` accessory_cost RPC修復 + `wonderful-lamport-197904` 文件補漏+worktree事故修復），解決8個文件衝突（含 §5.4.14/D64 編號衝突重新編號為 §5.4.16/D64續）。
+- **架構改動**：`en_parent`/`en_elder` 由 `renderLimbGrid()` 動態拼接搬到固定容器 `#pFamilyContainer`（ID 不變保向後相容）；新增 owner 管理函式組（`_pGlassSlots()`/`_pFamilyOwnerSlot()`/`_isFamilyOwner()`/`fhsFamilySyncVisibility()`）+ `#p_family_owner` 選擇器；`calculatePricing()` 家庭價 $2,580 判斷由 D64 `_isMainP` 改 `_isFamilyOwner()`；SKU 推導 consolidate 為單一共用函式 `_pDeriveSkuName()`（A2/#4 建議）；IG 訊息父母/大寶行改輸出在 owner 件 block；家庭組合鎖匙扣 S/P 改「全單任何一件」語義（Q3 裁決）；規則③防呆擴充至所有玻璃瓶件但僅警告（Q4 裁決）。
+- **A2/#1 BLOCKER 修復**：`restoreFormState()` 步驟1還原 `p_family_owner` 時 `<option>` 未建會靜默失效回退 Slot 1。修法：步驟0b之後、步驟1之前先呼叫 `fhsFamilySyncVisibility()` 建立完整 option 清單（抑制自動勾），尾段再做一次校驗回退。
+- **執行階段揪出並修復 2 個規劃未預見嘅真實 bug**：①舊 `_applyGlassDefaults()` 遺留獨立自動勾邏輯同新機制並存互不知情，令 Q1「手動取消不覆蓋」約束失效，移除該段落統一單一入口；②A2/#5 孤兒回退提示曾被 `calculatePricing()` 首次讀取即清空、被 `generate()` 內部第二次呼叫洗走用戶睇唔到，改為「持續顯示直至下次 sync 判定非孤兒狀態」語意。
+- **驗證**：browser live 實測（本地 `preview_start` 伺服器，非 `file://`）——3 張真實舊單零回歸（含 `06008013` 嘅 `raw_form_state` 真實值 `en_parent:false` 還原後正確維持 false）；owner=追加件 BLOCKER 單元測試通過（還原後仍為 2，非靜默回退 1，正確產出 `玻璃瓶套裝 (家庭)` $2,580）；IG 訊息 owner block 輸出正確；家庭組合鎖匙扣全單判定正確；Q1/Q4 裁決驗證通過。全程零 console error。
+- **文件同步**：`FHS_Product_Definition.md` 新增 §3.1a（七條業務規則+owner機制，唯一 SSoT）；`FHS_System_Logic_Overview.md` 新增 §5.4.17；`FHS_Product_Cost_Schema_v2.md` §10.6 + `FHS_Pricing_Bible.md` §2.1 + `finance-gatekeeper/SKILL.md` 路由表同步更新。
+
+詳見 [decisions.md D65](.fhs/notes/decisions.md)、[FHS_Product_Definition.md §3.1a](.fhs/ai/FHS_Product_Definition.md)、[FHS_System_Logic_Overview.md §5.4.17](.fhs/notes/FHS_System_Logic_Overview.md)、[artifacts/2026-08-16-2355/cl-final-plan.md](artifacts/2026-08-16-2355/cl-final-plan.md)。
+
 ## [2026-08-17] Session（Claude Code / Opus 5 執行）— /cl-flow A2 Gemini 升 gemini-3.7-flash + runner 收料層兩個靜默損壞修復
 
 - **緣起**：Fat Mo「a2 更新了最新 model」，並追加要求解決 D64 §DEGRADED 記錄嘅 A2 artifact UTF-8 亂碼缺陷。

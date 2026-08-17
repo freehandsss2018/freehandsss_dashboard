@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-08-17 (D65：父母/大寶升格為訂單層一次性角色，歸屬選擇器方案B): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17「D65」條目 + [decisions.md D65](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。Fat Mo 於 2026-08-16 檢查 D64 成品時口述澄清真實業務模型，父母/大寶由「主件屬性」升格「訂單層一次性角色」，走 `/cl-flow`（flow_id `2026-08-16-2355`，A2對抗評審＋五條開放問題裁決）→ `/execute`。Step 0 先合併兩條並行分支（accessory_cost RPC修復+文件補漏）解決8個文件衝突。核心改動：owner 管理函式組 + `#p_family_owner` 選擇器、`calculatePricing()` 家庭價判斷改讀 owner 件、SKU 推導 consolidate、IG 訊息輸出改到 owner block、家庭組合鎖匙扣 S/P 改「全單任何一件」語義、規則③防呆擴充僅警告。A2/#1 BLOCKER（`restoreFormState()` option 未建先賦值靜默失效）已修復。執行階段 live 實測再揪出 2 個規劃未預見嘅真實 bug（舊 `_applyGlassDefaults()` 遺留自動勾邏輯衝突、A2/#5 孤兒提示被自身消費邏輯洗走），均已修復。3 張真實舊單零回歸 + owner=追加件 BLOCKER 單元測試通過 + IG/家庭組合/Q1/Q4 全部驗證通過，全程零 console error。
+**Learnings**：核心教訓已落盤 `decisions.md` D65 全文（單一函式收口原則、多重自動化路徑互不知情陷阱、一次性提示消費時機陷阱）。
+**Subagent 使用記錄**：❌ 未使用（跨代碼/browser 即時交叉驗證＋逐步修復，委派會斷推理鏈）。
+
 ## 2026-08-17 (cl-flow A2 Gemini 升 gemini-3.7-flash + runner UTF-8 chunk 截斷/thinking model 多 parts 靜默截尾雙修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17 條目（無完成報告的小改動，本行僅摘要指回）。Fat Mo「a2 更新了最新 model」+ 追加要求解決 D64 §DEGRADED 記錄嘅 A2 artifact UTF-8 亂碼缺陷（3 字元：還原→還�/共用→共�/訊息→訊�）。**升級**：`GET /v1beta/models` 列帳號實際清單 + 逐個真 `generateContent` 測試，`gemini-3.7-flash`/`gemini-3.6-flash` 皆 200，Pro 系列仍 429 quota exceeded；`.env`/`.env.example`/`cl-flow-runner.js` 三處同步。**修復一**：`res.on('data', chunk=>{data+=chunk})` 令每個 Buffer chunk 獨立解碼，多位元組中文喺 chunk 邊界斷開變 U+FFFD，改 `Buffer.concat(chunks).toString('utf8')`。**修復二**（同函式內同居未被發現嘅缺陷）：thinking model 回應可分多 `parts`，原碼淨取 `parts[0].text` 會靜默截走後半段評審，改 `parts.map(p=>p.text).join('')` + `finishReason!=='STOP'` 截斷警告。三層驗證：74/248 byte 切點掃描（舊碼分別 48/74、96/248 corrupted，新碼皆 0）+ 真實 API 端到端跑通零 `�` 殘留。**Subagent 使用記錄**：❌未使用（單一函式修復 + 文件同步，無需 fan-out）。

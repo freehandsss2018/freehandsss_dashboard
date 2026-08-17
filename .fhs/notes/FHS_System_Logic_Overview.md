@@ -590,7 +590,30 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **教訓**：`pg_get_functiondef()` 讀到嘅係「當下 live 狀態」，唔等於「設計上應該冇」——一旦有獨立 migration 檔案（`0080`）明確記載過某欄位曾經存在，「0 次出現」應觸發「係咪回歸咗」嘅懷疑，而非直接下「本來冇」結論並寫入註解固化。日後 `pg_get_functiondef()` 診斷出「預期欄位缺席」，須先 `git log`/grep migrations 目錄確認有冇獨立 migration 記錄過，先可判斷「從未存在」定係「已回歸」。
 
-詳見 `.fhs/notes/decisions.md` D64、`.fhs/memory/learnings/supabase.md` #14、migration `0088_sync_rpc_accessory_cost_restore.sql`。
+詳見 `.fhs/notes/decisions.md` D64 續、`.fhs/memory/learnings/supabase.md` #14、migration `0088_sync_rpc_accessory_cost_restore.sql`。
+
+### 5.4.17 父母/大寶升格為訂單層一次性角色（歸屬選擇器方案B，純前端改動，2026-08-16 D65）
+
+**業務背景（回頭補 §5.4.14 D64 未展開的業務理由）**：D64 交付「多件手模擺設」逃生口模式時，父母/大寶仍沿用主件屬性語意（只能掛在主件），但真實業務模型並非如此——父母/大寶是**訂單層一次性角色**，不論訂單有幾件立體擺設，全單只可能出現一件「家庭瓶」。D64 當時之所以夠用，是因為所有真實情境（包括 Fat Mo 舉例的「木框×2 + 玻璃瓶(父母+嬰兒+大寶)」）都可以靠「把家庭瓶放主件」達成同樣效果——D64 本質是功能完備但語義錯配，UI 與文件都沒有揭露「有父母/大寶的玻璃瓶必須放主件」這條隱性規則，操作員若順手把木框放主件會找不到父母/大寶的落點。Fat Mo 於 2026-08-16 檢查 D64 成品時口述澄清並定案七條業務規則（全文見 `FHS_Product_Definition.md` §3.1a），裁決走「歸屬選擇器方案B」（Fat Mo 原話：「雖然性價比不高，但它最接近現實」）。
+
+**架構改動**：
+1. **DOM 遷移**：`en_parent`/`en_elder` 及其肢體 `.limb-sel` 由 `renderLimbGrid()` 玻璃瓶分支（動態字串拼接）搬到固定容器 `#pFamilyContainer`（靜態 HTML，ID 完全不變，保向後相容）。附帶收益：不再受 `renderLimbGrid()` 重建摧毀。
+2. **Owner 管理**：新增 `_pGlassSlots()`/`_pFamilyOwnerSlot()`/`_isFamilyOwner()`/`fhsFamilySyncVisibility()` 一組函式，統一管理「全單目前有邊啲玻璃瓶件」「目前歸屬邊件」。新增 `#p_family_owner` 選擇器，只列現存玻璃瓶件。
+3. **計價**：`calculatePricing()` 家庭價 $2,580 判斷由 D64 的 `_isMainP`（只認主件）改為 `_isFamilyOwner(item.Order_Item_Key)`（owner 可以係主件亦可以係追加件）；`hasBabyInSet` 改讀 owner 件自身嘅嬰兒肢體（owner 為追加件時讀 `data-who="嬰兒#N"`）。
+4. **SKU 推導 consolidation（A2/#4 對抗評審建議）**：`buildOrderItemsForPricing()` 與提交路徑原本各自平行實作嘅主件 SKU 推導邏輯，抽離為單一共用函式 `_pDeriveSkuName()`（`_pMainSkuOf()`/`_pSkuOf(slot)` 皆呼叫同一核心），防止兩處同步漂移（同 D64 已踩過嘅陷阱同源）。
+5. **IG 訊息**：`_pBlockLines(slot)` 由 `!slot`（只認主件）改為 `_isFamilyOwner` 判定，父母/大寶兩行輸出改到 owner 件嘅 block。主件為 owner 時（今日所有既有訂單狀態）輸出 byte-identical。
+6. **家庭組合鎖匙扣 S/P（Q3 裁決）**：`_fhsFamilyLimbMode()`／`getFamilyComboDetails()` 嬰兒部位判定由「僅讀主套裝」改為「全單任何一件」——石膏模一經倒出即實體存在，不論當初為邊件產品而倒，此語義與立體擺設家庭定價「只讀 owner 件自身」刻意不同、不可混用（全文見 `FHS_Product_Definition.md` §3.1a 規則7）。
+7. **防呆擴充（Q4 裁決，僅警告）**：所有玻璃瓶件（主件+追加件）皆須有至少一個嬰兒肢體非「無」，否則 `#priceDetails` 顯示橙色提醒，但不阻擋報價／`syncToAirtable()`（Fat Mo：訂單常態帶「待定」值先開單，硬攔會阻塞合法流程）。既有嘅「已勾父母但嬰兒全無」硬阻擋（§0 品牌核心）維持不變、屬不同層級。
+
+**執行階段揪出並修復嘅缺陷（規劃階段未預見）**：
+- **舊 `_applyGlassDefaults()` 遺留獨立自動勾邏輯**：D64/舊碼喺呢個函式內有一段獨立「父母 toggle On」邏輯，同新嘅 `fhsFamilySyncVisibility()` 自動勾機制並存但互不知情——會令「手動取消 en_parent 後再新增玻璃瓶件唔應該再自動勾回」（Q1 裁決核心約束）失效，因為舊邏輯完全唔識 `_fhsFamilyParentManualTouch` 旗標。Browser live 實測直接撞中：手動 uncheck 後切換 pSubCat 兩次，`en_parent` 又被勾返。修法：移除 `_applyGlassDefaults()` 內嘅自動勾段落，統一單一入口。
+- **A2/#5 孤兒回退提示消失**：初版實作將提示訊息喺 `calculatePricing()` 讀取時即清空（一次性 toast 語意），但 `generate()` 內部會再呼叫一次 `calculatePricing()`，令提示喺同一次使用者操作內已被第二次 render 洗走，用戶完全睇唔到。修法：提示改為「持續顯示直至下次 sync 判定非孤兒狀態」語意（沿用本函式其餘警示行既有慣例），唔喺讀取時清空。
+
+**驗證**：browser live 實測（`preview_start` 起本地伺服器，非 `file://`）——① 3 張真實舊單零回歸：`0600103`（純鎖匙扣，`enableP=false`）、`0600900`（單件木框，$2380，IG 訊息無父母/大寶行）、`06008013`（單件玻璃瓶，`raw_form_state` 真實值 `en_parent:false`，還原後**維持 false 唔被自動勾回**，價格 $1380）；② owner=追加件 BLOCKER 直接單元測試：合成 `p_family_owner:2` 嘅 `raw_form_state` 經 `restoreFormState()` 還原後 `#p_family_owner` 值仍為 `2`（非靜默回退 1），對應件正確產出 `玻璃瓶套裝 (家庭)` $2,580，總價 $4,960（主件木框 $2,380 + owner 追加件 $2,580）；③ IG 訊息父母/大寶行正確輸出喺 owner 件 block、主件 block 不含（同時驗證 owner=主件時輸出 byte-identical）；④ 家庭組合鎖匙扣「全單任何一件」語義：owner 追加件某部位有倒模、主件同部位「無」→ mode 仍判 `S`；兩者皆「無」先判 `P`；⑤ Q1 手動取消不覆蓋：手動 uncheck 後兩次 pSubCat 切換（含 0→1 轉換）`en_parent` 維持 false；⑥ Q4 防呆僅警告：玻璃瓶件嬰兒全「無」時顯示橙色提醒但報價正常產出（`$1380`，非 `$0`）。過程中揪出並修復 2 個規劃階段未預見嘅真實 bug（見上）。全程零 console error。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（開發版）；`FHS_Product_Definition.md`/`finance-gatekeeper/SKILL.md` 文件同步。Supabase schema／n8n 皆零改動（`Family_Member_Config` 由前端計算後傳入，同 D64 前提一致）。`Freehandsss_dashboard_current.html`（生產版）本次未動，部署為另一授權關卡。
+
+詳見 `.fhs/notes/decisions.md` D65、`FHS_Product_Definition.md` §3.1a、`artifacts/2026-08-16-2355/cl-final-plan.md`。
 
 ### 5.5 綜合審計日誌（Session 124 新增）
 
