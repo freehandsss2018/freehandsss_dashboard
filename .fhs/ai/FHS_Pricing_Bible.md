@@ -2,7 +2,7 @@
 
 > **Authority Level**: L2 — 現行定價 HEAD
 > **Version**: v1.7.0
-> **更新日期**: 2026-07-25（S189財務文件全面審查：§5/§6 移除重複金額表，改為指向 `FHS_Product_Cost_Schema_v2.md`（唯一SSoT），消除同Cost Schema §2.1/§3.2 兩處各自維護同組數字嘅drift風險；§6.1過時公式+§6.3已填妥卻仍標「待填」嘅清單一併移除）；2026-07-23（§3.2 純銀頸鏈吊飾 S mode remainder單隻價 $1,980→$1,490下修，N=1底價不變；§4.3 P mode 鎖匙扣改為多部位合併計價+新增跨部位附加費，取代原「各部位獨立計階梯」；兩項均為 Fat Mo 對照客戶最新售價表 + 真實訂單核實後裁決，決策見 decisions.md D45）；2026-07-21 (§2.1 修復肢數判定 bug：hasFoot 捷徑判斷→實際總肢數計算，並將大寶肢體納入嬰兒同等計數但不觸發家庭價；2026-07-19 §2.1 玻璃瓶套裝新增「含父母」家庭定價 $2,580 並改用獨立 SKU「玻璃瓶套裝 (家庭)」（推翻同日較早嘅「SKU不變」決定，修正稽核面板顯示舊價 bug）；§6 footnote 修正已過時技術債描述)
+> **更新日期**: 2026-08-16（§8「成本分類小計」表補漏第四分類 `accessory_cost`——配件成本自 2026-07-25 migration 0079/0080 導入以來從未同步進此表，finance-gatekeeper SKILL.md §5.4.7 grep sweep 事後揪出，純文件缺口非計算錯誤）；2026-07-25（S189財務文件全面審查：§5/§6 移除重複金額表，改為指向 `FHS_Product_Cost_Schema_v2.md`（唯一SSoT），消除同Cost Schema §2.1/§3.2 兩處各自維護同組數字嘅drift風險；§6.1過時公式+§6.3已填妥卻仍標「待填」嘅清單一併移除）；2026-07-23（§3.2 純銀頸鏈吊飾 S mode remainder單隻價 $1,980→$1,490下修，N=1底價不變；§4.3 P mode 鎖匙扣改為多部位合併計價+新增跨部位附加費，取代原「各部位獨立計階梯」；兩項均為 Fat Mo 對照客戶最新售價表 + 真實訂單核實後裁決，決策見 decisions.md D45）；2026-07-21 (§2.1 修復肢數判定 bug：hasFoot 捷徑判斷→實際總肢數計算，並將大寶肢體納入嬰兒同等計數但不觸發家庭價；2026-07-19 §2.1 玻璃瓶套裝新增「含父母」家庭定價 $2,580 並改用獨立 SKU「玻璃瓶套裝 (家庭)」（推翻同日較早嘅「SKU不變」決定，修正稽核面板顯示舊價 bug）；§6 footnote 修正已過時技術債描述)
 > **衝突規則**: 若本文件與 L1（`.fhs/ai/FHS_Finance_Bible.md`）衝突，以 L1 為準；本文件取代所有舊版定價文件（pricing_reference / Product_Bible_V3.7）
 > **Source of Truth**: `freehandsss_dashboardV41.html` → `calculatePricing()` 函式（代碼為最終裁決者）
 > **警告**: 計價邏輯變更後，本文件必須同步修訂，否則將成為誤導來源。
@@ -259,7 +259,7 @@ price += surcharge
 | **FatMo 繪圖成本** | 前端計算後傳 payload，**不存 DB** | 前端計算 |
 | **產品生產成本**（per SKU）| Supabase `products.total_base_cost` | 人工維護 / migration |
 | **訂單總成本** | Supabase `orders.total_cost` | n8n Calculate Profit |
-| **成本分類小計** | Supabase `order_items.necklace_cost` / `keychain_cost` / `handmodel_cost` | n8n |
+| **成本分類小計** | Supabase `order_items.necklace_cost` / `keychain_cost` / `handmodel_cost` / `accessory_cost` | n8n |
 | **折扣/補打** | Supabase `orders.adjustment_amount` | Review Mode 手動 |
 | **利潤** | Supabase `orders.net_profit` | n8n（`final_sale_price - total_cost`）|
 
