@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-17T14:36:07Z">
+    <meta name="fhs-build" content="2026-08-17T22:09:31Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -4463,42 +4463,18 @@
             <div class="ss-group-title">倒模對象</div>
             <div id="limbContainer"></div>
 
-            <!-- B 組：加購配件（毛氈 / 燈飾，隨款式顯隱）-->
-            <div id="ssAddonTitle" style="display:none;">
-                <div class="ss-group-sep"></div>
-                <div class="ss-group-title">加購配件</div>
-            </div>
-            <div class="part-item" id="woolAddonRow" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight: bold; color: #444; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>羊毛氈公仔 ($680)</span>
-                    <label class="switch d51-cat-p"><input type="checkbox" id="w_wool_en"
-                            onchange="generate()"><span class="slider"></span></label>
-                </div>
-            </div>
-            <div class="part-item" id="lightAddonRow" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight: bold; color: #444; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-lightbulb"/></svg>燈飾 ($80)</span>
-                    <label class="switch d51-cat-p"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
-                </div>
-            </div>
-
-            <!-- 多件手模擺設（追加件）逃生口，cl-flow 2026-08-15-1944 -->
-            <div class="ss-group-sep" id="pExtraSep" style="display:none;"></div>
-            <div id="pExtraContainer"></div>
-            <input type="hidden" id="p_slot_seq" value="1">
-            <button type="button" id="pExtraAddBtn" class="d51-link-btn" onclick="fhsPExtraAdd()">
-                <svg class="ba-icon" width="14" height="14"><use href="#icon-plus"/></svg>追加擺設款式（同一張單多件）
-            </button>
-
-            <!-- 家庭成員（全單一次），cl-flow 2026-08-16-2355 D65：父母/大寶由主件屬性升格訂單層一次性角色 -->
-            <div class="ss-group-sep" id="pFamilySep" style="display:none;"></div>
+            <!-- 家庭成員（父母/大寶）——同嬰兒同屬「倒模對象」，故緊貼 #limbContainer 之後。
+                 2026-08-18 Fat Mo 指正：原本擺喺加購配件／追加件之後，將同一組倒模對象劏開兩橛，
+                 違反「款式 → 倒模對象 → 配件」嘅操作員心智模型。
+                 ⚠️ 刻意唔放入 #limbContainer 內：renderLimbGrid() 會 innerHTML 重建該容器，
+                 放入即被洗走（D65 Step 1a 修好嘅正正就係呢個問題），故只可以做兄弟節點。 -->
             <div id="pFamilyContainer" style="display:none;">
-                <div class="ss-group-title">家庭成員（全單一次）</div>
                 <div id="pFamilyOwnerNotice" class="d51-family-notice"></div>
-                <div class="form-group">
-                    <label>歸屬（邊一件玻璃瓶）</label>
-                    <select id="p_family_owner" onchange="fhsFamilyOwnerChange()"></select>
-                </div>
+                <!-- 歸屬選擇器：2026-08-18 Fat Mo 指正「得一個選項時唔知有咩用」→ 永久隱藏，
+                     只作 raw_form_state 狀態載體（ID 屬 n8n/還原契約，唔可以刪）。
+                     操作員改歸屬改用各玻璃瓶卡片上嘅「設為家庭瓶」快捷掣（見 _pFamilyBadgeSync），
+                     一撳即轉，唔使揀下拉、亦唔使諗「主件／擺設②」對應邊件實物。 -->
+                <select id="p_family_owner" onchange="fhsFamilyOwnerChange()" style="display:none;"></select>
                 <div class="limb-grid d51-menu-block">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #eee; padding-bottom: 5px;">
                         <span class="limb-title d51-menu-title cat-p" style="margin:0; border:none;"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-users"/></svg>父母<span class="d51-family-badge">家庭專屬</span></span>
@@ -4526,6 +4502,35 @@
                     </div>
                 </div>
             </div>
+
+            <!-- B 組：加購配件（毛氈 / 燈飾，隨款式顯隱）——2026-08-18 移至倒模對象（嬰兒+父母+大寶）之後，
+                 還原「款式 → 倒模對象 → 配件」順序 -->
+            <div id="ssAddonTitle" style="display:none;">
+                <div class="ss-group-sep"></div>
+                <div class="ss-group-title">加購配件</div>
+            </div>
+            <div class="part-item" id="woolAddonRow" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight: bold; color: #444; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-smile"/></svg>羊毛氈公仔 ($680)</span>
+                    <label class="switch d51-cat-p"><input type="checkbox" id="w_wool_en"
+                            onchange="generate()"><span class="slider"></span></label>
+                </div>
+            </div>
+            <div class="part-item" id="lightAddonRow" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight: bold; color: #444; display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="16" height="16" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-lightbulb"/></svg>燈飾 ($80)</span>
+                    <label class="switch d51-cat-p"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <!-- 多件手模擺設（追加件）逃生口，cl-flow 2026-08-15-1944。擺喺最後：屬「一張單多件」嘅罕有情況，
+                 唔應該喺常規流程中途打斷操作員 -->
+            <div class="ss-group-sep" id="pExtraSep" style="display:none;"></div>
+            <div id="pExtraContainer"></div>
+            <input type="hidden" id="p_slot_seq" value="1">
+            <button type="button" id="pExtraAddBtn" class="d51-link-btn" onclick="fhsPExtraAdd()">
+                <svg class="ba-icon" width="14" height="14"><use href="#icon-plus"/></svg>追加擺設款式（同一張單多件）
+            </button>
         </div>
 
         <div class="toggle-row tier1-row" id="toggleRowK" onclick="fhsD51HeaderClick(event,'enableK','contentK')">
@@ -7036,7 +7041,8 @@
         // suppressAutoParent：還原流程呼叫時傳 true，Q1 約束「還原流程中一律不觸發自動勾」。
         function fhsFamilySyncVisibility(suppressAutoParent) {
             var glassSlots = _pGlassSlots();
-            var sep = document.getElementById('pFamilySep');
+            // #pFamilySep 已於 2026-08-18 移除——家庭成員已併入「倒模對象」群組（緊貼 #limbContainer），
+            // 唔再係獨立分區，故唔需要自己嘅分隔線。
             var container = document.getElementById('pFamilyContainer');
             var ownerSel = document.getElementById('p_family_owner');
 
@@ -7057,7 +7063,6 @@
                 }
                 document.querySelectorAll('.limb-sel[data-who="父母"], .limb-sel[data-who="大寶"]').forEach(function(s) { s.value = '待定'; });
                 if (ownerSel) ownerSel.innerHTML = '';
-                if (sep) sep.style.display = 'none';
                 if (container) container.style.display = 'none';
                 _fhsFamilyHadGlassBefore = false;
                 _fhsFamilyOwnerFallbackNotice = null;
@@ -7082,7 +7087,6 @@
             var ownerWasOrphan = prevValue !== '' && glassSlots.indexOf(Number(prevValue)) === -1;
             if (ownerSel) ownerSel.value = String(resolvedOwner);
 
-            if (sep) sep.style.display = '';
             if (container) container.style.display = '';
 
             // Q1 裁決：零→有玻璃瓶件轉換時自動勾父母，唯一次觸發；唔覆蓋操作員手動取消；還原流程抑制
