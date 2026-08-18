@@ -22,6 +22,13 @@
 **Learnings**：核心教訓已落盤 `decisions.md` D65 全文（單一函式收口原則、多重自動化路徑互不知情陷阱、一次性提示消費時機陷阱）。
 **Subagent 使用記錄**：❌ 未使用（跨代碼/browser 即時交叉驗證＋逐步修復，委派會斷推理鏈）。
 
+## 2026-08-18 (handoff 反覆失同步根因確診：讀取端 hook bug 非寫入端紀律 + 兩項修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-18 條目（無完成報告的小改動，本行僅摘要指回）。本 session 依 `main` 過時便攜塊重新規劃咗一次已完成工作（D65 實際早已由 `claude/d65-family-owner-role`／PR #3 完成並部署），經 Fat Mo 質疑後查證更正。根因：`session-start-sop.sh` 並行分支警告**取數範圍細過讀取範圍**（`:69` 只 fetch main，`:79` 讀全部 `origin/claude/*` 本地 ref），令全新雲端容器出殘缺清單、零報錯；更深一層係 `handoff.md` 屬 git 追蹤檔案故內容**分支局部**，未 merge 即必然失同步。關鍵判斷：歷來三次修復（S118/S144/D60）全部落喺內容・紀律層，故對此症零效果——d65 session 寫入紀律其實完美。修復：`fetch origin --prune` + 新增 handoff 新鮮度跨分支比對警告。驗證：刪本地 ref 模擬全新容器→重現漏報→修復→同條件重跑確認 d65 以第一位出現。
+**Learnings**：新增 `learnings/governance.md` #7（handoff 分支局部性；診斷反覆修唔好嘅制度病先問「之前修復落喺邊層」）、`learnings/tooling.md` #9（警告腳本取數範圍 ⊇ 讀取範圍，否則變偽陰性來源）。
+**Subagent 使用記錄**：❌未使用（單一腳本根因診斷 + 前後對照實測，需即時交叉驗證 git 狀態）。
+
+
 ## 2026-08-17 (cl-flow A2 Gemini 升 gemini-3.7-flash + runner UTF-8 chunk 截斷/thinking model 多 parts 靜默截尾雙修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17 條目（無完成報告的小改動，本行僅摘要指回）。Fat Mo「a2 更新了最新 model」+ 追加要求解決 D64 §DEGRADED 記錄嘅 A2 artifact UTF-8 亂碼缺陷（3 字元：還原→還�/共用→共�/訊息→訊�）。**升級**：`GET /v1beta/models` 列帳號實際清單 + 逐個真 `generateContent` 測試，`gemini-3.7-flash`/`gemini-3.6-flash` 皆 200，Pro 系列仍 429 quota exceeded；`.env`/`.env.example`/`cl-flow-runner.js` 三處同步。**修復一**：`res.on('data', chunk=>{data+=chunk})` 令每個 Buffer chunk 獨立解碼，多位元組中文喺 chunk 邊界斷開變 U+FFFD，改 `Buffer.concat(chunks).toString('utf8')`。**修復二**（同函式內同居未被發現嘅缺陷）：thinking model 回應可分多 `parts`，原碼淨取 `parts[0].text` 會靜默截走後半段評審，改 `parts.map(p=>p.text).join('')` + `finishReason!=='STOP'` 截斷警告。三層驗證：74/248 byte 切點掃描（舊碼分別 48/74、96/248 corrupted，新碼皆 0）+ 真實 API 端到端跑通零 `�` 殘留。**Subagent 使用記錄**：❌未使用（單一函式修復 + 文件同步，無需 fan-out）。

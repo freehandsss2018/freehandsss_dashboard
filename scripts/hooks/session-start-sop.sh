@@ -66,7 +66,12 @@ fi
 # 直到 merge 才會被看見——曾導致 AI 用過時本地狀態答「未做」，實際 main 已由並行 session 做完。
 # fail-open：任何步驟失敗都不得擋 session 啟動；git 網路操作加 timeout 防卡死。
 if command -v git >/dev/null 2>&1 && [ -d "$PROJECT_DIR/.git" -o -f "$PROJECT_DIR/.git" ]; then
-  timeout 8 git -C "$PROJECT_DIR" fetch origin main --quiet 2>/dev/null || true
+  # ⚠️ 必須 fetch 全部分支（非只 main）：下方 :OTHER_ACTIVE 讀嘅係本地 refs/remotes/origin/claude/*，
+  # 全新雲端容器只帶住 clone 當刻嗰批 ref——只 fetch main 會令其他 session 新開/更新嘅分支
+  # 喺本地完全冇對應 ref，令並行分支警告靜靜哋報一份殘缺清單（零報錯）。
+  # 2026-08-18 實測事故：d65-family-owner-role（6小時前，PR #3，D65 已完成部署）被完全漏報，
+  # 令本 session 誤信 main 上過時 handoff「D65 等緊 /execute」而重新規劃一次已完成嘅工作。
+  timeout 12 git -C "$PROJECT_DIR" fetch origin --prune --quiet 2>/dev/null || true
   AHEAD_COUNT=$(git -C "$PROJECT_DIR" rev-list --count HEAD..origin/main 2>/dev/null || echo "")
   if [ -n "$AHEAD_COUNT" ] && [ "$AHEAD_COUNT" -gt 0 ] 2>/dev/null; then
     echo ""
@@ -84,6 +89,30 @@ if command -v git >/dev/null 2>&1 && [ -d "$PROJECT_DIR/.git" -o -f "$PROJECT_DI
     echo ""
     echo "🔀 近48小時有動靜嘅其他並行分支（可能同你撞工，落手前留意）："
     echo "$OTHER_ACTIVE" | awk -F'|' '{printf "   • %s（%s）：%s\n", $1, $2, $3}'
+  fi
+
+  # T-handoff 新鮮度比對（2026-08-18 新增）：便攜塊係 git 追蹤檔案，內容屬「分支局部」——
+  # 其他 session 喺自己分支更新咗 handoff，喺未 merge 之前，本分支讀到嘅永遠係舊版。
+  # 上方「分支有動靜」警告只講 commit subject，講唔到「邊條分支嘅交接狀態先係最新」，
+  # 故此處獨立比對 handoff.md 本身嘅最後改動時間，直接指出真正權威嗰份喺邊。
+  HANDOFF_REL=".fhs/memory/handoff.md"
+  MY_HO_TS=$(git -C "$PROJECT_DIR" log -1 --format=%ct HEAD -- "$HANDOFF_REL" 2>/dev/null || echo "")
+  if [ -n "$MY_HO_TS" ]; then
+    NEWER_HO=$(for _r in $(git -C "$PROJECT_DIR" for-each-ref --format='%(refname:short)' \
+                   refs/remotes/origin/main refs/remotes/origin/claude/ 2>/dev/null); do
+        [ "$_r" = "origin/${CURRENT_BRANCH}" ] && continue
+        _ts=$(git -C "$PROJECT_DIR" log -1 --format=%ct "$_r" -- "$HANDOFF_REL" 2>/dev/null || echo "")
+        [ -n "$_ts" ] && [ "$_ts" -gt "$MY_HO_TS" ] 2>/dev/null && echo "$_ts|$_r"
+      done | sort -rn | head -3)
+    if [ -n "$NEWER_HO" ]; then
+      echo ""
+      echo "🕒 以下分支嘅 handoff 便攜塊比你手上呢份新——上面顯示嘅交接狀態可能已過時："
+      echo "$NEWER_HO" | while IFS='|' read -r _ts _r; do
+        _ago=$(git -C "$PROJECT_DIR" log -1 --format='%cr' "$_r" -- "$HANDOFF_REL" 2>/dev/null)
+        printf "   • %s（%s）\n" "$_r" "$_ago"
+      done
+      echo "   → 答「做咗未／進度點」前，先 git show <分支>:$HANDOFF_REL 核對，唔好單信本分支版本"
+    fi
   fi
 fi
 
