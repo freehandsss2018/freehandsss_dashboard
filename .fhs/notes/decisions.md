@@ -2396,6 +2396,8 @@ A2/#2（`_boxKey` TEMP↔正式格式不匹配）經 4 張真實訂單 `raw_form
 
 詳見 `FHS_System_Logic_Overview.md` §5.4.16、`.fhs/memory/learnings/supabase.md` #14、`supabase/migrations/0088_sync_rpc_accessory_cost_restore.sql`。
 
+**2026-08-18 覆核記錄**：本文最初記錄「附帶發現 finance-auditor.md/database-reviewer.md/Pricing_Bible.md 三處成本分類 checklist 未納入 accessory_cost，task_f997b096 追蹤」。查證確認**該缺口已於同日（2026-08-16）由 `wonderful-lamport-197904` 分支（commit `b6db6cd`，Changelog 2026-08-16 條目）修復**，三檔皆補齊第四分類並升 frontmatter version 至 v2.2.1，隨 D65 PR #3 併入 main。本次逐份 grep 核實現況與 footer 記載一致，task_f997b096 應視為已結案，handoff MASTER 表已同步更正。
+
 ### D65：父母/大寶升格為訂單層一次性角色（歸屬選擇器方案B，cl-flow `2026-08-16-2355`，2026-08-16）
 
 **緣起**：D64（2026-08-15）交付「多件手模擺設」逃生口模式後，Fat Mo 檢查成品時口述澄清真實業務模型：父母/大寶並非「主件的屬性」，而是**訂單層一次性角色**——全單只可能出現一件「家庭瓶」。D64 本質功能完備但語義錯配（所有真實情境靠「家庭瓶放主件」已可達成，只是 UI/文件都無提示此隱性順序依賴）。Fat Mo 在 A/B 方案對比後裁決走 B（歸屬選擇器），原話：「雖然性價比不高，但它最接近現實」。走 `/cl-flow` → A2（Gemini）對抗評審（DEGRADED：Perplexity quota 耗盡）→ Fat Mo 裁決五條開放問題 → `/execute`。

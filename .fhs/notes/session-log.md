@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-18 (D65 全套查證：產品關係/財務/UI 三方面文件記憶覆核 + task_f997b096 結案): 🏷️ ✅
+
+**摘要**：Fat Mo 要求核實 D65（父母/大寶訂單層角色）嘅產品關係邏輯、財務準確性、UI 設計是否已真正落檔有記憶。逐項查證：①`FHS_Product_Definition.md` §3.1a 為 SSoT，代碼實測 `_isFamilyOwner()` 已完全取代 D64 舊守衛 `_isMainP`；②`Cost_Schema_v2`/`Pricing_Bible`/`finance-gatekeeper` 三層財務文件同步一致，指向嘅 Logic_Overview §5.4.17/§5.4.18 兩節經查真實存在；③`V42.html` 與生產 `current.html` 逐 byte 比對僅差 build timestamp，SHA256 與部署記錄吻合，UI 已真正落地非得個講法。過程中發現 handoff 記錄嘅 `task_f997b096`（三份稽核輔助文件 accessory_cost checklist 缺口）**其實已於同日由 `wonderful-lamport-197904` 分支（`b6db6cd`）修復並隨 PR #3 併入 main**，屬 stale 記錄——逐份 grep 核實三檔 frontmatter 已升 v2.2.1、footer 明記補漏，非重新做，只更正 handoff/decisions.md 記錄。另核實 `task_4a9acd82`（`loadMode2Items()` 漏 select）／`task_0c9d1c51`（hook regex 漏 `accessory_cost`）兩者**仍是真缺口**（代碼/regex 皆零匹配），未動手修復，留待另行處理。
+**Subagent 使用記錄**：❌未使用（跨文件/代碼交叉核實，需即時判斷 stale vs 真缺口，委派會斷推理鏈）。
+
 ## 2026-08-18 (D65續IV：立體擺設「每件一張卡」統一重構 + 追加件家庭預設off): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-18「D65續IV」條目 + [decisions.md D65續IV](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。Fat Mo 對 D65續III 再截4圖反饋主件/追加件視覺不一致，第一輪修復（紫色邊框區分）被明確推翻，改為「主件同追加件結構完全一致」原則重構：`.p-item-card` 統一卡片樣式、主件新增對稱 `_pMainRefreshTitle()`、家庭區塊改用 `_pFamilyDock()`/`_pFamilyDockHome()` 節點搬遷跟隨owner走（解決「owner為追加件時父母仍顯示喺主件下」結構性bug）、兩個高風險清空點（`fhsPExtraRemove()`/`resetForm()`）加保護guard、追加件變玻璃瓶自動勾父母改預設off（加`resolvedOwner===1`守衛）。browser live實測：兩卡結構對稱確認、guard場景資料倖存、自動勾限縮驗證通過、3張真實舊單零回歸、零console error。**Fat Mo 同輪提出嘅父母/大寶新定價邏輯（大寶肢數應影響價錢）已明確叫停**（"取消修改，我想清楚再作優化，你只修改第一項即可"）——本次未落任何相關代碼，留待下個session主動帶出。
