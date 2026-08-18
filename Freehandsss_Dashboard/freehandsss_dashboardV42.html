@@ -521,6 +521,21 @@
         .d51-menu-row:last-child { border-bottom: none; }
         .d51-menu-row .part-details { border-top: 1px dashed #eee; }
         .limb-grid.d51-menu-block { background: #FBF8F3; border: 1px solid #eee; border-radius: 11px; }
+        /* ---- 立體擺設「每件一張卡」統一樣式（2026-08-18 Fat Mo 第三輪回饋定案）
+             背景：早前主件平鋪、追加件做卡再加紫色左邊帶區分，被指「排位／顏色／分隔唔一致，好混亂」。
+             定案改為：**主件（擺設①）同追加件（擺設②③）用完全相同嘅卡片樣式同內部排位**，
+             唔再用插入式色帶做區分——各件靠自己嘅標題（擺設①/②/③ · 款式）分辨。 ---- */
+        .p-item-card {
+            background: #fff;
+            border: 1px solid #E6DFD5;
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 1px 4px rgba(90, 70, 50, .07);
+        }
+        .p-item-card + .p-item-card,
+        #pExtraContainer > .p-item-card { margin-top: 12px; }
+        #pExtraContainer { display: flex; flex-direction: column; gap: 12px; }
+        #pExtraContainer:not(:empty) { margin-top: 12px; }
         /* ---- D51：嬰兒倒模模式 4 掣（二手二腳/自訂/一手一腳左/右）——統一格仔大小+字體，
              修復之前部分掣兩行文字令高度／字size唔一致嘅問題（Fat Mo驗收揪出） ---- */
         .d51-baby-mode-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
@@ -4446,10 +4461,20 @@
             </div>
         </div>
         <div id="contentP" class="addon-content">
+            <!-- 擺設①（主件）——2026-08-18 Fat Mo 回饋：主件同追加件必須係結構完全一致嘅卡，
+                 唔可以主件平鋪、追加件做卡再靠顏色邊框區分。故主件亦包成 .p-item-card，
+                 標題「擺設① · 款式」同追加件對稱（主件冇刪除掣，因為唔可以刪）。 -->
+            <div class="p-item-card" id="pMainCard">
+            <div class="sec-title-row">
+                <span style="display:flex; align-items:center; flex-wrap:wrap; flex:1; min-width:0;">
+                    <span class="limb-title d51-menu-title cat-p" id="pMainTitle"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-image"/></svg>擺設①</span>
+                    <span id="pMainFamilyBadge"></span>
+                </span>
+            </div>
             <!-- A 組：款式類型 + 底座顏色 + 刻字 -->
             <div class="form-group">
-                <label>款式類型 <span id="pMainFamilyBadge"></span></label>
-                <select id="pSubCat" onchange="renderLimbGrid(); _applyGlassDefaults(); fhsFamilySyncVisibility(); _syncAddonVisibility(); generate(); fhsD51UpdateHeader('P');">
+                <label>款式類型</label>
+                <select id="pSubCat" onchange="renderLimbGrid(); _applyGlassDefaults(); fhsFamilySyncVisibility(); _syncAddonVisibility(); _pMainRefreshTitle(); generate(); fhsD51UpdateHeader('P');">
                     <option value="木框款式">木框款式</option>
                     <option value="玻璃瓶款式">玻璃瓶款式</option>
                 </select>
@@ -4522,9 +4547,10 @@
                     <label class="switch d51-cat-p"><input type="checkbox" id="l_light_en" onchange="generate()"><span class="slider"></span></label>
                 </div>
             </div>
+            </div><!-- /.p-item-card #pMainCard（擺設①到此為止）-->
 
-            <!-- 多件手模擺設（追加件）逃生口，cl-flow 2026-08-15-1944。擺喺最後：屬「一張單多件」嘅罕有情況，
-                 唔應該喺常規流程中途打斷操作員 -->
+            <!-- 多件手模擺設（追加件）逃生口，cl-flow 2026-08-15-1944。每件同樣係一張 .p-item-card，
+                 結構與擺設①逐項對齊（標題／款式／底座色／刻字／倒模對象／加購配件）。 -->
             <div class="ss-group-sep" id="pExtraSep" style="display:none;"></div>
             <div id="pExtraContainer"></div>
             <input type="hidden" id="p_slot_seq" value="1">
@@ -6327,6 +6353,10 @@
             // 步驟1的通用 input/select 清空只清咗追加件欄位嘅值，唔會移除 DOM 節點本身，
             // 亦會將 p_slot_seq（hidden input）誤清做空字串——必須喺此顯式重設。
             const _pExtraC = document.getElementById('pExtraContainer');
+            // ⚠️ 必須喺 innerHTML='' 之前搬走（2026-08-18）：家庭區塊可能正泊喺某張追加件卡內
+            // （_pFamilyDock），一 innerHTML='' 就會連 #pFamilyContainer 整個節點永久刪走，
+            // 之後所有 getElementById('en_parent') 等呼叫全部返 null，表單靜默半死。
+            if (typeof _pFamilyDockHome === 'function') _pFamilyDockHome();
             if (_pExtraC) _pExtraC.innerHTML = '';
             const _pSeqEl = document.getElementById('p_slot_seq');
             if (_pSeqEl) _pSeqEl.value = '1';
@@ -7067,6 +7097,7 @@
                 _fhsFamilyHadGlassBefore = false;
                 _fhsFamilyOwnerFallbackNotice = null;
                 _pSyncFamilyOwnerNoticeDOM();
+                _pFamilyDockHome();   // 零玻璃瓶：搬返原位，避免仍泊喺隨時會被刪嘅追加件卡內
                 return;
             }
 
@@ -7092,7 +7123,9 @@
             // Q1 裁決：零→有玻璃瓶件轉換時自動勾父母，唯一次觸發；唔覆蓋操作員手動取消；還原流程抑制
             // （_fhsFamilyRestoring 為保底：pSubCat 還原時 dispatchEvent('change') 經 onchange 鏈
             // 間接觸發本函式，該呼叫路徑冇帶 suppressAutoParent 參數，須靠全域旗標保底攔截）。
-            if (!suppressAutoParent && !_fhsFamilyRestoring && !_fhsFamilyHadGlassBefore && !_fhsFamilyParentManualTouch) {
+            // 2026-08-18 Fat Mo 追加裁決：自動勾父母只適用於【主件】變玻璃瓶；追加擺設件變玻璃瓶時
+            // 預設家庭 = off（追加件多數係純嬰兒第二件，自動勾父母會令操作員逐次手動取消）。
+            if (!suppressAutoParent && !_fhsFamilyRestoring && !_fhsFamilyHadGlassBefore && !_fhsFamilyParentManualTouch && resolvedOwner === 1) {
                 var enParent2 = document.getElementById('en_parent');
                 if (enParent2 && !enParent2.checked) {
                     enParent2.checked = true;
@@ -7110,10 +7143,55 @@
                 ? ('家庭成員歸屬已自動變更至 ' + (resolvedOwner === 1 ? '主件' : ('擺設' + _pOrdinalOf(resolvedOwner))))
                 : null;
             _pSyncFamilyOwnerNoticeDOM();
+            _pFamilyDock();   // 父母/大寶跟隨 owner 件停泊（2026-08-18）
         }
+
+        // ── 家庭成員 DOM 跟隨 owner 停泊（2026-08-18 Fat Mo 回饋二次修正）─────────────
+        // 問題：父母/大寶 DOM 位置原本係死嘅（永遠喺主件「倒模對象」下面），但佢哋實際歸屬邊件
+        // 由 owner 決定。當 owner 係追加件（例：主件木框 + 追加玻璃瓶）時，畫面會出現
+        // 「木框主件下面有父母」呢個講唔通嘅組合——木框根本唔支援父母/大寶。
+        // 修法：將 #pFamilyContainer 整個節點**搬去** owner 件嘅視覺範圍內（搬節點，非重建，
+        // 故所有 ID／事件處理器／已填值全部原封不動）。
+        // ⚠️ 兩個必須守住嘅危險點（已加 guard，見 fhsPExtraRemove / resetForm）：
+        //   1. fhsPExtraRemove() 會先 querySelectorAll('input,select') 清空該卡全部欄位再 remove()
+        //      ——若家庭區塊當時泊咗喺該卡內，父母/大寶值會先被清空再連 DOM 一齊消失
+        //   2. resetForm() 對 #pExtraContainer 做 innerHTML=''，同樣會連泊咗入去嘅家庭區塊一齊清走
+        // 兩處都必須喺動手前先 _pFamilyDockHome() 搬返出嚟。
+
+        // 搬返「主件」位置（#limbContainer 之後）——亦即 HTML 原始定義位置
+        function _pFamilyDockHome() {
+            var fam = document.getElementById('pFamilyContainer');
+            var limb = document.getElementById('limbContainer');
+            if (!fam || !limb || !limb.parentNode) return;
+            if (fam.previousElementSibling === limb) return;   // 已經喺原位，唔使郁
+            limb.parentNode.insertBefore(fam, limb.nextSibling);
+        }
+
+        // 依目前 owner 決定停泊位置：主件 → 原位；追加件 → 該卡「嬰兒之後、燈飾配件之前」
+        function _pFamilyDock() {
+            var fam = document.getElementById('pFamilyContainer');
+            if (!fam) return;
+            var owner = _pFamilyOwnerSlot();
+            if (owner && owner !== 1) {
+                // 錨點用「加購配件」分區標題（恆存在，唔似燈飾列會隨款式隱藏），
+                // 令順序維持同主件一致嘅「款式 → 刻字 → ▣倒模對象(嬰兒+父母+大寶) → ▣加購配件」
+                var anchor = document.getElementById(_pns(owner) + 'addonTitle');
+                if (anchor && anchor.parentNode) {
+                    if (fam.nextElementSibling !== anchor) anchor.parentNode.insertBefore(fam, anchor);
+                    return;
+                }
+            }
+            _pFamilyDockHome();
+        }
+        window._pFamilyDockHome = _pFamilyDockHome;
 
         // #p_family_owner 下拉 onchange：操作員手動改變歸屬
         function fhsFamilyOwnerChange() {
+            // 2026-08-18 live 實測揪出：owner 一改，家庭區塊必須即刻跟住搬去新 owner 件，
+            // 否則父母/大寶會留喺舊件下面（例：撳「設為家庭瓶」轉去擺設②，但父母仍顯示喺主件）。
+            // 本函式係 owner 變更嘅唯一入口（下拉 onchange + fhsFamilySetOwner 快捷掣皆經此），
+            // 故 dock 掛喺呢度即可全覆蓋；唔叫 fhsFamilySyncVisibility() 係為咗避開佢嘅自動勾父母副作用。
+            _pFamilyDock();
             calculatePricing();
             generate();
         }
@@ -7223,10 +7301,13 @@
                 return '<option value="' + c + '"' + (c === '待定' ? ' selected' : '') + '>' + c + '</option>';
             }).join('');
 
+            // 2026-08-18 Fat Mo 回饋重構：追加件必須同擺設①（主件）逐項同構——
+            // 標題 → 款式類型 → 底座色 → 客製化刻字 → ▣倒模對象(嬰兒卡) → ▣加購配件。
+            // 舊版差異（已修正）：刻字排喺最尾（主件排喺倒模對象之前）、嬰兒掣冇包成卡、
+            // 倒模對象／加購配件冇用主件同款 .ss-group-title 分區標題。
             var wrap = document.createElement('div');
-            wrap.className = 'd51-menu-block';
+            wrap.className = 'p-item-card';
             wrap.setAttribute('data-p-slot', String(slot));
-            wrap.style.marginTop = '10px';
             wrap.innerHTML = `
                 <div class="sec-title-row">
                     <span style="display:flex; align-items:center; flex-wrap:wrap; flex:1; min-width:0;">
@@ -7243,29 +7324,42 @@
                     </select>
                 </div>
                 <div id="${ns}baseColorContainer"></div>
+                <div class="form-group"><label>客製化刻字</label><input type="text" id="${ns}pEngraving" placeholder="待定" oninput="generate()"></div>
+
                 <div class="ss-group-sep"></div>
-                <div class="d51-baby-mode-row" id="${ns}babyModeBtnRow">
-                    <button type="button" id="${ns}babyBtn_all" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'all')">二手二腳</button>
-                    <button type="button" id="${ns}babyBtn_custom" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'custom')">自訂 ↓</button>
-                    <button type="button" id="${ns}babyBtn_left" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'left')">一手一腳<span class="d51-baby-mode-sub">(左)</span></button>
-                    <button type="button" id="${ns}babyBtn_right" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'right')">一手一腳<span class="d51-baby-mode-sub">(右)</span></button>
-                </div>
-                <input type="hidden" id="${ns}babyMode" value="all">
-                <div id="${ns}babyColorRow" class="mini-col" style="margin-bottom:4px;">
-                    <label>顏色</label>
-                    <select id="${ns}babyQuickColor" onchange="fhsPExtraBabyColorChanged(${slot})">${babyColorOpts}</select>
-                </div>
-                <div id="${ns}babyCustomGrid" style="display:none; margin-top:8px; padding:8px; background:#fafafa; border:1px solid #eee; border-radius:6px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <label style="font-size:12px; color:#888; margin:0;">顏色</label>
-                        <button type="button" onclick="fhsPExtraBabyApplyAllCustom(${slot})" style="font-size:12px; padding:5px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer;">全部同色</button>
+                <div class="ss-group-title">倒模對象</div>
+                <div class="limb-grid d51-menu-block">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:5px; margin-bottom:10px;">
+                        <span class="limb-title d51-menu-title cat-p" style="margin:0; border:none;"><span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#icon-baby"/></svg>嬰兒</span>
                     </div>
-                    <select id="${ns}babyCustomColor" style="width:100%; padding:8px; font-size:14px; border:1px solid #ddd; border-radius:6px; margin-bottom:10px;" onchange="fhsPExtraBabyApplyAllCustom(${slot})">${babyColorOpts}</select>
-                    <div class="grid-2-col">
-                        ${["左手", "右手", "左腳", "右腳"].map(function(l) {
-                            return '<div class="mini-col"><label>' + l + '</label><select class="limb-sel" data-who="' + _pwho(slot) + '" data-part="' + l + '" onchange="calculatePricing();generate();">' + limbOpts + '</select></div>';
-                        }).join('')}
+                    <div class="d51-baby-mode-row" id="${ns}babyModeBtnRow">
+                        <button type="button" id="${ns}babyBtn_all" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'all')">二手二腳</button>
+                        <button type="button" id="${ns}babyBtn_custom" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'custom')">自訂 ↓</button>
+                        <button type="button" id="${ns}babyBtn_left" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'left')">一手一腳<span class="d51-baby-mode-sub">(左)</span></button>
+                        <button type="button" id="${ns}babyBtn_right" class="d51-baby-mode-btn" onclick="fhsPExtraBabyMode(${slot},'right')">一手一腳<span class="d51-baby-mode-sub">(右)</span></button>
                     </div>
+                    <input type="hidden" id="${ns}babyMode" value="all">
+                    <div id="${ns}babyColorRow" class="mini-col" style="margin-bottom:4px;">
+                        <label>顏色</label>
+                        <select id="${ns}babyQuickColor" onchange="fhsPExtraBabyColorChanged(${slot})">${babyColorOpts}</select>
+                    </div>
+                    <div id="${ns}babyCustomGrid" style="display:none; margin-top:8px; padding:8px; background:#fafafa; border:1px solid #eee; border-radius:6px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <label style="font-size:12px; color:#888; margin:0;">顏色</label>
+                            <button type="button" onclick="fhsPExtraBabyApplyAllCustom(${slot})" style="font-size:12px; padding:5px 12px; background:#f5f0e8; color:#B07D4C; border:1px solid #D4A373; border-radius:5px; cursor:pointer;">全部同色</button>
+                        </div>
+                        <select id="${ns}babyCustomColor" style="width:100%; padding:8px; font-size:14px; border:1px solid #ddd; border-radius:6px; margin-bottom:10px;" onchange="fhsPExtraBabyApplyAllCustom(${slot})">${babyColorOpts}</select>
+                        <div class="grid-2-col">
+                            ${["左手", "右手", "左腳", "右腳"].map(function(l) {
+                                return '<div class="mini-col"><label>' + l + '</label><select class="limb-sel" data-who="' + _pwho(slot) + '" data-part="' + l + '" onchange="calculatePricing();generate();">' + limbOpts + '</select></div>';
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="${ns}addonTitle" style="display:none;">
+                    <div class="ss-group-sep"></div>
+                    <div class="ss-group-title">加購配件</div>
                 </div>
                 <div class="part-item" id="${ns}lightAddonRow" style="display:none;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -7273,7 +7367,6 @@
                         <label class="switch d51-cat-p"><input type="checkbox" id="${ns}light_en" onchange="calculatePricing();generate();"><span class="slider"></span></label>
                     </div>
                 </div>
-                <div class="form-group"><label>客製化刻字</label><input type="text" id="${ns}pEngraving" placeholder="待定" oninput="generate()"></div>
             `;
             document.getElementById('pExtraContainer').appendChild(wrap);
 
@@ -7304,6 +7397,9 @@
 
             var lightRow = document.getElementById(ns + 'lightAddonRow');
             if (lightRow) lightRow.style.display = isGlass ? '' : 'none';
+            // 「加購配件」分區標題跟燈飾一齊顯隱（同主件 #ssAddonTitle 行為一致，2026-08-18 同構重構）
+            var addonTitle = document.getElementById(ns + 'addonTitle');
+            if (addonTitle) addonTitle.style.display = isGlass ? '' : 'none';
             if (!isGlass) {
                 var l = document.getElementById(ns + 'light_en');
                 if (l && l.checked) l.checked = false;
@@ -7330,6 +7426,18 @@
                 titleEl.innerHTML = '<span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#' + iconId + '"/></svg>擺設' + _pOrdinalOf(slot) + ' · ' + sub + _pDisambiguator(sub, ns);
             }
         }
+
+        // 主件（擺設①）標題——同追加件用同一格式，令兩者標題列對稱（2026-08-18 Fat Mo 回饋：
+        // 「追加擺設有標題，但與第一個沒有標題不一致」）。主件無 ns 前綴，欄位 ID 為 pSubCat/baseColor/woodStyle。
+        function _pMainRefreshTitle() {
+            var subEl = document.getElementById('pSubCat');
+            var titleEl = document.getElementById('pMainTitle');
+            if (!subEl || !titleEl) return;
+            var sub = subEl.value;
+            var iconId = sub.includes('木框') ? 'icon-image' : 'icon-bottle';
+            titleEl.innerHTML = '<span class="d51-menu-tag cat-p"></span><svg class="fhs-header-icon" width="16" height="16"><use href="#' + iconId + '"/></svg>擺設① · ' + sub + _pDisambiguator(sub, '');
+        }
+        window._pMainRefreshTitle = _pMainRefreshTitle;
 
         function fhsPExtraBabyMode(slot, mode) {
             var ns = _pns(slot);
@@ -7421,6 +7529,11 @@
         function fhsPExtraRemove(slot) {
             var box = document.querySelector('#pExtraContainer [data-p-slot="' + slot + '"]');
             if (!box) return;
+            // ⚠️ 必須喺清空迴圈之前搬走（2026-08-18）：家庭區塊可能正泊喺呢張卡內（_pFamilyDock），
+            // 下面嘅 querySelectorAll('input,select') 會連父母/大寶欄位一齊清空，跟住 remove() 更會
+            // 連 DOM 一併刪走——即係「刪一件追加擺設」會靜默毀掉訂單層嘅家庭成員資料。
+            // 搬返 home 之後，下面清空迴圈就只會掃到本卡自己嘅欄位。
+            if (box.contains(document.getElementById('pFamilyContainer'))) _pFamilyDockHome();
             // D51 血訓（production 曾多收 $860）：刪除必須先連鎖清空全部欄位，再移除 DOM。
             box.querySelectorAll('input, select').forEach(function(el) {
                 if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
@@ -8284,6 +8397,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 唔掛 fhsFamilySyncVisibility()——A2/#2 實測揪出 en_parent/en_elder/嬰兒肢體 onchange
             // 完全唔經該函式，只經呢度（見 _pFamilyBadgeSync 定義註解）。
             _pFamilyBadgeSync(items);
+            // 主件標題（擺設① · 款式（底座色））同追加件一樣要跟住款式／底座色改動即時更新。
+            // 掛喺同一位置：底座色 onchange 只叫 generate()，而 generate() 尾段必經 calculatePricing()。
+            if (typeof _pMainRefreshTitle === 'function') _pMainRefreshTitle();
             let totalSuggestedPrice = 0;
             let totalDrawingCost = 0;
             let _totalPrintingCost = 0;     // B1: 打印/鑄造費

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-18 (D65續IV：立體擺設「每件一張卡」統一重構 + 追加件家庭預設off): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-18「D65續IV」條目 + [decisions.md D65續IV](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。Fat Mo 對 D65續III 再截4圖反饋主件/追加件視覺不一致，第一輪修復（紫色邊框區分）被明確推翻，改為「主件同追加件結構完全一致」原則重構：`.p-item-card` 統一卡片樣式、主件新增對稱 `_pMainRefreshTitle()`、家庭區塊改用 `_pFamilyDock()`/`_pFamilyDockHome()` 節點搬遷跟隨owner走（解決「owner為追加件時父母仍顯示喺主件下」結構性bug）、兩個高風險清空點（`fhsPExtraRemove()`/`resetForm()`）加保護guard、追加件變玻璃瓶自動勾父母改預設off（加`resolvedOwner===1`守衛）。browser live實測：兩卡結構對稱確認、guard場景資料倖存、自動勾限縮驗證通過、3張真實舊單零回歸、零console error。**Fat Mo 同輪提出嘅父母/大寶新定價邏輯（大寶肢數應影響價錢）已明確叫停**（"取消修改，我想清楚再作優化，你只修改第一項即可"）——本次未落任何相關代碼，留待下個session主動帶出。
+**Subagent 使用記錄**：❌ 未使用（互動式browser實測+直接改碼+Fat Mo多輪截圖反饋修正）。
+
 ## 2026-08-18 (D65續III：立體擺設表單排版重整): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-18「D65續III」條目 + [decisions.md D65續III](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對象、歸屬下拉得一個選項無作用、選項過多難理解——三點全接納。父母/大寶移至緊貼嬰兒之後同屬「倒模對象」；`#p_family_owner` 永久隱藏（唔刪，`raw_form_state`契約載體），改用卡片快捷掣取代。browser live實測：DOM順序正確、state契約無斷、快捷掣正常、2張真實舊單零回歸、零console error。
