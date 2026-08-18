@@ -2444,3 +2444,26 @@ A2/#2（`_boxKey` TEMP↔正式格式不匹配）經 4 張真實訂單 `raw_form
 ### D65續III：立體擺設表單排版重整（2026-08-18）
 
 Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對象、歸屬下拉得一個選項無作用、整體選項過多難理解——三點全接納無反駁。父母/大寶移至緊貼嬰兒（`#limbContainer`）之後，同屬「倒模對象」分區；`#p_family_owner` 永久隱藏（唔刪除，`raw_form_state` 契約載體），改用已有嘅卡片「設為家庭瓶」快捷掣取代。屬純前端小改動（無完成報告，Changelog 為全文居所），全文見 [Changelog.md 2026-08-18「D65續III」條目](../../Changelog.md)。**Subagent 使用記錄**：❌ 未使用（互動式 browser 實測 + 直接改碼，委派會斷推理鏈）。
+
+### D66：handoff 反覆失同步——根因判定為讀取端機制缺陷，非寫入端紀律問題（2026-08-18）
+
+**Fat Mo 提問**：「為何多次出現 handoff 不同步的情況？之前已多次修改 handoff 仍沒有改善，並且每次都要 commit 任務。」
+
+**裁決前提（已查證，非推測）**：歷來三次相關修復——S118（便攜塊 SSOT 化，修三漏洞）、S144（同一件事寫五處易漏同步，改為「完成報告／Changelog 為全文唯一居所」）、D60（時限待辦漏帶，加健檢第 7 類機械偵測）——**全部落喺內容・紀律層**，即改「寫乜」同「寫幾多處」。故對本次症狀零效果：`claude/d65-family-owner-role` session 嘅寫入紀律其實完美（D65 及續II/III/IV 四次改動，每次均有 `docs: sync` commit 更新便攜塊），失同步依然發生。
+
+**根因兩層**：
+
+1. **讀取端 bug（可一行修）**：`scripts/hooks/session-start-sop.sh` 並行 session 偵測（S183 D41 撞單事故後新增）取數範圍細過讀取範圍——`:69` 只 `git fetch origin main`，`:79` 卻讀本地 `refs/remotes/origin/claude/*`。全新雲端容器只帶住 clone 當刻嗰批 remote-tracking ref，令警告靜靜哋出殘缺清單（格式正常、零報錯）。實測 `d65-family-owner-role`（7 小時前、PR #3、D65 已部署）完全冇出現。
+2. **結構性（需長線裁決）**：`handoff.md` 係 git 追蹤檔案，內容屬**分支局部**；hook 讀當前 checkout 分支嗰份，而雲端新容器 checkout `main`。實測同日同一檔案兩分支便攜塊 12 行全部唔同。**只要有未 merge 分支，就必然存在失同步窗口**——亦即 Fat Mo 所講「每次都要 commit」嘅來源：狀態只能靠 commit→push→merge 傳播。
+
+**本次決定（已執行）**：只修第 1 層 + 加一層偵測，不改 SSOT 架構。
+- 修復一：`fetch origin main` → `fetch origin --prune`（timeout 8→12）
+- 修復二：新增跨分支 `handoff.md` 新鮮度比對，若有分支比當前新則明示並附核對指令
+
+**刻意不做（留待 Fat Mo 裁決）**：將「live 狀態」搬出 git（例如改用不受分支影響嘅儲存），屬架構改動，須先有方案再議。短期緩解手段係盡快 merge PR #3 一類長命分支以收窄窗口。
+
+**驗證**：刪本地 ref 模擬全新容器 → 重現漏報 → 修復 → 同條件重跑確認 d65 以第一位出現；修復二以 main 視角實測正確列出兩條更新分支；`bash -n` 通過；健檢由 2 項異常收窄至 1 項（餘下項為既有）。
+
+**制度啟示（已落 `learnings/governance.md` #7）**：診斷「反覆修都唔好」嘅制度病，第一問應該係「之前幾次修復落喺邊一層」，而唔係再修同一層第四次。
+
+詳見 Changelog.md 2026-08-18 條目、`learnings/governance.md` #7、`learnings/tooling.md` #9。

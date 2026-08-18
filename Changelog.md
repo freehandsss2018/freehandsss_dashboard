@@ -49,6 +49,22 @@
 
 詳見 [decisions.md D65](.fhs/notes/decisions.md)、[FHS_Product_Definition.md §3.1a](.fhs/ai/FHS_Product_Definition.md)、[FHS_System_Logic_Overview.md §5.4.17](.fhs/notes/FHS_System_Logic_Overview.md)、[artifacts/2026-08-16-2355/cl-final-plan.md](artifacts/2026-08-16-2355/cl-final-plan.md)。
 
+## [2026-08-18] Session（Claude Code / Opus 5 執行）— handoff 反覆失同步：根因確診（讀取端 hook bug，非寫入端紀律）+ 兩項修復
+
+- **緣起**：本 session 依 `main` 上便攜塊「D65 已 APPROVED_READY，等緊 `/execute`」開工，執行 Step0（合併兩條 accessory_cost 分支）後開始重新規劃 D65。Fat Mo 質疑「另一 session 唔係已經完成咗邏輯同 UI 設計？」——查證確認 **Fat Mo 正確**：`claude/d65-family-owner-role`（PR #3 open）早已完成 D65 及續II/III/IV 並逐個升格部署 `current.html`（HTTP204/SHA256 已驗）。本 session 因此白做一輪。
+- **AI 判斷失誤（先認）**：session 開頭 `git branch -a` 只見 main 同自身分支，之後只針對性 fetch handoff 提及嗰兩條，**冇 `fetch --all` 就下結論**「cl-final-plan.md 隨舊 container 消失 → 要重新規劃」。正確做法係落任何「呢件事未做」結論前先 fetch 全部分支。
+- **🔴 根因（機械性，非紀律問題）**：`scripts/hooks/session-start-sop.sh` 嘅並行 session 偵測（S183 D41 撞單事故後新增）**取數範圍細過讀取範圍**——`:69` 只 `git fetch origin main`，但 `:79` 卻讀本地 `refs/remotes/origin/claude/*` 列舉活躍分支。全新雲端容器只帶住 clone 當刻嗰批 remote-tracking ref，其後其他 session 新開/更新嘅分支本地冇對應 ref，令警告**靜靜哋出殘缺清單**（格式正常、零報錯）。實測：`d65-family-owner-role`（7 小時前、PR #3）完全冇出現，只報到 2 日前嗰條。
+- **🔴 更深一層（結構性）**：`handoff.md` 係 git 追蹤檔案，內容屬**分支局部**。hook 讀當前 checkout 分支嗰份，而雲端新容器 checkout `main`。實測同日同一檔案：`main` 寫「D65 等緊 `/execute`」、`d65` 分支寫「D65續IV 已部署」，便攜塊 12 行全部唔同。**只要有未 merge 分支，就必然有失同步窗口。**
+- **點解之前多次改 handoff 都無改善**：查 `decisions.md` 確認歷來三次修復（S118 SSOT 化 / S144「五處寫同一件事」/ D60 時限待辦漏帶）**全部落喺內容・紀律層**（改「寫乜」同「寫幾多處」），對此症零效果——d65 session 紀律其實完美（四個「續」各有 `docs: sync` commit 更新 handoff），問題喺**讀取端**唔喺寫入端。
+- **修復一**：`:69` `fetch origin main` → `fetch origin --prune`（timeout 8→12），令 `:79` 讀到嘅 ref 完整。
+- **修復二**：新增 handoff 新鮮度比對——逐條分支比對 `handoff.md` 最後改動時間，若有分支比當前新，明寫「🕒 以下分支嘅 handoff 比你手上呢份新」並附 `git show <分支>:<路徑>` 核對指示。填補原警告只報 commit subject、講唔到「邊份交接狀態先權威」嘅缺口。
+- **驗證（前後對照，非純讀碼）**：①刪本地 ref 模擬全新容器（`git update-ref -d`，純可棄元數據）→ 跑 hook **重現漏報**（只見 2 日前嗰條，同本 session 開頭所見一模一樣）；②修復後同一條件重跑 → `d65-family-owner-role（7 hours ago）` **以第一位出現**；③修復二以 `main` 視角實測，正確列出兩條 handoff 更新過嘅分支；④`bash -n` 語法檢查通過；⑤`fhs-health-check.js` 由 2 項異常收窄至 1 項（餘下 `/fhs-usage-audit` 逾期 42 天屬既有項，非本次引入）。
+- **附帶更正兩項過時記載**：①`current.html` 升格部署——實測 `V42.html` 與 `current.html` 僅差一行 build timestamp，D64 早於 commit `040af5d` 部署完成，MASTER 表「待授權」為 stale 快照；②本分支便攜塊「D65 等緊 /execute」已更正為實況並指向權威分支。
+- **本 session 淨產出聲明**：兩個 merge commit（`0566c75`/`fb6f796`，accessory_cost 兩條分支）**與 PR #3 內 `4355cfd`/`a8407d4` 重複**，僅衝突解法文字有異；`freehandsss_dashboardV42.html` 全程一個字未改動，零污染 D65 成果。
+
+詳見 [scripts/hooks/session-start-sop.sh](scripts/hooks/session-start-sop.sh)、[learnings/governance.md](.fhs/memory/learnings/governance.md) #7、[learnings/tooling.md](.fhs/memory/learnings/tooling.md) #9。**Subagent 使用記錄**：❌ 未使用（單一腳本根因診斷 + 前後對照實測，全程需即時交叉驗證 git 狀態，委派會斷推理鏈）。
+
+
 ## [2026-08-17] Session（Claude Code / Opus 5 執行）— /cl-flow A2 Gemini 升 gemini-3.7-flash + runner 收料層兩個靜默損壞修復
 
 - **緣起**：Fat Mo「a2 更新了最新 model」，並追加要求解決 D64 §DEGRADED 記錄嘅 A2 artifact UTF-8 亂碼缺陷。
