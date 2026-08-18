@@ -416,6 +416,8 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **已知未完成項**（記錄，非本次阻擋項）：`n8n/FHS_Core_OrderProcessor_live.json` repo 匯出檔本身已嚴重過時（V47.12 vs live V47.22/23），本次冇完整重新匯出（MCP `get_workflow` 只返回節點清單/連線，唔含完整 `parameters`，冇工具可一次性完整重匯出）；後端 pSubCat 約束（防止配件掛喺非玻璃瓶款式）現時只喺前端 UI 層生效，未有 n8n/DB 層防線，已列入 backlog（見 `cl-final-plan.md` §6）。
 
+**補記（2026-08-16，D64 grep sweep 事後揪出，同 §5.4.15 RPC 回歸無關）**：本次上線嘅「finance-auditor 獨立覆核 4 項全 PASS」（見上方驗證段）用嘅係當次臨時驗證式，事後發現 `finance-auditor.md`／`database-reviewer.md` 兩份 subagent 定義檔案、`FHS_Pricing_Bible.md` §8 本身嘅 rollup 公式／SKU 類別推導表／NULL 檢查清單／稽核報告範本，從導入當日起就從未同步新增 `accessory_cost` 做第四分類，一直停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`）。根因：三B前置紀律第4步 grep sweep 嘅「必查清單」（`FHS_Finance_Bible.md`/`FHS_Product_Definition.md`/`FHS_Product_Cost_Schema_v2.md`/`Quadruple_Sync_Field_Map.md`/`finance-gatekeeper/SKILL.md`）本身冇列 subagent 定義檔案，令呢兩份稽核邏辑檔案落喺清單盲點。已於 2026-08-16 補齊 5 處（finance-auditor.md）+5 處（database-reviewer.md）+1 處（Pricing Bible §8），版本 v2.2.0→v2.2.1（兩個 subagent）。
+
 ### 5.4.8 大寶/成人/家庭三對象轉V2三層成本模型（Session後續，2026-07-28，cl-flow 2026-07-28-1121 ✅ 已修復）
 
 **背景**：S189（§5.4.6）Phase3 只覆蓋嬰兒tier，大寶/成人/家庭三個對象維持舊「(單購/加購)+N飾」模型，Fat Mo 明確要求下個session全面轉V2。
@@ -557,7 +559,7 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 詳見 `.fhs/notes/decisions.md` D64、`artifacts/2026-08-15-1944/cl-final-plan.md`。
 
-### 5.4.15 `sync_order_to_mirror` RPC `accessory_cost` 欄位靜默回歸（發現於 D64 執行階段，🔴 未修復，範圍外）
+### 5.4.15 `sync_order_to_mirror` RPC `accessory_cost` 欄位靜默回歸（發現於 D64 執行階段，✅ 已於 §5.4.16 修復）
 
 **症狀**：任何訂單只要含燈飾/羊毛氈（`item_category='配件'`）品項，`orders.accessory_cost` 與 `order_items.accessory_cost` 恆為 `0.00`。`total_cost`/`net_profit` 本身正確（配件成本有計入總數），純粹係分類 rollup 顯示缺口——同 §5.4.7 修復嗰次症狀完全一樣。
 
@@ -570,9 +572,76 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **發現方式**：D64 live webhook 測試單交叉驗證（一張 3 件 P + 2 件燈飾嘅單、一張純主件+單一燈飾嘅控制單），兩張都中招，確認同「多件手模擺設」功能本身無關。
 
-**處理狀態**：🔴 未修復。超出 D64 cl-final-plan 批准範圍（該 flow 明確裁定「Supabase schema 零改動」），依 execute.md「僅執行 Verdict 已批准內容」不得順手夾帶修復。待 Fat Mo 決定是否開新 cl-flow 處理。
+**處理狀態**：✅ 已修復。超出 D64 cl-final-plan 批准範圍（該 flow 明確裁定「Supabase schema 零改動」），依 execute.md「僅執行 Verdict 已批准內容」故獨立開分支處理，migration 0088 修復詳見 §5.4.16。
 
 詳見 `.fhs/notes/decisions.md` D63續II、`.fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md` 追加五。
+
+### 5.4.16 `sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸（migration 0088，2026-08-16 ✅ 已修復）
+
+**根因鏈**：`accessory_cost` 讀寫由 migration `0080`（2026-07-25，§5.4.7）首次加入 `sync_order_to_mirror()`，但 `0081`（2026-07-28，大寶/成人/家庭 V2 成本模型）用 `CREATE OR REPLACE FUNCTION` 整個覆蓋同一 RPC，手抄 base 版本源自更舊嘅 `0075`（跳過咗 `0080`），令 `accessory_cost` 讀寫靜默消失——`0081` 本身無意改動配件成本邏輯。更巧合嘅係，`0087`（§5.4.12）首版手抄時已經用 `pg_get_functiondef()` 實測發現「live 版本 `accessory_cost` 0 次出現」，但當時誤判為「本來就冇」而非「已回歸」，寫低註解「刻意不順手補」——呢個誤判令回歸被正式記錄成現狀，一直到 D64 先被跟進。
+
+**現況實測**：`orders.accessory_cost` / `order_items.accessory_cost` 喺 `0081` 後建立/更新嘅所有訂單恆為 `0.00`。**n8n 上游完全正常**——`Calculate Profit & Pack Items`（V47.24）同 `Supabase Mirror Prep` 兩個節點經 `get_node` 直查 live workflow 確認全程正確計算並傳送 `accessory_cost`，缺口純粹卡喺 RPC 呢一層冇寫入 DB。`total_cost`/`net_profit` 本身完全唔受影響，屬分類 rollup 顯示缺口，非算錯錢。
+
+**修復**：`migration 0088_sync_rpc_accessory_cost_restore.sql`，沿用 `0087` 防漂移先例——`pg_get_functiondef()` 攞 live 定義做 base，Python 程式化單一錨點插入 6 行（`orders`/`order_items` 各 3 處：INSERT 欄位/VALUES/ON CONFLICT UPDATE），邏輯與 `0080` 原始版本逐字一致（`COALESCE(...,0)` 保底），程式 diff 驗證「除呢 6 行外逐字不變」（`0087` 嘅 `deleted_at = NULL` 修復已保留）。Smoke test 額外加 `pg_get_functiondef() ILIKE '%accessory_cost%'` 斷言。
+
+**歷史訂單回歸範圍（0 backfill）**：全庫僅 3 張真實訂單命中 `product_sku IN ('羊毛氈公仔 - 加購','燈飾 - 加購')`（`0696216`/`0600107`/`0600723`），三張皆早於 `0081` 套用日期，回歸窗口（2026-07-28~2026-08-16）內零真實訂單新增/編輯過配件品項，純屬品類使用率極低嘅運氣，**不需要 backfill**。
+
+**Live webhook 端對端驗證**：`test9999004`（玻璃瓶套裝(2肢)+羊毛氈公仔-加購）經正式 webhook 建立，`orders.accessory_cost=$30`、品項層 `accessory_cost=$30`、`total_cost=$240` 收斂正確，驗證後同一 webhook soft-delete 確認 `deleted_at` 寫入。
+
+**教訓**：`pg_get_functiondef()` 讀到嘅係「當下 live 狀態」，唔等於「設計上應該冇」——一旦有獨立 migration 檔案（`0080`）明確記載過某欄位曾經存在，「0 次出現」應觸發「係咪回歸咗」嘅懷疑，而非直接下「本來冇」結論並寫入註解固化。日後 `pg_get_functiondef()` 診斷出「預期欄位缺席」，須先 `git log`/grep migrations 目錄確認有冇獨立 migration 記錄過，先可判斷「從未存在」定係「已回歸」。
+
+詳見 `.fhs/notes/decisions.md` D64 續、`.fhs/memory/learnings/supabase.md` #14、migration `0088_sync_rpc_accessory_cost_restore.sql`。
+
+### 5.4.17 父母/大寶升格為訂單層一次性角色（歸屬選擇器方案B，純前端改動，2026-08-16 D65）
+
+**業務背景（回頭補 §5.4.14 D64 未展開的業務理由）**：D64 交付「多件手模擺設」逃生口模式時，父母/大寶仍沿用主件屬性語意（只能掛在主件），但真實業務模型並非如此——父母/大寶是**訂單層一次性角色**，不論訂單有幾件立體擺設，全單只可能出現一件「家庭瓶」。D64 當時之所以夠用，是因為所有真實情境（包括 Fat Mo 舉例的「木框×2 + 玻璃瓶(父母+嬰兒+大寶)」）都可以靠「把家庭瓶放主件」達成同樣效果——D64 本質是功能完備但語義錯配，UI 與文件都沒有揭露「有父母/大寶的玻璃瓶必須放主件」這條隱性規則，操作員若順手把木框放主件會找不到父母/大寶的落點。Fat Mo 於 2026-08-16 檢查 D64 成品時口述澄清並定案七條業務規則（全文見 `FHS_Product_Definition.md` §3.1a），裁決走「歸屬選擇器方案B」（Fat Mo 原話：「雖然性價比不高，但它最接近現實」）。
+
+**架構改動**：
+1. **DOM 遷移**：`en_parent`/`en_elder` 及其肢體 `.limb-sel` 由 `renderLimbGrid()` 玻璃瓶分支（動態字串拼接）搬到固定容器 `#pFamilyContainer`（靜態 HTML，ID 完全不變，保向後相容）。附帶收益：不再受 `renderLimbGrid()` 重建摧毀。
+2. **Owner 管理**：新增 `_pGlassSlots()`/`_pFamilyOwnerSlot()`/`_isFamilyOwner()`/`fhsFamilySyncVisibility()` 一組函式，統一管理「全單目前有邊啲玻璃瓶件」「目前歸屬邊件」。新增 `#p_family_owner` 選擇器，只列現存玻璃瓶件。
+3. **計價**：`calculatePricing()` 家庭價 $2,580 判斷由 D64 的 `_isMainP`（只認主件）改為 `_isFamilyOwner(item.Order_Item_Key)`（owner 可以係主件亦可以係追加件）；`hasBabyInSet` 改讀 owner 件自身嘅嬰兒肢體（owner 為追加件時讀 `data-who="嬰兒#N"`）。
+4. **SKU 推導 consolidation（A2/#4 對抗評審建議）**：`buildOrderItemsForPricing()` 與提交路徑原本各自平行實作嘅主件 SKU 推導邏輯，抽離為單一共用函式 `_pDeriveSkuName()`（`_pMainSkuOf()`/`_pSkuOf(slot)` 皆呼叫同一核心），防止兩處同步漂移（同 D64 已踩過嘅陷阱同源）。
+5. **IG 訊息**：`_pBlockLines(slot)` 由 `!slot`（只認主件）改為 `_isFamilyOwner` 判定，父母/大寶兩行輸出改到 owner 件嘅 block。主件為 owner 時（今日所有既有訂單狀態）輸出 byte-identical。
+6. **家庭組合鎖匙扣 S/P（Q3 裁決）**：`_fhsFamilyLimbMode()`／`getFamilyComboDetails()` 嬰兒部位判定由「僅讀主套裝」改為「全單任何一件」——石膏模一經倒出即實體存在，不論當初為邊件產品而倒，此語義與立體擺設家庭定價「只讀 owner 件自身」刻意不同、不可混用（全文見 `FHS_Product_Definition.md` §3.1a 規則7）。
+7. **防呆擴充（Q4 裁決，僅警告）**：所有玻璃瓶件（主件+追加件）皆須有至少一個嬰兒肢體非「無」，否則 `#priceDetails` 顯示橙色提醒，但不阻擋報價／`syncToAirtable()`（Fat Mo：訂單常態帶「待定」值先開單，硬攔會阻塞合法流程）。既有嘅「已勾父母但嬰兒全無」硬阻擋（§0 品牌核心）維持不變、屬不同層級。
+
+**執行階段揪出並修復嘅缺陷（規劃階段未預見）**：
+- **舊 `_applyGlassDefaults()` 遺留獨立自動勾邏輯**：D64/舊碼喺呢個函式內有一段獨立「父母 toggle On」邏輯，同新嘅 `fhsFamilySyncVisibility()` 自動勾機制並存但互不知情——會令「手動取消 en_parent 後再新增玻璃瓶件唔應該再自動勾回」（Q1 裁決核心約束）失效，因為舊邏輯完全唔識 `_fhsFamilyParentManualTouch` 旗標。Browser live 實測直接撞中：手動 uncheck 後切換 pSubCat 兩次，`en_parent` 又被勾返。修法：移除 `_applyGlassDefaults()` 內嘅自動勾段落，統一單一入口。
+- **A2/#5 孤兒回退提示消失**：初版實作將提示訊息喺 `calculatePricing()` 讀取時即清空（一次性 toast 語意），但 `generate()` 內部會再呼叫一次 `calculatePricing()`，令提示喺同一次使用者操作內已被第二次 render 洗走，用戶完全睇唔到。修法：提示改為「持續顯示直至下次 sync 判定非孤兒狀態」語意（沿用本函式其餘警示行既有慣例），唔喺讀取時清空。
+
+**驗證**：browser live 實測（`preview_start` 起本地伺服器，非 `file://`）——① 3 張真實舊單零回歸：`0600103`（純鎖匙扣，`enableP=false`）、`0600900`（單件木框，$2380，IG 訊息無父母/大寶行）、`06008013`（單件玻璃瓶，`raw_form_state` 真實值 `en_parent:false`，還原後**維持 false 唔被自動勾回**，價格 $1380）；② owner=追加件 BLOCKER 直接單元測試：合成 `p_family_owner:2` 嘅 `raw_form_state` 經 `restoreFormState()` 還原後 `#p_family_owner` 值仍為 `2`（非靜默回退 1），對應件正確產出 `玻璃瓶套裝 (家庭)` $2,580，總價 $4,960（主件木框 $2,380 + owner 追加件 $2,580）；③ IG 訊息父母/大寶行正確輸出喺 owner 件 block、主件 block 不含（同時驗證 owner=主件時輸出 byte-identical）；④ 家庭組合鎖匙扣「全單任何一件」語義：owner 追加件某部位有倒模、主件同部位「無」→ mode 仍判 `S`；兩者皆「無」先判 `P`；⑤ Q1 手動取消不覆蓋：手動 uncheck 後兩次 pSubCat 切換（含 0→1 轉換）`en_parent` 維持 false；⑥ Q4 防呆僅警告：玻璃瓶件嬰兒全「無」時顯示橙色提醒但報價正常產出（`$1380`，非 `$0`）。過程中揪出並修復 2 個規劃階段未預見嘅真實 bug（見上）。全程零 console error。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（開發版）；`FHS_Product_Definition.md`/`finance-gatekeeper/SKILL.md` 文件同步。Supabase schema／n8n 皆零改動（`Family_Member_Config` 由前端計算後傳入，同 D64 前提一致）。`Freehandsss_dashboard_current.html`（生產版）本次未動，部署為另一授權關卡。
+
+詳見 `.fhs/notes/decisions.md` D65、`FHS_Product_Definition.md` §3.1a、`artifacts/2026-08-16-2355/cl-final-plan.md`。
+
+### 5.4.18 D65 owner 概念嘅介面配合——卡片狀態徽章（cl-flow `2026-08-17-1916`，2026-08-17）
+
+**背景**：§5.4.17 完成後，操作員填緊追加件卡片時，卡片本身零視覺提示話俾佢知呢件係咪家庭瓶 owner，要跳去表單最底獨立區塊先知/先揀。ui-designer Phase A 審視揪出 8 個因 owner 概念引入而生嘅認知斷層，推薦「卡片狀態徽章 + 就地快捷切換」最小介入方案。走 `/cl-flow-fast`（A2 對抗評審，`gemini-3.7-flash` HTTP 503 過載觸發本次同步新增嘅 model fallback 鏈自動降級至 `gemini-3.6-flash`）。
+
+**⚠️ [G] 運算邏輯變動聲明**：本次改動觸及 `calculatePricing()`（見下），但**純屬代碼結構重構，零財務規則語義變動**——`_pPriceOfSku(name)` 抽出嘅價錢對照表逐字照抄原 inline 判斷式，並經 128 組窮舉測試（`_pDeriveSkuName()` × `_pPriceOfSku()` 真身函式）證實新舊邏輯在所有可達狀態下逐分位相同。§5.4.17 記載嘅七條業務規則本身完全不變，本節純為代碼異動存證。
+
+**核心改動**：
+1. **價錢真源抽取（A2 對抗評審拒絕其 BLOCKER 後定案）**：`calculatePricing()` 內 inline 寫死嘅價錢判斷式抽為純函數 `_pPriceOfSku(name)`（只食 SKU 名，唔食任何 runtime 狀態），卡片徽章與報價共讀同一函數，結構上不可能唔一致。A2 對抗評審首輪誤判抽取會破壞 `mixed_member_surcharge` 所需嘅 `hasAdultInSet`/`hasBabyInSet` 變數——實碼核對兩變數定義位置完全在替換範圍外，予以拒絕（詳見 `artifacts/2026-08-17-1916/cl-final-plan.md` §2.1）。
+2. **徽章同步掛 `calculatePricing()` 入口（唔掛 `fhsFamilySyncVisibility()`）**：A2 對抗評審實碼揪出 `en_parent`/`en_elder`/嬰兒肢體 onchange 完全唔經 `fhsFamilySyncVisibility()`，只經 `calculatePricing()`（直接或經 `generate()` 尾段間接）。徽章同步函式 `_pFamilyBadgeSync(items)` 掛喺 `let items = buildOrderItemsForPricing();` 之後、任何提前 return 之前，覆蓋該函式全部 6 條提前 return 路徑。
+3. **徽章標籤一律由 SKU 名推導**（`skuName.includes("家庭")`），唔用 owner 身分判定——防止 owner 但未勾父母/未選嬰兒肢體時渲染出「家庭瓶 · $1,380」呢種自相矛盾嘅財務錯信號。
+4. **孤兒回退提示就地 echo**：`#pFamilyOwnerNotice` 固定 ID placeholder（`.textContent` 設值，唔用 `insertBefore`/父層 `innerHTML`，防重複 append）。
+5. **Disambiguator**：卡片標題／owner 選單 option 補讀底座色，緩解 `_pOrdinalOf()` 顯示序隨刪除位移嘅辨識困難。
+6. **「設為家庭瓶」快捷掣**：`fhsFamilySetOwner(slot)` 薄封裝，設落拉值再呼叫既有 `fhsFamilyOwnerChange()`。
+
+**執行階段 live 實測揪出並修復 1 個規劃未預見嘅真實 bug**：追加件卡片標題嘅 disambiguator 喺 `restoreFormState()` 還原流程入面讀到底座色嘅**還原前預設值**（'待定'）——因為 `_pExtraSubCatChange()`（內部呼叫 `_pExtraRefreshTitle()`）依既有次序喺 baseColor/woodStyle 實際套值**之前**執行（容器類型必須先於顏色值確認），令標題漏咗 disambiguator，但同一刻 owner 選單 option（喺尾段 `fhsFamilySyncVisibility()` 重建，此時顏色已還原）就有——兩者不一致。修法：`restoreFormState()` 尾段解除 `_fhsFamilyRestoring` 旗標前，額外對全部 `_pActiveSlots()` 逐一重跑 `_pExtraRefreshTitle()`，用最終已還原嘅顏色值刷新。
+
+**A2 對抗評審批評處理**：8 條批評（1 BLOCKER + 4 MAJOR + 3 MINOR）逐條實碼核對，4 條事實指控錯誤（含唯一 BLOCKER，以及誤稱 `fhsFamilyOwnerChange()` 有 `this` 綁定問題、誤稱現行有 `jar` 類型代碼判斷、誤稱標題行有拖曳 handle）予以拒絕；其餘全數採納或部分採納（底層顧慮有效但事實前提有誤時，採納顧慮、拒絕前提）。Verdict 依協議封頂 `CONDITIONAL_READY`，Fat Mo 認可反證後執行。
+
+**執行後 `code-reviewer` 獨立稽核同一模式再現**：報 FAIL，指 `en_elder` checkbox onchange 缺 `calculatePricing()` 呼叫——實碼查證 `en_elder` onchange 為 `togglePart('box_elder', this)`，內部呼叫 `generate()`，`generate()` 尾段呼叫 `calculatePricing()`；用真實 DOM `dispatchEvent('change')` + 函式呼叫計數器（monkey-patch `calculatePricing`）直接量度：呼叫次數 0→1，證實鏈路完整、稽核誤判。**三次獨立評審（A2 首輪 BLOCKER、A2 次輪部分批評、code-reviewer）皆犯同一類錯誤——只查字面 onchange 屬性有冇直接寫住目標函式名，未追蹤 `wrapper→中介函式→目標函式` 嘅間接呼叫鏈**，值得記入日後評審方法論教訓。
+
+**驗證**：browser live 實測——C1（勾 `en_parent` 嗰一刻，徽章與報價同步由 $1,680 跳 $2,580）；C2（`_pDeriveSkuName`/`_pPriceOfSku` 真身函式窮舉 128 組狀態，逐分位 100% 相同）；C3（`calculatePricing()` 六條提前 return 逐條觸發，徽章皆正確）；快捷掣對調（owner 由主件切至追加件，兩張卡徽章正確互換）；375px 窄螢幕（`.sec-title-row` flex-wrap 生效，快捷掣實測 77×44px 達觸控標準，標題行無溢出、刪除掣無被擠出畫面）；3 張真實舊單零回歸（`0600103`/`0600900`/`06008013`）；還原期間 disambiguator 修復後驗證通過。全程零 console error。`/fhs-check` 4 PASS/1 SKIP（既有狀態）。
+
+**支線任務（同 session Fat Mo 追加授權）**：`scripts/cl-flow-runner.js` 新增 Gemini model fallback 鏈（`gemini-3.7-flash` 連續 HTTP 503 時自動降級至 `gemini-3.6-flash`/`gemini-flash-latest`）+ 修復 `maxOutputTokens` 過小（8192→32768）導致 A2 評審長期截斷嘅問題（thinking model 嘅思考 token 亦計入此額度）。成效鐵證：同一份 a3-draft 草案，修復前截斷版評審只得 3 條批評，修復後完整版得 8 條——截斷一直藏起咗 5 條，其中 3 條為本次 Verdict 採納嘅真問題。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Verdict 批准範圍）+ `scripts/cl-flow-runner.js`（Fat Mo 另行授權嘅支線任務，非本次 Verdict 範圍）。Supabase／n8n 皆零改動。
+
+詳見 `.fhs/notes/decisions.md` D65 續II、`artifacts/2026-08-17-1916/`（task-brief/a3-draft/ag-review/cl-final-plan）。
 
 ### 5.5 綜合審計日誌（Session 124 新增）
 
@@ -689,7 +758,7 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 > ✅ **S124 v2 修復（2026-06-26，已結案）**：加購鎖匙扣 N飾成本漏算 bug 已修 — migration 0045（`fhs_compute_keychain_cost` RPC）+ 線B products UPDATE 41 rows（嬰兒 S/P 不銹鋼 N飾改 per-set 值）+ 線C 9 單回填（order_items/orders/audit_logs）+ finance-auditor 三端對賬 9/9 PASS。前向路徑：n8n 直讀 `products.total_base_cost`（已為 per-set 值），所有已發生訂單正確。`fhsAudit_qtyWarn` 誠實警示仍保留（對未來可能的其他 tier 缺口）。
 >
 > 若 n8n **Calculate Profit & Pack Items** 或 **Supabase Mirror Prep** 或 **財務 RPC** 邏輯變動，必須同步檢查 V42 `buildAuditLedgerHtml` 函式：
-> - 訂單層類別欄映射（`handmodel_cost / keychain_cost / necklace_cost`）
+> - 訂單層類別欄映射（`handmodel_cost / keychain_cost / necklace_cost / accessory_cost`）
 > - `n8n_adjustment_notes` 顯示邏輯
 > - 確收鏈公式（`deposit + balance + additional_fee = final_sale_price`）
 > - KPI 口徑（`net_profit − adjustment_amount`）

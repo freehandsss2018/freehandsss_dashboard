@@ -2,9 +2,9 @@
 name: finance-auditor
 description: FHS 三端財務稽核員（互動式 Live 驗證）。Use PROACTIVELY when user asks for live Airtable profit verification, order cost reconciliation, three-tier financial validation (Airtable↔n8n↔Dashboard), or Supabase-ready financial audit. Read-only audit mode — does NOT modify Airtable records or n8n workflows.
 tools: ["Bash", "Read", "Grep", "Glob", "mcp__claude_ai_Airtable__search_bases", "mcp__claude_ai_Airtable__list_tables_for_base", "mcp__claude_ai_Airtable__get_table_schema", "mcp__claude_ai_Airtable__list_records_for_table", "mcp__claude_ai_Airtable__search_records", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node", "mcp__n8n-mcp-server__verify_triple_sync"]
-version: v2.2.0
+version: v2.2.1
 compatible_with: AGENTS.md v1.5.0
-last_updated: 2026-06-12
+last_updated: 2026-08-16
 ---
 
 # FHS Finance Auditor — 四端財務稽核員
@@ -109,6 +109,7 @@ Read .fhs/ai/FHS_Finance_Bible.md
     木框/玻璃瓶 → 立體擺設 → handmodel_cost
     鎖匙扣      → 金屬鎖匙扣 → keychain_cost
     吊飾        → 銀飾       → necklace_cost
+    羊毛氈/燈飾 → 配件       → accessory_cost（僅限玻璃瓶款式立體擺設加購，migration 0079/0080）
 ```
 
 ### Phase 3：四端數據拉取與比對
@@ -133,9 +134,9 @@ curl "${SUPA_URL}/rest/v1/v_order_cost_breakdown?order_id=eq.${ORDER_ID}&select=
 
 ```text
 orders: final_sale_price, total_cost, net_profit,
-        handmodel_cost, keychain_cost, necklace_cost
+        handmodel_cost, keychain_cost, necklace_cost, accessory_cost
 order_items: item_category, item_base_cost, handmodel_cost,
-             keychain_cost, necklace_cost, product_sku
+             keychain_cost, necklace_cost, accessory_cost, product_sku
 ```
 
 #### Tier 2 — Airtable Live Query（備援，若 quota 可用）
@@ -194,7 +195,8 @@ def validate_finance(order):
     # 驗證 1：成本分類彙總
     rollup = (order["handmodel_cost"] or 0) + \
              (order["keychain_cost"] or 0) + \
-             (order["necklace_cost"] or 0)
+             (order["necklace_cost"] or 0) + \
+             (order["accessory_cost"] or 0)
     diff = abs(order["total_cost"] - rollup)
     if diff > 1:
         results["CRITICAL"].append(
@@ -224,7 +226,7 @@ def validate_finance(order):
         )
 
     # 驗證 4：成本分類欄位 NULL 檢查
-    for field in ["handmodel_cost", "keychain_cost", "necklace_cost"]:
+    for field in ["handmodel_cost", "keychain_cost", "necklace_cost", "accessory_cost"]:
         if order.get(field) is None:
             results["WARN"].append(
                 f"orders.{field} = NULL（n8n Mirror 未寫入）"
@@ -260,7 +262,7 @@ def validate_finance(order):
 
 ### Tier 1 (Supabase) 數據
 - total_cost: $XXX
-- handmodel_cost: $XXX / keychain_cost: $XXX / necklace_cost: $XXX
+- handmodel_cost: $XXX / keychain_cost: $XXX / necklace_cost: $XXX / accessory_cost: $XXX
 - net_profit: $XXX / final_sale_price: $XXX
 
 ### Tier 2 (Airtable) 數據（若可用）
@@ -296,7 +298,8 @@ def validate_finance(order):
 
 ---
 
-*FHS finance-auditor v2.2.0 — 2026-06-12*
+*FHS finance-auditor v2.2.1 — 2026-08-16*
+*v2.2.0 → v2.2.1：補漏 `accessory_cost`（配件成本，migration 0079/0080，2026-07-25 導入）第四分類——SKU 類別推導表、重點欄位清單、驗證1 rollup 公式、驗證4 NULL 檢查、稽核報告範本共 5 處同步（此前只列三分類，finance-gatekeeper SKILL.md §5.4.7 grep sweep 事後揪出）*
 *v2.1.0 → v2.2.0：啟動前置 Step 3 — 涉及 KPI / 混合單 / 3-layer 時按需讀取 §十；compatible_with v1.4.13（Session 99-100 知識治理落地）*
 *v2.1.0 — 2026-06-03：compatible_with v1.4.10；收款確收守護語義修正（Rule 3.16）；n8n V47.15；已知現況動態化；migration 0027 四分量欄說明*
 *v2.0.0 — 2026-05-16：Triple → Quadruple 四端架構；Supabase 為主；新增 Finance Bible 強制前置*

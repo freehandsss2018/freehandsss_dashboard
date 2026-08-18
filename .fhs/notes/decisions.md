@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-18] (D65續IV) 立體擺設「每件一張卡」統一重構——主件/追加件結構完全對稱、家庭區塊 DOM 跟隨 owner 停泊、追加件家庭預設 off；父母/大寶新定價邏輯 Fat Mo 明確暫緩，未落任何代碼
+
+**背景**：D65續III 排版重整後，Fat Mo 再截 4 張圖回饋——主件同追加件視覺唔一致（主件平鋪、追加件靠紫色邊框區分）、客製化刻字喺追加件走位到倒模對象下方、倒模對象嬰兒掣組冇標題、整體「好混亂」。第一輪修復（DOM位置bug修復+紫色邊框區分+小sublabel）被 Fat Mo 明確推翻："唔岩，仍然有排位錯誤"+"不要再插入紫色的方式區分"，並提出核心設計原則：主件同追加件應該係結構完全一致嘅卡片，唔靠顏色區分。
+
+**定案方向**：`.p-item-card` 統一卡片樣式（白底/`#E6DFD5`邊/10px圓角/淡陰影），主件包一層 `#pMainCard` 同追加件 `renderPExtraSlot()` 產出結構完全對稱：標題（「擺設① · 款式（底座色）」格式，`_pMainRefreshTitle()` 新函式對稱既有 `_pExtraRefreshTitle()`）→款式類型→底座色→客製化刻字→倒模對象（嬰兒卡）→加購配件。家庭區塊（父母/大寶）新增 `_pFamilyDock()`/`_pFamilyDockHome()` 做節點搬遷（非重建），跟住 `_pFamilyOwnerSlot()` 走，解決「owner為追加件時父母仍靜態顯示喺主件下」呢個結構性 bug。兩個高風險清空點（`fhsPExtraRemove()`/`resetForm()`）加 guard，動手清空前先 `_pFamilyDockHome()` 搬走家庭區塊，防止靜默洗走家庭成員資料。
+
+**追加件家庭預設 off**：`fhsFamilySyncVisibility()` 自動勾父母判斷加 `resolvedOwner === 1` 守衛，只喺主件變玻璃瓶時觸發；追加件變玻璃瓶預設唔自動勾（操作員可手動勾選，勾咗照跳家庭價）。
+
+**暫緩未做（Fat Mo 明確指示）**：Fat Mo 同一輪原本提出第二點——推翻「父母手下鎖死唔畀大寶影響價錢」嘅現行邏輯（現行：一開父母即 SKU 定死 `玻璃瓶套裝 (家庭)` $2,580 flat，`FHS_Pricing_Bible.md §2.1` 定案）。經澄清「係想推翻由原本喺父母手下就冇大寶，改為喺父母手下可以有大寶」（即大寶肢數應該好似冇父母時咁影響價錢）之後，Fat Mo 進一步表態："取消修改，我想清楚再作優化，你只修改第一項即可"——**明確叫停，本次冇落任何相關代碼**，現行 $2,580 flat 定價完全不變。此項留待 Fat Mo 想清楚新定價規則後另案處理，下個 session 需主動帶出呢個待辦（見 handoff.md 📋待辦）。
+
+**驗證**：browser live 實測——兩張卡結構程式化列舉逐項比對一致；主件標題正確跟款式/底座色即時更新；owner 搬遷/切換正常；`fhsPExtraRemove()`／`resetForm()` 兩個 guard 場景家庭區塊同 `en_parent` 皆完整倖存；自動勾限縮驗證通過（主件仍自動勾 $2,580、追加件唔再自動勾 $4,060 非 $4,960）；3 張真實舊單零回歸；全程零 console error。全文見 Changelog.md 2026-08-18「D65續IV」條目。**Subagent 使用記錄**：❌ 未使用（互動式 browser 實測 + 直接改碼 + Fat Mo 多輪截圖反饋修正）。
+
 [2026-08-05] (D60) handoff 便攜塊「時限待辦漏帶」機制修復——新增 fhs-health-check.js 第7類機械偵測 + commit.md P0.7 新增「⏰時限待辦」欄（不受最高優先3條上限約束）+ MASTER表列混寫禁令，副作用：便攜塊預算超支9.6%待Fat Mo裁決
 
 [2026-08-04] (D59) 壓測 Telegram 逐單騷擾整治 + Order_ID 缺失固定 fallback 撞單修復——n8n加Filter節點靜音測試單通知+彙總單一訊息、`未命名`固定字面值改每次獨立、PATCH中文值靜默0-rows另記learnings
@@ -2363,3 +2375,72 @@ A2/#2（`_boxKey` TEMP↔正式格式不匹配）經 4 張真實訂單 `raw_form
 **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（開發版）。Supabase schema／n8n 皆零改動（前提經實讀證實成立）。`Freehandsss_dashboard_current.html`（生產版）本次未動，部署為另一授權關卡。
 
 詳見 `artifacts/2026-08-15-1944/`（task-brief/a3-draft/ag-review/cl-final-plan）、`FHS_System_Logic_Overview.md` §5.4.14/§5.4.15、Changelog.md 2026-08-15 條目。**Subagent 使用記錄**：❌ 未使用（跨 Supabase/n8n/browser 即時交叉驗證，委派會斷推理鏈；cl-flow 內建 A2 對抗評審已提供獨立視角）。
+
+### D64 續：`sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸修復（migration 0088，2026-08-16）
+
+**根因鏈（三層 `CREATE OR REPLACE FUNCTION` 全量覆蓋接力踩中同一個坑）**：
+
+1. Migration `0080`（2026-07-25，cl-flow 2026-07-25-0148）首次為 `sync_order_to_mirror()` 加入 `accessory_cost` 讀寫（`orders` + `order_items` 兩表），finance-auditor 曾獨立覆核 PASS，見 §5.4.7。
+2. Migration `0081`（2026-07-28，大寶/成人/家庭 V2 成本模型）用 `CREATE OR REPLACE FUNCTION` 整個覆蓋同一 RPC，但其手抄 base 版本源自更舊嘅 `0075`（跳過咗 `0080`），令 `accessory_cost` 讀寫**靜默消失**——`0081` 本身完全無意改動配件成本邏輯，純粹係「手抄漏一個欄位就會整全覆蓋打回舊版」（呼應 [[feedback_migration_repo_db_drift]] 教訓）。
+3. Migration `0087`（2026-08-11，D63 續，修 `deleted_at` 冇 reset 嘅 bug）首版手抄時已經用 `pg_get_functiondef()` 攞 live 定義，並且**實測發現「live 版本 `accessory_cost` 0 次出現」**，但當時誤判為「本來就冇呢個欄位」而非「已經回歸」，於是喺 `0087` 註解寫低「刻意不順手補，維持單一改動原則」——呢個判斷令回歸被正式記錄成現狀，一直冇人跟進到 D64 先發現。
+
+**現況實測**：`orders.accessory_cost` / `order_items.accessory_cost` 喺 `0081` 後建立/更新嘅所有訂單恆為 `0.00`。`total_cost`/`net_profit` 本身完全唔受影響——配件成本一直有計入品項/訂單總數（n8n `Calculate Profit & Pack Items` + `Supabase Mirror Prep` 兩個節點全程正確計算並傳送 `accessory_cost`，經 `get_node` 直查 live workflow 確認），問題純粹卡喺 RPC 呢一層冇寫入 DB，屬分類 rollup 顯示缺口，非算錯錢。
+
+**修復**：`migration 0088_sync_rpc_accessory_cost_restore.sql`——沿用 `0087` 先例，用 `pg_get_functiondef()` 攞 live 定義做 base，Python 程式化單一錨點插入 6 行（`orders` 表 INSERT 欄位/VALUES/ON CONFLICT UPDATE 3 處 + `order_items` 表同款 3 處），邏輯與 `0080` 原始版本逐字一致（`COALESCE(...,0)` 保底），並經程式 diff 驗證「除呢 6 行外，其餘逐字不變」（`0087` 嘅 `deleted_at = NULL` 修復已保留）。Smoke test 除簽名檢查外，另加 `pg_get_functiondef() ILIKE '%accessory_cost%'` 斷言，防止同類靜默漏補再次發生。
+
+**歷史訂單回歸範圍實測（0 backfill 需要）**：查全庫 `product_sku IN ('羊毛氈公仔 - 加購','燈飾 - 加購')` 嘅 `order_items`，扣走本次驗證用嘅測試單，只有 3 張真實客戶訂單命中（`0696216`/`0600107`/`0600723`），三張全部 `created_at`/`updated_at` 早於 `0081` 套用日期（2026-07-28），從未喺回歸窗口內被重新 sync 過，`accessory_cost` 現值全部正確（`0696216` 本身成本 $0 唔受影響；`0600107`/`0600723` 各 $30 已正確落地）。回歸窗口（2026-07-28 ~ 2026-08-16）內**零真實訂單**新增或編輯過配件品項——純粹運氣（配件品類全庫使用率極低），非防線生效，**不需要 backfill**。
+
+**Live webhook 端對端驗證**：`test9999004`（玻璃瓶套裝(2肢) + 羊毛氈公仔-加購）經 `FHS_Core_OrderProcessor` 正式 webhook 建立，`orders.accessory_cost=$30.00`、`order_items` 品項層 `accessory_cost=$30.00` 且分類正確（`item_category='配件'`），`total_cost=$240`（$210 手模 + $30 配件）收斂正確；驗證完成後經同一 webhook `delete` action soft-delete，`deleted_at` 確認寫入。
+
+**教訓**：`0087` 嘅「live 版本 0 次出現 = 本來就冇」判斷邏輯本身有漏洞——`pg_get_functiondef()` 讀到嘅係「當下 live 狀態」，唔等於「設計上應該冇」；一旦手上有一份獨立 migration 檔案（`0080`）明確記載過呢個欄位曾經存在，「0 次出現」應該觸發「係咪回歸咗」嘅懷疑，而非直接下「本來冇」嘅結論並寫入註解固化。**日後任何 `pg_get_functiondef()` 診斷出「預期欄位缺席」，必須先 `git log`/grep migrations 目錄確認呢個欄位有冇獨立 migration 記錄過，先可以判斷係「從未存在」定係「已回歸」。**
+
+詳見 `FHS_System_Logic_Overview.md` §5.4.16、`.fhs/memory/learnings/supabase.md` #14、`supabase/migrations/0088_sync_rpc_accessory_cost_restore.sql`。
+
+### D65：父母/大寶升格為訂單層一次性角色（歸屬選擇器方案B，cl-flow `2026-08-16-2355`，2026-08-16）
+
+**緣起**：D64（2026-08-15）交付「多件手模擺設」逃生口模式後，Fat Mo 檢查成品時口述澄清真實業務模型：父母/大寶並非「主件的屬性」，而是**訂單層一次性角色**——全單只可能出現一件「家庭瓶」。D64 本質功能完備但語義錯配（所有真實情境靠「家庭瓶放主件」已可達成，只是 UI/文件都無提示此隱性順序依賴）。Fat Mo 在 A/B 方案對比後裁決走 B（歸屬選擇器），原話：「雖然性價比不高，但它最接近現實」。走 `/cl-flow` → A2（Gemini）對抗評審（DEGRADED：Perplexity quota 耗盡）→ Fat Mo 裁決五條開放問題 → `/execute`。
+
+**定案七條業務規則 + owner 機制**：全文見 `FHS_Product_Definition.md` §3.1a（唯一 SSoT，不在此重複列出，僅摘要要點）：父母/大寶各自全單只買一次、只能歸屬玻璃瓶件、若同存必屬同一件（owner）、owner 由 `#p_family_owner` 選擇器指定、家庭定價只在 owner 件評估、玻璃瓶件缺嬰兒肢體僅警告不阻擋、家庭組合鎖匙扣 S/P 用「全單任何一件」語義（與家庭定價「只讀 owner 件自身」刻意不同）。
+
+**Fat Mo 五條開放問題裁決**（2026-08-17）：
+- **Q1**（自動勾選）：保留「零→有玻璃瓶轉換」自動勾父母，但不覆蓋操作員手動取消，還原流程一律不觸發。
+- **Q2**（零玻璃瓶清值）：強制清空（由 A2/#3 定案，非 Fat Mo 裁決項）。
+- **Q3**（家庭組合 S/P 準則）：全單任何一件——石膏模一經倒出即實體存在，不論當初為邊件產品而倒。
+- **Q4**（規則③防呆）：僅警告，不阻擋報價與 `syncToAirtable()`。
+- **Q5**（並行分支處理）：先合併 `accessory_cost` 兩條分支（見 D64 續、本檔 2026-08-16 accessory_cost 文件補漏條目）再開工。
+
+**A2 對抗評審批評處理**（全文見 `artifacts/2026-08-16-2355/cl-final-plan.md` §4）：唯一 BLOCKER（A2/#1）——`restoreFormState()` 步驟1還原 `p_family_owner` 時 `<option>` 未建會靜默失效回退 Slot 1——已採納，修法為步驟0b之後、步驟1之前先呼叫 `fhsFamilySyncVisibility()` 建立完整 option 清單（此次呼叫抑制自動勾），尾段再做一次校驗回退。另 3 條 MAJOR（#2 嬰兒肢體歸屬、#3 零玻璃瓶清值、#5 靜默轉移禁止）全採納，#4（SKU 兩處平行實作）部分採納（事實指控不成立但重構建議採納，consolidate 為 `_pDeriveSkuName()`），MINOR #6 因 #3 修法消解、#7 因 Q5 先合併分支消解。
+
+**執行階段揪出並修復嘅缺陷（規劃階段未預見）**：
+1. **舊 `_applyGlassDefaults()` 遺留獨立自動勾邏輯**：D64/舊碼喺呢個函式內有一段獨立「父母 toggle On」邏輯，同新嘅 `fhsFamilySyncVisibility()` 自動勾機制並存但互不知情，令 Q1「手動取消後唔再自動勾回」約束失效。Browser live 實測直接撞中。修法：移除該段落，統一單一入口。
+2. **A2/#5 孤兒回退提示曾被自身消費邏輯洗走**：初版將提示訊息喺 `calculatePricing()` 讀取時即清空（一次性 toast 語意），但 `generate()` 內部會再呼叫一次 `calculatePricing()`，令提示喺同一次操作內已被第二次 render 洗走。修法：提示改為「持續顯示直至下次 sync 判定非孤兒狀態」語意。
+
+**驗證**：browser live 實測（本地 `preview_start` 伺服器，非 `file://`）——3 張真實舊單零回歸（`0600103` 純鎖匙扣、`0600900` 單件木框 $2380、`06008013` 單件玻璃瓶，其 `raw_form_state` 真實值 `en_parent:false` 還原後維持 false 唔被自動勾回）；owner=追加件 BLOCKER 直接單元測試通過（`p_family_owner:2` 還原後仍為 2，非靜默回退 1，對應件正確產出 `玻璃瓶套裝 (家庭)` $2,580）；IG 訊息父母/大寶行正確輸出喺 owner 件 block；家庭組合鎖匙扣「全單任何一件」語義驗證通過；Q1 手動取消不覆蓋驗證通過；Q4 防呆僅警告驗證通過（報價正常產出非歸零）。過程中揪出並修復 2 個規劃階段未預見嘅真實 bug（見上）。全程零 console error。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（開發版）；`FHS_Product_Definition.md`／`FHS_Product_Cost_Schema_v2.md`／`FHS_Pricing_Bible.md`／`finance-gatekeeper/SKILL.md` 文件同步。Supabase schema／n8n 皆零改動（`Family_Member_Config` 由前端計算後傳入，同 D64 前提一致）。`Freehandsss_dashboard_current.html`（生產版）本次未動，部署為另一授權關卡。
+
+詳見 `FHS_System_Logic_Overview.md` §5.4.17、`FHS_Product_Definition.md` §3.1a、`artifacts/2026-08-16-2355/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：❌ 未使用（跨代碼/browser 即時交叉驗證＋逐步修復，委派會斷推理鏈）。
+
+### D65 續II：owner 概念嘅介面配合——卡片狀態徽章（cl-flow `2026-08-17-1916`，2026-08-17）
+
+**緣起**：D65 完成後，操作員填緊追加件卡片時，卡片本身零視覺提示話俾佢知呢件係咪家庭瓶 owner，要跳去表單最底獨立區塊先知/先揀。派 `ui-designer` Phase A 審視，揪出 8 個因 owner 概念引入而生嘅認知斷層（G1–G8），推薦「卡片狀態徽章 + 就地快捷切換」最小介入方案（拒絕嘅方案B會重新引入 D65 Step 1a 剛修好嘅「家庭區塊唔再受 innerHTML 重建摧毀」架構脆弱點）。走 `/cl-flow-fast` → A2 對抗評審（`gemini-3.7-flash` 連續 HTTP 503 過載，由本次同步新增嘅 model fallback 鏈自動降級至 `gemini-3.6-flash`）→ Verdict `CONDITIONAL_READY` → Fat Mo 認可反證後 `/execute`。
+
+**A2 對抗評審批評處理**：完整版評審（修復截斷問題後）攞到 8 條批評（1 BLOCKER + 4 MAJOR + 3 MINOR），逐條實碼核對：**4 條事實指控錯誤予以拒絕**，包括唯一 BLOCKER（誤稱替換價錢三行會毀 `mixed_member_surcharge` 所需嘅 `hasAdultInSet`/`hasBabyInSet`——實碼證兩變數定義完全在替換範圍外）、誤稱 `fhsFamilyOwnerChange()` 有 `this` 綁定問題（實碼證零參數零 `this` 引用）、誤稱現行有 `jar` 類型代碼判斷（實碼證同樣係中文字串匹配）、誤稱標題行有拖曳 handle（實碼證唔存在）。其餘 4 條全數採納或部分採納（底層顧慮有效但事實前提有誤時，採納顧慮拒絕前提）。
+
+**核心改動**：①價錢真源抽取 `_pPriceOfSku(name)`，卡片徽章與報價共讀同一函數；②徽章同步掛 `calculatePricing()` 入口（A2 揪出 `en_parent`/`en_elder`/嬰兒肢體 onchange 完全唔經 `fhsFamilySyncVisibility()`），覆蓋六條提前 return；③徽章標籤一律由 SKU 名推導，唔用 owner 身分判定（防「家庭瓶 · $1,380」矛盾信號）；④孤兒回退提示就地 echo（固定 ID placeholder）；⑤標題/選單 disambiguator；⑥「設為家庭瓶」快捷掣。全文見 `FHS_System_Logic_Overview.md` §5.4.18。
+
+**執行階段揪出並修復 1 個規劃未預見嘅真實 bug**：追加件卡片標題 disambiguator 喺 `restoreFormState()` 還原流程入面讀到底座色**仲未套用**嘅預設值，同同一刻已用最終顏色值重建嘅 owner 選單 option 唔一致。修法：還原尾段解除 `_fhsFamilyRestoring` 旗標前，額外重跑全部追加件嘅 `_pExtraRefreshTitle()`。
+
+**執行後 `code-reviewer` 獨立稽核同一模式再現**：報 FAIL，指 `en_elder` onchange 缺 `calculatePricing()`——實碼查證該 onchange 經 `togglePart()` → `generate()` → `calculatePricing()` 三層間接鏈，用真實 DOM 事件 + 呼叫計數器直接量度（0→1）推翻。**三次獨立評審（A2 首輪、A2 次輪部分批評、code-reviewer）皆犯同一類錯誤——只查字面 onchange 屬性有冇直接寫住目標函式名，未追蹤間接呼叫鏈**，已記入 `FHS_System_Logic_Overview.md` §5.4.18 做評審方法論教訓。
+
+**驗證**：browser live 實測——C1（勾 `en_parent` 嗰一刻徽章與報價同步跳 $2,580）、C2（真身函式窮舉 128 組狀態逐分位 100% 相同）、C3（六條提前 return 逐條覆蓋）、快捷掣對調正確、375px 窄螢幕（快捷掣 77×44px 達標）、3 張真實舊單零回歸、全程零 console error、`/fhs-check` 4 PASS/1 SKIP。
+
+**支線任務（Fat Mo 同 session 追加授權）**：`scripts/cl-flow-runner.js` 新增 Gemini model fallback 鏈 + 修復 `maxOutputTokens`（8192→32768）導致嘅評審長期截斷問題。成效：同一份草案，截斷版評審得 3 條批評，修復後完整版得 8 條——藏起咗嘅 5 條入面 3 條為本次採納嘅真問題。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Verdict 批准範圍）+ `scripts/cl-flow-runner.js`（另行授權支線任務）。Supabase／n8n 零改動。
+
+詳見 `FHS_System_Logic_Overview.md` §5.4.18、`artifacts/2026-08-17-1916/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅ `ui-designer`（Phase A 設計診斷）+ `code-reviewer`（G1-G8，發現 1 個誤判已用實測推翻）。
+
+### D65續III：立體擺設表單排版重整（2026-08-18）
+
+Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對象、歸屬下拉得一個選項無作用、整體選項過多難理解——三點全接納無反駁。父母/大寶移至緊貼嬰兒（`#limbContainer`）之後，同屬「倒模對象」分區；`#p_family_owner` 永久隱藏（唔刪除，`raw_form_state` 契約載體），改用已有嘅卡片「設為家庭瓶」快捷掣取代。屬純前端小改動（無完成報告，Changelog 為全文居所），全文見 [Changelog.md 2026-08-18「D65續III」條目](../../Changelog.md)。**Subagent 使用記錄**：❌ 未使用（互動式 browser 實測 + 直接改碼，委派會斷推理鏈）。

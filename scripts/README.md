@@ -5,7 +5,7 @@
 | 檔案 | 用途 |
 |---|---|
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
-| `cl-flow-runner.js` | `/cl-flow` A3-first 協調器（v2.0.0，D39）— `--init` 開檔（不叫 API）／`--review [--fast]` 送 A3 草案俾 A1 Perplexity + A2 Gemini 評審（模型由 `GEMINI_A2_MODEL_DEFAULT` 控制）|
+| `cl-flow-runner.js` | `/cl-flow` A3-first 協調器（v2.0.0，D39）— `--init` 開檔（不叫 API）／`--review [--fast]` 送 A3 草案俾 A1 Perplexity + A2 Gemini 評審（2026-08-17 新增 model fallback 鏈，見下方說明）|
 | `validate-ag-plan.js` | ⚠️ 舊版 ag-plan 作者格式驗證器（D39 前）— 現行評審格式（`ag-review.md`）已不再呼叫此驗證器，檔案保留但未接線於當前 Verdict 鏈 |
 | `migrate_airtable_to_supabase.js` | **Supabase 遷移**：批量將 Airtable 資料同步至 Supabase (Phase 1)，需 Airtable API |
 | `migrate_from_csv.js` | **CSV 遷移備援**：當 Airtable API quota 耗盡時，改從 `airtable-database/*.csv` 讀取並遷移至 Supabase（支援 multiline quoted fields）|
@@ -132,6 +132,15 @@ node scripts/cl-flow-runner.js --review {flow_id} --fast   # 精簡版：淨 A2 
 
 - Node.js 16+
 - `.env` 含 `GEMINI_API_KEY`（`--review` 非 `--fast` 模式另需 `PERPLEXITY_API_KEY`）
+
+**A2 (Gemini) model fallback 鏈**（2026-08-17 新增，cl-flow `2026-08-17-1916`）：
+
+背景：`gemini-3.7-flash` 曾連續 6 次 HTTP 503「high demand」過載；原 `maxOutputTokens: 8192` 亦令評審長期喺第 2 條批評就 `finishReason=MAX_TOKENS` 截斷（thinking model 嘅思考 token 亦計入此額度）。
+
+- `GEMINI_A2_MODEL_CHAIN`（可選，逗號分隔）— 覆蓋整條降級鏈，預設 `gemini-3.7-flash,gemini-3.6-flash,gemini-flash-latest`。主 model 全數重試失敗（503/socket hang up 等）後自動降級至下一個；某 model 回傳截斷結果（`MAX_TOKENS`）唔當失敗，留低做「最佳半成品」再試下一個，攞到完整版（`finishReason=STOP`）即取代
+- `GEMINI_A2_MODEL_DEFAULT`（可選）— 仍生效，覆蓋鏈首位單一 model（歷史相容）
+- `GEMINI_A2_MAX_OUTPUT_TOKENS`（可選）— 覆蓋輸出額度，預設 `32768`
+- 全鏈行完仍冇完整結果 → 交返最長嗰份截斷半成品，`ag-review.md` 頭部會顯眼標註「本評審不完整」，`state.json` 記錄實際使用 model + 截斷狀態
 - 不再依賴 `repomix`——A3 草案由 Claude 直接用 Grep/Read 查證 repo，evidence 已內嵌於草案本身
 
 **輸出**：

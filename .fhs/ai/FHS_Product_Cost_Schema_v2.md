@@ -1,8 +1,9 @@
 ---
 name: FHS Product Cost Schema (Core)
-version: v2.4.0
+version: v2.4.1
 created: 2026-05-28
-updated: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人tier V2覆蓋擴充+家庭組合鎖匙扣動態畫圖exception新增，§2.1新增24號key，§10.1/§10.2/§10.6）
+updated: 2026-08-16（cl-flow 2026-08-16-2355，D65：§10.6 S/P判定改「全單任何一件」語義，取代舊有「僅讀主套裝」判斷；成人mode改「owner存在」判定，不再要求玻璃瓶(家庭)字面SKU）
+[前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人tier V2覆蓋擴充+家庭組合鎖匙扣動態畫圖exception新增，§2.1新增24號key，§10.1/§10.2/§10.6）
 authority: SSoT for cost_configurations 24-key schema + V2統一SKU模型（Core layer；S189審查後升格）
 companion_docs:
   - .fhs/ai/FHS_Product_Cost_UI_Spec.md       # 已退役 2026-07-25，僅供歷史參考
@@ -445,7 +446,7 @@ limb_rate：S=$60　P=$110（同 baby/elder tier drawing rate，嬰兒大寶共�
              qty 代表「同設計複製幾多塊牌」，畫圖只需設計一次）
 ```
 
-**S/P 判定（Dashboard 全自動推導，操作者不干預）**：成人 mode 由「玻璃瓶(家庭)是否已選」決定；每個嬰兒/大寶部位 mode 由「該部位喺立體擺設主套裝是否已有倒模（`.limb-sel` 值非「無」）」逐個判定。實作見 Dashboard `getFamilyComboDetails()`/`_fhsFamilyLimbMode()`。
+**S/P 判定（Dashboard 全自動推導，操作者不干預）**：成人 mode 由「`en_parent` 已勾選且全單存在有效家庭瓶 owner」決定；每個嬰兒部位 mode（2026-08-16 D65 修訂——「全單任何一件」語義，非僅主套裝）由「該部位喺全單任一件（主件或追加件）是否已有倒模（`.limb-sel` 值非「無」）」逐個判定，理由：石膏模一經倒出即實體存在，不論當初為邊件產品而倒；大寶部位直接讀訂單層單一組。實作見 Dashboard `getFamilyComboDetails()`/`_fhsFamilyLimbMode()`；owner 機制業務定義見 `FHS_Product_Definition.md` §3.1a。
 
 **驗算範例**（Cost Schema §3.3 組合公式逐位對照，2026-07-28 live webhook 驗證PASS）：
 

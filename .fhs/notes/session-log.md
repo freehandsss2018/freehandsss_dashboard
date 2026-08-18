@@ -1,8 +1,36 @@
 # Session Log
 
+## 2026-08-18 (D65續IV：立體擺設「每件一張卡」統一重構 + 追加件家庭預設off): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-18「D65續IV」條目 + [decisions.md D65續IV](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。Fat Mo 對 D65續III 再截4圖反饋主件/追加件視覺不一致，第一輪修復（紫色邊框區分）被明確推翻，改為「主件同追加件結構完全一致」原則重構：`.p-item-card` 統一卡片樣式、主件新增對稱 `_pMainRefreshTitle()`、家庭區塊改用 `_pFamilyDock()`/`_pFamilyDockHome()` 節點搬遷跟隨owner走（解決「owner為追加件時父母仍顯示喺主件下」結構性bug）、兩個高風險清空點（`fhsPExtraRemove()`/`resetForm()`）加保護guard、追加件變玻璃瓶自動勾父母改預設off（加`resolvedOwner===1`守衛）。browser live實測：兩卡結構對稱確認、guard場景資料倖存、自動勾限縮驗證通過、3張真實舊單零回歸、零console error。**Fat Mo 同輪提出嘅父母/大寶新定價邏輯（大寶肢數應影響價錢）已明確叫停**（"取消修改，我想清楚再作優化，你只修改第一項即可"）——本次未落任何相關代碼，留待下個session主動帶出。
+**Subagent 使用記錄**：❌ 未使用（互動式browser實測+直接改碼+Fat Mo多輪截圖反饋修正）。
+
+## 2026-08-18 (D65續III：立體擺設表單排版重整): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-18「D65續III」條目 + [decisions.md D65續III](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對象、歸屬下拉得一個選項無作用、選項過多難理解——三點全接納。父母/大寶移至緊貼嬰兒之後同屬「倒模對象」；`#p_family_owner` 永久隱藏（唔刪，`raw_form_state`契約載體），改用卡片快捷掣取代。browser live實測：DOM順序正確、state契約無斷、快捷掣正常、2張真實舊單零回歸、零console error。
+**Subagent 使用記錄**：❌ 未使用（互動式browser實測+直接改碼）。
+
+## 2026-08-17 (D65續II：owner 概念嘅介面配合 + cl-flow-runner model fallback 修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17「D65 續II」條目 + [decisions.md D65續II](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。D65 完成後 `ui-designer` Phase A 審視揪出操作員填緊追加件卡片時零視覺提示知悉家庭瓶 owner 狀態嘅認知斷層（8項，G1-G8），走 `/cl-flow-fast`（flow_id `2026-08-17-1916`）→ A2 對抗評審 → Verdict `CONDITIONAL_READY`（唯一 BLOCKER 實碼核對前提有誤已拒絕，Fat Mo 認可反證）→ `/execute`。核心改動：`_pPriceOfSku()` 抽取價錢真源（純代碼重構，128組窮舉證實零財務規則變動）、徽章同步改掛 `calculatePricing()`（A2 揪出原設計掛錯函式）、徽章標籤一律由 SKU 名推導防矛盾信號、孤兒提示就地 echo、disambiguator、快捷掣。live 實測揪出並修復 1 個規劃未預見嘅真實 bug（還原期間 disambiguator 讀到未套用嘅底座色）。**三次獨立評審（A2首輪/A2次輪/code-reviewer）皆犯同一類方法論錯誤**——只查字面 onchange 冇追蹤間接呼叫鏈，兩次誤判已用實碼+呼叫計數器推翻。同 session 支線任務修復 `cl-flow-runner.js` model fallback + 截斷問題（成效：同一草案截斷版3條批評、修復後完整版8條）。全程零 console error，`/fhs-check` 4 PASS/1 SKIP。
+**Learnings**：三次獨立評審同一類「未追蹤間接呼叫鏈」誤判模式已落盤 `FHS_System_Logic_Overview.md` §5.4.18。
+**Subagent 使用記錄**：✅ `ui-designer`（Phase A 設計診斷）+ `code-reviewer`（G1-G8，1個誤判已用實測推翻）。
+
+## 2026-08-17 (D65：父母/大寶升格為訂單層一次性角色，歸屬選擇器方案B): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17「D65」條目 + [decisions.md D65](decisions.md)（無完成報告的中型改動，兩處合計為全文居所，本行僅摘要指回）。Fat Mo 於 2026-08-16 檢查 D64 成品時口述澄清真實業務模型，父母/大寶由「主件屬性」升格「訂單層一次性角色」，走 `/cl-flow`（flow_id `2026-08-16-2355`，A2對抗評審＋五條開放問題裁決）→ `/execute`。Step 0 先合併兩條並行分支（accessory_cost RPC修復+文件補漏）解決8個文件衝突。核心改動：owner 管理函式組 + `#p_family_owner` 選擇器、`calculatePricing()` 家庭價判斷改讀 owner 件、SKU 推導 consolidate、IG 訊息輸出改到 owner block、家庭組合鎖匙扣 S/P 改「全單任何一件」語義、規則③防呆擴充僅警告。A2/#1 BLOCKER（`restoreFormState()` option 未建先賦值靜默失效）已修復。執行階段 live 實測再揪出 2 個規劃未預見嘅真實 bug（舊 `_applyGlassDefaults()` 遺留自動勾邏輯衝突、A2/#5 孤兒提示被自身消費邏輯洗走），均已修復。3 張真實舊單零回歸 + owner=追加件 BLOCKER 單元測試通過 + IG/家庭組合/Q1/Q4 全部驗證通過，全程零 console error。
+**Learnings**：核心教訓已落盤 `decisions.md` D65 全文（單一函式收口原則、多重自動化路徑互不知情陷阱、一次性提示消費時機陷阱）。
+**Subagent 使用記錄**：❌ 未使用（跨代碼/browser 即時交叉驗證＋逐步修復，委派會斷推理鏈）。
+
 ## 2026-08-17 (cl-flow A2 Gemini 升 gemini-3.7-flash + runner UTF-8 chunk 截斷/thinking model 多 parts 靜默截尾雙修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-17 條目（無完成報告的小改動，本行僅摘要指回）。Fat Mo「a2 更新了最新 model」+ 追加要求解決 D64 §DEGRADED 記錄嘅 A2 artifact UTF-8 亂碼缺陷（3 字元：還原→還�/共用→共�/訊息→訊�）。**升級**：`GET /v1beta/models` 列帳號實際清單 + 逐個真 `generateContent` 測試，`gemini-3.7-flash`/`gemini-3.6-flash` 皆 200，Pro 系列仍 429 quota exceeded；`.env`/`.env.example`/`cl-flow-runner.js` 三處同步。**修復一**：`res.on('data', chunk=>{data+=chunk})` 令每個 Buffer chunk 獨立解碼，多位元組中文喺 chunk 邊界斷開變 U+FFFD，改 `Buffer.concat(chunks).toString('utf8')`。**修復二**（同函式內同居未被發現嘅缺陷）：thinking model 回應可分多 `parts`，原碼淨取 `parts[0].text` 會靜默截走後半段評審，改 `parts.map(p=>p.text).join('')` + `finishReason!=='STOP'` 截斷警告。三層驗證：74/248 byte 切點掃描（舊碼分別 48/74、96/248 corrupted，新碼皆 0）+ 真實 API 端到端跑通零 `�` 殘留。**Subagent 使用記錄**：❌未使用（單一函式修復 + 文件同步，無需 fan-out）。
+
+## 2026-08-16 (accessory_cost 文件補漏 7 份 + Git Worktree 絕對路徑事故): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-16 條目（無完成報告的小改動，Changelog 為唯一全文居所，本行僅摘要指回）。補齊 `finance-auditor.md`/`database-reviewer.md`/`FHS_Pricing_Bible.md` §8 嘅 `accessory_cost` 第四分類缺口，grep sweep 額外揪出 `FHS_Finance_Bible.md`（L1 自相矛盾）/`finance-gatekeeper/SKILL.md`/`Quadruple_Sync_Field_Map.md` 三處同類缺口。過程中揪出 2 個獨立 spawn_task 範圍外 bug（Dashboard `loadMode2Items()` select 缺欄位、兩個 hook regex 缺 `accessory_cost`）。另意外自曝一次 Git worktree 絕對路徑事故：session 全程漏帶 worktree 前綴令改動落錯主倉，第一輪 fresh-context 覆核因此誤報「文件全部唔存在」，查明後relocate+還原修復，第二輪覆核 7/7 PASS。
+**Learnings**：新增 `learnings/tooling.md` #7（worktree 絕對路徑漏前綴）、`learnings/governance.md` #6（grep sweep 必查清單本身可以係漏嘅源頭）；完整 post-mortem 見 [2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md](../memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md)。
+**Subagent 使用記錄**：✅ 兩次 fresh-context `general-purpose` Agent（第一次因路徑錯誤誤報失敗，第二次 7/7 PASS）；✅ 兩次 `spawn_task`（Dashboard select 缺口、hook regex 缺口）。
 
 ## 2026-08-15 (V42 多件手模擺設訂單支援 — 逃生口模式，D64): 🏷️ ✅
 
@@ -1958,3 +1986,13 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 
 ## 2026-08-09 — Session續II（單次輕量探測覆核，Claude Code / Sonnet 5）
 - Fat Mo 要求「查核一下MCP記錄是否已更新」，改用單次最小化 create+delete 探測（`testprobe01`，非重跑完整 run_all.py，避免第三次全套壓測+Telegram通知噪音）直打 webhook。**即時結果（22:46:03 UTC，查詢當刻）：axios 來源 `GET /products` 仍然 401，`testprobe01` 冇落地 `orders` 表**——實時確認憑證問題喺呢一刻依然未解，非歷史快照。狀態：持續等 Fat Mo 喺 n8n 憑證管理介面輪替/確認 Supabase API key（涉及節點：`HTTP: Supabase Sync RPC`、`Mirror Delete to Supabase`）。
+
+## 2026-08-16 — D64：`sync_order_to_mirror` RPC `accessory_cost` 讀寫回歸修復（Claude Code / Sonnet 5）
+- Fat Mo 要求修復 `sync_order_to_mirror` RPC 漏咗 `accessory_cost` 欄位讀寫。考古出根因鏈：migration `0080`（2026-07-25）首次加入 → `0081`（2026-07-28，V2 成本模型）`CREATE OR REPLACE FUNCTION` 全量覆蓋、base 版本源自更舊嘅 `0075`（跳過咗 0080），令欄位靜默消失 → `0087`（2026-08-11，D63 續）首版手抄時已用 `pg_get_functiondef()` 實測到「live 版本 0 次出現」，但誤判為「本來就冇」而非「已回歸」，寫低註解固化呢個誤判，令回歸一直維持到今日先被跟進。
+- **上游確認無恙**：經 `get_node` 直查 live n8n workflow，`Calculate Profit & Pack Items`（V47.24）+ `Supabase Mirror Prep` 兩個節點全程正確計算並傳送 `accessory_cost`，缺口 100% 卡喺 RPC 呢一層，`total_cost`/`net_profit` 本身完全冇受影響。
+- **修復**：`migration 0088_sync_rpc_accessory_cost_restore.sql`，沿用 `0087` 防漂移先例——`pg_get_functiondef()` 攞 live 定義做 base，Python 程式化單一錨點插入 6 行（`orders`/`order_items` 各 3 處：INSERT 欄位/VALUES/ON CONFLICT UPDATE），程式 diff 驗證除呢 6 行外逐字不變（`0087` 嘅 `deleted_at=NULL` 修復保留）。Smoke test 加 `pg_get_functiondef() ILIKE '%accessory_cost%'` 斷言防再次靜默漏補。
+- **歷史回歸範圍實測（0 backfill）**：全庫僅 3 張真實訂單命中配件 SKU（`0696216`/`0600107`/`0600723`），三張皆早於 `0081` 套用日期、回歸窗口（2026-07-28~2026-08-16）內從未重新 sync 過，現值全部正確——純屬配件品類使用率極低嘅運氣，非防線生效。
+- **Live webhook 端對端驗證**：`test9999004`（玻璃瓶套裝(2肢)+羊毛氈公仔-加購）經正式 webhook 建立，`orders.accessory_cost=$30`、品項層同步正確、`total_cost=$240` 收斂正確，驗證後 soft-delete，`deleted_at` 確認寫入。
+- **附帶發現（未修，已開 task chip 追蹤）**：grep sweep 揪出 `finance-auditor.md`/`database-reviewer.md`/`FHS_Pricing_Bible.md` 三處成本分類 checklist 仍停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`），從未納入 `accessory_cost`，屬 2026-07-25 原始導入時遺留舊缺口，非本次回歸引入，超出本次修復範圍。
+- 全文見 [decisions.md D64](decisions.md)、[FHS_System_Logic_Overview.md §5.4.14](FHS_System_Logic_Overview.md)、[learnings/supabase.md #14](../memory/learnings/supabase.md)、[Changelog.md](../../Changelog.md) 2026-08-16 條目。
+- **Subagent 使用記錄**：❌未使用（Supabase MCP + n8n MCP + curl webhook 全程主 session 直接操作，需即時交叉驗證，委派會斷推理鏈）。

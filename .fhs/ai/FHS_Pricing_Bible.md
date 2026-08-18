@@ -1,8 +1,8 @@
 # FHS 定價聖經 (FHS Pricing Bible)
 
 > **Authority Level**: L2 — 現行定價 HEAD
-> **Version**: v1.7.0
-> **更新日期**: 2026-07-25（S189財務文件全面審查：§5/§6 移除重複金額表，改為指向 `FHS_Product_Cost_Schema_v2.md`（唯一SSoT），消除同Cost Schema §2.1/§3.2 兩處各自維護同組數字嘅drift風險；§6.1過時公式+§6.3已填妥卻仍標「待填」嘅清單一併移除）；2026-07-23（§3.2 純銀頸鏈吊飾 S mode remainder單隻價 $1,980→$1,490下修，N=1底價不變；§4.3 P mode 鎖匙扣改為多部位合併計價+新增跨部位附加費，取代原「各部位獨立計階梯」；兩項均為 Fat Mo 對照客戶最新售價表 + 真實訂單核實後裁決，決策見 decisions.md D45）；2026-07-21 (§2.1 修復肢數判定 bug：hasFoot 捷徑判斷→實際總肢數計算，並將大寶肢體納入嬰兒同等計數但不觸發家庭價；2026-07-19 §2.1 玻璃瓶套裝新增「含父母」家庭定價 $2,580 並改用獨立 SKU「玻璃瓶套裝 (家庭)」（推翻同日較早嘅「SKU不變」決定，修正稽核面板顯示舊價 bug）；§6 footnote 修正已過時技術債描述)
+> **Version**: v1.7.1
+> **更新日期**: 2026-08-16（D65：§2.1 補充「一單多件手模擺設」owner 歸屬提醒——家庭定價只喺歸屬件評估，全文見 `FHS_Product_Definition.md` §3.1a）；2026-08-16（§8「成本分類小計」表補漏第四分類 `accessory_cost`——配件成本自 2026-07-25 migration 0079/0080 導入以來從未同步進此表，finance-gatekeeper SKILL.md §5.4.7 grep sweep 事後揪出，純文件缺口非計算錯誤）；2026-07-25（S189財務文件全面審查：§5/§6 移除重複金額表，改為指向 `FHS_Product_Cost_Schema_v2.md`（唯一SSoT），消除同Cost Schema §2.1/§3.2 兩處各自維護同組數字嘅drift風險；§6.1過時公式+§6.3已填妥卻仍標「待填」嘅清單一併移除）；2026-07-23（§3.2 純銀頸鏈吊飾 S mode remainder單隻價 $1,980→$1,490下修，N=1底價不變；§4.3 P mode 鎖匙扣改為多部位合併計價+新增跨部位附加費，取代原「各部位獨立計階梯」；兩項均為 Fat Mo 對照客戶最新售價表 + 真實訂單核實後裁決，決策見 decisions.md D45）；2026-07-21 (§2.1 修復肢數判定 bug：hasFoot 捷徑判斷→實際總肢數計算，並將大寶肢體納入嬰兒同等計數但不觸發家庭價；2026-07-19 §2.1 玻璃瓶套裝新增「含父母」家庭定價 $2,580 並改用獨立 SKU「玻璃瓶套裝 (家庭)」（推翻同日較早嘅「SKU不變」決定，修正稽核面板顯示舊價 bug）；§6 footnote 修正已過時技術債描述)
 > **衝突規則**: 若本文件與 L1（`.fhs/ai/FHS_Finance_Bible.md`）衝突，以 L1 為準；本文件取代所有舊版定價文件（pricing_reference / Product_Bible_V3.7）
 > **Source of Truth**: `freehandsss_dashboardV41.html` → `calculatePricing()` 函式（代碼為最終裁決者）
 > **警告**: 計價邏輯變更後，本文件必須同步修訂，否則將成為誤導來源。
@@ -47,6 +47,7 @@
 ⚠️ **舊 bug（2026-07-19 起存在，2026-07-21 修復）**：舊判定 `hasFoot = 嬰兒左腳或右腳其中一隻≠無` 只睇「有冇揀腳」，唔理實際揀咗幾多肢——導致「一手一腳」（UI 快速按鈕 `babySetMode('left'/'right')`，實際只選 2 肢）被誤判做「4肢」，多收 $300。同時大寶肢體完全未被計入 2肢/4肢 判定（大寶單獨或大寶+嬰兒混合肢數會被漏計）。修復位置：`buildOrderItemsForPricing()` 與儲存路徑同名判定區塊（V42/current.html 各 2 處）。
 ⚠️ **SKU 命名 2026-07-19 起已改變**（推翻同日較早的「SKU 命名不變」決定）：原方案沿用 `玻璃瓶套裝 (4肢)` 品名、只改售價，導致前端「顯示項目財務」稽核面板（讀 `products.suggested_price` 靜態對照表，`fhsSuggestedPriceMap`，per-SKU 無法區分是否含父母）恆顯示舊價 $1,680，與 `calculatePricing()` 即時結果不符。改用獨立 SKU 名稱後，`products` 表新增對應行（migration 0060，`total_base_cost` 仍 $210 flat 不變）令兩處來源一致。
 木框套裝暫無對應「含父母」flat 價規則，維持 §2.1 原表 + §2.2 附加費邏輯；木框套裝亦無大寶/父母 UI 選項，故 `elderLimbCount` 恆為 0，肢數判定僅計嬰兒。
+⚠️ **一單多件手模擺設時（cl-flow 2026-08-16-2355 D65 起）**：`en_parent`/父母大寶肢體已升格「訂單層一次性角色」，只喺操作員指定嘅單一「歸屬件」（owner，可以係主件亦可以係追加件）評估——全單任一時刻最多一件「玻璃瓶套裝 (家庭)」，非 owner 件即使自身亦為玻璃瓶且已勾嬰兒肢體，仍只計普通 2肢/4肢價。業務規則全文見 `FHS_Product_Definition.md` §3.1a，判定機制見 `FHS_System_Logic_Overview.md` §5.4.17。
 
 ### 2.2 成員混合模式附加費
 
@@ -259,7 +260,7 @@ price += surcharge
 | **FatMo 繪圖成本** | 前端計算後傳 payload，**不存 DB** | 前端計算 |
 | **產品生產成本**（per SKU）| Supabase `products.total_base_cost` | 人工維護 / migration |
 | **訂單總成本** | Supabase `orders.total_cost` | n8n Calculate Profit |
-| **成本分類小計** | Supabase `order_items.necklace_cost` / `keychain_cost` / `handmodel_cost` | n8n |
+| **成本分類小計** | Supabase `order_items.necklace_cost` / `keychain_cost` / `handmodel_cost` / `accessory_cost` | n8n |
 | **折扣/補打** | Supabase `orders.adjustment_amount` | Review Mode 手動 |
 | **利潤** | Supabase `orders.net_profit` | n8n（`final_sale_price - total_cost`）|
 
