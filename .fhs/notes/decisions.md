@@ -2469,3 +2469,25 @@ Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對
 **制度啟示（已落 `learnings/governance.md` #7）**：診斷「反覆修都唔好」嘅制度病，第一問應該係「之前幾次修復落喺邊一層」，而唔係再修同一層第四次。
 
 詳見 Changelog.md 2026-08-18 條目、`learnings/governance.md` #7、`learnings/tooling.md` #9。
+
+### D67：`save_structured_order_items` RPC DELETE+INSERT 漏 14 個成本/V2 欄位（migration 0089）+ 前端連帶修復（2026-08-19）
+
+**緣起**：Fat Mo 要求修 `task_4a9acd82`（`loadMode2Items()` select 漏 `accessory_cost`）同 `task_0c9d1c51`（hook regex 漏同一欄位）。查證 `loadMode2Items()` 期間發現，呢兩個 chip 描述嘅其實只係冰山一角——真正寫入路徑 `save_structured_order_items` RPC（Mode 2「儲存明細」掣觸發）用 `DELETE FROM order_items` 再 `INSERT` 重寫成張單品項，但 INSERT 欄位清單只得 14 個（`item_key`/`product_sku`/`item_category`/`quantity`/`engraving_text`/`specification`/`item_base_cost`/`subtotal_cost`/`handmodel_cost`/`keychain_cost`/`necklace_cost`/`batch_number`/`process_status`），漏埋其後（D46/D64/D65）陸續加入嘅 14 個欄位：`accessory_cost`、`drawing_cost`、`printing_cost`、`chain_cost`、`shipping_cost`、`item_sale_price`、`position_code`、`drawing_waived`、`drawing_charged_count`、`cost_model_version`、`family_member_config`、`reference_image_url`、`ai_suggestion`、`precomplete_status`。任何一次經 Mode 2 儲存（哪怕淨係改刻字/數量），呢 14 個欄位會被靜默清零/NULL。
+
+**風險等級核實**：查全庫 133 個品項，`accessory_cost`>0 嘅 3 筆同 V2 欄位缺失嘅 0 筆完全冇重疊——呢個 RPC 從未喺任何有相關資料嘅訂單度真正執行過，屬**未爆地雷**而非已發生嘅意外，唔需要 backfill。
+
+**Fat Mo 裁決**：全部一次過修（RPC + 前端 + hook），唔留手尾。
+
+**修復一（核心）**：`migration 0089_save_structured_order_items_full_field_preserve.sql`——`v_prev_map` 由「淨存 `batch_number`/`process_status` 兩個」擴充做「存整行快照」，INSERT 時對 Mode 2 UI 本身唔會編輯嘅全部欄位一律 `COALESCE(新值, 快照值)`。沿用 0087/0088 防漂移先例，`pg_get_functiondef()` 攞 live 定義做 base。
+
+**Smoke test 揪出一個真 bug（非純理論，非純讀碼宣告完成）**：`v_prev_map` 用 `to_jsonb(reference_image_url)` 儲存 array 欄位，若原值為 SQL NULL，`to_jsonb(NULL::text[])` 會存成 JSON `null`（scalar），令 `jsonb_array_elements_text()` 對其求值直接 `22023` error（"cannot extract elements from a scalar"），即使包喺 `COALESCE` 入面都會爆——`COALESCE` 唔係短路控制流，兩個分支都會被求值。修法：先用 `jsonb_typeof(...) = 'array'` 守衛，非 array 一律當 NULL。
+
+**驗證（合成測試單，非真實客戶資料，已清理）**：①改刻字場景——`engraving_text` 正確改咗，其餘 9 個財務/V2 欄位（`accessory_cost`/`drawing_cost`/`drawing_waived`/`position_code`/`cost_model_version`/`family_member_config`/`ai_suggestion`/`precomplete_status`）全部原封不動保留；②array 型別 edge case——`reference_image_url` 有真實陣列值時再改一次數量，陣列同 `accessory_cost` 皆正確保留。
+
+**修復二（前端，發現更早、更根本嘅既有 bug）**：`saveMode2Items()` 嘅 `prev` 來源係 `globalOrders`（`sbFetchItems()` select 唔含任何成本/V2 欄位，`prev.X` 恆為 `undefined`），舊碼 `prev.handmodel_cost != null ? prev.handmodel_cost : 0` 令**每一次** Mode 2 儲存都恆定向 `handmodel_cost`/`keychain_cost`/`necklace_cost` 三個欄位送明確 `0`。migration 0089 之前 RPC 本身冇 fallback 機制，呢個送 0 嘅行為一直照單全收（無 backfill 需要，理由同上——全庫零真實訂單經呢條路徑存過非零成本）。但若唔修呢處，migration 0089 嘅 `COALESCE` 保護對呢 3 個欄位（同新加嘅 `accessory_cost`）完全失效——`COALESCE` 見到明確 `0`（非 `NULL`）唔會 fallback。修法：`newItems` 建構全部 pass-through 欄位改送 `null`（非 `0`/`''`），令 RPC 端 `->>'field'` 正確讀到 SQL NULL 先觸發 fallback。同步喺 `loadMode2Items()` select list 加齊 14 個欄位（前端唔會用，但保持同 RPC 消費者定義一致）。
+
+**修復三**：`task_0c9d1c51`——`pre-tool-guard.js` R11 同 `post-tool-kgov.js` `FINANCE_CONTENT_PATTERNS` 兩個 regex 加入 `accessory_cost`。
+
+**驗證清單**：migration apply 成功＋live 定義含新欄位確認、smoke test 兩場景 PASS（含 array edge case）、測試數據已清理、hook 語法 `node -c` 通過、`fhs-health-check.js` 由本輪修復前嘅狀態維持乾淨（餘 1 項為既有 `/fhs-usage-audit` 逾期，非本次引入）。
+
+詳見 `supabase/migrations/0089_save_structured_order_items_full_field_preserve.sql`（檔頭完整根因/修法/教訓記錄）、Changelog.md 2026-08-19 條目。**Subagent 使用記錄**：❌未使用（跨 Supabase RPC/前端/hook 三層即時交叉驗證＋smoke test，委派會斷推理鏈）。

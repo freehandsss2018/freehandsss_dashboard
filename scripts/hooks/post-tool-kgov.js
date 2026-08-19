@@ -88,7 +88,7 @@ const SQL_WRITE_VERB_PATTERN = /\b(CREATE|ALTER|DROP|INSERT|UPDATE|DELETE)\b/i;
 const FINANCE_CONTENT_PATTERNS = [
   /CREATE\s+OR\s+REPLACE\s+FUNCTION/i,
   /get_financial_kpis|get_financial_charts/i,
-  /handmodel_cost|keychain_cost|necklace_cost/i,
+  /handmodel_cost|keychain_cost|necklace_cost|accessory_cost/i,
   /3.layer|3layer|three.layer/i,
   /final_sale_price|total_cost|net_profit/i,
   /cost_configurations/i

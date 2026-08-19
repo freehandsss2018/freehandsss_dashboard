@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-19] Session（Claude Code / Opus 5 執行）— D67：`save_structured_order_items` RPC 漏 14 欄位修復（migration 0089）+ 前端連帶 bug + hook regex 補漏
+
+- **緣起**：Fat Mo 要求修 `task_4a9acd82`（`loadMode2Items()` select 漏 `accessory_cost`）+ `task_0c9d1c51`（hook regex 漏同一欄位）。查證期間發現真正寫入路徑 `save_structured_order_items` RPC（Mode 2「儲存明細」）用 DELETE+INSERT 重寫 order_items，但 INSERT 欄位清單漏埋 14 個成本/V2 欄位（`accessory_cost`/`drawing_cost`/`printing_cost`/`chain_cost`/`shipping_cost`/`item_sale_price`/`position_code`/`drawing_waived`/`drawing_charged_count`/`cost_model_version`/`family_member_config`/`reference_image_url`/`ai_suggestion`/`precomplete_status`）——任何一次 Mode 2 儲存都會靜默清走呢啲欄位。
+- **風險核實**：查全庫 133 品項，`accessory_cost`>0 嘅 3 筆同 V2 欄位缺失嘅 0 筆完全冇重疊，屬未爆地雷非已發生意外，唔需要 backfill。Fat Mo 裁決：全部一次過修（RPC+前端+hook）。
+- **修復一（RPC 核心）**：`migration 0089`——`v_prev_map` 由淨存 2 個欄位擴充做整行快照，INSERT 時對 Mode 2 唔會編輯嘅全部欄位一律 `COALESCE(新值,快照值)`。沿用 0087/0088 `pg_get_functiondef()` 攞 live 定義做 base 先例。
+- **Smoke test 揪出真 bug**：`to_jsonb(NULL::text[])` 存成 JSON `null`（scalar），`jsonb_array_elements_text()` 對其求值直接 22023 error，`COALESCE` 兩分支都會求值唔係短路——修法加 `jsonb_typeof(...)='array'` 守衛。
+- **驗證（合成測試單，已清理）**：①改刻字場景，9 個財務/V2 欄位原封不動保留；②array 型別 edge case（`reference_image_url` 有真實值時），陣列同 `accessory_cost` 皆正確保留。
+- **修復二（前端，更早更根本嘅既有 bug）**：`saveMode2Items()` 嘅 `prev` 嚟自 `globalOrders`（`sbFetchItems()` select 唔含成本欄位，`prev.X` 恆 undefined），舊碼 `!= null ? X : 0` 令每次 Mode 2 儲存都向 3 個成本欄位送明確 `0`——migration 0089 前 RPC 冇 fallback 故照單全收（無 backfill 需要，同上理由）；若唔修，migration 0089 嘅 COALESCE 保護對呢 3 個+新加嘅 `accessory_cost` 會完全失效（COALESCE 見明確 0 唔會 fallback）。修法：改送 `null`。`loadMode2Items()` select 同步加齊 14 欄位。
+- **修復三**：`pre-tool-guard.js` R11 + `post-tool-kgov.js` FINANCE_CONTENT_PATTERNS 兩個 regex 加 `accessory_cost`，`node -c` 語法驗證通過。
+
+詳見 `supabase/migrations/0089_save_structured_order_items_full_field_preserve.sql`（檔頭完整記錄）、decisions.md D67。**Subagent 使用記錄**：❌未使用（跨 RPC/前端/hook 三層即時交叉驗證+smoke test，委派會斷推理鏈）。
+
 ## [2026-08-18] Session（Claude Code / Sonnet 5 執行）— D65續IV：立體擺設「每件一張卡」統一重構 + 追加件家庭預設 off
 
 - **緣起**：D65續III 排版重整後，Fat Mo 再截 4 張圖回饋——主件同追加件視覺唔一致（主件平鋪、追加件做卡再加紫色邊框區分）、客製化刻字喺追加件走位到倒模對象下方、倒模對象嬰兒掣組冇任何標題說明、整體「好混亂」。核心診斷：問題根源係「主件根本唔係卡，追加件先係卡」，靠顏色邊框做區分只會治標不治本。

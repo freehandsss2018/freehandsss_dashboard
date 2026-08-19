@@ -222,7 +222,7 @@ process.stdin.on('end', () => {
     // Not blocking yet — logs to .fhs/.kgov-observe.log for a ~2-week hit-rate
     // review before this graduates to a hard flag (see governance/05 §4).
     if ((/(?:^|\s)(?:Set-Content|Out-File|tee|sed\s+-i)\b/i.test(command) || />>?/.test(command)) &&
-        /handmodel_cost|keychain_cost|necklace_cost|cost_configurations|final_sale_price|total_cost|net_profit|calculatePricing|CREATE\s+OR\s+REPLACE\s+FUNCTION/i.test(command)) {
+        /handmodel_cost|keychain_cost|necklace_cost|accessory_cost|cost_configurations|final_sale_price|total_cost|net_profit|calculatePricing|CREATE\s+OR\s+REPLACE\s+FUNCTION/i.test(command)) {
       logKgovObserve(command);
       warnings.push(
         '⚠️  [R11-observe] 偵測到 Shell 寫入指令疑似涉及財務欄位（觀察期，未攔截）',

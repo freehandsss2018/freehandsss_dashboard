@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-19 (D67：save_structured_order_items RPC 漏14欄位修復 migration 0089 + 前端連帶bug + hook regex補漏): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-19 條目（無完成報告的小改動，本行僅摘要指回）。奉命修 task_4a9acd82/task_0c9d1c51 兩個小 chip，查證期間揪出真正寫入路徑 `save_structured_order_items` RPC 用 DELETE+INSERT 漏 14 個成本/V2 欄位（未爆地雷，全庫零重疊實測確認），Fat Mo 裁決全部一次過修。migration 0089 全欄位快照+COALESCE fallback，smoke test 揪出 `to_jsonb(NULL::text[])` 令 array 求值爆 22023 嘅真 bug 並修正；額外發現前端 `saveMode2Items()` 更早更根本嘅既有 bug（`prev.X != null ? X : 0` 恆送明確 0，會令 RPC 保護失效）並同步修正做送 `null`。hook regex 兩處補 `accessory_cost`。
+**Subagent 使用記錄**：❌未使用（跨 RPC/前端/hook 三層即時交叉驗證+smoke test，需即時判斷委派會斷推理鏈）。
+
 ## 2026-08-18 (D65 全套查證：產品關係/財務/UI 三方面文件記憶覆核 + task_f997b096 結案): 🏷️ ✅
 
 **摘要**：Fat Mo 要求核實 D65（父母/大寶訂單層角色）嘅產品關係邏輯、財務準確性、UI 設計是否已真正落檔有記憶。逐項查證：①`FHS_Product_Definition.md` §3.1a 為 SSoT，代碼實測 `_isFamilyOwner()` 已完全取代 D64 舊守衛 `_isMainP`；②`Cost_Schema_v2`/`Pricing_Bible`/`finance-gatekeeper` 三層財務文件同步一致，指向嘅 Logic_Overview §5.4.17/§5.4.18 兩節經查真實存在；③`V42.html` 與生產 `current.html` 逐 byte 比對僅差 build timestamp，SHA256 與部署記錄吻合，UI 已真正落地非得個講法。過程中發現 handoff 記錄嘅 `task_f997b096`（三份稽核輔助文件 accessory_cost checklist 缺口）**其實已於同日由 `wonderful-lamport-197904` 分支（`b6db6cd`）修復並隨 PR #3 併入 main**，屬 stale 記錄——逐份 grep 核實三檔 frontmatter 已升 v2.2.1、footer 明記補漏，非重新做，只更正 handoff/decisions.md 記錄。另核實 `task_4a9acd82`（`loadMode2Items()` 漏 select）／`task_0c9d1c51`（hook regex 漏 `accessory_cost`）兩者**仍是真缺口**（代碼/regex 皆零匹配），未動手修復，留待另行處理。

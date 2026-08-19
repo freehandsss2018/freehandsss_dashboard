@@ -12664,7 +12664,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var r = await window.fetchWithTimeout(
                     _V41_SB_URL + '/rest/v1/order_items?order_fhs_id=eq.' + encodeURIComponent(orderId) +
                     '&select=item_key,item_category,specification,engraving_text,quantity,product_sku,' +
-                    'item_base_cost,subtotal_cost,handmodel_cost,keychain_cost,necklace_cost,batch_number,process_status' +
+                    'item_base_cost,subtotal_cost,handmodel_cost,keychain_cost,necklace_cost,accessory_cost,' +
+                    'drawing_cost,printing_cost,chain_cost,shipping_cost,item_sale_price,position_code,' +
+                    'drawing_waived,drawing_charged_count,cost_model_version,family_member_config,' +
+                    'reference_image_url,ai_suggestion,precomplete_status,batch_number,process_status' +
                     '&order=item_category.asc,item_key.asc',
                     { headers: { apikey: _V41_SB_ANON, Authorization: 'Bearer ' + _V41_SB_ANON } }
                 );
@@ -13317,6 +13320,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (qty <= 0) { validationErr = 'item_key ' + ik + ' 數量必須大於 0'; return; }
 
                 // Look up existing item for pass-through fields (costs, sku, etc.)
+                // ⚠️ migration 0089：pass-through 欄位若 prev 冇值必須送 null（非 0/''），
+                // 令 RPC 端 COALESCE 正確 fallback 去 DB 快照，而非誤將「冇資料」當「真係 0」
+                // 覆蓋走真實成本。prev 嚟自 globalOrders（sbFetchItems() select 唔含呢啲
+                // 成本欄位，prev.X 恆為 undefined）——舊碼 `: 0` fallback 曾令每次 Mode 2
+                // 儲存都靜默夾 0 送去 RPC，migration 0089 之前 RPC 本身冇 fallback 機制，
+                // 故呢個送 0 嘅行為一直照單全收（無 backfill 需要：實測全庫零真實訂單經
+                // 呢條路徑存過非零成本，見 migration 0089 檔頭）。
                 var prev = existingItems.find(function(it){ return it.item_key === ik || it.Order_Item_Key === ik; }) || {};
                 newItems.push({
                     item_key:       ik,
@@ -13324,14 +13334,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     specification:  card.dataset.spec || '',
                     engraving_text: eng,
                     quantity:       qty,
-                    product_sku:    prev.product_sku || prev.SKU || '',
-                    item_base_cost: prev.item_base_cost != null ? prev.item_base_cost : (prev.Base_Cost || 0),
-                    subtotal_cost:  prev.subtotal_cost  != null ? prev.subtotal_cost  : (prev.Subtotal_Cost || 0),
-                    handmodel_cost: prev.handmodel_cost != null ? prev.handmodel_cost : 0,
-                    keychain_cost:  prev.keychain_cost  != null ? prev.keychain_cost  : 0,
-                    necklace_cost:  prev.necklace_cost  != null ? prev.necklace_cost  : 0,
-                    batch_number:   prev.batch_number   || prev.Batch_Number || '',
-                    process_status: prev.process_status || '待製作'
+                    product_sku:    prev.product_sku || prev.SKU || null,
+                    item_base_cost: prev.item_base_cost != null ? prev.item_base_cost : null,
+                    subtotal_cost:  prev.subtotal_cost  != null ? prev.subtotal_cost  : null,
+                    handmodel_cost: prev.handmodel_cost != null ? prev.handmodel_cost : null,
+                    keychain_cost:  prev.keychain_cost  != null ? prev.keychain_cost  : null,
+                    necklace_cost:  prev.necklace_cost  != null ? prev.necklace_cost  : null,
+                    accessory_cost: prev.accessory_cost != null ? prev.accessory_cost : null,
+                    batch_number:   prev.batch_number   || prev.Batch_Number || null,
+                    process_status: prev.process_status || null
                 });
             });
             if (validationErr) { showToast('❌ ' + validationErr); return; }
