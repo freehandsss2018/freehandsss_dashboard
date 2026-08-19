@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-08-20] Session（Claude Code / Sonnet 5 執行）— /read 例行三件事：便攜塊日期標籤修正 + `/fhs-usage-audit` 補跑 + 過時分支清理
+
+**背景**：`/read` 開場 hook 自動偵測到三項異常，Fat Mo 要求一併處理，非新功能改動。
+
+1. **便攜塊日期標籤誤報修復**：handoff.md 便攜塊標題行日期停留在「2026-08-18」未跟 D67 內容同步（內文第18行實際已正確記錄 2026-08-19），純標籤 drift 觸發 hook 誤判「疑似漏跑 /commit」。已更新為 2026-08-19，非真的漏跑（Changelog/decisions.md/handoff 內文三處當時皆已正確記錄 D67）。
+2. **`/fhs-usage-audit` 補跑**（距上次 2026-07-07 已 43 天，逾 30 天上限）：掃描 79 sessions。趨勢：`/rp` 用量從 111 驟降至 2（近乎絕跡）、`/read` 88→38、`/execute` 79→20，反映日常已轉向 hook 輕量快照為主，全量重載頻率降低。無新增可 Skill 化建議；短句輪詢模式（"已完成？"/"done" 等）已由既有 Telegram 完成通知 hook 覆蓋，非新待辦。快照存 `.fhs/memory/usage-audit/2026-08-20.json`。
+3. **三個已完全合併入 main 的過時分支已刪除**（`claude/hook-fix-d66`、`claude/read-command-vmlu2x`——兩者均含與 main 已合併 D66 修復 commit 完全相同的 diff；`claude/d65-family-owner-role`——領先 main 0 commit）。
+
+**額外**：本次 `/commit` 續走 `/upload-web` 完成上個 session（2026-08-19，雲端 Linux 容器）因缺 PowerShell + NAS 憑證而中斷的 D67 實際 NAS 部署（該 session 只完成本機 cp 升格，見 commit `f276f1b`）。三關驗證結果見下方部署記錄。
+
+**Subagent 使用記錄**：❌未使用（純查證+輕量檔案修正，單線程即可完成）。
+
+---
+
 ## [2026-08-19] Session（Claude Code / Opus 5 執行）— D67：`save_structured_order_items` RPC 漏 14 欄位修復（migration 0089）+ 前端連帶 bug + hook regex 補漏
 
 - **緣起**：Fat Mo 要求修 `task_4a9acd82`（`loadMode2Items()` select 漏 `accessory_cost`）+ `task_0c9d1c51`（hook regex 漏同一欄位）。查證期間發現真正寫入路徑 `save_structured_order_items` RPC（Mode 2「儲存明細」）用 DELETE+INSERT 重寫 order_items，但 INSERT 欄位清單漏埋 14 個成本/V2 欄位（`accessory_cost`/`drawing_cost`/`printing_cost`/`chain_cost`/`shipping_cost`/`item_sale_price`/`position_code`/`drawing_waived`/`drawing_charged_count`/`cost_model_version`/`family_member_config`/`reference_image_url`/`ai_suggestion`/`precomplete_status`）——任何一次 Mode 2 儲存都會靜默清走呢啲欄位。

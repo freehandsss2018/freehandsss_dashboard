@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-20 (/read 例行三件事：便攜塊日期標籤修正 + /fhs-usage-audit 補跑 + 過時分支清理 + 補完 D67 NAS 部署): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-20 條目（無完成報告的小改動，本行僅摘要指回）。`/read` 開場 hook 揪出三項異常，逐一查證後處理：①誤報「疑似漏跑 /commit」實為便攜塊標題日期標籤 drift，非真漏跑，已修正；②`/fhs-usage-audit` 逾期 43 天已補跑，快照存 `.fhs/memory/usage-audit/2026-08-20.json`；③三個已 100% 合併入 main 的過時分支已刪除。另續走 `/upload-web` 補完上個 session（雲端 Linux 容器缺 pwsh+NAS 憑證）中斷的 D67 實際 NAS 部署——該 session 只完成本機 cp 升格。
+**Subagent 使用記錄**：❌未使用（純查證+輕量檔案修正，單線程即可完成）。
+
 ## 2026-08-19 (D67：save_structured_order_items RPC 漏14欄位修復 migration 0089 + 前端連帶bug + hook regex補漏): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-19 條目（無完成報告的小改動，本行僅摘要指回）。奉命修 task_4a9acd82/task_0c9d1c51 兩個小 chip，查證期間揪出真正寫入路徑 `save_structured_order_items` RPC 用 DELETE+INSERT 漏 14 個成本/V2 欄位（未爆地雷，全庫零重疊實測確認），Fat Mo 裁決全部一次過修。migration 0089 全欄位快照+COALESCE fallback，smoke test 揪出 `to_jsonb(NULL::text[])` 令 array 求值爆 22023 嘅真 bug 並修正；額外發現前端 `saveMode2Items()` 更早更根本嘅既有 bug（`prev.X != null ? X : 0` 恆送明確 0，會令 RPC 保護失效）並同步修正做送 `null`。hook regex 兩處補 `accessory_cost`。
