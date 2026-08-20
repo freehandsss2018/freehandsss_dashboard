@@ -52,6 +52,70 @@ function consumeDeployAuthorization(target) {
   } catch (_) { /* silent */ }
 }
 
+// ── Handoff sync gate (R13, D68, 2026-08-21) ────────────────────────────────
+// 為何存在：`/commit` P0.7 一直只係散文指示「便攜塊『更新:』必須改成今日日期」，
+// 冇任何機械強制。實測 D67(08-19)/D66-follow(08-20) 兩次 `/commit` 都改咗內容
+// 但個日期戳三日冇郁 —— AI 記得改內容記唔住改標籤，因為冇嘢會攔。
+// D66 已判定歷來三次修復（S118/S144/D60）全部落喺「內容·紀律層」故零效果；
+// SessionStart hook 只做**事後偵測**（下一個 session 先警告）。呢條係補返
+// 「寫入時點」嗰個真空 —— commit 前擋，唔係 commit 後嘈。
+//
+// 兩個條件（任一不過即 exit 2）：
+//   (1) 便攜塊頂部 `更新: YYYY-MM-DD` ≠ 今日本地日期
+//   (2) handoff.md 有未 staged 嘅改動（改咗但冇入今次 commit）
+// 條件(1)幂等：同一日第二個 commit（例如 Phase 2.5 部署 commit）自動過關，
+// 唔使開後門 flag，亦即冇「AI 自我授權」漏洞——檢查本身就係驗證。
+//
+// 已知邊界（刻意 fail-open，寧鬆莫死鎖）：
+//   • `git -C <path> commit` 形式唔會命中 regex（放行，非誤擋）
+//   • 指令字串內夾住 "git commit" 字樣（如 echo）會誤擋——用下方逃生口
+//   • git 不可用／唔係 repo／讀唔到 handoff → 一律放行
+//   • 擋唔到「日期戳啱但內容根本冇更新」——機械層無法驗證內容新鮮度
+// 逃生口：FHS_SKIP_HANDOFF_GATE=1（每次繞過記入 deploy-log.md 供稽核）
+// 測試用：FHS_HANDOFF_GATE_FILE 覆寫檔案路徑（同時跳過條件(2)嘅 git 探測）
+const REPO_ROOT = path.join(__dirname, '../..');
+const HANDOFF_REL = '.fhs/memory/handoff.md';
+const HANDOFF_FILE = process.env.FHS_HANDOFF_GATE_FILE || path.join(REPO_ROOT, HANDOFF_REL);
+
+function todayLocalISO() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function readHandoffStamp() {
+  try {
+    const head = fs.readFileSync(HANDOFF_FILE, 'utf8').split(/\r?\n/).slice(0, 6).join('\n');
+    const m = head.match(/更新:\s*(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : null;
+  } catch (_) { return null; }
+}
+
+function handoffHasUnstagedEdits() {
+  if (process.env.FHS_HANDOFF_GATE_FILE) return false; // 測試覆寫模式：跳過 git 探測
+  try {
+    const { execFileSync } = require('child_process');
+    const out = execFileSync('git', ['diff', '--name-only', '--', HANDOFF_REL], {
+      cwd: REPO_ROOT, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore']
+    });
+    return out.trim().length > 0;
+  } catch (_) {
+    return false; // git 不可用 → fail open，絕不死鎖 repo
+  }
+}
+
+function logGateBypass(reason, commandHead) {
+  // 夾具測試唔可以污染真實稽核檔（同 logKgovObserve 嘅 S148 B1 防污染同源）。
+  // 註：呢度用 FHS_HANDOFF_GATE_FILE 而非 FHS_GUARD_FIXTURE，因為 R13 喺
+  // FHS_GUARD_FIXTURE=1 之下根本唔會行到，R13 專屬 runner 用嘅係前者。
+  if (process.env.FHS_HANDOFF_GATE_FILE) return;
+  try {
+    const dir = path.dirname(DEPLOY_LOG_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | R13 handoff-gate bypass (${reason}) | ${String(commandHead).slice(0, 80)}\n`, 'utf8');
+  } catch (_) { /* silent */ }
+}
+
 function logKgovObserve(commandHead) {
   if (process.env.FHS_GUARD_FIXTURE === '1') return; // 夾具測試不污染觀察數據（S148 B1）
   try {
@@ -228,6 +292,44 @@ process.stdin.on('end', () => {
         '⚠️  [R11-observe] 偵測到 Shell 寫入指令疑似涉及財務欄位（觀察期，未攔截）',
         '   → 已記錄至 .fhs/.kgov-observe.log，觀察期後複查決定是否轉正為攔截'
       );
+    }
+
+    // ── Rule 13 (D68): handoff 同步閘 — 攔 git commit ────────────
+    // 設計理由與已知邊界見檔頭 HANDOFF_FILE 區塊註解。
+    if (process.env.FHS_GUARD_FIXTURE !== '1' &&
+        /\bgit\s+(?:-[^\s]+\s+)*commit\b/.test(command) &&
+        !/--dry-run\b/.test(command)) {
+      if (process.env.FHS_SKIP_HANDOFF_GATE === '1') {
+        logGateBypass('FHS_SKIP_HANDOFF_GATE=1', command);
+        warnings.push(
+          '⚠️  [R13] handoff 同步閘已被 FHS_SKIP_HANDOFF_GATE=1 繞過',
+          '   → 已記入 .fhs/notes/deploy-log.md 供稽核；請確認 handoff.md 確實唔需要更新'
+        );
+      } else {
+        const stamp = readHandoffStamp();
+        const today = todayLocalISO();
+        if (stamp === null) {
+          warnings.push(
+            '⚠️  [R13] 讀唔到 handoff.md 便攜塊「更新:」日期戳，本次放行（fail-open）',
+            '   → 若便攜塊仍在，請檢查格式係咪被改壞（預期：【FHS 交接摘要 — 更新: YYYY-MM-DD）'
+          );
+        } else if (stamp !== today) {
+          blocking.push(
+            `🚫 [R13] handoff 便攜塊日期戳過時：${stamp}（今日 ${today}），禁止 commit`,
+            '   → /commit P0.7：便攜塊七類欄位須反映本 session 最新狀態，「更新:」必須改成今日日期',
+            `   → 請編輯 ${HANDOFF_REL} 第 2 行「【FHS 交接摘要 — 更新: ${stamp}」→「更新: ${today}」，`,
+            '     並同步核對 🎯目標／✅已定決策／🔬驗證／📋待辦／⏰時限待辦／➡️下一步 六欄',
+            '   → 純查詢 session 無狀態改變時，依 P0.7 只更新日期即可',
+            '   → 確認今次真係唔關 handoff 事：FHS_SKIP_HANDOFF_GATE=1 <你條 git 指令>（會記入稽核）'
+          );
+        } else if (handoffHasUnstagedEdits()) {
+          blocking.push(
+            '🚫 [R13] handoff.md 有未 staged 嘅改動，禁止 commit',
+            '   → 日期戳係今日但改動未入 index，commit 落去會令 repo 同你手上版本 drift',
+            `   → 請先 git add ${HANDOFF_REL} 再 commit`
+          );
+        }
+      }
     }
 
     // ── Rule 5: Block git add .env ──────────────────────────────

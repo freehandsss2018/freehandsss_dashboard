@@ -3,6 +3,31 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-21] (D68) handoff 同步從「散文紀律」升格為「機械閘」——`pre-tool-guard.js` R13 攔截 `git commit`
+
+**背景**：Fat Mo 明確定義目標——「當我打 `/commit`，就代表任務完成並且**能確保**同步更新 handoff」。查證確認呢個保證一直唔成立：`commit.md` P0.7 雖然白紙黑字寫「`更新: <日期>` 必須更新至今日日期」，但純屬散文指示，冇任何機械強制。
+
+**實證**：D67（2026-08-19）同 D66-follow（2026-08-20）兩個 session 都完整行過 `/commit`，MASTER 表個 `上次更新` 兩次都有 bump，但便攜塊**頂部**個 `更新:` 日期戳連續三日凍結喺 2026-08-18。即係話 AI 記得改內容、記唔住改個標籤——因為冇嘢會攔佢。
+
+**修復層級判定**（承接 D66 根因框架）：
+- **內容·紀律層**（S118 SSOT 化／S144 五處寫同一件事／D60 時限待辦漏帶）——D66 已判定對此症零效果，本次不再重複。
+- **讀取層**（D66 修 `session-start-sop.sh`）——只做**事後偵測**，警告要下一個 session 開場先見到，已經遲咗一個 session。
+- **寫入層（commit 時點）** ← **本次補嘅真空**。偵測改為攔截，時點由「事後」提前到「事前」。
+
+**設計**：`scripts/hooks/pre-tool-guard.js` 新增 R13，PreToolUse 攔 Bash/PowerShell 嘅 `git commit`，兩個條件任一不過即 exit 2：①便攜塊 `更新: YYYY-MM-DD` ≠ 今日本地日期；②`handoff.md` 有未 staged 改動（改咗但冇 `git add`，會令 repo 同手上版本 drift）。
+
+**點解唔用旗標檔**：R1/R9（current.html 保護）要靠 `.deploy-ok` 一次性旗標，係因為「部署授權」呢件事機械層驗證唔到，只能靠人手發鑰匙。R13 唔同——**檢查本身就係驗證**（日期戳係咪今日，係客觀可讀事實），所以唔需要旗標，亦因此**冇「AI 自我授權」漏洞**。副產品：條件①天然幂等，同一日第二個 commit（例如 Phase 2.5 部署 commit）自動過關，唔使開後門。
+
+**刻意 fail-open 嘅邊界**（寧鬆莫死鎖 repo）：`git -C <path> commit` 形式唔命中 regex／git 不可用／讀唔到 handoff／便攜塊格式壞 → 一律放行。**明確擋唔到**：「日期戳啱但內容根本冇更新」——機械層無法驗證內容新鮮度，呢部分仍然只能靠 P0.7 紀律，唔應該對呢道閘有超出設計嘅安全感。逃生口 `FHS_SKIP_HANDOFF_GATE=1`，每次繞過記入 `deploy-log.md` 稽核。
+
+**副作用（Fat Mo 已知悉並接受）**：以後任何 `git commit`（包括順手修 typo）都會逼你 bump handoff 日期。呢個同 P0.7 現有條文一致（「純查詢 session 無狀態改變 → 只更新日期即可」），屬特性非 bug。
+
+**驗證**：新增獨立 runner `scripts/hooks/test/run-handoff-gate-tests.js` 8 案例全 PASS（過時擋／今日放行／同日第二 commit 幂等／`git log --grep=commit` 唔誤擋／`--dry-run` 唔擋／逃生口／格式壞 fail-open／R7 force push 不受干擾）；既有 `run-fixtures.js` 19 夾具零回歸。另做真實 repo live 前後對照：handoff.md 未 staged 時實測 exit 2 攔截、`git add` 後實測 exit 0 放行。過程中真·live hook 攔截咗我自己一個含 `git commit` 字樣嘅 Bash 呼叫，順帶實證咗已文件化嗰個誤擋邊界。
+
+**為何要獨立 test runner**：既有 `run-fixtures.js` 用 `FHS_GUARD_FIXTURE=1` 跑，而 R13 喺該旗標下刻意自我跳過——否則所有既有 Bash 夾具會突然全部被擋。R13 測試改用 `FHS_HANDOFF_GATE_FILE` 覆寫 handoff 路徑指向臨時夾具。
+
+全文見 Changelog.md 2026-08-21 條目、`commit.md` v2.5.0 §P0.7.2。**Subagent 使用記錄**：❌未使用（單一 hook 規則實作 + 即時 live 前後對照驗證，委派會斷推理鏈）。
+
 [2026-08-20] (D66-follow) 補 merge 兩條逾期未合併分支——D59 message_intents 修復（repo/live drift 補記）+ 保留一份孤兒教訓檔，另一分支確認已被取代直接捨棄
 
 **背景**：`/read` 例行檢視 `handoff.md` 待辦，發現 `D66-follow`「分支收工當日即 merge」長期未執行。逐一核查全部未 merge 分支，發現兩條逾期分支（`claude/brave-jennings-a47074` 2026-07-13、`claude/ecstatic-poincare-3cc445` 2026-08-04）內容性質完全不同，須分開處理，不可盲目整批 merge。

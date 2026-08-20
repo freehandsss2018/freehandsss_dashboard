@@ -1,4 +1,5 @@
 # /commit (任務完成 · 全包一條龍)
+> Version: v2.5.0 (2026-08-21, D68) | P0.7 由「散文指示」升格為**機械強制**：`pre-tool-guard.js` 新增 R13 handoff 同步閘，`git commit` 前檢查便攜塊日期戳＝今日且 handoff.md 無未 staged 改動，唔過即 exit 2 攔截。根因：D67(08-19)/D66-follow(08-20) 兩次 `/commit` 都更新咗內容但日期戳三日冇郁——D66 已證「內容·紀律層」修復零效果，SessionStart hook 只做事後偵測，寫入時點一直真空。見 decisions.md D68
 > Version: v2.4.0 (2026-08-05) | P0.7 新增第七欄「⏰ 時限待辦」+ MASTER 表列混寫禁令；根因：2026-08-04拷問技能2026-08-09試用閘的日期只落MASTER表未落便攜塊，被「最高優先3條」篩選器結構性漏帶，下個session開場看不見，Fat Mo質詢揭發（見 fhs-health-rules.json deadline_surfacing_checks 新增機械偵測）
 > Version: v2.3.0 (2026-07-12, Session 168) | 新增 Phase 2.5 條件觸發升格部署鏈（AGENTS.md v1.7.0 授權途徑c，先偵測 Dashboard HTML 是否有改動才部署）
 > 本指令為任務完成之單一入口：包含掃描、同步、備份、推送、（視偵測結果）升格部署。
@@ -58,6 +59,18 @@
 - **若本 session 無任何狀態改變**（純查詢 session）→ 只更新日期即可。
 - **🟡 警告**：便攜塊若不存在，依 decisions.md Session 118 SSOT 機制補建後繼續。
 - 目的：確保人類複製（外部聊天）與 hook 自動注入（AI session）始終同源不 drift。
+
+#### P0.7.2 機械強制閘 R13（新，2026-08-21 D68）
+> **本節唔係新規則，係上面 P0.7 嘅執行保證。** 之前 P0.7 純散文，AI 記得改內容記唔住改日期標籤（實測 D67／D66-follow 連續兩次中招），故加機械閘。
+
+- **攔截點**：`scripts/hooks/pre-tool-guard.js` R13，PreToolUse 攔 Bash/PowerShell 嘅 `git commit`。
+- **兩個條件**（任一不過即 exit 2 擋住 commit）：
+  1. 便攜塊頂部 `更新: YYYY-MM-DD` **≠ 今日本地日期**
+  2. `handoff.md` 有**未 staged** 嘅改動（改咗但冇 `git add`）
+- **幂等**：條件(1)令同一日第二個 commit（如 Phase 2.5 部署 commit）自動過關，唔使開後門 flag——**冇「AI 自我授權」漏洞，檢查本身即係驗證**（對比 R1/R9 要靠 `.deploy-ok` 一次性旗標）。
+- **fail-open 邊界**（寧鬆莫死鎖）：`git -C <path> commit` 形式唔命中 regex／git 不可用／讀唔到 handoff／便攜塊格式壞 → 一律放行（格式壞會出警告）。**擋唔到「日期戳啱但內容根本冇更新」**——機械層無法驗證內容新鮮度，呢部分仍靠 P0.7 紀律。
+- **逃生口**：`FHS_SKIP_HANDOFF_GATE=1 <git 指令>`，每次繞過記入 `.fhs/notes/deploy-log.md` 供稽核。誤擋情境：指令字串內夾住 `git commit` 字樣（如 `echo "run git commit"`）。
+- **測試**：`node scripts/hooks/test/run-handoff-gate-tests.js`（8 案例，獨立 runner——既有 `run-fixtures.js` 用 `FHS_GUARD_FIXTURE=1` 跑，而 R13 喺該旗標下刻意自我跳過，免得所有既有 Bash 夾具突然被擋）。
 
 ### P0.7.1 便攜塊體積預算（新，2026-07-04 Session 141 防回胖）
 - **背景**：便攜塊設計初衷為 hook 每 session 輕量注入（原估 ~300 tokens），但因「✅ 已定決策」逐 session 只追加不精簡，Session 140 實測動態段已膨脹至 7,787 bytes（~3,500 tokens），超出設計值 10 倍以上。
