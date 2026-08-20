@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
+
+- **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。
+- **D66-follow 核實結案**：`/read` 開場 hook 報本分支落後 main 一個 commit。查證 `c22bda9`（2026-08-20）正正就係 D66-follow 本身——另一 session 已補 merge 兩條逾期分支。本分支 `git merge --ff-only origin/main` 純 fast-forward 對齊，**無需重做**，MASTER 表待辦項標記結案。
+- **便攜塊日期漂移修復**：確認頂部 `更新:` 戳凍結喺 2026-08-18，但內容其實已含 D67(08-19) 同 D66-follow(08-20)——即內容有同步、標籤冇。已修正為 2026-08-21；順帶依 P0.7.1 自限規則清走過期 ⏰ 項（D58 時限 08-18 已逾期 3 日，轉入 📋 待辦並升 🔴）、移除已完成嘅 D66-follow 條目。動態段 4,386 → 4,262 bytes。
+- **D68 根因與修復**：查證確認 `commit.md` P0.7 一直只係散文指示，冇機械強制；D67／D66-follow 連續兩次 `/commit` 都中招（MASTER 表 `上次更新` 有 bump，頂部日期戳冇）。承接 D66 根因框架判定——內容·紀律層（S118/S144/D60）已證零效果，讀取層（D66 修 SessionStart hook）只做事後偵測遲一個 session，**寫入時點一直真空**。本次補上：`scripts/hooks/pre-tool-guard.js` 新增 **R13 handoff 同步閘**，PreToolUse 攔 `git commit`，兩條件任一不過即 exit 2——①便攜塊 `更新:` ≠ 今日本地日期；②`handoff.md` 有未 staged 改動。
+- **設計要點**：唔用 `.deploy-ok` 式一次性旗標——R1/R9 需要旗標係因為「部署授權」機械層驗證唔到；R13 嘅**檢查本身就係驗證**（日期戳係咪今日＝客觀可讀事實），故冇「AI 自我授權」漏洞，且條件①天然幂等（同日第二個 commit 如 Phase 2.5 部署 commit 自動過關）。
+- **已知邊界（刻意 fail-open）**：`git -C <path> commit`／git 不可用／讀唔到 handoff／便攜塊格式壞 → 放行；**擋唔到「日期戳啱但內容冇更新」**（機械層無法驗證內容新鮮度，仍靠 P0.7 紀律）。逃生口 `FHS_SKIP_HANDOFF_GATE=1`，繞過記入 `deploy-log.md`。副作用：任何 commit 都會逼 bump handoff 日期（Fat Mo 已知悉接受，同 P0.7「純查詢 session 只更新日期即可」一致）。
+- **驗證**：新增 `scripts/hooks/test/run-handoff-gate-tests.js` 8 案例全 PASS + 既有 `run-fixtures.js` 19 夾具零回歸 + 真實 repo live 前後對照（未 staged 實測 exit 2 攔截／`git add` 後 exit 0 放行）。獨立 runner 之必要：既有夾具跑 `FHS_GUARD_FIXTURE=1`，R13 喺該旗標下刻意自我跳過，否則全部既有 Bash 夾具會被擋。
+- **改動檔案**：`scripts/hooks/pre-tool-guard.js`（R13）、`scripts/hooks/test/run-handoff-gate-tests.js`（新）、`.fhs/ai/commands/commit.md`（v2.4.0→v2.5.0，新增 §P0.7.2）、`.fhs/memory/handoff.md`、`.fhs/notes/decisions.md`（D68）。**Dashboard HTML／Supabase schema／n8n 零改動。**
+- 全文見 decisions.md D68。**Subagent 使用記錄**：❌未使用（單一 hook 規則實作 + 即時 live 前後對照驗證，委派會斷推理鏈）。
+
 ## [2026-08-20] Session（Claude Code / Sonnet 5 執行）— D66-follow：補 merge 兩條逾期未合併分支
 
 - **緣起**：`/read` 例行檢視 handoff 待辦清單，發現 D66-follow「分支收工當日即 merge」長期未執行，逐一核查全部未 merge 分支。
