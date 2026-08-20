@@ -25,6 +25,7 @@
 ### 跨領域指標（全文在別桶）
 - → `supabase.md` #1 雙層成本架構
 - → `supabase.md` #13 PATCH `?col=eq.<非ASCII值>` 可能 HTTP 200 但實際 0 rows 命中，同 #6 RLS silent-2xx 屬同型「勿信狀態碼」陷阱
+- → `supabase.md` #15 冪等去重索引唔可以含「寫入當日」欄位（如 `alert_date=today`），否則重跑當日不同即繞過去重
 - → `frontend.md` #1 Webhook payload 缺漏（Late Enrichment）
 - → `governance.md` #4 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
 <!-- POINTERS:END -->

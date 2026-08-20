@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-20] (D66-follow) 補 merge 兩條逾期未合併分支——D59 message_intents 修復（repo/live drift 補記）+ 保留一份孤兒教訓檔，另一分支確認已被取代直接捨棄
+
+**背景**：`/read` 例行檢視 `handoff.md` 待辦，發現 `D66-follow`「分支收工當日即 merge」長期未執行。逐一核查全部未 merge 分支，發現兩條逾期分支（`claude/brave-jennings-a47074` 2026-07-13、`claude/ecstatic-poincare-3cc445` 2026-08-04）內容性質完全不同，須分開處理，不可盲目整批 merge。
+
+**`claude/ecstatic-poincare-3cc445`（D59）—— 真實 repo/live drift，已補 merge**：查證確認呢個修復（`message_intents` 冪等鍵移除 `alert_date`）**已於 2026-08-04 實際 apply 到 live Supabase + PUT 部署到 n8n**（該 commit 本身記載 apply_migration 執行證據），但 commit 從未 merge 入 main——即 main 分支嘅 repo 記載長期同 live 實際運作邏輯唔一致（`build_n8n_workflow.cjs` 仍寫舊版 `on_conflict=alert_date,...`，但 live workflow 實際跑嘅係新版）。本次補 cherry-pick：①`build_n8n_workflow.cjs` on_conflict 參數修正（同 live 一致）；②migration 檔案（原編號 0087，因與另一 D62 分支已合併嘅 `0087_sync_order_to_mirror_reset_deleted_at.sql` 撞號，改名 `0090_fix_message_intents_dedup_key.sql`——Supabase 用 timestamp 版本非檔名數字前綴，重新編號不影響 live）；③`learnings/supabase.md` #15 + `n8n.md` 跨領域指標補回（冪等鍵不可含「寫入當日」欄位嘅教訓）。**刻意不做**：分支裡嘅 `handoff.md`/舊版 `decisions.md`/`Changelog.md`/`session-log.md` 改動全部捨棄唔套用（cherry-pick 產生嚴重 conflict，內容係 2026-08-04 當日快照，早已被之後 16 日嘅大量 session 記錄淹沒取代，套用等於文件倒退）。
+
+**`claude/brave-jennings-a47074`（2026-07-13）—— 已被後續工作取代，不整體 merge**：分支裡 `build_n8n_workflow.cjs` 改動嘅係舊版 `CONTAINER_FOLDER_ID` 寫死常數修復，main 早已被 S189（`STABLE_DRIVE_ID` 動態偵測，2026-07-18 進一步驗證）取代，直接 merge 會令代碼倒退。分支裡嘅 migration `0056` 亦係較舊/不完整版本，main 現有版本已補記錄「live 已跑、本地補檔」語境，內容更完整。**唯一保留價值**：一份從未進 main 嘅獨立教訓檔 `2026-07-13_worktree-branch-mismatch-migration-number-collision.md`（worktree/分支誤植 + migration 編號衝突事故記錄，內容有效），已單獨 cherry-pick 落 `lessons/` 並補回 `lessons/INDEX.md` 索引；其餘（已被取代 code/舊 migration/舊版文件快照）全部捨棄。
+
+**兩分支處理完後皆可安全刪除**（本地 + remote），已 merge 內容不會遺失。
+
+**教訓**：`D66-follow` 本身嘅存在證明「分支收工當日即 merge」呢條紀律喺 D59/brave-jennings 呢兩個案例上失守超過 2 週至 5 週，其中 D59 更係**真實遺失嘅 production bug 修復記錄**（repo 曾同 live 長期不一致而不自知）——若唔係 D66 主動查根因帶出呢條 follow item，呢個 drift 可能永久潛伏。全文見 Changelog.md 2026-08-20 條目、`.fhs/memory/lessons/2026-07-13_worktree-branch-mismatch-migration-number-collision.md`。**Subagent 使用記錄**：❌未使用（跨分支 diff 比對 + 逐一判斷取捨，需要即時交叉驗證邊個內容仍然有效，委派會斷推理鏈）。
+
 [2026-08-18] (D65續IV) 立體擺設「每件一張卡」統一重構——主件/追加件結構完全對稱、家庭區塊 DOM 跟隨 owner 停泊、追加件家庭預設 off；父母/大寶新定價邏輯 Fat Mo 明確暫緩，未落任何代碼
 
 **背景**：D65續III 排版重整後，Fat Mo 再截 4 張圖回饋——主件同追加件視覺唔一致（主件平鋪、追加件靠紫色邊框區分）、客製化刻字喺追加件走位到倒模對象下方、倒模對象嬰兒掣組冇標題、整體「好混亂」。第一輪修復（DOM位置bug修復+紫色邊框區分+小sublabel）被 Fat Mo 明確推翻："唔岩，仍然有排位錯誤"+"不要再插入紫色的方式區分"，並提出核心設計原則：主件同追加件應該係結構完全一致嘅卡片，唔靠顏色區分。

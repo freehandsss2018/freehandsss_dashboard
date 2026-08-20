@@ -824,11 +824,14 @@ const workflow = {
       id: 'if_intents', name: 'Has Intents?', type: 'n8n-nodes-base.if', typeVersion: 2, position: [3500, 780],
     },
     {
-      // P2c：批量寫入 message_intents（service_role key，on_conflict 對齊 migration 0057
+      // P2c：批量寫入 message_intents（service_role key，on_conflict 對齊 migration 0090
       // dedup 索引，吸取 P2a F3 教訓不重犯——on_conflict 缺席會令 ignore-duplicates 形同虛設）。
+      // 2026-08-04 修復：舊 on_conflict 含 alert_date（＝寫入當日非訊息日期），若 thread cursor
+      // 曾重置會令同一訊息在不同日重跑繞過去重，產生重複列（is_primary 稽核發現案例：thread
+      // woshilili_956096984158193 / 1x3u01b0yy7 在 07-13 與 07-25 各寫一筆）。改用訊息自然鍵。
       parameters: {
         method: 'POST',
-        url: SUPABASE_URL + '/rest/v1/message_intents?on_conflict=alert_date,message_thread,message_ig_message_id,intent_label',
+        url: SUPABASE_URL + '/rest/v1/message_intents?on_conflict=message_thread,message_ig_message_id,intent_label',
         authentication: 'none',
         sendHeaders: true,
         specifyHeaders: 'keypair',

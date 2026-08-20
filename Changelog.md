@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-08-20] Session（Claude Code / Sonnet 5 執行）— D66-follow：補 merge 兩條逾期未合併分支
+
+- **緣起**：`/read` 例行檢視 handoff 待辦清單，發現 D66-follow「分支收工當日即 merge」長期未執行，逐一核查全部未 merge 分支。
+- **`claude/ecstatic-poincare-3cc445`（D59，2026-08-04）**：查證確認呢個 `message_intents` 冪等鍵修復（移除 `alert_date`）**已於 2026-08-04 實際 apply 到 live Supabase + 部署到 n8n**，但 commit 從未 merge 入 main——main 分支 repo 記載長期同 live 實際邏輯不一致（典型 repo/live drift）。已補 merge：`build_n8n_workflow.cjs` on_conflict 參數修正（同 live 對齊）+ migration 檔案（原編號 0087，與 D62 已合併嘅同號檔撞名，改號 `0090_fix_message_intents_dedup_key.sql`，Supabase 用 timestamp 版本非檔名數字前綴，重編不影響 live）+ `learnings/supabase.md` #15 補回冪等鍵教訓。分支裡嘅舊快照文件（handoff/decisions/Changelog 等 2026-08-04 當日版本）因早被之後大量 session 記錄取代，刻意不套用。
+- **`claude/brave-jennings-a47074`（2026-07-13）**：查證確認分支內容（`CONTAINER_FOLDER_ID` 寫死常數修復、舊版 migration 0056）已被後續工作（S189 `STABLE_DRIVE_ID` 動態偵測、main 現有更完整版 0056）取代，直接 merge 會令代碼倒退，故不整體 merge。唯一保留：一份從未進 main 嘅獨立教訓檔（worktree/分支誤植 + migration 編號衝突），已單獨 cherry-pick 落 `.fhs/memory/lessons/`。
+- 兩分支處理完後皆可安全刪除（本地 + remote）。全文見 decisions.md 2026-08-20「D66-follow」條目。**Subagent 使用記錄**：❌未使用（跨分支 diff 比對 + 逐一取捨判斷，需即時交叉驗證）。
+
 ## [2026-08-19] Session（Claude Code / Opus 5 執行）— D67：`save_structured_order_items` RPC 漏 14 欄位修復（migration 0089）+ 前端連帶 bug + hook regex 補漏
 
 - **緣起**：Fat Mo 要求修 `task_4a9acd82`（`loadMode2Items()` select 漏 `accessory_cost`）+ `task_0c9d1c51`（hook regex 漏同一欄位）。查證期間發現真正寫入路徑 `save_structured_order_items` RPC（Mode 2「儲存明細」）用 DELETE+INSERT 重寫 order_items，但 INSERT 欄位清單漏埋 14 個成本/V2 欄位（`accessory_cost`/`drawing_cost`/`printing_cost`/`chain_cost`/`shipping_cost`/`item_sale_price`/`position_code`/`drawing_waived`/`drawing_charged_count`/`cost_model_version`/`family_member_config`/`reference_image_url`/`ai_suggestion`/`precomplete_status`）——任何一次 Mode 2 儲存都會靜默清走呢啲欄位。
