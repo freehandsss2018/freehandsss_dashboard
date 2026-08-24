@@ -3,7 +3,15 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
-[2026-08-22] (D65續IV-follow) 玻璃瓶「＋大寶」價階 $1,680/$1,980 交付（同 tier ＋$300）——家庭價與純嬰兒價均不變；肢數 tier 改為只數嬰兒肢體，推翻 2026-07-21 定案；migration 0091（0090 為錯誤實作已作廢）
+[2026-08-24] Subagent 鏡像大規模漂移修復——9 個中 8 個 `~/.claude/agents/freehandsss/` 凍結喺 2026-07-07，跟 repo Master 脫鈎逾 6 星期，已重新同步
+
+**發現經過**：D65續IV-follow 交付後覆核 `product-integration-validator` 改動有否真正生效，diff Master 同鏡像發現漂移；順藤摸瓜檢查其餘 8 個 subagent，全部同一模式——鏡像檔 mtime 恆定 2026-07-07 21:56（同一批次），Master 檔持續更新至 8 月中，diff 33～590 行不等。
+
+**影響範圍**：`~/.claude/agents/freehandsss/` 係 Claude Code 實際 spawn subagent 時讀嘅檔案，非 repo 內 `.fhs/ai/subagents/freehandsss/`（Master，人類/AI 平時查閱改動嗰份）。即過去 6 星期任何一次 `finance-auditor`／`database-reviewer`／`code-reviewer` 等 subagent 呼叫，實際執行嘅都係 7 月 7 號嘅舊版指令。舉證：`finance-auditor.md` 舊版缺 `accessory_cost` 第四分類（2026-08-16 先喺 Master 補入），代表呢 6 星期內任何一次財務稽核 subagent 呼叫都可能漏審呢個成本分類。
+
+**修復**：純機械化 `cp` 同步 8 個檔案（Master → mirror，唔改內容），Fat Mo 當面確認後執行。非 repo 追蹤範圍，冇對應 commit。
+
+**根因未查**：點解會凍結喺同一日（7 月 7 號）未深究——可能係當日某次 Session 手動同步後，之後所有改 Master 嘅 session 都漏咗「同步複製」呢一步（README.md 明文規定但無機械化強制）。若要防止再發生，需要喺 `/commit` P0.1「系統接通確認」加一項 mirror diff 檢查（現時 P0.1 只查存在性/非空，唔查內容一致性）——**未落實裝，留待 Fat Mo 裁決是否值得加呢個機械化守護**。
 
 **定案規則**：有大寶參與且無父母 → $1,680（2肢）／$1,980（4肢），即同 tier 純嬰兒價 ＋$300；純嬰兒 $1,380/$1,680 不變；含父母一律 $2,580 flat 不變。成本三者同為 $210 flat，＋$300 全落淨利（Fat Mo 確認屬定價策略非成本差異）。
 
