@@ -107,6 +107,12 @@ C2. 確認 product_sku FK 安全性
 C3. 驗證 n8n Code Nodes 的 HTTP 請求安全性
     → 檢查 n8n Code Nodes 是否使用 `fetch()` 或 `https`/`http` 內建 Node.js 模組
     → 若有 HTTP 呼叫需求，必須統一使用 `axios`（即 `require('axios')`）以免 sandbox 靜默失敗或拋出 disallowed module 異常。
+
+C4.「repo 內 n8n 備份檔已同步」聲明必須實際驗證，唔可以憑單一 patch 就宣稱（2026-08-24 教訓）
+    → 若稽核任務涉及 `n8n/FHS_Core_OrderProcessor_live.json`（或類似 workflow JSON 備份檔）並聲稱「已同步反映 live 修復」：
+    → 用 `git log -3 --oneline -- <備份檔路徑>` 確認最近改動嘅幅度——單一 node 嘅細小 patch（幾行 diff）唔等於「同步」，真正嘅同步應該係大幅度嘅（因應落後幅度而定，通常幾十行以上）
+    → 抽查幾個節點嘅版本號註解（`get_node` 現場拉取 vs 備份檔內容）係咪一致，唔淨係查啱啱改嗰個節點
+    → 留意檔案可能有內嵌嘅歷史快照結構（例如 n8n export 格式嘅 `activeVersion.nodes`），呢啲唔會喺頂層 `nodes` 陣列出現，容易被漏查
 ```
 
 ### Checklist D — RLS 政策覆蓋

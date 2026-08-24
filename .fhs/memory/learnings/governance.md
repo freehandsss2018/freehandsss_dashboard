@@ -23,6 +23,8 @@
 
 9. **【高頻 ⚠️】同一個 AI 用同一套方法論自查三次仍會漏——驗收財務/生產改動必須改派獨立 fresh-context agent，唔可以再自己查第四次**：D65續IV-follow 玻璃瓶大寶定價，主對話自己核實咗三次「邏輯定義/UI/財務/測試驗收」四項（working tree→committed HEAD→再重複），每次都只查 Dashboard browser + Supabase products 表，從未實際跑 n8n webhook 全鏈路。改派一個完全冇對話記憶嘅 general-purpose agent 用相同四項清單獨立查，第一次就揪出 n8n 節點無條件降級玻璃瓶 SKU、抹走「(家庭)」/「+大寶」後綴嘅真 bug（存在超過一個月）。根因：自查會不自覺沿住之前驗證過嘅路徑再驗一次（同一套「browser+DB」方法論），唔會主動跳去未驗證過嘅層（n8n）；獨立 agent 冇呢個路徑依賴，會用自己嘅理解重新掃一次全部聲稱嘅範圍。日後任何財務/schema/n8n/生產HTML改動，交付後嘅「核實」唔應該由同一個 AI 用同一套方法反覆做，第二次起就應該改派獨立 subagent — 2026-08-24 見 decisions.md 同 Logic_Overview §5.4.21 `@governance +finance +n8n` <!-- v:2026-08-24 -->
 
+10. **對自己前一個 commit 嘅「已同步/已完成」聲明都要保持懷疑，尤其涉及安全敏感內容**：2026-08-24 commit `219dc48` 聲稱「repo內n8n JSON備份檔已同步反映live修復」，實際只喺一份凍結3個月嘅舊快照插咗1行guard，冇真正重新拉取全量資料——備份檔仲殘留住D62/D63已洩漏並撤銷嘅死key文字（8處，其中3處喺一個之前完全未被發現嘅內嵌`activeVersion`歷史快照）。第二輪獨立agent覆核先揪出。**「已同步」呢類斷言，喺冇實際重新拉取全量資料源頭比對之前，唔應該講出口**——單一行 patch唔等於同步，尤其涉及git追蹤檔案入面嘅密鑰殘留呢類安全敏感內容，斷言錯咗嘅代價唔止係文件唔準確，可能係誤導未來讀者以為風險已清除。日後任何「已同步/已完成」聲明前，應該先問「我係咪真係重新攞晒源頭嘅全量資料嚟比對，定係淨係改咗聲稱要改嘅嗰一忽」 — 2026-08-24 見 decisions.md 2026-08-24續條目 `@governance +n8n` <!-- v:2026-08-24 -->
+
 ## Preferences
 
 1. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01 `@governance` <!-- v:2026-06-01 -->
