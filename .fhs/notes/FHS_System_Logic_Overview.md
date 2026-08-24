@@ -741,6 +741,18 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 ---
 
+### 5.4.21 n8n 玻璃瓶 SKU 強制降級 bug 修復（V47.14→V47.15，2026-08-24 D65續IV-follow 續 ✅ 已修復）
+
+**發現**：獨立 fresh-context agent 覆核 §5.4.20 交付完整性時揪出，`Parse Items & Generate SKU` 節點無條件將任何含「玻璃瓶」品名強制降級做純 `(2肢)`/`(4肢)`，抹走 `(家庭)`（自 migration 0060，2026-07-19）同 `(N肢+大寶)`（自 migration 0091，2026-08-22）後綴。金額不受影響（三變體成本同為 $210 flat），但 `order_items.product_sku` 身份記錄錯咗，統計/篩選會漏 count。
+
+**修復**：`sku.includes("玻璃瓶") && !sku.includes("家庭") && !sku.includes("大寶")` 加 guard，V47.15，MCP `update_node_code` 正式寫入（自動備份於 `n8n-mcp-backups/2026-08-24/`）。
+
+**驗證**：真實 webhook 測試單（`玻璃瓶套裝 (2肢+大寶)` + `玻璃瓶套裝 (家庭)` 兩件），Supabase `product_sku` 逐字正確保留，`handmodel_cost` 各 $210 印證金額不受影響。測試單已刪除清理。
+
+**教訓**：同一人用同一套方法論自查三次仍漏，改派獨立 fresh-context agent 先揪出——驗收不自驗原則的實證案例。詳見 decisions.md 2026-08-24 條目。
+
+---
+
 ## 六、IG 訂單訊息邏輯
 
 ### 6.1 Category 分類

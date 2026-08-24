@@ -3,6 +3,31 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-24] (D65續IV-follow 續) n8n 玻璃瓶 SKU 強制降級 bug 修復（V47.14→V47.15）——`(家庭)`/`(N肢+大寶)` 後綴自 2026-07-19 起被靜默抹走，金額不受影響、SKU 身份記錄受影響
+
+**發現經過**：D65續IV-follow 交付後，派獨立 fresh-context agent 覆核「測試/驗收指令是否配合」，揪出 `n8n/FHS_Core_OrderProcessor_live.json`（及對應 live workflow）「Parse Items & Generate SKU」節點有段無條件正規化邏輯：
+
+```js
+} else if (sku.includes("玻璃瓶")) {
+    let limb = (sku.includes("4肢") || sku.includes("3肢")) ? "(4肢)" : "(2肢)";
+    sku = `玻璃瓶套裝 ${limb}`;
+}
+```
+
+`sku` 一開始已經係 Dashboard 送嚟嘅正確 canonical 值（`_pDeriveSkuName()` 產出），但呢段防禦性正規化（原意處理更舊年代唔規範嘅品名字串）不分青紅皂白將任何含「玻璃瓶」嘅品名強制降級做純 `(2肢)`/`(4肢)`，抹走 `(家庭)`（migration 0060，2026-07-19 起）同 `(N肢+大寶)`（migration 0091，2026-08-22 起）呢啲後綴。
+
+**影響範圍**：`Search_SKU` 一路傳到最終寫入 `order_items.product_sku`。金額不受影響（三個變體成本同為 $210 flat，Smart Cache Strategist 巧合撈到同一個數），但 SKU 身份記錄錯咗——過去一個月任何一張家庭瓶單、依家起任何一張＋大寶單，Supabase `product_sku` 都會顯示成錯誤嘅純嬰兒變體，依賴呢個欄位做統計/篩選會漏 count。非本次改動引入，只係新 SKU 繼承咗同一個舊 bug。
+
+**點解之前驗證漏咗**：2026-08-22 嘅驗證淨係喺 Dashboard browser 同 Supabase `products` 表核對報價/SKU 生成邏輯本身，從未實際跑過 n8n webhook 全鏈路，冇觸及呢條路徑。自我核實三次都用同一套方法論（browser+products表），直至改派獨立 fresh-context agent 先揪出。
+
+**修復（V47.15，MCP `update_node_code`，dry-run 確認後正式寫入，自動備份於 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-24/`）**：加 guard，品名已含「家庭」或「大寶」視為完整 canonical SKU，跳過強制降級。
+
+**驗證（真實 webhook，非 mock）**：合成測試單 `testD65sku576986` 兩件（`玻璃瓶套裝 (2肢+大寶)`、`玻璃瓶套裝 (家庭)`），Supabase `order_items.product_sku` 逐字正確保留兩個變體名，`handmodel_cost` 各 $210 印證金額不受影響。測試單已用 `{action:"delete", Order_ID}` 正式格式清理（`deleted_at` 已確認）。
+
+**教訓**：驗收不自驗——同一個人用同一套方法論核實三次會有系統性盲點，改派獨立 fresh-context agent 先真正揪出問題。詳見 `FHS_System_Logic_Overview.md` §5.4.20 補記。
+
+**Subagent 使用記錄**：✅ 已使用（general-purpose fresh-context agent 獨立稽核，揪出主對話三次自查都漏咗嘅缺口）。
+
 [2026-08-24] Subagent 鏡像大規模漂移修復——9 個中 8 個 `~/.claude/agents/freehandsss/` 凍結喺 2026-07-07，跟 repo Master 脫鈎逾 6 星期，已重新同步
 
 **發現經過**：D65續IV-follow 交付後覆核 `product-integration-validator` 改動有否真正生效，diff Master 同鏡像發現漂移；順藤摸瓜檢查其餘 8 個 subagent，全部同一模式——鏡像檔 mtime 恆定 2026-07-07 21:56（同一批次），Master 檔持續更新至 8 月中，diff 33～590 行不等。
