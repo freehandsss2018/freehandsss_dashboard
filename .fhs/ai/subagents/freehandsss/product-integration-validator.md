@@ -89,6 +89,15 @@ B3. 驗證 item_key 格式（{order_id}_{category}_{limb}）
 C1. 讀取 n8n workflow JSON（或相關 Code Node）
     → 找出 SKU normalization / Smart Cache 的硬編碼表
     → 確認新 SKU 是否已加入
+    ⚠️ 例外（2026-08-22 查證，不得誤判 FAIL）：`Smart Cache Strategist` 的
+       `BASE_PREFIXES` **不是**新 SKU 的必須加入項。該表只是「變體家族」查詢優化；
+       `getBasePrefix()` 未命中時自動 fallback 至 `sku.eq."<完整SKU>"` 精確查詢
+       products 表（節點註解明寫：New products automatically picked up without
+       code change）。活先例：`玻璃瓶套裝 (家庭)`（2026-07-19 起）、
+       `玻璃瓶套裝 (2肢+大寶/4肢+大寶)`（2026-08-22 起）皆不在表內而運作正常。
+       → 缺席本身**不判 FAIL**；硬性條件係 C2（products 表必須有該 SKU 行）。
+       → 但**必須**驗證新 SKU 不會被既有 prefix **誤命中**（`startsWith` 比對）：
+         若誤命中，會改用 `like."<prefix>*"` 查詢而撈到錯誤成本行。
     
 C2. 確認 product_sku FK 安全性
     → 新 SKU 是否已在 Supabase products 表中存在？

@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-08-22] Session（Claude Code / Opus 5 執行）— D65續IV-follow：玻璃瓶「＋大寶」定價階交付（同 tier ＋$300）+ 一次自我更正事故
+
+- **緣起**：D65續IV（2026-08-18）暫緩嘅「父母手下不應鎖死大寶價錢」，Fat Mo 本次想清楚後提供具體數字。過程中發生兩次 AI 錯誤，均在交付前發現並修正，詳見下方「事故記錄」。
+- **最終定案**：有大寶參與（不論幾多肢）＋無父母 → 售價改為**同 tier 純嬰兒價 ＋$300**（2肢 $1,680／4肢 $1,980）；純嬰兒 $1,380/$1,680 同家庭價 $2,580 flat **均不變**。連帶推翻 2026-07-21「大寶肢體同嬰兒肢體同等地位一齊計總數」定案——肢數 tier 自本次起**只數嬰兒肢體**，大寶改為「有冇參與」嘅 ＋$300 修正項。
+- **關鍵業務定義首次成文**（Fat Mo 口述，此前三份權威文件皆無記載）：**嬰兒**＝初生或客人**首個**孩子；**大寶**＝客人**第二個**孩子（嬰兒的兄／姊）。大寶係相對於嬰兒而存在嘅稱謂，故**有大寶必然有嬰兒**——「只有大寶、沒有嬰兒」在定義上不成立。據此確認 `FHS_Pricing_Bible.md` §0「所有產品必須圍繞嬰兒展開」從未被違反，大寶不是例外。連帶更正 `FHS_Product_Cost_Schema_v2.md` §3.1 原記嘅「嬰兒＝0–3歲／大寶＝4歲以上」**年齡**定義（與出生次序定義不符，次子可能僅 2 歲但仍為大寶）。
+- **執行**：migration 0091（新增 SKU `玻璃瓶套裝 (2肢+大寶/4肢+大寶)`，`total_base_cost` 仍 $210 flat 不變，＋$300 全落淨利）；`_pDeriveSkuName()` 改 `hasElder` 判定 + tier 只數嬰兒肢體；`_pPriceOfSku()` 大寶判斷排在通用 4肢/2肢 之前（防 SKU 名含「4肢」字樣令次序調轉靜默少收）；卡片徽章補「大寶 · 」標籤（原本淨顯示 `$1680`，同 tier 純嬰兒 `$1380` 並排睇唔出點解貴咗，會誤以為報錯價）；`V42.html`+`current.html` 同步。**n8n 零改動**（已查證 `Smart Cache Strategist` 嘅 `BASE_PREFIXES` 前綴表未命中會 fallback `sku.eq` 精確查 `products`，`(家庭)` SKU 自 2026-07-19 起已是活先例）。文件同步：`FHS_Pricing_Bible.md`（v1.8.1）、`FHS_Product_Cost_Schema_v2.md`、`FHS_Product_Definition.md`、`finance-gatekeeper/SKILL.md`（v1.14.0）、`product-integration-validator.md`（補 Checklist C1 例外條件）、`FHS_System_Logic_Overview.md` §5.4.20、`learnings/finance.md`＋`learnings/governance.md` 各補一條。
+- **驗證**：browser live（本地伺服器非 `file://`）——SKU/價錢窮舉 11 組全對、`calculatePricing()` 端到端 8 組全對（含硬阻擋、木框零回歸）、卡片徽章 6 組文字全對、`products` 表 5 個玻璃瓶 SKU 逐個核對、零 console error。
+- **事故記錄（同日兩次 AI 錯誤，均在交付前發現並修正）**：
+  1. **規劃階段**：AI 未讀 `calculatePricing()` 8468–8478 行既有硬阻擋代碼，就聲稱「勾父母但零嬰兒會靜默少收 $900–$1,200」，Fat Mo 據此錯誤前提作答；因結論恰好與現狀相同，無實害。
+  2. **實作階段（較嚴重）**：AI 喺窮舉組合表**預填** ✅/🚫 假定（誤將「純大寶」標可能、「嬰兒+大寶」標不可能），Fat Mo 只逐點確認被問及嗰兩格，未複核預填值。結果新價一度綁喺「零嬰兒＋有大寶」——一個**定義上不存在**嘅組合（migration 0090 + SKU `玻璃瓶套裝 (大寶N肢)`，令新價永遠觸發唔到），而真正適用嘅「嬰兒+大寶」反被標成不可能。Fat Mo 澄清嬰兒/大寶嘅出生次序定義後，AI 即查證 0090 兩個錯 SKU 零訂單引用（安全刪除），以 migration 0091 全套重做。**教訓已落 `learnings/governance.md`**：確認窮舉表時禁止預填讓對方「確認」，應逐格詢問或請對方主動列出。
+- **⚠️ 尚未部署生產**：本 session 完成 `V42.html`+`current.html` 兩檔同步改動，但 `current.html` 升格部署（`/upload-web`）留待本次 `/commit` Phase 2.5 自動觸發。
+
+詳見 [decisions.md 2026-08-22 條目](.fhs/notes/decisions.md)、[`FHS_System_Logic_Overview.md` §5.4.20](.fhs/notes/FHS_System_Logic_Overview.md)、`supabase/migrations/0090_glassjar_elder_only_pricing_sku.sql`＋`0091_glassjar_elder_sku_rename_fix.sql`（檔頭完整記錄兩次迭代）。**Subagent 使用記錄**：❌未使用（跨代碼/Supabase/browser 即時交叉驗證+多輪業務澄清，委派會斷推理鏈）。
+
 ## [2026-08-20] Session（Claude Code / Sonnet 5 執行）— /read 例行三件事：便攜塊日期標籤修正 + `/fhs-usage-audit` 補跑 + 過時分支清理
 
 **背景**：`/read` 開場 hook 自動偵測到三項異常，Fat Mo 要求一併處理，非新功能改動。
