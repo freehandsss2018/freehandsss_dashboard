@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-24 續] 更正上一條決策嘅失實聲明——n8n JSON 備份檔「已同步」實為假話，已完整重建
+
+**發現**：第二輪獨立 fresh-context agent 覆核揪出，上一條決策聲稱「repo 內 `n8n/FHS_Core_OrderProcessor_live.json` 備份檔同步反映 live 修復」係**失實**——實際只係喺一個凍結咗 3 個月（自 2026-05-27，Session 33 起未更新）嘅舊快照入面，用文字替換插咗一行 guard，冇真正重新攞成個 live workflow。
+
+**連帶查出**：呢個 3 個月落後嘅快照本身仲殘留住 D62/D63 事故（2026-08-10，已記錄於 `project_n8n_supabase_401_credential_incident.md`）洩漏並被 Supabase 撤銷嘅死 API key 文字（8 處，其中 3 處喺一個內嵌嘅 `activeVersion` 歷史快照入面，非主 `nodes` 陣列，之前完全冇被發現）。**已直接查證 live 系統本身完全乾淨**——3 個事故點名節點（`Smart Cache Strategist`／`Supabase Mirror Prep`／`Mirror Delete to Supabase`）全部只讀 `$env`/`process.env`，D62/D63 嘅修復紮實有效，冇被推翻，問題純粹在呢份舊 repo 快照未更新。
+
+**修復**：派獨立 agent 逐個節點（30個，主 `nodes` 陣列 + 內嵌 `activeVersion` 快照 28個）用 `get_workflow`+`get_node` MCP 重新攞返 live 狀態，按 name 匹配替換 `parameters`（結構性欄位 `id`/`type`/`typeVersion`/`credentials` 保留原檔案值，因 MCP 唔回傳呢啲）。過程中發現結構性差異（少2多1個節點：`Supabase Mirror Prep V47.11`改名做`Supabase Mirror Prep`；新增`Filter Test Delete Notify`同`Send Test Summary`）——agent 正確停低問清楚先做，唔自把自為。經確認後完整處理，`connections` 區塊同步更新。
+
+**已知限制**：新增節點 `Filter Test Delete Notify` 嘅 `typeVersion=2` 屬 best-effort 估值（repo 內冇同類節點可對照，未經 n8n schema 驗證）；`Send Test Summary` 嘅 `typeVersion=1.2` 有把握（同其餘3個telegram節點一致）。此檔案純供人/AI 查閱代碼參考，非用作 import 返 n8n，故估值錯誤唔會有功能性後果。
+
+**驗證**：`sb_secret_` 全檔（含內嵌快照）計數＝0；JSON 合法性通過；`git diff --stat` 138 insertions/37 deletions，幅度符合3個月落後嘅預期；主對話獨立重新執行三項驗證核實 agent 報告非虛報。
+
+**教訓**：對自己前一個 commit 嘅聲明都要保持懷疑——「已同步」呢類斷言喺冇實際重新拉取全量資料嘅情況下唔應該講出口，尤其係涉及 git 追蹤檔案嘅安全敏感內容。
+
+**Subagent 使用記錄**：✅ 已使用（general-purpose agent 兩輪：第一輪獨立審計揪出問題，第二輪執行機械化重建，中途因結構性差異主動暫停等待授權，非自把自為）。
+
 [2026-08-24] (D65續IV-follow 續) n8n 玻璃瓶 SKU 強制降級 bug 修復（V47.14→V47.15）——`(家庭)`/`(N肢+大寶)` 後綴自 2026-07-19 起被靜默抹走，金額不受影響、SKU 身份記錄受影響
 
 **發現經過**：D65續IV-follow 交付後，派獨立 fresh-context agent 覆核「測試/驗收指令是否配合」，揪出 `n8n/FHS_Core_OrderProcessor_live.json`（及對應 live workflow）「Parse Items & Generate SKU」節點有段無條件正規化邏輯：

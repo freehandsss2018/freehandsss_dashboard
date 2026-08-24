@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-24 續] Session（Claude Code / Opus 5 執行）— 更正失實聲明：n8n JSON 備份檔完整重建（含清除D62/D63死key殘留）
+
+- **緣起**：Fat Mo 連續四次要求重新核實同一份四項清單，第二輪派獨立 agent 覆核時揪出，上一次「repo 內 n8n JSON 備份檔已同步反映 live 修復」嘅聲明係**失實**——實際只喺一個凍結 3 個月（2026-05-27 起）嘅舊快照插咗一行 guard，冇真正重新拉取。
+- **連帶發現**：呢份舊快照本身仲殘留住 D62/D63（2026-08-10）已洩漏並被 Supabase 撤銷嘅死 API key 文字（8 處，其中 3 處喺一個之前完全未被發現嘅內嵌 `activeVersion` 歷史快照入面）。**已直接查證 live 系統本身完全乾淨**——3 個事故點名節點皆只讀 `$env`，D62/D63 修復紮實有效，冇被推翻，問題純粹係呢份 repo 快照未跟住更新。
+- **修復**：派 agent 完整重建，逐個節點（頂層30個+內嵌快照28個）用 `get_workflow`/`get_node` MCP 重新攞 live 狀態並按 name 匹配替換。過程揪出結構性差異（少2多1個節點）時 agent 主動暫停等授權，非自把自為。`Filter Test Delete Notify` 嘅 `typeVersion` 屬 best-effort 估值（無同類節點可對照，此檔案純供參考不用作 n8n import，估值錯誤無功能性後果）。
+- **驗證**：`sb_secret_` 全檔計數＝0（連內嵌快照都清），JSON 合法性 PASS，`git diff --stat` 138 insertions/37 deletions。主對話獨立重新核實三項驗證，非單信 agent 報告。
+- **教訓**：對自己前一個 commit 嘅聲明都要保持懷疑，尤其涉及安全敏感內容嘅「已同步」斷言，冇實際重新拉取全量資料前唔應該講出口。
+
+詳見 [decisions.md 2026-08-24 續條目](.fhs/notes/decisions.md)。**Subagent 使用記錄**：✅ 已使用（general-purpose agent 兩輪，第二輪執行機械化重建，中途因結構性差異主動暫停等授權）。
+
 ## [2026-08-24] Session（Claude Code / Opus 5 執行）— n8n 玻璃瓶 SKU 強制降級 bug 修復（Parse Items & Generate SKU V47.14→V47.15）+ subagent 鏡像大規模同步
 
 - **緣起**：D65續IV-follow（2026-08-22）交付後，主對話自查完整性三輪，但每次都只喺 Dashboard browser + Supabase `products` 表核對，從未實際跑 n8n webhook 全鏈路。改派獨立 fresh-context general-purpose agent 用同一份四項核實清單重查，第一次即揪出 n8n live workflow 一個存在超過一個月嘅真 bug。
