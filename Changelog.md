@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-24] Session（Claude Code / Opus 5 執行）— n8n 玻璃瓶 SKU 強制降級 bug 修復（Parse Items & Generate SKU V47.14→V47.15）+ subagent 鏡像大規模同步
+
+- **緣起**：D65續IV-follow（2026-08-22）交付後，主對話自查完整性三輪，但每次都只喺 Dashboard browser + Supabase `products` 表核對，從未實際跑 n8n webhook 全鏈路。改派獨立 fresh-context general-purpose agent 用同一份四項核實清單重查，第一次即揪出 n8n live workflow 一個存在超過一個月嘅真 bug。
+- **Bug 本體**：`Parse Items & Generate SKU` 節點有段無條件正規化邏輯——`else if (sku.includes("玻璃瓶")) { ...; sku = 玻璃瓶套裝 (2肢或4肢) }`——會將任何含「玻璃瓶」嘅品名強制降級做純 `(2肢)`/`(4肢)`，抹走 `(家庭)`（自 migration 0060，2026-07-19 起）同 `(N肢+大寶)`（自 migration 0091，2026-08-22 起）呢啲後綴。`sku` 入面本身已經係 Dashboard `_pDeriveSkuName()` 送嚟嘅正確 canonical 值，呢段正規化屬更舊年代嘅防禦性代碼（原意處理唔規範品名字串），對已規範嘅新變體反而係破壞。
+- **影響範圍**：改寫後嘅值成為 `Search_SKU`，一路傳到最終寫入 `order_items.product_sku`。**金額不受影響**——玻璃瓶三個變體成本同為 $210 flat，Smart Cache Strategist 巧合撈到同一個數。**但 SKU 身份記錄錯咗**——過去一個月任何一張家庭瓶單、今起任何一張＋大寶單，寫入 Supabase 嘅 `product_sku` 都會顯示成錯誤嘅純嬰兒變體，依賴呢個欄位做統計/篩選會漏 count。
+- **修復**：加 guard `sku.includes("玻璃瓶") && !sku.includes("家庭") && !sku.includes("大寶")`，已含呢兩個字眼嘅品名視為完整 canonical SKU 直接跳過。經 MCP `update_node_code` dry-run 預覽確認純加 guard 零其他行為改動後，正式寫入 live workflow（V47.14→V47.15），自動備份於 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-24/`。repo 內 `n8n/FHS_Core_OrderProcessor_live.json` 備份檔同步反映。
+- **驗證（真實 webhook，非 mock payload）**：合成測試單兩件（`玻璃瓶套裝 (2肢+大寶)`、`玻璃瓶套裝 (家庭)`），Supabase `order_items.product_sku` 逐字正確保留兩個變體名，`handmodel_cost` 各 $210 印證金額不受影響。測試單已用 `{action:"delete", Order_ID}` 正式格式刪除，`deleted_at` 已確認落地。
+- **附帶發現同步修復**：同一輪覆核順藤摸出 9 個 subagent 入面 8 個嘅執行鏡像（`~/.claude/agents/freehandsss/`）凍結喺 2026-07-07，同 repo Master 脫鈎逾 6 星期，diff 33～590 行不等——即過去 6 星期任何一次 `finance-auditor`／`database-reviewer` 等 subagent 呼叫實際執行嘅都係舊版指令（例如 finance-auditor 舊版漏咗 `accessory_cost` 分類）。已全數重新同步（純機械化 copy，Fat Mo 確認後執行），非 repo 追蹤範圍冇對應 commit。
+- **教訓**：同一個 AI 用同一套方法論自查三次仍會漏，驗收財務/生產改動應改派獨立 fresh-context agent，唔應該自己再查第四次。已落 `learnings/governance.md` #9。
+
+詳見 [decisions.md 2026-08-24 條目](.fhs/notes/decisions.md)、[`FHS_System_Logic_Overview.md` §5.4.21](.fhs/notes/FHS_System_Logic_Overview.md)。**Subagent 使用記錄**：✅ 已使用（general-purpose fresh-context agent 獨立稽核揪出主對話三次自查漏咗嘅缺口）。
+
 ## [2026-08-22] Session（Claude Code / Opus 5 執行）— D65續IV-follow：玻璃瓶「＋大寶」定價階交付（同 tier ＋$300）+ 一次自我更正事故
 
 - **緣起**：D65續IV（2026-08-18）暫緩嘅「父母手下不應鎖死大寶價錢」，Fat Mo 本次想清楚後提供具體數字。過程中發生兩次 AI 錯誤，均在交付前發現並修正，詳見下方「事故記錄」。
