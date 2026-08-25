@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-08-25] Session（Claude Code / Sonnet 5 執行）— D69-follow：`/code-review` xhigh 揪出 4 個真 bug 並修復（含審查中自己新增嘅回歸即場捕獲）
+
+- **緣起**：D69（訂單總覽類別視圖）落地後跑 `/code-review` xhigh（10 finder angle + 1-vote verify + sweep），對未 commit 嘅 diff 做深度審查。
+- **修 1｜備註格背景色同步斷咗**：`saveInlineEdit`／`applyBatchColorLive` 仍用 `itemIndex===0` 判斷「呢行係咪擁有備註 rowspan」，但 D69 已將 `itemIndex` 由渲染位置改成 `o.items` 真實 index，類別視圖下兩者唔再相等（手模擺設永遠排第一，篩鎖匙扣/頸鏈時首行真實 index 必然 ≥1）。改用 DOM containment（`_targetRow.contains(_notesTa)`）取代 index 比對，同渲染順序完全脫鉤。
+- **修 2｜`hm_` 進度下拉篩選未跟隨修**：獨立於類別 chip 嘅「進度」下拉篩選仍直讀 `item.Category` 原始字串（同 D69 本身修嘅 Bug 1 屬同類問題嘅漏網分支），改用 `matchesItemCategory()` 單一真源。
+- **修 3｜類別橫幅編輯後唔即時更新**：`saveInlineEdit()` 加樂觀重繪 `fhsRenderCatStrip()`。⚠️首輪修復直接傳全量 `_gOrders` 漏咗年/月/類別篩選，live 測試即時測出數字異常（28→48），改用 `renderReviewTable()` 快取嘅 `window._fhsLastFilteredOrders` 修正。
+- **修 4｜「全部」視圖表頭 padding 被無聲改咗**：`fhsBuildOverviewHead()` 對入帳/成本/利潤三欄統一套用咗新 padding，違反 D69「全部零改動」承諾；`_FHS_TH_DEF` 加 per-column `pad` 覆寫返原靜態值。
+- **驗證**：語法全過 + browser live 全視圖迴歸（69/29/28/12 列、零 cell overflow、零 index mismatch，同修復前基準一致）+ 4 個修復逐一 live 讀寫實測。5 個 PLAUSIBLE 發現本次不修，記錄喺 decisions.md 供日後參考。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（唯一代碼改動）、`.fhs/notes/decisions.md`（D69-follow）。
+- 全文見 decisions.md D69-follow。**Subagent 使用記錄**：✅已使用（10 個背景 finder agent 做審查；修復＋驗證階段自行完成）。
+
+## [2026-08-25] Session（Claude Code / Opus 5 執行）— D69：訂單總覽「類別視圖」（品項層過濾 + 欄位換裝 + 收起財務欄）+ 兩個既有 bug
+
+- **緣起**：Fat Mo 指示優化訂單總覽「全部／手模／鎖匙扣／頸鏈」顯示——揀某類別時只顯示該類別品項（例：`0500703` 揀鎖匙扣唔應該再顯示手模擺設列），因為操作者習慣咗 Excel 一眼睇晒全盤狀況；「全部」明示不改。
+- **診斷**：chip 一直做**訂單層** filter（「呢張單有冇鎖匙扣」），唔係品項層（「畀我睇晒所有鎖匙扣」）。Live 統計 67 張有品項嘅單有 **26 張（39%）係多類別單**。讀 Excel 原檔確認佢「一眼睇晒」靠三件事：一件一行 ✅ 已對齊、AutoFilter 落品項 ❌ 就係本次需求、**`對象|手腳|產品|材料|數量` 各佔獨立欄** ❌ 先係真正機制——現況全部維度逼喺「產品明細」一格變 badge 團，點篩都掃唔到。
+- **方案（原型三方案並列，Fat Mo 揀 B）**：A=只隱藏列；**B=類別視圖**；C=拉平品項清單（棄，撞 Section 六排版鐵律第 1 條 rowspan 強制）。財務欄 Fat Mo 選「類別視圖收起」。
+- **落地內容**：①品項層過濾（Desktop 表格 + 手機 Accordion 兩路徑；過濾後為空則 fallback 全部，永不出現零列訂單爆 rowspan）②單號欄「另有：手模擺設 ×1、純銀吊飾 ×2」提示 chip，撳即切返「全部」③欄位換裝——手模＝`款式|肢數明細|加購`、鎖匙扣/頸鏈＝`對象|部位|材質|數量`，同時刪走整欄重複嘅類別 badge ④類別工作台橫幅（件數／張單／進度分佈／批次分佈）⑤收起 `入帳/成本/利潤`，「顯示項目財務」掣同步 disabled 並講明原因。左右兩邊既有欄位位置一律唔郁。
+- **刻意唔做**：類別入帳小計。`final_sale_price` 係訂單層真理（finance-gatekeeper 死線 1），唯一獲授權嘅拆分係財務頁 RPC 3-layer fallback（伺服器端、只分 handmodel/metal 兩類，同總覽三分類軸唔對齊），前端另寫一套＝第二本數簿，即 D40／D42 修過嘅雙數簿漂移。手機 accordion 卡頭訂單層金額保留（訂單摘要卡，非逐件並排，冇誤讀風險）。
+- **連帶修 bug 1｜兩套分類標準打架**：`matchesOrderCategory` 只讀 `item_category` 原始字串，live 有 `'??'`（0600100）同 `'銀飾'`（0600804）唔中任何關鍵字，令呢兩張單喺類別 chip 完全消失；但 badge 由 `getProductDimensions()` 正確畫住「鎖匙扣」「純銀吊飾」。已收窄至唯一真源（新增 `fhsItemCatKey()`／`matchesItemCategory()`）。**Live 前後對照恰好 3 處差異**（0600100 手模＋鎖匙扣、0600804 頸鏈），全部 old=false→now=true，零反向誤收。
+- **連帶修 bug 2｜品項 index 漂移會靜默寫錯品項（⚠ 唔修就唔可以上類別過濾）**：`saveInlineEdit()`／`_fhsHmCheckChange()` 用 `o.items[itemIndex]` 反查，但 render 傳嘅係渲染陣列 index。以前冇爆純屬好彩（配件過濾後啱好係 prefix）；一加類別過濾即唔再係 prefix——0500703 篩鎖匙扣時渲染 index 0 係鎖匙扣但 `o.items[0]` 係手模擺設，改批次／進度會寫錯件且零提示。已改 `_iIdx`／`_aIdx` 取 `o.items.indexOf(item)`，所有 DOM id 同回呼跟住走。**Live 實測 12 張單嘅渲染真 index 由 1 起跳**——即舊碼上咗類別過濾之後呢 12 張單每次編輯都會寫錯。
+- **順手清存量違規**（Icon 鐵律第 6 條）：`toggleAuditMode()` 用 `textContent = '🔍 …'` 一來違反禁 emoji 作 icon，二來會抹走按鈕原有 sprite `<svg>`；改回 `innerHTML` + `<use href="#icon-search"/>`。新增欄位所需 icon sprite 內全部已有，**冇加過新 symbol**。
+- **驗證（live Supabase 55 張單，browser 實測）**：9 個 inline script 區塊語法全通過；`全部` 12 欄 69 列／`手模` 11 欄 29 列／`鎖匙扣` 12 欄 28 列／`頸鏈` 12 欄 12 列，逐列 cell 數（計 colspan）零溢出；28 個鎖匙扣列 DOM id 逐個反查全部確係鎖匙扣（0 mismatch）；手機 accordion 同樣 69/28/29/12、0 mismatch；表頭重建後排序箭嘴／`sort-active`／master checkbox 存活；掣狀態雙向跟得上；全程零 console error。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（唯一代碼改動）、`.fhs/reports/planning/overview-category-view-plan_2026-08-25.md`（方案書，新）、`.fhs/reports/planning/overview-category-view-prototype_2026-08-25.html`（互動原型，新）、`.fhs/notes/decisions.md`（D69）。**Supabase schema／n8n 零改動。**
+- **未做／待授權**：`Freehandsss_dashboard_current.html` 未同步（README「禁止覆蓋正式環境」）；類別視圖預設排序是否改「批次→進度」、chip `data-category` 用緊「鑰匙扣」而 DB／文件一律「鎖匙扣」是否統一——兩項待 Fat Mo 拍板。
+- 全文見 decisions.md D69。**Subagent 使用記錄**：❌未使用（單一檔案內互相牽連嘅 render 路徑改動 + 即時 browser live 驗證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。

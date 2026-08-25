@@ -3,6 +3,51 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-25] (D69-follow) `/code-review` xhigh 十角度審查 D69 diff——揪出 4 個真 bug 並即修，1 個審查過程自己新增嘅回歸即場捕獲
+
+**背景**：D69（訂單總覽類別視圖）落地後，用 `/code-review` xhigh（10 finder angle + verify + sweep）審查未 commit 嘅 diff。首輪 10 個背景 agent 遇 session limit 全部失敗，reset 後重跑全部完成。10 角度合共產生約 20 個候選發現，逐一直接對照代碼／live Supabase 資料驗證（CONFIRMED/PLAUSIBLE/REFUTED），非盡信 agent 判斷。
+
+**4 個 CONFIRMED 並已修復**：
+
+1. **備註格背景色同步斷咗**（`saveInlineEdit` 原 L13866、`applyBatchColorLive` 原 L14352）——兩處仍用 `itemIndex===0` 判斷「呢行係咪擁有備註 rowspan」，但 D69 已將 `itemIndex` 由「渲染位置」改成「`o.items` 真實 index」，兩者喺類別視圖唔再相等。手模擺設永遠排第一，任何多類別單揀鎖匙扣／頸鏈視圖，第一個顯示行嘅真實 index 必然 ≥1，改批次會令自己格啱但備註格唔跟住變色。**修法**：兩處改用 DOM containment（`_targetRow.contains(_notesTa)`）取代 index 比對——rowspan 嘅 `<td>` 本質上只係 render 位置 0 嗰條 `<tr>` 嘅子元素，唔理邊個 index 都查得啱，同渲染順序完全脫鉤。Live 測試（0600721，真實 index=1）：打字即時預覽同 blur 儲存兩條路徑均正確同步到 `#ffdab9`。
+2. **`hm_` 進度下拉篩選未跟隨 D69 修**（原 L12432）——類別 chip 篩選已改用 `getProductDimensions()`/`fhsItemCatKey()` 單一真源，但緊接兩行落嘅獨立「進度」下拉篩選（待Book／已Laser 等）仍然直讀 `item.Category` 原始字串，同 D69 本身修嘅 Bug 1（`item_category='??'` 令品項篩選唔到）係同一類問題嘅未修分支。**修法**：改用 `matchesItemCategory(it, '手模')`。合成測試單（`item_category='??'`，同 live 資料 `0600100` 同形狀）確認修復前中唔到 `hm_pending`，修復後中到。
+3. **類別工作台橫幅唔會即時更新**（`fhsRenderCatStrip` 呼叫點）——`saveInlineEdit()` 更新品項進度／批次後從未觸發橫幅重繪，要等下次篩選/排序/5分鐘輪詢先反映。**修法**：`saveInlineEdit()` 內加樂觀即時重算。⚠️**首輪修復本身有 bug**：直接傳 `_gOrders`（全量未過濾）會漏晒年/月/類別以外嘅其他生效篩選，live 測試即時測出數字異常跳動（28件→48件）。改為喺 `renderReviewTable()` 快取 `window._fhsLastFilteredOrders`（已過晒全部生效篩選嘅陣列），`saveInlineEdit()` 改讀呢個快取——重新測試確認加 year=2026 篩選後，編輯前後件數/張數維持一致，只有實際變動嘅批次分佈正確反映。
+4. **「全部」視圖入帳/成本/利潤表頭 padding 被無聲改咗**（`fhsBuildOverviewHead()` 原 L11462）——新函式對所有欄位統一套用 `padding:12px 16px`，但原靜態 markup 呢三欄用 `padding:12px`（無額外 16px 水平間距），而呢個函式喺**每次** render（包括「全部」）都無條件執行，違反 D69 決策同方案書明文承諾嘅「全部零改動」。**修法**：`_FHS_TH_DEF` 加 per-column `pad` 覆寫，inc/cost/profit 三欄指定 `pad:'12px'`。Live computed-style 確認「全部」視圖呢三欄現為 `12px/12px`，同其餘全部欄位 `12px/16px` 分明對應返原靜態值。
+
+**5 個 PLAUSIBLE，本次不修**（記錄供日後參考）：`o.items.indexOf(item)` reference-equality 查找失敗會 fail-silent 退返不安全 index（屬較大範圍重構，留待下次相關改動一併做）；訂單零品項 fallback 分支未跟隨類別欄位（現時經 `matchesOrderCategory` 保證不可達，純休眠風險，no_change_needed）；`fhsItemCatKey()` 完全捨棄 `item.Category` 欄位（live 55 張單零反向誤收，設計上刻意選擇，no_change_needed）；「另有」提示同 `fhsClearCategoryFilter()` 兩個輕微 reuse 重複（低回歸風險，維護成本取捨，skipped）。
+
+**驗證方法**：語法（9 個 script block `node vm.Script` 全過）+ browser live 逐項迴歸（全部 12欄69列／手模11欄29列／鎖匙扣12欄28列／頸鏈12欄12列，zero cell overflow，28個鎖匙扣列 DOM id 逐個反查零 mismatch，同修復前基準完全一致）+ 針對 4 個修復逐一 live 寫入/讀取實測（非只信語法檢查）。
+
+全文見本次 `/code-review` 對話紀錄（ReportFindings 兩次呼叫：初次 10 findings 待修，收工後補 outcome）。**Subagent 使用記錄**：✅已使用（10 個背景 finder agent，xhigh 效力多角度審查；驗證同修復階段全部自行直接對照代碼／live 資料完成，未再派 subagent）。
+
+[2026-08-25] (D69) 訂單總覽「類別」由訂單層篩選改為**類別視圖**——品項層過濾 + 欄位換裝對位 Excel + 收起財務欄；連帶修兩個既有 bug
+
+**需求（Fat Mo 直接指示，附三張截圖 + Excel 原檔）**：揀「手模／鎖匙扣／頸鏈」時只顯示該類別品項（截圖二例：`0500703` 揀鎖匙扣唔應該再顯示佢嘅手模擺設列）；原因係操作者習慣咗 Excel 一眼睇晒全盤狀況。「全部」明示不改。
+
+**診斷**：chip 答緊嘅係「呢張單有冇鎖匙扣」（`matchesOrderCategory` 做**訂單層** filter），操作者問緊嘅係「畀我睇晒所有鎖匙扣」。Live 統計：67 張有品項嘅單入面 **26 張（39%）係多類別單**，即每三張就有超過一張會出現唔關事嘅列。
+
+**點解要「拆欄」而唔止「隱藏列」**：讀咗 Excel 原檔（`銷售_2026`），佢一眼睇得晒係靠三件事——①一件一行；②`對象|手腳|產品|材料|數量` **各佔獨立一欄**所以可以直向掃；③AutoFilter 落喺「產品」欄。Dashboard 第①點本來已對齊，第③點就係本次需求，**第②點先係「一目了然」嘅真正機制**——現況全部維度逼晒喺「產品明細」一格變 badge 團，點篩都掃唔到。而拆欄之所以可行，正正因為類別視圖入面成個畫面得一個類別、形狀齊一；「全部」形狀唔齊一所以維持 badge 團先啱——同 Fat Mo「全部不需重新設計」嘅指示天然吻合。
+
+**方案選擇（原型三方案並列畀 Fat Mo 揀）**：A=只隱藏不相關列；**B=類別視圖（獲選）**；C=拉平做純品項清單（棄用——直接撞 `ui-ux-pro-max` Section 六排版鐵律第 1 條「核對中心強制 rowspan」，要行需明示豁免並改鐵律文字，唔值得）。
+
+**B 嘅三件事**：①品項層過濾（過濾後為空則 fallback 全部，永不出現零列訂單爆 rowspan）；②單號欄加「另有：手模擺設 ×1、純銀吊飾 ×2」提示 chip（撳即切返「全部」），防止誤讀成「呢張單淨係得呢類」；③欄位換裝——手模＝`款式|肢數明細|加購`，鎖匙扣／頸鏈＝`對象|部位|材質|數量`，同時刪走整欄重複嘅類別 badge（成欄都係鎖匙扣＝純雜訊）。另加類別工作台橫幅（件數／張單／進度分佈／批次分佈）回應「全盤狀態」。左邊 `單號|日期|客人` 同右邊 `刻字|批次|進度|備註` 位置一律唔郁，保住肌肉記憶同 rowspan 對齊定律。
+
+**財務欄裁決（Fat Mo 選「收起」；已載 finance-gatekeeper 核過）**：類別視圖收起 `入帳/成本/利潤` 三欄，當作純生產工作清單，要睇錢切返「全部」。**刻意唔做「類別入帳小計」**——`final_sale_price` 係訂單層真理（死線 1），唯一獲授權嘅拆分係財務頁 RPC 嘅 3-layer fallback（伺服器端，而且只分 handmodel/metal 兩類，同總覽三分類軸都唔對齊），喺前端另寫一套等於制造第二本數簿，正正係 D40／D42 修過嘅「雙數簿漂移」。連帶：「顯示項目財務」掣喺類別視圖 disabled 並講明原因（唔扮有反應）。手機 accordion 卡頭嘅訂單層金額**保留**——嗰度係訂單摘要卡而唔係逐件並排，冇「全單金額擺喺單件旁邊」嘅誤讀風險。
+
+**連帶修好嘅兩個既有 bug**：
+
+1. **兩套分類標準打架，令 2 張單喺類別篩選完全消失**。`matchesOrderCategory` 只讀 `item_category` 原始字串，但 live 有 `'??'`（`0600100` 兩件）同 `'銀飾'`（`0600804` 兩件）唔中任何關鍵字；同一批品項嘅 badge 卻由 `getProductDimensions()` 正確畫住「鎖匙扣」「純銀吊飾」——畫面話有、篩選話冇。代碼註解本身早已宣告 `getProductDimensions` 係「唯一真源」，只係篩選路徑一直冇跟。已收窄：新增 `fhsItemCatKey()` / `matchesItemCategory()`，訂單層同品項層共用同一個判斷。Live 前後對照實測**恰好 3 處差異**（`0600100` 手模＋鎖匙扣、`0600804` 頸鏈），全部係 old=false→now=true，零反向誤收。
+
+2. **品項 index 漂移 → 內聯編輯會靜默寫落錯品項**（⚠ 最高風險，唔修就唔可以上類別過濾）。`saveInlineEdit()` 同 `_fhsHmCheckChange()` 都係用 `o.items[itemIndex]` 反查係邊件，而 render 傳落去嘅係**渲染陣列**嘅 index。以前冇爆純屬好彩——唯一嘅過濾（羊毛氈/燈飾配件）排序後必定墊底，過濾結果啱好係 prefix。一加類別過濾就唔再係 prefix：`0500703` 篩鎖匙扣時渲染 index 0 係鎖匙扣但 `o.items[0]` 係手模擺設，改批次／改進度會寫錯件、畫面零提示。已改：Desktop `_iIdx`／Accordion `_aIdx` 一律取 `o.items.indexOf(item)`，所有 DOM id（`batch-input-*`／`status-select-*`／`hmck-*`／`adj-*`／`save-indicator-*`／`row-*-item-*`）同回呼跟住走。**Live 實測 12 張單嘅渲染真 index 由 1 起跳**——即係話舊碼落咗類別過濾之後，呢 12 張單每一次批次／進度編輯都會寫錯品項。副作用係好嘅：DOM id 唔會再隨篩選改變。
+
+**順手清嘅存量違規**（Icon 鐵律第 6 條「觸及區域一併清理」）：`toggleAuditMode()` 原本用 `textContent = '🔍 隱藏項目財務'`，一來違反鐵律第 2 條（禁 emoji 作 icon），二來 `textContent` 會連按鈕原有嘅 sprite `<svg>` 一齊抹走。改回 `innerHTML` + `<use href="#icon-search"/>`。本次新增欄位所需 icon sprite 內全部已有，**冇加過任何新 symbol**。
+
+**驗證（live Supabase 55 張單，browser 實測）**：9 個 inline script 區塊全部 `node vm.Script` 語法通過；`全部` 12 欄 69 列／`手模` 11 欄 29 列／`鎖匙扣` 12 欄 28 列／`頸鏈` 12 欄 12 列，逐列 cell 數（計 colspan）零溢出；28 個鎖匙扣列嘅 DOM id 逐個反查 `o.items[i]` 全部確係鎖匙扣（0 mismatch），手機 accordion 同樣 69/28/29/12 且 0 mismatch；表頭重建後排序（升↔降箭嘴、`sort-active`）同 master checkbox 存活；「顯示項目財務」掣狀態雙向跟得上（同步點放咗喺 `renderReviewTable` 呢個唯一收窄點，唔係淨靠 chip handler，免得將來新路徑漏調）；全程零 console error。
+
+**未做／待授權**：`Freehandsss_dashboard_current.html` **未同步**——README「禁止覆蓋正式環境，未獲 Fat Mo 授權絕不可覆蓋」。改動只落 `freehandsss_dashboardV42.html`。另兩個未拍板嘅細項：類別視圖預設排序要唔要改做「批次→進度」；chip `data-category` 用緊「鑰匙扣」而 DB／文件一律「鎖匙扣」，要唔要統一。
+
+方案書＋互動原型（真實資料，三方案並列）：`.fhs/reports/planning/overview-category-view-plan_2026-08-25.md` / `overview-category-view-prototype_2026-08-25.html`。**Subagent 使用記錄**：❌未使用（單一檔案內互相牽連嘅 render 路徑改動，加即時 browser live 驗證，委派會斷推理鏈）。
+
 [2026-08-21] (D68) handoff 同步從「散文紀律」升格為「機械閘」——`pre-tool-guard.js` R13 攔截 `git commit`
 
 **背景**：Fat Mo 明確定義目標——「當我打 `/commit`，就代表任務完成並且**能確保**同步更新 handoff」。查證確認呢個保證一直唔成立：`commit.md` P0.7 雖然白紙黑字寫「`更新: <日期>` 必須更新至今日日期」，但純屬散文指示，冇任何機械強制。

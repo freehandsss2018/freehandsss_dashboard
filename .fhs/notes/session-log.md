@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-25 (D69＋D69-follow：訂單總覽類別視圖 + /code-review xhigh 揪出並修返 4 個自身回歸): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25「D69」「D69-follow」兩則條目 + [decisions.md D69/D69-follow](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 指示優化訂單總覽「全部/手模/鎖匙扣/頸鏈」顯示，方案書＋互動原型（三方案並列）畀 Fat Mo 揀方案 B（類別視圖：品項層過濾+Excel式欄位換裝+收起財務欄+工作台橫幅）。連帶修 2 個既有 bug（分類真源打架令部分品項篩選唔到；品項 index 漂移致內聯編輯靜默寫落錯品項——最高風險）。事後跑 `/code-review` xhigh（10 finder angle + verify + sweep，首輪遇 session limit 全部失敗，reset 後重跑），揪出並即修 4 個 D69 自身回歸：備註格背景色同步斷咗（改用 DOM containment）、`hm_` 進度篩選未跟同一分類真源、類別橫幅編輯後唔即時更新（首輪修法自身有 bug，live 測試即場捕獲並重修）、「全部」視圖表頭 padding 被無聲改咗。全程 live Supabase 55 張單 browser 實測，`current.html` 未同步待授權部署。
+**Subagent 使用記錄**：✅已使用（10 個背景 finder agent 做 `/code-review` xhigh 多角度審查；方案規劃/實作/驗證/修復四階段全部自行完成，委派會斷推理鏈）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。
