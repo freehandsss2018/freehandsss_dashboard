@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-25T07:56:48Z">
+    <meta name="fhs-build" content="2026-08-25T11:12:09Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -6507,6 +6507,16 @@
                 } else if (mode === 'review') {
                     reviews.forEach(r => r.style.display = 'block');
                     forms.forEach(f => f.style.display = 'none');
+                    // [Bug 修復] #fhsSegCtrl（全部/進行中/已完成）嘅滑動指示器喺
+                    // DOMContentLoaded 首次執行 initSegmentedControls() 時，容器仲係
+                    // display:none（見上面 forms/reviews 隱藏邏輯），量到 0×0 而寫唔到位；
+                    // 依家容器啱啱先變 display:block，係第一個容器真正可見嘅時間點，
+                    // 觸發重新量度，唔使等用戶手動撳 tab 先「碰巧」啱返。
+                    requestAnimationFrame(function() {
+                        document.querySelectorAll('.fhs-seg-ctrl').forEach(function(ctrl) {
+                            if (ctrl._fhsSegUpdatePosition) ctrl._fhsSegUpdatePosition();
+                        });
+                    });
                     // sticky 佈局：Zone2/Zone3/thead 在文檔流自然佔位，
                     // 只需設定 Zone3 與 thead 的 sticky top（= 上方所有 sticky 元素高度總和）
                     requestAnimationFrame(function() { requestAnimationFrame(function applyReviewZoneOffsets() {
@@ -15390,20 +15400,40 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (!activeBtn) return;
                     const ctrlRect = ctrl.getBoundingClientRect();
                     const btnRect = activeBtn.getBoundingClientRect();
+                    // [Bug 修復] #fhsSegCtrl 掛喺 #reviewModeContainer 入面，該容器預設
+                    // style="display:none"，要揀咗「訂單」nav 先由 switchMode('review')
+                    // 揭開。但 initSegmentedControls() 首次執行係喺 DOMContentLoaded（見底部
+                    // 呼叫點），呢個時間點容器仲係隱藏——getBoundingClientRect() 量到成個
+                    // rect 都係 0，令白色滑動指示器一開始就寫咗個 width:0px 落去，睇落「進行中」
+                    // tab 得返粗體字冇白底。之後用戶撳一下 tab（`setSegTab`）先再叫一次
+                    // initSegmentedControls()，但呢次量到嘅先係啱嘅尺寸——變成「撳一下冇反應，
+                    // 撳多一下先生效」。修法：量到 0×0（容器仲隱藏緊）就唔好寫，等下次容器
+                    // 真正可見時嘅呼叫（見 switchMode 入面新增嘅觸發點）先寫入正確位置。
+                    if (btnRect.width === 0 && btnRect.height === 0) return;
                     requestAnimationFrame(() => {
                         indicator.style.width = `${btnRect.width}px`;
                         indicator.style.transform = `translateX(${btnRect.left - ctrlRect.left}px)`;
                     });
                 };
-                ctrl.querySelectorAll('.fhs-seg-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        ctrl.querySelectorAll('.fhs-seg-btn').forEach(b => b.classList.remove('is-active'));
-                        btn.classList.add('is-active');
-                        updatePosition();
+                // 掛喺 DOM 元素度，畀 switchMode() 入面攞到嚟喺容器由隱藏變可見嗰刻重新觸發
+                ctrl._fhsSegUpdatePosition = updatePosition;
+                // [Bug 修復] 原本每次 initSegmentedControls() 執行都會對住同一批按鈕再 addEventListener
+                // 一次，舊 listener 從未移除——`setSegTab()` 每次撳 tab 都會呼叫呢個函式，
+                // 令按鈕嘅 click listener 隨使用時間不斷疊加（實測：首次撳 getBoundingClientRect
+                // 叫 4 次，第二次撳叫 6 次，即多咗一組疊加嘅 listener）。用 dataset flag 確保
+                // 呢段只綁定一次，唔理呢個函式畀人叫幾多次。
+                if (!ctrl.dataset.segBound) {
+                    ctrl.dataset.segBound = '1';
+                    ctrl.querySelectorAll('.fhs-seg-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            ctrl.querySelectorAll('.fhs-seg-btn').forEach(b => b.classList.remove('is-active'));
+                            btn.classList.add('is-active');
+                            updatePosition();
+                        });
                     });
-                });
+                    window.addEventListener('resize', updatePosition);
+                }
                 setTimeout(updatePosition, 50);
-                window.addEventListener('resize', updatePosition);
             });
         }
         window.initSegmentedControls = initSegmentedControls;
