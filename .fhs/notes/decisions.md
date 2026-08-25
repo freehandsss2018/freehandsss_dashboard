@@ -3,6 +3,28 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-25] (D69續二) 分頁掣（全部/進行中/已完成）白色滑動指示器要撳兩下先生效 — 隱藏容器 0×0 量度 + listener 疊加雙修復
+
+**背景**：Fat Mo 截圖回報訂單總覽「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應（文字轉粗體但冇白底），要再撳一下先出到正確效果。
+
+**根因**：`#fhsSegCtrl` 白色滑動指示器（`.fhs-seg-indicator`）由 `initSegmentedControls()` 計位，首次執行喺 `DOMContentLoaded`；但佢所屬嘅 `#reviewModeContainer` 靜態 markup 預設 `style="display:none"`（`Freehandsss_Dashboard/freehandsss_dashboardV42.html:4157`），未切去訂單總覽 mode 前一直隱藏。量度隱藏元素嘅 `getBoundingClientRect()` 全部返 0（`{top:0,left:0,width:0,height:0}`），令指示器一開波就寫低 `width:0px` 嘅錯誤狀態。CSS 層面（`.fhs-seg-btn { background:transparent !important; }`，V42 AG Stitch 組件3）令按鈕自身嘅 `.is-active` 背景色被 `!important` 蓋走，白底完全依賴呢個 JS 指示器元素，所以量錯即係「文字轉粗體但冇白底」呢個症狀嘅直接成因。之後用戶撳一次分頁掣觸發 `setSegTab()`→再次呼叫 `initSegmentedControls()`，但呢個路徑一樣冇檢查容器係咪已經可見，喺容器仍然隱藏嗰陣（例如喺其他 mode 撳到嘅情況）一樣會再量錯一次；只有喺容器已經變返可見之後嘅撳擊先會撞啱返正確位置——呢個「撞啱」嘅隨機性正正解釋咗「撳一下唔得、撳多一下就得」嘅現象。
+
+**連帶揪出嘅隱藏毛病**：`initSegmentedControls()` 每次被 `setSegTab()` 呼叫（即每次撳任何分頁掣）都會對住同一批掣重新 `addEventListener` 一次，舊 listener 從未拆除，隨使用時間不斷疊加。Live 實測：修復前第二次撳掣嘅 `getBoundingClientRect` 呼叫次數由第一次嘅 4 次升到 6 次，確認疊加真實發生（雖然本次未證實呢個係「撳兩下」症狀嘅主因，但屬同一功能區塊嘅存量缺陷，一併清理）。
+
+**修法（`Freehandsss_Dashboard/freehandsss_dashboardV42.html`，唯一改動檔案）**：
+1. `updatePosition()` 加守衛：量到 `btnRect.width===0 && btnRect.height===0`（容器仲隱藏緊）時直接 `return`，唔寫落錯誤位置，等容器真正可見嗰次先寫。
+2. `switchMode()` 嘅 `mode==='review'` 分支，喺 `reviews.forEach(r=>r.style.display='block')` 之後、下個 `requestAnimationFrame` 入面，主動呼叫各 `.fhs-seg-ctrl` 掛喺自己度嘅 `_fhsSegUpdatePosition()`（`initSegmentedControls()` 新增嘅掛勾），喺容器啱啱由隱藏變可見嗰一刻即時重新計位——唔再靠用戶撳掣「撞啱」。
+3. `initSegmentedControls()` 嘅 click listener 綁定改用 `ctrl.dataset.segBound` flag 守衛，確保成個函式畀人叫幾多次都只會綁定一次，唔會再疊加。
+
+**驗證（live browser，模擬完整「create→review」冷啟動情境）**：
+- 容器隱藏時（`display:none`）執行 `initSegmentedControls()`：指示器 `style` 保持 `null`（冇寫錯誤位置）——確認修復 1 生效。
+- 隨即 `switchMode('review')`：指示器 `style` 立即變成 `"width: 69.475px; transform: translateX(75.2625px);"`（正確非零位置），全程冇額外撳掣——確認修復 2 生效。
+- listener 疊加測試：連續三次撳擊，`getBoundingClientRect` 呼叫次數穩定喺 2 次（修復前會由 4 遞增），確認修復 3 生效。
+- D69 四個類別視圖（全部/手模/鎖匙扣/頸鏈）重新逐一核對列數（69/29/28/12）／欄數（12/11/12/12）／零 cell overflow，同修復前基準完全一致，冇引入回歸。
+- Console 全程零 error。
+
+全文見 Changelog.md 2026-08-25「D69續二」條目。**Subagent 使用記錄**：❌未使用（單一 UI 時序 bug，需即時 browser 交叉驗證追蹤 rAF/display 時序因果鏈，委派會斷推理鏈）。
+
 [2026-08-25] (D69-follow) `/code-review` xhigh 十角度審查 D69 diff——揪出 4 個真 bug 並即修，1 個審查過程自己新增嘅回歸即場捕獲
 
 **背景**：D69（訂單總覽類別視圖）落地後，用 `/code-review` xhigh（10 finder angle + verify + sweep）審查未 commit 嘅 diff。首輪 10 個背景 agent 遇 session limit 全部失敗，reset 後重跑全部完成。10 角度合共產生約 20 個候選發現，逐一直接對照代碼／live Supabase 資料驗證（CONFIRMED/PLAUSIBLE/REFUTED），非盡信 agent 判斷。

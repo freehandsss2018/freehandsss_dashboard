@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-25 (D69續二：分頁掣白色滑動指示器撳兩下先生效 bug 修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25「D69續二」條目 + [decisions.md D69續二](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報訂單總覽「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應，要再撳一下先出到正確白底效果。根因查明：`#reviewModeContainer` 預設 `display:none`，`initSegmentedControls()` 喺 `DOMContentLoaded` 首次量度時容器仲隱藏緊，`getBoundingClientRect()` 全部返 0 令白色滑動指示器寫低錯誤位置；連帶揪出 click listener 每次撳掣都重新掛一次、舊 listener 從未拆除嘅疊加毛病。修法：量到 0×0 時跳過唔寫、`switchMode('review')` 容器變可見嗰刻主動觸發重新計位、listener 改用 dataset flag 只掛一次。模擬完整 create→review 冷啟動情境驗證通過，D69 四個類別視圖零回歸。
+**Subagent 使用記錄**：❌未使用（單一 UI 時序 bug，需即時 browser 交叉驗證追蹤 rAF/display 時序因果鏈，委派會斷推理鏈）。
+
 ## 2026-08-25 (D69＋D69-follow：訂單總覽類別視圖 + /code-review xhigh 揪出並修返 4 個自身回歸): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25「D69」「D69-follow」兩則條目 + [decisions.md D69/D69-follow](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 指示優化訂單總覽「全部/手模/鎖匙扣/頸鏈」顯示，方案書＋互動原型（三方案並列）畀 Fat Mo 揀方案 B（類別視圖：品項層過濾+Excel式欄位換裝+收起財務欄+工作台橫幅）。連帶修 2 個既有 bug（分類真源打架令部分品項篩選唔到；品項 index 漂移致內聯編輯靜默寫落錯品項——最高風險）。事後跑 `/code-review` xhigh（10 finder angle + verify + sweep，首輪遇 session limit 全部失敗，reset 後重跑），揪出並即修 4 個 D69 自身回歸：備註格背景色同步斷咗（改用 DOM containment）、`hm_` 進度篩選未跟同一分類真源、類別橫幅編輯後唔即時更新（首輪修法自身有 bug，live 測試即場捕獲並重修）、「全部」視圖表頭 padding 被無聲改咗。全程 live Supabase 55 張單 browser 實測，`current.html` 未同步待授權部署。

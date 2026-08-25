@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-25] Session（Claude Code / Sonnet 5 執行）— D69續二：分頁掣（全部/進行中/已完成）白色滑動指示器要撳兩下先生效
+
+- **緣起**：Fat Mo 截圖回報「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應（文字轉粗體但冇白底），要再撳一下先出到正確效果（白底跟埋個掣）。
+- **根因**：`#fhsSegCtrl` 白色滑動指示器（`.fhs-seg-indicator`）由 JS `initSegmentedControls()` 計位，喺 `DOMContentLoaded` 首次執行；但佢所屬嘅 `#reviewModeContainer` 預設 `style="display:none"`（未切去訂單總覽 mode 前一直隱藏），量度隱藏元素嘅 `getBoundingClientRect()` 全部返 0，令指示器一開波就寫低 `width:0px` 嘅錯誤狀態。之後用戶撳一次分頁掣先再次觸發計位函式，但呢次觸發嘅時機同狀態同開波嗰次一樣冇檢查容器係咪已經可見，要再撳多一下先撞啱。
+- **連帶揪出嘅隱藏毛病**：`initSegmentedControls()` 每次被 `setSegTab()` 呼叫都會對住同一批掣重新 `addEventListener` 一次，舊 listener 從未拆除，隨使用時間不斷疊加（live 實測：修復前第二次撳掣 `getBoundingClientRect` 呼叫次數由 4 升到 6，證實疊加）。
+- **修法**：①`updatePosition()` 量到 0×0（容器仲隱藏緊）時直接跳過唔寫，等真正可見嗰次先寫；②`switchMode('review')` 入面容器啱啱由隱藏變 `display:block` 嗰一刻，主動觸發一次重新計位（唔再靠用戶撳掣「撞啱」）；③click listener 改用 `dataset` flag 確保只掛一次，唔會再疊加。
+- **驗證**：模擬完整「create→review」冷啟動情境，確認容器隱藏時唔寫錯誤位置、`switchMode('review')` 觸發後即時得到正確非零位置（`width: 69.475px`），唔使額外撳掣；listener 疊加測試確認修復後穩定喺 2 次唔再爆升；D69 四個類別視圖（全部/手模/鎖匙扣/頸鏈）逐一核對列數/欄數/零溢出，同修復前基準完全一致；console 零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（唯一改動，`initSegmentedControls()` + `switchMode()` 兩處）。
+- 全文見 decisions.md D69續二。**Subagent 使用記錄**：❌未使用（單一 UI 時序 bug，需即時 browser 交叉驗證追蹤 rAF/display 時序，委派會斷推理鏈）。
+
 ## [2026-08-25] Session（Claude Code / Sonnet 5 執行）— D69-follow：`/code-review` xhigh 揪出 4 個真 bug 並修復（含審查中自己新增嘅回歸即場捕獲）
 
 - **緣起**：D69（訂單總覽類別視圖）落地後跑 `/code-review` xhigh（10 finder angle + 1-vote verify + sweep），對未 commit 嘅 diff 做深度審查。
