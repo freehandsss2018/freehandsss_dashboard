@@ -2,7 +2,7 @@
 
 **用途**：接到 Fat Mo 一句「canva-auto 新單」+ 訂單資料，走完 Canva 記念短片開殼→加工→換料→學習→出貨全流程。內建 diff-learning 校正回饋迴圈（同 3D pipeline 樣本庫同一原理）。
 **觸發指令**：`/canva-auto` 或對話講「canva-auto 新單」
-**版本**：v1.5.0（2026-08-15，TW_Ting 0600901 五項修訂；初版 v1.0.0 2026-07-11 S164 建）
+**版本**：v1.6.0（2026-08-25，0600302 新增 Stage⑤ 存檔頁；初版 v1.0.0 2026-07-11 S164 建）
 **依賴**：Canva MCP（Claude Code 端配置；Antigravity 環境無此 MCP，本指令不可攜）、本地 python + rembg（`canva_auto/local_prep.py`）
 **數值唯一真理來源**：`canva_auto/placement_memory.json`——本檔與記憶檔只放流程，**不放任何座標/尺寸數值**；錨點一律開單時從 JSON 讀。
 
@@ -197,10 +197,52 @@ AI 交付時要主動講明：第 1 項我驗過（附數值），第 2、3 項�
 
 - Fat Mo 有改 → 佢改完後讀 diff 落 `placement_memory.json`（case + convergence_log + `learned: true`）；規律 **≥3 單收斂**先升格寫入記憶檔規則層
 - Fat Mo OK → `get-export-formats` → `export-design` MP4 `horizontal_1080p` + 封面 JPG（page2、1280×720、**`quality` 必填**）→ 交連結（提醒有效期約 4 小時）→ 本 case 記 `learned: true`
+- ⚠️ 出唔出 MP4/封面 JPG **要問 Fat Mo**，唔係必然步驟（0600302 明示「不用出」）。但 **Stage⑤ 存檔頁照做**，兩者無關
+
+## Stage ⑤ — 存檔頁（短片 cover 上 `Free_Laser` 合集）（2026-08-25，0600302 首例）
+
+**每張短片完工後**，要喺 `Free_Laser (MM/26)` 合集加一頁 500×500 存檔頁＝**短片 page 2 畫面縮細** ＋ **客人原相貼右上角**。（08/26 合集＝`DAHRPCB--yU`；用 `search-folders`／`search-designs` 搵當月嗰個。）
+
+### 🔴 平台硬限制：合集頁數過多，MCP 寫唔入
+
+```
+Editing a Canva Design with a size of 156 pages is not currently supported
+```
+
+`read-design open_transaction` / `edit-design` **對呢類巨型 design 全部拒絕**——即係 AI **加唔到頁、改唔到嘢**。
+
+🔴 **`merge-designs` 唔係出路：佢會「假成功」**。實測 `modify_existing_design` + `insert_pages` 回 `status:"success"`、`job.result` 有齊 design 物件，但**實際完全冇插到**（page_count 前後同樣 156、讀 page 157 報 `Offset 157 is outside range of [1, 156]`）。**任何 merge-designs 之後必須用 `read-design` 實查 page_count／尾頁，唔可以信 `status:"success"`。**
+
+**繞路（已驗證可行）**：`copy-design` 指定 `page_numbers` 做**單頁複製唔受頁數限制**。所以照跑標準「母版 → update_fill」流程，最後一步交 Fat Mo 喺 Canva UI 複製入合集。
+
+### 做法
+
+1. `copy-design(合集ID, page_numbers=[最近一張存檔頁])` → 得一個 1 頁 500×500 母版（連排版、連 Free_Handsss 簽名一齊繼承）
+2. `read-design open_transaction` 讀母版 6 個元素：右上原相／水彩 blob／花環／字句／簽名／彩色插圖
+3. `update_fill` 換兩格（原相＋彩色插圖）→ `crop_media` 公式重算 → `replace_text` 換字句 → commit
+   - **原相 asset 通常 Fat Mo 已上載落合集**（同客其他頁），用 `copy-design` 抽嗰頁出嚟讀 `mediaId` 即得，唔使重新上載
+4. `export-design` JPG 1000×1000 眼證（頁面本身正方，draft 縮圖今次唔會變形，但仍以真圖為準）
+5. **交 Fat Mo 喺 Canva UI 複製入合集**——AI 做唔到，見上面硬限制
+
+### 幾何：短片 page2 → 存檔頁係一條精準仿射變換
+
+```
+scale s = 0.369803187    tx = -105.011    ty = +40.440
+存檔頁座標 = s × page2座標 + (tx, ty)
+```
+
+用簽名「Free_Handsss」交叉驗證 left/top/width/fontSize **四項 Δ 全部 = 0.0000**；花環啱好落 `left=0, w=500`（橫跨成頁闊）。**但字句唔跟呢條式**——Fat Mo 另行重排（字級 21.8221／lineHeight 1.67／letterSpacing 0.165／box 200.566），照 `replace_text` 繼承母版格式即可，唔好用變換式算。
+
+- **右上原相**：container 沿用母版 `135.367²  @ left=364.633, top=0`（`left+w = 500.000` 貼實右上角），**唔使 resize**，只按 media 原生 aspect 出 cover imageBox（`h=135.367, w=135.367×aspect, left=(135.367−w)/2, top=0`）
+- **彩色插圖**：沿用母版 **center 同 height**，闊度按新素材原生 aspect 重算（零變形），`crop_media` 歸零。唔好照抄純變換式數值（Fat Mo 母版本身對花環有人手微調，跟母版 center 先接得返佢個構圖）
+- **花環／水彩 blob／簽名**：母版原封不動繼承
 
 ---
 
 ## Known failure modes（追加區，見 05 §1 權限）
+
+- 🔴 **`merge-designs` 對超出編輯上限嘅巨型 design 會「假成功」**：回 `status:"success"` 但實際冇插入任何頁。**必須事後 `read-design` 實查 page_count**（0600302 首見，詳見 Stage⑤）
+- **巨型 design（實測 156 頁）開唔到 editing transaction**，`read-design open_transaction`／`edit-design` 全部拒絕；但 `copy-design(page_numbers=[N])` **單頁複製唔受限**，係目前唯一入手點
 
 - editing transaction TTL 極短（分鐘級）：中途等用戶回覆即過期報 `not found`，全部 operations 重做——所有等待位必須在 transaction 之外
 - `get-design-thumbnail` 在 transaction 內報 `Not allowed`（本帳號系統性）：改用 get-assets 縮圖或 commit 後 get-design-pages
@@ -222,6 +264,7 @@ AI 交付時要主動講明：第 1 項我驗過（附數值），第 2、3 項�
 
 ## 版本更新日誌
 
+- v1.6.0（2026-08-25，ochinglee22 0600302）：新增 **Stage⑤ 存檔頁**（短片 cover 上 `Free_Laser` 合集）——完整做法、仿射變換式（s=0.369803187 / tx=−105.011 / ty=+40.440，簽名交叉驗證 Δ=0）、右上原相同彩色插圖各自嘅 box 規則；連帶兩條新 Known failure mode：**巨型 design 開唔到 editing transaction**（實測 156 頁）同 **`merge-designs` 假成功**（回 success 但冇插到，必須事後實查 page_count）。另補記 Stage④ 出 MP4/封面 JPG **要問 Fat Mo、非必然步驟**
 - v1.5.0（2026-08-15，TW_Ting 0600901）：Fat Mo 指正兩個 AI 錯誤 + 主動提示 `word.png` 用法後落盤五項。①**禁止沿用母片 imageBox**（零裁切鐵律補強，AI 抄母片值被 Canva clamp 放大 9% 造成四邊裁切，Fat Mo 改正值同公式差 0.05%）②新增 **`word.png` 幾何真理源**（可反推 box 寬，最長段誤差 0.61%；`\n` 只保證最少行數，須讀 CDF 核對）③新增 **page2 圖對統一 left+height**（母片本身唔對齊，AI 曾誤判硬邊為素材問題）④**母片選擇改結構信號優先於音長距離**（揀錯家族會缺 slot）⑤**Fat Mo UI 複製字句手法升格規則層**（3 單收斂）；另補 960 置中規則唔跨家族適用
 - v1.0.0（2026-07-11，S164）：初版。SOP v3 + diff-learning 迴圈 + /8d 迭代三修正（開單補課制、transaction 一氣呵成鐵律、數值唯一真理來源歸 JSON）
 - v1.4.0（2026-08-01，HoKaSin 0601100 完工）：新增**黃金參考案例**（Fat Mo 判定「完美完成」嘅 6 步做法，日後照跑）；新增**字句置中規則**＝對齊花環中心 960（唔係對齊家庭圖中心，實測花環墨水左右完全對稱 294→697.5 / 1179→1626，外緣中點正好 960）；更正 `crop_media` 用法（imageBox 跟媒體 aspect 唔跟 container）

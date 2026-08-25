@@ -91,6 +91,13 @@
       "corrected_slots": "1個slot刪除(4→3,因應音訊時長) + 2個位置調整(page3三片整組translate + page2彩色圖位置/大小)",
       "total_slots": 3,
       "note": "🆕family video slot數目首次證實非固定——Fat Mo因應page3實際音訊時段(47秒)由AI原訂4片改3片,刪多餘slot時用Canva UI原生刪除(UI複製手法首次擴及video元素,過往3次收斂樣本皆為文字元素:0600303/0600905/0600901)。刪剩3片經Fat Mo成組水平/垂直translate(Δleft=-51.49,Δtop=+3.24),彼此相對排版不變,新位置left/top疑似對齊page2圖對top同字句box left,單一樣本待下次3片單覆核。另0600901訂立嘅『page2圖對統一left+height』規則喺本單被Fat Mo自己打破(彩色圖等比放大1.75%+大幅左移141.32,黑白圖不變),證明該規則屬特定情境手法非鐵律。"
+    },
+    {
+      "order": "0600302",
+      "date": "2026-08-25",
+      "corrected_slots": "Stage⑤存檔頁首例(0改,待Fat Mo驗收)",
+      "total_slots": 3,
+      "note": "🆕**新增Stage⑤存檔頁流程**(短片cover上Free_Laser合集)。反推到page2→存檔頁係精準仿射變換(s=0.369803187/tx=−105.011/ty=+40.440),簽名交叉驗證四項Δ=0.0000;但字句唔跟呢條式(Fat Mo另行重排,fontSize/lineHeight/letterSpacing/box全部唔同),一律replace_text繼承母版。🔴兩條新平台限制:(1)巨型design(156頁)開唔到editing transaction,MCP完全寫唔入;(2)**`merge-designs`假成功**——回status:\"success\"、job.result有齊design物件,但實際零插入(page_count前後同樣156、讀page157報out of range),日後任何merge-designs後必須實查page_count,唔可以信status。繞路=`copy-design(page_numbers=[N])`單頁複製唔受限,照跑母版update_fill,最後一步交Fat Mo喺UI複製入合集。"
     }
   ],
   "cases": [
@@ -164,6 +171,44 @@
             "scale": 1.0175
           },
           "note": "等比放大1.75%(aspect不變,非變形)+大幅左移141.32+輕微上移9.85。黑白圖(LBfYQf6Rltxq8M9h)完全冇改。⚠️0600901訂立嘅『page2圖對必須統一left+height』規則,喺本單被Fat Mo自己打破(彩色圖改到同黑白圖唔再同left/height)——證明該規則係『解決舊款疊圖硬邊問題』嘅特定情境手法,唔係放諸四海皆準嘅鐵律,Fat Mo可按構圖需要自行覆蓋。"
+        },
+        {
+          "slot": "stage5_存檔頁_Free_Laser合集_首例",
+          "archive_design": "DAHRPCB--yU (Free_Laser (08/26), 156頁)",
+          "template_page": "page148 (Kobekts存檔頁) → copy-design 單頁複製成 DAHTRjp7Z_A",
+          "affine_transform": {
+            "note": "短片page2(1920×1080)幾何 → 存檔頁(500×500)幾何。用水彩blob(MAE1JTVhBeo)兩邊數值反推,再用Free_Handsss簽名交叉驗證left/top/width/fontSize四項Δ全部=0.0000,即公式無誤差。",
+            "scale": 0.369803187,
+            "tx": -105.01106,
+            "ty": 40.439898,
+            "formula": "archive = s × page2 + (tx, ty)",
+            "verified_wreath": "花環經變換後啱好 left=0.000 / w=500.000（橫跨成頁闊）,但 top/height 被Fat Mo人手微調(+7.16 / ×0.952)"
+          },
+          "元素清單": "6個:右上原相 LBrLjZCqylVM239g / 水彩blob LBjCWzgpqgZlMk0R / 花環 LBdCk5V7bzsXSM4l / 字句 LBTNwPDrbcT7DNmx / 簽名 LBZY0TfT31cLqXRC / 彩色插圖 LBpD0G4wpsscHlgZ。冇黑白圖(存檔頁只放彩色版)。",
+          "右上原相": {
+            "container": {
+              "left": 364.632978490126,
+              "top": 0,
+              "w": 135.36702150987387,
+              "h": 135.36702150987387
+            },
+            "rule": "container沿用母版正方框、貼實右上角(left+w=500.000/top=0),唔使resize;只按media原生aspect出cover imageBox。本單asset=MAHRObnzx5w(01268ead....jpg,1600×1222,aspect1.309329),imageBox=(top=0,left=-20.936471,w=177.239963,h=135.367022)。",
+            "asset來源": "Fat Mo通常已經將原相上載咗落合集(同客其他頁),用copy-design抽嗰頁出嚟讀mediaId即得,唔使重新上載——本單由page154抽出。"
+          },
+          "彩色插圖": {
+            "ai_box": {
+              "left": 108.947278,
+              "top": 103.161809,
+              "w": 266.07338,
+              "h": 203.217021
+            },
+            "rule": "沿用母版center(241.984, 204.770)同height(203.217),闊度按新素材原生aspect重算(1435/1096=1.309307)→零變形,crop_media歸零。⚠️唔好照抄純變換式數值(會得 left=100.517/top=106.429/w=277.429/h=211.890,相差 left+8.4/top−3.3/w−11.4)——因為Fat Mo母版本身對花環同插圖都有人手微調(插圖較純變換縮2.42%、向左上移約9.45px),跟母版center先接得返佢個構圖。"
+          },
+          "字句": {
+            "rule": "🔴唔跟仿射變換。Fat Mo喺存檔頁另行重排:fontSize 21.8221(純變換式會得19.723)/lineHeight 1.67(page2係1.4)/letterSpacing 0.165(page2係0.146)/box寬200.566(純變換式會得292.877)。所以一律淨係replace_text繼承母版格式,唔好用變換式算。本單2行,同母版Kobekts一樣2行,replace_text後讀CDF核實冇reflow。"
+          },
+          "blocker": "🔴合集156頁超出Canva編輯上限,read-design open_transaction/edit-design全部拒絕(`Editing a Canva Design with a size of 156 pages is not currently supported`)。merge-designs亦唔work(假成功,見convergence_log)。最後一步『將單頁複製入合集』只能Fat Mo喺Canva UI人手做。",
+          "已知瑕疵": "簽名『Free_Handsss』右端約21px被右上原相左邊壓住(簽名 x 312.30→374.91 vs 原相 x 起 364.63)。呢個係母版本身固有(Kobekts同一數值),只不過佢張相嗰個位係白色所以睇唔出,本單原相背景灰啲就見到。已向Fat Mo提出,待決定係咪要移簽名(移就同母版唔一致)。"
         }
       ],
       "non_geometry_findings": [
