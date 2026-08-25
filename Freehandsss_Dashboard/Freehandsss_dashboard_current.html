@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-25T11:12:09Z">
+    <meta name="fhs-build" content="2026-08-25T19:56:16Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -997,6 +997,14 @@
         .review-btn-refresh:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,0.15); }
 
         /* 資料表外框 — 無內部捲動 + overflow:visible（避免成為 sticky scrolling ancestor，讓 thead 能 sticky 到 viewport） */
+        /* [D69續三][D69續六 撤回] 曾經改 overflow-x:auto 想解 iPad 1024px 撐爆問題，
+           但 CSS 規格：overflow-x 設非 visible 值時，overflow-y:visible 會被瀏覽器
+           強制變成 auto —— 呢個 wrap 即刻變成一個新嘅 sticky scrolling ancestor，
+           令 thead 嘅 position:sticky（top 由 JS 動態設，L~6644）唔再貼實際 viewport，
+           改為貼呢個 wrap 自己嘅捲動框，導致表頭喺捲動時飄到表格中間（Fat Mo
+           截圖見到深色表頭夾喺兩行資料中間）。真正解法喺欄闊本身（
+           ovw-narrowcol media query + 縮版 badge），唔需要呢個 wrapper 兜底，
+           復原返做 overflow:visible。 */
         .review-table-wrap { overflow:visible; border:1px solid #e0e0e0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
         .review-table { width:100%; border-collapse:collapse; font-size:13px; text-align:left; line-height:1.5; }
         .review-table thead { position:sticky; top:48px; z-index:10; }
@@ -1047,7 +1055,7 @@
 
         /* === 任務一：複選 checkbox 欄 === */
         .review-cb-th { width:36px; min-width:36px; text-align:center !important; padding:8px 4px !important; }
-        .review-cb-td { width:36px; min-width:36px; text-align:center; padding:8px 4px; vertical-align:top; }
+        .review-cb-td { width:36px; min-width:36px; text-align:center; padding:5px 4px; vertical-align:top; }
         .review-cb-td input[type=checkbox], .review-cb-th input[type=checkbox] { width:16px; height:16px; cursor:pointer; accent-color:var(--fhs-danger,#E63946); }
         #bulkActionBar { display:none; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px 16px; background:var(--fhs-bg-elevated,#F0EBE4); border:1px solid var(--fhs-accent,#C9714A); border-radius:var(--radius-md,8px); margin-bottom:12px; }
         #bulkActionBar.visible { display:flex; }
@@ -1073,9 +1081,13 @@
         .sort-th.sort-active { background:rgba(201,113,74,.15) !important; color:var(--fhs-accent) !important; box-shadow:inset 0 -3px 0 var(--fhs-accent); }
         .sort-th.sort-active .sort-arrow { opacity:1; color:var(--fhs-accent); font-size:11px; }
 
-        /* === review-filters-v2 ─ Filter Bar 增強版 === */
-        .review-filters-v2 { background:var(--fhs-bg-elevated); border:1px solid var(--fhs-border); border-radius:var(--radius-lg); margin-bottom:24px; overflow:hidden; }
-        .filter-toggle-bar { display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:44px; cursor:pointer; background:transparent; border:none; width:100%; user-select:none; -webkit-tap-highlight-color:transparent; transition:background .15s; }
+        /* === review-filters-v2 ─ Filter Bar 增強版 ===
+           [密度重排 2026-08-25] Fat Mo 截圖回報成塊篩選區太佔位、要求參考 Excel 密度重排。
+           改動：①margin/padding/控制項高度全面收窄；②類別 chip + 快捷按鈕移做常駐一行
+           （見 HTML `.filter-row-pinned`），只有年度/月份/狀態/批次/搜尋/排序呢批低頻欄位
+           保留摺疊（且改為 desktop/mobile 統一預設收埋，見下面 JS 收合邏輯）。 */
+        .review-filters-v2 { background:var(--fhs-bg-elevated); border:1px solid var(--fhs-border); border-radius:var(--radius-md); margin-bottom:10px; overflow:hidden; }
+        .filter-toggle-bar { display:flex; align-items:center; justify-content:space-between; padding:0 12px; height:34px; cursor:pointer; background:transparent; border:none; width:100%; user-select:none; -webkit-tap-highlight-color:transparent; transition:background .15s; }
         .filter-toggle-bar:active { background:var(--fhs-border); }
         .filter-toggle-summary { display:flex; align-items:center; gap:8px; }
         .filter-icon { color:var(--fhs-accent); flex-shrink:0; }
@@ -1084,22 +1096,24 @@
         .filter-active-hint.visible { display:inline-block; }
         .filter-chevron { color:var(--fhs-text-muted); flex-shrink:0; transition:transform .2s; }
         .filter-toggle-bar.expanded .filter-chevron { transform:rotate(180deg); }
-        .filter-body { display:flex; flex-direction:column; gap:12px; max-height:0; overflow:hidden; padding:0 20px; transition:max-height .3s ease,padding .3s ease; }
-        .filter-body.open { max-height:800px; padding:16px 20px 20px; }
-        .filter-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px 16px; }
-        .filter-row-secondary { padding-top:12px; border-top:1px solid var(--fhs-border); align-items:center; }
-        .filter-pair-row { display:flex; align-items:center; gap:12px 16px; }
-        .filter-group { display:flex; align-items:center; gap:8px; min-height:36px; }
+        /* 常駐可見一行：類別 chip + 顯示項目財務/清除篩選/儲存篩選/重新載入 */
+        .filter-row-pinned { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; padding:6px 12px 8px; border-top:1px solid var(--fhs-border); }
+        .filter-body { display:flex; flex-direction:column; gap:8px; max-height:0; overflow:hidden; padding:0 12px; transition:max-height .3s ease,padding .3s ease; }
+        .filter-body.open { max-height:800px; padding:8px 12px 12px; border-top:1px solid var(--fhs-border); }
+        .filter-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; }
+        .filter-row-secondary { padding-top:8px; border-top:1px solid var(--fhs-border); align-items:center; }
+        .filter-pair-row { display:flex; align-items:center; gap:8px 12px; }
+        .filter-group { display:flex; align-items:center; gap:6px; min-height:30px; }
         .filter-label { font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
-        .fhs-select { height:36px; padding:0 28px 0 10px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); background:var(--fhs-bg-surface); color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); cursor:pointer; transition:border-color .15s,box-shadow .15s; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A6A55' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; }
+        .fhs-select { height:30px; padding:0 26px 0 8px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); background:var(--fhs-bg-surface); color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); cursor:pointer; transition:border-color .15s,box-shadow .15s; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A6A55' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 7px center; }
         .fhs-select:focus { outline:none; border-color:var(--fhs-border-focus); box-shadow:0 0 0 3px var(--fhs-accent-light); }
-        .fhs-select--wide { min-width:160px; }
-        .fhs-select--sort { min-width:180px; }
-        .fhs-input { height:36px; padding:0 10px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); background:var(--fhs-bg-surface); color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); transition:border-color .15s,box-shadow .15s; }
+        .fhs-select--wide { min-width:150px; }
+        .fhs-select--sort { min-width:170px; }
+        .fhs-input { height:30px; padding:0 8px; border:1px solid var(--fhs-border); border-radius:var(--radius-sm); background:var(--fhs-bg-surface); color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); transition:border-color .15s,box-shadow .15s; }
         .fhs-input:focus { outline:none; border-color:var(--fhs-border-focus); box-shadow:0 0 0 3px var(--fhs-accent-light); }
-        .fhs-input--sm { width:96px; }
-        .fhs-input--md { width:144px; }
-        .fhs-btn-refresh { margin-left:auto; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border:none; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-size:var(--fhs-text-xs); font-weight:700; cursor:pointer; transition:background .15s,transform .1s; white-space:nowrap; flex-shrink:0; }
+        .fhs-input--sm { width:88px; }
+        .fhs-input--md { width:130px; }
+        .fhs-btn-refresh { margin-left:auto; display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 14px; border:none; border-radius:var(--radius-md); background:var(--fhs-success); color:#fff; font-size:var(--fhs-text-xs); font-weight:700; cursor:pointer; transition:background .15s,transform .1s; white-space:nowrap; flex-shrink:0; }
         .fhs-btn-refresh:hover { background:#256427; }
         .fhs-btn-refresh:active { background:#1b4d1d; transform:scale(0.97); }
         /* PGC-ODAT: Audit mode inline block (hidden by default, shown when body.fhs-audit-on) */
@@ -1127,7 +1141,7 @@
         .item-financial-drawer .ifd-val { font-weight:600; color:var(--fhs-text-primary); }
         .item-financial-drawer .ifd-footnote { color:#aaa; font-size:10px; margin-top:4px; }
         /* F1: Save Filter Button */
-        .fhs-btn-save-filter { display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 14px; border:1px solid var(--fhs-border); border-radius:var(--radius-md); background:#fff; color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; flex-shrink:0; }
+        .fhs-btn-save-filter { display:inline-flex; align-items:center; gap:5px; height:30px; padding:0 12px; border:1px solid var(--fhs-border); border-radius:var(--radius-md); background:#fff; color:var(--fhs-text-primary); font-size:var(--fhs-text-xs); font-weight:600; cursor:pointer; transition:background .15s; white-space:nowrap; flex-shrink:0; }
         .fhs-btn-save-filter:hover { background:#f4f6f8; }
         /* Chip group */
         .chip-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
@@ -1159,6 +1173,24 @@
             .fhs-btn-save-filter { width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
             .fhs-select--sort { min-width:0; width:100%; max-width:260px; }
             .chip-btn { height:36px; padding:0 14px; font-size:var(--fhs-text-sm); }
+            /* [D69續三] 常駐篩選列（.filter-row-pinned）喺手機要壓返扁。
+               類別 chip 由摺疊區升上嚟做常駐後，佢連埋四粒動作掣一齊出；
+               而上面 .fhs-btn-refresh / .fhs-btn-save-filter 嘅 width:100% 令
+               四粒掣**每粒各佔一整行 44px** —— 實測 375px 機身：常駐列 267px、
+               成個篩選區 310px／812px（38% 畫面）先至見到第一張單，同今次
+               「密集化」目標完全相反。
+               修法：只喺常駐列內改成兩粒一行（flex-basis 計 50%），
+               44px 掂手高度**照留**（AGENTS 雙端定位：手機＝POS 點餐機，
+               觸控目標 >44px 係硬規則，唔可以為咗慳位縮細）。
+               桌面完全唔受影響（呢段喺 max-width:767px 內）。
+               ⚠️ flex-basis 唔可以用 calc(50% - gap/2)：容器 column-gap 係 12px，
+               50%-6px 兩粒啱啱好等於內容闊（349px），subpixel 進位一超就散行
+               —— 實測四粒之中有兩粒各自佔返一整行。用 45% 留鬆動位，
+               再靠 flex-grow:1 補返闊度，結果一樣係兩粒平分一行。 */
+            .filter-row-pinned .fhs-btn-refresh,
+            .filter-row-pinned .fhs-btn-save-filter {
+                width:auto; flex:1 1 45%; min-width:0;
+            }
             .acc-sort-status { display:none; }
             .acc-sort-status.visible { display:block; }
         }
@@ -1300,7 +1332,18 @@
         .review-badge-product { background:#ffffff; color:var(--fhs-text-primary); border: 1px solid #ddd; font-weight: 500; }
 
         /* 刻字欄 — 水平並列佈局 (V29 升級) */
-        .review-eng-container { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+        /* [D69續三] table-layout:fixed 之後刻字欄唔會再為咗遷就內容自動撐闊，
+           長刻字（例：TOP Zarek / BOT 01.26）會溢出格外壓住隔籬欄
+           ——實測 1024px 闊度時溢出 77-97px。
+           ⚠️ 修法唔可以用 flex-wrap:wrap：咁做會令兩條 eng-line 喺闊screen
+           都照分兩行，實測 1920px 下鎖匙扣視圖表格由 875px 脹到 1177px、
+           一屏可見列數 19→16 —— 為咗一個淨係喺窄screen 出現嘅問題賠上密度。
+           正解係維持 nowrap，但明寫 min-width:0 解除 flex 子項預設嘅
+           min-width:auto（佢會拒絕縮到細過內容，逼到溢出）。闊screen 有位
+           就照排一行零損失，窄screen 自動縮並喺 line 內部斷字。 */
+        .review-eng-container { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; min-width: 0; }
+        .review-eng-container > * { min-width: 0; }
+        .review-eng-text { overflow-wrap: anywhere; }
         .review-eng-line { font-size:12px; background:#f0f4f8; padding:3px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:6px; border: 1px solid #d1d9e6; }
         .review-eng-label { font-size:10px; font-weight:900; padding:1px 4px; border-radius:3px; text-transform:uppercase; color: white; }
         .review-eng-label-top { background: #5DADE2; }
@@ -1309,27 +1352,35 @@
 
         /* 批次輸入框 — 精簡版 */
         .review-batch-input {
-            width: 100%; font-size:12px; padding:5px 4px; border-radius:6px;
+            /* [D69續三] 實測舊值渲染 44px（UA 預設 input 高度壓過 padding 計算），
+               靠 padding 收唔細，一定要明寫 height + box-sizing 先鎖得住 */
+            width: 100%; font-size:12px; padding:1px 4px; border-radius:5px;
+            height:23px; box-sizing:border-box; line-height:1.2;
             border:1px solid #ddd; background:#fff; color:#B07D4C; font-weight:bold;
-            text-align:center; transition:border-color 0.2s; line-height:1.4;
+            text-align:center; transition:border-color 0.2s;
         }
         .review-batch-input:focus { border-color:#d35400; box-shadow:0 0 0 2px rgba(211,84,0,0.1); outline:none; }
 
         /* 進度選單 — 精簡版 */
         .review-status-select {
-            width: 100%; font-size:11px; padding:5px 4px; border-radius:6px;
+            width: 100%; font-size:11px; padding:1px 4px; border-radius:5px;
+            height:23px; box-sizing:border-box; line-height:1.2;
             border:1px solid #ddd; background:#fff; color:#1a6b5e; font-weight:600;
-            transition:border-color 0.2s; cursor:pointer; line-height:1.4;
+            transition:border-color 0.2s; cursor:pointer;
         }
         .review-status-select:focus { border-color:#2A9D8F; box-shadow:0 0 0 2px rgba(42,157,143,0.1); outline:none; }
 
         /* 備註欄 */
-        .review-notes-textarea { width:100%; height:100%; min-height:80px; font-size:12px; padding:5px 7px; border-radius:6px; border:1px solid rgba(0,0,0,0.12); resize:none; transition:border-color 0.2s, box-shadow 0.2s; line-height:1.5; background:#ffffff; color:var(--fhs-text-primary); }
-        .review-notes-textarea:focus { border-color:#457B9D; outline:none; box-shadow:0 0 0 2px rgba(69,123,157,0.15); background:#ffffff; }
+        /* [D69續三] min-height 由 80px 降至 23px：舊值係單品項訂單列高度嘅頭號元兇
+           （實測 textarea 178px → 列高 197px）。height:100% 保留，長備註嘅群組列
+           仍然會撐滿；要睇全文就 focus 展開（下面 :focus 規則），平時只佔一行。 */
+        .review-notes-textarea { width:100%; height:100%; min-height:23px; font-size:12px; padding:2px 6px; border-radius:5px; border:1px solid rgba(0,0,0,0.12); resize:none; transition:border-color 0.2s, box-shadow 0.2s, min-height 0.15s; line-height:1.5; background:#ffffff; color:var(--fhs-text-primary); }
+        .review-notes-textarea:focus { border-color:#457B9D; outline:none; box-shadow:0 0 0 2px rgba(69,123,157,0.15); background:#ffffff; min-height:96px; position:relative; z-index:5; }
         td:has(> .review-notes-textarea) { height:1px; }
 
-        /* 儲存指示器 */
-        .review-save-indicator { font-size:9px; color:#2A9D8F; text-align:right; min-height:12px; margin-top:2px; }
+        /* 儲存指示器 —— [D69續三] 空白時唔再預留 12px+2px（×每列 = 密度殺手） */
+        .review-save-indicator { font-size:9px; color:#2A9D8F; text-align:right; min-height:0; margin-top:0; line-height:1.2; }
+        .review-save-indicator:empty { display:none; }
 
         /* 隱藏舊標題 */
         .review-col-label { display:none; }
@@ -2767,6 +2818,77 @@
         .fhs-modal-val { font-weight:500; text-align:right; }
         .fhs-btn-order-detail { background:none; border:none; cursor:pointer; font-size:15px; padding:2px 4px; border-radius:4px; line-height:1; }
         .fhs-btn-order-detail:hover { background:#f0f0f0; }
+
+        /* [D69續三] 訂單總覽 Excel 密集模式 —— 單號欄動作由「直行堆疊」改「橫向圖示條」
+           舊佈局：pill + 刪除 + 標記完成 + 手模 + 金屬 + 逾期badge + 另有chip 各佔一行 block，
+           連 margin 實測 177px，直接決定咗成個 rowspan 群組高度（單品項單 197px/列）。
+           新佈局：第一行 pill + icon-only 動作條；第二行 badge/chip 橫向 wrap。實測降至 ~40px。
+           ⚠️ 本區塊必須排喺 .fhs-btn-order-detail 之後：明細掣同時掛兩個 class
+           （`fhs-btn-order-detail ovw-ico`，前者保住 line 3387 手機隱藏規則），
+           兩者同為單 class 特異度，靠源碼次序分勝負，調前會被舊 padding/font-size 蓋返。 */
+        .ovw-id-line { display:flex; align-items:center; flex-wrap:wrap; gap:2px; }
+        .ovw-act { display:inline-flex; align-items:center; gap:1px; }
+        .ovw-ico { display:inline-flex; align-items:center; justify-content:center;
+            width:17px; height:17px; padding:0; border-radius:4px; cursor:pointer;
+            background:transparent; border:1px solid transparent; color:#8a8a8a;
+            line-height:0; flex-shrink:0;
+            transition:background .15s, color .15s, border-color .15s; }
+        .ovw-ico:hover { background:#f2f2f2; }
+        .ovw-ico-del  { color:#cc4444; border-color:rgba(255,204,204,0.9); }
+        .ovw-ico-del:hover  { background:#ffecec; }
+        .ovw-ico-done { color:#2a9d8f; border-color:rgba(183,228,199,0.9); }
+        .ovw-ico-done:hover { background:#e8f7f2; }
+        .ovw-ico-undo { color:#e08600; border-color:rgba(255,214,153,0.9); }
+        .ovw-ico-undo:hover { background:#fff4e0; }
+        .ovw-id-meta { display:flex; flex-wrap:wrap; align-items:center; gap:2px; margin-top:2px; }
+        .ovw-id-meta:empty { display:none; margin-top:0; }
+        .ovw-id-meta { min-width:0; }
+        .ovw-id-meta .dlv-badge,
+        .ovw-id-line .review-rest-chip { margin-top:0 !important; font-size:10px; padding:1px 5px; }
+        /* [D69續三] 交付 badge 搬咗入日期欄，而該 td 有 white-space:nowrap（本來淨係
+           為咗個日期唔好斷行），badge 會連帶唔肯換行。table-layout:fixed 之下欄闊
+           唔會自動遷就，實測 1024px 時「正常(剩134天)」溢出格外 22px 壓住客人欄。
+           喺呢個 context 解除 nowrap：闊 screen（1920 → 日期欄 127px）照樣一行，
+           窄 screen 先至斷兩行，唔使賠上闊 screen 嘅密度。 */
+        .ovw-id-meta .dlv-badge { white-space:normal; overflow-wrap:anywhere; }
+        /* [D69續四] 日期＋限時警告 badge 由「文字後面跟一個 block div」改「同一個 flex
+           row」，先至有可能一行過（Fat Mo 截圖圈住依家分兩行嗰個問題）。日期本身
+           永遠 nowrap（唔可以斷開「16/4/2026」），badge 留 flex-wrap 做窄screen
+           防呆——日期欄本身已經按呢個 chip 嘅需要放寬（見 Date.mwCat）。 */
+        .ovw-date-line { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+        .ovw-date-line .dlv-badge { margin-top:0; white-space:normal; overflow-wrap:anywhere; }
+        .review-jump-pill-sm { padding:1px 6px; font-size:11.5px; border-radius:10px; gap:2px; }
+        /* [D69續四] 「另有」chip 由整段文字改做逐類別 icon+數量；.review-rest-chip
+           而家淨係做外層容器（padding/邊框/hover/click，定義喺 L1240），實質內容
+           分拆成多個 .ovw-rest-ico —— 逐個獨立 title tooltip 顯示全類別名。 */
+        .ovw-rest-ico { display:inline-flex; align-items:center; gap:1px; }
+        /* [D69續四] 對象/材質/數量三欄專用縮版 badge（淨喺鎖匙扣/頸鏈視圖用），
+           唔改 .review-badge 本身（L1217，手機卡片/其他視圖共用）。 */
+        .ovw-tight-badge { padding:1px 5px !important; font-size:9.5px !important; margin:0 2px 0 0 !important; }
+
+        /* [密度重排 2026-08-25 續五] 1920 桌面同 1024 iPad 橫向兩個闊度冇辦法用同一組
+           px 數值同時滿足——badge 嘅內容闊度（中文材質名/客人IG帳號）唔會隨 viewport
+           縮放，但欄闊會，所以「夠 1920 靚」同「夠 1024 唔爆」呢兩個目標喺同一組數值
+           下互相排斥（實測：加大 客人/刻字 去遷就桌面密度要求，1024 度material badge
+           即刻溢出）。用 media query 分域先解決得到：>1280px 用呢輪 Fat Mo 要求嘅密集
+           數值，≤1280px 淨係將呢五個類別視圖專屬欄（class 由 fhsBuildOverviewHead()
+           動態加，_c 為真先有）覆寫返上一輪已實測安全嘅數值，唔影響「全部」視圖
+           （個class 淨喺 _c 有值先加，全部視圖 _c=''，成個 media query 對佢冧都冧唔到）。 */
+        /* [密度重排 2026-08-25 續七] target/qty 表頭（icon+「對象」/「數量」，
+           11px 粗體大寫）scrollWidth 實測 58px，1024 度呢兩欄 mw:32 淨係得返
+           32px render，表頭文字溢出撞落隔籬欄——同 >1280 嗰邊同一個 bug（見
+           _FHS_TH_DEF 續七註解），呢度一併補：兩欄都要 ≥60px 先夠 58px
+           scrollWidth + buffer。 */
+        @media (max-width: 1280px) {
+            .ovw-narrowcol-Date     { width:95px !important; }
+            .ovw-narrowcol-Customer { width:80px !important; }
+            .ovw-narrowcol-eng      { width:130px !important; }
+            .ovw-narrowcol-target   { width:60px !important; }
+            .ovw-narrowcol-part     { width:63px !important; }
+            .ovw-narrowcol-mat      { width:67px !important; }
+            .ovw-narrowcol-qty      { width:60px !important; }
+        }
+
         /* F3 v2: dual-mode modal — tabs */
         .fhs-modal-drag { display:none; width:36px; height:4px; background:#ddd; border-radius:2px; margin:8px auto 4px; flex-shrink:0; }
         .fhs-modal-tabs { display:flex; border-bottom:2px solid var(--fhs-border); background:#fafafa; flex-shrink:0; }
@@ -3344,7 +3466,6 @@
             border: 1px solid var(--fhs-border);
             border-radius: 10px;
             padding: 3px; gap: 2px;
-            margin-bottom: 12px;
         }
         @media (max-width: 767px) {
             .fhs-seg-ctrl { width: 100%; }
@@ -3353,7 +3474,7 @@
             .fhs-seg-ctrl { display: inline-flex; width: auto; min-width: 220px; }
         }
         .fhs-seg-btn {
-            flex: 1; height: 36px;
+            flex: 1; height: 30px;
             border: none; border-radius: 8px;
             background: transparent;
             font-size: 14px; font-weight: 500;
@@ -3394,7 +3515,7 @@
         .filter-toggle-row { display: flex; flex-direction: row; align-items: center; gap: 4px; padding: 0 4px; }
         .filter-toggle-bar { width: auto; flex-shrink: 0; padding: 0 8px; }
         .filter-toggle-label, .filter-active-hint { display: none; }
-        #fhsSegWrapper { flex: 1; min-width: 0; padding: 6px 8px 6px 0; }
+        #fhsSegWrapper { flex: 1; min-width: 0; padding: 2px 8px 2px 0; }
 
         /* ================================================================
            V42 AG Stitch Snippets — 組件 1: 左滑卡片背景色修正
@@ -4187,7 +4308,7 @@
                 <!-- S150 F3.1：Toggle Bar + Segmented Control 同組（Desktop 上下疊，Mobile 同行） -->
                 <div class="filter-toggle-row">
                     <!-- Mobile Only：Filter 收合 Toggle Bar -->
-                    <div class="filter-toggle-bar expanded" id="reviewFilterToggle" role="button" aria-expanded="true" aria-controls="reviewFilterBody" aria-label="篩選條件">
+                    <div class="filter-toggle-bar" id="reviewFilterToggle" role="button" aria-expanded="false" aria-controls="reviewFilterBody" aria-label="篩選條件">
                         <div class="filter-toggle-summary">
                             <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
@@ -4210,8 +4331,35 @@
                     </div>
                 </div>
 
-                <!-- Filter Body（Desktop 常駐，Mobile 收合） -->
-                <div class="filter-body open" id="reviewFilterBody">
+                <!-- [密度重排 2026-08-25] 類別 chip + 快捷按鈕常駐可見，移出摺疊區（原「第二行」）——
+                     呢排係日常最高頻控制（尤其類別 chip，D69 訂單總覽類別視圖核心入口），
+                     唔應該同「年度/月份/狀態/批次/搜尋/排序」呢啲低頻欄位一齊收埋。
+                     Fat Mo 原話：畫面太稀疏、篩選區太佔位，參考 Excel 密度重新排位。 -->
+                <div class="filter-row filter-row-pinned" id="reviewFilterPinned">
+                    <div class="filter-group">
+                        <label class="filter-label" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>類別</label>
+                        <div class="chip-group" role="group" aria-label="產品類別篩選">
+                            <button class="chip-btn active" data-category="" type="button">全部</button>
+                            <button class="chip-btn" data-category="手模" type="button">手模</button>
+                            <button class="chip-btn" data-category="鑰匙扣" type="button">鑰匙扣</button>
+                            <button class="chip-btn" data-category="頸鏈" type="button">頸鏈</button>
+                        </div>
+                    </div>
+                    <div style="width:1px; height:24px; background:var(--fhs-border); flex-shrink:0;"></div>
+                    <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
+                    <button id="fhsClearFilterBtn" class="fhs-btn-save-filter" type="button" onclick="clearFilters()" style="background-color: #f5f5f5; color: #333; border: 1px solid #ccc; margin-right: 6px;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-trash-2"/></svg>清除篩選</button>
+                    <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-save"/></svg>儲存篩選</button>
+                    <button class="fhs-btn-refresh" type="button"
+                        onclick="fhsRefreshAndCollapse()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        重新載入
+                    </button>
+                </div>
+
+                <!-- Filter Body（低頻欄位，預設收埋——Desktop/Mobile 統一，撳漏斗圖示先展開） -->
+                <div class="filter-body" id="reviewFilterBody">
 
                     <!-- 第一行：日期 + 狀態 + 批次 + 搜尋（S150 F3.3：狀態+批次配對，手機保證同行） -->
                     <div class="filter-row filter-row-primary">
@@ -4296,30 +4444,6 @@
                         </div>
                     </div>
 
-                    <!-- 第二行：產品類別 Chip + 重新載入 -->
-                    <div class="filter-row filter-row-secondary">
-                        <div class="filter-group">
-                            <label class="filter-label" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>類別</label>
-                            <div class="chip-group" role="group" aria-label="產品類別篩選">
-                                <button class="chip-btn active" data-category="" type="button">全部</button>
-                                <button class="chip-btn" data-category="手模" type="button">手模</button>
-                                <button class="chip-btn" data-category="鑰匙扣" type="button">鑰匙扣</button>
-                                <button class="chip-btn" data-category="頸鏈" type="button">頸鏈</button>
-                            </div>
-                        </div>
-                        <div style="width:1px; height:32px; background:var(--fhs-border); flex-shrink:0;"></div>
-                        <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
-                        <button id="fhsClearFilterBtn" class="fhs-btn-save-filter" type="button" onclick="clearFilters()" style="background-color: #f5f5f5; color: #333; border: 1px solid #ccc; margin-right: 6px;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-trash-2"/></svg>清除篩選</button>
-                        <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-save"/></svg>儲存篩選</button>
-                        <button class="fhs-btn-refresh" type="button"
-                            onclick="fhsRefreshAndCollapse()">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                            重新載入
-                        </button>
-                    </div>
-
                 </div><!-- /filter-body -->
             </div><!-- /review-filters-v2 -->
 
@@ -4354,23 +4478,23 @@
             <div id="reviewCatStrip"></div>
 
             <div class="review-table-wrap" style="overflow:visible; width:100%; border-radius:var(--radius-lg); background:#fff; border:1px solid var(--fhs-border);">
-                <table class="review-table" style="width:100%; border-collapse:collapse; text-align:left; font-size:var(--fhs-text-sm);" id="reviewTable">
+                <table class="review-table" style="width:100%; table-layout:fixed; border-collapse:collapse; text-align:left; font-size:var(--fhs-text-sm);" id="reviewTable">
                     <thead style="position:sticky; z-index:20; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
                         <tr id="reviewTheadRow">
-                            <th class="review-cb-th" style="padding:8px 4px; border:none;">
+                            <th class="review-cb-th" style="padding:8px 4px; border:none; width:32px;">
                                 <input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)">
                             </th>
-                            <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:110px;" onclick="sortReviewTable('Order_ID')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
-                            <th class="sort-th" data-sort="Date" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;" onclick="sortReviewTable('Date')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-calendar"/></svg>日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-user"/></svg>客人</th>
-                            <th style="padding:12px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-banknote"/></svg>入帳</th>
-                            <th style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-wallet"/></svg>成本</th>
-                            <th style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-star"/></svg>利潤</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:70px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg>刻字</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:200px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>產品明細</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-tag"/></svg>批次</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-activity"/></svg>進度</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>備註</th>
+                            <th class="sort-th" data-sort="Order_ID" style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:112px;" onclick="sortReviewTable('Order_ID')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
+                            <th class="sort-th" data-sort="Date" style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:75px;" onclick="sortReviewTable('Date')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-calendar"/></svg>日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
+                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-user"/></svg>客人</th>
+                            <th style="padding:8px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-banknote"/></svg>入帳</th>
+                            <th style="padding:8px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-wallet"/></svg>成本</th>
+                            <th style="padding:8px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-star"/></svg>利潤</th>
+                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:124px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg>刻字</th>
+                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:220px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>產品明細</th>
+                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:75px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-tag"/></svg>批次</th>
+                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:102px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-activity"/></svg>進度</th>
+                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:110px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>備註</th>
                         </tr>
                     </thead>
                     <tbody id="reviewTableBody">
@@ -11433,25 +11557,59 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
               唯一獲授權嘅拆分係財務頁 RPC 3-layer fallback，見 System_Logic_Overview §10.3）
            3. 「產品明細」badge 團拆成獨立欄，對位 Excel 對象|手腳|產品|材料|數量
            ============================================================ */
+        // [密度重排 2026-08-25 續] `mw` 由 min-width 改做 table-layout:fixed 下嘅 width 權重——
+        // 舊版 table-layout:auto 會將「未食滿嘅剩餘闊度」灌落最冇約束嘅欄（實測：刻字 70px
+        // 灌到 277px、單號 110px 灌到 292px，中間出現大塊死白位，Fat Mo 截圖圈住嗰嚿）。
+        // fixed layout 下呢啲數值變成**比例權重**（唔一定係最終 px），瀏覽器會將表格實際闊度
+        // 按呢啲數值嘅比例分配落去，唔會再自把自為益晒某一兩欄。
         var _FHS_TH_DEF = {
-            Order_ID: { label:'單號',     icon:'square-pen', mw:110, sort:'Order_ID' },
-            Date:     { label:'日期',     icon:'calendar',   mw:95,  sort:'Date' },
-            Customer: { label:'客人',     icon:'user',       mw:85 },
-            inc:      { label:'入帳',     icon:'banknote',   mw:80,  color:'#B07D4C',           pad:'12px' },
-            cost:     { label:'成本',     icon:'wallet',     mw:80,  color:'var(--fhs-danger)', pad:'12px' },
-            profit:   { label:'利潤',     icon:'star',       mw:80,  color:'var(--fhs-success)',pad:'12px' },
-            eng:      { label:'刻字',     icon:'edit',       mw:70 },
-            prod:     { label:'產品明細', icon:'package',    mw:200 },
-            style:    { label:'款式',     icon:'image',      mw:90 },
-            limb:     { label:'肢數明細', icon:'users',      mw:190 },
-            addon:    { label:'加購',     icon:'lightbulb',  mw:92 },
-            target:   { label:'對象',     icon:'baby',       mw:80 },
-            part:     { label:'部位',     icon:'hand',       mw:80 },
-            mat:      { label:'材質',     icon:'settings',   mw:84 },
-            qty:      { label:'數量',     icon:'package',    mw:62 },
-            batch:    { label:'批次',     icon:'tag',        mw:100 },
-            stat:     { label:'進度',     icon:'activity',   mw:100 },
-            notes:    { label:'備註',     icon:'square-pen', mw:140 }
+            // [密度重排 2026-08-25 續二] mwCat：類別視圖專用覆寫。單號欄要放低
+            // pill+動作條（142px）＋可能出現嘅「另有：XX ×N」chip（~113px）——
+            // 「全部」視圖冇呢個 chip（_restChipHtml 只喺 _catView 先計），112 已夠使，
+            // 唔應該為咗類別視圖嘅需要拖累「全部」（Fat Mo 明示唔改嗰個視圖）。
+            // [密度重排 2026-08-25 續四] 「另有」chip 由全寫文字改 icon+數量後（見
+            // _restChipHtml），單號欄唔使再放咁多位，mwCat 相應收返窄。
+            // Date.mwCat：Fat Mo 要求限時警告 badge 同日期同一行（.ovw-date-line），
+            // 75 淨係夠日期本身，實測「正常(剩134天)」badge 要加 90+ 先夠。
+            Order_ID: { label:'單號',     icon:'square-pen', mw:112, mwCat:130, sort:'Order_ID' },
+            Date:     { label:'日期',     icon:'calendar',   mw:75,  mwCat:110, sort:'Date' },
+            // [密度重排 2026-08-25 續五] Customer.mwCat：部位/材質/數量再收窄後騰出嘅位，
+            // Fat Mo 要求分俾刻字同客人兩欄——客人喺類別視圖常見長 IG 帳號名
+            // 「Lovehedqie852 (Selina Lai)」，157px 先夠唔截斷。
+            Customer: { label:'客人',     icon:'user',       mw:80,  mwCat:118 },
+            inc:      { label:'入帳',     icon:'banknote',   mw:65,  color:'#B07D4C',           pad:'8px' },
+            cost:     { label:'成本',     icon:'wallet',     mw:65,  color:'var(--fhs-danger)', pad:'8px' },
+            profit:   { label:'利潤',     icon:'star',       mw:65,  color:'var(--fhs-success)',pad:'8px' },
+            eng:      { label:'刻字',     icon:'edit',       mw:124, mwCat:172 },
+            prod:     { label:'產品明細', icon:'package',    mw:220 },
+            style:    { label:'款式',     icon:'image',      mw:80 },
+            limb:     { label:'肢數明細', icon:'users',      mw:170 },
+            addon:    { label:'加購',     icon:'lightbulb',  mw:80 },
+            // [密度重排 2026-08-25 續二] 呢四欄嘅內容需要（badge 實測「不銹鋼」64px／
+            // 「嬰兒」53px／「x4」31px）唔隨 viewport 改變，但欄闊按比例縮放跟住個
+            // scale factor 走。1920px 度嘅 scale ≈1.94，1024px 度得返 ≈1.10 ——
+            // 早輪為咗遷就單號欄夾到 mw:40/40/46/32，1920 冇事，但 1024 就爆
+            // （實測「不銹鋼」溢出 21px）。留返最少 +14px 緩衝先夠兩個闊度都安全。
+            // [密度重排 2026-08-25 續五] 呢輪 Fat Mo 明確要求收窄部位/材質/數量三欄
+            // （對象呢次冇提，維持上一輪嘅 56）。部位新加 .ovw-tight-badge（見
+            // _catCellsHtml），先至跟埋對象/材質/數量嗰個縮 padding 幅度。
+            // [密度重排 2026-08-25 續六] Fat Mo 再次反映呢三欄仲係太寬。之前留嘅
+            // buffer 係為咗兼顧 ≤1280px（iPad）安全，而家嗰個顧慮已經由
+            // ovw-narrowcol media query（CSS L~2864）獨立接管，>1280px 呢一路
+            // 唔使再遷就窄screen，可以貼實content需要（tight-badge 版：
+            // 部位45／材質55／數量24px）縮到底。
+            // [密度重排 2026-08-25 續七] 部位/數量縮到 30/18 後，表頭本身（icon+
+            // 「部位」/「數量」呢兩隻字，11px 粗體大寫+letter-spacing）嘅
+            // scrollWidth 實測要 58px，比欄闊仲寬——表頭文字溢出撞落隔籬欄
+            // （Fat Mo 截圖「數量欄表頭移位」）。data 內容雖然淨係要 24-45px，
+            // 但表頭label先係呢兩欄嘅真正下限，唔可以再縮過 33（58/1.9 scale)。
+            target:   { label:'對象',     icon:'baby',       mw:56 },
+            part:     { label:'部位',     icon:'hand',       mw:33 },
+            mat:      { label:'材質',     icon:'settings',   mw:36 },
+            qty:      { label:'數量',     icon:'package',    mw:33 },
+            batch:    { label:'批次',     icon:'tag',        mw:75 },
+            stat:     { label:'進度',     icon:'activity',   mw:102 },
+            notes:    { label:'備註',     icon:'square-pen', mw:110 }
         };
 
         // 目前生效嘅欄位計劃（第一個 'cb' 係全選 checkbox 欄）
@@ -11469,26 +11627,33 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function fhsBuildOverviewHead() {
             var row = document.getElementById('reviewTheadRow');
             if (!row) return;
+            var _c = reviewCategoryFilter || '';
             // [D69 修復]「全部」視圖係 Fat Mo 明示唔改嘅視圖，但呢個函式喺每次 render 都會
-            // 無條件執行，包括「全部」。原靜態 markup 入面 入帳/成本/利潤 三欄用 padding:12px
-            // （冇 16px 水平間距），同其餘欄位嘅 12px 16px 唔同；thBase 統一套用會令「全部」
+            // 無條件執行，包括「全部」。原靜態 markup 入面 入帳/成本/利潤 三欄用 padding:8px
+            // （冇 12px 水平間距），同其餘欄位嘅 8px 12px 唔同；thBase 統一套用會令「全部」
             // 視圖嘅呢三欄背離承諾。改用 per-column pad 覆寫，逐欄核對返原静態值。
+            // [密度重排 2026-08-25] 兩邊 12px→8px、16px→12px 一併收緊，兩處數值必須逐字同步。
             var thBase = 'font-weight:900; font-size:11px; text-transform:uppercase;'
                        + ' letter-spacing:0.08em; white-space:nowrap; border:none;';
             var html = fhsOverviewCols().map(function (k) {
                 if (k === 'cb') {
-                    return '<th class="review-cb-th" style="padding:8px 4px; border:none;">'
+                    return '<th class="review-cb-th" style="padding:8px 4px; border:none; width:32px;">'
                          + '<input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)"></th>';
                 }
                 var d = _FHS_TH_DEF[k];
                 if (!d) return '';
+                var _mw = (d.mwCat && _c) ? d.mwCat : d.mw;
+                // [密度重排 2026-08-25 續五] _c 淨喺類別視圖先真，「全部」永遠唔會行呢個
+                // class —— 靠呢點令低於 1280px 嘅媒體查詢覆寫（CSS L~2860）只影響類別
+                // 視圖，唔會誤中「全部」（Fat Mo 明示唔改嗰個）。
+                var _narrowCls = _c ? (' ovw-narrowcol-' + k) : '';
                 var ico = '<svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-' + d.icon + '"/></svg>';
-                var style = 'padding:' + (d.pad || '12px 16px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; min-width:' + d.mw + 'px;';
+                var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; width:' + _mw + 'px;';
                 if (d.sort) {
-                    return '<th class="sort-th" data-sort="' + d.sort + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'
+                    return '<th class="sort-th' + _narrowCls + '" data-sort="' + d.sort + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'
                          + ico + d.label + '<span class="sort-arrow" id="sort-arrow-' + d.sort + '"></span></th>';
                 }
-                return '<th style="' + style + '">' + ico + d.label + '</th>';
+                return '<th class="' + _narrowCls.trim() + '" style="' + style + '">' + ico + d.label + '</th>';
             }).join('');
             row.innerHTML = html;
             // thead 重建會沖走排序箭嘴同 master checkbox 狀態，即刻補回
@@ -11693,6 +11858,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (_catHit.length > 0) _renderItemsFinal = _catHit;
                 }
                 // 被收起嘅品項按類別彙總，喺單號欄出「另有 ⋯」，防止誤讀成「呢張單淨係得呢類」
+                // [D69續四] 由「另有：手模擺設 ×1、純銀吊飾 ×2」文字全寫改做 icon+數量：
+                // 文字版最長試過 178px，係單號欄唔夠位打橫一行嘅主因之一。圖示複用
+                // _catChipsHtml 果張 _chipMeta 表已有嘅同一套（L~11225），淨係揀
+                // getProductDimensions().category 實際會吐嘅 6 個值，全類別名留喺 title
+                // tooltip，唔喺可見文字度，靠 hover 先睇到。
                 let _restChipHtml = '';
                 if (_catView && _renderItemsFinal.length < _renderItemsPreCat.length) {
                     const _restAgg = {};
@@ -11701,12 +11871,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const _n = getProductDimensions(it).category || '其他';
                         _restAgg[_n] = (_restAgg[_n] || 0) + 1;
                     });
-                    const _restTxt = Object.keys(_restAgg).map(function (k) { return k + ' ×' + _restAgg[k]; }).join('、');
-                    if (_restTxt) {
-                        _restChipHtml = '<div class="review-rest-chip" title="呢張單仲有其他類別品項，撳返「全部」睇齊" '
-                            + 'onclick="fhsClearCategoryFilter()">'
-                            + '<svg class="ba-icon" width="11" height="11"><use href="#icon-package"/></svg>另有：'
-                            + fhsEscHtml(_restTxt) + '</div>';
+                    const _restIconMap = {
+                        '鎖匙扣': 'icon-key', '純銀吊飾': 'icon-gem', '手模擺設': 'icon-palette',
+                        '羊毛氈公仔': 'icon-smile', '燈飾': 'icon-lightbulb', '其他': 'icon-package'
+                    };
+                    const _restKeys = Object.keys(_restAgg);
+                    if (_restKeys.length) {
+                        const _restIcons = _restKeys.map(function (k) {
+                            const _ic = _restIconMap[k] || 'icon-package';
+                            return '<span class="ovw-rest-ico" title="' + fhsEscAttr(k) + ' ×' + _restAgg[k] + '">'
+                                + '<svg class="ba-icon" width="10" height="10"><use href="#' + _ic + '"/></svg>×' + _restAgg[k] + '</span>';
+                        }).join('');
+                        _restChipHtml = '<span class="review-rest-chip" title="呢張單仲有其他類別品項，撳返「全部」睇齊" '
+                            + 'onclick="fhsClearCategoryFilter()">' + _restIcons + '</span>';
                     }
                 }
 
@@ -11723,10 +11900,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // 訂單主結構 (左側 4 欄的 rowspan) - 使用 vertical-align: top 避免單號下沉
                 const isChecked = selectedOrderIds.has(o.id) ? 'checked' : '';
                 const _catFlagsD = _getOrderCatFlags(o);
+                // [D69續三] 明細掣改 icon-only 並排：文字標籤（手模/金屬）移入 title tooltip，
+                // 保留 fhs-btn-order-detail class 係為咗繼續食到 L~3387 手機隱藏規則。
                 let _detailBtns = '';
-                if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'A\')" title="手模擺設訊息" style="margin-top:4px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-image"/></svg>手模</button>';
-                if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'B\')" title="金屬產品訊息" style="margin-top:2px; display:block; font-size:11px; padding:2px 6px;"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-settings"/></svg>金屬</button>';
-                if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\')" title="訂單詳情" style="margin-top:4px; display:block;"><svg class="ba-icon" width="12" height="12" style="vertical-align:middle;"><use href="#icon-list"/></svg></button>';
+                if (_catFlagsD.hasA) _detailBtns += '<button class="fhs-btn-order-detail ovw-ico" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'A\')" title="手模擺設訊息"><svg class="ba-icon" width="12" height="12" style="color:inherit;"><use href="#icon-image"/></svg></button>';
+                if (_catFlagsD.hasB) _detailBtns += '<button class="fhs-btn-order-detail ovw-ico" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\',\'B\')" title="金屬產品訊息"><svg class="ba-icon" width="12" height="12" style="color:inherit;"><use href="#icon-settings"/></svg></button>';
+                if (!_detailBtns) _detailBtns = '<button class="fhs-btn-order-detail ovw-ico" onclick="openOrderModal(\'' + fhsEscAttr(o.id) + '\')" title="訂單詳情"><svg class="ba-icon" width="12" height="12" style="color:inherit;"><use href="#icon-list"/></svg></button>';
 
                 // PGC-ODAT: per-item audit data (price lookup per SKU)
                 // Built from _renderItemsFinal (not o.items) to stay index-aligned with forEach loop
@@ -11743,31 +11922,27 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${fhsEscHtml(o.id)}" ${isChecked} onchange="toggleOrderSelection('${fhsEscAttr(o.id)}', this.checked)">
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:13px; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">
-                        <div class="review-jump-pill" onclick="jumpToEditOrder('${fhsEscAttr(o.Order_ID)}')">
-                            ${fhsEscHtml(o.Order_ID || 'N/A')} ➜
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:13px; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:4px 4px;">
+                        <div class="ovw-id-line">
+                            <div class="review-jump-pill review-jump-pill-sm" onclick="jumpToEditOrder('${fhsEscAttr(o.Order_ID)}')">${fhsEscHtml(o.Order_ID || 'N/A')} ➜</div>
+                            <span class="ovw-act">
+                                <button class="ovw-ico ovw-ico-del" onclick="openDeleteModal('${fhsEscAttr(o.id)}', '${fhsEscAttr(o.Order_ID)}')" title="刪除此訂單"><svg class="ba-icon" width="12" height="12" style="color:inherit;"><use href="#icon-trash-2"/></svg></button>
+                                ${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id))
+                                    ? `<button class="ovw-ico ovw-ico-undo" onclick="triggerArchiveOrder('${fhsEscAttr(o.id)}')" title="將此訂單退回進行中"><svg class="ba-icon" width="12" height="12" style="color:inherit;"><use href="#icon-undo-2"/></svg></button>`
+                                    : `<button class="ovw-ico ovw-ico-done" onclick="triggerArchiveOrder('${fhsEscAttr(o.id)}')" title="將此訂單標記為已完成"><svg class="ba-icon" width="12" height="12" style="color:inherit;"><use href="#icon-check"/></svg></button>`}
+                                ${_detailBtns}
+                            </span>
+                            ${_restChipHtml}
                         </div>
-                        <button onclick="openDeleteModal('${fhsEscAttr(o.id)}', '${fhsEscAttr(o.Order_ID)}')" title="刪除此訂單"
-                                style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffcccc; border-radius:4px; color:#cc4444; font-size:11px; cursor:pointer; display:block;">
-                            <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-trash-2"/></svg>刪除
-                        </button>
-                        ${(window._fhsArchivedIds && window._fhsArchivedIds.has(o.id)) ? `<button onclick="triggerArchiveOrder('${fhsEscAttr(o.id)}')" title="將此訂單退回進行中"
-                                style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #ffd699; border-radius:4px; color:#e08600; font-size:11px; cursor:pointer; display:block;">
-                            <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-undo-2"/></svg>退回進行中
-                        </button>` : `<button onclick="triggerArchiveOrder('${fhsEscAttr(o.id)}')" title="將此訂單標記為已完成"
-                                style="margin-top:6px; padding:2px 8px; background:transparent; border:1px solid #b7e4c7; border-radius:4px; color:#2a9d8f; font-size:11px; cursor:pointer; display:block;">
-                            <svg class="ba-icon" width="12" height="12" style="vertical-align:middle; margin-right:2px;"><use href="#icon-check"/></svg>標記完成
-                        </button>`}
-                        ${_detailBtns}
-                        ${_dlvBadgeHtml(o.Order_ID)}
-                        ${_restChipHtml}
-                        <div id="sync-indicator-${fhsEscHtml(o.id)}" style="display:none; margin-top:6px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
+                        <div id="sync-indicator-${fhsEscHtml(o.id)}" style="display:none; margin-top:3px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
                             <span class="fhs-spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;"></span>
                             同步中
                         </div>
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; white-space:nowrap; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${cDate}</td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding-top:15px;">${fhsEscHtml(o.Customer || '-')}</td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:5px 8px;">
+                        <div class="ovw-date-line"><span style="white-space:nowrap;">${cDate}</span>${_dlvBadgeHtml(o.Order_ID)}</div>
+                    </td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:5px 8px;">${fhsEscHtml(o.Customer || '-')}</td>
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
@@ -11954,7 +12129,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // 類別 badge 本身喺類別視圖係整欄重複＝純雜訊，一律唔再畫。
                         let _catCellsHtml = '';
                         if (_catView) {
-                            const _tdOpen = `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:8px 10px; background-color:${rowBatchCol};">`;
+                            const _tdOpen = `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:4px 8px; background-color:${rowBatchCol};">`;
                             const _dash = '<span style="color:#ddd;">—</span>';
                             const _cell = (inner) => _tdOpen + (inner || _dash) + '</td>';
                             if (_catView === '手模') {
@@ -11987,14 +12162,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 let _tarCls = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
                                 if (dimensions.target.includes('大寶')) _tarCls = 'badge-target-大寶';
                                 if (dimensions.target.includes('家庭')) _tarCls = 'badge-target-家庭';
-                                _catCellsHtml += _cell(dimensions.target ? `<span class="review-badge ${_tarCls}">${dimensions.target}</span>` : '');
-                                _catCellsHtml += _cell(dimensions.part ? `<span class="review-badge badge-part">${dimensions.part}</span>` : '');
+                                // [密度重排 2026-08-25 續四] 對象/材質/數量三欄 Fat Mo 要求再收窄，
+                                // 淨靠欄闊已經逼近 1024px 安全下限（badge 本身 padding/margin 已佔
+                                // 成六成闊度）。加 .ovw-tight-badge 淨係喺呢三欄縮 padding/字號，
+                                // 冇改 .review-badge 本身——手機卡片、其他視圖嘅同 class badge 唔受影響。
+                                _catCellsHtml += _cell(dimensions.target ? `<span class="review-badge ovw-tight-badge ${_tarCls}">${dimensions.target}</span>` : '');
+                                _catCellsHtml += _cell(dimensions.part ? `<span class="review-badge ovw-tight-badge badge-part">${dimensions.part}</span>` : '');
                                 let _matCls = 'badge-mat-default';
                                 if (dimensions.material.includes('不銹鋼')) _matCls = 'badge-mat-不銹鋼';
                                 else if (dimensions.material.includes('金')) _matCls = 'badge-mat-金';
                                 else if (dimensions.material.includes('銀')) _matCls = 'badge-mat-銀';
-                                _catCellsHtml += _cell(dimensions.material ? `<span class="review-badge ${_matCls}">${dimensions.material}</span>` : '');
-                                _catCellsHtml += _cell(`<span class="review-badge review-badge-qty">x${qty}</span>`);
+                                _catCellsHtml += _cell(dimensions.material ? `<span class="review-badge ovw-tight-badge ${_matCls}">${dimensions.material}</span>` : '');
+                                _catCellsHtml += _cell(`<span class="review-badge ovw-tight-badge review-badge-qty">x${qty}</span>`);
                             }
                         }
 
@@ -12008,15 +12187,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         var _itPC    = (_itProfit != null && _itProfit > 0) ? '#2A9D8F' : '#E63946';
                         var _na      = '<span class="audit-na">—</span>';
                         var _finCells = `
-                          <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                          <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
                             ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
                             ${index === 0 ? `<span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
+                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
                             ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>`;
@@ -12026,13 +12205,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${index === 0 ? orderLeftColsHtml : ''}
                             ${_catView ? '' : _finCells}
                             ${_catView ? _catCellsHtml : ''}
-                            <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 70px; padding: 8px 3px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: 4px 3px; background-color:${rowBatchCol};">
                                 ${engCellHtml}
                             </td>
-                            ${_catView ? '' : `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:6px 10px; min-width: 250px; background-color:${rowBatchCol};">
+                            ${_catView ? '' : `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:4px 8px; background-color:${rowBatchCol};">
                                 ${prodHtml}
                             </td>`}
-                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; min-width: 100px; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding:4px 3px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; background-color:${rowBatchCol};">
                                 <input type="text" id="batch-input-${fhsEscHtml(o.id)}-${_iIdx}" class="review-batch-input"
                                        value="${fhsEscHtml(rowBatch || '')}"
                                        style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:13px;"
@@ -12042,20 +12221,26 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                        onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Batch_Number', 'batch-input-${fhsEscAttr(o.id)}-${_iIdx}', ${_iIdx})"
                                        placeholder="批次">
                             </td>
-                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding:4px 3px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                                 ${(function(){
                                     var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
                                     var _cat = (dimensions.category || item.Category || '').toString();
                                     if (_cat.indexOf('手模擺設') !== -1) {
                                         var _isGlass = dimensions.style && dimensions.style.indexOf('玻璃瓶') !== -1;
                                         var _st = window._fhsHmParseState ? window._fhsHmParseState(_s, _isGlass) : (_isGlass ? [false,false] : [false,false,false]);
-                                        var _lbs = _isGlass ? ['已book','已完成'] : ['已book','已做laser','已做音訊'];
+                                        // [D69續三] 桌面版標籤縮短（已book→Book…）純為咗迫三個 checkbox 上同一行：
+                                        // 143px 欄闊放唔落舊標籤，會散成 3 行（51px）。「已」嘅語意本來就由
+                                        // 刪除線＋灰字表達，唔靠文字重複，刪走唔失資訊。
+                                        // ⚠️ 手機 accordion（L~11340）維持長標籤 —— 卡片有闊度，唔使慳。
+                                        var _lbs = _isGlass ? ['Book','完成'] : ['Book','Laser','音訊'];
+                                        // [D69續三] 三個 checkbox 由「直行 column + gap:5px」改「橫向 wrap」：
+                                        // 舊佈局實測 106px，係手模視圖每一列嘅高度下限（中位列高 109px）。
                                         var _cks = _lbs.map(function(l,i){
                                             var ck = _st[i];
-                                            return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
-                                                +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:14px;height:14px;" onchange="_fhsHmCheckChange(\''+fhsEscAttr(o.id)+'\','+_iIdx+',\'hmck\')"> '+l+'</label>';
+                                            return '<label style="display:inline-flex;align-items:center;gap:2px;cursor:pointer;font-size:11px;white-space:nowrap;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
+                                                +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:12px;height:12px;margin:0;" onchange="_fhsHmCheckChange(\''+fhsEscAttr(o.id)+'\','+_iIdx+',\'hmck\')">'+l+'</label>';
                                         }).join('');
-                                        return '<div id="hmck-wrap-'+fhsEscHtml(o.id)+'-'+_iIdx+'" style="display:flex;flex-direction:column;gap:5px;text-align:left;padding:2px 0;">'
+                                        return '<div id="hmck-wrap-'+fhsEscHtml(o.id)+'-'+_iIdx+'" style="display:flex;flex-wrap:wrap;gap:2px 4px;text-align:left;padding:0;">'
                                             +_cks+'<input type="hidden" id="hmck-val-'+fhsEscHtml(o.id)+'-'+_iIdx+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>'
                                             +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:10px;"></div>';
                                     }
@@ -12078,7 +12263,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:10px;"></div>';
                                 })()}
                             </td>
-                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:8px; background-color:${batchCol};">
+                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:4px; background-color:${batchCol};">
                                 <textarea class="review-notes-textarea"
                                           id="notes-input-${fhsEscHtml(o.id)}"
                                           style="font-size:13px; background:#ffffff;"
@@ -12605,15 +12790,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const toggle = document.getElementById('reviewFilterToggle');
             const filterBody = document.getElementById('reviewFilterBody');
             if (toggle && filterBody) {
-                // Restore last state; default open on Desktop, default collapsed on Mobile first-visit（S150 F3.2）
+                // [密度重排 2026-08-25] 年度/月份/狀態/批次/搜尋/排序呢批低頻欄位，
+                // 無論 desktop/mobile 首次訪問一律預設收埋（之前 desktop 預設展開，
+                // Fat Mo 回報成塊篩選區太佔位）；用戶曾經手動展開過（_saved==='1'）
+                // 先保持展開，尊重返用戶自己嘅選擇。類別 chip 已移出呢個摺疊區、常駐可見，
+                // 唔受呢個預設值影響。
                 var _saved = null;
                 try { _saved = localStorage.getItem('fhs_filter_open'); } catch(e) {}
-                var _shouldCollapse = (_saved === '0') || (_saved === null && window.matchMedia('(max-width:767px)').matches);
-                if (_shouldCollapse) {
-                    filterBody.classList.remove('open');
-                    toggle.classList.remove('expanded');
-                    toggle.setAttribute('aria-expanded', 'false');
-                }
+                var _shouldOpen = (_saved === '1');
+                filterBody.classList.toggle('open', _shouldOpen);
+                toggle.classList.toggle('expanded', _shouldOpen);
+                toggle.setAttribute('aria-expanded', String(_shouldOpen));
                 toggle.addEventListener('click', function() {
                     const isOpen = filterBody.classList.toggle('open');
                     toggle.classList.toggle('expanded', isOpen);
