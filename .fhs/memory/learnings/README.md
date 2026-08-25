@@ -22,7 +22,7 @@
 | 桶 | 檔案 | 範圍 | 目前條數 | 配額上限 |
 |---|---|---|---|---|
 | Supabase | [supabase.md](supabase.md) | Postgres / PostgREST / RLS / migration / RPC 權限 | 14 | 20 |
-| Frontend | [frontend.md](frontend.md) | 主應用前端 HTML/JS（表單、渲染、狀態管理） | 20 | 25 |
+| Frontend | [frontend.md](frontend.md) | 主應用前端 HTML/JS（表單、渲染、狀態管理） | 23 | 25 |
 | Finance | [finance.md](finance.md) | 定價 / 成本 / SKU / 財務計算規則 | 5 | 20 |
 | n8n | [n8n.md](n8n.md) | Workflow 節點、payload、API 限制 | 8 | 20 |
 | Governance | [governance.md](governance.md) | 治理制度、多代理協作、文件生命週期 | 8 | 15 |

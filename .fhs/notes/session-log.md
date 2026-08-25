@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-25/26 (D69續三：訂單總覽類別視圖密集化重排，Excel式密度): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25/26「D69續三」條目 + [decisions.md D69續三](decisions.md)（無完成報告的中型改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 對 D69 類別視圖多輪投訴太稀疏，要求 Excel 式密度，逐輪截圖追加更精細要求（單號欄堆疊、四欄過寬、日期badge分行、「另有」文字過長）。密度改動：table-layout auto→fixed、單號欄改橫向icon動作條、對象/部位/材質/數量四欄縮版badge、日期同限時警告合併一行、「另有」全寫改icon+數量，鎖匙扣視圖表格高2175px→821px（19/19列一屏睇晒）。核心機制：`mwCat` 雙軌欄闊系統確保「全部」視圖零改動；`@media(max-width:1280px)` 分域解決桌面密度同iPad安全嘅回應式衝突。過程中兩次自我回歸即場修復：`overflow-x:auto` 打爛 position:sticky 表頭（CSS overflow-x/y耦合陷阱）、表頭label本身scrollWidth溢出（漏查表頭下限）。未解：訂單06001008報告嘅無故空行，查live Supabase資料一致但測試環境未能重現，待Fat Mo確認持續性。
+**Subagent 使用記錄**：✅已使用（1隻fresh-context code-reviewer覆核首輪diff；後續多輪反饋迭代主對話直接執行）。
+
 ## 2026-08-25 (D69續二：分頁掣白色滑動指示器撳兩下先生效 bug 修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25「D69續二」條目 + [decisions.md D69續二](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報訂單總覽「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應，要再撳一下先出到正確白底效果。根因查明：`#reviewModeContainer` 預設 `display:none`，`initSegmentedControls()` 喺 `DOMContentLoaded` 首次量度時容器仲隱藏緊，`getBoundingClientRect()` 全部返 0 令白色滑動指示器寫低錯誤位置；連帶揪出 click listener 每次撳掣都重新掛一次、舊 listener 從未拆除嘅疊加毛病。修法：量到 0×0 時跳過唔寫、`switchMode('review')` 容器變可見嗰刻主動觸發重新計位、listener 改用 dataset flag 只掛一次。模擬完整 create→review 冷啟動情境驗證通過，D69 四個類別視圖零回歸。

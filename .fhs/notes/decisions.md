@@ -3,6 +3,24 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-25/26] (D69續三) 訂單總覽類別視圖密集化重排 — Excel 式密度，多輪反饋逐一實測收斂
+
+**背景**：Fat Mo 對 D69 類別視圖多輪投訴「太稀疏」，指定要似 Excel 咁密、盡量一屏睇晒鎖匙扣所有列。之後逐輪追加更精細嘅要求：單號欄堆疊過高、對象/部位/材質/數量四欄過寬、日期同限時警告分兩行、「另有」全寫文字太佔位，每輪均截圖+紅圈指出具體問題。
+
+**核心技術決策：`mwCat` 雙軌欄闊系統**——`_FHS_TH_DEF` 部分欄位（`Order_ID`/`Date`/`Customer`/`eng`）新增 `mwCat` 屬性，`fhsBuildOverviewHead()` 用 `(d.mwCat && _c) ? d.mwCat : d.mw` 判斷：有揀類別（`_c` 為真）先用 `mwCat`（桌面密集數值），「全部」視圖（`_c=''`）永遠用原 `mw`（維持 D69 承諾嘅零改動）。呢個機制令本輪所有密度改動完全唔會滲入「全部」視圖，靠一個 boolean 判斷式而非分開兩套渲染邏輯達成。
+
+**回應式衝突同解法**：table-layout:fixed 之下，欄闊係「比例權重」，隨容器闊度線性縮放；但 badge/表頭 label 嘅實際內容闊度係固定 px（中文字/icon 唔會變細），兩者唔同步。同一組 mw 數值喺 Fat Mo 實際嘅 1920 桌面同一個假設嘅 1024 iPad 橫向之間互相排斥——加大去遷就桌面密度，1024 度即刻溢出；夾窄去遷就 1024，1920 又留返大量白位。**解法**：新增 `@media (max-width:1280px)` + 動態掛嘅 `.ovw-narrowcol-<key>` class（`_c` 為真先加），將呢批類別視圖專屬欄嘅闊度喺 ≤1280px 用 `!important` 覆寫返窄screen安全值，>1280px 保留桌面密集值。兩層互不干擾，「全部」視圖因為個 class 淨係喺類別視圖先加，完全唔會命中呢條 media query。
+
+**過程中兩次自我引入嘅回歸（均即場 live 實測揪出並修復，未帶入下一輪）**：
+1. **`.review-table-wrap { overflow-x:auto }` 打爛 position:sticky 表頭**：為修 iPad 1024px 撞版，一度將呢個 wrap 嘅 overflow 由 `visible` 改 `overflow-x:auto`。但 CSS 規格有陷阱——`overflow-x` 設非 `visible` 值時，`overflow-y:visible` 會被瀏覽器強制一併變成 `auto`，令呢個 wrap 意外變成新嘅「sticky scrolling ancestor」。表頭 `position:sticky`（原本靠 `.review-table-wrap` 原有註解明寫「無內部捲動+overflow:visible，避免成為 sticky scrolling ancestor」嚟保證貼實 viewport）因而唔再貼頁面，改貼呢個 wrap 自己嘅捲動框，捲動時飄到表格中間——Fat Mo 截圖見到深色表頭夾喺兩行資料中間。教訓：改動一個有明確反面註解嘅屬性前，必須先讀晒個註解嘅原因，唔可以純粹睇「呢個屬性而家值係乜」就改。已復原 `overflow:visible`，改用「欄闊本身 + media query 分域」解決 1024 撞版，唔再需要呢個 wrapper 兜底。
+2. **表頭 label 本身嘅 scrollWidth 溢出**：連續幾輪收窄部位/數量欄直至貼近 data badge 嘅內容需要（24-45px）時，漏查咗表頭文字本身（icon+「數量」，11px 粗體大寫+letter-spacing）嘅 scrollWidth 實測要 58px——一直只驗「data 內容有冇溢出」，冇驗「表頭 label 有冇溢出」，令表頭文字自己溢出撞落隔籬欄（Fat Mo 截圖：「數量欄表頭移位」）。教訓：欄闊嘅安全下限＝max(data內容需要, 表頭label需要)，唔可以淨計其中一項。已補回 33px（表頭 label 嘅真正物理下限），連 ≤1280px 備用數值嗰邊嘅同一盲點一併補。
+
+**未解決事項**：Fat Mo 報告訂單 `06001008` 出現無故空行。直接查 live Supabase `order_items` 表確認資料（2件：鎖匙扣右腳不銹鋼×4 + 手模擺設玻璃瓶各一）同截圖一致，但用完全相同資料喺測試環境重現得零空隙（單行 61px，同下一張單緊接）。未能定位成因，懷疑一次性渲染閃現，已請 Fat Mo 重新整理頁面確認是否持續，持續先再追查。
+
+**驗證**：每輪改動即時 4 個類別視圖 colspan/文字/表頭溢出=0、內聯編輯 index 對正確品項（D69-follow 建立嘅安全性質延續）、sticky 表頭捲動行為、console 零錯誤，1024px/1920px 雙闊度交叉驗證。另派一隻 fresh-context `code-reviewer`（opus）覆核首輪 diff：PASS 6 項（資料寫入安全/表頭三處同步/手機 accordion 隔離/CSS 特異度/XSS/死碼），揪出 1 個 blocker（手機篩選區佔版 38%畫面）+ 2 個警告（iPad 撞版風險），全部依 FHS「視覺 bug 必須實測」紀律逐一實測驗證後修復，唔盡信純讀碼推論。
+
+全文見 Changelog.md 2026-08-25/26「D69續三」條目。**Subagent 使用記錄**：✅已使用（1 隻 fresh-context code-reviewer 覆核首輪 diff；後續多輪反饋迭代因需要逐輪即時 browser 交叉驗證，主對話直接執行）。
+
 [2026-08-25] (D69續二) 分頁掣（全部/進行中/已完成）白色滑動指示器要撳兩下先生效 — 隱藏容器 0×0 量度 + listener 疊加雙修復
 
 **背景**：Fat Mo 截圖回報訂單總覽「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應（文字轉粗體但冇白底），要再撳一下先出到正確效果。

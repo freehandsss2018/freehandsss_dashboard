@@ -1,5 +1,26 @@
 # Changelog
 
+## [2026-08-25/26] Session（Claude Code / Sonnet 5 執行）— D69續三：訂單總覽類別視圖密集化重排（Excel 式密度）
+
+- **緣起**：Fat Mo 對 D69 類別視圖回報「畫面太稀疏」，多輪截圖＋紅圈逐步收緊：先要求整體密度貼近 Excel，其後逐輪指出單號欄堆疊過高、對象/部位/材質/數量欄過寬、日期同限時警告 badge 分兩行、「另有：⋯」全寫文字佔位，每輪均即場實測驗證後再收下一輪反饋。
+- **密度改動**（鎖匙扣視圖表格總高 2175px→821px，19/19 列一屏睇晒）：
+  - `table-layout:auto`→`fixed`，欄闊由「min-width建議值」改做比例權重，解決刻字/單號欄早前不成比例撐大留白嘅根因。
+  - 批次輸入框／進度下拉／備註 textarea／儲存指示器 padding 全面收緊；`.review-notes-textarea` min-height 80px→23px（focus 先展開 96px）。
+  - 單號欄由「pill+刪除+標記完成+手模+金屬+逾期badge+另有chip 各佔一行」改做「一行 icon 動作條」（`.ovw-id-line`/`.ovw-act`/`.ovw-ico`），逾期 badge 搬去日期欄同日期合併一行（`.ovw-date-line`），「另有：手模擺設 ×1」全寫文字改 icon+數量（複用既有 `_chipMeta` 類別圖示對照）。
+  - 手模擺設三個 checkbox（已book/已做laser/已做音訊）由直行改橫向 wrap，桌面版標籤縮短（手機 accordion 維持長版，兩者用獨立 `_lbs` 變數，寫落 Supabase 嘅序列化 labels 另有 hardcoded 陣列、與顯示層完全脫鉤，改標籤不影響資料）。
+  - 對象/部位/材質/數量四欄新增 `.ovw-tight-badge` 縮版 badge class（淨喺desktop類別視圖用，唔改全域 `.review-badge`，手機卡片實測零沾染）。
+- **關鍵設計**：`Order_ID`/`Date`/`Customer`/`eng` 四欄新增 `mwCat` 欄位（類別視圖專屬闊度覆寫），令「全部」視圖嘅四個對應欄位全程保持原值唔受影響（Fat Mo 明示「全部」唔改）——`fhsBuildOverviewHead()` 加 `_mw = (d.mwCat && _c) ? d.mwCat : d.mw` 判斷式達成。
+- **回應式衝突同解法**：table-layout:fixed 嘅欄闊按比例縮放，但中文 badge／表頭 label 嘅實際內容闊度唔會跟住縮——同一組 px 數值喺 1920 桌面同 1024 iPad 橫向兩個闊度互相排斥（加大刻字/客人去遷就桌面密度，1024 度material badge即刻溢出；反之夾窄去遷就1024，1920 又留白）。解法：新增 `@media (max-width:1280px)` + `.ovw-narrowcol-*` class（由 `fhsBuildOverviewHead()` 喺 `_c` 為真時動態掛），令 >1280px 用桌面密集數值、≤1280px 自動退返窄screen安全數值，兩者互不干擾，「全部」視圖完全唔會命中（class 只在類別視圖出現）。
+- **本輪自己整穿又補返嘅回歸**（逐一 live 實測揪出）：
+  1. CSS 註解漏收 `*/` 令一整段規則失效（改完發現更差，即場排查修正）。
+  2. 為防刻字溢出誤開 `flex-wrap:wrap`，令 1920 度鎖匙扣視圖由 875px 脹到 1177px——改為擴闊刻字欄本身，兩樣一齊解決。
+  3. **`.review-table-wrap { overflow-x:auto }` 破壞 sticky 表頭**（最嚴重一次）：CSS 規格陷阱——`overflow-x` 設非 `visible` 值時，`overflow-y:visible` 會被瀏覽器強制變成 `auto`，令呢個 wrap 意外變成新嘅 sticky scrolling ancestor，令表頭 `position:sticky` 唔再貼實 viewport 而貼呢個 wrap 自己嘅捲動框，捲動時飄到表格中間（Fat Mo 截圖：深色表頭夾兩行資料中間）。原有註解本已明寫「避免成為 sticky scrolling ancestor」但改動時未夠留意。已復原 `overflow:visible`，改用欄闊本身 + media query 分域解決撞版，唔再需要呢個 wrapper 兜底。
+  4. **表頭 label 本身嘅 scrollWidth 溢出**：連續收窄部位/數量欄至貼近 data 內容需要（badge 24-45px）時，漏查咗表頭文字本身（「數量」+icon，11px粗體大寫+letter-spacing，scrollWidth 實測 58px）嘅下限，令表頭溢出撞落隔籬欄（Fat Mo 截圖：「數量欄表頭移位」）。已補回 33px 下限（表頭 label 嘅真正物理下限，唔可再縮），連帶 ≤1280px 備用數值同一盲點一併補。
+- **未解**：Fat Mo 報告訂單 06001008 出現無故空行；直查 live Supabase（`order_items` 表，2 件：鎖匙扣右腳不銹鋼×4 + 手模擺設玻璃瓶）確認資料同截圖一致，但用相同資料喺測試環境重現得零空隙（單行 61px）。懷疑一次性渲染閃現，未能重現，待 Fat Mo 重新整理頁面後再確認是否持續。
+- **驗證**：每輪改動均即時 browser live 測 4 個類別視圖（全部/手模/鎖匙扣/頸鏈）colspan溢出/文字溢出/表頭溢出=0、內聯編輯 index 對正確品項、sticky 表頭捲動行為、console 零錯誤，1024px（iPad橫向）同 1920px（Fat Mo 實際桌面）雙闊度交叉驗證。另派一隻 fresh-context `code-reviewer`（opus）覆核首輪 diff，揪出手機篩選區佔版過高（1個 blocker）+ iPad 撞版風險（2個警告），全部逐一實測驗證後修復（詳見 decisions.md D69續三）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（唯一代碼改動，本輪 CSS/JS 密度重排全部集中喺呢個檔案，`_FHS_TH_DEF`/`fhsBuildOverviewHead()`/`fhsOverviewCols()`/單號欄同日期欄 markup/`_restChipHtml`/新增 media query）。
+- 全文見 decisions.md D69續三。**Subagent 使用記錄**：✅已使用（1 隻 fresh-context code-reviewer 覆核首輪 diff；後續多輪迭代改動因需要逐輪即時 browser 交叉驗證 Fat Mo 反饋，主對話直接執行）。
+
 ## [2026-08-25] Session（Claude Code / Sonnet 5 執行）— D69續二：分頁掣（全部/進行中/已完成）白色滑動指示器要撳兩下先生效
 
 - **緣起**：Fat Mo 截圖回報「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應（文字轉粗體但冇白底），要再撳一下先出到正確效果（白底跟埋個掣）。
