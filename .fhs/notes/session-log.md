@@ -1,9 +1,29 @@
 # Session Log
 
+## 2026-08-24 續 (更正失實聲明：n8n JSON 備份檔完整重建 + 清除D62/D63死key殘留): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-24續條目（無完成報告的改動，本行僅摘要指回）。Fat Mo 第四輪要求核實同一四項清單，第二輪派獨立agent覆核揪出：主對話上一次聲稱「repo內n8n JSON備份檔已同步」係失實，實際只插咗一行guard。連帶查出舊快照殘留D62/D63已撤銷死key（含一個之前未被發現嘅內嵌activeVersion快照）。直接查證live系統本身乾淨，事故修復未被推翻，問題純粹係repo快照未更新。派agent完整重建（30+28節點），過程遇結構性差異主動暫停等授權，非自把自為。三項驗證主對話獨立重新核實。教訓：對自己前一個commit嘅聲明都要保持懷疑。
+**Subagent 使用記錄**：✅已使用（general-purpose agent兩輪，第二輪機械化重建，中途主動暫停等授權）。
+
+## 2026-08-24 (n8n 玻璃瓶 SKU 強制降級 bug 修復 + 9個subagent鏡像大規模同步): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-24 條目（無完成報告的改動，本行僅摘要指回）。主對話自查 D65續IV-follow 交付完整性三輪未果，改派獨立 fresh-context agent 用同一清單重查，第一次即揪出 n8n「Parse Items & Generate SKU」節點存在超過一個月嘅真 bug——無條件將玻璃瓶品名降級純(2肢)/(4肢)，抹走(家庭)/(＋大寶)後綴（金額不受影響，SKU身份記錄受影響）。經 MCP dry-run 確認後正式修復（V47.14→V47.15），真實 webhook 測試單驗證通過並清理。同輪順藤摸出 9 個 subagent 入面 8 個執行鏡像凍結喺 7 月 7 號、脫鈎逾 6 星期，已全數重新同步。教訓（驗收不自驗，自查多輪仍會漏）已落 learnings。
+**Subagent 使用記錄**：✅已使用（general-purpose fresh-context agent 獨立稽核，揪出主對話三次自查漏咗嘅缺口）。
+
+## 2026-08-22 (D65續IV-follow：玻璃瓶「＋大寶」定價階交付 + 一次自我更正事故): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-22 條目（無完成報告的改動，本行僅摘要指回）。Fat Mo 就 D65續IV 暫緩嘅大寶定價提供新數字，過程兩度返工：第一次誤將新價綁喺「純大寶（零嬰兒）」——經 Fat Mo 澄清「大寶＝客人第二個孩子」出生次序定義後，發現該組合定義上不存在，migration 0090 全套作廢，改以 0091 重做正確嘅「嬰兒+大寶＝同tier＋$300」規則。另有一次規劃階段未讀碼斷言嘅小失誤（硬阻擋其實早已存在）。定案：有大寶參與＋無父母 → $1,680/$1,980，家庭價 $2,580 flat 與純嬰兒價均不變；肢數 tier 改為只數嬰兒肢體。9 份權威文件+2 個 learnings 條目+卡片徽章+驗收工具 checklist 全數同步，browser live 窮舉驗證全過。⚠️ 交付時仍未部署生產，待本次 `/commit` 觸發。
+**Subagent 使用記錄**：❌未使用（跨代碼/Supabase/browser 即時交叉驗證+多輪業務澄清問答，委派會斷推理鏈）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。
 **Subagent 使用記錄**：❌未使用（單一 hook 規則實作 + 即時 live 前後對照驗證，委派會斷推理鏈）。
+
+## 2026-08-20 (/read 例行三件事：便攜塊日期標籤修正 + /fhs-usage-audit 補跑 + 過時分支清理 + 補完 D67 NAS 部署): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-20 條目（無完成報告的小改動，本行僅摘要指回）。`/read` 開場 hook 揪出三項異常，逐一查證後處理：①誤報「疑似漏跑 /commit」實為便攜塊標題日期標籤 drift，非真漏跑，已修正；②`/fhs-usage-audit` 逾期 43 天已補跑，快照存 `.fhs/memory/usage-audit/2026-08-20.json`；③三個已 100% 合併入 main 的過時分支已刪除。另續走 `/upload-web` 補完上個 session（雲端 Linux 容器缺 pwsh+NAS 憑證）中斷的 D67 實際 NAS 部署——該 session 只完成本機 cp 升格。
+**Subagent 使用記錄**：❌未使用（純查證+輕量檔案修正，單線程即可完成）。
 
 ## 2026-08-19 (D67：save_structured_order_items RPC 漏14欄位修復 migration 0089 + 前端連帶bug + hook regex補漏): 🏷️ ✅
 

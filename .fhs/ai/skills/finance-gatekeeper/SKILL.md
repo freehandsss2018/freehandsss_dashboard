@@ -1,10 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.12.0
+version: 1.14.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-08-19（D67：`save_structured_order_items` RPC DELETE+INSERT 漏14個成本/V2欄位修復，migration 0089，§一路由表加一行，見 §5.4.19）
+last_updated: 2026-08-22（D65續IV-follow：玻璃瓶「＋大寶」價階 $1,680/$1,980（同 tier ＋$300）+ 兩個新 SKU（migration 0091）；肢數 tier 改為只數嬰兒肢體，推翻 2026-07-21 定案；§一路由表加一行，見 §5.4.20。同日稍早 migration 0090「純大寶」版本為錯誤實作已作廢）
+[前次] 2026-08-19（D67：`save_structured_order_items` RPC DELETE+INSERT 漏14個成本/V2欄位修復，migration 0089，§一路由表加一行，見 §5.4.19）
 [前次] 2026-08-17（D65續II：立體擺設價錢真源抽為 `_pPriceOfSku()`，§一路由表加一行；純代碼重構，128組窮舉證實零財務規則變動，見 §5.4.18）
 [前次] 2026-08-16（D65：父母/大寶升格訂單層一次性角色，§一路由表新增 owner 歸屬/家庭組合 S/P 全單判定一行，見 §5.4.17）
 [前次] 2026-08-16（§三「5條財務死線」第2條補漏 `accessory_cost`——此前只列三分類，屬同 finance-auditor.md/database-reviewer.md 文件缺口同一批 grep sweep 事後揪出；一併修復 `FHS_Finance_Bible.md` §九「驗證公式」自身內部漂移，同檔 §三 line 136 早有4分類但 §九 line 396 仍停留3分類）
@@ -51,6 +52,7 @@ compatible_with: AGENTS.md v1.4.13
 | 多件手模擺設訂單（一單多件木框/玻璃瓶）成本點計 | `FHS_System_Logic_Overview.md` §5.4.14（D64，2026-08-15）：逃生口模式，每件獨立收取完整基礎成本 $210，不設第二件起減免；追加件燈飾照計 $30/件 |
 | 父母/大寶唯一性規則 / 家庭瓶歸屬（owner）/ 家庭定價 $2,580 判斷歸邊件 / 家庭組合鎖匙扣 S/P 全單判定 | `FHS_System_Logic_Overview.md` §5.4.17（D65，2026-08-16）：父母/大寶升格「訂單層一次性角色」，全單最多一件家庭瓶，歸屬由 `#p_family_owner` 選擇器指定（`_isFamilyOwner()`）；業務規則七條+owner機制全文見 `FHS_Product_Definition.md` §3.1a；家庭組合鎖匙扣 S/P 語義＝「全單任何一件」倒模狀態（與立體擺設家庭定價「只讀 owner 件自身」刻意不同，見 §3.3a） |
 | 立體擺設價錢真源 / `_pPriceOfSku` 定義喺邊 / 卡片徽章顯示邏輯 | `FHS_System_Logic_Overview.md` §5.4.18（D65續II，2026-08-17）：`calculatePricing()` 原 inline 價錢判斷式抽為純函數 `_pPriceOfSku(name)`，卡片 owner 徽章與報價共讀同一函數（結構上不可能唔一致）；純代碼結構重構，128組窮舉證實零財務規則語義變動，七條業務規則本身不變 |
+| 有大寶嘅玻璃瓶點計 / `玻璃瓶套裝 (N肢+大寶)` SKU / 2肢4肢點數 / 倒模對象組合邊啲可能 | `FHS_Pricing_Bible.md` §0＋§2.1（唯一定價 SSoT，含 7 格組合窮舉表）+ `FHS_System_Logic_Overview.md` §5.4.20（D65續IV-follow，2026-08-22，migration 0091）：有大寶參與＋無父母 → $1,680／$1,980（同 tier 純嬰兒價 ＋$300）；純嬰兒 $1,380／$1,680 不變；含父母一律 $2,580 flat 不變。成本三者同為 $210 flat（純定價調整，＋$300 全落淨利）。**肢數 tier 只數嬰兒肢體**（2026-08-22 起，推翻 2026-07-21「大寶肢體同等計入」定案）。**業務定義**：嬰兒＝首個孩子、大寶＝第二個孩子，故「有大寶必有嬰兒」，純大寶單定義上不可能（誤入時由既有橙色提醒接住，不阻擋）。`en_parent` 已勾但零嬰兒肢體＝硬阻擋（2026-07-19 起既有）。新增立體擺設 SKU **無須改 n8n**（`Smart Cache Strategist` 前綴表未命中會 fallback `sku.eq` 精確查 products） |
 | Mode 2「儲存明細」點解會清走 `accessory_cost`/成本欄位 / `save_structured_order_items` RPC | `FHS_System_Logic_Overview.md` §5.4.19（D67，2026-08-19，✅已修復）：RPC 用 DELETE+INSERT 重寫 order_items 曾漏 14 個成本/V2 欄位，migration 0089 改用整行快照 + COALESCE fallback；前端 `saveMode2Items()` pass-through 欄位改送 `null`（非 `0`）避免覆蓋走真實成本 |
 
 ---

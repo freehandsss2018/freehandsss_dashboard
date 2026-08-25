@@ -3,6 +3,73 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-24 續] 更正上一條決策嘅失實聲明——n8n JSON 備份檔「已同步」實為假話，已完整重建
+
+**發現**：第二輪獨立 fresh-context agent 覆核揪出，上一條決策聲稱「repo 內 `n8n/FHS_Core_OrderProcessor_live.json` 備份檔同步反映 live 修復」係**失實**——實際只係喺一個凍結咗 3 個月（自 2026-05-27，Session 33 起未更新）嘅舊快照入面，用文字替換插咗一行 guard，冇真正重新攞成個 live workflow。
+
+**連帶查出**：呢個 3 個月落後嘅快照本身仲殘留住 D62/D63 事故（2026-08-10，已記錄於 `project_n8n_supabase_401_credential_incident.md`）洩漏並被 Supabase 撤銷嘅死 API key 文字（8 處，其中 3 處喺一個內嵌嘅 `activeVersion` 歷史快照入面，非主 `nodes` 陣列，之前完全冇被發現）。**已直接查證 live 系統本身完全乾淨**——3 個事故點名節點（`Smart Cache Strategist`／`Supabase Mirror Prep`／`Mirror Delete to Supabase`）全部只讀 `$env`/`process.env`，D62/D63 嘅修復紮實有效，冇被推翻，問題純粹在呢份舊 repo 快照未更新。
+
+**修復**：派獨立 agent 逐個節點（30個，主 `nodes` 陣列 + 內嵌 `activeVersion` 快照 28個）用 `get_workflow`+`get_node` MCP 重新攞返 live 狀態，按 name 匹配替換 `parameters`（結構性欄位 `id`/`type`/`typeVersion`/`credentials` 保留原檔案值，因 MCP 唔回傳呢啲）。過程中發現結構性差異（少2多1個節點：`Supabase Mirror Prep V47.11`改名做`Supabase Mirror Prep`；新增`Filter Test Delete Notify`同`Send Test Summary`）——agent 正確停低問清楚先做，唔自把自為。經確認後完整處理，`connections` 區塊同步更新。
+
+**已知限制**：新增節點 `Filter Test Delete Notify` 嘅 `typeVersion=2` 屬 best-effort 估值（repo 內冇同類節點可對照，未經 n8n schema 驗證）；`Send Test Summary` 嘅 `typeVersion=1.2` 有把握（同其餘3個telegram節點一致）。此檔案純供人/AI 查閱代碼參考，非用作 import 返 n8n，故估值錯誤唔會有功能性後果。
+
+**驗證**：`sb_secret_` 全檔（含內嵌快照）計數＝0；JSON 合法性通過；`git diff --stat` 138 insertions/37 deletions，幅度符合3個月落後嘅預期；主對話獨立重新執行三項驗證核實 agent 報告非虛報。
+
+**教訓**：對自己前一個 commit 嘅聲明都要保持懷疑——「已同步」呢類斷言喺冇實際重新拉取全量資料嘅情況下唔應該講出口，尤其係涉及 git 追蹤檔案嘅安全敏感內容。
+
+**Subagent 使用記錄**：✅ 已使用（general-purpose agent 兩輪：第一輪獨立審計揪出問題，第二輪執行機械化重建，中途因結構性差異主動暫停等待授權，非自把自為）。
+
+[2026-08-24] (D65續IV-follow 續) n8n 玻璃瓶 SKU 強制降級 bug 修復（V47.14→V47.15）——`(家庭)`/`(N肢+大寶)` 後綴自 2026-07-19 起被靜默抹走，金額不受影響、SKU 身份記錄受影響
+
+**發現經過**：D65續IV-follow 交付後，派獨立 fresh-context agent 覆核「測試/驗收指令是否配合」，揪出 `n8n/FHS_Core_OrderProcessor_live.json`（及對應 live workflow）「Parse Items & Generate SKU」節點有段無條件正規化邏輯：
+
+```js
+} else if (sku.includes("玻璃瓶")) {
+    let limb = (sku.includes("4肢") || sku.includes("3肢")) ? "(4肢)" : "(2肢)";
+    sku = `玻璃瓶套裝 ${limb}`;
+}
+```
+
+`sku` 一開始已經係 Dashboard 送嚟嘅正確 canonical 值（`_pDeriveSkuName()` 產出），但呢段防禦性正規化（原意處理更舊年代唔規範嘅品名字串）不分青紅皂白將任何含「玻璃瓶」嘅品名強制降級做純 `(2肢)`/`(4肢)`，抹走 `(家庭)`（migration 0060，2026-07-19 起）同 `(N肢+大寶)`（migration 0091，2026-08-22 起）呢啲後綴。
+
+**影響範圍**：`Search_SKU` 一路傳到最終寫入 `order_items.product_sku`。金額不受影響（三個變體成本同為 $210 flat，Smart Cache Strategist 巧合撈到同一個數），但 SKU 身份記錄錯咗——過去一個月任何一張家庭瓶單、依家起任何一張＋大寶單，Supabase `product_sku` 都會顯示成錯誤嘅純嬰兒變體，依賴呢個欄位做統計/篩選會漏 count。非本次改動引入，只係新 SKU 繼承咗同一個舊 bug。
+
+**點解之前驗證漏咗**：2026-08-22 嘅驗證淨係喺 Dashboard browser 同 Supabase `products` 表核對報價/SKU 生成邏輯本身，從未實際跑過 n8n webhook 全鏈路，冇觸及呢條路徑。自我核實三次都用同一套方法論（browser+products表），直至改派獨立 fresh-context agent 先揪出。
+
+**修復（V47.15，MCP `update_node_code`，dry-run 確認後正式寫入，自動備份於 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-24/`）**：加 guard，品名已含「家庭」或「大寶」視為完整 canonical SKU，跳過強制降級。
+
+**驗證（真實 webhook，非 mock）**：合成測試單 `testD65sku576986` 兩件（`玻璃瓶套裝 (2肢+大寶)`、`玻璃瓶套裝 (家庭)`），Supabase `order_items.product_sku` 逐字正確保留兩個變體名，`handmodel_cost` 各 $210 印證金額不受影響。測試單已用 `{action:"delete", Order_ID}` 正式格式清理（`deleted_at` 已確認）。
+
+**教訓**：驗收不自驗——同一個人用同一套方法論核實三次會有系統性盲點，改派獨立 fresh-context agent 先真正揪出問題。詳見 `FHS_System_Logic_Overview.md` §5.4.20 補記。
+
+**Subagent 使用記錄**：✅ 已使用（general-purpose fresh-context agent 獨立稽核，揪出主對話三次自查都漏咗嘅缺口）。
+
+[2026-08-24] Subagent 鏡像大規模漂移修復——9 個中 8 個 `~/.claude/agents/freehandsss/` 凍結喺 2026-07-07，跟 repo Master 脫鈎逾 6 星期，已重新同步
+
+**發現經過**：D65續IV-follow 交付後覆核 `product-integration-validator` 改動有否真正生效，diff Master 同鏡像發現漂移；順藤摸瓜檢查其餘 8 個 subagent，全部同一模式——鏡像檔 mtime 恆定 2026-07-07 21:56（同一批次），Master 檔持續更新至 8 月中，diff 33～590 行不等。
+
+**影響範圍**：`~/.claude/agents/freehandsss/` 係 Claude Code 實際 spawn subagent 時讀嘅檔案，非 repo 內 `.fhs/ai/subagents/freehandsss/`（Master，人類/AI 平時查閱改動嗰份）。即過去 6 星期任何一次 `finance-auditor`／`database-reviewer`／`code-reviewer` 等 subagent 呼叫，實際執行嘅都係 7 月 7 號嘅舊版指令。舉證：`finance-auditor.md` 舊版缺 `accessory_cost` 第四分類（2026-08-16 先喺 Master 補入），代表呢 6 星期內任何一次財務稽核 subagent 呼叫都可能漏審呢個成本分類。
+
+**修復**：純機械化 `cp` 同步 8 個檔案（Master → mirror，唔改內容），Fat Mo 當面確認後執行。非 repo 追蹤範圍，冇對應 commit。
+
+**根因未查**：點解會凍結喺同一日（7 月 7 號）未深究——可能係當日某次 Session 手動同步後，之後所有改 Master 嘅 session 都漏咗「同步複製」呢一步（README.md 明文規定但無機械化強制）。若要防止再發生，需要喺 `/commit` P0.1「系統接通確認」加一項 mirror diff 檢查（現時 P0.1 只查存在性/非空，唔查內容一致性）——**未落實裝，留待 Fat Mo 裁決是否值得加呢個機械化守護**。
+
+> ⚠️ 以下「定案規則」起為 D65續IV-follow 主體內容（2026-08-22 定案），原文缺獨立標題行，merge 時原樣保留不補（避免臆測原作者意圖），僅加此提示行供日後查閱辨識——見 handoff.md 待辦「decisions.md 標題缺失」。
+
+**定案規則**：有大寶參與且無父母 → $1,680（2肢）／$1,980（4肢），即同 tier 純嬰兒價 ＋$300；純嬰兒 $1,380/$1,680 不變；含父母一律 $2,580 flat 不變。成本三者同為 $210 flat，＋$300 全落淨利（Fat Mo 確認屬定價策略非成本差異）。
+
+**關鍵業務定義首次成文**（Fat Mo 口述，此前三份權威文件皆無記載）：嬰兒＝初生或客人**首個**孩子；大寶＝客人**第二個**孩子（嬰兒的兄／姊）。「大寶」相對於「嬰兒」而存在，故**有大寶必然有嬰兒**，「只有大寶、沒有嬰兒」定義上不成立（該孩子本身就會被定義為嬰兒）。據此確認 §0「所有產品必須圍繞嬰兒展開」**從未被違反**，大寶不是 §0 的例外——推翻 AI 稍早「大寶屬兒童非成人故為例外」的錯誤框架。
+
+**兩項連帶推翻**：(1) 肢數 tier 只數嬰兒肢體，取代 2026-07-21「大寶肢體同等計入總數」；(2) Cost Schema §3.1「嬰兒＝0–3歲／大寶＝4歲以上」年齡定義作廢，改用出生次序定義。
+
+**執行**：migration 0091（DELETE 0090 兩個錯 SKU + 建 `玻璃瓶套裝 (2肢+大寶/4肢+大寶)`，已查 `order_items` 零引用故 DELETE 安全）；`_pDeriveSkuName()` 改 `hasElder` 判定 + tier 只數嬰兒；`_pPriceOfSku()` 大寶判斷排在通用 4肢/2肢 之前；還原 D65「未選嬰兒肢體」提醒（不再抑制）。V42 + current.html 同步。Pricing Bible v1.8.1、Cost Schema、Product_Definition、Logic_Overview §5.4.20、finance-gatekeeper v1.14.0 全部同步。**n8n 零改動**（已查證 fallback 機制）。
+
+**驗證**：browser live——SKU 窮舉 11 組 + 端到端報價 8 組全對，木框零回歸，零 console error。
+
+**同日兩次 AI 錯誤（均在交付前發現）**：(1) 誤稱「父母+零嬰兒會靜默少收」，實際硬阻擋 2026-07-19 已存在，未讀碼即斷言；(2) **較嚴重**——將新價綁在定義上不存在的「純大寶」組合，令新價永不觸發，而真正適用的「嬰兒+大寶」反被標為不可能。根因：AI 在窮舉表預填 ✅/🚫 假定，Fat Mo 只逐點確認被問及的格，未複核預填值。**教訓：確認窮舉表時不可預填讓對方「確認」，應逐格詢問或請對方主動列出**。詳見 Logic_Overview §5.4.20。
+
+**Subagent 使用記錄**：❌ 未使用（跨代碼/DB/browser 即時交叉驗證）。
+
 [2026-08-21] (D68) handoff 同步從「散文紀律」升格為「機械閘」——`pre-tool-guard.js` R13 攔截 `git commit`
 
 **背景**：Fat Mo 明確定義目標——「當我打 `/commit`，就代表任務完成並且**能確保**同步更新 handoff」。查證確認呢個保證一直唔成立：`commit.md` P0.7 雖然白紙黑字寫「`更新: <日期>` 必須更新至今日日期」，但純屬散文指示，冇任何機械強制。

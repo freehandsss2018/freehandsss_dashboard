@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="__DEPLOY_TS__">
+    <meta name="fhs-build" content="2026-08-24T03:25:54Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -7563,10 +7563,23 @@
             var babyLimbCount = babyLimbSels.filter(function(s) { return s.value !== "無"; }).length;
             var elderChecked = isOwner && document.getElementById("en_elder") && document.getElementById("en_elder").checked;
             var elderLimbCount = elderChecked ? Array.from(document.querySelectorAll('.limb-sel[data-who="大寶"]')).filter(function(s) { return s.value !== "無"; }).length : 0;
-            var type = (babyLimbCount + elderLimbCount) >= 4 ? "4肢" : "2肢";
+            var type = babyLimbCount >= 4 ? "4肢" : "2肢";
             var hasParentGlass = isOwner && document.getElementById("en_parent") && document.getElementById("en_parent").checked
                 && babyLimbSels.some(function(s) { return s.value !== "無"; });
-            return subCat.includes("木框") ? ("木框套裝 (" + type + ")") : (hasParentGlass ? "玻璃瓶套裝 (家庭)" : ("玻璃瓶套裝 (" + type + ")"));
+            // 大寶參與（訂單層角色，只歸屬 owner 件）＝該件改用「+大寶」價階，較同 tier 純嬰兒貴 $300
+            // （2026-08-22 Fat Mo 定案：2肢 $1,680／4肢 $1,980）。
+            // ⚠️ 肢數 tier 自 2026-08-22 起**只數嬰兒肢體**，取代 2026-07-21「大寶肢體同嬰兒同等
+            // 地位一齊計總數」定案——大寶改為以「有冇參與」做 +$300 修正項，不再影響 2肢/4肢 分級。
+            // ⚠️ 必須用獨立 SKU 名：沿用「玻璃瓶套裝 (N肢)」會令 fhsSuggestedPriceMap（per-SKU
+            // 靜態對照表）分唔到有冇大寶而喺稽核面板顯示錯價——即 2026-07-19 家庭價踩過嘅
+            // 同一個坑（見 migration 0060 註解）。
+            // 註：「有大寶但零嬰兒」按業務定義不可能（大寶＝第二個孩子，若無嬰兒則該孩子本身
+            // 即定義為嬰兒），故不為該狀態另設 SKU；操作員誤入時由既有「未選嬰兒肢體」提醒接住。
+            var hasElder = isGlass && !hasParentGlass && elderLimbCount > 0;
+            if (subCat.includes("木框")) return "木框套裝 (" + type + ")";
+            if (hasParentGlass) return "玻璃瓶套裝 (家庭)";
+            if (hasElder) return "玻璃瓶套裝 (" + type + "+大寶)";
+            return "玻璃瓶套裝 (" + type + ")";
         }
 
         function _pMainSkuOf() {
@@ -7587,7 +7600,13 @@
         function _pPriceOfSku(name) {
             if (name) {
                 if (name.includes("木框")) return name.includes("4肢") ? 2380 : 2080;
-                if (name.includes("玻璃")) return name.includes("家庭") ? 2580 : (name.includes("4肢") ? 1680 : 1380);
+                if (name.includes("玻璃")) {
+                    if (name.includes("家庭")) return 2580;
+                    // ⚠️ 大寶必須喺通用 4肢/2肢 判斷之前——「玻璃瓶套裝 (4肢+大寶)」本身含「4肢」字樣，
+                    // 次序調轉會令有大寶嘅單靜默收返純嬰兒價（少收 $300）。
+                    if (name.includes("大寶")) return name.includes("4肢") ? 1980 : 1680;
+                    return name.includes("4肢") ? 1680 : 1380;
+                }
             }
             // 未命中任何已知型態：唔可以靜默回 0（本 repo 對靜默財務失敗有血訓）。
             // SKU 命名一旦漂移，要即刻喺 console 吵住出聲，而唔係報價無聲無息變 $0。
@@ -7627,7 +7646,10 @@
                     return;
                 }
                 // 淡色徽章顯示該件實際價（Q-1 裁決：顯示，兩件並排先睇到 $2,580 vs 差價）
-                var html = '<span class="d51-family-badge--muted">$' + price + '</span>';
+                // 2026-08-22：有大寶嘅件加標籤——同 tier 嘅 $1,380 vs $1,680 淨睇銀碼分唔出點解貴咗
+                // $300，操作員會以為報錯價。沿用 E2 原則：標籤一律由 SKU 名推導，唔用 state 判定。
+                var _elderTag = name.includes('大寶') ? '大寶 · ' : '';
+                var html = '<span class="d51-family-badge--muted">' + _elderTag + '$' + price + '</span>';
                 // 「設為家庭瓶」快捷掣：只喺非 owner 且全單多過一件玻璃瓶時先出現（E6）
                 if (!_isFamilyOwner(itemKey) && glassCount > 1) {
                     var slot = itemKey === 'TEMP_P_MAIN' ? 1 : Number(itemKey.slice(7));
