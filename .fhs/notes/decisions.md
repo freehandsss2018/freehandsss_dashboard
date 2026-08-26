@@ -3,6 +3,30 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-26] (D69續六) 進度狀態往返失真全套根治方案 — `/execute` 執行完成
+
+**背景**：D69續四 cl-flow-fast 判決 CONDITIONAL_READY，Fat Mo 已就 3 項拍板（見 D69續四段落），本輪 `/execute` 落地。原 `artifacts/2026-08-26-0828/` 內嘅 a3-draft 逐行技術規格已 gitignored，本 session 之worktree 冇存到，執行前先重新讀現行程式碼＋live Supabase 查證重建技術設計（非逐字重播 a3-draft），已向 Fat Mo 聲明此點並取得「照你方向去處理」嘅授權。
+
+**執行前意外發現並修復**：本 worktree（`claude/read-command-68c88c`）分支自舊 base（D68為止），漏咗 D69～D69續五全部 work（包括本方案本身）。查證 `claude/d65-family-owner-role` 已 push origin 且與本 worktree 零分歧（0 ahead / 28 behind），安全 `git merge --ff-only` 追上，未觸碰主倉工作目錄（該處在另一分支且有獨立進行中改動）。
+
+**技術設計（`_FHS_STAGE_DEF` 單一真源）**：
+- 新增 `window._FHS_STAGE_DEF` 陣列，每階段有 `value`（畫面原文，同 `fhs_complete_order` RPC 寫入慣例對齊）/`label`/`scope`（`general`/`keychain`/`bulk`/`filter` 四種下拉情境）。
+- 新增 `_fhsStageOptionPairs()`/`_fhsStageOptionsHtml()`/`_fhsPopulateStageDropdowns()`/`_isKeychainCategory()` 四個 helper，取代原本 4 處分散清單（篩選下拉 `#reviewStatus`、批量下拉 `#bulkStatusSelect`、手機卡片、桌面表格）。兩個靜態 `<select>` 改喺 script 執行時一次性填充，唔再喺 HTML／JS 兩處各自維護會漂移嘅選項清單。
+- **移除 `_sanitizeItemStatus()` 函式**（原本 4 個寫入點都會call佢，將畫面原文強行轉做收窄咗嘅 ENUM 風格值，係「同一個值嚟回一次就變一次」嘅根源）。4 個寫入點（`saveInlineEdit` 嘅 localMetaCache + PATCH、`sbSyncOrder` 嘅兩個 INSERT 路徑）全部改寫畫面原文，只保留空值防禦（`value || '0 什麼都未做'`）。
+- `_FHS_LEGACY_STATUS_MAP`/`_fhsNormalizeStatus`（顯示層安全網，處理 DB 殘留歷史別名值）**冇改動**，同 `_FHS_STAGE_DEF`（寫入層單一真源）係兩個獨立機制並存；`_fhsNormalizeStatus` 加 `.trim()`（Gemini MINOR）。
+- `localStorage` key `fhs_status_store` 改名 `fhs_status_store_v2`（Gemini MAJOR#2）——防止舊瀏覽器快取住轉換前嘅 ENUM 化舊值，喺根治後繼續遮蓋新鮮 DB 值。舊 key 唔清理（stale but harmless）。
+
+**手模路徑（項③，Fat Mo 拍板擴大範圍）根因分析**：追蹤 `_fhsHmCheckChange()` 寫入路徑，證實 checklist 值（`hm:已book|已做laser` 呢種格式）一樣經 `_sanitizeItemStatus()` 寫入，一樣被壓縮失真（2步驟壓成單一 `已book日期`，第2個勾選狀態喺下次 sbSyncOrder 或 refresh 後消失）。讀取端 `_fhsHmParseState()` 本身已經識得正確解析原始 `hm:` 字串——**移除寫入層轉換後，手模路徑自動一併根治，唔需要額外設計**。
+
+**SQL 清洗（migration `0092_process_status_dialect_cleanup.sql`）**——live 查證分佈後執行，範圍嚴格對齊 Fat Mo 拍板：
+- `process_status`：`完成`(17筆)→`Done 已完成`、`待製作`(4筆)→`0 什麼都未做`。**`製作中`(執行時live查證已增至8筆，非原估3筆，因寫入bug持續發生)刻意不清洗**——維持原值，前端已有嘅 `⚠原值` raw-option 顯示機制（D69續四已上線，本輪冇改動）繼續生效，由 Fat Mo 逐筆人手指定。
+- `precomplete_status`：`完成`(54筆)→`Done 已完成`、`待製作`(1筆)→`0 什麼都未做`（Gemini BLOCKER①擴大範圍，`fhs_uncomplete_order` 會由呢個欄位還原，唔清洗會令舊方言死灰復燃）。
+- 執行後即時查證：`process_status`分佈 `Done 已完成`65→82、新增`0 什麼都未做`4、`完成`/`待製作`歸零，`製作中`/`已book日期`/`hm:...`/`需進行補打` 一律不變；`precomplete_status`：`完成`歸零全部轉 `Done 已完成`(54)。
+
+**獨立稽核**：`code-reviewer` subagent 首輪 FAIL（`_isKeychainCategory` 判斷邏輯喺手機/桌面兩處重複，違反 DRY），已抽成全局 helper 修復，重新 live 驗證（重新載入 dashboard，DOM 確認 keychain/general 兩組 scope 選項正確、`製作中` 品項 `⚠` 選項正確 selected、console 零錯誤）。
+
+**改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（81 insertions/58 deletions）、`supabase/migrations/0092_process_status_dialect_cleanup.sql`（新檔，已 apply 到 live Supabase）。**唔涉及 schema 改動**（欄位本已自由 text）、**唔涉及 n8n 改動**（Mirror Prep 節點本身純 pass-through，前端統一後自動跟）。**Subagent 使用記錄**：✅已使用（`code-reviewer` 獨立審查 HTML diff，揪出並促成 DRY 修復；分支修復/live SQL查證/browser驗證由主對話直接執行，需 repo/DB/browser 存取，委派冇存取嘅模型會出幻覺路徑）。
+
 [2026-08-26] (D69續五) fhs-health-check.js 新增第8類偵測：P0.6歸檔洩漏機械閘
 
 **背景**：D69續四交接過程中揪出 `commit.md` P0.6（完成項目搬去「已確認完成」歸檔區）自 Session 144（2026-07-05）起連續 7 週無人執行，MASTER 持續待辦表積壓 135 項已完成項目佔表 87%，Fat Mo 反覆質疑「話已解決但新session仍見到」——根因之一正是呢個純人工紀律規則冇機械閘偵測，症狀係「表面有記錄、實際搵唔到」而非報錯，容易再度靜默停擺。Fat Mo 明確指示「要加 health-check 掃描 & 加呢個 health-check 閘」。

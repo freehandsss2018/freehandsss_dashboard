@@ -45,7 +45,8 @@
 <!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
 ### 跨領域指標（全文在別桶）
 - → `supabase.md` #10 新增資料表欄位後，除咗n8n寫入鏈，仲要逐一檢查前端所有獨立 fetch 呢個表嘅 SELECT query 有冇跟住補齊
+- → `supabase.md` #16 前端代碼對某欄位做「唔准存原文，一律轉成固定幾個值」嘅轉換，唔代表 DB 層真係有 ENUM/constraint 逼佢咁做——必須查 `pg_constraint`/`information_schema.columns` 先可以斷定
 - → `n8n.md` #2 Phase 0 payload 流向前置查證
-- → `governance.md` #5 【高頻 ⚠️】安全類修復唔可以一輪收工——實測連續 4 輪對抗式審查，每一輪都揪到真問題，其中兩輪推翻咗主對話自己嘅核心設計前提
+- → `governance.md` #6 【高頻 ⚠️】安全類修復唔可以一輪收工——實測連續 4 輪對抗式審查，每一輪都揪到真問題，其中兩輪推翻咗主對話自己嘅核心設計前提
 - → `tooling.md` #4 【高頻 ⚠️】跳脫層數唔可以靠推理，一定要用 `charCodeAt` 實測；另 raw U+2028/U+2029 放入 JS 源碼即係 SyntaxError
 <!-- POINTERS:END -->

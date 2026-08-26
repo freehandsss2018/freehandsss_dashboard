@@ -26,6 +26,8 @@
 
 11. **對自己前一個 commit 嘅「已同步/已完成」聲明都要保持懷疑，尤其涉及安全敏感內容**：2026-08-24 commit `219dc48` 聲稱「repo內n8n JSON備份檔已同步反映live修復」，實際只喺一份凍結3個月嘅舊快照插咗1行guard，冇真正重新拉取全量資料——備份檔仲殘留住D62/D63已洩漏並撤銷嘅死key文字（8處，其中3處喺一個之前完全未被發現嘅內嵌`activeVersion`歷史快照）。第二輪獨立agent覆核先揪出。**「已同步」呢類斷言，喺冇實際重新拉取全量資料源頭比對之前，唔應該講出口**——單一行 patch唔等於同步，尤其涉及git追蹤檔案入面嘅密鑰殘留呢類安全敏感內容，斷言錯咗嘅代價唔止係文件唔準確，可能係誤導未來讀者以為風險已清除。日後任何「已同步/已完成」聲明前，應該先問「我係咪真係重新攞晒源頭嘅全量資料嚟比對，定係淨係改咗聲稱要改嘅嗰一忽」 — 2026-08-24 見 decisions.md 2026-08-24續條目 `@governance +n8n` <!-- v:2026-08-24 -->
 
+12. **新 worktree/新分支 session 開工前，必須核對 ahead/behind 而非假設「新開嘅就係最新」——`/read`讀到嘅 handoff 內容可以來自另一個活躍 worktree/main checkout，同本 worktree 實際 checkout 嘅分支唔同**：2026-08-26 D69續六 `/execute`，`/read`（用絕對路徑冇帶 worktree 前綴）讀到主倉checkout（`claude/d65-family-owner-role` 分支）嘅 handoff.md，內容係最新（D69續五）；但本 worktree 分支（`claude/read-command-68c88c`）實際 fast-forward 自舊 base（D68 為止），漏咗 D69～續五全部 code。若當時直接喺呢個 worktree 動手改 `_sanitizeItemStatus()`，會喺一個**冇 D69續四止血修復**嘅舊版本上疊加新改動，merge 時大機會撞版本或靜默丟失中間修復。**做法**：任何 `/execute`／實作任務動手改代碼前，先 `git rev-list --left-right --count HEAD...<推斷嘅最新分支>` 核對 ahead/behind；若純落後（0 ahead）可安全 `git merge --ff-only` 追上；若雙向分歧就要停低問清楚，唔可以假設本 worktree 已經係最新。同既有 `feedback_worktree_bash_cd_path_leak`（絕對路徑漏 worktree 前綴會靜默錯改主倉）屬同源但唔同症狀嘅風險——嗰條講「寫錯地方」，呢條講「喺舊地基度起樓」 — 2026-08-26 見 decisions.md D69續六 `@governance +tooling` <!-- v:2026-08-26 -->
+
 ## Preferences
 
 1. **Skill vs Subagent：規則 context 問題用 Skill**：「忘記財務/業務規則」是 context 沒帶規則進來的問題，解法是 Skill（task 開始前 load）；Subagent 是 spawn 出去做事，無法解決 AI 呼叫前不知道規則的問題 — 源自 2026-06-01 `@governance` <!-- v:2026-06-01 -->
@@ -38,5 +40,7 @@
 ### 跨領域指標（全文在別桶）
 - → `supabase.md` #12 【高頻 ⚠️】規則系統由「thread 級」擴展成「全域生效」時，原有嘅「訊息內容存在」防偽護欄唔再夠——要問清楚呢個護欄嘅資料源頭本身係咪受同一信任邊界保護
 - → `n8n.md` #7 【高頻 ⚠️】n8n Code node 預設封鎖環境變數存取（`N8N_BLOCK_ENV_ACCESS_IN_NODE`）——見到「secret 硬編碼 + 防禦性 try/catch 包住 env 讀取」呢個組合，唔好當疏忽，要當「env 存取曾經失敗過」嘅訊號
-- → `tooling.md` #6 【高頻 ⚠️】Git worktree session 入面，絕對路徑漏咗 worktree 前綴會靜默錯改主倉，Read/Edit 完全唔會報錯
+- → `tooling.md` #7 【高頻 ⚠️】Git worktree session 入面，絕對路徑漏咗 worktree 前綴會靜默錯改主倉，Read/Edit 完全唔會報錯
+- → `tooling.md` #8 升格部署嘅 promotion-copy 目標路徑必須係 `scripts/upload-web.ps1` 實際讀取嘅檔名，唔可以憑口語「current.html」臆測落錯位置
+- → `tooling.md` #10 【高頻 ⚠️】警告腳本嘅「取數範圍」細過「讀取範圍」時，會靜靜哋出一份殘缺清單——零報錯，而且睇落完全正常
 <!-- POINTERS:END -->

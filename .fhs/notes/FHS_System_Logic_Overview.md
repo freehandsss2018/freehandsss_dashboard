@@ -751,6 +751,21 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **教訓**：同一人用同一套方法論自查三次仍漏，改派獨立 fresh-context agent 先揪出——驗收不自驗原則的實證案例。詳見 decisions.md 2026-08-24 條目。
 
+### 5.4.22 `order_items.process_status` 往返失真根治：`_FHS_STAGE_DEF` 單一真源 + 移除 ENUM 化寫入（migration 0092，2026-08-26 D69續六 ✅ 已修復）
+
+**背景**：`process_status`（品項生產進度）為自由 text 欄位（`pg_constraint` 查證零約束，非 ENUM），但有 3 個寫入者用緊 2 種方言：`fhs_complete_order` RPC 寫畫面原文（如 `Done 已完成`）；前端 `saveInlineEdit`／`sbSyncOrder` 經 `_sanitizeItemStatus()` 將畫面原文關鍵詞子字串比對硬轉做收窄咗嘅 ENUM 風格值（如 `製作中`）。實測 8 個細階段只有 3 個原樣往返，改階段描述會靜默改變存入值（5 改 4 中招）。手模擺設 checklist（`hm:已book|已做laser` 呢種格式）經同一函式，一樣被壓縮失真。
+
+**根治設計**：
+- 新增 `window._FHS_STAGE_DEF` 陣列（`value`/`label`/`scope`），取代原本 4 處分散嘅進度下拉清單（篩選 `#reviewStatus`、批量 `#bulkStatusSelect`、手機卡片、桌面表格）；`scope` 分 `general`/`keychain`（品項dropdown，keychain類多「需進行補打」）/`bulk`/`filter` 四種情境。兩個靜態 `<select>` 改喺 script 執行時由 `_fhsPopulateStageDropdowns()` 一次性填充。
+- **移除 `_sanitizeItemStatus()`**（原本 4 個寫入點都call佢做 ENUM 化轉換，係失真根源）。4 個寫入點（`saveInlineEdit` 嘅 `_localItemMetaCache` + PATCH、`sbSyncOrder` 嘅兩個 INSERT 路徑）全部改寫畫面原文，只保留 `value || '0 什麼都未做'` 空值防禦。
+- `_FHS_LEGACY_STATUS_MAP`/`_fhsNormalizeStatus()`（顯示層安全網，處理 DB 殘留歷史別名值，D69續四已上線）**冇改動**，同 `_FHS_STAGE_DEF`（寫入層單一真源）係兩個獨立機制並存。
+- `localStorage` key `fhs_status_store`→`fhs_status_store_v2`（防舊瀏覽器快取住轉換前嘅 ENUM 化舊值遮蓋新鮮 DB 值）。
+- 手模路徑無需額外設計：讀取端 `_fhsHmParseState()` 本身已經識得正確解析原始 `hm:` 字串，移除寫入層轉換後自動一併根治。
+
+**SQL 清洗**（`migration 0092`，範圍按 Fat Mo 拍板）：`process_status`／`precomplete_status` 兩欄嘅 `完成`→`Done 已完成`、`待製作`→`0 什麼都未做` 已清洗；`製作中`（細階段不可還原）／`已book日期`／`hm:...` 刻意不清洗，維持原值 + 前端已有嘅 `⚠原值` raw-option 顯示機制，由 Fat Mo 逐筆人手指定。`precomplete_status` 清洗範圍經 A2 Gemini 對抗評審擴大（`fhs_uncomplete_order` 會由此欄位還原，唔清洗會令舊方言死灰復燃）。
+
+**驗證**：`code-reviewer` 獨立審查首輪 FAIL（`_isKeychainCategory` 判斷邏輯手機/桌面重複，已抽成全局 helper 修復）；live 起 dashboard 讀 55 張真實訂單 console 零錯誤，DOM 確認 `製作中` 品項 `⚠` 選項正確 selected 且完整選項清單正確；SQL 清洗前後即時查證數值吻合預期。詳見 decisions.md D69續六。
+
 ---
 
 ## 六、IG 訂單訊息邏輯

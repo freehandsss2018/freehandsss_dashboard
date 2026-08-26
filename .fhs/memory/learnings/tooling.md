@@ -33,5 +33,7 @@
 
 <!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
 ### 跨領域指標（全文在別桶）
-- → `governance.md` #4 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
+- → `governance.md` #5 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
+- → `governance.md` #8 【高頻 ⚠️】`handoff.md` 係 git 追蹤檔案，內容屬「分支局部」——只要有未 merge 嘅分支，交接狀態就必然有失同步窗口，加幾多寫入紀律都補唔到
+- → `governance.md` #12 新 worktree/新分支 session 開工前，必須核對 ahead/behind 而非假設「新開嘅就係最新」——`/read`讀到嘅 handoff 內容可以來自另一個活躍 worktree/main checkout，同本 worktree 實際 checkout 嘅分支唔同
 <!-- POINTERS:END -->

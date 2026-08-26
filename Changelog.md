@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— D69續六：進度狀態往返失真全套根治方案 `/execute` 執行完成
+
+- **緣起**：D69續四 cl-flow-fast CONDITIONAL_READY，Fat Mo 就 3 項拍板（`製作中`維持原值+⚠標記由人手指定／SQL清洗同HTML一次過上線／手模`已book日期`/`hm:`路徑一併檢查），`/execute` 落地本輪。
+- **執行前修復**：發現本 worktree 分支自舊 base（漏咗 D69～D69續五全部work），已安全 fast-forward 追上 `claude/d65-family-owner-role`（已push origin，零分歧），未觸碰主倉獨立進行中改動。
+- **核心修復**：新增 `_FHS_STAGE_DEF` 單一真源階段表，取代原本 4 處分散嘅進度下拉清單；移除 `_sanitizeItemStatus()` ENUM 化轉換函式（4個寫入點全部改寫畫面原文），根治「同一個值嚟回一次就變一次」；`localStorage` key 版本化（`fhs_status_store_v2`）防舊快取遮蓋新值。
+- **手模路徑（Fat Mo 拍板擴大範圍）分析結果**：確認 checklist `hm:` 值經同一個函式一樣被壓縮失真，移除寫入層轉換後自動一併根治，冇額外設計需要。
+- **SQL 清洗**（migration `0092_process_status_dialect_cleanup.sql`，已 apply live）：`process_status` 完成17筆/待製作4筆清洗，`製作中`(live查證8筆)刻意不清洗維持原值+⚠標記；`precomplete_status` 完成54筆/待製作1筆清洗（Gemini對抗評審擴大範圍）。
+- **獨立稽核**：`code-reviewer` subagent 首輪 FAIL（`_isKeychainCategory` 邏輯手機/桌面重複），修復後重新 live 驗證 PASS——重載 dashboard 確認 keychain/general scope 選項正確、`製作中`品項⚠選項正確 selected、console 零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（81 insertions/58 deletions）、`supabase/migrations/0092_process_status_dialect_cleanup.sql`（新檔）。零 schema 改動、零 n8n 改動。
+- 全文見 decisions.md D69續六。**Subagent 使用記錄**：✅已使用（`code-reviewer` 獨立審查 HTML diff）。
+
 ## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— `/team` 同步更新：health-check描述過時 + 2項subagent版本漂移修復
 
 - Fat Mo 要求「同步更新埋 agent_dashboard」，跑 `/team` 重新掃描發現兩處已知漂移：

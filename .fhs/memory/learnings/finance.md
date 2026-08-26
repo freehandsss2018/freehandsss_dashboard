@@ -24,8 +24,10 @@
 <!-- POINTERS:BEGIN — 本區由 scripts/learnings-pointers.js 生成，禁止人手編輯 -->
 ### 跨領域指標（全文在別桶）
 - → `supabase.md` #8 【高頻 ⚠️】新增/沿用 status-filter 查詢前必查權威完成旗標 + 生產真實字面值
-- → `supabase.md` #14 【高頻 ⚠️】`CREATE OR REPLACE FUNCTION` 全量覆蓋，base 版本揀錯會靜默吞噬之前獨立修復加落嘅欄位
+- → `supabase.md` #14 【高頻 ⚠️】`pg_get_functiondef()` 讀到「預期欄位 0 次出現」唔可以直接判「本來就冇」，必須先查有冇獨立 migration 記錄過
 - → `frontend.md` #6 【高頻 ⚠️】「每件扣減率」config key 唔可以複用嚟當「每件加項成本」
 - → `n8n.md` #4 【高頻 ⚠️】SKU 目錄由「整套價焗死件數」改「單件價 × quantity」模型時，必須專門用 qty≥2 測試單驗證 n8n 有冇真的做呢個乘法
-- → `governance.md` #6 grep sweep 嘅「必查清單」本身可以就係漏嘅源頭，唔止靠記憶寫低嘅清單先會漏
+- → `governance.md` #7 grep sweep 嘅「必查清單」本身可以就係漏嘅源頭，唔止靠記憶寫低嘅清單先會漏
+- → `governance.md` #9 【高頻 ⚠️】向 Fat Mo 確認「窮舉組合表」時禁止預填 ✅/🚫——AI 嘅預填會變成雙方都冇審視嘅共同前提
+- → `governance.md` #10 【高頻 ⚠️】同一個 AI 用同一套方法論自查三次仍會漏——驗收財務/生產改動必須改派獨立 fresh-context agent，唔可以再自己查第四次
 <!-- POINTERS:END -->
