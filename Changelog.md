@@ -71,6 +71,41 @@
 - **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（唯一代碼改動）、`.fhs/reports/planning/overview-category-view-plan_2026-08-25.md`（方案書，新）、`.fhs/reports/planning/overview-category-view-prototype_2026-08-25.html`（互動原型，新）、`.fhs/notes/decisions.md`（D69）。**Supabase schema／n8n 零改動。**
 - **未做／待授權**：`Freehandsss_dashboard_current.html` 未同步（README「禁止覆蓋正式環境」）；類別視圖預設排序是否改「批次→進度」、chip `data-category` 用緊「鑰匙扣」而 DB／文件一律「鎖匙扣」是否統一——兩項待 Fat Mo 拍板。
 - 全文見 decisions.md D69。**Subagent 使用記錄**：❌未使用（單一檔案內互相牽連嘅 render 路徑改動 + 即時 browser live 驗證，委派會斷推理鏈）。
+## [2026-08-24 續] Session（Claude Code / Opus 5 執行）— 更正失實聲明：n8n JSON 備份檔完整重建（含清除D62/D63死key殘留）
+
+- **緣起**：Fat Mo 連續四次要求重新核實同一份四項清單，第二輪派獨立 agent 覆核時揪出，上一次「repo 內 n8n JSON 備份檔已同步反映 live 修復」嘅聲明係**失實**——實際只喺一個凍結 3 個月（2026-05-27 起）嘅舊快照插咗一行 guard，冇真正重新拉取。
+- **連帶發現**：呢份舊快照本身仲殘留住 D62/D63（2026-08-10）已洩漏並被 Supabase 撤銷嘅死 API key 文字（8 處，其中 3 處喺一個之前完全未被發現嘅內嵌 `activeVersion` 歷史快照入面）。**已直接查證 live 系統本身完全乾淨**——3 個事故點名節點皆只讀 `$env`，D62/D63 修復紮實有效，冇被推翻，問題純粹係呢份 repo 快照未跟住更新。
+- **修復**：派 agent 完整重建，逐個節點（頂層30個+內嵌快照28個）用 `get_workflow`/`get_node` MCP 重新攞 live 狀態並按 name 匹配替換。過程揪出結構性差異（少2多1個節點）時 agent 主動暫停等授權，非自把自為。`Filter Test Delete Notify` 嘅 `typeVersion` 屬 best-effort 估值（無同類節點可對照，此檔案純供參考不用作 n8n import，估值錯誤無功能性後果）。
+- **驗證**：`sb_secret_` 全檔計數＝0（連內嵌快照都清），JSON 合法性 PASS，`git diff --stat` 138 insertions/37 deletions。主對話獨立重新核實三項驗證，非單信 agent 報告。
+- **教訓**：對自己前一個 commit 嘅聲明都要保持懷疑，尤其涉及安全敏感內容嘅「已同步」斷言，冇實際重新拉取全量資料前唔應該講出口。
+
+詳見 [decisions.md 2026-08-24 續條目](.fhs/notes/decisions.md)。**Subagent 使用記錄**：✅ 已使用（general-purpose agent 兩輪，第二輪執行機械化重建，中途因結構性差異主動暫停等授權）。
+
+## [2026-08-24] Session（Claude Code / Opus 5 執行）— n8n 玻璃瓶 SKU 強制降級 bug 修復（Parse Items & Generate SKU V47.14→V47.15）+ subagent 鏡像大規模同步
+
+- **緣起**：D65續IV-follow（2026-08-22）交付後，主對話自查完整性三輪，但每次都只喺 Dashboard browser + Supabase `products` 表核對，從未實際跑 n8n webhook 全鏈路。改派獨立 fresh-context general-purpose agent 用同一份四項核實清單重查，第一次即揪出 n8n live workflow 一個存在超過一個月嘅真 bug。
+- **Bug 本體**：`Parse Items & Generate SKU` 節點有段無條件正規化邏輯——`else if (sku.includes("玻璃瓶")) { ...; sku = 玻璃瓶套裝 (2肢或4肢) }`——會將任何含「玻璃瓶」嘅品名強制降級做純 `(2肢)`/`(4肢)`，抹走 `(家庭)`（自 migration 0060，2026-07-19 起）同 `(N肢+大寶)`（自 migration 0091，2026-08-22 起）呢啲後綴。`sku` 入面本身已經係 Dashboard `_pDeriveSkuName()` 送嚟嘅正確 canonical 值，呢段正規化屬更舊年代嘅防禦性代碼（原意處理唔規範品名字串），對已規範嘅新變體反而係破壞。
+- **影響範圍**：改寫後嘅值成為 `Search_SKU`，一路傳到最終寫入 `order_items.product_sku`。**金額不受影響**——玻璃瓶三個變體成本同為 $210 flat，Smart Cache Strategist 巧合撈到同一個數。**但 SKU 身份記錄錯咗**——過去一個月任何一張家庭瓶單、今起任何一張＋大寶單，寫入 Supabase 嘅 `product_sku` 都會顯示成錯誤嘅純嬰兒變體，依賴呢個欄位做統計/篩選會漏 count。
+- **修復**：加 guard `sku.includes("玻璃瓶") && !sku.includes("家庭") && !sku.includes("大寶")`，已含呢兩個字眼嘅品名視為完整 canonical SKU 直接跳過。經 MCP `update_node_code` dry-run 預覽確認純加 guard 零其他行為改動後，正式寫入 live workflow（V47.14→V47.15），自動備份於 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-24/`。repo 內 `n8n/FHS_Core_OrderProcessor_live.json` 備份檔同步反映。
+- **驗證（真實 webhook，非 mock payload）**：合成測試單兩件（`玻璃瓶套裝 (2肢+大寶)`、`玻璃瓶套裝 (家庭)`），Supabase `order_items.product_sku` 逐字正確保留兩個變體名，`handmodel_cost` 各 $210 印證金額不受影響。測試單已用 `{action:"delete", Order_ID}` 正式格式刪除，`deleted_at` 已確認落地。
+- **附帶發現同步修復**：同一輪覆核順藤摸出 9 個 subagent 入面 8 個嘅執行鏡像（`~/.claude/agents/freehandsss/`）凍結喺 2026-07-07，同 repo Master 脫鈎逾 6 星期，diff 33～590 行不等——即過去 6 星期任何一次 `finance-auditor`／`database-reviewer` 等 subagent 呼叫實際執行嘅都係舊版指令（例如 finance-auditor 舊版漏咗 `accessory_cost` 分類）。已全數重新同步（純機械化 copy，Fat Mo 確認後執行），非 repo 追蹤範圍冇對應 commit。
+- **教訓**：同一個 AI 用同一套方法論自查三次仍會漏，驗收財務/生產改動應改派獨立 fresh-context agent，唔應該自己再查第四次。已落 `learnings/governance.md` #9。
+
+詳見 [decisions.md 2026-08-24 條目](.fhs/notes/decisions.md)、[`FHS_System_Logic_Overview.md` §5.4.21](.fhs/notes/FHS_System_Logic_Overview.md)。**Subagent 使用記錄**：✅ 已使用（general-purpose fresh-context agent 獨立稽核揪出主對話三次自查漏咗嘅缺口）。
+
+## [2026-08-22] Session（Claude Code / Opus 5 執行）— D65續IV-follow：玻璃瓶「＋大寶」定價階交付（同 tier ＋$300）+ 一次自我更正事故
+
+- **緣起**：D65續IV（2026-08-18）暫緩嘅「父母手下不應鎖死大寶價錢」，Fat Mo 本次想清楚後提供具體數字。過程中發生兩次 AI 錯誤，均在交付前發現並修正，詳見下方「事故記錄」。
+- **最終定案**：有大寶參與（不論幾多肢）＋無父母 → 售價改為**同 tier 純嬰兒價 ＋$300**（2肢 $1,680／4肢 $1,980）；純嬰兒 $1,380/$1,680 同家庭價 $2,580 flat **均不變**。連帶推翻 2026-07-21「大寶肢體同嬰兒肢體同等地位一齊計總數」定案——肢數 tier 自本次起**只數嬰兒肢體**，大寶改為「有冇參與」嘅 ＋$300 修正項。
+- **關鍵業務定義首次成文**（Fat Mo 口述，此前三份權威文件皆無記載）：**嬰兒**＝初生或客人**首個**孩子；**大寶**＝客人**第二個**孩子（嬰兒的兄／姊）。大寶係相對於嬰兒而存在嘅稱謂，故**有大寶必然有嬰兒**——「只有大寶、沒有嬰兒」在定義上不成立。據此確認 `FHS_Pricing_Bible.md` §0「所有產品必須圍繞嬰兒展開」從未被違反，大寶不是例外。連帶更正 `FHS_Product_Cost_Schema_v2.md` §3.1 原記嘅「嬰兒＝0–3歲／大寶＝4歲以上」**年齡**定義（與出生次序定義不符，次子可能僅 2 歲但仍為大寶）。
+- **執行**：migration 0091（新增 SKU `玻璃瓶套裝 (2肢+大寶/4肢+大寶)`，`total_base_cost` 仍 $210 flat 不變，＋$300 全落淨利）；`_pDeriveSkuName()` 改 `hasElder` 判定 + tier 只數嬰兒肢體；`_pPriceOfSku()` 大寶判斷排在通用 4肢/2肢 之前（防 SKU 名含「4肢」字樣令次序調轉靜默少收）；卡片徽章補「大寶 · 」標籤（原本淨顯示 `$1680`，同 tier 純嬰兒 `$1380` 並排睇唔出點解貴咗，會誤以為報錯價）；`V42.html`+`current.html` 同步。**n8n 零改動**（已查證 `Smart Cache Strategist` 嘅 `BASE_PREFIXES` 前綴表未命中會 fallback `sku.eq` 精確查 `products`，`(家庭)` SKU 自 2026-07-19 起已是活先例）。文件同步：`FHS_Pricing_Bible.md`（v1.8.1）、`FHS_Product_Cost_Schema_v2.md`、`FHS_Product_Definition.md`、`finance-gatekeeper/SKILL.md`（v1.14.0）、`product-integration-validator.md`（補 Checklist C1 例外條件）、`FHS_System_Logic_Overview.md` §5.4.20、`learnings/finance.md`＋`learnings/governance.md` 各補一條。
+- **驗證**：browser live（本地伺服器非 `file://`）——SKU/價錢窮舉 11 組全對、`calculatePricing()` 端到端 8 組全對（含硬阻擋、木框零回歸）、卡片徽章 6 組文字全對、`products` 表 5 個玻璃瓶 SKU 逐個核對、零 console error。
+- **事故記錄（同日兩次 AI 錯誤，均在交付前發現並修正）**：
+  1. **規劃階段**：AI 未讀 `calculatePricing()` 8468–8478 行既有硬阻擋代碼，就聲稱「勾父母但零嬰兒會靜默少收 $900–$1,200」，Fat Mo 據此錯誤前提作答；因結論恰好與現狀相同，無實害。
+  2. **實作階段（較嚴重）**：AI 喺窮舉組合表**預填** ✅/🚫 假定（誤將「純大寶」標可能、「嬰兒+大寶」標不可能），Fat Mo 只逐點確認被問及嗰兩格，未複核預填值。結果新價一度綁喺「零嬰兒＋有大寶」——一個**定義上不存在**嘅組合（migration 0090 + SKU `玻璃瓶套裝 (大寶N肢)`，令新價永遠觸發唔到），而真正適用嘅「嬰兒+大寶」反被標成不可能。Fat Mo 澄清嬰兒/大寶嘅出生次序定義後，AI 即查證 0090 兩個錯 SKU 零訂單引用（安全刪除），以 migration 0091 全套重做。**教訓已落 `learnings/governance.md`**：確認窮舉表時禁止預填讓對方「確認」，應逐格詢問或請對方主動列出。
+- **⚠️ 尚未部署生產**：本 session 完成 `V42.html`+`current.html` 兩檔同步改動，但 `current.html` 升格部署（`/upload-web`）留待本次 `/commit` Phase 2.5 自動觸發。
+
+詳見 [decisions.md 2026-08-22 條目](.fhs/notes/decisions.md)、[`FHS_System_Logic_Overview.md` §5.4.20](.fhs/notes/FHS_System_Logic_Overview.md)、`supabase/migrations/0090_glassjar_elder_only_pricing_sku.sql`＋`0091_glassjar_elder_sku_rename_fix.sql`（檔頭完整記錄兩次迭代）。**Subagent 使用記錄**：❌未使用（跨代碼/Supabase/browser 即時交叉驗證+多輪業務澄清，委派會斷推理鏈）。
 
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
@@ -90,6 +125,20 @@
 - **`claude/ecstatic-poincare-3cc445`（D59，2026-08-04）**：查證確認呢個 `message_intents` 冪等鍵修復（移除 `alert_date`）**已於 2026-08-04 實際 apply 到 live Supabase + 部署到 n8n**，但 commit 從未 merge 入 main——main 分支 repo 記載長期同 live 實際邏輯不一致（典型 repo/live drift）。已補 merge：`build_n8n_workflow.cjs` on_conflict 參數修正（同 live 對齊）+ migration 檔案（原編號 0087，與 D62 已合併嘅同號檔撞名，改號 `0090_fix_message_intents_dedup_key.sql`，Supabase 用 timestamp 版本非檔名數字前綴，重編不影響 live）+ `learnings/supabase.md` #15 補回冪等鍵教訓。分支裡嘅舊快照文件（handoff/decisions/Changelog 等 2026-08-04 當日版本）因早被之後大量 session 記錄取代，刻意不套用。
 - **`claude/brave-jennings-a47074`（2026-07-13）**：查證確認分支內容（`CONTAINER_FOLDER_ID` 寫死常數修復、舊版 migration 0056）已被後續工作（S189 `STABLE_DRIVE_ID` 動態偵測、main 現有更完整版 0056）取代，直接 merge 會令代碼倒退，故不整體 merge。唯一保留：一份從未進 main 嘅獨立教訓檔（worktree/分支誤植 + migration 編號衝突），已單獨 cherry-pick 落 `.fhs/memory/lessons/`。
 - 兩分支處理完後皆可安全刪除（本地 + remote）。全文見 decisions.md 2026-08-20「D66-follow」條目。**Subagent 使用記錄**：❌未使用（跨分支 diff 比對 + 逐一取捨判斷，需即時交叉驗證）。
+
+## [2026-08-20] Session（Claude Code / Sonnet 5 執行）— /read 例行三件事：便攜塊日期標籤修正 + `/fhs-usage-audit` 補跑 + 過時分支清理
+
+**背景**：`/read` 開場 hook 自動偵測到三項異常，Fat Mo 要求一併處理，非新功能改動。
+
+1. **便攜塊日期標籤誤報修復**：handoff.md 便攜塊標題行日期停留在「2026-08-18」未跟 D67 內容同步（內文第18行實際已正確記錄 2026-08-19），純標籤 drift 觸發 hook 誤判「疑似漏跑 /commit」。已更新為 2026-08-19，非真的漏跑（Changelog/decisions.md/handoff 內文三處當時皆已正確記錄 D67）。
+2. **`/fhs-usage-audit` 補跑**（距上次 2026-07-07 已 43 天，逾 30 天上限）：掃描 79 sessions。趨勢：`/rp` 用量從 111 驟降至 2（近乎絕跡）、`/read` 88→38、`/execute` 79→20，反映日常已轉向 hook 輕量快照為主，全量重載頻率降低。無新增可 Skill 化建議；短句輪詢模式（"已完成？"/"done" 等）已由既有 Telegram 完成通知 hook 覆蓋，非新待辦。快照存 `.fhs/memory/usage-audit/2026-08-20.json`。
+3. **三個已完全合併入 main 的過時分支已刪除**（`claude/hook-fix-d66`、`claude/read-command-vmlu2x`——兩者均含與 main 已合併 D66 修復 commit 完全相同的 diff；`claude/d65-family-owner-role`——領先 main 0 commit）。
+
+**額外**：本次 `/commit` 續走 `/upload-web` 完成上個 session（2026-08-19，雲端 Linux 容器）因缺 PowerShell + NAS 憑證而中斷的 D67 實際 NAS 部署（該 session 只完成本機 cp 升格，見 commit `f276f1b`）。三關驗證結果見下方部署記錄。
+
+**Subagent 使用記錄**：❌未使用（純查證+輕量檔案修正，單線程即可完成）。
+
+---
 
 ## [2026-08-19] Session（Claude Code / Opus 5 執行）— D67：`save_structured_order_items` RPC 漏 14 欄位修復（migration 0089）+ 前端連帶 bug + hook regex 補漏
 
