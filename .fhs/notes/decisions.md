@@ -17,7 +17,7 @@
 
 **A2 Gemini 對抗評審（`gemini-3.6-flash`，主模型過載自動降級，評審完整非 degraded）**：2 個 BLOCKER 全部用實證解除（非延後）——①清洗範圍遺漏 `precomplete_status`：查證屬實且範圍比原草案估計更大（`precomplete_status` 實測 54 筆 `完成`，`fhs_uncomplete_order` 會由呢個欄位還原污染 process_status，即「取消完成」操作會令舊方言死灰復燃），已擴大清洗範圍涵蓋兩欄；②懷疑 n8n `sync_order_to_mirror` 有獨立方言：實讀 live n8n 節點 `Supabase Mirror Prep`（workflow `6Ljih0hSKr9RpYNm`）證實 `process_status: ui.process_status || null` 純粹 pass-through 前端 webhook 送嘅 `_ui_process_status`（本身即畫面原文，未經 sanitize），n8n 完全冇獨立方言，前端統一後 n8n 自動跟隨，BLOCKER 不成立。另 3 個 MAJOR（命名 `hm`→`scope` 更貼切、localStorage `fhs_status_store` 需版本鍵防舊值遮蓋新值、移除 sanitize 需保留空值防禦）+ 2 個 MINOR（查表前 `.trim()`、`label`/`value` 長期漂移須文件化）全部採納。
 
-**待 Fat Mo 拍板（`/execute` 前置）**：①`製作中`(3筆) 細階段資訊已不可還原，點處理（維持原值+⚠標記／統一歸類／逐筆人手指定）；②清洗 SQL 執行時機（同 HTML 一齊上線 vs 分兩步先觀察）；③`已book日期`(7筆)/`hm:...`(1筆) 手模 checkbox 專屬路徑確認維持不動。
+**Fat Mo 已拍板（2026-08-26）**：①`製作中`(3筆)→**維持原值 + ⚠ 標記**，由 Fat Mo 逐筆人手指定正確階段（不由程式猜測）；②清洗 SQL→**同 HTML 一齊上線（一次過）**，非分兩步；③`已book日期`(7筆)/`hm:...`(1筆) 手模 checkbox 路徑→**唔係維持不動，要一併檢查有無同類問題**（範圍較原方案擴大，執行時需另行核實該路徑往返是否同樣失真）。
 
 **Session 交接狀態**：本輪全部改動（客人欄寬/篩選合併/空行修復/狀態止血）已 live 驗證但**尚未 commit**，待 Fat Mo 就上述 3 項拍板、`/execute` 全套方案後，一次過連同已驗證嘅修復統一 commit + 部署。
 
