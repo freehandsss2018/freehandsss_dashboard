@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-26 (`/team` 同步更新：health-check描述過時 + 2項subagent版本漂移修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「`/team` 同步更新」條目（純小型同步修復，無獨立 decisions.md 條目）。Fat Mo 要求同步agent_dashboard，跑`/team`揪出2處漂移：team-manifest.json嘅health-check描述停留5類舊版（未跟上第6-8類）+ database-reviewer/finance-auditor 2個subagent frontmatter版本同MANIFEST.md登記版本不符（2026-08-16 accessory_cost文件補漏批次改咗frontmatter漏同步MANIFEST）。已補記，重新生成後「✨零勘誤」。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-26 (D69續五：fhs-health-check.js 新增第8類「P0.6歸檔洩漏」偵測): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「D69續五」條目 + [decisions.md D69續五](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。D69續四交接過程揪出 `commit.md` P0.6（完成項目搬歸檔區）連續7週無人執行、MASTER表積壓87%已完成項目，Fat Mo 指示加機械閘。新增 `pending_table_leak_checks` 規則類別+`checkPendingTableLeaks()`引擎函式，偵測 handoff.md「MASTER持續待辦」表區間內殘留「✅完成」列（budget=0，歸檔區本身刻意排除唔誤判）。新增2個fixture（洩漏案例+乾淨案例）驗證，連同既有12個全部PASS（14/14）。順手修正 handoff.md 便攜塊兩處已過時內容（🎯目標行仍寫「待拍板」但實已拍板）+ 便攜塊過肥（4239→3999 bytes）。

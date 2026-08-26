@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— `/team` 同步更新：health-check描述過時 + 2項subagent版本漂移修復
+
+- Fat Mo 要求「同步更新埋 agent_dashboard」，跑 `/team` 重新掃描發現兩處已知漂移：
+  - `team-manifest.json` 嘅 `hook_descriptions.fhs-health-check.js` 描述仍寫「過肥/孤兒/過時/重複/斷鏈五項」，未跟上 D69續五新增嘅第8類「P0.6歸檔洩漏」（連同第6/7類週期稽核/時限待辦漏帶一齊補齊，一次寫齊8類）。
+  - `/team` 勘誤表揪出：`database-reviewer`/`finance-auditor` 兩個 subagent 嘅 frontmatter 版本（`v2.2.1`）同 `.fhs/ai/subagents/MANIFEST.md` 登記版本（`2.1.0`/`2.2.0`）不符——追查 frontmatter `last_updated: 2026-08-16` 對應 2026-08-16「accessory_cost 文件補漏」批次同步（見同日 Changelog 條目），當時只改咗 frontmatter 冇同步落 MANIFEST.md 嘅版本歷史表，屬遺留漏記非新回歸。已補記 MANIFEST 版本欄位+版本歷史行。
+- 重新生成後 `/team` 輸出「✨ 零勘誤」，人睇名冊/機讀 JSON 已更新（`artifacts/agent_dashboardV42.html`/`.json`，gitignored 本地產物，未部署公開網址）。
+- **改動檔案**：`.fhs/ai/team-manifest.json`、`.fhs/ai/subagents/MANIFEST.md`。
+- 全文見本條目（純小型同步修復，無獨立 decisions.md 條目）。**Subagent 使用記錄**：❌未使用（`/team` 本身即掃描工具，互動式修復漂移即可）。
+
 ## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— D69續五：fhs-health-check.js 新增第8類「P0.6歸檔洩漏」偵測
 
 - **緣起**：D69續四交接過程中揪出 `commit.md` P0.6（完成項目搬去「已確認完成」歸檔區）自 Session 144（2026-07-05）起連續 7 週無人執行，MASTER 持續待辦表積壓 135 項已完成項目佔表 87%，係 Fat Mo 反覆質疑「話已解決但新session仍見到」嘅根因之一——呢類純人工紀律規則冇機械閘偵測，症狀係「表面有記錄、實際搵唔到」而非報錯。Fat Mo 明確指示加呢個 health-check 閘。
