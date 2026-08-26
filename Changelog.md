@@ -1,5 +1,20 @@
 # Changelog
 
+## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— D69續四：客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + 全套修復方案 CONDITIONAL_READY（未 execute）
+
+- **客人欄寬**：D69續三 226px，Fat Mo 兩輪追加收窄要求（200px→180px），最終 `Customer.mwCat` 定案 92（實測 181px）。
+- **篩選列合併**：原兩行（第一行漏斗+全部/進行中/已完成，第二行類別chip+快捷掣）Fat Mo 要求合併一行。`.filter-toggle-row` wrapper 拆走，兩個子元素升做 `.filter-row-pinned` 直接子項；`#fhsSegWrapper` flex 由 `1`（獨佔一行）改 `0 0 auto`（同其餘控制項共享一行）；區塊高度 90px→56px。
+- **空行 bug 根治**（Fat Mo 三輪報告，前兩輪方向錯咗——「刻字空白」理論已證偽並復原）：
+  - 用 Fat Mo 點名嘅 4 張單（0600809/0600908/0600903/06001008）對比另外 5 張「冇事」嘅單，查 live Supabase 揪出真正變數：**單一品項數（rowspan=1）**，同刻字有冇資料完全無關（0650429 刻字空白但 2 件＝冇事，0600903 有刻字但 1 件＝有事）。
+  - 真根因兩層：①`.review-table tbody td`（特異度 0,2,2）壓住 `.review-cb-td`（0,1,0），令勾選格實際 10px padding + 16px checkbox = 36px，多品項單靠 rowspan 攤分睇唔出，單品項單就變成成行高度下限；②備註 `<textarea>` 冇 `rows` 屬性，瀏覽器預設 `rows=2` 天生兩行高，加埋備註格 padding 4px。
+  - 修法：`.review-table tbody td.review-cb-td { padding:5px 4px }` 對齊特異度；兩處 `<textarea class="review-notes-textarea">` 加 `rows="1"`；備註格 padding 4px→2px。單品項列 61px→37px，同多品項列（36px）差 1px。連帶喺 1024px 揪出手模視圖「肢數明細」/「加購」兩欄漏補窄screen數值，一併修正。
+- **進度狀態往返失真止血**（顯示層，Fat Mo 報告「已選 Done 但顯示變返什麼都未做」）：查明 `order_items.process_status` 為**自由 text**（非 ENUM，`pg_constraint` 查詢實測零約束），但 3 個寫入者用緊 2 種方言——`fhs_complete_order` RPC 寫畫面原文 `Done 已完成`（65筆最大宗）、前端 `saveInlineEdit` 經 `_sanitizeItemStatus()` 關鍵詞子字串比對硬轉成 ENUM 風格 `完成`/`待製作`/`製作中`（實測 8 階段只 3 個原樣往返，`2 已修3D圖` 更會降級成 `待製作`；改階段描述會靜默改變存入值，5 改 4 中招）、`sbSyncOrder` DELETE+INSERT 還原路徑對已在 DB 嘅值再度 sanitize（主動污染源）。本輪先加 `_FHS_LEGACY_STATUS_MAP`/`_fhsNormalizeStatus()` 對應表止血（`完成`→`Done 已完成` 等），桌面/手機下拉 + `fhsStatusBucket` 三處套用，唔夠明確嘅值改顯示 `⚠ 原值` 唔再靜默扮「未做」。實測：講大話 0 件、正確對應 10 件、標記待確認 1 件（`製作中`，細階段資訊已不可還原）。**呢層係止血 fallback，唔係根治**（見下）。
+- **全套根治方案已走 `/cl-flow-fast`**（Flow ID `2026-08-26-0828`，判決 **CONDITIONAL_READY**）：設計為單一真源階段表 `_FHS_STAGE_DEF` 取代 4 處重複清單（桌面/手機下拉、`_sanitizeItemStatus`、`fhsStatusBucket`），全線改寫畫面原文（同 `fhs_complete_order` 對齊），零 schema 改動（欄位本已自由 text）。A2 Gemini 對抗評審出 2 BLOCKER：①清洗範圍遺漏 `precomplete_status`——查證屬實且範圍更大（54筆 `完成`，`fhs_uncomplete_order` 會從呢度還原污染），已納入清洗範圍；②擔心 n8n `sync_order_to_mirror` 有獨立方言——實讀 n8n 節點 `Supabase Mirror Prep`（workflow `6Ljih0hSKr9RpYNm`）證實純 pass-through 前端 `_ui_process_status`，無獨立方言，前端統一後 n8n 自動跟，BLOCKER 解除。另 3 MAJOR + 2 MINOR 全部採納（命名/localStorage版本鍵/空值防禦/`.trim()`/label-value長期漂移註記）。**等 Fat Mo 就 3 項拍板（`製作中`3筆點處理／清洗SQL執行時機／`已book日期`等是否維持不動）後 `/execute`**，詳見 `artifacts/2026-08-26-0828/cl-final-plan.md`。
+- **⚠️ 本次改動（客人欄寬/篩選列合併/空行bug/進度止血）已驗證但尚未 commit**，同 cl-flow-fast 全套方案一齊等 Fat Mo 下一 session 拍板後統一 commit。
+- **驗證**：4 個類別視圖 colspan/文字/表頭溢出 0（1024px/1920px 雙闊度）、內聯編輯 index 對正確品項、密度數字逐輪核對、console 零錯誤；空行 bug 用 live Supabase SQL 對 9 張單逐一核實（4張bug單 vs 5張正常單）而非猜測。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（唯一代碼改動，尚未 commit）；`artifacts/2026-08-26-0828/`（cl-flow-fast 產物，gitignored）。
+- 全文見 decisions.md D69續四、`artifacts/2026-08-26-0828/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅已使用（cl-flow-fast 內建 A2 Gemini 對抗評審；依賴掃描/live SQL/n8n 節點實讀由主對話直接執行，需 repo/DB 存取，委派冇存取嘅模型會出幻覺路徑）。
+
 ## [2026-08-25/26] Session（Claude Code / Sonnet 5 執行）— D69續三：訂單總覽類別視圖密集化重排（Excel 式密度）
 
 - **緣起**：Fat Mo 對 D69 類別視圖回報「畫面太稀疏」，多輪截圖＋紅圈逐步收緊：先要求整體密度貼近 Excel，其後逐輪指出單號欄堆疊過高、對象/部位/材質/數量欄過寬、日期同限時警告 badge 分兩行、「另有：⋯」全寫文字佔位，每輪均即場實測驗證後再收下一輪反饋。

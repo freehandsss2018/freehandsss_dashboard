@@ -3,6 +3,26 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-26] (D69續四) 客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + 全套修復方案 CONDITIONAL_READY
+
+**背景**：D69續三 commit+部署後，Fat Mo 繼續回報三類問題：①客人欄仲想再收窄（226→200→180px）；②篩選區兩行想合併一行；③訂單總覽出現「無故空行」，先後兩輪指向錯誤方向（「刻字空白」理論，已用實測推翻）；④進度狀態下拉「明明揀咗 Done 但變返什麼都未做」。
+
+**空行 bug 真根因（本 session 第三次追查先揪到）**：Fat Mo 點名 4 張有 bug 嘅單（0600809/0600908/0600903/06001008）同 5 張冇事嘅單（0600718/0650429/0600106/0600112/0600107），查 live Supabase `order_items` 逐單對比，真正變數係**單一品項數（rowspan=1）**，同刻字有冇資料完全無關——推翻咗前兩輪嘅「刻字空白」理論。兩層真根因：①CSS 特異度：`.review-table tbody td`（0,2,2）壓住 `.review-cb-td`（0,1,0），令勾選格實際 padding 10px（設定值 5px 從未生效），加 16px checkbox = 36px 高度下限，多品項單靠 rowspan 攤分掩蓋咗，單品項單就變成成行嘅高度天花板；②備註 `<textarea>` 兩處都冇 `rows` 屬性，瀏覽器預設 `rows=2`。修法：CSS 加對齊特異度嘅覆寫、兩個 textarea 加 `rows="1"`、備註格 padding 4px→2px。單品項列 61px→37px，同多品項列（36px）僅差 1px。
+
+**進度狀態往返失真（比想像中根本嘅問題）**：查 `order_items.process_status` 型別，發現係**自由 text，冇 ENUM 冇 constraint**（`pg_constraint` 查詢實測零結果）——推翻咗前一輪「ENUM 限制」嘅錯誤前提。真正成因係**同一個 text 欄位有 3 個寫入者、2 種方言**：`fhs_complete_order` RPC（撳掣）寫畫面原文 `Done 已完成`（65筆最大宗）；前端 `saveInlineEdit` 經 `_sanitizeItemStatus()`（`V42.html:6005`）用關鍵詞子字串比對硬轉成 ENUM 風格 `完成`/`待製作`/`製作中`；`sbSyncOrder` 嘅 DELETE+INSERT 還原路徑（`:18182`）更會對「已經喺 DB 入面」嘅正確值再度 sanitize 一次，係主動污染源。往返實測：8 個階段只有 3 個原樣還原，`2 已修3D圖` 降級成 `待製作`；改階段描述會靜默改變存入值（5 改 4 中招）——直接影響 Fat Mo 明示嘅「將來會持續增減/改描述」需求。
+
+**本輪已落地嘅止血修復**：新增 `_FHS_LEGACY_STATUS_MAP` + `_fhsNormalizeStatus()` 別名對應表（`完成`→`Done 已完成`、`待交收`/`已取件`→`Done 已完成`、`待製作`→`0 什麼都未做`），桌面／手機下拉 + `fhsStatusBucket()` 三處讀取時套用；對唔上任何已知值嘅一律顯示 `⚠ 原值`，唔再靜默 fallback 去第一個選項扮「未做」。實測：講大話 0 件、正確對應 10 件、標記待確認 1 件（`製作中`，細階段資訊已不可還原）。**呢層只係止血 fallback，未動寫入路徑**。
+
+**全套根治方案**：走 `/cl-flow-fast`（Flow ID `2026-08-26-0828`），判決 **CONDITIONAL_READY**。設計核心：單一真源階段表 `_FHS_STAGE_DEF`（每個階段明確聲明 `value`/`label`/`bucket`/`scope`）取代代碼入面 4 處重複清單，全線寫入改用畫面原文（同 `fhs_complete_order` 既有慣例對齊），**零 schema 改動**（欄位本身已係自由 text，唔需要擴 ENUM）。呢個設計專門解決 Fat Mo「階段會持續演化」嘅長期要求：日後加減階段或改描述只需改一個陣列，唔會再靜默改壞已存資料。
+
+**A2 Gemini 對抗評審（`gemini-3.6-flash`，主模型過載自動降級，評審完整非 degraded）**：2 個 BLOCKER 全部用實證解除（非延後）——①清洗範圍遺漏 `precomplete_status`：查證屬實且範圍比原草案估計更大（`precomplete_status` 實測 54 筆 `完成`，`fhs_uncomplete_order` 會由呢個欄位還原污染 process_status，即「取消完成」操作會令舊方言死灰復燃），已擴大清洗範圍涵蓋兩欄；②懷疑 n8n `sync_order_to_mirror` 有獨立方言：實讀 live n8n 節點 `Supabase Mirror Prep`（workflow `6Ljih0hSKr9RpYNm`）證實 `process_status: ui.process_status || null` 純粹 pass-through 前端 webhook 送嘅 `_ui_process_status`（本身即畫面原文，未經 sanitize），n8n 完全冇獨立方言，前端統一後 n8n 自動跟隨，BLOCKER 不成立。另 3 個 MAJOR（命名 `hm`→`scope` 更貼切、localStorage `fhs_status_store` 需版本鍵防舊值遮蓋新值、移除 sanitize 需保留空值防禦）+ 2 個 MINOR（查表前 `.trim()`、`label`/`value` 長期漂移須文件化）全部採納。
+
+**待 Fat Mo 拍板（`/execute` 前置）**：①`製作中`(3筆) 細階段資訊已不可還原，點處理（維持原值+⚠標記／統一歸類／逐筆人手指定）；②清洗 SQL 執行時機（同 HTML 一齊上線 vs 分兩步先觀察）；③`已book日期`(7筆)/`hm:...`(1筆) 手模 checkbox 專屬路徑確認維持不動。
+
+**Session 交接狀態**：本輪全部改動（客人欄寬/篩選合併/空行修復/狀態止血）已 live 驗證但**尚未 commit**，待 Fat Mo 就上述 3 項拍板、`/execute` 全套方案後，一次過連同已驗證嘅修復統一 commit + 部署。
+
+全文見 Changelog.md 2026-08-26「D69續四」條目、`artifacts/2026-08-26-0828/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅已使用（cl-flow-fast 內建 A2 Gemini 對抗評審；依賴掃描/live SQL/n8n 節點實讀由主對話直接執行，需 repo/DB 存取，委派冇存取嘅模型會出幻覺路徑）。
+
 [2026-08-25/26] (D69續三) 訂單總覽類別視圖密集化重排 — Excel 式密度，多輪反饋逐一實測收斂
 
 **背景**：Fat Mo 對 D69 類別視圖多輪投訴「太稀疏」，指定要似 Excel 咁密、盡量一屏睇晒鎖匙扣所有列。之後逐輪追加更精細嘅要求：單號欄堆疊過高、對象/部位/材質/數量四欄過寬、日期同限時警告分兩行、「另有」全寫文字太佔位，每輪均截圖+紅圈指出具體問題。

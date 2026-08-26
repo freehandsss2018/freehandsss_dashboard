@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-26 (D69續四：客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + cl-flow-fast CONDITIONAL_READY): 🏷️ 🟡
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「D69續四」條目 + [decisions.md D69續四](decisions.md)（無完成報告的中型改動，Changelog 為全文居所，本行僅摘要指回）。三個問題全部用 live Supabase 對比實測（非猜測）揪出真根因：①空行bug 真變數係「單一品項數」而非之前錯判嘅「刻字空白」，CSS特異度+textarea rows屬性雙修復；②進度狀態下拉「Done 變返未做」根因係 `order_items.process_status` 自由text 欄位有3個寫入者用2種方言，本輪先落地止血對應表（讀取層），全套根治（統一寫入方言+單一真源階段表+零schema改動）已走 `/cl-flow-fast`（Flow ID `2026-08-26-0828`，判決 CONDITIONAL_READY，2個BLOCKER全部用實證解除非延後）；③客人欄寬/篩選列合併為 Fat Mo 直接要求嘅小改動。**本輪全部改動已驗證但未 commit**，等 Fat Mo 就 cl-final-plan §4 三項拍板、`/execute` 全套方案後統一 commit。
+**Subagent 使用記錄**：✅已使用（cl-flow-fast 內建 A2 Gemini 對抗評審；掃描/SQL/n8n節點實讀主對話直接執行）。
+
 ## 2026-08-25/26 (D69續三：訂單總覽類別視圖密集化重排，Excel式密度): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25/26「D69續三」條目 + [decisions.md D69續三](decisions.md)（無完成報告的中型改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 對 D69 類別視圖多輪投訴太稀疏，要求 Excel 式密度，逐輪截圖追加更精細要求（單號欄堆疊、四欄過寬、日期badge分行、「另有」文字過長）。密度改動：table-layout auto→fixed、單號欄改橫向icon動作條、對象/部位/材質/數量四欄縮版badge、日期同限時警告合併一行、「另有」全寫改icon+數量，鎖匙扣視圖表格高2175px→821px（19/19列一屏睇晒）。核心機制：`mwCat` 雙軌欄闊系統確保「全部」視圖零改動；`@media(max-width:1280px)` 分域解決桌面密度同iPad安全嘅回應式衝突。過程中兩次自我回歸即場修復：`overflow-x:auto` 打爛 position:sticky 表頭（CSS overflow-x/y耦合陷阱）、表頭label本身scrollWidth溢出（漏查表頭下限）。未解：訂單06001008報告嘅無故空行，查live Supabase資料一致但測試環境未能重現，待Fat Mo確認持續性。
