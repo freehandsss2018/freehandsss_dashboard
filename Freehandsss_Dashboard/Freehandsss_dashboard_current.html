@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-25T19:56:16Z">
+    <meta name="fhs-build" content="2026-08-26T01:08:13Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -1052,6 +1052,15 @@
         .review-table tbody tr:hover { box-shadow:inset 0 0 0 1px #2A9D8F22, 0 1px 6px rgba(0,0,0,0.06); }
         .review-table tbody td { padding:10px; border-right:1px solid #f0f0f0; vertical-align:top; font-size:13px; line-height:1.5; }
         .review-table tbody td:last-child { border-right:none; }
+        /* [密度重排 2026-08-26 續十] 勾選格：上面呢條 `.review-table tbody td`（特異度 0,2,2）
+           一直壓住 `.review-cb-td`（0,1,0）嘅 padding 設定，令勾選格實際係 10px padding
+           ＋16px checkbox ＝ 36px。單品項訂單（rowspan=1）呢個 36px 就變成成行嘅高度下限
+           ——正正等於多品項列嘅行高，所以多品項單睇唔出，單品項單就撐高咗，睇落好似
+           多咗一行空白（Fat Mo 報告嘅 0600809／0600908／0600903／06001008 全部係
+           1 件鎖匙扣嘅單，2 件以上嘅單一律冇事，live Supabase 逐單核對 9/9 吻合）。
+           對齊特異度先鎖得住。「全部」視圖行高由產品明細 badge 團決定（遠高於 36px），
+           呢格從來唔係嗰邊嘅約束，故此改動對「全部」視圖係 no-op（已實測確認）。 */
+        .review-table tbody td.review-cb-td { padding:5px 4px; }
 
         /* === 任務一：複選 checkbox 欄 === */
         .review-cb-th { width:36px; min-width:36px; text-align:center !important; padding:8px 4px !important; }
@@ -1096,8 +1105,10 @@
         .filter-active-hint.visible { display:inline-block; }
         .filter-chevron { color:var(--fhs-text-muted); flex-shrink:0; transition:transform .2s; }
         .filter-toggle-bar.expanded .filter-chevron { transform:rotate(180deg); }
-        /* 常駐可見一行：類別 chip + 顯示項目財務/清除篩選/儲存篩選/重新載入 */
-        .filter-row-pinned { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; padding:6px 12px 8px; border-top:1px solid var(--fhs-border); }
+        /* 常駐可見一行（2026-08-26 續十 起合併）：漏斗 + 全部/進行中/已完成 + 類別 chip
+           + 顯示項目財務/清除篩選/儲存篩選/重新載入，全部同一條 flex-wrap 線。
+           border-top 已移除——佢原本係用嚟同上面嗰行分隔，而家已經係唯一一行。 */
+        .filter-row-pinned { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; padding:6px 12px 8px; }
         .filter-body { display:flex; flex-direction:column; gap:8px; max-height:0; overflow:hidden; padding:0 12px; transition:max-height .3s ease,padding .3s ease; }
         .filter-body.open { max-height:800px; padding:8px 12px 12px; border-top:1px solid var(--fhs-border); }
         .filter-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; }
@@ -2880,13 +2891,17 @@
            _FHS_TH_DEF 續七註解），呢度一併補：兩欄都要 ≥60px 先夠 58px
            scrollWidth + buffer。 */
         @media (max-width: 1280px) {
-            .ovw-narrowcol-Date     { width:95px !important; }
+            .ovw-narrowcol-Date     { width:84px !important; }
             .ovw-narrowcol-Customer { width:80px !important; }
             .ovw-narrowcol-eng      { width:130px !important; }
-            .ovw-narrowcol-target   { width:60px !important; }
-            .ovw-narrowcol-part     { width:63px !important; }
+            /* [2026-08-26 續十] 手模視圖專屬兩欄之前漏咗補窄screen數值——1024px 實測
+               肢數明細內容要 199px（欄闊得 170）、加購要 94px（欄闊得 80），兩欄都溢出。 */
+            .ovw-narrowcol-limb     { width:215px !important; }
+            .ovw-narrowcol-addon    { width:100px !important; }
+            .ovw-narrowcol-target   { width:67px !important; }
+            .ovw-narrowcol-part     { width:67px !important; }
             .ovw-narrowcol-mat      { width:67px !important; }
-            .ovw-narrowcol-qty      { width:60px !important; }
+            .ovw-narrowcol-qty      { width:67px !important; }
         }
 
         /* F3 v2: dual-mode modal — tabs */
@@ -3512,10 +3527,14 @@
            位置：篩選面板內，與 filter-toggle-bar 同組（.filter-toggle-row）
            S150 F3.4（2026-07-07）：Desktop 統一跟隨 Mobile 排位——icon-only + tabs 同一行
            ================================================================ */
-        .filter-toggle-row { display: flex; flex-direction: row; align-items: center; gap: 4px; padding: 0 4px; }
+        /* [密度重排 2026-08-26 續十] `.filter-toggle-row` wrapper 已拆走（兩行合併成一行，
+           見 HTML `.filter-row-pinned`），故該 selector 已無對應元素，移除免留孤兒 CSS。
+           下面三條仍然生效——toggle bar／文字隱藏／seg wrapper 而家係 pinned row 嘅直接子項。 */
         .filter-toggle-bar { width: auto; flex-shrink: 0; padding: 0 8px; }
         .filter-toggle-label, .filter-active-hint { display: none; }
-        #fhsSegWrapper { flex: 1; min-width: 0; padding: 2px 8px 2px 0; }
+        /* flex:1 改 0 0 auto：舊佈局佢獨佔一行可以任意撐闊，而家同類別 chip／四個快捷掣
+           共用同一行，再 flex-grow 就會逼走後面所有嘢。 */
+        #fhsSegWrapper { flex: 0 0 auto; min-width: 0; padding: 2px 8px 2px 0; }
 
         /* ================================================================
            V42 AG Stitch Snippets — 組件 1: 左滑卡片背景色修正
@@ -4305,9 +4324,17 @@
             <!-- Zone 3 filter：篩選列（fixed at top:48px+zone2H，由 JS 動態計算） -->
             <div class="review-filters-v2" id="reviewFiltersV2">
 
-                <!-- S150 F3.1：Toggle Bar + Segmented Control 同組（Desktop 上下疊，Mobile 同行） -->
-                <div class="filter-toggle-row">
-                    <!-- Mobile Only：Filter 收合 Toggle Bar -->
+                <!-- [密度重排 2026-08-26 續十] 原本分兩行（第一行＝漏斗+全部/進行中/已完成，
+                     第二行＝類別 chip+快捷掣）。Fat Mo 要求合併成同一行，故 `.filter-toggle-row`
+                     整個拆走，其兩個子元素（toggle bar、#fhsSegWrapper）直接升做
+                     `.filter-row-pinned` 嘅頭兩個 flex 子項——同一條 flex-wrap 線上排完。
+                     連帶：`.filter-row-pinned` 由「第二行」變咗「唯一一行」，原本用嚟同上面
+                     分隔嘅 border-top 已無意義，一併移除（見 CSS L~1100）。
+                     [密度重排 2026-08-25] 類別 chip + 快捷按鈕常駐可見，移出摺疊區——
+                     呢排係日常最高頻控制（尤其類別 chip，D69 訂單總覽類別視圖核心入口），
+                     唔應該同「年度/月份/狀態/批次/搜尋/排序」呢啲低頻欄位一齊收埋。 -->
+                <div class="filter-row filter-row-pinned" id="reviewFilterPinned">
+                    <!-- Filter 收合 Toggle Bar（icon-only，文字由 CSS 隱藏） -->
                     <div class="filter-toggle-bar" id="reviewFilterToggle" role="button" aria-expanded="false" aria-controls="reviewFilterBody" aria-label="篩選條件">
                         <div class="filter-toggle-summary">
                             <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -4321,7 +4348,7 @@
                         </svg>
                     </div>
 
-                    <!-- V42 Segmented Control: 全部 / 進行中 / 已完成（S150 F3：常駐於篩選列旁） -->
+                    <!-- V42 Segmented Control: 全部 / 進行中 / 已完成 -->
                     <div id="fhsSegWrapper">
                         <div class="fhs-seg-ctrl" id="fhsSegCtrl" role="tablist" aria-label="訂單分類">
                             <button class="fhs-seg-btn" type="button" role="tab" data-tab="all" onclick="setSegTab('all')">全部</button>
@@ -4329,13 +4356,9 @@
                             <button class="fhs-seg-btn" type="button" role="tab" data-tab="archived" onclick="setSegTab('archived')">已完成</button>
                         </div>
                     </div>
-                </div>
 
-                <!-- [密度重排 2026-08-25] 類別 chip + 快捷按鈕常駐可見，移出摺疊區（原「第二行」）——
-                     呢排係日常最高頻控制（尤其類別 chip，D69 訂單總覽類別視圖核心入口），
-                     唔應該同「年度/月份/狀態/批次/搜尋/排序」呢啲低頻欄位一齊收埋。
-                     Fat Mo 原話：畫面太稀疏、篩選區太佔位，參考 Excel 密度重新排位。 -->
-                <div class="filter-row filter-row-pinned" id="reviewFilterPinned">
+                    <div style="width:1px; height:24px; background:var(--fhs-border); flex-shrink:0;"></div>
+
                     <div class="filter-group">
                         <label class="filter-label" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>類別</label>
                         <div class="chip-group" role="group" aria-label="產品類別篩選">
@@ -6017,6 +6040,25 @@
         window._getItemStatus = function(orderId, item) {
             var _k = orderId + '|' + (item.Item_ID || item.Order_Item_Key || '');
             return window._fhsStatusStore[_k] || item.Status || item.Process_Status || '';
+        };
+
+        /* [D69續十一] 進度舊值對應表 — Fat Mo 報告「進度冇同步更新，有啲已經 done 完成」。
+           根因：進度下拉用嚴格字串比對 `_s === p[0]` 決定邊個 <option> 有 selected。
+           生產庫入面除咗選單提供嘅正規值之外，仲有一批歷史/別名值（`完成` 11 筆、
+           `待製作` 9 筆、`製作中` 3 筆），全部都對唔上任何 option，於是冇任何 option
+           攞到 selected，瀏覽器就 fallback 去**第一個** option——啱好就係「0 什麼都未做」。
+           即係話：一件實際已完成嘅品項，畫面顯示「什麼都未做」。實測當前視圖 11 件中招，
+           其中 4 件 DB 值係 `完成` 但顯示「0 什麼都未做」（0650429 ×2 / 0600809 / 0600903）。
+           對應原則：只做**字面等義**嘅安全對應，唔夠明確嘅一律唔猜（見 _fhsStatusIsKnown）。 */
+        window._FHS_LEGACY_STATUS_MAP = {
+            '完成':   'Done 已完成',   // 字面等義
+            '待交收': 'Done 已完成',   // 同 fhsStatusBucket 既有判定一致
+            '已取件': 'Done 已完成',   // 同上
+            '待製作': '0 什麼都未做'   // 同 fhsStatusBucket 既有判定一致（同屬 todo）
+        };
+        window._fhsNormalizeStatus = function(s) {
+            s = s || '';
+            return window._FHS_LEGACY_STATUS_MAP[s] || s;
         };
 
         // 手模擺設 checklist helpers
@@ -11435,8 +11477,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         // _oc 成個字串最終落喺 onchange="..." 屬性入面，內部所有 \'...\' 都係 JS 字串
                                         // 分界，唔止最外層 2 個參數，中段兩個 getElementById 目標都要用 fhsEscAttr
                                         var _oc = 'saveInlineEdit(\''+fhsEscAttr(o.id)+'\',\'Process_Status\',\'acc-status-'+fhsEscAttr(o.id)+'-'+_aIdx+'\','+_aIdx+');var _adj=document.getElementById(\'acc-adj-wrapper-'+fhsEscAttr(o.id)+'-'+_aIdx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+fhsEscAttr(o.id)+'\');';
+                                        // [D69續十一] 同桌面路徑一樣：先套舊值對應，對唔上就照原值出 option，
+                                        // 唔可以靜靜哋 fallback 去第一個「0 什麼都未做」（見 _FHS_LEGACY_STATUS_MAP 註解）。
+                                        var _sNormA = window._fhsNormalizeStatus ? window._fhsNormalizeStatus(_s) : _s;
+                                        var _knownOptA = _opts.some(function(p){ return p[0] === _sNormA; });
+                                        var _rawOptA = (!_knownOptA && _s)
+                                            ? '<option value="'+fhsEscAttr(_s)+'" selected>⚠ '+fhsEscHtml(_s)+'</option>'
+                                            : '';
                                         return '<select id="acc-status-'+fhsEscHtml(o.id)+'-'+_aIdx+'" onchange="'+_oc+'">'
-                                            +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
+                                            +_rawOptA
+                                            +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_knownOptA && _sNormA===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
                                             +'<div id="acc-adj-wrapper-'+fhsEscHtml(o.id)+'-'+_aIdx+'" style="display:'+(_s==='需進行補打'?'flex':'none')+';align-items:center;gap:4px;margin-top:6px;">'
                                             +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
                                             +'<input type="number" id="acc-adj-input-'+fhsEscHtml(o.id)+'-'+_aIdx+'" value="'+fhsEscHtml(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:11px;text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+fhsEscAttr(o.id)+'\',this.value)" onblur="saveAdjustmentAmount(\''+fhsEscAttr(o.id)+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
@@ -11576,7 +11626,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // [密度重排 2026-08-25 續五] Customer.mwCat：部位/材質/數量再收窄後騰出嘅位，
             // Fat Mo 要求分俾刻字同客人兩欄——客人喺類別視圖常見長 IG 帳號名
             // 「Lovehedqie852 (Selina Lai)」，157px 先夠唔截斷。
-            Customer: { label:'客人',     icon:'user',       mw:80,  mwCat:118 },
+            Customer: { label:'客人',     icon:'user',       mw:80,  mwCat:92 },
             inc:      { label:'入帳',     icon:'banknote',   mw:65,  color:'#B07D4C',           pad:'8px' },
             cost:     { label:'成本',     icon:'wallet',     mw:65,  color:'var(--fhs-danger)', pad:'8px' },
             profit:   { label:'利潤',     icon:'star',       mw:65,  color:'var(--fhs-success)',pad:'8px' },
@@ -11603,10 +11653,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // scrollWidth 實測要 58px，比欄闊仲寬——表頭文字溢出撞落隔籬欄
             // （Fat Mo 截圖「數量欄表頭移位」）。data 內容雖然淨係要 24-45px，
             // 但表頭label先係呢兩欄嘅真正下限，唔可以再縮過 33（58/1.9 scale)。
-            target:   { label:'對象',     icon:'baby',       mw:56 },
-            part:     { label:'部位',     icon:'hand',       mw:33 },
+            // [密度重排 2026-08-26 續八] Fat Mo 要求四欄睇齊、以材質嘅闊度做統一標準
+            // （36 已經係四欄之中最闊、亦已滿足表頭 label scrollWidth 下限）。
+            target:   { label:'對象',     icon:'baby',       mw:36 },
+            part:     { label:'部位',     icon:'hand',       mw:36 },
             mat:      { label:'材質',     icon:'settings',   mw:36 },
-            qty:      { label:'數量',     icon:'package',    mw:33 },
+            qty:      { label:'數量',     icon:'package',    mw:36 },
             batch:    { label:'批次',     icon:'tag',        mw:75 },
             stat:     { label:'進度',     icon:'activity',   mw:102 },
             notes:    { label:'備註',     icon:'square-pen', mw:110 }
@@ -11664,7 +11716,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
         // 進度字串 → 四個桶（同 _fhsIsOrderReadyToArchive 嘅完成語義對齊：只信「Done 已完成」家族）
         function fhsStatusBucket(s) {
-            s = s || '';
+            // [D69續十一] 先過舊值對應表，令進度橫幅嘅「已完成」計數同下拉顯示同一套真源。
+            // 未修之前 `完成`（生產庫 11 筆）喺呢度會跌落 'wip'，橫幅少報已完成數。
+            s = (window._fhsNormalizeStatus ? window._fhsNormalizeStatus(s) : s) || '';
             if (s.indexOf('補打') !== -1) return 'redo';
             if (s === 'Done 已完成' || s === '已取件' || s === '待交收') return 'done';
             if (s === '' || s === '待製作' || s.indexOf('0 什麼都未做') !== -1) return 'todo';
@@ -12254,8 +12308,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     // getElementById 目標都係 JS 字串分界內，要用 fhsEscAttr
                                     var _oc = 'saveInlineEdit(\''+fhsEscAttr(o.id)+'\',\'Process_Status\',\'status-select-'+fhsEscAttr(o.id)+'-'+_iIdx+'\','+_iIdx+');var _adj=document.getElementById(\'adj-wrapper-'+fhsEscAttr(o.id)+'-'+_iIdx+'\');if(_adj)_adj.style.display=this.value===\'需進行補打\'?\'flex\':\'none\';window._fhsCheckHmOrderCompletion(\''+fhsEscAttr(o.id)+'\');';
                                     var _adjDisp = (_s === '需進行補打') ? 'flex' : 'none';
+                                    // [D69續十一] 先套舊值對應；仍然對唔上就**照原值出一個 option**，
+                                    // 唔可以靜靜哋 fallback 去第一個「0 什麼都未做」扮冇做過（見 _FHS_LEGACY_STATUS_MAP 註解）。
+                                    var _sNorm = window._fhsNormalizeStatus ? window._fhsNormalizeStatus(_s) : _s;
+                                    var _knownOpt = _opts.some(function(p){ return p[0] === _sNorm; });
+                                    var _rawOptHtml = (!_knownOpt && _s)
+                                        ? '<option value="'+fhsEscAttr(_s)+'" selected>⚠ '+fhsEscHtml(_s)+'</option>'
+                                        : '';
                                     return '<select id="status-select-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-status-select" style="width:100%;max-width:92px;font-size:13px;margin:0 auto;" onchange="'+_oc+'">'
-                                        +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_s===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
+                                        +_rawOptHtml
+                                        +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_knownOpt && _sNorm===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
                                         +'<div id="adj-wrapper-'+fhsEscHtml(o.id)+'-'+_iIdx+'" style="display:'+_adjDisp+';align-items:center;justify-content:center;gap:4px;margin-top:6px;">'
                                         +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
                                         +'<input type="number" id="adj-input-'+fhsEscHtml(o.id)+'-'+_iIdx+'" value="'+fhsEscHtml(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:12px;text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+fhsEscAttr(o.id)+'\',this.value)" onblur="saveAdjustmentAmount(\''+fhsEscAttr(o.id)+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
@@ -12263,8 +12325,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:10px;"></div>';
                                 })()}
                             </td>
-                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:4px; background-color:${batchCol};">
-                                <textarea class="review-notes-textarea"
+                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:2px; background-color:${batchCol};">
+                                <textarea class="review-notes-textarea" rows="1"
                                           id="notes-input-${fhsEscHtml(o.id)}"
                                           style="font-size:13px; background:#ffffff;"
                                           onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Admin_Notes', 'notes-input-${fhsEscAttr(o.id)}')"
@@ -12292,7 +12354,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             無子項目
                         </td>
                         <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${orderBatchCol};">
-                            <textarea class="review-notes-textarea"
+                            <textarea class="review-notes-textarea" rows="1"
                                       id="notes-input-${fhsEscHtml(o.id)}"
                                       style="font-size:13px; background:transparent;"
                                       onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Admin_Notes', 'notes-input-${fhsEscAttr(o.id)}')"
