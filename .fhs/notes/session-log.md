@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-26 (D69續五：fhs-health-check.js 新增第8類「P0.6歸檔洩漏」偵測): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「D69續五」條目 + [decisions.md D69續五](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。D69續四交接過程揪出 `commit.md` P0.6（完成項目搬歸檔區）連續7週無人執行、MASTER表積壓87%已完成項目，Fat Mo 指示加機械閘。新增 `pending_table_leak_checks` 規則類別+`checkPendingTableLeaks()`引擎函式，偵測 handoff.md「MASTER持續待辦」表區間內殘留「✅完成」列（budget=0，歸檔區本身刻意排除唔誤判）。新增2個fixture（洩漏案例+乾淨案例）驗證，連同既有12個全部PASS（14/14）。順手修正 handoff.md 便攜塊兩處已過時內容（🎯目標行仍寫「待拍板」但實已拍板）+ 便攜塊過肥（4239→3999 bytes）。
+**Subagent 使用記錄**：❌未使用（純機械規則新增+既有fixture框架擴充，互動式改碼+自跑測試suite驗證即可）。
+
 ## 2026-08-26 (D69續四：客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + cl-flow-fast CONDITIONAL_READY): 🏷️ 🟡
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「D69續四」條目 + [decisions.md D69續四](decisions.md)（無完成報告的中型改動，Changelog 為全文居所，本行僅摘要指回）。三個問題全部用 live Supabase 對比實測（非猜測）揪出真根因：①空行bug 真變數係「單一品項數」而非之前錯判嘅「刻字空白」，CSS特異度+textarea rows屬性雙修復；②進度狀態下拉「Done 變返未做」根因係 `order_items.process_status` 自由text 欄位有3個寫入者用2種方言，本輪先落地止血對應表（讀取層），全套根治（統一寫入方言+單一真源階段表+零schema改動）已走 `/cl-flow-fast`（Flow ID `2026-08-26-0828`，判決 CONDITIONAL_READY，2個BLOCKER全部用實證解除非延後）；③客人欄寬/篩選列合併為 Fat Mo 直接要求嘅小改動。**本輪全部改動已驗證但未 commit**，等 Fat Mo 就 cl-final-plan §4 三項拍板、`/execute` 全套方案後統一 commit。

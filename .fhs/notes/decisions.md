@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-26] (D69續五) fhs-health-check.js 新增第8類偵測：P0.6歸檔洩漏機械閘
+
+**背景**：D69續四交接過程中揪出 `commit.md` P0.6（完成項目搬去「已確認完成」歸檔區）自 Session 144（2026-07-05）起連續 7 週無人執行，MASTER 持續待辦表積壓 135 項已完成項目佔表 87%，Fat Mo 反覆質疑「話已解決但新session仍見到」——根因之一正是呢個純人工紀律規則冇機械閘偵測，症狀係「表面有記錄、實際搵唔到」而非報錯，容易再度靜默停擺。Fat Mo 明確指示「要加 health-check 掃描 & 加呢個 health-check 閘」。
+
+**設計**：沿用既有 `.fhs/tools/fhs-health-rules.json` 資料驅動架構（改規則不用改程式碼），新增 `pending_table_leak_checks` 規則類別 + `checkPendingTableLeaks()` 引擎函式（`scripts/hooks/fhs-health-check.js`）。邏輯：定位 handoff.md 內「# 📋 MASTER 持續待辦」標題至第一個「### 已確認完成」標題之間嘅區間（即真正未完成表），掃描區間內任何一行優先欄仍寫 `✅ 完成`（budget=0，零容忍——歸檔區本身大量 `✅ 完成` 屬正常，刻意排除喺區間之外唔誤判）。命中即代表上次 `/commit` P0.6 又漏執行。
+
+**驗證**：新增 fixture `13-pending-table-leak`（人工植入一行洩漏，預期命中）+ `14-pending-table-clean`（歸檔區大量 `✅ 完成` 但待辦表乾淨，預期零誤判），連同既有 12 個 fixture 全部 PASS（14/14），對真實 repo 現況（本輪剛完成歸檔整理後）跑出 0 命中，證實無回歸無誤判。同步更新 `governance/05_maintenance-protocol.md` §7 季度健檢指引提及類別數（過往 5 類 → 現 8 類）。
+
+**局限**：此閘只喺 SessionStart hook 執行時提示（fail-open，唔阻擋任何操作），唔會阻止 `/commit` 落地——同 R13（handoff 未 staged 禁 commit）呢種硬阻擋閘性質不同，屬於「事後盡快發現」而非「事前禁止」。若要做到 commit 時強制阻擋，需另外評估喺 `pre-tool-guard.js` 加對應規則（本輪未做，範圍外）。
+
+全文見 `scripts/hooks/fhs-health-check.js`（`checkPendingTableLeaks`）、`.fhs/tools/fhs-health-rules.json`（`pending_table_leak_checks`）、fixture 13/14。**Subagent 使用記錄**：❌未使用（純機械規則新增+既有測試框架擴充，互動式改碼+跑 fixture suite 自驗即可，無需委派）。
+
 [2026-08-26] (D69續四) 客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + 全套修復方案 CONDITIONAL_READY
 
 **背景**：D69續三 commit+部署後，Fat Mo 繼續回報三類問題：①客人欄仲想再收窄（226→200→180px）；②篩選區兩行想合併一行；③訂單總覽出現「無故空行」，先後兩輪指向錯誤方向（「刻字空白」理論，已用實測推翻）；④進度狀態下拉「明明揀咗 Done 但變返什麼都未做」。

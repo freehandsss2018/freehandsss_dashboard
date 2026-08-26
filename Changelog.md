@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— D69續五：fhs-health-check.js 新增第8類「P0.6歸檔洩漏」偵測
+
+- **緣起**：D69續四交接過程中揪出 `commit.md` P0.6（完成項目搬去「已確認完成」歸檔區）自 Session 144（2026-07-05）起連續 7 週無人執行，MASTER 持續待辦表積壓 135 項已完成項目佔表 87%，係 Fat Mo 反覆質疑「話已解決但新session仍見到」嘅根因之一——呢類純人工紀律規則冇機械閘偵測，症狀係「表面有記錄、實際搵唔到」而非報錯。Fat Mo 明確指示加呢個 health-check 閘。
+- **設計**：沿用 `.fhs/tools/fhs-health-rules.json` 資料驅動架構，新增 `pending_table_leak_checks` 規則類別 + `checkPendingTableLeaks()` 引擎函式。邏輯：定位 handoff.md 內「# 📋 MASTER 持續待辦」至第一個「### 已確認完成」標題之間嘅區間，掃描區間內任何一行優先欄仍寫 `✅ 完成`（budget=0）——歸檔區本身大量 `✅ 完成` 屬正常已刻意排除喺區間外。
+- **驗證**：新增 fixture `13-pending-table-leak`（人工植入洩漏行，預期命中）+ `14-pending-table-clean`（歸檔區大量 `✅ 完成` 但待辦表乾淨，預期零誤判），連同既有 12 個 fixture 全部 PASS（14/14）；真實 repo 現況（本輪剛完成歸檔整理後）跑出 0 命中，無回歸無誤判。同步順手修正 handoff.md 便攜塊兩處過時內容（🎯目標行仍寫「待Fat Mo拍板」但實已拍板、commit hash 過時）+ 便攜塊過肥（4239→3999 bytes）。
+- **局限**：此閘只喺 SessionStart hook fail-open 提示，唔阻擋任何操作，屬「事後盡快發現」而非「事前禁止」——同 R13（handoff 未 staged 禁 commit）呢種硬阻擋閘性質不同。
+- **改動檔案**：`scripts/hooks/fhs-health-check.js`、`.fhs/tools/fhs-health-rules.json`、`scripts/hooks/test/health-fixtures.json` + 兩個新 fixture 目錄、`.fhs/ai/governance/05_maintenance-protocol.md`（§7 類別數更新）。
+- 全文見 decisions.md D69續五。**Subagent 使用記錄**：❌未使用（純機械規則新增+既有測試框架擴充，互動式改碼+跑 fixture suite 自驗即可）。
+
 ## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— D69續四：客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + 全套修復方案 CONDITIONAL_READY（未 execute）
 
 - **客人欄寬**：D69續三 226px，Fat Mo 兩輪追加收窄要求（200px→180px），最終 `Customer.mwCat` 定案 92（實測 181px）。
