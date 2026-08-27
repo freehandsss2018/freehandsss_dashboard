@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-08-28] Session（Claude Code / Sonnet 5 執行）— S147 結案：n8n Mirror Prep 共享鎖 RPC 風險前提已消失
+
+- **緣起**：MASTER 待辦表 `[S147]`（🔴高，n8n Mirror Prep 改用共享鎖 RPC `fhs_mirror_write_product_cost`）長期未處理。處理前先核實原設計（2026-07-05）嘅併發風險前提喺 D43（Airtable 剝離）+ S189（成本模型大改）之後是否仍然成立。
+- **查證**：直查 live n8n workflow（`FHS_Core_OrderProcessor` 30 節點）+ 全 repo grep `products` 表寫入點 + `fhs_sync_products_from_config` 呼叫者，並派 fresh-context agent 獨立覆核。
+- **結論**：風險已消失。`fhs_sync_products_from_config()` 定義仍在但零呼叫者；Dashboard UI 只手動寫 `cost_configurations`，明文警告唔會自動同步 products；n8n live workflow 完全冇節點寫 `products` 表——同名嘅 `Supabase Mirror Prep` 節點實際做緊完全唔同嘅事（同步訂單資料，唔關 cost_config 事）。原設計文件講嘅「n8n 反寫 products」寫者喺現行架構搵唔到蹤影。
+- **裁決**：S147 結案下架，advisory-lock RPC 無需實作。意外發現 Dashboard 承諾嘅「drift 檢查」從未實作（另一性質問題，已 spawn 獨立低優先 task）。
+- 全文見 decisions.md 2026-08-28「S147-follow」條目。**Subagent 使用記錄**：✅已使用（1 個 fresh-context agent 核實現行寫入路徑）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。

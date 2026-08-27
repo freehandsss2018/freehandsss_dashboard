@@ -3,6 +3,26 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-28] (S147-follow) n8n Mirror Prep 共享鎖 RPC — 風險前提已消失，結案下架
+
+**背景**：MASTER 待辦表 `[S147]` 長期列 🔴 高優先，目標係防止「Fat Mo UI 改 `cost_config`」同「n8n Mirror Prep 反向寫 `products.total_base_cost`」兩者並發撞車，last-write-wins 蓋走手動設定。原設計文件 `.fhs/ai/FHS_Product_Cost_Operations.md` §OP-3.2（2026-07-05）提出 `fhs_mirror_write_product_cost` RPC，取同一把 `pg_try_advisory_xact_lock(hashtext('cost_sync'))`，令兩條路徑互斥，但一直未實作。
+
+**觸發覆核**：處理呢項待辦前，先核實兩個之後發生嘅架構變動有冇令原前提過時：①D43（2026-07-22）Airtable Fallback 全面剝離停用；②S189 起（2026-07-24）成本模型大改（V2 tier SKU）。原文件明言競態對手係「n8n V47.x Mirror Prep 反向寫 Airtable」，呢條路徑喺 D43 之後理論上應該消失。
+
+**查證方法**：直查 live n8n workflow（`get_workflow`/`get_node` MCP，`FHS_Core_OrderProcessor` 30 節點）+ 全 repo grep `products` 表寫入點 + `fhs_sync_products_from_config` 呼叫者 + Dashboard UI 原始碼；另派 fresh-context general-purpose agent 獨立覆核。
+
+**結論：風險已消失，非降級，係前提根本不存在**——現行系統對 `products.total_base_cost` 冇任何活躍嘅自動寫入路徑：
+- `fhs_sync_products_from_config()` RPC 定義仍在（`0022b_cost_config_v2_rpc.sql:116-188`，仍取同一把鎖），但**零呼叫者**——全 repo 搵唔到任何地方 call 佢，現行 `fhs_batch_recalc_execute` 都冇呼叫。
+- Dashboard UI（`saveSingleCostConfig()`，`Freehandsss_dashboard_current.html:18466`）只寫 `cost_configurations`，跟住彈 toast 明文警告「products 成本表不會自動同步」——UI 設計上本身就係手動、非自動觸發。
+- n8n live workflow 完全冇任何節點寫 `products` 表：`Smart Cache Strategist` 只 GET 唯讀；名字相似嘅 `Supabase Mirror Prep` 節點實際做緊完全唔同嘅事——建 payload 呼叫 `sync_order_to_mirror` RPC 同步**訂單**資料（`orders`/`order_items`），同 `products`/`cost_configurations` 全無關係。原文件講嘅「n8n 反寫 products」呢個寫者，喺現行架構完全搵唔到蹤影——可能係 D43 前遺留描述，或者原本就從未真正咁樣實作過。
+- 全 repo 內真正寫過 `products.*_cost` 欄位嘅位置全部係一次性 migration（`0004`/`0022b`/`0030`），屬人手/agent 執行嘅單次 DDL/DML，非併發 runtime 路徑，不會同任何嘢賽跑。
+
+**裁決**：S147 原設計嘅 advisory-lock RPC 無需實作，結案下架，MASTER 待辦表同步更正為已完成。
+
+**意外發現（另開低優先待辦，非本次範圍）**：Dashboard UI 承諾嘅「drift 檢查」（`cost_config` 改咗之後核對 `products` 有冇漂移）從未實作，`products.total_base_cost` 現時完全靠人手 migration 維護，冇自動偵測/告警機制。呢個係資料一致性/漂移偵測問題，性質同 S147 原本要防嘅併發競態完全不同，已 spawn 獨立低優先 task 追蹤，非本次結論範圍。
+
+全文見 handoff.md MASTER 待辦表 `[S147]` 條目更正、Changelog.md 2026-08-28 條目。**Subagent 使用記錄**：✅已使用（1 個 fresh-context general-purpose agent 獨立核實現行寫入路徑，補強主 session 已查嘅 live n8n workflow 證據）。
+
 [2026-08-21] (D68) handoff 同步從「散文紀律」升格為「機械閘」——`pre-tool-guard.js` R13 攔截 `git commit`
 
 **背景**：Fat Mo 明確定義目標——「當我打 `/commit`，就代表任務完成並且**能確保**同步更新 handoff」。查證確認呢個保證一直唔成立：`commit.md` P0.7 雖然白紙黑字寫「`更新: <日期>` 必須更新至今日日期」，但純屬散文指示，冇任何機械強制。
