@@ -1,0 +1,39 @@
+{
+  "parameters": {
+    "method": "POST",
+    "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/rpc/fhs_touch_ig_thread_rules",
+    "authentication": "none",
+    "sendHeaders": true,
+    "specifyHeaders": "keypair",
+    "headerParameters": {
+      "parameters": [
+        {
+          "name": "apikey",
+          "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+        },
+        {
+          "name": "Authorization",
+          "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    "sendBody": true,
+    "contentType": "raw",
+    "body": "={{ JSON.stringify({ p_ids: $('Classify & Report').first().json.overriddenIds }) }}",
+    "options": {}
+  },
+  "id": "tr1",
+  "name": "Touch Rules",
+  "type": "n8n-nodes-base.httpRequest",
+  "typeVersion": 4,
+  "position": [
+    3940,
+    420
+  ],
+  "alwaysOutputData": true,
+  "continueOnFail": true
+}

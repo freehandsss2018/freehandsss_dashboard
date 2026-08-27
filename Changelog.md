@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-27] Session（Claude Code / Sonnet 5 執行）— D58-follow：IG 睇門狗 checkpoint 揭發 D62 事故漏網節點，Supabase 寫入近 4 星期靜默 401，已修復待今晚驗證
+
+- **緣起**：`/read` 交接摘要標記 D58-follow（IG 睇門狗句子級學規則 checkpoint，2026-08-18 到期）逾期 9 日未檢視，Fat Mo 要求補查。
+- **查證**：`ig_phrase_rules` 提案數僅 7（門檻 <10 表面判「入口太深」），但逐筆時間戳全部集中喺 2026-08-03～04 上線首兩日，之後零新增；交叉查 `ig_messages`／`ig_watchdog_alerts` 同步斷流，判定表面結論不可信。
+- **根因**：n8n API 直查 `FHS_IGWatchdog_DriveWatch`（`D4LK6VrQbiXlju0V`）執行記錄，逐節點拆開發現 `Write Alerts`／`Touch Rules`／`Write Messages` 三個寫入節點每日皆 `401 Unregistered API key`（外層 `continueOnFail` 令整體仍回報 `status=success`，唔拆節點睇唔出）。三者共用嘅密鑰，正正係 2026-08-10 D62 事故（3節點洩漏公開 GitHub repo 遭 Supabase 自動撤銷）**同一條已死 key**——D62 修復（2026-08-11）只覆蓋另一條工作流程（Core OrderProcessor）嘅 3 個節點，呢條獨立嘅 IG 睇門狗工作流程完全漏修。
+- **影響核實**：`Telegram Notify (Data)` 節點獨立於三個壞節點，每日照常成功發送摘要俾 Fat Mo（`ok:true`）——**核心防漏單功能全程未受影響，冇實際漏單**。壞影響局限持久化層：Dashboard IG 訊息畫面／Thread 規則生效次數／本次 checkpoint 查嘅提案數，近 4 星期資料皆失真。
+- **修復**：沿用 D62 已驗證修法，三個節點 header 由寫死字串改 `={{ $env.SUPABASE_SERVICE_KEY }}`。GET→PUT 4 欄位鐵律部署，前後 diff 確認 30 節點數目不變、`connections` 逐字元相等，僅目標 6 個 header 值變動。節點快照存 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-27/D4LK6VrQbiXlju0V/`（已掃描確認冇殘留死 key）。
+- **驗證狀態（誠實聲明未完成）**：結構層驗證已做（diff 乾淨）+ 間接證據強（同容器另一工作流程用同一 `$env` 寫法 2026-08-26 仍正常）；**未做直接功能驗證**——排程觸發流程，n8n public API v1 冇開放手動觸發（`/run`、`/execute` 皆 405），待今晚 22:00 UTC 排程自然執行後查證。刻意放棄用雲端排程 agent 自動覆核（雲端 sandbox 見唔到本機 `.env`，強行做需要將密碼寫入雲端設定，等同重犯本次修緊嘅同一種錯誤）。
+- **D58 checkpoint 判定**：結論作廢，7 句樣本受污染不可信；待修復驗證生效後需重新起一個乾淨觀察期重新計數。
+- **改動檔案**：n8n 工作流程 `D4LK6VrQbiXlju0V`（3節點 header）、`.fhs/notes/aireports/n8n-mcp-backups/2026-08-27/D4LK6VrQbiXlju0V/`（新，3個節點快照）、`learnings/n8n.md`（#7 新增）、`.fhs/notes/decisions.md`（D58-follow）、`.fhs/memory/handoff.md`。**Dashboard HTML／Supabase schema／migration 零改動。**
+- 全文見 decisions.md D58-follow。**Subagent 使用記錄**：❌未使用（跨 Supabase SQL／n8n API／git 歷史三方即時交叉查證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。

@@ -1,0 +1,43 @@
+{
+  "parameters": {
+    "method": "POST",
+    "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/ig_messages?on_conflict=thread,ig_message_id",
+    "authentication": "none",
+    "sendHeaders": true,
+    "specifyHeaders": "keypair",
+    "headerParameters": {
+      "parameters": [
+        {
+          "name": "apikey",
+          "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+        },
+        {
+          "name": "Authorization",
+          "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Prefer",
+          "value": "resolution=ignore-duplicates,return=minimal"
+        }
+      ]
+    },
+    "sendBody": true,
+    "contentType": "raw",
+    "body": "={{ JSON.stringify($('Classify & Report').first().json.messages) }}",
+    "options": {}
+  },
+  "id": "wm1",
+  "name": "Write Messages",
+  "type": "n8n-nodes-base.httpRequest",
+  "typeVersion": 4,
+  "position": [
+    3720,
+    540
+  ],
+  "alwaysOutputData": true,
+  "continueOnFail": true
+}
