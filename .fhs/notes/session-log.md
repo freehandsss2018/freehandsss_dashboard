@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-28 (S147-follow：n8n Mirror Prep 共享鎖 RPC 風險前提已消失，結案下架): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-28 條目 + [decisions.md「S147-follow」](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 要求處理 MASTER 待辦表長期 🔴高 項目 [S147]（防「UI改cost_config」同「n8n反寫products.total_base_cost」撞車，原設計提議 advisory-lock RPC `fhs_mirror_write_product_cost`）。落手實作前先核實原設計（2026-07-05）嘅威脅模型喺 D43（剝離Airtable）+ S189（成本模型大改）之後是否仍成立：直查 live n8n workflow（`get_workflow`/`get_node` MCP，30 節點）+ 全 repo grep `products` 表寫入點 + `fhs_sync_products_from_config` 呼叫者 + Dashboard UI 原始碼，並派 fresh-context agent 獨立覆核。結論：風險已消失——`fhs_sync_products_from_config()` 零呼叫者、UI 只手動寫 `cost_configurations` 並警告唔自動同步、n8n live workflow 完全冇節點寫 `products` 表（同名 `Supabase Mirror Prep` 節點實際同步訂單資料，唔關 cost_config 事）。裁決 S147 結案下架，RPC 無需實作。意外發現 Dashboard 承諾嘅「drift 檢查」從未實作，已 spawn 獨立低優先 task（`task_6a2a5db6`）追蹤。另落一條 [[02_model-dispatch]] §7 教訓：承接舊設計文件嘅待辦項目落手前須先核實前提未過時。過程中一度誤用漏 worktree 前綴嘅絕對路徑讀檔（純唯讀，發現後即改正，未寫壞主倉）。
+**Subagent 使用記錄**：✅已使用（1 個 fresh-context general-purpose agent 獨立核實現行寫入路徑）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。
