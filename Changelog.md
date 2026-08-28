@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-28] Session（Claude Code / Sonnet 5 執行）— D58-follow-v2：獨立核實憑證修復生效 + builder 源頭補強（5節點非3）+ 重開乾淨觀察期
+
+- **緣起**：承接上一版摘要嘅 D58-follow（另一並行分支 `read-command-8f0fbb` 已完成，live 已修復但功能驗證懸空待排程首跑，且未 merge）。用 `/8d` 對「暫緩 UI 入口改善、先核實憑證修復」呢個方向做一輪自我批評迭代，揪出三個弱點：①驗證條件（等 `ig_watchdog_alerts` 天然出新行）可能永遠唔觸發；②修復係 live-only 手術，builder 一重跑就會自動回歸；③「乾淨觀察期」係未定義嘅詞。
+- **獨立核實**（唔等排程自然觸發）：`ig_messages` 查實 2026-08-03 22:00 UTC 後斷流 24 日，直到 **2026-08-27 22:00 UTC**（排程首跑時刻）精確恢復寫入 9 則——直接證據，`Write Messages` 節點確認已生效。`ig_watchdog_alerts` 因冇撞警報條件未產生新行，無法同法驗證，改用靜態層：`information_schema.role_table_grants` 確認 service_role 完整 CRUD、RLS 對 service_role 天然 bypass、`pg_indexes` 確認 `ix_igwatch_alerts_dedup_v2` unique index 對應 on_conflict 子句存在——三項疊加判定 `Write Alerts` 下次觸發時邏輯上會成功，但仍非親身執行證據，列為觀察期內第一個真警報出現時嘅待確認項。
+- **Builder 源頭補強（範圍擴大：5 節點非原判 3 個）**：`scripts/ig-watchdog/build_n8n_workflow.cjs` 用 `const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY` 對 5 個節點（`Write Alerts`/`Touch Rules`/`Write Messages`/`Write Mismatches`/`Write Intents`）做 build-time 字面插值。D58-follow 只手動修復咗 live 上已知壞嘅 3 個節點，但呢個結構性缺陷對全部 5 個一視同仁——任何人下次跑 builder 都會焗死覆蓋 live 已手動修好嘅 `$env` runtime 表達式，完整重演今次事故。已將全部 5 個節點改為 `={{ $env.SUPABASE_SERVICE_KEY }}` / `={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}`（字串直接抄自已驗證嘅 live 定義快照，非重新發明語法），並移除已變死碼嘅 const。`Write Mismatches`／`Write Intents` 喺 D58-follow 事故本身並非已知受害者，本次只補源頭防未來回歸，未觸碰 live。
+- **驗證**：`node -c` 語法通過；實跑 builder 產出 JSON，程式化核對 5 個節點 header 逐字元等於已驗證嘅 live 表達式；輸出節點總數 30，與 D58-follow commit 記錄嘅 live 節點數一致；全文掃描確認產物零殘留字面 key 字串；`.fhs-local/` 確認維持 gitignore。純 repo 側修復，未重新部署 n8n。
+- **分支合併**：`origin/claude/read-command-8f0fbb`（D58-follow 原始修復）已 fast-forward merge 入本分支，`git merge-tree` 預檢確認零衝突（該 commit 未觸碰 builder 檔案）。
+- **觀察期重新定義**：起計點 2026-08-28、終點 2026-09-11（14 日，回復 D58 原設計窗口）、門檻維持 10（窗口長度已還原不按比例調整）、現存 7 句舊提案標記 baseline 不刪除但計數不計入。新增判定訊號：終點時交叉查該窗口 `ig_messages` 有幾多則落入 deal 特徵，區分「有料但零提案＝入口問題」同「本身冇料＝checkpoint 設計要重估」，修補原設計「零數據時無法判斷」嘅缺口。
+- **刻意未做**：`SUPABASE_ANON_KEY`（同一 builder 3 處字面插值）性質同 service key 不同，設計上可公開，未一併改動，留獨立決策；`Touch Rules` 功能驗證留待 Phase 2b 開閘一併處理。
+- **改動檔案**：`scripts/ig-watchdog/build_n8n_workflow.cjs`（5節點 + 移除死 const）、`.fhs/notes/decisions.md`（D58-follow-v2）、`.fhs/memory/handoff.md`。**n8n live／Dashboard HTML／Supabase schema／migration 零改動**（純 repo 側 builder 修復 + 只讀查證）。
+- 全文見 decisions.md D58-follow-v2。**Subagent 使用記錄**：❌未使用（Supabase SQL／git 分支狀態／builder 產物三方即時交叉驗證，委派會斷推理鏈）。
+
 ## [2026-08-27] Session（Claude Code / Sonnet 5 執行）— D58-follow：IG 睇門狗 checkpoint 揭發 D62 事故漏網節點，Supabase 寫入近 4 星期靜默 401，已修復待今晚驗證
 
 - **緣起**：`/read` 交接摘要標記 D58-follow（IG 睇門狗句子級學規則 checkpoint，2026-08-18 到期）逾期 9 日未檢視，Fat Mo 要求補查。
