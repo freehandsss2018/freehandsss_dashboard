@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-28 (agent_dashboard Canva 學習記錄查證 + MANIFEST 版本漂移修復 + /fhs-usage-audit 補跑): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-28 條目（無完成報告的小改動，本行僅摘要指回）。Fat Mo 回報 dashboard Canva 學習記錄睇唔到新案例，查證確認係靜態快照未重新生成（非 bug），重跑 `/team` 後 6→9 案例正常出現。順手修復重跑時帶出嘅兩個勘誤：MANIFEST.md 版本號漂移（database-reviewer/finance-auditor 補至 v2.2.1）+ `/fhs-usage-audit` 52天逾期補跑（唯讀掃描，快照已存）。
+**Subagent 使用記錄**：❌未使用（單一腳本重跑 + 文件記錄同步，即時交叉核對即可）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。

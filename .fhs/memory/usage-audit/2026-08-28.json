@@ -1,0 +1,180 @@
+{
+ "date": "2026-08-28",
+ "sessions_total": 73,
+ "commands": [
+  [
+   "/model",
+   137
+  ],
+  [
+   "/commit",
+   57
+  ],
+  [
+   "/read",
+   34
+  ],
+  [
+   "/execute",
+   20
+  ],
+  [
+   "/cl-flow",
+   6
+  ],
+  [
+   "/8d",
+   5
+  ],
+  [
+   "/fhs-check",
+   3
+  ],
+  [
+   "/upload-web",
+   2
+  ],
+  [
+   "/rp",
+   2
+  ],
+  [
+   "/cl-flow-fast",
+   2
+  ],
+  [
+   "/canva-auto",
+   1
+  ]
+ ],
+ "tools_top10": [
+  [
+   "Bash",
+   3578
+  ],
+  [
+   "Read",
+   2292
+  ],
+  [
+   "Edit",
+   2221
+  ],
+  [
+   "Grep",
+   1029
+  ],
+  [
+   "mcp__Claude_Browser__javascript_tool",
+   547
+  ],
+  [
+   "TaskUpdate",
+   290
+  ],
+  [
+   "Write",
+   286
+  ],
+  [
+   "mcp__supabase__execute_sql",
+   278
+  ],
+  [
+   "mcp__Claude_Browser__computer",
+   262
+  ],
+  [
+   "mcp__Claude_Browser__navigate",
+   170
+  ]
+ ],
+ "themes": [
+  [
+   "fix_bug",
+   207
+  ],
+  [
+   "test_verify",
+   157
+  ],
+  [
+   "finance_cost",
+   137
+  ],
+  [
+   "deploy_upload_nas",
+   95
+  ],
+  [
+   "paste_error_log",
+   76
+  ],
+  [
+   "screenshot_look",
+   45
+  ],
+  [
+   "n8n",
+   39
+  ],
+  [
+   "supabase_sql",
+   34
+  ],
+  [
+   "continue",
+   32
+  ],
+  [
+   "ig",
+   27
+  ],
+  [
+   "mobile_375_iphone",
+   26
+  ]
+ ],
+ "repeated_prompts_top10": [
+  {
+   "count": 54,
+   "sample": "[Request interrupted by user]"
+  },
+  {
+   "count": 48,
+   "sample": "# /commit（Claude Code Bridge）\r / \r / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。\r / \r / **執行步驟"
+  },
+  {
+   "count": 34,
+   "sample": "# /read (Claude Code Bridge) /  / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。 /  / **執行步驟**： / 請"
+  },
+  {
+   "count": 19,
+   "sample": "Y"
+  },
+  {
+   "count": 16,
+   "sample": "繼續"
+  },
+  {
+   "count": 15,
+   "sample": "# /commit（Claude Code Bridge） /  / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。 /  / **執行步驟**： / "
+  },
+  {
+   "count": 14,
+   "sample": "讀取 `.fhs/ai/commands/execute.md` 並依照定義執行任務。\r / \r / 前置確認：\r / 1. 確認 Fat Mo 已明確授權（本指令即為授權"
+  },
+  {
+   "count": 13,
+   "sample": "Base directory for this skill: D:\\SynologyDrive\\Free_handsss\\freehandsss_dashboa"
+  },
+  {
+   "count": 12,
+   "sample": "Continue from where you left off."
+  },
+  {
+   "count": 11,
+   "sample": "# /cl-flow (Claude Code Bridge)\r / \r / > **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。\r / \r / **執行"
+  }
+ ]
+}

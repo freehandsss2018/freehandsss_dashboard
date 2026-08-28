@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-28] Session（Claude Code / Sonnet 5 執行）— agent_dashboard Canva 學習記錄「消失」查證 + MANIFEST 版本漂移修復 + `/fhs-usage-audit` 補跑
+
+- **緣起**：Fat Mo 回報 agent_dashboard「Canva 學習記錄」zone 睇唔到剛做完嘅新單案例（截圖只見 6 個舊案例）。
+- **查證結論（非 bug）**：`scripts/agent_dashboardV42.js` 的 Canva 學習記錄 zone 屬**靜態快照**——只喺 `/team` 手動觸發 `node scripts/agent_dashboardV42.js` 時，才會重新讀取 `canva_auto/placement_memory.json` 生成 `artifacts/agent_dashboardV42.html`，並非即時渲染。查 `placement_memory.json` git log，確認 Kobekts #0600506（08-16）/TW_Ting #0600901（08-15）/Woodcyn #0600905（08-15）三單早已寫入 `learned:true`，只係 dashboard 快照喺呢 3 單之前生成、之後未再重跑。渲染邏輯本身（`renderCanvaLearningZone()`）冇 cap／冇 dedup，重新生成即恢復正常——已實測重跑後案例總數 6→9，3 個新案例正確出現。
+- **順手修復 1：MANIFEST 版本漂移**：重跑 `/team` 時，dashboard 自身勘誤表帶出 `database-reviewer`／`finance-auditor` 兩個 subagent 嘅 frontmatter 版本（v2.2.1，2026-08-16 commit `b6db6cd` accessory_cost 第四成本分類補漏時已升版）同 `.fhs/ai/subagents/MANIFEST.md` 已安裝表記錄（分別停留喺 2.1.0/2.2.0）唔一致，屬 dual-write drift（frontmatter 改咗但漏同步 MANIFEST 登記表）。已補上已安裝表版本號 + 版本歷史表兩行記錄，內容本身（model/tools/邏輯）零改動，純文件記錄同步。
+- **順手處理 2：`/fhs-usage-audit` 逾期補跑**：同一勘誤表帶出「已 52 天未執行（規定上限 30 天）」。已跑 `node scripts/usage-audit/scan.js`（73 sessions，全程唯讀），快照存 `.fhs/memory/usage-audit/2026-08-28.json`。三清單摘要：可 Skill 化（短句輪詢如「Y」/「繼續」/「已完成？」等，已有 Telegram notify hook 部分緩解）；重複 Prompt（多為 bridge 指令觸發文字，屬正常機制重複非壞重複）；浪費模式（Bash `cd` 前綴 2722 次遠超其他前綴，撞正既有 worktree 絕對路徑風險教訓；`freehandsss_dashboardV42.html` 被 Read 394 次，建議下次健檢留意是否有全檔 Read 違規）。與上次快照（2026-07-07，91 sessions）比較，`/rp`/`/read`/`/execute` 用量顯著下降，反映 bridge 指令依賴度降低。
+- **改動檔案**：`.fhs/ai/subagents/MANIFEST.md`（版本號同步）、`.fhs/memory/usage-audit/2026-08-28.json`（新快照）。**Dashboard HTML／Supabase schema／n8n 零改動**，`artifacts/agent_dashboardV42.html`/`.json` 為本地生成物（gitignore，不進 repo）。
+- **Subagent 使用記錄**：❌未使用（單一腳本重跑 + 文件記錄同步，即時交叉核對即可）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。
