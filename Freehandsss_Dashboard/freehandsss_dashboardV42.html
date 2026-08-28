@@ -1256,16 +1256,16 @@
             border-radius:9px; font-size:10.5px; font-weight:700; background:#FAF6F1;
             border:1px dashed var(--fhs-border-strong); color:var(--fhs-text-secondary); cursor:pointer; }
         .review-rest-chip:hover { background:var(--fhs-accent-light); border-color:var(--fhs-accent); color:var(--fhs-accent-hover); }
-        .fhs-cat-strip { display:flex; align-items:stretch; background:var(--fhs-bg-surface);
+        .fhs-cat-strip { display:flex; align-items:center; background:var(--fhs-bg-surface);
             border:1px solid var(--fhs-border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:10px; }
-        .fhs-cat-strip__head { display:flex; flex-direction:column; justify-content:center; gap:2px;
-            padding:10px 18px; background:var(--fhs-accent-light); border-right:1px solid var(--fhs-border); min-width:180px; }
+        .fhs-cat-strip__head { display:flex; align-items:center; gap:10px;
+            padding:8px 14px; background:var(--fhs-accent-light); border-right:1px solid var(--fhs-border); white-space:nowrap; }
         .fhs-cat-strip__title { font-size:15px; font-weight:800; color:var(--fhs-accent-hover);
             display:flex; align-items:center; gap:6px; }
         .fhs-cat-strip__count { font-size:var(--fhs-text-xs); color:var(--fhs-text-secondary); font-weight:600; }
-        .fhs-cat-strip__body { display:flex; flex:1; flex-wrap:wrap; align-items:center; gap:22px; padding:8px 18px; }
-        .fhs-cat-strip__block { display:flex; flex-direction:column; gap:5px; }
-        .fhs-cat-strip__lbl { font-size:10px; font-weight:800; letter-spacing:.06em; color:var(--fhs-text-muted); }
+        .fhs-cat-strip__body { display:flex; flex:1; flex-wrap:wrap; align-items:center; gap:14px; padding:6px 14px; }
+        .fhs-cat-strip__block { display:flex; align-items:center; gap:8px; }
+        .fhs-cat-strip__lbl { font-size:10px; font-weight:800; letter-spacing:.06em; color:var(--fhs-text-muted); white-space:nowrap; }
         .fhs-cat-strip__pills { display:flex; gap:5px; flex-wrap:wrap; }
         .fhs-cat-pill { display:inline-flex; align-items:center; gap:4px; height:24px; padding:0 9px;
             border-radius:12px; font-size:11px; font-weight:700; border:1px solid; background:#fff; }
@@ -2868,6 +2868,11 @@
            防呆——日期欄本身已經按呢個 chip 嘅需要放寬（見 Date.mwCat）。 */
         .ovw-date-line { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
         .ovw-date-line .dlv-badge { margin-top:0; white-space:normal; overflow-wrap:anywhere; }
+        /* [密度重排 2026-08-29] 手模視圖 Fat Mo 要求限時警告一律放日期之下（唔跟隨
+           上面 D69續四「盡量同一行」嘅通則）——手模欄本身內容較多（款式/肢數/加購），
+           日期欄冇額外騰位遷就 badge，一律換行比忽同行忽換行嘅不一致排版更易讀。
+           淨影響 _catView==='手模' 嗰組列，鎖匙扣/頸鏈/全部視圖唔受影響。 */
+        .ovw-date-line--stack { flex-direction:column; align-items:flex-start; gap:2px; }
         .review-jump-pill-sm { padding:1px 6px; font-size:11.5px; border-radius:10px; gap:2px; }
         /* [D69續四] 「另有」chip 由整段文字改做逐類別 icon+數量；.review-rest-chip
            而家淨係做外層容器（padding/邊框/hover/click，定義喺 L1240），實質內容
@@ -11131,8 +11136,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var d = Math.abs(Number(r.days_remaining));
             if (r.urgency === 'overdue')   return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>逾期' + d + '天</span>';
             if (r.urgency === 'due_today') return '<span class="dlv-badge dlv-badge-red" style="cursor:pointer;" onclick="jumpToDlvCard(\'red\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>今日到期</span>';
-            if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow" style="cursor:pointer;" onclick="jumpToDlvCard(\'yellow\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-bell"/></svg>剩' + d + '天</span>';
-            return '<span class="dlv-badge dlv-badge-green" style="cursor:pointer;" onclick="jumpToDlvCard(\'green\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>正常(剩' + Number(r.days_remaining) + '天)</span>';
+            if (r.urgency === 'warn')      return '<span class="dlv-badge dlv-badge-yellow" style="cursor:pointer;" onclick="jumpToDlvCard(\'yellow\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-bell"/></svg>剩餘' + d + '天</span>';
+            return '<span class="dlv-badge dlv-badge-green" style="cursor:pointer;" onclick="jumpToDlvCard(\'green\')"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>剩餘' + Number(r.days_remaining) + '天</span>';
         }
         // 手機 accordion header card：回傳 urgency CSS class
         function _dlvCardClass(orderId) {
@@ -11149,8 +11154,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var d = Math.abs(Number(r.days_remaining));
             if (r.urgency === 'overdue')   return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>逾期' + d + '天';
             if (r.urgency === 'due_today') return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-shield-alert"/></svg>今日到期';
-            if (r.urgency === 'warn')      return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-bell"/></svg>剩' + d + '天';
-            return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>正常(剩' + Number(r.days_remaining) + '天)';
+            if (r.urgency === 'warn')      return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-bell"/></svg>剩餘' + d + '天';
+            return '<svg class="ba-icon" width="10" height="10" style="vertical-align:middle;margin-right:2px;color:inherit;"><use href="#icon-check"/></svg>剩餘' + Number(r.days_remaining) + '天';
         }
 
         async function initDeliveryStatsCard() {
@@ -11205,7 +11210,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var d = Number(r.days_remaining);
                 var dText = r.urgency === 'overdue'   ? '逾期' + Math.abs(d) + '天'
                           : r.urgency === 'due_today' ? '今日到期'
-                          : '剩' + d + '天';
+                          : '剩餘' + d + '天';
                 var sDate = (r.start_date || '').slice(0, 10) || '—';
                 var eDate = (r.due_date   || '').slice(0, 10) || '—';
                 var sla   = r.sla_days ? r.sla_days + '天' : '—';
@@ -11702,11 +11707,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 但表頭label先係呢兩欄嘅真正下限，唔可以再縮過 33（58/1.9 scale)。
             // [密度重排 2026-08-26 續八] Fat Mo 要求四欄睇齊、以材質嘅闊度做統一標準
             // （36 已經係四欄之中最闊、亦已滿足表頭 label scrollWidth 下限）。
-            target:   { label:'對象',     icon:'baby',       mw:36 },
-            part:     { label:'部位',     icon:'hand',       mw:36 },
-            mat:      { label:'材質',     icon:'settings',   mw:36 },
-            qty:      { label:'數量',     icon:'package',    mw:36 },
-            batch:    { label:'批次',     icon:'tag',        mw:75 },
+            target:   { label:'對象',     icon:'baby',       mw:40 },
+            part:     { label:'部位',     icon:'hand',       mw:40 },
+            mat:      { label:'材質',     icon:'settings',   mw:40 },
+            qty:      { label:'數量',     icon:'package',    mw:40 },
+            batch:    { label:'批次',     icon:'tag',        mw:60 },
             stat:     { label:'進度',     icon:'activity',   mw:102 },
             notes:    { label:'備註',     icon:'square-pen', mw:110 }
         };
@@ -12041,7 +12046,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         </div>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:5px 8px;">
-                        <div class="ovw-date-line"><span style="white-space:nowrap;">${cDate}</span>${_dlvBadgeHtml(o.Order_ID)}</div>
+                        <div class="ovw-date-line${_catView === '手模' ? ' ovw-date-line--stack' : ''}"><span style="white-space:nowrap;">${cDate}</span>${_dlvBadgeHtml(o.Order_ID)}</div>
                     </td>
                     <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:5px 8px;">${fhsEscHtml(o.Customer || '-')}</td>
                 `;
@@ -12260,6 +12265,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 _catCellsHtml += _cell(_addonHtml);
                             } else {
                                 // 鎖匙扣 / 頸鏈：對象｜部位｜材質｜數量
+                                // [密度重排 2026-08-28] 呢四欄 Fat Mo 要求內容置中——獨立 _cellC
+                                // 淨喺呢四欄用，唔改 _tdOpen/_cell 本身，手模嗰邊（style/limb/addon）
+                                // 共用嘅 _cell 唔受影響。
+                                const _cellC = (inner) => `<td class="batch-cell" style="vertical-align:top; text-align:center; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:4px 8px; background-color:${rowBatchCol};">` + (inner || _dash) + '</td>';
                                 let _tarCls = dimensions.target.includes('嬰兒') ? 'badge-target-嬰兒' : 'badge-target-成人';
                                 if (dimensions.target.includes('大寶')) _tarCls = 'badge-target-大寶';
                                 if (dimensions.target.includes('家庭')) _tarCls = 'badge-target-家庭';
@@ -12267,14 +12276,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 // 淨靠欄闊已經逼近 1024px 安全下限（badge 本身 padding/margin 已佔
                                 // 成六成闊度）。加 .ovw-tight-badge 淨係喺呢三欄縮 padding/字號，
                                 // 冇改 .review-badge 本身——手機卡片、其他視圖嘅同 class badge 唔受影響。
-                                _catCellsHtml += _cell(dimensions.target ? `<span class="review-badge ovw-tight-badge ${_tarCls}">${dimensions.target}</span>` : '');
-                                _catCellsHtml += _cell(dimensions.part ? `<span class="review-badge ovw-tight-badge badge-part">${dimensions.part}</span>` : '');
+                                _catCellsHtml += _cellC(dimensions.target ? `<span class="review-badge ovw-tight-badge ${_tarCls}">${dimensions.target}</span>` : '');
+                                _catCellsHtml += _cellC(dimensions.part ? `<span class="review-badge ovw-tight-badge badge-part">${dimensions.part}</span>` : '');
                                 let _matCls = 'badge-mat-default';
                                 if (dimensions.material.includes('不銹鋼')) _matCls = 'badge-mat-不銹鋼';
                                 else if (dimensions.material.includes('金')) _matCls = 'badge-mat-金';
                                 else if (dimensions.material.includes('銀')) _matCls = 'badge-mat-銀';
-                                _catCellsHtml += _cell(dimensions.material ? `<span class="review-badge ovw-tight-badge ${_matCls}">${dimensions.material}</span>` : '');
-                                _catCellsHtml += _cell(`<span class="review-badge ovw-tight-badge review-badge-qty">x${qty}</span>`);
+                                _catCellsHtml += _cellC(dimensions.material ? `<span class="review-badge ovw-tight-badge ${_matCls}">${dimensions.material}</span>` : '');
+                                _catCellsHtml += _cellC(`<span class="review-badge ovw-tight-badge review-badge-qty">x${qty}</span>`);
                             }
                         }
 

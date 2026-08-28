@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續七：訂單總覽類別視圖六輪密度／可讀性微調（Fat Mo 逐項截圖指定）
+
+- Fat Mo 逐項截圖＋直接指定要求，六輪小改動均 live 用真實 Supabase 資料驗證後落地：
+  1. **鎖匙扣/頸鏈四欄收放**：對象/部位/材質/數量 `mw` 36px→40px，內容（badge文字+icon）由預設左對齊改置中——新增 `_cellC` 專供呢四欄用，唔改動共用嘅 `_cell`/`_tdOpen`，手模視圖（style/limb/addon）唔受影響；批次欄 75px→60px。
+  2. **類別工作台橫幅合併一行**：`.fhs-cat-strip__block`（進度分佈/批次分佈）由 `flex-direction:column`（標籤獨立一行、pills 另一行）改 `row`，標籤同 pills 並排；連帶收緊 `__body`/`__head` 嘅 padding/gap。
+  3. **類別橫幅左側header同樣合併一行**：`.fhs-cat-strip__head`（icon+類別名 / N件·N張單）同上，由上下兩行改左右並排，區塊高度 56.4px→37.6px。
+  4. **限時警告 badge 文案精簡**：桌面/手機/取模排程展開清單共 5 處，「正常(剩N天)」移除「正常」同括號，同黃色警告 badge 格式對齊。
+  5. **限時警告 badge 文案再修**：5 處「剩N天」統一改「剩餘N天」（綠色正常 + 黃色警告同步）。
+  6. **手模視圖限時警告位置**：新增 scoped class `.ovw-date-line--stack`（只喺 `_catView==='手模'` 時附加），令限時警告一律換行放日期之下，唔跟 D69續四「盡量同一行」通則——手模欄位本身內容較多，日期欄冇額外騰位遷就 badge，一律換行比忽同行忽換行更易讀；鎖匙扣/頸鏈/全部視圖繼續維持同一行（live 驗證 0/10 列有 stack class）。
+- **驗證**：每輪均起本機 `npx serve` 連 live Supabase 真實訂單資料，用 `getBoundingClientRect()`/`scrollWidth` 量度確認零溢出、零誤判（22列鎖匙扣badge零overflow、8列手模badge全部stacked、10列鎖匙扣badge全部維持同行）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（純CSS+文案+scoped class，零schema/零n8n改動）。
+- 全文見本條目（純小型UI微調，無獨立 decisions.md 條目，Fat Mo 直接指定非架構決策）。**Subagent 使用記錄**：❌未使用（互動式截圖比對+live browser即時量度自驗，逐輪反饋節奏唔適合委派）。
+
 ## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— D69續六：進度狀態往返失真全套根治方案 `/execute` 執行完成
 
 - **緣起**：D69續四 cl-flow-fast CONDITIONAL_READY，Fat Mo 就 3 項拍板（`製作中`維持原值+⚠標記由人手指定／SQL清洗同HTML一次過上線／手模`已book日期`/`hm:`路徑一併檢查），`/execute` 落地本輪。
