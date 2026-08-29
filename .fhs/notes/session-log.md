@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-4：按比例縮細取代強制斷行＋底部導覽Threads式收納): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-4」條目 + [decisions.md D69續八-follow-4](decisions.md)。Fat Mo 提四點：第1點（頂頭掣過大）查證為**已修好、佢睇緊舊快取圖**（截圖時間戳同上一張一樣）；第2、4點係 follow-3 真bug 且 Fat Mo 診斷正確——我用 flex-wrap/white-space:normal 逼內容塞落窄欄，配上既有 overflow-wrap:anywhere 令刻字逐字直排（實測闊37px高260px）；正解係**等比縮細**（table 13→11px、badge/icon/select 同步）+ 刻字單行截斷。第3點新功能：底部浮動導覽加 Threads 式捲動收納，復用既有智慧置頂欄 handler 但拆兩個生效範圍（置頂欄維持<750，底部導覽擴至<1130）。四闊度×4視圖四重檢查全部0。已commit+部署。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-3：橫向桌面模式版面重整——頂部佔位+表頭走位): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-3」條目 + [decisions.md D69續八-follow-3](decisions.md)。follow-2 令橫向切到桌面表格後，Fat Mo 截圖投訴頂部佔位過多＋表頭走位，兩個都係 follow-2 後果：①只改咗表格切換斷點、篩選區同類別橫幅仍行手機版，750-767 變「混合態」（頂部食290px/370px視窗）→ 兩處斷點一併改749；②表頭壓到44px但2中文字label硬下限58px → 揪出 follow-2 嘅 cell 級檢查漏驗 thead label（同 learnings #16 同類錯低一層）。**關鍵槓桿**：表頭 padding 由 `8px 12px` 收到 4px，12欄一次過釋放~190px，先至夠位。另修正量度方法：rowspan 表格唔可以用 children index 對欄（曾量出845px假數據）。六闊度×4視圖三重檢查全部 0/0/0。已commit+部署生產。

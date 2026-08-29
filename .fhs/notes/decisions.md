@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-4) 「按比例縮細」取代「強制斷行」+ 底部導覽 Threads 式收納
+
+**背景**：Fat Mo 就 follow-3 提四點。**第1點（頂頭掣過大）查證為已修好——佢睇緊舊快取圖**（本機 750px 實測掣 30px 高、`mq749=false`；佢截圖時間戳同 follow-3 之前嗰張完全一樣）。**第2、4點係 follow-3 真 bug，而且 Fat Mo 嘅診斷（「應該按比例縮小」）先係正解。**
+
+**follow-3 錯喺邊**：我用 `flex-wrap:wrap` + `white-space:normal` 去「逼」內容塞落窄欄。配上既有 `.review-eng-text{overflow-wrap:anywhere}`，刻字喺 64px 欄變成一個字一行直排——實測有格闊 37px 但高 260px。**通則教訓：欄位唔夠闊嘅正解係令內容變細（等比縮放），唔係逼佢換行。** 強制斷行喺極窄欄會退化成逐字直排，視覺上比溢出更差，而且會令行高失控（Fat Mo 講嘅「多咗行」）。
+
+**正確做法**：緊縮層整體等比縮細（table 13→11px、badge 9.5px、icon 9px、select/input 10px、pill/dlv-badge 同步），內容自然變窄。刻字改單行截斷（…）取代 `overflow-wrap:anywhere`。另加兜底 `.review-table tbody .review-badge{max-width:100%;overflow:hidden}`——badge 係 nowrap，任何情況下切走好過爬出格外蓋住隔籬欄。
+
+**第3點新需求（底部導覽 Threads 式收納）**：復用既有「智慧置頂欄」scroll handler，但拆成**兩個獨立生效範圍**——置頂欄收納維持只限 <750（原行為零改動），底部導覽收納擴至 <1130。理由：橫向得 370px 高，個浮動 pill 蓋住表格內容嘅代價遠高於直向。直向手機順帶都有咗底部收納。
+
+**驗證**：750/390/1129/1536 × 4 視圖，四重檢查（頁面級溢出／表頭 label 溢出／cell 級 bleed／刻字病態直排高度）全部 0。捲動行為實測 down→hide、up→show。1536px 確認 `td` 字級仍 13px，緊縮層冇外洩去桌面。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-4」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-08-30] (D69續八-follow-3) 橫向桌面模式版面重整 — 「混合態」斷點對齊 + 表頭 padding 槓桿
 
 **背景**：follow-2 令橫向成功切 desktop 表格，但 Fat Mo 截圖投訴「頂頭選項佔據過多」＋「表頭表格不乎合大小走位」，兩個都係 follow-2 嘅直接後果。

@@ -1972,6 +1972,15 @@
 
         /* ===== S180 快捷列自訂（手機長按 / Desktop 右鍵進入編輯） ===== */
         .fhs-top-bar__actions { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+        /* [2026-08-30 D69續八-follow-4] 底部浮動導覽 Threads 式捲動收納：
+           向下捲收埋、向上捲彈返出嚟（Fat Mo 要求）。手機版呢個 pill 會被
+           L~20227 搬去 <body> 做 position:fixed，浮喺表格上面遮住內容——
+           橫向得 370px 高更加明顯。class 由下面 Smart Header 嘅 scroll
+           handler 統一開關。 */
+        .fhs-top-bar__actions { transition: transform .28s cubic-bezier(.4,0,.2,1), opacity .2s ease; }
+        body.fhs-bottomnav-hidden .fhs-top-bar__actions {
+            transform: translateY(150%); opacity: 0; pointer-events: none;
+        }
         .fhs-top-bar__actions button { position: relative; }
         .fhs-top-bar__actions button.sb-hidden { display: none !important; }
         #sbAddBtn, #sbDoneBtn { display: none; }
@@ -2945,8 +2954,8 @@
             .ovw-allview-col.ovw-col-eng      { width:54px  !important; }
             .ovw-allview-col.ovw-col-prod     { width:84px  !important; }
             .ovw-allview-col.ovw-col-batch    { width:52px  !important; }
-            .ovw-allview-col.ovw-col-stat     { width:86px  !important; }
-            .ovw-allview-col.ovw-col-notes    { width:58px  !important; }
+            .ovw-allview-col.ovw-col-stat     { width:88px  !important; }
+            .ovw-allview-col.ovw-col-notes    { width:56px  !important; }
         }
         /* [2026-08-29 緊縮桌面續] 上面「全部」視圖修好之後，同一斷層區（768-1129px）
            實測類別視圖（鎖匙扣/頸鏈/手模）都一樣溢出——既有 @media(max-width:1280px)
@@ -2981,19 +2990,42 @@
                ②刻字格容許斷行＋縮 padding/字級（原本 inline-flex nowrap 令
                  刻字欄需求去到 80px，斷行後跌返 label 下限）。 */
             .ovw-date-line { flex-direction:column; align-items:flex-start; gap:2px; }
-            .review-eng-line { flex-wrap:wrap; padding:2px 5px; gap:3px; font-size:11px; }
+            /* [2026-08-30 D69續八-follow-4] 改用「整體按比例縮細」取代「強制斷行」。
+               follow-3 用 flex-wrap/white-space:normal 逼內容塞落窄欄，結果刻字
+               喺 64px 欄內變成一個字一行直排（Fat Mo 截圖 HANG 直住排），行高爆炸
+               仲多咗行——正解係將字級/padding 一齊縮，令內容自然變窄，唔使斷行。 */
+            .review-table { font-size:11px; }
+            .review-table tbody td { font-size:11px; line-height:1.35; }
+            .review-table tbody .review-badge { font-size:9.5px; padding:1px 4px; }
+            .review-table tbody .review-badge .ba-icon { width:9px; height:9px; }
+            /* 刻字：窄欄 + `.review-eng-text{overflow-wrap:anywhere}`（L~1366）＝
+               一個字一行直排，實測有格闊37px但高260px。緊縮層改用單行截斷（…），
+               要睇全文可撳格內編輯掣。 */
+            .review-eng-line { font-size:9.5px; padding:1px 4px; gap:3px; max-width:100%; }
+            .review-eng-line .review-eng-text {
+                overflow-wrap:normal; white-space:nowrap;
+                overflow:hidden; text-overflow:ellipsis; min-width:0;
+            }
+            .fhs-inline-eng-wrap { max-width:100%; min-width:0; }
+            .review-table tbody select,
+            .review-table tbody input,
+            .review-table tbody textarea { font-size:10px; height:auto; min-height:22px; padding:2px 4px; }
+            .review-jump-pill-sm { font-size:10px; padding:1px 5px; }
+            .dlv-badge { font-size:9px; padding:1px 5px; }
             /* ③最大槓桿：表頭 58px「2字 label 下限」入面有 24px 純粹係左右 padding
                （原 8px 12px）。收到 4px 令每欄下限由 58→~42，12 欄一次過慳返
                ~190px，先至有得將所有欄位放到真正夠位。tbody 同步收窄免得
                內容貼死格邊。 */
             .review-table thead th { padding-left:4px !important; padding-right:4px !important; }
             .review-table tbody td { padding-left:4px; padding-right:4px; }
-            /* ④「全部」視圖產品明細格入面嘅 badge（例：「嬰兒 1手1腳」）本身
-               white-space:nowrap 且單一個就闊過成欄，令 badge 團雖然有
-               flex-wrap 都仲係會撐爆。喺緊縮層容許 badge 內部斷行——只限
-               .review-item-card 入面（即產品明細格），類別視圖嗰啲短 badge
-               （對象/部位/材質）唔喺呢個容器內，完全唔受影響。 */
-            .review-item-card .review-badge { white-space:normal; }
+            /* ④ follow-3 曾用 white-space:normal 逼產品明細 badge 斷行，同樣造成
+               一個字一行嘅醜排版，已改由字級縮細解決，唔再強制斷行。
+               產品明細格（「全部」視圖專有）一行會並排兩粒 badge，故再縮多少少。 */
+            .review-item-card .review-badge { font-size:8.5px; padding:1px 3px; }
+            .review-item-card .review-badge .ba-icon { width:8px; height:8px; }
+            /* 兜底：badge 係 nowrap，任何情況下唔可以爬出自己格外（爬出去會蓋住
+               隔籬欄嘅內容）。夾硬限死喺格內，超出就切走好過越界。 */
+            .review-table tbody .review-badge { max-width:100%; overflow:hidden; }
             /* ⑤補打金額輸入格（status=需進行補打先出現）喺窄欄會超出格邊 2px */
             .review-table tbody input { max-width:100%; box-sizing:border-box; }
         }
@@ -16152,9 +16184,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const SHOW_THRESHOLD = 15; // 向上滑動 15px 顯示
 
             window.addEventListener('scroll', () => {
-                // 僅在手機版（< 750px，D69續八-follow同步訂單總覽斷點）且處於訂單總覽模式下生效
-                if (window.innerWidth >= 750 || !document.body.classList.contains('v40-review-active')) {
+                // [D69續八-follow-4] 兩個獨立生效範圍：
+                //   置頂欄收納 = 只限直向手機（<750，維持原行為）
+                //   底部導覽收納 = 直向手機 + 橫向手機/窄桌面（<1130，Fat Mo 要求
+                //     Threads 式：向下捲收埋、向上捲返出嚟）——橫向得 370px 高，
+                //     個 pill 浮喺表格上面遮住內容，更加需要收得起。
+                const inReview = document.body.classList.contains('v40-review-active');
+                const headerScope = window.innerWidth < 750 && inReview;
+                const navScope    = window.innerWidth < 1130 && inReview;
+
+                if (!headerScope && !navScope) {
                     document.body.classList.remove('fhs-header-hidden');
+                    document.body.classList.remove('fhs-bottomnav-hidden');
                     accumulatedDelta = 0;
                     return;
                 }
@@ -16162,9 +16203,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const currentScrollY = window.scrollY;
                 const delta = currentScrollY - lastScrollY;
 
+                const setHidden = (on) => {
+                    if (headerScope) document.body.classList.toggle('fhs-header-hidden', on);
+                    else document.body.classList.remove('fhs-header-hidden');
+                    if (navScope) document.body.classList.toggle('fhs-bottomnav-hidden', on);
+                    else document.body.classList.remove('fhs-bottomnav-hidden');
+                };
+
                 // 靠近頂端時強制顯示
                 if (currentScrollY <= 20) {
-                    document.body.classList.remove('fhs-header-hidden');
+                    setHidden(false);
                     accumulatedDelta = 0;
                     lastScrollY = currentScrollY;
                     return;
@@ -16174,16 +16222,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     // 向下滑動
                     if (accumulatedDelta < 0) accumulatedDelta = 0;
                     accumulatedDelta += delta;
-                    if (accumulatedDelta > HIDE_THRESHOLD) {
-                        document.body.classList.add('fhs-header-hidden');
-                    }
+                    if (accumulatedDelta > HIDE_THRESHOLD) setHidden(true);
                 } else if (delta < 0) {
                     // 向上滑動
                     if (accumulatedDelta > 0) accumulatedDelta = 0;
                     accumulatedDelta += delta;
-                    if (Math.abs(accumulatedDelta) > SHOW_THRESHOLD) {
-                        document.body.classList.remove('fhs-header-hidden');
-                    }
+                    if (Math.abs(accumulatedDelta) > SHOW_THRESHOLD) setHidden(false);
                 }
                 lastScrollY = currentScrollY;
             }, { passive: true });

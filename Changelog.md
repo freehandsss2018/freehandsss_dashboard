@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Opus 5 執行）— D69續八-follow-4：改用「按比例縮細」取代「強制斷行」＋底部導覽 Threads 式收納
+
+- **緣起**：Fat Mo 就 follow-3 提四點。查證後定性：
+  - **第1點（頂頭掣過大）＝已修好，佢睇緊舊快取圖**。本機 750px 實測掣高 30px／闊 97px（`mq749=false`），佢嗰張截圖時間戳「10筆·上午02:16」同 follow-3 之前嗰張**完全一樣**，即同一張舊圖。
+  - **第2、4點（走位／多咗行）＝follow-3 真 bug，Fat Mo 診斷正確**。follow-3 用 `flex-wrap:wrap` + `white-space:normal` 逼內容塞落窄欄，配上既有 `.review-eng-text{overflow-wrap:anywhere}`，令刻字喺 64px 欄變成**一個字一行直排**——實測有格闊 37px 但高 **260px**，行高爆炸。Fat Mo 講「應該按比例縮小」係啱嘅正解。
+  - **第3點（底部bar要 Threads 式收納）＝新需求**。
+- **修法①（取代 follow-3 嘅斷行 hack）**：緊縮層改用**整體按比例縮細**——`table` 字級 13→11px、badge 9.5px＋icon 9px、select/input 10px、pill/dlv-badge 同步縮。內容自然變窄，唔使斷行。刻字另加**單行截斷（…）**（`white-space:nowrap; text-overflow:ellipsis`）取代 `overflow-wrap:anywhere`，要睇全文撳格內編輯掣。加兜底 `.review-table tbody .review-badge{max-width:100%;overflow:hidden}` 確保任何 badge 都唔會爬出自己格外蓋住隔籬欄。
+- **修法②（第3點新功能）**：底部浮動導覽 `.fhs-top-bar__actions` 加 Threads 式捲動收納——向下捲收埋（`translateY(150%)`+fade）、向上捲彈返出嚟。復用既有「智慧置頂欄」嘅 scroll handler，但**兩個獨立生效範圍**：置頂欄收納維持只限 <750（原行為不變），底部導覽收納擴至 <1130（橫向得 370px 高，個 pill 浮喺表格上遮住內容更需要收得起）。直向手機順帶都有咗底部收納。
+- **驗證**：750/390/1129/1536 四闊度 × 4 視圖，每組四重檢查（頁面級溢出／表頭 label 溢出／cell 級 bleed／刻字病態直排高度），全部 **0/0/0/0**。捲動行為實測：向下捲 →`fhs-bottomnav-hidden` 加上、向上捲 → 移除。390px 確認仍係卡片模式 + 44px 觸控目標。1536px 確認 `td` 字級仍係 13px（緊縮層冇外洩去桌面）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS + 一段 scroll handler 擴充）。
+- 全文見 decisions.md D69續八-follow-4。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-30] Session（Claude Code / Opus 5 執行）— D69續八-follow-3：橫向桌面模式版面重整（頂部佔位 + 表頭走位）
 
 - **緣起**：follow-2 令 iPhone 橫向成功切到 desktop 表格，但 Fat Mo 截圖投訴兩點：①「頂頭選項佔據過多」②「表頭表格不乎合大小走位」。兩個都係 follow-2 改動嘅直接後果。
