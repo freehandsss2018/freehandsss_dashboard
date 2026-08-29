@@ -24,6 +24,8 @@
 
 ## 當前版本
 
+- **2026-08-29（D69續七）**：訂單總覽類別視圖六輪密度／可讀性微調——鎖匙扣/頸鏈四欄（對象/部位/材質/數量）40px+內容置中、批次欄60px；類別工作台橫幅（含左側header）合併一行；限時警告badge統一「剩餘N天」；手模視圖限時警告一律換行放日期下（鎖匙扣/頸鏈/全部視圖不受影響）。純CSS+文案改動，零schema/零n8n。已部署 `current.html`。詳見 Changelog.md「D69續七」條目。
+- **2026-08-27（D69續六）**：進度狀態往返失真全套根治方案 `/execute` 執行完成並部署——`_FHS_STAGE_DEF` 單一真源取代4處重複下拉清單，SQL清洗migration 0092已apply live。詳見 Changelog.md、decisions.md D69續六。
 - **2026-08-26（D69續四）**：客人欄寬收窄至180px、篩選列由兩行合併一行（高度90px→56px）、空行bug根治（真根因＝單一品項訂單rowspan=1，非早前誤判嘅「刻字空白」；CSS特異度+textarea rows雙修復，單品項列61px→37px）、進度狀態往返失真止血（`_FHS_LEGACY_STATUS_MAP`別名對應表）。全套進度狀態根治方案（統一寫入畫面原文+單一真源階段表，零schema改動）已走`/cl-flow-fast`（Flow ID `2026-08-26-0828`，判決CONDITIONAL_READY），待Fat Mo拍板3項後另行`/execute`。詳見 Changelog.md、decisions.md D69續四。
 - **2026-08-25/26（D69續二＋D69續三）**：分頁掣白色滑動指示器撳兩下先生效已修（隱藏容器0×0量度+listener疊加雙修復）。訂單總覽類別視圖密集化重排（Excel式密度，鎖匙扣視圖表格高2175px→821px）——單號欄堆疊改橫向icon動作條、對象/部位/材質/數量四欄縮版badge、日期同限時警告合併一行、「另有」全寫改icon+數量；新增 `mwCat` 雙軌欄闊系統確保「全部」視圖零改動；`@media(max-width:1280px)` 分域解決桌面密度同iPad安全嘅回應式衝突。過程中兩次自我回歸（sticky表頭被`overflow-x:auto`打爛、表頭label溢出）均即場修復。詳見 Changelog.md、decisions.md D69續二／D69續三。
 - **2026-08-25（D69＋D69-follow）**：訂單總覽「類別」由訂單層篩選改為**類別視圖**（品項層過濾＋Excel式欄位換裝＋收起財務欄＋類別工作台橫幅），另修 3 個既有 bug（分類真源打架令部分品項篩選唔到、品項 index 漂移致內聯編輯寫錯品項、hm_ 進度篩選未跟同一真源）。`/code-review` xhigh 覆核再揪出並修返 4 個 D69 自身回歸（備註格背景色同步／`hm_` 篩選未同步／類別橫幅唔即時更新／「全部」視圖表頭 padding 誤改）。`current.html` 尚未同步，待 Fat Mo 授權部署。詳見 Changelog.md、decisions.md D69／D69-follow、方案書 `.fhs/reports/planning/overview-category-view-plan_2026-08-25.md`。
