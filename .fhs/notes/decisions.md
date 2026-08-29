@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-29] (D69續八) 多裝置響應式審計 + 768-1129px「斷層區」根治 — CSS Grid blowout 真根因 + 緊縮桌面新斷點層
+
+**背景**：Fat Mo 問「iPhone 轉橫向會唔會切去 desktop 模式」，並要求用 iPhone 13 Pro／iPhone 17 Pro／iPad Pro 11" M4／ASUS ZenBook Duo UX482EGR 四款實機尺吋重新審視訂單總覽 UI/UX。查 `isMobile()` 純睇 `window.innerWidth<768`（[freehandsss_dashboardV42.html:16470](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:16470)），冇睇裝置/觸控，故答案係「會」。
+
+**四機六向掃描（WebSearch 核實 CSS viewport：iPhone17 Pro 402×874/webmobilefirst.com；iPad Pro11M4 834×1210/多方交叉；ZenBook UX482EGR 主屏1920×1080 FHD/asus.com 官方規格，Windows 157PPI級預設125%縮放換算有效CSS 1536×864）**：iPhone13 Pro／17 Pro **橫向**（844×390／874×402）、iPad **直向**（834×1210）三個真實使用情境全部命中「768-1023px 斷層區」——JS/CSS 斷點話一過768即切桌面table，但「全部」視圖原欄闊總和實測 ≈1125px（`_FHS_TH_DEF` 11 欄之和，主要`prod`產品明細220px），呢段完全頂唔住，全頁橫向溢出（iPad直向819個像素→溢出至998-1123px不等，視乎所選類別）。
+
+**真根因非表面現象**：起初懷疑係篩選列 `.filter-row-primary` flex-wrap 唔生效，逐層 `getComputedStyle` 追蹤揪出真凶喺高幾層——`.v40-review-active .v40-layout { grid-template-columns: 1fr; }`（CSS Grid）嘅子項 `.v40-main-col` 冇顯式 `min-width`，觸發 CSS Grid 經典「grid blowout」陷阱：grid item 預設 `min-width:auto`，唔會縮落去 grid track 目標寬度以下，令內容嘅自然（未換行）寬度倒灌撐大成個 track，全鏈（main-col→review-container→card→review-filters-v2→filter-row-pinned→filter-body→filter-row-primary）跟住一齊撐爆。修法：`grid-template-columns: 1fr` → `minmax(0, 1fr)`（Grid 慣用解法），一行修復即令 main-col 正確收返落 grid track 闊度，篩選列 flex-wrap 隨即自然生效（唔使再另加 width/flex 修補）。
+
+**Fat Mo 拍板方向③**：加一層「緊縮桌面」中間態（768-1129px，實測邊界比原估768-1099再闊少少至1129先完全冚實原欄闊嘅~1125px真實下限），淨影響呢個範圍，`<768`（手機卡片）同 `≥1130`（原有欄闊，Fat Mo明示「全部」視圖唔好改嗰條規則）完全唔動。做法：`fhsBuildOverviewHead()` 新增 `.ovw-allview-col.ovw-col-{k}` class（只喺 `_c===''`即「全部」視圖先加，唔影響類別視圖既有 `ovw-narrowcol-*` 1280px系統），新 media query 覆寫呢11欄 !important width。掃描過程再發現類別視圖（鎖匙扣/頸鏈/手模）喺同一斷層區**同樣溢出**（1280px tier 數值原為1024px「iPad安全」門檻校準，768-1023從未實測）——追加第二組更緊嘅 `ovw-narrowcol-*` 覆寫，源碼排喺 1280px 組之後靠 cascade 順序喺 768-1129 重疊時食硬。
+
+**驗證**：全部6個真實裝置viewport（3手機橫直向+iPad兩向+ZenBook）× 4個視圖（全部/鎖匙扣/頸鏈/手模）= 24組合，加埋768/1099/1100/1129/1130五個邊界精確像素點 × 4視圖 = 20組合，全部 `scrollWidth>innerWidth` 全域掃描零溢出、零 overflow element。1130px 邊界確認原有≥1100寬度嘅欄闊設定完全冇動過（回歸測試PASS）。
+
+全文見 Changelog.md 2026-08-29「D69續八」條目。**Subagent 使用記錄**：❌未使用（互動式CSS層層追蹤+live browser即時量度，需要每步睇返上一步結果先決定下一步查邊度，委派會斷診斷鏈；WebSearch 已用嚟核實裝置真實規格非猜測）。
+
 [2026-08-26] (D69續六) 進度狀態往返失真全套根治方案 — `/execute` 執行完成
 
 **背景**：D69續四 cl-flow-fast 判決 CONDITIONAL_READY，Fat Mo 已就 3 項拍板（見 D69續四段落），本輪 `/execute` 落地。原 `artifacts/2026-08-26-0828/` 內嘅 a3-draft 逐行技術規格已 gitignored，本 session 之worktree 冇存到，執行前先重新讀現行程式碼＋live Supabase 查證重建技術設計（非逐字重播 a3-draft），已向 Fat Mo 聲明此點並取得「照你方向去處理」嘅授權。

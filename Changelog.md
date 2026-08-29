@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續八：多裝置響應式審計 + 768-1129px「斷層區」根治
+
+- **緣起**：Fat Mo 問「iPhone 轉橫向會唔會令訂單總覽切去 desktop 模式」，並要求用 iPhone 13 Pro／iPhone 17 Pro／iPad Pro 11" M4／ASUS ZenBook Duo UX482EGR 四款實機尺吋重新審視 UI/UX。查 `isMobile()`（`window.innerWidth<768`）純睇闊度唔睇裝置，答案係「會」。
+- **WebSearch 核實真實裝置 CSS viewport**（非猜測）：iPhone 13 Pro 390×844、iPhone 17 Pro 402×874（webmobilefirst.com/yesviz.com 交叉核實）、iPad Pro 11" M4 834×1210、ZenBook Duo UX482EGR 主屏 1920×1080 FHD（asus.com 官方規格）換算 Windows 157PPI 級預設 125% 縮放後有效 CSS 1536×864。
+- **六向掃描揪出真實斷層區**：iPhone 13 Pro/17 Pro **橫向**（844×390／874×402）、iPad **直向**（834×1210）三個真實使用情境全部命中「768-1023px」——CSS/JS 斷點一過768即切桌面table，但「全部」視圖原11欄總和實測 ≈1125px，呢段完全頂唔住，全頁橫向溢出。iPad橫向/ZenBook 因闊過1100px，原本已正常。
+- **真根因追查（非表面現象）**：起初懷疑係篩選列 `.filter-row-primary` flex-wrap 唔生效，逐層 `getComputedStyle` 追蹤揪出真凶喺高幾層外——`.v40-review-active .v40-layout { grid-template-columns: 1fr; }`（CSS Grid）嘅子項 `.v40-main-col` 冇顯式 `min-width`，觸發 CSS Grid 經典「grid blowout」陷阱（grid item 預設 `min-width:auto` 唔會縮落track目標寬度以下，內容自然寬度倒灌撐大成個track，全鏈由main-col一路撐爆到最底層嘅篩選列）。**修法一行**：`grid-template-columns: 1fr` → `minmax(0, 1fr)`，main-col 正確收返track闊度後，篩選列 flex-wrap 自動生效，唔使另加任何 width/flex 修補。
+- **Fat Mo 拍板方向③——加緊縮桌面中間態**：新增 768-1129px 斷點（實測邊界比原估1099再闊少少至1129先完全冚原表~1125px真實下限），`<768`／`≥1130` 完全唔動（Fat Mo明示「全部」視圖唔好改嗰條規則喺呢個範圍外繼續生效）。`fhsBuildOverviewHead()` 新增 `.ovw-allview-col.ovw-col-{k}`（只喺「全部」視圖加，唔影響類別視圖既有系統），新 media query 覆寫11欄 !important width。
+- **意外發現並一併修復**：掃描過程揪出類別視圖（鎖匙扣/頸鏈/手模）喺同一斷層區**同樣溢出**——既有 `@media(max-width:1280px)` narrowcol 數值原為1024px「iPad安全」門檻校準，768-1023從未實測過。追加第二組更緊嘅 `ovw-narrowcol-*` 覆寫（Order_ID/Date/Customer/eng/batch/stat/notes/target/part/mat/qty/style/limb/addon 共14個class），源碼排喺1280px組之後靠cascade順序喺768-1129重疊時食硬。
+- **驗證**：6個真實裝置viewport（3手機橫直向+iPad兩向+ZenBook）+ 5個邊界精確像素點（768/1099/1100/1129/1130）× 4個視圖（全部/鎖匙扣/頸鏈/手模）= 44組合，全部用全域DOM掃描（`scrollWidth>innerWidth+2`）驗證零溢出、零overflow element。1130px確認≥1100寬度嘅原有欄闊完全冇動過（回歸PASS）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（1個CSS Grid修復 + 2組新media query，共約45行新增，零JS邏輯改動、零schema/n8n改動）。
+- 全文見 decisions.md D69續八。**Subagent 使用記錄**：❌未使用（互動式CSS層層追蹤+live browser即時量度，每步要睇返上一步結果先決定下一步查邊度，委派會斷診斷鏈；WebSearch已用嚟核實裝置真實規格）。
+
 ## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續七：訂單總覽類別視圖六輪密度／可讀性微調（Fat Mo 逐項截圖指定）
 
 - Fat Mo 逐項截圖＋直接指定要求，六輪小改動均 live 用真實 Supabase 資料驗證後落地：

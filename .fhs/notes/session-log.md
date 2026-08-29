@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-29 (D69續八：多裝置響應式審計 + 768-1129px「斷層區」根治): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八」條目 + [decisions.md D69續八](decisions.md)。Fat Mo 問iPhone橫向會唔會切desktop模式並要求四機（iPhone13Pro/17Pro/iPad M4 11"/ZenBook UX482EGR）審視，WebSearch核實真實viewport後六向掃描揪出768-1023px斷層區（iPhone橫向+iPad直向三個真實情境命中，全頁橫向溢出）。真根因非篩選列CSS而係更高層CSS Grid「blowout」陷阱（`.v40-main-col`冇min-width，`grid-template-columns:1fr`→`minmax(0,1fr)`一行修復）。Fat Mo拍板方向③加768-1129px「緊縮桌面」新斷點層（<768/≥1130完全唔動），過程中意外發現類別視圖同一斷層區都溢出並一併修復。44組合（6裝置+5邊界像素×4視圖）全域DOM掃描零溢出。
+**Subagent 使用記錄**：❌未使用（互動式CSS層層追蹤診斷鏈唔適合委派；WebSearch已用核實裝置規格）。
+
 ## 2026-08-29 (D69續七：訂單總覽類別視圖六輪密度／可讀性微調): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續七」條目（純小型UI微調，無獨立decisions.md條目）。Fat Mo 逐項截圖指定六輪改動：鎖匙扣/頸鏈四欄放寬置中+批次收窄、類別橫幅（進度/批次分佈+左側header）合併一行、限時警告badge文案兩輪精簡（去「正常()」→統一「剩餘N天」）、手模視圖限時警告改一律換行放日期下（scoped class，鎖匙扣/頸鏈不受影響）。逐輪live起dev server連真實Supabase資料量度驗證，零溢出零回歸。
