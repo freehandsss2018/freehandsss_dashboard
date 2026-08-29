@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Opus 5 執行）— D69續八-follow-3：橫向桌面模式版面重整（頂部佔位 + 表頭走位）
+
+- **緣起**：follow-2 令 iPhone 橫向成功切到 desktop 表格，但 Fat Mo 截圖投訴兩點：①「頂頭選項佔據過多」②「表頭表格不乎合大小走位」。兩個都係 follow-2 改動嘅直接後果。
+- **問題① 頂部食咗290px／370px 視窗**：follow-2 只改咗 accordion/table 切換斷點（768→750），但篩選區同類別橫幅仍然行 `@media(max-width:767px)` 手機版排版——750px 落入 750-767 呢個「混合態」，出現「桌面表格 ＋ 手機版全闊2×2堆疊掣」。實測常駐篩選列 164px、類別橫幅 76px、連頂欄合共 290px，表格由 y=300 先開始，370px 視窗只剩 70px。**修法**：篩選區（`@media max-width:767px` 大 block）同 `.fhs-cat-strip` 兩處斷點一併改 749，同 750 對齊。**取捨已明寫落註解**：750-767 呢段唔再享有 44px 觸控目標（AGENTS 手機 POS 硬規則）——該規則本意針對直向落單場景，橫向睇表格屬瀏覽場景；直向（≤749）完全不受影響，實測 390px 四粒掣仍然係 44px。
+- **問題② 表頭互相黐埋**：follow-2 將客人/數量/批次壓到 44px，但「2個中文字 label + 12px icon + padding」實測硬下限係 58px，四欄表頭文字溢出撞隔籬（Fat Mo 截圖「客人⊙對象」黐住）。**根因係 follow-2 嘅 cell 級檢查只驗 tbody 內容，冇驗 thead label**——同 follow-2 自己寫落 learnings #16 嗰個「頁面級掃描有盲區」係同一類錯，只係低一層。
+- **關鍵槓桿**：58px 下限入面有 24px 純粹係表頭左右 padding（原 `8px 12px`）。喺緊縮層收到 4px，令每欄下限跌到 ~42px，12 欄一次過釋放約 190px，先至夠位將所有欄位放到真正需求值。連帶三個「降低內容需求」手法：日期+限時badge一律上下疊（推廣 follow-2 只做咗喺手模嘅做法去全部視圖）、刻字格容許斷行、產品明細 badge 容許內部斷行（`.review-item-card .review-badge{white-space:normal}`，類別視圖短badge唔喺呢個容器內故零影響）。
+- **量度方法論再修正**：本輪發現 follow-2 用嘅 `tr.children[i]` 欄位對位法**喺有 rowspan 嘅「全部」視圖會系統性對錯欄**（後續列缺少被 rowspan 吃掉嘅前導格），一度量出 845px 假數據。改用幾何對位（比對 `td` 同 `th` 嘅 `left` 座標）後真實需求係 807px。凡量度有 rowspan 嘅表格，唔可以用 children index。
+- **驗證**：750（真機值）/749（斷點下緣）/1129/1130/1536/390 六個闊度 × 4 視圖，每組合三重檢查（頁面級 `scrollWidth` ＋ 表頭 label 溢出 ＋ 逐 badge/select/input 嘅 cell 級 bleed），全部 **0/0/0**。750px 四個視圖全部啱好收埋落 750，表格起始位由 y=300 降到 y=144（全部視圖）／y=230（類別視圖）。390px 直向確認仍係卡片模式 + 44px 觸控目標。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（純 CSS，零 JS 邏輯、零 schema／n8n 改動）。
+- 全文見 decisions.md D69續八-follow-3。**Subagent 使用記錄**：❌未使用（逐輪量度→調整→再量度嘅收斂過程，每步依賴上一步實測數字）。
+
 ## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-2：真機橫向手機模式最終修復——斷點由768改750
 
 - **診斷推翻前一輪假設**：Fat Mo 截圖顯示 viewport-check.html（現行meta）同 viewport-check2.html（移除`width=device-width`修正meta）兩個版本橫向都報 `window.innerWidth=750`——證實 D69續八-follow 嘅「iOS meta鎖定直向闊度」理論係錯嘅。真正病因純粹係**750<768**嘅數值問題：真機橫向可用闊度就係750，同WebSearch查到嘅理論裝置闊度844有~94px落差（推測Safari橫向本身保留部分UI空間）。

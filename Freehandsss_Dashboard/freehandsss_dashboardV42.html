@@ -1164,7 +1164,15 @@
         .acc-sort-status { display:none; font-size:var(--fhs-text-xs); color:var(--fhs-accent); background:var(--fhs-accent-light); border:1px solid rgba(201,113,74,.25); border-radius:var(--radius-sm); padding:6px 12px; margin-bottom:12px; font-weight:600; }
         .acc-sort-status.visible { display:block; }
         /* Mobile */
-        @media (max-width:767px) {
+        /* [2026-08-30 D69續八-follow-3] 由 767→749：同訂單總覽 accordion/table 斷點
+           （750）對齊。原本 750-767 呢段會出現「桌面表格 ＋ 手機版篩選掣」嘅混合態
+           ——實測 iPhone 13 Pro 橫向（750×370）常駐篩選列高達 164px、類別橫幅 76px、
+           連頂欄合共食咗 290px，370px 視窗只剩 70px 睇表格（Fat Mo 截圖投訴「頂頭
+           選項佔據過多」）。橫向手機既然已經行桌面表格，篩選區亦應該一併行桌面
+           緊湊排版。⚠️ 取捨：呢段唔再享有下面 44px 觸控目標（AGENTS 手機 POS 硬
+           規則）——但該規則本意係針對直向手機落單場景，橫向睇表格屬瀏覽場景，
+           且 Fat Mo 明確要求橫向出桌面模式。直向（≤749）完全不受影響。 */
+        @media (max-width:749px) {
             .review-filters-v2 { border-radius:var(--radius-md); margin-bottom:16px; }
             .filter-toggle-bar { display:flex; }
             .filter-body { padding:0 16px; }
@@ -1275,7 +1283,8 @@
         .fhs-cat-pill--redo { border-color:#FFCC80; color:#E65100; background:#FFF3E0; }
         .fhs-cat-pill--done { border-color:#A5D6A7; color:#1B5E20; background:#E8F5E9; }
         .fhs-cat-pill--batch{ border-color:var(--fhs-border-strong); color:var(--fhs-text-secondary); }
-        @media (max-width: 767px) { .fhs-cat-strip { flex-direction:column; } .fhs-cat-strip__head { min-width:0; border-right:none; border-bottom:1px solid var(--fhs-border); } }
+        /* [2026-08-30 D69續八-follow-3] 767→749，同上面篩選區一齊對齊 750 斷點 */
+        @media (max-width: 749px) { .fhs-cat-strip { flex-direction:column; } .fhs-cat-strip__head { min-width:0; border-right:none; border-bottom:1px solid var(--fhs-border); } }
 
         /* 摺疊卡產品組成 chips（取代無意義的「N 件」） */
         .acc-cat-chips { display:flex; flex-wrap:wrap; gap:3px; margin-top:1px; }
@@ -2926,17 +2935,18 @@
            淨影響 .ovw-allview-col（只喺 _c==='' 即「全部」視圖先會加呢個
            class，類別視圖既有 1280px narrowcol 系統完全唔受影響）。 */
         @media (min-width: 750px) and (max-width: 1129px) {
-            .ovw-allview-col.ovw-col-Order_ID { width:78px  !important; }
-            .ovw-allview-col.ovw-col-Date     { width:56px  !important; }
-            .ovw-allview-col.ovw-col-Customer { width:52px  !important; }
-            .ovw-allview-col.ovw-col-inc      { width:46px  !important; }
-            .ovw-allview-col.ovw-col-cost     { width:46px  !important; }
-            .ovw-allview-col.ovw-col-profit   { width:61px  !important; }
-            .ovw-allview-col.ovw-col-eng      { width:70px  !important; }
-            .ovw-allview-col.ovw-col-prod     { width:109px !important; }
-            .ovw-allview-col.ovw-col-batch    { width:46px  !important; }
-            .ovw-allview-col.ovw-col-stat     { width:88px  !important; }
-            .ovw-allview-col.ovw-col-notes    { width:62px  !important; }
+            /* ⚠️ 同下面類別視圖一樣，58px 係 2字表頭 label 硬下限（見該處註解） */
+            .ovw-allview-col.ovw-col-Order_ID { width:88px  !important; }
+            .ovw-allview-col.ovw-col-Date     { width:68px  !important; }
+            .ovw-allview-col.ovw-col-Customer { width:58px  !important; }
+            .ovw-allview-col.ovw-col-inc      { width:54px  !important; }
+            .ovw-allview-col.ovw-col-cost     { width:54px  !important; }
+            .ovw-allview-col.ovw-col-profit   { width:57px  !important; }
+            .ovw-allview-col.ovw-col-eng      { width:54px  !important; }
+            .ovw-allview-col.ovw-col-prod     { width:84px  !important; }
+            .ovw-allview-col.ovw-col-batch    { width:52px  !important; }
+            .ovw-allview-col.ovw-col-stat     { width:86px  !important; }
+            .ovw-allview-col.ovw-col-notes    { width:58px  !important; }
         }
         /* [2026-08-29 緊縮桌面續] 上面「全部」視圖修好之後，同一斷層區（768-1129px）
            實測類別視圖（鎖匙扣/頸鏈/手模）都一樣溢出——既有 @media(max-width:1280px)
@@ -2944,20 +2954,48 @@
            呢度加多一層更緊嘅覆寫，源碼順序排喺 1280px 嗰組之後，兩條 range 喺
            768-1129 重疊時靠後者食硬（cascade），1130px 或以上跌返去 1280px 嗰組。 */
         @media (min-width: 750px) and (max-width: 1129px) {
-            .ovw-narrowcol-Order_ID { width:85px  !important; }
-            .ovw-narrowcol-Date     { width:64px  !important; }
-            .ovw-narrowcol-Customer { width:44px  !important; }
-            .ovw-narrowcol-eng      { width:86px  !important; }
-            .ovw-narrowcol-batch    { width:44px  !important; }
-            .ovw-narrowcol-stat     { width:90px  !important; }
-            .ovw-narrowcol-notes    { width:55px  !important; }
-            .ovw-narrowcol-target   { width:64px  !important; }
-            .ovw-narrowcol-part     { width:64px  !important; }
-            .ovw-narrowcol-mat      { width:73px  !important; }
-            .ovw-narrowcol-qty      { width:44px  !important; }
+            /* ⚠️ 58px 係「2個中文字表頭 label + 12px icon + padding」嘅硬下限
+               （實測 th.scrollWidth=58），任何欄唔可以低過呢個數，否則表頭文字
+               會互相黐埋／溢出去隔籬欄（Fat Mo 2026-08-30 截圖「客人⊙對象」黐住）。
+               D69續八-follow-2 曾將客人/數量/批次壓到 44px 就係中咗呢個伏——
+               當時 cell 級檢查只驗 tbody 內容，冇驗 thead label。 */
+            .ovw-narrowcol-Order_ID { width:88px  !important; }
+            .ovw-narrowcol-Date     { width:68px  !important; }
+            .ovw-narrowcol-Customer { width:56px  !important; }
+            .ovw-narrowcol-eng      { width:64px  !important; }
+            .ovw-narrowcol-batch    { width:52px  !important; }
+            .ovw-narrowcol-stat     { width:86px  !important; }
+            .ovw-narrowcol-notes    { width:56px  !important; }
+            .ovw-narrowcol-target   { width:58px  !important; }
+            .ovw-narrowcol-part     { width:58px  !important; }
+            .ovw-narrowcol-mat      { width:66px  !important; }
+            .ovw-narrowcol-qty      { width:58px  !important; }
             .ovw-narrowcol-style    { width:74px  !important; }
             .ovw-narrowcol-limb     { width:110px !important; }
             .ovw-narrowcol-addon    { width:60px  !important; }
+            /* [2026-08-30 D69續八-follow-3] 兩個「降低欄位內容需求」嘅通用手法，
+               淨喺緊縮桌面層生效（≥1130px 完全唔受影響）：
+               ①日期同限時警告 badge 一律上下疊（原本橫排令日期欄需求 68px，
+                 疊起之後跌返表頭 label 下限）——即係將 D69續八 只做咗喺手模
+                 視圖嘅 .ovw-date-line--stack 推廣去全部視圖；
+               ②刻字格容許斷行＋縮 padding/字級（原本 inline-flex nowrap 令
+                 刻字欄需求去到 80px，斷行後跌返 label 下限）。 */
+            .ovw-date-line { flex-direction:column; align-items:flex-start; gap:2px; }
+            .review-eng-line { flex-wrap:wrap; padding:2px 5px; gap:3px; font-size:11px; }
+            /* ③最大槓桿：表頭 58px「2字 label 下限」入面有 24px 純粹係左右 padding
+               （原 8px 12px）。收到 4px 令每欄下限由 58→~42，12 欄一次過慳返
+               ~190px，先至有得將所有欄位放到真正夠位。tbody 同步收窄免得
+               內容貼死格邊。 */
+            .review-table thead th { padding-left:4px !important; padding-right:4px !important; }
+            .review-table tbody td { padding-left:4px; padding-right:4px; }
+            /* ④「全部」視圖產品明細格入面嘅 badge（例：「嬰兒 1手1腳」）本身
+               white-space:nowrap 且單一個就闊過成欄，令 badge 團雖然有
+               flex-wrap 都仲係會撐爆。喺緊縮層容許 badge 內部斷行——只限
+               .review-item-card 入面（即產品明細格），類別視圖嗰啲短 badge
+               （對象/部位/材質）唔喺呢個容器內，完全唔受影響。 */
+            .review-item-card .review-badge { white-space:normal; }
+            /* ⑤補打金額輸入格（status=需進行補打先出現）喺窄欄會超出格邊 2px */
+            .review-table tbody input { max-width:100%; box-sizing:border-box; }
         }
 
         /* F3 v2: dual-mode modal — tabs */

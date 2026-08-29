@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-3：橫向桌面模式版面重整——頂部佔位+表頭走位): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-3」條目 + [decisions.md D69續八-follow-3](decisions.md)。follow-2 令橫向切到桌面表格後，Fat Mo 截圖投訴頂部佔位過多＋表頭走位，兩個都係 follow-2 後果：①只改咗表格切換斷點、篩選區同類別橫幅仍行手機版，750-767 變「混合態」（頂部食290px/370px視窗）→ 兩處斷點一併改749；②表頭壓到44px但2中文字label硬下限58px → 揪出 follow-2 嘅 cell 級檢查漏驗 thead label（同 learnings #16 同類錯低一層）。**關鍵槓桿**：表頭 padding 由 `8px 12px` 收到 4px，12欄一次過釋放~190px，先至夠位。另修正量度方法：rowspan 表格唔可以用 children index 對欄（曾量出845px假數據）。六闊度×4視圖三重檢查全部 0/0/0。已commit+部署生產。
+**Subagent 使用記錄**：❌未使用（逐輪量度→調整→再量度嘅收斂過程）。
+
 ## 2026-08-29 (D69續八-follow-2：真機橫向手機模式最終修復——斷點768改750): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八-follow-2」條目 + [decisions.md D69續八-follow-2](decisions.md)。Fat Mo截圖推翻上一輪「iOS meta鎖定」假設——兩個對照頁橫向都報innerWidth=750，證實純數值問題（750<768），同理論裝置闊度844有~94px落差。只改訂單總覽專屬7處768（唔動側邊欄/財務總覽等~10處共用）。斷點選值經兩輪迭代：第一輪730觸發「cell級bleed」新盲區（badge/input內容溢出隔籬儲存格但頁面級scrollWidth驗唔到），逐欄位精確量度後改用750（貼實真機值+content真實下限）。新增cell級bleed雙重驗收方法論，教訓落盤learnings/frontend.md#16。已commit+部署生產。

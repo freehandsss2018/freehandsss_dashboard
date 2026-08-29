@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-3) 橫向桌面模式版面重整 — 「混合態」斷點對齊 + 表頭 padding 槓桿
+
+**背景**：follow-2 令橫向成功切 desktop 表格，但 Fat Mo 截圖投訴「頂頭選項佔據過多」＋「表頭表格不乎合大小走位」，兩個都係 follow-2 嘅直接後果。
+
+**問題①「混合態」**：follow-2 只改咗 accordion/table 切換嗰個斷點（768→750），其餘控制篩選區排版嘅 `@media(max-width:767px)` 大 block 同 `.fhs-cat-strip` 冇跟——令 750-767 出現「桌面表格 ＋ 手機版全闊 2×2 堆疊掣」嘅混合態。實測 370px 高視窗被頂欄48＋篩選164＋橫幅76＝290px 食晒，表格只剩 70px。**修法**：兩處斷點一併改 749。**取捨**：750-767 唔再享 44px 觸控目標（AGENTS 手機 POS 硬規則）——該規則本意係直向落單場景，橫向睇表格屬瀏覽場景，且 Fat Mo 明確要求橫向出桌面模式；直向 ≤749 完全不受影響（實測 390px 四粒掣仍 44px）。呢個取捨已明寫落 CSS 註解，日後有人質疑可即刻睇到理由。
+
+**問題②「表頭黐埋」**：follow-2 將客人/數量/批次壓到 44px，但「2 中文字 label + 12px icon + padding」實測硬下限 58px。**根因係 follow-2 嘅 cell 級檢查只掃 tbody 內容，冇掃 thead label**——同 follow-2 自己啱啱寫落 learnings #16 嘅「頁面級掃描有盲區」係同一類錯誤，只係低一層。教訓補強：驗表格密度要三層（頁面 `scrollWidth` → thead label 溢出 → tbody cell bleed），缺一層就會有一類問題冚唔到。
+
+**關鍵槓桿（呢個先係真正解法）**：58px 下限入面有 24px 純粹係表頭左右 padding（原 `8px 12px`）。喺緊縮層收到 4px，每欄下限跌到 ~42px，12 欄一次過釋放 ~190px——之前幾輪一直喺「邊欄讓幾px俾邊欄」度打轉，就係因為冇睇穿真正嘅空間喺 padding 度。連帶三個降低內容需求嘅手法：日期+限時badge上下疊（推廣 follow-2 只做咗喺手模嘅做法）、刻字格容許斷行、產品明細 badge 容許內部斷行（scope 落 `.review-item-card` 內，類別視圖短 badge 零影響）。
+
+**量度方法論再修正**：本輪揪出 follow-2 用嘅 `tr.children[i]` 欄位對位法**喺有 rowspan 嘅「全部」視圖會系統性對錯欄**（後續列缺少被 rowspan 吃掉嘅前導格），一度量出 845px 假數據，令我幾乎誤判「全部視圖根本唔可能 fit」。改用幾何對位（`td.left` 對 `th.left`）後真實需求 807px，最終收埋落 750。**通則：量度任何有 rowspan 嘅表格，唔可以用 children index 對欄。**
+
+**驗證**：750（真機值）/749/1129/1130/1536/390 六闊度 × 4 視圖，每組三重檢查（頁面級＋thead label＋cell bleed）全部 0/0/0。表格起始位由 y=300 降到 y=144（全部）／y=230（類別）。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-3」條目。**Subagent 使用記錄**：❌未使用（逐輪量度→調整→再量度嘅收斂過程，每步依賴上一步實測數字）。
+
 [2026-08-29] (D69續八-follow-2) 真機 iPhone 13 Pro 橫向仍留手機模式最終修復 — 斷點由768改750，貼合真機實測值
 
 **背景**：D69續八部署後 Fat Mo 真機測試橫向仍留手機模式。D69續八-follow 一度懷疑係`<meta viewport>`嘅`width=device-width`令layout viewport鎖死直向闊度（WebSearch查到嘅iOS已知陷阱），上線兩個對照診斷頁（viewport-check.html現行meta／viewport-check2.html移除`width=device-width`修正meta）等Fat Mo截圖驗證。
