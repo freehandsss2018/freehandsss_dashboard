@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-08-29] Session（Claude Code / Sonnet 5+Opus 5 執行）— canva-auto v1.6.0：新增 Stage⑤ 存檔頁（0600302 ochinglee22）
+
+- **緣起**：Fat Mo 「canva-auto 新單」處理 0600302（ochinglee22），完成 Stage①-④ 後追加需求——短片完工要將 cover 貼上 `Free_Laser (MM/26)` 合集存檔，之前無此步驟。
+- **本單過程中順帶新增/修正兩條既有 SOP 規則**：
+  - 客人淨得 3 條原始片（非既有案例庫嘅 2 或 4 條），先例首見——同 Fat Mo 確認後揀 4 片家族（母片＝Kobekts 0600506，全庫音長最接近），Video4 slot 重複填影片3（跟 Fat Mo 自己 Stage② 拖入臨時素材時嘅重複選擇一致）。
+  - Fat Mo 事後喺 Canva UI 因應音訊時段（page3 設 47 秒）將 4 片改 3 片 + 整組水平群移，同時調整咗 page2 彩色圖重疊位置——證實 0600901 單訂立嘅「黑白/彩色圖統一 left+height」規則屬特定情境手法非放諸四海皆準嘅鐵律。
+- **新增 Stage⑤ 存檔頁**（`.fhs/ai/commands/canva-auto.md` v1.5.0→v1.6.0）：反推出「短片 page2 → 500×500 存檔頁」係精準仿射變換（`s=0.369803187 / tx=-105.011 / ty=+40.440`），用 `Free_Handsss` 簽名交叉驗證 left/top/width/fontSize 四項 Δ 全部 = 0.0000；字句唔跟呢條式（Fat Mo 另行重排字級/行距/字距），一律 `replace_text` 繼承母版格式。
+- **兩條新平台限制（實測發現）**：
+  1. 巨型 design（`Free_Laser (08/26)` 實測 156 頁）`read-design open_transaction`／`edit-design` 全部拒絕（`Editing a Canva Design with a size of N pages is not currently supported`），MCP 完全寫唔入。
+  2. 🔴 **`merge-designs` 對呢類巨型 design 會「假成功」**——`insert_pages` 回 `status:"success"`、`job.result` 有齊 design 物件，但**實際零插入**（page_count 前後同樣 156、讀新頁報 `Offset ... outside range`）。任何 `merge-designs` 之後必須 `read-design` 實查 `page_count`，唔可以信 `status`。
+  - 繞路（已驗證可行）：`copy-design(page_numbers=[N])` 單頁複製唔受頁數限制，喺副本上照跑母版 `update_fill` 流程，最後一步交 Fat Mo 喺 Canva UI 人手複製入合集（MCP 做唔到）。
+- **歸檔補漏**：過程中兩個臨時 design（成品 `DAHTRjp7Z_A` + 抽 asset id 用嘅副本 `DAHTRiuUFKs`）一開始漏咗歸檔、孤零零留喺 Canva root，Fat Mo 主動問起先發現。查證確認 `Free_Laser (MM/26)` 唔似 `Free_recorder (MM/26)` 咁有專屬資料夾（05/26 版一樣冇），所以已將兩個 design 改搬去 `Free_recorder (08/26)`（同單其他素材擺埋一齊）；`canva-auto.md` Stage⑤ 做法補第 6 步歸檔提醒，並註明 MCP 冇 `delete-design` 工具，用完嘅副本要 Fat Mo 自行喺 Canva UI 刪。
+- **學習系統同步**：`canva_auto/placement_memory.json`（0600302 case 三個 slot 完整記錄 + convergence_log 兩條新條目）、auto-memory `project_canva_video_automation.md`（「最高優先鐵律」加第四條 Stage⑤ 摘要）、`MEMORY.md` 索引同步。
+- **本次 Dashboard HTML／Supabase schema／n8n 零改動**——純 canva-auto 側支線工作，`.fhs/memory/handoff.md` 便攜塊六欄內容未受影響，僅同步日期戳。
+- 全文見本條目 + `canva_auto/placement_memory.json` order `0600302`。**Subagent 使用記錄**：❌未使用（Canva MCP 逐步試探+即時像素驗證+仿射變換反推，需即時交叉驗證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。

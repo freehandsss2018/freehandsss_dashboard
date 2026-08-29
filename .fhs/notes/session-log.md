@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-29 (canva-auto v1.6.0：新增 Stage⑤ 存檔頁，0600302 ochinglee22): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29 條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。處理 canva-auto 新單 0600302（ochinglee22）Stage①-④ 期間，本單客人淨得 3 條原始片（非既有案例庫 2/4 條家族）先例首見，同 Fat Mo 確認揀 4 片家族+重複填法；Fat Mo 事後喺 Canva UI 因應音訊時段改 3 片+調整 page2 彩色圖位置，證實 0600901 訂立嘅「圖對統一 left+height」規則屬特定情境非鐵律。完工後 Fat Mo 追加需求：短片 cover 要貼上 `Free_Laser (MM/26)` 合集存檔——新增 **Stage⑤**，反推出短片page2→存檔頁嘅精準仿射變換（簽名交叉驗證Δ=0），同時發現兩條新 Canva 平台限制：巨型 design（156頁）開唔到 editing transaction；`merge-designs` 對呢類 design 會「假成功」（回 status success 但零插入，必須事後實查 page_count）。過程中兩個臨時 design 一度漏歸檔留喺 Canva root，Fat Mo 主動問起後查證 `Free_Laser` 系列本身冇資料夾（同 `Free_recorder` 不同），已補搬 + SOP 補歸檔步驟。學習系統（`placement_memory.json`/`project_canva_video_automation.md`/`MEMORY.md`）三處同步。本次 Dashboard HTML／Supabase／n8n 零改動。
+**Subagent 使用記錄**：❌未使用（Canva MCP 逐步試探+即時像素驗證+仿射變換反推，需即時交叉驗證，委派會斷推理鏈）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。
