@@ -2528,3 +2528,13 @@ Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對
 **驗證清單**：migration apply 成功＋live 定義含新欄位確認、smoke test 兩場景 PASS（含 array edge case）、測試數據已清理、hook 語法 `node -c` 通過、`fhs-health-check.js` 由本輪修復前嘅狀態維持乾淨（餘 1 項為既有 `/fhs-usage-audit` 逾期，非本次引入）。
 
 詳見 `supabase/migrations/0089_save_structured_order_items_full_field_preserve.sql`（檔頭完整根因/修法/教訓記錄）、Changelog.md 2026-08-19 條目。**Subagent 使用記錄**：❌未使用（跨 Supabase RPC/前端/hook 三層即時交叉驗證＋smoke test，委派會斷推理鏈）。
+
+### D69：code-reviewer.md 補「Icon 鐵律稽核」——補回 Section 六與稽核關卡的漏同步（2026-08-29）
+
+**緣起**：Fat Mo 指出 `FHS_INTEGRATION.md` Section 三聲稱「供 code-reviewer 使用」，但 Section 六「Icon 鐵律」（2026-08-10 訂立，含禁 emoji、禁重複 symbol id 等 6 條）在 `code-reviewer.md` 全文零提及（grep `icon|Icon|sprite|Lucide|emoji` 零命中）。查證確認：`code-reviewer.md` 頭部 `last_updated: 2026-05-16`，比 Section 六訂立早三個月，屬真實漏同步而非刻意排除。
+
+**裁決**：Fat Mo 批准補全套方案（非精簡版）。
+
+**修復**：`code-reviewer.md` 新增「Icon 鐵律稽核」表格（emoji/裸字符 CRITICAL、重複 symbol id CRITICAL、sprite 引用/風格一致/裝飾圖形 WARNING 共 5 項）；稽核流程加一步 grep 掃描；報告輸出格式加對應子區塊；參考標準補引 Section 六；version v1.1.0 → v1.2.0。改前備份至 `.fhs/ai/governance/backups/code-reviewer.md.2026-08-29.bak`（依 05_maintenance-protocol.md §5）。
+
+**Subagent 使用記錄**：❌未使用（單檔文字新增，讀兩份來源文件即可核實缺口，無需委派）。

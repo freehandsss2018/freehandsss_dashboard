@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-29 (D69：code-reviewer.md 補「Icon 鐵律稽核」— Section六與稽核關卡漏同步修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29 條目 + [decisions.md D69](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 指出 `FHS_INTEGRATION.md` Section 六「Icon 鐵律」（2026-08-10 訂立）在 `code-reviewer.md` 全文零提及（grep 零命中）。核實確認 `code-reviewer.md` `last_updated: 2026-05-16` 早於 Section 六訂立三個月，屬真實漏同步。先寫方案徵得 Fat Mo 批准（此為調度層 subagent 定義檔，改動權限見 `05_maintenance-protocol.md` §1），批准後新增 5 項 Icon 鐵律稽核表格（emoji/重複 symbol id 定 CRITICAL）+ 對應流程步驟/報告格式/參考標準補引，version v1.1.0→v1.2.0。改前備份至 `.fhs/ai/governance/backups/`。同步落一條調度層教訓（`02_model-dispatch.md` §7）：規則文件新增章節不會自動聯動稽核 subagent checklist，須同一改動內順手 grep 確認。
+**Subagent 使用記錄**：❌未使用（讀兩份既有文件核對缺口即可判斷，委派無助益）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。

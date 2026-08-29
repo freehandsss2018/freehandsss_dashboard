@@ -1,5 +1,6 @@
 # 02 — 模型調度守則（Model Dispatch Doctrine）
 
+> **Version**: v1.0.6（2026-08-29，D69；§7 追加「稽核 checklist 與來源規則文件漏同步」教訓一條，純追加不改舊條）
 > **Version**: v1.0.5（2026-07-21，Session 183 續；§7 追加並行 worktree 視野盲區教訓一條，純追加不改舊條；同步 session-start-sop.sh 新增機制層防護）
 > **讀者**：主對話模型（任何等級）。每逢「大量讀取 / 掃 repo / 查網頁 / 批次改檔 / 選模型」先讀本檔。
 > **依據**：[[01_diagnosis]] token 洩漏 #2/#3。
@@ -139,4 +140,5 @@
   > 📌 已治本（S148 判準對齊，2026-07-08）：`post-tool-kgov.js` v2.0.0 起，.js 檔案編輯含財務詞只觸發 warn，不再落 flag——此類誤觸已結構性消滅，本條保留為歷史記錄，見 planning/2026-07-06_s148-loop-hardening_implementation_plan.md §4.2。
 - 【情境】S171 團隊名冊生成器用 `indexOf('\n---')` 切 CRLF 檔嘅 frontmatter block，末行殘留 `\r`，而 JS regex 嘅 `.` 唔匹配 `\r`（`\r` 屬 line terminator），`(.*)$` 靜默 fail——**最後一個 frontmatter key 消失**（grilling 嘅 description 啱好排最後）；且逐步裁切 debug 時因 bash 轉義污染出假結果，誤診咗兩輪（先疑 BOM、再疑隱藏字元）。【修正】任何行錨點/frontmatter 解析必須逐行 `replace(/\r+$/,'')`（BOM 防禦同上 2026-07-04 條）；debug regex 一律寫入獨立 .js 檔跑，唔好經 bash -e 內嵌（雙層轉義會製造假 NOMATCH）。【日期】2026-07-13
 - 【情境】【重要】S181 D40/D41 期間，多條 worktree 並行改成本邏輯，主對話單靠本地 handoff.md/todo.md 記憶答 Fat Mo「Phase 2 未做」，實情係另一 worktree（D41）已完成並 merge 落 main，只係本地未 fetch 睇唔到——連續兩輪答錯先由 Fat Mo 反問揭發，屬第 4 次同型「並行視野盲區」事故（此前 3 次：S179 部署互相覆蓋、handoff drift、S181 Changelog/session-log merge 衝突），達 05 §7 熔斷條款門檻。【修正】治本兩層：(a) 機制層——`session-start-sop.sh` 新增並行偵測區塊：開場自動 `fetch origin/main` 比對落後 commit 數並列出標題、掃近48h有動靜嘅其他 `claude/*` 分支，兩者皆列印警示，唔靠 AI 記得主動查；(b) 行為規則——答任何「做咗未／進度點／有冇人跟進緊」類狀態問題前，強制先睇 hook 輸出或手動 `git fetch`＋查 live 數據源（DB/API），禁止純用本地文件或對話記憶推斷現況，本規則同 finance-gatekeeper §三B「live數據唯一真相」原則同源，適用範圍擴至一切狀態查詢非僅財務。【日期】2026-07-21
+- 【情境】D69：`FHS_INTEGRATION.md` Section 六「Icon 鐵律」（2026-08-10 訂立，聲稱供 code-reviewer 使用）喺 `code-reviewer.md` 稽核清單全文零提及，兩者相隔三個月未同步——source-of-truth 規則文件新增章節，唔會自動聯動落稽核 subagent 嘅 checklist，靠 Fat Mo 主動抽查先發現。【修正】任何喺設計/排版/鐵律類文件新增章節、且該章節聲稱「供 X subagent 使用」時，同一改動內須順手 grep 該 subagent 定義檔確認已引用，唔可以只信文件本身嘅聲稱字句；季度健檢（05 §7）可加一項「稽核類 subagent checklist vs 來源規則文件」交叉抽查。【日期】2026-08-29
 

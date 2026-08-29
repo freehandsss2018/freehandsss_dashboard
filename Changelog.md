@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69：code-reviewer.md 補「Icon 鐵律稽核」
+
+- **緣起**：Fat Mo 指出 `FHS_INTEGRATION.md` Section 三聲稱「供 code-reviewer 使用」，但 Section 六「Icon 鐵律」（2026-08-10 訂立，6 條規則：inline SVG sprite 強制、禁 emoji/裸 Unicode 字符、新 symbol 須 Lucide 描邊風格、禁重複 symbol id 等）在 `code-reviewer.md` 全文零提及（grep `icon|Icon|sprite|Lucide|emoji` 零命中）。
+- **核實**：`code-reviewer.md` 頭部 `last_updated: 2026-05-16`，比 Section 六訂立（08-10）早三個月，中間從未同步——確認為真實漏同步而非刻意排除。Section 三/五（品質閘門）本身有被 code-reviewer.md line 72「參考標準」正確引用，僅 Section 六漏引。
+- **方案先提後執行**：先寫方案（5 項新稽核表格 + 流程步驟 + 報告格式 + 參考標準補引）向 Fat Mo 確認，批准後才動手，符合 `05_maintenance-protocol.md` §1 subagent 定義檔改動權限（此為調度層檔案）。
+- **修復**：`code-reviewer.md` 新增「Icon 鐵律稽核」表格（emoji/裸字符作icon、重複 symbol id 定 🚨 CRITICAL；sprite引用/風格一致/裝飾圖形CSS繪製定 ⚠️ WARNING，共5項）；稽核流程加一步「grep 掃描 emoji + 統計 symbol id 重複」；報告輸出格式加「Icon 鐵律檢查」子區塊；line 72 參考標準補引 Section 六；version v1.1.0 → v1.2.0，`last_updated` → 2026-08-29。
+- **改前備份**：`.fhs/ai/governance/backups/code-reviewer.md.2026-08-29.bak`（依 `05_maintenance-protocol.md` §5 硬前置）。
+- **改動檔案**：`.fhs/ai/subagents/freehandsss/code-reviewer.md`、`.fhs/notes/decisions.md`（D69）、`.fhs/memory/handoff.md`。**Dashboard HTML／Supabase schema／n8n 零改動。**
+- 全文見 decisions.md D69。**Subagent 使用記錄**：❌未使用（讀兩份既有文件核對缺口即可判斷，委派無助益）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。

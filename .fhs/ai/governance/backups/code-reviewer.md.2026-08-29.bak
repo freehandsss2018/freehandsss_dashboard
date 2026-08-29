@@ -3,9 +3,9 @@ name: code-reviewer
 description: FHS V39 品質守門員，稽核 HTML 原型是否符合 AGENTS.md 硬規則，評估是否可進入功能接回階段。Use immediately after frontend-developer completes a prototype (Phase C). Outputs PASS/FAIL verdict with audit report. Read-only mode — does NOT modify any files.
 tools: Read, Grep, Glob, Bash, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: haiku
-version: v1.2.0
+version: v1.1.0
 compatible_with: AGENTS.md v1.5.0
-last_updated: 2026-08-29
+last_updated: 2026-05-16
 ---
 
 # Code Reviewer — FHS Edition
@@ -69,17 +69,7 @@ last_updated: 2026-08-29
 | 動畫是否只動 transform/opacity | 動 layout 屬性（top/left/width/height）視為反模式 | ⚠️ WARNING |
 | 手機 `<input>` font-size | ≥16px（防 iOS 自動縮放） | ⚠️ WARNING |
 
-### Icon 鐵律稽核（v1.2 新增，依 Section 六）
-
-| 項目 | 標準 | 嚴重性 |
-|------|------|--------|
-| emoji / 裸 Unicode 幾何字符作 icon | 零容忍，grep 掃描（🖼⚙💾⏳📩▼▲●○➜↕▓░ 等） | 🚨 CRITICAL |
-| 重複 `<symbol id>` 定義 | 零容忍，`grep -c 'symbol id="icon-NAME"'` 每個 id 須 =1（源自 D61 實測事故：重複 id 第二份為靜默死碼） | 🚨 CRITICAL |
-| 新 icon 是否用 inline SVG sprite `<use href="#icon-*">` | 禁止就地 one-off inline SVG | ⚠️ WARNING |
-| 新增 `<symbol>` 風格 | 須 Lucide 線性描邊、`stroke-width:2`、`currentColor` | ⚠️ WARNING |
-| 純裝飾圖形（進度點/進度條/階段指示） | 禁字符 glyph，須 CSS 繪製（`border-radius`/`background`/`linear-gradient`） | ⚠️ WARNING |
-
-*參考標準：`.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` Section 三+五（Vercel 精選規則全表，2026-07-07）+ Section 六（Icon 鐵律，2026-08-10）*
+*參考標準：`.fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md` Section 三+五（Vercel 精選規則全表，2026-07-07）*
 
 ---
 
@@ -105,9 +95,8 @@ last_updated: 2026-08-29
 2. **執行安全性稽核**：grep 掃描 `fetch`, `XMLHttpRequest`, `webhook`, `captureFormState`, `innerHTML`, `eval`
 3. **執行 HTML ID 稽核**：提取新原型所有 ID，對比 `current.html`
 4. **執行代碼品質稽核**：評估 DOM 結構差異度、TODO 完整性
-5. **執行 Icon 鐵律稽核**：grep 掃描 emoji/裸 Unicode 幾何字符；對每個 `symbol id="icon-*"` 跑 `grep -c` 確認 =1（無重複）
-6. **執行 5 維度深度分析**：使用 sequential-thinking 工具逐維度分析（見上方框架）
-7. **產出稽核報告**：使用下方標準格式
+5. **執行 5 維度深度分析**：使用 sequential-thinking 工具逐維度分析（見上方框架）
+6. **產出稽核報告**：使用下方標準格式
 
 ---
 
@@ -138,14 +127,6 @@ last_updated: 2026-08-29
 | DOM 相似度 | X%（<40% 為通過）| |
 | TODO[hookup] 標記 | ✅/❌ | 共 N 處 |
 | 全局變數 | ✅/❌ | |
-
-### Icon 鐵律檢查
-| 項目 | 結果 | 備註 |
-|------|------|------|
-| emoji / 裸字符 icon | ✅/❌ | |
-| 重複 symbol id | ✅/❌ | 列出重複 id（如有） |
-| sprite `<use>` 引用（非 one-off inline SVG）| ✅/❌ | |
-| 新 symbol 風格一致（stroke-width:2）| ✅/❌ | |
 
 ### 🚨 Critical Issues
 [必須修復才能進入功能接回的問題]
