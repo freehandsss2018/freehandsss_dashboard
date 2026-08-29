@@ -1587,12 +1587,21 @@
             opacity: 0.8;
         }
 
-        /* ===== V40 iPhone Accordion — 訂單總覽 ===== */
-        @media (max-width: 767px) {
+        /* ===== V40 iPhone Accordion — 訂單總覽 =====
+           [2026-08-29 D69續八-follow] 斷點由 768→750px，只限訂單總覽呢組
+           accordion/table 切換（唔動側邊欄/財務總覽/彈窗等共用 768 嘅其他
+           ~10 處，避免引入未測試過嘅風險）。緣由：真機 iPhone 13 Pro 橫向
+           實測 window.innerWidth=750（非 WebSearch 查到嘅理論值 844——iOS
+           Safari 橫向本身會保留部分UI空間，真實可用闊度細過理論裝置闊度），
+           750<768 令橫向一直落手機模式。原擬730留緩衝，但實測「全部」/鎖匙扣/
+           頸鏈/手模四個視圖content真實最低闊度都落喺748-751px（逐欄位精確量度
+           badge/select/input實際闊度收窄，table-layout:auto唔容許再縮），
+           730反而會overflow——改用750做斷點恰好貼實測值同真實content下限。 */
+        @media (max-width: 749px) {
             .review-table-wrap { display: none !important; }
             #reviewAccordionContainer { display: block !important; }
         }
-        @media (min-width: 768px) {
+        @media (min-width: 750px) {
             #reviewAccordionContainer { display: none !important; }
         }
 
@@ -2916,38 +2925,38 @@
            （原有欄闊，Fat Mo明示「全部」視圖唔好改嗰條規則喺呢個範圍外繼續生效）。
            淨影響 .ovw-allview-col（只喺 _c==='' 即「全部」視圖先會加呢個
            class，類別視圖既有 1280px narrowcol 系統完全唔受影響）。 */
-        @media (min-width: 768px) and (max-width: 1129px) {
-            .ovw-allview-col.ovw-col-Order_ID { width:82px  !important; }
-            .ovw-allview-col.ovw-col-Date     { width:58px  !important; }
-            .ovw-allview-col.ovw-col-Customer { width:56px  !important; }
-            .ovw-allview-col.ovw-col-inc      { width:48px  !important; }
-            .ovw-allview-col.ovw-col-cost     { width:48px  !important; }
-            .ovw-allview-col.ovw-col-profit   { width:48px  !important; }
-            .ovw-allview-col.ovw-col-eng      { width:76px  !important; }
-            .ovw-allview-col.ovw-col-prod     { width:108px !important; }
-            .ovw-allview-col.ovw-col-batch    { width:50px  !important; }
-            .ovw-allview-col.ovw-col-stat     { width:70px  !important; }
-            .ovw-allview-col.ovw-col-notes    { width:68px  !important; }
+        @media (min-width: 750px) and (max-width: 1129px) {
+            .ovw-allview-col.ovw-col-Order_ID { width:78px  !important; }
+            .ovw-allview-col.ovw-col-Date     { width:56px  !important; }
+            .ovw-allview-col.ovw-col-Customer { width:52px  !important; }
+            .ovw-allview-col.ovw-col-inc      { width:46px  !important; }
+            .ovw-allview-col.ovw-col-cost     { width:46px  !important; }
+            .ovw-allview-col.ovw-col-profit   { width:61px  !important; }
+            .ovw-allview-col.ovw-col-eng      { width:70px  !important; }
+            .ovw-allview-col.ovw-col-prod     { width:109px !important; }
+            .ovw-allview-col.ovw-col-batch    { width:46px  !important; }
+            .ovw-allview-col.ovw-col-stat     { width:88px  !important; }
+            .ovw-allview-col.ovw-col-notes    { width:62px  !important; }
         }
         /* [2026-08-29 緊縮桌面續] 上面「全部」視圖修好之後，同一斷層區（768-1129px）
            實測類別視圖（鎖匙扣/頸鏈/手模）都一樣溢出——既有 @media(max-width:1280px)
            narrowcol 數值係為 1024px「iPad安全」門檻校準，768-1023 呢段從未實測過。
            呢度加多一層更緊嘅覆寫，源碼順序排喺 1280px 嗰組之後，兩條 range 喺
            768-1129 重疊時靠後者食硬（cascade），1130px 或以上跌返去 1280px 嗰組。 */
-        @media (min-width: 768px) and (max-width: 1129px) {
-            .ovw-narrowcol-Order_ID { width:90px  !important; }
-            .ovw-narrowcol-Date     { width:58px  !important; }
-            .ovw-narrowcol-Customer { width:56px  !important; }
-            .ovw-narrowcol-eng      { width:76px  !important; }
-            .ovw-narrowcol-batch    { width:50px  !important; }
-            .ovw-narrowcol-stat     { width:68px  !important; }
-            .ovw-narrowcol-notes    { width:62px  !important; }
-            .ovw-narrowcol-target   { width:36px  !important; }
-            .ovw-narrowcol-part     { width:36px  !important; }
-            .ovw-narrowcol-mat      { width:36px  !important; }
-            .ovw-narrowcol-qty      { width:36px  !important; }
-            .ovw-narrowcol-style    { width:50px  !important; }
-            .ovw-narrowcol-limb     { width:130px !important; }
+        @media (min-width: 750px) and (max-width: 1129px) {
+            .ovw-narrowcol-Order_ID { width:85px  !important; }
+            .ovw-narrowcol-Date     { width:64px  !important; }
+            .ovw-narrowcol-Customer { width:44px  !important; }
+            .ovw-narrowcol-eng      { width:86px  !important; }
+            .ovw-narrowcol-batch    { width:44px  !important; }
+            .ovw-narrowcol-stat     { width:90px  !important; }
+            .ovw-narrowcol-notes    { width:55px  !important; }
+            .ovw-narrowcol-target   { width:64px  !important; }
+            .ovw-narrowcol-part     { width:64px  !important; }
+            .ovw-narrowcol-mat      { width:73px  !important; }
+            .ovw-narrowcol-qty      { width:44px  !important; }
+            .ovw-narrowcol-style    { width:74px  !important; }
+            .ovw-narrowcol-limb     { width:110px !important; }
             .ovw-narrowcol-addon    { width:60px  !important; }
         }
 
@@ -11902,7 +11911,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 任何改 reviewCategoryFilter 嘅新路徑都自動跟得上，唔會出現掣狀態同視圖唔一致
             fhsSyncAuditBtnState();
             // V40: iPhone → Accordion，Desktop → Table
-            if (window.innerWidth < 768) {
+            // [2026-08-29 D69續八-follow] 768→730，跟返上面 CSS 斷點同步（見 .review-table-wrap 註解）
+            if (window.innerWidth < 750) {
                 renderReviewAccordion(orders);
                 // Still update badge count
                 const badge = document.getElementById('reviewCountBadge');
@@ -16104,8 +16114,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const SHOW_THRESHOLD = 15; // 向上滑動 15px 顯示
 
             window.addEventListener('scroll', () => {
-                // 僅在手機版（< 768px）且處於訂單總覽模式下生效
-                if (window.innerWidth >= 768 || !document.body.classList.contains('v40-review-active')) {
+                // 僅在手機版（< 750px，D69續八-follow同步訂單總覽斷點）且處於訂單總覽模式下生效
+                if (window.innerWidth >= 750 || !document.body.classList.contains('v40-review-active')) {
                     document.body.classList.remove('fhs-header-hidden');
                     accumulatedDelta = 0;
                     return;
@@ -20209,7 +20219,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         var container = document.getElementById('reviewAccordionContainer');
         if (!container) return;
         new MutationObserver(function() {
-            if (_peekDone || window.innerWidth >= 768) return;
+            if (_peekDone || window.innerWidth >= 750) return;
             var firstContent = container.querySelector('.swipe-content');
             if (!firstContent) return;
             _peekDone = true;

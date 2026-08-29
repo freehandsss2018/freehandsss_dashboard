@@ -35,6 +35,8 @@
 
 15. **【高頻 ⚠️】`overflow-x` 設非 `visible` 值會強制將 `overflow-y:visible` 一併變成 `auto`，令一個容器意外變成新嘅 `position:sticky` scrolling ancestor**：D69續三為修 iPad 1024px 表格橫向溢出，將 `.review-table-wrap` 由 `overflow:visible` 改 `overflow-x:auto; overflow-y:visible`，但 CSS 規格陷阱令瀏覽器將 `overflow-y` 一併強制變 `auto`。呢個 wrap 裡面嘅 `<thead>` 本身靠 `position:sticky` 貼實 viewport（原有註解已明寫「無內部捲動+overflow:visible，避免成為 sticky scrolling ancestor」），一旦 wrap 自己變成捲動容器，thead 就唔再貼頁面，改貼 wrap 自己嘅捲動框，捲動時飄到表格中間（Fat Mo 截圖：深色表頭夾兩行資料中間）。**判斷訊號**：任何容器內有 `position:sticky` 元素時，改動祖先元素嘅 `overflow-x`/`overflow-y` 前必須先搜尋周邊有冇「避免成為 sticky ancestor」呢類反面註解，唔可以純粹睇「呢個屬性而家值係乜」就改；兩個 overflow 軸必須同時明寫（`overflow-x:auto; overflow-y:visible` 呢種寫法本身就係陷阱，因為視覺上睇落 y 軸冇變但實際已被強制覆蓋）。**修法**：解決橫向內容溢出唔一定要開 wrapper 捲動——本例改用「欄闊本身收緊 + `@media` 分域覆寫」達成，完全避開呢個 CSS 耦合陷阱 — D69續三/2026-08-26 `@frontend` <!-- v:2026-08-26 -->
 
+16. **【高頻 ⚠️】驗零溢出淨睇 `document.body.scrollWidth`/`el.scrollWidth` 唔夠——`table-layout:auto` 分配欄闊時，個table本身可以啱好收埋落viewport（頁面級睇落乾淨），但入面個別`<td>`嘅badge/select/input內容可以溢出去隔籬儲存格**：D69續八「44組合全域掃描零溢出」淨用`el.scrollWidth > innerWidth`呢個頁面級指標驗收，真機/後續改動先暴露：儲存格本身闊度撐到剛好等於視窗，但badge文字/下拉/input內容本身比分配到嘅欄闊闊，會視覺bleed出去隔籬欄，而唔會令頁面本身出現橫向捲動（因為table總闊度冇超）。**判斷訊號**：任何用`table-layout:auto`+`!important`欄闊覆寫嘅密度壓縮改動，驗收唔可以淨做`document.body.scrollWidth`檢查，要逐個content元素（badge/select/input/textarea）用`getBoundingClientRect().right`同所屬`<td>`嘅右邊界比較，先揪到儲存格級bleed。**連帶教訓**：WebSearch查到嘅裝置理論CSS viewport數值（如iPhone 13 Pro橫向844px）同真機Safari實際report嘅`window.innerWidth`可以有顯著落差（實測750，差94px，推測係Safari橫向UI保留空間）——涉及真機斷點嘅改動，理論規格數字只可以做起點，最終數值要以真機截圖實測為準 — D69續八-follow-2/2026-08-29 `@frontend` <!-- v:2026-08-29 -->
+
 ## Preferences
 
 1. **完成訂單唯一出口為 Modal 審閱**：桌面/手機均不設直接 syncToAirtable 按鈕，操作者必須進入 Modal 審閱後才能同步。Modal 入口永遠可點 — 源自 2026-05-31 `@frontend` <!-- v:2026-05-31 -->

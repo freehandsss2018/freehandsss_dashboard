@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-2：真機橫向手機模式最終修復——斷點由768改750
+
+- **診斷推翻前一輪假設**：Fat Mo 截圖顯示 viewport-check.html（現行meta）同 viewport-check2.html（移除`width=device-width`修正meta）兩個版本橫向都報 `window.innerWidth=750`——證實 D69續八-follow 嘅「iOS meta鎖定直向闊度」理論係錯嘅。真正病因純粹係**750<768**嘅數值問題：真機橫向可用闊度就係750，同WebSearch查到嘅理論裝置闊度844有~94px落差（推測Safari橫向本身保留部分UI空間）。
+- **斷點改動範圍**：768呢個數值全App共~15處共用（側邊欄/財務總覽/多個彈窗/底部導覽/segmented control），全部改動未經測試風險太大。**只改訂單總覽專屬7處**：accordion/table CSS切換、`renderReviewTable()` JS分支、D69續八嘅緊縮桌面tier下界、智慧置頂欄（review-mode guarded）、peek animation（reviewAccordionContainer專屬）——其餘~10處保持768不變。
+- **斷點數值兩輪迭代**：第一輪選730（750留20px緩衝），逐欄位精確量度後發現嚴重問題——`table-layout:auto`縮到730時多個badge/input嘅真實內容闊度跌穿分配欄闊，令內容bleed溢出去隔籬儲存格（頁面級`document.body.scrollWidth`檢查完全驗唔到，要逐個content元素同所屬`<td>`右邊界比較先揪到）。逐欄位重新量測調整多輪後，發現四個視圖（全部/鎖匙扣/頸鏈/手模）content真實最低闊度都落喺748-751px，同Fat Mo實測嘅750幾乎完全吻合——**730太進取，750先係真實可行下限**，改用750（零緩衝但貼實真機值+content下限雙重印證）。
+- **驗收方法論修正**：新增「cell級bleed檢查」——每個badge/select/input嘅`getBoundingClientRect().right`同所屬`<td>`右邊界比較，唔再淨信頁面級`scrollWidth`。D69續八嗰輪「44組合零溢出」驗收有呢個盲區，僥倖冚過去因為當時寬度（768起跳）仲有餘量。
+- **驗證**：750/749邊界精確位元 + 730（曾經嘅舊斷點，證實已失效）+ 1129/1130邊界 + iPad橫向1210 + ZenBook 1536 + 手機直向390，全部4個視圖，每組合同時做頁面級+cell級雙重檢查，全部PASS零溢出零bleed。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（7處768→750斷點 + 多輪欄闊精調，零JS邏輯改動以外新增、零schema/n8n改動）。
+- 全文見 decisions.md D69續八-follow-2。教訓落盤 `learnings/frontend.md` #16（table-layout:auto儲存格級bleed盲區+真機vs理論viewport落差）。**Subagent 使用記錄**：❌未使用（每步量度結果直接決定下一步調整方向，逐輪反饋節奏唔適合委派）。
+
 ## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續八-follow：真機橫向仍留手機模式，追查 iOS viewport meta 陷阱（進行中，未落實修復）
 
 - **緣起**：D69續八部署後 Fat Mo 用真機 iPhone 13 Pro 實測——橫向仍然顯示手機卡片，非desktop表格。用 Chrome-engine 模擬（resize_window）複製唔到，證實真機同模擬器行為有落差。

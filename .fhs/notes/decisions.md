@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-29] (D69續八-follow-2) 真機 iPhone 13 Pro 橫向仍留手機模式最終修復 — 斷點由768改750，貼合真機實測值
+
+**背景**：D69續八部署後 Fat Mo 真機測試橫向仍留手機模式。D69續八-follow 一度懷疑係`<meta viewport>`嘅`width=device-width`令layout viewport鎖死直向闊度（WebSearch查到嘅iOS已知陷阱），上線兩個對照診斷頁（viewport-check.html現行meta／viewport-check2.html移除`width=device-width`修正meta）等Fat Mo截圖驗證。
+
+**診斷推翻**：Fat Mo截圖顯示**兩個版本**（現行/修正meta）橫向都報`window.innerWidth=750`，非直向鎖定嘅390，亦非理論橫向值844——證明個meta理論係錯嘅，真正病因純粹係**750<768**（一個純數值問題，跟meta寫法無關）。真機橫向可用闊度本身就係750，同WebSearch查到嘅理論裝置闊度844有~94px落差（推測係Safari橫向本身保留咗部分UI空間，真機實測永遠比理論裝置規格值細，呢個係本次最大教訓）。
+
+**斷點調整範圍**：768呢個數值喺成個Dashboard有~15處共用（側邊欄/財務總覽/多個彈窗/底部導覽/segmented control等），全部改動風險太大且未測試。**只改訂單總覽專屬嘅7處**：accordion/table CSS切換、`renderReviewTable()`嘅JS分支、D69續八加嘅緊縮桌面tier下界、智慧置頂欄（review-mode guarded）、peek animation（reviewAccordionContainer專屬）——其餘~10處側邊欄/財務總覽/彈窗類共用768保持不變。
+
+**斷點數值嘅兩輪迭代**：第一輪選730（750留20px緩衝，出於保守猜測），逐欄位精確量度先發現嚴重問題——`table-layout:auto`縮到730時，多個badge/input嘅真實內容闊度已經跌穿分配到嘅欄闊，令內容**bleed溢出去隔籬欄**（頁面級`scrollWidth`檢查完全驗唔到呢類問題，要逐個badge/select/input嘅`getBoundingClientRect().right`同所屬`<td>`右邊界比較先揪到）。逐欄位重新量測+調整多輪後，發現「全部」/鎖匙扣/頸鏈/手模四個視圖content嘅真實最低闊度都落喺748-751px——同Fat Mo實測嘅750幾乎完全吻合。**結論：730太進取，750先係真實可行嘅下限**，遂將斷點由730改返750（零緩衝，但貼實真機實測值+content真實下限雙重印證）。
+
+**新教訓（已落learnings/frontend.md）**：table-layout:auto嘅欄闊分配唔可以淨睇`body.scrollWidth`/`document.scrollWidth`嚟判斷零溢出——個table本身可能啱好等於viewport闊度（睇落乾淨），但入面個別badge/select/input嘅content可以溢出去隔籬`<td>`嘅視覺範圍，要逐個content元素同自己所屬`<td>`嘅邊界比較先驗得出。D69續八嗰輪「44組合全域掃描零溢出」嘅驗收方法論本身有呢個盲區——只驗到頁面級溢出，冇驗到儲存格級溢出，僥倖冚過去因為當時嘅寬度（768起跳）仲有足夰餘量。
+
+**驗證**：750/749邊界精確位元 + 730（曾經嘅舊斷點，證實已無效）+ 1129/1130邊界 + iPad橫向1210 + ZenBook 1536 + 手機直向390，全部4個視圖，每個組合同時做頁面級`scrollWidth`檢查**同**逐badge/select/input嘅cell級bleed檢查（雙重驗證，唔再淨信頁面級）。全部PASS，零溢出零bleed。
+
+全文見 Changelog.md 2026-08-29「D69續八-follow-2」條目。**Subagent 使用記錄**：❌未使用（每一步嘅量度結果直接決定下一步調整方向，逐輪反饋節奏唔適合委派；WebSearch已用核實裝置真實規格）。
+
 [2026-08-29] (D69續八) 多裝置響應式審計 + 768-1129px「斷層區」根治 — CSS Grid blowout 真根因 + 緊縮桌面新斷點層
 
 **背景**：Fat Mo 問「iPhone 轉橫向會唔會切去 desktop 模式」，並要求用 iPhone 13 Pro／iPhone 17 Pro／iPad Pro 11" M4／ASUS ZenBook Duo UX482EGR 四款實機尺吋重新審視訂單總覽 UI/UX。查 `isMobile()` 純睇 `window.innerWidth<768`（[freehandsss_dashboardV42.html:16470](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:16470)），冇睇裝置/觸控，故答案係「會」。

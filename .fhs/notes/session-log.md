@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-29 (D69續八-follow-2：真機橫向手機模式最終修復——斷點768改750): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八-follow-2」條目 + [decisions.md D69續八-follow-2](decisions.md)。Fat Mo截圖推翻上一輪「iOS meta鎖定」假設——兩個對照頁橫向都報innerWidth=750，證實純數值問題（750<768），同理論裝置闊度844有~94px落差。只改訂單總覽專屬7處768（唔動側邊欄/財務總覽等~10處共用）。斷點選值經兩輪迭代：第一輪730觸發「cell級bleed」新盲區（badge/input內容溢出隔籬儲存格但頁面級scrollWidth驗唔到），逐欄位精確量度後改用750（貼實真機值+content真實下限）。新增cell級bleed雙重驗收方法論，教訓落盤learnings/frontend.md#16。已commit+部署生產。
+**Subagent 使用記錄**：❌未使用（逐輪量度反饋節奏唔適合委派）。
+
 ## 2026-08-29 (D69續八-follow：真機橫向仍留手機模式，追查iOS viewport meta陷阱): 🏷️ 🟡
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八-follow」條目（診斷進行中，暫無決定，待Fat Mo截圖確認後補記decisions.md）。D69續八部署後真機測試發現橫向仍留手機模式，Chrome模擬複製唔到。逐步排除縮放/瀏覽器/JS邏輯後，WebSearch鎖定iOS已知陷阱：`width=device-width`令layout viewport鎖死喺直向闊度唔隨轉向reflow。已上線兩個獨立對照診斷頁（唔掂生產Dashboard）等Fat Mo真機截圖驗證，未落實修復。
