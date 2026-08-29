@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-29T03:05:00Z">
+    <meta name="fhs-build" content="2026-08-29T12:12:13Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -1109,7 +1109,7 @@
            + 顯示項目財務/清除篩選/儲存篩選/重新載入，全部同一條 flex-wrap 線。
            border-top 已移除——佢原本係用嚟同上面嗰行分隔，而家已經係唯一一行。 */
         .filter-row-pinned { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; padding:6px 12px 8px; }
-        .filter-body { display:flex; flex-direction:column; gap:8px; max-height:0; overflow:hidden; padding:0 12px; transition:max-height .3s ease,padding .3s ease; }
+        .filter-body { display:flex; flex-direction:column; gap:8px; max-height:0; overflow:hidden; padding:0 12px; transition:max-height .3s ease,padding .3s ease; flex:1 1 100%; min-width:0; box-sizing:border-box; }
         .filter-body.open { max-height:800px; padding:8px 12px 12px; border-top:1px solid var(--fhs-border); }
         .filter-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; }
         .filter-row-secondary { padding-top:8px; border-top:1px solid var(--fhs-border); align-items:center; }
@@ -2361,7 +2361,7 @@
             display: none;
         }
         .v40-review-active .v40-layout {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             padding: 0 !important;
         }
 
@@ -2907,6 +2907,48 @@
             .ovw-narrowcol-part     { width:67px !important; }
             .ovw-narrowcol-mat      { width:67px !important; }
             .ovw-narrowcol-qty      { width:67px !important; }
+        }
+        /* [2026-08-29 緊縮桌面] 768-1099px 斷層區：CSS/JS 斷點（isMobile()＝
+           window.innerWidth<768）一過768即由手機卡片切去桌面table，但「全部」
+           視圖原欄闊總和 ≈1125px，764-1099px 呢段完全頂唔住，會全頁橫向溢出
+           （iPhone橫向844/874px、iPad直向834px 三個真實裝置實測命中）。Fat Mo
+           拍板方向③：加呢層「緊縮桌面」中間態，唔動 <768（手機卡片）同 ≥1100
+           （原有欄闊，Fat Mo明示「全部」視圖唔好改嗰條規則喺呢個範圍外繼續生效）。
+           淨影響 .ovw-allview-col（只喺 _c==='' 即「全部」視圖先會加呢個
+           class，類別視圖既有 1280px narrowcol 系統完全唔受影響）。 */
+        @media (min-width: 768px) and (max-width: 1129px) {
+            .ovw-allview-col.ovw-col-Order_ID { width:82px  !important; }
+            .ovw-allview-col.ovw-col-Date     { width:58px  !important; }
+            .ovw-allview-col.ovw-col-Customer { width:56px  !important; }
+            .ovw-allview-col.ovw-col-inc      { width:48px  !important; }
+            .ovw-allview-col.ovw-col-cost     { width:48px  !important; }
+            .ovw-allview-col.ovw-col-profit   { width:48px  !important; }
+            .ovw-allview-col.ovw-col-eng      { width:76px  !important; }
+            .ovw-allview-col.ovw-col-prod     { width:108px !important; }
+            .ovw-allview-col.ovw-col-batch    { width:50px  !important; }
+            .ovw-allview-col.ovw-col-stat     { width:70px  !important; }
+            .ovw-allview-col.ovw-col-notes    { width:68px  !important; }
+        }
+        /* [2026-08-29 緊縮桌面續] 上面「全部」視圖修好之後，同一斷層區（768-1129px）
+           實測類別視圖（鎖匙扣/頸鏈/手模）都一樣溢出——既有 @media(max-width:1280px)
+           narrowcol 數值係為 1024px「iPad安全」門檻校準，768-1023 呢段從未實測過。
+           呢度加多一層更緊嘅覆寫，源碼順序排喺 1280px 嗰組之後，兩條 range 喺
+           768-1129 重疊時靠後者食硬（cascade），1130px 或以上跌返去 1280px 嗰組。 */
+        @media (min-width: 768px) and (max-width: 1129px) {
+            .ovw-narrowcol-Order_ID { width:90px  !important; }
+            .ovw-narrowcol-Date     { width:58px  !important; }
+            .ovw-narrowcol-Customer { width:56px  !important; }
+            .ovw-narrowcol-eng      { width:76px  !important; }
+            .ovw-narrowcol-batch    { width:50px  !important; }
+            .ovw-narrowcol-stat     { width:68px  !important; }
+            .ovw-narrowcol-notes    { width:62px  !important; }
+            .ovw-narrowcol-target   { width:36px  !important; }
+            .ovw-narrowcol-part     { width:36px  !important; }
+            .ovw-narrowcol-mat      { width:36px  !important; }
+            .ovw-narrowcol-qty      { width:36px  !important; }
+            .ovw-narrowcol-style    { width:50px  !important; }
+            .ovw-narrowcol-limb     { width:130px !important; }
+            .ovw-narrowcol-addon    { width:60px  !important; }
         }
 
         /* F3 v2: dual-mode modal — tabs */
@@ -11750,7 +11792,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // [密度重排 2026-08-25 續五] _c 淨喺類別視圖先真，「全部」永遠唔會行呢個
                 // class —— 靠呢點令低於 1280px 嘅媒體查詢覆寫（CSS L~2860）只影響類別
                 // 視圖，唔會誤中「全部」（Fat Mo 明示唔改嗰個）。
-                var _narrowCls = _c ? (' ovw-narrowcol-' + k) : '';
+                var _narrowCls = _c ? (' ovw-narrowcol-' + k) : ' ovw-allview-col ovw-col-' + k;
                 var ico = '<svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-' + d.icon + '"/></svg>';
                 var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; width:' + _mw + 'px;';
                 if (d.sort) {
