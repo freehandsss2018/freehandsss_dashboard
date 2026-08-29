@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-29 (D69續八-follow：真機橫向仍留手機模式，追查iOS viewport meta陷阱): 🏷️ 🟡
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八-follow」條目（診斷進行中，暫無決定，待Fat Mo截圖確認後補記decisions.md）。D69續八部署後真機測試發現橫向仍留手機模式，Chrome模擬複製唔到。逐步排除縮放/瀏覽器/JS邏輯後，WebSearch鎖定iOS已知陷阱：`width=device-width`令layout viewport鎖死喺直向闊度唔隨轉向reflow。已上線兩個獨立對照診斷頁（唔掂生產Dashboard）等Fat Mo真機截圖驗證，未落實修復。
+**Subagent 使用記錄**：❌未使用（互動式即時排除假設節奏唔適合委派）。
+
 ## 2026-08-29 (D69續八：多裝置響應式審計 + 768-1129px「斷層區」根治): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八」條目 + [decisions.md D69續八](decisions.md)。Fat Mo 問iPhone橫向會唔會切desktop模式並要求四機（iPhone13Pro/17Pro/iPad M4 11"/ZenBook UX482EGR）審視，WebSearch核實真實viewport後六向掃描揪出768-1023px斷層區（iPhone橫向+iPad直向三個真實情境命中，全頁橫向溢出）。真根因非篩選列CSS而係更高層CSS Grid「blowout」陷阱（`.v40-main-col`冇min-width，`grid-template-columns:1fr`→`minmax(0,1fr)`一行修復）。Fat Mo拍板方向③加768-1129px「緊縮桌面」新斷點層（<768/≥1130完全唔動），過程中意外發現類別視圖同一斷層區都溢出並一併修復。44組合（6裝置+5邊界像素×4視圖）全域DOM掃描零溢出。

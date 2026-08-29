@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續八-follow：真機橫向仍留手機模式，追查 iOS viewport meta 陷阱（進行中，未落實修復）
+
+- **緣起**：D69續八部署後 Fat Mo 用真機 iPhone 13 Pro 實測——橫向仍然顯示手機卡片，非desktop表格。用 Chrome-engine 模擬（resize_window）複製唔到，證實真機同模擬器行為有落差。
+- **逐步排除**：確認頁面縮放100%（非放大顯示觸發CSS闊度縮細）；確認Chrome/Safari兩個瀏覽器一齊中（排除單一App bug）；確認`isMobile()`純睇`window.innerWidth<768`零UA/orientation media query（排除JS邏輯本身有問題）。
+- **鎖定嫌疑**：WebSearch 查到 iOS Safari 已知行為（[quirksmode.org](https://www.quirksmode.org/blog/archives/2013/10/initialscale1_m.html)）——`<meta viewport>` 含 `width=device-width` 時，layout viewport 會鎖死喺**直向闊度**，轉橫向唔會reflow，淨係將直向畫面放大填滿螢幕（正正吻合Fat Mo描述「啲字睇落偏大」）。現行 `freehandsss_dashboardV42.html` 正正用緊 `width=device-width, initial-scale=1.0`。
+- **對照驗證（未落實修復先驗證）**：上線兩個獨立診斷頁（唔掂生產Dashboard）——`viewport-check.html`（現行meta，預期紅色手機）vs `viewport-check2.html`（移除`width=device-width`嘅修正meta，預期綠色桌面），逐項列印`innerWidth`/`screen.width`/`visualViewport.scale`等數字。**等緊Fat Mo真機截圖對比兩頁結果先落實修復落V42.html**——呢個meta改動全App全裝置生效，唔想淨憑理論就郁生產版。
+- **暫存檔案**：`Freehandsss_Dashboard/viewport-check.html`、`viewport-check2.html`（已直接`upload-web.ps1`部署NAS獨立URL，非git版本控制的current.html/V42.html本身；確認診斷結果後會清走或保留做迴歸測試頁，視乎修復方向）。
+- **未完成**：本輪暫時只有診斷頁面部署，V42.html/current.html嘅meta viewport本身尚未改動，待確認後續行動。
+- 全文見本條目（診斷進行中，暫無獨立decisions.md，待有定案後補記）。**Subagent 使用記錄**：❌未使用（互動式逐輪同Fat Mo即時對話排除假設，WebSearch已用核實iOS已知行為非猜測）。
+
 ## [2026-08-29] Session（Claude Code / Sonnet 5 執行）— D69續八：多裝置響應式審計 + 768-1129px「斷層區」根治
 
 - **緣起**：Fat Mo 問「iPhone 轉橫向會唔會令訂單總覽切去 desktop 模式」，並要求用 iPhone 13 Pro／iPhone 17 Pro／iPad Pro 11" M4／ASUS ZenBook Duo UX482EGR 四款實機尺吋重新審視 UI/UX。查 `isMobile()`（`window.innerWidth<768`）純睇闊度唔睇裝置，答案係「會」。
