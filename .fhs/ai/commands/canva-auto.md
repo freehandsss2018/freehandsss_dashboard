@@ -223,6 +223,7 @@ Editing a Canva Design with a size of 156 pages is not currently supported
    - **原相 asset 通常 Fat Mo 已上載落合集**（同客其他頁），用 `copy-design` 抽嗰頁出嚟讀 `mediaId` 即得，唔使重新上載
 4. `export-design` JPG 1000×1000 眼證（頁面本身正方，draft 縮圖今次唔會變形，但仍以真圖為準）
 5. **交 Fat Mo 喺 Canva UI 複製入合集**——AI 做唔到，見上面硬限制
+6. `move-item-to-folder` 將呢步用嘅副本（成品＋任何 asset-id 抽取用嘅臨時副本）歸入 `Free_recorder (MM/26)`——**⚠️ `Free_Laser (MM/26)` 唔係資料夾，冇嘢可以歸檔入去**（0600302 首次漏做：兩個 design 孤零零留喺 Canva root，Fat Mo 主動問起先發現）。副本用完 Fat Mo 要自行喺 Canva UI delete（MCP 冇 delete-design 工具，`merge-designs` 淨係刪頁唔刪成個 design）
 
 ### 幾何：短片 page2 → 存檔頁係一條精準仿射變換
 
