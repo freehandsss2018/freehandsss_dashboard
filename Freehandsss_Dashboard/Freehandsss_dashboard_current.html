@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-29T23:10:42Z">
+    <meta name="fhs-build" content="2026-08-30T00:34:22Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3028,6 +3028,17 @@
             .review-table tbody .review-badge { max-width:100%; overflow:hidden; }
             /* ⑤補打金額輸入格（status=需進行補打先出現）喺窄欄會超出格邊 2px */
             .review-table tbody input { max-width:100%; box-sizing:border-box; }
+            /* ⑥【真正根因—Fat Mo 截圖「表頭飄咗落表格中間」】呢個同上面幾條完全
+               無關，係一條更舊、休眠咗好耐嘅 CSS（L~2380，@media max-width:767px
+               獨立區塊，非本輪任何一次改動）：`.review-table-wrap{max-height:60vh}`。
+               呢條規則以前一直冇發揮作用——767px 以下之前永遠係手機卡片模式，
+               `.review-table-wrap{display:none}`，表格本身睇唔到。D69續八首次令
+               750px 都顯示桌面表格，先第一次令呢條休眠規則生效：實測 370px 高
+               視窗 × 60vh = 222px box，但表格內容實際 707px 高，令 thead
+               position:sticky 嘅定位基準錯亂，表頭飄咗落表格中間（非貼實
+               viewport頂）。修法：喺呢個層淨係取消 max-height 限制，等表格
+               自然伸展，thead sticky 返正常運作。 */
+            .review-table-wrap { max-height:none !important; }
         }
 
         /* F3 v2: dual-mode modal — tabs */
