@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-30T10:19:44Z">
+    <meta name="fhs-build" content="2026-08-30T10:45:41Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3046,6 +3046,15 @@
             /* ②「重新載入」搬咗去 top bar（JS `fhsSyncCompactDesktopLayout()` 處理
                實際DOM搬遷），呢度淨係定位落腳後嘅樣式。 */
             #v40-top-bar .fhs-btn-refresh { height:28px; padding:0 10px; font-size:11px; margin-left:auto; }
+            /* [2026-08-30 D69續八-follow-8] Fat Mo 截圖紅圈：「訂單總覽」標題自帶嘅
+               list icon（`switchMode()`寫入`topEl.innerHTML`嘅共用SVG，唔止喺呢個
+               tier出現）喺呢層純屬贅飾，收埋。淨CSS隱藏，唔改JS共用邏輯，
+               mobile/傳統桌面唔受影響。 */
+            #v40-top-bar #v40-top-order-id svg { display: none; }
+            /* 篩選漏斗嘅chevron（舊手風琴「展開/收起」指示器）喺 follow-7 已經改
+               做Threads式抽屜，冇「向下展開」呢回事，留低會誤導；淨隱藏，撳擊
+               區域（成個 #reviewFilterToggle）唔變，抽屜開關邏輯不受影響。 */
+            #v40-top-bar #reviewFilterToggle .filter-chevron { display: none; }
             /* ③「顯示項目財務／清除篩選／儲存篩選」3粒收納入 #fhsCompactBtnSlot
                （JS 搬遷入 filter-body 頂部），呢度淨係定位樣式：橫向排一行，
                同下面年度/月份等篩選項有視覺分隔。 */
@@ -15851,6 +15860,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var filterBody = document.getElementById('reviewFilterBody');
             var bodyAnchor = document.getElementById('fhsFilterBodyAnchor');
             var scrim = document.getElementById('fhsDrawerScrim');
+            var countBadge = document.getElementById('reviewCountBadge');
             if (!pinnedRow || !titleEl || !toggleEl || !segWrapper || !catGroup || !div1 || !div2 || !filterBody || !bodyAnchor) return;
             if (isCompact) {
                 // 唔可以用 `.fhs-top-bar__actions` 做插入參照點——嗰個係模式切換
@@ -15864,6 +15874,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (filterBody.parentElement !== document.body) document.body.appendChild(filterBody);
                 filterBody.classList.add('fhs-drawer-mode');
                 filterBody.style.top = topBar.getBoundingClientRect().height + 'px';
+                // [D69續八-follow-8] Fat Mo 截圖要求：「24筆·時間」徽章搬去最右，
+                // 「重新載入」緊貼喺佢左邊同一行。refreshBtn 上面已 appendChild
+                // 咗入 topBar（follow-6 原有邏輯），呢度再 appendChild badge
+                // 會排喺 refreshBtn 之後，兩者一齊食 `.fhs-btn-refresh` 嘅
+                // `margin-left:auto` 推去最右做一組。
+                if (countBadge) topBar.appendChild(countBadge);
             } else {
                 if (toggleEl.parentElement !== pinnedRow) pinnedRow.insertBefore(toggleEl, div1);
                 if (segWrapper.parentElement !== pinnedRow) pinnedRow.insertBefore(segWrapper, div1);
@@ -15875,6 +15891,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 toggleEl.classList.remove('expanded');
                 toggleEl.setAttribute('aria-expanded', 'false');
                 if (scrim) scrim.classList.remove('open');
+                // 徽章原位＝標題span之後（HTML L~4396），用`insertAdjacentElement`
+                // 直接歸位，唔使理會其他元素當刻已經復原到邊——結果永遠一致。
+                if (countBadge) titleEl.insertAdjacentElement('afterend', countBadge);
             }
         }
         window.addEventListener('resize', fhsSyncCompactDesktopLayout);
