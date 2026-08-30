@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-31 (D69續八-follow-12：緊縮桌面密度再優化——刻字欄取消/follow-11同類bug再現於單號日期客人3欄): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-31「D69續八-follow-12」條目 + [decisions.md D69續八-follow-12](decisions.md)。Fat Mo要求：刻字欄取消釋放位、客人欄字再縮小。客人欄真根因同follow-11同一機制——單號/日期/客人3個rowspan欄嘅td有inline`font-size:13px`，follow-4嘅11px規則冇`!important`一直贏唔到，加`!important`一次過修埋3欄。刻字欄真根因：td用共用`batch-cell` class冇獨立hook，加專屬class`ovw-eng-cell`連同既有th class一齊隱藏，table-layout:fixed+rowspan下必須連th同每列td一致隱藏先唔會錯位。通則：JS render inline style贏compact規則係系統性模式，非單一事件。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-11：iPhone 13 Pro真機再揪兩個bug——safe-area遺漏/inline style贏咗compact規則): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-11」條目 + [decisions.md D69續八-follow-11](decisions.md)。Fat Mo用iPhone 13 Pro真機測試follow-10後再揪兩個bug：①橫向轉屏左右灰色bar——`<meta viewport>`缺`viewport-fit=cover`，令全檔已用嘅`env(safe-area-inset-*)`永遠讀0，notch裝置橫向安全區由上下變左右俾Safari自己渲染；修法加viewport-fit=cover+body補safe-area padding。②表格字體同格子不相稱——`renderReviewTable()`寫select/textarea時注入inline`font-size:13px`，follow-4已有嘅compact 10px規則因冇`!important`從未真正生效過；修法加`!important`。先用AskUserQuestion釐清裝置/問題再落手，避免猜錯。750/1129/1130/390全PASS，已commit+部署生產。

@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-31] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-12：緊縮桌面密度再優化（刻字欄取消／follow-11同類bug再現於單號日期客人3欄）
+
+- **緣起**：follow-11部署後，Fat Mo繼續要求緊縮桌面（750-1129px）密度優化：①刻字欄可以取消，釋放位；②客人欄字再縮小。
+- **②真根因（follow-11同一類bug再現）**：`orderLeftColsHtml`（單號/日期/客人3個`rowspan`欄）嘅`<td>`各自帶inline`font-size:13px`（render函式手寫）。follow-4已有`.review-table tbody td{font-size:11px}`但一直冇`!important`——同follow-11揪出嘅select/textarea bug同一機制，inline style贏晒，令呢3欄嘅字從未真正縮過。「客人欄字再縮小」揭示follow-4嘅壓縮由一開始就冇喺呢3欄生效，唔係「已經縮咗但唔夠細」。
+- **②修法**：`.review-table tbody td{font-size:11px}`加`!important`——一次過連帶修埋單號/日期兩欄同一個bug，三欄同時受惠。
+- **①真根因**：刻字（eng）欄嘅`<td>`一直用同其他窄欄共用嘅`batch-cell` class，冇獨立identifier；加上表格`table-layout:fixed`+部分列有`rowspan`，位置索引（nth-child）對唔上column（本session之前follow-2~3已踩過類似rowspan量度陷阱）——唔可以靠位置隱藏，必須靠class。
+- **①修法**：render函式幫刻字`<td>`加專屬class`ovw-eng-cell`；連同表頭已有嘅`ovw-col-eng`/`ovw-narrowcol-eng`，三個selector一齊`display:none!important`，確保表頭列同每列資料列cell數一致，table-layout:fixed唔會錯位。
+- **通則**：follow-11揪出嘅「JS render inline style贏咗compact CSS規則」係系統性模式（唔止select/textarea，單號/日期/客人3欄亦中招）——日後任何「呢欄字點解冧唔到細」嘅疑惑，第一步應查`el.getAttribute('style')`有冇inline font-size，唔可以假設加咗CSS rule就一定生效。
+- **驗證**：750/1129/1130/390四闊度全PASS；「全部」+類別視圖(鑰匙扣)雙重確認刻字欄th同全部45個td正確隱藏、表頭列同資料列cell數一致(12/12)；單號/日期/客人3欄computed font-size確認compact 11px、桌面≥1130維持13px零regression。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（render函式1個td加class + 1條既有規則加`!important` + 新增1條隱藏規則）。
+- 全文見 decisions.md D69續八-follow-12。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-11：iPhone 13 Pro真機再揪兩個bug（safe-area遺漏／inline style贏咗compact規則）
 
 - **緣起**：follow-10部署後Fat Mo用iPhone 13 Pro真機測試，回報：①橫向轉屏後畫面左右出現灰色bar，唔係full screen；②表格內字體「太大/太小，與格子不相稱」。先用AskUserQuestion釐清裝置同具體問題，因為單憑截圖冇辦法分辨CSS bug定係查看方式造成。

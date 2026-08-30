@@ -3,6 +3,24 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-31] (D69續八-follow-12) 緊縮桌面密度再優化 — 刻字欄取消 + follow-11同類bug再現於單號/日期/客人3欄
+
+**背景**：follow-11部署後，Fat Mo繼續要求緊縮桌面（750-1129px）密度優化：①刻字欄可以取消，釋放位；②客人欄字再縮小。
+
+**②真根因（follow-11同一類bug再現）**：`orderLeftColsHtml`（L~12318，單號/日期/客人3個`rowspan`欄）嘅`<td>`各自帶inline `font-size:13px`（render函式手寫，非CSS class）。follow-4已有`.review-table tbody td{font-size:11px}`規則，但一直**冇`!important`**——同follow-11揪出嘅select/textarea bug完全同一個機制，inline style優先級贏晒，令呢3欄嘅字從未真正縮過。「客人欄字再縮小」呢個要求其實揭示緊：follow-4嘅壓縮從一開始就冇喺呢3欄生效過，唔係「已經縮咗但唔夠細」。
+
+**②修法**：`.review-table tbody td{font-size:11px}`加`!important`。呢個修改係全域性（唔淨係客人欄），一次過連帶修埋單號/日期兩欄同一個bug——三欄同時受惠。
+
+**①真根因**：`刻字`（eng）欄嘅`<td>`一直用同其他窄欄共用嘅`batch-cell` class，冇獨立identifier，加上表格用`table-layout:fixed`+部分列有`rowspan`（單號/日期/客人3欄），令位置索引（`nth-child`）對唔上column（呢個坑本session之前已踩過一次，見follow-2~3嘅rowspan量度教訓）——唔可以靠位置隱藏，必須靠class。
+
+**①修法**：render函式（L~12609）幫刻字`<td>`加專屬class`ovw-eng-cell`；連同表頭已有嘅`ovw-col-eng`（全部視圖）/`ovw-narrowcol-eng`（類別視圖），三個selector一齊`display:none!important`，確保表頭列同每一列資料列都一致少一格，`table-layout:fixed`唔會因為列與列之間cell數目唔一致而錯位。
+
+**通則**：follow-11揪出嘅「JS render inline style贏咗compact CSS規則」唔係單一事件，係呢個codebase嘅系統性模式——render函式為咗桌面闊度可讀性，普遍會幫文字內容手寫inline font-size，呢類inline style會系統性咁蓋過任何冇`!important`嘅compact-tier CSS override。日後任何「呢欄個字點解冧唔到細」嘅疑惑，第一步應該直接`el.getAttribute('style')`查有冇inline font-size，唔應該假設加咗CSS rule就一定生效。
+
+**驗證**：750/1129/1130/390四闊度全PASS；「全部」+類別視圖(鑰匙扣)雙重確認刻字欄th同全部45個td正確隱藏（`display:none`）、表頭列同資料列cell數一致(12/12，無錯位)；單號/日期/客人3欄computed font-size確認compact scope內11px、桌面≥1130維持13px零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-08-31「D69續八-follow-12」條目。**Subagent 使用記錄**：❌未使用（grep追蹤render函式+browser實測全程自行操作）。
+
 [2026-08-30] (D69續八-follow-11) iPhone 13 Pro真機再揪兩個bug — safe-area遺漏 + inline style贏咗自己嘅compact-tier規則
 
 **背景**：follow-10部署後，Fat Mo用iPhone 13 Pro真機測試，回報兩個新bug：①橫向轉屏後畫面左右出現灰色bar，唔係full screen；②表格內字體「太大/太小，與格子不相稱」。呢兩個都要求先問清楚裝置/具體位置先落手（AskUserQuestion確認咗係iPhone 13 Pro真機、字體問題係「太大/太小同格子不相稱」），因為單憑截圖冇辦法分辨係CSS bug定係查看方式（截圖工具/瀏覽器chrome）造成。
