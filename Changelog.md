@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-8：緊縮桌面視覺清理（隱藏冗餘icon／徽章移去最右／重新載入同行）
+
+- **緣起**：follow-7部署後，Fat Mo再截一張圖三處標記：①「訂單總覽」標題自帶嘅list icon要刪；②篩選漏斗嘅chevron（follow-7已改做Threads式抽屜，冇「展開」呢回事，留低誤導）要刪；③④「24筆·時間」徽章搬去top bar最右，「重新載入」緊貼佢左邊同一行。
+- **①②純CSS隱藏**：`#v40-top-bar #v40-top-order-id svg{display:none}`+`#v40-top-bar #reviewFilterToggle .filter-chevron{display:none}`，SCOPE死喺緊縮桌面media query，唔改共用JS（icon仍喺mobile/傳統桌面正常顯示），亦唔影響drawer開關（click handler綁喺成個toggle bar唔係chevron本身）。
+- **③④擴充follow-7嘅`fhsSyncCompactDesktopLayout()`**：compact分支加`topBar.appendChild(countBadge)`（喺refreshBtn已appendChild之後執行，兩者共享`.fhs-btn-refresh`嘅`margin-left:auto`一齊推去最右做一組）；還原分支加`titleEl.insertAdjacentElement('afterend', countBadge)`直接歸位。
+- **驗證**：750/1129（icon/chevron隱藏、徽章搬右）+1130/390（全部還原）四闊度PASS，零溢出，drawer開關功能重測正常，console零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（新增2條CSS隱藏規則 + 擴充`fhsSyncCompactDesktopLayout()`加4行，零改動既有函式邏輯）。
+- 全文見 decisions.md D69續八-follow-8。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-7：緊縮桌面收納介面優化（狀態tabs+類別chips搬頂列／篩選漏斗改Threads式抽屜）
 
 - **緣起**：follow-6部署後，Fat Mo再截兩張圖（訂單總覽本身 + Threads app 對照組）三色圈第二輪要求：①②紅圈——狀態tabs（全部/進行中/已完成）+類別chips（全部/手模/鑰匙扣/頸鏈）搬去頂部、「訂單總覽」標題右方；③藍圈——篩選漏斗「已選N項」合併入標題左方，展開方式由「撳落喺下面展開filter-body」改做Threads app樣式：撳左上角icon，整個介面向右移開展示選項面板。

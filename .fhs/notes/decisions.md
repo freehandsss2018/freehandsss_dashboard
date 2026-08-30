@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-8) 緊縮桌面視覺清理 — 隱藏冗餘icon+徽章移位，證實follow-7 pattern已可低風險擴充
+
+**背景**：follow-7部署後，Fat Mo再截一張圖三處標記：①「訂單總覽」標題自帶嘅list icon（`switchMode()`寫入`topEl.innerHTML`嘅共用SVG）喺呢層純屬贅飾；②篩選漏斗嘅chevron（舊手風琴「展開」指示器）follow-7已改做抽屜，冇「向下展開」呢回事，留低會誤導；③④「24筆·時間」徽章要搬去top bar最右，「重新載入」緊貼佢左邊同一行。
+
+**做法**：①②純CSS隱藏（`display:none`），SCOPE死喺緊縮桌面media query入面，唔改共用JS（icon仍喺mobile/傳統桌面正常顯示）。③④擴充follow-7新增嘅`fhsSyncCompactDesktopLayout()`——compact分支`topBar.appendChild(countBadge)`（喺refreshBtn已appendChild之後執行，兩者共享`.fhs-btn-refresh`嘅`margin-left:auto`一齊推去最右）；還原分支用`titleEl.insertAdjacentElement('afterend', countBadge)`直接歸位，唔使理會其他元素當刻已經復原到邊。
+
+**驗證**：750/1129（icon/chevron隱藏、徽章搬右）+1130/390（icon/chevron/徽章位置全部還原）四闊度PASS，零溢出；抽屜開關功能重測正常（chevron移除唔影響click handler，佢綁喺成個toggle bar唔係chevron本身）。
+
+**通則**：呢輪係follow-7建立DOM搬遷pattern之後嘅首次「低風險擴充」——證實錨點+同一函式擴充嘅做法夠成熟，加新項目唔使重新設計整套機制，只需喺compact/restore兩個分支各加一句。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-8」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-08-30] (D69續八-follow-7) 緊縮桌面收納介面優化 — 手風琴改Threads式抽屜，揪出兩個結構性硬上限
 
 **背景**：follow-6部署後，Fat Mo再截兩張圖（訂單總覽本身 + Threads app 對照組）三色圈第二輪要求：①②紅圈——狀態tabs（全部/進行中/已完成）+類別chips（全部/手模/鑰匙扣/頸鏈）搬去頂部、「訂單總覽」標題右方；③藍圈——篩選漏斗「已選N項」合併入標題左方，並將其展開方式由「撳落喺下面展開filter-body」改做Threads app嘅樣式：撳左上角icon，整個介面向右移開展示選項面板。
