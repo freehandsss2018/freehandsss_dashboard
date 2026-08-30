@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-11：iPhone 13 Pro真機再揪兩個bug（safe-area遺漏／inline style贏咗compact規則）
+
+- **緣起**：follow-10部署後Fat Mo用iPhone 13 Pro真機測試，回報：①橫向轉屏後畫面左右出現灰色bar，唔係full screen；②表格內字體「太大/太小，與格子不相稱」。先用AskUserQuestion釐清裝置同具體問題，因為單憑截圖冇辦法分辨CSS bug定係查看方式造成。
+- **Bug①真根因**：全檔已有`env(safe-area-inset-bottom, 0px)`代碼（底部導覽），但`<meta viewport>`一直缺`viewport-fit=cover`——冇呢個屬性`env(safe-area-inset-*)`全部永遠讀0 fallback，iOS Safari同時會將notch/圓角安全區留返自己渲染（非頁面background）。iPhone 13 Pro橫向後安全區由上下變左右，呢個gap一直存在，今次先俾真機揭發。
+- **Bug①修法**：`<meta viewport>`加`viewport-fit=cover`；`body`補`padding-left/right:env(safe-area-inset-left/right,0px) !important`。非notch裝置零視覺影響（本機測試證實resolve做0px）。
+- **Bug②真根因**：`renderReviewTable()`寫`<select>`/`<textarea>`時直接注入inline`style="font-size:13px"`（桌面闊度手調值）。follow-4已有compact-tier規則`font-size:10px`但冇`!important`，inline style優先級贏晒，10px規則落地嗰刻就已經從未真正生效——查`el.getAttribute('style')`直接證實根因。
+- **Bug②修法**：呢條rule加`!important`；修復後查`getComputedStyle`確認compact scope內正確變10px、桌面≥1130維持13px零regression。
+- **通則**：①用`env(safe-area-inset-*)`前必須確認`viewport-fit=cover`已設，呢個坑可以喺代碼已有相關用法嘅情況下存在好耐（因為冇人喺notch裝置橫向真機下實測）。②覆蓋JS動態寫入嘅inline style一定要`!important`，加rule後應直接查computed style驗證真正生效，唔可以淨憑「代碼應該啱」當done。
+- **驗證**：750/1129/1130/390四闊度全PASS；inline+computed style雙重確認select/textarea 13px→10px（compact）、≥1130維持13px；safe-area padding非notch環境正確resolve做0px。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（meta viewport加1個屬性 + body加2行padding + 1條既有規則加`!important`）。
+- 全文見 decisions.md D69續八-follow-11。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-10：兩個真bug修復（iPhone橫向表格stuck loading／抽屜篩選欄位排列錯亂）
 
 - **緣起**：follow-9部署後Fat Mo真機覆核，回報兩個真bug（唔係截圖UI要求）：①iPhone轉橫向後表格停留「Supabase讀取中」冇資料；②抽屜展開後入面嘅篩選欄位排列錯亂。

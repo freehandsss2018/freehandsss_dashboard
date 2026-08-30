@@ -3,6 +3,24 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-11) iPhone 13 Pro真機再揪兩個bug — safe-area遺漏 + inline style贏咗自己嘅compact-tier規則
+
+**背景**：follow-10部署後，Fat Mo用iPhone 13 Pro真機測試，回報兩個新bug：①橫向轉屏後畫面左右出現灰色bar，唔係full screen；②表格內字體「太大/太小，與格子不相稱」。呢兩個都要求先問清楚裝置/具體位置先落手（AskUserQuestion確認咗係iPhone 13 Pro真機、字體問題係「太大/太小同格子不相稱」），因為單憑截圖冇辦法分辨係CSS bug定係查看方式（截圖工具/瀏覽器chrome）造成。
+
+**Bug①真根因**：全檔已經有一批`env(safe-area-inset-bottom, 0px)`代碼（底部導覽列避開home indicator），但`<meta name="viewport">`一直缺`viewport-fit=cover`——冇呢個屬性，`env(safe-area-inset-*)`全部永遠讀返fallback值`0px`，**同時**iOS Safari會將notch/圓角嘅安全區留返自己渲染（用系統色，唔係頁面background）。iPhone 13 Pro（notch裝置）轉橫向後，安全區由「上下」變「左右」——呢個gap一直存在（因為之前冇人喺notch裝置橫向下實測過，包括寫落bottom-safe-area代碼嗰個人），今次先俾Fat Mo真機揭發。
+
+**Bug①修法**：`<meta viewport>`加`viewport-fit=cover`；`body`補`padding-left:env(safe-area-inset-left,0px)`+`padding-right:env(safe-area-inset-right,0px)`（`!important`跟body既有padding寫法一致）。非notch裝置/直向時呢兩個env()值都係0，零視覺影響——本機瀏覽器測試證實（無notch環境，body padding-left/right正確resolve做0px，冇任何regression）。
+
+**Bug②真根因**：`renderReviewTable()`嘅render函式喺生成`<select class="review-status-select">`/`<textarea class="review-notes-textarea">`等HTML字串時，直接寫入inline `style="font-size:13px"`（呢個係為傳統桌面闊度手調嘅可讀尺寸）。follow-4已經有compact-tier規則`.review-table tbody select,input,textarea{font-size:10px;...}`，但**冇`!important`**——inline style優先級高過任何冇`!important`嘅stylesheet規則（唔理specificity），呢條10px規則喺follow-4落地嗰刻就已經被inline 13px蓋過，從未真正生效過，一直去到今次Fat Mo真機睇到先揭發。
+
+**Bug②修法**：呢條rule加`!important`。查`el.getAttribute('style')`直接證實真根因（唔係靠猜），修復後查`getComputedStyle`確認compact tier內正確變10px、桌面≥1130維持13px不變。
+
+**通則**：①用`env(safe-area-inset-*)`前必須確認`viewport-fit=cover`已設——呢個坑喺代碼庫已經有相關代碼嘅情況下都可以存在好耐，因為冇人喺notch裝置橫向真機下實測過。②寫CSS override去蓋一個「由JS render函式動態寫入嘅inline style」，一定要帶`!important`，唔可以淨靠specificity（inline style specificity天生高過任何普通selector）；加咗rule之後應該直接查`getComputedStyle`/`getAttribute('style')`驗證真正生效，唔可以淨憑代碼「應該啱」就當done。
+
+**驗證**：750/1129/1130/390四闊度全PASS；直接查inline style + computed style確認select/textarea由13px→10px（compact scope）、桌面≥1130維持13px（零regression）；body safe-area padding喺非notch測試環境正確resolve做0px，冇視覺變化。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-11」條目。**Subagent 使用記錄**：❌未使用（互動式AskUserQuestion釐清情境+browser實測grep追蹤根因）。
+
 [2026-08-30] (D69續八-follow-10) 兩個真機覆核揪出嘅真bug — CSS視覺切換唔等於JS資料render
 
 **背景**：follow-9部署後，Fat Mo真機覆核回報，呢次唔係截圖UI要求，係兩個真bug：①iPhone轉橫向後表格停留「Supabase讀取中」，一直冇資料出現；②抽屜展開後入面嘅篩選欄位（年度/月份/狀態/批次/搜尋/排序）排列錯亂。

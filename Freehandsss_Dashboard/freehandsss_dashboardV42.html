@@ -3,7 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- [2026-08-30 D69續八-follow-11] 加 viewport-fit=cover：冇呢個屬性，全檔已經用緊
+         嘅 `env(safe-area-inset-bottom, ...)`（見底部導覽列）永遠讀0（fallback值），
+         而且 iOS Safari 會將缺口/圓角安全區留返俾自己嘅UI渲染（非頁面背景）——
+         notch裝置轉橫向後安全區由上下變左右，缺呢個屬性令頁面內容縮埋入安全區
+         中間，兩側露出Safari自己嘅底色（睇落成灰色bar，Fat Mo iPhone 13 Pro
+         橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
+         padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="fhs-build" content="__DEPLOY_TS__">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
@@ -151,6 +158,10 @@
             margin: 0;
             padding: 0 !important;
             padding-bottom: 100px !important;
+            /* [D69續八-follow-11] 配合 viewport-fit=cover：內容避開notch/圓角安全區
+               （非notch裝置/直向時呢兩個值都係0，零視覺影響）。 */
+            padding-left: env(safe-area-inset-left, 0px) !important;
+            padding-right: env(safe-area-inset-right, 0px) !important;
         }
 
         .card {
@@ -3007,9 +3018,15 @@
                 overflow:hidden; text-overflow:ellipsis; min-width:0;
             }
             .fhs-inline-eng-wrap { max-width:100%; min-width:0; }
+            /* [2026-08-30 D69續八-follow-11] Fat Mo截圖紅圈：呢層字體「同格子不相
+               稱」——真根因唔喺呢條rule本身（一早就有font-size:10px），而係
+               render函式（renderReviewTable等）幫呢啲select/input/textarea寫入
+               inline `style="font-size:13px"`（针對桌面闊度手調嘅可讀尺寸），
+               inline style優先級高過冇`!important`嘅普通CSS rule，令呢條10px
+               規則一直被蓋過從未生效。加`!important`先真正贏得返inline style。 */
             .review-table tbody select,
             .review-table tbody input,
-            .review-table tbody textarea { font-size:10px; height:auto; min-height:22px; padding:2px 4px; }
+            .review-table tbody textarea { font-size:10px !important; height:auto; min-height:22px; padding:2px 4px; }
             .review-jump-pill-sm { font-size:10px; padding:1px 5px; }
             .dlv-badge { font-size:9px; padding:1px 5px; }
             /* ③最大槓桿：表頭 58px「2字 label 下限」入面有 24px 純粹係左右 padding

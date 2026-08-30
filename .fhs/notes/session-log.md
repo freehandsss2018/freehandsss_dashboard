@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-11：iPhone 13 Pro真機再揪兩個bug——safe-area遺漏/inline style贏咗compact規則): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-11」條目 + [decisions.md D69續八-follow-11](decisions.md)。Fat Mo用iPhone 13 Pro真機測試follow-10後再揪兩個bug：①橫向轉屏左右灰色bar——`<meta viewport>`缺`viewport-fit=cover`，令全檔已用嘅`env(safe-area-inset-*)`永遠讀0，notch裝置橫向安全區由上下變左右俾Safari自己渲染；修法加viewport-fit=cover+body補safe-area padding。②表格字體同格子不相稱——`renderReviewTable()`寫select/textarea時注入inline`font-size:13px`，follow-4已有嘅compact 10px規則因冇`!important`從未真正生效過；修法加`!important`。先用AskUserQuestion釐清裝置/問題再落手，避免猜錯。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-10：兩個真bug修復——iPhone橫向表格stuck loading/抽屜篩選欄位排列錯亂): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-10」條目 + [decisions.md D69續八-follow-10](decisions.md)。follow-9部署後Fat Mo真機覆核揪出兩個真bug：①iPhone橫向後表格停留「Supabase讀取中」——真根因`renderReviewTable()`喺mobile寬度early-return去accordion，desktop tbody從未填真資料，成個codebase一直冇resize監聽會跨越750px分界重render，舊768px斷點時未暴露，D69續八降到750先揭發；修法追蹤`isMobile()`狀態跨界重用`globalOrders`觸發`applyReviewFilters()`。②抽屜篩選欄位排列錯亂——`.filter-pair-row`並排排版係為闊版設計，follow-7改窄身抽屜後未調整；修法強制單欄垂直堆疊。通則：CSS視覺切換唔等於JS資料render，跨界要實測。750/1129/1130/390全PASS+「390→900跨界」精確重現情境驗證PASS，已commit+部署生產。
