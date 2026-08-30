@@ -3039,6 +3039,20 @@
                viewport頂）。修法：喺呢個層淨係取消 max-height 限制，等表格
                自然伸展，thead sticky 返正常運作。 */
             .review-table-wrap { max-height:none !important; }
+            /* [2026-08-30 D69續八-follow-6] Fat Mo 三項紅/藍/綠圈指示：
+               ①類別工作台橫幅（進度/批次分佈）喺緊縮桌面層唔顯示——呢個範圍高度
+               緊絀，橫幅純資訊性、唔係操作控制項，優先讓位俾表格本身。 */
+            #reviewCatStrip { display:none !important; }
+            /* ②「重新載入」搬咗去 top bar（JS `fhsSyncCompactDesktopLayout()` 處理
+               實際DOM搬遷），呢度淨係定位落腳後嘅樣式。 */
+            #v40-top-bar .fhs-btn-refresh { height:28px; padding:0 10px; font-size:11px; margin-left:auto; }
+            /* ③「顯示項目財務／清除篩選／儲存篩選」3粒收納入 #fhsCompactBtnSlot
+               （JS 搬遷入 filter-body 頂部），呢度淨係定位樣式：橫向排一行，
+               同下面年度/月份等篩選項有視覺分隔。 */
+            #fhsCompactBtnSlot.has-content { display:flex !important; gap:6px; flex-wrap:wrap;
+                padding-bottom:8px; margin-bottom:8px; border-bottom:1px dashed var(--fhs-border); }
+            #fhsCompactBtnSlot .fhs-btn-save-filter,
+            #fhsCompactBtnSlot .fhs-btn-refresh { margin-right:0 !important; }
         }
 
         /* F3 v2: dual-mode modal — tabs */
@@ -4506,10 +4520,13 @@
                         </div>
                     </div>
                     <div style="width:1px; height:24px; background:var(--fhs-border); flex-shrink:0;"></div>
+                    <!-- D69續八-follow-6 錨點：緊縮桌面層(750-1129px)會將呢4粒掣搬走，
+                         呢個span做返原位標記，離開緊縮範圍時搬返嚟呢個位置之後。 -->
+                    <span id="fhsPinnedBtnAnchor" style="display:none;"></span>
                     <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
                     <button id="fhsClearFilterBtn" class="fhs-btn-save-filter" type="button" onclick="clearFilters()" style="background-color: #f5f5f5; color: #333; border: 1px solid #ccc; margin-right: 6px;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-trash-2"/></svg>清除篩選</button>
                     <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-save"/></svg>儲存篩選</button>
-                    <button class="fhs-btn-refresh" type="button"
+                    <button id="fhsRefreshBtn" class="fhs-btn-refresh" type="button"
                         onclick="fhsRefreshAndCollapse()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -4520,6 +4537,9 @@
 
                 <!-- Filter Body（低頻欄位，預設收埋——Desktop/Mobile 統一，撳漏斗圖示先展開） -->
                 <div class="filter-body" id="reviewFilterBody">
+                    <!-- D69續八-follow-6：緊縮桌面層將3粒篩選掣搬入呢個容器嘅最頂（收納入
+                         「已選N項」摺疊面板），跳出範圍時搬返出去 fhsPinnedBtnAnchor 之後。 -->
+                    <div id="fhsCompactBtnSlot" style="display:none;"></div>
 
                     <!-- 第一行：日期 + 狀態 + 批次 + 搜尋（S150 F3.3：狀態+批次配對，手機保證同行） -->
                     <div class="filter-row filter-row-primary">
@@ -15700,6 +15720,40 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // NOTE: switchMode() 已有邏輯控制 bbar display，此處不覆蓋 Desktop 行為
             }
         }
+
+        // [2026-08-30 D69續八-follow-6] 訂單總覽緊縮桌面層（750-1129px）版面重排：
+        // Fat Mo 截圖藍/綠圈要求——「重新載入」搬去 top bar 右側；「顯示項目財務／
+        // 清除篩選／儲存篩選」3粒收納入「已選N項」摺疊面板。跳出呢個範圍（返手機
+        // 或返≥1130桌面）要搬返原位——用 <span id="fhsPinnedBtnAnchor"> 呢個
+        // 錨點記低原位，同 v40SyncActionBars() 一樣做法：matchMedia 判斷 + resize
+        // 監聽，唔淨係首次載入判斷一次。
+        function fhsSyncCompactDesktopLayout() {
+            var isCompact = window.matchMedia('(min-width:750px) and (max-width:1129px)').matches;
+            var anchor = document.getElementById('fhsPinnedBtnAnchor');
+            var slot = document.getElementById('fhsCompactBtnSlot');
+            var topBar = document.getElementById('v40-top-bar');
+            var refreshBtn = document.getElementById('fhsRefreshBtn');
+            var financeBtn = document.getElementById('fhsToggleAuditBtn');
+            var clearBtn = document.getElementById('fhsClearFilterBtn');
+            var saveBtn = document.getElementById('fhsSaveFilterBtn');
+            if (!anchor || !slot || !topBar || !refreshBtn || !financeBtn || !clearBtn || !saveBtn) return;
+            if (isCompact) {
+                if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
+                [financeBtn, clearBtn, saveBtn].forEach(function (b) {
+                    if (b.parentElement !== slot) slot.appendChild(b);
+                });
+                slot.classList.add('has-content');
+            } else {
+                if (refreshBtn.parentElement === topBar) anchor.insertAdjacentElement('afterend', refreshBtn);
+                [saveBtn, clearBtn, financeBtn].forEach(function (b) {
+                    if (b.parentElement === slot) anchor.insertAdjacentElement('afterend', b);
+                });
+                slot.classList.remove('has-content');
+            }
+        }
+        window.addEventListener('resize', fhsSyncCompactDesktopLayout);
+        window.addEventListener('orientationchange', function () { setTimeout(fhsSyncCompactDesktopLayout, 300); });
+        document.addEventListener('DOMContentLoaded', fhsSyncCompactDesktopLayout);
 
         // 覆寫 switchMode 的 bbar 邏輯，使其在 iPhone 下永遠隱藏 legacy bar
         const _origSwitchMode = window.switchMode;

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-6：緊縮桌面版面三項重排——隱橫幅/搬重新載入/收納篩選掣): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-6」條目 + [decisions.md D69續八-follow-6](decisions.md)。Fat Mo三色圈截圖要求緊縮桌面（750-1129px）三項調整：類別橫幅隱藏（純CSS）、重新載入掣搬去頂列（同「N筆·時間」徽章埋一齊）、3粒篩選掣收納入「已選N項」摺疊面板。後兩項首次需要跨容器DOM搬遷（CSS做唔到），新增`fhsSyncCompactDesktopLayout()`跟返`v40SyncActionBars()`舊pattern，用錨點記原位。**測試方法論教訓**：發現`resize_window()`模擬工具唔會觸發真正`resize`事件，要手動dispatch先驗證到JS邏輯（純CSS部分唔受影響），已記落learnings/tooling.md#11。750/1129/1130/390四闊度全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-5：sticky表頭飄落表格中間——休眠7星期舊CSS首次生效): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-5」條目 + [decisions.md D69續八-follow-5](decisions.md)。Fat Mo截圖顯示表頭飄咗落表格中間，同follow-3之前「表頭黐埋」係完全唔同性質——sticky定位錯亂。真根因同本輪任何改動都無關：`@media(max-width:767px){.review-table-wrap{max-height:60vh}}`一直喺度，但以前767px以下永遠係手機卡片模式（表格display:none）從未發揮效果；D69續八系列首次令750px顯示桌面表格，先第一次令呢條休眠規則生效（370px視窗×60vh=222px box但內容707px高），令thead sticky錯亂。教訓：呢類「新功能令舊dead zone首次變live zone」bug靠code review揪唔到。修法：緊縮tier加max-height:none override。750/390/1129/1536四闊度sticky實測全PASS。已commit+部署。

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-6：緊縮桌面版面三項重排（隱橫幅／搬重新載入／收納篩選掣）
+
+- **緣起**：Fat Mo 截圖三色圈標示緊縮桌面（750-1129px）三個要調整位置：①紅圈「鎖匙扣 17件·10張單」類別工作台橫幅太佔位，要隱藏；②綠圈「重新載入」掣要搬去頂列（訂單總覽標題列右側，同「N筆·時間」徽章埋一齊）；③藍圈「顯示項目財務／清除篩選／儲存篩選」3粒掣要收納入「已選N項」摺疊面板（撳漏斗icon先展開）。
+- **①橫幅隱藏**：純CSS，喺緊縮桌面tier加 `#reviewCatStrip{display:none!important}`。呢個橫幅本身純資訊性（進度/批次分佈），緊縮範圍高度緊絀，優先讓位俾表格本身。
+- **②③DOM搬遷**：呢兩個要求都要將元素喺唔同容器之間搬遷（`#v40-top-bar` vs `.filter-row-pinned` vs `#reviewFilterBody`），CSS本身做唔到跨容器搬遷，改用新函式 `fhsSyncCompactDesktopLayout()`（跟返 `v40SyncActionBars()` 舊有 pattern）：`matchMedia('(min-width:750px) and (max-width:1129px)')` 判斷 + `resize`/`orientationchange`/`DOMContentLoaded` 三個時機觸發。用 `<span id="fhsPinnedBtnAnchor">` 錨點記低原位，跳出750-1129範圍時逆序插返錨點之後，確保順序同原本一致。
+- **驗證**：750/1129（應收納）+ 1130/390（應還原）四闊度，逐個用**真實 `resize` 事件**（`window.dispatchEvent(new Event('resize'))`，唔淨係改 viewport 尺寸——模擬工具嘅 `resize_window()` 本身唔會觸發真正 `resize` DOM 事件，同真機轉向會可靠觸發`resize`/`orientationchange`唔同，純測試工具限制非真機行為）驗證 DOM 搬遷正確、頁面零溢出、filter panel 展開後3粒掣可見可撳（`disabled` 狀態喺類別視圖正確保留）。Console 零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS隱藏規則 + 新增1個JS函式 + 2個錨點標記，零改動既有函式邏輯）。
+- 全文見 decisions.md D69續八-follow-6。**Subagent 使用記錄**：❌未使用（由截圖圈選位置直接對應到具體DOM元素，過程需要即時live量度+互動測試）。
+
 ## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-5：sticky 表頭飄落表格中間——一條休眠7星期嘅舊 CSS 首次生效
 
 - **緣起**：Fat Mo 截圖顯示表頭飄咗落表格中間（唔貼實視窗頂），紅圈標示。同 follow-3 之前嗰個「表頭黐埋」係完全唔同嘅病——呢個係 `position:sticky` 定位錯亂。

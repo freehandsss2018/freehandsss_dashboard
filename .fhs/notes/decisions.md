@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-6) 緊縮桌面版面三項重排 — 首次喺呢一系列引入DOM跨容器搬遷（非純CSS）
+
+**背景**：Fat Mo 三色圈截圖標示緊縮桌面（750-1129px）三個位置要調整：①類別橫幅太佔位要隱藏；②「重新載入」搬去頂列標題右側；③「顯示項目財務／清除篩選／儲存篩選」3粒收納入「已選N項」摺疊面板。
+
+**設計取捨**：①純CSS可解決。②③要求嘅係喺唔同DOM容器之間搬元素（top-bar vs filter-row-pinned vs filter-body），CSS Grid/Flex `order`只能喺同一個flex/grid容器內重排，做唔到跨容器搬遷——呢個係本系列（D69續八~follow-5）首次需要真正DOM操作嘅UI改動，之前全部純CSS media query已夠。跟返代碼庫既有 `v40SyncActionBars()` pattern：`matchMedia`判斷 + `resize`監聽，唔用一次性判斷。
+
+**錨點設計**：用隱藏嘅 `<span id="fhsPinnedBtnAnchor">` 標記原位，離開緊縮範圍時逆序（save→clear→finance，插入後前者push後者）插返錨點之後，確保還原順序同原本一致——呢個係「單一插入點逆序重建」手法，避免要記住4個獨立插入位置。
+
+**驗證方法論教訓**：測試呢類JS resize監聽時，發現模擬工具嘅`resize_window()`只改視窗尺寸嘅CSS渲染，唔會觸發真正瀏覽器`resize` DOM事件——純CSS media query（好似之前幾輪嘅斷點切換）會即時反映因為佢哋根本唔靠事件，但依賴`window.addEventListener('resize',...)`嘅JS邏輯就唔會觸發。改用`window.dispatchEvent(new Event('resize'))`手動觸發先驗證到。**呢個純粹係測試工具限制，唔代表真機行為**——真實裝置轉向會可靠觸發`resize`/`orientationchange`事件（呢個係好成熟嘅標準瀏覽器行為，唔似之前follow-2嗰種「理論viewport值同真機有落差」咁易踩雷）。日後測試任何JS resize監聽邏輯，記得要手動dispatch事件先算完整驗證，唔可以淨靠`resize_window()`工具嘅視覺變化就當已驗證。
+
+**驗證**：750/1129（compact）+ 1130/390（normal）四闊度，每個都手動dispatch resize事件後檢查DOM位置、頁面溢出、filter panel展開後3粒掣可見可撳。全部PASS，console零錯誤。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-6」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-08-30] (D69續八-follow-5) sticky 表頭飄落表格中間 — 一條休眠7星期嘅舊 CSS 首次生效
 
 **背景**：Fat Mo 截圖顯示表頭飄咗落表格中間，同之前「表頭黐埋」（follow-3）係完全唔同性質嘅病——呢個係 `position:sticky` 定位錯亂。
