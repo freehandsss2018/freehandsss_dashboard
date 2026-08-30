@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-5：sticky表頭飄落表格中間——休眠7星期舊CSS首次生效): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-5」條目 + [decisions.md D69續八-follow-5](decisions.md)。Fat Mo截圖顯示表頭飄咗落表格中間，同follow-3之前「表頭黐埋」係完全唔同性質——sticky定位錯亂。真根因同本輪任何改動都無關：`@media(max-width:767px){.review-table-wrap{max-height:60vh}}`一直喺度，但以前767px以下永遠係手機卡片模式（表格display:none）從未發揮效果；D69續八系列首次令750px顯示桌面表格，先第一次令呢條休眠規則生效（370px視窗×60vh=222px box但內容707px高），令thead sticky錯亂。教訓：呢類「新功能令舊dead zone首次變live zone」bug靠code review揪唔到。修法：緊縮tier加max-height:none override。750/390/1129/1536四闊度sticky實測全PASS。已commit+部署。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-4：按比例縮細取代強制斷行＋底部導覽Threads式收納): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-4」條目 + [decisions.md D69續八-follow-4](decisions.md)。Fat Mo 提四點：第1點（頂頭掣過大）查證為**已修好、佢睇緊舊快取圖**（截圖時間戳同上一張一樣）；第2、4點係 follow-3 真bug 且 Fat Mo 診斷正確——我用 flex-wrap/white-space:normal 逼內容塞落窄欄，配上既有 overflow-wrap:anywhere 令刻字逐字直排（實測闊37px高260px）；正解係**等比縮細**（table 13→11px、badge/icon/select 同步）+ 刻字單行截斷。第3點新功能：底部浮動導覽加 Threads 式捲動收納，復用既有智慧置頂欄 handler 但拆兩個生效範圍（置頂欄維持<750，底部導覽擴至<1130）。四闊度×4視圖四重檢查全部0。已commit+部署。

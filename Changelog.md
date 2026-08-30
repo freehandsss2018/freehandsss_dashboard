@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-5：sticky 表頭飄落表格中間——一條休眠7星期嘅舊 CSS 首次生效
+
+- **緣起**：Fat Mo 截圖顯示表頭飄咗落表格中間（唔貼實視窗頂），紅圈標示。同 follow-3 之前嗰個「表頭黐埋」係完全唔同嘅病——呢個係 `position:sticky` 定位錯亂。
+- **根因**：真凶同今輪任何一次改動（follow-2/3/4）都無關，係一條**休眠咗好耐嘅舊CSS**——`@media(max-width:767px){.review-table-wrap{max-height:60vh}}`（L~2380，非本輪任何一個 block）。呢條規則以前一直冇發揮過作用：767px 以下之前永遠係手機卡片模式，`.review-table-wrap{display:none}`，表格本身睇唔到，呢條 max-height 淨係設咗但冇任何可見效果。D69續八系列首次令 750px 都顯示桌面表格（呢個正正係 Fat Mo 要求嘅功能），先第一次令呢條規則生效——實測 370px 高視窗 × 60vh = 222px box，但表格內容實際 707px 高，內容遠遠超過個 box，令 `<thead>` 嘅 `position:sticky` 定位基準錯亂，飄咗落表格中間。
+- **教訓**：呢類「舊代碼一直喺度、但要新功能令一個舊 dead zone 第一次變成 live zone 先暴露」嘅 bug，好難靠靜態 code review 揪出——因為淨睇嗰段 CSS 本身完全冇問題，問題喺佢同「呢個 viewport 範圍表格而家會顯示」呢個新事實嘅**交互作用**。
+- **修法**：喺 750-1129px 緊縮桌面 tier 入面加 `.review-table-wrap{max-height:none!important}`，中和呢條舊規則，等表格自然伸展、sticky 返正常運作。
+- **驗證**：750/390/1129/1536 四闊度，逐個模擬「捲動250px」後檢查 `thead` 距離視窗頂嘅實際距離（應貼實 sticky top 值~48-53px，唔應該喺表格中間），全部 PASS。連帶重跑 follow-3/4 嗰套四重檢查（頁面溢出/表頭label溢出/cell bleed/刻字直排）確認冇回歸。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（1行CSS override）。
+- 全文見 decisions.md D69續八-follow-5。**Subagent 使用記錄**：❌未使用（由截圖直接定位到具體DOM座標再倒推CSS，過程需要即時live量度）。
+
 ## [2026-08-30] Session（Claude Code / Opus 5 執行）— D69續八-follow-4：改用「按比例縮細」取代「強制斷行」＋底部導覽 Threads 式收納
 
 - **緣起**：Fat Mo 就 follow-3 提四點。查證後定性：
