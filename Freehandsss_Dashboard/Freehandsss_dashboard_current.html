@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="2026-08-30T13:56:11Z">
+    <meta name="fhs-build" content="2026-08-30T14:21:56Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3132,6 +3132,28 @@
                 transition: opacity .28s ease; z-index: 1850;
             }
             #fhsDrawerScrim.open { opacity: 1; pointer-events: auto; }
+            /* [2026-08-30 D69續八-follow-10] Fat Mo截圖二：抽屜展開後入面嘅年度/
+               月份/狀態/批次/搜尋/排序欄位「排列錯亂」——`.filter-pair-row`／
+               `.filter-row-divider`呢套排版本身係為闊版（原本佔成頁闊度嘅
+               accordion）設計，兩個select並排+中間垂直分隔線，喺follow-7改做
+               窄身300px抽屜之後從未針對性調整過，兩個select並排會唔夠位，
+               分隔線喺垂直堆疊入面亦無意義。改為強制單欄垂直堆疊，每行一個
+               欄位（label喺左、field flex-grow填滿餘下闊度），零溢出風險。 */
+            #reviewFilterBody.fhs-drawer-mode .filter-row-primary {
+                flex-direction: column; align-items: stretch; gap: 10px;
+            }
+            #reviewFilterBody.fhs-drawer-mode .filter-pair-row {
+                flex-direction: column; align-items: stretch; gap: 10px; width: 100%;
+            }
+            #reviewFilterBody.fhs-drawer-mode .filter-row-divider { display: none; }
+            #reviewFilterBody.fhs-drawer-mode .filter-group { width: 100%; }
+            #reviewFilterBody.fhs-drawer-mode .filter-group .filter-label {
+                flex-shrink: 0; min-width: 40px;
+            }
+            #reviewFilterBody.fhs-drawer-mode .filter-group select,
+            #reviewFilterBody.fhs-drawer-mode .filter-group input {
+                flex: 1 1 auto; min-width: 0; width: auto;
+            }
         }
 
         /* F3 v2: dual-mode modal — tabs */
@@ -15838,6 +15860,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // 錨點記低原位，同 v40SyncActionBars() 一樣做法：matchMedia 判斷 + resize
         // 監聽，唔淨係首次載入判斷一次。
         function fhsSyncCompactDesktopLayout() {
+            // [D69續八-follow-10] Fat Mo截圖一：iPhone轉橫向後表格停留喺「Supabase
+            // 讀取中」冇資料。真根因：`renderReviewTable()`（L~12103）內部見到
+            // `window.innerWidth < 750` 就即刻`return renderReviewAccordion(orders)`，
+            // 桌面版`<table><tbody>`從未被實際填入資料——如果最初fetch發生嗰陣
+            // 用戶仲喺手機直向（<750），desktop tbody會一直停留喺
+            // `fetchGlobalReview()`寫入嘅loading placeholder（L~18945）。呢個
+            // codebase一直冇resize監聽會喺跨越750px呢條mobile/desktop分界時
+            // 重新render——純CSS visibility toggle（.review-table-wrap display）
+            // 唔會自動填內容，要JS主動再render先得。舊斷點768px時，iPhone橫向
+            // 都跨唔到去desktop，呢個缺口從未暴露；D69續八將斷點降到750先首次
+            // 令iPhone橫向跨界，揭發呢個一直存在嘅gap。修法：追蹤isMobile()
+            // 狀態，跨界先重用window.globalOrders（唔使重新fetch）觸發
+            // applyReviewFilters()重新render入正確嘅view。
+            var nowMobile = window.innerWidth < 750;
+            if (window._fhsLastIsMobile === undefined) window._fhsLastIsMobile = nowMobile;
+            if (nowMobile !== window._fhsLastIsMobile) {
+                window._fhsLastIsMobile = nowMobile;
+                if (window.applyReviewFilters) window.applyReviewFilters();
+            }
             var isCompact = window.matchMedia('(min-width:750px) and (max-width:1129px)').matches;
             var anchor = document.getElementById('fhsPinnedBtnAnchor');
             var slot = document.getElementById('fhsCompactBtnSlot');
