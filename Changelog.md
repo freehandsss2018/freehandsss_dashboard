@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-9：緊縮桌面密度極致化（隱藏標題文字／徽章合併入重新載入按鈕，750px首次做到一行）
+
+- **緣起**：follow-8部署後，Fat Mo再截圖確認並明確講出目的：「訂單總覽」標題文字可以刪；「重新載入」同「N筆·時間」徽章合併成一個button放右上；**整體目的係盡量一行，盡量俾多啲位表格**——呢句「目的」係本輪裁決依據。
+- **①隱藏標題文字**：`#v40-top-bar #v40-top-order-id{display:none}`。標題span本身冇拆走（icon follow-8已隱，呢輪連文字都隱埋），JS `insertBefore(toggleEl, titleEl)` 參照點唔受影響。
+- **②徽章合併入按鈕**：`fhsSyncCompactDesktopLayout()` compact分支由`topBar.appendChild(countBadge)`改做`refreshBtn.appendChild(countBadge)`，徽章成為button子元素，click事件自然bubble up觸發reload，唔使額外綁listener；CSS隱走徽章自己嘅獨立綠色藥丸樣式，改做button內帶border-left嘅後綴文字。還原邏輯不變。
+- **取捨**：密度目的優先靠**減內容**（隱藏冗餘文字/合併同類元素）而非再縮字體——follow-7/8已將字體/padding縮到接近可讀性下限，減內容先係仲有空間嘅槓桿。
+- **驗證**：750px（最窄緊縮寬度）實測top bar由follow-7/8嘅87-92px（flex-wrap落兩行）降返51px（一行），750-1129全緊縮範圍皆一行；徽章click bubble測試PASS（撳徽章觸發reload）；1130/390兩個邊界闊度確認完整還原原位；drawer開關功能重測正常，console零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（新增2條CSS + 修改`fhsSyncCompactDesktopLayout()`1行appendChild目標，零改動既有函式邏輯）。
+- 全文見 decisions.md D69續八-follow-9。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-8：緊縮桌面視覺清理（隱藏冗餘icon／徽章移去最右／重新載入同行）
 
 - **緣起**：follow-7部署後，Fat Mo再截一張圖三處標記：①「訂單總覽」標題自帶嘅list icon要刪；②篩選漏斗嘅chevron（follow-7已改做Threads式抽屜，冇「展開」呢回事，留低誤導）要刪；③④「24筆·時間」徽章搬去top bar最右，「重新載入」緊貼佢左邊同一行。

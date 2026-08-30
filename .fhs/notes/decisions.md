@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-9) 緊縮桌面密度極致化 — 隱藏標題文字+合併徽章入按鈕，750px首次做到一行
+
+**背景**：follow-8部署後，Fat Mo再截圖確認並提出明確目的（唔止係逐點截圖圈選）：「訂單總覽」標題文字可以刪；「重新載入」同「N筆·時間」徽章合併成一個button放右上；**整體目的係盡量一行，盡量俾多啲位表格**。呢句「目的」係本輪嘅裁決依據，唔止跟截圖字面。
+
+**做法**：①`#v40-top-bar #v40-top-order-id{display:none}`——標題span本身冇拆走（icon follow-8已隱，呢輪連文字都隱埋），JS `insertBefore(toggleEl, titleEl)` 參照點唔受影響（display:none唔影響DOM查詢/insertBefore）。②徽章合併：`fhsSyncCompactDesktopLayout()` compact分支由`topBar.appendChild(countBadge)`改做`refreshBtn.appendChild(countBadge)`，令徽章成為button嘅子元素——click事件自然bubble up觸發`onclick="fhsRefreshAndCollapse()"`，唔使額外綁listener；CSS淨隱走徽章自己嗰個獨立綠色藥丸樣式（背景/padding/圓角），改做button內加border-left嘅後綴文字。還原邏輯不變（`titleEl.insertAdjacentElement('afterend', countBadge)`，唔理徽章當刻喺邊）。
+
+**取捨**：「盡量一行」呢類密度目的，優先靠**減內容**（隱藏冗餘文字、合併同類元素）而非**再縮字體**——follow-7/8已經將字體/padding縮到接近可讀性下限（11px/26px高），再縮風險大於收益；減內容（標題文字本身已可由頁面上下文推斷冗餘、徽章合併省返一組padding/margin）先係仲有空間嘅槓桿。
+
+**驗證**：750px（最窄緊縮寬度）實測top bar由follow-7/8嘅87-92px（因flex-wrap落兩行）降返51px（一行），750-1129全緊縮範圍皆一行；徽章click bubble測試PASS；1130/390兩個邊界闊度確認標題/徽章完整還原原位；drawer開關功能重測正常。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-9」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-08-30] (D69續八-follow-8) 緊縮桌面視覺清理 — 隱藏冗餘icon+徽章移位，證實follow-7 pattern已可低風險擴充
 
 **背景**：follow-7部署後，Fat Mo再截一張圖三處標記：①「訂單總覽」標題自帶嘅list icon（`switchMode()`寫入`topEl.innerHTML`嘅共用SVG）喺呢層純屬贅飾；②篩選漏斗嘅chevron（舊手風琴「展開」指示器）follow-7已改做抽屜，冇「向下展開」呢回事，留低會誤導；③④「24筆·時間」徽章要搬去top bar最右，「重新載入」緊貼佢左邊同一行。

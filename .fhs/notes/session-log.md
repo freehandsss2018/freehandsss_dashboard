@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-9：緊縮桌面密度極致化——隱藏標題文字/徽章合併入重新載入按鈕/750px首次一行): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-9」條目 + [decisions.md D69續八-follow-9](decisions.md)。follow-8部署後Fat Mo明確講目的「盡量一行、盡量俾多啲位表格」：隱藏「訂單總覽」標題文字（icon follow-8已隱）；「重新載入」+「N筆·時間」徽章合併成一個button（`refreshBtn.appendChild(countBadge)`，撳徽章都算撳掣）。實測750px top bar由87-92px（兩行）降返51px（一行），750-1129全範圍皆一行。裁決：密度目的優先減內容而非再縮字體（follow-7/8已縮到接近下限）。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-8：緊縮桌面視覺清理——隱藏冗餘icon/徽章移去最右/重新載入同行): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-8」條目 + [decisions.md D69續八-follow-8](decisions.md)。follow-7部署後Fat Mo再截圖三處標記：隱藏標題自帶list icon、隱藏篩選漏斗嘅舊手風琴chevron（follow-7已改做抽屜冇「展開」呢回事）、「24筆·時間」徽章搬去top bar最右同「重新載入」同行。①②純CSS隱藏SCOPE死喺緊縮層；③④擴充follow-7新增嘅`fhsSyncCompactDesktopLayout()`各加一句。證實follow-7建立嘅DOM搬遷pattern已可低風險擴充，唔使重新設計。750/1129/1130/390全PASS，已commit+部署生產。

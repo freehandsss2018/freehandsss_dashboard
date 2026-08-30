@@ -3055,6 +3055,21 @@
                做Threads式抽屜，冇「向下展開」呢回事，留低會誤導；淨隱藏，撳擊
                區域（成個 #reviewFilterToggle）唔變，抽屜開關邏輯不受影響。 */
             #v40-top-bar #reviewFilterToggle .filter-chevron { display: none; }
+            /* [2026-08-30 D69續八-follow-9] Fat Mo 目的明確講明：盡量一行，盡量
+               俾多啲位表格。①「訂單總覽」文字本身已可由頁面上下文推斷（呢頁
+               淨係得訂單總覽一種內容），淨隱藏成個標題span（icon已follow-8
+               隱咗，呢度索性連文字都隱埋）——span本身冇拆走，JS insertBefore
+               參照點唔受影響。 */
+            #v40-top-bar #v40-top-order-id { display: none; }
+            /* ②「重新載入」+「N筆·時間」徽章合併做一個button——JS
+               fhsSyncCompactDesktopLayout() 改用`refreshBtn.appendChild(countBadge)`
+               令徽章成為button嘅子元素（撳徽章都算撳咗button，一齊觸發reload），
+               呢度淨隱走徽章自己嗰個獨立綠色藥丸樣式，改做button內嘅後綴文字。 */
+            #v40-top-bar #fhsRefreshBtn #reviewCountBadge {
+                background: transparent !important; padding: 0 !important;
+                margin-left: 6px !important; border-left: 1px solid rgba(255,255,255,.45);
+                padding-left: 6px !important; font-weight: 600;
+            }
             /* ③「顯示項目財務／清除篩選／儲存篩選」3粒收納入 #fhsCompactBtnSlot
                （JS 搬遷入 filter-body 頂部），呢度淨係定位樣式：橫向排一行，
                同下面年度/月份等篩選項有視覺分隔。 */
@@ -15874,12 +15889,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (filterBody.parentElement !== document.body) document.body.appendChild(filterBody);
                 filterBody.classList.add('fhs-drawer-mode');
                 filterBody.style.top = topBar.getBoundingClientRect().height + 'px';
-                // [D69續八-follow-8] Fat Mo 截圖要求：「24筆·時間」徽章搬去最右，
-                // 「重新載入」緊貼喺佢左邊同一行。refreshBtn 上面已 appendChild
-                // 咗入 topBar（follow-6 原有邏輯），呢度再 appendChild badge
-                // 會排喺 refreshBtn 之後，兩者一齊食 `.fhs-btn-refresh` 嘅
-                // `margin-left:auto` 推去最右做一組。
-                if (countBadge) topBar.appendChild(countBadge);
+                // [D69續八-follow-9] Fat Mo 進一步要求：徽章同重新載入合併做
+                // 一個button，撳徽章都算撳掣。改為 appendChild 入
+                // #fhsRefreshBtn（button本身）而唔係 topBar，令徽章成為
+                // button嘅子元素——click事件由子元素bubble up到button，
+                // 一齊觸發 onclick="fhsRefreshAndCollapse()"，唔使額外綁listener。
+                if (countBadge) refreshBtn.appendChild(countBadge);
             } else {
                 if (toggleEl.parentElement !== pinnedRow) pinnedRow.insertBefore(toggleEl, div1);
                 if (segWrapper.parentElement !== pinnedRow) pinnedRow.insertBefore(segWrapper, div1);
