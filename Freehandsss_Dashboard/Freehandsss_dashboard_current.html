@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-08-30T15:45:39Z">
+    <meta name="fhs-build" content="2026-08-30T16:06:40Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3006,7 +3006,12 @@
                喺 64px 欄內變成一個字一行直排（Fat Mo 截圖 HANG 直住排），行高爆炸
                仲多咗行——正解係將字級/padding 一齊縮，令內容自然變窄，唔使斷行。 */
             .review-table { font-size:11px; }
-            .review-table tbody td { font-size:11px; line-height:1.35; }
+            /* [2026-08-30 D69續八-follow-12] Fat Mo要求客人欄字再細——真根因同
+               follow-11一樣：單號/日期/客人3個rowspan欄嘅<td>各自帶inline
+               `font-size:13px`（渲染函式手寫，L~12322/12339/12342），冇`!important`
+               嘅呢條規則一直贏唔到inline style，一早已經冇真正生效過。加
+               `!important`先令呢3欄同其他欄一致縮到11px。 */
+            .review-table tbody td { font-size:11px !important; line-height:1.35; }
             .review-table tbody .review-badge { font-size:9.5px; padding:1px 4px; }
             .review-table tbody .review-badge .ba-icon { width:9px; height:9px; }
             /* 刻字：窄欄 + `.review-eng-text{overflow-wrap:anywhere}`（L~1366）＝
@@ -3029,6 +3034,12 @@
             .review-table tbody textarea { font-size:10px !important; height:auto; min-height:22px; padding:2px 4px; }
             .review-jump-pill-sm { font-size:10px; padding:1px 5px; }
             .dlv-badge { font-size:9px; padding:1px 5px; }
+            /* [2026-08-30 D69續八-follow-12] Fat Mo要求緊縮桌面層可以取消刻字欄——
+               釋放位俾其他欄。table-layout:fixed下要連th同每一列嘅td一齊隱藏
+               先唔會令行與行之間欄位數量唔一致（td本身用共用`batch-cell`class，
+               冇獨立識別，已喺render函式L~12609加`ovw-eng-cell`做專屬hook）；
+               th已有既有`ovw-col-eng`/`ovw-narrowcol-eng`（全部/類別視圖各一）。 */
+            .ovw-col-eng, .ovw-narrowcol-eng, .ovw-eng-cell { display: none !important; }
             /* ③最大槓桿：表頭 58px「2字 label 下限」入面有 24px 純粹係左右 padding
                （原 8px 12px）。收到 4px 令每欄下限由 58→~42，12 欄一次過慳返
                ~190px，先至有得將所有欄位放到真正夠位。tbody 同步收窄免得
@@ -12606,7 +12617,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${index === 0 ? orderLeftColsHtml : ''}
                             ${_catView ? '' : _finCells}
                             ${_catView ? _catCellsHtml : ''}
-                            <td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: 4px 3px; background-color:${rowBatchCol};">
+                            <td class="batch-cell ovw-eng-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: 4px 3px; background-color:${rowBatchCol};">
                                 ${engCellHtml}
                             </td>
                             ${_catView ? '' : `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:4px 8px; background-color:${rowBatchCol};">
