@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-10：兩個真bug修復（iPhone橫向表格stuck loading／抽屜篩選欄位排列錯亂）
+
+- **緣起**：follow-9部署後Fat Mo真機覆核，回報兩個真bug（唔係截圖UI要求）：①iPhone轉橫向後表格停留「Supabase讀取中」冇資料；②抽屜展開後入面嘅篩選欄位排列錯亂。
+- **Bug①真根因**：`renderReviewTable()`（L~12103）有`if(window.innerWidth<750){renderReviewAccordion(orders);return;}`——手機直向fetch資料嗰陣，desktop`<table><tbody>`從未實際填入真資料，一直停留喺loading placeholder。成個codebase從來冇resize監聽會喺跨越750px呢條mobile/desktop渲染模式分界時重新render——CSS media query只切換顯示/隱藏，唔會自動觸發JS render內容。舊768px斷點時iPhone橫向跨唔到界，呢個gap一直未暴露；D69續八降到750先首次揭發，同任何UI改動都無關嘅結構性缺口。
+- **Bug①修法**：喺已經每次resize/orientationchange都會執行嘅`fhsSyncCompactDesktopLayout()`頂部追蹤`window._fhsLastIsMobile`狀態，跨界重用`window.globalOrders`（唔重新fetch）觸發`applyReviewFilters()`補回真實內容。
+- **Bug②真根因**：`.filter-pair-row`並排+`.filter-row-divider`分隔線嘅排版係為闊版accordion設計，follow-7改窄身300px抽屜後從未調整，並排select/input唔夠位。
+- **Bug②修法**：`#reviewFilterBody.fhs-drawer-mode`下強制`.filter-row-primary`/`.filter-pair-row`轉`column`，divider隱藏，每個`.filter-group`一行、field `flex:1`填滿餘下闊度。
+- **通則**：CSS視覺模式切換（display toggle）唔可以假設「顯示出嚟嗰刻內容自動啱」——跨越JS render分界（如`isMobile()`）嘅resize必須有對應重render觸發，否則view停留喺「未曾渲染過」嘅初始狀態。純睇CSS/HTML睇唔出，要實測跨界情境。
+- **驗證**：750/1129/1130/390四闊度PASS；構造「390(globalOrders已有55筆但tbody stuck)→900」精確重現情境，確認resize後tbody變返45行真實資料；抽屜6個欄位逐一量度零溢出；console零新增錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`fhsSyncCompactDesktopLayout()`新增8行跨界偵測+新增1組compact-drawer篩選欄位CSS override）。
+- 全文見 decisions.md D69續八-follow-10。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-9：緊縮桌面密度極致化（隱藏標題文字／徽章合併入重新載入按鈕，750px首次做到一行）
 
 - **緣起**：follow-8部署後，Fat Mo再截圖確認並明確講出目的：「訂單總覽」標題文字可以刪；「重新載入」同「N筆·時間」徽章合併成一個button放右上；**整體目的係盡量一行，盡量俾多啲位表格**——呢句「目的」係本輪裁決依據。

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-10：兩個真bug修復——iPhone橫向表格stuck loading/抽屜篩選欄位排列錯亂): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-10」條目 + [decisions.md D69續八-follow-10](decisions.md)。follow-9部署後Fat Mo真機覆核揪出兩個真bug：①iPhone橫向後表格停留「Supabase讀取中」——真根因`renderReviewTable()`喺mobile寬度early-return去accordion，desktop tbody從未填真資料，成個codebase一直冇resize監聽會跨越750px分界重render，舊768px斷點時未暴露，D69續八降到750先揭發；修法追蹤`isMobile()`狀態跨界重用`globalOrders`觸發`applyReviewFilters()`。②抽屜篩選欄位排列錯亂——`.filter-pair-row`並排排版係為闊版設計，follow-7改窄身抽屜後未調整；修法強制單欄垂直堆疊。通則：CSS視覺切換唔等於JS資料render，跨界要實測。750/1129/1130/390全PASS+「390→900跨界」精確重現情境驗證PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-9：緊縮桌面密度極致化——隱藏標題文字/徽章合併入重新載入按鈕/750px首次一行): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-9」條目 + [decisions.md D69續八-follow-9](decisions.md)。follow-8部署後Fat Mo明確講目的「盡量一行、盡量俾多啲位表格」：隱藏「訂單總覽」標題文字（icon follow-8已隱）；「重新載入」+「N筆·時間」徽章合併成一個button（`refreshBtn.appendChild(countBadge)`，撳徽章都算撳掣）。實測750px top bar由87-92px（兩行）降返51px（一行），750-1129全範圍皆一行。裁決：密度目的優先減內容而非再縮字體（follow-7/8已縮到接近下限）。750/1129/1130/390全PASS，已commit+部署生產。

@@ -3,6 +3,24 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-10) 兩個真機覆核揪出嘅真bug — CSS視覺切換唔等於JS資料render
+
+**背景**：follow-9部署後，Fat Mo真機覆核回報，呢次唔係截圖UI要求，係兩個真bug：①iPhone轉橫向後表格停留「Supabase讀取中」，一直冇資料出現；②抽屜展開後入面嘅篩選欄位（年度/月份/狀態/批次/搜尋/排序）排列錯亂。
+
+**Bug①真根因**：`renderReviewTable()`（L~12103）入面有 `if (window.innerWidth < 750) { renderReviewAccordion(orders); return; }`——喺手機直向fetch資料嗰陣，desktop `<table><tbody>` 從未實際被填入真資料，一直停留喺`fetchGlobalReview()`寫入嘅loading placeholder（「⏳ Supabase 讀取中...」）。成個codebase從來冇resize監聽會喺跨越750px呢條mobile/desktop渲染模式分界時重新render——`.review-table-wrap`嘅顯示切換純粹CSS media query（`display:none↔block`），但**顯示出嚟嘅內容本身要JS主動填**，CSS唔會自動觸發JS render。舊斷點768px時，iPhone橫向（實測約750px可用寬度，見D69續八-follow）都跨唔到768呢條界，呢個gap一直未暴露；D69續八系列將斷點降到750，先首次令iPhone橫向真正跨過呢條分界，揭發呢個一直存在、同任何UI改動都無關嘅結構性缺口。
+
+**Bug①修法**：喺已經每次resize/orientationchange都會執行嘅`fhsSyncCompactDesktopLayout()`頂部，追蹤`window._fhsLastIsMobile`狀態；當`window.innerWidth<750`嘅布林值同上次唔同（即跨咗界），重用已快取嘅`window.globalOrders`（唔使重新fetch），觸發`window.applyReviewFilters()`（純過濾+render，冇network call）令現正顯示緊嘅view補回真實內容。
+
+**Bug②真根因**：`.filter-pair-row`（兩個filter-group並排）+`.filter-row-divider`（中間垂直分隔線）呢套排版設計時嘅假設係「成頁闊度嘅accordion」（原本`#reviewFiltersV2`喺傳統桌面/手機嘅寬度），follow-7將`#reviewFilterBody`改做窄身300px抽屜之後，從未回頭針對呢個新context調整內部欄位排版，兩個select/input並排喺300px入面唔夠位，垂直分隔線喺單欄堆疊入面亦冇意義。
+
+**Bug②修法**：`#reviewFilterBody.fhs-drawer-mode`下強制`.filter-row-primary`/`.filter-pair-row`轉`flex-direction:column`，`.filter-row-divider`隱藏，每個`.filter-group`一行（label左、field `flex:1 1 auto`填滿餘下闊度），變成標準單欄表單排版，零溢出風險。
+
+**通則**：純CSS嘅視覺模式切換（display toggle／media query）唔可以假設「顯示出嚟嗰刻內容自動啱」——如果某個view嘅內容係由JS喺特定條件下先render（例如`isMobile()`分支），跨越呢條分界嘅resize/orientationchange必須有對應JS重render觸發，否則個view會停留喺「未曾喺呢個模式下渲染過」嘅初始/loading狀態。呢類bug純睇CSS/HTML完全睇唔出，一定要實測跨界情境（例如手機闊度load資料後，模擬resize去桌面闊度，檢查內容係咪真係跟埋去）。
+
+**驗證**：750/1129/1130/390四闊度PASS；額外構造「390(mobile，globalOrders已有55筆但desktop tbody stuck loading)→900(compact)」嘅精確重現情境，確認resize後tbody由stuck placeholder變返45行真實資料；抽屜6個欄位逐一量度`getBoundingClientRect()`確認全部零溢出；console零新增錯誤（既有嘅本機環境network noise不計）。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-10」條目。**Subagent 使用記錄**：❌未使用（互動式grep追蹤render pipeline+browser精確重現情境測試全程自行操作）。
+
 [2026-08-30] (D69續八-follow-9) 緊縮桌面密度極致化 — 隱藏標題文字+合併徽章入按鈕，750px首次做到一行
 
 **背景**：follow-8部署後，Fat Mo再截圖確認並提出明確目的（唔止係逐點截圖圈選）：「訂單總覽」標題文字可以刪；「重新載入」同「N筆·時間」徽章合併成一個button放右上；**整體目的係盡量一行，盡量俾多啲位表格**。呢句「目的」係本輪嘅裁決依據，唔止跟截圖字面。
