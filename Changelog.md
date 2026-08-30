@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-08-31] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-13：限時警告badge拆兩行修復（換行bug非單純字太大）
+
+- **緣起**：follow-12部署後，Fat Mo截圖回報緊縮桌面層日期欄嘅限時警告badge（逾期N天／剩餘N天）拆成兩行，要求縮字至同一行。
+- **真根因**：`.ovw-date-line .dlv-badge`（CSS L~2908）自D69續四起刻意`white-space:normal;overflow-wrap:anywhere`做「窄screen防呆兜底」——寬screen（1920px）badge同日期自然一行，窄screen先解除nowrap換行避免溢出。緊縮桌面層（750-1129px）Date欄本身已收到68px（follow-3「淨夠日期本身」下限），呢個「兜底」變常態觸發，`overflow-wrap:anywhere`仲會令badge文字自己拆多過一行。單純縮字（follow-4已有9px）冇解決問題，因為觸發換行嘅係`white-space:normal`屬性本身，唔係字太大裝唔落。
+- **修法**：①`.dlv-badge`字級9px→8px，icon同步10px→8px。②新增`.ovw-date-line .dlv-badge{white-space:nowrap!important;overflow-wrap:normal!important}`，緊縮層覆寫返D69續四嘅窄screen兜底規則（緊縮層已有專屬欄闊/字級調校，唔再需要嗰個假設）。傳統桌面≥1130維持原本兜底邏輯不變。
+- **通則**：換行類bug診斷唔可以只睇font-size——`white-space`/`overflow-wrap`呢類為舊context設計嘅換行規則，可能同新緊縮層設計初衷已唔一致，修復時要連埋呢兩個屬性一齊查。
+- **驗證**：750/1129/1130/390四闊度全PASS；「全部」+類別視圖(鑰匙扣)雙重量度badge高度確認15px單行零溢出；桌面≥1130維持10px+原邏輯零regression。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`.dlv-badge`字級調整+icon尺寸+新增1條nowrap覆寫規則）。
+- 全文見 decisions.md D69續八-follow-13。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-31] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-12：緊縮桌面密度再優化（刻字欄取消／follow-11同類bug再現於單號日期客人3欄）
 
 - **緣起**：follow-11部署後，Fat Mo繼續要求緊縮桌面（750-1129px）密度優化：①刻字欄可以取消，釋放位；②客人欄字再縮小。

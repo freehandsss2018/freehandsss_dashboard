@@ -3033,7 +3033,15 @@
             .review-table tbody input,
             .review-table tbody textarea { font-size:10px !important; height:auto; min-height:22px; padding:2px 4px; }
             .review-jump-pill-sm { font-size:10px; padding:1px 5px; }
-            .dlv-badge { font-size:9px; padding:1px 5px; }
+            /* [2026-08-31 D69續八-follow-13] Fat Mo截圖：限時警告badge（逾期N天/
+               剩餘N天）拆成兩行。真根因唔淨係字太大——`.ovw-date-line .dlv-badge`
+               （CSS L~2908）自D69續四起刻意`white-space:normal;overflow-wrap:anywhere`
+               做窄screen防呆兜底，緊縮桌面層Date欄闊得返68px（follow-3已收到
+               「淨夠日期本身」嘅下限），badge淨係縮字唔夠仲要解除呢個強制換行
+               先真正一行過。 */
+            .dlv-badge { font-size:8px; padding:1px 4px; }
+            .dlv-badge .ba-icon { width:8px !important; height:8px !important; }
+            .ovw-date-line .dlv-badge { white-space:nowrap !important; overflow-wrap:normal !important; }
             /* [2026-08-30 D69續八-follow-12] Fat Mo要求緊縮桌面層可以取消刻字欄——
                釋放位俾其他欄。table-layout:fixed下要連th同每一列嘅td一齊隱藏
                先唔會令行與行之間欄位數量唔一致（td本身用共用`batch-cell`class，

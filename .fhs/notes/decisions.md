@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-31] (D69續八-follow-13) 限時警告badge拆兩行 — 換行bug唔淨係字太大，`white-space`/`overflow-wrap`本身係另一半
+
+**背景**：follow-12部署後，Fat Mo截圖回報：緊縮桌面層日期欄嘅限時警告badge（逾期N天／剩餘N天）拆成兩行（例如「逾期61」一行、「天」再一行），要求縮字至同一行。
+
+**真根因**：`.ovw-date-line .dlv-badge`（CSS L~2908）自D69續四起就刻意設咗`white-space:normal; overflow-wrap:anywhere`——當時目的係做「窄screen防呆兜底」：寬screen（1920px，日期欄127px）badge同日期自然同一行，窄screen（例如1024px）先解除nowrap俾badge有得換行，避免溢出撞埋隔籬客人欄。呢個設計本身喺D69續四嗰個年代係合理嘅取捨。但緊縮桌面層（750-1129px）Date欄本身已經收到68px（follow-3量到「淨夠日期本身」嘅下限），喺呢個闊度，badge換行嘅「兜底」變成常態觸發，加上`overflow-wrap:anywhere`本身會逼到「連badge文字自己都拆多過一行」（例如"61"同"天"分開），而唔淨係「badge同日期分兩行」。單純縮字（follow-4已有9px）並冇解決呢個問題，因為觸發換行嘅係`white-space:normal`呢條屬性本身，唔係字太大裝唔落。
+
+**修法**：①`.dlv-badge`字級喺緊縮層由9px再縮到8px，icon同步由10px縮到8px。②新增`.ovw-date-line .dlv-badge { white-space:nowrap !important; overflow-wrap:normal !important; }`，喺緊縮層覆寫返D69續四嗰條「窄screen兜底」規則——因為依家緊縮層本身已經有專屬嘅欄闊/字級調校（唔再需要嗰條通用兜底），可以安全咁強制返一行。傳統桌面（≥1130px）維持原本D69續四嘅兜底邏輯不變。
+
+**通則**：換行類bug嘅診斷唔可以只睇font-size——`white-space`同`overflow-wrap`呢類「刻意為某個舊context設計嘅換行規則」，隨住斷點/密度目標演進，可能已經同新嘅緊縮層設計初衷唔一致（舊規則假設「呢個闊度冇得諗，換行係唯一出路」，新緊縮層已經有專屬空間規劃，唔再需要嗰個假設）。修復呢類bug時，除咗font-size，一定要連埋`white-space`/`overflow-wrap`一齊查有冇歷史遺留嘅強制換行規則。
+
+**驗證**：750/1129/1130/390四闊度全PASS；「全部」+類別視圖(鑰匙扣)雙重量度badge `getBoundingClientRect().height`確認15px（單行高度，非30px雙行），零溢出所屬`<td>`；桌面≥1130維持10px字級+原本換行邏輯，零regression。
+
+全文見 Changelog.md 2026-08-31「D69續八-follow-13」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-08-31] (D69續八-follow-12) 緊縮桌面密度再優化 — 刻字欄取消 + follow-11同類bug再現於單號/日期/客人3欄
 
 **背景**：follow-11部署後，Fat Mo繼續要求緊縮桌面（750-1129px）密度優化：①刻字欄可以取消，釋放位；②客人欄字再縮小。

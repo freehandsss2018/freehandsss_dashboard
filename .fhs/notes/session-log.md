@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-31 (D69續八-follow-13：限時警告badge拆兩行修復——換行bug非單純字太大): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-31「D69續八-follow-13」條目 + [decisions.md D69續八-follow-13](decisions.md)。Fat Mo截圖：緊縮桌面層限時警告badge（逾期N天/剩餘N天）拆成兩行。真根因：`.ovw-date-line .dlv-badge`自D69續四起刻意`white-space:normal;overflow-wrap:anywhere`做窄screen防呆兜底，緊縮層Date欄已收到68px，單純follow-4嘅9px縮字冇解決問題，因為觸發換行嘅係white-space屬性本身。修法：字再縮8px+icon同步縮8px+緊縮層覆寫返`white-space:nowrap`。通則：換行bug要連埋white-space/overflow-wrap一齊查，唔可以只睇font-size。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-31 (D69續八-follow-12：緊縮桌面密度再優化——刻字欄取消/follow-11同類bug再現於單號日期客人3欄): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-31「D69續八-follow-12」條目 + [decisions.md D69續八-follow-12](decisions.md)。Fat Mo要求：刻字欄取消釋放位、客人欄字再縮小。客人欄真根因同follow-11同一機制——單號/日期/客人3個rowspan欄嘅td有inline`font-size:13px`，follow-4嘅11px規則冇`!important`一直贏唔到，加`!important`一次過修埋3欄。刻字欄真根因：td用共用`batch-cell` class冇獨立hook，加專屬class`ovw-eng-cell`連同既有th class一齊隱藏，table-layout:fixed+rowspan下必須連th同每列td一致隱藏先唔會錯位。通則：JS render inline style贏compact規則係系統性模式，非單一事件。750/1129/1130/390全PASS，已commit+部署生產。
