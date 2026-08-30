@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-7：緊縮桌面收納介面優化（狀態tabs+類別chips搬頂列／篩選漏斗改Threads式抽屜）
+
+- **緣起**：follow-6部署後，Fat Mo再截兩張圖（訂單總覽本身 + Threads app 對照組）三色圈第二輪要求：①②紅圈——狀態tabs（全部/進行中/已完成）+類別chips（全部/手模/鑰匙扣/頸鏈）搬去頂部、「訂單總覽」標題右方；③藍圈——篩選漏斗「已選N項」合併入標題左方，展開方式由「撳落喺下面展開filter-body」改做Threads app樣式：撳左上角icon，整個介面向右移開展示選項面板。
+- **實作前grep先發現兩個結構性硬上限**（非臆測）：(1) `#v40-top-bar` 原本 `height:48px`+`overflow:hidden`，只夠一行，紅圈嗰兩組嘢塞落去會被裁走（隱形消失，唔係換行）——緊縮桌面層改 `height:auto`+`flex-wrap:wrap` 容許長高兩行。(2) `#reviewFiltersV2`（filter-body原生父容器）嘅 `overflow:hidden` 係手風琴收合動畫必需嘅剪裁機制，唔可以直接喺原地拆咗改做fixed抽屜（會連累mobile/傳統桌面仍用緊嘅手風琴模式）——抽屜模式改為JS將 `#reviewFilterBody` 整個搬去 `document.body`（沿用follow-6錨點pattern），`#reviewFiltersV2` 喺緊縮層直接隱藏（內容已全數搬走）。
+- **連帶修復**：top bar長高兩行後，`applyReviewZoneOffsets()` 入面 `zone1H` 一直寫死 `48`，令Zone2/Zone3/thead嘅sticky top全部用錯高度。改用 `topBarEl.getBoundingClientRect().height` 動態量度，並將 `topBarEl` 加入既有 `ResizeObserver` 監聽名單。同follow-5「休眠CSS假設喺新viewport範圍首次現形」屬同一類陷阱，差別在於呢次係主動排查發現，唔使等真機bug report。
+- **實作期間揪出並修復2個bug**：(1) Scrim（抽屜背後遮罩）一開始寫喺 `#reviewFiltersV2` 入面，但嗰個容器喺緊縮層 `display:none`——`display:none` 會令所有後代（包括 `position:fixed`）完全唔render，同 `overflow:hidden` 唔會影響fixed後代係兩回事；改做body層級靜態元素。(2) 還原分支（離開750-1129範圍）原本用 `.fhs-top-bar__actions` 做 `insertBefore` 參照點，但實測呢個元素會被另一段既有邏輯動態搬去 `<body>` 底層做底部導覽——guard寫成 `if(!actionsDiv) return` 令成個if/else都唔執行，累到同actionsDiv完全無關嘅還原邏輯一齊卡死；改用 `refreshBtn`（follow-6原有元素，同一function早幾行剛appendChild入topBar，保證存在）做參照點。
+- **測試環境教訓**：驗證抽屜transform動畫時，發現automated browser分頁嘅CSS transition唔會自然tick——`element.getAnimations()`顯示`playState:"running"`但`currentTime`永遠卡喺`0`，令`getComputedStyle().transform`一直讀到起始值，連手動加`!important`嘅inline style都好似攔唔到（CSS Transitions喺cascade優先級高過`!important` author rule，卡死嘅transition會蓋過任何inline覆寫）。一度誤導成疑似CSS specificity bug，逐層排查（cssText/specificity/matches()/styleSheets遞歸掃描）證明源碼正確，最後用`el.getAnimations().forEach(a=>a.finish())`強制結算先證實真實落點正確。同follow-6發現嘅`resize_window()`唔觸發真resize事件同一類別測試工具限制，日後驗證CSS transition/animation相關UI要記住呢個可能性。
+- **驗證**：750/1129（應收納）+1130/390（應還原）四闊度，另加兩組來回輪換（900→1130→900、1129→390→1000）。逐個闊度用page-level/header-label/cell-bleed三層溢出檢查全部零溢出零bleed；抽屜開關用`getAnimations().finish()`強制結算後確認位置/scrim/sticky聯動皆正確。Console全程零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS新增1個緊縮桌面子區塊 + 擴充 `fhsSyncCompactDesktopLayout()` + 修復 `applyReviewZoneOffsets()` zone1H + 新增scrim元素/2個divider id/2個錨點）。
+- 全文見 decisions.md D69續八-follow-7。**Subagent 使用記錄**：❌未使用（互動式grep排查+browser live測試全程自行操作）。
+
 ## [2026-08-30] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-6：緊縮桌面版面三項重排（隱橫幅／搬重新載入／收納篩選掣）
 
 - **緣起**：Fat Mo 截圖三色圈標示緊縮桌面（750-1129px）三個要調整位置：①紅圈「鎖匙扣 17件·10張單」類別工作台橫幅太佔位，要隱藏；②綠圈「重新載入」掣要搬去頂列（訂單總覽標題列右側，同「N筆·時間」徽章埋一齊）；③藍圈「顯示項目財務／清除篩選／儲存篩選」3粒掣要收納入「已選N項」摺疊面板（撳漏斗icon先展開）。

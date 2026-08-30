@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-08-30 (D69續八-follow-7：緊縮桌面收納介面優化——狀態tabs+類別chips搬頂列/篩選漏斗改Threads式抽屜): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-7」條目 + [decisions.md D69續八-follow-7](decisions.md)。Fat Mo兩張截圖三色圈第二輪要求：狀態tabs+類別chips搬去top bar標題右方、篩選漏斗「已選N項」由手風琴改做Threads式左側抽屜。實作前grep先揪出兩個結構性硬上限（top bar原48px+overflow:hidden只夠一行；filter-body父容器overflow:hidden係手風琴動畫必需，改抽屜要先搬走），連帶修復zone1H寫死48嘅sticky offset隱患。實作期間再揪出並修復2個bug（scrim放錯容器被display:none連累消失、還原分支guard揀錯會被搬走嘅參照元素）。**測試環境教訓**：自動化瀏覽器分頁CSS transition唔自然tick，`getComputedStyle`睇落連`!important`都攔唔到transform，要用`getAnimations().finish()`強制結算先驗到真實落點，已記入decisions.md。750/1129/1130/390+來回輪換全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-30 (D69續八-follow-6：緊縮桌面版面三項重排——隱橫幅/搬重新載入/收納篩選掣): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-6」條目 + [decisions.md D69續八-follow-6](decisions.md)。Fat Mo三色圈截圖要求緊縮桌面（750-1129px）三項調整：類別橫幅隱藏（純CSS）、重新載入掣搬去頂列（同「N筆·時間」徽章埋一齊）、3粒篩選掣收納入「已選N項」摺疊面板。後兩項首次需要跨容器DOM搬遷（CSS做唔到），新增`fhsSyncCompactDesktopLayout()`跟返`v40SyncActionBars()`舊pattern，用錨點記原位。**測試方法論教訓**：發現`resize_window()`模擬工具唔會觸發真正`resize`事件，要手動dispatch先驗證到JS邏輯（純CSS部分唔受影響），已記落learnings/tooling.md#11。750/1129/1130/390四闊度全PASS，已commit+部署生產。

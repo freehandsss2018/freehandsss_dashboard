@@ -3053,6 +3053,61 @@
                 padding-bottom:8px; margin-bottom:8px; border-bottom:1px dashed var(--fhs-border); }
             #fhsCompactBtnSlot .fhs-btn-save-filter,
             #fhsCompactBtnSlot .fhs-btn-refresh { margin-right:0 !important; }
+
+            /* [2026-08-30 D69續八-follow-7] Fat Mo 第二輪三色圈截圖（緊縮桌面收納介面
+               優化）：①③紅圈（狀態tabs＋類別chips）搬去 top bar、標題右方；②藍圈
+               （篩選漏斗「已選N項」）合併入標題左方，並由「撳落展開 filter-body」
+               改做 Threads 式左側抽屜。DOM 實際搬遷由 JS fhsSyncCompactDesktopLayout()
+               處理，呢度做版面基礎。 */
+            /* top bar 原本 height:48px + overflow:hidden 淨夠一行，塞唔落狀態tabs+
+               類別chips會被裁走（唔係換行，係直接消失）——呢層放寬做可長高兩行。
+               連帶 JS 那邊 zone1H 由寫死 48 改動態量度（L~6878），否則 Zone2/Zone3/
+               thead sticky top 會用返舊 48 嘅假設，同 follow-5 嗰次「休眠 CSS 假設」
+               屬同一類陷阱——呢度提前修正，唔留第二個地雷。 */
+            #v40-top-bar {
+                height: auto; min-height: 48px; overflow: visible;
+                flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px;
+            }
+            /* 絕對定位置中嘅「freehandsss」水印本身無功能（pointer-events:none），
+               top bar 長高兩行後佢會垂直置中喺兩行之間、視覺上疊住狀態tabs——
+               呢層乾脆收埋，減低視覺雜訊，同時避開重疊。 */
+            #v40-top-bar .fhs-top-bar__logo { display: none; }
+            #v40-top-bar #reviewFilterToggle { width: auto; flex-shrink: 0; }
+            #v40-top-bar #fhsSegWrapper { flex: 0 0 auto; padding: 2px 0; }
+            #v40-top-bar .fhs-seg-ctrl { min-width: 0; }
+            #v40-top-bar .fhs-seg-btn { height: 26px; font-size: 12px; }
+            #v40-top-bar #fhsCategoryFilterGroup { flex: 0 0 auto; }
+            #v40-top-bar #fhsCategoryFilterGroup .filter-label { display: none; }
+            #v40-top-bar .chip-btn { height: 26px; padding: 0 9px; font-size: 11px; }
+            /* 篩選漏斗「已選N項」由手風琴（filter-body 展開推低表格）改做抽屜：
+               #reviewFiltersV2 整個收埋（入面嘅 filter-row-pinned／filter-body
+               內容已經全部由 JS 搬走，剩返嘅空殼連埋兩條分隔線一齊收埋）。
+               #reviewFilterBody 本身要搬出去 document.body（見 JS）先套用
+               drawer-mode——原地 #reviewFiltersV2 有 overflow:hidden 做手風琴
+               收合動畫必需嘅剪裁，唔可以直接喺原地拆佢嚟做 fixed 抽屜。 */
+            #reviewFiltersV2 { display: none !important; }
+            #reviewFilterBody.fhs-drawer-mode {
+                display: flex !important; flex-direction: column;
+                position: fixed; left: 0; bottom: 0; top: 0;
+                width: 300px; max-width: 82vw; max-height: none !important;
+                background: var(--fhs-bg-elevated, #f7f3ee);
+                box-shadow: 2px 0 20px rgba(0,0,0,0.22);
+                z-index: 1900; overflow-y: auto;
+                padding: 16px !important;
+                border-top: none !important;
+                transform: translateX(-100%);
+                transition: transform .28s ease;
+            }
+            #reviewFilterBody.fhs-drawer-mode.open { transform: translateX(0); }
+            /* top 由 JS 動態設為 top-bar 實際高度（1行或2行視闊度而定），
+               呢度純粹係轉場前嘅預設值，避免 JS 未執行時 top:0 令抽屜頂穿 top bar。 */
+            #fhsDrawerScrim {
+                display: block; position: fixed; inset: 0;
+                background: rgba(20,18,15,0.4);
+                opacity: 0; pointer-events: none;
+                transition: opacity .28s ease; z-index: 1850;
+            }
+            #fhsDrawerScrim.open { opacity: 1; pointer-events: auto; }
         }
 
         /* F3 v2: dual-mode modal — tabs */
@@ -4416,6 +4471,12 @@
     <!-- S180 快捷列編輯調色盤（列出未顯示嘅快捷鍵，JS 動態填充） -->
     <div id="sbPalette" role="menu" aria-label="加入快捷鍵"></div>
 
+    <!-- [D69續八-follow-7] 抽屜背後遮罩：body 層級固定放置（唔可以放喺
+         #reviewFiltersV2 之類會 display:none 嘅容器入面——position:fixed 唔會
+         救返俾 display:none 嘅祖先，成個元素連同後代一齊唔會 render）。
+         只喺緊縮桌面層 + 抽屜展開時可見可撳（CSS 控制），撳一下＝關閉抽屜。 -->
+    <div id="fhsDrawerScrim" onclick="window.fhsCollapseFilter && window.fhsCollapseFilter()"></div>
+
     <!-- V37 原有 role-bar 保留（隱藏，保持 ID 合約） -->
     <!-- NOTE: roleLingBtn / roleFatBtn 保留 ID，但不驅動視覺主題（V40 廢除雙模式） -->
     <div class="role-bar" style="display:none;">
@@ -4508,9 +4569,9 @@
                         </div>
                     </div>
 
-                    <div style="width:1px; height:24px; background:var(--fhs-border); flex-shrink:0;"></div>
+                    <div id="fhsDivider1" style="width:1px; height:24px; background:var(--fhs-border); flex-shrink:0;"></div>
 
-                    <div class="filter-group">
+                    <div class="filter-group" id="fhsCategoryFilterGroup">
                         <label class="filter-label" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>類別</label>
                         <div class="chip-group" role="group" aria-label="產品類別篩選">
                             <button class="chip-btn active" data-category="" type="button">全部</button>
@@ -4519,7 +4580,7 @@
                             <button class="chip-btn" data-category="頸鏈" type="button">頸鏈</button>
                         </div>
                     </div>
-                    <div style="width:1px; height:24px; background:var(--fhs-border); flex-shrink:0;"></div>
+                    <div id="fhsDivider2" style="width:1px; height:24px; background:var(--fhs-border); flex-shrink:0;"></div>
                     <!-- D69續八-follow-6 錨點：緊縮桌面層(750-1129px)會將呢4粒掣搬走，
                          呢個span做返原位標記，離開緊縮範圍時搬返嚟呢個位置之後。 -->
                     <span id="fhsPinnedBtnAnchor" style="display:none;"></span>
@@ -4534,6 +4595,11 @@
                         重新載入
                     </button>
                 </div>
+
+                <!-- D69續八-follow-7 錨點：緊縮桌面層會將 #reviewFilterBody 整個搬去
+                     document.body 做抽屜（避開呢度 overflow:hidden 嘅手風琴剪裁），
+                     離開緊縮範圍時搬返嚟呢個位置之後。 -->
+                <span id="fhsFilterBodyAnchor" style="display:none;"></span>
 
                 <!-- Filter Body（低頻欄位，預設收埋——Desktop/Mobile 統一，撳漏斗圖示先展開） -->
                 <div class="filter-body" id="reviewFilterBody">
@@ -6874,8 +6940,14 @@
                         const zone2El = document.getElementById('reviewZone2');
                         const zone3FilterEl = document.getElementById('reviewFiltersV2');
                         const thead = document.querySelector('#reviewTable thead');
+                        const topBarEl = document.getElementById('v40-top-bar');
                         if (!zone2El || !zone3FilterEl) { console.warn('[ZoneFix] missing element'); return; }
-                        const zone1H = 48;
+                        // [D69續八-follow-7] zone1H 原本寫死 48——緊縮桌面層 top bar
+                        // 會長高做兩行（狀態tabs+類別chips搬咗入嚟），寫死值會令
+                        // Zone2 sticky top 用返舊 48，同 follow-5 嗰次「休眠 CSS
+                        // 假設」屬同一類陷阱，故改動態量度 + 監聽 topBarEl 高度變化。
+                        const zone1H = topBarEl ? topBarEl.getBoundingClientRect().height : 48;
+                        zone2El.style.top = zone1H + 'px';
                         const zone2H = zone2El.getBoundingClientRect().height;
                         zone3FilterEl.style.top = (zone1H + zone2H) + 'px';
                         const zone3FilterH = zone3FilterEl.getBoundingClientRect().height;
@@ -6884,13 +6956,16 @@
                         if (window._reviewZone2Observer) window._reviewZone2Observer.disconnect();
                         if (window.ResizeObserver) {
                             window._reviewZone2Observer = new ResizeObserver(function() {
+                                const z1h = topBarEl ? topBarEl.getBoundingClientRect().height : 48;
+                                zone2El.style.top = z1h + 'px';
                                 const z2h = zone2El.getBoundingClientRect().height;
-                                zone3FilterEl.style.top = (zone1H + z2h) + 'px';
+                                zone3FilterEl.style.top = (z1h + z2h) + 'px';
                                 const z3h = zone3FilterEl.getBoundingClientRect().height;
-                                if (thead) thead.style.top = (zone1H + z2h + z3h) + 'px';
+                                if (thead) thead.style.top = (z1h + z2h + z3h) + 'px';
                             });
                             window._reviewZone2Observer.observe(zone2El);
                             window._reviewZone2Observer.observe(zone3FilterEl);
+                            if (topBarEl) window._reviewZone2Observer.observe(topBarEl);
                         }
                     }); });
                 } else if (mode === 'finance') {
@@ -13043,8 +13118,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.fhsCollapseFilter = function() {
             var fb = document.getElementById('reviewFilterBody');
             var ft = document.getElementById('reviewFilterToggle');
+            var scrim = document.getElementById('fhsDrawerScrim');
             if (fb) fb.classList.remove('open');
             if (ft) { ft.classList.remove('expanded'); ft.setAttribute('aria-expanded', 'false'); }
+            if (scrim) scrim.classList.remove('open');
             try { localStorage.setItem('fhs_filter_open', '0'); } catch(e) {}
         };
         window.fhsRefreshAndCollapse = function() {
@@ -13069,11 +13146,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 filterBody.classList.toggle('open', _shouldOpen);
                 toggle.classList.toggle('expanded', _shouldOpen);
                 toggle.setAttribute('aria-expanded', String(_shouldOpen));
+                // [D69續八-follow-7] 首次載入時如果 localStorage 記住咗「上次係展開」，
+                // 上面 3 句會令 filterBody 一開波就帶 .open——緊縮桌面層嘅抽屜模式
+                // 要連 scrim 都同步，否則抽屜顯示緊但背後冇遮罩、亦撳唔到範圍外關閉。
+                var _initScrim = document.getElementById('fhsDrawerScrim');
+                if (_initScrim) _initScrim.classList.toggle('open', _shouldOpen);
                 toggle.addEventListener('click', function() {
                     const isOpen = filterBody.classList.toggle('open');
                     toggle.classList.toggle('expanded', isOpen);
                     toggle.setAttribute('aria-expanded', String(isOpen));
                     try { localStorage.setItem('fhs_filter_open', isOpen ? '1' : '0'); } catch(e) {}
+                    // [D69續八-follow-7] 緊縮桌面層 filterBody 轉做抽屜，呢個 scrim
+                    // 要同步開關；抽屜以外嘅寬度 scrim 一直 display:none，呢句安全。
+                    const scrim = document.getElementById('fhsDrawerScrim');
+                    if (scrim) scrim.classList.toggle('open', isOpen);
                 });
             }
             // Chip filter
@@ -15749,6 +15835,46 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (b.parentElement === slot) anchor.insertAdjacentElement('afterend', b);
                 });
                 slot.classList.remove('has-content');
+            }
+
+            // [D69續八-follow-7] 狀態tabs＋類別chips 搬去 top bar 標題右方；篩選漏斗
+            // 合併入標題左方並轉做 Threads 式抽屜。div1/div2（兩條分隔線）從未搬過，
+            // 一直留喺 pinnedRow 原位，離開緊縮範圍時直接用嚟做 insertBefore 錨點
+            // 復原順序，唔使額外記錄。
+            var pinnedRow = document.getElementById('reviewFilterPinned');
+            var titleEl = document.getElementById('v40-top-order-id');
+            var toggleEl = document.getElementById('reviewFilterToggle');
+            var segWrapper = document.getElementById('fhsSegWrapper');
+            var catGroup = document.getElementById('fhsCategoryFilterGroup');
+            var div1 = document.getElementById('fhsDivider1');
+            var div2 = document.getElementById('fhsDivider2');
+            var filterBody = document.getElementById('reviewFilterBody');
+            var bodyAnchor = document.getElementById('fhsFilterBodyAnchor');
+            var scrim = document.getElementById('fhsDrawerScrim');
+            if (!pinnedRow || !titleEl || !toggleEl || !segWrapper || !catGroup || !div1 || !div2 || !filterBody || !bodyAnchor) return;
+            if (isCompact) {
+                // 唔可以用 `.fhs-top-bar__actions` 做插入參照點——嗰個係模式切換
+                // 快捷列，實測會俾其他既有邏輯搬去 <body> 底層做底部導覽，唔保證
+                // 一直留喺 topBar 入面（曾經因為佢揾唔到而令成個 if guard 提早
+                // return，累埋 else 分支都冧埋唔執行）。改用 refreshBtn——上面
+                // 幾行啱啱先 appendChild 入 topBar，呢一刻保證存在。
+                if (toggleEl.parentElement !== topBar) topBar.insertBefore(toggleEl, titleEl);
+                if (segWrapper.parentElement !== topBar) topBar.insertBefore(segWrapper, refreshBtn);
+                if (catGroup.parentElement !== topBar) topBar.insertBefore(catGroup, refreshBtn);
+                if (filterBody.parentElement !== document.body) document.body.appendChild(filterBody);
+                filterBody.classList.add('fhs-drawer-mode');
+                filterBody.style.top = topBar.getBoundingClientRect().height + 'px';
+            } else {
+                if (toggleEl.parentElement !== pinnedRow) pinnedRow.insertBefore(toggleEl, div1);
+                if (segWrapper.parentElement !== pinnedRow) pinnedRow.insertBefore(segWrapper, div1);
+                if (catGroup.parentElement !== pinnedRow) pinnedRow.insertBefore(catGroup, div2);
+                if (filterBody.parentElement === document.body) bodyAnchor.insertAdjacentElement('afterend', filterBody);
+                filterBody.classList.remove('fhs-drawer-mode');
+                filterBody.classList.remove('open');
+                filterBody.style.top = '';
+                toggleEl.classList.remove('expanded');
+                toggleEl.setAttribute('aria-expanded', 'false');
+                if (scrim) scrim.classList.remove('open');
             }
         }
         window.addEventListener('resize', fhsSyncCompactDesktopLayout);

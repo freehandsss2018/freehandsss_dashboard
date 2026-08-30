@@ -3,6 +3,26 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-08-30] (D69續八-follow-7) 緊縮桌面收納介面優化 — 手風琴改Threads式抽屜，揪出兩個結構性硬上限
+
+**背景**：follow-6部署後，Fat Mo再截兩張圖（訂單總覽本身 + Threads app 對照組）三色圈第二輪要求：①②紅圈——狀態tabs（全部/進行中/已完成）+類別chips（全部/手模/鑰匙扣/頸鏈）搬去頂部、「訂單總覽」標題右方；③藍圈——篩選漏斗「已選N項」合併入標題左方，並將其展開方式由「撳落喺下面展開filter-body」改做Threads app嘅樣式：撳左上角icon，整個介面向右移開展示選項面板。
+
+**兩個預先未察覺嘅結構性硬上限**：實作前grep代碼先發現，唔係憑截圖臆測：
+1. `#v40-top-bar`原本`height:48px`+`overflow:hidden`——只夠一行，紅圈嗰兩組嘢塞落去會被**裁走（隱形消失，唔係換行）**。修法：緊縮桌面層放寬做`height:auto`+`flex-wrap:wrap`，容許長高兩行。
+2. `#reviewFiltersV2`（filter-body嘅原生父容器）本身有`overflow:hidden`，係手風琴收合動畫必需嘅剪裁機制，唔可以直接喺原地拆咗嚟改做fixed抽屜（拆咗會連累其他仍然用緊手風琴模式嘅斷點，即mobile/傳統桌面）。修法：抽屜模式喺緊縮桌面層將`#reviewFilterBody`整個JS搬去`document.body`（沿用follow-6錨點pattern），跳出範圍搬返原位，`#reviewFiltersV2`喺緊縮層直接隱藏（入面內容已全數搬走，唔留空殼）。
+
+**連帶修復（非本輪要求，但唔修會埋雷）**：top bar長高兩行後，`applyReviewZoneOffsets()`裡面`zone1H`一直寫死`48`（假設top bar永遠48px高），令Zone2/Zone3/thead嘅sticky top全部用錯高度、視覺上會重疊。改用`topBarEl.getBoundingClientRect().height`動態量度，並將`topBarEl`加入既有`ResizeObserver`監聽名單（原本只聽Zone2/Zone3自己）。呢個同follow-5「休眠CSS假設喺新viewport範圍首次現形」屬同一類陷阱——差別在於呢次係**主動排查發現**，唔使等真機bug report先揭發。
+
+**兩個實作期間揪出嘅bug（均已修復並重新驗證）**：
+1. Scrim（抽屜背後遮罩）一開始寫喺`#reviewFiltersV2`入面——但嗰個容器喺緊縮層`display:none`，`display:none`會令**所有後代（包括`position:fixed`）完全唔render**，同`overflow:hidden`唔會影響fixed後代係兩回事。修法：scrim改做body層級靜態元素，唔跟隨`#reviewFilterBody`嘅JS搬遷。
+2. 還原分支（離開750-1129範圍）原本用`.fhs-top-bar__actions`（模式切換快捷列）做`insertBefore`參照點，但實測呢個元素會被**另一段既有邏輯**動態搬去`<body>`底層做底部導覽——唔保證留喺top bar入面。由於guard寫成`if(!actionsDiv) return`，揾唔到就令**成個if/else都唔執行**，包括同`actionsDiv`完全無關嘅else分支，static/segWrapper/類別chips/filterBody全部卡死喺緊縮狀態出唔返到傳統桌面。改用`refreshBtn`（follow-6原有元素，同一function入面早幾行剛appendChild入topBar，呢一刻保證存在）做參照點。
+
+**驗證方法論教訓**：驗證抽屜transform動畫時，發現automated browser分頁嘅CSS transition唔會自然tick——`element.getAnimations()`顯示`playState:"running"`但`currentTime`永遠卡喺`0`，令`getComputedStyle().transform`一直讀到起始值，**連手動加`!important`嘅inline style都好似攔唔到**（因為CSS Transitions喺cascade入面優先級高過`!important`author rule，一個卡死嘅transition會蓋過任何inline覆寫）。呢個一度誤導成疑似嚴重CSS specificity bug，逐層排查（cssText/specificity/matches()/document.styleSheets遞歸掃描）都證明源碼本身正確，最後用`el.getAnimations().forEach(a=>a.finish())`強制結算先證實真實落點正確。**呢個純粹係呢個自動化瀏覽器分頁嘅環境限制**（同follow-6發現嘅`resize_window()`唔觸發真resize事件同一類別），日後驗證任何牽涉CSS transition/animation嘅UI，卡住睇落唔啱時要諗埋呢個可能性，唔好只懷疑CSS cascade邏輯本身。
+
+**驗證**：750/1129（應收納）+1130/390（應還原）四闊度，另加兩組來回輪換（900→1130→900覆核重新進入緊縮層仍正確、1129→390→1000覆核手機模式完全唔受影響）。逐個闊度都用page-level/header-label/cell-bleed三層溢出檢查，全部零溢出零bleed；抽屜開關用`getAnimations().finish()`強制結算後確認位置/scrim/sticky聯動皆正確；console全程零錯誤。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-7」條目。**Subagent 使用記錄**：❌未使用（互動式grep排查+browser live測試全程自行操作）。
+
 [2026-08-30] (D69續八-follow-6) 緊縮桌面版面三項重排 — 首次喺呢一系列引入DOM跨容器搬遷（非純CSS）
 
 **背景**：Fat Mo 三色圈截圖標示緊縮桌面（750-1129px）三個位置要調整：①類別橫幅太佔位要隱藏；②「重新載入」搬去頂列標題右側；③「顯示項目財務／清除篩選／儲存篩選」3粒收納入「已選N項」摺疊面板。
