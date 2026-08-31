@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-01 (D69續八-follow-15：修復財務頁背景刷新後徽章又浮返出嚟——follow-14同一類bug第二個現身位): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-15」條目 + [decisions.md D69續八-follow-15](decisions.md)。follow-14修咗DOM搬遷嗰半後，Fat Mo再截兩張圖（相差9分鐘）確認訂單筆數徽章仲會喺財務頁背景刷新後浮出。真根因：`renderReviewTable()`兩處徽章顯示邏輯（mobile/desktop分支）淨睇有冇資料，從未理會而家係咪review分頁；`startAutoRefresh()`每5分鐘call`fetchGlobalReview(true)`唔理會當刻分頁，時間差剛好對上一次刷新週期。同follow-14係同一根因、兩個獨立代碼路徑。修法：兩處都加`isReviewActive`判斷。通則：背景計時器類代碼路徑特別容易漏checked「當前分頁」，開發時只喺目標分頁測試唔會諗到。已模擬background refresh觸發驗證+mobile/compact雙寬度確認，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-01 (D69續八-follow-14：修復財務/系統分頁浮咗review專用按鈕——共用top bar搬遷漏檢查當前分頁): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-14」條目 + [decisions.md D69續八-follow-14](decisions.md)。Fat Mo截圖回報橫向緊縮桌面切去財務/系統分頁時，訂單總覽專用嘅篩選漏斗/狀態tabs/類別chips/重新載入浮咗上top bar同其他頁內容疊埋。真根因：`fhsSyncCompactDesktopLayout()`（follow-7起）由頭到尾淨查闊度，從未檢查而家係咪真係訂單總覽分頁，`#v40-top-bar`跨全部分頁共用但呢批元素淨屬review分頁。修法：新增`isReviewActive`同`isCompact`一齊組成`shouldRelocate`；並喺`switchMode()`加一句主動call同步函式（切tab本身唔觸發resize）。Review/Finance/System三分頁來回切換+750/1129/1130/390全PASS，已commit+部署生產。

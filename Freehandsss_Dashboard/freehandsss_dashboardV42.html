@@ -12170,12 +12170,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             fhsSyncAuditBtnState();
             // V40: iPhone → Accordion，Desktop → Table
             // [2026-08-29 D69續八-follow] 768→730，跟返上面 CSS 斷點同步（見 .review-table-wrap 註解）
+            // [D69續八-follow-15] Fat Mo截圖：訂單筆數徽章喺財務/其他分頁都浮咗
+            // 出嚟，蓋住原本應該顯示嘅「標題 + freehandsss」top bar。真根因
+            // 同follow-14同一類——徽章顯示邏輯淨睇「有冇資料」，從未理會
+            // 「而家係咪真係訂單總覽分頁」。renderReviewTable()唔止喺撳訂單總覽
+            // tab先會執行：任何背景重render（例如follow-10加嘅跨mobile/desktop
+            // 分界重render、輪詢更新）都會經過呢度，無論用戶當刻企緊邊個分頁，
+            // 一律強制show返個徽章。加返isReviewActive把關，唔喺review分頁就
+            // 強制隱藏，唔理會呢次render本身係咪有資料。
+            var _isReviewActiveForBadge = document.body.classList.contains('v40-review-active');
             if (window.innerWidth < 750) {
                 renderReviewAccordion(orders);
                 // Still update badge count
                 const badge = document.getElementById('reviewCountBadge');
                 if (badge) {
-                    if (!orders || orders.length === 0) { badge.style.display = 'none'; }
+                    if (!_isReviewActiveForBadge || !orders || orders.length === 0) { badge.style.display = 'none'; }
                     else { badge.textContent = `${orders.length} 筆 · ${new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'})}`; badge.style.display = 'inline-flex'; }
                 }
                 return;
@@ -12192,8 +12201,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 更新筆數 Badge
             const badge = document.getElementById('reviewCountBadge');
             if (badge) {
-                badge.textContent = `${orders.length} 筆 · ${new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'})}`;
-                badge.style.display = 'inline-flex';
+                if (!_isReviewActiveForBadge) {
+                    badge.style.display = 'none';
+                } else {
+                    badge.textContent = `${orders.length} 筆 · ${new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'})}`;
+                    badge.style.display = 'inline-flex';
+                }
             }
 
             let html = "";

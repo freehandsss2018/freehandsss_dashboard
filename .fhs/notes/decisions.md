@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-01] (D69續八-follow-15) 財務頁背景刷新後徽章又浮返出嚟 — follow-14同一類bug嘅第二個現身位
+
+**背景**：follow-14修咗DOM搬遷嗰半之後，Fat Mo再截兩張圖：截圖一（財務頁，狀態欄07:01）top bar正常顯示「財務總覽」標題+「freehandsss」，同follow-14修復後嘅預期一致；截圖二（同一財務頁，徽章顯示「22筆·07:10」）top bar右側浮返出訂單筆數徽章，蓋住原本標題位置。兩個時間戳相差9分鐘。
+
+**真根因**：`renderReviewTable()`（L~12103）有兩處徽章顯示邏輯——mobile/accordion分支（L~12174）同desktop/table分支（L~12192）——兩處都淨睇「呢批`orders`有冇資料」就決定`badge.style.display`，從未理會「而家係咪真係訂單總覽分頁」。呢個function**唔止喺撳訂單總覽tab先會執行**：`startAutoRefresh()`（L~19173）每5分鐘一個`setInterval`，唔理會用戶當刻企緊邊個分頁，一律call`window.fetchGlobalReview(true)`（cascades落去`applyReviewFilters()`→`renderReviewTable()`）。兩張截圖相差9分鐘，剛好跨過一次5分鐘刷新週期——精確對上呢個真根因。
+
+**同follow-14嘅關係**：follow-14修嘅係「DOM搬遷邏輯」（`fhsSyncCompactDesktopLayout()`，只喺resize/orientationchange/切mode時執行），follow-15修嘅係「徽章顯示邏輯」（`renderReviewTable()`，任何資料重render都會執行，觸發源更廣）——兩者都係同一個「共用top bar元素冇檢查當前分頁」嘅系統性根因，但發作喺兩個獨立、唔重疊嘅代碼路徑，所以follow-14修完之後呢個bug仲會再現一次先俾人發現。
+
+**修法**：兩處徽章顯示邏輯都加返`var _isReviewActiveForBadge = document.body.classList.contains('v40-review-active');`判斷——mobile分支：`!_isReviewActiveForBadge`時強制`display:none`；desktop分支：`!_isReviewActiveForBadge`時強制`display:none`，先至喺review分頁先執行原本嘅「更新文字+show」邏輯。
+
+**通則**：follow-14「共用容器要檢查當前分頁」呢個教訓，適用範圍唔止DOM搬遷，係任何「跨分頁共用元素嘅顯示/內容更新邏輯」都要set。**背景計時器（setInterval/auto-refresh）呢類「觸發時用戶可能喺任何分頁」嘅代碼路徑特別容易漏checked**——開發嗰陣通常只喺目標分頁（呢度係訂單總覽）手動測試，測試流程本身唔會諗到「如果我啱啱切咗去第二頁，個background timer會唔會影響緊我而家睇緊嘅嘢」。日後審查任何跨分頁共用元素嘅顯示邏輯，除咗查DOM搬遷函式，仲要專門查一次「邊啲`setInterval`/背景輪詢會touch呢個元素」。
+
+**驗證**：模擬background auto-refresh（直接call `fetchGlobalReview(true)`）喺財務分頁背景觸發，confirm徽章維持`display:none`；切返review分頁confirm徽章正常顯示（含正確筆數/時間）；mobile(390px)+compact-desktop(900px)雙寬度重測，drawer/badge-in-button relocate機制（follow-9）零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-15」條目。**Subagent 使用記錄**：❌未使用（截圖時間戳比對推斷真根因+grep追蹤render/timer代碼+browser模擬重現全程自行操作）。
+
 [2026-09-01] (D69續八-follow-14) 財務/系統分頁浮咗review專用按鈕 — 共用容器DOM搬遷漏咗「而家係邊個分頁」呢個維度
 
 **背景**：Fat Mo截圖回報：橫向緊縮桌面（750-1129px）切去財務或系統分頁時，訂單總覽專用嘅篩選漏斗「已選N項」/狀態tabs（全部/進行中/已完成）/類別chips（全部/手模/鑰匙扣/頸鏈）/重新載入等，全部浮咗上top bar，同財務/系統頁本身內容重疊。

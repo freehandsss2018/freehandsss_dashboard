@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-15：修復財務頁背景刷新後徽章又浮返出嚟（follow-14同一類bug第二個現身位）
+
+- **緣起**：follow-14修咗DOM搬遷之後，Fat Mo再截兩張圖：截圖一財務頁top bar正常（標題+freehandsss），截圖二同一頁面訂單筆數徽章「22筆·07:10」浮返出嚟蓋住標題，兩個時間戳相差9分鐘。
+- **真根因**：`renderReviewTable()`兩處徽章顯示邏輯（mobile/accordion分支+desktop/table分支）淨睇「有冇資料」，從未理會「而家係咪訂單總覽分頁」。`startAutoRefresh()`每5分鐘一個`setInterval`，唔理會用戶當刻企緊邊個分頁一律call`fetchGlobalReview(true)`，cascades落去`renderReviewTable()`。9分鐘嘅時間差剛好跨過一次5分鐘刷新週期，精確對上真根因。
+- **同follow-14嘅關係**：follow-14修DOM搬遷邏輯（只喺resize/切mode時執行），follow-15修徽章顯示邏輯（任何資料重render都會執行，觸發源更廣）——同一個「共用top bar元素冇檢查當前分頁」根因，發作喺兩個獨立代碼路徑，所以follow-14修完後呢個bug仲會再現一次先俾人發現。
+- **修法**：兩處徽章顯示邏輯都加`isReviewActive`判斷（讀`document.body.classList.contains('v40-review-active')`），非review分頁一律強制`display:none`，先至喺review分頁先執行原本嘅顯示邏輯。
+- **通則**：follow-14「共用容器要檢查當前分頁」教訓適用範圍唔止DOM搬遷，係任何跨分頁共用元素嘅顯示/內容更新邏輯都要set。背景計時器（setInterval/auto-refresh）呢類「觸發時用戶可能喺任何分頁」嘅代碼路徑特別容易漏檢查——開發時通常只喺目標分頁手動測試，唔會諗到背景timer會影響緊其他分頁。
+- **驗證**：模擬background auto-refresh（直接call`fetchGlobalReview(true)`）喺財務分頁背景觸發，confirm徽章維持隱藏；切返review分頁confirm正常顯示；mobile(390px)+compact-desktop(900px)雙寬度重測，drawer/badge-in-button relocate機制零regression。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`renderReviewTable()`兩處徽章顯示邏輯各加`isReviewActive`判斷）。
+- 全文見 decisions.md D69續八-follow-15。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-14：修復財務/系統分頁浮咗review專用按鈕（共用top bar搬遷漏檢查當前分頁）
 
 - **緣起**：Fat Mo截圖回報：橫向緊縮桌面（750-1129px）切去財務或系統分頁時，訂單總覽專用嘅篩選漏斗「已選N項」/狀態tabs/類別chips/重新載入等，全部浮咗上top bar，同財務/系統頁本身內容重疊。
