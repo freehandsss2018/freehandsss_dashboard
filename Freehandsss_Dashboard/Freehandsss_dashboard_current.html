@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-08-30T17:11:11Z">
+    <meta name="fhs-build" content="2026-08-31T17:46:09Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -15915,7 +15915,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 window._fhsLastIsMobile = nowMobile;
                 if (window.applyReviewFilters) window.applyReviewFilters();
             }
+            // [D69續八-follow-14] Fat Mo截圖：橫向緊縮桌面切去財務／系統等其他
+            // 分頁時，訂單總覽專用嘅篩選漏斗/狀態tabs/類別chips/重新載入等
+            // 一樣浮咗上嚟top bar，同財務頁內容疊埋。真根因：呢個function由
+            // 頭到尾淨查`isCompact`（闊度），從未理會「而家係咪真係喺訂單總覽
+            // 分頁」——`#v40-top-bar`係跨全部分頁共用嘅頂列，但呢批元素本身
+            // 淨屬review分頁，唔應該喺其他分頁都搬入嚟。加`isReviewActive`
+            // 一齊把關：淨係「緊縮闊度 + 當刻真係訂單總覽分頁」先搬入top bar，
+            // 其餘情況（包括「緊縮闊度但而家喺財務/系統」）一律行還原分支，
+            // 等呢批元素返返去佢哋原本理應隱藏嘅review filter panel入面。
             var isCompact = window.matchMedia('(min-width:750px) and (max-width:1129px)').matches;
+            var isReviewActive = document.body.classList.contains('v40-review-active');
+            var shouldRelocate = isCompact && isReviewActive;
             var anchor = document.getElementById('fhsPinnedBtnAnchor');
             var slot = document.getElementById('fhsCompactBtnSlot');
             var topBar = document.getElementById('v40-top-bar');
@@ -15924,7 +15935,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var clearBtn = document.getElementById('fhsClearFilterBtn');
             var saveBtn = document.getElementById('fhsSaveFilterBtn');
             if (!anchor || !slot || !topBar || !refreshBtn || !financeBtn || !clearBtn || !saveBtn) return;
-            if (isCompact) {
+            if (shouldRelocate) {
                 if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
                 [financeBtn, clearBtn, saveBtn].forEach(function (b) {
                     if (b.parentElement !== slot) slot.appendChild(b);
@@ -15954,7 +15965,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var scrim = document.getElementById('fhsDrawerScrim');
             var countBadge = document.getElementById('reviewCountBadge');
             if (!pinnedRow || !titleEl || !toggleEl || !segWrapper || !catGroup || !div1 || !div2 || !filterBody || !bodyAnchor) return;
-            if (isCompact) {
+            if (shouldRelocate) {
                 // 唔可以用 `.fhs-top-bar__actions` 做插入參照點——嗰個係模式切換
                 // 快捷列，實測會俾其他既有邏輯搬去 <body> 底層做底部導覽，唔保證
                 // 一直留喺 topBar 入面（曾經因為佢揾唔到而令成個 if guard 提早
@@ -16003,6 +16014,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (layout) {
                 layout.classList.toggle('v40-review-active', mode === 'review');
             }
+            // [D69續八-follow-14] 切分頁本身唔會觸發resize/orientationchange，
+            // 但緊縮桌面top bar嘅內容要跟住分頁變（見fhsSyncCompactDesktopLayout
+            // 新加嘅isReviewActive判斷）——分頁一切換就要即刻重新評估一次，
+            // 唔可以淨靠下次窗口resize先執行。
+            if (typeof fhsSyncCompactDesktopLayout === 'function') fhsSyncCompactDesktopLayout();
 
             // V40.4: Finance Mode Header Optimization
             const topEl = document.getElementById('v40-top-order-id');
