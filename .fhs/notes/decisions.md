@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-01] (D69續八-follow-14) 財務/系統分頁浮咗review專用按鈕 — 共用容器DOM搬遷漏咗「而家係邊個分頁」呢個維度
+
+**背景**：Fat Mo截圖回報：橫向緊縮桌面（750-1129px）切去財務或系統分頁時，訂單總覽專用嘅篩選漏斗「已選N項」/狀態tabs（全部/進行中/已完成）/類別chips（全部/手模/鑰匙扣/頸鏈）/重新載入等，全部浮咗上top bar，同財務/系統頁本身內容重疊。
+
+**真根因**：`fhsSyncCompactDesktopLayout()`（follow-7起新增，follow-8/9/10陸續擴充）由頭到尾淨查`isCompact`（`window.matchMedia('(min-width:750px) and (max-width:1129px)')`），從未檢查「而家係咪真係訂單總覽分頁」。`#v40-top-bar`係跨全部分頁（新增/修改/月曆/訂單/財務/系統）共用嘅頂列，但呢批被搬遷嘅元素（篩選漏斗/狀態tabs/類別chips/重新載入+徽章）本身淨屬訂單總覽分頁——喺其他分頁根本唔應該存在/可見。呢個bug由follow-7落地嗰刻就已經存在，一直冇人喺「緊縮闊度+非訂單總覽分頁」呢個組合下實測過，直到今次Fat Mo截圖先揭發。
+
+**修法**：新增`isReviewActive = document.body.classList.contains('v40-review-active')`（呢個class由`switchMode()`喺mode==='review'時toggle），同`isCompact`一齊組成`shouldRelocate`，取代原本單靠`isCompact`嘅判斷——兩個「if(isCompact)」分支全部改用`shouldRelocate`。非review分頁（即使闊度啱），一律行「還原」分支，令呢批元素返返去`reviewFilterPinned`（訂單總覽filter panel本身，非review分頁時佢自己都係display:none，元素跟住冇形跡）。
+
+**連帶修法**：`fhsSyncCompactDesktopLayout()`本身只綁`resize`/`orientationchange`/`DOMContentLoaded`三個事件——但**切換分頁（switchMode）本身唔會觸發resize**，若用戶喺同一闊度下由訂單總覽切去財務，`shouldRelocate`嘅新判斷結果雖然啱，但成個function冇被重新call過，舊嘅relocate狀態會一直卡住唔變。修法：喺`switchMode()`嘅override入面（`layout.classList.toggle('v40-review-active', ...)`之後）主動加一句`fhsSyncCompactDesktopLayout()`，確保切分頁即刻重新評估。
+
+**通則**：共用容器（跨多個分頁/模式都可見嘅頂層元素）嘅DOM搬遷邏輯，判斷條件唔可以淨睇單一維度（呢度係「闊度」）——仲要問「呢批被搬嘅元素本身屬唔屬於邊個分頁/模式」，否則闊度啱但分頁唔啱一樣會出事。凡搬遷邏輯綁喺`resize`/`orientationchange`，若判斷用到嘅狀態（呢度係mode）可以喺唔觸發resize嘅情況下改變（例如切tab），必須喺嗰個改變嘅入口（`switchMode`）主動call一次同步函式，唔可以淨靠下次窗口resize先執行。
+
+**驗證**：Review→Finance→Review→System→Review嚟回切換（唔改闊度，純切tab），逐次query確認review專用元素（`reviewFilterToggle`/`fhsSegWrapper`/`fhsCategoryFilterGroup`/`fhsRefreshBtn`）嘅`parentElement`喺非review分頁正確係`reviewFilterPinned`、top bar只剩共用元素（logo/title/badge/mode-actions），並截圖視覺確認Finance/System頁面乾淨冇浮動按鈕；750/1129/1130/390四闊度重測review模式本身，drawer開關/one-row layout/relocate邏輯全部零regression。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-14」條目。**Subagent 使用記錄**：❌未使用（grep追蹤+browser多分頁來回切換實測全程自行操作）。
+
 [2026-08-31] (D69續八-follow-13) 限時警告badge拆兩行 — 換行bug唔淨係字太大，`white-space`/`overflow-wrap`本身係另一半
 
 **背景**：follow-12部署後，Fat Mo截圖回報：緊縮桌面層日期欄嘅限時警告badge（逾期N天／剩餘N天）拆成兩行（例如「逾期61」一行、「天」再一行），要求縮字至同一行。

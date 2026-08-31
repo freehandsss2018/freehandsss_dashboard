@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-14：修復財務/系統分頁浮咗review專用按鈕（共用top bar搬遷漏檢查當前分頁）
+
+- **緣起**：Fat Mo截圖回報：橫向緊縮桌面（750-1129px）切去財務或系統分頁時，訂單總覽專用嘅篩選漏斗「已選N項」/狀態tabs/類別chips/重新載入等，全部浮咗上top bar，同財務/系統頁本身內容重疊。
+- **真根因**：`fhsSyncCompactDesktopLayout()`（follow-7起新增，follow-8/9/10陸續擴充）由頭到尾淨查`isCompact`闊度，從未檢查「而家係咪真係訂單總覽分頁」。`#v40-top-bar`跨全部分頁共用，但呢批被搬遷嘅元素本身淨屬訂單總覽分頁——喺其他分頁根本唔應該出現。呢個bug由follow-7落地就已經存在，一直冇人喺「緊縮闊度+非訂單總覽分頁」呢個組合下實測過。
+- **修法**：新增`isReviewActive = document.body.classList.contains('v40-review-active')`同`isCompact`一齊組成`shouldRelocate`，取代原本單靠`isCompact`嘅判斷。非review分頁一律行「還原」分支，令呢批元素返返去`reviewFilterPinned`（訂單總覽自己嘅filter panel，非review分頁時本身display:none）。
+- **連帶修法**：`fhsSyncCompactDesktopLayout()`只綁`resize`/`orientationchange`/`DOMContentLoaded`——但切換分頁本身唔會觸發resize，同一闊度下切tab會令新判斷結果啱但function冇被重call。修法：喺`switchMode()`override入面主動加一句`fhsSyncCompactDesktopLayout()`，切分頁即刻重新評估。
+- **通則**：共用容器嘅DOM搬遷邏輯，判斷條件唔可以淨睇單一維度（闊度）——仲要問「呢批元素本身屬邊個分頁」。凡搬遷邏輯綁resize，若判斷狀態可以喺唔觸發resize情況下改變（切tab），必須喺嗰個改變入口主動call同步函式。
+- **驗證**：Review→Finance→Review→System→Review嚟回切換（唔改闊度），逐次確認review專用元素喺非review分頁正確歸位、top bar只剩共用元素，並截圖視覺確認乾淨；750/1129/1130/390四闊度重測review模式本身零regression。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`fhsSyncCompactDesktopLayout()`加`isReviewActive`判斷+`switchMode()`override加1句主動call）。
+- 全文見 decisions.md D69續八-follow-14。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-08-31] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-13：限時警告badge拆兩行修復（換行bug非單純字太大）
 
 - **緣起**：follow-12部署後，Fat Mo截圖回報緊縮桌面層日期欄嘅限時警告badge（逾期N天／剩餘N天）拆成兩行，要求縮字至同一行。

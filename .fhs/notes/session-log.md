@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-01 (D69續八-follow-14：修復財務/系統分頁浮咗review專用按鈕——共用top bar搬遷漏檢查當前分頁): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-14」條目 + [decisions.md D69續八-follow-14](decisions.md)。Fat Mo截圖回報橫向緊縮桌面切去財務/系統分頁時，訂單總覽專用嘅篩選漏斗/狀態tabs/類別chips/重新載入浮咗上top bar同其他頁內容疊埋。真根因：`fhsSyncCompactDesktopLayout()`（follow-7起）由頭到尾淨查闊度，從未檢查而家係咪真係訂單總覽分頁，`#v40-top-bar`跨全部分頁共用但呢批元素淨屬review分頁。修法：新增`isReviewActive`同`isCompact`一齊組成`shouldRelocate`；並喺`switchMode()`加一句主動call同步函式（切tab本身唔觸發resize）。Review/Finance/System三分頁來回切換+750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-08-31 (D69續八-follow-13：限時警告badge拆兩行修復——換行bug非單純字太大): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-31「D69續八-follow-13」條目 + [decisions.md D69續八-follow-13](decisions.md)。Fat Mo截圖：緊縮桌面層限時警告badge（逾期N天/剩餘N天）拆成兩行。真根因：`.ovw-date-line .dlv-badge`自D69續四起刻意`white-space:normal;overflow-wrap:anywhere`做窄screen防呆兜底，緊縮層Date欄已收到68px，單純follow-4嘅9px縮字冇解決問題，因為觸發換行嘅係white-space屬性本身。修法：字再縮8px+icon同步縮8px+緊縮層覆寫返`white-space:nowrap`。通則：換行bug要連埋white-space/overflow-wrap一齊查，唔可以只睇font-size。750/1129/1130/390全PASS，已commit+部署生產。
