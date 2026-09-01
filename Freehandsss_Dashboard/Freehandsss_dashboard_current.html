@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-08-31T23:18:25Z">
+    <meta name="fhs-build" content="2026-09-01T00:28:31Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3079,29 +3079,36 @@
                ①類別工作台橫幅（進度/批次分佈）喺緊縮桌面層唔顯示——呢個範圍高度
                緊絀，橫幅純資訊性、唔係操作控制項，優先讓位俾表格本身。 */
             #reviewCatStrip { display:none !important; }
+            /* [2026-09-01 D69續八-follow-16] Fat Mo明確要求：除訂單總覽外，其餘
+               分頁橫向緊縮闊度嘅top bar一律跟返原本手機直向嗰套設計，唔應該有
+               任何呢個tier專屬嘅覆寫。以下由follow-6~9新增嘅一整批`#v40-top-bar`
+               規則，先前全部係裸選擇器（冇scope），會跨全部分頁生效——喺財務/
+               系統等分頁一樣隱走標題/icon/freehandsss水印。而家統一加
+               `body.v40-review-active`前綴，確保只有訂單總覽先套用呢批規則，
+               其餘分頁嘅top bar完全唔受呢個tier影響（連height:auto都唔套）。 */
             /* ②「重新載入」搬咗去 top bar（JS `fhsSyncCompactDesktopLayout()` 處理
                實際DOM搬遷），呢度淨係定位落腳後嘅樣式。 */
-            #v40-top-bar .fhs-btn-refresh { height:28px; padding:0 10px; font-size:11px; margin-left:auto; }
+            body.v40-review-active #v40-top-bar .fhs-btn-refresh { height:28px; padding:0 10px; font-size:11px; margin-left:auto; }
             /* [2026-08-30 D69續八-follow-8] Fat Mo 截圖紅圈：「訂單總覽」標題自帶嘅
                list icon（`switchMode()`寫入`topEl.innerHTML`嘅共用SVG，唔止喺呢個
                tier出現）喺呢層純屬贅飾，收埋。淨CSS隱藏，唔改JS共用邏輯，
                mobile/傳統桌面唔受影響。 */
-            #v40-top-bar #v40-top-order-id svg { display: none; }
+            body.v40-review-active #v40-top-bar #v40-top-order-id svg { display: none; }
             /* 篩選漏斗嘅chevron（舊手風琴「展開/收起」指示器）喺 follow-7 已經改
                做Threads式抽屜，冇「向下展開」呢回事，留低會誤導；淨隱藏，撳擊
                區域（成個 #reviewFilterToggle）唔變，抽屜開關邏輯不受影響。 */
-            #v40-top-bar #reviewFilterToggle .filter-chevron { display: none; }
+            body.v40-review-active #v40-top-bar #reviewFilterToggle .filter-chevron { display: none; }
             /* [2026-08-30 D69續八-follow-9] Fat Mo 目的明確講明：盡量一行，盡量
                俾多啲位表格。①「訂單總覽」文字本身已可由頁面上下文推斷（呢頁
                淨係得訂單總覽一種內容），淨隱藏成個標題span（icon已follow-8
                隱咗，呢度索性連文字都隱埋）——span本身冇拆走，JS insertBefore
                參照點唔受影響。 */
-            #v40-top-bar #v40-top-order-id { display: none; }
+            body.v40-review-active #v40-top-bar #v40-top-order-id { display: none; }
             /* ②「重新載入」+「N筆·時間」徽章合併做一個button——JS
                fhsSyncCompactDesktopLayout() 改用`refreshBtn.appendChild(countBadge)`
                令徽章成為button嘅子元素（撳徽章都算撳咗button，一齊觸發reload），
                呢度淨隱走徽章自己嗰個獨立綠色藥丸樣式，改做button內嘅後綴文字。 */
-            #v40-top-bar #fhsRefreshBtn #reviewCountBadge {
+            body.v40-review-active #v40-top-bar #fhsRefreshBtn #reviewCountBadge {
                 background: transparent !important; padding: 0 !important;
                 margin-left: 6px !important; border-left: 1px solid rgba(255,255,255,.45);
                 padding-left: 6px !important; font-weight: 600;
@@ -3124,21 +3131,21 @@
                連帶 JS 那邊 zone1H 由寫死 48 改動態量度（L~6878），否則 Zone2/Zone3/
                thead sticky top 會用返舊 48 嘅假設，同 follow-5 嗰次「休眠 CSS 假設」
                屬同一類陷阱——呢度提前修正，唔留第二個地雷。 */
-            #v40-top-bar {
+            body.v40-review-active #v40-top-bar {
                 height: auto; min-height: 48px; overflow: visible;
                 flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px;
             }
             /* 絕對定位置中嘅「freehandsss」水印本身無功能（pointer-events:none），
                top bar 長高兩行後佢會垂直置中喺兩行之間、視覺上疊住狀態tabs——
                呢層乾脆收埋，減低視覺雜訊，同時避開重疊。 */
-            #v40-top-bar .fhs-top-bar__logo { display: none; }
-            #v40-top-bar #reviewFilterToggle { width: auto; flex-shrink: 0; }
-            #v40-top-bar #fhsSegWrapper { flex: 0 0 auto; padding: 2px 0; }
-            #v40-top-bar .fhs-seg-ctrl { min-width: 0; }
-            #v40-top-bar .fhs-seg-btn { height: 26px; font-size: 12px; }
-            #v40-top-bar #fhsCategoryFilterGroup { flex: 0 0 auto; }
-            #v40-top-bar #fhsCategoryFilterGroup .filter-label { display: none; }
-            #v40-top-bar .chip-btn { height: 26px; padding: 0 9px; font-size: 11px; }
+            body.v40-review-active #v40-top-bar .fhs-top-bar__logo { display: none; }
+            body.v40-review-active #v40-top-bar #reviewFilterToggle { width: auto; flex-shrink: 0; }
+            body.v40-review-active #v40-top-bar #fhsSegWrapper { flex: 0 0 auto; padding: 2px 0; }
+            body.v40-review-active #v40-top-bar .fhs-seg-ctrl { min-width: 0; }
+            body.v40-review-active #v40-top-bar .fhs-seg-btn { height: 26px; font-size: 12px; }
+            body.v40-review-active #v40-top-bar #fhsCategoryFilterGroup { flex: 0 0 auto; }
+            body.v40-review-active #v40-top-bar #fhsCategoryFilterGroup .filter-label { display: none; }
+            body.v40-review-active #v40-top-bar .chip-btn { height: 26px; padding: 0 9px; font-size: 11px; }
             /* 篩選漏斗「已選N項」由手風琴（filter-body 展開推低表格）改做抽屜：
                #reviewFiltersV2 整個收埋（入面嘅 filter-row-pinned／filter-body
                內容已經全部由 JS 搬走，剩返嘅空殼連埋兩條分隔線一齊收埋）。
