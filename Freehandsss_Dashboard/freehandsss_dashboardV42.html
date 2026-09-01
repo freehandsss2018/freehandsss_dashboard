@@ -3275,6 +3275,27 @@
                 border: 1px solid transparent !important;
                 box-shadow: none !important;
             }
+            /* [2026-09-01 D69續八-follow-18] Fat Mo要求：橫向模式（呢個緊縮桌面
+               750-1129px層）底部功能bar整體縮減30%——只影響呢層，767以下嘅
+               純mobile直向版本維持原大小唔變。源碼順序排喺上面follow-17嗰組
+               之後，同一選擇器、同一specificity，後者食硬蓋過前面數值。
+               各數值按70%等比例縮（56→39/44→31/20→14/9→6.3四捨五入），
+               padding/max-width同步等比例縮，bottom離邊距離維持16px唔變
+               （呢個係定位、唔係「bar本身大細」）。 */
+            .fhs-top-bar__actions {
+                height: 39px;
+                padding: 3px 4px;
+                max-width: 350px;
+            }
+            .fhs-top-bar__actions button {
+                height: 31px;
+                padding: 3px 1px;
+                font-size: 6px;
+            }
+            .fhs-top-bar__actions button .ba-icon {
+                width: 14px;
+                height: 14px;
+            }
         }
 
         /* F3 v2: dual-mode modal — tabs */

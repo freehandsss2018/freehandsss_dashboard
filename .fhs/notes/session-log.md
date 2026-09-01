@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-01 (D69續八-follow-18：橫向模式底部功能bar整體縮減30%): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-18」條目 + [decisions.md D69續八-follow-18](decisions.md)。follow-17修復好緊縮桌面底部浮動藥丸nav後，Fat Mo要求整體縮減30%。做法：喺follow-17區塊尾部新增覆寫，各相關px值等比例縮至70%（bar56→39px/button44→31px/icon20→14px/字級9→6px/max-width500→350px），bottom離邊距離維持16px不變。純mobile(<750)/傳統桌面(≥1130)完全不受影響。純數值密度指令直譯執行，唔自行判斷太細而打折扣。750/900/1129/1130/390五闊度全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-01 (D69續八-follow-17：修復Chrome/Safari橫向顯示不一致、底部功能bar完全消失——又一個舊767/768 threshold): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-17」條目 + [decisions.md D69續八-follow-17](decisions.md)。Fat Mo回報Chrome/Safari橫向顯示不一致、Safari底部功能bar不見。真根因比報告更嚴重：`.fhs-top-bar__actions`（模式切換nav）用舊`@media(max-width:767px)`控制浮動底部藥丸樣式，同D69續八成套改用嘅750/1129脫節；900px實測nav完全消失撳唔到，唔止樣式唔啱。修法：新增獨立`@media(750-1129)`區塊重新套用浮動樣式。呢已經係第三次獨立發現舊768/767 threshold遺漏（follow-14 JS搬遷/follow-15 JS顯示/follow-16 CSS scope/follow-17又一組CSS），全檔grep顯示仲有其他occurrence未核實，已記入handoff.md留待Fat Mo拍板範圍。四分頁四闊度全PASS，已commit+部署生產。

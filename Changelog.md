@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-18：橫向模式底部功能bar整體縮減30%
+
+- **緣起**：follow-17啱啱先修復好緊縮桌面（750-1129px）底部浮動藥丸nav（消失咗嗰個），Fat Mo緊接要求整體縮減30%。
+- **做法**：喺follow-17新增嘅`@media(min-width:750px) and (max-width:1129px)`區塊尾部加一組覆寫規則（源碼順序後者食硬），各相關px值等比例縮至70%：bar高度56→39px、button高度44→31px、icon 20→14px、字級9→6px、bar/button padding同步等比例縮、max-width 500→350px。`bottom:16px`（離邊距離，屬定位非「bar大細」）刻意維持不變。
+- **Scope**：淨影響750-1129緊縮桌面範圍。767px以下純mobile直向版本維持原大小56px/9px；1130或以上傳統桌面（inline top-bar，非浮動）不受影響。
+- **通則**：純數值密度縮減指令（「縮N%」）優先直譯做「等比例縮各相關px值」執行，唔應該自行判斷「太細睇唔到」而擅自打折扣——呢類指令本身冇歧義，應直接照做，太細由用戶截圖反映再調整，AI唔應該預先過度詮釋意圖。
+- **驗證**：750/900/1129三個緊縮桌面闊度confirm各數值準確縮至70%；390(mobile)確認完全唔受影響；1130(傳統桌面)確認不受影響；console零新增錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（follow-17區塊尾部新增一組覆寫規則，8條屬性）。
+- 全文見 decisions.md D69續八-follow-18。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-17：修復Chrome/Safari橫向顯示不一致、底部功能bar完全消失（又一個舊767/768 threshold）
 
 - **緣起**：follow-16部署後，Fat Mo回報Chrome/Safari喺同一橫向闊度顯示唔一致，Safari橫向底部功能bar（新增/修改/月曆/訂單/財務/系統）不見咗。
