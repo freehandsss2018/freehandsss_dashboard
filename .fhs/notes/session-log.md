@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-01 (D69續八-follow-17：修復Chrome/Safari橫向顯示不一致、底部功能bar完全消失——又一個舊767/768 threshold): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-17」條目 + [decisions.md D69續八-follow-17](decisions.md)。Fat Mo回報Chrome/Safari橫向顯示不一致、Safari底部功能bar不見。真根因比報告更嚴重：`.fhs-top-bar__actions`（模式切換nav）用舊`@media(max-width:767px)`控制浮動底部藥丸樣式，同D69續八成套改用嘅750/1129脫節；900px實測nav完全消失撳唔到，唔止樣式唔啱。修法：新增獨立`@media(750-1129)`區塊重新套用浮動樣式。呢已經係第三次獨立發現舊768/767 threshold遺漏（follow-14 JS搬遷/follow-15 JS顯示/follow-16 CSS scope/follow-17又一組CSS），全檔grep顯示仲有其他occurrence未核實，已記入handoff.md留待Fat Mo拍板範圍。四分頁四闊度全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-01 (D69續八-follow-16：其餘分頁橫向top bar完全跟返手機設計——follow-14/15淨修JS，CSS scope本身未處理): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-16」條目 + [decisions.md D69續八-follow-16](decisions.md)。Fat Mo明確裁決：除訂單總覽外，其餘分頁橫向緊縮闊度top bar應完全跟返手機設計。真根因：follow-6~9新增嘅13條`#v40-top-bar`CSS規則（隱藏標題/icon/freehandsss水印/top bar長高兩行）全部係裸選擇器，冇scope返訂單總覽，跨全部分頁生效，令財務/系統頁橫向時標題消失。follow-14/15淨修咗JS層（DOM搬遷+badge顯示），呢批CSS規則本身從未處理過——三個獨立round先補齊同一議題嘅完整修復。修法：13條全部加`body.v40-review-active`前綴。財務/系統/訂單總覽三分頁四闊度全PASS，Review分頁compact行為零regression，已commit+部署生產。

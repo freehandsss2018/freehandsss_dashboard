@@ -3,6 +3,24 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-01] (D69續八-follow-17) Chrome/Safari橫向顯示不一致，底部功能bar完全消失 — 又一個舊767/768 threshold未對齊750/1129
+
+**背景**：follow-16部署後，Fat Mo回報：Chrome同Safari喺同一橫向闊度，介面大小睇落唔一樣；Safari橫向底部功能bar（新增/修改/月曆/訂單/財務/系統）不見咗。
+
+**真根因（比表面報告更嚴重）**：`.fhs-top-bar__actions`（模式切換按鈕，喺窄闊度視覺上呈現做浮動底部藥丸nav）本身係V40早期舊代碼，用`@media(max-width:767px)`（L~2265）決定套用「position:fixed浮動底部藥丸」定「position:static回歸top bar內嵌」。呢條767嘅threshold同D69續八系列成套改用嘅750/1129完全脫節——真機Safari/Chrome橫向報返嚟嘅`window.innerWidth`會因為各browser自己UI chrome保留空間唔同而有落差（同follow-2嗰次iPhone13 Pro實測750 vs理論844嘅94px落差同一成因），落喺750-900呢個範圍浮動好正常。
+
+實測900px width：`.fhs-top-bar__actions`嘅`position`跌返`static`、`bottom`變`auto`——即係完全脫離浮動藥丸樣式，回歸做top bar入面嘅普通inline element。但緊縮桌面層嘅top bar本身已經好逼（follow-7~9塞咗篩選tabs/類別chips/重新載入等），視覺化截圖確認**模式切換nav完全冇喺任何位置render出嚟**——唔止「樣式唔啱」，係「完全消失、撳唔到」，用戶喺呢個闊度冇任何辦法切換分頁。
+
+**修法**：新增獨立`@media(min-width:750px) and (max-width:1129px)`區塊，源碼順序排喺舊767嗰組之後，完整重新套用返嗰套「浮動底部藥丸」樣式（`.fhs-top-bar__actions`嘅fixed定位+`button`/`.ba-icon`/`.active`子樣式+`body`底部padding），覆蓋返768-1129嗰段缺口。750-767兩組重疊時數值相同，冇視覺分別；1130或以上跌返去`position:static`嘅傳統桌面內嵌樣式，唔受影響。
+
+**同follow-14/15/16嘅共通點**：呢已經係第三次獨立發現嘅「舊768/767 threshold同新750/1129脫節」問題（follow-14係JS DOM搬遷、follow-15係JS顯示邏輯、follow-16係CSS scope、而家follow-17係另一組完全獨立嘅CSS——`.fhs-top-bar__actions`嘅fixed定位）。每次都以為「呢個係最後一個」，但全檔grep`767|768`顯示仲有大量其他occurrence未逐一核實（部分屬合理獨立於D69續八範圍之外嘅組件，例如bulk action bar/modal tabs，未必需要對齊）。
+
+**通則**：改響應式斷點嘅風險唔止喺「改嗰一條規則本身」，仲喺「呢個codebase有幾多個獨立、互不相關嘅代碼路徑各自硬編碼緊同一組舊threshold數值（767/768），逐一改斷點嗰陣淨會改到自己接觸到嗰幾條」。落手改任何全域性斷點前，應該先做一次全檔grep建立完整清單，逐條核實係咪都要跟住改，而非等一個一個真機bug report先逐個補鑊——即使最終裁決係「淨改訂單總覽相關嗰幾條，其餘保留768」，都應該係一次過睇晒全部清單之後嘅有意識決定，而唔係漏檢查嘅副產品。呢個判斷已記入handoff.md下一步，留返俾Fat Mo拍板範圍。
+
+**驗證**：財務/系統/訂單總覽/新增四分頁，750/1129/1130/390四闊度全PASS；900px實測`.fhs-top-bar__actions`由`position:static`（完全唔顯示）變返`position:fixed`（浮動藥丸nav正常顯示、可撳）；截圖確認新增/月曆/訂單/財務/系統五粒掣同active狀態指示正確；1130確認正確跌返傳統桌面top bar內嵌樣式（非fixed）；Review分頁drawer/one-row layout重測零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-17」條目。**Subagent 使用記錄**：❌未使用（grep追蹤舊threshold+browser多寬度截圖交叉驗證全程自行操作）。
+
 [2026-09-01] (D69續八-follow-16) 其餘分頁橫向top bar要完全跟返手機設計 — follow-14/15淨修JS，CSS scope本身未處理
 
 **背景**：follow-15部署後，Fat Mo明確裁決範圍：「除訂單總覽不用修改外，其餘版面橫向模式，版面介面頂端跟隨原本手機嘅設計」——即財務/系統/新增/修改/月曆呢批分頁，喺750-1129px橫向緊縮闊度，top bar應該完全等同原本mobile portrait嗰套顯示（標題+freehandsss水印+正常icon），唔應該有任何「訂單總覽專屬」嘅覆寫滲入。

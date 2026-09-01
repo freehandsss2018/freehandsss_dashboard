@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-17：修復Chrome/Safari橫向顯示不一致、底部功能bar完全消失（又一個舊767/768 threshold）
+
+- **緣起**：follow-16部署後，Fat Mo回報Chrome/Safari喺同一橫向闊度顯示唔一致，Safari橫向底部功能bar（新增/修改/月曆/訂單/財務/系統）不見咗。
+- **真根因（比表面報告更嚴重）**：`.fhs-top-bar__actions`（模式切換按鈕，窄闊度呈現做浮動底部藥丸nav）係V40早期舊代碼，用`@media(max-width:767px)`決定「浮動」定「回歸top bar內嵌」，呢條767 threshold同D69續八系列成套改用嘅750/1129完全脫節。真機Safari/Chrome橫向報返嚟嘅innerWidth因各browser UI chrome保留空間唔同會有落差，落喺750-900好正常。實測900px：`.fhs-top-bar__actions`跌返`position:static`，但緊縮桌面top bar本身已經逼爆冇位，模式切換nav**完全消失、撳唔到**，唔止樣式唔啱。
+- **修法**：新增獨立`@media(min-width:750px) and (max-width:1129px)`區塊，源碼順序排喺舊767嗰組之後，完整重新套用返「浮動底部藥丸」樣式，覆蓋返768-1129嗰段缺口。750-767重疊部分數值相同冇分別；1130或以上跌返傳統桌面內嵌樣式不受影響。
+- **同follow-14/15/16嘅共通點**：第三次獨立發現「舊768/767 threshold同新750/1129脫節」——follow-14 JS DOM搬遷、follow-15 JS顯示邏輯、follow-16 CSS scope、follow-17又一組獨立CSS。全檔grep`767|768`顯示仲有大量occurrence未逐一核實，部分屬合理獨立範圍（bulk action bar/modal tabs），未必需要改。
+- **通則**：改響應式斷點嘅風險唔止喺「改嗰一條規則」，仲喺「codebase有幾多獨立代碼路徑各自硬編碼同一組舊threshold」。落手前應該先全檔grep建立完整清單，一次過核實，而非逐個真機bug report先逐個補鑊。已記入handoff.md下一步，留返俾Fat Mo拍板剩餘occurrence嘅處理範圍。
+- **驗證**：財務/系統/訂單總覽/新增四分頁，750/1129/1130/390四闊度全PASS；900px實測`.fhs-top-bar__actions`由消失變返正常顯示可撳；1130確認正確跌返傳統桌面樣式；Review分頁drawer/one-row layout零regression。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（新增1個`@media`區塊，重新套用既有「浮動底部藥丸」樣式覆蓋750-1129範圍）。
+- 全文見 decisions.md D69續八-follow-17。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-16：其餘分頁橫向top bar完全跟返手機設計（follow-14/15淨修JS，CSS scope本身未處理）
 
 - **緣起**：follow-15部署後，Fat Mo明確裁決範圍：「除訂單總覽不用修改外，其餘版面橫向模式，版面介面頂端跟隨原本手機嘅設計」——財務/系統等分頁喺750-1129px橫向緊縮闊度，top bar應該完全等同mobile portrait嗰套顯示，唔應該有訂單總覽專屬嘅覆寫滲入。
