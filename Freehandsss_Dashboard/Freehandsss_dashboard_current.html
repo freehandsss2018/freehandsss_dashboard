@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-01T00:28:31Z">
+    <meta name="fhs-build" content="2026-09-01T01:02:24Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3196,6 +3196,84 @@
             #reviewFilterBody.fhs-drawer-mode .filter-group select,
             #reviewFilterBody.fhs-drawer-mode .filter-group input {
                 flex: 1 1 auto; min-width: 0; width: auto;
+            }
+        }
+
+        /* [2026-09-01 D69續八-follow-17] Fat Mo截圖：Chrome／Safari喺同一橫向
+           闊度顯示唔一致，Safari橫向底部功能bar（新增/修改/月曆/訂單/財務/系統）
+           不見咗。真根因：`.fhs-top-bar__actions`（模式切換按鈕）本身用
+           `@media(max-width:767px)`（L~2265，V40早期舊代碼）決定「浮動底部藥丸
+           nav」定「回歸top bar內嵌」，呢條767嘅threshold同D69續八系列成套改用嘅
+           750/1129完全脫節——真實裝置Safari/Chrome橫向報返嚟嘅innerWidth可以
+           喺750-900呢個範圍浮動（各browser自己UI chrome保留空間唔同，同
+           follow-2嗰次iPhone13 Pro實測750 vs理論844嘅94px落差同一成因），一
+           跨過767即刻由「底部浮動pill」打回「top bar內嵌」，但緊縮桌面層top
+           bar本身已經好逼（篩選tabs/chips/重新載入等塞晒），實測結果係
+           `.fhs-top-bar__actions`跌返做`position:static`，冇位可擠，成排
+           模式切換按鈕完全消失（唔止外觀唔同，係完全睇唔到、撳唔到）。
+           修法：喺750-1129成個緊縮桌面範圍重新套用返767嗰套「底部浮動pill」
+           樣式（源碼順序排喺舊767嗰組之後，覆寫返768-1129嗰段缺口；750-767
+           重疊部分兩組數值相同，冇視覺分別），令Safari/Chrome喺呢個範圍表現
+           一致，亦同follow-9已確立嘅「緊縮桌面好多方面沿用mobile行為」原則
+           對齊。 */
+        @media (min-width: 750px) and (max-width: 1129px) {
+            body {
+                padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+            .fhs-top-bar__actions {
+                position: fixed;
+                left: 16px; right: 16px;
+                bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+                z-index: 2000;
+                height: 56px;
+                background: rgba(255, 255, 255, 0.6) !important;
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
+                border: 1px solid rgba(224, 216, 204, 0.5);
+                border-radius: 9999px;
+                box-shadow: 0 8px 32px rgba(44, 36, 22, 0.08), 0 1px 2px rgba(44, 36, 22, 0.02);
+                padding: 4px 6px;
+                gap: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            .fhs-top-bar__actions button {
+                position: relative;
+                z-index: 1;
+                flex: 1;
+                height: 44px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;
+                min-width: 0;
+                padding: 4px 2px;
+                font-size: 9px;
+                font-weight: 500;
+                border: 1px solid transparent !important;
+                border-radius: 22px;
+                background: transparent !important;
+                color: var(--fhs-text-secondary);
+                transition: color 0.2s ease;
+                box-shadow: none !important;
+                cursor: pointer;
+            }
+            .fhs-top-bar__actions button .ba-icon {
+                width: 20px;
+                height: 20px;
+                display: block;
+                color: inherit;
+            }
+            .fhs-top-bar__actions button.active {
+                color: var(--fhs-accent) !important;
+                font-weight: 700;
+                background: transparent !important;
+                border: 1px solid transparent !important;
+                box-shadow: none !important;
             }
         }
 
