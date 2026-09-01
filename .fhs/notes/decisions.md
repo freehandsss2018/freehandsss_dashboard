@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-01] (D69續八-follow-16) 其餘分頁橫向top bar要完全跟返手機設計 — follow-14/15淨修JS，CSS scope本身未處理
+
+**背景**：follow-15部署後，Fat Mo明確裁決範圍：「除訂單總覽不用修改外，其餘版面橫向模式，版面介面頂端跟隨原本手機嘅設計」——即財務/系統/新增/修改/月曆呢批分頁，喺750-1129px橫向緊縮闊度，top bar應該完全等同原本mobile portrait嗰套顯示（標題+freehandsss水印+正常icon），唔應該有任何「訂單總覽專屬」嘅覆寫滲入。
+
+**真根因**：follow-6~9一連串新增嘅`#v40-top-bar`CSS規則（top bar長高兩行、隱藏freehandsss水印、隱藏標題icon、隱藏標題文字等，共13條）全部係**裸選擇器**（`#v40-top-bar {...}`／`#v40-top-bar #v40-top-order-id {...}`等），冇任何祖先selector scope返訂單總覽分頁——呢批規則本質上係為訂單總覽單一分頁設計（follow-8隱藏「訂單總覽」自帶icon、follow-9隱藏「訂單總覽」文字），但寫法上冇set「淨喺訂單總覽先生效」，結果只要闊度啱（750-1129px），**任何分頁**都會中招：財務頁橫向時「財務總覽」標題文字/icon/freehandsss水印全部俾呢批規則屈埋。
+
+**同follow-14/15嘅關係**：follow-14修DOM搬遷邏輯（JS，`fhsSyncCompactDesktopLayout()`）、follow-15修徽章顯示邏輯（JS，`renderReviewTable()`）——兩者都係**JS層面**嘅「共用容器要檢查當前分頁」修復。但呢批CSS規則係完全獨立嘅第三個問題源，JS修完之後CSS本身冇跟住郁過，所以Fat Mo截圖仍然見到財務頁標題消失——唔係follow-14/15冇修好，係佢哋根本冇涵蓋呢個範圍。三個獨立round先至補齊同一個「共用top bar」議題嘅完整修復。
+
+**修法**：13條規則全部加`body.v40-review-active`祖先selector前綴，令佢哋只喺`document.body`帶住`v40-review-active`class（即訂單總覽分頁）先套用。呢個class同follow-14/15用嚟判斷`isReviewActive`嘅JS查詢係同一個，CSS/JS兩層用返同一套真源，冇分歧風險。
+
+**通則**：「共用容器要檢查當前分頁」呢個follow-14教訓，適用範圍横跨JS狀態邏輯**同**CSS scope兩層，唔可以修完一層就假設另一層自動跟埋。凡專屬某分頁但物理上寫喺共用容器（`#v40-top-bar`跨全部分頁存在）身上嘅media query覆寫，一律要用`body.<mode>-active`（或對應嘅mode判斷class）祖先selector scope住；裸選擇器一定會滲晒去其他分頁——呢個唔係「可能發生」嘅風險，係follow-6落地嗰刻就已經實際發生咗，一直等到今次Fat Mo明確裁決先俾人發現完整範圍。
+
+**驗證**：財務/系統/訂單總覽三分頁，750/1129/1130/390四闊度全PASS；Finance/System頁逐項確認`v40-top-order-id`嘅`display`/文字/icon、`.fhs-top-bar__logo`嘅`display`、top bar `height`（48px單行，非follow-7嘅兩行放寬）全部同mobile設計一致；Review分頁compact行為（one-row layout/drawer開關/toggle-seg-cat relocate）重測零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-16」條目。**Subagent 使用記錄**：❌未使用（grep全面列出`#v40-top-bar`規則+browser多分頁多闊度交叉驗證全程自行操作）。
+
 [2026-09-01] (D69續八-follow-15) 財務頁背景刷新後徽章又浮返出嚟 — follow-14同一類bug嘅第二個現身位
 
 **背景**：follow-14修咗DOM搬遷嗰半之後，Fat Mo再截兩張圖：截圖一（財務頁，狀態欄07:01）top bar正常顯示「財務總覽」標題+「freehandsss」，同follow-14修復後嘅預期一致；截圖二（同一財務頁，徽章顯示「22筆·07:10」）top bar右側浮返出訂單筆數徽章，蓋住原本標題位置。兩個時間戳相差9分鐘。

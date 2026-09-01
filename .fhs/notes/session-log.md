@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-01 (D69續八-follow-16：其餘分頁橫向top bar完全跟返手機設計——follow-14/15淨修JS，CSS scope本身未處理): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-16」條目 + [decisions.md D69續八-follow-16](decisions.md)。Fat Mo明確裁決：除訂單總覽外，其餘分頁橫向緊縮闊度top bar應完全跟返手機設計。真根因：follow-6~9新增嘅13條`#v40-top-bar`CSS規則（隱藏標題/icon/freehandsss水印/top bar長高兩行）全部係裸選擇器，冇scope返訂單總覽，跨全部分頁生效，令財務/系統頁橫向時標題消失。follow-14/15淨修咗JS層（DOM搬遷+badge顯示），呢批CSS規則本身從未處理過——三個獨立round先補齊同一議題嘅完整修復。修法：13條全部加`body.v40-review-active`前綴。財務/系統/訂單總覽三分頁四闊度全PASS，Review分頁compact行為零regression，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-01 (D69續八-follow-15：修復財務頁背景刷新後徽章又浮返出嚟——follow-14同一類bug第二個現身位): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-15」條目 + [decisions.md D69續八-follow-15](decisions.md)。follow-14修咗DOM搬遷嗰半後，Fat Mo再截兩張圖（相差9分鐘）確認訂單筆數徽章仲會喺財務頁背景刷新後浮出。真根因：`renderReviewTable()`兩處徽章顯示邏輯（mobile/desktop分支）淨睇有冇資料，從未理會而家係咪review分頁；`startAutoRefresh()`每5分鐘call`fetchGlobalReview(true)`唔理會當刻分頁，時間差剛好對上一次刷新週期。同follow-14係同一根因、兩個獨立代碼路徑。修法：兩處都加`isReviewActive`判斷。通則：背景計時器類代碼路徑特別容易漏checked「當前分頁」，開發時只喺目標分頁測試唔會諗到。已模擬background refresh觸發驗證+mobile/compact雙寬度確認，已commit+部署生產。
