@@ -2968,6 +2968,41 @@
             .ovw-allview-col.ovw-col-stat     { width:88px  !important; }
             .ovw-allview-col.ovw-col-notes    { width:56px  !important; }
         }
+        /* [2026-09-02 D69續八-follow-19] Fat Mo要求：手機直向（<750px）都要享用
+           「顯示項目財務／清除篩選／儲存篩選收納入摺疊面板＋重新載入搬去top
+           bar同徽章合併」呢套follow-6/9原本淨限compact-desktop（750-1129px）
+           嘅密度手法（JS判斷見`fhsSyncCompactDesktopLayout()`嘅
+           `shouldCollapseButtons`）。以下4條規則本身喺follow-16/6/9建立時
+           全部包喺750-1129嗰個media query入面，令佢哋淨喺嗰個闊度先生效——
+           而家將呢4條**照抄一份、拆出嚟做闊度獨立版本**（唔改原有嗰份，避免
+           影響compact-desktop既有行為），確保JS喺手機闊度做咗DOM搬遷之後，
+           呢度嘅樣式都跟到手。手機原有`.fhs-btn-refresh`/`.fhs-btn-save-filter`
+           喺`@media(max-width:767px)`入面有`width:100%`（S150 F3.3手機觸控
+           目標規則），呢度要額外覆寫返`width:auto`先合用喺top bar/收納面板
+           呢種窄身context，唔可以直接沿用手機版嘅全寬觸控目標樣式。 */
+        body.v40-review-active #v40-top-bar .fhs-btn-refresh {
+            height: 28px; padding: 0 10px; font-size: 11px; margin-left: auto; width: auto;
+        }
+        /* 手機width實測：徽章併入button後「重新載入」+「N筆·時間」合埋闊度
+           足以撞正絕對定位置中嘅freehandsss水印（純裝飾、pointer-events:none，
+           follow-8已喺compact-desktop隱咗，但嗰條規則局限750-1129，手機一直
+           冇隱過）——擴闊做闊度獨立版，同上面4條規則同一批次修正。 */
+        body.v40-review-active #v40-top-bar .fhs-top-bar__logo { display: none; }
+        body.v40-review-active #v40-top-bar #fhsRefreshBtn #reviewCountBadge {
+            background: transparent !important; padding: 0 !important;
+            margin-left: 6px !important; border-left: 1px solid rgba(255,255,255,.45);
+            padding-left: 6px !important; font-weight: 600;
+        }
+        #fhsCompactBtnSlot.has-content {
+            display: flex !important; gap: 6px; flex-wrap: wrap;
+            padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed var(--fhs-border);
+        }
+        #fhsCompactBtnSlot .fhs-btn-save-filter,
+        #fhsCompactBtnSlot .fhs-btn-refresh {
+            margin-right: 0 !important; width: auto !important; flex: 0 1 auto;
+            height: 36px; font-size: 12px;
+        }
+
         /* [2026-08-29 緊縮桌面續] 上面「全部」視圖修好之後，同一斷層區（768-1129px）
            實測類別視圖（鎖匙扣/頸鏈/手模）都一樣溢出——既有 @media(max-width:1280px)
            narrowcol 數值係為 1024px「iPad安全」門檻校準，768-1023 呢段從未實測過。
@@ -4037,10 +4072,18 @@
             box-shadow: none !important;
         }
         .fhs-seg-indicator {
+            /* [2026-09-02 D69續八-follow-19] Fat Mo截圖：白色滑動指示器同「進行中」
+               等tab文字冇對齊、成排都偏咗。真根因：呢度舊`left:3px`（對應
+               `.fhs-seg-ctrl`嘅3px padding）同JS `initSegmentedControls()`嘅
+               `translateX(btnRect.left - ctrlRect.left)`計算雙重計咗padding——
+               嗰條translateX本身已經係用真實getBoundingClientRect()量度嘅相對
+               位移，已經包含晒padding喺內，唔應該再喺CSS基礎位置額外加多次
+               3px。實測：改前indicator同button左緣相差3.8px（右移咗），改
+               `left:0`後跌返0.8px（純sub-pixel四捨五入誤差，視覺上完全對齊）。 */
             position: absolute;
             top: 3px;
             bottom: 3px;
-            left: 3px;
+            left: 0;
             z-index: 0;
             background: var(--fhs-bg-surface, #fff);
             border-radius: 8px;
@@ -16046,6 +16089,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var isCompact = window.matchMedia('(min-width:750px) and (max-width:1129px)').matches;
             var isReviewActive = document.body.classList.contains('v40-review-active');
             var shouldRelocate = isCompact && isReviewActive;
+            // [2026-09-02 D69續八-follow-19] Fat Mo截圖一：手機直向（<750px）嘅
+            // 篩選常駐列（顯示項目財務／清除篩選／儲存篩選／重新載入4粒掣）
+            // 全部stack晒喺畫面最頂，佔咗成個screen三成幾先見到第一張單。之前
+            // follow-6/9 呢套「3粒收納入摺疊面板+重新載入搬去top bar」嘅密度
+            // 手法一直淨限compact-desktop（750-1129px），手機直向從未受惠。
+            // 呢度將呢個「收納」判斷獨立開一個`shouldCollapseButtons`（緊縮桌面
+            // 或手機、皆要review分頁），對比落面嘅`shouldRelocate`保持
+            // compact-desktop-only——狀態tabs/類別chips/篩選漏斗嘅Threads式
+            // 抽屜呢套後續變化，Fat Mo冇要求手機都要跟，維持手機原有嘅
+            // accordion展開行為，只係收窄「3粒掣+重新載入」呢部分嘅常駐佔位。
+            var nowMobileForCollapse = window.innerWidth < 750;
+            var shouldCollapseButtons = (isCompact || nowMobileForCollapse) && isReviewActive;
             var anchor = document.getElementById('fhsPinnedBtnAnchor');
             var slot = document.getElementById('fhsCompactBtnSlot');
             var topBar = document.getElementById('v40-top-bar');
@@ -16053,19 +16108,30 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var financeBtn = document.getElementById('fhsToggleAuditBtn');
             var clearBtn = document.getElementById('fhsClearFilterBtn');
             var saveBtn = document.getElementById('fhsSaveFilterBtn');
+            var countBadgeForRefresh = document.getElementById('reviewCountBadge');
+            var titleElForRefresh = document.getElementById('v40-top-order-id');
             if (!anchor || !slot || !topBar || !refreshBtn || !financeBtn || !clearBtn || !saveBtn) return;
-            if (shouldRelocate) {
+            if (shouldCollapseButtons) {
                 if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
                 [financeBtn, clearBtn, saveBtn].forEach(function (b) {
                     if (b.parentElement !== slot) slot.appendChild(b);
                 });
                 slot.classList.add('has-content');
+                // follow-9 原本淨喺compact-desktop分支先做嘅「徽章併入重新載入
+                // button」，而家兩個tier（compact-desktop／手機）都經呢度，
+                // 一併搬埋，令手機「重新載入」都落返去截圖三藍圈（徽章原位）。
+                if (countBadgeForRefresh && countBadgeForRefresh.parentElement !== refreshBtn) {
+                    refreshBtn.appendChild(countBadgeForRefresh);
+                }
             } else {
                 if (refreshBtn.parentElement === topBar) anchor.insertAdjacentElement('afterend', refreshBtn);
                 [saveBtn, clearBtn, financeBtn].forEach(function (b) {
                     if (b.parentElement === slot) anchor.insertAdjacentElement('afterend', b);
                 });
                 slot.classList.remove('has-content');
+                if (countBadgeForRefresh && titleElForRefresh && countBadgeForRefresh.parentElement === refreshBtn) {
+                    titleElForRefresh.insertAdjacentElement('afterend', countBadgeForRefresh);
+                }
             }
 
             // [D69續八-follow-7] 狀態tabs＋類別chips 搬去 top bar 標題右方；篩選漏斗
@@ -16082,8 +16148,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var filterBody = document.getElementById('reviewFilterBody');
             var bodyAnchor = document.getElementById('fhsFilterBodyAnchor');
             var scrim = document.getElementById('fhsDrawerScrim');
-            var countBadge = document.getElementById('reviewCountBadge');
             if (!pinnedRow || !titleEl || !toggleEl || !segWrapper || !catGroup || !div1 || !div2 || !filterBody || !bodyAnchor) return;
+            // [2026-09-02 D69續八-follow-19] 徽章（reviewCountBadge）嘅搬遷/歸位
+            // 已經統一喺上面`shouldCollapseButtons`嗰個共用區塊處理（手機/緊縮
+            // 桌面都經嗰度），呢度（compact-desktop專屬嘅toggle/seg/cat/抽屜
+            // 邏輯）唔再重複處理徽章——原本呢度嘅else分支會將徽章搬返去
+            // titleEl之後，喺手機底下會同上面`shouldCollapseButtons`剛搬入
+            // refreshBtn嘅徽章打架（手機`shouldRelocate`恒為false，呢個
+            // else分支原本每次resize都會執行，將啱啱先搬入button嘅徽章即刻
+            // 搬走）。
             if (shouldRelocate) {
                 // 唔可以用 `.fhs-top-bar__actions` 做插入參照點——嗰個係模式切換
                 // 快捷列，實測會俾其他既有邏輯搬去 <body> 底層做底部導覽，唔保證
@@ -16096,12 +16169,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (filterBody.parentElement !== document.body) document.body.appendChild(filterBody);
                 filterBody.classList.add('fhs-drawer-mode');
                 filterBody.style.top = topBar.getBoundingClientRect().height + 'px';
-                // [D69續八-follow-9] Fat Mo 進一步要求：徽章同重新載入合併做
-                // 一個button，撳徽章都算撳掣。改為 appendChild 入
-                // #fhsRefreshBtn（button本身）而唔係 topBar，令徽章成為
-                // button嘅子元素——click事件由子元素bubble up到button，
-                // 一齊觸發 onclick="fhsRefreshAndCollapse()"，唔使額外綁listener。
-                if (countBadge) refreshBtn.appendChild(countBadge);
             } else {
                 if (toggleEl.parentElement !== pinnedRow) pinnedRow.insertBefore(toggleEl, div1);
                 if (segWrapper.parentElement !== pinnedRow) pinnedRow.insertBefore(segWrapper, div1);
@@ -16113,9 +16180,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 toggleEl.classList.remove('expanded');
                 toggleEl.setAttribute('aria-expanded', 'false');
                 if (scrim) scrim.classList.remove('open');
-                // 徽章原位＝標題span之後（HTML L~4396），用`insertAdjacentElement`
-                // 直接歸位，唔使理會其他元素當刻已經復原到邊——結果永遠一致。
-                if (countBadge) titleEl.insertAdjacentElement('afterend', countBadge);
             }
         }
         window.addEventListener('resize', fhsSyncCompactDesktopLayout);

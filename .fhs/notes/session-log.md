@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-02 (D69續八-follow-19：手機直向篩選列收納+重新載入合併+分段指示器置中修正): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-19」條目 + [decisions.md D69續八-follow-19](decisions.md)。手機直向(<750px)訂單總覽3按鈕（顯示項目財務/清除篩選/儲存篩選）過度佔位，將follow-6/9原本緊縮桌面專屬嘅收納/合併行為擴展去mobile共用：3按鈕收納入篩選toggle面板、重新載入按鈕同筆數徽章合併做右上角單一pill。另修正分段控制器（全部/進行中/已完成）白色active指示框CSS padding+JS transform雙重計算偏移（`left:3px→left:0`）。驗證期間一度誤判指示器「卡死」深層bug，查出係測試方法論race condition（rapid連續互動+分開量測中間夾住背景auto-refresh reflow），改單一原子化量測後三分頁mismatch全部≤0.8px，非真bug。390mobile/750/900緊縮桌面/1400傳統桌面全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-01 (D69續八-follow-18：橫向模式底部功能bar整體縮減30%): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-18」條目 + [decisions.md D69續八-follow-18](decisions.md)。follow-17修復好緊縮桌面底部浮動藥丸nav後，Fat Mo要求整體縮減30%。做法：喺follow-17區塊尾部新增覆寫，各相關px值等比例縮至70%（bar56→39px/button44→31px/icon20→14px/字級9→6px/max-width500→350px），bottom離邊距離維持16px不變。純mobile(<750)/傳統桌面(≥1130)完全不受影響。純數值密度指令直譯執行，唔自行判斷太細而打折扣。750/900/1129/1130/390五闊度全PASS，已commit+部署生產。

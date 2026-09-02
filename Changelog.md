@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-19：手機直向篩選列收納、重新載入合併、分段指示器置中修正
+
+- **緣起**：Fat Mo截圖標註手機直向（<750px）「進行中/已完成」分頁下，3個功能按鈕+獨立重新載入+筆數徽章合共佔用近1/3畫面高度，訂單列表要捲好多先睇到；同時分段控制器（全部/進行中/已完成）嘅白色active指示框對唔中文字。
+- **做法**：(1) `fhsSyncCompactDesktopLayout()`新增`shouldCollapseButtons = (isCompact || innerWidth<750) && isReviewActive`，將follow-6/9原本「緊縮桌面專屬」嘅按鈕收納/合併邏輯擴展去mobile共用；(2) 5條width-independent CSS：重新載入按鈕縮成28px單行、freehandsss浮水印隱藏、筆數徽章合併做reload按鈕後綴、篩選抽屜按鈕排版；(3) `.fhs-seg-indicator`嘅`left:3px→left:0`，修正CSS padding同JS transform雙重計算偏移。
+- **測試陷阱**：Fix 3驗證期間一度誤判「進行中/已完成」分頁指示器「卡死」深層bug，最終查出係rapid連續JS互動+分開兩次exec量測嘅race condition（背景auto-refresh令兩次量測之間頁面reflow），改用單一原子化exec同時查詢btn/ctrl/indicator後，三個分頁mismatch全部回落到0.8px sub-pixel雜訊，確認並非真bug。
+- **Scope**：mobile（<750px）新增按鈕收納/合併行為；緊縮桌面（750-1129px）沿用原有follow-6/9行為（代碼共用，非重複實作）；傳統桌面（≥1130px）不受影響。
+- **驗證**：390mobile確認篩選面板預設摺埋、展開後3按鈕成行顯示；重新載入+筆數合併做右上角單一pill；分段指示器三分頁單次原子化量測mismatch≤0.8px；750/900緊縮桌面回歸測試冇regression；1400傳統桌面不受影響；console零新增錯誤（僅一個無關404）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`fhsSyncCompactDesktopLayout()`共用化改動、5條新CSS規則、`.fhs-seg-indicator`偏移修正）。
+- 全文見 decisions.md D69續八-follow-19。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-18：橫向模式底部功能bar整體縮減30%
 
 - **緣起**：follow-17啱啱先修復好緊縮桌面（750-1129px）底部浮動藥丸nav（消失咗嗰個），Fat Mo緊接要求整體縮減30%。

@@ -3,6 +3,23 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-02] (D69續八-follow-19) 手機直向篩選列過度佔位 — 收納3按鈕入篩選抽屜、合併重新載入+筆數、修正分頁指示器置中偏移
+
+**背景**：Fat Mo截圖標註手機直向（<750px）「進行中/已完成」分頁下，「顯示項目財務/清除篩選/儲存篩選」3個按鈕橫向堆疊，加上獨立「重新載入」按鈕同筆數徽章，合共佔用畫面上方接近1/3高度，訂單列表要捲好多先睇到。三項具體要求：(1) 3按鈕收納入篩選toggle嘅可摺疊面板內（follow-6已喺緊縮桌面750-1129做過同款收納，今次擴展去mobile）；(2) 重新載入按鈕移去右上角同筆數徽章合併（follow-9緊縮桌面已有嘅merge-badge手法，同樣擴展去mobile）；(3) 分段控制器（全部/進行中/已完成）嘅白色active指示器對唔中文字，其他分頁都有同樣問題。
+
+**做法**：
+1. `fhsSyncCompactDesktopLayout()`新增`shouldCollapseButtons = (isCompact || window.innerWidth<750) && isReviewActive`，取代原本淨checkisCompact嘅`shouldRelocate`嚟gate financeBtn/clearBtn/saveBtn/refreshBtn/badge嘅relocate區塊——即係將follow-6/9嘅「緊縮桌面專屬」收納邏輯，改成「緊縮桌面OR mobile」都觸發，兩層tier共用同一套relocate代碼，唔重複寫。
+2. 5條width-independent CSS規則（唔綁死喺750-1129 media query入面，mobile同緊縮桌面共用）：`.fhs-btn-refresh`縮成28px高單行按鈕、`.fhs-top-bar__logo`（freehandsss浮水印）隱藏、`#reviewCountBadge`合併入refreshBtn內做細字後綴、`#fhsCompactBtnSlot.has-content`同內部3按鈕嘅排版樣式。
+3. `.fhs-seg-indicator`嘅`left:3px`改做`left:0`——原本CSS padding已經計咗一次3px偏移，JS嘅`translateX()`又計多一次，雙重計算令白色指示框成日偏右3-4px，改做`left:0`剩返JS單一計算源頭。
+
+**驗證陷阱**：改埋fix 3之後，用JS快速連續模擬click測試「進行中/已完成」分頁，一度以為發現指示器「卡死唔郁」嘅深層bug（連fresh manual重寫inline style都測到-41px偏移），但最終查出係測試方法論本身嘅race condition——訂單列表有背景auto-refresh（5分鐘一次+手動觸發），rapid連續JS呼叫之間分開兩個`javascript_exec`呼叫量度`btnRect`同`indRect`，中間隔咗頁面reflow，導致量度到嘅係唔同時間點嘅stale rect。改用單一原子化JS呼叫（同一個exec入面一次過查ctrl/btn/indicator）重新量度，「全部/進行中/已完成」三個分頁全部mismatch回落到0.8px（純sub-pixel雜訊），確認唔係真bug。
+
+**通則**：呢類「連續rapid互動+分開量測」嘅測試手法，喺有背景自動刷新（auto-refresh/live data）嘅頁面上有天生嘅race condition風險，量度指令必須同觸發指令包喺同一個原子化exec入面，先可以排除reflow時序污染出嚟嘅假陽性。另外，Browser pane嘅`computer.left_click`喺呢個頁面對呢個特定控制項有計時器逾時傾向（30s timeout），改用`element.click()`嘅JS直接呼叫繞過，同follow-19投入調查前已知嘅"click-timeout"問題一致。
+
+**驗證**：390mobile確認3按鈕預設摺埋（`reviewFilterBody`高度0px/overflow:hidden），點toggle後展開顯示3按鈕成行；重新載入+筆數已合併做右上角單一pill；分段指示器喺「全部/進行中/已完成」三個分頁，用單次原子化JS量測全部mismatch≤0.8px。750/900px緊縮桌面回歸測試：top bar同toggle面板排版不變，冇regression。1400px傳統桌面：`position:static`內嵌top bar完全唔受影響。console零新增錯誤（僅一個404靜態資源、非本次改動相關）。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-19」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-01] (D69續八-follow-18) 橫向模式底部功能bar整體縮減30% — 純數值密度指令，直譯等比例縮放
 
 **背景**：follow-17啱啱先修復好緊縮桌面（750-1129px）底部浮動藥丸nav（消失咗嗰個），Fat Mo緊接要求：「優化橫向模式下底部功能bar整體縮減30%」。
