@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T13:43:23Z">
+    <meta name="fhs-build" content="2026-09-02T22:24:08Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3050,7 +3050,14 @@
                緩衝，令「toggle+segWrapper+reload」三者夾埋闊度有真正
                鬆動位，唔再係壓線夾啱啱好。 */
             body.v40-review-active #fhsSegWrapper .fhs-seg-btn { height: 26px; font-size: 12px; }
-            body.v40-review-active #reviewFilterToggle { padding: 0 6px; }
+            /* [2026-09-03 D69續八-follow-26] Fat Mo截圖：第一行（篩選漏斗+
+               分頁tabs）同第二行（類別）冇對齊。查實`#fhsCategoryFilterGroup`
+               本身`padding:0`（icon緊貼佢自己個box左邊=13px），但follow-23
+               嗰陣加嘅`padding:0 6px`（兩邊都有）令toggle個icon向內縮咗6px
+               先開始（19px），兩個icon橫向差6px對唔齊。改做`padding:0 6px
+               0 0`（淨留返右邊，左邊清零）令兩個icon共用同一個左邊起點
+               （13px），闊度緩衝效果不變（總padding仍然係6px，冇縮返轉頭）。 */
+            body.v40-review-active #reviewFilterToggle { padding: 0 6px 0 0; }
             /* [2026-09-02 D69續八-follow-25] Fat Mo紅圈：`#fhsDivider1`/
                `#fhsDivider2`（原本單行舊佈局用嚟分隔「toggle+tabs」/
                「類別」/「3粒掣」三個group嘅1px直線）喺follow-19將呢批
