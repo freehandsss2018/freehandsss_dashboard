@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T12:14:29Z">
+    <meta name="fhs-build" content="2026-09-02T12:27:47Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3052,6 +3052,15 @@
             body.v40-review-active #fhsSegWrapper .fhs-seg-btn { height: 26px; font-size: 12px; }
             body.v40-review-active #reviewFilterToggle { padding: 0 6px; }
         }
+        /* [2026-09-02 D69續八-follow-24] Fat Mo截圖：漏斗icon右邊「已選N項」
+           文字提示唔應該show出嚟（收納喺icon內即可）——`updateFilterActiveHint()`
+           會喺有篩選生效時加`.visible`class，令`.filter-active-hint.visible`
+           （2個class，specificity蓋過基礎`display:none`）現形，撐闊個toggle
+           掣，同呢輪一路追求嘅「toggle+分頁tabs+reload同一行」目標互相矛盾。
+           呢度加一條specificity夠高嘅覆寫，唔理`.visible`有冇加，恆常隱藏；
+           JS計算邏輯不變（純視覺隱藏，唔改`updateFilterActiveHint()`本身，
+           萬一第度仲有邏輯依賴呢個class都唔會斷）。 */
+        body.v40-review-active #filterActiveHint { display: none !important; }
         /* 手機width實測：徽章併入button後「重新載入」+「N筆·時間」合埋闊度
            足以撞正絕對定位置中嘅freehandsss水印（純裝飾、pointer-events:none，
            follow-8已喺compact-desktop隱咗，但嗰條規則局限750-1129，手機一直
