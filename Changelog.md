@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-26：第一行漏斗icon同第二行類別icon左邊未對齊，follow-23收窄padding嘅副作用
+
+- **緣起**：Fat Mo截圖標示手機直向第一行（篩選漏斗+分頁tabs）同第二行（類別）冇對齊。
+- **根因**：`#fhsCategoryFilterGroup`本身`padding:0`（icon left:13px），但`#reviewFilterToggle`喺follow-23加咗`padding:0 6px`（兩邊都有）令filter-icon向內縮6px（left:19px），兩個icon橫向差6px。
+- **修法**：toggle padding由`0 6px`改做`0 6px 0 0`（淨留返右邊），令兩個icon共用同一個左邊起點13px。總padding量不變，follow-23原本嘅闊度緩衝效果完全保留。
+- **通則**：加width-saving padding時，若容器需要同其他行對齊，應該用單邊padding而非對稱padding，否則會偏移視覺起點。
+- **驗證**：375px確認兩個icon left完全對齊（19→13px）；reload仍然同分頁tabs同一行；toggle功能正常；900緊縮桌面回歸PASS；console零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`#reviewFilterToggle`padding調整，1條CSS）。
+- 全文見 decisions.md D69續八-follow-26。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-25：刪走孤伶伶分隔直線 + 重新載入改「重新載入(N筆)」白色連續文字
 
 - **緣起**：Fat Mo紅圈標示手機直向兩行右邊各有孤伶伶垂直分隔線（follow-19 wrap成兩行後淪為殘留，原本設計用嚟分隔單行舊佈局嘅功能group），要求刪走+對齊；另要求reload button文字格式改做「重新載入(25筆)」白色連續文字。

@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-03] (D69續八-follow-26) 第一行漏斗icon同第二行類別icon左邊未對齊 — follow-23收窄padding嘅副作用
+
+**背景**：Fat Mo截圖標示手機直向第一行（篩選漏斗+分頁tabs）同第二行（類別）冇對齊。實測`#fhsCategoryFilterGroup`本身`padding:0`（icon緊貼自己個box左邊，left:13px），但`#reviewFilterToggle`喺follow-23（真機闊度緩衝追加規則）加咗`padding:0 6px`（兩邊都有），令toggle個filter-icon向內縮6px先開始（left:19px）——兩個icon橫向差6px，形成截圖入面睇到嘅「未對齊」。
+
+**修法**：`#reviewFilterToggle`嘅padding由`0 6px`（兩邊）改做`0 6px 0 0`（淨留返右邊，左邊清零），令toggle同catGroup兩個icon共用同一個左邊起點（13px）。刻意冇改總padding量（仍然係6px），follow-23原本要嘅闊度緩衝效果完全保留，純粹將個padding搬去右邊，唔犧牲空間換對齊。
+
+**通則**：加width-saving padding嗰陣，若容器係一組「應該同其他行/元素對齊」嘅icon-leading設計，要留意padding應該加去邊一邊——對稱padding（左右都有）會令視覺起點偏移，如果對齊優先於視覺置中，應該用單邊padding先唔會擾亂已建立嘅對齊基準。follow-23純為求闊度緩衝加對稱padding，冇考慮埋對齊，係呢次事故嘅根因。
+
+**驗證**：375px確認toggleIcon.left=13同catIcon.left=13完全對齊（之前19 vs 13差6px）；reload button仍然同分頁tabs同一行（三者y軸重疊，闊度緩衝未受影響）；toggle單次點擊展開/收埋正常；900緊縮桌面回歸PASS（呢條改動scoped喺`@media(max-width:749px)`，唔touch緊縮桌面）；console零錯誤。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-26」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-02] (D69續八-follow-25) 刪走孤伶伶分隔直線 + 重新載入改「重新載入(N筆)」白色連續文字
 
 **背景**：Fat Mo紅圈標示手機直向兩行（分頁tabs行/類別行）右邊各有一條孤伶伶垂直分隔線（`#fhsDivider1`/`#fhsDivider2`），要求刪走並對齊上下兩行；另要求重新載入button文字格式改做「重新載入(25筆)」，括號部分用白色。

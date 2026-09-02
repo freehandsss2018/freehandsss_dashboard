@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-26：第一/二行icon左邊未對齊，follow-23收窄padding副作用): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-26」條目 + [decisions.md D69續八-follow-26](decisions.md)。Fat Mo截圖標示第一行（漏斗+分頁tabs）同第二行（類別）冇對齊。根因follow-23加嘅`#reviewFilterToggle{padding:0 6px}`（兩邊都有）令filter-icon向內縮6px，同catGroup嘅icon（無padding，left:13px）差6px。改做`padding:0 6px 0 0`（淨留右邊）令兩icon共用left:13px起點，總padding量不變、follow-23闊度緩衝效果保留。375px驗證PASS，900緊縮桌面回歸PASS。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-02 (D69續八-follow-25：刪走孤伶伶分隔線+reload改「重新載入(N筆)」白色連續文字): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-25」條目 + [decisions.md D69續八-follow-25](decisions.md)。Fat Mo紅圈標示手機兩行右邊各有孤伶伶垂直分隔線（follow-19 wrap成兩行後嘅殘留，原分隔單行舊佈局功能group），mobile scope隱藏；reload button文字改「重新載入(N筆)」白色連續文字，移走border-left分隔線樣式（merged context用括號格式，傳統桌面獨立pill維持冇括號）。375px+900緊縮桌面驗證PASS，toggle功能不受影響，console零錯誤。
