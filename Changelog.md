@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-25：刪走孤伶伶分隔直線 + 重新載入改「重新載入(N筆)」白色連續文字
+
+- **緣起**：Fat Mo紅圈標示手機直向兩行右邊各有孤伶伶垂直分隔線（follow-19 wrap成兩行後淪為殘留，原本設計用嚟分隔單行舊佈局嘅功能group），要求刪走+對齊；另要求reload button文字格式改做「重新載入(25筆)」白色連續文字。
+- **修法一**：`@media(max-width:749px)`追加隱藏`#fhsDivider1`/`#fhsDivider2`，淨限mobile（緊縮桌面單行擠晒dividers仍有效）。左邊本身已對齊，純消除視覺雜訊。
+- **修法二**：徽章文字`${N}筆`→`(${N}筆)`（merged context恆常用括號格式，傳統桌面獨立pill維持`N筆`冇括號）；CSS移走border-left分隔線樣式改純白色文字貼實。兩份CSS（width-independent+緊縮桌面`#v40-top-bar`祖先版）同步改。
+- **驗證**：375px確認dividers消失+reload顯示「重新載入(25筆)」白色連續文字；toggle單次點擊正確展開/收埋；900緊縮桌面回歸PASS；console零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（1條CSS隱藏dividers、2條CSS改badge樣式、2處JS改badge文字格式）。
+- 全文見 decisions.md D69續八-follow-25。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-24：「已選N項」文字提示隱走，唔再撐闊toggle掣
 
 - **緣起**：Fat Mo截圖顯示篩選漏斗icon右邊出現「已選1項」文字提示，要求隱走。

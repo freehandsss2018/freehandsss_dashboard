@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-02] (D69續八-follow-25) 刪走孤伶伶分隔直線 + 重新載入改「重新載入(N筆)」白色連續文字
+
+**背景**：Fat Mo紅圈標示手機直向兩行（分頁tabs行/類別行）右邊各有一條孤伶伶垂直分隔線（`#fhsDivider1`/`#fhsDivider2`），要求刪走並對齊上下兩行；另要求重新載入button文字格式改做「重新載入(25筆)」，括號部分用白色。
+
+**分隔線根因**：呢兩條1px直線原本設計嚟分隔單行舊佈局入面「toggle+tabs」/「類別」/「3粒掣」三個功能group（單行擠晒喺一齊時，分隔線有實際視覺作用）。follow-19將呢批元素改wrap做兩行之後，div1（segWrapper後）同div2（catGroup後）各自淪為孤伶伶浮喺對應行右邊、乜嘢都冇分隔到嘅殘留線。
+
+**修法一（分隔線）**：`@media(max-width:749px)`追加`body.v40-review-active #fhsDivider1, #fhsDivider2 { display:none; }`，淨限mobile（緊縮桌面仍係單行擠晒，dividers喺嗰度仲有效，唔動）。`display:none`連埋佢哋消耗嘅column-gap一齊釋放。左邊對齊：toggle icon（left:13）同類別icon（left:13）本身已經對齊，刪走分隔線純粹消除視覺雜訊，唔需要額外對齊調整。
+
+**修法二（重新載入格式）**：JS `renderReviewTable()`兩個分支徽章文字由`${N} 筆`改做`(${N}筆)`（手機分支恆常做merged格式；桌面分支加`isMergedForBadgeFmt`判斷——併入refreshBtn嗰陣（mobile/緊縮桌面）用括號格式，傳統桌面≥1130px徽章企返標題右邊獨立pill唔跟button文字，維持`N 筆`冇括號更自然）。CSS移走`border-left:1px solid rgba(255,255,255,.45)`分隔線樣式，改做`color:#fff`純白色文字，貼實跟喺「重新載入」後面（兩份CSS：width-independent版+緊縮桌面`#v40-top-bar`祖先版同步改，後者specificity較高唔改就會蓋返舊樣式）。
+
+**驗證**：375px確認div1/div2皆`display:none`、reload button顯示「重新載入(25筆)」白色連續文字冇分隔線；toggle單次點擊正確展開/收埋（6篩選項+3粒掣完整，快速連續兩次點擊一度誤觸跳去財務頁，查實係測試時序問題非真bug，單次點擊行為正常）；900緊縮桌面回歸PASS（reload button同步顯示括號格式，dividers喺嗰個tier仍然生效）；console零錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-25」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-02] (D69續八-follow-24) 「已選N項」文字提示隱走 — 收納喺icon內，唔再撐闊toggle掣
 
 **背景**：Fat Mo截圖顯示篩選漏斗icon右邊出現「已選 1項」文字提示，要求隱走（收納喺icon內即可，唔使show出嚟）。查實`#filterActiveHint`（`.filter-active-hint`）本身基礎`display:none`，但`updateFilterActiveHint()`會喺任何一個篩選欄（年度/月份/狀態/批次/搜尋/類別/排序）有值時加`.visible`class，`.filter-active-hint.visible`（雙class，specificity蓋過基礎規則）令佢現形——呢個文字撐闊toggle掣本身闊度，同follow-19~23一路追求嘅「toggle+分頁tabs+reload同一行」目標直接矛盾。

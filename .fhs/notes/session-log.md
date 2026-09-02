@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-02 (D69續八-follow-25：刪走孤伶伶分隔線+reload改「重新載入(N筆)」白色連續文字): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-25」條目 + [decisions.md D69續八-follow-25](decisions.md)。Fat Mo紅圈標示手機兩行右邊各有孤伶伶垂直分隔線（follow-19 wrap成兩行後嘅殘留，原分隔單行舊佈局功能group），mobile scope隱藏；reload button文字改「重新載入(N筆)」白色連續文字，移走border-left分隔線樣式（merged context用括號格式，傳統桌面獨立pill維持冇括號）。375px+900緊縮桌面驗證PASS，toggle功能不受影響，console零錯誤。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-02 (D69續八-follow-24：「已選N項」文字提示隱走，唔再撐闊toggle掣): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-24」條目 + [decisions.md D69續八-follow-24](decisions.md)。Fat Mo截圖漏斗icon右邊「已選1項」文字提示要求隱走。根因：`updateFilterActiveHint()`喺任一篩選欄有值時加`.visible`class令原本`display:none`嘅提示現形，撐闊toggle掣。加`body.v40-review-active #filterActiveHint{display:none!important}`width-independent覆寫恆常隱藏，JS計算邏輯不變。375mobile+900緊縮桌面驗證PASS。

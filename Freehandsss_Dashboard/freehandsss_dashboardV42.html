@@ -3051,6 +3051,17 @@
                鬆動位，唔再係壓線夾啱啱好。 */
             body.v40-review-active #fhsSegWrapper .fhs-seg-btn { height: 26px; font-size: 12px; }
             body.v40-review-active #reviewFilterToggle { padding: 0 6px; }
+            /* [2026-09-02 D69續八-follow-25] Fat Mo紅圈：`#fhsDivider1`/
+               `#fhsDivider2`（原本單行舊佈局用嚟分隔「toggle+tabs」/
+               「類別」/「3粒掣」三個group嘅1px直線）喺follow-19將呢批
+               元素改wrap做兩行之後，變成孤伶伶浮喺每行右邊、乜都冇分隔
+               到嘅殘留線——淨限mobile（緊縮桌面仍然單行塞晒，dividers
+               喺嗰度仲有實際分組作用，唔動）隱走。display:none連埋佢哋
+               本身消耗嘅column-gap都一齊釋放，順道令兩行嘅可用闊度
+               對齊返（見下面.fhs-seg-btn/reviewFilterToggle收窄前，
+               兩行分別因為多咗一條divider消耗闊度而唔對稱）。 */
+            body.v40-review-active #fhsDivider1,
+            body.v40-review-active #fhsDivider2 { display: none; }
         }
         /* [2026-09-02 D69續八-follow-24] Fat Mo截圖：漏斗icon右邊「已選N項」
            文字提示唔應該show出嚟（收納喺icon內即可）——`updateFilterActiveHint()`
@@ -3066,10 +3077,15 @@
            follow-8已喺compact-desktop隱咗，但嗰條規則局限750-1129，手機一直
            冇隱過）——擴闊做闊度獨立版，同上面4條規則同一批次修正。 */
         body.v40-review-active #v40-top-bar .fhs-top-bar__logo { display: none; }
+        /* [2026-09-02 D69續八-follow-25] Fat Mo要求：徽章唔再扮獨立pill
+           （border-left分隔線+padding-left做間隔），改做「重新載入(N筆)」
+           連續白色文字入面嘅一部分——`(N筆)`文字本身已經喺JS入面加咗
+           括號（見renderReviewTable()兩個分支），呢度淨負責樣式：清走
+           border/padding分隔感，色沿用`.review-count-badge`基礎色white，
+           margin收窄做貼實跟喺「重新載入」文字後面。 */
         body.v40-review-active #fhsRefreshBtn #reviewCountBadge {
             background: transparent !important; padding: 0 !important;
-            margin-left: 6px !important; border-left: 1px solid rgba(255,255,255,.45);
-            padding-left: 6px !important; font-weight: 600;
+            margin-left: 4px !important; border-left: none; color: #fff; font-weight: 600;
         }
         #fhsCompactBtnSlot.has-content {
             display: flex !important; gap: 6px; flex-wrap: wrap;
@@ -3229,10 +3245,13 @@
                fhsSyncCompactDesktopLayout() 改用`refreshBtn.appendChild(countBadge)`
                令徽章成為button嘅子元素（撳徽章都算撳咗button，一齊觸發reload），
                呢度淨隱走徽章自己嗰個獨立綠色藥丸樣式，改做button內嘅後綴文字。 */
+            /* [2026-09-02 D69續八-follow-25] 同下面width-independent版本
+               同步：移走border-left分隔線，做返純白色連續文字「重新載入
+               (N筆)」——呢條`#v40-top-bar`祖先版specificity較高，緊縮桌面
+               度食硬，必須同步改先唔會蓋返舊樣式。 */
             body.v40-review-active #v40-top-bar #fhsRefreshBtn #reviewCountBadge {
                 background: transparent !important; padding: 0 !important;
-                margin-left: 6px !important; border-left: 1px solid rgba(255,255,255,.45);
-                padding-left: 6px !important; font-weight: 600;
+                margin-left: 4px !important; border-left: none; color: #fff; font-weight: 600;
             }
             /* ③「顯示項目財務／清除篩選／儲存篩選」3粒收納入 #fhsCompactBtnSlot
                （JS 搬遷入 filter-body 頂部），呢度淨係定位樣式：橫向排一行，
@@ -12422,7 +12441,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (!_isReviewActiveForBadge || !orders || orders.length === 0) { badge.style.display = 'none'; }
                     // [2026-09-02 D69續八-follow-20] Fat Mo截圖二：合併入「重新載入」
                     // button嘅徽章要簡化，淨保留筆數，時間（· 下午HH:MM）刪走。
-                    else { badge.textContent = `${orders.length} 筆`; badge.style.display = 'inline-flex'; }
+                    // [2026-09-02 D69續八-follow-25] Fat Mo再截圖：手機呢個分支
+                    // 徽章恆常併入refreshBtn（見shouldCollapseButtons），改做
+                    // 「重新載入(N筆)」連筆格式，取代之前用border-left分隔線
+                    // 假扮pill嘅樣式。
+                    else { badge.textContent = `(${orders.length}筆)`; badge.style.display = 'inline-flex'; }
                 }
                 return;
             }
@@ -12442,7 +12465,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     badge.style.display = 'none';
                 } else {
                     // [2026-09-02 D69續八-follow-20] 同上（手機分支）簡化：淨保留筆數。
-                    badge.textContent = `${orders.length} 筆`;
+                    // [2026-09-02 D69續八-follow-25] 呢個分支覆蓋緊縮桌面（徽章
+                    // 併入refreshBtn，格式同手機一致做「重新載入(N筆)」）+
+                    // 傳統桌面（徽章企返標題右邊獨立pill，唔跟refreshBtn文字，
+                    // 淨顯示「N筆」冇括號更自然）——用「而家係咪已經企喺
+                    // refreshBtn入面」判斷邊種context。
+                    var refreshBtnForBadgeFmt = document.getElementById('fhsRefreshBtn');
+                    var isMergedForBadgeFmt = refreshBtnForBadgeFmt && refreshBtnForBadgeFmt.contains(badge);
+                    badge.textContent = isMergedForBadgeFmt ? `(${orders.length}筆)` : `${orders.length} 筆`;
                     badge.style.display = 'inline-flex';
                 }
             }
