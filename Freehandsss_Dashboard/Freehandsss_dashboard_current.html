@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T09:52:03Z">
+    <meta name="fhs-build" content="2026-09-02T10:21:55Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -2071,6 +2071,12 @@
         @media (max-width: 380px) {
             .fhs-top-bar__order-id { display: none; }
             .fhs-top-bar { gap: 4px; padding: 0 8px; }
+            /* [2026-09-02 D69續八-follow-20] Fat Mo截圖一：訂單總覽頁標題唔可以
+               消失——呢條<380px舊規則本身早喺follow-19之前已存在（同一份
+               先前commit已有），淨限review分頁覆寫返顯示。follow-19之後
+               freehandsss水印已隱走+徽章簡化，讓出嘅位已經夠訂單總覽標題
+               留低，唔再需要犧牲佢嚟換位。 */
+            body.v40-review-active .fhs-top-bar__order-id { display: inline !important; }
         }
 
         .fhs-header-icon {
@@ -2980,15 +2986,36 @@
            喺`@media(max-width:767px)`入面有`width:100%`（S150 F3.3手機觸控
            目標規則），呢度要額外覆寫返`width:auto`先合用喺top bar/收納面板
            呢種窄身context，唔可以直接沿用手機版嘅全寬觸控目標樣式。 */
-        body.v40-review-active #v40-top-bar .fhs-btn-refresh {
-            height: 28px; padding: 0 10px; font-size: 11px; margin-left: auto; width: auto;
+        /* [2026-09-02 D69續八-follow-20] 選擇器由「必須喺#v40-top-bar底下」
+           放寬做純ID（#fhsRefreshBtn）——follow-19原本假設呢粒掣手機/緊縮
+           桌面都搬去topBar，但follow-20改咗手機分支搬去pinnedRow（同分頁
+           tabs同一行），令「#v40-top-bar 後代」呢個前提喺手機下唔再成立。
+           純ID specificity夠高，唔理父容器係邊個都套用得到，兩個tier共用。 */
+        body.v40-review-active #fhsRefreshBtn {
+            height: 28px; padding: 0 6px; font-size: 11px; margin-left: auto; width: auto; gap: 4px;
+            /* [2026-09-02 D69續八-follow-20] 手機將呢粒掣搬入`.filter-row-pinned`
+               （#reviewFilterPinned嘅class）之後，撞正D69續三舊有嘅
+               `.filter-row-pinned .fhs-btn-refresh{flex:1 1 45%}`（兩粒動作掣
+               並排45%闊嗰條規則，當時假設呢個容器入面淨得「4粒掣逐個排」
+               嘅舊佈局）。`width:auto`管唔到`flex-basis`（後者優先於width），
+               必須顯式覆寫成`flex:0 0 auto`先可以令個掣返做「跟內容闊」。
+               padding/gap 額外收窄（10px→6px／預設6px→4px）：手機375-390px
+               闊要同「全部/進行中/已完成」分頁tabs擠喺同一行，實測需要
+               的空間差廿零px，呢個掣本身收窄嘅一截就補返晒差額，唔使郁
+               分頁tabs自身（掂手闊度更貼近觸控目標下限，優先讓呢粒掣讓路）。 */
+            flex: 0 0 auto;
         }
+        /* [2026-09-02 D69續八-follow-20] 手機呢一行（篩選漏斗+分頁tabs+重新
+           載入）夾埋闊度爭緊嗰廿零px，column-gap 由 12px 收窄做 6px 補位；
+           唔影響類別/分隔線嗰行（row-gap 獨立冇改），亦唔影響緊縮桌面
+           （呢批元素喺嗰層搬晒去topBar，pinnedRow到時得返anchor空殼）。 */
+        body.v40-review-active #reviewFilterPinned { column-gap: 6px; }
         /* 手機width實測：徽章併入button後「重新載入」+「N筆·時間」合埋闊度
            足以撞正絕對定位置中嘅freehandsss水印（純裝飾、pointer-events:none，
            follow-8已喺compact-desktop隱咗，但嗰條規則局限750-1129，手機一直
            冇隱過）——擴闊做闊度獨立版，同上面4條規則同一批次修正。 */
         body.v40-review-active #v40-top-bar .fhs-top-bar__logo { display: none; }
-        body.v40-review-active #v40-top-bar #fhsRefreshBtn #reviewCountBadge {
+        body.v40-review-active #fhsRefreshBtn #reviewCountBadge {
             background: transparent !important; padding: 0 !important;
             margin-left: 6px !important; border-left: 1px solid rgba(255,255,255,.45);
             padding-left: 6px !important; font-weight: 600;
@@ -12334,7 +12361,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const badge = document.getElementById('reviewCountBadge');
                 if (badge) {
                     if (!_isReviewActiveForBadge || !orders || orders.length === 0) { badge.style.display = 'none'; }
-                    else { badge.textContent = `${orders.length} 筆 · ${new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'})}`; badge.style.display = 'inline-flex'; }
+                    // [2026-09-02 D69續八-follow-20] Fat Mo截圖二：合併入「重新載入」
+                    // button嘅徽章要簡化，淨保留筆數，時間（· 下午HH:MM）刪走。
+                    else { badge.textContent = `${orders.length} 筆`; badge.style.display = 'inline-flex'; }
                 }
                 return;
             }
@@ -12353,7 +12382,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (!_isReviewActiveForBadge) {
                     badge.style.display = 'none';
                 } else {
-                    badge.textContent = `${orders.length} 筆 · ${new Date().toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'})}`;
+                    // [2026-09-02 D69續八-follow-20] 同上（手機分支）簡化：淨保留筆數。
+                    badge.textContent = `${orders.length} 筆`;
                     badge.style.display = 'inline-flex';
                 }
             }
@@ -16112,7 +16142,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var titleElForRefresh = document.getElementById('v40-top-order-id');
             if (!anchor || !slot || !topBar || !refreshBtn || !financeBtn || !clearBtn || !saveBtn) return;
             if (shouldCollapseButtons) {
-                if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
+                // [2026-09-02 D69續八-follow-20] Fat Mo截圖：手機直向「重新載入」
+                // 搬咗去topBar自成一行，同「全部/進行中/已完成」分頁tabs分開兩
+                // 行，唔啱要求（應該同已完成掣同一行、右方）。緊縮桌面
+                // （isCompact）沿用follow-9原有行為（搬去topBar，同toggle/seg/
+                // cat一齊搬），唔改；手機（isCompact false）改搬去pinnedRow入面
+                // segWrapper之後、div1之前，令佢同分頁tabs處於同一個flex行，
+                // 靠`#fhsRefreshBtn`嘅width-independent CSS margin-left:auto
+                // 推去該行最右方（見下面CSS，選擇器已由「必須喺#v40-top-bar
+                // 底下」放寬做純ID，唔再要求特定父容器）。
+                if (isCompact) {
+                    if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
+                } else {
+                    var segWrapperForRefresh = document.getElementById('fhsSegWrapper');
+                    var div1ForRefresh = document.getElementById('fhsDivider1');
+                    var pinnedRowForRefresh = document.getElementById('reviewFilterPinned');
+                    if (segWrapperForRefresh && div1ForRefresh && pinnedRowForRefresh && refreshBtn.previousElementSibling !== segWrapperForRefresh) {
+                        pinnedRowForRefresh.insertBefore(refreshBtn, div1ForRefresh);
+                    }
+                }
                 [financeBtn, clearBtn, saveBtn].forEach(function (b) {
                     if (b.parentElement !== slot) slot.appendChild(b);
                 });
@@ -16124,7 +16172,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     refreshBtn.appendChild(countBadgeForRefresh);
                 }
             } else {
-                if (refreshBtn.parentElement === topBar) anchor.insertAdjacentElement('afterend', refreshBtn);
+                // [2026-09-02 D69續八-follow-20] 復原檢查由「係咪喺topBar」擴
+                // 展做「係咪已經企返喺anchor之後」，覆蓋埋新增嘅pinnedRow-
+                // before-div1呢個手機專屬搬遷位置，兩個異常位置都可以由呢一
+                // 行歸位，唔使逐個位置各寫一次判斷。
+                if (refreshBtn.previousElementSibling !== anchor) anchor.insertAdjacentElement('afterend', refreshBtn);
                 [saveBtn, clearBtn, financeBtn].forEach(function (b) {
                     if (b.parentElement === slot) anchor.insertAdjacentElement('afterend', b);
                 });
