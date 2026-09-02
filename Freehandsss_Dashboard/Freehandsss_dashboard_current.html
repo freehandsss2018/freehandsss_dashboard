@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T10:21:55Z">
+    <meta name="fhs-build" content="2026-09-02T11:27:23Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3029,6 +3029,14 @@
             margin-right: 0 !important; width: auto !important; flex: 0 1 auto;
             height: 36px; font-size: 12px;
         }
+        /* [2026-09-02 D69續八-follow-21] Fat Mo紅圈：篩選漏斗icon（保留，仍係
+           展開/收埋年度/月份/狀態/批次/搜尋/排序+follow-19新收埋3粒掣嗰個
+           面板嘅唯一入口，唔可以刪）右邊嘅細chevron（∨）純屬follow-7已經
+           作廢嘅「手風琴展開指示」殘留，同follow-16已喺緊縮桌面隱走嘅係
+           同一個元素——呢度擴展做闊度獨立版，手機都隱埋，順道騰出少少
+           位俾reload搬埋嚟同一行(見上面#fhsRefreshBtn/#reviewFilterPinned
+           兩條收窄規則)。 */
+        body.v40-review-active #reviewFilterToggle .filter-chevron { display: none; }
 
         /* [2026-08-29 緊縮桌面續] 上面「全部」視圖修好之後，同一斷層區（768-1129px）
            實測類別視圖（鎖匙扣/頸鏈/手模）都一樣溢出——既有 @media(max-width:1280px)
