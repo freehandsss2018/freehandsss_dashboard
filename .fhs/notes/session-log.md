@@ -2018,3 +2018,6 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - **附帶發現（未修，已開 task chip 追蹤）**：grep sweep 揪出 `finance-auditor.md`/`database-reviewer.md`/`FHS_Pricing_Bible.md` 三處成本分類 checklist 仍停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`），從未納入 `accessory_cost`，屬 2026-07-25 原始導入時遺留舊缺口，非本次回歸引入，超出本次修復範圍。
 - 全文見 [decisions.md D64](decisions.md)、[FHS_System_Logic_Overview.md §5.4.14](FHS_System_Logic_Overview.md)、[learnings/supabase.md #14](../memory/learnings/supabase.md)、[Changelog.md](../../Changelog.md) 2026-08-16 條目。
 - **Subagent 使用記錄**：❌未使用（Supabase MCP + n8n MCP + curl webhook 全程主 session 直接操作，需即時交叉驗證，委派會斷推理鏈）。
+
+## [2026-09-02] 訂單總覽P款誤報父母/大寶肢數 bug 修復
+- 全文見 [Changelog.md](../../Changelog.md) 2026-09-02 條目、[handoff.md MASTER 表](../memory/handoff.md)、[learnings/frontend.md #13](../memory/learnings/frontend.md)。

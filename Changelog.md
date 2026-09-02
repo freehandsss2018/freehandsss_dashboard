@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— 訂單總覽立體擺設（P款）誤報父母/大寶肢數修復
+
+- **緣起**：Fat Mo 回報新增訂單 0600728（木框款式，只選咗嬰兒二手二腳）儲存後，訂單總覽產品明細多咗「父母 2手」同「大寶 4肢」badge——木框款式表單本身冇父母/大寶選項可揀。
+- **根因**：`mapOrder()` Fix 4D 肢數統計邏輯（V42.html 約 L17732-17735）——原碼旁註解寫明「父母/大寶：待定 = 預設空值 → 不計」，但判斷式漏咗排除 `'待定'`，只排除咗 `'無'`。表單無論揀邊個款式，DOM 都會預埋父母/大寶嘅 limb 欄位（預設值 `待定`），`captureFormState()` 照單全收存入 `raw_form_state`；木框單雖然冇顯示呢啲欄位俾人揀，呢批預設值一樣落 DB，總覽讀取時就被誤判做「已選取」。經 Supabase 直查 0600728 `raw_form_state` 確認：`pSubCat=木框款式` 正確，但同時存有 10 個 `limb_sel_*` key（父母 2 個、大寶 4 個、嬰兒 4 個），全部值為 `待定`。
+- **修復**：兩行判斷式加返 `&& v!=='待定'`，令父母/大寶只計明確揀色先算入肢數；嬰兒維持原邏輯不變（嬰兒「待定」語義係「已選但色未定」，本身要計入）。
+- **驗證**：起本機 preview 直接讀真實訂單 0600728（Supabase live 資料），修復前重現父母2手/大寶4肢誤報，修復後總覽正確顯示「手模擺設・木框・嬰兒4肢」，父母/大寶 badge 消失；同頁另一張含真實父母/大寶資料嘅舊單（0650429）肢數顯示不受影響，零 console error。
+- **資料面**：0600728 本身 `raw_form_state` 冇壞，純顯示層誤判，部署後即時自動修正，不需 backfill。生產版 `Freehandsss_dashboard_current.html` 同段代碼有同一 bug，隨本次 `/commit` 途徑c 一併升格部署修復。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（單點 2 行修復）。Supabase schema／n8n 零改動。
+- **Subagent 使用記錄**：❌未使用（單一 Supabase live 查證 + 單點代碼修復 + 即時 browser 驗證，全程需交叉比對唔宜委派）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。
