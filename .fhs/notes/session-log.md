@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-28：兩行右邊對齊咗但仲有空白，反過嚟放寬類別chip填滿): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-28」條目 + [decisions.md D69續八-follow-28](decisions.md)。Fat Mo確認follow-27對齊已生效，但截圖標示「重新載入」右邊到screen邊仲有大片空白。根因follow-27令兩行對齊但一齊停喺類別行過細嘅天然闊度（315px vs 可用350px）。修法：放寬類別chip padding/gap令catGroup闊度+24px，follow-27嘅JS自動跟住新闊度重算segWrapper，兩行一齊變闊對齊維持不變（rightDiff仍0）。空白由34px收窄到10px，三分頁切換+900緊縮桌面回歸PASS。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-03 (D69續八-follow-27：重新載入改同「頸鏈」右邊精確對齊，唔再伸展到成行絕對邊界): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-27」條目 + [decisions.md D69續八-follow-27](decisions.md)。Fat Mo截圖標示「已完成」同「重新載入」中間有空白+reload應同第二行「頸鏈」右邊對齊。根因follow-22嘅`flex:1 1 auto`令segWrapper攞晒剩餘空間推reload去絕對右邊界，但類別行跟內容闊喺「頸鏈」就完咗，兩行右邊唔同座標。改做JS動態量度：反推segWrapper應有幾闊令右邊精確對齊catGroup，`getBoundingClientRect()`量度確認差值=0；切換三個分頁tab維持對齊；900緊縮桌面回歸PASS（`style.width`正確clear）。

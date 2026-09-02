@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-03] (D69續八-follow-28) 兩行右邊對齊咗但成行仲有大片空白 — 反過嚟放寬類別chip填滿
+
+**背景**：Fat Mo確認follow-27嘅對齊已生效，但截圖紅圈標示「重新載入」右邊到screen邊仲有一大片完全冇用嘅空白，要求「調整這兩行整體的按鈕，去使其乎合要求」。查實根因：follow-27令兩行右邊互相對齊（`segWrapper.right === catGroup.right`），但兩行一齊停喺類別行天然內容闊度（`頸鏈`掣之後），而類別行本身嘅天然闊度（315px）遠細過pinnedRow真正嘅可用闊度（350px）——即係follow-19~27一路做緊「壓縮就手夠位」，做到宜家兩行都夾埋一齊停埋喺同一個過細嘅目標，成行右邊留低成34px空白。
+
+**修法**：反過嚟做——放寬類別chip嘅padding/gap，令`#fhsCategoryFilterGroup`天然闊度增加（chip padding 14px→16px、chip-group gap 6px→8px、catGroup自身gap 6px→8px，合共+24px，刻意唔追到盡，留返~10px緩衝食real-device font-metric誤差）。follow-27嘅JS（`fhsSyncCompactDesktopLayout()`量度catGroup闊度反推segWrapper闊度）**自動**跟住新嘅catGroup闊度重新計算，唔使額外改reload/segWrapper嗰邊代碼——兩行一齊變闊、一齊食埋大部分空白，右邊對齊效果完全維持（`rightDiff`實測仍然係0）。
+
+**驗證**：375px量度gap（`類別行右邊`到`pinnedRow真正右邊界`）由34px收窄到10px；`segWrapper.right - catGroup.right`仍然係0（follow-27對齊效果經過本輪改動後未受影響，證明follow-27嘅動態量度機制設計得夠robust，可以食得住上游輸入變化）；切換「全部/進行中/已完成」三個分頁維持對齊+`body.scrollWidth===innerWidth`確認無page overflow；toggle單次點擊展開/收埋正常；900緊縮桌面回歸PASS（改動scoped喺`@media(max-width:749px)`）；console零錯誤。
+
+**通則**：follow-19~27呢個系列一路做緊「壓縮到啱啱好夠位」，去到follow-27已經做到「兩行精確對齊」，但精確對齊唔等於「填滿咗可用空間」——如果對齊嘅目標本身（呢次case嘅catGroup）過細，兩行會一齊「準確咁停埋喺一個過細嘅位」。follow-27嘅動態JS量度機制刻意設計成「量catGroup反推segWrapper」（單向依賴），令呢次「反過嚟放寬catGroup」嘅修復可以自動連帶修正segWrapper，唔使兩邊分別各自再調一次——呢個係follow-27設計嗰陣預留落嘅擴展性，今次直接受惠。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-28」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-03] (D69續八-follow-27) 重新載入應該同「頸鏈」右邊對齊，唔應該伸展到成行絕對邊界
 
 **背景**：Fat Mo截圖紅圈標示兩點：①「已完成」同「重新載入」中間有一嚿唔應該有嘅空白②「重新載入」應該同第二行「頸鏈」掣右邊上下對齊（紅直線）。查實follow-22嘅`#fhsSegWrapper{flex:1 1 auto}`會令segWrapper攞晒pinnedRow全部剩餘空間，將reload推去成行嘅絕對右邊界；但第二行「類別」（`#fhsCategoryFilterGroup`）冇伸展，跟內容闊，喺`頸鏈`掣之後就完咗——兩行嘅右邊落喺唔同x座標，中間出現空白正正係因為segWrapper伸展過龍，超出咗類別行實際嘅右邊界。

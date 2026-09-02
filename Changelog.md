@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-28：兩行右邊對齊咗但仲有空白，反過嚟放寬類別chip填滿
+
+- **緣起**：Fat Mo確認follow-27對齊已生效，但截圖標示「重新載入」右邊到screen邊仲有一大片空白，要求調整兩行按鈕填滿。
+- **根因**：follow-27令兩行右邊互相對齊，但兩行一齊停喺類別行天然闊度（315px），遠細過pinnedRow可用闊度（350px），留低34px空白。
+- **修法**：放寬類別chip padding（14→16px）/gap（6→8px）令catGroup天然闊度+24px（刻意留~10px緩衝食font-metric誤差）；follow-27嘅JS自動跟住新闊度重算segWrapper，兩行一齊變闊、對齊維持（`rightDiff`仍然係0）。
+- **驗證**：375px空白由34px收窄到10px；三分頁切換維持對齊+無page overflow；toggle功能正常；900緊縮桌面回歸PASS；console零錯誤。
+- **通則**：精確對齊唔等於填滿可用空間；follow-27嘅「量catGroup反推segWrapper」單向依賴設計，令呢次反過嚟放寬catGroup可以自動連帶修正segWrapper。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（3條CSS：chip padding/chip-group gap/catGroup gap）。
+- 全文見 decisions.md D69續八-follow-28。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-27：重新載入改同「頸鏈」右邊精確對齊，唔再伸展到成行絕對邊界
 
 - **緣起**：Fat Mo截圖紅圈標示「已完成」同「重新載入」中間有空白+「重新載入」應該同第二行「頸鏈」右邊上下對齊。

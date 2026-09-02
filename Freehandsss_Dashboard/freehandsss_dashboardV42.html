@@ -3074,6 +3074,24 @@
                兩行分別因為多咗一條divider消耗闊度而唔對稱）。 */
             body.v40-review-active #fhsDivider1,
             body.v40-review-active #fhsDivider2 { display: none; }
+            /* [2026-09-03 D69續八-follow-28] Fat Mo紅圈：follow-27令兩行右邊
+               精確對齊咗，但兩行一齊停喺類別行（`頸鏈`之後）自然嘅內容
+               閂位，成行右邊仲有成34px完全冇用嘅空白（量度：pinnedRow
+               內容寬350px，`#fhsCategoryFilterGroup`天然闊度淨315px）。
+               follow-19~27一路做緊「壓縮就手夠位」，而家反過嚟：類別
+               chip padding/gap略為放寬（14px→16px、gap 6px→8px），令
+               `#fhsCategoryFilterGroup`天然闊度增加返（4粒chip×2px+3個
+               gap×2px+catGroup自身gap+2px≈+24px），刻意唔追到盡（留返
+               ~10px緩衝，吸收真機font-metric誤差，同follow-22/23嗰次
+               「headless PASS、真機唔夠位」教訓一致）。follow-27嘅JS
+               （`fhsSyncCompactDesktopLayout()`量度catGroup闊度反推
+               segWrapper闊度）會自動跟住新嘅catGroup闊度重新計算，
+               唔使額外改segWrapper/reload嗰邊嘅代碼——兩行會一齊變闊、
+               一齊食埋呢21-24px嘅空白，右邊對齊效果（follow-27）維持
+               不變。 */
+            body.v40-review-active #fhsCategoryFilterGroup .chip-btn { padding: 0 16px; }
+            body.v40-review-active #fhsCategoryFilterGroup .chip-group { gap: 8px; }
+            body.v40-review-active #fhsCategoryFilterGroup { gap: 8px; }
         }
         /* [2026-09-02 D69續八-follow-24] Fat Mo截圖：漏斗icon右邊「已選N項」
            文字提示唔應該show出嚟（收納喺icon內即可）——`updateFilterActiveHint()`
