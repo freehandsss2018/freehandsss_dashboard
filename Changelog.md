@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-21：篩選漏斗chevron手機都隱走，補足reload同行嘅最後缺口
+
+- **緣起**：follow-20已將reload搬去分頁tabs同一行，但夾埋闊度仍差約20px，靠reload自身收窄勉強補回。Fat Mo截圖紅圈篩選漏斗icon要求「刪除它」+「調整大小一致，目的係令重新載入放置同一行」。
+- **釐清**：AskUserQuestion確認Fat Mo唔係要刪走成個`#reviewFilterToggle`（年度/月份/狀態/批次/搜尋/排序6項+follow-19收埋嘅3粒掣嘅唯一入口，刪咗用戶冇途徑再撳到），選擇較安全方案：淨刪走icon右邊嘅細chevron（∨）——本身已係follow-7 Threads式抽屜改版後嘅作廢殘留，follow-16已喺緊縮桌面隱過但局限嗰個tier，手機一直未隱。
+- **修法**：`body.v40-review-active #reviewFilterToggle .filter-chevron{display:none}`由follow-16嘅media query+topBar祖先限定，擴展做闊度獨立版，兩個tier共用。騰出嘅空間剛好補足follow-20仍差嘅缺口。
+- **通則**：密度收窄缺口優先喺已作廢嘅純裝飾殘留度搵，先過犧牲仲有實際功能嘅控制項尺寸；牽涉「成個元素刪咗會令功能入口消失」嘅高風險場景，AskUserQuestion釐清比自行判斷安全。
+- **驗證**：375px確認reload+分頁tabs同一行、chevron消失、漏斗icon仍正常展開/收埋面板（6篩選項+3粒掣完整）；750/900緊縮桌面回歸零regression；console零新增錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`.filter-chevron`隱藏規則擴展做闊度獨立版，1條CSS）。
+- 全文見 decisions.md D69續八-follow-21。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-20：follow-19四點回饋（標題消失/徽章簡化/reload同行/類別空行）
 
 - **緣起**：follow-19部署後Fat Mo四點截圖回饋：標題「訂單總覽」消失、重新載入button要簡化去除時間、reload應搬去分頁tabs同一行、類別下方多咗一行空行。

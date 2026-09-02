@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-02] (D69續八-follow-21) 篩選漏斗chevron手機都隱走 — follow-20「同行」剩尾的最後一截空間
+
+**背景**：follow-20已將reload按鈕搬去同分頁tabs（全部/進行中/已完成）同一行，但實測發現三元素（篩選漏斗toggle+分頁tabs+reload）夾埋闊度仍差約20px先夠放同一行，靠reload自身padding/gap收窄+pinnedRow column-gap收窄補回。Fat Mo截圖紅圈標示篩選漏斗icon要求「刪除它」，並要求「調整大小一致，目的是令重新載入能放置同一行」。
+
+**釐清範圍**：AskUserQuestion確認Fat Mo唔係要刪走成個篩選漏斗toggle（`#reviewFilterToggle`）——嗰個仲係年度/月份/狀態/批次/搜尋/排序6個篩選項+follow-19新收埋嘅3粒掣（顯示項目財務/清除篩選/儲存篩選）嘅**唯一入口**，成個刪走會令用戶完全冇途徑再撳到呢啲篩選項。Fat Mo選擇較安全嘅方案：淨刪走漏斗icon右邊嘅細chevron（∨箭嘴）——呢個本身已經係follow-7 Threads式抽屜改版後嘅**作廢殘留**（冇「向下展開」概念，follow-16已喺緊縮桌面(750-1129px)隱過一次，但嗰條規則局限嗰個tier，手機一直冇隱過）。
+
+**修法**：`body.v40-review-active #reviewFilterToggle .filter-chevron { display: none; }`，由follow-16原本嘅`@media(750-1129)`+`#v40-top-bar`祖先限定，擴展做闊度獨立版（純ID+class選擇器，唔理父容器/闊度）。删走chevron（連gap）騰出嘅空間，剛好補足follow-20仍差嘅約20px，reload成功落入同一行，唔需要再郁篩選漏斗icon本身或分頁tabs嘅尺寸。
+
+**通則**：跨round密度收窄類任務，每次「仲差幾多px」嘅缺口，優先喺**已經作廢/純裝飾嘅殘留元素**度搵（例如呢次嘅chevron——功能上已經冇意義，純粹冇人執手尾清走），先過犧牲仲有實際功能嘅控制項尺寸（分頁tabs/篩選icon本身）。發現呢類「功能性 vs 純裝飾殘留」嘅取捨題，AskUserQuestion釐清比自行判斷安全，尤其目標元素成個刪咗會令某個功能入口完全消失嗰種高風險場景。
+
+**驗證**：375px確認reload+分頁tabs同一行、chevron已消失、漏斗icon本身仍在且撳落去正常展開/收埋面板（6個篩選項+3粒掣全部完整可見）；750/900緊縮桌面回歸測試冇regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-21」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-02] (D69續八-follow-20) follow-19四點回饋 — 標題消失/徽章簡化/重新載入搬同行/類別下空行
 
 **背景**：follow-19部署後，Fat Mo四點截圖回饋：①左上角「訂單總覽」標題消失②「重新載入」button要簡化，淨要ICON+「重新載入(N筆)」，唔要時間③「重新載入」應該搬去「已完成」右方、同分頁tabs同一行，唔應該自成一行④類別下方多咗一行空行。

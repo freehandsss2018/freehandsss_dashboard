@@ -3029,6 +3029,14 @@
             margin-right: 0 !important; width: auto !important; flex: 0 1 auto;
             height: 36px; font-size: 12px;
         }
+        /* [2026-09-02 D69續八-follow-21] Fat Mo紅圈：篩選漏斗icon（保留，仍係
+           展開/收埋年度/月份/狀態/批次/搜尋/排序+follow-19新收埋3粒掣嗰個
+           面板嘅唯一入口，唔可以刪）右邊嘅細chevron（∨）純屬follow-7已經
+           作廢嘅「手風琴展開指示」殘留，同follow-16已喺緊縮桌面隱走嘅係
+           同一個元素——呢度擴展做闊度獨立版，手機都隱埋，順道騰出少少
+           位俾reload搬埋嚟同一行(見上面#fhsRefreshBtn/#reviewFilterPinned
+           兩條收窄規則)。 */
+        body.v40-review-active #reviewFilterToggle .filter-chevron { display: none; }
 
         /* [2026-08-29 緊縮桌面續] 上面「全部」視圖修好之後，同一斷層區（768-1129px）
            實測類別視圖（鎖匙扣/頸鏈/手模）都一樣溢出——既有 @media(max-width:1280px)

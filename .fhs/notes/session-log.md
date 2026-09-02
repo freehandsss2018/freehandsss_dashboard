@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-02 (D69續八-follow-21：篩選漏斗chevron手機都隱走，補足reload同行最後缺口): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-21」條目 + [decisions.md D69續八-follow-21](decisions.md)。follow-20已將reload搬去分頁tabs同一行但仍差約20px闊度勉強補回，Fat Mo截圖紅圈篩選漏斗icon要求刪除+調整大小令reload同行。AskUserQuestion釐清後確認唔刪成個toggle（年度/月份/狀態/批次/搜尋/排序6項+follow-19收埋嘅3粒掣嘅唯一入口），改淨刪icon右邊嘅細chevron（follow-7已作廢嘅殘留裝飾，follow-16已喺緊縮桌面隱過但手機一直未隱），擴展做闊度獨立版。騰出空間補足缺口，375px確認reload+tabs同一行、toggle功能完整不變、750/900緊縮桌面零regression。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-02 (D69續八-follow-20：follow-19四點回饋——標題消失/徽章簡化/reload搬同行/類別空行): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-20」條目 + [decisions.md D69續八-follow-20](decisions.md)。follow-19四點截圖回饋：①標題「訂單總覽」消失（查實係pre-existing嘅`<380px`舊threshold規則，follow-19騰出空間先首次被留意到，已加review-active覆寫）②徽章簡化去除時間淨留筆數③重新載入搬去分頁tabs同一行（撞正D69續三舊`flex:1 1 45%`規則+闊度差20px，靠自身padding/gap+pinnedRow gap收窄補回）④類別下方空行——多寬度/多分頁/逐層DOM量度未能重現，完成前三點後複查已無空行，未能獨立確認根因已如實告知。375/390px+750/900緊縮桌面+1400傳統桌面三態回歸全PASS，已commit+部署生產。
