@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-02] (D69續八-follow-23) 篩選漏斗icon仍被逼落自己一行 — follow-22結構保證唔等於闊度夠用，追加真正緩衝
+
+**背景**：follow-22改用結構性方案（refreshBtn做segWrapper子元素），確保「reload唔會再獨自被踢走」——呢個結構保證本身冇錯。但Fat Mo真機第二次截圖顯示：而家係**篩選漏斗toggle**（segWrapper所在行嘅第一個item）被逼落自己一行，segWrapper（連embed埋嘅reload）留喺下一行——證明follow-22嘅結構保證解決咗「邊啲元素綁埋一齊換行」，但完全冇解決「使唔使換行」呢個更底層嘅**闊度夠唔夠**問題。本session headless瀏覽器量度到「toggle+segWrapper」喺375px夾埋闊度淨返6-7px緩衝（342.6px需求 vs 349.6px可用），壓線夾啱啱好——真機font metric渲染稍闊少少就爆。
+
+**修法（真正製造闊度緩衝，唔淨係結構保證）**：喺`@media(max-width:749px)`入面追加2條規則：
+1. `#fhsSegWrapper .fhs-seg-btn { height:26px; font-size:12px }`——分頁tabs字級/高度收窄到同緊縮桌面follow-16已用緊嗰個細碼一致（14px/30px→12px/26px），淨喺手機先套用（之前呢個縮細待遇淨限compact-desktop）。3粒按鈕合共闊度由148px收窄到132px。
+2. `#reviewFilterToggle { padding:0 6px }`——漏斗icon掣自身padding再收窄少少。
+
+**驗證方法論**：唔再淨睇「計算出嚟嘅sumNeeded夠唔夠」（follow-22已經証明呢個做法喺headless PASS但真機FAIL，唔可信）；改做**逐級收窄闊度壓力測試**（340/320px），直接睇實際斷點喺邊——收窄前斷點大約喺375px附近（壓線），收窄後375px有明顯緩衝，一路撐到340px先開始出現toggle獨立換行（320px仍然係graceful degradation：toggle獨自一行、segWrapper連reload仍然結構性同一行冇拆散，符合follow-22嘅核心保證）。呢個方法可以直接量度「緩衝有幾多」，唔使靠估算單一寬度嘅px夠唔夠。
+
+**通則**：結構性保證（follow-22嘅「兩元素綁定同一行」）同闊度緩衝（follow-23嘅「確保通常有足夠空間」）係兩個獨立、互補嘅問題，唔可以用一個解決埋另一個——結構保證解決「拆唔拆散」，闊度緩衝解決「使唔使觸發換行」。跨環境（headless vs 真機）font-metric差異令「壓線夾啱啱好」嘅設計必然脆弱，設計密度收窄嗰陣應該預留可觀緩衝（唔淨係計到啱啱夠），並用「收窄寬度直到斷點出現」嘅壓力測試法驗證緩衝實際有幾多，而唔係信賴單一目標寬度嘅精確計算。
+
+**驗證**：320/340/360/375/390/414px多寬度壓力測試，斷點由~375px（follow-22收窄前）推後到<340px（僅320px先出現graceful degradation）；toggle展開/收埋功能不受影響；750/900緊縮桌面回歸零regression（新規則scoped喺`@media(max-width:749px)`）；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-23」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-02] (D69續八-follow-22) 重新載入結構性同分頁tabs同行 — 取代follow-20/21脆弱嘅pixel-shaving做法
 
 **背景**：follow-20/21喺mobile分頁tabs同一行安置reload嘅做法，本質係「將refreshBtn插入pinnedRow做獨立flex item，靠column-gap/padding收窄+刪chevron騰位，計到啱啱好夠fit」——呢種計算喺本session嘅headless瀏覽器環境PASS，但Fat Mo真機（實際font metric/DPI/系統字體渲染同headless瀏覽器有出入）截圖顯示reload依然被逼落獨立一行，證明呢個「淨計算夠位」嘅做法本質脆弱，唔可靠。

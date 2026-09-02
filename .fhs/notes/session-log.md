@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-02 (D69續八-follow-23：篩選漏斗toggle仍被逼落自己一行，追加真正闊度緩衝): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-23」條目 + [decisions.md D69續八-follow-23](decisions.md)。follow-22結構性方案確保reload唔會獨自被踢走，但真機第二次回報顯示toggle自己被逼落一行——證明結構保證解決「拆唔拆散」但冇解決「使唔使換行」呢個底層闊度問題（headless量度375px淨6-7px緩衝，壓線夾）。追加`@media(max-width:749px)`分頁tabs字級/高度收窄（同緊縮桌面follow-16一致，14px/30px→12px/26px）+toggle padding收窄，3粒按鈕闊度由148px收窄到132px。改用逐級收窄壓力測試（340/320px）驗證斷點由~375px推後到<340px。toggle功能/750-900緊縮桌面零regression。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-02 (D69續八-follow-22：重新載入結構性同分頁tabs同行，取代follow-20/21脆弱pixel-shaving): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-22」條目 + [decisions.md D69續八-follow-22](decisions.md)。follow-20/21用column-gap/padding收窄+刪chevron騰位嘅「數值啱啱夠位」做法喺headless瀏覽器PASS但Fat Mo真機截圖顯示reload依然被逼落獨立一行（font metric差異令計算唔可靠）。改結構性修法：refreshBtn唔再係pinnedRow獨立flex item，改做segWrapper（分頁tabs容器）子元素，segWrapper改`display:flex;flex-wrap:nowrap`+手機專屬`flex:1 1 auto`令margin-left:auto有嘢好推+中和舊`.fhs-seg-ctrl{width:100%}`規則。而家segWrapper連embed埋嘅reload喺flex-wrap換行判斷入面係同一個不可分割單位，320/360/375/390/414px多寬度確認即使極窄都結構性同行。toggle功能/750-900緊縮桌面/1400傳統桌面零regression。

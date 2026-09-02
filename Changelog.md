@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-23：篩選漏斗toggle仍被逼落自己一行，follow-22結構保證外追加真正闊度緩衝
+
+- **緣起**：follow-22結構性方案確保「reload唔會獨自被踢走」，但Fat Mo真機第二次截圖顯示：而家係篩選漏斗toggle自己被逼落一行，segWrapper（連reload）留喺下一行——證明follow-22解決咗「邊啲元素綁埋一齊換行」，但冇解決「使唔使換行」呢個底層闊度問題。headless瀏覽器量度375px淨返6-7px緩衝，壓線夾啱啱好，真機font metric稍闊就爆。
+- **修法**：`@media(max-width:749px)`追加2條規則：①分頁tabs字級/高度收窄到同緊縮桌面follow-16一致（14px/30px→12px/26px），淨喺手機先套用；②篩選漏斗toggle自身padding再收窄。3粒按鈕合共闊度由148px收窄到132px。
+- **驗證方法論轉向**：唔再淨計算單一寬度「夠唔夠」（已証明headless PASS唔代表真機PASS），改用逐級收窄闊度壓力測試（340/320px）直接量度斷點喺邊——收窄前斷點約喺375px壓線，收窄後撐到340px，僅320px先出現graceful degradation（toggle獨立換行但segWrapper連reload仍結構性同行）。
+- **通則**：結構性保證（follow-22）同闊度緩衝（follow-23）係兩個獨立問題，唔可以互相取代；密度收窄設計應預留可觀緩衝並用壓力測試驗證，唔應信賴單一目標寬度嘅精確計算。
+- **驗證**：320-414px多寬度壓力測試確認斷點大幅推後；toggle功能不受影響；750/900緊縮桌面回歸零regression；console零新增錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`@media(max-width:749px)`追加`.fhs-seg-btn`+`#reviewFilterToggle`收窄規則）。
+- 全文見 decisions.md D69續八-follow-23。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-22：重新載入結構性同分頁tabs同行，取代follow-20/21脆弱pixel-shaving
 
 - **緣起**：follow-20/21用「refreshBtn插入pinnedRow做獨立flex item，靠column-gap/padding收窄+刪chevron騰位」嘅做法喺headless瀏覽器PASS，但Fat Mo真機截圖顯示reload依然被逼落獨立一行——證明呢類「數值啱啱夠位」嘅做法對font metric/瀏覽器差異敏感，唔可靠。
