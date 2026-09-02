@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-27：重新載入改同「頸鏈」右邊精確對齊，唔再伸展到成行絕對邊界): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-27」條目 + [decisions.md D69續八-follow-27](decisions.md)。Fat Mo截圖標示「已完成」同「重新載入」中間有空白+reload應同第二行「頸鏈」右邊對齊。根因follow-22嘅`flex:1 1 auto`令segWrapper攞晒剩餘空間推reload去絕對右邊界，但類別行跟內容闊喺「頸鏈」就完咗，兩行右邊唔同座標。改做JS動態量度：反推segWrapper應有幾闊令右邊精確對齊catGroup，`getBoundingClientRect()`量度確認差值=0；切換三個分頁tab維持對齊；900緊縮桌面回歸PASS（`style.width`正確clear）。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-03 (D69續八-follow-26：第一/二行icon左邊未對齊，follow-23收窄padding副作用): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-26」條目 + [decisions.md D69續八-follow-26](decisions.md)。Fat Mo截圖標示第一行（漏斗+分頁tabs）同第二行（類別）冇對齊。根因follow-23加嘅`#reviewFilterToggle{padding:0 6px}`（兩邊都有）令filter-icon向內縮6px，同catGroup嘅icon（無padding，left:13px）差6px。改做`padding:0 6px 0 0`（淨留右邊）令兩icon共用left:13px起點，總padding量不變、follow-23闊度緩衝效果保留。375px驗證PASS，900緊縮桌面回歸PASS。

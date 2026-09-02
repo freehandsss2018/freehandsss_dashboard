@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-27：重新載入改同「頸鏈」右邊精確對齊，唔再伸展到成行絕對邊界
+
+- **緣起**：Fat Mo截圖紅圈標示「已完成」同「重新載入」中間有空白+「重新載入」應該同第二行「頸鏈」右邊上下對齊。
+- **根因**：follow-22嘅`#fhsSegWrapper{flex:1 1 auto}`令segWrapper攞晒pinnedRow剩餘空間，推reload去成行絕對右邊界；但類別行冇伸展，跟內容闊喺「頸鏈」之後就完咗——兩行右邊落喺唔同座標，中間空白正正因為segWrapper伸展過龍。
+- **修法**：CSS改`flex:0 0 auto`（配合JS inline width）。JS新增量度邏輯：每次render/resize量catGroup闊度反推segWrapper應有幾闊先令右邊精確對齊，`element.style.width`設定；安全下限：目標闊度比natural（`scrollWidth`）窄就唔縮，避免內容裁走。
+- **驗證方法**：`getBoundingClientRect()`直接量度右邊差值確認0（非肉眼估）；切換三個分頁tab（文字長度不同）覆核對齊維持；緊縮桌面確認`style.width`正確clear。
+- **通則**：兩行content量有差異時，「攞晒剩餘空間」做法會令兩行對齊到唔同基準；真正對齊需要動態綁定闊度而非各自獨立伸展。
+- **驗證**：375px右邊差值=0；三分頁切換維持對齊；toggle功能正常；900緊縮桌面回歸PASS；console零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（CSS改flex屬性+JS新增寬度對齊量測邏輯）。
+- 全文見 decisions.md D69續八-follow-27。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-26：第一行漏斗icon同第二行類別icon左邊未對齊，follow-23收窄padding嘅副作用
 
 - **緣起**：Fat Mo截圖標示手機直向第一行（篩選漏斗+分頁tabs）同第二行（類別）冇對齊。

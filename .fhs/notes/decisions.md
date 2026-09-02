@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-03] (D69續八-follow-27) 重新載入應該同「頸鏈」右邊對齊，唔應該伸展到成行絕對邊界
+
+**背景**：Fat Mo截圖紅圈標示兩點：①「已完成」同「重新載入」中間有一嚿唔應該有嘅空白②「重新載入」應該同第二行「頸鏈」掣右邊上下對齊（紅直線）。查實follow-22嘅`#fhsSegWrapper{flex:1 1 auto}`會令segWrapper攞晒pinnedRow全部剩餘空間，將reload推去成行嘅絕對右邊界；但第二行「類別」（`#fhsCategoryFilterGroup`）冇伸展，跟內容闊，喺`頸鏈`掣之後就完咗——兩行嘅右邊落喺唔同x座標，中間出現空白正正係因為segWrapper伸展過龍，超出咗類別行實際嘅右邊界。
+
+**修法**：CSS `#fhsSegWrapper`嘅mobile覆寫由`flex:1 1 auto`（攞晒剩餘空間）改做`flex:0 0 auto`（明確指定，配合JS動態設定嘅inline width生效）。JS喺`fhsSyncCompactDesktopLayout()`加一段量度邏輯：每次render/resize，量catGroup（類別行）嘅實際闊度、toggle嘅闊度、pinnedRow嘅column-gap，反推segWrapper應該有幾闊先可以令佢個右邊同catGroup個右邊精確對齊，用`element.style.width`設定。安全下限：先reset做natural width量`scrollWidth`（真正需要嘅最小闊度），如果計出嚟嘅目標闊度比natural闊度仲窄就唔縮（避免tabs/reload內容被逼疊埋，寧願兩行有少少對唔齊都好過裁走內容）。
+
+**驗證方法**：`getBoundingClientRect()`直接量度`segWrapper.right`同`catGroup.right`嘅差值，確認精確等於0（唔係靠肉眼估）；切換「全部/進行中/已完成」三個分頁（tab button文字長度唔同）覆核對齊喺唔同狀態下都維持（因為segWrapper本身闊度固定，唔受邊個tab active影響）；緊縮桌面（≥750px）確認`segWrapper.style.width`正確clear返做`''`（新邏輯淨限`nowMobileForCollapse`先套用，冇污染compact-desktop既有嘅「攞晒topBar一行」行為）。
+
+**通則**：兩個獨立content-driven嘅flex行想要右邊對齊，「其中一行攞晒剩餘空間」呢個做法只喺「兩行content量剛好一致」先啱用——一旦內容量有差異（呢次case：4個類別chip vs 3個分頁tab+reload button，闊度天生唔同），伸展到「絕對容器邊界」會令兩行各自對齊到唔同基準（一個對齊「容器邊界」、一個對齊「自身內容尾」），睇落唔對齊。要真正對齊，必須將其中一行嘅闊度**動態綁定**去另一行嘅實際闊度（JS量度反推），而唔係兩者各自獨立咁伸展/唔伸展。
+
+**驗證**：375px確認`segWrapper.right - catGroup.right === 0`；切換三個分頁tab維持對齊；toggle單次點擊展開/收埋正常；900緊縮桌面回歸PASS（`segWrapper.style.width`正確clear）；console零錯誤。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-27」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-03] (D69續八-follow-26) 第一行漏斗icon同第二行類別icon左邊未對齊 — follow-23收窄padding嘅副作用
 
 **背景**：Fat Mo截圖標示手機直向第一行（篩選漏斗+分頁tabs）同第二行（類別）冇對齊。實測`#fhsCategoryFilterGroup`本身`padding:0`（icon緊貼自己個box左邊，left:13px），但`#reviewFilterToggle`喺follow-23（真機闊度緩衝追加規則）加咗`padding:0 6px`（兩邊都有），令toggle個filter-icon向內縮6px先開始（left:19px）——兩個icon橫向差6px，形成截圖入面睇到嘅「未對齊」。
