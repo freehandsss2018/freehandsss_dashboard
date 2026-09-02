@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-20：follow-19四點回饋（標題消失/徽章簡化/reload同行/類別空行）
+
+- **緣起**：follow-19部署後Fat Mo四點截圖回饋：標題「訂單總覽」消失、重新載入button要簡化去除時間、reload應搬去分頁tabs同一行、類別下方多咗一行空行。
+- **標題消失**：查實係pre-existing嘅`@media(max-width:380px){.fhs-top-bar__order-id{display:none}}`舊規則（follow-19之前已存在，非本輪引入），follow-19騰出嘅空間令佢首次被留意到。修法：同一media query入面加`body.v40-review-active`覆寫，只限訂單總覽頁強制顯示。
+- **徽章簡化**：`renderReviewTable()`兩個分支嘅badge文字由`N筆 · 時間`改做`N筆`，全寬度統一。
+- **reload搬同一行**：`fhsSyncCompactDesktopLayout()`嘅mobile分支改插入`#reviewFilterPinned`（segWrapper之後、div1之前），令reload button同「全部/進行中/已完成」tabs落入同一flex行；連帶2個CSS選擇器由「必須喺#v40-top-bar底下」放寬做純ID共用兩個tier；撞正D69續三舊有`.filter-row-pinned .fhs-btn-refresh{flex:1 1 45%}`規則需顯式覆寫`flex:0 0 auto`；三元素夾埋闊度差20px先夠放同一行，靠reload自身padding/gap收窄+pinnedRow column-gap收窄補回，冇郁tabs/篩選漏斗尺寸。
+- **類別下空行**：多寬度/多分頁/逐層DOM box model量度均未能重現，完成上面三點修復後複查已無空行，判斷為連帶消除或單次截圖時機巧合，未能獨立確認根因，已如實告知 Fat Mo。
+- **通則**：密度/佈局改動後若使用者報告「元素消失」，除檢查本次改動本身，都要檢查係咪意外揭發一條早已存在、之前冇人踩中嘅舊threshold規則。
+- **驗證**：375/390px確認四點回饋逐一解決（標題顯示、徽章簡化、reload同行、類別下無空行）；750/900緊縮桌面、1400傳統桌面三態回歸測試零regression；分段指示器mismatch維持0.8px；console零新增錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`fhsSyncCompactDesktopLayout()` mobile分支改動、`<380px`標題覆寫、badge文字簡化2處、`#fhsRefreshBtn`/`#reviewCountBadge`選擇器放寬+間距收窄）。
+- 全文見 decisions.md D69續八-follow-20。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-19：手機直向篩選列收納、重新載入合併、分段指示器置中修正
 
 - **緣起**：Fat Mo截圖標註手機直向（<750px）「進行中/已完成」分頁下，3個功能按鈕+獨立重新載入+筆數徽章合共佔用近1/3畫面高度，訂單列表要捲好多先睇到；同時分段控制器（全部/進行中/已完成）嘅白色active指示框對唔中文字。

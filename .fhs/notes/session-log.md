@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-02 (D69續八-follow-20：follow-19四點回饋——標題消失/徽章簡化/reload搬同行/類別空行): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-20」條目 + [decisions.md D69續八-follow-20](decisions.md)。follow-19四點截圖回饋：①標題「訂單總覽」消失（查實係pre-existing嘅`<380px`舊threshold規則，follow-19騰出空間先首次被留意到，已加review-active覆寫）②徽章簡化去除時間淨留筆數③重新載入搬去分頁tabs同一行（撞正D69續三舊`flex:1 1 45%`規則+闊度差20px，靠自身padding/gap+pinnedRow gap收窄補回）④類別下方空行——多寬度/多分頁/逐層DOM量度未能重現，完成前三點後複查已無空行，未能獨立確認根因已如實告知。375/390px+750/900緊縮桌面+1400傳統桌面三態回歸全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-02 (D69續八-follow-19：手機直向篩選列收納+重新載入合併+分段指示器置中修正): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-19」條目 + [decisions.md D69續八-follow-19](decisions.md)。手機直向(<750px)訂單總覽3按鈕（顯示項目財務/清除篩選/儲存篩選）過度佔位，將follow-6/9原本緊縮桌面專屬嘅收納/合併行為擴展去mobile共用：3按鈕收納入篩選toggle面板、重新載入按鈕同筆數徽章合併做右上角單一pill。另修正分段控制器（全部/進行中/已完成）白色active指示框CSS padding+JS transform雙重計算偏移（`left:3px→left:0`）。驗證期間一度誤判指示器「卡死」深層bug，查出係測試方法論race condition（rapid連續互動+分開量測中間夾住背景auto-refresh reflow），改單一原子化量測後三分頁mismatch全部≤0.8px，非真bug。390mobile/750/900緊縮桌面/1400傳統桌面全PASS，已commit+部署生產。

@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-02] (D69續八-follow-20) follow-19四點回饋 — 標題消失/徽章簡化/重新載入搬同行/類別下空行
+
+**背景**：follow-19部署後，Fat Mo四點截圖回饋：①左上角「訂單總覽」標題消失②「重新載入」button要簡化，淨要ICON+「重新載入(N筆)」，唔要時間③「重新載入」應該搬去「已完成」右方、同分頁tabs同一行，唔應該自成一行④類別下方多咗一行空行。
+
+**逐點根因與修法**：
+1. **標題消失**：查實係一條**pre-existing、follow-19之前已存在**嘅舊規則`@media(max-width:380px){.fhs-top-bar__order-id{display:none}}`（同一份follow-18 commit已有，非follow-19引入）。凡實測viewport<380px（如iPhone SE級375px）就會觸發，之前冇人留意到，follow-19將freehandsss水印隱走+徽章簡化後空間反而更闊，令標題缺席更顯眼。修法：喺同一個media query入面加`body.v40-review-active .fhs-top-bar__order-id{display:inline!important}`，只限訂單總覽頁覆寫顯示（沿用follow-16established嘅「其餘分頁唔受影響」紀律），其餘頁面窄寬度隱標題行為不變。
+2. **徽章簡化**：`renderReviewTable()`兩個分支（mobile/desktop共用嘅badge賦值邏輯）由`${N}筆 · ${時間}`改做`${N}筆`，全寬度統一（唔分merge/standalone context），因為時間精確到分鐘本身資訊值低，全面簡化風險低。
+3. **重新載入搬同一行**：follow-19將refreshBtn固定搬去`#v40-top-bar`（同toggle/tabs徹底分家，變成topBar獨自一行），Fat Mo要求同分頁tabs（`#fhsSegWrapper`）同一行。修法：`fhsSyncCompactDesktopLayout()`嘅`shouldCollapseButtons`分支再拆——`isCompact`（緊縮桌面）維持follow-9原有「搬去topBar」行為不變；純mobile改做「插入`#reviewFilterPinned`入面、`segWrapper`之後、`div1`之前」，令佢同分頁tabs落入同一個flex-wrap行。連帶2個以往假設「呢粒掣淨係喺#v40-top-bar底下」嘅CSS選擇器（`#fhsRefreshBtn`同`#reviewCountBadge`）放寬做純ID（唔再要求`#v40-top-bar`祖先），兩個tier共用。實測搬去`#reviewFilterPinned`後即刻撞正D69續三舊有嘅`.filter-row-pinned .fhs-btn-refresh{flex:1 1 45%}`（假設容器入面淨得「4粒掣逐個排」嘅舊佈局），令個掣暴衝做45%闊——顯式覆寫`flex:0 0 auto`解決。再實測發現toggle+segWrapper+refreshBtn三者夾埋闊度喺350px可用寬度內差成20px先夠放同一行，靠refreshBtn自身padding/gap收窄（10px→6px／6px→4px）+ pinnedRow column-gap收窄（12px→6px）補回差額，冇郁分頁tabs/篩選漏斗自身尺寸（掂手觸控目標優先讓路）。
+4. **類別下空行**：多次於375/390px、「進行中」/「已完成」兩個分頁、DOM box model逐層量度（`reviewFilterPinned`→`reviewFilterBody`(collapsed 0px)→`bulkActionBar`(display:none)→`reviewCatStrip`(0px空)→`reviewAccordionContainer`第一張卡），marginTop/paddingTop全部0，未能重現任何空行。完成上面1-3點修復後再截圖複查，類別行同第一張卡之間視覺上貼實冇縫。判斷為修復1-3連帶消除（原本徽章/reload位置錯亂可能引起某種暫態reflow），或單次截圖時機巧合（背景auto-refresh reflow，同follow-19已記錄嘅race condition教訓同類）；未能獨立確認根因，已於回報中如實告知 Fat Mo，留待複核。
+
+**通則**：舊有CSS規則嘅生效範圍（尤其`@media(max-width:Npx)`呢類舊threshold）唔可以只睇「呢個commit有冇改佢」嚟判斷相關性——follow-19本身冇動<380px嗰條title-hide規則一隻字，但follow-19嘅其他改動（隱水印、簡化徽章）騰出嘅空間，令呢條沉睡已久嘅舊規則第一次被使用者實際留意到。密度/佈局類改動後，如果使用者報告「某元素消失咗」，除咗檢查本次改動本身，都要檢查係咪本次改動意外「揭發」咗一條早就存在、只係之前冇人踩中嘅舊規則。
+
+**驗證**：375px/390px兩個寬度，逐點確認：標題顯示、徽章文字淨得筆數、重新載入button同分頁tabs同一行（`getBoundingClientRect()`量度三者y軸重疊）、類別下方冇空行。750/900緊縮桌面、1400傳統桌面三態回歸測試：badge文字同步簡化（三態一致）、緊縮桌面reload搬topBar行為不變、傳統桌面reload standalone行為不變、分段指示器mismatch維持0.8px sub-pixel雜訊、console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-20」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-02] (D69續八-follow-19) 手機直向篩選列過度佔位 — 收納3按鈕入篩選抽屜、合併重新載入+筆數、修正分頁指示器置中偏移
 
 **背景**：Fat Mo截圖標註手機直向（<750px）「進行中/已完成」分頁下，「顯示項目財務/清除篩選/儲存篩選」3個按鈕橫向堆疊，加上獨立「重新載入」按鈕同筆數徽章，合共佔用畫面上方接近1/3高度，訂單列表要捲好多先睇到。三項具體要求：(1) 3按鈕收納入篩選toggle嘅可摺疊面板內（follow-6已喺緊縮桌面750-1129做過同款收納，今次擴展去mobile）；(2) 重新載入按鈕移去右上角同筆數徽章合併（follow-9緊縮桌面已有嘅merge-badge手法，同樣擴展去mobile）；(3) 分段控制器（全部/進行中/已完成）嘅白色active指示器對唔中文字，其他分頁都有同樣問題。
