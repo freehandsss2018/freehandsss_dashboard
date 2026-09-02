@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T11:51:45Z">
+    <meta name="fhs-build" content="2026-09-02T12:14:29Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3038,6 +3038,19 @@
                年代寫嘅）會令個分段控制器自己攞晒segWrapper成個闊度，
                擠冇位俾refreshBtn。淨限呢個組合場景覆寫返做跟內容闊。 */
             body.v40-review-active #fhsSegWrapper .fhs-seg-ctrl { width: auto; flex: 0 1 auto; }
+            /* [2026-09-02 D69續八-follow-23] Fat Mo真機第二次回報：follow-22
+               結構性方案令「reload唔會再獨自被踢走」冇錯，但呢個headless
+               瀏覽器度量到「toggle+segWrapper(連reload)」啱啱好夠位（淨返
+               6-7px緩衝），去到真機（字體渲染/DPI有出入）連toggle都跟住
+               被逼落自己一行。淨靠結構性保證唔夠——結構保證嘅係「邊啲
+               元素綁埋一齊換行」，管唔到「使唔使換行」本身（呢個仍然係
+               闊度夠唔夠嘅數值問題）。呢度追加真正嘅闊度緩衝：分頁tabs
+               字級/高度收窄到同緊縮桌面（follow-16已用緊嘅26px/12px）
+               一致嘅細碼，唔再淨喺compact-desktop先咁做——騰出嘅十零px
+               緩衝，令「toggle+segWrapper+reload」三者夾埋闊度有真正
+               鬆動位，唔再係壓線夾啱啱好。 */
+            body.v40-review-active #fhsSegWrapper .fhs-seg-btn { height: 26px; font-size: 12px; }
+            body.v40-review-active #reviewFilterToggle { padding: 0 6px; }
         }
         /* 手機width實測：徽章併入button後「重新載入」+「N筆·時間」合埋闊度
            足以撞正絕對定位置中嘅freehandsss水印（純裝飾、pointer-events:none，
