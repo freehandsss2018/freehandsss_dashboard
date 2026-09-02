@@ -3,6 +3,25 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-02] (D69續八-follow-22) 重新載入結構性同分頁tabs同行 — 取代follow-20/21脆弱嘅pixel-shaving做法
+
+**背景**：follow-20/21喺mobile分頁tabs同一行安置reload嘅做法，本質係「將refreshBtn插入pinnedRow做獨立flex item，靠column-gap/padding收窄+刪chevron騰位，計到啱啱好夠fit」——呢種計算喺本session嘅headless瀏覽器環境PASS，但Fat Mo真機（實際font metric/DPI/系統字體渲染同headless瀏覽器有出入）截圖顯示reload依然被逼落獨立一行，證明呢個「淨計算夠位」嘅做法本質脆弱，唔可靠。
+
+**根因**：refreshBtn同segWrapper（分頁tabs）喺pinnedRow入面係**兩個獨立嘅flex item**，各自參與`flex-wrap:wrap`嘅換行判斷——只要總闊度唔夠，flex演算法會揀最後一個溢出嘅item（即refreshBtn）獨自換去下一行，segWrapper留喺原位，兩者結構上從來冇「綁定喺同一行」嘅保證，只係「數值上啱啱夠就睇落好似同行」嘅巧合。
+
+**修法（結構性保證，非數值調校）**：`refreshBtn`唔再插入`pinnedRow`做獨立item，改做`segWrapper`（`#fhsSegWrapper`）嘅**子元素**（`segWrapper.appendChild(refreshBtn)`）。連帶3條CSS：
+1. `#fhsSegWrapper{display:flex;align-items:center;flex-wrap:nowrap}`——令segWrapper內部（分頁tabs+reload）永遠唔會自行拆開；
+2. `@media(max-width:749px){#fhsSegWrapper{flex:1 1 auto}}`——手機專屬，令segWrapper由「跟內容闊」改做「伸展攞晒pinnedRow剩低空間」，先可以令refreshBtn嘅`margin-left:auto`有嘢好推（原本shrink-to-fit容器冇多餘空間，auto margin形同虛設）；
+3. `@media(max-width:749px){#fhsSegWrapper .fhs-seg-ctrl{width:auto;flex:0 1 auto}}`——中和舊有`.fhs-seg-ctrl{width:100%}`手機規則（單一子元素年代寫嘅，加入refreshBtn做第二子元素後，`.fhs-seg-ctrl`唔可以再攞晒segWrapper成個闊度）。
+
+而家即使真係闊度唔夠（實測320px極端窄機），flex-wrap:wrap會將**segWrapper成嚿（連embed埋嘅reload）**一齊換去下一行，唔會再出現「reload獨自被踢走、tabs孤伶伶留低」嘅情況——換行單位由「逐個item」變成「segWrapper呢個group」，結構上唔會再拆散。
+
+**通則**：兩個視覺上要「永遠同一行、唔可以拆散」嘅元素，唔應該作為同一個flex容器入面嘅平行獨立item、然後靠數值計算「啱啱好夠位」嚟達成——呢種做法對font metric/瀏覽器差異敏感，不同環境（尤其headless測試 vs 真機）計出嚟嘅可用闊度可以有出入，屬結構性脆弱。正確做法係將呢兩個元素做**父子關係**（或共同包喺一個獨立flex sub-container），令佢哋喺換行判斷入面被視為**同一個不可分割嘅單位**，換行與否兩者共進退，跨環境行為一致。follow-20/21已經係第二/三次喺呢個「同一行」目標度落手，本次改用結構性方案而非再一次數值微調，避免第四次真機回報。
+
+**驗證**：320/360/375/390/414px多寬度確認reload+分頁tabs結構性同行（320px極窄例外情況：segWrapper連reload一齊換行，但toggle獨自留喺上一行——仍然滿足「reload同tabs同行」嘅核心要求，只係toggle犧牲，屬合理降級）；toggle展開/收埋功能不受影響（撳落去6篩選項+3粒掣正常展開，DOM量度height 331.6px確認展開狀態）；750/900緊縮桌面回歸零regression（segWrapper單一子元素`display:flex`對視覺冇影響）；1400傳統桌面不受影響；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-22」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-02] (D69續八-follow-21) 篩選漏斗chevron手機都隱走 — follow-20「同行」剩尾的最後一截空間
 
 **背景**：follow-20已將reload按鈕搬去同分頁tabs（全部/進行中/已完成）同一行，但實測發現三元素（篩選漏斗toggle+分頁tabs+reload）夾埋闊度仍差約20px先夠放同一行，靠reload自身padding/gap收窄+pinnedRow column-gap收窄補回。Fat Mo截圖紅圈標示篩選漏斗icon要求「刪除它」，並要求「調整大小一致，目的是令重新載入能放置同一行」。

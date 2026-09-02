@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-22：重新載入結構性同分頁tabs同行，取代follow-20/21脆弱pixel-shaving
+
+- **緣起**：follow-20/21用「refreshBtn插入pinnedRow做獨立flex item，靠column-gap/padding收窄+刪chevron騰位」嘅做法喺headless瀏覽器PASS，但Fat Mo真機截圖顯示reload依然被逼落獨立一行——證明呢類「數值啱啱夠位」嘅做法對font metric/瀏覽器差異敏感，唔可靠。
+- **根因**：refreshBtn同segWrapper（分頁tabs）係pinnedRow入面兩個獨立flex item，各自參與flex-wrap換行判斷，兩者從來冇「綁定同一行」嘅結構保證，只係數值巧合。
+- **修法**：refreshBtn唔再係pinnedRow嘅獨立item，改做`segWrapper`（分頁tabs容器）嘅**子元素**。連帶3條CSS：①segWrapper改`display:flex;flex-wrap:nowrap`令內部（tabs+reload）唔會自行拆開；②手機專屬`flex:1 1 auto`令segWrapper伸展攞晒剩餘空間，令reload嘅`margin-left:auto`有嘢好推；③中和舊有`.fhs-seg-ctrl{width:100%}`手機規則（單一子元素年代寫嘅，加入reload做第二子元素後唔可以再攞晒全部空間）。而家即使闊度真係唔夠，flex-wrap會將segWrapper成嚿（連reload）一齊換行，唔會再有「reload獨自被踢走」。
+- **通則**：兩個要「永遠同一行」嘅元素唔應該做同一容器嘅平行item再靠數值計算夠位，應該做父子/sub-container關係令佢哋喺換行判斷入面係同一個不可分割單位。
+- **驗證**：320/360/375/390/414px多寬度確認結構性同行（320極窄例外：segWrapper連reload一齊換行，toggle獨自留上一行，仍滿足核心要求）；toggle展開/收埋功能不受影響；750/900緊縮桌面、1400傳統桌面零regression；console零新增錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`fhsSyncCompactDesktopLayout()` mobile分支改appendChild入segWrapper、3條新CSS規則）。
+- 全文見 decisions.md D69續八-follow-22。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-21：篩選漏斗chevron手機都隱走，補足reload同行嘅最後缺口
 
 - **緣起**：follow-20已將reload搬去分頁tabs同一行，但夾埋闊度仍差約20px，靠reload自身收窄勉強補回。Fat Mo截圖紅圈篩選漏斗icon要求「刪除它」+「調整大小一致，目的係令重新載入放置同一行」。

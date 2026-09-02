@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-02 (D69續八-follow-22：重新載入結構性同分頁tabs同行，取代follow-20/21脆弱pixel-shaving): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-22」條目 + [decisions.md D69續八-follow-22](decisions.md)。follow-20/21用column-gap/padding收窄+刪chevron騰位嘅「數值啱啱夠位」做法喺headless瀏覽器PASS但Fat Mo真機截圖顯示reload依然被逼落獨立一行（font metric差異令計算唔可靠）。改結構性修法：refreshBtn唔再係pinnedRow獨立flex item，改做segWrapper（分頁tabs容器）子元素，segWrapper改`display:flex;flex-wrap:nowrap`+手機專屬`flex:1 1 auto`令margin-left:auto有嘢好推+中和舊`.fhs-seg-ctrl{width:100%}`規則。而家segWrapper連embed埋嘅reload喺flex-wrap換行判斷入面係同一個不可分割單位，320/360/375/390/414px多寬度確認即使極窄都結構性同行。toggle功能/750-900緊縮桌面/1400傳統桌面零regression。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-02 (D69續八-follow-21：篩選漏斗chevron手機都隱走，補足reload同行最後缺口): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-21」條目 + [decisions.md D69續八-follow-21](decisions.md)。follow-20已將reload搬去分頁tabs同一行但仍差約20px闊度勉強補回，Fat Mo截圖紅圈篩選漏斗icon要求刪除+調整大小令reload同行。AskUserQuestion釐清後確認唔刪成個toggle（年度/月份/狀態/批次/搜尋/排序6項+follow-19收埋嘅3粒掣嘅唯一入口），改淨刪icon右邊嘅細chevron（follow-7已作廢嘅殘留裝飾，follow-16已喺緊縮桌面隱過但手機一直未隱），擴展做闊度獨立版。騰出空間補足缺口，375px確認reload+tabs同一行、toggle功能完整不變、750/900緊縮桌面零regression。
