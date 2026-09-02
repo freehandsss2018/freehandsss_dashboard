@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-02 (D69續八-follow-24：「已選N項」文字提示隱走，唔再撐闊toggle掣): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-24」條目 + [decisions.md D69續八-follow-24](decisions.md)。Fat Mo截圖漏斗icon右邊「已選1項」文字提示要求隱走。根因：`updateFilterActiveHint()`喺任一篩選欄有值時加`.visible`class令原本`display:none`嘅提示現形，撐闊toggle掣。加`body.v40-review-active #filterActiveHint{display:none!important}`width-independent覆寫恆常隱藏，JS計算邏輯不變。375mobile+900緊縮桌面驗證PASS。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-02 (D69續八-follow-23：篩選漏斗toggle仍被逼落自己一行，追加真正闊度緩衝): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-23」條目 + [decisions.md D69續八-follow-23](decisions.md)。follow-22結構性方案確保reload唔會獨自被踢走，但真機第二次回報顯示toggle自己被逼落一行——證明結構保證解決「拆唔拆散」但冇解決「使唔使換行」呢個底層闊度問題（headless量度375px淨6-7px緩衝，壓線夾）。追加`@media(max-width:749px)`分頁tabs字級/高度收窄（同緊縮桌面follow-16一致，14px/30px→12px/26px）+toggle padding收窄，3粒按鈕闊度由148px收窄到132px。改用逐級收窄壓力測試（340/320px）驗證斷點由~375px推後到<340px。toggle功能/750-900緊縮桌面零regression。

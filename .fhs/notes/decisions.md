@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-02] (D69續八-follow-24) 「已選N項」文字提示隱走 — 收納喺icon內，唔再撐闊toggle掣
+
+**背景**：Fat Mo截圖顯示篩選漏斗icon右邊出現「已選 1項」文字提示，要求隱走（收納喺icon內即可，唔使show出嚟）。查實`#filterActiveHint`（`.filter-active-hint`）本身基礎`display:none`，但`updateFilterActiveHint()`會喺任何一個篩選欄（年度/月份/狀態/批次/搜尋/類別/排序）有值時加`.visible`class，`.filter-active-hint.visible`（雙class，specificity蓋過基礎規則）令佢現形——呢個文字撐闊toggle掣本身闊度，同follow-19~23一路追求嘅「toggle+分頁tabs+reload同一行」目標直接矛盾。
+
+**修法**：加一條specificity夠高嘅width-independent CSS覆寫`body.v40-review-active #filterActiveHint { display:none !important; }`，唔理`.visible`有冇加都恆常隱藏。JS計算邏輯（`updateFilterActiveHint()`）刻意不變——純視覺隱藏，唔改內部count計算，萬一將來有其他地方要讀呢個狀態（例如未來想改做icon上嘅小圓點徽章）唔會斷。
+
+**Scope**：width-independent，mobile/緊縮桌面/傳統桌面三態一致隱走（Fat Mo冇特別指明淨限手機，且呢個文字撐闊問題喺任何tier都存在，全面隱藏更一致）。
+
+**驗證**：手動set `reviewSearch.value` 觸發count>0 → 呼叫`updateFilterActiveHint()` → 確認`.visible`class已加、`textContent`已populate（"已選 2 項"）但`getComputedStyle().display`仍然係`none`、`offsetParent`為null（真正唔render）；375mobile同900緊縮桌面兩個tier分別驗證PASS；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-24」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-02] (D69續八-follow-23) 篩選漏斗icon仍被逼落自己一行 — follow-22結構保證唔等於闊度夠用，追加真正緩衝
 
 **背景**：follow-22改用結構性方案（refreshBtn做segWrapper子元素），確保「reload唔會再獨自被踢走」——呢個結構保證本身冇錯。但Fat Mo真機第二次截圖顯示：而家係**篩選漏斗toggle**（segWrapper所在行嘅第一個item）被逼落自己一行，segWrapper（連embed埋嘅reload）留喺下一行——證明follow-22嘅結構保證解決咗「邊啲元素綁埋一齊換行」，但完全冇解決「使唔使換行」呢個更底層嘅**闊度夠唔夠**問題。本session headless瀏覽器量度到「toggle+segWrapper」喺375px夾埋闊度淨返6-7px緩衝（342.6px需求 vs 349.6px可用），壓線夾啱啱好——真機font metric渲染稍闊少少就爆。

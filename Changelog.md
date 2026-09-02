@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-24：「已選N項」文字提示隱走，唔再撐闊toggle掣
+
+- **緣起**：Fat Mo截圖顯示篩選漏斗icon右邊出現「已選1項」文字提示，要求隱走。
+- **根因**：`#filterActiveHint`基礎`display:none`，但`updateFilterActiveHint()`喺任一篩選欄有值時加`.visible`class（雙class specificity蓋過基礎規則）令佢現形，撐闊toggle掣本身闊度，同follow-19~23一路追求嘅「同一行」目標矛盾。
+- **修法**：加`body.v40-review-active #filterActiveHint{display:none!important}`width-independent覆寫，唔理`.visible`有冇加都恆常隱藏；JS計算邏輯不變（純視覺隱藏）。
+- **Scope**：width-independent，三態（mobile/緊縮桌面/傳統桌面）一致隱走。
+- **驗證**：手動觸發count>0確認`.visible`已加+textContent已populate但`display:none`+`offsetParent`為null；375mobile+900緊縮桌面兩個tier驗證PASS；console零新增錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（1條CSS覆寫）。
+- 全文見 decisions.md D69續八-follow-24。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-02] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-23：篩選漏斗toggle仍被逼落自己一行，follow-22結構保證外追加真正闊度緩衝
 
 - **緣起**：follow-22結構性方案確保「reload唔會獨自被踢走」，但Fat Mo真機第二次截圖顯示：而家係篩選漏斗toggle自己被逼落一行，segWrapper（連reload）留喺下一行——證明follow-22解決咗「邊啲元素綁埋一齊換行」，但冇解決「使唔使換行」呢個底層闊度問題。headless瀏覽器量度375px淨返6-7px緩衝，壓線夾啱啱好，真機font metric稍闊就爆。
