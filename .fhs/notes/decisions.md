@@ -3,6 +3,18 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-03] (D69續八-follow-29) 類別工作台橫幅（進度/批次分佈）刪除 — Fat Mo判定純資訊性統計卡冇用
+
+**背景**：Fat Mo截圖「🔑鑰匙扣 26件·14張單」嘅類別工作台橫幅（撳入手模/鑰匙扣/頸鏈某個類別tab時彈出，顯示「進度分佈」未開始/進行中/需補打/已完成 + 「批次分佈」第N批統計），要求整個刪除，理由「冇用」。
+
+**歷史脈絡**：呢個橫幅（`#reviewCatStrip`，由`fhsRenderCatStrip()`按當前生效嘅category filter動態populate）follow-6（D69續八早期round）已經喺緊縮桌面（750-1129px）隱過一次，理由係「橫幅純資訊性、唔係操作控制項，優先讓位俾表格本身」——但當時淨限compact-desktop一個tier，mobile（<750px）同傳統桌面（≥1130px）一直保留顯示。
+
+**修法**：新增一條width-independent CSS `#reviewCatStrip { display: none !important; }`，三個tier一律唔顯示。`fhsRenderCatStrip()`內部計算/populate邏輯完全不變（純CSS隱藏，唔拆function），萬一將來要重新開放（例如改做icon badge之類更精簡嘅呈現）唔使重寫計算邏輯，直接拆返CSS隱藏規則就得。舊有compact-desktop-scoped版本（follow-6）保留唔刪，加註解話明而家由呢條width-independent版本蓋晒。
+
+**驗證**：手動撳「鑰匙扣」category chip觸發`fhsRenderCatStrip()`實際populate內容（`innerHTML.length>0`確認函數有跑），375mobile/900緊縮桌面/1400傳統桌面三個tier分別確認`getComputedStyle(el).display==='none'`同`el.offsetParent===null`（真正冇render，唔係淨睇肉眼）；console零錯誤。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-29」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-03] (D69續八-follow-28) 兩行右邊對齊咗但成行仲有大片空白 — 反過嚟放寬類別chip填滿
 
 **背景**：Fat Mo確認follow-27嘅對齊已生效，但截圖紅圈標示「重新載入」右邊到screen邊仲有一大片完全冇用嘅空白，要求「調整這兩行整體的按鈕，去使其乎合要求」。查實根因：follow-27令兩行右邊互相對齊（`segWrapper.right === catGroup.right`），但兩行一齊停喺類別行天然內容闊度（`頸鏈`掣之後），而類別行本身嘅天然闊度（315px）遠細過pinnedRow真正嘅可用闊度（350px）——即係follow-19~27一路做緊「壓縮就手夠位」，做到宜家兩行都夾埋一齊停埋喺同一個過細嘅目標，成行右邊留低成34px空白。

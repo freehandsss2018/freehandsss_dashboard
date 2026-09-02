@@ -3093,6 +3093,17 @@
             body.v40-review-active #fhsCategoryFilterGroup .chip-group { gap: 8px; }
             body.v40-review-active #fhsCategoryFilterGroup { gap: 8px; }
         }
+        /* [2026-09-03 D69續八-follow-29] Fat Mo截圖：類別工作台橫幅（撳入
+           鑰匙扣/手模/頸鏈某個類別tab時彈出嘅「進度分佈」+「批次分佈」
+           統計卡）「冇用」，要求刪除。follow-6已經喺緊縮桌面（750-1129px）
+           隱過一次（見上面`#reviewCatStrip{display:none!important}`，
+           限compact-desktop），但mobile（<750px）同傳統桌面（≥1130px）
+           一直有得show。呢度擴展做闊度獨立版，三個tier一律唔顯示。
+           `fhsRenderCatStrip()`內部計算邏輯（`window.fhsRenderCatStrip`）
+           保持不變，純CSS隱藏——萬一第度有代碼假設呢個function執行完
+           會populate到某個狀態，唔會斷（function本身冇被拆走，淨係
+           render出嚟嘅結果視覺唔顯示）。 */
+        #reviewCatStrip { display: none !important; }
         /* [2026-09-02 D69續八-follow-24] Fat Mo截圖：漏斗icon右邊「已選N項」
            文字提示唔應該show出嚟（收納喺icon內即可）——`updateFilterActiveHint()`
            會喺有篩選生效時加`.visible`class，令`.filter-active-hint.visible`
@@ -3244,7 +3255,10 @@
             .review-table-wrap { max-height:none !important; }
             /* [2026-08-30 D69續八-follow-6] Fat Mo 三項紅/藍/綠圈指示：
                ①類別工作台橫幅（進度/批次分佈）喺緊縮桌面層唔顯示——呢個範圍高度
-               緊絀，橫幅純資訊性、唔係操作控制項，優先讓位俾表格本身。 */
+               緊絀，橫幅純資訊性、唔係操作控制項，優先讓位俾表格本身。
+               [2026-09-03 D69續八-follow-29] 呢條rule而家由下面width-independent
+               版本蓋晒（見`#reviewCatStrip{display:none!important}`width-
+               independent覆寫），留低純粹減少diff，唔刪走。 */
             #reviewCatStrip { display:none !important; }
             /* [2026-09-01 D69續八-follow-16] Fat Mo明確要求：除訂單總覽外，其餘
                分頁橫向緊縮闊度嘅top bar一律跟返原本手機直向嗰套設計，唔應該有

@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-29：類別工作台橫幅（進度/批次分佈）刪除): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-29」條目 + [decisions.md D69續八-follow-29](decisions.md)。Fat Mo截圖類別工作台橫幅（「進度分佈」+「批次分佈」統計卡）要求刪除，理由冇用。`#reviewCatStrip`follow-6已喺緊縮桌面隱過但mobile/傳統桌面一直保留，加width-independent CSS三個tier一律隱藏，`fhsRenderCatStrip()`計算邏輯不變。手動觸發populate後三個tier確認display:none+offsetParent null，console零錯誤。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-03 (D69續八-follow-28：兩行右邊對齊咗但仲有空白，反過嚟放寬類別chip填滿): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-28」條目 + [decisions.md D69續八-follow-28](decisions.md)。Fat Mo確認follow-27對齊已生效，但截圖標示「重新載入」右邊到screen邊仲有大片空白。根因follow-27令兩行對齊但一齊停喺類別行過細嘅天然闊度（315px vs 可用350px）。修法：放寬類別chip padding/gap令catGroup闊度+24px，follow-27嘅JS自動跟住新闊度重算segWrapper，兩行一齊變闊對齊維持不變（rightDiff仍0）。空白由34px收窄到10px，三分頁切換+900緊縮桌面回歸PASS。

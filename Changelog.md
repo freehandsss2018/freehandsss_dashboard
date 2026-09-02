@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-29：類別工作台橫幅（進度/批次分佈）刪除
+
+- **緣起**：Fat Mo截圖類別工作台橫幅（「進度分佈」+「批次分佈」統計卡，撳入手模/鑰匙扣/頸鏈某個category tab時彈出）要求刪除，理由「冇用」。
+- **歷史脈絡**：`#reviewCatStrip`follow-6已喺緊縮桌面（750-1129px）隱過一次（「純資訊性、優先讓位俾表格」），但mobile/傳統桌面一直保留顯示。
+- **修法**：新增width-independent CSS恆常隱藏，三個tier一律唔顯示。`fhsRenderCatStrip()`計算邏輯不變（純CSS隱藏，未拆function，方便日後如需要重開更精簡呈現）。
+- **驗證**：手動觸發`fhsRenderCatStrip()`populate內容後，375mobile/900緊縮桌面/1400傳統桌面三個tier確認`display:none`+`offsetParent===null`；console零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（1條width-independent CSS）。
+- 全文見 decisions.md D69續八-follow-29。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-28：兩行右邊對齊咗但仲有空白，反過嚟放寬類別chip填滿
 
 - **緣起**：Fat Mo確認follow-27對齊已生效，但截圖標示「重新載入」右邊到screen邊仲有一大片空白，要求調整兩行按鈕填滿。
