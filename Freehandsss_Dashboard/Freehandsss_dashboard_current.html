@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T11:27:23Z">
+    <meta name="fhs-build" content="2026-09-02T11:51:45Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3010,6 +3010,35 @@
            唔影響類別/分隔線嗰行（row-gap 獨立冇改），亦唔影響緊縮桌面
            （呢批元素喺嗰層搬晒去topBar，pinnedRow到時得返anchor空殼）。 */
         body.v40-review-active #reviewFilterPinned { column-gap: 6px; }
+        /* [2026-09-02 D69續八-follow-22] 手機將refreshBtn搬做`#fhsSegWrapper`
+           嘅子元素（同分頁tabs group埋一齊，唔再係pinnedRow嘅獨立flex
+           item）——`#fhsSegWrapper`本身冇宣告display，預設block，兩個
+           子元素（`.fhs-seg-ctrl`同新搬入嘅refreshBtn）會垂直疊埋；改做
+           `display:flex`先可以令佢哋橫向並排。`flex-wrap:nowrap`保證segWrapper
+           內部（tabs+reload）永遠唔會自行拆開換行——真係唔夠位就成嚿
+           segWrapper（連埋reload）一齊俾外層pinnedRow嘅flex-wrap:wrap
+           讓去下一行，唔會再出現reload獨自被踢走、tabs孤伶伶留低嗰種
+           結構性不保證。緊縮桌面（compact-desktop）唔受影響——嗰個tier
+           refreshBtn搬去topBar，segWrapper入面淨得`.fhs-seg-ctrl`一個
+           子元素，`display:flex`對單一子元素冇視覺分別。 */
+        body.v40-review-active #fhsSegWrapper {
+            display: flex; align-items: center; flex-wrap: nowrap; gap: 4px;
+        }
+        /* [2026-09-02 D69續八-follow-22] 淨手機（唔影響緊縮桌面）：segWrapper
+           由「跟內容闊」（flex:0 0 auto）改做「伸展去攞晒pinnedRow剩低嘅
+           橫向空間」（flex:1 1 auto），先可以俾`#fhsRefreshBtn`嘅
+           `margin-left:auto`有嘢好推——原本segWrapper跟內容闊冇多餘空間，
+           margin-left:auto形同虛設，reload會貼實喺分頁tabs右邊，冇到達
+           Fat Mo截圖要求嘅「靠去成行最右方」效果。 */
+        @media (max-width: 749px) {
+            body.v40-review-active #fhsSegWrapper { flex: 1 1 auto; }
+            /* segWrapper 由單一子元素（`.fhs-seg-ctrl`）變做兩個子元素
+               （`.fhs-seg-ctrl`+refreshBtn）之後，舊有手機`@media(max-
+               width:767px){.fhs-seg-ctrl{width:100%}}`規則（單一子元素
+               年代寫嘅）會令個分段控制器自己攞晒segWrapper成個闊度，
+               擠冇位俾refreshBtn。淨限呢個組合場景覆寫返做跟內容闊。 */
+            body.v40-review-active #fhsSegWrapper .fhs-seg-ctrl { width: auto; flex: 0 1 auto; }
+        }
         /* 手機width實測：徽章併入button後「重新載入」+「N筆·時間」合埋闊度
            足以撞正絕對定位置中嘅freehandsss水印（純裝飾、pointer-events:none，
            follow-8已喺compact-desktop隱咗，但嗰條規則局限750-1129，手機一直
@@ -16162,11 +16191,22 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (isCompact) {
                     if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
                 } else {
+                    // [2026-09-02 D69續八-follow-22] Fat Mo真機覆核：follow-20/21
+                    // 靠pinnedRow column-gap/refreshBtn padding收窄嚟「啱啱好夾
+                    // 得落」嘅做法，喺真機字體量度落同呢度嘅headless瀏覽器有
+                    // 出入，實測仍然唔夠位、refreshBtn自己一個被逼落次行。
+                    // 呢種「淨計算應該夠位」嘅寫法本質上脆弱（font-metric
+                    // 隨瀏覽器/系統字體有偏差），改做結構性保證：唔再將
+                    // refreshBtn插入做`pinnedRow`嘅獨立flex item（同segWrapper
+                    // 分開計算、分開決定邊個先換行），而係直接搬做
+                    // `#fhsSegWrapper`嘅**子元素**（同分頁tabs掣group埋一齊）。
+                    // segWrapper本身已經係pinnedRow入面`flex:0 0 auto`嘅單一
+                    // flex item，換行判斷以佢成嚿計，唔會再出現「reload獨自
+                    // 被踢落次行、剩返分頁tabs孤伶伶」嘅情況——即使闊度真係
+                    // 唔夠，都會連segWrapper成嚿一齊換行（好過依家咁分開）。
                     var segWrapperForRefresh = document.getElementById('fhsSegWrapper');
-                    var div1ForRefresh = document.getElementById('fhsDivider1');
-                    var pinnedRowForRefresh = document.getElementById('reviewFilterPinned');
-                    if (segWrapperForRefresh && div1ForRefresh && pinnedRowForRefresh && refreshBtn.previousElementSibling !== segWrapperForRefresh) {
-                        pinnedRowForRefresh.insertBefore(refreshBtn, div1ForRefresh);
+                    if (segWrapperForRefresh && refreshBtn.parentElement !== segWrapperForRefresh) {
+                        segWrapperForRefresh.appendChild(refreshBtn);
                     }
                 }
                 [financeBtn, clearBtn, saveBtn].forEach(function (b) {
