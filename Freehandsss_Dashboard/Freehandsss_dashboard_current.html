@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T22:24:08Z">
+    <meta name="fhs-build" content="2026-09-02T23:01:27Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3024,14 +3024,19 @@
         body.v40-review-active #fhsSegWrapper {
             display: flex; align-items: center; flex-wrap: nowrap; gap: 4px;
         }
-        /* [2026-09-02 D69續八-follow-22] 淨手機（唔影響緊縮桌面）：segWrapper
-           由「跟內容闊」（flex:0 0 auto）改做「伸展去攞晒pinnedRow剩低嘅
-           橫向空間」（flex:1 1 auto），先可以俾`#fhsRefreshBtn`嘅
-           `margin-left:auto`有嘢好推——原本segWrapper跟內容闊冇多餘空間，
-           margin-left:auto形同虛設，reload會貼實喺分頁tabs右邊，冇到達
-           Fat Mo截圖要求嘅「靠去成行最右方」效果。 */
+        /* [2026-09-03 D69續八-follow-27] Fat Mo紅圈：follow-22嘅「segWrapper
+           伸展去攞晒pinnedRow剩低橫向空間」（flex:1 1 auto）令reload推到
+           成行最右邊（pinnedRow嘅絕對邊界），但第二行「類別」冇伸展
+           （跟內容闊，`頸鏈`掣之後就完咗），兩行右邊唔對齊，中間出現
+           一嚿冇嘢嘅空白（已完成→重新載入之間）。改做JS動態量度：淨
+           將segWrapper闊度設做「令reload右邊同`頸鏈`右邊睇齊」所需嘅
+           精確px值（見`fhsSyncCompactDesktopLayout()`新增嘅
+           alignSegWrapperWidth邏輯），唔再一刀切攞晒剩餘空間。`flex:0 0
+           auto`（明確指定、唔靠inherit base rule）令`element.style.width`
+           呢個JS設嘅inline width生效——`flex-basis:auto`會用width
+           屬性做基準，冇grow/shrink會超出呢個明確寬度。 */
         @media (max-width: 749px) {
-            body.v40-review-active #fhsSegWrapper { flex: 1 1 auto; }
+            body.v40-review-active #fhsSegWrapper { flex: 0 0 auto; }
             /* segWrapper 由單一子元素（`.fhs-seg-ctrl`）變做兩個子元素
                （`.fhs-seg-ctrl`+refreshBtn）之後，舊有手機`@media(max-
                width:767px){.fhs-seg-ctrl{width:100%}}`規則（單一子元素
@@ -16339,6 +16344,35 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 toggleEl.classList.remove('expanded');
                 toggleEl.setAttribute('aria-expanded', 'false');
                 if (scrim) scrim.classList.remove('open');
+            }
+
+            // [2026-09-03 D69續八-follow-27] Fat Mo紅圈：手機分頁tabs行（第一
+            // 行）嘅reload應該同類別行（第二行）嘅右邊（`頸鏈`掣右邊）睇齊，
+            // 唔應該伸展去到成行嘅絕對邊界——follow-22嘅`flex:1 1 auto`會令
+            // segWrapper攞晒pinnedRow全部剩餘空間，喺「已完成」同「重新
+            // 載入」中間留低一嚿唔應該有嘅空白，而類別行（跟內容闊，冇
+            // 伸展）自然咁短過嗰個絕對邊界，兩行右邊對唔齊。改做JS動態
+            // 量度：淨將segWrapper攞闊去到「令佢個右邊同catGroup個右邊
+            // 對齊」所需嘅精確px值，唔再一刀切攞晒剩餘空間。先reset做
+            // natural width先量`scrollWidth`（真正需要嘅最小闊度），如果
+            // 計出嚟嘅目標闊度比natural闊度仲窄，就唔好縮（避免tabs/
+            // reload內容被逼到互相疊埋），維持natural闊度算，寧願行1、
+            // 2兩邊右邊有少少對唔齊，都好過內容被裁走。
+            if (nowMobileForCollapse && isReviewActive) {
+                segWrapper.style.width = '';
+                var segNaturalWidthForAlign = segWrapper.scrollWidth;
+                var catGroupRectForAlign = catGroup.getBoundingClientRect();
+                var toggleRectForAlign = toggleEl.getBoundingClientRect();
+                if (catGroupRectForAlign.width > 0 && toggleRectForAlign.width > 0) {
+                    var pinnedRowCsForAlign = getComputedStyle(pinnedRow);
+                    var gapForAlign = parseFloat(pinnedRowCsForAlign.columnGap) || 0;
+                    var targetSegWidthForAlign = catGroupRectForAlign.width - toggleRectForAlign.width - gapForAlign;
+                    if (targetSegWidthForAlign > segNaturalWidthForAlign) {
+                        segWrapper.style.width = targetSegWidthForAlign + 'px';
+                    }
+                }
+            } else {
+                segWrapper.style.width = '';
             }
         }
         window.addEventListener('resize', fhsSyncCompactDesktopLayout);
