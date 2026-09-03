@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="__DEPLOY_TS__">
+    <meta name="fhs-build" content="2026-09-03T01:23:49Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -14059,10 +14059,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const container = document.getElementById(field + 'SplitContainer');
             if (!container) return;
 
-            // Save current values keyed by boxKey before rebuild
+            // Save current values + manual-edit flag keyed by boxKey before rebuild
             const prevData = {};
+            const prevDefault = {};
             container.querySelectorAll('.split-box-input').forEach(function(inp) {
-                if (inp.dataset.boxkey) prevData[inp.dataset.boxkey] = inp.value;
+                if (inp.dataset.boxkey) {
+                    prevData[inp.dataset.boxkey] = inp.value;
+                    prevDefault[inp.dataset.boxkey] = inp.dataset.isDefault;
+                }
             });
             // Merge from persisted JSON (for restore scenario)
             const dataEl = document.getElementById(field + 'SplitData');
@@ -14095,6 +14099,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             function _addBox(bk, label, catClass, defaultVal, suggested) {
                 const savedVal = (prevData[bk] !== undefined && prevData[bk] !== '') ? prevData[bk] : defaultVal;
+                // S190: 人手/預設標記要跨重繪存活；有已存值但未知標記（如訂單還原）一律當人手輸入處理，
+                // 防止之後嘅交叉同步（_syncBalanceFromDeposit/_syncDepositFromBalance）靜默覆寫
+                const savedDefault = (prevDefault[bk] !== undefined) ? prevDefault[bk]
+                    : ((prevData[bk] !== undefined && prevData[bk] !== '') ? 'false' : 'true');
                 if (boxCount > 0) {
                     const plus = document.createElement('span');
                     plus.className = 'split-plus'; plus.textContent = '+';
@@ -14108,7 +14116,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     + '<div class="split-box-input-row">'
                     + '<span class="split-box-dollar">$</span>'
                     + '<input type="number" class="split-box-input" inputmode="numeric"'
-                    + ' data-boxkey="' + safeKey + '" data-field="' + field + '"'
+                    + ' data-boxkey="' + safeKey + '" data-field="' + field + '" data-is-default="' + savedDefault + '"'
                     + ' value="' + (savedVal !== '' ? savedVal : '') + '" placeholder="0"'
                     + ' oninput="this.dataset.isDefault=\'false\'; recalcSplitSum(\'' + field + '\')">'
                     + (sugNum > 0
@@ -14203,7 +14211,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const newBal = isStandard ? Math.max(0, calcPrice - paid) : 0;
                 balContainer.querySelectorAll('.split-box-input').forEach(function(balInp) {
                     if (balInp.dataset.boxkey === bk) {
-                        if (!isStandard && balInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
+                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫，無論來源金額是否「標準值」（0/半/全）
                         balInp.value = newBal;
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
@@ -14221,7 +14229,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const gPaid = Number(depInp.value) || 0;
                         const gHalf = Math.ceil(gPrice / 2);
                         const gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
-                        if (!gStandard && balInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
+                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫，無論來源金額是否「標準值」（0/半/全）
                         balInp.value = gStandard ? Math.max(0, gPrice - gPaid) : 0;
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
@@ -14443,9 +14451,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (!inp) return;
                 var suggested = Number(btn.dataset.suggested) || 0;
                 if (!suggested) return;
-                // Skip boxes with a saved/user-entered value — only auto-fill empty or previously auto-filled boxes
+                // Skip boxes the operator has manually touched — only auto-fill boxes still marked default.
+                // S190: 移除舊有 value!=='0' 判斷——手動輸入 $0（如豁免加購收費）都算「人手觸碰過」，
+                // 唔可以因為數值啱巧係 0 就當成「未填」畀 calculatePricing() 每次重算都彈返半數。
                 // force=true bypasses this guard (user explicitly clicking 全部半訂)
-                if (!force && inp.value !== '' && inp.value !== '0' && inp.dataset.isDefault !== 'true') return;
+                if (!force && inp.dataset.isDefault !== 'true') return;
                 inp.value = Math.ceil(suggested / 2);
                 inp.style.color = 'var(--fhs-text-muted)';
                 inp.dataset.isDefault = 'true';
@@ -18170,7 +18180,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (e.target && e.target.classList.contains('split-box-input')) {
                         var val  = e.target.value;
                         var bk   = e.target.dataset.boxkey;
-                        if (val === '' || val === '0') {
+                        if (val === '') { // S190: 移除 val==='0' 判斷——操作員手動輸入 $0（如豁免加購燈飾收費）係合法確定值，唔應該當「唔小心清空」revert 返 pre-focus 舊值
                             var pfv  = e.target.dataset.preFocusVal;
                             var pfid = e.target.dataset.preFocusIsDefault;
                             if (pfv !== undefined && pfv !== '' && !isNaN(Number(pfv))) {
@@ -18243,7 +18253,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (e.target && e.target.classList.contains('split-box-input')) {
                         var val  = e.target.value;
                         var bk   = e.target.dataset.boxkey;
-                        if (val === '' || val === '0') {
+                        if (val === '') { // S190: 移除 val==='0' 判斷——操作員手動輸入 $0（如豁免加購燈飾收費）係合法確定值，唔應該當「唔小心清空」revert 返 pre-focus 舊值
                             var pfv  = e.target.dataset.preFocusVal;
                             var pfid = e.target.dataset.preFocusIsDefault;
                             if (pfv !== undefined && pfv !== '' && !isNaN(Number(pfv))) {
