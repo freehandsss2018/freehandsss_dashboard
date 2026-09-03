@@ -11105,7 +11105,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // Build items badges HTML
                 let itemsHtml = '';
                 if (_accRenderFinal && _accRenderFinal.length > 0) {
-                    let _accWoolBadgeShown = false; let _accLightBadgeShown = false;
                     _accRenderFinal.forEach((item, idx) => {
                         const getSafeText = (val) => {
                             if (!val) return "";
@@ -11173,13 +11172,28 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
                         if (qty >= 1 && !dimensions.category.includes('手模擺設')) badgeHtml += `<span class="review-badge review-badge-qty">x${qty}</span>`;
-                        // 加購配件 badge：合併至第一個立體擺設 card
-                        if (_accHasWool && !_accWoolBadgeShown && dimensions.category.includes('手模擺設')) {
-                            _accWoolBadgeShown = true;
+                        // 加購配件 badge（D69續III 修復，2026-09-03）：同表格視圖同一根因——燈飾/羊毛氈
+                        // 各自綁定特定 P slot（item_key 後綴），「合併至第一個 card」喺 D64 多件手模擺設
+                        // 後失真，改為逐件按 slot 精準配對。
+                        var _accPSlotKey = (function(){
+                            var k = (item.Order_Item_Key || item.Item_ID || '').toUpperCase();
+                            if (/_P_MAIN$/.test(k)) return 'MAIN';
+                            var m = k.match(/_P_(\d+)$/);
+                            return m ? m[1] : null;
+                        })();
+                        var _accWoolForThis = _accPSlotKey === 'MAIN' && (o.items || []).some(function(a) {
+                            if (_addonType(a) !== 'wool') return false;
+                            return /_W_WOOL$/.test((a.Order_Item_Key || a.Item_ID || '').toUpperCase());
+                        });
+                        var _accLightForThis = _accPSlotKey && (o.items || []).some(function(a) {
+                            if (_addonType(a) !== 'light') return false;
+                            var ak = (a.Order_Item_Key || a.Item_ID || '').toUpperCase();
+                            return _accPSlotKey === 'MAIN' ? /_L_LIGHTS$/.test(ak) : ak.endsWith('_L_LIGHTS_' + _accPSlotKey);
+                        });
+                        if (_accWoolForThis && dimensions.category.includes('手模擺設')) {
                             badgeHtml += `<span class="review-badge" style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-smile"/></svg> 羊毛氈公仔</span>`;
                         }
-                        if (_accHasLight && !_accLightBadgeShown && dimensions.category.includes('手模擺設')) {
-                            _accLightBadgeShown = true;
+                        if (_accLightForThis && dimensions.category.includes('手模擺設')) {
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FFCC80; color:#E65100; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-lightbulb"/></svg> 燈飾</span>`;
                         }
 
@@ -11527,7 +11541,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
-                    let _woolBadgeShown = false; let _lightBadgeShown = false;
                     _renderItemsFinal.forEach((item, index) => {
                         // V45.4 強化型資料解析引擎 (強型別檢查避免 ID 洩漏)
                         const getSafeText = (val) => {
@@ -11617,13 +11630,29 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             badgeHtml += `<span class="review-badge badge-part" style="background:#FFF9C4; border-color:#FBC02D;">${dimensions.count}</span>`;
                         }
 
-                        // 加購配件 badge：合併至第一個立體擺設列
-                        if (_hasWool && !_woolBadgeShown && dimensions.category.includes('手模擺設')) {
-                            _woolBadgeShown = true;
+                        // 加購配件 badge（D69續III 修復，2026-09-03）：舊碼「合併至第一個立體擺設列」
+                        // 喺 D64 多件手模擺設（逃生口模式）後失真——燈飾/羊毛氈本身各自綁定特定 slot
+                        // （item_key 後綴，如 _L_LIGHTS_2 對應 P_2），唔可以再靠「第一個 card」呢個
+                        // 假設，改為逐件按 slot 精準配對。木框主件冇燈時，燈飾唔會再錯貼落主件。
+                        var _tblPSlotKey = (function(){
+                            var k = (item.Order_Item_Key || item.Item_ID || '').toUpperCase();
+                            if (/_P_MAIN$/.test(k)) return 'MAIN';
+                            var m = k.match(/_P_(\d+)$/);
+                            return m ? m[1] : null;
+                        })();
+                        var _tblWoolForThis = _tblPSlotKey === 'MAIN' && (o.items || []).some(function(a) {
+                            if (_addonType(a) !== 'wool') return false;
+                            return /_W_WOOL$/.test((a.Order_Item_Key || a.Item_ID || '').toUpperCase());
+                        });
+                        var _tblLightForThis = _tblPSlotKey && (o.items || []).some(function(a) {
+                            if (_addonType(a) !== 'light') return false;
+                            var ak = (a.Order_Item_Key || a.Item_ID || '').toUpperCase();
+                            return _tblPSlotKey === 'MAIN' ? /_L_LIGHTS$/.test(ak) : ak.endsWith('_L_LIGHTS_' + _tblPSlotKey);
+                        });
+                        if (_tblWoolForThis && dimensions.category.includes('手模擺設')) {
                             badgeHtml += `<span class="review-badge" style="background:#E8F5E9; border:1px solid #A5D6A7; color:#1B5E20; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-smile"/></svg> 羊毛氈公仔</span>`;
                         }
-                        if (_hasLight && !_lightBadgeShown && dimensions.category.includes('手模擺設')) {
-                            _lightBadgeShown = true;
+                        if (_tblLightForThis && dimensions.category.includes('手模擺設')) {
                             badgeHtml += `<span class="review-badge" style="background:#FFF3E0; border:1px solid #FFCC80; color:#E65100; font-weight:600; display:inline-flex; align-items:center; gap:2px;"><svg class="ba-icon" width="12" height="12"><use href="#icon-lightbulb"/></svg> 燈飾</span>`;
                         }
 
@@ -17740,12 +17769,22 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const _cleanKey = _ik.includes(' | ') ? '' : (it.item_key || '');
 
                 // Fix 4: For P items, supplement Specification and Engraving from raw_form_state
+                // Fix 5（D69續III，2026-09-03）：D64（2026-08-15）多件手模擺設「逃生口模式」引入
+                // p2_/p3_ 前綴嘅追加件獨立欄位後，呢個 block 從未跟住改，一律讀主件（slot 1）嘅
+                // pSubCat/pEngraving/limb_sel_嬰兒_*，令追加件（P_2/P_3）錯誤顯示主件款式/刻字，
+                // 並將父母/大寶（訂單層一次性角色，見 Product_Definition §3.1a）錯誤複製到每一件
+                // 立體擺設，而非只喺 owner 件顯示一次。
                 let _specFinal = _spec;
                 let _engFinal  = it.engraving_text || '';
                 if (_cat === '立體擺設') {
-                    const _pSubCat = _rfs.pSubCat || '';
+                    // Step 1：由 item_key 推導呢件屬於邊個 slot（MAIN=1，P_2=2，P_3=3...）
+                    var _pSlotMatch = _ik.match(/_P_(\d+)$/);
+                    var _pSlot = /_P_MAIN$/.test(_ik) ? 1 : (_pSlotMatch ? parseInt(_pSlotMatch[1], 10) : 1);
+                    var _pPrefix = _pSlot === 1 ? '' : ('p' + _pSlot + '_');
+
+                    const _pSubCat = _rfs[_pPrefix + 'pSubCat'] || '';
                     if (_pSubCat) _specFinal = _pSubCat + (_specFinal ? ' · ' + _specFinal : '');
-                    if (!_engFinal && _rfs.pEngraving) _engFinal = _rfs.pEngraving;
+                    if (!_engFinal && _rfs[_pPrefix + 'pEngraving']) _engFinal = _rfs[_pPrefix + 'pEngraving'];
                     // Fix 4D: derive limb count per person from raw_form_state.limb_sel_*
                     var _fmtLimbs = function(h, f) {
                         var t = h + f;
@@ -17758,21 +17797,32 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         if (t > 0) return t + '肢';
                         return '';
                     };
-                    // 嬰兒: 待定 = TBD color but limb IS planned → count it
+                    // 嬰兒: 待定 = TBD color but limb IS planned → count it。
+                    // slot 1（主件）讀 bare「嬰兒」key；追加件讀「嬰兒#N」（同 _pwho(slot) 一致）。
+                    var _babyWho = _pSlot === 1 ? '嬰兒' : ('嬰兒#' + _pSlot);
                     var _bH = 0, _bF = 0;
-                    ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_嬰兒_'+k]; if(v&&v!=='無') _bH++; });
-                    ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_嬰兒_'+k]; if(v&&v!=='無') _bF++; });
+                    ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_'+_babyWho+'_'+k]; if(v&&v!=='無') _bH++; });
+                    ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_'+_babyWho+'_'+k]; if(v&&v!=='無') _bF++; });
                     var _babySum = _fmtLimbs(_bH, _bF);
-                    // 父母/大寶: 待定 = default empty → do NOT count
+                    // 父母/大寶: 待定 = default empty → do NOT count（同 fhs-p-product-display skill
+                    // 文件「正確計數邏輯」一致：大寶/父母同時排除 '無' 和 '待定'，只計明確選色——
+                    // 舊碼註解寫咗呢條規則但漏咗實作 v!=='待定' 判斷，令全部6個父母/大寶部位預設值
+                    // 「待定」被誤當已選取，觸發 §5.4.7 已知缺陷：8肢無法匹配任何 count pattern
+                    // 令肢數 badge 顯示空白（D69續III 一併修正，2026-09-03）。
+                    // 且只喺 family owner 嗰件顯示一次（Product_Definition §3.1a 規則1/3：
+                    // 父母/大寶全單只可能出現在其中一件）。
                     var _limbPartsArr = _babySum ? [{who:'嬰兒', sum:_babySum}] : [];
                     var _totalH = _bH, _totalF = _bF;
-                    ['父母','大寶'].forEach(function(_who){
-                        var _wH=0, _wF=0;
-                        ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無') _wH++; });
-                        ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無') _wF++; });
-                        var _wSum = _fmtLimbs(_wH, _wF);
-                        if (_wSum) { _limbPartsArr.push({who:_who, sum:_wSum}); _totalH += _wH; _totalF += _wF; }
-                    });
+                    var _ownerSlot = parseInt(_rfs.p_family_owner || '1', 10) || 1;
+                    if (_pSlot === _ownerSlot) {
+                        ['父母','大寶'].forEach(function(_who){
+                            var _wH=0, _wF=0;
+                            ['左手','右手'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無'&&v!=='待定') _wH++; });
+                            ['左腳','右腳'].forEach(function(k){ var v=_rfs['limb_sel_'+_who+'_'+k]; if(v&&v!=='無'&&v!=='待定') _wF++; });
+                            var _wSum = _fmtLimbs(_wH, _wF);
+                            if (_wSum) { _limbPartsArr.push({who:_who, sum:_wSum}); _totalH += _wH; _totalF += _wF; }
+                        });
+                    }
                     // Append total to _specFinal so getProductDimensions can still detect pattern
                     var _limbSummary = _fmtLimbs(_totalH, _totalF);
                     if (_limbSummary) _specFinal = _specFinal + (_specFinal ? ' · ' : '') + _limbSummary;

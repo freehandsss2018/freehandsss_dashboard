@@ -2569,3 +2569,15 @@ Fat Mo 喺真實訂單 #0600901 截圖回報撳「全部半訂」後未付尾數
 修復：新增 `window._fhsForceSync` 全域旗標，`_quickFillAllSplits`/`_quickHalfFillAllSplits(field,true)` 喺覆寫迴圈期間設為 `true`，兩個交叉同步函式（含 necklace group）加 `!window._fhsForceSync &&` 判斷。驗證：模擬「已載入舊單兩側皆鎖定$0」場景，撳半訂/全付皆正確覆寫兩側；D69/D69續全部既有情境重驗無回歸。
 
 唯一改動檔案同 D69：`freehandsss_dashboardV42.html`。全文見 [Changelog.md 2026-09-03「D69續II」條目](../../Changelog.md)（依 Phase 1.6 分級合約(b)）。**Subagent 使用記錄**：❌未使用。
+
+### D69續III：訂單總覽多件手模擺設（逃生口模式）產品明細顯示錯誤（2026-09-03）
+
+Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報訂單總覽產品明細與訂單選訂不相乎：三件立體擺設全顯示「木框」、木框錯誤顯示燈飾、三行IG文字/家庭成員badge完全相同。
+
+根因：`mapOrder()` 嘅 Fix 4 區塊喺 D64（2026-08-15）引入 `p2_`/`p3_` 前綴追加件欄位後從未跟住改，一律讀主件（slot 1）嘅 `pSubCat`/`pEngraving`/`limb_sel_嬰兒_*`；父母/大寶（§3.1a 訂單層一次性角色）被無條件計入每一件而非只計 owner 件；桌面表格/手機摺疊卡兩個渲染路徑嘅「加購配件合併至第一個 card」邏輯同樣係 D64 前遺留寫法，燈飾唔理實際所屬 slot 一律貼落第一件；附帶父母/大寶「待定」預設值被誤當已選取（實測 `en_parent`/`en_elder` 皆 false，證實純屬未觸碰預設值）。
+
+修復：`mapOrder()` 由 item_key 後綴推導 slot，改讀對應 `p{slot}_pSubCat`/`p{slot}_pEngraving`/`limb_sel_嬰兒{#slot}_*`；父母/大寶限定只喺 `p_family_owner` 指定嘅 owner slot 計算，且「待定」明確排除；兩個渲染路徑嘅配件 badge 改為按 item_key 後綴精準配對 slot。
+
+驗證：用 Node 抽取 `mapOrder()`/`getProductDimensions()` 真實函式碼，餵入 Supabase 直接查詢嘅訂單 #0600901 真實資料，逐項核對輸出完全吻合 Fat Mo 描述嘅正確結構；另以合成單件舊單（無 D64 前綴）驗證向後相容零回歸。
+
+唯一改動檔案：`freehandsss_dashboardV42.html`。全文見 [Changelog.md 2026-09-03「D69續III」條目](../../Changelog.md)（依 Phase 1.6 分級合約(b)）。**Subagent 使用記錄**：❌未使用（跨四處程式碼+Supabase真實資料即時交叉驗證，委派會斷推理鏈）。

@@ -40,6 +40,17 @@
 - **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`_quickFillAllSplits`/`_quickHalfFillAllSplits`/`_syncBalanceFromDeposit`/`_syncDepositFromBalance`，新增 `window._fhsForceSync` 旗標）。`current.html`／Supabase／n8n 零改動。
 - **Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 JS 直接操作重現與驗證，委派會斷推理鏈）。
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續III：訂單總覽多件手模擺設（逃生口模式）產品明細顯示錯誤（款式/燈飾/家庭成員/刻字全部錯配）
+
+- **緣起**：Fat Mo 檢視真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾，D64 逃生口模式追加件單）截圖回報訂單總覽「產品明細與訂單選訂不相乎」：①三件立體擺設全部顯示「木框」（應為木框/玻璃瓶/玻璃瓶）；②木框（主件）錯誤顯示燈飾 badge（燈飾其實掛喺追加件）；③三行 IG 訊息預覽文字完全相同（其實只有主件有刻字）；④三行家庭成員 badge（父母2手/大寶4肢）完全相同（實際訂單未曾勾選父母/大寶 section）。
+- **根因（單一根源，四個症狀）**：`mapOrder()` 嘅「Fix 4」區塊（處理 P 款 Specification/Engraving/肢數摘要）喺 D64（2026-08-15）引入 `p2_`/`p3_` 前綴嘅追加件獨立欄位後，從未跟住改，一律讀主件（slot 1）嘅 `pSubCat`/`pEngraving`/`limb_sel_嬰兒_*`，令全部立體擺設品項不論屬邊個 slot 都顯示主件嘅款式/刻字/嬰兒肢數；同時父母/大寶（Product_Definition §3.1a 定案「訂單層一次性角色」）被無條件計入每一件而非只計 owner 件。獨立第二根因：兩個渲染路徑（桌面表格 + 手機摺疊卡）嘅「加購配件 badge：合併至第一個立體擺設 card」邏輯，同樣係 D64 前遺留寫法——燈飾/羊毛氈本身各自綁定特定 slot（item_key 後綴 `_L_LIGHTS_2`/`_L_LIGHTS_3`），但顯示邏輯只識揀「第一個 card」硬塞，完全唔理實際歸屬。附帶第三根因：父母/大寶嘅「待定」預設值錯誤被當成已選取（`_isDefault` 判斷漏咗 `v!=='待定'`），令全部6個未啟用嘅父母/大寶部位被誤算做「已選」，觸發 `fhs-p-product-display` skill 已文件化嘅已知缺陷（8肢無法匹配任何 count pattern，肢數 badge 顯示空白）——實測訂單 `en_parent`/`en_elder` 皆為 `false`（section 從未啟用），證實呢批「待定」值純屬未觸碰嘅預設值。
+- **修復（`freehandsss_dashboardV42.html`，三處）**：
+  1. `mapOrder()` Fix 4/4D 區塊：由 `item_key` 後綴（`_P_MAIN`/`_P_(\d+)`）推導呢件屬於邊個 slot，改讀對應嘅 `p{slot}_pSubCat`/`p{slot}_pEngraving`/`limb_sel_嬰兒{#slot}_*`（slot 1 冇前綴，追加件用 `p{N}_`/`嬰兒#{N}`，同現行 `_pns()`/`_pwho()` 命名慣例一致）；父母/大寶限定只喺 `p_family_owner` 指定嘅 owner slot 計算一次（同 §3.1a 規則1/3對齊）；父母/大寶嘅「待定」值改為明確排除（同 `無` 一齊唔計數），對齊 skill 文件記載嘅正確邏輯。
+  2. 桌面表格 + 手機摺疊卡兩個渲染路徑：加購配件（燈飾/羊毛氈）badge 由「合併至第一個 card」改為逐件按 item_key 後綴精準配對所屬 slot（羊毛氈維持只限主件，D64 逃生口模式本身唔支援追加件羊毛氈）。
+- **驗證（非純讀碼宣告完成——用 Node 抽取 `mapOrder()`/`getProductDimensions()` 真實函式碼，餵入從 Supabase 直接查詢返嚟嘅訂單 #0600901 真實 `raw_form_state`/`order_items` 資料逐行核對輸出）**：①主件（P_MAIN）：style=木框、count=4肢、hasLight=false、LimbParts=[嬰兒4肢]——冇父母/大寶、冇燈飾；②追加件2（P_2，family owner）：style=玻璃瓶、count=2肢、hasLight=true、LimbParts=[嬰兒1手1腳]；③追加件3（P_3）：style=玻璃瓶、count=2肢、hasLight=true、LimbParts=[嬰兒1手1腳]——全部同 Fat Mo 描述嘅正確結構完全吻合。另以合成單元測試驗證單件（無 D64 前綴、無 `p_family_owner`）舊單向後相容——輸出與修復前邏輯逐位元組相同，零回歸。
+- **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`。純前端訂單總覽顯示修復（`mapOrder()`/桌面表格/手機摺疊卡三處渲染邏輯），Supabase schema／n8n／`current.html`（部署前）零改動，過程中查詢 Supabase 屬唯讀（`execute_sql` 純 SELECT，未執行任何寫入/DDL）。
+- **Subagent 使用記錄**：❌未使用（跨 mapOrder/getProductDimensions/兩個渲染路徑四處程式碼 + Supabase 真實資料即時交叉驗證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。
