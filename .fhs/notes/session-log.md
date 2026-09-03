@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-32b：真機iPhone13Pro覆核揪出headless PASS真機唔夠位，改JS動態量度加碼壓縮): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-32b」條目（無完成報告的小改動，Changelog 為全文居所）。Fat Mo 用真實 iPhone 13 Pro（390px）截圖回報 follow-32 部署後合併行仍跌落次行，連toggle都被逼走——同 follow-22/23 記錄過嘅「headless瀏覽器量度PASS、真機字體渲染唔夠位」屬同一類教訓，非新bug，係固定px壓縮值方案本身結構性脆弱。修復：`fhsSyncCompactDesktopLayout()`改用JS實時量度`segWrapper.scrollWidth`vs可用闊度，唔夠先動態加`.fhs-seg-tight`class再收緊一級，順道移除follow-32加嗰條唔必要嘅border-left分隔線釋放空間。用臨時letter-spacing模擬真機較闊字體雙向驗證動態class觸發/還原正確，375/390px headless本身唔誤觸發（同follow-32零回歸），已重新部署。
+**Subagent 使用記錄**：❌未使用（單一HTML排版邏輯調整+即時Browser pane模擬量度驗證，委派會斷推理鏈）。
+
 ## 2026-09-03 (D69續八-follow-32：手機Order Overview「重新載入」搬topBar+類別chips合併分頁tabs一行): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-32」條目 + [handoff.md MASTER表](../memory/handoff.md)（無完成報告的小改動，Changelog 為全文居所）。Fat Mo 截圖手機（375px）訂單總覽頂部紅圈/藍圈標示排版要求：reload搬去右上角同freehandsss同一行、類別chip列頂替reload原位同分頁tabs合併一行必要時壓縮。落喺剛合併嗰條分支31輪迭代（follow-1~31）打磨過嘅同一區域。改動`fhsSyncCompactDesktopLayout()`新增`shouldMobileMergeCatRow`分支+對應CSS高specificity覆寫。Browser pane 375px實測零重疊零溢出，chip/tab功能正常，900px/1400px兩個tier零回歸。

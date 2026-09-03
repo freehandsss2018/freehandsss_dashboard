@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-32b：真機（iPhone 13 Pro）覆核揪出headless PASS但真機唔夠位，改JS動態量度加碼壓縮
+
+- **緣起**：Fat Mo 用真實 iPhone 13 Pro（390px CSS viewport）截圖回報 follow-32 部署後合併行仍然跌落次行——連篩選漏斗（toggle）都被逼走自己一行，同 follow-22/23 記錄過嘅「headless 瀏覽器 375px 量度 PASS，真機字體渲染（PingFang 系統字體）落實測仍然唔夠位」屬同一類教訓，並非新 bug，係固定 px 值壓縮呢種做法本身結構性脆弱（見 `feedback_visual_bug_measure_not_guess.md`：視覺/版面 bug 必須實測，唔可以淨靠肉眼猜 padding 數值）。
+- **修復（`freehandsss_dashboardV42.html`）**：唔再淨靠一組「應該夠鬆」嘅固定壓縮值，改做 JS 實時測量自動加碼：`fhsSyncCompactDesktopLayout()` 新增邏輯，每次都先移除 `.fhs-seg-tight` 做 baseline，量度 `segWrapper.scrollWidth` 同「`pinnedRow` 扣走 toggle 闊度+gap 之後嘅可用闊度」比較，唔夠先加 `.fhs-seg-tight` class（tabs/chip 字體/padding 再收緊一級：`chip-btn padding 0 7px→0 5px`、`font-size 11px→10px`、`height 26px→24px`，`segWrapper`/`catGroup`/`chip-group` gap 全部收窄到 2px）。順道移除 follow-32 加嗰條 `catGroup` 左邊 `border-left` 分隔線（連埋佢消耗嘅 9px margin/padding 一齊釋放），視覺分組改靠 chip 本身嘅 pill 造型已經夠清晰。呢個方案會隨裝置實際字體量度自動適應，唔使再靠肉眼猜下一個門檻值。
+- **驗證（Browser pane，非純讀碼宣告完成）**：①375px/390px 兩個寬度下 headless 度量本身已夠位（`.fhs-seg-tight` 未觸發），確認冇因為新加邏輯而誤觸發收緊、視覺同 follow-32 一致；②用臨時注入 `letter-spacing` 樣式人工模擬「真機字體較闊」場景，觸發 `.fhs-seg-tight` 後截圖確認合併行仍然保持一行、可讀、無裁切，移除模擬樣式後恢復非 tight 狀態，證明動態量度邏輯雙向正確；③語法檢查 PASS，緊縮桌面（900px）/傳統桌面（1400px）兩個 tier 截圖確認同 follow-32 前一致，零回歸。
+- **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`。純前端排版/CSS 調整，Supabase schema／n8n 零改動。
+- **Subagent 使用記錄**：❌未使用（單一 HTML 排版邏輯調整 + 即時 Browser pane 模擬量度驗證，委派會斷推理鏈）。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-32：手機Order Overview「重新載入」搬去頂部與freehandsss同一行，類別chips頂替其原位同分頁tabs合併一行
 
 - **緣起**：Fat Mo 截圖手機（375px）訂單總覽頂部，紅圈標示「重新載入」按鈕位置、藍圈標示類別篩選 chip 列位置，要求：①紅色區域——「重新載入」搬去右上角，同 `freehandsss` 水印同一行；②藍色區域——類別 chip 列（全部/手模/鑰匙扣/頸鏈）頂替「重新載入」原有位置，同「全部/進行中/已完成」分頁 tabs 合併做同一行，必要時壓縮按鈕令其只有一行出現。純 UI 排版優化，非 bug 修復，落喺剛合併嗰條分支（`order-overview-category-display-1a4f84`）31 輪迭代（follow-1~31）已經打磨過嘅同一塊區域，須格外小心唔好回歸對方成果。
