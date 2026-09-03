@@ -14118,7 +14118,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     + '<input type="number" class="split-box-input" inputmode="numeric"'
                     + ' data-boxkey="' + safeKey + '" data-field="' + field + '" data-is-default="' + savedDefault + '"'
                     + ' value="' + (savedVal !== '' ? savedVal : '') + '" placeholder="0"'
-                    + ' oninput="this.dataset.isDefault=\'false\'; recalcSplitSum(\'' + field + '\')">'
+                    + ' oninput="if(event.isTrusted){this.dataset.isDefault=\'false\';} recalcSplitSum(\'' + field + '\')">'
                     + (sugNum > 0
                         ? '<div style="display:flex;flex-direction:column;gap:1px;">'
                           + '<button type="button" class="quick-half-btn" data-boxkey="' + safeKey + '" data-suggested="' + sugNum + '" data-field="' + field + '" onclick="_quickHalfFillSplitBtn(this)" title="半付 $' + Math.ceil(sugNum / 2) + '" style="background:#f5f5f5;border:1px solid #ddd;border-radius:3px;color:#555;font-size:11px;cursor:pointer;padding:1px 5px;line-height:1.4;min-width:24px;">半</button>'
@@ -14206,12 +14206,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const bk = _boxKey(item, index);
                 const calcPrice = Number(item.CalculatedPrice) || 0;
                 const paid = depMap[bk] !== undefined ? depMap[bk] : 0;
-                const halfAmt = Math.ceil(calcPrice / 2);
-                const isStandard = (paid === 0 || paid === halfAmt || paid === calcPrice);
-                const newBal = isStandard ? Math.max(0, calcPrice - paid) : 0;
+                // S191: 恆算真實餘額（唔再淨限0/半/全先計）——任何已付金額（包括自訂金額）都應該令
+                // 另一邊自動補返差額，先符合「一方自動填補餘值」嘅原有設計初衷；保護機制單靠下面
+                // isDefault 判斷（未被人手觸碰嘅箱先會被覆寫），唔再靠「數值是否標準」嚟決定計唔計。
+                const newBal = Math.max(0, calcPrice - paid);
                 balContainer.querySelectorAll('.split-box-input').forEach(function(balInp) {
                     if (balInp.dataset.boxkey === bk) {
-                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫，無論來源金額是否「標準值」（0/半/全）
+                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫
                         balInp.value = newBal;
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
@@ -14227,10 +14228,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (depInp && balInp) {
                         const gPrice = group.price || 0;
                         const gPaid = Number(depInp.value) || 0;
-                        const gHalf = Math.ceil(gPrice / 2);
-                        const gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
-                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫，無論來源金額是否「標準值」（0/半/全）
-                        balInp.value = gStandard ? Math.max(0, gPrice - gPaid) : 0;
+                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過一律唔再自動覆寫
+                        balInp.value = Math.max(0, gPrice - gPaid); // S191: 恆算真實餘額
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
                     }
@@ -14255,19 +14254,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var bk = _boxKey(item, index);
                 var calcPrice = Number(item.CalculatedPrice) || 0;
                 var paid = balMap[bk] !== undefined ? balMap[bk] : 0;
-                var halfAmt = Math.ceil(calcPrice / 2);
-                var isStandard = (paid === 0 || paid === halfAmt || paid === calcPrice);
-                if (!isStandard) {
-                    depContainer.querySelectorAll('.split-box-input').forEach(function(depInp) {
-                        if (depInp.dataset.boxkey === bk) {
-                            if (depInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
-                            depInp.value = 0;
-                            depInp.style.color = 'var(--fhs-text-muted)';
-                            depInp.dataset.isDefault = 'true';
-                            anyChanged = true;
-                        }
-                    });
-                }
+                // S191: 同 _syncBalanceFromDeposit 對稱——恆算真實餘額，唔再淨限「balance 係非標準值」先郁 deposit，
+                // 亦唔再定死覆寫做 0（原碼淨識歸零，令客人畀咗自訂尾數時 deposit 顯示唔到真實已收金額）。
+                var newDep = Math.max(0, calcPrice - paid);
+                depContainer.querySelectorAll('.split-box-input').forEach(function(depInp) {
+                    if (depInp.dataset.boxkey === bk) {
+                        if (depInp.dataset.isDefault !== 'true') return; // 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫
+                        if ((Number(depInp.value) || 0) === newDep) return; // 值冇變化，唔使當作 changed
+                        depInp.value = newDep;
+                        depInp.style.color = 'var(--fhs-text-muted)';
+                        depInp.dataset.isDefault = 'true';
+                        anyChanged = true;
+                    }
+                });
             });
             var _nGroups = window.fhsNecklaceGroups;
             if (_nGroups && _nGroups.length > 0) {
@@ -14277,15 +14276,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (depInp && balInp) {
                         var gPrice = group.price || 0;
                         var gPaid = Number(balInp.value) || 0;
-                        var gHalf = Math.ceil(gPrice / 2);
-                        var gStandard = (gPaid === 0 || gPaid === gHalf || gPaid === gPrice);
-                        if (!gStandard) {
-                            if (depInp.dataset.isDefault !== 'true') return; // S94: skip zeroing manually-touched box
-                            depInp.value = 0;
-                            depInp.style.color = 'var(--fhs-text-muted)';
-                            depInp.dataset.isDefault = 'true';
-                            anyChanged = true;
-                        }
+                        var newGDep = Math.max(0, gPrice - gPaid);
+                        if (depInp.dataset.isDefault !== 'true') return;
+                        if ((Number(depInp.value) || 0) === newGDep) return;
+                        depInp.value = newGDep;
+                        depInp.style.color = 'var(--fhs-text-muted)';
+                        depInp.dataset.isDefault = 'true';
+                        anyChanged = true;
                     }
                 });
             }
@@ -14456,6 +14453,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // 唔可以因為數值啱巧係 0 就當成「未填」畀 calculatePricing() 每次重算都彈返半數。
                 // force=true bypasses this guard (user explicitly clicking 全部半訂)
                 if (!force && inp.dataset.isDefault !== 'true') return;
+                // S191: 呢個函式每次 calculatePricing() 都會無條件執行一次（用嚟畀新加嘅品項有初始半付值）。
+                // 但 isDefault==='true' 唔止代表「從未填過」，仲代表「呢邊自動算返嚟嘅真實餘額仍然開放」
+                // （見 _syncDepositFromBalance）——若唔額外檢查現值，會將啱啱由另一邊算返嚟嘅有意義金額
+                // （例如 $2080）靜默打番做半數（$1190），令 _syncDepositFromBalance() 嘅心血白費。
+                // 只有現值真係 0/未填先算「未填」，先值得半填。
+                if (!force && (Number(inp.value) || 0) !== 0) return;
                 inp.value = Math.ceil(suggested / 2);
                 inp.style.color = 'var(--fhs-text-muted)';
                 inp.dataset.isDefault = 'true';

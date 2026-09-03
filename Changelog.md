@@ -16,6 +16,21 @@
 - **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`renderPaymentSplits`/`_addBox`/`_syncBalanceFromDeposit`/`_quickHalfFillAllSplits`/兩個 `focusout` handler）。純前端收款分帳 UI 行為修復，`Freehandsss_dashboard_current.html`（production）未動、Supabase schema／n8n 零改動。呼應 §三死線第 1 條「操作者手動輸入的確收金額為絕對真理」——修復前呢個原則喺 UI 層本身已被違反（操作員刻意輸入嘅 $0 從未有機會落地）。
 - **Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 直接操作驗證，委派會斷推理鏈）。
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續：原有「一方自動填補餘值」設計因 D69 修復而失效，恢復並加固
+
+- **緣起**：Fat Mo 驗收 D69 後回報——原有設計係已付訂金/未付尾數其中一方有金額，另一方會自動填補餘值，D69 修復後呢個自動填補功能失效咗，要求喺保留 $0 豁免修復嘅前提下恢復呢個能力，並確保操作員仍然可以輸入任意自訂金額。
+- **查證揪出 D69 本身遺留兩個未覆蓋盲點（非新引入的另一問題，係 D69 修復深度不足）**：
+  1. **餘值計算式本身有缺陷**：`_syncBalanceFromDeposit`/`_syncDepositFromBalance` 嘅 `newBal`/deposit 重置邏輯只喺已付金額啱好係 0/半/全先計真實餘額，任何其他自訂金額（例如客人畀咗 $2000 訂金買 $2380 嘅產品）一律得返 0（forward 方向）或完全唔郁（reverse 方向）——即係「自動填補餘值」對非標準金額從未真正計過真實餘值，只不過呢個缺陷之前被另一個獨立 bug（`isDefault` 旗標喺 `_addBox` 重繪後遺失變 `undefined`）意外掩蓋，令箱恰好「凍結喺舊值」睇落似冇壞，D69 修正咗個重繪遺失 bug 之後，呢個原有缺陷先變得可見同有破壞性。
+  2. **`oninput` handler 冇分辨真人輸入定程式觸發**：`_quickHalfFillAllSplits`/`_quickFillSplitBtn` 等函式為咗觸發連鎖反應會 `dispatchEvent(new Event('input'))`，但共用嘅 `oninput="this.dataset.isDefault='false';..."` 一律當成「人手觸碰」，令 deposit 箱喺每次 `calculatePricing()` 嘅週期性半填後永遠變成「已鎖定」，令 balance 驅動 deposit 嘅反向自動填補從一開始就冇機會運作。
+  3. **週期性半填冇檢查現值**：`_quickHalfFillAllSplits('deposit')`（無 force，每次 `calculatePricing()` 都執行一次）淨睇 `isDefault==='true'` 就填返半數，但 D69 之後「auto-filled 但仍開放」嘅箱（例如反向同步啱啱計出嚟嘅 $2080 真實餘額）都會標記做 `isDefault='true'`，導致呢個週期性半填會將啱啱計好嘅有意義金額靜默打番做半數，破壞剛完成嘅計算。
+- **修復（同一檔案，延續 D69 嘅 `isDefault` 設計方向）**：
+  1. `_syncBalanceFromDeposit`/`_syncDepositFromBalance`：`newBal`/deposit 改為恆算 `Math.max(0, calcPrice - paid)`，唔再限死 0/半/全先計，任何自訂金額都會令另一方正確顯示真實餘額（necklace group 分支同步修正）。
+  2. `_addBox` 生成嘅 `oninput` 屬性加 `if(event.isTrusted){...}` 守衛（沿用本檔既有 S71「isTrusted 分辨人手/程式輸入」慣例，非新發明），令程式化 `dispatchEvent` 唔會誤將自動填值嘅箱標記做「人手鎖定」。
+  3. `_quickHalfFillAllSplits` 額外加一重檢查：現值非 0 就跳過（唔再重複半填），保護反向同步啱啱算好嘅非零真實餘額唔會被週期性半填打番轉。
+- **驗證（本機 browser 真實鍵盤輸入 + JS 直接操作雙軌，非純讀碼宣告完成）**：①用真實 `computer` 工具點擊+打字（非 `dispatchEvent`，確保 `isTrusted` 為真）：主件 deposit 打自訂 $2000 → balance 正確自動算出真實餘額 $380（非 0）；重新載入後喺 balance 打自訂 $300 → deposit 正確自動算出 $2080（反向方向首次證實可用）；②模擬「啟用另一加購項目」等無關表單改動觸發嘅 `calculatePricing()` 重算，確認 deposit=$2080/balance=$300 呢對自訂金額喺多次重算後原封不動（修復前會被打番做半數 $1190/$1190）；③重新驗證 D69 原有 $0 豁免情境喺三次重算後依然保持 $0/$0；④確認「全部半訂」全域掣（`force=true`）依然可以刻意覆寫全部箱（包括已手動設定嘅自訂金額同 $0 豁免項），全域強制覆寫功能無回歸。
+- **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（同 D69 相同四個函式 + `_addBox` 嘅 `oninput` 屬性）。`current.html`／Supabase／n8n 零改動。
+- **Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 真實鍵盤輸入驗證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。

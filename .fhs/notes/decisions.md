@@ -2549,3 +2549,15 @@ Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對
 **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`。純前端收款分帳 UI 行為修復，`current.html`（production）未動，Supabase schema／n8n 零改動。呼應 finance-gatekeeper §三死線第 1 條「操作者手動輸入的確收金額為絕對真理」——修復前呢個原則喺 UI 輸入層本身已被違反。
 
 詳見 Changelog.md 2026-09-03 條目。**Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 直接操作驗證，委派會斷推理鏈）。
+
+### D69續：原有「一方自動填補餘值」設計因 D69 修復而失效，恢復並加固（2026-09-03）
+
+Fat Mo 驗收 D69 後回報：原有設計「已付訂金/未付尾數一方有金額，另一方自動填補餘值」失效，要求喺保留 $0 豁免嘅前提下恢復，並確保操作員仍可輸入任意自訂金額。
+
+查證揪出 D69 遺留兩個未覆蓋盲點（非新問題，係 D69 修復深度不足）：①`_syncBalanceFromDeposit`/`_syncDepositFromBalance` 嘅餘值計算式（`newBal`）只喺已付金額啱好係 0/半/全先計真實餘額，任何自訂金額一律得 0 或完全唔郁——呢個缺陷本身一直存在，只係之前被 `_addBox` 重繪令 `isDefault` 變 `undefined` 嘅獨立 bug 意外掩蓋（箱恰好凍結喺舊值，睇落似正常），D69 修正重繪遺失後先變得可見同有破壞性；②共用 `oninput` handler 冇分辨真人輸入定程式 `dispatchEvent` 觸發，令 deposit 箱每次 `calculatePricing()` 週期性半填後永遠變「鎖定」，反向自動填補從未有機會運作；③週期性半填淨睇 `isDefault==='true'` 就填返半數，會將反向同步啱啱算好嘅有意義非零金額靜默打番做半數。
+
+修復：①`newBal`/deposit 改恆算 `Math.max(0, calcPrice - paid)`，唔再限死標準值先計；②`_addBox` 嘅 `oninput` 加 `if(event.isTrusted){...}` 守衛（沿用本檔既有 S71 慣例，非新發明）；③週期性半填加現值非 0 就跳過嘅檢查。
+
+驗證：真實 `computer` 工具鍵盤輸入（非 `dispatchEvent`，確保 `isTrusted`）證實兩方向自訂金額互填正確（$2000→$380、$300→$2080）；多次模擬無關表單改動觸發嘅重算後自訂金額原封不動；D69 原有 $0 豁免情境重驗依然通過；全域「全部半訂」force 覆寫無回歸。
+
+唯一改動檔案同 D69：`freehandsss_dashboardV42.html`。全文見 [Changelog.md 2026-09-03「D69續」條目](../../Changelog.md)（依 Phase 1.6 分級合約(b)，Changelog 為全文居所，此處不重複展開）。**Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 真實鍵盤輸入驗證，委派會斷推理鏈）。
