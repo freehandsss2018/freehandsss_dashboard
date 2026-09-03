@@ -1188,17 +1188,29 @@
             .filter-toggle-bar { display:flex; }
             .filter-body { padding:0 16px; }
             .filter-body.open { max-height:700px; padding:12px 16px 16px; }
-            .fhs-select, .fhs-input { height:44px; font-size:var(--fhs-text-sm); }
+            /* [2026-09-03 D69續八-follow-33] Fat Mo截圖箭嘴：年度/月份/狀態/批次/
+               搜尋/排序六個欄位縮減比例，並將各自嘅標題（label）同輸入框
+               （select/input）移做同一行（推翻S150 F3.3嗰陣「label上/控制項
+               下」嘅決定——嗰個決定原意係防窄欄擠壓，而家改用縮小尺寸嚟解決
+               窄欄問題，唔再靠垂直堆疊）。`.fhs-select`/`.fhs-input`呢兩個
+               class淨用喺呢六個欄位（grep確認），縮細高度/字級唔會影響第度。 */
+            .fhs-select, .fhs-input { height:34px; font-size:var(--fhs-text-xs); }
             .fhs-select { padding-right:32px; }
             .fhs-input--sm { width:100%; max-width:120px; }
             .fhs-input--md { width:100%; max-width:180px; }
             .filter-row { gap:10px 12px; }
             .filter-row-secondary { padding-top:10px; }
-            /* S150 F3.3：狀態+批次（及年度+月份）配對並列同一行，label 上/控制項下確保窄欄不擠壓 */
+            .filter-label { font-size:var(--fhs-text-xs); }
+            .filter-label .fhs-header-icon { width:12px; height:12px; }
             .filter-row-divider { display:none; }
-            .filter-pair-row { width:100%; gap:10px 12px; }
-            .filter-pair-row .filter-group { flex:1 1 0; min-width:0; flex-direction:column; align-items:stretch; gap:4px; }
-            .filter-pair-row .fhs-select, .filter-pair-row .fhs-input { width:100%; max-width:none; }
+            .filter-pair-row { width:100%; gap:8px 10px; }
+            .filter-pair-row .filter-group {
+                flex:1 1 0; min-width:0; flex-direction:row; align-items:center; gap:6px;
+            }
+            .filter-pair-row .filter-group .filter-label { flex-shrink:0; }
+            .filter-pair-row .fhs-select, .filter-pair-row .fhs-input {
+                width:auto; max-width:none; flex:1 1 0; min-width:0;
+            }
             .fhs-btn-refresh { margin-left:0; width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
             .fhs-btn-save-filter { width:100%; justify-content:center; height:44px; font-size:var(--fhs-text-sm); }
             .fhs-select--sort { min-width:0; width:100%; max-width:260px; }

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-33：手機篩選抽屜（年度/月份/狀態/批次/搜尋/排序）縮減比例+label與輸入框合併同一行
+
+- **緣起**：Fat Mo 截圖手機篩選抽屜展開狀態，箭嘴標示年度/月份/狀態/批次/搜尋/排序六個欄位，要求「縮減其比例，並且各自所屬的方框與標題移至同一行」——即推翻 S150 F3.3 嗰陣「label 上／控制項下」嘅垂直堆疊決定（該決定原意係防窄欄擠壓），改用縮小尺寸嚟解決窄欄問題。
+- **改動（`freehandsss_dashboardV42.html`，`@media (max-width:749px)` 區塊）**：`.fhs-select`/`.fhs-input` 高度 `44px→34px`、字級 `--fhs-text-sm→--fhs-text-xs`（grep 確認呢兩個 class 淨用喺呢六個欄位，唔會影響第度）；`.filter-label` 字級同步收細，內含 icon `14px→12px`；`.filter-pair-row .filter-group` 由 `flex-direction:column`（label 上/輸入框下）改做 `row`（label 同輸入框並排同一行，輸入框 `flex:1 1 0` 佔用該欄位剩餘闊度）。緊縮桌面（`fhs-drawer-mode`）同傳統桌面用嘅係唔同一套獨立 CSS 規則，選擇器冇重疊，兩層完全唔受影響。
+- **驗證（Browser pane 375×812 實測，非純讀碼宣告完成）**：截圖確認六個欄位各自 label+輸入框同一行、面板整體高度明顯收窄；`getBoundingClientRect()` 量度各輸入框 119×34px 冇溢出冇裁切；`reviewYear` select 改值+`dispatchEvent('change')` 確認互動邏輯正常；900px（緊縮桌面）/1400px（傳統桌面）截圖+`getComputedStyle()`量度兩層 select 高度/字級同改動前一致（30px/12px），零回歸。
+- **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`。純 CSS 調整，Supabase schema／n8n 零改動。
+- **⚠️ 已知取捨**：`ui-ux-pro-max/FHS_INTEGRATION.md` 記錄嘅 44px 觸控目標為 WARNING 級指引（非 P0 硬規則），本次因 Fat Mo 明確指示縮細呢六個低頻次要篩選欄位，收窄至 34px；主要高頻操作按鈕（重新載入/清除篩選/儲存篩選等）維持 44px 未動。
+- **Subagent 使用記錄**：❌未使用（單一 HTML 排版邏輯調整 + 即時 Browser pane 直接操作驗證，委派會斷推理鏈）。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-32b：真機（iPhone 13 Pro）覆核揪出headless PASS但真機唔夠位，改JS動態量度加碼壓縮
 
 - **緣起**：Fat Mo 用真實 iPhone 13 Pro（390px CSS viewport）截圖回報 follow-32 部署後合併行仍然跌落次行——連篩選漏斗（toggle）都被逼走自己一行，同 follow-22/23 記錄過嘅「headless 瀏覽器 375px 量度 PASS，真機字體渲染（PingFang 系統字體）落實測仍然唔夠位」屬同一類教訓，並非新 bug，係固定 px 值壓縮呢種做法本身結構性脆弱（見 `feedback_visual_bug_measure_not_guess.md`：視覺/版面 bug 必須實測，唔可以淨靠肉眼猜 padding 數值）。

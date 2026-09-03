@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-33：手機篩選抽屜六欄位縮減比例+label同輸入框合併同一行): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-33」條目（無完成報告的小改動，Changelog 為全文居所）。Fat Mo 截圖手機篩選抽屜展開狀態，箭嘴標示年度/月份/狀態/批次/搜尋/排序六個欄位，要求縮減比例+各自label同輸入框移做同一行，推翻S150 F3.3嗰陣「label上/控制項下」垂直堆疊決定（該決定原意防窄欄擠壓，而家改用縮小尺寸解決）。修復：`@media(max-width:749px)`區塊`.fhs-select`/`.fhs-input`高度44px→34px、字級xs、`.filter-pair-row .filter-group`由column改row。Browser pane 375px實測六欄位一行零溢出，select互動正常，900px/1400px兩層零回歸。
+**Subagent 使用記錄**：❌未使用（單一HTML排版邏輯調整+即時Browser pane直接操作驗證，委派會斷推理鏈）。
+
 ## 2026-09-03 (D69續八-follow-32b：真機iPhone13Pro覆核揪出headless PASS真機唔夠位，改JS動態量度加碼壓縮): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-32b」條目（無完成報告的小改動，Changelog 為全文居所）。Fat Mo 用真實 iPhone 13 Pro（390px）截圖回報 follow-32 部署後合併行仍跌落次行，連toggle都被逼走——同 follow-22/23 記錄過嘅「headless瀏覽器量度PASS、真機字體渲染唔夠位」屬同一類教訓，非新bug，係固定px壓縮值方案本身結構性脆弱。修復：`fhsSyncCompactDesktopLayout()`改用JS實時量度`segWrapper.scrollWidth`vs可用闊度，唔夠先動態加`.fhs-seg-tight`class再收緊一級，順道移除follow-32加嗰條唔必要嘅border-left分隔線釋放空間。用臨時letter-spacing模擬真機較闊字體雙向驗證動態class觸發/還原正確，375/390px headless本身唔誤觸發（同follow-32零回歸），已重新部署。
