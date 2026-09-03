@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-31：同步中banner嘅spinner圖示重複，兩個spinner疊埋一齊): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-31」條目 + [decisions.md D69續八-follow-31](decisions.md)。Fat Mo截圖傳統桌面新增/修改訂單背景同步期間，`#syncProgressBanner`黃色提示banner同時顯示兩個轉動圖示。查證：banner原本有純CSS border-circle spinner+SVG refresh-cw icon兩個獨立元素並排，都掛`.fhs-spin`持續旋轉，睇落好似重複。刪走純CSS圓圈，淨保留SVG icon（語意更清楚）。DOM量度`.fhs-spin`數量由2變1，375mobile+1400傳統桌面截圖確認單一icon，console零錯誤。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-03 (D69續八-follow-30：freehandsss水印手機版復原，follow-19隱藏前提已被follow-22推翻): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-30」條目 + [decisions.md D69續八-follow-30](decisions.md)。Fat Mo截圖確認訂單總覽（mobile）top bar「freehandsss」水印消失，要求復原。考古發現：follow-19因refreshBtn當時仲喺`#v40-top-bar`入面（會同絕對定位水印重疊）而擴闊隱藏規則做width-independent；但follow-22已改relocate目標去`#fhsSegWrapper`，重疊前提消失卻冇人清呢條規則。刪走width-independent版本，保留compact-desktop-scoped版本（refreshBtn仍搬入topBar嗰個tier）。375mobile確認水印顯示+冇重疊+reload對齊不受影響，900緊縮桌面仍隱藏，1400傳統桌面一路顯示。

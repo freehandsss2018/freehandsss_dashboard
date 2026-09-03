@@ -4917,8 +4917,12 @@
                 </span>
             </div>
             <!-- Sync in progress notification banner -->
+            <!-- [2026-09-03 D69續八-follow-31] Fat Mo紅圈：同步icon重複咗——呢個
+                 banner原本有兩個獨立spinner（CSS border-circle + SVG
+                 refresh-cw icon）疊埋一齊顯示，睇落好似兩個轉緊嘅圖示。
+                 淨保留SVG icon（語意更清楚係「重新整理/同步」），刪走純CSS
+                 嘅border-circle spinner。 -->
             <div id="syncProgressBanner" style="display:none; background:var(--fhs-warning-bg); border-top:1px solid var(--fhs-border); border-bottom:1px solid var(--fhs-border); padding:8px 24px; font-size:var(--fhs-text-xs); color:var(--fhs-warning); font-weight:600; align-items:center; gap:8px;">
-                <span style="display:inline-block; width:12px; height:12px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;" class="fhs-spin"></span>
                 <span><svg class="fhs-header-icon fhs-spin" width="14" height="14" style="vertical-align:middle;margin-right:4px;color:inherit;"><use href="#icon-refresh-cw"/></svg>訂單 <span id="syncProgressOrderId"></span> 同步中，由於背景更新有時間差，資料將於幾秒後自動更新...</span>
             </div>
             </div><!-- /reviewZone2 -->

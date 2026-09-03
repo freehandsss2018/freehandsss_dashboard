@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-03] (D69續八-follow-31) 同步中banner嘅spinner圖示重複 — CSS圓圈+SVG icon兩個spinner疊埋一齊
+
+**背景**：Fat Mo截圖傳統桌面（≥1130px）新增/修改訂單並進行背景同步期間，`#syncProgressBanner`（「訂單0600709同步中...」黃色提示banner）左側同時顯示兩個轉動嘅圖示，紅圈標示。
+
+**根因**：`#syncProgressBanner`嘅HTML結構原本有兩個獨立spinner元素並排：①一個純CSS畫嘅圓圈（`border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%`嘅`<span>`，靠border-top透明造成「缺口圓圈」視覺）②一個SVG `#icon-refresh-cw`（循環箭嘴icon）。兩者都掛`.fhs-spin`class（CSS animation持續旋轉），一齊顯示就變成兩個各自轉緊嘅圖示並排，睇落好似「重複」。
+
+**修法**：刪走①純CSS border-circle spinner，淨保留②SVG refresh-cw icon——理由：SVG icon語意更清楚（明確係「重新整理/同步」嘅循環箭嘴形狀），純CSS圓圈冇語意、純粹視覺裝飾。banner嘅`display:flex; align-items:center; gap:8px`容器樣式不變，剩低單一icon+文字自然對齊。
+
+**驗證**：手動觸發`#syncProgressBanner`（`style.display='flex'`+填入測試訂單號）喺mobile(375px)同傳統桌面(1400px)兩個寬度分別截圖確認淨顯示一個icon；DOM量度`banner.querySelectorAll('.fhs-spin').length === 1`（之前係2）、`banner.children.length === 1`（之前係2個並排`<span>`）；console零錯誤。
+
+**通則**：呢類「兩個獨立spinner元素疊埋一齊」嘅重複，肉眼喺細icon(14px)+快速旋轉動畫嘅情況下唔容易一眼睇出邊個係邊個、定係真係兩個——DOM層面直接查`childCount`/`.fhs-spin`數量先可以確定係咪真係重複定係單一元素嘅動畫幻覺。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-31」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-03] (D69續八-follow-30) freehandsss水印手機版復原 — follow-19嗰陣嘅隱藏前提已被follow-22推翻，冇人手清
 
 **背景**：Fat Mo兩張截圖對比：訂單總覽頁面（mobile）top bar淨得標題icon，冇「freehandsss」；「新增」頁面（create order）同一個top bar結構卻正常顯示「freehandsss」。要求復原訂單總覽嗰邊，並補充「呢個水印喺原有嘅空間，應不影響任何按鈕」——暗示水印本身唔應該同任何操作元件爭位。

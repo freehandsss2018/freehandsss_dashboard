@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-31：同步中banner嘅spinner圖示重複，兩個spinner疊埋一齊
+
+- **緣起**：Fat Mo截圖傳統桌面新增/修改訂單並背景同步期間，「訂單N同步中...」黃色提示banner左側同時顯示兩個轉動圖示。
+- **根因**：`#syncProgressBanner`原本有兩個獨立spinner並排：純CSS border-circle（缺口圓圈）+SVG `#icon-refresh-cw`，兩者都掛`.fhs-spin`持續旋轉，一齊顯示變成「重複」。
+- **修法**：刪走純CSS border-circle spinner，淨保留SVG refresh-cw icon（語意更清楚）。
+- **驗證**：手動觸發banner，375mobile/1400傳統桌面截圖確認單一icon；DOM量度`.fhs-spin`數量由2變1、children由2變1；console零錯誤。
+- **通則**：細icon+快速旋轉動畫嘅「重複」肉眼未必一眼睇出，DOM層面直接查元素數量先可以確定。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（刪走1個`<span>`spinner元素）。
+- 全文見 decisions.md D69續八-follow-31。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-30：freehandsss水印手機版復原，follow-19嘅隱藏前提已被follow-22推翻
 
 - **緣起**：Fat Mo截圖對比訂單總覽（mobile）top bar冇「freehandsss」水印，但「新增」頁面同結構有——要求復原，並確認「呢個水印喺原有嘅空間，應不影響任何按鈕」。
