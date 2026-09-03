@@ -2528,3 +2528,24 @@ Fat Mo 對 D65續II 徽章功能截圖回饋三點：加購配件劏開倒模對
 **驗證清單**：migration apply 成功＋live 定義含新欄位確認、smoke test 兩場景 PASS（含 array edge case）、測試數據已清理、hook 語法 `node -c` 通過、`fhs-health-check.js` 由本輪修復前嘅狀態維持乾淨（餘 1 項為既有 `/fhs-usage-audit` 逾期，非本次引入）。
 
 詳見 `supabase/migrations/0089_save_structured_order_items_full_field_preserve.sql`（檔頭完整根因/修法/教訓記錄）、Changelog.md 2026-08-19 條目。**Subagent 使用記錄**：❌未使用（跨 Supabase RPC/前端/hook 三層即時交叉驗證＋smoke test，委派會斷推理鏈）。
+
+### D69（本分支暫編號，⚠️ merge 主線時如撞號需協調重編）：逐件模式收款分帳「手動歸零」被強制覆寫返標準值（2026-09-03）
+
+**Fat Mo 回報**：新/修訂單財務結算逐件模式，客人有選加購燈飾但操作員決定唔收呢件錢，將「燈飾 - 加購」已付訂金或未付尾數手動改做 0 後，系統強制轉返（全數 $80）或（半數 $40），唔畀改。
+
+**根因**：三個獨立函式各自把「$0」當成「未填/仍可自動填」而非「操作員刻意輸入嘅確定值」，同一設計缺陷嘅三個獨立發作點：
+1. `focusout`（blur）handler：`if (val === '' || val === '0')` 把刻意輸入 0 當「唔小心清空」，離開輸入框即 revert 返 pre-focus 舊值。
+2. `_syncBalanceFromDeposit`（deposit→balance 交叉同步）guard：`!isStandard && isDefault!=='true'`——因為 0 本身係「標準值」三態之一，`isStandard` 恆真令人手保護判斷完全短路，deposit 讀到 0 即強制將對應 balance 覆寫做全額。
+3. `calculatePricing()` 每次重算都無條件呼叫 `_quickHalfFillAllSplits('deposit')`（無 force），其 guard `inp.value !== '0'` 令啱啱手動歸零嘅箱被當「未填」再填返半數——呢個係令問題喺全單任何一次重算後都會「彈返」嘅主因（表單幾乎任何輸入都觸發 `calculatePricing()`）。
+
+**修復（`freehandsss_dashboardV42.html`，統一以 `dataset.isDefault` 單一旗標判斷「人手觸碰過」，唔再用數值本身係咪 0 猜意圖）**：
+1. `renderPaymentSplits()`／`_addBox()` 新增 `prevDefault` 快照機制，令 `isDefault` 旗標可跨越容器重繪存活（原本 `_addBox` 完全冇保留呢個旗標，每次重繪重置成 undefined——呢個係之前令 `isStandard` 短路判斷「睇落有效」嘅隱藏前提，冇呢步單改 guard 會令正常半/全自動填功能喺重繪後失效，屬必要配套非額外美化）；未知標記但已有存值嘅箱（如訂單還原）一律當人手輸入處理，避免歷史金額被靜默重算。
+2. `_syncBalanceFromDeposit`（含 necklace group 分支）guard 移除 `!isStandard &&`，改為人手觸碰過一律唔再自動覆寫。
+3. `_quickHalfFillAllSplits` guard 移除 `inp.value !== '0'`，改純睇 `isDefault`。
+4. 兩個 `focusout` handler（deposit/balance 各一）移除 `val === '0'`，只有真係留空先觸發復原邏輯。
+
+**驗證**：本機 http.server 起 dev 版，browser 直接操作（非純讀碼宣告完成）——①deposit 打 0 並 blur，值保持 0（修復前會彈返舊值）；②balance 亦打 0 並 blur，兩箱同時保持 $0，冇連帶互相覆寫；③連續三次呼叫 `calculatePricing()` 模擬操作員編輯其他欄位，$0/$0 持續保持，訂單總額正確反映豁免；④確認「全部半訂」全域掣（`force=true`）依然可刻意覆寫返半數（包括已手動歸零嘅箱），全域強制覆寫功能無回歸。
+
+**唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`。純前端收款分帳 UI 行為修復，`current.html`（production）未動，Supabase schema／n8n 零改動。呼應 finance-gatekeeper §三死線第 1 條「操作者手動輸入的確收金額為絕對真理」——修復前呢個原則喺 UI 輸入層本身已被違反。
+
+詳見 Changelog.md 2026-09-03 條目。**Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 直接操作驗證，委派會斷推理鏈）。

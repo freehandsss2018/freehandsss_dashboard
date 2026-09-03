@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69：逐件模式收款分帳「手動歸零豁免收費」被強制覆寫返標準值修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03 條目 + [decisions.md D69](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 回報新/修訂單財務結算逐件模式，客人選咗加購燈飾但操作員決定唔收呢件錢，手動將對應品項嘅已付訂金/未付尾數改做0後，系統強制轉返全數($80)或半數($40)，唔畀改。查證揪出三個獨立函式共用同一設計缺陷——把「$0」當「未填/仍可自動填」而非「操作員刻意輸入嘅確定值」：①`focusout` blur revert 判斷式把0同空白一視同仁；②`_syncBalanceFromDeposit`交叉同步 guard 因0本身係「標準值」三態之一令`isStandard`恆真短路人手保護；③`calculatePricing()`每次重算都無條件呼叫嘅週期性自動半填，guard同樣睇數值本身係咪0。統一改用`dataset.isDefault`旗標判斷「人手觸碰過」，並新增`prevDefault`快照機制令旗標可跨容器重繪存活（原本`_addBox`完全冇保留呢個旗標，每次`calculatePricing()`重繪都會重置消失）。四個函式屬全品項共用引擎，Fat Mo 事後追問核實，已用本機 browser 直接操作逐一驗證木框主件/燈飾配件/頸鏈group三種格式皆已修復，非單點修復。唯一改動檔案`freehandsss_dashboardV42.html`。
+**Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復+即時 browser 直接操作驗證，委派會斷推理鏈）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。

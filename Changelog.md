@@ -1,5 +1,21 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69（本分支暫編號，merge 時如撞主線 D69 需協調重編）：逐件模式收款分帳「手動歸零」被強制覆寫返標準值（三處同源設計缺陷）
+
+- **緣起**：Fat Mo 回報——新/修訂單財務結算逐件模式下，客人有選加購燈飾但操作員決定唔收呢件錢，手動將「燈飾 - 加購」嘅已付訂金或未付尾數改做 0 後，系統會強制轉返（全數 $80）或（半數 $40），唔畀改。
+- **根因**：全案根源同一個設計缺陷——「$0」呢個數值喺多處被當成「未填/仍可自動填」，同「操作員刻意輸入嘅確定值」冇分開，令三個獨立函式各自出手覆寫：
+  1. `focusout`（blur）處理：`_depCont`/`_balCont` 兩個 handler 嘅判斷式 `if (val === '' || val === '0')` 把「刻意輸入 0」同「唔小心清空」一視同仁，離開輸入框即 revert 返 pre-focus 舊值。
+  2. 交叉同步：`_syncBalanceFromDeposit`（連 necklace group 分支）嘅 guard `if (!isStandard && isDefault !== 'true') return;`——因為 0/半/全三個「標準值」永遠令 `isStandard` 為 true，令人手保護判斷形同虛設，deposit 一旦讀到 0 就必定強制將對應 balance 覆寫做全額。
+  3. 週期性自動半填：`calculatePricing()` 每次重算都無條件呼叫 `_quickHalfFillAllSplits('deposit')`（無 force），其 guard `inp.value !== '0'` 令「啱啱手動歸零」嘅箱都會被判斷做「未填」再次填返半數——呢個先係令問題喺全單任何一次重算後都會「彈返」嘅主因（訂單表單幾乎每個輸入都會觸發 `calculatePricing()`）。
+- **修復（`freehandsss_dashboardV42.html`，四處，同一設計原則：以 `dataset.isDefault` 單一旗標判斷「人手觸碰過」，唔再用數值本身係咪 0 嚟猜測意圖）**：
+  1. `renderPaymentSplits()`／`_addBox()` 新增 `prevDefault` 快照機制，令 `isDefault` 旗標可以跨越 `calculatePricing()` 觸發嘅容器重繪存活（原本 `_addBox` 完全冇保留呢個旗標，每次重繪都會重置成 undefined，係之前令 isStandard 短路判斷「睇落有效」嘅隱藏前提——冇呢步單改 guard 會令正常半/全自動填功能喺重繪後失效，故列為必要配套）；未知標記但已有存值嘅箱（如訂單還原）一律當人手輸入處理。
+  2. `_syncBalanceFromDeposit`（含 necklace group）guard 移除 `!isStandard &&`，改為人手觸碰過一律唔再自動覆寫，不論來源金額是否標準值。
+  3. `_quickHalfFillAllSplits` guard 移除 `inp.value !== '0'` 判斷，改純睇 `isDefault`。
+  4. 兩個 `focusout` handler 移除 `val === '0'` 判斷，只有真係留空先觸發「復原意外清空」邏輯。
+- **驗證（本機 http.server 起 dev 版起 browser 直接操作，非純讀碼宣告完成）**：①手動將燈飾加購 deposit 打 0 並 blur → 值保持 0（修復前會彈返 pre-focus 值）；②再手動將 balance 打 0 並 blur → 值保持 0，deposit 亦冇被連帶改動；③連續三次呼叫 `calculatePricing()` 模擬「操作員編輯訂單其他欄位」— 兩個箱持續保持 $0/$0，訂單總額正確反映豁免（唔再計呢件嘅 $80）；④確認「全部半訂」全域掣（`force=true`）依然可以刻意覆寫返半數（包括之前已手動歸零嘅箱），全域強制覆寫功能無回歸。
+- **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`renderPaymentSplits`/`_addBox`/`_syncBalanceFromDeposit`/`_quickHalfFillAllSplits`/兩個 `focusout` handler）。純前端收款分帳 UI 行為修復，`Freehandsss_dashboard_current.html`（production）未動、Supabase schema／n8n 零改動。呼應 §三死線第 1 條「操作者手動輸入的確收金額為絕對真理」——修復前呢個原則喺 UI 層本身已被違反（操作員刻意輸入嘅 $0 從未有機會落地）。
+- **Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 直接操作驗證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。
