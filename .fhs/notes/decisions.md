@@ -2561,3 +2561,11 @@ Fat Mo 驗收 D69 後回報：原有設計「已付訂金/未付尾數一方有�
 驗證：真實 `computer` 工具鍵盤輸入（非 `dispatchEvent`，確保 `isTrusted`）證實兩方向自訂金額互填正確（$2000→$380、$300→$2080）；多次模擬無關表單改動觸發嘅重算後自訂金額原封不動；D69 原有 $0 豁免情境重驗依然通過；全域「全部半訂」force 覆寫無回歸。
 
 唯一改動檔案同 D69：`freehandsss_dashboardV42.html`。全文見 [Changelog.md 2026-09-03「D69續」條目](../../Changelog.md)（依 Phase 1.6 分級合約(b)，Changelog 為全文居所，此處不重複展開）。**Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 真實鍵盤輸入驗證，委派會斷推理鏈）。
+
+### D69續II：撳「全部半訂/全部付清」對已載入舊單（對面箱已鎖定）冇反應（2026-09-03）
+
+Fat Mo 喺真實訂單 #0600901 截圖回報撳「全部半訂」後未付尾數全部維持 $0 冇反應。查證：D69續嘅保護機制（`isDefault`）冇分「呢個保護係咪應該被『全部』字面意思繞過」——載入舊單時對面箱（例如全部已是$0）一早已按 D69 設計當人手輸入鎖定，`_quickHalfFillAllSplits('deposit', true)` 嘅 `force` 只影響自己嗰個 loop，連鎖觸發嘅 `_syncBalanceFromDeposit()` 完全唔知呢次係 force 動作。
+
+修復：新增 `window._fhsForceSync` 全域旗標，`_quickFillAllSplits`/`_quickHalfFillAllSplits(field,true)` 喺覆寫迴圈期間設為 `true`，兩個交叉同步函式（含 necklace group）加 `!window._fhsForceSync &&` 判斷。驗證：模擬「已載入舊單兩側皆鎖定$0」場景，撳半訂/全付皆正確覆寫兩側；D69/D69續全部既有情境重驗無回歸。
+
+唯一改動檔案同 D69：`freehandsss_dashboardV42.html`。全文見 [Changelog.md 2026-09-03「D69續II」條目](../../Changelog.md)（依 Phase 1.6 分級合約(b)）。**Subagent 使用記錄**：❌未使用。

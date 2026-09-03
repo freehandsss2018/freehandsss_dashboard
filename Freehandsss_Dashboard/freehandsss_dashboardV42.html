@@ -14212,7 +14212,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const newBal = Math.max(0, calcPrice - paid);
                 balContainer.querySelectorAll('.split-box-input').forEach(function(balInp) {
                     if (balInp.dataset.boxkey === bk) {
-                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫
+                        // S190: 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫；
+                        // S192: 但 _fhsForceSync（撳「全部半訂/全部付清」）會暫時繞過呢個保護
+                        if (!window._fhsForceSync && balInp.dataset.isDefault !== 'true') return;
                         balInp.value = newBal;
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
@@ -14228,7 +14230,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (depInp && balInp) {
                         const gPrice = group.price || 0;
                         const gPaid = Number(depInp.value) || 0;
-                        if (balInp.dataset.isDefault !== 'true') return; // S190: 人手觸碰過一律唔再自動覆寫
+                        // S190: 人手觸碰過一律唔再自動覆寫；S192: force 時繞過
+                        if (!window._fhsForceSync && balInp.dataset.isDefault !== 'true') return;
                         balInp.value = Math.max(0, gPrice - gPaid); // S191: 恆算真實餘額
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
@@ -14259,7 +14262,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var newDep = Math.max(0, calcPrice - paid);
                 depContainer.querySelectorAll('.split-box-input').forEach(function(depInp) {
                     if (depInp.dataset.boxkey === bk) {
-                        if (depInp.dataset.isDefault !== 'true') return; // 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫
+                        // 人手觸碰過（包括手動歸零豁免收費）一律唔再自動覆寫；S192: force 時繞過
+                        if (!window._fhsForceSync && depInp.dataset.isDefault !== 'true') return;
                         if ((Number(depInp.value) || 0) === newDep) return; // 值冇變化，唔使當作 changed
                         depInp.value = newDep;
                         depInp.style.color = 'var(--fhs-text-muted)';
@@ -14277,7 +14281,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         var gPrice = group.price || 0;
                         var gPaid = Number(balInp.value) || 0;
                         var newGDep = Math.max(0, gPrice - gPaid);
-                        if (depInp.dataset.isDefault !== 'true') return;
+                        if (!window._fhsForceSync && depInp.dataset.isDefault !== 'true') return;
                         if ((Number(depInp.value) || 0) === newGDep) return;
                         depInp.value = newGDep;
                         depInp.style.color = 'var(--fhs-text-muted)';
@@ -14354,10 +14358,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function _quickFillAllSplits(field) {
             const container = document.getElementById(field + 'SplitContainer');
             if (!container) return;
-            container.querySelectorAll('.quick-fill-btn').forEach(function(btn) {
-                _quickFillSplitBtn(btn);
-                if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, btn.dataset.boxkey, 'full');
-            });
+            // S192: 呢個按鈕本身就係「全部」（force）語意——連鎖觸發嘅對面（balance/deposit）
+            // 交叉同步唔可以再受 isDefault 保護阻攔，否則載入舊單（對面箱已有存值、被當人手鎖定）
+            // 之後撳「全部半訂/全部付清」會出現「已付訂金填咗，未付尾數冇反應」嘅假象。
+            window._fhsForceSync = true;
+            try {
+                container.querySelectorAll('.quick-fill-btn').forEach(function(btn) {
+                    _quickFillSplitBtn(btn);
+                    if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, btn.dataset.boxkey, 'full');
+                });
+            } finally {
+                window._fhsForceSync = false;
+            }
             if (field === 'deposit') {
                 container.querySelectorAll('.split-box-input').forEach(function(inp) {
                     inp.style.color = 'var(--fhs-text-primary)';
@@ -14390,6 +14402,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window._depositMode = null;
         window._balanceMode = 'half';
         window._fhsSplitRestoreSnapshot = null; // S107 方案A: 還原期 split 快照（權威來源，防 generate() 污染存檔值）
+        // S192: 全域「全部半訂/全部付清」掣觸發嘅交叉同步強制旗標——true 時 _syncBalanceFromDeposit/
+        // _syncDepositFromBalance 對面箱嘅 isDefault 保護會被暫時繞過，令「全部」呢個字面意思（連對面
+        // 箱都一齊覆寫）名副其實；平時（單格輸入/新品項週期性半填）維持 false，保護唔受影響。
+        window._fhsForceSync = false;
 
         function _syncGlobalDepositBtnUI() {
             var btn = document.getElementById('fhsDepositFillToggle');
@@ -14442,30 +14458,38 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var container = document.getElementById(field + 'SplitContainer');
             if (!container) return;
             var filledAny = false;
-            container.querySelectorAll('.quick-half-btn').forEach(function(btn) {
-                var bk  = btn.dataset.boxkey;
-                var inp = container.querySelector('.split-box-input[data-boxkey="' + bk + '"]');
-                if (!inp) return;
-                var suggested = Number(btn.dataset.suggested) || 0;
-                if (!suggested) return;
-                // Skip boxes the operator has manually touched — only auto-fill boxes still marked default.
-                // S190: 移除舊有 value!=='0' 判斷——手動輸入 $0（如豁免加購收費）都算「人手觸碰過」，
-                // 唔可以因為數值啱巧係 0 就當成「未填」畀 calculatePricing() 每次重算都彈返半數。
-                // force=true bypasses this guard (user explicitly clicking 全部半訂)
-                if (!force && inp.dataset.isDefault !== 'true') return;
-                // S191: 呢個函式每次 calculatePricing() 都會無條件執行一次（用嚟畀新加嘅品項有初始半付值）。
-                // 但 isDefault==='true' 唔止代表「從未填過」，仲代表「呢邊自動算返嚟嘅真實餘額仍然開放」
-                // （見 _syncDepositFromBalance）——若唔額外檢查現值，會將啱啱由另一邊算返嚟嘅有意義金額
-                // （例如 $2080）靜默打番做半數（$1190），令 _syncDepositFromBalance() 嘅心血白費。
-                // 只有現值真係 0/未填先算「未填」，先值得半填。
-                if (!force && (Number(inp.value) || 0) !== 0) return;
-                inp.value = Math.ceil(suggested / 2);
-                inp.style.color = 'var(--fhs-text-muted)';
-                inp.dataset.isDefault = 'true';
-                filledAny = true;
-                inp.dispatchEvent(new Event('input', { bubbles: true }));
-                if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, bk, 'half');
-            });
+            // S192: force=true（撳「全部半訂」）等於操作員宣告「呢張單全部重新分配」，連鎖觸發嘅對面
+            // 交叉同步（見 _syncBalanceFromDeposit）都要跟住繞過保護，否則舊單載入時對面箱已有存值
+            // （即使係$0）會被當人手鎖定，令「已付訂金填咗，未付尾數冇反應」。
+            if (force) window._fhsForceSync = true;
+            try {
+                container.querySelectorAll('.quick-half-btn').forEach(function(btn) {
+                    var bk  = btn.dataset.boxkey;
+                    var inp = container.querySelector('.split-box-input[data-boxkey="' + bk + '"]');
+                    if (!inp) return;
+                    var suggested = Number(btn.dataset.suggested) || 0;
+                    if (!suggested) return;
+                    // Skip boxes the operator has manually touched — only auto-fill boxes still marked default.
+                    // S190: 移除舊有 value!=='0' 判斷——手動輸入 $0（如豁免加購收費）都算「人手觸碰過」，
+                    // 唔可以因為數值啱巧係 0 就當成「未填」畀 calculatePricing() 每次重算都彈返半數。
+                    // force=true bypasses this guard (user explicitly clicking 全部半訂)
+                    if (!force && inp.dataset.isDefault !== 'true') return;
+                    // S191: 呢個函式每次 calculatePricing() 都會無條件執行一次（用嚟畀新加嘅品項有初始半付值）。
+                    // 但 isDefault==='true' 唔止代表「從未填過」，仲代表「呢邊自動算返嚟嘅真實餘額仍然開放」
+                    // （見 _syncDepositFromBalance）——若唔額外檢查現值，會將啱啱由另一邊算返嚟嘅有意義金額
+                    // （例如 $2080）靜默打番做半數（$1190），令 _syncDepositFromBalance() 嘅心血白費。
+                    // 只有現值真係 0/未填先算「未填」，先值得半填。
+                    if (!force && (Number(inp.value) || 0) !== 0) return;
+                    inp.value = Math.ceil(suggested / 2);
+                    inp.style.color = 'var(--fhs-text-muted)';
+                    inp.dataset.isDefault = 'true';
+                    filledAny = true;
+                    inp.dispatchEvent(new Event('input', { bubbles: true }));
+                    if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, bk, 'half');
+                });
+            } finally {
+                if (force) window._fhsForceSync = false;
+            }
             if (field === 'deposit') {
                 // Update mode when: (a) user explicitly clicked button (force), or
                 // (b) auto-fill actually filled boxes AND we're not mid-restore of an existing order

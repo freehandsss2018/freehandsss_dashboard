@@ -31,6 +31,15 @@
 - **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（同 D69 相同四個函式 + `_addBox` 嘅 `oninput` 屬性）。`current.html`／Supabase／n8n 零改動。
 - **Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 browser 真實鍵盤輸入驗證，委派會斷推理鏈）。
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續II：撳「全部半訂/全部付清」對已載入舊單（對面箱已鎖定）冇反應
+
+- **緣起**：Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報——撳咗「全部半訂」，已付訂金正確填晒半數（$2650），但未付尾數全部維持 $0，完全冇反應。
+- **根因**：D69續嘅餘值計算式修復（`Math.max(0,calcPrice-paid)`）本身冇問題，但保護機制（`isDefault`）冇分「呢個保護係咪應該被『全部』呢個字面意思繞過」。`_addBox` 對「有已存值但未知標記」（例如載入呢張真實訂單時，未付尾數全部已經係 $0）嘅 fallback 一律當人手輸入處理（D69 為咗保護歷史財務快照唔畀靜默改動而做嘅刻意設計），令呢啲箱一早已經被鎖定。撳「全部半訂」時，`_quickHalfFillAllSplits('deposit', true)` 嘅 `force` 參數只影響佢自己嗰個 loop（deposit 側），連鎖觸發嘅 `_syncBalanceFromDeposit()` 對 balance 側嘅保護判斷完全唔知道呢次係「force」動作，一律照舊擋。
+- **修復**：新增 `window._fhsForceSync` 全域旗標——`_quickFillAllSplits`（全部付清，本質上就係全域覆寫）同 `_quickHalfFillAllSplits(field, true)`（全部半訂）喺各自嘅覆寫迴圈執行期間將呢個旗標設做 `true`，`_syncBalanceFromDeposit`/`_syncDepositFromBalance`（含 necklace group 分支）嘅保護判斷加多一句 `!window._fhsForceSync &&`，令「全部」呢兩個字嘅字面意思（連對面箱都一齊覆寫）名副其實。平時單格輸入或新品項嘅週期性半填唔會設呢個旗標，保護機制不受影響。
+- **驗證**：模擬「已載入舊單，兩側箱皆已存值 $0 並被鎖定」場景（重現 Fat Mo 截圖情境）——撳「全部半訂」後兩側正確變返半數（例如 $1190/$1190、$40/$40），撳「全部付清」後正確變返全數/$0；同時重驗 D69/D69續全部既有情境（$0豁免手動保護、自訂金額互填、多次無關重算後不變）皆無回歸。
+- **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`_quickFillAllSplits`/`_quickHalfFillAllSplits`/`_syncBalanceFromDeposit`/`_syncDepositFromBalance`，新增 `window._fhsForceSync` 旗標）。`current.html`／Supabase／n8n 零改動。
+- **Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復 + 即時 JS 直接操作重現與驗證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。
