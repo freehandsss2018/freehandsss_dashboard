@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-02T23:28:09Z">
+    <meta name="fhs-build" content="2026-09-03T00:09:12Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3113,11 +3113,21 @@
            JS計算邏輯不變（純視覺隱藏，唔改`updateFilterActiveHint()`本身，
            萬一第度仲有邏輯依賴呢個class都唔會斷）。 */
         body.v40-review-active #filterActiveHint { display: none !important; }
-        /* 手機width實測：徽章併入button後「重新載入」+「N筆·時間」合埋闊度
-           足以撞正絕對定位置中嘅freehandsss水印（純裝飾、pointer-events:none，
-           follow-8已喺compact-desktop隱咗，但嗰條規則局限750-1129，手機一直
-           冇隱過）——擴闊做闊度獨立版，同上面4條規則同一批次修正。 */
-        body.v40-review-active #v40-top-bar .fhs-top-bar__logo { display: none; }
+        /* [2026-09-03 D69續八-follow-30] Fat Mo截圖：freehandsss水印喺訂單
+           總覽（mobile）消失咗，要求復原（佢確認「呢個水印喺原有嘅空間，
+           應不影響任何按鈕」）。查證屬實：follow-19嗰陣加呢條width-
+           independent規則，係因為當時refreshBtn仲係搬入`#v40-top-bar`
+           （同絕對定位置中嘅水印同一個容器、視覺會疊埋），先擴闊follow-8
+           原本淨限compact-desktop嘅隱藏做width-independent版。但follow-22
+           已經將refreshBtn改搬做`#fhsSegWrapper`（`#reviewFilterPinned`
+           入面，完全唔同嘅DOM區域）嘅子元素，`#v40-top-bar`喺mobile底下
+           而家淨返水印本身+隱藏咗嘅標題span+一個supabase狀態燈——冲突
+           條件已經消失，呢條width-independent隱藏規則喺mobile變成冇必要
+           嘅殘留（follow-19騙咗自己一次，冇人記得跟手清）。刪走呢條，
+           mobile回復顯示水印；compact-desktop（refreshBtn仍然搬入topBar，
+           重疊風險仍然存在）由follow-8原本嗰條scoped版本（見下面
+           `@media(750-1129)`區塊入面同一個選擇器）繼續負責隱藏，唔受
+           影響。 */
         /* [2026-09-02 D69續八-follow-25] Fat Mo要求：徽章唔再扮獨立pill
            （border-left分隔線+padding-left做間隔），改做「重新載入(N筆)」
            連續白色文字入面嘅一部分——`(N筆)`文字本身已經喺JS入面加咗
