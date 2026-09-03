@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-03T05:37:01Z">
+    <meta name="fhs-build" content="2026-09-03T11:37:14Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3092,6 +3092,27 @@
             body.v40-review-active #fhsCategoryFilterGroup .chip-btn { padding: 0 16px; }
             body.v40-review-active #fhsCategoryFilterGroup .chip-group { gap: 8px; }
             body.v40-review-active #fhsCategoryFilterGroup { gap: 8px; }
+            /* [2026-09-03 D69續八-follow-32] Fat Mo藍圈：reload搬去topBar後，
+               類別chips頂替佢喺segWrapper原位，同分頁tabs合併做同一行
+               （JS見`fhsSyncCompactDesktopLayout()`嘅`shouldMobileMergeCatRow`
+               分支）。follow-28刻意放寬嘅chip padding/gap（校準俾「類別自成
+               一行、有多餘闊度」嘅舊佈局）喺合併之後反而係唔夠位嘅元兇——
+               用加咗`#fhsSegWrapper`前綴嘅高specificity覆寫，淨喺合併狀態
+               （catGroup變咗segWrapper子元素先會命中呢個選擇器）先收緊，
+               冇merge嗰條分支（catGroup留喺pinnedRow原位）選擇器唔命中、
+               唔受影響。label（「類別」文字+icon）隱埋淨留4粒chip，同
+               compact-desktop（見下面750-1129px區塊同一做法）睇齊。 */
+            body.v40-review-active #fhsSegWrapper #fhsCategoryFilterGroup {
+                gap: 4px; margin-left: 4px; padding-left: 4px; border-left: 1px solid var(--fhs-border);
+            }
+            /* `.filter-label`喺HTML本身有inline style="display:inline-flex"
+               （4968行），specificity再高嘅stylesheet class選擇器都蓋唔過
+               inline style，必須加`!important`先隱得走。 */
+            body.v40-review-active #fhsSegWrapper #fhsCategoryFilterGroup .filter-label { display: none !important; }
+            body.v40-review-active #fhsSegWrapper #fhsCategoryFilterGroup .chip-group { gap: 3px; }
+            body.v40-review-active #fhsSegWrapper #fhsCategoryFilterGroup .chip-btn {
+                padding: 0 7px; font-size: 11px; height: 26px;
+            }
         }
         /* [2026-09-03 D69續八-follow-29] Fat Mo截圖：類別工作台橫幅（撳入
            鑰匙扣/手模/頸鏈某個類別tab時彈出嘅「進度分佈」+「批次分佈」
@@ -16345,6 +16366,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // accordion展開行為，只係收窄「3粒掣+重新載入」呢部分嘅常駐佔位。
             var nowMobileForCollapse = window.innerWidth < 750;
             var shouldCollapseButtons = (isCompact || nowMobileForCollapse) && isReviewActive;
+            // [2026-09-03 D69續八-follow-32] Fat Mo紅/藍圈指示：①reload搬去topBar
+            // 同freehandsss同一行（右上角）；②類別chips頂替reload喺segWrapper
+            // 原本嘅位置，同分頁tabs合併一行，必要時壓縮到一行放得落。淨限手機
+            // （唔包括緊縮桌面，嗰邊follow-7~9已經有自己一套topBar合併方案，
+            // 呢度唔改動）。
+            var shouldMobileMergeCatRow = nowMobileForCollapse && isReviewActive && !isCompact;
             var anchor = document.getElementById('fhsPinnedBtnAnchor');
             var slot = document.getElementById('fhsCompactBtnSlot');
             var topBar = document.getElementById('v40-top-bar');
@@ -16356,36 +16383,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var titleElForRefresh = document.getElementById('v40-top-order-id');
             if (!anchor || !slot || !topBar || !refreshBtn || !financeBtn || !clearBtn || !saveBtn) return;
             if (shouldCollapseButtons) {
-                // [2026-09-02 D69續八-follow-20] Fat Mo截圖：手機直向「重新載入」
-                // 搬咗去topBar自成一行，同「全部/進行中/已完成」分頁tabs分開兩
-                // 行，唔啱要求（應該同已完成掣同一行、右方）。緊縮桌面
-                // （isCompact）沿用follow-9原有行為（搬去topBar，同toggle/seg/
-                // cat一齊搬），唔改；手機（isCompact false）改搬去pinnedRow入面
-                // segWrapper之後、div1之前，令佢同分頁tabs處於同一個flex行，
-                // 靠`#fhsRefreshBtn`嘅width-independent CSS margin-left:auto
-                // 推去該行最右方（見下面CSS，選擇器已由「必須喺#v40-top-bar
-                // 底下」放寬做純ID，唔再要求特定父容器）。
-                if (isCompact) {
-                    if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
-                } else {
-                    // [2026-09-02 D69續八-follow-22] Fat Mo真機覆核：follow-20/21
-                    // 靠pinnedRow column-gap/refreshBtn padding收窄嚟「啱啱好夾
-                    // 得落」嘅做法，喺真機字體量度落同呢度嘅headless瀏覽器有
-                    // 出入，實測仍然唔夠位、refreshBtn自己一個被逼落次行。
-                    // 呢種「淨計算應該夠位」嘅寫法本質上脆弱（font-metric
-                    // 隨瀏覽器/系統字體有偏差），改做結構性保證：唔再將
-                    // refreshBtn插入做`pinnedRow`嘅獨立flex item（同segWrapper
-                    // 分開計算、分開決定邊個先換行），而係直接搬做
-                    // `#fhsSegWrapper`嘅**子元素**（同分頁tabs掣group埋一齊）。
-                    // segWrapper本身已經係pinnedRow入面`flex:0 0 auto`嘅單一
-                    // flex item，換行判斷以佢成嚿計，唔會再出現「reload獨自
-                    // 被踢落次行、剩返分頁tabs孤伶伶」嘅情況——即使闊度真係
-                    // 唔夠，都會連segWrapper成嚿一齊換行（好過依家咁分開）。
-                    var segWrapperForRefresh = document.getElementById('fhsSegWrapper');
-                    if (segWrapperForRefresh && refreshBtn.parentElement !== segWrapperForRefresh) {
-                        segWrapperForRefresh.appendChild(refreshBtn);
-                    }
-                }
+                // [2026-09-02 D69續八-follow-20/22] 歷史脈絡：follow-20 曾經試過
+                // 將手機嘅reload搬去topBar自成一行，因為同分頁tabs分開兩行被
+                // Fat Mo打回頭，follow-22改做搬入`#fhsSegWrapper`同分頁tabs埋
+                // 一齊（結構性保證換行時成嚿一齊走，唔再獨自被踢落次行）。
+                // [2026-09-03 D69續八-follow-32] Fat Mo提出新版面：reload正式
+                // 搬返去topBar、同freehandsss同一行（右上角），segWrapper原本
+                // 嗰個位由類別chips頂替（見下面catGroup相關分支）。手機同緊縮
+                // 桌面（isCompact）而家目標位置一致，統一搬入topBar，唔再分支。
+                if (refreshBtn.parentElement !== topBar) topBar.appendChild(refreshBtn);
                 [financeBtn, clearBtn, saveBtn].forEach(function (b) {
                     if (b.parentElement !== slot) slot.appendChild(b);
                 });
@@ -16449,7 +16455,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             } else {
                 if (toggleEl.parentElement !== pinnedRow) pinnedRow.insertBefore(toggleEl, div1);
                 if (segWrapper.parentElement !== pinnedRow) pinnedRow.insertBefore(segWrapper, div1);
-                if (catGroup.parentElement !== pinnedRow) pinnedRow.insertBefore(catGroup, div2);
+                // [2026-09-03 D69續八-follow-32] Fat Mo藍圈：手機reload搬去topBar
+                // 後，pinnedRow第一行（toggle+分頁tabs）騰出嘅位由類別chips
+                // 頂替——catGroup唔再插入pinnedRow（會繼續自成一行），改做
+                // segWrapper嘅子元素，同`.fhs-seg-ctrl`（分頁tabs）合併做同一個
+                // flex行，必要時靠下面CSS壓縮至一行放得落。桌面闊屏（唔merge
+                // 嗰個情況）維持舊有插入pinnedRow行為唔變。
+                if (shouldMobileMergeCatRow) {
+                    if (catGroup.parentElement !== segWrapper) segWrapper.appendChild(catGroup);
+                } else {
+                    if (catGroup.parentElement !== pinnedRow) pinnedRow.insertBefore(catGroup, div2);
+                }
                 if (filterBody.parentElement === document.body) bodyAnchor.insertAdjacentElement('afterend', filterBody);
                 filterBody.classList.remove('fhs-drawer-mode');
                 filterBody.classList.remove('open');
@@ -16471,7 +16487,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 計出嚟嘅目標闊度比natural闊度仲窄，就唔好縮（避免tabs/
             // reload內容被逼到互相疊埋），維持natural闊度算，寧願行1、
             // 2兩邊右邊有少少對唔齊，都好過內容被裁走。
-            if (nowMobileForCollapse && isReviewActive) {
+            // [2026-09-03 D69續八-follow-32] follow-27/28呢個JS對齊hack針對嘅係
+            // 「segWrapper（tabs+reload）」同「catGroup（類別）」分處兩條獨立
+            // 行、要靠量度令兩行右邊對齊嘅舊佈局。而家`shouldMobileMergeCatRow`
+            // 令catGroup已經係segWrapper嘅子元素、同處一行，冇「兩行對齊」呢個
+            // 問題需要解決，跳過此段（segWrapper.style.width保持''，跟內容
+            // natural闊度）。
+            if (nowMobileForCollapse && isReviewActive && !shouldMobileMergeCatRow) {
                 segWrapper.style.width = '';
                 var segNaturalWidthForAlign = segWrapper.scrollWidth;
                 var catGroupRectForAlign = catGroup.getBoundingClientRect();
