@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-30：freehandsss水印手機版復原，follow-19嘅隱藏前提已被follow-22推翻
+
+- **緣起**：Fat Mo截圖對比訂單總覽（mobile）top bar冇「freehandsss」水印，但「新增」頁面同結構有——要求復原，並確認「呢個水印喺原有嘅空間，應不影響任何按鈕」。
+- **根因**：follow-19（本session早段）為咗避免同`#fhsRefreshBtn`喺`#v40-top-bar`入面視覺重疊，將follow-8原本compact-desktop-only嘅隱藏規則擴闊做width-independent版（覆蓋mobile）。但follow-22已經將mobile分支嘅refreshBtn relocate目標由`#v40-top-bar`改做`#fhsSegWrapper`（完全唔同區域），follow-19嘅重疊前提從此消失，但冇人跟手清呢條規則。
+- **查證**：水印`position:absolute`（脫離flex flow，`pointer-events:none`），`#v40-top-bar`喺mobile底下現存子元素同水印冇任何爭位對象。
+- **修法**：刪走follow-19加嘅width-independent版本，保留follow-8原本`@media(750-1129)`scoped版本（緊縮桌面重疊風險依然存在）。
+- **通則**：跨round嘅CSS覆寫如果係「因為X先做嘅Y」，後續改咗X必須反查所有衍生規則係咪跟住失效——同follow-25孤伶伶分隔線屬同一類系統性風險。
+- **驗證**：375mobile水印顯示+冇重疊pinnedRow+reload/tabs對齊不受影響；900緊縮桌面仍正確隱藏；1400傳統桌面一路顯示；toggle功能正常；console零錯誤。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（刪走1條width-independent CSS）。
+- 全文見 decisions.md D69續八-follow-30。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-29：類別工作台橫幅（進度/批次分佈）刪除
 
 - **緣起**：Fat Mo截圖類別工作台橫幅（「進度分佈」+「批次分佈」統計卡，撳入手模/鑰匙扣/頸鏈某個category tab時彈出）要求刪除，理由「冇用」。

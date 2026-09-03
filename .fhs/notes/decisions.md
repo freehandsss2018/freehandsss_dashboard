@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-03] (D69續八-follow-30) freehandsss水印手機版復原 — follow-19嗰陣嘅隱藏前提已被follow-22推翻，冇人手清
+
+**背景**：Fat Mo兩張截圖對比：訂單總覽頁面（mobile）top bar淨得標題icon，冇「freehandsss」；「新增」頁面（create order）同一個top bar結構卻正常顯示「freehandsss」。要求復原訂單總覽嗰邊，並補充「呢個水印喺原有嘅空間，應不影響任何按鈕」——暗示水印本身唔應該同任何操作元件爭位。
+
+**根因（考古）**：follow-19嗰陣（本session早段）將follow-8原本淨限緊縮桌面（750-1129px）嘅「隱藏freehandsss水印」規則，擴闊做width-independent版本（覆蓋埋mobile），原因係當時`#fhsRefreshBtn`（重新載入掣）仲係被JS搬入`#v40-top-bar`（同絕對定位置中嘅水印共用同一個容器，實測闊度合埋會視覺重疊）。但follow-22（同一session，續八輪）已經將呢個relocate邏輯改咗——mobile分支唔再搬去`#v40-top-bar`，改搬做`#fhsSegWrapper`（`#reviewFilterPinned`入面，完全唔同區域）嘅子元素。follow-22改咗relocate目標之後，follow-19嗰條「因為會重疊所以隱藏」嘅width-independent規則從此失去前提，但冇人跟手清走——變成一條「解決緊一個已經唔存在嘅問題」嘅殘留規則，直到今次Fat Mo截圖先揭發。
+
+**查證**：`getComputedStyle(logo).position === 'absolute'`確認水印本身脫離flex flow（純覆蓋層，`pointer-events:none`），復原顯示唔會影響任何flex排版；`#v40-top-bar`喺mobile底下現存子元素淨得logo本身+隱藏咗嘅標題span+一個supabase狀態燈——真係冇嘢好同水印爭位。
+
+**修法**：刪走follow-19加嘅width-independent版本（`body.v40-review-active #v40-top-bar .fhs-top-bar__logo{display:none}`，冇media query包住嗰條），保留follow-8原本`@media(750-1129)`scoped嗰條（緊縮桌面refreshBtn仍然搬入topBar，重疊風險依然存在，唔可以一併刪）。
+
+**驗證**：375mobile確認水印顯示、垂直位置（top:13-34）同pinnedRow（top:55起）完全冇重疊、reload/tabs同行對齊（follow-27/28嘅`rightDiff=0`）不受影響；900緊縮桌面確認水印仍然正確隱藏（`display:none`）；1400傳統桌面確認水印一路顯示（未受任何一輪影響）；toggle單次點擊功能正常；console零錯誤。
+
+**通則**：跨round嘅CSS覆寫如果係「因為X先做嘅Y」（例如「因為refreshBtn喺呢度先隱藏水印」），一旦後續某輪改咗X（呢次follow-22改relocate目標），必須反查所有「因為X」嘅衍生規則係咪都要跟住失效——呢類「前提消失但規則冇跟手清」嘅殘留，同follow-25發現嘅孤伶伶分隔線係同一類系統性風險，值得喺日後改動涉及DOM relocation嘅代碼時，主動搜尋「呢個relocation嘅目的地」有冇其他CSS假設咗佢。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-30」條目。**Subagent 使用記錄**：❌未使用。
+
 [2026-09-03] (D69續八-follow-29) 類別工作台橫幅（進度/批次分佈）刪除 — Fat Mo判定純資訊性統計卡冇用
 
 **背景**：Fat Mo截圖「🔑鑰匙扣 26件·14張單」嘅類別工作台橫幅（撳入手模/鑰匙扣/頸鏈某個類別tab時彈出，顯示「進度分佈」未開始/進行中/需補打/已完成 + 「批次分佈」第N批統計），要求整個刪除，理由「冇用」。

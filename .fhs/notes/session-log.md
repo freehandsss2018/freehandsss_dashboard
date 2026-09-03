@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-30：freehandsss水印手機版復原，follow-19隱藏前提已被follow-22推翻): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-30」條目 + [decisions.md D69續八-follow-30](decisions.md)。Fat Mo截圖確認訂單總覽（mobile）top bar「freehandsss」水印消失，要求復原。考古發現：follow-19因refreshBtn當時仲喺`#v40-top-bar`入面（會同絕對定位水印重疊）而擴闊隱藏規則做width-independent；但follow-22已改relocate目標去`#fhsSegWrapper`，重疊前提消失卻冇人清呢條規則。刪走width-independent版本，保留compact-desktop-scoped版本（refreshBtn仍搬入topBar嗰個tier）。375mobile確認水印顯示+冇重疊+reload對齊不受影響，900緊縮桌面仍隱藏，1400傳統桌面一路顯示。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-03 (D69續八-follow-29：類別工作台橫幅（進度/批次分佈）刪除): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-29」條目 + [decisions.md D69續八-follow-29](decisions.md)。Fat Mo截圖類別工作台橫幅（「進度分佈」+「批次分佈」統計卡）要求刪除，理由冇用。`#reviewCatStrip`follow-6已喺緊縮桌面隱過但mobile/傳統桌面一直保留，加width-independent CSS三個tier一律隱藏，`fhsRenderCatStrip()`計算邏輯不變。手動觸發populate後三個tier確認display:none+offsetParent null，console零錯誤。
