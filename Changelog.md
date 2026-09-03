@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-32：手機Order Overview「重新載入」搬去頂部與freehandsss同一行，類別chips頂替其原位同分頁tabs合併一行
+
+- **緣起**：Fat Mo 截圖手機（375px）訂單總覽頂部，紅圈標示「重新載入」按鈕位置、藍圈標示類別篩選 chip 列位置，要求：①紅色區域——「重新載入」搬去右上角，同 `freehandsss` 水印同一行；②藍色區域——類別 chip 列（全部/手模/鑰匙扣/頸鏈）頂替「重新載入」原有位置，同「全部/進行中/已完成」分頁 tabs 合併做同一行，必要時壓縮按鈕令其只有一行出現。純 UI 排版優化，非 bug 修復，落喺剛合併嗰條分支（`order-overview-category-display-1a4f84`）31 輪迭代（follow-1~31）已經打磨過嘅同一塊區域，須格外小心唔好回歸對方成果。
+- **改動（`freehandsss_dashboardV42.html`，`fhsSyncCompactDesktopLayout()` 一個函式 + 對應 CSS）**：
+  1. 新增 `shouldMobileMergeCatRow`（`nowMobileForCollapse && isReviewActive && !isCompact`）判斷手機且訂單分頁啟用嘅場景。
+  2. `refreshBtn` 歸位邏輯由「手機搬入 `#fhsSegWrapper`、緊縮桌面搬入 `topBar`」兩分支（follow-20/22 遺留），統一改做兩個 tier 都搬入 `topBar`（同 `freehandsss` 水印同一容器，`margin-left:auto` 推去最右）。
+  3. `catGroup`（`#fhsCategoryFilterGroup`）placement 加第三個分支：`shouldMobileMergeCatRow` 時 `appendChild` 入 `#fhsSegWrapper`（同分頁 tabs 埋一齊，同一 flex row）；桌面闊屏／非 review 場景維持插入 `pinnedRow` 原位唔變。
+  4. follow-27/28 嘅 JS 動態量度「segWrapper 右邊同 catGroup 右邊對齊」對齊邏輯（針對舊有「兩行分開」佈局）喺 `shouldMobileMergeCatRow` 時跳過——merge 之後兩者同處一行，冇「兩行對齊」呢個問題需要解決。
+  5. CSS：新增 `#fhsSegWrapper #fhsCategoryFilterGroup` 高 specificity 覆寫（隱藏 `.filter-label`——因原 inline `style="display:inline-flex"` 需 `!important` 先蓋得過；chip padding 由 follow-28 嘅 `0 16px` 收緊做 `0 7px`、`chip-group`/`catGroup` gap 收緊做 `3px`/`4px`），淨命中 merge 後狀態，冇 merge 嗰條分支（`catGroup` 留喺 `pinnedRow`）選擇器唔命中、零影響。
+- **驗證（本機 `npx serve` 起 dev 版，Browser pane 375×812 實測，非純讀碼宣告完成）**：①截圖確認「重新載入(N筆)」同「freehandsss」同一行、右上角，`getBoundingClientRect()` 量度兩者水平零重疊（logo 右緣 240px vs reload 左緣 253px，13px 淨距）；②`fhsSegWrapper.scrollWidth`(337px) < `pinnedRow.clientWidth`(373px)，4 粒類別 chip 同分頁 tabs 同一行零溢出零換行；③點擊「手模」/「全部」chip、切換「已完成」分頁 tab，過濾邏輯同計數 badge 正常運作（DOM 搬遷冇影響既有 `onclick`/事件委派）；④緊縮桌面（900px）同傳統桌面（1400px）截圖確認兩個 tier 版面同改動前一致，零回歸。
+- **唯一改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`。純前端排版/CSS 調整，Supabase schema／n8n 零改動。
+- **Subagent 使用記錄**：❌未使用（單一 HTML 排版邏輯調整 + 即時 Browser pane 直接操作驗證，委派會斷推理鏈）。
+
 ## [2026-09-03] Session（Claude Code / Sonnet 5 執行）— 分支合併事故：本分支4次deploy意外覆寫另一分支31輪UI優化成果
 
 - **緣起**：Fat Mo 截圖訂單總覽頂部區域，回報「較早時優化嘅介面任務」被意外刪除，要求全面覆查修復並檢查有冇其他意外覆蓋/遺留/bug。

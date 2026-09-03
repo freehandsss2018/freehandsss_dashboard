@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (D69續八-follow-32：手機Order Overview「重新載入」搬topBar+類別chips合併分頁tabs一行): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-32」條目 + [handoff.md MASTER表](../memory/handoff.md)（無完成報告的小改動，Changelog 為全文居所）。Fat Mo 截圖手機（375px）訂單總覽頂部紅圈/藍圈標示排版要求：reload搬去右上角同freehandsss同一行、類別chip列頂替reload原位同分頁tabs合併一行必要時壓縮。落喺剛合併嗰條分支31輪迭代（follow-1~31）打磨過嘅同一區域。改動`fhsSyncCompactDesktopLayout()`新增`shouldMobileMergeCatRow`分支+對應CSS高specificity覆寫。Browser pane 375px實測零重疊零溢出，chip/tab功能正常，900px/1400px兩個tier零回歸。
+**Subagent 使用記錄**：❌未使用（單一HTML排版邏輯調整+即時Browser pane直接操作驗證，委派會斷推理鏈）。
+
 ## 2026-09-03 (分支合併事故：本分支4次deploy意外覆寫另一分支31輪UI優化成果): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「分支合併事故」條目 + [decisions.md 分支合併事故](decisions.md)（無完成報告的改動，Changelog 為全文居所）。Fat Mo 截圖訂單總覽頂部區域回報「較早優化嘅介面任務被意外刪除」。查證：`current.html` 係跨分支共享嘅部署目標（部署動作喺 git 之外，NAS 只認最後一個 PUT），本 session 連續 4 次 deploy（09:24-12:20）覆寫咗另一分支 `claude/order-overview-category-display-1a4f84` 喺 08:26 已部署嘅 96-commit（31輪UI優化）成果；`/read` 開場其實已警告呢條並行分支，但本 session 未核對其部署時間戳就假設自己 branch 係最新。已用 `git merge` 合併兩分支代碼（V42.html僅1處衝突，已妥善保留雙方各自需要嘅旗標）+ 人手合併文件記錄；另有第三條分支帶住同 D69續III 逐字相同嘅獨立修復（收斂驗證，非衝突）。合併後用 Node 重新驗證 `mapOrder()` 真實函式輸出零回歸，重新部署 `current.html` 三關驗證PASS。教訓（跨分支共享部署目標必須核對時間戳）已落 `learnings/governance.md` #10。
