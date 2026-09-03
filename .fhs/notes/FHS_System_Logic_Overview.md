@@ -703,6 +703,69 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 > ⚠️ **S150 修復前的斷裂**：前端 `submitExpenseLog()` 早已呼叫 `_fsRpc('fhs_write_expense_log', ...)` 作為主路徑，但該 RPC 從未建立（探針 404），落入 `.catch()` fallback；fallback 又引用未定義的 `window._sbUrl`/`window._sbHdr`（第二層斷裂），導致記錄中心「支出記錄」tab 完全無法寫入。migration 0049 補上 RPC 本體；fallback 同步修正為使用同一 IIFE 內已宣告的 `_FS_SB_URL`/`_FS_SB_ANON` 常數（不再依賴 window 上不存在的鍵）。詳見 `.fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md` §4.4。
 
+### 5.4.20 玻璃瓶「＋大寶」價階（migration 0091，2026-08-22 D65續IV-follow ✅ 已交付）
+
+**緣起**：D65續IV（2026-08-18）Fat Mo 曾提出推翻「父母手下鎖死唔畀大寶影響價錢」，同日叫停待想清楚。2026-08-22 定案：有大寶參與嘅玻璃瓶件加 $300，家庭價 $2,580 flat 反而完全不動。
+
+**定案規則**（全表見 `FHS_Pricing_Bible.md` §2.1）：
+| 嬰兒 | 大寶 | 父母 | 售價 |
+|:--:|:--:|:--:|---|
+| ✅ | — | — | $1,380／$1,680（不變）|
+| ✅ | ✅ | — | **$1,680／$1,980（新，＋$300）** |
+| ✅ | 任何 | ✅ | $2,580 flat（不變）|
+| — | ✅ | 任何 | 定義上不可能，見下 |
+
+**關鍵業務定義（Fat Mo 2026-08-22 口述，三份權威文件此前皆從未記錄）**：
+- **嬰兒**＝初生，或客人的**首個**孩子
+- **大寶**＝客人的**第二個**孩子（嬰兒的兄／姊）
+
+「大寶」是**相對於「嬰兒」而存在**的稱謂，故「只有大寶、沒有嬰兒」**在定義上不可能**——若訂單無嬰兒，那個被倒模的孩子本身就會被定義為嬰兒。推論：**有大寶必然有嬰兒**，因此 `FHS_Pricing_Bible.md` §0「所有產品必須圍繞嬰兒展開」在任何合法組合下皆不被違反，大寶**不是 §0 的例外**。
+
+**兩項連帶推翻**：
+1. **肢數 tier 改為只數嬰兒肢體**——推翻 2026-07-21 定案「大寶肢體同嬰兒肢體同等地位一齊計總數」。大寶改為以「有冇參與」做 ＋$300 修正項。實例差異：嬰兒1肢＋大寶1肢，舊制 2肢 $1,380 → 新制 $1,680；嬰兒4肢＋大寶4肢，舊制 4肢 $1,680 → 新制 $1,980。
+2. **`FHS_Product_Cost_Schema_v2.md` §3.1 的年齡定義作廢**——原記「嬰兒＝0–3歲、大寶＝4歲以上」，與出生次序定義不符（次子可能僅 2 歲但仍為大寶），已更正。
+
+**執行**：`_pDeriveSkuName()` 以 `hasElder`（`elderLimbCount > 0 && !hasParentGlass`）取代肢數合併；`_pPriceOfSku()` 大寶價階**排在通用 4肢/2肢 之前**（SKU 名含「4肢」字樣，次序調轉會令有大寶嘅單靜默收返純嬰兒價，少收 $300）；新 SKU `玻璃瓶套裝 (2肢+大寶/4肢+大寶)`（migration 0091，`total_base_cost=210` 不變、`suggested_price` 1680/1980）。V42 + current.html 兩檔同步（`diff` 僅餘 build timestamp placeholder 一行）。**n8n 零改動**（已查證：`Smart Cache Strategist` 的 `BASE_PREFIXES` 未命中會 fallback `sku.eq` 精確查 `products`，節點註解明寫「New products automatically picked up without code change」；`(家庭)` 自 2026-07-19 起走同一路徑已是活先例）。
+
+**成本不變**：`total_base_cost` 仍 $210 flat，故 ＋$300 全數落在淨利潤，屬定價策略非成本差異（Fat Mo 確認）。既有訂單不回填（Layer 2 快照精神）。
+
+**UI 配合（卡片徽章）**：有大寶的件原本只顯示 `$1680`，與同 tier 純嬰兒的 `$1380` 並排時**無任何視覺線索解釋為何貴 $300**，操作員會誤以為報錯價——正是 D65續II 徽章機制要解決的認知斷層。已補 `大寶 · $1680` 標籤，與既有 `家庭瓶 · $2580` 對稱。標籤沿用 D65續II E2 原則**由 SKU 名推導**（`name.includes('大寶')`），不用 runtime state 判定，故結構上不可能與報價不一致。實測六組徽章文字全對。
+
+**驗收工具配合**：`product-integration-validator` subagent 的 Checklist C1（「新 SKU 是否已加入 n8n 硬編碼表」）在本次會產生**假 FAIL**——立體擺設新 SKU 依賴 `sku.eq` fallback，本就不需加入 `BASE_PREFIXES`。已於該 checklist 補明例外條件，並加入一項此前缺漏的真實檢查：**新 SKU 不得被既有 prefix 用 `startsWith` 誤命中**（若誤命中會改走 `like."<prefix>*"` 而撈到錯誤成本行）。本次已驗證 `玻璃瓶套裝 (2肢+大寶)` 不會被 `玻璃瓶套裝 (2肢)` 誤命中（前綴第 6 字為 `)`，SKU 為 `+`）。
+
+**驗證**（browser live，本地 `preview_start` 伺服器非 `file://`）：SKU/價錢窮舉 11 組全對；`calculatePricing()` 端到端 8 組全對（嬰兒2肢+大寶2肢 $1,680、嬰兒4肢+大寶4肢 $1,980、純嬰兒回歸 $1,380/$1,680、有大寶零嬰兒正確出橙色提醒、父母零嬰兒硬阻擋 $0、木框 $2,080/$2,380 零回歸）；`products` 表 5 個玻璃瓶 SKU 價錢逐個核對；零 console error。
+
+> ⚠️ **本次事故記錄（同日兩次錯誤，均在交付前發現並修正）**
+> **錯誤一（規劃階段）**：AI 聲稱「勾父母但零嬰兒會靜默少收 $900–$1,200」，未讀 `calculatePricing()` 8468–8478 行就斷言；實際該硬阻擋自 2026-07-19 起已在生產運作。Fat Mo 據此錯誤前提作答，結論恰好與現狀相同故無實害。
+> **錯誤二（實作階段，較嚴重）**：AI 將新價綁在「零嬰兒＋有大寶＋無父母」（純大寶單），並建 migration 0090 + SKU `(大寶N肢)`。按上述業務定義，該組合**定義上不存在**，等於新價永遠不會觸發；而真正該套用的「嬰兒＋大寶」組合反被 AI 標記為「不可能」。根因：AI 在窮舉表中自行假定哪些組合可能，Fat Mo 回覆「6、7 同樣不可能」時只逐點確認被問及的格，未逐格複核 AI 的預填假定，雙方對錯誤前提各自默認。**教訓：向使用者確認窮舉表時，不可預填 ✅/🚫 讓對方「確認」，應逐格詢問或要求對方主動列出可能組合**——AI 的預填會成為未被審視的前提。migration 0090 已由 0091 作廢（DELETE + 重建，經查 `order_items` 零引用故安全）。
+
+---
+
+### 5.4.21 n8n 玻璃瓶 SKU 強制降級 bug 修復（V47.14→V47.15，2026-08-24 D65續IV-follow 續 ✅ 已修復）
+
+**發現**：獨立 fresh-context agent 覆核 §5.4.20 交付完整性時揪出，`Parse Items & Generate SKU` 節點無條件將任何含「玻璃瓶」品名強制降級做純 `(2肢)`/`(4肢)`，抹走 `(家庭)`（自 migration 0060，2026-07-19）同 `(N肢+大寶)`（自 migration 0091，2026-08-22）後綴。金額不受影響（三變體成本同為 $210 flat），但 `order_items.product_sku` 身份記錄錯咗，統計/篩選會漏 count。
+
+**修復**：`sku.includes("玻璃瓶") && !sku.includes("家庭") && !sku.includes("大寶")` 加 guard，V47.15，MCP `update_node_code` 正式寫入（自動備份於 `n8n-mcp-backups/2026-08-24/`）。
+
+**驗證**：真實 webhook 測試單（`玻璃瓶套裝 (2肢+大寶)` + `玻璃瓶套裝 (家庭)` 兩件），Supabase `product_sku` 逐字正確保留，`handmodel_cost` 各 $210 印證金額不受影響。測試單已刪除清理。
+
+**教訓**：同一人用同一套方法論自查三次仍漏，改派獨立 fresh-context agent 先揪出——驗收不自驗原則的實證案例。詳見 decisions.md 2026-08-24 條目。
+
+### 5.4.22 `order_items.process_status` 往返失真根治：`_FHS_STAGE_DEF` 單一真源 + 移除 ENUM 化寫入（migration 0092，2026-08-26 D69續六 ✅ 已修復）
+
+**背景**：`process_status`（品項生產進度）為自由 text 欄位（`pg_constraint` 查證零約束，非 ENUM），但有 3 個寫入者用緊 2 種方言：`fhs_complete_order` RPC 寫畫面原文（如 `Done 已完成`）；前端 `saveInlineEdit`／`sbSyncOrder` 經 `_sanitizeItemStatus()` 將畫面原文關鍵詞子字串比對硬轉做收窄咗嘅 ENUM 風格值（如 `製作中`）。實測 8 個細階段只有 3 個原樣往返，改階段描述會靜默改變存入值（5 改 4 中招）。手模擺設 checklist（`hm:已book|已做laser` 呢種格式）經同一函式，一樣被壓縮失真。
+
+**根治設計**：
+- 新增 `window._FHS_STAGE_DEF` 陣列（`value`/`label`/`scope`），取代原本 4 處分散嘅進度下拉清單（篩選 `#reviewStatus`、批量 `#bulkStatusSelect`、手機卡片、桌面表格）；`scope` 分 `general`/`keychain`（品項dropdown，keychain類多「需進行補打」）/`bulk`/`filter` 四種情境。兩個靜態 `<select>` 改喺 script 執行時由 `_fhsPopulateStageDropdowns()` 一次性填充。
+- **移除 `_sanitizeItemStatus()`**（原本 4 個寫入點都call佢做 ENUM 化轉換，係失真根源）。4 個寫入點（`saveInlineEdit` 嘅 `_localItemMetaCache` + PATCH、`sbSyncOrder` 嘅兩個 INSERT 路徑）全部改寫畫面原文，只保留 `value || '0 什麼都未做'` 空值防禦。
+- `_FHS_LEGACY_STATUS_MAP`/`_fhsNormalizeStatus()`（顯示層安全網，處理 DB 殘留歷史別名值，D69續四已上線）**冇改動**，同 `_FHS_STAGE_DEF`（寫入層單一真源）係兩個獨立機制並存。
+- `localStorage` key `fhs_status_store`→`fhs_status_store_v2`（防舊瀏覽器快取住轉換前嘅 ENUM 化舊值遮蓋新鮮 DB 值）。
+- 手模路徑無需額外設計：讀取端 `_fhsHmParseState()` 本身已經識得正確解析原始 `hm:` 字串，移除寫入層轉換後自動一併根治。
+
+**SQL 清洗**（`migration 0092`，範圍按 Fat Mo 拍板）：`process_status`／`precomplete_status` 兩欄嘅 `完成`→`Done 已完成`、`待製作`→`0 什麼都未做` 已清洗；`製作中`（細階段不可還原）／`已book日期`／`hm:...` 刻意不清洗，維持原值 + 前端已有嘅 `⚠原值` raw-option 顯示機制，由 Fat Mo 逐筆人手指定。`precomplete_status` 清洗範圍經 A2 Gemini 對抗評審擴大（`fhs_uncomplete_order` 會由此欄位還原，唔清洗會令舊方言死灰復燃）。
+
+**驗證**：`code-reviewer` 獨立審查首輪 FAIL（`_isKeychainCategory` 判斷邏輯手機/桌面重複，已抽成全局 helper 修復）；live 起 dashboard 讀 55 張真實訂單 console 零錯誤，DOM 確認 `製作中` 品項 `⚠` 選項正確 selected 且完整選項清單正確；SQL 清洗前後即時查證數值吻合預期。詳見 decisions.md D69續六。
+
 ---
 
 ## 六、IG 訂單訊息邏輯

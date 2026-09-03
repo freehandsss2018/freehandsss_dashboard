@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<!-- 【修正版】移除 width=device-width，淨留 initial-scale=1.0。
+     iOS 已知行為：有 width=device-width 時 layout viewport 會鎖死喺直向闊度，
+     轉橫向唔 reflow 只放大；移除後 iOS 恢復跟隨當前方向。 -->
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FHS Viewport 診斷（修正版 meta）</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; margin:0; padding:12px;
+         background:#F1F6FA; color:#2b2b2b; }
+  h1 { font-size:18px; margin:0 0 4px; color:#1d4ed8; }
+  .tag { font-size:12px; color:#1d4ed8; font-weight:800; margin-bottom:10px; }
+  table { width:100%; border-collapse:collapse; }
+  td { padding:6px 4px; border-bottom:1px solid #d5e0ea; font-size:15px; }
+  td.k { color:#55697A; white-space:nowrap; }
+  td.v { text-align:right; font-weight:800; font-variant-numeric:tabular-nums; }
+  .big { font-size:34px; font-weight:900; text-align:center; padding:14px 0;
+         border-radius:10px; margin-bottom:12px; }
+  .desktop { background:#dcfce7; color:#166534; }
+  .mobile  { background:#fee2e2; color:#b91c1c; }
+  .hint { font-size:13px; color:#55697A; margin-top:12px; line-height:1.5; }
+</style>
+</head>
+<body>
+<h1>FHS Viewport 診斷</h1>
+<div class="tag">【修正版 meta：冇 width=device-width】</div>
+<div id="verdict" class="big">…</div>
+<table><tbody id="rows"></tbody></table>
+<p class="hint">同 <b>viewport-check.html</b>（現行版）喺<b>橫向</b>逐個對比。<br>
+如果呢頁轉橫向出綠色、而嗰頁出紅色，就證實咗係 meta 寫法問題。</p>
+
+<script>
+function render() {
+  var vv = window.visualViewport || {};
+  var isDesktop = window.matchMedia('(min-width: 768px)').matches;
+  var v = document.getElementById('verdict');
+  v.textContent = (isDesktop ? '✅ DESKTOP (≥768)' : '❌ MOBILE (<768)');
+  v.className = 'big ' + (isDesktop ? 'desktop' : 'mobile');
+
+  var data = [
+    ['window.innerWidth',  window.innerWidth],
+    ['window.innerHeight', window.innerHeight],
+    ['documentElement.clientWidth', document.documentElement.clientWidth],
+    ['screen.width',  window.screen.width],
+    ['screen.height', window.screen.height],
+    ['devicePixelRatio', window.devicePixelRatio],
+    ['visualViewport.width', vv.width !== undefined ? Math.round(vv.width) : 'n/a'],
+    ['visualViewport.scale', vv.scale !== undefined ? vv.scale : 'n/a'],
+    ['media (min-width:768px)', isDesktop],
+    ['media (orientation)', window.matchMedia('(orientation: landscape)').matches ? 'landscape' : 'portrait']
+  ];
+  document.getElementById('rows').innerHTML = data.map(function(r) {
+    return '<tr><td class="k">' + r[0] + '</td><td class="v">' + r[1] + '</td></tr>';
+  }).join('');
+}
+render();
+window.addEventListener('resize', render);
+window.addEventListener('orientationchange', function(){ setTimeout(render, 300); });
+if (window.visualViewport) window.visualViewport.addEventListener('resize', render);
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": [],
+  "pending_table_leak_checks": [
+    {
+      "id": "handoff_master_table_p0_6_leak",
+      "scan_file": ".fhs/memory/handoff.md",
+      "region_start_marker": "# 📋 MASTER 持續待辦",
+      "region_end_marker": "### 已確認完成",
+      "leak_row_pattern": "^\\|\\s*✅",
+      "budget": 0,
+      "source": "test"
+    }
+  ]
+}

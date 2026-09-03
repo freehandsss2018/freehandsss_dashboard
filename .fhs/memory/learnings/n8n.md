@@ -27,5 +27,7 @@
 - → `supabase.md` #13 PATCH `?col=eq.<非ASCII值>` 可能 HTTP 200 但實際 0 rows 命中，同 #6 RLS silent-2xx 屬同型「勿信狀態碼」陷阱
 - → `supabase.md` #15 冪等去重索引唔可以含「寫入當日」欄位（如 `alert_date=today`），否則重跑當日不同即繞過去重
 - → `frontend.md` #1 Webhook payload 缺漏（Late Enrichment）
-- → `governance.md` #4 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
+- → `governance.md` #5 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
+- → `governance.md` #10 【高頻 ⚠️】同一個 AI 用同一套方法論自查三次仍會漏——驗收財務/生產改動必須改派獨立 fresh-context agent，唔可以再自己查第四次
+- → `governance.md` #11 對自己前一個 commit 嘅「已同步/已完成」聲明都要保持懷疑，尤其涉及安全敏感內容
 <!-- POINTERS:END -->

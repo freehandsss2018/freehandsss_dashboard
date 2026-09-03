@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-03 (分支合併事故：本分支4次deploy意外覆寫另一分支31輪UI優化成果): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「分支合併事故」條目 + [decisions.md 分支合併事故](decisions.md)（無完成報告的改動，Changelog 為全文居所）。Fat Mo 截圖訂單總覽頂部區域回報「較早優化嘅介面任務被意外刪除」。查證：`current.html` 係跨分支共享嘅部署目標（部署動作喺 git 之外，NAS 只認最後一個 PUT），本 session 連續 4 次 deploy（09:24-12:20）覆寫咗另一分支 `claude/order-overview-category-display-1a4f84` 喺 08:26 已部署嘅 96-commit（31輪UI優化）成果；`/read` 開場其實已警告呢條並行分支，但本 session 未核對其部署時間戳就假設自己 branch 係最新。已用 `git merge` 合併兩分支代碼（V42.html僅1處衝突，已妥善保留雙方各自需要嘅旗標）+ 人手合併文件記錄；另有第三條分支帶住同 D69續III 逐字相同嘅獨立修復（收斂驗證，非衝突）。合併後用 Node 重新驗證 `mapOrder()` 真實函式輸出零回歸，重新部署 `current.html` 三關驗證PASS。教訓（跨分支共享部署目標必須核對時間戳）已落 `learnings/governance.md` #10。
+**Subagent 使用記錄**：❌未使用（git archaeology + 跨分支diff比對 + Node真實函式碼即時交叉驗證，委派會斷推理鏈）。
+
 ## 2026-09-03 (D69續III：訂單總覽多件手模擺設產品明細顯示錯誤): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續III」條目 + [decisions.md D69續III](decisions.md)（無完成報告的小改動，Changelog 為全文居所）。Fat Mo 喺真實訂單 #0600901 截圖回報訂單總覽三件立體擺設全顯示「木框」、木框錯誤顯示燈飾、三行IG文字/家庭成員badge完全相同。根因：`mapOrder()` Fix 4 區塊喺 D64 引入 p2_/p3_ 前綴後從未跟住改，一律讀主件欄位；父母/大寶被無條件計入每一件而非只計owner件；兩個渲染路徑「配件合併至第一個card」邏輯同樣係D64前遺留寫法。修復：mapOrder()由item_key後綴推導slot改讀對應前綴欄位，父母/大寶限owner件+待定值明確排除；兩個渲染路徑配件badge改按slot精準配對。用Node抽取真實函式碼餵入Supabase真實訂單資料驗證完全吻合，另驗證單件舊單向後相容零回歸。
@@ -19,11 +24,229 @@
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03 條目 + [decisions.md D69](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 回報新/修訂單財務結算逐件模式，客人選咗加購燈飾但操作員決定唔收呢件錢，手動將對應品項嘅已付訂金/未付尾數改做0後，系統強制轉返全數($80)或半數($40)，唔畀改。查證揪出三個獨立函式共用同一設計缺陷——把「$0」當「未填/仍可自動填」而非「操作員刻意輸入嘅確定值」：①`focusout` blur revert 判斷式把0同空白一視同仁；②`_syncBalanceFromDeposit`交叉同步 guard 因0本身係「標準值」三態之一令`isStandard`恆真短路人手保護；③`calculatePricing()`每次重算都無條件呼叫嘅週期性自動半填，guard同樣睇數值本身係咪0。統一改用`dataset.isDefault`旗標判斷「人手觸碰過」，並新增`prevDefault`快照機制令旗標可跨容器重繪存活（原本`_addBox`完全冇保留呢個旗標，每次`calculatePricing()`重繪都會重置消失）。四個函式屬全品項共用引擎，Fat Mo 事後追問核實，已用本機 browser 直接操作逐一驗證木框主件/燈飾配件/頸鏈group三種格式皆已修復，非單點修復。唯一改動檔案`freehandsss_dashboardV42.html`。
 **Subagent 使用記錄**：❌未使用（單一 HTML 前端邏輯修復+即時 browser 直接操作驗證，委派會斷推理鏈）。
+## 2026-09-03 (D69續八-follow-31：同步中banner嘅spinner圖示重複，兩個spinner疊埋一齊): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-31」條目 + [decisions.md D69續八-follow-31](decisions.md)。Fat Mo截圖傳統桌面新增/修改訂單背景同步期間，`#syncProgressBanner`黃色提示banner同時顯示兩個轉動圖示。查證：banner原本有純CSS border-circle spinner+SVG refresh-cw icon兩個獨立元素並排，都掛`.fhs-spin`持續旋轉，睇落好似重複。刪走純CSS圓圈，淨保留SVG icon（語意更清楚）。DOM量度`.fhs-spin`數量由2變1，375mobile+1400傳統桌面截圖確認單一icon，console零錯誤。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-03 (D69續八-follow-30：freehandsss水印手機版復原，follow-19隱藏前提已被follow-22推翻): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-30」條目 + [decisions.md D69續八-follow-30](decisions.md)。Fat Mo截圖確認訂單總覽（mobile）top bar「freehandsss」水印消失，要求復原。考古發現：follow-19因refreshBtn當時仲喺`#v40-top-bar`入面（會同絕對定位水印重疊）而擴闊隱藏規則做width-independent；但follow-22已改relocate目標去`#fhsSegWrapper`，重疊前提消失卻冇人清呢條規則。刪走width-independent版本，保留compact-desktop-scoped版本（refreshBtn仍搬入topBar嗰個tier）。375mobile確認水印顯示+冇重疊+reload對齊不受影響，900緊縮桌面仍隱藏，1400傳統桌面一路顯示。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-03 (D69續八-follow-29：類別工作台橫幅（進度/批次分佈）刪除): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-29」條目 + [decisions.md D69續八-follow-29](decisions.md)。Fat Mo截圖類別工作台橫幅（「進度分佈」+「批次分佈」統計卡）要求刪除，理由冇用。`#reviewCatStrip`follow-6已喺緊縮桌面隱過但mobile/傳統桌面一直保留，加width-independent CSS三個tier一律隱藏，`fhsRenderCatStrip()`計算邏輯不變。手動觸發populate後三個tier確認display:none+offsetParent null，console零錯誤。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-03 (D69續八-follow-28：兩行右邊對齊咗但仲有空白，反過嚟放寬類別chip填滿): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-28」條目 + [decisions.md D69續八-follow-28](decisions.md)。Fat Mo確認follow-27對齊已生效，但截圖標示「重新載入」右邊到screen邊仲有大片空白。根因follow-27令兩行對齊但一齊停喺類別行過細嘅天然闊度（315px vs 可用350px）。修法：放寬類別chip padding/gap令catGroup闊度+24px，follow-27嘅JS自動跟住新闊度重算segWrapper，兩行一齊變闊對齊維持不變（rightDiff仍0）。空白由34px收窄到10px，三分頁切換+900緊縮桌面回歸PASS。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-03 (D69續八-follow-27：重新載入改同「頸鏈」右邊精確對齊，唔再伸展到成行絕對邊界): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-27」條目 + [decisions.md D69續八-follow-27](decisions.md)。Fat Mo截圖標示「已完成」同「重新載入」中間有空白+reload應同第二行「頸鏈」右邊對齊。根因follow-22嘅`flex:1 1 auto`令segWrapper攞晒剩餘空間推reload去絕對右邊界，但類別行跟內容闊喺「頸鏈」就完咗，兩行右邊唔同座標。改做JS動態量度：反推segWrapper應有幾闊令右邊精確對齊catGroup，`getBoundingClientRect()`量度確認差值=0；切換三個分頁tab維持對齊；900緊縮桌面回歸PASS（`style.width`正確clear）。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-03 (D69續八-follow-26：第一/二行icon左邊未對齊，follow-23收窄padding副作用): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-03「D69續八-follow-26」條目 + [decisions.md D69續八-follow-26](decisions.md)。Fat Mo截圖標示第一行（漏斗+分頁tabs）同第二行（類別）冇對齊。根因follow-23加嘅`#reviewFilterToggle{padding:0 6px}`（兩邊都有）令filter-icon向內縮6px，同catGroup嘅icon（無padding，left:13px）差6px。改做`padding:0 6px 0 0`（淨留右邊）令兩icon共用left:13px起點，總padding量不變、follow-23闊度緩衝效果保留。375px驗證PASS，900緊縮桌面回歸PASS。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-02 (D69續八-follow-25：刪走孤伶伶分隔線+reload改「重新載入(N筆)」白色連續文字): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-25」條目 + [decisions.md D69續八-follow-25](decisions.md)。Fat Mo紅圈標示手機兩行右邊各有孤伶伶垂直分隔線（follow-19 wrap成兩行後嘅殘留，原分隔單行舊佈局功能group），mobile scope隱藏；reload button文字改「重新載入(N筆)」白色連續文字，移走border-left分隔線樣式（merged context用括號格式，傳統桌面獨立pill維持冇括號）。375px+900緊縮桌面驗證PASS，toggle功能不受影響，console零錯誤。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-02 (D69續八-follow-24：「已選N項」文字提示隱走，唔再撐闊toggle掣): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-24」條目 + [decisions.md D69續八-follow-24](decisions.md)。Fat Mo截圖漏斗icon右邊「已選1項」文字提示要求隱走。根因：`updateFilterActiveHint()`喺任一篩選欄有值時加`.visible`class令原本`display:none`嘅提示現形，撐闊toggle掣。加`body.v40-review-active #filterActiveHint{display:none!important}`width-independent覆寫恆常隱藏，JS計算邏輯不變。375mobile+900緊縮桌面驗證PASS。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-02 (D69續八-follow-23：篩選漏斗toggle仍被逼落自己一行，追加真正闊度緩衝): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-23」條目 + [decisions.md D69續八-follow-23](decisions.md)。follow-22結構性方案確保reload唔會獨自被踢走，但真機第二次回報顯示toggle自己被逼落一行——證明結構保證解決「拆唔拆散」但冇解決「使唔使換行」呢個底層闊度問題（headless量度375px淨6-7px緩衝，壓線夾）。追加`@media(max-width:749px)`分頁tabs字級/高度收窄（同緊縮桌面follow-16一致，14px/30px→12px/26px）+toggle padding收窄，3粒按鈕闊度由148px收窄到132px。改用逐級收窄壓力測試（340/320px）驗證斷點由~375px推後到<340px。toggle功能/750-900緊縮桌面零regression。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-02 (D69續八-follow-22：重新載入結構性同分頁tabs同行，取代follow-20/21脆弱pixel-shaving): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-22」條目 + [decisions.md D69續八-follow-22](decisions.md)。follow-20/21用column-gap/padding收窄+刪chevron騰位嘅「數值啱啱夠位」做法喺headless瀏覽器PASS但Fat Mo真機截圖顯示reload依然被逼落獨立一行（font metric差異令計算唔可靠）。改結構性修法：refreshBtn唔再係pinnedRow獨立flex item，改做segWrapper（分頁tabs容器）子元素，segWrapper改`display:flex;flex-wrap:nowrap`+手機專屬`flex:1 1 auto`令margin-left:auto有嘢好推+中和舊`.fhs-seg-ctrl{width:100%}`規則。而家segWrapper連embed埋嘅reload喺flex-wrap換行判斷入面係同一個不可分割單位，320/360/375/390/414px多寬度確認即使極窄都結構性同行。toggle功能/750-900緊縮桌面/1400傳統桌面零regression。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-02 (D69續八-follow-21：篩選漏斗chevron手機都隱走，補足reload同行最後缺口): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-21」條目 + [decisions.md D69續八-follow-21](decisions.md)。follow-20已將reload搬去分頁tabs同一行但仍差約20px闊度勉強補回，Fat Mo截圖紅圈篩選漏斗icon要求刪除+調整大小令reload同行。AskUserQuestion釐清後確認唔刪成個toggle（年度/月份/狀態/批次/搜尋/排序6項+follow-19收埋嘅3粒掣嘅唯一入口），改淨刪icon右邊嘅細chevron（follow-7已作廢嘅殘留裝飾，follow-16已喺緊縮桌面隱過但手機一直未隱），擴展做闊度獨立版。騰出空間補足缺口，375px確認reload+tabs同一行、toggle功能完整不變、750/900緊縮桌面零regression。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-02 (D69續八-follow-20：follow-19四點回饋——標題消失/徽章簡化/reload搬同行/類別空行): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-20」條目 + [decisions.md D69續八-follow-20](decisions.md)。follow-19四點截圖回饋：①標題「訂單總覽」消失（查實係pre-existing嘅`<380px`舊threshold規則，follow-19騰出空間先首次被留意到，已加review-active覆寫）②徽章簡化去除時間淨留筆數③重新載入搬去分頁tabs同一行（撞正D69續三舊`flex:1 1 45%`規則+闊度差20px，靠自身padding/gap+pinnedRow gap收窄補回）④類別下方空行——多寬度/多分頁/逐層DOM量度未能重現，完成前三點後複查已無空行，未能獨立確認根因已如實告知。375/390px+750/900緊縮桌面+1400傳統桌面三態回歸全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-02 (D69續八-follow-19：手機直向篩選列收納+重新載入合併+分段指示器置中修正): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-02「D69續八-follow-19」條目 + [decisions.md D69續八-follow-19](decisions.md)。手機直向(<750px)訂單總覽3按鈕（顯示項目財務/清除篩選/儲存篩選）過度佔位，將follow-6/9原本緊縮桌面專屬嘅收納/合併行為擴展去mobile共用：3按鈕收納入篩選toggle面板、重新載入按鈕同筆數徽章合併做右上角單一pill。另修正分段控制器（全部/進行中/已完成）白色active指示框CSS padding+JS transform雙重計算偏移（`left:3px→left:0`）。驗證期間一度誤判指示器「卡死」深層bug，查出係測試方法論race condition（rapid連續互動+分開量測中間夾住背景auto-refresh reflow），改單一原子化量測後三分頁mismatch全部≤0.8px，非真bug。390mobile/750/900緊縮桌面/1400傳統桌面全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-01 (D69續八-follow-18：橫向模式底部功能bar整體縮減30%): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-18」條目 + [decisions.md D69續八-follow-18](decisions.md)。follow-17修復好緊縮桌面底部浮動藥丸nav後，Fat Mo要求整體縮減30%。做法：喺follow-17區塊尾部新增覆寫，各相關px值等比例縮至70%（bar56→39px/button44→31px/icon20→14px/字級9→6px/max-width500→350px），bottom離邊距離維持16px不變。純mobile(<750)/傳統桌面(≥1130)完全不受影響。純數值密度指令直譯執行，唔自行判斷太細而打折扣。750/900/1129/1130/390五闊度全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-01 (D69續八-follow-17：修復Chrome/Safari橫向顯示不一致、底部功能bar完全消失——又一個舊767/768 threshold): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-17」條目 + [decisions.md D69續八-follow-17](decisions.md)。Fat Mo回報Chrome/Safari橫向顯示不一致、Safari底部功能bar不見。真根因比報告更嚴重：`.fhs-top-bar__actions`（模式切換nav）用舊`@media(max-width:767px)`控制浮動底部藥丸樣式，同D69續八成套改用嘅750/1129脫節；900px實測nav完全消失撳唔到，唔止樣式唔啱。修法：新增獨立`@media(750-1129)`區塊重新套用浮動樣式。呢已經係第三次獨立發現舊768/767 threshold遺漏（follow-14 JS搬遷/follow-15 JS顯示/follow-16 CSS scope/follow-17又一組CSS），全檔grep顯示仲有其他occurrence未核實，已記入handoff.md留待Fat Mo拍板範圍。四分頁四闊度全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-01 (D69續八-follow-16：其餘分頁橫向top bar完全跟返手機設計——follow-14/15淨修JS，CSS scope本身未處理): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-16」條目 + [decisions.md D69續八-follow-16](decisions.md)。Fat Mo明確裁決：除訂單總覽外，其餘分頁橫向緊縮闊度top bar應完全跟返手機設計。真根因：follow-6~9新增嘅13條`#v40-top-bar`CSS規則（隱藏標題/icon/freehandsss水印/top bar長高兩行）全部係裸選擇器，冇scope返訂單總覽，跨全部分頁生效，令財務/系統頁橫向時標題消失。follow-14/15淨修咗JS層（DOM搬遷+badge顯示），呢批CSS規則本身從未處理過——三個獨立round先補齊同一議題嘅完整修復。修法：13條全部加`body.v40-review-active`前綴。財務/系統/訂單總覽三分頁四闊度全PASS，Review分頁compact行為零regression，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-01 (D69續八-follow-15：修復財務頁背景刷新後徽章又浮返出嚟——follow-14同一類bug第二個現身位): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-15」條目 + [decisions.md D69續八-follow-15](decisions.md)。follow-14修咗DOM搬遷嗰半後，Fat Mo再截兩張圖（相差9分鐘）確認訂單筆數徽章仲會喺財務頁背景刷新後浮出。真根因：`renderReviewTable()`兩處徽章顯示邏輯（mobile/desktop分支）淨睇有冇資料，從未理會而家係咪review分頁；`startAutoRefresh()`每5分鐘call`fetchGlobalReview(true)`唔理會當刻分頁，時間差剛好對上一次刷新週期。同follow-14係同一根因、兩個獨立代碼路徑。修法：兩處都加`isReviewActive`判斷。通則：背景計時器類代碼路徑特別容易漏checked「當前分頁」，開發時只喺目標分頁測試唔會諗到。已模擬background refresh觸發驗證+mobile/compact雙寬度確認，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-09-01 (D69續八-follow-14：修復財務/系統分頁浮咗review專用按鈕——共用top bar搬遷漏檢查當前分頁): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-14」條目 + [decisions.md D69續八-follow-14](decisions.md)。Fat Mo截圖回報橫向緊縮桌面切去財務/系統分頁時，訂單總覽專用嘅篩選漏斗/狀態tabs/類別chips/重新載入浮咗上top bar同其他頁內容疊埋。真根因：`fhsSyncCompactDesktopLayout()`（follow-7起）由頭到尾淨查闊度，從未檢查而家係咪真係訂單總覽分頁，`#v40-top-bar`跨全部分頁共用但呢批元素淨屬review分頁。修法：新增`isReviewActive`同`isCompact`一齊組成`shouldRelocate`；並喺`switchMode()`加一句主動call同步函式（切tab本身唔觸發resize）。Review/Finance/System三分頁來回切換+750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-31 (D69續八-follow-13：限時警告badge拆兩行修復——換行bug非單純字太大): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-31「D69續八-follow-13」條目 + [decisions.md D69續八-follow-13](decisions.md)。Fat Mo截圖：緊縮桌面層限時警告badge（逾期N天/剩餘N天）拆成兩行。真根因：`.ovw-date-line .dlv-badge`自D69續四起刻意`white-space:normal;overflow-wrap:anywhere`做窄screen防呆兜底，緊縮層Date欄已收到68px，單純follow-4嘅9px縮字冇解決問題，因為觸發換行嘅係white-space屬性本身。修法：字再縮8px+icon同步縮8px+緊縮層覆寫返`white-space:nowrap`。通則：換行bug要連埋white-space/overflow-wrap一齊查，唔可以只睇font-size。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-31 (D69續八-follow-12：緊縮桌面密度再優化——刻字欄取消/follow-11同類bug再現於單號日期客人3欄): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-31「D69續八-follow-12」條目 + [decisions.md D69續八-follow-12](decisions.md)。Fat Mo要求：刻字欄取消釋放位、客人欄字再縮小。客人欄真根因同follow-11同一機制——單號/日期/客人3個rowspan欄嘅td有inline`font-size:13px`，follow-4嘅11px規則冇`!important`一直贏唔到，加`!important`一次過修埋3欄。刻字欄真根因：td用共用`batch-cell` class冇獨立hook，加專屬class`ovw-eng-cell`連同既有th class一齊隱藏，table-layout:fixed+rowspan下必須連th同每列td一致隱藏先唔會錯位。通則：JS render inline style贏compact規則係系統性模式，非單一事件。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-11：iPhone 13 Pro真機再揪兩個bug——safe-area遺漏/inline style贏咗compact規則): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-11」條目 + [decisions.md D69續八-follow-11](decisions.md)。Fat Mo用iPhone 13 Pro真機測試follow-10後再揪兩個bug：①橫向轉屏左右灰色bar——`<meta viewport>`缺`viewport-fit=cover`，令全檔已用嘅`env(safe-area-inset-*)`永遠讀0，notch裝置橫向安全區由上下變左右俾Safari自己渲染；修法加viewport-fit=cover+body補safe-area padding。②表格字體同格子不相稱——`renderReviewTable()`寫select/textarea時注入inline`font-size:13px`，follow-4已有嘅compact 10px規則因冇`!important`從未真正生效過；修法加`!important`。先用AskUserQuestion釐清裝置/問題再落手，避免猜錯。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-10：兩個真bug修復——iPhone橫向表格stuck loading/抽屜篩選欄位排列錯亂): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-10」條目 + [decisions.md D69續八-follow-10](decisions.md)。follow-9部署後Fat Mo真機覆核揪出兩個真bug：①iPhone橫向後表格停留「Supabase讀取中」——真根因`renderReviewTable()`喺mobile寬度early-return去accordion，desktop tbody從未填真資料，成個codebase一直冇resize監聽會跨越750px分界重render，舊768px斷點時未暴露，D69續八降到750先揭發；修法追蹤`isMobile()`狀態跨界重用`globalOrders`觸發`applyReviewFilters()`。②抽屜篩選欄位排列錯亂——`.filter-pair-row`並排排版係為闊版設計，follow-7改窄身抽屜後未調整；修法強制單欄垂直堆疊。通則：CSS視覺切換唔等於JS資料render，跨界要實測。750/1129/1130/390全PASS+「390→900跨界」精確重現情境驗證PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-9：緊縮桌面密度極致化——隱藏標題文字/徽章合併入重新載入按鈕/750px首次一行): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-9」條目 + [decisions.md D69續八-follow-9](decisions.md)。follow-8部署後Fat Mo明確講目的「盡量一行、盡量俾多啲位表格」：隱藏「訂單總覽」標題文字（icon follow-8已隱）；「重新載入」+「N筆·時間」徽章合併成一個button（`refreshBtn.appendChild(countBadge)`，撳徽章都算撳掣）。實測750px top bar由87-92px（兩行）降返51px（一行），750-1129全範圍皆一行。裁決：密度目的優先減內容而非再縮字體（follow-7/8已縮到接近下限）。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-8：緊縮桌面視覺清理——隱藏冗餘icon/徽章移去最右/重新載入同行): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-8」條目 + [decisions.md D69續八-follow-8](decisions.md)。follow-7部署後Fat Mo再截圖三處標記：隱藏標題自帶list icon、隱藏篩選漏斗嘅舊手風琴chevron（follow-7已改做抽屜冇「展開」呢回事）、「24筆·時間」徽章搬去top bar最右同「重新載入」同行。①②純CSS隱藏SCOPE死喺緊縮層；③④擴充follow-7新增嘅`fhsSyncCompactDesktopLayout()`各加一句。證實follow-7建立嘅DOM搬遷pattern已可低風險擴充，唔使重新設計。750/1129/1130/390全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-7：緊縮桌面收納介面優化——狀態tabs+類別chips搬頂列/篩選漏斗改Threads式抽屜): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-7」條目 + [decisions.md D69續八-follow-7](decisions.md)。Fat Mo兩張截圖三色圈第二輪要求：狀態tabs+類別chips搬去top bar標題右方、篩選漏斗「已選N項」由手風琴改做Threads式左側抽屜。實作前grep先揪出兩個結構性硬上限（top bar原48px+overflow:hidden只夠一行；filter-body父容器overflow:hidden係手風琴動畫必需，改抽屜要先搬走），連帶修復zone1H寫死48嘅sticky offset隱患。實作期間再揪出並修復2個bug（scrim放錯容器被display:none連累消失、還原分支guard揀錯會被搬走嘅參照元素）。**測試環境教訓**：自動化瀏覽器分頁CSS transition唔自然tick，`getComputedStyle`睇落連`!important`都攔唔到transform，要用`getAnimations().finish()`強制結算先驗到真實落點，已記入decisions.md。750/1129/1130/390+來回輪換全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-6：緊縮桌面版面三項重排——隱橫幅/搬重新載入/收納篩選掣): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-6」條目 + [decisions.md D69續八-follow-6](decisions.md)。Fat Mo三色圈截圖要求緊縮桌面（750-1129px）三項調整：類別橫幅隱藏（純CSS）、重新載入掣搬去頂列（同「N筆·時間」徽章埋一齊）、3粒篩選掣收納入「已選N項」摺疊面板。後兩項首次需要跨容器DOM搬遷（CSS做唔到），新增`fhsSyncCompactDesktopLayout()`跟返`v40SyncActionBars()`舊pattern，用錨點記原位。**測試方法論教訓**：發現`resize_window()`模擬工具唔會觸發真正`resize`事件，要手動dispatch先驗證到JS邏輯（純CSS部分唔受影響），已記落learnings/tooling.md#11。750/1129/1130/390四闊度全PASS，已commit+部署生產。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-5：sticky表頭飄落表格中間——休眠7星期舊CSS首次生效): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-5」條目 + [decisions.md D69續八-follow-5](decisions.md)。Fat Mo截圖顯示表頭飄咗落表格中間，同follow-3之前「表頭黐埋」係完全唔同性質——sticky定位錯亂。真根因同本輪任何改動都無關：`@media(max-width:767px){.review-table-wrap{max-height:60vh}}`一直喺度，但以前767px以下永遠係手機卡片模式（表格display:none）從未發揮效果；D69續八系列首次令750px顯示桌面表格，先第一次令呢條休眠規則生效（370px視窗×60vh=222px box但內容707px高），令thead sticky錯亂。教訓：呢類「新功能令舊dead zone首次變live zone」bug靠code review揪唔到。修法：緊縮tier加max-height:none override。750/390/1129/1536四闊度sticky實測全PASS。已commit+部署。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-4：按比例縮細取代強制斷行＋底部導覽Threads式收納): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-4」條目 + [decisions.md D69續八-follow-4](decisions.md)。Fat Mo 提四點：第1點（頂頭掣過大）查證為**已修好、佢睇緊舊快取圖**（截圖時間戳同上一張一樣）；第2、4點係 follow-3 真bug 且 Fat Mo 診斷正確——我用 flex-wrap/white-space:normal 逼內容塞落窄欄，配上既有 overflow-wrap:anywhere 令刻字逐字直排（實測闊37px高260px）；正解係**等比縮細**（table 13→11px、badge/icon/select 同步）+ 刻字單行截斷。第3點新功能：底部浮動導覽加 Threads 式捲動收納，復用既有智慧置頂欄 handler 但拆兩個生效範圍（置頂欄維持<750，底部導覽擴至<1130）。四闊度×4視圖四重檢查全部0。已commit+部署。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-30 (D69續八-follow-3：橫向桌面模式版面重整——頂部佔位+表頭走位): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-30「D69續八-follow-3」條目 + [decisions.md D69續八-follow-3](decisions.md)。follow-2 令橫向切到桌面表格後，Fat Mo 截圖投訴頂部佔位過多＋表頭走位，兩個都係 follow-2 後果：①只改咗表格切換斷點、篩選區同類別橫幅仍行手機版，750-767 變「混合態」（頂部食290px/370px視窗）→ 兩處斷點一併改749；②表頭壓到44px但2中文字label硬下限58px → 揪出 follow-2 嘅 cell 級檢查漏驗 thead label（同 learnings #16 同類錯低一層）。**關鍵槓桿**：表頭 padding 由 `8px 12px` 收到 4px，12欄一次過釋放~190px，先至夠位。另修正量度方法：rowspan 表格唔可以用 children index 對欄（曾量出845px假數據）。六闊度×4視圖三重檢查全部 0/0/0。已commit+部署生產。
+**Subagent 使用記錄**：❌未使用（逐輪量度→調整→再量度嘅收斂過程）。
+
+## 2026-08-29 (D69續八-follow-2：真機橫向手機模式最終修復——斷點768改750): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八-follow-2」條目 + [decisions.md D69續八-follow-2](decisions.md)。Fat Mo截圖推翻上一輪「iOS meta鎖定」假設——兩個對照頁橫向都報innerWidth=750，證實純數值問題（750<768），同理論裝置闊度844有~94px落差。只改訂單總覽專屬7處768（唔動側邊欄/財務總覽等~10處共用）。斷點選值經兩輪迭代：第一輪730觸發「cell級bleed」新盲區（badge/input內容溢出隔籬儲存格但頁面級scrollWidth驗唔到），逐欄位精確量度後改用750（貼實真機值+content真實下限）。新增cell級bleed雙重驗收方法論，教訓落盤learnings/frontend.md#16。已commit+部署生產。
+**Subagent 使用記錄**：❌未使用（逐輪量度反饋節奏唔適合委派）。
+
+## 2026-08-29 (D69續八-follow：真機橫向仍留手機模式，追查iOS viewport meta陷阱): 🏷️ 🟡
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八-follow」條目（診斷進行中，暫無決定，待Fat Mo截圖確認後補記decisions.md）。D69續八部署後真機測試發現橫向仍留手機模式，Chrome模擬複製唔到。逐步排除縮放/瀏覽器/JS邏輯後，WebSearch鎖定iOS已知陷阱：`width=device-width`令layout viewport鎖死喺直向闊度唔隨轉向reflow。已上線兩個獨立對照診斷頁（唔掂生產Dashboard）等Fat Mo真機截圖驗證，未落實修復。
+**Subagent 使用記錄**：❌未使用（互動式即時排除假設節奏唔適合委派）。
+
+## 2026-08-29 (D69續八：多裝置響應式審計 + 768-1129px「斷層區」根治): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續八」條目 + [decisions.md D69續八](decisions.md)。Fat Mo 問iPhone橫向會唔會切desktop模式並要求四機（iPhone13Pro/17Pro/iPad M4 11"/ZenBook UX482EGR）審視，WebSearch核實真實viewport後六向掃描揪出768-1023px斷層區（iPhone橫向+iPad直向三個真實情境命中，全頁橫向溢出）。真根因非篩選列CSS而係更高層CSS Grid「blowout」陷阱（`.v40-main-col`冇min-width，`grid-template-columns:1fr`→`minmax(0,1fr)`一行修復）。Fat Mo拍板方向③加768-1129px「緊縮桌面」新斷點層（<768/≥1130完全唔動），過程中意外發現類別視圖同一斷層區都溢出並一併修復。44組合（6裝置+5邊界像素×4視圖）全域DOM掃描零溢出。
+**Subagent 使用記錄**：❌未使用（互動式CSS層層追蹤診斷鏈唔適合委派；WebSearch已用核實裝置規格）。
+
+## 2026-08-29 (D69續七：訂單總覽類別視圖六輪密度／可讀性微調): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29「D69續七」條目（純小型UI微調，無獨立decisions.md條目）。Fat Mo 逐項截圖指定六輪改動：鎖匙扣/頸鏈四欄放寬置中+批次收窄、類別橫幅（進度/批次分佈+左側header）合併一行、限時警告badge文案兩輪精簡（去「正常()」→統一「剩餘N天」）、手模視圖限時警告改一律換行放日期下（scoped class，鎖匙扣/頸鏈不受影響）。逐輪live起dev server連真實Supabase資料量度驗證，零溢出零回歸。
+**Subagent 使用記錄**：❌未使用（互動式截圖比對節奏，逐輪反饋唔適合委派）。
+
+## 2026-08-27 (D69續六：進度狀態往返失真全套根治方案 `/execute` 執行完成 + `/commit`): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「D69續六」條目 + [decisions.md D69續六](decisions.md)（無完成報告的中型改動，Changelog 為全文居所，本行僅摘要指回）。D69續四 cl-flow-fast CONDITIONAL_READY，Fat Mo 拍板3項後 `/execute` 落地：`_FHS_STAGE_DEF` 單一真源取代4處重複下拉清單，移除 `_sanitizeItemStatus()` 根治「同值嚟回一次變一次」，手模 `hm:` checklist 路徑分析證實同款失真且隨主修復自動根治，SQL清洗migration 0092已apply live（`製作中`/`已book日期`/`hm:...`按拍板刻意不清洗）。`code-reviewer` 獨立審查首輪FAIL（DRY重複），修復後重驗PASS。執行前意外發現本worktree分支落後（漏D69～續五），已安全ff追上，落learnings教訓（governance.md #12）防再犯。
+**Subagent 使用記錄**：✅已使用（`code-reviewer` 獨立審查HTML diff，促成DRY修復）。
+
+## 2026-08-26 (`/team` 同步更新：health-check描述過時 + 2項subagent版本漂移修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「`/team` 同步更新」條目（純小型同步修復，無獨立 decisions.md 條目）。Fat Mo 要求同步agent_dashboard，跑`/team`揪出2處漂移：team-manifest.json嘅health-check描述停留5類舊版（未跟上第6-8類）+ database-reviewer/finance-auditor 2個subagent frontmatter版本同MANIFEST.md登記版本不符（2026-08-16 accessory_cost文件補漏批次改咗frontmatter漏同步MANIFEST）。已補記，重新生成後「✨零勘誤」。
+**Subagent 使用記錄**：❌未使用。
+
+## 2026-08-26 (D69續五：fhs-health-check.js 新增第8類「P0.6歸檔洩漏」偵測): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「D69續五」條目 + [decisions.md D69續五](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。D69續四交接過程揪出 `commit.md` P0.6（完成項目搬歸檔區）連續7週無人執行、MASTER表積壓87%已完成項目，Fat Mo 指示加機械閘。新增 `pending_table_leak_checks` 規則類別+`checkPendingTableLeaks()`引擎函式，偵測 handoff.md「MASTER持續待辦」表區間內殘留「✅完成」列（budget=0，歸檔區本身刻意排除唔誤判）。新增2個fixture（洩漏案例+乾淨案例）驗證，連同既有12個全部PASS（14/14）。順手修正 handoff.md 便攜塊兩處已過時內容（🎯目標行仍寫「待拍板」但實已拍板）+ 便攜塊過肥（4239→3999 bytes）。
+**Subagent 使用記錄**：❌未使用（純機械規則新增+既有fixture框架擴充，互動式改碼+自跑測試suite驗證即可）。
+
+## 2026-08-26 (D69續四：客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + cl-flow-fast CONDITIONAL_READY): 🏷️ 🟡
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-26「D69續四」條目 + [decisions.md D69續四](decisions.md)（無完成報告的中型改動，Changelog 為全文居所，本行僅摘要指回）。三個問題全部用 live Supabase 對比實測（非猜測）揪出真根因：①空行bug 真變數係「單一品項數」而非之前錯判嘅「刻字空白」，CSS特異度+textarea rows屬性雙修復；②進度狀態下拉「Done 變返未做」根因係 `order_items.process_status` 自由text 欄位有3個寫入者用2種方言，本輪先落地止血對應表（讀取層），全套根治（統一寫入方言+單一真源階段表+零schema改動）已走 `/cl-flow-fast`（Flow ID `2026-08-26-0828`，判決 CONDITIONAL_READY，2個BLOCKER全部用實證解除非延後）；③客人欄寬/篩選列合併為 Fat Mo 直接要求嘅小改動。**本輪全部改動已驗證但未 commit**，等 Fat Mo 就 cl-final-plan §4 三項拍板、`/execute` 全套方案後統一 commit。
+**Subagent 使用記錄**：✅已使用（cl-flow-fast 內建 A2 Gemini 對抗評審；掃描/SQL/n8n節點實讀主對話直接執行）。
+
+## 2026-08-25/26 (D69續三：訂單總覽類別視圖密集化重排，Excel式密度): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25/26「D69續三」條目 + [decisions.md D69續三](decisions.md)（無完成報告的中型改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 對 D69 類別視圖多輪投訴太稀疏，要求 Excel 式密度，逐輪截圖追加更精細要求（單號欄堆疊、四欄過寬、日期badge分行、「另有」文字過長）。密度改動：table-layout auto→fixed、單號欄改橫向icon動作條、對象/部位/材質/數量四欄縮版badge、日期同限時警告合併一行、「另有」全寫改icon+數量，鎖匙扣視圖表格高2175px→821px（19/19列一屏睇晒）。核心機制：`mwCat` 雙軌欄闊系統確保「全部」視圖零改動；`@media(max-width:1280px)` 分域解決桌面密度同iPad安全嘅回應式衝突。過程中兩次自我回歸即場修復：`overflow-x:auto` 打爛 position:sticky 表頭（CSS overflow-x/y耦合陷阱）、表頭label本身scrollWidth溢出（漏查表頭下限）。未解：訂單06001008報告嘅無故空行，查live Supabase資料一致但測試環境未能重現，待Fat Mo確認持續性。
+**Subagent 使用記錄**：✅已使用（1隻fresh-context code-reviewer覆核首輪diff；後續多輪反饋迭代主對話直接執行）。
+
+## 2026-08-25 (D69續二：分頁掣白色滑動指示器撳兩下先生效 bug 修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25「D69續二」條目 + [decisions.md D69續二](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報訂單總覽「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應，要再撳一下先出到正確白底效果。根因查明：`#reviewModeContainer` 預設 `display:none`，`initSegmentedControls()` 喺 `DOMContentLoaded` 首次量度時容器仲隱藏緊，`getBoundingClientRect()` 全部返 0 令白色滑動指示器寫低錯誤位置；連帶揪出 click listener 每次撳掣都重新掛一次、舊 listener 從未拆除嘅疊加毛病。修法：量到 0×0 時跳過唔寫、`switchMode('review')` 容器變可見嗰刻主動觸發重新計位、listener 改用 dataset flag 只掛一次。模擬完整 create→review 冷啟動情境驗證通過，D69 四個類別視圖零回歸。
+**Subagent 使用記錄**：❌未使用（單一 UI 時序 bug，需即時 browser 交叉驗證追蹤 rAF/display 時序因果鏈，委派會斷推理鏈）。
+
+## 2026-08-25 (D69＋D69-follow：訂單總覽類別視圖 + /code-review xhigh 揪出並修返 4 個自身回歸): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-25「D69」「D69-follow」兩則條目 + [decisions.md D69/D69-follow](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 指示優化訂單總覽「全部/手模/鎖匙扣/頸鏈」顯示，方案書＋互動原型（三方案並列）畀 Fat Mo 揀方案 B（類別視圖：品項層過濾+Excel式欄位換裝+收起財務欄+工作台橫幅）。連帶修 2 個既有 bug（分類真源打架令部分品項篩選唔到；品項 index 漂移致內聯編輯靜默寫落錯品項——最高風險）。事後跑 `/code-review` xhigh（10 finder angle + verify + sweep，首輪遇 session limit 全部失敗，reset 後重跑），揪出並即修 4 個 D69 自身回歸：備註格背景色同步斷咗（改用 DOM containment）、`hm_` 進度篩選未跟同一分類真源、類別橫幅編輯後唔即時更新（首輪修法自身有 bug，live 測試即場捕獲並重修）、「全部」視圖表頭 padding 被無聲改咗。全程 live Supabase 55 張單 browser 實測，`current.html` 未同步待授權部署。
+**Subagent 使用記錄**：✅已使用（10 個背景 finder agent 做 `/code-review` xhigh 多角度審查；方案規劃/實作/驗證/修復四階段全部自行完成，委派會斷推理鏈）。
+## 2026-08-24 續 (更正失實聲明：n8n JSON 備份檔完整重建 + 清除D62/D63死key殘留): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-24續條目（無完成報告的改動，本行僅摘要指回）。Fat Mo 第四輪要求核實同一四項清單，第二輪派獨立agent覆核揪出：主對話上一次聲稱「repo內n8n JSON備份檔已同步」係失實，實際只插咗一行guard。連帶查出舊快照殘留D62/D63已撤銷死key（含一個之前未被發現嘅內嵌activeVersion快照）。直接查證live系統本身乾淨，事故修復未被推翻，問題純粹係repo快照未更新。派agent完整重建（30+28節點），過程遇結構性差異主動暫停等授權，非自把自為。三項驗證主對話獨立重新核實。教訓：對自己前一個commit嘅聲明都要保持懷疑。
+**Subagent 使用記錄**：✅已使用（general-purpose agent兩輪，第二輪機械化重建，中途主動暫停等授權）。
+
+## 2026-08-24 (n8n 玻璃瓶 SKU 強制降級 bug 修復 + 9個subagent鏡像大規模同步): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-24 條目（無完成報告的改動，本行僅摘要指回）。主對話自查 D65續IV-follow 交付完整性三輪未果，改派獨立 fresh-context agent 用同一清單重查，第一次即揪出 n8n「Parse Items & Generate SKU」節點存在超過一個月嘅真 bug——無條件將玻璃瓶品名降級純(2肢)/(4肢)，抹走(家庭)/(＋大寶)後綴（金額不受影響，SKU身份記錄受影響）。經 MCP dry-run 確認後正式修復（V47.14→V47.15），真實 webhook 測試單驗證通過並清理。同輪順藤摸出 9 個 subagent 入面 8 個執行鏡像凍結喺 7 月 7 號、脫鈎逾 6 星期，已全數重新同步。教訓（驗收不自驗，自查多輪仍會漏）已落 learnings。
+**Subagent 使用記錄**：✅已使用（general-purpose fresh-context agent 獨立稽核，揪出主對話三次自查漏咗嘅缺口）。
+
+## 2026-08-22 (D65續IV-follow：玻璃瓶「＋大寶」定價階交付 + 一次自我更正事故): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-22 條目（無完成報告的改動，本行僅摘要指回）。Fat Mo 就 D65續IV 暫緩嘅大寶定價提供新數字，過程兩度返工：第一次誤將新價綁喺「純大寶（零嬰兒）」——經 Fat Mo 澄清「大寶＝客人第二個孩子」出生次序定義後，發現該組合定義上不存在，migration 0090 全套作廢，改以 0091 重做正確嘅「嬰兒+大寶＝同tier＋$300」規則。另有一次規劃階段未讀碼斷言嘅小失誤（硬阻擋其實早已存在）。定案：有大寶參與＋無父母 → $1,680/$1,980，家庭價 $2,580 flat 與純嬰兒價均不變；肢數 tier 改為只數嬰兒肢體。9 份權威文件+2 個 learnings 條目+卡片徽章+驗收工具 checklist 全數同步，browser live 窮舉驗證全過。⚠️ 交付時仍未部署生產，待本次 `/commit` 觸發。
+**Subagent 使用記錄**：❌未使用（跨代碼/Supabase/browser 即時交叉驗證+多輪業務澄清問答，委派會斷推理鏈）。
 
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。
 **Subagent 使用記錄**：❌未使用（單一 hook 規則實作 + 即時 live 前後對照驗證，委派會斷推理鏈）。
+
+## 2026-08-20 (/read 例行三件事：便攜塊日期標籤修正 + /fhs-usage-audit 補跑 + 過時分支清理 + 補完 D67 NAS 部署): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-20 條目（無完成報告的小改動，本行僅摘要指回）。`/read` 開場 hook 揪出三項異常，逐一查證後處理：①誤報「疑似漏跑 /commit」實為便攜塊標題日期標籤 drift，非真漏跑，已修正；②`/fhs-usage-audit` 逾期 43 天已補跑，快照存 `.fhs/memory/usage-audit/2026-08-20.json`；③三個已 100% 合併入 main 的過時分支已刪除。另續走 `/upload-web` 補完上個 session（雲端 Linux 容器缺 pwsh+NAS 憑證）中斷的 D67 實際 NAS 部署——該 session 只完成本機 cp 升格。
+**Subagent 使用記錄**：❌未使用（純查證+輕量檔案修正，單線程即可完成）。
 
 ## 2026-08-19 (D67：save_structured_order_items RPC 漏14欄位修復 migration 0089 + 前端連帶bug + hook regex補漏): 🏷️ ✅
 

@@ -3,6 +3,689 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-03] (D69續八-follow-31) 同步中banner嘅spinner圖示重複 — CSS圓圈+SVG icon兩個spinner疊埋一齊
+
+**背景**：Fat Mo截圖傳統桌面（≥1130px）新增/修改訂單並進行背景同步期間，`#syncProgressBanner`（「訂單0600709同步中...」黃色提示banner）左側同時顯示兩個轉動嘅圖示，紅圈標示。
+
+**根因**：`#syncProgressBanner`嘅HTML結構原本有兩個獨立spinner元素並排：①一個純CSS畫嘅圓圈（`border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%`嘅`<span>`，靠border-top透明造成「缺口圓圈」視覺）②一個SVG `#icon-refresh-cw`（循環箭嘴icon）。兩者都掛`.fhs-spin`class（CSS animation持續旋轉），一齊顯示就變成兩個各自轉緊嘅圖示並排，睇落好似「重複」。
+
+**修法**：刪走①純CSS border-circle spinner，淨保留②SVG refresh-cw icon——理由：SVG icon語意更清楚（明確係「重新整理/同步」嘅循環箭嘴形狀），純CSS圓圈冇語意、純粹視覺裝飾。banner嘅`display:flex; align-items:center; gap:8px`容器樣式不變，剩低單一icon+文字自然對齊。
+
+**驗證**：手動觸發`#syncProgressBanner`（`style.display='flex'`+填入測試訂單號）喺mobile(375px)同傳統桌面(1400px)兩個寬度分別截圖確認淨顯示一個icon；DOM量度`banner.querySelectorAll('.fhs-spin').length === 1`（之前係2）、`banner.children.length === 1`（之前係2個並排`<span>`）；console零錯誤。
+
+**通則**：呢類「兩個獨立spinner元素疊埋一齊」嘅重複，肉眼喺細icon(14px)+快速旋轉動畫嘅情況下唔容易一眼睇出邊個係邊個、定係真係兩個——DOM層面直接查`childCount`/`.fhs-spin`數量先可以確定係咪真係重複定係單一元素嘅動畫幻覺。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-31」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-03] (D69續八-follow-30) freehandsss水印手機版復原 — follow-19嗰陣嘅隱藏前提已被follow-22推翻，冇人手清
+
+**背景**：Fat Mo兩張截圖對比：訂單總覽頁面（mobile）top bar淨得標題icon，冇「freehandsss」；「新增」頁面（create order）同一個top bar結構卻正常顯示「freehandsss」。要求復原訂單總覽嗰邊，並補充「呢個水印喺原有嘅空間，應不影響任何按鈕」——暗示水印本身唔應該同任何操作元件爭位。
+
+**根因（考古）**：follow-19嗰陣（本session早段）將follow-8原本淨限緊縮桌面（750-1129px）嘅「隱藏freehandsss水印」規則，擴闊做width-independent版本（覆蓋埋mobile），原因係當時`#fhsRefreshBtn`（重新載入掣）仲係被JS搬入`#v40-top-bar`（同絕對定位置中嘅水印共用同一個容器，實測闊度合埋會視覺重疊）。但follow-22（同一session，續八輪）已經將呢個relocate邏輯改咗——mobile分支唔再搬去`#v40-top-bar`，改搬做`#fhsSegWrapper`（`#reviewFilterPinned`入面，完全唔同區域）嘅子元素。follow-22改咗relocate目標之後，follow-19嗰條「因為會重疊所以隱藏」嘅width-independent規則從此失去前提，但冇人跟手清走——變成一條「解決緊一個已經唔存在嘅問題」嘅殘留規則，直到今次Fat Mo截圖先揭發。
+
+**查證**：`getComputedStyle(logo).position === 'absolute'`確認水印本身脫離flex flow（純覆蓋層，`pointer-events:none`），復原顯示唔會影響任何flex排版；`#v40-top-bar`喺mobile底下現存子元素淨得logo本身+隱藏咗嘅標題span+一個supabase狀態燈——真係冇嘢好同水印爭位。
+
+**修法**：刪走follow-19加嘅width-independent版本（`body.v40-review-active #v40-top-bar .fhs-top-bar__logo{display:none}`，冇media query包住嗰條），保留follow-8原本`@media(750-1129)`scoped嗰條（緊縮桌面refreshBtn仍然搬入topBar，重疊風險依然存在，唔可以一併刪）。
+
+**驗證**：375mobile確認水印顯示、垂直位置（top:13-34）同pinnedRow（top:55起）完全冇重疊、reload/tabs同行對齊（follow-27/28嘅`rightDiff=0`）不受影響；900緊縮桌面確認水印仍然正確隱藏（`display:none`）；1400傳統桌面確認水印一路顯示（未受任何一輪影響）；toggle單次點擊功能正常；console零錯誤。
+
+**通則**：跨round嘅CSS覆寫如果係「因為X先做嘅Y」（例如「因為refreshBtn喺呢度先隱藏水印」），一旦後續某輪改咗X（呢次follow-22改relocate目標），必須反查所有「因為X」嘅衍生規則係咪都要跟住失效——呢類「前提消失但規則冇跟手清」嘅殘留，同follow-25發現嘅孤伶伶分隔線係同一類系統性風險，值得喺日後改動涉及DOM relocation嘅代碼時，主動搜尋「呢個relocation嘅目的地」有冇其他CSS假設咗佢。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-30」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-03] (D69續八-follow-29) 類別工作台橫幅（進度/批次分佈）刪除 — Fat Mo判定純資訊性統計卡冇用
+
+**背景**：Fat Mo截圖「🔑鑰匙扣 26件·14張單」嘅類別工作台橫幅（撳入手模/鑰匙扣/頸鏈某個類別tab時彈出，顯示「進度分佈」未開始/進行中/需補打/已完成 + 「批次分佈」第N批統計），要求整個刪除，理由「冇用」。
+
+**歷史脈絡**：呢個橫幅（`#reviewCatStrip`，由`fhsRenderCatStrip()`按當前生效嘅category filter動態populate）follow-6（D69續八早期round）已經喺緊縮桌面（750-1129px）隱過一次，理由係「橫幅純資訊性、唔係操作控制項，優先讓位俾表格本身」——但當時淨限compact-desktop一個tier，mobile（<750px）同傳統桌面（≥1130px）一直保留顯示。
+
+**修法**：新增一條width-independent CSS `#reviewCatStrip { display: none !important; }`，三個tier一律唔顯示。`fhsRenderCatStrip()`內部計算/populate邏輯完全不變（純CSS隱藏，唔拆function），萬一將來要重新開放（例如改做icon badge之類更精簡嘅呈現）唔使重寫計算邏輯，直接拆返CSS隱藏規則就得。舊有compact-desktop-scoped版本（follow-6）保留唔刪，加註解話明而家由呢條width-independent版本蓋晒。
+
+**驗證**：手動撳「鑰匙扣」category chip觸發`fhsRenderCatStrip()`實際populate內容（`innerHTML.length>0`確認函數有跑），375mobile/900緊縮桌面/1400傳統桌面三個tier分別確認`getComputedStyle(el).display==='none'`同`el.offsetParent===null`（真正冇render，唔係淨睇肉眼）；console零錯誤。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-29」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-03] (D69續八-follow-28) 兩行右邊對齊咗但成行仲有大片空白 — 反過嚟放寬類別chip填滿
+
+**背景**：Fat Mo確認follow-27嘅對齊已生效，但截圖紅圈標示「重新載入」右邊到screen邊仲有一大片完全冇用嘅空白，要求「調整這兩行整體的按鈕，去使其乎合要求」。查實根因：follow-27令兩行右邊互相對齊（`segWrapper.right === catGroup.right`），但兩行一齊停喺類別行天然內容闊度（`頸鏈`掣之後），而類別行本身嘅天然闊度（315px）遠細過pinnedRow真正嘅可用闊度（350px）——即係follow-19~27一路做緊「壓縮就手夠位」，做到宜家兩行都夾埋一齊停埋喺同一個過細嘅目標，成行右邊留低成34px空白。
+
+**修法**：反過嚟做——放寬類別chip嘅padding/gap，令`#fhsCategoryFilterGroup`天然闊度增加（chip padding 14px→16px、chip-group gap 6px→8px、catGroup自身gap 6px→8px，合共+24px，刻意唔追到盡，留返~10px緩衝食real-device font-metric誤差）。follow-27嘅JS（`fhsSyncCompactDesktopLayout()`量度catGroup闊度反推segWrapper闊度）**自動**跟住新嘅catGroup闊度重新計算，唔使額外改reload/segWrapper嗰邊代碼——兩行一齊變闊、一齊食埋大部分空白，右邊對齊效果完全維持（`rightDiff`實測仍然係0）。
+
+**驗證**：375px量度gap（`類別行右邊`到`pinnedRow真正右邊界`）由34px收窄到10px；`segWrapper.right - catGroup.right`仍然係0（follow-27對齊效果經過本輪改動後未受影響，證明follow-27嘅動態量度機制設計得夠robust，可以食得住上游輸入變化）；切換「全部/進行中/已完成」三個分頁維持對齊+`body.scrollWidth===innerWidth`確認無page overflow；toggle單次點擊展開/收埋正常；900緊縮桌面回歸PASS（改動scoped喺`@media(max-width:749px)`）；console零錯誤。
+
+**通則**：follow-19~27呢個系列一路做緊「壓縮到啱啱好夠位」，去到follow-27已經做到「兩行精確對齊」，但精確對齊唔等於「填滿咗可用空間」——如果對齊嘅目標本身（呢次case嘅catGroup）過細，兩行會一齊「準確咁停埋喺一個過細嘅位」。follow-27嘅動態JS量度機制刻意設計成「量catGroup反推segWrapper」（單向依賴），令呢次「反過嚟放寬catGroup」嘅修復可以自動連帶修正segWrapper，唔使兩邊分別各自再調一次——呢個係follow-27設計嗰陣預留落嘅擴展性，今次直接受惠。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-28」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-03] (D69續八-follow-27) 重新載入應該同「頸鏈」右邊對齊，唔應該伸展到成行絕對邊界
+
+**背景**：Fat Mo截圖紅圈標示兩點：①「已完成」同「重新載入」中間有一嚿唔應該有嘅空白②「重新載入」應該同第二行「頸鏈」掣右邊上下對齊（紅直線）。查實follow-22嘅`#fhsSegWrapper{flex:1 1 auto}`會令segWrapper攞晒pinnedRow全部剩餘空間，將reload推去成行嘅絕對右邊界；但第二行「類別」（`#fhsCategoryFilterGroup`）冇伸展，跟內容闊，喺`頸鏈`掣之後就完咗——兩行嘅右邊落喺唔同x座標，中間出現空白正正係因為segWrapper伸展過龍，超出咗類別行實際嘅右邊界。
+
+**修法**：CSS `#fhsSegWrapper`嘅mobile覆寫由`flex:1 1 auto`（攞晒剩餘空間）改做`flex:0 0 auto`（明確指定，配合JS動態設定嘅inline width生效）。JS喺`fhsSyncCompactDesktopLayout()`加一段量度邏輯：每次render/resize，量catGroup（類別行）嘅實際闊度、toggle嘅闊度、pinnedRow嘅column-gap，反推segWrapper應該有幾闊先可以令佢個右邊同catGroup個右邊精確對齊，用`element.style.width`設定。安全下限：先reset做natural width量`scrollWidth`（真正需要嘅最小闊度），如果計出嚟嘅目標闊度比natural闊度仲窄就唔縮（避免tabs/reload內容被逼疊埋，寧願兩行有少少對唔齊都好過裁走內容）。
+
+**驗證方法**：`getBoundingClientRect()`直接量度`segWrapper.right`同`catGroup.right`嘅差值，確認精確等於0（唔係靠肉眼估）；切換「全部/進行中/已完成」三個分頁（tab button文字長度唔同）覆核對齊喺唔同狀態下都維持（因為segWrapper本身闊度固定，唔受邊個tab active影響）；緊縮桌面（≥750px）確認`segWrapper.style.width`正確clear返做`''`（新邏輯淨限`nowMobileForCollapse`先套用，冇污染compact-desktop既有嘅「攞晒topBar一行」行為）。
+
+**通則**：兩個獨立content-driven嘅flex行想要右邊對齊，「其中一行攞晒剩餘空間」呢個做法只喺「兩行content量剛好一致」先啱用——一旦內容量有差異（呢次case：4個類別chip vs 3個分頁tab+reload button，闊度天生唔同），伸展到「絕對容器邊界」會令兩行各自對齊到唔同基準（一個對齊「容器邊界」、一個對齊「自身內容尾」），睇落唔對齊。要真正對齊，必須將其中一行嘅闊度**動態綁定**去另一行嘅實際闊度（JS量度反推），而唔係兩者各自獨立咁伸展/唔伸展。
+
+**驗證**：375px確認`segWrapper.right - catGroup.right === 0`；切換三個分頁tab維持對齊；toggle單次點擊展開/收埋正常；900緊縮桌面回歸PASS（`segWrapper.style.width`正確clear）；console零錯誤。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-27」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-03] (D69續八-follow-26) 第一行漏斗icon同第二行類別icon左邊未對齊 — follow-23收窄padding嘅副作用
+
+**背景**：Fat Mo截圖標示手機直向第一行（篩選漏斗+分頁tabs）同第二行（類別）冇對齊。實測`#fhsCategoryFilterGroup`本身`padding:0`（icon緊貼自己個box左邊，left:13px），但`#reviewFilterToggle`喺follow-23（真機闊度緩衝追加規則）加咗`padding:0 6px`（兩邊都有），令toggle個filter-icon向內縮6px先開始（left:19px）——兩個icon橫向差6px，形成截圖入面睇到嘅「未對齊」。
+
+**修法**：`#reviewFilterToggle`嘅padding由`0 6px`（兩邊）改做`0 6px 0 0`（淨留返右邊，左邊清零），令toggle同catGroup兩個icon共用同一個左邊起點（13px）。刻意冇改總padding量（仍然係6px），follow-23原本要嘅闊度緩衝效果完全保留，純粹將個padding搬去右邊，唔犧牲空間換對齊。
+
+**通則**：加width-saving padding嗰陣，若容器係一組「應該同其他行/元素對齊」嘅icon-leading設計，要留意padding應該加去邊一邊——對稱padding（左右都有）會令視覺起點偏移，如果對齊優先於視覺置中，應該用單邊padding先唔會擾亂已建立嘅對齊基準。follow-23純為求闊度緩衝加對稱padding，冇考慮埋對齊，係呢次事故嘅根因。
+
+**驗證**：375px確認toggleIcon.left=13同catIcon.left=13完全對齊（之前19 vs 13差6px）；reload button仍然同分頁tabs同一行（三者y軸重疊，闊度緩衝未受影響）；toggle單次點擊展開/收埋正常；900緊縮桌面回歸PASS（呢條改動scoped喺`@media(max-width:749px)`，唔touch緊縮桌面）；console零錯誤。
+
+全文見 Changelog.md 2026-09-03「D69續八-follow-26」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-02] (D69續八-follow-25) 刪走孤伶伶分隔直線 + 重新載入改「重新載入(N筆)」白色連續文字
+
+**背景**：Fat Mo紅圈標示手機直向兩行（分頁tabs行/類別行）右邊各有一條孤伶伶垂直分隔線（`#fhsDivider1`/`#fhsDivider2`），要求刪走並對齊上下兩行；另要求重新載入button文字格式改做「重新載入(25筆)」，括號部分用白色。
+
+**分隔線根因**：呢兩條1px直線原本設計嚟分隔單行舊佈局入面「toggle+tabs」/「類別」/「3粒掣」三個功能group（單行擠晒喺一齊時，分隔線有實際視覺作用）。follow-19將呢批元素改wrap做兩行之後，div1（segWrapper後）同div2（catGroup後）各自淪為孤伶伶浮喺對應行右邊、乜嘢都冇分隔到嘅殘留線。
+
+**修法一（分隔線）**：`@media(max-width:749px)`追加`body.v40-review-active #fhsDivider1, #fhsDivider2 { display:none; }`，淨限mobile（緊縮桌面仍係單行擠晒，dividers喺嗰度仲有效，唔動）。`display:none`連埋佢哋消耗嘅column-gap一齊釋放。左邊對齊：toggle icon（left:13）同類別icon（left:13）本身已經對齊，刪走分隔線純粹消除視覺雜訊，唔需要額外對齊調整。
+
+**修法二（重新載入格式）**：JS `renderReviewTable()`兩個分支徽章文字由`${N} 筆`改做`(${N}筆)`（手機分支恆常做merged格式；桌面分支加`isMergedForBadgeFmt`判斷——併入refreshBtn嗰陣（mobile/緊縮桌面）用括號格式，傳統桌面≥1130px徽章企返標題右邊獨立pill唔跟button文字，維持`N 筆`冇括號更自然）。CSS移走`border-left:1px solid rgba(255,255,255,.45)`分隔線樣式，改做`color:#fff`純白色文字，貼實跟喺「重新載入」後面（兩份CSS：width-independent版+緊縮桌面`#v40-top-bar`祖先版同步改，後者specificity較高唔改就會蓋返舊樣式）。
+
+**驗證**：375px確認div1/div2皆`display:none`、reload button顯示「重新載入(25筆)」白色連續文字冇分隔線；toggle單次點擊正確展開/收埋（6篩選項+3粒掣完整，快速連續兩次點擊一度誤觸跳去財務頁，查實係測試時序問題非真bug，單次點擊行為正常）；900緊縮桌面回歸PASS（reload button同步顯示括號格式，dividers喺嗰個tier仍然生效）；console零錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-25」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-02] (D69續八-follow-24) 「已選N項」文字提示隱走 — 收納喺icon內，唔再撐闊toggle掣
+
+**背景**：Fat Mo截圖顯示篩選漏斗icon右邊出現「已選 1項」文字提示，要求隱走（收納喺icon內即可，唔使show出嚟）。查實`#filterActiveHint`（`.filter-active-hint`）本身基礎`display:none`，但`updateFilterActiveHint()`會喺任何一個篩選欄（年度/月份/狀態/批次/搜尋/類別/排序）有值時加`.visible`class，`.filter-active-hint.visible`（雙class，specificity蓋過基礎規則）令佢現形——呢個文字撐闊toggle掣本身闊度，同follow-19~23一路追求嘅「toggle+分頁tabs+reload同一行」目標直接矛盾。
+
+**修法**：加一條specificity夠高嘅width-independent CSS覆寫`body.v40-review-active #filterActiveHint { display:none !important; }`，唔理`.visible`有冇加都恆常隱藏。JS計算邏輯（`updateFilterActiveHint()`）刻意不變——純視覺隱藏，唔改內部count計算，萬一將來有其他地方要讀呢個狀態（例如未來想改做icon上嘅小圓點徽章）唔會斷。
+
+**Scope**：width-independent，mobile/緊縮桌面/傳統桌面三態一致隱走（Fat Mo冇特別指明淨限手機，且呢個文字撐闊問題喺任何tier都存在，全面隱藏更一致）。
+
+**驗證**：手動set `reviewSearch.value` 觸發count>0 → 呼叫`updateFilterActiveHint()` → 確認`.visible`class已加、`textContent`已populate（"已選 2 項"）但`getComputedStyle().display`仍然係`none`、`offsetParent`為null（真正唔render）；375mobile同900緊縮桌面兩個tier分別驗證PASS；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-24」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-02] (D69續八-follow-23) 篩選漏斗icon仍被逼落自己一行 — follow-22結構保證唔等於闊度夠用，追加真正緩衝
+
+**背景**：follow-22改用結構性方案（refreshBtn做segWrapper子元素），確保「reload唔會再獨自被踢走」——呢個結構保證本身冇錯。但Fat Mo真機第二次截圖顯示：而家係**篩選漏斗toggle**（segWrapper所在行嘅第一個item）被逼落自己一行，segWrapper（連embed埋嘅reload）留喺下一行——證明follow-22嘅結構保證解決咗「邊啲元素綁埋一齊換行」，但完全冇解決「使唔使換行」呢個更底層嘅**闊度夠唔夠**問題。本session headless瀏覽器量度到「toggle+segWrapper」喺375px夾埋闊度淨返6-7px緩衝（342.6px需求 vs 349.6px可用），壓線夾啱啱好——真機font metric渲染稍闊少少就爆。
+
+**修法（真正製造闊度緩衝，唔淨係結構保證）**：喺`@media(max-width:749px)`入面追加2條規則：
+1. `#fhsSegWrapper .fhs-seg-btn { height:26px; font-size:12px }`——分頁tabs字級/高度收窄到同緊縮桌面follow-16已用緊嗰個細碼一致（14px/30px→12px/26px），淨喺手機先套用（之前呢個縮細待遇淨限compact-desktop）。3粒按鈕合共闊度由148px收窄到132px。
+2. `#reviewFilterToggle { padding:0 6px }`——漏斗icon掣自身padding再收窄少少。
+
+**驗證方法論**：唔再淨睇「計算出嚟嘅sumNeeded夠唔夠」（follow-22已經証明呢個做法喺headless PASS但真機FAIL，唔可信）；改做**逐級收窄闊度壓力測試**（340/320px），直接睇實際斷點喺邊——收窄前斷點大約喺375px附近（壓線），收窄後375px有明顯緩衝，一路撐到340px先開始出現toggle獨立換行（320px仍然係graceful degradation：toggle獨自一行、segWrapper連reload仍然結構性同一行冇拆散，符合follow-22嘅核心保證）。呢個方法可以直接量度「緩衝有幾多」，唔使靠估算單一寬度嘅px夠唔夠。
+
+**通則**：結構性保證（follow-22嘅「兩元素綁定同一行」）同闊度緩衝（follow-23嘅「確保通常有足夠空間」）係兩個獨立、互補嘅問題，唔可以用一個解決埋另一個——結構保證解決「拆唔拆散」，闊度緩衝解決「使唔使觸發換行」。跨環境（headless vs 真機）font-metric差異令「壓線夾啱啱好」嘅設計必然脆弱，設計密度收窄嗰陣應該預留可觀緩衝（唔淨係計到啱啱夠），並用「收窄寬度直到斷點出現」嘅壓力測試法驗證緩衝實際有幾多，而唔係信賴單一目標寬度嘅精確計算。
+
+**驗證**：320/340/360/375/390/414px多寬度壓力測試，斷點由~375px（follow-22收窄前）推後到<340px（僅320px先出現graceful degradation）；toggle展開/收埋功能不受影響；750/900緊縮桌面回歸零regression（新規則scoped喺`@media(max-width:749px)`）；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-23」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-02] (D69續八-follow-22) 重新載入結構性同分頁tabs同行 — 取代follow-20/21脆弱嘅pixel-shaving做法
+
+**背景**：follow-20/21喺mobile分頁tabs同一行安置reload嘅做法，本質係「將refreshBtn插入pinnedRow做獨立flex item，靠column-gap/padding收窄+刪chevron騰位，計到啱啱好夠fit」——呢種計算喺本session嘅headless瀏覽器環境PASS，但Fat Mo真機（實際font metric/DPI/系統字體渲染同headless瀏覽器有出入）截圖顯示reload依然被逼落獨立一行，證明呢個「淨計算夠位」嘅做法本質脆弱，唔可靠。
+
+**根因**：refreshBtn同segWrapper（分頁tabs）喺pinnedRow入面係**兩個獨立嘅flex item**，各自參與`flex-wrap:wrap`嘅換行判斷——只要總闊度唔夠，flex演算法會揀最後一個溢出嘅item（即refreshBtn）獨自換去下一行，segWrapper留喺原位，兩者結構上從來冇「綁定喺同一行」嘅保證，只係「數值上啱啱夠就睇落好似同行」嘅巧合。
+
+**修法（結構性保證，非數值調校）**：`refreshBtn`唔再插入`pinnedRow`做獨立item，改做`segWrapper`（`#fhsSegWrapper`）嘅**子元素**（`segWrapper.appendChild(refreshBtn)`）。連帶3條CSS：
+1. `#fhsSegWrapper{display:flex;align-items:center;flex-wrap:nowrap}`——令segWrapper內部（分頁tabs+reload）永遠唔會自行拆開；
+2. `@media(max-width:749px){#fhsSegWrapper{flex:1 1 auto}}`——手機專屬，令segWrapper由「跟內容闊」改做「伸展攞晒pinnedRow剩低空間」，先可以令refreshBtn嘅`margin-left:auto`有嘢好推（原本shrink-to-fit容器冇多餘空間，auto margin形同虛設）；
+3. `@media(max-width:749px){#fhsSegWrapper .fhs-seg-ctrl{width:auto;flex:0 1 auto}}`——中和舊有`.fhs-seg-ctrl{width:100%}`手機規則（單一子元素年代寫嘅，加入refreshBtn做第二子元素後，`.fhs-seg-ctrl`唔可以再攞晒segWrapper成個闊度）。
+
+而家即使真係闊度唔夠（實測320px極端窄機），flex-wrap:wrap會將**segWrapper成嚿（連embed埋嘅reload）**一齊換去下一行，唔會再出現「reload獨自被踢走、tabs孤伶伶留低」嘅情況——換行單位由「逐個item」變成「segWrapper呢個group」，結構上唔會再拆散。
+
+**通則**：兩個視覺上要「永遠同一行、唔可以拆散」嘅元素，唔應該作為同一個flex容器入面嘅平行獨立item、然後靠數值計算「啱啱好夠位」嚟達成——呢種做法對font metric/瀏覽器差異敏感，不同環境（尤其headless測試 vs 真機）計出嚟嘅可用闊度可以有出入，屬結構性脆弱。正確做法係將呢兩個元素做**父子關係**（或共同包喺一個獨立flex sub-container），令佢哋喺換行判斷入面被視為**同一個不可分割嘅單位**，換行與否兩者共進退，跨環境行為一致。follow-20/21已經係第二/三次喺呢個「同一行」目標度落手，本次改用結構性方案而非再一次數值微調，避免第四次真機回報。
+
+**驗證**：320/360/375/390/414px多寬度確認reload+分頁tabs結構性同行（320px極窄例外情況：segWrapper連reload一齊換行，但toggle獨自留喺上一行——仍然滿足「reload同tabs同行」嘅核心要求，只係toggle犧牲，屬合理降級）；toggle展開/收埋功能不受影響（撳落去6篩選項+3粒掣正常展開，DOM量度height 331.6px確認展開狀態）；750/900緊縮桌面回歸零regression（segWrapper單一子元素`display:flex`對視覺冇影響）；1400傳統桌面不受影響；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-22」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-02] (D69續八-follow-21) 篩選漏斗chevron手機都隱走 — follow-20「同行」剩尾的最後一截空間
+
+**背景**：follow-20已將reload按鈕搬去同分頁tabs（全部/進行中/已完成）同一行，但實測發現三元素（篩選漏斗toggle+分頁tabs+reload）夾埋闊度仍差約20px先夠放同一行，靠reload自身padding/gap收窄+pinnedRow column-gap收窄補回。Fat Mo截圖紅圈標示篩選漏斗icon要求「刪除它」，並要求「調整大小一致，目的是令重新載入能放置同一行」。
+
+**釐清範圍**：AskUserQuestion確認Fat Mo唔係要刪走成個篩選漏斗toggle（`#reviewFilterToggle`）——嗰個仲係年度/月份/狀態/批次/搜尋/排序6個篩選項+follow-19新收埋嘅3粒掣（顯示項目財務/清除篩選/儲存篩選）嘅**唯一入口**，成個刪走會令用戶完全冇途徑再撳到呢啲篩選項。Fat Mo選擇較安全嘅方案：淨刪走漏斗icon右邊嘅細chevron（∨箭嘴）——呢個本身已經係follow-7 Threads式抽屜改版後嘅**作廢殘留**（冇「向下展開」概念，follow-16已喺緊縮桌面(750-1129px)隱過一次，但嗰條規則局限嗰個tier，手機一直冇隱過）。
+
+**修法**：`body.v40-review-active #reviewFilterToggle .filter-chevron { display: none; }`，由follow-16原本嘅`@media(750-1129)`+`#v40-top-bar`祖先限定，擴展做闊度獨立版（純ID+class選擇器，唔理父容器/闊度）。删走chevron（連gap）騰出嘅空間，剛好補足follow-20仍差嘅約20px，reload成功落入同一行，唔需要再郁篩選漏斗icon本身或分頁tabs嘅尺寸。
+
+**通則**：跨round密度收窄類任務，每次「仲差幾多px」嘅缺口，優先喺**已經作廢/純裝飾嘅殘留元素**度搵（例如呢次嘅chevron——功能上已經冇意義，純粹冇人執手尾清走），先過犧牲仲有實際功能嘅控制項尺寸（分頁tabs/篩選icon本身）。發現呢類「功能性 vs 純裝飾殘留」嘅取捨題，AskUserQuestion釐清比自行判斷安全，尤其目標元素成個刪咗會令某個功能入口完全消失嗰種高風險場景。
+
+**驗證**：375px確認reload+分頁tabs同一行、chevron已消失、漏斗icon本身仍在且撳落去正常展開/收埋面板（6個篩選項+3粒掣全部完整可見）；750/900緊縮桌面回歸測試冇regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-21」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-02] (D69續八-follow-20) follow-19四點回饋 — 標題消失/徽章簡化/重新載入搬同行/類別下空行
+
+**背景**：follow-19部署後，Fat Mo四點截圖回饋：①左上角「訂單總覽」標題消失②「重新載入」button要簡化，淨要ICON+「重新載入(N筆)」，唔要時間③「重新載入」應該搬去「已完成」右方、同分頁tabs同一行，唔應該自成一行④類別下方多咗一行空行。
+
+**逐點根因與修法**：
+1. **標題消失**：查實係一條**pre-existing、follow-19之前已存在**嘅舊規則`@media(max-width:380px){.fhs-top-bar__order-id{display:none}}`（同一份follow-18 commit已有，非follow-19引入）。凡實測viewport<380px（如iPhone SE級375px）就會觸發，之前冇人留意到，follow-19將freehandsss水印隱走+徽章簡化後空間反而更闊，令標題缺席更顯眼。修法：喺同一個media query入面加`body.v40-review-active .fhs-top-bar__order-id{display:inline!important}`，只限訂單總覽頁覆寫顯示（沿用follow-16established嘅「其餘分頁唔受影響」紀律），其餘頁面窄寬度隱標題行為不變。
+2. **徽章簡化**：`renderReviewTable()`兩個分支（mobile/desktop共用嘅badge賦值邏輯）由`${N}筆 · ${時間}`改做`${N}筆`，全寬度統一（唔分merge/standalone context），因為時間精確到分鐘本身資訊值低，全面簡化風險低。
+3. **重新載入搬同一行**：follow-19將refreshBtn固定搬去`#v40-top-bar`（同toggle/tabs徹底分家，變成topBar獨自一行），Fat Mo要求同分頁tabs（`#fhsSegWrapper`）同一行。修法：`fhsSyncCompactDesktopLayout()`嘅`shouldCollapseButtons`分支再拆——`isCompact`（緊縮桌面）維持follow-9原有「搬去topBar」行為不變；純mobile改做「插入`#reviewFilterPinned`入面、`segWrapper`之後、`div1`之前」，令佢同分頁tabs落入同一個flex-wrap行。連帶2個以往假設「呢粒掣淨係喺#v40-top-bar底下」嘅CSS選擇器（`#fhsRefreshBtn`同`#reviewCountBadge`）放寬做純ID（唔再要求`#v40-top-bar`祖先），兩個tier共用。實測搬去`#reviewFilterPinned`後即刻撞正D69續三舊有嘅`.filter-row-pinned .fhs-btn-refresh{flex:1 1 45%}`（假設容器入面淨得「4粒掣逐個排」嘅舊佈局），令個掣暴衝做45%闊——顯式覆寫`flex:0 0 auto`解決。再實測發現toggle+segWrapper+refreshBtn三者夾埋闊度喺350px可用寬度內差成20px先夠放同一行，靠refreshBtn自身padding/gap收窄（10px→6px／6px→4px）+ pinnedRow column-gap收窄（12px→6px）補回差額，冇郁分頁tabs/篩選漏斗自身尺寸（掂手觸控目標優先讓路）。
+4. **類別下空行**：多次於375/390px、「進行中」/「已完成」兩個分頁、DOM box model逐層量度（`reviewFilterPinned`→`reviewFilterBody`(collapsed 0px)→`bulkActionBar`(display:none)→`reviewCatStrip`(0px空)→`reviewAccordionContainer`第一張卡），marginTop/paddingTop全部0，未能重現任何空行。完成上面1-3點修復後再截圖複查，類別行同第一張卡之間視覺上貼實冇縫。判斷為修復1-3連帶消除（原本徽章/reload位置錯亂可能引起某種暫態reflow），或單次截圖時機巧合（背景auto-refresh reflow，同follow-19已記錄嘅race condition教訓同類）；未能獨立確認根因，已於回報中如實告知 Fat Mo，留待複核。
+
+**通則**：舊有CSS規則嘅生效範圍（尤其`@media(max-width:Npx)`呢類舊threshold）唔可以只睇「呢個commit有冇改佢」嚟判斷相關性——follow-19本身冇動<380px嗰條title-hide規則一隻字，但follow-19嘅其他改動（隱水印、簡化徽章）騰出嘅空間，令呢條沉睡已久嘅舊規則第一次被使用者實際留意到。密度/佈局類改動後，如果使用者報告「某元素消失咗」，除咗檢查本次改動本身，都要檢查係咪本次改動意外「揭發」咗一條早就存在、只係之前冇人踩中嘅舊規則。
+
+**驗證**：375px/390px兩個寬度，逐點確認：標題顯示、徽章文字淨得筆數、重新載入button同分頁tabs同一行（`getBoundingClientRect()`量度三者y軸重疊）、類別下方冇空行。750/900緊縮桌面、1400傳統桌面三態回歸測試：badge文字同步簡化（三態一致）、緊縮桌面reload搬topBar行為不變、傳統桌面reload standalone行為不變、分段指示器mismatch維持0.8px sub-pixel雜訊、console零新增錯誤。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-20」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-02] (D69續八-follow-19) 手機直向篩選列過度佔位 — 收納3按鈕入篩選抽屜、合併重新載入+筆數、修正分頁指示器置中偏移
+
+**背景**：Fat Mo截圖標註手機直向（<750px）「進行中/已完成」分頁下，「顯示項目財務/清除篩選/儲存篩選」3個按鈕橫向堆疊，加上獨立「重新載入」按鈕同筆數徽章，合共佔用畫面上方接近1/3高度，訂單列表要捲好多先睇到。三項具體要求：(1) 3按鈕收納入篩選toggle嘅可摺疊面板內（follow-6已喺緊縮桌面750-1129做過同款收納，今次擴展去mobile）；(2) 重新載入按鈕移去右上角同筆數徽章合併（follow-9緊縮桌面已有嘅merge-badge手法，同樣擴展去mobile）；(3) 分段控制器（全部/進行中/已完成）嘅白色active指示器對唔中文字，其他分頁都有同樣問題。
+
+**做法**：
+1. `fhsSyncCompactDesktopLayout()`新增`shouldCollapseButtons = (isCompact || window.innerWidth<750) && isReviewActive`，取代原本淨checkisCompact嘅`shouldRelocate`嚟gate financeBtn/clearBtn/saveBtn/refreshBtn/badge嘅relocate區塊——即係將follow-6/9嘅「緊縮桌面專屬」收納邏輯，改成「緊縮桌面OR mobile」都觸發，兩層tier共用同一套relocate代碼，唔重複寫。
+2. 5條width-independent CSS規則（唔綁死喺750-1129 media query入面，mobile同緊縮桌面共用）：`.fhs-btn-refresh`縮成28px高單行按鈕、`.fhs-top-bar__logo`（freehandsss浮水印）隱藏、`#reviewCountBadge`合併入refreshBtn內做細字後綴、`#fhsCompactBtnSlot.has-content`同內部3按鈕嘅排版樣式。
+3. `.fhs-seg-indicator`嘅`left:3px`改做`left:0`——原本CSS padding已經計咗一次3px偏移，JS嘅`translateX()`又計多一次，雙重計算令白色指示框成日偏右3-4px，改做`left:0`剩返JS單一計算源頭。
+
+**驗證陷阱**：改埋fix 3之後，用JS快速連續模擬click測試「進行中/已完成」分頁，一度以為發現指示器「卡死唔郁」嘅深層bug（連fresh manual重寫inline style都測到-41px偏移），但最終查出係測試方法論本身嘅race condition——訂單列表有背景auto-refresh（5分鐘一次+手動觸發），rapid連續JS呼叫之間分開兩個`javascript_exec`呼叫量度`btnRect`同`indRect`，中間隔咗頁面reflow，導致量度到嘅係唔同時間點嘅stale rect。改用單一原子化JS呼叫（同一個exec入面一次過查ctrl/btn/indicator）重新量度，「全部/進行中/已完成」三個分頁全部mismatch回落到0.8px（純sub-pixel雜訊），確認唔係真bug。
+
+**通則**：呢類「連續rapid互動+分開量測」嘅測試手法，喺有背景自動刷新（auto-refresh/live data）嘅頁面上有天生嘅race condition風險，量度指令必須同觸發指令包喺同一個原子化exec入面，先可以排除reflow時序污染出嚟嘅假陽性。另外，Browser pane嘅`computer.left_click`喺呢個頁面對呢個特定控制項有計時器逾時傾向（30s timeout），改用`element.click()`嘅JS直接呼叫繞過，同follow-19投入調查前已知嘅"click-timeout"問題一致。
+
+**驗證**：390mobile確認3按鈕預設摺埋（`reviewFilterBody`高度0px/overflow:hidden），點toggle後展開顯示3按鈕成行；重新載入+筆數已合併做右上角單一pill；分段指示器喺「全部/進行中/已完成」三個分頁，用單次原子化JS量測全部mismatch≤0.8px。750/900px緊縮桌面回歸測試：top bar同toggle面板排版不變，冇regression。1400px傳統桌面：`position:static`內嵌top bar完全唔受影響。console零新增錯誤（僅一個404靜態資源、非本次改動相關）。
+
+全文見 Changelog.md 2026-09-02「D69續八-follow-19」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-01] (D69續八-follow-18) 橫向模式底部功能bar整體縮減30% — 純數值密度指令，直譯等比例縮放
+
+**背景**：follow-17啱啱先修復好緊縮桌面（750-1129px）底部浮動藥丸nav（消失咗嗰個），Fat Mo緊接要求：「優化橫向模式下底部功能bar整體縮減30%」。
+
+**做法**：喺follow-17新增嘅`@media(min-width:750px) and (max-width:1129px)`區塊尾部加一組覆寫規則（源碼順序排喺follow-17數值之後，同一選擇器、同一specificity，後者食硬），各相關px值等比例縮至70%（即減30%）：
+- bar高度 `56px→39px`（56×0.7=39.2四捨五入）
+- button高度 `44px→31px`（44×0.7=30.8）
+- icon `20px→14px`
+- 字級 `9px→6px`（9×0.7=6.3）
+- bar padding `4px 6px→3px 4px`；button padding `4px 2px→3px 1px`
+- `max-width: 500px→350px`
+
+`bottom:16px`（離螢幕邊緣距離）刻意維持不變——呢個係「bar擺喺邊」嘅定位參數，唔屬於「bar本身有幾大」，縮嗰個唔啱題。
+
+**Scope**：淨影響750-1129緊縮桌面範圍。767px以下純mobile直向版本（V40早期原有代碼，follow-17冇改過）維持原大小56px/9px；1130或以上傳統桌面（`.fhs-top-bar__actions`回歸`position:static`內嵌top bar，非浮動pill）唔受影響。
+
+**通則**：呢類純數值嘅密度縮減指令（「縮N%」），優先直譯做「等比例縮各相關px值」執行，唔應該自行判斷「呢個字太細用戶睇唔到」而擅自打折扣或加下限。follow-4曾有「窄欄強制斷行 vs 內容等比例縮」嘅教訓，但嗰次係「點樣達成目標」有歧義（斷行 or 縮小）；今次「縮30%」指令本身冇歧義，應該直接照做，如果實際睇落太細，交返俾用戶截圖反映，AI唔應該預先過度詮釋用戶意圖、自把自為降低縮減幅度。
+
+**驗證**：750/900/1129三個緊縮桌面闊度，逐項confirm bar/button/icon/字級全部準確縮至70%數值（39px/31px/14px/6px）；390(mobile)確認完全唔受影響，維持原56px/9px；1130(傳統桌面)確認`position:static`唔受影響；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-18」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-09-01] (D69續八-follow-17) Chrome/Safari橫向顯示不一致，底部功能bar完全消失 — 又一個舊767/768 threshold未對齊750/1129
+
+**背景**：follow-16部署後，Fat Mo回報：Chrome同Safari喺同一橫向闊度，介面大小睇落唔一樣；Safari橫向底部功能bar（新增/修改/月曆/訂單/財務/系統）不見咗。
+
+**真根因（比表面報告更嚴重）**：`.fhs-top-bar__actions`（模式切換按鈕，喺窄闊度視覺上呈現做浮動底部藥丸nav）本身係V40早期舊代碼，用`@media(max-width:767px)`（L~2265）決定套用「position:fixed浮動底部藥丸」定「position:static回歸top bar內嵌」。呢條767嘅threshold同D69續八系列成套改用嘅750/1129完全脫節——真機Safari/Chrome橫向報返嚟嘅`window.innerWidth`會因為各browser自己UI chrome保留空間唔同而有落差（同follow-2嗰次iPhone13 Pro實測750 vs理論844嘅94px落差同一成因），落喺750-900呢個範圍浮動好正常。
+
+實測900px width：`.fhs-top-bar__actions`嘅`position`跌返`static`、`bottom`變`auto`——即係完全脫離浮動藥丸樣式，回歸做top bar入面嘅普通inline element。但緊縮桌面層嘅top bar本身已經好逼（follow-7~9塞咗篩選tabs/類別chips/重新載入等），視覺化截圖確認**模式切換nav完全冇喺任何位置render出嚟**——唔止「樣式唔啱」，係「完全消失、撳唔到」，用戶喺呢個闊度冇任何辦法切換分頁。
+
+**修法**：新增獨立`@media(min-width:750px) and (max-width:1129px)`區塊，源碼順序排喺舊767嗰組之後，完整重新套用返嗰套「浮動底部藥丸」樣式（`.fhs-top-bar__actions`嘅fixed定位+`button`/`.ba-icon`/`.active`子樣式+`body`底部padding），覆蓋返768-1129嗰段缺口。750-767兩組重疊時數值相同，冇視覺分別；1130或以上跌返去`position:static`嘅傳統桌面內嵌樣式，唔受影響。
+
+**同follow-14/15/16嘅共通點**：呢已經係第三次獨立發現嘅「舊768/767 threshold同新750/1129脫節」問題（follow-14係JS DOM搬遷、follow-15係JS顯示邏輯、follow-16係CSS scope、而家follow-17係另一組完全獨立嘅CSS——`.fhs-top-bar__actions`嘅fixed定位）。每次都以為「呢個係最後一個」，但全檔grep`767|768`顯示仲有大量其他occurrence未逐一核實（部分屬合理獨立於D69續八範圍之外嘅組件，例如bulk action bar/modal tabs，未必需要對齊）。
+
+**通則**：改響應式斷點嘅風險唔止喺「改嗰一條規則本身」，仲喺「呢個codebase有幾多個獨立、互不相關嘅代碼路徑各自硬編碼緊同一組舊threshold數值（767/768），逐一改斷點嗰陣淨會改到自己接觸到嗰幾條」。落手改任何全域性斷點前，應該先做一次全檔grep建立完整清單，逐條核實係咪都要跟住改，而非等一個一個真機bug report先逐個補鑊——即使最終裁決係「淨改訂單總覽相關嗰幾條，其餘保留768」，都應該係一次過睇晒全部清單之後嘅有意識決定，而唔係漏檢查嘅副產品。呢個判斷已記入handoff.md下一步，留返俾Fat Mo拍板範圍。
+
+**驗證**：財務/系統/訂單總覽/新增四分頁，750/1129/1130/390四闊度全PASS；900px實測`.fhs-top-bar__actions`由`position:static`（完全唔顯示）變返`position:fixed`（浮動藥丸nav正常顯示、可撳）；截圖確認新增/月曆/訂單/財務/系統五粒掣同active狀態指示正確；1130確認正確跌返傳統桌面top bar內嵌樣式（非fixed）；Review分頁drawer/one-row layout重測零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-17」條目。**Subagent 使用記錄**：❌未使用（grep追蹤舊threshold+browser多寬度截圖交叉驗證全程自行操作）。
+
+[2026-09-01] (D69續八-follow-16) 其餘分頁橫向top bar要完全跟返手機設計 — follow-14/15淨修JS，CSS scope本身未處理
+
+**背景**：follow-15部署後，Fat Mo明確裁決範圍：「除訂單總覽不用修改外，其餘版面橫向模式，版面介面頂端跟隨原本手機嘅設計」——即財務/系統/新增/修改/月曆呢批分頁，喺750-1129px橫向緊縮闊度，top bar應該完全等同原本mobile portrait嗰套顯示（標題+freehandsss水印+正常icon），唔應該有任何「訂單總覽專屬」嘅覆寫滲入。
+
+**真根因**：follow-6~9一連串新增嘅`#v40-top-bar`CSS規則（top bar長高兩行、隱藏freehandsss水印、隱藏標題icon、隱藏標題文字等，共13條）全部係**裸選擇器**（`#v40-top-bar {...}`／`#v40-top-bar #v40-top-order-id {...}`等），冇任何祖先selector scope返訂單總覽分頁——呢批規則本質上係為訂單總覽單一分頁設計（follow-8隱藏「訂單總覽」自帶icon、follow-9隱藏「訂單總覽」文字），但寫法上冇set「淨喺訂單總覽先生效」，結果只要闊度啱（750-1129px），**任何分頁**都會中招：財務頁橫向時「財務總覽」標題文字/icon/freehandsss水印全部俾呢批規則屈埋。
+
+**同follow-14/15嘅關係**：follow-14修DOM搬遷邏輯（JS，`fhsSyncCompactDesktopLayout()`）、follow-15修徽章顯示邏輯（JS，`renderReviewTable()`）——兩者都係**JS層面**嘅「共用容器要檢查當前分頁」修復。但呢批CSS規則係完全獨立嘅第三個問題源，JS修完之後CSS本身冇跟住郁過，所以Fat Mo截圖仍然見到財務頁標題消失——唔係follow-14/15冇修好，係佢哋根本冇涵蓋呢個範圍。三個獨立round先至補齊同一個「共用top bar」議題嘅完整修復。
+
+**修法**：13條規則全部加`body.v40-review-active`祖先selector前綴，令佢哋只喺`document.body`帶住`v40-review-active`class（即訂單總覽分頁）先套用。呢個class同follow-14/15用嚟判斷`isReviewActive`嘅JS查詢係同一個，CSS/JS兩層用返同一套真源，冇分歧風險。
+
+**通則**：「共用容器要檢查當前分頁」呢個follow-14教訓，適用範圍横跨JS狀態邏輯**同**CSS scope兩層，唔可以修完一層就假設另一層自動跟埋。凡專屬某分頁但物理上寫喺共用容器（`#v40-top-bar`跨全部分頁存在）身上嘅media query覆寫，一律要用`body.<mode>-active`（或對應嘅mode判斷class）祖先selector scope住；裸選擇器一定會滲晒去其他分頁——呢個唔係「可能發生」嘅風險，係follow-6落地嗰刻就已經實際發生咗，一直等到今次Fat Mo明確裁決先俾人發現完整範圍。
+
+**驗證**：財務/系統/訂單總覽三分頁，750/1129/1130/390四闊度全PASS；Finance/System頁逐項確認`v40-top-order-id`嘅`display`/文字/icon、`.fhs-top-bar__logo`嘅`display`、top bar `height`（48px單行，非follow-7嘅兩行放寬）全部同mobile設計一致；Review分頁compact行為（one-row layout/drawer開關/toggle-seg-cat relocate）重測零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-16」條目。**Subagent 使用記錄**：❌未使用（grep全面列出`#v40-top-bar`規則+browser多分頁多闊度交叉驗證全程自行操作）。
+
+[2026-09-01] (D69續八-follow-15) 財務頁背景刷新後徽章又浮返出嚟 — follow-14同一類bug嘅第二個現身位
+
+**背景**：follow-14修咗DOM搬遷嗰半之後，Fat Mo再截兩張圖：截圖一（財務頁，狀態欄07:01）top bar正常顯示「財務總覽」標題+「freehandsss」，同follow-14修復後嘅預期一致；截圖二（同一財務頁，徽章顯示「22筆·07:10」）top bar右側浮返出訂單筆數徽章，蓋住原本標題位置。兩個時間戳相差9分鐘。
+
+**真根因**：`renderReviewTable()`（L~12103）有兩處徽章顯示邏輯——mobile/accordion分支（L~12174）同desktop/table分支（L~12192）——兩處都淨睇「呢批`orders`有冇資料」就決定`badge.style.display`，從未理會「而家係咪真係訂單總覽分頁」。呢個function**唔止喺撳訂單總覽tab先會執行**：`startAutoRefresh()`（L~19173）每5分鐘一個`setInterval`，唔理會用戶當刻企緊邊個分頁，一律call`window.fetchGlobalReview(true)`（cascades落去`applyReviewFilters()`→`renderReviewTable()`）。兩張截圖相差9分鐘，剛好跨過一次5分鐘刷新週期——精確對上呢個真根因。
+
+**同follow-14嘅關係**：follow-14修嘅係「DOM搬遷邏輯」（`fhsSyncCompactDesktopLayout()`，只喺resize/orientationchange/切mode時執行），follow-15修嘅係「徽章顯示邏輯」（`renderReviewTable()`，任何資料重render都會執行，觸發源更廣）——兩者都係同一個「共用top bar元素冇檢查當前分頁」嘅系統性根因，但發作喺兩個獨立、唔重疊嘅代碼路徑，所以follow-14修完之後呢個bug仲會再現一次先俾人發現。
+
+**修法**：兩處徽章顯示邏輯都加返`var _isReviewActiveForBadge = document.body.classList.contains('v40-review-active');`判斷——mobile分支：`!_isReviewActiveForBadge`時強制`display:none`；desktop分支：`!_isReviewActiveForBadge`時強制`display:none`，先至喺review分頁先執行原本嘅「更新文字+show」邏輯。
+
+**通則**：follow-14「共用容器要檢查當前分頁」呢個教訓，適用範圍唔止DOM搬遷，係任何「跨分頁共用元素嘅顯示/內容更新邏輯」都要set。**背景計時器（setInterval/auto-refresh）呢類「觸發時用戶可能喺任何分頁」嘅代碼路徑特別容易漏checked**——開發嗰陣通常只喺目標分頁（呢度係訂單總覽）手動測試，測試流程本身唔會諗到「如果我啱啱切咗去第二頁，個background timer會唔會影響緊我而家睇緊嘅嘢」。日後審查任何跨分頁共用元素嘅顯示邏輯，除咗查DOM搬遷函式，仲要專門查一次「邊啲`setInterval`/背景輪詢會touch呢個元素」。
+
+**驗證**：模擬background auto-refresh（直接call `fetchGlobalReview(true)`）喺財務分頁背景觸發，confirm徽章維持`display:none`；切返review分頁confirm徽章正常顯示（含正確筆數/時間）；mobile(390px)+compact-desktop(900px)雙寬度重測，drawer/badge-in-button relocate機制（follow-9）零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-15」條目。**Subagent 使用記錄**：❌未使用（截圖時間戳比對推斷真根因+grep追蹤render/timer代碼+browser模擬重現全程自行操作）。
+
+[2026-09-01] (D69續八-follow-14) 財務/系統分頁浮咗review專用按鈕 — 共用容器DOM搬遷漏咗「而家係邊個分頁」呢個維度
+
+**背景**：Fat Mo截圖回報：橫向緊縮桌面（750-1129px）切去財務或系統分頁時，訂單總覽專用嘅篩選漏斗「已選N項」/狀態tabs（全部/進行中/已完成）/類別chips（全部/手模/鑰匙扣/頸鏈）/重新載入等，全部浮咗上top bar，同財務/系統頁本身內容重疊。
+
+**真根因**：`fhsSyncCompactDesktopLayout()`（follow-7起新增，follow-8/9/10陸續擴充）由頭到尾淨查`isCompact`（`window.matchMedia('(min-width:750px) and (max-width:1129px)')`），從未檢查「而家係咪真係訂單總覽分頁」。`#v40-top-bar`係跨全部分頁（新增/修改/月曆/訂單/財務/系統）共用嘅頂列，但呢批被搬遷嘅元素（篩選漏斗/狀態tabs/類別chips/重新載入+徽章）本身淨屬訂單總覽分頁——喺其他分頁根本唔應該存在/可見。呢個bug由follow-7落地嗰刻就已經存在，一直冇人喺「緊縮闊度+非訂單總覽分頁」呢個組合下實測過，直到今次Fat Mo截圖先揭發。
+
+**修法**：新增`isReviewActive = document.body.classList.contains('v40-review-active')`（呢個class由`switchMode()`喺mode==='review'時toggle），同`isCompact`一齊組成`shouldRelocate`，取代原本單靠`isCompact`嘅判斷——兩個「if(isCompact)」分支全部改用`shouldRelocate`。非review分頁（即使闊度啱），一律行「還原」分支，令呢批元素返返去`reviewFilterPinned`（訂單總覽filter panel本身，非review分頁時佢自己都係display:none，元素跟住冇形跡）。
+
+**連帶修法**：`fhsSyncCompactDesktopLayout()`本身只綁`resize`/`orientationchange`/`DOMContentLoaded`三個事件——但**切換分頁（switchMode）本身唔會觸發resize**，若用戶喺同一闊度下由訂單總覽切去財務，`shouldRelocate`嘅新判斷結果雖然啱，但成個function冇被重新call過，舊嘅relocate狀態會一直卡住唔變。修法：喺`switchMode()`嘅override入面（`layout.classList.toggle('v40-review-active', ...)`之後）主動加一句`fhsSyncCompactDesktopLayout()`，確保切分頁即刻重新評估。
+
+**通則**：共用容器（跨多個分頁/模式都可見嘅頂層元素）嘅DOM搬遷邏輯，判斷條件唔可以淨睇單一維度（呢度係「闊度」）——仲要問「呢批被搬嘅元素本身屬唔屬於邊個分頁/模式」，否則闊度啱但分頁唔啱一樣會出事。凡搬遷邏輯綁喺`resize`/`orientationchange`，若判斷用到嘅狀態（呢度係mode）可以喺唔觸發resize嘅情況下改變（例如切tab），必須喺嗰個改變嘅入口（`switchMode`）主動call一次同步函式，唔可以淨靠下次窗口resize先執行。
+
+**驗證**：Review→Finance→Review→System→Review嚟回切換（唔改闊度，純切tab），逐次query確認review專用元素（`reviewFilterToggle`/`fhsSegWrapper`/`fhsCategoryFilterGroup`/`fhsRefreshBtn`）嘅`parentElement`喺非review分頁正確係`reviewFilterPinned`、top bar只剩共用元素（logo/title/badge/mode-actions），並截圖視覺確認Finance/System頁面乾淨冇浮動按鈕；750/1129/1130/390四闊度重測review模式本身，drawer開關/one-row layout/relocate邏輯全部零regression。
+
+全文見 Changelog.md 2026-09-01「D69續八-follow-14」條目。**Subagent 使用記錄**：❌未使用（grep追蹤+browser多分頁來回切換實測全程自行操作）。
+
+[2026-08-31] (D69續八-follow-13) 限時警告badge拆兩行 — 換行bug唔淨係字太大，`white-space`/`overflow-wrap`本身係另一半
+
+**背景**：follow-12部署後，Fat Mo截圖回報：緊縮桌面層日期欄嘅限時警告badge（逾期N天／剩餘N天）拆成兩行（例如「逾期61」一行、「天」再一行），要求縮字至同一行。
+
+**真根因**：`.ovw-date-line .dlv-badge`（CSS L~2908）自D69續四起就刻意設咗`white-space:normal; overflow-wrap:anywhere`——當時目的係做「窄screen防呆兜底」：寬screen（1920px，日期欄127px）badge同日期自然同一行，窄screen（例如1024px）先解除nowrap俾badge有得換行，避免溢出撞埋隔籬客人欄。呢個設計本身喺D69續四嗰個年代係合理嘅取捨。但緊縮桌面層（750-1129px）Date欄本身已經收到68px（follow-3量到「淨夠日期本身」嘅下限），喺呢個闊度，badge換行嘅「兜底」變成常態觸發，加上`overflow-wrap:anywhere`本身會逼到「連badge文字自己都拆多過一行」（例如"61"同"天"分開），而唔淨係「badge同日期分兩行」。單純縮字（follow-4已有9px）並冇解決呢個問題，因為觸發換行嘅係`white-space:normal`呢條屬性本身，唔係字太大裝唔落。
+
+**修法**：①`.dlv-badge`字級喺緊縮層由9px再縮到8px，icon同步由10px縮到8px。②新增`.ovw-date-line .dlv-badge { white-space:nowrap !important; overflow-wrap:normal !important; }`，喺緊縮層覆寫返D69續四嗰條「窄screen兜底」規則——因為依家緊縮層本身已經有專屬嘅欄闊/字級調校（唔再需要嗰條通用兜底），可以安全咁強制返一行。傳統桌面（≥1130px）維持原本D69續四嘅兜底邏輯不變。
+
+**通則**：換行類bug嘅診斷唔可以只睇font-size——`white-space`同`overflow-wrap`呢類「刻意為某個舊context設計嘅換行規則」，隨住斷點/密度目標演進，可能已經同新嘅緊縮層設計初衷唔一致（舊規則假設「呢個闊度冇得諗，換行係唯一出路」，新緊縮層已經有專屬空間規劃，唔再需要嗰個假設）。修復呢類bug時，除咗font-size，一定要連埋`white-space`/`overflow-wrap`一齊查有冇歷史遺留嘅強制換行規則。
+
+**驗證**：750/1129/1130/390四闊度全PASS；「全部」+類別視圖(鑰匙扣)雙重量度badge `getBoundingClientRect().height`確認15px（單行高度，非30px雙行），零溢出所屬`<td>`；桌面≥1130維持10px字級+原本換行邏輯，零regression。
+
+全文見 Changelog.md 2026-08-31「D69續八-follow-13」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-08-31] (D69續八-follow-12) 緊縮桌面密度再優化 — 刻字欄取消 + follow-11同類bug再現於單號/日期/客人3欄
+
+**背景**：follow-11部署後，Fat Mo繼續要求緊縮桌面（750-1129px）密度優化：①刻字欄可以取消，釋放位；②客人欄字再縮小。
+
+**②真根因（follow-11同一類bug再現）**：`orderLeftColsHtml`（L~12318，單號/日期/客人3個`rowspan`欄）嘅`<td>`各自帶inline `font-size:13px`（render函式手寫，非CSS class）。follow-4已有`.review-table tbody td{font-size:11px}`規則，但一直**冇`!important`**——同follow-11揪出嘅select/textarea bug完全同一個機制，inline style優先級贏晒，令呢3欄嘅字從未真正縮過。「客人欄字再縮小」呢個要求其實揭示緊：follow-4嘅壓縮從一開始就冇喺呢3欄生效過，唔係「已經縮咗但唔夠細」。
+
+**②修法**：`.review-table tbody td{font-size:11px}`加`!important`。呢個修改係全域性（唔淨係客人欄），一次過連帶修埋單號/日期兩欄同一個bug——三欄同時受惠。
+
+**①真根因**：`刻字`（eng）欄嘅`<td>`一直用同其他窄欄共用嘅`batch-cell` class，冇獨立identifier，加上表格用`table-layout:fixed`+部分列有`rowspan`（單號/日期/客人3欄），令位置索引（`nth-child`）對唔上column（呢個坑本session之前已踩過一次，見follow-2~3嘅rowspan量度教訓）——唔可以靠位置隱藏，必須靠class。
+
+**①修法**：render函式（L~12609）幫刻字`<td>`加專屬class`ovw-eng-cell`；連同表頭已有嘅`ovw-col-eng`（全部視圖）/`ovw-narrowcol-eng`（類別視圖），三個selector一齊`display:none!important`，確保表頭列同每一列資料列都一致少一格，`table-layout:fixed`唔會因為列與列之間cell數目唔一致而錯位。
+
+**通則**：follow-11揪出嘅「JS render inline style贏咗compact CSS規則」唔係單一事件，係呢個codebase嘅系統性模式——render函式為咗桌面闊度可讀性，普遍會幫文字內容手寫inline font-size，呢類inline style會系統性咁蓋過任何冇`!important`嘅compact-tier CSS override。日後任何「呢欄個字點解冧唔到細」嘅疑惑，第一步應該直接`el.getAttribute('style')`查有冇inline font-size，唔應該假設加咗CSS rule就一定生效。
+
+**驗證**：750/1129/1130/390四闊度全PASS；「全部」+類別視圖(鑰匙扣)雙重確認刻字欄th同全部45個td正確隱藏（`display:none`）、表頭列同資料列cell數一致(12/12，無錯位)；單號/日期/客人3欄computed font-size確認compact scope內11px、桌面≥1130維持13px零regression；console零新增錯誤。
+
+全文見 Changelog.md 2026-08-31「D69續八-follow-12」條目。**Subagent 使用記錄**：❌未使用（grep追蹤render函式+browser實測全程自行操作）。
+
+[2026-08-30] (D69續八-follow-11) iPhone 13 Pro真機再揪兩個bug — safe-area遺漏 + inline style贏咗自己嘅compact-tier規則
+
+**背景**：follow-10部署後，Fat Mo用iPhone 13 Pro真機測試，回報兩個新bug：①橫向轉屏後畫面左右出現灰色bar，唔係full screen；②表格內字體「太大/太小，與格子不相稱」。呢兩個都要求先問清楚裝置/具體位置先落手（AskUserQuestion確認咗係iPhone 13 Pro真機、字體問題係「太大/太小同格子不相稱」），因為單憑截圖冇辦法分辨係CSS bug定係查看方式（截圖工具/瀏覽器chrome）造成。
+
+**Bug①真根因**：全檔已經有一批`env(safe-area-inset-bottom, 0px)`代碼（底部導覽列避開home indicator），但`<meta name="viewport">`一直缺`viewport-fit=cover`——冇呢個屬性，`env(safe-area-inset-*)`全部永遠讀返fallback值`0px`，**同時**iOS Safari會將notch/圓角嘅安全區留返自己渲染（用系統色，唔係頁面background）。iPhone 13 Pro（notch裝置）轉橫向後，安全區由「上下」變「左右」——呢個gap一直存在（因為之前冇人喺notch裝置橫向下實測過，包括寫落bottom-safe-area代碼嗰個人），今次先俾Fat Mo真機揭發。
+
+**Bug①修法**：`<meta viewport>`加`viewport-fit=cover`；`body`補`padding-left:env(safe-area-inset-left,0px)`+`padding-right:env(safe-area-inset-right,0px)`（`!important`跟body既有padding寫法一致）。非notch裝置/直向時呢兩個env()值都係0，零視覺影響——本機瀏覽器測試證實（無notch環境，body padding-left/right正確resolve做0px，冇任何regression）。
+
+**Bug②真根因**：`renderReviewTable()`嘅render函式喺生成`<select class="review-status-select">`/`<textarea class="review-notes-textarea">`等HTML字串時，直接寫入inline `style="font-size:13px"`（呢個係為傳統桌面闊度手調嘅可讀尺寸）。follow-4已經有compact-tier規則`.review-table tbody select,input,textarea{font-size:10px;...}`，但**冇`!important`**——inline style優先級高過任何冇`!important`嘅stylesheet規則（唔理specificity），呢條10px規則喺follow-4落地嗰刻就已經被inline 13px蓋過，從未真正生效過，一直去到今次Fat Mo真機睇到先揭發。
+
+**Bug②修法**：呢條rule加`!important`。查`el.getAttribute('style')`直接證實真根因（唔係靠猜），修復後查`getComputedStyle`確認compact tier內正確變10px、桌面≥1130維持13px不變。
+
+**通則**：①用`env(safe-area-inset-*)`前必須確認`viewport-fit=cover`已設——呢個坑喺代碼庫已經有相關代碼嘅情況下都可以存在好耐，因為冇人喺notch裝置橫向真機下實測過。②寫CSS override去蓋一個「由JS render函式動態寫入嘅inline style」，一定要帶`!important`，唔可以淨靠specificity（inline style specificity天生高過任何普通selector）；加咗rule之後應該直接查`getComputedStyle`/`getAttribute('style')`驗證真正生效，唔可以淨憑代碼「應該啱」就當done。
+
+**驗證**：750/1129/1130/390四闊度全PASS；直接查inline style + computed style確認select/textarea由13px→10px（compact scope）、桌面≥1130維持13px（零regression）；body safe-area padding喺非notch測試環境正確resolve做0px，冇視覺變化。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-11」條目。**Subagent 使用記錄**：❌未使用（互動式AskUserQuestion釐清情境+browser實測grep追蹤根因）。
+
+[2026-08-30] (D69續八-follow-10) 兩個真機覆核揪出嘅真bug — CSS視覺切換唔等於JS資料render
+
+**背景**：follow-9部署後，Fat Mo真機覆核回報，呢次唔係截圖UI要求，係兩個真bug：①iPhone轉橫向後表格停留「Supabase讀取中」，一直冇資料出現；②抽屜展開後入面嘅篩選欄位（年度/月份/狀態/批次/搜尋/排序）排列錯亂。
+
+**Bug①真根因**：`renderReviewTable()`（L~12103）入面有 `if (window.innerWidth < 750) { renderReviewAccordion(orders); return; }`——喺手機直向fetch資料嗰陣，desktop `<table><tbody>` 從未實際被填入真資料，一直停留喺`fetchGlobalReview()`寫入嘅loading placeholder（「⏳ Supabase 讀取中...」）。成個codebase從來冇resize監聽會喺跨越750px呢條mobile/desktop渲染模式分界時重新render——`.review-table-wrap`嘅顯示切換純粹CSS media query（`display:none↔block`），但**顯示出嚟嘅內容本身要JS主動填**，CSS唔會自動觸發JS render。舊斷點768px時，iPhone橫向（實測約750px可用寬度，見D69續八-follow）都跨唔到768呢條界，呢個gap一直未暴露；D69續八系列將斷點降到750，先首次令iPhone橫向真正跨過呢條分界，揭發呢個一直存在、同任何UI改動都無關嘅結構性缺口。
+
+**Bug①修法**：喺已經每次resize/orientationchange都會執行嘅`fhsSyncCompactDesktopLayout()`頂部，追蹤`window._fhsLastIsMobile`狀態；當`window.innerWidth<750`嘅布林值同上次唔同（即跨咗界），重用已快取嘅`window.globalOrders`（唔使重新fetch），觸發`window.applyReviewFilters()`（純過濾+render，冇network call）令現正顯示緊嘅view補回真實內容。
+
+**Bug②真根因**：`.filter-pair-row`（兩個filter-group並排）+`.filter-row-divider`（中間垂直分隔線）呢套排版設計時嘅假設係「成頁闊度嘅accordion」（原本`#reviewFiltersV2`喺傳統桌面/手機嘅寬度），follow-7將`#reviewFilterBody`改做窄身300px抽屜之後，從未回頭針對呢個新context調整內部欄位排版，兩個select/input並排喺300px入面唔夠位，垂直分隔線喺單欄堆疊入面亦冇意義。
+
+**Bug②修法**：`#reviewFilterBody.fhs-drawer-mode`下強制`.filter-row-primary`/`.filter-pair-row`轉`flex-direction:column`，`.filter-row-divider`隱藏，每個`.filter-group`一行（label左、field `flex:1 1 auto`填滿餘下闊度），變成標準單欄表單排版，零溢出風險。
+
+**通則**：純CSS嘅視覺模式切換（display toggle／media query）唔可以假設「顯示出嚟嗰刻內容自動啱」——如果某個view嘅內容係由JS喺特定條件下先render（例如`isMobile()`分支），跨越呢條分界嘅resize/orientationchange必須有對應JS重render觸發，否則個view會停留喺「未曾喺呢個模式下渲染過」嘅初始/loading狀態。呢類bug純睇CSS/HTML完全睇唔出，一定要實測跨界情境（例如手機闊度load資料後，模擬resize去桌面闊度，檢查內容係咪真係跟埋去）。
+
+**驗證**：750/1129/1130/390四闊度PASS；額外構造「390(mobile，globalOrders已有55筆但desktop tbody stuck loading)→900(compact)」嘅精確重現情境，確認resize後tbody由stuck placeholder變返45行真實資料；抽屜6個欄位逐一量度`getBoundingClientRect()`確認全部零溢出；console零新增錯誤（既有嘅本機環境network noise不計）。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-10」條目。**Subagent 使用記錄**：❌未使用（互動式grep追蹤render pipeline+browser精確重現情境測試全程自行操作）。
+
+[2026-08-30] (D69續八-follow-9) 緊縮桌面密度極致化 — 隱藏標題文字+合併徽章入按鈕，750px首次做到一行
+
+**背景**：follow-8部署後，Fat Mo再截圖確認並提出明確目的（唔止係逐點截圖圈選）：「訂單總覽」標題文字可以刪；「重新載入」同「N筆·時間」徽章合併成一個button放右上；**整體目的係盡量一行，盡量俾多啲位表格**。呢句「目的」係本輪嘅裁決依據，唔止跟截圖字面。
+
+**做法**：①`#v40-top-bar #v40-top-order-id{display:none}`——標題span本身冇拆走（icon follow-8已隱，呢輪連文字都隱埋），JS `insertBefore(toggleEl, titleEl)` 參照點唔受影響（display:none唔影響DOM查詢/insertBefore）。②徽章合併：`fhsSyncCompactDesktopLayout()` compact分支由`topBar.appendChild(countBadge)`改做`refreshBtn.appendChild(countBadge)`，令徽章成為button嘅子元素——click事件自然bubble up觸發`onclick="fhsRefreshAndCollapse()"`，唔使額外綁listener；CSS淨隱走徽章自己嗰個獨立綠色藥丸樣式（背景/padding/圓角），改做button內加border-left嘅後綴文字。還原邏輯不變（`titleEl.insertAdjacentElement('afterend', countBadge)`，唔理徽章當刻喺邊）。
+
+**取捨**：「盡量一行」呢類密度目的，優先靠**減內容**（隱藏冗餘文字、合併同類元素）而非**再縮字體**——follow-7/8已經將字體/padding縮到接近可讀性下限（11px/26px高），再縮風險大於收益；減內容（標題文字本身已可由頁面上下文推斷冗餘、徽章合併省返一組padding/margin）先係仲有空間嘅槓桿。
+
+**驗證**：750px（最窄緊縮寬度）實測top bar由follow-7/8嘅87-92px（因flex-wrap落兩行）降返51px（一行），750-1129全緊縮範圍皆一行；徽章click bubble測試PASS；1130/390兩個邊界闊度確認標題/徽章完整還原原位；drawer開關功能重測正常。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-9」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-08-30] (D69續八-follow-8) 緊縮桌面視覺清理 — 隱藏冗餘icon+徽章移位，證實follow-7 pattern已可低風險擴充
+
+**背景**：follow-7部署後，Fat Mo再截一張圖三處標記：①「訂單總覽」標題自帶嘅list icon（`switchMode()`寫入`topEl.innerHTML`嘅共用SVG）喺呢層純屬贅飾；②篩選漏斗嘅chevron（舊手風琴「展開」指示器）follow-7已改做抽屜，冇「向下展開」呢回事，留低會誤導；③④「24筆·時間」徽章要搬去top bar最右，「重新載入」緊貼佢左邊同一行。
+
+**做法**：①②純CSS隱藏（`display:none`），SCOPE死喺緊縮桌面media query入面，唔改共用JS（icon仍喺mobile/傳統桌面正常顯示）。③④擴充follow-7新增嘅`fhsSyncCompactDesktopLayout()`——compact分支`topBar.appendChild(countBadge)`（喺refreshBtn已appendChild之後執行，兩者共享`.fhs-btn-refresh`嘅`margin-left:auto`一齊推去最右）；還原分支用`titleEl.insertAdjacentElement('afterend', countBadge)`直接歸位，唔使理會其他元素當刻已經復原到邊。
+
+**驗證**：750/1129（icon/chevron隱藏、徽章搬右）+1130/390（icon/chevron/徽章位置全部還原）四闊度PASS，零溢出；抽屜開關功能重測正常（chevron移除唔影響click handler，佢綁喺成個toggle bar唔係chevron本身）。
+
+**通則**：呢輪係follow-7建立DOM搬遷pattern之後嘅首次「低風險擴充」——證實錨點+同一函式擴充嘅做法夠成熟，加新項目唔使重新設計整套機制，只需喺compact/restore兩個分支各加一句。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-8」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-08-30] (D69續八-follow-7) 緊縮桌面收納介面優化 — 手風琴改Threads式抽屜，揪出兩個結構性硬上限
+
+**背景**：follow-6部署後，Fat Mo再截兩張圖（訂單總覽本身 + Threads app 對照組）三色圈第二輪要求：①②紅圈——狀態tabs（全部/進行中/已完成）+類別chips（全部/手模/鑰匙扣/頸鏈）搬去頂部、「訂單總覽」標題右方；③藍圈——篩選漏斗「已選N項」合併入標題左方，並將其展開方式由「撳落喺下面展開filter-body」改做Threads app嘅樣式：撳左上角icon，整個介面向右移開展示選項面板。
+
+**兩個預先未察覺嘅結構性硬上限**：實作前grep代碼先發現，唔係憑截圖臆測：
+1. `#v40-top-bar`原本`height:48px`+`overflow:hidden`——只夠一行，紅圈嗰兩組嘢塞落去會被**裁走（隱形消失，唔係換行）**。修法：緊縮桌面層放寬做`height:auto`+`flex-wrap:wrap`，容許長高兩行。
+2. `#reviewFiltersV2`（filter-body嘅原生父容器）本身有`overflow:hidden`，係手風琴收合動畫必需嘅剪裁機制，唔可以直接喺原地拆咗嚟改做fixed抽屜（拆咗會連累其他仍然用緊手風琴模式嘅斷點，即mobile/傳統桌面）。修法：抽屜模式喺緊縮桌面層將`#reviewFilterBody`整個JS搬去`document.body`（沿用follow-6錨點pattern），跳出範圍搬返原位，`#reviewFiltersV2`喺緊縮層直接隱藏（入面內容已全數搬走，唔留空殼）。
+
+**連帶修復（非本輪要求，但唔修會埋雷）**：top bar長高兩行後，`applyReviewZoneOffsets()`裡面`zone1H`一直寫死`48`（假設top bar永遠48px高），令Zone2/Zone3/thead嘅sticky top全部用錯高度、視覺上會重疊。改用`topBarEl.getBoundingClientRect().height`動態量度，並將`topBarEl`加入既有`ResizeObserver`監聽名單（原本只聽Zone2/Zone3自己）。呢個同follow-5「休眠CSS假設喺新viewport範圍首次現形」屬同一類陷阱——差別在於呢次係**主動排查發現**，唔使等真機bug report先揭發。
+
+**兩個實作期間揪出嘅bug（均已修復並重新驗證）**：
+1. Scrim（抽屜背後遮罩）一開始寫喺`#reviewFiltersV2`入面——但嗰個容器喺緊縮層`display:none`，`display:none`會令**所有後代（包括`position:fixed`）完全唔render**，同`overflow:hidden`唔會影響fixed後代係兩回事。修法：scrim改做body層級靜態元素，唔跟隨`#reviewFilterBody`嘅JS搬遷。
+2. 還原分支（離開750-1129範圍）原本用`.fhs-top-bar__actions`（模式切換快捷列）做`insertBefore`參照點，但實測呢個元素會被**另一段既有邏輯**動態搬去`<body>`底層做底部導覽——唔保證留喺top bar入面。由於guard寫成`if(!actionsDiv) return`，揾唔到就令**成個if/else都唔執行**，包括同`actionsDiv`完全無關嘅else分支，static/segWrapper/類別chips/filterBody全部卡死喺緊縮狀態出唔返到傳統桌面。改用`refreshBtn`（follow-6原有元素，同一function入面早幾行剛appendChild入topBar，呢一刻保證存在）做參照點。
+
+**驗證方法論教訓**：驗證抽屜transform動畫時，發現automated browser分頁嘅CSS transition唔會自然tick——`element.getAnimations()`顯示`playState:"running"`但`currentTime`永遠卡喺`0`，令`getComputedStyle().transform`一直讀到起始值，**連手動加`!important`嘅inline style都好似攔唔到**（因為CSS Transitions喺cascade入面優先級高過`!important`author rule，一個卡死嘅transition會蓋過任何inline覆寫）。呢個一度誤導成疑似嚴重CSS specificity bug，逐層排查（cssText/specificity/matches()/document.styleSheets遞歸掃描）都證明源碼本身正確，最後用`el.getAnimations().forEach(a=>a.finish())`強制結算先證實真實落點正確。**呢個純粹係呢個自動化瀏覽器分頁嘅環境限制**（同follow-6發現嘅`resize_window()`唔觸發真resize事件同一類別），日後驗證任何牽涉CSS transition/animation嘅UI，卡住睇落唔啱時要諗埋呢個可能性，唔好只懷疑CSS cascade邏輯本身。
+
+**驗證**：750/1129（應收納）+1130/390（應還原）四闊度，另加兩組來回輪換（900→1130→900覆核重新進入緊縮層仍正確、1129→390→1000覆核手機模式完全唔受影響）。逐個闊度都用page-level/header-label/cell-bleed三層溢出檢查，全部零溢出零bleed；抽屜開關用`getAnimations().finish()`強制結算後確認位置/scrim/sticky聯動皆正確；console全程零錯誤。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-7」條目。**Subagent 使用記錄**：❌未使用（互動式grep排查+browser live測試全程自行操作）。
+
+[2026-08-30] (D69續八-follow-6) 緊縮桌面版面三項重排 — 首次喺呢一系列引入DOM跨容器搬遷（非純CSS）
+
+**背景**：Fat Mo 三色圈截圖標示緊縮桌面（750-1129px）三個位置要調整：①類別橫幅太佔位要隱藏；②「重新載入」搬去頂列標題右側；③「顯示項目財務／清除篩選／儲存篩選」3粒收納入「已選N項」摺疊面板。
+
+**設計取捨**：①純CSS可解決。②③要求嘅係喺唔同DOM容器之間搬元素（top-bar vs filter-row-pinned vs filter-body），CSS Grid/Flex `order`只能喺同一個flex/grid容器內重排，做唔到跨容器搬遷——呢個係本系列（D69續八~follow-5）首次需要真正DOM操作嘅UI改動，之前全部純CSS media query已夠。跟返代碼庫既有 `v40SyncActionBars()` pattern：`matchMedia`判斷 + `resize`監聽，唔用一次性判斷。
+
+**錨點設計**：用隱藏嘅 `<span id="fhsPinnedBtnAnchor">` 標記原位，離開緊縮範圍時逆序（save→clear→finance，插入後前者push後者）插返錨點之後，確保還原順序同原本一致——呢個係「單一插入點逆序重建」手法，避免要記住4個獨立插入位置。
+
+**驗證方法論教訓**：測試呢類JS resize監聽時，發現模擬工具嘅`resize_window()`只改視窗尺寸嘅CSS渲染，唔會觸發真正瀏覽器`resize` DOM事件——純CSS media query（好似之前幾輪嘅斷點切換）會即時反映因為佢哋根本唔靠事件，但依賴`window.addEventListener('resize',...)`嘅JS邏輯就唔會觸發。改用`window.dispatchEvent(new Event('resize'))`手動觸發先驗證到。**呢個純粹係測試工具限制，唔代表真機行為**——真實裝置轉向會可靠觸發`resize`/`orientationchange`事件（呢個係好成熟嘅標準瀏覽器行為，唔似之前follow-2嗰種「理論viewport值同真機有落差」咁易踩雷）。日後測試任何JS resize監聽邏輯，記得要手動dispatch事件先算完整驗證，唔可以淨靠`resize_window()`工具嘅視覺變化就當已驗證。
+
+**驗證**：750/1129（compact）+ 1130/390（normal）四闊度，每個都手動dispatch resize事件後檢查DOM位置、頁面溢出、filter panel展開後3粒掣可見可撳。全部PASS，console零錯誤。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-6」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-08-30] (D69續八-follow-5) sticky 表頭飄落表格中間 — 一條休眠7星期嘅舊 CSS 首次生效
+
+**背景**：Fat Mo 截圖顯示表頭飄咗落表格中間，同之前「表頭黐埋」（follow-3）係完全唔同性質嘅病——呢個係 `position:sticky` 定位錯亂。
+
+**真根因非本輪改動**：`@media(max-width:767px){.review-table-wrap{max-height:60vh}}`——一條同 D69續八-follow-2/3/4 完全無關嘅舊規則（L~2380），成日都喺度。以前 767px 以下永遠係手機卡片模式（`.review-table-wrap{display:none}`），表格本身睇唔到，呢條 max-height 從來冇機會發揮實際效果。D69續八系列首次令橫向手機（750px）都顯示桌面表格，先第一次令呢條休眠規則生效：370px 視窗 × 60vh = 222px box，但表格內容 707px 高，遠超個 box，thead 嘅 sticky 定位基準錯亂，飄咗落表格中間。
+
+**通則教訓**：呢類 bug（舊代碼一直喺度冇問題，直到新功能令一個舊 dead zone 首次變 live zone 先暴露）**靠靜態 code review 揪唔到**——單獨睇嗰段 CSS 完全正常，問題喺佢同「呢個 viewport 範圍而家會顯示表格」呢個新事實嘅交互作用。任何「令一個之前隱藏嘅範圍首次顯示」類改動（例如 D69續八本身），除咗檢查自己新加嘅 CSS，仲要問「呢個範圍入面重有無其他舊規則本來假設咗『呢度睇唔到』」。
+
+**修法**：喺 750-1129px 緊縮桌面 tier 加 `.review-table-wrap{max-height:none!important}`，中和舊規則。
+
+**驗證**：750/390/1129/1536 四闊度，模擬捲動250px後檢查 thead 距視窗頂嘅實際距離（應貼實 sticky top ~48-53px），全部 PASS；重跑 follow-3/4 四重檢查確認冇回歸。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-5」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-08-30] (D69續八-follow-4) 「按比例縮細」取代「強制斷行」+ 底部導覽 Threads 式收納
+
+**背景**：Fat Mo 就 follow-3 提四點。**第1點（頂頭掣過大）查證為已修好——佢睇緊舊快取圖**（本機 750px 實測掣 30px 高、`mq749=false`；佢截圖時間戳同 follow-3 之前嗰張完全一樣）。**第2、4點係 follow-3 真 bug，而且 Fat Mo 嘅診斷（「應該按比例縮小」）先係正解。**
+
+**follow-3 錯喺邊**：我用 `flex-wrap:wrap` + `white-space:normal` 去「逼」內容塞落窄欄。配上既有 `.review-eng-text{overflow-wrap:anywhere}`，刻字喺 64px 欄變成一個字一行直排——實測有格闊 37px 但高 260px。**通則教訓：欄位唔夠闊嘅正解係令內容變細（等比縮放），唔係逼佢換行。** 強制斷行喺極窄欄會退化成逐字直排，視覺上比溢出更差，而且會令行高失控（Fat Mo 講嘅「多咗行」）。
+
+**正確做法**：緊縮層整體等比縮細（table 13→11px、badge 9.5px、icon 9px、select/input 10px、pill/dlv-badge 同步），內容自然變窄。刻字改單行截斷（…）取代 `overflow-wrap:anywhere`。另加兜底 `.review-table tbody .review-badge{max-width:100%;overflow:hidden}`——badge 係 nowrap，任何情況下切走好過爬出格外蓋住隔籬欄。
+
+**第3點新需求（底部導覽 Threads 式收納）**：復用既有「智慧置頂欄」scroll handler，但拆成**兩個獨立生效範圍**——置頂欄收納維持只限 <750（原行為零改動），底部導覽收納擴至 <1130。理由：橫向得 370px 高，個浮動 pill 蓋住表格內容嘅代價遠高於直向。直向手機順帶都有咗底部收納。
+
+**驗證**：750/390/1129/1536 × 4 視圖，四重檢查（頁面級溢出／表頭 label 溢出／cell 級 bleed／刻字病態直排高度）全部 0。捲動行為實測 down→hide、up→show。1536px 確認 `td` 字級仍 13px，緊縮層冇外洩去桌面。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-4」條目。**Subagent 使用記錄**：❌未使用。
+
+[2026-08-30] (D69續八-follow-3) 橫向桌面模式版面重整 — 「混合態」斷點對齊 + 表頭 padding 槓桿
+
+**背景**：follow-2 令橫向成功切 desktop 表格，但 Fat Mo 截圖投訴「頂頭選項佔據過多」＋「表頭表格不乎合大小走位」，兩個都係 follow-2 嘅直接後果。
+
+**問題①「混合態」**：follow-2 只改咗 accordion/table 切換嗰個斷點（768→750），其餘控制篩選區排版嘅 `@media(max-width:767px)` 大 block 同 `.fhs-cat-strip` 冇跟——令 750-767 出現「桌面表格 ＋ 手機版全闊 2×2 堆疊掣」嘅混合態。實測 370px 高視窗被頂欄48＋篩選164＋橫幅76＝290px 食晒，表格只剩 70px。**修法**：兩處斷點一併改 749。**取捨**：750-767 唔再享 44px 觸控目標（AGENTS 手機 POS 硬規則）——該規則本意係直向落單場景，橫向睇表格屬瀏覽場景，且 Fat Mo 明確要求橫向出桌面模式；直向 ≤749 完全不受影響（實測 390px 四粒掣仍 44px）。呢個取捨已明寫落 CSS 註解，日後有人質疑可即刻睇到理由。
+
+**問題②「表頭黐埋」**：follow-2 將客人/數量/批次壓到 44px，但「2 中文字 label + 12px icon + padding」實測硬下限 58px。**根因係 follow-2 嘅 cell 級檢查只掃 tbody 內容，冇掃 thead label**——同 follow-2 自己啱啱寫落 learnings #16 嘅「頁面級掃描有盲區」係同一類錯誤，只係低一層。教訓補強：驗表格密度要三層（頁面 `scrollWidth` → thead label 溢出 → tbody cell bleed），缺一層就會有一類問題冚唔到。
+
+**關鍵槓桿（呢個先係真正解法）**：58px 下限入面有 24px 純粹係表頭左右 padding（原 `8px 12px`）。喺緊縮層收到 4px，每欄下限跌到 ~42px，12 欄一次過釋放 ~190px——之前幾輪一直喺「邊欄讓幾px俾邊欄」度打轉，就係因為冇睇穿真正嘅空間喺 padding 度。連帶三個降低內容需求嘅手法：日期+限時badge上下疊（推廣 follow-2 只做咗喺手模嘅做法）、刻字格容許斷行、產品明細 badge 容許內部斷行（scope 落 `.review-item-card` 內，類別視圖短 badge 零影響）。
+
+**量度方法論再修正**：本輪揪出 follow-2 用嘅 `tr.children[i]` 欄位對位法**喺有 rowspan 嘅「全部」視圖會系統性對錯欄**（後續列缺少被 rowspan 吃掉嘅前導格），一度量出 845px 假數據，令我幾乎誤判「全部視圖根本唔可能 fit」。改用幾何對位（`td.left` 對 `th.left`）後真實需求 807px，最終收埋落 750。**通則：量度任何有 rowspan 嘅表格，唔可以用 children index 對欄。**
+
+**驗證**：750（真機值）/749/1129/1130/1536/390 六闊度 × 4 視圖，每組三重檢查（頁面級＋thead label＋cell bleed）全部 0/0/0。表格起始位由 y=300 降到 y=144（全部）／y=230（類別）。
+
+全文見 Changelog.md 2026-08-30「D69續八-follow-3」條目。**Subagent 使用記錄**：❌未使用（逐輪量度→調整→再量度嘅收斂過程，每步依賴上一步實測數字）。
+
+[2026-08-29] (D69續八-follow-2) 真機 iPhone 13 Pro 橫向仍留手機模式最終修復 — 斷點由768改750，貼合真機實測值
+
+**背景**：D69續八部署後 Fat Mo 真機測試橫向仍留手機模式。D69續八-follow 一度懷疑係`<meta viewport>`嘅`width=device-width`令layout viewport鎖死直向闊度（WebSearch查到嘅iOS已知陷阱），上線兩個對照診斷頁（viewport-check.html現行meta／viewport-check2.html移除`width=device-width`修正meta）等Fat Mo截圖驗證。
+
+**診斷推翻**：Fat Mo截圖顯示**兩個版本**（現行/修正meta）橫向都報`window.innerWidth=750`，非直向鎖定嘅390，亦非理論橫向值844——證明個meta理論係錯嘅，真正病因純粹係**750<768**（一個純數值問題，跟meta寫法無關）。真機橫向可用闊度本身就係750，同WebSearch查到嘅理論裝置闊度844有~94px落差（推測係Safari橫向本身保留咗部分UI空間，真機實測永遠比理論裝置規格值細，呢個係本次最大教訓）。
+
+**斷點調整範圍**：768呢個數值喺成個Dashboard有~15處共用（側邊欄/財務總覽/多個彈窗/底部導覽/segmented control等），全部改動風險太大且未測試。**只改訂單總覽專屬嘅7處**：accordion/table CSS切換、`renderReviewTable()`嘅JS分支、D69續八加嘅緊縮桌面tier下界、智慧置頂欄（review-mode guarded）、peek animation（reviewAccordionContainer專屬）——其餘~10處側邊欄/財務總覽/彈窗類共用768保持不變。
+
+**斷點數值嘅兩輪迭代**：第一輪選730（750留20px緩衝，出於保守猜測），逐欄位精確量度先發現嚴重問題——`table-layout:auto`縮到730時，多個badge/input嘅真實內容闊度已經跌穿分配到嘅欄闊，令內容**bleed溢出去隔籬欄**（頁面級`scrollWidth`檢查完全驗唔到呢類問題，要逐個badge/select/input嘅`getBoundingClientRect().right`同所屬`<td>`右邊界比較先揪到）。逐欄位重新量測+調整多輪後，發現「全部」/鎖匙扣/頸鏈/手模四個視圖content嘅真實最低闊度都落喺748-751px——同Fat Mo實測嘅750幾乎完全吻合。**結論：730太進取，750先係真實可行嘅下限**，遂將斷點由730改返750（零緩衝，但貼實真機實測值+content真實下限雙重印證）。
+
+**新教訓（已落learnings/frontend.md）**：table-layout:auto嘅欄闊分配唔可以淨睇`body.scrollWidth`/`document.scrollWidth`嚟判斷零溢出——個table本身可能啱好等於viewport闊度（睇落乾淨），但入面個別badge/select/input嘅content可以溢出去隔籬`<td>`嘅視覺範圍，要逐個content元素同自己所屬`<td>`嘅邊界比較先驗得出。D69續八嗰輪「44組合全域掃描零溢出」嘅驗收方法論本身有呢個盲區——只驗到頁面級溢出，冇驗到儲存格級溢出，僥倖冚過去因為當時嘅寬度（768起跳）仲有足夰餘量。
+
+**驗證**：750/749邊界精確位元 + 730（曾經嘅舊斷點，證實已無效）+ 1129/1130邊界 + iPad橫向1210 + ZenBook 1536 + 手機直向390，全部4個視圖，每個組合同時做頁面級`scrollWidth`檢查**同**逐badge/select/input嘅cell級bleed檢查（雙重驗證，唔再淨信頁面級）。全部PASS，零溢出零bleed。
+
+全文見 Changelog.md 2026-08-29「D69續八-follow-2」條目。**Subagent 使用記錄**：❌未使用（每一步嘅量度結果直接決定下一步調整方向，逐輪反饋節奏唔適合委派；WebSearch已用核實裝置真實規格）。
+
+[2026-08-29] (D69續八) 多裝置響應式審計 + 768-1129px「斷層區」根治 — CSS Grid blowout 真根因 + 緊縮桌面新斷點層
+
+**背景**：Fat Mo 問「iPhone 轉橫向會唔會切去 desktop 模式」，並要求用 iPhone 13 Pro／iPhone 17 Pro／iPad Pro 11" M4／ASUS ZenBook Duo UX482EGR 四款實機尺吋重新審視訂單總覽 UI/UX。查 `isMobile()` 純睇 `window.innerWidth<768`（[freehandsss_dashboardV42.html:16470](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:16470)），冇睇裝置/觸控，故答案係「會」。
+
+**四機六向掃描（WebSearch 核實 CSS viewport：iPhone17 Pro 402×874/webmobilefirst.com；iPad Pro11M4 834×1210/多方交叉；ZenBook UX482EGR 主屏1920×1080 FHD/asus.com 官方規格，Windows 157PPI級預設125%縮放換算有效CSS 1536×864）**：iPhone13 Pro／17 Pro **橫向**（844×390／874×402）、iPad **直向**（834×1210）三個真實使用情境全部命中「768-1023px 斷層區」——JS/CSS 斷點話一過768即切桌面table，但「全部」視圖原欄闊總和實測 ≈1125px（`_FHS_TH_DEF` 11 欄之和，主要`prod`產品明細220px），呢段完全頂唔住，全頁橫向溢出（iPad直向819個像素→溢出至998-1123px不等，視乎所選類別）。
+
+**真根因非表面現象**：起初懷疑係篩選列 `.filter-row-primary` flex-wrap 唔生效，逐層 `getComputedStyle` 追蹤揪出真凶喺高幾層——`.v40-review-active .v40-layout { grid-template-columns: 1fr; }`（CSS Grid）嘅子項 `.v40-main-col` 冇顯式 `min-width`，觸發 CSS Grid 經典「grid blowout」陷阱：grid item 預設 `min-width:auto`，唔會縮落去 grid track 目標寬度以下，令內容嘅自然（未換行）寬度倒灌撐大成個 track，全鏈（main-col→review-container→card→review-filters-v2→filter-row-pinned→filter-body→filter-row-primary）跟住一齊撐爆。修法：`grid-template-columns: 1fr` → `minmax(0, 1fr)`（Grid 慣用解法），一行修復即令 main-col 正確收返落 grid track 闊度，篩選列 flex-wrap 隨即自然生效（唔使再另加 width/flex 修補）。
+
+**Fat Mo 拍板方向③**：加一層「緊縮桌面」中間態（768-1129px，實測邊界比原估768-1099再闊少少至1129先完全冚實原欄闊嘅~1125px真實下限），淨影響呢個範圍，`<768`（手機卡片）同 `≥1130`（原有欄闊，Fat Mo明示「全部」視圖唔好改嗰條規則）完全唔動。做法：`fhsBuildOverviewHead()` 新增 `.ovw-allview-col.ovw-col-{k}` class（只喺 `_c===''`即「全部」視圖先加，唔影響類別視圖既有 `ovw-narrowcol-*` 1280px系統），新 media query 覆寫呢11欄 !important width。掃描過程再發現類別視圖（鎖匙扣/頸鏈/手模）喺同一斷層區**同樣溢出**（1280px tier 數值原為1024px「iPad安全」門檻校準，768-1023從未實測）——追加第二組更緊嘅 `ovw-narrowcol-*` 覆寫，源碼排喺 1280px 組之後靠 cascade 順序喺 768-1129 重疊時食硬。
+
+**驗證**：全部6個真實裝置viewport（3手機橫直向+iPad兩向+ZenBook）× 4個視圖（全部/鎖匙扣/頸鏈/手模）= 24組合，加埋768/1099/1100/1129/1130五個邊界精確像素點 × 4視圖 = 20組合，全部 `scrollWidth>innerWidth` 全域掃描零溢出、零 overflow element。1130px 邊界確認原有≥1100寬度嘅欄闊設定完全冇動過（回歸測試PASS）。
+
+全文見 Changelog.md 2026-08-29「D69續八」條目。**Subagent 使用記錄**：❌未使用（互動式CSS層層追蹤+live browser即時量度，需要每步睇返上一步結果先決定下一步查邊度，委派會斷診斷鏈；WebSearch 已用嚟核實裝置真實規格非猜測）。
+
+[2026-08-26] (D69續六) 進度狀態往返失真全套根治方案 — `/execute` 執行完成
+
+**背景**：D69續四 cl-flow-fast 判決 CONDITIONAL_READY，Fat Mo 已就 3 項拍板（見 D69續四段落），本輪 `/execute` 落地。原 `artifacts/2026-08-26-0828/` 內嘅 a3-draft 逐行技術規格已 gitignored，本 session 之worktree 冇存到，執行前先重新讀現行程式碼＋live Supabase 查證重建技術設計（非逐字重播 a3-draft），已向 Fat Mo 聲明此點並取得「照你方向去處理」嘅授權。
+
+**執行前意外發現並修復**：本 worktree（`claude/read-command-68c88c`）分支自舊 base（D68為止），漏咗 D69～D69續五全部 work（包括本方案本身）。查證 `claude/d65-family-owner-role` 已 push origin 且與本 worktree 零分歧（0 ahead / 28 behind），安全 `git merge --ff-only` 追上，未觸碰主倉工作目錄（該處在另一分支且有獨立進行中改動）。
+
+**技術設計（`_FHS_STAGE_DEF` 單一真源）**：
+- 新增 `window._FHS_STAGE_DEF` 陣列，每階段有 `value`（畫面原文，同 `fhs_complete_order` RPC 寫入慣例對齊）/`label`/`scope`（`general`/`keychain`/`bulk`/`filter` 四種下拉情境）。
+- 新增 `_fhsStageOptionPairs()`/`_fhsStageOptionsHtml()`/`_fhsPopulateStageDropdowns()`/`_isKeychainCategory()` 四個 helper，取代原本 4 處分散清單（篩選下拉 `#reviewStatus`、批量下拉 `#bulkStatusSelect`、手機卡片、桌面表格）。兩個靜態 `<select>` 改喺 script 執行時一次性填充，唔再喺 HTML／JS 兩處各自維護會漂移嘅選項清單。
+- **移除 `_sanitizeItemStatus()` 函式**（原本 4 個寫入點都會call佢，將畫面原文強行轉做收窄咗嘅 ENUM 風格值，係「同一個值嚟回一次就變一次」嘅根源）。4 個寫入點（`saveInlineEdit` 嘅 localMetaCache + PATCH、`sbSyncOrder` 嘅兩個 INSERT 路徑）全部改寫畫面原文，只保留空值防禦（`value || '0 什麼都未做'`）。
+- `_FHS_LEGACY_STATUS_MAP`/`_fhsNormalizeStatus`（顯示層安全網，處理 DB 殘留歷史別名值）**冇改動**，同 `_FHS_STAGE_DEF`（寫入層單一真源）係兩個獨立機制並存；`_fhsNormalizeStatus` 加 `.trim()`（Gemini MINOR）。
+- `localStorage` key `fhs_status_store` 改名 `fhs_status_store_v2`（Gemini MAJOR#2）——防止舊瀏覽器快取住轉換前嘅 ENUM 化舊值，喺根治後繼續遮蓋新鮮 DB 值。舊 key 唔清理（stale but harmless）。
+
+**手模路徑（項③，Fat Mo 拍板擴大範圍）根因分析**：追蹤 `_fhsHmCheckChange()` 寫入路徑，證實 checklist 值（`hm:已book|已做laser` 呢種格式）一樣經 `_sanitizeItemStatus()` 寫入，一樣被壓縮失真（2步驟壓成單一 `已book日期`，第2個勾選狀態喺下次 sbSyncOrder 或 refresh 後消失）。讀取端 `_fhsHmParseState()` 本身已經識得正確解析原始 `hm:` 字串——**移除寫入層轉換後，手模路徑自動一併根治，唔需要額外設計**。
+
+**SQL 清洗（migration `0092_process_status_dialect_cleanup.sql`）**——live 查證分佈後執行，範圍嚴格對齊 Fat Mo 拍板：
+- `process_status`：`完成`(17筆)→`Done 已完成`、`待製作`(4筆)→`0 什麼都未做`。**`製作中`(執行時live查證已增至8筆，非原估3筆，因寫入bug持續發生)刻意不清洗**——維持原值，前端已有嘅 `⚠原值` raw-option 顯示機制（D69續四已上線，本輪冇改動）繼續生效，由 Fat Mo 逐筆人手指定。
+- `precomplete_status`：`完成`(54筆)→`Done 已完成`、`待製作`(1筆)→`0 什麼都未做`（Gemini BLOCKER①擴大範圍，`fhs_uncomplete_order` 會由呢個欄位還原，唔清洗會令舊方言死灰復燃）。
+- 執行後即時查證：`process_status`分佈 `Done 已完成`65→82、新增`0 什麼都未做`4、`完成`/`待製作`歸零，`製作中`/`已book日期`/`hm:...`/`需進行補打` 一律不變；`precomplete_status`：`完成`歸零全部轉 `Done 已完成`(54)。
+
+**獨立稽核**：`code-reviewer` subagent 首輪 FAIL（`_isKeychainCategory` 判斷邏輯喺手機/桌面兩處重複，違反 DRY），已抽成全局 helper 修復，重新 live 驗證（重新載入 dashboard，DOM 確認 keychain/general 兩組 scope 選項正確、`製作中` 品項 `⚠` 選項正確 selected、console 零錯誤）。
+
+**改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（81 insertions/58 deletions）、`supabase/migrations/0092_process_status_dialect_cleanup.sql`（新檔，已 apply 到 live Supabase）。**唔涉及 schema 改動**（欄位本已自由 text）、**唔涉及 n8n 改動**（Mirror Prep 節點本身純 pass-through，前端統一後自動跟）。**Subagent 使用記錄**：✅已使用（`code-reviewer` 獨立審查 HTML diff，揪出並促成 DRY 修復；分支修復/live SQL查證/browser驗證由主對話直接執行，需 repo/DB/browser 存取，委派冇存取嘅模型會出幻覺路徑）。
+
+[2026-08-26] (D69續五) fhs-health-check.js 新增第8類偵測：P0.6歸檔洩漏機械閘
+
+**背景**：D69續四交接過程中揪出 `commit.md` P0.6（完成項目搬去「已確認完成」歸檔區）自 Session 144（2026-07-05）起連續 7 週無人執行，MASTER 持續待辦表積壓 135 項已完成項目佔表 87%，Fat Mo 反覆質疑「話已解決但新session仍見到」——根因之一正是呢個純人工紀律規則冇機械閘偵測，症狀係「表面有記錄、實際搵唔到」而非報錯，容易再度靜默停擺。Fat Mo 明確指示「要加 health-check 掃描 & 加呢個 health-check 閘」。
+
+**設計**：沿用既有 `.fhs/tools/fhs-health-rules.json` 資料驅動架構（改規則不用改程式碼），新增 `pending_table_leak_checks` 規則類別 + `checkPendingTableLeaks()` 引擎函式（`scripts/hooks/fhs-health-check.js`）。邏輯：定位 handoff.md 內「# 📋 MASTER 持續待辦」標題至第一個「### 已確認完成」標題之間嘅區間（即真正未完成表），掃描區間內任何一行優先欄仍寫 `✅ 完成`（budget=0，零容忍——歸檔區本身大量 `✅ 完成` 屬正常，刻意排除喺區間之外唔誤判）。命中即代表上次 `/commit` P0.6 又漏執行。
+
+**驗證**：新增 fixture `13-pending-table-leak`（人工植入一行洩漏，預期命中）+ `14-pending-table-clean`（歸檔區大量 `✅ 完成` 但待辦表乾淨，預期零誤判），連同既有 12 個 fixture 全部 PASS（14/14），對真實 repo 現況（本輪剛完成歸檔整理後）跑出 0 命中，證實無回歸無誤判。同步更新 `governance/05_maintenance-protocol.md` §7 季度健檢指引提及類別數（過往 5 類 → 現 8 類）。
+
+**局限**：此閘只喺 SessionStart hook 執行時提示（fail-open，唔阻擋任何操作），唔會阻止 `/commit` 落地——同 R13（handoff 未 staged 禁 commit）呢種硬阻擋閘性質不同，屬於「事後盡快發現」而非「事前禁止」。若要做到 commit 時強制阻擋，需另外評估喺 `pre-tool-guard.js` 加對應規則（本輪未做，範圍外）。
+
+全文見 `scripts/hooks/fhs-health-check.js`（`checkPendingTableLeaks`）、`.fhs/tools/fhs-health-rules.json`（`pending_table_leak_checks`）、fixture 13/14。**Subagent 使用記錄**：❌未使用（純機械規則新增+既有測試框架擴充，互動式改碼+跑 fixture suite 自驗即可，無需委派）。
+
+[2026-08-26] (D69續四) 客人欄寬/篩選列合併/空行bug根治/進度狀態往返失真止血 + 全套修復方案 CONDITIONAL_READY
+
+**背景**：D69續三 commit+部署後，Fat Mo 繼續回報三類問題：①客人欄仲想再收窄（226→200→180px）；②篩選區兩行想合併一行；③訂單總覽出現「無故空行」，先後兩輪指向錯誤方向（「刻字空白」理論，已用實測推翻）；④進度狀態下拉「明明揀咗 Done 但變返什麼都未做」。
+
+**空行 bug 真根因（本 session 第三次追查先揪到）**：Fat Mo 點名 4 張有 bug 嘅單（0600809/0600908/0600903/06001008）同 5 張冇事嘅單（0600718/0650429/0600106/0600112/0600107），查 live Supabase `order_items` 逐單對比，真正變數係**單一品項數（rowspan=1）**，同刻字有冇資料完全無關——推翻咗前兩輪嘅「刻字空白」理論。兩層真根因：①CSS 特異度：`.review-table tbody td`（0,2,2）壓住 `.review-cb-td`（0,1,0），令勾選格實際 padding 10px（設定值 5px 從未生效），加 16px checkbox = 36px 高度下限，多品項單靠 rowspan 攤分掩蓋咗，單品項單就變成成行嘅高度天花板；②備註 `<textarea>` 兩處都冇 `rows` 屬性，瀏覽器預設 `rows=2`。修法：CSS 加對齊特異度嘅覆寫、兩個 textarea 加 `rows="1"`、備註格 padding 4px→2px。單品項列 61px→37px，同多品項列（36px）僅差 1px。
+
+**進度狀態往返失真（比想像中根本嘅問題）**：查 `order_items.process_status` 型別，發現係**自由 text，冇 ENUM 冇 constraint**（`pg_constraint` 查詢實測零結果）——推翻咗前一輪「ENUM 限制」嘅錯誤前提。真正成因係**同一個 text 欄位有 3 個寫入者、2 種方言**：`fhs_complete_order` RPC（撳掣）寫畫面原文 `Done 已完成`（65筆最大宗）；前端 `saveInlineEdit` 經 `_sanitizeItemStatus()`（`V42.html:6005`）用關鍵詞子字串比對硬轉成 ENUM 風格 `完成`/`待製作`/`製作中`；`sbSyncOrder` 嘅 DELETE+INSERT 還原路徑（`:18182`）更會對「已經喺 DB 入面」嘅正確值再度 sanitize 一次，係主動污染源。往返實測：8 個階段只有 3 個原樣還原，`2 已修3D圖` 降級成 `待製作`；改階段描述會靜默改變存入值（5 改 4 中招）——直接影響 Fat Mo 明示嘅「將來會持續增減/改描述」需求。
+
+**本輪已落地嘅止血修復**：新增 `_FHS_LEGACY_STATUS_MAP` + `_fhsNormalizeStatus()` 別名對應表（`完成`→`Done 已完成`、`待交收`/`已取件`→`Done 已完成`、`待製作`→`0 什麼都未做`），桌面／手機下拉 + `fhsStatusBucket()` 三處讀取時套用；對唔上任何已知值嘅一律顯示 `⚠ 原值`，唔再靜默 fallback 去第一個選項扮「未做」。實測：講大話 0 件、正確對應 10 件、標記待確認 1 件（`製作中`，細階段資訊已不可還原）。**呢層只係止血 fallback，未動寫入路徑**。
+
+**全套根治方案**：走 `/cl-flow-fast`（Flow ID `2026-08-26-0828`），判決 **CONDITIONAL_READY**。設計核心：單一真源階段表 `_FHS_STAGE_DEF`（每個階段明確聲明 `value`/`label`/`bucket`/`scope`）取代代碼入面 4 處重複清單，全線寫入改用畫面原文（同 `fhs_complete_order` 既有慣例對齊），**零 schema 改動**（欄位本身已係自由 text，唔需要擴 ENUM）。呢個設計專門解決 Fat Mo「階段會持續演化」嘅長期要求：日後加減階段或改描述只需改一個陣列，唔會再靜默改壞已存資料。
+
+**A2 Gemini 對抗評審（`gemini-3.6-flash`，主模型過載自動降級，評審完整非 degraded）**：2 個 BLOCKER 全部用實證解除（非延後）——①清洗範圍遺漏 `precomplete_status`：查證屬實且範圍比原草案估計更大（`precomplete_status` 實測 54 筆 `完成`，`fhs_uncomplete_order` 會由呢個欄位還原污染 process_status，即「取消完成」操作會令舊方言死灰復燃），已擴大清洗範圍涵蓋兩欄；②懷疑 n8n `sync_order_to_mirror` 有獨立方言：實讀 live n8n 節點 `Supabase Mirror Prep`（workflow `6Ljih0hSKr9RpYNm`）證實 `process_status: ui.process_status || null` 純粹 pass-through 前端 webhook 送嘅 `_ui_process_status`（本身即畫面原文，未經 sanitize），n8n 完全冇獨立方言，前端統一後 n8n 自動跟隨，BLOCKER 不成立。另 3 個 MAJOR（命名 `hm`→`scope` 更貼切、localStorage `fhs_status_store` 需版本鍵防舊值遮蓋新值、移除 sanitize 需保留空值防禦）+ 2 個 MINOR（查表前 `.trim()`、`label`/`value` 長期漂移須文件化）全部採納。
+
+**Fat Mo 已拍板（2026-08-26）**：①`製作中`(3筆)→**維持原值 + ⚠ 標記**，由 Fat Mo 逐筆人手指定正確階段（不由程式猜測）；②清洗 SQL→**同 HTML 一齊上線（一次過）**，非分兩步；③`已book日期`(7筆)/`hm:...`(1筆) 手模 checkbox 路徑→**唔係維持不動，要一併檢查有無同類問題**（範圍較原方案擴大，執行時需另行核實該路徑往返是否同樣失真）。
+
+**Session 交接狀態**：本輪全部改動（客人欄寬/篩選合併/空行修復/狀態止血）已 live 驗證但**尚未 commit**，待 Fat Mo 就上述 3 項拍板、`/execute` 全套方案後，一次過連同已驗證嘅修復統一 commit + 部署。
+
+全文見 Changelog.md 2026-08-26「D69續四」條目、`artifacts/2026-08-26-0828/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅已使用（cl-flow-fast 內建 A2 Gemini 對抗評審；依賴掃描/live SQL/n8n 節點實讀由主對話直接執行，需 repo/DB 存取，委派冇存取嘅模型會出幻覺路徑）。
+
+[2026-08-25/26] (D69續三) 訂單總覽類別視圖密集化重排 — Excel 式密度，多輪反饋逐一實測收斂
+
+**背景**：Fat Mo 對 D69 類別視圖多輪投訴「太稀疏」，指定要似 Excel 咁密、盡量一屏睇晒鎖匙扣所有列。之後逐輪追加更精細嘅要求：單號欄堆疊過高、對象/部位/材質/數量四欄過寬、日期同限時警告分兩行、「另有」全寫文字太佔位，每輪均截圖+紅圈指出具體問題。
+
+**核心技術決策：`mwCat` 雙軌欄闊系統**——`_FHS_TH_DEF` 部分欄位（`Order_ID`/`Date`/`Customer`/`eng`）新增 `mwCat` 屬性，`fhsBuildOverviewHead()` 用 `(d.mwCat && _c) ? d.mwCat : d.mw` 判斷：有揀類別（`_c` 為真）先用 `mwCat`（桌面密集數值），「全部」視圖（`_c=''`）永遠用原 `mw`（維持 D69 承諾嘅零改動）。呢個機制令本輪所有密度改動完全唔會滲入「全部」視圖，靠一個 boolean 判斷式而非分開兩套渲染邏輯達成。
+
+**回應式衝突同解法**：table-layout:fixed 之下，欄闊係「比例權重」，隨容器闊度線性縮放；但 badge/表頭 label 嘅實際內容闊度係固定 px（中文字/icon 唔會變細），兩者唔同步。同一組 mw 數值喺 Fat Mo 實際嘅 1920 桌面同一個假設嘅 1024 iPad 橫向之間互相排斥——加大去遷就桌面密度，1024 度即刻溢出；夾窄去遷就 1024，1920 又留返大量白位。**解法**：新增 `@media (max-width:1280px)` + 動態掛嘅 `.ovw-narrowcol-<key>` class（`_c` 為真先加），將呢批類別視圖專屬欄嘅闊度喺 ≤1280px 用 `!important` 覆寫返窄screen安全值，>1280px 保留桌面密集值。兩層互不干擾，「全部」視圖因為個 class 淨係喺類別視圖先加，完全唔會命中呢條 media query。
+
+**過程中兩次自我引入嘅回歸（均即場 live 實測揪出並修復，未帶入下一輪）**：
+1. **`.review-table-wrap { overflow-x:auto }` 打爛 position:sticky 表頭**：為修 iPad 1024px 撞版，一度將呢個 wrap 嘅 overflow 由 `visible` 改 `overflow-x:auto`。但 CSS 規格有陷阱——`overflow-x` 設非 `visible` 值時，`overflow-y:visible` 會被瀏覽器強制一併變成 `auto`，令呢個 wrap 意外變成新嘅「sticky scrolling ancestor」。表頭 `position:sticky`（原本靠 `.review-table-wrap` 原有註解明寫「無內部捲動+overflow:visible，避免成為 sticky scrolling ancestor」嚟保證貼實 viewport）因而唔再貼頁面，改貼呢個 wrap 自己嘅捲動框，捲動時飄到表格中間——Fat Mo 截圖見到深色表頭夾喺兩行資料中間。教訓：改動一個有明確反面註解嘅屬性前，必須先讀晒個註解嘅原因，唔可以純粹睇「呢個屬性而家值係乜」就改。已復原 `overflow:visible`，改用「欄闊本身 + media query 分域」解決 1024 撞版，唔再需要呢個 wrapper 兜底。
+2. **表頭 label 本身嘅 scrollWidth 溢出**：連續幾輪收窄部位/數量欄直至貼近 data badge 嘅內容需要（24-45px）時，漏查咗表頭文字本身（icon+「數量」，11px 粗體大寫+letter-spacing）嘅 scrollWidth 實測要 58px——一直只驗「data 內容有冇溢出」，冇驗「表頭 label 有冇溢出」，令表頭文字自己溢出撞落隔籬欄（Fat Mo 截圖：「數量欄表頭移位」）。教訓：欄闊嘅安全下限＝max(data內容需要, 表頭label需要)，唔可以淨計其中一項。已補回 33px（表頭 label 嘅真正物理下限），連 ≤1280px 備用數值嗰邊嘅同一盲點一併補。
+
+**未解決事項**：Fat Mo 報告訂單 `06001008` 出現無故空行。直接查 live Supabase `order_items` 表確認資料（2件：鎖匙扣右腳不銹鋼×4 + 手模擺設玻璃瓶各一）同截圖一致，但用完全相同資料喺測試環境重現得零空隙（單行 61px，同下一張單緊接）。未能定位成因，懷疑一次性渲染閃現，已請 Fat Mo 重新整理頁面確認是否持續，持續先再追查。
+
+**驗證**：每輪改動即時 4 個類別視圖 colspan/文字/表頭溢出=0、內聯編輯 index 對正確品項（D69-follow 建立嘅安全性質延續）、sticky 表頭捲動行為、console 零錯誤，1024px/1920px 雙闊度交叉驗證。另派一隻 fresh-context `code-reviewer`（opus）覆核首輪 diff：PASS 6 項（資料寫入安全/表頭三處同步/手機 accordion 隔離/CSS 特異度/XSS/死碼），揪出 1 個 blocker（手機篩選區佔版 38%畫面）+ 2 個警告（iPad 撞版風險），全部依 FHS「視覺 bug 必須實測」紀律逐一實測驗證後修復，唔盡信純讀碼推論。
+
+全文見 Changelog.md 2026-08-25/26「D69續三」條目。**Subagent 使用記錄**：✅已使用（1 隻 fresh-context code-reviewer 覆核首輪 diff；後續多輪反饋迭代因需要逐輪即時 browser 交叉驗證，主對話直接執行）。
+
+[2026-08-25] (D69續二) 分頁掣（全部/進行中/已完成）白色滑動指示器要撳兩下先生效 — 隱藏容器 0×0 量度 + listener 疊加雙修復
+
+**背景**：Fat Mo 截圖回報訂單總覽「全部/進行中/已完成」分頁掣有 bug——撳「進行中」一下畫面冇反應（文字轉粗體但冇白底），要再撳一下先出到正確效果。
+
+**根因**：`#fhsSegCtrl` 白色滑動指示器（`.fhs-seg-indicator`）由 `initSegmentedControls()` 計位，首次執行喺 `DOMContentLoaded`；但佢所屬嘅 `#reviewModeContainer` 靜態 markup 預設 `style="display:none"`（`Freehandsss_Dashboard/freehandsss_dashboardV42.html:4157`），未切去訂單總覽 mode 前一直隱藏。量度隱藏元素嘅 `getBoundingClientRect()` 全部返 0（`{top:0,left:0,width:0,height:0}`），令指示器一開波就寫低 `width:0px` 嘅錯誤狀態。CSS 層面（`.fhs-seg-btn { background:transparent !important; }`，V42 AG Stitch 組件3）令按鈕自身嘅 `.is-active` 背景色被 `!important` 蓋走，白底完全依賴呢個 JS 指示器元素，所以量錯即係「文字轉粗體但冇白底」呢個症狀嘅直接成因。之後用戶撳一次分頁掣觸發 `setSegTab()`→再次呼叫 `initSegmentedControls()`，但呢個路徑一樣冇檢查容器係咪已經可見，喺容器仍然隱藏嗰陣（例如喺其他 mode 撳到嘅情況）一樣會再量錯一次；只有喺容器已經變返可見之後嘅撳擊先會撞啱返正確位置——呢個「撞啱」嘅隨機性正正解釋咗「撳一下唔得、撳多一下就得」嘅現象。
+
+**連帶揪出嘅隱藏毛病**：`initSegmentedControls()` 每次被 `setSegTab()` 呼叫（即每次撳任何分頁掣）都會對住同一批掣重新 `addEventListener` 一次，舊 listener 從未拆除，隨使用時間不斷疊加。Live 實測：修復前第二次撳掣嘅 `getBoundingClientRect` 呼叫次數由第一次嘅 4 次升到 6 次，確認疊加真實發生（雖然本次未證實呢個係「撳兩下」症狀嘅主因，但屬同一功能區塊嘅存量缺陷，一併清理）。
+
+**修法（`Freehandsss_Dashboard/freehandsss_dashboardV42.html`，唯一改動檔案）**：
+1. `updatePosition()` 加守衛：量到 `btnRect.width===0 && btnRect.height===0`（容器仲隱藏緊）時直接 `return`，唔寫落錯誤位置，等容器真正可見嗰次先寫。
+2. `switchMode()` 嘅 `mode==='review'` 分支，喺 `reviews.forEach(r=>r.style.display='block')` 之後、下個 `requestAnimationFrame` 入面，主動呼叫各 `.fhs-seg-ctrl` 掛喺自己度嘅 `_fhsSegUpdatePosition()`（`initSegmentedControls()` 新增嘅掛勾），喺容器啱啱由隱藏變可見嗰一刻即時重新計位——唔再靠用戶撳掣「撞啱」。
+3. `initSegmentedControls()` 嘅 click listener 綁定改用 `ctrl.dataset.segBound` flag 守衛，確保成個函式畀人叫幾多次都只會綁定一次，唔會再疊加。
+
+**驗證（live browser，模擬完整「create→review」冷啟動情境）**：
+- 容器隱藏時（`display:none`）執行 `initSegmentedControls()`：指示器 `style` 保持 `null`（冇寫錯誤位置）——確認修復 1 生效。
+- 隨即 `switchMode('review')`：指示器 `style` 立即變成 `"width: 69.475px; transform: translateX(75.2625px);"`（正確非零位置），全程冇額外撳掣——確認修復 2 生效。
+- listener 疊加測試：連續三次撳擊，`getBoundingClientRect` 呼叫次數穩定喺 2 次（修復前會由 4 遞增），確認修復 3 生效。
+- D69 四個類別視圖（全部/手模/鎖匙扣/頸鏈）重新逐一核對列數（69/29/28/12）／欄數（12/11/12/12）／零 cell overflow，同修復前基準完全一致，冇引入回歸。
+- Console 全程零 error。
+
+全文見 Changelog.md 2026-08-25「D69續二」條目。**Subagent 使用記錄**：❌未使用（單一 UI 時序 bug，需即時 browser 交叉驗證追蹤 rAF/display 時序因果鏈，委派會斷推理鏈）。
+
+[2026-08-25] (D69-follow) `/code-review` xhigh 十角度審查 D69 diff——揪出 4 個真 bug 並即修，1 個審查過程自己新增嘅回歸即場捕獲
+
+**背景**：D69（訂單總覽類別視圖）落地後，用 `/code-review` xhigh（10 finder angle + verify + sweep）審查未 commit 嘅 diff。首輪 10 個背景 agent 遇 session limit 全部失敗，reset 後重跑全部完成。10 角度合共產生約 20 個候選發現，逐一直接對照代碼／live Supabase 資料驗證（CONFIRMED/PLAUSIBLE/REFUTED），非盡信 agent 判斷。
+
+**4 個 CONFIRMED 並已修復**：
+
+1. **備註格背景色同步斷咗**（`saveInlineEdit` 原 L13866、`applyBatchColorLive` 原 L14352）——兩處仍用 `itemIndex===0` 判斷「呢行係咪擁有備註 rowspan」，但 D69 已將 `itemIndex` 由「渲染位置」改成「`o.items` 真實 index」，兩者喺類別視圖唔再相等。手模擺設永遠排第一，任何多類別單揀鎖匙扣／頸鏈視圖，第一個顯示行嘅真實 index 必然 ≥1，改批次會令自己格啱但備註格唔跟住變色。**修法**：兩處改用 DOM containment（`_targetRow.contains(_notesTa)`）取代 index 比對——rowspan 嘅 `<td>` 本質上只係 render 位置 0 嗰條 `<tr>` 嘅子元素，唔理邊個 index 都查得啱，同渲染順序完全脫鉤。Live 測試（0600721，真實 index=1）：打字即時預覽同 blur 儲存兩條路徑均正確同步到 `#ffdab9`。
+2. **`hm_` 進度下拉篩選未跟隨 D69 修**（原 L12432）——類別 chip 篩選已改用 `getProductDimensions()`/`fhsItemCatKey()` 單一真源，但緊接兩行落嘅獨立「進度」下拉篩選（待Book／已Laser 等）仍然直讀 `item.Category` 原始字串，同 D69 本身修嘅 Bug 1（`item_category='??'` 令品項篩選唔到）係同一類問題嘅未修分支。**修法**：改用 `matchesItemCategory(it, '手模')`。合成測試單（`item_category='??'`，同 live 資料 `0600100` 同形狀）確認修復前中唔到 `hm_pending`，修復後中到。
+3. **類別工作台橫幅唔會即時更新**（`fhsRenderCatStrip` 呼叫點）——`saveInlineEdit()` 更新品項進度／批次後從未觸發橫幅重繪，要等下次篩選/排序/5分鐘輪詢先反映。**修法**：`saveInlineEdit()` 內加樂觀即時重算。⚠️**首輪修復本身有 bug**：直接傳 `_gOrders`（全量未過濾）會漏晒年/月/類別以外嘅其他生效篩選，live 測試即時測出數字異常跳動（28件→48件）。改為喺 `renderReviewTable()` 快取 `window._fhsLastFilteredOrders`（已過晒全部生效篩選嘅陣列），`saveInlineEdit()` 改讀呢個快取——重新測試確認加 year=2026 篩選後，編輯前後件數/張數維持一致，只有實際變動嘅批次分佈正確反映。
+4. **「全部」視圖入帳/成本/利潤表頭 padding 被無聲改咗**（`fhsBuildOverviewHead()` 原 L11462）——新函式對所有欄位統一套用 `padding:12px 16px`，但原靜態 markup 呢三欄用 `padding:12px`（無額外 16px 水平間距），而呢個函式喺**每次** render（包括「全部」）都無條件執行，違反 D69 決策同方案書明文承諾嘅「全部零改動」。**修法**：`_FHS_TH_DEF` 加 per-column `pad` 覆寫，inc/cost/profit 三欄指定 `pad:'12px'`。Live computed-style 確認「全部」視圖呢三欄現為 `12px/12px`，同其餘全部欄位 `12px/16px` 分明對應返原靜態值。
+
+**5 個 PLAUSIBLE，本次不修**（記錄供日後參考）：`o.items.indexOf(item)` reference-equality 查找失敗會 fail-silent 退返不安全 index（屬較大範圍重構，留待下次相關改動一併做）；訂單零品項 fallback 分支未跟隨類別欄位（現時經 `matchesOrderCategory` 保證不可達，純休眠風險，no_change_needed）；`fhsItemCatKey()` 完全捨棄 `item.Category` 欄位（live 55 張單零反向誤收，設計上刻意選擇，no_change_needed）；「另有」提示同 `fhsClearCategoryFilter()` 兩個輕微 reuse 重複（低回歸風險，維護成本取捨，skipped）。
+
+**驗證方法**：語法（9 個 script block `node vm.Script` 全過）+ browser live 逐項迴歸（全部 12欄69列／手模11欄29列／鎖匙扣12欄28列／頸鏈12欄12列，zero cell overflow，28個鎖匙扣列 DOM id 逐個反查零 mismatch，同修復前基準完全一致）+ 針對 4 個修復逐一 live 寫入/讀取實測（非只信語法檢查）。
+
+全文見本次 `/code-review` 對話紀錄（ReportFindings 兩次呼叫：初次 10 findings 待修，收工後補 outcome）。**Subagent 使用記錄**：✅已使用（10 個背景 finder agent，xhigh 效力多角度審查；驗證同修復階段全部自行直接對照代碼／live 資料完成，未再派 subagent）。
+
+[2026-08-25] (D69) 訂單總覽「類別」由訂單層篩選改為**類別視圖**——品項層過濾 + 欄位換裝對位 Excel + 收起財務欄；連帶修兩個既有 bug
+
+**需求（Fat Mo 直接指示，附三張截圖 + Excel 原檔）**：揀「手模／鎖匙扣／頸鏈」時只顯示該類別品項（截圖二例：`0500703` 揀鎖匙扣唔應該再顯示佢嘅手模擺設列）；原因係操作者習慣咗 Excel 一眼睇晒全盤狀況。「全部」明示不改。
+
+**診斷**：chip 答緊嘅係「呢張單有冇鎖匙扣」（`matchesOrderCategory` 做**訂單層** filter），操作者問緊嘅係「畀我睇晒所有鎖匙扣」。Live 統計：67 張有品項嘅單入面 **26 張（39%）係多類別單**，即每三張就有超過一張會出現唔關事嘅列。
+
+**點解要「拆欄」而唔止「隱藏列」**：讀咗 Excel 原檔（`銷售_2026`），佢一眼睇得晒係靠三件事——①一件一行；②`對象|手腳|產品|材料|數量` **各佔獨立一欄**所以可以直向掃；③AutoFilter 落喺「產品」欄。Dashboard 第①點本來已對齊，第③點就係本次需求，**第②點先係「一目了然」嘅真正機制**——現況全部維度逼晒喺「產品明細」一格變 badge 團，點篩都掃唔到。而拆欄之所以可行，正正因為類別視圖入面成個畫面得一個類別、形狀齊一；「全部」形狀唔齊一所以維持 badge 團先啱——同 Fat Mo「全部不需重新設計」嘅指示天然吻合。
+
+**方案選擇（原型三方案並列畀 Fat Mo 揀）**：A=只隱藏不相關列；**B=類別視圖（獲選）**；C=拉平做純品項清單（棄用——直接撞 `ui-ux-pro-max` Section 六排版鐵律第 1 條「核對中心強制 rowspan」，要行需明示豁免並改鐵律文字，唔值得）。
+
+**B 嘅三件事**：①品項層過濾（過濾後為空則 fallback 全部，永不出現零列訂單爆 rowspan）；②單號欄加「另有：手模擺設 ×1、純銀吊飾 ×2」提示 chip（撳即切返「全部」），防止誤讀成「呢張單淨係得呢類」；③欄位換裝——手模＝`款式|肢數明細|加購`，鎖匙扣／頸鏈＝`對象|部位|材質|數量`，同時刪走整欄重複嘅類別 badge（成欄都係鎖匙扣＝純雜訊）。另加類別工作台橫幅（件數／張單／進度分佈／批次分佈）回應「全盤狀態」。左邊 `單號|日期|客人` 同右邊 `刻字|批次|進度|備註` 位置一律唔郁，保住肌肉記憶同 rowspan 對齊定律。
+
+**財務欄裁決（Fat Mo 選「收起」；已載 finance-gatekeeper 核過）**：類別視圖收起 `入帳/成本/利潤` 三欄，當作純生產工作清單，要睇錢切返「全部」。**刻意唔做「類別入帳小計」**——`final_sale_price` 係訂單層真理（死線 1），唯一獲授權嘅拆分係財務頁 RPC 嘅 3-layer fallback（伺服器端，而且只分 handmodel/metal 兩類，同總覽三分類軸都唔對齊），喺前端另寫一套等於制造第二本數簿，正正係 D40／D42 修過嘅「雙數簿漂移」。連帶：「顯示項目財務」掣喺類別視圖 disabled 並講明原因（唔扮有反應）。手機 accordion 卡頭嘅訂單層金額**保留**——嗰度係訂單摘要卡而唔係逐件並排，冇「全單金額擺喺單件旁邊」嘅誤讀風險。
+
+**連帶修好嘅兩個既有 bug**：
+
+1. **兩套分類標準打架，令 2 張單喺類別篩選完全消失**。`matchesOrderCategory` 只讀 `item_category` 原始字串，但 live 有 `'??'`（`0600100` 兩件）同 `'銀飾'`（`0600804` 兩件）唔中任何關鍵字；同一批品項嘅 badge 卻由 `getProductDimensions()` 正確畫住「鎖匙扣」「純銀吊飾」——畫面話有、篩選話冇。代碼註解本身早已宣告 `getProductDimensions` 係「唯一真源」，只係篩選路徑一直冇跟。已收窄：新增 `fhsItemCatKey()` / `matchesItemCategory()`，訂單層同品項層共用同一個判斷。Live 前後對照實測**恰好 3 處差異**（`0600100` 手模＋鎖匙扣、`0600804` 頸鏈），全部係 old=false→now=true，零反向誤收。
+
+2. **品項 index 漂移 → 內聯編輯會靜默寫落錯品項**（⚠ 最高風險，唔修就唔可以上類別過濾）。`saveInlineEdit()` 同 `_fhsHmCheckChange()` 都係用 `o.items[itemIndex]` 反查係邊件，而 render 傳落去嘅係**渲染陣列**嘅 index。以前冇爆純屬好彩——唯一嘅過濾（羊毛氈/燈飾配件）排序後必定墊底，過濾結果啱好係 prefix。一加類別過濾就唔再係 prefix：`0500703` 篩鎖匙扣時渲染 index 0 係鎖匙扣但 `o.items[0]` 係手模擺設，改批次／改進度會寫錯件、畫面零提示。已改：Desktop `_iIdx`／Accordion `_aIdx` 一律取 `o.items.indexOf(item)`，所有 DOM id（`batch-input-*`／`status-select-*`／`hmck-*`／`adj-*`／`save-indicator-*`／`row-*-item-*`）同回呼跟住走。**Live 實測 12 張單嘅渲染真 index 由 1 起跳**——即係話舊碼落咗類別過濾之後，呢 12 張單每一次批次／進度編輯都會寫錯品項。副作用係好嘅：DOM id 唔會再隨篩選改變。
+
+**順手清嘅存量違規**（Icon 鐵律第 6 條「觸及區域一併清理」）：`toggleAuditMode()` 原本用 `textContent = '🔍 隱藏項目財務'`，一來違反鐵律第 2 條（禁 emoji 作 icon），二來 `textContent` 會連按鈕原有嘅 sprite `<svg>` 一齊抹走。改回 `innerHTML` + `<use href="#icon-search"/>`。本次新增欄位所需 icon sprite 內全部已有，**冇加過任何新 symbol**。
+
+**驗證（live Supabase 55 張單，browser 實測）**：9 個 inline script 區塊全部 `node vm.Script` 語法通過；`全部` 12 欄 69 列／`手模` 11 欄 29 列／`鎖匙扣` 12 欄 28 列／`頸鏈` 12 欄 12 列，逐列 cell 數（計 colspan）零溢出；28 個鎖匙扣列嘅 DOM id 逐個反查 `o.items[i]` 全部確係鎖匙扣（0 mismatch），手機 accordion 同樣 69/28/29/12 且 0 mismatch；表頭重建後排序（升↔降箭嘴、`sort-active`）同 master checkbox 存活；「顯示項目財務」掣狀態雙向跟得上（同步點放咗喺 `renderReviewTable` 呢個唯一收窄點，唔係淨靠 chip handler，免得將來新路徑漏調）；全程零 console error。
+
+**未做／待授權**：`Freehandsss_dashboard_current.html` **未同步**——README「禁止覆蓋正式環境，未獲 Fat Mo 授權絕不可覆蓋」。改動只落 `freehandsss_dashboardV42.html`。另兩個未拍板嘅細項：類別視圖預設排序要唔要改做「批次→進度」；chip `data-category` 用緊「鑰匙扣」而 DB／文件一律「鎖匙扣」，要唔要統一。
+
+方案書＋互動原型（真實資料，三方案並列）：`.fhs/reports/planning/overview-category-view-plan_2026-08-25.md` / `overview-category-view-prototype_2026-08-25.html`。**Subagent 使用記錄**：❌未使用（單一檔案內互相牽連嘅 render 路徑改動，加即時 browser live 驗證，委派會斷推理鏈）。
+[2026-08-24 續] 更正上一條決策嘅失實聲明——n8n JSON 備份檔「已同步」實為假話，已完整重建
+
+**發現**：第二輪獨立 fresh-context agent 覆核揪出，上一條決策聲稱「repo 內 `n8n/FHS_Core_OrderProcessor_live.json` 備份檔同步反映 live 修復」係**失實**——實際只係喺一個凍結咗 3 個月（自 2026-05-27，Session 33 起未更新）嘅舊快照入面，用文字替換插咗一行 guard，冇真正重新攞成個 live workflow。
+
+**連帶查出**：呢個 3 個月落後嘅快照本身仲殘留住 D62/D63 事故（2026-08-10，已記錄於 `project_n8n_supabase_401_credential_incident.md`）洩漏並被 Supabase 撤銷嘅死 API key 文字（8 處，其中 3 處喺一個內嵌嘅 `activeVersion` 歷史快照入面，非主 `nodes` 陣列，之前完全冇被發現）。**已直接查證 live 系統本身完全乾淨**——3 個事故點名節點（`Smart Cache Strategist`／`Supabase Mirror Prep`／`Mirror Delete to Supabase`）全部只讀 `$env`/`process.env`，D62/D63 嘅修復紮實有效，冇被推翻，問題純粹在呢份舊 repo 快照未更新。
+
+**修復**：派獨立 agent 逐個節點（30個，主 `nodes` 陣列 + 內嵌 `activeVersion` 快照 28個）用 `get_workflow`+`get_node` MCP 重新攞返 live 狀態，按 name 匹配替換 `parameters`（結構性欄位 `id`/`type`/`typeVersion`/`credentials` 保留原檔案值，因 MCP 唔回傳呢啲）。過程中發現結構性差異（少2多1個節點：`Supabase Mirror Prep V47.11`改名做`Supabase Mirror Prep`；新增`Filter Test Delete Notify`同`Send Test Summary`）——agent 正確停低問清楚先做，唔自把自為。經確認後完整處理，`connections` 區塊同步更新。
+
+**已知限制**：新增節點 `Filter Test Delete Notify` 嘅 `typeVersion=2` 屬 best-effort 估值（repo 內冇同類節點可對照，未經 n8n schema 驗證）；`Send Test Summary` 嘅 `typeVersion=1.2` 有把握（同其餘3個telegram節點一致）。此檔案純供人/AI 查閱代碼參考，非用作 import 返 n8n，故估值錯誤唔會有功能性後果。
+
+**驗證**：`sb_secret_` 全檔（含內嵌快照）計數＝0；JSON 合法性通過；`git diff --stat` 138 insertions/37 deletions，幅度符合3個月落後嘅預期；主對話獨立重新執行三項驗證核實 agent 報告非虛報。
+
+**教訓**：對自己前一個 commit 嘅聲明都要保持懷疑——「已同步」呢類斷言喺冇實際重新拉取全量資料嘅情況下唔應該講出口，尤其係涉及 git 追蹤檔案嘅安全敏感內容。
+
+**Subagent 使用記錄**：✅ 已使用（general-purpose agent 兩輪：第一輪獨立審計揪出問題，第二輪執行機械化重建，中途因結構性差異主動暫停等待授權，非自把自為）。
+
+[2026-08-24] (D65續IV-follow 續) n8n 玻璃瓶 SKU 強制降級 bug 修復（V47.14→V47.15）——`(家庭)`/`(N肢+大寶)` 後綴自 2026-07-19 起被靜默抹走，金額不受影響、SKU 身份記錄受影響
+
+**發現經過**：D65續IV-follow 交付後，派獨立 fresh-context agent 覆核「測試/驗收指令是否配合」，揪出 `n8n/FHS_Core_OrderProcessor_live.json`（及對應 live workflow）「Parse Items & Generate SKU」節點有段無條件正規化邏輯：
+
+```js
+} else if (sku.includes("玻璃瓶")) {
+    let limb = (sku.includes("4肢") || sku.includes("3肢")) ? "(4肢)" : "(2肢)";
+    sku = `玻璃瓶套裝 ${limb}`;
+}
+```
+
+`sku` 一開始已經係 Dashboard 送嚟嘅正確 canonical 值（`_pDeriveSkuName()` 產出），但呢段防禦性正規化（原意處理更舊年代唔規範嘅品名字串）不分青紅皂白將任何含「玻璃瓶」嘅品名強制降級做純 `(2肢)`/`(4肢)`，抹走 `(家庭)`（migration 0060，2026-07-19 起）同 `(N肢+大寶)`（migration 0091，2026-08-22 起）呢啲後綴。
+
+**影響範圍**：`Search_SKU` 一路傳到最終寫入 `order_items.product_sku`。金額不受影響（三個變體成本同為 $210 flat，Smart Cache Strategist 巧合撈到同一個數），但 SKU 身份記錄錯咗——過去一個月任何一張家庭瓶單、依家起任何一張＋大寶單，Supabase `product_sku` 都會顯示成錯誤嘅純嬰兒變體，依賴呢個欄位做統計/篩選會漏 count。非本次改動引入，只係新 SKU 繼承咗同一個舊 bug。
+
+**點解之前驗證漏咗**：2026-08-22 嘅驗證淨係喺 Dashboard browser 同 Supabase `products` 表核對報價/SKU 生成邏輯本身，從未實際跑過 n8n webhook 全鏈路，冇觸及呢條路徑。自我核實三次都用同一套方法論（browser+products表），直至改派獨立 fresh-context agent 先揪出。
+
+**修復（V47.15，MCP `update_node_code`，dry-run 確認後正式寫入，自動備份於 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-24/`）**：加 guard，品名已含「家庭」或「大寶」視為完整 canonical SKU，跳過強制降級。
+
+**驗證（真實 webhook，非 mock）**：合成測試單 `testD65sku576986` 兩件（`玻璃瓶套裝 (2肢+大寶)`、`玻璃瓶套裝 (家庭)`），Supabase `order_items.product_sku` 逐字正確保留兩個變體名，`handmodel_cost` 各 $210 印證金額不受影響。測試單已用 `{action:"delete", Order_ID}` 正式格式清理（`deleted_at` 已確認）。
+
+**教訓**：驗收不自驗——同一個人用同一套方法論核實三次會有系統性盲點，改派獨立 fresh-context agent 先真正揪出問題。詳見 `FHS_System_Logic_Overview.md` §5.4.20 補記。
+
+**Subagent 使用記錄**：✅ 已使用（general-purpose fresh-context agent 獨立稽核，揪出主對話三次自查都漏咗嘅缺口）。
+
+[2026-08-24] Subagent 鏡像大規模漂移修復——9 個中 8 個 `~/.claude/agents/freehandsss/` 凍結喺 2026-07-07，跟 repo Master 脫鈎逾 6 星期，已重新同步
+
+**發現經過**：D65續IV-follow 交付後覆核 `product-integration-validator` 改動有否真正生效，diff Master 同鏡像發現漂移；順藤摸瓜檢查其餘 8 個 subagent，全部同一模式——鏡像檔 mtime 恆定 2026-07-07 21:56（同一批次），Master 檔持續更新至 8 月中，diff 33～590 行不等。
+
+**影響範圍**：`~/.claude/agents/freehandsss/` 係 Claude Code 實際 spawn subagent 時讀嘅檔案，非 repo 內 `.fhs/ai/subagents/freehandsss/`（Master，人類/AI 平時查閱改動嗰份）。即過去 6 星期任何一次 `finance-auditor`／`database-reviewer`／`code-reviewer` 等 subagent 呼叫，實際執行嘅都係 7 月 7 號嘅舊版指令。舉證：`finance-auditor.md` 舊版缺 `accessory_cost` 第四分類（2026-08-16 先喺 Master 補入），代表呢 6 星期內任何一次財務稽核 subagent 呼叫都可能漏審呢個成本分類。
+
+**修復**：純機械化 `cp` 同步 8 個檔案（Master → mirror，唔改內容），Fat Mo 當面確認後執行。非 repo 追蹤範圍，冇對應 commit。
+
+**根因未查**：點解會凍結喺同一日（7 月 7 號）未深究——可能係當日某次 Session 手動同步後，之後所有改 Master 嘅 session 都漏咗「同步複製」呢一步（README.md 明文規定但無機械化強制）。若要防止再發生，需要喺 `/commit` P0.1「系統接通確認」加一項 mirror diff 檢查（現時 P0.1 只查存在性/非空，唔查內容一致性）——**未落實裝，留待 Fat Mo 裁決是否值得加呢個機械化守護**。
+
+> ⚠️ 以下「定案規則」起為 D65續IV-follow 主體內容（2026-08-22 定案），原文缺獨立標題行，merge 時原樣保留不補（避免臆測原作者意圖），僅加此提示行供日後查閱辨識——見 handoff.md 待辦「decisions.md 標題缺失」。
+
+**定案規則**：有大寶參與且無父母 → $1,680（2肢）／$1,980（4肢），即同 tier 純嬰兒價 ＋$300；純嬰兒 $1,380/$1,680 不變；含父母一律 $2,580 flat 不變。成本三者同為 $210 flat，＋$300 全落淨利（Fat Mo 確認屬定價策略非成本差異）。
+
+**關鍵業務定義首次成文**（Fat Mo 口述，此前三份權威文件皆無記載）：嬰兒＝初生或客人**首個**孩子；大寶＝客人**第二個**孩子（嬰兒的兄／姊）。「大寶」相對於「嬰兒」而存在，故**有大寶必然有嬰兒**，「只有大寶、沒有嬰兒」定義上不成立（該孩子本身就會被定義為嬰兒）。據此確認 §0「所有產品必須圍繞嬰兒展開」**從未被違反**，大寶不是 §0 的例外——推翻 AI 稍早「大寶屬兒童非成人故為例外」的錯誤框架。
+
+**兩項連帶推翻**：(1) 肢數 tier 只數嬰兒肢體，取代 2026-07-21「大寶肢體同等計入總數」；(2) Cost Schema §3.1「嬰兒＝0–3歲／大寶＝4歲以上」年齡定義作廢，改用出生次序定義。
+
+**執行**：migration 0091（DELETE 0090 兩個錯 SKU + 建 `玻璃瓶套裝 (2肢+大寶/4肢+大寶)`，已查 `order_items` 零引用故 DELETE 安全）；`_pDeriveSkuName()` 改 `hasElder` 判定 + tier 只數嬰兒；`_pPriceOfSku()` 大寶判斷排在通用 4肢/2肢 之前；還原 D65「未選嬰兒肢體」提醒（不再抑制）。V42 + current.html 同步。Pricing Bible v1.8.1、Cost Schema、Product_Definition、Logic_Overview §5.4.20、finance-gatekeeper v1.14.0 全部同步。**n8n 零改動**（已查證 fallback 機制）。
+
+**驗證**：browser live——SKU 窮舉 11 組 + 端到端報價 8 組全對，木框零回歸，零 console error。
+
+**同日兩次 AI 錯誤（均在交付前發現）**：(1) 誤稱「父母+零嬰兒會靜默少收」，實際硬阻擋 2026-07-19 已存在，未讀碼即斷言；(2) **較嚴重**——將新價綁在定義上不存在的「純大寶」組合，令新價永不觸發，而真正適用的「嬰兒+大寶」反被標為不可能。根因：AI 在窮舉表預填 ✅/🚫 假定，Fat Mo 只逐點確認被問及的格，未複核預填值。**教訓：確認窮舉表時不可預填讓對方「確認」，應逐格詢問或請對方主動列出**。詳見 Logic_Overview §5.4.20。
+
+**Subagent 使用記錄**：❌ 未使用（跨代碼/DB/browser 即時交叉驗證）。
+
 [2026-08-21] (D68) handoff 同步從「散文紀律」升格為「機械閘」——`pre-tool-guard.js` R13 攔截 `git commit`
 
 **背景**：Fat Mo 明確定義目標——「當我打 `/commit`，就代表任務完成並且**能確保**同步更新 handoff」。查證確認呢個保證一直唔成立：`commit.md` P0.7 雖然白紙黑字寫「`更新: <日期>` 必須更新至今日日期」，但純屬散文指示，冇任何機械強制。
@@ -2581,3 +3264,21 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 驗證：用 Node 抽取 `mapOrder()`/`getProductDimensions()` 真實函式碼，餵入 Supabase 直接查詢嘅訂單 #0600901 真實資料，逐項核對輸出完全吻合 Fat Mo 描述嘅正確結構；另以合成單件舊單（無 D64 前綴）驗證向後相容零回歸。
 
 唯一改動檔案：`freehandsss_dashboardV42.html`。全文見 [Changelog.md 2026-09-03「D69續III」條目](../../Changelog.md)（依 Phase 1.6 分級合約(b)）。**Subagent 使用記錄**：❌未使用（跨四處程式碼+Supabase真實資料即時交叉驗證，委派會斷推理鏈）。
+
+### 分支合併事故：本分支4次deploy意外覆寫另一分支31輪UI優化成果（2026-09-03）
+
+**Fat Mo 回報**：訂單總覽截圖圈起頂部區域，指出「較早時優化嘅介面任務」不見咗，要求全面覆查修復並檢查有冇其他意外覆蓋/遺留/bug。
+
+**根因**：`current.html`（生產版）係一個**跨分支共享嘅部署目標**，任何分支執行 `/commit` Phase 2.5 途徑c都會直接 PUT 上 NAS，呢個部署動作**喺 git 之外**（NAS 唔知道 git branch 概念，只認「最後一個 PUT 贏」）。本 session 喺 `claude/read-command-15bfd5` 分支連續 4 次 deploy（09:24/10:12/11:28/12:20，D69/D69續/D69續II/D69續III），但喺 08:26 已經有另一條分支 `claude/order-overview-category-display-1a4f84` 部署咗佢自己嘅 D69續八-follow-31（訂單總覽響應式/排版/密度/safe-area/spinner重複等**31輪**UI優化累積成果）。由於本分支嘅 `freehandsss_dashboardV42.html` 喺 fork 主線後從未追蹤過另一分支嘅改動，第一次 `cp V42.html → current.html` 就完整抹走咗對方成果，之後三次 deploy 更加深咗差距。**`/read` 開場其實已經有警告**（"🔀 近48小時有動靜嘅其他並行分支"）列出咗呢條分支，但本 session 因為專注喺 Fat Mo 交辦嘅收款分帳 bug，冇停低核對佢嘅部署時間戳，直接假設自己 branch 嘅 dev 版就係最新。
+
+**查證範圍**：`git log --oneline origin/main..origin/claude/order-overview-category-display-1a4f84` 顯示 **96 個 commit**（48輪 fix+deploy 配對），V42.html 淨增 2097 行；另有第三條分支 `claude/read-command-3a168b` 帶住一個獨立單行修復（「待定」排除），核實同本分支 D69續III 嘅修復**逐字相同**（另一 session 獨立揪到同一 bug，收斂驗證）；`claude/d65-family-owner-role` 分支查證後確認係 `order-overview-category-display-1a4f84` 嘅祖先（同一條開發線），內容已全部包含喺後者。
+
+**修復**：`git merge origin/claude/order-overview-category-display-1a4f84` 入本分支。實際衝突意外地細——`freehandsss_dashboardV42.html` 僅 1 個衝突 hunk（兩個分支各自喺 D64 舊「合併至第一個card」邏輯附近改嘢：本分支移除咗唔再需要嘅 `_woolBadgeShown`/`_lightBadgeShown` 逐件旗標，另一分支新增咗一組獨立嘅 `_woolCellShown`/`_lightCellShown` 供「類別視圖」彙總欄使用——兩者職責唔同，保留咗雙方各自需要嘅部分）；文件層面（handoff.md/Changelog.md/session-log.md/deploy-log.md）人手合併，保留兩條分支各自嘅完整記錄。**新增 migrations 0090/0091/0092 已核實喺 Supabase live 確實存在**（`glassjar_elder_only_pricing_sku`/`glassjar_elder_sku_rename_fix`/`process_status_dialect_cleanup`），純粹係 repo 檔案追落嚟，唔需要重新 apply。
+
+**⚠️ 命名撞號（非本次修復範圍，純文件層面提醒）**：本分支嘅 `[D69]`/`[D69續]`/`[D69續II]`/`[D69續III]`（收款分帳+訂單顯示，2026-09-03）同另一分支已歸檔嘅 `[D69]`/`[D69-follow]`（訂單總覽類別視圖功能本身，2026-08-25）、`[D69續八-follow-1~31]`（呢個功能嘅後續UI優化，2026-09-03）係三件完全獨立嘅事，純粹編號巧合撞號。日後查 decisions.md 見到「D69」呢個字串，必須連日期一併核對先可以判斷係邊一件事，唔可以單憑編號。
+
+**驗證**：合併後 `freehandsss_dashboardV42.html` 語法檢查 PASS；用 Node 抽取合併後嘅真實 `mapOrder()` 函式碼重新餵訂單 #0600901 真實資料，輸出同合併前逐字相同（D69續III 零回歸）；grep 確認 `_fhsForceSync`/`isTrusted`/`prevDefault`（D69/D69續/D69續II 核心機制）出現次數同合併前一致（零回歸）；`/fhs-check` 4 PASS/1 SKIP；重新部署 current.html 三關驗證PASS。
+
+**教訓**：已落 `learnings/governance.md`（跨分支協作類）——`/commit` Phase 2.5 部署前，若 SessionStart hook／`/read` 顯示「近48小時有其他分支動靜」，必須先 `git log <該分支> -1 --format=%ci` 核對其部署時間戳是否比自己上一次部署更新，新則先合併再 deploy，唔可以假設自己 branch 嘅 dev 版必然係最新——`current.html` 係跨分支共享嘅部署目標，唔係本分支專屬狀態。
+
+全文見 Changelog.md 2026-09-03「分支合併事故」條目。**Subagent 使用記錄**：❌未使用（git archaeology + 跨分支 diff 比對 + Node 真實函式碼即時交叉驗證，委派會斷推理鏈）。
