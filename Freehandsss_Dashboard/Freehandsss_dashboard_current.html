@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-03T11:37:14Z">
+    <meta name="fhs-build" content="2026-09-03T11:47:57Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -3103,7 +3103,7 @@
                唔受影響。label（「類別」文字+icon）隱埋淨留4粒chip，同
                compact-desktop（見下面750-1129px區塊同一做法）睇齊。 */
             body.v40-review-active #fhsSegWrapper #fhsCategoryFilterGroup {
-                gap: 4px; margin-left: 4px; padding-left: 4px; border-left: 1px solid var(--fhs-border);
+                gap: 4px; margin-left: 4px;
             }
             /* `.filter-label`喺HTML本身有inline style="display:inline-flex"
                （4968行），specificity再高嘅stylesheet class選擇器都蓋唔過
@@ -3112,6 +3112,23 @@
             body.v40-review-active #fhsSegWrapper #fhsCategoryFilterGroup .chip-group { gap: 3px; }
             body.v40-review-active #fhsSegWrapper #fhsCategoryFilterGroup .chip-btn {
                 padding: 0 7px; font-size: 11px; height: 26px;
+            }
+            /* [2026-09-03 D69續八-follow-32b] Fat Mo真機（iPhone 13 Pro，390px）
+               覆核截圖：上面呢組固定壓縮值headless瀏覽器375px度量PASS，但真機
+               字體渲染（PingFang系統字體）落唔夠位——連toggle（漏斗icon）都被
+               逼走自己一行，同follow-22/23嗰次「headless PASS、真機唔夠位」
+               屬同一類教訓，冇再淨靠肉眼加碼猜一個新固定值，改由JS實時量度
+               （`fhsSyncCompactDesktopLayout()`）自動判斷係咪加呢個
+               `.fhs-seg-tight`class，達到再收緊一級。移除咗上面嘅
+               `border-left`分隔線（連埋佢消耗嘅9px margin/padding一齊
+               釋放），視覺分組改靠chip本身嘅pill造型已經夠清晰，唔需要額外
+               分隔線。 */
+            body.v40-review-active #fhsSegWrapper.fhs-seg-tight { gap: 2px; }
+            body.v40-review-active #fhsSegWrapper.fhs-seg-tight .fhs-seg-btn { padding: 0 5px; }
+            body.v40-review-active #fhsSegWrapper.fhs-seg-tight #fhsCategoryFilterGroup { gap: 2px; margin-left: 2px; }
+            body.v40-review-active #fhsSegWrapper.fhs-seg-tight #fhsCategoryFilterGroup .chip-group { gap: 2px; }
+            body.v40-review-active #fhsSegWrapper.fhs-seg-tight #fhsCategoryFilterGroup .chip-btn {
+                padding: 0 5px; font-size: 10px; height: 24px;
             }
         }
         /* [2026-09-03 D69續八-follow-29] Fat Mo截圖：類別工作台橫幅（撳入
@@ -16473,6 +16490,30 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 toggleEl.classList.remove('expanded');
                 toggleEl.setAttribute('aria-expanded', 'false');
                 if (scrim) scrim.classList.remove('open');
+            }
+
+            // [2026-09-03 D69續八-follow-32b] Fat Mo真機（iPhone 13 Pro，390px）
+            // 覆核：headless瀏覽器375px量度靠固定px值校準嘅CSS壓縮，喺真機
+            // 字體渲染（PingFang等系統字體）落實測仍然唔夠位——連toggle（漏斗
+            // icon）都被逼落自己一行，同follow-22/23嗰次「headless PASS、
+            // 真機唔夠位」屬同一類教訓（見`feedback_visual_bug_measure_
+            // not_guess.md`：視覺/版面bug必須實測，唔可以淨靠固定px猜）。
+            // 呢度唔再淨靠猜一組「應該夠鬆」嘅padding數值，改做JS實時量度
+            // 自動加碼壓縮：每次都由baseline（.fhs-seg-tight移除）重新量
+            // `segWrapper.scrollWidth`同「pinnedRow扣走toggle+gap之後嘅
+            // 可用闊度」比較，唔夠先加`.fhs-seg-tight`class再收緊一截
+            // （tabs/chips字體/padding再細一級）。可以隨裝置字體量度自動
+            // 適應，唔使再靠肉眼猜下一個門檻值。
+            if (shouldMobileMergeCatRow) {
+                segWrapper.classList.remove('fhs-seg-tight');
+                var _pinnedCsForTight = getComputedStyle(pinnedRow);
+                var _gapForTight = parseFloat(_pinnedCsForTight.columnGap) || 0;
+                var _availForTight = pinnedRow.clientWidth - toggleEl.getBoundingClientRect().width - _gapForTight;
+                if (segWrapper.scrollWidth > _availForTight) {
+                    segWrapper.classList.add('fhs-seg-tight');
+                }
+            } else {
+                segWrapper.classList.remove('fhs-seg-tight');
             }
 
             // [2026-09-03 D69續八-follow-27] Fat Mo紅圈：手機分頁tabs行（第一
