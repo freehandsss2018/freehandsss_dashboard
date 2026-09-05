@@ -1,4 +1,5 @@
 # /commit (任務完成 · 全包一條龍)
+> Version: v2.6.0 (2026-09-05, D70) | 新增 Phase 2.6 主線同步：Phase 2/2.5 push 完之後，嘗試將目前分支 fast-forward-only 合併落 `main`（`git push origin HEAD:main`）；若 main 自本分支分岔後已有其他 session 搶先落地（非快進），一律跳過並回報，唔做衝突自動解決、唔強推。根源：Fat Mo 指出「commit 完＝任務完成，理應等同 main 已同步」，現行預設要人手再 merge/PR 同呢個直覺唔一致；經查證本 repo 常態有多條 worktree 分支並行（含 2026-09-03「分支合併事故」先例），故只做技術上零風險嘅快進部分，唔做全面自動合併。見 decisions.md D70
 > Version: v2.5.0 (2026-08-21, D68) | P0.7 由「散文指示」升格為**機械強制**：`pre-tool-guard.js` 新增 R13 handoff 同步閘，`git commit` 前檢查便攜塊日期戳＝今日且 handoff.md 無未 staged 改動，唔過即 exit 2 攔截。根因：D67(08-19)/D66-follow(08-20) 兩次 `/commit` 都更新咗內容但日期戳三日冇郁——D66 已證「內容·紀律層」修復零效果，SessionStart hook 只做事後偵測，寫入時點一直真空。見 decisions.md D68
 > Version: v2.4.0 (2026-08-05) | P0.7 新增第七欄「⏰ 時限待辦」+ MASTER 表列混寫禁令；根因：2026-08-04拷問技能2026-08-09試用閘的日期只落MASTER表未落便攜塊，被「最高優先3條」篩選器結構性漏帶，下個session開場看不見，Fat Mo質詢揭發（見 fhs-health-rules.json deadline_surfacing_checks 新增機械偵測）
 > Version: v2.3.0 (2026-07-12, Session 168) | 新增 Phase 2.5 條件觸發升格部署鏈（AGENTS.md v1.7.0 授權途徑c，先偵測 Dashboard HTML 是否有改動才部署）
@@ -143,6 +144,24 @@
 4. 部署前置 `/fhs-check`（Step 0）仍需執行；若命中**已有先例裁決不阻擋部署的已知外部限制**（如 Airtable API 429 額度用盡類的 PRICE_AUDIT FAIL），比照先例繼續部署並在回報中註明；若是**新出現**的 Red Flag（非既有已裁決先例），停止部署並回報，不得比照舊例擅自放行。
 5. `git add` 補上 `Freehandsss_Dashboard/Freehandsss_dashboard_current.html` + `.fhs/notes/deploy-log.md`（hook 自動追加）→ 追加一個部署 commit → push。
 6. 回報格式併入 Phase 3（見下），額外附上傳三關結果 + 公開網址。
+
+---
+
+## 【Phase 2.6：主線同步（Fast-Forward Auto-Merge，新，2026-09-05，D70）】
+> **目的**：Fat Mo 指出「commit 完＝任務完成，理應等同 main 已同步」——現行預設要另外人手 merge/開 PR，同呢個直覺唔一致。本節補上呢個等號，但**只喺技術上保證零風險嘅情況先自動做**，唔做任何形式嘅衝突自動解決。
+
+1. **前置**：Phase 2（及 Phase 2.5，若本次有觸發部署 commit）已完成 push。若目前分支本身就係 `main`（例如直接喺 main 開工），Phase 2 嘅 push 已經即係寫落 main，本節略過。
+2. **偵測**：`git fetch origin main` → 判斷 `origin/main` 是否為目前分支 HEAD 嘅**祖先**（`git merge-base --is-ancestor origin/main HEAD`）。
+   - **是**（fast-forward 可行，即由本分支分岔到而家，main 未被其他 session 搶先郁過）→ 續步驟 3。
+   - **否**（main 自本分支分岔後已有其他 commit 落地，即有並行 worktree session 搶先 merge 咗）→ **跳過自動合併**，輸出 `git log HEAD..origin/main --oneline` 畀 Fat Mo 睇邊啲 commit 令 main 郁咗，回報「本次未自動合併主線，main 已被其他分支更新，需人手 merge / 開 PR review」，直接跳落 Phase 3。
+3. **執行**：`git push origin HEAD:main`——呢個係 fast-forward-only 推送，git 原生拒絕非快進嘅推送，唔會產生隱藏嘅三方合併或衝突解決，亦唔會多一個 merge commit，main 歷史保持線性。
+4. **失敗處理**：若步驟 3 因為極罕見嘅時間差被 remote 拒絕（偵測完到推送之間 main 又被其他 session 搶先郁咗）→ 視同步驟 2「否」分支處理，回報並停止，唔重試唔強推（`--force` 一律禁止，同 R7 一致）。
+5. **刻意不做**（超出本次授權範圍，留待日後另案裁決）：
+   - 唔自動刪除來源分支或 worktree。
+   - 唔處理 Phase 2.5 嘅 NAS 部署衝突——`Freehandsss_dashboard_current.html` 係跨分支共享嘅部署目標，屬 git 之外嘅另一個課題（見 decisions.md「分支合併事故」2026-09-03 條目），本節只同步 git `main` ref，唔改動任何 NAS 部署邏輯。
+   - 唔嘗試自動解決衝突：只要唔係乾淨快進，一律停低等人手，物理上唔可能靜默覆寫或遺失第三方分支嘅內容。
+
+**安全依據**：fast-forward-only 由 git 底層保證——冇「自動判斷點解決衝突」呢一步，只有「係咪線性延續」呢個客觀事實判斷，判斷錯咗會直接被 git 拒絕（步驟 4），故本節唔存在令 main 資料遺失或被靜默覆寫嘅路徑。
 
 ---
 

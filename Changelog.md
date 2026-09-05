@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-05] Session（Claude Code / Sonnet 5 執行）— D70：`/commit` 新增 Phase 2.6 主線同步（Fast-Forward Auto-Merge）
+
+- **緣起**：`/read` 交接同步後 Fat Mo 質疑「D58 已喺另一分支更新，點解呢邊 handoff 冇更新？我確實打咗 commit」。查證確認該 commit（`9c342c0`）落喺另一條 worktree 分支 `claude/read-command-d64261`，同本分支共同祖先仍係 main 現時 tip——即該分支從未 merge 落 main，本分支自然睇唔到，非 bug。Fat Mo 追問「完成任務即代表已完結，是否應該等同自動落 main」，要求評估此方案是否可行。
+- **查證**：①GitHub main 無 branch protection、無 CI，技術上無外部閘阻擋直接 push/merge；②`pre-tool-guard.js` 現有 R1-R13 冇任何一條限制 push/merge 落 main；③`git worktree list` 實測本 repo **常態同時有 6 條 worktree 並行**，並非邊緣情境；④`handoff.md` 近 10 個 commit 有 8 個 touch 咗頂部同一便攜塊區塊，係最高機率撞板嘅檔案；⑤查到 **2026-09-03 真實「分支合併事故」**（另一分支 decisions.md 記錄）——一條分支連續 4 次 `/commit` Phase 2.5 部署冇核對其他分支時間戳，完整覆寫另一條分支 31 輪 UI 優化成果上 NAS，證實跨分支協作風險並非假設。
+- **裁決**：naive「每次自動合併、有衝突就自動解決」不安全（③④⑤三點證實非邊緣案例）。改用**受限安全版**——只做 fast-forward-only 自動合併：`git merge-base --is-ancestor origin/main HEAD` 判斷是否線性延續，係就 `git push origin HEAD:main`（git 底層保證零風險，唔存在自動解衝突步驟）；main 已被其他並行分支搶先郁過（非快進）就跳過，回報 `git log HEAD..origin/main --oneline` 畀 Fat Mo 睇邊啲 commit 令主線郁咗，需人手 merge/PR，唔強推唔自動解衝突。
+- **刻意不做**：唔處理 Phase 2.5 NAS 部署跨分支覆寫問題（上方事故第⑤點，屬獨立課題，另案處理）；唔自動刪除來源分支/worktree；唔改動 `pre-tool-guard.js`（無現有規則需要調整）。
+- **改動檔案**：`.fhs/ai/commands/commit.md`（v2.5.0→v2.6.0，新增 §Phase 2.6）、`.claude/commands/commit.md`（橋接摘要同步）、`.fhs/notes/decisions.md`（D70）、`.fhs/memory/handoff.md`。**Dashboard HTML／Supabase schema／n8n 零改動。**
+- 全文見 decisions.md D70。**Subagent 使用記錄**：❌未使用（單一指令邏輯設計 + git/gh 現況即時查證，委派會斷推理鏈）。
+
 ## [2026-08-21] Session（Claude Code / Opus 5 執行）— D68：`/commit` handoff 同步升格機械閘（pre-tool-guard R13）+ D66-follow 結案核實 + 便攜塊日期漂移修復
 
 - **緣起**：Fat Mo 指定目標「打 `/commit` 就代表任務完成並且**能確保**同步更新 handoff」，並指出呢個問題「始終冇解決」。

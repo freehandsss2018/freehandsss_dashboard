@@ -3,6 +3,25 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-05] (D70) `/commit` 新增 Phase 2.6 主線同步：push 後嘗試 fast-forward-only 自動合併落 `main`，非快進即跳過等人手 merge/PR
+
+**背景**：Fat Mo 於 `/read` 交接同步後提問：「D58 已喺另一分支更新，點解呢邊 handoff 冇更新？我確實打咗 commit」。查證發現該 commit（`9c342c0`）確實存在，但落喺另一條 worktree 分支 `claude/read-command-d64261`，同本分支（`claude/read-f21491`）嘅共同祖先仍係 main 現時 tip——即該分支 commit 完之後從未 merge 落 main，本分支自然睇唔到。Fat Mo 追問：「但若我完成任務後代表任務已完結，不是等同自動落main 嗎？這是人的思考邏輯方迥」，要求評估「commit 後自動 merge 落 main」呢個方案是否可行。
+
+**查證（落手前）**：
+1. GitHub `main` 分支**無 branch protection、無 CI workflow**（`gh api .../branches/main/protection` 回 404 "Branch not protected"，`.github/workflows/` 不存在）——技術上直接 push/merge 落 main 冇外部閘阻擋。
+2. `pre-tool-guard.js` 現有 R1-R13 規則入面，**冇任何一條限制 push/merge 落 main**（R7 只擋 `--force`），新增此功能唔會撞現有 hook。
+3. **`git worktree list` 實測發現本 repo 常態同時有 6 條 worktree 並行**，多條分支同一時間分岔自同一 main tip 未合併——並非假設情境，係本 repo 實際運作模式。
+4. **`handoff.md` 幾乎每個 commit 都會改**（近 10 個 commit 有 8 個touch 咗佢），而且改嘅係頂部同一個便攜塊區塊——即多條並行分支若同時自動 merge，最大機率撞板嘅就正正係觸發呢個提問嘅 `handoff.md` 本身。
+5. **查到 2026-09-03 真實事故**（`claude/order-overview-category-display-1a4f84` 分支 decisions.md「分支合併事故」條目）：另一 session 喺 `claude/read-command-15bfd5` 連續 4 次 `/commit` Phase 2.5 部署，因為冇核對其他分支嘅部署時間戳，完整覆寫咗一條並行分支 31 輪 UI 優化成果上 NAS——`current.html` 係跨分支共享嘅部署目標，呢個問題喺 git merge 層面之外，屬 Phase 2.5 部署管線嘅獨立缺陷，唔可以用「git merge 落 main」解決。
+
+**裁決**：naive「每次 commit 都自動合併、有衝突就即場解決」唔安全——上面 4+5 兩點證實本 repo 嘅並行分支數量同 handoff.md 嘅高頻改動令衝突並非邊緣案例。改用**受限安全版**：只做 **fast-forward-only** 自動合併（`git merge-base --is-ancestor origin/main HEAD` 判斷 + `git push origin HEAD:main`）——呢個操作由 git 底層保證零風險，唔存在「自動解決衝突」呢一步，只有客觀嘅「係咪線性延續」判斷，判斷錯會被 git 本身拒絕。可行（origin/main 未被搶先郁過）就自動合併，main 即時同步，滿足 Fat Mo「commit=完成=main已同步」嘅直覺；不可行（有並行 session 搶先落地）就維持現狀，停低回報，唔強推唔自動解衝突。
+
+**刻意不做**：唔處理 Phase 2.5 NAS 部署跨分支覆寫問題（見上方查證第5點，屬獨立課題）；唔自動刪除來源分支/worktree；唔嘗試任何形式嘅自動衝突合併。
+
+**設計實作**：`.fhs/ai/commands/commit.md` v2.5.0→v2.6.0，新增 §Phase 2.6（Phase 2/2.5 push 後執行，Phase 3 之前）。無需改動 `pre-tool-guard.js`（無現有規則需要調整或會被誤觸）。
+
+全文見 Changelog.md 2026-09-05 條目、`commit.md` v2.6.0 §Phase 2.6。**Subagent 使用記錄**：❌未使用（單一指令邏輯設計 + git/gh 現況即時查證，委派會斷推理鏈）。
+
 [2026-08-21] (D68) handoff 同步從「散文紀律」升格為「機械閘」——`pre-tool-guard.js` R13 攔截 `git commit`
 
 **背景**：Fat Mo 明確定義目標——「當我打 `/commit`，就代表任務完成並且**能確保**同步更新 handoff」。查證確認呢個保證一直唔成立：`commit.md` P0.7 雖然白紙黑字寫「`更新: <日期>` 必須更新至今日日期」，但純屬散文指示，冇任何機械強制。

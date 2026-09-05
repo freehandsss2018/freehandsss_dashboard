@@ -2018,3 +2018,11 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - **附帶發現（未修，已開 task chip 追蹤）**：grep sweep 揪出 `finance-auditor.md`/`database-reviewer.md`/`FHS_Pricing_Bible.md` 三處成本分類 checklist 仍停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`），從未納入 `accessory_cost`，屬 2026-07-25 原始導入時遺留舊缺口，非本次回歸引入，超出本次修復範圍。
 - 全文見 [decisions.md D64](decisions.md)、[FHS_System_Logic_Overview.md §5.4.14](FHS_System_Logic_Overview.md)、[learnings/supabase.md #14](../memory/learnings/supabase.md)、[Changelog.md](../../Changelog.md) 2026-08-16 條目。
 - **Subagent 使用記錄**：❌未使用（Supabase MCP + n8n MCP + curl webhook 全程主 session 直接操作，需即時交叉驗證，委派會斷推理鏈）。
+
+## 2026-09-05 — D70：`/commit` 新增 Phase 2.6 主線同步（Fast-Forward Auto-Merge）（Claude Code / Sonnet 5）
+- `/read` 交接同步後 Fat Mo 質疑「D58 已喺另一分支更新，點解呢邊 handoff 冇更新？我確實打咗 commit」。查證確認該 commit（`9c342c0`）落喺另一條 worktree 分支 `claude/read-command-d64261`，同本分支共同祖先仍係 main tip——該分支從未 merge 落 main，本分支自然睇唔到，非 bug。Fat Mo 追問：「若我完成任務後代表任務已完結，不是等同自動落main嗎？這是人的思考邏輯」，要求評估「commit 後自動 merge 落 main」方案可行性。
+- **查證（落手前）**：①GitHub main 無 branch protection、無 CI；②`pre-tool-guard.js` R1-R13 冇任何一條限制 push/merge 落 main；③`git worktree list` 實測本 repo **常態同時有 6 條 worktree 並行**；④`handoff.md` 近 10 個 commit 有 8 個 touch 頂部同一便攜塊區塊，係最高機率撞板嘅檔案；⑤查到 **2026-09-03 真實「分支合併事故」**（`claude/order-overview-category-display-1a4f84` 分支 decisions.md 記錄）——一分支連續 4 次 `/commit` Phase 2.5 部署冇核對其他分支時間戳，完整覆寫另一分支 31 輪 UI 優化成果上 NAS。
+- **裁決**：naive「每次自動合併、有衝突就自動解決」不安全（③④⑤三點證實非邊緣案例）。改用受限安全版——只做 fast-forward-only 自動合併：`git merge-base --is-ancestor origin/main HEAD` 判斷是否線性延續，係就 `git push origin HEAD:main`；main 已被搶先（非快進）就跳過並回報需人手 merge/PR，唔強推唔自動解衝突。
+- **刻意不做**：唔處理 Phase 2.5 NAS 部署跨分支覆寫問題（另案）；唔自動刪除來源分支/worktree；唔改動 `pre-tool-guard.js`。
+- 全文見 [decisions.md D70](decisions.md)、[Changelog.md](../../Changelog.md) 2026-09-05 條目、[learnings/governance.md #4（Preferences）](../memory/learnings/governance.md)。
+- **Subagent 使用記錄**：❌未使用（單一指令邏輯設計 + git/gh 現況即時查證，委派會斷推理鏈）。
