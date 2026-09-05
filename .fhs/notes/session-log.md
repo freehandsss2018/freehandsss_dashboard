@@ -2018,3 +2018,11 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - **附帶發現（未修，已開 task chip 追蹤）**：grep sweep 揪出 `finance-auditor.md`/`database-reviewer.md`/`FHS_Pricing_Bible.md` 三處成本分類 checklist 仍停留三分類（`handmodel_cost`/`keychain_cost`/`necklace_cost`），從未納入 `accessory_cost`，屬 2026-07-25 原始導入時遺留舊缺口，非本次回歸引入，超出本次修復範圍。
 - 全文見 [decisions.md D64](decisions.md)、[FHS_System_Logic_Overview.md §5.4.14](FHS_System_Logic_Overview.md)、[learnings/supabase.md #14](../memory/learnings/supabase.md)、[Changelog.md](../../Changelog.md) 2026-08-16 條目。
 - **Subagent 使用記錄**：❌未使用（Supabase MCP + n8n MCP + curl webhook 全程主 session 直接操作，需即時交叉驗證，委派會斷推理鏈）。
+
+## 2026-09-05 — D58-follow：逾期檢視點覆核 + Fat Mo 裁決延長觀察期（Claude Code / Sonnet 5）
+- `/read` 例行同步發現 D58 原定 2026-08-18 嘅檢視點逾期未查。Supabase 直查 `ig_phrase_rules`：共 7 筆全 `status='proposed'`，全部集中喺 2026-08-03/04 上線首兩天，其後整月零新增。7<10 觸發 D58 預定規則，判定入口太深，Phase 2b（開 enforce）繼續暫停。
+- AI 提出三個候選改介面方向後，Fat Mo 反應係「重新教我點用」而非揀方向——顯示低使用率可能源於唔熟悉操作而非入口太深。已於對話中重新講解完整操作路徑（底部導覽「系統」分頁→IG看門狗警報卡→💬IG訊息→選字→標籤條→預覽→確認）。
+- **Fat Mo 裁決**：唔改入口，延長觀察期至 **2026-10-05**（一個月），屆時沿用同一 <10/≥10 判準再查一次。
+- 已落盤 governance Preference #4（低使用率覆核先排除操作唔熟悉可能，唔好即刻假設入口/UX問題）。
+- 全文見 [decisions.md D58-follow](decisions.md)、[Changelog.md](../../Changelog.md) 2026-09-05 條目、[learnings/governance.md](../memory/learnings/governance.md) #4。
+- **Subagent 使用記錄**：❌未使用（單一 Supabase 查詢 + 文件落盤 + 對話講解，無需委派）。
