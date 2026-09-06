@@ -3,6 +3,23 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-06] (D73) 桌面「全部」視圖：入帳/成本/利潤/單號欄改用 table-layout:fixed 隱藏技巧貼緊內容，闊螢幕多出嘅位全數撥俾刻字
+
+**背景**：Fat Mo 截圖回報桌面「全部」視圖——① 入帳/成本/利潤三欄各自留有大片死白位；② 單號欄（單號 pill + 刪除/標記完成/明細三個 icon-only 按鈕，已係 D69續三 壓縮過嘅版本）同樣有多餘闊度。要求兩者都改為「最適闊度，不要有多餘的空間」，騰出嚟嘅位全數撥俾刻字（長刻字句子當時要 wrap 6-7 行先顯示完）。
+
+**根因**：`.review-table` 用 `table-layout:fixed`，`_FHS_TH_DEF` 嘅 `mw` 值本身已經係刻意設計嘅「比例權重」（2026-08-25「密度重排」決策，非本次改動），凡欄位全部都有明確 `width`，瀏覽器會將「表格實際闊度 - 全部欄宣告闊度總和」嘅落差按比例攤分落**每一個**欄，闊螢幕落差越大、每欄被拉伸得越誇張——呢個正正係入帳/成本/利潤/單號睇落有大片死白位嘅原因，唔關 CSS padding 或者按鈕排版事。
+
+**驗證（落手前）**：獨立寫咗一份隔離 test HTML（三個宣告 `width` 嘅 `<th>` + 一個冇宣告 `width` 嘅 `<th>`，`table-layout:fixed; width:100%`，放喺 900px 闊容器），Chromium 實測：三個宣告 65/65/112px 嘅欄各自量到 67/67/114px（+2px 純屬 border-collapse，唔係比例拉伸），冇宣告 width 嗰欄食晒落差得返 552px——證實「淨留一個欄唔宣告 width，佢會食晒 100% 落差，其餘有宣告 width 嘅欄會維持喺宣告值」呢個標準 CSS 技巧喺呢個 codebase 嘅環境下確實成立。
+
+**修復**：新增 `_fhsDesktopFlexEng(_c)` 判斷式（`!_c && !_fhsFinMerged()`，即桌面「全部」視圖、非手機橫向合併層），`fhsBuildOverviewHead()` 為 `eng`（刻字）欄喺呢個條件下**刻意唔宣告 width**，令佢做該表格入面唯一嘅彈性欄，食晒全部落差；入帳/成本/利潤/單號（同其餘所有欄）維持喺 `_FHS_TH_DEF` 宣告值，唔再被拉伸。**淨改一個欄嘅 width 宣告方式，冇改任何 mw 數值、冇改單號欄嘅 icon 按鈕排版**（D69續三已經係 icon-only 壓縮版，本身冇再縮嘅空間，問題全部出喺比例拉伸）。範圍收窄：只喺 `!_c && !_fhsFinMerged()`（桌面「全部」視圖）生效，類別視圖（`_c` 有值）繼續用 `mwCat` 明確闊度，手機橫向合併層（`_fhsFinMerged()`）由 `!important` media query 獨立掌管，兩者皆不受影響。
+
+**附帶發現並修復嘅獨立真 bug（D71-follow6）**：實測呢個修復嘅過程中，喺 Chromium 自動化重現咗 D71 財務欄合併嘅 resize/orientationchange 重繪機制（`_fhsFinLayoutRecheck`）一個真實 race——初版用獨立 JS 變數 `_fhsLastFinMerged` 記住「上次狀態」，但呢個變數喺 `<script>` 解析嗰一刻就讀一次 `window.innerWidth`；若之後 viewport 變更發生喺呢一刻**之後**（例如自動化工具 `resize_window` 唔會即時觸發真正 resize DOM event，令變數停留喺過時快照），下一次 resize 判斷會誤判「冇改變」而跳過重繪，永久停留喺錯嘅版面。**修法**：捨棄獨立變數快照，改為每次直接由 DOM 現狀讀取「而家顯示緊邊種」（`.ovw-col-fin` 存在＝合併版／`.ovw-col-inc` 存在＝分拆版），同 `_fhsFinMerged()` 期望值比對，唔符先重繪——天然冧唔到，因為冇獨立狀態可以同現實脫節。已補返 `load` 後延遲複檢（呢次唔會引入 race，因為機制本身唔靠快照）。
+
+**驗證**：Chromium 反覆測試 1400px↔758px 雙向切換（含手動 dispatch resize event 模擬真實裝置行為，因為自動化工具本身唔觸發），headers/widths 每次都正確反映當前闊度；1400px 抽驗：單號 112px／入帳成本利潤各 65px（貼緊宣告值，冇被拉伸）／刻字 396px（食晒落差，長句子由 6-7 行減到 2 行）；類別視圖（`_c` 有值）經程式碼審查確認 `_fhsDesktopFlexEng` 恆回 `false`，唔受影響；console 零 error。
+
+全文見 `Freehandsss_Dashboard/freehandsss_dashboardV42.html` `_fhsDesktopFlexEng()`/`_fhsFinLayoutRecheck()`。**Subagent 使用記錄**：❌未使用（跨 CSS table 演算法查證 + 隔離 test HTML 實測 + Chromium 交叉驗證，委派會斷推理鏈）。
+
+---
 [2026-09-06] (D72) Gate 0 生產版血統閘 — `current.html` 跨分支覆寫事故第三次重演後嘅機械補位
 
 **事故**：本分支（`claude/read-command-cad5ef`）部署 D71 時，用自己血統嘅 `current.html` 覆寫咗 NAS 上由 `claude/order-overview-category-display-1a4f84` 分支部署嘅生產版，一次抹走該分支 **117 個 commit** 嘅 D69續八 系列 UI 工作。Fat Mo 回報兩個症狀：①iPhone 13 Pro 橫向訂單總覽退回手機卡片版；②直向模式失去「訂單總覽分類顯示優化」全部成果。

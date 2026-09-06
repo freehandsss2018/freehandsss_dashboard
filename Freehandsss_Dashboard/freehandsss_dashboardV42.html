@@ -12441,6 +12441,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function fhsOverviewColCount() { return fhsOverviewCols().length; }
         window.fhsOverviewColCount = fhsOverviewColCount;
 
+        // [D71-follow5 2026-09-06] `table-layout:fixed` 下，若表格全部欄位都有明確 width，
+        // 瀏覽器會將「表格實際闊度 - 欄闊總和」嘅差額按比例攤分落所有欄（見上面「密度重排
+        // 2026-08-25」comment），令入帳/成本/利潤/單號呢啲已經夠窄嘅欄喺闊螢幕度被拉到遠超
+        // 宣告值（Fat Mo 截圖圈住嘅大片死白位）。標準 CSS table 技巧：淨留一個欄冇宣告
+        // width，佢會食晒 100% 落差，其餘有宣告 width 嘅欄則維持喺宣告值唔會被拉伸
+        // （已用獨立 test HTML 喺 Chromium 實測驗證：a/b/c 三欄宣告 65/65/112px，
+        // 喺 900px 闊容器實測得返 67/67/114px——多出嘅 2px 純屬 border-collapse，
+        // 唔係比例拉伸；d 欄冇宣告 width 就食晒剩低嘅 552px）。
+        // 揀「刻字」做呢個唯一冇宣告 width 嘅欄（Fat Mo 明示「以便騰出空給刻字」）——
+        // 長刻字句子（例：英文長句）先最需要呢啲騰出嚟嘅闊度，減少換行。
+        // ⚠️ 只喺**桌面「全部」視圖**生效（`!_c && !_fhsFinMerged()`，即 ≥1130px）：
+        // 類別視圖／手機橫向緊縮桌面層（750-1129px 本身已用 `!important` media query
+        // 覆寫、且該層 `.ovw-col-eng{display:none!important}` 已將刻字整欄隱藏，
+        // 見 D69續八-follow-12）唔應該受呢個新規則影響。
+        function _fhsDesktopFlexEng(_c) {
+            return !_c && !_fhsFinMerged();
+        }
+
         function fhsBuildOverviewHead() {
             var row = document.getElementById('reviewTheadRow');
             if (!row) return;
@@ -12465,7 +12483,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // 視圖，唔會誤中「全部」（Fat Mo 明示唔改嗰個）。
                 var _narrowCls = _c ? (' ovw-narrowcol-' + k) : ' ovw-allview-col ovw-col-' + k;
                 var ico = '<svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-' + d.icon + '"/></svg>';
-                var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; width:' + _mw + 'px;';
+                // [D71-follow5] 桌面「全部」視圖嘅「刻字」欄刻意唔宣告 width，食晒
+                // table-layout:fixed 嘅比例落差，換返其餘欄位維持喺宣告值唔被拉伸。
+                var _widthDecl = (k === 'eng' && _fhsDesktopFlexEng(_c)) ? '' : ('width:' + _mw + 'px;');
+                var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; ' + _widthDecl;
                 if (d.sort) {
                     return '<th class="sort-th' + _narrowCls + '" data-sort="' + d.sort + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'
                          + ico + d.label + '<span class="sort-arrow" id="sort-arrow-' + d.sort + '"></span></th>';
@@ -16617,22 +16638,40 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.addEventListener('orientationchange', function () { setTimeout(fhsSyncCompactDesktopLayout, 300); });
         document.addEventListener('DOMContentLoaded', fhsSyncCompactDesktopLayout);
 
-        // [D71 2026-09-06] 財務欄合併只喺 750-1129px（手機橫向）生效，而欄位組合係
-        // render 嗰刻由 fhsOverviewCols() 決定嘅——跨越呢兩條邊界（旋轉手機／拉窗口）
-        // 之後如果唔重繪，就會停留喺舊組合（例如轉去闊螢幕仲係得一個合併欄）。
-        // 只喺狀態**真係翻轉**先重繪，唔係每個 resize tick 都重繪成張表。
-        var _fhsLastFinMerged = (typeof window._fhsFinMerged === 'function') ? window._fhsFinMerged() : null;
+        // [D71 2026-09-06，D71-follow6 2026-09-06 修正] 財務欄合併只喺 750-1129px（手機橫向）
+        // 生效，而欄位組合係 render 嗰刻由 fhsOverviewCols() 決定嘅——跨越呢兩條邊界（旋轉
+        // 手機／拉窗口）之後如果唔重繪，就會停留喺舊組合。
+        // ⚠️ follow6 修正一個真實 race：初版用獨立 JS 變數 `_fhsLastFinMerged` 記住「上次狀態」，
+        // 但呢個變數喺 <script> 解析嗰一刻就讀一次 `window.innerWidth`；若瀏覽器嘅 viewport
+        // 變更（無論係 CDP 自動化定真實裝置 orientation 尚未完全 settle）發生喺呢一刻**之後**，
+        // 個變數會停留喺過時嘅闊度快照，同真實 DOM 現狀脫鈎——之後任何一次 resize 若計出嚟嘅
+        // `now` 啱好同呢個過時快照相同，就會被誤判做「冇改變」而跳過重繪，永久停留喺錯嘅版面
+        // （Chromium 自動化測試實測重現：navigate 後即刻 resize 到 758px 時，初始化嗰一刻讀到
+        // 嘅闊度同資源載入完成、真正 render 嗰陣嘅闊度唔一致，導致財務欄卡死喺舊版面）。
+        // **修法**：唔再靠自己維護嘅變數快照，直接每次由 DOM 現狀讀「而家顯示緊邊種」
+        // （`.ovw-col-fin` 存在＝合併版，`.ovw-col-inc` 存在＝分拆版），同 `_fhsFinMerged()`
+        // 嘅期望值比對——兩者不符先重繪，天然冧唔到，因為冇獨立狀態可以同現實脫節。
+        var _fhsFinRecheckTimer = null;
         function _fhsFinLayoutRecheck() {
-            if (typeof window._fhsFinMerged !== 'function') return;
-            var now = window._fhsFinMerged();
-            if (now === _fhsLastFinMerged) return;
-            _fhsLastFinMerged = now;
-            if (!document.body.classList.contains('v40-review-active')) return;  // 唔喺訂單總覽就唔使做，切返嚟嗰陣自然會重繪
-            if (typeof window.applyReviewFilters === 'function') window.applyReviewFilters();
-            else if (typeof window.renderReviewTable === 'function' && window.globalOrders) window.renderReviewTable(window.globalOrders);
+            clearTimeout(_fhsFinRecheckTimer);
+            _fhsFinRecheckTimer = setTimeout(function () {
+                if (typeof window._fhsFinMerged !== 'function') return;
+                if (!document.body.classList.contains('v40-review-active')) return;  // 唔喺訂單總覽就唔使做，切返嚟嗰陣自然會重繪
+                var domMerged = !!document.querySelector('#reviewTheadRow .ovw-col-fin');
+                var domSplit = !!document.querySelector('#reviewTheadRow .ovw-col-inc');
+                if (!domMerged && !domSplit) return;  // 類別視圖／表格未初始化，同「全部」財務欄無關
+                if (window._fhsFinMerged() === domMerged) return;  // 現狀已同步，唔使重繪
+                if (typeof window.applyReviewFilters === 'function') window.applyReviewFilters();
+                else if (typeof window.renderReviewTable === 'function' && window.globalOrders) window.renderReviewTable(window.globalOrders);
+            }, 200);
         }
         window.addEventListener('resize', _fhsFinLayoutRecheck);
         window.addEventListener('orientationchange', function () { setTimeout(_fhsFinLayoutRecheck, 300); });
+        // 額外喺 load 後補一次：應付「打開嗰刻已經處於某個闊度、成程冇觸發過 resize/
+        // orientationchange event」呢種冇 event 可以 hook 嘅情況（例如 iOS 加至主畫面
+        // app 喺已橫向狀態下冷啟動）。因為呢個函式而家淨係比較 DOM 現狀同期望值，
+        // 唔靠獨立變數，呢個額外呼叫本身唔會引入新嘅 race。
+        window.addEventListener('load', function () { setTimeout(_fhsFinLayoutRecheck, 500); });
 
         // 覆寫 switchMode 的 bbar 邏輯，使其在 iPhone 下永遠隱藏 legacy bar
         const _origSwitchMode = window.switchMode;

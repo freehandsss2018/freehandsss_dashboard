@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-06 續二] D73：桌面「全部」視圖財務/單號欄貼緊內容 + D71-follow6 resize race 修復
+
+- **回報**：Fat Mo 截圖回報桌面「全部」視圖入帳/成本/利潤三欄、單號欄（pill+icon 按鈕）都有大片死白位，要求改為最適闊度，騰出嚟嘅位全數撥俾刻字（長刻字句子當時要 wrap 6-7 行）。
+- **根因**：`.review-table` 用 `table-layout:fixed`，`_FHS_TH_DEF` 嘅 `mw` 本身係刻意設計嘅比例權重（2026-08-25 決策）——凡欄位全部都有明確 `width`，瀏覽器會將「表格闊度－全部欄宣告闊度總和」嘅落差按比例攤分落每一個欄，闊螢幕落差越大、每欄被拉伸得越誇張。
+- **驗證**：獨立寫隔離 test HTML（3 個宣告 width 嘅 `<th>` + 1 個唔宣告嘅），Chromium 實測證實「淨留一個欄唔宣告 width，佢食晒 100% 落差，其餘維持宣告值」呢個標準技巧喺呢個環境確實成立。
+- **修復**：新增 `_fhsDesktopFlexEng(_c)`（`!_c && !_fhsFinMerged()`），刻字欄喺桌面「全部」視圖刻意唔宣告 width 做彈性欄。淨改一個欄嘅 width 宣告方式，冇改任何 mw 數值、冇改單號欄按鈕排版。範圍收窄至桌面「全部」視圖，類別視圖／手機橫向合併層不受影響。
+- **附帶發現並修復 D71-follow6（真實 race）**：`_fhsFinLayoutRecheck`（D71 財務欄合併嘅 resize 重繪機制）原本用獨立 JS 變數 `_fhsLastFinMerged` 記住上次狀態，該變數喺 `<script>` 解析嗰刻就讀一次 `window.innerWidth`；若 viewport 變更發生喺之後，變數停留喺過時快照，令之後任何一次 resize 判斷「冇改變」而跳過重繪，永久停留喺錯嘅版面（Chromium 自動化實測重現：navigate 後即刻 resize 會踩中呢個 race）。修法：捨棄獨立變數，改為每次直接由 DOM 現狀（`.ovw-col-fin`/`.ovw-col-inc` 存在與否）同期望值比對，天然冧唔到。
+- **驗證**：Chromium 反覆測試 1400px↔758px 雙向切換（含手動 dispatch resize event，因自動化工具本身唔觸發真實 resize），headers/widths 每次正確反映當前闊度；1400px：單號 112px／入帳成本利潤各 65px（貼緊宣告值）／刻字 396px（食晒落差，長句子 6-7 行→2 行）；類別視圖經程式碼審查確認不受影響；console 零 error。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`_fhsDesktopFlexEng()`/`fhsBuildOverviewHead()`/`_fhsFinLayoutRecheck()`）、`.fhs/notes/decisions.md`（D73）、`.fhs/memory/handoff.md`。已同一批部署至 `current.html`（Gate 0 自動核實血統通過）。
+- 全文見 decisions.md D73。**Subagent 使用記錄**：❌未使用（跨 CSS table 演算法查證+隔離 test HTML 實測+Chromium 交叉驗證，委派會斷推理鏈）。
+
 ## [2026-09-06 續] D71-follow2：iPhone 橫向訂單總覽退回卡片版排查 + 防禦性修復
 
 - **回報**：Fat Mo 部署 D71 後回報「iPhone 13 Pro 橫向打開訂單總覽變咗直向卡片版」，附橫向截圖確認。
