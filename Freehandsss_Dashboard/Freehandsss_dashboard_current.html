@@ -11,8 +11,8 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-06T13:29:29Z">
-    <meta name="fhs-deploy-src" content="b811a0ef366fdd59fab248477b243bf68f8b4f53-dirty">
+    <meta name="fhs-build" content="2026-09-06T14:58:30Z">
+    <meta name="fhs-deploy-src" content="6811c4c8db8ca0dcb88bf4dd38fe25e21aa9cd9a-dirty">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -12372,7 +12372,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // [密度重排 2026-08-25 續五] Customer.mwCat：部位/材質/數量再收窄後騰出嘅位，
             // Fat Mo 要求分俾刻字同客人兩欄——客人喺類別視圖常見長 IG 帳號名
             // 「Lovehedqie852 (Selina Lai)」，157px 先夠唔截斷。
-            Customer: { label:'客人',     icon:'user',       mw:80,  mwCat:92 },
+            // [D71-follow7 2026-09-06] mw 80→180：D73 令刻字唔再食晒 table-layout:fixed
+            // 嘅落差，令客人欄之前靠「意外比例拉伸」掩蓋緊嘅過窄問題現形，真實長客人名
+            // （量得 "Lovehedqie852 (Selina Lai)" 13px 字體要 157px）走位/截斷。180px
+            // 貼緊呢個真實最長個案 + padding buffer。只影響桌面「全部」視圖（750-1129
+            // 已有 `!important` media query 獨立覆寫，類別視圖用 mwCat 唔受影響）。
+            Customer: { label:'客人',     icon:'user',       mw:180, mwCat:92 },
             inc:      { label:'入帳',     icon:'banknote',   mw:65,  color:'#B07D4C',           pad:'8px' },
             cost:     { label:'成本',     icon:'wallet',     mw:65,  color:'var(--fhs-danger)', pad:'8px' },
             profit:   { label:'利潤',     icon:'star',       mw:65,  color:'var(--fhs-success)',pad:'8px' },
@@ -12450,12 +12455,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // （已用獨立 test HTML 喺 Chromium 實測驗證：a/b/c 三欄宣告 65/65/112px，
         // 喺 900px 闊容器實測得返 67/67/114px——多出嘅 2px 純屬 border-collapse，
         // 唔係比例拉伸；d 欄冇宣告 width 就食晒剩低嘅 552px）。
-        // 揀「刻字」做呢個唯一冇宣告 width 嘅欄（Fat Mo 明示「以便騰出空給刻字」）——
-        // 長刻字句子（例：英文長句）先最需要呢啲騰出嚟嘅闊度，減少換行。
         // ⚠️ 只喺**桌面「全部」視圖**生效（`!_c && !_fhsFinMerged()`，即 ≥1130px）：
         // 類別視圖／手機橫向緊縮桌面層（750-1129px 本身已用 `!important` media query
         // 覆寫、且該層 `.ovw-col-eng{display:none!important}` 已將刻字整欄隱藏，
         // 見 D69續八-follow-12）唔應該受呢個新規則影響。
+        //
+        // [D71-follow7 2026-09-06] 初版揀「刻字」做彈性欄，Fat Mo 覆核後裁決刻字食得
+        // 太多（減三分一闊度）+ 客人欄之前靠「意外比例拉伸」掩蓋緊嘅過窄問題現形
+        // （真實客人名 "Lovehedqie852 (Selina Lai)" 量到要 157px，見 Customer.mw 註解）。
+        // 兩個改動：①客人欄 mw 80→180（明確 fixed 值，唔再靠彈性欄補）；②彈性欄改派
+        // 「產品明細」（prod）—— 刻字本身係短句改用明確上限（`_FHS_DESKTOP_ENG_MW`）
+        // 而非食晒落差；產品明細本身多個 badge，額外闊度用得着，換佢做彈性欄冇壞處。
+        var _FHS_DESKTOP_ENG_MW = 260; // ≈ D71-follow5 版本量得嘅 ~396px 減三分一
         function _fhsDesktopFlexEng(_c) {
             return !_c && !_fhsFinMerged();
         }
@@ -12479,14 +12490,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var d = _FHS_TH_DEF[k];
                 if (!d) return '';
                 var _mw = (d.mwCat && _c) ? d.mwCat : d.mw;
+                // [D71-follow7] 桌面「全部」視圖：刻字改用明確上限（減三分一），唔再食晒落差。
+                if (k === 'eng' && _fhsDesktopFlexEng(_c)) _mw = _FHS_DESKTOP_ENG_MW;
                 // [密度重排 2026-08-25 續五] _c 淨喺類別視圖先真，「全部」永遠唔會行呢個
                 // class —— 靠呢點令低於 1280px 嘅媒體查詢覆寫（CSS L~2860）只影響類別
                 // 視圖，唔會誤中「全部」（Fat Mo 明示唔改嗰個）。
                 var _narrowCls = _c ? (' ovw-narrowcol-' + k) : ' ovw-allview-col ovw-col-' + k;
                 var ico = '<svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-' + d.icon + '"/></svg>';
-                // [D71-follow5] 桌面「全部」視圖嘅「刻字」欄刻意唔宣告 width，食晒
-                // table-layout:fixed 嘅比例落差，換返其餘欄位維持喺宣告值唔被拉伸。
-                var _widthDecl = (k === 'eng' && _fhsDesktopFlexEng(_c)) ? '' : ('width:' + _mw + 'px;');
+                // [D71-follow7] 桌面「全部」視圖嘅彈性欄改由「產品明細」（prod）擔任——
+                // 刻字已鎖定明確上限（見上面 _mw 覆寫），產品明細多個 badge 換嚟額外闊度冇壞處。
+                var _widthDecl = (k === 'prod' && _fhsDesktopFlexEng(_c)) ? '' : ('width:' + _mw + 'px;');
                 var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; ' + _widthDecl;
                 if (d.sort) {
                     return '<th class="sort-th' + _narrowCls + '" data-sort="' + d.sort + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'

@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-06 續三] D71-follow7：D73 覆核 — 客人欄過窄現形 + 刻字裁減三分一
+
+- **回報**：D73 部署後 Fat Mo 覆核回報①客人欄壓縮太過，有客人名稱走位；②刻字佔位過多，要求減少三分一闊度。
+- **根因**：D73 拆除咗 `table-layout:fixed` 嘅比例拉伸之後，客人欄嘅宣告值（`mw:80`）一直冇窄到單獨企得住呢個事實現形——之前係靠意外拉伸隱性谷大先冇出事。
+- **查證**：用真實生產資料查證（非估計）——`window.globalOrders`（60 張單）逐個用 Canvas 實際字體（13px/500）量度，最長客人名 `"Lovehedqie852 (Selina Lai)"` 需要 157px，同 2026-08-25 舊 comment 早已預警嘅數字吻合。
+- **修復**：`Customer.mw` 80→180px（貼緊 157px 實測值 + buffer，實測該真實訂單 TD 零溢出）；刻字由「桌面全部視圖唯一彈性欄」（食晒 100% 落差 ~396px）改為明確上限 `_FHS_DESKTOP_ENG_MW=260px`（減三分一）；彈性欄角色改派產品明細（1400px 實測由固定 220px 變彈性 255px）。
+- **驗證**：Chromium 1400px 實測 11 欄全部貼緊宣告值，總和 1381px 同表格實際闊度吻合；真實最長客人名 TD 零溢出；resize dispatch 後重繪冧唔到；console 零 error。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`_FHS_TH_DEF.Customer`／`_FHS_DESKTOP_ENG_MW`／`fhsBuildOverviewHead()`）、`.fhs/notes/decisions.md`（D71-follow7）。已同一批部署至 `current.html`（Gate 0 自動核實血統通過）。
+- 全文見 decisions.md D71-follow7。**Subagent 使用記錄**：❌未使用（真實生產資料 Canvas 量度+Chromium 交叉驗證，委派會斷推理鏈）。
+
 ## [2026-09-06 續二] D73：桌面「全部」視圖財務/單號欄貼緊內容 + D71-follow6 resize race 修復
 
 - **回報**：Fat Mo 截圖回報桌面「全部」視圖入帳/成本/利潤三欄、單號欄（pill+icon 按鈕）都有大片死白位，要求改為最適闊度，騰出嚟嘅位全數撥俾刻字（長刻字句子當時要 wrap 6-7 行）。
