@@ -16,7 +16,7 @@
 
 **相容性（零 JS 斷鏈）**：`cost-cell-${id}` id 保留在合併後 `<td>` 本身（原本就是寫入後從未被讀取的死 id，純延續性保留）；`cost-val-${id}` 沿用原有 span 包裝模式；`profit-cell-${id}` 由原本包住整個 `<td>` 改為只包住「利潤」金額的 `<span>`——因為 `updateFinancialsLocally()`（`freehandsss_dashboardV42.html` ~13711 行）會對 `profit-cell-` 元素執行 `textContent = '$'+displayedProfit`，若仍掛喺 `<td>` 上會連「利潤」文字標籤一併被覆蓋清空；改掛喺內層 amount `<span>` 後，補打調整金額即時更新時只換數字，標籤不受影響。「顯示項目財務」逐 SKU 稽核 toggle（`.audit-fin-col`，CSS class 控制顯隱，與 DOM 巢狀深度無關）行為完全不變，已用真實 60 筆訂單資料 + toggle on/off 實測確認。
 
-**驗證**：`node --check` 抽取全部 inline `<script>` 語法通過；本地 `npx serve` 起 Freehandsss_Dashboard 靜態伺服器，手機橫向寬度（900px）+ 真實 Supabase 快取資料（`window.globalOrders`，60 筆）實測——兩張與 Fat Mo 原始截圖相同嘅訂單（0600728 Dorothy $2,380/$210/$2,170、0650429 Shirley Lee $4,260/$770/$3,490）數值完全對應；`getComputedStyle` 直接量測三行 `.fhs-fin-amt` 均為 `12.5px`/`700` 完全一致；`toggleAuditMode()` 開關測試逐 SKU 明細正常顯示/隱藏；console 零 error。**未部署至 `Freehandsss_dashboard_current.html`**——依 AGENTS.md §3 途徑(c)，留待 Fat Mo 下次 `/commit` 偵測 dev 版 HTML 有改動時自動觸發升格。
+**驗證**：`node --check` 抽取全部 inline `<script>` 語法通過；本地 `npx serve` 起 Freehandsss_Dashboard 靜態伺服器，手機橫向寬度（900px）+ 真實 Supabase 快取資料（`window.globalOrders`，60 筆）實測——兩張與 Fat Mo 原始截圖相同嘅訂單（0600728 Dorothy $2,380/$210/$2,170、0650429 Shirley Lee $4,260/$770/$3,490）數值完全對應；`getComputedStyle` 直接量測三行 `.fhs-fin-amt` 均為 `12.5px`/`700` 完全一致；`toggleAuditMode()` 開關測試逐 SKU 明細正常顯示/隱藏；console 零 error。**[2026-09-06 追記，同一 `/commit` 內完成部署]**：依 AGENTS.md §3 途徑(c)，`/commit` 偵測本次 commit 確實改動 `freehandsss_dashboardV42.html` → Phase 2.5 自動觸發升格，`/fhs-check` 4 PASS/1 SKIP 前置通過，三關驗證 PASS（HTTP 204／大小 1,225,315 bytes 相符／SHA256 `36203277F6AAB2222306FBCC40A5496017A62C15EC2D7944CCA75D72D82B84A3` 相符），已上線 `https://yanhei.synology.me/Freehandsss_dashboard_current.html`（commit `c34bc5f`）。
 
 **Subagent 使用記錄**：❌未使用（單一 UI 排版設計 + 讀碼取樣式 token 建 mockup + 直接改碼 + 即時 browser 實測，委派會斷視覺一致性與 JS 相容性判斷鏈）。
 
@@ -38,6 +38,8 @@
 **設計實作**：`.fhs/ai/commands/commit.md` v2.5.0→v2.6.0，新增 §Phase 2.6（Phase 2/2.5 push 後執行，Phase 3 之前）。無需改動 `pre-tool-guard.js`（無現有規則需要調整或會被誤觸）。
 
 全文見 Changelog.md 2026-09-05 條目、`commit.md` v2.6.0 §Phase 2.6。**Subagent 使用記錄**：❌未使用（單一指令邏輯設計 + git/gh 現況即時查證，委派會斷推理鏈）。
+
+**[2026-09-06 首次實機驗證，D70-follow 結案]**：D71 commit push 後觸發 Phase 2.6，`git fetch origin main` + `git merge-base --is-ancestor origin/main HEAD` 判定 `origin/main` 確為 HEAD 祖先（未被其他並行 worktree 分支搶先），`git push origin HEAD:main` 快進成功（`4881787..c34bc5f`），main 歷史保持線性、零額外 merge commit。機制自設計以來首次實機觸發，行為與設計完全相符，D70-follow 待驗證項結案。
 
 [2026-08-21] (D68) handoff 同步從「散文紀律」升格為「機械閘」——`pre-tool-guard.js` R13 攔截 `git commit`
 
