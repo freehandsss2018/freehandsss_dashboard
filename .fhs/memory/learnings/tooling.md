@@ -31,6 +31,8 @@
 
 12. **Claude Browser 自動化分頁嘅 CSS transition 唔會自然 tick 完成——`currentTime` 卡喺 `0`，`getComputedStyle()` 會讀到起始值，連手動 `!important` inline style 都好似攔唔到**：D69續八-follow-7 驗證一個 `translateX(-100%)→translateX(0)` 抽屜滑入動畫，`.open` class 已確認加咗、CSS specificity/`fb.matches()`/`document.styleSheets` 遞歸掃描全部證明源碼正確，但 `getComputedStyle(el).transform` 死咬住起始值唔放，連 `el.style.setProperty('transform','translateX(0px)','important')`（inline + `!important`，CSS 最高優先級）都覆寫唔到。用 `el.getAnimations()` 查到 `playState:"running"` 但 `currentTime:0` 永遠唔前進——CSS Transitions 喺 cascade 入面優先級高過任何 `!important` author rule，一個卡死嘅 transition 會蓋過任何覆寫。呢個係因為自動化分頁未必持續驅動正常嘅 rAF/合成器渲染循環（唔似真實裝置分頁被主動睇住）。修法／驗證手法：`element.getAnimations().forEach(a => a.finish())` 強制結算，即刻跳到目標值，證實源碼本身正確。**通則**：呢個環境驗證任何牽涉 CSS transition/animation 嘅 UI，若 computed style 睇落「唔聽任何覆寫」，先查 `getAnimations()` 是否有卡死嘅 running 動畫，唔好即刻懷疑 CSS cascade/specificity 邏輯本身——同 #11 `resize_window()` 唔觸發真 resize 事件屬同一類別（自動化環境同真實裝置嘅行為落差），非源碼 bug — D69續八-follow-7/2026-08-30 `@tooling +frontend` <!-- v:2026-08-30 -->
 
+13. **【高頻 ⚠️】`.ps1` 腳本檔案本身必須帶 UTF-8 BOM，否則 PowerShell 5.1 讀中文變亂碼並觸發指唔到真因嘅連鎖 parse error**：改寫 `scripts/upload-web.ps1` 時用一般 UTF-8（無 BOM）寫檔，PowerShell 5.1 當系統 ANSI codepage 讀，成個檔嘅中文註解／字串全部亂碼，報一堆 `Unexpected token`／`missing terminator`，錯誤訊息完全指唔到真因（我一度以為係 `^{commit}` 語法問題去捉錯位）。**同 `Get-Content`/`Set-Content` encoding 陷阱同源但唔同對象**——舊記錄講「腳本讀寫其他檔案」，呢次係「腳本檔案自己」。**修法**：寫完用 Node 補 BOM（`fs.writeFileSync(p, '\uFEFF' + text, 'utf8')`）。**判斷訊號**：PowerShell 報一堆莫名其妙 parse error 而錯誤訊息入面見到亂碼中文 → 十有八九係 BOM，唔好逐行捉語法 — D72/2026-09-06 `@tooling` <!-- v:2026-09-06 -->
+
 ## Preferences
 
 1. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30 `@tooling` <!-- v:2026-05-30 -->
@@ -40,4 +42,5 @@
 - → `governance.md` #5 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
 - → `governance.md` #8 【高頻 ⚠️】`handoff.md` 係 git 追蹤檔案，內容屬「分支局部」——只要有未 merge 嘅分支，交接狀態就必然有失同步窗口，加幾多寫入紀律都補唔到
 - → `governance.md` #12 新 worktree/新分支 session 開工前，必須核對 ahead/behind 而非假設「新開嘅就係最新」——`/read`讀到嘅 handoff 內容可以來自另一個活躍 worktree/main checkout，同本 worktree 實際 checkout 嘅分支唔同
+- → `governance.md` #10 【高頻 ⚠️】`current.html` 呢類「生產部署目標」係跨分支共享嘅，唔係本分支專屬狀態——`/read`／SessionStart hook 警告嘅「近48小時有其他分支動靜」唔可以掃過，一定要核對部署時間戳先至 deploy
 <!-- POINTERS:END -->

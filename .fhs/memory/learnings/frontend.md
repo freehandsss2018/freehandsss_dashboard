@@ -57,4 +57,6 @@
 - → `n8n.md` #2 Phase 0 payload 流向前置查證
 - → `governance.md` #6 【高頻 ⚠️】安全類修復唔可以一輪收工——實測連續 4 輪對抗式審查，每一輪都揪到真問題，其中兩輪推翻咗主對話自己嘅核心設計前提
 - → `tooling.md` #4 【高頻 ⚠️】跳脫層數唔可以靠推理，一定要用 `charCodeAt` 實測；另 raw U+2028/U+2029 放入 JS 源碼即係 SyntaxError
+- → `tooling.md` #11 Claude Browser 嘅 `resize_window()` 淨改視窗渲染尺寸，唔會觸發真正瀏覽器 `resize` DOM 事件——測試靠 `window.addEventListener('resize',...)` 嘅JS邏輯必須手動 dispatch 先驗證得到
+- → `tooling.md` #12 Claude Browser 自動化分頁嘅 CSS transition 唔會自然 tick 完成——`currentTime` 卡喺 `0`，`getComputedStyle()` 會讀到起始值，連手動 `!important` inline style 都好似攔唔到
 <!-- POINTERS:END -->
