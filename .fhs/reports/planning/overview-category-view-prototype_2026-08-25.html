@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>訂單總覽 · 類別顯示方案原型（2026-08-25）</title>
+<style>
+:root{
+  --fhs-bg-base:#FAF7F4; --fhs-bg-surface:#FFFFFF; --fhs-bg-elevated:#F0EBE4;
+  --fhs-text-primary:#2C2416; --fhs-text-secondary:#7A6A55; --fhs-text-muted:#B0A090;
+  --fhs-accent:#C9714A; --fhs-accent-hover:#B5603B; --fhs-accent-light:#F5E8E0;
+  --fhs-border:#E0D8CC; --fhs-border-strong:#C4B8A8;
+  --fhs-success:#2E7D32; --fhs-success-bg:#E8F5E9;
+  --fhs-warning:#F57F17; --fhs-warning-bg:#FFF8E1;
+  --fhs-danger:#C62828; --fhs-danger-bg:#FFEBEE;
+  --fhs-info:#1565C0; --fhs-info-bg:#E3F2FD;
+  --fhs-text-xs:12px; --fhs-text-sm:14px;
+  --radius-sm:4px; --radius-md:8px; --radius-lg:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--fhs-bg-base);color:var(--fhs-text-primary);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang HK","Microsoft JhengHei",sans-serif;}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--fhs-text-secondary);font-size:var(--fhs-text-xs);margin-bottom:16px;line-height:1.7}
+.ba-icon,.fhs-header-icon{display:inline-block;vertical-align:-1px}
+
+/* ---- 控制列 ---- */
+.panel{background:var(--fhs-bg-surface);border:1px solid var(--fhs-border);border-radius:var(--radius-lg);
+  padding:12px 14px;margin-bottom:12px}
+.ctl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctl-row + .ctl-row{margin-top:10px;padding-top:10px;border-top:1px dashed var(--fhs-border)}
+.filter-label{font-size:var(--fhs-text-xs);font-weight:700;color:var(--fhs-text-secondary);
+  display:inline-flex;align-items:center;gap:5px;min-width:76px}
+.chip-group{display:flex;gap:6px;flex-wrap:wrap}
+.chip-btn{display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1.5px solid var(--fhs-border);
+  border-radius:15px;background:var(--fhs-bg-surface);color:var(--fhs-text-secondary);font-size:var(--fhs-text-xs);
+  font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
+.chip-btn:hover:not(.active){border-color:var(--fhs-accent);color:var(--fhs-accent);background:var(--fhs-accent-light)}
+.chip-btn.active{background:var(--fhs-accent);border-color:var(--fhs-accent-hover);color:#fff;
+  box-shadow:0 1px 3px rgba(201,113,74,.3)}
+.chip-btn.rec::after{content:"推薦";margin-left:6px;font-size:9px;font-weight:800;background:var(--fhs-success-bg);
+  color:var(--fhs-success);border-radius:6px;padding:1px 5px}
+.chip-btn.active.rec::after{background:rgba(255,255,255,.22);color:#fff}
+
+/* ---- 方案說明條 ---- */
+.mode-note{margin-top:10px;padding:9px 12px;border-radius:var(--radius-md);font-size:var(--fhs-text-xs);
+  line-height:1.65;border-left:3px solid}
+.mode-note.now{background:var(--fhs-danger-bg);border-color:var(--fhs-danger);color:#8a1f1f}
+.mode-note.a{background:var(--fhs-warning-bg);border-color:var(--fhs-warning);color:#7a5200}
+.mode-note.b{background:var(--fhs-success-bg);border-color:var(--fhs-success);color:#1d5220}
+
+/* ---- 類別工作台橫幅（方案B） ---- */
+.cat-strip{display:flex;align-items:stretch;background:var(--fhs-bg-surface);
+  border:1px solid var(--fhs-border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:12px}
+.cat-strip-head{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:12px 18px;
+  background:var(--fhs-accent-light);border-right:1px solid var(--fhs-border);min-width:186px}
+.cat-strip-head .t{font-size:15px;font-weight:800;color:var(--fhs-accent-hover);display:flex;align-items:center;gap:6px}
+.cat-strip-head .n{font-size:var(--fhs-text-xs);color:var(--fhs-text-secondary);font-weight:600}
+.cat-strip-body{display:flex;flex:1;flex-wrap:wrap;align-items:center;gap:24px;padding:10px 18px}
+.strip-block{display:flex;flex-direction:column;gap:5px}
+.strip-block .lbl{font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--fhs-text-muted)}
+.strip-pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:12px;
+  font-size:11px;font-weight:700;border:1px solid;background:#fff}
+.pill b{font-weight:900}
+.pill-todo{border-color:#CFD8DC;color:#455A64;background:#F5F5F5}
+.pill-wip{border-color:#B3E5FC;color:#01579B;background:#E3F2FD}
+.pill-redo{border-color:#FFCC80;color:#E65100;background:#FFF3E0}
+.pill-done{border-color:#A5D6A7;color:#1B5E20;background:#E8F5E9}
+.pill-batch{border-color:var(--fhs-border-strong);color:var(--fhs-text-secondary)}
+
+/* ---- 表格 ---- */
+.table-wrap{background:#fff;border:1px solid var(--fhs-border);border-radius:var(--radius-lg);overflow-x:auto}
+table.review-table{width:100%;border-collapse:collapse;text-align:left;font-size:var(--fhs-text-sm)}
+thead th{padding:11px 12px;color:var(--fhs-text-secondary);font-weight:900;font-size:11px;
+  letter-spacing:.08em;white-space:nowrap;border:none;background:#fff;
+  position:sticky;top:0;z-index:5;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+thead th.money-in{color:#B07D4C}
+thead th.money-cost{color:var(--fhs-danger)}
+thead th.money-profit{color:var(--fhs-success)}
+thead th.newcol{color:var(--fhs-success);background:#F4FBF4}
+tbody td{font-size:13px;vertical-align:top;padding:14px 12px 8px}
+.review-jump-pill{display:inline-block;font-weight:800;color:#B07D4C;font-size:13px;cursor:pointer;
+  border:1px solid #EADBCB;border-radius:14px;padding:2px 10px;background:#FFF9F2}
+.review-badge{display:inline-flex;align-items:center;gap:3px;margin:2px 3px 2px 0;padding:2px 8px;
+  border-radius:9px;font-size:10.5px;font-weight:700;line-height:1.4;white-space:nowrap;
+  border:1px solid transparent;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.badge-cat-P{background:#F3E5F5;color:#4A148C;border-color:#E1BEE7}
+.badge-cat-K{background:#E3F2FD;color:#01579B;border-color:#B3E5FC}
+.badge-cat-M{background:#EFEBE9;color:#4E342E;border-color:#D7CCC8}
+.badge-cat-light{background:#FFF3E0;color:#E65100;border-color:#FFCC80}
+.badge-cat-wool{background:#E8F5E9;color:#1B5E20;border-color:#C8E6C9}
+.badge-cat-default{background:#F5F5F5;color:#455A64;border-color:#CFD8DC}
+.badge-mat-steel{background:#ECEFF1;color:#455A64;border-color:#CFD8DC}
+.badge-mat-silver{background:#FAFAFA;color:#757575;border-color:#EEEEEE;border-style:dashed}
+.badge-mat-gold{background:#FFFDE7;color:#C79A10;border-color:#FFF3B0}
+.badge-target-baby{background:#E1F5FE;color:#0288D1;border-color:#B3E5FC}
+.badge-target-parent{background:#FCE4EC;color:#C2185B;border-color:#F48FB1}
+.badge-target-elder{background:#E8F5E9;color:#388E3C;border-color:#A5D6A7}
+.badge-target-family{background:#FFF3E0;color:#BF360C;border-color:#FFCC80}
+.badge-part{background:#fff;color:#6b5b45;border-color:#e3d9c9}
+.review-badge-qty{background:#FFF9C4;color:#8a6d00;border-color:#FBC02D}
+.review-eng-line{display:flex;align-items:center;gap:5px;margin:1px 0}
+.review-eng-label{font-size:9px;font-weight:900;letter-spacing:.05em;border-radius:4px;padding:1px 5px}
+.review-eng-label-top{background:#E3F2FD;color:#1565C0}
+.review-eng-label-bot{background:#FFF3E0;color:#E65100}
+.review-eng-text{font-size:12px;font-weight:600}
+.review-batch-input{border:1px solid var(--fhs-border);border-radius:var(--radius-sm);padding:4px;
+  font-size:13px;text-align:center;width:88px;background:#fff}
+.review-status-select{border:1px solid var(--fhs-border);border-radius:var(--radius-sm);padding:4px;
+  font-size:12px;width:100%;max-width:108px;background:#fff}
+.hm-checks{display:flex;flex-direction:column;gap:4px;text-align:left;font-size:12px}
+.hm-checks label{display:flex;align-items:center;gap:4px;cursor:pointer}
+.hm-checks label.on{text-decoration:line-through;color:#aaa}
+.notes-ta{width:100%;min-height:62px;border:1px solid var(--fhs-border);border-radius:var(--radius-sm);
+  padding:5px;font-size:12px;resize:vertical;background:#fff;font-family:inherit}
+.muted{color:#c9c0b4}
+.rest-chip{display:inline-flex;align-items:center;gap:4px;margin-top:7px;padding:2px 8px;border-radius:9px;
+  font-size:10.5px;font-weight:700;background:#FAF6F1;border:1px dashed var(--fhs-border-strong);
+  color:var(--fhs-text-secondary);cursor:pointer}
+.rest-chip:hover{background:var(--fhs-accent-light);border-color:var(--fhs-accent);color:var(--fhs-accent-hover)}
+.whole-tag{display:block;font-size:9px;font-weight:800;letter-spacing:.05em;color:var(--fhs-text-muted);
+  margin-bottom:1px}
+.dim-row td{opacity:.42}
+.bug-flag{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:1px 7px;border-radius:8px;
+  font-size:10px;font-weight:800;background:var(--fhs-danger-bg);color:var(--fhs-danger);border:1px solid #f3bdbd}
+.miss-note{margin-bottom:12px;padding:10px 13px;border-radius:var(--radius-md);background:var(--fhs-danger-bg);
+  border-left:3px solid var(--fhs-danger);color:#8a1f1f;font-size:var(--fhs-text-xs);line-height:1.7}
+.legend{margin-top:14px;font-size:var(--fhs-text-xs);color:var(--fhs-text-secondary);line-height:1.85}
+.legend code{background:var(--fhs-bg-elevated);padding:1px 5px;border-radius:3px;font-size:11px}
+.legend b{color:var(--fhs-text-primary)}
+</style>
+</head>
+<body>
+<h1>訂單總覽 · 類別顯示方案原型</h1>
+<div class="sub">
+  2026-08-25 · 資料 = Supabase 真實訂單 7 張（含 3 張三類別混合單、2 張現況會整張漏顯示的單）<br>
+  用法：先揀「顯示方案」，再揀「類別」——同一批資料即時對照三種做法。「全部」視圖三個方案完全一致（依需求不改）。
+</div>
+<!-- ===== V42 Lucide SVG Sprite (inline, zero external deps, MIT) ===== -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icon-check" viewBox="0 0 24 24">
+    <polyline stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" points="20 6 9 17 4 12"/>
+  </symbol>
+  <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m6 9 6 6 6-6"/>
+  </symbol>
+  <symbol id="icon-refresh-cw" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+  </symbol>
+  <symbol id="icon-gem" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 3h12l4 6-10 13L2 9zM11 3 8 9l4 13 4-13-3-6M2 9h20"/>
+  </symbol>
+  <symbol id="icon-hand" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+  </symbol>
+  <symbol id="icon-footprint" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.66V16a2 2 0 1 1-4 0Z" />
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M16 21v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 7 14 8.8 14 10.5c0 3.11 2 5.66 2 8.66V21a2 2 0 1 0 4 0Z" />
+  </symbol>
+  <symbol id="icon-crown" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7z"/>
+  </symbol>
+  <symbol id="icon-bottle" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M9 3h6M10 3v3a4 4 0 0 1-1 2.8L8 11v8a3 3 0 0 0 3 3h2a3 3 0 0 0 3-3v-8l-1-2.2A4 4 0 0 1 14 6V3"/>
+  </symbol>
+  <symbol id="icon-heart" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+  </symbol>
+  <symbol id="icon-waves" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M2 6c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+  </symbol>
+  <symbol id="icon-message-circle" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+  </symbol>
+  <symbol id="icon-send" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M22 2 11 13M22 2 15 22l-4-9-9-4Z"/>
+  </symbol>
+  <symbol id="icon-square-pen" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84.84-2.873a2 2 0 0 1 .506-.852Z"/>
+  </symbol>
+  <symbol id="icon-star" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.454 2.454 0 0 0 1.84 1.34l5.16.752a.53.53 0 0 1 .294.904l-3.735 3.638a2.454 2.454 0 0 0-.706 2.172l.882 5.139a.53.53 0 0 1-.771.56l-4.618-2.428a2.454 2.454 0 0 0-2.282 0l-4.618 2.427a.53.53 0 0 1-.77-.56l.881-5.138a2.454 2.454 0 0 0-.706-2.172l-3.735-3.638a.53.53 0 0 1 .294-.904l5.16-.752a2.454 2.454 0 0 0 1.84-1.34Z"/>
+  </symbol>
+  <symbol id="icon-archive" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="2" y="4" width="20" height="5" rx="2"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9M10 13h4"/>
+  </symbol>
+  <symbol id="icon-trash-2" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>
+  </symbol>
+  <symbol id="icon-more-horizontal" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+    <circle cx="19" cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+    <circle cx="5"  cy="12" r="1" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-undo-2" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M9 14 4 9l5-5"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>
+  </symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M18 6 6 18M6 6l12 12"/>
+  </symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M5 12h14M12 5v14"/>
+  </symbol>
+  <symbol id="icon-edit" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+  </symbol>
+  <symbol id="icon-list" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+  </symbol>
+  <symbol id="icon-wallet" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3M3 10h18M16 14h.01"/>
+  </symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+  </symbol>
+  <symbol id="icon-bell" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+  </symbol>
+  <symbol id="icon-clipboard-list" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 12h6M9 16h6M9 8h6"/>
+  </symbol>
+  <symbol id="icon-shopping-bag" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M3 6h18M16 10a4 4 0 0 1-8 0"/>
+  </symbol>
+  <symbol id="icon-message-square" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </symbol>
+  <symbol id="icon-image" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+    <circle cx="9" cy="9" r="2" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+  </symbol>
+  <symbol id="icon-book-open" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  </symbol>
+  <symbol id="icon-truck" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="1" y="3" width="15" height="13" rx="2" ry="2"/>
+    <polygon stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+    <circle cx="5.5" cy="18.5" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/>
+    <circle cx="18.5" cy="18.5" r="2.5" stroke="currentColor" stroke-width="2" fill="none"/>
+  </symbol>
+  <symbol id="icon-banknote" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="2" y="5" width="20" height="14" rx="2"/>
+    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M6 12h.01M18 12h.01"/>
+  </symbol>
+  <symbol id="icon-wrench" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </symbol>
+  <symbol id="icon-lightbulb" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4"/>
+  </symbol>
+  <symbol id="icon-shield-alert" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/>
+  </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="m21 21-4.3-4.3"/>
+  </symbol>
+  <symbol id="icon-calendar" viewBox="0 0 24 24">
+    <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M16 2v4M8 2v4M3 10h18"/>
+  </symbol>
+  <symbol id="icon-activity" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+  </symbol>
+  <symbol id="icon-tag" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.41 0l7.29-7.29a1 1 0 0 0 0-1.41L12 2zM6 6h.01"/>
+  </symbol>
+  <symbol id="icon-package" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/>
+  </symbol>
+  <symbol id="icon-save" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M17 21v-8H7v8M7 3v5h8"/>
+  </symbol>
+  <symbol id="icon-palette" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C4.85857 19 4 20 4 21C4 22 5 22 5 22H12Z"/>
+    <circle cx="7.5" cy="10.5" r="1.5" stroke="currentColor" fill="currentColor"/>
+    <circle cx="11.5" cy="7.5" r="1.5" stroke="currentColor" fill="currentColor"/>
+    <circle cx="16.5" cy="9.5" r="1.5" stroke="currentColor" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-key" viewBox="0 0 24 24">
+    <circle cx="7.5" cy="15.5" r="5.5" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m21 2-9.6 9.6M15.5 7.5l3 3M18.5 4.5l3 3"/>
+  </symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+  </symbol>
+  <symbol id="icon-users" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+  </symbol>
+  <symbol id="icon-baby" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M9 12h.01M15 12h.01M10 16c.5 1 1.5 1 2 0M19 6.3A9 9 0 0 1 19 19a9 9 0 0 1-14 0 9 9 0 0 1 0-12.7c1.6-1.6 3.6-2.3 6-2.3 2.4 0 4.4.7 6 2.3z"/>
+  </symbol>
+  <symbol id="icon-smile" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>
+  </symbol>
+</svg>
+
+<div class="panel">
+  <div class="ctl-row">
+    <label class="filter-label"><svg class="fhs-header-icon" width="14" height="14"><use href="#icon-search"/></svg>顯示方案</label>
+    <div class="chip-group" id="modeChips">
+      <button class="chip-btn active" data-mode="now" type="button">現況（今日 V42）</button>
+      <button class="chip-btn" data-mode="a" type="button">方案 A · 只隱藏不相關列</button>
+      <button class="chip-btn rec" data-mode="b" type="button">方案 B · 類別視圖</button>
+    </div>
+  </div>
+  <div class="ctl-row">
+    <label class="filter-label"><svg class="fhs-header-icon" width="14" height="14"><use href="#icon-package"/></svg>類別</label>
+    <div class="chip-group" id="catChips">
+      <button class="chip-btn active" data-cat="" type="button">全部</button>
+      <button class="chip-btn" data-cat="P" type="button">手模</button>
+      <button class="chip-btn" data-cat="K" type="button">鎖匙扣</button>
+      <button class="chip-btn" data-cat="M" type="button">頸鏈</button>
+    </div>
+  </div>
+  <div id="modeNote"></div>
+</div>
+
+<div id="missNote"></div>
+<div id="catStrip"></div>
+
+<div class="table-wrap">
+  <table class="review-table">
+    <thead><tr id="theadRow"></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<script>
+/* ============================================================
+   真實資料（Supabase，2026-08-25 讀取）
+   ============================================================ */
+var ORDERS = [
+ { id:'0600107', cust:'Dede', date:'16/5/2026', price:10300, cost:2240, profit:8060, adj:0,
+   batch:'第34批', notes:'',
+   limbs:[{who:'嬰兒',sum:'1手1腳'},{who:'父母',sum:'2手'},{who:'大寶',sum:'4肢'}],
+   items:[
+    {key:'0600107_P_MAIN', rawCat:'立體擺設', sku:'玻璃瓶套裝 (4肢)', spec:'', eng:'', qty:1, batch:'第34批', status:'完成', cost:210},
+    {key:'0600107_K_FAM_COMBO', rawCat:'金屬鎖匙扣', sku:'家庭(S2)鎖匙扣 - 不銹鋼 - 1飾 (加購)', spec:'合成: 父母手 + 嬰兒左手 + 嬰兒左腳', eng:'爸：KA WAI 媽：DEDE 寶：HANG YU', qty:1, batch:'第34批', status:'0 什麼都未做', cost:135},
+    {key:'0600107_K_LF', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 3飾 (加購)', spec:'', eng:'[上排]HANG [下排]YU', qty:3, batch:'第34批', status:'0 什麼都未做', cost:555},
+    {key:'0600107_K_RH', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 3飾 (加購)', spec:'', eng:'[上排]HANG [下排]YU', qty:3, batch:'第34批', status:'0 什麼都未做', cost:555},
+    {key:'0600107_M_LH', rawCat:'純銀頸鏈吊飾', sku:'嬰兒吊飾 - 925金 - 1飾 (加購)', spec:'', eng:'', qty:1, batch:'第36批', status:'製作中', cost:625},
+    {key:'0600107_M_RF', rawCat:'純銀頸鏈吊飾', sku:'嬰兒吊飾 - 925銀 - 1飾 (加購)', spec:'', eng:'G', qty:1, batch:'第36批', status:'製作中', cost:625},
+    {key:'0600107_L_LIGHTS', rawCat:'配件', sku:'燈飾 - 加購', spec:'', eng:'', qty:1, batch:'', status:'', cost:30}
+   ]},
+ { id:'0600903', cust:'Lokyi_C', date:'16/4/2026', price:6220, cost:1450, profit:4770, adj:500,
+   batch:'第34批', notes:'925金重做左手\n$500',
+   limbs:[{who:'嬰兒',sum:'4肢'}],
+   items:[
+    {key:'0600903_P_MAIN', rawCat:'立體擺設', sku:'木框套裝 (4肢)', spec:'', eng:'', qty:1, batch:'', status:'完成', cost:210},
+    {key:'0600903_K_RF', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 1飾 (加購)', spec:'', eng:'[上排]S.C [下排]0121', qty:1, batch:'', status:'0 什麼都未做', cost:185},
+    {key:'0600903_M_LH', rawCat:'純銀頸鏈吊飾', sku:'嬰兒吊飾 - 925金 - 1飾 (加購)', spec:'', eng:'', qty:1, batch:'', status:'需進行補打', cost:625},
+    {key:'0600903_M_RF', rawCat:'純銀頸鏈吊飾', sku:'嬰兒吊飾 - 925銀 - 1飾 (加購)', spec:'', eng:'C', qty:1, batch:'', status:'0 什麼都未做', cost:625}
+   ]},
+ { id:'0600106', cust:'Angie Yeung', date:'20/5/2026', price:6580, cost:1190, profit:5390, adj:0,
+   batch:'第34批', notes:'+燈 +#$80',
+   limbs:[{who:'嬰兒',sum:'1手1腳'},{who:'父母',sum:'2手'},{who:'大寶',sum:'4肢'}],
+   items:[
+    {key:'0600106_P_MAIN', rawCat:'立體擺設', sku:'玻璃瓶套裝 (2肢)', spec:'', eng:'', qty:1, batch:'第34批', status:'待製作', cost:210},
+    {key:'0600106_K_LH', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 4飾 (加購)', spec:'', eng:'[上排]WCY [下排]26520', qty:4, batch:'第34批', status:'0 什麼都未做', cost:740},
+    {key:'0600106_K_LF', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 4飾 (加購)', spec:'', eng:'[上排]WCY [下排]26520', qty:4, batch:'第34批', status:'0 什麼都未做', cost:740}
+   ]},
+ { id:'0600112', cust:'Evelyn.c414', date:'30/5/2026', price:4860, cost:770, profit:4090, adj:0,
+   batch:'', notes:'淨Scan 右手',
+   limbs:[{who:'嬰兒',sum:'4肢'}],
+   items:[
+    {key:'0600112_P_MAIN', rawCat:'立體擺設', sku:'木框套裝 (4肢)', spec:'', eng:'', qty:1, batch:'第35批', status:'已book日期', cost:210},
+    {key:'0600112_K_LH', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 2飾 (加購)', spec:'', eng:'[上排]Yi [下排]Fei', qty:2, batch:'第35批', status:'待製作', cost:370},
+    {key:'0600112_K_RF', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 2飾 (加購)', spec:'', eng:'[上排]Yi [下排]Fei', qty:2, batch:'第35批', status:'待製作', cost:370}
+   ]},
+ { id:'06001008', cust:'Mandy Ho', date:'9/6/2026', price:3680, cost:710, profit:2970, adj:0,
+   batch:'', notes:'',
+   limbs:[{who:'嬰兒',sum:'1手1腳'},{who:'父母',sum:'2手'},{who:'大寶',sum:'4肢'}],
+   items:[
+    {key:'06001008_P_MAIN', rawCat:'立體擺設', sku:'玻璃瓶套裝 (4肢)', spec:'', eng:'', qty:1, batch:'第35批', status:'已book日期', cost:210},
+    {key:'06001008_K_RF', rawCat:'金屬鎖匙扣', sku:'嬰兒鎖匙扣 - 不銹鋼 - 4飾 (加購)', spec:'', eng:'', qty:4, batch:'第35批', status:'待製作', cost:365}
+   ]},
+ { id:'0600804', cust:'Katrina Sui', date:'28/3/2026', price:5640, cost:1136, profit:1644, adj:0,
+   batch:'第34批', notes:'玻璃瓶+燈\n首飾 不知怎樣計', badCat:true,
+   limbs:[{who:'嬰兒',sum:'1手'},{who:'父母',sum:'2手'},{who:'大寶',sum:'4肢'}],
+   items:[
+    {key:'0600804_P_MAIN', rawCat:'立體擺設', sku:'', spec:'玻璃瓶款式', eng:'', qty:1, batch:'', status:'待製作', cost:null},
+    {key:'0600804_M_LH', rawCat:'銀飾', sku:'', spec:'手 / 左手', eng:'', qty:1, batch:'', status:'待製作', cost:null},
+    {key:'0600804_M_E_RH', rawCat:'銀飾', sku:'', spec:'手 / 右手', eng:'', qty:1, batch:'', status:'待製作', cost:null}
+   ]},
+ { id:'0600100', cust:'Jasmine', date:'7/10/2025', price:3980, cost:395, profit:3585, adj:0,
+   batch:'第31批', notes:'', badCat:true,
+   limbs:[{who:'嬰兒',sum:'4肢'},{who:'父母',sum:'2手'},{who:'大寶',sum:'4肢'}],
+   items:[
+    {key:'0600100_P_MAIN', rawCat:'??', sku:'玻璃瓶套裝 (4肢)', spec:'', eng:'', qty:1, batch:'', status:'Done 已完成', cost:null},
+    {key:'0600100_K_LF', rawCat:'??', sku:'嬰兒鎖匙扣 - 不銹鋼 - 4飾 (加購)', spec:'', eng:'[上排]Yuna [下排]1107', qty:4, batch:'第31批', status:'Done 已完成', cost:null}
+   ]}
+];
+
+/* ============================================================
+   維度解析（等同 V42 getProductDimensions 的判斷次序）
+   ============================================================ */
+function ic(n, extra){ return '<svg class="ba-icon" width="12" height="12"'+(extra||'')+'><use href="#icon-'+n+'"/></svg>'; }
+
+function dims(it){
+  var K = (it.key||'').toUpperCase();
+  var txt = (it.key||'')+' '+(it.sku||'')+' '+(it.spec||'');
+  var d = {};
+  // 類別
+  if (K.indexOf('_W_WOOL')>-1 || txt.indexOf('羊毛氈')>-1){ d.cat='ADDON'; d.addon='wool'; d.catName='羊毛氈公仔'; d.catCls='badge-cat-wool'; d.catIcon='smile'; }
+  else if (K.indexOf('_L_LIGHTS')>-1 || txt.indexOf('燈飾')>-1){ d.cat='ADDON'; d.addon='light'; d.catName='燈飾'; d.catCls='badge-cat-light'; d.catIcon='lightbulb'; }
+  else if (K.indexOf('_K_')>-1 || txt.indexOf('鎖匙扣')>-1){ d.cat='K'; d.catName='鎖匙扣'; d.catCls='badge-cat-K'; d.catIcon='key'; }
+  else if (K.indexOf('_M_')>-1 || txt.indexOf('吊飾')>-1 || txt.indexOf('頸鏈')>-1){ d.cat='M'; d.catName='純銀吊飾'; d.catCls='badge-cat-M'; d.catIcon='gem'; }
+  else if (K.indexOf('_P_')>-1 || txt.indexOf('擺設')>-1 || txt.indexOf('木框')>-1 || txt.indexOf('玻璃')>-1){ d.cat='P'; d.catName='手模擺設'; d.catCls='badge-cat-P'; d.catIcon='palette'; }
+  else { d.cat='OTHER'; d.catName='其他'; d.catCls='badge-cat-default'; d.catIcon='package'; }
+  // 對象
+  if (K.indexOf('_FAM_')>-1 || txt.indexOf('家庭')>-1){ d.target='家庭'; d.tCls='badge-target-family'; d.tIcon='users'; }
+  else if (/_E_/.test(K) || txt.indexOf('大寶')>-1){ d.target='大寶'; d.tCls='badge-target-elder'; d.tIcon='smile'; }
+  else if (txt.indexOf('成人')>-1){ d.target='成人'; d.tCls='badge-target-parent'; d.tIcon='user'; }
+  else { d.target='嬰兒'; d.tCls='badge-target-baby'; d.tIcon='baby'; }
+  // 部位
+  var m = K.match(/_(LH|RH|LF|RF)$/);
+  if (m){ d.part={LH:'左手',RH:'右手',LF:'左腳',RF:'右腳'}[m[1]]; }
+  else if ((it.spec||'').indexOf('左手')>-1) d.part='左手';
+  else if ((it.spec||'').indexOf('右手')>-1) d.part='右手';
+  else if ((it.spec||'').indexOf('左腳')>-1) d.part='左腳';
+  else if ((it.spec||'').indexOf('右腳')>-1) d.part='右腳';
+  else if (d.target==='家庭') d.part='合成';
+  d.pIcon = d.part && d.part.indexOf('手')>-1 ? 'hand' : (d.part && d.part.indexOf('腳')>-1 ? 'footprint' : 'users');
+  // 材質
+  if (txt.indexOf('不銹鋼')>-1 || txt.indexOf('不鏽鋼')>-1){ d.mat='不銹鋼'; d.mCls='badge-mat-steel'; d.mIcon='settings'; }
+  else if (txt.indexOf('925金')>-1){ d.mat='925金'; d.mCls='badge-mat-gold'; d.mIcon='crown'; }
+  else if (txt.indexOf('925銀')>-1 || txt.indexOf('銀')>-1){ d.mat='925銀'; d.mCls='badge-mat-silver'; d.mIcon='gem'; }
+  if (!d.mat){ if (d.cat==='K'){ d.mat='不銹鋼'; d.mCls='badge-mat-steel'; d.mIcon='settings'; }
+               else if (d.cat==='M'){ d.mat='925銀'; d.mCls='badge-mat-silver'; d.mIcon='gem'; } }
+  // 手模款式
+  if (d.cat==='P'){
+    if (txt.indexOf('木框')>-1){ d.style='木框'; d.sIcon='image'; }
+    else if (txt.indexOf('玻璃')>-1){ d.style='玻璃瓶'; d.sIcon='bottle'; }
+  }
+  return d;
+}
+
+/* 現況（V42）的訂單層比對：只看 item_category 原始字串 */
+function legacyMatch(o, cat){
+  if (!cat) return true;
+  return o.items.some(function(i){
+    var c = i.rawCat || '';
+    if (cat==='P') return c.indexOf('擺設')>-1 || c.indexOf('木框')>-1 || c.indexOf('玻璃瓶')>-1;
+    if (cat==='K') return c.indexOf('鎖匙扣')>-1 || c.indexOf('鑰匙扣')>-1;
+    if (cat==='M') return c.indexOf('吊飾')>-1 || c.indexOf('頸鏈')>-1;
+    return true;
+  });
+}
+/* 新做法：一律走 dims()（同 badge 顯示唯一真源） */
+function newMatch(o, cat){
+  if (!cat) return true;
+  return o.items.some(function(i){ return dims(i).cat === cat; });
+}
+
+/* ============================================================
+   進度
+   ============================================================ */
+var OPTS_KM = [['0 什麼都未做','0 什麼都未做'],['1 已繪圖 或 已取相','1 已繪圖/取相'],['1.5 已交付建模師, 等3D圖中','1.5 等3D圖'],
+  ['2 已修3D圖, 但未核對','2 已修3D圖'],['2.5 已核對3D圖, 準備打印','2.5 準備打印'],['3 已交付廠家, 打印中','3 打印中'],
+  ['需進行補打','需進行補打'],['Done 已完成','Done 已完成']];
+
+function bucket(s){
+  s = s||'';
+  if (s.indexOf('補打')>-1) return 'redo';
+  if (s.indexOf('Done')>-1 || s==='完成' || s==='已取件' || s==='待交收') return 'done';
+  if (s==='' || s==='待製作' || s.indexOf('0 什麼都未做')>-1) return 'todo';
+  return 'wip';
+}
+function statusCell(o, it, d){
+  if (d.cat==='P'){
+    var glass = d.style==='玻璃瓶';
+    var labels = glass ? ['已book','已完成'] : ['已book','已做laser','已做音訊'];
+    var b = bucket(it.status);
+    var on = b==='done' ? labels.length : ((it.status||'').indexOf('book')>-1 ? 1 : 0);
+    return '<div class="hm-checks">'+labels.map(function(l,i){
+      return '<label class="'+(i<on?'on':'')+'"><input type="checkbox" '+(i<on?'checked':'')+'> '+l+'</label>';
+    }).join('')+'</div>';
+  }
+  var opts = OPTS_KM.slice(); var found = opts.some(function(p){ return p[0]===it.status; });
+  if (!found && it.status) opts.unshift([it.status, it.status]);
+  return '<select class="review-status-select">'+opts.map(function(p){
+    return '<option '+(p[0]===it.status?'selected':'')+'>'+p[1]+'</option>'; }).join('')+'</select>';
+}
+
+/* ============================================================
+   Cell builders
+   ============================================================ */
+function engCell(it){
+  var raw = it.eng||'';
+  if (!raw) return '<span class="muted">—</span>';
+  var top='', bot='';
+  var t = raw.match(/\[上排\](.*?)(\[下排\]|$)/), b = raw.match(/\[下排\](.*?)$/);
+  if (t) top = t[1].trim(); if (b) bot = b[1].trim();
+  if (!top && !bot) top = raw;
+  return (top?'<div class="review-eng-line"><span class="review-eng-label review-eng-label-top">TOP</span><span class="review-eng-text">'+top+'</span></div>':'')
+       + (bot?'<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">'+bot+'</span></div>':'');
+}
+function limbBadges(o){
+  var cls = {'嬰兒':'badge-target-baby','父母':'badge-target-parent','大寶':'badge-target-elder'};
+  var icn = {'嬰兒':'baby','父母':'users','大寶':'smile'};
+  return (o.limbs||[]).map(function(l){
+    return '<span class="review-badge '+cls[l.who]+'">'+ic(icn[l.who])+' '+l.who+' '+l.sum+'</span>'; }).join('');
+}
+/* 現況/方案A 用的「產品明細」badge 團 */
+function prodCell(o, it, d){
+  var h = '<span class="review-badge '+d.catCls+'">'+ic(d.catIcon)+' '+d.catName+'</span>';
+  if (d.mat) h += '<span class="review-badge '+d.mCls+'">'+ic(d.mIcon)+' '+d.mat+'</span>';
+  if (d.style) h += '<span class="review-badge badge-part">'+ic(d.sIcon)+' '+d.style+'</span>';
+  if (d.cat==='P'){ h += '<span style="flex-basis:100%;height:0"></span>' + limbBadges(o); }
+  else {
+    h += '<span class="review-badge '+d.tCls+'">'+ic(d.tIcon)+' '+d.target+'</span>';
+    if (d.part) h += '<span class="review-badge badge-part">'+ic(d.pIcon)+' '+d.part+'</span>';
+    if (it.qty>=1) h += '<span class="review-badge review-badge-qty">x'+it.qty+'</span>';
+  }
+  return '<div style="display:flex;flex-wrap:wrap;align-items:center">'+h+'</div>';
+}
+
+/* ============================================================
+   Render
+   ============================================================ */
+var MODE = 'now', CAT = '';
+
+var HEADS = {
+  cb:['','width:34px'], id:['單號','min-width:112px','square-pen'], date:['日期','min-width:92px','calendar'],
+  cust:['客人','min-width:86px','user'], inc:['入帳','min-width:86px','banknote','money-in'],
+  cost:['成本','min-width:80px','wallet','money-cost'], prof:['利潤','min-width:80px','star','money-profit'],
+  eng:['刻字','min-width:112px','edit'], prod:['產品明細','min-width:230px','package'],
+  batch:['批次','min-width:96px','tag'], stat:['進度','min-width:120px','activity'],
+  notes:['備註','min-width:132px','square-pen'],
+  style:['款式','min-width:88px','image','newcol'], limb:['肢數明細','min-width:190px','users','newcol'],
+  addon:['加購','min-width:92px','lightbulb','newcol'],
+  target:['對象','min-width:78px','baby','newcol'], part:['部位','min-width:78px','hand','newcol'],
+  mat:['材質','min-width:82px','settings','newcol'], qty:['數量','min-width:60px','package','newcol']
+};
+function colsFor(){
+  var money = ['inc','cost','prof'];
+  var base = ['cb','id','date','cust'];
+  if (MODE!=='b' || !CAT) return base.concat(money, ['eng','prod','batch','stat','notes']);
+  // 方案 B 定案：類別視圖收起財務欄（Fat Mo 裁決）——當作純生產工作清單，要睇錢切返「全部」
+  if (CAT==='P') return base.concat(['style','limb','addon','eng','batch','stat','notes']);
+  return base.concat(['target','part','mat','qty','eng','batch','stat','notes']);
+}
+
+function render(){
+  var cols = colsFor();
+  document.getElementById('theadRow').innerHTML = cols.map(function(c){
+    var h = HEADS[c];
+    return '<th class="'+(h[3]||'')+'" style="'+h[1]+'">'+(h[2]?ic(h[2],' style="margin-right:4px"'):'')+h[0]+'</th>';
+  }).join('');
+
+  var matcher = (MODE==='now') ? legacyMatch : newMatch;
+  var shown = ORDERS.filter(function(o){ return matcher(o, CAT); });
+  var dropped = ORDERS.filter(function(o){ return !matcher(o, CAT) && newMatch(o, CAT); });
+
+  /* 漏單警示（只有現況模式先會出現） */
+  var mn = document.getElementById('missNote');
+  if (dropped.length){
+    mn.innerHTML = '<div class="miss-note">'+ic('shield-alert',' style="margin-right:5px"')+
+      '<b>現況會整張漏顯示 '+dropped.length+' 張單</b>：'+dropped.map(function(o){return o.id+'（'+o.cust+'）';}).join('、')+
+      '<br>原因：訂單層比對只讀 <code>item_category</code> 原始字串，呢啲單嘅值係 <code>??</code> / <code>銀飾</code>，唔中任何一個關鍵字；'+
+      'badge 顯示用嘅 <code>getProductDimensions()</code> 卻靠 <code>_K_</code>/<code>_M_</code> key 判斷，兩套標準唔一致。方案 A / B 收窄到同一套真源後即修好。</div>';
+  } else mn.innerHTML = '';
+
+  /* 類別工作台橫幅（方案B） */
+  var cs = document.getElementById('catStrip');
+  if (MODE==='b' && CAT){
+    var items=[], oset={}, bmap={}, smap={todo:0,wip:0,redo:0,done:0};
+    shown.forEach(function(o){ o.items.forEach(function(it){
+      if (dims(it).cat!==CAT) return;
+      items.push(it); oset[o.id]=1; smap[bucket(it.status)]++;
+      var bk = it.batch || o.batch || '未派批'; bmap[bk]=(bmap[bk]||0)+1;
+    });});
+    var meta = {P:['palette','手模擺設'],K:['key','鎖匙扣'],M:['gem','純銀吊飾']}[CAT];
+    var pills = [['todo','未開始','pill-todo'],['wip','進行中','pill-wip'],['redo','需補打','pill-redo'],['done','已完成','pill-done']]
+      .map(function(p){ return '<span class="pill '+p[2]+'">'+p[1]+' <b>'+smap[p[0]]+'</b></span>'; }).join('');
+    var bpills = Object.keys(bmap).sort().map(function(k){
+      return '<span class="pill pill-batch">'+k+' <b>'+bmap[k]+'</b></span>'; }).join('');
+    cs.innerHTML = '<div class="cat-strip"><div class="cat-strip-head">'+
+      '<div class="t">'+ic(meta[0],' width="17" height="17"')+meta[1]+'</div>'+
+      '<div class="n">'+items.length+' 件 · '+Object.keys(oset).length+' 張單</div></div>'+
+      '<div class="cat-strip-body">'+
+        '<div class="strip-block"><span class="lbl">進度分佈</span><div class="strip-pills">'+pills+'</div></div>'+
+        '<div class="strip-block"><span class="lbl">批次分佈</span><div class="strip-pills">'+bpills+'</div></div>'+
+      '</div></div>';
+  } else cs.innerHTML='';
+
+  /* 表身 */
+  var html='';
+  shown.forEach(function(o){
+    var all = o.items.slice().sort(function(a,b){
+      var r={P:0,K:1,M:2,ADDON:8,OTHER:9}, la={左手:0,右手:1,左腳:2,右腳:3};
+      var da=dims(a), db=dims(b);
+      return (r[da.cat]*10+(la[da.part]!==undefined?la[da.part]:9)) - (r[db.cat]*10+(la[db.part]!==undefined?la[db.part]:9));
+    });
+    var addons = all.filter(function(i){ return dims(i).cat==='ADDON'; });
+    var main   = all.filter(function(i){ return dims(i).cat!=='ADDON'; });
+    var rows   = (MODE==='now' || !CAT) ? main : main.filter(function(i){ return dims(i).cat===CAT; });
+    if (!rows.length) rows = main;                       // 保險：永不出現零列訂單
+    var hidden = main.filter(function(i){ return rows.indexOf(i)<0; });
+    var hagg={}; hidden.forEach(function(i){ var n=dims(i).catName; hagg[n]=(hagg[n]||0)+1; });
+    var restChip = Object.keys(hagg).length
+      ? '<div class="rest-chip" title="呢張單仲有其他類別品項，撳返「全部」睇齊">'+ic('package')+'另有：'+
+        Object.keys(hagg).map(function(k){return k+' ×'+hagg[k];}).join('、')+'</div>' : '';
+    var n = rows.length;
+    var wholeTag = (MODE!=='now' && CAT) ? '<span class="whole-tag">全單</span>' : '';
+
+    rows.forEach(function(it, i){
+      var d = dims(it);
+      var td=[];
+      if (i===0){
+        td.push('<td rowspan="'+n+'"><input type="checkbox"></td>');
+        td.push('<td rowspan="'+n+'"><div class="review-jump-pill">'+o.id+' '+'</div>'+
+          (o.badCat && MODE!=='now' ? '<div class="bug-flag">'+ic('shield-alert',' width="10" height="10"')+'現況睇唔到</div>':'')+
+          restChip+'</td>');
+        td.push('<td rowspan="'+n+'" style="color:#555;white-space:nowrap">'+o.date+'</td>');
+        td.push('<td rowspan="'+n+'" style="font-weight:600">'+o.cust+'</td>');
+        if (cols.indexOf('inc')>-1){
+          td.push('<td rowspan="'+n+'" style="text-align:center;font-weight:800;color:#B07D4C">'+wholeTag+'$'+o.price+'</td>');
+          td.push('<td rowspan="'+n+'" style="text-align:center;font-weight:700;color:#C62828">'+wholeTag+'$'+o.cost+
+            (o.adj>0?'<br><span style="font-size:11px;color:#FF8F00">+$'+o.adj+' 補打</span>':'')+'</td>');
+          td.push('<td rowspan="'+n+'" style="text-align:center;font-weight:800;color:#2E7D32">'+wholeTag+'$'+o.profit+'</td>');
+        }
+      }
+      cols.slice(cols.indexOf('inc')>-1 ? 7 : 4).forEach(function(c){
+        if (c==='eng')   td.push('<td>'+engCell(it)+'</td>');
+        else if (c==='prod')  td.push('<td>'+prodCell(o,it,d)+'</td>');
+        else if (c==='batch') td.push('<td style="text-align:center"><input class="review-batch-input" value="'+(it.batch||'')+'" placeholder="批次"></td>');
+        else if (c==='stat')  td.push('<td>'+statusCell(o,it,d)+'</td>');
+        else if (c==='notes'){ if(i===0) td.push('<td rowspan="'+n+'"><textarea class="notes-ta" placeholder="備註...">'+(o.notes||'')+'</textarea></td>'); }
+        else if (c==='style') td.push('<td>'+(d.style?'<span class="review-badge badge-part">'+ic(d.sIcon)+' '+d.style+'</span>':'<span class="muted">—</span>')+'</td>');
+        else if (c==='limb')  td.push('<td><div style="display:flex;flex-wrap:wrap">'+limbBadges(o)+'</div></td>');
+        else if (c==='addon') td.push('<td>'+(addons.length?addons.map(function(a){var ad=dims(a);
+              return '<span class="review-badge '+ad.catCls+'">'+ic(ad.catIcon)+' '+ad.catName+'</span>';}).join(''):'<span class="muted">—</span>')+'</td>');
+        else if (c==='target')td.push('<td><span class="review-badge '+d.tCls+'">'+ic(d.tIcon)+' '+d.target+'</span></td>');
+        else if (c==='part')  td.push('<td>'+(d.part?'<span class="review-badge badge-part">'+ic(d.pIcon)+' '+d.part+'</span>':'<span class="muted">—</span>')+'</td>');
+        else if (c==='mat')   td.push('<td>'+(d.mat?'<span class="review-badge '+d.mCls+'">'+ic(d.mIcon)+' '+d.mat+'</span>':'<span class="muted">—</span>')+'</td>');
+        else if (c==='qty')   td.push('<td style="text-align:center"><span class="review-badge review-badge-qty">x'+it.qty+'</span></td>');
+      });
+      var last = (i===n-1);
+      html += '<tr style="'+(last?'border-bottom:3px solid #b0b0b0':'border-bottom:1px solid #ebebeb')+'">'+td.join('')+'</tr>';
+    });
+  });
+  document.getElementById('tbody').innerHTML = html ||
+    '<tr><td colspan="'+cols.length+'" style="padding:30px;text-align:center;color:#888">沒有符合條件的訂單</td></tr>';
+
+  /* 方案說明 */
+  var notes = {
+    now:['now','<b>現況（今日 V42）</b>：類別 chip 只做<b>訂單層</b>篩選——「呢張單有冇鎖匙扣」。中咗就成張單原封不動全部列照出，'+
+        '手模擺設、頸鏈、加購全部照樣佔行。揀咗「鎖匙扣」但眼前仍然係一堆唔關事嘅列。'],
+    a:['a','<b>方案 A · 只隱藏不相關列</b>：改成<b>品項層</b>篩選——只出屬於該類別嘅列，rowspan 重新計。'+
+        '訂單層數字（入帳/成本/利潤/備註）維持全單值，加「全單」標籤講明；單號下加「另有 ⋯」提示，唔會誤讀成單淨得呢啲嘢。'+
+        '排版、欄位、互動全部不變，風險最細。'],
+    b:['b','<b>方案 B · 類別視圖（Fat Mo 已定案，已落 V42）</b>：喺方案 A 之上，因為成個畫面得一個類別，'+
+        '<b>「產品明細」badge 團可以拆成獨立欄</b>（手模＝款式/肢數明細/加購；鎖匙扣、頸鏈＝對象/部位/材質/數量），'+
+        '同 Excel 嘅「對象｜手腳｜產品｜材料｜數量」逐欄對位，可以直向掃。'+
+        '重複嘅類別 badge（成欄都係鎖匙扣）刪走騰位。上方加類別工作台橫幅，一眼睇晒件數／進度分佈／批次分佈。'+
+        '<br><b>財務欄收起</b>（Fat Mo 裁決）：類別視圖當作純生產工作清單，唔顯示入帳／成本／利潤，騰返闊度畀產品維度欄；要睇錢切返「全部」。']
+  }[MODE];
+  document.getElementById('modeNote').innerHTML = '<div class="mode-note '+notes[0]+'">'+notes[1]+'</div>';
+
+  document.getElementById('legend').innerHTML =
+    '<b>原型範圍聲明</b>（避免誤讀）：<br>'+
+    '· <b>方案 B 已定案並落咗 V42</b>（D69）：類別視圖收起入帳／成本／利潤三欄。「現況」同「方案 A」兩個模式仍然顯示，用嚟做對照。<br>'+
+    '· 顯示財務嘅模式入面，數值一律係<b>全單快照值</b>，本原型無、亦不建議做「類別入帳拆分」——'+
+    '<code>final_sale_price</code> 係訂單層真理，唯一獲授權嘅拆分邏輯係財務頁 RPC 嘅 3-layer fallback（伺服器端、只做 handmodel/metal 兩分類），'+
+    '喺前端另寫一套等於制造第二本數簿。逐項金額維持由現有「顯示項目財務」掣控制。<br>'+
+    '· 原型將入帳/成本/利潤 rowspan 合併咗；生產版 V42 係逐列 <code>&lt;td&gt;</code>（配合稽核 toggle），落地時保留現有結構。<br>'+
+    '· 「另有 ⋯」提示、工作台橫幅嘅點撳互動喺原型只做視覺，未接邏輯。';
+}
+
+document.getElementById('modeChips').addEventListener('click', function(e){
+  var b = e.target.closest('.chip-btn'); if(!b) return;
+  this.querySelectorAll('.chip-btn').forEach(function(x){x.classList.remove('active')});
+  b.classList.add('active'); MODE = b.dataset.mode; render();
+});
+document.getElementById('catChips').addEventListener('click', function(e){
+  var b = e.target.closest('.chip-btn'); if(!b) return;
+  this.querySelectorAll('.chip-btn').forEach(function(x){x.classList.remove('active')});
+  b.classList.add('active'); CAT = b.dataset.cat; render();
+});
+render();
+</script>
+</body>
+</html>

@@ -10,5 +10,7 @@
   { "name": "09-rules-json-corrupted", "expect_exit_zero": true, "expect_stdout_empty": true, "expect_no_report": true, "expect_error_log": true },
   { "name": "10-entries-unit-precise", "expected_issue_count": 0, "expect_stdout_empty": true },
   { "name": "11-cadence-overdue", "expected_issue_count": 1, "expected_substrings": ["週期"] },
-  { "name": "12-cadence-fresh", "expected_issue_count": 0, "expect_stdout_empty": true, "generates_fresh_evidence": ".fhs/reports/audits/system" }
+  { "name": "12-cadence-fresh", "expected_issue_count": 0, "expect_stdout_empty": true, "generates_fresh_evidence": ".fhs/reports/audits/system" },
+  { "name": "13-pending-table-leak", "expected_issue_count": 1, "expected_substrings": ["P0.6歸檔洩漏", "1 項"] },
+  { "name": "14-pending-table-clean", "expected_issue_count": 0, "expect_stdout_empty": true }
 ]

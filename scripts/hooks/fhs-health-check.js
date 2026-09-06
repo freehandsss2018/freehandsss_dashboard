@@ -2,7 +2,8 @@
 // scripts/hooks/fhs-health-check.js
 // FHS 文件健康快檢（L1）— SessionStart hook 呼叫，零 LLM token，零外部依賴。
 // 偵測文件病：過肥 / 沉積孤兒 / 過時漂移 / 同名重複 / 歸檔斷鏈 / 未註冊桶 /
-// 複驗逾期 / 週期稽核到期 / 時限待辦漏帶入便攜塊（2026-08-05 新增第7類）。
+// 複驗逾期 / 週期稽核到期 / 時限待辦漏帶入便攜塊（2026-08-05 新增第7類）/
+// P0.6歸檔洩漏（2026-08-26 新增第8類）。
 // 規則資料在 .fhs/tools/fhs-health-rules.json，改規則不必改此檔。
 //
 // Fail-open 三原則：全包 try-catch、無論如何 exit 0、內部錯誤只落
@@ -390,6 +391,35 @@ function checkLastVerified(rules) {
   return issues;
 }
 
+// ── CHECK 5d: P0.6 歸檔洩漏 pending_table_leak_checks（2026-08-26）───────────────
+// P0.6（/commit 完成項目搬去歸檔區）冇機械閘就會靜默停擺（2026-08-26 實測 7 週無人
+// 執行，MASTER 表膨脹至 87%）。偵測「MASTER 持續待辦」表（第一個「已確認完成」
+// 標題之前）內任何一行優先欄仍寫 ✅ 完成——代表應歸檔但未歸檔，零容忍。
+
+function checkPendingTableLeaks(rules) {
+  const issues = [];
+  for (const rule of rules.pending_table_leak_checks || []) {
+    try {
+      const scanPath = path.join(REPO_ROOT, rule.scan_file);
+      if (!fs.existsSync(scanPath)) continue;
+      const lines = readText(scanPath).split(/\r?\n/);
+      const startIdx = lines.findIndex(l => l.includes(rule.region_start_marker));
+      if (startIdx === -1) continue;
+      const endIdx = lines.findIndex((l, i) => i > startIdx && l.includes(rule.region_end_marker));
+      const region = endIdx === -1 ? lines.slice(startIdx) : lines.slice(startIdx, endIdx);
+
+      const leakRe = new RegExp(rule.leak_row_pattern);
+      const leaked = region.filter(l => leakRe.test(l));
+      if (leaked.length > (rule.budget || 0)) {
+        issues.push(`P0.6歸檔洩漏: ${rel(scanPath)} MASTER待辦表內有 ${leaked.length} 項標記已完成但未搬去歸檔區（規定上限 ${rule.budget || 0} 項，${rule.source}）`);
+      }
+    } catch (err) {
+      logError(`pending_table_leak[${rule.id}]`, err);
+    }
+  }
+  return issues;
+}
+
 // ── CHECK 6: 週期稽核到期 cadence_checks ────────────────────────────────────────
 // 記憶負擔歸零：不要求 Fat Mo 記得多久沒跑 /fhs-audit 這類週期指令，改由既有
 // 報告產物（檔名含日期）推斷「上次執行時間」，不建新 marker 機制。
@@ -500,6 +530,7 @@ function main() {
   try { issues = issues.concat(checkArchiveLinks(rules)); } catch (err) { logError('checkArchiveLinks', err); }
   try { issues = issues.concat(checkUnregisteredFiles(rules)); } catch (err) { logError('checkUnregisteredFiles', err); }
   try { issues = issues.concat(checkLastVerified(rules)); } catch (err) { logError('checkLastVerified', err); }
+  try { issues = issues.concat(checkPendingTableLeaks(rules)); } catch (err) { logError('checkPendingTableLeaks', err); }
   try { issues = issues.concat(checkCadenceOverdue(rules)); } catch (err) { logError('checkCadenceOverdue', err); }
   try { issues = issues.concat(checkDeadlineSurfacing(rules)); } catch (err) { logError('checkDeadlineSurfacing', err); }
 
@@ -517,7 +548,7 @@ function main() {
   }
 
   if (issues.length > 0) {
-    process.stdout.write(`⚠️  健康檢查：${issues.length} 項異常（過肥/孤兒/過時/重複/斷鏈/未註冊/複驗逾期/週期/時限待辦漏帶）\n`);
+    process.stdout.write(`⚠️  健康檢查：${issues.length} 項異常（過肥/孤兒/過時/重複/斷鏈/未註冊/複驗逾期/週期/時限待辦漏帶/P0.6歸檔洩漏）\n`);
     process.stdout.write(`   → 詳情見 .fhs/.health-report.json，跑 /fhs-slim 看清理方案\n`);
   }
 

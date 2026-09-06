@@ -89,6 +89,15 @@ B3. 驗證 item_key 格式（{order_id}_{category}_{limb}）
 C1. 讀取 n8n workflow JSON（或相關 Code Node）
     → 找出 SKU normalization / Smart Cache 的硬編碼表
     → 確認新 SKU 是否已加入
+    ⚠️ 例外（2026-08-22 查證，不得誤判 FAIL）：`Smart Cache Strategist` 的
+       `BASE_PREFIXES` **不是**新 SKU 的必須加入項。該表只是「變體家族」查詢優化；
+       `getBasePrefix()` 未命中時自動 fallback 至 `sku.eq."<完整SKU>"` 精確查詢
+       products 表（節點註解明寫：New products automatically picked up without
+       code change）。活先例：`玻璃瓶套裝 (家庭)`（2026-07-19 起）、
+       `玻璃瓶套裝 (2肢+大寶/4肢+大寶)`（2026-08-22 起）皆不在表內而運作正常。
+       → 缺席本身**不判 FAIL**；硬性條件係 C2（products 表必須有該 SKU 行）。
+       → 但**必須**驗證新 SKU 不會被既有 prefix **誤命中**（`startsWith` 比對）：
+         若誤命中，會改用 `like."<prefix>*"` 查詢而撈到錯誤成本行。
     
 C2. 確認 product_sku FK 安全性
     → 新 SKU 是否已在 Supabase products 表中存在？
@@ -98,6 +107,12 @@ C2. 確認 product_sku FK 安全性
 C3. 驗證 n8n Code Nodes 的 HTTP 請求安全性
     → 檢查 n8n Code Nodes 是否使用 `fetch()` 或 `https`/`http` 內建 Node.js 模組
     → 若有 HTTP 呼叫需求，必須統一使用 `axios`（即 `require('axios')`）以免 sandbox 靜默失敗或拋出 disallowed module 異常。
+
+C4.「repo 內 n8n 備份檔已同步」聲明必須實際驗證，唔可以憑單一 patch 就宣稱（2026-08-24 教訓）
+    → 若稽核任務涉及 `n8n/FHS_Core_OrderProcessor_live.json`（或類似 workflow JSON 備份檔）並聲稱「已同步反映 live 修復」：
+    → 用 `git log -3 --oneline -- <備份檔路徑>` 確認最近改動嘅幅度——單一 node 嘅細小 patch（幾行 diff）唔等於「同步」，真正嘅同步應該係大幅度嘅（因應落後幅度而定，通常幾十行以上）
+    → 抽查幾個節點嘅版本號註解（`get_node` 現場拉取 vs 備份檔內容）係咪一致，唔淨係查啱啱改嗰個節點
+    → 留意檔案可能有內嵌嘅歷史快照結構（例如 n8n export 格式嘅 `activeVersion.nodes`），呢啲唔會喺頂層 `nodes` 陣列出現，容易被漏查
 ```
 
 ### Checklist D — RLS 政策覆蓋

@@ -1,7 +1,7 @@
 {
   "_readme": "FHS AI 團隊手記 manifest。只登記『掃描器掃唔到的非檔案資產』（MCP 連接器/召喚詞/內建 agent）同分類規則。檔案型資產（subagents/skills/commands/hooks）由 frontmatter 自動掃描；n8n workflows 由 API live 實掃（.env N8N_INSTANCE+N8N_KEY），本檔只補描述（用 n8n_id 對應）。維護規則見 .fhs/notes/ai-team-registry.md。",
-  "version": "1.1.1",
-  "updated": "2026-07-16",
+  "version": "1.1.2",
+  "updated": "2026-08-26",
   "scan_roots": {
     "subagents": "C:/Users/Edwin/.claude/agents/freehandsss",
     "commands_master": ".fhs/ai/commands",
@@ -86,7 +86,7 @@
     "pre-tool-guard.js": "PreToolUse — 高危攔截：財務欄位改動 / 密鑰外洩 pattern / 部署旗標偽造（R1-R10）",
     "post-tool-kgov.js": "PostToolUse — 財務知識治理偵測，落 .kgov-pending flag（v2 起 .js 檔只 warn）",
     "stop-kgov.js": "Stop — session 收尾 kgov pending 檢查",
-    "fhs-health-check.js": "文件衛生 L1 零token偵測（過肥/孤兒/過時/重複/斷鏈五項）→ .fhs/.health-report.json"
+    "fhs-health-check.js": "文件衛生 L1 零token偵測（過肥/孤兒/過時/重複/斷鏈/未註冊桶/複驗逾期/週期稽核/時限待辦漏帶/P0.6歸檔洩漏共8類）→ .fhs/.health-report.json"
   },
   "skill_categories": {
     "fhs_core": ["finance-gatekeeper", "fhs-bug-triage", "fhs-p-product-display", "fhs-overview-badge-layout", "px"],

@@ -12,12 +12,12 @@
 | ui-designer | 2.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/ui-designer.md` | lst97 (FHS rewrite) |
 | frontend-developer | 1.1.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/frontend-developer.md` | lst97 (FHS rewrite) |
 | code-reviewer | 1.1.0 | claude-haiku-4-5 | active | `~/.claude/agents/freehandsss/code-reviewer.md` | lst97 (FHS rewrite) |
-| database-reviewer | 2.1.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/database-reviewer.md` | FHS native (ECC concept rewrite) |
+| database-reviewer | 2.2.1 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/database-reviewer.md` | FHS native (ECC concept rewrite) |
 | tdd-guide | 1.1.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/tdd-guide.md` | FHS native (ECC concept rewrite) |
 | build-error-resolver | 1.0.0 | claude-haiku-4-5-20251001 | active | `~/.claude/agents/freehandsss/build-error-resolver.md` | FHS native (ECC concept rewrite) |
 | blender-3d-modeler | 2.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/blender-3d-modeler.md` | FHS native (2026-05-07 triage + printability + 路徑規則) |
 | product-integration-validator | 1.0.0 | claude-haiku-4-5-20251001 | active | `.fhs/ai/subagents/freehandsss/product-integration-validator.md` | FHS native (2026-05-21 新產品跨層融入驗證) |
-| finance-auditor | 2.2.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/finance-auditor.md` | FHS native（四端財務稽核員） |
+| finance-auditor | 2.2.1 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/finance-auditor.md` | FHS native（四端財務稽核員） |
 
 ---
 
@@ -50,6 +50,8 @@
 | finance-auditor | 1.0.0 | 2026-05-09 | 初次安裝（commit e6acd5c）|
 | finance-auditor | 2.1.0 | 2026-06-03 | AGENTS.md v1.4.11 Rule 3.16 路由強化配套升級（commit 1c95797）|
 | finance-auditor | 2.2.0 | 2026-06-12 | frontmatter 內容更新升版（last_updated 標記日期；對應內容變更 commit 未能精確定位，欄位本身於批次同步 commit 472391a 2026-07-04 一併寫入）|
+| database-reviewer | 2.2.1 | 2026-08-16 | accessory_cost 欄位文件補漏批次同步（見 Changelog.md 2026-08-16「accessory_cost 文件補漏」條目），frontmatter 已升版但本表當時漏同步，2026-08-26 `/team` 勘誤表揪出後補記 |
+| finance-auditor | 2.2.1 | 2026-08-16 | 同上，accessory_cost 文件補漏批次同步，2026-08-26 補記 |
 
 ## Skills（非 subagent）
 
