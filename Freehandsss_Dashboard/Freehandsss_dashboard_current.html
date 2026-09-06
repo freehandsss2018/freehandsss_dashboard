@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="fhs-build" content="__DEPLOY_TS__">
+    <meta name="fhs-build" content="2026-09-06T03:52:27Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -1120,6 +1120,12 @@
         .audit-fin-col .audit-modal-btn  { cursor:pointer; background:none; border:none; font-size:12px; padding:0 2px; color:#4A90D9; }
         /* Per-item cost breakdown — always visible in cost column */
         /* (Session 84) 成本細項改回 toggle-gated，沿用 .audit-fin-col 舊版風格；.cost-fin-* 已退役 */
+        /* D71（2026-09-06）入帳/成本/利潤三欄合併一欄：三行帳目堆疊，字體/數字大小刻意一致不做放大（Fat Mo 定案） */
+        .fhs-fin-merged { width:92px; }
+        .fhs-fin-line { display:flex; align-items:baseline; justify-content:space-between; gap:6px; padding:1px 0; }
+        .fhs-fin-line .fhs-fin-tag { font-size:10px; font-weight:700; opacity:.8; white-space:nowrap; }
+        .fhs-fin-line .fhs-fin-amt { font-size:12.5px; font-weight:700; white-space:nowrap; }
+        .fhs-fin-line-profit { border-top:1px dashed #ddd; margin-top:3px; padding-top:3px; }
         /* Mobile item financial drawer */
         .item-financial-drawer { display:none; margin-top:6px; padding:6px 8px; background:#f8faff; border-radius:6px; border:1px solid #e0e8f5; font-size:11px; }
         .item-financial-drawer .ifd-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; }
@@ -4334,19 +4340,17 @@
                             <th class="sort-th" data-sort="Order_ID" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:110px;" onclick="sortReviewTable('Order_ID')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
                             <th class="sort-th" data-sort="Date" style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:95px;" onclick="sortReviewTable('Date')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-calendar"/></svg>日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:85px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-user"/></svg>客人</th>
-                            <th style="padding:12px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-banknote"/></svg>入帳</th>
-                            <th style="padding:12px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-wallet"/></svg>成本</th>
-                            <th style="padding:12px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-star"/></svg>利潤</th>
+                            <th style="padding:12px 10px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:92px;" title="入帳／成本／利潤（D71 三欄合併一欄，2026-09-06）"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-banknote"/></svg>財務</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:70px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg>刻字</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:200px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>產品明細</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:260px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>產品明細</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-tag"/></svg>批次</th>
-                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:100px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-activity"/></svg>進度</th>
+                            <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:150px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-activity"/></svg>進度</th>
                             <th style="padding:12px 16px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; min-width:140px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>備註</th>
                         </tr>
                     </thead>
                     <tbody id="reviewTableBody">
                         <tr>
-                            <td colspan="12" style="padding:48px; text-align:center; color:var(--fhs-text-muted); font-size:var(--fhs-text-sm);">請選擇上方條件載入資料</td>
+                            <td colspan="10" style="padding:48px; text-align:center; color:var(--fhs-text-muted); font-size:var(--fhs-text-sm);">請選擇上方條件載入資料</td>
                         </tr>
                     </tbody>
                 </table>
@@ -10803,7 +10807,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (!silentPoll) {
                 showLoader("正在載入全域核對資料...");
                 loading.style.display = "inline";
-                tbody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="padding:20px; text-align:center; color:#888;">⏳ 讀取資料中... (如果資料量大可能需要幾秒鐘)</td></tr>';
             }
 
             let fetchUrl = getWebhookUrl("https://yanhei.synology.me:8443/webhook/fetch-global-review");
@@ -10825,7 +10829,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             for (let attempt = 1; attempt <= 2; attempt++) {
                 try {
                     if (attempt > 1) {
-                        tbody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:#888;">⏳ 重試中 (${attempt}/2)...</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:#888;">⏳ 重試中 (${attempt}/2)...</td></tr>`;
                         await new Promise(r => setTimeout(r, 1500));
                     }
                     const res = await window.fetchWithTimeout(fetchUrl, { method: 'GET' });
@@ -10842,7 +10846,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         return;
                     } else {
                         loading.style.display = "none";
-                        tbody.innerHTML = '<tr><td colspan="12" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="10" style="padding:20px; text-align:center; color:#E63946;">⚠️ 未找到符合條件的訂單</td></tr>';
                         hideLoader();
                         return;
                     }
@@ -10852,7 +10856,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 }
             }
             loading.style.display = "none";
-            tbody.innerHTML = `<tr><td colspan="12" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="padding:20px; text-align:center; color:#E63946;">❌ ${lastErr}</td></tr>`;
             hideLoader();
         }
 
@@ -11386,7 +11390,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             const tbody = document.getElementById("reviewTableBody");
             if (!orders || orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="padding:30px; text-align:center; color:#888; font-size:14px;">📩 沒有符合條件的訂單</td></tr>';
                 const badge = document.getElementById('reviewCountBadge');
                 if (badge) { badge.style.display = 'none'; }
                 return;
@@ -11692,9 +11696,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const isLastItem = index === itemsCount - 1;
                         const _rowBorderB = isLastItem ? '3px solid #b0b0b0' : '1px solid #ebebeb';
 
-                        // D1-a: per-row 入帳/成本/利潤 cells (方案甲 拆 rowspan)
-                        // index===0: 訂單總額粗體在上，逐項值在下 (audit-fin-col toggle)
-                        // index>0:   只顯逐項值 (audit-fin-col toggle)
+                        // D71（2026-09-06）：入帳/成本/利潤三欄合併一欄，帳目堆疊排版（方案A，Fat Mo 定案，三行字體/數字大小一致不做放大）
+                        // index===0: 訂單總額三行顯示；index>0: 只顯 audit-fin-col 逐項值 (toggle 控制，行為不變)
                         var _itEnt   = (_pgcItems || [])[index] || null;
                         var _itPrice = _itEnt ? _itEnt.price : null;
                         var _itCost  = Number(item.Cost) > 0 ? Number(item.Cost) : null;
@@ -11702,16 +11705,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         var _itPC    = (_itProfit != null && _itProfit > 0) ? '#2A9D8F' : '#E63946';
                         var _na      = '<span class="audit-na">—</span>';
                         var _finCells = `
-                          <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
-                            ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
+                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:top; text-align:left; padding:8px 10px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#B07D4C;">入帳</span><span class="fhs-fin-amt" style="color:#B07D4C;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
-                          </td>
-                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
-                            ${index === 0 ? `<span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
+                            ${index === 0 ? `<div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#E63946;">成本</span><span id="cost-val-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:#E63946;">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:10px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
-                          </td>
-                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:15px; border-bottom:${_rowBorderB};">
-                            ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
+                            ${index === 0 ? `<div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>`;
 
@@ -11787,14 +11786,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     html += `
                     <tr class="order-group-${fhsEscHtml(o.id)}" id="row-${fhsEscHtml(o.id)}">
                         ${orderLeftColsHtml}
-                        <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
-                            ${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
-                        </td>
-                        <td id="cost-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
-                            <span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
-                        </td>
-                        <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
-                            $${displayedProfit}
+                        <td id="cost-cell-${fhsEscHtml(o.id)}" class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:middle; text-align:left; padding:8px 10px; border-bottom:3px solid #b0b0b0;">
+                            <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#B07D4C;">入帳</span><span class="fhs-fin-amt" style="color:#B07D4C;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</span></div>
+                            <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#E63946;">成本</span><span id="cost-val-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:#E63946;">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:10px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span></div>
+                            <div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>
                         </td>
                         <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
@@ -17902,7 +17897,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const loading = document.getElementById('reviewLoading');
                 if (!silentPoll) {
                     if (loading) loading.style.display = 'inline';
-                    if (tbody) tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:#888;">⏳ Supabase 讀取中...</td></tr>';
                 }
 
                 const _dlvFetch = (typeof fetchDeliveryMap === 'function') ? fetchDeliveryMap() : Promise.resolve();
