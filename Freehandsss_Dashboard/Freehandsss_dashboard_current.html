@@ -11,8 +11,8 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-06T07:29:58Z">
-    <meta name="fhs-deploy-src" content="4a19a54817b5ade9ebaee5fbac91303661e15242-dirty">
+    <meta name="fhs-build" content="2026-09-06T11:44:47Z">
+    <meta name="fhs-deploy-src" content="0c53f0a088f28cd467e8401ed1a5a60014545e5e-dirty">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -12373,10 +12373,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // Fat Mo 要求分俾刻字同客人兩欄——客人喺類別視圖常見長 IG 帳號名
             // 「Lovehedqie852 (Selina Lai)」，157px 先夠唔截斷。
             Customer: { label:'客人',     icon:'user',       mw:80,  mwCat:92 },
+            inc:      { label:'入帳',     icon:'banknote',   mw:65,  color:'#B07D4C',           pad:'8px' },
+            cost:     { label:'成本',     icon:'wallet',     mw:65,  color:'var(--fhs-danger)', pad:'8px' },
+            profit:   { label:'利潤',     icon:'star',       mw:65,  color:'var(--fhs-success)',pad:'8px' },
             // [D71 2026-09-06] 入帳/成本/利潤三欄合併為單一「財務」欄（Fat Mo 定案方案A：
             // 帳目堆疊，三行字體/數字大小完全一致、不做利潤放大，只靠棕/紅/綠顏色分辨）。
-            // 緣起：手機橫向（750-1129px 緊縮桌面區）三欄各佔一格共 165px，擠壓「產品明細」
-            // 逐行換行、「進度」勾選格貼邊。合併後 92px，釋放 73px 分俾 prod 同 stat。
+            // ⚠️ **只喺手機橫向（750-1129px 緊縮桌面區）生效**（Fat Mo 2026-09-06 明示
+            // 「只適用於手機橫向模式介面，其他則保留不變」）——嗰個區間三欄各佔一格共 165px，
+            // 擠壓「產品明細」逐行換行、「進度」勾選格貼邊；合併後 92px，釋放 73px 分俾
+            // prod/stat。≥1130px 有位，維持原本三欄唔改（掃描性較好）。切換邏輯見 _fhsFinMerged()。
             fin:      { label:'財務',     icon:'banknote',   mw:92,  pad:'8px' },
             eng:      { label:'刻字',     icon:'edit',       mw:124, mwCat:172 },
             prod:     { label:'產品明細', icon:'package',    mw:220 },
@@ -12412,11 +12417,24 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             notes:    { label:'備註',     icon:'square-pen', mw:110 }
         };
 
+        // [D71 2026-09-06] 財務三欄合併只喺「緊縮桌面」區（手機橫向）生效。
+        // 邊界同 CSS `@media (min-width:750px) and (max-width:1129px)`（L~2975）**必須一致**，
+        // 兩處數值改一邊要同步另一邊，否則會出現「JS 出咗 fin 欄但 CSS 冇對應寬度」嘅錯配。
+        //   <750px   → 手機卡片版（Accordion），根本冇表格
+        //   750-1129 → 緊縮桌面（iPhone 橫向 844/874、iPad 直向 834）→ **合併**
+        //   ≥1130px  → 原欄闊桌面，有位，維持原本三欄（Fat Mo 明示其他保留不變）
+        function _fhsFinMerged() {
+            var w = window.innerWidth;
+            return w >= 750 && w <= 1129;
+        }
+        window._fhsFinMerged = _fhsFinMerged;
+
         // 目前生效嘅欄位計劃（第一個 'cb' 係全選 checkbox 欄）
         function fhsOverviewCols() {
             var _c = reviewCategoryFilter || '';
             var base = ['cb', 'Order_ID', 'Date', 'Customer'];
-            if (!_c) return base.concat(['fin', 'eng', 'prod', 'batch', 'stat', 'notes']);
+            if (!_c) return base.concat(_fhsFinMerged() ? ['fin', 'eng', 'prod', 'batch', 'stat', 'notes']
+                                                        : ['inc', 'cost', 'profit', 'eng', 'prod', 'batch', 'stat', 'notes']);
             if (_c === '手模') return base.concat(['style', 'limb', 'addon', 'eng', 'batch', 'stat', 'notes']);
             return base.concat(['target', 'part', 'mat', 'qty', 'eng', 'batch', 'stat', 'notes']);
         }
@@ -13036,17 +13054,33 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         var _itProfit = (_itPrice != null && _itCost != null) ? (_itPrice - _itCost) : null;
                         var _itPC    = (_itProfit != null && _itProfit > 0) ? '#2A9D8F' : '#E63946';
                         var _na      = '<span class="audit-na">—</span>';
-                        // [D71 2026-09-06] 三欄合併為單一「財務」欄，帳目堆疊排版。
-                        // 三行 .fhs-fin-amt 字體/字重完全一致（Fat Mo 明示唔好放大利潤），只靠顏色分辨。
-                        // profit-cell- id 必須只包住金額 <span>，唔可以掛喺 <td>——
-                        // updateFinancialsLocally() 對佢做 textContent 覆寫，掛喺 <td> 會連「利潤」標籤一齊清空。
-                        var _finCells = `
+                        // [D71 2026-09-06] 兩套財務儲存格，由 _fhsFinMerged()（闊度）決定出邊套：
+                        //   合併版（手機橫向 750-1129px）：單一 <td>，三行帳目堆疊，
+                        //     .fhs-fin-amt 字體/字重完全一致（Fat Mo 明示唔好放大利潤），只靠顏色分辨。
+                        //   原版（≥1130px 及其他情況）：三個獨立 <td>，一字不改（Fat Mo 明示其他保留不變）。
+                        // 兩套都要保留 cost-cell-/cost-val-/profit-cell- 三個 id，否則
+                        // updateFinancialsLocally() 補打金額即時更新會失效。
+                        // ⚠️ 合併版嘅 profit-cell- 必須只包住金額 <span>，唔可以掛喺 <td>——
+                        // 該函式對佢做 textContent 覆寫，掛喺 <td> 會連「利潤」標籤一齊清空。
+                        var _finCells = _fhsFinMerged() ? `
                           <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:top; text-align:left; padding:6px 8px; border-bottom:${_rowBorderB};">
                             ${index === 0 ? `<div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#B07D4C;">入帳</span><span class="fhs-fin-amt" style="color:#B07D4C;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
                             ${index === 0 ? `<div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#E63946;">成本</span><span id="cost-val-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:#E63946;">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:10px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
                             ${index === 0 ? `<div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
+                          </td>` : `
+                          <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
+                          </td>
+                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
+                            <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
+                          </td>
+                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>`;
 
@@ -13134,11 +13168,21 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     html += `
                     <tr class="order-group-${fhsEscHtml(o.id)}" id="row-${fhsEscHtml(o.id)}">
                         ${orderLeftColsHtml}
+                        ${_fhsFinMerged() ? `
                         <td id="cost-cell-${fhsEscHtml(o.id)}" class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:middle; text-align:left; padding:6px 8px; border-bottom:3px solid #b0b0b0;">
                             <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#B07D4C;">入帳</span><span class="fhs-fin-amt" style="color:#B07D4C;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</span></div>
                             <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#E63946;">成本</span><span id="cost-val-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:#E63946;">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:10px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span></div>
                             <div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>
+                        </td>` : `
+                        <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            ${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                         </td>
+                        <td id="cost-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            <span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
+                        </td>
+                        <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            $${displayedProfit}
+                        </td>`}
                         <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
                             無子項目
                         </td>
@@ -16573,6 +16617,23 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.addEventListener('resize', fhsSyncCompactDesktopLayout);
         window.addEventListener('orientationchange', function () { setTimeout(fhsSyncCompactDesktopLayout, 300); });
         document.addEventListener('DOMContentLoaded', fhsSyncCompactDesktopLayout);
+
+        // [D71 2026-09-06] 財務欄合併只喺 750-1129px（手機橫向）生效，而欄位組合係
+        // render 嗰刻由 fhsOverviewCols() 決定嘅——跨越呢兩條邊界（旋轉手機／拉窗口）
+        // 之後如果唔重繪，就會停留喺舊組合（例如轉去闊螢幕仲係得一個合併欄）。
+        // 只喺狀態**真係翻轉**先重繪，唔係每個 resize tick 都重繪成張表。
+        var _fhsLastFinMerged = (typeof window._fhsFinMerged === 'function') ? window._fhsFinMerged() : null;
+        function _fhsFinLayoutRecheck() {
+            if (typeof window._fhsFinMerged !== 'function') return;
+            var now = window._fhsFinMerged();
+            if (now === _fhsLastFinMerged) return;
+            _fhsLastFinMerged = now;
+            if (!document.body.classList.contains('v40-review-active')) return;  // 唔喺訂單總覽就唔使做，切返嚟嗰陣自然會重繪
+            if (typeof window.applyReviewFilters === 'function') window.applyReviewFilters();
+            else if (typeof window.renderReviewTable === 'function' && window.globalOrders) window.renderReviewTable(window.globalOrders);
+        }
+        window.addEventListener('resize', _fhsFinLayoutRecheck);
+        window.addEventListener('orientationchange', function () { setTimeout(_fhsFinLayoutRecheck, 300); });
 
         // 覆寫 switchMode 的 bbar 邏輯，使其在 iPhone 下永遠隱藏 legacy bar
         const _origSwitchMode = window.switchMode;
