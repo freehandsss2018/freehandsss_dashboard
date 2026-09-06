@@ -1227,10 +1227,48 @@ Fat Mo 確認 0600037（木框，appointment_at=2026-07-27，尚未到）正確�
 
 詳見 [0085_fix_financial_overview_current_trend_null.sql](../../supabase/migrations/0085_fix_financial_overview_current_trend_null.sql)、[freehandsss_dashboardV42.html:15086](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html:15086)、decisions.md D52。
 
+### 10.24 訂單總覽表格：三層響應式欄位架構 + 財務欄分層合併（D69續八 / D71，2026-08-30～2026-09-06）
+
+> 呢節補上 D69續八 handoff 標記為「三態架構未寫入文件」嘅缺口，並記錄 D71 財務欄合併點樣掛喺呢個架構之上。
+
+**欄位唔係寫死喺 HTML，而係由 JS 宣告式定義生成**（[freehandsss_dashboardV42.html](../../Freehandsss_Dashboard/freehandsss_dashboardV42.html)）：
+
+| 元件 | 職責 |
+|------|------|
+| `_FHS_TH_DEF` | 每個欄位嘅 label／icon／寬度權重（`mw`，類別視圖用 `mwCat` 覆寫）／顏色／padding |
+| `fhsOverviewCols()` | 回傳**當前生效**嘅欄位 key 陣列（跟類別篩選 + 視窗闊度變） |
+| `fhsOverviewColCount()` | 由上者長度推導 colspan——**所以空狀態／載入中／錯誤訊息嘅 colspan 唔可以寫死數字** |
+| `fhsBuildOverviewHead()` | 按欄位計劃重建 `<thead>`，每欄掛 `.ovw-allview-col.ovw-col-<key>`（「全部」視圖）或 `.ovw-narrowcol-<key>`（類別視圖）供 CSS 針對性覆寫 |
+
+**三層響應式分層**（斷點喺 CSS media query 同 JS 判斷式兩處各有一份，**改一邊必須同步另一邊**）：
+
+| 層 | 闊度 | 版面 | 財務欄 |
+|----|------|------|--------|
+| 手機卡片 | `< 750px` | Accordion 卡片（`#reviewAccordionContainer`），根本冇表格 | 不適用 |
+| **緊縮桌面** | `750–1129px` | 表格，欄闊由 `@media (min-width:750px) and (max-width:1129px)` 逐欄覆寫 | **合併為單一「財務」欄**（D71）|
+| 原欄闊桌面 | `≥ 1130px` | 表格，欄闊用 `_FHS_TH_DEF` 嘅 `mw` 原值 | 維持原本 入帳／成本／利潤 三欄 |
+
+**點解要有「緊縮桌面」呢一層**（D69續八，2026-08-30）：CSS/JS 斷點一過 750px 就由手機卡片切去桌面表格，但「全部」視圖原欄闊總和約 1125px——750–1129px 呢段完全頂唔住，會全頁橫向溢出（iPhone 橫向 844/874、iPad 直向 834 三個真實裝置實測命中）。同期將手機／桌面斷點由 768 改 **750**：iPhone 13 Pro 橫向名義 844px，扣除瀏海左右安全區後有效 viewport 落喺 750–768 之間，舊斷點 768 會誤判做手機而出卡片版。
+
+**D71 財務欄合併（2026-09-06）**：緊縮桌面層入面，入帳／成本／利潤三欄各佔一格共 165px，擠壓「產品明細」逐行換行、「進度」勾選格貼邊。合併為單一 `fin` 欄（92px）後釋放 73px 分俾 `prod`（84→130）同 `stat`（88→115），**欄闊總和維持 745px 不變**，唔會令 750px 起始點溢出。
+
+- 切換由 `_fhsFinMerged()`（`750 ≤ innerWidth ≤ 1129`）決定，**邊界必須同上述 CSS media query 逐字一致**。
+- `_finCells` 同「無子項目」fallback 路徑各備兩套 markup；**兩套都必須保留 `cost-cell-` ／ `cost-val-` ／ `profit-cell-` 三個 id**，否則補打金額嘅即時更新（`updateFinancialsLocally()`）會失效。
+- 合併版嘅 `profit-cell-` **只可以掛喺金額 `<span>`**，唔可以掛喺 `<td>`——該函式對佢做 `textContent` 覆寫，掛喺 `<td>` 會連「利潤」文字標籤一齊清空。
+- 三行字體／字重刻意完全一致（12.5px／700），唔做利潤放大，只靠既有棕／紅／綠語意色分辨（Fat Mo 明示「字體及數目不用放大一致即可」）。
+- 欄位組合係 render 嗰刻決定，故加 `resize`／`orientationchange` 監聽，**只喺合併狀態真係翻轉先重繪**（非每個 resize tick）。
+
+**類別視圖（揀單一類別時）另有一套欄位計劃**：品項層過濾 + 收起財務三欄（Fat Mo 裁決：類別視圖＝純生產工作清單，要睇錢切返「全部」）+ 產品明細 badge 團拆成獨立欄（對象／部位／材質／數量）。因為財務欄已收起，「顯示項目財務」toggle 喺類別視圖明確停用而唔係扮有反應。
+
+**維護提醒**：改動欄位時要同步嘅四個位置——① `_FHS_TH_DEF` 定義；② `fhsOverviewCols()` 各視圖陣列；③ 緊縮桌面 media query 逐欄寬度；④ `_finCells` 兩套 markup。漏改任何一個都會出現「表頭同資料格數對唔上」或「JS 出咗某欄但 CSS 冇對應寬度」嘅錯配。
+
+詳見 decisions.md D71（含 follow4 範圍收窄）、D72（Gate 0 部署血統閘，因本次改動引發嘅跨分支覆寫事故）。
+
+---
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§10.24 由 2026-09-06 D71/D72 session 補入（同時補上 D69續八 標記嘅三態架構文件缺口）。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 
