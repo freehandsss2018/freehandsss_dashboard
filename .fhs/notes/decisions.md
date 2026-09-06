@@ -3,6 +3,23 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-06] (D71) 訂單總覽（全域核對中心）表格入帳/成本/利潤三欄合併為一欄「財務」，騰出寬度給產品明細/進度
+
+**背景**：Fat Mo 反映手機橫向模式下，訂單總覽表格入帳/成本/利潤各佔一格（共 250px），擠壓到「產品明細」要逐行換行、「進度」勾選格幾乎貼邊。要求設計 UI/UX 方案將三欄壓縮成一欄共用顯示。
+
+**流程**：先出 3 個排版方案 mockup（Artifact 互動預覽，即時切換比較）——A 帳目堆疊 / B 利潤主導 / C 圖示膠囊——附欄寬重新分配建議。Fat Mo 採用方案 A，並額外要求「字體及數目不用放大一致即可」，即三行入帳/成本/利潤字體大小與粗細必須完全一致，不做利潤行放大強調。
+
+**實作**（`Freehandsss_Dashboard/freehandsss_dashboardV42.html`，僅 `renderReviewTable` 桌面/橫向表格路徑，未觸及 `renderReviewAccordion` 手機直向卡片路徑——範圍不蔓延）：
+- 表頭：入帳/成本/利潤 3 個 `<th>` 合併為 1 個「財務」`<th>`（min-width 92px）；產品明細 min-width 200→260px；進度 min-width 100→150px。
+- 資料列：3 個獨立 `<td>` 合併為 1 個 `.fhs-fin-merged` `<td>`，內含 3 行 `.fhs-fin-line`（入帳/成本/利潤），CSS 統一 `.fhs-fin-amt { font-size:12.5px; font-weight:700; }`（三行大小/粗細一致，僅顏色分辨：棕/紅/綠沿用現有配色），利潤行加 `border-top:1px dashed` 做視覺分組但不影響字體大小。
+- `reviewTableBody` 空狀態/載入中/錯誤訊息 7 處 `colspan="12"` 同步改 `colspan="10"`（欄數由 12 減至 10）。
+
+**相容性（零 JS 斷鏈）**：`cost-cell-${id}` id 保留在合併後 `<td>` 本身（原本就是寫入後從未被讀取的死 id，純延續性保留）；`cost-val-${id}` 沿用原有 span 包裝模式；`profit-cell-${id}` 由原本包住整個 `<td>` 改為只包住「利潤」金額的 `<span>`——因為 `updateFinancialsLocally()`（`freehandsss_dashboardV42.html` ~13711 行）會對 `profit-cell-` 元素執行 `textContent = '$'+displayedProfit`，若仍掛喺 `<td>` 上會連「利潤」文字標籤一併被覆蓋清空；改掛喺內層 amount `<span>` 後，補打調整金額即時更新時只換數字，標籤不受影響。「顯示項目財務」逐 SKU 稽核 toggle（`.audit-fin-col`，CSS class 控制顯隱，與 DOM 巢狀深度無關）行為完全不變，已用真實 60 筆訂單資料 + toggle on/off 實測確認。
+
+**驗證**：`node --check` 抽取全部 inline `<script>` 語法通過；本地 `npx serve` 起 Freehandsss_Dashboard 靜態伺服器，手機橫向寬度（900px）+ 真實 Supabase 快取資料（`window.globalOrders`，60 筆）實測——兩張與 Fat Mo 原始截圖相同嘅訂單（0600728 Dorothy $2,380/$210/$2,170、0650429 Shirley Lee $4,260/$770/$3,490）數值完全對應；`getComputedStyle` 直接量測三行 `.fhs-fin-amt` 均為 `12.5px`/`700` 完全一致；`toggleAuditMode()` 開關測試逐 SKU 明細正常顯示/隱藏；console 零 error。**未部署至 `Freehandsss_dashboard_current.html`**——依 AGENTS.md §3 途徑(c)，留待 Fat Mo 下次 `/commit` 偵測 dev 版 HTML 有改動時自動觸發升格。
+
+**Subagent 使用記錄**：❌未使用（單一 UI 排版設計 + 讀碼取樣式 token 建 mockup + 直接改碼 + 即時 browser 實測，委派會斷視覺一致性與 JS 相容性判斷鏈）。
+
 [2026-09-05] (D70) `/commit` 新增 Phase 2.6 主線同步：push 後嘗試 fast-forward-only 自動合併落 `main`，非快進即跳過等人手 merge/PR
 
 **背景**：Fat Mo 於 `/read` 交接同步後提問：「D58 已喺另一分支更新，點解呢邊 handoff 冇更新？我確實打咗 commit」。查證發現該 commit（`9c342c0`）確實存在，但落喺另一條 worktree 分支 `claude/read-command-d64261`，同本分支（`claude/read-f21491`）嘅共同祖先仍係 main 現時 tip——即該分支 commit 完之後從未 merge 落 main，本分支自然睇唔到。Fat Mo 追問：「但若我完成任務後代表任務已完結，不是等同自動落main 嗎？這是人的思考邏輯方迥」，要求評估「commit 後自動 merge 落 main」呢個方案是否可行。

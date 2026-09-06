@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-06] Session（Claude Code / Sonnet 5 執行）— D71：訂單總覽入帳/成本/利潤三欄合併一欄「財務」
+
+- **緣起**：Fat Mo 截圖反映手機橫向模式訂單總覽表格入帳/成本/利潤三欄各佔一格（共 250px），擠壓「產品明細」逐行換行、「進度」勾選格幾乎貼邊，要求設計 UI/UX 方案將三欄壓縮成一欄共用顯示。
+- **設計流程**：讀取 `ui-ux-pro-max/FHS_INTEGRATION.md` Section 六排版鐵律 + 抽取 production 實際色票/badge樣式後，出 3 個排版方案 Artifact 互動預覽（A 帳目堆疊 / B 利潤主導 / C 圖示膠囊），用 Fat Mo 原截圖兩張真實訂單（0600728 Dorothy、0650429 Shirley Lee）做 Before/After 對照，附即時切換比較與欄寬重新分配建議。Fat Mo 採用方案 A，並補充要求「字體及數目不用放大一致即可」——三行入帳/成本/利潤字體大小與粗細須完全一致，不做利潤行放大強調。
+- **實作**（`Freehandsss_Dashboard/freehandsss_dashboardV42.html`，僅 `renderReviewTable` 桌面/橫向表格路徑，`renderReviewAccordion` 手機直向卡片路徑未觸及）：表頭 3 個 `<th>`（入帳/成本/利潤）合併為 1 個「財務」`<th>`；資料列 3 個 `<td>` 合併為 1 個 `.fhs-fin-merged` `<td>`，內含 3 行 `.fhs-fin-line`，CSS 統一 `.fhs-fin-amt { font-size:12.5px; font-weight:700; }`（三行大小/粗細一致，僅顏色分辨棕/紅/綠）；利潤行加 `border-top:1px dashed` 做分組但不影響字體大小。產品明細 min-width 200→260px、進度 100→150px。`reviewTableBody` 空狀態/載入中/錯誤 7 處 `colspan="12"` 同步改 `colspan="10"`（欄數 12→10）。
+- **相容性（零 JS 斷鏈）**：`cost-cell-` id 保留在合併後 `<td>`（原本即從未被讀取的死 id）；`cost-val-` 沿用原 span 包裝模式；`profit-cell-` 由原本包住整個 `<td>` 改為只包住「利潤」金額的 `<span>`——因 `updateFinancialsLocally()`（~13711 行）對其執行 `textContent = '$'+displayedProfit`，若仍掛喺 `<td>` 會連「利潤」文字標籤一併被覆蓋清空，改掛喺內層 amount `<span>` 後補打調整金額即時更新只換數字不動標籤。「顯示項目財務」逐 SKU 稽核 toggle（`.audit-fin-col`，CSS class 控制顯隱，與 DOM 巢狀深度無關）行為完全不變。
+- **驗證**：`node --check` 抽取全部 inline `<script>` 語法通過；本地 `npx serve` 起 Freehandsss_Dashboard 靜態伺服器，手機橫向寬度（900px）+ 真實 Supabase 快取資料（`window.globalOrders` 60 筆）實測——兩張與 Fat Mo 原截圖相同嘅訂單數值完全對應；`getComputedStyle` 直接量測三行 `.fhs-fin-amt` 均為 `12.5px`/`700` 完全一致；`toggleAuditMode()` 開關測試逐 SKU 明細正常顯示/隱藏；console 零 error。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`、`.fhs/notes/decisions.md`（D71）、`.fhs/memory/handoff.md`。**未部署至 `current.html`**（依 AGENTS.md §3 途徑(c)，留待 Fat Mo 下次 `/commit` 偵測 dev 版 HTML 有改動時自動觸發升格）。**Supabase schema／n8n 零改動。**
+- 全文見 decisions.md D71。**Subagent 使用記錄**：❌未使用（單一 UI 排版設計 + 讀碼取樣式 token 建 mockup + 直接改碼 + 即時 browser 實測，委派會斷視覺一致性與 JS 相容性判斷鏈）。
+
 ## [2026-09-05] Session（Claude Code / Sonnet 5 執行）— D70：`/commit` 新增 Phase 2.6 主線同步（Fast-Forward Auto-Merge）
 
 - **緣起**：`/read` 交接同步後 Fat Mo 質疑「D58 已喺另一分支更新，點解呢邊 handoff 冇更新？我確實打咗 commit」。查證確認該 commit（`9c342c0`）落喺另一條 worktree 分支 `claude/read-command-d64261`，同本分支共同祖先仍係 main 現時 tip——即該分支從未 merge 落 main，本分支自然睇唔到，非 bug。Fat Mo 追問「完成任務即代表已完結，是否應該等同自動落 main」，要求評估此方案是否可行。

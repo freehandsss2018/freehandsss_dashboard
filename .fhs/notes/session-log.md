@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-06 (D71：訂單總覽入帳/成本/利潤三欄合併一欄「財務」): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-06 條目 + [decisions.md D71](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 反映手機橫向模式訂單總覽表格入帳/成本/利潤三欄擠壓產品明細/進度顯示空間，先出 3 個排版方案 Artifact 互動預覽（帳目堆疊/利潤主導/圖示膠囊）比較，Fat Mo 採用方案 A 並要求三行字體大小完全一致不做利潤放大。落實 `renderReviewTable`（僅桌面/橫向表格路徑，手機直向 Accordion 未觸及），過程中揪出 `updateFinancialsLocally()` 對 `profit-cell-` 執行 `textContent` 覆寫，若沿用原本掛喺整個 `<td>` 嘅 id 會連「利潤」標籤一併清空，改掛喺內層 amount `<span>` 解決（已落 `learnings/frontend.md` #13）。本地 `npx serve`+真實 60 筆 Supabase 快取資料實測兩張 Fat Mo 原截圖訂單數值對應、字體量測一致、audit toggle 正常、console 零 error。未部署 current.html。
+**Subagent 使用記錄**：❌未使用（單一 UI 排版設計+讀碼取樣式 token 建 mockup+直接改碼+即時 browser 實測，委派會斷視覺一致性與 JS 相容性判斷鏈）。
+
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-21 條目 + [decisions.md D68](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 定義目標「打 `/commit` 就代表任務完成並且能確保同步更新 handoff」，指出此症「始終冇解決」。查證證實 `commit.md` P0.7 一直只係散文指示——D67/D66-follow 兩次 `/commit` 都更新內容但便攜塊頂部日期戳凍結 3 日冇郁。承接 D66 根因框架：內容·紀律層／讀取層（事後偵測）皆已證零效果，**寫入時點真空**係本次補位。新增 `pre-tool-guard.js` R13 攔 `git commit`，兩條件任一不過即 exit 2（便攜塊日期≠今日／handoff.md 有未staged改動）；唔用旗標檔因「檢查本身即驗證」無自我授權漏洞、天然幂等；刻意 fail-open，明確擋唔到「日期啱但內容冇更新」。另順帶：核實 D66-follow 已由另一 session（`c22bda9`）結案，本分支 ff 對齊 main；修復便攜塊日期漂移並依 P0.7.1 壓縮舊條目（3,927 bytes < 4,000 預算）。
