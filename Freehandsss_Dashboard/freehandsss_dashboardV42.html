@@ -16263,6 +16263,29 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         });
     </script>
 
+    <script>
+        // D71-follow（2026-09-06）：修 iPhone home-screen「加至主畫面」版打開嗰刻已經係橫向，
+        // window.innerWidth 喺 renderReviewTable() 判斷嗰一刻讀到嘅值同真實方向唔同步（已知 iOS
+        // Safari standalone webview 初始化時序問題），令佢一次性判斷 <768 卡死喺手機卡片版，
+        // 之後冇任何機制再重新判斷過。同 foResizeTimer（財務圖表）用一致嘅 resize debounce 手法，
+        // 額外加 load 後一次性延遲複檢，應付「打開嗰刻已經橫向、成程冇觸發過 resize/orientationchange
+        // event」呢種冇 event 可以 hook 嘅情況。純重新呼叫現有 renderReviewTable()，唔改動判斷邏輯本身。
+        var _fhsReviewRecheckTimer = null;
+        function _fhsReviewRecheck() {
+            clearTimeout(_fhsReviewRecheckTimer);
+            _fhsReviewRecheckTimer = setTimeout(function() {
+                if (document.body.classList.contains('v40-review-active') &&
+                    typeof window.renderReviewTable === 'function' &&
+                    window.globalOrders && window.globalOrders.length) {
+                    window.renderReviewTable(window.globalOrders);
+                }
+            }, 200);
+        }
+        window.addEventListener('resize', _fhsReviewRecheck);
+        window.addEventListener('orientationchange', _fhsReviewRecheck);
+        window.addEventListener('load', function() { setTimeout(_fhsReviewRecheck, 500); });
+    </script>
+
     <!-- ═══════════════════════════════════════════════════════════════
          FHS V41 — Supabase Read Layer
          Phase 3: Dashboard 讀取切換（Supabase-first / n8n-fallback）

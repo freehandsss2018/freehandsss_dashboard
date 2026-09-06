@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-06 續] D71-follow2：iPhone 橫向訂單總覽退回卡片版排查 + 防禦性修復
+
+- **回報**：Fat Mo 部署 D71 後回報「iPhone 13 Pro 橫向打開訂單總覽變咗直向卡片版」，附橫向截圖確認。
+- **排查**：本地/生產檔逐 byte 核對零差異；用 Chromium 模擬 iPhone 13 Pro 實際橫向解析度（844×390）反覆測試本機同生產 URL，table 均正常顯示、console 零 error；直接實測證實 `@media(min-width:768px){#reviewAccordionContainer{display:none!important}}` 對顯示與否有絕對否決權，唔受 JS 呼叫邊個 render function 影響——證明「JS 判斷錯 branch」呢個最初理論唔成立。**未能 100% 複現確診根因**，最可能解釋為 iOS 加至主畫面 standalone webview 喺已經橫向狀態下冷啟動嘅已知 WebKit layout viewport 初始化時序問題，亦不排除裝置「顯示縮放」設定令有效闊度持續細過 768。
+- **防禦性修復**（純追加，未改動任何判斷邏輯）：仿照既有 `foResizeTimer`（財務圖表 resize 重繪）手法，新增 `_fhsReviewRecheck()`，於 `resize`/`orientationchange`/`load` 後 500ms 各觸發一次重新呼叫現有 `renderReviewTable()`，逼佢重新評估現狀闊度。
+- **誠實局限**：若根因係「初始量度不同步、事後自我修正」，此修復有效；若係裝置設定令闊度持續穩定 <768（如顯示縮放模式），此修復幫唔到手，需要 Fat Mo 核實 iPhone 設定 > 螢幕顯示與亮度 > 檢視 是否為「縮放」。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（新增獨立 `<script>` block）、`.fhs/notes/decisions.md`（D71-follow2）。已同一批部署至 `current.html`。
+- 全文見 decisions.md D71-follow2。**Subagent 使用記錄**：❌未使用（跨本機/生產即時對照排查，委派會斷推理鏈）。
+
 ## [2026-09-06] Session（Claude Code / Sonnet 5 執行）— D71：訂單總覽入帳/成本/利潤三欄合併一欄「財務」
 
 - **緣起**：Fat Mo 截圖反映手機橫向模式訂單總覽表格入帳/成本/利潤三欄各佔一格（共 250px），擠壓「產品明細」逐行換行、「進度」勾選格幾乎貼邊，要求設計 UI/UX 方案將三欄壓縮成一欄共用顯示。
