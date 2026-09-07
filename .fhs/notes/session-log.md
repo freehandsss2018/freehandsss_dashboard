@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-07/08 (D71-follow7~11：訂單總覽財務欄多輪覆核，含跨引擎 safe-area/table-layout 真兇排查): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-07 起連續條目 + [decisions.md D71-follow7~11](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。D73 部署後 Fat Mo 五輪覆核，過程中兩次診斷方向錯誤（follow7/8 誤判目標視圖層級；follow9/10 誤判「兩側留白」係表格 width 演算法問題），最終定位到兩個真正獨立根因：①手機橫向合併層（750-1129px）同 D73 同源、未推廣修過嘅 `table-layout:fixed` 比例拉伸（真實訂單量度驗證修復）；②2026-08-30 加落嘅 body `safe-area-inset` padding 喺橫向模式食走成 47px/邊。教訓：「留白」類回報第一步應先核對範圍係咪跨越目標元件之外，唔應該狹窄咁只查最顯眼嘅元件本身。另附帶發現 `_fhsFinLayoutRecheck` 一個真實 race（獨立 JS 變數快照喺 script 解析時機讀到過時闊度）並修復。全部 5 輪均已部署，Gate 0（D72）逐次自動核實血統通過。⚠️ 已知局限：D71-follow10/11 兩個跨引擎修復均無法喺呢個環境（Claude Browser 底層 Chromium）直接驗證真機 Safari，待 Fat Mo 實機覆核確認。
+**Subagent 使用記錄**：❌未使用（跨視圖層級/跨瀏覽器引擎查證+真實 DOM 逐格度量，委派會斷推理鏈）。
+
 
 ## 2026-09-06 (D71：訂單總覽入帳/成本/利潤三欄合併一欄「財務」): 🏷️ ✅
 
