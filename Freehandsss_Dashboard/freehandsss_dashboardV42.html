@@ -159,9 +159,18 @@
             padding: 0 !important;
             padding-bottom: 100px !important;
             /* [D69續八-follow-11] 配合 viewport-fit=cover：內容避開notch/圓角安全區
-               （非notch裝置/直向時呢兩個值都係0，零視覺影響）。 */
-            padding-left: env(safe-area-inset-left, 0px) !important;
-            padding-right: env(safe-area-inset-right, 0px) !important;
+               （非notch裝置/直向時呢兩個值都係0，零視覺影響）。
+               [D71-follow11 2026-09-07] Fat Mo 回報真機 Safari 橫向兩側留白——查證確認
+               呢兩條白邊就係呢度嘅安全區 padding 本身（唔關表格闊度事：截圖入面連上面
+               條篩選列都一樣內縮，即留白喺所有內容之外）。量化佐證：iPhone 13 Pro 橫向
+               844px，減左右各 ~47px 安全區＝750px，啱好就係另一條分支當初要將斷點由 768
+               改做 750 嘅同一個現象。
+               改法：用 `min()` 封頂，只保留避開圓角所需嘅少量留白，攞返其餘約 ~78px 俾
+               表格用。**已知取捨**：瀏海嗰一側（視乎手機轉邊個方向）最外側嗰一小截內容
+               會被瀏海遮住；因為表格本身可以橫向捲動，遮到嘅部分可以捲出嚟，故判斷可接受。
+               若 Fat Mo 覺得被遮住嘅嘢重要，將 8px 調返做 `env(...)` 原值即可還原。 */
+            padding-left: min(env(safe-area-inset-left, 0px), 8px) !important;
+            padding-right: min(env(safe-area-inset-right, 0px), 8px) !important;
         }
 
         .card {

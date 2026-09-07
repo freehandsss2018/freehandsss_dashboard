@@ -3,6 +3,23 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-07 續] (D71-follow11) 認錯改正——follow10 診斷方向錯，真兇係 safe-area 留白，唔關表格 width 演算法事
+
+**回報**：Fat Mo 部署 follow10 後截圖「情況同舊截圖一樣」，兩側留白完全冇改善。
+
+**重新查證揪出真兇**：仔細對照截圖發現——連頁面最頂嗰條篩選列（漏斗／全部／進行中／重新載入）都同表格一齊向內縮咗，即係留白喺**整個頁面內容之外**，根本唔關表格闊度演算法事（follow10 嘅診斷方向由頭錯到尾）。查 body CSS 揪到 2026-08-30 D69續八-follow-11 加咗嘅 `padding-left/right: env(safe-area-inset-left/right, 0px) !important`——呢個係 iOS Safari **橫向**專屬嘅瀏海/圓角避讓區（notch 裝置轉橫向後安全區由上下變左右）。
+
+**量化佐證**：iPhone 13 Pro 橫向邏輯闊度 844px，減去左右各 ~47px 安全區 padding＝**750px**——同另一條分支（D69續八-follow-2）當初將斷點由 768 改做 750 嘅根據係**同一個現象**，證實呢條 padding 本身一直客觀存在，兩條分支各自摸到呢隻大象嘅唔同部位。follow-11 原意係修「內容縮入安全區、兩側露出 Safari 灰底」，但代價係每邊食走 ~47px 可用闊度，Fat Mo 而家覺得代價太大。
+
+**修復**：`padding-left/right` 由 `env(safe-area-inset-left/right, 0px)` 改做 `min(env(...), 8px)`——用 CSS `min()` 封頂，只留返避開圓角所需嘅少量緩衝（8px），攞返其餘 ~39px／邊嘅可用闊度俾表格用。**已知取捨**：瀏海嗰一側最外側一小截內容會被瀏海實體遮住；因表格本身可橫向捲動，被遮部分可以捲出嚟，判斷為可接受嘅代價。
+
+**驗證**：Chromium `CSS.supports()` 確認 `min(env(),8px)` 語法受支援；CSSOM 直接讀出 `body` 規則嘅 `padding-left`/`padding-right` 值同 `!important` priority 均正確寫入（非被靜默丟棄）；由 `.review-table-wrap` 逐層向上量到 `body` 之間全部容器 padding/margin 皆為 0，證實留白源頭單一、已鎖定在 body 呢一句。**未能喺呢個環境直接驗證真機 Safari 視覺效果**（Claude Browser 底層都係 Chromium，冇 safe-area-inset 環境變數可以真實觸發），留待 Fat Mo 實機覆核。
+
+**教訓（記落嚟避免同類事故）**：follow9/follow10 兩輪都喺冇先核對「留白範圍係咪包含表格以外嘅其他元素」之前，就直接假設係表格闊度計算問題，結果做咗兩輪同真正根因無關嘅嘢。下次遇到「畫面留白」類回報，第一步應該係問／查「留白範圍止於邊度」——如果連頁面其他無關區塊都一齊受影響，就應該懷疑係更高層（body/html/viewport safe-area）嘅共因，而非狹窄咁只查最顯眼嗰個元件（今次係表格）自己嘅樣式。
+
+全文見 `freehandsss_dashboardV42.html` body CSS `padding-left`/`padding-right` 規則。**Subagent 使用記錄**：❌未使用（跨截圖範圍比對+CSS cascade 查證，委派會斷推理鏈）。
+
+---
 [2026-09-07 續] (D71-follow10) 真機 Safari 兩側留白 — 「未宣告 width 嘅欄自動食晒落差」演算法喺 WebKit 唔一致
 
 **回報**：Fat Mo 用真機 Safari 打開 `current.html`，訂單總覽表格兩側留白（表格冇撐滿螢幕闊度），附截圖紅色雙箭頭標示。備註欄本身闊度效果確認收貨。
