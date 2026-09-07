@@ -3,6 +3,24 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-07 續] (D71-follow10) 真機 Safari 兩側留白 — 「未宣告 width 嘅欄自動食晒落差」演算法喺 WebKit 唔一致
+
+**回報**：Fat Mo 用真機 Safari 打開 `current.html`，訂單總覽表格兩側留白（表格冇撐滿螢幕闊度），附截圖紅色雙箭頭標示。備註欄本身闊度效果確認收貨。
+
+**根因**：D71-follow9（同更早嘅 D73）「淨留一個欄唔宣告 width，等佢食晒 table-layout:fixed 落差」呢個做法，喺 Chromium 自動化測試 100% 通過，但真機 Safari 對「一個 `<th>` 完全冇 width 屬性」呢種情況嘅處理方式同 Chromium 唔一致——WebKit 冇將呢個未宣告嘅欄擴展去食晒容器落差，令表格總闊度細過容器，兩側留白。
+
+**修復**：唔再靠「未宣告 width」呢招（呢個演算法本身喺唔同瀏覽器引擎有分歧，唔可靠）。改為：
+1. 備註首次 render 刻意寫個微小 placeholder（1px）——若寫返正常 `_mw`（110），佢會同其餘 8 欄一齊入落 table-layout:fixed 嘅比例攤分計算池，令下一步度緊嘅「其餘 8 欄闊度」已經係扭曲值（循環依賴陷阱，已喺落手前推演發現並避開）。
+2. `row.innerHTML` 生效之後，直接由 DOM 度返其餘 8 個欄嘅**實際 render 闊度**（`getBoundingClientRect().width`，唔係 JS 常數自己加——部分欄仲有 750-1129 media query `!important` 覆寫緊，JS 常數同 CSS 最終生效值可以唔一致）。
+3. 用 `.review-table-wrap` 嘅 `clientWidth` 減走呢個總和，得出容器落差，明確寫返落備註 `<th>.style.width`——令 9 欄闊度總和啱好等於容器闊度，每一步都係實牌 px 數字，冇任何一步靠「未宣告 width 點分配」呢個有分歧嘅演算法，跨引擎行為應該一致。
+
+**驗證**：Chromium 750-1129 層（1000px）實測 `table.getBoundingClientRect().width`（982px）**完全等於** `.review-table-wrap.clientWidth`（982px），零溢出零留白；桌面「全部」視圖（1400px）實測相差 2px（可忽略嘅 rounding，遠優於修復前嘅表現）；D71-follow9 兩個真 bug（x2 跌行／BOOK LASER 未分3行）重驗仍然修復；console 零 JS error（`ERR_NETWORK_IO_SUSPENDED` 等為環境網路雜訊，同代碼改動無關）。
+
+**已知局限**：呢個修復無法喺呢個環境直接喺真機 Safari 覆核（Claude Browser 底層都係 Chromium），淨可以做到「消除咗嗰個已知有分歧嘅演算法本身」——即係將「靠瀏覽器自動填滿落差」呢個唔可靠嘅做法，換成「JS 度出精確數值再明確賦值」呢個唔靠任何單一瀏覽器實現細節嘅做法。理論上呢個改法應該喺任何遵循 CSS2.1 table-layout:fixed 規格嘅引擎（Chromium／WebKit／Gecko）都得出一致結果，因為淨係用咗規格入面冇爭議嘅部分（「已宣告明確 width 嘅欄一律尊重嗰個值」），完全避開咗「未宣告 width 嘅欄點處理」呢個規格含糊、各引擎自行詮釋嘅地帶。留待 Fat Mo 實機 Safari 覆核確認。
+
+全文見 `freehandsss_dashboardV42.html` `fhsBuildOverviewHead()` 尾段量度覆寫邏輯。**Subagent 使用記錄**：❌未使用（跨瀏覽器引擎演算法查證+循環依賴推演+Chromium 實測驗證，委派會斷推理鏈）。
+
+---
 [2026-09-07 續] (D71-follow9) 認錯：follow7/8 改錯層——真正目標其實一直係手機橫向合併層（750-1129px），非桌面「全部」視圖
 
 **事故**：Fat Mo D71-follow7/8 兩輪五點覆核，實際附圖同上下文一直指向「手機橫向模式」，但被誤判為「桌面全部視圖」術語上嘅口語講法，導致 follow7/8 兩整輪改動全部落錯咗喺 ≥1130px 桌面「全部」層。Fat Mo 部署後截圖「我看不到任何修改」——三張新截圖表頭顯示「財務」合併欄，證實佢一直用緊嘅係 750-1129px 手機橫向合併層（`_fhsFinMerged()===true`），呢層由始至終未被 follow7/8 觸碰過。

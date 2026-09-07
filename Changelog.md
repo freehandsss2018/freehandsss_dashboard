@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-07 續二] D71-follow10：真機 Safari 兩側留白修復（未宣告 width 演算法跨引擎分歧）
+
+- **回報**：Fat Mo 用真機 Safari 打開 `current.html`，訂單總覽表格兩側留白，附截圖標示。備註欄闊度本身效果確認收貨。
+- **根因**：D71-follow9（同 D73）「淨留一欄唔宣告 width，食晒 table-layout:fixed 落差」呢招，喺 Chromium 自動化測試 100% 通過，但真機 Safari 對「一個 `<th>` 完全冇 width 屬性」嘅處理同 Chromium 唔一致，令表格冇撐滿容器，兩側留白。
+- **修復**：改用 JS 明確度量+賦值，唔再靠瀏覽器自動填滿落差。備註首次 render 寫 1px placeholder（避免同其餘 8 欄一齊入落攤分計算池嘅循環依賴）；`row.innerHTML` 生效後由 DOM 度返其餘 8 欄嘅實際 render 闊度（反映晒任何 media query `!important` 覆寫）；用 `.review-table-wrap.clientWidth` 減走呢個總和，明確賦值落備註 `<th>.style.width`——全程冇任何一步靠有引擎分歧嘅「未宣告 width」演算法。
+- **驗證**：Chromium 750-1129 層（1000px）實測 table 闊度（982px）完全等於 wrap.clientWidth（982px），零溢出零留白；桌面「全部」視圖（1400px）相差僅 2px（可忽略）；D71-follow9 兩個真 bug（x2 跌行／BOOK LASER 未分3行）重驗仍修復；console 零 JS error。
+- **已知局限**：呢個環境（Claude Browser）底層都係 Chromium，無法直接驗證真機 Safari，淨可以做到「消除咗嗰個已知有分歧嘅演算法本身」——理論上呢個改法應該喺任何遵循 CSS2.1 table-layout:fixed 規格嘅引擎都一致，因為淨用咗規格入面冇爭議嘅部分。留待 Fat Mo 實機 Safari 覆核確認。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`fhsBuildOverviewHead()` 尾段量度覆寫邏輯）、`.fhs/notes/decisions.md`（D71-follow10）。已同一批部署至 `current.html`（Gate 0 自動核實血統通過）。
+- 全文見 decisions.md D71-follow10。**Subagent 使用記錄**：❌未使用（跨瀏覽器引擎演算法查證+循環依賴推演+Chromium 實測驗證，委派會斷推理鏈）。
+
 ## [2026-09-07 續] D71-follow9：認錯改正——真正目標一直係手機橫向合併層（750-1129px），非桌面「全部」視圖
 
 - **事故**：D71-follow7/8 兩輪五點覆核，實際指向「手機橫向模式」被誤判為桌面「全部」視圖嘅口語講法，兩整輪改動落錯層。Fat Mo 部署後截圖「我看不到任何修改」——三張新截圖表頭顯示「財務」合併欄，證實佢一直用緊750-1129px 手機橫向合併層，由始至終未被觸碰。

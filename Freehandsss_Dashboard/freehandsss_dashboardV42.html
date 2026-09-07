@@ -12501,6 +12501,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // [密度重排 2026-08-25] 兩邊 12px→8px、16px→12px 一併收緊，兩處數值必須逐字同步。
             var thBase = 'font-weight:900; font-size:11px; text-transform:uppercase;'
                        + ' letter-spacing:0.08em; white-space:nowrap; border:none;';
+            // [D71-follow10 2026-09-07] 「備註做唯一彈性欄」原本靠「淨留佢一個 <th> 唔宣告
+            // width」等 table-layout:fixed 自動食晒落差——Chromium 自動化測試 100% 通過，
+            // 但真機 Safari 實測兩側留白（表格冇撐滿容器），證實「未宣告 width 嘅欄點分配
+            // 落差」呢個演算法喺唔同瀏覽器引擎有分歧，唔可以靠呢招。改法：備註都照樣寫一個
+            // 明確 px 值（下面 fallback 初始值），render 完之後即刻**由 DOM 度返其餘 8 個
+            // 欄嘅實際 render 闊度**（唔係由 JS 常數自己加，因為部分欄仲有 750-1129 media
+            // query `!important` 覆寫緊，JS 常數同 CSS 最終生效值可以唔一致），計出容器落差，
+            // 先明確覆寫返落備註——令 8+1 欄嘅闊度總和啱好等於容器闊度，冇任何一步靠「未宣告
+            // width 點分配」呢個有分歧嘅演算法，跨引擎行為一致。
             var html = fhsOverviewCols().map(function (k) {
                 if (k === 'cb') {
                     return '<th class="review-cb-th" style="padding:8px 4px; border:none; width:32px;">'
@@ -12516,13 +12525,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // 視圖，唔會誤中「全部」（Fat Mo 明示唔改嗰個）。
                 var _narrowCls = _c ? (' ovw-narrowcol-' + k) : ' ovw-allview-col ovw-col-' + k;
                 var ico = '<svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-' + d.icon + '"/></svg>';
-                // [D71-follow8/9] 「全部」視圖嘅彈性欄由「產品明細」交俾「備註」（notes）——
-                // 淨低嘅落差全部撥俾備註（Fat Mo 明示「餘下騰出來的空間放給備註」）。
-                // follow9：擴大去兩個 tier（`!_c` 唔再加 `!_fhsFinMerged()`）——750-1129
-                // 手機橫向合併層一樣中咗 table-layout:fixed 比例拉伸（見上面 CSS 註解），
-                // 備註一樣要做嗰層嘅唯一彈性欄先可以解除其餘 8 欄嘅拉伸。
-                var _widthDecl = (k === 'notes' && !_c) ? '' : ('width:' + _mw + 'px;');
-                var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; ' + _widthDecl;
+                // [D71-follow10] 備註（notes）首次 render 刻意寫個微小 placeholder（1px）
+                // 而唔係真正 `_mw`（110）——若寫 110，佢會同其餘 8 欄一齊入落
+                // table-layout:fixed 嘅「比例攤分落差」計算池，令下面度緊其餘 8 欄嘅
+                // step 量到嘅已經係「連同備註都攤分埋」嘅扭曲值，計出嚟嘅落差會偏細
+                // （循環依賴）。1px 令佢喺呢一輪攤分幾乎冇權重，其餘 8 欄先可以量到
+                // 接近真正宣告值嘅闊度；真正生效值隨即由下面 row.innerHTML 之後嘅
+                // DOM 量度 + 覆寫決定。
+                var _isNotesFlexCol = (k === 'notes' && !_c);
+                var _initW = _isNotesFlexCol ? 1 : _mw;
+                var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; width:' + _initW + 'px;';
                 if (d.sort) {
                     return '<th class="sort-th' + _narrowCls + '" data-sort="' + d.sort + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'
                          + ico + d.label + '<span class="sort-arrow" id="sort-arrow-' + d.sort + '"></span></th>';
@@ -12533,6 +12545,26 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // thead 重建會沖走排序箭嘴同 master checkbox 狀態，即刻補回
             if (typeof updateSortHeaderUI === 'function') updateSortHeaderUI(sortField, sortDir);
             _syncMasterCheckbox();
+            // [D71-follow10] 由 DOM 度返其餘欄嘅實際 render 闊度（已反映晒任何 !important
+            // media query 覆寫），計出容器落差，明確覆寫落備註嘅 <th>。
+            if (!_c) {
+                var _notesTh = row.querySelector('.ovw-col-notes');
+                var _wrap = row.closest('.review-table-wrap');
+                if (_notesTh && _wrap) {
+                    var _wrapW = _wrap.clientWidth;
+                    var _otherSum = 0;
+                    [].forEach.call(row.children, function (th) {
+                        if (th !== _notesTh) _otherSum += th.getBoundingClientRect().width;
+                    });
+                    if (_wrapW > 0 && _otherSum > 0) {
+                        // 實測 1000px 下 sum(8欄)+備註 比 wrap.clientWidth 多返 ~11px（border-collapse
+                        // 圓整+可能出現嘅垂直捲動軸），-4 唔夠慳，改用 -16 留較闊容錯，寧願備註
+                        // 窄少少都好過令成張表再度溢出 wrap（重踩今次修緊嘅 bug）。
+                        var _notesW = Math.max(80, _wrapW - _otherSum - 16); // -16 為 border/scrollbar 容錯，80 為下限
+                        _notesTh.style.width = _notesW + 'px';
+                    }
+                }
+            }
         }
         window.fhsBuildOverviewHead = fhsBuildOverviewHead;
 
