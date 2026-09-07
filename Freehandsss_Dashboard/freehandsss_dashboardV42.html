@@ -2984,15 +2984,25 @@
             .ovw-allview-col.ovw-col-Order_ID { width:88px  !important; }
             .ovw-allview-col.ovw-col-Date     { width:68px  !important; }
             .ovw-allview-col.ovw-col-Customer { width:58px  !important; }
-            /* [D71 2026-09-06] 原 inc(54)+cost(54)+profit(57)=165px 三欄合併為 fin(92px)，
-               釋放 73px 全數分俾呢個斷層區最擠嘅兩欄：prod 84→130、stat 88→115。
-               欄闊總和維持不變（745px），唔會令 750px 起始點溢出。 */
+            /* [D71 2026-09-06] 原 inc(54)+cost(54)+profit(57)=165px 三欄合併為 fin(92px)。 */
             .ovw-allview-col.ovw-col-fin      { width:92px  !important; }
-            .ovw-allview-col.ovw-col-eng      { width:54px  !important; }
-            .ovw-allview-col.ovw-col-prod     { width:130px !important; }
+            .ovw-allview-col.ovw-col-eng      { width:54px  !important; } /* display:none，數值無意義但留低唔刪 */
+            /* [D71-follow9 2026-09-07] 呢層同 D73/桌面「全部」視圖一樣中咗 table-layout:fixed
+               嘅比例拉伸——全部欄都有明確 width 時，瀏覽器會將「表格闊度－欄闊總和」按比例
+               攤分落每欄（實測 1000px 下 stat 宣告 115px 拉到 163px，Order_ID/Date/Customer/
+               prod 全部按同一比例~1.42x拉伸，證實唔係個別欄嘅問題）。跟 D73 手法：淨留
+               「備註」一個欄唔宣告 width（連同下面 fhsBuildOverviewHead() 嘅 JS 判斷一齊
+               拆），佢會食晒 100% 落差，其餘欄先至真正維持喺宣告值。
+               連帶修：①產品明細 130→165——真實訂單量度證實「嬰兒/左手/x2」三個 badge
+               埋位啱好 110px，130px 扣咗 td/inner div padding 後淨返 ~110px 卡喺邊緣令
+               x2 跌落新行；②進度 115→75——「Book」+「Laser」兩個 checkbox label 合埋
+               只需 ~94-98px，115px 仲夠佢哋兩個逼喺同一行，改窄過呢個組合需要嘅闊度先
+               逼到 flex-wrap 一行一個、變返 Fat Mo 想要嘅乾淨 3 行顯示（同手模類別視圖
+               嗰種效果一致，機制係 `hmck-wrap-*` 嘅 `flex-wrap:wrap` 冇強制 column 方向，
+               淨係窄到兩個都放唔低先會逐個換行）。 */
+            .ovw-allview-col.ovw-col-prod     { width:165px !important; }
             .ovw-allview-col.ovw-col-batch    { width:52px  !important; }
-            .ovw-allview-col.ovw-col-stat     { width:115px !important; }
-            .ovw-allview-col.ovw-col-notes    { width:56px  !important; }
+            .ovw-allview-col.ovw-col-stat     { width:75px  !important; }
         }
         /* [2026-09-02 D69續八-follow-19] Fat Mo要求：手機直向（<750px）都要享用
            「顯示項目財務／清除篩選／儲存篩選收納入摺疊面板＋重新載入搬去top
@@ -12506,10 +12516,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // 視圖，唔會誤中「全部」（Fat Mo 明示唔改嗰個）。
                 var _narrowCls = _c ? (' ovw-narrowcol-' + k) : ' ovw-allview-col ovw-col-' + k;
                 var ico = '<svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-' + d.icon + '"/></svg>';
-                // [D71-follow8] 桌面「全部」視圖嘅彈性欄由「產品明細」交俾「備註」（notes）——
-                // 產品明細復原返 D73 之前嘅原始固定闊度，刻字/進度/日期都已鎖定明確值，
+                // [D71-follow8/9] 「全部」視圖嘅彈性欄由「產品明細」交俾「備註」（notes）——
                 // 淨低嘅落差全部撥俾備註（Fat Mo 明示「餘下騰出來的空間放給備註」）。
-                var _widthDecl = (k === 'notes' && _fhsDesktopFlexEng(_c)) ? '' : ('width:' + _mw + 'px;');
+                // follow9：擴大去兩個 tier（`!_c` 唔再加 `!_fhsFinMerged()`）——750-1129
+                // 手機橫向合併層一樣中咗 table-layout:fixed 比例拉伸（見上面 CSS 註解），
+                // 備註一樣要做嗰層嘅唯一彈性欄先可以解除其餘 8 欄嘅拉伸。
+                var _widthDecl = (k === 'notes' && !_c) ? '' : ('width:' + _mw + 'px;');
                 var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; ' + _widthDecl;
                 if (d.sort) {
                     return '<th class="sort-th' + _narrowCls + '" data-sort="' + d.sort + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'
