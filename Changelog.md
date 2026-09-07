@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-07] D71-follow8：桌面「全部」視圖五點再覆核（日期/產品明細/刻字/進度/備註）
+
+- **回報**：D71-follow7 部署後 Fat Mo 再截圖回報五點：①日期欄收窄過多，要求日期／限時警示各佔一行、只准兩行；②產品明細過闊，要求復原 D73 之前嘅原始闊度；③刻字仍太窄，要求 >320px；④進度欄要收窄，貼近類別視圖 checkbox 緊湊觀感；⑤餘位撥俾備註。
+- **釐清**：附嘅截圖係「手模」類別視圖（唔存在產品明細／刻字欄），經澄清確認實際改動對象仍係桌面「全部」寬螢幕視圖，截圖純粹係「進度欄緊湊感」嘅視覺參考，非改動目標視圖本身。
+- **修復**：彈性欄角色由「產品明細」交俾「備註」；產品明細復原固定 220px；新增桌面「全部」視圖專屬覆寫 `_FHS_DESKTOP_MW_OVERRIDE = {eng:330, stat:85, Date:90}`（唔改 `_FHS_TH_DEF` 共用 mw，類別視圖／750-1129 緊縮桌面層不受影響）；`.ovw-date-line--stack`（日期／限時警示上下疊）由原本只限手模類別視圖推廣去桌面「全部」視圖。
+- **驗證**：Chromium 1400px 實測 11 欄全部達標（日期90/2行疊、產品明細220復原、刻字330達成>320、進度85收窄、備註92彈性吸落差）；日期/備註 cell 零溢出；audit toggle 開關表頭不變；console 零 error。
+- **誠實局限**：備註喺 1400px 實測 92px，比 follow7 之前嘅固定 110px 仲窄——客人 180＋刻字 330＋產品明細 220 三個明確加大咗嘅闊度食走咗大部分讓俾備註嘅空間，已喺 decisions.md 記錄呢個 trade-off，留待 Fat Mo 實機覆核是否需要再平衡。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`_FHS_DESKTOP_MW_OVERRIDE`／`fhsBuildOverviewHead()`／`.ovw-date-line--stack`）、`.fhs/notes/decisions.md`（D71-follow8）。已同一批部署至 `current.html`（Gate 0 自動核實血統通過）。
+- 全文見 decisions.md D71-follow8。**Subagent 使用記錄**：❌未使用（跨欄位闊度分配權衡+Chromium 交叉驗證，委派會斷推理鏈）。
+
 ## [2026-09-06 續三] D71-follow7：D73 覆核 — 客人欄過窄現形 + 刻字裁減三分一
 
 - **回報**：D73 部署後 Fat Mo 覆核回報①客人欄壓縮太過，有客人名稱走位；②刻字佔位過多，要求減少三分一闊度。
