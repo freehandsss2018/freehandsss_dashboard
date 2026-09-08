@@ -1409,12 +1409,23 @@
         .review-eng-label-bot { background: #EB984E; }
         .review-eng-text { font-weight: 600; color: #34495E; }
 
-        /* [D74 2026-09-08] 訂單封面圖：107×60（縮圖三分一），平時零視覺痕跡——
-           冇圖嗰格淨係一個透明空 div，只喺全域拖拽進行緊（body.fhs-cover-drag-active）
-           先亮虛線框，達成 Fat Mo「兩樣都冇就留空」嘅要求；有圖嗰格常駐顯示縮圖。 */
-        .fhs-cover-slot { width:107px; height:60px; flex:none; border-radius:4px; }
-        .fhs-cover-slot.has-img { cursor:default; }
-        .fhs-cover-thumb { width:107px; height:60px; object-fit:cover; border-radius:4px; display:block; border:1px solid #d9cfc0; cursor:zoom-in; background:#eee; }
+        /* [D74 2026-09-08] 訂單封面圖，[D74-follow 2026-09-08] Fat Mo 真機驗收兩點回饋後調整：
+           ①冇圖嗰格原本完全透明零痕跡，要滑鼠移埋去先知道係上傳位——唔夠 discoverable。
+             改為常駐顯示淡色 icon（唔算「常駐 button」：冇邊框、冇背景色、冇文字，純圖示提示）。
+           ②有圖嗰格喺生產環境真實列高度（87.9px）量得下方仲有 18.7px headroom——
+             107×60 改 135×76（16:9，放大約26%），留 2.7px 安全緩衝（跨瀏覽器行高量度誤差）。
+           ⚠️ 兩個狀態故意用唔同尺寸（自家測試 手模 類別視圖 172px 窄欄揪出嘅真 bug）：
+           冇圖嗰格同刻字文字＋編輯掣係同一 flex row 嘅並列 sibling，若都用 135px 闊，
+           喺 172px 窄欄會逼刻字文字得返 ~20px 得餘位，觸發 overflow-wrap:anywhere
+           逐字元直排（睇落好似成串直排亂碼）。有圖嗰格冇呢個問題——冇圖時 wrap 淨係得
+           coverSlotHtml 一個 sibling，唔使同文字爭位。 */
+        .fhs-cover-slot { flex:none; border-radius:4px; display:flex; align-items:center; justify-content:center; }
+        .fhs-cover-slot.has-img { width:135px; height:76px; cursor:default; }
+        .fhs-cover-slot:not(.has-img) { width:30px; height:30px; }
+        .fhs-cover-slot:not(.has-img) svg { width:20px; height:20px; color:#C9B8A4; opacity:.8; pointer-events:none; transition:color .15s, opacity .15s; }
+        .fhs-cover-slot:not(.has-img):hover svg,
+        body.fhs-cover-drag-active .fhs-cover-slot:not(.has-img) svg { color:#C9714A; opacity:1; }
+        .fhs-cover-thumb { width:135px; height:76px; object-fit:cover; border-radius:4px; display:block; border:1px solid #d9cfc0; cursor:zoom-in; background:#eee; }
         body.fhs-cover-drag-active .fhs-cover-slot:not(.has-img) {
             border:1.5px dashed #C9B8A4; background:#FBF8F3; cursor:pointer;
         }
@@ -13320,7 +13331,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             const _oidEsc = fhsEscAttr(o.id);
                             coverSlotHtml = o.Cover_Image_Path
                                 ? `<div class="fhs-cover-slot has-img" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')"><img class="fhs-cover-thumb" data-cover-path="${fhsEscAttr(o.Cover_Image_Path)}" alt="訂單封面圖" onclick="fhsOpenCoverLightbox(this)"></div>`
-                                : `<div class="fhs-cover-slot" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')" onclick="fhsCoverSlotClick('${_oidEsc}')" title="拖圖入嚟或撳呢度上載封面圖"></div>`;
+                                : `<div class="fhs-cover-slot" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')" onclick="fhsCoverSlotClick('${_oidEsc}')" title="拖圖入嚟或撳呢度上載封面圖"><svg width="22" height="22"><use href="#icon-image"/></svg></div>`;
                         }
                         // Phase 3: wrap with inline edit button (hover to reveal ✏)
                         // 同 Accordion 路徑一樣：onclick 係雙引號屬性，只做 JS 跳脫唔夠，見該處註解

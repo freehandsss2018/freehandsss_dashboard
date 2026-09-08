@@ -1,4 +1,10 @@
 # Session Log
+## 2026-09-08 續 (D74-follow：真機驗收兩點回饋+意外自揪窄欄擠壓 bug): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-08 續「D74-follow」條目 + [decisions.md D74-follow](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 生產環境真機測試 D74 後回報兩點：冇圖格睇唔到上傳位置（改常駐顯示淡色icon）、有圖格可以按比例再大（真實列量得headroom後107×60改135×76）。實作過程喺自家 browser 驗證時揪出並修正一個從未流出生產嘅新 bug——兩個狀態一度共用同一尺寸，喺「手模」172px窄欄觸發刻字文字逐字元直排。真實55張單全量掃描零overflow確認修復。
+**Subagent 使用記錄**：❌未使用（真機截圖回報跨視圖真實資料驗證，委派會斷推理鏈）。
+
+
 ## 2026-09-08 (D74：訂單總覽刻字欄新增訂單封面圖 16:9 縮圖，拖拽上載): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-08「D74」條目 + [decisions.md D74](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 要求「全部」／「手模」類別視圖刻字欄有設計圖時以 16:9 縮圖取代刻字字句，設計預覽兩輪核准（縮圖 107×60、拖拽取代常駐 button）。落實：新建 private bucket `order-covers` + `orders.cover_image_path`（migration `0093_order_cover_image`）、mapOrder/select query 擴充、engraving cell render 邏輯改由 `_coverEligible`（`!_catView || _catView==='手模'` 且 `index===0`）判斷、新增 ~230 行 D74 專屬 JS（canvas resize/上載/全域拖拽/lightbox/簽名URL批量換）。真實 browser end-to-end 測試（非 mock）：canvas 測試圖走完整上載 pipeline 成功、模擬 `DragEvent` 確認全域拖拽亮框、切「鎖匙扣」視圖確認零受影響、console 零新增錯誤，測試數據已還原（Storage 殘留一個 12KB 無害孤兒測試圖，因設計上刻意不畀 anon DELETE 權）。
