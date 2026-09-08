@@ -1264,11 +1264,29 @@ Fat Mo 確認 0600037（木框，appointment_at=2026-07-27，尚未到）正確�
 
 詳見 decisions.md D71（含 follow4 範圍收窄）、D72（Gate 0 部署血統閘，因本次改動引發嘅跨分支覆寫事故）。
 
+### 10.25 訂單總覽刻字欄：訂單封面圖（D74，2026-09-08）
+
+**緣起**：Fat Mo 要求刻字欄有設計圖時，以 16:9 縮圖取代刻字字句顯示，操作員用手機拍設計完成圖上載。設計預覽經兩輪核准（縮圖 107×60、拖拽取代常駐 button、平時真·留空）。
+
+**資料模型**：圖片綁**訂單層**（`orders.cover_image_path`），非品項層——同一單多品項時只喺第一件 render 位置（`index===0`，同 `orderLeftColsHtml`/備註 rowspan 用一致慣例）顯示，其餘品項照出各自刻字。
+
+**儲存**：private bucket `order-covers`（migration `0093_order_cover_image`，2MB上限、限 webp/jpeg/png），anon 只有 INSERT/SELECT/UPDATE，**刻意不給 DELETE**（換圖用 `x-upsert:true` 覆蓋同一 path，唔需要刪除權，減少誤刪面）。讀取一律經簽名 URL（1小時TTL），前端 `fhsRefreshCoverThumbs()` 每次 render 後批量換（一個 request 換晒全頁，唔逐張 fetch）。
+
+**適用範圍**：只喺「全部」／「手模」類別視圖生效（Fat Mo 原話），鎖匙扣／頸鏈類別視圖唔受影響，繼續維持純文字顯示。
+
+**上載互動**：桌面拖拽（全域 `dragenter` 深度計數器控制 `body.fhs-cover-drag-active`，令表格入面所有合資格空格同時亮虛線框，非只有滑鼠正上方嗰格）；空格本身亦可撳出原生檔案選擇器（唔算常駐 button，撳嘅係個格本身，平時零視覺痕跡）。上載前端 canvas 16:9 center-crop 至 1280×720，優先輸出 WebP（canvas.toBlob 對唔支援 WebP 編碼嘅瀏覽器會靜默降級做 PNG，用 `blob.type` 事後驗證，唔啱先 fallback JPEG quality 0.85）。
+
+**核心函式**（`freehandsss_dashboardV42.html`，`renderReviewTable()` 之前）：`fhsCoverResizeToBlob()`／`fhsUploadOrderCover()`／`fhsInitCoverDnd()`／`fhsCoverDragOver/DragLeave/Drop()`／`fhsCoverSlotClick()`／`fhsOpenCoverLightbox()`／`fhsRefreshCoverThumbs()`。上載成功後同 `inlineEditEngraving()` 一致嘅模式：PATCH → 更新本地 `globalOrders` 快取 → `applyReviewFilters()` 觸發重繪（唔做局部 DOM patch，因為由文字版切去圖片版屬結構性改動）。
+
+**已知取捨**：換圖時 path 可能不變（同 ext 重複上載），故上載成功後必須 `delete window._fhsCoverSignedCache[path]`，否則新 render 出嚟嘅 `<img>` 會攞返 cache 入面舊 token 嘅簽名 URL；一個乾淨嘅新 token URL 本身已足夠令瀏覽器 HTTP cache miss，唔需要額外 `?t=` cache-busting。
+
+全文見 decisions.md D74。
+
 ---
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§10.24 由 2026-09-06 D71/D72 session 補入（同時補上 D69續八 標記嘅三態架構文件缺口）。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§10.24 由 2026-09-06 D71/D72 session 補入（同時補上 D69續八 標記嘅三態架構文件缺口）。§10.25 由 2026-09-08 D74 訂單封面圖 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 

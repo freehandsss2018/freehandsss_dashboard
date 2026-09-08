@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-09-08] D74：訂單總覽刻字欄新增訂單封面圖（16:9 縮圖，拖拽上載）
+
+- **緣起**：Fat Mo 要求「全部」／「手模」類別視圖嘅刻字欄，有設計圖時以 16:9 縮圖取代刻字字句顯示，操作員用手機拍設計完成圖上載。設計預覽兩輪核准：v1（160×90）Fat Mo 回饋「圖佔比過大」；v2 縮至 107×60（縮三分一）並將上載方式由「常駐上載 button」改「拖入方格即上載」——後者順帶達成「兩樣都冇就留空」（無常駐虛線框）。
+- **資料模型**：Fat Mo 選擇「綁訂單」。刻字欄本身係品項層 render（每個 item 一格），故圖只喺該單第一件 render 位置（`index===0`，同 `orderLeftColsHtml`/備註 rowspan 一致慣例）顯示，其餘品項繼續各自顯示自己嘅刻字文字——避免同一單多品項時同一張圖重複顯示 N 次。
+- **儲存**：新建 private bucket `order-covers`（migration `0093_order_cover_image`，2MB上限、限 webp/jpeg/png）+ `orders.cover_image_path` 欄位。anon 只授權 INSERT/SELECT/UPDATE，**刻意不給 DELETE**（換圖用 `x-upsert:true` 覆蓋同一 path，減少誤刪面）。讀取一律經簽名 URL（1小時TTL），`fhsRefreshCoverThumbs()` 每次 render 後批量換（一個 request 換晒全頁）。
+- **上載互動**：桌面全域拖拽（`dragenter`/`dragleave` 深度計數器控制 `body.fhs-cover-drag-active`，令所有合資格空格同時亮虛線框）；空格本身亦可撳出原生檔案選擇器（唔算常駐 button）。前端 canvas 16:9 center-crop 至 1280×720，優先輸出 WebP，`canvas.toBlob` 靜默降級時用 `blob.type` 事後驗證並 fallback JPEG quality 0.85。
+- **範圍**：只喺「全部」／「手模」類別視圖生效，鎖匙扣／頸鏈類別視圖不受影響。
+- **已知限制**：手機（`<750px`）同手機橫向（`750-1129px`，刻字欄本身已 `display:none`）睇唔到呢個功能，上載通道目前只做到桌面拖拽/點擊；跨網頁拖拽（非本機檔案）上載唔到。
+- **驗證**：真實 browser end-to-end 測試——canvas 合成測試圖走完整上載pipeline（resize→Storage上載→PATCH→本地快取更新→重繪→簽名URL→顯示），量得縮圖 107×60、source 1280×720；模擬真實 `DragEvent` 確認 27 格同時亮框、`dragend` 清返；lightbox 撳圖開得；切「鎖匙扣」視圖確認零 cover slot；console 零新增錯誤；測試數據已 PATCH 返 `null` 還原（Storage 殘留一個 12KB 測試圖，因設計上冇畀 anon DELETE，留待 Fat Mo 手動清或不理）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`mapOrder()`/select query/engraving cell render/新增 D74 JS 區塊 ~230 行/CSS）、`supabase/migrations/0093_order_cover_image.sql`（新檔）、`.fhs/notes/decisions.md`（D74）、`.fhs/notes/FHS_System_Logic_Overview.md`（§10.25）、`docs/repo-map.md`（migration 索引補登）。
+- 全文見 decisions.md D74、FHS_System_Logic_Overview.md §10.25。**Subagent 使用記錄**：❌未使用（單一連續實作＋Browser pane 真實端對端驗證，委派會斷推理鏈）。
+
 ## [2026-09-07 續三] D71-follow11：認錯改正——真兇係 safe-area 留白，唔關表格 width 演算法事
 
 - **回報**：Fat Mo 部署 follow10 後截圖「情況同舊截圖一樣」，兩側留白完全冇改善。

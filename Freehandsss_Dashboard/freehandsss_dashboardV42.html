@@ -1409,6 +1409,20 @@
         .review-eng-label-bot { background: #EB984E; }
         .review-eng-text { font-weight: 600; color: #34495E; }
 
+        /* [D74 2026-09-08] 訂單封面圖：107×60（縮圖三分一），平時零視覺痕跡——
+           冇圖嗰格淨係一個透明空 div，只喺全域拖拽進行緊（body.fhs-cover-drag-active）
+           先亮虛線框，達成 Fat Mo「兩樣都冇就留空」嘅要求；有圖嗰格常駐顯示縮圖。 */
+        .fhs-cover-slot { width:107px; height:60px; flex:none; border-radius:4px; }
+        .fhs-cover-slot.has-img { cursor:default; }
+        .fhs-cover-thumb { width:107px; height:60px; object-fit:cover; border-radius:4px; display:block; border:1px solid #d9cfc0; cursor:zoom-in; background:#eee; }
+        body.fhs-cover-drag-active .fhs-cover-slot:not(.has-img) {
+            border:1.5px dashed #C9B8A4; background:#FBF8F3; cursor:pointer;
+        }
+        body.fhs-cover-drag-active .fhs-cover-slot.drag-over {
+            border-width:2px; border-color:#C9714A; background:#FBEDE5; box-shadow:0 0 0 3px rgba(201,113,74,.16);
+        }
+        .fhs-cover-slot:not(.has-img):hover { border:1.5px dashed #C9B8A4; background:#FBF8F3; }
+
         /* 批次輸入框 — 精簡版 */
         .review-batch-input {
             /* [D69續三] 實測舊值渲染 44px（UA 預設 input 高度壓過 padding 計算），
@@ -12660,6 +12674,227 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window.fhsSyncAuditBtnState = fhsSyncAuditBtnState;
 
+        // ========================================================
+        // [D74 2026-09-08] 訂單封面圖：刻字欄 16:9 縮圖（拖入即上載）
+        // 設計預覽已核准（107×60、拖拽取代常駐 button、平時真·留空）。
+        // 儲存：private bucket order-covers + orders.cover_image_path（migration 0093）。
+        // 讀取一律經簽名 URL（1小時TTL，fhsRefreshCoverThumbs 批量換，唔逐張 fetch）。
+        // ========================================================
+        var _FHS_COVER_BUCKET = 'order-covers';
+        window._fhsCoverSignedCache = window._fhsCoverSignedCache || {}; // path -> {url, exp}
+
+        function _fhsCoverSbHdr(extra) {
+            var k = window.SB_ANON_KEY || '';
+            return Object.assign({ apikey: k, Authorization: 'Bearer ' + k }, extra || {});
+        }
+
+        // 16:9 center-crop resize，1280×720，優先 WebP——canvas.toBlob 對唔支援 WebP 編碼嘅
+        // 瀏覽器會靜默降級輸出 PNG（唔會報錯），唔可以信賴 mimeType 參數必然生效，事後用
+        // blob.type 驗證，唔啱先 fallback 用 JPEG quality 0.85 重新輸出一次。
+        function fhsCoverResizeToBlob(file) {
+            return new Promise(function (resolve, reject) {
+                var objUrl = URL.createObjectURL(file);
+                var img = new Image();
+                img.onload = function () {
+                    URL.revokeObjectURL(objUrl);
+                    try {
+                        var W = 1280, H = 720;
+                        var srcRatio = img.naturalWidth / img.naturalHeight;
+                        var tgtRatio = W / H;
+                        var sx, sy, sw, sh;
+                        if (srcRatio > tgtRatio) { // 源圖過闊 → 左右裁
+                            sh = img.naturalHeight; sw = sh * tgtRatio;
+                            sx = (img.naturalWidth - sw) / 2; sy = 0;
+                        } else { // 源圖過高 → 上下裁
+                            sw = img.naturalWidth; sh = sw / tgtRatio;
+                            sx = 0; sy = (img.naturalHeight - sh) / 2;
+                        }
+                        var canvas = document.createElement('canvas');
+                        canvas.width = W; canvas.height = H;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+                        canvas.toBlob(function (webpBlob) {
+                            if (webpBlob && webpBlob.type === 'image/webp') {
+                                resolve({ blob: webpBlob, ext: 'webp' });
+                            } else {
+                                canvas.toBlob(function (jpgBlob) {
+                                    if (!jpgBlob) { reject(new Error('canvas 編碼失敗')); return; }
+                                    resolve({ blob: jpgBlob, ext: 'jpg' });
+                                }, 'image/jpeg', 0.85);
+                            }
+                        }, 'image/webp', 0.82);
+                    } catch (e) { reject(e); }
+                };
+                img.onerror = function () { URL.revokeObjectURL(objUrl); reject(new Error('圖片解碼失敗')); };
+                img.src = objUrl;
+            });
+        }
+
+        async function fhsUploadOrderCover(orderId, file) {
+            if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+                showToast('❌ 請拖入圖片檔案'); return;
+            }
+            showLoader('正在上載封面圖...');
+            try {
+                var _resized = await fhsCoverResizeToBlob(file);
+                var path = orderId + '/cover.' + _resized.ext;
+                var _sbUrl = window.SB_URL;
+                // 30s timeout（非預設 10s）：壓縮後圖片雖小（~35-110KB），但操作員手機
+                // 上載環境（工作間 wifi／流動數據）唔穩定，10s 對慢網絡太緊。
+                var upRes = await window.fetchWithTimeout(
+                    _sbUrl + '/storage/v1/object/' + _FHS_COVER_BUCKET + '/' + encodeURIComponent(path),
+                    { method: 'POST', headers: _fhsCoverSbHdr({ 'Content-Type': _resized.blob.type, 'x-upsert': 'true' }), body: _resized.blob },
+                    30000
+                );
+                if (!upRes.ok) {
+                    var upBody = await upRes.text().catch(function () { return ''; });
+                    throw new Error('上載 ' + upRes.status + ' ' + upBody.substring(0, 80));
+                }
+                var patchRes = await window.fetchWithTimeout(
+                    _sbUrl + '/rest/v1/orders?order_id=eq.' + encodeURIComponent(orderId),
+                    { method: 'PATCH', headers: _fhsCoverSbHdr({ 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+                      body: JSON.stringify({ cover_image_path: path }) }
+                );
+                var patchBody = await patchRes.json().catch(function () { return []; });
+                if (!patchRes.ok) throw new Error('PATCH ' + patchRes.status + ' ' + JSON.stringify(patchBody).substring(0, 80));
+                if (Array.isArray(patchBody) && patchBody.length === 0) throw new Error('PATCH 0 rows — order_id: ' + orderId);
+
+                // 換咗新內容但 path 可能不變（同 ext 重複上載換圖）——簽名 URL cache 必須清走，
+                // 否則新 render 出嚟嘅 <img> 會攞返 cache 入面舊 token 嘅 URL，瀏覽器 HTTP cache
+                // 命中同一 URL 就會繼續顯示舊 bytes。刪咗令下次 fhsRefreshCoverThumbs 一定攞新 token。
+                delete window._fhsCoverSignedCache[path];
+
+                var _go = (window.globalOrders && window.globalOrders.length > 0) ? window.globalOrders : globalOrders;
+                var _ord = _go.find(function (x) { return x.id === orderId; });
+                if (_ord) _ord.Cover_Image_Path = path;
+
+                if (typeof applyReviewFilters === 'function') applyReviewFilters();
+                showToast('✅ 封面圖已上載');
+            } catch (e) {
+                console.error('[fhsUploadOrderCover]', e);
+                showToast('❌ 封面圖上載失敗：' + e.message.substring(0, 60));
+            } finally {
+                hideLoader();
+            }
+        }
+        window.fhsUploadOrderCover = fhsUploadOrderCover;
+
+        // ---- 拖拽：全域 dragenter/dragleave 深度計數器控制 body class，令表格入面
+        // 所有合資格空格（唔止滑鼠正上方嗰格）拖拽進行緊嗰陣同時亮起虛線框提示 ----
+        var _fhsCoverDragDepth = 0;
+        function fhsInitCoverDnd() {
+            if (window._fhsCoverDndInit) return;
+            window._fhsCoverDndInit = true;
+            document.addEventListener('dragenter', function (e) {
+                if (!e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') === -1) return;
+                _fhsCoverDragDepth++;
+                document.body.classList.add('fhs-cover-drag-active');
+            });
+            document.addEventListener('dragleave', function () {
+                _fhsCoverDragDepth = Math.max(0, _fhsCoverDragDepth - 1);
+                if (_fhsCoverDragDepth === 0) document.body.classList.remove('fhs-cover-drag-active');
+            });
+            document.addEventListener('drop', function () {
+                _fhsCoverDragDepth = 0;
+                document.body.classList.remove('fhs-cover-drag-active');
+            });
+            document.addEventListener('dragend', function () {
+                _fhsCoverDragDepth = 0;
+                document.body.classList.remove('fhs-cover-drag-active');
+            });
+        }
+        window.fhsInitCoverDnd = fhsInitCoverDnd;
+
+        function fhsCoverDragOver(ev) {
+            ev.preventDefault();
+            if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'copy';
+            if (ev.currentTarget) ev.currentTarget.classList.add('drag-over');
+        }
+        window.fhsCoverDragOver = fhsCoverDragOver;
+
+        function fhsCoverDragLeave(ev) {
+            if (ev.currentTarget) ev.currentTarget.classList.remove('drag-over');
+        }
+        window.fhsCoverDragLeave = fhsCoverDragLeave;
+
+        function fhsCoverDrop(ev, orderId) {
+            ev.preventDefault();
+            if (ev.currentTarget) ev.currentTarget.classList.remove('drag-over');
+            document.body.classList.remove('fhs-cover-drag-active');
+            _fhsCoverDragDepth = 0;
+            var f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+            if (!f) return;
+            fhsUploadOrderCover(orderId, f);
+        }
+        window.fhsCoverDrop = fhsCoverDrop;
+
+        // 桌面滑鼠使用者未必手邊有檔案總管視窗可拖——空格本身亦可撳出原生檔案選擇器，
+        // 呢個唔算加返 Fat Mo 已否決嘅常駐 button（撳嘅係個格本身，平時零視覺痕跡）。
+        function fhsCoverSlotClick(orderId) {
+            var inp = document.createElement('input');
+            inp.type = 'file'; inp.accept = 'image/*';
+            inp.onchange = function () { if (inp.files && inp.files[0]) fhsUploadOrderCover(orderId, inp.files[0]); };
+            inp.click();
+        }
+        window.fhsCoverSlotClick = fhsCoverSlotClick;
+
+        function fhsOpenCoverLightbox(imgEl) {
+            var src = imgEl && imgEl.src;
+            if (!src) return;
+            var overlay = document.getElementById('fhsCoverLightbox');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'fhsCoverLightbox';
+                overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(20,16,12,.86);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;padding:24px;';
+                overlay.innerHTML = '<img id="fhsCoverLightboxImg" style="max-width:92vw;max-height:92vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.5);">';
+                overlay.onclick = function () { overlay.style.display = 'none'; };
+                document.body.appendChild(overlay);
+            }
+            document.getElementById('fhsCoverLightboxImg').src = src;
+            overlay.style.display = 'flex';
+        }
+        window.fhsOpenCoverLightbox = fhsOpenCoverLightbox;
+
+        // 每次 renderReviewTable() 完成 tbody.innerHTML 賦值後呼叫：批量換簽名 URL
+        // （1 個 request 換晒全頁全部圖，唔逐張 fetch），1 小時 TTL、餘 60 秒緩衝就當過期預先換。
+        async function fhsRefreshCoverThumbs() {
+            var imgs = document.querySelectorAll('.fhs-cover-thumb[data-cover-path]');
+            if (!imgs.length) return;
+            var now = Date.now();
+            var needPaths = [];
+            imgs.forEach(function (img) {
+                var p = img.getAttribute('data-cover-path');
+                var cached = window._fhsCoverSignedCache[p];
+                if (cached && cached.exp > now) {
+                    img.src = cached.url;
+                } else if (needPaths.indexOf(p) === -1) {
+                    needPaths.push(p);
+                }
+            });
+            if (!needPaths.length) return;
+            try {
+                var _sbUrl = window.SB_URL;
+                var r = await window.fetchWithTimeout(
+                    _sbUrl + '/storage/v1/object/sign/' + _FHS_COVER_BUCKET,
+                    { method: 'POST', headers: _fhsCoverSbHdr({ 'Content-Type': 'application/json' }),
+                      body: JSON.stringify({ expiresIn: 3600, paths: needPaths }) }
+                );
+                var body = await r.json().catch(function () { return []; });
+                if (!r.ok || !Array.isArray(body)) { console.error('[fhsRefreshCoverThumbs] sign failed', r.status, body); return; }
+                body.forEach(function (row) {
+                    if (!row || row.error || !row.signedURL) return;
+                    var url = _sbUrl + '/storage/v1' + row.signedURL;
+                    window._fhsCoverSignedCache[row.path] = { url: url, exp: now + 3600000 - 60000 };
+                });
+                document.querySelectorAll('.fhs-cover-thumb[data-cover-path]').forEach(function (img) {
+                    var p = img.getAttribute('data-cover-path');
+                    var cached = window._fhsCoverSignedCache[p];
+                    if (cached) img.src = cached.url;
+                });
+            } catch (e) { console.error('[fhsRefreshCoverThumbs]', e); }
+        }
+        window.fhsRefreshCoverThumbs = fhsRefreshCoverThumbs;
+
         function renderReviewTable(orders) {
             // 快取「最後一次實際渲染緊嘅（已過晒 年/月/批次/搜尋/類別 全部篩選嘅）訂單陣列」，
             // 畀 saveInlineEdit() 之後嘅樂觀橫幅重算用（唔可以淨傳 globalOrders 全量，
@@ -13072,11 +13307,28 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${fhsEscHtml(bot)}</span></div>` : ''}
                             </div>`;
                         }
+                        // [D74 2026-09-08] 訂單封面圖：只喺「全部」／「手模」類別視圖、每單第一件
+                        // render 位置（同 orderLeftColsHtml/備註 rowspan 用一致嘅 index===0 慣例，
+                        // 圖片綁訂單層 orders.cover_image_path 非品項層）顯示。有圖完全取代刻字
+                        // 文字（Fat Mo 原話）；冇圖時保留文字，另加一個平時零視覺痕跡嘅拖拽區
+                        // （.fhs-cover-slot），只喺拖拽進行緊（body.fhs-cover-drag-active，見
+                        // fhsInitCoverDnd）先亮虛線框——唔靠常駐 button 或常駐虛線框達成
+                        // 「兩樣都冇就留空」（Fat Mo 否決常駐 button 方案後嘅定案）。
+                        const _coverEligible = (!_catView || _catView === '手模') && index === 0;
+                        let coverSlotHtml = '';
+                        if (_coverEligible) {
+                            const _oidEsc = fhsEscAttr(o.id);
+                            coverSlotHtml = o.Cover_Image_Path
+                                ? `<div class="fhs-cover-slot has-img" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')"><img class="fhs-cover-thumb" data-cover-path="${fhsEscAttr(o.Cover_Image_Path)}" alt="訂單封面圖" onclick="fhsOpenCoverLightbox(this)"></div>`
+                                : `<div class="fhs-cover-slot" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')" onclick="fhsCoverSlotClick('${_oidEsc}')" title="拖圖入嚟或撳呢度上載封面圖"></div>`;
+                        }
                         // Phase 3: wrap with inline edit button (hover to reveal ✏)
                         // 同 Accordion 路徑一樣：onclick 係雙引號屬性，只做 JS 跳脫唔夠，見該處註解
                         const _itemKeyEscT = fhsEscAttr(item.Item_ID || '');
                         const _engEscT = fhsEscAttr(_engStripped);
-                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${fhsEscAttr(o.id)}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button></div>`;
+                        const engCellHtml = (_coverEligible && o.Cover_Image_Path)
+                            ? `<div class="fhs-inline-eng-wrap">${coverSlotHtml}</div>`
+                            : `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${fhsEscAttr(o.id)}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button>${coverSlotHtml}</div>`;
 
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
@@ -13300,6 +13552,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
             // 任務一：重繪後同步 master checkbox 狀態
             _syncMasterCheckbox();
+            // [D74] 重繪後批量換封面圖簽名 URL（新出現嘅 <img data-cover-path> 呢刻先入 DOM）
+            if (typeof fhsRefreshCoverThumbs === 'function') fhsRefreshCoverThumbs();
         }
 
         // ========================================================
@@ -16716,6 +16970,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         window.addEventListener('resize', fhsSyncCompactDesktopLayout);
         window.addEventListener('orientationchange', function () { setTimeout(fhsSyncCompactDesktopLayout, 300); });
         document.addEventListener('DOMContentLoaded', fhsSyncCompactDesktopLayout);
+        // [D74] 訂單封面圖全域拖拽監聽（一次性 init，見 fhsInitCoverDnd 內部 guard）
+        document.addEventListener('DOMContentLoaded', fhsInitCoverDnd);
 
         // [D71 2026-09-06，D71-follow6 2026-09-06 修正] 財務欄合併只喺 750-1129px（手機橫向）
         // 生效，而欄位組合係 render 嗰刻由 fhsOverviewCols() 決定嘅——跨越呢兩條邊界（旋轉
@@ -19685,6 +19941,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 Status:           row.process_status || '待確認',
                 Batch:            row.batch_number || '',
                 Admin_Notes:      row.admin_notes || '',
+                Cover_Image_Path: row.cover_image_path || '',
                 Full_Order_Text:    row.full_order_text || '',
                 Full_Order_Text_A:  row.full_order_text_a || '',
                 Full_Order_Text_B:  row.full_order_text_b || '',
@@ -19726,7 +19983,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // Only pass status values that exist in Supabase ENUM; manufacturing-step values cause errors
             const SB_ORDER_STATUSES = new Set(['待確認','製作中','完成','已取件','已取消']);
             // raw_form_state included so mapOrder can derive part direction (左手/右手/etc.) from k_lh_en/k_rh_en flags
-            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b,is_archived', deleted_at: 'is.null', order: 'appointment_at.asc.nullslast,confirmed_at.asc', limit: 200 };
+            const qs = { select: 'id,order_id,customer_name,confirmed_at,appointment_at,deposit,balance,additional_fee,adjustment_amount,final_sale_price,total_cost,net_profit,process_status,batch_number,admin_notes,raw_form_state,full_order_text,is_text_overridden,full_order_text_a,full_order_text_b,is_archived,cover_image_path', deleted_at: 'is.null', order: 'appointment_at.asc.nullslast,confirmed_at.asc', limit: 200 };
 
             // Bug C 修復（2026-07-28，Fat Mo 裁決）：已取消單九成係輸入錯誤/測試單，訂單總覽預設一律唔顯示唔計算
             // （資料保留喺 Supabase 唔刪除），同財務RPC `NOT IN ('已取消')` 口徑對齊。

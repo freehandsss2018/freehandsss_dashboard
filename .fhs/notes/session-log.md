@@ -1,4 +1,10 @@
 # Session Log
+## 2026-09-08 (D74：訂單總覽刻字欄新增訂單封面圖 16:9 縮圖，拖拽上載): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-08「D74」條目 + [decisions.md D74](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 要求「全部」／「手模」類別視圖刻字欄有設計圖時以 16:9 縮圖取代刻字字句，設計預覽兩輪核准（縮圖 107×60、拖拽取代常駐 button）。落實：新建 private bucket `order-covers` + `orders.cover_image_path`（migration `0093_order_cover_image`）、mapOrder/select query 擴充、engraving cell render 邏輯改由 `_coverEligible`（`!_catView || _catView==='手模'` 且 `index===0`）判斷、新增 ~230 行 D74 專屬 JS（canvas resize/上載/全域拖拽/lightbox/簽名URL批量換）。真實 browser end-to-end 測試（非 mock）：canvas 測試圖走完整上載 pipeline 成功、模擬 `DragEvent` 確認全域拖拽亮框、切「鎖匙扣」視圖確認零受影響、console 零新增錯誤，測試數據已還原（Storage 殘留一個 12KB 無害孤兒測試圖，因設計上刻意不畀 anon DELETE 權）。
+**Subagent 使用記錄**：❌未使用（單一連續實作＋Browser pane 真實端對端驗證，委派會斷推理鏈）。
+
+
 ## 2026-09-07/08 (D71-follow7~11：訂單總覽財務欄多輪覆核，含跨引擎 safe-area/table-layout 真兇排查): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-07 起連續條目 + [decisions.md D71-follow7~11](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。D73 部署後 Fat Mo 五輪覆核，過程中兩次診斷方向錯誤（follow7/8 誤判目標視圖層級；follow9/10 誤判「兩側留白」係表格 width 演算法問題），最終定位到兩個真正獨立根因：①手機橫向合併層（750-1129px）同 D73 同源、未推廣修過嘅 `table-layout:fixed` 比例拉伸（真實訂單量度驗證修復）；②2026-08-30 加落嘅 body `safe-area-inset` padding 喺橫向模式食走成 47px/邊。教訓：「留白」類回報第一步應先核對範圍係咪跨越目標元件之外，唔應該狹窄咁只查最顯眼嘅元件本身。另附帶發現 `_fhsFinLayoutRecheck` 一個真實 race（獨立 JS 變數快照喺 script 解析時機讀到過時闊度）並修復。全部 5 輪均已部署，Gate 0（D72）逐次自動核實血統通過。⚠️ 已知局限：D71-follow10/11 兩個跨引擎修復均無法喺呢個環境（Claude Browser 底層 Chromium）直接驗證真機 Safari，待 Fat Mo 實機覆核確認。

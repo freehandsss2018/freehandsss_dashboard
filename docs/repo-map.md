@@ -102,7 +102,8 @@ freehandsss_dashboard/
 │   │   ├── 0084c_revoke_public_touch_ig_thread_rules.sql ← 修正0084b未夠徹底：連PostgreSQL函式預設PUBLIC授權都要REVOKE先真正做到service_role only（has_function_privilege()驗證揪出）✅ 已部署
 │   │   ├── 0086_ig_phrase_rules.sql ← IG看門狗學習系統Phase2a：ig_phrase_rules表（詞句級全域規則，跨客人生效，observe模式enforce恆false）+5支RPC+二段式狀態機（proposed/approved/rejected，DB CHECK約束enforce=true一定要status=approved）+G1-G12護欄（核心G3：phrase必須真實出現喺來源訊息，防anon塞字串癱瘓看門狗）（cl-flow 2026-08-04-0244，A2對抗評審BLOCKER修補）✅ 已部署
 │   │   ├── [0087-0091 待補登，pre-existing缺口，見handoff.md MASTER表]
-│   │   └── 0092_process_status_dialect_cleanup.sql ← D69續六：清洗order_items.process_status/precomplete_status歷史ENUM風格舊方言（完成→Done已完成、待製作→0什麼都未做），配合前端移除_sanitizeItemStatus()寫入轉換；`製作中`/`已book日期`/`hm:...`刻意不清洗（Fat Mo拍板）✅ 已部署
+│   │   ├── 0092_process_status_dialect_cleanup.sql ← D69續六：清洗order_items.process_status/precomplete_status歷史ENUM風格舊方言（完成→Done已完成、待製作→0什麼都未做），配合前端移除_sanitizeItemStatus()寫入轉換；`製作中`/`已book日期`/`hm:...`刻意不清洗（Fat Mo拍板）✅ 已部署
+│   │   └── 0093_order_cover_image.sql ← D74：orders.cover_image_path欄位 + private bucket order-covers（2MB上限，webp/jpeg/png，anon INSERT/SELECT/UPDATE無DELETE）+3條RLS policy，訂單總覽刻字欄16:9封面圖✅ 已部署
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）

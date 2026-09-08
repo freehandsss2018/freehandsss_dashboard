@@ -3,6 +3,23 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-08] (D74) 訂單總覽刻字欄：新增訂單封面圖（16:9 縮圖取代刻字字句，拖拽上載）
+
+**緣起**：Fat Mo 要求「全部」／「手模」類別視圖嘅刻字欄，有設計圖時以 16:9 縮圖取代刻字字句，操作員用手機拍設計完成圖上載。設計預覽經兩輪核准：v1（160×90）Fat Mo 回饋「圖佔比過大」；v2 縮至 107×60（縮三分一）並將上載方式由「常駐上載 button」改「拖入方格即上載」——後者順帶解決咗「兩樣都冇就留空」嘅要求（拖拽方案毋須常駐虛線框，平時完全冇視覺痕跡）。
+
+**資料模型抉擇**：Fat Mo 明確選擇「綁訂單」（非綁品項）。因刻字欄本身係品項層 render（每個 item 一格），實作決定：圖只喺該單第一件 render 位置（`index===0`，同 `orderLeftColsHtml`/備註 rowspan 一致慣例）顯示，其餘品項繼續各自顯示自己嘅刻字文字——避免同一單多品項時同一張圖重複顯示 N 次。
+
+**儲存策略**：新建 private bucket `order-covers`（migration `0093_order_cover_image`，2MB上限、限 webp/jpeg/png）+ `orders.cover_image_path` 欄位。private 而非 public：避免簽名以外嘅 URL 永久外流即可讀（雖然 anon key 本身已喺 HTML 公開，private bucket 嘅實質得益係「URL 唔會永久有效、唔可以枚舉」）。anon 只授權 INSERT/SELECT/UPDATE，**刻意不給 DELETE**——換圖用 `x-upsert:true` 覆蓋同一 path 達成，唔需要刪除權，減少誤刪面。讀取一律經簽名 URL（1小時TTL），`fhsRefreshCoverThumbs()` 每次 render 後批量換（一個 request 換晒全頁全部圖）。
+
+**上載互動**：桌面全域拖拽（`dragenter`/`dragleave` 深度計數器控制 `body.fhs-cover-drag-active`，令表格入面所有合資格空格同時亮虛線框，非只有滑鼠正上方嗰格）；空格本身亦可撳出原生檔案選擇器（Fat Mo 否決常駐 button 後嘅折衷——撳嘅係個格本身，唔顯示任何按鈕視覺）。上載前端 canvas 16:9 center-crop 至 1280×720，優先輸出 WebP，`canvas.toBlob` 對唔支援 WebP 編碼嘅瀏覽器會靜默降級做 PNG（唔會報錯），用 `blob.type` 事後驗證，唔啱先 fallback JPEG quality 0.85 重新輸出。
+
+**已知限制**：手機（`<750px` 卡片版）同手機橫向（`750-1129px`，D69續八-follow-12 已將刻字整欄 `display:none`）都見唔到呢個欄位，操作員手機上載入口目前**只做到桌面拖拽/點擊**，未實作手機端上載通道（mockup 階段有設計但因刻字欄手機本身唔顯示，範圍收窄至桌面）；拖拽亦只認本機檔案，跨網頁拖拽（例如由另一 tab 拖圖）瀏覽器俾嘅係 URL 唔係檔案，上載唔到。
+
+**驗證**：真實 browser end-to-end 測試（非 mock）——canvas 合成測試圖 → `fhsUploadOrderCover()` 完整跑一次 → Storage 上載成功 → PATCH `orders.cover_image_path` 成功 → 本地快取更新 → `applyReviewFilters()` 重繪 → 簽名 URL 批量換成功 → `<img>` 正確顯示（量得 107×60，source 1280×720）；模擬真實 `DragEvent` 進入 document，27 個空格同時亮虛線框，`dragend` 後全部清返；lightbox 撳圖開得；切「鎖匙扣」類別視圖確認零 cover slot（範圍正確收窄）；console 零新增錯誤；測試數據已 PATCH 返 `cover_image_path=null` 還原，唯一殘留係 Storage 入面一個 12KB 測試圖（`order-covers/0600728/cover.webp`）——因設計上冇畀 anon DELETE 權（連 SQL 直刪都被 Supabase `protect_delete()` 擋），需 Fat Mo 於 Supabase Dashboard 手動清走或留低（無害孤兒物件）。
+
+全文見 `FHS_System_Logic_Overview.md` §10.25。**Subagent 使用記錄**：❌未使用（單一連續實作＋Browser pane 真實端對端驗證，委派會斷推理鏈）。
+
+---
 [2026-09-07 續] (D71-follow11) 認錯改正——follow10 診斷方向錯，真兇係 safe-area 留白，唔關表格 width 演算法事
 
 **回報**：Fat Mo 部署 follow10 後截圖「情況同舊截圖一樣」，兩側留白完全冇改善。
