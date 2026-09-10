@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-10 續] D71-follow12：訂單總覽「刻字」欄改名做「刻字/封面」
+
+- **背景**：Fat Mo 指出「刻字」呢個欄名已經唔再適合。查證確認：D74 系列（並行分支，本輪已 `git merge --ff-only origin/main` 追上）已經將呢個欄由「純刻字文字」擴展做「刻字文字／訂單封面圖」四態擇一顯示，舊名已冇涵蓋依家嘅實際內容。
+- **同步紀律**：session 開場 hook 警示「main 領先 6 個 commit」且列明正正係 D74 系列——落手改名前先合併咗先，喺正確血統上做，避免重蹈 D72 跨分支覆寫事故同類型風險。
+- **改名**：`_FHS_TH_DEF.eng.label` 由 `'刻字'` 改做 `'刻字/封面'`——跟 D74 自己已確立嘅詞彙（`.fhs-cover-*` class 命名、decisions.md 通篇稱「訂單封面圖」）保持一致，唔重新發明新字眼。淨改顯示用嘅 label 文字，內部 key（`eng`）同 render 邏輯變數（`_hasEngText` 等）維持不變——減少牽連範圍。另一個唔相關嘅「刻字」標籤（`ATTR.eng`，用於訂單通知 diff 產生器）刻意不動。
+- **驗證**：Chromium 桌面「全部」視圖（1400px，`mw:330`）實測新 label 零溢出；D74 四態 cover 功能（48 個元素）驗證完好；console 零新增錯誤；類別視圖（172px）受制於已知 closure-scope 測試限制，改用逐字元寬度估算（~89px 遠低於上限）判斷安全。
+- **部署**：已推production，SHA256 `1387C28073F797AB3063D8C27CC39E227D40F9A0BA8C58A638758A25D279623D`。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`、`.fhs/notes/decisions.md`（D71-follow12）。
+- 全文見 decisions.md D71-follow12。**Subagent 使用記錄**：❌未使用（跨分支血統同步+單一 label 改名+Chromium 實測，委派會斷推理鏈）。
+
 ## [2026-09-10] D74-follow2：訂單封面圖四態重新定案（Synology拖拽視窗模式，推翻follow1常駐icon）
 
 - **背景**：Fat Mo 用三張 Synology 下載對話框截圖否定 follow1 常駐 icon 方向——問題根源係 D74 原版拖拽提示太細（30px icon 變色）唔夠顯眼，令判斷方向錯咗去加常駐 icon。之後補充「無圖及無字先出 ICON」，定案四態。

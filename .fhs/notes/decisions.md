@@ -3,6 +3,19 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-10 續] (D71-follow12) 訂單總覽「刻字」欄改名做「刻字/封面」——追上 D74 系列已擴展嘅實際內容
+
+**背景**：Fat Mo 指出「刻字」呢個欄名已經唔再適合。查證確認：D74 系列（同期另一並行 session）已經將呢個欄由「純刻字文字」擴展做「刻字文字／訂單封面圖」四態擇一顯示（見 D74/D74-follow/D74-follow2）——有相就淨顯示相、冇相先顯示文字，兩者互斥。舊名「刻字」已經唔能夠涵蓋依家嘅實際內容。
+
+**同步流程（避免重蹈 D72 覆轍）**：落手改名前，session 開場 hook 已警示「main 領先本分支 6 個 commit」且列明呢 6 個 commit 正正就係 D74 系列——先 `git merge --ff-only origin/main` 同步咗先，確認本分支已包含 D74 全部改動，先至喺正確血統上做呢個改名，避免又一次用舊血統覆寫另一條分支嘅新工作（D72 事故同類型風險）。
+
+**改名**：`_FHS_TH_DEF.eng.label` 由 `'刻字'` 改做 `'刻字/封面'`——跟 D74 自己已確立嘅詞彙（`.fhs-cover-*` class 命名、decisions.md 通篇稱「訂單封面圖」）保持一致，唔重新發明新字眼。**淨改顯示用嘅 label 文字**，內部 key（`'eng'`）同 render 邏輯變數（`_hasEngText` 等）維持不變——嗰啲係代碼識別符非使用者可見文字，改咗只會增加牽連範圍冇實際著數。另一個唔相關嘅「刻字」標籤（L~11191 `ATTR.eng`，用於修改訂單通知嘅 diff 產生器，指嘅係逐肢刻字資料欄位本身，語意冇變）刻意不動，範圍不蔓延。
+
+**驗證**：Chromium 桌面「全部」視圖（1400px，`_FHS_DESKTOP_MW_OVERRIDE.eng=330`）實測新 label 零溢出（`scrollWidth===clientWidth===330`）；D74 嘅四態 cover 功能（idle icon／縮圖／overlay）經真實 60 張單資料驗證完好（48 個 cover 元素正常渲染）；console 零 error。**類別視圖（mwCat:172）嘅實測受制於已知嘅 `reviewCategoryFilter` closure-scope 限制**（外部 `window.reviewCategoryFilter = ...` 改唔到內部閉包變數，本 session 之前已撞過同一限制）——改用逐字元寬度估算代替直接量度：5 個字元（刻/字/斜線/封/面）連 icon／padding 粗估 ~89px，遠低於 172px 上限，判斷安全。
+
+全文見 `freehandsss_dashboardV42.html` `_FHS_TH_DEF.eng` 定義。**Subagent 使用記錄**：❌未使用（跨分支血統同步+單一 label 改名+Chromium 實測，委派會斷推理鏈）。
+
+---
 [2026-09-10] (D74-follow2) 訂單封面圖四態重新定案：Synology 拖拽視窗模式，推翻 follow1 常駐 icon 方案
 
 **背景**：D74-follow1（2026-09-08）為解決「睇唔到上傳位置」，將冇圖狀態改做常駐顯示 icon。Fat Mo 兩日後用三張參考截圖（Synology 下載對話框：①平時乾淨零提示 ②拖拽進行中彈出大提示區 ③唔想要嘅常駐 icon）明確否定咗呢個方向——問題唔係「要唔要常駐提示」，而係「follow1 原本 D74 版本嘅拖拽提示太細（30px icon 變色）唔夠顯眼」，令 Fat Mo 一開始判斷錯方向去加常駐 icon，越搞越偏。

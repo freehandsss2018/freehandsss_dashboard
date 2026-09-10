@@ -12446,7 +12446,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // 擠壓「產品明細」逐行換行、「進度」勾選格貼邊；合併後 92px，釋放 73px 分俾
             // prod/stat。≥1130px 有位，維持原本三欄唔改（掃描性較好）。切換邏輯見 _fhsFinMerged()。
             fin:      { label:'財務',     icon:'banknote',   mw:92,  pad:'8px' },
-            eng:      { label:'刻字',     icon:'edit',       mw:124, mwCat:172 },
+            // [D71-follow12 2026-09-10] Fat Mo 指出「刻字」呢個名已經唔啱——D74 系列已經將呢欄
+            // 擴展做「刻字文字／訂單封面圖」擇一顯示（有相就唔顯示字，見 D74/D74-follow2
+            // 四態定案：文字／相片／idle icon／拖拽 overlay）。跟 D74 自己已確立嘅詞彙
+            // （.fhs-cover-* class／decisions.md 通篇稱「訂單封面圖」）改名做「刻字/封面」，
+            // 保持全系統術語一致，唔重新發明新字眼。淨改顯示用嘅 label 文字，內部 key（'eng'）
+            // 同 render 邏輯變數（_hasEngText 等）維持不變——嗰啲係代碼識別符，唔係使用者
+            // 見到嘅文字，改咗風險大過著數（牽連太多引用點）。
+            eng:      { label:'刻字/封面', icon:'edit',       mw:124, mwCat:172 },
             prod:     { label:'產品明細', icon:'package',    mw:220 },
             style:    { label:'款式',     icon:'image',      mw:80 },
             limb:     { label:'肢數明細', icon:'users',      mw:170 },
