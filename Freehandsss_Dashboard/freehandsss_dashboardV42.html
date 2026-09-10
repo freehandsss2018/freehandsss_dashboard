@@ -1409,30 +1409,39 @@
         .review-eng-label-bot { background: #EB984E; }
         .review-eng-text { font-weight: 600; color: #34495E; }
 
-        /* [D74 2026-09-08] 訂單封面圖，[D74-follow 2026-09-08] Fat Mo 真機驗收兩點回饋後調整：
-           ①冇圖嗰格原本完全透明零痕跡，要滑鼠移埋去先知道係上傳位——唔夠 discoverable。
-             改為常駐顯示淡色 icon（唔算「常駐 button」：冇邊框、冇背景色、冇文字，純圖示提示）。
-           ②有圖嗰格喺生產環境真實列高度（87.9px）量得下方仲有 18.7px headroom——
-             107×60 改 135×76（16:9，放大約26%），留 2.7px 安全緩衝（跨瀏覽器行高量度誤差）。
-           ⚠️ 兩個狀態故意用唔同尺寸（自家測試 手模 類別視圖 172px 窄欄揪出嘅真 bug）：
-           冇圖嗰格同刻字文字＋編輯掣係同一 flex row 嘅並列 sibling，若都用 135px 闊，
-           喺 172px 窄欄會逼刻字文字得返 ~20px 得餘位，觸發 overflow-wrap:anywhere
-           逐字元直排（睇落好似成串直排亂碼）。有圖嗰格冇呢個問題——冇圖時 wrap 淨係得
-           coverSlotHtml 一個 sibling，唔使同文字爭位。 */
-        .fhs-cover-slot { flex:none; border-radius:4px; display:flex; align-items:center; justify-content:center; }
-        .fhs-cover-slot.has-img { width:135px; height:76px; cursor:default; }
-        .fhs-cover-slot:not(.has-img) { width:30px; height:30px; }
-        .fhs-cover-slot:not(.has-img) svg { width:20px; height:20px; color:#C9B8A4; opacity:.8; pointer-events:none; transition:color .15s, opacity .15s; }
-        .fhs-cover-slot:not(.has-img):hover svg,
-        body.fhs-cover-drag-active .fhs-cover-slot:not(.has-img) svg { color:#C9714A; opacity:1; }
-        .fhs-cover-thumb { width:135px; height:76px; object-fit:cover; border-radius:4px; display:block; border:1px solid #d9cfc0; cursor:zoom-in; background:#eee; }
-        body.fhs-cover-drag-active .fhs-cover-slot:not(.has-img) {
-            border:1.5px dashed #C9B8A4; background:#FBF8F3; cursor:pointer;
+        /* [D74-follow2 2026-09-10] 訂單封面圖，Fat Mo 三張參考截圖重新定案
+           （Synology 下載視窗模式，推翻 follow1 常駐 icon 方案）：
+           - 狀態①有文字冇相／②有相：`.fhs-inline-eng-wrap` 平時完全乾淨，冇任何 icon／框
+             （截圖一：下載對話框平時零提示）。
+           - 狀態③兩樣都冇（Fat Mo 明確定案「無圖及無字先出ICON」）：顯示 `.fhs-cover-idle`
+             細 icon，可撳可拖。
+           - 狀態④拖拽進行中：唔理上面邊態，一律由 `.fhs-cover-overlay`（position:absolute，
+             蓋喺成個 <td>，唔佔用 flex row 闊度，唔會同文字爭位）浮出大提示（截圖二）；
+             `body.fhs-cover-drag-active` 全域控制顯隱，`.drag-over` 標記滑鼠所在嗰格加深。
+           呢個結構順帶令 follow1 嗰個「窄欄逼刻字文字直排」bug 從根本消失——overlay 唔再係
+           flex sibling，冇嘢再同文字爭闊度。 */
+        /* max-width:100%（新，2026-09-10）：1130-1280px「手模」窄欄層（.ovw-narrowcol-eng
+           width:130px）真機掃描揪出固定 135px 會溢出 4px——呢層之前一直冧咗，D74-follow1
+           先出現（果陣淨測 172px 同 330px 兩層，漏咗呢個中間層）。max-width 令圖喺呢層跟住
+           容器收窄，高度維持 76px 唔郁，肉眼睇唔出差別。 */
+        .fhs-cover-thumb { width:135px; max-width:100%; height:76px; object-fit:cover; border-radius:4px; display:block; border:1px solid #d9cfc0; cursor:zoom-in; background:#eee; }
+        .fhs-cover-idle { width:34px; height:34px; flex:none; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s; }
+        .fhs-cover-idle svg { width:22px; height:22px; color:#C4B4A0; transition:color .15s; }
+        .fhs-cover-idle:hover { background:var(--fhs-accent-light,#F5E8E0); }
+        .fhs-cover-idle:hover svg { color:var(--fhs-accent,#C9714A); }
+        .fhs-cover-overlay { display:none; }
+        body.fhs-cover-drag-active .fhs-cover-overlay {
+            display:flex; position:absolute; inset:3px; z-index:2;
+            border:2px dashed #C9B8A4; border-radius:6px; background:rgba(252,250,247,.95);
+            align-items:center; justify-content:center; gap:7px;
+            font-size:11.5px; font-weight:700; color:#A2907A; letter-spacing:.02em; cursor:pointer;
         }
-        body.fhs-cover-drag-active .fhs-cover-slot.drag-over {
-            border-width:2px; border-color:#C9714A; background:#FBEDE5; box-shadow:0 0 0 3px rgba(201,113,74,.16);
+        body.fhs-cover-drag-active .fhs-cover-overlay svg { width:18px; height:18px; color:#BFAE99; flex:none; }
+        body.fhs-cover-drag-active .fhs-cover-overlay.drag-over {
+            border-color:var(--fhs-accent,#C9714A); border-width:2.5px; background:rgba(251,237,229,.97);
+            color:var(--fhs-accent,#C9714A); box-shadow:0 0 0 3px rgba(201,113,74,.18);
         }
-        .fhs-cover-slot:not(.has-img):hover { border:1.5px dashed #C9B8A4; background:#FBF8F3; }
+        body.fhs-cover-drag-active .fhs-cover-overlay.drag-over svg { color:var(--fhs-accent,#C9714A); }
 
         /* 批次輸入框 — 精簡版 */
         .review-batch-input {
@@ -4856,6 +4865,12 @@
     <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" x="3" y="3" width="18" height="18" rx="2" ry="2"/>
     <circle cx="9" cy="9" r="2" stroke="currentColor" stroke-width="2" fill="none"/>
     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+  </symbol>
+  <!-- [D74-follow2 2026-09-10] 拖拽 overlay 用：雲+上傳箭嘴，語意較 icon-image 更貼「放低上載」 -->
+  <symbol id="icon-cloud-upload" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M12 13v8"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="m8 17 4-4 4 4"/>
   </symbol>
   <symbol id="icon-book-open" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
@@ -13318,28 +13333,38 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 ${bot ? `<div class="review-eng-line"><span class="review-eng-label review-eng-label-bot">BOT</span><span class="review-eng-text">${fhsEscHtml(bot)}</span></div>` : ''}
                             </div>`;
                         }
-                        // [D74 2026-09-08] 訂單封面圖：只喺「全部」／「手模」類別視圖、每單第一件
-                        // render 位置（同 orderLeftColsHtml/備註 rowspan 用一致嘅 index===0 慣例，
-                        // 圖片綁訂單層 orders.cover_image_path 非品項層）顯示。有圖完全取代刻字
-                        // 文字（Fat Mo 原話）；冇圖時保留文字，另加一個平時零視覺痕跡嘅拖拽區
-                        // （.fhs-cover-slot），只喺拖拽進行緊（body.fhs-cover-drag-active，見
-                        // fhsInitCoverDnd）先亮虛線框——唔靠常駐 button 或常駐虛線框達成
-                        // 「兩樣都冇就留空」（Fat Mo 否決常駐 button 方案後嘅定案）。
+                        // [D74-follow2 2026-09-10] 訂單封面圖，Fat Mo 三張截圖重新定案（見 CSS
+                        // 註解同 decisions.md D74-follow2）。四態：①有文字冇相→淨文字 ②有相→
+                        // 淨相 ③兩樣都冇→細icon（可撳可拖，Fat Mo 明確要求「無圖及無字先出
+                        // ICON」）④拖拽進行中→以上三態一律蓋 overlay。只喺「全部」／「手模」
+                        // 類別視圖、每單第一件 render 位置（同 orderLeftColsHtml/備註 rowspan
+                        // 一致嘅 index===0 慣例，圖片綁訂單層非品項層）生效。
                         const _coverEligible = (!_catView || _catView === '手模') && index === 0;
-                        let coverSlotHtml = '';
-                        if (_coverEligible) {
-                            const _oidEsc = fhsEscAttr(o.id);
-                            coverSlotHtml = o.Cover_Image_Path
-                                ? `<div class="fhs-cover-slot has-img" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')"><img class="fhs-cover-thumb" data-cover-path="${fhsEscAttr(o.Cover_Image_Path)}" alt="訂單封面圖" onclick="fhsOpenCoverLightbox(this)"></div>`
-                                : `<div class="fhs-cover-slot" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')" onclick="fhsCoverSlotClick('${_oidEsc}')" title="拖圖入嚟或撳呢度上載封面圖"><svg width="22" height="22"><use href="#icon-image"/></svg></div>`;
+                        const _hasEngText = !!(_engStripped && _engStripped !== '待定' && _engStripped !== '不適用');
+                        const _oidEsc = fhsEscAttr(o.id);
+                        let coverBodyHtml;
+                        if (_coverEligible && o.Cover_Image_Path) {
+                            // 狀態②：有相 → 淨顯示相，唔顯示刻字文字
+                            coverBodyHtml = `<img class="fhs-cover-thumb" data-cover-path="${fhsEscAttr(o.Cover_Image_Path)}" alt="訂單封面圖" onclick="fhsOpenCoverLightbox(this)">`;
+                        } else if (_hasEngText) {
+                            // 狀態①：有文字 → 淨顯示文字＋編輯掣（同 Accordion 路徑一樣，onclick
+                            // 係雙引號屬性，只做 JS 跳脫唔夠，見該處註解）
+                            const _itemKeyEscT = fhsEscAttr(item.Item_ID || '');
+                            const _engEscT = fhsEscAttr(_engStripped);
+                            coverBodyHtml = `${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${_oidEsc}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button>`;
+                        } else if (_coverEligible) {
+                            // 狀態③：兩樣都冇 → 顯示細 icon（Fat Mo 定案：只有呢個狀態先出 icon）
+                            coverBodyHtml = `<div class="fhs-cover-idle" onclick="fhsCoverSlotClick('${_oidEsc}')" title="上載封面圖"><svg><use href="#icon-image"/></svg></div>`;
+                        } else {
+                            // 冇資格顯示封面（同單非第一件品項行／鎖匙扣頸鏈視圖）→ 原有「—」佔位
+                            coverBodyHtml = engHtml;
                         }
-                        // Phase 3: wrap with inline edit button (hover to reveal ✏)
-                        // 同 Accordion 路徑一樣：onclick 係雙引號屬性，只做 JS 跳脫唔夠，見該處註解
-                        const _itemKeyEscT = fhsEscAttr(item.Item_ID || '');
-                        const _engEscT = fhsEscAttr(_engStripped);
-                        const engCellHtml = (_coverEligible && o.Cover_Image_Path)
-                            ? `<div class="fhs-inline-eng-wrap">${coverSlotHtml}</div>`
-                            : `<div class="fhs-inline-eng-wrap">${engHtml}<button class="fhs-inline-eng-btn" onclick="inlineEditEngraving('${fhsEscAttr(o.id)}','${_itemKeyEscT}','${_engEscT}')" title="快速編輯刻字"><svg class="ba-icon" width="10" height="10" style="vertical-align:middle;"><use href="#icon-edit"/></svg></button>${coverSlotHtml}</div>`;
+                        // 狀態④：拖拽進行中，一律蓋 overlay（唔理上面邊態），position:absolute
+                        // 浮喺 <td> 度，唔佔用 flex row 闊度，唔會同文字/圖片爭位
+                        const _coverOverlayHtml = _coverEligible
+                            ? `<div class="fhs-cover-overlay" data-order-id="${_oidEsc}" ondragover="fhsCoverDragOver(event)" ondragleave="fhsCoverDragLeave(event)" ondrop="fhsCoverDrop(event,'${_oidEsc}')"><svg><use href="#icon-cloud-upload"/></svg><span>${o.Cover_Image_Path ? '放低換封面' : '放低設為封面'}</span></div>`
+                            : '';
+                        const engCellHtml = `<div class="fhs-inline-eng-wrap">${coverBodyHtml}</div>${_coverOverlayHtml}`;
 
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
@@ -13451,7 +13476,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${index === 0 ? orderLeftColsHtml : ''}
                             ${_catView ? '' : _finCells}
                             ${_catView ? _catCellsHtml : ''}
-                            <td class="batch-cell ovw-eng-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: 4px 3px; background-color:${rowBatchCol};">
+                            <td class="batch-cell ovw-eng-cell" style="position:relative; vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: 4px 3px; background-color:${rowBatchCol};">
                                 ${engCellHtml}
                             </td>
                             ${_catView ? '' : `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:4px 8px; background-color:${rowBatchCol};">

@@ -3,6 +3,31 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-10] (D74-follow2) 訂單封面圖四態重新定案：Synology 拖拽視窗模式，推翻 follow1 常駐 icon 方案
+
+**背景**：D74-follow1（2026-09-08）為解決「睇唔到上傳位置」，將冇圖狀態改做常駐顯示 icon。Fat Mo 兩日後用三張參考截圖（Synology 下載對話框：①平時乾淨零提示 ②拖拽進行中彈出大提示區 ③唔想要嘅常駐 icon）明確否定咗呢個方向——問題唔係「要唔要常駐提示」，而係「follow1 原本 D74 版本嘅拖拽提示太細（30px icon 變色）唔夠顯眼」，令 Fat Mo 一開始判斷錯方向去加常駐 icon，越搞越偏。
+
+**再補充**：Fat Mo 補一句「無圖及無字先出 ICON」，即係話 icon 唔係完全取消，而係收窄去第四態——三態（有文字/有相/兩樣都冇）之中，只有「兩樣都冇」先顯示 icon；有文字或有相嘅格一律唔出任何提示。
+
+**定案四態**：
+- ①有刻字文字、冇相 → 淨顯示文字（`review-eng-container`），冇 icon、冇框
+- ②有相 → 淨顯示相（`.fhs-cover-thumb`，135×76 16:9），唔顯示文字
+- ③兩樣都冇 → 顯示 `.fhs-cover-idle`（34×34 細 icon，複用 `#icon-image` sprite），可撳（開檔案選擇器）可拖
+- ④拖拽進行中（`body.fhs-cover-drag-active`）→ 唔理上面邊態，一律由 `.fhs-cover-overlay` 浮出大提示（「放低設為封面」／已有相顯示「放低換封面」），滑鼠所在嗰格加深＋橙色光暈（`.drag-over`）
+
+**結構改動（非純 CSS）**：overlay 改用 `position:absolute; inset:3px` 浮喺 `<td>` 度（`<td>` 加 `position:relative`），唔再係 `.fhs-inline-eng-wrap` 嘅 flex sibling。呢個順帶令 follow1 嗰個「窄欄逼刻字文字逐字直排」bug 從結構上消失——overlay 唔再同文字爭 flex row 闊度，亦唔再需要「有冇文字」嘅特殊判斷先揀用邊個尺寸。
+
+**新增 icon**：`#icon-cloud-upload`（雲+上傳箭嘴，Lucide 慣例 stroke path，語意較 `#icon-image` 更貼「放低上載」），只用喺 overlay；state③ idle icon 沿用現有 `#icon-image`，避免為單一細 icon 再開一個新符號。
+
+**驗證**：真實 Supabase 資料全量掃描（`.fhs-inline-eng-wrap` scrollWidth vs clientWidth）——「全部」視圖 110 格（1500px/1200px 兩寬度）、「手模」視圖 172px 層 50 格、**新增覆蓋 1130-1280px 窄欄層（130px）50 格**——三層全部 0 overflow；「鑰匙扣」視圖確認 0 個 cover 元素（範圍不受影響）；`DragEvent` 模擬確認 overlay 平時 `display:none`／拖拽中 `flex`／`drag-over` 邊框變橙 `rgb(201,113,74)`；console 零新增錯誤。
+
+**意外自揪嘅獨立舊 bug（非本次改動引起）**：驗證 1130-1280px 窄欄層時發現 `.fhs-cover-thumb` 固定 135px 闊度喺呢層（欄闊收到 130px）溢出 4px——呢個係 follow1（2026-09-08）遺留缺口，果陣只測過 172px 同 330px 兩層，漏咗呢個中間層。已加 `max-width:100%` 修復，高度維持 76px 不變，肉眼睇唔出差別。
+
+**改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（icon sprite 新增 `#icon-cloud-upload`／CSS `.fhs-cover-slot` 系列全部改寫做 `.fhs-cover-idle`/`.fhs-cover-overlay`／render 邏輯改用 `_hasEngText` 四態判斷／eng `<td>` 加 `position:relative`／`.fhs-cover-thumb` 加 `max-width:100%`）。
+
+**Subagent 使用記錄**：❌未使用（單一連續實作＋真實 Supabase 資料多寬度掃描驗證，委派會斷推理鏈）。
+
+---
 [2026-09-08 續] (D74-follow) 真機驗收兩點回饋：常駐上傳icon + 縮圖放大，意外揪出並修正自家新 bug
 
 **回報**：Fat Mo 喺生產環境真機測試 D74，附兩張截圖：①紅圈標示一個空刻字格，回報「看不見位置給圖片上傳，要鼠標到它的位置作知道是上傳位置」；②另一張已上載成功嘅訂單（0600303）截圖，回報「可以按比例再大一點，相片下方仍有空間」。

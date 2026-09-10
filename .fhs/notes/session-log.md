@@ -1,4 +1,10 @@
 # Session Log
+## 2026-09-10 (D74-follow2：訂單封面圖四態重新定案，Synology拖拽視窗模式): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-10「D74-follow2」條目 + [decisions.md D74-follow2](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 用三張 Synology 下載對話框參考截圖否定 follow1 常駐 icon 方向，補充「無圖及無字先出 ICON」定案四態（有文字/有相/兩樣都冇顯 icon/拖拽中蓋 overlay）。結構改用 `position:absolute` overlay 取代 flex sibling，順帶消除 follow1 嗰個窄欄逼文字直排嘅 bug 根源。驗證新增覆蓋咗之前漏測嘅 1130-1280px 窄欄層，意外揪出並修正一個 follow1 遺留嘅獨立溢出 bug（`.fhs-cover-thumb` 固定寬度喺呢層溢出4px）。真實 Supabase 資料三層寬度全量掃描零 overflow，console 零新增錯誤。
+**Subagent 使用記錄**：❌未使用（單一連續實作＋真實資料多寬度掃描驗證，委派會斷推理鏈）。
+
+
 ## 2026-09-08 續 (D74-follow：真機驗收兩點回饋+意外自揪窄欄擠壓 bug): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-08 續「D74-follow」條目 + [decisions.md D74-follow](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 生產環境真機測試 D74 後回報兩點：冇圖格睇唔到上傳位置（改常駐顯示淡色icon）、有圖格可以按比例再大（真實列量得headroom後107×60改135×76）。實作過程喺自家 browser 驗證時揪出並修正一個從未流出生產嘅新 bug——兩個狀態一度共用同一尺寸，喺「手模」172px窄欄觸發刻字文字逐字元直排。真實55張單全量掃描零overflow確認修復。

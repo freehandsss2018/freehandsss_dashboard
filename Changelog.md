@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-10] D74-follow2：訂單封面圖四態重新定案（Synology拖拽視窗模式，推翻follow1常駐icon）
+
+- **背景**：Fat Mo 用三張 Synology 下載對話框截圖否定 follow1 常駐 icon 方向——問題根源係 D74 原版拖拽提示太細（30px icon 變色）唔夠顯眼，令判斷方向錯咗去加常駐 icon。之後補充「無圖及無字先出 ICON」，定案四態。
+- **四態**：①有文字冇相→淨文字 ②有相→淨相 ③兩樣都冇→34×34 icon（可撳可拖） ④拖拽進行中→唔理上面邊態一律蓋 `.fhs-cover-overlay`（「放低設為封面」／「放低換封面」），滑鼠所在格加深＋橙光暈。
+- **結構改動**：overlay 改用 `position:absolute` 浮喺 `<td>` 度（唔再係 flex sibling），順帶令 follow1 嗰個「窄欄逼文字直排」bug 從結構上消失，唔再需要「有冇文字」特殊判斷。
+- **新增** `#icon-cloud-upload` icon sprite（雲+上傳箭嘴，用喺 overlay）；state③ idle icon 沿用現有 `#icon-image`。
+- **驗證**：真實 Supabase 資料全量掃描——「全部」110格、「手模」172px層50格、**新增覆蓋 1130-1280px 窄欄層（130px）50格**——三層全部零 overflow；「鑰匙扣」視圖確認零受影響；DragEvent 模擬確認 overlay 顯隱＋drag-over 正確；console 零新增錯誤。
+- **意外自揪獨立舊bug**：驗證窄欄層時發現 `.fhs-cover-thumb` 固定135px喺130px欄溢出4px（follow1遺留缺口，果陣冇測呢層）——已加 `max-width:100%` 修復。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`、`.fhs/notes/decisions.md`（D74-follow2）。
+- 全文見 decisions.md D74-follow2。**Subagent 使用記錄**：❌未使用（單一連續實作＋真實資料多寬度掃描驗證，委派會斷推理鏈）。
+
 ## [2026-09-08 續] D74-follow：真機驗收兩點回饋（常駐上傳icon+縮圖放大）+ 意外自揪窄欄擠壓 bug
 
 - **回報**：Fat Mo 生產環境真機測試，附兩張截圖：①空刻字格睇唔到上傳位置，要鼠標移埋去先知；②已上載訂單相片可以按比例再大一點，下方仲有空間。
