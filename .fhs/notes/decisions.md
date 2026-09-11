@@ -3,6 +3,28 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-11 續] (D75-follow) 訂單封面圖置中/按比例放大 + 桌面寬螢幕工具列收納（選項icon/搜尋前移/重新載入併徽章）
+
+**背景**：Fat Mo 五點截圖回饋：①刻字/封面格內容偏左上、留白唔對稱，要置中 ②idle icon 應跟產品明細/手模擺設行高按比例放大並置中 ③儲存篩選／編輯版面收納入「選項」icon ④搜尋輸入框縮短並移去「顯示項目財務」左邊 ⑤重新載入同56筆徽章合併，放置去徽章原位（沿用手機/緊縮桌面已有嘅併入設計）。全部淨限桌面「全部」寬螢幕視圖（≥1130px）。
+
+**①②置中/按比例放大**：`.fhs-inline-eng-wrap` 改 `align-items:center;justify-content:center`。CSS-only 方案（`height:clamp(34px,100%,76px)`）喺孤立測試頁面正常，但喺呢一列真實 rowspan 幾何（單號/日期/客人/備註 rowspan=itemsCount 共存一 row）入面實測完全唔生效（percentage height 喺 rowspan 參與嘅 `<td>` 入面唔可靠，`getComputedStyle` 量到淨返 34px／基礎值，唔係真實列高）——同 D71-follow10 跨引擎 table-layout 分歧屬同一類「CSS 自動計算喺 table 環境唔可信」教訓。改用 JS 度真實 `<td>` 高度後明確賦值 px（`_fhsOvwSizeCoverIcons()`，`renderReviewTable()` render 完＋density slider 改變時都會呼叫），wrap 同 idle icon 都用呢招。
+
+**③選項收納**：新增 `#fhsOvwOptionsWrap`（icon）+ `#fhsOvwOptionsPanel`（下拉），撳先展開，收埋儲存篩選／編輯版面（財務/清除篩選維持常駐）。面板一開始用 `position:absolute` 相對 wrap，實測俾祖先 `#reviewFiltersV2{overflow:hidden}` 裁走（同本檔 D69續八-follow-7 filterBody 抽屜之前撞過嘅裁剪問題同一類）——跟既有先例改用同一招：開嗰刻先搬去 `document.body`，`position:fixed`＋`getBoundingClientRect()`算座標。
+
+**④搜尋前移**：`reviewSearch` 所屬 `.filter-group` 由 filter-body 搬入 `reviewFilterPinned`（插喺 `fhsToggleAuditBtn` 之前），縮短做 110px；離開 wide-desktop tier 用 `#fhsSearchOrigAnchor` 錨點搬返原位。
+
+**⑤重新載入併徽章**：沿用 D69續八-follow-25/32 已確立嘅「reviewCountBadge 併入 refreshBtn」設計，桌面寬螢幕改插喺 `v40-top-order-id`（56筆徽章原位）之後，而唔係 `topBar.appendChild`（會跌去 `.fhs-top-bar__actions` 之後，闊螢幕呢排掣常駐可見同壓縮桌面唔同）。
+
+**`fhsSyncCompactDesktopLayout()` 重構**：原本 `if(shouldCollapseButtons){...}else{...}` 兩分支改三分支，新增 `else if(isWideDesktopReview)`——`shouldCollapseButtons`（mobile/compact）同新分支（wide-desktop-review）互斥處理 refreshBtn/saveBtn/editBtn/search，避免兩套邏輯同一次 call 內互相沖數。
+
+**實測揪出並修正一個真實 bug**：闊度可以由手機（財務/清除篩選按鈕仍留喺 `slot`）直跳寬桌面（一次 resize 冇經過緊縮桌面嗰步），落手用 `financeBtn` 做 `insertBefore` 錨點前冇保證佢已經返晒去 `pinnedRow` 原位，觸發 `NotFoundError`。修復：新分支開頭先執行同「else」分支一樣嘅 `[clearBtn, financeBtn]` 復原邏輯，先至用 financeBtn 做錨點。
+
+**驗證方法論教訓（本輪新增，非既有 tooling.md 條目）**：呢輪驗證接連撞到三種「DOM/CSSOM 狀態完全正確，但工具自己嘅內省/截圖/console 記錄唔反映」嘅假訊號——① 剛用 JS 設定嘅 inline style，`getBoundingClientRect`/`getComputedStyle` 喺同一個已渲染節點上持續讀到舊值（fresh clone/detach-reattach 可即時修復，證明係節點級快取非真實渲染） ② 一個已 `hidden=false` 且 computed style 全部正常嘅新元素，截圖入面唔顯示（force reflow 都唔fix，最終證實panel本身無事，係祖先 overflow:hidden 裁走——呢個反而係真bug）③ `read_console_messages` 喺**重用**嘅分頁會重播舊 navigation 遺留嘅錯誤紀錄，`window.dispatchEvent(new Event('resize'))` 手動觸發嘅 resize 若唔跟住做至少一次真實用戶操作等價嘅完整 settle（例如原有 `_fhsSnap` 手法會再 `chip.click()`），量到嘅中間態數值可能同最終穩定態唔同。**結論**：呢類「畫面/console睇落有事，但DOM狀態/computed style樣樣啱」嘅訊號，開新分頁（`tabs_create`）重新驗證一次係最快嘅排除法，比死跟一個懷疑有事嘅分頁繼續開更多測試更快收斂到真相。因 `learnings/frontend.md` 已 30/25 超額（見 D75 已記錄嘅 housekeeping 待辦），呢條教訓暫時只落喺呢度，退役騰位時一併搬。
+
+**改動檔案**：`freehandsss_dashboardV42.html`（唯一代碼改動檔）。**Subagent 使用記錄**：❌未使用（單一連續實作+多輪 Chromium 互動排查+根因分析，委派會斷推理鏈）。
+
+---
+
 [2026-09-11] (D75) 訂單總覽自由版面編輯——桌面「全部」寬螢幕視圖新增可持久化嘅欄寬/外框高度/密度手動調節
 
 **背景**：Fat Mo 指出桌面「全部」視圖（≥1130px）欄寬比例每次都要靠 AI 手動調（本 session 之前已為呢一帶做過 D71-follow7~10 多輪覆核），要求加「編輯」掣自行調節，唔使每次搵 AI。經 `/cl-flow-fast`（flow_id `2026-09-11-1441`，A2 Gemini 對抗評審 7 條批評，6 採納 1 拒絕，Verdict APPROVED_READY）規劃後實作。
