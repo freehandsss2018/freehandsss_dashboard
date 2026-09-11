@@ -28,11 +28,15 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // 而同一 API key 下 gemini-3.6-flash / gemini-flash-latest 即時回 200——即係 model 專屬過載，
 // 唔係 quota 亦唔係 key 問題。當時要人手用環境變數繞過，先攞到評審。
 // GEMINI_A2_MODEL_DEFAULT 仍然生效（覆蓋鏈首位），其餘備援自動接力。
+// 2026-09-11 re-probe：ListModels 揪出更新嘅 gemini-3.8-flash，真實 generateContent 測試通過；
+// 同一次測試中 gemini-3.7-flash 即場撞返 503 high demand，正好印證上面呢個 fallback 鏈存在嘅原因。
+// 鏈首位換成 3.8-flash，3.7-flash 降落第二備援（非下架，只係暫時過載）。
 const GEMINI_MODEL_CHAIN = (
   process.env.GEMINI_A2_MODEL_CHAIN
     ? process.env.GEMINI_A2_MODEL_CHAIN.split(',').map(s => s.trim()).filter(Boolean)
     : [
-        process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.7-flash',
+        process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.8-flash',
+        'gemini-3.7-flash',
         'gemini-3.6-flash',
         'gemini-flash-latest'
       ]

@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-09-11] Session（Claude Code / Sonnet 5 執行）— /cl-flow A2 Gemini model 鏈 re-probe：gemini-3.7-flash → gemini-3.8-flash
+
+- **緣起**：Fat Mo 要求跟過往方法（2026-07-28首次升級）再查 A2（cl-flow內Gemini評審）有冇新model，融入前先實測API可用。
+- **查證**：`GET /v1beta/models` 列出帳號現有可用模型，發現 `gemini-3.8-flash`（目前最新）；真實 `generateContent` 測試時，`gemini-3.8-flash`同現有鏈首位 `gemini-3.7-flash` 兩個都即場撞 HTTP 503 high demand（Google側短暫高峰，非model下架/quota問題）。
+- **修復**：`GEMINI_MODEL_CHAIN`（`scripts/cl-flow-runner.js`，2026-08-17建立嘅 fallback 鏈）鏈首位由 `gemini-3.7-flash` 換成 `gemini-3.8-flash`，3.7-flash降落第二備援；`.env`／`.env.example` 嘅 `GEMINI_A2_MODEL_DEFAULT` 同步。
+- **驗證（意外完整）**：真實跑一次 `--init`+`--review --fast`（flow_id `2026-09-11-1428`），3.8-flash同3.7-flash兩個當刻都503失敗，鏈自動降級到 `gemini-3.6-flash` 成功產出完整`ag-review.md`——非刻意設計嘅測試，係真實流量撞到高峰，反而完整驗證咗fallback鏈喺雙重失效下仍然正常運作。
+- 詳見 `.env.example` 註解、`scripts/cl-flow-runner.js` GEMINI_MODEL_CHAIN 上方註解。
+
+【交付前雙紀律自檢】
+驗收：純配置/工具鏈改動（非核心業務邏輯）——已用真實API請求探測+真實runner端對端跑通，且意外觸發真實雙重fallback場景驗證PASS
+Subagent：❌ 未使用（直接curl探測API+Edit改配置+跑真實runner驗證）
+
 ## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-18：橫向模式底部功能bar整體縮減30%
 
 - **緣起**：follow-17啱啱先修復好緊縮桌面（750-1129px）底部浮動藥丸nav（消失咗嗰個），Fat Mo緊接要求整體縮減30%。
