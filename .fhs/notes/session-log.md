@@ -1,4 +1,12 @@
 # Session Log
+## 2026-09-11 (D75：訂單總覽自由版面編輯，桌面「全部」寬螢幕視圖): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-11「D75」條目 + [decisions.md D75](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 要求桌面「全部」視圖（≥1130px）欄寬/高度/密度可自行持久化調節。經 `/cl-flow-fast`（flow_id 2026-09-11-1441，Gemini A2對抗評審7條批評6採納1拒絕）規劃後實作三功能：外框高度拖柄（內部捲動）、相鄰欄zero-sum拖拽、密度連續slider（CSS calc()縮放）。`localStorage`持久化，淨限桌面「全部」tier，其餘tier完全不受影響。三個tier零回歸實測、欄寬/高度/密度全功能驗證PASS、D74封面圖完好、console零error。實測中自揪並修正高度拖柄公式bug（delta-based→絕對座標公式）。已部署（commit `ea1176a`）。
+**Subagent 使用記錄**：❌未使用（單一連續實作＋Chromium互動實測，委派會斷推理鏈；A2對抗評審由cl-flow-fast流程內建嘅Gemini擔任）。
+## 2026-09-10 續 (D71-follow12：訂單總覽「刻字」欄改名做「刻字/封面」): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-10「D71-follow12」條目 + [decisions.md D71-follow12](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 指出「刻字」呢個名已經唔再啱——查證確認 D74 系列（並行分支，已 fast-forward 合併）已將呢欄擴展做「刻字文字／訂單封面圖」四態擇一顯示。`_FHS_TH_DEF.eng.label` 改「刻字/封面」，跟 D74 自己已確立嘅詞彙保持一致；內部 key 同 render 變數刻意不動。桌面全部視圖330px實測零溢出，D74四態cover功能驗證完好。已部署（commit `376a657`）。
+**Subagent 使用記錄**：❌未使用（跨分支血統同步+單一label改名+Chromium實測，委派會斷推理鏈）。
 ## 2026-09-10 (D74-follow2：訂單封面圖四態重新定案，Synology拖拽視窗模式): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-10「D74-follow2」條目 + [decisions.md D74-follow2](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 用三張 Synology 下載對話框參考截圖否定 follow1 常駐 icon 方向，補充「無圖及無字先出 ICON」定案四態（有文字/有相/兩樣都冇顯 icon/拖拽中蓋 overlay）。結構改用 `position:absolute` overlay 取代 flex sibling，順帶消除 follow1 嗰個窄欄逼文字直排嘅 bug 根源。驗證新增覆蓋咗之前漏測嘅 1130-1280px 窄欄層，意外揪出並修正一個 follow1 遺留嘅獨立溢出 bug（`.fhs-cover-thumb` 固定寬度喺呢層溢出4px）。真實 Supabase 資料三層寬度全量掃描零 overflow，console 零新增錯誤。
