@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-11 續二] (D75-follow2) 儲存篩選/編輯版面改收納入現有篩選漏斗 icon（撤回 D75-follow 新開嘅「選項」icon）+ 修復 editBtn 錯誤喺手機顯示嘅真bug
+
+**背景**：Fat Mo 兩張截圖回饋：①桌面寬螢幕唔好開新「選項」icon（"..."），儲存篩選／編輯版面應該直接收納入現有嘅篩選漏斗 icon（`reviewFilterToggle`）已控制緊嘅抽屜 ②手機視圖見到「編輯版面」不應存在嘅按鈕。
+
+**②係一個真bug，唔淨係UI擺位問題**：`_fhsOvwTierKey()` 靠 `_fhsDesktopFlexEng(_c)`（`!_c && !_fhsFinMerged()`）判斷桌面寬螢幕，但呢個函式**淨排除 750-1129px（合併層），冇明確要求 ≥1130px**——喺 <750px（手機）都會回傳 true，因為 `!_fhsFinMerged()` 喺嗰個闊度下都係 true。`fhsBuildOverviewHead()`（內含呢個判斷）喺 `renderReviewTable()` 入面手機分支 `return` 之前無條件執行，令 `editBtn.hidden` 錯誤喺手機被解除。修復：`_fhsOvwTierKey()` 加返明確 `window.innerWidth >= 1130` 判斷。
+
+**①改用現有漏斗 icon**：撤回 D75-follow 新開嘅 `#fhsOvwOptionsWrap`/`#fhsOvwOptionsPanel`（HTML/CSS/JS 全部移除，包括 `fhsToggleOvwOptionsMenu` 同 click-outside listener）。`fhsOvwEditBtn` 改做**靜態常駐**喺 `reviewFilterBody`（新增 `#fhsOvwEditRow`），唔再需要 JS 搬遷——可見度純粹交返 `_fhsOvwApplyAll()` 嘅 `.hidden` 判斷，同修復咗嘅 tier 判斷一致，其他 tier 恆 hidden 唔理佢實際喺邊個容器。`fhsSaveFilterBtn` 保留原生 pinnedRow 位置做預設／compact/mobile `slot` 收納嘅落點（同現有機制一致），桌面寬螢幕先由 `fhsSyncCompactDesktopLayout()` 搬入 `#fhsOvwEditRow`（同編輯版面同一行）；離開 tier 用 `clearBtn` 做錨點插返 pinnedRow 原位。搜尋框前移／重新載入+徽章合併（D75-follow 已交付部分）維持不變。
+
+**驗證**：桌面寬螢幕（1400px）撳漏斗 icon 展開，儲存篩選+編輯版面同年度/月份/狀態/批次/排序同一個抽屜顯示，編輯版面功能（拖曳grips/toggle）正常；手機（390px）`editBtn.hidden===true`，畫面確認冇再出現「編輯版面」；緊縮桌面（1000px）零回歸（saveBtn/editBtn/refreshBtn/badge 全部落返原有位置）；手機直跳寬桌面邊界情況（D75-follow 揪出嘅 bug）重測仍然正確；console 全程零新增錯誤。
+
+**改動檔案**：`freehandsss_dashboardV42.html`。**Subagent 使用記錄**：❌未使用（單一連續實作+多輪 Chromium 互動驗證，委派會斷推理鏈）。
+
+---
+
 [2026-09-11 續] (D75-follow) 訂單封面圖置中/按比例放大 + 桌面寬螢幕工具列收納（選項icon/搜尋前移/重新載入併徽章）
 
 **背景**：Fat Mo 五點截圖回饋：①刻字/封面格內容偏左上、留白唔對稱，要置中 ②idle icon 應跟產品明細/手模擺設行高按比例放大並置中 ③儲存篩選／編輯版面收納入「選項」icon ④搜尋輸入框縮短並移去「顯示項目財務」左邊 ⑤重新載入同56筆徽章合併，放置去徽章原位（沿用手機/緊縮桌面已有嘅併入設計）。全部淨限桌面「全部」寬螢幕視圖（≥1130px）。

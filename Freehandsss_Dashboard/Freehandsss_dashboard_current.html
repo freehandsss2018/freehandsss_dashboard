@@ -11,8 +11,8 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-11T10:56:29Z">
-    <meta name="fhs-deploy-src" content="c62429ec98b7cd2b0f17433567613754c0160d6f-dirty">
+    <meta name="fhs-build" content="2026-09-11T14:45:21Z">
+    <meta name="fhs-deploy-src" content="2239b935855efd571ec706df08303fd10063a84c-dirty">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -1128,16 +1128,10 @@
         #fhsOvwEditBar .fhs-ovw-hint { color:#8a7a68; }
         body.fhs-ovw-dragging, body.fhs-ovw-dragging * { user-select:none !important; }
 
-        /* [D75-follow 2026-09-11] 桌面寬螢幕工具列收納：選項 icon + 下拉面板、
-           搜尋框搬入 pinned row 後嘅縮短樣式。 */
-        .fhs-ovw-options-wrap { position:relative; display:inline-flex; }
-        .fhs-ovw-options-wrap[hidden] { display:none !important; }
-        /* position:fixed（非 absolute）——面板開嗰刻由 JS 搬去 document.body 並
-           算好 top/right px 值，避開 `#reviewFiltersV2{overflow:hidden}` 裁剪
-           （實測撞到，同 filterBody 抽屜之前撞過嘅裁剪問題同一類，見 JS 註解）。 */
-        .fhs-ovw-options-panel { position:fixed; background:#fff; border:1px solid var(--fhs-border,#ddd); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.14); padding:6px; display:flex; flex-direction:column; gap:4px; z-index:9500; min-width:150px; }
-        .fhs-ovw-options-panel[hidden] { display:none !important; }
-        .fhs-ovw-options-panel .fhs-btn-save-filter { width:100%; justify-content:flex-start; margin-right:0 !important; }
+        /* [D75-follow2 2026-09-11] Fat Mo 指示：唔開新「選項」icon，改用現有篩選
+           漏斗 icon 抽屜收納「儲存篩選/編輯版面」（見 HTML `#fhsOvwEditRow`、JS
+           `fhsSyncCompactDesktopLayout`）。此處淨保留搜尋框搬入 pinned row 後嘅
+           縮短樣式；舊「選項」icon/面板樣式已隨機制一併移除。 */
         .filter-group.fhs-ovw-search-pinned { flex-shrink:0; }
         .filter-group.fhs-ovw-search-pinned .fhs-input { width:110px; }
         .bulk-divider { width:1px; height:28px; background:var(--fhs-accent,#C9714A); opacity:0.3; flex-shrink:0; }
@@ -5164,20 +5158,13 @@
                     <span id="fhsPinnedBtnAnchor" style="display:none;"></span>
                     <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
                     <button id="fhsClearFilterBtn" class="fhs-btn-save-filter" type="button" onclick="clearFilters()" style="background-color: #f5f5f5; color: #333; border: 1px solid #ccc; margin-right: 6px;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-trash-2"/></svg>清除篩選</button>
+                    <!-- [D75-follow2 2026-09-11] Fat Mo 兩張截圖指示：唔好開新「選項」
+                         icon，「儲存篩選」直接收納入現有嘅篩選漏斗 icon（reviewFilterToggle）
+                         已控制緊嘅 reviewFilterBody 抽屜——桌面寬螢幕先搬入去（見
+                         fhsSyncCompactDesktopLayout），呢度保留原生 pinnedRow 位置做
+                         其餘 tier（緊縮桌面/手機）嘅預設／復原落點，同現有 slot 收納
+                         機制一致，唔另開一套。 -->
                     <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-save"/></svg>儲存篩選</button>
-                    <!-- [D75] 淨喺桌面「全部」寬螢幕視圖顯示（由 _fhsOvwApplyAll() 解除 hidden），
-                         其他 tier 即使 JS 出錯都預設 hidden，唔會誤現形 -->
-                    <button id="fhsOvwEditBtn" class="fhs-btn-save-filter" type="button" onclick="fhsOvwToggleEdit()" style="margin-right:6px;" hidden><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg><span id="fhsOvwEditBtnLabel">編輯版面</span></button>
-                    <!-- [D75-follow 2026-09-11] 桌面寬螢幕（≥1130px）專屬「選項」收納
-                         icon——儲存篩選／編輯版面收埋喺度，撳先展開。預設 hidden，
-                         由 fhsSyncCompactDesktopLayout() 淨喺 wide-desktop+review
-                         分頁解除。 -->
-                    <div id="fhsOvwOptionsWrap" class="fhs-ovw-options-wrap" hidden>
-                        <button type="button" id="fhsOvwOptionsBtn" class="fhs-btn-save-filter" onclick="fhsToggleOvwOptionsMenu()" title="更多選項" style="margin-right:6px; padding:0 10px;">
-                            <svg class="fhs-header-icon" width="16" height="16" style="margin:0;"><use href="#icon-more-horizontal"/></svg>
-                        </button>
-                        <div id="fhsOvwOptionsPanel" class="fhs-ovw-options-panel" hidden></div>
-                    </div>
                     <button id="fhsRefreshBtn" class="fhs-btn-refresh" type="button"
                         onclick="fhsRefreshAndCollapse()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -5273,6 +5260,14 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- [D75-follow2 2026-09-11] Fat Mo 截圖：「編輯版面」淨限桌面「全部」
+                         寬螢幕視圖有意義（拖欄寬/高度/密度），直接常駐喺呢個抽屜入面，
+                         唔使再搬嚟搬去——可見度純粹交返 `_fhsOvwApplyAll()` 嘅 `.hidden`
+                         判斷（其他 tier 恆 hidden，唔理佢喺邊個容器）。 -->
+                    <div class="filter-row" id="fhsOvwEditRow">
+                        <button id="fhsOvwEditBtn" class="fhs-btn-save-filter" type="button" onclick="fhsOvwToggleEdit()" hidden><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg><span id="fhsOvwEditBtnLabel">編輯版面</span></button>
                     </div>
 
                 </div><!-- /filter-body -->
@@ -12652,10 +12647,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         var _FHS_OVW_SCALE_MIN = 0.75, _FHS_OVW_SCALE_MAX = 1.35;
         var _FHS_OVW_H_MIN = 240, _FHS_OVW_H_MAX = 4000;
 
-        // 淨限桌面「全部」寬螢幕視圖（同 _fhsDesktopFlexEng 同一 gate）——類別視圖／
-        // 手機橫向合併層／手機卡片版一律回傳 null，令下面所有函式 no-op。
+        // 淨限桌面「全部」寬螢幕視圖——類別視圖／手機橫向合併層／手機卡片版一律
+        // 回傳 null，令下面所有函式 no-op。
+        // [Bug 修復 2026-09-11] `_fhsDesktopFlexEng()` 淨排除 750-1129px（合併層），
+        // 冇明確要求 ≥1130px——喺 <750px（手機）都會回傳 true，因為 `!_fhsFinMerged()`
+        // 喺嗰個闊度下都係 true。`fhsBuildOverviewHead()`（含呢個 tier 判斷）喺
+        // `renderReviewTable()` 入面手機分支 `return` 之前無條件執行，令 editBtn
+        // 錯誤喺手機顯示（Fat Mo 截圖二揪出）。加返明確闊度判斷。
         function _fhsOvwTierKey() {
-            return _fhsDesktopFlexEng(reviewCategoryFilter || '') ? 'all:desktop' : null;
+            return (window.innerWidth >= 1130 && _fhsDesktopFlexEng(reviewCategoryFilter || '')) ? 'all:desktop' : null;
         }
 
         function _fhsOvwRead() {
@@ -13034,32 +13034,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             else if (typeof renderReviewTable === 'function' && window.globalOrders) renderReviewTable(window.globalOrders);
         }
         window.fhsOvwReset = fhsOvwReset;
-
-        // [D75-follow 2026-09-11] 桌面寬螢幕「選項」收納 icon（儲存篩選／編輯版面）。
-        // 面板實測俾祖先 `#reviewFiltersV2{overflow:hidden}` 裁走（同 fhsDrawerScrim
-        // /filterBody 之前撞過嘅裁剪問題同一類）——跟本檔已有先例（compact 層
-        // filterBody 搬去 document.body 做 position:fixed 抽屜）用同一招：開嗰刻
-        // 先搬去 body，用 getBoundingClientRect 度掣位置算 fixed 座標。
-        function fhsToggleOvwOptionsMenu(forceClose) {
-            var panel = document.getElementById('fhsOvwOptionsPanel');
-            var btn = document.getElementById('fhsOvwOptionsBtn');
-            if (!panel || !btn) return;
-            var willOpen = forceClose ? false : panel.hidden;
-            if (willOpen) {
-                if (panel.parentElement !== document.body) document.body.appendChild(panel);
-                var r = btn.getBoundingClientRect();
-                panel.style.top = Math.round(r.bottom + 4) + 'px';
-                panel.style.right = Math.round(window.innerWidth - r.right) + 'px';
-            }
-            panel.hidden = !willOpen;
-        }
-        window.fhsToggleOvwOptionsMenu = fhsToggleOvwOptionsMenu;
-        document.addEventListener('click', function (e) {
-            var panel = document.getElementById('fhsOvwOptionsPanel');
-            var btn = document.getElementById('fhsOvwOptionsBtn');
-            if (!panel || panel.hidden) return;
-            if (!panel.contains(e.target) && e.target !== btn && (!btn || !btn.contains(e.target))) fhsToggleOvwOptionsMenu(true);
-        }, true);
 
         function fhsBuildOverviewHead() {
             var row = document.getElementById('reviewTheadRow');
@@ -17404,21 +17378,19 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var saveBtn = document.getElementById('fhsSaveFilterBtn');
             var countBadgeForRefresh = document.getElementById('reviewCountBadge');
             var titleElForRefresh = document.getElementById('v40-top-order-id');
-            // [D75-follow 2026-09-11] 桌面寬螢幕（≥1130px）版面收納：儲存篩選／
-            // 編輯版面收落新「選項」icon（財務/清除篩選維持常駐，唔動）；搜尋
-            // 輸入框搬入 pinned row 貼「顯示項目財務」左邊；重新載入併入 56筆
-            // 徽章、位置移去徽章原位（跟手機/緊縮桌面已有嘅併入設計一致）。
-            var ovwEditBtn = document.getElementById('fhsOvwEditBtn');
-            var ovwOptWrap = document.getElementById('fhsOvwOptionsWrap');
-            var ovwOptPanel = document.getElementById('fhsOvwOptionsPanel');
+            // [D75-follow2 2026-09-11] 桌面寬螢幕（≥1130px）版面收納：儲存篩選收落
+            // 現有篩選漏斗 icon（reviewFilterToggle）控制緊嘅 reviewFilterBody 抽屜
+            // （財務/清除篩選維持常駐，唔動）；搜尋輸入框搬入 pinned row 貼「顯示
+            // 項目財務」左邊；重新載入併入 56筆徽章、位置移去徽章原位（跟手機/
+            // 緊縮桌面已有嘅併入設計一致）。編輯版面（fhsOvwEditBtn）已直接常駐
+            // HTML 落 reviewFilterBody，唔需要 JS 搬遷，可見度淨交 `_fhsOvwApplyAll()`
+            // 嘅 `.hidden` 判斷。
             var pinnedRow = document.getElementById('reviewFilterPinned');
             var searchInputEl = document.getElementById('reviewSearch');
             var searchGroup = searchInputEl ? searchInputEl.closest('.filter-group') : null;
             var searchOrigAnchor = document.getElementById('fhsSearchOrigAnchor');
             var isWideDesktopReview = isReviewActive && window.innerWidth >= 1130;
             function _fhsOvwRestoreWideExtras() {
-                if (ovwOptWrap) ovwOptWrap.hidden = true;
-                if (ovwOptPanel) ovwOptPanel.hidden = true;
                 if (searchGroup && searchOrigAnchor && searchGroup.parentElement !== searchOrigAnchor.parentElement) {
                     searchOrigAnchor.insertAdjacentElement('afterend', searchGroup);
                     if (searchInputEl) searchInputEl.style.width = '';
@@ -17463,12 +17435,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (b.parentElement === slot) anchor.insertAdjacentElement('afterend', b);
                 });
                 slot.classList.remove('has-content');
-                // 儲存篩選／編輯版面收納入「選項」icon（財務/清除篩選唔動，維持常駐）
-                if (ovwOptWrap && ovwOptPanel) {
-                    ovwOptWrap.hidden = false;
-                    [saveBtn, ovwEditBtn].forEach(function (b) {
-                        if (b && b.parentElement !== ovwOptPanel) ovwOptPanel.appendChild(b);
-                    });
+                // 儲存篩選收納入現有篩選漏斗 icon 控制嘅抽屜（財務/清除篩選唔動，維持常駐），
+                // 放入 fhsOvwEditRow 同編輯版面同一行
+                var ovwEditRow = document.getElementById('fhsOvwEditRow');
+                if (ovwEditRow && saveBtn.parentElement !== ovwEditRow) {
+                    ovwEditRow.insertBefore(saveBtn, ovwEditRow.firstChild);
                 }
                 // 搜尋輸入框搬入 pinned row，貼喺「顯示項目財務」左邊，並縮短闊度
                 if (searchGroup && searchGroup.parentElement !== pinnedRow) {
@@ -17493,7 +17464,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 // saveBtn 原生順序喺 clearBtn 之後（financeBtn→clearBtn→saveBtn→
                 // editBtn→refreshBtn）；用 clearBtn 做錨點插返去，唔受上面
                 // refreshBtn 復原順序影響
-                if (ovwOptPanel && saveBtn.parentElement === ovwOptPanel) {
+                if (saveBtn.parentElement && saveBtn.parentElement.id === 'fhsOvwEditRow') {
                     clearBtn.insertAdjacentElement('afterend', saveBtn);
                 }
             }

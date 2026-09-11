@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-11 續二] D75-follow2：儲存篩選/編輯版面改收納入現有篩選漏斗icon + 修復editBtn手機誤現
+
+- **撤回新「選項」icon**：Fat Mo 指示唔好開新 icon，儲存篩選／編輯版面應直接收納入現有嘅篩選漏斗 icon（`reviewFilterToggle`）抽屜。已移除 D75-follow 新開嘅 `#fhsOvwOptionsWrap`/`#fhsOvwOptionsPanel` 全部 HTML/CSS/JS。
+- **編輯版面改靜態常駐**：`fhsOvwEditBtn` 移入 `reviewFilterBody` 新增嘅 `#fhsOvwEditRow`，唔再需要 JS 搬遷；儲存篩選桌面寬螢幕先搬入同一行，其餘 tier 落返原有 `slot` 收納機制。
+- **修復真bug**：`_fhsOvwTierKey()` 判斷桌面寬螢幕靠嘅 `_fhsDesktopFlexEng()` 冇明確要求 ≥1130px（淨排除750-1129px合併層），令編輯版面掣錯誤喺手機（<750px）顯示——Fat Mo截圖揪出。已加返明確闊度判斷。
+- **驗證**：桌面寬螢幕/緊縮桌面/手機三個tier零回歸，手機編輯版面按鈕消失確認、桌面漏斗icon抽屜正確顯示兩粒掣且功能正常、邊界跳轉情況重測正確，console零error。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`。
+- 全文見 decisions.md D75-follow2。**Subagent 使用記錄**：❌未使用（單一連續實作+多輪Chromium驗證，委派會斷推理鏈）。
+
 ## [2026-09-11 續] D75-follow：訂單封面圖置中/按比例放大 + 桌面寬螢幕工具列收納
 
 - **①②訂單封面圖／idle icon 置中+按比例放大**：`.fhs-inline-eng-wrap` 改置中對齊；idle icon 由 JS 度真實 `<td>` 高度後明確賦值 px（34-76px 範圍，上限對齊封面相片高度）——CSS-only `clamp()` 方案喺呢個 rowspan 共存嘅 `<td>` 入面實測完全唔生效，改用 JS 量度賦值（`_fhsOvwSizeCoverIcons()`）。
