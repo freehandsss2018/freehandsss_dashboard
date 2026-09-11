@@ -3,6 +3,26 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-11] (D75) 訂單總覽自由版面編輯——桌面「全部」寬螢幕視圖新增可持久化嘅欄寬/外框高度/密度手動調節
+
+**背景**：Fat Mo 指出桌面「全部」視圖（≥1130px）欄寬比例每次都要靠 AI 手動調（本 session 之前已為呢一帶做過 D71-follow7~10 多輪覆核），要求加「編輯」掣自行調節，唔使每次搵 AI。經 `/cl-flow-fast`（flow_id `2026-09-11-1441`，A2 Gemini 對抗評審 7 條批評，6 採納 1 拒絕，Verdict APPROVED_READY）規劃後實作。
+
+**三功能**：①外框高度——撳「編輯版面」後表格底部出現 `position:sticky;bottom:0` 拖柄，拖動即時調節訂單總覽區域喺螢幕上嘅高度，超出部分表格內部自己捲動（thead 改 `top:0!important` 貼實內部捲動容器頂），表格本身闊度唔變。②欄寬——Excel 式相鄰欄邊界拖拽（`pointerdown/move/up`），拖 A/B 中間分隔線淨改呢兩欄，總闊度數學上恆等於容器（zero-sum），唔再靠 D71-follow10 嗰套「留一欄度落差」演算法——後者喺自訂欄寬模式下明確跳過（`fhsBuildOverviewHead()` 加 `!_fhsOvwHasCustomCols()` 判斷）。③行高/密度——連續 slider（0.75x-1.35x），縮放全數表格內容嘅 `font-size`/`padding` 用 CSS `calc(Npx*var(--fhs-ovw-s,1))`，預設值 1 時 calc 結果同原硬編碼值完全一致，零回歸。
+
+**範圍**：淨限桌面「全部」寬螢幕視圖（`_fhsDesktopFlexEng(_c)`，即 `!reviewCategoryFilter && !_fhsFinMerged()`，≥1130px）。類別視圖（手模/鑰匙扣/頸鏈）、手機橫向合併層（750-1129px）、手機卡片版（<750px）完全唔郁，編輯掣預設 `hidden` 由 `_fhsOvwApplyAll()` 淨喺目標 tier 解除。
+
+**持久化**：`localStorage` key `fhs_ovw_layout_v1`，`{v:1, tiers:{"all:desktop":{cols,height,scale}}}`。欄寬正規化採「用戶調過嘅欄保持原 px，備註做唯一彈性欄吸收容器闊度變化落差」（沿用 D71-follow8 已批准嘅「備註做彈性欄」角色），改用 `ResizeObserver` 監聽 `.review-table-wrap` 本身闊度（非 `window.resize`）先可以捕捉側欄收合等冇觸發 window resize 嘅版面變化。「重設」掣一鍵清空該 tier 紀錄，恢復原生預設路徑（100% 走返原有計算，非另一套「預設值」）。
+
+**A2 評審 7 條批評處理**（詳見 `artifacts/2026-09-11-1441/cl-final-plan.md`）：#1 拖柄收窄喺 th 界內（`right:0`）避免 `overflow:hidden` 裁走；#2 全檔盤點揪出 `updateFinancialsLocally()` 漏咗一處硬編碼字級一併修正；#3 查證表格內冇會被外框裁走嘅浮動元件，拒絕；#4 改「備註做彈性欄」取代「全部欄按比例縮放」；#5 改 `ResizeObserver`；#6 取消入編輯模式即跳動嘅臨時預覽高度；#7 拖完欄用 capture 階段 click 攔截防誤觸排序。
+
+**實測中額外揪出並修正一個自己嘅 bug**：外框高度拖柄原本用 delta-based 公式（`起始高度+滑鼠位移`），但拖柄本身 `position:sticky` 貼視窗底、表格未封頂前嘅起始高度可以係全內容高度（實測 3404px）——delta 公式會令由「未封頂」拖到想要嘅高度需要移動幾千 px 滑鼠，唔現實。改用絕對公式 `高度=游標Y-wrap頂部Y`，游標喺邊表格就跟到邊，Chromium 實測直接印證正確。
+
+**驗證**：Chromium 1400px/1000px/手模三個 tier 逐項數值同改動前完全一致（零回歸，含備註彈性欄計算、`_FHS_DESKTOP_MW_OVERRIDE`）；欄寬拖拽 zero-sum 驗證（拖 70px，總和 1384px 不變）+ reload 持久化 + 容器闊度改變後正規化正確（1384→1381px，備註獨力吸收 3px 落差，其餘欄 px 不變）；外框高度拖拽 339px 內部捲動+thead 貼頂+scrollHeight 3403px 確認捲動生效；密度 slider 0.75x/1.35x computed font-size 精確符合 calc 公式，`:not(:focus)` 正確唔壓過備註 focus 展開嘅 96px（含 CSS transition 中間值排查）；D74 封面圖功能完好（49 個元素）；排序點擊喺非拖拽狀態下正常（非被 click-guard 誤攔）；重設掣完整清空並精確復原原生預設寬度；console 全程零新增錯誤；`node --check` 抽出 9 個 `<script>` 區塊全部語法通過。
+
+**改動檔案**：`freehandsss_dashboardV42.html`（唯一代碼改動檔）。全文見 `artifacts/2026-09-11-1441/{a3-draft,ag-review,cl-final-plan}.md`。**Subagent 使用記錄**：❌未使用（單一連續實作+跨函式一致性推理+Chromium 互動實測，委派會斷推理鏈；A2 對抗評審已由 cl-flow-fast 流程內建嘅 Gemini 擔任）。
+
+---
+
 [2026-09-10 續] (D71-follow12) 訂單總覽「刻字」欄改名做「刻字/封面」——追上 D74 系列已擴展嘅實際內容
 
 **背景**：Fat Mo 指出「刻字」呢個欄名已經唔再適合。查證確認：D74 系列（同期另一並行 session）已經將呢個欄由「純刻字文字」擴展做「刻字文字／訂單封面圖」四態擇一顯示（見 D74/D74-follow/D74-follow2）——有相就淨顯示相、冇相先顯示文字，兩者互斥。舊名「刻字」已經唔能夠涵蓋依家嘅實際內容。

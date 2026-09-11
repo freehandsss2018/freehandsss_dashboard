@@ -11,8 +11,8 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-10T12:06:31Z">
-    <meta name="fhs-deploy-src" content="9fcd7f1c3939e9e8566e549c8e263376d4278077-dirty">
+    <meta name="fhs-build" content="2026-09-11T07:43:36Z">
+    <meta name="fhs-deploy-src" content="376a6575ed1021db923ad06543aa3bcbc714c5fe-dirty">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -1090,6 +1090,43 @@
         #bulkActionBar { display:none; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px 16px; background:var(--fhs-bg-elevated,#F0EBE4); border:1px solid var(--fhs-accent,#C9714A); border-radius:var(--radius-md,8px); margin-bottom:12px; }
         #bulkActionBar.visible { display:flex; }
         .bulk-count-badge { font-size:13px; font-weight:700; color:var(--fhs-accent,#C9714A); white-space:nowrap; }
+
+        /* [D75 2026-09-11] 訂單總覽自由版面編輯——桌面「全部」寬螢幕視圖專屬。
+           全部 class 名以 fhs-ovw- 開頭，冇撳編輯／冇自訂紀錄時呢批規則完全唔生效。 */
+        .review-table-wrap.fhs-ovw-capped { overflow:auto !important; }
+        /* [AG批評#3 已查證拒絕，反證見 cl-final-plan.md]：表格內冇任何會越出格界嘅浮動
+           元件，wrap 原本 overflow:visible 嘅真正原因係避免 max-height 令 thead sticky
+           錯位（L~2380 註解）——內部捲動時 sticky 參照物變成 wrap 本身，貼頂即可。 */
+        .review-table-wrap.fhs-ovw-capped .review-table thead { top:0 !important; }
+        #reviewTable.fhs-ovw-customcols thead th { overflow:hidden; text-overflow:ellipsis; }
+
+        #reviewTable.fhs-ovw-scaled .review-badge        { font-size:calc(10.5px*var(--fhs-ovw-s)); padding:calc(2px*var(--fhs-ovw-s)) 8px; }
+        #reviewTable.fhs-ovw-scaled .review-eng-line     { font-size:calc(12px*var(--fhs-ovw-s));   padding:calc(3px*var(--fhs-ovw-s)) 8px; }
+        #reviewTable.fhs-ovw-scaled .review-jump-pill-sm { font-size:calc(11.5px*var(--fhs-ovw-s)); }
+        #reviewTable.fhs-ovw-scaled .dlv-badge           { font-size:calc(10px*var(--fhs-ovw-s)); }
+        #reviewTable.fhs-ovw-scaled .review-batch-input,
+        #reviewTable.fhs-ovw-scaled .review-status-select { height:calc(23px*var(--fhs-ovw-s)); }
+        /* :not(:focus) 保留——否則 (1,2,0) 會壓過 .review-notes-textarea:focus 嘅
+           min-height:96px（L~1471），令備註撳落去唔再展開 */
+        #reviewTable.fhs-ovw-scaled .review-notes-textarea:not(:focus) { min-height:calc(23px*var(--fhs-ovw-s)); }
+        #reviewTable.fhs-ovw-scaled .fhs-cover-thumb     { width:calc(135px*var(--fhs-ovw-s)); height:calc(76px*var(--fhs-ovw-s)); }
+        #reviewTable.fhs-ovw-scaled tbody td.review-cb-td { padding-top:calc(5px*var(--fhs-ovw-s)); padding-bottom:calc(5px*var(--fhs-ovw-s)); }
+
+        #fhsOvwEditBtn[hidden], #fhsOvwEditBar[hidden], #fhsOvwHeightGrip[hidden] { display:none !important; }
+        body.fhs-ovw-editing #reviewTheadRow th { position:relative; }
+        /* [AG批評#1 採納並修正] 拖柄收喺 th 界內（right:0），避免 th overflow:hidden
+           （.fhs-ovw-customcols 規則，見上）裁走凸出部分 */
+        .fhs-ovw-col-grip { position:absolute; top:0; right:0; width:10px; height:100%; cursor:col-resize; z-index:3; touch-action:none; }
+        .fhs-ovw-col-grip::after { content:''; position:absolute; top:20%; bottom:20%; right:2px; width:2px; border-radius:1px; background:rgba(255,255,255,0.45); }
+        .fhs-ovw-col-grip:hover::after, .fhs-ovw-col-grip.is-dragging::after { background:#F4A261; }
+        /* [AG批評#6 採納並修正] sticky bottom:0——編輯模式一開即貼視窗底，唔使捲到
+           成頁最底先搵到，亦唔會令外框跳動（無臨時預覽高度） */
+        #fhsOvwHeightGrip { position:sticky; bottom:0; height:14px; margin-top:2px; cursor:ns-resize; touch-action:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(#fff0,#fff 40%); z-index:5; }
+        #fhsOvwHeightGrip::after { content:''; width:48px; height:4px; border-radius:2px; background:#c9bfb2; }
+        #fhsOvwHeightGrip:hover::after, #fhsOvwHeightGrip.is-dragging::after { background:#F4A261; }
+        #fhsOvwEditBar { display:flex; align-items:center; gap:10px; padding:8px 12px; margin-bottom:8px; background:#FFF8F0; border:1px dashed #F4A261; border-radius:8px; font-size:12px; flex-wrap:wrap; }
+        #fhsOvwEditBar .fhs-ovw-hint { color:#8a7a68; }
+        body.fhs-ovw-dragging, body.fhs-ovw-dragging * { user-select:none !important; }
         .bulk-divider { width:1px; height:28px; background:var(--fhs-accent,#C9714A); opacity:0.3; flex-shrink:0; }
         .bulk-action-group { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
         .bulk-action-label { font-size:12px; font-weight:600; color:var(--fhs-text-secondary,#666); white-space:nowrap; }
@@ -5099,6 +5136,9 @@
                     <button id="fhsToggleAuditBtn" class="fhs-btn-save-filter" type="button" onclick="toggleAuditMode()" style="margin-right:6px;" title="SKU建議價｜SKU建議利潤｜📋 SKU參考價，不含整單優惠／折讓"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>顯示項目財務</button>
                     <button id="fhsClearFilterBtn" class="fhs-btn-save-filter" type="button" onclick="clearFilters()" style="background-color: #f5f5f5; color: #333; border: 1px solid #ccc; margin-right: 6px;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-trash-2"/></svg>清除篩選</button>
                     <button id="fhsSaveFilterBtn" class="fhs-btn-save-filter" type="button" onclick="saveFilters()"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-save"/></svg>儲存篩選</button>
+                    <!-- [D75] 淨喺桌面「全部」寬螢幕視圖顯示（由 _fhsOvwApplyAll() 解除 hidden），
+                         其他 tier 即使 JS 出錯都預設 hidden，唔會誤現形 -->
+                    <button id="fhsOvwEditBtn" class="fhs-btn-save-filter" type="button" onclick="fhsOvwToggleEdit()" style="margin-right:6px;" hidden><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg><span id="fhsOvwEditBtnLabel">編輯版面</span></button>
                     <button id="fhsRefreshBtn" class="fhs-btn-refresh" type="button"
                         onclick="fhsRefreshAndCollapse()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -5222,6 +5262,16 @@
             <!-- [D69] 類別工作台橫幅（只喺類別視圖出現；「全部」為空） -->
             <div id="reviewCatStrip"></div>
 
+            <!-- [D75] 編輯版面工具列——淨喺撳咗「編輯版面」先顯示（hidden 由 fhsOvwToggleEdit 控制） -->
+            <div id="fhsOvwEditBar" hidden>
+                <span class="fhs-ovw-hint">拖表頭分隔線調欄寬 · 拖表格底部橫條調高度</span>
+                <label style="display:flex; align-items:center; gap:6px;">行高
+                    <input type="range" id="fhsOvwScale" min="0.75" max="1.35" step="0.01" value="1" oninput="fhsOvwScaleInput(this.value)" onchange="fhsOvwScaleChange(this.value)">
+                    <span id="fhsOvwScaleVal">100%</span>
+                </label>
+                <button type="button" class="fhs-btn-save-filter" style="background:#f5f5f5; color:#333; border:1px solid #ccc;" onclick="fhsOvwReset()">重設</button>
+                <button type="button" class="fhs-btn-save-filter" onclick="fhsOvwToggleEdit()">完成</button>
+            </div>
             <div class="review-table-wrap" style="overflow:visible; width:100%; border-radius:var(--radius-lg); background:#fff; border:1px solid var(--fhs-border);">
                 <table class="review-table" style="width:100%; table-layout:fixed; border-collapse:collapse; text-align:left; font-size:var(--fhs-text-sm);" id="reviewTable">
                     <thead style="position:sticky; z-index:20; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
@@ -12547,6 +12597,397 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             return !_c && !_fhsFinMerged();
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        // [D75 2026-09-11] 訂單總覽自由版面編輯——桌面「全部」寬螢幕視圖專屬
+        // （cl-flow-fast flow_id 2026-09-11-1441，Verdict APPROVED_READY）
+        // 三功能：①外框高度拖拉 ②相鄰欄 zero-sum 拖拽 ③密度連續 slider。
+        // 冇撳「編輯版面」、冇 localStorage 紀錄 = 現行行為零改動（見 _fhsOvwApplyAll
+        // 喺 tier 唔啱或冇紀錄時嘅 early-return 分支）。
+        // ═══════════════════════════════════════════════════════════════
+        var _FHS_OVW_LS_KEY = 'fhs_ovw_layout_v1';
+        var _FHS_OVW_COL_MIN = { Order_ID:80, Date:70, Customer:70, inc:52, cost:52, profit:52, eng:110, prod:120, batch:48, stat:70, notes:60 };
+        var _FHS_OVW_SCALE_MIN = 0.75, _FHS_OVW_SCALE_MAX = 1.35;
+        var _FHS_OVW_H_MIN = 240, _FHS_OVW_H_MAX = 4000;
+
+        // 淨限桌面「全部」寬螢幕視圖（同 _fhsDesktopFlexEng 同一 gate）——類別視圖／
+        // 手機橫向合併層／手機卡片版一律回傳 null，令下面所有函式 no-op。
+        function _fhsOvwTierKey() {
+            return _fhsDesktopFlexEng(reviewCategoryFilter || '') ? 'all:desktop' : null;
+        }
+
+        function _fhsOvwRead() {
+            try {
+                var raw = localStorage.getItem(_FHS_OVW_LS_KEY);
+                if (!raw) return { v: 1, tiers: {} };
+                var obj = JSON.parse(raw);
+                if (!obj || typeof obj !== 'object' || obj.v !== 1 || typeof obj.tiers !== 'object' || !obj.tiers) return { v: 1, tiers: {} };
+                return obj;
+            } catch (e) { return { v: 1, tiers: {} }; }
+        }
+
+        function _fhsOvwTier(key) {
+            if (!key) return null;
+            var data = _fhsOvwRead();
+            return data.tiers[key] || null;
+        }
+
+        function _fhsOvwWriteTier(key, patch) {
+            if (!key) return;
+            try {
+                var data = _fhsOvwRead();
+                if (patch === null) {
+                    delete data.tiers[key];
+                } else {
+                    var cur = data.tiers[key] || {};
+                    var next = {};
+                    for (var k in cur) next[k] = cur[k];
+                    for (var k2 in patch) next[k2] = patch[k2];
+                    data.tiers[key] = next;
+                }
+                localStorage.setItem(_FHS_OVW_LS_KEY, JSON.stringify(data));
+            } catch (e) {}
+        }
+
+        // D71-follow10 備註補落差邏輯要知道「而家係咪自訂欄寬模式」先決定要唔要跳過
+        function _fhsOvwHasCustomCols() {
+            var t = _fhsOvwTier(_fhsOvwTierKey());
+            return !!(t && t.cols && Object.keys(t.cols).length);
+        }
+
+        function _fhsOvwColThs(row) {
+            return [].filter.call(row.children, function (th) { return th.dataset.colkey && th.dataset.colkey !== 'cb'; })
+                .map(function (th) { return { k: th.dataset.colkey, th: th }; });
+        }
+
+        function _fhsOvwAvailW(row) {
+            var wrap = row.closest('.review-table-wrap');
+            if (!wrap) return 0;
+            var cbTh = row.children[0];
+            var cbW = cbTh ? cbTh.getBoundingClientRect().width : 32;
+            return Math.max(0, wrap.clientWidth - cbW - 2); // -2：border-collapse 圓整容錯
+        }
+
+        // [AG批評#4 採納並修正] 用戶調過嘅欄保持原 px，備註做唯一彈性欄吸收落差
+        // （沿用 D71-follow8 已批准嘅「備註做彈性欄」角色）；淨當備註會跌穿下限
+        // 先按比例縮其餘欄——恆由儲存值出發，唔會逐次 resize 累積漂移。
+        function _fhsOvwNormalizeCols(row, cols) {
+            var items = _fhsOvwColThs(row);
+            var avail = _fhsOvwAvailW(row);
+            if (!(avail > 0) || !items.length) return;
+            var fixed = {}, fixedSum = 0;
+            items.forEach(function (item) {
+                if (item.k === 'notes') return;
+                var min = _FHS_OVW_COL_MIN[item.k] || 48;
+                var w = cols[item.k];
+                if (!(w > 0)) w = item.th.getBoundingClientRect().width;
+                w = Math.max(min, Math.round(w));
+                fixed[item.k] = w;
+                fixedSum += w;
+            });
+            var notesMin = _FHS_OVW_COL_MIN.notes || 60;
+            var notesW = avail - fixedSum;
+            if (notesW < notesMin) {
+                var deficit = notesMin - notesW;
+                var minSum = 0;
+                Object.keys(fixed).forEach(function (k) { minSum += (_FHS_OVW_COL_MIN[k] || 48); });
+                var scalable = fixedSum - minSum;
+                if (scalable > 0) {
+                    var ratio = Math.max(0, (fixedSum - deficit) / fixedSum);
+                    var newSum = 0;
+                    Object.keys(fixed).forEach(function (k) {
+                        var min = _FHS_OVW_COL_MIN[k] || 48;
+                        var w = Math.max(min, Math.round(fixed[k] * ratio));
+                        fixed[k] = w;
+                        newSum += w;
+                    });
+                    fixedSum = newSum;
+                }
+                notesW = Math.max(notesMin, avail - fixedSum);
+            }
+            items.forEach(function (item) {
+                item.th.style.width = (item.k === 'notes' ? notesW : fixed[item.k]) + 'px';
+            });
+        }
+
+        function _fhsOvwApplyScale(scale) {
+            var table = document.getElementById('reviewTable');
+            if (!table) return;
+            var s = Number(scale);
+            if (!(s > 0) || Math.abs(s - 1) < 0.001) {
+                table.style.removeProperty('--fhs-ovw-s');
+                table.classList.remove('fhs-ovw-scaled');
+                return;
+            }
+            s = Math.min(_FHS_OVW_SCALE_MAX, Math.max(_FHS_OVW_SCALE_MIN, s));
+            table.style.setProperty('--fhs-ovw-s', s);
+            table.classList.add('fhs-ovw-scaled');
+        }
+
+        function _fhsOvwApplyHeight(h) {
+            var wrap = document.querySelector('.review-table-wrap');
+            if (!wrap) return;
+            if (h && h > 0) {
+                wrap.style.maxHeight = h + 'px';
+                wrap.classList.add('fhs-ovw-capped');
+            } else {
+                wrap.style.maxHeight = '';
+                wrap.classList.remove('fhs-ovw-capped');
+            }
+        }
+
+        // [AG批評#7 採納] 拖完欄界，瀏覽器有機會補派 click 落底層 th 觸發排序；
+        // capture 階段喺呢個旗標生效期間攔截。listener 掛喺 <tr> 本身（每次
+        // render 淨換 innerHTML，tr 節點不變），用 dataset 旗標防重複掛。
+        window._fhsOvwJustDragged = false;
+        function _fhsOvwEnsureClickGuard(row) {
+            if (row.dataset.ovwGuarded) return;
+            row.dataset.ovwGuarded = '1';
+            row.addEventListener('click', function (e) {
+                if (window._fhsOvwJustDragged) { e.stopPropagation(); e.preventDefault(); }
+            }, true);
+        }
+
+        // [AG批評#5 採納] 監聽 wrap 本身闊度（非 window resize）——側欄收合／內部
+        // 捲動軸出現等冇觸發 window resize 嘅版面變化都要重新正規化欄寬。
+        var _fhsOvwRO = null, _fhsOvwResizeTimer = null;
+        function _fhsOvwOnResize() {
+            clearTimeout(_fhsOvwResizeTimer);
+            _fhsOvwResizeTimer = setTimeout(function () {
+                var key = _fhsOvwTierKey();
+                if (!key) return;
+                var t = _fhsOvwTier(key);
+                if (!t || !t.cols) return;
+                var row = document.getElementById('reviewTheadRow');
+                if (row) _fhsOvwNormalizeCols(row, t.cols);
+            }, 150);
+        }
+        function _fhsOvwEnsureResizeObserver() {
+            if (_fhsOvwRO) return;
+            var wrap = document.querySelector('.review-table-wrap');
+            if (!wrap) return;
+            if (typeof ResizeObserver === 'undefined') {
+                window.addEventListener('resize', _fhsOvwOnResize);
+                _fhsOvwRO = true;
+                return;
+            }
+            var lastW = null;
+            _fhsOvwRO = new ResizeObserver(function () {
+                var w = wrap.clientWidth;
+                if (w === lastW) return;
+                lastW = w;
+                _fhsOvwOnResize();
+            });
+            _fhsOvwRO.observe(wrap);
+        }
+
+        function _fhsOvwRemoveColGrips(row) {
+            [].forEach.call(row.querySelectorAll('.fhs-ovw-col-grip'), function (g) { g.remove(); });
+        }
+
+        // [AG批評#1 採納並修正] 拖柄收喺 th 界內（right:0），唔外凸——避免 th
+        // overflow:hidden 裁走拖柄。淨喺 index 1..n-2（跳過 cb 同最後一欄 notes
+        // 本身右邊冇下一欄）。
+        function _fhsOvwAttachColGrips(row) {
+            _fhsOvwRemoveColGrips(row);
+            var kids = row.children;
+            for (var i = 1; i <= kids.length - 2; i++) {
+                var th = kids[i];
+                if (!th || !th.dataset.colkey) continue;
+                var grip = document.createElement('span');
+                grip.className = 'fhs-ovw-col-grip';
+                (function (i, grip) {
+                    grip.addEventListener('pointerdown', function (e) { _fhsOvwColGripDown(e, row, i); });
+                })(i, grip);
+                th.appendChild(grip);
+            }
+        }
+
+        function _fhsOvwColGripDown(e, row, i) {
+            e.preventDefault();
+            e.stopPropagation();
+            var kids = row.children;
+            var thA = kids[i], thB = kids[i + 1];
+            if (!thA || !thB || !thA.dataset.colkey || !thB.dataset.colkey) return;
+            var grip = e.currentTarget;
+            grip.setPointerCapture(e.pointerId);
+            grip.classList.add('is-dragging');
+            document.body.classList.add('fhs-ovw-dragging');
+            // 凍結全部欄做明確 px，拖拽期間唔畀瀏覽器有任何自動重新分配空間嘅機會
+            [].forEach.call(row.children, function (th) {
+                if (th.dataset.colkey) th.style.width = Math.round(th.getBoundingClientRect().width) + 'px';
+            });
+            var startX = e.clientX;
+            var wA = thA.getBoundingClientRect().width;
+            var wB = thB.getBoundingClientRect().width;
+            var minA = _FHS_OVW_COL_MIN[thA.dataset.colkey] || 48;
+            var minB = _FHS_OVW_COL_MIN[thB.dataset.colkey] || 48;
+            var raf = null, pendingX = null;
+            function onMove(ev) {
+                pendingX = ev.clientX;
+                if (raf) return;
+                raf = requestAnimationFrame(function () {
+                    raf = null;
+                    var dx = pendingX - startX;
+                    var newA = Math.min(wA + wB - minB, Math.max(minA, wA + dx));
+                    var newB = wA + wB - newA;
+                    thA.style.width = newA + 'px';
+                    thB.style.width = newB + 'px';
+                });
+            }
+            function onUp(ev) {
+                grip.releasePointerCapture(ev.pointerId);
+                grip.classList.remove('is-dragging');
+                document.body.classList.remove('fhs-ovw-dragging');
+                grip.removeEventListener('pointermove', onMove);
+                grip.removeEventListener('pointerup', onUp);
+                grip.removeEventListener('pointercancel', onUp);
+                var cols = {};
+                [].forEach.call(row.children, function (th) {
+                    if (th.dataset.colkey && th.dataset.colkey !== 'cb') cols[th.dataset.colkey] = Math.round(th.getBoundingClientRect().width);
+                });
+                _fhsOvwWriteTier(_fhsOvwTierKey(), { cols: cols });
+                var table = document.getElementById('reviewTable');
+                if (table) table.classList.add('fhs-ovw-customcols');
+                window._fhsOvwJustDragged = true;
+                setTimeout(function () { window._fhsOvwJustDragged = false; }, 0);
+            }
+            grip.addEventListener('pointermove', onMove);
+            grip.addEventListener('pointerup', onUp);
+            grip.addEventListener('pointercancel', onUp);
+        }
+
+        // [AG批評#6 採納並修正] 取消入編輯模式即套臨時預覽高度——改用
+        // position:sticky; bottom:0（CSS），拖柄自動貼視窗底唔使跳動版面。
+        function _fhsOvwEnsureHeightGrip() {
+            var wrap = document.querySelector('.review-table-wrap');
+            if (!wrap) return null;
+            var grip = document.getElementById('fhsOvwHeightGrip');
+            if (grip) return grip;
+            grip = document.createElement('div');
+            grip.id = 'fhsOvwHeightGrip';
+            grip.hidden = true;
+            grip.title = '拖動調節訂單總覽高度';
+            wrap.insertAdjacentElement('afterend', grip);
+            grip.addEventListener('pointerdown', _fhsOvwHeightGripDown);
+            return grip;
+        }
+
+        function _fhsOvwHeightGripDown(e) {
+            e.preventDefault();
+            var grip = e.currentTarget;
+            var wrap = document.querySelector('.review-table-wrap');
+            if (!wrap) return;
+            grip.setPointerCapture(e.pointerId);
+            grip.classList.add('is-dragging');
+            document.body.classList.add('fhs-ovw-dragging');
+            // [AG批評#6 修正落點] 拖柄 position:sticky 貼視窗底，起始 wrap 高度喺
+            // 未封頂前可以係全內容高度（成千 px）——delta-based（startH+dy）會令
+            // 由「未封頂」拖到想要嘅高度需要移動幾千 px 滑鼠，唔現實。改用絕對公式：
+            // h = 游標Y − wrap頂部Y（wrap.top 喺拖拽過程中唔會變，因為佢由上方
+            // 內容決定，同 wrap 自己嘅高度無關），游標喺邊，高度就跟到邊，直觀直接。
+            var wrapTop = wrap.getBoundingClientRect().top;
+            var raf = null, pendingY = null;
+            function onMove(ev) {
+                pendingY = ev.clientY;
+                if (raf) return;
+                raf = requestAnimationFrame(function () {
+                    raf = null;
+                    var h = Math.min(_FHS_OVW_H_MAX, Math.max(_FHS_OVW_H_MIN, pendingY - wrapTop));
+                    wrap.style.maxHeight = h + 'px';
+                    wrap.classList.add('fhs-ovw-capped');
+                });
+            }
+            function onUp(ev) {
+                grip.releasePointerCapture(ev.pointerId);
+                grip.classList.remove('is-dragging');
+                document.body.classList.remove('fhs-ovw-dragging');
+                grip.removeEventListener('pointermove', onMove);
+                grip.removeEventListener('pointerup', onUp);
+                grip.removeEventListener('pointercancel', onUp);
+                _fhsOvwWriteTier(_fhsOvwTierKey(), { height: Math.round(wrap.getBoundingClientRect().height) });
+            }
+            grip.addEventListener('pointermove', onMove);
+            grip.addEventListener('pointerup', onUp);
+            grip.addEventListener('pointercancel', onUp);
+        }
+
+        // 每次 fhsBuildOverviewHead() render 完尾段呼叫：非目標 tier 一律清零效果
+        // 並隱藏編輯掣；目標 tier 有紀錄先套用，冇紀錄＝現行預設路徑原封不動。
+        function _fhsOvwApplyAll(row) {
+            _fhsOvwEnsureClickGuard(row);
+            _fhsOvwEnsureResizeObserver();
+            var key = _fhsOvwTierKey();
+            var editBtn = document.getElementById('fhsOvwEditBtn');
+            var table = document.getElementById('reviewTable');
+            if (!key) {
+                if (editBtn) editBtn.hidden = true;
+                _fhsOvwApplyScale(1);
+                _fhsOvwApplyHeight(null);
+                if (table) table.classList.remove('fhs-ovw-customcols');
+                if (document.body.classList.contains('fhs-ovw-editing')) fhsOvwToggleEdit(true);
+                return;
+            }
+            if (editBtn) editBtn.hidden = false;
+            var t = _fhsOvwTier(key) || {};
+            if (t.cols && Object.keys(t.cols).length) {
+                if (table) table.classList.add('fhs-ovw-customcols');
+                _fhsOvwNormalizeCols(row, t.cols);
+            } else if (table) {
+                table.classList.remove('fhs-ovw-customcols');
+            }
+            _fhsOvwApplyScale(t.scale || 1);
+            _fhsOvwApplyHeight(t.height || null);
+            if (document.body.classList.contains('fhs-ovw-editing')) _fhsOvwAttachColGrips(row);
+        }
+
+        function fhsOvwToggleEdit(forceOff) {
+            var editing = document.body.classList.contains('fhs-ovw-editing');
+            var turnOn = forceOff ? false : !editing;
+            if (turnOn === editing) return;
+            document.body.classList.toggle('fhs-ovw-editing', turnOn);
+            var bar = document.getElementById('fhsOvwEditBar');
+            var grip = _fhsOvwEnsureHeightGrip();
+            var label = document.getElementById('fhsOvwEditBtnLabel');
+            if (bar) bar.hidden = !turnOn;
+            if (grip) grip.hidden = !turnOn;
+            if (label) label.textContent = turnOn ? '完成編輯' : '編輯版面';
+            var row = document.getElementById('reviewTheadRow');
+            if (turnOn) {
+                if (row) _fhsOvwAttachColGrips(row);
+                var t = _fhsOvwTier(_fhsOvwTierKey()) || {};
+                var slider = document.getElementById('fhsOvwScale');
+                if (slider) slider.value = t.scale || 1;
+                var val = document.getElementById('fhsOvwScaleVal');
+                if (val) val.textContent = Math.round((t.scale || 1) * 100) + '%';
+            } else if (row) {
+                _fhsOvwRemoveColGrips(row);
+            }
+        }
+        window.fhsOvwToggleEdit = fhsOvwToggleEdit;
+
+        function fhsOvwScaleInput(v) {
+            var s = Number(v);
+            _fhsOvwApplyScale(s);
+            var val = document.getElementById('fhsOvwScaleVal');
+            if (val) val.textContent = Math.round(s * 100) + '%';
+        }
+        window.fhsOvwScaleInput = fhsOvwScaleInput;
+
+        function fhsOvwScaleChange(v) {
+            _fhsOvwWriteTier(_fhsOvwTierKey(), { scale: Number(v) });
+        }
+        window.fhsOvwScaleChange = fhsOvwScaleChange;
+
+        function fhsOvwReset() {
+            if (!confirm('重設訂單總覽版面？將清除已儲存嘅欄寬／高度／密度設定。')) return;
+            var key = _fhsOvwTierKey();
+            if (!key) return;
+            _fhsOvwWriteTier(key, null);
+            if (typeof applyReviewFilters === 'function') applyReviewFilters();
+            else if (typeof renderReviewTable === 'function' && window.globalOrders) renderReviewTable(window.globalOrders);
+        }
+        window.fhsOvwReset = fhsOvwReset;
+
         function fhsBuildOverviewHead() {
             var row = document.getElementById('reviewTheadRow');
             if (!row) return;
@@ -12569,7 +13010,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             // width 點分配」呢個有分歧嘅演算法，跨引擎行為一致。
             var html = fhsOverviewCols().map(function (k) {
                 if (k === 'cb') {
-                    return '<th class="review-cb-th" style="padding:8px 4px; border:none; width:32px;">'
+                    return '<th class="review-cb-th" data-colkey="cb" style="padding:8px 4px; border:none; width:32px;">'
                          + '<input type="checkbox" id="masterCheckbox" title="全選/全消" onchange="toggleMasterCheckbox(this.checked)"></th>';
                 }
                 var d = _FHS_TH_DEF[k];
@@ -12592,11 +13033,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var _isNotesFlexCol = (k === 'notes' && !_c);
                 var _initW = _isNotesFlexCol ? 1 : _mw;
                 var style = 'padding:' + (d.pad || '8px 12px') + '; ' + thBase + ' color:' + (d.color || 'var(--fhs-text-secondary)') + '; width:' + _initW + 'px;';
+                // [D75] data-colkey：自由版面編輯（欄寬拖拽/正規化）用嚟識別欄位，
+                // 跨 narrow/allview 兩種 class 變體通用；title 令欄窄到截斷時 hover 仍見全名。
                 if (d.sort) {
-                    return '<th class="sort-th' + _narrowCls + '" data-sort="' + d.sort + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'
+                    return '<th class="sort-th' + _narrowCls + '" data-colkey="' + k + '" data-sort="' + d.sort + '" title="' + d.label + '" style="' + style + '" onclick="sortReviewTable(\'' + d.sort + '\')">'
                          + ico + d.label + '<span class="sort-arrow" id="sort-arrow-' + d.sort + '"></span></th>';
                 }
-                return '<th class="' + _narrowCls.trim() + '" style="' + style + '">' + ico + d.label + '</th>';
+                return '<th class="' + _narrowCls.trim() + '" data-colkey="' + k + '" title="' + d.label + '" style="' + style + '">' + ico + d.label + '</th>';
             }).join('');
             row.innerHTML = html;
             // thead 重建會沖走排序箭嘴同 master checkbox 狀態，即刻補回
@@ -12604,7 +13047,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             _syncMasterCheckbox();
             // [D71-follow10] 由 DOM 度返其餘欄嘅實際 render 闊度（已反映晒任何 !important
             // media query 覆寫），計出容器落差，明確覆寫落備註嘅 <th>。
-            if (!_c) {
+            // [D75] 加 `!_fhsOvwHasCustomCols()`：用戶有自訂欄寬時跳過呢段——所有欄
+            // 已由 `_fhsOvwApplyAll()` → `_fhsOvwNormalizeCols()` 明確賦值，唔再需要
+            // 「度其餘欄補落差」（兩套邏輯同時跑會互相沖數）。冇自訂時原封不動。
+            if (!_c && !_fhsOvwHasCustomCols()) {
                 var _notesTh = row.querySelector('.ovw-col-notes');
                 var _wrap = row.closest('.review-table-wrap');
                 if (_notesTh && _wrap) {
@@ -12622,6 +13068,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     }
                 }
             }
+            // [D75] 尾段套用自由版面編輯狀態——非目標 tier／冇自訂紀錄一律 no-op。
+            _fhsOvwApplyAll(row);
         }
         window.fhsBuildOverviewHead = fhsBuildOverviewHead;
 
@@ -13136,7 +13584,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${fhsEscHtml(o.id)}" ${isChecked} onchange="toggleOrderSelection('${fhsEscAttr(o.id)}', this.checked)">
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:13px; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:4px 4px;">
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:calc(13px*var(--fhs-ovw-s,1)); vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(4px*var(--fhs-ovw-s,1)) 4px;">
                         <div class="ovw-id-line">
                             <div class="review-jump-pill review-jump-pill-sm" onclick="jumpToEditOrder('${fhsEscAttr(o.Order_ID)}')">${fhsEscHtml(o.Order_ID || 'N/A')} ➜</div>
                             <span class="ovw-act">
@@ -13148,17 +13596,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             </span>
                             ${_restChipHtml}
                         </div>
-                        <div id="sync-indicator-${fhsEscHtml(o.id)}" style="display:none; margin-top:3px; font-size:11px; color:var(--fhs-warning); align-items:center; gap:4px;">
+                        <div id="sync-indicator-${fhsEscHtml(o.id)}" style="display:none; margin-top:3px; font-size:calc(11px*var(--fhs-ovw-s,1)); color:var(--fhs-warning); align-items:center; gap:4px;">
                             <span class="fhs-spin" style="display:inline-block; width:10px; height:10px; border:2px solid var(--fhs-warning); border-top-color:transparent; border-radius:50%;"></span>
                             同步中
                         </div>
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:5px 8px;">
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(5px*var(--fhs-ovw-s,1)) 8px;">
                         <!-- [D71-follow8] 桌面「全部」寬螢幕視圖都改上下疊（日期一行/限時警示一行），
                              同手模類別視圖睇齊，配合 Date 欄收窄後只需夠一行內容用 -->
                         <div class="ovw-date-line${(_catView === '手模' || _fhsDesktopFlexEng(_catView)) ? ' ovw-date-line--stack' : ''}"><span style="white-space:nowrap;">${cDate}</span>${_dlvBadgeHtml(o.Order_ID)}</div>
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:5px 8px;">${fhsEscHtml(o.Customer || '-')}</td>
+                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(5px*var(--fhs-ovw-s,1)) 8px;">${fhsEscHtml(o.Customer || '-')}</td>
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
@@ -13301,13 +13749,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         var _auditPriceHtml = _auditEntry
                             ? `<span class="audit-sku-price">$${_auditEntry.price}</span><span class="audit-sku-profit">$${(_auditEntry.price - _auditEntry.cost).toFixed(0)}<button class="audit-modal-btn" onclick="openAuditModal('${fhsEscAttr(o.id)}','${_iIdx}','${fhsEscAttr(_auditSku)}',${_auditEntry.price},${_auditEntry.cost})" title="對賬試算">💡</button></span>`
                             : (_auditSku ? `<span class="audit-na" title="SKU: ${fhsEscHtml(_auditSku)}">—</span>` : `<span class="audit-na">—</span>`);
-                        let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height:42px;">
-                            <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:13px; padding:2px 4px;">${badgeHtml}</div>
+                        let prodHtml = `<div class="review-item-card" style="border-left:3px solid ${itemBatchCol}; background:${itemBatchCol}15; height:100%; margin:0; min-height:calc(42px*var(--fhs-ovw-s,1));">
+                            <div style="display:flex; flex-wrap:wrap; align-items:center; width:100%; font-size:calc(13px*var(--fhs-ovw-s,1)); padding:calc(2px*var(--fhs-ovw-s,1)) 4px;">${badgeHtml}</div>
                         </div>`;
 
 
                         // 刻字水平佈局 (V29) — 移除括號與文字輔助
-                        let engHtml = '<span style="color:#ddd; font-size:13px;">—</span>';
+                        let engHtml = '<span style="color:#ddd; font-size:calc(13px*var(--fhs-ovw-s,1));">—</span>';
                         // 家庭合成 Notes 包含 "| 合成: ..." — 刻字欄只顯示刻字文字
                         const _engStripped = item.Engraving ? item.Engraving.replace(/\s*\|?\s*合成:.*/, '').trim() : '';
                         if(_engStripped && _engStripped !== '待定' && _engStripped !== '不適用') {
@@ -13466,15 +13914,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${index === 0 ? `<div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>` : `
-                          <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
+                          <td style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB};">
                             ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
-                            ${index === 0 ? `<span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
+                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB};">
+                            ${index === 0 ? `<span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:calc(11px*var(--fhs-ovw-s,1));color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:7px; border-bottom:${_rowBorderB};">
+                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB};">
                             ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>`;
@@ -13484,23 +13932,23 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${index === 0 ? orderLeftColsHtml : ''}
                             ${_catView ? '' : _finCells}
                             ${_catView ? _catCellsHtml : ''}
-                            <td class="batch-cell ovw-eng-cell" style="position:relative; vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: 4px 3px; background-color:${rowBatchCol};">
+                            <td class="batch-cell ovw-eng-cell" style="position:relative; vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: calc(4px*var(--fhs-ovw-s,1)) 3px; background-color:${rowBatchCol};">
                                 ${engCellHtml}
                             </td>
-                            ${_catView ? '' : `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:4px 8px; background-color:${rowBatchCol};">
+                            ${_catView ? '' : `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:calc(4px*var(--fhs-ovw-s,1)) 8px; background-color:${rowBatchCol};">
                                 ${prodHtml}
                             </td>`}
-                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding:4px 3px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding:calc(4px*var(--fhs-ovw-s,1)) 3px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; background-color:${rowBatchCol};">
                                 <input type="text" id="batch-input-${fhsEscHtml(o.id)}-${_iIdx}" class="review-batch-input"
                                        value="${fhsEscHtml(rowBatch || '')}"
-                                       style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:13px;"
+                                       style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:calc(13px*var(--fhs-ovw-s,1));"
                                        inputmode="numeric"
                                        onfocus="batchInputFocus(this)"
                                        oninput="this.value=this.value.replace(/\D/g,''); applyBatchColorLive(this.value, this)"
                                        onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Batch_Number', 'batch-input-${fhsEscAttr(o.id)}-${_iIdx}', ${_iIdx})"
                                        placeholder="批次">
                             </td>
-                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding:4px 3px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
+                            <td class="batch-cell" style="vertical-align:top; text-align:center; padding:calc(4px*var(--fhs-ovw-s,1)) 3px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                                 ${(function(){
                                     var _s = (window._getItemStatus||function(a,b){return b.Status||''})(o.id, item);
                                     var _cat = (dimensions.category || item.Category || '').toString();
@@ -13516,12 +13964,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         // 舊佈局實測 106px，係手模視圖每一列嘅高度下限（中位列高 109px）。
                                         var _cks = _lbs.map(function(l,i){
                                             var ck = _st[i];
-                                            return '<label style="display:inline-flex;align-items:center;gap:2px;cursor:pointer;font-size:11px;white-space:nowrap;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
+                                            return '<label style="display:inline-flex;align-items:center;gap:2px;cursor:pointer;font-size:calc(11px*var(--fhs-ovw-s,1));white-space:nowrap;'+(ck?'text-decoration:line-through;color:#aaa;':'')+'">'
                                                 +'<input type="checkbox"'+(ck?' checked':'')+' style="cursor:pointer;accent-color:#2A9D8F;width:12px;height:12px;margin:0;" onchange="_fhsHmCheckChange(\''+fhsEscAttr(o.id)+'\','+_iIdx+',\'hmck\')">'+l+'</label>';
                                         }).join('');
                                         return '<div id="hmck-wrap-'+fhsEscHtml(o.id)+'-'+_iIdx+'" style="display:flex;flex-wrap:wrap;gap:2px 4px;text-align:left;padding:0;">'
                                             +_cks+'<input type="hidden" id="hmck-val-'+fhsEscHtml(o.id)+'-'+_iIdx+'" value="'+(_s||'').replace(/"/g,'&quot;')+'"></div>'
-                                            +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                            +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:calc(10px*var(--fhs-ovw-s,1));"></div>';
                                     }
                                     // [D69續四根治] 改由 _FHS_STAGE_DEF 單一真源生成，取代原本呢度同
                                     // 手機卡片（L~11527附近）近乎逐字複製嘅重複清單。
@@ -13537,20 +13985,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     var _rawOptHtml = (!_knownOpt && _s)
                                         ? '<option value="'+fhsEscAttr(_s)+'" selected>⚠ '+fhsEscHtml(_s)+'</option>'
                                         : '';
-                                    return '<select id="status-select-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-status-select" style="width:100%;max-width:92px;font-size:13px;margin:0 auto;" onchange="'+_oc+'">'
+                                    return '<select id="status-select-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-status-select" style="width:100%;max-width:92px;font-size:calc(13px*var(--fhs-ovw-s,1));margin:0 auto;" onchange="'+_oc+'">'
                                         +_rawOptHtml
                                         +_opts.map(function(p){return '<option value="'+p[0]+'"'+(_knownOpt && _sNorm===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select>'
                                         +'<div id="adj-wrapper-'+fhsEscHtml(o.id)+'-'+_iIdx+'" style="display:'+_adjDisp+';align-items:center;justify-content:center;gap:4px;margin-top:6px;">'
-                                        +'<span style="color:#e63946;font-size:12px;font-weight:bold;">$</span>'
-                                        +'<input type="number" id="adj-input-'+fhsEscHtml(o.id)+'-'+_iIdx+'" value="'+fhsEscHtml(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:12px;text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+fhsEscAttr(o.id)+'\',this.value)" onblur="saveAdjustmentAmount(\''+fhsEscAttr(o.id)+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
+                                        +'<span style="color:#e63946;font-size:calc(12px*var(--fhs-ovw-s,1));font-weight:bold;">$</span>'
+                                        +'<input type="number" id="adj-input-'+fhsEscHtml(o.id)+'-'+_iIdx+'" value="'+fhsEscHtml(o.Adjustment_Amount||'')+'" placeholder="金額" style="border:1px solid #ccc;border-radius:4px;outline:none;width:80px;font-size:calc(12px*var(--fhs-ovw-s,1));text-align:center;padding:4px;background:#ffffff;color:var(--fhs-text-primary);" oninput="updateFinancialsLocally(\''+fhsEscAttr(o.id)+'\',this.value)" onblur="saveAdjustmentAmount(\''+fhsEscAttr(o.id)+'\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}">'
                                         +'</div>'
-                                        +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:10px;"></div>';
+                                        +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:calc(10px*var(--fhs-ovw-s,1));"></div>';
                                 })()}
                             </td>
-                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:2px; background-color:${batchCol};">
+                            ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(2px*var(--fhs-ovw-s,1)); background-color:${batchCol};">
                                 <textarea class="review-notes-textarea" rows="1"
                                           id="notes-input-${fhsEscHtml(o.id)}"
-                                          style="font-size:13px; background:#ffffff;"
+                                          style="font-size:calc(13px*var(--fhs-ovw-s,1)); background:#ffffff;"
                                           onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Admin_Notes', 'notes-input-${fhsEscAttr(o.id)}')"
                                           placeholder="備註...">${fhsEscHtml(o.Admin_Notes || '')}</textarea>
                             </td>` : ''}
@@ -13569,22 +14017,22 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#E63946;">成本</span><span id="cost-val-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:#E63946;">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:10px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span></div>
                             <div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>
                         </td>` : `
-                        <td style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                        <td style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
                             ${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                         </td>
-                        <td id="cost-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
-                            <span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
+                        <td id="cost-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                            <span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:calc(11px*var(--fhs-ovw-s,1));color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
                         </td>
-                        <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:13px; font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                        <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
                             $${displayedProfit}
                         </td>`}
-                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:13px; background-color:${orderBatchCol};">
+                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:calc(13px*var(--fhs-ovw-s,1)); background-color:${orderBatchCol};">
                             無子項目
                         </td>
-                        <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:10px; background-color:${orderBatchCol};">
+                        <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:calc(10px*var(--fhs-ovw-s,1)); background-color:${orderBatchCol};">
                             <textarea class="review-notes-textarea" rows="1"
                                       id="notes-input-${fhsEscHtml(o.id)}"
-                                      style="font-size:13px; background:transparent;"
+                                      style="font-size:calc(13px*var(--fhs-ovw-s,1)); background:transparent;"
                                       onblur="saveInlineEdit('${fhsEscAttr(o.id)}', 'Admin_Notes', 'notes-input-${fhsEscAttr(o.id)}')"
                                       placeholder="備註...">${fhsEscHtml(o.Admin_Notes || '')}</textarea>
                         </td>
@@ -15542,7 +15990,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
 
                 const costVal = document.getElementById(`cost-val-${recordId}`);
                 if (costVal) costVal.innerHTML = numVal > 0
-                    ? `$${baseCost}<br><span style="font-size:11px;color:#FF8F00;font-weight:500;">+$${numVal}&nbsp;補打</span>`
+                    ? `$${baseCost}<br><span style="font-size:calc(11px*var(--fhs-ovw-s,1));color:#FF8F00;font-weight:500;">+$${numVal}&nbsp;補打</span>`
                     : `$${displayedCost}`;
 
                 const profitCell = document.getElementById(`profit-cell-${recordId}`);
