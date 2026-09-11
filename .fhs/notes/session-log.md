@@ -1,4 +1,12 @@
 # Session Log
+## 2026-09-11 續三 (D75-follow2：儲存篩選/編輯版面改收納入現有篩選漏斗icon + 修復editBtn手機誤現): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-11「D75-follow2」條目 + [decisions.md D75-follow2](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 兩張截圖回饋：①撤回 D75-follow 新開嘅「選項」icon，儲存篩選/編輯版面改直接收納入現有篩選漏斗icon（`reviewFilterToggle`）已控制嘅抽屜②修復真bug：`_fhsOvwTierKey()`靠嘅`_fhsDesktopFlexEng()`冇明確要求≥1130px，令編輯版面掣錯誤喺手機顯示。已部署（commit `2088a30`），三個tier零回歸實測，console零error。事後 Fat Mo 再拎一張疑似殘留舊畫面嘅截圖覆核，經 fresh reload 逐 tier 查證確認代碼已經正確（手機hidden/緊縮桌面3掣/桌面寬螢幕4掣同一行同大小），純屬截圖時間差，冇再改代碼。
+**Subagent 使用記錄**：❌未使用（單一連續實作+多輪Chromium驗證，委派會斷推理鏈）。
+## 2026-09-11 續二 (D75-follow：訂單封面圖置中/按比例放大 + 桌面寬螢幕工具列收納): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-11「D75-follow」條目 + [decisions.md D75-follow](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 五點截圖回饋：①②訂單封面圖/idle icon置中+按比例放大（CSS-only clamp()喺rowspan共存嘅td入面實測完全唔生效，改JS度真實td高度賦值px）③儲存篩選/編輯版面收納入新「選項」icon下拉④搜尋輸入框前移到常駐工具列並縮短⑤重新載入+筆數徽章合併移去徽章原位。全部淨限桌面「全部」寬螢幕視圖。實測自揪並修正一個真實bug：手機直跳寬桌面會令按鈕仲留喺舊tier容器觸發insertBefore NotFoundError。過程中識別三種工具自身狀態滯後嘅假訊號。已部署（commit `2239b93`）。③嘅「選項」icon部分翌日被D75-follow2（見上）撤回重做。
+**Subagent 使用記錄**：❌未使用（單一連續實作+多輪根因排查，委派會斷推理鏈）。
 ## 2026-09-11 (D75：訂單總覽自由版面編輯，桌面「全部」寬螢幕視圖): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-11「D75」條目 + [decisions.md D75](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 要求桌面「全部」視圖（≥1130px）欄寬/高度/密度可自行持久化調節。經 `/cl-flow-fast`（flow_id 2026-09-11-1441，Gemini A2對抗評審7條批評6採納1拒絕）規劃後實作三功能：外框高度拖柄（內部捲動）、相鄰欄zero-sum拖拽、密度連續slider（CSS calc()縮放）。`localStorage`持久化，淨限桌面「全部」tier，其餘tier完全不受影響。三個tier零回歸實測、欄寬/高度/密度全功能驗證PASS、D74封面圖完好、console零error。實測中自揪並修正高度拖柄公式bug（delta-based→絕對座標公式）。已部署（commit `ea1176a`）。
