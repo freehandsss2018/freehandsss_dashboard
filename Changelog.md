@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-12] Session（Claude Code / Sonnet 5→Fable 5.1→Opus 5 執行）— canva-auto v1.7.0：Lokyi_C 0600903 首單全幅款 + Stage⑤ 新月份合集
+
+- **緣起**：Fat Mo「canva-auto 新單」處理 0600903 Lokyi_C（全幅AI短片，字句「Welcome to the world, little one!」）——canva-auto 首次處理全幅款（5頁；此前收斂案例全部係純音樂4頁）。
+- **Stage①**：母片揀 hiumanthm 0600906（全庫最新5頁全幅款）→ `DAHU50rhAmk`，改標題、page2/3/4 換字句、歸入新建 `Free_recorder (09/26)`；`local_prep.py` 已跑。
+- **Stage③ 同 Fat Mo 人手修正 diff（8/8 格全部被改）**：AI 三個真錯——①page3 直片沿用母片闊格＋置中裁，裁走嬰兒塊臉（Fat Mo 收窄＋貼頂裁）②漏換 page 層 `background.media`（全幅 page3 背景＝同一條客人片關聲）③page4 video 信 get-assets 錯 metadata（810×2160，真值 3:4）拉長 2 倍。另 AI 對彩色圖去背狀態四度改口，最終以 export 真 PNG 確認係 Fat Mo Lovart 重出嘅透明版。
+- **Fat Mo 明文規則落盤**（`.fhs/ai/commands/canva-auto.md` v1.7.0）：全幅款 page2/4 同純音樂一樣、page3 唯一分別（背景＝同一條直片、直向片格收窄貼頂、右下＝page2 成品等比縮細）；Known failure modes 追加 4 條；Stage⑤ 補新月份合集／貼頁手法／交貨前核對原相。
+- **Stage⑤ 存檔頁**：唔出 MP4、唔出封面 JPG（Fat Mo 明示，照 0600302 收尾）。AI 由上月合集 p149 單頁複製做存檔頁（`DAHU9lhgXg4`）；Fat Mo 自行 copy 上月合集成 `Free_Laser (09/26)`（`DAHU_lpDwxo`）並貼入做 p150——幾何 0 修正。🔴**右上原相仍係上一單 ochinglee22 嘅相**（Lokyi_C 真相未入 Canva），已報 Fat Mo 待佢 UI 換。
+- **分支合併**：2026-08-29 未合併分支 `claude/canva-auto-order-0600302-bf9036`（Stage⑤ v1.6.0）一併合併，解 canva-auto.md／placement_memory.json／Changelog／handoff 衝突（兩邊內容全保留，handoff 取本分支較新便攜塊）。
+- **待 Fat Mo 人手**：p150 換 Lokyi_C 原相；Canva 刪多餘副本 `DAHU9x7r2ZI`／`DAHU_qRB96c`／`DAHU_kVhWLg`／`DAHU9lhgXg4`（MCP 冇 delete-design）。
+- **本次 Dashboard HTML／Supabase／n8n 零改動**，Phase 2.5 部署跳過。全文見本條目 + `canva_auto/placement_memory.json` order `0600903`。**Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
 ## [2026-09-11 續二] D75-follow2：儲存篩選/編輯版面改收納入現有篩選漏斗icon + 修復editBtn手機誤現
 
 - **撤回新「選項」icon**：Fat Mo 指示唔好開新 icon，儲存篩選／編輯版面應直接收納入現有嘅篩選漏斗 icon（`reviewFilterToggle`）抽屜。已移除 D75-follow 新開嘅 `#fhsOvwOptionsWrap`/`#fhsOvwOptionsPanel` 全部 HTML/CSS/JS。
@@ -607,6 +618,22 @@
 - **驗證**：每輪均起本機 `npx serve` 連 live Supabase 真實訂單資料，用 `getBoundingClientRect()`/`scrollWidth` 量度確認零溢出、零誤判（22列鎖匙扣badge零overflow、8列手模badge全部stacked、10列鎖匙扣badge全部維持同行）。
 - **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（純CSS+文案+scoped class，零schema/零n8n改動）。
 - 全文見本條目（純小型UI微調，無獨立 decisions.md 條目，Fat Mo 直接指定非架構決策）。**Subagent 使用記錄**：❌未使用（互動式截圖比對+live browser即時量度自驗，逐輪反饋節奏唔適合委派）。
+
+## [2026-08-29] Session（Claude Code / Sonnet 5+Opus 5 執行）— canva-auto v1.6.0：新增 Stage⑤ 存檔頁（0600302 ochinglee22）
+
+- **緣起**：Fat Mo 「canva-auto 新單」處理 0600302（ochinglee22），完成 Stage①-④ 後追加需求——短片完工要將 cover 貼上 `Free_Laser (MM/26)` 合集存檔，之前無此步驟。
+- **本單過程中順帶新增/修正兩條既有 SOP 規則**：
+  - 客人淨得 3 條原始片（非既有案例庫嘅 2 或 4 條），先例首見——同 Fat Mo 確認後揀 4 片家族（母片＝Kobekts 0600506，全庫音長最接近），Video4 slot 重複填影片3（跟 Fat Mo 自己 Stage② 拖入臨時素材時嘅重複選擇一致）。
+  - Fat Mo 事後喺 Canva UI 因應音訊時段（page3 設 47 秒）將 4 片改 3 片 + 整組水平群移，同時調整咗 page2 彩色圖重疊位置——證實 0600901 單訂立嘅「黑白/彩色圖統一 left+height」規則屬特定情境手法非放諸四海皆準嘅鐵律。
+- **新增 Stage⑤ 存檔頁**（`.fhs/ai/commands/canva-auto.md` v1.5.0→v1.6.0）：反推出「短片 page2 → 500×500 存檔頁」係精準仿射變換（`s=0.369803187 / tx=-105.011 / ty=+40.440`），用 `Free_Handsss` 簽名交叉驗證 left/top/width/fontSize 四項 Δ 全部 = 0.0000；字句唔跟呢條式（Fat Mo 另行重排字級/行距/字距），一律 `replace_text` 繼承母版格式。
+- **兩條新平台限制（實測發現）**：
+  1. 巨型 design（`Free_Laser (08/26)` 實測 156 頁）`read-design open_transaction`／`edit-design` 全部拒絕（`Editing a Canva Design with a size of N pages is not currently supported`），MCP 完全寫唔入。
+  2. 🔴 **`merge-designs` 對呢類巨型 design 會「假成功」**——`insert_pages` 回 `status:"success"`、`job.result` 有齊 design 物件，但**實際零插入**（page_count 前後同樣 156、讀新頁報 `Offset ... outside range`）。任何 `merge-designs` 之後必須 `read-design` 實查 `page_count`，唔可以信 `status`。
+  - 繞路（已驗證可行）：`copy-design(page_numbers=[N])` 單頁複製唔受頁數限制，喺副本上照跑母版 `update_fill` 流程，最後一步交 Fat Mo 喺 Canva UI 人手複製入合集（MCP 做唔到）。
+- **歸檔補漏**：過程中兩個臨時 design（成品 `DAHTRjp7Z_A` + 抽 asset id 用嘅副本 `DAHTRiuUFKs`）一開始漏咗歸檔、孤零零留喺 Canva root，Fat Mo 主動問起先發現。查證確認 `Free_Laser (MM/26)` 唔似 `Free_recorder (MM/26)` 咁有專屬資料夾（05/26 版一樣冇），所以已將兩個 design 改搬去 `Free_recorder (08/26)`（同單其他素材擺埋一齊）；`canva-auto.md` Stage⑤ 做法補第 6 步歸檔提醒，並註明 MCP 冇 `delete-design` 工具，用完嘅副本要 Fat Mo 自行喺 Canva UI 刪。
+- **學習系統同步**：`canva_auto/placement_memory.json`（0600302 case 三個 slot 完整記錄 + convergence_log 兩條新條目）、auto-memory `project_canva_video_automation.md`（「最高優先鐵律」加第四條 Stage⑤ 摘要）、`MEMORY.md` 索引同步。
+- **本次 Dashboard HTML／Supabase schema／n8n 零改動**——純 canva-auto 側支線工作，`.fhs/memory/handoff.md` 便攜塊六欄內容未受影響，僅同步日期戳。
+- 全文見本條目 + `canva_auto/placement_memory.json` order `0600302`。**Subagent 使用記錄**：❌未使用（Canva MCP 逐步試探+即時像素驗證+仿射變換反推，需即時交叉驗證，委派會斷推理鏈）。
 
 ## [2026-08-26] Session（Claude Code / Sonnet 5 執行）— D69續六：進度狀態往返失真全套根治方案 `/execute` 執行完成
 

@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-12 (canva-auto v1.7.0：Lokyi_C 0600903 首單全幅款 + Stage⑤ 新月份合集): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-12 條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。canva-auto 首次處理全幅款；Fat Mo 人手修正 8/8 格後 diff 落 `placement_memory.json`，明文規則落 `canva-auto.md` v1.7.0（全幅 page3 三件事、Stage⑤ 新月份合集／貼頁手法／核對原相）；同 0600302 Stage⑤ 未合併分支一併合併。🔴 `Free_Laser (09/26)` p150 右上原相仍係上一客，待 Fat Mo UI 換。
+**Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
 ## 2026-09-11 續三 (D75-follow2：儲存篩選/編輯版面改收納入現有篩選漏斗icon + 修復editBtn手機誤現): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-11「D75-follow2」條目 + [decisions.md D75-follow2](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 兩張截圖回饋：①撤回 D75-follow 新開嘅「選項」icon，儲存篩選/編輯版面改直接收納入現有篩選漏斗icon（`reviewFilterToggle`）已控制嘅抽屜②修復真bug：`_fhsOvwTierKey()`靠嘅`_fhsDesktopFlexEng()`冇明確要求≥1130px，令編輯版面掣錯誤喺手機顯示。已部署（commit `2088a30`），三個tier零回歸實測，console零error。事後 Fat Mo 再拎一張疑似殘留舊畫面嘅截圖覆核，經 fresh reload 逐 tier 查證確認代碼已經正確（手機hidden/緊縮桌面3掣/桌面寬螢幕4掣同一行同大小），純屬截圖時間差，冇再改代碼。
@@ -295,6 +299,11 @@
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-22 條目（無完成報告的改動，本行僅摘要指回）。Fat Mo 就 D65續IV 暫緩嘅大寶定價提供新數字，過程兩度返工：第一次誤將新價綁喺「純大寶（零嬰兒）」——經 Fat Mo 澄清「大寶＝客人第二個孩子」出生次序定義後，發現該組合定義上不存在，migration 0090 全套作廢，改以 0091 重做正確嘅「嬰兒+大寶＝同tier＋$300」規則。另有一次規劃階段未讀碼斷言嘅小失誤（硬阻擋其實早已存在）。定案：有大寶參與＋無父母 → $1,680/$1,980，家庭價 $2,580 flat 與純嬰兒價均不變；肢數 tier 改為只數嬰兒肢體。9 份權威文件+2 個 learnings 條目+卡片徽章+驗收工具 checklist 全數同步，browser live 窮舉驗證全過。⚠️ 交付時仍未部署生產，待本次 `/commit` 觸發。
 **Subagent 使用記錄**：❌未使用（跨代碼/Supabase/browser 即時交叉驗證+多輪業務澄清問答，委派會斷推理鏈）。
+
+## 2026-08-29 (canva-auto v1.6.0：新增 Stage⑤ 存檔頁，0600302 ochinglee22): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-08-29 條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。處理 canva-auto 新單 0600302（ochinglee22）Stage①-④ 期間，本單客人淨得 3 條原始片（非既有案例庫 2/4 條家族）先例首見，同 Fat Mo 確認揀 4 片家族+重複填法；Fat Mo 事後喺 Canva UI 因應音訊時段改 3 片+調整 page2 彩色圖位置，證實 0600901 訂立嘅「圖對統一 left+height」規則屬特定情境非鐵律。完工後 Fat Mo 追加需求：短片 cover 要貼上 `Free_Laser (MM/26)` 合集存檔——新增 **Stage⑤**，反推出短片page2→存檔頁嘅精準仿射變換（簽名交叉驗證Δ=0），同時發現兩條新 Canva 平台限制：巨型 design（156頁）開唔到 editing transaction；`merge-designs` 對呢類 design 會「假成功」（回 status success 但零插入，必須事後實查 page_count）。過程中兩個臨時 design 一度漏歸檔留喺 Canva root，Fat Mo 主動問起後查證 `Free_Laser` 系列本身冇資料夾（同 `Free_recorder` 不同），已補搬 + SOP 補歸檔步驟。學習系統（`placement_memory.json`/`project_canva_video_automation.md`/`MEMORY.md`）三處同步。本次 Dashboard HTML／Supabase／n8n 零改動。
+**Subagent 使用記錄**：❌未使用（Canva MCP 逐步試探+即時像素驗證+仿射變換反推，需即時交叉驗證，委派會斷推理鏈）。
 
 ## 2026-08-21 (D68：/commit handoff 同步升格機械閘 pre-tool-guard R13 + D66-follow 結案核實 + 便攜塊日期漂移修復): 🏷️ ✅
 
