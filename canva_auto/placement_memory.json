@@ -3,6 +3,13 @@
   "purpose": "canva-auto diff-learning 案例庫：每單 Fat Mo 人手改正 = 一筆訓練數據。Stage③ 換 fill 前先查此庫預測 resize/position；Fat Mo 改正後把 delta 記錄落此檔。案例 >=3 單收斂的規律才升格寫入記憶檔規則層。座標系 = 1920x1080 頁面像素。",
   "convergence_log": [
     {
+      "order": "0600903",
+      "date": "2026-09-12",
+      "corrected_slots": "8/8（page2彩色+黑白+字句、page3直片+背景+右下小組合、page4動畫+字句，全部Fat Mo再改）",
+      "total_slots": 8,
+      "note": "🆕首單全幅款（5頁）。AI三個真錯：①page3直片沿用母片1092.6闊格＋置中cover裁切→裁走嬰兒塊臉（Fat Mo收窄至737、貼頂裁）②漏換page層background.media（全幅page3背景＝同一條客人片關聲cover鋪滿；AI淨睇elements）③page4 video信get-assets錯metadata 810x2160（真值3:4，縮圖270x360早已露餡）→拉長2倍變形。另：彩色圖1616²＝Fat Mo喺Lovart重出（原尺寸有問題），透明底（真PNG export實測）；AI中途四度改口，因為信咗縮圖同update_fill後即時draft render（兩者都會將透明畫成白）。Fat Mo明文規則：全幅page2/page4處理同純音樂一樣；page3係唯一分別：右下＝page2成品UI複製等比縮0.3295至唔遮中間直片、背景＝同一條直片。收斂計數：UI複製字句手法第5次（首次page2→page4）；local_prep Parakeet黑白輸出獲接受。"
+    },
+    {
       "order": "0600506",
       "date": "2026-08-16",
       "corrected_slots": "1(page2彩色圖container對齊,AI自行修正) + 2(page2/page3字句font+位置,Fat Mo人手UI完成)",
@@ -87,6 +94,94 @@
     }
   ],
   "cases": [
+    {
+      "order": "0600903",
+      "customer": "Lokyi_C",
+      "design_id": "DAHU50rhAmk",
+      "date": "2026-09-12",
+      "learned": true,
+      "family": "全幅AI短片5頁；母片 hiumanthm 0600906 DAHPDo49KcI（全庫最新5頁全幅款；2026-07-27後冇全幅新單，所有sec標題母片都係純音樂4頁）",
+      "note": "canva-auto首次處理全幅款（此前收斂案例全部係純音樂）。Fat Mo明文：全幅page2/page4處理同純音樂基本一樣，page3係唯一分別。Stage①（母片選擇/標題無sec後綴/字句拆行 'Welcome to the \\nworld, little one!'）全部冇被推翻。",
+      "slots": [
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PB1r1fbHjRRxctcB-LBRvHyPrSQQrT9kL（母片元素，保留）",
+          "asset": "MAHU9MGndyg 彩色圖.png 1616x1616＝Fat Mo喺Lovart自行重出（原本896x1200尺寸有問題），透明底——存檔頁真PNG export像素實測方框角同水彩blob底色一致（237/231/230），冇白框。首次draft PNG四角254白係update_fill後即時draft render嘅假象",
+          "ai_box": {"top": 146.1028599531146, "left": 653.411459688382, "w": 592.9934187640936, "h": 633.2350229404807, "imageBox": {"top": 0, "left": -20.120802088193557, "box": 633.2350229404807}},
+          "fatmo_box": {"top": 79.60373004739205, "left": 607.1713268742681, "w": 674.1823102753654, "h": 735.386945483444, "imageBox": {"top": 0, "left": -30.602317604039683, "box": 735.386945483444}},
+          "note": "放大16%（h633→735）並上移66px；imageBox仍完全符合AI公式(box=max(w,h), left=(w-box)/2)——公式無誤，錯在沿用母片container尺寸"
+        },
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "母片 LBSJ8PGp10fmk1bK 被Fat Mo刪除 → 新元素 PB1r1fbHjRRxctcB-LB77HXWn954kMQfD",
+          "asset": "MAHU9VawTGY 黑白圖_parakeet.png 1254x1254（local_prep.py輸出，本單獲採用）",
+          "fatmo_box": {"top": 121.64221149546364, "left": 607.1713268742681, "w": 686.480283480052, "h": 677.8950577859013, "imageBox": {"top": -4.292612847075418, "left": 0, "box": 686.4802834800521}},
+          "note": "Fat Mo聲明首輪上傳錯黑白圖（原檔非parakeet），差異屬正常。left同彩色統一607.17，但height/底邊唔統一（735.39 vs 677.90；底 815.0 vs 799.5）——同TW_Ting『統一left+height』規則有出入，單一樣本，未收斂"
+        },
+        {
+          "slot": "page2_字句",
+          "element_id": "PB1r1fbHjRRxctcB-LBRP9nzJWCjx3Dyq（保留）",
+          "ai_box": {"top": 794.5345135322254, "left": 560.500995099521, "w": 827.9937163813338, "h": 148.50495773851128, "fontSize": 54.97262950637621, "letterSpacing": 0.094},
+          "fatmo_box": {"top": 789.8720845397592, "left": 546.003141809333, "w": 827.9937163813338, "h": 173.055989, "fontSize": 63.4667, "letterSpacing": 0.11},
+          "note": "字號+15.5%、字距0.094→0.11；box闊不變。短句(33字)兩行，Fat Mo揀大字"
+        },
+        {
+          "slot": "page3_直片",
+          "element_id": "PBpKX7d6642dSQQG-LBLShpnVC4V07tSD（母片元素，保留）",
+          "asset": "VAHU9Eyt4fA WhatsApp Video 352x640（9:16直向，本地tkhd一致）",
+          "ai_box": {"top": 0, "left": 412.5547675690266, "w": 1092.5963544256367, "h": 1080, "imageBox": {"top": -453.26941311421524, "left": 0, "w": 1092.5963544256367, "h": 1986.5388262284305}},
+          "fatmo_box": {"top": 0, "left": 592.7742798601207, "w": 737.1767107790307, "h": 1080, "imageBox": {"top": 0, "left": -17.268747668863398, "w": 787.1909218522595, "h": 1431.2562215495627}},
+          "note": "🔴AI錯：沿用母片1092.6闊格（係hiumanthm 16:9橫片而設）再置中cover裁切→嬰兒塊臉被裁頂。Fat Mo：格收窄至737.18（aspect 0.683）、中心x=961.4≈960、imageBox貼頂top=0保住面部、比cover多放大6.8%。規律（單一樣本）：直向客人片→直片格按片收窄、裁切貼頂保臉，唔好置中；配合hiumanthm橫片round2（加闊至1092.6）＝直片格闊度要跟客人片方向調"
+        },
+        {
+          "slot": "page3_背景",
+          "element_id": "page層 background.media（唔係elements；LB4M60NzfZ93cV9C 58%紋理rect保留疊喺上面）",
+          "asset": "母片 VAHQGaQAvWE → VAHU9cdOXJU（同一條WhatsApp片再上載一次，關聲）",
+          "fatmo_box": {"imageBox": {"top": -1205.454545454546, "left": 0, "w": 1920, "h": 3490.909090909092}},
+          "note": "🔴AI漏：Stage③只睇elements，冇檢查page層background.media，誤判『背景係母片裝飾唔使換』。Fat Mo明文(point5)：全幅page3背景＝中間同一條客人片（關聲）cover鋪滿全頁。已知限制：page背景video update_fill曾報invalid duration→人手位"
+        },
+        {
+          "slot": "page3_右下小組合",
+          "element_id": "母片小組合7元素全部被刪（LB94JSSsQg93GpyX/LBH4KntD3w2tvqtK/LB2ZXxkVD4ZnTgHh/LBjrYYPV4VwKdscg/LBtJNMH94Sk8WcNB/LBHwdd01N5Tg0d9n/LBkt7WpVVSVMhxWj）→ page2成品組合UI複製",
+          "fatmo_transform": {"scale": 0.3295120522448906, "offset_x": 1322.5757380978537, "offset_y": 721.8341189181376, "formula": "x'=0.32951*x+1322.58, y'=0.32951*y+721.83（彩色/黑白/花環group/blob/Free_Handsss/字句同一affine，驗證誤差<0.01px）"},
+          "fatmo_extent": {"left": 1384.0243421340506, "right": 1893.7902743718464, "top": 748.0645073724021, "bottom": 1027.0651328850463, "gap_to_video_right_edge": 54.07},
+          "note": "Fat Mo明文(point4)：page3右下＝page2成品copy過去、按比例縮細至唔遮中間影片。AI做唔到UI複製（帶動畫）；AI可替代＝對母片小組合逐元素update_fill＋按此affine resize/position（必須喺Fat Mo設動畫之前）。縮放比會跟直片格闊度變（本單直片右邊界1329.95→組合左邊界1384.02）"
+        },
+        {
+          "slot": "page4_動畫",
+          "element_id": "母片 LBRzVQvR9RykrlDq 被Fat Mo刪除 → 新元素 PBf1CMJ0CQGLZ45t-LBR1YP3qgQwHy2s6",
+          "asset": "VAHU9aMWNyw 影片1去背版；真比例3:4（本地影片 1.mp4 tkhd 834x1112；Canva縮圖270x360）；get-assets metadata錯報810x2160",
+          "ai_box": {"top": 146.1028599531146, "left": 666.5137091217063, "w": 632.2339766494763, "h": 632.2339766494763, "imageBox": {"top": -526.8616472078969, "left": 0, "w": 632.2339766494763, "h": 1685.95727106527}},
+          "fatmo_box": {"top": 123.25892949205758, "left": 650.2885724824182, "w": 619.4228550351638, "h": 825.897140046885, "imageBox": "=container（0,0,619.42,825.90）"},
+          "note": "🔴AI中get-assets video metadata陷阱（第6次；SOP早已明文『縮圖aspect vs metadata唔一致＝metadata錯』），按0.375計imageBox＝垂直拉長2倍變形。Fat Mo：格改跟媒體3:4、中心x=960.0、底邊949.2疊過字句區（已去背透明，可接受）"
+        },
+        {
+          "slot": "page4_字句",
+          "element_id": "母片 LBMGKJ85wzc4S7Hh 被刪 → page2字句UI複製 PBf1CMJ0CQGLZ45t-LBKyYFKCqw3RZDLJ",
+          "fatmo_box": {"top": 789.8720845397592, "left": 546.003141809333, "w": 827.9937163813338, "h": 173.055989, "fontSize": 63.4667, "lineHeight": 1.53, "letterSpacing": 0.11},
+          "note": "同page2字句幾何/字型完全一致。UI複製字句手法擴展到page2→page4（此前記錄只page2→page3）"
+        },
+        {
+          "slot": "stage5_存檔頁",
+          "closing_decision": "Fat Mo明示：唔出MP4、唔出1280x720封面JPG；照0600302收尾＝只做500x500存檔頁，由Fat Mo人手複製入合集",
+          "archive_design": "🆕新月份規則（Fat Mo 2026-09-12更正）：9月要用 Free_Laser (09/26)，唔係08/26。做法＝copy-design整份上月合集（DAHRPCB--yU 08/26，154頁，承接前月所有頁；07→08亦同一做法）→ 新副本 DAHU9x7r2ZI 放入 Free_recorder (09/26) 資料夾。🔴154頁已超出MCP編輯上限（open_transaction報『size of 154 pages is not currently supported』），所以副本改名做『Free_Laser (09/26)』同貼存檔頁都要Fat Mo喺Canva UI做",
+          "template": "上月合集p149（ochinglee22存檔頁，同DAHTRjp7Z_A一致）→ copy-design單頁複製成 DAHU9lhgXg4（標題改『→ 貼入 Free_Laser (09/26)』），已歸 Free_recorder (09/26)",
+          "fatmo_manual_paste_method": "Ctrl+A全選 → Ctrl+C → 開當月 Free_Laser (MM/26) 去到最後一頁後面新增一頁（500×500）→ Ctrl+V（Fat Mo原話講第156頁；MCP讀到08/26實際154頁，超範圍頁碼copy會誤報『Design not found』）",
+          "mcp_quirk": "copy-design(合集, page_numbers=[155,156]) 報『Design not found』；read-design metadata報page_count=154（Fat Mo講156，疑快取落後）。超範圍頁碼嘅錯誤訊息誤導成not found，改抄p149即成功",
+          "ai_彩色插圖": {"rule": "沿用母版center同height、闊度按素材aspect（1:1）", "top": 103.161809, "left": 140.3754575, "w": 203.217021, "h": 203.217021, "asset": "MAHU9MGndyg"},
+          "原相": "本地 978fe17e-90a3-44a7-8354-d8d7e48d5202.jpg 1206x1608（客人真相，粉紅鈎織皇冠）——Canva未上載，待Fat Mo拖入後update_fill＋cover crop",
+          "result_2026-09-12": "已commit：標題『Lokyi_C 存檔頁 (0600903) → 貼入 Free_Laser (08/26)』；字句replace_text後h 61.74維持2行冇reflow；彩色插圖position無top/left對調。彩色插圖MAHU9MGndyg（Fat Mo Lovart重出、透明）：真PNG export實測冇白框；首次draft嘅白色方塊係即時render假象，唔使換。🔴右上原相仍係ochinglee22嘅相（MAHRObnzx5w），Lokyi_C真相未入Canva，未換前唔可以交貨",
+          "fatmo_final_2026-09-12": "Fat Mo自行copy-design上月合集成 Free_Laser (09/26) DAHU_lpDwxo（155頁），將AI存檔頁原封貼入做p150——插入位置＝上一張存檔頁（p149 ochinglee22）後面，唔係合集最尾（最尾p155係Orion家庭原相頁）。單頁抽出DAHU_kVhWLg逐元素比對：6個元素幾何/字型/asset同AI版完全一致，0修正（彩色插圖center+height規則、replace_text繼承母版格式均被接受）。🔴但右上原相仍係ochinglee22嘅MAHRObnzx5w——另一個客嘅相已入咗合集，已即時向Fat Mo報告，須佢喺UI直接換（155頁MCP改唔到）。AI多出嘅副本待Fat Mo UI刪：DAHU9x7r2ZI（AI複製嘅09/26合集，標題仲係08/26，已被Fat Mo自己份取代）、DAHU_qRB96c／DAHU_kVhWLg（diff用單頁副本）。技巧：巨型合集用read-design純文字（唔使transaction）讀全份，按字句次序即可定位頁碼；縮圖帶fallbackstale=T嘅頁唔可信（p150縮圖顯示成向日葵頁）"
+        }
+      ],
+      "non_geometry_findings": [
+        "AI冇刪任何母片元素（元素保命鐵律遵守）；Fat Mo自己刪咗母片元素（page2黑白、page3小組合、page4動畫+字句）改用新元素/UI複製，動畫由佢人手設或複製帶過去——AI睇唔到動畫，第②③項指標靠Fat Mo。",
+        "🔴溝通教訓：Fat Mo拖入素材產生orphan新元素屬SOP預期（『拖落任一頁』），AI首輪曾誤當Fat Mo出錯去解釋。",
+        "🔴判斷教訓（最終定案）：①get-assets縮圖將透明渲染成白底（透明嘅黑白圖_parakeet同彩色圖縮圖都係白底），『縮圖白底』唔可以判斷未去背；②update_fill後即時嘅draft PNG都唔可信——彩色圖1616²首次draft四角254白，但真PNG export實測透明、冇白框；③唯一可靠＝commit後export-design真PNG，量方框角vs周圍背景；④本地資料夾素材可能已過時：Fat Mo嫌尺寸有問題會喺Lovart重出再上載（896x1200→1616x1616），AI用本地舊檔跑local_prep.py嘅cutout會錯尺寸，Fat Mo唔用係正常。AI今單喺呢張圖四度改口（未去背→已加工→未去背→未定→透明），教訓＝未export驗證前唔好向Fat Mo斷言。",
+        "local_prep.py：黑白圖_parakeet.png本單獲採用；彩色圖_cutout.png未被採用（Fat Mo用自己Canva加工版，原因未問）。",
+        "全幅款文件Stage②『page3背景層』＝page層background.media，唔係elements入面嘅紋理rect。"
+      ]
+    },
     {
       "order": "0600506",
       "customer": "Kobekts",

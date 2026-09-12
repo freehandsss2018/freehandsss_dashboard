@@ -121,6 +121,16 @@ page2 因為母片幾何本身已啱、唔使 resize/position，三項指標全�
 5. 縮圖眼證時檢查 imageBox 係咪 `(0,0 W×H)`——唔係就即係仲有裁切，要再 crop_media 一次
 4. 縮圖眼證交 Fat Mo（draft 縮圖攞唔到就用 perform 回傳嘅 thumbnails url 或 commit 後 `get-design-pages`）
 
+### 🎬 全幅款 page3 專屬做法（2026-09-12 Lokyi_C 0600903，Fat Mo 明文）
+
+全幅款（5頁）page2／page4 處理**同純音樂款一樣**；**page3 係唯一分別**，三件事：
+
+1. **背景＝中間同一條客人直片（關聲）**：放喺 page 層 `background.media`（**唔係** elements 入面嗰個半透明紋理 rect——嗰個保留、疊喺上面），cover 鋪滿全頁（imageBox 闊＝頁闊、高按片 aspect、垂直置中）。Stage③ 讀 CDF 必須連 `background.media` 一齊查。`update_fill` 掂唔到 page 背景 video（曾報 invalid duration）→ 人手位，交 Fat Mo。
+2. **直片格闊度跟客人片方向調**：直向片（9:16）→ 格收窄、裁切**貼頂**保住面部（唔好置中，置中會裁走塊臉）；橫向片（16:9）→ 格加闊。中心 x 固定頁面正中、top/h 固定全高。唔准沿用母片格闊（嗰個係上一單片方向嘅裁法）。
+3. **右下小組合＝page2 成品等比縮細**：Fat Mo 喺 Canva UI 將 page2 完成組合（圖對＋花環＋水彩 blob＋簽名＋字句）複製過 page3，用一條 affine 等比縮細至**唔遮中間直片**。AI 做唔到 UI 複製（佢帶動畫）；AI 可替代做法＝對母片小組合逐元素 `update_fill`＋按 affine `resize/position`，**必須喺 Fat Mo 設動畫之前做**（受幾何凍結鐵律管）。縮放比會跟直片格闊度變。
+
+數值一律見 `placement_memory.json` 0600903（單一樣本，未收斂）。
+
 ### Stage③ 人手補完提醒（AI 做唔到，靠 Fat Mo 記得）
 
 - **片去背**：MCP 掂唔到。上載前必須自己去背。HoKaSin 0601100 就係 `Video 1.mp4` 未去背，出來一個灰色紙紋方框遮晒下層——**上載前用 get-assets 縮圖自查：見到硬邊方形底色＝未去背**。
@@ -213,6 +223,10 @@ AI 交付時要主動講明：第 1 項我驗過（附數值），第 2、3 項�
 - `resize_element` 嘅 `preserve_aspect_ratio=true` 保留嘅係**目前 element container 現有比例**，唔係 asset 原生像素比例！Fat Mo 拖入新素材時 Canva 預設 container 形狀（例：864x864 方形）可能同新 asset 原生比例（例：960x1920 直向）完全唔同，淨傳 height 靠 preserve_aspect_ratio 推算會保留錯咗嘅 container 舊比例，導致變形/重疊（S171續III 0800802 首見）。**凡新素材原生比例明顯異於現有 container 比例時，必須明確傳 width+height（preserve_aspect_ratio=false），唔可以淨靠 preserve_aspect_ratio 自動推算。**
 - **即使 resize_element 傳咗同 asset 完全吻合嘅長寬比，元素仍可能保留裁切**（Meika 0600904 實測）：呢個 container 之前畀 update_fill 換過好幾手唔同 asset，每手都可能經過人手 crop 調校，呢啲 crop 參數（imageBox offset）唔會因為外層 resize_element 而重設——即使新 container 比例同新 asset 完全一致，imageBox 都可能仲係舊嘅 offset+放大版本（例：577×577 container 但 imageBox 顯示 603.81×603.81 帶負 offset）。**必須額外顯式 call `crop_media(top=0,left=0,width=<container寬>,height=<container高>)`** 先會真正歸零裁切，resize_element 本身唔夠。
 - 新 API（`edit-design`/`read-design`）下，`operations` 陣列**一個 call 只可以改一頁**（`page_index` 對應嗰一頁），跨頁操作要分開幾個 call，唔似舊 API 可以夾雜多頁。
+- **判斷有冇去背：縮圖同即時 draft 都唔可靠**（Lokyi_C 0600903）：①`get-assets` 縮圖將透明渲染成白底（透明嘅黑白圖_parakeet／彩色圖縮圖都係白底）；②`update_fill` 後即時回傳嘅 draft PNG 都可能將透明畫成白（彩色圖首次 draft 四角 254 白，真 export 實測透明）。**唯一可靠：commit 後 `export-design` 真 PNG，量方框角 vs 周圍背景像素**。未 export 驗證前唔好向 Fat Mo 斷言有冇去背。Stage② 「硬邊方形底色」自查只適用於有紋理／有色硬邊。
+- **本地資料夾素材可能已過時**（0600903）：Fat Mo 覺得尺寸有問題會喺 Lovart 重出再上載（彩色圖 896×1200 → 1616×1616），所以 Canva 入面嘅 asset 可以同本地檔唔同；用本地舊檔跑 `local_prep.py` 嘅輸出會錯尺寸。Stage③ 以 Canva 實際 asset 為準，唔好假設等於本地檔。
+- **page 層 `background.media` 獨立於 `elements`**（0600903）：Stage③ 讀 CDF 必須連每頁 `background.media` 一齊檢查。全幅款 page3 背景就係佢（客人同一條直片、關聲、cover 鋪滿），AI 淨睇 elements 漏換。
+- **`get-assets` video metadata 陷阱第 6 次**（0600903 影片1去背版：縮圖 270×360 vs metadata 810×2160，真值 3:4＝本地 834×1112）：AI 照 metadata 計 imageBox → 垂直拉長 2 倍。**換任何 video 前強制讀本地 tkhd 或核對縮圖 aspect，唔准跳過。**
 
 ## 執行規則
 
@@ -222,6 +236,7 @@ AI 交付時要主動講明：第 1 項我驗過（附數值），第 2、3 項�
 
 ## 版本更新日誌
 
+- v1.7.0（2026-09-12，Lokyi_C 0600903，首單全幅款）：新增 **全幅款 page3 專屬做法**（Fat Mo 明文：page2/4 同純音樂一樣，page3 係唯一分別——背景＝同一條直片關聲鋪 page 層 `background.media`、直片格闊度跟客人片方向調＋直向片貼頂裁、右下小組合＝page2 成品等比縮細）；Known failure modes 追加 3 條（縮圖白底≠未去背、page 層 background 要查、video metadata 陷阱第 6 次）。⚠️ v1.6.0（Stage⑤）喺未合併分支 `claude/canva-auto-order-0600302-bf9036`，合併時要解衝突
 - v1.5.0（2026-08-15，TW_Ting 0600901）：Fat Mo 指正兩個 AI 錯誤 + 主動提示 `word.png` 用法後落盤五項。①**禁止沿用母片 imageBox**（零裁切鐵律補強，AI 抄母片值被 Canva clamp 放大 9% 造成四邊裁切，Fat Mo 改正值同公式差 0.05%）②新增 **`word.png` 幾何真理源**（可反推 box 寬，最長段誤差 0.61%；`\n` 只保證最少行數，須讀 CDF 核對）③新增 **page2 圖對統一 left+height**（母片本身唔對齊，AI 曾誤判硬邊為素材問題）④**母片選擇改結構信號優先於音長距離**（揀錯家族會缺 slot）⑤**Fat Mo UI 複製字句手法升格規則層**（3 單收斂）；另補 960 置中規則唔跨家族適用
 - v1.0.0（2026-07-11，S164）：初版。SOP v3 + diff-learning 迴圈 + /8d 迭代三修正（開單補課制、transaction 一氣呵成鐵律、數值唯一真理來源歸 JSON）
 - v1.4.0（2026-08-01，HoKaSin 0601100 完工）：新增**黃金參考案例**（Fat Mo 判定「完美完成」嘅 6 步做法，日後照跑）；新增**字句置中規則**＝對齊花環中心 960（唔係對齊家庭圖中心，實測花環墨水左右完全對稱 294→697.5 / 1179→1626，外緣中點正好 960）；更正 `crop_media` 用法（imageBox 跟媒體 aspect 唔跟 container）
