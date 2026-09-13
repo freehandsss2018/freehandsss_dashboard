@@ -2337,8 +2337,8 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 全文見 [decisions.md D70](decisions.md)、[Changelog.md](../../Changelog.md) 2026-09-05 條目、[learnings/governance.md #4（Preferences）](../memory/learnings/governance.md)。
 - **Subagent 使用記錄**：❌未使用（單一指令邏輯設計 + git/gh 現況即時查證，委派會斷推理鏈）。
 
-## 2026-09-13 — D76：Canva 學習記錄重構——placement_memory.json schema v2（Claude Code / Sonnet 5）
+## 2026-09-13 — D77：Canva 學習記錄重構——placement_memory.json schema v2（Claude Code / Sonnet 5）
 - 依 Phase 1.6 分級合約 (a)：本次觸發 [B] 制度層變動，完成報告為唯一全文居所，此處僅摘要+連結。
 - Fat Mo 對 Agent Dashboard「Canva 學習記錄」截圖提四點回饋（分類/簡精列點/按Page拆分/追加建議），經 `/cl-flow-fast`（flow `2026-09-13-0857`）規劃執行；`placement_memory.json` 升級 schema v2（規則編號表+逐case lessons[]）；11 單回填經 fresh-context agent 兩輪覆核；Agent Dashboard 渲染重寫；新增防退化 validator CLI；canva-auto.md 升 v1.8.0。
-- 全文見 [.fhs/reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md](../reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md)、[decisions.md D76](decisions.md)。
+- 全文見 [.fhs/reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md](../reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md)、[decisions.md D77](decisions.md)。
 - **Subagent 使用記錄**：✅ 兩次派 general-purpose fresh-context agent 做回填覆核。

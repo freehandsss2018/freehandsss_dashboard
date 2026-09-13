@@ -3,7 +3,7 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
-[2026-09-13] (D76) Canva 學習記錄重構：placement_memory.json 升級 schema v2（規則編號表 + 逐 Page 列點）
+[2026-09-13] (D77) Canva 學習記錄重構：placement_memory.json 升級 schema v2（規則編號表 + 逐 Page 列點）
 
 **背景**：Fat Mo 睇住 Canva 學習記錄嘅截圖提出四點要求：①截圖一紅圈顯示嘅重複文字係 UI bug ②卡片應該先分「純音樂」／「全幅AI短片」兩個類別 ③內容應以簡精列點取代大段文字解說，並按 Page 拆分（Page2 學到咩、Page3 學到咩……）④要求 AI 審視後主動追加建議，唔係奉承。經 `/cl-flow-fast`（flow_id `2026-09-13-0857`，先「拷問」8 條問題逐一拍板，A2 Gemini 對抗評審 7 條批評 5 採納 2 拒絕，Verdict APPROVED_READY）規劃後執行。
 

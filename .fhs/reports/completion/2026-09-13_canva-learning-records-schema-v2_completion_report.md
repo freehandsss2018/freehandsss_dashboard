@@ -1,4 +1,4 @@
-# 完成記錄：Canva 學習記錄重構——schema v2（規則編號表 + 逐 Page 列點）（D76）
+# 完成記錄：Canva 學習記錄重構——schema v2（規則編號表 + 逐 Page 列點）（D77）
 
 > flow_id: `2026-09-13-0857`／執行：Claude Code Sonnet 5／2026-09-13
 
@@ -72,7 +72,7 @@ Fat Mo 提供兩張 Agent Dashboard「Canva 學習記錄」截圖，指出四點
 | `[MODIFY]` | `.fhs/ai/commands/canva-auto.md`（v1.7.0→v1.8.0） |
 | `[MODIFY]` | `docs/repo-map.md`（新增兩個腳本登記） |
 | `[MODIFY]` | `scripts/README.md`（同上） |
-| `[MODIFY]` | `.fhs/notes/decisions.md`（D76） |
+| `[MODIFY]` | `.fhs/notes/decisions.md`（D77） |
 | `[MODIFY]` | auto-memory `project_canva_video_automation.md`（schema v2 一段指引） |
 | `[MODIFY]` | `Changelog.md` |
 | `[NEW]` | 本完成記錄 |
