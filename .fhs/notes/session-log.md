@@ -2346,3 +2346,9 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - Fat Mo 對 Agent Dashboard「Canva 學習記錄」截圖提四點回饋（分類/簡精列點/按Page拆分/追加建議），經 `/cl-flow-fast`（flow `2026-09-13-0857`）規劃執行；`placement_memory.json` 升級 schema v2（規則編號表+逐case lessons[]）；11 單回填經 fresh-context agent 兩輪覆核；Agent Dashboard 渲染重寫；新增防退化 validator CLI；canva-auto.md 升 v1.8.0。
 - 全文見 [.fhs/reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md](../reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md)、[decisions.md D77](decisions.md)。
 - **Subagent 使用記錄**：✅ 兩次派 general-purpose fresh-context agent 做回填覆核。
+
+## 2026-09-13 — D77-follow/follow2：Canva 卡片+規則編號表改預設收納 + hover 說明（Claude Code / Sonnet 5）
+- Fat Mo 兩輪截圖回饋：①卡片一開頁全展開資訊過載，改收納顯示 Page chip+一句最高優先學習重點，撳開先見完整列點 ②規則編號表同樣佔位太多，改收納；標題加 `title` hover tooltip 解釋 CV 編號同狀態含意。
+- Browser 實測：`details.open===false` 預設、click 展開全部內容、五類型篩選 chip 零回歸、CSS cascade 覆寫確認生效。已重新部署至 `https://yanhei.synology.me/agent_dashboardV42.html`。
+- 全文見 [decisions.md D77 附錄](decisions.md)、Changelog.md「D77-follow」「D77-follow2」條目。
+- **Subagent 使用記錄**：❌未使用。
