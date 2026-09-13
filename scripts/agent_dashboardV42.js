@@ -894,12 +894,16 @@ function renderCanvaRulesTable(rules, ruleStats) {
   }
   const sorted = Object.values(groups).sort((a, b) => cvPageSortKey(a.page) - cvPageSortKey(b.page));
   const promotedN = rules.filter(r => r.promoted_to).length;
+  const rulesTitle = '規則編號表：同一類教訓喺唔同單重複出現時嘅統一追蹤編號（CV-01…），逐條列點右邊嘅 CV- chip 可撳返嚟；「✅已升格」= 已寫入 canva-auto.md 正式規則層；「n/3」= 未夠3單引用嘅觀察期；「💡達門檻未升格」= 已夠3單但仲未寫入規則本體';
+  const rowsHtml = sorted.map(g => '<div class="cv-pagehead">' + esc(cvPageLabel(g.page)) + '</div>' +
+    g.items.map(r => cvRenderRuleRow(r, ruleStats)).join('')
+  ).join('');
   return '<div class="cv-rulestable" id="cv-rules">' +
-    '<div class="gh" style="font-size:14px;">📚 規則編號表<span class="gn">' + rules.length + '</span>' +
+    '<div class="gh" style="font-size:14px;" title="' + esc(rulesTitle) + '">📚 規則編號表<span class="gn">' + rules.length + '</span>' +
     '<span class="ghnote">已升格 ' + promotedN + ' ／ 待收斂 ' + (rules.length - promotedN) + '</span></div>' +
-    sorted.map(g => '<div class="cv-pagehead">' + esc(cvPageLabel(g.page)) + '</div>' +
-      g.items.map(r => cvRenderRuleRow(r, ruleStats)).join('')
-    ).join('') +
+    '<details class="cv-body cv-body-rules"><summary><div class="cv-headline">撳開睇 ' + rules.length + ' 條規則逐條內容（按 Page 分組）</div></summary>' +
+    rowsHtml +
+    '</details>' +
     '</div>';
 }
 
@@ -1252,6 +1256,8 @@ const html = '<!DOCTYPE html>\n<html lang="zh-Hant">\n<head>\n<meta charset="UTF
 '.cv-body summary::-webkit-details-marker{display:none;}\n' +
 '.cv-body summary::before{content:"▸ 展開學習列點";color:var(--faint);font-size:11px;display:block;margin-bottom:4px;}\n' +
 '.cv-body[open] summary::before{content:"▾ 收起";}\n' +
+'.cv-body-rules summary::before{content:"▸ 展開規則列表";}\n' +
+'.cv-body-rules[open] summary::before{content:"▾ 收起";}\n' +
 '.cv-chips{display:flex;flex-wrap:wrap;gap:5px;}\n' +
 '.cv-chip{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--tile);border:1px solid var(--line);color:var(--soft);}\n' +
 '.cv-headline{font-size:12px;color:var(--ink);margin-top:5px;line-height:1.5;}\n' +

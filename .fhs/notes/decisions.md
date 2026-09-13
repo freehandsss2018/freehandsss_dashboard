@@ -37,6 +37,8 @@
 
 **D77-follow（同日）**：Fat Mo 睇成品截圖後回饋「先收納，最初只顯示核心超精簡資訊，學習重點即可，若要詳看才按下去後顯示」——卡片原本一開頁就全展開所有 Page 列點，資訊過載。改法：`renderCanvaCase()` 每張卡片嘅逐 Page 內容包入 `<details class="cv-body">`（預設收埋），`<summary>` 只顯示 Page 分佈 chip（例：Page 2 5／Page 3 2／Page 4 1／流程 2）+ 一句最高優先學習重點（優先序 ai_error＞tool_bug＞fatmo_technique＞manual_only＞material，clamp 60 字）；撳開先見完整列點。Browser 實測：collapsed 預設 `open===false`+截圖確認視覺上只見 chip+headline；click 後 `open===true`+10 條列點全現形；五類型篩選 chip 喺收埋狀態下仍正確運作（🔴篩選後 13 條不變）。全文見完成記錄同名條目。**Subagent 使用記錄**：❌未使用（單一 UI 收納邏輯改動+Browser 直接驗證）。
 
+**D77-follow2（同日）**：Fat Mo 再截圖回饋兩點：①規則編號表嘅「規則編號表 35」標題想撳滑鼠停留（hover）就有說明，唔使開返 canva-auto.md 先知呢個數字係咩 ②規則表同卡片一樣佔位太多，要求先收納。改法：`renderCanvaRulesTable()` 標題 `.gh` div 加 `title` 屬性（hover tooltip 解釋規則編號用途、已升格／n-3／💡達門檻三種狀態含意）；35 條規則逐條內容同樣包入 `<details class="cv-body cv-body-rules">`（預設收埋），summary 顯示「撳開睇 N 條規則逐條內容（按 Page 分組）」；新增 `.cv-body-rules` modifier class 令 collapse 提示文字改講「▸ 展開規則列表」（唔再沿用卡片嗰句「展開學習列點」，避免規則表同卡片文字重複造成語意錯位）。Browser 實測：`title` 屬性內容正確、`details.open===false`預設、click 後 35 條規則全現形、CSS cascade 順序確認 `.cv-body-rules` 覆寫生效（`getComputedStyle(...,'::before').content` 讀到「▸ 展開規則列表」）。**Subagent 使用記錄**：❌未使用。
+
 ---
 
 [2026-09-11 續二] (D75-follow2) 儲存篩選/編輯版面改收納入現有篩選漏斗 icon（撤回 D75-follow 新開嘅「選項」icon）+ 修復 editBtn 錯誤喺手機顯示嘅真bug

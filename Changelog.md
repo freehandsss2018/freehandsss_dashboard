@@ -21,6 +21,12 @@
 - Fat Mo 睇成品截圖回饋「先收納，最初只顯示核心超精簡資訊，學習重點即可，若要詳看才按下去後顯示」——逐 Page 列點包入 `<details class="cv-body">`（預設收埋），summary 只顯示 Page 分佈 chip + 一句最高優先學習重點（優先序 ai_error＞tool_bug＞fatmo_technique＞manual_only＞material）。
 - Browser 實測：collapsed 預設 open===false（截圖確認）；click 展開全部列點；五類型篩選 chip 零回歸。全文見完成記錄「七、D77-follow」、decisions.md D77 附錄。**Subagent 使用記錄**：❌未使用。
 
+## [2026-09-13] D77-follow2：規則編號表加 hover 說明 + 同樣改預設收納
+
+- Fat Mo 兩點回饋：①「規則編號表 35」標題想 hover 即有說明 ②規則表同卡片一樣佔位太多，要收納。
+- 標題加 `title` tooltip（解釋 CV- 編號用途、已升格／n-3／💡達門檻含意）；35 條規則同樣包入 `<details class="cv-body-rules">`（預設收埋），撳開先見逐條內容；新增 modifier class 令收納提示文字改講「展開規則列表」（區隔卡片嘅「展開學習列點」）。
+- Browser 實測：title 內容正確、預設收埋、click 全展開、CSS cascade 覆寫確認生效。全文見決策 D77 附錄、完成記錄。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-12] Session（Claude Code / Sonnet 5→Fable 5.1→Opus 5 執行）— canva-auto v1.7.0：Lokyi_C 0600903 首單全幅款 + Stage⑤ 新月份合集
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0600903 Lokyi_C（全幅AI短片，字句「Welcome to the world, little one!」）——canva-auto 首次處理全幅款（5頁；此前收斂案例全部係純音樂4頁）。
