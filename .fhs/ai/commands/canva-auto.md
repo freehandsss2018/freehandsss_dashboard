@@ -2,7 +2,7 @@
 
 **用途**：接到 Fat Mo 一句「canva-auto 新單」+ 訂單資料，走完 Canva 記念短片開殼→加工→換料→學習→出貨全流程。內建 diff-learning 校正回饋迴圈（同 3D pipeline 樣本庫同一原理）。
 **觸發指令**：`/canva-auto` 或對話講「canva-auto 新單」
-**版本**：v1.7.0（2026-09-12，0600903 首單全幅款 page3 做法＋Stage⑤ 新月份合集；v1.6.0 2026-08-25 新增 Stage⑤；初版 v1.0.0 2026-07-11 S164 建）
+**版本**：v1.8.0（2026-09-13，flow 2026-09-13-0857：placement_memory.json 升級 schema v2，Stage④/Step 0 寫入規格新增 lessons[]/rules[]；v1.7.0 2026-09-12 0600903 首單全幅款 page3 做法＋Stage⑤ 新月份合集；v1.6.0 2026-08-25 新增 Stage⑤；初版 v1.0.0 2026-07-11 S164 建）
 **依賴**：Canva MCP（Claude Code 端配置；Antigravity 環境無此 MCP，本指令不可攜）、本地 python + rembg（`canva_auto/local_prep.py`）
 **數值唯一真理來源**：`canva_auto/placement_memory.json`——本檔與記憶檔只放流程，**不放任何座標/尺寸數值**；錨點一律開單時從 JSON 讀。
 
@@ -25,6 +25,44 @@
 ## Step 0 — 補課檢查（開單前強制）
 
 讀 `canva_auto/placement_memory.json`：若最後一個 case 的 `learned` ≠ true，先對該單 design 開唯讀 transaction 讀取 Fat Mo 最終幾何，diff 落庫（`learned: true` + convergence_log 補記），**先補課、後開新單**。學習不依賴上一單收尾時有沒有講「改好了」。
+
+### Schema v2 寫入規格（2026-09-13，flow 2026-09-13-0857 起強制）
+
+`placement_memory.json` 現為 `schema_version: 2`。補課／Stage④ 寫入新 case 時，**除舊有欄位外必須同時填**：
+
+| 欄位 | 內容 | 判準 |
+|---|---|---|
+| `category` | `"純音樂"` 或 `"全幅AI短片"` | 以 Canva `read-design` 實查嘅 `design_metadata.page_count`（4=純音樂／5=全幅）為準，唔可以靠客人講法或標題臆測 |
+| `page_count` | 頁數（4 或 5） | 同上 |
+| `parent_order` | 母片嘅訂單編號 | 只喺母片確實喺本庫（`cases[].order` 精確吻合）先填實際編號；訂單編號跨客人巧合重複（見 yunggggm 案例 `Kaki 0600906`）或母片唔喺本庫，一律填描述性文字（唔會被渲染器誤連結），唔可以填一個會撞到其他 case 嘅 order 值 |
+| `first_pass_total` / `first_pass_corrected` | AI 首次交付俾 Fat Mo 果刻，總共幾多格／幾多格需要修正 | 以 case 自己嘅 `slots` 數量或 convergence_log 首次記錄為準；同一單有多次 convergence_log（覆核追加）時**唔准跨條目加總**——用最後一次記錄嘅實際格數，或喺 note 講清楚點計（見 flow 2026-09-13-0857 AG 評審批評#2） |
+| `lessons[]` | 逐條 `{page, flow_stage?, type, rule, text, src}` | 見下 |
+
+**`lessons[]` 逐條規格**：
+- `page`：`[2]`／`[2,3]`（跨頁）／`"flow"`（唔屬任何頁，例：Stage①母片選擇、Stage⑤存檔頁、工具限制、人手步驟）
+- `flow_stage`：`page:"flow"` 時必填，取值 `stage1|stage2|stage3|stage4|stage5|tool`
+- `type`：五類之一，**照本次事件實際性質判斷，唔跟 rule 自動繼承**（同一條 rule 底下可以有「AI 犯錯」同「Fat Mo 技巧示範」兩種不同 type 嘅 lesson）——判準：
+  - 🔴 `ai_error`：AI 做錯咗、Fat Mo 指正
+  - 🟡 `fatmo_technique`：Fat Mo 自己嘅手法、或已確立嘅正確做法（包括 AI 自行診斷成功嘅案例）
+  - 🐞 `tool_bug`：Canva MCP / API 本身行為異常或唔可靠
+  - ✋ `manual_only`：MCP 完全冇對應能力，結構性人手位
+  - 📦 `material`：素材本身嘅狀態問題（過時／命名唔跟慣例／規格有誤）
+- `rule`：引用 `rules[]` 嘅 `id`（例 `"CV-15"`）；純單次個案填 `null`（`null` 時 `type` 必填，唔可以留空指望繼承）
+- `text`：一句話（≤約40字），具體講呢單發生咩事，唔重複 rule 嘅通則字眼
+- `src`：出處指返 v1 原有欄位（`case.note`／`slots[xxx].note`／`non_geometry_findings[i]`／`convergence_log[order].note` 或其他頂層額外欄位名），方便日後覆核追溯
+
+**規則編號表 `rules[]` 維護**：
+- 同義教訓（跨單重複出現嘅通則）沿用現有 `id`，唔開新號；新教訓開新號，取現有最大編號 `CV-NN` 之後一號
+- 一條規則被 **≥3 單引用**（`lessons[].rule` 命中次數）而 `promoted_to` 仍為 `null` 時，考慮升格寫入本檔規則本體（Stage③ 各段鐵律／Known failure modes），升格後同步將該規則 `promoted_to` 填實際章節名
+- `id` 一經指派永不重編號；規則作廢改 `retired:true`，唔可以直接刪除（避免舊 lesson 引用斷鏈）
+
+**寫入後強制驗證**：Stage④／Step 0 寫入完成後，必須執行：
+
+```bash
+node scripts/canva_memory_validate.js
+```
+
+exit code ≠ 0 即代表寫入有缺（缺欄位／規則引用錯誤／type 非法／id 重複），**唔准當 Stage④ 完成**，必須修正到 exit 0 為止。exit 0 但有 `💡` 提示（達 3 單門檻未升格）屬正常，斟酌是否升格即可，唔阻擋流程。
 
 ## 🏆 黃金參考案例：HoKaSin 0601100（2026-08-01 Fat Mo 判定「完美完成」，日後照呢個做）
 
@@ -205,7 +243,7 @@ AI 交付時要主動講明：第 1 項我驗過（附數值），第 2、3 項�
 
 ## Stage ④ — 學習＋出貨
 
-- Fat Mo 有改 → 佢改完後讀 diff 落 `placement_memory.json`（case + convergence_log + `learned: true`）；規律 **≥3 單收斂**先升格寫入記憶檔規則層
+- Fat Mo 有改 → 佢改完後讀 diff 落 `placement_memory.json`（case + convergence_log + `learned: true` + schema v2 `category`/`page_count`/`parent_order`/`first_pass_total`/`first_pass_corrected`/`lessons[]`，規格見 Step 0「Schema v2 寫入規格」）；規律 **≥3 單收斂**先升格寫入記憶檔規則層／`rules[].promoted_to`；寫完跑 `node scripts/canva_memory_validate.js` 確認 exit 0
 - Fat Mo OK → `get-export-formats` → `export-design` MP4 `horizontal_1080p` + 封面 JPG（page2、1280×720、**`quality` 必填**）→ 交連結（提醒有效期約 4 小時）→ 本 case 記 `learned: true`
 - ⚠️ 出唔出 MP4/封面 JPG **要問 Fat Mo**，唔係必然步驟（0600302 明示「不用出」）。但 **Stage⑤ 存檔頁照做**，兩者無關
 
@@ -283,6 +321,7 @@ scale s = 0.369803187    tx = -105.011    ty = +40.440
 
 ## 版本更新日誌
 
+- v1.8.0（2026-09-13，flow 2026-09-13-0857，Canva 學習記錄重構）：`placement_memory.json` 升級 `schema_version:2`——新增頂層 `rules[]`（規則編號表 CV-01..CV-35，跨單教訓統一編號＋升格追蹤）＋逐 case `category`/`page_count`/`parent_order`/`first_pass_total`/`first_pass_corrected`/`lessons[]`（逐 Page/流程列點，五類型標籤）；11 個既有 case 已回填（AI 抽取 + fresh-context agent 兩輪覆核）；v1 舊欄位一字不刪、零改動（887 key path 深比對驗證）。新增 `scripts/canva_memory_validate.js`（Stage④ 寫入後強制跑嘅防退化校驗 CLI）＋`scripts/_oneoff/canva_lessons_merge.js`（一次性回填腳本，保留審計）。Agent Dashboard `renderCanvaLearningZone` 同步重寫：純音樂/全幅款分組置頂、規則表雙向錨點跳轉、AI 首次準確率／Canva 連結／母片連結／類型篩選；順手修正 `.cnote[open]` 展開摘要重複顯示嘅舊 bug（IG/Canva/3D 三個學習記錄 zone 共用）。Step 0 新增「Schema v2 寫入規格」段，Stage④ 同步引用。
 - v1.7.0（2026-09-12，Lokyi_C 0600903，首單全幅款）：新增 **全幅款 page3 專屬做法**（Fat Mo 明文：page2/4 同純音樂一樣，page3 係唯一分別——背景＝同一條直片關聲鋪 page 層 `background.media`、直片格闊度跟客人片方向調＋直向片貼頂裁、右下小組合＝page2 成品等比縮細）；Stage⑤ 補**新月份合集**（上月合集 copy→改名→入 `Free_recorder (MM/26)`）、Fat Mo 貼頁手法同插入位置、交貨前核對右上原相係本客；Known failure modes 追加 4 條（判斷去背只信 export 真 PNG、page 層 background 要查、video metadata 陷阱第 6 次、本地素材可能已過時）。同 v1.6.0（原喺未合併分支）於 2026-09-12 一併合併落 main
 - v1.6.0（2026-08-25，ochinglee22 0600302）：新增 **Stage⑤ 存檔頁**（短片 cover 上 `Free_Laser` 合集）——完整做法、仿射變換式（s=0.369803187 / tx=−105.011 / ty=+40.440，簽名交叉驗證 Δ=0）、右上原相同彩色插圖各自嘅 box 規則；連帶兩條新 Known failure mode：**巨型 design 開唔到 editing transaction**（實測 156 頁）同 **`merge-designs` 假成功**（回 success 但冇插到，必須事後實查 page_count）。另補記 Stage④ 出 MP4/封面 JPG **要問 Fat Mo、非必然步驟**
 - v1.5.0（2026-08-15，TW_Ting 0600901）：Fat Mo 指正兩個 AI 錯誤 + 主動提示 `word.png` 用法後落盤五項。①**禁止沿用母片 imageBox**（零裁切鐵律補強，AI 抄母片值被 Canva clamp 放大 9% 造成四邊裁切，Fat Mo 改正值同公式差 0.05%）②新增 **`word.png` 幾何真理源**（可反推 box 寬，最長段誤差 0.61%；`\n` 只保證最少行數，須讀 CDF 核對）③新增 **page2 圖對統一 left+height**（母片本身唔對齊，AI 曾誤判硬邊為素材問題）④**母片選擇改結構信號優先於音長距離**（揀錯家族會缺 slot）⑤**Fat Mo UI 複製字句手法升格規則層**（3 單收斂）；另補 960 置中規則唔跨家族適用

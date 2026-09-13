@@ -3,6 +3,26 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-13] (D76) Canva 學習記錄重構：placement_memory.json 升級 schema v2（規則編號表 + 逐 Page 列點）
+
+**背景**：Fat Mo 睇住 Canva 學習記錄嘅截圖提出四點要求：①截圖一紅圈顯示嘅重複文字係 UI bug ②卡片應該先分「純音樂」／「全幅AI短片」兩個類別 ③內容應以簡精列點取代大段文字解說，並按 Page 拆分（Page2 學到咩、Page3 學到咩……）④要求 AI 審視後主動追加建議，唔係奉承。經 `/cl-flow-fast`（flow_id `2026-09-13-0857`，先「拷問」8 條問題逐一拍板，A2 Gemini 對抗評審 7 條批評 5 採納 2 拒絕，Verdict APPROVED_READY）規劃後執行。
+
+**Schema v2**：`canva_auto/placement_memory.json` 加 `schema_version:2`，頂層新增 `rules[]`（規則編號表 CV-01..CV-35，每條 `{id,type,page,applies_to,text,promoted_to}`，跨單重複教訓統一編號、`promoted_to` 追蹤是否已升格入 canva-auto.md），每個 case 新增 `category`/`page_count`/`parent_order`/`first_pass_total`/`first_pass_corrected`/`lessons[]`（逐條 `{page,flow_stage?,type,rule,text,src}`，五類型 🔴AI錯/🟡Fat Mo手法/🐞工具bug/✋人手限制/📦素材）。**v1 舊欄位一律唔改**（`slots`/`note`/`non_geometry_findings`/`convergence_log`/`technique_lesson*` 全部保留做「原文」摺疊顯示，零資訊損失）——一次性合併腳本 `scripts/_oneoff/canva_lessons_merge.js` 對 887 個 v1 key path 逐一深比對驗證後先寫入。
+
+**11 單回填 + 兩輪覆核**：AI 先從 5 個來源（`note`/`slots[].note`/`non_geometry_findings`/`convergence_log`/`technique_lesson*` 等額外欄位）抽取列點（每點標 `src` 出處），派 fresh-context agent 逐單四項覆核（無中生有／有冇漏真錯／type 標啱唔啱／rule 引用啱唔啱）——首輪 **11/11 FAIL**，揪出系統性問題：8 條 lesson 將「AI 做啱咗／Fat Mo 自己嘅動作／AI 自行診斷成功」誤標做 🔴`ai_error`，另有 4 處 `src` 指錯欄位、4 條真教訓（包括 hiumanthm 自標「最嚴重錯誤」嘅 page4 揀錯 asset）完全漏記。全部修正並針對 pristine v1 backup 重新跑合併驗證後通過。
+
+**分類判準**：純音樂／全幅AI短片以 Canva `read-design` 實查 `page_count`（4=純音樂、5=全幅）為準，非估算——11 單全部逐一查證（全幅：0600903/0600906；其餘 9 單純音樂）。
+
+**Agent Dashboard 渲染**（`scripts/agent_dashboardV42.js`）：`renderCanvaLearningZone`/`renderCanvaCase` 全面重寫——兩段類別置頂（各附 AI 首次準確率）、卡片內逐 Page（＋「流程」分 Stage①-⑤/工具）列點、規則編號表按 Page 分組（雙向錨點跳轉 `#case-*`↔`#rule-*`，CSS `:target` 高亮）、Canva 直達連結、母片連結（精確 order 比對，避免 Kaki/hiumanthm 訂單編號巧合撞號嘅誤連結）、五類型篩選 chip（獨立 JS，唔碰現有 `apply()`——AG 評審提出質疑但驗證咗兩者 DOM token 完全唔重疊，裁決拒絕採納合併建議）。**順手修正**截圖一紅圈嘅真 bug：`<details>` 展開後截斷摘要同全文 `<p>` 同時顯示——新增 `cnoteBlock()` 共用 helper，IG看門狗／Canva／3D 三個學習記錄 zone 共用同一 fix，三者皆已零回歸驗證。
+
+**防退化**：新增 `scripts/canva_memory_validate.js`（可 `require` 亦可 CLI 直跑，缺欄位/規則引用錯/type非法/id重複 → exit 1；達 3 單門檻未升格 → 💡 提示 exit 0），canva-auto.md Stage④/Step 0 寫入規格同步更新為 v1.8.0，要求寫入後強制跑呢個 CLI。已用刻意壞資料做正反測試（exit 1 → 還原 → exit 0）。
+
+**驗證**：generator 生成零勘誤；Browser 實測兩段類別（9+2單）/35條規則列全部渲染、篩選 chip（🔴13條/🐞14條）同規則表聯動正確、`:target` 錨點高亮、桌面+手機（375px 零橫向溢出）、console 全程零 error。
+
+**改動檔案**：`canva_auto/placement_memory.json`、`scripts/agent_dashboardV42.js`、`scripts/canva_memory_validate.js` [NEW]、`scripts/_oneoff/canva_lessons_merge.js` [NEW]、`.fhs/ai/commands/canva-auto.md`。**Subagent 使用記錄**：✅ 兩次派 general-purpose fresh-context agent 做回填覆核（第一輪揪出 11/11 FAIL 並具體指出修正點；第二輪由 AI 自行 spot-check 確認 11 項修正全部落實，未再重派完整覆核）。
+
+---
+
 [2026-09-11 續二] (D75-follow2) 儲存篩選/編輯版面改收納入現有篩選漏斗 icon（撤回 D75-follow 新開嘅「選項」icon）+ 修復 editBtn 錯誤喺手機顯示嘅真bug
 
 **背景**：Fat Mo 兩張截圖回饋：①桌面寬螢幕唔好開新「選項」icon（"..."），儲存篩選／編輯版面應該直接收納入現有嘅篩選漏斗 icon（`reviewFilterToggle`）已控制緊嘅抽屜 ②手機視圖見到「編輯版面」不應存在嘅按鈕。

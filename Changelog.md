@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] D76：Canva 學習記錄重構——placement_memory.json schema v2（規則編號表+逐Page列點）
+
+- 依 Phase 1.6 分級合約 (a)：本條目觸發 [B] 制度層變動，完成報告為唯一全文居所，此處僅摘要。
+- Fat Mo 四點回饋（分類/簡精列點/按Page拆分/追加建議）→ `/cl-flow-fast`（flow `2026-09-13-0857`）規劃執行；`placement_memory.json` 升 schema v2（規則編號表CV-01..CV-35+逐case lessons[]，v1零改動）；11單回填經fresh-context agent兩輪覆核（首輪11/11 FAIL全部修正）；Agent Dashboard渲染重寫+順手修IG/Canva/3D共用嘅重複文字bug；新增防退化validator CLI；canva-auto.md升v1.8.0。
+- 全文見 `.fhs/reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md`、decisions.md D76。**Subagent 使用記錄**：✅ 兩次派 fresh-context agent 做回填覆核。
+
 ## [2026-09-12] Session（Claude Code / Sonnet 5→Fable 5.1→Opus 5 執行）— canva-auto v1.7.0：Lokyi_C 0600903 首單全幅款 + Stage⑤ 新月份合集
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0600903 Lokyi_C（全幅AI短片，字句「Welcome to the world, little one!」）——canva-auto 首次處理全幅款（5頁；此前收斂案例全部係純音樂4頁）。

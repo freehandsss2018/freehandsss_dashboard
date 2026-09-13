@@ -55,6 +55,12 @@ function esc(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+// 2026-09-13（flow 2026-09-13-0857 #4）：<details> 展開後 summary 截斷文字同 <p> 全文同時顯示嘅重複 bug 統一修法
+// summary 文字包一層 span，開啟時用 CSS 隱藏；IG/Canva/3D 三個學習記錄 zone 共用（原本各自重複同一段錯 pattern）
+function cnoteBlock(escapedText, clampLen) {
+  if (!escapedText) return '';
+  return '<details class="cnote"><summary><span class="cnote-sum-text">' + clamp(escapedText, clampLen || 90) + '</span></summary><p>' + escapedText + '</p></details>';
+}
 function parseFrontmatter(text) {
   const out = {};
   if (!text || !text.startsWith('---')) return out;
@@ -645,7 +651,7 @@ function renderIgWatchRuleCard(r) {
     : ('全部抑制' + (r.from_kind ? '（限 ' + esc(r.from_kind) + '）' : ''));
   const dateStr = r.created_at ? String(r.created_at).slice(0, 10) : '—';
   const appliedStr = r.applied_count > 0 ? '生效 ' + r.applied_count + ' 次' : '未生效過';
-  const note = r.note ? '<details class="cnote"><summary>' + clamp(esc(r.note), 60) + '</summary><p>' + esc(r.note) + '</p></details>' : '';
+  const note = cnoteBlock(esc(r.note), 60);
   return '<article class="ccard' + (r.active ? '' : ' ccard-pending') + '" data-rule-id="' + esc(r.id) + '">' +
     '<div class="chead"><span class="emo">' + (r.active ? '🟢' : '⏸️') + '</span>' +
     '<h3>' + typeLabel + '<span class="cord">' + dateStr + '</span></h3></div>' +
@@ -680,6 +686,9 @@ function renderIgWatchLearningZone() {
 }
 
 // ---------- Canva 學習記錄 zone：canva_auto/placement_memory.json diff-learning 案例庫 ----------
+// Schema v2（flow 2026-09-13-0857，Verdict cl-final-plan.md）：款式分組置頂／逐 Page 列點／規則編號表跨單連繫
+const { validateCanvaMemory } = require('./canva_memory_validate');
+
 function loadCanvaLearning() {
   const p = path.join(ROOT, 'canva_auto', 'placement_memory.json');
   const raw = readIf(p);
@@ -687,44 +696,261 @@ function loadCanvaLearning() {
   try { return JSON.parse(raw); } catch (e) { warnings.push('canva_auto/placement_memory.json 解析失敗：' + e.message); return null; }
 }
 const canvaData = loadCanvaLearning();
+if (canvaData) {
+  const { errors: cvErrors, infos: cvInfos } = validateCanvaMemory(canvaData);
+  cvErrors.forEach(e => warnings.push('[Canva學習記錄] ' + e));
+  cvInfos.forEach(i => warnings.push('[Canva學習記錄] ' + i));
+}
 
-function renderCanvaCase(c) {
+const CV_TYPE_EMOJI = { ai_error: '🔴', fatmo_technique: '🟡', tool_bug: '🐞', manual_only: '✋', material: '📦' };
+const CV_TYPE_LABEL = { ai_error: 'AI錯', fatmo_technique: 'Fat Mo手法', tool_bug: '工具bug', manual_only: '人手限制', material: '素材' };
+const CV_FLOW_STAGE_ORDER = ['stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'tool'];
+const CV_FLOW_STAGE_LABEL = { stage1: 'Stage① 開殼', stage2: 'Stage② 人手', stage3: 'Stage③ 換料', stage4: 'Stage④ 學習出貨', stage5: 'Stage⑤ 存檔頁', tool: '工具限制' };
+const CV_CATEGORY_ORDER = ['純音樂', '全幅AI短片'];
+const CV_KNOWN_CASE_KEYS = new Set(['order', 'customer', 'design_id', 'date', 'learned', 'family', 'note', 'text_notes',
+  'slots', 'non_geometry_findings', 'category', 'page_count', 'parent_order', 'first_pass_total', 'first_pass_corrected', 'lessons']);
+
+function cvPageKey(page) {
+  if (page === 'flow') return 'flow';
+  if (Array.isArray(page)) return 'p' + page.slice().sort((a, b) => a - b).join('_');
+  return 'p' + page;
+}
+function cvPageLabel(page) {
+  if (page === 'flow') return '流程';
+  if (Array.isArray(page)) return 'Page ' + page.slice().sort((a, b) => a - b).join('＋');
+  return 'Page ' + page;
+}
+function cvPageSortKey(page) {
+  if (page === 'flow') return 999;
+  const arr = Array.isArray(page) ? page : [page];
+  return Math.min.apply(null, arr);
+}
+
+// 規則使用統計（rule id -> 引用單號集合），用嚟計 chip 顯示嘅「n單」同規則表嘅來源連結
+function cvBuildRuleStats(cases) {
+  const stats = {};
+  for (const c of cases) {
+    for (const l of (c.lessons || [])) {
+      if (!l.rule) continue;
+      if (!stats[l.rule]) stats[l.rule] = new Set();
+      stats[l.rule].add(c.order);
+    }
+  }
+  return stats;
+}
+
+function cvLessonLi(l, ruleStats, rulesById) {
+  const emo = CV_TYPE_EMOJI[l.type] || '•';
+  let chip = '';
+  if (l.rule && rulesById[l.rule]) {
+    const n = ruleStats[l.rule] ? ruleStats[l.rule].size : 0;
+    const promoted = rulesById[l.rule].promoted_to;
+    const statusTxt = promoted ? '✅已升格' : (n >= 3 ? '💡達門檻' : n + '單');
+    chip = ' <a class="cv-rulechip" href="#rule-' + esc(l.rule) + '" data-cv-type="' + esc(l.type || '') + '">' + esc(l.rule) + ' · ' + statusTxt + '</a>';
+  }
+  return '<li class="cv-lesson" data-cv-type="' + esc(l.type || '') + '"><span class="cv-emo">' + emo + '</span> ' + esc(l.text) + chip + '</li>';
+}
+
+function cvGroupLessons(lessons) {
+  const groups = {};
+  for (const l of lessons) {
+    const key = cvPageKey(l.page);
+    if (!groups[key]) groups[key] = { page: l.page, items: [] };
+    groups[key].items.push(l);
+  }
+  return Object.values(groups).sort((a, b) => cvPageSortKey(a.page) - cvPageSortKey(b.page));
+}
+
+function cvRenderFlowGroup(items, ruleStats, rulesById) {
+  // flow 分組內部再按 stage 排序、加子標題
+  const byStage = {};
+  for (const l of items) {
+    const st = l.flow_stage || 'tool';
+    if (!byStage[st]) byStage[st] = [];
+    byStage[st].push(l);
+  }
+  return CV_FLOW_STAGE_ORDER.filter(st => byStage[st]).map(st =>
+    '<div class="cv-substage">' + esc(CV_FLOW_STAGE_LABEL[st] || st) + '</div><ul class="cv-lessons">' +
+    byStage[st].map(l => cvLessonLi(l, ruleStats, rulesById)).join('') + '</ul>'
+  ).join('');
+}
+
+function cvOrigNote(c, convergenceLog) {
+  // 原文（舊欄位）：note/text_notes、slots[].note、non_geometry_findings、convergence_log、
+  // 未知額外欄位（technique_lesson* 等 v1 遺留豐富欄位）—— 全部保留，零資訊損失
+  const parts = [];
+  if (c.note) parts.push('【note】' + c.note);
+  if (Array.isArray(c.text_notes)) parts.push('【text_notes】' + c.text_notes.join(' ／ '));
+  if (Array.isArray(c.slots)) {
+    for (const s of c.slots) {
+      if (s.note) parts.push('【' + (s.slot || 'slot') + '】' + s.note);
+    }
+  }
+  if (Array.isArray(c.non_geometry_findings)) {
+    c.non_geometry_findings.forEach((f, i) => parts.push('【ngf#' + i + '】' + f));
+  }
+  const logEntries = convergenceLog.filter(l => l.order === c.order);
+  for (const l of logEntries) {
+    if (l.note) parts.push('【convergence_log ' + (l.date || '') + '】' + l.note);
+    if (Array.isArray(l.entries)) l.entries.forEach(e => parts.push('【convergence_log ' + (l.date || '') + '】' + e));
+  }
+  for (const k of Object.keys(c)) {
+    if (CV_KNOWN_CASE_KEYS.has(k)) continue;
+    const v = c[k];
+    parts.push('【' + k + '】' + (typeof v === 'string' ? v : JSON.stringify(v, null, 1)));
+  }
+  return parts.map(stripMd).join('\n\n');
+}
+
+function renderCanvaCase(c, ctx) {
   const learned = c.learned === true;
-  const slotN = Array.isArray(c.slots) ? c.slots.length : 0;
-  const noteSrc = c.note || (Array.isArray(c.text_notes) ? c.text_notes.join(' ／ ') : '');
-  const note = esc(stripMd(noteSrc));
-  return '<article class="ccard' + (learned ? '' : ' ccard-pending') + '">' +
+  const orderById = ctx.orderById;
+  // 舊格式安全網：冇 lessons[] 就退回顯示 note 全文（理論上 schema v2 下不應出現，防未來手誤寫入漏欄位）
+  if (!Array.isArray(c.lessons)) {
+    const noteSrc = c.note || (Array.isArray(c.text_notes) ? c.text_notes.join(' ／ ') : '');
+    const note = esc(stripMd(noteSrc));
+    return '<article class="ccard ccard-pending cv-case" id="case-' + esc(c.order) + '">' +
+      '<div class="chead"><span class="emo">⚠️</span><h3>' + esc(c.customer || '未具名') + '<span class="cord">#' + esc(c.order || '') + '</span></h3></div>' +
+      '<div class="cmeta"><span class="tag tg-summon">舊格式（未回填 lessons）</span></div>' +
+      cnoteBlock(note, 90) + '</article>';
+  }
+  const groups = cvGroupLessons(c.lessons);
+  const bodyHtml = groups.map(g => {
+    if (g.page === 'flow') {
+      return '<div class="cv-pagegrp" data-cv-grp="flow">' + cvRenderFlowGroup(g.items, ctx.ruleStats, ctx.rulesById) + '</div>';
+    }
+    return '<div class="cv-pagegrp" data-cv-grp="' + cvPageKey(g.page) + '"><div class="cv-pagehead">' + esc(cvPageLabel(g.page)) + '</div>' +
+      '<ul class="cv-lessons">' + g.items.map(l => cvLessonLi(l, ctx.ruleStats, ctx.rulesById)).join('') + '</ul></div>';
+  }).join('');
+
+  const canvaLink = c.design_id ? ' <a class="cv-canvalink" href="https://www.canva.com/design/' + esc(c.design_id) + '/edit" target="_blank" rel="noopener">↗Canva</a>' : '';
+  // 母片連結：parent_order 必須精確等於本庫另一個 case.order 先自動連結；
+  // 唔存在（跨案例編號巧合、或母片本身唔喺庫內）就淨顯示文字，唔會誤連錯單（見 orderById 精確 lookup，唔做模糊配對）
+  let parentHtml = '';
+  if (c.parent_order) {
+    const target = orderById[c.parent_order];
+    parentHtml = target
+      ? ' <a class="cv-parentlink" href="#case-' + esc(c.parent_order) + '">母片 ← #' + esc(c.parent_order) + ' ' + esc(target.customer || '') + '</a>'
+      : ' <span class="cv-parenttxt" title="母片非本庫獨立案例">母片：' + esc(c.parent_order) + '</span>';
+  }
+  const accBadge = (typeof c.first_pass_total === 'number' && c.first_pass_total > 0)
+    ? '<span class="ver" title="AI 首次交付準確率">首次準 ' + (c.first_pass_total - (c.first_pass_corrected || 0)) + '/' + c.first_pass_total + ' 格</span>'
+    : '';
+  const orig = cvOrigNote(c, ctx.convergenceLog);
+
+  return '<article class="ccard cv-case" id="case-' + esc(c.order) + '">' +
     '<div class="chead"><span class="emo">' + (learned ? '✅' : '⏳') + '</span>' +
-    '<h3>' + esc(c.customer || '未具名') + '<span class="cord">#' + esc(c.order || '') + '</span></h3></div>' +
+    '<h3>' + esc(c.customer || '未具名') + '<span class="cord">#' + esc(c.order || '') + '</span></h3>' + canvaLink + '</div>' +
     '<div class="cmeta"><span class="tag ' + (learned ? 'tg-cmd' : 'tg-summon') + '">' + (learned ? '已學習' : '待覆核') + '</span>' +
     (c.date ? '<span class="ver">' + esc(c.date) + '</span>' : '') +
-    (slotN ? '<span class="ver" title="幾何格數">' + slotN + ' 格</span>' : '') +
+    (c.page_count ? '<span class="ver">' + c.page_count + ' 頁</span>' : '') +
+    accBadge + parentHtml +
     '</div>' +
-    (note ? '<details class="cnote"><summary>' + clamp(note, 90) + '</summary><p>' + note + '</p></details>' : '') +
+    bodyHtml +
+    cnoteBlock(esc(orig), 40) +
     '</article>';
+}
+
+function cvRenderRuleRow(r, ruleStats) {
+  const orders = ruleStats[r.id] ? [...ruleStats[r.id]] : [];
+  const n = orders.length;
+  const statusHtml = r.promoted_to
+    ? '<span class="tag tg-cmd">✅已升格 → ' + esc(r.promoted_to) + '</span>'
+    : (n >= 3 ? '<span class="tag tg-summon">💡達門檻未升格（' + n + '單）</span>' : '<span class="ver">' + n + '/3</span>');
+  const orderChips = orders.map(o => '<a class="cv-caselink" href="#case-' + esc(o) + '">#' + esc(o) + '</a>').join(' ');
+  return '<div class="cv-rulerow" id="rule-' + esc(r.id) + '" data-cv-type="' + esc(r.type) + '">' +
+    '<span class="cv-emo">' + (CV_TYPE_EMOJI[r.type] || '•') + '</span> ' +
+    '<b>' + esc(r.id) + '</b>　' + esc(r.text) +
+    '<div class="cmeta" style="margin-top:4px;">' +
+    '<span class="ver">' + esc(cvPageLabel(r.page)) + '</span>' +
+    '<span class="ver">' + esc(r.applies_to || 'all') + '</span>' +
+    statusHtml +
+    (orderChips ? '<span class="ver">來源：' + orderChips + '</span>' : '') +
+    '</div></div>';
+}
+
+function renderCanvaRulesTable(rules, ruleStats) {
+  if (!rules.length) return '';
+  const groups = {};
+  for (const r of rules) {
+    const key = cvPageKey(r.page);
+    if (!groups[key]) groups[key] = { page: r.page, items: [] };
+    groups[key].items.push(r);
+  }
+  const sorted = Object.values(groups).sort((a, b) => cvPageSortKey(a.page) - cvPageSortKey(b.page));
+  const promotedN = rules.filter(r => r.promoted_to).length;
+  return '<div class="cv-rulestable" id="cv-rules">' +
+    '<div class="gh" style="font-size:14px;">📚 規則編號表<span class="gn">' + rules.length + '</span>' +
+    '<span class="ghnote">已升格 ' + promotedN + ' ／ 待收斂 ' + (rules.length - promotedN) + '</span></div>' +
+    sorted.map(g => '<div class="cv-pagehead">' + esc(cvPageLabel(g.page)) + '</div>' +
+      g.items.map(r => cvRenderRuleRow(r, ruleStats)).join('')
+    ).join('') +
+    '</div>';
 }
 
 function renderCanvaLearningZone() {
   if (!canvaData) return '';
-  const cases = Array.isArray(canvaData.cases) ? canvaData.cases.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
-  const learnedN = cases.filter(c => c.learned === true).length;
-  const pendingN = cases.length - learnedN;
+  const allCases = Array.isArray(canvaData.cases) ? canvaData.cases.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')) : [];
+  const rules = Array.isArray(canvaData.rules) ? canvaData.rules : [];
+  const rulesById = {};
+  rules.forEach(r => { rulesById[r.id] = r; });
+  const orderById = {};
+  allCases.forEach(c => { orderById[c.order] = c; });
+  const ruleStats = cvBuildRuleStats(allCases);
+  const convergenceLog = Array.isArray(canvaData.convergence_log) ? canvaData.convergence_log : [];
+  const ctx = { ruleStats, rulesById, orderById, convergenceLog };
+
+  const learnedN = allCases.filter(c => c.learned === true).length;
+  const pendingN = allCases.length - learnedN;
+  const promotedN = rules.filter(r => r.promoted_to).length;
+  const thresholdN = rules.filter(r => !r.promoted_to && ruleStats[r.id] && ruleStats[r.id].size >= 3).length;
+
   const tiles =
     '<div class="stats">' +
-    '<div class="stat"><div class="lb">🎨 案例總數</div><div class="nu teal">' + cases.length + '</div></div>' +
+    '<div class="stat"><div class="lb">🎨 案例總數</div><div class="nu teal">' + allCases.length + '</div></div>' +
     '<div class="stat"><div class="lb">✅ 已學習</div><div class="nu ok">' + learnedN + '</div></div>' +
     '<div class="stat"><div class="lb">⏳ 待覆核</div><div class="nu ' + (pendingN ? 'orange' : 'ok') + '">' + pendingN + '</div></div>' +
+    '<div class="stat"><div class="lb">📚 規則數</div><div class="nu teal">' + rules.length + '</div></div>' +
+    '<div class="stat"><div class="lb">✅ 已升格</div><div class="nu ok">' + promotedN + '</div></div>' +
+    (thresholdN ? '<div class="stat"><div class="lb">💡 達門檻未升格</div><div class="nu orange">' + thresholdN + '</div></div>' : '') +
     '</div>';
-  const log = Array.isArray(canvaData.convergence_log) ? canvaData.convergence_log.slice().reverse() : [];
-  const logHtml = log.length ? '<div class="clog"><b>收斂追蹤</b><ul>' +
-    log.map(l => '<li>' + esc(l.date || '') + ' · #' + esc(l.order || '') + '　' + esc(l.corrected_slots) + '/' + esc(l.total_slots) + ' 格被修正——' + esc(stripMd(l.note || '')) + '</li>').join('') +
-    '</ul></div>' : '';
+
+  // 款式分組（Q5：純音樂 → 全幅AI短片 上下並列；未分類舊格式殿後）
+  const byCategory = {};
+  for (const c of allCases) {
+    const cat = CV_CATEGORY_ORDER.includes(c.category) ? c.category : '未分類（舊格式）';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(c);
+  }
+  const catOrder = CV_CATEGORY_ORDER.filter(cat => byCategory[cat]).concat(Object.keys(byCategory).filter(k => !CV_CATEGORY_ORDER.includes(k)));
+
+  const jumpChips = catOrder.map(cat => '<a class="cv-jumpchip" href="#cv-cat-' + esc(cat) + '">' + (cat === '純音樂' ? '🎵' : cat === '全幅AI短片' ? '🎬' : '📁') + ' ' + esc(cat) + ' ' + byCategory[cat].length + '</a>')
+    .concat(rules.length ? ['<a class="cv-jumpchip" href="#cv-rules">📚 規則編號表 ' + rules.length + '</a>'] : [])
+    .join('');
+
+  const typeFilterChips = '<span class="cv-filterlabel">篩選：</span>' +
+    '<button type="button" class="cvtypechip on" data-cv-filter="all">全部</button>' +
+    Object.keys(CV_TYPE_EMOJI).map(t => '<button type="button" class="cvtypechip" data-cv-filter="' + t + '">' + CV_TYPE_EMOJI[t] + esc(CV_TYPE_LABEL[t]) + '</button>').join('');
+
+  const categorySections = catOrder.map(cat => {
+    const cases = byCategory[cat];
+    let totalFP = 0, totalCorr = 0;
+    cases.forEach(c => { if (typeof c.first_pass_total === 'number') { totalFP += c.first_pass_total; totalCorr += (c.first_pass_corrected || 0); } });
+    const accTxt = totalFP > 0 ? '（AI 首次準確率 ' + Math.round((totalFP - totalCorr) / totalFP * 100) + '%）' : '';
+    return '<div class="cv-catsection" id="cv-cat-' + esc(cat) + '">' +
+      '<div class="cv-cathead">' + (cat === '純音樂' ? '🎵' : cat === '全幅AI短片' ? '🎬' : '📁') + ' ' + esc(cat) + '　' + cases.length + ' 單' + accTxt + '</div>' +
+      '<div class="grid ccgrid">' + cases.map(c => renderCanvaCase(c, ctx)).join('') + '</div>' +
+      '</div>';
+  }).join('');
+
   return '<section class="grp" id="canvazone" data-grp="canvazone">' +
-    '<div class="gh" style="font-size:15px;">🎨 Canva 學習記錄<span class="gn">' + cases.length + '</span>' +
+    '<div class="gh" style="font-size:15px;">🎨 Canva 學習記錄<span class="gn">' + allCases.length + '</span>' +
     '<span class="ghnote">canva_auto/placement_memory.json · diff-learning 案例庫，同 3D pipeline 樣本庫同一原理</span></div>' +
     tiles +
-    '<div class="grid ccgrid">' + cases.map(renderCanvaCase).join('') + '</div>' +
-    logHtml +
+    '<div class="cv-jumprow">' + jumpChips + '</div>' +
+    '<div class="cv-filterrow">' + typeFilterChips + '</div>' +
+    categorySections +
+    renderCanvaRulesTable(rules, ruleStats) +
     '</section>';
 }
 
@@ -751,7 +977,7 @@ function render3dCase(c) {
     '<div class="cmeta"><span class="tag ' + (learned ? 'tg-cmd' : 'tg-summon') + '">' + (learned ? '已學習' : '待覆核') + '</span>' +
     (c.date ? '<span class="ver">' + esc(c.date) + '</span>' : '') + '</div>' +
     (paramDiff ? '<ul class="cparams">' + paramDiff + '</ul>' : '') +
-    (note ? '<details class="cnote"><summary>' + clamp(note, 90) + '</summary><p>' + note + '</p></details>' : '') +
+    cnoteBlock(note, 90) +
     '</article>';
 }
 
@@ -863,7 +1089,27 @@ const clientJS =
   "tag.className='tag '+(newActive?'tg-cmd':'tg-summon');tag.textContent=newActive?'生效中':'已停用';" +
   "btn.setAttribute('data-active',newActive?'true':'false');btn.textContent=newActive?'停用':'重啟';btn.disabled=false;" +
   "}).catch(function(e){btn.textContent='失敗，重試';btn.disabled=false;alert('操作失敗：'+e.message);});" +
-  "});}";
+  "});}" +
+  // Canva 學習記錄 E4：類型篩選（🔴🟡🐞✋📦）。獨立於上面 apply()（後者只揀 .card，Canva 卡片係 .ccard，
+  // 兩者 token 完全唔重疊，from未曾互相影響）——刻意唔併入 apply()，避免將搜尋框邏輯強行接上一個
+  // 佢從來冇處理過嘅 zone（AG evidence 見 flow 2026-09-13-0857 cl-final-plan.md 批評#1 裁決）。
+  "var cvChips=document.querySelectorAll('.cvtypechip');" +
+  "function cvApplyFilter(t){" +
+  "var lessons=document.querySelectorAll('#canvazone .cv-lesson,#canvazone .cv-rulerow');" +
+  "for(var i=0;i<lessons.length;i++){var show=(t==='all')||(lessons[i].getAttribute('data-cv-type')===t);" +
+  "lessons[i].toggleAttribute('data-cv-hidden',!show);}" +
+  "var stages=document.querySelectorAll('#canvazone .cv-substage');" +
+  "for(var s=0;s<stages.length;s++){var nxt=stages[s].nextElementSibling;var any=false;" +
+  "if(nxt){var lis=nxt.querySelectorAll('.cv-lesson');for(var k=0;k<lis.length;k++){if(!lis[k].hasAttribute('data-cv-hidden')){any=true;break;}}}" +
+  "stages[s].toggleAttribute('data-cv-hidden',!any);if(nxt)nxt.toggleAttribute('data-cv-hidden',!any);}" +
+  "var grps=document.querySelectorAll('#canvazone .cv-pagegrp');" +
+  "for(var g=0;g<grps.length;g++){var items=grps[g].querySelectorAll('.cv-lesson');var any2=items.length===0;" +
+  "for(var m=0;m<items.length;m++){if(!items[m].hasAttribute('data-cv-hidden')){any2=true;break;}}" +
+  "grps[g].toggleAttribute('data-cv-hidden',!any2);}" +
+  "}" +
+  "for(var cc=0;cc<cvChips.length;cc++){cvChips[cc].addEventListener('click',function(){" +
+  "for(var z=0;z<cvChips.length;z++){cvChips[z].className='cvtypechip';}this.className='cvtypechip on';" +
+  "cvApplyFilter(this.getAttribute('data-cv-filter'));});}";
 
 const errataN = warnings.length;
 
@@ -959,10 +1205,40 @@ const html = '<!DOCTYPE html>\n<html lang="zh-Hant">\n<head>\n<meta charset="UTF
 '.cnote summary{cursor:pointer;color:var(--soft);list-style:none;}\n' +
 '.cnote summary::-webkit-details-marker{display:none;}\n' +
 '.cnote summary::before{content:"▸ ";color:var(--faint);}\n' +
-'.cnote[open] summary::before{content:"▾ ";}\n' +
+'.cnote[open] summary::before{content:"▾ 收起";color:var(--faint);}\n' +
+// 2026-09-13（flow 2026-09-13-0857 #4）：展開後隱藏截斷摘要文字，避免同下面 <p> 全文重複顯示（IG/Canva/3D 三 zone 共用此修）
+'.cnote[open] summary .cnote-sum-text{display:none;}\n' +
 '.cnote p{margin-top:6px;color:var(--soft);line-height:1.6;white-space:pre-wrap;}\n' +
 '.cparams{margin-top:8px;font-size:11.5px;color:var(--soft);padding-left:18px;}\n' +
 '.cparams li{margin:3px 0;}\n' +
+'/* Canva 學習記錄 v2：款式分組/Page列點/規則編號表 */\n' +
+'.cv-jumprow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}\n' +
+'.cv-jumpchip{font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--tile);border:1px solid var(--line);color:var(--soft);text-decoration:none;}\n' +
+'.cv-jumpchip:hover{color:var(--ink);box-shadow:var(--shadow);}\n' +
+'.cv-filterrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:8px 0 14px;}\n' +
+'.cv-filterlabel{font-size:11px;color:var(--faint);margin-right:2px;}\n' +
+'.cvtypechip{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--tile);border:1px solid var(--line);color:var(--soft);cursor:pointer;font-family:inherit;}\n' +
+'.cvtypechip.on{background:var(--ink);color:var(--card);border-color:var(--ink);}\n' +
+'.cv-catsection{margin-top:14px;}\n' +
+'.cv-cathead{font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--line);}\n' +
+'.cv-pagegrp{margin-top:8px;}\n' +
+'.cv-pagehead{font-size:11.5px;font-weight:600;color:var(--faint);margin:8px 0 3px;text-transform:uppercase;letter-spacing:.02em;}\n' +
+'.cv-substage{font-size:11px;font-weight:600;color:var(--faint);margin:6px 0 2px 4px;}\n' +
+'.cv-lessons{list-style:none;padding:0;margin:0;}\n' +
+'.cv-lessons li{font-size:12px;line-height:1.55;color:var(--soft);padding:2px 0;}\n' +
+'.cv-emo{display:inline-block;width:1.3em;}\n' +
+'.cv-rulechip{font-size:10.5px;padding:1px 7px;border-radius:999px;background:var(--tile);border:1px solid var(--line);color:var(--soft);text-decoration:none;margin-left:4px;white-space:nowrap;}\n' +
+'.cv-rulechip:hover{color:var(--ink);}\n' +
+'.cv-canvalink,.cv-parentlink{font-size:11px;color:var(--soft);text-decoration:none;margin-left:6px;}\n' +
+'.cv-canvalink:hover,.cv-parentlink:hover{color:var(--ink);}\n' +
+'.cv-parenttxt{font-size:11px;color:var(--faint);margin-left:6px;}\n' +
+'.cv-rulestable{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);}\n' +
+'.cv-rulerow{padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px;color:var(--soft);}\n' +
+'.cv-caselink{font-size:10.5px;color:var(--soft);text-decoration:none;margin-right:4px;}\n' +
+'.cv-caselink:hover{color:var(--ink);}\n' +
+'.ccard.cv-case:target,.cv-rulerow:target{outline:2px solid #d97706;outline-offset:2px;border-radius:10px;}\n' +
+'[data-cv-hidden]{display:none!important;}\n' +
+'@media (max-width:768px){.ccgrid{grid-template-columns:1fr;}.cv-pagehead{font-size:11px;}}\n' +
 '.igwtoggle{margin-top:10px;width:100%;border:1px solid var(--line);background:var(--tile);color:var(--soft);font-size:11.5px;padding:6px 0;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .12s ease-out;}\n' +
 '.igwtoggle:hover{color:var(--ink);box-shadow:var(--shadow);}\n' +
 '.igwtoggle:disabled{opacity:.6;cursor:not-allowed;}\n' +

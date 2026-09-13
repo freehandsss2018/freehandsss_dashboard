@@ -360,6 +360,8 @@ freehandsss_dashboard/
 │   ├── learnings-pointers.js            ← learnings 6 桶跨領域指標生成器（2026-08-03，讀 `@主桶 +副桶` tag 生成副桶 pointer；含防呆機制拒絕覆寫誤植正式條目）
 │   ├── validate-ag-plan.js             ← ag-plan 輸出格式守護（6 section + checkbox + 檔案標記驗證，保護 Verdict 鏈）
 │   ├── deploy_batch_recalc_workflow.js  ← 建立並啟動 n8n 💰 Financial Batch Recalculate workflow（2026-05-28）
+│   ├── canva_memory_validate.js        ← canva_auto/placement_memory.json schema v2 防退化校驗（require+CLI 兩用，D76，2026-09-13）
+│   ├── _oneoff/canva_lessons_merge.js  ← 一次性 v1→v2 schema 回填腳本（D76，已完成，保留審計）
 │   ├── repair/                          ← 財務 / 資料修補腳本（一次性，需人工確認後執行）
 │   │   ├── sync_0600701.js             ← 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）
 │   │   └── sync_0600903.js             ← 訂單 0600903 財務與時間修補
