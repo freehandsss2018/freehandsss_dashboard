@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('./lib/env').loadEnv(require('path').join(__dirname, '..')); // worktree-aware fallback
 const https = require('https');
 const fs = require('fs');
 

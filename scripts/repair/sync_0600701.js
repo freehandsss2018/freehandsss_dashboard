@@ -11,7 +11,7 @@
  */
 
 const https = require('https');
-require('dotenv').config();
+require('../lib/env').loadEnv(require('path').join(__dirname, '..', '..')); // worktree-aware fallback
 
 const ORDER_ID = '0600701';
 const WEBHOOK_URL = 'https://yanhei.synology.me:8443/webhook/1444800b-1397-4154-b2da-a4d328c6c51b';

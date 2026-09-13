@@ -5,7 +5,7 @@
 // Usage:  node scripts/deploy_batch_recalc_workflow.js
 // Output: Prints the production webhook URL to fill into V41 HTML _FS_N8N_WEBHOOK.
 
-require('dotenv').config();
+require('./lib/env').loadEnv(require('path').join(__dirname, '..')); // worktree-aware fallback
 const https = require('https');
 
 const N8N_INSTANCE       = process.env.N8N_INSTANCE;        // https://yanhei.synology.me:8443

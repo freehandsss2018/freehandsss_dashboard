@@ -4,7 +4,7 @@
 // Safe to run multiple times (upsert on unique keys).
 // Run: node scripts/migrate_airtable_to_supabase.js
 
-require('dotenv').config();
+require('./lib/env').loadEnv(require('path').join(__dirname, '..')); // worktree-aware fallback
 const https = require('https');
 
 const AIRTABLE_KEY = process.env.AIRTABLE_API_KEY;

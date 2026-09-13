@@ -4,9 +4,9 @@
 // Safe to run multiple times (upsert on unique keys).
 // Run: node scripts/migrate_from_csv.js
 
-require('dotenv').config();
-const fs = require('fs');
 const path = require('path');
+require('./lib/env').loadEnv(path.join(__dirname, '..')); // worktree-aware fallback
+const fs = require('fs');
 const https = require('https');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;

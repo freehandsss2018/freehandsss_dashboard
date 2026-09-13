@@ -7,7 +7,7 @@
  *       node scripts/update-legacy-sale-price.js
  */
 
-require('dotenv').config();
+require('./lib/env').loadEnv(require('path').join(__dirname, '..')); // worktree-aware fallback
 const Airtable = require('airtable');
 
 const DRY_RUN = process.argv.includes('--dry-run');

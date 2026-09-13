@@ -1,7 +1,7 @@
-require('dotenv').config();
+const path = require('path');
+require('./lib/env').loadEnv(path.join(__dirname, '..')); // worktree-aware fallback
 const https = require('https');
 const fs = require('fs');
-const path = require('path');
 
 const N8N_INSTANCE = process.env.N8N_INSTANCE;
 const N8N_KEY = process.env.N8N_KEY;

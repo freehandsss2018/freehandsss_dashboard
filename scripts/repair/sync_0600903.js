@@ -1,5 +1,5 @@
 const https = require('https');
-require('dotenv').config();
+require('../lib/env').loadEnv(require('path').join(__dirname, '..', '..')); // worktree-aware fallback
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;

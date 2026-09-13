@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-13] (D76) scripts/lib/env.js — .env 載入 worktree-aware fallback
+
+**背景**：`.env` gitignored，git worktree（`.claude/worktrees/<name>/`）冇本機副本。`cl-flow-runner.js:22` 寫死 `path.join(__dirname, '..', '.env')`，喺 worktree 入面跑必然搵唔到，令 `--review` 一律報 `GEMINI_API_KEY missing`（實測 2026-09-13，flow `2026-09-13-0857`）。人手workaround係 `$env:DOTENV_CONFIG_PATH='<main>\.env'; node -r dotenv/config ...`。
+
+**方案（提出俾 Fat Mo 確認，選 B）**：新增共用 helper `scripts/lib/env.js`：目前目錄冇 `.env` 就用 `git rev-parse --path-format=absolute --git-common-dir`（永遠指向主 checkout 嘅 `.git`）取其上層做主倉根，讀嗰邊嘅 `.env`；兩處都搵唔到先退回 dotenv 原生 `config()`。**唔複製密鑰入 worktree、唔印出任何值**——dotenv 原地讀主倉檔案。`cl-flow-runner.js` 改用此 helper；另外 grep 到 14 個一樣 `require('dotenv').config()`（冇指定路徑，同款隱患）嘅 script 一併改用同一 helper 一致化：`add_supabase_mirror_nodes.js`／`deploy-order-confirm-date.js`／`deploy_native_supabase_mirror.js`／`deploy_batch_recalc_workflow.js`／`migrate_from_csv.js`／`migrate_airtable_to_supabase.js`／`scratch_pull_and_save_workflow.js`／`Sync_Notion_Brain.js`／`sync-legacy-orders.js`／`update_n8n_supabase_mirror.js`／`update-legacy-sale-price.js`／`update-legacy-profit.js`／`repair/sync_0600903.js`／`repair/sync_0600701.js`。
+
+**刻意不動**：`agent_dashboardV42.js`（`loadEnv()`）同 `ig-watchdog/build_n8n_workflow.cjs` 係手動 parse `.env`（非 dotenv package），非同一 code shape；`upload-web.ps1` 係 PowerShell，機制完全獨立。三者皆未報壞，改動風險/效益比不划算，本次不觸碰。
+
+**驗證**：16 個改動檔案 `node --check` 全過；喺本 worktree（確認冇本機 `.env`）跑 `node scripts/cl-flow-runner.js --init "..."` 成功產生 flow；額外 `node -e` 直接呼叫 helper 確認 `GEMINI_API_KEY`／`PERPLEXITY_API_KEY` 均經 fallback resolve 到（只印 boolean，冇印值）；測試產物 `artifacts/2026-09-13-0926/` 已刪除確認。
+
+**改動檔案**：新增 `scripts/lib/env.js`；改動 `scripts/cl-flow-runner.js` + 上列 14 個 script；`scripts/README.md` 補文件。**Subagent 使用記錄**：❌未使用（單一連續查證+改碼+驗證，範圍集中不需委派）。
+
+---
+
 [2026-09-13] (D77) Canva 學習記錄重構：placement_memory.json 升級 schema v2（規則編號表 + 逐 Page 列點）
 
 **背景**：Fat Mo 睇住 Canva 學習記錄嘅截圖提出四點要求：①截圖一紅圈顯示嘅重複文字係 UI bug ②卡片應該先分「純音樂」／「全幅AI短片」兩個類別 ③內容應以簡精列點取代大段文字解說，並按 Page 拆分（Page2 學到咩、Page3 學到咩……）④要求 AI 審視後主動追加建議，唔係奉承。經 `/cl-flow-fast`（flow_id `2026-09-13-0857`，先「拷問」8 條問題逐一拍板，A2 Gemini 對抗評審 7 條批評 5 採納 2 拒絕，Verdict APPROVED_READY）規劃後執行。
