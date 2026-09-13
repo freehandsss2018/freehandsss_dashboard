@@ -35,6 +35,8 @@
 
 **改動檔案**：`canva_auto/placement_memory.json`、`scripts/agent_dashboardV42.js`、`scripts/canva_memory_validate.js` [NEW]、`scripts/_oneoff/canva_lessons_merge.js` [NEW]、`.fhs/ai/commands/canva-auto.md`。**Subagent 使用記錄**：✅ 兩次派 general-purpose fresh-context agent 做回填覆核（第一輪揪出 11/11 FAIL 並具體指出修正點；第二輪由 AI 自行 spot-check 確認 11 項修正全部落實，未再重派完整覆核）。
 
+**D77-follow（同日）**：Fat Mo 睇成品截圖後回饋「先收納，最初只顯示核心超精簡資訊，學習重點即可，若要詳看才按下去後顯示」——卡片原本一開頁就全展開所有 Page 列點，資訊過載。改法：`renderCanvaCase()` 每張卡片嘅逐 Page 內容包入 `<details class="cv-body">`（預設收埋），`<summary>` 只顯示 Page 分佈 chip（例：Page 2 5／Page 3 2／Page 4 1／流程 2）+ 一句最高優先學習重點（優先序 ai_error＞tool_bug＞fatmo_technique＞manual_only＞material，clamp 60 字）；撳開先見完整列點。Browser 實測：collapsed 預設 `open===false`+截圖確認視覺上只見 chip+headline；click 後 `open===true`+10 條列點全現形；五類型篩選 chip 喺收埋狀態下仍正確運作（🔴篩選後 13 條不變）。全文見完成記錄同名條目。**Subagent 使用記錄**：❌未使用（單一 UI 收納邏輯改動+Browser 直接驗證）。
+
 ---
 
 [2026-09-11 續二] (D75-follow2) 儲存篩選/編輯版面改收納入現有篩選漏斗 icon（撤回 D75-follow 新開嘅「選項」icon）+ 修復 editBtn 錯誤喺手機顯示嘅真bug

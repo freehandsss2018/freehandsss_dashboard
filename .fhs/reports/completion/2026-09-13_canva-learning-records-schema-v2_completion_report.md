@@ -77,4 +77,18 @@ Fat Mo 提供兩張 Agent Dashboard「Canva 學習記錄」截圖，指出四點
 | `[MODIFY]` | `Changelog.md` |
 | `[NEW]` | 本完成記錄 |
 
+## 七、D77-follow（同日）——卡片預設收納
+
+Fat Mo 睇成品截圖後回饋：卡片一開頁就全展開所有 Page 列點，資訊過載，要求「先收納，最初只顯示核心超精簡資訊，學習重點即可，若要詳看才按下去後顯示」。
+
+**改法**：`renderCanvaCase()` 每張卡片嘅逐 Page 內容包入 `<details class="cv-body">`（預設收埋，唔加 `open` 屬性）。`<summary>` 只顯示：
+- Page 分佈 chip（例：`Page 2 5`／`Page 3 2`／`Page 4 1`／`流程 2`）——一眼睇到邊幾頁有幾多條教訓
+- 一句最高優先學習重點（優先序 `ai_error` ＞ `tool_bug` ＞ `fatmo_technique` ＞ `manual_only` ＞ `material`，`clamp` 60 字）
+
+撳開（click `<summary>`）先見完整逐 Page 列點（沿用原有結構）。五類型篩選 chip（E4）邏輯不變，收埋狀態下 DOM 仍存在、篩選同摺疊判斷照常運作。
+
+**驗證**：Browser 實測——collapsed 卡片 `details.open===false`，截圖確認視覺上只見 chip+headline，冇列點文字；`summary.click()` 後 `open===true`、10 條列點全現形；篩選 chip（🔴 ai_error）喺收埋狀態下重新套用仍精準得返 13 條（同改動前一致，零回歸）；`node --check`／generator 零勘誤。
+
+**改動檔案**：`scripts/agent_dashboardV42.js`（`renderCanvaCase()` + CSS `.cv-body`/`.cv-chips`/`.cv-chip`/`.cv-headline`）。
+
 詳見 `artifacts/2026-09-13-0857/`（task-brief/a3-draft/ag-review/cl-final-plan.md）。

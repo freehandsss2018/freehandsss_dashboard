@@ -822,6 +822,19 @@ function renderCanvaCase(c, ctx) {
     return '<div class="cv-pagegrp" data-cv-grp="' + cvPageKey(g.page) + '"><div class="cv-pagehead">' + esc(cvPageLabel(g.page)) + '</div>' +
       '<ul class="cv-lessons">' + g.items.map(l => cvLessonLi(l, ctx.ruleStats, ctx.rulesById)).join('') + '</ul></div>';
   }).join('');
+  // 收納摘要（2026-09-13，Fat Mo 截圖回饋）：卡片預設收埋，先睇 Page 分佈 chip + 一句最高優先學習重點；
+  // 撳開先見逐 Page 完整列點——避免一開頁就成版全展開嘅資訊過載
+  const chipsHtml = groups.map(g => {
+    const label = g.page === 'flow' ? '流程' : cvPageLabel(g.page);
+    return '<span class="cv-chip">' + esc(label) + ' ' + g.items.length + '</span>';
+  }).join('');
+  const TYPE_PRIORITY = ['ai_error', 'tool_bug', 'fatmo_technique', 'manual_only', 'material'];
+  let headlineLesson = null;
+  for (const t of TYPE_PRIORITY) { headlineLesson = c.lessons.find(l => l.type === t); if (headlineLesson) break; }
+  if (!headlineLesson) headlineLesson = c.lessons[0];
+  const headlineHtml = headlineLesson
+    ? '<div class="cv-headline"><span class="cv-emo">' + (CV_TYPE_EMOJI[headlineLesson.type] || '•') + '</span> ' + esc(clamp(headlineLesson.text, 60)) + '</div>'
+    : '';
 
   const canvaLink = c.design_id ? ' <a class="cv-canvalink" href="https://www.canva.com/design/' + esc(c.design_id) + '/edit" target="_blank" rel="noopener">↗Canva</a>' : '';
   // 母片連結：parent_order 必須精確等於本庫另一個 case.order 先自動連結；
@@ -846,8 +859,10 @@ function renderCanvaCase(c, ctx) {
     (c.page_count ? '<span class="ver">' + c.page_count + ' 頁</span>' : '') +
     accBadge + parentHtml +
     '</div>' +
+    '<details class="cv-body"><summary><div class="cv-chips">' + chipsHtml + '</div>' + headlineHtml + '</summary>' +
     bodyHtml +
     cnoteBlock(esc(orig), 40) +
+    '</details>' +
     '</article>';
 }
 
@@ -1232,6 +1247,14 @@ const html = '<!DOCTYPE html>\n<html lang="zh-Hant">\n<head>\n<meta charset="UTF
 '.cv-canvalink,.cv-parentlink{font-size:11px;color:var(--soft);text-decoration:none;margin-left:6px;}\n' +
 '.cv-canvalink:hover,.cv-parentlink:hover{color:var(--ink);}\n' +
 '.cv-parenttxt{font-size:11px;color:var(--faint);margin-left:6px;}\n' +
+'.cv-body{margin-top:6px;}\n' +
+'.cv-body summary{cursor:pointer;list-style:none;}\n' +
+'.cv-body summary::-webkit-details-marker{display:none;}\n' +
+'.cv-body summary::before{content:"▸ 展開學習列點";color:var(--faint);font-size:11px;display:block;margin-bottom:4px;}\n' +
+'.cv-body[open] summary::before{content:"▾ 收起";}\n' +
+'.cv-chips{display:flex;flex-wrap:wrap;gap:5px;}\n' +
+'.cv-chip{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--tile);border:1px solid var(--line);color:var(--soft);}\n' +
+'.cv-headline{font-size:12px;color:var(--ink);margin-top:5px;line-height:1.5;}\n' +
 '.cv-rulestable{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);}\n' +
 '.cv-rulerow{padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px;color:var(--soft);}\n' +
 '.cv-caselink{font-size:10.5px;color:var(--soft);text-decoration:none;margin-right:4px;}\n' +

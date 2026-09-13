@@ -16,6 +16,11 @@
 - Fat Mo 四點回饋（分類/簡精列點/按Page拆分/追加建議）→ `/cl-flow-fast`（flow `2026-09-13-0857`）規劃執行；`placement_memory.json` 升 schema v2（規則編號表CV-01..CV-35+逐case lessons[]，v1零改動）；11單回填經fresh-context agent兩輪覆核（首輪11/11 FAIL全部修正）；Agent Dashboard渲染重寫+順手修IG/Canva/3D共用嘅重複文字bug；新增防退化validator CLI；canva-auto.md升v1.8.0。
 - 全文見 `.fhs/reports/completion/2026-09-13_canva-learning-records-schema-v2_completion_report.md`、decisions.md D77。**Subagent 使用記錄**：✅ 兩次派 fresh-context agent 做回填覆核。
 
+## [2026-09-13] D77-follow：Canva 卡片改預設收納（chip+headline，撳先展開）
+
+- Fat Mo 睇成品截圖回饋「先收納，最初只顯示核心超精簡資訊，學習重點即可，若要詳看才按下去後顯示」——逐 Page 列點包入 `<details class="cv-body">`（預設收埋），summary 只顯示 Page 分佈 chip + 一句最高優先學習重點（優先序 ai_error＞tool_bug＞fatmo_technique＞manual_only＞material）。
+- Browser 實測：collapsed 預設 open===false（截圖確認）；click 展開全部列點；五類型篩選 chip 零回歸。全文見完成記錄「七、D77-follow」、decisions.md D77 附錄。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-12] Session（Claude Code / Sonnet 5→Fable 5.1→Opus 5 執行）— canva-auto v1.7.0：Lokyi_C 0600903 首單全幅款 + Stage⑤ 新月份合集
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0600903 Lokyi_C（全幅AI短片，字句「Welcome to the world, little one!」）——canva-auto 首次處理全幅款（5頁；此前收斂案例全部係純音樂4頁）。
