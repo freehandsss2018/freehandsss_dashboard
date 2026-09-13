@@ -11,8 +11,8 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-11T14:45:21Z">
-    <meta name="fhs-deploy-src" content="2239b935855efd571ec706df08303fd10063a84c-dirty">
+    <meta name="fhs-build" content="2026-09-13T15:18:09Z">
+    <meta name="fhs-deploy-src" content="3036c62399d5d6382d90e8f011555807fce06b90-dirty">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -5320,13 +5320,13 @@
                             <th class="sort-th" data-sort="Order_ID" style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:112px;" onclick="sortReviewTable('Order_ID')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>單號<span class="sort-arrow" id="sort-arrow-Order_ID"></span></th>
                             <th class="sort-th" data-sort="Date" style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:75px;" onclick="sortReviewTable('Date')"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-calendar"/></svg>日期<span class="sort-arrow" id="sort-arrow-Date"></span></th>
                             <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:80px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-user"/></svg>客人</th>
-                            <th style="padding:8px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-banknote"/></svg>入帳</th>
-                            <th style="padding:8px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-wallet"/></svg>成本</th>
-                            <th style="padding:8px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-star"/></svg>利潤</th>
-                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:124px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg>刻字</th>
                             <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:220px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-package"/></svg>產品明細</th>
                             <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:75px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-tag"/></svg>批次</th>
                             <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:102px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-activity"/></svg>進度</th>
+                            <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:124px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-edit"/></svg>刻字/封面</th>
+                            <th style="padding:8px; color:#B07D4C; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-banknote"/></svg>入帳</th>
+                            <th style="padding:8px; color:var(--fhs-danger); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-wallet"/></svg>成本</th>
+                            <th style="padding:8px; color:var(--fhs-success); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:65px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle; color: inherit;"><use href="#icon-star"/></svg>利潤</th>
                             <th style="padding:8px 12px; color:var(--fhs-text-secondary); font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; border:none; width:110px;"><svg class="fhs-header-icon" width="12" height="12" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-square-pen"/></svg>備註</th>
                         </tr>
                     </thead>
@@ -12592,8 +12592,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function fhsOverviewCols() {
             var _c = reviewCategoryFilter || '';
             var base = ['cb', 'Order_ID', 'Date', 'Customer'];
-            if (!_c) return base.concat(_fhsFinMerged() ? ['fin', 'eng', 'prod', 'batch', 'stat', 'notes']
-                                                        : ['inc', 'cost', 'profit', 'eng', 'prod', 'batch', 'stat', 'notes']);
+            // [D78] 「全部」視圖：刻字/封面 + 入帳/成本/利潤（或合併 fin）移到
+            // 批次／進度之後、備註之前——Fat Mo 明示只限「全部」視圖，類別視圖
+            // （手模/鎖匙扣頸鏈，下面兩個 return）維持原次序不變。
+            if (!_c) return base.concat(_fhsFinMerged() ? ['prod', 'batch', 'stat', 'eng', 'fin', 'notes']
+                                                        : ['prod', 'batch', 'stat', 'eng', 'inc', 'cost', 'profit', 'notes']);
             if (_c === '手模') return base.concat(['style', 'limb', 'addon', 'eng', 'batch', 'stat', 'notes']);
             return base.concat(['target', 'part', 'mat', 'qty', 'eng', 'batch', 'stat', 'notes']);
         }
@@ -13877,6 +13880,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const isLastItem = index === itemsCount - 1;
                         const _rowBorderB = isLastItem ? '3px solid #b0b0b0' : '1px solid #ebebeb';
 
+                        // [D78] 刻字/封面 <td> 抽做獨立變數：全部視圖挪到「進度」右方
+                        // （fhsOverviewCols() 新次序），類別視圖維持原位——兩處引用同一份 markup。
+                        const _engCellTd = `<td class="batch-cell ovw-eng-cell" style="position:relative; vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: calc(4px*var(--fhs-ovw-s,1)) 3px; background-color:${rowBatchCol};">
+                                ${engCellHtml}
+                            </td>`;
+
                         // [D69] 類別視圖：「產品明細」badge 團拆成獨立欄（對位 Excel 對象|手腳|產品|材料|數量）。
                         // 之所以拆得成，係因為成個畫面只得一個類別、形狀齊一；「全部」視圖形狀唔齊一，
                         // 維持 badge 團先啱，所以呢段完全唔會喺「全部」行到。
@@ -13977,11 +13986,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         html += `
                         <tr class="order-group-${fhsEscHtml(o.id)}" id="row-${fhsEscHtml(o.id)}-item-${_iIdx}">
                             ${index === 0 ? orderLeftColsHtml : ''}
-                            ${_catView ? '' : _finCells}
                             ${_catView ? _catCellsHtml : ''}
-                            <td class="batch-cell ovw-eng-cell" style="position:relative; vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding: calc(4px*var(--fhs-ovw-s,1)) 3px; background-color:${rowBatchCol};">
-                                ${engCellHtml}
-                            </td>
+                            ${_catView ? _engCellTd : ''}
                             ${_catView ? '' : `<td class="batch-cell" style="vertical-align:top; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; padding:calc(4px*var(--fhs-ovw-s,1)) 8px; background-color:${rowBatchCol};">
                                 ${prodHtml}
                             </td>`}
@@ -14042,6 +14048,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                         +'<div id="save-indicator-'+fhsEscHtml(o.id)+'-'+_iIdx+'" class="review-save-indicator" style="font-size:calc(10px*var(--fhs-ovw-s,1));"></div>';
                                 })()}
                             </td>
+                            ${_catView ? '' : _engCellTd}
+                            ${_catView ? '' : _finCells}
                             ${index === 0 ? `<td rowspan="${itemsCount}" style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(2px*var(--fhs-ovw-s,1)); background-color:${batchCol};">
                                 <textarea class="review-notes-textarea" rows="1"
                                           id="notes-input-${fhsEscHtml(o.id)}"
@@ -14058,6 +14066,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     html += `
                     <tr class="order-group-${fhsEscHtml(o.id)}" id="row-${fhsEscHtml(o.id)}">
                         ${orderLeftColsHtml}
+                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:calc(13px*var(--fhs-ovw-s,1)); background-color:${orderBatchCol};">
+                            無子項目
+                        </td>
                         ${_fhsFinMerged() ? `
                         <td id="cost-cell-${fhsEscHtml(o.id)}" class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:middle; text-align:left; padding:6px 8px; border-bottom:3px solid #b0b0b0;">
                             <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#B07D4C;">入帳</span><span class="fhs-fin-amt" style="color:#B07D4C;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</span></div>
@@ -14073,9 +14084,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
                             $${displayedProfit}
                         </td>`}
-                        <td colspan="4" class="batch-cell" style="vertical-align:middle; border-bottom:3px solid #b0b0b0; text-align:center; color:#bbb; font-size:calc(13px*var(--fhs-ovw-s,1)); background-color:${orderBatchCol};">
-                            無子項目
-                        </td>
                         <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:calc(10px*var(--fhs-ovw-s,1)); background-color:${orderBatchCol};">
                             <textarea class="review-notes-textarea" rows="1"
                                       id="notes-input-${fhsEscHtml(o.id)}"

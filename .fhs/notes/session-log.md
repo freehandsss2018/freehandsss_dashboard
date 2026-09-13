@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-13 (D78：訂單總覽「全部」視圖欄位重排——刻字/封面+入帳/成本/利潤移至進度右方): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-13「D78」條目 + [decisions.md D78](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖直接指示欄位重排，兩輪 Artifact 預覽確認次序後落手：`fhsOverviewCols()` 真源改「全部」視圖分支次序，逐列 `<td>` 同步重排（新增 `_engCellTd` 變數兩處條件輸出），類別視圖次序不變。V42.html+current.html 同步 + `/upload-web` 部署三關驗證全過。派 fresh-context agent 獨立覆核（非自驗）PASS。
+**Subagent 使用記錄**：✅ 派 1 個 general-purpose fresh-context agent 做獨立驗收，未用於實作。
 ## 2026-09-13 (D76：scripts/lib/env.js — cl-flow-runner 等15支script .env worktree-aware fallback): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-13「D76」條目 + [decisions.md D76](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。修復 worktree 跑 `/cl-flow --review` 因搵唔到 `.env` 報 `GEMINI_API_KEY missing`；方案（窄 vs 闊）經 Fat Mo 選闊確認先落手。新增共用 helper `scripts/lib/env.js`（本機 `.env` 搵唔到就用 `git rev-parse --git-common-dir` 揾主倉讀，不複製密鑰、不印值），`cl-flow-runner.js` + 14 個同款 script 統一改用。16 檔 `node --check` 全過 + worktree 內實測 `--init` 成功 + key resolve 確認為 true。Dashboard/Supabase/n8n 零改動，Phase 2.5 部署跳過。

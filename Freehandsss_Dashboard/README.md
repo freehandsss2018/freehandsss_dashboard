@@ -24,6 +24,7 @@
 
 ## 當前版本
 
+- **2026-09-13（D78）**：訂單總覽「全部」視圖欄位重排——刻字/封面+入帳/成本/利潤移至進度右方（批次／進度之後、備註之前），類別視圖次序不變。`V42.html`+`current.html` 同步、已部署+三關驗證通過。詳見 Changelog.md D78。
 - **2026-08-29（D69續七）**：訂單總覽類別視圖六輪密度／可讀性微調——鎖匙扣/頸鏈四欄（對象/部位/材質/數量）40px+內容置中、批次欄60px；類別工作台橫幅（含左側header）合併一行；限時警告badge統一「剩餘N天」；手模視圖限時警告一律換行放日期下（鎖匙扣/頸鏈/全部視圖不受影響）。純CSS+文案改動，零schema/零n8n。已部署 `current.html`。詳見 Changelog.md「D69續七」條目。
 - **2026-08-27（D69續六）**：進度狀態往返失真全套根治方案 `/execute` 執行完成並部署——`_FHS_STAGE_DEF` 單一真源取代4處重複下拉清單，SQL清洗migration 0092已apply live。詳見 Changelog.md、decisions.md D69續六。
 - **2026-08-26（D69續四）**：客人欄寬收窄至180px、篩選列由兩行合併一行（高度90px→56px）、空行bug根治（真根因＝單一品項訂單rowspan=1，非早前誤判嘅「刻字空白」；CSS特異度+textarea rows雙修復，單品項列61px→37px）、進度狀態往返失真止血（`_FHS_LEGACY_STATUS_MAP`別名對應表）。全套進度狀態根治方案（統一寫入畫面原文+單一真源階段表，零schema改動）已走`/cl-flow-fast`（Flow ID `2026-08-26-0828`，判決CONDITIONAL_READY），待Fat Mo拍板3項後另行`/execute`。詳見 Changelog.md、decisions.md D69續四。

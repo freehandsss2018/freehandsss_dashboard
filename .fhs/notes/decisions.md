@@ -3,6 +3,10 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-13] (D78) 訂單總覽「全部」視圖欄位重排：刻字/封面+入帳/成本/利潤移至進度右方 — Fat Mo 截圖直接指示 + 兩輪 Artifact 預覽確認次序後執行；全文見 Changelog.md D78 條目（Phase 1.6(b) 無完成報告小改動，Changelog 為全文居所）。
+
+---
+
 [2026-09-13] (D76) scripts/lib/env.js — .env 載入 worktree-aware fallback
 
 **背景**：`.env` gitignored，git worktree（`.claude/worktrees/<name>/`）冇本機副本。`cl-flow-runner.js:22` 寫死 `path.join(__dirname, '..', '.env')`，喺 worktree 入面跑必然搵唔到，令 `--review` 一律報 `GEMINI_API_KEY missing`（實測 2026-09-13，flow `2026-09-13-0857`）。人手workaround係 `$env:DOTENV_CONFIG_PATH='<main>\.env'; node -r dotenv/config ...`。

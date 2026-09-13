@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-13] D78：訂單總覽「全部」視圖欄位重排——刻字/封面+入帳/成本/利潤移至進度右方
+
+- **緣起**：Fat Mo 睇住訂單總覽截圖，要求將入帳/成本/利潤三欄（後追加刻字/封面）搬到「進度」欄右方（批次／進度之後、備註之前），原位置係緊接客人欄之後。落手前先出兩輪 Artifact 預覽（改前/改後對照表）畀 Fat Mo 確認次序，確認後才動代碼。
+- **真源**：欄位次序由 `fhsOverviewCols()`（`Freehandsss_Dashboard/freehandsss_dashboardV42.html:12592`）決定，只改「全部」視圖分支（`!_c`）：`['inc','cost','profit','eng',...]` → `['prod','batch','stat','eng','inc','cost','profit',...]`（750-1129px iPad 合併財務欄同步：`['fin','eng',...]` → `['prod','batch','stat','eng','fin',...]`）。手模/鎖匙扣頸鏈等**類別視圖次序不變**。
+- **逐列 `<td>` 同步重排**：新增 `_engCellTd` 變數令刻字/封面 `<td>` 可喺兩個位置條件輸出（類別視圖留原位、全部視圖移到新位置），避免表頭同表身次序對唔上。無子項目 fallback 列（「無子項目」`colspan="4"` 佔位）同步搬到財務欄之前。
+- **V42.html + current.html 同步改動**（兩檔本次改動前完全同步，僅差部署時間戳 meta），一併走 `/upload-web` 升格部署三關驗證（HTTP 200／Content-Length／SHA256 全過）。
+- **驗證**：派 fresh-context agent 獨立覆核（非自驗）——桌面≥1130px 三欄次序、750-1129px 合併財務欄次序、類別視圖（手模）未受影響、無子項目 fallback colspan 位置、9 個 inline script 零 parse error，全部 PASS。覆核順帶記錄兩件與本次無關嘅舊已知限制（750-1129px 刻字/封面欄早被既有 CSS 隱藏；fallback colspan 未跟類別視圖調整），非本次引入、非本次範圍。
+- 全文見 decisions.md D78。**Subagent 使用記錄**：✅ 派 1 個 general-purpose fresh-context agent 做獨立驗收（讀 DOM/JS 邏輯+screenshot+script parse check），未用於實作。
+
 ## [2026-09-13] D76：scripts/lib/env.js — cl-flow-runner 等 15 支 script `.env` worktree-aware fallback
 
 - **緣起**：Fat Mo 喺 worktree（`.claude/worktrees/sad-ardinghelli-63bc6f/`）跑 `/cl-flow` `--review` 撞到 `GEMINI_API_KEY missing`——`cl-flow-runner.js:22` 寫死讀「目前目錄」嘅 `.env`（gitignored，worktree 冇副本），只有主 checkout 先有。人手曾用 `DOTENV_CONFIG_PATH` 環境變數繞過（flow `2026-09-13-0857`）。
