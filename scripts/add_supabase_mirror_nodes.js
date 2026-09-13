@@ -2,7 +2,7 @@
 // Phase 2: Add Supabase Mirror Write nodes to FHS_Core_OrderProcessor
 // Adds 2 parallel Code nodes + updates connections. Non-destructive.
 
-require('dotenv').config();
+require('./lib/env').loadEnv(require('path').join(__dirname, '..')); // worktree-aware fallback
 const https = require('https');
 
 const N8N_INSTANCE = process.env.N8N_INSTANCE;

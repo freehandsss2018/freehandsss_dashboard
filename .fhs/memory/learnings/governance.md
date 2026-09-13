@@ -46,4 +46,5 @@
 - → `tooling.md` #7 【高頻 ⚠️】Git worktree session 入面，絕對路徑漏咗 worktree 前綴會靜默錯改主倉，Read/Edit 完全唔會報錯
 - → `tooling.md` #8 升格部署嘅 promotion-copy 目標路徑必須係 `scripts/upload-web.ps1` 實際讀取嘅檔名，唔可以憑口語「current.html」臆測落錯位置
 - → `tooling.md` #10 【高頻 ⚠️】警告腳本嘅「取數範圍」細過「讀取範圍」時，會靜靜哋出一份殘缺清單——零報錯，而且睇落完全正常
+- → `tooling.md` #12 `.env` gitignored，git worktree 內冇本機副本——script 若寫死 `path.join(__dirname,'..','.env')` 或裸呼叫 `require('dotenv').config()`，喺 worktree 入面跑會靜默搵唔到 env var（非崩潰，係下游 `process.env.X missing` 業務錯誤，容易誤判做「API key 過期」）
 <!-- POINTERS:END -->

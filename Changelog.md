@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-13] D76：scripts/lib/env.js — cl-flow-runner 等 15 支 script `.env` worktree-aware fallback
+
+- **緣起**：Fat Mo 喺 worktree（`.claude/worktrees/sad-ardinghelli-63bc6f/`）跑 `/cl-flow` `--review` 撞到 `GEMINI_API_KEY missing`——`cl-flow-runner.js:22` 寫死讀「目前目錄」嘅 `.env`（gitignored，worktree 冇副本），只有主 checkout 先有。人手曾用 `DOTENV_CONFIG_PATH` 環境變數繞過（flow `2026-09-13-0857`）。
+- **方案先提俾 Fat Mo 確認**（CLAUDE.md Rule 3：架構改動先提案）：A（窄，淨修 `cl-flow-runner.js`）vs B（闊，順手一致化其餘同款隱患 script）。Fat Mo 選 **B**。
+- **實作**：新增共用 helper `scripts/lib/env.js`——本機 `.env` 搵唔到就用 `git rev-parse --path-format=absolute --git-common-dir` 揪出主 checkout 根目錄，讀嗰邊嘅 `.env`；兩處都冇先退回 dotenv 原生行為。**不複製密鑰入 worktree、不印出任何值**，dotenv 原地讀主倉檔案。
+- **一致化範圍**：`cl-flow-runner.js`（原報壞）+ 另外 14 個一樣用 `require('dotenv').config()`（冇指定路徑，同款隱患）嘅 script 全部改用同一 helper：`add_supabase_mirror_nodes.js`、`deploy-order-confirm-date.js`、`deploy_native_supabase_mirror.js`、`deploy_batch_recalc_workflow.js`、`migrate_from_csv.js`、`migrate_airtable_to_supabase.js`、`scratch_pull_and_save_workflow.js`、`Sync_Notion_Brain.js`、`sync-legacy-orders.js`、`update_n8n_supabase_mirror.js`、`update-legacy-sale-price.js`、`update-legacy-profit.js`、`repair/sync_0600903.js`、`repair/sync_0600701.js`。
+- **刻意不動**：`agent_dashboardV42.js`／`ig-watchdog/build_n8n_workflow.cjs`（手動 parse `.env`，非 dotenv package）同 `upload-web.ps1`（PowerShell，機制獨立）——三者皆未報壞，本次不觸碰。
+- **驗證**：16 個改動檔案 `node --check` 全過；喺本 worktree（確認冇本機 `.env`）跑 `node scripts/cl-flow-runner.js --init "worktree env fallback test"` 成功產生 flow；另跑 `node -e` 直呼 helper 確認 `GEMINI_API_KEY`／`PERPLEXITY_API_KEY` 均經 fallback resolve 到 `true`（只印 boolean，冇印值）；測試產物 `artifacts/2026-09-13-0926/` 已刪除，`git status` 確認乾淨。
+- **本次 Dashboard HTML／Supabase／n8n 零改動**，Phase 2.5 部署跳過。全文見本條目 + decisions.md D76。**Subagent 使用記錄**：❌未使用（單一連續查證+改碼+驗證，範圍集中不需委派）。
+
 ## [2026-09-12] Session（Claude Code / Sonnet 5→Fable 5.1→Opus 5 執行）— canva-auto v1.7.0：Lokyi_C 0600903 首單全幅款 + Stage⑤ 新月份合集
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0600903 Lokyi_C（全幅AI短片，字句「Welcome to the world, little one!」）——canva-auto 首次處理全幅款（5頁；此前收斂案例全部係純音樂4頁）。

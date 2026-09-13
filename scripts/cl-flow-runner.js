@@ -19,7 +19,9 @@ const https = require('https');
 const { execSync, spawnSync } = require('child_process');
 
 // ─── Environment ─────────────────────────────────────────────────────────────
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+// Worktree-aware: falls back to the main checkout's .env when this worktree
+// has none of its own (see scripts/lib/env.js for rationale).
+require('./lib/env').loadEnv(path.join(__dirname, '..'));
 
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;

@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-13 (D76：scripts/lib/env.js — cl-flow-runner 等15支script .env worktree-aware fallback): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-13「D76」條目 + [decisions.md D76](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。修復 worktree 跑 `/cl-flow --review` 因搵唔到 `.env` 報 `GEMINI_API_KEY missing`；方案（窄 vs 闊）經 Fat Mo 選闊確認先落手。新增共用 helper `scripts/lib/env.js`（本機 `.env` 搵唔到就用 `git rev-parse --git-common-dir` 揾主倉讀，不複製密鑰、不印值），`cl-flow-runner.js` + 14 個同款 script 統一改用。16 檔 `node --check` 全過 + worktree 內實測 `--init` 成功 + key resolve 確認為 true。Dashboard/Supabase/n8n 零改動，Phase 2.5 部署跳過。
+**Subagent 使用記錄**：❌未使用（單一連續查證+改碼+驗證，範圍集中不需委派）。
 ## 2026-09-12 (canva-auto v1.7.0：Lokyi_C 0600903 首單全幅款 + Stage⑤ 新月份合集): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-12 條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。canva-auto 首次處理全幅款；Fat Mo 人手修正 8/8 格後 diff 落 `placement_memory.json`，明文規則落 `canva-auto.md` v1.7.0（全幅 page3 三件事、Stage⑤ 新月份合集／貼頁手法／核對原相）；同 0600302 Stage⑤ 未合併分支一併合併。🔴 `Free_Laser (09/26)` p150 右上原相仍係上一客，待 Fat Mo UI 換。

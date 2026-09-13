@@ -4,6 +4,7 @@
 
 | 檔案 | 用途 |
 |---|---|
+| `lib/env.js` | **共用 .env 載入器**（2026-09-13）：worktree-aware fallback — 目前目錄冇 `.env` 就用 `git rev-parse --git-common-dir` 揾主倉再讀嗰邊嘅 `.env`；`cl-flow-runner.js` 及所有 `require('dotenv').config()` 呼叫點已統一改用，不再各自寫死 `path.join(__dirname, '..', '.env')` |
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
 | `cl-flow-runner.js` | `/cl-flow` A3-first 協調器（v2.0.0，D39）— `--init` 開檔（不叫 API）／`--review [--fast]` 送 A3 草案俾 A1 Perplexity + A2 Gemini 評審（2026-08-17 新增 model fallback 鏈，見下方說明）|
 | `validate-ag-plan.js` | ⚠️ 舊版 ag-plan 作者格式驗證器（D39 前）— 現行評審格式（`ag-review.md`）已不再呼叫此驗證器，檔案保留但未接線於當前 Verdict 鏈 |
@@ -131,7 +132,7 @@ node scripts/cl-flow-runner.js --review {flow_id} --fast   # 精簡版：淨 A2 
 **環境需求**：
 
 - Node.js 16+
-- `.env` 含 `GEMINI_API_KEY`（`--review` 非 `--fast` 模式另需 `PERPLEXITY_API_KEY`）
+- `.env` 含 `GEMINI_API_KEY`（`--review` 非 `--fast` 模式另需 `PERPLEXITY_API_KEY`）——透過 `lib/env.js` 讀取，喺 git worktree 入面跑而該 worktree 冇本機 `.env` 時，會自動 fallback 去主倉嘅 `.env`（不複製檔案、不印出任何密鑰值）
 
 **A2 (Gemini) model fallback 鏈**（2026-08-17 新增，cl-flow `2026-08-17-1916`）：
 

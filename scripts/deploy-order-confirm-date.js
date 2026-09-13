@@ -7,7 +7,7 @@
  *       node scripts/deploy-order-confirm-date.js
  */
 
-require('dotenv').config();
+require('./lib/env').loadEnv(require('path').join(__dirname, '..')); // worktree-aware fallback
 const https = require('https');
 
 const DRY_RUN = process.argv.includes('--dry-run');

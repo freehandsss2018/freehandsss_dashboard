@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+require('./lib/env').loadEnv(path.join(__dirname, '..')); // worktree-aware fallback
 
 const NOTION_TOKEN = process.env.NOTION_API_KEY;
 const DATABASE_ID = process.env.NOTION_DATABASE_ID || "329574ef-3b8b-8135-80be-f248aedb9d46";
