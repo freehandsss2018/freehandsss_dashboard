@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-15] 訂單總覽品項批次清空後 reload「打返舊值」bug fix（純 render fallback 問題，非同步失敗）
+
+- **緣起**：Fat Mo 截圖回報訂單總覽單 0650429「手模擺設」品項嘅批次（原「第34批」）刪走清空後，畫面彈出已儲存確認，但撳「重新載入」後又打返「第34批」。
+- **診斷（喺 production Supabase 直接實測，唔靠推斷）**：清空該品項批次 → console 確認 `📤 PATCH Batch_Number → {"batch_number":""}` status 200 → 直接查 Supabase `order_items` 表確認 `batch_number:""` 已真正清空 → `window.globalOrders` 記憶體亦正確為 `''` → 但撳「重新載入」後畫面顯示返「第34批」，再查 DB 仍然係 `""`（DB 全程未被改回）。證實 **DB 同步從無失敗，純粹係渲染邏輯揀錯值顯示**。
+- **根因**：`freehandsss_dashboardV42.html` 兩處（表格視圖 line ~13875、Accordion 視圖 line ~12215）用 `const rowBatch = item.Batch || o.Batch || '';` 決定品項批次輸入框嘅顯示值——呢個 `||` fallback 分唔開「品項自己刻意清空（''）」同「品項從未逐件設過批次（DB=null→JS''）」，兩種情況一律借用訂單層 `o.Batch` 顯示。單 0650429 訂單層 `Batch="第34批"`，所以任何品項自己嘅批次一清空，個 input 就即刻「借用」訂單批次填返，睇落好似清極都清唔走。
+- **修復**：新增 `const rowBatchOwn = item.Batch || '';` 專供 input 嘅顯示/編輯值使用（唔再繼承訂單批次，品項自己清空就真係顯示空白）；原本 `rowBatch`/`rowBatchCol` 保留唔變，繼續畀色塊分組（`getBatchColor`）喺「從未逐件設過批次」嘅品項上借用訂單批次分色——呢個行為取捨（input 唯一顯示自己值 vs 色塊仍可繼承分色）已用 `AskUserQuestion` 問過 Fat Mo 確認方向。
+- **驗證**：本機起 static server 直接接 production Supabase，重測單 0650429——清空品項批次→reload 後 input 正確保持空白（唔再打返「第34批」）；有自己批次嘅品項（如同單鎖匙扣）reload 後不受影響；另一個從未設過批次嘅品項（DB=`null`）而家正確顯示空白（原本會借用訂單批次顯示，屬已確認嘅預期行為改變）。測試完已用 UI 操作（非直接寫 DB）將 0650429 還原返原本狀態，冇留低測試痕跡喺生產數據。
+- 已將修好嘅檔案 cp 落主倉 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Fat Mo 手動測試用嗰份路徑，跟 memory `feedback_v42_main_repo_test_copy` 慣例）。`current.html`（生產部署版）本次一併同步升格（見 Phase 2.5）。
+- 全文見本條目。**Subagent 使用記錄**：❌未使用，全程主 session 直接查碼 + Browser 對 production Supabase 實測復現同驗證。
+
 ## [2026-09-15] Session（Claude Code / Sonnet 5↔Opus 5 執行）— canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付（史上首單單片家族，新規則 CV-42、CV-33 升格）
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0601011 `_hilaryy.`（純音樂，字句「I will always be here for you」）。素材夾檢查發現：只有一條 Lovart 卡通片（`影片 5.mp4`，本地 tkhd 實測 960×960 正方，`get-assets` metadata 錯報 960×1920——第9次撞中 CV-27 陷阱），冇 `WhatsApp Video`；另有2張 UUID 命名 jpg（媽媽抱BB切蛋糕、BB特寫）同 `plaint.png`。

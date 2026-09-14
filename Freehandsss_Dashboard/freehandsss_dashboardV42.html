@@ -12214,6 +12214,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const qty = Number(item.Qty) || 1;
                         const rowBatch = item.Batch || o.Batch || '';
                         const rowBatchCol = getBatchColor(rowBatch);
+                        // 品項自己嘅批次輸入框只顯示自己嘅值，唔可以再用 rowBatch（見下）——
+                        // rowBatch 特登 fallback 去 o.Batch 畀「從未設過批次」嘅品項分色用，
+                        // 但用嚟填 input value 會令用戶刻意清空（item.Batch===''）嘅品項，
+                        // 個輸入框仍然顯示訂單批次，睇落好似「清完又變返」。
+                        const rowBatchOwn = item.Batch || '';
 
                         let catClass = 'badge-cat-default';
                         const cat = getSafeText(item.Category) || '';
@@ -12339,7 +12344,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-tag"/></svg>批次</span>
                                     <input type="text"
                                         id="acc-batch-${fhsEscHtml(o.id)}-${_aIdx}"
-                                        value="${fhsEscHtml(rowBatch || '')}"
+                                        value="${fhsEscHtml(rowBatchOwn)}"
                                         placeholder="批次"
                                         inputmode="numeric"
                                         onfocus="batchInputFocus(this)"
@@ -13874,6 +13879,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
                         const rowBatchCol = getBatchColor(rowBatch);
+                        // 品項自己嘅批次輸入框只顯示自己嘅值，唔可以再用 rowBatch（見 12215 同款註解）
+                        const rowBatchOwn = item.Batch || '';
 
                         // 繪製表格列 (TR)
                         const isLastItem = index === itemsCount - 1;
@@ -13992,7 +13999,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             </td>`}
                             <td class="batch-cell" style="vertical-align:top; text-align:center; padding:calc(4px*var(--fhs-ovw-s,1)) 3px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; background-color:${rowBatchCol};">
                                 <input type="text" id="batch-input-${fhsEscHtml(o.id)}-${_iIdx}" class="review-batch-input"
-                                       value="${fhsEscHtml(rowBatch || '')}"
+                                       value="${fhsEscHtml(rowBatchOwn)}"
                                        style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:calc(13px*var(--fhs-ovw-s,1));"
                                        inputmode="numeric"
                                        onfocus="batchInputFocus(this)"
