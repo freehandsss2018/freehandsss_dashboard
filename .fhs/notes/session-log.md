@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-15 (canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付，史上首單單片家族): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15 條目 + `canva_auto/placement_memory.json` order `0601011`（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。素材只得一條卡通片（史上首見），開工前問 Fat Mo 確認揀雙直片家族+單片重複填兩格（非AI自行決定）。Stage①-⑤全交付：黑白圖零修改，彩色圖/字句/page3 各有 Fat Mo 微調（字句字號42.67→56、字距0.073→0.14，新規則CV-42）。AI 曾憑肉眼睇export誤報page3未去背，後量框角像素推翻。CV-33（素材角色核對）達4單升格入canva-auto.md。Stage⑤存檔頁已建，待Fat Mo拖本客原相貼入合集。
+**Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
 ## 2026-09-14 續 (訂單總覽「全部」視圖：入帳/成本/利潤+單號/日期/客人批次顏色同步 bug fix): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-14「續」條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報批次顏色未跟入帳/成本/利潤、單號/日期/客人同步；查證確認呢幾組 `<td>` 從最初設計就一直未帶 `background-color`（非退化），已補齊背景色 + `class="batch-cell"`（令現有 live-update 邏輯自動帶埋）。生產真單 0600107 實測 12 格顏色一致，live 變色驗證後還原未寫入 Supabase。已 copy 落主倉 V42.html，`current.html` 未動。

@@ -83,6 +83,7 @@ exit code ≠ 0 即代表寫入有缺（缺欄位／規則引用錯誤／type �
 
 ## Stage ① — AI 開殼
 
+0. **素材角色核對（CV-33，4單收斂升格）**：素材夾常混入唔跟命名慣例或非本產品線嘅檔（UUID jpg、plaint.png、Free_Laser png 等）。開工前逐檔睇，角色唔清楚就問 Fat Mo，唔好靠檔名推斷。已知：`plaint.png`＝花環參考、`word.png`＝字句參考（兩者都唔上載）；UUID jpg 通常同短片無關，但可能係 Stage⑤ 右上原相（0601011 寶寶相＝插畫來源）。片數少過母片 slot 數時，揀母片前先問 Fat Mo（0600901／0600302／0601011）。
 1. **搵母片（2026-08-15 起優先序再改，TW_Ting 0600901 定案）**：
    ⚠️ **結構信號優先於音長距離**——先數本單素材：幾多條片、各自尺寸（本地 tkhd）、各自時長。母片家族由 page3 結構分辨（「兩片疊放」＝HoKaSin/Meika 系；「四片疊放」＝yunggggm/Kaki 系）。**揀錯家族會直接缺 slot，代價遠高於音長唔啱**（TW_Ting 4條片×960×960×15.04sec → 揀音長差19秒嘅 yunggggm，而非音長最近嘅 Meika/HoKaSin，證實正確）。
    結構同級之後，先用 `mutagen`（`from mutagen.mp3 import MP3; MP3(path).info.length`）讀本單 `WhatsApp Audio *` 音長（秒，1位小數），`search-designs` 攞同款式全部母片後，**喺同結構家族內揀音長最接近嘅**；音長打平手先睇建立日期，揀**最接近**（唔係最新）嗰個——因為建立時間相近代表版式演進階段接近，比純粹「最新」更適合做母片。**排除 PILOT_/測試前綴/自動化次品**，優先 Fat Mo 人手正版。
@@ -321,6 +322,7 @@ scale s = 0.369803187    tx = -105.011    ty = +40.440
 
 ## 版本更新日誌
 
+- v1.8.2（2026-09-15，_hilaryy. 0601011）：Stage① 新增第0步「素材角色核對」（CV-33 達4單升格）；`placement_memory.json` 新增 CV-42（字句行數少過母片／短句時，字號同字距唔好照抄母片，2行約55-56px、字距約0.14）
 - v1.8.1（2026-09-14，Shirley 0600914）：Stage④ 刪除「出唔出 MP4／封面 JPG 要問 Fat Mo」舊句，改為**預設唔出、唔准問、直接開 Stage⑤**（0600302/0600903 已明示，0600914 AI 照舊句再問，Fat Mo 定性重複犯錯）；`placement_memory.json` 新增 CV-38（Stage③ 讀全部頁搵臨時件）、CV-39（page2 圖對上限花環 top／下限字句 top）、CV-40（page4 動畫格跟 page2 彩色格，唔繼承母片 Fat Mo 單次微調值）、CV-41（本條，已升格）
 - v1.8.0（2026-09-13，flow 2026-09-13-0857，Canva 學習記錄重構）：`placement_memory.json` 升級 `schema_version:2`——新增頂層 `rules[]`（規則編號表 CV-01..CV-35，跨單教訓統一編號＋升格追蹤）＋逐 case `category`/`page_count`/`parent_order`/`first_pass_total`/`first_pass_corrected`/`lessons[]`（逐 Page/流程列點，五類型標籤）；11 個既有 case 已回填（AI 抽取 + fresh-context agent 兩輪覆核）；v1 舊欄位一字不刪、零改動（887 key path 深比對驗證）。新增 `scripts/canva_memory_validate.js`（Stage④ 寫入後強制跑嘅防退化校驗 CLI）＋`scripts/_oneoff/canva_lessons_merge.js`（一次性回填腳本，保留審計）。Agent Dashboard `renderCanvaLearningZone` 同步重寫：純音樂/全幅款分組置頂、規則表雙向錨點跳轉、AI 首次準確率／Canva 連結／母片連結／類型篩選；順手修正 `.cnote[open]` 展開摘要重複顯示嘅舊 bug（IG/Canva/3D 三個學習記錄 zone 共用）。Step 0 新增「Schema v2 寫入規格」段，Stage④ 同步引用。
 - v1.7.0（2026-09-12，Lokyi_C 0600903，首單全幅款）：新增 **全幅款 page3 專屬做法**（Fat Mo 明文：page2/4 同純音樂一樣，page3 係唯一分別——背景＝同一條直片關聲鋪 page 層 `background.media`、直片格闊度跟客人片方向調＋直向片貼頂裁、右下小組合＝page2 成品等比縮細）；Stage⑤ 補**新月份合集**（上月合集 copy→改名→入 `Free_recorder (MM/26)`）、Fat Mo 貼頁手法同插入位置、交貨前核對右上原相係本客；Known failure modes 追加 4 條（判斷去背只信 export 真 PNG、page 層 background 要查、video metadata 陷阱第 6 次、本地素材可能已過時）。同 v1.6.0（原喺未合併分支）於 2026-09-12 一併合併落 main

@@ -119,9 +119,277 @@
       "corrected_slots": 5,
       "total_slots": 6,
       "note": "全幅款第3單（Shirley，母片Chinok 0600709）。只page3直片一次過中。page2圖對沿用母片735.39²壓過字句→Fat Mo縮至622.94²對齊花環top；page3細組合跟縮；page4動畫錯繼承Chinok嘅Fat Mo單次放大值→改回同page2格。字距0.11→0.14。新規則 CV-38/CV-39/CV-40。"
+    },
+    {
+      "order": "0601011",
+      "date": "2026-09-15",
+      "corrected_slots": 2,
+      "total_slots": 4,
+      "note": "純音樂（_hilaryy.，母片Woodcyn 0600905），史上首單只得一條卡通片。4格計法：page2彩色／page2黑白／字句（兩頁計1格）／page3卡通片。黑白圖同page3片幾何零修改；彩色右移6.22；字句字號42.67→56、字距0.073→0.14。page3重複格被Fat Mo UI刪（結構改動，唔計幾何修正）。新規則 CV-42。"
     }
   ],
   "cases": [
+    {
+      "order": "0601011",
+      "customer": "_hilaryy.",
+      "design_id": "DAHVL73M3IQ",
+      "date": "2026-09-15",
+      "learned": true,
+      "family": "純音樂4頁；母片 Woodcyn 0600905 DAHSVXh07QY（雙直片疊放家族，音長25.5sec最接近本單19.4sec）。本單素材＝單條 Lovart 卡通片「影片 5.mp4」960²（冇 WhatsApp Video）＋彩色/黑白圖＋word.png/plaint.png＋2張 UUID jpg（寶寶原相、全家切蛋糕相）",
+      "note": "✅幾何已收尾（2026-09-15 Fat Mo 人手改完）。史上首單純音樂只得一條卡通片（Fat Mo 語）：開工前問 Fat Mo，揀雙直片家族、page3 兩格重複填；Fat Mo 其後 UI 刪重複格＋調 page3 時長，剩低嗰格幾何＝AI 交付值。page2 黑白圖零修改；彩色圖右移6.22（按內容疊合）；字句 Fat Mo 改字號42.67→56、字距0.073→0.14（母片3行、本單2行，AI 照抄母片）。AI Stage③ 曾憑 export 目測硬邊誤報「疑似未去背」，後量角位推翻。Stage⑤ 存檔頁 DAHVMN_62Vw（由 Free_Laser (09/26) p152 Shirley 單頁複製）：彩色插圖+字句已換；右上原相仍係 Shirley 相，待 Fat Mo 拖入本客寶寶原相後補換，再人手貼入合集。",
+      "slots": [
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PBzFjBg9hQdFdWjW-LB0wWsLNwJJf9lvB（母片元素，保留）",
+          "asset": "MAHVL71_PTY 彩色圖_cutout.png 1024x1024（local_prep 輸出）",
+          "mother_box": {
+            "top": 162.9437507485734,
+            "left": 672.235,
+            "w": 575.53,
+            "h": 579.8450741303774
+          },
+          "ai_box": {
+            "top": 162.9438,
+            "left": 670.0775,
+            "w": 579.845,
+            "h": 579.845,
+            "imageBox": "=container（0,0,579.845²）"
+          },
+          "fatmo_box": {
+            "top": 162.9438,
+            "left": 676.2978441957747,
+            "w": 579.845,
+            "h": 579.845,
+            "imageBox": "=container（冇改）"
+          },
+          "delta": {
+            "left": 6.2203,
+            "top": 0,
+            "w": 0,
+            "h": 0
+          },
+          "note": "AI 以母片中心（960, 452.87）＋母片高579.85按 asset 正方重算。Fat Mo 淨係右移6.22（中心966.22），大小/imageBox 冇改；黑白圖中心仍係960。兩圖 asset 比例唔同（1024² vs 1233×1275）時，box 中心對齊唔等於內容對齊，Fat Mo 按內容疊合手調。"
+        },
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "PBzFjBg9hQdFdWjW-LB92FvgZHc33rxW7（母片元素，保留）",
+          "asset": "MAHVL0kUnhg 黑白圖_parakeet.png 1233x1275（local_prep 輸出）",
+          "mother_box": {
+            "top": 178.34447495920756,
+            "left": 672.235,
+            "w": 575.53,
+            "h": 564.4443499197431
+          },
+          "ai_box": {
+            "top": 178.3445,
+            "left": 687.0815,
+            "w": 545.837,
+            "h": 564.4443,
+            "imageBox": "=container（0,0,545.837×564.444）"
+          },
+          "fatmo_box": "=ai_box（零修改）",
+          "note": "以母片中心（960, 460.57）＋母片高564.44，闊按 asset 比例0.96706重算，零裁切，Fat Mo 接受。"
+        },
+        {
+          "slot": "page2_page3_字句",
+          "element_id_page2": "PBzFjBg9hQdFdWjW-LBpSwN9yHKsvYrY4",
+          "element_id_page3": "PBnkjDnf1dD8xC0x-LBw4RRNgHf16Sx5W（ID 冇變，今次冇用 UI 複製）",
+          "ai_box": {
+            "top": 779.6080092175106,
+            "left": 615.067683741635,
+            "w": 649.7629279554662,
+            "h": 109.46666,
+            "fontSize": 42.6667,
+            "letterSpacing": 0.073,
+            "lines": 2
+          },
+          "fatmo_box": {
+            "top": 761.9413392175106,
+            "left": 615.067683741635,
+            "w": 649.7629279554662,
+            "h": 144.8,
+            "fontSize": 56,
+            "letterSpacing": 0.14,
+            "lines": 2
+          },
+          "delta": {
+            "fontSize_pct": 31.25,
+            "letterSpacing": 0.067,
+            "top": -17.6667
+          },
+          "note": "母片 Woodcyn 係3行字句（42.67），本單 word.png 2行；AI 照抄母片字號/字距。Fat Mo 兩頁字號+31.25%（≈記憶檔決策表19-40字→2行55px）、字距0.073→0.14；box 垂直中心不變（834.34）、left/w 不變。word.png 實測（1563 canvas）：2行、墨水寬511/363、行距91px。"
+        },
+        {
+          "slot": "page3_卡通片",
+          "element_ids_ai": [
+            "PBnkjDnf1dD8xC0x-LBcmP2V1RC2HlLDp",
+            "PBnkjDnf1dD8xC0x-LBDXmPZS466VsHHW"
+          ],
+          "element_id_fatmo": "PBnkjDnf1dD8xC0x-LBrR0LFBMWpYlPM5（淨一格，ID 變新）",
+          "asset": "VAHVL7uSWmA 影片 5.mp4（Lovart 卡通去背版）：get-assets metadata 報960x1920（錯），縮圖360²、本地 tkhd 960²",
+          "mother_box": {
+            "top": 162.94375074857356,
+            "left": 666.244783852103,
+            "w": 587.5104322957947,
+            "h": 572.7295871245093
+          },
+          "ai_box": {
+            "top": 162.9438,
+            "left": 673.6352,
+            "w": 572.7296,
+            "h": 572.7296,
+            "imageBox": "=container",
+            "note": "兩個母片 slot 都 update_fill 同一條"
+          },
+          "fatmo_box": {
+            "top": 162.9438,
+            "left": 673.6352000000002,
+            "w": 572.7296000000002,
+            "h": 572.7296,
+            "imageBox": "=container"
+          },
+          "note": "史上首單純音樂只得一條卡通片。開工前已問 Fat Mo，揀雙直片家族、兩格重複填；Fat Mo 其後 UI 刪走重複格並調 page3 時長。剩低元素 locator_id 變新，幾何＝AI 交付值（零修改）。export 角位量度：頂左角 inside≈outside（diff 3.7／8.2）、頂右角 dy80 兩邊都255＝已去背；見到嘅直邊係插畫毛巾本身伸到畫框邊（page2 同一插畫亦一樣）。"
+        },
+        {
+          "slot": "stage5_存檔頁",
+          "element_id": "design DAHVMN_62Vw（由 Free_Laser (09/26) p152 Shirley 單頁複製）；彩色插圖 PB5WLW3dghrH5wYv-LB0VjJ5R3dpSDyd6、字句 PB5WLW3dghrH5wYv-LBR0mkYMDKmvNsXL、右上原相 PB5WLW3dghrH5wYv-LBbTYD5lntPnWFHn",
+          "asset": "彩色插圖 MAHVL71_PTY（同 page2）；右上原相應換本客寶寶原相 25ab4b77-09b6-4f0a-8d2d-3d0b39d902e1.jpg（插畫來源，未入 Canva）",
+          "mother_box": {
+            "彩色插圖": {
+              "top": 103.16180921025318,
+              "left": 143.8664,
+              "w": 214.7501,
+              "h": 214.7501
+            },
+            "字句": {
+              "fontSize": 17,
+              "w": 256,
+              "lineHeight": 1.67,
+              "letterSpacing": 0.165
+            }
+          },
+          "ai_box": {
+            "top": 107.8588,
+            "left": 145.234,
+            "w": 214.4285,
+            "h": 214.4285,
+            "imageBox": "=container"
+          },
+          "note": "尺寸＝page2 最終579.845×s(0.369803187)。位置跟花環相對：page2 彩色 top 比花環低12.70、中心比花環右6.22 → ×s → 模板花環 top103.16／中心250.15。底邊322.29 < 字句 top 327.80。",
+          "fatmo_box": "待 Fat Mo 貼入合集後覆核"
+        }
+      ],
+      "non_geometry_findings": [
+        "字句：母片3行→本單2行，AI 照抄母片字號42.67／字距0.073；Fat Mo 兩頁改56／0.14",
+        "素材夾：單條 Lovart 卡通片（冇 WhatsApp Video）、2張 UUID jpg、plaint.png、word.png。開工前問 Fat Mo：jpg 同短片無關；單片→雙直片家族兩格重複填",
+        "page3：Fat Mo UI 刪重複片＋調 page3 時長（MCP 睇唔到時長）",
+        "AI Stage③ 交付時憑 export 目測直邊向 Fat Mo 報「疑似未去背」，後以角位像素量度推翻：頂角透明，直邊係插畫毛巾伸到畫框邊",
+        "get-assets video metadata 第9次錯報（960x1920 vs tkhd 960²，縮圖360²）",
+        "Fat Mo 用 local_prep 兩張輸出上載（檔名一致），繼 Shirley 之後連續第二單接受",
+        "Stage⑤：本客寶寶原相 jpg 未入 Canva，存檔頁右上仍係 Shirley 相，待 Fat Mo 拖入；合集 p154／p155 已有本客字句版面（疑似 Fat Mo 自己做緊嘅雷射版），AI 冇掂"
+      ],
+      "category": "純音樂",
+      "page_count": 4,
+      "parent_order": "0600905",
+      "first_pass_total": 4,
+      "first_pass_corrected": 2,
+      "lessons": [
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "fatmo_technique",
+          "rule": "CV-10",
+          "text": "只得一條片、母片全係2/4片家族；先問 Fat Mo 再揀雙直片 Woodcyn",
+          "src": "non_geometry_findings[1]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage2",
+          "type": "material",
+          "rule": "CV-33",
+          "text": "2張UUID jpg+plaint.png 混入，問咗先知同短片無關",
+          "src": "non_geometry_findings[1]"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "ai_error",
+          "rule": null,
+          "text": "兩圖比例唔同仍按box中心960對齊，Fat Mo彩色右移6.22按內容疊合",
+          "src": "slots[page2_彩色圖].note"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-03",
+          "text": "黑白1233×1275按asset比例重算545.84×564.44，Fat Mo零修改",
+          "src": "slots[page2_黑白圖].fatmo_box"
+        },
+        {
+          "page": [
+            2,
+            3
+          ],
+          "type": "ai_error",
+          "rule": "CV-42",
+          "text": "母片3行改2行仍照抄42.67/0.073，Fat Mo改56/0.14",
+          "src": "slots[page2_page3_字句].note"
+        },
+        {
+          "page": [
+            3
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-32",
+          "text": "單條卡通片兩格重複填，Fat Mo UI刪重複格＋調page3時長",
+          "src": "slots[page3_卡通片].note"
+        },
+        {
+          "page": [
+            3
+          ],
+          "type": "tool_bug",
+          "rule": "CV-27",
+          "text": "影片5 metadata報960x1920，縮圖360²、tkhd 960²；第9次",
+          "src": "slots[page3_卡通片].asset"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage3",
+          "type": "ai_error",
+          "rule": "CV-24",
+          "text": "憑export目測直邊誤報未去背，量角位先知透明",
+          "src": "non_geometry_findings[3]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage2",
+          "type": "fatmo_technique",
+          "rule": "CV-37",
+          "text": "Fat Mo再用local_prep兩張輸出，連續第二單接受",
+          "src": "non_geometry_findings[5]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage5",
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "存檔頁插圖按page2最終×s、跟花環相對位，底邊唔壓字句",
+          "src": "slots[stage5_存檔頁].note"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage5",
+          "type": "material",
+          "rule": null,
+          "text": "本客寶寶原相jpg未入Canva，存檔頁右上仍係Shirley相",
+          "src": "non_geometry_findings[6]"
+        }
+      ]
+    },
     {
       "order": "0600914",
       "customer": "Shirley",
@@ -2901,7 +3169,7 @@
       "flow_stage": "stage2",
       "applies_to": "all",
       "text": "素材資料夾命名可以完全唔跟慣例（可能混雜非本產品線檔案），開工前應向 Fat Mo 確認素材角色，唔好靠檔名推斷",
-      "promoted_to": null
+      "promoted_to": "canva-auto.md §Stage①第0步素材角色核對"
     },
     {
       "id": "CV-34",
@@ -2979,6 +3247,17 @@
       "applies_to": "all",
       "text": "收尾預設唔出 MP4／封面 JPG，唔准再問 Fat Mo；Stage④ 寫完直接開 Stage⑤ 存檔頁。只有 Fat Mo 主動要求先 export（0600302/0600903 已明示，0600914 再問被定性重複犯錯）",
       "promoted_to": "canva-auto.md §Stage④ 學習＋出貨"
+    },
+    {
+      "id": "CV-42",
+      "type": "ai_error",
+      "page": [
+        2,
+        3
+      ],
+      "applies_to": "all",
+      "text": "字句行數少過母片（或短句）時，字號同字距都唔好照抄母片：2行短句 Fat Mo 放大到約55-56px（記憶檔決策表19-40字→55px）、字距改約0.14（0600303 0.146／0600914 0.14／0601011 0.14）",
+      "promoted_to": null
     }
   ]
 }

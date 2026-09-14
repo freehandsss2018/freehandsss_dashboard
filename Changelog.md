@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-15] Session（Claude Code / Sonnet 5↔Opus 5 執行）— canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付（史上首單單片家族，新規則 CV-42、CV-33 升格）
+
+- **緣起**：Fat Mo「canva-auto 新單」處理 0601011 `_hilaryy.`（純音樂，字句「I will always be here for you」）。素材夾檢查發現：只有一條 Lovart 卡通片（`影片 5.mp4`，本地 tkhd 實測 960×960 正方，`get-assets` metadata 錯報 960×1920——第9次撞中 CV-27 陷阱），冇 `WhatsApp Video`；另有2張 UUID 命名 jpg（媽媽抱BB切蛋糕、BB特寫）同 `plaint.png`。
+- **開工前先問 Fat Mo（非自行決定）**：純音樂款全庫已收斂案例 page3 全部係 2 條或 4 條片疊放，從未見過單片先例；揀錯家族代價遠高於音長唔啱（見 CV-10）。跟 TW_Ting 0600901 血訓「提出缺口比自作主張重複用同一條片正確」，用 `AskUserQuestion` 問清楚：(a) 單片定係等補片、(b) 兩張 UUID jpg 是否本單素材。Fat Mo 確認：揀雙直片家族（母片 Woodcyn 0600905，音長25.5sec 全庫最接近本單19.4sec）、單片重複填兩格；兩張 jpg 同短片無關（其中一張 BB 特寫其實係 Stage⑤ 存檔頁右上原相用途）。
+- **Stage①-③**：`copy-design`→改標題`_hilaryy. 純音樂 (1409/26) 19.4sec`→page2/3 `replace_text`（跟 `word.png` 量度兩行拆行：「I will always be / here for you」）→commit；Fat Mo 去背上載後，Stage③ AI 換料：page2 彩色圖/黑白圖按各自 asset 原生比例零裁切公式重算（母片中心錨點 x=960）、page3 兩個 video slot 同時 `update_fill` 入同一條去背片、刪 Fat Mo 臨時拖入元素。
+- **AI 犯錯（已記錄）**：export 真圖後憑肉眼睇 page3 條直邊，向 Fat Mo 誤報「疑似未去背」——事後用 Python 量度框角像素（inside vs outside 顏色差）先證實實際已透明，直邊係插畫毛巾本身伸出畫框邊（page2 同一插畫都一樣），同背景殘留無關。教訓：CV-24「判斷去背信 export 真圖」呢條唔夠——連真圖都要量像素，唔可以純肉眼判斷。
+- **Fat Mo 修改**：page2 黑白圖零修改；彩色圖右移6.22px（兩圖 asset 比例唔同，box 中心對齊唔等於內容對齊）；字句——母片 Woodcyn 原文 3 行，本單 2 行，AI 照抄咗母片字號 42.6667/字距 0.073 冇按決策表重估，Fat Mo 兩頁一致改 56/0.14（新增規則 **CV-42**）；page3——Fat Mo 喺 Canva UI 刪走重複嗰格 + 調整 page3 顯示時長（MCP 睇唔到時長），剩低嗰格幾何 = AI 交付值零修改。
+- **Stage④**：落庫 `placement_memory.json` order `0601011`（`learned:true`，4格中2格被改），`node scripts/canva_memory_validate.js` exit 0（2個💡升格提示，0 error）。**CV-33**（開工前核對素材角色，本單第4次引用）達升格門檻，寫入 `canva-auto.md` Stage①新增第0步。
+- **Stage⑤存檔頁**：由 `Free_Laser (09/26)` p152（Shirley 存檔頁）單頁複製做母版 `DAHVMN_62Vw`，彩色插圖已換、按 page2 最終格 × 仿射比例 0.369803187 算位置（跟花環相對位，底邊唔壓字句）、字句已換，export 真 JPG 1000² 量方框角零白框、gap 列冇墨水確認唔壓字句。**待 Fat Mo**：拖入本客寶寶原相 `25ab4b77-09b6-4f0a-8d2d-3d0b39d902e1.jpg` 換走暫代嘅 Shirley 相，Ctrl+A/C/V 手動貼入合集 p152 後（p154/p155 已有本客字句版面，疑似 Fat Mo 自己做緊嘅雷射版，AI 冇郁過）。
+- **本次 Dashboard HTML／Supabase／n8n 零改動**，Phase 2.5 部署跳過。全文見本條目 + `canva_auto/placement_memory.json` order `0601011`、規則 CV-42、CV-33（`promoted_to`）。**Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
 ## [2026-09-14] Session（Claude Code / Sonnet 5↔Opus 5 執行）— canva-auto：Shirley 0600914 全幅款第3單全流程交付 + SOP 重複犯錯修正（CV-41）
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0600914 Shirley（全幅AI短片，字句「Stay healthy and happy always」）。母片揀 Chinok 0600709（同日前一單，材料模式一致：冇 WhatsApp Audio、直向9:16客人片、單條 Lovart 動畫、word.png/plaint.png，全幅款標題冇 sec）。
