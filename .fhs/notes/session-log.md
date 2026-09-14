@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-14 續 (訂單總覽「全部」視圖：入帳/成本/利潤+單號/日期/客人批次顏色同步 bug fix): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-14「續」條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報批次顏色未跟入帳/成本/利潤、單號/日期/客人同步；查證確認呢幾組 `<td>` 從最初設計就一直未帶 `background-color`（非退化），已補齊背景色 + `class="batch-cell"`（令現有 live-update 邏輯自動帶埋）。生產真單 0600107 實測 12 格顏色一致，live 變色驗證後還原未寫入 Supabase。已 copy 落主倉 V42.html，`current.html` 未動。
+**Subagent 使用記錄**：❌未使用，全程主 session 直接查碼＋Browser 實測。
 ## 2026-09-13 (D78：訂單總覽「全部」視圖欄位重排——刻字/封面+入帳/成本/利潤移至進度右方): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-13「D78」條目 + [decisions.md D78](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖直接指示欄位重排，兩輪 Artifact 預覽確認次序後落手：`fhsOverviewCols()` 真源改「全部」視圖分支次序，逐列 `<td>` 同步重排（新增 `_engCellTd` 變數兩處條件輸出），類別視圖次序不變。V42.html+current.html 同步 + `/upload-web` 部署三關驗證全過。派 fresh-context agent 獨立覆核（非自驗）PASS。
