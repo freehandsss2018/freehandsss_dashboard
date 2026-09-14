@@ -244,8 +244,8 @@ AI 交付時要主動講明：第 1 項我驗過（附數值），第 2、3 項�
 ## Stage ④ — 學習＋出貨
 
 - Fat Mo 有改 → 佢改完後讀 diff 落 `placement_memory.json`（case + convergence_log + `learned: true` + schema v2 `category`/`page_count`/`parent_order`/`first_pass_total`/`first_pass_corrected`/`lessons[]`，規格見 Step 0「Schema v2 寫入規格」）；規律 **≥3 單收斂**先升格寫入記憶檔規則層／`rules[].promoted_to`；寫完跑 `node scripts/canva_memory_validate.js` 確認 exit 0
-- Fat Mo OK → `get-export-formats` → `export-design` MP4 `horizontal_1080p` + 封面 JPG（page2、1280×720、**`quality` 必填**）→ 交連結（提醒有效期約 4 小時）→ 本 case 記 `learned: true`
-- ⚠️ 出唔出 MP4/封面 JPG **要問 Fat Mo**，唔係必然步驟（0600302 明示「不用出」）。但 **Stage⑤ 存檔頁照做**，兩者無關
+- Fat Mo OK → 本 case 記 `learned: true` → **直接開 Stage⑤ 存檔頁**
+- 🔴 **收尾預設唔出 MP4／封面 JPG，唔准再問 Fat Mo**（0600302「不用出」、0600903 明示「唔出 MP4、唔出封面 JPG，只做存檔頁」；0600914 AI 照舊問，Fat Mo 定性重複犯錯，CV-41）。只有 Fat Mo 主動要求先出：`get-export-formats` → `export-design` MP4 `horizontal_1080p` + 封面 JPG（page2、1280×720、**`quality` 必填**）→ 交連結（有效期約 4 小時）
 
 ## Stage ⑤ — 存檔頁（短片 cover 上 `Free_Laser` 合集）（2026-08-25，0600302 首例）
 
@@ -321,6 +321,7 @@ scale s = 0.369803187    tx = -105.011    ty = +40.440
 
 ## 版本更新日誌
 
+- v1.8.1（2026-09-14，Shirley 0600914）：Stage④ 刪除「出唔出 MP4／封面 JPG 要問 Fat Mo」舊句，改為**預設唔出、唔准問、直接開 Stage⑤**（0600302/0600903 已明示，0600914 AI 照舊句再問，Fat Mo 定性重複犯錯）；`placement_memory.json` 新增 CV-38（Stage③ 讀全部頁搵臨時件）、CV-39（page2 圖對上限花環 top／下限字句 top）、CV-40（page4 動畫格跟 page2 彩色格，唔繼承母片 Fat Mo 單次微調值）、CV-41（本條，已升格）
 - v1.8.0（2026-09-13，flow 2026-09-13-0857，Canva 學習記錄重構）：`placement_memory.json` 升級 `schema_version:2`——新增頂層 `rules[]`（規則編號表 CV-01..CV-35，跨單教訓統一編號＋升格追蹤）＋逐 case `category`/`page_count`/`parent_order`/`first_pass_total`/`first_pass_corrected`/`lessons[]`（逐 Page/流程列點，五類型標籤）；11 個既有 case 已回填（AI 抽取 + fresh-context agent 兩輪覆核）；v1 舊欄位一字不刪、零改動（887 key path 深比對驗證）。新增 `scripts/canva_memory_validate.js`（Stage④ 寫入後強制跑嘅防退化校驗 CLI）＋`scripts/_oneoff/canva_lessons_merge.js`（一次性回填腳本，保留審計）。Agent Dashboard `renderCanvaLearningZone` 同步重寫：純音樂/全幅款分組置頂、規則表雙向錨點跳轉、AI 首次準確率／Canva 連結／母片連結／類型篩選；順手修正 `.cnote[open]` 展開摘要重複顯示嘅舊 bug（IG/Canva/3D 三個學習記錄 zone 共用）。Step 0 新增「Schema v2 寫入規格」段，Stage④ 同步引用。
 - v1.7.0（2026-09-12，Lokyi_C 0600903，首單全幅款）：新增 **全幅款 page3 專屬做法**（Fat Mo 明文：page2/4 同純音樂一樣，page3 係唯一分別——背景＝同一條直片關聲鋪 page 層 `background.media`、直片格闊度跟客人片方向調＋直向片貼頂裁、右下小組合＝page2 成品等比縮細）；Stage⑤ 補**新月份合集**（上月合集 copy→改名→入 `Free_recorder (MM/26)`）、Fat Mo 貼頁手法同插入位置、交貨前核對右上原相係本客；Known failure modes 追加 4 條（判斷去背只信 export 真 PNG、page 層 background 要查、video metadata 陷阱第 6 次、本地素材可能已過時）。同 v1.6.0（原喺未合併分支）於 2026-09-12 一併合併落 main
 - v1.6.0（2026-08-25，ochinglee22 0600302）：新增 **Stage⑤ 存檔頁**（短片 cover 上 `Free_Laser` 合集）——完整做法、仿射變換式（s=0.369803187 / tx=−105.011 / ty=+40.440，簽名交叉驗證 Δ=0）、右上原相同彩色插圖各自嘅 box 規則；連帶兩條新 Known failure mode：**巨型 design 開唔到 editing transaction**（實測 156 頁）同 **`merge-designs` 假成功**（回 success 但冇插到，必須事後實查 page_count）。另補記 Stage④ 出 MP4/封面 JPG **要問 Fat Mo、非必然步驟**

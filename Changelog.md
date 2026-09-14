@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-14] Session（Claude Code / Sonnet 5↔Opus 5 執行）— canva-auto：Shirley 0600914 全幅款第3單全流程交付 + SOP 重複犯錯修正（CV-41）
+
+- **緣起**：Fat Mo「canva-auto 新單」處理 0600914 Shirley（全幅AI短片，字句「Stay healthy and happy always」）。母片揀 Chinok 0600709（同日前一單，材料模式一致：冇 WhatsApp Audio、直向9:16客人片、單條 Lovart 動畫、word.png/plaint.png，全幅款標題冇 sec）。
+- **Stage①-③**：copy-design→改標題→page2/3/4 replace_text→commit；Stage③ AI 換料期間踩中兩個**流程性錯誤**（已落 CV-38/CV-39/CV-40）：①Stage③ 只讀 `page_indices:[2,3,4]` 搵 Fat Mo 臨時拖入元素，漏咗落錯 page1 嘅圖，誤報「未上載」——Fat Mo 糾正後改讀全部頁；②page2 圖對沿用母片舊 container（735.39²）底邊壓過字句 box，Fat Mo 改細對齊花環頂——記錄「上限花環top／下限字句top」新規則；③page4 動畫格錯繼承母片 Chinok 嘅單次放大值（Fat Mo 當時話「不必理會」係一次性微調非規格），冇跟 Chinok 教訓「page4格＝page2彩色格」。
+- **Stage④**：AI 交付 6 格幾何入面只 page3 直片零修改，其餘 5 格被 Fat Mo 改（見上）；字句字距三頁 0.11→0.14。落庫 `placement_memory.json` order `0600914`（`learned:true`），新增規則 CV-38/CV-39/CV-40。
+- **🔴 重複犯錯（Fat Mo 明確定性，本次修正重點）**：Stage④ 交付時 AI 再次問「MP4／封面 JPG 出唔出」——Fat Mo 於 0600302、0600903 兩單已明示「唔出」，但該指示只落咗喺個別 case 嘅 `closing_decision`/note，`canva-auto.md` Stage④ 段同 `project_canva_video_automation.md` 記憶檔嘅 SOP 原句從未跟住改，令下一單又跑返舊句再問。Fat Mo：「我已告知你怎樣做，是重復性犯錯，記錄下來」。**修正**：`canva-auto.md` Stage④ 段刪除「要問 Fat Mo」句，改為「預設唔出、唔准問、Stage④ 寫完直接開 Stage⑤」；`project_canva_video_automation.md` 同步；新增規則 **CV-41**（`promoted_to` 直接指向 `canva-auto.md §Stage④`，已升格）；另立 Claude 個人 auto-memory `feedback_canva_no_export_ask.md`，記低根因（指示落單一 case note、SOP 原句冇同步更新）同適用範圍（Fat Mo 講過一次嘅流程/收尾決定，要即刻改 SOP 原句，唔可以淨係寫入單一 case）。
+- **Stage⑤存檔頁**：由 `Free_Laser (09/26)` p151（Chinok 存檔頁）單頁複製做母版 `DAHVKybdRvA`，彩色插圖換 Shirley、按 page2 最終縮放比例 0.847 等比縮細、top 對齊花環（套用 CV-39 同一鐵律）、字句已換，export 真 JPG 1000² 量方框角零白框確認。**待 Fat Mo**：右上原相仍係 Chinok（本客原相 `4b164008…jpg` 未入 Canva），換相後 Ctrl+A/C/V 手動貼入合集 p151 後。
+- **本次 Dashboard HTML／Supabase／n8n 零改動**，Phase 2.5 部署跳過。全文見本條目 + `canva_auto/placement_memory.json` order `0600914`、規則表 CV-38~CV-41。**Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
 ## [2026-09-14] Session（Claude Code / Opus 5→Sonnet 5 執行）— canva-auto：Chinok 0600709 全幅款第2單 + Stage⑤存檔頁（部分完成）
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0600709 Chinok（全幅AI短片，字句「Family is where life begins and love never ends」）——全幅款第2單，母片揀 Lokyi_C 0600903（DAHU50rhAmk）：全庫全幅款樣本只有兩單，因音長比對做唔到（folder冇獨立WhatsApp Audio、全幅款標題唔跟純音樂款帶sec後綴），改以客人片方向（同為9:16直向）做揀母片依據。

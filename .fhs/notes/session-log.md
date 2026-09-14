@@ -2363,3 +2363,9 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - Stage⑤存檔頁做到一半：彩色插圖已換、字句因母版字級喺呢個構圖會爆行同撞花環，實測花環內緣空間縮到17字級2行置中。待Fat Mo拖入原相+背景移除+手動Ctrl+A/C/V貼入`Free_Laser (09/26)`。
 - 全文見 [Changelog.md 2026-09-14條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600709`。
 - **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
+## 2026-09-14 — canva-auto：Shirley 0600914 全幅款第3單全流程交付 + SOP 重複犯錯修正（Claude Code / Sonnet 5↔Opus 5）
+- Fat Mo「canva-auto 新單」處理 0600914 Shirley，母片揀同日前一單 Chinok 0600709（材料模式一致）。Stage①-④交付：AI 6格幾何只page3直片零修改，其餘5格被Fat Mo改（page2圖對底邊壓字句、page4動畫錯繼承母片單次放大值），落新規則CV-38/39/40。Stage⑤存檔頁已建，彩色插圖+字句已換，export真圖零白框，待Fat Mo換本客原相後貼入合集。
+- 🔴**本次重點**：Stage④交付時再問「MP4/封面JPG出唔出」，Fat Mo指出0600302/0600903已講過「唔出」，屬重複犯錯。根因查明：指示只落個別case note，SOP原句從未同步改。已修正`canva-auto.md`Stage④段+記憶檔+新增規則CV-41（已升格）+落`learnings/governance.md`通則教訓（指令流程嘅常設決定必須改SOP本體，唔可以淨落case note）。
+- 全文見 [Changelog.md 2026-09-14（Shirley 0600914）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600914`、`learnings/governance.md` #13。
+- **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
