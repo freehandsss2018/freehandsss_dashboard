@@ -2356,3 +2356,10 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - Browser 實測：`details.open===false` 預設、click 展開全部內容、五類型篩選 chip 零回歸、CSS cascade 覆寫確認生效。已重新部署至 `https://yanhei.synology.me/agent_dashboardV42.html`。
 - 全文見 [decisions.md D77 附錄](decisions.md)、Changelog.md「D77-follow」「D77-follow2」條目。
 - **Subagent 使用記錄**：❌未使用。
+
+## 2026-09-14 — canva-auto：Chinok 0600709 全幅款第2單 + Stage⑤存檔頁（部分完成，Claude Code / Opus 5→Sonnet 5）
+- Fat Mo「canva-auto 新單」處理 0600709 Chinok，母片揀 Lokyi_C 0600903（全幅款樣本只2單，音長比對做唔到改以客人片方向揀）。Stage①-④已交付：page2/3幾何5/6格Fat Mo零修改（首次全幅款接近全中），只page4動畫被放大8.35%+改特效（Fat Mo話唔使理）。
+- 新踩坑落盤兩條規則：CV-36（Canva「背景移除」效果係元素層，`update_fill`帶唔過去母片元素，米白方塊要Fat Mo補撳）、CV-37（`local_prep.py`兩張輸出連續第2單被棄用，Fat Mo改用自製漸變填色版）。
+- Stage⑤存檔頁做到一半：彩色插圖已換、字句因母版字級喺呢個構圖會爆行同撞花環，實測花環內緣空間縮到17字級2行置中。待Fat Mo拖入原相+背景移除+手動Ctrl+A/C/V貼入`Free_Laser (09/26)`。
+- 全文見 [Changelog.md 2026-09-14條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600709`。
+- **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。

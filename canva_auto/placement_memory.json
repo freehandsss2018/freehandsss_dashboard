@@ -105,9 +105,284 @@
       "corrected_slots": "Stage⑤存檔頁首例(0改,待Fat Mo驗收)",
       "total_slots": 3,
       "note": "🆕**新增Stage⑤存檔頁流程**(短片cover上Free_Laser合集)。反推到page2→存檔頁係精準仿射變換(s=0.369803187/tx=−105.011/ty=+40.440),簽名交叉驗證四項Δ=0.0000;但字句唔跟呢條式(Fat Mo另行重排,fontSize/lineHeight/letterSpacing/box全部唔同),一律replace_text繼承母版。🔴兩條新平台限制:(1)巨型design(156頁)開唔到editing transaction,MCP完全寫唔入;(2)**`merge-designs`假成功**——回status:\"success\"、job.result有齊design物件,但實際零插入(page_count前後同樣156、讀page157報out of range),日後任何merge-designs後必須實查page_count,唔可以信status。繞路=`copy-design(page_numbers=[N])`單頁複製唔受限,照跑母版update_fill,最後一步交Fat Mo喺UI複製入合集。"
+    },
+    {
+      "order": "0600709",
+      "date": "2026-09-14",
+      "corrected_slots": 1,
+      "total_slots": 6,
+      "note": "全幅款第2單（Chinok，母片Lokyi_C 0600903）。page2/page3幾何零修改：彩色圖正方735.39²保母片高度+中心、黑白圖經edge NCC反推同left/top/w、直片沿用直向片格闊貼頂cover、右下細組合用0600903 affine——全部一次過中。只page4動畫格被Fat Mo放大8.35%（佢話不必理會）+特效要改。🔴新坑CV-36：Fat Mo喺臨時元素做嘅Canva背景移除係元素層效果，update_fill入母片帶唔過去→米白方塊，須Fat Mo補撳。🔴CV-37：local_prep.py兩張輸出都被棄用（parakeet線稿深藍底消失、cutout白暈食邊），Fat Mo改用Canva自製漸變填色版。"
     }
   ],
   "cases": [
+    {
+      "order": "0600709",
+      "customer": "Chinok",
+      "design_id": "DAHVJV0YVXY",
+      "date": "2026-09-14",
+      "learned": true,
+      "family": "全幅AI短片5頁；母片 Lokyi_C 0600903 DAHU50rhAmk（客人片同為直向9:16；folder冇獨立WhatsApp Audio、全幅款標題冇sec，音長比對做唔到，改以客人片方向揀）",
+      "note": "✅已收尾（2026-09-14 Fat Mo：『基本上已無問題』）。Stage③ AI換料後Fat Mo人手做：page2/page3彩色圖母片元素補撳背景移除（CDF mediaId仍係MAHVJRGJBOA，效果屬元素層睇唔到），export真圖實測米白方塊已消失；刪page2臨時彩色圖；page3背景換新上載片VAHVJwPrr6Q（關聲）；page4動畫改特效+放大。page2/page3 AI交付幾何Fat Mo零修改。素材命名唔跟慣例：『影片 3.mp4』＝Lovart動畫（非Video 1.mp4），另有1–6.png、plaint.png（花環參考）、word.png；冇WhatsApp Audio。字句跟word.png拆2行『Family is where life begins / and love never ends』，page2/3/4 replace_text後行數正確。",
+      "slots": [
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PB1r1fbHjRRxctcB-LBRvHyPrSQQrT9kL（母片元素，保留）",
+          "asset": "MAHVJRGJBOA 彩色圖.png 1024x1024；asset本身係米白不透明底（同本地彩色圖.png一致）；Fat Mo喺臨時元素LBrTzCqndMtnjCDh用Canva背景移除（元素層效果）",
+          "ai_box": {
+            "top": 79.60373004739205,
+            "left": 576.5690092702287,
+            "w": 735.386945483444,
+            "h": 735.386945483444,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "box": 735.386945483444
+            }
+          },
+          "note": "container由母片674.18x735.39改正方735.39²（保母片高度同中心x=944.26），imageBox零裁切。🔴commit後export實測母片元素出米白方塊：Fat Mo嘅背景移除係元素層效果，update_fill帶唔過去（同一次export入面，臨時元素同一mediaId渲染透明、母片元素渲染米白）。待Fat Mo喺母片元素補撳背景移除。",
+          "fatmo_box": "=ai_box（幾何零修改）；Fat Mo喺母片元素補撳背景移除"
+        },
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "PB1r1fbHjRRxctcB-LB77HXWn954kMQfD（母片元素，保留）",
+          "asset": "MAHVJc_tBU8 AAGCELPNtWk_1789363456383.png 1563x1363 RGBA＝Fat Mo喺Canva自製：人物內部填粉彩漸變（綠→粉→紫）+線條+去背；唔用AI local_prep黑白圖_parakeet",
+          "ai_box": {
+            "top": 79.60373004739205,
+            "left": 576.5690092702287,
+            "w": 735.386945483444,
+            "h": 641.2875282750699,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 735.386945483444,
+              "h": 641.2875282750699
+            }
+          },
+          "note": "edge NCC反推：Fat Mo黑白＝彩色1024²同一構圖、按闊度對齊（1563↔1024，scale 0.655）、offset(0,0)，只係剪走底部12.9%空白。所以同彩色格同left/top/w，h=w×1363/1563。Fat Mo臨時元素曾crop走頂部83px透明位（無視覺影響），AI用零裁切。",
+          "fatmo_box": "=ai_box（幾何零修改）"
+        },
+        {
+          "slot": "page3_直片",
+          "element_id": "PBpKX7d6642dSQQG-LBLShpnVC4V07tSD（母片元素，保留，container冇resize）",
+          "asset": "VAHVJexB2dA WhatsApp Video 2026-07-31 at 19.55.48.mp4 464x816（9:16直向；metadata/縮圖/本地tkhd三者一致）22.8sec",
+          "ai_box": {
+            "top": 0,
+            "left": 592.7742798601207,
+            "w": 737.1767107790307,
+            "h": 1080,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 737.1767107790307,
+              "h": 1296.4142155079505
+            }
+          },
+          "note": "跟CV-04直向片做法：沿用Lokyi_C Fat Mo最終格闊737.18（同為直向片），cover貼頂top=0保BB面部，底部裁216px（被單）。冇resize/position，動畫最大機會保住。",
+          "fatmo_box": "=ai_box（零修改）"
+        },
+        {
+          "slot": "page3_背景",
+          "element_id": "page層 background.media（仍係Lokyi_C嘅VAHU9cdOXJU）",
+          "asset": "應換VAHVJexB2dA（同一條WhatsApp片，關聲）",
+          "target_imageBox": {
+            "top": -1148.2758620689656,
+            "left": 0,
+            "w": 1920,
+            "h": 3376.551724137931
+          },
+          "note": "update_fill(locator=page PBpKX7d6642dSQQG)報『Cannot replace video - invalid duration』（CV-18），人手位交Fat Mo。 ✅Fat Mo人手換成新上載VAHVJwPrr6Q（同一條WhatsApp片再上載、關聲），imageBox同AI預算target_imageBox完全一致（cover、垂直置中）。",
+          "fatmo_box": {
+            "videoId": "VAHVJwPrr6Q",
+            "imageBox": {
+              "top": -1148.2758620689656,
+              "left": 0,
+              "w": 1920,
+              "h": 3376.551724137931
+            }
+          }
+        },
+        {
+          "slot": "page3_右下小組合",
+          "element_id": "彩色 PBpKX7d6642dSQQG-LBn0z2LXYzc3xmsS／黑白 PBpKX7d6642dSQQG-LBNFJNYN3fRF8z5q（母片元素，保留）",
+          "transform": {
+            "scale": 0.3295120522448906,
+            "offset_x": 1322.5757380978537,
+            "offset_y": 721.8341189181376,
+            "src": "0600903 slots[page3_右下小組合].fatmo_transform"
+          },
+          "ai_box": {
+            "彩色": {
+              "top": 748.0645073724021,
+              "left": 1512.5621756032901,
+              "w": 242.31886160035114,
+              "h": 242.31886160035114
+            },
+            "黑白": {
+              "top": 748.0645073724021,
+              "left": 1512.5621756032901,
+              "w": 242.31886160035114,
+              "h": 211.3119695209716
+            }
+          },
+          "note": "page2新格經0600903 affine換算，中心同母片一致；細彩色同樣出米白方塊（同page2_彩色圖原因），待Fat Mo補撳背景移除。",
+          "fatmo_box": "=ai_box（零修改）；細彩色補撳背景移除"
+        },
+        {
+          "slot": "page4_動畫",
+          "element_id": "PBf1CMJ0CQGLZ45t-LBR1YP3qgQwHy2s6（母片元素，保留）",
+          "asset": "VAHVJRxv1kA 影片 3.mp4：get-assets metadata報960x1920（錯），縮圖360x360、本地tkhd 960x960＝真正方；縮圖RGBA 50.7%透明＝asset層已去背",
+          "ai_box": {
+            "top": 79.60373004739205,
+            "left": 576.5690092702287,
+            "w": 735.386945483444,
+            "h": 735.386945483444,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "box": 735.386945483444
+            }
+          },
+          "note": "edge NCC：動畫幀同彩色圖構圖一致（scale 1.00、offset 0,0），所以格＝page2彩色格，前後頁人物重疊。container由母片3:4（619.42x825.90）改正方。export實測透明冇方塊。 Fat Mo：①『卡通短片的特效用錯』→人手改動畫特效（AI睇唔到，係母片繼承定resize後被改未知）；②放大8.35%（735.39→796.80），右邊1311.96同top 79.60不變＝貼住右上角向左下放大，中心x 944.26→913.56，底邊876.40蓋過字句區（已去背透明）。Fat Mo明言尺寸『不必理會』＝偏好微調非AI錯。",
+          "fatmo_box": {
+            "top": 79.60373004739199,
+            "left": 515.1596057613054,
+            "w": 796.796348992367,
+            "h": 796.796348992367,
+            "imageBox": "=container（0,0,796.80,796.80）"
+          }
+        }
+      ],
+      "non_geometry_findings": [
+        "🔴local_prep.py兩張輸出都被Fat Mo棄用（Fat Mo：『你處理不好，你自己作相比找出分別』）。深藍底合成對比：①黑白圖_parakeet＝淨係線稿、人物內部透明，擺深藍底幾乎消失，rembg仲食爛邊；Fat Mo版＝人物內部填粉彩漸變（綠→粉→紫）+線條保留+乾淨去背+剪走底部空白。②彩色圖_cutout＝rembg白色光暈、細路條腿同右邊畀食咗、留藍色污漬；Fat Mo用原圖+Canva背景移除。",
+        "🔴Canva編輯器效果係元素層（例：背景移除），唔跟asset走：update_fill母片元素只換到原始asset→米白方塊。判斷法＝同一mediaId喺兩個元素渲染唔同。解法＝叫Fat Mo喺母片元素補撳，或請佢上載已去背PNG asset再update_fill。",
+        "move-item-to-folder回success、list-folder-items確認已喺Free_recorder (09/26)，但Fat Mo Windows app資料夾清單睇唔到（疑本地快取），未確認重啟後有冇出現。",
+        "有resize/position嘅母片元素：page2彩色+黑白、page3細彩色+細黑白、page4動畫——動畫/顯示時間AI睇唔到（CV-09），已請Fat Mo逐個眼證；page3直片冇改container。",
+        "first_pass計法：AI幾何格6個（page2彩色/黑白、page3直片/細彩色/細黑白、page4動畫；page3背景屬人手位唔計）。修正1格＝page4動畫放大（Fat Mo話『不必理會』，照實計入）。米白方塊（CV-36元素層效果）同page4特效錯屬人手位/動畫層，唔計入幾何修正。"
+      ],
+      "category": "全幅AI短片",
+      "page_count": 5,
+      "parent_order": "0600903",
+      "first_pass_total": 6,
+      "first_pass_corrected": 1,
+      "lessons": [
+        {
+          "page": [
+            2
+          ],
+          "type": "ai_error",
+          "rule": "CV-37",
+          "text": "local_prep兩張輸出被棄用：parakeet線稿擺深藍底消失、cutout白暈食邊",
+          "src": "non_geometry_findings[0]"
+        },
+        {
+          "page": [
+            2,
+            3
+          ],
+          "type": "manual_only",
+          "rule": "CV-36",
+          "text": "Fat Mo喺臨時元素做背景移除，update_fill入母片後export出米白方塊，要補撳",
+          "src": "non_geometry_findings[1]"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-30",
+          "text": "Fat Mo黑白＝彩色同構圖按闊對齊剪底12.9%，兩格同left/top/w、h按比例",
+          "src": "slots[page2_黑白圖].note"
+        },
+        {
+          "page": [
+            4
+          ],
+          "type": "tool_bug",
+          "rule": "CV-27",
+          "text": "影片3 metadata報960x1920，縮圖360²、tkhd 960²；第7次，AI按正方處理冇中招",
+          "src": "slots[page4_動畫].asset"
+        },
+        {
+          "page": [
+            3
+          ],
+          "type": "manual_only",
+          "rule": "CV-18",
+          "text": "page3背景update_fill報invalid duration，交Fat Mo換片關聲",
+          "src": "slots[page3_背景].note"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage2",
+          "type": "material",
+          "rule": "CV-33",
+          "text": "影片3.mp4取代Video 1.mp4、另有1–6.png/plaint.png；AI以tkhd判角色，吻合",
+          "src": "note"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "material",
+          "rule": null,
+          "text": "冇WhatsApp Audio、全幅標題冇sec，音長比對做唔到，改以客人片方向揀母片",
+          "src": "family"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "tool_bug",
+          "rule": null,
+          "text": "move-item-to-folder成功但Fat Mo Windows app資料夾睇唔到，疑本地快取",
+          "src": "non_geometry_findings[2]"
+        },
+        {
+          "page": [
+            4
+          ],
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "NCC證實動畫幀同彩色圖同構圖，page4格直接用page2彩色格令前後頁人物對位",
+          "src": "slots[page4_動畫].note"
+        },
+        {
+          "page": [
+            4
+          ],
+          "type": "manual_only",
+          "rule": "CV-34",
+          "text": "page4卡通短片特效用錯，Fat Mo人手改；AI睇唔到係母片繼承定resize後被改",
+          "src": "slots[page4_動畫].note"
+        },
+        {
+          "page": [
+            4
+          ],
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "Fat Mo將動畫格貼右上角放大8.35%至796.80²，話尺寸唔使理（偏好微調）",
+          "src": "slots[page4_動畫].fatmo_box"
+        },
+        {
+          "page": [
+            3
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-04",
+          "text": "Fat Mo換背景片（新上載關聲），imageBox同AI預算cover值完全一致",
+          "src": "slots[page3_背景].fatmo_box"
+        },
+        {
+          "page": [
+            2,
+            3
+          ],
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "page2/page3 AI交付幾何Fat Mo零修改（首次全幅款page2/3全中）",
+          "src": "slots[page2_彩色圖].fatmo_box"
+        }
+      ]
+    },
     {
       "order": "0600903",
       "customer": "Lokyi_C",
@@ -2311,6 +2586,27 @@
       "applies_to": "all",
       "text": "母片搜尋 tiebreak：結構家族優先分家族後，家族內先揀音長最接近；音長打平手先睇建立日期，揀最接近（唔係最新）；設計標題新增音長標記 {DDMM}/26) {音長}sec",
       "promoted_to": "canva-auto.md §Stage①母片選擇"
+    },
+    {
+      "id": "CV-36",
+      "type": "manual_only",
+      "page": [
+        2,
+        3
+      ],
+      "applies_to": "all",
+      "text": "Canva編輯器效果（背景移除等）係元素層、唔跟asset走：Fat Mo喺臨時元素做完效果，AI update_fill入母片只換到原始asset（例：米白方塊）；判斷＝同一mediaId喺兩個元素渲染唔同，須Fat Mo喺母片元素補做，或上載已處理PNG再update_fill",
+      "promoted_to": null
+    },
+    {
+      "id": "CV-37",
+      "type": "ai_error",
+      "page": [
+        2
+      ],
+      "applies_to": "all",
+      "text": "local_prep.py輸出唔達標：parakeet淨係線稿、人物內部透明，擺深藍底幾乎消失；rembg cutout有白暈、食邊、留污漬。Fat Mo標準＝人物內部填粉彩漸變+線條保留+乾淨去背+剪走底部空白；彩色cutout已連續兩單（0600903/0600709）唔獲採用",
+      "promoted_to": null
     }
   ]
 }

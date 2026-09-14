@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-14] Session（Claude Code / Opus 5→Sonnet 5 執行）— canva-auto：Chinok 0600709 全幅款第2單 + Stage⑤存檔頁（部分完成）
+
+- **緣起**：Fat Mo「canva-auto 新單」處理 0600709 Chinok（全幅AI短片，字句「Family is where life begins and love never ends」）——全幅款第2單，母片揀 Lokyi_C 0600903（DAHU50rhAmk）：全庫全幅款樣本只有兩單，因音長比對做唔到（folder冇獨立WhatsApp Audio、全幅款標題唔跟純音樂款帶sec後綴），改以客人片方向（同為9:16直向）做揀母片依據。
+- **Stage①-③**：copy-design→改標題→page2/3/4 replace_text（跟word.png兩行拆行）→commit；Fat Mo手動去背上載後，Stage③ AI換料：page2彩色/黑白圖零裁切疊齊、page3直片貼頂cover、page3右下細組合套用0600903 affine換算、page4動畫格。過程中踩中新坑：**Canva編輯器「背景移除」效果係元素層，`update_fill`帶唔過去母片元素**（同一mediaId喺兩個元素渲染唔同——臨時元素透明、母片元素米白方塊），export真PNG先揪出，交Fat Mo喺母片元素補撳。另發現AI本地`local_prep.py`兩張輸出（rembg cutout白暈食邊、parakeet線稿深藍底幾乎消失）連續第2單被Fat Mo棄用，改用其Canva自製漸變填色版。
+- **Stage④**：page2/page3 AI交付嘅6格幾何入面5格Fat Mo零修改（首次全幅款零裁切全中），只page4動畫格放大8.35%+改動畫特效（Fat Mo：尺寸不必理會）。新增規則CV-36（元素層效果唔跟asset）、CV-37（local_prep輸出唔達標）落盤 `placement_memory.json`（`learned:true`）。
+- **Stage⑤存檔頁**（部分完成，唔出MP4/封面，跟0600903定案）：由`Free_Laser (09/26)` p150（Lokyi_C）單頁複製做母版，彩色插圖已換Chinok，字句因母版21.82字級喺呢個構圖會爆4行且撞插圖，實測花環內緣可用闊度後縮至17字級+box闊256置中，達成2行不撞花環。**待Fat Mo**：拖入客人原相、彩色插圖補撳背景移除、Ctrl+A/C/V手動貼入`Free_Laser (09/26)`第156頁後。
+- **本次 Dashboard HTML／Supabase／n8n 零改動**，Phase 2.5 部署跳過。全文見本條目 + `canva_auto/placement_memory.json` order `0600709`。**Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
 ## [2026-09-13] D78：訂單總覽「全部」視圖欄位重排——刻字/封面+入帳/成本/利潤移至進度右方
 
 - **緣起**：Fat Mo 睇住訂單總覽截圖，要求將入帳/成本/利潤三欄（後追加刻字/封面）搬到「進度」欄右方（批次／進度之後、備註之前），原位置係緊接客人欄之後。落手前先出兩輪 Artifact 預覽（改前/改後對照表）畀 Fat Mo 確認次序，確認後才動代碼。
