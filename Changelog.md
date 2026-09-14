@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-15] D79：訂單總覽批次色重做（方案C）——底色跟訂單、顏色跟批次
+
+- **緣起**：Fat Mo 截圖回報 0600914（手模擺設冇批次 + 兩件鎖匙扣第36批）同一張單顏色分裂——冇批次品項白色、第36批品項三文魚紅全格填色，睇落好似兩張單。查證確認根因：批次色同訂單分組共用同一個視覺通道（格底色），單號/日期/客人等訂單層 rowspan 格跟「第一件貨」嘅批次色，混批/未入批單必然分裂；另揪出色板本身有撞色（第29/30批同色、第39/40批同色）。
+- **方案**：三路 Explore 盤點桌面/手機/CSS 全部批次色觸點 + ui-designer 定稿 + Opus 對抗審查（3 MAJOR 4 MINOR 全修）+ `/8d` 自我迭代兩輪，定案方案 C：訂單層格（勾選/單號/日期/客人/備註）改用「訂單斑馬底色」（單張 `#FFFFFF`／雙張 `#FAF7F4`，按渲染次序交替，唔再跟批次）；品項層格改「批次深色 9% 疊喺該張單斑馬底」；產品明細卡加 4px 批次色條（冇批次=透明）；批次輸入框改標籤樣式（有批次=淡色底+同色邊框，冇批次=白底虛線）；類別視圖色條落第一個類別格（`box-shadow inset`，避免 border-collapse 走位）；色板改按批次號尾數（`% 10`）揀色，10 個色相冷暖交錯，逐一計過對比度（accent 對白 ≥3.24:1，pill 上文字 ≥12.4:1）。舊 `BATCH_COLORS`/`getBatchColor()` 整個換走，7 個呼叫點全部改寫。手機 accordion 順手修埋一個既有問題：改批次一直唔會即時變色（regex 只認桌面 id 前綴），呢次同桌面共用同一個 `fhsBatchPaint()` 令兩邊都即時變色。
+- **實作**：`freehandsss_dashboardV42.html` 11 個步驟（S1-S11，見方案書），共 108 行新增/85 行刪除；另喺 `FHS_INTEGRATION.md` 補一條 Known failure mode（新增品項欄漏帶 `batch-cell`+`background-color` 嘅後果同驗證方法），改前已備份落 `.fhs/ai/governance/backups/`。
+- **驗證**：派 fresh-context agent（general-purpose，未睇實作過程）獨立驗收，用生產 Supabase 62 張真實訂單，逐項 `getComputedStyle` 實測對照色值表（非只讀碼）——13 項驗收標準全 PASS：訂單頭/品項淡底/色條/批次標籤色值精確對得上、57+30 張訂單斑馬零違規、類別視圖色條 46 行零缺漏、桌面+手機即時變色（含手機新行為）、受控失焦測試零 Supabase 請求、全站漏帶 DOM 檢查零缺漏、console 全程零 error。1130-1280px 窄桌面橫向溢出經 `git stash` 比對 baseline 確認屬 pre-existing（同今次改動無關）。
+- 已 copy 落主倉 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`，hash 核對一致。`current.html` 本次未改動。全文見方案書 `.fhs/reports/planning/batch-color-option-c-plan_2026-09-14.md`、decisions.md D79。**Subagent 使用記錄**：✅ 派 3 個 Explore（分路盤點）+ 1 個 ui-designer（定稿規格）+ 1 個 general-purpose/Opus（對抗審查方案）+ 1 個 general-purpose（fresh-context 獨立驗收），主 session 負責整合、獨立核對審查員關鍵事實聲稱、實作全部代碼改動。
+
 ## [2026-09-14 續] 訂單總覽「全部」視圖：入帳/成本/利潤 + 單號/日期/客人 批次顏色同步 bug fix
 
 - **緣起**：Fat Mo 截圖回報訂單總覽（全部視圖）批次顏色（`getBatchColor()`）冇跟入帳/成本/利潤、單號/日期/客人同步——同一單第34/36批唔同行，產品明細/批次/進度/刻字封面四欄有正確變色，但入帳/成本/利潤（`_finCells`，逐項forEach分支）同單號/日期/客人（`orderLeftColsHtml`，訂單層rowspan）從最初設計（V41已可見同款寫法）就未帶`background-color`，一直白色——**非本次改動前先前正常後來退化，係一直存在嘅漏帶**。

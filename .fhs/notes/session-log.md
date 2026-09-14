@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-15 (D79：訂單總覽批次色重做——方案C，底色跟訂單斑馬紋、顏色跟批次): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15「D79」條目 + [decisions.md D79](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報混批/未入批訂單顏色分裂（0600914：手模擺設冇批次白色、鎖匙扣第36批全格三文魚紅）；三路 Explore 盤點全部批次色觸點 + ui-designer 定稿方案C + Opus 對抗審查（3 MAJOR 4 MINOR 全修）+ `/8d` 自我迭代兩輪規劃。定案：訂單層格改跟訂單斑馬底色（唔再跟批次），品項層格改「批次深色9%疊斑馬底」+ 產品卡4px色條 + 批次框標籤化，色板改按批次號尾數揀色（解撞色）。11步驟實作，順手修埋手機改批次一直唔會即時變色嘅既有問題。fresh-context agent 用62張生產真單逐項 getComputedStyle 實測，13項驗收標準全PASS。已 copy 落主倉 V42.html，`current.html` 未動；每批顏色會變已經 Fat Mo 接受。
+**Subagent 使用記錄**：✅ 派 3 個 Explore（分路盤點）+ 1 個 ui-designer（定稿規格）+ 1 個 general-purpose/Opus（對抗審查方案）+ 1 個 general-purpose（fresh-context 獨立驗收），主 session 負責整合、實作全部代碼改動。
 ## 2026-09-14 續 (訂單總覽「全部」視圖：入帳/成本/利潤+單號/日期/客人批次顏色同步 bug fix): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-14「續」條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報批次顏色未跟入帳/成本/利潤、單號/日期/客人同步；查證確認呢幾組 `<td>` 從最初設計就一直未帶 `background-color`（非退化），已補齊背景色 + `class="batch-cell"`（令現有 live-update 邏輯自動帶埋）。生產真單 0600107 實測 12 格顏色一致，live 變色驗證後還原未寫入 Supabase。已 copy 落主倉 V42.html，`current.html` 未動。

@@ -245,11 +245,6 @@ Claude Code 的 `ui-designer` agent 可直接 Read 以下路徑（已驗證可�
 
 ---
 
-## Known failure modes（迴圈追加，格式勿改）
-- 訂單總覽品項層新增 `<td>` 冇帶 `class="batch-cell"` + `background-color:${rowBatchCol}`：現象＝淡色帶斷開、改批次唔會即時變色（V41 起財務格一直漏帶，2026-09-14 D79 發現）。Fix：新增品項欄必帶兩者；訂單層 rowspan 格（勾選/單號/日期/客人/備註）只用 `_zbBg`、禁帶 `batch-cell`。驗證用方案 C 驗收 #13 DOM 檢查（`.fhs/reports/planning/batch-color-option-c-plan_2026-09-14.md`）。[2026-09-14]
-
----
-
 *本文件 v2.0.0 由 Claude Opus 4.6 改寫，2026-04-21*
 *廢除雙模式（令狐沖/肥貓），改為純 iPhone vs Desktop 響應式設計*
 *授權來源：Fat Mo /execute*

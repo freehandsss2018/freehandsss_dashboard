@@ -5,6 +5,8 @@
 
 [2026-09-13] (D78) 訂單總覽「全部」視圖欄位重排：刻字/封面+入帳/成本/利潤移至進度右方 — Fat Mo 截圖直接指示 + 兩輪 Artifact 預覽確認次序後執行；全文見 Changelog.md D78 條目（Phase 1.6(b) 無完成報告小改動，Changelog 為全文居所）。
 
+[2026-09-15] (D79) 訂單總覽批次色重做——方案C：底色跟訂單（斑馬紋），顏色跟批次（極淡底+色條+標籤），取代舊全格填色 — Fat Mo 截圖指示混批/未入批單顏色分裂問題，三路 Explore 盤點+ui-designer定稿+Opus對抗審查+`/8d`自迭代兩輪後執行，fresh-context agent 用62張生產真單逐項 getComputedStyle 實測驗收全PASS；每批顏色會變（Fat Mo已接受）；全文見 Changelog.md D79 條目 + 方案書 `.fhs/reports/planning/batch-color-option-c-plan_2026-09-14.md`（Phase 1.6(b) 無完成報告小改動，Changelog 為全文居所）。
+
 ---
 
 [2026-09-13] (D76) scripts/lib/env.js — .env 載入 worktree-aware fallback
