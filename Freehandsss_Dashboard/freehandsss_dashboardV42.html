@@ -13633,7 +13633,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     <td rowspan="${itemsCount}" class="review-cb-td" style="vertical-align:top; border-bottom:3px solid #b0b0b0;">
                         <input type="checkbox" class="order-row-cb" data-order-id="${fhsEscHtml(o.id)}" ${isChecked} onchange="toggleOrderSelection('${fhsEscAttr(o.id)}', this.checked)">
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:calc(13px*var(--fhs-ovw-s,1)); vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(4px*var(--fhs-ovw-s,1)) 4px;">
+                    <td rowspan="${itemsCount}" class="batch-cell" style="border-right:1px solid #f0f0f0; font-weight:bold; color:#B07D4C; font-size:calc(13px*var(--fhs-ovw-s,1)); vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(4px*var(--fhs-ovw-s,1)) 4px; background-color:${batchCol};">
                         <div class="ovw-id-line">
                             <div class="review-jump-pill review-jump-pill-sm" onclick="jumpToEditOrder('${fhsEscAttr(o.Order_ID)}')">${fhsEscHtml(o.Order_ID || 'N/A')} ➜</div>
                             <span class="ovw-act">
@@ -13650,12 +13650,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             同步中
                         </div>
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(5px*var(--fhs-ovw-s,1)) 8px;">
+                    <td rowspan="${itemsCount}" class="batch-cell" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); color:#555; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(5px*var(--fhs-ovw-s,1)) 8px; background-color:${batchCol};">
                         <!-- [D71-follow8] 桌面「全部」寬螢幕視圖都改上下疊（日期一行/限時警示一行），
                              同手模類別視圖睇齊，配合 Date 欄收窄後只需夠一行內容用 -->
                         <div class="ovw-date-line${(_catView === '手模' || _fhsDesktopFlexEng(_catView)) ? ' ovw-date-line--stack' : ''}"><span style="white-space:nowrap;">${cDate}</span>${_dlvBadgeHtml(o.Order_ID)}</div>
                     </td>
-                    <td rowspan="${itemsCount}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(5px*var(--fhs-ovw-s,1)) 8px;">${fhsEscHtml(o.Customer || '-')}</td>
+                    <td rowspan="${itemsCount}" class="batch-cell" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:500; vertical-align:top; border-bottom:3px solid #b0b0b0; padding:calc(5px*var(--fhs-ovw-s,1)) 8px; background-color:${batchCol};">${fhsEscHtml(o.Customer || '-')}</td>
                 `;
 
                 if(_renderItemsFinal && _renderItemsFinal.length > 0) {
@@ -13961,7 +13961,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // ⚠️ 合併版嘅 profit-cell- 必須只包住金額 <span>，唔可以掛喺 <td>——
                         // 該函式對佢做 textContent 覆寫，掛喺 <td> 會連「利潤」標籤一齊清空。
                         var _finCells = _fhsFinMerged() ? `
-                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:top; text-align:left; padding:6px 8px; border-bottom:${_rowBorderB};">
+                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} class="fhs-fin-merged batch-cell" style="border-right:1px solid #f0f0f0; vertical-align:top; text-align:left; padding:6px 8px; border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                             ${index === 0 ? `<div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#B07D4C;">入帳</span><span class="fhs-fin-amt" style="color:#B07D4C;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
                             ${index === 0 ? `<div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#E63946;">成本</span><span id="cost-val-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:#E63946;">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:10px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span></div>` : ''}
@@ -13969,15 +13969,15 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             ${index === 0 ? `<div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>` : `
-                          <td style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB};">
+                          <td class="batch-cell" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:700; color:#B07D4C; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                             ${index === 0 ? `<div style="font-weight:700;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itPrice != null ? '<span class="audit-sku-price" style="color:#B07D4C;font-weight:600;">$'+_itPrice+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB};">
+                          <td ${index === 0 ? `id="cost-cell-${fhsEscHtml(o.id)}"` : ''} class="batch-cell" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:600; color:#E63946; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                             ${index === 0 ? `<span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:calc(11px*var(--fhs-ovw-s,1));color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itCost != null ? '<span class="audit-sku-profit" style="color:#E63946;font-weight:600;">$'+_itCost+'</span>' : _na}</span>
                           </td>
-                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB};">
+                          <td ${index === 0 ? `id="profit-cell-${fhsEscHtml(o.id)}"` : ''} class="batch-cell" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:800; color:${index === 0 ? profitColor : _itPC}; vertical-align:top; text-align:center; padding-top:calc(7px*var(--fhs-ovw-s,1)); border-bottom:${_rowBorderB}; background-color:${rowBatchCol};">
                             ${index === 0 ? `<div>$${displayedProfit}</div>` : ''}
                             <span class="audit-fin-col"${index === 0 ? '' : ' style="border-top:0;margin-top:0;padding-top:0;"'}>${_itProfit != null ? '<span class="audit-sku-profit" style="color:'+_itPC+';">$'+_itProfit+'</span>' : _na}</span>
                           </td>`;
@@ -14069,18 +14069,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             無子項目
                         </td>
                         ${_fhsFinMerged() ? `
-                        <td id="cost-cell-${fhsEscHtml(o.id)}" class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:middle; text-align:left; padding:6px 8px; border-bottom:3px solid #b0b0b0;">
+                        <td id="cost-cell-${fhsEscHtml(o.id)}" class="fhs-fin-merged" style="border-right:1px solid #f0f0f0; vertical-align:middle; text-align:left; padding:6px 8px; border-bottom:3px solid #b0b0b0; background-color:${orderBatchCol};">
                             <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#B07D4C;">入帳</span><span class="fhs-fin-amt" style="color:#B07D4C;">${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}</span></div>
                             <div class="fhs-fin-line"><span class="fhs-fin-tag" style="color:#E63946;">成本</span><span id="cost-val-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:#E63946;">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:10px;color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span></div>
                             <div class="fhs-fin-line fhs-fin-line-profit"><span class="fhs-fin-tag" style="color:${profitColor};">利潤</span><span id="profit-cell-${fhsEscHtml(o.id)}" class="fhs-fin-amt" style="color:${profitColor};">$${displayedProfit}</span></div>
                         </td>` : `
-                        <td style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                        <td style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:700; color:#B07D4C; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0; background-color:${orderBatchCol};">
                             ${o.Final_Sale_Price ? '$'+o.Final_Sale_Price : '<span style="color:#bbb;">—</span>'}
                         </td>
-                        <td id="cost-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                        <td id="cost-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:600; color:#E63946; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0; background-color:${orderBatchCol};">
                             <span id="cost-val-${fhsEscHtml(o.id)}">$${_baseCostD}${_adjAmtD > 0 ? `<br><span style="font-size:calc(11px*var(--fhs-ovw-s,1));color:#FF8F00;font-weight:500;">+$${_adjAmtD}&nbsp;補打</span>` : ''}</span>
                         </td>
-                        <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0;">
+                        <td id="profit-cell-${fhsEscHtml(o.id)}" style="border-right:1px solid #f0f0f0; font-size:calc(13px*var(--fhs-ovw-s,1)); font-weight:800; color:${profitColor}; vertical-align:middle; text-align:center; border-bottom:3px solid #b0b0b0; background-color:${orderBatchCol};">
                             $${displayedProfit}
                         </td>`}
                         <td style="border-left:1px solid #f0f0f0; vertical-align:top; border-bottom:1px solid #ebebeb; padding-top:calc(10px*var(--fhs-ovw-s,1)); background-color:${orderBatchCol};">

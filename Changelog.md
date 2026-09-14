@@ -9,6 +9,14 @@
 - **Stage⑤存檔頁**：由 `Free_Laser (09/26)` p151（Chinok 存檔頁）單頁複製做母版 `DAHVKybdRvA`，彩色插圖換 Shirley、按 page2 最終縮放比例 0.847 等比縮細、top 對齊花環（套用 CV-39 同一鐵律）、字句已換，export 真 JPG 1000² 量方框角零白框確認。**待 Fat Mo**：右上原相仍係 Chinok（本客原相 `4b164008…jpg` 未入 Canva），換相後 Ctrl+A/C/V 手動貼入合集 p151 後。
 - **本次 Dashboard HTML／Supabase／n8n 零改動**，Phase 2.5 部署跳過。全文見本條目 + `canva_auto/placement_memory.json` order `0600914`、規則表 CV-38~CV-41。**Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
 
+## [2026-09-14 續] 訂單總覽「全部」視圖：入帳/成本/利潤 + 單號/日期/客人 批次顏色同步 bug fix
+
+- **緣起**：Fat Mo 截圖回報訂單總覽（全部視圖）批次顏色（`getBatchColor()`）冇跟入帳/成本/利潤、單號/日期/客人同步——同一單第34/36批唔同行，產品明細/批次/進度/刻字封面四欄有正確變色，但入帳/成本/利潤（`_finCells`，逐項forEach分支）同單號/日期/客人（`orderLeftColsHtml`，訂單層rowspan）從最初設計（V41已可見同款寫法）就未帶`background-color`，一直白色——**非本次改動前先前正常後來退化，係一直存在嘅漏帶**。
+- **修復**：`freehandsss_dashboardV42.html` 補齊兩組 `<td>` 嘅 `background-color:${rowBatchCol}`（逐項）／`${batchCol}`（訂單層rowspan：單號/日期/客人），並加 `class="batch-cell"` 令現有 live-update 邏輯（`applyBatchColorLive()`/`saveInlineEdit()` 用嘅 `.batch-cell` querySelector）自動帶埋呢幾格——改批次輸入框即時全行變色，唔止靜態載入先啱。多子項目 forEach 分支＋無子項目 fallback 分支（`orderBatchCol`）同步修。共 22 行改動，純加 style 屬性/class，冇改 HTML 結構或 JS 邏輯。
+- **驗證**：本機起 `fhs-dashboard` server 接生產 Supabase 實單 0600107（Fat Mo 原截圖同一單），核對第34批4行/第36批2行全部12格背景色一致；再用 JS dispatch `input` 事件（無 blur）測 live 變色即時更新，驗證後還原，全程未寫入 Supabase。
+- 已將修好嗰份 copy 落主倉 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Fat Mo 手動測試用嗰份路徑，非 worktree 副本）；日後呢類 V42.html 改動預設做呢個 copy（見 memory `feedback_v42_main_repo_test_copy`）。`current.html`（生產部署版）本次未改動，如需部署另行 `/upload-web` 確認。
+- 全文見本條目。**Subagent 使用記錄**：❌未使用，全程主 session 直接查碼＋Browser 實測。
+
 ## [2026-09-14] Session（Claude Code / Opus 5→Sonnet 5 執行）— canva-auto：Chinok 0600709 全幅款第2單 + Stage⑤存檔頁（部分完成）
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0600709 Chinok（全幅AI短片，字句「Family is where life begins and love never ends」）——全幅款第2單，母片揀 Lokyi_C 0600903（DAHU50rhAmk）：全庫全幅款樣本只有兩單，因音長比對做唔到（folder冇獨立WhatsApp Audio、全幅款標題唔跟純音樂款帶sec後綴），改以客人片方向（同為9:16直向）做揀母片依據。
