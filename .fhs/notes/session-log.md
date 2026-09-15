@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-15 續 (D79：收款分帳逐件/簡化雙模式自動填餘值一致化+總額不符確認bar+快捷掣顏色狀態化): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15「續」條目 + [decisions.md D79](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報訂單0600914三問題：自動填餘值缺提示、全域掣/快捷掣顏色冇取消、簡化模式$0 bug。`/cl-flow-fast`（flow 2026-09-15-0607）規劃，Gemini A2對抗評審7條批評6採納（BLOCKER：focusout setTimeout競態改同步執行；MAJOR：多行bar改佇列、取消只還原剛改箱、售價變動改靜默失效）。主session browser真實事件模擬自測全PASS，另派fresh-context agent獨立覆核（紅線「驗收不自驗」，收款金額改動）12項測試矩陣全PASS，揪出並修復1個簡化模式`agg[cat]||''`顯示bug。純前端UI修復，核心財務公式不變，未觸發finance-gatekeeper路由同步（同D69系列先例）。已cp落主倉V42.html，current.html本次未動（是否升格待Fat Mo手動測試後決定）。
+**Subagent 使用記錄**：✅ 派 1 個 general-purpose fresh-context agent 做獨立驗收覆核，未用於實作。
 ## 2026-09-15 (canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付，史上首單單片家族): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15 條目 + `canva_auto/placement_memory.json` order `0601011`（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。素材只得一條卡通片（史上首見），開工前問 Fat Mo 確認揀雙直片家族+單片重複填兩格（非AI自行決定）。Stage①-⑤全交付：黑白圖零修改，彩色圖/字句/page3 各有 Fat Mo 微調（字句字號42.67→56、字距0.073→0.14，新規則CV-42）。AI 曾憑肉眼睇export誤報page3未去背，後量框角像素推翻。CV-33（素材角色核對）達4單升格入canva-auto.md。Stage⑤存檔頁已建，待Fat Mo拖本客原相貼入合集。

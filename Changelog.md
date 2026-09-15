@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-09-15 續] 收款分帳逐件/簡化雙模式：自動填餘值一致化 + 總額不符確認 bar + 快捷掣顏色狀態化（flow 2026-09-15-0607）
+
+- **緣起**：Fat Mo 截圖回報訂單 0600914（Shirley，木框套裝(4肢) $2380 + 嬰兒鎖匙扣×2）分帳操作三個問題：①逐格點擊清空可任意輸入、自動餘值仍可改（截圖二，已運作但漏冇提示）；②訂金+尾數改到唔等於總金額時，應彈頁內確認提示，按「是」後唔再自動填/唔再問；③人手改動後，「全部半訂/全部付清」全域掣同逐箱「半/全」快捷掣顏色冇取消（截圖三/四紅圈），因每次表單重算都無條件將顏色塗返（`calculatePricing()` 幾乎任何輸入都觸發），簡化（3類別彙總）模式仲漏埋 $0 bug（輸入 0 會彈返舊值）同從未設過「人手改動」狀態。
+- **規劃**：`/cl-flow-fast`（flow_id `2026-09-15-0607`）先參照歷史 D69/D69續/D69續II（`decisions.md:3566-3605`，同一收款分帳區既有機制：`dataset.isDefault` 人手鎖定旗標＋恆算餘值＋`window._fhsForceSync` 全域掣繞過），寫 `a3-draft.md`（M1-M15）交 Gemini A2 對抗評審（`gemini-3.6-flash`）。評審 7 條批評，6 條採納：**BLOCKER**——`focusout` 用 `setTimeout(0)` 讀對面箱現值時，對面箱嘅 `focusin` 已經清空自己，跨欄 Tab 必爆假警報（改同步執行，唔用 setTimeout）；**MAJOR**——單一全域 bar 多行不符時互相覆蓋（改佇列逐條顯示「(1/2)」）／「取消」邏輯原本會改動操作員未掂過嘅對面箱（金額已收款）而非還原剛改嗰格（已修正——只還原操作員自己剛改嗰格）／售價變動主動彈 bar 會打斷非分帳操作（改靜默失效，等下次觸碰先問）；**MINOR**——簡化模式整類別 ack 唔應遮蔽逐件模式品項級警告（改用獨立 `window._fhsSimpAck` 類別層 map，唔寫入逐件 ack）／iOS PWA 軟鍵盤下動態插入 DOM 會跳畫（bar 改 `position:fixed` 頂部浮動，跟 S165 草稿救援 banner 同款做法）。1 條駁回（單數售價令半掣顏色推導錯——已證實唔成立，因半/全狀態只喺撳自己快捷掣時先記低，唔會誤判交叉同步寫入嘅值）。
+- **實作**（`freehandsss_dashboardV42.html`，唯一改動檔案）：
+  - 新增 `window._fhsQuickState`（撳邊個快捷「半/全」掣，非 DOM dataset、令狀態自動跨重繪存活）驅動 `_fhsPaintSplitBtnStates()` 統一由「快捷掣狀態＋現值是否仍吻合」推導逐箱＋全域掣顏色，取代原本四個事件各自塗色（R2 主因：`_quickHalfFillAllSplits` 尾段原本無條件將全部「半」掣塗綠，即使冇填任何箱）。`_syncGlobalDepositBtnUI` 新增 `'manual'` 中性灰分支。
+  - 新增 `window._fhsMismatchAck`（品項行 ack）+ `window._fhsMismatchQueue`（多行排隊）+ `_fhsCheckSplitMismatch`/`_fhsRenderMismatchBar`/`_fhsMismatchAckCurrent`/`_fhsMismatchCancelCurrent`：逐件模式 focusout 同步（非 setTimeout）判斷該行訂金+尾數是否等於售價，不等則浮動 bar 提示，「是」鎖定該行唔再自動填/唔再問，「取消」只還原操作員剛改嗰格。
+  - 簡化模式 `_fhsSimpInputCommit` 改用 `value.trim()===''` 判斷留空（原本 `total===0` 令輸入 0 被當「未填」彈返舊值），總額不符警告併入既有「確認分攤」同一個 bar；`_fhsAllocateSimplified` 分攤寫值時清 quickState 令 painter 正確判「人手」（修簡化模式漏設 manual 狀態）。
+  - `_quickFillAllSplits`/`_quickHalfFillAllSplits`（全域「全部半訂/全部付清」）force 時清晒涉及箱嘅 ack＋佇列，符合「全部」= 重新分配語意。
+- **驗證**：主 session browser 真實鍵盤/事件模擬自測全數 PASS（跨欄 Tab 零假警報、取消只還原剛改箱、$0/$0 豁免情境、force 覆寫鎖定箱、三次重算顏色不變、雙行佇列排隊、舊單載入唔觸發、簡化模式 0 輸入唔彈返、375px 手機零溢出、零 console error）。依紅線「驗收不自驗」（收款金額改動）另派 **fresh-context agent** 獨立覆核，12 項測試矩陣全數 PASS，確認 A2 BLOCKER 修復（同步執行）確實生效，另外揪出 1 個非阻擋性小 bug：簡化模式 readonly 鏡像顯示用 `agg[cat] || ''`，令確認咗嘅合法 $0 顯示做空白（同 T9 修復目的矛盾）——已修復（`agg[cat]` 恆為數字，移除多餘 `|| ''`，三處：`_fhsRefreshSimplifiedView`/`_fhsSimpConfirmAlloc`/`_fhsSimpCancelAlloc`），修復後再驗證 PASS。
+- 純前端 UI 互動修復，`captureFormState()`／既有 HTML ID／n8n／Supabase schema 零改動；核心財務公式（`Math.max(0, calcPrice-paid)` 恆算餘值）本身不變，只加行為回饋層，故未觸發 finance-gatekeeper 路由表同步（同 D69 系列先例一致——該系列同一功能區塊改動亦未觸發）。已將修好嗰份 copy 落主倉 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Fat Mo 手動測試用嗰份路徑，見 memory `feedback_v42_main_repo_test_copy`）；`current.html`（生產部署版）本次未改動。
+- 全文見方案 `artifacts/2026-09-15-0607/cl-final-plan.md`（含批評處理表）。**Subagent 使用記錄**：✅已使用 general-purpose fresh-context agent 做獨立驗收覆核（12 項測試矩陣 PASS，揪出並促成 1 個修復）。
+
 ## [2026-09-15] Session（Claude Code / Sonnet 5↔Opus 5 執行）— canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付（史上首單單片家族，新規則 CV-42、CV-33 升格）
 
 - **緣起**：Fat Mo「canva-auto 新單」處理 0601011 `_hilaryy.`（純音樂，字句「I will always be here for you」）。素材夾檢查發現：只有一條 Lovart 卡通片（`影片 5.mp4`，本地 tkhd 實測 960×960 正方，`get-assets` metadata 錯報 960×1920——第9次撞中 CV-27 陷阱），冇 `WhatsApp Video`；另有2張 UUID 命名 jpg（媽媽抱BB切蛋糕、BB特寫）同 `plaint.png`。
