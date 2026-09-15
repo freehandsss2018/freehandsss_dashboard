@@ -1,5 +1,9 @@
 # Session Log
-## 2026-09-15 續 (D79：收款分帳逐件/簡化雙模式自動填餘值一致化+總額不符確認bar+快捷掣顏色狀態化): 🏷️ ✅
+## 2026-09-15 (D79：訂單總覽批次色重做——方案C，底色跟訂單斑馬紋、顏色跟批次): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15「D79」條目 + [decisions.md D79](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報混批/未入批訂單顏色分裂（0600914：手模擺設冇批次白色、鎖匙扣第36批全格三文魚紅）；三路 Explore 盤點全部批次色觸點 + ui-designer 定稿方案C + Opus 對抗審查（3 MAJOR 4 MINOR 全修）+ `/8d` 自我迭代兩輪規劃。定案：訂單層格改跟訂單斑馬底色（唔再跟批次），品項層格改「批次深色9%疊斑馬底」+ 產品卡4px色條 + 批次框標籤化，色板改按批次號尾數揀色（解撞色）。11步驟實作，順手修埋手機改批次一直唔會即時變色嘅既有問題。fresh-context agent 用62張生產真單逐項 getComputedStyle 實測，13項驗收標準全PASS。已 copy 落主倉 V42.html，`current.html` 未動；每批顏色會變已經 Fat Mo 接受。
+**Subagent 使用記錄**：✅ 派 3 個 Explore（分路盤點）+ 1 個 ui-designer（定稿規格）+ 1 個 general-purpose/Opus（對抗審查方案）+ 1 個 general-purpose（fresh-context 獨立驗收），主 session 負責整合、實作全部代碼改動。
+## 2026-09-15 續 (D79：收款分帳逐件/簡化雙模式自動填餘值一致化+總額不符確認bar+快捷掣顏色狀態化，⚠️與上一條D79編號撞號見decisions.md註記): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15「續」條目 + [decisions.md D79](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報訂單0600914三問題：自動填餘值缺提示、全域掣/快捷掣顏色冇取消、簡化模式$0 bug。`/cl-flow-fast`（flow 2026-09-15-0607）規劃，Gemini A2對抗評審7條批評6採納（BLOCKER：focusout setTimeout競態改同步執行；MAJOR：多行bar改佇列、取消只還原剛改箱、售價變動改靜默失效）。主session browser真實事件模擬自測全PASS，另派fresh-context agent獨立覆核（紅線「驗收不自驗」，收款金額改動）12項測試矩陣全PASS，揪出並修復1個簡化模式`agg[cat]||''`顯示bug。純前端UI修復，核心財務公式不變，未觸發finance-gatekeeper路由同步（同D69系列先例）。已cp落主倉V42.html，current.html本次未動（是否升格待Fat Mo手動測試後決定）。
 **Subagent 使用記錄**：✅ 派 1 個 general-purpose fresh-context agent 做獨立驗收覆核，未用於實作。

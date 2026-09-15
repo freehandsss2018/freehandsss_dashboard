@@ -3,11 +3,15 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+⚠️ **編號撞號說明**：本檔緊接嘅兩條 D79（收款分帳雙模式 vs 訂單總覽批次色重做）係兩條獨立並行 worktree 分支各自編號、事後 merge 先發現撞號，非同一事件（同 D69 系列先例同類情況，見下方「分支合併事故」條目）。
+
 [2026-09-15] (D79) 收款分帳逐件/簡化雙模式：自動填餘值一致化 + 總額不符確認 bar + 快捷掣顏色狀態化 — Fat Mo 截圖回報訂單 0600914 三個問題（自動填餘值缺提示/顏色唔取消/簡化模式$0 bug），`/cl-flow-fast`（flow `2026-09-15-0607`）規劃、Gemini A2 對抗評審 7 條批評 6 採納（BLOCKER：focusout setTimeout 競態改同步執行；MAJOR：多行 bar 互相覆蓋改佇列、「取消」原會誤改對面已收款箱改為只還原剛改嗰格、售價變動主動彈 bar 改靜默失效）。實作＋主session自測後另派 fresh-context agent 獨立覆核，12 項測試矩陣全 PASS，揪出 1 個簡化模式 `agg[cat]||''` 令合法 $0 顯示空白嘅小 bug 已一併修復。純前端 UI 修復，核心財務公式不變，未觸發 finance-gatekeeper 路由同步（同 D69 系列先例一致）。全文見 Changelog.md「2026-09-15 續」條目、`artifacts/2026-09-15-0607/cl-final-plan.md`（Phase 1.6(b) 無完成報告小改動，Changelog 為全文居所）。
 
 ---
 
 [2026-09-13] (D78) 訂單總覽「全部」視圖欄位重排：刻字/封面+入帳/成本/利潤移至進度右方 — Fat Mo 截圖直接指示 + 兩輪 Artifact 預覽確認次序後執行；全文見 Changelog.md D78 條目（Phase 1.6(b) 無完成報告小改動，Changelog 為全文居所）。
+
+[2026-09-15] (D79) 訂單總覽批次色重做——方案C：底色跟訂單（斑馬紋），顏色跟批次（極淡底+色條+標籤），取代舊全格填色 — Fat Mo 截圖指示混批/未入批單顏色分裂問題，三路 Explore 盤點+ui-designer定稿+Opus對抗審查+`/8d`自迭代兩輪後執行，fresh-context agent 用62張生產真單逐項 getComputedStyle 實測驗收全PASS；每批顏色會變（Fat Mo已接受）；全文見 Changelog.md D79 條目 + 方案書 `.fhs/reports/planning/batch-color-option-c-plan_2026-09-14.md`（Phase 1.6(b) 無完成報告小改動，Changelog 為全文居所）。
 
 ---
 
