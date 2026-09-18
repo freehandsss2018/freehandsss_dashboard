@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-19 (handoff.md 便攜塊 P0.7.1 輪轉：動態段 36,444→5,873 bytes): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 直接指派處理 2026-09-18 登記嘅「便攜塊超支」待辦（動態段超 P0.7.1 4,000 bytes 預算約 9 倍）。逐條核對 Changelog.md/decisions.md/handoff.md MASTER 表確認完整記錄後：narrative field（主因，佔原檔 14KB）全段搬至新 archive 檔，🎯目標/✅已定決策/🔬驗證三欄舊條目（已完成無殘留待辦者）壓縮搬移，📋待辦移除已解決之本項。輪轉前備份全檔，輪轉後跑 `session-start-sop.sh` 實測 hook 抽取正常。剩餘 5,873 bytes 仍超預算約1.47倍（原9.1倍）——為避免資訊流失未進一步壓縮活躍待辦項，是否調整預算數值待 Fat Mo 裁決。
+**Subagent 使用記錄**：❌未使用（單一檔案精確逐行核對+改動，委派會斷跨檔交叉驗證推理鏈）。
+
 ## 2026-09-18 (FHS 衛生機制重整期一：/fhs-cost-audit 廢除、/fhs-audit v3.0.0、run_all.py 移除 LOCAL_AUDIT + 新增 COST_INTEGRITY、semantic_audit.py D3 死碼修復): 🏷️ ✅
 
 **摘要**：接續 2026-09-17 發現嘅 LOCAL_AUDIT 靜默失效，Fat Mo 提議全面重整衛生機制，經 `/grilling` 十輪拷問（Q1-Q10）定案兩期方案後走 `/cl-flow-fast`（flow `2026-09-18-1827`，三個 fresh-context agent 平行盤點：`/fhs-audit` 33項效用判定/反向引用/測試資產；A2 Gemini 評審兩輪因請求過大遭 Google 端間歇性過載拒收，縮小草案至評審版後第2輪成功；兩條 BLOCKER 部分拒絕，CONDITIONAL_READY）。Fat Mo 就 5 條待確認條件全部採納 AI 建議後 `/execute` 期一。執行內容：新建 `check_registry.json`（SKIP/已知違規三態語義）+ `audit_cost_integrity.py`/`audit_price_completeness.py`（COST_INTEGRITY/PRICE_AUDIT 改讀 Supabase，取代已廢除嘅 `/fhs-cost-audit`）；`run_all.py` 移除 LOCAL_AUDIT + 新環境前置檢查 + 3條新DEGRADED marker；`AGENTS.md` 憲法層路由行刪除（v1.7.1→v1.7.2）；`commit.md` 刪 Airtable 429 白名單、新增 Phase 2.4 健檢閘；`/fhs-audit` 重寫 v3.0.0（刪9項假防線、修復三處寫死版本號、項目數33→24）；`semantic_audit.py` 修復 D3 死碼（`allowed_references` 自建立以來從未真正被解析）。Live 唯讀驗證揪出訂單 `0600804` 利潤不符（已另開獨立任務不在本次範圍），26個 `suggested_price` NULL 全屬 `(V2)` SKU 設計如此。歸檔 9 個檔案。改寫後 `run_all.py` 5項全PASS零SKIP；D3「紅得起」測試確認真會命中；派 fresh-context agent 獨立驗收 PASS-with-fixes（揪出 Changelog/decisions/session-log 三處文件同步缺口，本條目即為補齊項之一）。期二（前端唯讀層/端對端層/視覺回歸）留待另次 `/execute`。

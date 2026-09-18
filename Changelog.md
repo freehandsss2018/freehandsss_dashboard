@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-09-19] handoff.md 便攜塊 P0.7.1 輪轉——動態段 36,444→5,873 bytes（9.1倍超支→1.47倍）
+
+- **緣起**：2026-09-18 `/commit` 於便攜塊 📋 待辦登記「動態段實測 35,806 bytes，超 P0.7.1 預算(4,000 bytes) 約 9 倍」，主因診斷為「【FHS交接摘要】」narrative field 逐 session 只 prepend 新內容、自 2026-08-03 上次輪轉後從未再壓縮；Fat Mo 本次直接指派處理。
+- **執行**：逐條核對 2026-08-21~2026-09-18 期間嘅 narrative／🎯目標／✅已定決策／🔬驗證 內容，確認 Changelog.md（本檔，逐日期核對存在）／decisions.md／handoff.md 下方「MASTER 持續待辦」表（唯一可信狀態源）三處均已有完整記錄後：
+  - narrative field（36,444 bytes 中佔 14,065 bytes，主因）整段搬至 `.fhs/memory/archive/handoff-narrative-2026-08-21-to-2026-09-18.md`，便攜塊回歸「當前狀態一句話」定位
+  - 🎯目標欄移除「已✅完成且無殘留 Fat Mo 待辦動作」條目（D68/D74/D74-follow/D75系列/D77/D78/D69系列等18項，其完成事實已在 MASTER 表/Changelog 永久保存），只留 7 項仍待 Fat Mo 動作嘅前線
+  - ✅已定決策欄由 19 條壓縮至 5 條（僅留仍具前瞻規則性質者：衛生機制重整期一/canva-auto CV-41/CV-42-33/D77 schema v2/D74-follow2 四態定案），其餘 14 條純一次性實作細節搬至新增之 `.fhs/memory/archive/handoff-portable-block-2026-09-19-rotation.md`
+  - 🔬驗證欄由 15 個 session 壓縮至最近 2 個（衛生機制重整期一、canva-auto 0601011），較舊者同上搬至同一 archive 檔
+  - 📋待辦欄移除已完成之本項（便攜塊超支），⏰時限待辦欄剪除一句已成歷史事實嘅 D58 說明句
+- **未做**：MASTER 持續待辦表本身不在 P0.7.1 動態段預算範圍內（hook 只抽取 ` ```handoff ` 至「便攜邊界」之間），未觸碰；⚠️易猜錯／🗺下鑽兩個靜態段亦不在預算範圍內，未觸碰。
+- **驗證**：輪轉前先 `cp` 全檔備份至 `.fhs/memory/archive/handoff.md.pre-rotation-2026-09-19.bak`；輪轉後 `bash scripts/hooks/session-start-sop.sh` 實測 hook 正確抽取新內容且格式完整；`sed -n '2,9p' handoff.md | wc -c` 確認動態段 5,873 bytes；`wc -l` 確認全檔行數 415→414（僅目標 7 行內容替換，行結構/CRLF 換行符與便攜邊界/MASTER表/易猜錯段落逐行比對零變動）。
+- **已知殘留**：5,873 bytes 仍超 4,000 bytes 預算約 1.47 倍（原 9.1 倍）——剩餘內容全部為仍待 Fat Mo 具體動作嘅活躍項目，未進一步壓縮以避免資訊流失；是否調整 4,000 bytes 預算數值，或另立獨立輪轉規則，待 Fat Mo 裁決（與 `commit.md` P0.7.1「已知緊張」附註屬同一未決問題，非本次新增）。
+- 全文見 `.fhs/memory/handoff.md` 便攜塊本身、上述兩份新 archive 檔、decisions.md 本條參照。**Subagent 使用記錄**：❌未使用（單一檔案精確逐行核對+改動，委派會斷跨檔交叉驗證推理鏈）。
+
 ## [2026-09-18] FHS 衛生機制重整 期一（減法+修復）——LOCAL_AUDIT 5個月靜默失效根治 + `/fhs-cost-audit` 廢除 + `/fhs-audit` v3.0.0
 
 - **緣起**：`/fhs-check` 例行執行揭發 `Maintenance_Tools/run_all.py` 之 LOCAL_AUDIT 階段指向 2026-04-07 已刪除嘅 `test_audit_0695346.py`，已靜默 SKIP 5 個月而 Health Report 一直照印「全部通過」。Fat Mo 建議用 `cl-flow-fast` 全面審查全部衛生機制（`/fhs-check`／`/fhs-audit`／`/fhs-cost-audit`／fhs-health）；經 `/grilling` 十輪拷問定案兩期方案（先減後加），`/cl-flow-fast`（flow `2026-09-18-1827`，A2 Gemini 對抗評審，CONDITIONAL_READY，兩條 BLOCKER 部分拒絕）→ `/execute` 期一。
