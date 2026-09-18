@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-09-18] FHS 衛生機制重整 期一（減法+修復）——LOCAL_AUDIT 5個月靜默失效根治 + `/fhs-cost-audit` 廢除 + `/fhs-audit` v3.0.0
+
+- **緣起**：`/fhs-check` 例行執行揭發 `Maintenance_Tools/run_all.py` 之 LOCAL_AUDIT 階段指向 2026-04-07 已刪除嘅 `test_audit_0695346.py`，已靜默 SKIP 5 個月而 Health Report 一直照印「全部通過」。Fat Mo 建議用 `cl-flow-fast` 全面審查全部衛生機制（`/fhs-check`／`/fhs-audit`／`/fhs-cost-audit`／fhs-health）；經 `/grilling` 十輪拷問定案兩期方案（先減後加），`/cl-flow-fast`（flow `2026-09-18-1827`，A2 Gemini 對抗評審，CONDITIONAL_READY，兩條 BLOCKER 部分拒絕）→ `/execute` 期一。
+- **20 宗腐化實證**（全文見 `artifacts/2026-09-18-1827/a3-draft-full.md` §1.1）：LOCAL_AUDIT 死引用、`/fhs-cost-audit` 純 Airtable 且公式與實作脫節（建基於 D37 已判定語意不可靠的 `Item_BaseCost`）、PRICE_AUDIT 查 Airtable 而真源早已係 Supabase `products.suggested_price`、`commit.md:144` 書面白名單放行已知外部限制、`/fhs-audit` 三處寫死 AGENTS.md v1.4.5（現行 v1.7.1）、bridge 與 master 檔項目數三個版本並存流通（21/30/33）、`semantic_audit.py` 的 D3 跨檔比對自建立以來從未真正解析 `allowed_references`（list item 因無 `:` 被靜默跳過，屬 dead code）、9 項 `/fhs-audit` 假防線（目標不存在/永遠PASS/與其他機制完全重疊）、5 支 playwright 腳本全指向已 2.1 倍體積落後嘅 V41、3 個零引用 Maintenance_Tools 孤兒（其中 `update_profit_auditor.py` 會靜默覆寫 n8n Profit Auditor 節點為硬編碼 V45.8）。
+- **Live 唯讀驗證**（Supabase，62張生產訂單）：Finance Bible §九 驗證1（四分類成本和=total_cost）0違規；驗證2（net_profit=final_sale_price-total_cost）發現 1 筆真違規 `0600804`（差額$2,860，已另開獨立任務 `task_9dba2023` 追查，本次登記已知例外不處理）；`products.suggested_price IS NULL` 26筆全部為 `(V2)` SKU（設計如此，非漏填，援引 migration 0074 排除先例）。
+- **執行內容**：
+  - 新建 `.fhs/tools/check_registry.json`（SKIP/已知違規三態語義：未登記=FAIL、過期=FAIL、有效=WARN，附到期日，fail-closed）
+  - 新建 `Maintenance_Tools/audit_cost_integrity.py`（COST_INTEGRITY，讀 Supabase，取代 `/fhs-cost-audit`）+ `audit_price_completeness.py`（PRICE_AUDIT 改讀 Supabase，取代 Airtable 版 `generate_fix_payload.py`）
+  - `run_all.py` 移除 LOCAL_AUDIT、新增真環境前置檢查（Supabase 憑證缺失即全部停止）、SKIP 三態、3 條新 DEGRADED marker（憑證缺失靜默跳過驗證/failsafe疑似回歸/查詢失敗三種既有靜默降級模式）
+  - 廢除 `/fhs-cost-audit`（master+bridge+舊腳本歸檔至 `archive/`），刪 `.fhs/ai/AGENTS.md:286` 路由行（憲法層，v1.7.1→v1.7.2），`commit.md` 刪 Airtable 429 白名單、新增 Phase 2.4 健檢閘（migration/n8n 改動亦觸發全量 `/fhs-check`，修復舊版零健檢缺口）
+  - `/fhs-audit` 重寫至 v3.0.0：刪 9 項假防線、修復三處寫死版本號、A6-2 改 glob（8→9 個 subagent）、A6-3 修正路徑錯誤、A6-4 改強制當次重跑、項目數收斂至單一居所 24 項（唯讀健康稽核定位，與 `/fhs-check` 以 blast radius 分界）
+  - `semantic_audit.py` 修復 D3 死碼（`parse_canonical_keys()` 補齊 list 解析），實作結構化標記（`agents_version`）+ 檔名字面常量（`production_html`）兩種比對策略；`canonical_keys.yml` 擴充 `allowed_references` 至活躍規格檔，同時移除誤含嘅 `docs/repo-map.md`（其為多版本盤點表，非單一斷言，會產生假陽性——2026-09-18 D3 首次真正執行才發現此既有 config 缺陷）
+  - 歸檔 9 個檔案：`/fhs-cost-audit` 三件、3 個零引用孤兒、2 個一次性 viewport 診斷頁、`test_full_reconstruction.js`（內建已不存在 V40 分支）、`verify_repo_map.py`（與 `.sh` 功能等價重複實作）
+  - 4 支仍指向 V41 嘅 playwright 腳本（`qa_v41_supabase.js`／`test_edit_order.js`／`test_engraving_render.js`／`test_final_verify.js`）登記為 `SEMANTIC_D3` 已知例外，延後期二前端唯讀層工作處理
+- **驗證**：改寫後 `run_all.py` 5 項全 PASS（LIFECYCLE/STRESS/ACCEPTANCE/COST_INTEGRITY/PRICE_AUDIT），零 SKIP；`semantic_audit.py` D3 「紅得起」測試（注入結構化標記版本不符）確認真會命中，現行 repo 僅 4 條命中且全部已登記；派 fresh-context agent 獨立驗收，PASS-with-fixes（本條目即為修復項之一：補齊 Changelog/decisions/session-log 三處文件同步缺口）。
+- **刻意不做**（留待期二）：前端唯讀層（Section 六硬條款機械化+視覺回歸）、端對端層取代 `qa_v41_supabase.js`、`/commit` Phase 2.4 前端閘。`0600804` 財務數據本身不在本次範圍。
+- 全文見完成記錄 `.fhs/reports/completion/2026-09-18_fhs-hygiene-overhaul-phase1_completion_report.md`、`artifacts/2026-09-18-1827/cl-final-plan.md`、`a3-draft-full.md`、decisions.md 2026-09-18 條目。**Subagent 使用記錄**：✅ 3 個 fresh-context agent 平行盤點（/fhs-audit 33項效用／反向引用／測試資產）+ 1 個獨立驗收 agent（PASS-with-fixes）。
+
 ## [2026-09-15] 訂單總覽品項批次清空後 reload「打返舊值」bug fix（純 render fallback 問題，非同步失敗）
 
 - **緣起**：Fat Mo 截圖回報訂單總覽單 0650429「手模擺設」品項嘅批次（原「第34批」）刪走清空後，畫面彈出已儲存確認，但撳「重新載入」後又打返「第34批」。

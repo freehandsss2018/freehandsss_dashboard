@@ -1,0 +1,52 @@
+{
+  "_readme": "衛生檢查例外登記冊（P1-1，2026-09-18 fhs-hygiene-overhaul 期一新增）。skips＝整項檢查跳過（例：檔案暫時不存在但已知原因）；known_exceptions＝檢查內個別已知違規（例：單張訂單財務數據待查）。三態語義：未登記＝FAIL；已登記但 expires 已過＝FAIL；已登記且未過期＝WARN（顯示、不阻斷 exit code）。到期日判斷只可喺 Node/Python 宿主進程以系統時間計算，禁止喺任何被 Playwright page.clock 凍結嘅 context 內計算（cl-flow 2026-09-18-1827 Verdict §2B-A5）。每條必須有 reason/registered/expires/approved_by，缺一視為登記無效（等同未登記）。",
+  "version": "1.0.0",
+  "skips": [],
+  "known_exceptions": [
+    {
+      "check": "COST_INTEGRITY",
+      "rule": "C2",
+      "key": "0600804",
+      "reason": "net_profit($1644) 與 final_sale_price-total_cost($4504) 不符，差額 $2860。已由 Fat Mo 另開獨立 session 追查（task_9dba2023），本次衛生機制重整不處理此筆財務數據，僅登記例外避免 COST_INTEGRITY 首次上線即被單一歷史數據問題卡住。",
+      "registered": "2026-09-18",
+      "expires": "2026-10-18",
+      "approved_by": "Fat Mo（/execute 2026-09-18，cl-flow 2026-09-18-1827 條件 C2）"
+    },
+    {
+      "check": "SEMANTIC_D3",
+      "rule": "production_html",
+      "key": "scripts/qa_v41_supabase.js",
+      "reason": "腳本仍指向 freehandsss_dashboardV41.html（現行生產版為 V42）。屬期二前端唯讀層工作範圍——期二會將此腳本斷言移植入新端對端測試層後歸檔（cl-final-plan.md P2-6/P2-7/D-10），期一僅登記不處理。",
+      "registered": "2026-09-18",
+      "expires": "2026-12-17",
+      "approved_by": "Fat Mo（/execute 2026-09-18，cl-flow 2026-09-18-1827 期一範圍）"
+    },
+    {
+      "check": "SEMANTIC_D3",
+      "rule": "production_html",
+      "key": "scripts/test_edit_order.js",
+      "reason": "腳本仍指向 freehandsss_dashboardV41.html（現行生產版為 V42）。屬期二前端唯讀層工作範圍——期二會將此腳本斷言移植入新前端唯讀層後歸檔（cl-final-plan.md P2-3/P2-7/D-10），期一僅登記不處理。",
+      "registered": "2026-09-18",
+      "expires": "2026-12-17",
+      "approved_by": "Fat Mo（/execute 2026-09-18，cl-flow 2026-09-18-1827 期一範圍）"
+    },
+    {
+      "check": "SEMANTIC_D3",
+      "rule": "production_html",
+      "key": "scripts/test_engraving_render.js",
+      "reason": "腳本仍指向 freehandsss_dashboardV41.html（現行生產版為 V42）。屬期二前端唯讀層工作範圍——期二會收編其刻字格式測試案例入新 fixture 後歸檔（cl-final-plan.md P2-2/P2-7/D-10），期一僅登記不處理。",
+      "registered": "2026-09-18",
+      "expires": "2026-12-17",
+      "approved_by": "Fat Mo（/execute 2026-09-18，cl-flow 2026-09-18-1827 期一範圍）"
+    },
+    {
+      "check": "SEMANTIC_D3",
+      "rule": "production_html",
+      "key": "scripts/test_final_verify.js",
+      "reason": "腳本仍指向 freehandsss_dashboardV41.html（現行生產版為 V42）。屬期二前端唯讀層工作範圍——期二會將此腳本斷言移植入新前端唯讀層後歸檔（cl-final-plan.md P2-3/P2-7/D-10），期一僅登記不處理。",
+      "registered": "2026-09-18",
+      "expires": "2026-12-17",
+      "approved_by": "Fat Mo（/execute 2026-09-18，cl-flow 2026-09-18-1827 期一範圍）"
+    }
+  ]
+}

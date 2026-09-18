@@ -24,4 +24,4 @@
 | /error-eye | commands/error-eye.md | 錯誤監控（Catch-Push-Diagnose）|
 | /guardian | commands/guardian.md | 全端守護稽核（動工前防護）|
 | /px audit | commands/px-audit.md | 外部審查（第三方審計員）|
-| /fhs-audit | commands/fhs-audit.md | 系統架構衛生稽核（21項）|
+| /fhs-audit | commands/fhs-audit.md | 唯讀健康稽核（24項）|

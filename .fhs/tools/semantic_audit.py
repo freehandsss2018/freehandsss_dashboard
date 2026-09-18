@@ -69,12 +69,21 @@ def is_excepted(path: Path) -> bool:
 
 def parse_canonical_keys() -> dict:
     """Lightweight YAML-ish parser for canonical_keys.yml.
-    Supports only the shape we wrote — no external dep."""
+    Supports only the shape we wrote — no external dep.
+
+    2026-09-18 v0.2.0（cl-flow 2026-09-18-1827）：新增 allowed_references（list）/
+    key_type / reference_pattern 解析。v0.1.0-mvp 雖然在 schema 註解宣告
+    allowed_references 為欄位，但從未真正解析——list item（`  - foo`）雖然 startswith
+    一個空白因而落入 elif 分支，但因為冇 ':' 而完全被 `elif current_key and ":" in
+    line` 條件擋在外面、靜默跳過，等於 D3 跨檔比對從一開始就係 dead code（見
+    cl-flow 2026-09-18-1827 §0.3-3 A3 自認錯誤：曾誤判「機器已存在只係冧咗自己」，
+    實情係機器從未實作）。"""
     keys_file = TOOLS_DIR / "canonical_keys.yml"
     if not keys_file.exists():
         return {}
-    keys = {}
+    keys: dict = {}
     current_key = None
+    in_list_field = None
     for raw in keys_file.read_text(encoding="utf-8").splitlines():
         line = raw.rstrip()
         if not line or line.lstrip().startswith("#"):
@@ -83,14 +92,27 @@ def parse_canonical_keys() -> dict:
             m = re.match(r"^([\w_]+):\s*$", line)
             if m:
                 current_key = m.group(1)
-                keys[current_key] = {}
-        elif current_key and ":" in line:
-            field, val = line.strip().split(":", 1)
+                keys[current_key] = {"allowed_references": []}
+                in_list_field = None
+            continue
+        if current_key is None:
+            continue
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            if in_list_field:
+                keys[current_key][in_list_field].append(stripped[2:].strip())
+            continue
+        if ":" in stripped:
+            field, _, val = stripped.partition(":")
             field = field.strip()
             val = val.strip()
-            if field == "pattern":
+            if field == "allowed_references":
+                in_list_field = "allowed_references"
+                continue
+            in_list_field = None
+            if field in ("pattern", "reference_pattern"):
                 val = val.strip("'\"")
-            if field in {"source_of_truth", "pattern", "note"}:
+            if field in {"source_of_truth", "pattern", "reference_pattern", "note", "key_type"}:
                 keys[current_key][field] = val
     return keys
 
@@ -118,6 +140,49 @@ def extract_canonical_values(keys: dict) -> dict:
         except Exception as exc:
             values[key] = {"status": "error", "error": str(exc), "source": sot}
     return values
+
+
+def compare_references(keys: dict, canonical_values: dict) -> list:
+    """D3 Conflict：掃描每個 key 的 allowed_references，用 reference_pattern（缺省
+    fallback 用 pattern）抽值，同 source_of_truth 現值比對。2026-09-18 新實作
+    （cl-flow 2026-09-18-1827 §2B-A3，回應 A2 評審 #4）：
+    - key_type=structured（散文語境，如 agents_version）→ reference_pattern 只匹配
+      顯式標記（如 `<!-- canonical:key=vX -->`），不用自然語言 regex 猜測語境
+    - key_type=literal（檔名等字面常量，如 production_html）→ reference_pattern
+      可直接字面比對，無語境歧義
+    回傳衝突清單，每條含 key/file/line/found_value/expected_value。"""
+    conflicts = []
+    for key, spec in keys.items():
+        expected = canonical_values.get(key, {}).get("value")
+        if not expected:
+            continue  # 真理來源本身抽唔到值，D1 已報告，D3 冇比對基準可跳過
+        ref_pattern = spec.get("reference_pattern") or spec.get("pattern")
+        if not ref_pattern:
+            continue
+        for ref_glob in spec.get("allowed_references", []):
+            try:
+                matched_paths = list(REPO_ROOT.glob(ref_glob))
+            except Exception:
+                continue
+            for path in matched_paths:
+                if not path.is_file() or is_excepted(path):
+                    continue
+                try:
+                    text = path.read_text(encoding="utf-8")
+                except Exception:
+                    continue
+                for m in re.finditer(ref_pattern, text):
+                    found = m.group(1)
+                    if found != expected:
+                        lineno = text.count("\n", 0, m.start()) + 1
+                        conflicts.append({
+                            "key": key,
+                            "file": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
+                            "line": lineno,
+                            "found_value": found,
+                            "expected_value": expected,
+                        })
+    return conflicts
 
 
 def find_deprecated_refs(blacklist_file: Path) -> list:
@@ -220,24 +285,29 @@ def main():
 
     keys = parse_canonical_keys()
     canonical_values = extract_canonical_values(keys)
+    d3_conflicts = compare_references(keys, canonical_values)
     deprecated_hits = find_deprecated_refs(TOOLS_DIR / "deprecated_terms.txt")
     ref_graph_findings = build_ref_graph()
 
     report = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "tool_version": "0.1.0-mvp",
+        "tool_version": "0.2.0",
         "summary": {
             "canonical_keys_tracked": len(keys),
+            "d3_conflicts": len(d3_conflicts),
             "deprecated_term_hits": len(deprecated_hits),
             "dangling_links": len(ref_graph_findings["dangling"]),
             "cycles_detected": len(ref_graph_findings["cycles"]),
         },
-        "D1_D3_canonical_values": canonical_values,
+        "D1_canonical_values": canonical_values,
+        "D3_conflicts": d3_conflicts,
         "D2_D5_dangling_links": ref_graph_findings["dangling"],
         "D5_cycles": ref_graph_findings["cycles"],
         "D5_deprecated_term_hits": deprecated_hits,
         "notes": [
             "本 JSON 為候選清單，不是判決。/fhs-audit 主流程 Claude 需做語義仲裁。",
+            "D3_conflicts 為 2026-09-18 v0.2.0 新實作（v0.1.0-mvp 宣告過 allowed_references 欄位但從未解析，係 dead code）；"
+            "與 .fhs/tools/check_registry.json 的 known_exceptions（check=\"SEMANTIC_D3\"）交叉比對，已登記且未過期者非新增紅旗。",
             "D4 沉餘偵測未實作於 MVP（需 fuzzy match 依賴）；由 Claude 讀文件直接判斷。",
         ],
     }
@@ -248,6 +318,7 @@ def main():
     )
     print(f"[OK] Semantic audit candidates written to: {REPORT_PATH}")
     print(f"     Canonical keys: {report['summary']['canonical_keys_tracked']}")
+    print(f"     D3 conflicts: {report['summary']['d3_conflicts']}")
     print(f"     Deprecated hits: {report['summary']['deprecated_term_hits']}")
     print(f"     Dangling links: {report['summary']['dangling_links']}")
     print(f"     Cycles: {report['summary']['cycles_detected']}")

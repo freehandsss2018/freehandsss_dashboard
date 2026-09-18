@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.7.1
-> Last updated: 2026-07-22
+> Version: v1.7.2
+> Last updated: 2026-09-18
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -281,9 +281,8 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | `/cl-flow` | cl 給我最終報告（完整版） | Claude | PX + AG → 產出 verdict → 停止等待。適合架構決策、新系統引入 |
 | `/cl-flow-fast` | cl 給我最終報告（輕量版） | Claude | 跳過 PX，只跑 AG → 精簡 Verdict → 停止等待。適合功能實作、UI 修改、Bug 修復 |
 | `/execute` | 唯一正式授權執行入口（修改磁碟） | Fat Mo / Claude | `.fhs/ai/commands/execute.md` |
-| `/fhs-check` | 全系統健康檢查（核心功能、壓力、驗收） | Claude | `.fhs/ai/commands/fhs-check.md` |
-| `/fhs-audit` | 內部巡邏、架構衛生稽核、版本噪音清理 | Claude | `.fhs/ai/commands/fhs-audit.md` |
-| `/fhs-cost-audit` | 財務成本完整性稽核（Total_Cost vs rollup 比對） | Claude | `.fhs/ai/commands/fhs-cost-audit.md` |
+| `/fhs-check` | 全系統健康檢查（連生產：webhook 生命週期/壓力/驗收 + 訂單成本一致性 + 產品售價完整性） | Claude | `.fhs/ai/commands/fhs-check.md` |
+| `/fhs-audit` | 唯讀健康稽核（文件/版本/語義；不連生產） | Claude | `.fhs/ai/commands/fhs-audit.md` |
 | `/px-audit` | 已退役（2026-05-30，同上原因） | N/A | 改用 `/cl-flow` |
 | `v39-aom.md` | 已遷移至 `archive/v39-aom.md`，內容見 subagents/OPERATING_MODEL.md | N/A | Archived |
 

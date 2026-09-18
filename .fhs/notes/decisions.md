@@ -3,6 +3,24 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-18] (無編號，衛生機制重整期一) `/fhs-cost-audit` 廢除、`/fhs-audit` v3.0.0（33→24項）、`run_all.py` 移除 LOCAL_AUDIT + 新增 COST_INTEGRITY、`semantic_audit.py` D3 死碼修復
+
+**背景**：`/fhs-check` 例行執行揭發 `run_all.py` LOCAL_AUDIT 指向 2026-04-07 已刪檔案，靜默 SKIP 5 個月而 Health Report 一直印「全部通過」。Fat Mo 提議用 `/cl-flow-fast` 全面審查全部衛生機制（`/fhs-check`／`/fhs-audit`／`/fhs-cost-audit`／fhs-health），經 `/grilling` 十輪拷問定案兩期方案（先減後加：期一減法+修復、期二加前端唯讀層），`/cl-flow-fast`（flow `2026-09-18-1827`，A2 Gemini 對抗評審兩條 BLOCKER 部分拒絕、CONDITIONAL_READY）→ Fat Mo 就 5 條待確認條件（C1-C5）全部採納 AI 建議 → `/execute` 期一。
+
+**核心裁決**：①`/fhs-cost-audit`（純 Airtable，公式與實作脫節，建基 D37 已判定語意不可靠嘅 `Item_BaseCost`）與 PRICE_AUDIT（查 Airtable，真源早已係 Supabase `products.suggested_price`）兩者皆重寫落 Supabase 併入 `/fhs-check`，非直接廢除——訂單成本完整性稽核冇任何 Supabase 替代品，廢除即完全失去該防線；②按 blast radius 分兩支：`/fhs-audit`＝唯讀零網路，`/fhs-check`＝連生產；③SKIP 語義由「一律不阻斷」改為登記冊三態（未登記=FAIL、過期=FAIL、有效=WARN，`.fhs/tools/check_registry.json`）——LOCAL_AUDIT 5個月靜默失效嘅根因正正係舊語義；④`semantic_audit.py` 的 D3 跨檔比對自建立以來從未真正解析 `allowed_references`（list item 因無 `:` 被解析器靜默跳過），本次補實作，並按 A2 評審意見分兩種比對策略（散文語境用顯式標記、檔名字面常量直接比對），避免自然語言 regex 猜語境嘅脆弱性。
+
+**Live 唯讀驗證**（Supabase 62張生產訂單）：Finance Bible §九 驗證1（四分類成本和=total_cost）0違規；驗證2（net_profit=final_sale_price-total_cost）1筆真違規 `0600804`（差額$2,860，另開獨立任務 `task_9dba2023` 追查，本次登記已知例外不處理）；`suggested_price IS NULL` 26筆全屬 `(V2)` SKU 設計如此（援引 migration 0074 排除先例），非漏填。
+
+**執行內容**：新建 `check_registry.json`／`audit_cost_integrity.py`／`audit_price_completeness.py`；`run_all.py` 移除 LOCAL_AUDIT+新增真環境前置檢查+3條新DEGRADED marker；廢除 `/fhs-cost-audit`（歸檔，`AGENTS.md:286` 憲法層路由行刪除，v1.7.1→v1.7.2）；`commit.md` 刪 Airtable 429 白名單、新增 Phase 2.4 健檢閘（migration/n8n 改動亦觸發全量健檢，修復舊版零覆蓋缺口）；`/fhs-audit` 刪 9 項假防線（含 A4-2 前提與 repo-map.md 直接矛盾嘅教科書案例）、修復三處寫死版本號、項目數收斂至單一居所 24；歸檔 9 個檔案（`/fhs-cost-audit` 三件、3個零引用孤兒、2個viewport診斷頁、`test_full_reconstruction.js`、`verify_repo_map.py` 重複實作）；4支仍指向V41嘅playwright腳本登記已知例外延後期二處理。
+
+**驗證**：改寫後 `run_all.py` 5項全PASS零SKIP；D3「紅得起」測試（注入結構化標記不符）確認真會命中；派 fresh-context agent 獨立驗收 PASS-with-fixes（發現本文件+Changelog+session-log三處文件同步缺口，已補）。
+
+**刻意不做**：期二前端唯讀層/端對端層/視覺回歸留待另次 `/execute`；`0600804` 財務數據本身不在本次範圍。
+
+全文見完成記錄 `.fhs/reports/completion/2026-09-18_fhs-hygiene-overhaul-phase1_completion_report.md`、`artifacts/2026-09-18-1827/cl-final-plan.md`、`a3-draft-full.md`、Changelog.md 2026-09-18 條目。**Subagent 使用記錄**：✅ 3個fresh-context agent平行盤點 + 1個獨立驗收agent（PASS-with-fixes）。
+
+---
+
 [2026-09-13] (D78) 訂單總覽「全部」視圖欄位重排：刻字/封面+入帳/成本/利潤移至進度右方 — Fat Mo 截圖直接指示 + 兩輪 Artifact 預覽確認次序後執行；全文見 Changelog.md D78 條目（Phase 1.6(b) 無完成報告小改動，Changelog 為全文居所）。
 
 ---

@@ -26,10 +26,9 @@
 | 遇到錯誤 / Bug | **AI 自動** — build-error-resolver subagent 強制走 4 階段根因法（Rule 3.15）|
 | 代碼審查 | **AI 自動** — code-reviewer subagent 5 維度自動覆蓋 |
 | TDD 測試引導 | **AI 自動** — tdd-guide subagent |
-| live 系統壓力測試 | `/fhs-check` |
+| live 系統壓力測試 / 財務成本完整性掃描 | `/fhs-check`（COST_INTEGRITY + PRICE_AUDIT phase，2026-09-18 起併入，取代已廢除 `/fhs-cost-audit`） |
 | 文件結構健康稽核 | `/fhs-audit` |
 | 大動作改動前確認 | `/guardian` |
-| 財務成本完整性掃描 | `/fhs-cost-audit` |
 | n8n / Error_Log 診斷 | `/error-eye` |
 
 ---
@@ -74,9 +73,8 @@
 |---|---|---|
 | read.md | /read | 讀取系統文件，執行系統初始化 |
 | fhs-check.md | /fhs-check | 全系統活測（建立/刪除真實測試訂單）|
-| fhs-audit.md | /fhs-audit | 系統架構衛生稽核（33 項，7 大檢查；S145 2026-07-05 實測數字）|
+| fhs-audit.md | /fhs-audit | 唯讀健康稽核（24 項，7 大檢查；v3.0.0 2026-09-18 刪 9 項假防線後數字）|
 | guardian.md | /guardian | 全端守護稽核（大動作前 4 點確認）|
-| fhs-cost-audit.md | /fhs-cost-audit | 財務成本完整性稽核 |
 | error-eye.md | /error-eye | 錯誤監控（Catch-Push-Diagnose）|
 | commit.md | /commit | 全包一條龍：Memory Engine + Notion 同步 + git push |
 | new-product.md | /new-product | 新產品跨層融入引導（5 步 atomic 流程）|

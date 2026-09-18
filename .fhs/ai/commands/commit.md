@@ -1,4 +1,5 @@
 # /commit (任務完成 · 全包一條龍)
+> Version: v2.7.0 (2026-09-18, cl-flow 2026-09-18-1827) | 新增 Phase 2.4 健檢閘：`git diff` 觸及 Dashboard HTML／migrations／n8n 任一即跑全量 `/fhs-check`，FAIL/DEGRADED 即停止 Phase 2.5/2.6；Phase 2.5 步驟4刪除「Airtable API 429 比照先例放行」書面白名單（PRICE_AUDIT 已改讀 Supabase，前提消失），改為登記冊制（`.fhs/tools/check_registry.json`）。根源：/fhs-cost-audit 與 PRICE_AUDIT 純 Airtable 資料源已判定過時，本次衛生機制重整一併修復「migration/n8n 改動零健檢」缺口。見 cl-final-plan.md 2026-09-18-1827
 > Version: v2.6.0 (2026-09-05, D70) | 新增 Phase 2.6 主線同步：Phase 2/2.5 push 完之後，嘗試將目前分支 fast-forward-only 合併落 `main`（`git push origin HEAD:main`）；若 main 自本分支分岔後已有其他 session 搶先落地（非快進），一律跳過並回報，唔做衝突自動解決、唔強推。根源：Fat Mo 指出「commit 完＝任務完成，理應等同 main 已同步」，現行預設要人手再 merge/PR 同呢個直覺唔一致；經查證本 repo 常態有多條 worktree 分支並行（含 2026-09-03「分支合併事故」先例），故只做技術上零風險嘅快進部分，唔做全面自動合併。見 decisions.md D70
 > Version: v2.5.0 (2026-08-21, D68) | P0.7 由「散文指示」升格為**機械強制**：`pre-tool-guard.js` 新增 R13 handoff 同步閘，`git commit` 前檢查便攜塊日期戳＝今日且 handoff.md 無未 staged 改動，唔過即 exit 2 攔截。根因：D67(08-19)/D66-follow(08-20) 兩次 `/commit` 都更新咗內容但日期戳三日冇郁——D66 已證「內容·紀律層」修復零效果，SessionStart hook 只做事後偵測，寫入時點一直真空。見 decisions.md D68
 > Version: v2.4.0 (2026-08-05) | P0.7 新增第七欄「⏰ 時限待辦」+ MASTER 表列混寫禁令；根因：2026-08-04拷問技能2026-08-09試用閘的日期只落MASTER表未落便攜塊，被「最高優先3條」篩選器結構性漏帶，下個session開場看不見，Fat Mo質詢揭發（見 fhs-health-rules.json deadline_surfacing_checks 新增機械偵測）
@@ -133,6 +134,20 @@
 2. **Safety**: 若出現 `.env` 則立即 `git reset HEAD .env` 並警告。
 3. **Push**: `git commit -m "chore: sync [YYYY-MM-DD]"` -> `git push`。
 
+## 【Phase 2.4: 健檢閘（新，2026-09-18，cl-flow 2026-09-18-1827 期一）】
+> **目的**：舊版只喺 `Freehandsss_Dashboard/freehandsss_dashboardV*.html` 有改動時先跑 `/fhs-check`，migration／n8n 改動零健檢——但成本/售價稽核、webhook 生命週期同樣可能因 migration／n8n 改動而爆（COST_INTEGRITY 讀 Supabase live schema，n8n workflow 改動直接影響生產下單流程）。本 Phase 補呢個缺口。
+
+1. **偵測**：`git diff --name-only origin/main...HEAD` 是否包含以下任一路徑：
+   - `Freehandsss_Dashboard/freehandsss_dashboardV*.html`
+   - `supabase/migrations/*`
+   - `n8n/*`
+   - **有**任一 → 執行 `/fhs-check`（全量五項：LIFECYCLE／STRESS／ACCEPTANCE／COST_INTEGRITY／PRICE_AUDIT，不縮減）。
+   - **沒有**（純文件／治理改動）→ Phase 2.4 到此結束，直接進 Phase 2.5。
+2. **判定**：`/fhs-check` 回傳 exit code：
+   - `0`（全部 PASS，或僅有已登記且未過期嘅 WARN）→ 通過，繼續 Phase 2.5。
+   - 非 `0`（任何 FAIL／DEGRADED／未登記或已過期嘅 SKIP）→ **停止**：Phase 2.5 部署與 Phase 2.6 主線同步均不執行，回報 Fat Mo 完整 Health Report，等待人手處理。
+3. **migration 時序註記**：Supabase migration 經 `apply_migration` 於執行當刻已套用至 live（先上 live、後補 `.sql` 落 repo），故本 Phase 對 migration 屬**事後偵測**（確認 live 現況健康），並非「部署前阻止 migration 套用」——真正嘅套用時機控制超出本指令範圍。
+
 ## 【Phase 2.5: 自動升格部署（條件觸發，2026-07-12 Session 168，AGENTS.md v1.7.0 授權途徑c）】
 > **先偵測、後執行、不再詢問**：Fat Mo 執行 `/commit` 本身即構成「有條件」授權（AGENTS.md §3 授權途徑 c）。AI 先自動判斷本次是否需要部署，需要則直接續走部署鏈，不需要則只做 commit+push——兩種結果皆不再另外詢問確認。
 
@@ -141,7 +156,7 @@
    - **沒有**改動（純文件/治理/migration/n8n/其他 scripts 改動）→ 判定「不需要部署」，Phase 2.5 到此結束，直接進 Phase 3 回報，並註明「本次未改動 Dashboard HTML，已跳過部署」。
 2. 依 `upload-web.md` 無參數流程執行：偵測 `Freehandsss_Dashboard/` 內版本號最高的 `freehandsss_dashboardV*.html` → **跳過該檔案原本的 Step 1 二次確認**（已由途徑c預先授權）→ AI 自建 `.fhs/.deploy-ok`（純 ISO timestamp 字串，禁夾帶說明文字，詳見 `.fhs/memory/handoff.md` 便攜塊「⚠️易猜錯」(11)）→ cp 升格為 `Freehandsss_dashboard_current.html`。
 3. 執行 `scripts/upload-web.ps1 current -Force` 完成 NAS 部署，三關驗證（HTTP 200 / Content-Length 相符 / SHA256 相符）不可省略——**任一關失敗則視為部署失敗**，回報 Fat Mo，不得回頭跳過驗證強行視為成功。
-4. 部署前置 `/fhs-check`（Step 0）仍需執行；若命中**已有先例裁決不阻擋部署的已知外部限制**（如 Airtable API 429 額度用盡類的 PRICE_AUDIT FAIL），比照先例繼續部署並在回報中註明；若是**新出現**的 Red Flag（非既有已裁決先例），停止部署並回報，不得比照舊例擅自放行。
+4. 部署前置健檢已由 Phase 2.4 執行並通過；Phase 2.4 未通過則本 Phase 不會進入。已知例外一律經 `.fhs/tools/check_registry.json` 登記（附到期日），不再以「比照先例」口頭放行——舊版 Airtable API 429 類先例已隨 PRICE_AUDIT 改讀 Supabase（2026-09-18）失去適用前提，一併廢止。
 5. `git add` 補上 `Freehandsss_Dashboard/Freehandsss_dashboard_current.html` + `.fhs/notes/deploy-log.md`（hook 自動追加）→ 追加一個部署 commit → push。
 6. 回報格式併入 Phase 3（見下），額外附上傳三關結果 + 公開網址。
 

@@ -1,16 +1,17 @@
 {
-  "generated_at": "2026-07-05T16:28:09",
-  "tool_version": "0.1.0-mvp",
+  "generated_at": "2026-09-18T20:55:05",
+  "tool_version": "0.2.0",
   "summary": {
     "canonical_keys_tracked": 6,
-    "deprecated_term_hits": 59,
-    "dangling_links": 249,
-    "cycles_detected": 38
+    "d3_conflicts": 4,
+    "deprecated_term_hits": 66,
+    "dangling_links": 632,
+    "cycles_detected": 106
   },
-  "D1_D3_canonical_values": {
+  "D1_canonical_values": {
     "agents_version": {
       "status": "ok",
-      "value": "v1.5.0",
+      "value": "v1.7.2",
       "source": ".fhs/ai/AGENTS.md"
     },
     "n8n_version": {
@@ -39,22 +40,580 @@
       "source": ".fhs/ai/AGENTS.md"
     }
   },
-  "D2_D5_dangling_links": [
+  "D3_conflicts": [
     {
-      "from": ".cursorrules",
-      "to": "docs/SOP_NOW.md"
+      "key": "production_html",
+      "file": "scripts/qa_v41_supabase.js",
+      "line": 11,
+      "found_value": "freehandsss_dashboardV41.html",
+      "expected_value": "freehandsss_dashboardV42.html"
     },
+    {
+      "key": "production_html",
+      "file": "scripts/test_edit_order.js",
+      "line": 3,
+      "found_value": "freehandsss_dashboardV41.html",
+      "expected_value": "freehandsss_dashboardV42.html"
+    },
+    {
+      "key": "production_html",
+      "file": "scripts/test_engraving_render.js",
+      "line": 10,
+      "found_value": "freehandsss_dashboardV41.html",
+      "expected_value": "freehandsss_dashboardV42.html"
+    },
+    {
+      "key": "production_html",
+      "file": "scripts/test_final_verify.js",
+      "line": 7,
+      "found_value": "freehandsss_dashboardV41.html",
+      "expected_value": "freehandsss_dashboardV42.html"
+    }
+  ],
+  "D2_D5_dangling_links": [
     {
       "from": ".cursorrules",
       "to": "handoff.md"
     },
     {
-      "from": "CLAUDE.md",
+      "from": ".cursorrules",
+      "to": "docs/SOP_NOW.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "product-integration-validator.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "todo.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "SKILL.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "SOP.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/ai/commands/px-audit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "build-error-resolver.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "project_canva_video_automation.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "mold-schedule-plan_2026-07-09.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_INTEGRATION.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "commit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-07-13-1224/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "2026-03-31_a3_workflow_optimization_completion_report.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fhs_cowork_governance.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-06-16-2330/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "learnings/finance.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "v39-rebuild_phase0_contract_freeze.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "project_glass_jar_parent_pricing.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ag-stitch-sync.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "project_keychain_addon_qty_cost_bug.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "systematic-debugging.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "07_compounding-loop.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "learnings/frontend.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "lessons/INDEX.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/notes/2026-05-04_cost_audit_detailed.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "finance-auditor.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ai-team-registry.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "database-reviewer.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "rp.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ag-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Product_Bible_V3.7.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "v40-phase1_design_spec.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "canva-auto.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-07-28-1121/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-07-25-0148/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "deploy-log.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "feedback_canva_no_export_ask.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "vendor/awesome-cc/hooks-setup-guide.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "project_ai_team_dashboard.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ag-flow.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-08-26-0828/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "feedback_migration_repo_db_drift.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-07-31-2332/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "supabase-query.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "governance/02_model-dispatch.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "05_maintenance-protocol.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "team.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "knowledge-map.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "MEMORY.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-08-17-1916/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-07-25-0058/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "cl-final-plan-v2.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "archive/handoff-portable-block-verified-pre-2026-07-04.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "OPERATING_MODEL.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ui-designer.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "plan_0004_supabase_cost_migration.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-06-20-0112/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Legacy_Migration_Notes.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Prompts.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ag-ui-import.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/notes/FHS_Pricing_Bible.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Knowledge_Map.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "project_financial_rpc_status_filter_bug.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "learnings/tooling.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/live_verification_report.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "Quadruple_Sync_Field_Map.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Mode_Card.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "INDEX.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "repo-map.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "user_fatmo.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "feedback_finance_rules_must_be_recorded.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "learnings/governance.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "session-log.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "product_pricing_reference.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "test-driven-development.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-08-16-2355/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "archive/handoff-portable-block-decisions-pre-2026-07-04.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "project_appointment_vs_confirmed_date_semantics.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "Triple_Sync_Field_Map.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "read-only-postgres.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "addon_product_sop.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "2026-07-05_git-checkout-carries-uncommitted-changes-silent-merge-noop.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "learnings.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "learnings/supabase.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Blueprint.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "task-brief.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "CLAUDE_SESSION_INIT.md"
+    },
+    {
+      "from": "Changelog.md",
       "to": "decisions.md"
     },
     {
+      "from": "Changelog.md",
+      "to": "rp-flow.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ADR-FORMAT.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".claude/commands/fhs-cost-audit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "frontend-developer.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/ai/commands/fhs-cost-audit.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "execute.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "governance/03_judgment-rubrics.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Product_Definition.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "docs/SOP_NOW.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "feedback_visual_bug_measure_not_guess.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "feedback_session_completion_summary_style.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "a1_implementation_plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/notes/aireports/total_cost_audit_YYYY-MM-DD.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/ai/skills/vendor/awesome-cc/hooks-setup-guide.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "2026-07-12_rls-policy-removal-silent-2xx-write-failure.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Product_Bible_V3.5.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/ai/commands/v39-aom.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "read.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "3d-print.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-08-15-1944/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "artifacts/2026-07-15-2330/cl-final-plan.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "feedback_n8n_code_node_nas_limits.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "project_cost_calculation_rules.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "ag-review.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "../notes/decisions.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "02_model-dispatch.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "commands/README.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "docs/CHANGELOG.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "cl-flow.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "MANIFEST.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "finance-calculator/SKILL.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "upload-web.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "fatmo-ops-quickcard.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": ".fhs/ai/commands/rp-flow.md"
+    },
+    {
+      "from": "Changelog.md",
+      "to": "cl-flow-fast.md"
+    },
+    {
       "from": "CLAUDE.md",
-      "to": "session-log.md"
+      "to": "CONTEXT.md"
     },
     {
       "from": ".agents/workflows/ag-plan.md",
@@ -89,36 +648,56 @@
       "to": "file:///D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/ai/commands/guardian.md"
     },
     {
-      "from": ".claude/commands/fhs-cost-audit.md",
-      "to": ".fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
+      "from": ".claude/commands/cl-flow-fast.md",
+      "to": "a3-draft.md"
+    },
+    {
+      "from": ".claude/commands/cl-flow.md",
+      "to": "a3-draft.md"
     },
     {
       "from": ".claude/skills/arrange/SKILL.md",
       "to": "reference/spatial-design.md"
     },
     {
+      "from": ".claude/skills/domain-modeling/ADR-FORMAT.md",
+      "to": "0002-slug.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/ADR-FORMAT.md",
+      "to": "0001-slug.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/CONTEXT-FORMAT.md",
+      "to": "CONTEXT.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/CONTEXT-FORMAT.md",
+      "to": "src/ordering/CONTEXT.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/CONTEXT-FORMAT.md",
+      "to": "src/billing/CONTEXT.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/CONTEXT-FORMAT.md",
+      "to": "src/fulfillment/CONTEXT.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/CONTEXT-FORMAT.md",
+      "to": "CONTEXT-MAP.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/SKILL.md",
+      "to": "CONTEXT.md"
+    },
+    {
+      "from": ".claude/skills/domain-modeling/SKILL.md",
+      "to": "CONTEXT-MAP.md"
+    },
+    {
       "from": ".claude/skills/typeset/SKILL.md",
       "to": "reference/typography.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "todo.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "v39-aom.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "GLOBAL_AI_SOP.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "a2_implementation_plan.md"
-    },
-    {
-      "from": ".fhs/ai/AGENTS.md",
-      "to": "decisions.md"
     },
     {
       "from": ".fhs/ai/AGENTS.md",
@@ -130,7 +709,7 @@
     },
     {
       "from": ".fhs/ai/AGENTS.md",
-      "to": ".fhs/ai/commands/px-audit.md"
+      "to": "todo.md"
     },
     {
       "from": ".fhs/ai/AGENTS.md",
@@ -142,7 +721,27 @@
     },
     {
       "from": ".fhs/ai/AGENTS.md",
-      "to": "a1_implementation_plan.md"
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "artifacts/2026-07-03-0014/cl-final-plan-v2.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "v39-aom.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/ai/AGENTS.md",
+      "to": "GLOBAL_AI_SOP.md"
+    },
+    {
+      "from": ".fhs/ai/FHS_Pricing_Bible.md",
+      "to": "FHS_System_Logic_Overview.md"
     },
     {
       "from": ".fhs/ai/FHS_Product_Cost_Operations.md",
@@ -150,7 +749,15 @@
     },
     {
       "from": ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
-      "to": "_archive_v2.md"
+      "to": "FHS_Product_Cost_Schema_v3.md"
+    },
+    {
+      "from": ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
+      "to": "artifacts/2026-07-28-1121/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
+      "to": "FHS_System_Logic_Overview.md"
     },
     {
       "from": ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
@@ -158,7 +765,7 @@
     },
     {
       "from": ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
-      "to": "FHS_Product_Cost_Schema_v3.md"
+      "to": "_archive_v2.md"
     },
     {
       "from": ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
@@ -170,19 +777,55 @@
     },
     {
       "from": ".fhs/ai/FHS_Product_Definition.md",
+      "to": "addon_product_sop.md"
+    },
+    {
+      "from": ".fhs/ai/FHS_Product_Definition.md",
       "to": "decisions.md"
     },
     {
       "from": ".fhs/ai/FHS_Product_Definition.md",
-      "to": "addon_product_sop.md"
+      "to": "artifacts/2026-07-25-0148/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/ai/commands/3d-print.md",
+      "to": "project_3d_print_pipeline.md"
     },
     {
       "from": ".fhs/ai/commands/ag-plan.md",
       "to": "a2_implementation_plan.md"
     },
     {
+      "from": ".fhs/ai/commands/canva-auto.md",
+      "to": "project_canva_video_automation.md"
+    },
+    {
       "from": ".fhs/ai/commands/cl-flow-fast.md",
+      "to": "px-review.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow-fast.md",
+      "to": "ag-review.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow-fast.md",
+      "to": "a3-draft.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "px-review.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
       "to": "px-report.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "ag-review.md"
+    },
+    {
+      "from": ".fhs/ai/commands/cl-flow.md",
+      "to": "a1_implementation_plan.md"
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
@@ -190,7 +833,7 @@
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
-      "to": "a1_implementation_plan.md"
+      "to": "a3-draft.md"
     },
     {
       "from": ".fhs/ai/commands/cl-flow.md",
@@ -202,7 +845,11 @@
     },
     {
       "from": ".fhs/ai/commands/commit.md",
-      "to": "decisions.md"
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/ai/commands/commit.md",
+      "to": "learnings/README.md"
     },
     {
       "from": ".fhs/ai/commands/commit.md",
@@ -211,6 +858,10 @@
     {
       "from": ".fhs/ai/commands/commit.md",
       "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/ai/commands/commit.md",
+      "to": "decisions.md"
     },
     {
       "from": ".fhs/ai/commands/execute.md",
@@ -225,8 +876,36 @@
       "to": "AGENTS.md"
     },
     {
-      "from": ".fhs/ai/commands/fhs-cost-audit.md",
-      "to": ".fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": "product-integration-validator.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": "todo.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": ".fhs/notes/plan_0004_supabase_cost_migration.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": "session-log.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": "docs/FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/ai/commands/fhs-audit.md",
+      "to": ".fhs/ai/FHS_Legacy_Migration_Notes.md"
     },
     {
       "from": ".fhs/ai/commands/fhs-slim.md",
@@ -242,11 +921,11 @@
     },
     {
       "from": ".fhs/ai/commands/read.md",
-      "to": ".fhs/memory/MEMORY.md"
+      "to": "SOP_NOW.md"
     },
     {
       "from": ".fhs/ai/commands/read.md",
-      "to": "SOP_NOW.md"
+      "to": ".fhs/memory/MEMORY.md"
     },
     {
       "from": ".fhs/ai/governance/00_INDEX.md",
@@ -254,11 +933,11 @@
     },
     {
       "from": ".fhs/ai/governance/01_diagnosis.md",
-      "to": "decisions.md"
+      "to": "session-log.md"
     },
     {
       "from": ".fhs/ai/governance/01_diagnosis.md",
-      "to": "session-log.md"
+      "to": "decisions.md"
     },
     {
       "from": ".fhs/ai/governance/02_model-dispatch.md",
@@ -270,15 +949,39 @@
     },
     {
       "from": ".fhs/ai/governance/05_maintenance-protocol.md",
-      "to": "learnings.md"
+      "to": "learnings/tooling.md"
+    },
+    {
+      "from": ".fhs/ai/governance/05_maintenance-protocol.md",
+      "to": "learnings/README.md"
+    },
+    {
+      "from": ".fhs/ai/governance/05_maintenance-protocol.md",
+      "to": "learnings/n8n.md"
+    },
+    {
+      "from": ".fhs/ai/governance/05_maintenance-protocol.md",
+      "to": "learnings/governance.md"
     },
     {
       "from": ".fhs/ai/governance/05_maintenance-protocol.md",
       "to": "AGENTS.md"
     },
     {
+      "from": ".fhs/ai/governance/05_maintenance-protocol.md",
+      "to": "learnings.md"
+    },
+    {
+      "from": ".fhs/ai/governance/07_compounding-loop.md",
+      "to": "learnings.md"
+    },
+    {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-30_AI_Architecture_Upgrade_v1.2.md",
       "to": "repo-map.md"
+    },
+    {
+      "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_GLOBAL_AI_SOP_v2.md",
+      "to": "a1_audit_report.md"
     },
     {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_GLOBAL_AI_SOP_v2.md",
@@ -287,10 +990,6 @@
     {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_GLOBAL_AI_SOP_v2.md",
       "to": "a2_implementation_plan.md"
-    },
-    {
-      "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_GLOBAL_AI_SOP_v2.md",
-      "to": "a1_audit_report.md"
     },
     {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_System_Init_v131.md",
@@ -314,10 +1013,6 @@
     },
     {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-06_boundary_hygiene.md",
-      "to": "file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/notes/SOP_NOW.md"
-    },
-    {
-      "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-06_boundary_hygiene.md",
       "to": "repo-map.md"
     },
     {
@@ -333,6 +1028,10 @@
       "to": "AGENTS.md"
     },
     {
+      "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-06_boundary_hygiene.md",
+      "to": "file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/notes/SOP_NOW.md"
+    },
+    {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-18_n8n-nas-code-node-limits-telegram-debug.md",
       "to": "feedback_n8n_code_node_nas_limits.md"
     },
@@ -346,11 +1045,15 @@
     },
     {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap.md",
-      "to": "FHS_System_Logic_Overview.md"
+      "to": "FHS_Product_Cost_Schema_v2.md"
     },
     {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap.md",
-      "to": "FHS_Product_Cost_Schema_v2.md"
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-20_n8n-google-drive-search-query-mechanics.md",
+      "to": "artifacts/2026-06-20-0112/cl-final-plan.md"
     },
     {
       "from": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md",
@@ -390,15 +1093,35 @@
     },
     {
       "from": ".fhs/ai/skills/finance-calculator/SKILL.md",
-      "to": "FHS_Pricing_Bible.md"
+      "to": "FHS_Product_Bible_V3.7.md"
     },
     {
       "from": ".fhs/ai/skills/finance-calculator/SKILL.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
       "to": "FHS_Product_Bible_V3.7.md"
     },
     {
       "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
-      "to": "FHS_Pricing_Bible.md"
+      "to": "Quadruple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      "to": "FHS_System_Logic_Overview.md"
     },
     {
       "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
@@ -406,11 +1129,39 @@
     },
     {
       "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
-      "to": "FHS_Product_Bible_V3.7.md"
+      "to": "FHS_Product_Definition.md"
     },
     {
       "from": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
-      "to": "FHS_System_Logic_Overview.md"
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": ".gemini/skills/frontend-design/reference/typography.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": ".gemini/skills/frontend-design/reference/responsive-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": ".gemini/skills/frontend-design/reference/spatial-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": ".gemini/skills/frontend-design/reference/interaction-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": ".gemini/skills/frontend-design/reference/motion-design.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": ".gemini/skills/frontend-design/reference/color-and-contrast.md"
+    },
+    {
+      "from": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "to": ".gemini/skills/frontend-design/reference/ux-writing.md"
     },
     {
       "from": ".fhs/ai/skills/ui-ux-pro-max/vendor/SKILL.md",
@@ -418,11 +1169,11 @@
     },
     {
       "from": ".fhs/ai/subagents/install-log.md",
-      "to": ".fhs/notes/completion_reports/2026-04-05_uiux-intelligence-integration_completion_report.md"
+      "to": ".fhs/notes/completion_reports/2026-04-05_subagent-engineering_completion_report.md"
     },
     {
       "from": ".fhs/ai/subagents/install-log.md",
-      "to": ".fhs/notes/completion_reports/2026-04-05_subagent-engineering_completion_report.md"
+      "to": ".fhs/notes/completion_reports/2026-04-05_uiux-intelligence-integration_completion_report.md"
     },
     {
       "from": ".fhs/ai/subagents/OPERATING_MODEL.md",
@@ -438,7 +1189,7 @@
     },
     {
       "from": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
-      "to": "FHS_Pricing_Bible.md"
+      "to": "FHS_Product_Bible_V3.7.md"
     },
     {
       "from": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
@@ -450,7 +1201,103 @@
     },
     {
       "from": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
-      "to": "FHS_Product_Bible_V3.7.md"
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "project_3d_print_pipeline.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "governance/07_compounding-loop.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "commit.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "project_glass_jar_parent_pricing.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "07_compounding-loop.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "finance-auditor.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "rp.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "database-reviewer.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "canva-auto.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "artifacts/2026-07-28-1121/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "artifacts/2026-07-25-0148/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "vendor/awesome-cc/hooks-setup-guide.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "ag-flow.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "feedback_migration_repo_db_drift.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "artifacts/2026-07-31-2332/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "05_maintenance-protocol.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "project_financial_rpc_status_filter_bug.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "Quadruple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "project_appointment_vs_confirmed_date_semantics.md"
     },
     {
       "from": ".fhs/memory/handoff.md",
@@ -458,7 +1305,47 @@
     },
     {
       "from": ".fhs/memory/handoff.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "execute.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "FHS_Product_Definition.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "feedback_visual_bug_measure_not_guess.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "2026-07-12_rls-policy-removal-silent-2xx-write-failure.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "artifacts/2026-08-15-1944/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "../../artifacts/2026-07-13-1224/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
       "to": "docs/CHANGELOG.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/memory/handoff.md",
+      "to": "cl-flow.md"
     },
     {
       "from": ".fhs/memory/handoff.md",
@@ -469,24 +1356,116 @@
       "to": "upload-web.md"
     },
     {
-      "from": ".fhs/memory/learnings.md",
-      "to": "reference_supabase_mcp_dropout_workaround.md"
+      "from": ".fhs/memory/handoff.md",
+      "to": "fatmo-ops-quickcard.md"
     },
     {
-      "from": ".fhs/memory/learnings.md",
-      "to": "feedback_tdz_silent_catch.md"
+      "from": ".fhs/memory/handoff.md",
+      "to": "cl-flow-fast.md"
     },
     {
-      "from": ".fhs/memory/learnings.md",
+      "from": ".fhs/memory/learnings/finance.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/finance.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/finance.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/finance.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "finance-auditor.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "database-reviewer.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "canva-auto.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "feedback_canva_no_export_ask.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
       "to": "docs/CHANGELOG.md"
     },
     {
-      "from": ".fhs/memory/learnings.md",
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "commit.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/governance.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "feedback_visual_bug_measure_not_guess.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "project_3d_print_pipeline.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "reference_supabase_mcp_dropout_workaround.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "project_keychain_addon_qty_cost_bug.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "learnings.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
       "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "feedback_tdz_silent_catch.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/README.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/tooling.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/memory/learnings/tooling.md",
+      "to": "learnings/governance.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-03-30_AI_Architecture_Upgrade_v1.2.md",
       "to": "repo-map.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
+      "to": "a1_audit_report.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
@@ -495,10 +1474,6 @@
     {
       "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
       "to": "a2_implementation_plan.md"
-    },
-    {
-      "from": ".fhs/memory/lessons/2026-03-31_GLOBAL_AI_SOP_v2.md",
-      "to": "a1_audit_report.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-03-31_System_Init_v131.md",
@@ -522,10 +1497,6 @@
     },
     {
       "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
-      "to": "file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/notes/SOP_NOW.md"
-    },
-    {
-      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
       "to": "repo-map.md"
     },
     {
@@ -541,6 +1512,10 @@
       "to": "AGENTS.md"
     },
     {
+      "from": ".fhs/memory/lessons/2026-05-06_boundary_hygiene.md",
+      "to": "file:///d:/SynologyDrive/Free_handsss/freehandsss_dashboard/.fhs/notes/SOP_NOW.md"
+    },
+    {
       "from": ".fhs/memory/lessons/2026-05-18_n8n-nas-code-node-limits-telegram-debug.md",
       "to": "feedback_n8n_code_node_nas_limits.md"
     },
@@ -554,11 +1529,15 @@
     },
     {
       "from": ".fhs/memory/lessons/2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap.md",
-      "to": "FHS_System_Logic_Overview.md"
+      "to": "FHS_Product_Cost_Schema_v2.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap.md",
-      "to": "FHS_Product_Cost_Schema_v2.md"
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-06-20_n8n-google-drive-search-query-mechanics.md",
+      "to": "artifacts/2026-06-20-0112/cl-final-plan.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md",
@@ -574,15 +1553,75 @@
     },
     {
       "from": ".fhs/memory/lessons/2026-07-04_docs-changelog-duplicate-cleanup.md",
-      "to": "decisions.md"
-    },
-    {
-      "from": ".fhs/memory/lessons/2026-07-04_docs-changelog-duplicate-cleanup.md",
       "to": "repo-map.md"
     },
     {
       "from": ".fhs/memory/lessons/2026-07-04_docs-changelog-duplicate-cleanup.md",
       "to": "docs/CHANGELOG.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-07-04_docs-changelog-duplicate-cleanup.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-07-13_worktree-branch-mismatch-migration-number-collision.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-07-13_worktree-branch-mismatch-migration-number-collision.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-04_telegram-spam-and-orderid-fallback-collision.md",
+      "to": "learnings/n8n.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-04_telegram-spam-and-orderid-fallback-collision.md",
+      "to": "learnings/supabase.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "finance-auditor.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "learnings/tooling.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "database-reviewer.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "feedback_worktree_bash_cd_path_leak.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "learnings/governance.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-09-06_cross-branch-production-overwrite-and-device-only-symptom-misdiagnosis.md",
+      "to": "learnings/tooling.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-09-06_cross-branch-production-overwrite-and-device-only-symptom-misdiagnosis.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/memory/lessons/2026-09-06_cross-branch-production-overwrite-and-device-only-symptom-misdiagnosis.md",
+      "to": "deploy-log.md"
     },
     {
       "from": ".fhs/memory/lessons/20260320_1358_Memory_Engine_2.0_Architecture.md",
@@ -610,7 +1649,11 @@
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": ".fhs/ai/commands/v39-aom.md"
+      "to": "CONTEXT.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "SKILL.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
@@ -618,19 +1661,7 @@
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "fhs_v0_desktop_probe.md"
-    },
-    {
-      "from": ".fhs/notes/decisions.md",
-      "to": ".fhs/notes/FHS_Pricing_Bible.md"
-    },
-    {
-      "from": ".fhs/notes/decisions.md",
-      "to": "OPERATING_MODEL.md"
-    },
-    {
-      "from": ".fhs/notes/decisions.md",
-      "to": "AGENTS.md"
+      "to": "project_canva_video_automation.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
@@ -638,31 +1669,47 @@
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "cl-final-plan-v2.md"
+      "to": "docs/FHS_Blueprint.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": ".agents/workflows/freehandsss-optimizer-v2.md"
+      "to": "artifacts/2026-07-13-1224/cl-final-plan.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "handoff.md"
+      "to": "px-report.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "docs/CHANGELOG.md"
+      "to": "learnings/finance.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "FHS_Pricing_Bible.md"
+      "to": "project_keychain_addon_qty_cost_bug.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "fhs_n8n_3brain_spec.md"
+      "to": "feedback_grilling_proactive_prompt.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "cl-flow.md"
+      "to": "learnings/frontend.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "lessons/INDEX.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "finance-auditor.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "rp.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
@@ -670,11 +1717,215 @@
     },
     {
       "from": ".fhs/notes/decisions.md",
-      "to": "deploy-log.md"
+      "to": "artifacts/2026-07-28-1121/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "canva-auto.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "artifacts/2026-07-25-0148/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": ".agents/workflows/freehandsss-optimizer-v2.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "vendor/awesome-cc/hooks-setup-guide.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "ag-flow.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "fhs_v0_desktop_probe.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "cl-final-plan-v2.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "artifacts/2026-07-03-0014/cl-final-plan-v2.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "2026-07-13_worktree-branch-mismatch-migration-number-collision.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "OPERATING_MODEL.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "px-review.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "project_n8n_supabase_401_credential_incident.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": ".fhs/notes/FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "project_financial_rpc_status_filter_bug.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "learnings/tooling.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "learnings/README.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "user_fatmo.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "learnings/governance.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "artifacts/2026-07-18-2105/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "artifacts/2026-08-16-2355/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "project_appointment_vs_confirmed_date_semantics.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "n8n.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "learnings/supabase.md"
     },
     {
       "from": ".fhs/notes/decisions.md",
       "to": "learnings.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "FHS_Blueprint.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "governance/05_maintenance-protocol.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "task-brief.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "ADR-FORMAT.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "fhs_n8n_3brain_spec.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "execute.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "FHS_Product_Definition.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "a1_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": ".fhs/ai/commands/v39-aom.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "artifacts/2026-07-15-2330/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "feedback_n8n_code_node_nas_limits.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "ag-review.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "docs/CHANGELOG.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "cl-flow.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "upload-web.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "artifacts/2026-09-11-1441/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "tooling.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "cl-flow-fast.md"
+    },
+    {
+      "from": ".fhs/notes/decisions.md",
+      "to": "Product_Bible_V3.7.md"
+    },
+    {
+      "from": ".fhs/notes/fatmo-ops-quickcard.md",
+      "to": "cl-final-plan.md"
     },
     {
       "from": ".fhs/notes/FHS_Mode_Card.md",
@@ -682,7 +1933,107 @@
     },
     {
       "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "project_financial_rpc_status_filter_bug.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "2026-07-22_migration-repo-db-drift-create-or-replace-regression.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "Quadruple_Sync_Field_Map.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
       "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "feedback_migration_repo_db_drift.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "FHS_Product_Definition.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "artifacts/2026-07-18-2105/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "artifacts/2026-08-16-2355/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "artifacts/2026-07-13-1224/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "docs/FHS_Blueprint.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "learnings/finance.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "artifacts/2026-08-15-1944/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "artifacts/2026-08-17-1916/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "finance-auditor.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "database-reviewer.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "artifacts/2026-07-28-1121/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "artifacts/2026-06-26-0922/cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/notes/FHS_System_Logic_Overview.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/notes/grilling-quickcard.md",
+      "to": "CONTEXT.md"
+    },
+    {
+      "from": ".fhs/notes/knowledge-map.md",
+      "to": "ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/notes/knowledge-map.md",
+      "to": "learnings/tooling.md"
+    },
+    {
+      "from": ".fhs/notes/knowledge-map.md",
+      "to": "learnings/README.md"
     },
     {
       "from": ".fhs/notes/knowledge-map.md",
@@ -690,19 +2041,31 @@
     },
     {
       "from": ".fhs/notes/SOP_NOW.md",
-      "to": "AGENTS.md"
-    },
-    {
-      "from": ".fhs/notes/SOP_NOW.md",
       "to": "handoff.md"
     },
     {
-      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
-      "to": "OPERATING_MODEL.md"
+      "from": ".fhs/notes/SOP_NOW.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/notes/ai_reports/2026-07-17_order_cost_audit.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/notes/ai_reports/2026-07-17_order_cost_audit.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/notes/ai_reports/2026-07-24_accessory_cost_category_gap_investigation.md",
+      "to": "addon_product_sop.md"
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
       "to": ".fhs/notes/ai_reports/a2_implementation_plan.md"
+    },
+    {
+      "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
+      "to": "OPERATING_MODEL.md"
     },
     {
       "from": ".fhs/notes/pending_tasks/2026-04-08_stitch_integration_resume.md",
@@ -718,6 +2081,14 @@
     },
     {
       "from": ".fhs/reports/a2_systemic_bug_diagnosis_report.md",
+      "to": "commands/read.md"
+    },
+    {
+      "from": ".fhs/reports/a2_systemic_bug_diagnosis_report.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/reports/a2_systemic_bug_diagnosis_report.md",
       "to": "SOP_NOW.md"
     },
     {
@@ -726,15 +2097,11 @@
     },
     {
       "from": ".fhs/reports/a2_systemic_bug_diagnosis_report.md",
-      "to": "handoff.md"
-    },
-    {
-      "from": ".fhs/reports/a2_systemic_bug_diagnosis_report.md",
-      "to": "commands/read.md"
-    },
-    {
-      "from": ".fhs/reports/a2_systemic_bug_diagnosis_report.md",
       "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
+      "to": "Quadruple_Sync_Field_Map.md"
     },
     {
       "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
@@ -746,10 +2113,6 @@
     },
     {
       "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
-      "to": "Quadruple_Sync_Field_Map.md"
-    },
-    {
-      "from": ".fhs/reports/FHS_Comprehensive_Documentation_Audit_20260516.md",
       "to": "AGENTS.md"
     },
     {
@@ -762,7 +2125,7 @@
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
-      "to": "GLOBAL_AI_SOP.md"
+      "to": "docs/product-bible.md"
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
@@ -770,19 +2133,7 @@
     },
     {
       "from": ".fhs/reports/FHS_Documentation_Audit_Phase_3.5_20260516.md",
-      "to": "docs/product-bible.md"
-    },
-    {
-      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "SOP_NOW.md"
-    },
-    {
-      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "implementation_plan.md"
-    },
-    {
-      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "decisions.md"
+      "to": "GLOBAL_AI_SOP.md"
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
@@ -794,43 +2145,55 @@
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
-      "to": "a2_implementation_plan.md"
+      "to": "SOP_NOW.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "implementation_plan.md"
     },
     {
       "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
       "to": "AGENTS.md"
     },
     {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/reports/FHS_Engineering_Process_Deep_Dive.md",
+      "to": "a2_implementation_plan.md"
+    },
+    {
       "from": ".fhs/reports/handoff_ag_review_v2.md",
       "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/reports/handoff_ag_review_v2.md",
+      "to": "addon_product_sop.md"
     },
     {
       "from": ".fhs/reports/handoff_ag_review_v2.md",
       "to": "AGENTS.md"
     },
     {
-      "from": ".fhs/reports/handoff_ag_review_v2.md",
-      "to": "addon_product_sop.md"
+      "from": ".fhs/reports/handoff_execute_v3.md",
+      "to": "handoff.md"
     },
     {
       "from": ".fhs/reports/handoff_execute_v3.md",
-      "to": "handoff.md"
+      "to": "addon_product_sop.md"
     },
     {
       "from": ".fhs/reports/handoff_execute_v3.md",
       "to": "new-product.md"
     },
     {
-      "from": ".fhs/reports/handoff_execute_v3.md",
-      "to": "addon_product_sop.md"
+      "from": ".fhs/reports/README.md",
+      "to": ".fhs/reports/audits/system/audit_YYYY-MM-DD.md"
     },
     {
       "from": ".fhs/reports/README.md",
       "to": ".fhs/reports/audits/cost/total_cost_audit_YYYY-MM-DD.md"
-    },
-    {
-      "from": ".fhs/reports/README.md",
-      "to": ".fhs/reports/audits/system/audit_YYYY-MM-DD.md"
     },
     {
       "from": ".fhs/reports/backups/auto-memory-2026-07-04/handoff.md",
@@ -858,19 +2221,91 @@
     },
     {
       "from": ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "to": "product_pricing_reference.md"
-    },
-    {
-      "from": ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
       "to": "FHS_Finance_Bible.md"
     },
     {
-      "from": ".fhs/reports/planning/a1_implementation_plan.md",
-      "to": "FHS_Prompts.md"
+      "from": ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
+      "to": "product_pricing_reference.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s148-loop-hardening_implementation_plan.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s148-loop-hardening_implementation_plan.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s148-loop-hardening_implementation_plan.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s148-loop-hardening_implementation_plan.md",
+      "to": "learnings.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s148-loop-hardening_implementation_plan.md",
+      "to": "lessons/INDEX.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s149-governance-portability_implementation_plan.md",
+      "to": "CLAUDE.router.skeleton.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s149-governance-portability_implementation_plan.md",
+      "to": "AGENTS.skeleton.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s149-governance-portability_implementation_plan.md",
+      "to": "07_compounding-loop.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md",
+      "to": "handoff.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-06_s150-audit-fix_implementation_plan.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-07_s152-skills-absorption_implementation_plan.md",
+      "to": "artifacts/.../00-verdict-summary.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-07_s152-skills-absorption_implementation_plan.md",
+      "to": "artifacts/2026-07-07-1851-skills-research/00-verdict-summary.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md",
+      "to": "governance/03_judgment-rubrics.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md",
+      "to": ".fhs/notes/youtube_nfc_video_sop.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/reports/planning/3d-print-pipeline-v0_2026-07-10.md",
+      "to": "project_3d_print_pipeline.md"
     },
     {
       "from": ".fhs/reports/planning/a1_implementation_plan.md",
       "to": "repo-map.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a1_implementation_plan.md",
+      "to": "FHS_Prompts.md"
     },
     {
       "from": ".fhs/reports/planning/a1_implementation_plan.md",
@@ -882,15 +2317,15 @@
     },
     {
       "from": ".fhs/reports/planning/a3_execution_verdict.md",
-      "to": "read.md"
-    },
-    {
-      "from": ".fhs/reports/planning/a3_execution_verdict.md",
       "to": "ag-plan.md"
     },
     {
       "from": ".fhs/reports/planning/a3_execution_verdict.md",
       "to": "FHS_Prompts.md"
+    },
+    {
+      "from": ".fhs/reports/planning/a3_execution_verdict.md",
+      "to": "read.md"
     },
     {
       "from": ".fhs/reports/planning/a3_execution_verdict.md",
@@ -901,12 +2336,8 @@
       "to": "CLAUDE_SESSION_INIT.md"
     },
     {
-      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
-      "to": "cl-flow.md"
-    },
-    {
-      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
-      "to": "a3go.md"
+      "from": ".fhs/reports/planning/canva-auto-sop-v2_2026-07-10.md",
+      "to": "project_canva_video_automation.md"
     },
     {
       "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
@@ -914,7 +2345,7 @@
     },
     {
       "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
-      "to": "freehandsss-optimizer-v2.md"
+      "to": "a3go.md"
     },
     {
       "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
@@ -922,7 +2353,15 @@
     },
     {
       "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "freehandsss-optimizer-v2.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
       "to": "commit.md"
+    },
+    {
+      "from": ".fhs/reports/planning/command_consistency_2026-04-03.md",
+      "to": "cl-flow.md"
     },
     {
       "from": ".fhs/reports/planning/fhs_cowork_governance.md",
@@ -930,19 +2369,11 @@
     },
     {
       "from": ".fhs/reports/planning/fhs_cowork_governance.md",
-      "to": "FHS_Mode_Card.md"
-    },
-    {
-      "from": ".fhs/reports/planning/fhs_cowork_governance.md",
       "to": "decisions.md"
     },
     {
-      "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
-      "to": "cl-final-plan-v2.md"
-    },
-    {
-      "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
-      "to": "a3-draft.md"
+      "from": ".fhs/reports/planning/fhs_cowork_governance.md",
+      "to": "FHS_Mode_Card.md"
     },
     {
       "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
@@ -950,23 +2381,131 @@
     },
     {
       "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
+      "to": "cl-final-plan.md"
+    },
+    {
+      "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
       "to": "task-brief.md"
     },
     {
       "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
-      "to": "cl-final-plan.md"
+      "to": "a3-draft.md"
     },
     {
       "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
       "to": "a2-digest.md"
     },
     {
-      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
-      "to": "px-audit.md"
+      "from": ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
+      "to": "cl-final-plan-v2.md"
+    },
+    {
+      "from": ".fhs/reports/planning/mold-schedule-plan_2026-07-09.md",
+      "to": "decisions.md"
+    },
+    {
+      "from": ".fhs/reports/planning/overview-category-view-plan_2026-08-25.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": ".fhs/reports/planning/overview-category-view-plan_2026-08-25.md",
+      "to": "ui-ux-pro-max/FHS_INTEGRATION.md"
+    },
+    {
+      "from": ".fhs/reports/planning/overview-category-view-plan_2026-08-25.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_Product_Definition.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "docs/FHS_Blueprint.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "governance/02_model-dispatch.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_Product_Cost_UI_Spec.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_Blueprint.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "commands/README.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_Product_Cost_Operations.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "06_letter-to-future-sessions.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "2026-06-23_igwatch-alerts-phase1a-2_completion_report.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "FHS_Pricing_Bible.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_evidence_appendix.md",
+      "to": "commands/px-audit.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_optimization_proposal.md",
+      "to": "FHS_Product_Bible_V3.7.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_optimization_proposal.md",
+      "to": "finance-gatekeeper/SKILL.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_optimization_proposal.md",
+      "to": "commands/README.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_optimization_proposal.md",
+      "to": "AGENTS.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_optimization_proposal.md",
+      "to": "fhs-audit.md"
+    },
+    {
+      "from": ".fhs/reports/planning/phase3_optimization_proposal.md",
+      "to": "06_letter-to-future-sessions.md"
     },
     {
       "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
       "to": "completion_reports/2026-04-03_audit_resolution_completion_report.md"
+    },
+    {
+      "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
+      "to": "px-audit.md"
     },
     {
       "from": ".fhs/reports/planning/resolution_checklist_2026-04-03.md",
@@ -977,28 +2516,32 @@
       "to": "handoff.md"
     },
     {
-      "from": ".gemini/skills/arrange/SKILL.md",
-      "to": "reference/spatial-design.md"
-    },
-    {
-      "from": ".gemini/skills/typeset/SKILL.md",
-      "to": "reference/typography.md"
-    },
-    {
       "from": "docs/FHS_Knowledge_Map.md",
       "to": "handoff.md"
     },
     {
       "from": "docs/FHS_Prompts.md",
-      "to": "FHS_Product_Definition.md"
-    },
-    {
-      "from": "docs/FHS_Prompts.md",
       "to": "handoff.md"
     },
     {
       "from": "docs/FHS_Prompts.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "fhs-cost-audit.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
       "to": "fhs-slim.md"
+    },
+    {
+      "from": "docs/FHS_Prompts.md",
+      "to": "FHS_Product_Definition.md"
     },
     {
       "from": "docs/FHS_Prompts.md",
@@ -1010,7 +2553,7 @@
     },
     {
       "from": "docs/GLOBAL_AI_SOP.md",
-      "to": "a3_execution_verdict.md"
+      "to": "a1_implementation_plan.md"
     },
     {
       "from": "docs/GLOBAL_AI_SOP.md",
@@ -1018,19 +2561,39 @@
     },
     {
       "from": "docs/GLOBAL_AI_SOP.md",
-      "to": "a1_implementation_plan.md"
+      "to": "a3_execution_verdict.md"
     },
     {
       "from": "docs/GLOBAL_AI_SOP.md",
       "to": "a2_implementation_plan.md"
     },
     {
+      "from": "Freehandsss_Dashboard/README.md",
+      "to": "FHS_System_Logic_Overview.md"
+    },
+    {
+      "from": "Freehandsss_Dashboard/README.md",
+      "to": "docs/FHS_Blueprint.md"
+    },
+    {
       "from": "n8n/Prevention_Optimization_Proposal.md",
       "to": "file:///C:/Users/Edwin/.gemini/antigravity/brain/a53ee22f-985b-447a-88a7-8b189548fcb2/walkthrough.md"
     },
     {
+      "from": "n8n/Quadruple_Sync_Field_Map.md",
+      "to": "FHS_Product_Cost_Schema_v2.md"
+    },
+    {
+      "from": "n8n/Quadruple_Sync_Field_Map.md",
+      "to": "FHS_Finance_Bible.md"
+    },
+    {
       "from": "scripts/README.md",
-      "to": "ag-plan.md"
+      "to": "ag-review.md"
+    },
+    {
+      "from": "scripts/README.md",
+      "to": "artifacts/2026-06-16-2330/cl-final-plan.md"
     },
     {
       "from": "scripts/hooks/test/health-fixtures/04-orphan-index/auto-memory-sim/MEMORY.md",
@@ -1048,202 +2611,472 @@
       ".fhs/ai/FHS_Finance_Bible.md"
     ],
     [
+      ".fhs/ai/AGENTS.md",
       ".fhs/ai/FHS_Finance_Bible.md",
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      ".fhs/ai/FHS_Finance_Bible.md"
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/AGENTS.md"
     ],
     [
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      ".fhs/notes/product_pricing_reference.md",
-      ".fhs/ai/FHS_Pricing_Bible.md"
-    ],
-    [
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md"
-    ],
-    [
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/FHS_Product_Bible_V3.7.md",
-      ".fhs/ai/FHS_Pricing_Bible.md"
-    ],
-    [
-      "docs/FHS_Product_Bible_V3.7.md",
-      "docs/FHS_Legacy_Migration_Notes.md",
-      "docs/FHS_Product_Bible_V3.7.md"
-    ],
-    [
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
       ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/memory/handoff.md"
-    ],
-    [
-      ".fhs/ai/FHS_Finance_Bible.md",
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      ".fhs/ai/FHS_Finance_Bible.md"
-    ],
-    [
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      ".fhs/ai/FHS_Pricing_Bible.md"
-    ],
-    [
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
       ".fhs/ai/FHS_Product_Cost_Operations.md"
-    ],
-    [
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      ".fhs/ai/governance/02_model-dispatch.md",
-      ".fhs/memory/handoff.md"
-    ],
-    [
-      ".fhs/notes/decisions.md",
-      ".fhs/ai/governance/02_model-dispatch.md",
-      ".fhs/notes/decisions.md"
     ],
     [
       ".fhs/ai/AGENTS.md",
       ".fhs/ai/FHS_Finance_Bible.md",
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
       ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      ".fhs/notes/knowledge-map.md",
+      ".fhs/memory/handoff.md",
       ".fhs/ai/governance/00_INDEX.md",
       "CLAUDE.md",
       ".fhs/ai/AGENTS.md"
     ],
     [
       ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      ".fhs/notes/knowledge-map.md",
       ".fhs/ai/governance/00_INDEX.md",
       "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/FHS_Product_Definition.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      ".fhs/ai/governance/00_INDEX.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".agents/workflows/cl-flow-fast.md",
+      ".fhs/ai/commands/cl-flow-fast.md"
+    ],
+    [
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/cl-flow-fast.md",
+      ".fhs/ai/commands/cl-flow-fast.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/memory/learnings/README.md",
+      ".fhs/memory/learnings.md",
+      ".fhs/memory/learnings/README.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/cl-flow.md",
+      ".fhs/ai/commands/cl-flow.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/cl-flow.md",
+      ".fhs/ai/commands/cl-flow.md",
+      ".fhs/reports/planning/fhs_n8n_3brain_spec.md",
+      ".fhs/reports/planning/fhs_v0_desktop_probe.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/cl-flow.md",
+      ".fhs/ai/commands/cl-flow.md",
+      "docs/repo-map.md"
+    ],
+    [
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/commit.md",
+      ".fhs/ai/commands/commit.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/reports/planning/a3_execution_verdict.md",
+      "docs/repo-map.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/reports/planning/a3_execution_verdict.md",
+      "scripts/README.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/reports/planning/a3_execution_verdict.md",
+      "scripts/README.md",
+      ".fhs/notes/ai-team-registry.md",
       ".fhs/ai/governance/05_maintenance-protocol.md",
       ".fhs/memory/handoff.md"
     ],
     [
       ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
       ".fhs/notes/knowledge-map.md",
-      ".fhs/ai/governance/00_INDEX.md",
-      "CLAUDE.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/reports/planning/a3_execution_verdict.md",
+      "scripts/README.md",
+      ".fhs/notes/ai-team-registry.md",
       ".fhs/ai/governance/05_maintenance-protocol.md",
       ".fhs/notes/decisions.md"
     ],
     [
       "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/reports/planning/a3_execution_verdict.md",
+      "scripts/README.md",
+      ".fhs/notes/ai-team-registry.md",
       ".fhs/ai/governance/05_maintenance-protocol.md",
       "CLAUDE.md"
     ],
     [
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
       ".fhs/notes/knowledge-map.md",
-      ".fhs/ai/governance/00_INDEX.md",
-      "CLAUDE.md",
-      ".fhs/memory/handoff.md"
-    ],
-    [
-      ".fhs/notes/decisions.md",
-      ".fhs/notes/knowledge-map.md",
-      ".fhs/ai/governance/00_INDEX.md",
-      "CLAUDE.md",
-      ".fhs/notes/decisions.md"
-    ],
-    [
-      ".fhs/notes/knowledge-map.md",
-      ".fhs/ai/governance/00_INDEX.md",
-      "CLAUDE.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      ".fhs/reports/planning/a3_execution_verdict.md",
+      "scripts/README.md",
+      ".fhs/notes/ai-team-registry.md",
       ".fhs/notes/knowledge-map.md"
-    ],
-    [
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      ".fhs/notes/knowledge-map.md",
-      ".fhs/memory/handoff.md"
-    ],
-    [
-      ".fhs/notes/decisions.md",
-      ".fhs/notes/knowledge-map.md",
-      ".fhs/notes/decisions.md"
-    ],
-    [
-      ".fhs/notes/decisions.md",
-      ".fhs/notes/knowledge-map.md",
-      "docs/FHS_Knowledge_Map.md",
-      ".fhs/notes/decisions.md"
-    ],
-    [
-      ".fhs/notes/knowledge-map.md",
-      "docs/FHS_Knowledge_Map.md",
-      ".fhs/notes/knowledge-map.md"
-    ],
-    [
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md"
-    ],
-    [
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      "Freehandsss_Dashboard/README.md",
-      "docs/FHS_Blueprint.md",
-      ".fhs/ai/FHS_Pricing_Bible.md"
     ],
     [
       ".fhs/ai/AGENTS.md",
       ".fhs/ai/FHS_Finance_Bible.md",
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
       ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
       ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
       "README.md",
       ".fhs/ai/AGENTS.md"
     ],
     [
       ".fhs/ai/AGENTS.md",
       ".fhs/ai/FHS_Finance_Bible.md",
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
       ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
       ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
       "README.md",
       "docs/GLOBAL_AI_SOP.md",
       ".fhs/ai/AGENTS.md"
@@ -1253,59 +3086,132 @@
       "docs/GLOBAL_AI_SOP.md"
     ],
     [
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
-      ".fhs/ai/FHS_Product_Cost_Operations.md",
-      ".fhs/notes/decisions.md",
-      "docs/FHS_Prompts.md",
-      ".fhs/ai/FHS_Pricing_Bible.md"
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      "README.md",
+      "docs/repo-map.md"
     ],
     [
       ".fhs/ai/AGENTS.md",
       ".fhs/ai/FHS_Finance_Bible.md",
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
       ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
       ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
       "docs/FHS_Prompts.md",
       ".fhs/ai/commands/fhs-check.md",
       ".fhs/ai/AGENTS.md"
     ],
     [
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      "docs/FHS_Prompts.md",
+      ".fhs/ai/governance/00_INDEX.md"
+    ],
+    [
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/execute.md",
+      ".fhs/ai/commands/execute.md",
+      "docs/repo-map.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
       ".fhs/ai/FHS_Finance_Bible.md",
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
       ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
       ".fhs/notes/decisions.md",
-      "docs/FHS_Prompts.md",
-      ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
-      ".fhs/ai/FHS_Finance_Bible.md"
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/read.md",
+      ".fhs/ai/AGENTS.md"
     ],
     [
-      ".fhs/ai/FHS_Pricing_Bible.md",
-      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      ".fhs/memory/handoff.md",
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
       ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
       ".fhs/notes/decisions.md",
-      "docs/FHS_Prompts.md",
-      ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
-      ".fhs/ai/FHS_Pricing_Bible.md"
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/read.md",
+      ".fhs/ai/commands/read.md",
+      ".fhs/ai/AGENTS.md"
     ],
     [
-      "docs/plan_0004_supabase_cost_migration.md",
-      ".fhs/notes/todo.md",
-      "docs/plan_0004_supabase_cost_migration.md"
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/read.md",
+      ".fhs/ai/commands/read.md",
+      ".fhs/memory/handoff.md"
     ],
     [
       ".fhs/notes/SOP_NOW.md",
@@ -1314,9 +3220,170 @@
       ".fhs/notes/SOP_NOW.md"
     ],
     [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".agents/workflows/read.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
       ".fhs/notes/SOP_NOW.md",
       ".agents/workflows/read.md",
       ".fhs/notes/SOP_NOW.md"
+    ],
+    [
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/commit.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/fhs-audit.md",
+      ".fhs/ai/commands/fhs-audit.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/fhs-audit.md",
+      ".fhs/ai/commands/fhs-audit.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      ".fhs/notes/todo.md",
+      ".fhs/ai/governance/07_compounding-loop.md",
+      ".fhs/notes/todo.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/fhs-audit.md",
+      ".fhs/ai/commands/fhs-audit.md",
+      ".fhs/notes/todo.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/notes/todo.md",
+      "docs/plan_0004_supabase_cost_migration.md",
+      ".fhs/notes/todo.md"
+    ],
+    [
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/fhs-audit.md",
+      ".fhs/ai/commands/fhs-audit.md",
+      "Changelog.md"
+    ],
+    [
+      "docs/FHS_Product_Bible_V3.7.md",
+      "docs/FHS_Legacy_Migration_Notes.md",
+      "docs/FHS_Product_Bible_V3.7.md"
+    ],
+    [
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/fhs-audit.md",
+      ".fhs/ai/commands/fhs-audit.md",
+      "docs/repo-map.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/read.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".claude/commands/read.md",
+      ".fhs/memory/handoff.md"
     ],
     [
       ".fhs/notes/SOP_NOW.md",
@@ -1324,60 +3391,632 @@
       ".fhs/notes/SOP_NOW.md"
     ],
     [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".fhs/ai/commands/cl-flow-fast.md"
+    ],
+    [
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".fhs/ai/commands/commit.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      ".fhs/memory/learnings/README.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      "ANTIGRAVITY.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      ".fhs/memory/learnings/README.md",
+      ".fhs/notes/SOP_NOW.md",
+      "ANTIGRAVITY.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      "Changelog.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      "Freehandsss_Dashboard/README.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      "Freehandsss_Dashboard/README.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".claude/commands/commit.md",
+      ".fhs/ai/commands/commit.md",
+      "docs/repo-map.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md"
+    ],
+    [
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/commands/cl-flow-fast.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/subagents/OPERATING_MODEL.md",
+      ".fhs/ai/subagents/freehandsss/build-error-resolver.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/subagents/OPERATING_MODEL.md",
+      ".fhs/ai/subagents/freehandsss/database-reviewer.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      "Changelog.md",
+      ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "Changelog.md"
+    ],
+    [
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "docs/repo-map.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/ai/subagents/freehandsss/finance-auditor.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/memory/lessons/2026-08-10_supabase-secret-key-public-repo-leak-auto-revocation.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/memory/lessons/2026-08-16_accessory-cost-doc-sync-and-worktree-path-leak.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/notes/FHS_Mode_Card.md",
+      ".fhs/reports/planning/fhs_cowork_governance.md",
+      ".fhs/memory/handoff.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/notes/README.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/notes/fatmo-ops-quickcard.md",
+      ".fhs/notes/knowledge-map.md"
+    ],
+    [
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/notes/fatmo-ops-quickcard.md",
+      "CLAUDE.md"
+    ],
+    [
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/notes/knowledge-map.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/reports/planning/2026-07-22_financial-overview-3layer-gap-analysis.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/ai/AGENTS.md",
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      ".fhs/reports/planning/mold-schedule-plan_2026-07-09.md",
+      ".fhs/ai/AGENTS.md"
+    ],
+    [
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      "CLAUDE.md"
+    ],
+    [
+      "Changelog.md",
+      "Changelog.md"
+    ],
+    [
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      "docs/FHS_Knowledge_Map.md",
+      ".fhs/notes/decisions.md"
+    ],
+    [
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      "docs/FHS_Knowledge_Map.md",
+      ".fhs/notes/knowledge-map.md"
+    ],
+    [
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      "docs/repo-map.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/commands/cl-flow-fast.md",
+      "docs/repo-map.md",
+      ".fhs/notes/knowledge-map.md",
+      "Changelog.md",
+      "supabase/README.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/ai/governance/02_model-dispatch.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/ai/FHS_Finance_Bible.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
+      ".fhs/ai/FHS_Finance_Bible.md"
+    ],
+    [
+      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md",
+      ".fhs/reports/planning/2026-05-31_A_granular_cost_architecture_handoff.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/ai/governance/00_INDEX.md",
+      "CLAUDE.md",
+      ".fhs/ai/governance/02_model-dispatch.md",
+      ".fhs/notes/decisions.md",
+      ".fhs/reports/planning/2026-07-08_s155-youtube-nfc-video-workflow_implementation_plan.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/memory/lessons/2026-07-04_docs-changelog-duplicate-cleanup.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md"
+    ],
+    [
+      ".fhs/notes/FHS_System_Logic_Overview.md",
+      ".fhs/ai/FHS_Product_Cost_Operations.md",
+      ".fhs/memory/handoff.md",
+      ".fhs/notes/FHS_System_Logic_Overview.md"
+    ],
+    [
       ".claude/commands/db-query.md",
       ".fhs/ai/commands/db-query.md",
       ".claude/commands/db-query.md"
+    ],
+    [
+      "n8n/README.md",
+      "scripts/ig-watchdog/SOP.md",
+      "n8n/README.md"
     ]
   ],
   "D5_deprecated_term_hits": [
     {
-      "file": ".claude/skills/px/SKILL.md",
-      "line": 22,
+      "file": "Changelog.md",
+      "line": 5525,
       "token": "Triple_Sync_Field_Map.md",
       "replacement": "Quadruple_Sync_Field_Map.md",
-      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
+      "snippet": "- AGENTS.md L47 修改前必讀文件 `Triple_Sync_Field_Map.md` → `Quadruple_Sync_Field_Map.md`"
     },
     {
-      "file": ".claude/skills/px/SKILL.md",
-      "line": 22,
+      "file": "Changelog.md",
+      "line": 5525,
       "token": "Triple_Sync_Field_Map",
       "replacement": "Quadruple_Sync_Field_Map",
-      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
+      "snippet": "- AGENTS.md L47 修改前必讀文件 `Triple_Sync_Field_Map.md` → `Quadruple_Sync_Field_Map.md`"
     },
     {
-      "file": ".fhs/ai/AGENTS.md",
-      "line": 254,
-      "token": "Triple_Sync_Field_Map.md",
-      "replacement": "Quadruple_Sync_Field_Map.md",
-      "snippet": "- ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）"
-    },
-    {
-      "file": ".fhs/ai/AGENTS.md",
-      "line": 254,
+      "file": "Changelog.md",
+      "line": 5532,
       "token": "Triple_Sync_Field_Map",
       "replacement": "Quadruple_Sync_Field_Map",
-      "snippet": "- ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）"
+      "snippet": "- `.fhs/tools/deprecated_terms.txt` — 已廢棄詞黑名單（Triple_Sync_Field_Map、三端同步/稽核/映射、v39-aom.md）"
     },
     {
-      "file": ".fhs/ai/FHS_Finance_Bible.md",
-      "line": 374,
-      "token": "Triple_Sync_Field_Map.md",
-      "replacement": "Quadruple_Sync_Field_Map.md",
-      "snippet": "❌ n8n/Triple_Sync_Field_Map.md（已被 Quadruple_Sync 取代）"
-    },
-    {
-      "file": ".fhs/ai/FHS_Finance_Bible.md",
-      "line": 374,
-      "token": "Triple_Sync_Field_Map",
-      "replacement": "Quadruple_Sync_Field_Map",
-      "snippet": "❌ n8n/Triple_Sync_Field_Map.md（已被 Quadruple_Sync 取代）"
-    },
-    {
-      "file": ".fhs/ai/commands/cl-flow-fast.md",
-      "line": 90,
+      "file": "Changelog.md",
+      "line": 5532,
       "token": "三端同步",
       "replacement": "四端同步",
-      "snippet": "- 步驟是否違反 AGENTS.md 硬規則（HTML ID、API Key、三端同步）"
+      "snippet": "- `.fhs/tools/deprecated_terms.txt` — 已廢棄詞黑名單（Triple_Sync_Field_Map、三端同步/稽核/映射、v39-aom.md）"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 5543,
+      "token": "三端同步",
+      "replacement": "四端同步",
+      "snippet": "- `.fhs/notes/SOP_NOW.md` L44：「三端同步」→「四端同步」"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 5562,
+      "token": "三端稽核",
+      "replacement": "四端稽核",
+      "snippet": "- **Subagent 路由 — finance-auditor**：三端稽核 → 四端稽核（補入 Supabase）"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 5563,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- **系統真理庫**：Triple_Sync_Field_Map.md 標注 [已廢棄]，避免 AI 誤用殭屍 reference"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 5563,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- **系統真理庫**：Triple_Sync_Field_Map.md 標注 [已廢棄]，避免 AI 誤用殭屍 reference"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 6912,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- **地圖化記錄**：建立 `Triple_Sync_Field_Map.md`，將 Dashboard、n8n、Airtable 三端欄位映射永久記錄於代碼庫，防範未來的數據斷鏈。"
+    },
+    {
+      "file": "Changelog.md",
+      "line": 6912,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- **地圖化記錄**：建立 `Triple_Sync_Field_Map.md`，將 Dashboard、n8n、Airtable 三端欄位映射永久記錄於代碼庫，防範未來的數據斷鏈。"
+    },
+    {
+      "file": ".claude/skills/px/SKILL.md",
+      "line": 22,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
+    },
+    {
+      "file": ".claude/skills/px/SKILL.md",
+      "line": 22,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
+    },
+    {
+      "file": ".fhs/ai/AGENTS.md",
+      "line": 251,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "- ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）"
+    },
+    {
+      "file": ".fhs/ai/AGENTS.md",
+      "line": 251,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "- ~~`/n8n/Triple_Sync_Field_Map.md`~~（**[已廢棄]** 三端欄位映射，已由 Quadruple_Sync 完整取代，請勿參照）"
+    },
+    {
+      "file": ".fhs/ai/FHS_Finance_Bible.md",
+      "line": 441,
+      "token": "Triple_Sync_Field_Map.md",
+      "replacement": "Quadruple_Sync_Field_Map.md",
+      "snippet": "❌ n8n/Triple_Sync_Field_Map.md（已被 Quadruple_Sync 取代）"
+    },
+    {
+      "file": ".fhs/ai/FHS_Finance_Bible.md",
+      "line": 441,
+      "token": "Triple_Sync_Field_Map",
+      "replacement": "Quadruple_Sync_Field_Map",
+      "snippet": "❌ n8n/Triple_Sync_Field_Map.md（已被 Quadruple_Sync 取代）"
     },
     {
       "file": ".fhs/ai/commands/new-product.md",
@@ -1514,14 +4153,14 @@
     },
     {
       "file": ".fhs/memory/lessons/INDEX.md",
-      "line": 30,
+      "line": 35,
       "token": "Triple_Sync_Field_Map",
       "replacement": "Quadruple_Sync_Field_Map",
       "snippet": "| 2026-03-26 | 20260326_Triple_Sync_Field_Map_Ground_Truth.md | Triple Sync 欄位地圖真相 | triple-sync, field-map, ground-trut"
     },
     {
       "file": ".fhs/notes/decisions.md",
-      "line": 900,
+      "line": 2336,
       "token": "三端同步",
       "replacement": "四端同步",
       "snippet": "- 三端同步驗證（verify_triple_sync）制度化"
@@ -1674,71 +4313,57 @@
       "snippet": "2. Triple_Sync_Field_Map.md（payload 真理）"
     },
     {
-      "file": ".gemini/skills/px/SKILL.md",
-      "line": 23,
-      "token": "Triple_Sync_Field_Map.md",
-      "replacement": "Quadruple_Sync_Field_Map.md",
-      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
-    },
-    {
-      "file": ".gemini/skills/px/SKILL.md",
-      "line": 23,
-      "token": "Triple_Sync_Field_Map",
-      "replacement": "Quadruple_Sync_Field_Map",
-      "snippet": "- `https://raw.githubusercontent.com/freehandsss2018/freehandsss_dashboard/main/n8n/Triple_Sync_Field_Map.md`"
-    },
-    {
       "file": "docs/repo-map.md",
-      "line": 233,
+      "line": 288,
       "token": "Triple_Sync_Field_Map",
       "replacement": "Quadruple_Sync_Field_Map",
       "snippet": "│       └── deprecated_terms.txt        ← 已廢棄詞黑名單（Triple_Sync_Field_Map / 三端同步 等）"
     },
     {
       "file": "docs/repo-map.md",
-      "line": 233,
+      "line": 288,
       "token": "三端同步",
       "replacement": "四端同步",
       "snippet": "│       └── deprecated_terms.txt        ← 已廢棄詞黑名單（Triple_Sync_Field_Map / 三端同步 等）"
     },
     {
       "file": "docs/repo-map.md",
-      "line": 263,
+      "line": 318,
       "token": "Triple_Sync_Field_Map.md",
       "replacement": "Quadruple_Sync_Field_Map.md",
       "snippet": "│   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）"
     },
     {
       "file": "docs/repo-map.md",
-      "line": 263,
+      "line": 318,
       "token": "Triple_Sync_Field_Map",
       "replacement": "Quadruple_Sync_Field_Map",
       "snippet": "│   ├── Triple_Sync_Field_Map.md         ← ⚠️ [已過時] 三端對齊欄位地圖（被 Quadruple_Sync_Field_Map.md 取代）"
     },
     {
       "file": "docs/repo-map.md",
-      "line": 296,
+      "line": 349,
       "token": "三端同步",
       "replacement": "四端同步",
       "snippet": "│   │       └── verify-triple-sync.js    ← 三端同步驗證"
     },
     {
       "file": "n8n/Quadruple_Sync_Field_Map.md",
-      "line": 325,
+      "line": 383,
       "token": "Triple_Sync_Field_Map.md",
       "replacement": "Quadruple_Sync_Field_Map.md",
-      "snippet": "> **歷史背景**：Triple_Sync_Field_Map.md 曾在 Node 14 章節描述這些計算值，但 Triple_Sync 文件已 [已廢棄]。本段落為遷移至 Quadruple_Sync 的補完，避免知識斷層。"
+      "snippet": "> **歷史背景**：Triple_Sync_Field_Map.md 曾在「Node 14」章節描述呢類計算值，Triple_Sync 文件已廢棄。本段落 2026-05-17 首次遷移補完，2026-07-25（S189）因節點鏈+公式"
     },
     {
       "file": "n8n/Quadruple_Sync_Field_Map.md",
-      "line": 325,
+      "line": 383,
       "token": "Triple_Sync_Field_Map",
       "replacement": "Quadruple_Sync_Field_Map",
-      "snippet": "> **歷史背景**：Triple_Sync_Field_Map.md 曾在 Node 14 章節描述這些計算值，但 Triple_Sync 文件已 [已廢棄]。本段落為遷移至 Quadruple_Sync 的補完，避免知識斷層。"
+      "snippet": "> **歷史背景**：Triple_Sync_Field_Map.md 曾在「Node 14」章節描述呢類計算值，Triple_Sync 文件已廢棄。本段落 2026-05-17 首次遷移補完，2026-07-25（S189）因節點鏈+公式"
     },
     {
       "file": "n8n/README.md",
-      "line": 11,
+      "line": 12,
       "token": "三端同步",
       "replacement": "四端同步",
       "snippet": "> 修改任何 n8n 配置前，必須先完成三端同步稽核（見 .fhs/ai/AGENTS.md 第 4 條）。"
@@ -1746,6 +4371,7 @@
   ],
   "notes": [
     "本 JSON 為候選清單，不是判決。/fhs-audit 主流程 Claude 需做語義仲裁。",
+    "D3_conflicts 為 2026-09-18 v0.2.0 新實作（v0.1.0-mvp 宣告過 allowed_references 欄位但從未解析，係 dead code）；與 .fhs/tools/check_registry.json 的 known_exceptions（check=\"SEMANTIC_D3\"）交叉比對，已登記且未過期者非新增紅旗。",
     "D4 沉餘偵測未實作於 MVP（需 fuzzy match 依賴）；由 Claude 讀文件直接判斷。"
   ]
 }

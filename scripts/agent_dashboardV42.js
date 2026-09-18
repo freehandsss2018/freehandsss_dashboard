@@ -421,7 +421,7 @@ const EMOJI = {
   '/3d-print': '🖨️', '/8d': '🧠', '/ag-flow': '🔗', '/ag-plan': '📐', '/ag-stitch-sync': '🧵',
   '/ag-ui-import': '🖼️', '/canva-auto': '🎬', '/cl-flow': '🌊', '/cl-flow-fast': '⚡',
   '/commit': '📦', '/db-query': '🗃️', '/error-eye': '👁️', '/execute': '🚀', '/fhs-audit': '🧾',
-  '/fhs-check': '🩺', '/fhs-cost-audit': '💹', '/fhs-slim': '🧹', '/guardian': '🛡️',
+  '/fhs-check': '🩺', '/fhs-slim': '🧹', '/guardian': '🛡️',
   '/new-product': '🆕', '/px': '🔎', '/read': '📖', '/rg': '🧲', '/rp': '✍️', '/team': '📇',
   '/upload-web': '☁️', '/usage-audit': '📊',
   // skills（FHS 自研＋拷問）

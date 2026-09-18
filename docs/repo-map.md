@@ -177,7 +177,7 @@ freehandsss_dashboard/
 │   │   │   ├── error-eye.md             ← 錯誤監控（Catch-Push-Diagnose）
 │   │   │   ├── guardian.md              ← 全端守護稽核（Anti-Tunnel Vision）
 │   │   │   [已退役] px-audit（外部研究已內建至 cl-flow A1，2026-05-30）
-│   │   │   ├── fhs-audit.md             ← 系統架構衛生稽核（21項，5大檢查）
+│   │   │   ├── fhs-audit.md             ← 唯讀健康稽核（24項，7大檢查；v3.0.0 2026-09-18 刪9項假防線）
 │   │   │   ├── fhs-slim.md              ← /fhs-slim 文件健康清理（L1健檢報告→方案→批准→S141紀律執行，2026-07-05 S142新增）
 │   │   │   ├── ag-stitch-sync.md        ← /ag-stitch-sync Stitch UI snippet 擷取與依賴識別（2026-05-03）
 │   │   │   ├── ag-ui-import.md          ← /ag-ui-import Stitch → Vanilla HTML/CSS 轉換入口（2026-05-03）
@@ -281,8 +281,9 @@ freehandsss_dashboard/
 │   │       ├── INDEX.md                ← Lessons 唯一檢索入口（一行式索引，2026-06-12 新增）
 │   │       └── *.md                    ← 60 個教訓記錄（Notion Auto-Discovery 自動同步）
 │   └── tools/                          ← 稽核工具腳本（2026-05-17 v2.1 新增）
-│       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測 MVP
+│       ├── semantic_audit.py           ← /fhs-audit Check 7 候選偵測（2026-09-18 v0.2.0 起 D3 跨檔比對為真實作，非文字描述）
 │       ├── canonical_keys.yml          ← 單一真理 key 清單（agents_version / n8n_version 等），亦供 fhs-health-check.js 過時漂移偵測共用
+│       ├── check_registry.json         ← 衛生檢查例外登記冊（skips/known_exceptions 三態語義，2026-09-18 新增，供 run_all.py 與 semantic_audit.py 共讀）
 │       ├── fhs-health-rules.json       ← L1 健康檢查規則資料檔（預算值+單位+出處，2026-07-05 S142 新增，不與 canonical_keys.yml 重複維護）
 │       └── deprecated_terms.txt        ← 已廢棄詞黑名單（Triple_Sync_Field_Map / 三端同步 等）
 │
@@ -324,14 +325,12 @@ freehandsss_dashboard/
 │       └── fhs_delivery_reminder_push.json  ← 交貨期每日 Telegram 推送（09:00 HKT，v_delivery_reminders，Session 82）
 ├── Maintenance_Tools/                   ← 系統健康檢查與維護腳本
 │   ├── README.md                        ← 維護工具說明
-│   ├── run_all.py                       ← 全部測試執行器
-│   ├── generate_fix_payload.py          ← 修復 Payload 產生器
+│   ├── run_all.py                       ← 全部測試執行器（2026-09-18 移除 LOCAL_AUDIT，新增 COST_INTEGRITY）
+│   ├── audit_cost_integrity.py          ← COST_INTEGRITY：訂單成本一致性稽核（讀 Supabase，2026-09-18 新增，取代已廢除 /fhs-cost-audit）
+│   ├── audit_price_completeness.py      ← PRICE_AUDIT：Supabase 空白售價稽核（2026-09-18 改讀 Supabase，取代原 generate_fix_payload.py）
 │   ├── FHS_Comprehensive_Test.py        ← 綜合測試
 │   ├── FHS_Full_System_Test.py          ← 全系統測試
-│   ├── FHS_System_StressTester.py       ← 壓力測試
-│   ├── analyze_empty_prices.py          ← 空價格分析
-│   ├── final_audit_check_v2.py          ← 最終審計檢查 v2
-│   └── update_profit_auditor.py         ← 利潤審計器更新
+│   └── FHS_System_StressTester.py       ← 壓力測試
 ├── n8n-mcp-server/                      ← n8n MCP Server — AI 控制層（Phase 1: FHS_Core_OrderProcessor）
 │   ├── README.md                        ← 專案說明
 │   ├── .env.example                     ← 環境變數範例（正式值在根目錄 .env）
@@ -407,7 +406,13 @@ freehandsss_dashboard/
 │   ├── freehandsss_financial_overview.html.deprecated ← 已停用的獨立財務總覽頁（2026-07-05補列）
 │   ├── n8n_scripts/                     ← n8n workflow 建立腳本歷史版本（2026-07-05補列）
 │   ├── scripts-scratch-2026-07/         ← `/fhs-audit` S145歸檔：46個一次性除錯/驗證腳本（原scripts/根目錄，2026-05-22~06-03建立，逾月無更新未列README，2026-07-05新增）
-│   └── antigravity-backup-20260703.sha256.txt ← AG 全量安全快照 checksum（zip 本體 gitignored，Phase 0.1，2026-07-03）
+│   ├── antigravity-backup-20260703.sha256.txt ← AG 全量安全快照 checksum（zip 本體 gitignored，Phase 0.1，2026-07-03）
+│   ├── fhs-cost-audit.md / fhs-cost-audit-bridge.md ← 已廢除指令（2026-09-18，純Airtable，功能重寫落Supabase併入/fhs-check）
+│   ├── audit_total_cost_integrity.py    ← 已廢除 /fhs-cost-audit 舊實作腳本（2026-09-18）
+│   ├── analyze_empty_prices.py / final_audit_check_v2.py / update_profit_auditor.py ← 零引用孤兒（2026-09-18歸檔）
+│   ├── viewport-check.html / viewport-check2.html ← 一次性 viewport 診斷頁（2026-09-18歸檔，原 Freehandsss_Dashboard/）
+│   ├── test_full_reconstruction.js      ← 內建已不存在 V40 分支之孤兒腳本（2026-09-18歸檔，原 scripts/）
+│   └── verify_repo_map.py.duplicate     ← verify_repo_map.sh 之重複 Python 實作（2026-09-18歸檔）
 └── tmp/                                 ← 臨時檔案（不納入 git）
 
 註：node_modules/、tmp/ 與 .* 開頭之隱藏檔案為系統環境自動生成，禁止 AI 任意修改或刪除。

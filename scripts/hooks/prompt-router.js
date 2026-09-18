@@ -37,7 +37,7 @@ process.stdin.on('end', () => {
   // 避免 /commit、/fhs-slim 等輕量維護指令被無關全文塞爆 context）。
   const ALL_SLASH_COMMANDS = ['/read', '/commit', '/execute', '/cl-flow', '/cl-flow-fast',
     '/fhs-check', '/fhs-audit', '/guardian', '/error-eye', '/rg', '/rp',
-    '/db-query', '/new-product', '/upload-web', '/fhs-cost-audit'];
+    '/db-query', '/new-product', '/upload-web'];
   const LEARNINGS_WHITELISTED_COMMANDS = ['/cl-flow', '/cl-flow-fast', '/execute', '/error-eye', '/guardian'];
 
   const isSlashCommand = ALL_SLASH_COMMANDS.some(cmd => trimmedPrompt.startsWith(cmd));

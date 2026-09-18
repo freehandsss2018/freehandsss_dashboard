@@ -11,16 +11,41 @@
 #   <key_name>:
 #     source_of_truth: <檔案路徑>          # 真理來源
 #     pattern: <regex 抽取規則>             # 從檔內抽出當前值
-#     allowed_references: [<檔案清單>]      # 允許出現此 key 的其他檔案（必須與 source 一致）
+#     key_type: structured | literal        # 2026-09-18 新增。structured=散文語境
+#       （版本號等會被人手手寫成句子的值，reference_pattern 只認顯式標記，唔用自然
+#       語言 regex 猜語境——cl-flow 2026-09-18-1827 §2B-A3，回應 A2 評審 #4「散文
+#       regex 分語境太脆弱」）；literal=檔名等字面常量（無語境歧義，可直接字面比對）
+#     reference_pattern: <regex>            # 2026-09-18 新增。缺省時 fallback 用 pattern。
+#       structured key 用 `<!-- canonical:key=vX.Y.Z -->` 顯式標記；literal key
+#       可用同 pattern 相近但不含來源檔專屬前後綴嘅寬鬆版本
+#     allowed_references: [<檔案清單/glob>]  # 允許出現此 key 的其他檔案（必須與 source 一致）
+#       2026-09-18 起擴充涵蓋「活躍規格檔」（.fhs/ai/commands/*.md、scripts/*.js、
+#       Maintenance_Tools/*.py），排除歷史類（decisions.md/Changelog.md/session-log.md/
+#       .fhs/reports/**/archive/**，見 semantic_audit.py EXCEPTION_PATH_FRAGMENTS）
+#
+# ⚠️ 2026-09-18 修復（cl-flow 2026-09-18-1827）：semantic_audit.py v0.1.0-mvp 的
+# parse_canonical_keys() 從未真正解析本檔的 allowed_references（list item 因為冇
+# ':' 被靜默跳過），即本檔案由建立至今，D3 跨檔比對從未真正執行過，純屬 dead
+# config。v0.2.0 起已修復，本檔隨即同步擴充 key_type/reference_pattern/
+# allowed_references 三項。
 
 agents_version:
   source_of_truth: .fhs/ai/AGENTS.md
   pattern: '^>\s*Version:\s*(v\d+\.\d+\.\d+)'
+  key_type: structured
+  reference_pattern: '<!--\s*canonical:agents_version=(v\d+\.\d+\.\d+)\s*-->'
   allowed_references:
     - .fhs/notes/SOP_NOW.md
     - docs/FHS_Prompts.md
     - .fhs/ai/subagents/freehandsss/*.md
     - .fhs/reports/audits/system/audit_*.md
+    - .fhs/ai/commands/*.md
+    - scripts/*.js
+    - Maintenance_Tools/*.py
+  note: "2026-09-18 新增 reference_pattern：舊版無此欄位時 fallback 用 pattern（散文
+    regex）比對活躍規格檔會製造大量假陽性/假陰性（見 A2 評審 #4），故改為只認顯式
+    <!-- canonical:agents_version=vX.Y.Z --> 標記；現時 repo 內尚無任何檔案採用此
+    標記，D3 對本 key 預期零命中，屬設計如此（收窄範圍換取零假陽性），非漏未覆蓋"
 
 n8n_version:
   source_of_truth: .fhs/ai/AGENTS.md
@@ -49,11 +74,25 @@ supabase_role:
 production_html:
   source_of_truth: .fhs/ai/AGENTS.md
   pattern: '(freehandsss_dashboardV\d+\.html)`（生產版'
+  key_type: literal
+  reference_pattern: '(freehandsss_dashboardV\d+\.html)'
   allowed_references:
     - .fhs/notes/SOP_NOW.md
     - .fhs/memory/handoff.md
-    - docs/repo-map.md
-  note: "2026-07-05 S145 修正：AGENTS.md 現行用語是「生產版」，原 pattern 多要求「穩定」二字（已不存在於現行文字），造成 no_match"
+    - scripts/*.js
+    - Maintenance_Tools/*.py
+  note: "2026-07-05 S145 修正：AGENTS.md 現行用語是「生產版」，原 pattern 多要求「穩定」二字（已不存在於現行文字），造成 no_match。
+    2026-09-18 擴充 allowed_references 至 scripts/*.js／Maintenance_Tools/*.py（活躍規格檔）：
+    reference_pattern 為檔名字面常量，無語境歧義，可直接沿用寬鬆版 pattern（去掉 AGENTS.md 專屬「（生產版」後綴）。
+    預期命中：仍指向 freehandsss_dashboardV41.html 嘅腳本（test_final_verify.js／test_edit_order.js／
+    test_engraving_render.js／qa_v41_supabase.js）——已登記 check_registry.json known_exceptions
+    （check=SEMANTIC_D3），到期日對齊期二前端唯讀層完工時程。
+    同日**移除** docs/repo-map.md（原已在此列表但因 D3 舊版從未真正解析而從未觸發）：
+    2026-09-18 首次實測發現該檔為 Dashboard 目錄「全版本盤點表」，逐檔各自標註
+    （✅ Production／⛔ 已凍結／舊版穩定基準等），並非「單一斷言邊個係生產版」嘅
+    散文陳述，同本 key 設計語義（單一真源比對）範疇不合，會對 V36/V37/V40/V41
+    嘅合法歷史記載產生 5 個假陽性——非漏改，係首次令 D3 真正執行後發現嘅既有
+    config 缺陷並當場修正"
 
 field_map_authority:
   source_of_truth: .fhs/ai/AGENTS.md

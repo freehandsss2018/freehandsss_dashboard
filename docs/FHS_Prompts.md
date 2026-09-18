@@ -92,7 +92,7 @@ Mobile phone 介面專屬設計準則（強制執行）：
 - **動作**：執行內部巡邏，檢查是否存在孤立檔案、過時版本或路由斷層。
 - **kgov 觸發**：識別為 FHS 知識治理框架（Session 63）再優化任務 → 稽核 `.fhs/ai/FHS_Product_Definition.md` + `FHS_Pricing_Bible.md §10` + `AGENTS Rule 3.17` + `/new-product Step 6`。
 - **執行邏輯**：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/fhs-audit.md。
-- **深度分流（2026-07-05 S142 新增）**：若用戶意圖明確是「文件健康快檢/瘦身」而非全套 30 項深稽核（例如提及「便攜塊超標」「health-check」「/fhs-slim」「過肥」「孤兒檔」），改載入 `.fhs/ai/commands/fhs-slim.md`（輕量、對接 SessionStart hook 自動偵測的 `.fhs/.health-report.json`）；語意模糊時預設仍走 `/fhs-audit`（較全面，寧可多做不漏做）。
+- **深度分流（2026-07-05 S142 新增）**：若用戶意圖明確是「文件健康快檢/瘦身」而非全套 24 項唯讀深稽核（例如提及「便攜塊超標」「health-check」「/fhs-slim」「過肥」「孤兒檔」），改載入 `.fhs/ai/commands/fhs-slim.md`（輕量、對接 SessionStart hook 自動偵測的 `.fhs/.health-report.json`）；語意模糊時預設仍走 `/fhs-audit`（較全面，寧可多做不漏做）。
 
 ## 【情境九：記憶引擎 3.0 (Memory Engine)】
 
@@ -140,11 +140,11 @@ Mobile phone 介面專屬設計準則（強制執行）：
 觸發：用戶提及「為什麼」「五個為什麼」「five whys」「根因分析」「系統性原因」
 執行邏輯：**AI 自動執行**（Rule 3.15）。Five-Whys 追問法已內建至 `build-error-resolver` subagent 的根因調查協議，遇到「不知道為什麼」或「已試過 2+ 修復仍失敗」時自動觸發。指令 `/five` 已退役（2026-05-30），方法論已內建至 subagent。
 
-## 【情境十六：財務成本完整性稽核 (Cost Audit)】
+## 【情境十六：財務成本完整性稽核 (Cost Audit)】（2026-09-18 起併入 /fhs-check，`/fhs-cost-audit` 已廢除）
 
 觸發：用戶提及「成本稽核」「cost audit」「Total_Cost 對帳」「rollup 比對」「成本完整性」
-> 與情境五的區別：情境五處理一般財務數據審計；此情境專門執行 Total_Cost vs rollup 的結構性比對。
-執行邏輯：此情境已獨立為專屬指令，請立即載入並嚴格執行 .fhs/ai/commands/fhs-cost-audit.md。
+> 與情境五的區別：情境五處理一般財務數據審計；此情境專門執行訂單成本一致性（Finance Bible §九 驗證1/2）+ SKU 成本完整性 + drift RPC。
+執行邏輯：此情境已併入 `/fhs-check` 的 COST_INTEGRITY 階段（`Maintenance_Tools/audit_cost_integrity.py`，讀 Supabase，不再讀 Airtable），請立即載入並嚴格執行 .fhs/ai/commands/fhs-check.md。舊獨立指令 `/fhs-cost-audit`（原 `fhs-cost-audit.md`）已於 2026-09-18 歸檔至 `archive/`，原因：純 Airtable 資料源、公式與實作脫節、建基於 D37 已判定語意不可靠的 `Item_BaseCost` 欄位（見 cl-flow 2026-09-18-1827 決策）。
 
 ## 【情境十七：輕量快速規劃 (Fast Planning)】
 

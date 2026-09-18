@@ -12,7 +12,7 @@
 
 ## Pitfalls
 
-1. **PostgreSQL/PostgREST 型別與過濾陷阱**：①`->>` 得 text，不能隱式轉型為 ENUM，須 explicit cast `(v_json->>'field')::order_status`（42804）；②SKU 含括號時（如 "木框套裝 (4肢)"），過濾值必須用雙引號包裹 `sku.like."FILTER*"` — 源自 2026-05-23 `@supabase` <!-- v:2026-05-23 -->
+1. **PostgreSQL/PostgREST 型別與過濾陷阱**：①`->>` 得 text，不能隱式轉型為 ENUM，須 explicit cast `(v_json->>'field')::order_status`（42804）；②SKU 含括號時（如 "木框套裝 (4肢)"），過濾值必須用雙引號包裹 `sku.like."FILTER*"`；③**雙引號規則僅適用於 `or=(...)`/`and=(...)` 組合語法內嵌入嘅 `column.operator.value` 字串**，頂層查詢參數 `sku=not.like.value` 加雙引號會令 PostgREST 把成個值當字面樣式比對，永遠匹配唔中，排除條件靜默失效 — 源自 2026-05-23、2026-09-18 `@supabase` <!-- v:2026-09-18 -->
 2. **RPC GRANT 安全層級**：SECURITY DEFINER 函式若寫業務表（如 products），GRANT 應給 service_role 而非 anon；否則任何持 anon key 的人可觸發 — 源自 2026-05-28 `@supabase` <!-- v:2026-05-28 -->
 3. **Migration 套用時序與可見性**：①新欄位加入 SELECT 或 PATCH body 前必確認 migration 已套用，否則 PostgREST 400（順序：migration 套用→加 SELECT→加 PATCH）；②`CREATE TABLE IF NOT EXISTS` 在表已存在時靜默跳過，後續 PART（ALTER/INSERT/RPC）不執行無報錯，各 PART 必須有獨立 smoke-test 查詢 — 源自 2026-05-26，2026-05-29 `@supabase` <!-- v:2026-05-29 -->
 4. **批量 UPDATE 前必先 SELECT 記錄原始值**：直接 UPDATE 無法回滾（Supabase 無交易歷史），Airtable 備份不保證有值。每次批量改狀態前先 `SELECT ... RETURNING` 存快照 — 源自 2026-06-11 `@supabase` <!-- v:2026-06-11 -->

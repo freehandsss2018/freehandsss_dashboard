@@ -4,8 +4,8 @@
 
 執行步驟：
 1. 執行 python Maintenance_Tools/run_all.py
-2. 依序完成：LOCAL_AUDIT → LIFECYCLE → STRESS → ACCEPTANCE
-3. 輸出 Health Report，明確標示所有 Red Flags
+2. 依序完成：環境前置檢查 → LIFECYCLE → STRESS → ACCEPTANCE → COST_INTEGRITY → PRICE_AUDIT
+3. 輸出 Health Report，明確標示所有 Red Flags / DEGRADED / WARN
 4. 若發現 Red Flags，將問題摘要寫入 .fhs/notes/session-log.md
 
 異常處理：

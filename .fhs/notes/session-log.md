@@ -1,5 +1,14 @@
 # Session Log
-## 2026-09-15 (canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付，史上首單單片家族): 🏷️ ✅
+## 2026-09-18 (FHS 衛生機制重整期一：/fhs-cost-audit 廢除、/fhs-audit v3.0.0、run_all.py 移除 LOCAL_AUDIT + 新增 COST_INTEGRITY、semantic_audit.py D3 死碼修復): 🏷️ ✅
+
+**摘要**：接續 2026-09-17 發現嘅 LOCAL_AUDIT 靜默失效，Fat Mo 提議全面重整衛生機制，經 `/grilling` 十輪拷問（Q1-Q10）定案兩期方案後走 `/cl-flow-fast`（flow `2026-09-18-1827`，三個 fresh-context agent 平行盤點：`/fhs-audit` 33項效用判定/反向引用/測試資產；A2 Gemini 評審兩輪因請求過大遭 Google 端間歇性過載拒收，縮小草案至評審版後第2輪成功；兩條 BLOCKER 部分拒絕，CONDITIONAL_READY）。Fat Mo 就 5 條待確認條件全部採納 AI 建議後 `/execute` 期一。執行內容：新建 `check_registry.json`（SKIP/已知違規三態語義）+ `audit_cost_integrity.py`/`audit_price_completeness.py`（COST_INTEGRITY/PRICE_AUDIT 改讀 Supabase，取代已廢除嘅 `/fhs-cost-audit`）；`run_all.py` 移除 LOCAL_AUDIT + 新環境前置檢查 + 3條新DEGRADED marker；`AGENTS.md` 憲法層路由行刪除（v1.7.1→v1.7.2）；`commit.md` 刪 Airtable 429 白名單、新增 Phase 2.4 健檢閘；`/fhs-audit` 重寫 v3.0.0（刪9項假防線、修復三處寫死版本號、項目數33→24）；`semantic_audit.py` 修復 D3 死碼（`allowed_references` 自建立以來從未真正被解析）。Live 唯讀驗證揪出訂單 `0600804` 利潤不符（已另開獨立任務不在本次範圍），26個 `suggested_price` NULL 全屬 `(V2)` SKU 設計如此。歸檔 9 個檔案。改寫後 `run_all.py` 5項全PASS零SKIP；D3「紅得起」測試確認真會命中；派 fresh-context agent 獨立驗收 PASS-with-fixes（揪出 Changelog/decisions/session-log 三處文件同步缺口，本條目即為補齊項之一）。期二（前端唯讀層/端對端層/視覺回歸）留待另次 `/execute`。
+**全文**見 `artifacts/2026-09-18-1827/cl-final-plan.md`、`a3-draft-full.md`、Changelog.md 2026-09-18 條目、decisions.md 2026-09-18 條目。
+**Subagent 使用記錄**：✅ 3個fresh-context agent平行盤點（研究）+ 1個獨立驗收agent（PASS-with-fixes，發現文件同步缺口已修復）。
+
+## 2026-09-17 (/fhs-check 全系統健康檢查：LIFECYCLE/STRESS/ACCEPTANCE/PRICE_AUDIT 全PASS，LOCAL_AUDIT 發現5個月配置漂移): 🏷️ ⚠️
+
+**摘要**：執行 `python Maintenance_Tools/run_all.py`（AGENTS.md v1.7.1）。四項有效測試全PASS：LIFECYCLE 26.5s（Create→Update→Delete 全週期含 Supabase 刪除驗證）、STRESS 67.2s（TC-01~05 五情境含正常單/空品項/未知SKU/污染資料型別/缺主資訊全符合 EXPECT_LANDING）、ACCEPTANCE 26.6s（混合品項+未知SKU failsafe）、PRICE_AUDIT 4.6s（Product_Database 無空白售價）。所有測試單均以 `test` 開頭且已清理完畢。**LOCAL_AUDIT 被 SKIP**：`run_all.py` 第27行仍引用 `test_audit_0695346.py`，該檔已於 2026-04-07 commit `66eaf483`（/execute 沉積清理）刪除，`run_all.py` 當時未同步更新引用——導致「Profit Auditor 本地邏輯測試」自 4 月起靜默停跑至少 5 個月，期間所有 `/fhs-check` 應該都回報過同一 SKIP 卻從未被當作 Red Flag 處理（`run_all.py` 自身邏輯把 SKIP 視為非阻斷，仍宣告「全部通過」）。此為 `/fhs-check.md` 健康標準（要求所有測試腳本均 PASS）與 `run_all.py` 實際寬容度之間的落差，非本次操作引入。已停手待 Fat Mo 裁決處理方式（刪除 CHECKS 清單該項 / 另尋替代腳本如 `update_profit_auditor.py` / 重建缺失測試），未自作主張修改。
+**Subagent 使用記錄**：❌未使用（單一腳本執行+git log 溯源，主 session 直接查證即可）。
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15 條目 + `canva_auto/placement_memory.json` order `0601011`（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。素材只得一條卡通片（史上首見），開工前問 Fat Mo 確認揀雙直片家族+單片重複填兩格（非AI自行決定）。Stage①-⑤全交付：黑白圖零修改，彩色圖/字句/page3 各有 Fat Mo 微調（字句字號42.67→56、字距0.073→0.14，新規則CV-42）。AI 曾憑肉眼睇export誤報page3未去背，後量框角像素推翻。CV-33（素材角色核對）達4單升格入canva-auto.md。Stage⑤存檔頁已建，待Fat Mo拖本客原相貼入合集。
 **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。

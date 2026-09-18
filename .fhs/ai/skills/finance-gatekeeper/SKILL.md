@@ -1,10 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.14.0
+version: 1.15.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-08-22（D65續IV-follow：玻璃瓶「＋大寶」價階 $1,680/$1,980（同 tier ＋$300）+ 兩個新 SKU（migration 0091）；肢數 tier 改為只數嬰兒肢體，推翻 2026-07-21 定案；§一路由表加一行，見 §5.4.20。同日稍早 migration 0090「純大寶」版本為錯誤實作已作廢）
+last_updated: 2026-09-18（cl-flow 2026-09-18-1827 期一：`/fhs-cost-audit`（純 Airtable）已廢除歸檔，功能重寫落 Supabase 併入 `/fhs-check` COST_INTEGRITY phase，§一路由表加一行指向新機制）
+[前次] 2026-08-22（D65續IV-follow：玻璃瓶「＋大寶」價階 $1,680/$1,980（同 tier ＋$300）+ 兩個新 SKU（migration 0091）；肢數 tier 改為只數嬰兒肢體，推翻 2026-07-21 定案；§一路由表加一行，見 §5.4.20。同日稍早 migration 0090「純大寶」版本為錯誤實作已作廢）
 [前次] 2026-08-19（D67：`save_structured_order_items` RPC DELETE+INSERT 漏14個成本/V2欄位修復，migration 0089，§一路由表加一行，見 §5.4.19）
 [前次] 2026-08-17（D65續II：立體擺設價錢真源抽為 `_pPriceOfSku()`，§一路由表加一行；純代碼重構，128組窮舉證實零財務規則變動，見 §5.4.18）
 [前次] 2026-08-16（D65：父母/大寶升格訂單層一次性角色，§一路由表新增 owner 歸屬/家庭組合 S/P 全單判定一行，見 §5.4.17）
@@ -39,6 +40,7 @@ compatible_with: AGENTS.md v1.4.13
 | 架構規則（Layer 1/2 快照 / 誰寫哪個欄位 / 禁 trigger）| **L1** `.fhs/ai/FHS_Finance_Bible.md` |
 | 四端同步欄位映射 | `n8n/Quadruple_Sync_Field_Map.md` |
 | KPI 收入分攤 / 混合單 3-layer fallback / get_financial_kpis / get_financial_charts | §十 `.fhs/notes/FHS_System_Logic_Overview.md` §十（RPC 財務計算層 SSoT） |
+| 訂單成本一致性自動稽核（四分類成本和=total_cost / net_profit=final_sale_price-total_cost / SKU 成本完整性 / drift RPC） | `/fhs-check` COST_INTEGRITY phase（`Maintenance_Tools/audit_cost_integrity.py`，讀 Supabase；2026-09-18 取代已廢除、純 Airtable 的 `/fhs-cost-audit`，見 cl-flow 2026-09-18-1827） |
 | Live 訂單成本/利潤驗證 | 啟動 `finance-auditor` subagent |
 | Supabase schema / SKU 成本資料 | 啟動 `database-reviewer` subagent |
 | `cost_configurations` 改值後 `products.total_base_cost` 是否同步（懷疑 drift）| 先跑 `SELECT * FROM fhs_check_product_cost_drift();`——**2026-07-18 Phase 2 起已覆蓋全品類**（嬰兒/成人/家庭鎖匙扣不銹鋼+鋁合金、吊飾全 tier、立體擺設、配件、佔位 row 監測），見 `FHS_System_Logic_Overview.md` §5.4.3。禁止假設「改設定中心=products 自動同步」|

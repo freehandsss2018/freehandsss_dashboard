@@ -11,7 +11,7 @@
 | `migrate_airtable_to_supabase.js` | **Supabase 遷移**：批量將 Airtable 資料同步至 Supabase (Phase 1)，需 Airtable API |
 | `migrate_from_csv.js` | **CSV 遷移備援**：當 Airtable API quota 耗盡時，改從 `airtable-database/*.csv` 讀取並遷移至 Supabase（支援 multiline quoted fields）|
 | `run_supabase_migration.js` | **遷移啟動器**：自動化執行 Supabase 遷移流程 |
-| `qa_v41_supabase.js` | **V41 驗證**：測試 Dashboard V41 與 Supabase 連接與渲染 |
+| `qa_v41_supabase.js` | **V41 驗證**：測試 Dashboard V41 與 Supabase 連接與渲染。⚠️ 仍指向已過時的 V41（現行生產版 V42），已登記 `.fhs/tools/check_registry.json` known_exceptions（`SEMANTIC_D3`），待期二前端唯讀層工作收編/歸檔 |
 | `add_supabase_mirror_nodes.js` | **n8n 自動化**：自動向 n8n 工作流添加 Supabase 鏡像節點 |
 | `update_n8n_supabase_mirror.js` | **n8n 自動化**：將 n8n 工作流中的 Supabase 鏡像節點代碼更新為基於 Axios 的實作 |
 | `deploy_native_supabase_mirror.js` | **n8n 自動化**：將最新的 SSoT Webhook 準備邏輯部署至 NAS |
@@ -27,10 +27,11 @@
 
 | 檔案 | 用途 |
 |---|---|
-| `test_engraving_render.js` | 驗證刻字資料在 V41 渲染是否正確 |
-| `test_full_reconstruction.js` | 測試訂單狀態從 Raw_Form_State 完全重建 |
-| `test_edit_order.js` | 測試 Supabase 環境下的訂單編輯同步 |
-| `test_final_verify.js` | 上線前的最終全系統驗證 |
+| `test_engraving_render.js` | 驗證刻字資料在 V41 渲染是否正確。⚠️ 仍指向已過時的 V41，零呼叫方，已登記 `check_registry.json` known_exceptions（`SEMANTIC_D3`），待期二收編其刻字格式測試案例入前端唯讀層 fixture 後歸檔 |
+| `test_edit_order.js` | 測試 Supabase 環境下的訂單編輯同步。⚠️ 仍指向已過時的 V41，`.claude/settings.json` 保留其 Bash 執行權限白名單，已登記 `check_registry.json` known_exceptions（`SEMANTIC_D3`），待期二移植入前端唯讀層後歸檔 |
+| `test_final_verify.js` | 上線前的最終全系統驗證。⚠️ 仍指向已過時的 V41，零呼叫方，已登記 `check_registry.json` known_exceptions（`SEMANTIC_D3`），待期二移植入前端唯讀層後歸檔 |
+
+（`test_full_reconstruction.js` 已於 2026-09-18 歸檔至 `archive/`：內建已不存在的 V40 比較分支，執行必 fatal，零呼叫方——見 `archive/README.md`）
 
 ## 已歸檔的一次性除錯腳本（2026-07-05，`/fhs-audit` S145）
 
