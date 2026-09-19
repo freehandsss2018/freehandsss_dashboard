@@ -3,6 +3,26 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-19] (D80) V2 品項層 `order_items.drawing_cost` 恆為 0——n8n V47.25 改由 n8n 計算 + migration 0094 回填 — `finance-auditor` 審訂單 0600804 揭發全庫 5 行 V2 品項 `drawing_cost=0`，違反 Cost Schema v2 §10.3「品項層＝全額」；訂單層數字全程正確，故從未被發現
+
+**編號說明**：原暫編 D79，與主線並行 session 嘅 D79（n8n secret 洩漏修補）撞號，2026-09-20 merge 主線時重編為 D80；migration 0094 檔頭註解仍寫「D79」（該 migration 已套用 live，repo 檔須與已套用版本逐位相同，故不改）。
+
+**背景**：5 行（3 張單：0600804／06009005／0600914，`cost_model_version='v2_layered'`）`drawing_cost=0` 但 `drawing_charged_count=1`，合共缺 $720；每行 `item_base_cost − printing − chain − shipping` 恰好等於缺失嘅畫圖分量（其餘三分量存得正確）。訂單層（`total_cost`／`net_profit`／四個分類成本）因 `item_base_cost` 取自 `products.total_base_cost` 而全程正確。
+
+**根因（兩層，execution 7516 webhook body 實證）**：(1) Dashboard `calculatePricing()`（V42.html:9601-9613）有主商品時把已倒模部位一律預填入 `chargedPositions`＝視為「畫圖費已收」——係 S55 舊語義（選咗主套裝＝連首件都免），§10 於 2026-07-24 已推翻，但呢段前端邏輯未同步，令 V2 品項恆傳 `Drawing_Cost:0`；(2) n8n `Calculate Profit & Pack Items` V47.24 對非家庭 V2 品項原樣透傳前端值，從未調用 `getDrawingRateForV2Sku()`。
+
+**決策（Fat Mo `/execute` 2026-09-19：Step 1 + Step 2）**：①n8n V47.25 單行改動——非家庭 V2 品項 `Drawing_Cost = getDrawingRateForV2Sku(sku) × itemQty`（全額，豁免資訊只存 `Drawing_Waived`／`Drawing_Charged_Count`），舊 SKU 透傳、家庭組合動態計算兩條路徑不變；**揀修 n8n 而非 Dashboard**：n8n 已係家庭組合畫圖費嘅計算點，且唔使改 V42 生產 HTML（另案）。②migration 0094 回填部署前 5 行（不變式守衛＋命中行數必須 0 或 5）。**順序鐵則**：必須先部署 V47.25 再回填，否則重新同步會用 Dashboard 嘅 0 覆蓋（0600804 當日 04:43Z 就發生過）。③Layer-2 紅線：`orders` 表完全不碰。
+
+**驗證**：離線重放（execution 7516 真實輸入＋按 DB 重建嘅 0600914／06009005，舊新代碼逐位比對，總數／分類／調整金額全相同，12 個 V2 檔位費率正確）；live 測試單 `testV2draw0919`（execution 7539）`drawing_cost` 60／60／220／110、`total_cost=2040` 同預先手算一致；回填前後 3 張單 `orders` 整行 md5 同全表 75 張單雜湊逐位一致、其餘 145 行 `order_items` 雜湊一致、`fhs_check_product_cost_drift()` 0 行。**獨立 fresh-context `finance-auditor` 覆核**：n8n 代碼 diff（3 個預期改動群組、U+FFFD 仍 8 個、其餘 29 節點零改動）、5 行資料、Layer-2 紅線、migration 檔同已套用版本逐位相同（md5 一致）、repo 鏡像，全部 PASS；另揪出下列兩項，已處理。
+
+**覆核揪出嘅問題（誠實記錄）**：(1) **我寫錯咗「測試單被 KPI RPC 排除」**——寫入五個文件前，我淨係數 RPC 原始碼入面 `confirmed_at` 出現次數同有冇 `IS NULL` 後備，冇讀謂詞本身。實情：兩個 RPC 以 `LEAST(confirmed_at, appointment_at)`（migration 0066）定期間歸屬，`LEAST` 忽略 NULL，未確認單以預約日入賬；而我嘅測試單預約日設咗 2026-12-31。所以佢**而家唔計入，但 2026-12 起會計入 $6,000 收入／$2,040 成本**（覆核以 RPC 實跑證實：`ref_date=2026-12-15` 月度返回 1 單）。已更正五處文字；測試單清理（軟刪或取消）原屬 Fat Mo 核准範圍外嘅生產寫入，其後 2026-09-20 經 Fat Mo 授權軟刪（只設 `deleted_at`，該單其餘欄位、其他 75 張單同 6 行品項雜湊不變，2026-12 月度 KPI 1→0 單、全年 58→57 單）。(2) **文件 sweep 漏咗兩份 §三B 必查清單上嘅權威文件**——`FHS_Finance_Bible.md`（L1）同 `Quadruple_Sync_Field_Map.md` 仍標 V47.22／V47.24 為現行，order_items 表冇 drawing／printing／chain／shipping_cost 寫入方；已補（Finance Bible v1.4.3、Field Map v2.1.2），System_Logic 217 行 `chain_cost` 措辭（吊飾自 V47.20 起 n8n 自算）一併更正。我嘅 sweep 只 grep 欄位名，冇 grep「現行 V47.xx」版本標籤同「表內欠行」。
+
+**教訓**：(1) **被標為「純 cosmetic」嘅審計差值可能係真缺陷嘅唯一信號**——Phase 2（2026-07-24）已見 `convergence_note` 對 V2 單差值無意義，記為「唔影響入帳、留待日後」，實情係 V2 品項畫圖分量一直冇入庫，拖咗約 8 週先由獨立審計揭發。(2) **規格推翻後要 grep 前端有冇同語義殘留**——§10 推翻 S55 語義時只改咗 n8n／文件，前端 `chargedPositions` 預填一直沿用舊語義。(3) **live 節點含 U+FFFD 亂碼字元時，唔好用 `update_node_code` 整段重寫**，改 GET→精準字串替換（每處 count==1 斷言）→PUT，並結構比對證明其餘節點同連線零改動。(4) **回填必須排喺修復部署之後**。(5) **斷言「某 RPC 排除某類資料」前要讀 WHERE 謂詞並實跑 RPC，唔好數關鍵字次數**；測試單預約日要設過去或測完即刪，因為未確認單以預約日入賬。(6) **§三B sweep 要 grep 版本標籤同結構缺口，唔止欄位名**；大型改動嘅獨立覆核真係揪出咗自查漏嘅嘢（同 learnings/governance #10 一致）。
+
+**殘留／待 Fat Mo 決定**：①測試單 `testV2draw0919` 已於 2026-09-20 軟刪（見上）；②V42 `calculatePricing()` 畫圖成本估算仍沿用 S55 舊語義，V42.html:15421-15424 有過時註解（「n8n 無獨立寫 drawing_cost」）——生產 HTML，另案；2026-09-20 已評估影響：只影響報價面板「系統成本」估算（3 張實單偏低 $60／$120／$120；面板本身另有約 $290–$330 既有差距，因面板唔計立體擺設 $210 等）同 n8n anti-loss 守衛（只喺收款低於成本先報警，實單售價係成本約 4–5.6 倍，冇實際影響）；入帳／KPI／品項 drawing_cost 全部由 n8n 決定。**結論：暫不改**；③兩份 `finance-auditor.md`（repo `.fhs/ai/subagents/freehandsss/` v2.2.1 同用戶層 `~/.claude/agents/freehandsss/` v2.3.0，pre-existing 漂移 36 行）仍有「Task A 完成前不寫入實值」等過時描述——用戶層檔案在 repo 外，本次不動；④`FHS_Product_Cost_Schema_v2.md` 標題／status 仍寫 v2.3.0（pre-existing）；⑤三張已回填單嘅舊 `convergence_note` 文字（差額 360／570／450）要待下次重新同步先更新（訂單層快照不可變，純審計文字）。
+
+全文見 `FHS_System_Logic_Overview.md` §5.4.23、Cost Schema v2 §10.4、Changelog.md 2026-09-19、`.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md`。**Subagent 使用記錄**：✅ `finance-auditor` 兩次——前期獨立 live 驗證（兩項 PASS）；後期 fresh-context 覆核（兩項 PASS＋2 項問題，已處理）。
+
 [2026-09-18] (無編號，衛生機制重整期一) `/fhs-cost-audit` 廢除、`/fhs-audit` v3.0.0（33→24項）、`run_all.py` 移除 LOCAL_AUDIT + 新增 COST_INTEGRITY、`semantic_audit.py` D3 死碼修復
 
 **背景**：`/fhs-check` 例行執行揭發 `run_all.py` LOCAL_AUDIT 指向 2026-04-07 已刪檔案，靜默 SKIP 5 個月而 Health Report 一直印「全部通過」。Fat Mo 提議用 `/cl-flow-fast` 全面審查全部衛生機制（`/fhs-check`／`/fhs-audit`／`/fhs-cost-audit`／fhs-health），經 `/grilling` 十輪拷問定案兩期方案（先減後加：期一減法+修復、期二加前端唯讀層），`/cl-flow-fast`（flow `2026-09-18-1827`，A2 Gemini 對抗評審兩條 BLOCKER 部分拒絕、CONDITIONAL_READY）→ Fat Mo 就 5 條待確認條件（C1-C5）全部採納 AI 建議 → `/execute` 期一。

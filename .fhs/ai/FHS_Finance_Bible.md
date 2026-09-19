@@ -2,8 +2,8 @@
 
 > **Authority Level**: L1 — 架構不變量（最高權威）
 > **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/ai/FHS_Pricing_Bible.md`。
-> **Version**: v1.4.2
-> **Created**: 2026-05-16 | **Updated**: 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§五B架構責任圖擴充n8n版本號+Family_Member_Config欄位，新增歷史回填/大寶standalone規則廢止記錄）；2026-07-25（cl-flow 2026-07-25-0148：新增「配件」（羊毛氈/燈飾加購）分類至 §一實體清單/§三彙總/§四 getItemCategory+成本分配規則/§四收斂驗證公式/§五責任表 x2，`accessory_cost` 欄位補齊 migration 0079/0080）；2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
+> **Version**: v1.4.3
+> **Created**: 2026-05-16 | **Updated**: 2026-09-19（D80：§五 order_items 表補 drawing/printing/chain/shipping_cost 寫入方；§五B／§九 n8n 版本號→V47.25，n8n 自 V47.25 起計算 V2 非家庭品項 Drawing_Cost）；[前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§五B架構責任圖擴充n8n版本號+Family_Member_Config欄位，新增歷史回填/大寶standalone規則廢止記錄）；2026-07-25（cl-flow 2026-07-25-0148：新增「配件」（羊毛氈/燈飾加購）分類至 §一實體清單/§三彙總/§四 getItemCategory+成本分配規則/§四收斂驗證公式/§五責任表 x2，`accessory_cost` 欄位補齊 migration 0079/0080）；2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
 > **Path**: `.fhs/ai/FHS_Finance_Bible.md`
 >
 > ⚠️ **強制規則**：凡任何 AI（主 agent 或 subagent）涉及財務利潤、成本、折扣計算任務，
@@ -213,7 +213,7 @@ function getItemCategory(sku) {
 
 範例：嬰兒左手已有鎖匙扣 → 再加購嬰兒左手吊飾 → 吊飾免畫圖費
 
-V2統一SKU模型實作：見 `FHS_Product_Cost_Schema_v2.md` §10.4「同部位共享豁免公式」（n8n V47.22 現行邏輯，position_code分組跨品類共享）。
+V2統一SKU模型實作：見 `FHS_Product_Cost_Schema_v2.md` §10.4「同部位共享豁免公式」（n8n V47.22 起實作，position_code分組跨品類共享；V47.25 起非家庭 V2 品項 `Drawing_Cost` 由 n8n 按費率×qty 自行計算，見 `FHS_System_Logic_Overview.md` §5.4.23）。
 ```
 
 #### 【G4】頸鏈費：1 頸鏈最多 2 吊飾（奇偶交替規則）
@@ -273,6 +273,9 @@ V2統一SKU模型實作：見 `FHS_Product_Cost_Schema_v2.md` §10.4「同部位
 | `keychain_cost` | n8n（Mirror to Supabase） | item 層：如類別=金屿扣則=item_base_cost，否則=0 |
 | `necklace_cost` | n8n（Mirror to Supabase） | item 層：如類別=純銀頸鏈吊飾則=item_base_cost，否則=0 |
 | `accessory_cost` | n8n（Mirror to Supabase） | item 層：如類別=配件則=item_base_cost，否則=0（migration 0079/0080） |
+| `drawing_cost` | n8n（Mirror to Supabase） | item 層畫圖費分量＝全額 quantity × tier 費率（不理會同部位豁免）。V2 非家庭品項自 n8n V47.25 起由 n8n 按 SKU 費率自行計算（唔透傳 Dashboard 值，已含於 `products.total_base_cost`，只作拆分展示）；家庭組合(V2)由 n8n 動態計算並另計入 itemCost（V47.24）；舊 SKU 仍透傳前端值。詳見 Cost Schema v2 §10.3–§10.6 |
+| `printing_cost` / `shipping_cost` | n8n（Mirror to Supabase，透傳 Dashboard 值） | Task A 品項層分量，審計用；訂單層總數來自 `products.total_base_cost`，唔係四分量加總 |
+| `chain_cost` | n8n（Mirror to Supabase） | 吊飾：n8n 按 `100 × quantity` 計算（V47.20 起，見 System_Logic §5.4.5）；鎖匙扣環扣：透傳 Dashboard 值 |
 | `product_sku` | n8n（Mirror to Supabase） | 來自 Product_Name（matched SKU） |
 | `subtotal_cost` | n8n（Mirror to Supabase） | = item_base_cost（`item_base_cost` 本身已為該行 quantity 之全額 total，非單件價；quantity 欄位純展示用途，不參與相乘。2026-07-25 修正：舊版寫「×quantity」會誤導再乘一次） |
 
@@ -287,10 +290,11 @@ Dashboard（前端）
     ↓ 生成 V2 SKU 名（"(V2)" 後綴）+ Order_Item_Key（含position後綴 _LH/_RH/_LF/_RF）
 n8n「Parse Items & Generate SKU」（V47.14）
     ↓ isV2Sku guard，跳過舊式「-N飾 Mode」後綴邏輯；透傳 Family_Member_Config
-n8n「Calculate Profit & Pack Items」（V47.24）
+n8n「Calculate Profit & Pack Items」（V47.25）
     ↓ 按position_code分組（跨鎖匙扣/吊飾），組內首件收畫圖費、其餘豁免
     ↓ 大寶position_code用獨立字串（「大寶左手」等，同嬰兒「左手」區隔，防跨對象誤共享豁免）
     ↓ 家庭組合鎖匙扣(V2)另走動態畫圖分支（讀family_member_config，唔入position分組）
+    ↓ 非家庭 V2 品項 Drawing_Cost = quantity × tier 費率（V47.25 起由 n8n 計算，唔透傳 Dashboard 值；全額，不理會豁免）
     ↓ 寫入 packedItems：Position_Code / Drawing_Waived / Drawing_Charged_Count / Cost_Model_Version / Family_Member_Config
 n8n「Supabase Mirror Prep」（V47.16）→「HTTP: Supabase Sync RPC」
     ↓ 呼叫 sync_order_to_mirror()（migration 0075/0081 已擴充支援5新欄位）
@@ -431,7 +435,7 @@ RPC KPI 收入分攤 / 混合單 3-layer / get_financial_kpis / get_financial_ch
   （RPC 財務計算層唯一 SSoT；按需 Grep 定位後只讀 §十，禁全量）
 
 如需查詢 n8n 節點程式碼：
-  get_node("Calculate Profit & Pack Items")   ← 核心計算節點（V47.22，含V2同部位畫圖扣減邏輯）
+  get_node("Calculate Profit & Pack Items")   ← 核心計算節點（V47.25，含V2同部位畫圖扣減邏輯及V2品項層Drawing_Cost計算）
   get_node("Supabase Mirror Prep")           ← Supabase 寫入節點
   get_node("Parse Items & Generate SKU")     ← SKU 正規化節點（V47.13，含isV2Sku guard）
 

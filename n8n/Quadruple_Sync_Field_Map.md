@@ -1,15 +1,16 @@
 # Quadruple Sync Field Map
 
-**Version**: v2.1.1
+**Version**: v2.1.2
 **Created**: 2026-05-10 (Phase 0 盤點，升級自 Triple_Sync 概念)
-**Updated**: 2026-08-16（§「❌ 嚴禁寫入」表補漏 `accessory_cost`——同 §四端映射表已列嘅配件成本欄位口徑不一，屬同批 grep sweep 事後揪出，見 finance-gatekeeper SKILL.md last_updated）
+**Updated**: 2026-09-19（D80：order_items 表補 drawing_cost／printing_cost／chain_cost／shipping_cost 四分量映射；「n8n 內部計算規則」新增 V2 品項層 Drawing_Cost 計算段（V47.25）；節點版本 V47.22→V47.25）
+[前次] 2026-08-16（§「❌ 嚴禁寫入」表補漏 `accessory_cost`——同 §四端映射表已列嘅配件成本欄位口徑不一，屬同批 grep sweep 事後揪出，見 finance-gatekeeper SKILL.md last_updated）
 [前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象V2模型——新增`family_member_config`欄位映射；position_code值域擴充大寶獨立字串；新增familyCombinDynamicDrawing計算段；節點版本V47.13/22→V47.14/24）
 [前次] 2026-07-25（S189財務文件全面審查大改版——本文件2.5個月零更新，核心架構假設「Airtable過渡期SSoT」已被D43(2026-07-22~23)推翻，「n8n內部計算規則」整段描述嘅「Node 14 – Cost Calculator」節點自V47.4起已不存在，現行節點鏈完全改寫；新增order_items 4個V2欄位；已知問題表核對實際狀態）
 **四端**: Airtable ↔ n8n ↔ Dashboard ↔ Supabase
 
 > 本文件記錄 FHS 四端系統中每個核心欄位的「寫入方」「讀取方」「同步方向」與「真理來源」。
 > 任何改動此對應關係的操作，必須先更新本文件。
-> ⚠️ **v2.0 讀者須知**：本文件v1.1版本（2026-05-13）核心假設「Airtable過渡期SSoT」已於D43大幅剝離Airtable依賴後推翻；「n8n內部計算規則」章節描述嘅節點名/版本已對唔上現行V47.22——如果你係憑歷史記憶對照本文件，請以本次v2.0改版為準，唔好假設v1.1嘅框架仍然生效。
+> ⚠️ **v2.0 讀者須知**：本文件v1.1版本（2026-05-13）核心假設「Airtable過渡期SSoT」已於D43大幅剝離Airtable依賴後推翻；「n8n內部計算規則」章節描述嘅節點名/版本已對唔上現行V47.25——如果你係憑歷史記憶對照本文件，請以本次v2.0改版為準，唔好假設v1.1嘅框架仍然生效。
 
 ---
 
@@ -67,6 +68,10 @@
 | `keychain_cost` | Order_Items.Keychain_Cost (formula) | 計算 + 寫入 | — | `order_items.keychain_cost NUMERIC` | **n8n** |
 | `necklace_cost` | Order_Items.Necklace_Cost (formula) | 計算 + 寫入 | — | `order_items.necklace_cost NUMERIC` | **n8n** |
 | `accessory_cost` | — (Airtable已剝離停用，D43) | 計算 + 寫入 | — | `order_items.accessory_cost NUMERIC` | **n8n**（migration 0079/0080，cl-flow 2026-07-25-0148） |
+| `drawing_cost` | — (Airtable已剝離停用，D43) | 計算 + 寫入（V2 非家庭品項 V47.25 起自算 qty×費率；家庭組合 V47.24 動態；舊SKU透傳） | 傳送（V2 品項嘅值被 n8n 忽略） | `order_items.drawing_cost NUMERIC` | **n8n**（V2）／Dashboard→n8n 透傳（舊SKU）；規則見 Cost Schema v2 §10.3 |
+| `printing_cost` | — | 透傳寫入 | 傳送 | `order_items.printing_cost NUMERIC` | Dashboard→n8n 透傳（審計用分量，唔入訂單層總數） |
+| `chain_cost` | — | 計算（吊飾 `100×qty`，V47.20 起）／透傳（鎖匙扣環扣）+ 寫入 | 傳送（吊飾嘅值被 n8n 覆蓋） | `order_items.chain_cost NUMERIC` | **n8n**（吊飾）／Dashboard→n8n 透傳（環扣） |
+| `shipping_cost` | — | 透傳寫入 | 傳送 | `order_items.shipping_cost NUMERIC` | Dashboard→n8n 透傳（審計用分量） |
 | `engraving_text` | Order_Items.Engraving_Text | 寫入 | 輸入 | `order_items.engraving_text TEXT` | Dashboard |
 | `specification` | Order_Items.Specification | 寫入 | 輸入 | `order_items.specification TEXT` | Dashboard |
 | `process_status` | Order_Items.Process_Status | 讀取 / 寫入 | 讀取 | `order_items.process_status` | Airtable |
@@ -299,7 +304,7 @@ LEFT JOIN cost_configurations c ON p.cost_config_id = c.id;
 
 ## 🧮 n8n 內部計算規則（非持久化，2026-07-25 全面重寫）
 
-> 原「補完日期：2026-05-17」版本描述嘅係 `Node 14 – Cost Calculator`（V47.4 workflow），呢個節點已經唔存在——現行 workflow `FHS_Core_OrderProcessor`（workflowId `6Ljih0hSKr9RpYNm`）節點鏈同計算邏輯已升級到 V47.22，本段落完全重寫對齊現行代碼（非僅改節點名，公式亦已不同）。
+> 原「補完日期：2026-05-17」版本描述嘅係 `Node 14 – Cost Calculator`（V47.4 workflow），呢個節點已經唔存在——現行 workflow `FHS_Core_OrderProcessor`（workflowId `6Ljih0hSKr9RpYNm`）節點鏈同計算邏輯已升級到 V47.22（現行 V47.25，見下方各節點版本標註），本段落完全重寫對齊現行代碼（非僅改節點名，公式亦已不同）。
 > 以下計算值僅存在於 n8n workflow 執行記憶體，寫入結果進入 `orders`/`order_items` 持久層，但中間扣減值（deduction）本身**不建獨立 column**。
 
 ### 現行節點鏈
@@ -314,7 +319,7 @@ Batch SKU Collector → Smart Cache Strategist（Supabase v_products_with_costs 
     ↓
 Local Data Mapper
     ↓
-Calculate Profit & Pack Items（V47.22，核心計算節點）
+Calculate Profit & Pack Items（V47.25，核心計算節點）
     ↓
 Supabase Mirror Prep → HTTP: Supabase Sync RPC（呼叫 sync_order_to_mirror()）
 ```
@@ -359,6 +364,20 @@ drawingDedupDeduction = Σ(每組waived_units × tier_drawing_rate)
 - 寫入 `n8n_adjustment_notes`（type=`drawing_position_dedup_deduction`，含逐行 detail：position_code/item_key/waived_units/drawing_rate/deduction）
 - 同步寫入 `order_items.position_code`/`drawing_waived`/`drawing_charged_count`（migration 0073新欄位，非持久化中間值，實際落地欄位）
 - 完整公式同適用範圍見 `FHS_Product_Cost_Schema_v2.md` §10.4（唯一SSoT）
+
+### v2ItemDrawingCost（V2 品項層畫圖費，V47.25 新增，2026-09-19，D80）
+
+```
+Drawing_Cost（品項層，寫入 order_items.drawing_cost）
+  = isFamilyV2 ? familyDrawing（動態，見下節）
+  : isV2Sku    ? getDrawingRateForV2Sku(sku) × quantity   ← V47.25，全額，不理會同部位豁免
+  : Dashboard 透傳值（舊 SKU）
+費率：嬰兒/大寶 S=$60 P=$110；成人 S=$110 P=$240（同 Cost Schema v2 §2.1）
+```
+
+- V47.25 之前非家庭 V2 品項直接透傳 Dashboard 值，而 Dashboard 恆傳 0（舊 S55 語義），令生產 5 行 `drawing_cost=0`；migration 0094 已回填。詳見 `FHS_System_Logic_Overview.md` §5.4.23。
+- **唔入訂單層總數**：非家庭 V2 品項嘅畫圖費已包含喺 `products.total_base_cost`（單件全費），`Drawing_Cost` 只係拆分展示同入收斂律審計（`convergence_note`，amount=0）；家庭組合(V2)嘅畫圖費先係另計入 itemCost。
+- 豁免資訊只存 `drawing_waived`／`drawing_charged_count`（見上節），唔影響本欄數值。
 
 ### familyCombinDynamicDrawing（家庭組合動態畫圖，V47.24 新增，2026-07-28）
 

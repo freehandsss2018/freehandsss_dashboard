@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-19] V2 品項層 `order_items.drawing_cost` 恆為 0 修復——n8n V47.25 + migration 0094（D80）
+
+- **修復**：生產 5 行 V2 品項 `drawing_cost=0`（缺 $720，違反 Cost Schema v2 §10.3）；n8n `Calculate Profit & Pack Items` V47.24→V47.25（非家庭 V2 品項 `Drawing_Cost = 費率 × qty`，取代透傳 Dashboard 值）＋ migration 0094 回填 5 行；`orders` 表零改動（3 張單整行雜湊＋全表雜湊逐位一致），fresh-context `finance-auditor` 覆核 PASS。
+- **2026-09-20 追加**：測試單 `testV2draw0919` 經 Fat Mo 授權軟刪；真單 0600106 補設 `confirmed_at=2026-05-22`（KPI 不變，以預約日計入 2026-05 係 D43續三核准設計）；Fat Mo 澄清「待確認」＝訂單細節待確認、與財務無關、訂金／全付已實收，已落 `finance-gatekeeper` §四、`learnings/finance.md` #7。
+- 全文（根因、驗證、覆核揪出嘅 2 項錯誤、待辦）見 [completion report](.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)；決策見 decisions.md D80（原暫編 D79，撞主線 D79 n8n secret 修補，merge 時重編）。**Subagent 使用記錄**：✅ `finance-auditor` ×2。
+
 ## [2026-09-19] handoff.md 便攜塊 P0.7.1 輪轉——動態段 36,444→5,873 bytes（9.1倍超支→1.47倍）
 
 - **緣起**：2026-09-18 `/commit` 於便攜塊 📋 待辦登記「動態段實測 35,806 bytes，超 P0.7.1 預算(4,000 bytes) 約 9 倍」，主因診斷為「【FHS交接摘要】」narrative field 逐 session 只 prepend 新內容、自 2026-08-03 上次輪轉後從未再壓縮；Fat Mo 本次直接指派處理。
