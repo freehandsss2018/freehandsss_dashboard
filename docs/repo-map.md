@@ -367,10 +367,11 @@ freehandsss_dashboard/
 │   │   └── sync_0600903.js             ← 訂單 0600903 財務與時間修補
 │   ├── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │   │   ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
-│   │   ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議 + 2026-08-03 新增 learnings 6 桶自動注入，session 內去重，slash command 白名單放行）
+│   │   ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議 + 2026-08-03 新增 learnings 6 桶自動注入，session 內去重，slash command 白名單放行；v2.1.0 2026-09-19 財務路由改必派 finance-auditor＋財務訊號強制疊加）
 │   │   ├── pre-tool-guard.js            ← PreToolUse hook：AGENTS.md 硬規則守護（Write/Edit/MultiEdit/PowerShell/Bash/NotebookEdit，2026-07-04 S139 補洞：current.html Bash/PowerShell目標偵測 R9、sbp_/eyJ key pattern）
 │   │   ├── post-tool-kgov.js            ← PostToolUse hook：知識治理自動捕捉（[G] 觸發提醒，2026-06-12）
 │   │   ├── stop-kgov.js                 ← Stop hook：session 結束知識治理守衛（HARD_BLOCK=false 第一階段，2026-06-12）
+│   │   ├── stop-finance-auditor.js      ← Stop hook：本輪有財務訊號而近5輪未派 finance-auditor 即攔截收尾一次（豁免標記【finance-auditor 豁免：理由】，2026-09-19 0600804 事故方案C-C6）
 │   │   ├── fhs-health-check.js          ← L1 文件健康快檢（零依賴，五病偵測，2026-07-05 S142 新增，session-start-sop.sh 末尾呼叫）
 │   │   └── test/                        ← guard/health/kgov hook 特徵化測試夾具（S139 新增，S148 擴充）
 │   │       ├── guard-fixtures.json      ← 12 組 tool_input 樣本 + 期望行為（含已修復缺口的回歸標記）
@@ -379,7 +380,8 @@ freehandsss_dashboard/
 │   │       ├── health-fixtures/         ← 12 個自足沙盒目錄，各含專屬 rules.json（S142新增10案+S143加cadence 2案）
 │   │       ├── run-health-fixtures.js   ← 夾具執行器：env var 沙盒隔離（FHS_HEALTH_ROOT等）+ generates_fresh_evidence 動態日期夾具支援（S143），12/12 PASS
 │   │       ├── kgov-fixtures.json       ← 10 組 post-tool-kgov.js 測試夾具（S148 新增）
-│   │       └── run-kgov-fixtures.js     ← 夾具執行器：隔離 temp flag 檔案，10/10 PASS（S148 新增）
+│   │       ├── run-kgov-fixtures.js     ← 夾具執行器：隔離 temp flag 檔案，10/10 PASS（S148 新增）
+│   │       └── run-finance-stop-fixtures.js ← stop-finance-auditor.js 回歸測試：16 組 evaluate 夾具＋4 組進程級（20/20 PASS），可選傳真實 transcript 路徑逐輪重播（2026-09-19）
 │   └── ig-watchdog/                     ← IG 漏單看門狗（全自動，NAS n8n 跑，Session 108→110；P2a Session 171 起會寫入 Supabase，見下方修正）
 │       ├── build_n8n_workflow.cjs       ← 改規則的唯一入口：產生/更新 n8n workflow JSON（Code節點移植邏輯）
 │       ├── index.mjs                    ← 本機手動工具（保留作ad-hoc深度分析，非日常必需）

@@ -36,11 +36,11 @@
 
 ### 文件同步（[G] 觸發）
 
-Cost Schema v2 v2.4.2（§10.4 實作行）、`FHS_Finance_Bible.md` v1.4.3（§五 order_items 表補四分量寫入方＋版本標籤）、`Quadruple_Sync_Field_Map.md` v2.1.2（order_items 四分量映射＋V2 畫圖費計算段；獨立覆核後補）、`FHS_System_Logic_Overview.md`（新增 §5.4.23 ＋ 四分量／`drawing_cost` 欄位兩處措辭 ＋ Phase 2 已知瑕疵註記）、`finance-gatekeeper` v1.16.0（路由表 +1 行＋§三B V2 方程式補語義）、`decisions.md` D80、`Changelog.md`、`docs/repo-map.md`（+0094）。
+Cost Schema v2 v2.4.2（§10.4 實作行）、`FHS_Finance_Bible.md` v1.4.3（§五 order_items 表補四分量寫入方＋版本標籤）、`Quadruple_Sync_Field_Map.md` v2.1.2（order_items 四分量映射＋V2 畫圖費計算段；獨立覆核後補）、`FHS_System_Logic_Overview.md`（新增 §5.4.23 ＋ 四分量／`drawing_cost` 欄位兩處措辭 ＋ Phase 2 已知瑕疵註記）、`finance-gatekeeper` v1.17.0（路由表 +1 行＋§三B V2 方程式補語義＋§四「待確認」定義；2026-09-20 與主線 v1.16.0 merge）、`decisions.md` D80、`Changelog.md`、`docs/repo-map.md`（+0094）。
 
 ### 教訓落盤（過 stage-3 門檻）
 
-`learnings/finance.md` #2（「已知 cosmetic」審計差值可能係真缺陷唯一信號）、`learnings/n8n.md` #8（live 節點含 U+FFFD 時用 GET→精準替換→PUT）、`learnings/supabase.md` #17（斷言 RPC 排除某類資料前要讀 WHERE 謂詞並實跑，唔好數關鍵字次數——覆核揪出我嘅錯後補）。另 2026-09-20 依 Fat Mo 澄清補 `learnings/finance.md` #7（「待確認」＝訂單細節待確認，同財務無關；訂金／全付已實收）同 `finance-gatekeeper` §四一行（v1.16.1）。三桶均在配額內（finance 9/20、n8n 10/20、supabase 18/20）；governance／frontend／tooling 三桶本身已超額（pre-existing），本次不碰。
+`learnings/finance.md` #2（「已知 cosmetic」審計差值可能係真缺陷唯一信號）、`learnings/n8n.md` #8（live 節點含 U+FFFD 時用 GET→精準替換→PUT）、`learnings/supabase.md` #17（斷言 RPC 排除某類資料前要讀 WHERE 謂詞並實跑，唔好數關鍵字次數——覆核揪出我嘅錯後補）。另 2026-09-20 依 Fat Mo 澄清補 `learnings/finance.md` #7（「待確認」＝訂單細節待確認，同財務無關；訂金／全付已實收）同 `finance-gatekeeper` §四一行（合併後 v1.17.0）。三桶均在配額內（finance 9/20、n8n 10/20、supabase 18/20）；governance／frontend／tooling 三桶本身已超額（pre-existing），本次不碰。
 
 ## 四、驗證
 
@@ -86,7 +86,7 @@ Cost Schema v2 v2.4.2（§10.4 實作行）、`FHS_Finance_Bible.md` v1.4.3（§
 - **歷史 `convergence_note` 文字不變**：三張已回填單嘅舊備註文字要待下次重新同步先會更新；純審計文字，`amount=0`。
 - **`fhs_simulate_new_cost_model()`**：會把新補回嘅 3 行（qty>1 且 `drawing_cost>0`）計入其「已知 qty 相乘 bug 污染」診斷計數，純標籤，唯讀診斷函數，無財務影響。
 - **其餘過時位置（本次不動，另案）**：V42.html:15421-15424 註解（「n8n 無獨立寫 drawing_cost」，生產 HTML）；兩份 `finance-auditor.md`（repo v2.2.1／用戶層 v2.3.0，pre-existing 漂移 36 行）仍有「Task A 完成前不寫入實值」等過時描述，用戶層檔案在 repo 外；`FHS_Product_Cost_Schema_v2.md` 標題／status 仍寫 v2.3.0（pre-existing）。
-- **`check_registry.json` 0600804 例外**（2026-10-18 到期，屬 task_9dba2023）：live 而家 `net_profit 4215 = 5640 − 1425` 已通過 C2，例外可能已不需要；本次不動，留俾該任務處理。
+- **`check_registry.json` 0600804 例外**：已由主線並行 session（0600804 違規單追查，2026-09-19）移除；live `net_profit 4215 = 5640 − 1425` 通過 C2，與本次改動無關。2026-09-20 merge 主線時核實。
 
 ## 六、文件同步 grep sweep（§三B 第 4 步）
 

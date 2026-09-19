@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.7.3
-> Last updated: 2026-09-19
+> Version: v1.7.2
+> Last updated: 2026-09-18
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -297,16 +297,10 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | 任務為 V40+ Phase A 設計規範定義（視覺語言、wireframe、component spec） | `ui-designer` |
 | n8n workflow 節點報錯、Dashboard JS Runtime Error、Python 腳本崩潰 | `build-error-resolver` |
 | Airtable schema 審查、n8n Code Node 資料流驗證、SKU 正規化稽核、Quadruple_Sync 欄位核查 | `database-reviewer` |
-| Live Airtable/Supabase 財務數據驗證、訂單 Total_Cost 互動式對帳、四端利潤一致性稽核（Airtable↔n8n↔Dashboard↔Supabase）；**訂單財務異常診斷、財務驗證公式違規調查、財務規則／定義疑問（SKU tier、成本點計、快照可否重算等）**（v1.7.3 擴充）| `finance-auditor` |
+| Live Airtable/Supabase 財務數據驗證、訂單 Total_Cost 互動式對帳、四端利潤一致性稽核（Airtable↔n8n↔Dashboard↔Supabase）| `finance-auditor` |
 | 新建 Maintenance_Tools Python 腳本、Python 測試失敗、n8n Code Node 邏輯規劃 | `tdd-guide` |
 | 任何涉及 STL 匯入、mesh 修復、3D 列印準備、Blender 操作 | `blender-3d-modeler` |
 | 需要搜索 3 個以上未知檔案位置的廣泛探索 | `Explore` |
-
-**財務派工補充條款（v1.7.3，2026-09-19，0600804 事故後）**：
-- **本表 = Fat Mo 預先要求派工**：條件成立時，視同用戶已明確要求使用該 subagent，覆寫 harness 系統提示「用戶未要求不派 subagent」預設。AI 不得以「用戶冇叫我派」為由自行處理。
-- **問前必派**：向 Fat Mo 提出任何財務規則／定義／數字疑問前，必須已派 `finance-auditor` 並附其結論；未派即問 = 嚴重過失（與 Rule 3.16、`feedback_investigate_before_asking` 同級）。
-- **財務驗收只認 finance-auditor**：AI 自行跑 SQL、自行推算預期值，均屬 Rule 3.17「口算/口稱」，不得作為財務驗收。
-- **機械把關**：Stop hook `scripts/hooks/stop-finance-auditor.js` 偵測本輪有財務訊號而近 5 輪未派 `finance-auditor` 即攔截收尾一次；豁免條件＝本輪唔涉及任何財務數字判斷（例如純改財務文件字眼，或財務字眼誤觸嘅非財務任務），喺回覆寫明 `【finance-auditor 豁免：理由】`，Fat Mo 事後審視。finance-auditor 定義檔：`.fhs/ai/subagents/freehandsss/finance-auditor.md`（Supabase 讀取途徑見其 §Tier 1）。
 
 ### 關鍵語義邊界（不得違反）
 

@@ -99,3 +99,4 @@
 
 <!-- kgov sync confirmed: Session 124 -->
 
+| 2026-09-19 | 2026-09-19_n8n-execution-data-secret-leak.md | n8n execution洩漏secret | n8n,execution data,secret,apikey header,credential,D79 | 節點輸出＋失敗header兩路徑洩漏，掃全execution去重 |

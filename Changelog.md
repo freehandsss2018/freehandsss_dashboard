@@ -6,6 +6,23 @@
 - **2026-09-20 追加**：測試單 `testV2draw0919` 經 Fat Mo 授權軟刪；真單 0600106 補設 `confirmed_at=2026-05-22`（KPI 不變，以預約日計入 2026-05 係 D43續三核准設計）；Fat Mo 澄清「待確認」＝訂單細節待確認、與財務無關、訂金／全付已實收，已落 `finance-gatekeeper` §四、`learnings/finance.md` #7。
 - 全文（根因、驗證、覆核揪出嘅 2 項錯誤、待辦）見 [completion report](.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)；決策見 decisions.md D80（原暫編 D79，撞主線 D79 n8n secret 修補，merge 時重編）。**Subagent 使用記錄**：✅ `finance-auditor` ×2。
 
+## [2026-09-19] D79：n8n Mirror Prep 洩漏 Supabase secret key 入 execution data 修補 + 刪 92 個含 key execution（n8n API key 公開暴露待 Fat Mo 更換）
+
+- **緣起**：0600804 財務稽核（唯讀）發現 `FHS_Core_OrderProcessor`（`6Ljih0hSKr9RpYNm`）`Supabase Mirror Prep` 節點輸出含明文 `supabaseKey`。今次授權：Fat Mo 指示「n8n API key 更換稍後做，其他立即修改」，並確認 0600804 已結案、可刪 execution。
+- **查證（全程指紋比對，唔印 key）**：①係 `sb_secret_`（service_role 級），現行有效；唔喺 git 歷史／repo 任何檔案（repo 內同 `.env` 嘅 `sb_secret_` 全屬已撤銷舊 key，`.env` 嗰條實測 401）。②兩條洩漏路徑：(A) `supabaseKey` 節點輸出→`Supabase Active Switch` 透傳→各存一份；(B) `HTTP: Supabase Sync RPC` 失敗時 `error.context.request.headers.apikey`（n8n 只遮 `Authorization`）。③伺服器共 305 個 execution，含現行 key 者 92 個（69 success + 23 error，全屬本 workflow；曾誤報 114＝兩路徑重複相加，已更正）。④**更大風險**：現行 n8n API key 明文喺公開 GitHub repo（5 個受追蹤檔，自 2026-04-28）＋ n8n 喺公網 → 可讀 execution data。
+- **執行**：①n8n API PUT（只 `{name,nodes,connections,settings}`）改 2 個節點：Mirror Prep 移除 `supabaseKey` 輸出；Sync RPC 兩個 header 改 `$env.SUPABASE_SERVICE_KEY`（同 `Mirror Delete to Supabase` 已驗證寫法，該節點喺保存 execution 成功跑 88 次）。部署前後 webhook 註冊狀態一致；回讀 live：只 2 節點變、connections 不變、`supabaseKey` 0 次。備份 `.fhs/notes/aireports/n8n-mcp-backups/2026-09-19-pre-secret-hardening/`（0 secret，回滾＝同法 PUT）。②`DELETE` 92 個 execution，重掃確認伺服器餘 213 個、含 key 0 個、被刪 id 全 404。③3 個死腳本硬編碼 n8n key 改讀 `N8N_KEY` env；`.claude/settings.json` 及 `.bak` 內 3 條舊 curl 授權規則 key 字串遮蔽；`n8n/FHS_Core_OrderProcessor_live.json` 同步 live。④落 `decisions.md` D79、lesson `2026-09-19_n8n-execution-data-secret-leak.md`、`learnings/n8n.md` #8。
+- **未做（須 Fat Mo 帳戶層操作）**：①**更換 n8n API key**（稍後；舊 key 永久留 git 歷史，呢步先係根治）②建 n8n Supabase credential→改 2 個 HTTP 節點（堵路徑 B，須刻意失敗單實測 `sb_secret_` 0 次）③輪替 Supabase secret key（必須喺②後）。
+- **運行驗證**：16 個成功 execution 零 `supabaseKey`／零 `sb_secret_`，Mirror Prep 輸出鍵只剩 `rpcPayload`/`supabaseActive`，`HTTP: Supabase Sync RPC` 成功 6 次；2 個失敗 execution（7526/7534，`/fhs-check` 內建「Unknown SKU」預期拒絕測試，FK `order_items_product_sku_fkey` 409）仍存 `apikey` header＝路徑 B 實證未堵，已刪除；**每次 `/fhs-check` 都會產生約 2 個此類含 key 失敗 execution，credential 化前需事後清理**。先前「22 個失敗 execution 可能有單冇入 Supabase」推測大概率係同類測試單（記錄已刪，無法逐個證實）。
+- **新發現（另案）**：另外 4 個 active workflow 定義內仍硬編碼**已撤銷舊 key**（指紋 `8fdf055d9e`，實測 401）：`FHS_Financial_Overview`（3 節點）、`FHS_Query_GlobalReview`（2 節點）、`FHS_IGWatchdog_DriveWatch`（2 節點）、`FHS_System_ErrorMonitor`（1 節點）。舊 key 已死故無 secret 風險，但前兩者 execution 持續 error（Fetch Orders/Items (Supabase) 401，共 70 個失敗記錄），功能實際已壞；87 個含舊 key 嘅 execution 保留未刪（無風險）。修法同本次（改 `$env`/credential），待 Fat Mo 決定。
+- **Subagent 使用記錄**：❌未使用（全程 curl + Python 指紋比對，避免 key 值進入 subagent 上下文）。
+## [2026-09-19] 財務必派 finance-auditor 防漏機制（0600804 事故方案C，AGENTS.md v1.7.3）
+
+- **緣起**：0600804 驗證2違規調查，AI 載入 finance-gatekeeper 後仍全程自己查 SQL、自己推算，並將 4 條查得到嘅財務定義問題丟俾 Fat Mo；事後補派 finance-auditor 揪出 AI 已宣告「完成」嘅數字已被第二次儲存蓋過。Fat Mo 指出規則早已制定，要求揪漏洞＋防再犯。
+- **6 個漏洞**：harness「未要求不派 subagent」蓋過 AGENTS.md（且 AGENTS.md 唔喺 session 開頭載入）／CLAUDE.md「驗收不自驗」有「或附運行證據」出口／finance-gatekeeper 措辭太軟／prompt-router 財務路由 `subagent: null` 兼被 first-match 搶走／finance-auditor 冇 Supabase 工具、Airtable 工具名過時／強制範圍冇涵蓋「財務規則疑問」。
+- **修補（C1–C6）**：CLAUDE.md 第四紅線；AGENTS.md v1.7.3「財務派工補充條款」（本表＝Fat Mo 預先要求、問前必派、財務驗收只認 finance-auditor）；finance-gatekeeper 1.16.0 §〇 強制派工閘＋死線6；prompt-router 2.1.0 必派＋財務訊號強制疊加；finance-auditor v2.3.0（Supabase 唯讀工具、模式 B 規則解答、雙寫）；新 Stop hook `stop-finance-auditor.js`（財務訊號＋近5輪未派→攔截一次，豁免標記【finance-auditor 豁免：理由】）。
+- **驗證**：夾具 20/20；真實 transcript 重播——當初犯錯嘅 5 輪全部會被攔截；既有 hook 回歸 29/29；fresh-context ≤2 跳盲測 Q1/Q3 PASS、Q2 補路徑後可達、斷鏈 0，盲測揪出 5 項一致性問題（版本號、舊軟句、豁免定義、hook 漏 gatekeeper Read 訊號、缺 finance-auditor.md 路徑）已即場修正。
+- 全文見 `.fhs/reports/completion/2026-09-19_finance-auditor-mandatory-dispatch_completion_report.md`。**Subagent 使用記錄**：✅ finance-auditor（0600804 覆核）、✅ Explore（盲測）。
+
 ## [2026-09-19] handoff.md 便攜塊 P0.7.1 輪轉——動態段 36,444→5,873 bytes（9.1倍超支→1.47倍）
 
 - **緣起**：2026-09-18 `/commit` 於便攜塊 📋 待辦登記「動態段實測 35,806 bytes，超 P0.7.1 預算(4,000 bytes) 約 9 倍」，主因診斷為「【FHS交接摘要】」narrative field 逐 session 只 prepend 新內容、自 2026-08-03 上次輪轉後從未再壓縮；Fat Mo 本次直接指派處理。
