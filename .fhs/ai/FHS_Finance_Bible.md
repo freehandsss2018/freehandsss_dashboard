@@ -414,7 +414,7 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
 
 ```
 必讀（按優先順序）：
-  0. .fhs/ai/skills/finance-gatekeeper/SKILL.md ← 守門員（查詢路由 + 5 條死線，先讀此）
+  0. .fhs/ai/skills/finance-gatekeeper/SKILL.md ← 守門員（§〇 強制派工閘 + 查詢路由 + 6 條死線，先讀此）
   1. .fhs/ai/FHS_Finance_Bible.md             ← 本文件（架構規則 L1）
   2. n8n/Quadruple_Sync_Field_Map.md          ← 四端欄位映射（最新版）
   3. supabase/migrations/0001_initial_schema.sql ← Supabase 表結構

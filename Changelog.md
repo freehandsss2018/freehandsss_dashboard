@@ -9,6 +9,13 @@
 - **運行驗證**：16 個成功 execution 零 `supabaseKey`／零 `sb_secret_`，Mirror Prep 輸出鍵只剩 `rpcPayload`/`supabaseActive`，`HTTP: Supabase Sync RPC` 成功 6 次；2 個失敗 execution（7526/7534，`/fhs-check` 內建「Unknown SKU」預期拒絕測試，FK `order_items_product_sku_fkey` 409）仍存 `apikey` header＝路徑 B 實證未堵，已刪除；**每次 `/fhs-check` 都會產生約 2 個此類含 key 失敗 execution，credential 化前需事後清理**。先前「22 個失敗 execution 可能有單冇入 Supabase」推測大概率係同類測試單（記錄已刪，無法逐個證實）。
 - **新發現（另案）**：另外 4 個 active workflow 定義內仍硬編碼**已撤銷舊 key**（指紋 `8fdf055d9e`，實測 401）：`FHS_Financial_Overview`（3 節點）、`FHS_Query_GlobalReview`（2 節點）、`FHS_IGWatchdog_DriveWatch`（2 節點）、`FHS_System_ErrorMonitor`（1 節點）。舊 key 已死故無 secret 風險，但前兩者 execution 持續 error（Fetch Orders/Items (Supabase) 401，共 70 個失敗記錄），功能實際已壞；87 個含舊 key 嘅 execution 保留未刪（無風險）。修法同本次（改 `$env`/credential），待 Fat Mo 決定。
 - **Subagent 使用記錄**：❌未使用（全程 curl + Python 指紋比對，避免 key 值進入 subagent 上下文）。
+## [2026-09-19] 財務必派 finance-auditor 防漏機制（0600804 事故方案C，AGENTS.md v1.7.3）
+
+- **緣起**：0600804 驗證2違規調查，AI 載入 finance-gatekeeper 後仍全程自己查 SQL、自己推算，並將 4 條查得到嘅財務定義問題丟俾 Fat Mo；事後補派 finance-auditor 揪出 AI 已宣告「完成」嘅數字已被第二次儲存蓋過。Fat Mo 指出規則早已制定，要求揪漏洞＋防再犯。
+- **6 個漏洞**：harness「未要求不派 subagent」蓋過 AGENTS.md（且 AGENTS.md 唔喺 session 開頭載入）／CLAUDE.md「驗收不自驗」有「或附運行證據」出口／finance-gatekeeper 措辭太軟／prompt-router 財務路由 `subagent: null` 兼被 first-match 搶走／finance-auditor 冇 Supabase 工具、Airtable 工具名過時／強制範圍冇涵蓋「財務規則疑問」。
+- **修補（C1–C6）**：CLAUDE.md 第四紅線；AGENTS.md v1.7.3「財務派工補充條款」（本表＝Fat Mo 預先要求、問前必派、財務驗收只認 finance-auditor）；finance-gatekeeper 1.16.0 §〇 強制派工閘＋死線6；prompt-router 2.1.0 必派＋財務訊號強制疊加；finance-auditor v2.3.0（Supabase 唯讀工具、模式 B 規則解答、雙寫）；新 Stop hook `stop-finance-auditor.js`（財務訊號＋近5輪未派→攔截一次，豁免標記【finance-auditor 豁免：理由】）。
+- **驗證**：夾具 20/20；真實 transcript 重播——當初犯錯嘅 5 輪全部會被攔截；既有 hook 回歸 29/29；fresh-context ≤2 跳盲測 Q1/Q3 PASS、Q2 補路徑後可達、斷鏈 0，盲測揪出 5 項一致性問題（版本號、舊軟句、豁免定義、hook 漏 gatekeeper Read 訊號、缺 finance-auditor.md 路徑）已即場修正。
+- 全文見 `.fhs/reports/completion/2026-09-19_finance-auditor-mandatory-dispatch_completion_report.md`。**Subagent 使用記錄**：✅ finance-auditor（0600804 覆核）、✅ Explore（盲測）。
 
 ## [2026-09-19] handoff.md 便攜塊 P0.7.1 輪轉——動態段 36,444→5,873 bytes（9.1倍超支→1.47倍）
 

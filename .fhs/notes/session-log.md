@@ -4,6 +4,11 @@
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 D79 條目（無完成報告的小改動，Changelog 為全文居所）。已修補 2 個 n8n 節點、刪 92 個含 key execution、清死腳本硬編碼 n8n key；n8n API key 更換／Supabase credential／Supabase key 輪替待 Fat Mo。 /fhs-check 5項全PASS並兼作運行驗證（16個成功execution零key）；🔴新發現4個workflow仍硬編碼已撤銷舊key（FHS_Financial_Overview/FHS_Query_GlobalReview持續401失敗），待Fat Mo決定。
 **Subagent 使用記錄**：❌未使用（全程 curl+Python 指紋比對，避免 key 值進入 subagent 上下文）。
 
+
+## 2026-09-19 (0600804 違規單追查 + 財務必派 finance-auditor 防漏機制方案C): 🏷️ ✅
+
+**摘要**：0600804 真bug（改單後 n8n 未重算，Fat Mo 重新儲存已修復，付款 $5,640+$0、成本 $1,425、利潤 $4,215，finance-auditor 16項PASS）；揪出 6 個漏洞並落地 C1-C6（CLAUDE.md 第四紅線／AGENTS v1.7.3／finance-gatekeeper 1.16.0／prompt-router 2.1.0／finance-auditor v2.3.0／Stop hook）。全文見 [完成記錄](../reports/completion/2026-09-19_finance-auditor-mandatory-dispatch_completion_report.md)。
+**Subagent 使用記錄**：✅ finance-auditor（0600804 覆核，事後補派——本 session 前三輪應派未派，正是本次修補嘅事故）；✅ Explore（fresh-context ≤2跳盲測）；❌ code-reviewer（G1–G8 為 HTML 原型 gate，不適用 Node hook）。
 ## 2026-09-19 (handoff.md 便攜塊 P0.7.1 輪轉：動態段 36,444→5,873 bytes): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 直接指派處理 2026-09-18 登記嘅「便攜塊超支」待辦（動態段超 P0.7.1 4,000 bytes 預算約 9 倍）。逐條核對 Changelog.md/decisions.md/handoff.md MASTER 表確認完整記錄後：narrative field（主因，佔原檔 14KB）全段搬至新 archive 檔，🎯目標/✅已定決策/🔬驗證三欄舊條目（已完成無殘留待辦者）壓縮搬移，📋待辦移除已解決之本項。輪轉前備份全檔，輪轉後跑 `session-start-sop.sh` 實測 hook 抽取正常。剩餘 5,873 bytes 仍超預算約1.47倍（原9.1倍）——為避免資訊流失未進一步壓縮活躍待辦項，是否調整預算數值待 Fat Mo 裁決。

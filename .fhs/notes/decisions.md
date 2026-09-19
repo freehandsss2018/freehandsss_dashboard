@@ -3,6 +3,20 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-19] (無編號，0600804 事故方案C) 財務任務「必派 finance-auditor」由建議升格為強制，並加 Stop hook 機械把關 — 規則早已存在於 AGENTS.md 決定性路由，但 AI 仍可合法地唔派
+
+**背景**：0600804 驗證2違規調查全程由主對話自己查、自己算，仲將查得到嘅財務定義問題丟俾 Fat Mo。追查發現唔係「冇規則」，而係規則被更高聲量嘅 harness 預設（用戶未要求不派 subagent）蓋過：AGENTS.md 唔喺 session 開頭載入，每 session 必載嘅 CLAUDE.md 紅線反而有「或附運行證據」出口，prompt-router 財務路由寫明 `subagent: null`。
+
+**核心裁決**：①項目規則講「必須調用」＝用戶已預先要求，明文覆寫 harness 預設（CLAUDE.md 第四紅線＋AGENTS.md v1.7.3 補充條款）；②強制範圍擴至「財務規則／定義疑問」，並定「問前必派」；③財務驗收只認 finance-auditor，AI 自己 SQL／推算屬 Rule 3.17 口算；④唔再單靠 AI 自覺——加 Stop hook 按 transcript 訊號攔截漏派。
+
+**點解用 Stop hook 而唔係 PreToolUse:AskUserQuestion**：今次 AI 係喺普通回覆文字度向 Fat Mo 發問，冇經 AskUserQuestion，只攔工具會漏；Stop hook 讀整輪 transcript（工具＋回覆文字）先捉到。只攔一次（`stop_hook_active` 放行）以防死鎖，非財務誤觸用豁免標記由 Fat Mo 事後審視——取捨：寧可偶爾誤觸，都唔好再靠自覺。
+
+**否決方案**：直接改 harness 系統提示（做唔到，屬平台層）；PreToolUse 硬封鎖所有財務 SQL（會連 finance-auditor 本身都封死，且主對話正當查數亦被擋）。
+
+完成記錄：`.fhs/reports/completion/2026-09-19_finance-auditor-mandatory-dispatch_completion_report.md`。
+
+---
+
 [2026-09-18] (無編號，衛生機制重整期一) `/fhs-cost-audit` 廢除、`/fhs-audit` v3.0.0（33→24項）、`run_all.py` 移除 LOCAL_AUDIT + 新增 COST_INTEGRITY、`semantic_audit.py` D3 死碼修復
 
 **背景**：`/fhs-check` 例行執行揭發 `run_all.py` LOCAL_AUDIT 指向 2026-04-07 已刪檔案，靜默 SKIP 5 個月而 Health Report 一直印「全部通過」。Fat Mo 提議用 `/cl-flow-fast` 全面審查全部衛生機制（`/fhs-check`／`/fhs-audit`／`/fhs-cost-audit`／fhs-health），經 `/grilling` 十輪拷問定案兩期方案（先減後加：期一減法+修復、期二加前端唯讀層），`/cl-flow-fast`（flow `2026-09-18-1827`，A2 Gemini 對抗評審兩條 BLOCKER 部分拒絕、CONDITIONAL_READY）→ Fat Mo 就 5 條待確認條件（C1-C5）全部採納 AI 建議 → `/execute` 期一。

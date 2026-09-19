@@ -4,15 +4,6 @@
   "skips": [],
   "known_exceptions": [
     {
-      "check": "COST_INTEGRITY",
-      "rule": "C2",
-      "key": "0600804",
-      "reason": "net_profit($1644) 與 final_sale_price-total_cost($4504) 不符，差額 $2860。已由 Fat Mo 另開獨立 session 追查（task_9dba2023），本次衛生機制重整不處理此筆財務數據，僅登記例外避免 COST_INTEGRITY 首次上線即被單一歷史數據問題卡住。",
-      "registered": "2026-09-18",
-      "expires": "2026-10-18",
-      "approved_by": "Fat Mo（/execute 2026-09-18，cl-flow 2026-09-18-1827 條件 C2）"
-    },
-    {
       "check": "SEMANTIC_D3",
       "rule": "production_html",
       "key": "scripts/qa_v41_supabase.js",

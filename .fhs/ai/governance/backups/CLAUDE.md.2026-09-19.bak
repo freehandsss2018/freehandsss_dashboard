@@ -13,7 +13,7 @@
 | 卡關兩輪、想升級模型、想宣告完成、想問 Fat Mo、懷疑方向錯了 | `.fhs/ai/governance/03_judgment-rubrics.md` |
 | 要派工給 subagent（搜尋/實作/重構/研究/審查） | `.fhs/ai/governance/04_delegation-templates.md` 直接套模板 |
 | 要修改 governance / learnings / handoff 等制度檔案 | `.fhs/ai/governance/05_maintenance-protocol.md` 查權限矩陣 |
-| 涉及財務 / 成本 / 定價 | 先載 `finance-gatekeeper` skill（既有硬規則），再按下方第四條紅線派 `finance-auditor` |
+| 涉及財務 / 成本 / 定價 | 先載 `finance-gatekeeper` skill（既有硬規則） |
 | 想找舊知識 / 過往決策為什麼這樣定 / 教訓在哪份文件 | `.fhs/notes/knowledge-map.md`（查詢路由表，非規則） |
 | 要落盤教訓（learnings/skill）/ 平行派工（fan-out/loop 迭代）/ 想用 worktree | `.fhs/ai/governance/07_compounding-loop.md` |
 | 想了解制度退化模式 / 給未來 session 的提醒 | `.fhs/ai/governance/06_letter-to-future-sessions.md` |
@@ -22,11 +22,10 @@
 | 想查一個業務詞而家嘅定義（大寶/家庭組合/owner等） | `CONTEXT.md`（拷問落檔嘅產出，術語現狀字典；非決策歷史，歷史查 decisions.md） |
 | 想知道日常操作/召喚詞速查（人讀，非規則） | `.fhs/notes/fatmo-ops-quickcard.md`（D39，harness 內建能力 + FHS 自建指令核心集） |
 
-## 四條免查即生效的紅線（前三條規則本體見 `.fhs/ai/governance/02_model-dispatch.md` §5-§6，診斷依據見 01_diagnosis.md；第四條本體見 AGENTS.md「Subagent 決定性路由規則」）
+## 三條免查即生效的紅線（規則本體與完整版見 `.fhs/ai/governance/02_model-dispatch.md` §5-§6；診斷依據見 01_diagnosis.md）
 
 - **禁全檔 Read**：巨檔（Dashboard HTML/handoff.md/CHANGELOG.md/decisions.md/n8n JSON 等）一律 Grep 定位 → 窗口讀。
 - **巨檔替換三步**：改前 grep -c =1 → 才替換 → 改後 count 驗證。
-- **驗收不自驗**：schema / n8n 部署 / 生產 HTML 的改動，驗收派 fresh-context agent 或附運行證據；**財務改動只認 `finance-auditor` 報告**（自己跑 SQL / 口算 ≠ 驗收）。
-- **財務必派 `finance-auditor`**：財務驗證、對帳、訂單財務異常、財務規則／定義疑問，一律主動派 `finance-auditor`（可背景跑）。本條等同 Fat Mo 已預先要求派工，覆寫 harness「用戶未要求不派 subagent」預設。向 Fat Mo 提任何財務問題前，必須已派過並附其結論。Stop hook `stop-finance-auditor.js` 會攔截漏派。
+- **驗收不自驗**：財務 / schema / n8n 部署 / 生產 HTML 的改動，驗收派 fresh-context agent 或附運行證據。
 
 > ⚠️ 不要在此檔案新增規則。規則只在 AGENTS.md（憲法）與 `.fhs/ai/governance/`（調度制度）維護；本檔只做路由。

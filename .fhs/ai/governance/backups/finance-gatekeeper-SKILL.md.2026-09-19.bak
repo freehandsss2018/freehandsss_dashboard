@@ -1,11 +1,10 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.16.0
+version: 1.15.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-09-19（0600804 事故後：新增 §〇 強制派工閘 + 第6條死線「財務必派 finance-auditor」+ §六 Known failure modes；原 line 22「不替代…需另行啟動」措辭太軟，被當成可選）
-[前次] 2026-09-18（cl-flow 2026-09-18-1827 期一：`/fhs-cost-audit`（純 Airtable）已廢除歸檔，功能重寫落 Supabase 併入 `/fhs-check` COST_INTEGRITY phase，§一路由表加一行指向新機制）
+last_updated: 2026-09-18（cl-flow 2026-09-18-1827 期一：`/fhs-cost-audit`（純 Airtable）已廢除歸檔，功能重寫落 Supabase 併入 `/fhs-check` COST_INTEGRITY phase，§一路由表加一行指向新機制）
 [前次] 2026-08-22（D65續IV-follow：玻璃瓶「＋大寶」價階 $1,680/$1,980（同 tier ＋$300）+ 兩個新 SKU（migration 0091）；肢數 tier 改為只數嬰兒肢體，推翻 2026-07-21 定案；§一路由表加一行，見 §5.4.20。同日稍早 migration 0090「純大寶」版本為錯誤實作已作廢）
 [前次] 2026-08-19（D67：`save_structured_order_items` RPC DELETE+INSERT 漏14個成本/V2欄位修復，migration 0089，§一路由表加一行，見 §5.4.19）
 [前次] 2026-08-17（D65續II：立體擺設價錢真源抽為 `_pPriceOfSku()`，§一路由表加一行；純代碼重構，128組窮舉證實零財務規則變動，見 §5.4.18）
@@ -15,30 +14,13 @@ last_updated: 2026-09-19（0600804 事故後：新增 §〇 強制派工閘 + �
 [前次] 2026-08-15（D64：多件手模擺設訂單新財務規則入表；曾記錄 accessory_cost「已修復」過時聲明——已於2026-07-28回歸，見 §5.4.15）
 [前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§一路由表新增家庭組合(V2)/大寶standalone廢止規則兩行；§三B方程式段新增V2擴充+家庭動態畫圖式）
 [前次] 2026-07-25（D46事故後：§三B新增第4步「文件同步完整性grep sweep」，防止成本欄位改動漏同步Finance Bible/Product_Definition等權威文件；大型改動另派fresh-context subagent覆核）
-compatible_with: AGENTS.md v1.7.3
+compatible_with: AGENTS.md v1.4.13
 ---
 
 # FHS Finance Gatekeeper — 財務知識守門員
 
 > **觸發時機**：任何涉及定價 / 成本 / 利潤 / 折扣的任務，在第一個工具呼叫前必須載入本 Skill。
-> **本 Skill 唔代替 subagent**：載入本 Skill 之後，`finance-auditor`（live 訂單驗證＋財務規則解答）同 `database-reviewer`（schema 稽核）**必須按 §〇 強制派工閘主動派**，唔係可選項（v1.16.0 改寫，舊句「需另行啟動」措辭太軟曾被當成可選）。
-
----
-
-## 〇、強制派工閘（載入本 Skill 後第一件事，v1.16.0）
-
-載入本 Skill ≠ 已完成財務前置。讀完本節，**立即判斷並派工**，唔好先自己查：
-
-| 任務性質（任一成立） | 必須動作 |
-|---|---|
-| 訂單成本/利潤驗證、對帳、驗證公式（§九）違規、訂單財務異常 | 派 `finance-auditor`（可 `run_in_background`，自己同時做其他嘢） |
-| 對財務規則／定義有疑問（SKU tier、成本點計、快照可否重算、扣減規則） | 先派 `finance-auditor` 查權威文件＋live 數據作答；**佢答唔到先可以問 Fat Mo，並附佢嘅結論** |
-| 財務改動收尾驗收 | 只認 `finance-auditor` 報告；自己跑 SQL／推算＝口算，無效 |
-| Supabase schema / SKU 成本資料審查 | 派 `database-reviewer` |
-
-- 呢個閘等同 Fat Mo 已預先要求派工，覆寫 harness「用戶未要求不派 subagent」預設（AGENTS.md「財務派工補充條款」）。
-- `finance-auditor` 定義檔：`.fhs/ai/subagents/freehandsss/finance-auditor.md`（v2.3.0 起 tools 已含 `mcp__supabase__execute_sql`，只准 SELECT；MCP 不可用時嘅 curl Management API fallback 同 PAT 位置已寫入該檔 §Tier 1——worktree 冇 `.mcp.json`，PAT 喺主倉 `D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.mcp.json`）。
-- 唯一例外：本輪唔涉及任何財務數字判斷（例如純改財務文件字眼，或財務字眼誤觸嘅非財務任務），喺回覆寫明 `【finance-auditor 豁免：理由】`，Fat Mo 事後審視。
+> **不替代**：finance-auditor（live 訂單驗證）和 database-reviewer（schema 稽核）職責不同，需另行啟動。
 
 ---
 
@@ -97,14 +79,13 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 
 ---
 
-## 三、6 條財務死線（永不違反）
+## 三、5 條財務死線（永不違反）
 
 1. **收款確收守護（v1.4.10 語義修正）**：操作者手動輸入的確收金額 `final_sale_price`（= Deposit + Balance + Additional_Fee）為絕對真理，n8n 不得重算（除非前端傳入值為 0）。成本 `total_cost` 由 n8n 從 Supabase 估算，屬後台快照，非「真理」。
 2. **Layer 2 歷史快照不可變**：`orders.total_cost` / `net_profit` / `handmodel_cost` / `keychain_cost` / `necklace_cost` / `accessory_cost` 訂單確認後不可變更
 3. **禁止 trigger 重算成本**：Postgres trigger / generated column 重算任何成本欄位是架構反模式
 4. **captureFormState() 禁止改動**：此函式是整個 POS 系統的數據根基
 5. **HTML ID 禁止變更**：前端 Input/Button ID 是 n8n Webhook 掛鉤
-6. **財務必派 finance-auditor（v1.16.0）**：財務驗證／對帳／異常／規則疑問一律主動派 `finance-auditor`；未派即向 Fat Mo 發問、或以自己 SQL／推算充當驗收，均屬違規（見 §〇）
 
 ---
 
@@ -146,9 +127,3 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 ## 五、技術債備忘
 
 - **Task A 路由更新觸發條件**：Task A（四分量 roll-up）完成後，Cost Schema v2 將升至 v3（新增 drawing/printing/chain/shipping_cost key），本路由表需同步更新。
-
----
-
-## 六、Known failure modes
-
-- **2026-09-18~19｜0600804 驗證2違規單——載入本 Skill 但冇派 finance-auditor**：AI 讀到 §一「Live 訂單成本/利潤驗證 → 啟動 finance-auditor」，仍全程自己查 SQL、自己算，仲將 4 條查得到嘅財務定義問題丟俾 Fat Mo。根因：harness「用戶未要求不派 subagent」預設蓋過項目規則 + 本檔舊措辭只寫「需另行啟動」冇「必須」+ prompt-router 一般財務路由 `subagent: null`。修正：§〇 強制派工閘、死線6、AGENTS.md v1.7.3 補充條款、CLAUDE.md 第四紅線、prompt-router 財務路由改派 finance-auditor、Stop hook `stop-finance-auditor.js`。事後補派 finance-auditor 更揪出 AI 已宣告「完成」嘅數字已被第二次儲存蓋過（5,560→5,640），證明自驗唔可靠。
