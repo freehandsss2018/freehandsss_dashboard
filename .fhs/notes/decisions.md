@@ -3651,3 +3651,18 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **教訓**：已落 `learnings/governance.md`（跨分支協作類）——`/commit` Phase 2.5 部署前，若 SessionStart hook／`/read` 顯示「近48小時有其他分支動靜」，必須先 `git log <該分支> -1 --format=%ci` 核對其部署時間戳是否比自己上一次部署更新，新則先合併再 deploy，唔可以假設自己 branch 嘅 dev 版必然係最新——`current.html` 係跨分支共享嘅部署目標，唔係本分支專屬狀態。
 
 全文見 Changelog.md 2026-09-03「分支合併事故」條目。**Subagent 使用記錄**：❌未使用（git archaeology + 跨分支 diff 比對 + Node 真實函式碼即時交叉驗證，委派會斷推理鏈）。
+
+### D79：2026-09-19 — n8n Mirror Prep 洩漏 Supabase secret key 入 execution data（D62 續）+ n8n API key 公開暴露（Fat Mo 授權「其他立即修改」，n8n API key 更換稍後做）
+
+**發現（finance audit 0600804 副產物，只讀查證）**：`FHS_Core_OrderProcessor`（`6Ljih0hSKr9RpYNm`）`Supabase Mirror Prep` 節點將 `$env.SUPABASE_SERVICE_KEY` 當 `supabaseKey` 輸出，n8n 將節點輸出存入 execution data → 保存中 201 個 execution 有 92 個含現行 `sb_secret_` key（69 個成功 + 23 個失敗；成功路徑經兩個節點各存一份；失敗路徑另經：`HTTP: Supabase Sync RPC` 出錯時 n8n 將 request headers 存入 `error.context.request.headers.apikey`，n8n 只遮 `Authorization` 唔遮 `apikey`）。**更大風險**：現行 n8n API key 明文喺公開 GitHub repo（5 個受追蹤檔，自 2026-04-28）＋ n8n 伺服器喺公網 → 任何人可 `GET /executions/<id>?includeData=true` 攞 Supabase secret key。GitHub 唔會自動撤銷 n8n key。現行 Supabase key 本身唔喺 git 歷史／repo 任何檔案（repo 內 `sb_secret_` 全部係已撤銷舊 key，`.env` 嗰條實測 401）。
+
+**已執行（2026-09-19，API PUT 四欄，部署前後 webhook 註冊狀態一致）**：
+1. `Supabase Mirror Prep` 移除 `supabaseKey` 輸出（保留 env 讀取作 fail-fast 診斷）；`HTTP: Supabase Sync RPC` 兩個 header 改 `{{ $env.SUPABASE_SERVICE_KEY }}`（同 `Mirror Delete to Supabase` 已驗證嘅寫法，該節點喺保存嘅 execution 內成功跑過 88 次）。live 只改咗呢 2 個節點，connections 不變，`supabaseKey` 出現次數 0。部署前備份：`.fhs/notes/aireports/n8n-mcp-backups/2026-09-19-pre-secret-hardening/6Ljih0hSKr9RpYNm/full_workflow.json`（回滾＝以同一四欄方式 PUT 該檔）。repo 副本 `n8n/FHS_Core_OrderProcessor_live.json` 已同步。
+2. 3 個死腳本（`archive/n8n_scripts/create_fo_workflow{,_v2}.js`、`n8n/create_fo_workflow_v3.js`）硬編碼 n8n key 改讀 `process.env.N8N_KEY`；`.claude/settings.json` 及其 `.bak` 內 3 條舊 curl 授權規則嘅 key 字串遮蔽（規則本就只匹配單次舊指令）；稽核 session scratchpad 內 `exec7516.json` 嘅 Supabase key 遮蔽（保留結構作證據）。
+
+**尚未做（依賴 Fat Mo 帳戶層操作，AI 依規不可代入 key）**：①**更換 n8n API key**（Fat Mo 稱稍後做——呢步先係公開暴露嘅根治，git 歷史入面舊 key 永遠喺；換完先更新 `.env` `N8N_KEY` 同 n8n-mcp 設定）；②Fat Mo 喺 n8n 介面建 Supabase API credential，令兩個 HTTP 節點改用 credential（路徑 B：失敗 execution 仍會存 `apikey` header，只有 credential 化先可能根治，須用刻意失敗嘅單實測 `sb_secret_` 出現 0 次證明）；③輪替 Supabase secret key（必須喺②之後，新 key 先唔會入 execution）；④現存含 key 嘅 execution——已於同日刪除（見下）。
+
+**已刪 execution（同日追加，Fat Mo 確認 0600804 個案已完結，毋須保留證據）**：全伺服器 305 個 execution 逐個掃描（指紋比對，不印 key），含現行 key 者共 92 個（全部屬本 workflow：69 success + 23 error；先前報告嘅「114」係將失敗路徑 22 個同成功路徑重複相加嘅計算錯誤，已更正），以 `DELETE /api/v1/executions/{id}` 全數刪除，重新掃描確認伺服器餘 213 個 execution、含該 key 者 0 個、被刪 id 全部 404。
+**運行驗證待辦**：改動後未有新 execution（部署後未收新單），下一單真實 execution 必須讀 runData 確認 ①`Supabase Sync RPC` 成功 ②`Supabase Mirror Prep`/`Supabase Active Switch` 輸出冇 `supabaseKey`。
+**另案**：22 個失敗 execution 全部係 `HTTP: Supabase Sync RPC` 回「request invalid」，可能有訂單冇同步入 Supabase，待另行查。
+**Subagent 使用記錄**：❌未使用（全程 curl + Python 指紋比對直接查證，避免 key 值進入任何 subagent 上下文）。

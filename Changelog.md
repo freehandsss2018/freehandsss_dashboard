@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-19] D79：n8n Mirror Prep 洩漏 Supabase secret key 入 execution data 修補 + 刪 92 個含 key execution（n8n API key 公開暴露待 Fat Mo 更換）
+
+- **緣起**：0600804 財務稽核（唯讀）發現 `FHS_Core_OrderProcessor`（`6Ljih0hSKr9RpYNm`）`Supabase Mirror Prep` 節點輸出含明文 `supabaseKey`。今次授權：Fat Mo 指示「n8n API key 更換稍後做，其他立即修改」，並確認 0600804 已結案、可刪 execution。
+- **查證（全程指紋比對，唔印 key）**：①係 `sb_secret_`（service_role 級），現行有效；唔喺 git 歷史／repo 任何檔案（repo 內同 `.env` 嘅 `sb_secret_` 全屬已撤銷舊 key，`.env` 嗰條實測 401）。②兩條洩漏路徑：(A) `supabaseKey` 節點輸出→`Supabase Active Switch` 透傳→各存一份；(B) `HTTP: Supabase Sync RPC` 失敗時 `error.context.request.headers.apikey`（n8n 只遮 `Authorization`）。③伺服器共 305 個 execution，含現行 key 者 92 個（69 success + 23 error，全屬本 workflow；曾誤報 114＝兩路徑重複相加，已更正）。④**更大風險**：現行 n8n API key 明文喺公開 GitHub repo（5 個受追蹤檔，自 2026-04-28）＋ n8n 喺公網 → 可讀 execution data。
+- **執行**：①n8n API PUT（只 `{name,nodes,connections,settings}`）改 2 個節點：Mirror Prep 移除 `supabaseKey` 輸出；Sync RPC 兩個 header 改 `$env.SUPABASE_SERVICE_KEY`（同 `Mirror Delete to Supabase` 已驗證寫法，該節點喺保存 execution 成功跑 88 次）。部署前後 webhook 註冊狀態一致；回讀 live：只 2 節點變、connections 不變、`supabaseKey` 0 次。備份 `.fhs/notes/aireports/n8n-mcp-backups/2026-09-19-pre-secret-hardening/`（0 secret，回滾＝同法 PUT）。②`DELETE` 92 個 execution，重掃確認伺服器餘 213 個、含 key 0 個、被刪 id 全 404。③3 個死腳本硬編碼 n8n key 改讀 `N8N_KEY` env；`.claude/settings.json` 及 `.bak` 內 3 條舊 curl 授權規則 key 字串遮蔽；`n8n/FHS_Core_OrderProcessor_live.json` 同步 live。④落 `decisions.md` D79、lesson `2026-09-19_n8n-execution-data-secret-leak.md`、`learnings/n8n.md` #8。
+- **未做（須 Fat Mo 帳戶層操作）**：①**更換 n8n API key**（稍後；舊 key 永久留 git 歷史，呢步先係根治）②建 n8n Supabase credential→改 2 個 HTTP 節點（堵路徑 B，須刻意失敗單實測 `sb_secret_` 0 次）③輪替 Supabase secret key（必須喺②後）。
+- **未驗證**：改動後未有新 execution，下一單真實訂單須讀 runData 確認 Sync RPC 成功＋輸出冇 `supabaseKey`。另案：22 個失敗 execution 全部係 Sync RPC「request invalid」，可能有單冇同步入 Supabase。
+- **Subagent 使用記錄**：❌未使用（全程 curl + Python 指紋比對，避免 key 值進入 subagent 上下文）。
+
 ## [2026-09-19] handoff.md 便攜塊 P0.7.1 輪轉——動態段 36,444→5,873 bytes（9.1倍超支→1.47倍）
 
 - **緣起**：2026-09-18 `/commit` 於便攜塊 📋 待辦登記「動態段實測 35,806 bytes，超 P0.7.1 預算(4,000 bytes) 約 9 倍」，主因診斷為「【FHS交接摘要】」narrative field 逐 session 只 prepend 新內容、自 2026-08-03 上次輪轉後從未再壓縮；Fat Mo 本次直接指派處理。

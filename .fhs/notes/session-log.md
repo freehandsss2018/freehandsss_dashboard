@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-19 (D79：n8n Mirror Prep 洩漏 Supabase key 入 execution data 修補 + 刪 92 個 execution): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 D79 條目（無完成報告的小改動，Changelog 為全文居所）。已修補 2 個 n8n 節點、刪 92 個含 key execution、清死腳本硬編碼 n8n key；n8n API key 更換／Supabase credential／Supabase key 輪替待 Fat Mo。
+**Subagent 使用記錄**：❌未使用（全程 curl+Python 指紋比對，避免 key 值進入 subagent 上下文）。
+
 ## 2026-09-19 (handoff.md 便攜塊 P0.7.1 輪轉：動態段 36,444→5,873 bytes): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 條目（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 直接指派處理 2026-09-18 登記嘅「便攜塊超支」待辦（動態段超 P0.7.1 4,000 bytes 預算約 9 倍）。逐條核對 Changelog.md/decisions.md/handoff.md MASTER 表確認完整記錄後：narrative field（主因，佔原檔 14KB）全段搬至新 archive 檔，🎯目標/✅已定決策/🔬驗證三欄舊條目（已完成無殘留待辦者）壓縮搬移，📋待辦移除已解決之本項。輪轉前備份全檔，輪轉後跑 `session-start-sop.sh` 實測 hook 抽取正常。剩餘 5,873 bytes 仍超預算約1.47倍（原9.1倍）——為避免資訊流失未進一步壓縮活躍待辦項，是否調整預算數值待 Fat Mo 裁決。

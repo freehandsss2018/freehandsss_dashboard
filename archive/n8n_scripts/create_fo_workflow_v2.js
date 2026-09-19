@@ -1,7 +1,7 @@
 const https = require('https');
 const { randomUUID } = require('crypto');
 
-const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YmQ0NWY3Ni0zMDdkLTQ2ZmItYmU0Ny1kNzExZTMxMjAzZmIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNDdjOTQ2NjItMjI5Mi00NTQ3LTkwN2MtMmEwMjQ0OTkxYjVhIiwiaWF0IjoxNzc0Njc1MDcyfQ.kEDQ_sk2wWKU9bwWbN3yXJOLK1PNr1EjJwl2qUXOqIQ';
+const API_KEY = process.env.N8N_KEY || (() => { throw new Error('N8N_KEY env var not set (see .env)'); })();
 const CRED_ID = 'lON99lpYk558mFdA';
 const CRED_NAME = 'Airtable Personal Access Token account';
 
