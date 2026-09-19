@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-19] 財務必派 finance-auditor 防漏機制（0600804 事故方案C，AGENTS.md v1.7.3）
+
+- **緣起**：0600804 驗證2違規調查，AI 載入 finance-gatekeeper 後仍全程自己查 SQL、自己推算，並將 4 條查得到嘅財務定義問題丟俾 Fat Mo；事後補派 finance-auditor 揪出 AI 已宣告「完成」嘅數字已被第二次儲存蓋過。Fat Mo 指出規則早已制定，要求揪漏洞＋防再犯。
+- **6 個漏洞**：harness「未要求不派 subagent」蓋過 AGENTS.md（且 AGENTS.md 唔喺 session 開頭載入）／CLAUDE.md「驗收不自驗」有「或附運行證據」出口／finance-gatekeeper 措辭太軟／prompt-router 財務路由 `subagent: null` 兼被 first-match 搶走／finance-auditor 冇 Supabase 工具、Airtable 工具名過時／強制範圍冇涵蓋「財務規則疑問」。
+- **修補（C1–C6）**：CLAUDE.md 第四紅線；AGENTS.md v1.7.3「財務派工補充條款」（本表＝Fat Mo 預先要求、問前必派、財務驗收只認 finance-auditor）；finance-gatekeeper 1.16.0 §〇 強制派工閘＋死線6；prompt-router 2.1.0 必派＋財務訊號強制疊加；finance-auditor v2.3.0（Supabase 唯讀工具、模式 B 規則解答、雙寫）；新 Stop hook `stop-finance-auditor.js`（財務訊號＋近5輪未派→攔截一次，豁免標記【finance-auditor 豁免：理由】）。
+- **驗證**：夾具 20/20；真實 transcript 重播——當初犯錯嘅 5 輪全部會被攔截；既有 hook 回歸 29/29；fresh-context ≤2 跳盲測 Q1/Q3 PASS、Q2 補路徑後可達、斷鏈 0，盲測揪出 5 項一致性問題（版本號、舊軟句、豁免定義、hook 漏 gatekeeper Read 訊號、缺 finance-auditor.md 路徑）已即場修正。
+- 全文見 `.fhs/reports/completion/2026-09-19_finance-auditor-mandatory-dispatch_completion_report.md`。**Subagent 使用記錄**：✅ finance-auditor（0600804 覆核）、✅ Explore（盲測）。
+
 ## [2026-09-19] handoff.md 便攜塊 P0.7.1 輪轉——動態段 36,444→5,873 bytes（9.1倍超支→1.47倍）
 
 - **緣起**：2026-09-18 `/commit` 於便攜塊 📋 待辦登記「動態段實測 35,806 bytes，超 P0.7.1 預算(4,000 bytes) 約 9 倍」，主因診斷為「【FHS交接摘要】」narrative field 逐 session 只 prepend 新內容、自 2026-08-03 上次輪轉後從未再壓縮；Fat Mo 本次直接指派處理。

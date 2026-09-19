@@ -2,8 +2,7 @@
 // scripts/hooks/prompt-router.js
 // FHS UserPromptSubmit Hook — Intelligent Task Router
 // Analyzes the user's prompt and injects subagent/skill/model routing suggestions
-// Version: 2.1.0 | 2026-09-19 (0600804 事故方案C-C4：財務路由改必派 finance-auditor + 財務訊號強制疊加)
-// Previous: 2.0.0 | 2026-08-03 (flow 2026-08-03-2003, learnings 分桶重構 P3)
+// Version: 2.0.0 | 2026-08-03 (flow 2026-08-03-2003, learnings 分桶重構 P3)
 // Change: 新增獨立 learnings 領域路由（P3.1-P3.5）——按任務內容自動注入命中
 //         桶檔全文至工作記憶，同 session 內去重，slash command 白名單放行。
 //         舊有 12 條 subagent/model 路由（first-match-wins）完全不變、不受影響。
@@ -99,12 +98,11 @@ process.stdin.on('end', () => {
     // ── Financial Audit（須排在 Quality Review 之前，避免「稽核」字樣被品質審查路由搶先攔截）──
     {
       patterns: ['財務稽核', '利潤核對', 'triple sync 稽核', '三端核對', 'finance audit',
-        '對帳', '訂單利潤驗證', '驗證公式', '財務異常', 'net_profit', 'total_cost', 'final_sale_price'],
+        '對帳', '訂單利潤驗證'],
       subagent: 'finance-auditor',
-      mandatory: true,
-      skill: 'finance-gatekeeper',
+      skill: null,
       model: 'sonnet',
-      reason: '偵測到財務稽核任務（2026-07-07 S152-followup 補鏈；2026-09-19 0600804 事故後補英文欄位名＋改為必派）'
+      reason: '偵測到財務稽核任務（2026-07-07 S152-followup 補鏈）'
     },
     // ── Quality Review / Audit ──
     {
@@ -154,8 +152,7 @@ process.stdin.on('end', () => {
     {
       patterns: ['利潤', 'profit', '毛利', 'gross margin', 'revenue', '收入', 'aov',
         '財務計算', 'financial', '售價', '成本計算'],
-      subagent: 'finance-auditor', // 2026-09-19：原為 null，令財務疑問被導向「唔使派 subagent」（0600804 事故漏洞4）
-      mandatory: true,
+      subagent: null,
       skill: 'finance-gatekeeper',
       model: 'sonnet',
       reason: '偵測到財務計算相關任務'
@@ -189,9 +186,7 @@ process.stdin.on('end', () => {
     if (matched.guardian) {
       parts.push('→ ⚠️  建議先執行 /guardian 稽核（大範圍改動四部曲）');
     }
-    if (matched.subagent && matched.mandatory) {
-      parts.push(`→ 🔴 必須派 subagent: ${matched.subagent}（AGENTS.md 決定性路由，視同 Fat Mo 已要求；可背景跑）`);
-    } else if (matched.subagent) {
+    if (matched.subagent) {
       parts.push(`→ 建議 subagent: ${matched.subagent}`);
     }
     if (matched.skill) {
@@ -204,21 +199,6 @@ process.stdin.on('end', () => {
       parts.push(`→ 建議 model: ${matched.model}  (切換：/model ${matched.model})`);
     }
     outputParts.push(parts.join('\n'));
-  }
-
-  // ─── 財務強制疊加（2026-09-19，0600804 事故漏洞4）──────────────────────
-  // first-match-wins 會令財務 prompt 被前面嘅路由（如 bug→build-error-resolver、sku→database-reviewer）
-  // 搶先攔截，財務派工提示就消失。呢度獨立於 first-match 再掃一次財務訊號，命中就疊加必派提示。
-  const FINANCE_SIGNALS = ['財務', '利潤', '成本', '定價', '售價', '毛利', '收入', '對帳',
-    'profit', 'net_profit', 'total_cost', 'final_sale_price', 'handmodel_cost', 'keychain_cost',
-    'necklace_cost', 'accessory_cost', 'cost_configurations', 'total_base_cost', 'pricing', 'finance', 'revenue'];
-  if ((!matched || matched.subagent !== 'finance-auditor') && FINANCE_SIGNALS.some(s => prompt.includes(s))) {
-    outputParts.push([
-      '[FHS Router] 偵測到財務訊號（強制疊加，唔受 first-match 影響）',
-      '→ 載入 skill: finance-gatekeeper（先讀 §〇 強制派工閘）',
-      '→ 🔴 涉及訂單數字驗證／財務異常／財務規則疑問 → 必須派 subagent: finance-auditor；問 Fat Mo 財務問題前必須已派過',
-      '→ 純財務文件文字改動（無數字判斷）→ 回覆寫明【finance-auditor 豁免：理由】'
-    ].join('\n'));
   }
 
   if (outputParts.length) console.log(outputParts.join('\n\n'));
