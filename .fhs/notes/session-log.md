@@ -1,7 +1,7 @@
 # Session Log
 ## 2026-09-19 (D79：n8n Mirror Prep 洩漏 Supabase key 入 execution data 修補 + 刪 92 個 execution): 🏷️ ✅
 
-**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 D79 條目（無完成報告的小改動，Changelog 為全文居所）。已修補 2 個 n8n 節點、刪 92 個含 key execution、清死腳本硬編碼 n8n key；n8n API key 更換／Supabase credential／Supabase key 輪替待 Fat Mo。
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 D79 條目（無完成報告的小改動，Changelog 為全文居所）。已修補 2 個 n8n 節點、刪 92 個含 key execution、清死腳本硬編碼 n8n key；n8n API key 更換／Supabase credential／Supabase key 輪替待 Fat Mo。 /fhs-check 5項全PASS並兼作運行驗證（16個成功execution零key）；🔴新發現4個workflow仍硬編碼已撤銷舊key（FHS_Financial_Overview/FHS_Query_GlobalReview持續401失敗），待Fat Mo決定。
 **Subagent 使用記錄**：❌未使用（全程 curl+Python 指紋比對，避免 key 值進入 subagent 上下文）。
 
 ## 2026-09-19 (handoff.md 便攜塊 P0.7.1 輪轉：動態段 36,444→5,873 bytes): 🏷️ ✅
