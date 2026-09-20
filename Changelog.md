@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-21] canva-auto augustinefok 07001006（純音樂）— 母片 HoKaSin，Stage①-⑤交付；CV-48~51 新規則
+
+- **單號**：augustinefok 07001006，字句 `Beyond the days, the moments / we hold each other / truly stay`（跟 `word.png` 拆 3 行）。Fat Mo 首次輸入款式寫「全幅AI短片」，但素材夾冇客人片、只得 2 條 Lovart 動畫（`影片 1／2.mp4`，960²×15.1s）＋音訊 33.1sec；AI 開單前發現並準備詢問，Fat Mo 自行取消更正為「純音樂」重新開單。成品 `DAHVvl_drcw`（`augustinefok 純音樂 (2009/26) 33.1sec`），歸檔 `Free_recorder (09/26)`。
+- **母片揀錯一次（CV-48）**：先揀 Meika 0600904（音長 35.0sec 最近 33.1sec）並已 copy，讀 CDF 才見 page3 片格係 **290×580 直格**、本單片係 960² 正方（要 `resize_element` 會郁動畫）；改揀 HoKaSin 0601100（page3 已係 577² 正方格、黃金案例）。Meika 副本 `DAHVvi7ZCBI` 已改名 `[廢棄·揀錯母片副本，可刪]` 並歸入 09/26 資料夾（MCP 冇刪 design 工具，待 Fat Mo UI 刪）。
+- **Stage③**：全程只用 `update_fill`／`crop_media`／刪臨時件，母片元素零刪、container 零郁。Fat Mo 唔滿意 AI 用 `local_prep` 出嘅兩張圖（CV-49），自己重做：彩色＝原檔＋Canva 元素層背景移除（`update_fill` 入母片出白方塊，經 export 真圖量角證實；Fat Mo 揀方案A喺母片元素補撳，CV-36）；黑白＝Canva 新 asset，透明背景 export 量 alpha=0 證實 asset 層已透明、直接可用。
+- **Stage④ 學習**：AI 幾何 6 格修正 4 格（兩頁字句 44→40.93px／字距 0.073→0.14／top＋26.4；page3 兩片格微放大 0.63%）；page2 兩圖 container／imageBox 零修改。案例 `07001006` 已落 `canva_auto/placement_memory.json`（`schema_version:2`，`node scripts/canva_memory_validate.js` exit 0）。新規則：**CV-48**（copy 前先讀候選 page3 片格形狀）／**CV-49**（`local_prep` 採用率唔穩）／**CV-50**（`format_text` 冇 `letterSpacing` 參數）／**CV-51**（存檔頁 3 行字句字號按花環尾間距縮）。validator 提示 CV-36／CV-30／CV-42 已達 3 單引用未升格，待 Fat Mo 決定。
+- **Stage⑤ 存檔頁**：`DAHVv8QrIGc`（合集 `Free_Laser (09/26)` p152 Shirley 標準頁單頁複製；上一張單頁副本已被刪）。右上換本客原相（jpg 底部帶截圖黑邊，imageBox 多裁約 6px）、彩色插圖用 `local_prep` cutout（Fat Mo 版係元素層效果帶唔過去）、字句 3 行 14px；export 1000² 眼證兩輪修正。待 Fat Mo Ctrl+A/C/V 貼入合集。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
 ## [2026-09-20] `sync_order_to_mirror` 拒絕對已軟刪訂單嘅 edit（migration 0095，D81）
 
 - **修復**：函數開首加守衛，`edit` 已軟刪訂單 → `RAISE EXCEPTION`（P0001，零副作用），封死「舊分頁儲存令已刪單復活入 KPI」。`create` 重用已刪 ID 仍復活（0087 語義保留，`/fhs-check` 固定 test ID 依賴）；`update` 不變。**冇改任何訂單資料，n8n／Dashboard／Layer-2 均零改動。**
