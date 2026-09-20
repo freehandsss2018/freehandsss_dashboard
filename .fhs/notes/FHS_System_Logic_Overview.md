@@ -523,6 +523,8 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 詳見 `.fhs/notes/decisions.md` D63續、migration `0087_sync_order_to_mirror_reset_deleted_at.sql`。
 
+**⚠️ 2026-09-20 後續（D81／migration 0095，§5.4.24）**：上文「無條件清 `deleted_at`」現改為**有條件**——`edit` 已軟刪訂單會被守衛拒絕；`create`（含重用已刪 ID）仍然清 `deleted_at`（本節語義保留）。
+
 ### 5.4.13 `Smart Cache Strategist` 讀 key 路徑修正：`process.env` → `$env`（2026-08-11 ✅ 已修復）
 
 **背景**：D62 修復 `Smart Cache Strategist` 時（移除寫死 secret + 棄用 `require('axios')`），當時 `$env` 封鎖問題**尚未確診**，故 key 讀取保留咗 `process.env` 寫法。之後同一 session 內證實 n8n Code node 沙盒 `typeof process === 'undefined'`（見 §5.4.10 平台層根因 1），令該節點 `SUPABASE_KEY` 恆為 `null`。
@@ -783,6 +785,22 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 **殘留／教訓**：V42 `calculatePricing()` 畫圖成本估算仍沿用 S55 舊語義（生產 HTML，另案；V2 品項 `Drawing_Cost` 而家由 n8n 決定，前端值被忽略，故無財務影響）。收斂差值縮窄至只剩立體擺設／配件（無四分量拆分）成本。教訓：被標為「純 cosmetic」嘅審計差值（見上文 Phase 2「已知非阻斷性小瑕疵」）可能係真缺陷嘅唯一信號；規格推翻後要 grep 前端有冇同語義殘留。詳見 decisions.md D80；三條教訓已落 `learnings/finance.md` #2（cosmetic 審計差值）、`learnings/n8n.md` #8（live 節點含 U+FFFD 時用 GET→精準替換→PUT）與 `learnings/supabase.md` #17（斷言 RPC 排除某類資料前要讀 WHERE 謂詞）。
 
 ---
+
+### 5.4.24 `sync_order_to_mirror` 拒絕對已軟刪訂單嘅 `edit`（migration 0095，2026-09-20 D81 ✅ 已修復）
+
+**問題**：0087（§5.4.12）令 `ON CONFLICT` 無條件 `deleted_at = NULL`，所以任何對已軟刪訂單嘅同步都會令佢復活、重新計入財務 KPI。原意（`/fhs-check` 固定 test ID 重用）係合理，但「edit 一張已刪單」永遠唔係合法操作。
+
+**觸發路徑（極窄）**：Dashboard 開單／編輯單嘅讀取全部帶 `deleted_at=is.null`（V42.html:10490／10593／19280／19380／20619／22432），正常操作開唔到已刪單。Dashboard 送 `"action": currentMode`（`create`／`edit`，V42.html:11199）。**注意（2026-09-20 fresh-context 覆核）**：Dashboard 刪單實際係 Supabase **硬刪**（V42.html:14222／16177，anon `DELETE`），`deleted_at` 軟刪只來自 n8n `Mirror Delete to Supabase`／手動 SQL／測試腳本——故本守衛主要保護軟刪嘅測試／手動單，唔涵蓋 Dashboard 硬刪嘅真實單。
+
+**修法**：函數開首守衛：`p_action='edit'` 且 `p_old_order_id` 對應列 `deleted_at IS NOT NULL` → `RAISE EXCEPTION`（P0001）；喺 `rename_order_id` 同所有寫入之前，零副作用。`create`／`update` 行為不變。
+
+**取捨**：n8n webhook `responseMode=onReceived`，操作員唔會見到錯誤，只留 n8n execution log；失敗 execution 存 `apikey` header（D79 殘留）。
+
+**範圍外殘留（未處理，見 decisions D81／handoff）**：①Dashboard `sbSyncOrder()` 係 `POST orders?on_conflict=order_id`＋`merge-duplicates`（V42.html:20234，唔經 RPC、唔碰 `deleted_at`）：對軟刪單只覆寫欄位、唔復活；對硬刪 ID 會插入新行。②RPC 對不存在 ID 做 `edit` 不被拒絕（會 INSERT）。③webhook 無認證，直接 POST `create`／`update` 仍可復活軟刪單（`create` 係 0087 有意保留、`update` 只有 `/fhs-check` 用）。
+
+**驗證（2026-09-20）**：①改前 0088 函數本文 md5 ＝ live `pg_get_functiondef` md5（`4d683163…`，6082 字元），改後 live md5 ＝ repo 檔函數本文 md5（`dba96d22…`，6533 字元），刪走守衛區塊後逐位還原；②回滾子交易行為測試：`edit` 已刪單→拒絕（P0001，`deleted_at` 不變，`rename_order_id` 唔會被觸發）、`create` 重用已刪 ID→仍復活、`update`→行為不變；③`/fhs-check` 5/5 PASS（LIFECYCLE 固定 test ID 重用路徑正常）；④fresh-context `finance-auditor` 8 項 PASS（Layer-2 未刪 62 張 `total_cost` 36,835／`net_profit` 184,841 不變、驗證公式 0 違規、無殘留測試單、KPI 不變）。
+
+詳見 `.fhs/notes/decisions.md` D81、`supabase/migrations/0095_sync_order_guard_edit_deleted.sql`。
 
 ## 六、IG 訂單訊息邏輯
 

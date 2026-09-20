@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-20 (D81：sync_order_to_mirror 拒絕 edit 已軟刪訂單，migration 0095): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-20 D81 條目與 decisions.md D81。守衛只攔 `edit` 已刪單；`create` 重用 ID 仍復活（0087 語義保留）。事前將風險講得過重（Dashboard 本身開唔到已刪單），已誠實記錄。
+**Subagent 使用記錄**：✅ `finance-auditor`（影響評估＋收尾覆核）。
+
 ## 2026-09-19 (D79：n8n Mirror Prep 洩漏 Supabase key 入 execution data 修補 + 刪 92 個 execution): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 D79 條目（無完成報告的小改動，Changelog 為全文居所）。已修補 2 個 n8n 節點、刪 92 個含 key execution、清死腳本硬編碼 n8n key；n8n API key 更換／Supabase credential／Supabase key 輪替待 Fat Mo。 /fhs-check 5項全PASS並兼作運行驗證（16個成功execution零key）；🔴新發現4個workflow仍硬編碼已撤銷舊key（FHS_Financial_Overview/FHS_Query_GlobalReview持續401失敗），待Fat Mo決定。

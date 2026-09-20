@@ -3,6 +3,29 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-20] (D81) `sync_order_to_mirror` 拒絕對已軟刪訂單嘅 `edit`（migration 0095）— finance-auditor 影響評估揭出「已刪單可被重新儲存復活入 KPI」，Fat Mo 指示封死；但唔可以刪走 0087 嘅 `deleted_at = NULL`（呢行係故意嘅），改為只攔 `edit`
+
+**背景**：0087（D63續，2026-08-11）令 RPC `ON CONFLICT` 無條件 `deleted_at = NULL`，原意係修「測試腳本用固定 test ID 反覆 create→delete，重用已刪 ID 時新單永遠卡喺已刪」（`/fhs-check` 壓測誤報 FAIL）。副作用：任何對已刪單嘅同步都會令佢復活。2026-09-20 finance-auditor 影響評估提到「重新儲存已軟刪嘅單會令佢復活」，我向 Fat Mo 講成「窿」。
+
+**我事前講得過重（誠實記錄）**：查證後呢個唔係漏洞而係 0087 有意設計；而且 Dashboard 開單／編輯讀取全部帶 `deleted_at=is.null`（V42.html:10490／10593／19280／19380／20619／22432），正常操作**開唔到已刪單**，風險遠細過我所講。
+
+**決策**：函數開首加守衛——`p_action='edit'` 且 `p_old_order_id` 對應列 `deleted_at IS NOT NULL` → `RAISE EXCEPTION`（SQLSTATE P0001）。守衛喺 `rename_order_id` 同所有寫入之前，失敗零副作用。`create`（Dashboard 新單／測試腳本重用 ID）行為完全不變，仍然復活；`update`（只有 `/fhs-check` 腳本用）亦不變。**否決方案**：①直接刪走 `deleted_at = NULL`（會令 0087 修好嘅 bug 返嚟）；②按 `order_id LIKE 'test%'` 分流（將測試命名慣例寫入生產 RPC）；③改成 `RETURN {success:false}`（n8n 會照發「利潤報告」Telegram，形同已刪單仍有利潤報告）。
+
+**已知取捨**：n8n webhook `responseMode=onReceived`（先回 200），所以操作員 Dashboard 唔會見到呢個錯誤，只有 n8n execution log 有記錄；失敗 execution 會存 `apikey` header（D79 未根治殘留，同所有失敗 execution 一樣，待 Fat Mo 建 credential）。呢個路徑要「舊分頁＋儲存已刪單」先觸發，預期極少。
+
+**驗證**：① `CREATE OR REPLACE` 前 0088 函數本文 md5 ＝ live `pg_get_functiondef` md5（`4d683163…`，6082 字元），證明冇漂移；套用後 live md5 ＝ repo 檔函數本文 md5（`dba96d22…`，6533 字元）。② 行為測試（全部喺回滾子交易內，真單 `deleted_at`／`total_cost=2040` 不變）：`edit` 已刪單 → 拒絕，`deleted_at` 不變；`create` 重用已刪 ID → 復活（0087 語義保留）；`update` 已刪單 → 行為同以前一樣。③ `/fhs-check` 端對端迴歸（真實 webhook，固定 test ID 重用路徑）**5/5 PASS**（LIFECYCLE 26.8s／STRESS 64.5s／ACCEPTANCE 28.1s／COST_INTEGRITY／PRICE_AUDIT）。
+
+**收尾覆核（fresh-context `finance-auditor`，8 項 PASS）揭出嘅範圍外事實——我事前講得唔準，已更正**：
+①**Dashboard 刪單實際係硬刪**：批量（V42.html:14222）／單張（16177，註解自寫 "Supabase hard delete (primary)"）用 anon key 發 PostgREST `DELETE`，整行刪走，之後先 best-effort call n8n `action:'delete'`。`deleted_at` 軟刪只來自 n8n `Mirror Delete to Supabase`／手動 SQL／測試腳本；生產現有 14 張軟刪單，只有 3 張非 test 命名，全係垃圾單（`未命名`、`probe1004`、`probe1005`）。**所以 0095 實際保護嘅主要係軟刪嘅測試／手動單，真實客戶單經 Dashboard 刪走係硬刪，唔受此守衛影響。**
+②**硬刪單被舊分頁再儲存會「重新出現」**：Dashboard 自己嘅 `sbSyncOrder()` 係 `POST orders?on_conflict=order_id`＋`resolution=merge-duplicates`（V42.html:20234，唔係 PATCH，寫 customer_name／appointment_at／deposit／balance／additional_fee／adjustment_amount／final_sale_price／full_order_text／raw_form_state 等，唔碰 `deleted_at`）：對已軟刪單只覆寫該等欄位、唔復活；對已硬刪 ID 則直接插入新行。RPC 對「不存在 ID」做 `edit` 亦不被拒絕（實測會 INSERT）。
+③**webhook 無認證**（`authentication: none`，URL 寫喺 Dashboard HTML），直接 POST `create`／`update` 仍可復活軟刪單——`create` 係 0087 有意保留、`update` 只有 `/fhs-check` 腳本用，守衛刻意唔攔。
+④「唯一入口係舊分頁」呢個講法不完整（見①②③）。
+**處理**：以上三項全部範圍外、未處理，記入 handoff。**建議**：不擴大——攔 `create` 會破壞 `/fhs-check` 固定測試單；硬刪改軟刪係另一個較大設計（要改 Dashboard 刪單路徑＋RLS `orders_anon_delete`），而生產真實影響（舊分頁＋剛好刪過單）極低。
+
+全文見 migration `supabase/migrations/0095_sync_order_guard_edit_deleted.sql`、`FHS_System_Logic_Overview.md` §5.4.24。**Subagent 使用記錄**：✅ `finance-auditor` 用於前置影響評估（同日）；本次收尾覆核見 Changelog。
+
+---
+
 [2026-09-19] (D80) V2 品項層 `order_items.drawing_cost` 恆為 0——n8n V47.25 改由 n8n 計算 + migration 0094 回填 — `finance-auditor` 審訂單 0600804 揭發全庫 5 行 V2 品項 `drawing_cost=0`，違反 Cost Schema v2 §10.3「品項層＝全額」；訂單層數字全程正確，故從未被發現
 
 **編號說明**：原暫編 D79，與主線並行 session 嘅 D79（n8n secret 洩漏修補）撞號，2026-09-20 merge 主線時重編為 D80；migration 0094 檔頭註解仍寫「D79」（該 migration 已套用 live，repo 檔須與已套用版本逐位相同，故不改）。
@@ -19,7 +42,7 @@
 
 **教訓**：(1) **被標為「純 cosmetic」嘅審計差值可能係真缺陷嘅唯一信號**——Phase 2（2026-07-24）已見 `convergence_note` 對 V2 單差值無意義，記為「唔影響入帳、留待日後」，實情係 V2 品項畫圖分量一直冇入庫，拖咗約 8 週先由獨立審計揭發。(2) **規格推翻後要 grep 前端有冇同語義殘留**——§10 推翻 S55 語義時只改咗 n8n／文件，前端 `chargedPositions` 預填一直沿用舊語義。(3) **live 節點含 U+FFFD 亂碼字元時，唔好用 `update_node_code` 整段重寫**，改 GET→精準字串替換（每處 count==1 斷言）→PUT，並結構比對證明其餘節點同連線零改動。(4) **回填必須排喺修復部署之後**。(5) **斷言「某 RPC 排除某類資料」前要讀 WHERE 謂詞並實跑 RPC，唔好數關鍵字次數**；測試單預約日要設過去或測完即刪，因為未確認單以預約日入賬。(6) **§三B sweep 要 grep 版本標籤同結構缺口，唔止欄位名**；大型改動嘅獨立覆核真係揪出咗自查漏嘅嘢（同 learnings/governance #10 一致）。
 
-**殘留／待 Fat Mo 決定**：①測試單 `testV2draw0919` 已於 2026-09-20 軟刪（見上）；②V42 `calculatePricing()` 畫圖成本估算仍沿用 S55 舊語義，V42.html:15421-15424 有過時註解（「n8n 無獨立寫 drawing_cost」）——生產 HTML，另案；2026-09-20 finance-auditor 核實（我早前評估有多處錯，已更正）：該數字（`_totalCostNew`）係 Fat Mo 2026-06-03 裁決嘅「供操作者參考嘅預算估算，非確收數字」（n8n 擁有成本），自 2026-07-21 起 UI 隱藏（`#drawingCost` display:none，Fat Mo 裁決成本／利潤顯示改由「核對訂單」負責），冇「報價面板系統成本」呢個介面標籤；唯一消費者係 n8n Profit Auditor V45.8（只喺收款低於該估算先警報；62 張單中 29 張估算為 0 而跳過，冇一張收款低於 n8n 成本，從未觸發）。冇任何裁決要求保留或修正，「暫不改」只係 AI 評估、Fat Mo 未裁決；差距拆解同「單純移除 S55 預填唔會令估算對齊」見 completion report §五；③兩份 `finance-auditor.md`（repo `.fhs/ai/subagents/freehandsss/` v2.2.1 同用戶層 `~/.claude/agents/freehandsss/` v2.3.0，pre-existing 漂移 36 行）仍有「Task A 完成前不寫入實值」等過時描述——用戶層檔案在 repo 外，本次不動；④`FHS_Product_Cost_Schema_v2.md` 標題／status 仍寫 v2.3.0（pre-existing）；⑤三張已回填單嘅舊 `convergence_note` 文字（差額 360／570／450）要待下次重新同步先更新（訂單層快照不可變，純審計文字）。
+**殘留／待 Fat Mo 決定**：①測試單 `testV2draw0919` 已於 2026-09-20 軟刪（見上）；②V42 `calculatePricing()` 畫圖成本估算仍沿用 S55 舊語義，V42.html:15421-15424 有過時註解（「n8n 無獨立寫 drawing_cost」）——生產 HTML，另案。該數字（`_totalCostNew`）係 Fat Mo 2026-06-03 裁決嘅「供操作者參考嘅預算估算，非確收數字」（n8n 擁有成本），自 2026-07-21（commit `aa12f5e`）起 UI 隱藏，成本／利潤顯示改由「核對訂單」負責；訂單層唯一消費者係 n8n Profit Auditor V45.8（只喺收款低於該估算先警報，62 張單從未觸發）。**2026-09-20 第二次 `finance-auditor` 覆核，更正我三處講法**：(a) **「沒有任何裁決要求改或不改」係錯**——「前端估算＋n8n 權威」呢個分工本身**有裁決**：2026-06-03（S57，`decisions.md:1787-1796`）確立成本側歸 n8n、「n8n 信任前端成本」違反 Rule 3.16；2026-06-05（S60，`decisions.md:1777-1785`）裁決前端繼續計並透傳品項層四分量，明文理由係「n8n 拿不到部位級資料，無法重算 drawing 豁免邏輯（最高頻財務雷）」（**唔係「較易維護」——全 repo 零記錄**）；2026-07-21（`aa12f5e`）再裁決將該數字 UI 隱藏。未有裁決嘅只係 S55 計算邏輯本身。(b) **「冇『報價面板系統成本』介面標籤」係將「已隱藏」講成「從來唔存在」**——實際標籤寫「畫圖成本: $X」而值係全成本估算（V42.html:5969／9989），名實不符存在約 7 星期（2026-06-03～07-21），Fat Mo「命名易令操作員誤會」嘅質疑有硬證據支持。(c) **「前端估算＝純參考、零 DB 足跡」係錯框架**——品項層四分量由前端計並真實寫入 `order_items`。⚠️ S60 嘅技術前提今日已部分失效（n8n V47.22 起有 `position_code`、V47.25 起自算 V2 畫圖費），即「係咪仲需要前端計成本」值得重新裁決。全文見 completion report §五；③兩份 `finance-auditor.md`（repo `.fhs/ai/subagents/freehandsss/` v2.2.1 同用戶層 `~/.claude/agents/freehandsss/` v2.3.0，pre-existing 漂移 36 行）仍有「Task A 完成前不寫入實值」等過時描述——用戶層檔案在 repo 外，本次不動；④`FHS_Product_Cost_Schema_v2.md` 標題／status 仍寫 v2.3.0（pre-existing）；⑤三張已回填單嘅舊 `convergence_note` 文字（差額 360／570／450）要待下次重新同步先更新（訂單層快照不可變，純審計文字）。
 
 全文見 `FHS_System_Logic_Overview.md` §5.4.23、Cost Schema v2 §10.4、Changelog.md 2026-09-19、`.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md`。**Subagent 使用記錄**：✅ `finance-auditor` 兩次——前期獨立 live 驗證（兩項 PASS）；後期 fresh-context 覆核（兩項 PASS＋2 項問題，已處理）。
 

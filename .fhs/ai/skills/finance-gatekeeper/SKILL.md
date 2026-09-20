@@ -1,10 +1,11 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.17.0
+version: 1.18.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-09-20（§四補「待確認」定義：同財務無關、訂金／全付一律已實收、`confirmed_at`＝入單日——Fat Mo 澄清；與主線 0600804 方案C（v1.16.0：§〇 強制派工閘、第6條死線、§六 Known failure modes）merge，版本 1.17.0）
+last_updated: 2026-09-20（§一路由表新增「前端 `calculatePricing()` 成本估算／前後端成本分工」一行——`finance-auditor` 第二次覆核揪出：本 Skill 係強制前置，但路由表 27 行內無一行指向前端成本估算，直接令 AI 兩次向 Fat Mo 答錯「冇任何裁決」；真實情況係有 S57／S60／2026-07-21 三條裁決）
+[前次] 2026-09-20（§四補「待確認」定義：同財務無關、訂金／全付一律已實收、`confirmed_at`＝入單日——Fat Mo 澄清；與主線 0600804 方案C（v1.16.0：§〇 強制派工閘、第6條死線、§六 Known failure modes）merge，版本 1.17.0）
 [前次] 2026-09-19（D80：V2 品項層 drawing_cost 恆為 0 修復——n8n V47.25 + migration 0094，§一路由表加一行指向 §5.4.23；§三B「現行已定案方程式」V2 條補品項層 drawing_cost 語義）
 [前次] 2026-09-19（0600804 事故後：新增 §〇 強制派工閘 + 第6條死線「財務必派 finance-auditor」+ §六 Known failure modes；原 line 22「不替代…需另行啟動」措辭太軟，被當成可選）
 [前次] 2026-09-18（cl-flow 2026-09-18-1827 期一：`/fhs-cost-audit`（純 Airtable）已廢除歸檔，功能重寫落 Supabase 併入 `/fhs-check` COST_INTEGRITY phase，§一路由表加一行指向新機制）
@@ -76,6 +77,7 @@ compatible_with: AGENTS.md v1.7.3
 | 立體擺設價錢真源 / `_pPriceOfSku` 定義喺邊 / 卡片徽章顯示邏輯 | `FHS_System_Logic_Overview.md` §5.4.18（D65續II，2026-08-17）：`calculatePricing()` 原 inline 價錢判斷式抽為純函數 `_pPriceOfSku(name)`，卡片 owner 徽章與報價共讀同一函數（結構上不可能唔一致）；純代碼結構重構，128組窮舉證實零財務規則語義變動，七條業務規則本身不變 |
 | 有大寶嘅玻璃瓶點計 / `玻璃瓶套裝 (N肢+大寶)` SKU / 2肢4肢點數 / 倒模對象組合邊啲可能 | `FHS_Pricing_Bible.md` §0＋§2.1（唯一定價 SSoT，含 7 格組合窮舉表）+ `FHS_System_Logic_Overview.md` §5.4.20（D65續IV-follow，2026-08-22，migration 0091）：有大寶參與＋無父母 → $1,680／$1,980（同 tier 純嬰兒價 ＋$300）；純嬰兒 $1,380／$1,680 不變；含父母一律 $2,580 flat 不變。成本三者同為 $210 flat（純定價調整，＋$300 全落淨利）。**肢數 tier 只數嬰兒肢體**（2026-08-22 起，推翻 2026-07-21「大寶肢體同等計入」定案）。**業務定義**：嬰兒＝首個孩子、大寶＝第二個孩子，故「有大寶必有嬰兒」，純大寶單定義上不可能（誤入時由既有橙色提醒接住，不阻擋）。`en_parent` 已勾但零嬰兒肢體＝硬阻擋（2026-07-19 起既有）。新增立體擺設 SKU **無須改 n8n**（`Smart Cache Strategist` 前綴表未命中會 fallback `sku.eq` 精確查 products） |
 | V2 品項 `order_items.drawing_cost` 恆為 0 / 品項層畫圖費點計 / `Drawing_Cost` 由邊度嚟 / 點解 `convergence_note` 差額 | `FHS_System_Logic_Overview.md` §5.4.23（D80，2026-09-19，✅已修復）：n8n V47.25 起非家庭 V2 品項 `Drawing_Cost` 由 n8n 按 §2.1 費率×qty 計算（Dashboard 傳值被忽略；V42 `chargedPositions` 仍沿用 S55 舊語義未改，另案）；歷史 5 行由 migration 0094 回填；訂單層 `total_cost`/`net_profit` 全程不變（Drawing_Cost 只入收斂律審計）；規則本身見 Cost Schema v2 §10.3。**回填類改動必須排喺 n8n 修復部署之後**（否則重新同步會用舊值覆蓋） |
+| 前端 `calculatePricing()` 成本估算點解同 n8n 唔同 / `System_Total_Cost` 最後去咗邊 / 前後端成本分工係咪刻意 | **有裁決，唔好答「冇記錄／冇裁決」**（2026-09-20 `finance-auditor` 覆核落檔）：①2026-06-03（S57，`decisions.md:1787-1796`）確立**成本側由 n8n 計算、非前端傳入**，「n8n 信任前端成本」違反 Rule 3.16；②2026-06-05（S60，`decisions.md:1777-1785`）裁決**前端繼續計並透傳品項層四分量**，明文理由「n8n 拿不到部位級資料，無法重算 drawing 豁免邏輯（最高頻財務雷）」——**唔係「較易維護」**（全 repo grep 零命中），亦唔係離線需求（`calculatePricing()` 要等 `cost_configurations` 載入）；③2026-06-03（`decisions.md:2598-2631`）裁決該輸出＝「供操作者參考嘅預算估算，非確收數字」；④2026-07-21（commit `aa12f5e`）裁決 UI 隱藏，成本／利潤顯示歸「核對訂單」（隱藏前標籤寫「畫圖成本」但裝住全成本估算，名實不符約 7 星期）。**訂單層** `System_Total_Cost` 只餵 n8n `Profit Auditor` V45.8（從未觸發、不寫任何成本欄位），**但品項層四分量（`Drawing_/Printing_/Chain_/Shipping_Cost`）由前端計、經 n8n 透傳真實寫入 `order_items`**——禁止當佢「純顯示層／零影響」。⚠️ S60 技術前提已因 V47.22（`position_code`）／V47.25（n8n 自算 V2 畫圖費）部分失效。全文 `.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md` §五 |
 | Mode 2「儲存明細」點解會清走 `accessory_cost`/成本欄位 / `save_structured_order_items` RPC | `FHS_System_Logic_Overview.md` §5.4.19（D67，2026-08-19，✅已修復）：RPC 用 DELETE+INSERT 重寫 order_items 曾漏 14 個成本/V2 欄位，migration 0089 改用整行快照 + COALESCE fallback；前端 `saveMode2Items()` pass-through 欄位改送 `null`（非 `0`）避免覆蓋走真實成本 |
 
 ---

@@ -104,7 +104,8 @@ freehandsss_dashboard/
 │   │   ├── [0087-0091 待補登，pre-existing缺口，見handoff.md MASTER表]
 │   │   ├── 0092_process_status_dialect_cleanup.sql ← D69續六：清洗order_items.process_status/precomplete_status歷史ENUM風格舊方言（完成→Done已完成、待製作→0什麼都未做），配合前端移除_sanitizeItemStatus()寫入轉換；`製作中`/`已book日期`/`hm:...`刻意不清洗（Fat Mo拍板）✅ 已部署
 │   │   ├── 0093_order_cover_image.sql ← D74：orders.cover_image_path欄位 + private bucket order-covers（2MB上限，webp/jpeg/png，anon INSERT/SELECT/UPDATE無DELETE）+3條RLS policy，訂單總覽刻字欄16:9封面圖✅ 已部署
-│   │   └── 0094_backfill_v2_item_drawing_cost.sql ← D80：V2品項層order_items.drawing_cost回填（部署前5行，缺$720；不變式守衛+命中行數0或5否則回滾；只改drawing_cost，orders表不碰）；須在n8n V47.25部署之後套用
+│   │   ├── 0094_backfill_v2_item_drawing_cost.sql ← D80：V2品項層order_items.drawing_cost回填（部署前5行，缺$720；不變式守衛+命中行數0或5否則回滾；只改drawing_cost，orders表不碰）；須在n8n V47.25部署之後套用
+│   │   └── 0095_sync_order_guard_edit_deleted.sql ← D81：sync_order_to_mirror 拒絕對已軟刪訂單嘅edit（RAISE P0001，零副作用）；create重用已刪ID仍復活（0087語義保留）；只改函數，不碰任何訂單資料
 │   ├── rls/
 │   │   └── rls_policies.sql             ← Row Level Security 政策
 │   ├── descriptions_comments.sql        ← 全表全欄位中文說明（2026-05-13 新增，Fat Mo 查閱用）
