@@ -2,7 +2,7 @@
 
 **用途**：接到 Fat Mo 一句「canva-auto 新單」+ 訂單資料，走完 Canva 記念短片開殼→加工→換料→學習→出貨全流程。內建 diff-learning 校正回饋迴圈（同 3D pipeline 樣本庫同一原理）。
 **觸發指令**：`/canva-auto` 或對話講「canva-auto 新單」
-**版本**：v1.8.0（2026-09-13，flow 2026-09-13-0857：placement_memory.json 升級 schema v2，Stage④/Step 0 寫入規格新增 lessons[]/rules[]；v1.7.0 2026-09-12 0600903 首單全幅款 page3 做法＋Stage⑤ 新月份合集；v1.6.0 2026-08-25 新增 Stage⑤；初版 v1.0.0 2026-07-11 S164 建）
+**版本**：v1.8.3（2026-09-20，Dorothy 0600728：特訂單排除出母片候選、Stage⑤ 橫向插圖做法、CV-43~47、CV-37 retired；v1.8.0 2026-09-13，flow 2026-09-13-0857：placement_memory.json 升級 schema v2，Stage④/Step 0 寫入規格新增 lessons[]/rules[]；v1.7.0 2026-09-12 0600903 首單全幅款 page3 做法＋Stage⑤ 新月份合集；v1.6.0 2026-08-25 新增 Stage⑤；初版 v1.0.0 2026-07-11 S164 建）
 **依賴**：Canva MCP（Claude Code 端配置；Antigravity 環境無此 MCP，本指令不可攜）、本地 python + rembg（`canva_auto/local_prep.py`）
 **數值唯一真理來源**：`canva_auto/placement_memory.json`——本檔與記憶檔只放流程，**不放任何座標/尺寸數值**；錨點一律開單時從 JSON 讀。
 
@@ -86,7 +86,7 @@ exit code ≠ 0 即代表寫入有缺（缺欄位／規則引用錯誤／type �
 0. **素材角色核對（CV-33，4單收斂升格）**：素材夾常混入唔跟命名慣例或非本產品線嘅檔（UUID jpg、plaint.png、Free_Laser png 等）。開工前逐檔睇，角色唔清楚就問 Fat Mo，唔好靠檔名推斷。已知：`plaint.png`＝花環參考、`word.png`＝字句參考（兩者都唔上載）；UUID jpg 通常同短片無關，但可能係 Stage⑤ 右上原相（0601011 寶寶相＝插畫來源）。片數少過母片 slot 數時，揀母片前先問 Fat Mo（0600901／0600302／0601011）。
 1. **搵母片（2026-08-15 起優先序再改，TW_Ting 0600901 定案）**：
    ⚠️ **結構信號優先於音長距離**——先數本單素材：幾多條片、各自尺寸（本地 tkhd）、各自時長。母片家族由 page3 結構分辨（「兩片疊放」＝HoKaSin/Meika 系；「四片疊放」＝yunggggm/Kaki 系）。**揀錯家族會直接缺 slot，代價遠高於音長唔啱**（TW_Ting 4條片×960×960×15.04sec → 揀音長差19秒嘅 yunggggm，而非音長最近嘅 Meika/HoKaSin，證實正確）。
-   結構同級之後，先用 `mutagen`（`from mutagen.mp3 import MP3; MP3(path).info.length`）讀本單 `WhatsApp Audio *` 音長（秒，1位小數），`search-designs` 攞同款式全部母片後，**喺同結構家族內揀音長最接近嘅**；音長打平手先睇建立日期，揀**最接近**（唔係最新）嗰個——因為建立時間相近代表版式演進階段接近，比純粹「最新」更適合做母片。**排除 PILOT_/測試前綴/自動化次品**，優先 Fat Mo 人手正版。
+   結構同級之後，先用 `mutagen`（`from mutagen.mp3 import MP3; MP3(path).info.length`）讀本單 `WhatsApp Audio *` 音長（秒，1位小數），`search-designs` 攞同款式全部母片後，**喺同結構家族內揀音長最接近嘅**；音長打平手先睇建立日期，揀**最接近**（唔係最新）嗰個——因為建立時間相近代表版式演進階段接近，比純粹「最新」更適合做母片。**排除 PILOT_/測試前綴/自動化次品**，優先 Fat Mo 人手正版。🔴 **同樣排除「特訂」單**：`placement_memory.json` case 帶 `no_parent:true`，或 Canva 標題含 `[特訂` 字樣（例：Dorothy 0600728 `[特訂草框·勿用作母片]`）＝Fat Mo 明示唔做下一次母片，`search-designs` 見到即跳過。
 2. `copy-design` → **一氣呵成**開 transaction：`update_title` 改名 `{客人名} 全幅AI短片({DDMM}/26) {音長}sec`（例：`Meika 純音樂 (2707/26) 35.0sec`；copy-design 的 title 參數不生效）+ `replace_text` 換 page2/3/4 字句（拆行決策表見記憶檔）→ 即刻 commit，**不得中途停等**
 3. `move-item-to-folder` 歸檔 `Free_recorder (MM/26)`
 4. 本地 `python canva_auto/local_prep.py --color 彩色圖.png --bw 黑白圖.png --out-dir {folder}/local_prep_out/`（勿漏——S164 曾漏做）
@@ -288,12 +288,20 @@ scale s = 0.369803187    tx = -105.011    ty = +40.440
 用簽名「Free_Handsss」交叉驗證 left/top/width/fontSize **四項 Δ 全部 = 0.0000**；花環啱好落 `left=0, w=500`（橫跨成頁闊）。**但字句唔跟呢條式**——Fat Mo 另行重排（字級 21.8221／lineHeight 1.67／letterSpacing 0.165／box 200.566），照 `replace_text` 繼承母版格式即可，唔好用變換式算。
 
 - **右上原相**：container 沿用母版 `135.367²  @ left=364.633, top=0`（`left+w = 500.000` 貼實右上角），**唔使 resize**，只按 media 原生 aspect 出 cover imageBox（`h=135.367, w=135.367×aspect, left=(135.367−w)/2, top=0`）
-- **彩色插圖**：沿用母版 **center 同 height**，闊度按新素材原生 aspect 重算（零變形），`crop_media` 歸零。唔好照抄純變換式數值（Fat Mo 母版本身對花環有人手微調，跟母版 center 先接得返佢個構圖）
+- **彩色插圖**：`crop_media` 歸零、零變形；唔好照抄純變換式數值（Fat Mo 母版本身對花環有人手微調，跟母版 center 先接得返佢個構圖）。
+  - 正方／直向插圖：沿用母版 **center 同 height**，闊度按新素材原生 aspect 重算。
+  - 🔴 **橫向插圖（3:2，0600728 首見）**：闊度上限＝**草框墨水內側空間**，**唔准**照上面「沿用 height」放大闊度（0600728 初版 319.62 闊遮咗草框，Fat Mo 指正「不可以遮到草框內側」）。做法＝沿用母版**左右邊界**（＝草框內側，母版 214.43），高度按 aspect 算（143.85），垂直中心沿用母版。內側位置必須 `export-design` 真圖逐列掃描實測，唔好用 container 邊界估（CV-47）。
+  - 草框換成特訂素材時（`plaint*.png`）：母片草框 fill 鎖死（CV-43），換唔到；線稿原檔可能係黑底冇 alpha（CV-46），落白底頁 export 會全黑——要本地出真透明版（深底白線／白底深線）再由 Fat Mo 上載。
 - **花環／水彩 blob／簽名**：母版原封不動繼承
 
 ---
 
 ## Known failure modes（追加區，見 05 §1 權限）
+
+- 🔴 **母片裝飾元素 fill 鎖死**（0600728，CV-43）：草框／水彩 blob／星星等 `isMediaReplaceable:false`，`update_fill`／`crop_media` 一律報 `not_permitted: The fill in the element is not editable`。換裝飾素材＝結構性人手位；AI 只可用新元素頂替＋舊元素 `update_opacity:0`（**禁 delete**，CV-01）。Fat Mo 實際手法：UI 刪母片草框 group 自建新組，兩個 container 共用同一素材，各自用 `imageBox` left offset 取左／右半（唔用 flip／rotation）。
+- **`recolor_element` 只食向量**（CV-44）：raster 圖報 `not_permitted: Selected entity cannot be recolored`；線稿要改色須本地預處理（alpha＝255−亮度、RGB 填目標色）。
+- **元素層背景移除唔跟 asset 走，第 2 次**（CV-36／CV-46）：`plaint2.png` 原檔黑底冇 alpha，短片頁睇落正常係因 Fat Mo 喺元素上撳咗背景移除；同一 asset `update_fill` 落另一個 design（如 Stage⑤ 存檔頁）export PNG／JPG 全黑。判準＝白底頁 export 真圖採樣。
+- **page3 右下小組合要按 page2 最終版重算精確仿射**（CV-45）：page2 構圖一變（如特訂草框放大），scale 就變（0600914 s=0.32951 → 0600728 s=0.309299），唔可沿用母片細格 top／height。次序＝page2 定案後先做。
 
 - 🔴 **`merge-designs` 對超出編輯上限嘅巨型 design 會「假成功」**：回 `status:"success"` 但實際冇插入任何頁。**必須事後 `read-design` 實查 page_count**（0600302 首見，詳見 Stage⑤）
 - **巨型 design（實測 156 頁）開唔到 editing transaction**，`read-design open_transaction`／`edit-design` 全部拒絕；但 `copy-design(page_numbers=[N])` **單頁複製唔受限**，係目前唯一入手點
@@ -322,6 +330,7 @@ scale s = 0.369803187    tx = -105.011    ty = +40.440
 
 ## 版本更新日誌
 
+- v1.8.3（2026-09-20，Dorothy 0600728 特訂草框）：Stage① 母片選擇新增**排除特訂單**（`no_parent:true`／標題含 `[特訂`）；Stage⑤ 彩色插圖拆**正方／直向**同**橫向**兩種做法（橫向闊度上限＝草框墨水內側，CV-47），並補特訂草框素材注意事項；Known failure modes 追加 CV-43／CV-44／CV-46／CV-45 四條；`placement_memory.json` 新增 CV-43~CV-47，**CV-37 retired**（Fat Mo 確認：0600914／0600728 已直接採用 local_prep 輸出，規則同現行做法矛盾）。史上首單橫向 3:2 圖對＋橫向動畫，6 格中 4 格零修改。
 - v1.8.2（2026-09-15，_hilaryy. 0601011）：Stage① 新增第0步「素材角色核對」（CV-33 達4單升格）；`placement_memory.json` 新增 CV-42（字句行數少過母片／短句時，字號同字距唔好照抄母片，2行約55-56px、字距約0.14）
 - v1.8.1（2026-09-14，Shirley 0600914）：Stage④ 刪除「出唔出 MP4／封面 JPG 要問 Fat Mo」舊句，改為**預設唔出、唔准問、直接開 Stage⑤**（0600302/0600903 已明示，0600914 AI 照舊句再問，Fat Mo 定性重複犯錯）；`placement_memory.json` 新增 CV-38（Stage③ 讀全部頁搵臨時件）、CV-39（page2 圖對上限花環 top／下限字句 top）、CV-40（page4 動畫格跟 page2 彩色格，唔繼承母片 Fat Mo 單次微調值）、CV-41（本條，已升格）
 - v1.8.0（2026-09-13，flow 2026-09-13-0857，Canva 學習記錄重構）：`placement_memory.json` 升級 `schema_version:2`——新增頂層 `rules[]`（規則編號表 CV-01..CV-35，跨單教訓統一編號＋升格追蹤）＋逐 case `category`/`page_count`/`parent_order`/`first_pass_total`/`first_pass_corrected`/`lessons[]`（逐 Page/流程列點，五類型標籤）；11 個既有 case 已回填（AI 抽取 + fresh-context agent 兩輪覆核）；v1 舊欄位一字不刪、零改動（887 key path 深比對驗證）。新增 `scripts/canva_memory_validate.js`（Stage④ 寫入後強制跑嘅防退化校驗 CLI）＋`scripts/_oneoff/canva_lessons_merge.js`（一次性回填腳本，保留審計）。Agent Dashboard `renderCanvaLearningZone` 同步重寫：純音樂/全幅款分組置頂、規則表雙向錨點跳轉、AI 首次準確率／Canva 連結／母片連結／類型篩選；順手修正 `.cnote[open]` 展開摘要重複顯示嘅舊 bug（IG/Canva/3D 三個學習記錄 zone 共用）。Step 0 新增「Schema v2 寫入規格」段，Stage④ 同步引用。
