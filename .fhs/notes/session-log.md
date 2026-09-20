@@ -2407,3 +2407,10 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 生產 5 行 V2 品項 `drawing_cost=0` 已由 n8n 按費率×qty 計並回填；`orders` 表零改動，fresh-context `finance-auditor` 覆核 PASS；測試單軟刪、0600106 補確認日期。
 - 2026-09-20 追加：前端成本估算影響評估（自己讀碼、冇派 finance-auditor）被 Fat Mo 質疑後，經 `finance-auditor` 核實並更正，見 completion report §五。
 - 全文見 [completion report](../reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)、decisions.md D80。**Subagent 使用記錄**：✅ `finance-auditor` ×3（前期獨立 live 驗證＋後期 fresh-context 覆核＋裁決查證）。
+
+## 2026-09-20 — canva-auto Dorothy 0600728（特訂草框）全幅款第5單（Claude Code / Sonnet 5 + Opus 5）
+
+- 全幅款 Stage①-④＋⑤存檔頁交付；史上首單橫向 3:2 圖對＋橫向動畫，6 格 4 格零修改；Fat Mo 特訂草框（plaint2.png）唔做母片，標題已標 `[特訂草框·勿用作母片]`，案例加 `no_parent:true`。新規則 CV-43~CV-47，CV-37 retired。
+- 存檔頁右上原相、`plaint_dark.png` 上載、貼入合集 p153 後仍待 Fat Mo。
+- 全文見 [Changelog.md 2026-09-20（Dorothy 0600728）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600728`。
+- **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。

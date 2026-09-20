@@ -1,5 +1,17 @@
 # Changelog
 
+## [2026-09-20] canva-auto Dorothy 0600728（特訂草框）— 全幅款第5單，Stage①-④＋⑤存檔頁交付，唔做母片；CV-43~47 新規則、CV-37 retired
+
+- **單號**：Dorothy 0600728，全幅AI短片，字句 `You completed our “Family” / where life begins and / love never ends`（跟 `word.png` 拆3行，句中「-」冇跟）。母片 Shirley 0600914（最新全幅款、已收斂）→ 成品 `DAHVuBDnNtk`，歸檔 `Free_recorder (09/26)`。
+- **首次**：橫向 3:2 圖對（黑白 2016×1344／彩色 1264×848）＋橫向 Lovart 動畫（`影片 1.mp4` 本地 tkhd 1112×834，Canva metadata 報 1112×1668＝CV-17 第7次）。AI 交付 6 格幾何 **4 格零修改**（page2 兩圖、page3 直片、page4 動畫），用「同 top＋同 height＋同中心 x=960」取代 CV-05「統一 left」（兩圖 ink 中心實測差 0.1%）。
+- **特訂草框**：Fat Mo 上載 `plaint2.png`（向日葵，2048² 白線透明）取代母片草框，UI 刪舊 group 自建新組（兩 container 共用素材、`imageBox` left offset 取左／右半，唔用 flip）。AI 試 `update_fill` 母片草框→**not_permitted**（CV-43），`recolor_element` 拒 raster（CV-44），遂本地生成 `plaint_white.png`／`plaint_dark.png`（`local_prep_out/`）。page3 細組合要跟 page2 最終版精確仿射（s=0.309299，6組元素最大誤差 0.02px），AI 沿用母片值屬錯（CV-45）。
+- **標記**：Fat Mo 明示特別訂做、唔做下一次母片、加名稱——Canva 標題改 `Dorothy 全幅AI短片(2009/26) [特訂草框·勿用作母片]`；`placement_memory.json` case 加 `no_parent:true`＋`variant`；`canva-auto.md` Stage① 母片選擇加排除規則。
+- **Stage⑤ 存檔頁** `DAHVutmGpgo`（由 `Free_Laser (09/26)` p153 單頁複製，已歸檔）：彩色插圖＋字句已換。**AI 兩處錯**：①橫向彩色插圖照 SOP「沿用母版 height」→ 319.62 闊遮草框，Fat Mo 指正後改沿用母版左右邊界 214.43（CV-47，`canva-auto.md` Stage⑤ 拆正方／橫向兩種做法）；②花環換 plaint2 export 全黑（CV-46＝CV-36 第2次，元素層背景移除唔跟 asset 走），已還原母版樹枝。
+- **待 Fat Mo**：拖入本客原相 `ba614e8b-…jpg`、上載 `plaint_dark.png`（AI 再換草框）、Ctrl+A/C/V 貼入合集 p153 後。
+- **CV-37 retired**：「local_prep 輸出唔達標」同 0600914／0600728 實際做法矛盾，Fat Mo 確認標記 `retired:true`（id 不重編、舊 lesson 引用保留）。SOP 待答條目③（local_prep 改跟 Fat Mo 漸變填色）因此失去前提。
+- 檔案：`canva_auto/placement_memory.json`（case 0600728＋9 slots＋15 lessons＋convergence_log；rules 42→47）、`.fhs/ai/commands/canva-auto.md` v1.8.3；`node scripts/canva_memory_validate.js` PASS。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
 ## [2026-09-19] V2 品項層 `order_items.drawing_cost` 恆為 0 修復——n8n V47.25 + migration 0094（D80）
 
 - **修復**：生產 5 行 V2 品項 `drawing_cost=0`（缺 $720，違反 Cost Schema v2 §10.3）；n8n `Calculate Profit & Pack Items` V47.24→V47.25（非家庭 V2 品項 `Drawing_Cost = 費率 × qty`，取代透傳 Dashboard 值）＋ migration 0094 回填 5 行；`orders` 表零改動（3 張單整行雜湊＋全表雜湊逐位一致），fresh-context `finance-auditor` 覆核 PASS。
