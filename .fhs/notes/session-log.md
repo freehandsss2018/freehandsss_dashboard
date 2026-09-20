@@ -2405,4 +2405,5 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-20 — D80：V2 品項層 drawing_cost 修復（n8n V47.25 + migration 0094）（Claude Code / Opus 5→Sonnet 5）
 
 - 生產 5 行 V2 品項 `drawing_cost=0` 已由 n8n 按費率×qty 計並回填；`orders` 表零改動，fresh-context `finance-auditor` 覆核 PASS；測試單軟刪、0600106 補確認日期。
-- 全文見 [completion report](../reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)、decisions.md D80。**Subagent 使用記錄**：✅ `finance-auditor` ×2（前期獨立 live 驗證＋後期 fresh-context 覆核）。
+- 2026-09-20 追加：前端成本估算影響評估（自己讀碼、冇派 finance-auditor）被 Fat Mo 質疑後，經 `finance-auditor` 核實並更正，見 completion report §五。
+- 全文見 [completion report](../reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)、decisions.md D80。**Subagent 使用記錄**：✅ `finance-auditor` ×3（前期獨立 live 驗證＋後期 fresh-context 覆核＋裁決查證）。

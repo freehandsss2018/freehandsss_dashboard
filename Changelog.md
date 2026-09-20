@@ -4,7 +4,7 @@
 
 - **修復**：生產 5 行 V2 品項 `drawing_cost=0`（缺 $720，違反 Cost Schema v2 §10.3）；n8n `Calculate Profit & Pack Items` V47.24→V47.25（非家庭 V2 品項 `Drawing_Cost = 費率 × qty`，取代透傳 Dashboard 值）＋ migration 0094 回填 5 行；`orders` 表零改動（3 張單整行雜湊＋全表雜湊逐位一致），fresh-context `finance-auditor` 覆核 PASS。
 - **2026-09-20 追加**：測試單 `testV2draw0919` 經 Fat Mo 授權軟刪；真單 0600106 補設 `confirmed_at=2026-05-22`（KPI 不變，以預約日計入 2026-05 係 D43續三核准設計）；Fat Mo 澄清「待確認」＝訂單細節待確認、與財務無關、訂金／全付已實收，已落 `finance-gatekeeper` §四、`learnings/finance.md` #7。
-- 全文（根因、驗證、覆核揪出嘅 2 項錯誤、待辦）見 [completion report](.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)；決策見 decisions.md D80（原暫編 D79，撞主線 D79 n8n secret 修補，merge 時重編）。**Subagent 使用記錄**：✅ `finance-auditor` ×2。
+- 全文（根因、驗證、覆核揪出嘅 2 項錯誤、待辦）見 [completion report](.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)；決策見 decisions.md D80（原暫編 D79，撞主線 D79 n8n secret 修補，merge 時重編）。**2026-09-20 更正**：前端成本估算影響評估經 `finance-auditor` 核實後更正（該數字屬 Fat Mo 2026-06-03 裁決嘅參考估算、07-21 起 UI 隱藏、賠本守衛從未觸發；「暫不改」冇裁決，Fat Mo 未裁決），見 completion report §五。**Subagent 使用記錄**：✅ `finance-auditor` ×3。
 
 ## [2026-09-19] D79：n8n Mirror Prep 洩漏 Supabase secret key 入 execution data 修補 + 刪 92 個含 key execution（n8n API key 公開暴露待 Fat Mo 更換）
 
