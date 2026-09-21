@@ -1,8 +1,9 @@
 ---
 name: FHS Product Cost Schema (Core)
-version: v2.4.1
+version: v2.4.2
 created: 2026-05-28
-updated: 2026-08-16（cl-flow 2026-08-16-2355，D65：§10.6 S/P判定改「全單任何一件」語義，取代舊有「僅讀主套裝」判斷；成人mode改「owner存在」判定，不再要求玻璃瓶(家庭)字面SKU）
+updated: 2026-09-19（D80：§10.4 實作行同步 n8n V47.25——非家庭 V2 品項 Drawing_Cost 由 n8n 按 §2.1 費率×quantity 計算、不再透傳 Dashboard 值；migration 0094 回填歷史 5 行；§10.3 規則本身不變）
+[前次] 2026-08-16（cl-flow 2026-08-16-2355，D65：§10.6 S/P判定改「全單任何一件」語義，取代舊有「僅讀主套裝」判斷；成人mode改「owner存在」判定，不再要求玻璃瓶(家庭)字面SKU）
 [前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人tier V2覆蓋擴充+家庭組合鎖匙扣動態畫圖exception新增，§2.1新增24號key，§10.1/§10.2/§10.6）
 authority: SSoT for cost_configurations 24-key schema + V2統一SKU模型（Core layer；S189審查後升格）
 companion_docs:
@@ -13,7 +14,7 @@ references:
   - airtable-database/Base_Costs-Grid view.csv (歷史成本記錄)
   - .fhs/notes/addon_product_sop.md (加購配件 SOP)
   - supabase/migrations/0020_financial_settings_system.sql (v1 schema)
-  - supabase/migrations/0073/0076-0078 (V2統一SKU模型 + 歷史回填，見§10)
+  - supabase/migrations/0073/0076-0078/0094 (V2統一SKU模型 + 歷史回填，見§10；0094=2026-09-19 V2品項 drawing_cost 回填)
   - supabase/migrations/0081-0082 (大寶/家庭tier擴充+position_code CHECK擴充，見§10.6)
 status: v2.3.0 active
 status_note: 原v2.2.0規劃嘅3-subagent audit鏈（database-reviewer/code-reviewer/ui-designer）從未正式完成即擱置逾7週；本次升格依據係§2.1內容已於S124/D40-D45/S189多個session實際生產驗證使用（非事後補簽審查記錄）——production-validated supersedes原定審查流程。此為誠實揭露，非假裝已審查。
@@ -425,7 +426,7 @@ drawing_position_dedup_deduction（訂單層扣減，寫入n8n_adjustment_notes�
   = Σ(每個非首件品項嘅 quantity × tier_drawing_rate)
 ```
 
-實作：n8n workflow `FHS_Core_OrderProcessor`「Calculate Profit & Pack Items」節點 V47.22（現行 live）。歷史舊模型訂單回填見 migrations 0076-0078（架構責任分工見 `FHS_Finance_Bible.md` 新增章節「V2統一成本模型 — 架構責任」）。
+實作：n8n workflow `FHS_Core_OrderProcessor`「Calculate Profit & Pack Items」節點 V47.25（現行 live；V47.22 起實作同部位豁免，V47.25 起非家庭 V2 品項 `Drawing_Cost` 由 n8n 按 §2.1 費率 × `quantity` 自行計算、不再透傳 Dashboard 值，見 `FHS_System_Logic_Overview.md` §5.4.23）。V2 品項歷史 5 行 `drawing_cost` 回填見 migration 0094（2026-09-19）。歷史舊模型訂單回填見 migrations 0076-0078（架構責任分工見 `FHS_Finance_Bible.md` 新增章節「V2統一成本模型 — 架構責任」）。
 
 ### 10.5 快照聲明
 

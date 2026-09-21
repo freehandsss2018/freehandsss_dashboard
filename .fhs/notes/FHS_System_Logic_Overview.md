@@ -166,7 +166,7 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 ### 3.3 成本計算邏輯（Calculate Profit & Pack Items）
 
 - **讀取來源**：每件 `Total_Base_Cost` 來自 Smart Cache → Supabase `products.total_base_cost`
-- **四分量**（Task A）：直接從前端透傳的 `Drawing_Cost / Printing_Cost / Chain_Cost / Shipping_Cost` 讀取
+- **四分量**（Task A）：直接從前端透傳的 `Drawing_Cost / Printing_Cost / Chain_Cost / Shipping_Cost` 讀取（**例外**：V2 非家庭品項嘅 `Drawing_Cost` 自 V47.25 起由 n8n 按費率×qty 計算、忽略前端值，見 §5.4.23；家庭組合 V2 自 V47.24 起亦由 n8n 動態計算，見 Cost Schema v2 §10.6）
 - **運費扣減**（訂單層）：
   - 鎖匙扣：`(keychainItemCount-1) × $20`
   - 吊飾：`(charmItemCount-1) × $35`
@@ -212,9 +212,9 @@ Supabase Mirror Prep → Supabase Active Switch → HTTP: Supabase Sync RPC
 |------|------|
 | `item_key` | `{OrderID}_{類型}_{部位}` 唯一鍵 |
 | `total_base_cost` | 每件成本總數（來自 products）|
-| `drawing_cost` | 畫圖費分量（Task A，前端傳入）|
+| `drawing_cost` | 畫圖費分量（Task A，前端傳入；**V2 非家庭品項自 V47.25 起由 n8n 計算**，見 §5.4.23）|
 | `printing_cost` | 打印/鑄造費分量（Task A，前端傳入）|
-| `chain_cost` | 鏈條/環扣費分量（Task A，前端傳入）|
+| `chain_cost` | 鏈條/環扣費分量（Task A，前端傳入；**吊飾自 V47.20 起由 n8n 按 `100 × quantity` 計算**，見 §5.4.5）|
 | `shipping_cost` | 運費毛值分量（Task A，前端傳入）|
 | `precomplete_status` | 「完成」前的 process_status 快照（用於精準退回）；`fhs_complete_order` 寫入，`fhs_uncomplete_order` 讀取後清空 |
 
@@ -376,7 +376,7 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
   - **邏輯**：由 `Order_Item_Key` 後綴（`_LH`/`_RH`/`_LF`/`_RF`）推導 `position_code`；同一 position_code 之下**跨品類**（鎖匙扣+吊飾共享豁免資格，同Dashboard前端 `calculatePricing()` 嘅 `chargedPositions` Set 精神一致——同部位3D掃描只需一次）分組，組內按 `packedItems` 原始順序，第1件收畫圖費，其餘全部豁免；扣減鏡像現有 `keychainShippingDeduction`/`charmChainSharingDiscount` 寫法（訂單層扣減 + `n8n_adjustment_notes` 審計記錄），僅V2統一SKU套用，舊SKU完全不受影響。
   - **結構化欄位落地**：`order_items.position_code`/`drawing_waived`/`drawing_charged_count`/`cost_model_version`（migration 0073已建）首次被實際寫入非NULL值——`sync_order_to_mirror()` RPC（migration 0075）擴充 INSERT/UPDATE 支援呢4個欄位，`Supabase Mirror Prep` 節點同步傳遞。
   - **Live webhook 對抗測試**（跨品類同部位訂單：右手鎖匙扣qty4 + 右手吊飾qty1 + 左腳鎖匙扣qty2）：**結果完全吻合人手推導**——右手鎖匙扣`drawing_charged_count=1`（首件），右手吊飾`drawing_charged_count=0`（同部位第2件，正確跨品類豁免），左腳鎖匙扣`drawing_charged_count=1`（新部位首件）；訂單層`total_cost=$1,490`/`keychain_cost=$890`/`necklace_cost=$600`，`n8n_adjustment_notes`記錄`drawing_position_dedup_deduction:-$300`並附逐行detail拆解，數字全部核對正確。**再次舊SKU regression確認未受V47.22影響**（`$500`不變，4個新欄位皆NULL）。全部測試訂單已清理。
-  - **已知非阻斷性小瑕疵**：`_fourColGross`收斂律自我檢查（審計用，`amount=0`唔影響實際財務數字）對V2 SKU會產生誤導性差異提示——因為呢個檢查原本針對舊SKU嘅前端四分量pass-through設計（`Drawing_Cost`/`Printing_Cost`/`Shipping_Cost`），V2訂單前端未必填呢啲欄位，令`convergence_note`嘅差值計算對V2單無意義。純cosmetic，唔影響任何實際入帳數字，留待日後獨立處理（唔喺本次Phase2範圍）。
+  - **已知非阻斷性小瑕疵**：`_fourColGross`收斂律自我檢查（審計用，`amount=0`唔影響實際財務數字）對V2 SKU會產生誤導性差異提示——因為呢個檢查原本針對舊SKU嘅前端四分量pass-through設計（`Drawing_Cost`/`Printing_Cost`/`Shipping_Cost`），V2訂單前端未必填呢啲欄位，令`convergence_note`嘅差值計算對V2單無意義。純cosmetic，唔影響任何實際入帳數字，留待日後獨立處理（唔喺本次Phase2範圍）。**→ 2026-09-19 更新（§5.4.23，V47.25）**：呢個「純cosmetic」審計差值其實遮蓋咗 V2 品項 `order_items.drawing_cost` 恆為 0 嘅真實資料缺陷（自 2026-07-24 Phase 2 上線起約 8 週）；V47.25 起 V2 品項畫圖分量由 n8n 計算，差值收窄至只剩立體擺設/配件（無四分量拆分）成本，V2 品項部分嘅誤導性已消除（對之後新同步／重新同步嘅單成立；已存嘅舊備註文字不變）。
   - **Phase 2 至此完整交付**：SKU過度匹配修復（V47.13）+ qty乘法修復（V47.21）+ 頸鏈雙重計算修復（V47.21）+ 同部位畫圖動態扣減（V47.22+RPC 0075）四項全部live驗證PASS。
 
 - **Phase 3（部分）：Dashboard 前端切換到 V2 SKU 生成（`freehandsss_dashboardV42.html`，dev版，未部署 `current.html`）**：
@@ -522,6 +522,8 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 **驗收**：`apply_migration` 成功後重跑 `FHS_Full_System_Test.py`（用返有殘留 `deleted_at` 嘅 `test9999003`），由 FAIL 變 **PASS**，「did not appear in Supabase」訊息消失。
 
 詳見 `.fhs/notes/decisions.md` D63續、migration `0087_sync_order_to_mirror_reset_deleted_at.sql`。
+
+**⚠️ 2026-09-20 後續（D81／migration 0095，§5.4.24）**：上文「無條件清 `deleted_at`」現改為**有條件**——`edit` 已軟刪訂單會被守衛拒絕；`create`（含重用已刪 ID）仍然清 `deleted_at`（本節語義保留）。
 
 ### 5.4.13 `Smart Cache Strategist` 讀 key 路徑修正：`process.env` → `$env`（2026-08-11 ✅ 已修復）
 
@@ -766,7 +768,39 @@ order_items.subtotal_cost ← 建單時複製 products.total_base_cost（快照�
 
 **驗證**：`code-reviewer` 獨立審查首輪 FAIL（`_isKeychainCategory` 判斷邏輯手機/桌面重複，已抽成全局 helper 修復）；live 起 dashboard 讀 55 張真實訂單 console 零錯誤，DOM 確認 `製作中` 品項 `⚠` 選項正確 selected 且完整選項清單正確；SQL 清洗前後即時查證數值吻合預期。詳見 decisions.md D69續六。
 
+### 5.4.23 V2 品項層 `drawing_cost` 恆為 0 修復（n8n V47.24→V47.25 + migration 0094，2026-09-19 D80 ✅ 已修復）
+
+**發現**：`finance-auditor` 2026-09-19 審查訂單 0600804 時揭發——生產庫全部 5 行 V2 品項（`cost_model_version='v2_layered'`，3 張單：0600804／06009005／0600914）`order_items.drawing_cost=0`，但 `drawing_charged_count=1`，違反 Cost Schema v2 §10.3「品項層＝全額」。合共缺 $720（60+60+360+120+120）；每行 `item_base_cost − printing − chain − shipping` 恰好等於缺失嘅畫圖分量，即其餘三分量存得正確。
+
+**根因（兩層）**：①Dashboard `calculatePricing()`（V42.html:9601-9613）有主商品時把所有已倒模部位預填入 `chargedPositions`＝「畫圖費已收」——係 S55 舊語義（選咗主套裝＝連首件都免），§10 已推翻，但呢段前端邏輯未同步，令 V2 品項恆傳 `Drawing_Cost:0`（execution 7516 webhook body 實證）；②n8n `Calculate Profit & Pack Items` V47.24 對非家庭 V2 品項 `Drawing_Cost = Number(originalItemData.Drawing_Cost) || 0` 原樣透傳，從未調用 `getDrawingRateForV2Sku()`。**點解一直冇人發現**：`Drawing_Cost` 只入收斂律審計 `_fourColGross`（`convergence_note`，`amount=0`），從不入 `Total_Cost`／分類總數；Dashboard 審計面板遇 `draw2===0` 自行按 `qty×rate` 重算顯示（V42.html:15435-15444），使用者見到嘅數字本來就啱。
+
+**修復**：
+- n8n V47.25（單行功能改動）：`Drawing_Cost: isFamilyV2 ? itemFamilyDrawing : (isV2Sku ? getDrawingRateForV2Sku(sku) * itemQty : (Number(originalItemData.Drawing_Cost) || 0))`。舊 SKU 透傳、家庭組合動態計算兩條路徑不變。
+- 部署：GET workflow→精準字串替換（每處 count==1 斷言）→PUT 四個核心欄位。live 節點註解含 8 個 U+FFFD 亂碼字元，故不用 `update_node_code`（要整段重輸出）；其餘 29 節點與連線比對零改動；備份 `n8n-mcp-backups/2026-09-19/`；repo 鏡像 `n8n/FHS_Core_OrderProcessor_live.json` 同步。
+- migration 0094：回填部署前 5 行 `drawing_cost`（不變式守衛＋命中行數必須 0 或 5，否則回滾）。**順序鐵則**：必須先部署 V47.25 再回填，否則任何重新同步（例如 0600804 當日 04:43Z 嗰次）會用 Dashboard 嘅 0 覆蓋返去。
+- Layer-2 紅線：`orders` 表完全不碰。
+
+**驗證**：①離線重放：execution 7516 真實輸入＋按 DB 重建嘅 0600914／06009005，舊新代碼逐位比對——`Total_Cost`／四分類總數／調整金額完全相同，只有 `Sub_Items[].Drawing_Cost` 改變；12 個 V2 檔位費率正確，家庭組合與舊 SKU 透傳不變；②live 端到端：測試單 `testV2draw0919`（不帶 `Order_Confirm_Date`＝未確認、預約日 2026-12-31；⚠️ 兩個 KPI RPC 按 `LEAST(confirmed_at, appointment_at)`（migration 0066）定期間歸屬，`LEAST` 忽略 NULL，未確認單以預約日入賬——而家唔計入，但 2026-12 起會計入 $6,000 收入／$2,040 成本；**2026-09-20 已經 Fat Mo 授權軟刪**，KPI 已驗證唔再計入）execution 7539 success，`drawing_cost` 60／60／220／110、`total_cost=2040`＝預先手算；③回填前後 3 張單 `orders` 整行 md5 同全表 75 張單雜湊逐位一致、其餘 145 行 `order_items` 雜湊一致，`fhs_check_product_cost_drift()` 0 行；④獨立 fresh-context `finance-auditor` 覆核：n8n 代碼 diff（3 個預期改動群組、U+FFFD 仍 8 個、其餘 29 節點零改動）／5 行資料／Layer-2 紅線（3 張單整行 md5＋全表 75 張單雜湊逐位一致）／migration 檔與已套用版本 md5 相同／repo 鏡像，全部 PASS；覆核另揪出兩項並已處理：「測試單不計入 KPI」係我寫錯嘅事實（見上②，已更正），以及 `FHS_Finance_Bible.md`／`Quadruple_Sync_Field_Map.md` 漏改（已補）。詳見 `.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md`。
+
+**殘留／教訓**：V42 `calculatePricing()` 畫圖成本估算仍沿用 S55 舊語義（生產 HTML，另案；V2 品項 `Drawing_Cost` 而家由 n8n 決定，前端值被忽略，故無財務影響）。收斂差值縮窄至只剩立體擺設／配件（無四分量拆分）成本。教訓：被標為「純 cosmetic」嘅審計差值（見上文 Phase 2「已知非阻斷性小瑕疵」）可能係真缺陷嘅唯一信號；規格推翻後要 grep 前端有冇同語義殘留。詳見 decisions.md D80；三條教訓已落 `learnings/finance.md` #2（cosmetic 審計差值）、`learnings/n8n.md` #8（live 節點含 U+FFFD 時用 GET→精準替換→PUT）與 `learnings/supabase.md` #17（斷言 RPC 排除某類資料前要讀 WHERE 謂詞）。
+
 ---
+
+### 5.4.24 `sync_order_to_mirror` 拒絕對已軟刪訂單嘅 `edit`（migration 0095，2026-09-20 D81 ✅ 已修復）
+
+**問題**：0087（§5.4.12）令 `ON CONFLICT` 無條件 `deleted_at = NULL`，所以任何對已軟刪訂單嘅同步都會令佢復活、重新計入財務 KPI。原意（`/fhs-check` 固定 test ID 重用）係合理，但「edit 一張已刪單」永遠唔係合法操作。
+
+**觸發路徑（極窄）**：Dashboard 開單／編輯單嘅讀取全部帶 `deleted_at=is.null`（V42.html:10490／10593／19280／19380／20619／22432），正常操作開唔到已刪單。Dashboard 送 `"action": currentMode`（`create`／`edit`，V42.html:11199）。**注意（2026-09-20 fresh-context 覆核）**：Dashboard 刪單實際係 Supabase **硬刪**（V42.html:14222／16177，anon `DELETE`），`deleted_at` 軟刪只來自 n8n `Mirror Delete to Supabase`／手動 SQL／測試腳本——故本守衛主要保護軟刪嘅測試／手動單，唔涵蓋 Dashboard 硬刪嘅真實單。
+
+**修法**：函數開首守衛：`p_action='edit'` 且 `p_old_order_id` 對應列 `deleted_at IS NOT NULL` → `RAISE EXCEPTION`（P0001）；喺 `rename_order_id` 同所有寫入之前，零副作用。`create`／`update` 行為不變。
+
+**取捨**：n8n webhook `responseMode=onReceived`，操作員唔會見到錯誤，只留 n8n execution log；失敗 execution 存 `apikey` header（D79 殘留）。
+
+**範圍外殘留（未處理，見 decisions D81／handoff）**：①Dashboard `sbSyncOrder()` 係 `POST orders?on_conflict=order_id`＋`merge-duplicates`（V42.html:20234，唔經 RPC、唔碰 `deleted_at`）：對軟刪單只覆寫欄位、唔復活；對硬刪 ID 會插入新行。②RPC 對不存在 ID 做 `edit` 不被拒絕（會 INSERT）。③webhook 無認證，直接 POST `create`／`update` 仍可復活軟刪單（`create` 係 0087 有意保留、`update` 只有 `/fhs-check` 用）。
+
+**驗證（2026-09-20）**：①改前 0088 函數本文 md5 ＝ live `pg_get_functiondef` md5（`4d683163…`，6082 字元），改後 live md5 ＝ repo 檔函數本文 md5（`dba96d22…`，6533 字元），刪走守衛區塊後逐位還原；②回滾子交易行為測試：`edit` 已刪單→拒絕（P0001，`deleted_at` 不變，`rename_order_id` 唔會被觸發）、`create` 重用已刪 ID→仍復活、`update`→行為不變；③`/fhs-check` 5/5 PASS（LIFECYCLE 固定 test ID 重用路徑正常）；④fresh-context `finance-auditor` 8 項 PASS（Layer-2 未刪 62 張 `total_cost` 36,835／`net_profit` 184,841 不變、驗證公式 0 違規、無殘留測試單、KPI 不變）。
+
+詳見 `.fhs/notes/decisions.md` D81、`supabase/migrations/0095_sync_order_guard_edit_deleted.sql`。
 
 ## 六、IG 訂單訊息邏輯
 
@@ -1047,8 +1081,8 @@ Layer 3（平均分，兜底）：final_sale_price / 訂單品項數
 | 3 | **RPC 死過濾器**：`get_financial_kpis`（15處）/`get_financial_charts`（5處）狀態過濾全部寫 `process_status::TEXT NOT IN ('cancelled', 'refunded')`，但 enum `order_status` 實際值係中文（待確認/製作中/完成/已取件/已取消）→ **過濾器從未生效，取消單一直計入財務 KPI** | ✅ 已修（Fat Mo 已批准，migration `fix_financial_rpc_status_filter_enum_mismatch` 已套用，20處替換 `NOT IN ('已取消')`；驗證 RPC 實跑=獨立SQL 對數分毫不差：monthly $29,570、yearly $156,120） |
 
 **已裁決並執行**：
-- 0600106（$5,680 未確認真單）Fat Mo 決定維持「待確認」唔郁，現正確排除喺兩個 RPC 財務統計之外，日後人手 confirm 先計入。
-- kpis 計未確認單 vs charts 唔計嘅口徑不一致——Fat Mo 裁決「kpis 統一收緊唔計未確認單」，migration `unify_financial_kpis_charts_unconfirmed_orders_scope` 已套用（移除 kpis current 期 4 處 `OR confirmed_at IS NULL`），驗證 kpis yearly revenue = charts trend 加總 = $150,440 分毫不差。
+- 0600106（$5,680 未確認真單）Fat Mo 決定維持「待確認」唔郁，現正確排除喺兩個 RPC 財務統計之外，日後人手 confirm 先計入。**⚠️ 已被 2026-07-23 D43續三（migration 0066）取代**：期間歸屬改用 `LEAST(confirmed_at, appointment_at)`，冇 `confirmed_at` 嘅單以預約日入賬，0600106（而家 $6,580，訂金已收全數）因此計入 2026-05 KPI——D43續三驗證時已明列（「+0600106 未確認但有約定日期」），係 Fat Mo 核准嘅設計，唔係副作用。**另（Fat Mo 2026-09-20 澄清）**：「待確認」＝日期、刻字內容等訂單細節仍待確認，**同財務無關**，訂金／全付一律已實收；上文「未確認」實指 `confirmed_at` 為空（冇入單日期），並非「待確認」狀態。2026-09-20 已補設 `confirmed_at=2026-05-22`（入單日），KPI 數字不變。
+- kpis 計未確認單 vs charts 唔計嘅口徑不一致——Fat Mo 裁決「kpis 統一收緊唔計未確認單」，migration `unify_financial_kpis_charts_unconfirmed_orders_scope` 已套用（移除 kpis current 期 4 處 `OR confirmed_at IS NULL`），驗證 kpis yearly revenue = charts trend 加總 = $150,440 分毫不差（⚠️ 其後 2026-07-23 D43續三／migration 0066 已將期間歸屬改為 `LEAST(confirmed_at, appointment_at)`，冇 `confirmed_at` 嘅單以預約日入賬，上述「唔計未確認單」口徑已被取代）。
 - V42 前端三處修復已走 `/upload-web` 升格部署至 `current.html`，三關驗證PASS，正式上線生產。
 
 事故全案至此結案，最終 monthly revenue（真實已確認）= $23,890，yearly = $150,440。

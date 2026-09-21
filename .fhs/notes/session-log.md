@@ -3,6 +3,10 @@
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-20 條目。FO/GlobalReview 由 401 復活（webhook 200、62 行）；IGWatchdog 寫入節點 401 被 continueOnFail 吞咗改為正常；ErrorMonitor 修復；IGWatchdog 2026-09-21 排程已驗證（message_intents 恢復寫入）；ErrorMonitor 待有 workflow 出錯先能驗。
 **Subagent 使用記錄**：✅ finance-auditor（背景，獨立覆核 Financial Overview 輸出；財務紅線）。
+## 2026-09-20 (D81：sync_order_to_mirror 拒絕 edit 已軟刪訂單，migration 0095): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-20 D81 條目與 decisions.md D81。守衛只攔 `edit` 已刪單；`create` 重用 ID 仍復活（0087 語義保留）。事前將風險講得過重（Dashboard 本身開唔到已刪單），已誠實記錄。
+**Subagent 使用記錄**：✅ `finance-auditor`（影響評估＋收尾覆核）。
 
 ## 2026-09-19 (D79：n8n Mirror Prep 洩漏 Supabase key 入 execution data 修補 + 刪 92 個 execution): 🏷️ ✅
 
@@ -2405,4 +2409,24 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - Fat Mo「canva-auto 新單」處理 0600914 Shirley，母片揀同日前一單 Chinok 0600709（材料模式一致）。Stage①-④交付：AI 6格幾何只page3直片零修改，其餘5格被Fat Mo改（page2圖對底邊壓字句、page4動畫錯繼承母片單次放大值），落新規則CV-38/39/40。Stage⑤存檔頁已建，彩色插圖+字句已換，export真圖零白框，待Fat Mo換本客原相後貼入合集。
 - 🔴**本次重點**：Stage④交付時再問「MP4/封面JPG出唔出」，Fat Mo指出0600302/0600903已講過「唔出」，屬重複犯錯。根因查明：指示只落個別case note，SOP原句從未同步改。已修正`canva-auto.md`Stage④段+記憶檔+新增規則CV-41（已升格）+落`learnings/governance.md`通則教訓（指令流程嘅常設決定必須改SOP本體，唔可以淨落case note）。
 - 全文見 [Changelog.md 2026-09-14（Shirley 0600914）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600914`、`learnings/governance.md` #13。
+- **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
+## 2026-09-20 — D80：V2 品項層 drawing_cost 修復（n8n V47.25 + migration 0094）（Claude Code / Opus 5→Sonnet 5）
+
+- 生產 5 行 V2 品項 `drawing_cost=0` 已由 n8n 按費率×qty 計並回填；`orders` 表零改動，fresh-context `finance-auditor` 覆核 PASS；測試單軟刪、0600106 補確認日期。
+- 2026-09-20 追加：前端成本估算影響評估（自己讀碼、冇派 finance-auditor）被 Fat Mo 質疑後，經 `finance-auditor` 核實並更正，見 completion report §五。
+- 全文見 [completion report](../reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)、decisions.md D80。**Subagent 使用記錄**：✅ `finance-auditor` ×3（前期獨立 live 驗證＋後期 fresh-context 覆核＋裁決查證）。
+
+## 2026-09-20 — canva-auto Dorothy 0600728（特訂草框）全幅款第5單（Claude Code / Sonnet 5 + Opus 5）
+
+- 全幅款 Stage①-④＋⑤存檔頁交付；史上首單橫向 3:2 圖對＋橫向動畫，6 格 4 格零修改；Fat Mo 特訂草框（plaint2.png）唔做母片，標題已標 `[特訂草框·勿用作母片]`，案例加 `no_parent:true`。新規則 CV-43~CV-47，CV-37 retired。
+- 存檔頁右上原相、`plaint_dark.png` 上載、貼入合集 p153 後仍待 Fat Mo。
+- 全文見 [Changelog.md 2026-09-20（Dorothy 0600728）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600728`。
+- **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
+## 2026-09-21 — canva-auto augustinefok 07001006（純音樂）（Claude Code / Sonnet 5）
+
+- 純音樂 Stage①-⑤交付；母片揀 Meika 後發現 page3 片格 290×580 直格唔配正方片，改用 HoKaSin（CV-48）；Fat Mo 自行重做兩張圖對（彩色＝元素層背景移除，CV-36／CV-49）；AI 幾何 6 格修正 4 格。新規則 CV-48~CV-51，validator exit 0。
+- 存檔頁 `DAHVv8QrIGc` 已備妥，待 Fat Mo 貼入 `Free_Laser (09/26)`；廢棄副本 `DAHVvi7ZCBI` 待 Fat Mo UI 刪。
+- 全文見 [Changelog.md 2026-09-21（augustinefok 07001006）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `07001006`。
 - **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。

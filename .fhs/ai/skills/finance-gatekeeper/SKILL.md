@@ -1,10 +1,13 @@
 ---
 name: finance-gatekeeper
 type: fhs-native
-version: 1.16.0
+version: 1.18.0
 scope: pre-load（任何財務任務前強制載入）
 authority: L1 + L2 路由守門員
-last_updated: 2026-09-19（0600804 事故後：新增 §〇 強制派工閘 + 第6條死線「財務必派 finance-auditor」+ §六 Known failure modes；原 line 22「不替代…需另行啟動」措辭太軟，被當成可選）
+last_updated: 2026-09-20（§一路由表新增「前端 `calculatePricing()` 成本估算／前後端成本分工」一行——`finance-auditor` 第二次覆核揪出：本 Skill 係強制前置，但路由表 27 行內無一行指向前端成本估算，直接令 AI 兩次向 Fat Mo 答錯「冇任何裁決」；真實情況係有 S57／S60／2026-07-21 三條裁決）
+[前次] 2026-09-20（§四補「待確認」定義：同財務無關、訂金／全付一律已實收、`confirmed_at`＝入單日——Fat Mo 澄清；與主線 0600804 方案C（v1.16.0：§〇 強制派工閘、第6條死線、§六 Known failure modes）merge，版本 1.17.0）
+[前次] 2026-09-19（D80：V2 品項層 drawing_cost 恆為 0 修復——n8n V47.25 + migration 0094，§一路由表加一行指向 §5.4.23；§三B「現行已定案方程式」V2 條補品項層 drawing_cost 語義）
+[前次] 2026-09-19（0600804 事故後：新增 §〇 強制派工閘 + 第6條死線「財務必派 finance-auditor」+ §六 Known failure modes；原 line 22「不替代…需另行啟動」措辭太軟，被當成可選）
 [前次] 2026-09-18（cl-flow 2026-09-18-1827 期一：`/fhs-cost-audit`（純 Airtable）已廢除歸檔，功能重寫落 Supabase 併入 `/fhs-check` COST_INTEGRITY phase，§一路由表加一行指向新機制）
 [前次] 2026-08-22（D65續IV-follow：玻璃瓶「＋大寶」價階 $1,680/$1,980（同 tier ＋$300）+ 兩個新 SKU（migration 0091）；肢數 tier 改為只數嬰兒肢體，推翻 2026-07-21 定案；§一路由表加一行，見 §5.4.20。同日稍早 migration 0090「純大寶」版本為錯誤實作已作廢）
 [前次] 2026-08-19（D67：`save_structured_order_items` RPC DELETE+INSERT 漏14個成本/V2欄位修復，migration 0089，§一路由表加一行，見 §5.4.19）
@@ -73,6 +76,8 @@ compatible_with: AGENTS.md v1.7.3
 | 父母/大寶唯一性規則 / 家庭瓶歸屬（owner）/ 家庭定價 $2,580 判斷歸邊件 / 家庭組合鎖匙扣 S/P 全單判定 | `FHS_System_Logic_Overview.md` §5.4.17（D65，2026-08-16）：父母/大寶升格「訂單層一次性角色」，全單最多一件家庭瓶，歸屬由 `#p_family_owner` 選擇器指定（`_isFamilyOwner()`）；業務規則七條+owner機制全文見 `FHS_Product_Definition.md` §3.1a；家庭組合鎖匙扣 S/P 語義＝「全單任何一件」倒模狀態（與立體擺設家庭定價「只讀 owner 件自身」刻意不同，見 §3.3a） |
 | 立體擺設價錢真源 / `_pPriceOfSku` 定義喺邊 / 卡片徽章顯示邏輯 | `FHS_System_Logic_Overview.md` §5.4.18（D65續II，2026-08-17）：`calculatePricing()` 原 inline 價錢判斷式抽為純函數 `_pPriceOfSku(name)`，卡片 owner 徽章與報價共讀同一函數（結構上不可能唔一致）；純代碼結構重構，128組窮舉證實零財務規則語義變動，七條業務規則本身不變 |
 | 有大寶嘅玻璃瓶點計 / `玻璃瓶套裝 (N肢+大寶)` SKU / 2肢4肢點數 / 倒模對象組合邊啲可能 | `FHS_Pricing_Bible.md` §0＋§2.1（唯一定價 SSoT，含 7 格組合窮舉表）+ `FHS_System_Logic_Overview.md` §5.4.20（D65續IV-follow，2026-08-22，migration 0091）：有大寶參與＋無父母 → $1,680／$1,980（同 tier 純嬰兒價 ＋$300）；純嬰兒 $1,380／$1,680 不變；含父母一律 $2,580 flat 不變。成本三者同為 $210 flat（純定價調整，＋$300 全落淨利）。**肢數 tier 只數嬰兒肢體**（2026-08-22 起，推翻 2026-07-21「大寶肢體同等計入」定案）。**業務定義**：嬰兒＝首個孩子、大寶＝第二個孩子，故「有大寶必有嬰兒」，純大寶單定義上不可能（誤入時由既有橙色提醒接住，不阻擋）。`en_parent` 已勾但零嬰兒肢體＝硬阻擋（2026-07-19 起既有）。新增立體擺設 SKU **無須改 n8n**（`Smart Cache Strategist` 前綴表未命中會 fallback `sku.eq` 精確查 products） |
+| V2 品項 `order_items.drawing_cost` 恆為 0 / 品項層畫圖費點計 / `Drawing_Cost` 由邊度嚟 / 點解 `convergence_note` 差額 | `FHS_System_Logic_Overview.md` §5.4.23（D80，2026-09-19，✅已修復）：n8n V47.25 起非家庭 V2 品項 `Drawing_Cost` 由 n8n 按 §2.1 費率×qty 計算（Dashboard 傳值被忽略；V42 `chargedPositions` 仍沿用 S55 舊語義未改，另案）；歷史 5 行由 migration 0094 回填；訂單層 `total_cost`/`net_profit` 全程不變（Drawing_Cost 只入收斂律審計）；規則本身見 Cost Schema v2 §10.3。**回填類改動必須排喺 n8n 修復部署之後**（否則重新同步會用舊值覆蓋） |
+| 前端 `calculatePricing()` 成本估算點解同 n8n 唔同 / `System_Total_Cost` 最後去咗邊 / 前後端成本分工係咪刻意 | **有裁決，唔好答「冇記錄／冇裁決」**（2026-09-20 `finance-auditor` 覆核落檔）：①2026-06-03（S57，`decisions.md:1787-1796`）確立**成本側由 n8n 計算、非前端傳入**，「n8n 信任前端成本」違反 Rule 3.16；②2026-06-05（S60，`decisions.md:1777-1785`）裁決**前端繼續計並透傳品項層四分量**，明文理由「n8n 拿不到部位級資料，無法重算 drawing 豁免邏輯（最高頻財務雷）」——**唔係「較易維護」**（全 repo grep 零命中），亦唔係離線需求（`calculatePricing()` 要等 `cost_configurations` 載入）；③2026-06-03（`decisions.md:2598-2631`）裁決該輸出＝「供操作者參考嘅預算估算，非確收數字」；④2026-07-21（commit `aa12f5e`）裁決 UI 隱藏，成本／利潤顯示歸「核對訂單」（隱藏前標籤寫「畫圖成本」但裝住全成本估算，名實不符約 7 星期）。**訂單層** `System_Total_Cost` 只餵 n8n `Profit Auditor` V45.8（從未觸發、不寫任何成本欄位），**但品項層四分量（`Drawing_/Printing_/Chain_/Shipping_Cost`）由前端計、經 n8n 透傳真實寫入 `order_items`**——禁止當佢「純顯示層／零影響」。⚠️ S60 技術前提已因 V47.22（`position_code`）／V47.25（n8n 自算 V2 畫圖費）部分失效。全文 `.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md` §五 |
 | Mode 2「儲存明細」點解會清走 `accessory_cost`/成本欄位 / `save_structured_order_items` RPC | `FHS_System_Logic_Overview.md` §5.4.19（D67，2026-08-19，✅已修復）：RPC 用 DELETE+INSERT 重寫 order_items 曾漏 14 個成本/V2 欄位，migration 0089 改用整行快照 + COALESCE fallback；前端 `saveMode2Items()` pass-through 欄位改送 `null`（非 `0`）避免覆蓋走真實成本 |
 
 ---
@@ -126,7 +131,7 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 - 成人/家庭鎖匙扣（不銹鋼/鋁合金，material 已同價 $125）：加購 = (material+clasp$10)×N；單購 = **composite_drawing** + 同上。composite_drawing＝成人份+每個嬰兒肢各計一次：成人(P)=240、家庭(S1)=170、家庭(S2)=230、家庭(P1)=350、家庭(P2)=460。
 - 吊飾（嬰兒/成人）：加購 = material($465)×N；單購 = tier_drawing{60/110/240} + material×N。運費不入 SKU（扣減 (N−1)×$35）。**頸鏈成本（現行 live，V47.20，2026-07-22 D42）**＝品項層對稱摺入每件 $100（`order_items.chain_cost`/`item_base_cost`/`subtotal_cost`/`necklace_cost` 皆已反映，即每件吊飾對稱多 $100），訂單層用共用折扣 `floor(N/2)×$100` 扣減（`n8n_adjustment_notes` type=`necklace_chain_sharing_discount`，負數），取代已退役嘅 V47.19 訂單層單一加項式（`necklace_chain_cost` 正數，`ceil(N/2)×$100`）。數學等價（`100N−floor(N/2)×100=ceil(N/2)×100`），總數不變，純記帳格式對齊鎖匙扣環扣模式。**7 張真實歷史單已一併 backfill**（Dede/Kathleen/Akira/DebbieHo/Amen/Selina Lai/Lokyi_C），全庫現時已統一新格式，冇新舊並存問題。見 `FHS_System_Logic_Overview.md` §5.4.5、decisions.md D42。
 - 家庭吊飾（單購）：composite_drawing（同鎖匙扣，D41 修正原單一成人式錯誤）+ material×N；加購 = material×N（無畫圖，不變）。**⚠️ 以上鎖匙扣composite_drawing式僅適用歷史舊單（S1/S2/P1/P2靜態SKU）；新單見下方V2動態式。**
-- **V2統一SKU（2026-07-28擴充，大寶/成人tier）**：`大寶(S/P)鎖匙扣/吊飾 - 材質 (V2)`，成本值＝嬰兒tier同值（205/255鎖匙扣、660/710吊飾）；`成人(S/P)鎖匙扣/吊飾 - 材質 (V2)`＝265/395/710/840。大寶standalone用「大寶(P)」新語義，取代舊「升格家庭(P1)」規則（已核實三份權威文件皆無記載，正式廢止）。
+- **V2統一SKU（2026-07-28擴充，大寶/成人tier）**：`大寶(S/P)鎖匙扣/吊飾 - 材質 (V2)`，成本值＝嬰兒tier同值（205/255鎖匙扣、660/710吊飾）；`成人(S/P)鎖匙扣/吊飾 - 材質 (V2)`＝265/395/710/840。大寶standalone用「大寶(P)」新語義，取代舊「升格家庭(P1)」規則（已核實三份權威文件皆無記載，正式廢止）。**品項層 `drawing_cost`＝quantity × tier 費率（全額，不理會同部位豁免；嬰兒/大寶 S60/P110、成人 S110/P240），n8n V47.25 起由 n8n 計算、唔透傳 Dashboard 值**（見 §5.4.23，D80）。
 - **家庭鎖匙扣(V2) 動態畫圖式（2026-07-28新增，取代composite_drawing）**：`products.total_base_cost=$160`（塊牌物理成本only：material_cost_keychain_family$150+clasp$10）；畫圖費n8n訂單層動態計算＝adult_rate(S110/P240)+Σ每部位limb_rate(S60/P110)，唔隨qty相乘。S/P由Dashboard全自動推導（成人：玻璃瓶家庭已選=S；部位：主套裝該部位有冇倒模=S）。β混型（成人P+部位S混合）天然支援。只限鎖匙扣，冇家庭吊飾版本。完整公式見 `FHS_Product_Cost_Schema_v2.md` §10.6。
 - 立體擺設：$210 flat（2肢/4肢同價，migration 0030）。
 - 配件（羊毛氈/燈飾加購）：$30 flat。
@@ -139,6 +144,7 @@ L2b FHS_Pricing_Bible.md     ← 現行定價 HEAD（2026-06-01 起）
 - 「adjustment_amount」：FHS 無百分比折扣，唯一調整方式是金額差值（正數=追費，負數=折讓）
 - 「products.total_base_cost」：目前為 migration 0023 硬編碼值，Task A 完成前不是動態 roll-up；**`cost_configurations` 改值不會自動回算此欄位**（無傳播機制，Session 112 確認），舊單 base cost 不變屬正常快照語義，非錯誤
 - 「`recalculate_product_costs(text)` RPC」：**已於 migration 0042 移除**（v1 schema 死碼，引用不存在欄位必報錯），不存在替代品——目前無任何 RPC 能批量回算 products 表，僅 `fhs_check_product_cost_drift()` 可唯讀比對（2026-07-18 起已覆蓋全品類）
+- 「待確認」（訂單狀態）：**同財務完全無關**——指日期、刻字內容等訂單細節仍待確認（Fat Mo 2026-09-20 澄清）；訂單上嘅訂金／全付一律係**已實收**，唔好因為「待確認」質疑收入或成本。`orders.confirmed_at`（確認日期）只係入單日（Dashboard 新建單時寫當天日期），唔係客人確認；冇 `confirmed_at` 嘅單以預約日入賬（D43續三，migration 0066，Fat Mo 核准設計）
 - 「家庭套裝畫圖成本」：**唔係單一成人式**——每個嬰兒肢都各自要計畫圖費，成人+2嬰兒肢 = 成人份+2×嬰兒份，唔係淨計成人嗰份（D41 教訓，opus 首輪對抗審查方向都判斷錯，最終要查 Dashboard 前端原始碼先定案）
 
 ---

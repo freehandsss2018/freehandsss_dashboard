@@ -7,6 +7,38 @@
 - **執行**：API PUT 12 處改動／8 節點（HTTP header→`$env` 表達式；Code 節點→`$env` 優先＋無 fallback＋讀唔到即 throw）。回讀：只目標節點變、連線不變、`activeVersion` 零 literal、仍 active、設定與改前一致（`availableInMCP` 被 PUT 重設後已還原）。repo：FO 副本改為 live 快照；2 個舊腳本移除舊 key。
 - **運行證據**：FO webhook exec 7560 200/全節點 success；GlobalReview exec 7561 200、拉到 62 行；兩者 execution 全 JSON 零 `sb_secret_`。IGWatchdog 已於 2026-09-21 06:00 HKT 排程驗證（exec 7582：Write Intents/Messages 無 error、零 key；`message_intents` 205→206，最後寫入 2026-09-20 22:00 UTC）；ErrorMonitor 待有 workflow 出錯先觸發（`error_logs` 仍 0 行屬預期）。
 - **落盤**：decisions.md D79 續、learnings/n8n.md #9、handoff MASTER。**Subagent 使用記錄**：`finance-auditor` 背景獨立覆核 FO 輸出（財務 workflow 紅線）：**PASS-with-notes，認證改動放行**（節點只 auth 差異、KPI／環比／分類全部獨立重算吻合、n8n 原樣透傳 RPC）；另揭發 3 個舊有 RPC 口徑問題（折線圖未計 adjustment 差 480、分類收入圖超總收入 12,711.5、monthly 圖表為 5 個月滾動窗口），非今次引起，已登記待辦，詳見 decisions.md D79 續。
+## [2026-09-21] canva-auto augustinefok 07001006（純音樂）— 母片 HoKaSin，Stage①-⑤交付；CV-48~51 新規則
+
+- **單號**：augustinefok 07001006，字句 `Beyond the days, the moments / we hold each other / truly stay`（跟 `word.png` 拆 3 行）。Fat Mo 首次輸入款式寫「全幅AI短片」，但素材夾冇客人片、只得 2 條 Lovart 動畫（`影片 1／2.mp4`，960²×15.1s）＋音訊 33.1sec；AI 開單前發現並準備詢問，Fat Mo 自行取消更正為「純音樂」重新開單。成品 `DAHVvl_drcw`（`augustinefok 純音樂 (2009/26) 33.1sec`），歸檔 `Free_recorder (09/26)`。
+- **母片揀錯一次（CV-48）**：先揀 Meika 0600904（音長 35.0sec 最近 33.1sec）並已 copy，讀 CDF 才見 page3 片格係 **290×580 直格**、本單片係 960² 正方（要 `resize_element` 會郁動畫）；改揀 HoKaSin 0601100（page3 已係 577² 正方格、黃金案例）。Meika 副本 `DAHVvi7ZCBI` 已改名 `[廢棄·揀錯母片副本，可刪]` 並歸入 09/26 資料夾（MCP 冇刪 design 工具，待 Fat Mo UI 刪）。
+- **Stage③**：全程只用 `update_fill`／`crop_media`／刪臨時件，母片元素零刪、container 零郁。Fat Mo 唔滿意 AI 用 `local_prep` 出嘅兩張圖（CV-49），自己重做：彩色＝原檔＋Canva 元素層背景移除（`update_fill` 入母片出白方塊，經 export 真圖量角證實；Fat Mo 揀方案A喺母片元素補撳，CV-36）；黑白＝Canva 新 asset，透明背景 export 量 alpha=0 證實 asset 層已透明、直接可用。
+- **Stage④ 學習**：AI 幾何 6 格修正 4 格（兩頁字句 44→40.93px／字距 0.073→0.14／top＋26.4；page3 兩片格微放大 0.63%）；page2 兩圖 container／imageBox 零修改。案例 `07001006` 已落 `canva_auto/placement_memory.json`（`schema_version:2`，`node scripts/canva_memory_validate.js` exit 0）。新規則：**CV-48**（copy 前先讀候選 page3 片格形狀）／**CV-49**（`local_prep` 採用率唔穩）／**CV-50**（`format_text` 冇 `letterSpacing` 參數）／**CV-51**（存檔頁 3 行字句字號按花環尾間距縮）。validator 提示 CV-36／CV-30／CV-42 已達 3 單引用未升格，待 Fat Mo 決定。
+- **Stage⑤ 存檔頁**：`DAHVv8QrIGc`（合集 `Free_Laser (09/26)` p152 Shirley 標準頁單頁複製；上一張單頁副本已被刪）。右上換本客原相（jpg 底部帶截圖黑邊，imageBox 多裁約 6px）、彩色插圖用 `local_prep` cutout（Fat Mo 版係元素層效果帶唔過去）、字句 3 行 14px；export 1000² 眼證兩輪修正。待 Fat Mo Ctrl+A/C/V 貼入合集。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
+## [2026-09-20] `sync_order_to_mirror` 拒絕對已軟刪訂單嘅 edit（migration 0095，D81）
+
+- **修復**：函數開首加守衛，`edit` 已軟刪訂單 → `RAISE EXCEPTION`（P0001，零副作用），封死「舊分頁儲存令已刪單復活入 KPI」。`create` 重用已刪 ID 仍復活（0087 語義保留，`/fhs-check` 固定 test ID 依賴）；`update` 不變。**冇改任何訂單資料，n8n／Dashboard／Layer-2 均零改動。**
+- **前置發現／範圍**：0087 嘅 `deleted_at = NULL` 係有意設計（非漏洞）；Dashboard 讀取全部帶 `deleted_at=is.null`，正常操作開唔到已刪單，我事前將風險講得過重。fresh-context 覆核再揪出：**Dashboard 刪單實為硬刪**（V42.html:14222／16177），故本守衛主要保護軟刪嘅測試／手動單；硬刪單舊分頁再儲存、webhook 無認證直接 POST create／update，均屬範圍外殘留（已記 decisions D81／handoff，未處理，建議不擴大）。
+- **驗證**：live 函數 md5 修改前後逐位可追溯（0088 本文 ＝ 修改前 live；修改後 ＝ repo 檔）；回滾子交易行為測試 3 項全過；`/fhs-check` 迴歸 **5/5 PASS**（LIFECYCLE／STRESS／ACCEPTANCE／COST_INTEGRITY／PRICE_AUDIT；固定 test ID 重用路徑仍正常）。**已知取捨**：webhook 先回 200，操作員唔會見到錯誤，只留 n8n execution log（失敗 execution 存 apikey header＝D79 殘留）。決策見 decisions.md D81。**Subagent 使用記錄**：✅ `finance-auditor`（前置影響評估＋收尾覆核）。
+
+## [2026-09-20] canva-auto Dorothy 0600728（特訂草框）— 全幅款第5單，Stage①-④＋⑤存檔頁交付，唔做母片；CV-43~47 新規則、CV-37 retired
+
+- **單號**：Dorothy 0600728，全幅AI短片，字句 `You completed our “Family” / where life begins and / love never ends`（跟 `word.png` 拆3行，句中「-」冇跟）。母片 Shirley 0600914（最新全幅款、已收斂）→ 成品 `DAHVuBDnNtk`，歸檔 `Free_recorder (09/26)`。
+- **首次**：橫向 3:2 圖對（黑白 2016×1344／彩色 1264×848）＋橫向 Lovart 動畫（`影片 1.mp4` 本地 tkhd 1112×834，Canva metadata 報 1112×1668＝CV-17 第7次）。AI 交付 6 格幾何 **4 格零修改**（page2 兩圖、page3 直片、page4 動畫），用「同 top＋同 height＋同中心 x=960」取代 CV-05「統一 left」（兩圖 ink 中心實測差 0.1%）。
+- **特訂草框**：Fat Mo 上載 `plaint2.png`（向日葵，2048² 白線透明）取代母片草框，UI 刪舊 group 自建新組（兩 container 共用素材、`imageBox` left offset 取左／右半，唔用 flip）。AI 試 `update_fill` 母片草框→**not_permitted**（CV-43），`recolor_element` 拒 raster（CV-44），遂本地生成 `plaint_white.png`／`plaint_dark.png`（`local_prep_out/`）。page3 細組合要跟 page2 最終版精確仿射（s=0.309299，6組元素最大誤差 0.02px），AI 沿用母片值屬錯（CV-45）。
+- **標記**：Fat Mo 明示特別訂做、唔做下一次母片、加名稱——Canva 標題改 `Dorothy 全幅AI短片(2009/26) [特訂草框·勿用作母片]`；`placement_memory.json` case 加 `no_parent:true`＋`variant`；`canva-auto.md` Stage① 母片選擇加排除規則。
+- **Stage⑤ 存檔頁** `DAHVutmGpgo`（由 `Free_Laser (09/26)` p153 單頁複製，已歸檔）：彩色插圖＋字句已換。**AI 兩處錯**：①橫向彩色插圖照 SOP「沿用母版 height」→ 319.62 闊遮草框，Fat Mo 指正後改沿用母版左右邊界 214.43（CV-47，`canva-auto.md` Stage⑤ 拆正方／橫向兩種做法）；②花環換 plaint2 export 全黑（CV-46＝CV-36 第2次，元素層背景移除唔跟 asset 走），已還原母版樹枝。
+- **待 Fat Mo**：拖入本客原相 `ba614e8b-…jpg`、上載 `plaint_dark.png`（AI 再換草框）、Ctrl+A/C/V 貼入合集 p153 後。
+- **CV-37 retired**：「local_prep 輸出唔達標」同 0600914／0600728 實際做法矛盾，Fat Mo 確認標記 `retired:true`（id 不重編、舊 lesson 引用保留）。SOP 待答條目③（local_prep 改跟 Fat Mo 漸變填色）因此失去前提。
+- 檔案：`canva_auto/placement_memory.json`（case 0600728＋9 slots＋15 lessons＋convergence_log；rules 42→47）、`.fhs/ai/commands/canva-auto.md` v1.8.3；`node scripts/canva_memory_validate.js` PASS。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
+## [2026-09-19] V2 品項層 `order_items.drawing_cost` 恆為 0 修復——n8n V47.25 + migration 0094（D80）
+
+- **修復**：生產 5 行 V2 品項 `drawing_cost=0`（缺 $720，違反 Cost Schema v2 §10.3）；n8n `Calculate Profit & Pack Items` V47.24→V47.25（非家庭 V2 品項 `Drawing_Cost = 費率 × qty`，取代透傳 Dashboard 值）＋ migration 0094 回填 5 行；`orders` 表零改動（3 張單整行雜湊＋全表雜湊逐位一致），fresh-context `finance-auditor` 覆核 PASS。
+- **2026-09-20 追加**：測試單 `testV2draw0919` 經 Fat Mo 授權軟刪；真單 0600106 補設 `confirmed_at=2026-05-22`（KPI 不變，以預約日計入 2026-05 係 D43續三核准設計）；Fat Mo 澄清「待確認」＝訂單細節待確認、與財務無關、訂金／全付已實收，已落 `finance-gatekeeper` §四、`learnings/finance.md` #7。
+- 全文（根因、驗證、覆核揪出嘅 2 項錯誤、待辦）見 [completion report](.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)；決策見 decisions.md D80（原暫編 D79，撞主線 D79 n8n secret 修補，merge 時重編）。**2026-09-20 更正**：前端成本估算影響評估經 `finance-auditor` 核實後更正（該數字屬 Fat Mo 2026-06-03 裁決嘅參考估算、07-21 起 UI 隱藏、賠本守衛從未觸發），見 completion report §五。**2026-09-20 二次更正**（Fat Mo 再質疑後第二次派 `finance-auditor`）：①「沒有任何裁決要求改或不改」係錯——分工本身有裁決（S57 2026-06-03 成本側歸 n8n；S60 2026-06-05 前端透傳品項層四分量，理由「n8n 拿不到部位級資料」而**非**「較易維護」；2026-07-21 `aa12f5e` UI 隱藏）；②「冇報價面板系統成本標籤」誤導——實際標籤「畫圖成本: $X」裝住全成本估算，名實不符約 7 星期；③「純參考零 DB 足跡」錯——品項層四分量真實寫入 `order_items`；④真缺口＝冇一份端到端描述前後端成本運算嘅文件，`finance-gatekeeper` 路由表已補一行（v1.18.0）。**Subagent 使用記錄**：✅ `finance-auditor` ×4。
 
 ## [2026-09-19] D79：n8n Mirror Prep 洩漏 Supabase secret key 入 execution data 修補 + 刪 92 個含 key execution（n8n API key 公開暴露待 Fat Mo 更換）
 
