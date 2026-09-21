@@ -104,16 +104,40 @@
     },
     {
       "id": "6b895cf9-18d8-4504-ab4b-ef00b33dce60",
-      "parameters": {
-        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\nconst resp = await axios.post(\n  `${SUPABASE_URL}/rest/v1/rpc/get_financial_overview_full`,\n  {},\n  { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, timeout: 15000 }\n);\nreturn [{ json: resp.data }];\n"
-      },
       "name": "Financial Aggregator",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [
         1340,
         300
-      ]
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://vpmwizzixnwilmzctdvu.supabase.co/rest/v1/rpc/get_financial_overview_full",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      }
     },
     {
       "id": "a4c1981b-e3ef-4a68-8127-5a742bc4bf13",
@@ -147,7 +171,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\nconst PAGE_SIZE = 1000;\nlet all = [];\nlet offset = 0;\nwhile (true) {\n  const resp = await axios.get(\n    `${SUPABASE_URL}/rest/v1/orders?select=order_id,appointment_at,final_sale_price,total_cost,net_profit&deleted_at=is.null&order=id.asc&limit=${PAGE_SIZE}&offset=${offset}`,\n    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, timeout: 15000 }\n  );\n  const rows = resp.data || [];\n  all = all.concat(rows);\n  if (rows.length < PAGE_SIZE) break;\n  offset += PAGE_SIZE;\n}\nreturn all.map(r => ({\n  json: {\n    order_id: r.order_id,\n    Appointment_Date: r.appointment_at,\n    Final_Sale_Price: Number(r.final_sale_price) || 0,\n    Total_Cost: Number(r.total_cost) || 0,\n    Net_Profit: Number(r.net_profit) || 0\n  }\n}));\n",
+        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (() => {\n  try { if (typeof $env !== 'undefined' && $env && $env.SUPABASE_SERVICE_KEY) return $env.SUPABASE_SERVICE_KEY; } catch (e) {}\n  try { if (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) return process.env.SUPABASE_SERVICE_KEY; } catch (e) {}\n  throw new Error('SUPABASE_SERVICE_KEY 讀唔到（$env 同 process.env 皆無）— 見 D62/D79');\n})();\nconst PAGE_SIZE = 1000;\nlet all = [];\nlet offset = 0;\nwhile (true) {\n  const resp = await axios.get(\n    `${SUPABASE_URL}/rest/v1/orders?select=order_id,appointment_at,final_sale_price,total_cost,net_profit&deleted_at=is.null&order=id.asc&limit=${PAGE_SIZE}&offset=${offset}`,\n    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, timeout: 15000 }\n  );\n  const rows = resp.data || [];\n  all = all.concat(rows);\n  if (rows.length < PAGE_SIZE) break;\n  offset += PAGE_SIZE;\n}\nreturn all.map(r => ({\n  json: {\n    order_id: r.order_id,\n    Appointment_Date: r.appointment_at,\n    Final_Sale_Price: Number(r.final_sale_price) || 0,\n    Total_Cost: Number(r.total_cost) || 0,\n    Net_Profit: Number(r.net_profit) || 0\n  }\n}));\n",
         "notice": ""
       },
       "id": "a1b1c1d1-e1f1-4111-8111-911111111111",
@@ -163,7 +187,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';\nconst PAGE_SIZE = 1000;\n\nconst mainOrders = $('Collect Main Orders').first().json.mainOrders || [];\nconst orderIds = mainOrders.map(o => o.order_id).filter(Boolean);\n\nif (orderIds.length === 0) {\n  return [];\n}\n\nconst idList = orderIds.map(id => `\"${id}\"`).join(',');\nlet all = [];\nlet offset = 0;\nwhile (true) {\n  const resp = await axios.get(\n    `${SUPABASE_URL}/rest/v1/order_items?select=product_sku,quantity&order_fhs_id=in.(${idList})&order=id.asc&limit=${PAGE_SIZE}&offset=${offset}`,\n    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, timeout: 15000 }\n  );\n  const rows = resp.data || [];\n  all = all.concat(rows);\n  if (rows.length < PAGE_SIZE) break;\n  offset += PAGE_SIZE;\n}\nreturn all.map(r => ({\n  json: {\n    Product_Link: r.product_sku,\n    Quantity: r.quantity\n  }\n}));\n",
+        "jsCode": "const axios = require('axios');\nconst SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';\nconst SUPABASE_KEY = (() => {\n  try { if (typeof $env !== 'undefined' && $env && $env.SUPABASE_SERVICE_KEY) return $env.SUPABASE_SERVICE_KEY; } catch (e) {}\n  try { if (typeof process !== 'undefined' && process.env && process.env.SUPABASE_SERVICE_KEY) return process.env.SUPABASE_SERVICE_KEY; } catch (e) {}\n  throw new Error('SUPABASE_SERVICE_KEY 讀唔到（$env 同 process.env 皆無）— 見 D62/D79');\n})();\nconst PAGE_SIZE = 1000;\n\nconst mainOrders = $('Collect Main Orders').first().json.mainOrders || [];\nconst orderIds = mainOrders.map(o => o.order_id).filter(Boolean);\n\nif (orderIds.length === 0) {\n  return [];\n}\n\nconst idList = orderIds.map(id => `\"${id}\"`).join(',');\nlet all = [];\nlet offset = 0;\nwhile (true) {\n  const resp = await axios.get(\n    `${SUPABASE_URL}/rest/v1/order_items?select=product_sku,quantity&order_fhs_id=in.(${idList})&order=id.asc&limit=${PAGE_SIZE}&offset=${offset}`,\n    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }, timeout: 15000 }\n  );\n  const rows = resp.data || [];\n  all = all.concat(rows);\n  if (rows.length < PAGE_SIZE) break;\n  offset += PAGE_SIZE;\n}\nreturn all.map(r => ({\n  json: {\n    Product_Link: r.product_sku,\n    Quantity: r.quantity\n  }\n}));\n",
         "notice": ""
       },
       "id": "a2b2c2d2-e2f2-4222-8222-922222222222",
@@ -247,6 +271,6 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": true
   }
 }

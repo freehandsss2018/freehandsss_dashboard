@@ -42,8 +42,7 @@ const MIRROR_CREATE_CODE = `// === FHS Supabase Mirror Write — CREATE/EDIT pat
 const axios = require('axios');
 
 const SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';
-const SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()
-  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';
+const SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })();
 
 const staticData = $getWorkflowStaticData('global');
 if (staticData.supabase_mirror_enabled === false) {
@@ -194,8 +193,7 @@ const MIRROR_DELETE_CODE = `// === FHS Supabase Mirror Delete — DELETE path (V
 const axios = require('axios');
 
 const SUPABASE_URL = 'https://vpmwizzixnwilmzctdvu.supabase.co';
-const SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()
-  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';
+const SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })();
 
 const staticData = $getWorkflowStaticData('global');
 if (staticData.supabase_mirror_enabled === false) {

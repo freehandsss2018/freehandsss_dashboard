@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-20] D79 續：修補另外 4 個 workflow 仍寫死已撤銷舊 key（FO / GlobalReview / IGWatchdog / ErrorMonitor）
+
+- **緣起**：D79 全伺服器掃描發現 87 個 execution 含舊 key（fp `8fdf055d9e`，已撤銷），指向 D62 漏收斂嘅 4 個 workflow。Fat Mo：「立即處理」。
+- **診斷**：`FHS_Financial_Overview`／`FHS_Query_GlobalReview` 持續 401（Dashboard 09-19 仍呼叫）；`FHS_IGWatchdog_DriveWatch` 嘅 `Write Mismatches`/`Write Intents` 因 `continueOnFail` 令每日 401 被吞成 success（`message_intents` 最後寫入 2026-08-03）；`FHS_System_ErrorMonitor` 嘅 `Log to Supabase` 401（`error_logs` 0 行）。
+- **執行**：API PUT 12 處改動／8 節點（HTTP header→`$env` 表達式；Code 節點→`$env` 優先＋無 fallback＋讀唔到即 throw）。回讀：只目標節點變、連線不變、`activeVersion` 零 literal、仍 active、設定與改前一致（`availableInMCP` 被 PUT 重設後已還原）。repo：FO 副本改為 live 快照；2 個舊腳本移除舊 key。
+- **運行證據**：FO webhook exec 7560 200/全節點 success；GlobalReview exec 7561 200、拉到 62 行；兩者 execution 全 JSON 零 `sb_secret_`。IGWatchdog 已於 2026-09-21 06:00 HKT 排程驗證（exec 7582：Write Intents/Messages 無 error、零 key；`message_intents` 205→206，最後寫入 2026-09-20 22:00 UTC）；ErrorMonitor 待有 workflow 出錯先觸發（`error_logs` 仍 0 行屬預期）。
+- **落盤**：decisions.md D79 續、learnings/n8n.md #9、handoff MASTER。**Subagent 使用記錄**：`finance-auditor` 背景獨立覆核 FO 輸出（財務 workflow 紅線）：**PASS-with-notes，認證改動放行**（節點只 auth 差異、KPI／環比／分類全部獨立重算吻合、n8n 原樣透傳 RPC）；另揭發 3 個舊有 RPC 口徑問題（折線圖未計 adjustment 差 480、分類收入圖超總收入 12,711.5、monthly 圖表為 5 個月滾動窗口），非今次引起，已登記待辦，詳見 decisions.md D79 續。
+
 ## [2026-09-19] D79：n8n Mirror Prep 洩漏 Supabase secret key 入 execution data 修補 + 刪 92 個含 key execution（n8n API key 公開暴露待 Fat Mo 更換）
 
 - **緣起**：0600804 財務稽核（唯讀）發現 `FHS_Core_OrderProcessor`（`6Ljih0hSKr9RpYNm`）`Supabase Mirror Prep` 節點輸出含明文 `supabaseKey`。今次授權：Fat Mo 指示「n8n API key 更換稍後做，其他立即修改」，並確認 0600804 已結案、可刪 execution。

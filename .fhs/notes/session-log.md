@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-20 (D79續：修補 4 個 workflow 仍寫死已撤銷舊 key): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-20 條目。FO/GlobalReview 由 401 復活（webhook 200、62 行）；IGWatchdog 寫入節點 401 被 continueOnFail 吞咗改為正常；ErrorMonitor 修復；IGWatchdog 2026-09-21 排程已驗證（message_intents 恢復寫入）；ErrorMonitor 待有 workflow 出錯先能驗。
+**Subagent 使用記錄**：✅ finance-auditor（背景，獨立覆核 Financial Overview 輸出；財務紅線）。
+
 ## 2026-09-19 (D79：n8n Mirror Prep 洩漏 Supabase key 入 execution data 修補 + 刪 92 個 execution): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-19 D79 條目（無完成報告的小改動，Changelog 為全文居所）。已修補 2 個 n8n 節點、刪 92 個含 key execution、清死腳本硬編碼 n8n key；n8n API key 更換／Supabase credential／Supabase key 輪替待 Fat Mo。 /fhs-check 5項全PASS並兼作運行驗證（16個成功execution零key）；🔴新發現4個workflow仍硬編碼已撤銷舊key（FHS_Financial_Overview/FHS_Query_GlobalReview持續401失敗），待Fat Mo決定。
