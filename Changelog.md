@@ -1,5 +1,23 @@
 # Changelog
 
+## [2026-09-21] Session（Antigravity 執行）— 財務結算手機輸入防回彈修復（iPhone 13 Pro 直向手機模式）
+
+- **緣起**：Fat Mo 回報直向手模模式下（iPhone 13 Pro 真機開啟 Dashboard 訂單，如 0600512），在「財務結算」簡化模式點選「已付訂金/未付尾數」方格時出現 bug：多次回彈 keyboard，未能順利輸入金額，需多番點擊方可修改。
+- **真根因**：
+  1. iOS Safari `< 16px` Auto-Zoom 強制視窗位移：在手機直向介面 `@media (max-width: 480px)` 下，輸入框字體為 `13px`。點入時 iOS 觸發視窗重繪位移，導致手指抬起時 WebKit 誤判點擊了視窗外，立即觸發 `blur`。
+  2. `pointerdown` 動態切換 `readonly` 與焦點手勢衝突：原設計在 `pointerdown` 動態將 `readOnly` 轉為 `false` 並強制 `.focus()`，當手指離開螢幕時 WebKit 偵測到可編輯狀態突變引發焦點丟失；隨後 `blur` 回呼再次將 `readOnly` 設回 `true`，iOS 遂將鍵盤強制縮回，形成「彈出即回彈」現象。
+- **修法（100% 嚴格保留所有原先回饋設定）**：
+  1. 輸入框字體調升至標準 `16px`（寬度由 60px 微調為 68px），徹底根治 iOS Safari 視窗位移誤判。
+  2. 移除 DOM 上的 `readonly` 屬性及 `pointerdown`/`click` 監聽，改由原生 `onfocus="_fhsSimpInputFocus(this)"` 觸發，並以 `dataset.isEditing` 標記編輯狀態。
+  3. 保留所有原交互回饋：聚焦時自動清空方便直接輸入、誤點離開時無損還原進入前金額、輸入金額後彈出黃色警告條（`#fhsPaySimp_confirmBar`）、各品項無貨時維持灰色禁用。
+- **驗證**：在 iPhone 13 Pro 模擬環境下執行 4 項自動化端對端測試：
+  1. 單次點擊穩定停留焦點並清空數字（PASS，焦點穩定無回彈）
+  2. 誤觸未輸入離開自動還原舊金額（PASS）
+  3. 輸入 1980 離開正常彈出分攤確認條（PASS）
+  4. 點擊確認分攤後拆帳分配正確（PASS）
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`、`Freehandsss_Dashboard/Freehandsss_dashboard_current.html`。
+- **Subagent 使用記錄**：❌ 未使用。
+
 ## [2026-09-11] Session（Claude Code / Sonnet 5 執行）— /cl-flow A2 Gemini model 鏈 re-probe：gemini-3.7-flash → gemini-3.8-flash
 
 - **緣起**：Fat Mo 要求跟過往方法（2026-07-28首次升級）再查 A2（cl-flow內Gemini評審）有冇新model，融入前先實測API可用。

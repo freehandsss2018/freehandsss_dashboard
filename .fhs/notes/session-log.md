@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-21 (財務結算手機輸入防回彈修復 — iPhone 13 Pro 直向手機模式): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-21 條目。Fat Mo 回報直向手模模式下（iPhone 13 Pro 真機開啟 Dashboard 訂單 0600512）點擊「已付訂金/未付尾數」方格時多次回彈 keyboard 無法輸入。真根因：iOS <16px 強制 auto-zoom 位移導致 touchend 誤判 blur，疊加 pointerdown 動態改 readOnly 引發手勢衝突。修法：字體調至標準 16px、移除 pointerdown 的 readOnly 動態切換改用原生 focus 事件及 `dataset.isEditing` 標記。100% 嚴格保留原有反饋（自動洗0、誤點還原、分攤警告條、無品項禁用）。iPhone 13 Pro 模擬測試 4 項全 PASS，已同步 `V42.html` 與 `current.html` 並部署。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-01 (D69續八-follow-18：橫向模式底部功能bar整體縮減30%): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-01「D69續八-follow-18」條目 + [decisions.md D69續八-follow-18](decisions.md)。follow-17修復好緊縮桌面底部浮動藥丸nav後，Fat Mo要求整體縮減30%。做法：喺follow-17區塊尾部新增覆寫，各相關px值等比例縮至70%（bar56→39px/button44→31px/icon20→14px/字級9→6px/max-width500→350px），bottom離邊距離維持16px不變。純mobile(<750)/傳統桌面(≥1130)完全不受影響。純數值密度指令直譯執行，唔自行判斷太細而打折扣。750/900/1129/1130/390五闊度全PASS，已commit+部署生產。
