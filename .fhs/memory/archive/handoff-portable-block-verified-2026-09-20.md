@@ -7,3 +7,7 @@
 ## 2026-09-21 `/commit` 追加輪轉（P0.7.1，逐字搬出）
 
 **[0600804]** finance-auditor覆核16項PASS（付款$5,640+$0，成本$1,425，利潤$4,215）；全庫62單驗證1/2零違規。**[防漏機制]** Stop hook夾具20/20＋真實transcript重播全攔。
+
+## 2026-09-21 `/commit` 追加輪轉（P0.7.1，Ctungdear 0600108，逐字搬出）
+
+**[D79續]** FO經finance-auditor PASS-with-notes（KPI/環比/分類獨立重算全吻合）；IGWatchdog 2026-09-21排程message_intents 205→206恢復寫入。

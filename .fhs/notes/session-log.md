@@ -2430,3 +2430,10 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 存檔頁 `DAHVv8QrIGc` 已備妥，待 Fat Mo 貼入 `Free_Laser (09/26)`；廢棄副本 `DAHVvi7ZCBI` 待 Fat Mo UI 刪。
 - 全文見 [Changelog.md 2026-09-21（augustinefok 07001006）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `07001006`。
 - **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
+## 2026-09-21 — canva-auto Ctungdear 0600108（全幅AI短片）＋ local_prep.py 改良（Claude Code / Sonnet 5）
+
+- 全幅款 Stage①-⑤交付（母片 Shirley 0600914，6 格修正 3 格，CV-52~55）；存檔頁 `DAHV0GXct1M` 待 Fat Mo 撳彩色插圖背景移除、貼入合集。
+- `local_prep.py` 按 Fat Mo Canva 版逐像素對比改良：黑白圖去背 IoU 0.860→0.981、彩色 0.980→0.986、Parakeet RGB 誤差 0.159→0.122；仍有光暈／線條顏色未解。
+- 全文見 [Changelog.md 2026-09-21（Ctungdear 0600108）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600108`。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
