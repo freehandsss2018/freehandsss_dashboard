@@ -3,6 +3,80 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-22] (D83) 防再發方案裁決 — cl-flow-fast（2026-09-21-1536）Verdict CONDITIONAL_READY，Fat Mo `/execute A` 授權，執行 Option A′（期1＋期2）— 原 4 層方案否決，改為修現有 Stop hook 缺口＋成本總覽加「組件現行立場」
+
+**背景**：Fat Mo 要求就「同 session 建議立場三度翻轉」（見上方「AI 過失記錄」）出防再發方案。原提案 `.fhs/reports/planning/2026-09-21_component-charter-prevention-plan.md`（4 層：組件戶口冊＋自動載入＋改動前置關卡＋維護鉤，分3期）由本人撰寫，用 `/cl-flow-fast` 交 Gemini（A2）對抗評審。
+
+**評審結果**：1 BLOCKER + 4 MAJOR + 1 MINOR，**全部採納**：
+1. 損害定義過窄（MAJOR，採納）：草案將損害定義為「帳簿零出錯」，漏咗「5 份錯誤文件推上 main，其中 `finance-gatekeeper/SKILL.md` 係每個財務任務強制前載」＝知識庫污染本身係已發生嘅生產級損害（已重複 3 次：2026-06-03／2026-09-19／2026-09-21）。
+2. Hook 判「新舊斷言」係 BLOCKER（採納，放棄原設計）：無狀態 Hook 冇辦法用純程式判斷自然語言邊個結論係「新」，會死鎖或被換字繞過。**改為舉證責任倒置**：財務結論放行只認三選一——①本輪有 dispatch ②回覆含依據標記【依據：finance-auditor <flow_id/日期>】③豁免標記；Hook 只做字串存在性檢查，零語義判斷。
+3. `PROPOSES_CHANGE` 正則（MAJOR，整條刪除）：「建議｜應該」+「改｜退役」呢類正則做唔到排除否定句（「建議唔改」一樣命中），會逼 AI 濫用豁免令 Hook 形同虛設。
+4. `SKILL.md` 加速查表違反 SSOT（MAJOR，採納）：`finance-gatekeeper/SKILL.md` 已 28,426 bytes，v1.19.0 已有指向 `FHS_Cost_System_Overview.md` 嘅指針行，足夠；`SKILL.md` 本身零改動，速查表只放 Overview 內。
+5. 自我適用測試雙重標準（MAJOR，採納）：草案用自己嘅「純預防性→唔改」門檻否決原方案，但方案自身（改 Hook＋改文件）同樣屬預防性改動，嚴格執行應一併否決。經 #1 更正損害定義後解除——知識庫污染屬已發生且重複 3 次嘅損害，針對性修復有正當性；但「全新 4 層制度」仍屬預防性擴張，維持否決。
+6. 用真實 transcript 測試＝過擬合（MINOR，採納）：只證明攔到 2026-09-21 當日句式，加測 ≥5 同義變體 ＋ ≥5 邊界案例。
+
+**執行內容（Option A′，取代原 4 層方案）**：
+- **期 1**：`scripts/hooks/stop-finance-auditor.js` v1.1.0——放行邏輯由「lookback 5 輪內派過即無條件放行」改為「本輪 dispatch／依據標記／豁免標記」三選一；`LOOKBACK_TURNS` 降級為僅用於依據標記嘅合法性提示（`cited-verified`／`cited-unverified`，唔影響是否放行）。`scripts/hooks/test/run-finance-stop-fixtures.js`：既有 F5 由「放行」改「攔截」（刻意行為改變，正正係修緊嘅缺口）；新增 F17-F20（依據標記）、G1-G6（同義變體）、B1-B5（邊界案例），全部 35/35 PASS。
+- **期 2**：`.fhs/notes/FHS_Cost_System_Overview.md` 新增「五之二、組件現行立場」速查（≤10 行，純指針，唔複製費率／流程）。`finance-gatekeeper/SKILL.md` 零改動。
+- **刪走**（相對原方案）：全新 `FHS_Component_Charter.md`、第 3 個 Stop hook、`PROPOSES_CHANGE` 正則、SKILL.md 速查表、CLAUDE.md 路由行、13 組件全覆蓋。
+
+**驗證**：①既有 20 夾具 + 新增 15 夾具，共 35/35 PASS；②真實 transcript 重播（`275997f1-5dcb-40e8-840b-ee6327ea3a1a.jsonl`，44 個 prompt 邊界）：用執行 SQL 查財務欄位嘅輪次（如「改和不改前端有什麼影響」）在新舊版本都正確攔截，確認基礎偵測機制冇壞。
+
+**🔴 重播意外發現嘅新缺口（誠實記錄，屬本次範圍外，未修）**：真實重播揪出第二次 `/commit` 嘅完成摘要（含「沒有任何裁決要求改或不改」呢句錯誤結論，即錯誤4）喺舊同新版本 Hook 之下**都係 `no-signal`**——因為嗰段係陳述句（冇問號、冇「請確認」），且喺該輪冇叫 `execute_sql`／Read 財務文件（純用 Edit/Write 寫入 decisions.md／Changelog），現有 `financeSignal()` 完全唔檢查 Edit/Write 工具。即：**本次修復嘅係「派過一次之後幾輪免檢」嘅缺口，但「純文字陳述、用 Edit 寫入財務文件」呢類從未被任何版本偵測過**——呢個係獨立、更大嘅缺口，未經 cl-flow／AG 評審設計方案，本次刻意唔擴大範圍修，留待下次另開 `/cl-flow-fast` 評估（例如：Edit/Write finance docs 加入 `financeSignal()`；或改用「回覆含財務數字結論」而非「回覆有問句」做訊號）。
+
+**Subagent 使用記錄**：❌ 本輪治理設計評估，用 `/cl-flow-fast`（Claude A3 草案 + Gemini A2 對抗評審），非財務數字判斷，豁免 `finance-auditor`。
+
+全文見 `artifacts/2026-09-21-1536/cl-final-plan.md`、`.fhs/reports/completion/2026-09-22_finance-stop-hook-citation-fix_completion_report.md`。
+
+---
+
+[2026-09-21] (D82) 前端成本估算（`System_Total_Cost`／賠本守衛）保留、品項層四分量維持現狀——暫不改動 — Fat Mo 2026-09-21 同意「唔改」；finance-auditor 數據顯示冇急迫需要，且改動風險大過好處
+
+**決定**：①前端 `calculatePricing()` 成本估算保留，唔退役、唔刪碼、唔改 n8n `Profit Auditor`；②品項層四欄（`drawing／printing／chain／shipping_cost`）維持現狀，唔收歸 n8n、唔額外補寫、唔清空；③原「未裁決兩件」（`FHS_Cost_System_Overview.md` §五）標為「暫不處理」。
+
+**理由（finance-auditor 2026-09-21，live 數據）**：
+- **帳簿冇因前端估算或四欄運行出錯**：平日入帳靠 n8n 逐件 `products.total_base_cost`；`System_Total_Cost` 唯一消費者係 `Profit Auditor`；四欄冇任何總數／KPI／報表／`/fhs-check` 依賴，只用於核對訂單品項展開（未刪單 133 行中 67 行有值）及收斂律審計文字（`amount=0`）；四欄全 0 時 `total_cost`／`net_profit` 等**全部不變**。過往真入錯帳（D40 頸鏈少計、S55 畫圖豁免語義漂移）嘅入帳值來自 n8n／`products`／SKU 規則，唔係前端估算。
+- **賠本守衛實際價值低**：65 張未刪單命中 0 次；32 張因估算＝0 被跳過（全部純立體擺設單）；有估算嘅 33 張中，估算平均比帳簿低 $203（最大低 $560、最大高 $520）；警報冇金額；每單儲存時已有 Telegram「入帳／成本／利潤」報告（用 n8n 帳簿）。
+- **風險**：`calculatePricing()` 成本專屬約 150–200 行同售價計算交織；改動要動生產 HTML（升格部署）；預防性收益唔值回歸風險。
+
+**重啟條件**（任一發生先重新評估，且須附證據）：①出現真實訂單帳簿數字因前端估算或四欄而錯；②Fat Mo 要求賠本警報真正有效（首選只改 n8n：`Profit Auditor` 改比較帳簿 `Total_Cost`，唔動 Dashboard）；③Dashboard 大改版／重寫；④核對訂單品項展開因四欄語義（尤其 `shipping_cost` 實值係「運費扣減率×數量」）造成誤讀事故。
+
+**已做嘅低風險加固**：`FHS_Cost_System_Overview.md` §七.9「四欄唔可用作 backfill 基準」。**未做**：V42.html:15421-15424 過時註解（生產 HTML，待下次改 V42 時順手）。**唔屬本決定**：07001007 覆核（`handoff.md` `[0076-follow]`，待 Fat Mo 另行決定）。
+
+**Subagent 使用記錄**：✅ `finance-auditor` ×1（2026-09-21 數據查證，本 session 累計 ×9）。
+
+---
+
+[2026-09-21] (無編號，AI 過失記錄) 成本系統「角色／功能／建立原因」反覆遺忘——同一 session 連環答錯、建議立場三度翻轉 — Fat Mo 指出：「呢個角色定義你之前查明過，今日又忘記」
+
+**事故**：2026-09-19～21 處理 D80／D81 期間，就 FHS 成本系統（前端估算 vs n8n 帳簿 vs 品項四欄）反覆給出錯誤或自相矛盾嘅講法，每次都要 Fat Mo 質疑或 `finance-auditor` 核對先更正。**生產帳簿冇因此出錯**（錯誤全部出喺分析、建議同文件；D80 回填 $720、測試單軟刪、0600106 補 `confirmed_at` 均經 Fat Mo 授權並驗證）；但有 5 份錯誤文件曾推上 `main`（其後已更正），Fat Mo 被迫多次追問。
+
+**Fat Mo 指出嘅核心**：角色定義我 09-20 已查明——帳簿只用 n8n，前端估算係「供操作者參考」（Fat Mo 2026-06-03 確認）。之後我卻建議「退役前端成本線／printing 同 shipping 收歸 n8n」，建議同已查明嘅定義矛盾（估算根本唔入帳，退役就冇急迫性）。若每次都遺忘角色、功能、建立原因，就會喺唔知情下建議改動，有弄壞系統嘅風險。
+
+**錯誤清單**（按時序；括號＝點樣被揪出）：
+1. 斷言「測試單被 KPI RPC 排除」，只數關鍵字未讀 WHERE 謂詞（`finance-auditor` 覆核）。
+2. 「待確認」定義錯兩次；0600106 稱「副作用／誤解」未讀 decisions D43續三（Fat Mo 澄清／質問）。
+3. 前端成本估算影響評估：未查裁決、未派 `finance-auditor` 就落結論（「面板只是參考」「差距係既有設計」「暫不改」），6 處錯（Fat Mo 質問「有冇用 subagent」→補派）。
+4. 第二次更正：「沒有任何裁決」「冇呢個標籤」「純參考零 DB 足跡」全錯或過頭（Fat Mo 再質疑→第二次 auditor）。
+5. 第三次更正矯枉過正：「有三條裁決／權威翻轉／刻意分開嘅裁決」（S60 批准者查唔到、06-03 係 Fat Mo 確認、漏 S125 廢欄）（第二輪 auditor 揪出）。
+6. 第四次再矯枉過正：「S60 係 AI session 決策／06-03 唔係改制」同樣缺證據（同一輪 auditor 揪出）。
+7. 將 migration 0087 有意設計嘅 `deleted_at = NULL` 講成「窿」，並將風險講得過重（Dashboard 刪單實為硬刪、開唔到已刪單）（自查 0087 註解時發現）。
+8. **建議立場三度翻轉**：09-20「暫不改」→「建議做（退役／收歸 n8n）」→ 09-21 數據後「唔改」；提「收歸 n8n」時未查 S125 已廢欄（Fat Mo 問「為何要退役」→重新查數據先收回）。
+9. 成本總覽文件草稿 7 處錯（`total_cost` 公式漏最大宗扣減、drawing／chain 分工寫錯、`System_Final_Sale_Price` 其實有備存等）（第一輪 auditor 揪出）。
+
+**根因**：
+- **R1 冇單一入口**講組件角色／功能／建立原因，知識散落 5+ 份文件同 commit message，每個新 context 由局部代碼／SQL 重新推導。
+- **R2 提出改動建議嗰刻冇機制強制載入角色定義**；結論只存在對話，compaction／新 session 即失憶。
+- **R3 冇「預設唔改」門檻**：見到不一致就想修，唔要求「已發生嘅錯數」作證據。
+- **R4 更正時擺盪**：由一個未核實嘅強斷言換去另一個。
+- **R5 自我驗收**：寫入文件前冇先派 `finance-auditor`（多次由 auditor 揪出）。
+
+**已做更正**：`FHS_Cost_System_Overview.md`（單一入口）、`finance-gatekeeper` 路由行（v1.19.0）、D80 殘留段、D80 完成記錄 §五、Changelog、handoff、auto-memory，全部按核實結果統一為「只寫 repo 批准情況，查唔到就寫查唔到」。
+
+**防再發**：方案見 `.fhs/reports/planning/2026-09-21_component-charter-prevention-plan.md`（組件戶口冊＋自動載入＋改動前置關卡＋維護鉤；待 Fat Mo 批准）。教訓見 `learnings/finance.md` Preferences #3。
+
+---
+
 [2026-09-20] (D81) `sync_order_to_mirror` 拒絕對已軟刪訂單嘅 `edit`（migration 0095）— finance-auditor 影響評估揭出「已刪單可被重新儲存復活入 KPI」，Fat Mo 指示封死；但唔可以刪走 0087 嘅 `deleted_at = NULL`（呢行係故意嘅），改為只攔 `edit`
 
 **背景**：0087（D63續，2026-08-11）令 RPC `ON CONFLICT` 無條件 `deleted_at = NULL`，原意係修「測試腳本用固定 test ID 反覆 create→delete，重用已刪 ID 時新單永遠卡喺已刪」（`/fhs-check` 壓測誤報 FAIL）。副作用：任何對已刪單嘅同步都會令佢復活。2026-09-20 finance-auditor 影響評估提到「重新儲存已軟刪嘅單會令佢復活」，我向 Fat Mo 講成「窿」。
@@ -42,7 +116,7 @@
 
 **教訓**：(1) **被標為「純 cosmetic」嘅審計差值可能係真缺陷嘅唯一信號**——Phase 2（2026-07-24）已見 `convergence_note` 對 V2 單差值無意義，記為「唔影響入帳、留待日後」，實情係 V2 品項畫圖分量一直冇入庫，拖咗約 8 週先由獨立審計揭發。(2) **規格推翻後要 grep 前端有冇同語義殘留**——§10 推翻 S55 語義時只改咗 n8n／文件，前端 `chargedPositions` 預填一直沿用舊語義。(3) **live 節點含 U+FFFD 亂碼字元時，唔好用 `update_node_code` 整段重寫**，改 GET→精準字串替換（每處 count==1 斷言）→PUT，並結構比對證明其餘節點同連線零改動。(4) **回填必須排喺修復部署之後**。(5) **斷言「某 RPC 排除某類資料」前要讀 WHERE 謂詞並實跑 RPC，唔好數關鍵字次數**；測試單預約日要設過去或測完即刪，因為未確認單以預約日入賬。(6) **§三B sweep 要 grep 版本標籤同結構缺口，唔止欄位名**；大型改動嘅獨立覆核真係揪出咗自查漏嘅嘢（同 learnings/governance #10 一致）。
 
-**殘留／待 Fat Mo 決定**：①測試單 `testV2draw0919` 已於 2026-09-20 軟刪（見上）；②V42 `calculatePricing()` 畫圖成本估算仍沿用 S55 舊語義，V42.html:15421-15424 有過時註解（「n8n 無獨立寫 drawing_cost」）——生產 HTML，另案。該數字（`_totalCostNew`）係 Fat Mo 2026-06-03 裁決嘅「供操作者參考嘅預算估算，非確收數字」（n8n 擁有成本），自 2026-07-21（commit `aa12f5e`）起 UI 隱藏，成本／利潤顯示改由「核對訂單」負責；訂單層唯一消費者係 n8n Profit Auditor V45.8（只喺收款低於該估算先警報，62 張單從未觸發）。**2026-09-20 第二次 `finance-auditor` 覆核，更正我三處講法**：(a) **「沒有任何裁決要求改或不改」係錯**——「前端估算＋n8n 權威」呢個分工本身**有裁決**：2026-06-03（S57，`decisions.md:1787-1796`）確立成本側歸 n8n、「n8n 信任前端成本」違反 Rule 3.16；2026-06-05（S60，`decisions.md:1777-1785`）裁決前端繼續計並透傳品項層四分量，明文理由係「n8n 拿不到部位級資料，無法重算 drawing 豁免邏輯（最高頻財務雷）」（**唔係「較易維護」——全 repo 零記錄**）；2026-07-21（`aa12f5e`）再裁決將該數字 UI 隱藏。未有裁決嘅只係 S55 計算邏輯本身。(b) **「冇『報價面板系統成本』介面標籤」係將「已隱藏」講成「從來唔存在」**——實際標籤寫「畫圖成本: $X」而值係全成本估算（V42.html:5969／9989），名實不符存在約 7 星期（2026-06-03～07-21），Fat Mo「命名易令操作員誤會」嘅質疑有硬證據支持。(c) **「前端估算＝純參考、零 DB 足跡」係錯框架**——品項層四分量由前端計並真實寫入 `order_items`。⚠️ S60 嘅技術前提今日已部分失效（n8n V47.22 起有 `position_code`、V47.25 起自算 V2 畫圖費），即「係咪仲需要前端計成本」值得重新裁決。全文見 completion report §五；③兩份 `finance-auditor.md`（repo `.fhs/ai/subagents/freehandsss/` v2.2.1 同用戶層 `~/.claude/agents/freehandsss/` v2.3.0，pre-existing 漂移 36 行）仍有「Task A 完成前不寫入實值」等過時描述——用戶層檔案在 repo 外，本次不動；④`FHS_Product_Cost_Schema_v2.md` 標題／status 仍寫 v2.3.0（pre-existing）；⑤三張已回填單嘅舊 `convergence_note` 文字（差額 360／570／450）要待下次重新同步先更新（訂單層快照不可變，純審計文字）。
+**殘留／待 Fat Mo 決定**：①測試單 `testV2draw0919` 已於 2026-09-20 軟刪（見上）；②V42 `calculatePricing()` 畫圖成本估算仍沿用 S55 舊語義，V42.html:15421-15424 有過時註解（「n8n 無獨立寫 drawing_cost」）——生產 HTML，另案。該數字（`_totalCostNew`）係 Fat Mo 2026-06-03 確認嘅「供操作者參考嘅預算估算，非確收數字」（n8n 擁有成本），自 2026-07-21（commit `aa12f5e`）起 UI 隱藏，成本／利潤顯示改由「核對訂單」負責；訂單層唯一消費者係 n8n Profit Auditor V45.8（只喺收款低於該估算先警報；現存 62 張單中 0 張符合觸發條件，但 D79 已刪 92 個 execution，證明唔到「從未觸發」）。**2026-09-20 第二次 `finance-auditor` 覆核，更正我三處講法**：(a) **「沒有任何裁決要求改或不改」係錯；但我第二次更正時寫成「有三條裁決／權威翻轉」亦過頭（2026-09-21 兩輪 fresh-context 核對後再更正）**——repo 按批准情況如實記：①2026-06-02 S53 前端唯一成本權威（cl-flow 記「已獲 Fat Mo 確認」，AI 撰寫、原話查唔到）；②2026-06-03 **Fat Mo 確認**成本側歸 n8n、前端輸出＝參考預算估算（該段標題為「AI 過失記錄」；同 S53 方向相反，係糾錯定改制 repo 兩種講法都有、冇明文定案）；③2026-06-05 S60 品項四分量前端透傳，**批准者查唔到**（cl-flow 標明需 Fat Mo 拍板，冇拍板記錄），理由「n8n 拿不到部位級資料，無法重算 drawing 豁免邏輯」（**唔係「較易維護」——全 repo 零記錄**），其 (4)「n8n 信任前端成本分量」措辭同 S57 相反；④2026-06-27 S125 品項層四欄正式廢欄、停止補寫投資（決策者未註明），D80 其後為 V2 `drawing_cost` 補寫，方向相反／有張力（D80 決策時未提 S125）；⑤2026-07-21（`aa12f5e`）commit 標 Fat Mo decision：UI 隱藏。未有裁決：前端成本估算保留定退役、四分量去向（**2026-09-21 Fat Mo 決定唔改，見 D82**）。端到端總覽見 `.fhs/notes/FHS_Cost_System_Overview.md`。(b) **「冇『報價面板系統成本』介面標籤」係將「已隱藏」講成「從來唔存在」**——實際標籤寫「畫圖成本: $X」而值係全成本估算（V42.html:5969／9989），名實不符存在約 7 星期（2026-06-02 `aae874a` 起～07-21），Fat Mo「命名易令操作員誤會」嘅質疑有硬證據支持。(c) **「前端估算＝純參考、零 DB 足跡」係錯框架**——品項層四分量由前端計並真實寫入 `order_items`。⚠️ S60 嘅技術前提今日已部分失效（n8n V47.22 起有 `position_code`、V47.25 起自算 V2 畫圖費），即「係咪仲需要前端計成本」值得重新裁決。全文見 completion report §五；③兩份 `finance-auditor.md`（repo `.fhs/ai/subagents/freehandsss/` v2.2.1 同用戶層 `~/.claude/agents/freehandsss/` v2.3.0，pre-existing 漂移 36 行）仍有「Task A 完成前不寫入實值」等過時描述——用戶層檔案在 repo 外，本次不動；④`FHS_Product_Cost_Schema_v2.md` 標題／status 仍寫 v2.3.0（pre-existing）；⑤三張已回填單嘅舊 `convergence_note` 文字（差額 360／570／450）要待下次重新同步先更新（訂單層快照不可變，純審計文字）。
 
 全文見 `FHS_System_Logic_Overview.md` §5.4.23、Cost Schema v2 §10.4、Changelog.md 2026-09-19、`.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md`。**Subagent 使用記錄**：✅ `finance-auditor` 兩次——前期獨立 live 驗證（兩項 PASS）；後期 fresh-context 覆核（兩項 PASS＋2 項問題，已處理）。
 

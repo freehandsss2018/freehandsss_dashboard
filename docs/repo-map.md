@@ -250,6 +250,7 @@ freehandsss_dashboard/
 │   │   ├── session-log.md
 │   │   ├── SOP_NOW.md
 │   │   ├── FHS_System_Logic_Overview.md ← 系統運作總論 v1.0.0（2026-06-05 新增）前端成本/售價/畫圖費/n8n節點/IG訊息/B1標靶全記錄
+│   │   ├── FHS_Cost_System_Overview.md ← 成本運算系統端到端總覽（單一入口，指針型，2026-09-21）：前端/n8n 分工、四分量、WHY 時間線（分清 Fat Mo 確認／AI session 決策）、已知落差、查詢路由；唔複製費率公式
 │   │   ├── ai_reports/                   ← AI 產出稽核報告存放區（2026-07-17 S181 新增，D40 全量成本審計報告首例）
 │   │   └── product_pricing_reference.md ← [DEPRECATED 2026-06-01] 已合併至 FHS_Pricing_Bible.md（現位於 .fhs/ai/）
 │   ├── reports/                         ← AI 產出正式報告與計劃區（2026-05-23 新增規則）

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-22] D83 防再發方案裁決（cl-flow-fast 2026-09-21-1536）— 原4層方案否決，改執行 Option A′：修 Stop hook 缺口 ＋ 成本總覽加組件現行立場
+
+- **裁決**：Fat Mo 要求就「同 session 建議立場三度翻轉」出防再發方案，原提案（4層3期，組件戶口冊＋自動載入＋改動前置關卡＋維護鉤）交 `/cl-flow-fast` 予 Gemini（A2）對抗評審。評審結果 **1 BLOCKER + 4 MAJOR + 1 MINOR，全部採納**，原方案否決，改執行縮小版 **Option A′**。
+- **關鍵發現（A2 揪出）**：①損害定義原本寫錯——漏咗「5 份錯誤文件推上 main」本身已係已發生嘅知識庫污染（其中一份係每個財務任務強制前載嘅 `finance-gatekeeper/SKILL.md`）；②Hook 判斷「呢個結論係咪新」係 BLOCKER（無狀態 Hook 做唔到語義判斷，會死鎖或被換字繞過）——**改為舉證責任倒置**：放行只認「本輪 dispatch／依據標記【依據：finance-auditor …】／豁免標記」三選一，Hook 只做字串存在性檢查；③`SKILL.md` 已 28,426 bytes，加速查表違反 SSOT，改為 `FHS_Cost_System_Overview.md` 零重複。
+- **執行**：`scripts/hooks/stop-finance-auditor.js` v1.1.0（放行邏輯收緊，lookback 降級為合法性提示）；`scripts/hooks/test/run-finance-stop-fixtures.js` 新增 15 夾具（依據標記4＋同義變體6＋邊界案例5），連同既有共 **35/35 PASS**；`FHS_Cost_System_Overview.md` 新增「五之二、組件現行立場」速查（純指針，`SKILL.md` 零改動）。
+- **🔴 真實 transcript 重播意外發現新缺口（未修，範圍外）**：陳述句形式嘅財務結論（冇問號、純用 Edit/Write 寫入 decisions.md 等，非 execute_sql／Read 財務文件）**從未被任何版本 Hook 偵測過**——即本次修復嘅係「派過一次之後免檢」缺口，唔係全部缺口。留待下次另開 `/cl-flow-fast` 評估。
+- 全文：`.fhs/notes/decisions.md` D83、`artifacts/2026-09-21-1536/cl-final-plan.md`（Verdict）、`.fhs/reports/completion/2026-09-22_finance-stop-hook-citation-fix_completion_report.md`。**Subagent 使用記錄**：❌ 治理設計評估用 `/cl-flow-fast`（Claude A3＋Gemini A2），非財務數字判斷，豁免 `finance-auditor`。
+
 ## [2026-09-21] canva-auto augustinefok 07001006（純音樂）— 母片 HoKaSin，Stage①-⑤交付；CV-48~51 新規則
 
 - **單號**：augustinefok 07001006，字句 `Beyond the days, the moments / we hold each other / truly stay`（跟 `word.png` 拆 3 行）。Fat Mo 首次輸入款式寫「全幅AI短片」，但素材夾冇客人片、只得 2 條 Lovart 動畫（`影片 1／2.mp4`，960²×15.1s）＋音訊 33.1sec；AI 開單前發現並準備詢問，Fat Mo 自行取消更正為「純音樂」重新開單。成品 `DAHVvl_drcw`（`augustinefok 純音樂 (2009/26) 33.1sec`），歸檔 `Free_recorder (09/26)`。
@@ -8,6 +16,19 @@
 - **Stage④ 學習**：AI 幾何 6 格修正 4 格（兩頁字句 44→40.93px／字距 0.073→0.14／top＋26.4；page3 兩片格微放大 0.63%）；page2 兩圖 container／imageBox 零修改。案例 `07001006` 已落 `canva_auto/placement_memory.json`（`schema_version:2`，`node scripts/canva_memory_validate.js` exit 0）。新規則：**CV-48**（copy 前先讀候選 page3 片格形狀）／**CV-49**（`local_prep` 採用率唔穩）／**CV-50**（`format_text` 冇 `letterSpacing` 參數）／**CV-51**（存檔頁 3 行字句字號按花環尾間距縮）。validator 提示 CV-36／CV-30／CV-42 已達 3 單引用未升格，待 Fat Mo 決定。
 - **Stage⑤ 存檔頁**：`DAHVv8QrIGc`（合集 `Free_Laser (09/26)` p152 Shirley 標準頁單頁複製；上一張單頁副本已被刪）。右上換本客原相（jpg 底部帶截圖黑邊，imageBox 多裁約 6px）、彩色插圖用 `local_prep` cutout（Fat Mo 版係元素層效果帶唔過去）、字句 3 行 14px；export 1000² 眼證兩輪修正。待 Fat Mo Ctrl+A/C/V 貼入合集。
 - **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
+## [2026-09-21] D82 前端成本估算保留、四欄維持現狀（暫不改）＋ AI 過失記錄 ＋ 防再發方案
+
+- **決定（D82）**：Fat Mo 同意「唔改」——前端成本估算保留、品項四欄維持現狀。理由（finance-auditor live 數據）：帳簿冇因佢哋出錯；賠本守衛 65 單命中 0；四欄冇財務總數依賴；刪前端碼風險大過好處。重啟條件見 decisions.md D82。
+- **AI 過失記錄**：同 session 9 項錯誤、5 項根因、建議立場三度翻轉（「暫不改」→「建議退役」→「唔改」）；全文 decisions.md「AI 過失記錄」（單一全文居所），learnings/finance.md Preferences #3。**生產帳簿冇因此出錯**。
+- **防再發方案**（待 Fat Mo 批准）：`.fhs/reports/planning/2026-09-21_component-charter-prevention-plan.md`——組件戶口冊＋自動載入＋改動前置關卡＋維護鉤，分 3 期。**Subagent 使用記錄**：✅ `finance-auditor` ×1（數據查證）。
+
+## [2026-09-21] 新增 `FHS_Cost_System_Overview.md`——成本運算系統端到端總覽（單一入口）
+
+- **新增**：`.fhs/notes/FHS_Cost_System_Overview.md`。指針型（唔複製費率／公式／金額），涵蓋：前端 `calculatePricing()` ＋ n8n 分工表、四分量逐項歸屬、WHY 時間線（**逐行如實寫 repo 嘅批准情況，查唔到就寫查唔到，唔定性**）、已知落差、「我想查 X → 去邊」路由表、常見誤區、維護觸發條件。已登記 `docs/repo-map.md`、`finance-gatekeeper` §一（v1.19.0）、`knowledge-map.md`（類別行）。
+- **驗證**：fresh-context `finance-auditor` 逐句核對，草稿有 7 處必須修正（`total_cost` 公式漏最大宗扣減、drawing／chain 分工寫錯、「權威翻轉」過頭、S60「刻意分開裁決」過頭、漏 S125 廢欄、`System_Final_Sale_Price` 其實有備存等）已全改。**同時揭出我之前已推上 main 嘅講法過頭**：「有三條裁決／權威翻轉」——實況按 repo 批准情況：Fat Mo 2026-06-03 有確認語義（糾錯定改制冇明文）、S60 批准者查唔到、S125（2026-06-27）已將品項層四欄廢欄（決策者未註明）、賠本守衛「從未觸發」只證到現存 0 單符合。**第二輪覆核再揭出我更正時矯枉過正**（將 S60 定性為「AI session 決策」、06-03 定性為「唔係改制」同樣未有足夠證據），改為只寫批准情況。已同步更正 gatekeeper、decisions D80 殘留、D80 完成記錄 §五、Changelog、handoff、auto-memory。
+- **影響提議**：原提議「printing／shipping 收歸 n8n」要先過 S125（廢欄）呢關——真正未裁決嘅係兩件：①前端成本估算保留定退役；②品項四分量去向（S125 廢欄／D80 補寫／收歸 n8n）。
+- **未做**：Finance Bible（L1）加指針（改 L1 需 Fat Mo 批准）；System_Logic §2.1／§3.3 過時處（總覽內已標 ⚠️）。**Subagent 使用記錄**：✅ `finance-auditor` ×2（本條：事實核對；後續一致性覆核見 session-log）。
 
 ## [2026-09-20] `sync_order_to_mirror` 拒絕對已軟刪訂單嘅 edit（migration 0095，D81）
 
@@ -31,7 +52,7 @@
 
 - **修復**：生產 5 行 V2 品項 `drawing_cost=0`（缺 $720，違反 Cost Schema v2 §10.3）；n8n `Calculate Profit & Pack Items` V47.24→V47.25（非家庭 V2 品項 `Drawing_Cost = 費率 × qty`，取代透傳 Dashboard 值）＋ migration 0094 回填 5 行；`orders` 表零改動（3 張單整行雜湊＋全表雜湊逐位一致），fresh-context `finance-auditor` 覆核 PASS。
 - **2026-09-20 追加**：測試單 `testV2draw0919` 經 Fat Mo 授權軟刪；真單 0600106 補設 `confirmed_at=2026-05-22`（KPI 不變，以預約日計入 2026-05 係 D43續三核准設計）；Fat Mo 澄清「待確認」＝訂單細節待確認、與財務無關、訂金／全付已實收，已落 `finance-gatekeeper` §四、`learnings/finance.md` #7。
-- 全文（根因、驗證、覆核揪出嘅 2 項錯誤、待辦）見 [completion report](.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)；決策見 decisions.md D80（原暫編 D79，撞主線 D79 n8n secret 修補，merge 時重編）。**2026-09-20 更正**：前端成本估算影響評估經 `finance-auditor` 核實後更正（該數字屬 Fat Mo 2026-06-03 裁決嘅參考估算、07-21 起 UI 隱藏、賠本守衛從未觸發），見 completion report §五。**2026-09-20 二次更正**（Fat Mo 再質疑後第二次派 `finance-auditor`）：①「沒有任何裁決要求改或不改」係錯——分工本身有裁決（S57 2026-06-03 成本側歸 n8n；S60 2026-06-05 前端透傳品項層四分量，理由「n8n 拿不到部位級資料」而**非**「較易維護」；2026-07-21 `aa12f5e` UI 隱藏）；②「冇報價面板系統成本標籤」誤導——實際標籤「畫圖成本: $X」裝住全成本估算，名實不符約 7 星期；③「純參考零 DB 足跡」錯——品項層四分量真實寫入 `order_items`；④真缺口＝冇一份端到端描述前後端成本運算嘅文件，`finance-gatekeeper` 路由表已補一行（v1.18.0）。**Subagent 使用記錄**：✅ `finance-auditor` ×4。
+- 全文（根因、驗證、覆核揪出嘅 2 項錯誤、待辦）見 [completion report](.fhs/reports/completion/2026-09-19_v2-item-drawing-cost-v4725_completion_report.md)；決策見 decisions.md D80（原暫編 D79，撞主線 D79 n8n secret 修補，merge 時重編）。**2026-09-20 更正**：前端成本估算影響評估經 `finance-auditor` 核實後更正（該數字屬 Fat Mo 2026-06-03 確認嘅參考估算、07-21 起 UI 隱藏、現存單 0 張符合賠本守衛觸發條件），見 completion report §五。**2026-09-20 二次更正**（Fat Mo 再質疑後第二次派 `finance-auditor`）：①「沒有任何裁決要求改或不改」係錯——但我其後寫「有裁決／權威翻轉」亦過頭（2026-09-21 兩輪核對後修正）。repo 按批准情況如實記：Fat Mo 2026-06-03 確認成本側歸 n8n（該段標題為「AI 過失記錄」；同 S53 方向相反，糾錯定改制冇明文）；S60 2026-06-05 批准者查唔到（cl-flow 標明需 Fat Mo 拍板、冇拍板記錄；理由「n8n 拿不到部位級資料」而**非**「較易維護」）；S125 2026-06-27 品項層四欄廢欄（決策者未註明），D80 方向相反／有張力；2026-07-21 `aa12f5e` commit 標 Fat Mo decision：UI 隱藏；②「冇報價面板系統成本標籤」誤導——實際標籤「畫圖成本: $X」裝住全成本估算，名實不符約 7 星期；③「純參考零 DB 足跡」錯——品項層四分量真實寫入 `order_items`；④真缺口＝冇一份端到端描述前後端成本運算嘅文件，`finance-gatekeeper` 路由表已補一行（v1.18.0），2026-09-21 補 `.fhs/notes/FHS_Cost_System_Overview.md` 作單一入口（見下條）。**Subagent 使用記錄**：✅ `finance-auditor` ×4。
 
 ## [2026-09-19] D79：n8n Mirror Prep 洩漏 Supabase secret key 入 execution data 修補 + 刪 92 個含 key execution（n8n API key 公開暴露待 Fat Mo 更換）
 

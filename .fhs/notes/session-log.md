@@ -1,4 +1,19 @@
 # Session Log
+## 2026-09-22 (D83 防再發方案裁決 — cl-flow-fast 否決原4層方案，執行 Stop hook 缺口修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-22 D83 條目、`artifacts/2026-09-21-1536/cl-final-plan.md`。Gemini 對抗評審 1 BLOCKER+4 MAJOR+1 MINOR 全採納，原提案否決；執行修 `stop-finance-auditor.js` 缺口（35/35 夾具 PASS）＋成本總覽加組件現行立場。重播意外揪出新缺口（陳述句財務結論從未被偵測），已誠實記錄、範圍外未修。
+**Subagent 使用記錄**：❌ 用 `/cl-flow-fast`（Claude A3＋Gemini A2 對抗評審），非財務數字判斷，豁免 `finance-auditor`。
+
+## 2026-09-21 (D82 唔改決定 + AI 過失記錄 + 組件戶口制防再發方案): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-21 D82 條目與 decisions.md D82／「AI 過失記錄」。Fat Mo 同意前端成本估算保留、四欄維持現狀；記錄同 session 9 項錯誤同根因；防再發方案待批准。
+**Subagent 使用記錄**：✅ `finance-auditor` ×1（數據查證）。
+
+## 2026-09-21 (成本運算端到端總覽文件 + 更正「有裁決」過頭講法): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-21 條目。新增 `FHS_Cost_System_Overview.md`（單一入口）；fresh-context `finance-auditor` 核對揪出草稿 7 處錯並連帶更正已推 main 嘅過頭講法（S60 非「裁決」、S125 已廢欄、賠本守衛只證到現存 0 單符合）。
+**Subagent 使用記錄**：✅ `finance-auditor`（事實核對＋一致性覆核）。
+
 ## 2026-09-20 (D81：sync_order_to_mirror 拒絕 edit 已軟刪訂單，migration 0095): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-20 D81 條目與 decisions.md D81。守衛只攔 `edit` 已刪單；`create` 重用 ID 仍復活（0087 語義保留）。事前將風險講得過重（Dashboard 本身開唔到已刪單），已誠實記錄。

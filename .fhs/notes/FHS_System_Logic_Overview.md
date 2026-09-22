@@ -33,6 +33,8 @@ Supabase（Read/Write Lead）          Airtable（過渡期 SSoT 快照）
 
 ### 2.1 成本計算：`calculatePricing()`
 
+> ⚠️ **本節有已知過時處**（2026-09-21 fresh-context 核對）：下文步驟 3 嘅 `_systemTotalCost` 公式仍含「+ BaseShipping」，該加項已於 2026-07-21 移除（commit `3845879`）；§二標題仍寫「V41」，現行生產版為 V42。**前端／n8n 分工、四分量歸屬、點解咁設計**請先讀 [`FHS_Cost_System_Overview.md`](FHS_Cost_System_Overview.md)（端到端單一入口），本節只作前端算法白話補充。
+
 **觸發時機**：任何商品或數量變更時自動觸發。
 
 **前置條件**：`window._fhsCostReady === true`（`cost_configurations` 已從 Supabase 載入）

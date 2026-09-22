@@ -11,6 +11,7 @@
 | 我想找… | 去這個類別（按檔名/日期 Grep，不要全讀） |
 |---|---|
 | 某個架構決策「為什麼」這樣定 | `.fhs/notes/decisions.md`（Grep 決策關鍵詞或 D 編號） |
+| 財務／成本／定價（邊個計、點解咁設計、有冇裁決、某訂單數字啱唔啱） | 先載 `finance-gatekeeper` skill（強制前置，其路由表指向 L1/L2 同成本總覽）；驗證必派 `finance-auditor` |
 | 某個 session 具體做了什麼、怎麼驗收的 | `.fhs/reports/completion/YYYY-MM-DD_*_completion_report.md`（Grep 檔名日期/slug） |
 | 某個功能的逐版本變更歷史 | `Changelog.md`（Grep 版本號或關鍵詞） |
 | 某個踩過的坑、避雷方法 | `.fhs/memory/learnings/`（2026-08-03 起分 6 領域桶：supabase/frontend/finance/n8n/governance/tooling，索引見 `learnings/README.md`；各桶內仍分 Pattern/Pitfall/Preference 三類） |
