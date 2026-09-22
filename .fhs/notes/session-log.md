@@ -2437,3 +2437,11 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - `local_prep.py` 按 Fat Mo Canva 版逐像素對比改良：黑白圖去背 IoU 0.860→0.981、彩色 0.980→0.986、Parakeet RGB 誤差 0.159→0.122；仍有光暈／線條顏色未解。
 - 全文見 [Changelog.md 2026-09-21（Ctungdear 0600108）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600108`。
 - **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
+## 2026-09-22 — canva-auto evie.c414 0600112（全幅AI短片）Stage①-③交付，待Fat Mo覆核（Claude Code / Sonnet 5）
+
+- 全幅款母片揀 Ctungdear 0600108（結構家族+page3片格形狀吻合，9:16客人片+單條Lovart動畫）；Stage①開殼＋local_prep.py去背（黑白/彩色 IoU 0.979）＋Stage③換料完成，page2圖對高度用滿花環top→字句top（CV-52）、page3直片貼頂裁+小組合仿射縮放、page4動畫正方零裁切；3行字句（CV-42字距0.14）。
+- 訂單編號／客人名中途各更正一次（0600512→0600112；Evie→evie.c414），已同步更正 Canva 設計標題，未落任何檔案毋須額外修正。
+- 元素大小已 export 真圖驗過；動畫／顯示時間 AI 睇唔到，待 Fat Mo 眼證後方可 Stage④ 落庫（`placement_memory.json` order=`0600112`）+ Stage⑤ 存檔頁。本次無 git 改動（Canva MCP 側工作，唯一 repo 改動為本記錄同 handoff.md 同步）。
+- 編輯連結：`https://www.canva.com/d/N4csTKsqzMsXAjl`。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
