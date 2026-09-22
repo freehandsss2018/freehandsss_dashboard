@@ -140,9 +140,366 @@
       "corrected_slots": 4,
       "total_slots": 6,
       "note": "純音樂（augustinefok，母片 HoKaSin 0601100，非首選 Meika——CV-48）。AI 幾何6格（page2 彩色／黑白零修改；page3 影片1／影片2、page2／page3 字句被改）修正4格：字句 44→40.93px／字距0.073→0.14／top+26.4，page3 片格微放大0.63%。Fat Mo 自行重做兩張圖對（彩色＝原檔＋元素層背景移除 CV-36；黑白＝Canva 新 asset），AI 首版 local_prep 輸出被棄（CV-49）。新規則 CV-48／49／50。 Stage⑤ 存檔頁 DAHVv8QrIGc 已交付（新規則 CV-51：3行字句字號按花環尾間距縮）。"
+    },
+    {
+      "order": "0600108",
+      "date": "2026-09-21",
+      "corrected_slots": 3,
+      "total_slots": 6,
+      "note": "全幅AI短片（Ctungdear，母片 Shirley 0600914）。AI 幾何6格修正3格：page2 黑白／彩色高560→642.62、黑白中心960、彩色同left；page4 動畫高560→643.77、中心960→954.5；page3 直片＋小組合零修改（小組合未跟 page2 新尺寸，待確認）。首單 local_prep vs Canva 版逐像素對比：黑白圖去背留封閉空位＋光暈9px、彩色圖白衫邊切走1.5%、Parakeet 飽和度 0.30 對 0.206＋黑位偏低。新規則 CV-52／53／54／55（CV-40 補中心）。"
     }
   ],
   "cases": [
+    {
+      "order": "0600108",
+      "customer": "Ctungdear",
+      "design_id": "DAHVz5fHg5c",
+      "date": "2026-09-21",
+      "learned": true,
+      "category": "全幅AI短片",
+      "page_count": 5,
+      "parent_order": "0600914",
+      "first_pass_total": 6,
+      "first_pass_corrected": 3,
+      "family": "全幅AI短片5頁；母片 Shirley 0600914 DAHVKjpqgu0（客人片直向9:16、單條 Lovart 動畫、冇 WhatsApp Audio、標題冇 sec；page3 片格吻合）。本單客人片 464×832 21.06sec；Lovart 動畫 834×1112（3:4）；彩色圖 928×1152／黑白圖 1157×1360（直向，非慣例正方）；字句 2 行『My love for you is / as big as the universe』。",
+      "note": "✅Fat Mo 改完（2026-09-21）。AI 幾何6格修正3格：page3 直片＋小組合2格零修改；page2 黑白／彩色（container 由 560高左對齊放大到 642.62高、黑白中心960）＋page4 動畫（高560→643.77、中心960→954.5）被改。主要教訓＝圖對／動畫高度要用滿花環 top→字句 top（CV-52）。新素材圖對係直向 tight bbox（非母片正方留白），container 闊度按 asset 比例。同單首次做 local_prep vs Fat Mo Canva 版逐像素對比（CV-54／55）。p3 小組合冇跟 p2 新尺寸縮放（待確認）。",
+      "slots": [
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "PB1r1fbHjRRxctcB-LB77HXWn954kMQfD（母片元素，保留）",
+          "asset": "MAHVz7Q5QwQ AAGCELPNtWk_1789975094337.png 1157×1360（Fat Mo 用 Canva app Parakeet 產出嘅新 asset；AI local_prep 版被棄）＋元素層背景移除",
+          "ai_box": {
+            "top": 146.1028599531146,
+            "left": 699.6,
+            "w": 490.477,
+            "h": 560,
+            "imageBox": {
+              "top": -16.533,
+              "left": 0,
+              "w": 490.477,
+              "h": 576.533
+            }
+          },
+          "fatmo_box": {
+            "top": 147.25,
+            "left": 678.579,
+            "w": 562.841,
+            "h": 642.622,
+            "imageBox": {
+              "top": -18.972,
+              "left": 0,
+              "w": 562.841,
+              "h": 661.594
+            }
+          },
+          "note": "AI 高取 560（CV-52），Fat Mo 放大到 642.62：中心 959.9995（CV-53）、底邊 789.872＝字句 top。imageBox 兩邊都係頂裁39 asset px（scale 0.48645），比例零變形，AI 公式無誤，錯在 container 尺寸／位置"
+        },
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PB1r1fbHjRRxctcB-LBRvHyPrSQQrT9kL（母片元素，保留）",
+          "asset": "MAHVz8j013A 彩色圖.png 928×1152（原檔）＋Canva 元素層背景移除（CV-36）",
+          "ai_box": {
+            "top": 146.1028599531146,
+            "left": 699.6,
+            "w": 464.415,
+            "h": 560,
+            "imageBox": {
+              "top": -16.515,
+              "left": 0,
+              "w": 464.415,
+              "h": 576.515
+            }
+          },
+          "fatmo_box": {
+            "top": 146.1028599531146,
+            "left": 680.874,
+            "w": 547.888,
+            "h": 642.622,
+            "imageBox": {
+              "top": -28.499,
+              "left": 0,
+              "w": 547.888,
+              "h": 680.136
+            }
+          },
+          "note": "高度同黑白統一 642.622（CV-05）；left 比黑白多 2.295；Fat Mo 將彩色 asset 裁成 y≈48.3→1136.8（AI 按 Canva bbox 取 y33→1152），container 闊高比 0.8293→0.8526（單樣本，未知係去背後自動 bbox 定人手再裁）"
+        },
+        {
+          "slot": "page3_直片",
+          "element_id": "PBpKX7d6642dSQQG-LBLShpnVC4V07tSD（母片元素，保留，container冇resize）",
+          "asset": "VAHVz-cYkYY WhatsApp Video 2026-07-03 at 10.43.11.mp4 464×832（metadata／縮圖／本地 tkhd 一致）21.06sec",
+          "ai_box": {
+            "top": 0,
+            "left": 592.7742798601207,
+            "w": 737.1767107790307,
+            "h": 1080,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 737.1767107790307,
+              "h": 1321.834
+            }
+          },
+          "fatmo_box": "=ai_box（零修改）",
+          "note": "沿用母片格闊，直向片 cover 貼頂（底部裁 241.83px）；page3 背景 Fat Mo 自己設 VAHVz-cYkYY 垂直置中（top −1181.379），AI 核對冇改"
+        },
+        {
+          "slot": "page3_右下小組合",
+          "element_id": "彩色 PBpKX7d6642dSQQG-LBn0z2LXYzc3xmsS／黑白 PBpKX7d6642dSQQG-LBNFJNYN3fRF8z5q（母片元素，保留）",
+          "ai_box": {
+            "黑白": {
+              "top": 769.972,
+              "left": 1553.105,
+              "w": 161.617,
+              "h": 184.526,
+              "imageBox": {
+                "top": -5.448,
+                "left": 0,
+                "w": 161.617,
+                "h": 189.973
+              }
+            },
+            "彩色": {
+              "top": 769.972,
+              "left": 1553.105,
+              "w": 153.029,
+              "h": 184.526,
+              "imageBox": {
+                "top": -5.442,
+                "left": 0,
+                "w": 153.029,
+                "h": 189.967
+              }
+            }
+          },
+          "fatmo_box": "=ai_box（零修改）",
+          "note": "AI 按 page2 H=560 用 affine（s=0.32951, tx=1322.58, ty=721.83）出值；Fat Mo 其後將 page2 放大到 642.62 但小組合冇跟改——若跟 CV-45 應為：黑白 top 770.35／left 1546.17／w 185.46／h 211.75。待確認係咪有意"
+        },
+        {
+          "slot": "page4_動畫",
+          "element_id": "PBf1CMJ0CQGLZ45t-LBR1YP3qgQwHy2s6（母片元素，保留）",
+          "asset": "VAHVz60DjDo 影片 1.mp4：get-assets metadata 報 810×2160（錯，第11次）；縮圖 270×360；本地 tkhd 834×1112（3:4）15.10sec；元素層背景移除",
+          "ai_box": {
+            "top": 146.1028599531146,
+            "left": 750,
+            "w": 420,
+            "h": 560,
+            "imageBox": "=container（0,0,420×560）"
+          },
+          "fatmo_box": {
+            "top": 146.1028599531146,
+            "left": 713.107,
+            "w": 482.827,
+            "h": 643.769,
+            "imageBox": "=container（0,0,482.83×643.77）"
+          },
+          "note": "CV-40 補：高度＝上限 643.769（底邊 789.872＝字句 top），中心 954.52＝page2 彩色格中心 954.82（AI 置中 960＋高 560）；闊按 3:4 零裁切"
+        },
+        {
+          "slot": "stage5_存檔頁",
+          "element_id": "存檔頁 DAHV0GXct1M（由 DAHVv8QrIGc 07001006 存檔頁單頁複製；已歸入 Free_recorder (09/26)）；臨時副本 DAHV0BPxXgE（合集 p159 單頁複製，只為抽客人原相 mediaId，已歸檔，待 Fat Mo UI 刪）",
+          "asset": "右上原相 MAHVwClfxBw（合集 p159 已有嘅客人原相 1366×2048，唔使重新上載）；彩色插圖 MAHVz8j013A 彩色圖.png 928×1152 原檔（含底色，Fat Mo 元素層背景移除 update_fill 帶唔過去，CV-36）",
+          "ai_box": {
+            "右上原相": {
+              "top": 0,
+              "left": 363.412,
+              "w": 136.588,
+              "h": 136.588,
+              "imageBox": {
+                "top": -24,
+                "left": 0,
+                "w": 136.5878,
+                "h": 204.78
+              }
+            },
+            "彩色插圖": {
+              "top": 103.1618,
+              "left": 156.12,
+              "w": 184.16,
+              "h": 216,
+              "imageBox": {
+                "top": -9.58,
+                "left": 0,
+                "w": 184.16,
+                "h": 228.62
+              },
+              "note": "按 Fat Mo 最終 page2 彩色格（547.888×642.622，imageBox 頂裁 28.499）等比縮到高216＝花環 top 103.16→字句 top 327.80 之間（CV-39 套落存檔頁，底邊留 8.6）；中心 248.2＝page2 中心 954.82 按 affine（s0.3698）換算"
+            },
+            "字句": {
+              "top": 327.8,
+              "left": 122.15,
+              "w": 256,
+              "h": 48.01,
+              "fontSize": 17,
+              "lineHeight": 1.67,
+              "letterSpacing": 0.165,
+              "lines": 2,
+              "note": "母版（07001006）係 3 行 14px／box 290／top 331；本單 2 行回復 Shirley 母版值 17px／box 256／中心 250.15／top 327.80，replace_text 後 box 高48.01＝2行；字距繼承母版 0.165（CV-50 冇 letterSpacing API）"
+            }
+          },
+          "fatmo_box": "待 Fat Mo 貼入合集後覆核",
+          "note": "Shirley 存檔頁 DAHVKybdRvA 已被 Fat Mo 刪走（copy 報 not found），改用 07001006 存檔頁 DAHVv8QrIGc 做母版。合集 DAHU_lpDwxo 160 頁：p157＝本單雷雕字句頁、p159＝本單客人原相頁（Fat Mo 已放入）；存檔頁要貼喺上一張存檔頁後面。客人原相直向 1366×2048 放右上正方窗，imageBox 貼下 24px 令兩人＋BB 入鏡（首版 −10.2 BB 被切）。export 1000² 眼證：彩色插圖仍見淺色底方塊（未去背，需 Fat Mo 撳背景移除）、字句 2 行冇撞花環、光暈／簽名沿用母版。"
+        }
+      ],
+      "non_geometry_findings": [
+        "素材夾：影片 1.mp4（Lovart 動畫 834×1112 3:4 15.10sec，非慣例 Video N）＋WhatsApp Video（直片 464×832 21.06sec）＋彩色圖／黑白圖＋1.png／2.png（較早線稿版本，唔用，同 0600709／07001006 一致）＋UUID jpg 1366×2048（客人原相，Stage⑤ 用）＋word.png（2行）；冇 WhatsApp Audio（全幅款）",
+        "Stage① 母片揀 Shirley 0600914 DAHVKjpqgu0：客人片直向 9:16 同其 page3 片格吻合；排除 Dorothy 0600728（特訂 no_parent）；只睇縮圖確認片格形狀，冇 read-design 逐格核尺寸（CV-48 建議做法）；copy 後冇留孤兒副本",
+        "Stage① 字句：replace_text 後 2 行夾入母片 box 828（63.47px／字距0.14），word.png 隱含字號≈62.7（行距 g≈96px，最寬行 563px，需寬≈762<828），冇再調",
+        "Fat Mo 兩張圖對都自己處理：彩色＝原檔＋Canva 元素層背景移除；黑白＝Canva app Parakeet 產新 asset（1157×1360）＋元素層背景移除。AI local_prep 輸出被棄（CV-49／CV-54）；Fat Mo 其後明示政策 CV-55",
+        "本單首次做 local_prep vs Canva 版逐像素對比（黑白圖配準：線條覆蓋率 99.5%±1px；彩色圖相關 0.997）；量度結果見 CV-54，下一步改良 local_prep.py 並以呢單為驗證基準",
+        "Stage③ 臨時件：p2 兩張（彩色 LBqg7CfFDzknGnRt／黑白 LBbpV6MSqKh088fG）、p3 一條客人片 LBJbngYXRvnSPC1b、p4 一條動畫 LBmMsSt084DY3Mg0；p1／p5 嘅星星 asset 屬母片裝飾（唔係臨時件）；已讀全部頁（CV-38 遵守）。AI 刪臨時件後 Fat Mo 嘅元素層背景移除效果連元素冇咗，要喺母片元素重做（CV-36）",
+        "AI 讀 CDF 全部頁核對 p3 背景 video 已係 VAHVz-cYkYY（Fat Mo 設）；動畫／顯示時間／音軌 AI 睇唔到"
+      ],
+      "lessons": [
+        {
+          "page": [
+            2
+          ],
+          "type": "ai_error",
+          "rule": "CV-52",
+          "text": "高取 560（怕闊過花環內側），Fat Mo 放大到 642.62，底邊貼字句 top，兩邊壓花環亦接受",
+          "src": "slots[page2_黑白圖].note"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-53",
+          "text": "闊嗰張黑白中心 960、窄嗰張彩色同 left（差2.3px）；兩格高統一 642.622",
+          "src": "slots[page2_黑白圖].fatmo_box"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-05",
+          "text": "兩格高度統一到小數位（642.622），left 差 2.3px，闊度按各自 asset 比例",
+          "src": "slots[page2_彩色圖].fatmo_box"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-30",
+          "text": "黑白彩色 container 闊度唔同（562.84／547.89），四值全等唔適用於闊高比唔同嘅兩張 asset",
+          "src": "slots[page2_彩色圖].note"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "Fat Mo 將彩色 asset 裁成 y48→1137（AI 取 y33→1152），闊高比 0.8293→0.8526；未知去背 bbox 抑或人手再裁",
+          "src": "slots[page2_彩色圖].note"
+        },
+        {
+          "page": [
+            2,
+            3
+          ],
+          "type": "manual_only",
+          "rule": "CV-36",
+          "text": "Fat Mo 用 Canva 元素層背景移除；AI update_fill 母片元素只換到原始 asset，刪臨時件後效果冇咗，要 Fat Mo 母片元素重做",
+          "src": "non_geometry_findings[5]"
+        },
+        {
+          "page": [
+            3
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-04",
+          "text": "直片 464×832 沿用母片格闊 737.18、imageBox 貼頂 1321.83，Fat Mo 零修改",
+          "src": "slots[page3_直片]"
+        },
+        {
+          "page": [
+            3
+          ],
+          "type": "manual_only",
+          "rule": "CV-18",
+          "text": "page3 背景 Fat Mo 自己設同一條客人片 VAHVz-cYkYY 垂直置中（AI 核對冇改）",
+          "src": "slots[page3_直片].note"
+        },
+        {
+          "page": [
+            4
+          ],
+          "type": "ai_error",
+          "rule": "CV-40",
+          "text": "AI 置中 960＋高 560；Fat Mo 改高 643.77、中心對齊 page2 彩色格 954.5、闊 482.83（3:4 零裁切）",
+          "src": "slots[page4_動畫]"
+        },
+        {
+          "page": [
+            4
+          ],
+          "type": "tool_bug",
+          "rule": "CV-17",
+          "text": "影片 1.mp4 get-assets 報 810×2160，縮圖 270×360、本地 tkhd 834×1112（第11次）",
+          "src": "slots[page4_動畫].asset"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "ai_error",
+          "rule": "CV-54",
+          "text": "local_prep：黑白圖去背保留封閉空位＋光暈約9px、彩色圖白衫邊切走1.5%、Parakeet 飽和度0.30 對 Canva 0.206、黑位偏低",
+          "src": "non_geometry_findings[3]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "ai_error",
+          "rule": "CV-49",
+          "text": "local_prep 輸出再被棄（第4單）：Fat Mo 兩張都自己用 Canva 處理",
+          "src": "non_geometry_findings[3]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "fatmo_technique",
+          "rule": "CV-55",
+          "text": "Fat Mo 明示去背由 AI 做並盡量做好，唔得先用 Canva；每單對比學習",
+          "src": "non_geometry_findings[4]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage2",
+          "type": "material",
+          "rule": "CV-33",
+          "text": "1.png／2.png 係較早線稿版本、UUID jpg 係客人原相、影片 1.mp4 非慣例命名；AI 按 0600709／07001006 慣例判斷冇問，Fat Mo 冇反對",
+          "src": "non_geometry_findings[0]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage3",
+          "type": "fatmo_technique",
+          "rule": "CV-38",
+          "text": "讀全部頁搵臨時件：p2×2、p3×1、p4×1，冇漏",
+          "src": "non_geometry_findings[5]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage5",
+          "type": "fatmo_technique",
+          "rule": "CV-51",
+          "text": "母版係 3 行 14px 時，本單 2 行要回復 17px／box 256／top 327.80，replace_text 後 box 高48.01＝2行",
+          "src": "slots[stage5_存檔頁].ai_box.字句"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage5",
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "客人原相 mediaId 由合集單頁複製（p159）read-design 抽出（MAHVwClfxBw），冇需要重新上載",
+          "src": "slots[stage5_存檔頁].asset"
+        }
+      ]
+    },
     {
       "order": "07001006",
       "customer": "augustinefok",
@@ -3997,7 +4354,7 @@
         4
       ],
       "applies_to": "全幅AI短片",
-      "text": "page4 動畫格跟 page2 彩色格（同 top、同高度），唔好繼承母片 page4 嘅 Fat Mo 單次偏好微調值（例 Chinok 放大版 796.8²，佢話「不必理會」）",
+      "text": "page4 動畫格跟 page2 彩色格（同 top、同高度），唔好繼承母片 page4 嘅 Fat Mo 單次偏好微調值（例 Chinok 放大版 796.8²，佢話「不必理會」）（0600108 補：動畫格中心亦跟 page2 彩色格中心［954.52 對 954.82］，高度＝字句 top−花環 top 上限 643.77，闊按 3:4 零裁切 482.83）",
       "promoted_to": null
     },
     {
@@ -4104,6 +4461,44 @@
       "flow_stage": "stage5",
       "applies_to": "all",
       "text": "存檔頁字句行數多過母版（2→3行）時，母版 17px 唔可以照抄：按短片 page2 字句寬度比例（≈花環兩枝尾間距 216px）計字號（本單14px），否則第一行撞花環枝尾；box 闊預留 ≥290、中心對齊母版中心 250.15，replace_text 後 top 會被 anchoring 自動上移，要 position_element 手動下移到圖底＋約4px",
+      "promoted_to": null
+    },
+    {
+      "id": "CV-52",
+      "type": "ai_error",
+      "page": [
+        2
+      ],
+      "applies_to": "全幅AI短片",
+      "text": "page2 圖對高度要用滿「花環 group top → 字句 box top」整段（本單 146.10→789.87＝643.77；Fat Mo 最終 642.62，黑白底邊＝字句 top 789.872）。AI 因怕新圖（無留白 tight bbox，人物即圖闊）闊過花環內側淨空（≈481px）而保守取 560，Fat Mo 放大 14.75%，黑白闊 562.8（壓花環兩邊各約40px）亦接受——唔好為避花環而縮細，先按 CV-39 兩條邊界取滿高度，闊度由 asset 比例決定",
+      "promoted_to": null
+    },
+    {
+      "id": "CV-53",
+      "type": "fatmo_technique",
+      "page": [
+        2
+      ],
+      "applies_to": "全幅AI短片",
+      "text": "page2 圖對對齊：兩格高度統一（642.622）；較闊嗰張（黑白 562.84）中心＝頁面正中 960（實測 959.9995），較窄嗰張（彩色 547.89）同 left（差 2.3px，鼻位對得齊）；兩張 asset 闊高比唔同時 container 闊度各自按 asset 比例，唔使四值全等（對 CV-30 單樣本嘅反例）",
+      "promoted_to": null
+    },
+    {
+      "id": "CV-54",
+      "type": "ai_error",
+      "page": "flow",
+      "flow_stage": "stage1",
+      "applies_to": "all",
+      "text": "local_prep.py 已用 0600108 對比量度嘅偏差（Fat Mo Canva 版為基準，白底壓平檔逐像素配準）：①黑白圖 rembg 去背保留咗兩人之間封閉空位（≈9.7% 畫面，Canva 去咗）＋外圍光暈約 9px（原圖解像度）＋左下約1%切多；②彩色圖去背大致啱（多留僅0.03%）但白衫／光亮背景交界切走 1.5% 畫面（底部手臂位約3600px、袖口、衫邊）；③Parakeet：色相場幾近一致（平均差 −2.1°），但 Canva 飽和度約 0.206（local_prep 預設 0.30）、黑位抬高（粗線 RGB≈52,28,35，明度0.14；local_prep 近純黑 0.04）。Canva 版＝Canva app Parakeet 產新 asset（AAGC….png 已焗色）＋元素層背景移除。單樣本，改良方向：黑白圖去封閉空位／收緊 alpha 去光暈、彩色圖邊緣救援、飽和度同黑位可調；改良後用呢單兩張 Canva 版當驗證基準。【2026-09-21 改良已落 local_prep.py（0600108 原圖＋Fat Mo Canva 版還原成原圖座標 truth mask，IoU 為尺）】基準：黑白 rembg IoU 0.860（over-keep 10.9%）、彩色 0.980。①彩色：alpha 閾值 0.5→0.1（實作＝alpha≥0.3 全不透明）IoU 0.986、over-cut 1.8%→1.1%；alpha_matting 無收益，post_process_mask 變硬邊更差。②黑白：用彩色 rembg 前景 mask 做前置——兩圖闊高比唔同（sx1.25／sy1.22），要 bbox＋IoU 精修嘅 affine；對位時兩邊先 binary_fill_holes 只比外輪廓（直接對 rembg 黑白 mask 會被保留嘅空位拖歪參數，sx 偏 2.4%、對位 IoU 只 0.866）；再將黑白圖近白像素（lum≥0.94，4-連通）分連通區，被前置 bg 覆蓋 >50％且 >200px 嘅區整塊剔走，貼線條邊界唔受配準誤差影響。IoU 0.860→0.981（over-keep 0.95%／over-cut 0.55%），對位 IoU 0.978；閾值 lum 0.90–0.97、覆蓋比 0.4–0.7 結果幾乎不變。對位 IoU＜0.90 自動退回純 rembg（鏡像＋裁剪測試 IoU 0.746 正確觸發）。陷阱：唔可以用『同圖邊連通嘅白區＝背景』——人物被圖邊裁切，白衫內部經圖邊漏出去，over-cut 37%。③Parakeet：Canva 紙面（白區）飽和度 0.207±0.02（local_prep 舊 0.30），V≈0.989；線條唔係純黑（最暗像素約 RGB 22,3,47～52,28,35，偏紫、飽和度高）。實作 S=0.207、V=0.20+0.80×明度；Canva-kept 像素平均 RGB 誤差 0.159→0.122，黑位抬高 a 喺 0.2–0.38 間誤差平（最優約 0.3），線條真實上色仍未重現。④剩餘：外圍淺灰光暈（新版仍有細灰邊）、底部白衫繼承彩色 prior 嘅 over-cut、線條顏色。⑤量度方法：Canva 版下載檔係白底壓平＋裁到人物 bbox＋縮細（0.556），要保留原圖（彩色圖／黑白圖）先量得到，原圖被清走會全部做唔到",
+      "promoted_to": null
+    },
+    {
+      "id": "CV-55",
+      "type": "fatmo_technique",
+      "page": "flow",
+      "flow_stage": "stage1",
+      "applies_to": "all",
+      "text": "Fat Mo 2026-09-21 明示 local_prep 政策：去背預設由 AI 做並盡量做好，唔得先由 Fat Mo 用 Canva 補；AI 只須每單將自己輸出同 Fat Mo Canva 版逐像素對比、從差異學習改良，唔使追求 100%（不可能）。Fat Mo 下載 Canva 版時放喺 local_prep_out（檔案已白底壓平＋裁到人物 bbox，無 alpha，只可估去背範圍）",
       "promoted_to": null
     }
   ]

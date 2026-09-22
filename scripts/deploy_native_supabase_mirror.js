@@ -53,8 +53,7 @@ const newOrderId = (() => {
 const staticData = $getWorkflowStaticData('global');
 const supabaseActive = staticData.supabase_mirror_enabled !== false;
 
-const SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })()
-  || 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq';
+const SUPABASE_KEY = (() => { try { return process.env.SUPABASE_SERVICE_KEY; } catch(e) { return null; } })();
 
 // Build lookup from original webhook items to preserve UI-edited process_status & batch_number
 let uiItemMap = {};
@@ -245,11 +244,11 @@ async function main() {
         parameters: [
           {
             name: 'apikey',
-            value: 'sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq'
+            value: '={{ $env.SUPABASE_SERVICE_KEY }}'
           },
           {
             name: 'Authorization',
-            value: 'Bearer sb_secret_EXq938yU-MinIxdpOc0nZg_qL-N3BCq'
+            value: "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}"
           },
           {
             name: 'Content-Type',

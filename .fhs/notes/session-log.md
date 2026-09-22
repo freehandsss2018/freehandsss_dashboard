@@ -14,6 +14,10 @@
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-21 條目。新增 `FHS_Cost_System_Overview.md`（單一入口）；fresh-context `finance-auditor` 核對揪出草稿 7 處錯並連帶更正已推 main 嘅過頭講法（S60 非「裁決」、S125 已廢欄、賠本守衛只證到現存 0 單符合）。
 **Subagent 使用記錄**：✅ `finance-auditor`（事實核對＋一致性覆核）。
 
+## 2026-09-20 (D79續：修補 4 個 workflow 仍寫死已撤銷舊 key): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-20 條目。FO/GlobalReview 由 401 復活（webhook 200、62 行）；IGWatchdog 寫入節點 401 被 continueOnFail 吞咗改為正常；ErrorMonitor 修復；IGWatchdog 2026-09-21 排程已驗證（message_intents 恢復寫入）；ErrorMonitor 待有 workflow 出錯先能驗。
+**Subagent 使用記錄**：✅ finance-auditor（背景，獨立覆核 Financial Overview 輸出；財務紅線）。
 ## 2026-09-20 (D81：sync_order_to_mirror 拒絕 edit 已軟刪訂單，migration 0095): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-20 D81 條目與 decisions.md D81。守衛只攔 `edit` 已刪單；`create` 重用 ID 仍復活（0087 語義保留）。事前將風險講得過重（Dashboard 本身開唔到已刪單），已誠實記錄。
@@ -2441,3 +2445,18 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 存檔頁 `DAHVv8QrIGc` 已備妥，待 Fat Mo 貼入 `Free_Laser (09/26)`；廢棄副本 `DAHVvi7ZCBI` 待 Fat Mo UI 刪。
 - 全文見 [Changelog.md 2026-09-21（augustinefok 07001006）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `07001006`。
 - **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
+
+## 2026-09-21 — canva-auto Ctungdear 0600108（全幅AI短片）＋ local_prep.py 改良（Claude Code / Sonnet 5）
+
+- 全幅款 Stage①-⑤交付（母片 Shirley 0600914，6 格修正 3 格，CV-52~55）；存檔頁 `DAHV0GXct1M` 待 Fat Mo 撳彩色插圖背景移除、貼入合集。
+- `local_prep.py` 按 Fat Mo Canva 版逐像素對比改良：黑白圖去背 IoU 0.860→0.981、彩色 0.980→0.986、Parakeet RGB 誤差 0.159→0.122；仍有光暈／線條顏色未解。
+- 全文見 [Changelog.md 2026-09-21（Ctungdear 0600108）條目](../../Changelog.md)、`canva_auto/placement_memory.json` order `0600108`。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
+## 2026-09-22 — canva-auto evie.c414 0600112（全幅AI短片）Stage①-③交付，待Fat Mo覆核（Claude Code / Sonnet 5）
+
+- 全幅款母片揀 Ctungdear 0600108（結構家族+page3片格形狀吻合，9:16客人片+單條Lovart動畫）；Stage①開殼＋local_prep.py去背（黑白/彩色 IoU 0.979）＋Stage③換料完成，page2圖對高度用滿花環top→字句top（CV-52）、page3直片貼頂裁+小組合仿射縮放、page4動畫正方零裁切；3行字句（CV-42字距0.14）。
+- 訂單編號／客人名中途各更正一次（0600512→0600112；Evie→evie.c414），已同步更正 Canva 設計標題，未落任何檔案毋須額外修正。
+- 元素大小已 export 真圖驗過；動畫／顯示時間 AI 睇唔到，待 Fat Mo 眼證後方可 Stage④ 落庫（`placement_memory.json` order=`0600112`）+ Stage⑤ 存檔頁。本次無 git 改動（Canva MCP 側工作，唯一 repo 改動為本記錄同 handoff.md 同步）。
+- 編輯連結：`https://www.canva.com/d/N4csTKsqzMsXAjl`。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。

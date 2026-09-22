@@ -46,6 +46,7 @@
 - → `supabase.md` #12 【高頻 ⚠️】規則系統由「thread 級」擴展成「全域生效」時，原有嘅「訊息內容存在」防偽護欄唔再夠——要問清楚呢個護欄嘅資料源頭本身係咪受同一信任邊界保護
 - → `n8n.md` #7 【高頻 ⚠️】n8n Code node 預設封鎖環境變數存取（`N8N_BLOCK_ENV_ACCESS_IN_NODE`）——見到「secret 硬編碼 + 防禦性 try/catch 包住 env 讀取」呢個組合，唔好當疏忽，要當「env 存取曾經失敗過」嘅訊號
 - → `n8n.md` #8 【高頻 ⚠️】節點輸出會被 n8n 存入 execution data（預設14日、成功失敗皆存全文），secret 唔可以經節點輸出傳遞；HTTP 節點失敗時 `error.context.request.headers` 只遮 `Authorization` 唔遮 `apikey`
+- → `n8n.md` #9 **【高頻 ⚠️】節點設 `continueOnFail`+`alwaysOutputData` 會將 401 吞成「success」——健檢/稽核 workflow 唔可以睇 execution `status`，要讀該節點輸出有冇 `error` 欄位；揪出一個 workflow 嘅寫死 secret 後必須全伺服器掃所有 workflow（D62 只收斂咗 OrderProcessor，另 4 個 workflow 帶住已撤銷舊 key 靜默失敗 ≥5 週
 - → `tooling.md` #7 【高頻 ⚠️】Git worktree session 入面，絕對路徑漏咗 worktree 前綴會靜默錯改主倉，Read/Edit 完全唔會報錯
 - → `tooling.md` #8 升格部署嘅 promotion-copy 目標路徑必須係 `scripts/upload-web.ps1` 實際讀取嘅檔名，唔可以憑口語「current.html」臆測落錯位置
 - → `tooling.md` #10 【高頻 ⚠️】警告腳本嘅「取數範圍」細過「讀取範圍」時，會靜靜哋出一份殘缺清單——零報錯，而且睇落完全正常

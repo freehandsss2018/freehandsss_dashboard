@@ -8,6 +8,23 @@
 - **🔴 真實 transcript 重播意外發現新缺口（未修，範圍外）**：陳述句形式嘅財務結論（冇問號、純用 Edit/Write 寫入 decisions.md 等，非 execute_sql／Read 財務文件）**從未被任何版本 Hook 偵測過**——即本次修復嘅係「派過一次之後免檢」缺口，唔係全部缺口。留待下次另開 `/cl-flow-fast` 評估。
 - 全文：`.fhs/notes/decisions.md` D83、`artifacts/2026-09-21-1536/cl-final-plan.md`（Verdict）、`.fhs/reports/completion/2026-09-22_finance-stop-hook-citation-fix_completion_report.md`。**Subagent 使用記錄**：❌ 治理設計評估用 `/cl-flow-fast`（Claude A3＋Gemini A2），非財務數字判斷，豁免 `finance-auditor`。
 
+## [2026-09-21] canva-auto Ctungdear 0600108（全幅AI短片）— Stage①-⑤交付；CV-52~55 新規則；`local_prep.py` 去背／Parakeet 改良
+
+- **單號**：Ctungdear 0600108，字句 `My love for you is / as big as the universe`（2 行）。母片揀 Shirley 0600914 `DAHVKjpqgu0`（客人片直向 9:16 同其 page3 片格吻合）；設計 `DAHVz5fHg5c`（5 頁）。
+- **Stage④ 學習**：AI 幾何 6 格修正 3 格（page3 直片＋右下小組合零修改；page2 兩圖高 560→642.62、黑白中心 960；page4 動畫高 560→643.77、中心 960→954.5）。教訓＝圖對／動畫高度用滿花環 top→字句 top（CV-52／53）。p3 小組合冇跟 p2 新尺寸縮放，待 Fat Mo 確認係咪有意。
+- **Stage⑤ 存檔頁**：`DAHV0GXct1M`（由 07001006 存檔頁單頁複製，Shirley 存檔頁已被刪），右上原相 `MAHVwClfxBw`（合集 p159 抽出，imageBox 貼下 24px 令 BB 入鏡）、彩色插圖等比縮至高 216、字句回復 2 行 17px。彩色插圖仍見底色方塊，待 Fat Mo 撳背景移除；待貼入 `Free_Laser (09/26)` p159 後；臨時副本 `DAHV0BPxXgE` 待 UI 刪。
+- **`local_prep.py` 改良（Fat Mo 授權：去背 AI 做盡、每單對比學習，CV-55）**：以 Fat Mo Canva 版還原成原圖座標 truth mask（IoU 為尺）——黑白圖去背 0.860→**0.981**（彩色圖 mask 前置＋affine 對位＋白色連通區判斷，去到兩人之間封閉空位；對位 IoU＜0.90 自動退回純 rembg）、彩色圖 0.980→0.986（alpha 重映射）、Parakeet 飽和度 0.30→0.207＋黑位抬高 0.20（RGB 誤差 0.159→0.122）。鏡像＋裁剪圖測試對位失敗正確退回。
+- **未解**：外圍淺灰光暈、底部白衫 over-cut、Parakeet 線條顏色（Canva 最暗像素偏紫，local_prep 偏灰）；只用單一樣本，下一單交付後須再對比（單號資料夾要保留原圖＋Canva 版）。
+- 全文見 [canva-auto.md v1.8.5](.fhs/ai/commands/canva-auto.md)、`canva_auto/placement_memory.json` order `0600108`（CV-52／53／54／55）、`canva_auto/README.md`。
+- **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
+## [2026-09-20] D79 續：修補另外 4 個 workflow 仍寫死已撤銷舊 key（FO / GlobalReview / IGWatchdog / ErrorMonitor）
+
+- **緣起**：D79 全伺服器掃描發現 87 個 execution 含舊 key（fp `8fdf055d9e`，已撤銷），指向 D62 漏收斂嘅 4 個 workflow。Fat Mo：「立即處理」。
+- **診斷**：`FHS_Financial_Overview`／`FHS_Query_GlobalReview` 持續 401（Dashboard 09-19 仍呼叫）；`FHS_IGWatchdog_DriveWatch` 嘅 `Write Mismatches`/`Write Intents` 因 `continueOnFail` 令每日 401 被吞成 success（`message_intents` 最後寫入 2026-08-03）；`FHS_System_ErrorMonitor` 嘅 `Log to Supabase` 401（`error_logs` 0 行）。
+- **執行**：API PUT 12 處改動／8 節點（HTTP header→`$env` 表達式；Code 節點→`$env` 優先＋無 fallback＋讀唔到即 throw）。回讀：只目標節點變、連線不變、`activeVersion` 零 literal、仍 active、設定與改前一致（`availableInMCP` 被 PUT 重設後已還原）。repo：FO 副本改為 live 快照；2 個舊腳本移除舊 key。
+- **運行證據**：FO webhook exec 7560 200/全節點 success；GlobalReview exec 7561 200、拉到 62 行；兩者 execution 全 JSON 零 `sb_secret_`。IGWatchdog 已於 2026-09-21 06:00 HKT 排程驗證（exec 7582：Write Intents/Messages 無 error、零 key；`message_intents` 205→206，最後寫入 2026-09-20 22:00 UTC）；ErrorMonitor 待有 workflow 出錯先觸發（`error_logs` 仍 0 行屬預期）。
+- **落盤**：decisions.md D79 續、learnings/n8n.md #9、handoff MASTER。**Subagent 使用記錄**：`finance-auditor` 背景獨立覆核 FO 輸出（財務 workflow 紅線）：**PASS-with-notes，認證改動放行**（節點只 auth 差異、KPI／環比／分類全部獨立重算吻合、n8n 原樣透傳 RPC）；另揭發 3 個舊有 RPC 口徑問題（折線圖未計 adjustment 差 480、分類收入圖超總收入 12,711.5、monthly 圖表為 5 個月滾動窗口），非今次引起，已登記待辦，詳見 decisions.md D79 續。
 ## [2026-09-21] canva-auto augustinefok 07001006（純音樂）— 母片 HoKaSin，Stage①-⑤交付；CV-48~51 新規則
 
 - **單號**：augustinefok 07001006，字句 `Beyond the days, the moments / we hold each other / truly stay`（跟 `word.png` 拆 3 行）。Fat Mo 首次輸入款式寫「全幅AI短片」，但素材夾冇客人片、只得 2 條 Lovart 動畫（`影片 1／2.mp4`，960²×15.1s）＋音訊 33.1sec；AI 開單前發現並準備詢問，Fat Mo 自行取消更正為「純音樂」重新開單。成品 `DAHVvl_drcw`（`augustinefok 純音樂 (2009/26) 33.1sec`），歸檔 `Free_recorder (09/26)`。

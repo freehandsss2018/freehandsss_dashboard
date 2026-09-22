@@ -6,13 +6,13 @@
 
 | Canva App | 本地替代 |
 |---|---|
-| 魔法抓取（Magic Grab）去背 | rembg / u2net |
+| 魔法抓取（Magic Grab）去背 | rembg / u2net；黑白圖另用彩色圖 mask 前置去封閉空位 |
 | ColourMix → Parakeet 色譜 | 反推嘅線性色相漸變公式 |
 
 ## 安裝
 
 ```
-pip install rembg[cpu] pillow numpy
+pip install rembg[cpu] pillow numpy scipy
 ```
 
 ## 用法
@@ -26,6 +26,14 @@ python local_prep.py --color 彩色圖.png --bw 黑白圖.png --out-dir 輸出�
 - `{黑白圖}_parakeet.png` — 去背 + Parakeet 色譜完嘅黑白圖，直接可以擺 page2/3
 
 片去背（page4 動畫、page3 背景層）**未包含**——見方案書「唔搬」原因（本地質素風險大）。
+
+## 2026-09-21 改良（0600108 對比 Fat Mo Canva 版）
+
+- 黑白圖去背：以彩色圖去背 mask 做前置（affine 對位＋白色連通區判斷），去到兩人之間封閉空位；IoU 對 Canva 版 0.860 → 0.981。兩張圖唔係同一構圖（對位 IoU < 0.90）會自動退回純 rembg 並印警告。
+- 彩色圖去背：半透明 alpha 重映射，白衫邊少切（IoU 0.980 → 0.986）。
+- Parakeet：飽和度預設 0.30 → 0.207、黑位抬高 0.20（`--black-lift 0` 還原舊行為）。
+- 仍未做：外圍淺灰光暈、底部白衫沿用彩色去背 over-cut、Parakeet 線條上色未完全重現。
+- 每單交付後請繼續同 Fat Mo Canva 版對比（CV-55），數據落 `placement_memory.json`。
 
 ## 已知限制
 
