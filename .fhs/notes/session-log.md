@@ -1,5 +1,10 @@
 # Session Log
 
+## 2026-09-23 (訂單總覽篩選輸入框防走位＋底部功能Bar跨模式動態收納＋取模日曆手勢切換與防背景穿透滾動): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-23 條目。完成三項前端優化：①訂單總覽手機版點選搜尋/輸入方框時，字級調升至 16px 阻斷 iOS Safari Auto-Zoom 視窗平移，移除 translateY 縮移並加入 focus 守衛防篩選列縮回；②解除 `navScope` 原先僅限總覽模式（`inReview`）的限制，新/修訂單在窄螢幕（<1130px）同樣具備向下捲收起、向上捲浮現（Threads 式）動態收納，模式切換即時復位；③取模日曆綁定單指左右滑動手勢切換月份（左滑下月、右滑上月，附帶位移門檻防止誤觸），並加入 `fhs-modal-open` 鎖定背景 overflow 及 overscroll-behavior 阻斷背景穿透滾動。已同步升格 `Freehandsss_dashboard_current.html` 並透過 `upload-web.ps1 current -Force` 完成 NAS 部署（HTTP 204 / SHA256 驗證一致）。
+**Subagent 使用記錄**：❌未使用。
+
 ## 2026-09-21 (財務結算手機輸入防回彈修復 — iPhone 13 Pro 直向手機模式): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-21 條目。Fat Mo 回報直向手模模式下（iPhone 13 Pro 真機開啟 Dashboard 訂單 0600512）點擊「已付訂金/未付尾數」方格時多次回彈 keyboard 無法輸入。真根因：iOS <16px 強制 auto-zoom 位移導致 touchend 誤判 blur，疊加 pointerdown 動態改 readOnly 引發手勢衝突。修法：字體調至標準 16px、移除 pointerdown 的 readOnly 動態切換改用原生 focus 事件及 `dataset.isEditing` 標記。100% 嚴格保留原有反饋（自動洗0、誤點還原、分攤警告條、無品項禁用）。iPhone 13 Pro 模擬測試 4 項全 PASS，已同步 `V42.html` 與 `current.html` 並部署。

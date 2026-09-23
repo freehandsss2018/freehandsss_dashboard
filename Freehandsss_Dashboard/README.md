@@ -24,6 +24,10 @@
 
 ## 當前版本
 
+- **2026-09-23（訂單總覽篩選輸入框防走位＋底部功能Bar動態收納＋取模日曆手勢切換與防背景穿透滾動）**：
+  1. 訂單總覽手機版點擊搜尋/輸入方框防走位：字級調升至 16px 消除 iOS Safari 強制 Auto-Zoom 與視窗平移；移除 translateY(-200px) 位移並在 scroll 監聽器加入焦點守衛，篩選列常駐置頂。
+  2. 新/修訂單底部功能 Bar 動態表現對齊：解除 `navScope` 原先僅限總覽模式（`inReview`）的限制，全模式（<1130px）向下捲收起、向上捲浮現（Threads 式），切換模式即時復位展開。
+  3. 取模日曆觸控增強與防背景穿透滾動：加入單指左右滑動切換月份手勢（左滑下月、右滑上月，附帶位移比對門檻防止誤觸）；開啟時鎖定 `body` overflow 與 touch-action，並在遮罩層攔截 touchmove 穿透，根治後方訂單總覽跟隨滑動問題。已同步升格 `Freehandsss_dashboard_current.html` 並部署 NAS。
 - **2026-09-21（財務結算手機輸入防回彈）**：修復 iPhone 直向手機模式下點擊「已付訂金/未付尾數」方框時鍵盤反覆回彈（彈出又縮回）問題。根因：iOS <16px 強制 auto-zoom 位移導致 touchend 誤判 blur，疊加 pointerdown 動態改 readOnly 引發手勢衝突。修復：字體調至 16px、移除 pointerdown 的 readOnly 動態切換改用原生 focus 事件及 `dataset.isEditing` 標記。100% 保留原有反饋（自動洗0、誤點還原、分攤警告條、無品項禁用）。已同步 `V42.html` 與 `current.html`。
 - **2026-08-29（D69續七）**：訂單總覽類別視圖六輪密度／可讀性微調——鎖匙扣/頸鏈四欄（對象/部位/材質/數量）40px+內容置中、批次欄60px；類別工作台橫幅（含左側header）合併一行；限時警告badge統一「剩餘N天」；手模視圖限時警告一律換行放日期下（鎖匙扣/頸鏈/全部視圖不受影響）。純CSS+文案改動，零schema/零n8n。已部署 `current.html`。詳見 Changelog.md「D69續七」條目。
 - **2026-08-27（D69續六）**：進度狀態往返失真全套根治方案 `/execute` 執行完成並部署——`_FHS_STAGE_DEF` 單一真源取代4處重複下拉清單，SQL清洗migration 0092已apply live。詳見 Changelog.md、decisions.md D69續六。

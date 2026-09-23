@@ -11,7 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-21T10:21:19Z">
+    <meta name="fhs-build" content="2026-09-23T12:47:42Z">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -1250,13 +1250,8 @@
             .filter-toggle-bar { display:flex; }
             .filter-body { padding:0 16px; }
             .filter-body.open { max-height:700px; padding:12px 16px 16px; }
-            /* [2026-09-03 D69續八-follow-33] Fat Mo截圖箭嘴：年度/月份/狀態/批次/
-               搜尋/排序六個欄位縮減比例，並將各自嘅標題（label）同輸入框
-               （select/input）移做同一行（推翻S150 F3.3嗰陣「label上/控制項
-               下」嘅決定——嗰個決定原意係防窄欄擠壓，而家改用縮小尺寸嚟解決
-               窄欄問題，唔再靠垂直堆疊）。`.fhs-select`/`.fhs-input`呢兩個
-               class淨用喺呢六個欄位（grep確認），縮細高度/字級唔會影響第度。 */
-            .fhs-select, .fhs-input { height:34px; font-size:var(--fhs-text-xs); }
+            /* [2026-09-23 手機輸入防 Auto-Zoom] 字級設為 16px，徹底根治 iOS Safari 點擊輸入框時自動縮放位移問題 */
+            .fhs-select, .fhs-input { height:34px; font-size:16px; }
             .fhs-select { padding-right:32px; }
             .fhs-input--sm { width:100%; max-width:120px; }
             .fhs-input--md { width:100%; max-width:180px; }
@@ -4086,21 +4081,10 @@
             }
 
             /* ── 智慧置頂欄 Smart Header ── */
-            .fhs-top-bar,
-            body.v40-review-active #reviewZone2,
-            body.v40-review-active #reviewFiltersV2 {
-                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            }
-            body.fhs-header-hidden .fhs-top-bar {
-                transform: translateY(-48px) !important;
-            }
-            body.fhs-header-hidden #reviewZone2 {
-                transform: translateY(-120px) !important;
-            }
-            body.fhs-header-hidden #reviewFiltersV2 {
-                transform: translateY(-200px) !important;
-            }
-
+            /* [2026-09-23 訂單總覽手機篩選列固定防移位]
+               依 Fat Mo 指示「固定它不要移位」：移除 fhs-header-hidden 對 .fhs-top-bar / #reviewZone2 / #reviewFiltersV2 嘅 translateY 縮移。
+               原先向下滑動時 #reviewFiltersV2 被強制 translateY(-200px)，造成篩選版面被截半卡在畫面頂端；
+               改為常駐置頂（sticky），觸控滑動時保持固定不移位。 */
         } /* end @media max-width:767px */
 
         /* ── Bottom-Sheet 遮罩 ── */
@@ -4458,6 +4442,10 @@
            V42 — 取模排程中心 B：迷你月曆（S159規劃/S170拷問修訂，決策見 decisions.md D29；
            本次僅落地 B，C/D/E 延後）
            ================================================================ */
+        body.fhs-modal-open {
+            overflow: hidden !important;
+            touch-action: none;
+        }
         #moldCalOverlay {
             display: none;
             position: fixed;
@@ -4467,12 +4455,15 @@
             align-items: center;
             justify-content: center;
             padding: 16px;
+            overscroll-behavior: contain;
+            touch-action: none;
         }
         #moldCalOverlay.is-open { display: flex; }
         #moldCalOverlay.mc-anchored {
             background: transparent;
             align-items: flex-start;
             justify-content: flex-start;
+            touch-action: auto;
         }
         #moldCalPopup {
             background: var(--fhs-bg-surface);
@@ -4484,6 +4475,8 @@
             flex-direction: column;
             box-shadow: 0 8px 40px rgba(0,0,0,0.25);
             overflow: hidden;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
         }
         #moldCalOverlay.mc-anchored #moldCalPopup {
             position: fixed;
@@ -7476,6 +7469,7 @@
         async function switchMode(mode) {
             console.log("[DEBUG] switchMode triggered:", mode);
             document.body.classList.remove('fhs-header-hidden');
+            document.body.classList.remove('fhs-bottomnav-hidden');
             if (currentMode !== mode) {
                 const skipId = (mode === 'edit');
                 await resetForm(skipId); // 只要模式改變，就清空表單
@@ -7577,7 +7571,10 @@
                     if (btn) { btn.classList.remove('active'); btn.style.cssText = ''; }
                 });
                 const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn', system:'modeSystemBtn' };
-                const activeBtn = document.getElementById(activeMap[mode]);
+                let activeBtn = document.getElementById(activeMap[mode]);
+                if (mode === 'edit' && activeBtn && activeBtn.classList.contains('sb-hidden')) {
+                    activeBtn = document.getElementById('modeCreateBtn');
+                }
                 if (activeBtn) activeBtn.classList.add('active');
                 if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
 
@@ -18321,7 +18318,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             initShortcutBar();
         });
 
-        // === 手機版智慧置頂欄 Smart Header ===
+        // === 手機版置頂欄與底部導覽捲動收納 ===
         (() => {
             let lastScrollY = window.scrollY;
             let accumulatedDelta = 0;
@@ -18329,17 +18326,26 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const SHOW_THRESHOLD = 15; // 向上滑動 15px 顯示
 
             window.addEventListener('scroll', () => {
-                // [D69續八-follow-4] 兩個獨立生效範圍：
-                //   置頂欄收納 = 只限直向手機（<750，維持原行為）
-                //   底部導覽收納 = 直向手機 + 橫向手機/窄桌面（<1130，Fat Mo 要求
-                //     Threads 式：向下捲收埋、向上捲返出嚟）——橫向得 370px 高，
-                //     個 pill 浮喺表格上面遮住內容，更加需要收得起。
-                const inReview = document.body.classList.contains('v40-review-active');
-                const headerScope = window.innerWidth < 750 && inReview;
-                const navScope    = window.innerWidth < 1130 && inReview;
+                // [2026-09-23 訂單總覽手機篩選列固定防移位]
+                // 依 Fat Mo 指示「固定它不要移位」：訂單總覽置頂欄與篩選列（#reviewFiltersV2）
+                // 常駐置頂，不再隨向下捲動而向上縮移（移除 headerScope / fhs-header-hidden）；
+                // 底部導覽收納維持 Threads 式（向下捲收埋、向上捲返出嚟，<1130）。
+                // 另外：若使用者正在點選或輸入方框，忽略鍵盤彈出引發的微幅捲動，防止介面抖動。
+                const activeEl = document.activeElement;
+                const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+                if (isInputFocused) {
+                    lastScrollY = window.scrollY;
+                    return;
+                }
 
-                if (!headerScope && !navScope) {
-                    document.body.classList.remove('fhs-header-hidden');
+                // [2026-09-23 新/修訂單與總覽底部導覽動態收納]
+                // 依 Fat Mo 需求：無論新增、修改或總覽模式，窄螢幕/手機（<1130）
+                // 均享有 Threads 式動態收納（向下捲收埋、向上捲返出嚟）。
+                const navScope = window.innerWidth < 1130;
+
+                document.body.classList.remove('fhs-header-hidden');
+
+                if (!navScope) {
                     document.body.classList.remove('fhs-bottomnav-hidden');
                     accumulatedDelta = 0;
                     return;
@@ -18349,8 +18355,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const delta = currentScrollY - lastScrollY;
 
                 const setHidden = (on) => {
-                    if (headerScope) document.body.classList.toggle('fhs-header-hidden', on);
-                    else document.body.classList.remove('fhs-header-hidden');
                     if (navScope) document.body.classList.toggle('fhs-bottomnav-hidden', on);
                     else document.body.classList.remove('fhs-bottomnav-hidden');
                 };
@@ -22862,6 +22866,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         if (overlay) overlay.classList.toggle('mc-anchored', doAnchor);
         if (!doAnchor && popup) { popup.style.top = ''; popup.style.bottom = ''; popup.style.left = ''; popup.style.maxHeight = ''; }
         if (overlay) overlay.classList.add('is-open');
+        document.body.classList.add('fhs-modal-open');
+        document.body.style.overflow = 'hidden';
 
         // 內容 render 完成先量真實高度先擺位（唔靠估高度，先至保證唔會遮住 appDate）
         window._moldCalRender().then(function() {
@@ -22902,7 +22908,59 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     window.closeMoldCalendar = function() {
         var overlay = document.getElementById('moldCalOverlay');
         if (overlay) overlay.classList.remove('is-open');
+        document.body.classList.remove('fhs-modal-open');
+        document.body.style.overflow = '';
     };
+
+    // [2026-09-23 取模日曆觸控向左/向右滑動切換月份 + 背景防滾動穿透]
+    (function initMoldCalTouch() {
+        var popup = document.getElementById('moldCalPopup');
+        var overlay = document.getElementById('moldCalOverlay');
+        if (!popup) return;
+
+        // 阻擋 overlay 背景 touchmove 穿透滾動到後方訂單總覽
+        if (overlay) {
+            overlay.addEventListener('touchmove', function(e) {
+                if (e.target === overlay) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+
+        var startX = 0;
+        var startY = 0;
+        var startTime = 0;
+        var isSwiping = false;
+
+        popup.addEventListener('touchstart', function(e) {
+            if (e.touches.length !== 1) return;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            startTime = Date.now();
+            isSwiping = true;
+        }, { passive: true });
+
+        popup.addEventListener('touchend', function(e) {
+            if (!isSwiping || e.changedTouches.length !== 1) return;
+            isSwiping = false;
+            var endX = e.changedTouches[0].clientX;
+            var endY = e.changedTouches[0].clientY;
+            var diffX = endX - startX;
+            var diffY = endY - startY;
+            var elapsed = Date.now() - startTime;
+
+            // 判定橫向滑動：時間 < 600ms，水平位移 > 40px，且水平位移明顯大於垂直位移 (1.3倍)
+            if (elapsed < 600 && Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+                if (diffX < 0) {
+                    // 向左滑動 -> 下一月
+                    window._moldCalNav(1);
+                } else {
+                    // 向右滑動 -> 上一月
+                    window._moldCalNav(-1);
+                }
+            }
+        }, { passive: true });
+    })();
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {

@@ -1,5 +1,30 @@
 # Changelog
 
+## [2026-09-23] Session（Antigravity 執行）— 訂單總覽篩選輸入框防走位＋底部功能Bar跨模式動態收納＋取模日曆手勢切換與防背景穿透滾動
+
+- **緣起與問題確診**：
+  1. **訂單總覽手機版點選輸入框（彈出鍵盤）防篩選走位**：Fat Mo 反饋在手機上點選「搜尋 姓名/單號」或「批次」等方框時，虛擬鍵盤彈出的一瞬間，篩選面板立即縮移跳到畫面頂端以外。根因：iOS Safari `< 16px` 強制 Auto-Zoom 視窗平移（原本 `.fhs-select, .fhs-input` 為 12px），加上鍵盤彈出引發的微幅捲動觸發了舊版 `translateY(-200px)` 縮移。
+  2. **新/修訂單底部功能 Bar 動態表現對齊**：新訂單與修訂單模式下，底部功能導覽列（`.fhs-top-bar__actions`）原本只在「訂單總覽」模式支援向下捲收起、向上捲浮現（Threads 式）的動態行為。
+  3. **取模日曆觸控手勢與背景滾動穿透**：日曆開啟後無法透過向左/向右滑動切換月份；且開啟後在日曆周圍滑動時，後方的訂單總覽清單會跟著滾動（Scroll Chaining）。
+- **修復方案**：
+  1. **訂單總覽輸入方框防縮回**：
+     - 將手機版（`<750px`）所有 `.fhs-select, .fhs-input` 字級由 12px 調升至 **16px**，徹底符合 WebKit HIG 規範，杜絕點擊觸發自動放大與視窗平移。
+     - 移除 `body.fhs-header-hidden` 對 `#reviewFiltersV2` 等元素的 translateY 縮移，並在 scroll 監聽器加入 `isInputFocused` 守衛，聚焦方框時忽略鍵盤彈出產生的微幅捲動，保持篩選列常駐置頂。
+  2. **底部功能 Bar 全模式動態收納**：
+     - 解除 `navScope` 原先僅限總覽模式（`inReview`）的限制，將範圍擴展至所有模式（`<1130px` 寬度）。
+     - 在模式切換時（`switchMode`）即時移除 `fhs-bottomnav-hidden`，確保切換到新/修訂單時導覽列必定立即可見。
+     - 當切換至「修改訂單」且修改按鈕為捷徑隱藏狀態（`.sb-hidden`）時，平滑回退高亮「新增訂單」，維持底部分割按鈕指示器狀態。
+  3. **取模日曆觸控左右滑動與防背景滾動穿透**：
+     - 於 `#moldCalPopup` 綁定單指觸控監聽（`touchstart` / `touchend`），加入手勢判定邏輯：時間 < 600ms、水平位移 > 40px，且水平位移需明顯大於垂直位移（`|diffX| > |diffY| * 1.3`），防止垂直滾動預約明細列表時誤觸。左滑（`diffX < 0`）切換至下月，右滑（`diffX > 0`）切換至上月。
+     - CSS 增設 `body.fhs-modal-open { overflow: hidden !important; touch-action: none; }`，並在 `#moldCalOverlay` 與 `#moldCalPopup` 增加 `overscroll-behavior: contain`。
+     - 在 `openMoldCalendar()` 開啟時立即為 `body` 添加 `fhs-modal-open` 及 `style.overflow = 'hidden'`；在 `closeMoldCalendar()` 關閉時自動還原。在遮罩層攔截非 passive 的 `touchmove` 阻斷（`e.preventDefault()`），消除背景穿透滾動。
+- **驗證**：
+  - JS 語法解析測試 9 個 script blocks 全 PASS。
+  - 依 Fat Mo 「同步升格」授權，已同步升格 `Freehandsss_dashboard_current.html` 並透過 `upload-web.ps1 current -Force` 部署至 Synology NAS WebDAV。
+  - NAS 部署三關驗證 PASS（HTTP 204 / 1,486,519 bytes remote=local / SHA256 `C3A52FD27BA9DA790186A4B9531F4C607E759A91E6BA27993279F87F9EFF6EFE` / `fhs-build=2026-09-23T12:47:42Z`）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`、`Freehandsss_Dashboard/Freehandsss_dashboard_current.html`、`Freehandsss_Dashboard/README.md`。
+- **Subagent 使用記錄**：❌ 未使用。
+
 ## [2026-09-21] Session（Antigravity 執行）— 財務結算手機輸入防回彈修復（iPhone 13 Pro 直向手機模式）
 
 - **緣起**：Fat Mo 回報直向手模模式下（iPhone 13 Pro 真機開啟 Dashboard 訂單，如 0600512），在「財務結算」簡化模式點選「已付訂金/未付尾數」方格時出現 bug：多次回彈 keyboard，未能順利輸入金額，需多番點擊方可修改。
