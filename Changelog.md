@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-24] D84 Stop hook 陳述句財務結論缺口：量度後決定不擴充（cl-flow-fast 2026-09-24-0534）
+
+- **緣起**：D83 重播揪出「純陳述句＋純 Edit/Write 寫文件」嘅財務結論，`stop-finance-auditor.js` 五個訊號全部偵測唔到，D83 留待另案評估。
+- **量度**：重播 143 session／2,050 輪，比較 4 類候選偵測嘅額外攔截輪數。捉到實例嘅候選（寫入／回覆含任何財務字眼）誤報 ≥11%；誤報 <4% 嘅候選（寫入財務欄位名 +66、回覆含財務字眼＋金額 +40）全部捉唔到實例。
+- **決定（Fat Mo `/execute` 方案 A）**：唔改 hook 邏輯。`scripts/hooks/stop-finance-auditor.js` v1.1.0→v1.1.1，僅頂部註解新增「已知不覆蓋」段，夾具 35/35 PASS。根因係 Stop hook 無狀態、分辨唔到「轉述舊結論」（系統層面限制）。
+- **重啟條件**：出現第 2 宗「錯結論經 Edit/Write 入庫且事後被 Fat Mo 發現」。
+- 全文見 decisions.md D84、`artifacts/2026-09-24-0534/cl-final-plan.md`、`.fhs/reports/completion/2026-09-24_finance-stop-hook-statement-gap-d84_completion_report.md`。
+
 ## [2026-09-24] 歷史 `item_sale_price` NULL backfill（13張單）+ K_FAM_COMBO第三缺口修復（cl-flow-fast 2026-09-24-0134）
 
 - **緣起**：2026-09-23修復咗未來新單，但14張現存生產訂單嘅歷史NULL未回填。Fat Mo要求先睇埋backfill方案，finance-auditor兩輪獨立驗證揪出兩個額外缺口。

@@ -2486,3 +2486,9 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - fresh-context finance-auditor部署後獨立驗收：PASS-with-notes（守恆零誤差、orders層完全未觸碰；category_revenue由超收$12,711.5轉為短收$846，方向/幅度獨立確認吻合，歸因合理外推）。
 - 全文見`.fhs/reports/completion/2026-09-24_item-sale-price-backfill-and-kfamcombo-fix_completion_report.md`、decisions.md、CHANGELOG.md、`FHS_System_Logic_Overview.md`§10.27。
 - **Subagent 使用記錄**：✅ `finance-auditor`×5（分攤方案初評、14張單分類驗算×2、K_FAM_COMBO/0600704深挖、部署後驗收，全部背景派工）。
+
+## 2026-09-24 D84：Stop hook 陳述句財務結論缺口（D83-follow）量度後不擴充（cl-flow-fast 2026-09-24-0534）
+- 重播143 session/2,050輪量度4類候選偵測：捉到實例者誤報≥11%，誤報<4%者全部捉唔到；根因＝Stop hook無狀態（轉述舊結論分辨唔到）。
+- Fat Mo `/execute` 方案A：`stop-finance-auditor.js` v1.1.1只加註解（零邏輯，夾具35/35）；decisions.md D84；handoff 🟠→⚪已決定不修。
+- 全文見`.fhs/reports/completion/2026-09-24_finance-stop-hook-statement-gap-d84_completion_report.md`、Changelog.md、decisions.md D84。
+- **Subagent 使用記錄**：❌ 治理設計評估＋transcript重播量度，非財務數字判斷，豁免finance-auditor；A2評審由Gemini(gemini-2.5-flash)執行。
