@@ -51,3 +51,31 @@
 - reference memory: `reference_supabase_mcp_dropout_workaround.md`（curl 非 urllib，同源）
 - learnings #24（sonar-reasoning-pro 反覆出事：Session 110 空白內容 + 本次 socket hang up）
 - Preference #6（模型切換走 .env）、#7（endpoint 先 probe）
+
+---
+
+## 案例更新（2026-09-23，flow 2026-09-23-1957）：三個 fallback model 同時過載 + Fat Mo 定案標準處理程序
+
+### 症狀
+執行 `/cl-flow-fast --review --fast` 時，`.env` 讀到嘅 `GEMINI_A2_MODEL_DEFAULT=gemini-3.8-flash`＋runner 內建 fallback 鏈（`gemini-3.6-flash`／`gemini-flash-latest`）**三個 model 一齊 503 high demand**——同以往「只有最新model中招、換舊model即刻好返」嘅情況唔同，runner 內建 fallback 鏈完全失效，state.json 標 `degraded:true`。
+
+### 診斷（唔靠 runner，直接 curl 逐個 probe Google API）
+```bash
+for m in gemini-3.8-flash gemini-3.6-flash gemini-flash-latest gemini-2.5-flash gemini-2.0-flash; do
+  curl -s -o /tmp/probe.json -w "%{http_code}" \
+    "https://generativelanguage.googleapis.com/v1beta/models/$m:generateContent?key=$GEMINI_API_KEY" \
+    -H "Content-Type: application/json" -d '{"contents":[{"parts":[{"text":"ping"}]}]}'
+done
+```
+結果：`3.8-flash`＝連線失敗、`3.6-flash`／`2.5-flash`＝200正常、`flash-latest`＝仍503、`2.0-flash`＝404已停用（Google提示改用`3.6-flash`）。**證實現存3個model同時過載係暫時性巧合撞正低潮，非runner邏輯壞或key/quota問題**——同一時間點總有其他健康model存在。
+
+### Fat Mo 定案嘅標準處理程序（本次起固定套用，唔使每次重新判斷）
+1. `/cl-flow(-fast) --review` 撞到 Gemini 過載（state.json `degraded:true` 或錯誤訊息含 "high demand"）→ **立即** curl 逐個直探 Google API（唔經 runner，用上面嘅指令樣板，唔可以只重試同一個 model 或者坐視 degraded）。
+2. 搵到現時健康嘅 model 後，用 `GEMINI_A2_MODEL_CHAIN="健康model1,健康model2" node scripts/cl-flow-runner.js --review {flow_id} --fast` **臨時 env override 即時重試**（唔改 `.env`，只影響單次呼叫，避免將可能好快又復原嘅model永久踢出鏈）。
+3. 攞到真正嘅 AG 評審後，Verdict 唔再標 DEGRADED，按正常批評處理表流程走。
+4. 若健康model之後又間歇性再過載（本次`3.6-flash`喺override後第二次呼叫又503一次），fallback鏈第二位（`2.5-flash`）接力成功即可，唔使進一步升級——證明「一鏈帶多個候選」本身已經夠用，唔需要因單次間歇性失敗而恐慌式加碼。
+
+### 通用規則（新增，覆蓋原規則）
+- **降級聲明唔係終點，係觸發診斷嘅訊號**：見到 DEGRADED，第一反應係 curl probe 搵活model，唔係直接接受「今次冇評審」就算數。
+- probe 指令樣板已固定（見上），下次直接複用，唔使重新設計診斷步驟。
+- 呢個程序本身應該被視為 runner 韌性設計嘅一部分：現行 `GEMINI_MODEL_CHAIN` 已經係「一個env變數控制成條鏈」嘅設計，故臨時override完全唔違反 Preference #6（模型切換走 .env／env override，唔改代碼）。

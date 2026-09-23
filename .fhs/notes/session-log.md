@@ -2460,3 +2460,11 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 元素大小已 export 真圖驗過；動畫／顯示時間 AI 睇唔到，待 Fat Mo 眼證後方可 Stage④ 落庫（`placement_memory.json` order=`0600112`）+ Stage⑤ 存檔頁。本次無 git 改動（Canva MCP 側工作，唯一 repo 改動為本記錄同 handoff.md 同步）。
 - 編輯連結：`https://www.canva.com/d/N4csTKsqzMsXAjl`。
 - **Subagent 使用記錄**：❌未使用（canva-auto 指令明文禁止派工，Canva MCP 在主 session）。
+
+## 2026-09-23 — 財務RPC三口徑問題根因追查+cl-flow-fast修復方案（Claude Code / Sonnet 5）
+
+- Fat Mo截圖訂單0600721質疑頸鏈item_sale_price為NULL，finance-auditor兩輪唯讀查證：①頸鏈`necklace_N`配對key格式從未被n8n `Supabase Mirror Prep`嘅`_splitMap`支援②`additional_fee`冇分帳格會觸發全單item_sale_price棄用（訂單0600112實測）；final_sale_price完全不受影響，只影響`get_financial_charts()`分類收入圖表精度。連同上一輪已查明嘅③trend漏計adjustment_amount④monthly非曆月滾動窗口，一併交`/cl-flow-fast`規劃。
+- flow `2026-09-23-1957`：AG（`gemini-2.5-flash`）評審2MAJOR（Quantity<=0邊界、單一測試單驗證深度不足）+2MINOR（捨入精度、硬編碼分類字面值），MAJOR/MINOR各修復落實入a3-draft，測試計劃擴充為4組。Verdict CONDITIONAL_READY，待Fat Mo`/execute`。
+- 過程中Gemini三個fallback model（3.8-flash/3.6-flash/flash-latest）同時503 high demand，即時curl逐個直探Google API確認`3.6-flash`/`2.5-flash`當時已回復健康，用`GEMINI_A2_MODEL_CHAIN`臨時env override重試成功攞到真實評審。此處理方法已定案為標準程序，落盤`.fhs/memory/lessons/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md`案例更新段+`learnings/tooling.md` #14。
+- 全文見`artifacts/2026-09-23-1957/`（task-brief/a3-draft/ag-review/cl-final-plan）、handoff.md MASTER表對應列。
+- **Subagent 使用記錄**：✅ `finance-auditor`（兩輪，背景派工，查根因+修復前置影響評估）。

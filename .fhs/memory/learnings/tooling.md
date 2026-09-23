@@ -34,6 +34,8 @@
 
 13. **【高頻 ⚠️】`.ps1` 腳本檔案本身必須帶 UTF-8 BOM，否則 PowerShell 5.1 讀中文變亂碼並觸發指唔到真因嘅連鎖 parse error**：改寫 `scripts/upload-web.ps1` 時用一般 UTF-8（無 BOM）寫檔，PowerShell 5.1 當系統 ANSI codepage 讀，成個檔嘅中文註解／字串全部亂碼，報一堆 `Unexpected token`／`missing terminator`，錯誤訊息完全指唔到真因（我一度以為係 `^{commit}` 語法問題去捉錯位）。**同 `Get-Content`/`Set-Content` encoding 陷阱同源但唔同對象**——舊記錄講「腳本讀寫其他檔案」，呢次係「腳本檔案自己」。**修法**：寫完用 Node 補 BOM（`fs.writeFileSync(p, '\uFEFF' + text, 'utf8')`）。**判斷訊號**：PowerShell 報一堆莫名其妙 parse error 而錯誤訊息入面見到亂碼中文 → 十有八九係 BOM，唔好逐行捉語法 — D72/2026-09-06 `@tooling` <!-- v:2026-09-06 -->
 
+14. **【高頻 ⚠️】`cl-flow-runner.js` 嘅 Gemini fallback鏈（3個model）可以同時全部503 high demand——唔可以見到DEGRADED就直接接受，要即刻curl逐個直探Google API搵活model再用`GEMINI_A2_MODEL_CHAIN` env override即時重試**：2026-06-23（單一model過載）、2026-08-17（同上）、2026-09-23（首次3個model一齊撞503）三次撞到同款「high demand」，但2026-09-23實測證明「三個一齊過載」只係暫時性巧合，同一時間點必然有其他健康model存在（該次`3.6-flash`/`2.5-flash`即時200）。**通則**：見到 `state.json` 標 `degraded:true` 或錯誤含"high demand"，第一反應係跑 `for m in <候選>; do curl ...models/$m:generateContent?key=$KEY ...; done` 逐個直探現況（唔經runner，排除runner本身邏輯問題），搵到200嘅model後用 `GEMINI_A2_MODEL_CHAIN="model1,model2" node scripts/cl-flow-runner.js --review {flow_id} --fast` 臨時覆寫（唔改`.env`，只影響單次呼叫）即時重試，唔好對財務/架構相關嘅Verdict將就一個零外部評審嘅DEGRADED版本 — 2026-09-23 [[feedback_gemini_degraded_probe_and_switch]] `@tooling +governance +finance` <!-- v:2026-09-23 -->
+
 ## Preferences
 
 1. **外部 API endpoint 必先 probe 再推薦**：知識截止日後的 model ID 可能已過時；推薦前必須 curl/node probe 確認端點存在 — 源自 2026-05-30 `@tooling` <!-- v:2026-05-30 -->
