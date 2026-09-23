@@ -3841,3 +3841,37 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **明確不做範圍**：`category_revenue`分類收入圖超收$12,711.5（頸鏈成本比例估算 vs 其他品類品項售價兩種口徑混用，同一混合單分攤不守恆）需 Fat Mo 先拍板分攤演算法，屬業務判斷非純技術bug，另案處理，本次故意唔擴大範圍。已存在嘅歷史NULL單（如0600721/0600804/0600727本身）唔會被本次修復自動回填，backfill需另開`/execute`授權。
 
 全文見 `.fhs/notes/FHS_System_Logic_Overview.md` §10.26、CHANGELOG.md 2026-09-23、`artifacts/2026-09-23-1957/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅ `finance-auditor`（三輪：根因追查×2、部署後驗收×1，全部背景派工）。
+
+---
+
+[2026-09-24] 歷史 `item_sale_price` NULL backfill（13張單）+ K_FAM_COMBO第三缺口修復 + 0600704等歷史孤例判定不修（cl-flow-fast 2026-09-24-0134）
+
+**緣起**：2026-09-23（flow 2026-09-23-1957）修復咗n8n嘅頸鏈斷鏈①同附加費斷鏈②，但只影響未來新單。Fat Mo要求先睇分攤方案，再要求睇埋backfill方案先一齊決定。
+
+**Part 1 — backfill 14張單嘅初步查證**：finance-auditor獨立重放n8n V47.26演算法，逐張SQL查證，確認可安全backfill嘅13張單（25個品項，7張純頸鏈+0600107兩件頸鏈+5張附加費）數值，並確認R1排序歧義風險不存在（14張單中除0600721有兩組頸鏈外，其餘皆單一組；0600721兩組金額相同，任何配對方式結果一致）。
+
+**Part 2 — 兩個新缺口意外揭發**：
+- **缺口③ K_FAM_COMBO**：`0600107`嘅家庭組合鎖匙扣(V2)品項，Dashboard分帳box key（`calculatePricing()`，`freehandsss_dashboardV42.html:9432-9439`原文）用`"TEMP_K_FAM"`，但最終提交`Sub_Items`嘅`Order_Item_Key`係`"${orderId}_K_FAM_COMBO"`（11081-11088行），兩者suffix永遠對唔上，令`item_sale_price`恆為NULL。**此缺口現行live代碼仍存在**，屬第三個、獨立於①②之外嘅斷鏈。全庫查證歷史影響範圍僅0600107一張單。
+- **缺口④ 0600704**：`order_items.item_base_cost`/`subtotal_cost`都係NULL。finance-auditor兩輪查證，第一輪懷疑同「Mode 2儲存明細」RPC相關，第二輪深挖推翻此懷疑——`created_at`從未被DELETE+INSERT模式重設，證明從未經過`save_structured_order_items`處理；`updated_at`24日落差經查證源自migration 0092（方言清洗，2026-08-26批次UPDATE `process_status`）嘅無關副作用，非成本欄位缺失嘅成因。全庫查證同類pattern另有2張（0500719、0600722，2026-05-10建立，連`product_sku`都缺），三者最近一單2026-08-02，其後至今冇再現，判定為歷史孤例。
+
+**方案評估與Fat Mo拍板**：
+- K_FAM_COMBO：兩方案比較（甲=改Dashboard box key字串／乙=改n8n suffix比對加特例），finance-auditor建議方案甲（改動面最細、唔碰共用`_boxKey()`函式、唔需n8n重新部署、治本）。**Fat Mo：跟建議做。**
+- 0600704/0500719/0600722：finance-auditor建議判定歷史孤例不修（0600704技術上可用`products`表反查回填，但另外兩張連SKU都缺，唔建議一齊搞）。**Fat Mo：跟建議做（唔修）。**
+- `sync_order_to_mirror`成本欄位缺COALESCE保護（附帶發現，另案）：Fat Mo同意記錄待排期，唔喺本次修。
+
+**規劃**：`/cl-flow-fast` flow `2026-09-24-0134`，AG（過程中`gemini-3.8-flash`/`flash-latest`503，`gemini-3.6-flash`探得健康後override重試仍間歇性503，fallback至`gemini-2.5-flash`成功）評審5條批評（2MAJOR+3MINOR，冇BLOCKER）：
+- MAJOR#2（backfill數值hardcode，冇動態重放機制）**採納**——腳本重新設計為即場從`raw_form_state`動態重放同一套演算法，並同finance-auditor驗算表交叉核對，不符即拒絕寫入
+- MAJOR#3（建議改用`@supabase/supabase-js`）**拒絕**——查證`package.json`同既有`scripts/repair/sync_0600701.js`確認repo既定慣例正正係原生`https`模組，批評前提有誤
+- MINOR#1/#4/#5（K_FAM_COMBO文字矛盾／型態驗證／per-item錯誤處理）全部**採納**
+- Verdict：**APPROVED_READY**
+
+**執行**：
+- `scripts/repair/backfill_item_sale_price_2026_09.js`（動態重放版）已寫入repo，但執行時撞到`.env` `SUPABASE_SERVICE_KEY`回報`401 Unregistered API key`（curl直測確認key本身已失效，非腳本bug，可能與D79-follow「Fat Mo輪替Supabase secret key」pending項相關）。改用`mcp__supabase__execute_sql`直接執行同一批已驗證數值嘅UPDATE（單一SQL，`item_sale_price IS NULL`守衛）完成backfill，24項全部成功、0項覆寫現存值。
+- `0600107_K_FAM_COMBO`另用獨立UPDATE人手核准backfill=$1300。
+- `freehandsss_dashboardV42.html:9433`：`"TEMP_K_FAM"`→`"TEMP_K_FAM_COMBO"`，已複製落主倉供Fat Mo手動測試（既有慣例）。
+
+**驗證**：逐張守恆重查全部PASS（7張頸鏈單`SUM=final_sale_price`；5張附加費單`SUM=deposit+balance`；0600107全8項`SUM=10300=final_sale_price`）。`category_revenue`超收由backfill前$12,711.5轉為現時短收約$846（方向轉變屬預期：頸鏈由Layer2高估修正為真實值後大幅下調，keychain因K_FAM_COMBO由0變1300小幅上調，兩者相抵淨效應轉向；殘餘差額源自6張真正歷史舊單Layer2估算+0600723獨立$80落差，非本次範圍）。fresh-context finance-auditor部署後強制驗收。
+
+**明確不做範圍**：`category_revenue`分攤演算法架構缺口（②另案）依然未解，需Fat Mo先拍板分攤邏輯；0600704/0500719/0600722維持NULL；`sync_order_to_mirror`COALESCE保護待排期。
+
+全文見`.fhs/notes/FHS_System_Logic_Overview.md`§10.27、CHANGELOG.md 2026-09-24、`artifacts/2026-09-24-0134/`。**Subagent 使用記錄**：✅ `finance-auditor`（本任務全程共5輪背景派工：分攤方案初評、14張單分類驗算獨立覆核、K_FAM_COMBO/0600704深挖、部署後最終驗收）。

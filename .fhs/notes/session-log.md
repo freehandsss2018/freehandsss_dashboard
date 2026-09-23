@@ -2476,3 +2476,13 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - fresh-context `finance-auditor`部署後強制驗收：PASS無附帶條件，確認`final_sale_price`未受影響，抽查真實生產單07001013計算鏈自洽。
 - 全文見`.fhs/reports/completion/2026-09-23_item-sale-price-financial-rpc-fix_completion_report.md`、decisions.md、CHANGELOG.md、`FHS_System_Logic_Overview.md`§10.26。
 - **Subagent 使用記錄**：✅ `finance-auditor`×3（根因追查×2、部署後驗收×1，全部背景派工）。
+
+## 2026-09-24 — 歷史item_sale_price NULL backfill + K_FAM_COMBO第三缺口修復（Claude Code / Sonnet 5）
+
+- flow `2026-09-24-0134`（APPROVED_READY，Fat Mo「跟建議做」授權）：13張生產訂單25個order_items.item_sale_price backfill（單一SQL UPDATE，item_sale_price IS NULL守衛），數值由finance-auditor兩輪獨立重放n8n V47.26演算法驗算。
+- 意外揪出並修復第三個獨立缺口：家庭組合鎖匙扣(V2)嘅`K_FAM_COMBO`品項因Dashboard分帳box key（`TEMP_K_FAM`）同最終item_key（`K_FAM_COMBO`）唔一致，n8n比對邏輯永遠match唔到——`freehandsss_dashboardV42.html:9433`已改名`TEMP_K_FAM_COMBO`修復（純字串，唔碰共用函式），0600107嘅該品項另用人手核准SQL backfill=$1300。
+- 第四個獨立發現：0600704/0500719/0600722三張歷史孤例（成本欄位自建單起NULL，同「儲存明細」RPC無關），Fat Mo決定不修；另發現`sync_order_to_mirror`嘅6個成本欄位缺COALESCE保護，記入待辦另案。
+- backfill repair script執行時撞到`.env` SUPABASE_SERVICE_KEY 401過期，改用Supabase MCP直接完成，已記入待辦提醒Fat Mo（可能同D79-follow key輪替相關）。
+- fresh-context finance-auditor部署後獨立驗收：PASS-with-notes（守恆零誤差、orders層完全未觸碰；category_revenue由超收$12,711.5轉為短收$846，方向/幅度獨立確認吻合，歸因合理外推）。
+- 全文見`.fhs/reports/completion/2026-09-24_item-sale-price-backfill-and-kfamcombo-fix_completion_report.md`、decisions.md、CHANGELOG.md、`FHS_System_Logic_Overview.md`§10.27。
+- **Subagent 使用記錄**：✅ `finance-auditor`×5（分攤方案初評、14張單分類驗算×2、K_FAM_COMBO/0600704深挖、部署後驗收，全部背景派工）。

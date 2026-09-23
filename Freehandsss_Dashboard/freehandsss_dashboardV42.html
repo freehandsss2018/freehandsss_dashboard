@@ -9430,7 +9430,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let qty = Math.max(1, Math.floor(Number(getValSafe('k_family_qty', '1')) || 1));
                     let comboInfo = getFamilyComboDetails();
                     orderItemsArray.push({
-                        "Order_Item_Key": `TEMP_K_FAM`,
+                        // [FIX 2026-09-24] 原 "TEMP_K_FAM" 同最終提交嘅 Order_Item_Key
+                        // "${orderId}_K_FAM_COMBO"（下方11081-11088行附近）尾段對唔上，
+                        // 令n8n suffix比對邏輯（TEMP_→suffix "K_FAM"）永遠match唔到
+                        // item_key嘅suffix "K_FAM_COMBO"，item_sale_price恆為NULL
+                        // （見0600107事故）。改名令分帳box key同最終item_key天生一致。
+                        "Order_Item_Key": `TEMP_K_FAM_COMBO`,
                         "Product_Name": `家庭鎖匙扣 - 不銹鋼 (V2)`,
                         "Quantity": qty,
                         "isFamily": true,

@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-24] 歷史 `item_sale_price` NULL backfill（13張單）+ K_FAM_COMBO第三缺口修復（cl-flow-fast 2026-09-24-0134）
+
+- **緣起**：2026-09-23修復咗未來新單，但14張現存生產訂單嘅歷史NULL未回填。Fat Mo要求先睇埋backfill方案，finance-auditor兩輪獨立驗證揪出兩個額外缺口。
+- **Backfill**：13張單、25個品項（頸鏈斷鏈7張+0600107兩件、附加費斷鏈5張），用單一SQL UPDATE（`item_sale_price IS NULL`守衛）寫入，數值由finance-auditor獨立重放n8n V47.26演算法計出，逐張守恆驗證PASS。
+- **缺口③ `K_FAM_COMBO`命名斷層（現行代碼修復）**：家庭組合鎖匙扣(V2)嘅Dashboard分帳box key`"TEMP_K_FAM"`同最終`Order_Item_Key`後綴`"K_FAM_COMBO"`對唔上，令n8n比對邏輯永遠match唔到（全庫只影響0600107一張單）。修復：`freehandsss_dashboardV42.html:9433`box key改名為`"TEMP_K_FAM_COMBO"`（純字串改動，唔碰共用函式，唔需n8n重新部署）；0600107嘅`K_FAM_COMBO`品項另用人手核准SQL backfill=$1300。
+- **缺口④ 0600704/0500719/0600722（判定歷史孤例，不修）**：查證推翻「同儲存明細RPC相關」嘅懷疑，成本欄位自建單起已NULL、非後續動作清走，最近一單2026-08-02後冇再現，Fat Mo決定當歷史孤例處理。
+- **附帶發現（另案）**：`sync_order_to_mirror`嘅6個成本欄位UPSERT冇COALESCE保護（`item_sale_price`已有），屬預防性技術債，已記入handoff MASTER表；backfill repair script執行時撞到`.env` `SUPABASE_SERVICE_KEY` 401（key疑似過期，可能與D79-follow Supabase key輪替pending項相關），改用Supabase MCP直接執行UPDATE完成本次backfill，腳本本身待key問題解決後補測。
+- **驗證**：`category_revenue`超收由backfill前$12,711.5轉為現時短收約$846（方向轉變屬預期，頸鏈由高估修正為真實值後大幅下調，殘餘差額源自6張真正歷史舊單+0600723獨立$80落差，非本次範圍）。fresh-context `finance-auditor`部署後強制驗收。**Subagent 使用記錄**：✅ `finance-auditor`（多輪：分攤方案初評、backfill分類驗算×2、K_FAM_COMBO/0600704深挖、部署後驗收）。
+- 全文見 `.fhs/notes/FHS_System_Logic_Overview.md` §10.27、decisions.md 2026-09-24、`artifacts/2026-09-24-0134/`。
+
 ## [2026-09-23] `item_sale_price` 分帳斷鏈修復 + `get_financial_charts()` 兩個口徑修正（cl-flow-fast 2026-09-23-1957）
 
 - **緣起**：Fat Mo 截圖訂單 0600721 質疑分帳UI明明有輸入頸鏈金額，`item_sale_price` 點解係NULL。finance-auditor 兩輪唯讀查證揪出 4 個獨立問題（2個n8n分帳斷鏈+2個RPC口徑），經 `/cl-flow-fast` 規劃、AG（`gemini-2.5-flash`）評審 2MAJOR+2MINOR 全處理後執行。**全程唔影響 `final_sale_price`（Fat Mo實收金額）**，只影響背景分類統計圖表。

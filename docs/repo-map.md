@@ -367,7 +367,8 @@ freehandsss_dashboard/
 │   ├── _oneoff/canva_lessons_merge.js  ← 一次性 v1→v2 schema 回填腳本（D77，已完成，保留審計）
 │   ├── repair/                          ← 財務 / 資料修補腳本（一次性，需人工確認後執行）
 │   │   ├── sync_0600701.js             ← 訂單 0600701 利潤缺口修補（total_cost / net_profit NULL）
-│   │   └── sync_0600903.js             ← 訂單 0600903 財務與時間修補
+│   │   ├── sync_0600903.js             ← 訂單 0600903 財務與時間修補
+│   │   └── backfill_item_sale_price_2026_09.js ← cl-flow-fast 2026-09-24-0134：13張生產訂單order_items.item_sale_price NULL backfill，即場重放n8n V47.26演算法+同finance-auditor驗算表交叉核對（dry-run預設，需--apply）；已知限制：撞到`.env` SUPABASE_SERVICE_KEY 401，實際backfill改用Supabase MCP執行，本腳本待key問題解決後補測
 │   ├── hooks/                           ← Claude Code Hooks 執行層（2026-04-28 新增）
 │   │   ├── session-start-sop.sh         ← SessionStart hook：自動注入 SOP_NOW + handoff 摘要
 │   │   ├── prompt-router.js             ← UserPromptSubmit hook：任務路由器（subagent/skill/model 建議 + 2026-08-03 新增 learnings 6 桶自動注入，session 內去重，slash command 白名單放行；v2.1.0 2026-09-19 財務路由改必派 finance-auditor＋財務訊號強制疊加）

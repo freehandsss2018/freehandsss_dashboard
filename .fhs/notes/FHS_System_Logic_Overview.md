@@ -1349,10 +1349,32 @@ Fat Mo 確認 0600037（木框，appointment_at=2026-07-27，尚未到）正確�
 全文見 decisions.md 2026-09-23、`artifacts/2026-09-23-1957/`（task-brief/a3-draft/ag-review/cl-final-plan）。
 
 ---
+
+### 10.27 歷史 `item_sale_price` NULL backfill + K_FAM_COMBO 第三缺口修復（cl-flow-fast 2026-09-24-0134，2026-09-24）
+
+**緣起**：§10.26 修復咗未來新單，但14張現存生產訂單嘅`order_items.item_sale_price`歷史NULL冇被回填。finance-auditor兩輪獨立查證，逐張重放n8n V47.26演算法計出正確值，並意外揪出兩個獨立於①②嘅新缺口。
+
+**Backfill執行（13張單，24+1個品項）**：
+- 分類①（頸鏈斷鏈）7張＋0600107兩件頸鏈：0600710／0600721／0600727／0600800／0600803／0600804／0600903／0600107，用單一SQL UPDATE（`WHERE item_sale_price IS NULL`守衛）寫入，數值由finance-auditor獨立重放`_splitMap`/頸鏈pair-group演算法計出，逐張守恆驗證`SUM(item_sale_price)=final_sale_price`
+- 分類②（附加費斷鏈）5張：0600112／0600303／0600506／0600904／0601011，守恆基準為`deposit+balance`（差額=`additional_fee`，屬正常設計非計錯）
+
+**缺口③：`K_FAM_COMBO`命名斷層（現行live代碼修復，非只backfill）**——家庭組合鎖匙扣(V2)嘅Dashboard分帳box key（`calculatePricing()`）用`"TEMP_K_FAM"`，但最終提交`Sub_Items`嘅`Order_Item_Key`係`"${orderId}_K_FAM_COMBO"`，兩者suffix對唔上，令n8n`_splitMap`比對邏輯永遠match唔到，`item_sale_price`恆為NULL。歷史影響範圍全庫查證只有0600107一張單用過此SKU。**修復（方案甲）**：`freehandsss_dashboardV42.html:9433`box key改為`"TEMP_K_FAM_COMBO"`，令兩端suffix天生一致，唔改共用嘅`_boxKey()`函式、唔改n8n代碼、唔需重新部署workflow。已知代價：0600107若日後重新編輯，該分帳格會顯示空白一次（非資料流失，人手重填）。0600107嘅`K_FAM_COMBO`品項另用獨立SQL人手核准backfill=$1300（源自`raw_form_state`直接讀值，非演算法重放產物，因現行代碼修復前呢個suffix必產出NULL）。
+
+**缺口④：0600704/0500719/0600722 三張歷史孤例（判定不修）**——查證推翻咗最初「同`save_structured_order_items`寫入模式脗合」嘅懷疑：呢3張單`order_items.item_base_cost`/`subtotal_cost`自建單起已經係NULL（非後續動作清走；0600704嘅`updated_at`落差經查證源自migration 0092方言清洗嘅無關批次UPDATE，同成本欄位缺失無關），亦非現行`save_structured_order_items`（migration 0089已修復嘅缺口從未真正觸發過）造成。最近一單2026-08-02，其後至今冇再出現同類新case，判定為歷史孤例，Fat Mo決定唔修。
+
+**附帶發現（獨立、現正生效，另案追蹤）**：`sync_order_to_mirror`嘅UPSERT對`item_base_cost`/`subtotal_cost`/`handmodel_cost`/`keychain_cost`/`necklace_cost`/`accessory_cost`六個成本欄位冇COALESCE保護（`item_sale_price`/`engraving_text`等已有），理論上未來若任何一單編輯時n8n成本計算意外返回null，會靜默覆寫一個原本正確嘅歷史值。屬預防性技術債，唔喺本次修，已記入handoff MASTER表待Fat Mo排期。
+
+**`category_revenue`超收現況**：backfill後yearly revenue（$219,536）vs 三分類加總，由backfill前超收$12,711.5，變為現時**短收約$846**（方向轉變屬預期——頸鏈由Layer2高估值修正做真實值後大幅下調，keychain因`K_FAM_COMBO`由0變1300小幅上調，兩者相抵後淨效應轉向）。殘餘$846源自：6張真正歷史舊單（冇分帳資料）仍用Layer2估算、以及0600723嗰$80獨立落差（非本次範圍）。`category_revenue`分攤演算法本身嘅架構缺口（②另案，需Fat Mo拍板分攤邏輯）依然未解，唔受本次backfill影響。
+
+**已知操作限制**：本次backfill原計劃用`scripts/repair/backfill_item_sale_price_2026_09.js`（動態重放版，經AG評審設計），但執行時發現`.env`嘅`SUPABASE_SERVICE_KEY`回報`401 Unregistered API key`（curl直測確認非腳本bug，key本身已失效/過期，可能與D79-follow「Fat Mo輪替Supabase secret key」pending項相關，需Fat Mo確認並更新`.env`）。改用`mcp__supabase__execute_sql`直接執行同一套已驗證數值嘅UPDATE，效果等同，惟腳本本身（作為未來可重用工具）現時未能實測跑通，已記入handoff待Fat Mo處理key問題後補測。
+
+驗證：fresh-context finance-auditor部署後強制驗收。全文見decisions.md 2026-09-24、`artifacts/2026-09-24-0134/`。
+
+---
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§10.24 由 2026-09-06 D71/D72 session 補入（同時補上 D69續八 標記嘅三態架構文件缺口）。§10.25 由 2026-09-08 D74 訂單封面圖 session 補入。§10.26 由 2026-09-23 cl-flow-fast 2026-09-23-1957 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§10.24 由 2026-09-06 D71/D72 session 補入（同時補上 D69續八 標記嘅三態架構文件缺口）。§10.25 由 2026-09-08 D74 訂單封面圖 session 補入。§10.26 由 2026-09-23 cl-flow-fast 2026-09-23-1957 session 補入。§10.27 由 2026-09-24 cl-flow-fast 2026-09-24-0134 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 
