@@ -11,8 +11,7 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-09-14T10:31:29Z">
-    <meta name="fhs-deploy-src" content="e54a0fa9e3ebad6f48746eea4574738eae67e512-dirty">
+    <meta name="fhs-build" content="__DEPLOY_TS__">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -9431,7 +9430,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     let qty = Math.max(1, Math.floor(Number(getValSafe('k_family_qty', '1')) || 1));
                     let comboInfo = getFamilyComboDetails();
                     orderItemsArray.push({
-                        "Order_Item_Key": `TEMP_K_FAM`,
+                        // [FIX 2026-09-24] 原 "TEMP_K_FAM" 同最終提交嘅 Order_Item_Key
+                        // "${orderId}_K_FAM_COMBO"（下方11081-11088行附近）尾段對唔上，
+                        // 令n8n suffix比對邏輯（TEMP_→suffix "K_FAM"）永遠match唔到
+                        // item_key嘅suffix "K_FAM_COMBO"，item_sale_price恆為NULL
+                        // （見0600107事故）。改名令分帳box key同最終item_key天生一致。
+                        "Order_Item_Key": `TEMP_K_FAM_COMBO`,
                         "Product_Name": `家庭鎖匙扣 - 不銹鋼 (V2)`,
                         "Quantity": qty,
                         "isFamily": true,
@@ -12215,6 +12219,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         const qty = Number(item.Qty) || 1;
                         const rowBatch = item.Batch || o.Batch || '';
                         const rowBatchCol = getBatchColor(rowBatch);
+                        // 品項自己嘅批次輸入框只顯示自己嘅值，唔可以再用 rowBatch（見下）——
+                        // rowBatch 特登 fallback 去 o.Batch 畀「從未設過批次」嘅品項分色用，
+                        // 但用嚟填 input value 會令用戶刻意清空（item.Batch===''）嘅品項，
+                        // 個輸入框仍然顯示訂單批次，睇落好似「清完又變返」。
+                        const rowBatchOwn = item.Batch || '';
 
                         let catClass = 'badge-cat-default';
                         const cat = getSafeText(item.Category) || '';
@@ -12340,7 +12349,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     <span class="acc-field-label"><svg class="ba-icon" width="12" height="12" style="vertical-align:-1px;margin-right:4px;"><use href="#icon-tag"/></svg>批次</span>
                                     <input type="text"
                                         id="acc-batch-${fhsEscHtml(o.id)}-${_aIdx}"
-                                        value="${fhsEscHtml(rowBatch || '')}"
+                                        value="${fhsEscHtml(rowBatchOwn)}"
                                         placeholder="批次"
                                         inputmode="numeric"
                                         onfocus="batchInputFocus(this)"
@@ -13875,6 +13884,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         // 為單一項目定義批次顏色 — fall back to order-level batch
                         const rowBatch = item.Batch || o.Batch || '';
                         const rowBatchCol = getBatchColor(rowBatch);
+                        // 品項自己嘅批次輸入框只顯示自己嘅值，唔可以再用 rowBatch（見 12215 同款註解）
+                        const rowBatchOwn = item.Batch || '';
 
                         // 繪製表格列 (TR)
                         const isLastItem = index === itemsCount - 1;
@@ -13993,7 +14004,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             </td>`}
                             <td class="batch-cell" style="vertical-align:top; text-align:center; padding:calc(4px*var(--fhs-ovw-s,1)) 3px; border-bottom:${_rowBorderB}; border-right:1px dashed #e0e0e0; background-color:${rowBatchCol};">
                                 <input type="text" id="batch-input-${fhsEscHtml(o.id)}-${_iIdx}" class="review-batch-input"
-                                       value="${fhsEscHtml(rowBatch || '')}"
+                                       value="${fhsEscHtml(rowBatchOwn)}"
                                        style="width:100%; max-width:92px; text-align:center; margin:0 auto; font-size:calc(13px*var(--fhs-ovw-s,1));"
                                        inputmode="numeric"
                                        onfocus="batchInputFocus(this)"
