@@ -30,6 +30,10 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // 而同一 API key 下 gemini-3.6-flash / gemini-flash-latest 即時回 200——即係 model 專屬過載，
 // 唔係 quota 亦唔係 key 問題。當時要人手用環境變數繞過，先攞到評審。
 // GEMINI_A2_MODEL_DEFAULT 仍然生效（覆蓋鏈首位），其餘備援自動接力。
+// 2026-09-23 補充（flow 2026-09-23-1957）：內建鏈全部 3 個 model 曾一齊 503（非單一 model
+// 過載），curl 直探 Google API 證實同一時間點必有其他健康 model 存在——見到 state.json
+// degraded:true 唔好直接接受，先 curl probe 逐個現況，再用 GEMINI_A2_MODEL_CHAIN env
+// override 即時重試。全文見 .fhs/memory/lessons/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md。
 const GEMINI_MODEL_CHAIN = (
   process.env.GEMINI_A2_MODEL_CHAIN
     ? process.env.GEMINI_A2_MODEL_CHAIN.split(',').map(s => s.trim()).filter(Boolean)

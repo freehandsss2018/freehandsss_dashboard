@@ -205,6 +205,3 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | A3 需自行抓兩份計劃的衝突 | A3 產出批評處理表，逐條採納/拒絕+證據，防做戲條款強制 |
 | API 掛 → 整條路徑降級到靜態備援 | API 掛 → 單邊 degraded，另一邊照常完成，Verdict 顯眼聲明 |
 | 有靜態檔案備援分支 | 備援分支退役（見上方路徑判斷段說明） |
-
-## Known failure modes（迴圈追加，格式勿改）
-- Gemini(A2) fallback鏈全數同時503 high demand：`.env`預設鏈（`GEMINI_A2_MODEL_DEFAULT`+內建2個備援）3個model一齊過載，非單一model問題，`state.json`標`degraded:true`。Fix：唔可以直接接受DEGRADED——立即curl逐個直探Google API（`https://generativelanguage.googleapis.com/v1beta/models/$m:generateContent?key=$GEMINI_API_KEY` POST `{"contents":[{"parts":[{"text":"ping"}]}]}`）搵現時健康(HTTP 200)嘅model，用`GEMINI_A2_MODEL_CHAIN="健康model1,健康model2" node scripts/cl-flow-runner.js --review {flow_id}`臨時env override即時重試（唔改`.env`，只影響單次呼叫）。實測證明同一時間點必有其他健康model存在，三個一齊過載屬暫時性巧合非key/quota問題；全文見`.fhs/memory/lessons/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md`案例更新段。[2026-09-23]
