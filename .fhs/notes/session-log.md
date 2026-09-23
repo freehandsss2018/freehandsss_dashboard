@@ -2468,3 +2468,11 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - 過程中Gemini三個fallback model（3.8-flash/3.6-flash/flash-latest）同時503 high demand，即時curl逐個直探Google API確認`3.6-flash`/`2.5-flash`當時已回復健康，用`GEMINI_A2_MODEL_CHAIN`臨時env override重試成功攞到真實評審。此處理方法已定案為標準程序，落盤`.fhs/memory/lessons/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md`案例更新段+`learnings/tooling.md` #14。
 - 全文見`artifacts/2026-09-23-1957/`（task-brief/a3-draft/ag-review/cl-final-plan）、handoff.md MASTER表對應列。
 - **Subagent 使用記錄**：✅ `finance-auditor`（兩輪，背景派工，查根因+修復前置影響評估）。
+
+## 2026-09-23 — 財務RPC三口徑問題`/execute`完成部署（Claude Code / Sonnet 5）
+
+- flow `2026-09-23-1957`（Verdict CONDITIONAL_READY）正式執行：n8n `Supabase Mirror Prep`（V47.16→V47.26，頸鏈pair-group反查+`_splitValid`驗證基準修正）+ migration `0096_get_financial_charts_adjustment_and_monthly_window.sql`（trend補adjustment_amount+monthly曆月對齊）。
+- 4組真實webhook測試單全PASS（過程中意外發現虛構測試SKU觸發FK違反令全單建立失敗，改用真實SKU後解決，同代碼改動無關）；Live直查yearly trend/KPI、monthly/yearly「2026-04」profit分毫吻合。
+- fresh-context `finance-auditor`部署後強制驗收：PASS無附帶條件，確認`final_sale_price`未受影響，抽查真實生產單07001013計算鏈自洽。
+- 全文見`.fhs/reports/completion/2026-09-23_item-sale-price-financial-rpc-fix_completion_report.md`、decisions.md、CHANGELOG.md、`FHS_System_Logic_Overview.md`§10.26。
+- **Subagent 使用記錄**：✅ `finance-auditor`×3（根因追查×2、部署後驗收×1，全部背景派工）。

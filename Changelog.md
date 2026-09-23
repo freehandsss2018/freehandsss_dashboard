@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-23] `item_sale_price` 分帳斷鏈修復 + `get_financial_charts()` 兩個口徑修正（cl-flow-fast 2026-09-23-1957）
+
+- **緣起**：Fat Mo 截圖訂單 0600721 質疑分帳UI明明有輸入頸鏈金額，`item_sale_price` 點解係NULL。finance-auditor 兩輪唯讀查證揪出 4 個獨立問題（2個n8n分帳斷鏈+2個RPC口徑），經 `/cl-flow-fast` 規劃、AG（`gemini-2.5-flash`）評審 2MAJOR+2MINOR 全處理後執行。**全程唔影響 `final_sale_price`（Fat Mo實收金額）**，只影響背景分類統計圖表。
+- **①頸鏈`necklace_N` pair-key 從未被支援**：n8n `Supabase Mirror Prep` 節點（V47.16→V47.26）新增頸鏈pair-group反查——按`Sub_Items`提交順序累加`Quantity`每滿2件一組，組價整數分(cents)精確分配到`item_key`（`Quantity<=0`篩選階段排除、餘數歸最後一件避免捨入誤差累積，AG評審批評#1#2）。
+- **②`additional_fee`冇分帳格觸發全單棄用**：Dashboard「附加費($)」係獨立輸入格，從未落入`depositSplitData`/`balanceSplitData`；`_splitValid`驗證基準由`Deposit+Balance+Additional_Fee`改為`Deposit+Balance`，對齊分帳UI實際涵蓋範圍。
+- **③trend漏計`adjustment_amount`**：migration `0096_get_financial_charts_adjustment_and_monthly_window.sql`——`get_financial_charts()`trend子查詢補上，對齊`get_financial_kpis()`公式（原yearly折線vs KPI差$480）。
+- **④monthly非曆月滾動窗口**：同一migration——起點由`(ref_date - INTERVAL '5 months')`日曆日改為`DATE_TRUNC('month', ref_date - INTERVAL '5 months')`曆月頭，令窗口恆為「最近6個完整曆月」；`category_revenue`/`cost_breakdown`逐字不變。
+- **驗證**：4組真實webhook測試單（頸鏈4件2對/3件1對+remainder/混合品類零回歸/Additional_Fee=80）全數PASS；yearly trend/KPI profit 改後 182246.00=182246.00 完全吻合；monthly/yearly「2026-04」profit 改後 37530=37530 完全吻合；6張2026-05-10前歷史單`item_sale_price`確認仍為NULL未被觸碰。**Subagent 使用記錄**：✅ `finance-auditor`（三輪：根因追查、修復前置影響評估、部署後強制驗收）。
+- **未解決範圍外**：`category_revenue`分類收入圖超收$12,711.5（頸鏈成本比例估算vs其他品類品項售價兩種口徑混用）需Fat Mo先拍板分攤演算法，另案處理；歷史已存在NULL單backfill需另開`/execute`。
+- 全文見 `.fhs/notes/FHS_System_Logic_Overview.md` §10.26、decisions.md 2026-09-23、`artifacts/2026-09-23-1957/`。
+
 ## [2026-09-22] D83 防再發方案裁決（cl-flow-fast 2026-09-21-1536）— 原4層方案否決，改執行 Option A′：修 Stop hook 缺口 ＋ 成本總覽加組件現行立場
 
 - **裁決**：Fat Mo 要求就「同 session 建議立場三度翻轉」出防再發方案，原提案（4層3期，組件戶口冊＋自動載入＋改動前置關卡＋維護鉤）交 `/cl-flow-fast` 予 Gemini（A2）對抗評審。評審結果 **1 BLOCKER + 4 MAJOR + 1 MINOR，全部採納**，原方案否決，改執行縮小版 **Option A′**。

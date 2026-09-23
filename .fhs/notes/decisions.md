@@ -3814,3 +3814,30 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **auditor 揭發嘅 3 個舊有 RPC 口徑問題（非本次改動引起，另案，待 Fat Mo 判斷）**：①折線圖 `get_financial_charts` 唔計 `adjustment_amount` 但 KPI 計，yearly 折線逐月 profit 加總 170,196 對 KPI 169,716，差 480（0600803 +30、0600903 +450）；②分類收入圖（`barChart`／`breakdown.revenue`）加總超出總收入 12,711.5（yearly 217,447.5 對 204,736）：頸鏈吊飾 `item_sale_price` 全 NULL 改用 `final_sale_price×necklace_cost/total_cost` 分攤，同鎖匙扣／手模擺設用品項售價兩種口徑混用，9 張混合單重複分攤（0600800／0600710／0600804／0600107／0600803／0600727／0600721／0600723／0600903）；③`monthly` tab 圖表用 ref_date 起計過去 5 個月滾動窗口而非曆月，同頂部曆月 KPI 口徑唔同（4 月折線 16,700 對 yearly 4 月 44,960）。
 
 **驗證補記（2026-09-21）**：IGWatchdog 06:00 HKT 排程 exec 7582 成功——`Write Intents`/`Write Messages` 輸出無 `error` 欄位（昔日為 401 error 物件）、全 execution 零 `sb_secret_`；Supabase `message_intents` 205→206、最後寫入 2026-09-20 22:00:22 UTC，`ig_messages` 同步增加＝IGWatchdog 修復端到端生效。`content_mismatch` 無新增（當日無 mismatch 可寫，非失敗）。ErrorMonitor 仍待有 workflow 出錯先能驗（`error_logs` 仍 0 行，屬預期）。
+
+---
+
+[2026-09-23] `item_sale_price` 分帳斷鏈修復 + `get_financial_charts()` 兩個口徑修正（cl-flow-fast 2026-09-23-1957）
+
+**緣起**：Fat Mo 截圖訂單 0600721 分帳UI（明確輸入「頸鏈①一對:$2980／頸鏈②一對:$2980」），質疑點解 `order_items.item_sale_price` 係NULL——2026-09-20 D79續 finance-auditor 揭發嘅3個口徑問題（見上）之一「②分類收入圖超收」根因描述「頸鏈item_sale_price全NULL」被 Fat Mo 用實例質疑，主對話重新派 finance-auditor 兩輪唯讀查證，揪出比原描述更完整嘅根因（原描述只講對咗現象，冇講清楚點解會咁）。
+
+**根因（finance-auditor 兩輪查證，Live SQL + n8n get_node 源碼追蹤）**：
+①**頸鏈`necklace_N` pair-key 從未被 `_splitMap` 支援**——`Supabase Mirror Prep` 節點嘅 suffix 比對邏輯（`key.replace('TEMP_','').split('#')[0].toUpperCase()`）只識別鎖匙扣/木框嗰種 `TEMP_{prefix}_{position}##` 位置式命名，Dashboard `calculatePricing()`（`freehandsss_dashboardV42.html:9892-9908`）嘅頸鏈分組演算法產生嘅係 `necklace_1`/`necklace_2`（每2件charm一組計價，非逐件），兩者格式從未對齊，令頸鏈類 `item_sale_price` 恆為NULL。
+②**`additional_fee` 冇分帳格歸屬觸發全單棄用**——Dashboard「附加費($)」係獨立輸入格（`input.Additional_Fee`），從未落入 `depositSplitData`/`balanceSplitData`；舊版 `_splitValid` 驗證基準 `Deposit+Balance+Additional_Fee` 連埋附加費一齊比對分帳格總和，任何有附加費嘅單恆定「唔啱數」，觸發**全單**（非只有附加費嗰件）`item_sale_price` 棄用（訂單0600112實測：兩個鎖匙扣皆NULL，純因$80附加費冇格可歸）。
+③④：見 2026-09-20 D79續條目已記錄嘅 trend 漏計 adjustment_amount／monthly 非曆月窗口，本次一併修復。
+
+**規劃**：`/cl-flow-fast` flow `2026-09-23-1957`，A3草案 → AG（`gemini-2.5-flash`，過程中 `gemini-3.8-flash`/`3.6-flash`/`flash-latest`同時503，curl probe後臨時override）評審 2MAJOR（Quantity<=0邊界累加位移風險／單一測試單驗證深度不足）+2MINOR（cents捨入誤差／硬編碼分類字面值）→ 全部處理（MAJOR落實代碼修復，測試計劃擴充4組）→ Verdict CONDITIONAL_READY → Fat Mo 口頭確認理解後 `/execute`。
+
+**執行**：
+- n8n `FHS_Core_OrderProcessor`/`Supabase Mirror Prep`（V47.16→V47.26）：修改A（驗證基準改`Deposit+Balance`）+ 修改B（頸鏈pair-group反查，cents精確分配+Quantity guard）。API PUT回讀零漂移。
+- migration `0096_get_financial_charts_adjustment_and_monthly_window.sql`：trend補adjustment_amount，monthly起點改`DATE_TRUNC('month', ref_date - INTERVAL '5 months')`。`category_revenue`/`cost_breakdown`逐字不變。
+
+**驗證**：
+- 4組真實webhook測試單（A頸鏈4件2對/B頸鏈3件1對+remainder/C混合品類/D附加費$80）全數逐項核對PASS。過程中意外撞到：測試SKU若非`products`表真實存在值會觸發`order_items_product_sku_fkey` FK違反，令**全單**（非單一品項）建立失敗（HTTP 200但orders/order_items皆無落地）——同代碼改動無關，純測試資料設計問題（首輪用虛構SKU「嬰兒吊飾 - 純銀」，改用真實SKU「嬰兒吊飾 - 925銀」+ Mode觸發正規化後全數通過）。測試資料已清理。
+- Live直查：`get_financial_kpis('yearly','all')` vs `get_financial_charts('yearly','all')` trend加總，改前差$480、改後182246.00=182246.00完全吻合；monthly/yearly「2026-04」profit改後37530=37530完全吻合。
+- 確認6張歷史單（0500719/0600722/0600809/0600905/0600908/0650429，2026-05-10前建立、原生冇分帳UI功能）`item_sale_price`仍為NULL，未被本次修復意外觸碰。
+- fresh-context `finance-auditor` 部署後強制驗收（背景派工，獨立重算，非主對話自驗）。
+
+**明確不做範圍**：`category_revenue`分類收入圖超收$12,711.5（頸鏈成本比例估算 vs 其他品類品項售價兩種口徑混用，同一混合單分攤不守恆）需 Fat Mo 先拍板分攤演算法，屬業務判斷非純技術bug，另案處理，本次故意唔擴大範圍。已存在嘅歷史NULL單（如0600721/0600804/0600727本身）唔會被本次修復自動回填，backfill需另開`/execute`授權。
+
+全文見 `.fhs/notes/FHS_System_Logic_Overview.md` §10.26、CHANGELOG.md 2026-09-23、`artifacts/2026-09-23-1957/`（task-brief/a3-draft/ag-review/cl-final-plan）。**Subagent 使用記錄**：✅ `finance-auditor`（三輪：根因追查×2、部署後驗收×1，全部背景派工）。

@@ -1319,10 +1319,40 @@ Fat Mo 確認 0600037（木框，appointment_at=2026-07-27，尚未到）正確�
 全文見 decisions.md D74。
 
 ---
+
+### 10.26 `item_sale_price` 分帳斷鏈修復 + `get_financial_charts()` 兩個口徑修正（cl-flow-fast 2026-09-23-1957，2026-09-23）
+
+**緣起**：Fat Mo 截圖訂單 0600721 質疑分帳UI明明有輸入頸鏈金額，點解 `item_sale_price` 係NULL。finance-auditor 兩輪唯讀查證揪出 4 個獨立問題，經 `/cl-flow-fast` 規劃（AG `gemini-2.5-flash` 評審2MAJOR+2MINOR全處理）後執行。
+
+**問題①：頸鏈吊飾 `necklace_N` pair-key 從未被 `_splitMap` 支援**——Dashboard `calculatePricing()`（`freehandsss_dashboardV42.html:9892-9908`）將頸鏈按「每2件charm一組」計價，分帳key格式為 `necklace_1`/`necklace_2`（非鎖匙扣/木框嗰種 `TEMP_{prefix}_{position}##` 位置式命名），n8n `Supabase Mirror Prep` 節點嘅 suffix 比對邏輯從未涵蓋呢種格式，令頸鏈類 `item_sale_price` 恆為 NULL。
+
+**問題②：`additional_fee` 冇分帳格歸屬觸發全單棄用**——Dashboard「附加費($)」係獨立輸入格（`input.Additional_Fee`），從未落入 `depositSplitData`/`balanceSplitData`；舊版 `_splitValid` 驗證基準用 `Deposit+Balance+Additional_Fee` 比對分帳格總和，任何有附加費嘅單恆定「唔啱數」，觸發**全單**（唔止有附加費嗰件）`item_sale_price` 一併棄用。
+
+**修復（V47.16→V47.26，`Supabase Mirror Prep` 節點）**：
+- 驗證基準改為 `Deposit+Balance`（唔連Additional_Fee，對齊分帳UI實際涵蓋範圍）
+- 新增頸鏈 pair-group 反查：按 `Sub_Items` 提交順序累加 `Quantity`，每滿2件一組，組價用整數分(cents)運算+餘數歸最後一件精確分配到 `item_key`（避免捨入誤差累積）；`Quantity<=0` 品項篩選階段排除，唔進入分組（防累加位移）
+- `final_sale_price`/`net_profit` 計算完全不變（收款確收守護範圍外）
+
+**問題③：`get_financial_charts()` trend 漏計 `adjustment_amount`**——`get_financial_kpis()` 已將 `adjustment_amount` 計入 cost/profit，`trend` 子查詢冇跟上，令 yearly 折線加總同 KPI 卡差 $480（0600803+30、0600903+450）。
+
+**問題④：`get_financial_charts()` monthly tab 非曆月滾動窗口**——原 `cur_start := (ref_date - INTERVAL '5 months')::DATE` 用日曆日起算，令窗口邊界月份只涵蓋部分日子卻套用完整月份標籤，同 `yearly` tab 曆月分組口徑不一致。
+
+**修復（migration `0096_get_financial_charts_adjustment_and_monthly_window.sql`）**：
+- `trend` 子查詢新增 `adjustment_amount`，`cost`/`profit` 公式對齊 `get_financial_kpis()`
+- `monthly` 起點改用 `DATE_TRUNC('month', ref_date - INTERVAL '5 months')`，令窗口恆為「最近6個完整曆月」
+- `category_revenue`/`cost_breakdown` 逐字不變
+
+**驗證**：4組真實webhook測試單（頸鏈4件2對/3件1對+remainder/混合品類/Additional_Fee=80）逐項核對 `item_sale_price` 全部PASS，測試中意外揪出：測試SKU若非 `products` 表真實存在嘅值會觸發 `order_items_product_sku_fkey` FK違反令**全單**（非單一品項）建立失敗——同代碼改動無關，純測試資料設計問題，改用真實SKU後全數通過。Live直查：yearly trend/KPI profit 改前差$480、改後 182246.00=182246.00 完全吻合；monthly/yearly「2026-04」profit 改後 37530=37530 完全吻合。確認6張歷史單（0500719/0600722/0600809/0600905/0600908/0650429，2026-05-10前建立、原生冇分帳UI功能）`item_sale_price` 仍為NULL，未被本次修復意外觸碰。fresh-context `finance-auditor` 獨立驗收（部署後強制，非自驗）。
+
+**未解決/明確不做範圍**：`category_revenue` 分類收入圖超收 $12,711.5（頸鏈成本比例估算 vs 其他品類品項售價兩種口徑混用，同一混合單分攤不守恆）需 Fat Mo 先拍板分攤演算法，另案處理；本次不擴大範圍。已存在嘅歷史NULL單（如0600721本身）唔會被本次修復自動回填，backfill 需另開 `/execute`。
+
+全文見 decisions.md 2026-09-23、`artifacts/2026-09-23-1957/`（task-brief/a3-draft/ag-review/cl-final-plan）。
+
+---
 ---
 
 *本文件由 Session 60 建立。下次改動任何上述層次時，請同步更新對應章節。*
-*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§10.24 由 2026-09-06 D71/D72 session 補入（同時補上 D69續八 標記嘅三態架構文件缺口）。§10.25 由 2026-09-08 D74 訂單封面圖 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
+*§十 由 Session 99 補入（2026-06-12）。§10.8–10.9 由 Session 104 補入（2026-06-15）。§10.10 由 Session 105 補入（2026-06-16）。§10.11 由 Session 130b 補入（2026-07-01）。§10.12 由 Session 150 補入（2026-07-07）。§10.13 由 2026-07-17 財務審計 session 補入。§10.14 由 D43續完成 session 補入（2026-07-22）。§10.15 由 D43續二 session 補入（2026-07-22）。§10.16 由 S187續XIII session 補入（2026-07-22）。§10.17 由 2026-07-22 訂單數細項單位修復 session 補入。§10.18 由 2026-07-22 migration drift 回歸修復 session 補入。§10.19 由 2026-07-23 期間歸屬日期口徑統一 session 補入。§10.20 由 2026-07-23 手模擺設木框/玻璃瓶拆分 session 補入。§10.21 由 2026-07-23 D44 純鎖匙扣/頸鏈兩連環修復 session 補入。§10.22 由 2026-07-28 D50 訂單總覽篩選三連環修復 session 補入。§10.23 由 2026-08-02 D52 財務分頁示範數據誤判修復 session 補入。§10.24 由 2026-09-06 D71/D72 session 補入（同時補上 D69續八 標記嘅三態架構文件缺口）。§10.25 由 2026-09-08 D74 訂單封面圖 session 補入。§10.26 由 2026-09-23 cl-flow-fast 2026-09-23-1957 session 補入。§十一 由 Session 119 補入（2026-06-23）。*
 
 ---
 
