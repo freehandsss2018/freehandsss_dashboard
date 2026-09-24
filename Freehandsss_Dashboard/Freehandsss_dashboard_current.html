@@ -5230,7 +5230,7 @@
                             <div class="filter-group">
                                 <label class="filter-label" for="reviewSearch" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>搜尋</label>
                                 <input type="text" id="reviewSearch" class="fhs-input fhs-input--md" placeholder="姓名/單號"
-                                    oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
+                                    oninput="handleReviewSearchInput();">
                             </div>
                             <div class="filter-group">
                                 <label class="filter-label" for="reviewSortSelect">↕ 排序</label>
@@ -11830,6 +11830,38 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
         }
 
+        function handleReviewSearchInput() {
+            var searchEl = document.getElementById('reviewSearch');
+            var val = searchEl ? searchEl.value.trim() : '';
+            if (val) {
+                // 當輸入搜尋資料時，default 轉為「全部」模式下作搜尋訂單
+                if (window._fhsSegTab !== 'all') {
+                    if (!window._fhsPrevSegTab) {
+                        window._fhsPrevSegTab = window._fhsSegTab || 'active';
+                    }
+                    if (typeof setSegTab === 'function') {
+                        setSegTab('all', true);
+                    } else {
+                        window._fhsSegTab = 'all';
+                    }
+                }
+            } else {
+                // 清空搜尋時，若先前為自動切換至全部，則還原回原先分頁
+                if (window._fhsPrevSegTab) {
+                    var prev = window._fhsPrevSegTab;
+                    window._fhsPrevSegTab = null;
+                    if (typeof setSegTab === 'function') {
+                        setSegTab(prev);
+                    } else {
+                        window._fhsSegTab = prev;
+                    }
+                }
+            }
+            debounceFetchGlobalReview();
+            updateFilterActiveHint();
+        }
+        window.handleReviewSearchInput = handleReviewSearchInput;
+
         // 【V46.0】GlobalReview 5分鐘快取層 — 減少 Airtable API 呼叫
         const REVIEW_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -14387,6 +14419,68 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             applyReviewFilters();
         }
 
+        function _getOrderCategoryBatch(order, cat) {
+            if (!order) return '';
+            if (order.items && Array.isArray(order.items)) {
+                var catItems = order.items.filter(function(it) {
+                    return typeof matchesItemCategory === 'function' ? matchesItemCategory(it, cat) : true;
+                });
+                for (var i = 0; i < catItems.length; i++) {
+                    var b = (catItems[i].Batch || catItems[i].Batch_Number || '').trim();
+                    if (b) return b;
+                }
+            }
+            return (order.Batch || order.Batch_Number || '').trim();
+        }
+
+        function _parseBatchNumber(batchStr) {
+            if (!batchStr) return null;
+            var s = String(batchStr).trim();
+            if (!s || s === '未派批' || s === '無' || s === '-' || s === '—') return null;
+            var m = s.match(/\d+/);
+            return m ? parseInt(m[0], 10) : null;
+        }
+
+        function _compareCategoryBatch(a, b, cat) {
+            var bA = _getOrderCategoryBatch(a, cat);
+            var bB = _getOrderCategoryBatch(b, cat);
+            var numA = _parseBatchNumber(bA);
+            var numB = _parseBatchNumber(bB);
+
+            // 空白/未填批次排最頂（作是没有空間為最頂）
+            if (numA === null && numB !== null) return -1;
+            if (numA !== null && numB === null) return 1;
+
+            function parseSafeDate(dStr) {
+                if (!dStr) return 0;
+                if (dStr.includes('-')) return new Date(dStr).getTime() || 0;
+                if (dStr.includes('/')) {
+                    var parts = dStr.split('/');
+                    if (parts.length >= 3) {
+                        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime() || 0;
+                    }
+                }
+                return new Date(dStr).getTime() || 0;
+            }
+
+            // 兩者皆為空白批次：依日期最新優先排序
+            if (numA === null && numB === null) {
+                var dateA = parseSafeDate(a.Date || a.confirmed_at || a.Appointment_Date);
+                var dateB = parseSafeDate(b.Date || b.confirmed_at || b.Appointment_Date);
+                if (dateA !== dateB) return dateB - dateA;
+                return String(b.Order_ID || '').localeCompare(String(a.Order_ID || ''));
+            }
+
+            // 兩者皆有批次：最近的批次排先（數字降序，例如第36批 > 第35批 > 第34批）
+            if (numA !== numB) return numB - numA;
+
+            // 同一批次：依日期最新優先排序
+            var dateA2 = parseSafeDate(a.Date || a.confirmed_at || a.Appointment_Date);
+            var dateB2 = parseSafeDate(b.Date || b.confirmed_at || b.Appointment_Date);
+            if (dateA2 !== dateB2) return dateB2 - dateA2;
+            return String(b.Order_ID || '').localeCompare(String(a.Order_ID || ''));
+        }
+
         // ── Filter + Sort orchestrator ──────────────────────────────
         function applyReviewFilters() {
             const _orders = window.globalOrders || globalOrders;
@@ -14509,6 +14603,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (aVal < bVal) return _dir === 'asc' ? -1 : 1;
                     if (aVal > bVal) return _dir === 'asc' ? 1 : -1;
                     return 0;
+                });
+            } else if (reviewCategoryFilter === '鑰匙扣' || reviewCategoryFilter === '鎖匙扣' || reviewCategoryFilter === '頸鏈') {
+                filtered = filtered.slice().sort(function(a, b) {
+                    return _compareCategoryBatch(a, b, reviewCategoryFilter);
                 });
             }
             renderReviewTable(filtered);
@@ -18398,6 +18496,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (bt) bt.value = '';
             if (se) se.value = '';
             if (so) so.value = '';
+
+            window._fhsPrevSegTab = null;
+            window._fhsExplicitTabWhileSearch = false;
 
             reviewCategoryFilter = '';
             document.querySelectorAll('.chip-btn[data-category]').forEach(function(btn) {
@@ -22449,7 +22550,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     });
 
     /* ── P4: segmented tab + applyReviewFilters override ── */
-    function setSegTab(tab) {
+    function setSegTab(tab, fromSearch) {
+        if (!fromSearch) {
+            window._fhsPrevSegTab = null;
+            window._fhsExplicitTabWhileSearch = true;
+        }
         window._fhsSegTab = tab;
         /* Update button states */
         document.querySelectorAll('.fhs-seg-btn').forEach(function(btn) {
@@ -22470,9 +22575,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var allOrders = window.globalOrders || [];
             var segFiltered;
 
-            if (window._fhsSegTab === 'all') {
+            var _sEl = document.getElementById('reviewSearch');
+            var _hasSearch = _sEl && _sEl.value && _sEl.value.trim().length > 0;
+            var effectiveTab = window._fhsSegTab;
+            if (_hasSearch && !window._fhsExplicitTabWhileSearch) {
+                effectiveTab = 'all';
+            }
+
+            if (effectiveTab === 'all') {
                 segFiltered = allOrders.slice();
-            } else if (window._fhsSegTab === 'archived') {
+            } else if (effectiveTab === 'archived') {
                 segFiltered = allOrders.filter(function(o) { return window._fhsArchivedIds.has(o.id); });
             } else {
                 segFiltered = allOrders.filter(function(o) { return !window._fhsArchivedIds.has(o.id); });
