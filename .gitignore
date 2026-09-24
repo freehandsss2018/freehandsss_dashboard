@@ -67,6 +67,9 @@ __pycache__/
 *.pyc
 
 # Temporary debug scripts & local data dumps
+Freehandsss_Dashboard/assets/
+scripts/generate_png_icons.js
+scripts/setup_flaticon_uicons.js
 Freehandsss_Dashboard/analyze_bugs.js
 Freehandsss_Dashboard/analyze_bugs.py
 Freehandsss_Dashboard/scratch/

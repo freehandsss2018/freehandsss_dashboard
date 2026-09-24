@@ -34,11 +34,15 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // 過載），curl 直探 Google API 證實同一時間點必有其他健康 model 存在——見到 state.json
 // degraded:true 唔好直接接受，先 curl probe 逐個現況，再用 GEMINI_A2_MODEL_CHAIN env
 // override 即時重試。全文見 .fhs/memory/lessons/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md。
+// 2026-09-11 re-probe：ListModels 揪出更新嘅 gemini-3.8-flash，真實 generateContent 測試通過；
+// 同一次測試中 gemini-3.7-flash 即場撞返 503 high demand，正好印證上面呢個 fallback 鏈存在嘅原因。
+// 鏈首位換成 3.8-flash，3.7-flash 降落第二備援（非下架，只係暫時過載）。
 const GEMINI_MODEL_CHAIN = (
   process.env.GEMINI_A2_MODEL_CHAIN
     ? process.env.GEMINI_A2_MODEL_CHAIN.split(',').map(s => s.trim()).filter(Boolean)
     : [
-        process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.7-flash',
+        process.env.GEMINI_A2_MODEL_DEFAULT || 'gemini-3.8-flash',
+        'gemini-3.7-flash',
         'gemini-3.6-flash',
         'gemini-flash-latest'
       ]

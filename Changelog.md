@@ -643,6 +643,86 @@
 - **驗證**：390mobile確認篩選面板預設摺埋、展開後3按鈕成行顯示；重新載入+筆數合併做右上角單一pill；分段指示器三分頁單次原子化量測mismatch≤0.8px；750/900緊縮桌面回歸測試冇regression；1400傳統桌面不受影響；console零新增錯誤（僅一個無關404）。
 - **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`（`fhsSyncCompactDesktopLayout()`共用化改動、5條新CSS規則、`.fhs-seg-indicator`偏移修正）。
 - 全文見 decisions.md D69續八-follow-19。**Subagent 使用記錄**：❌未使用。
+## [2026-09-24] Session（Antigravity 執行）— 訂單總覽鎖匙扣與頸鏈預設批次排序＋搜尋預設全部模式 ＆ 業務 80/20 數據審視
+
+- **業務 80/20 Supabase 數據審視**：
+  - 根據 Supabase live orders (81筆) 及 order_items (163筆) 數據深入審視。
+  - 客單價 (AOV) 為 $3,529，毛利率約 83.5%。
+  - 核心利潤動力：純主套裝訂單 AOV 為 $2,284，加購訂單 AOV 達 $4,813（高出 110%），平均毛利自 $1,971 躍升至 $3,656（1.85倍）。
+  - 產出 80/20 關鍵洞察：主力突破口在於提升「加購率（立體手腳模 ➔ 加購鎖匙扣/吊飾）」及引進高單價大套裝組合（如二寶/家庭/四肢框）。
+- **訂單總覽功能優化**：
+  1. **鎖匙扣與頸鏈預設批次排序**：
+     - 在「鎖匙扣」及「頸鏈」類別視圖下，預設排序（未選擇其他自訂排序時）改為：空批次/未填（「沒有空間」）排在最頂端（優先處理無批次訂單）；有批次者依照批次數字降序排列（最新批次優先，例如 第36批 > 第35批 > 第34批...）；同批次內再按建立日期降序排列。
+     - 封裝 `_getOrderCategoryBatch`、`_parseBatchNumber` 與 `_compareCategoryBatch`，確保品項層與訂單層批次欄位一致解析。
+  2. **搜尋預設切換全部模式**：
+     - 點擊搜尋框輸入任何文字時，系統自動將分頁視圖暫存並切換至「全部」模式（不再受限於當前「進行中」或「已完成」之過濾，方便全域檢索訂單）。
+     - 當搜尋框內容清空時，自動平滑復原原本的分頁（例如「進行中」）。
+     - 若在搜尋狀態下使用者主動點擊分頁（全部/進行中/已完成），系統尊重使用者明確意圖並標記 `_fhsExplicitTabWhileSearch`，避免強制覆蓋。
+     - 重設/清除篩選（`clearFilters`）時同步重設搜尋相關分頁旗標。
+- **驗證**：
+  - JS AST 語法解析 9 個 script blocks 全 PASS。
+  - 單元測試驗證批次排序（空批次置頂 ➔ 36 ➔ 35 ➔ 34）全數 PASS。
+  - 單元測試驗證搜尋輸入切換全部模式、手動切換保留、清空平滑復原全數 PASS。
+- **改動檔案**：
+  - `Freehandsss_Dashboard/freehandsss_dashboardV42.html`
+  - `Freehandsss_Dashboard/Freehandsss_dashboard_current.html`
+  - `Freehandsss_Dashboard/README.md`
+- **Subagent 使用記錄**：❌ 未使用。
+
+## [2026-09-23] Session（Antigravity 執行）— 訂單總覽篩選輸入框防走位＋底部功能Bar跨模式動態收納＋取模日曆手勢切換與防背景穿透滾動
+
+- **緣起與問題確診**：
+  1. **訂單總覽手機版點選輸入框（彈出鍵盤）防篩選走位**：Fat Mo 反饋在手機上點選「搜尋 姓名/單號」或「批次」等方框時，虛擬鍵盤彈出的一瞬間，篩選面板立即縮移跳到畫面頂端以外。根因：iOS Safari `< 16px` 強制 Auto-Zoom 視窗平移（原本 `.fhs-select, .fhs-input` 為 12px），加上鍵盤彈出引發的微幅捲動觸發了舊版 `translateY(-200px)` 縮移。
+  2. **新/修訂單底部功能 Bar 動態表現對齊**：新訂單與修訂單模式下，底部功能導覽列（`.fhs-top-bar__actions`）原本只在「訂單總覽」模式支援向下捲收起、向上捲浮現（Threads 式）的動態行為。
+  3. **取模日曆觸控手勢與背景滾動穿透**：日曆開啟後無法透過向左/向右滑動切換月份；且開啟後在日曆周圍滑動時，後方的訂單總覽清單會跟著滾動（Scroll Chaining）。
+- **修復方案**：
+  1. **訂單總覽輸入方框防縮回**：
+     - 將手機版（`<750px`）所有 `.fhs-select, .fhs-input` 字級由 12px 調升至 **16px**，徹底符合 WebKit HIG 規範，杜絕點擊觸發自動放大與視窗平移。
+     - 移除 `body.fhs-header-hidden` 對 `#reviewFiltersV2` 等元素的 translateY 縮移，並在 scroll 監聽器加入 `isInputFocused` 守衛，聚焦方框時忽略鍵盤彈出產生的微幅捲動，保持篩選列常駐置頂。
+  2. **底部功能 Bar 全模式動態收納**：
+     - 解除 `navScope` 原先僅限總覽模式（`inReview`）的限制，將範圍擴展至所有模式（`<1130px` 寬度）。
+     - 在模式切換時（`switchMode`）即時移除 `fhs-bottomnav-hidden`，確保切換到新/修訂單時導覽列必定立即可見。
+     - 當切換至「修改訂單」且修改按鈕為捷徑隱藏狀態（`.sb-hidden`）時，平滑回退高亮「新增訂單」，維持底部分割按鈕指示器狀態。
+  3. **取模日曆觸控左右滑動與防背景滾動穿透**：
+     - 於 `#moldCalPopup` 綁定單指觸控監聽（`touchstart` / `touchend`），加入手勢判定邏輯：時間 < 600ms、水平位移 > 40px，且水平位移需明顯大於垂直位移（`|diffX| > |diffY| * 1.3`），防止垂直滾動預約明細列表時誤觸。左滑（`diffX < 0`）切換至下月，右滑（`diffX > 0`）切換至上月。
+     - CSS 增設 `body.fhs-modal-open { overflow: hidden !important; touch-action: none; }`，並在 `#moldCalOverlay` 與 `#moldCalPopup` 增加 `overscroll-behavior: contain`。
+     - 在 `openMoldCalendar()` 開啟時立即為 `body` 添加 `fhs-modal-open` 及 `style.overflow = 'hidden'`；在 `closeMoldCalendar()` 關閉時自動還原。在遮罩層攔截非 passive 的 `touchmove` 阻斷（`e.preventDefault()`），消除背景穿透滾動。
+- **驗證**：
+  - JS 語法解析測試 9 個 script blocks 全 PASS。
+  - 依 Fat Mo 「同步升格」授權，已同步升格 `Freehandsss_dashboard_current.html` 並透過 `upload-web.ps1 current -Force` 部署至 Synology NAS WebDAV。
+  - NAS 部署三關驗證 PASS（HTTP 204 / 1,486,519 bytes remote=local / SHA256 `C3A52FD27BA9DA790186A4B9531F4C607E759A91E6BA27993279F87F9EFF6EFE` / `fhs-build=2026-09-23T12:47:42Z`）。
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`、`Freehandsss_Dashboard/Freehandsss_dashboard_current.html`、`Freehandsss_Dashboard/README.md`。
+- **Subagent 使用記錄**：❌ 未使用。
+
+## [2026-09-21] Session（Antigravity 執行）— 財務結算手機輸入防回彈修復（iPhone 13 Pro 直向手機模式）
+
+- **緣起**：Fat Mo 回報直向手模模式下（iPhone 13 Pro 真機開啟 Dashboard 訂單，如 0600512），在「財務結算」簡化模式點選「已付訂金/未付尾數」方格時出現 bug：多次回彈 keyboard，未能順利輸入金額，需多番點擊方可修改。
+- **真根因**：
+  1. iOS Safari `< 16px` Auto-Zoom 強制視窗位移：在手機直向介面 `@media (max-width: 480px)` 下，輸入框字體為 `13px`。點入時 iOS 觸發視窗重繪位移，導致手指抬起時 WebKit 誤判點擊了視窗外，立即觸發 `blur`。
+  2. `pointerdown` 動態切換 `readonly` 與焦點手勢衝突：原設計在 `pointerdown` 動態將 `readOnly` 轉為 `false` 並強制 `.focus()`，當手指離開螢幕時 WebKit 偵測到可編輯狀態突變引發焦點丟失；隨後 `blur` 回呼再次將 `readOnly` 設回 `true`，iOS 遂將鍵盤強制縮回，形成「彈出即回彈」現象。
+- **修法（100% 嚴格保留所有原先回饋設定）**：
+  1. 輸入框字體調升至標準 `16px`（寬度由 60px 微調為 68px），徹底根治 iOS Safari 視窗位移誤判。
+  2. 移除 DOM 上的 `readonly` 屬性及 `pointerdown`/`click` 監聽，改由原生 `onfocus="_fhsSimpInputFocus(this)"` 觸發，並以 `dataset.isEditing` 標記編輯狀態。
+  3. 保留所有原交互回饋：聚焦時自動清空方便直接輸入、誤點離開時無損還原進入前金額、輸入金額後彈出黃色警告條（`#fhsPaySimp_confirmBar`）、各品項無貨時維持灰色禁用。
+- **驗證**：在 iPhone 13 Pro 模擬環境下執行 4 項自動化端對端測試：
+  1. 單次點擊穩定停留焦點並清空數字（PASS，焦點穩定無回彈）
+  2. 誤觸未輸入離開自動還原舊金額（PASS）
+  3. 輸入 1980 離開正常彈出分攤確認條（PASS）
+  4. 點擊確認分攤後拆帳分配正確（PASS）
+- **改動檔案**：`Freehandsss_Dashboard/freehandsss_dashboardV42.html`、`Freehandsss_Dashboard/Freehandsss_dashboard_current.html`。
+- **Subagent 使用記錄**：❌ 未使用。
+
+## [2026-09-11] Session（Claude Code / Sonnet 5 執行）— /cl-flow A2 Gemini model 鏈 re-probe：gemini-3.7-flash → gemini-3.8-flash
+
+- **緣起**：Fat Mo 要求跟過往方法（2026-07-28首次升級）再查 A2（cl-flow內Gemini評審）有冇新model，融入前先實測API可用。
+- **查證**：`GET /v1beta/models` 列出帳號現有可用模型，發現 `gemini-3.8-flash`（目前最新）；真實 `generateContent` 測試時，`gemini-3.8-flash`同現有鏈首位 `gemini-3.7-flash` 兩個都即場撞 HTTP 503 high demand（Google側短暫高峰，非model下架/quota問題）。
+- **修復**：`GEMINI_MODEL_CHAIN`（`scripts/cl-flow-runner.js`，2026-08-17建立嘅 fallback 鏈）鏈首位由 `gemini-3.7-flash` 換成 `gemini-3.8-flash`，3.7-flash降落第二備援；`.env`／`.env.example` 嘅 `GEMINI_A2_MODEL_DEFAULT` 同步。
+- **驗證（意外完整）**：真實跑一次 `--init`+`--review --fast`（flow_id `2026-09-11-1428`），3.8-flash同3.7-flash兩個當刻都503失敗，鏈自動降級到 `gemini-3.6-flash` 成功產出完整`ag-review.md`——非刻意設計嘅測試，係真實流量撞到高峰，反而完整驗證咗fallback鏈喺雙重失效下仍然正常運作。
+- 詳見 `.env.example` 註解、`scripts/cl-flow-runner.js` GEMINI_MODEL_CHAIN 上方註解。
+
+【交付前雙紀律自檢】
+驗收：純配置/工具鏈改動（非核心業務邏輯）——已用真實API請求探測+真實runner端對端跑通，且意外觸發真實雙重fallback場景驗證PASS
+Subagent：❌ 未使用（直接curl探測API+Edit改配置+跑真實runner驗證）
 
 ## [2026-09-01] Session（Claude Code / Sonnet 5 執行）— D69續八-follow-18：橫向模式底部功能bar整體縮減30%
 

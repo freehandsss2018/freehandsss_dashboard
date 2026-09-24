@@ -362,8 +362,10 @@
         .fhsPaySimp_dollar { font-size: 13px; color: #555; }
         .fhsPaySimp_input {
             width: 75px; padding: 4px 5px; border: 1px solid #D1D5DB; border-radius: 4px;
-            font-size: 14px; background: #E9ECEF; color: #555; cursor: default; text-align: right;
+            font-size: 16px; background: #E9ECEF; color: #555; cursor: default; text-align: right;
         }
+        .fhsPaySimp_input:focus,
+        .fhsPaySimp_input[data-is-editing="1"],
         .fhsPaySimp_input:not([readonly]) {
             background: #fff; color: #111; cursor: text; border-color: #2563EB;
         }
@@ -389,7 +391,7 @@
         }
         @media (max-width: 480px) {
             .fhsPaySimp_grid { grid-template-columns: minmax(0,1.2fr) 1fr 1fr; gap: 4px 6px; }
-            .fhsPaySimp_input { width: 60px; font-size: 13px; }
+            .fhsPaySimp_input { width: 68px; font-size: 16px; }
         }
 
         .toggle-row {
@@ -1248,13 +1250,8 @@
             .filter-toggle-bar { display:flex; }
             .filter-body { padding:0 16px; }
             .filter-body.open { max-height:700px; padding:12px 16px 16px; }
-            /* [2026-09-03 D69續八-follow-33] Fat Mo截圖箭嘴：年度/月份/狀態/批次/
-               搜尋/排序六個欄位縮減比例，並將各自嘅標題（label）同輸入框
-               （select/input）移做同一行（推翻S150 F3.3嗰陣「label上/控制項
-               下」嘅決定——嗰個決定原意係防窄欄擠壓，而家改用縮小尺寸嚟解決
-               窄欄問題，唔再靠垂直堆疊）。`.fhs-select`/`.fhs-input`呢兩個
-               class淨用喺呢六個欄位（grep確認），縮細高度/字級唔會影響第度。 */
-            .fhs-select, .fhs-input { height:34px; font-size:var(--fhs-text-xs); }
+            /* [2026-09-23 手機輸入防 Auto-Zoom] 字級設為 16px，徹底根治 iOS Safari 點擊輸入框時自動縮放位移問題 */
+            .fhs-select, .fhs-input { height:34px; font-size:16px; }
             .fhs-select { padding-right:32px; }
             .fhs-input--sm { width:100%; max-width:120px; }
             .fhs-input--md { width:100%; max-width:180px; }
@@ -4084,21 +4081,10 @@
             }
 
             /* ── 智慧置頂欄 Smart Header ── */
-            .fhs-top-bar,
-            body.v40-review-active #reviewZone2,
-            body.v40-review-active #reviewFiltersV2 {
-                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            }
-            body.fhs-header-hidden .fhs-top-bar {
-                transform: translateY(-48px) !important;
-            }
-            body.fhs-header-hidden #reviewZone2 {
-                transform: translateY(-120px) !important;
-            }
-            body.fhs-header-hidden #reviewFiltersV2 {
-                transform: translateY(-200px) !important;
-            }
-
+            /* [2026-09-23 訂單總覽手機篩選列固定防移位]
+               依 Fat Mo 指示「固定它不要移位」：移除 fhs-header-hidden 對 .fhs-top-bar / #reviewZone2 / #reviewFiltersV2 嘅 translateY 縮移。
+               原先向下滑動時 #reviewFiltersV2 被強制 translateY(-200px)，造成篩選版面被截半卡在畫面頂端；
+               改為常駐置頂（sticky），觸控滑動時保持固定不移位。 */
         } /* end @media max-width:767px */
 
         /* ── Bottom-Sheet 遮罩 ── */
@@ -4456,6 +4442,10 @@
            V42 — 取模排程中心 B：迷你月曆（S159規劃/S170拷問修訂，決策見 decisions.md D29；
            本次僅落地 B，C/D/E 延後）
            ================================================================ */
+        body.fhs-modal-open {
+            overflow: hidden !important;
+            touch-action: none;
+        }
         #moldCalOverlay {
             display: none;
             position: fixed;
@@ -4465,12 +4455,15 @@
             align-items: center;
             justify-content: center;
             padding: 16px;
+            overscroll-behavior: contain;
+            touch-action: none;
         }
         #moldCalOverlay.is-open { display: flex; }
         #moldCalOverlay.mc-anchored {
             background: transparent;
             align-items: flex-start;
             justify-content: flex-start;
+            touch-action: auto;
         }
         #moldCalPopup {
             background: var(--fhs-bg-surface);
@@ -4482,6 +4475,8 @@
             flex-direction: column;
             box-shadow: 0 8px 40px rgba(0,0,0,0.25);
             overflow: hidden;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
         }
         #moldCalOverlay.mc-anchored #moldCalPopup {
             position: fixed;
@@ -5235,7 +5230,7 @@
                             <div class="filter-group">
                                 <label class="filter-label" for="reviewSearch" style="display: inline-flex; align-items: center;"><svg class="fhs-header-icon" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><use href="#icon-search"/></svg>搜尋</label>
                                 <input type="text" id="reviewSearch" class="fhs-input fhs-input--md" placeholder="姓名/單號"
-                                    oninput="debounceFetchGlobalReview(); updateFilterActiveHint();">
+                                    oninput="handleReviewSearchInput();">
                             </div>
                             <div class="filter-group">
                                 <label class="filter-label" for="reviewSortSelect">↕ 排序</label>
@@ -5996,17 +5991,15 @@
                 <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelP" style="background:#F3E5F5;color:#4A148C;">① 手模擺設 + 配件<span id="fhsPaySimp_formula_P" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="deposit" readonly placeholder="0"
-                        onpointerdown="_fhsSimpClickToEdit(this)"
-                        onclick="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="deposit" placeholder="0"
+                        onfocus="_fhsSimpInputFocus(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="balance" readonly placeholder="0"
-                        onpointerdown="_fhsSimpClickToEdit(this)"
-                        onclick="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="P" data-simpfield="balance" placeholder="0"
+                        onfocus="_fhsSimpInputFocus(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
@@ -6017,17 +6010,15 @@
                 <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelK" style="background:#E3F2FD;color:#1565C0;">② 鎖匙扣<span id="fhsPaySimp_formula_K" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="deposit" readonly placeholder="0"
-                        onpointerdown="_fhsSimpClickToEdit(this)"
-                        onclick="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="deposit" placeholder="0"
+                        onfocus="_fhsSimpInputFocus(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="balance" readonly placeholder="0"
-                        onpointerdown="_fhsSimpClickToEdit(this)"
-                        onclick="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="K" data-simpfield="balance" placeholder="0"
+                        onfocus="_fhsSimpInputFocus(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
@@ -6038,17 +6029,15 @@
                 <div class="fhsPaySimp_catLabel" id="fhsPaySimp_labelM" style="background:#EFEBE9;color:#4E342E;">③ 頸鏈吊飾<span id="fhsPaySimp_formula_M" class="fhsPaySimp_formula"></span></div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="deposit" readonly placeholder="0"
-                        onpointerdown="_fhsSimpClickToEdit(this)"
-                        onclick="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="deposit" placeholder="0"
+                        onfocus="_fhsSimpInputFocus(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
                 <div class="fhsPaySimp_cell">
                     <span class="fhsPaySimp_dollar">$</span>
-                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="balance" readonly placeholder="0"
-                        onpointerdown="_fhsSimpClickToEdit(this)"
-                        onclick="_fhsSimpClickToEdit(this)"
+                    <input type="text" inputmode="decimal" pattern="[0-9.]*" class="fhsPaySimp_input" data-simpcat="M" data-simpfield="balance" placeholder="0"
+                        onfocus="_fhsSimpInputFocus(this)"
                         onkeydown="if(event.key==='Enter'){event.preventDefault();_fhsSimpInputCommit(this);}"
                         onblur="_fhsSimpInputBlur(this)">
                 </div>
@@ -7480,6 +7469,7 @@
         async function switchMode(mode) {
             console.log("[DEBUG] switchMode triggered:", mode);
             document.body.classList.remove('fhs-header-hidden');
+            document.body.classList.remove('fhs-bottomnav-hidden');
             if (currentMode !== mode) {
                 const skipId = (mode === 'edit');
                 await resetForm(skipId); // 只要模式改變，就清空表單
@@ -7581,7 +7571,10 @@
                     if (btn) { btn.classList.remove('active'); btn.style.cssText = ''; }
                 });
                 const activeMap = { create:'modeCreateBtn', edit:'modeEditBtn', review:'modeReviewBtn', finance:'modeFinanceBtn', system:'modeSystemBtn' };
-                const activeBtn = document.getElementById(activeMap[mode]);
+                let activeBtn = document.getElementById(activeMap[mode]);
+                if (mode === 'edit' && activeBtn && activeBtn.classList.contains('sb-hidden')) {
+                    activeBtn = document.getElementById('modeCreateBtn');
+                }
                 if (activeBtn) activeBtn.classList.add('active');
                 if (window.updateBottomNavIndicator) window.updateBottomNavIndicator();
 
@@ -11842,6 +11835,38 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             reviewFetchTimeout = setTimeout(fetchGlobalReview, 600);
         }
 
+        function handleReviewSearchInput() {
+            var searchEl = document.getElementById('reviewSearch');
+            var val = searchEl ? searchEl.value.trim() : '';
+            if (val) {
+                // 當輸入搜尋資料時，default 轉為「全部」模式下作搜尋訂單
+                if (window._fhsSegTab !== 'all') {
+                    if (!window._fhsPrevSegTab) {
+                        window._fhsPrevSegTab = window._fhsSegTab || 'active';
+                    }
+                    if (typeof setSegTab === 'function') {
+                        setSegTab('all', true);
+                    } else {
+                        window._fhsSegTab = 'all';
+                    }
+                }
+            } else {
+                // 清空搜尋時，若先前為自動切換至全部，則還原回原先分頁
+                if (window._fhsPrevSegTab) {
+                    var prev = window._fhsPrevSegTab;
+                    window._fhsPrevSegTab = null;
+                    if (typeof setSegTab === 'function') {
+                        setSegTab(prev);
+                    } else {
+                        window._fhsSegTab = prev;
+                    }
+                }
+            }
+            debounceFetchGlobalReview();
+            updateFilterActiveHint();
+        }
+        window.handleReviewSearchInput = handleReviewSearchInput;
+
         // 【V46.0】GlobalReview 5分鐘快取層 — 減少 Airtable API 呼叫
         const REVIEW_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -14406,6 +14431,68 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             applyReviewFilters();
         }
 
+        function _getOrderCategoryBatch(order, cat) {
+            if (!order) return '';
+            if (order.items && Array.isArray(order.items)) {
+                var catItems = order.items.filter(function(it) {
+                    return typeof matchesItemCategory === 'function' ? matchesItemCategory(it, cat) : true;
+                });
+                for (var i = 0; i < catItems.length; i++) {
+                    var b = (catItems[i].Batch || catItems[i].Batch_Number || '').trim();
+                    if (b) return b;
+                }
+            }
+            return (order.Batch || order.Batch_Number || '').trim();
+        }
+
+        function _parseBatchNumber(batchStr) {
+            if (!batchStr) return null;
+            var s = String(batchStr).trim();
+            if (!s || s === '未派批' || s === '無' || s === '-' || s === '—') return null;
+            var m = s.match(/\d+/);
+            return m ? parseInt(m[0], 10) : null;
+        }
+
+        function _compareCategoryBatch(a, b, cat) {
+            var bA = _getOrderCategoryBatch(a, cat);
+            var bB = _getOrderCategoryBatch(b, cat);
+            var numA = _parseBatchNumber(bA);
+            var numB = _parseBatchNumber(bB);
+
+            // 空白/未填批次排最頂（作是没有空間為最頂）
+            if (numA === null && numB !== null) return -1;
+            if (numA !== null && numB === null) return 1;
+
+            function parseSafeDate(dStr) {
+                if (!dStr) return 0;
+                if (dStr.includes('-')) return new Date(dStr).getTime() || 0;
+                if (dStr.includes('/')) {
+                    var parts = dStr.split('/');
+                    if (parts.length >= 3) {
+                        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime() || 0;
+                    }
+                }
+                return new Date(dStr).getTime() || 0;
+            }
+
+            // 兩者皆為空白批次：依日期最新優先排序
+            if (numA === null && numB === null) {
+                var dateA = parseSafeDate(a.Date || a.confirmed_at || a.Appointment_Date);
+                var dateB = parseSafeDate(b.Date || b.confirmed_at || b.Appointment_Date);
+                if (dateA !== dateB) return dateB - dateA;
+                return String(b.Order_ID || '').localeCompare(String(a.Order_ID || ''));
+            }
+
+            // 兩者皆有批次：最近的批次排先（數字降序，例如第36批 > 第35批 > 第34批）
+            if (numA !== numB) return numB - numA;
+
+            // 同一批次：依日期最新優先排序
+            var dateA2 = parseSafeDate(a.Date || a.confirmed_at || a.Appointment_Date);
+            var dateB2 = parseSafeDate(b.Date || b.confirmed_at || b.Appointment_Date);
+            if (dateA2 !== dateB2) return dateB2 - dateA2;
+            return String(b.Order_ID || '').localeCompare(String(a.Order_ID || ''));
+        }
+
         // ── Filter + Sort orchestrator ──────────────────────────────
         function applyReviewFilters() {
             const _orders = window.globalOrders || globalOrders;
@@ -14528,6 +14615,10 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     if (aVal < bVal) return _dir === 'asc' ? -1 : 1;
                     if (aVal > bVal) return _dir === 'asc' ? 1 : -1;
                     return 0;
+                });
+            } else if (reviewCategoryFilter === '鑰匙扣' || reviewCategoryFilter === '鎖匙扣' || reviewCategoryFilter === '頸鏈') {
+                filtered = filtered.slice().sort(function(a, b) {
+                    return _compareCategoryBatch(a, b, reviewCategoryFilter);
                 });
             }
             renderReviewTable(filtered);
@@ -16567,6 +16658,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 _syncDepositFromBalance();
                 _fhsPaymentSyncing = false;
             }
+            if (typeof _fhsPaintSplitBtnStates === 'function') _fhsPaintSplitBtnStates();
         }
 
         function _syncBalanceFromDeposit() {
@@ -16596,6 +16688,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         balInp.value = newBal;
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
+                        delete window._fhsQuickState['balance::' + bk]; // S193: 自動餘額非快捷掣狀態
                     }
                 });
             });
@@ -16613,6 +16706,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         balInp.value = Math.max(0, gPrice - gPaid); // S191: 恆算真實餘額
                         balInp.style.color = 'var(--fhs-text-muted)';
                         balInp.dataset.isDefault = 'true';
+                        delete window._fhsQuickState['balance::' + group.boxKey]; // S193
                     }
                 });
             }
@@ -16646,6 +16740,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         depInp.value = newDep;
                         depInp.style.color = 'var(--fhs-text-muted)';
                         depInp.dataset.isDefault = 'true';
+                        delete window._fhsQuickState['deposit::' + bk]; // S193
                         anyChanged = true;
                     }
                 });
@@ -16664,6 +16759,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         depInp.value = newGDep;
                         depInp.style.color = 'var(--fhs-text-muted)';
                         depInp.dataset.isDefault = 'true';
+                        delete window._fhsQuickState['deposit::' + group.boxKey]; // S193
                         anyChanged = true;
                     }
                 });
@@ -16691,6 +16787,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 inp.value = suggested;
                 inp.style.color = 'var(--fhs-text-primary)';
                 inp.dataset.isDefault = 'false';
+                window._fhsQuickState[field + '::' + boxKey] = 'full';
                 inp.dispatchEvent(new Event('input', { bubbles: true }));
                 window._depositDirty = true;
                 if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, boxKey, 'full');
@@ -16709,6 +16806,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 inp.value = Math.ceil(suggested / 2);
                 inp.style.color = 'var(--fhs-text-muted)';
                 inp.dataset.isDefault = 'true';
+                window._fhsQuickState[field + '::' + boxKey] = 'half';
                 inp.dispatchEvent(new Event('input', { bubbles: true }));
                 window._depositDirty = true;
                 if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, boxKey, 'half');
@@ -16733,6 +16831,43 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window._updateBoxBtnState = _updateBoxBtnState;
 
+        // S193（flow 2026-09-15-0607）：按鈕顏色由狀態推導，取代四個事件各自塗色（AG 批評 #? 對應 R2）。
+        // 逐箱：quickState（撳過邊個快捷掣）+ 現值是否仍等於嗰個快捷掣寫入嘅值 → half/full/中性。
+        // 全域：deposit/balance 全部有售價嘅箱一致 half → 'half'；一致 full → 'full'；否則 'manual'（中性灰）。
+        function _fhsPaintSplitBtnStates() {
+            ['deposit', 'balance'].forEach(function(field) {
+                var container = document.getElementById(field + 'SplitContainer');
+                if (!container) return;
+                var allHalf = true, allFull = true, any = false;
+                container.querySelectorAll('.split-box-input').forEach(function(inp) {
+                    var bk = inp.dataset.boxkey;
+                    if (!bk) return;
+                    var halfBtn = container.querySelector('.quick-half-btn[data-boxkey="' + bk + '"]');
+                    if (!halfBtn) return; // 冇快捷掣（sugNum<=0）嘅箱唔參與顏色推導
+                    any = true;
+                    var suggested = Number(halfBtn.dataset.suggested) || 0;
+                    var value = Number(inp.value) || 0;
+                    var qs = window._fhsQuickState[field + '::' + bk];
+                    var mode = null;
+                    if (qs === 'half' && value === Math.ceil(suggested / 2)) mode = 'half';
+                    else if (qs === 'full' && value === suggested) mode = 'full';
+                    if (mode !== 'half') allHalf = false;
+                    if (mode !== 'full') allFull = false;
+                    _updateBoxBtnState(container, bk, mode);
+                });
+                if (!any) return;
+                var globalMode = allHalf ? 'half' : (allFull ? 'full' : 'manual');
+                if (field === 'deposit') {
+                    window._depositMode = globalMode;
+                    if (typeof _syncGlobalDepositBtnUI === 'function') _syncGlobalDepositBtnUI();
+                } else {
+                    window._balanceMode = globalMode;
+                    if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
+                }
+            });
+        }
+        window._fhsPaintSplitBtnStates = _fhsPaintSplitBtnStates;
+
         function _quickFillAllSplits(field) {
             const container = document.getElementById(field + 'SplitContainer');
             if (!container) return;
@@ -16742,9 +16877,17 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             window._fhsForceSync = true;
             try {
                 container.querySelectorAll('.quick-fill-btn').forEach(function(btn) {
-                    _quickFillSplitBtn(btn);
-                    if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, btn.dataset.boxkey, 'full');
+                    _quickFillSplitBtn(btn); // 內部已設 quickState='full'（S193）
                 });
+                // S193/AG批評#2：「全部」= 操作員宣告重新分配，清晒本容器涉及嘅總額不符 ack + 佇列
+                container.querySelectorAll('.split-box-input').forEach(function(inp) {
+                    var bk = inp.dataset.boxkey;
+                    if (bk) {
+                        delete window._fhsMismatchAck[bk];
+                        window._fhsMismatchQueue = window._fhsMismatchQueue.filter(function(e) { return e.boxKey !== bk; });
+                    }
+                });
+                if (typeof _fhsRenderMismatchBar === 'function') _fhsRenderMismatchBar();
             } finally {
                 window._fhsForceSync = false;
             }
@@ -16753,25 +16896,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     inp.style.color = 'var(--fhs-text-primary)';
                     inp.dataset.isDefault = 'false';
                 });
-                window._depositMode  = 'full';
                 window._depositDirty = false;
-                if (typeof _syncGlobalDepositBtnUI === 'function') _syncGlobalDepositBtnUI();
             }
             if (field === 'balance') {
                 container.querySelectorAll('.split-box-input').forEach(function(inp) {
                     inp.style.color = 'var(--fhs-text-primary)';
                     inp.dataset.isDefault = 'false';
                 });
-                window._balanceMode = 'full';
-                if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
             }
+            // S193: 顏色/全域掣狀態改由 painter 由 quickState+現值推導，唔再喺呢度直接塗色
             var _ff = field;
             setTimeout(function() {
-                var c = document.getElementById(_ff + 'SplitContainer');
-                if (!c) return;
-                c.querySelectorAll('.quick-fill-btn').forEach(function(b) {
-                    if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(c, b.dataset.boxkey, 'full');
-                });
+                if (typeof _fhsPaintSplitBtnStates === 'function') _fhsPaintSplitBtnStates();
                 if (window._fhsPaySimpMode && typeof _fhsRefreshSimplifiedView === 'function') _fhsRefreshSimplifiedView();
             }, 0);
         }
@@ -16784,6 +16920,14 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // _syncDepositFromBalance 對面箱嘅 isDefault 保護會被暫時繞過，令「全部」呢個字面意思（連對面
         // 箱都一齊覆寫）名副其實；平時（單格輸入/新品項週期性半填）維持 false，保護唔受影響。
         window._fhsForceSync = false;
+        // S193（flow 2026-09-15-0607）：quickState 記錄邊個箱係撳快捷「半/全」掣填嘅（非交叉同步/人手），
+        // 按鈕顏色由呢個 map + 現值是否仍吻合推導，唔再靠事件各自塗色。key 格式 field+'::'+boxKey，
+        // 用 window 級 map（非 DOM dataset）令狀態自動跨越 renderPaymentSplits() 重繪存活，唔使額外快照機制。
+        window._fhsQuickState = {};
+        // 總額不符確認：ack 按品項行（boxKey）記低「用戶已確認嘅售價」，售價變動即靜默失效（唔主動彈）。
+        window._fhsMismatchAck = {};
+        window._fhsMismatchQueue = []; // {boxKey, field} 佇列，多行不符時逐條顯示，防止單一 bar 互相覆蓋
+        window._fhsSimpAck = {}; // 簡化模式類別層 ack（獨立於逐件 _fhsMismatchAck，唔互相遮蔽）
 
         function _syncGlobalDepositBtnUI() {
             var btn = document.getElementById('fhsDepositFillToggle');
@@ -16797,6 +16941,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 btn.style.background  = '#1565C0';
                 btn.style.borderColor = '#1565C0';
                 btn.style.color       = '#fff';
+            } else if (mode === 'manual') {
+                // S193: 人手輸入過（quickState 唔全部一致）→ 中性灰，取消快捷掣顏色暗示
+                btn.textContent = '全部半訂';
+                btn.style.background  = '#F3F4F6';
+                btn.style.borderColor = '#D1D5DB';
+                btn.style.color       = '#374151';
             } else {
                 btn.textContent = '全部半訂';
                 btn.style.background  = '#388E3C';
@@ -16862,32 +17012,31 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                     inp.style.color = 'var(--fhs-text-muted)';
                     inp.dataset.isDefault = 'true';
                     filledAny = true;
+                    window._fhsQuickState[field + '::' + bk] = 'half'; // S193
                     inp.dispatchEvent(new Event('input', { bubbles: true }));
-                    if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(container, bk, 'half');
                 });
+                if (force) {
+                    // S193/AG批評#2：「全部」= 重新分配宣告，清晒本容器涉及嘅總額不符 ack + 佇列
+                    container.querySelectorAll('.split-box-input').forEach(function(inp) {
+                        var bk = inp.dataset.boxkey;
+                        if (bk) {
+                            delete window._fhsMismatchAck[bk];
+                            window._fhsMismatchQueue = window._fhsMismatchQueue.filter(function(e) { return e.boxKey !== bk; });
+                        }
+                    });
+                    if (typeof _fhsRenderMismatchBar === 'function') _fhsRenderMismatchBar();
+                }
             } finally {
                 if (force) window._fhsForceSync = false;
             }
-            if (field === 'deposit') {
-                // Update mode when: (a) user explicitly clicked button (force), or
-                // (b) auto-fill actually filled boxes AND we're not mid-restore of an existing order
-                if (force || (!window._fhsSplitRestoreSnapshot && filledAny)) {
-                    window._depositMode  = 'half';
-                    window._depositDirty = false;
-                    _syncGlobalDepositBtnUI();
-                }
+            if (field === 'deposit' && (force || (!window._fhsSplitRestoreSnapshot && filledAny))) {
+                window._depositDirty = false;
             }
-            if (field === 'balance') {
-                window._balanceMode = 'half';
-                if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
-            }
+            // S193: 顏色/全域掣狀態改由 painter 由 quickState+現值推導，唔再喺呢度直接塗色
+            // （原本呢度無條件將全部「半」掣塗綠，即使冇填任何箱都塗，係按鈕顏色冇取消嘅主因——R2）
             var _hf = field;
             setTimeout(function() {
-                var c = document.getElementById(_hf + 'SplitContainer');
-                if (!c) return;
-                c.querySelectorAll('.quick-half-btn').forEach(function(b) {
-                    if (typeof _updateBoxBtnState === 'function') _updateBoxBtnState(c, b.dataset.boxkey, 'half');
-                });
+                if (typeof _fhsPaintSplitBtnStates === 'function') _fhsPaintSplitBtnStates();
                 if (window._fhsPaySimpMode && typeof _fhsRefreshSimplifiedView === 'function') _fhsRefreshSimplifiedView();
             }, 0);
         }
@@ -16898,14 +17047,126 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (!container) return;
             container.querySelectorAll('.split-box-input').forEach(function(inp) {
                 inp.value = '';
+                var bk = inp.dataset.boxkey;
+                if (bk) {
+                    delete window._fhsQuickState[field + '::' + bk]; // S193
+                    delete window._fhsMismatchAck[bk];
+                    window._fhsMismatchQueue = window._fhsMismatchQueue.filter(function(e) { return e.boxKey !== bk; });
+                }
                 inp.dispatchEvent(new Event('input', { bubbles: true }));
             });
+            if (typeof _fhsRenderMismatchBar === 'function') _fhsRenderMismatchBar();
             if (window._fhsPaySimpMode) {
                 if (typeof _fhsSimpCancelAlloc === 'function') _fhsSimpCancelAlloc();
                 if (typeof _fhsRefreshSimplifiedView === 'function') _fhsRefreshSimplifiedView();
             }
         }
         window._quickClearAllSplits = _quickClearAllSplits;
+
+        // ═══════════════════════════════════════════════════════════
+        // S193（flow 2026-09-15-0607）：訂金+尾數總額不符確認 bar
+        // 逐件／簡化兩模式共用列級（逐件=品項行／簡化見 M14）比對；頁內浮動 bar 取代原生 confirm()
+        // （iOS Safari「加至主畫面」standalone PWA 模式會靜默吞掉 confirm()/alert()，見 S165 同類做法 line~10187）。
+        // 多行同時不符用佇列逐條顯示，防止單一 DOM 互相覆蓋（AG 批評 #2）。
+        // ═══════════════════════════════════════════════════════════
+
+        function _fhsRowSuggested(boxKey) {
+            var btn = document.querySelector('.quick-half-btn[data-boxkey="' + boxKey + '"]');
+            return btn ? (Number(btn.dataset.suggested) || 0) : 0;
+        }
+
+        function _fhsRowLabel(boxKey) {
+            var inp = document.querySelector('.split-box-input[data-boxkey="' + boxKey + '"]');
+            var box = inp && inp.closest('.split-box');
+            var labelEl = box && box.querySelector('.split-box-label');
+            return labelEl ? labelEl.textContent : boxKey;
+        }
+
+        function _fhsRowAmounts(boxKey) {
+            var depInp = document.querySelector('#depositSplitContainer .split-box-input[data-boxkey="' + boxKey + '"]');
+            var balInp = document.querySelector('#balanceSplitContainer .split-box-input[data-boxkey="' + boxKey + '"]');
+            return { dep: depInp ? (Number(depInp.value) || 0) : 0, bal: balInp ? (Number(balInp.value) || 0) : 0 };
+        }
+
+        function _fhsEnsureMismatchBar() {
+            var bar = document.getElementById('fhsSplitMismatchBar');
+            if (bar) return bar;
+            bar = document.createElement('div');
+            bar.id = 'fhsSplitMismatchBar';
+            bar.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:9550;width:calc(100% - 24px);max-width:480px;background:var(--fhs-bg-elevated, #fff);color:var(--fhs-text-primary, #333);border:1px solid var(--fhs-border, #ddd);border-left:4px solid #E53935;border-radius:10px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,0.18);backdrop-filter:blur(6px);font-size:13px;display:none;';
+            document.body.appendChild(bar);
+            return bar;
+        }
+
+        function _fhsRenderMismatchBar() {
+            var q = window._fhsMismatchQueue;
+            var bar = _fhsEnsureMismatchBar();
+            if (!q || !q.length) { bar.style.display = 'none'; return; }
+            var entry = q[0];
+            var amt = _fhsRowAmounts(entry.boxKey);
+            var sug = _fhsRowSuggested(entry.boxKey);
+            var label = _fhsRowLabel(entry.boxKey);
+            var posTag = q.length > 1 ? ('（1/' + q.length + '）') : '';
+            bar.innerHTML =
+                '<div style="font-weight:700;margin-bottom:8px;">⚠️ ' + posTag + '「' + label + '」訂金 $' + amt.dep + ' + 尾數 $' + amt.bal + ' = $' + (amt.dep + amt.bal) + '，唔等於售價 $' + sug + '</div>'
+                + '<div style="display:flex;gap:8px;">'
+                +     '<button type="button" id="fhsMismatchYes" style="flex:1;min-height:44px;border:none;border-radius:8px;background:#E53935;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">是，照此金額</button>'
+                +     '<button type="button" id="fhsMismatchNo" style="flex:1;min-height:44px;border:1px solid var(--fhs-border, #ccc);border-radius:8px;background:transparent;color:var(--fhs-text-secondary, #666);font-size:14px;font-weight:600;cursor:pointer;">取消</button>'
+                + '</div>';
+            bar.style.display = 'block';
+            document.getElementById('fhsMismatchYes').onclick = function() { _fhsMismatchAckCurrent(); };
+            document.getElementById('fhsMismatchNo').onclick = function() { _fhsMismatchCancelCurrent(); };
+        }
+        window._fhsRenderMismatchBar = _fhsRenderMismatchBar;
+
+        function _fhsCheckSplitMismatch(boxKey, field) {
+            var sug = _fhsRowSuggested(boxKey);
+            if (!sug) return; // 冇快捷掣即冇參考售價，唔判斷
+            var amt = _fhsRowAmounts(boxKey);
+            var total = amt.dep + amt.bal;
+            var ackSug = window._fhsMismatchAck[boxKey];
+            var idx = window._fhsMismatchQueue.findIndex(function(e) { return e.boxKey === boxKey; });
+            if (total === sug || ackSug === sug) {
+                if (idx !== -1) window._fhsMismatchQueue.splice(idx, 1);
+            } else {
+                if (idx !== -1) window._fhsMismatchQueue[idx].field = field;
+                else window._fhsMismatchQueue.push({ boxKey: boxKey, field: field });
+            }
+            _fhsRenderMismatchBar();
+        }
+        window._fhsCheckSplitMismatch = _fhsCheckSplitMismatch;
+
+        function _fhsMismatchAckCurrent() {
+            var q = window._fhsMismatchQueue;
+            if (!q.length) return;
+            var entry = q.shift();
+            window._fhsMismatchAck[entry.boxKey] = _fhsRowSuggested(entry.boxKey);
+            ['depositSplitContainer', 'balanceSplitContainer'].forEach(function(cId) {
+                var inp = document.querySelector('#' + cId + ' .split-box-input[data-boxkey="' + entry.boxKey + '"]');
+                if (inp) inp.dataset.isDefault = 'false'; // 兩邊鎖定，之後唔再被自動餘額覆寫
+            });
+            _fhsRenderMismatchBar();
+        }
+        window._fhsMismatchAckCurrent = _fhsMismatchAckCurrent;
+
+        function _fhsMismatchCancelCurrent() {
+            var q = window._fhsMismatchQueue;
+            if (!q.length) return;
+            var entry = q.shift();
+            var cId = entry.field === 'deposit' ? 'depositSplitContainer' : 'balanceSplitContainer';
+            var inp = document.querySelector('#' + cId + ' .split-box-input[data-boxkey="' + entry.boxKey + '"]');
+            if (inp) {
+                var pfv  = inp.dataset.preFocusVal;
+                var pfid = inp.dataset.preFocusIsDefault;
+                if (pfv !== undefined) inp.value = pfv;
+                inp.style.color = (pfid === 'true') ? 'var(--fhs-text-muted)' : 'var(--fhs-text-primary)';
+                if (pfid !== undefined) inp.dataset.isDefault = pfid;
+                delete window._fhsQuickState[entry.field + '::' + entry.boxKey];
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            _fhsRenderMismatchBar();
+        }
+        window._fhsMismatchCancelCurrent = _fhsMismatchCancelCurrent;
 
         // ═══════════════════════════════════════════════════════════
         // fhsPaySimp — Simplified 3-category payment mode (S126)
@@ -16984,10 +17245,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             boxes.forEach(function(b, i) {
                 b.inp.value = allocs[i];
                 b.inp.dataset.isDefault = 'false';
+                var _bk = b.inp.dataset.boxkey;
+                // S193: 分攤寫值清 quickState，令 painter 判返「人手」（修簡化模式漏設 manual 狀態，R3-1）
+                if (_bk) delete window._fhsQuickState[field + '::' + _bk];
                 b.inp.dispatchEvent(new Event('input', { bubbles: true }));
             });
         }
         window._fhsAllocateSimplified = _fhsAllocateSimplified;
+
+        // S193: 類別（P/K/M）加總售價，簡化模式總額不符判斷用
+        function _fhsCatSuggestedTotal(cat) {
+            var container = document.getElementById('depositSplitContainer');
+            if (!container) return 0;
+            var sum = 0;
+            container.querySelectorAll('.split-box.box-cat-' + cat + ' .quick-half-btn[data-suggested]').forEach(function(b) {
+                sum += Number(b.dataset.suggested) || 0;
+            });
+            return sum;
+        }
+        window._fhsCatSuggestedTotal = _fhsCatSuggestedTotal;
 
         // Refresh readonly mirrors from aggregated box values (focus guard: skip active input)
         function _fhsRefreshSimplifiedView() {
@@ -16997,8 +17273,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 var agg = _fhsAggregateByCat(field);
                 ['P', 'K', 'M'].forEach(function(cat) {
                     var inp = document.querySelector('.fhsPaySimp_input[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
-                    if (!inp || inp === active) return;
-                    if (inp.readOnly) inp.value = agg[cat] || '';
+                    if (!inp || inp === active || inp.dataset.isEditing === '1') return;
+                    // S193 fix（fresh-context agent 覆核揪出）：agg[cat] 恆為數字（_fhsAggregateByCat 初始化
+                    // {P:0,K:0,M:0}，唔會 undefined），空類別已由 _fhsUpdateSimpCatAvailability() 另行清空，
+                    // || '' 會將合法 $0 顯示做空白，同 T9 呢個修復本身嘅目的矛盾（$0 應該顯示得返 $0）
+                    inp.value = agg[cat];
                 });
             });
             _fhsUpdateSimpCatAvailability();
@@ -17102,40 +17381,41 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         }
         window._fhsSimpEditToggle = _fhsSimpEditToggle;
 
-        // Click/Touch-to-edit handler (replaces ✏️ button flow)
-        function _fhsSimpClickToEdit(inp) {
+        // Focus-to-edit handler
+        function _fhsSimpInputFocus(inp) {
             if (inp.disabled) return;
-            if (!inp.readOnly) return; // already in active edit session
+            if (inp.dataset.isEditing === '1') return; // already in active edit session
             _fhsSimpCancelAlloc();
             inp.dataset.preFocusVal = inp.value;
             inp.value = ''; // 自動洗0，方便操作者直接輸入數字
-            inp.readOnly = false;
+            inp.dataset.isEditing = '1';
             inp.style.background = '';
-            inp.focus();
         }
-        window._fhsSimpClickToEdit = _fhsSimpClickToEdit;
+        window._fhsSimpInputFocus = _fhsSimpInputFocus;
+        window._fhsSimpClickToEdit = _fhsSimpInputFocus; // 保留相容
 
         // Called on blur; show confirm bar if value changed
         function _fhsSimpInputBlur(inp) {
-            if (inp.readOnly) return;
+            if (inp.dataset.isEditing !== '1') return;
             // Small delay so confirm button click fires before blur closes
             setTimeout(function() {
-                if (inp.readOnly) return; // already cancelled
+                if (inp.dataset.isEditing !== '1') return; // already cancelled
                 _fhsSimpInputCommit(inp);
             }, 120);
         }
         window._fhsSimpInputBlur = _fhsSimpInputBlur;
 
         function _fhsSimpInputCommit(inp) {
-            if (inp.readOnly) return;
+            if (inp.dataset.isEditing !== '1') return;
             var cat = inp.dataset.simpcat;
             var field = inp.dataset.simpfield;
-            var total = Math.round(Number(inp.value)) || 0;
-            // Empty/zero blur → restore pre-focus value (mirrors 逐件 focusout restore)
-            if (total === 0) {
+            // S193（flow 2026-09-15-0607，修 R3-2）：只有真係留空先還原舊值——原本用 total===0 判斷，
+            // 令操作員刻意輸入 $0（如豁免加購收費）都被當「未填」彈返舊值，冇跟返逐件模式 S190 already
+            // 做咗嘅修法（D69 已解決逐件版，簡化版漏咗）。
+            if (inp.value.trim() === '') {
                 var pfv = inp.dataset.preFocusVal;
                 inp.value = (pfv !== undefined && pfv !== '') ? pfv : '';
-                inp.readOnly = true;
+                delete inp.dataset.isEditing;
                 inp.style.background = '';
                 var eb = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + cat + '"][data-simpfield="' + field + '"]');
                 if (eb) { eb.textContent = '✏️'; eb.style.background = ''; eb.style.color = ''; eb.style.borderColor = ''; }
@@ -17144,16 +17424,25 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 if (bar) bar.style.display = 'none';
                 return;
             }
+            var total = Math.round(Number(inp.value)) || 0;
             var container = document.getElementById(field + 'SplitContainer');
             var catCount = container ? container.querySelectorAll('.split-box.box-cat-' + cat).length : 0;
             if (!catCount) { _fhsSimpCancelAlloc(); return; }
             var catNames = { P: '手模擺設+配件', K: '鎖匙扣', M: '頸鏈吊飾' };
             var fieldNames = { deposit: '已付訂金', balance: '未付尾數' };
-            window._fhsPaySimpPending = { cat: cat, field: field, total: total, inp: inp };
+            // S193：同一個 bar 順便判斷分攤後嘅類別總額（呢個field嘅新值 + 對面field現值）是否等於類別售價，
+            // 合併顯示，唔再喺簡化模式另外彈第二個提示（避免逐件模式 M9 bar 同呢個「確認分攤」bar 疊加）
+            var otherField = field === 'deposit' ? 'balance' : 'deposit';
+            var otherAgg = (typeof _fhsAggregateByCat === 'function') ? (_fhsAggregateByCat(otherField)[cat] || 0) : 0;
+            var catSug = _fhsCatSuggestedTotal(cat);
+            var combined = total + otherAgg;
+            var mismatch = (catSug > 0 && combined !== catSug);
+            window._fhsPaySimpPending = { cat: cat, field: field, total: total, inp: inp, mismatch: mismatch, catSug: catSug };
             var bar = document.getElementById('fhsPaySimp_confirmBar');
             if (bar) {
-                bar.querySelector('.fhsPaySimp_confirmMsg').textContent =
-                    '⚠️ 將按整百比例重新分攤「' + catNames[cat] + ' · ' + fieldNames[field] + '」共 ' + catCount + ' 件，覆蓋現有逐件';
+                var msg = '⚠️ 將按整百比例重新分攤「' + catNames[cat] + ' · ' + fieldNames[field] + '」共 ' + catCount + ' 件，覆蓋現有逐件';
+                if (mismatch) msg += '<br>⚠️ 分攤後訂金+尾數 $' + combined + '，唔等於售價 $' + catSug;
+                bar.querySelector('.fhsPaySimp_confirmMsg').innerHTML = msg;
                 bar.style.display = 'flex';
             }
         }
@@ -17163,11 +17452,13 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var p = window._fhsPaySimpPending;
             if (!p) return;
             _fhsAllocateSimplified(p.field, p.cat, p.total);
+            // S193: 簡化模式 ack 存類別層（獨立於逐件 _fhsMismatchAck），唔會遮蔽切返逐件模式嘅品項級警告（AG #6）
+            if (p.mismatch) window._fhsSimpAck[p.cat] = p.catSug;
             if (p.inp) {
-                p.inp.readOnly = true;
+                delete p.inp.dataset.isEditing;
                 p.inp.style.background = '';
                 var agg = _fhsAggregateByCat(p.field);
-                p.inp.value = agg[p.cat] || '';
+                p.inp.value = agg[p.cat]; // S193 fix：agg 恆為數字，唔用 || '' 免將合法 $0 顯示做空白
             }
             var editBtn = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + p.cat + '"][data-simpfield="' + p.field + '"]');
             if (editBtn) { editBtn.textContent = '✏️'; editBtn.style.background = ''; editBtn.style.color = ''; editBtn.style.borderColor = ''; }
@@ -17180,18 +17471,18 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         function _fhsSimpCancelAlloc() {
             var p = window._fhsPaySimpPending;
             if (p && p.inp) {
-                p.inp.readOnly = true;
+                delete p.inp.dataset.isEditing;
                 p.inp.style.background = '';
                 var agg = _fhsAggregateByCat(p.field);
-                p.inp.value = agg[p.cat] || '';
+                p.inp.value = agg[p.cat]; // S193 fix
                 var editBtn = document.querySelector('.fhsPaySimp_editBtn[data-simpcat="' + p.cat + '"][data-simpfield="' + p.field + '"]');
                 if (editBtn) { editBtn.textContent = '✏️'; editBtn.style.background = ''; editBtn.style.color = ''; editBtn.style.borderColor = ''; }
             }
             window._fhsPaySimpPending = null;
             var bar = document.getElementById('fhsPaySimp_confirmBar');
             if (bar) bar.style.display = 'none';
-            document.querySelectorAll('.fhsPaySimp_input:not([readonly])').forEach(function(inp) {
-                inp.readOnly = true; inp.style.background = '';
+            document.querySelectorAll('.fhsPaySimp_input').forEach(function(inp) {
+                delete inp.dataset.isEditing; inp.style.background = '';
             });
             document.querySelectorAll('.fhsPaySimp_editBtn').forEach(function(b) {
                 b.textContent = '✏️'; b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
@@ -18137,7 +18428,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             initShortcutBar();
         });
 
-        // === 手機版智慧置頂欄 Smart Header ===
+        // === 手機版置頂欄與底部導覽捲動收納 ===
         (() => {
             let lastScrollY = window.scrollY;
             let accumulatedDelta = 0;
@@ -18145,17 +18436,26 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             const SHOW_THRESHOLD = 15; // 向上滑動 15px 顯示
 
             window.addEventListener('scroll', () => {
-                // [D69續八-follow-4] 兩個獨立生效範圍：
-                //   置頂欄收納 = 只限直向手機（<750，維持原行為）
-                //   底部導覽收納 = 直向手機 + 橫向手機/窄桌面（<1130，Fat Mo 要求
-                //     Threads 式：向下捲收埋、向上捲返出嚟）——橫向得 370px 高，
-                //     個 pill 浮喺表格上面遮住內容，更加需要收得起。
-                const inReview = document.body.classList.contains('v40-review-active');
-                const headerScope = window.innerWidth < 750 && inReview;
-                const navScope    = window.innerWidth < 1130 && inReview;
+                // [2026-09-23 訂單總覽手機篩選列固定防移位]
+                // 依 Fat Mo 指示「固定它不要移位」：訂單總覽置頂欄與篩選列（#reviewFiltersV2）
+                // 常駐置頂，不再隨向下捲動而向上縮移（移除 headerScope / fhs-header-hidden）；
+                // 底部導覽收納維持 Threads 式（向下捲收埋、向上捲返出嚟，<1130）。
+                // 另外：若使用者正在點選或輸入方框，忽略鍵盤彈出引發的微幅捲動，防止介面抖動。
+                const activeEl = document.activeElement;
+                const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+                if (isInputFocused) {
+                    lastScrollY = window.scrollY;
+                    return;
+                }
 
-                if (!headerScope && !navScope) {
-                    document.body.classList.remove('fhs-header-hidden');
+                // [2026-09-23 新/修訂單與總覽底部導覽動態收納]
+                // 依 Fat Mo 需求：無論新增、修改或總覽模式，窄螢幕/手機（<1130）
+                // 均享有 Threads 式動態收納（向下捲收埋、向上捲返出嚟）。
+                const navScope = window.innerWidth < 1130;
+
+                document.body.classList.remove('fhs-header-hidden');
+
+                if (!navScope) {
                     document.body.classList.remove('fhs-bottomnav-hidden');
                     accumulatedDelta = 0;
                     return;
@@ -18165,8 +18465,6 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                 const delta = currentScrollY - lastScrollY;
 
                 const setHidden = (on) => {
-                    if (headerScope) document.body.classList.toggle('fhs-header-hidden', on);
-                    else document.body.classList.remove('fhs-header-hidden');
                     if (navScope) document.body.classList.toggle('fhs-bottomnav-hidden', on);
                     else document.body.classList.remove('fhs-bottomnav-hidden');
                 };
@@ -18210,6 +18508,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             if (bt) bt.value = '';
             if (se) se.value = '';
             if (so) so.value = '';
+
+            window._fhsPrevSegTab = null;
+            window._fhsExplicitTabWhileSearch = false;
 
             reviewCategoryFilter = '';
             document.querySelectorAll('.chip-btn[data-category]').forEach(function(btn) {
@@ -20961,6 +21262,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         window._depositMode = 'manual';
                         if (typeof _syncGlobalDepositBtnUI === 'function') _syncGlobalDepositBtnUI();
                         var _bk = e.target.dataset.boxkey;
+                        if (_bk) delete window._fhsQuickState['deposit::' + _bk]; // S193
                         var _cont = e.target.closest('#depositSplitContainer') || e.target.closest('#balanceSplitContainer');
                         if (_bk && _cont && typeof _updateBoxBtnState === 'function') _updateBoxBtnState(_cont, _bk, 'manual');
                     }
@@ -21000,6 +21302,20 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                     }
                                 }
                             }
+                        } else {
+                            // S193（flow 2026-09-15-0607）：值有真實改動先檢查總額是否吻合售價。
+                            // 必須同步執行（唔可以 setTimeout）——AG 批評 #1 BLOCKER：Tab 切換去對面箱時，
+                            // 對面箱嘅 focusin 會清空自己（見上面 focusin handler），若延遲到下個 macrotask
+                            // 先讀對面箱現值就會讀到啱啱被清空嘅 ''，誤判總額不符。同步執行喺對面箱
+                            // focusin 觸發之前完成判斷，唔會有呢個問題；另加 relatedTarget 防禦當埋一層。
+                            var _pfvChk = e.target.dataset.preFocusVal;
+                            if (String(val) !== String(_pfvChk !== undefined ? _pfvChk : '')) {
+                                var _relBk = e.relatedTarget && e.relatedTarget.dataset && e.relatedTarget.dataset.boxkey;
+                                var _movingToSameRowOpposite = _relBk === bk && e.relatedTarget.classList && e.relatedTarget.classList.contains('split-box-input');
+                                if (!_movingToSameRowOpposite && typeof _fhsCheckSplitMismatch === 'function') {
+                                    _fhsCheckSplitMismatch(bk, 'deposit');
+                                }
+                            }
                         }
                     }
                 });
@@ -21017,6 +21333,7 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         window._balanceMode = 'manual';
                         if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
                         var _bk = e.target.dataset.boxkey;
+                        if (_bk) delete window._fhsQuickState['balance::' + _bk]; // S193
                         if (_bk && typeof _updateBoxBtnState === 'function') _updateBoxBtnState(_balCont, _bk, 'manual');
                     }
                 });
@@ -21071,6 +21388,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                             if (typeof _syncGlobalBalanceBtnUI === 'function') _syncGlobalBalanceBtnUI();
                                         }
                                     }
+                                }
+                            }
+                        } else {
+                            // S193（flow 2026-09-15-0607）：同步執行，理由見 deposit focusout 對應段落註解（AG BLOCKER #1）
+                            var _pfvChk = e.target.dataset.preFocusVal;
+                            if (String(val) !== String(_pfvChk !== undefined ? _pfvChk : '')) {
+                                var _relBk = e.relatedTarget && e.relatedTarget.dataset && e.relatedTarget.dataset.boxkey;
+                                var _movingToSameRowOpposite = _relBk === bk && e.relatedTarget.classList && e.relatedTarget.classList.contains('split-box-input');
+                                if (!_movingToSameRowOpposite && typeof _fhsCheckSplitMismatch === 'function') {
+                                    _fhsCheckSplitMismatch(bk, 'balance');
                                 }
                             }
                         }
@@ -22235,7 +22562,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     });
 
     /* ── P4: segmented tab + applyReviewFilters override ── */
-    function setSegTab(tab) {
+    function setSegTab(tab, fromSearch) {
+        if (!fromSearch) {
+            window._fhsPrevSegTab = null;
+            window._fhsExplicitTabWhileSearch = true;
+        }
         window._fhsSegTab = tab;
         /* Update button states */
         document.querySelectorAll('.fhs-seg-btn').forEach(function(btn) {
@@ -22256,9 +22587,16 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
             var allOrders = window.globalOrders || [];
             var segFiltered;
 
-            if (window._fhsSegTab === 'all') {
+            var _sEl = document.getElementById('reviewSearch');
+            var _hasSearch = _sEl && _sEl.value && _sEl.value.trim().length > 0;
+            var effectiveTab = window._fhsSegTab;
+            if (_hasSearch && !window._fhsExplicitTabWhileSearch) {
+                effectiveTab = 'all';
+            }
+
+            if (effectiveTab === 'all') {
                 segFiltered = allOrders.slice();
-            } else if (window._fhsSegTab === 'archived') {
+            } else if (effectiveTab === 'archived') {
                 segFiltered = allOrders.filter(function(o) { return window._fhsArchivedIds.has(o.id); });
             } else {
                 segFiltered = allOrders.filter(function(o) { return !window._fhsArchivedIds.has(o.id); });
@@ -22652,6 +22990,8 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         if (overlay) overlay.classList.toggle('mc-anchored', doAnchor);
         if (!doAnchor && popup) { popup.style.top = ''; popup.style.bottom = ''; popup.style.left = ''; popup.style.maxHeight = ''; }
         if (overlay) overlay.classList.add('is-open');
+        document.body.classList.add('fhs-modal-open');
+        document.body.style.overflow = 'hidden';
 
         // 內容 render 完成先量真實高度先擺位（唔靠估高度，先至保證唔會遮住 appDate）
         window._moldCalRender().then(function() {
@@ -22692,7 +23032,59 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
     window.closeMoldCalendar = function() {
         var overlay = document.getElementById('moldCalOverlay');
         if (overlay) overlay.classList.remove('is-open');
+        document.body.classList.remove('fhs-modal-open');
+        document.body.style.overflow = '';
     };
+
+    // [2026-09-23 取模日曆觸控向左/向右滑動切換月份 + 背景防滾動穿透]
+    (function initMoldCalTouch() {
+        var popup = document.getElementById('moldCalPopup');
+        var overlay = document.getElementById('moldCalOverlay');
+        if (!popup) return;
+
+        // 阻擋 overlay 背景 touchmove 穿透滾動到後方訂單總覽
+        if (overlay) {
+            overlay.addEventListener('touchmove', function(e) {
+                if (e.target === overlay) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+
+        var startX = 0;
+        var startY = 0;
+        var startTime = 0;
+        var isSwiping = false;
+
+        popup.addEventListener('touchstart', function(e) {
+            if (e.touches.length !== 1) return;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            startTime = Date.now();
+            isSwiping = true;
+        }, { passive: true });
+
+        popup.addEventListener('touchend', function(e) {
+            if (!isSwiping || e.changedTouches.length !== 1) return;
+            isSwiping = false;
+            var endX = e.changedTouches[0].clientX;
+            var endY = e.changedTouches[0].clientY;
+            var diffX = endX - startX;
+            var diffY = endY - startY;
+            var elapsed = Date.now() - startTime;
+
+            // 判定橫向滑動：時間 < 600ms，水平位移 > 40px，且水平位移明顯大於垂直位移 (1.3倍)
+            if (elapsed < 600 && Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
+                if (diffX < 0) {
+                    // 向左滑動 -> 下一月
+                    window._moldCalNav(1);
+                } else {
+                    // 向右滑動 -> 上一月
+                    window._moldCalNav(-1);
+                }
+            }
+        }, { passive: true });
+    })();
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
