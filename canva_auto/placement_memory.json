@@ -160,7 +160,7 @@
       "date": "2026-09-24",
       "corrected_slots": "4/5（page2 黑白＋彩色、page3 右下小組合、page4 動畫全部縮細；page3 直片零修改）",
       "total_slots": 5,
-      "note": "🆕Fat Mo 明文學習重點：字句同照片／短片不能有任何遮蓋。AI 按 CV-39／CV-52『底邊貼字句 box top』取滿高度，但手寫體上伸筆畫高過 box top 約 9px（export 真圖實測墨水頂 y≈781／box top 789.87），page2／page4／page3 小組合底邊全部壓字；Fat Mo 三處都縮細並拉底左角（右邊＋頂不動），最終底邊 771.725／770.380／972.0＝字句 box top −18.15／−19.49／−11.07（≈0.29×字號），即 CV-58：底邊＝box top −0.29×字號，交付前 export 量墨水頂。另：page2 顯示時間 5.9s→7s（CV-59，AI 盲，單樣本）；local_prep 黑白圖舊 u2net 版配準失敗退回 rembg over-cut 26.4%（IoU 0.734；合併 main 用 human_seg 重跑 0.989）、彩色 IoU 0.984、Parakeet 紙面飽和度 0.207 證實準確（CV-60）；replace_text 要完整 locator（CV-61）；export-design 暫時性 code 10（CV-62）。收斂計數：CV-52／CV-39 自 0600108 起兩單，本單修訂其邊界定義。"
+      "note": "🆕Fat Mo 明文學習重點：字句同照片／短片不能有任何遮蓋。AI 按 CV-39／CV-52『底邊貼字句 box top』取滿高度，但手寫體上伸筆畫高過 box top 約 9px（export 真圖實測墨水頂 y≈781／box top 789.87），page2／page4／page3 小組合底邊全部壓字；Fat Mo 三處都縮細並拉底左角（右邊＋頂不動），最終底邊 771.725／770.380／972.0＝字句 box top −18.15／−19.49／−11.07（≈0.29×字號），即 CV-58：底邊＝box top −0.29×字號，交付前 export 量墨水頂。另：page2 顯示時間 5.9s→7s（CV-59，AI 盲，單樣本）；local_prep 黑白圖舊 u2net 版配準失敗退回 rembg over-cut 26.4%（IoU 0.734；合併 main 用 human_seg 重跑 0.989）、彩色 IoU 0.984、Parakeet 紙面飽和度 0.207 證實準確（CV-60）；replace_text 要完整 locator（CV-61）；export-design 暫時性 code 10（CV-62）。收斂計數：CV-52／CV-39 自 0600108 起兩單，本單修訂其邊界定義。 【Stage⑤ 覆核 2026-09-24】存檔頁貼入合集 p157，幾何同 AI 版逐位相同（3 格 0 修正），Fat Mo 只做彩色插圖背景移除（CV-36）。"
     }
   ],
   "cases": [
@@ -176,7 +176,7 @@
       "first_pass_total": 5,
       "first_pass_corrected": 4,
       "family": "全幅AI短片5頁；母片 Ctungdear 0600108 DAHVz5fHg5c（客人片直向9:16、單條 Lovart 動畫、冇 WhatsApp Audio、標題冇 sec；page3 片格吻合）。本單客人片 576×1024 71.5sec；Lovart 動畫 960×960（1:1，get-assets 報 960×1920 ✗）15.1sec；彩色圖 1024²／黑白圖 1254²（兩圖構圖比例唔同）；字句 2 行『We are all so happy / you are here!』。",
-      "note": "✅Fat Mo 改完（2026-09-24）。AI 幾何5格修正4格：page3 直片零修改；page2 黑白／彩色（642.62²→625.622²）、page3 右下小組合（211.75²→202.026²）、page4 動畫（643.77²→624.277²）全部縮細。主要教訓＝字句同圖／片不能有任何遮蓋：AI 按 CV-52 令底邊貼字句 box top，但手寫體上伸筆畫高過 box top 約 9px，壓字（CV-58，Fat Mo 明文學習重點）。另 page2 顯示時間 Fat Mo 由 5.9s 延長至 7s（CV-59，AI 盲）。同單第2次 local_prep vs Canva 版逐像素對比（彩色 IoU 0.984 達標，黑白 0.734 over-cut 26.4%［舊 u2net 版；合併 main 後 human_seg 重跑 0.989，CV-60］）。Stage⑤ 存檔頁已做（DAHWHOxwu2k，原相＝合集 p160 抽出），待 Fat Mo 去背＋貼入合集覆核；first_pass 統計不含 Stage⑤（未覆核）。",
+      "note": "✅Fat Mo 改完（2026-09-24）。AI 幾何5格修正4格：page3 直片零修改；page2 黑白／彩色（642.62²→625.622²）、page3 右下小組合（211.75²→202.026²）、page4 動畫（643.77²→624.277²）全部縮細。主要教訓＝字句同圖／片不能有任何遮蓋：AI 按 CV-52 令底邊貼字句 box top，但手寫體上伸筆畫高過 box top 約 9px，壓字（CV-58，Fat Mo 明文學習重點）。另 page2 顯示時間 Fat Mo 由 5.9s 延長至 7s（CV-59，AI 盲）。同單第2次 local_prep vs Canva 版逐像素對比（彩色 IoU 0.984 達標，黑白 0.734 over-cut 26.4%［舊 u2net 版；合併 main 後 human_seg 重跑 0.989，CV-60］）。Stage⑤ 存檔頁已做（DAHWHOxwu2k，原相＝合集 p160 抽出），Fat Mo 已去背並貼入合集 p157（2026-09-24），幾何零修改（3 格 0 修正）；first_pass 5/4 統計不含 Stage⑤。",
       "slots": [
         {
           "slot": "page2_黑白圖",
@@ -318,7 +318,7 @@
         },
         {
           "slot": "stage5_存檔頁",
-          "element_id": "存檔頁 DAHWHOxwu2k（由合集 DAHU_lpDwxo p156 單頁複製，p156＝Ctungdear 存檔頁；已歸入 Free_recorder (09/26)）；臨時副本 DAHWHPJ9tz8（合集 p160 單頁複製，只為抽客人原相 mediaId，已歸檔，待 Fat Mo UI 刪）",
+          "element_id": "存檔頁 DAHWHOxwu2k（由合集 DAHU_lpDwxo p156 單頁複製，p156＝Ctungdear 存檔頁；已歸入 Free_recorder (09/26)）；臨時副本 DAHWHPJ9tz8（合集 p160 單頁複製，只為抽客人原相 mediaId，已歸檔，待 Fat Mo UI 刪）。【2026-09-24 覆核】成品已由 Fat Mo 貼入合集 p157（p156 Ctungdear 存檔頁之後，合集 161→162 頁）；讀 p157 幾何用嘅臨時副本 DAHWHux1-gs 已歸檔待 Fat Mo UI 刪",
           "asset": "右上原相 MAHV6uKMlrs＝37fb7a0a….jpg 1366×2048（合集 p160 已有，read-design 抽出，唔使上載；Fat Mo 確認『160』）；彩色插圖 MAHWG_-Arzk 彩色圖.png 1024² 原檔（含白底，元素層背景移除 update_fill 帶唔過去，CV-36）",
           "ai_box": {
             "右上原相": {
@@ -359,8 +359,8 @@
               "note": "2 行同 p156 母版一致，replace_text 後 box 不變，冇撞花環"
             }
           },
-          "fatmo_box": "待 Fat Mo 撳彩色插圖背景移除、貼入合集後覆核",
-          "note": "export 1000² 真圖：字句同圖冇遮蓋（彩色插圖底邊至字句墨水頂約 9px）；彩色插圖仍見白方底（未去背），白底右上角蓋住簽名『Free_Handsss』一截、左上角觸花環葉尖——去背後消失，需 Fat Mo 撳背景移除（CV-36）。右上原相右下角疊住右花環葉尖，同 p156 母版一致（非新問題）。"
+          "fatmo_box": "=ai_box（幾何零修改；Fat Mo 只做彩色插圖元素層背景移除，CDF 睇唔到）",
+          "note": "export 1000² 真圖：字句同圖冇遮蓋（彩色插圖底邊至字句墨水頂約 9px）；彩色插圖仍見白方底（未去背），白底右上角蓋住簽名『Free_Handsss』一截、左上角觸花環葉尖——去背後消失，需 Fat Mo 撳背景移除（CV-36）。右上原相右下角疊住右花環葉尖，同 p156 母版一致（非新問題）。 【2026-09-24 覆核】Fat Mo 貼入後 p157 幾何同 AI 版逐位相同（原相 386.825／0／112.345×168.433、彩色插圖 140.2／103.1618／216²、字句 122.15／327.8／256×48.01），只撳咗彩色插圖背景移除（縮圖見已去背、冇白方底）；即 Stage⑤ 3 格 0 修正。"
         }
       ],
       "non_geometry_findings": [
@@ -618,6 +618,22 @@
           "rule": null,
           "text": "開單時 branch 落後 main 6 個 commit（含 CV-56 local_prep 改良），冇先 fetch 就用舊版 local_prep，黑白圖白白 over-cut",
           "src": "non_geometry_findings[6]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage5",
+          "type": "fatmo_technique",
+          "rule": "CV-58",
+          "text": "存檔頁彩色插圖底邊按 CV-58 留約 9px 墨水間隙，Fat Mo 幾何零修改，做法獲接受",
+          "src": "slots[stage5_存檔頁].note"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage5",
+          "type": "ai_error",
+          "rule": null,
+          "text": "Fat Mo 答『160』係原相頁碼，AI 誤當貼入位置（p160 後）；實際貼 p157（p156 存檔頁後），歧義回覆應先核合集實況",
+          "src": "slots[stage5_存檔頁].element_id"
         }
       ]
     },

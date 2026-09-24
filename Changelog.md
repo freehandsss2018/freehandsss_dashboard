@@ -7,7 +7,8 @@
 - **其他學習**：CV-59 page2 顯示時間 5.9s→7s（Fat Mo 人手，AI 盲）；CV-60 `local_prep` 對比——舊 u2net 版黑白 IoU 0.734（配準 0.814 退回純 rembg，over-cut 26.4%），合併 main 後用 `u2net_human_seg`（Small Chan CV-56 改良）重跑同一單：配準 0.995、黑白 0.989、彩色 0.983，第2樣本證實換模型有效；Parakeet 紙面飽和度 Canva 0.208 對 local 0.207（預設準確），線條色偏紫更深仍未重現；CV-61 `replace_text` 要完整 locator（`PB…-LB…`）；CV-62 `export-design` 暫時性 `code 10`。
 - **撞號重編**：本單原編 CV-56~60，合併 origin/main 時發現 main 已有 Small Chan 0600512 用咗 CV-56／57 → 本單一律重編 CV-58~62（`placement_memory.json`、`canva-auto.md` 同步）。`canva-auto.md` v1.8.6。`canva_memory_validate.js` exit 0。
 - **AI 過失**：①開單時 branch 落後 main 6 個 commit 而冇 fetch，用舊 `local_prep`（重犯 governance.md #12）；②開工冇逐檔睇 1.png／Free_Laser／UUID jpg（CV-33）；③Stage⑤ 問 Fat Mo 揀邊張原相（合集 p160 可自查）。
-- **待 Fat Mo**：存檔頁彩色插圖撳背景移除、貼入合集 p160 後；臨時副本 `DAHWHPJ9tz8` 待 UI 刪；CV-36／CV-30／CV-40／CV-49／CV-38 達≥3單未升格待裁決。**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session，派工斷 context）。
+- **Stage⑤ 覆核（2026-09-24 補記）**：Fat Mo 已去背並貼入合集 p157（p156 存檔頁之後；合集 161→162 頁），幾何同 AI 版逐位相同（零修改）；AI 曾誤將 Fat Mo 答「160」當貼入位置（實為原相頁碼）。臨時副本 `DAHWHPJ9tz8`／`DAHWHux1-gs` 已歸檔待 UI 刪。
+- **待 Fat Mo**：CV-36／CV-30／CV-40／CV-49／CV-38 達≥3單未升格待裁決。**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session，派工斷 context）。
 
 ## [2026-09-24] 刪除 6 條已合併／放棄分支（Fat Mo 批准，本地＋遠端）
 
