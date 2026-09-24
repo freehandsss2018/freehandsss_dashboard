@@ -4992,8 +4992,8 @@
         2
       ],
       "applies_to": "all",
-      "text": "兩張 source 圖人物相對框架一致時，唯一裁切變因係 container 本身未統一；建議彩色圖 container 完整複製去黑白圖 container（left/top/w/h 四值全等），比 CV-05 單統一 left+height 更進一步——單樣本，與 CV-05 待收斂調和",
-      "promoted_to": null
+      "text": "兩張 source 圖人物相對框架一致時，唯一裁切變因係 container 本身未統一；建議彩色圖 container 完整複製去黑白圖 container（left/top/w/h 四值全等），比 CV-05 單統一 left+height 更進一步——單樣本，與 CV-05 待收斂調和【2026-09-24 升格調和結論：top／left／height 必統一（CV-05）；闊高比相同→四值全等；闊高比唔同→height 統一、w 各自按 asset 比例（CV-53）。見 canva-auto.md】",
+      "promoted_to": "canva-auto.md §page2圖對必須統一left+height（CV-30調和結論）"
     },
     {
       "id": "CV-31",
@@ -5052,7 +5052,7 @@
       ],
       "applies_to": "all",
       "text": "Canva編輯器效果（背景移除等）係元素層、唔跟asset走：Fat Mo喺臨時元素做完效果，AI update_fill入母片只換到原始asset（例：米白方塊）；判斷＝同一mediaId喺兩個元素渲染唔同，須Fat Mo喺母片元素補做，或上載已處理PNG再update_fill",
-      "promoted_to": null
+      "promoted_to": "canva-auto.md §Stage③ 🖼️元素層背景移除唔跟asset走"
     },
     {
       "id": "CV-37",

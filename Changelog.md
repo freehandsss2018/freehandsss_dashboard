@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-24] canva-auto 規則升格：CV-36（元素層背景移除唔跟 asset 走）＋CV-30（container 統一分級）
+
+- Fat Mo 批准。**CV-36**（5 單：0600709／0600728／07001006／0600108／06001007）→ `canva-auto.md` Stage③ 新節：分「asset 層已透明」／「原檔＋元素層去背」兩類；AI 交付時必須主動列出要 Fat Mo 撳背景移除嘅元素清單；不可為保去背改用臨時元素刪母片元素（CV-01）；Stage⑤ 存檔頁兩法皆可。
+- **CV-30**（5 單：0600506／0600709／0600914／07001006／0600108，06001007 同結論）→ page2 圖對節補「調和結論」：top／left／height 必統一（CV-05）；闊高比相同→四值全等；闊高比唔同→height 統一、w 各自按 asset 比例（CV-53）。解決原「與 CV-05 待收斂調和」。
+- `placement_memory.json` 兩規則 `promoted_to` 已填；`canva-auto.md` v1.8.7；`canva_memory_validate.js` exit 0（提示只剩 CV-40／CV-49／CV-38／CV-42／CV-37 等未升格）。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-24] canva-auto meiyan_cmyy 06001007 全幅AI短片 Stage①-⑤ 完成＋學習落庫（規則 CV-58~CV-62）
 
 - **交付**：母片 Ctungdear 0600108 → `DAHWG_juSnA`（歸檔 `Free_recorder (09/26)`）；Stage⑤ 存檔頁 `DAHWHOxwu2k`（原相＝合集 p160 抽出 `MAHV6uKMlrs`，Fat Mo 確認「160」）。母片元素全 `update_fill`，只刪 Fat Mo 臨時件。
