@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-24] D85 平行 session 撞題：Edit/Write 偵測（hook v1.2.0）評審＋實作完成但不採用，以 D84 為準（cl-flow-fast 2026-09-24-0651）
+
+- 同日另一 session 已以 D84（量度143 session／2,050輪）決定不擴充；本案獨立實作 v1.2.0（55/55夾具、fresh-context覆核PASS）並重播47輪**零翻轉**，與 D84 量度互相印證。Fat Mo 選「以 main 的 D84 為準」：倉內 hook 維持 v1.1.1／35夾具，v1.2.0＋夾具存 `.fhs/reports/planning/2026-09-24_stop-hook-v1.2.0-not-adopted/` 備日後重議。
+- 教訓：開治理類 `/cl-flow*` 前先 `git fetch`＋`git log origin/main -10` 掃同題 commit。
+- 全文：decisions.md D85、`.fhs/reports/completion/2026-09-24_finance-stop-hook-write-signal_completion_report.md`。**Subagent 使用記錄**：❌ 治理設計，豁免 `finance-auditor`；驗收派 general-purpose。
+
 ## [2026-09-24] D84 Stop hook 陳述句財務結論缺口：量度後決定不擴充（cl-flow-fast 2026-09-24-0534）
 
 - **緣起**：D83 重播揪出「純陳述句＋純 Edit/Write 寫文件」嘅財務結論，`stop-finance-auditor.js` 五個訊號全部偵測唔到，D83 留待另案評估。

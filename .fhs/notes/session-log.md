@@ -2492,3 +2492,10 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - Fat Mo `/execute` 方案A：`stop-finance-auditor.js` v1.1.1只加註解（零邏輯，夾具35/35）；decisions.md D84；handoff 🟠→⚪已決定不修。
 - 全文見`.fhs/reports/completion/2026-09-24_finance-stop-hook-statement-gap-d84_completion_report.md`、Changelog.md、decisions.md D84。
 - **Subagent 使用記錄**：❌ 治理設計評估＋transcript重播量度，非財務數字判斷，豁免finance-auditor；A2評審由Gemini(gemini-2.5-flash)執行。
+
+---
+## 2026-09-24 D85：平行 session 撞題（Edit/Write 偵測 hook v1.2.0 不採用）
+- cl-flow-fast 2026-09-24-0651：Fat Mo 選方案A，實作 hook v1.2.0＋55夾具，fresh-context覆核PASS，真實重播47輪零翻轉；合併時發現 main 已有同日 D84（不擴充）。
+- Fat Mo 選「以 main 的 D84 為準」：還原 hook／夾具至 v1.1.1／35夾具，v1.2.0 存 `.fhs/reports/planning/2026-09-24_stop-hook-v1.2.0-not-adopted/`。
+- 全文見 decisions.md D85、Changelog.md、`.fhs/reports/completion/2026-09-24_finance-stop-hook-write-signal_completion_report.md`。
+- **Subagent 使用記錄**：✅ general-purpose×1（fresh-context 驗收 v1.2.0，PASS）；❌ finance-auditor（非財務數字判斷）。

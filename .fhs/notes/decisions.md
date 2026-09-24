@@ -3,6 +3,22 @@
 > 任何架構改動完成後，AI 必須在此補充一筆記錄。
 > 格式：`[日期] 決策內容 — 原因`
 
+[2026-09-24] (D85) 平行 session 撞題：Edit/Write 偵測方案（hook v1.2.0）已完整評審並實作，但**不採用**——被同日 D84「不擴充」涵蓋（Fat Mo 2026-09-24 選「以 main 的 D84 為準」）
+
+**背景**：D84（cl-flow-fast 2026-09-24-0534）與本案（cl-flow-fast 2026-09-24-0651，Fat Mo 選方案 A＝Edit/Write 寫入路徑＋內容偵測）於同日平行進行、互不知情。D84 先落 main：量度 143 session／2,050 輪後決定不擴充。
+
+**本案結果**：實作 `stop-finance-auditor.js` v1.2.0（Edit/Write/MultiEdit：命中 `FIN_DOCS` 路徑，或 `.fhs/notes/decisions.md`／`.fhs/memory/handoff.md`／根目錄 `Changelog.md` 且新寫入內容含 `FIN_COLUMNS`）＋夾具 35→55（55/55 PASS）＋fresh-context agent 覆核 PASS。A2 5 條（1 BLOCKER 拒絕、2 採納、1 部分採納、1 MINOR 拒絕）。真實重播 `275997f1…jsonl` 47 輪 v1.1.0 vs v1.2.0 **零翻轉**（新訊號僅落在本已 dispatched／waived 嘅第 36、44 輪；含錯誤4 字句嘅第 16／17 輪仍 no-signal）。
+
+**為何不採用**：①D84 量度直接證明——`FIN_DOCS` 寫入路徑多攔 0 輪、寫入內容含財務欄位名多攔 66 輪（3.2%）且兩者皆捉唔到實例；本案獨立重播得同一結論（零翻轉）。②v1.2.0 等同 D84 已量度嘅「方案 B」＋「FIN_DOCS 寫入」，只有成本（3.2% 額外攔截、豁免通脹風險）、冇已證實好處。③D84 重啟條件（第 2 宗錯結論經 Edit/Write 入庫被發現；重議方案 B 前置＝fresh-context 抽樣覆核 66 輪）未滿足。④根因係 Stop hook 無狀態，分辨唔到「轉述舊結論」同「作出新結論」，兩案皆解決唔到。
+
+**保留**：v1.2.0 hook＋55 夾具＋A2 評審全文＋Verdict 存 `.fhs/reports/planning/2026-09-24_stop-hook-v1.2.0-not-adopted/`（artifacts/ 被 gitignore，故改存追蹤路徑）；日後若 D84 重啟條件成立，可直接由此重議。倉內 hook／夾具維持 D84 嘅 v1.1.1／35 夾具。
+
+**教訓**：兩個 session 同日對同一缺口各自開 `/cl-flow-fast`，起手前冇查「main／其他 worktree 最近有冇同主題 commit」——`/read` 讀到嘅 handoff 便攜塊仍寫「D83-follow 未排期」，因另一 session 尚未 push。開治理類 `/cl-flow*` 前應先 `git fetch` 並 `git log origin/main -10` 掃同題 commit。
+
+**Subagent 使用記錄**：治理設計，非財務數字判斷，豁免 `finance-auditor`；驗收派 general-purpose（fresh-context，PASS，針對 v1.2.0）。
+
+---
+
 [2026-09-24] (D84) 陳述句財務結論缺口（D83-follow）— 量度後決定**不擴充 Stop hook**，維持現狀＋登記已知缺口（cl-flow-fast 2026-09-24-0534，Fat Mo `/execute` 授權方案 A）
 
 **背景**：D83 重播揪出獨立缺口：純陳述句（冇問號）財務結論＋只用 Edit/Write 寫入文件，`stop-finance-auditor.js` 五個訊號 (a)-(e) 全部 no-signal。實例＝session 275997f1 第二次 `/commit`（第 16 個 prompt 邊界）完成摘要轉述「沒有任何裁決要求改或不改」錯誤結論。
