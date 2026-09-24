@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-24] handoff 全面審視＋生產版分岔修復：合併 d65／22e327 入 main 並重新部署
+
+- **緣起**：Fat Mo 指出 handoff 有多項已結案仍顯示。審視揪出 11 條分支嘅 commit 從未入 main（各 session 喺自己分支更新 handoff，`/read` 讀 main 所以睇唔到），並揪出 NAS 生產版（fhs-build 2026-09-24T10:18:18Z）係由未合併分支 `claude/d65-family-owner-role` 部署，覆蓋咗同日 main 嘅 K_FAM_COMBO 修復同 5638507 批次清空修復。
+- **根因**：d65 由 09-01 分出，早過 Gate 0（09-06）上線；佢用嘅舊 `upload-web.ps1` 冇血統檢查、唔注入 `fhs-deploy-src`，所以跨分支覆寫冇被攔。
+- **修復（Fat Mo 批准）**：e92c1d8 合併 d65（V42 7 塊衝突：16px 防 auto-zoom 同 S193 按鈕狀態取 d65，`rowBatchOwn` 取 main）；ec6bd39 合併 22e327（批次色方案C 由 Fat Mo 選擇恢復，並補回 `rowBatchOwn` 兩處定義；防回彈 `isEditing` 取 d65）；撞號「D79」重編 D86（收款分帳雙模式）／D87（批次色方案C）。c6b9ec1 升格 current.html，`upload-web.ps1 current -Force -AllowClobber` 部署（Gate 0 因舊生產版冇來源標記而需 AllowClobber，已核 c1dd88f 為 HEAD 祖先）；臨時 `.env` 只含 3 行 NAS_* 並即時刪除。
+- **驗證**：JS 語法 9 blocks 0 error；本機 preview 訂單總覽 38 個批次輸入框正常、方案C 色條生效、零 console error；NAS 三關 PASS（SHA256 43BA08CA…）；生產網址實測 build/src 標記正確、零 console error。
+- **財務**：finance-auditor 唯讀查證回退期間新 `item_sale_price` NULL＝0、backfill 範圍＝0；K_FAM_COMBO 修復仍未有 live 實單證據，首張家庭組合鎖匙扣實單 sync 後須再派 finance-auditor 驗收。
+- **handoff 同步**：移除 0600112／0600903（Fat Mo 確認結案）；S147 共享鎖 RPC 標結案、D58 改為觀察期至 2026-10-05（兩者結論原只喺未合併分支）；`SUPABASE_SERVICE_KEY` 仍 401、`sync_order_to_mirror` 6 成本欄仍無 COALESCE（live 實測）；餘 8 條分支未入 main 待 Fat Mo 決定。**Subagent 使用記錄**：✅ finance-auditor（K_FAM_COMBO 回退財務影響）。
+
 ## [2026-09-24] handoff 清理：移除兩行已結案待辦
 
 - 刪除 `handoff.md` MASTER 表兩行：①「[canva-auto] 0600903 存檔頁右上原相錯客＋多餘副本」（Fat Mo 確認已結案）；②「[D79續-follow] 財務RPC 3個舊有口徑問題」（2026-09-23 已修復並經 finance-auditor 驗收，見 `2026-09-23_item-sale-price-financial-rpc-fix_completion_report.md`，該行為過時字樣）。

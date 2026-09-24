@@ -247,3 +247,5 @@ git commit --no-verify -F - << 'E
 2026-09-15T01:49:15.436Z | R1/R9 bypass | cd "D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/worktrees/read-c
 2026-09-15T04:11:50.440Z | R1/R9 bypass | cd "D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/worktrees/read-c
 2026-09-15T04:16:53.276Z | R1/R9 bypass | cd "D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/worktrees/read-c
+2026-09-24T10:43:22.983Z | R1/R9 bypass | cd "D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/worktrees/read-c
+2026-09-24T10:44:11.960Z | Gate0 AllowClobber | 生產版冇來源標記（Gate 0 上線前嘅舊部署），無法核實血統。
