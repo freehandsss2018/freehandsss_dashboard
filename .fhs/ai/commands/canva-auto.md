@@ -2,7 +2,7 @@
 
 **用途**：接到 Fat Mo 一句「canva-auto 新單」+ 訂單資料，走完 Canva 記念短片開殼→加工→換料→學習→出貨全流程。內建 diff-learning 校正回饋迴圈（同 3D pipeline 樣本庫同一原理）。
 **觸發指令**：`/canva-auto` 或對話講「canva-auto 新單」
-**版本**：v1.8.8（2026-09-25，Fat Mo 批准升格 CV-38（Stage③ 搵臨時件讀全部頁）、CV-40（page4 動畫格跟 page2 彩色格新小節）、CV-49（local_prep 採用率唔穩＋開單前 fetch 主線）；v1.8.7（2026-09-24，Fat Mo 批准升格 CV-36（元素層背景移除唔跟 asset 走）→ Stage③ 新節、CV-30（container 統一分級，與 CV-05 調和）→ page2 圖對節；v1.8.6（2026-09-24，meiyan_cmyy 06001007 全幅AI短片：字句同圖／片不能有任何遮蓋——page2／page3 小組合／page4 底邊改按「字句 box top −0.29×字號」（手寫體上伸筆畫高過 box top 約 9px），CV-52／CV-39 舊『貼字句 box top』已加修訂；Known failure modes 追加 CV-58／59／60／61／62；v1.8.5（2026-09-21，Ctungdear 0600108 全幅AI短片：Step 4 local_prep 改良（黑白圖以彩色圖去背 mask 前置去封閉空位、Parakeet 飽和度 0.207＋黑位抬高 0.20）、Known failure modes 追加 CV-52／53／54／55；v1.8.4（2026-09-21，augustinefok 07001006：Stage① 母片選擇加 page3 片格形狀檢查、Known failure modes 追加 CV-48／49／50／51；v1.8.3（2026-09-20，Dorothy 0600728：特訂單排除出母片候選、Stage⑤ 橫向插圖做法、CV-43~47、CV-37 retired；v1.8.0 2026-09-13，flow 2026-09-13-0857：placement_memory.json 升級 schema v2，Stage④/Step 0 寫入規格新增 lessons[]/rules[]；v1.7.0 2026-09-12 0600903 首單全幅款 page3 做法＋Stage⑤ 新月份合集；v1.6.0 2026-08-25 新增 Stage⑤；初版 v1.0.0 2026-07-11 S164 建）
+**版本**：v1.8.9（2026-09-25，Fat Mo 批准升格 CV-42（字句字號／字距唔好照抄母片，新小節）；v1.8.8（2026-09-25，Fat Mo 批准升格 CV-38（Stage③ 搵臨時件讀全部頁）、CV-40（page4 動畫格跟 page2 彩色格新小節）、CV-49（local_prep 採用率唔穩＋開單前 fetch 主線）；v1.8.7（2026-09-24，Fat Mo 批准升格 CV-36（元素層背景移除唔跟 asset 走）→ Stage③ 新節、CV-30（container 統一分級，與 CV-05 調和）→ page2 圖對節；v1.8.6（2026-09-24，meiyan_cmyy 06001007 全幅AI短片：字句同圖／片不能有任何遮蓋——page2／page3 小組合／page4 底邊改按「字句 box top −0.29×字號」（手寫體上伸筆畫高過 box top 約 9px），CV-52／CV-39 舊『貼字句 box top』已加修訂；Known failure modes 追加 CV-58／59／60／61／62；v1.8.5（2026-09-21，Ctungdear 0600108 全幅AI短片：Step 4 local_prep 改良（黑白圖以彩色圖去背 mask 前置去封閉空位、Parakeet 飽和度 0.207＋黑位抬高 0.20）、Known failure modes 追加 CV-52／53／54／55；v1.8.4（2026-09-21，augustinefok 07001006：Stage① 母片選擇加 page3 片格形狀檢查、Known failure modes 追加 CV-48／49／50／51；v1.8.3（2026-09-20，Dorothy 0600728：特訂單排除出母片候選、Stage⑤ 橫向插圖做法、CV-43~47、CV-37 retired；v1.8.0 2026-09-13，flow 2026-09-13-0857：placement_memory.json 升級 schema v2，Stage④/Step 0 寫入規格新增 lessons[]/rules[]；v1.7.0 2026-09-12 0600903 首單全幅款 page3 做法＋Stage⑤ 新月份合集；v1.6.0 2026-08-25 新增 Stage⑤；初版 v1.0.0 2026-07-11 S164 建）
 **依賴**：Canva MCP（Claude Code 端配置；Antigravity 環境無此 MCP，本指令不可攜）、本地 python + rembg（`canva_auto/local_prep.py`）
 **數值唯一真理來源**：`canva_auto/placement_memory.json`——本檔與記憶檔只放流程，**不放任何座標/尺寸數值**；錨點一律開單時從 JSON 讀。
 
@@ -234,6 +234,14 @@ box_width        = max(各段 need_width) × 1.005
 🔴 **`\n` 只保證「最少幾行」，唔保證「最多幾行」**：TW_Ting 嘅 `replace_text` 已傳咗正確 `\n`，但 box 寬沿用母片 649.76，最長段需要 810.33 → 該段自己再摺一截 → 2 段渲染成 **3 行**，Fat Mo 要求改返 2 行。
 **所以 `replace_text` 後必須讀 CDF 核對實際行數 vs `word.png` 目標行數，唔夾就 `resize_element` 加闊 text box**（趁 Fat Mo 未設動畫前做，受幾何凍結鐵律管）。
 
+### 🔤 字句字號／字距唔好照抄母片（CV-42，2026-09-25 升格：07001006／0600728／0601011 共 3 單，06001007 正面驗證）
+
+- **母片行數同本單一致、字號字距已係 Fat Mo 慣用值** → 沿用，唔使動（06001007：母片 2 行 63.47px／字距 0.14，本單 2 行，Fat Mo 零修改）。
+- **本單行數少過母片，或係短句** → 字號、字距都唔好照抄母片：先按 `word.png` 公式（CV-06）出 scale，再以 Fat Mo 實例校：2 行短句約 **55–56px**（記憶檔決策表 19–40 字→55px；0601011 母片 3 行 42.67px／0.073 改 2 行，Fat Mo 改 56px／0.14）；3 行版約 **41px**（07001006 Fat Mo 定 40.93px／0.14，AI 曾出 44px／0.073）；0600728 45.33px／0.14。
+- **字距慣用 0.14**（0600303 0.146、0600914／0601011／0600728／07001006 皆 0.14）。`format_text` 冇 `letterSpacing` 參數（CV-50），AI 改唔到字距，只可喺排 box 闊時按 0.14 預留（box＝max 行寬×scale＋字數×字號×0.14，×1.005），令 Fat Mo 喺 UI 加字距後唔爆行。母片字距若係 0.073 之類，交付時要預告「字距要 Fat Mo 改」。
+- **top**：3 行版 Fat Mo 會將字句 top 下移（07001006 下移 26.4；0600728 由貼實圖底 782.73 下移至 812.34），配合 CV-58 底邊間隙——字句唔好貼實圖底。
+- 交付前 `replace_text` 後必讀 CDF 核對實際行數（CV-06），行數同 `word.png` 唔夾就 `resize_element` 加闊 box（趁未設動畫）。
+
 ### 📐 字句水平置中＝對齊「花環」中心，唔係對齊「家庭圖」中心（2026-08-01 HoKaSin 定案）
 
 Fat Mo 原話：「**正中的意思是左右草框之間**」。
@@ -369,6 +377,7 @@ scale s = 0.369803187    tx = -105.011    ty = +40.440
 
 ## 版本更新日誌
 
+- v1.8.9（2026-09-25，規則升格）：Fat Mo 批准升格 **CV-42**（07001006／0600728／0601011）→ 新小節「字句字號／字距唔好照抄母片」：行數同母片一致沿用；行數少過母片或短句 2 行約 55–56px、3 行約 41px；字距慣用 0.14（AI 冇 letterSpacing API，CV-50，只可預留 box 闊並預告 Fat Mo 改）；3 行版字句 top 下移唔貼實圖底。`placement_memory.json` CV-42 `promoted_to` 已填。至此驗證器 ≥3 單未升格提示只剩已 retired 嘅 CV-37。
 - v1.8.8（2026-09-25，規則升格）：Fat Mo 批准升格 **CV-38**（Stage③ 新步驟 1b：搵臨時件讀全部頁、唔加 `page_indices`、連 `background.media`；0600914／0600108／06001007）、**CV-40**（新小節「全幅款 page4 動畫格」：跟 page2 彩色格 top／中心，底邊按 CV-58，闊按原生比例零裁切，唔沿用母片單次微調；0600914／0600108／06001007）、**CV-49**（Stage① step 4 補：local_prep 採用率唔穩、開單前先 fetch 確認主線最新版；0600914／0600728／0601011 採用，07001006／0600709／0600903／0600108／06001007 棄用）。`placement_memory.json` 三規則 `promoted_to` 已填。
 - v1.8.7（2026-09-24，規則升格）：Fat Mo 批准升格 **CV-36**（Canva 元素層背景移除唔跟 asset 走：分「asset 層已透明」同「原檔＋元素層去背」兩類，AI 交付時必須主動列出要 Fat Mo 撳背景移除嘅元素清單，5 單：0600709／0600728／07001006／0600108／06001007）→ Stage③ 新節「🖼️ 元素層背景移除唔跟 asset 走」；**CV-30**（兩圖 container 統一分級：top／left／height 必統一；闊高比相同→四值全等；闊高比唔同→height 統一、闊各自按 asset 比例，與 CV-05／CV-53 調和，5 單）→ 「page2 圖對必須統一 left + height」節補充。`placement_memory.json` 兩規則 `promoted_to` 已填。
 - v1.8.6（2026-09-24，meiyan_cmyy 06001007 全幅AI短片）：Fat Mo 明文學習重點「字句同照片／短片不能有任何遮蓋」——AI 按 CV-52／CV-39 令 page2 圖對／page4 動畫／page3 小組合底邊貼字句 box top，但手寫體上伸筆畫高過 box top 約 9px 全部壓字，Fat Mo 三處縮細（拉底左角）。新增 CV-58（底邊＝box top −0.29×字號，交付前 export 量墨水頂）、CV-59（page2 顯示時間 5.9s→7s 人手，AI 盲）、CV-60（local_prep 對比：彩色 IoU 0.984、黑白 0.734 over-cut 26.4%、Parakeet 紙面飽和度 0.207 證實準確）、CV-61（edit-design 要完整 locator）、CV-62（export-design 暫時性 code 10）；CV-52／CV-39／CV-53 加修訂註記；`placement_memory.json` 新增 case 06001007（5 格修正 4 格）。CV-36／CV-30／CV-40／CV-49／CV-38 已達 ≥3 單引用未升格，待 Fat Mo 決定。

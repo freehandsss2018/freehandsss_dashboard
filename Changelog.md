@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] canva-auto 規則升格：CV-42（字句字號／字距唔好照抄母片）
+
+- Fat Mo 批准，`canva-auto.md` v1.8.9 新小節「字句字號／字距唔好照抄母片」（07001006／0600728／0601011 共 3 單，06001007 正面驗證）：行數同母片一致沿用；行數少過母片或短句 → 2 行約 55–56px、3 行約 41px；字距慣用 0.14，AI 冇 `letterSpacing` API（CV-50）只可預留 box 闊並預告 Fat Mo 改；3 行版字句 top 下移，唔貼實圖底。
+- `placement_memory.json` CV-42 `promoted_to` 已填；驗證器 exit 0，≥3 單未升格提示只剩已 retired 嘅 CV-37。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] canva-auto 規則升格：CV-38（搵臨時件讀全部頁）＋CV-40（page4 動畫格）＋CV-49（local_prep 採用率）
 
 - Fat Mo 批准，`canva-auto.md` v1.8.8。**CV-38**（0600914／0600108／06001007）→ Stage③ 步驟 1b：`read-design` 搵臨時件唔加 `page_indices`、連 `background.media`，臨時件可落錯頁（0600914 圖對落 page1）。
