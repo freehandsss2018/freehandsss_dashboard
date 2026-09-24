@@ -43,6 +43,16 @@ python local_prep.py --color 彩色圖.png --bw 黑白圖.png --out-dir 輸出�
 - 試過但唔採用：`alpha_matting=True`（彩色再加少少但慢 3 倍、黑白冇提升）；`isnet-general-use`（彩色最勁 0.989 但線稿災難性失敗 0.364，唔可用於黑白圖）。
 - 仍未做：外圍淺灰光暈、髮絲邊緣軟化程度同 Canva 版仲有少量差異（未量化）。
 
+## 2026-09-25 改良（06001007＋0600512 兩單 Canva 黑白版，CV-60）
+
+- **Parakeet 線條上色**：Canva 唔係固定飽和度——按原圖明度逐級統計，飽和度由紙面 ≈0.21 隨明度下降升到墨線核心 ≈0.87。預設改用明度色調曲線 `S(L)=0.2145+0.6542×(1−L)^2.70`、`V(L)=0.2387+0.7613×L^1.03`（`local_prep.py` 內 `CURVE_*`）。墨線區逐像素 RGB 平均絕對誤差：06001007 0.072→0.043、0600512 0.087→0.062，紙面區不變。傳 `--saturation`／`--black-lift` 即退回舊固定值模式。殘差：墨線平均仍略暗（R 約低 6–8）；hue 仍用位置漸變場。
+- **墨水間隙量度 `ink_gap.py`**（CV-58）：交付前讀 `export-design` 真圖，量字句墨水頂同圖／片底邊間隙，避免壓住手寫體上伸筆畫。
+  ```
+  python ink_gap.py page2.jpg --image-bottom 771.725 --x 546 1374 --text light
+  python ink_gap.py archive.png --image-bottom 319.16 --x 122 378 --text dark --scale 2
+  ```
+  `--image-bottom`／`--x` 用設計座標（CDF），`--scale`＝匯出像素／設計座標；exit 0＝間隙足夠（預設最小 5px）、1＝不足、2＝掃唔到字句。已用 06001007 Fat Mo 終值驗證：page2 10.27、page4 11.62、存檔頁 5.34 皆通過；AI 原版底邊 788.72 報不足。
+
 ## 已知限制
 
 見 `local_prep.py` 檔頭 docstring。v2（2026-07-13, 0800802 案）改用正規化座標

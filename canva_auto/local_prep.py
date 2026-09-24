@@ -59,6 +59,21 @@ placement_memory.json CV-54／CV-55）：
     對位 IoU 理應會過 0.90 門檻，前置邏輯可以繼續生效補埋殘餘封閉空位；即使對位
     仍然失敗，退回嘅純 rembg（而家已經係 human_seg）本身都已經夠好。
   - 仍未做：外圍淺灰光暈、髮絲邊緣軟化程度同 Canva 版仲有少量差異（未量化）。
+
+2026-09-25 改良（06001007 meiyan_cmyy＋0600512 Small Chan 兩單 Canva 黑白版，見
+placement_memory.json CV-60）：
+  - 線條上色：Canva Parakeet 唔係固定飽和度——按原圖明度逐級統計，飽和度由紙面 ≈0.21
+    隨明度下降急升到墨線核心 ≈0.87（原固定 0.207 令線條偏灰：本地墨線 RGB≈(64,58,66)，
+    Canva≈(66–72,40–44,63–64) 偏紫）。改為明度色調曲線 S(L)、V(L)（見 CURVE_*），預設啟用；
+    傳 --saturation／--black-lift 即退回舊固定值模式。
+  - 驗證（Canva 版下載檔白底壓平，flood-fill 取前景，逐像素 RGB 平均絕對誤差 MAE，
+    墨線區＝原圖明度＜0.35）：最終合併參數兩單 06001007 墨線區 0.072→0.043、整體
+    0.043→0.034；0600512 Small Chan 墨線區 0.087→0.062、整體 0.048→0.042；紙面區不變
+    （0.022–0.025）。獨立性註記：只用 06001007 單樣本擬合時，Small Chan（未參與擬合）
+    已由 0.087→0.062，即曲線可跨單泛化；最終參數係兩單合併擬合，故上面兩單都唔算純
+    hold-out。Small Chan 有 Canva 版嘅資料夾只得 06001007／0600512 兩單，其餘單冇獨立
+    Canva 黑白圖檔可驗（0600108 只有彩色版同整頁匯出）。
+  - 仍有殘差：墨線平均仍略暗（R 約低 6–8），hue 仍用位置漸變場（未逐單校 Rainbow 滑桿）。
 """
 
 import argparse
@@ -78,6 +93,15 @@ HUE_B_DEG = 213.21        # 每單位 v（高度 0->1）度數
 HUE_C_DEG = 313.79        # 截距
 DEFAULT_SATURATION = 0.207   # 0600108 Canva 版紙面實測（原 0.30 對 0800802 滑桿讀數）
 DEFAULT_BLACK_LIFT = 0.20    # V = lift + (1-lift)*明度；0 = 舊行為（純黑線）
+# 2026-09-25 色調曲線（預設）：Canva Parakeet 唔係固定飽和度——越暗越飽和（紙面 S≈0.21、
+# 墨線核心 S≈0.87）。用 06001007＋0600512 兩單 Canva 版逐明度分級統計合併擬合：
+#   S(L) = S_PAPER + (S_INK - S_PAPER) * (1-L)^S_POWER      L＝原圖明度 0-1
+#   V(L) = V_BLACK + (1 - V_BLACK) * L^V_POWER
+CURVE_S_PAPER = 0.2145
+CURVE_S_INK = 0.8687
+CURVE_S_POWER = 2.70
+CURVE_V_BLACK = 0.2387
+CURVE_V_POWER = 1.03
 
 COLOR_ALPHA_FULL = 0.3    # 彩色圖 rembg alpha >= 呢個值即當全不透明
 PRIOR_ALPHA = 0.1         # 彩色圖 alpha 高過呢個值先當前景（前置 mask）
@@ -206,22 +230,31 @@ def _hsv_to_rgb_vec(h: np.ndarray, s: np.ndarray, v: np.ndarray):
     return r, g, b
 
 
-def apply_parakeet(rgba: Image.Image, saturation: float = DEFAULT_SATURATION,
-                   black_lift: float = DEFAULT_BLACK_LIFT) -> Image.Image:
-    """Parakeet 色譜（ColourMix 替代）。以原圖明暗度做 lightness，位置決定 hue。"""
+def apply_parakeet(rgba: Image.Image, saturation: float | None = None,
+                   black_lift: float | None = None) -> Image.Image:
+    """Parakeet 色譜（ColourMix 替代）。以原圖明暗度做 lightness，位置決定 hue。
+
+    預設用色調曲線（S、V 都按原圖明度變化，見 CURVE_*）；只要傳咗 saturation 或 black_lift
+    其中一個，就退回舊固定值模式（S 固定、V＝lift＋(1-lift)×明度）供手動微調／對照。"""
     w, h = rgba.size
     arr = np.array(rgba).astype(float)
     r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
-    lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
-    lum = black_lift + (1.0 - black_lift) * lum
+    lum0 = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
 
     yy, xx = np.mgrid[0:h, 0:w]
     u = xx / w
     v = yy / h
     hue = (HUE_A_DEG * u + HUE_B_DEG * v + HUE_C_DEG) % 360 / 360.0
-    sat = np.full_like(hue, saturation)
+    if saturation is None and black_lift is None:
+        sat = CURVE_S_PAPER + (CURVE_S_INK - CURVE_S_PAPER) * (1.0 - lum0) ** CURVE_S_POWER
+        lum = CURVE_V_BLACK + (1.0 - CURVE_V_BLACK) * lum0 ** CURVE_V_POWER
+    else:
+        s_flat = DEFAULT_SATURATION if saturation is None else saturation
+        lift = DEFAULT_BLACK_LIFT if black_lift is None else black_lift
+        sat = np.full_like(hue, s_flat)
+        lum = lift + (1.0 - lift) * lum0
 
-    ro, go, bo = _hsv_to_rgb_vec(hue, sat, lum)
+    ro, go, bo = _hsv_to_rgb_vec(hue, sat, np.clip(lum, 0.0, 1.0))
     out = np.zeros((h, w, 4), dtype=np.uint8)
     out[:, :, 0] = np.clip(ro * 255, 0, 255)
     out[:, :, 1] = np.clip(go * 255, 0, 255)
@@ -231,7 +264,7 @@ def apply_parakeet(rgba: Image.Image, saturation: float = DEFAULT_SATURATION,
 
 
 def process_order(color_path: Path, bw_path: Path, out_dir: Path,
-                  saturation: float = DEFAULT_SATURATION, black_lift: float = DEFAULT_BLACK_LIFT):
+                  saturation: float | None = None, black_lift: float | None = None):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[1/3] 去背彩色圖：{color_path.name}")
@@ -257,8 +290,10 @@ def main():
     ap.add_argument("--color", required=True, type=Path, help="彩色圖路徑")
     ap.add_argument("--bw", required=True, type=Path, help="黑白圖路徑")
     ap.add_argument("--out-dir", type=Path, default=Path("."), help="輸出資料夾")
-    ap.add_argument("--saturation", type=float, default=DEFAULT_SATURATION, help=f"Parakeet 飽和度（預設 {DEFAULT_SATURATION}）")
-    ap.add_argument("--black-lift", type=float, default=DEFAULT_BLACK_LIFT, help=f"Parakeet 黑位抬高（預設 {DEFAULT_BLACK_LIFT}；0 = 純黑線）")
+    ap.add_argument("--saturation", type=float, default=None,
+                    help=f"Parakeet 固定飽和度（不傳＝用明度色調曲線；傳咗即退回舊固定值模式，配合 --black-lift，舊預設 {DEFAULT_SATURATION}）")
+    ap.add_argument("--black-lift", type=float, default=None,
+                    help=f"Parakeet 黑位抬高（不傳＝用明度色調曲線；傳咗即退回舊固定值模式，舊預設 {DEFAULT_BLACK_LIFT}；0 = 純黑線）")
     args = ap.parse_args()
 
     process_order(args.color, args.bw, args.out_dir, args.saturation, args.black_lift)

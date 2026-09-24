@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-25] canva-auto 工具改良：local_prep 線條上色曲線＋ink_gap.py 墨水間隙腳本＋更正存檔頁間隙記錄
+
+- **`local_prep.py` 線條上色**：Canva Parakeet 飽和度隨原圖明度變化（紙面 0.21→墨線 0.87），舊固定 0.207 令線條偏灰。改為明度色調曲線 `S(L)=0.2145+0.6542×(1−L)^2.70`、`V(L)=0.2387+0.7613×L^1.03`（06001007＋0600512 兩單 Canva 黑白版合併擬合，RMSE S 0.031／V 0.017）。墨線區逐像素 MAE：06001007 0.072→0.043、Small Chan 0.087→0.062，紙面不變；只用 06001007 擬合時 Small Chan（未參與）已 0.087→0.062，即可跨單泛化。預設啟用，`--saturation`／`--black-lift` 退回舊固定值。驗證資料只有兩單有獨立 Canva 黑白圖檔（其餘單只有彩色版或整頁匯出）；殘差：墨線仍略暗（R 低約 6–8）。
+- **新增 `canva_auto/ink_gap.py`**（CV-58 自動化）：讀 export 真圖，量字句墨水頂同圖／片底邊間隙，exit 1＝不足。以 06001007 Fat Mo 終值驗證（page2 10.27、page4 11.62、存檔頁 5.34 通過；AI 原版底邊 788.72 報不足；錯參數 exit 2）。
+- **更正**：早前記錄存檔頁彩色插圖間隙「約 9px」係目測錯誤（`placement_memory.json` 存檔頁 slot／lessons），腳本量度實為 5.34px（17px 字，Fat Mo 幾何零修改接受）；`placement_memory.json` 相關 4 處已改並補 lesson。
+- `canva-auto.md` v1.8.10、`canva_auto/README.md` 同步；`placement_memory.json` CV-58／CV-60 更新。**未做**：舊 worktree `canva-auto-meiyan-cmyy-fcb9f6` 未刪（內有 `.agents/skills/`、`.codex/`、`AGENTS.md` 3 個唔係本 session 建立嘅未追蹤項目，刪 worktree 會一併消失）。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] canva-auto 規則升格：CV-42（字句字號／字距唔好照抄母片）
 
 - Fat Mo 批准，`canva-auto.md` v1.8.9 新小節「字句字號／字距唔好照抄母片」（07001006／0600728／0601011 共 3 單，06001007 正面驗證）：行數同母片一致沿用；行數少過母片或短句 → 2 行約 55–56px、3 行約 41px；字距慣用 0.14，AI 冇 `letterSpacing` API（CV-50）只可預留 box 闊並預告 Fat Mo 改；3 行版字句 top 下移，唔貼實圖底。
