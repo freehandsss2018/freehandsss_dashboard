@@ -1032,6 +1032,28 @@
 
 全文見 Changelog.md 2026-08-29「D69續八」條目。**Subagent 使用記錄**：❌未使用（互動式CSS層層追蹤+live browser即時量度，需要每步睇返上一步結果先決定下一步查邊度，委派會斷診斷鏈；WebSearch 已用嚟核實裝置真實規格非猜測）。
 
+[2026-08-28] (S147-follow) n8n Mirror Prep 共享鎖 RPC — 風險前提已消失，結案下架
+
+**背景**：MASTER 待辦表 `[S147]` 長期列 🔴 高優先，目標係防止「Fat Mo UI 改 `cost_config`」同「n8n Mirror Prep 反向寫 `products.total_base_cost`」兩者並發撞車，last-write-wins 蓋走手動設定。原設計文件 `.fhs/ai/FHS_Product_Cost_Operations.md` §OP-3.2（2026-07-05）提出 `fhs_mirror_write_product_cost` RPC，取同一把 `pg_try_advisory_xact_lock(hashtext('cost_sync'))`，令兩條路徑互斥，但一直未實作。
+
+**觸發覆核**：處理呢項待辦前，先核實兩個之後發生嘅架構變動有冇令原前提過時：①D43（2026-07-22）Airtable Fallback 全面剝離停用；②S189 起（2026-07-24）成本模型大改（V2 tier SKU）。原文件明言競態對手係「n8n V47.x Mirror Prep 反向寫 Airtable」，呢條路徑喺 D43 之後理論上應該消失。
+
+**查證方法**：直查 live n8n workflow（`get_workflow`/`get_node` MCP，`FHS_Core_OrderProcessor` 30 節點）+ 全 repo grep `products` 表寫入點 + `fhs_sync_products_from_config` 呼叫者 + Dashboard UI 原始碼；另派 fresh-context general-purpose agent 獨立覆核。
+
+**結論：風險已消失，非降級，係前提根本不存在**——現行系統對 `products.total_base_cost` 冇任何活躍嘅自動寫入路徑：
+- `fhs_sync_products_from_config()` RPC 定義仍在（`0022b_cost_config_v2_rpc.sql:116-188`，仍取同一把鎖），但**零呼叫者**——全 repo 搵唔到任何地方 call 佢，現行 `fhs_batch_recalc_execute` 都冇呼叫。
+- Dashboard UI（`saveSingleCostConfig()`，`Freehandsss_dashboard_current.html:18466`）只寫 `cost_configurations`，跟住彈 toast 明文警告「products 成本表不會自動同步」——UI 設計上本身就係手動、非自動觸發。
+- n8n live workflow 完全冇任何節點寫 `products` 表：`Smart Cache Strategist` 只 GET 唯讀；名字相似嘅 `Supabase Mirror Prep` 節點實際做緊完全唔同嘅事——建 payload 呼叫 `sync_order_to_mirror` RPC 同步**訂單**資料（`orders`/`order_items`），同 `products`/`cost_configurations` 全無關係。原文件講嘅「n8n 反寫 products」呢個寫者，喺現行架構完全搵唔到蹤影——可能係 D43 前遺留描述，或者原本就從未真正咁樣實作過。
+- 全 repo 內真正寫過 `products.*_cost` 欄位嘅位置全部係一次性 migration（`0004`/`0022b`/`0030`），屬人手/agent 執行嘅單次 DDL/DML，非併發 runtime 路徑，不會同任何嘢賽跑。
+
+**裁決**：S147 原設計嘅 advisory-lock RPC 無需實作，結案下架，MASTER 待辦表同步更正為已完成。
+
+**意外發現（另開低優先待辦，非本次範圍）**：Dashboard UI 承諾嘅「drift 檢查」（`cost_config` 改咗之後核對 `products` 有冇漂移）從未實作，`products.total_base_cost` 現時完全靠人手 migration 維護，冇自動偵測/告警機制。呢個係資料一致性/漂移偵測問題，性質同 S147 原本要防嘅併發競態完全不同，已 spawn 獨立低優先 task 追蹤，非本次結論範圍。
+
+全文見 handoff.md MASTER 待辦表 `[S147]` 條目更正、Changelog.md 2026-08-28 條目。**Subagent 使用記錄**：✅已使用（1 個 fresh-context general-purpose agent 獨立核實現行寫入路徑，補強主 session 已查嘅 live n8n workflow 證據）。
+
+---
+
 [2026-08-28] (D58-follow-v2) 獨立核實 D58-follow 修復生效 + builder 一致性補強（5節點非3）+ 重開觀察期定義
 
 **背景**：`/read` 承接 D58-follow（見下一則），發現另一並行分支已修復 live 但未 merge、亦未完成功能驗證。用 `/8d` 對「暫緩 UI 入口改善、先驗證憑證修復」呢個方向做自我批評迭代，揪出三個弱點後執行 v2。
@@ -3470,6 +3492,20 @@ Rule 3.16 強制要求：財務討論第一步必讀 Finance Bible §一。
 **範圍**：純標註功能，`enforce`恆false，對現行看門狗判斷結果零影響。抑制類撞`DEAL_RE`詞嘅衝突護欄刻意延到Phase 2b喺引擎端做（避免SQL複製一份`DEAL_RE`造成第二真源）。
 
 詳見 Changelog.md 2026-08-04 條目、`FHS_System_Logic_Overview.md` §11.14、`.fhs/reports/completion/2026-08-04_igwatch-phrase-rules-phase2a_completion_report.md`、`artifacts/2026-08-04-0244/`。
+
+### D58-follow：2026-08-18 檢視點覆核——提案數 7（<10），判定入口太深，Phase 2b 暫停（2026-09-05 補查）
+
+**背景**：D58 預先訂定 2026-08-18 為檢視點：`ig_phrase_rules` 提案數 ≥10 → 入口可用進 Phase 2b（開 enforce）；<10 → 判定入口太深，先改入口再重數。此檢視點逾期未查（已於 handoff.md 標記 🔴 逾期），本次 `/read` 例行檢視發現後執行。
+
+**查證結果**（Supabase 直查 `ig_phrase_rules`，2026-09-05）：共 **7 筆**，全部 `status='proposed'`（0 approved / 0 rejected），全部 `applied_count=0`。全部 7 筆 `created_at` 集中喺 **2026-08-03 23:35 ～ 2026-08-04 00:25**（即功能上線首兩天內），其後**整整一個月零新增**（觀察窗口原定兩星期，實際已超一個月）。
+
+**判定**：7 < 10，觸發 D58 預定規則——判定為入口問題（現行入口：總覽→igwatch 面板→撳警報卡「💬 IG訊息」→開 thread overlay→逐句點選），非需求不存在。**Phase 2b（開 enforce）繼續暫停**。零新增持續整月而非僅未達標，加強「入口太深、Fat Mo 日常操作路徑接觸唔到呢個功能」嘅假設（相對於「功能冇用被主動放棄」）。
+
+**本次僅執行既定判準查證，未動任何代碼**——入口具體改法需要 Fat Mo 拍板方向後另行規劃執行（見 handoff.md 待辦，已提出待選方向供參考）。
+
+**Fat Mo 裁決（同日追加）**：唔改入口，**延長觀察期至 2026-10-05**（一個月）。背景：Fat Mo 主動要求「重新教我點用呢個系統」，顯示低使用率可能源於**唔熟悉操作方式**而非入口太深——本次已於對話中重新講解完整操作路徑（底部導覽「系統」分頁→IG看門狗警報卡→💬IG訊息→選字→標籤條→預覽→確認）。新檢視點 **2026-10-05**：屆時再查 `ig_phrase_rules` 提案數，沿用同一 <10/≥10 判準；若 Fat Mo 已理解操作但仍然零/低使用，「入口太深」假設才算證實，屆時再認真規劃入口改法；若已有實際使用但仍 <10，可再視乎成長曲線判斷。已寫入 handoff.md ⏰ 時限待辦。
+
+詳見 handoff.md 待辦欄、⏰ 時限待辦欄。
 
 ### D60：2026-08-05 — handoff 便攜塊「時限待辦漏帶」機制修復
 

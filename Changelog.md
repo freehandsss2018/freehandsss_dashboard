@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-24] 未合併分支決策文字撿回：d64261（D58-follow 覆核）＋263e23（S147 結案）
+
+- **d64261**：`decisions.md` 新增 D58-follow 2026-08-18 檢視點覆核（提案數 7<10，Fat Mo 裁決唔改入口、重新教學、觀察期延至 **2026-10-05**），置於 D58 章節之後；`learnings/governance.md` #11「功能低使用率檢視點，先排除『唔熟悉操作』先假設『入口太深』」。
+- **263e23**：`decisions.md` 新增 S147-follow（共享鎖 RPC 風險前提已消失、結案下架；`fhs_sync_products_from_config()` 零呼叫者、n8n 無節點寫 `products`）；`02_model-dispatch.md` §7 追加「承接舊設計文件待辦前須核實前提未過時」。
+- **版本衝突處理**：兩條分支（含先前撿回的 D88）都把 `02_model-dispatch` 升到 v1.0.6，合併後統一升 **v1.0.7**（版本行保留兩條教訓來源），`00_INDEX.md` 同步。原分支 `.bak` 備份檔不撿（git 歷史已有）、其舊 handoff/Changelog 不撿。
+- **過程更正**：首次插入 S147 條目時，因該條目在原分支無 `---` 結尾，邊界判斷過寬吸進 104 行無關內容；發現後精確還原，改以條目自己的結尾句為界重插，最終 `decisions.md` 淨增 36 行、零刪除（對 origin/main）。**Subagent 使用記錄**：❌未使用（git 比對／文件編輯，無財務判斷）。
+
 ## [2026-09-24] 未合併分支選擇性撿回：IG 看門狗 builder／code-reviewer v1.2.0／Small Chan 去背
 
 - **緣起**：審視揪出 8 條分支 commit 從未入 main。逐條 `git cherry`＋dry-run merge 後結論：整條合併會令舊 handoff/Changelog 蓋回 main，改為只撿代碼與決策文字。
