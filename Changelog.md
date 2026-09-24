@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-24] canva-auto meiyan_cmyy 06001007 全幅AI短片 Stage①-⑤ 完成＋學習落庫（規則 CV-58~CV-62）
+
+- **交付**：母片 Ctungdear 0600108 → `DAHWG_juSnA`（歸檔 `Free_recorder (09/26)`）；Stage⑤ 存檔頁 `DAHWHOxwu2k`（原相＝合集 p160 抽出 `MAHV6uKMlrs`，Fat Mo 確認「160」）。母片元素全 `update_fill`，只刪 Fat Mo 臨時件。
+- **Fat Mo 學習重點＝字句同圖／片不能有任何遮蓋（CV-58）**：AI 按 CV-52／CV-39 令 page2 圖對、page4 動畫、page3 小組合底邊貼字句 box top，但手寫體上伸筆畫高過 box top 約 9px（export 真圖實測墨水頂 y≈781／box top 789.87）全部壓字；Fat Mo 縮細三處（拉底左角，右邊＋頂不動）：page2 642.62²→625.622²、page4 643.77²→624.277²、page3 小組合 211.75²→202.026²。新規則：底邊＝字句 box top −0.29×字號；交付前 export 量墨水頂。CV-52／CV-39／CV-53 加修訂註記。
+- **其他學習**：CV-59 page2 顯示時間 5.9s→7s（Fat Mo 人手，AI 盲）；CV-60 `local_prep` 對比——舊 u2net 版黑白 IoU 0.734（配準 0.814 退回純 rembg，over-cut 26.4%），合併 main 後用 `u2net_human_seg`（Small Chan CV-56 改良）重跑同一單：配準 0.995、黑白 0.989、彩色 0.983，第2樣本證實換模型有效；Parakeet 紙面飽和度 Canva 0.208 對 local 0.207（預設準確），線條色偏紫更深仍未重現；CV-61 `replace_text` 要完整 locator（`PB…-LB…`）；CV-62 `export-design` 暫時性 `code 10`。
+- **撞號重編**：本單原編 CV-56~60，合併 origin/main 時發現 main 已有 Small Chan 0600512 用咗 CV-56／57 → 本單一律重編 CV-58~62（`placement_memory.json`、`canva-auto.md` 同步）。`canva-auto.md` v1.8.6。`canva_memory_validate.js` exit 0。
+- **AI 過失**：①開單時 branch 落後 main 6 個 commit 而冇 fetch，用舊 `local_prep`（重犯 governance.md #12）；②開工冇逐檔睇 1.png／Free_Laser／UUID jpg（CV-33）；③Stage⑤ 問 Fat Mo 揀邊張原相（合集 p160 可自查）。
+- **待 Fat Mo**：存檔頁彩色插圖撳背景移除、貼入合集 p160 後；臨時副本 `DAHWHPJ9tz8` 待 UI 刪；CV-36／CV-30／CV-40／CV-49／CV-38 達≥3單未升格待裁決。**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session，派工斷 context）。
+
 ## [2026-09-24] 刪除 6 條已合併／放棄分支（Fat Mo 批准，本地＋遠端）
 
 - **已合併**（`git cherry` 零獨有 commit）：`claude/d65-family-owner-role`（c1dd88f）、`claude/read-command-22e327`（9902136）、`claude/interface-color-sync-bug-f54425`（120d7dd）。

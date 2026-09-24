@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-24 (canva-auto meiyan_cmyy 06001007 全幅AI短片 Stage①-⑤＋學習落庫，CV-58~62): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-24（meiyan_cmyy）條目。字句同圖／片零遮蓋（底邊＝字句 box top −0.29×字號）；合併 main 時 CV 編號撞車重編；`local_prep` 主線新版重測黑白 IoU 0.734→0.989。
+**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
+
 ## 2026-09-24 (handoff 清理：移除兩行已結案待辦): 🏷️ ✅
 
 **摘要**：刪 canva-auto 0600903 行與已修復嘅財務 RPC 三口徑行，全文見 [Changelog.md](../../Changelog.md) 2026-09-24 handoff 清理條目。
