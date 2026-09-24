@@ -1032,6 +1032,55 @@
 
 全文見 Changelog.md 2026-08-29「D69續八」條目。**Subagent 使用記錄**：❌未使用（互動式CSS層層追蹤+live browser即時量度，需要每步睇返上一步結果先決定下一步查邊度，委派會斷診斷鏈；WebSearch 已用嚟核實裝置真實規格非猜測）。
 
+[2026-08-28] (D58-follow-v2) 獨立核實 D58-follow 修復生效 + builder 一致性補強（5節點非3）+ 重開觀察期定義
+
+**背景**：`/read` 承接 D58-follow（見下一則），發現另一並行分支已修復 live 但未 merge、亦未完成功能驗證。用 `/8d` 對「暫緩 UI 入口改善、先驗證憑證修復」呢個方向做自我批評迭代，揪出三個弱點後執行 v2。
+
+**獨立核實（唔等排程自然觸發）**：
+1. `ig_messages` 查證：2026-08-03 22:00 UTC 後斷流，直到 **2026-08-27 22:00 UTC**（修復部署當晚排程首跑）先重新寫入 9 則——時間點與排程精確吻合，證實 `Write Messages` 節點修復已生效。
+2. `ig_watchdog_alerts` 因冇撞到警報條件，同一輪未產生新行，無法用「等自然觸發」驗證 `Write Alerts`。改用靜態層核實：`information_schema.role_table_grants` 確認 `service_role` 對該表有完整 CRUD 授權；`pg_class.relrowsecurity=true` 但 service_role 天然繞過 RLS；`pg_indexes` 確認 `on_conflict=alert_date,thread,order_id_key,kind` 對應嘅 `ix_igwatch_alerts_dedup_v2` UNIQUE INDEX 確實存在（PostgREST upsert 唔會因缺索引 42P10 失敗）。三項疊加＋`Write Messages` 已用同一 `$env` 值證實有效 → 邏輯上可判 `Write Alerts` 下次觸發時會成功，惟仍未有一次親身執行嘅直接證據，**留為觀察期內第一個真警報出現時的待確認項**，唔誇大為「已 100% 驗證」。
+
+**Builder 一致性補強（範圍由 3 節點擴大至 5 節點）**：`scripts/ig-watchdog/build_n8n_workflow.cjs` 原本 5 個用 service_role key 嘅節點（`Write Alerts`/`Touch Rules`/`Write Messages`/`Write Mismatches`/`Write Intents`）全部係 build-time 字面插值（`const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY` 直接寫入 JSON）。D58-follow 只手動修復咗 live 上其中 3 個已知壞嘅節點，但 builder 源頭嘅結構性缺陷對全部 5 個一視同仁——任何人下次跑 builder 重新部署，都會用當時機器上嘅 env 值焗死覆蓋返 live 已手動修好嘅 3 個 `$env` runtime 表達式，完整重演今次事故。修復：全部 5 個節點改為同 live 一致嘅 `={{ $env.SUPABASE_SERVICE_KEY }}` / `={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}` runtime 表達式（字串直接抄自 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-27/D4LK6VrQbiXlju0V/Write_Alerts.json` 嘅已驗證 live 定義，非重新發明語法），移除已變死碼嘅 `SUPABASE_SERVICE_KEY` const。**Write Mismatches／Write Intents 呢兩個節點喺 D58-follow 事故本身並非已知受害者**（冇對應嘅 live 修復 commit），本次只補 builder 源頭防未來回歸，唔代表佢哋現時 live 有問題，亦未觸碰 live（純 repo 側修復，冇重新部署）。
+
+**驗證**：`node -c` 語法通過；實跑 builder 產出 JSON，程式化核對 5 個節點 header 逐字元等於已驗證嘅 live 表達式；輸出節點總數 30（同 D58-follow commit 記錄嘅 live 節點數一致）；全文掃描確認產物零殘留字面 key 字串；`.fhs-local/` 確認維持 gitignore，不落 repo。
+
+**已 merge**：`origin/claude/read-command-8f0fbb`（D58-follow 原始修復）已 fast-forward merge 入本分支，零衝突（該 commit 未觸碰 `build_n8n_workflow.cjs`）。
+
+**觀察期重新定義**（回應原 D58 checkpoint 作廢後嘅缺口）：
+| 項目 | 定義 |
+|---|---|
+| 起計點 | 2026-08-28（本次核實完成日） |
+| 現存 7 句舊提案 | 不刪除（保留審計價值），標記為 baseline，計數只計起計點之後新增 row |
+| 終點 | 起計點 + 14 日＝2026-09-11（回復 D58 原設計嘅兩星期窗口） |
+| 門檻 | 維持 10（窗口長度已還原，不按比例調整） |
+| 判定訊號補強 | 終點時額外查該窗口內 `ig_messages` 有幾多則落入 deal 特徵，區分「有料但零提案＝入口問題」同「本身冇料＝ checkpoint 設計本身要重估」，避免重蹈「零數據時無法判斷」嘅同一缺口 |
+
+**刻意未做**（留待 Fat Mo 另外決策，唔混入本次範圍）：`SUPABASE_ANON_KEY` 喺同一 builder 亦有 3 處字面插值（630/644/661 行），性質同 service key 不同（anon key 本身設計為可公開），故未一併改動；`Touch Rules` 因 `enforce` 觀察期內近乎 no-op，其功能驗證明確留待 Phase 2b 開閘時一併處理，非本次遺漏。
+
+全文見本檔上一則 D58-follow 條目、`.fhs/memory/handoff.md` 待辦欄。**Subagent 使用記錄**：❌未使用（Supabase SQL／git 分支狀態／builder 產物三方即時交叉驗證，委派會斷推理鏈）。
+
+---
+
+[2026-08-27] (D58-follow) IG 睇門狗學習系統 checkpoint 揭發真正故障——D4LK6VrQbiXlju0V 三個寫入節點沿用 D62 事故嘅同一條死 key，寫入 Supabase 靜默失敗近 4 星期；7 句提案數屬假象，已修復但待今晚排程首跑驗證
+
+**背景**：`handoff.md` 待辦記錄 D58（2026-08-04 上線嘅 IG 訊息句子級學規則功能，`enforce` 恆 false 觀察期）2026-08-18 checkpoint——`ig_phrase_rules` 提案數 ≥10 開 Phase 2b enforce，<10 判定「入口太深」先改 UI。逾期 9 日未檢視，本次奉命補查。
+
+**查證**：`ig_phrase_rules` 全庫僅 7 筆（全部 `status='proposed'`），表面符合「<10」門檻。但逐筆 `created_at` 顯示全部集中喺 2026-08-03～04（功能剛上線嗰兩日），之後 24 日零新增；交叉查 `ig_messages`（最後一筆 2026-08-03 22:00 UTC）同 `ig_watchdog_alerts`（最後一筆 2026-07-27）同樣長期零寫入。三表同步斷流，判定「入口太深」結論不可信，深查根因。
+
+**根因**：直接用 n8n REST API（`GET /api/v1/executions?workflowId=D4LK6VrQbiXlju0V&includeData=true`）查 IG 睇門狗流程（`FHS_IGWatchdog_DriveWatch`）近日執行記錄，發現排程本身**每日準時觸發且整體回報 `status=success`**（唔係 D66 提過嗰種「假 success」，係節點級 `continueOnFail` 吞咗錯誤令外層唔崩潰）。逐節點拆開先見到：`Write Alerts`／`Touch Rules`／`Write Messages` 三個負責寫入 Supabase 嘅節點，每次執行都回 `401 Unregistered API key`——三者共用同一條**寫死喺節點參數入面**嘅 Supabase secret key，同 2026-08-10 D62 事故（3節點洩漏公開 GitHub repo、遭 Supabase 自動撤銷）**係同一條已死 key**。`git log -S` 證實呢條 key 曾長期存在於 git 歷史（含 `8adb78c` 「清除D62/D63事故死key殘留」清理提交）。**D62 修復（2026-08-11）只改咗另一條工作流程（`6Ljih0hSKr9RpYNm` Core OrderProcessor）嘅 3 個節點**（`Supabase Mirror Prep`/`Smart Cache Strategist`/`Mirror Delete to Supabase`，改讀 `$env.SUPABASE_SERVICE_KEY`），完全冇覆蓋呢條獨立嘅 IG 睇門狗工作流程——**同一漏洞喺兩條工作流程各自出現一份，事故修復時只堵咗其中一邊**。
+
+**影響範圍核實**（好消息主導）：`Telegram Notify (Data)` 節點獨立於呢三個寫入節點，每日照常成功發送「🐶 IG漏單看門狗」摘要俾 Fat Mo（實測 `ok:true` 有真實 `message_id`）——**核心防漏單功能全程冇受影響，冇實際漏單風險**。壞影響局限於「持久化層」：Dashboard IG 訊息審視畫面睇唔到近 4 星期新訊息、Thread 規則生效次數冇更新、以及本次 D58 checkpoint 查嘅「提案數」本身因為冇新訊息可睇而失真。
+
+**修復**：沿用 D62 已驗證嘅修法，將三個節點嘅 `apikey`／`Authorization` header 由寫死字串改為 `={{ $env.SUPABASE_SERVICE_KEY }}` 表達式。GET→PUT 4 欄位鐵律部署（`{name,nodes,connections,settings}`），前後 diff 確認 30 個節點數目不變、`connections` 逐字元相等、僅目標 6 個 header 值變動。節點快照存入 `.fhs/notes/aireports/n8n-mcp-backups/2026-08-27/D4LK6VrQbiXlju0V/`（已掃描確認冇殘留死 key 字串）。
+
+**驗證狀態（誠實聲明未完成）**：結構層驗證已做（節點/連接 diff 乾淨）；間接證據強（同容器內另一工作流程用完全相同嘅 `$env.SUPABASE_SERVICE_KEY` 寫法喺 2026-08-26 仍正常運作）。但**未做到直接功能驗證**——呢條流程係排程觸發（每日 22:00 UTC），n8n public API v1 冇開放手動觸發呢類流程（`POST .../run` 同 `.../execute` 皆回 405），只能等今晚排程自然執行後查 `ig_messages` 有冇新行、執行記錄有冇再出 401。**本次刻意唔用雲端排程 agent 做自動覆核**——雲端 sandbox 見唔到本機 `.env`（`N8N_KEY`/`SUPABASE_SERVICE_KEY`），要做到就必須將密碼寫入雲端排程設定，等同重犯本次修緊嘅同一種「密碼放錯地方」錯誤，故放棄，改為留待人手或下個 session 主動查證。
+
+**D58 checkpoint 本身判定**：**結論作廢**，7 句唔可信。待今晚驗證修復生效後，需重新起一個乾淨嘅觀察期先重新計數（≥10/<10 門檻邏輯本身不變，只係呢輪樣本污染）。
+
+全文見 Changelog.md 2026-08-27 條目、`learnings/n8n.md` #8。**Subagent 使用記錄**：❌未使用（跨 Supabase SQL／n8n API／git 歷史三方即時交叉查證，委派會斷推理鏈）。
+
+---
+
 [2026-08-26] (D69續六) 進度狀態往返失真全套根治方案 — `/execute` 執行完成
 
 **背景**：D69續四 cl-flow-fast 判決 CONDITIONAL_READY，Fat Mo 已就 3 項拍板（見 D69續四段落），本輪 `/execute` 落地。原 `artifacts/2026-08-26-0828/` 內嘅 a3-draft 逐行技術規格已 gitignored，本 session 之worktree 冇存到，執行前先重新讀現行程式碼＋live Supabase 查證重建技術設計（非逐字重播 a3-draft），已向 Fat Mo 聲明此點並取得「照你方向去處理」嘅授權。

@@ -505,7 +505,9 @@ return [{ json: { summary, red: 0, yellow: 0, gray: 0, matched: 0, inPipe: 0, to
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+// SUPABASE_SERVICE_KEY 不再 build-time 插值——2026-08-27 D58-follow 事故教訓：
+// 焗死字面 key 令 builder 重跑會覆蓋 live 手動修復。全部 5 個 service-key 節點
+// 改用 runtime 表達式 $env.SUPABASE_SERVICE_KEY，同 D62 手法一致。
 
 const workflow = {
   name: 'FHS_IGWatchdog_DriveWatch',
@@ -699,8 +701,8 @@ const workflow = {
         sendHeaders: true,
         specifyHeaders: 'keypair',
         headerParameters: { parameters: [
-          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
-          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'apikey', value: '={{ $env.SUPABASE_SERVICE_KEY }}' },
+          { name: 'Authorization', value: "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}" },
           { name: 'Content-Type', value: 'application/json' },
           { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
         ] },
@@ -724,8 +726,8 @@ const workflow = {
         sendHeaders: true,
         specifyHeaders: 'keypair',
         headerParameters: { parameters: [
-          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
-          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'apikey', value: '={{ $env.SUPABASE_SERVICE_KEY }}' },
+          { name: 'Authorization', value: "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}" },
           { name: 'Content-Type', value: 'application/json' },
         ] },
         sendBody: true,
@@ -762,8 +764,8 @@ const workflow = {
         sendHeaders: true,
         specifyHeaders: 'keypair',
         headerParameters: { parameters: [
-          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
-          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'apikey', value: '={{ $env.SUPABASE_SERVICE_KEY }}' },
+          { name: 'Authorization', value: "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}" },
           { name: 'Content-Type', value: 'application/json' },
           { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
         ] },
@@ -798,8 +800,8 @@ const workflow = {
         sendHeaders: true,
         specifyHeaders: 'keypair',
         headerParameters: { parameters: [
-          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
-          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'apikey', value: '={{ $env.SUPABASE_SERVICE_KEY }}' },
+          { name: 'Authorization', value: "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}" },
           { name: 'Content-Type', value: 'application/json' },
           { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
         ] },
@@ -836,8 +838,8 @@ const workflow = {
         sendHeaders: true,
         specifyHeaders: 'keypair',
         headerParameters: { parameters: [
-          { name: 'apikey', value: SUPABASE_SERVICE_KEY },
-          { name: 'Authorization', value: 'Bearer ' + SUPABASE_SERVICE_KEY },
+          { name: 'apikey', value: '={{ $env.SUPABASE_SERVICE_KEY }}' },
+          { name: 'Authorization', value: "={{ 'Bearer ' + $env.SUPABASE_SERVICE_KEY }}" },
           { name: 'Content-Type', value: 'application/json' },
           { name: 'Prefer', value: 'resolution=ignore-duplicates,return=minimal' },
         ] },
