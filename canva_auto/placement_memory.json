@@ -5074,7 +5074,7 @@
       "flow_stage": "stage3",
       "applies_to": "all",
       "text": "Stage③ 讀 CDF 搵 Fat Mo 臨時拖入元素必須讀全部頁（唔好加 page_indices 過濾）；臨時件可以落錯頁（例 page1），淨讀 page2-4 會誤判「未上載」",
-      "promoted_to": null
+      "promoted_to": "canva-auto.md §Stage③ 步驟1b 搵臨時件讀全部頁"
     },
     {
       "id": "CV-39",
@@ -5093,8 +5093,8 @@
         4
       ],
       "applies_to": "全幅AI短片",
-      "text": "page4 動畫格跟 page2 彩色格（同 top、同高度），唔好繼承母片 page4 嘅 Fat Mo 單次偏好微調值（例 Chinok 放大版 796.8²，佢話「不必理會」）（0600108 補：動畫格中心亦跟 page2 彩色格中心［954.52 對 954.82］，高度＝字句 top−花環 top 上限 643.77，闊按 3:4 零裁切 482.83）",
-      "promoted_to": null
+      "text": "page4 動畫格跟 page2 彩色格（同 top、同高度），唔好繼承母片 page4 嘅 Fat Mo 單次偏好微調值（例 Chinok 放大版 796.8²，佢話「不必理會」）（0600108 補：動畫格中心亦跟 page2 彩色格中心［954.52 對 954.82］，高度＝字句 top−花環 top 上限 643.77，闊按 3:4 零裁切 482.83）【2026-09-25 升格修訂：高度上限改按 CV-58（底邊＝字句 box top −0.29×字號），不再取 643.77 貼 box top；中心容許約 ±2px】",
+      "promoted_to": "canva-auto.md §全幅款page4動畫格（CV-40）"
     },
     {
       "id": "CV-41",
@@ -5181,8 +5181,8 @@
         2
       ],
       "applies_to": "all",
-      "text": "local_prep.py 輸出（彩色 cutout＋黑白 parakeet）Fat Mo 採用率唔穩定：0600914／0600728／0601011 採用，07001006／0600709／0600903 棄用自己重做。Stage③ 交付時預留 Fat Mo 自行替換嘅可能（臨時件、元素層效果，見 CV-36），唔好因前兩單採用就假設今單會採用；CV-37 雖已 retired，其棄用現象仍會發生",
-      "promoted_to": null
+      "text": "local_prep.py 輸出（彩色 cutout＋黑白 parakeet）Fat Mo 採用率唔穩定：0600914／0600728／0601011 採用，07001006／0600709／0600903 棄用自己重做。Stage③ 交付時預留 Fat Mo 自行替換嘅可能（臨時件、元素層效果，見 CV-36），唔好因前兩單採用就假設今單會採用；CV-37 雖已 retired，其棄用現象仍會發生【2026-09-25 升格補：0600108／06001007 亦棄用（共 5 單棄用）；開單前先 git fetch 確認 local_prep 係主線最新版；u2net_human_seg 版採用率待觀察】",
+      "promoted_to": "canva-auto.md §Stage① step4 local_prep採用率唔穩＋開單前fetch"
     },
     {
       "id": "CV-50",

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-25] canva-auto 規則升格：CV-38（搵臨時件讀全部頁）＋CV-40（page4 動畫格）＋CV-49（local_prep 採用率）
+
+- Fat Mo 批准，`canva-auto.md` v1.8.8。**CV-38**（0600914／0600108／06001007）→ Stage③ 步驟 1b：`read-design` 搵臨時件唔加 `page_indices`、連 `background.media`，臨時件可落錯頁（0600914 圖對落 page1）。
+- **CV-40**（同三單）→ 新小節「全幅款 page4 動畫格」：top＝page2 彩色格 top、中心跟 page2 彩色格（容許 ±2px）、底邊按 CV-58、闊按原生比例零裁切、唔沿用母片單次微調（Chinok 796.8²）。CV-40 舊「取 643.77 貼字句 box top」已按 CV-58 修訂。
+- **CV-49**（0600914／0600728／0601011 採用；07001006／0600709／0600903／0600108／06001007 棄用）→ Stage① step 4：local_prep 採用率唔穩、交付預留替換；補「開單前先 `git fetch` 確認 local_prep 係主線最新版」（06001007 教訓）。
+- `placement_memory.json` 三規則 `promoted_to` 已填；`canva_memory_validate.js` exit 0。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-24] canva-auto 規則升格：CV-36（元素層背景移除唔跟 asset 走）＋CV-30（container 統一分級）
 
 - Fat Mo 批准。**CV-36**（5 單：0600709／0600728／07001006／0600108／06001007）→ `canva-auto.md` Stage③ 新節：分「asset 層已透明」／「原檔＋元素層去背」兩類；AI 交付時必須主動列出要 Fat Mo 撳背景移除嘅元素清單；不可為保去背改用臨時元素刪母片元素（CV-01）；Stage⑤ 存檔頁兩法皆可。
