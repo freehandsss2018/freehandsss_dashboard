@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-24] handoff 清理：移除兩行已結案待辦
+
+- 刪除 `handoff.md` MASTER 表兩行：①「[canva-auto] 0600903 存檔頁右上原相錯客＋多餘副本」（Fat Mo 確認已結案）；②「[D79續-follow] 財務RPC 3個舊有口徑問題」（2026-09-23 已修復並經 finance-auditor 驗收，見 `2026-09-23_item-sale-price-financial-rpc-fix_completion_report.md`，該行為過時字樣）。
+- 核對：D83-follow 於 handoff 第 4／6／45 行已標 ⚪ D84 已決定不修，無殘字。純文件清理，無代碼／財務數字改動。
+
 ## [2026-09-24] D84 Stop hook 陳述句財務結論缺口：量度後決定不擴充（cl-flow-fast 2026-09-24-0534）
 
 - **緣起**：D83 重播揪出「純陳述句＋純 Edit/Write 寫文件」嘅財務結論，`stop-finance-auditor.js` 五個訊號全部偵測唔到，D83 留待另案評估。

@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-24 (handoff 清理：移除兩行已結案待辦): 🏷️ ✅
+
+**摘要**：刪 canva-auto 0600903 行與已修復嘅財務 RPC 三口徑行，全文見 [Changelog.md](../../Changelog.md) 2026-09-24 handoff 清理條目。
+
 ## 2026-09-22 (D83 防再發方案裁決 — cl-flow-fast 否決原4層方案，執行 Stop hook 缺口修復): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-22 D83 條目、`artifacts/2026-09-21-1536/cl-final-plan.md`。Gemini 對抗評審 1 BLOCKER+4 MAJOR+1 MINOR 全採納，原提案否決；執行修 `stop-finance-auditor.js` 缺口（35/35 夾具 PASS）＋成本總覽加組件現行立場。重播意外揪出新缺口（陳述句財務結論從未被偵測），已誠實記錄、範圍外未修。
