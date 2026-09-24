@@ -169,6 +169,28 @@
 - **驗證**：本機起 static server 直接接 production Supabase，重測單 0650429——清空品項批次→reload 後 input 正確保持空白（唔再打返「第34批」）；有自己批次嘅品項（如同單鎖匙扣）reload 後不受影響；另一個從未設過批次嘅品項（DB=`null`）而家正確顯示空白（原本會借用訂單批次顯示，屬已確認嘅預期行為改變）。測試完已用 UI 操作（非直接寫 DB）將 0650429 還原返原本狀態，冇留低測試痕跡喺生產數據。
 - 已將修好嘅檔案 cp 落主倉 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Fat Mo 手動測試用嗰份路徑，跟 memory `feedback_v42_main_repo_test_copy` 慣例）。`current.html`（生產部署版）本次一併同步升格（見 Phase 2.5）。
 - 全文見本條目。**Subagent 使用記錄**：❌未使用，全程主 session 直接查碼 + Browser 對 production Supabase 實測復現同驗證。
+## [2026-09-15] D87（原暫編 D79）：訂單總覽批次色重做（方案C）——底色跟訂單、顏色跟批次
+
+- **緣起**：Fat Mo 截圖回報 0600914（手模擺設冇批次 + 兩件鎖匙扣第36批）同一張單顏色分裂——冇批次品項白色、第36批品項三文魚紅全格填色，睇落好似兩張單。查證確認根因：批次色同訂單分組共用同一個視覺通道（格底色），單號/日期/客人等訂單層 rowspan 格跟「第一件貨」嘅批次色，混批/未入批單必然分裂；另揪出色板本身有撞色（第29/30批同色、第39/40批同色）。
+- **方案**：三路 Explore 盤點桌面/手機/CSS 全部批次色觸點 + ui-designer 定稿 + Opus 對抗審查（3 MAJOR 4 MINOR 全修）+ `/8d` 自我迭代兩輪，定案方案 C：訂單層格（勾選/單號/日期/客人/備註）改用「訂單斑馬底色」（單張 `#FFFFFF`／雙張 `#FAF7F4`，按渲染次序交替，唔再跟批次）；品項層格改「批次深色 9% 疊喺該張單斑馬底」；產品明細卡加 4px 批次色條（冇批次=透明）；批次輸入框改標籤樣式（有批次=淡色底+同色邊框，冇批次=白底虛線）；類別視圖色條落第一個類別格（`box-shadow inset`，避免 border-collapse 走位）；色板改按批次號尾數（`% 10`）揀色，10 個色相冷暖交錯，逐一計過對比度（accent 對白 ≥3.24:1，pill 上文字 ≥12.4:1）。舊 `BATCH_COLORS`/`getBatchColor()` 整個換走，7 個呼叫點全部改寫。手機 accordion 順手修埋一個既有問題：改批次一直唔會即時變色（regex 只認桌面 id 前綴），呢次同桌面共用同一個 `fhsBatchPaint()` 令兩邊都即時變色。
+- **實作**：`freehandsss_dashboardV42.html` 11 個步驟（S1-S11，見方案書），共 108 行新增/85 行刪除；另喺 `FHS_INTEGRATION.md` 補一條 Known failure mode（新增品項欄漏帶 `batch-cell`+`background-color` 嘅後果同驗證方法），改前已備份落 `.fhs/ai/governance/backups/`。
+- **驗證**：派 fresh-context agent（general-purpose，未睇實作過程）獨立驗收，用生產 Supabase 62 張真實訂單，逐項 `getComputedStyle` 實測對照色值表（非只讀碼）——13 項驗收標準全 PASS：訂單頭/品項淡底/色條/批次標籤色值精確對得上、57+30 張訂單斑馬零違規、類別視圖色條 46 行零缺漏、桌面+手機即時變色（含手機新行為）、受控失焦測試零 Supabase 請求、全站漏帶 DOM 檢查零缺漏、console 全程零 error。1130-1280px 窄桌面橫向溢出經 `git stash` 比對 baseline 確認屬 pre-existing（同今次改動無關）。
+- 已 copy 落主倉 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`，hash 核對一致。`current.html` 本次未改動。全文見方案書 `.fhs/reports/planning/batch-color-option-c-plan_2026-09-14.md`、decisions.md D79。**Subagent 使用記錄**：✅ 派 3 個 Explore（分路盤點）+ 1 個 ui-designer（定稿規格）+ 1 個 general-purpose/Opus（對抗審查方案）+ 1 個 general-purpose（fresh-context 獨立驗收），主 session 負責整合、獨立核對審查員關鍵事實聲稱、實作全部代碼改動。
+
+⚠️ **編號撞號說明**（2026-09-24 合併入 main 時重編：與主線 D79〔n8n secret 洩漏〕撞號，收款分帳雙模式→D86、批次色方案C→D87，同 D80 先例）：下方原暫編「D79」（收款分帳雙模式，現 D86）與上方原暫編「D79」（訂單總覽批次色重做，現 D87）係兩條獨立並行 worktree 分支各自編號、事後 merge 先發現撞號，非同一事件（同 D69 系列先例同類情況）。
+
+## [2026-09-15 續] 收款分帳逐件/簡化雙模式：自動填餘值一致化 + 總額不符確認 bar + 快捷掣顏色狀態化（flow 2026-09-15-0607）
+
+- **緣起**：Fat Mo 截圖回報訂單 0600914（Shirley，木框套裝(4肢) $2380 + 嬰兒鎖匙扣×2）分帳操作三個問題：①逐格點擊清空可任意輸入、自動餘值仍可改（截圖二，已運作但漏冇提示）；②訂金+尾數改到唔等於總金額時，應彈頁內確認提示，按「是」後唔再自動填/唔再問；③人手改動後，「全部半訂/全部付清」全域掣同逐箱「半/全」快捷掣顏色冇取消（截圖三/四紅圈），因每次表單重算都無條件將顏色塗返（`calculatePricing()` 幾乎任何輸入都觸發），簡化（3類別彙總）模式仲漏埋 $0 bug（輸入 0 會彈返舊值）同從未設過「人手改動」狀態。
+- **規劃**：`/cl-flow-fast`（flow_id `2026-09-15-0607`）先參照歷史 D69/D69續/D69續II（`decisions.md:3566-3605`，同一收款分帳區既有機制：`dataset.isDefault` 人手鎖定旗標＋恆算餘值＋`window._fhsForceSync` 全域掣繞過），寫 `a3-draft.md`（M1-M15）交 Gemini A2 對抗評審（`gemini-3.6-flash`）。評審 7 條批評，6 條採納：**BLOCKER**——`focusout` 用 `setTimeout(0)` 讀對面箱現值時，對面箱嘅 `focusin` 已經清空自己，跨欄 Tab 必爆假警報（改同步執行，唔用 setTimeout）；**MAJOR**——單一全域 bar 多行不符時互相覆蓋（改佇列逐條顯示「(1/2)」）／「取消」邏輯原本會改動操作員未掂過嘅對面箱（金額已收款）而非還原剛改嗰格（已修正——只還原操作員自己剛改嗰格）／售價變動主動彈 bar 會打斷非分帳操作（改靜默失效，等下次觸碰先問）；**MINOR**——簡化模式整類別 ack 唔應遮蔽逐件模式品項級警告（改用獨立 `window._fhsSimpAck` 類別層 map，唔寫入逐件 ack）／iOS PWA 軟鍵盤下動態插入 DOM 會跳畫（bar 改 `position:fixed` 頂部浮動，跟 S165 草稿救援 banner 同款做法）。1 條駁回（單數售價令半掣顏色推導錯——已證實唔成立，因半/全狀態只喺撳自己快捷掣時先記低，唔會誤判交叉同步寫入嘅值）。
+- **實作**（`freehandsss_dashboardV42.html`，唯一改動檔案）：
+  - 新增 `window._fhsQuickState`（撳邊個快捷「半/全」掣，非 DOM dataset、令狀態自動跨重繪存活）驅動 `_fhsPaintSplitBtnStates()` 統一由「快捷掣狀態＋現值是否仍吻合」推導逐箱＋全域掣顏色，取代原本四個事件各自塗色（R2 主因：`_quickHalfFillAllSplits` 尾段原本無條件將全部「半」掣塗綠，即使冇填任何箱）。`_syncGlobalDepositBtnUI` 新增 `'manual'` 中性灰分支。
+  - 新增 `window._fhsMismatchAck`（品項行 ack）+ `window._fhsMismatchQueue`（多行排隊）+ `_fhsCheckSplitMismatch`/`_fhsRenderMismatchBar`/`_fhsMismatchAckCurrent`/`_fhsMismatchCancelCurrent`：逐件模式 focusout 同步（非 setTimeout）判斷該行訂金+尾數是否等於售價，不等則浮動 bar 提示，「是」鎖定該行唔再自動填/唔再問，「取消」只還原操作員剛改嗰格。
+  - 簡化模式 `_fhsSimpInputCommit` 改用 `value.trim()===''` 判斷留空（原本 `total===0` 令輸入 0 被當「未填」彈返舊值），總額不符警告併入既有「確認分攤」同一個 bar；`_fhsAllocateSimplified` 分攤寫值時清 quickState 令 painter 正確判「人手」（修簡化模式漏設 manual 狀態）。
+  - `_quickFillAllSplits`/`_quickHalfFillAllSplits`（全域「全部半訂/全部付清」）force 時清晒涉及箱嘅 ack＋佇列，符合「全部」= 重新分配語意。
+- **驗證**：主 session browser 真實鍵盤/事件模擬自測全數 PASS（跨欄 Tab 零假警報、取消只還原剛改箱、$0/$0 豁免情境、force 覆寫鎖定箱、三次重算顏色不變、雙行佇列排隊、舊單載入唔觸發、簡化模式 0 輸入唔彈返、375px 手機零溢出、零 console error）。依紅線「驗收不自驗」（收款金額改動）另派 **fresh-context agent** 獨立覆核，12 項測試矩陣全數 PASS，確認 A2 BLOCKER 修復（同步執行）確實生效，另外揪出 1 個非阻擋性小 bug：簡化模式 readonly 鏡像顯示用 `agg[cat] || ''`，令確認咗嘅合法 $0 顯示做空白（同 T9 修復目的矛盾）——已修復（`agg[cat]` 恆為數字，移除多餘 `|| ''`，三處：`_fhsRefreshSimplifiedView`/`_fhsSimpConfirmAlloc`/`_fhsSimpCancelAlloc`），修復後再驗證 PASS。
+- 純前端 UI 互動修復，`captureFormState()`／既有 HTML ID／n8n／Supabase schema 零改動；核心財務公式（`Math.max(0, calcPrice-paid)` 恆算餘值）本身不變，只加行為回饋層，故未觸發 finance-gatekeeper 路由表同步（同 D69 系列先例一致——該系列同一功能區塊改動亦未觸發）。已將修好嗰份 copy 落主倉 `Freehandsss_Dashboard/freehandsss_dashboardV42.html`（Fat Mo 手動測試用嗰份路徑，見 memory `feedback_v42_main_repo_test_copy`）；`current.html`（生產部署版）本次未改動。
+- 全文見方案 `artifacts/2026-09-15-0607/cl-final-plan.md`（含批評處理表）。**Subagent 使用記錄**：✅已使用 general-purpose fresh-context agent 做獨立驗收覆核（12 項測試矩陣 PASS，揪出並促成 1 個修復）。
 
 ## [2026-09-15] Session（Claude Code / Sonnet 5↔Opus 5 執行）— canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付（史上首單單片家族，新規則 CV-42、CV-33 升格）
 

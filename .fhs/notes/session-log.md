@@ -52,6 +52,15 @@
 
 **摘要**：執行 `python Maintenance_Tools/run_all.py`（AGENTS.md v1.7.1）。四項有效測試全PASS：LIFECYCLE 26.5s（Create→Update→Delete 全週期含 Supabase 刪除驗證）、STRESS 67.2s（TC-01~05 五情境含正常單/空品項/未知SKU/污染資料型別/缺主資訊全符合 EXPECT_LANDING）、ACCEPTANCE 26.6s（混合品項+未知SKU failsafe）、PRICE_AUDIT 4.6s（Product_Database 無空白售價）。所有測試單均以 `test` 開頭且已清理完畢。**LOCAL_AUDIT 被 SKIP**：`run_all.py` 第27行仍引用 `test_audit_0695346.py`，該檔已於 2026-04-07 commit `66eaf483`（/execute 沉積清理）刪除，`run_all.py` 當時未同步更新引用——導致「Profit Auditor 本地邏輯測試」自 4 月起靜默停跑至少 5 個月，期間所有 `/fhs-check` 應該都回報過同一 SKIP 卻從未被當作 Red Flag 處理（`run_all.py` 自身邏輯把 SKIP 視為非阻斷，仍宣告「全部通過」）。此為 `/fhs-check.md` 健康標準（要求所有測試腳本均 PASS）與 `run_all.py` 實際寬容度之間的落差，非本次操作引入。已停手待 Fat Mo 裁決處理方式（刪除 CHECKS 清單該項 / 另尋替代腳本如 `update_profit_auditor.py` / 重建缺失測試），未自作主張修改。
 **Subagent 使用記錄**：❌未使用（單一腳本執行+git log 溯源，主 session 直接查證即可）。
+## 2026-09-15 (D79：訂單總覽批次色重做——方案C，底色跟訂單斑馬紋、顏色跟批次): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15「D79」條目 + [decisions.md D79](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報混批/未入批訂單顏色分裂（0600914：手模擺設冇批次白色、鎖匙扣第36批全格三文魚紅）；三路 Explore 盤點全部批次色觸點 + ui-designer 定稿方案C + Opus 對抗審查（3 MAJOR 4 MINOR 全修）+ `/8d` 自我迭代兩輪規劃。定案：訂單層格改跟訂單斑馬底色（唔再跟批次），品項層格改「批次深色9%疊斑馬底」+ 產品卡4px色條 + 批次框標籤化，色板改按批次號尾數揀色（解撞色）。11步驟實作，順手修埋手機改批次一直唔會即時變色嘅既有問題。fresh-context agent 用62張生產真單逐項 getComputedStyle 實測，13項驗收標準全PASS。已 copy 落主倉 V42.html，`current.html` 未動；每批顏色會變已經 Fat Mo 接受。
+**Subagent 使用記錄**：✅ 派 3 個 Explore（分路盤點）+ 1 個 ui-designer（定稿規格）+ 1 個 general-purpose/Opus（對抗審查方案）+ 1 個 general-purpose（fresh-context 獨立驗收），主 session 負責整合、實作全部代碼改動。
+## 2026-09-15 續 (D79：收款分帳逐件/簡化雙模式自動填餘值一致化+總額不符確認bar+快捷掣顏色狀態化，⚠️與上一條D79編號撞號見decisions.md註記): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15「續」條目 + [decisions.md D79](decisions.md)（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。Fat Mo 截圖回報訂單0600914三問題：自動填餘值缺提示、全域掣/快捷掣顏色冇取消、簡化模式$0 bug。`/cl-flow-fast`（flow 2026-09-15-0607）規劃，Gemini A2對抗評審7條批評6採納（BLOCKER：focusout setTimeout競態改同步執行；MAJOR：多行bar改佇列、取消只還原剛改箱、售價變動改靜默失效）。主session browser真實事件模擬自測全PASS，另派fresh-context agent獨立覆核（紅線「驗收不自驗」，收款金額改動）12項測試矩陣全PASS，揪出並修復1個簡化模式`agg[cat]||''`顯示bug。純前端UI修復，核心財務公式不變，未觸發finance-gatekeeper路由同步（同D69系列先例）。已cp落主倉V42.html，current.html本次未動（是否升格待Fat Mo手動測試後決定）。
+**Subagent 使用記錄**：✅ 派 1 個 general-purpose fresh-context agent 做獨立驗收覆核，未用於實作。
+## 2026-09-15 (canva-auto：_hilaryy. 0601011 純音樂款第4單全流程交付，史上首單單片家族): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-15 條目 + `canva_auto/placement_memory.json` order `0601011`（無完成報告的小改動，Changelog 為全文居所，本行僅摘要指回）。素材只得一條卡通片（史上首見），開工前問 Fat Mo 確認揀雙直片家族+單片重複填兩格（非AI自行決定）。Stage①-⑤全交付：黑白圖零修改，彩色圖/字句/page3 各有 Fat Mo 微調（字句字號42.67→56、字距0.073→0.14，新規則CV-42）。AI 曾憑肉眼睇export誤報page3未去背，後量框角像素推翻。CV-33（素材角色核對）達4單升格入canva-auto.md。Stage⑤存檔頁已建，待Fat Mo拖本客原相貼入合集。
 **Subagent 使用記錄**：❌未使用（canva-auto指令明文禁止派工，Canva MCP在主session）。
