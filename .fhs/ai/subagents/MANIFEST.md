@@ -11,7 +11,7 @@
 |-------|---------|-------|--------|-------------|--------|
 | ui-designer | 2.0.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/ui-designer.md` | lst97 (FHS rewrite) |
 | frontend-developer | 1.1.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/frontend-developer.md` | lst97 (FHS rewrite) |
-| code-reviewer | 1.1.0 | claude-haiku-4-5 | active | `~/.claude/agents/freehandsss/code-reviewer.md` | lst97 (FHS rewrite) |
+| code-reviewer | 1.2.0 | claude-haiku-4-5 | active | `~/.claude/agents/freehandsss/code-reviewer.md` | lst97 (FHS rewrite) |
 | database-reviewer | 2.2.1 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/database-reviewer.md` | FHS native (ECC concept rewrite) |
 | tdd-guide | 1.1.0 | claude-sonnet-4-6 | active | `~/.claude/agents/freehandsss/tdd-guide.md` | FHS native (ECC concept rewrite) |
 | build-error-resolver | 1.0.0 | claude-haiku-4-5-20251001 | active | `~/.claude/agents/freehandsss/build-error-resolver.md` | FHS native (ECC concept rewrite) |
@@ -31,6 +31,7 @@
 | frontend-developer | 1.1.0 | 2026-04-05 | 加入 FHS Design Spec Input Contract |
 | code-reviewer | 1.0.0 | 2026-04-05 | 初次安裝 |
 | code-reviewer | 1.1.0 | 2026-04-05 | 加入 UX/Visual Quality Checklist（4 項） |
+| code-reviewer | 1.2.0 | 2026-08-29 | 補「Icon 鐵律稽核」5 項（依 FHS_INTEGRATION Section 六），D88（原暫編 D69），2026-09-24 撿回 main |
 
 ---
 

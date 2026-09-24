@@ -3975,3 +3975,17 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **明確不做範圍**：`category_revenue`分攤演算法架構缺口（②另案）依然未解，需Fat Mo先拍板分攤邏輯；0600704/0500719/0600722維持NULL；`sync_order_to_mirror`COALESCE保護待排期。
 
 全文見`.fhs/notes/FHS_System_Logic_Overview.md`§10.27、CHANGELOG.md 2026-09-24、`artifacts/2026-09-24-0134/`。**Subagent 使用記錄**：✅ `finance-auditor`（本任務全程共5輪背景派工：分攤方案初評、14張單分類驗算獨立覆核、K_FAM_COMBO/0600704深挖、部署後最終驗收）。
+
+### D88（原暫編 D69，2026-09-24 撿回 main 時重編：與主線 D69 系列撞號）：code-reviewer.md 補「Icon 鐵律稽核」——補回 Section 六與稽核關卡的漏同步（2026-08-29）
+
+**來源**：`claude/wonderful-bhaskara-1e9f3e`（2026-08-29 完成、從未併入 main；Fat Mo 2026-09-24 批准選擇性撿回）。
+
+**緣起**：Fat Mo 指出 `FHS_INTEGRATION.md` Section 三聲稱「供 code-reviewer 使用」，但 Section 六「Icon 鐵律」（2026-08-10 訂立，含禁 emoji、禁重複 symbol id 等 6 條）在 `code-reviewer.md` 全文零提及（grep `icon|Icon|sprite|Lucide|emoji` 零命中）。查證確認：`code-reviewer.md` 頭部 `last_updated: 2026-05-16`，比 Section 六訂立早三個月，屬真實漏同步而非刻意排除。
+
+**裁決**：Fat Mo 批准補全套方案（非精簡版）。
+
+**修復**：`code-reviewer.md` 新增「Icon 鐵律稽核」表格（emoji/裸字符 CRITICAL、重複 symbol id CRITICAL、sprite 引用/風格一致/裝飾圖形 WARNING 共 5 項）；稽核流程加一步 grep 掃描；報告輸出格式加對應子區塊；參考標準補引 Section 六；version v1.1.0 → v1.2.0。`02_model-dispatch.md` v1.0.5 → v1.0.6（§7 追加「稽核 checklist 與來源規則文件漏同步」教訓）。原分支備份檔 `code-reviewer.md.2026-08-29.bak` 不撿（git 歷史已有 v1.1.0）。
+
+**撿回時同步**：MANIFEST 版本 v1.1.0→v1.2.0；已安裝副本 `~/.claude/agents/freehandsss/code-reviewer.md` 同步（subagent 實際使用嗰份）。
+
+**Subagent 使用記錄**：❌未使用（單檔文字新增，讀兩份來源文件即可核實缺口，無需委派）。
