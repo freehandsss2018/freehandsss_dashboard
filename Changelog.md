@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-24] 刪除 6 條已合併／放棄分支（Fat Mo 批准，本地＋遠端）
+
+- **已合併**（`git cherry` 零獨有 commit）：`claude/d65-family-owner-role`（c1dd88f）、`claude/read-command-22e327`（9902136）、`claude/interface-color-sync-bug-f54425`（120d7dd）。
+- **放棄**：`claude/read-command-8f0fbb`（f0b29bc，db07e0 首 commit 子集）、`claude/read-command-55d66d`（679f616，MANIFEST 舊版，合併會令 finance-auditor 退 2.3.0→2.2.1）、`claude/read-command-3a168b`（c538689，P 款修復代碼已在 main）。
+- 刪前核對：6 條均無掛 worktree、主倉在 `main`；刪後本地／遠端 ls-remote 皆 0。還原：`git branch <名> <sha>`。
+- 仍在但內容已撿回：`db07e0`／`wonderful-bhaskara-1e9f3e`／`canva-auto-small-chan-ef7849`／`d64261`／`263e23`，待 Fat Mo 決定是否一併刪。**Subagent 使用記錄**：❌未使用（git 操作，無財務判斷）。
+
 ## [2026-09-24] 未合併分支決策文字撿回：d64261（D58-follow 覆核）＋263e23（S147 結案）
 
 - **d64261**：`decisions.md` 新增 D58-follow 2026-08-18 檢視點覆核（提案數 7<10，Fat Mo 裁決唔改入口、重新教學、觀察期延至 **2026-10-05**），置於 D58 章節之後；`learnings/governance.md` #11「功能低使用率檢視點，先排除『唔熟悉操作』先假設『入口太深』」。
