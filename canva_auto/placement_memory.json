@@ -147,9 +147,268 @@
       "corrected_slots": 3,
       "total_slots": 6,
       "note": "全幅AI短片（Ctungdear，母片 Shirley 0600914）。AI 幾何6格修正3格：page2 黑白／彩色高560→642.62、黑白中心960、彩色同left；page4 動畫高560→643.77、中心960→954.5；page3 直片＋小組合零修改（小組合未跟 page2 新尺寸，待確認）。首單 local_prep vs Canva 版逐像素對比：黑白圖去背留封閉空位＋光暈9px、彩色圖白衫邊切走1.5%、Parakeet 飽和度 0.30 對 0.206＋黑位偏低。新規則 CV-52／53／54／55（CV-40 補中心）。"
+    },
+    {
+      "order": "0600512",
+      "date": "2026-09-23",
+      "corrected_slots": 3,
+      "total_slots": 5,
+      "note": "全幅AI短片（Small Chan，母片Ctungdear 0600108）。AI幾何5格修正3格：page2黑白圖位置微調、page2彩色圖放大0.9%+重新引入小量左裁、page4動畫放大2.4%+左移16.97px；page3直片＋右下小組合零修改。主要教訓：local_prep.py換u2net_human_seg模型根治白衫over-cut（CV-56，彩色IoU0.882→0.969/黑白0.784→0.945）；page3右下小組合Stage③首輪漏做經指出後按CV-45補做；page3小組合文字框resize/format_text API對autofit元素完全失效（CV-57，人手位）。"
     }
   ],
   "cases": [
+    {
+      "order": "0600512",
+      "customer": "Small Chan",
+      "design_id": "DAHV7HjmbOA",
+      "date": "2026-09-23",
+      "learned": true,
+      "category": "全幅AI短片",
+      "page_count": 5,
+      "parent_order": "0600108",
+      "first_pass_total": 5,
+      "first_pass_corrected": 3,
+      "family": "全幅AI短片5頁；母片 Ctungdear 0600108 DAHVz5fHg5c（客人片直向9:16、page3片格737.2×1080同本單客人片同屬直向家族，且係最新已完成修正一單）。本單客人片 576×1024 21:16（實測576×1024）47.5sec；Lovart動畫 960×960正方15.1sec；彩色圖1024×1024／黑白圖1334×1179；字句2行『Baba Mama & sister / will always love you ♥️』。冇WhatsApp Audio（全幅款正常）。",
+      "note": "Fat Mo自行UI修改完成（2026-09-23）。AI幾何5格修正3格：page2黑白圖(位置微調)/page2彩色圖(放大0.9%+重新引入小量左裁)/page4動畫(放大2.4%+左移16.97px)被Fat Mo調整；page3直片＋右下小組合零修改。主要教訓：①rembg預設模型白衫over-cut根因查明並換模型修復（CV-56）②page3右下小組合Stage③首輪漏做，經Fat Mo指出後按CV-45補做③page3小組合文字框resize/format_text API對autofit元素完全失效（CV-57，人手位）。Stage⑤：彩色插圖＋字句已完成（`DAHWBPTzf4I`），右上原相待Fat Mo上載本客原相至Canva先可完成交貨。",
+      "slots": [
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "PB1r1fbHjRRxctcB-LB77HXWn954kMQfD（母片元素，保留）",
+          "asset": "MAHV7GRc0d0 AAGCELPNtWk_1790078947220.png 1334×1179（Fat Mo用Canva app Parakeet產出嘅新asset）",
+          "ai_box": {
+            "top": 147.250398678,
+            "left": 596.47,
+            "w": 727.05,
+            "h": 642.6216858618911,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 727.05,
+              "h": 642.6216858618911
+            }
+          },
+          "fatmo_box": {
+            "top": 148.145,
+            "left": 584.419,
+            "w": 727.05,
+            "h": 642.622,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 727.05,
+              "h": 642.622
+            }
+          },
+          "note": "Fat Mo微調位置（left -12.05／top +0.9），大小同零裁切不變，AI公式本身無誤"
+        },
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PB1r1fbHjRRxctcB-LBRvHyPrSQQrT9kL（母片元素，保留）",
+          "asset": "MAHV7KzF8yM 彩色圖.png 1024×1024（原檔，Fat Mo自行Canva元素層背景移除）",
+          "ai_box": {
+            "top": 146.10285995311466,
+            "left": 596.47,
+            "w": 642.6216858618911,
+            "h": 642.6216858618909,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 642.6216858618911,
+              "h": 642.6216858618909
+            }
+          },
+          "fatmo_box": {
+            "top": 142.538,
+            "left": 633.359,
+            "w": 642.453,
+            "h": 648.228,
+            "imageBox": {
+              "top": 0,
+              "left": -5.775,
+              "w": 648.228,
+              "h": 648.228
+            }
+          },
+          "note": "Fat Mo放大0.9%（642.62→648.23）並重新引入小量左裁（-5.775px，幅度極小，非零裁切鐵律實質違反）；中心右移+上移，同黑白圖唔再共left（CV-53「共left」手法本單未跟）"
+        },
+        {
+          "slot": "page3_直片",
+          "element_id": "PBpKX7d6642dSQQG-LBLShpnVC4V07tSD（母片元素，保留，container冇resize）",
+          "asset": "VAHV7ONrq80 WhatsApp Video 2026-09-17 at 21.04.15.mp4 576×1024（metadata／本地tkhd一致，本單無CV-17陷阱）",
+          "ai_box": {
+            "top": 0,
+            "left": 592.7742798601207,
+            "w": 737.1767107790307,
+            "h": 1080,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 737.1767107790308,
+              "h": 1310.536374718277
+            }
+          },
+          "fatmo_box": "=ai_box（零修改）",
+          "note": "貼頂零裁切（底部裁約230.5px保住面部），background沿用Fat Mo自設同一條片；Fat Mo零修改"
+        },
+        {
+          "slot": "page3_右下小組合",
+          "element_id": "黑白 PBpKX7d6642dSQQG-LBNFJNYN3fRF8z5q／彩色 PBpKX7d6642dSQQG-LBn0z2LXYzc3xmsS（母片元素，保留）",
+          "ai_box": {
+            "黑白": {
+              "top": 770.23,
+              "left": 1526.067,
+              "w": 208.8,
+              "h": 184.573,
+              "imageBox": {
+                "top": 0,
+                "left": 0,
+                "w": 208.8,
+                "h": 184.573
+              }
+            },
+            "彩色": {
+              "top": 768.626,
+              "left": 1540.13,
+              "w": 184.524,
+              "h": 186.136,
+              "imageBox": {
+                "top": 0,
+                "left": 0,
+                "w": 184.524,
+                "h": 186.136
+              }
+            }
+          },
+          "fatmo_box": "=ai_box（零修改）",
+          "note": "AI Stage③首輪漏做（見non_geometry_findings），Fat Mo指出後按CV-45用page2最終座標（換料時）重算仿射（s=0.28718，由母片page2/page3對應關係推導）補做；Fat Mo收貨零再修改，CV-45方法論再驗證一次"
+        },
+        {
+          "slot": "page4_動畫",
+          "element_id": "PBf1CMJ0CQGLZ45t-LBR1YP3qgQwHy2s6（母片元素，保留）",
+          "asset": "VAHV7B7wzp0 影片 1 (1).mp4：get-assets metadata報960×1920（錯，CV-17第8次）；縮圖360×360、本地tkhd 960×960正方15.1sec",
+          "ai_box": {
+            "top": 146.1028599531146,
+            "left": 632.635,
+            "w": 643.7692245866446,
+            "h": 643.7692245866446,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 643.7692245866446,
+              "h": 643.7692245866446
+            }
+          },
+          "fatmo_box": {
+            "top": 146.103,
+            "left": 615.669,
+            "w": 659.223,
+            "h": 659.223,
+            "imageBox": {
+              "top": 0,
+              "left": 0,
+              "w": 659.223,
+              "h": 659.223
+            }
+          },
+          "note": "Fat Mo放大2.4%（643.77→659.22）並左移16.97px（中心954.52→945.28），零裁切保留；新中心同page2彩色格新中心（954.59）唔完全對齊（差9.3px），CV-40「跟page2彩色格中心」本單只係大致，非精確"
+        },
+        {
+          "slot": "stage5_存檔頁",
+          "element_id": "存檔頁 DAHWBPTzf4I（由 07001006 augustinefok 存檔頁 p155 單頁複製；已歸入 Free_recorder (09/26)）",
+          "asset": "彩色插圖 MAHV7KzF8yM 彩色圖.png 1024×1024（同page2用嗰個asset，正方零裁切，母版container本身都係正方，闊度零改動）",
+          "ai_box": {
+            "彩色插圖": {
+              "top": 111.91,
+              "left": 139.775,
+              "w": 214.4285,
+              "h": 214.4285,
+              "imageBox": {
+                "top": 0,
+                "left": 0,
+                "w": 214.4285,
+                "h": 214.4285
+              },
+              "note": "母版container本身正方、asset本身正方，唔使resize，直接update_fill+crop_media歸零即完成"
+            },
+            "字句": {
+              "top": 354,
+              "left": 105.148,
+              "w": 290,
+              "h": 39.42,
+              "fontSize": 14,
+              "lineHeight": 1.67,
+              "letterSpacing": 0.165,
+              "lines": 2,
+              "note": "沿用母版格式直接replace_text，2行冇爆版"
+            }
+          },
+          "fatmo_box": "待 Fat Mo 貼入合集後覆核",
+          "note": "🔴右上原相未完成：Small Chan客人原相（1.png／UUID jpg 78703d4e-...）從未上載入Canva，母版仍帶住augustinefok嘅原相（MAHVuXy227A）——本欄位AI做唔到，需Fat Mo將本客原相拖入呢個存檔頁design先可以交貨（Stage⑤鐵律9：右上原相未入Canva就唔可以交）"
+        }
+      ],
+      "non_geometry_findings": [
+        "Stage①母片揀Ctungdear 0600108：客人片直向9:16、page3片格737.2×1080同屬直向家族，且係最新已完成修正一單（learned:true，6格修正3格經驗已入庫）",
+        "local_prep.py CV-56根因修復：Fat Mo對首輪去背成品唔滿意並自行Canva重做逐像素對比，揪出CV-54「彩色mask前置」只治標——真正根源係rembg預設u2net模型對大片低對比白色saliency信心唔夠（白衫延伸到圖邊over-cut達24×(彩色)/14.7×(黑白)under-cut，對位IoU 0.846跌穿0.90門檻完全冇觸發）。換u2net_human_seg後IoU：彩色0.882→0.969、黑白0.784→0.945，對位IoU回升到0.964。此修復對之後所有單即時生效",
+        "流程事故：首輪local_prep對比誤跑咗main checkout嘅舊版local_prep.py（bash cwd漂移出worktree），已確認只worktree分支被改、main checkout未受影響",
+        "page3右下小組合Stage③首輪漏做（換料時淨做咗直片+text，漏咗細圖對），Fat Mo指出後補做——下次Stage③清單須明確列明page3全部4個元素（直片/黑白細圖/彩色細圖/字句）",
+        "page3小組合文字框（LB8Txj7z77KFPTBs）fontSize/box高度AI改唔到：resize_element傳height一律報not_permitted「vertical resize not supported」（只width生效但會令height自動重wrap唔受控）、format_text嘅fontSize多次驗證CDF回讀完全唔變。已知API限制，同CV-50 letterSpacing同類，列人手位",
+        "素材：1.png／UUID jpg同一張客人原相唔同裁法（留Stage⑤用）；word.png 2行核對同customer phrase一致，冇拆行爭議",
+        "Stage⑤合集`Free_Laser (09/26)`(DAHU_lpDwxo, 161頁)尾4頁（p158-161）發現非本序列相關嘅零散頁（3張唔認得嘅客人原相＋1句唔認得嘅字句「This love,heavy and sweet...」），推測係其他並行session（如evie.c414 0600112）Stage⑤半途留低嘅碎片，非完整存檔頁模板；已改名『[可刪·AI探索副本 pNNN]』並歸入Free_recorder(09/26)避免誤用，唔屬於本單改動。改用p155（augustinefok 07001006，結構完整驗證過）做母版複製來源"
+      ],
+      "lessons": [
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "ai_error",
+          "rule": "CV-56",
+          "text": "local_prep.py首輪去背用預設u2net模型，白衫over-cut嚴重，Fat Mo唔滿意自行Canva重做，逐像素對比揪出根源並換u2net_human_seg修復",
+          "src": "non_geometry_findings[1]"
+        },
+        {
+          "page": [
+            3
+          ],
+          "type": "ai_error",
+          "rule": null,
+          "text": "Stage③首輪漏做page3右下小組合換料，只做咗直片同字句，Fat Mo指出後按CV-45補做",
+          "src": "slots[page3_右下小組合].note"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "彩色圖Fat Mo自行放大0.9%+重新引入小量左裁-5.775px，非零裁切鐵律實質違反（幅度極小）；同黑白圖唔再共left，CV-53手法本單未跟",
+          "src": "slots[page2_彩色圖].note"
+        },
+        {
+          "page": [
+            4
+          ],
+          "type": "fatmo_technique",
+          "rule": null,
+          "text": "動畫格Fat Mo放大2.4%並左移16.97px，新中心較page2彩色格新中心偏差9.3px，CV-40「跟page2彩色格中心」本單只係大致對齊",
+          "src": "slots[page4_動畫].note"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage3",
+          "type": "tool_bug",
+          "rule": "CV-57",
+          "text": "page3小組合文字框resize_element(height)報not_permitted、format_text(fontSize)完全無效，只width-resize/position生效，字號調整列人手位",
+          "src": "non_geometry_findings[4]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "ai_error",
+          "rule": null,
+          "text": "首輪local_prep對比誤跑main checkout舊版local_prep.py（bash cwd漂移出worktree），已釐清只worktree分支被改",
+          "src": "non_geometry_findings[2]"
+        }
+      ]
+    },
     {
       "order": "0600108",
       "customer": "Ctungdear",
@@ -4499,6 +4758,24 @@
       "flow_stage": "stage1",
       "applies_to": "all",
       "text": "Fat Mo 2026-09-21 明示 local_prep 政策：去背預設由 AI 做並盡量做好，唔得先由 Fat Mo 用 Canva 補；AI 只須每單將自己輸出同 Fat Mo Canva 版逐像素對比、從差異學習改良，唔使追求 100%（不可能）。Fat Mo 下載 Canva 版時放喺 local_prep_out（檔案已白底壓平＋裁到人物 bbox，無 alpha，只可估去背範圍）",
+      "promoted_to": null
+    },
+    {
+      "id": "CV-56",
+      "type": "ai_error",
+      "page": "flow",
+      "flow_stage": "stage1",
+      "applies_to": "all",
+      "text": "rembg預設u2net模型對大片低對比白色（白衫近似米白背景）saliency信心唔夠，白衫延伸到圖邊時over-cut嚴重（CV-54「彩色mask前置」對位IoU跌穿0.90門檻完全冇觸發，即CV-54修法對呢類單完全冇作用）。換用`u2net_human_seg`（人像專用模型，local_prep.py REMBG_MODEL常數）後，同Fat Mo Canva版IoU：彩色0.882→0.969、黑白0.784→0.945；CV-54機制保留並正常觸發（對位IoU 0.846→0.964）。試過alpha_matting（彩色再加少少但慢3倍、黑白冇提升）／isnet-general-use（彩色最勁0.989但線稿災難性失敗0.364，線條太疏被當背景）均不採用。",
+      "promoted_to": null
+    },
+    {
+      "id": "CV-57",
+      "type": "tool_bug",
+      "page": "flow",
+      "flow_stage": "stage3",
+      "applies_to": "all",
+      "text": "`edit-design`嘅`resize_element`對autofit（動態高度）文字元素嘅height參數一律報`not_permitted`「vertical resize not supported」，只有width可以改（改width會令box自動重新wrap，height隨之改變但唔受控）；`format_text`嘅fontSize對呢類元素完全冇效（多次驗證，CDF回讀數值不變）。字號/框高調整已知只能人手位（Fat Mo UI改），同CV-50 letterSpacing同類。",
       "promoted_to": null
     }
   ]

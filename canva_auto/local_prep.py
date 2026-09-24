@@ -41,6 +41,24 @@ placement_memory.json CV-54／CV-55）：
     0.159 → 0.122。線條真正嘅 Canva 上色仍未完全重現（最暗像素偏紫、飽和度高），
     餘下誤差屬未解。
   - 仍未做：外圍淺灰光暈（約 9px）、底部白衫沿用彩色去背嘅 over-cut。
+
+2026-09-22 改良（0600512 Small Chan 案，Fat Mo 對成品唔滿意主動 Canva 重做後逐像素
+對比發現，見 placement_memory.json CV-56）：
+  - 根源查明：上面 CV-54／CV-55 嘅「彩色 mask 前置」只係治標，白衫 over-cut 嘅真正
+    根源係 rembg **預設 `u2net` 模型**本身對大片低對比白色（白衫近似米白紙底背景）
+    saliency 信心唔夠。0600512 白衫延伸到圖邊，over-cut 達 24×（彩色）／14.7×（黑白）
+    under-cut，對位 IoU 只得 0.846（<FIT_MIN_IOU 0.90），前置 mask 冇觸發、黑白圖
+    退回純 rembg，即係話 CV-54 嘅修法對呢單完全冇作用。
+  - 換 `u2net_human_seg`（人像專用模型，同 session 兩張圖共用）後，同 Fat Mo Canva
+    版 IoU：彩色 0.882→**0.969**，黑白 0.784→**0.945**（原始 rembg 輸出，未過
+    Parakeet／對位管線）。`alpha_matting=True` 再加返少少（彩色 0.973）但黑白冇提升
+    仲慢 3×（9.3s vs 3.5s／兩圖），暫不用。`isnet-general-use` 對彩色更勁（0.989）
+    但對線稿災難性失敗（0.364——線稿線條太疏，唔似「顯著物件」，大片被當背景），
+    唔可用於黑白圖。
+  - 上面 CV-54 嘅「彩色 mask 前置＋affine 對位」機制**保留**（唔刪）：換咗模型後
+    對位 IoU 理應會過 0.90 門檻，前置邏輯可以繼續生效補埋殘餘封閉空位；即使對位
+    仍然失敗，退回嘅純 rembg（而家已經係 human_seg）本身都已經夠好。
+  - 仍未做：外圍淺灰光暈、髮絲邊緣軟化程度同 Canva 版仲有少量差異（未量化）。
 """
 
 import argparse
@@ -49,7 +67,7 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
-from rembg import remove
+from rembg import new_session, remove
 from scipy import ndimage as ndi
 
 # 主公式：正規化座標 u=x/寬, v=y/高（0-1）；由 0800802 訂單 Canva 原生
@@ -68,10 +86,19 @@ BG_COVER_FRAC = 0.5       # 連通區被前置 mask 判背景嘅比例超過即�
 MIN_BG_REGION_PX = 200    # 太細嘅白區（線條縫隙）唔理
 FIT_MIN_IOU = 0.90        # 對位 IoU 低過呢個值就唔信前置 mask
 
+REMBG_MODEL = "u2net_human_seg"   # 0600512：人像專用模型，白衫 over-cut 大幅改善（CV-56）
+_session_cache = {}
+
+
+def _rembg_session():
+    if REMBG_MODEL not in _session_cache:
+        _session_cache[REMBG_MODEL] = new_session(REMBG_MODEL)
+    return _session_cache[REMBG_MODEL]
+
 
 def _rembg_rgba(image_path: Path) -> Image.Image:
     data = image_path.read_bytes()
-    return Image.open(BytesIO(remove(data))).convert("RGBA")
+    return Image.open(BytesIO(remove(data, session=_rembg_session()))).convert("RGBA")
 
 
 def remove_background(image_path: Path):
