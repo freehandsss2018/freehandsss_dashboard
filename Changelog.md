@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-24] 未合併分支選擇性撿回：IG 看門狗 builder／code-reviewer v1.2.0／Small Chan 去背
+
+- **緣起**：審視揪出 8 條分支 commit 從未入 main。逐條 `git cherry`＋dry-run merge 後結論：整條合併會令舊 handoff/Changelog 蓋回 main，改為只撿代碼與決策文字。
+- **①** 49a134a `build_n8n_workflow.cjs`：5 個 service-key 節點由 build-time 字面插值改 runtime `$env`（來源 `read-command-db07e0`）。哨兵值實跑 builder，產物零字面 key、10 處 `$env`；live 以 n8n REST API 核對 5 個寫入節點已是 `$env`（3 個 Fetch 節點為 `sb_publishable_` 公開 key，預期）→ 此修復屬防回退。連帶撿 D58-follow／follow-v2 決策、learnings/n8n #11 #12。不撿節點備份 JSON（恐含已撤銷舊 key）。
+- **②** f924740 code-reviewer v1.1.0→v1.2.0「Icon 鐵律稽核」，決策編號由暫編 D69（與主線 D69 系列撞號）重編 **D88**；02_model-dispatch v1.0.6、00_INDEX、MANIFEST 1.2.0 同步；已安裝副本 cp＋cmp 一致。
+- **③** ee28216 `local_prep.py` rembg `u2net`→`u2net_human_seg`（CV-56）＋`placement_memory.json` CV-56/57＋tooling learnings #15。`canva_memory_validate.js` PASS、py_compile OK、合成圖實跑載入 OK；**去背品質只有分支 session 量度（IoU 彩色 0.882→0.969／黑白 0.784→0.945），撿回後未用真人相複驗**。
+- **未撿**：`8f0fbb`（db07e0 子集）、`55d66d`（MANIFEST 舊版會令 finance-auditor 退版）、`3a168b`（修復已在 main）；`d64261`／`263e23` 決策文字待 Fat Mo 確認。**Subagent 使用記錄**：❌未使用（git 比對／腳本驗證，無財務判斷）。
+
 ## [2026-09-24] handoff 全面審視＋生產版分岔修復：合併 d65／22e327 入 main 並重新部署
 
 - **緣起**：Fat Mo 指出 handoff 有多項已結案仍顯示。審視揪出 11 條分支嘅 commit 從未入 main（各 session 喺自己分支更新 handoff，`/read` 讀 main 所以睇唔到），並揪出 NAS 生產版（fhs-build 2026-09-24T10:18:18Z）係由未合併分支 `claude/d65-family-owner-role` 部署，覆蓋咗同日 main 嘅 K_FAM_COMBO 修復同 5638507 批次清空修復。
