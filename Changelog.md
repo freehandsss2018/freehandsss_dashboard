@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-25] 便攜塊瘦身：動態段 21,041 → 3,962 bytes（P0.7.1 輪轉）
+
+- 依 `commit.md` P0.7.1：🎯／✅已定決策／🔬驗證／📋待辦／➡️下一步 舊內容原文完整封存至 `.fhs/memory/archive/handoff-portable-block-2026-09-25-rotation.md`（不刪任何內容），便攜塊只留當前狀態＋連結。「⚠️ 易猜錯」欄不動。
+- 輪轉前逐項核對待辦於 MASTER 表有對應列；缺 3 項已補：`[分支清理]` 5條已撿內容分支待刪、`[learnings 桶超配額]`（frontend 30／governance 21／tooling 18）、`[全檔767/768舊threshold]`。
+- 驗證：`fhs-health-check` 便攜塊「過肥」警報消失，「便攜塊與MASTER表不一致」／「時限待辦漏帶」皆無；其餘 7 項屬既有（learnings 3 桶超額、commit.md agents_version、archive/handoff.md 斷鏈、P0.6 歸檔洩漏 40 項、/fhs-usage-audit 逾期），未在本次處理範圍。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] S170／S175 最終裁決：S175 council 結案唔裝；S170 to-spec 延長至 2026-10-23
 
 - Fat Mo 重新回答：**S175 llm-council-skill 結案，唔裝**（MASTER 列搬入已確認完成，重啟條件記 D28）；**S170 拷問技能試用閘通過、四支留低，to-spec 第二批繼續延長審視期至 2026-10-23**（便攜塊 ⏰ 時限待辦僅剩 S170）。取代下方同日「兩項都延長」條目。同步 decisions.md D28、handoff、auto-memory。**Subagent 使用記錄**：❌未使用。
