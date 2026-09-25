@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-25] V42.html 全檔 Read 抽樣檢查（回應 /fhs-usage-audit 浪費模式 #3）＋ /read 改讀 handoff 前 13 行
+
+- **方法**：掃全部 transcript 的 Read 工具呼叫，以是否帶 `offset`／`limit` 判斷窗口讀 vs 全檔讀（精確，非抽樣）。
+- **結果**：V42.html 953 次、current.html 104 次、Changelog.md 173 次、decisions.md 130 次、Logic_Overview 67 次——**全部 100% 窗口讀，零次全檔**（usage-audit 當日「V42.html 被 Read 376 次，無法分辨」之疑慮解除，非違規）。唯一例外 `handoff.md`：390 次中 42 次（11%）無窗口，回傳中位數約 25.6k 字元，皆成功（當時檔案較小）。
+- **根因**：`/read` 指令說明（`read.md` 步驟 2、`SOP_NOW.md`、橋接版）寫「讀取 handoff.md」而無範圍限定。handoff.md 現 228KB，全檔讀已必失敗。
+- **修正**：三處改為「前 13 行（`limit: 13`＝便攜塊）＋禁全檔 Read＋待辦明細 Grep MASTER 表後窗口讀」。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] R14 觀察期初步覆核＋覆核腳本 cd-review.js
 
 - 新增 `scripts/usage-audit/cd-review.js`（唯讀）：比對 R14 上線前後 cd 前綴比例、上線後 worktree→主倉 cd、hook 日誌；10-09 正式覆核一行指令可跑。

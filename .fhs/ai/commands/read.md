@@ -31,7 +31,7 @@
 按以下優先級讀取（忽略不存在的檔案）：
 
 1. `/.fhs/notes/SOP_NOW.md` — 系統快照與初始化需求
-2. `/.fhs/memory/handoff.md` — 上次 session 交接狀態
+2. `/.fhs/memory/handoff.md` **前 13 行**（Read 用 `limit: 13`＝便攜塊）— 上次 session 交接狀態。⚠️ **禁全檔 Read**（CLAUDE.md 紅線；檔案 >200KB，全檔讀必失敗）；待辦明細用 Grep 查下方「MASTER 持續待辦」表，再窗口讀
 3. `/.fhs/ai/AGENTS.md`（前 100 行）— 確認憲法版本號
 
 ### 步驟 3：狀態輸出
