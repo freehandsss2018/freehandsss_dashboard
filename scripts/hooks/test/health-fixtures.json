@@ -16,5 +16,6 @@
   { "name": "15-portable-stale", "expected_issue_count": 1, "expected_substrings": ["便攜塊與MASTER表不一致", "0600111"] },
   { "name": "16-portable-consistent", "expected_issue_count": 0, "expect_stdout_empty": true },
   { "name": "17-canonical-structured-own-version", "expected_issue_count": 0, "expect_stdout_empty": true },
-  { "name": "18-canonical-structured-marker-drift", "expected_issue_count": 1, "expected_substrings": ["過時", "v0.9.0"] }
+  { "name": "18-canonical-structured-marker-drift", "expected_issue_count": 1, "expected_substrings": ["過時", "v0.9.0"] },
+  { "name": "19-archive-bak-prefix-not-link", "expected_issue_count": 0, "expect_stdout_empty": true }
 ]

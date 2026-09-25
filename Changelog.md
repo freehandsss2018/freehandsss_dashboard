@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] 健檢「archive/handoff.md 斷鏈」假陽性修復（archive_link_checks 連結規則）
+
+- 根因：`fhs-health-rules.json` 兩條 `archive_link_checks`（handoff／decisions）的 `link_pattern` 為 `archive/[\w.\-]+\.md`，未限定結尾；handoff.md 提到的備份檔 `archive/handoff.md.pre-rotation-2026-09-19.bak`（檔案存在）前半段被誤當連結 `archive/handoff.md`，報目標不存在。
+- 修復：兩條規則 `link_pattern` 補負向前瞻 `(?![\w.\-])`，`.md` 後不可再接檔名字元。新增夾具 19（`.bak` 前綴＋真連結皆存在＝靜默），舊規則 FAIL／新規則 PASS，health 夾具 19/19。健檢異常 2→1（只剩 `/fhs-usage-audit` 逾期）。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] D91：健檢「commit.md 版本不符」假陽性根治
 
 - `fhs-health-check.js` `checkCanonicalDrift()`：structured 類 canonical key 參照檔改用 `reference_pattern`（只認顯式標記），修復自 2026-09-18 起 `commit.md` 自己嘅 `> Version:` 被誤當 AGENTS 版本嘅假陽性；literal 類維持原行為。新增夾具 17／18，舊碼 FAIL、新碼 18/18 PASS；健檢異常 3→2。決策 decisions.md D91。**Subagent 使用記錄**：❌未使用。

@@ -172,13 +172,13 @@
     {
       "id": "handoff_archive_links",
       "scan_file": ".fhs/memory/handoff.md",
-      "link_pattern": "archive/[\\w.\\-]+\\.md",
+      "link_pattern": "archive/[\\w.\\-]+\\.md(?![\\w.\\-])",
       "resolve_base": ".fhs/memory"
     },
     {
       "id": "decisions_archive_links",
       "scan_file": ".fhs/notes/decisions.md",
-      "link_pattern": "archive/[\\w.\\-]+\\.md",
+      "link_pattern": "archive/[\\w.\\-]+\\.md(?![\\w.\\-])",
       "resolve_base": ".fhs/memory"
     }
   ],
