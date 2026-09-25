@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-25] handoff MASTER 表過時列清理＋便攜塊 canva 待辦對齊
+
+- MASTER 表：2 個 `[2026-08-16-follow]` `accessory_cost` 列核對已修復（V42 `loadMode2Items()` select 已含；`pre-tool-guard.js:289`／`post-tool-kgov.js:91` regex 已含，commit 7feca4e／D67），搬入「已確認完成（2026-09-25）」；task_4a9acd82／task_0c9d1c51 過時。D58 列檢視點由 2026-08-18 更正為 2026-10-05（09-05 已覆核）。
+- 便攜塊：🎯／📋／➡️ 三欄 canva-auto「6 張存檔頁待貼入」改為已完成＋真實剩餘（0600108 p3 小組合、4 個 Canva 副本待刪、SOP 只剩 Step 0 一條），同 MASTER 表一致。
+- 未處理（待 Fat Mo）：S170／S175 試用閘（原定 2026-08-09）與 S140 R11-observe 覆核逾期未有結論；D69 撞號提醒列是否歸檔。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] handoff 核對：canva-auto 5 行「存檔頁未貼入」待辦已過時，改為完成＋拆出真實剩餘項
 
 - 對 Canva 合集 `Free_Laser (09/26)`（162 頁）核對：0600709 Chinok p151、0601011 _hilaryy. p153、0600728 Dorothy p154、07001006 augustinefok p155、0600108 Ctungdear p156、06001007 p157 存檔頁全部已貼入且縮圖見去背＋右上原相（縮圖眼證，未逐格量度）。handoff 5 行舊待辦（頁碼 p152／p156／p159 等亦已失效）合併為 1 行 ✅。
