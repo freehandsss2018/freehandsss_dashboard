@@ -4099,3 +4099,15 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **覆核（2026-10-09，列便攜塊 ⏰ 時限待辦）**：讀主倉 `.fhs/.kgov-observe.log`（忽略 2026-09-25 當日開發測試行）：①若期間**仍無真正「shell 寫財務檔」個案**（預期如此）→ 建議**退役 R11-observe**（連同 kgov 相關觀察文件），改依賴 PostToolUse kgov（已修復，D93）與 R13／財務 Stop hook；②若出現真個案→ 針對該個案樣式收窄成精準規則再議轉硬攔，而非放寬。
 
 **已知邊界**：日誌只記命令前 80 字元；重新起算後 2026-09-25 當日日誌含本次開發測試指令，判讀時忽略當日。**Subagent 使用記錄**：❌未使用（transcript 回放量度＋guard 改動＋夾具自驗）。
+
+### D95：2026-09-25 — 輪詢式短句改用通知取代：Telegram Stop hook 新增「❓ 等你回覆」＋發送重試
+
+**背景**：`/fhs-usage-audit`（2026-09-25）指出「輪詢式短句」（Y／繼續／已完成？／Continue／Try again，合計約 56 次）可用通知取代。回放全部 transcript 量度上一回合狀態：**「已完成？」41 次中 30 次（73%）上一回合 ≥120s**（完成通知應已發，日誌顯示發送約 10% 因連線中斷／逾時失敗）；**「Y／可以」35 次中 24 次上一回合僅 30–120s**，AI 用**純文字**問確認而非 AskUserQuestion 工具——舊通知邏輯（只有 AskUserQuestion／權限請求即時通知＋Stop 僅 ≥120s 才發）對此完全靜默，逼使用者回來輪詢。「Continue from where you left off」24 次中位數距上則訊息 2.3 小時，屬 session 恢復訊息，非使用者輪詢，不處理。
+
+**修改（user-level，repo 外：`~/.claude/telegram-notify/`，原檔備份 `*.bak-2026-09-25`）**：①`on-stop.js`：新增 `needsReply()`（結尾以問號結束，或結尾 ~120 字內含「要唔要／要不要／請回覆／請選擇／等你回覆／告訴我／待你」等明確用語；刻意不用單詞「確認」，避免「已確認完成」誤判）；命中即發「❓ [會話] 等你回覆」，**不受 120 秒門檻限制**，取訊息**尾段**（問題在結尾）；其餘維持 ≥120s 才發「✅ 任務完成」；新增 `logInfo` 記錄每次 sent／kind／dur，令日後可審計（舊版成功發送不留記錄）。②`lib.js`：`sendTelegramMessage` 加一次重試——僅連線層快速失敗（TLS 中斷等）且首次 3 秒內失敗才重試（Stop hook 逾時 8 秒：5s＋0.8s＋4s）；逾時／HTTP 非 200 不重試；新增 `FHS_NOTIFY_DRY_RUN=1` 只印不發。
+
+**驗證**：dry-run 7 個情境全過（短回合問句→❓、短回合正常收尾→靜默、長回合→✅、「要唔要」結尾→❓、長回合問句→❓優先、「已確認完成」→靜默、stop_hook_active→靜默）；假 https 測重試：中斷後第二次成功（2 次呼叫）、連續中斷 2 次後放棄、HTTP 400 不重試。測試殘留日誌行已清除。**未做真實 Telegram 發送**（不代 Fat Mo 發訊息），首次自然出現「AI 以問句收尾」時即會發 ❓，可由 `telegram-notify.log` 的 `on-stop: sent=…, kind=ask` 確認。
+
+**不做／已知邊界**：①「已完成？」73% 屬 ≥120s 回合，通知本就會發——重試只能減少約 10% 的發送失敗，無法保證使用者有睇到；②「繼續」／「Try again」屬 AI 中途停低或出錯，非通知可解；③`needsReply` 為關鍵字啟發式，可能對修辭問句多發（寧多勿漏，可經 `telegram-notify.log` 檢視 kind=ask 命中後微調）；④程式在 repo 外，換機需另行複製（見 auto-memory `reference_telegram_notify_hooks`）。
+
+**Subagent 使用記錄**：❌未使用（transcript 回放量度＋user-level hook 改動＋dry-run／mock 自驗）。

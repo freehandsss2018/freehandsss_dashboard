@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] D95：輪詢式短句改用通知取代（Telegram Stop hook 新增「❓ 等你回覆」＋發送重試）
+
+- 回放量度：「已完成？」41 次中 73% 上一回合 ≥120s（通知應已發；日誌約 10% 發送失敗）；「Y／可以」35 次中 24 次上一回合僅 30–120s 而 AI 用純文字問確認——舊通知邏輯對此靜默。
+- 修改 `~/.claude/telegram-notify/on-stop.js`（`needsReply()`：問句／明確要求回覆結尾即發 ❓，不受 120s 限制，取尾段；新增 sent/kind/dur 日誌）與 `lib.js`（連線層快速失敗重試一次；`FHS_NOTIFY_DRY_RUN`）。原檔備份 `*.bak-2026-09-25`。dry-run 7 情境＋mock 重試全過。決策 decisions.md D95。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] V42.html 全檔 Read 抽樣檢查（回應 /fhs-usage-audit 浪費模式 #3）＋ /read 改讀 handoff 前 13 行
 
 - **方法**：掃全部 transcript 的 Read 工具呼叫，以是否帶 `offset`／`limit` 判斷窗口讀 vs 全檔讀（精確，非抽樣）。

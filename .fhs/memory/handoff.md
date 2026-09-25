@@ -77,6 +77,7 @@
 | ✅ 已裁決 | **[S175] `llm-council-skill` 結案，唔裝（2026-09-25 Fat Mo 裁決）** | D28 v2 判準覆核數字通過（D30／D36／D39＋D43），但決策已由 `/cl-flow` 跨廠評審＋拷問覆蓋、5顧問全Claude分身、`.claude/skills/` 已30支 | 重啟條件：出現一單「`/cl-flow` A1/A2 不可用或同向、決策事後證實錯」個案；全文 decisions.md D28 覆核補記 |
 | ✅ 完成 | **[D90] learnings 三桶超配額處理** | ✅ 退役6條有證據者（governance 3／tooling 3，原文封存 `archive/learnings-retired-2026-09-25.md`）；frontend 25→32、governance 15→20 經 Fat Mo 批准；tooling 15/15；健檢 learnings 超額警報全消 | 全文 decisions.md D90。tooling 已滿，下一條新教訓需先退役或申請提升；frontend 有5條可合併備用（XSS三條／D69收款三條／overflow兩條） |
 | ✅ 完成 | **[D93] Hook 警告隱形問題根治** | ✅ guard 全部警告規則（R3/R4/R6/R8/R11/R12/R13/R14）＋kgov [G] 提醒改經 `hookSpecificOutput.additionalContext` 直達模型，實機探針證實；guard 30/30、kgov 10/10 | 全文 decisions.md D93。注意：R11-observe 觀察期日誌係隱形期累積，判讀命中率要留意；警告從此出現喺對話，如過吵逐條調整 |
+| ✅ 完成 | **[D95] 輪詢式短句改用通知取代** | ✅ Telegram Stop hook 新增「❓ 等你回覆」（AI 以問句／要求回覆收尾即發，不受120s限制）＋發送重試一次；dry-run 7情境＋mock重試全過（程式在 repo 外 `~/.claude/telegram-notify/`，備份 `*.bak-2026-09-25`） | 全文 decisions.md D95。首次自然出現問句收尾時會發 ❓，可查 `telegram-notify.log` 的 `on-stop: sent=…, kind=ask` 確認；未真實發送測試訊息 |
 
 ### 已確認完成（2026-09-25 P0.6 補搬：自 MASTER 待辦表移出，共 40 項）
 
