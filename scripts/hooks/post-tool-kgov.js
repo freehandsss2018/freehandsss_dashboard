@@ -135,7 +135,11 @@ function flagExists() {
 }
 
 function emitAdditionalContext(message) {
-  process.stdout.write(JSON.stringify({ additionalContext: message }) + '\n');
+  // 2026-09-25 D93 修復：舊版輸出頂層 `{additionalContext}` 不被 harness 採用（實測模型收唔到，
+  // [G] 財務提醒自 S148 起隱形）。PostToolUse 正確格式係 hookSpecificOutput.additionalContext。
+  process.stdout.write(JSON.stringify({
+    hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: message }
+  }) + '\n');
 }
 
 function hasFinanceContent(text) {

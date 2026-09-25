@@ -4074,3 +4074,15 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **已知邊界**：只認命令開頭嘅 `cd`（`x && cd y` 等中途 cd 不偵測）；`additionalContext` 為 PreToolUse 輸出格式，若日後 harness 版本不支援會退回只寫 stderr（fail-open，無害）。
 
 **Subagent 使用記錄**：❌未使用（transcript 統計＋guard 改動，夾具自驗）。
+
+### D93：2026-09-25 — Hook 警告隱形問題根治：guard 全部警告規則＋kgov [G] 提醒改經 additionalContext 直達模型
+
+**發現**（D92 實測副產物）：hook exit 0 時 stderr 只進 transcript，**模型收唔到**。`pre-tool-guard.js` 所有「只警告」規則（R3 受保護符號／R4 寫 .env／R6 git add -A／R8 rm -rf／R11-observe 財務 shell 寫入／R12 寫 learnings／R13 bypass 與 fail-open／R14）自建立以來一直隱形；`post-tool-kgov.js` 更係輸出頂層 `{additionalContext}`，PostToolUse 唔採用呢個格式（實測寫入含財務字眼嘅 .md，hook 有輸出、模型完全冇收到），令 [G] 財務／kgov 提醒自 S148 起同樣隱形。R11-observe 觀察期（原定 ~2 週後複查）其實由頭到尾冇人睇到過警告，只有日誌。
+
+**修復**：①`pre-tool-guard.js` 結尾：有 warnings 即輸出 `hookSpecificOutput{hookEventName:PreToolUse, additionalContext}`（stderr 保留；只加資訊，不加 permissionDecision，exit code 不變）。②`post-tool-kgov.js` `emitAdditionalContext` 改輸出 `hookSpecificOutput{hookEventName:PostToolUse, additionalContext}`。③`run-kgov-fixtures.js` 解析器同時接受新舊格式。④新增 guard 夾具 6 個（R8／R11／R4 stdout 直達、無警告不發空 JSON、R6 兩個）；⑤降雜訊：警告變成模型可見後，R6 `git add -A <指定路徑>`（已限範圍、掃唔到 .env）誤報，改為只對 -A／--all／. 之後冇 pathspec 者警告；guard 32/32、kgov 10/10、R13 8/8、health 19/19、finance-stop 35/35。
+
+**實機驗證（非只跑夾具）**：R14／R8／R11-observe 三條 PreToolUse 警告與 kgov PostToolUse G_WARN，修復後皆即時出現喺模型 context；修復前同一個 kgov 探針（Write 含財務字眼 .md）完全無顯示。stop-kgov 已係 `HARD_BLOCK=true`（exit 2＋reason，模型睇到），不受影響。
+
+**含意**：①R11-observe 觀察期由今日起先真正有「人」睇到警告，日誌數據（`.fhs/.kgov-observe.log`）係之前隱形期累積，判讀「命中率」時要留意；②警告從此會出現喺對話，可能有雜訊（R8/R6 等）——如過吵再逐條調整而唔係回退通道；③日後新增任何 hook 警告，必須用 hookSpecificOutput.additionalContext 並做實機探針，唔可以只寫 stderr。**已知邊界**：hookSpecificOutput 需 harness 支援，不支援時退回只寫 stderr（fail-open，無害）。
+
+**Subagent 使用記錄**：❌未使用（hook 改動＋夾具＋實機探針自驗）。

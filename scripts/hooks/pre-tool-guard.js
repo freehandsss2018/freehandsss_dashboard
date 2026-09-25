@@ -410,7 +410,9 @@ process.stdin.on('end', () => {
     }
 
     // ── Rule 6: Warn on git add . or -A ─────────────────────────
-    if (/git\s+add\s+(-A|--all|\.)(\s|$)/.test(command)) {
+    // D93：警告改為模型可見後，`git add -A <指定路徑>`（已限定範圍、唔會掃到 .env）唔應誤報——
+    // 只對「-A／--all／. 之後冇 pathspec」（行尾或接 && ; |）嘅全倉庫暫存警告。
+    if (/git\s+add\s+(?:-A|--all|\.)\s*(?:$|&&|;|\|)/.test(command)) {
       warnings.push(
         '⚠️  [R6] git add . / -A 可能意外包含 .env',
         '   → 建議改用 git add <specific files>，或確認 .gitignore 正確'
@@ -460,12 +462,13 @@ process.stdin.on('end', () => {
     process.exit(2); // BLOCK
   }
 
-  // R14（D92）：exit 0 時 stderr 只進 transcript、模型睇唔到，提醒等於冇發——改用 hook JSON
-  // additionalContext 直接畀模型。只帶 R14 行，唔影響其他規則嘅輸出與權限決定。
-  const r14Lines = warnings.filter(w => w.includes('[R14-observe]') || w.startsWith('   → '));
-  if (warnings.some(w => w.includes('[R14-observe]'))) {
+  // D92/D93：exit 0 時 stderr 只進 transcript、模型睇唔到——本檔所有「只警告」規則
+  // （R3/R4/R6/R8/R11-observe/R12/R13/R14）自建立以來一直係隱形嘅（2026-09-25 實測）。
+  // 改用 hook JSON hookSpecificOutput.additionalContext 直接畀模型；stderr 照舊保留（transcript／人睇）。
+  // 只加資訊，唔改權限決定（冇 permissionDecision），exit code 不變。
+  if (warnings.length > 0) {
     process.stdout.write(JSON.stringify({
-      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: r14Lines.join('\n') }
+      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: warnings.join('\n') }
     }) + '\n');
   }
 

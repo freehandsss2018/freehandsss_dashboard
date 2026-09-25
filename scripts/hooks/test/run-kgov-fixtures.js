@@ -47,7 +47,7 @@ for (const fx of fixtures) {
   let additionalContext = '';
   try {
     const parsed = JSON.parse(result.stdout.trim());
-    additionalContext = parsed.additionalContext || '';
+    additionalContext = (parsed.hookSpecificOutput && parsed.hookSpecificOutput.additionalContext) || parsed.additionalContext || '';
   } catch (_) { /* no JSON output = no additionalContext */ }
 
   // Check assertions

@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] D93：Hook 警告隱形問題根治（guard 全部警告規則＋kgov [G] 提醒改經 additionalContext）
+
+- 根因：exit 0 時 stderr 模型收唔到；`pre-tool-guard.js` 全部警告規則（R3/R4/R6/R8/R11-observe/R12/R13/R14）與 `post-tool-kgov.js` 頂層 `{additionalContext}` 格式（PostToolUse 唔採用）自建立起一直隱形。
+- 修復：guard 結尾輸出 `hookSpecificOutput.additionalContext`；kgov 改 `hookSpecificOutput` 格式；kgov 夾具解析器兼容新舊。新增 guard 夾具 6 個；R6 降雜訊（`git add -A <指定路徑>` 不再誤報）。guard 32/32、kgov 10/10、R13 8/8、health 19/19、finance-stop 35/35。實機探針證實警告即時直達模型（kgov 修復前同一探針完全無顯示）。決策 decisions.md D93。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] D92：Bash `cd` 前綴浪費模式 — guard R14-observe（警告不攔截）
 
 - 全 transcript 統計：115 sessions／9,256 次 Bash，75% 帶 cd 前綴；89% 純多餘、4% cd 入子目錄致目錄漂移循環、1%（75 次）worktree→主倉有改錯倉風險。
