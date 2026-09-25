@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] R14 觀察期初步覆核＋覆核腳本 cd-review.js
+
+- 新增 `scripts/usage-audit/cd-review.js`（唯讀）：比對 R14 上線前後 cd 前綴比例、上線後 worktree→主倉 cd、hook 日誌；10-09 正式覆核一行指令可跑。
+- 初步結果（僅本 session，建規則者自己，非正式結論）：cd 前綴 99% → 14% → 最後 40 次為 0；全 transcript 口徑 75% → 0/37；上線後 worktree→主倉 cd＝0。歷史 89 次 worktree→主倉 cd 多為唯讀檢查、寫入類約 5 次，不宜整類硬攔。正式覆核仍 2026-10-09。決策 decisions.md D92 補記。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] D94：R11-observe 觀察期重新起算（改 log-only，日誌固定寫主倉，10-09 覆核）
 
 - 回放 9,298 次真實 Bash：R11 舊規則命中 82、目標感知版 60，抽樣近乎全為誤報（heredoc／commit 訊息／/tmp 暫存腳本），找不到真正 shell 寫財務檔個案。

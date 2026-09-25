@@ -4071,6 +4071,7 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 
 **不做**：不硬攔（硬攔一個無害但多餘嘅 cd 會逼 AI 重試，反增 token；main 類 75 次待觀察數據再決定）。**覆核**：2026-10-09 讀 `.fhs/.bash-cd-observe.log`：same 比例有冇明顯下降；main 類有冇再出現，若仍有→考慮該類轉硬攔（exit 2）。
 
+**2026-09-25 初步覆核（提前，正式覆核仍 2026-10-09）**：新增可重複覆核腳本 `node scripts/usage-audit/cd-review.js`（唯讀，比對上線前後 cd 比例、上線後 worktree→主倉 cd、hook 日誌）。結果：①**本 session 內**上線前 111/112（99%）Bash 帶 cd，上線後 7/50（14%），其中 7 次全在上線後首 10 次（含刻意測試警告），之後 40 次為 0；全 transcript 口徑上線前 75%（6,955/9,276）→ 上線後 0/37。②上線後 worktree→主倉 cd＝0 次。**但樣本僅得一個 session，且係建規則嗰個 AI（已知規則內容），不能當正式結論**；含 R14 嘅 guard 只喺 R14 合入 main 後新開嘅 worktree 才生效，其餘 session 仍用舊 guard。③歷史 89 次 worktree→主倉 cd（2026-07～09）多為唯讀檢查（git status／fetch／log 約 35 次，python／echo／grep／ls 約 40 次），寫入類（git checkout／add／commit／push、cp）約 5 次——故**不宜整類硬攔**（會擋合理檢查）；2026-10-09 如仍有寫入類個案，只攔「cd 主倉後接寫入指令」，放行唯讀。
 **已知邊界**：只認命令開頭嘅 `cd`（`x && cd y` 等中途 cd 不偵測）；`additionalContext` 為 PreToolUse 輸出格式，若日後 harness 版本不支援會退回只寫 stderr（fail-open，無害）。
 
 **Subagent 使用記錄**：❌未使用（transcript 統計＋guard 改動，夾具自驗）。
