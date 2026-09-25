@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] D92：Bash `cd` 前綴浪費模式 — guard R14-observe（警告不攔截）
+
+- 全 transcript 統計：115 sessions／9,256 次 Bash，75% 帶 cd 前綴；89% 純多餘、4% cd 入子目錄致目錄漂移循環、1%（75 次）worktree→主倉有改錯倉風險。
+- `pre-tool-guard.js` 新增 R14-observe（same／sub／main 三類，警告不攔截，日誌寫主倉 `.fhs/.bash-cd-observe.log`）；以 hook JSON `additionalContext` 傳遞，實測警告直達模型（stderr 在 exit 0 時模型睇唔到）。夾具 26/26，R13／kgov／health 零回歸。2026-10-09 覆核日誌。決策 decisions.md D92。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] /fhs-usage-audit 補跑（逾期 36 天，上次 2026-08-20）
 
 - 掃描 73 sessions（70 新掃／3 快取）；與 08-20 快照對比：每 session 工具使用率幾乎不變（Bash 47.8 vs 47.3、Read 29.3 vs 29.9、Edit 27.2 vs 29.0、Grep 13.0 vs 14.1），sessions 79→73（部分舊 worktree 資料已不在，非同口徑，只比每 session 比率）。快照存 `.fhs/memory/usage-audit/2026-09-25.json`。

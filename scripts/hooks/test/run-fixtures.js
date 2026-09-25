@@ -34,13 +34,23 @@ for (const fx of fixtures) {
     continue;
   }
 
-  const input = JSON.stringify({ tool_name: fx.tool_name, tool_input: fx.tool_input });
+  const input = JSON.stringify({ tool_name: fx.tool_name, tool_input: fx.tool_input, cwd: fx.cwd });
   const result = spawnSync('node', [GUARD_PATH], { input, encoding: 'utf8', env: { ...process.env, FHS_GUARD_FIXTURE: '1' } });
 
   const exitOk = result.status === fx.expected_exit;
   let stderrOk = true;
   if (fx.expected_stderr_contains) {
     stderrOk = fx.expected_stderr_contains.every(s => result.stderr.includes(s));
+  }
+
+  if (fx.expected_stdout_contains) {
+    stderrOk = stderrOk && fx.expected_stdout_contains.every(s => (result.stdout || '').includes(s));
+  }
+  if (fx.expected_stdout_absent) {
+    stderrOk = stderrOk && fx.expected_stdout_absent.every(s => !(result.stdout || '').includes(s));
+  }
+  if (fx.expected_stderr_absent) {
+    stderrOk = stderrOk && fx.expected_stderr_absent.every(s => !result.stderr.includes(s));
   }
 
   const ok = exitOk && stderrOk;

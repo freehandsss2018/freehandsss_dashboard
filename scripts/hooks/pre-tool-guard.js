@@ -125,6 +125,47 @@ function logKgovObserve(commandHead) {
   } catch (_) { /* silent */ }
 }
 
+// ── R14 輔助（D92）：分析 Bash 開頭 cd 前綴 ──────────────────────────────────
+// 觀察數據要跨 worktree 累積（worktree 刪除即失）→ 固定寫入主倉 .fhs/（檔案被 *.log 忽略，不入 git）
+const BASH_CD_ROOT = (() => {
+  const base = path.join(__dirname, '../..');
+  const norm = base.split('\\').join('/');
+  const i = norm.indexOf('/.claude/worktrees/');
+  return i >= 0 ? norm.slice(0, i) : base;
+})();
+const BASH_CD_OBSERVE_LOG = path.join(BASH_CD_ROOT, '.fhs/.bash-cd-observe.log');
+
+function normPath(p) {
+  return String(p).split('\\').join('/')
+    .replace(/^\/([a-zA-Z])\//, (m, d) => d.toUpperCase() + ':/')
+    .replace(/\/+$/, '').toLowerCase();
+}
+
+// 回傳 null（無 cd 前綴／唔屬需警告類型）或 { kind: 'same'|'sub'|'main', target }
+function analyzeBashCd(command, cwd) {
+  const m = String(command).trim().match(/^cd\s+("([^"]+)"|'([^']+)'|(\S+))\s*(?:&&|;)/);
+  if (!m) return null;
+  const target = m[2] || m[3] || m[4];
+  const T = normPath(target), C = normPath(cwd);
+  if (T === C) return { kind: 'same', target };
+  const WT = '/.claude/worktrees/';
+  if (C.includes(WT)) {
+    const mainRoot = C.slice(0, C.indexOf(WT));
+    if (!T.includes(WT) && (T === mainRoot || T.startsWith(mainRoot + '/'))) return { kind: 'main', target };
+  }
+  if (T.startsWith(C + '/')) return { kind: 'sub', target };
+  return null;
+}
+
+function logBashCdObserve(kind, cwd, target) {
+  if (process.env.FHS_GUARD_FIXTURE === '1') return; // 夾具測試不污染觀察數據
+  try {
+    const dir = path.dirname(BASH_CD_OBSERVE_LOG);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(BASH_CD_OBSERVE_LOG, `${new Date().toISOString()} | ${kind} | cwd=${String(cwd).slice(-50)} | target=${String(target).slice(-50)}\n`, 'utf8');
+  } catch (_) { /* silent */ }
+}
+
 let input = '';
 process.stdin.on('data', chunk => { input += chunk; });
 process.stdin.on('end', () => {
@@ -294,6 +335,34 @@ process.stdin.on('end', () => {
       );
     }
 
+    // ── Rule 14 (observe-only, D92, 2026-09-25): Bash 開頭 `cd <路徑> &&` 前綴 ──
+    // 實測（usage-audit，115 sessions／9,256 次 Bash）：75% 帶 cd 前綴，其中 89% 係 cd 去自己已喺嘅目錄
+    // （純多餘），4% cd 入子目錄（cd 會跨 Bash 呼叫持續，令其後指令留喺子目錄，逼出下一次 cd 修返＝循環），
+    // 1% 由 worktree cd 去主倉（靜默改錯倉風險，見 learnings/tooling #7）。
+    // 只警告不攔截（fail-open）；記錄 .fhs/.bash-cd-observe.log 供日後決定是否轉硬攔。
+    if (data.cwd) {
+      const cdInfo = analyzeBashCd(command, data.cwd);
+      if (cdInfo) {
+        logBashCdObserve(cdInfo.kind, data.cwd, cdInfo.target);
+        if (cdInfo.kind === 'same') {
+          warnings.push(
+            '⚠️  [R14-observe] 呢個 Bash 以 `cd <路徑> &&` 開頭，但工作目錄已經係嗰個路徑——請刪走 cd 前綴直接跑指令',
+            '   → 工作目錄跨呼叫持續；多餘 cd 浪費 token，亦會觸發組合指令權限提示'
+          );
+        } else if (cdInfo.kind === 'main') {
+          warnings.push(
+            '⚠️  [R14-observe] worktree session 內 cd 去主倉：其後指令會喺主倉執行，有靜默改錯倉風險（learnings/tooling #7）',
+            '   → 改用 `git -C <主倉> …` 或絕對路徑；主倉只准做已批准嘅對齊（commit.md Phase 2.7）'
+          );
+        } else if (cdInfo.kind === 'sub') {
+          warnings.push(
+            '⚠️  [R14-observe] cd 入子目錄會令其後所有 Bash 留喺該子目錄（cd 跨呼叫持續）——請改用絕對路徑或指令自帶目錄參數',
+            '   → 否則下一次指令要再 cd 返 repo 根，形成循環'
+          );
+        }
+      }
+    }
+
     // ── Rule 13 (D68): handoff 同步閘 — 攔 git commit ────────────
     // 設計理由與已知邊界見檔頭 HANDOFF_FILE 區塊註解。
     if (process.env.FHS_GUARD_FIXTURE !== '1' &&
@@ -389,6 +458,15 @@ process.stdin.on('end', () => {
     blocking.forEach(b => process.stderr.write(b + '\n'));
     process.stderr.write('═══════════════════════════════\n');
     process.exit(2); // BLOCK
+  }
+
+  // R14（D92）：exit 0 時 stderr 只進 transcript、模型睇唔到，提醒等於冇發——改用 hook JSON
+  // additionalContext 直接畀模型。只帶 R14 行，唔影響其他規則嘅輸出與權限決定。
+  const r14Lines = warnings.filter(w => w.includes('[R14-observe]') || w.startsWith('   → '));
+  if (warnings.some(w => w.includes('[R14-observe]'))) {
+    process.stdout.write(JSON.stringify({
+      hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: r14Lines.join('\n') }
+    }) + '\n');
   }
 
   process.exit(0); // Warnings only, allow with caution

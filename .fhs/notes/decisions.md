@@ -4062,3 +4062,15 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **修復**：`checkCanonicalDrift()` 對 `key_type === structured` 且有 `reference_pattern` 者，參照檔改用 `reference_pattern`；literal／未標類型維持原行為（避免 production_html 等 key 一次過湧出無關新警報）。新增夾具 17（參照檔有自己 Version 行＝靜默）／18（顯式標記版本不符＝抓到），舊碼下兩者皆 FAIL、新碼 18/18 PASS。**已知邊界**：現時 repo 內冇任何檔案使用顯式標記，agents_version 跨檔比對預期零命中（canonical_keys.yml 注明係設計如此）；literal 類 key 仍走散文 regex 路徑，日後如需一併收窄另案。
 
 **Subagent 使用記錄**：❌未使用（單一函式修復＋夾具自驗）。
+
+### D92：2026-09-25 — Bash `cd` 前綴浪費模式：guard R14-observe（警告不攔截，經 additionalContext 直達模型）
+
+**背景**：`/fhs-usage-audit`（2026-09-25）發現 Bash 呼叫 75% 帶 `cd <路徑> &&` 前綴。掃全部 transcript（115 sessions／9,256 次 Bash／6,944 次 cd）分類：**89%（6,206）cd 去自己已喺嘅目錄**（純多餘）；4%（295）cd 入子目錄（cd 跨 Bash 呼叫持續，令其後指令留喺子目錄，逼出下一次 cd 修返＝自我維持嘅循環）；1%（75）由 worktree cd 去主倉（靜默改錯倉風險，learnings/tooling #7）；5% 其他。實測：不帶 cd 的 Bash 本來就喺正確 worktree。
+
+**決定**：`pre-tool-guard.js` 新增 R14-observe（僅警告、不攔截、fail-open）：對 `^cd <路徑> &&` 判三類——same／sub／main——各出一句改正建議，並記入主倉 `.fhs/.bash-cd-observe.log`（被 `*.log` 忽略，固定寫主倉以跨 worktree 累積）。**關鍵發現**：exit 0 時 stderr 只進 transcript、模型睇唔到，故 R14 另以 stdout JSON `hookSpecificOutput.additionalContext` 傳遞，實測警告即時出現喺模型 context（R11-observe 等舊 warn-only 規則同樣只寫 stderr，實際上模型睇唔到，另案）。夾具：`guard-fixtures.json` 新增 7 個 R14 案例（26/26 PASS），`run-fixtures.js` 新增 `cwd`／`expected_stdout_*`／`expected_stderr_absent` 支援；其餘 guard／R13／kgov／health 測試零回歸。
+
+**不做**：不硬攔（硬攔一個無害但多餘嘅 cd 會逼 AI 重試，反增 token；main 類 75 次待觀察數據再決定）。**覆核**：2026-10-09 讀 `.fhs/.bash-cd-observe.log`：same 比例有冇明顯下降；main 類有冇再出現，若仍有→考慮該類轉硬攔（exit 2）。
+
+**已知邊界**：只認命令開頭嘅 `cd`（`x && cd y` 等中途 cd 不偵測）；`additionalContext` 為 PreToolUse 輸出格式，若日後 harness 版本不支援會退回只寫 stderr（fail-open，無害）。
+
+**Subagent 使用記錄**：❌未使用（transcript 統計＋guard 改動，夾具自驗）。
