@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-09-25] S170／S175 最終裁決：S175 council 結案唔裝；S170 to-spec 延長至 2026-10-23
+
+- Fat Mo 重新回答：**S175 llm-council-skill 結案，唔裝**（MASTER 列搬入已確認完成，重啟條件記 D28）；**S170 拷問技能試用閘通過、四支留低，to-spec 第二批繼續延長審視期至 2026-10-23**（便攜塊 ⏰ 時限待辦僅剩 S170）。取代下方同日「兩項都延長」條目。同步 decisions.md D28、handoff、auto-memory。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] S170／S175 試用閘逾期覆核補做＋兩項延長審視期至 2026-10-23
 
 - 08-09 排程任務 `fhs-2026-08-09-skill-trial-gate-review` 有跑（41 秒 succeeded）但結論冇落盤；MASTER 表兩列停在「待覆核」47 天。
