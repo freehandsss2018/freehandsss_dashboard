@@ -49,8 +49,8 @@
       "unit": "entries",
       "count_method": "line_regex_count",
       "count_pattern": "^\\d+\\.\\s",
-      "budget": 25,
-      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表"
+      "budget": 32,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表；2026-09-25 Fat Mo 批准配額 25→32（實際增長，見 README §2）"
     },
     {
       "id": "learnings_finance_entries",
@@ -79,8 +79,8 @@
       "unit": "entries",
       "count_method": "line_regex_count",
       "count_pattern": "^\\d+\\.\\s",
-      "budget": 15,
-      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表"
+      "budget": 20,
+      "source": "learnings 分桶重構（2026-08-03，flow 2026-08-03-2003）+ README.md §2 配額表；2026-09-25 Fat Mo 批准配額 15→20（實際增長，見 README §2）"
     },
     {
       "id": "learnings_tooling_entries",

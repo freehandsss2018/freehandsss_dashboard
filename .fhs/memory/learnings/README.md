@@ -12,7 +12,7 @@
 實測發現的病灶：一般 session 依賴 hook 快照、不常執行 `/read` 全量重載，導致大部分 session 的工作記憶內教訓條目數為零——教訓寫了但從未真正被讀取應用。同時，全檔 34% 的體積是退役附註與制度說明，並非教訓本體，卻每次全量載入。
 
 分桶後的設計：
-- 教訓按**領域**（非任務掃描維度）分成 6 個獨立檔案，各自獨立配額，總配額由 50 提升為 115。
+- 教訓按**領域**（非任務掃描維度）分成 6 個獨立檔案，各自獨立配額，總配額由 50 提升為 115（2026-09-25 起 frontend 25→32、governance 15→20，合計 127）。
 - 一個自動化路由機制（見專案的 prompt 路由 hook）依任務內容判斷相關領域，按需注入對應桶檔全文到工作記憶——教訓從「靠記得去讀」變成「相關時自動在場」。
 - 跨領域的教訓，全文只保留在一個「主桶」，其他相關「副桶」只放一行自動生成的指標（pointer），不複製全文——避免同一份知識散落多處各自修改而失去單一真源。
 - 退役附註與制度說明移到本索引檔，不再隨教訓內容一起被自動注入。
@@ -21,13 +21,15 @@
 
 | 桶 | 檔案 | 範圍 | 目前條數 | 配額上限 |
 |---|---|---|---|---|
-| Supabase | [supabase.md](supabase.md) | Postgres / PostgREST / RLS / migration / RPC 權限 | 16 | 20 |
-| Frontend | [frontend.md](frontend.md) | 主應用前端 HTML/JS（表單、渲染、狀態管理） | 23 | 25 |
-| Finance | [finance.md](finance.md) | 定價 / 成本 / SKU / 財務計算規則 | 5 | 20 |
+| Supabase | [supabase.md](supabase.md) | Postgres / PostgREST / RLS / migration / RPC 權限 | 19 | 20 |
+| Frontend | [frontend.md](frontend.md) | 主應用前端 HTML/JS（表單、渲染、狀態管理） | 30 | 32 |
+| Finance | [finance.md](finance.md) | 定價 / 成本 / SKU / 財務計算規則 | 10 | 20 |
 | n8n | [n8n.md](n8n.md) | Workflow 節點、payload、API 限制 | 14 | 20 |
-| Governance | [governance.md](governance.md) | 治理制度、多代理協作、文件生命週期 | 9 | 15 |
-| Tooling | [tooling.md](tooling.md) | 開發工具、第三方整合、harness 怪癖 | 7 | 15 |
-| **合計** | — | — | **62 主文 + 15 個跨桶指標** | **115** |
+| Governance | [governance.md](governance.md) | 治理制度、多代理協作、文件生命週期 | 18 | 20 |
+| Tooling | [tooling.md](tooling.md) | 開發工具、第三方整合、harness 怪癖 | 15 | 15 |
+| **合計** | — | — | **106 主文（2026-09-25 實測）** | **127** |
+
+> **2026-09-25 配額調整**：frontend 25→32、governance 15→20（Fat Mo 批准）。理由：8 週內 frontend 23→30、governance 9→21，皆為已驗證的高頻教訓，非「隨便加」；依 §5 (b) 提升配額而非硬刪。另退役 6 條有證據者，見 §8.9。「目前條數」欄同日校正為實測值（原欄位長期未更新）。下季健檢重新檢視。
 
 > 配額初值為「現況條數 × 約 2.3」的粗略估算，非依歷史增長率精算。**應每季健檢（見專案的定期維護協議）重新檢視是否合理，非一次性定值。**
 
@@ -167,3 +169,21 @@
 ## 9. 遷移記錄
 
 - **2026-08-03**（flow `2026-08-03-2003`）：由單檔 `learnings.md`（50 條）分桶重構為本目錄 6 桶結構。內容 100% 保留（re-file，非重寫）；22 段退役附註 + 檔頭制度說明搬入本檔 §8；三重機械執法（health-rules / post-tool-kgov T6 / pre-tool-guard R12）與路由注入機制的接回，見 `decisions.md` 對應條目。
+
+### 8.9 2026-09-25 配額清理（governance／tooling，`/fhs-health` 示警後處理）
+
+> 原文封存於 `.fhs/memory/archive/learnings-retired-2026-09-25.md`。只退役有具體證據、符合 §5 類別者；frontend／governance 餘額不靠「隨便揀一條刪」處理。
+>
+> 📌 **退役**（2026-09-25）：`governance.md` Pitfalls #10——類1 已升格為更高層規則。`CLAUDE.md` 第三條紅線「驗收不自驗」＋第四條紅線「財務必派 finance-auditor」＋`stop-finance-auditor.js` Stop hook；0600804 再犯教訓已寫入 decisions.md 2026-09-19。
+>
+> 📌 **退役**（2026-09-25）：`governance.md` Preferences #3——類2 已結構性修復。`/cl-flow`／`/cl-flow-fast` 已按 D39 重組為 A3 先寫草案、A1/A2 做評審（`cl-flow.md` 流程本身），全文 decisions.md D39。
+>
+> 📌 **退役**（2026-09-25）：`governance.md` Preferences #4——類3 已在其他文件有更完整記錄。`commit.md` Phase 2.6（fast-forward-only）＋Phase 2.7；全文 decisions.md D70／D89。
+>
+> 📌 **退役**（2026-09-25）：`tooling.md` Pitfalls #3——類3 已在其他文件有更完整記錄。`canva-auto.md` Stage③ 步驟「`resize_element(preserve_aspect_ratio=false)`，width/height 都按新素材長寬比明確計算傳入」（第151行）。
+>
+> 📌 **退役**（2026-09-25）：`tooling.md` Pitfalls #5——類3 已在其他文件有更完整記錄。`canva-auto.md`「禁止沿用母片 imageBox 值」（第158行）及 crop_media 正確理解（第153-154行）。
+>
+> 📌 **退役**（2026-09-25）：`tooling.md` Pitfalls #14——類3 已在其他文件有更完整記錄。`cl-flow.md`／`cl-flow-fast.md`／`ag-flow.md`／`execute.md` Known failure modes 節（「Gemini(A2) fallback鏈全數同時503」標準處理程序）＋`.fhs/memory/lessons/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md`。
+>
+

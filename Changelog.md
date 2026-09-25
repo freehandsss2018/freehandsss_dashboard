@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] D90：learnings 三桶超配額處理（退役 6 條＋frontend／governance 提升配額）
+
+- 退役 6 條有證據者（governance 3、tooling 3），原文封存 `archive/learnings-retired-2026-09-25.md`，README §8.9 登記；frontend 25→32、governance 15→20 經 Fat Mo 批准；tooling 退役後 15/15。
+- `scripts/learnings-pointers.js` 重新生成跨桶指標（含補上漏生成的 n8n #11／#12）；README §2 表格校正為實測值。健檢異常 5→3（learnings 三桶超額全消）。決策全文 decisions.md D90。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] handoff MASTER 表補做 P0.6：40 個已完成列搬入歸檔區
 
 - `fhs-health-check` 報「P0.6 歸檔洩漏」：MASTER 待辦表內 40 列仍標 ✅ 未搬（上限 0）。已將 40 列**原文一字不改、原順序**搬入新區塊「已確認完成（2026-09-25 P0.6 補搬）」；待辦表由 42+40 列變為只剩未完成列。

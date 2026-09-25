@@ -32,6 +32,4 @@
 - → `n8n.md` #4 【高頻 ⚠️】SKU 目錄由「整套價焗死件數」改「單件價 × quantity」模型時，必須專門用 qty≥2 測試單驗證 n8n 有冇真的做呢個乘法
 - → `governance.md` #7 grep sweep 嘅「必查清單」本身可以就係漏嘅源頭，唔止靠記憶寫低嘅清單先會漏
 - → `governance.md` #9 【高頻 ⚠️】向 Fat Mo 確認「窮舉組合表」時禁止預填 ✅/🚫——AI 嘅預填會變成雙方都冇審視嘅共同前提
-- → `governance.md` #10 【高頻 ⚠️】同一個 AI 用同一套方法論自查三次仍會漏——驗收財務/生產改動必須改派獨立 fresh-context agent，唔可以再自己查第四次
-- → `tooling.md` #14 【高頻 ⚠️】`cl-flow-runner.js` 嘅 Gemini fallback鏈（3個model）可以同時全部503 high demand——唔可以見到DEGRADED就直接接受，要即刻curl逐個直探Google API搵活model再用`GEMINI_A2_MODEL_CHAIN` env override即時重試
 <!-- POINTERS:END -->

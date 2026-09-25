@@ -4045,3 +4045,13 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **已知邊界**：只認識別碼，純文字描述嘅待辦偵測唔到；檢查於 SessionStart 與 commit 前手動跑，非 commit 硬攔截（R13 只查日期戳與 staged）；Phase 2.7 只對齊主倉，唔處理主倉未 commit 改動。
 
 **Subagent 使用記錄**：❌未使用（純流程／腳本改動，夾具自驗）。
+
+### D90：2026-09-25 — learnings 三桶超配額處理：退役 6 條有證據者＋frontend／governance 提升配額
+
+**背景**：`fhs-health-check` 示警 frontend 30>25、governance 21>15、tooling 18>15。README §5 規定退役只可符合五類之一，「配額壓力大」不是理由；優先合併精簡或提升配額。
+
+**處理**：①**退役 6 條（有證據）**：governance Pitfalls #10（類1，已升格 CLAUDE.md 第三／四紅線＋Stop hook）、Preferences #3（類2，D39 cl-flow 重組已結構化）、Preferences #4（類3，`commit.md` Phase 2.6／2.7＋D70／D89）；tooling Pitfalls #3、#5（類3，`canva-auto.md` 第151／158行更完整）、#14（類3，cl-flow／execute 等 Known failure modes 已收錄）。原文封存 `.fhs/memory/archive/learnings-retired-2026-09-25.md`，登記 README §8.9。②**提升配額（Fat Mo 批准）**：frontend 25→32、governance 15→20（8 週內 frontend 23→30、governance 9→21，皆已驗證高頻教訓；不為配額硬刪有效知識）。tooling 退役後 15/15 回到配額內。③跨桶指標以 `scripts/learnings-pointers.js` 重新生成（順帶補上 09-24 撿回時漏生成的 `n8n.md` #11／#12 指標）。README §2 表格「目前條數」校正為實測值（原欄位長期未更新）。
+
+**已知邊界**：①各桶條目編號本已非連續（含重複編號），退役後留缺號，未重編（避免外部引用漂移）；②tooling 現時 15/15 已滿，下一條新教訓需先退役或申請提升；③frontend 有 5 條可合併（XSS 三條、D69 收款三條、overflow 兩條）備用，未動；④下季健檢重新檢視配額合理性。
+
+**Subagent 使用記錄**：❌未使用（逐條核對證據＋跑既有生成器，無需委派）。
