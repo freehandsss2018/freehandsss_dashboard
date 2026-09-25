@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] /fhs-usage-audit 補跑（逾期 36 天，上次 2026-08-20）
+
+- 掃描 73 sessions（70 新掃／3 快取）；與 08-20 快照對比：每 session 工具使用率幾乎不變（Bash 47.8 vs 47.3、Read 29.3 vs 29.9、Edit 27.2 vs 29.0、Grep 13.0 vs 14.1），sessions 79→73（部分舊 worktree 資料已不在，非同口徑，只比每 session 比率）。快照存 `.fhs/memory/usage-audit/2026-09-25.json`。
+- 三清單結論見對話回報（只出方案未動手）：Bash `cd` 前綴佔 76%（易致 worktree 路徑漏前綴，見 learnings tooling #7）、`grep`/`cat`/`ls`/`find` 經 Bash 245 次應改用專用工具、短句輪詢（Y／繼續／已完成？／Continue）53 次可接 Stop hook 通知或 auto-continue。健檢異常 1→0。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] 健檢「archive/handoff.md 斷鏈」假陽性修復（archive_link_checks 連結規則）
 
 - 根因：`fhs-health-rules.json` 兩條 `archive_link_checks`（handoff／decisions）的 `link_pattern` 為 `archive/[\w.\-]+\.md`，未限定結尾；handoff.md 提到的備份檔 `archive/handoff.md.pre-rotation-2026-09-19.bak`（檔案存在）前半段被誤當連結 `archive/handoff.md`，報目標不存在。
