@@ -26,7 +26,15 @@ const DEPLOY_TTL_MS = 10 * 60 * 1000;
 // ── kgov shell-write observation log (S140, F12) ────────────────────────────
 // Warn-only for now: log shell writes that touch finance content so we can
 // measure real hit rate before promoting this to a hard PostToolUse flag.
-const KGOV_OBSERVE_LOG = path.join(__dirname, '../../.fhs/.kgov-observe.log');
+// D94（2026-09-25）：觀察數據固定寫入主倉 .fhs/（worktree 刪除即失、且各 worktree 各寫各嘅日誌，
+// 累積唔到有意義嘅命中率）；被 *.log 忽略、不入 git。
+const MAIN_REPO_ROOT = (() => {
+  const base = path.join(__dirname, '../..');
+  const norm = base.split('\\').join('/');
+  const i = norm.indexOf('/.claude/worktrees/');
+  return i >= 0 ? norm.slice(0, i) : base;
+})();
+const KGOV_OBSERVE_LOG = path.join(MAIN_REPO_ROOT, '.fhs/.kgov-observe.log');
 
 function checkDeployAuthorization() {
   try {
@@ -127,12 +135,7 @@ function logKgovObserve(commandHead) {
 
 // ── R14 輔助（D92）：分析 Bash 開頭 cd 前綴 ──────────────────────────────────
 // 觀察數據要跨 worktree 累積（worktree 刪除即失）→ 固定寫入主倉 .fhs/（檔案被 *.log 忽略，不入 git）
-const BASH_CD_ROOT = (() => {
-  const base = path.join(__dirname, '../..');
-  const norm = base.split('\\').join('/');
-  const i = norm.indexOf('/.claude/worktrees/');
-  return i >= 0 ? norm.slice(0, i) : base;
-})();
+const BASH_CD_ROOT = MAIN_REPO_ROOT;
 const BASH_CD_OBSERVE_LOG = path.join(BASH_CD_ROOT, '.fhs/.bash-cd-observe.log');
 
 function normPath(p) {
@@ -328,11 +331,14 @@ process.stdin.on('end', () => {
     // review before this graduates to a hard flag (see governance/05 §4).
     if ((/(?:^|\s)(?:Set-Content|Out-File|tee|sed\s+-i)\b/i.test(command) || />>?/.test(command)) &&
         /handmodel_cost|keychain_cost|necklace_cost|accessory_cost|cost_configurations|final_sale_price|total_cost|net_profit|calculatePricing|CREATE\s+OR\s+REPLACE\s+FUNCTION/i.test(command)) {
-      logKgovObserve(command);
-      warnings.push(
-        '⚠️  [R11-observe] 偵測到 Shell 寫入指令疑似涉及財務欄位（觀察期，未攔截）',
-        '   → 已記錄至 .fhs/.kgov-observe.log，觀察期後複查決定是否轉正為攔截'
-      );
+      // D94（2026-09-25 觀察期重新起算）：改為「只記日誌、不出警告」。回放 9,298 次真實 Bash：
+      // 舊規則命中 82 次、目標感知版 60 次，抽樣近乎全為誤報（heredoc／`git commit -m` 訊息內嘅
+      // `>` 同財務字眼、寫入 /tmp 暫存腳本），對自由格式 shell 文字無法精準；警告直達模型後只會
+      // 製造雜訊。`git commit`／`gh` 訊息文字直接排除。覆核日 2026-10-09：若日誌仍無真正「shell 寫財務檔」
+      // 個案 → 建議退役此規則（見 decisions.md D94）。
+      if (!/\bgit\s+(?:-C\s+\S+\s+)?commit\b|\bgh\s+(?:pr|issue)\b/i.test(command)) {
+        logKgovObserve(command);
+      }
     }
 
     // ── Rule 14 (observe-only, D92, 2026-09-25): Bash 開頭 `cd <路徑> &&` 前綴 ──

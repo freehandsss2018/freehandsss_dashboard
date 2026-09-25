@@ -4083,6 +4083,18 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 
 **實機驗證（非只跑夾具）**：R14／R8／R11-observe 三條 PreToolUse 警告與 kgov PostToolUse G_WARN，修復後皆即時出現喺模型 context；修復前同一個 kgov 探針（Write 含財務字眼 .md）完全無顯示。stop-kgov 已係 `HARD_BLOCK=true`（exit 2＋reason，模型睇到），不受影響。
 
-**含意**：①R11-observe 觀察期由今日起先真正有「人」睇到警告，日誌數據（`.fhs/.kgov-observe.log`）係之前隱形期累積，判讀「命中率」時要留意；②警告從此會出現喺對話，可能有雜訊（R8/R6 等）——如過吵再逐條調整而唔係回退通道；③日後新增任何 hook 警告，必須用 hookSpecificOutput.additionalContext 並做實機探針，唔可以只寫 stderr。**已知邊界**：hookSpecificOutput 需 harness 支援，不支援時退回只寫 stderr（fail-open，無害）。
+**含意**：①R11-observe 原以為由今日起警告會被睇到，但回放證實該規則近乎全為誤報，故 D94 改為 log-only（見 D94）；②警告從此會出現喺對話，可能有雜訊（R8/R6 等）——如過吵再逐條調整而唔係回退通道；③日後新增任何 hook 警告，必須用 hookSpecificOutput.additionalContext 並做實機探針，唔可以只寫 stderr。**已知邊界**：hookSpecificOutput 需 harness 支援，不支援時退回只寫 stderr（fail-open，無害）。
 
 **Subagent 使用記錄**：❌未使用（hook 改動＋夾具＋實機探針自驗）。
+
+### D94：2026-09-25 — R11-observe 觀察期重新起算：改 log-only，日誌固定寫主倉，2026-10-09 覆核
+
+**背景**：D93 令警告首次直達模型，順帶要處理 R11-observe（S140 F12，shell 寫入含財務字眼）「觀察期」。原觀察期（S148 已重啟一次，2026-07-08 起）日誌在主倉只有 47 行，多為 `git commit -m` 訊息與診斷指令；且日誌寫落各 worktree 自己嘅 `.fhs/`，worktree 一刪即失，累積唔到有意義數據。
+
+**回放量度**：對全部 transcript 嘅 9,298 次 Bash 回放——舊規則命中 82 次；排除 commit／gh 訊息後 46 次；再改「目標感知」（寫入目標為 repo 內檔案）仍 60 次。逐條抽樣，**近乎全為誤報**：heredoc／`git commit -m "…財務字眼…"` 內嘅 `>` 與關鍵字、寫入 /tmp 暫存腳本、`node -e` 內嘅正則字串；找不到一個真正「用 shell 繞過 Write/Edit 守護去寫財務檔」嘅個案。對自由格式 shell 文字，regex 無法做到精準。
+
+**決定（重新起算）**：①R11-observe 改 **log-only**——不再 `warnings.push`（警告直達模型只會製造雜訊，違反 D93 後「警告必須有價值」嘅前提）；②排除 `git commit`／`gh pr|issue` 指令（訊息文字）；③日誌固定寫**主倉** `.fhs/.kgov-observe.log`（`MAIN_REPO_ROOT`，同 R14），舊日誌封存為 `.kgov-observe.pre-D94-2026-09-25.log`，新日誌檔頭註明重新起算日與判準；④夾具：R11 舊夾具改為「不警告」、新增「commit 訊息不觸發」，guard 32/32。
+
+**覆核（2026-10-09，列便攜塊 ⏰ 時限待辦）**：讀主倉 `.fhs/.kgov-observe.log`（忽略 2026-09-25 當日開發測試行）：①若期間**仍無真正「shell 寫財務檔」個案**（預期如此）→ 建議**退役 R11-observe**（連同 kgov 相關觀察文件），改依賴 PostToolUse kgov（已修復，D93）與 R13／財務 Stop hook；②若出現真個案→ 針對該個案樣式收窄成精準規則再議轉硬攔，而非放寬。
+
+**已知邊界**：日誌只記命令前 80 字元；重新起算後 2026-09-25 當日日誌含本次開發測試指令，判讀時忽略當日。**Subagent 使用記錄**：❌未使用（transcript 回放量度＋guard 改動＋夾具自驗）。

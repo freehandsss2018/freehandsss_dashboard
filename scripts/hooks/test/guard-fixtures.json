@@ -193,17 +193,20 @@
     "note": "S140(F8) 原全面封鎖；S159續同上放寬，shell 變體同步"
   },
   {
-    "name": "R11-observe: Shell 寫入財務關鍵字應警告但不攔截（觀察期）",
+    "name": "R11-observe: Shell 寫入財務關鍵字只記日誌、不警告不攔截（D94 觀察期重新起算）",
     "tool_name": "Bash",
     "tool_input": {
       "command": "echo \"cost_configurations\" >> notes.txt"
     },
     "expected_exit": 0,
-    "expected_stderr_contains": [
-      "R11-observe"
+    "expected_stderr_absent": [
+      "R11"
+    ],
+    "expected_stdout_absent": [
+      "additionalContext"
     ],
     "known_gap": false,
-    "note": "S140 新增（F12）：warn-only 觀察期，兩週後複查是否轉正為攔截（見 governance/05 §4）"
+    "note": "S140 新增（F12）；D94（2026-09-25）改為 log-only：回放 9,298 次 Bash 命中近乎全為誤報，警告直達模型只製造雜訊。覆核日 2026-10-09"
   },
   {
     "name": "R12: 寫入 learnings.md 應警告但不攔截（S156提案，Fat Mo裁決同意）",
@@ -271,7 +274,7 @@
   {"name": "R14-observe: cd 去無關目錄（如 scratchpad）→ 唔警告", "tool_name": "Bash", "cwd": "D:/SynologyDrive/Free_handsss/freehandsss_dashboard/.claude/worktrees/wt-test", "tool_input": {"command": "cd \"C:/Users/Edwin/AppData/Local/Temp\" && ls"}, "expected_exit": 0, "expected_stderr_absent": ["R14"], "known_gap": false, "note": "只警告已識別嘅三類，唔誤傷合理 cd"},
   {"name": "R14-observe: hook 輸入冇 cwd → fail-open 不警告", "tool_name": "Bash", "tool_input": {"command": "cd /tmp && ls"}, "expected_exit": 0, "expected_stderr_absent": ["R14"], "known_gap": false, "note": "讀唔到 cwd 一律放行"},
   {"name": "D93: R8 rm -rf 警告 → 同時經 additionalContext 直達模型", "tool_name": "Bash", "tool_input": {"command": "rm -rf ./build-output"}, "expected_exit": 0, "expected_stderr_contains": ["R8"], "expected_stdout_contains": ["additionalContext", "PreToolUse", "R8"], "known_gap": false, "note": "D93：警告型規則 exit 0 時 stderr 模型睇唔到，須有 stdout JSON"},
-  {"name": "D93: R11-observe 財務 shell 寫入警告 → 直達模型", "tool_name": "Bash", "tool_input": {"command": "echo total_cost > note.txt"}, "expected_exit": 0, "expected_stderr_contains": ["R11-observe"], "expected_stdout_contains": ["additionalContext", "R11-observe"], "known_gap": false, "note": "D93：觀察期規則一直隱形，補 stdout 通道"},
+  {"name": "D94: R11 log-only 觀察規則不發警告（含 git commit 訊息文字亦不記日誌）", "tool_name": "Bash", "tool_input": {"command": "git commit -m \"fix: total_cost > 0 檢查\""}, "expected_exit": 0, "expected_stderr_absent": ["R11"], "expected_stdout_absent": ["additionalContext"], "known_gap": false, "note": "D94：commit 訊息文字內嘅財務字眼與 > 唔算 shell 寫檔"},
   {"name": "D93: R4 寫入 .env 警告 → 直達模型", "tool_name": "Write", "tool_input": {"file_path": "D:/tmp-fixture/.env", "content": "X=1"}, "expected_exit": 0, "expected_stderr_contains": ["R4"], "expected_stdout_contains": ["additionalContext", "R4"], "known_gap": false, "note": "D93：Write/Edit 路徑上嘅警告同樣經 additionalContext"},
   {"name": "D93: 無警告嘅正常指令 → stdout 為空（不發空 additionalContext）", "tool_name": "Bash", "tool_input": {"command": "git status --short"}, "expected_exit": 0, "expected_stdout_absent": ["additionalContext"], "known_gap": false, "note": "只有真有警告先輸出 JSON"},
   {"name": "D93: R6 git add -A 限定路徑 → 不誤報", "tool_name": "Bash", "tool_input": {"command": "git add -A .fhs/memory/handoff.md Changelog.md"}, "expected_exit": 0, "expected_stderr_absent": ["R6"], "expected_stdout_absent": ["additionalContext"], "known_gap": false, "note": "D93：警告直達模型後須降雜訊；有 pathspec 唔會掃到 .env"},

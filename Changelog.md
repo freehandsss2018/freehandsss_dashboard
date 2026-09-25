@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-25] D94：R11-observe 觀察期重新起算（改 log-only，日誌固定寫主倉，10-09 覆核）
+
+- 回放 9,298 次真實 Bash：R11 舊規則命中 82、目標感知版 60，抽樣近乎全為誤報（heredoc／commit 訊息／/tmp 暫存腳本），找不到真正 shell 寫財務檔個案。
+- `pre-tool-guard.js`：R11 改 log-only（不再警告，排除 git commit／gh 訊息）；`MAIN_REPO_ROOT` 令日誌固定寫主倉；舊日誌封存 `.kgov-observe.pre-D94-2026-09-25.log`，新日誌 2026-09-25 起。夾具 guard 32/32。2026-10-09 覆核，無真個案建議退役。決策 decisions.md D94；D93 含意①同步更正。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] D93：Hook 警告隱形問題根治（guard 全部警告規則＋kgov [G] 提醒改經 additionalContext）
 
 - 根因：exit 0 時 stderr 模型收唔到；`pre-tool-guard.js` 全部警告規則（R3/R4/R6/R8/R11-observe/R12/R13/R14）與 `post-tool-kgov.js` 頂層 `{additionalContext}` 格式（PostToolUse 唔採用）自建立起一直隱形。
