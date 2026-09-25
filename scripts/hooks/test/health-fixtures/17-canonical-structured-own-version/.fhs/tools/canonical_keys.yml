@@ -1,0 +1,8 @@
+# test canonical keys (structured)
+test_version:
+  source_of_truth: src/truth.md
+  pattern: '^>\s*Version:\s*(v\d+\.\d+\.\d+)'
+  key_type: structured
+  reference_pattern: '<!--\s*canonical:test_version=(v\d+\.\d+\.\d+)\s*-->'
+  allowed_references:
+    - ref/copy.md

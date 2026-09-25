@@ -4055,3 +4055,10 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **已知邊界**：①各桶條目編號本已非連續（含重複編號），退役後留缺號，未重編（避免外部引用漂移）；②tooling 現時 15/15 已滿，下一條新教訓需先退役或申請提升；③frontend 有 5 條可合併（XSS 三條、D69 收款三條、overflow 兩條）備用，未動；④下季健檢重新檢視配額合理性。
 
 **Subagent 使用記錄**：❌未使用（逐條核對證據＋跑既有生成器，無需委派）。
+
+### D91：2026-09-25 — 健檢「commit.md 版本不符」假陽性根治：structured 類 canonical key 改用 reference_pattern 比對
+
+**現象**：`fhs-health-check` 長期報「`commit.md` 的 agents_version=v2.x.x 與 AGENTS.md=v1.7.3 不符」（自 2026-09-18 起每 session 出現）。**根因**：`canonical_keys.yml` 於 2026-09-18 已將 `agents_version` 標為 `key_type: structured`＋`reference_pattern`（只認 `<!-- canonical:agents_version=vX.Y.Z -->` 顯式標記），`semantic_audit.py` 已依此實作，但 `fhs-health-check.js` 的 `checkCanonicalDrift()` 從未讀該欄位，一律用來源檔散文 regex 掃參照檔，令 `commit.md` 自己嘅 `> Version: v2.8.0` 被誤當 AGENTS 版本。**並非 `commit.md` 版本寫錯**（指令檔有自己嘅版本號屬正常）。
+**修復**：`checkCanonicalDrift()` 對 `key_type === structured` 且有 `reference_pattern` 者，參照檔改用 `reference_pattern`；literal／未標類型維持原行為（避免 production_html 等 key 一次過湧出無關新警報）。新增夾具 17（參照檔有自己 Version 行＝靜默）／18（顯式標記版本不符＝抓到），舊碼下兩者皆 FAIL、新碼 18/18 PASS。**已知邊界**：現時 repo 內冇任何檔案使用顯式標記，agents_version 跨檔比對預期零命中（canonical_keys.yml 注明係設計如此）；literal 類 key 仍走散文 regex 路徑，日後如需一併收窄另案。
+
+**Subagent 使用記錄**：❌未使用（單一函式修復＋夾具自驗）。

@@ -231,6 +231,13 @@ function checkCanonicalDrift() {
 
       let truthRe;
       try { truthRe = new RegExp(def.pattern, 'm'); } catch (err) { logError(`canonical[${keyName}].pattern`, err); continue; }
+      // structured 類（如 agents_version）：參照檔只認顯式標記 reference_pattern，唔用來源檔嘅散文 regex 猜語境
+      // （canonical_keys.yml 頭註＋fhs-audit.md D3 明文規定；2026-09-25 修復：舊版一律用 pattern 比對參照檔，
+      // 令 commit.md 自己嘅 `> Version: v2.8.0` 被誤當 AGENTS 版本，連續產生假陽性）。literal／未標類型維持原行為。
+      let refRe = truthRe;
+      if (def.key_type === 'structured' && def.reference_pattern) {
+        try { refRe = new RegExp(def.reference_pattern, 'm'); } catch (err) { logError(`canonical[${keyName}].reference_pattern`, err); continue; }
+      }
       const truthMatch = readText(sourcePath).match(truthRe);
       if (!truthMatch) continue;
       const truthValue = truthMatch[1] || truthMatch[0];
@@ -239,7 +246,7 @@ function checkCanonicalDrift() {
         const refFiles = refPattern.includes('*') ? globFiles(refPattern) : [path.join(REPO_ROOT, refPattern)];
         for (const rf of refFiles) {
           if (!fs.existsSync(rf) || fs.statSync(rf).isDirectory()) continue;
-          const refMatch = readText(rf).match(truthRe);
+          const refMatch = readText(rf).match(refRe);
           if (refMatch) {
             const refValue = refMatch[1] || refMatch[0];
             if (refValue !== truthValue) {

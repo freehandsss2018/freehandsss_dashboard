@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-09-25] D91：健檢「commit.md 版本不符」假陽性根治
+
+- `fhs-health-check.js` `checkCanonicalDrift()`：structured 類 canonical key 參照檔改用 `reference_pattern`（只認顯式標記），修復自 2026-09-18 起 `commit.md` 自己嘅 `> Version:` 被誤當 AGENTS 版本嘅假陽性；literal 類維持原行為。新增夾具 17／18，舊碼 FAIL、新碼 18/18 PASS；健檢異常 3→2。決策 decisions.md D91。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] D90：learnings 三桶超配額處理（退役 6 條＋frontend／governance 提升配額）
 
 - 退役 6 條有證據者（governance 3、tooling 3），原文封存 `archive/learnings-retired-2026-09-25.md`，README §8.9 登記；frontend 25→32、governance 15→20 經 Fat Mo 批准；tooling 退役後 15/15。
