@@ -504,6 +504,58 @@ function checkDeadlineSurfacing(rules) {
   return issues;
 }
 
+// ── CHECK 8: 便攜塊與 MASTER 表不一致 portable_master_consistency_checks（2026-09-25）──
+// 為何存在：/read 先讀便攜塊，但 commit 常只更新 MASTER 表，令便攜塊繼續寫「待貼入」等
+// 已完成事項（2026-09-25 實測：6 張 canva 存檔頁 MASTER 表已 ✅，便攜塊仍寫待貼入）。
+// 判定：便攜塊動態段內以 🟡/🔴/🟠 開頭的待辦片段提及某識別碼（訂單號／Canva design id），
+// 而該識別碼在 MASTER 表只出現於 ✅ 完成列、不再出現於任何未完成列 → 便攜塊過時。
+// 已知邊界：只認識別碼，不比對文字語義；沒有識別碼的待辦（純描述）偵測不到。
+
+function checkPortableMasterConsistency(rules) {
+  const issues = [];
+  for (const rule of rules.portable_master_consistency_checks || []) {
+    try {
+      const scanPath = path.join(REPO_ROOT, rule.scan_file);
+      if (!fs.existsSync(scanPath)) continue;
+      const lines = readText(scanPath).split(/\r?\n/);
+      const startIdx = lines.findIndex(l => l.includes(rule.dynamic_segment_start_marker));
+      const endIdx = lines.findIndex(l => l.includes(rule.dynamic_segment_end_marker));
+      const masterIdx = lines.findIndex(l => l.includes(rule.master_start_marker));
+      if (startIdx === -1 || endIdx === -1 || masterIdx === -1) continue;
+
+      const tokenRe = new RegExp(rule.token_pattern, 'g');
+      const tokensOf = text => new Set(text.match(tokenRe) || []);
+
+      const segments = lines.slice(startIdx, endIdx + 1).join('\n')
+        .split(new RegExp('(?=(?:' + rule.pending_markers.concat(rule.segment_break_markers || []).join('|') + '))|'+String.fromCharCode(92)+'r?'+String.fromCharCode(92)+'n'))
+        .filter(seg => seg && rule.pending_markers.some(m => seg.startsWith(m)));
+      const portablePending = new Map();
+      for (const seg of segments) for (const t of tokensOf(seg)) if (!portablePending.has(t)) portablePending.set(t, seg.slice(0, 24));
+
+      const doneTokens = new Set();
+      const pendingTokens = new Set();
+      let inPendingRegion = true;
+      for (const line of lines.slice(masterIdx)) {
+        if (line.includes(rule.archive_start_marker)) inPendingRegion = false;
+        if (!line.startsWith('|')) continue;
+        if (line.startsWith(rule.done_row_prefix)) {
+          for (const t of tokensOf(line)) doneTokens.add(t);
+        } else if (inPendingRegion) {
+          for (const t of tokensOf(line)) pendingTokens.add(t);
+        }
+      }
+
+      const stale = [...portablePending.keys()].filter(t => doneTokens.has(t) && !pendingTokens.has(t));
+      if (stale.length > (rule.budget || 0)) {
+        issues.push(`便攜塊與MASTER表不一致: ${rel(scanPath)} 便攜塊待辦仍提及 ${stale.join('、')}，但MASTER表該項已✅完成且無未完成列（${rule.note || ''}）`);
+      }
+    } catch (err) {
+      logError(`portable_master_consistency[${rule.id}]`, err);
+    }
+  }
+  return issues;
+}
+
 // ── MAIN ─────────────────────────────────────────────────────────────────────
 
 function main() {
@@ -533,6 +585,7 @@ function main() {
   try { issues = issues.concat(checkPendingTableLeaks(rules)); } catch (err) { logError('checkPendingTableLeaks', err); }
   try { issues = issues.concat(checkCadenceOverdue(rules)); } catch (err) { logError('checkCadenceOverdue', err); }
   try { issues = issues.concat(checkDeadlineSurfacing(rules)); } catch (err) { logError('checkDeadlineSurfacing', err); }
+  try { issues = issues.concat(checkPortableMasterConsistency(rules)); } catch (err) { logError('checkPortableMasterConsistency', err); }
 
   const durationMs = Date.now() - startedAt;
 
@@ -548,7 +601,7 @@ function main() {
   }
 
   if (issues.length > 0) {
-    process.stdout.write(`⚠️  健康檢查：${issues.length} 項異常（過肥/孤兒/過時/重複/斷鏈/未註冊/複驗逾期/週期/時限待辦漏帶/P0.6歸檔洩漏）\n`);
+    process.stdout.write(`⚠️  健康檢查：${issues.length} 項異常（過肥/孤兒/過時/重複/斷鏈/未註冊/複驗逾期/週期/時限待辦漏帶/P0.6歸檔洩漏/便攜塊與MASTER表不一致）\n`);
     process.stdout.write(`   → 詳情見 .fhs/.health-report.json，跑 /fhs-slim 看清理方案\n`);
   }
 

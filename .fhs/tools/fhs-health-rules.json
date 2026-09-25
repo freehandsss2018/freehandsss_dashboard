@@ -194,6 +194,22 @@
       "note": "MASTER表非全✅完成列（含🟡/🔴/⚪標記）內嵌的未來日期，若60天內到期但便攜塊動態段（人類複製/hook注入範圍）未提及，即為2026-08-05事故型（拷問技能2026-08-09試用閘漏帶入session context，Fat Mo質詢揭發）；commit.md P0.7 §⏰時限待辦 對應此規則"
     }
   ],
+  "portable_master_consistency_checks": [
+    {
+      "id": "handoff_portable_vs_master",
+      "scan_file": ".fhs/memory/handoff.md",
+      "dynamic_segment_start_marker": "```handoff",
+      "dynamic_segment_end_marker": "便攜邊界",
+      "master_start_marker": "# 📋 MASTER 持續待辦",
+      "archive_start_marker": "### 已確認完成",
+      "done_row_prefix": "| ✅",
+      "pending_markers": ["🟡", "🔴", "🟠"],
+      "segment_break_markers": ["✅", "🟢", "⚪"],
+      "token_pattern": "\\b0\\d{6,7}\\b|DAH[A-Za-z0-9_-]{8,}",
+      "budget": 0,
+      "note": "便攜塊待辦片段提到的訂單號/Canva design id，在MASTER表只剩✅完成列＝便攜塊過時；/read 先讀便攜塊，2026-09-25 實測6張canva存檔頁已完成但便攜塊仍寫待貼入"
+    }
+  ],
   "pending_table_leak_checks": [
     {
       "id": "handoff_master_table_p0_6_leak",

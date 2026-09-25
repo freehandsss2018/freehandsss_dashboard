@@ -1,0 +1,23 @@
+{
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": [],
+  "portable_master_consistency_checks": [
+    {
+      "id": "handoff_portable_vs_master",
+      "scan_file": ".fhs/memory/handoff.md",
+      "dynamic_segment_start_marker": "```handoff",
+      "dynamic_segment_end_marker": "便攜邊界",
+      "master_start_marker": "# 📋 MASTER 持續待辦",
+      "archive_start_marker": "### 已確認完成",
+      "done_row_prefix": "| ✅",
+      "pending_markers": ["🟡", "🔴", "🟠"],
+      "segment_break_markers": ["✅", "🟢", "⚪"],
+      "token_pattern": "\\b0\\d{6,7}\\b|DAH[A-Za-z0-9_-]{8,}",
+      "budget": 0,
+      "note": "test"
+    }
+  ]
+}

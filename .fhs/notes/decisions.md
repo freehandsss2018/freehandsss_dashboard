@@ -4025,3 +4025,15 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **撿回時同步**：MANIFEST 版本 v1.1.0→v1.2.0；已安裝副本 `~/.claude/agents/freehandsss/code-reviewer.md` 同步（subagent 實際使用嗰份）。
 
 **Subagent 使用記錄**：❌未使用（單檔文字新增，讀兩份來源文件即可核實缺口，無需委派）。
+
+### D89：2026-09-25 — 結案同步兩道防線：Phase 2.7 主倉對齊 + 便攜塊/MASTER 表一致性檢查
+
+**背景**：Fat Mo 打 `/read` 睇到舊 canva 待辦。實查 worktree／origin/main／主倉三處 commit 相同（4480b1a），過時嘅係 handoff 內部：commit 只更新 MASTER 表，便攜塊仍寫「待貼入」。另主倉資料夾歷來要人手 pull，`/commit` 只推到 `origin/main`。
+
+**決定（Fat Mo「兩項都做」）**：①`commit.md` v2.8.0 新增 Phase 2.7 主倉對齊（`--ff-only`，唔切分支、唔 stash、唔強推，主倉停喺非 main 分支則跳過回報）。②`fhs-health-check.js` 新增第 8 類檢查 `checkPortableMasterConsistency`（`fhs-health-rules.json` `portable_master_consistency_checks`）：便攜塊 🟡/🔴/🟠 待辦片段提及嘅訂單號／Canva design id，若 MASTER 表只剩 ✅ 完成列 → 報警；`commit.md` P0.7.3 規定 commit 前必跑並先修。
+
+**驗證**：舊版 handoff（4480b1a）重播 → 抓到 0600728／0601011／0600914／0600709 等過時待辦；現行版首跑抓到真漏洞 0600512（便攜塊有待辦、MASTER 表無列），已補登。三個誤報（歷史提及落喺待辦片段內）經加入 ✅／🟢／⚪ 片段切分與逐行切分消除。health 夾具 16/16 PASS（新增 15 過時／16 一致）。
+
+**已知邊界**：只認識別碼，純文字描述嘅待辦偵測唔到；檢查於 SessionStart 與 commit 前手動跑，非 commit 硬攔截（R13 只查日期戳與 staged）；Phase 2.7 只對齊主倉，唔處理主倉未 commit 改動。
+
+**Subagent 使用記錄**：❌未使用（純流程／腳本改動，夾具自驗）。

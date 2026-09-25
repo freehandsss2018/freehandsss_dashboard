@@ -1,4 +1,5 @@
 # /commit (任務完成 · 全包一條龍)
+> Version: v2.8.0 (2026-09-25, D89) | 新增 Phase 2.7 主倉對齊（Phase 2.6 push main 後，將主倉資料夾 `--ff-only` 對齊 `origin/main`，唔切分支、唔 stash、唔強推）＋ P0.7.3 便攜塊/MASTER 表一致性（commit 前必跑 `fhs-health-check.js`，「便攜塊與MASTER表不一致」必須先修）。根源：Fat Mo 2026-09-25 打 `/read` 睇到舊 canva 待辦（MASTER 表已 ✅、便攜塊仍寫待貼入），另主倉資料夾歷來要人手 pull。見 decisions.md D89
 > Version: v2.7.0 (2026-09-18, cl-flow 2026-09-18-1827) | 新增 Phase 2.4 健檢閘：`git diff` 觸及 Dashboard HTML／migrations／n8n 任一即跑全量 `/fhs-check`，FAIL/DEGRADED 即停止 Phase 2.5/2.6；Phase 2.5 步驟4刪除「Airtable API 429 比照先例放行」書面白名單（PRICE_AUDIT 已改讀 Supabase，前提消失），改為登記冊制（`.fhs/tools/check_registry.json`）。根源：/fhs-cost-audit 與 PRICE_AUDIT 純 Airtable 資料源已判定過時，本次衛生機制重整一併修復「migration/n8n 改動零健檢」缺口。見 cl-final-plan.md 2026-09-18-1827
 > Version: v2.6.0 (2026-09-05, D70) | 新增 Phase 2.6 主線同步：Phase 2/2.5 push 完之後，嘗試將目前分支 fast-forward-only 合併落 `main`（`git push origin HEAD:main`）；若 main 自本分支分岔後已有其他 session 搶先落地（非快進），一律跳過並回報，唔做衝突自動解決、唔強推。根源：Fat Mo 指出「commit 完＝任務完成，理應等同 main 已同步」，現行預設要人手再 merge/PR 同呢個直覺唔一致；經查證本 repo 常態有多條 worktree 分支並行（含 2026-09-03「分支合併事故」先例），故只做技術上零風險嘅快進部分，唔做全面自動合併。見 decisions.md D70
 > Version: v2.5.0 (2026-08-21, D68) | P0.7 由「散文指示」升格為**機械強制**：`pre-tool-guard.js` 新增 R13 handoff 同步閘，`git commit` 前檢查便攜塊日期戳＝今日且 handoff.md 無未 staged 改動，唔過即 exit 2 攔截。根因：D67(08-19)/D66-follow(08-20) 兩次 `/commit` 都更新咗內容但日期戳三日冇郁——D66 已證「內容·紀律層」修復零效果，SessionStart hook 只做事後偵測，寫入時點一直真空。見 decisions.md D68
@@ -73,6 +74,12 @@
 - **fail-open 邊界**（寧鬆莫死鎖）：`git -C <path> commit` 形式唔命中 regex／git 不可用／讀唔到 handoff／便攜塊格式壞 → 一律放行（格式壞會出警告）。**擋唔到「日期戳啱但內容根本冇更新」**——機械層無法驗證內容新鮮度，呢部分仍靠 P0.7 紀律。
 - **逃生口**：`FHS_SKIP_HANDOFF_GATE=1 <git 指令>`，每次繞過記入 `.fhs/notes/deploy-log.md` 供稽核。誤擋情境：指令字串內夾住 `git commit` 字樣（如 `echo "run git commit"`）。
 - **測試**：`node scripts/hooks/test/run-handoff-gate-tests.js`（8 案例，獨立 runner——既有 `run-fixtures.js` 用 `FHS_GUARD_FIXTURE=1` 跑，而 R13 喺該旗標下刻意自我跳過，免得所有既有 Bash 夾具突然被擋）。
+
+### P0.7.3 便攜塊 / MASTER 表一致性（新，2026-09-25 D89）
+> `/read` 先讀便攜塊，但 commit 常只改 MASTER 表，令便攜塊繼續寫已完成事項。同一件事必須兩區寫成同一個狀態。
+- 改完 handoff.md 後、`git add` 前，跑 `node scripts/hooks/fhs-health-check.js`，再讀 `.fhs/.health-report.json`。
+- 若出現「便攜塊與MASTER表不一致」：便攜塊待辦（🟡/🔴/🟠 片段）提及嘅訂單號／Canva design id，喺 MASTER 表只剩 ✅ 完成列。**必須先修**：已完成→便攜塊刪走該待辦；MASTER 表漏列→補一列。修完再跑一次至無此項先 commit。
+- 已知邊界：只認識別碼（訂單號 `0xxxxxx`／Canva `DAHxxxx`），純文字描述嘅待辦偵測唔到。機械層係 `checkPortableMasterConsistency`（`fhs-health-rules.json` `portable_master_consistency_checks`，夾具 15/16）。
 
 ### P0.7.1 便攜塊體積預算（新，2026-07-04 Session 141 防回胖）
 - **背景**：便攜塊設計初衷為 hook 每 session 輕量注入（原估 ~300 tokens），但因「✅ 已定決策」逐 session 只追加不精簡，Session 140 實測動態段已膨脹至 7,787 bytes（~3,500 tokens），超出設計值 10 倍以上。
@@ -180,6 +187,18 @@
 
 ---
 
+## 【Phase 2.7：主倉對齊（新，2026-09-25，D89）】
+> **目的**：Phase 2.6 只推 `origin/main`，Fat Mo 日常測試用嘅主倉資料夾唔會自動更新，要人手 pull。本節補上最後一步：**只做 fast-forward，唔郁分支、唔郁未 commit 改動**。
+
+1. **前置**：Phase 2.6 已成功推上 `main`，或目前分支本身就係 `main`。Phase 2.6 被跳過（main 已被其他 session 更新）→ 本節略過。
+2. **取得主倉路徑**：`git worktree list --porcelain` 第一個 `worktree` 行即主倉。若目前 cwd 已係主倉（冇 worktree）→ 直接當對齊完成。
+3. **檢查主倉分支**：`git -C <主倉> branch --show-current`。**唔係 `main`** → 跳過並回報「主倉停喺 <分支>，未對齊」，**唔切換分支**（Fat Mo 可能喺嗰度測緊）。
+4. **對齊**：`git -C <主倉> fetch origin` → `git -C <主倉> merge --ff-only origin/main`。git 會拒絕會覆蓋未 commit 改動嘅合併（例如 V42.html 測試 cp）→ 視為失敗，回報原因，**唔 stash、唔 reset、唔強推**。
+5. **核對**：比較 `git rev-parse --short HEAD`（worktree）／`origin/main`／`git -C <主倉> rev-parse --short HEAD` 三個 hash，全部相同先回報 ✅。
+6. **回報**：Phase 3 狀態框加一行「主倉對齊」：✅ 三處同 hash／⚠️ 跳過（原因）。
+
+---
+
 ## 【Phase 3: 完成回報】
 輸出格式如下：
 ```text
@@ -187,6 +206,7 @@
 - Pre-Commit Sweep: ✅
 - Memory Engine: ✅ (Notion + Handoff)
 - Git Operation: ✅ (Commit + Push)
+- 主倉對齊: ✅ 三處 hash 相同 / ⚠️ 跳過（原因）
 雲端大腦 + GitHub 雙備份完成。收工！
 ```
 

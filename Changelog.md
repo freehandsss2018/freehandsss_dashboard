@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-25] D89：結案同步兩道防線（Phase 2.7 主倉對齊 + 便攜塊/MASTER 一致性檢查）
+
+- `commit.md` v2.8.0：Phase 2.7 主倉對齊（`--ff-only`）＋P0.7.3 一致性檢查步驟＋Phase 3 狀態框加「主倉對齊」行。
+- `scripts/hooks/fhs-health-check.js` 第 8 類 `checkPortableMasterConsistency`＋`fhs-health-rules.json` `portable_master_consistency_checks`；夾具 15-portable-stale／16-portable-consistent，health 16/16 PASS。
+- 首跑揪出真漏洞：0600512 Small Chan 只喺便攜塊有待辦、MASTER 表無列，已補登 MASTER 待辦列。決策全文見 decisions.md D89。**Subagent 使用記錄**：❌未使用。
+
 ## [2026-09-25] handoff MASTER 表過時列清理＋便攜塊 canva 待辦對齊
 
 - MASTER 表：2 個 `[2026-08-16-follow]` `accessory_cost` 列核對已修復（V42 `loadMode2Items()` select 已含；`pre-tool-guard.js:289`／`post-tool-kgov.js:91` regex 已含，commit 7feca4e／D67），搬入「已確認完成（2026-09-25）」；task_4a9acd82／task_0c9d1c51 過時。D58 列檢視點由 2026-08-18 更正為 2026-10-05（09-05 已覆核）。
