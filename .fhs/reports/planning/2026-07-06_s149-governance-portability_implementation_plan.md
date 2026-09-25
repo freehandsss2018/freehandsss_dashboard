@@ -174,6 +174,54 @@ S148 已完成；S150 Phase 4-6 明文等 S149 → **S149 現為執行佇列 blo
 
 ---
 
+## §5.4 v3.2 修訂（2026-09-25 重審增量節，Sonnet 5，經 Codex 交叉平台審閱＋獨立代碼核對）
+
+> **背景**：Fat Mo 新訂閱 Codex，將本計畫（v2＋§5 v3.1）送去 Codex 做第二意見審閱。Codex 回覆 B1/M1–M5/Minor 共 9 項發現＋撤回上輪 2 項過重判斷；Sonnet 5 逐項對照現行 `scripts/hooks/**` 代碼、fixture 檔案、Antigravity 官方文件核實，**8 項成立（部分調整嚴重度）、2 項降級、另補 3 項 Codex 未發現的問題（N1–N3）**。本節為 §5 v3.1 之上的**第二層 delta**：執行以「§4 v2＋§5.1 覆寫＋本節 §5.4 覆寫」為準；v3.1 本文一字未動（追溯性保留）。
+
+### §5.4.1 逐條覆寫表
+
+| 位置 | 原句（v2/v3.1） | 改為（v3.2） |
+|---|---|---|
+| §4.1 Phase 0 | 「確認 S148 計畫執行狀態節 4/4 完成」＋建當日基線 | 追加前置檢查：**確認 `.fhs/.deploy-ok` 不存在**方可執行後續任何 fixtures 跑批；若存在則中止並記錄原因（原因：`pre-tool-guard.js` R1/R9 嘅 `checkDeployAuthorization()`／`consumeDeployAuthorization()` 冇 `FHS_GUARD_FIXTURE` 閘，跑夾具期間若旗標有效會被誤消耗＋誤寫 `deploy-log.md`＋令 R1/R9 夾具誤判 FAIL——Codex B1，核實成立，降級為 Major） |
+| §4.1 Phase 0 基線範圍 | 「三套夾具全跑留輸出檔」 | 改為「**現有全部 5 支 runner**（`run-fixtures.js`／`run-kgov-fixtures.js`／`run-health-fixtures.js`／`run-finance-stop-fixtures.js`／`run-handoff-gate-tests.js`）全跑留輸出檔」——2026-07-12 定稿時只有 3 支，現已增至 5 支（Codex M1 部分成立：漏算咗 R13 專屬 runner 已存在） |
+| §4.3 Phase 2 紅線 1 | 「三套夾具全數 PASS 且與 Phase 0 當日基線逐項一致；guard 規則清單拆分前後 grep 輸出相同」 | 改為「**五套 runner 全數 PASS 且與 Phase 0 當日基線逐項一致**；規則等價改用**規則 ID 集合比對**（拆分前用 `// ── Rule N` 代碼塊標記抽取 ID 集合，拆分後用規則 JSON 的 ID 欄位抽取，兩集合須相等）取代原本嘅純 grep 字串比對（因為拆分本身就係將規則搬去 JSON，「grep 輸出相同」自相矛盾）；另加 **guard stdout JSON 結構檢查**（現有 runner 只做子串比對，驗證唔到 `pre-tool-guard.js:476` 輸出嘅 JSON 結構完整性）——Codex M1，核實成立 |
+| §4.2 Phase 1 manifest 欄位 | `{source, class, action, dest, install_level, line_budget?, upstream_blob_hash?}` | 追加 **`deps` 欄位**：記錄該檔案嘅 `require()`/`import` 閉包（例如 `cl-flow-runner.js` 依賴 `scripts/lib/env.js`，`env.js` 又依賴 `dotenv` package）；`check-manifest.js` 驗證條件追加「`deps` 閉包內全部檔案都有對應 manifest 條目」；模板附帶 `package.json` 記錄外部套件依賴——Codex M2，核實成立（現行 §4.2 枚舉範圍確實漏列 `scripts/lib/`） |
+| §4.2 Phase 1 定位 | 「§0 矩陣為初判，逐檔開檔驗證後定案」 | 追加：**Phase 1 manifest 取代 §0 資產矩陣，成為唯一有效資產分類來源**——§0 已漂移（定稿時 5 支 hook 腳本／R1–R11，現時 7 支腳本／R1–R14，且 D92 起 guard 警告改直達輸出格式），日後查資產分類一律睇 manifest 不睇 §0（N2，Codex 未發現，本次補充） |
+| §5.1 回填律 | `grep -c "⬜" 本計畫檔＝0` | 改為 `grep -cE '^- Phase [0-5]：⬜'`（原 pattern 會命中「回填律」條文自身嘅說明文字，實測模擬六個 Phase 全部打剔後計數仍為 1）——Codex M3，核實成立，降級為 Minor（後果只係驗收誤判 FAIL，一眼睇得出） |
+| §0 平台矩陣・Antigravity 列 | 「`.agents/workflows/` 橋接＋`.gemini/skills/`（凍結）／⚠️ 無 hook 守護」 | 改為：**Antigravity Workflows 將於 2026-11-01 正式退役**（官方 Workflows to Skills Migration 文件確認，退役後 workflow 目錄不再被索引/可執行），新橋接目標改為 `.agents/skills/`；Antigravity 現已支援 hooks（`.agents/hooks.json`，涵蓋 PreToolUse/PostToolUse/PreInvocation/PostInvocation/Stop），但移植前須先驗證阻擋語義是否等價，**本輪不擴大範圍**，只更新橋接路徑——Codex M4a/M4b，核實成立（M4a 升級為 Major；M4b 降級為 Minor 且列後續）。**此事同時影響 FHS 現行系統**（16 個 `.agents/workflows/` 橋接檔，非本計畫獨有），已另行記入 handoff 時限待辦，不待本計畫執行 |
+| §4.4 模板內容集 | 「`scripts/generate-bridges.js`（master→`.claude/commands`＋`.agents/workflows` 產生器）」 | 目標路徑同步改 `.agents/skills/`（隨 Antigravity 官方遷移路徑） |
+| §4.5 Phase 4 checklist | 8 項 | 追加**第 9 項**：**agents／hooks 載入來源驗證**——斷言乾跑演練載入嘅 subagents／hooks 當中冇任何一項嚟自 `~/.claude/agents/freehandsss/`（FHS runtime agents 全域目錄，見 `OPERATING_MODEL.md`）；本項要求 Phase 4 喺**乾淨 HOME 環境**（或至少確認全域 agents 目錄冇同名衝突）下執行，否則 Claude Code 會載入使用者級 agents 造成假 PASS。9/9 才 PASS——Codex M4c，核實成立 |
+| §4.0b 授權清單（追加第 10 項） | — | 「10. 環境變數前綴亦納入去識別化範圍：模板內 `FHS_*` 環境變數（`FHS_GUARD_FIXTURE`／`FHS_HANDOFF_GATE_FILE`／`FHS_HEALTH_*` 等 11 個）改用 `{{ENV_PREFIX}}_` 佔位符，避免撞正 Phase 3 黑名單嘅 `FHS_` 條目令引擎類檔案第一次 fork 就 FAIL；Phase 3 驗收追加**對匯出後嘅模板重新跑一次全套 runner**（而非只驗證活體），確保去識別化冇改壞行為」——Codex 未發現，本次補充（N1） |
+| §4.4 機械紅線（黑名單） | 「黑名單 grep＝0 hits」 | 追加**正向對照**：另準備一份含黑名單字串嘅合成測試樣本，驗證掃描器確實能攔截（防止 pattern 本身失效但仍顯示 0 hits 嘅假陽性）——Codex M5，核實成立，維持 Minor |
+| §4.0b 授權項 #1 | 「模板落點：獨立 git repo `D:\SynologyDrive\AI_Governance_Template`」 | 追加執行環境澄清：**Phase 0–3 須在具備該本地路徑存取權的機器（Fat Mo 本機）執行**；若改在雲端 session（例如本次審閱所在嘅 remote 環境）執行，一律改用替代案 `dist/template/` 子目錄方案，且路徑一律佔位符化，不寫死 Windows 路徑——Codex N3，本次補充 |
+| §4.3 Phase 2/§4.4 Phase 3 驗收（追加三項 Minor） | — | ① 模板 `VERSION` 檔案追加記錄來源 FHS repo 嘅 commit hash；② `delta ≤50ms` 訂明採樣方法：同一部機、同一組樣本輸入，拆分前後各跑 30 次取執行時間中位數比較，非單次量測；③ Phase 0 額外產出一份「v2＋§5.1＋§5.4 全部覆寫」嘅單一執行視圖文件（`§4-effective.md`），方便執行 session 唔使人手疊三份 delta，v2/§5 原文一字不動保留追溯 |
+
+### §5.4.2 Codex 發現核實結果一覽
+
+| 編號 | Codex 判定 | 核實結果 | 嚴重度（本次裁定） |
+|---|---|---|---|
+| B1 | .deploy-ok 消耗風險 | ✅ 成立（`pre-tool-guard.js:200-201/307-308` 無 fixture 閘） | Major（原判 Blocker，降級——只會喺旗標 10 分鐘窗口內發生，加一行前置檢查即解） |
+| M1 | 三套測試證明唔到行為等價 | ✅ 成立，但漏算 R13 已有專屬 runner（現為 5 支非 3 支） | Major |
+| M2 | manifest 漏 `scripts/lib/env.js` 依賴 | ✅ 成立（`cl-flow-runner.js:24` require 鏈確認） | Major |
+| M3 | `grep -c "⬜"` 命中自身 | ✅ 成立（實測模擬全 Phase 完成後計數仍為 1） | Minor（原判無明確分級，本次定為 Minor——後果為驗收誤判，非實質損害） |
+| M4a | Antigravity Workflows 2026-11-01 退役 | ✅ 成立（官方 Workflows to Skills Migration 文件確認；官方頁面本身被網絡代理擋咗未能直接開啟，僅憑搜尋結果標題／摘要佐證，建議 Fat Mo 自行覆核） | Major（升級——同時影響 FHS 現行 16 個橋接檔，非本計畫獨有） |
+| M4b | Antigravity 已支援 hooks | ✅ 成立，但移植語義未驗 | Minor（列後續範圍，本輪不做） |
+| M4c | 專案級 agents 隔離唔到全域 agents | ✅ 成立（`OPERATING_MODEL.md` 確認 FHS runtime agents 全域目錄） | Major |
+| M5 | 黑名單零命中只可做輔助證據 | ✅ 成立 | Minor |
+| Minor×3 | VERSION／delta 採樣法／單一執行視圖 | ✅ 全部採納 | Minor |
+| 「Git 狀態」（B1 附帶主張） | R13/handoff/health 亦受夾具污染 | ❌ 不採納——R13 喺 `FHS_GUARD_FIXTURE=1` 下唔行（`:374`）；handoff 測試用暫存檔且跳過 git 探測（`:103/:119`）；health runner 已用環境變數隔離 | — |
+| 撤回項×2 | 「批准」與 `/execute` 互斥／`\|` 係 regex 錯誤 | ✅ 同意撤回（Markdown 表格跳脫寫法，非 regex 問題；批准與 `/execute` 可並存） | — |
+| N1（本次補充） | `FHS_` 環境變數撞正 Phase 3 自己嘅黑名單 | 新發現 | Major |
+| N2（本次補充） | §0 資產矩陣已漂移過時，manifest 應取代之 | 新發現 | Major |
+| N3（本次補充） | 授權項 #1 路徑假設本地執行環境，雲端 session 建立唔到 | 新發現 | Minor |
+
+### §5.4.3 明確排除（本輪不擴大範圍）
+
+- Antigravity hooks 阻擋語義移植（M4b）：列為模板 v0.2+ 範圍，本輪只更新橋接目標路徑至 `.agents/skills/`，不實作 hooks 映射。
+- FHS 現行 16 個 `.agents/workflows/` 橋接檔本身嘅遷移：屬 FHS 生產系統維護工作，不併入 S149 範圍，已另行記入 handoff 時限待辦（2026-11-01）供 Fat Mo 獨立排程。
+
+---
+
 ## 執行狀態（執行 session 回填）
 
 - Phase 0：⬜ 基線 commit hash：＿＿＿
