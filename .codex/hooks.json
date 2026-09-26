@@ -1,0 +1,66 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|PowerShell|Bash|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/pre-tool-guard.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|mcp__.*__apply_migration|mcp__.*__update_node_code|mcp__.*__execute_sql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/post-tool-kgov.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/session-start-sop.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/prompt-router.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/stop-kgov.js",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node scripts/hooks/stop-finance-auditor.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

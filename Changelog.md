@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-26] A4（Codex）接入：探針＋Codex 橋接角色修正（Claude Code，flow 2026-09-26-1831，Fat Mo 批清單 #1–#3）
+
+- 定名：Codex＝A4（代號 GPT，獨立審查者，只審不改，無裁決權）；A1=PX（代號不改）、A2=AG、A3=CL（Claude Code）。角色表與流程規則尚未寫入 AGENTS.md（清單 #4–#6、#9 未批准），本條只記錄已執行部分。
+- 行為變更：`.agents/skills/source-command-cl-flow/SKILL.md`、`source-command-cl-flow-fast/SKILL.md` 由「Codex 撰寫草案／裁決（A3）」改為「Codex 不執行 /cl-flow，只做 A4 審查」；改前備份於 `.fhs/ai/governance/backups/source-command-cl-flow*.SKILL.md.2026-09-26.bak`。
+- 探針報告：`.fhs/reports/planning/2026-09-26_a4-probe-report.md`。要點：`codex exec -s read-only` 擋下 shell 與 `apply_patch` 寫入；`.codex/hooks.json` 對 Codex 未能證明生效；`codex review --uncommitted` 不可併用自訂提示；六項預埋 bug 全數找到。
+- 令牌處置（清單 #1）：`.codex/config.toml` 改用 `env_vars`、本地排除加入 `.git/info/exclude`；令牌旋轉待 Fat Mo。
+- 分支：由 main（34c78b8）開 `gov/a4-codex-workflow`。擱置：#7 runner、#8 guard 規則，待 3 次實審後再議。
+
 ## [2026-09-26] 分支清理：刪除 5 條已撿內容分支（Fat Mo 批准）
 
 - 刪除本地＋origin 共 5 條：`claude/read-command-db07e0`（16ed627）／`claude/wonderful-bhaskara-1e9f3e`（12b5ed4）／`claude/canva-auto-small-chan-ef7849`（aed3a77）／`claude/read-command-d64261`（9c342c0）／`claude/read-command-263e23`（a230505）。還原：`git branch <名> <sha>`，遠端須重推。
