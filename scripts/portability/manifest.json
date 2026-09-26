@@ -1,0 +1,2951 @@
+{
+  "schema_version": 1,
+  "source_commit": "c09a255d1808610137b628e5f70960336a4ecaa7",
+  "source_scopes": [
+    ".fhs/ai",
+    "scripts/hooks",
+    "scripts/cl-flow-runner.js",
+    "scripts/validate-ag-plan.js",
+    ".claude/commands",
+    ".agents/workflows",
+    ".fhs/notes/FHS_Mode_Card.md",
+    ".fhs/notes/knowledge-map.md",
+    ".fhs/notes/SOP_NOW.md",
+    "3d",
+    "canva_auto",
+    "scripts/lib/env.js",
+    "package.json",
+    ".fhs/tools/fhs-health-rules.json",
+    ".fhs/tools/canonical_keys.yml"
+  ],
+  "classification_authority": "S149 Phase 1 manifest supersedes plan §0 asset matrix",
+  "phase2_handoff": "After guard split, add scripts/hooks/guard-rules.fhs.json and refresh pre-tool-guard.js blob hash before Phase 3.",
+  "files": [
+    {
+      "source": ".agents/workflows/ag-flow.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/ag-plan.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/ag-stitch-sync.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/ag-ui-import.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/cl-flow-fast.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/cl-flow.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/commit.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/error-eye.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/execute.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/fhs-audit.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/fhs-check.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/guardian.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/read.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/rg.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/rp.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".agents/workflows/upload-web.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/3d-print.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/8d.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/ag-flow.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/ag-plan.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/ag-stitch-sync.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/ag-ui-import.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/canva-auto.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/cl-flow-fast.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/cl-flow.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/commit.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/db-query.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/error-eye.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/execute.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/fhs-audit.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/fhs-check.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/fhs-slim.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/guardian.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/new-product.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/read.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/rg.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/rp.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/team.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/upload-web.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".claude/commands/usage-audit.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
+    },
+    {
+      "source": ".fhs/ai/AGENTS.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "AGENTS.skeleton.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "bb48a26a65f5110262463f0729b1697752a2f743",
+      "line_budget": 120
+    },
+    {
+      "source": ".fhs/ai/FHS_Finance_Bible.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/ai/FHS_Pricing_Bible.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/ai/FHS_Product_Cost_Operations.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/ai/FHS_Product_Cost_Schema_v2.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/ai/FHS_Product_Cost_UI_Spec.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/ai/FHS_Product_Definition.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/ai/README.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/ai/commands/3d-print.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/8d.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/8d.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "e9b492b5581b094afd98c6f15620e4d3c6fb602c"
+    },
+    {
+      "source": ".fhs/ai/commands/README.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current command catalogue is FHS-specific; template writes its own catalogue"
+    },
+    {
+      "source": ".fhs/ai/commands/ag-flow.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/ag-plan.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/ag-stitch-sync.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/ag-ui-import.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/canva-auto.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/cl-flow-fast.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/cl-flow-fast.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "011ec73fed1a607ecde694bd4b9fed78eb6980fb"
+    },
+    {
+      "source": ".fhs/ai/commands/cl-flow.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/cl-flow.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "9a516527ac9ee6c7dbb44822b92f052e35006a90"
+    },
+    {
+      "source": ".fhs/ai/commands/commit.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/commit.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "51b2eac646c875aef43f370d8beeb6ad3da18a2f"
+    },
+    {
+      "source": ".fhs/ai/commands/db-query.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/error-eye.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/execute.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/execute.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "69e77a251ff6cee1934b130fa56ecf79d66863a9"
+    },
+    {
+      "source": ".fhs/ai/commands/fhs-audit.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/fhs-check.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/fhs-slim.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/guardian.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/new-product.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/read.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/read.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "99589201c14a379eaa969ec94619beb7bcdff56d"
+    },
+    {
+      "source": ".fhs/ai/commands/rg.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/rg.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "bcb37da42d76f6de4c74b63c464d02b57de17b68"
+    },
+    {
+      "source": ".fhs/ai/commands/rp.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/commands/rp.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "69baa22dbd5b7ee02bb76b828d74540eb6ecc6d9"
+    },
+    {
+      "source": ".fhs/ai/commands/team.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/upload-web.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/usage-audit.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Transcript scanner and FHS usage paths are outside template v0.1 core commands"
+    },
+    {
+      "source": ".fhs/ai/governance/00_INDEX.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/00_INDEX.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "f6805b20942bf72aa16c67f1f563000c471eeff5"
+    },
+    {
+      "source": ".fhs/ai/governance/01_diagnosis.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/01_diagnosis.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "d81adc7cde05ee975594b2d0bbab224807267589"
+    },
+    {
+      "source": ".fhs/ai/governance/02_model-dispatch.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/02_model-dispatch.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "85b131a09ce9c4eae6810e054d58645c30497d3e"
+    },
+    {
+      "source": ".fhs/ai/governance/03_judgment-rubrics.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/03_judgment-rubrics.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "4ac139f8cf88baacb4386546c9af3171988ac93e"
+    },
+    {
+      "source": ".fhs/ai/governance/04_delegation-templates.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/04_delegation-templates.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "cd7587b88e02fe34126db10eb5abfb0e3d339609"
+    },
+    {
+      "source": ".fhs/ai/governance/05_maintenance-protocol.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/05_maintenance-protocol.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "1f6bfd4cc907296a264e2250fe0c2777dca25619"
+    },
+    {
+      "source": ".fhs/ai/governance/06_letter-to-future-sessions.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/06_letter-to-future-sessions.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "8876f9ea6a3570c1ce30704c06dc99bdf0c8dc72"
+    },
+    {
+      "source": ".fhs/ai/governance/07_compounding-loop.md",
+      "class": "U",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/ai/governance/07_compounding-loop.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "c318de6d6c53edd0d2bdedf9a7245b6f7ee3dcea"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/00_INDEX.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/00_INDEX.md.2026-07-04.pre-review.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/00_INDEX.md.2026-07-08.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/01_diagnosis.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/01_diagnosis.md.2026-07-04.pre-review.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/02_model-dispatch.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/02_model-dispatch.md.2026-07-04.pre-review.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/02_model-dispatch.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/02_model-dispatch.md.2026-07-13.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/02_model-dispatch.md.2026-07-14.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/02_model-dispatch.md.2026-07-21.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/03_judgment-rubrics.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/03_judgment-rubrics.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/04_delegation-templates.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/04_delegation-templates.md.2026-07-04.pre-review.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/04_delegation-templates.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/04_delegation-templates.md.2026-07-08.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/05_maintenance-protocol.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/05_maintenance-protocol.md.2026-07-08.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/06_letter-to-future-sessions.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/06_letter-to-future-sessions.md.2026-07-04.pre-review.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/2026-09-23-known-failure-modes/8d.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/2026-09-23-known-failure-modes/ag-flow.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/2026-09-23-known-failure-modes/cl-flow-fast.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/2026-09-23-known-failure-modes/cl-flow.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/AGENTS.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/AGENTS.md.2026-07-09.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/AGENTS.md.2026-09-19.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/CLAUDE.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/CLAUDE.md.2026-07-04.pre-review.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/CLAUDE.md.2026-07-08.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/CLAUDE.md.2026-09-19.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/FHS_INTEGRATION.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/FHS_INTEGRATION.md.2026-09-14.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/FHS_Knowledge_Map.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/SOP_NOW.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/build-error-resolver.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/build-error-resolver.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/cl-flow.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/code-reviewer.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/code-reviewer.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/database-reviewer.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/decisions.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/finance-auditor.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/finance-auditor.md.2026-09-19.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/finance-gatekeeper-SKILL.md.2026-09-19.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/guard-fixtures.json.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/guard-fixtures.json.c2.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/learnings.md.2026-07-04-pre-wikilink.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-30_AI_Architecture_Upgrade_v1.2.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-30_System_Hygiene_Upgrade.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_AI_Authorization_Breach_Fix.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_GLOBAL_AI_SOP_v2.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-03-31_System_Init_v131.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-02_command_layer_sync.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-02_windows_encoding_fix.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-03_cl-flow-v2.1-verification.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-03_command_authorization_lesson.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-03_fhs_audit_resolution.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-05_subagent_engineering_installation.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-07_architecture-hygiene-px-ag-audit.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-10_v39-rebuild-phase4-hookup.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-18_IG_Text_Format.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-22_css-specificity-and-legacy-bugs.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-22_iphone-accordion-audit-center.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-25_financial-overview-v40-integration.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-04-30_antigravity-mcp-vscode-config.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-03_order-integrity-audit.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-04_keychain-shipping-deduction.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-05_Blender_Subagent.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-06_boundary_hygiene.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-09_Baby_Color_TBD_Logic.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-09_skill-import-and-report-unification.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-11_UI_UX_Optimization.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-12_AI_Accountability_Protocol.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-12_Financial_Restoration_Fix.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-13_Bug_Fix_Completion_Bias.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-14_P_Product_Badge_Debug.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-15_Overview_Badge_Layout_Redesign.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-16_CSV_Migration_Bug6_Fix.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-16_Documentation_Ecosystem_Audit.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-16_keychain_shipping_deduction.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-16_order_0600802_pricing_concession.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-17_finance-mode-sql-debugging.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-17_handmodel-bar-chart-subdivision.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-17_stitch_design_system_mcp_export.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-18_n8n-nas-code-node-limits-telegram-debug.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-19_antigravity-implicit-memory-behavior.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-19_dom-restore-multilayer-override.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-05-24_Timeout_Finally_Syntax_Safety.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-12_knowledge-governance-enforcement-layer.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-12_split-box-ux-and-zeroing-boundary.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-13_audit_ledger_four_column_unreliable.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-19_n8n-nas-code-node-buffer-compression-capabilities.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-20_keychain-cost-drift-misdiagnosis-and-propagation-gap.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-20_n8n-google-drive-search-query-mechanics.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-23_cl-flow-runner-cloudflare-px-gemini-fix.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-23_pitfall_cost_config_key_gap.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-25_keychain_addon_subtotal_ignores_quantity.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-06-26_audit_ledger_honest_cost_presentation.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/2026-07-04_n8n_api_workflow_build_pattern.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260320_1358_Memory_Engine_2.0_Architecture.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_Airtable_Data_Cleansing_V3.5.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_Final_Judgment_Protocols.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_Full_Check_Report.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_History_Indexing_Fix.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_JS_Init_Bug_Context.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_Reflex_Audit_Report.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_UI_System_Offline_Impeccable.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260321_n8n_MCP_Activation.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260322_Unauthorized_Merge_Violation.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260324_Incomplete_SOUL_Recovery_Incident.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260324_PowerShell_Encoding_Corruption_Crisis.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260324_System_Management_Chaos_Reflection.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260324_Unauthorized_n8n_Rewrite_Incident.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260324_n8n_Search_Formula_Stabilization_V45.5.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260326_Triple_Sync_Field_Map_Ground_Truth.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/20260326_n8n_Soul_Restoration_V45.7.4.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/lessons.2026-07-04-pre-wikilink/INDEX.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/post-tool-kgov.js.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/post-tool-kgov.js.2026-07-08.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/pre-tool-guard.js.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/pre-tool-guard.js.2026-07-09.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/pre-tool-guard.js.c2.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/product-integration-validator.md.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/prompt-router.js.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/prompt-router.js.2026-09-19.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/settings.json.2026-07-04.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/tdd-guide.md.2026-07-07.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/governance/backups/upload-web.ps1.2026-07-16.bak",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Historical governance backup; portable template uses the current master only"
+    },
+    {
+      "source": ".fhs/ai/skills/fhs-bug-triage/SKILL.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/fhs-overview-badge-layout/SKILL.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/fhs-p-product-display/SKILL.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/finance-calculator/SKILL.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/finance-gatekeeper/SKILL.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/ui-ux-pro-max/FHS_INTEGRATION.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/ui-ux-pro-max/README.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/ui-ux-pro-max/vendor/SKILL.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/vendor/awesome-cc/read-only-postgres.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/vendor/awesome-cc/supabase-query.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/vendor/superpowers/systematic-debugging.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/skills/vendor/superpowers/test-driven-development.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain or vendored skill; template v0.1 does not copy installed skills"
+    },
+    {
+      "source": ".fhs/ai/subagents/MANIFEST.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS agent inventory, vendor copy or install log; template creates project-level guidance"
+    },
+    {
+      "source": ".fhs/ai/subagents/OPERATING_MODEL.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS global-agent operating model conflicts with template project-level installation"
+    },
+    {
+      "source": ".fhs/ai/subagents/README.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS agent inventory, vendor copy or install log; template creates project-level guidance"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/blender-3d-modeler.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain role; project-level template ships only the generic trio"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/build-error-resolver.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".claude/agents/build-error-resolver.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "c0f38937c603b6f923fb5c1bb901923c8284fcff"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/code-reviewer.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".claude/agents/code-reviewer.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "4fbfe417d266ca2350e1f0f99070f5157183b60c"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/database-reviewer.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain role; project-level template ships only the generic trio"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/finance-auditor.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain role; project-level template ships only the generic trio"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/frontend-developer.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain role; project-level template ships only the generic trio"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/product-integration-validator.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain role; project-level template ships only the generic trio"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/tdd-guide.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".claude/agents/tdd-guide.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "923cf45c5f2d70d485c267b027d99555b396fd85"
+    },
+    {
+      "source": ".fhs/ai/subagents/freehandsss/ui-designer.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain role; project-level template ships only the generic trio"
+    },
+    {
+      "source": ".fhs/ai/subagents/install-log.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS agent inventory, vendor copy or install log; template creates project-level guidance"
+    },
+    {
+      "source": ".fhs/ai/subagents/vendor/code-reviewer.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS agent inventory, vendor copy or install log; template creates project-level guidance"
+    },
+    {
+      "source": ".fhs/ai/subagents/vendor/frontend-developer.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS agent inventory, vendor copy or install log; template creates project-level guidance"
+    },
+    {
+      "source": ".fhs/ai/subagents/vendor/ui-designer.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS agent inventory, vendor copy or install log; template creates project-level guidance"
+    },
+    {
+      "source": ".fhs/ai/team-manifest.json",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS business definition or runtime inventory; template creates a generic skeleton"
+    },
+    {
+      "source": ".fhs/notes/FHS_Mode_Card.md",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/notes/Mode_Card.md",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "295df5e30224cc4ace9c23002bfe623e72c31035"
+    },
+    {
+      "source": ".fhs/notes/SOP_NOW.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS operational SOP; new project defines its own SOP"
+    },
+    {
+      "source": ".fhs/notes/knowledge-map.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current knowledge map points to FHS documents; template creates a new map"
+    },
+    {
+      "source": ".fhs/tools/canonical_keys.yml",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/tools/canonical_keys.yml",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "6c91ee960ef3676254df058d2e9da80b16bbc676"
+    },
+    {
+      "source": ".fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": ".fhs/tools/fhs-health-rules.json",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "300002da789cb26b693fe06b57199882c6faad55"
+    },
+    {
+      "source": "3d/README.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "3d/param_memory.json",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "3d/scripts/pipeline_v0_phase1_foot.py",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "canva_auto/README.md",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "canva_auto/ink_gap.py",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "canva_auto/local_prep.py",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "canva_auto/placement_memory.json",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "canva_auto/sample_gradient_fit.py",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS domain memory; Phase 3 uses the pattern to write a new generic param-memory guide"
+    },
+    {
+      "source": "package.json",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "package.json",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "27d61ffdf0e501c1b194d3173479a7eec1339dab"
+    },
+    {
+      "source": "scripts/cl-flow-runner.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/cl-flow-runner.js",
+      "install_level": "project",
+      "deps": [
+        "scripts/lib/env.js"
+      ],
+      "upstream_blob_hash": "b0c868fffa9cdb5adaa3d543c0d5ad7e074a3075"
+    },
+    {
+      "source": "scripts/hooks/fhs-health-check.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/fhs-health-check.js",
+      "install_level": "project",
+      "deps": [
+        ".fhs/tools/canonical_keys.yml",
+        ".fhs/tools/fhs-health-rules.json"
+      ],
+      "upstream_blob_hash": "cca35097912ea529b01f2d2b1d94077c63e703e6"
+    },
+    {
+      "source": "scripts/hooks/post-tool-kgov.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/post-tool-kgov.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "f428d236b0b409687ef62d5df21584e650cad296"
+    },
+    {
+      "source": "scripts/hooks/pre-tool-guard.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/pre-tool-guard.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "3b56948f2832cc48309e1440e5fe8f1de49c0661"
+    },
+    {
+      "source": "scripts/hooks/prompt-router.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/prompt-router.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "10844b0e2953c2b34c4d4eaba607ad9d4c2c8b73"
+    },
+    {
+      "source": "scripts/hooks/session-start-sop.sh",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/session-start-sop.sh",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "1f364a79b10431444cf189b6b89c4661525f8f6d"
+    },
+    {
+      "source": "scripts/hooks/stop-finance-auditor.js",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "FHS finance-only Stop hook"
+    },
+    {
+      "source": "scripts/hooks/stop-kgov.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/stop-kgov.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "153fb694ca7383896e836c01c15d97ebcc103e45"
+    },
+    {
+      "source": "scripts/hooks/test/guard-fixtures.json",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/test/guard-fixtures.json",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "095cbac107722434d5e96e105e016d3c9e2f3e2c"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures.json",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/test/health-fixtures.json",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "6e1267bd7b3402bf1ba1c3ad6de5f29f7a8b533f"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/01-healthy-silent/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/01-healthy-silent/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/02-bloat-portable-block/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/02-bloat-portable-block/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/03-bloat-entries/.fhs/memory/learnings.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/03-bloat-entries/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/04-orphan-index/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/04-orphan-index/auto-memory-sim/MEMORY.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/04-orphan-index/auto-memory-sim/fileA.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/04-orphan-index/auto-memory-sim/fileB.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/05-canonical-drift/.fhs/tools/canonical_keys.yml",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/05-canonical-drift/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/05-canonical-drift/ref/copy.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/05-canonical-drift/src/truth.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/06-duplicate-basename/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/06-duplicate-basename/dirA/README.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/06-duplicate-basename/dirA/backups/file.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/06-duplicate-basename/dirA/file.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/06-duplicate-basename/dirB/README.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/06-duplicate-basename/dirB/file.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/07-archive-broken-link/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/07-archive-broken-link/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/08-external-auto-memory/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/08-external-auto-memory/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/08-external-auto-memory/ext-memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/09-rules-json-corrupted/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/10-entries-unit-precise/.fhs/memory/learnings.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/10-entries-unit-precise/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/11-cadence-overdue/.fhs/reports/audits/system/audit_2020-01-01.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/11-cadence-overdue/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/12-cadence-fresh/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/13-pending-table-leak/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/13-pending-table-leak/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/14-pending-table-clean/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/14-pending-table-clean/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/15-portable-stale/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/15-portable-stale/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/16-portable-consistent/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/16-portable-consistent/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/17-canonical-structured-own-version/.fhs/tools/canonical_keys.yml",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/17-canonical-structured-own-version/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/17-canonical-structured-own-version/ref/copy.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/17-canonical-structured-own-version/src/truth.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/18-canonical-structured-marker-drift/.fhs/tools/canonical_keys.yml",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/18-canonical-structured-marker-drift/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/18-canonical-structured-marker-drift/ref/copy.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/18-canonical-structured-marker-drift/src/truth.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/19-archive-bak-prefix-not-link/.fhs/memory/archive/handoff.md.pre-rotation-2026-09-19.bak",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/19-archive-bak-prefix-not-link/.fhs/memory/archive/real-file.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/19-archive-bak-prefix-not-link/.fhs/memory/handoff.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/health-fixtures/19-archive-bak-prefix-not-link/.fhs/tools/fhs-health-rules.json",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Current synthetic health corpus is tied to FHS paths; template creates a new synthetic corpus"
+    },
+    {
+      "source": "scripts/hooks/test/kgov-fixtures.json",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/test/kgov-fixtures.json",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "b756b0e7efd398506b38254d27256166718d5300"
+    },
+    {
+      "source": "scripts/hooks/test/run-finance-stop-fixtures.js",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [
+        "scripts/hooks/stop-finance-auditor.js"
+      ],
+      "reason": "Tests FHS finance-only Stop hook, which is excluded from generic template"
+    },
+    {
+      "source": "scripts/hooks/test/run-fixtures.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/test/run-fixtures.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "2e66ddcde605bb05f95bcc4a4d67918aa397489d"
+    },
+    {
+      "source": "scripts/hooks/test/run-handoff-gate-tests.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/test/run-handoff-gate-tests.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "92f659a815bd5394d1058b59becc6f345baa3996"
+    },
+    {
+      "source": "scripts/hooks/test/run-health-fixtures.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/test/run-health-fixtures.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "a93b012f8f29db6f1bfa680a951837ad2ff0a856"
+    },
+    {
+      "source": "scripts/hooks/test/run-kgov-fixtures.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/hooks/test/run-kgov-fixtures.js",
+      "install_level": "project",
+      "deps": [],
+      "upstream_blob_hash": "12757d35f09056436376ecb693297ef12d465408"
+    },
+    {
+      "source": "scripts/lib/env.js",
+      "class": "M",
+      "action": "GENERIC-FORK",
+      "dest": "scripts/lib/env.js",
+      "install_level": "project",
+      "deps": [
+        "npm:dotenv"
+      ],
+      "upstream_blob_hash": "5dc59abe6df150aca5e024a536e58f3269e1d0ac"
+    },
+    {
+      "source": "scripts/validate-ag-plan.js",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Antigravity plan validator is outside template v0.1 core and requires redesign"
+    },
+    {
+      "source": "scripts/hooks/guard-rules.fhs.json",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Rule content extracted from pre-tool-guard.js is FHS-specific (business field names, file paths, messages); portable template ships an empty/example guard-rules.*.json for each project to fill in, not this repo's actual rule content."
+    }
+  ]
+}

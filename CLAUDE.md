@@ -13,6 +13,7 @@
 | 卡關兩輪、想升級模型、想宣告完成、想問 Fat Mo、懷疑方向錯了 | `.fhs/ai/governance/03_judgment-rubrics.md` |
 | 要派工給 subagent（搜尋/實作/重構/研究/審查） | `.fhs/ai/governance/04_delegation-templates.md` 直接套模板 |
 | 要修改 governance / learnings / handoff 等制度檔案 | `.fhs/ai/governance/05_maintenance-protocol.md` 查權限矩陣 |
+| 要抽取、更新或健檢跨專案治理模板 | `scripts/portability/§4-effective.md`、`scripts/portability/manifest.json`；發版與盲測證據見 S149 完成報告 |
 | 涉及財務 / 成本 / 定價 | 先載 `finance-gatekeeper` skill（既有硬規則），再按下方第四條紅線派 `finance-auditor` |
 | 想找舊知識 / 過往決策為什麼這樣定 / 教訓在哪份文件 | `.fhs/notes/knowledge-map.md`（查詢路由表，非規則） |
 | 要落盤教訓（learnings/skill）/ 平行派工（fan-out/loop 迭代）/ 想用 worktree | `.fhs/ai/governance/07_compounding-loop.md` |

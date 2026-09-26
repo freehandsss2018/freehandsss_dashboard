@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-09-26] S149 Phase 2：guard.js 拆為判斷引擎＋規則 JSON（Claude Code，D96 交棒）
+
+- `scripts/hooks/pre-tool-guard.js` 由 482 行單體拆為通用判斷引擎（按規則 `kind` 解讀執行）＋`scripts/hooks/guard-rules.fhs.json`（R1–R14 全部 pattern／訊息／門檻外置，執行次序照舊）。行為等價：五套 runner 32/10/19/35/8 前後一致、規則 ID 集合相等、stdout JSON 結構正常、perf 中位數 delta 1.42ms。
+- 拆分帶嚟嘅新故障模式已封死：規則檔缺失／JSON 壞／未知或繼承 kind／欄位缺失／regex 編譯失敗／未知 match.type → 一律 exit 2 全面攔截（fail-closed），唔再 exit 1 靜默放行；稽核日誌模板改 function 替換防 `$` 污染；不設規則檔 env override。
+- fresh-context opus 對抗審查三輪（第 1、2 輪各揪 3 項並修正，第 3 輪 PASS，13,528 例差異測試 0 語義差異）。manifest 新增規則檔條目、刷新引擎 blob hash，`check-manifest.js` PASS。
+- **交 Phase 3**：引擎寫死讀 `guard-rules.fhs.json`，模板必須附帶空白／範例規則檔，否則新專案所有 Write/Edit/Bash 會被攔截。非阻擋加固待辦：scope/kind 相容檢查、剝 UTF-8 BOM、symbols 載入時預編譯。**Subagent 使用記錄**：✅ opus 對抗審查 ×3（計畫紅線要求，驗收不自驗）。
+
+## [2026-09-26] S149 Phase 0–1：治理可攜化基線與 manifest（D96 交棒）
+
+- 以 PR #6 `c09a255` 為基線。獲 Fat Mo 明確批准後清走已過期 `.fhs/.deploy-ok`；五套 runner 全 PASS（32/10/19/35/8），R1–R14 清單與逐項輸出留 `.fhs-local/s149-phase0-baseline/`。獨立模板 repo 已於 `D:\SynologyDrive\AI_Governance_Template` 初始化。
+- 新增 `scripts/portability/manifest.json`（323 個 tracked 來源，含 health runtime config 兩份；未分類 0、SKIP 理由 284/284、GENERIC-FORK blob hash 39/39、依賴閉包 PASS）及 `check-manifest.js`；`§4-effective.md` 整合 v2、§5.1、§5.4 執行條文。
+- fresh-context 審查指出 07-compounding-loop 應為 U-class、checker 不能信 manifest 自述 scope、缺 import 掃描、模板 runner 範圍要與活體五套分清；四項已修正。checker 負向探針「移除整個 scope／SKIP 理由／本地依賴」三種均轉 FAIL。
+- 依 D96 停在 Phase 1，下一棒由 Claude Code 執行 Phase 2 guard 拆分及 fresh-context opus 審查；Phase 3 依賴該輸出。**Subagent 使用記錄**：✅ 唯讀 inventory agent 盤點來源與依賴；另以 fresh-context agent 驗收本 Phase（見本次交棒記錄）。
+
 ## [2026-09-25] D95：輪詢式短句改用通知取代（Telegram Stop hook 新增「❓ 等你回覆」＋發送重試）
 
 - 回放量度：「已完成？」41 次中 73% 上一回合 ≥120s（通知應已發；日誌約 10% 發送失敗）；「Y／可以」35 次中 24 次上一回合僅 30–120s 而 AI 用純文字問確認——舊通知邏輯對此靜默。

@@ -65,6 +65,7 @@
 | `n8n/` | n8n workflow 配置與欄位映射 |
 | `Maintenance_Tools/` | 系統健康檢查腳本 |
 | `scripts/` | 輔助維護腳本 |
+| `scripts/portability/` | S149 治理模板抽取器、manifest、去識別化 fork 與匯出驗證；獨立模板 repo 見 `D:\SynologyDrive\AI_Governance_Template` |
 | `archive/` | 舊版備份 |
 | `n8n-mcp-server/` | n8n MCP Server — AI 控制層（Phase 1: FHS_Core_OrderProcessor）|
 | `perplexity-mcp-server/` | Perplexity MCP 整合伺服器 |

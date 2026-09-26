@@ -360,6 +360,7 @@ freehandsss_dashboard/
 │   ├── README.md                        ← 腳本說明索引
 │   ├── Sync_Notion_Brain.js             ← Notion 雲端記憶同步
 │   ├── cl-flow-runner.js               ← /cl-flow 協調器（Perplexity + Gemini headless runner，模型由 GEMINI_A2_MODEL_DEFAULT 控制）
+│   ├── portability/                    ← S149 治理可攜化：manifest＋抽取器＋通用 template-src＋黑名單驗證；獨立模板 repo v0.1.0（D97）
 │   ├── learnings-pointers.js            ← learnings 6 桶跨領域指標生成器（2026-08-03，讀 `@主桶 +副桶` tag 生成副桶 pointer；含防呆機制拒絕覆寫誤植正式條目）
 │   ├── validate-ag-plan.js             ← ag-plan 輸出格式守護（6 section + checkbox + 檔案標記驗證，保護 Verdict 鏈）
 │   ├── deploy_batch_recalc_workflow.js  ← 建立並啟動 n8n 💰 Financial Batch Recalculate workflow（2026-05-28）

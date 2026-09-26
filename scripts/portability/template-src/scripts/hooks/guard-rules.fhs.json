@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "source_note": "Portable starter rules. Review and extend for your project before enabling hooks.",
+  "rules": [
+    {
+      "id": "G1",
+      "scope": "write",
+      "kind": "env_write_warn",
+      "suffix": ".env",
+      "exclude_suffix": ".env.example",
+      "warn_message": ["Check that this local environment file is ignored by Git."]
+    },
+    {
+      "id": "G2",
+      "scope": "bash",
+      "kind": "regex_block",
+      "pattern": { "source": "(?:^|\\s)git\\s+push\\s+--force(?:\\s|$)", "flags": "i" },
+      "block_message": ["Force push needs explicit project authorization."]
+    },
+    {
+      "id": "G3",
+      "scope": "bash",
+      "kind": "handoff_gate",
+      "disabled_under_env": "{{ENV_PREFIX}}_GUARD_FIXTURE",
+      "command_pattern": { "source": "\\bgit\\s+(?:-[^\\s]+\\s+)*commit\\b", "flags": "" },
+      "dry_run_exclude_pattern": { "source": "--dry-run\\b", "flags": "" },
+      "skip_env": "{{ENV_PREFIX}}_SKIP_HANDOFF_GATE",
+      "gate_file_env": "{{ENV_PREFIX}}_HANDOFF_GATE_FILE",
+      "handoff_rel": ".fhs/memory/handoff.md",
+      "skip_warn_message": ["Handoff date gate bypassed for this commit; record why."],
+      "stamp_missing_warn_message": ["Handoff date is missing. Update the portable handoff block."],
+      "stamp_stale_block_message_template": ["Handoff date {stamp} is stale; update it to {today}."],
+      "unstaged_block_message_template": ["Stage {handoff_rel} before committing."]
+    }
+  ]
+}

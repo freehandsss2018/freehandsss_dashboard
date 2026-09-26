@@ -7,6 +7,7 @@
 | `lib/env.js` | **共用 .env 載入器**（2026-09-13）：worktree-aware fallback — 目前目錄冇 `.env` 就用 `git rev-parse --git-common-dir` 揾主倉再讀嗰邊嘅 `.env`；`cl-flow-runner.js` 及所有 `require('dotenv').config()` 呼叫點已統一改用，不再各自寫死 `path.join(__dirname, '..', '.env')` |
 | `Sync_Notion_Brain.js` | 將核心邏輯或災難分析同步寫入 Notion 以作為雲端記憶備份 |
 | `cl-flow-runner.js` | `/cl-flow` A3-first 協調器（v2.0.0，D39）— `--init` 開檔（不叫 API）／`--review [--fast]` 送 A3 草案俾 A1 Perplexity + A2 Gemini 評審（2026-08-17 新增 model fallback 鏈，見下方說明）|
+| `portability/` | S149 治理可攜化：`manifest.json` 盤點、`template-src/` 通用 fork、`export-template.js` 匯出、`check-manifest.js`/`check-export.js` 驗證；先讀 `§4-effective.md` 與完成報告 |
 | `validate-ag-plan.js` | ⚠️ 舊版 ag-plan 作者格式驗證器（D39 前）— 現行評審格式（`ag-review.md`）已不再呼叫此驗證器，檔案保留但未接線於當前 Verdict 鏈 |
 | `migrate_airtable_to_supabase.js` | **Supabase 遷移**：批量將 Airtable 資料同步至 Supabase (Phase 1)，需 Airtable API |
 | `migrate_from_csv.js` | **CSV 遷移備援**：當 Airtable API quota 耗盡時，改從 `airtable-database/*.csv` 讀取並遷移至 Supabase（支援 multiline quoted fields）|

@@ -1,0 +1,11 @@
+# Portable canonical value map. Add a key only when its source and references are known.
+# Each key: source_of_truth, pattern, optional reference_pattern, allowed_references.
+# The health check compares extracted values in the listed files.
+
+governance_version:
+  source_of_truth: .fhs/ai/governance/00_INDEX.md
+  pattern: '> Version:\s*(\d+\.\d+\.\d+)'
+  key_type: structured
+  reference_pattern: '<!--\s*canonical:governance_version=(\d+\.\d+\.\d+)\s*-->'
+  allowed_references:
+    - .fhs/ai/governance/*.md
