@@ -2347,7 +2347,7 @@
       "dest": "scripts/hooks/pre-tool-guard.js",
       "install_level": "project",
       "deps": [],
-      "upstream_blob_hash": "36fb987cfd356e217c00c6b996447d17afcf8c8b"
+      "upstream_blob_hash": "3b56948f2832cc48309e1440e5fe8f1de49c0661"
     },
     {
       "source": "scripts/hooks/prompt-router.js",
@@ -2937,6 +2937,15 @@
       "install_level": "n/a",
       "deps": [],
       "reason": "Antigravity plan validator is outside template v0.1 core and requires redesign"
+    },
+    {
+      "source": "scripts/hooks/guard-rules.fhs.json",
+      "class": "F",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "Rule content extracted from pre-tool-guard.js is FHS-specific (business field names, file paths, messages); portable template ships an empty/example guard-rules.*.json for each project to fill in, not this repo's actual rule content."
     }
   ]
 }

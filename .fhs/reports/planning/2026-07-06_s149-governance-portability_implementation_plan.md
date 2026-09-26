@@ -229,7 +229,7 @@ S148 已完成；S150 Phase 4-6 明文等 S149 → **S149 現為執行佇列 blo
   - 五套當日基線：guard 32/32、kgov 10/10、health 19/19、finance-stop 35/35、handoff-gate 8/8，全部 0 failed。逐項輸出與 SHA256 留 `.fhs-local/s149-phase0-baseline/`；guard 代碼標記 ID 集合 R1–R14（14 個），見同目錄 `guard-rule-ids.txt`。
   - 有效執行視圖：`scripts/portability/§4-effective.md`（v2＋§5.1＋§5.4，D96 插入式交棒）。
 - Phase 1：✅ `scripts/portability/manifest.json`：323 個 tracked 來源（原範圍 321＋health 兩份 runtime config），未分類 0；GENERIC-FORK 39／SKIP 284／COPY-CLEAN 0（活體來源均有 FHS 身份或路徑耦合）。SKIP 理由 284/284；GENERIC-FORK blob hash 39/39；`deps` 閉包 PASS，含 `cl-flow-runner.js → scripts/lib/env.js → npm:dotenv`。`node scripts/portability/check-manifest.js` PASS。Phase 2 拆 guard 後須新增規則 JSON 條目並刷新引擎 blob hash，再交 Phase 3。
-- Phase 2：⬜ fixtures 基線 vs 拆後：＿＿＿；perf delta：＿＿ms
+- Phase 2：✅（Claude Code，2026-09-26）`pre-tool-guard.js` 拆為判斷引擎＋`scripts/hooks/guard-rules.fhs.json`（R1–R14 全外置，規則 ID 集合拆分前後相等）。五套 runner 基線 vs 拆後：32/10/19/35/8 → 32/10/19/35/8 逐項一致；stdout JSON 結構驗證正常；perf 同機同輸入各 120 次取中位數 delta 1.42ms（≤50ms）。fresh-context opus 對抗審查三輪：第一輪揪 3 項（`$` 污染稽核日誌／規則檔損壞 fail-open／`FHS_GUARD_RULES` env 可換走全部規則）、第二輪揪 3 項（規則內欄位壞仍 fail-open／繼承 kind 名過驗證／未知 match.type 靜默停用），全部修正（改 function 替換、`loadRules()` 逐 kind 驗證＋預編譯 regex、dispatch try/catch→fail-closed、移除 env override）；第三輪 **PASS**，13,528 個差異測試 0 語義差異。manifest：新增 `guard-rules.fhs.json`（F/SKIP）、引擎 blob hash 刷新為 `3b56948`，`check-manifest.js` PASS。**交 Phase 3 須處理**：引擎寫死讀 `guard-rules.fhs.json`，模板若唔附帶（或附帶空白範例）該檔，新專案每個 Write/Edit/Bash 都會被 fail-closed 攔截——manifest 現時將佢列 SKIP 且引擎 `deps: []`，Phase 3 exporter 必須另出一份空白/範例規則檔。非阻擋待加固（opus 建議）：scope/kind 相容性檢查（`KIND_SCOPES`）、`JSON.parse` 前剝 UTF-8 BOM、`symbol_modify_warn` symbols 載入時預編譯。
 - Phase 3：⬜ 黑名單 grep：＿＿＿；行數預算抽查：＿＿＿
 - Phase 4：⬜ fresh agent checklist：＿/9
 - Phase 5：⬜
