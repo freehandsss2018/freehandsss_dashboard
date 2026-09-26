@@ -4715,6 +4715,104 @@
           "src": "convergence_log[0600906].note"
         }
       ]
+    },
+    {
+      "order": "0600809",
+      "customer": "wing430",
+      "design_id": "DAHWS_4GmeE",
+      "date": "2026-09-26",
+      "learned": true,
+      "category": "純音樂",
+      "page_count": 4,
+      "parent_order": "0601011",
+      "first_pass_total": 3,
+      "first_pass_corrected": 0,
+      "family": "純音樂4頁；母片 _hilaryy. 0601011 DAHVL73M3IQ（19.4sec，page3 單條 572.7² 正方片格，音長最近本單16.1sec）。素材＝Lovart 動畫「影片 1.mp4」960²×15s（tkhd 960²；Canva 報 960×1920 屬已知錯）＋音訊 16.07sec＋彩色圖 1024²／黑白圖 1254²＋word.png（2行）＋1.png／2.png（較早版本，不用）＋UUID jpg 1600×1065（客人原相，已喺 Free_Laser 合集 p162）",
+      "note": "✅收尾（2026-09-26 Fat Mo：『冇改動』）。Stage③ 全程 update_fill／crop_media／resize+position（只黑白圖格 545.8×564.4→579.845² 統一彩色格，CV-30 四值全等）／delete 臨時件；彩色格與 page3 片格幾何零改動；字句沿用母片 56px／字距0.14，2行冇爆行。local_prep 輸出（彩色 cutout＋黑白 parakeet，配準 IoU 0.988）被 Fat Mo 直接採用、export 真圖無白方底。ink_gap 間隙 18.21px。Stage⑤ 存檔頁 DAHWTBARIyU（由 Small Chan 存檔頁 DAHWBPTzf4I 複製；合集尾頁 p162 係原相頁唔係存檔頁，故改用最近完成嘅單頁存檔頁做母版）。",
+      "slots": [
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "PBzFjBg9hQdFdWjW-LB92FvgZHc33rxW7（母片元素，保留）",
+          "asset": "MAHWTMZXwb8 黑白圖_parakeet.png 1254²",
+          "ai_box": {
+            "top": 162.9438,
+            "left": 676.2978,
+            "w": 579.845,
+            "h": 579.845,
+            "imageBox": "=container（0,0,579.845²）"
+          },
+          "fatmo_box": "=ai_box（冇改）",
+          "note": "母片黑白格 545.8×564.4 非方形，新 asset 方形 → resize+position 統一彩色格（CV-30）；動畫繼承有無受影響要 Fat Mo 眼證"
+        },
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PBzFjBg9hQdFdWjW-LB0wWsLNwJJf9lvB（母片元素，保留）",
+          "asset": "MAHWTP-2psY 彩色圖_cutout.png 1024²",
+          "ai_box": {
+            "top": 162.9438,
+            "left": 676.2978,
+            "w": 579.845,
+            "h": 579.845,
+            "imageBox": "=container"
+          },
+          "fatmo_box": "=ai_box（冇改）",
+          "note": "container 沿用母片（即 0601011 Fat Mo 最終值），零 resize／position，只 update_fill＋crop_media"
+        },
+        {
+          "slot": "page3_片",
+          "element_id": "PBnkjDnf1dD8xC0x-LBrR0LFBMWpYlPM5（母片元素，保留）",
+          "asset": "VAHWTLddcno 影片 1.mp4（本地 960²）",
+          "ai_box": {
+            "top": 162.9438,
+            "left": 673.6352,
+            "w": 572.7296,
+            "h": 572.7296,
+            "imageBox": "=container"
+          },
+          "fatmo_box": "=ai_box（冇改）",
+          "note": "container 零改動，只 update_fill＋crop_media"
+        }
+      ],
+      "non_geometry_findings": [
+        "Stage① 母片選擇：素材只得一條 960² 片→揀 page3 單片正方格、音長最近嘅 _hilaryy.（19.4s），copy 前 read-design 核 page3 片格形狀（CV-48 正面驗證），冇留孤兒副本",
+        "Stage⑤：Free_Laser (09/26) 合集尾頁 p162 係客人原相頁（asset MAHWGw-VMyc）唔係存檔頁，copy p162 得到原相頁；改 copy 最近完成嘅單頁存檔頁（Small Chan 存檔頁）。臨時 copy DAHWTMLiTDc 已歸 Free_recorder (09/26)"
+      ],
+      "lessons": [
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "fatmo_technique",
+          "rule": "CV-48",
+          "text": "copy 前 read-design 核 page3 片格 572.7² 正方，配 960² 片，一次揀中冇孤兒副本",
+          "src": "non_geometry_findings[0]"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-30",
+          "text": "黑白 asset 由非方形變方形，統一至彩色格四值全等，Fat Mo 冇改",
+          "src": "slots[page2_黑白圖].note"
+        },
+        {
+          "page": [
+            2
+          ],
+          "type": "fatmo_technique",
+          "rule": "CV-49",
+          "text": "local_prep 輸出（配準 IoU 0.988）被直接採用，export 無白方底",
+          "src": "case.note"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage5",
+          "type": "tool_bug",
+          "rule": null,
+          "text": "合集尾頁 p162 係原相頁唔係存檔頁，copy 尾頁會得錯母版；要先確認頁內容再揀母版",
+          "src": "non_geometry_findings[1]"
+        }
+      ]
     }
   ],
   "schema_version": 2,

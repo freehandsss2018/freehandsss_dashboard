@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-26 (canva-auto 0600809 wing430 純音樂 Stage①-⑤＋學習落庫): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-26 canva-auto 0600809 條目。存檔頁 DAHWTBARIyU 待 Fat Mo 貼入合集。
+**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
+
 ## 2026-09-26 (分支清理：刪 5 條已撿內容分支＋handoff 收尾): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-26 分支清理條目。agent 獨立核實 5 條實質內容 main 全有後，經 Fat Mo 批准本地＋origin 全刪，連帶移除 dorothy worktree。
@@ -2541,3 +2546,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-26 — S149 Phase 0–1（Codex，D96 交棒）
 - P0：S148 閘通過；獲 Fat Mo 授權清走過期部署旗標；五套 runner 32/10/19/35/8 全 PASS、R1–R14 基線留 .fhs-local。P1：manifest 323 檔未分類0、依賴閉包 PASS；有效執行視圖與 checker 已落 scripts/portability/。詳見 Changelog.md 本日條目及 S149 計畫執行狀態。
 - 下一棒 Claude Code Phase 2（guard 拆分＋fresh-context opus 審查）；Phase 3 等其輸出。本 session 用唯讀 inventory agent；Phase 1 fresh-context 驗收記錄見交棒。
+
+## 2026-09-26 — A4（Codex）文件落地＋/cl-flow-g（Claude Code，D98/D99）
+- 憲法 v1.8.0 角色表 A1–A4、`/a4-review`（v1.3.0）、`/cl-flow-g`；4 次 Codex 實審（P1×3、P2×~9）全數處理，px 技能缺失 URL 另案；17 個寫入類 Codex 橋接改為拒絕。全文見完成記錄兩份與 decisions D98/D99。
+- **Subagent 使用記錄**：✅ fresh-context Claude subagent×2（盲測）＋`codex exec -s read-only` 盲測；❌ finance-auditor（非財務數字判斷）。

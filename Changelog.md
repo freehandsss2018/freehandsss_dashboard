@@ -19,6 +19,13 @@
 - 令牌處置（清單 #1）：`.codex/config.toml` 改用 `env_vars`、本地排除加入 `.git/info/exclude`；令牌旋轉待 Fat Mo。
 - 分支：由 main（34c78b8）開 `gov/a4-codex-workflow`。擱置：#7 runner、#8 guard 規則，待 3 次實審後再議。
 
+## [2026-09-26] canva-auto：0600809 wing430 純音樂 Stage①-⑤＋學習落庫
+
+- 母片 `_hilaryy. 0601011`（DAHVL73M3IQ，19.4s，page3 單條 572.7² 正方片格，copy 前 read-design 核形狀）→ 成品 `DAHWS_4GmeE`（歸 Free_recorder 09/26）。Fat Mo 「冇改動」→ `placement_memory.json` 新增 case 0600809（`learned:true`，首次交付 3 格 0 修正，`canva_memory_validate.js` exit 0，commit 73c3e42）。
+- Stage③：全程 update_fill／crop_media，母片元素不刪；僅黑白圖格 545.8×564.4→579.845²（統一彩色格，CV-30）。export 真圖驗證去背透明、ink_gap 18.21px。
+- Stage⑤：存檔頁 `DAHWTBARIyU`（copy 自 Small Chan 存檔頁 DAHWBPTzf4I）。發現 `Free_Laser (09/26)` 合集尾頁 p162 係客人原相頁（asset MAHWGw-VMyc）唔係存檔頁，copy 尾頁會得錯母版。待 Fat Mo 人手貼入合集。
+- CV-48 已被 3 單引用（06001007／07001006／0600809）未升格，待 Fat Mo 決定。**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
+
 ## [2026-09-26] 分支清理：刪除 5 條已撿內容分支（Fat Mo 批准）
 
 - 刪除本地＋origin 共 5 條：`claude/read-command-db07e0`（16ed627）／`claude/wonderful-bhaskara-1e9f3e`（12b5ed4）／`claude/canva-auto-small-chan-ef7849`（aed3a77）／`claude/read-command-d64261`（9c342c0）／`claude/read-command-263e23`（a230505）。還原：`git branch <名> <sha>`，遠端須重推。
