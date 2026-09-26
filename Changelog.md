@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-27] handoff 待辦登記：Canva 收尾兩項結案（Claude Code）
+
+- 純文件登記，無代碼改動。Fat Mo 確認：①5 個 Canva 副本已刪、0600809 存檔頁 `DAHWTBARIyU` 已貼入 Free_Laser 合集；②Small Chan 0600512 存檔頁 `DAHWBPTzf4I` 原相已上載。
+- handoff 便攜塊（🎯/📋/➡️）移除對應待辦，MASTER 表三列改 ✅ 完成。K_FAM_COMBO 維持待實單驗收（0600107 歷史單已結案，新代碼路徑未驗）。無財務數字判斷。
+
 ## [2026-09-26] 新增 /cl-flow-g（cl-flow-fast 的 A4 串接版，D99，Claude Code）
 
 - 新指令 `/cl-flow-g`（Master＋Claude 橋接）：前段同 `/cl-flow-fast`，`/execute` 後內建 A4 硬停關卡（交付包→Fat Mo 觸發 Codex→回應→2 輪上限）；`/cl-flow-fast` 不動。

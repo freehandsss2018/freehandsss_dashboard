@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-27 (/read＋Canva 收尾兩項結案登記): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../CHANGELOG.md) 2026-09-27 條目。
+**Subagent 使用記錄**：❌未使用（純登記待辦狀態，無財務判斷）。
+
 ## 2026-09-26 (canva-auto 0600809 wing430 純音樂 Stage①-⑤＋學習落庫): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-26 canva-auto 0600809 條目。存檔頁 DAHWTBARIyU 待 Fat Mo 貼入合集。
