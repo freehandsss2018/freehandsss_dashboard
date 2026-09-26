@@ -1,5 +1,9 @@
 # Changelog
 
+## [2026-09-27] Supabase PAT 旋轉完成（Claude Code，Fat Mo 操作）
+
+- 新令牌（Project 範圍限 freehandsss_dashboard，2027-09-26 到期，日曆提醒 2027-09-12）；`.mcp.json` 改讀環境變數 `SUPABASE_ACCESS_TOKEN`；清舊令牌於 `~/.claude/settings.json`（6 條）。新 200／舊 401，repo 舊令牌 0 處。舊令牌已撤銷。
+
 ## [2026-09-26] 新增 /cl-flow-g（cl-flow-fast 的 A4 串接版，D99，Claude Code）
 
 - 新指令 `/cl-flow-g`（Master＋Claude 橋接）：前段同 `/cl-flow-fast`，`/execute` 後內建 A4 硬停關卡（交付包→Fat Mo 觸發 Codex→回應→2 輪上限）；`/cl-flow-fast` 不動。

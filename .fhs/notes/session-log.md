@@ -2550,3 +2550,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-26 — A4（Codex）文件落地＋/cl-flow-g（Claude Code，D98/D99）
 - 憲法 v1.8.0 角色表 A1–A4、`/a4-review`（v1.3.0）、`/cl-flow-g`；4 次 Codex 實審（P1×3、P2×~9）全數處理，px 技能缺失 URL 另案；17 個寫入類 Codex 橋接改為拒絕。全文見完成記錄兩份與 decisions D98/D99。
 - **Subagent 使用記錄**：✅ fresh-context Claude subagent×2（盲測）＋`codex exec -s read-only` 盲測；❌ finance-auditor（非財務數字判斷）。
+
+## 2026-09-27 — Supabase PAT 旋轉完成（Claude Code）
+- Fat Mo 建新令牌（Project 範圍限 freehandsss_dashboard，1 年，2027-09-26 到期）；換主倉／canva-learning-records-design-e99f26 `.env`、Windows 環境變數、`.mcp.json` 改讀環境變數（移除寫死 `--access-token`）、清 `~/.claude/settings.json` 內 6 條舊令牌 curl 允許規則；新令牌 HTTP 200、舊令牌 HTTP 401、Supabase MCP 重開後連得上；repo／歷史舊令牌 0 處；舊令牌已由 Fat Mo 撤銷。日曆提醒 2027-09-12。
+- **Subagent 使用記錄**：❌未使用（純令牌操作）；finance-auditor 豁免（非財務數字判斷）。
