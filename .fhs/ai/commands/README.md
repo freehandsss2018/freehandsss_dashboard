@@ -11,6 +11,7 @@
 |------|------------|
 | 規劃任何新任務（完整）| `/cl-flow [任務]` — A1 PX + A2 AG + A3 Verdict |
 | 快速規劃（跳外部研究）| `/cl-flow-fast [任務]` — A2 + A3，適合 UI/Bug 修復 |
+| 快速規劃＋A4 實作後審查 | `/cl-flow-g [任務]` — fast 前段＋內建 A4 硬停關卡（Codex 由 Fat Mo 觸發） |
 | 執行已批准計畫 | `/execute` |
 | 初始化 / 同步狀態 | `/read` |
 | 交接 + Notion 同步 | `/commit` |
@@ -61,6 +62,7 @@
 |---|---|---|---|
 | cl-flow.md | /cl-flow | 精煉（內建）→ A1+A2+A3，Claude 裁決 | Claude |
 | cl-flow-fast.md | /cl-flow-fast | 精煉（內建）→ A2+A3，跳 PX，Claude 裁決 | Claude |
+| cl-flow-g.md | /cl-flow-g | cl-flow-fast＋A4 串接（D99，g=GPT） | Claude |
 | a4-review.md | /a4-review | 準備 A4(Codex) 審查交付包並處理意見（D98；A4 由 Fat Mo 觸發） | Claude |
 | ag-flow.md | /ag-flow | 精煉（內建）→ A1+A2，AG 裁決（跳 A3） | Claude/AG |
 | ag-plan.md | /ag-plan | A2 產出本地落實 Plan（含落盤自查） | Antigravity |

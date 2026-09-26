@@ -238,6 +238,15 @@
       "reason": "A4 (Codex) 審查指令；FHS 專屬，模板 v0.1.0 不含 A1–A4 角色表（D98）"
     },
     {
+      "source": ".claude/commands/cl-flow-g.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "cl-flow-g（A4 串接版）；FHS 專屬，模板 v0.1.0 不含 A1–A4 角色表（D99）"
+    },
+    {
       "source": ".claude/commands/cl-flow-fast.md",
       "class": "M",
       "action": "SKIP",
@@ -543,6 +552,15 @@
       "install_level": "n/a",
       "deps": [],
       "reason": "A4 (Codex) 審查指令；FHS 專屬，模板 v0.1.0 不含 A1–A4 角色表（D98）"
+    },
+    {
+      "source": ".fhs/ai/commands/cl-flow-g.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "cl-flow-g（A4 串接版）；FHS 專屬，模板 v0.1.0 不含 A1–A4 角色表（D99）"
     },
     {
       "source": ".fhs/ai/commands/cl-flow-fast.md",

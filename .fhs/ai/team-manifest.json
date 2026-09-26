@@ -25,6 +25,7 @@
     { "phrase": "/upload-web team", "target": "scripts/upload-web.ps1 team", "effect": "上傳團隊名冊至公開網址 https://yanhei.synology.me/agent_dashboardV42.html（建議先重新生成）" },
     { "phrase": "/3d-print", "target": "3D 手腳模打印 pipeline", "effect": "diff-learning 參數迴圈；v0=師傅版模式（縮放+刻字+加環）" },
     { "phrase": "/cl-flow 任務描述", "target": "cl-flow-runner.js（A3-first）", "effect": "Claude(A3) 先寫草案 → PX(A1)／Gemini(A2) 評審 → Claude 裁決出方案書" },
+    { "phrase": "/cl-flow-g 任務描述", "target": ".fhs/ai/commands/cl-flow-g.md", "effect": "cl-flow-fast 前段＋實作後 A4(Codex) 硬停關卡；A4 由 Fat Mo 觸發（D99）" },
     { "phrase": "/a4-review", "target": ".fhs/ai/commands/a4-review.md", "effect": "實作後準備 A4(Codex) 審查交付包；A4 由 Fat Mo 觸發，只審不改（D98）" },
     { "phrase": "/codex:review", "target": "Codex 外掛（A4）", "effect": "Fat Mo 親手輸入＝A4 已審（Fat Mo 直接觸發）；唯讀，附 Codex thread id" },
     { "phrase": "/commit", "target": "session 收尾四同步", "effect": "handoff 便攜塊 + Changelog + decisions + git sync（條件觸發自動部署）" },

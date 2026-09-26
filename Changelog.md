@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-26] 新增 /cl-flow-g（cl-flow-fast 的 A4 串接版，D99，Claude Code）
+
+- 新指令 `/cl-flow-g`（Master＋Claude 橋接）：前段同 `/cl-flow-fast`，`/execute` 後內建 A4 硬停關卡（交付包→Fat Mo 觸發 Codex→回應→2 輪上限）；`/cl-flow-fast` 不動。
+- 同步 AGENTS.md §7 指令表、README、repo-map、team-manifest、FHS_Prompts、路由行、portability manifest。決策見 D99。
+
 ## [2026-09-26] A4（Codex）文件落地：憲法 v1.8.0 角色表 A1–A4＋/a4-review（Claude Code，D98，flow 2026-09-26-1831）
 
 - 行為變更：`.fhs/ai/AGENTS.md` v1.7.3→v1.8.0（§7 新增跨代理角色表、規則 3.17 加 A4 附加層）；新增 `/a4-review` 指令；`/execute`、`/cl-flow`（v3.1.0）、`/cl-flow-fast`（v2.1.0）加 A4／A1 狀態指針。#7 runner、#8 guard 擱置。

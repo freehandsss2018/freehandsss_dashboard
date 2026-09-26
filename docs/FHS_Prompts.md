@@ -260,8 +260,8 @@ Mobile phone 介面專屬設計準則（強制執行）：
 
 ## 【情境二十七：A4 實作後獨立審查 (/a4-review)】（2026-09-26，D98）
 
-- 觸發詞：「A4」「Codex 審查」「實作後審查」「/a4-review」「GPT 審一下」「PX AG CL GPT 分工」
-- 執行邏輯：載入並遵循 `.fhs/ai/commands/a4-review.md`——A3 產交付包 `artifacts/{flow_id}/a4-scope.md`，**Fat Mo 觸發 A4（Codex）**，A3 逐條回應；角色表唯一本文見 `.fhs/ai/AGENTS.md` §7
+- 觸發詞：「A4」「Codex 審查」「實作後審查」「/a4-review」「/cl-flow-g」「GPT 審一下」「PX AG CL GPT 分工」
+- 執行邏輯：`/cl-flow-g` 為 cl-flow-fast＋A4 串接版（`.fhs/ai/commands/cl-flow-g.md`，D99）；單獨審查載入並遵循 `.fhs/ai/commands/a4-review.md`——A3 產交付包 `artifacts/{flow_id}/a4-scope.md`，**Fat Mo 觸發 A4（Codex）**，A3 逐條回應；角色表唯一本文見 `.fhs/ai/AGENTS.md` §7
 - 護欄：A4 只審不改、無裁決權；A3 不代跑 Codex、不偽稱「A4 已審」；重審上限 2 輪；A4 受阻須標明
 - 適用：代碼／HTML／n8n／migration／hook／腳本變更必審；純文件搬移／文案潤飾可標「A4 不適用：理由」
 

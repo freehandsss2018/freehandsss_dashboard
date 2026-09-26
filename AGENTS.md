@@ -21,7 +21,7 @@
 | 需求模糊想「拷問」問清楚先做決定 | `.fhs/notes/grilling-quickcard.md`（mattpocock/skills 吸收版，召喚詞「拷問我」/「拷問落檔」） |
 | 想查一個業務詞而家嘅定義（大寶/家庭組合/owner等） | `CONTEXT.md`（拷問落檔嘅產出，術語現狀字典；非決策歷史，歷史查 decisions.md） |
 | 想知道日常操作/召喚詞速查（人讀，非規則） | `.fhs/notes/fatmo-ops-quickcard.md`（D39，harness 內建能力 + FHS 自建指令核心集） |
-| 要準備 A4(Codex) 審查交付包／處理 A4 意見／問 PX·AG·CL·GPT 分工 | `.fhs/ai/commands/a4-review.md`（角色表見 `.fhs/ai/AGENTS.md` §7） |
+| 要跑含 A4 關卡的輕量規劃流程（/cl-flow-g）／準備 A4(Codex) 審查交付包／處理 A4 意見／問 PX·AG·CL·GPT 分工 | `.fhs/ai/commands/a4-review.md`（角色表見 `.fhs/ai/AGENTS.md` §7） |
 
 ## 四條免查即生效的紅線（前三條規則本體見 `.fhs/ai/governance/02_model-dispatch.md` §5-§6，診斷依據見 01_diagnosis.md；第四條本體見 AGENTS.md「Subagent 決定性路由規則」）
 

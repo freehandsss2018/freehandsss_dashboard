@@ -4159,3 +4159,20 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **A4 第 2 次實審後修正（同日，Fat Mo 授權「P1／P2 直接修改」）**：Codex 審查分支對 main（thread `01a0de00-8037-7a42-bae3-38b3f70832cd`）提 2 條 P1，均採納：① `/a4-review` 範圍改用實作前基準 SHA／merge-base（原 `git diff HEAD` 於已 commit 後為空）；② `.agents/skills/` 內 8 個寫入類橋接（`execute`、`commit`、`upload-web`、`db-query`、`new-product`、`canva-auto`、`3d-print`、`fhs-slim`）改寫為「Codex 不執行，指向 A3」，原檔備份於 `.fhs/ai/governance/backups/`。唯讀／報告類橋接未動。**第 3 次實審（thread `01a0de08-c78a-7372-9459-ec344f2bb02a`，1 P1＋2 P2，均採納）**：再收緊 8 個橋接（`fhs-check`、`fhs-audit`、`ag-plan`、`team`、`ag-stitch-sync`、`ag-ui-import`、`error-eye`、`usage-audit`），連同前 8 個共 16 個；`/a4-review` v1.2.0 非空自檢計入未追蹤檔；`/execute` 基線檔在舊版無 artifacts 路徑改存 `.fhs/reports/planning/a4_baseline.txt`。**第 4 次實審（thread `01a0de23-a6c5-7b22-941b-deb1a13c9a32`，6 條全 P2）**：修 5 條——`/a4-review` v1.3.0（舊版流程 `<PKG>` 路徑、失敗判定獨立於輸出檔並防陳舊檔、main 上禁用退化 merge-base）、`ag-flow` 橋接改拒絕（共 17 個）、`domain-modeling` 技能加 A4 唯讀限制；`px` 技能缺失 URL 屬既有問題，另案。此後不再自行迴圈，是否再複審由 Fat Mo 決定。
 
 **Subagent 使用記錄**：見本次完成記錄 `.fhs/reports/completion/2026-09-26_a4-workflow-docs-landing_completion_report.md`。
+
+---
+
+### D99：2026-09-26 — 新增 `/cl-flow-g`（cl-flow-fast 的 A4 串接版，g=GPT=A4）
+
+**背景**：D98 把 Codex 定為 A4，但 `/cl-flow-fast` 只放指針，A4 步驟靠 A3 記得。Fat Mo 要求新增 `/cl-flow-g`＝`/cl-flow-fast` 加入現行 A4 運作，g 代表 GPT（A4）。
+
+**裁定（Fat Mo 確認）**：新建指令，Master `.fhs/ai/commands/cl-flow-g.md`＋Claude 橋接 `.claude/commands/cl-flow-g.md`；`/cl-flow-fast` 不動（方便對照與回滾）。
+- 前段完全同 `/cl-flow-fast`（精煉、A2 評審、批評處理表、Verdict）；Verdict 加「A4 適用性」欄；`state.json` 加 `a4.{required,reason,status}`（不改 runner）。
+- `/execute` 後內建 G1–G6：實作測試 → 既有驗收 → 產 `a4-scope.md` → **硬停請 Fat Mo 親手觸發 A4** → 存 `gpt-review.md` 並逐條回應 → 2 輪上限／`DISPUTE_ESCALATED`／受阻處理 → `a4.status` 為 responded／not_applicable 才可收尾。
+- 不自動呼叫 Codex：沿用 D98 對清單 #7 的擱置理由。
+
+**同步範圍**：AGENTS.md §7 指令表、commands/README、repo-map、team-manifest、FHS_Prompts 情境二十七、CLAUDE.md／根 AGENTS.md 路由行、portability manifest（兩檔 SKIP）。
+
+**驗收**：fresh-context Claude subagent 盲測 4 題全對，Step 編號／版本／基線路徑一致；揪出 repo-map 版本號過時（已修）與 D99 條目缺失（本條補上）。
+
+**Subagent 使用記錄**：✅ fresh-context Claude subagent 盲測；其餘直接編輯。

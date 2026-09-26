@@ -282,6 +282,7 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | `/cl-review` | cl 給我審視報告 | Claude | 技術審視，不執行寫入 |
 | `/cl-flow` | cl 給我最終報告（完整版） | Claude | PX + AG → 產出 verdict → 停止等待。適合架構決策、新系統引入 |
 | `/cl-flow-fast` | cl 給我最終報告（輕量版） | Claude | 跳過 PX，只跑 AG → 精簡 Verdict → 停止等待。適合功能實作、UI 修改、Bug 修復 |
+| `/cl-flow-g` | cl-flow-fast 的 A4 串接版（g=GPT=A4） | Claude(A3)；A4 由 Fat Mo 觸發 | 前段同 fast；`/execute` 後內建 A4 交付包＋硬停＋回應＋2 輪上限（D99） |
 | `/execute` | 唯一正式授權執行入口（修改磁碟） | Fat Mo / Claude | `.fhs/ai/commands/execute.md` |
 | /a4-review | 準備 A4 交付包（實作後審查） | Claude(A3) 準備；Codex(A4) 審查由 Fat Mo 觸發 | .fhs/ai/commands/a4-review.md |
 | `/fhs-check` | 全系統健康檢查（連生產：webhook 生命週期/壓力/驗收 + 訂單成本一致性 + 產品售價完整性） | Claude | `.fhs/ai/commands/fhs-check.md` |

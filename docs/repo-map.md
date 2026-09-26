@@ -171,8 +171,9 @@ freehandsss_dashboard/
 │   │   │   ├── README.md               ← 指令索引
 │   │   │   ├── read.md
 │   │   │   ├── cl-flow.md               ← /cl-flow A3-first 規劃協調（v3.0.0，D39 2026-07-16：A3 先寫草案，A1/A2 改做評審）
-│   │   │   ├── a4-review.md             ← /a4-review 準備 A4(Codex) 實作後審查交付包（v1.0.0，D98 2026-09-26；A4 由 Fat Mo 觸發，只審不改）
-│   │   │   ├── cl-flow-fast.md          ← /cl-flow-fast A3-first 鏡像縮水版（v2.0.0，D39 2026-07-16：跳 A1 外部研究，評審一步保留）
+│   │   │   ├── a4-review.md             ← /a4-review 準備 A4(Codex) 實作後審查交付包（v1.3.0，D98 2026-09-26；A4 由 Fat Mo 觸發，只審不改）
+│   │   │   ├── cl-flow-fast.md          ← /cl-flow-fast A3-first 鏡像縮水版（v2.1.0，D39 2026-07-16：跳 A1 外部研究，評審一步保留）
+│   │   │   ├── cl-flow-g.md             ← /cl-flow-g cl-flow-fast 的 A4 串接版（v1.0.0，D99 2026-09-26；g=GPT=A4）
 │   │   │   ├── ag-plan.md               ← /ag-plan 本地實施計畫（A2 專用）
 │   │   │   [已退役] px-plan（外部研究已內建至 cl-flow A1，2026-05-30）
 │   │   │   ├── execute.md               ← /execute 唯一正式執行入口（v2.1 新增）
