@@ -1,0 +1,19 @@
+{
+  "_readme": "Portable document health configuration. Set budgets in project policy before enforcement; optional checks can be added without changing the engine.",
+  "version": "0.1.0",
+  "auto_memory_dir": { "path": "" },
+  "volume_budgets": [
+    { "id": "handoff_portable", "path": ".fhs/memory/handoff.md", "scope": "portable_block", "unit": "bytes", "budget": 4000, "source": "Portable handoff budget" },
+    { "id": "handoff_full", "path": ".fhs/memory/handoff.md", "scope": "full_file", "unit": "lines", "budget": 800, "source": "Memory rotation guideline" },
+    { "id": "governance_docs", "path_glob": ".fhs/ai/governance/0*.md", "scope": "full_file", "unit": "lines", "budget": 400, "source": "Governance maintenance guideline" }
+  ],
+  "index_orphan_checks": [],
+  "duplicate_basename_checks": [],
+  "archive_link_checks": [],
+  "unregistered_file_checks": [],
+  "last_verified_checks": [],
+  "pending_table_leak_checks": [],
+  "cadence_checks": [],
+  "deadline_surfacing_checks": [],
+  "portable_master_consistency_checks": []
+}

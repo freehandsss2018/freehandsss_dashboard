@@ -1,0 +1,12 @@
+[
+  {"name":"schema migration sets flag","tool_name":"Write","tool_input":{"file_path":"db/migrations/001_create.sql","content":"CREATE TABLE records (id INTEGER);"},"expected_flag":true,"expected_kind":"flag"},
+  {"name":"migration tool sets flag","tool_name":"mcp__db__apply_migration","tool_input":{"sql":"CREATE TABLE records (id INTEGER);"},"expected_flag":true,"expected_kind":"flag"},
+  {"name":"workflow code tool sets flag","tool_name":"mcp__workflow__update_node_code","tool_input":{"code":"return items;"},"expected_flag":true,"expected_kind":"flag"},
+  {"name":"domain SQL write sets flag","tool_name":"mcp__db__execute_sql","tool_input":{"query":"UPDATE records SET total_amount = 10;"},"expected_flag":true,"expected_kind":"flag"},
+  {"name":"read SQL remains silent","tool_name":"mcp__db__execute_sql","tool_input":{"query":"SELECT total_amount FROM records;"},"expected_flag":false,"expected_kind":"none"},
+  {"name":"source rule edit sets flag","tool_name":"Edit","tool_input":{"file_path":"src/billing.js","new_string":"function calculateTotal() { return 10; }"},"expected_flag":true,"expected_kind":"flag"},
+  {"name":"unrelated source edit silent","tool_name":"Edit","tool_input":{"file_path":"src/view.js","new_string":"const title = 'Example';"},"expected_flag":false,"expected_kind":"none"},
+  {"name":"document rule mention warns","tool_name":"Write","tool_input":{"file_path":"docs/guide.md","content":"total_amount is shown on the report"},"expected_flag":false,"expected_kind":"warn"},
+  {"name":"memory path remains silent","tool_name":"Write","tool_input":{"file_path":".fhs/memory/handoff.md","content":"total_amount was checked"},"expected_flag":false,"expected_kind":"none"},
+  {"name":"knowledge update clears pending flag","tool_name":"Write","tool_input":{"file_path":".fhs/notes/system-logic.md","content":"updated"},"initial_flag":true,"expected_flag":false,"expected_kind":"none"}
+]

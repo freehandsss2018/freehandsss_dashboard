@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "SessionStart": [{"hooks":[{"type":"command","command":"node scripts/hooks/session-start-sop.js","timeout":10}]}],
+    "UserPromptSubmit": [{"hooks":[{"type":"command","command":"node scripts/hooks/prompt-router.js","timeout":5}]}],
+    "PreToolUse": [{"matcher":"Write|Edit|MultiEdit|PowerShell|Bash|NotebookEdit","hooks":[{"type":"command","command":"node scripts/hooks/pre-tool-guard.js","timeout":5}]}],
+    "PostToolUse": [{"matcher":"Write|Edit|MultiEdit","hooks":[{"type":"command","command":"node scripts/hooks/post-tool-kgov.js","timeout":5}]}],
+    "Stop": [{"hooks":[{"type":"command","command":"node scripts/hooks/stop-kgov.js","timeout":5}]}]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "{{PROJECT_NAME}}-governance-template",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Portable project governance tools",
+  "scripts": {
+    "test:kgov": "node scripts/hooks/test/run-kgov-fixtures.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1"
+  }
+}

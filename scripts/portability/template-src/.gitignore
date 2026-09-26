@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.fhs/.health-report.json
+.fhs/.health-check-error.log
+.fhs/.kgov-pending
+.fhs/.kgov-observe.log

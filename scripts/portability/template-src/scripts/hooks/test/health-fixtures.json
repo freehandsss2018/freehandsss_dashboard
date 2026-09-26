@@ -1,0 +1,1 @@
+[{"name":"01-healthy","expected_issue_count":0,"expect_stdout_empty":true},{"name":"02-portable-over-budget","expected_issue_count":1,"expected_substrings":["過肥"]},{"name":"03-rules-corrupt","expect_exit_zero":true,"expect_stdout_empty":true,"expect_no_report":true,"expect_error_log":true}]

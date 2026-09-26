@@ -1,0 +1,7 @@
+[
+  {"name":"ordinary write passes","tool_name":"Write","tool_input":{"file_path":"docs/guide.md","content":"hello"},"expected_exit":0},
+  {"name":"environment file warns","tool_name":"Write","tool_input":{"file_path":".env","content":"EXAMPLE=value"},"expected_exit":0,"expected_stderr_contains":["ignored by Git"],"expected_stdout_contains":["additionalContext"]},
+  {"name":"example environment file passes","tool_name":"Write","tool_input":{"file_path":".env.example","content":"EXAMPLE=placeholder"},"expected_exit":0,"expected_stderr_absent":["ignored by Git"]},
+  {"name":"force push blocked","tool_name":"Bash","tool_input":{"command":"git push --force"},"expected_exit":2,"expected_stderr_contains":["Force push needs explicit project authorization"]},
+  {"name":"ordinary shell command passes","tool_name":"Bash","tool_input":{"command":"git status --short"},"expected_exit":0}
+]
