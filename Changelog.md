@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-26] A4（Codex）文件落地：憲法 v1.8.0 角色表 A1–A4＋/a4-review（Claude Code，D98，flow 2026-09-26-1831）
+
+- 行為變更：`.fhs/ai/AGENTS.md` v1.7.3→v1.8.0（§7 新增跨代理角色表、規則 3.17 加 A4 附加層）；新增 `/a4-review` 指令；`/execute`、`/cl-flow`（v3.1.0）、`/cl-flow-fast`（v2.1.0）加 A4／A1 狀態指針。#7 runner、#8 guard 擱置。
+- 全文見 `.fhs/reports/completion/2026-09-26_a4-workflow-docs-landing_completion_report.md`；決策見 `decisions.md` D98。
+
 ## [2026-09-26] A4（Codex）接入：探針＋Codex 橋接角色修正（Claude Code，flow 2026-09-26-1831，Fat Mo 批清單 #1–#3）
 
 - 定名：Codex＝A4（代號 GPT，獨立審查者，只審不改，無裁決權）；A1=PX（代號不改）、A2=AG、A3=CL（Claude Code）。角色表與流程規則尚未寫入 AGENTS.md（清單 #4–#6、#9 未批准），本條只記錄已執行部分。

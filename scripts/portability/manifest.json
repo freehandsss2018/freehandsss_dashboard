@@ -229,6 +229,15 @@
       "reason": "Existing FHS bridge; template generates project bridges, targeting .agents/skills for Antigravity"
     },
     {
+      "source": ".claude/commands/a4-review.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "A4 (Codex) 審查指令；FHS 專屬，模板 v0.1.0 不含 A1–A4 角色表（D98）"
+    },
+    {
       "source": ".claude/commands/cl-flow-fast.md",
       "class": "M",
       "action": "SKIP",
@@ -525,6 +534,15 @@
       "install_level": "n/a",
       "deps": [],
       "reason": "FHS or platform-specific command; template v0.1 ships the eight core commands"
+    },
+    {
+      "source": ".fhs/ai/commands/a4-review.md",
+      "class": "M",
+      "action": "SKIP",
+      "dest": null,
+      "install_level": "n/a",
+      "deps": [],
+      "reason": "A4 (Codex) 審查指令；FHS 專屬，模板 v0.1.0 不含 A1–A4 角色表（D98）"
     },
     {
       "source": ".fhs/ai/commands/cl-flow-fast.md",

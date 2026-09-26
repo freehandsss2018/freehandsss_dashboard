@@ -1,13 +1,15 @@
 ---
 name: FHS Business Scenarios Library
-version: v1.16
-compatible_with: AGENTS.md v1.7.3
-last_updated: 2026-09-19
-last_audited_session: 2026-09-19 0600804 事故方案C /execute
+version: v1.17
+compatible_with: AGENTS.md v1.8.0
+last_updated: 2026-09-26
+last_audited_session: 2026-09-26 D98 A4 文件落地 /execute
 description: Business situation detection and command routing for AI execution
 ---
 
-# FHS 業務情境劇本庫 (Scenarios Library) - v1.16
+# FHS 業務情境劇本庫 (Scenarios Library) - v1.17
+>
+> 最後更新：2026-09-26（v1.17，D98：`.fhs/ai/commands/` 新增 `a4-review.md`、AGENTS.md v1.8.0 新增 §7 跨代理角色表 A1–A4，觸發 [F]——新增情境二十七「A4 實作後獨立審查」）。前次：2026-09-19（v1.16）。
 >
 > 最後更新：2026-09-19（v1.16，0600804 事故方案C：AGENTS.md v1.7.3 財務派工補充條款觸發 [F]——情境二十一補觸發詞＋「主動必派 finance-auditor」條文）。前次：2026-08-16（v1.15 cl-flow 2026-08-16-2355 稽核，D65：核心業務語義修正——父母/大寶由「主件屬性」升格「訂單層一次性角色」，家庭瓶歸屬改由 `#p_family_owner` 選擇器指定）觸發 [F] 稽核義務。結論：情境六補「父母」「家庭瓶」「歸屬」「owner」觸發詞，路由指向 Product_Definition §3.1a（新增章節）+ System_Logic_Overview §5.4.17，不新增/刪除情境——路由結構不變，僅反映產品身份現況）
 > 前次更新：2026-07-28（v1.14 cl-flow 2026-07-28-1121 稽核：核心業務語義修正（大寶/成人/家庭三對象轉V2模型；家庭組合鎖匙扣正式定義首次落檔；大寶standalone「升格家庭」舊規則廢止）觸發 [F] 稽核義務。結論：情境六補「大寶」「家庭組合」「家庭鎖匙扣」「β混型」觸發詞，路由指向 Cost Schema v2 §10.6（新exception章節）+ Product_Definition §3.3a，不新增/刪除情境——路由結構不變，僅反映成本模型現況）
@@ -255,6 +257,13 @@ Mobile phone 介面專屬設計準則（強制執行）：
 - 已知使用場景：`/upload-web` Step 0 部署前置預設執行（v1.2.0，S143）
 
 > 📝 **`/rg`（Ripgrep 全專案搜尋）不在此路由表**：它與 `/read`、`/execute` 同屬**明確 slash 指令直接呼叫**類別（用戶已知確切指令名稱才會用），非需要「自然語言意圖偵測」的業務情境，比照既有慣例不另立情境條目。
+
+## 【情境二十七：A4 實作後獨立審查 (/a4-review)】（2026-09-26，D98）
+
+- 觸發詞：「A4」「Codex 審查」「實作後審查」「/a4-review」「GPT 審一下」「PX AG CL GPT 分工」
+- 執行邏輯：載入並遵循 `.fhs/ai/commands/a4-review.md`——A3 產交付包 `artifacts/{flow_id}/a4-scope.md`，**Fat Mo 觸發 A4（Codex）**，A3 逐條回應；角色表唯一本文見 `.fhs/ai/AGENTS.md` §7
+- 護欄：A4 只審不改、無裁決權；A3 不代跑 Codex、不偽稱「A4 已審」；重審上限 2 輪；A4 受阻須標明
+- 適用：代碼／HTML／n8n／migration／hook／腳本變更必審；純文件搬移／文案潤飾可標「A4 不適用：理由」
 
 ---
 

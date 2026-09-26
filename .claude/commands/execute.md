@@ -13,3 +13,5 @@
 - [C] CHANGELOG 稽核 → 更新 CHANGELOG.md
 
 交付摘要強制三段式（已完成／點運作／點維護），簡短直白；細節留 completion report，唔喺對話重複。
+
+實作後屬必審範圍者：走 `/a4-review`（A4 Codex 審查由 Fat Mo 觸發；角色表見 `.fhs/ai/AGENTS.md` §7）。

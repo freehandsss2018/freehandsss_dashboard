@@ -21,3 +21,5 @@
 - ✅ Step 0 精煉不可跳過
 - ✅ Gate 1 必須強制停
 - ✅ NO-TOUCH：禁止任何業務代碼寫入，直到 /execute
+
+實作後屬必審範圍者：走 `/a4-review`（A4 Codex 審查由 Fat Mo 觸發；角色表見 `.fhs/ai/AGENTS.md` §7）。

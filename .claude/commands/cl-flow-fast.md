@@ -25,3 +25,5 @@ description: 精煉（內建）→ 跳 PX，AG + Claude 精簡 Verdict。Claude 
 - ❌ 技術選型、引入新 API → 改用 `/cl-flow`
 
 ### 裁決者：Claude（A3），跳過 A1 PX（評審一步保留，跳嘅係外部研究）
+
+實作後屬必審範圍者：走 `/a4-review`（A4 Codex 審查由 Fat Mo 觸發；角色表見 `.fhs/ai/AGENTS.md` §7）。

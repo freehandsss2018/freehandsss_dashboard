@@ -4141,3 +4141,21 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **下次加固（本輪未做）**：① guard `KIND_SCOPES` 檢查 scope/kind 相容；② `JSON.parse` 前剝 UTF-8 BOM；③ `symbol_modify_warn` symbols 在載入時預編譯。另「每 Phase commit 前回填狀態」全域化只保留獨立提案，需 Fat Mo 另案裁決，唔隨 S149 自動生效。
 
 **Subagent 使用記錄**：Phase 2 由 Claude Code 安排 fresh-context opus 三輪；Phase 4 由 Codex 安排 fresh-context 盲測一輪，修正後 9/9 PASS；Phase 3 通用 fork 分工作業有獨立 agent 驗證，最終以匯出後 runner／黑名單／盲測為準。
+
+---
+
+### D98：2026-09-26 — Codex 定為 A4（獨立審查者），跨代理角色表 A1–A4 入憲法
+
+**背景**：Fat Mo 決定將 Codex 正式納入分工。flow 2026-09-26-1831（`/cl-flow-fast`）＋Codex 親手審方案（`artifacts/2026-09-26-1831/gpt-review.md`）＋A3 回應（`a4-response.md`）後，第一階段（探針、橋接改為只審、開分支）已 commit `8de94fd`，本決策落地文件層。
+
+**裁定**：
+1. **角色**：A1=PX（Perplexity，代號維持 PX 不改 PL）、A2=AG（Gemini／Antigravity，對草案作對抗評審）、A3=CL（Claude Code，整合／實作／回應 A4）、A4=GPT（Codex，實作後審查實際 diff，**只審不改**、無裁決權）。Fat Mo 為唯一授權者。角色表唯一本文＝`.fhs/ai/AGENTS.md` §7（v1.8.0），其餘文件只放指針。
+2. **與 D96 的邊界**：D96 是「Codex 作為 S149 的**寫入者**」的一次性跨工具分工先例；D98 的 A4 是**常態只讀審查角色**。兩者不互相擴張：D96 不使 Codex 成為一般寫入者，D98 也不追溯改變 S149 已完成的分工。
+3. **只讀措辭**：以 `codex exec -s read-only`（npm CLI）執行時，寫入由沙盒阻擋（探針 8 次嘗試全擋）；桌面版／互動模式／`workspace-write` 只能寫「要求 A4 只讀」。Codex 端 `.codex/hooks.json` 對本 repo 未能證明生效，不得當防線。
+4. **報告效力三級**：`A4 已審（Fat Mo 直接交付／直接觸發）`／`A4 已審（機械留痕，待核對）`／`A4 未獨立驗證`；A3 不得偽稱前兩級。因 `disable-model-invocation` 只擋 Skill、A3 用 Bash 仍可呼叫外掛，「由 Fat Mo 親手輸入」是約定不是機械保證。
+5. **流程**：測試 → code-reviewer G1–G8 → A4；重審上限 2 輪，`DISPUTE_ESCALATED` 交 Fat Mo；A4 BLOCKER 不得由 A3 推翻；受阻須標「A4 受阻」。詳見 `.fhs/ai/commands/a4-review.md`。
+6. **擱置**：清單 #7（runner 自動呼叫 Codex）、#8（guard 規則）。理由：探針只證明非互動 `codex exec` 只讀可用，hook 生效未證，機械觸發會使「Fat Mo 親手觸發」的約定失去意義；待 3 次實審後再議。
+
+**未動的已知衝突**：`.agents/skills/` 的 `source-command-*` 橋接含 `execute`、`commit`、`upload-web`、`db-query` 等寫入類指令，Codex 依技能可執行，與「A4 只審不改」矛盾；規則第 7 條已寫入憲法，刪除／改寫橋接另案，待 Fat Mo 決定。
+
+**Subagent 使用記錄**：見本次完成記錄 `.fhs/reports/completion/2026-09-26_a4-workflow-docs-landing_completion_report.md`。

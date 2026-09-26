@@ -61,6 +61,7 @@
 |---|---|---|---|
 | cl-flow.md | /cl-flow | 精煉（內建）→ A1+A2+A3，Claude 裁決 | Claude |
 | cl-flow-fast.md | /cl-flow-fast | 精煉（內建）→ A2+A3，跳 PX，Claude 裁決 | Claude |
+| a4-review.md | /a4-review | 準備 A4(Codex) 審查交付包並處理意見（D98；A4 由 Fat Mo 觸發） | Claude |
 | ag-flow.md | /ag-flow | 精煉（內建）→ A1+A2，AG 裁決（跳 A3） | Claude/AG |
 | ag-plan.md | /ag-plan | A2 產出本地落實 Plan（含落盤自查） | Antigravity |
 | execute.md | /execute | 唯一正式執行入口（需 Fat Mo 明確批准） | Claude |

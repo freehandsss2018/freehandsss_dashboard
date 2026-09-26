@@ -17,6 +17,7 @@
      - 不得重新規劃，不得重跑 PX 或 AG
    - **若前序為舊版 `/cl-flow` 流程**（無 artifacts/）：
      - 確認 `.fhs/reports/planning/a3_execution_verdict.md` 存在且非空。
+   - **A4 基線（D98）**：屬 A4 必審範圍者（代碼／HTML／n8n／migration／hook／腳本，見 AGENTS.md Rule 3.17），開工前記基線：`git --no-optional-locks status --porcelain > artifacts/{flow_id}/a4-baseline.txt`。
 
 2. **執行約束 (Strict Execution)**：
    - 重新列出準備修改的檔案。
@@ -32,6 +33,7 @@
 3. **完成後動作**：
    - 執行完畢後，確保符合三端守護原則。
    - 若為重大更新，需提醒 Fat Mo 是否要進行 `/commit`。
+   - **A4 步驟（D98，屬必審範圍者）**：測試＋Rule 3.17 驗收完成後，跑 `/a4-review` 準備交付包，然後**停下請 Fat Mo 觸發 A4（Codex）**；A3 不代跑。A4 未審或受阻，不得寫「已獨立審查」。角色表見 `AGENTS.md` §7。
    - **交付摘要三段式（強制，2026-07-16 Fat Mo 指示）**：對話收尾摘要必須用以下格式，簡短直白，寫俾唔熟技術細節嘅人睇：
 
      ```
@@ -89,6 +91,8 @@
    驗收：[任務型對應驗證 + 結果 PASS/FAIL/不適用+具體理由]
    Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
    ```
+
+   驗收行有效標準另加 A4 欄：`｜A4：已審（級別）／不適用（理由）／受阻`。
 
    驗收行有效標準（任務型分流，詳見 AGENTS Rule 3.17）：
    - 財務/成本 → `finance-auditor` live 三端，附訂單號（口算/口稱 = 無效）

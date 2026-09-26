@@ -20,6 +20,7 @@
 | 查資料 / 想方案 / 讀報告 / 長文分析 | **Cowork**（或手機 App） |
 | 手機在外查單 / 看警報 | **手機 Claude App**（remote connectors） |
 | 規劃大任務（三腦協作） | **n8n 三腦**（觸發後回 Code 分頁裁決） |
+| 實作後獨立審查（A4） | **Codex**（只讀；由 Fat Mo 觸發，流程見 `/a4-review`） |
 | Desktop App 故障 | **VSCode ext / CLI**（永久 fallback，配置同源） |
 | Claude 生態全掛 / 需 Gemini 視角 | **Antigravity**（永久備援；只讀分析為主） |
 | 多檔代碼重構 / inline 補全 / diff 審查 | **Cursor**（⏸ 目前擱置，未安裝——見附錄） |
@@ -37,6 +38,8 @@
 | `artifacts/{flow_id}/` | 建立者所有（n8n 或本機） | — | ⚠️ 僅自建 flow | — |
 | 一般代碼（scripts/tools/非生產） | 任一工具（人審 diff） | ⚠️ | ⚠️ 緊急時 | ✅ 主場（未啟用） |
 
+> Codex（A4）對所有類別一律唯讀（只審不改）。
+
 **緊急例外**：Claude 生態全掛時 AG 可臨時寫入治理/財務類檔案，但恢復後**第一件事**=回 Code 分頁 `git diff` 覆核 + 補跑落盤（AG/Cowork/Cursor 寫入均不經 5 hook 守護，kgov/財務守衛全旁路）。
 
 ---
@@ -52,6 +55,11 @@
 - **入場條件**：Claude 生態故障、或需要 Gemini 視角時
 - **原則**：只讀分析為主，寫入須遵單一寫者矩陣 + 緊急例外事後覆核義務
 - 兩者技術上完全共存，無除役時間表（2026-07-03 Fat Mo 決策）
+
+### Codex（A4，實作後審查）
+- **入場條件**：A3 實作完成、測試與 code-reviewer 已過，由 Fat Mo 觸發
+- **原則**：只審不改；以 `codex exec -s read-only` 執行時寫入由沙盒阻擋，桌面版／互動模式僅「要求只讀」
+- 詳見 `.fhs/ai/AGENTS.md` §7 角色表、`.fhs/ai/commands/a4-review.md`
 
 ### Cursor（休眠藍圖）
 - **狀態**：未安裝，Fat Mo 近期不用，僅為未來準備

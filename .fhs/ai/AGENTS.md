@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.7.3
-> Last updated: 2026-09-19
+> Version: v1.8.0
+> Last updated: 2026-09-26（D98：新增 §7「跨代理角色表 A1–A4」與 /a4-review；Codex 定為 A4）
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -52,7 +52,7 @@
 
 **Cursor 定位（休眠藍圖，2026-07-04 確認未安裝/近期不用）**：若未來啟用，定位為**代碼編輯器強化**（inline 補全/多檔重構/diff 審查），非治理執行端。預設**不建** `.cursor/mcp.json`（無 hook 守護不發寫入級 MCP 鑰匙，同 AG 邏輯）；`.cursorrules` 走橋接模式指向本文件（SSoT 不分叉）。入場前置 C1-C3 探針，詳見 `artifacts/2026-07-03-0014/cl-final-plan-v2.md` Phase 2.5。
 
-**n8n 三腦（A2 Gemini→A3 Claude→A1 GPT）＝休眠藍圖**（2026-07-04 確認）：與 `/cl-flow` 對照後，FHS 系統相關任務 `/cl-flow` 全面勝出（裁決免費、直接落 repo、全套 hook 治理）；n8n 三腦每步花 API 錢、無治理，產出仍須帶回 Desktop Code 分頁才算數。workflow（id `cztGsFXZYtvBUDA6`）保留但停用，唯一未覆蓋優勢＝排程/無人值守/非 FHS 外部任務，目前無具體需求。詳見 `.fhs/reports/planning/fhs_n8n_3brain_spec.md` §十一。
+**n8n 三腦（Gemini→Claude→GPT 三段管線；舊編號與 §7 角色表無關）＝休眠藍圖**（2026-07-04 確認）：與 `/cl-flow` 對照後，FHS 系統相關任務 `/cl-flow` 全面勝出（裁決免費、直接落 repo、全套 hook 治理）；n8n 三腦每步花 API 錢、無治理，產出仍須帶回 Desktop Code 分頁才算數。workflow（id `cztGsFXZYtvBUDA6`）保留但停用，唯一未覆蓋優勢＝排程/無人值守/非 FHS 外部任務，目前無具體需求。詳見 `.fhs/reports/planning/fhs_n8n_3brain_spec.md` §十一。
 
 
 ***
@@ -215,6 +215,8 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | 純文件搬移 | 引用同步清單（N 個檔各一行確認）| 「已同步」無清單 |
 | 純規劃（cl-flow 待 execute）| 「待 /execute；驗收於執行後」| 不適用其他型 |
 
+**A4（Codex）審查為附加層（2026-09-26）**：不取代上表任何一行（財務仍只認 finance-auditor；代碼/HTML 仍認 code-reviewer G1–G8）。適用範圍：代碼／HTML／n8n／migration／hook／腳本變更必審；純文件搬移或純文案潤飾可標「A4 不適用：理由」。[E] 驗收行須填 A4 狀態。順序與衝突處理見 §7 角色表規則 4。
+
 **誠實限制（B3）**：hook 可驗「有無輸出」，無法驗「內容真實性」；品質靠 AI 誠實 + 任務型綁定。  
 **記憶對應**：`feedback_pre_delivery_dual_discipline`（由 `feedback_subagent_router` + `feedback_delivery_standards` 合併升級）。  
 **規則起源**：Session 63 系統知識文件化治理方案（2026-06-05）。
@@ -281,10 +283,33 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | `/cl-flow` | cl 給我最終報告（完整版） | Claude | PX + AG → 產出 verdict → 停止等待。適合架構決策、新系統引入 |
 | `/cl-flow-fast` | cl 給我最終報告（輕量版） | Claude | 跳過 PX，只跑 AG → 精簡 Verdict → 停止等待。適合功能實作、UI 修改、Bug 修復 |
 | `/execute` | 唯一正式授權執行入口（修改磁碟） | Fat Mo / Claude | `.fhs/ai/commands/execute.md` |
+| /a4-review | 準備 A4 交付包（實作後審查） | Claude(A3) 準備；Codex(A4) 審查由 Fat Mo 觸發 | .fhs/ai/commands/a4-review.md |
 | `/fhs-check` | 全系統健康檢查（連生產：webhook 生命週期/壓力/驗收 + 訂單成本一致性 + 產品售價完整性） | Claude | `.fhs/ai/commands/fhs-check.md` |
 | `/fhs-audit` | 唯讀健康稽核（文件/版本/語義；不連生產） | Claude | `.fhs/ai/commands/fhs-audit.md` |
 | `/px-audit` | 已退役（2026-05-30，同上原因） | N/A | 改用 `/cl-flow` |
 | `v39-aom.md` | 已遷移至 `archive/v39-aom.md`，內容見 subagents/OPERATING_MODEL.md | N/A | Archived |
+
+### 跨代理角色表 A1–A4（2026-09-26，D98）
+
+> 本表為跨代理分工**唯一本文**；CLAUDE.md／根 AGENTS.md／ANTIGRAVITY.md／各指令橋接只放指針，不複製。流程與交付包格式見 `.fhs/ai/commands/a4-review.md`。
+
+| 代號 | 工具 | 職責 | 明確不做 |
+|---|---|---|---|
+| A1 PX | Perplexity | 外部事實查證：來源、結果、適用範圍、不確定性；無外部事實則標「本次不需 A1（理由）」 | 不測本地代碼；不批准 |
+| A2 AG | Gemini／Antigravity | 對 A3 草案作對抗評審：反例、缺漏、失敗情境、權限風險、回滾 | 不批准；無裁決權 |
+| A3 CL | Claude Code | 整合方案；Fat Mo `/execute` 後實作與測試；回應 A4 findings | 不把自身判斷當批准；不代寫 A1/A2/A4 報告 |
+| A4 GPT | Codex | 實作後獨立審查實際 diff：bug、回歸、遺漏測試、安全、與已批准 plan 不符 | **只審不改**；無裁決權；未真正呼叫且取得結果，不得標「A4 已審」 |
+| — | Fat Mo | 批准 plan、批准實作、驗收 | — |
+
+規則（強制）：
+1. **代號**：A1 維持 PX（不改 PL）。「A1 GPT」舊稱僅存於休眠 n8n 藍圖，與本表無關。
+2. **報告效力三級**（寫在報告檔頭）：`A4 已審（Fat Mo 直接交付／直接觸發）`＝Fat Mo 親手把資料交給 Codex，或親自輸入 `/codex:review`，並存檔；`A4 已審（機械留痕，待核對）`＝由腳本產生並附 Codex thread／job id，Fat Mo 核對後才升級；`A4 未獨立驗證`＝其餘一切（含 A3 轉存、A3 自行呼叫）。A3 不得偽稱前兩級。
+3. **只讀的措辭**：以 `codex exec -s read-only`（npm CLI）執行時，寫入由沙盒阻擋（2026-09-26 探針）；桌面版、互動模式、`workspace-write` 環境只能寫「要求 A4 只讀」，不得寫「已保證」。Codex 端 hook 對本 repo 未能證明生效，不得當作防線。
+4. **順序**：測試 → `code-reviewer` G1–G8（Rule 3.17）→ A4。A4 的 BLOCKER 不得由 A3 推翻；A4 與其他驗收衝突時交 Fat Mo，不自動勝出。
+5. **重審上限 2 輪**；仍有未解 BLOCKER 標 `DISPUTE_ESCALATED`，停止並交 Fat Mo。審後任何代碼改動使舊報告作廢（純報告或註解除外）。
+6. **嚴重度照抄**：A3 不得調級；外掛輸出的 `[P1]`／`[P2]` 照抄，不轉換。
+7. **A4 不得執行任何寫入類指令**（`/execute`、`/commit`、`/upload-web`、`/db-query`、`/new-product` 等）。同一時間只容許一個主要寫入者。
+8. **不可用即標明**：Codex 未登入、逾時、無輸出檔、越權 → 標「A4 受阻」，停在驗收前，不得以「A4 已審」收尾；替代交接由 Fat Mo 決定。
 
 ### Subagent 決定性路由規則（強制調用，不得以 Claude 直接處理替代）
 
@@ -315,3 +340,4 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 - **`/commit` 授權例外**：`/commit` 指令的 Memory Engine 同步（`handoff.md`、`session-log.md`、`lessons/`）及 Git 操作為授權寫入，無需額外 `/execute`。此例外僅限 `/commit` 指令明確觸發的寫入範圍，不得類比至其他場景。
 - **NO-TOUCH GUARDRAIL**：在 `/cl-flow` 全程，絕對禁止使用任何寫入、修改、建立、刪除工具。
 - **Fat Mo 最終承認者**：任一 agent 的結論，不得自動視為 Fat Mo 已確認。`/execute` 是唯一有效授權信號。
+- **A4 報告≠批准**：A4（Codex）意見與 A1/A2 一樣只是決策依據，不構成授權；A4 未審或受阻時不得宣稱「已獨立審查」。角色表見上。

@@ -31,7 +31,7 @@
 |------|------|
 | `/read` | 初始化：讀取 SOP_NOW.md + handoff.md，輸出系統狀態 |
 | `/ag-plan` | 產出本地實作計劃（A2），寫入 `.fhs/reports/planning/` |
-| `/cl-flow` | 觸發 Claude Code 執行全自動規劃（PX+Gemini+Claude） |
+| `/cl-flow` | 觸發 Claude Code(A3) 寫草案，PX(A1)／Gemini(A2) 評審後由 Claude 裁決；AG＝A2，只讀評審，角色表見 `.fhs/ai/AGENTS.md` §7 |
 | `/execute` | 唯一執行授權入口（Fat Mo 下達，Claude Code 執行） |
 | `/commit` | 任務收尾：Memory 同步 + Git 推送 |
 | `/fhs-audit` | 架構衛生稽核 |
