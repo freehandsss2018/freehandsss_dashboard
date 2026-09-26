@@ -2,7 +2,7 @@
 
 **用途 (Purpose)**：實作完成後，準備 A4（Codex，代號 GPT）獨立審查的交付包，並處理 A4 的 findings。
 **對應 Agent**：A3 (Claude Code) 準備交付包與回應意見；**A4 審查由 Fat Mo 觸發，A3 不代跑**。
-**Version**: v1.2.0 (2026-09-26，D98；v1.1.0 修 A4 實審 P1 範圍改基準 SHA；v1.2.0 修 P2：非空自檢計入未追蹤檔、舊版路徑基線位置)
+**Version**: v1.3.0 (2026-09-26，D98；v1.1.0 範圍改基準 SHA；v1.2.0 非空自檢計入未追蹤檔；v1.3.0 修第 4 次實審 P2：舊版流程交付包路徑、失敗判定獨立於輸出檔、main 上禁用退化 merge-base)
 **角色表唯一本文**：`.fhs/ai/AGENTS.md` §7「跨代理角色表 A1–A4」。本檔只寫流程，不複製角色表。
 **NO-TOUCH GUARDRAIL**：本指令只產出 `artifacts/{flow_id}/` 內的報告檔，不改業務代碼；A4 不得執行任何寫入類指令。
 
@@ -20,10 +20,15 @@
 2. 測試已跑並有結果。
 3. `code-reviewer` G1–G8 已完成（Rule 3.17）。
 
-## Step 1 — A3 產出交付包 `artifacts/{flow_id}/a4-scope.md`
+## Step 1 — A3 產出交付包 `<PKG>/a4-scope.md`
+
+**路徑定義**（依 `/execute` 前序流程，與 `execute.md` 一致）：
+- 有 artifacts 的 `/cl-flow` 流程：`<PKG>` ＝ `artifacts/{flow_id}`；plan ＝ `<PKG>/cl-final-plan.md`；基線 ＝ `<PKG>/a4-baseline.txt`。
+- 舊版無 artifacts 流程：`<PKG>` ＝ `.fhs/reports/planning/a4`（不存在則建立）；plan ＝ `.fhs/reports/planning/a3_execution_verdict.md`；基線 ＝ `.fhs/reports/planning/a4_baseline.txt`。
+以下文中的 `artifacts/{flow_id}/` 一律讀作 `<PKG>/`，`cl-final-plan.md` 讀作上述 plan。
 
 必含：
-- **範圍基準 SHA**（`<BASE>`）：優先取 `/execute` 開工時記下的實作前 SHA（`artifacts/{flow_id}/a4-baseline.txt`，舊版無 artifacts 路徑則 `.fhs/reports/planning/a4_baseline.txt`；首行 `HEAD=<sha>`）；沒有則用 `git merge-base HEAD <目標分支>`（通常 `main`）。**實作已 commit 時 `git diff HEAD` 為空，不得用它定義範圍。**
+- **範圍基準 SHA**（`<BASE>`）：優先取 `/execute` 開工時記下的實作前 SHA（`artifacts/{flow_id}/a4-baseline.txt`，舊版無 artifacts 路徑則 `.fhs/reports/planning/a4_baseline.txt`；首行 `HEAD=<sha>`）；沒有則用 `git merge-base HEAD <目標分支>`（通常 `main`）——**但目前分支即目標分支（例如直接在 `main` 上 commit）時 merge-base 會退化成 `HEAD`，範圍必為空，此時禁用此後備，須由 Fat Mo 或實作紀錄提供明確的實作前 SHA（或其他有效祖先），否則標「A4 受阻：缺基準」**。**實作已 commit 時 `git diff HEAD` 為空，不得用它定義範圍。**
 - 現時 `git rev-parse HEAD`（審查終點）。
 - 已 commit 部分：`git diff <BASE>..HEAD` 的 sha256 與 `--stat`。
 - 未 commit 部分：`git diff HEAD` 的 sha256（可為空）。
@@ -54,7 +59,9 @@
 不要給批准或裁決；沒有問題就明說沒有。
 ```
 
-## Step 3 — 存檔 `artifacts/{flow_id}/gpt-review.md`
+## Step 3 — 存檔 `<PKG>/gpt-review.md`
+
+**重跑前**先把既有 `gpt-review.md`（若有）改名為 `gpt-review.prev-<時間>.md`，避免陳舊檔冒充本次結果。
 
 檔頭必含：工具與版本、執行指令、範圍 sha256、Codex thread／job id、時間、**效力級別**（三級定義見 AGENTS.md §7 規則 2）。正文不改、不潤飾。
 
@@ -70,7 +77,8 @@
 
 | 狀況 | 判定 |
 |---|---|
-| 非 0 exit 且無輸出檔（無效模型 exit 1、逾時 exit 124、未登入 exit 1） | 標「A4 受阻」 |
+| 非 0 exit（無效模型 exit 1、逾時 exit 124、未登入 exit 1），**不論輸出檔是否存在** | 標「A4 受阻」；舊輸出檔不得沿用 |
+| 輸出檔存在但檔頭 thread／job id 或範圍 sha256 與本次不符（陳舊檔） | 標「A4 受阻」，重跑 |
 | Codex 越權寫入 | 標「A4 受阻」，回報 Fat Mo |
 | A3 自行呼叫 Codex 或轉存結果 | 效力只能是「A4 未獨立驗證」 |
 

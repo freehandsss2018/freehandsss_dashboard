@@ -48,6 +48,12 @@
 - [P2] `/execute` 舊版路徑基線檔位置 → **已修**（舊版改存 `.fhs/reports/planning/a4_baseline.txt`）。
 - 回應全文：`artifacts/2026-09-26-1831/a4-response-3.md`。若複審仍有未解 BLOCKER 標 `DISPUTE_ESCALATED`。
 
+## 第 4 次實審（thread `01a0de23-a6c5-7b22-941b-deb1a13c9a32`，6 條全 P2）
+
+- 已修 5：`/a4-review` v1.3.0（舊版流程 `<PKG>` 路徑；非 0 exit 一律受阻且防陳舊檔；main 上禁用退化 merge-base）、`ag-flow` 橋接改拒絕（共 17 個）、`domain-modeling` 加 A4 唯讀限制。
+- 另案 1：`px` 技能指向不存在的 `CLAUDE_SESSION_INIT.md`（既有問題，與 A4 無關）。
+- 回應全文：`artifacts/2026-09-26-1831/a4-response-4.md`。
+
 ## 工程記錄
 
 - 工作位置：`gov/a4-codex-workflow` 被主倉佔用，改在 worktree 建 `gov/a4-docs-landing`（同 `8de94fd`）；合併回 gov 分支時在主倉 `git merge --ff-only gov/a4-docs-landing` 即可。

@@ -10,6 +10,8 @@ description: Build and sharpen a project's domain model. Use when the user wants
      CONTEXT.md 維持 root（中立格式），跨工具共讀不受影響。
      日後 `skills update` 同步上游時，人手 diff 這段 fork 差異，勿整檔覆蓋。 -->
 
+> **A4（Codex）唯讀限制（2026-09-26，D98）**：本 repo 中 Codex 是 A4（只審不改）。在 Codex 內使用本技能時，**不得**編輯 `CONTEXT.md`、不得建立或修改 ADR／`.fhs/notes/adr/` 或任何檔案；只可讀取並口頭提出建議的詞條／ADR 內容，寫入交由 Claude Code（A3）在 Fat Mo 授權下執行。以下寫入指示僅適用於 A3。
+
 # Domain Modeling
 
 Actively build and sharpen the project's domain model as you design. This is the *active* discipline — challenging terms, inventing edge-case scenarios, and writing the glossary and decisions down the moment they crystallise. (Merely *reading* `CONTEXT.md` for vocabulary is not this skill — that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
