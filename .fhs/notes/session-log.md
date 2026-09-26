@@ -2532,3 +2532,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - Fat Mo 選「以 main 的 D84 為準」：還原 hook／夾具至 v1.1.1／35夾具，v1.2.0 存 `.fhs/reports/planning/2026-09-24_stop-hook-v1.2.0-not-adopted/`。
 - 全文見 decisions.md D85、Changelog.md、`.fhs/reports/completion/2026-09-24_finance-stop-hook-write-signal_completion_report.md`。
 - **Subagent 使用記錄**：✅ general-purpose×1（fresh-context 驗收 v1.2.0，PASS）；❌ finance-auditor（非財務數字判斷）。
+
+## 2026-09-26 — S149 Phase 0–1（Codex，D96 交棒）
+- P0：S148 閘通過；獲 Fat Mo 授權清走過期部署旗標；五套 runner 32/10/19/35/8 全 PASS、R1–R14 基線留 .fhs-local。P1：manifest 323 檔未分類0、依賴閉包 PASS；有效執行視圖與 checker 已落 scripts/portability/。詳見 Changelog.md 本日條目及 S149 計畫執行狀態。
+- 下一棒 Claude Code Phase 2（guard 拆分＋fresh-context opus 審查）；Phase 3 等其輸出。本 session 用唯讀 inventory agent；Phase 1 fresh-context 驗收記錄見交棒。

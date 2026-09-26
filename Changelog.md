@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-26] S149 Phase 0–1：治理可攜化基線與 manifest（D96 交棒）
+
+- 以 PR #6 `c09a255` 為基線。獲 Fat Mo 明確批准後清走已過期 `.fhs/.deploy-ok`；五套 runner 全 PASS（32/10/19/35/8），R1–R14 清單與逐項輸出留 `.fhs-local/s149-phase0-baseline/`。獨立模板 repo 已於 `D:\SynologyDrive\AI_Governance_Template` 初始化。
+- 新增 `scripts/portability/manifest.json`（323 個 tracked 來源，含 health runtime config 兩份；未分類 0、SKIP 理由 284/284、GENERIC-FORK blob hash 39/39、依賴閉包 PASS）及 `check-manifest.js`；`§4-effective.md` 整合 v2、§5.1、§5.4 執行條文。
+- fresh-context 審查指出 07-compounding-loop 應為 U-class、checker 不能信 manifest 自述 scope、缺 import 掃描、模板 runner 範圍要與活體五套分清；四項已修正。checker 負向探針「移除整個 scope／SKIP 理由／本地依賴」三種均轉 FAIL。
+- 依 D96 停在 Phase 1，下一棒由 Claude Code 執行 Phase 2 guard 拆分及 fresh-context opus 審查；Phase 3 依賴該輸出。**Subagent 使用記錄**：✅ 唯讀 inventory agent 盤點來源與依賴；另以 fresh-context agent 驗收本 Phase（見本次交棒記錄）。
+
 ## [2026-09-25] D95：輪詢式短句改用通知取代（Telegram Stop hook 新增「❓ 等你回覆」＋發送重試）
 
 - 回放量度：「已完成？」41 次中 73% 上一回合 ≥120s（通知應已發；日誌約 10% 發送失敗）；「Y／可以」35 次中 24 次上一回合僅 30–120s 而 AI 用純文字問確認——舊通知邏輯對此靜默。

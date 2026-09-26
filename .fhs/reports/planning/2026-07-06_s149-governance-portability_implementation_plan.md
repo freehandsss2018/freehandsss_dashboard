@@ -224,9 +224,12 @@ S148 已完成；S150 Phase 4-6 明文等 S149 → **S149 現為執行佇列 blo
 
 ## 執行狀態（執行 session 回填）
 
-- Phase 0：⬜ 基線 commit hash：＿＿＿
-- Phase 1：⬜ manifest 檔數/未分類：＿＿＿
+- Phase 0：✅ 基線 commit `c09a255d1808610137b628e5f70960336a4ecaa7`（2026-09-26）；S148 4/4 完成；獨立模板 repo `D:\SynologyDrive\AI_Governance_Template` 已 `git init`。
+  - 前置閘：原有 `.fhs/.deploy-ok` 時間戳 `2026-09-24T10:18:12.694Z`，已過 10 分鐘 TTL；先停跑，獲 Fat Mo 本次明確批准後清走，重查不存在才跑 fixtures。
+  - 五套當日基線：guard 32/32、kgov 10/10、health 19/19、finance-stop 35/35、handoff-gate 8/8，全部 0 failed。逐項輸出與 SHA256 留 `.fhs-local/s149-phase0-baseline/`；guard 代碼標記 ID 集合 R1–R14（14 個），見同目錄 `guard-rule-ids.txt`。
+  - 有效執行視圖：`scripts/portability/§4-effective.md`（v2＋§5.1＋§5.4，D96 插入式交棒）。
+- Phase 1：✅ `scripts/portability/manifest.json`：323 個 tracked 來源（原範圍 321＋health 兩份 runtime config），未分類 0；GENERIC-FORK 39／SKIP 284／COPY-CLEAN 0（活體來源均有 FHS 身份或路徑耦合）。SKIP 理由 284/284；GENERIC-FORK blob hash 39/39；`deps` 閉包 PASS，含 `cl-flow-runner.js → scripts/lib/env.js → npm:dotenv`。`node scripts/portability/check-manifest.js` PASS。Phase 2 拆 guard 後須新增規則 JSON 條目並刷新引擎 blob hash，再交 Phase 3。
 - Phase 2：⬜ fixtures 基線 vs 拆後：＿＿＿；perf delta：＿＿ms
 - Phase 3：⬜ 黑名單 grep：＿＿＿；行數預算抽查：＿＿＿
-- Phase 4：⬜ fresh agent checklist：＿/8
+- Phase 4：⬜ fresh agent checklist：＿/9
 - Phase 5：⬜
