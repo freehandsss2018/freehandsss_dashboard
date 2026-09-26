@@ -4127,3 +4127,17 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **下一步**：AI 準備 ChatGPT 專用嘅 Phase 0-1 執行指令（真實識別碼版，因 Fat Mo 確認 ChatGPT 已有本 repo 存取權），ChatGPT 完成 Phase 1 commit 後停低交返 Fat Mo，貼結果嚟呢個 session 做 Phase 2。
 
 **Subagent 使用記錄**：❌未使用（純治理決策記錄，AskUserQuestion 已完成裁定確認）。
+
+---
+
+### D97：2026-09-26 — S149 治理模板 v0.1.0 完成與後續加固邊界
+
+**背景**：D96 授權嘅插入式交棒已依序完成：Codex Phase 0–1、Claude Code Phase 2＋fresh-context opus 對抗審查、Codex Phase 3–5。Phase 2 將 guard 判斷引擎與 FHS 規則 JSON 拆分；Phase 3 依 manifest 匯出通用 fork；Phase 4 fresh-context 新專案乾跑 9/9。
+
+**執行紀錄**：獨立模板 repo `D:\SynologyDrive\AI_Governance_Template` v0.1.0（commit `5ee17ca`）；39/39 非 SKIP 映射、30 份模板附加檔，共 69 檔。黑名單 0 hits、合成正例 PASS；README 53/150 行、AGENTS skeleton 40/120 行；模板四套 runner 5/10/3/3 全過。Phase 4 先揪缺 `SOP_NOW.md`、Windows SessionStart shell 依賴、離線 `npm install` 強制步驟，修正後 9/9 PASS。詳細證據見 S149 Phase 4 乾跑與總完成報告。
+
+**裁定邊界**：模板 repo 只由受 hook 保護的本地 writer 更新；下游新專案須依 README bootstrap，業務規則與記憶由該專案持有，唔可因模板再匯出直接覆蓋。模板版本與 manifest 來源 hash 納入 05 §7 季度 drift 健檢。本條只記錄 D96 已批准事項的完成狀態，唔擴張其他治理權限。
+
+**下次加固（本輪未做）**：① guard `KIND_SCOPES` 檢查 scope/kind 相容；② `JSON.parse` 前剝 UTF-8 BOM；③ `symbol_modify_warn` symbols 在載入時預編譯。另「每 Phase commit 前回填狀態」全域化只保留獨立提案，需 Fat Mo 另案裁決，唔隨 S149 自動生效。
+
+**Subagent 使用記錄**：Phase 2 由 Claude Code 安排 fresh-context opus 三輪；Phase 4 由 Codex 安排 fresh-context 盲測一輪，修正後 9/9 PASS；Phase 3 通用 fork 分工作業有獨立 agent 驗證，最終以匯出後 runner／黑名單／盲測為準。

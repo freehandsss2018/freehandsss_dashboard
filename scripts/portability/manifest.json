@@ -686,7 +686,7 @@
       "dest": ".fhs/ai/governance/00_INDEX.md",
       "install_level": "project",
       "deps": [],
-      "upstream_blob_hash": "3926e81b33db55ad2c2e152a15ef85807df3f0b4"
+      "upstream_blob_hash": "f6805b20942bf72aa16c67f1f563000c471eeff5"
     },
     {
       "source": ".fhs/ai/governance/01_diagnosis.md",
@@ -731,7 +731,7 @@
       "dest": ".fhs/ai/governance/05_maintenance-protocol.md",
       "install_level": "project",
       "deps": [],
-      "upstream_blob_hash": "6a2fa4ef1109b9dde13b607cb3a5971115475dae"
+      "upstream_blob_hash": "1f6bfd4cc907296a264e2250fe0c2777dca25619"
     },
     {
       "source": ".fhs/ai/governance/06_letter-to-future-sessions.md",

@@ -10,7 +10,7 @@
 | [[02_model-dispatch]] | 模型調度守則：指揮官不下場、派工三件套、model 對照表、升降級、驗證不自驗 | v1.0.7 | ✅ 2026-09-24（撿回合併：§7 追加 D88「稽核 checklist 與來源規則文件漏同步」＋S147-follow「承接舊設計文件待辦前須核實前提未過時」兩教訓；前 v1.0.5 2026-07-21 S183續 並行worktree視野盲區教訓+session-start-sop.sh機制層防護）|
 | [[03_judgment-rubrics]] | 判斷力外化：升級/完成/問人/換路/品質底線 五組 rubric，每條附正反例 | v1.0.1 | ✅ 2026-07-04（S140 追加 2 條反例）|
 | [[04_delegation-templates]] | 派工 prompt 模板 ×7（搜尋/實作/重構/研究/審查/交接膠囊/fan-out），填空即用 | v1.0.3 | ✅ 2026-07-08（S156 加 T7）|
-| [[05_maintenance-protocol]] | 維護協議：權限矩陣、教訓落點、精簡觸發、備份規則、模板 drift | v1.3.0 | ✅ 2026-09-26（S149 Phase 5）|
+| [[05_maintenance-protocol]] | 維護協議：權限矩陣、教訓落點、精簡觸發、備份規則 | v1.2.0 | ✅ 2026-07-08（S156 接線 07）|
 | [[06_letter-to-future-sessions]] | 給未來 session 的信：三件最重要的事 + 制度退化模式與預防 | —（信件體） | ✅ 2026-07-04 |
 | [[07_compounding-loop]] | 複利迴圈：教訓五階段落盤門檻、Skills 複利、平行工作流（fan-out/loop-until-done）、worktree、評分者降級（blocktempo fable-5-2 凍結快照，含 §0 吸收邊界表防重複吸收） | v1.0.1 | ✅ 2026-07-08（S156，含 /8d 迭代修正）|
 | `.fhs/ai/governance/backups/` | 修改既有檔案前的備份副本（帶日期） | — | — |

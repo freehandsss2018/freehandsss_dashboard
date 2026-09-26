@@ -1,6 +1,6 @@
 # 05 — 維護協議（governance 檔案怎麼安全地演化）
 
-> **Version**: v1.3.0（2026-09-26，S149 Phase 5：§7 加模板 drift 季度健檢）；v1.2.1（2026-08-03，learnings 分桶重構 flow 2026-08-03-2003；§1/§2/§4 三處 learnings.md 引用改為 learnings/<bucket>.md，§2 補 O1 已知張力備註）；v1.2.0（2026-07-08，Session 156；§2 分流表加 skill 落點行、§7 加 2b stage-1 污染抽查，均指向 [[07_compounding-loop]]；S148 同日曾加 §7 第 5 項教訓熔斷條款 A4）
+> **Version**: v1.2.1（2026-08-03，learnings 分桶重構 flow 2026-08-03-2003；§1/§2/§4 三處 learnings.md 引用改為 learnings/<bucket>.md，§2 補 O1 已知張力備註）；v1.2.0（2026-07-08，Session 156；§2 分流表加 skill 落點行、§7 加 2b stage-1 污染抽查，均指向 [[07_compounding-loop]]；S148 同日曾加 §7 第 5 項教訓熔斷條款 A4）
 > **讀者**：任何想修改 CLAUDE.md、governance/、learnings、handoff 的未來 session。
 > **原則**：制度檔的價值在「穩定可預期」。寧可慢半拍，不可讓兩個 session 讀到互相矛盾的規則。
 
@@ -89,7 +89,6 @@
 3. 驗證 CLAUDE.md 路由表每條路徑仍存在。
 4. 產出 ≤20 行健檢報告，追加到本檔尾部 §8。
 5. **教訓熔斷條款**（S148 Phase 4 新增）：若 `02 §7` 或 `learnings.md` 中出現 **≥3 條同型 workaround 教訓**（如「X 誤觸，先查 git diff，安全則刪 flag」），本次健檢必須發起 **hook 層或制度層治本議案**，提交 Fat Mo 審閱後執行，不再允許「又加一條教訓繞過」。同型教訓累積到 3 是迴圈訊號，治本是義務，非選項。
-6. **模板 drift 檢查**（S149）：執行 `node scripts/portability/check-manifest.js` 比對 39 個 GENERIC-FORK 來源 blob hash；讀獨立模板 repo `VERSION` 的 `template_version`／`source_commit`，確認來源 commit 仍可追溯，並檢查該 commit 之後 manifest 範圍的變動有否重新審閱 fork。若需再匯出，先更新 manifest 與 fork，跑 `export-template.js`、`check-export.js` 和匯出後四套 runner，再按模板 README 的單一寫者 SOP 發版；不得直接覆蓋新專案的業務規則或記憶。
 
 ## §8 健檢記錄
 
