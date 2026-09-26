@@ -4156,6 +4156,6 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 5. **流程**：測試 → code-reviewer G1–G8 → A4；重審上限 2 輪，`DISPUTE_ESCALATED` 交 Fat Mo；A4 BLOCKER 不得由 A3 推翻；受阻須標「A4 受阻」。詳見 `.fhs/ai/commands/a4-review.md`。
 6. **擱置**：清單 #7（runner 自動呼叫 Codex）、#8（guard 規則）。理由：探針只證明非互動 `codex exec` 只讀可用，hook 生效未證，機械觸發會使「Fat Mo 親手觸發」的約定失去意義；待 3 次實審後再議。
 
-**A4 第 2 次實審後修正（同日，Fat Mo 授權「P1／P2 直接修改」）**：Codex 審查分支對 main（thread `01a0de00-8037-7a42-bae3-38b3f70832cd`）提 2 條 P1，均採納：① `/a4-review` 範圍改用實作前基準 SHA／merge-base（原 `git diff HEAD` 於已 commit 後為空）；② `.agents/skills/` 內 8 個寫入類橋接（`execute`、`commit`、`upload-web`、`db-query`、`new-product`、`canva-auto`、`3d-print`、`fhs-slim`）改寫為「Codex 不執行，指向 A3」，原檔備份於 `.fhs/ai/governance/backups/`。唯讀／報告類橋接未動。
+**A4 第 2 次實審後修正（同日，Fat Mo 授權「P1／P2 直接修改」）**：Codex 審查分支對 main（thread `01a0de00-8037-7a42-bae3-38b3f70832cd`）提 2 條 P1，均採納：① `/a4-review` 範圍改用實作前基準 SHA／merge-base（原 `git diff HEAD` 於已 commit 後為空）；② `.agents/skills/` 內 8 個寫入類橋接（`execute`、`commit`、`upload-web`、`db-query`、`new-product`、`canva-auto`、`3d-print`、`fhs-slim`）改寫為「Codex 不執行，指向 A3」，原檔備份於 `.fhs/ai/governance/backups/`。唯讀／報告類橋接未動。**第 3 次實審（thread `01a0de08-c78a-7372-9459-ec344f2bb02a`，1 P1＋2 P2，均採納）**：再收緊 8 個橋接（`fhs-check`、`fhs-audit`、`ag-plan`、`team`、`ag-stitch-sync`、`ag-ui-import`、`error-eye`、`usage-audit`），連同前 8 個共 16 個；`/a4-review` v1.2.0 非空自檢計入未追蹤檔；`/execute` 基線檔在舊版無 artifacts 路徑改存 `.fhs/reports/planning/a4_baseline.txt`。
 
 **Subagent 使用記錄**：見本次完成記錄 `.fhs/reports/completion/2026-09-26_a4-workflow-docs-landing_completion_report.md`。

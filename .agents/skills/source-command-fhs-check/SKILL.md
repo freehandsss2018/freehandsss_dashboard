@@ -1,24 +1,19 @@
 ---
 name: "source-command-fhs-check"
-description: "Migrated source command `fhs-check`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /fhs-check（健康檢查（跑腳本並寫 session-log））；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-fhs-check
 
-Use this skill when the user asks to run the migrated source command `fhs-check`.
+Use this skill when the user asks to run `/fhs-check` inside Codex.
 
-## Command Template
+## Codex 不執行 /fhs-check
 
-讀取 `.fhs/ai/commands/fhs-check.md` 並執行全系統健康檢查。
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/fhs-check` 屬寫入類指令（健康檢查（跑腳本並寫 session-log）），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-fhs-check.SKILL.md.2026-09-26.bak`）。
 
-前置條件：已讀取 .fhs/ai/AGENTS.md 並確認版本號。
+**收到 `/fhs-check` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/fhs-check.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/fhs-check` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-執行步驟：
-1. 執行 python Maintenance_Tools/run_all.py
-2. 依序完成：環境前置檢查 → LIFECYCLE → STRESS → ACCEPTANCE → COST_INTEGRITY → PRICE_AUDIT
-3. 輸出 Health Report，明確標示所有 Red Flags / DEGRADED / WARN
-4. 若發現 Red Flags，將問題摘要寫入 .fhs/notes/session-log.md
-
-異常處理：
-- run_all.py 不存在 → 回報「未找到，請 Fat Mo 確認路徑」，停止執行
-- 任何測試階段失敗 → 停止後續測試，立即回報失敗階段與錯誤訊息
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/fhs-check.md](/.fhs/ai/commands/fhs-check.md)

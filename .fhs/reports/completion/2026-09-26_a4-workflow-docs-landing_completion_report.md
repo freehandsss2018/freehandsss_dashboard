@@ -39,7 +39,14 @@
 
 - [P1] `/a4-review` 範圍依 `git diff HEAD`，已 commit 後為空 → **已修**：v1.1.0 改 `<BASE>..HEAD`（基準 SHA／merge-base）＋範圍非空自檢；`execute.md` 基線記 `HEAD=<sha>`。
 - [P1] Codex 寫入類橋接 → **已修**：8 個橋接（`execute`、`commit`、`upload-web`、`db-query`、`new-product`、`canva-auto`、`3d-print`、`fhs-slim`）改為拒絕並指向 A3，備份於 `governance/backups/`；fresh Codex 唯讀測 `/execute` 回覆拒絕。
-- 回應全文：`artifacts/2026-09-26-1831/a4-response-2.md`。待 Fat Mo 再輸入 `/codex:review --base main` 複審。
+- 回應全文：`artifacts/2026-09-26-1831/a4-response-2.md`。
+
+## 第 3 次實審（thread `01a0de08-c78a-7372-9459-ec344f2bb02a`，重審第 2 輪，上限 2 輪）
+
+- [P1] 其餘寫入類橋接 → **已修**：再改 8 個（`fhs-check`、`fhs-audit`、`ag-plan`、`team`、`ag-stitch-sync`、`ag-ui-import`、`error-eye`、`usage-audit`），共 16 個；保留唯讀類 `read`、`rg`、`rp`、`guardian`、`8d`。
+- [P2] `/a4-review` 非空自檢漏未追蹤檔 → **已修**（v1.2.0）。
+- [P2] `/execute` 舊版路徑基線檔位置 → **已修**（舊版改存 `.fhs/reports/planning/a4_baseline.txt`）。
+- 回應全文：`artifacts/2026-09-26-1831/a4-response-3.md`。若複審仍有未解 BLOCKER 標 `DISPUTE_ESCALATED`。
 
 ## 工程記錄
 

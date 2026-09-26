@@ -1,35 +1,19 @@
 ---
 name: "source-command-ag-ui-import"
-description: "Migrated source command `ag-ui-import`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /ag-ui-import（匯入 UI 草稿到專案）；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-ag-ui-import
 
-Use this skill when the user asks to run the migrated source command `ag-ui-import`.
+Use this skill when the user asks to run `/ag-ui-import` inside Codex.
 
-## Command Template
+## Codex 不執行 /ag-ui-import
 
-# /ag-ui-import（Codex Bridge）
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/ag-ui-import` 屬寫入類指令（匯入 UI 草稿到專案），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-ag-ui-import.SKILL.md.2026-09-26.bak`）。
 
-> ## ⚠️ [DEPRECATED]（2026-07-04）— 前置步驟 `/ag-stitch-sync` 已棄用，改用 `ui-designer` + `frontend-developer` 原生流程
-> **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
+**收到 `/ag-ui-import` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/ag-ui-import.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/ag-ui-import` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-**執行步驟**：
-請立即讀取並嚴格遵循以下 Master 指令定義：
-[/.fhs/ai/commands/ag-ui-import.md](/.fhs/ai/commands/ag-ui-import.md)
-
-### 前置條件（必須全部滿足）：
-- `/ag-stitch-sync` 已完成，草稿存在於 `.fhs/reports/planning/stitch_draft_*.html`
-- 依賴清單已識別完畢
-- Fat Mo 已確認草稿方向
-
-### 流程摘要：
-1. 去除 React/JSX 依賴（className → class）
-2. 去除 Tailwind（轉為 inline CSS 或 `--fhs-*` token）
-3. 去除外部 CDN（全部 inline）
-4. FHS token 對齊（`--fhs-*` Custom Properties）
-5. 移交 frontend-developer 整合至 V[N]_proto.html
-
-### 防守檢查：
-- ✅ 不修改任何現有主核心檔案
-- ✅ 所有色彩間距必須使用 `--fhs-*` token
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/ag-ui-import.md](/.fhs/ai/commands/ag-ui-import.md)

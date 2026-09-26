@@ -2,7 +2,7 @@
 
 **用途 (Purpose)**：實作完成後，準備 A4（Codex，代號 GPT）獨立審查的交付包，並處理 A4 的 findings。
 **對應 Agent**：A3 (Claude Code) 準備交付包與回應意見；**A4 審查由 Fat Mo 觸發，A3 不代跑**。
-**Version**: v1.1.0 (2026-09-26，D98；修 A4 第 2 次實審 P1：範圍改用基準 SHA，不再依賴 `git diff HEAD`)
+**Version**: v1.2.0 (2026-09-26，D98；v1.1.0 修 A4 實審 P1 範圍改基準 SHA；v1.2.0 修 P2：非空自檢計入未追蹤檔、舊版路徑基線位置)
 **角色表唯一本文**：`.fhs/ai/AGENTS.md` §7「跨代理角色表 A1–A4」。本檔只寫流程，不複製角色表。
 **NO-TOUCH GUARDRAIL**：本指令只產出 `artifacts/{flow_id}/` 內的報告檔，不改業務代碼；A4 不得執行任何寫入類指令。
 
@@ -23,13 +23,13 @@
 ## Step 1 — A3 產出交付包 `artifacts/{flow_id}/a4-scope.md`
 
 必含：
-- **範圍基準 SHA**（`<BASE>`）：優先取 `/execute` 開工時記下的實作前 SHA（`artifacts/{flow_id}/a4-baseline.txt` 首行 `HEAD=<sha>`）；沒有則用 `git merge-base HEAD <目標分支>`（通常 `main`）。**實作已 commit 時 `git diff HEAD` 為空，不得用它定義範圍。**
+- **範圍基準 SHA**（`<BASE>`）：優先取 `/execute` 開工時記下的實作前 SHA（`artifacts/{flow_id}/a4-baseline.txt`，舊版無 artifacts 路徑則 `.fhs/reports/planning/a4_baseline.txt`；首行 `HEAD=<sha>`）；沒有則用 `git merge-base HEAD <目標分支>`（通常 `main`）。**實作已 commit 時 `git diff HEAD` 為空，不得用它定義範圍。**
 - 現時 `git rev-parse HEAD`（審查終點）。
 - 已 commit 部分：`git diff <BASE>..HEAD` 的 sha256 與 `--stat`。
 - 未 commit 部分：`git diff HEAD` 的 sha256（可為空）。
 - `git --no-optional-locks status --porcelain` 全文。
 - 未追蹤檔清單＋各自 sha256。
-- **範圍非空自檢**：`<BASE>..HEAD` 與工作區 diff 皆空時，交付包標「範圍為空，A4 不適用或基準錯誤」，不得送審。
+- **範圍非空自檢**：`<BASE>..HEAD`、工作區 diff、**未追蹤實作檔**（上列清單，排除 `artifacts/` 與自動產生的 handoff／報告檔）三者皆空時，才標「範圍為空，A4 不適用或基準錯誤」，不得送審。只有未追蹤新檔時範圍**非空**，須送審。
 - 已批准 plan 路徑（`cl-final-plan.md`）。
 - **批准清單 vs 實際變更清單**比對。審查範圍由 git 獨立枚舉；A3 宣告的清單只用來標「越出已批准範圍」。
 - 測試結果。

@@ -1,28 +1,19 @@
 ---
 name: "source-command-usage-audit"
-description: "Migrated source command `usage-audit`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /usage-audit（跑掃描並存快照）；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-usage-audit
 
-Use this skill when the user asks to run the migrated source command `usage-audit`.
+Use this skill when the user asks to run `/usage-audit` inside Codex.
 
-## Command Template
+## Codex 不執行 /usage-audit
 
-# /fhs-usage-audit（Codex Bridge）
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/usage-audit` 屬寫入類指令（跑掃描並存快照），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-usage-audit.SKILL.md.2026-09-26.bak`）。
 
-> **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
+**收到 `/usage-audit` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/usage-audit.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/usage-audit` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-**執行步驟**：
-請立即讀取並嚴格遵循以下 Master 指令定義：
-[/.fhs/ai/commands/usage-audit.md](/.fhs/ai/commands/usage-audit.md)
-
-### 流程摘要（v1.0.0）：
-1. **Step 1** — 跑 `node scripts/usage-audit/scan.js`，讀 `.fhs/.usage-report.json`
-2. **Step 2** — 讀上次快照（`.fhs/memory/usage-audit/`），做趨勢對比
-3. **Step 3** — 產出三清單：可 Skill 化清單 / 重複 Prompt 清單 / 浪費模式清單（只提方案不動手）
-4. **Step 4** — 存本次聚合快照（只存數字，不存長文本）
-5. **Step 5** — 完成回報
-
-### 與 `/fhs-slim`、`/fhs-audit` 分界：
-`/fhs-audit` = 架構衛生深稽核；`/fhs-slim` = 文件五病清理；`/fhs-usage-audit` = **AI 使用行為**審計（資料源是 transcript，非 repo 檔案），三者正交不重疊。
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/usage-audit.md](/.fhs/ai/commands/usage-audit.md)

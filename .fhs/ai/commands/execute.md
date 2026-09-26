@@ -17,7 +17,7 @@
      - 不得重新規劃，不得重跑 PX 或 AG
    - **若前序為舊版 `/cl-flow` 流程**（無 artifacts/）：
      - 確認 `.fhs/reports/planning/a3_execution_verdict.md` 存在且非空。
-   - **A4 基線（D98）**：屬 A4 必審範圍者（代碼／HTML／n8n／migration／hook／腳本，見 AGENTS.md Rule 3.17），開工前記基線：`{ echo "HEAD=$(git rev-parse HEAD)"; git --no-optional-locks status --porcelain; } > artifacts/{flow_id}/a4-baseline.txt`（首行為實作前 SHA，供 `/a4-review` 定義 `<BASE>..HEAD` 範圍）。
+   - **A4 基線（D98）**：屬 A4 必審範圍者（代碼／HTML／n8n／migration／hook／腳本，見 AGENTS.md Rule 3.17），開工前記基線：`{ echo "HEAD=$(git rev-parse HEAD)"; git --no-optional-locks status --porcelain; } > <基線檔>`，`<基線檔>` ＝ 有 artifacts 流程用 `artifacts/{flow_id}/a4-baseline.txt`；舊版無 artifacts 流程用 `.fhs/reports/planning/a4_baseline.txt`（首行為實作前 SHA，供 `/a4-review` 定義 `<BASE>..HEAD` 範圍）。
 
 2. **執行約束 (Strict Execution)**：
    - 重新列出準備修改的檔案。

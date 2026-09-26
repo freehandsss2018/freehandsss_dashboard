@@ -1,27 +1,19 @@
 ---
 name: "source-command-fhs-audit"
-description: "Migrated source command `fhs-audit`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /fhs-audit（架構稽核（會重跑工具並可能寫報告））；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-fhs-audit
 
-Use this skill when the user asks to run the migrated source command `fhs-audit`.
+Use this skill when the user asks to run `/fhs-audit` inside Codex.
 
-## Command Template
+## Codex 不執行 /fhs-audit
 
-讀取 `.fhs/ai/commands/fhs-audit.md` 並執行系統唯讀健康稽核（24 項，7 大檢查）。
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/fhs-audit` 屬寫入類指令（架構稽核（會重跑工具並可能寫報告）），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-fhs-audit.SKILL.md.2026-09-26.bak`）。
 
-性質：純讀取稽核，零網路連線，不修改任何檔案，只輸出報告。
+**收到 `/fhs-audit` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/fhs-audit.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/fhs-audit` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-七大檢查：
-1. README & repo-map 準確性（A1-1 至 A1-3）
-2. 衝突偵測 - .cursorrules vs AGENTS.md 等（A2-1 至 A2-3）
-3. 沉積檔案偵測 - scripts/Maintenance_Tools 孤兒引用計數（A3-1）
-4. 孤獨檔案偵測 - archive 索引/路由條目/說明文件（A4-1 至 A4-3）
-5. 過時檔案偵測 - 版本號/Changelog/handoff 日期（A5-1 至 A5-5）
-6. 文檔生態系統版本一致性 - subagent 標準化/自動化工具當次重跑（A6-1 至 A6-4）
-7. 語義稽核 - D1-D5 五維深度檢測（A7-1 至 A7-5）
-
-輸出格式：每項標示 ✅ / 🟡 / 🔴，統計總通過數，列出待處理清單。
-報告完成後寫入 .fhs/reports/audits/system/audit_YYYY-MM-DD.md。
-等待 Fat Mo 指示後才處理問題，不自行修復。
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/fhs-audit.md](/.fhs/ai/commands/fhs-audit.md)

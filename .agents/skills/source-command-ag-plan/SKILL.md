@@ -1,29 +1,19 @@
 ---
 name: "source-command-ag-plan"
-description: "Migrated source command `ag-plan`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /ag-plan（寫入 planning 計劃檔）；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-ag-plan
 
-Use this skill when the user asks to run the migrated source command `ag-plan`.
+Use this skill when the user asks to run `/ag-plan` inside Codex.
 
-## Command Template
+## Codex 不執行 /ag-plan
 
-# /ag-plan（Codex Bridge）
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/ag-plan` 屬寫入類指令（寫入 planning 計劃檔），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-ag-plan.SKILL.md.2026-09-26.bak`）。
 
-> **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
+**收到 `/ag-plan` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/ag-plan.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/ag-plan` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-**執行步驟**：
-請立即讀取並嚴格遵循以下 Master 指令定義：
-[/.fhs/ai/commands/ag-plan.md](/.fhs/ai/commands/ag-plan.md)
-
-### 流程摘要：
-1. Antigravity (A2) 本地分析並產出 Implementation Plan
-2. **落盤強制路徑**：`d:\SynologyDrive\Free_handsss\freehandsss_dashboard\.fhs\reports\planning\a2_implementation_plan.md`
-3. 落盤後立即自查驗證（file reader 確認存在且非空）
-4. 產出交回 Fat Mo → 呼叫 `/cl-flow` 或 `/execute`
-
-### 防守檢查：
-- ✅ 禁止只存入 `.gemini/antigravity/brain/` 而不寫入專案目錄
-- ✅ 禁止在此階段對任何程式碼執行修改操作
-- ✅ 必須使用繁體中文
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/ag-plan.md](/.fhs/ai/commands/ag-plan.md)
