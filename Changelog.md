@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-26] 分支清理：刪除 5 條已撿內容分支（Fat Mo 批准）
+
+- 刪除本地＋origin 共 5 條：`claude/read-command-db07e0`（16ed627）／`claude/wonderful-bhaskara-1e9f3e`（12b5ed4）／`claude/canva-auto-small-chan-ef7849`（aed3a77）／`claude/read-command-d64261`（9c342c0）／`claude/read-command-263e23`（a230505）。還原：`git branch <名> <sha>`，遠端須重推。
+- 刪前派 agent（opus，sonnet 兩次 529）獨立核實：`git cherry` 5 條全 `+`（原樣不在 main，屬改寫後撿回），逐檔比對分支新增行喺 main 缺失數＝0。**handoff 舊說「只剩 handoff/Changelog 未撿」不完全準確**——另有 session-log 條目、2 份 `.bak`（`code-reviewer.md.2026-08-29.bak`／`02_model-dispatch.md.2026-08-28.bak`）、db07e0 上 3 份 n8n 修復前快照 JSON（`.fhs/notes/aireports/n8n-mcp-backups/2026-08-27/D4LK6VrQbiXlju0V/`）冇撿，Fat Mo 決定不留。
+- 連帶移除 worktree `dorothy-family-video-order-25bd71`（65 個未追蹤 Codex 橋接檔 `.agents/skills/`／`.codex/`／`AGENTS.md` 一併刪）；磁碟殘留空資料夾被程序佔用，待手動刪（MASTER 表 ⚪ 低）。
+- 過程失誤：查健檢時誤跑 `git stash` 收走 handoff 改動，已用 sha `stash apply` 還原並只刪自己嗰個條目，stash 已空，內容無損。**Subagent 使用記錄**：✅ general-purpose（opus）×1 唯讀核對。
+
 ## [2026-09-26] S149 Phase 2：guard.js 拆為判斷引擎＋規則 JSON（Claude Code，D96 交棒）
 
 - `scripts/hooks/pre-tool-guard.js` 由 482 行單體拆為通用判斷引擎（按規則 `kind` 解讀執行）＋`scripts/hooks/guard-rules.fhs.json`（R1–R14 全部 pattern／訊息／門檻外置，執行次序照舊）。行為等價：五套 runner 32/10/19/35/8 前後一致、規則 ID 集合相等、stdout JSON 結構正常、perf 中位數 delta 1.42ms。

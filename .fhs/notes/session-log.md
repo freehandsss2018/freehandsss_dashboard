@@ -1,4 +1,9 @@
 # Session Log
+## 2026-09-26 (分支清理：刪 5 條已撿內容分支＋handoff 收尾): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-26 分支清理條目。agent 獨立核實 5 條實質內容 main 全有後，經 Fat Mo 批准本地＋origin 全刪，連帶移除 dorothy worktree。
+**Subagent 使用記錄**：✅ general-purpose（opus）×1 唯讀核對。
+
 ## 2026-09-24 (canva-auto meiyan_cmyy 06001007 全幅AI短片 Stage①-⑤＋學習落庫，CV-58~62): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-24（meiyan_cmyy）條目。字句同圖／片零遮蓋（底邊＝字句 box top −0.29×字號）；合併 main 時 CV 編號撞車重編；`local_prep` 主線新版重測黑白 IoU 0.734→0.989。
