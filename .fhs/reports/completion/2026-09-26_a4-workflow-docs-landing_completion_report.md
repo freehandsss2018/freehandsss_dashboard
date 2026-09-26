@@ -32,8 +32,14 @@
 
 1. 親手輸入 `/codex:review --base main`（第 2 次實審）；A3 不代跑。
 2. Supabase 令牌旋轉（Fat Mo 自己做）。
-3. `.agents/skills/` 內 24 個 `source-command-*` 橋接含寫入類指令，與「A4 只審不改」矛盾——去留另案。
+3. ~~`.agents/skills/` 寫入類橋接去留~~：已由第 2 次實審 P1 觸發並修畢（見下節）。
 4. `gov/a4-docs-landing` 未 push、未推 main、未同步 Notion。
+
+## 第 2 次實審（Codex，`/codex:review --base main`，thread `01a0de00-8037-7a42-bae3-38b3f70832cd`）
+
+- [P1] `/a4-review` 範圍依 `git diff HEAD`，已 commit 後為空 → **已修**：v1.1.0 改 `<BASE>..HEAD`（基準 SHA／merge-base）＋範圍非空自檢；`execute.md` 基線記 `HEAD=<sha>`。
+- [P1] Codex 寫入類橋接 → **已修**：8 個橋接（`execute`、`commit`、`upload-web`、`db-query`、`new-product`、`canva-auto`、`3d-print`、`fhs-slim`）改為拒絕並指向 A3，備份於 `governance/backups/`；fresh Codex 唯讀測 `/execute` 回覆拒絕。
+- 回應全文：`artifacts/2026-09-26-1831/a4-response-2.md`。待 Fat Mo 再輸入 `/codex:review --base main` 複審。
 
 ## 工程記錄
 

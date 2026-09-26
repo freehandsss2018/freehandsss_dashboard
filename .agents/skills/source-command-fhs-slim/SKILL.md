@@ -1,29 +1,19 @@
 ---
 name: "source-command-fhs-slim"
-description: "Migrated source command `fhs-slim`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /fhs-slim（清理／歸檔／刪除文件）；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-fhs-slim
 
-Use this skill when the user asks to run the migrated source command `fhs-slim`.
+Use this skill when the user asks to run `/fhs-slim` inside Codex.
 
-## Command Template
+## Codex 不執行 /fhs-slim
 
-# /fhs-slim（Codex Bridge）
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/fhs-slim` 屬寫入類指令（清理／歸檔／刪除文件），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-fhs-slim.SKILL.md.2026-09-26.bak`）。
 
-> **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
+**收到 `/fhs-slim` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/fhs-slim.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/fhs-slim` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-**執行步驟**：
-請立即讀取並嚴格遵循以下 Master 指令定義：
-[/.fhs/ai/commands/fhs-slim.md](/.fhs/ai/commands/fhs-slim.md)
-
-### 流程摘要（v1.0.0）：
-1. **Step 1** — 讀取 `.fhs/.health-report.json`（L1 健康檢查報告），無 issue 則結束
-2. **Step 2** — 逐項核實現況＋出清理方案（壓縮索引 / 歸檔 / 安全刪除 / 修正漂移 / 去重）
-3. **Step 3** — 停等 Fat Mo 批准（Y / 排除特定項 / 取消）
-4. **Step 4** — 執行（S141 紀律：備份→只歸檔不刪→每步一commit→視範圍派fresh-context核對）
-5. **Step 5** — 完成回報 + 後效同步稽核
-
-### 與 `/fhs-audit` 分界：
-`/fhs-audit` = 24 項唯讀健康稽核（含語義層，重、按需、零網路）
-`/fhs-slim` = 5 種文件病快檢清理管道（輕、L1 hook 每 session 自動觸發偵測）
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/fhs-slim.md](/.fhs/ai/commands/fhs-slim.md)

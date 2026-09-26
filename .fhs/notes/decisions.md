@@ -4156,6 +4156,6 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 5. **流程**：測試 → code-reviewer G1–G8 → A4；重審上限 2 輪，`DISPUTE_ESCALATED` 交 Fat Mo；A4 BLOCKER 不得由 A3 推翻；受阻須標「A4 受阻」。詳見 `.fhs/ai/commands/a4-review.md`。
 6. **擱置**：清單 #7（runner 自動呼叫 Codex）、#8（guard 規則）。理由：探針只證明非互動 `codex exec` 只讀可用，hook 生效未證，機械觸發會使「Fat Mo 親手觸發」的約定失去意義；待 3 次實審後再議。
 
-**未動的已知衝突**：`.agents/skills/` 的 `source-command-*` 橋接含 `execute`、`commit`、`upload-web`、`db-query` 等寫入類指令，Codex 依技能可執行，與「A4 只審不改」矛盾；規則第 7 條已寫入憲法，刪除／改寫橋接另案，待 Fat Mo 決定。
+**A4 第 2 次實審後修正（同日，Fat Mo 授權「P1／P2 直接修改」）**：Codex 審查分支對 main（thread `01a0de00-8037-7a42-bae3-38b3f70832cd`）提 2 條 P1，均採納：① `/a4-review` 範圍改用實作前基準 SHA／merge-base（原 `git diff HEAD` 於已 commit 後為空）；② `.agents/skills/` 內 8 個寫入類橋接（`execute`、`commit`、`upload-web`、`db-query`、`new-product`、`canva-auto`、`3d-print`、`fhs-slim`）改寫為「Codex 不執行，指向 A3」，原檔備份於 `.fhs/ai/governance/backups/`。唯讀／報告類橋接未動。
 
 **Subagent 使用記錄**：見本次完成記錄 `.fhs/reports/completion/2026-09-26_a4-workflow-docs-landing_completion_report.md`。

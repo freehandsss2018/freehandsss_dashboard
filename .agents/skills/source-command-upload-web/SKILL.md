@@ -1,40 +1,19 @@
 ---
 name: "source-command-upload-web"
-description: "Migrated source command `upload-web`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /upload-web（部署上傳）；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-upload-web
 
-Use this skill when the user asks to run the migrated source command `upload-web`.
+Use this skill when the user asks to run `/upload-web` inside Codex.
 
-## Command Template
+## Codex 不執行 /upload-web
 
-# /upload-web（Codex Bridge）
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/upload-web` 屬寫入類指令（部署上傳），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-upload-web.SKILL.md.2026-09-26.bak`）。
 
-> **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
+**收到 `/upload-web` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/upload-web.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/upload-web` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-**執行步驟**：
-請立即讀取並嚴格遵循以下 Master 指令定義：
-[/.fhs/ai/commands/upload-web.md](/.fhs/ai/commands/upload-web.md)
-
-### 簡化流程：
-
-**Step 0（S143新增）**：預設先跑 `/fhs-check` 部署前置檢查；FAIL 停止部署；Fat Mo 可明示 skip。
-
-**無參數（預設 — 升格流程）：**
-1. 掃描 `Freehandsss_Dashboard/` 找最高版本號的 `freehandsss_dashboardV*.html`
-2. 向 Fat Mo 二次確認（「偵測到最新版：VXX，確認升格 current 並部署？」）——**例外（S168，AGENTS.md v1.7.0）**：若由 `/commit` Phase 2.5 條件觸發（已偵測到本次 commit 有改動 Dashboard HTML），跳過此步
-3. `Copy-Item` 最新版 → `Freehandsss_dashboard_current.html`
-4. 執行 `powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 current -Force`
-5. 回報 PASS/FAIL：偵測版本 + 公開網址 + 大小比對 + SHA256
-
-**指定目標（`/upload-web V43` / `current` / `team` 等）：**
-1. 解析目標代稱
-2. 若目標為 `current` → 先向 Fat Mo 二次確認，執行時加 `-Force`；若為 `team`（AI 助理團隊名冊，2026-07-16 新增）→ 非生產系統不需二次確認，建議執行前先跑 `node scripts/agent_dashboardV42.js` 重新生成
-3. 執行 `powershell -ExecutionPolicy Bypass -File scripts/upload-web.ps1 [目標] [-Force]`
-4. 回報 PASS/FAIL：公開網址 + 大小比對 + SHA256
-
-### 防守檢查：
-- ✅ 升格流程：二次確認後才 cp + 上傳，未確認不得繼續
-- ✅ 密碼永不回顯，`.env` 永不入庫
-- ✅ 驗證三關（HTTP 200 + 大小 + SHA256）任一失敗即 FAIL
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/upload-web.md](/.fhs/ai/commands/upload-web.md)

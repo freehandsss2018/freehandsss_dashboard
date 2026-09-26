@@ -1,28 +1,19 @@
 ---
 name: "source-command-canva-auto"
-description: "Migrated source command `canva-auto`"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /canva-auto（Canva 與本地檔案寫入）；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-canva-auto
 
-Use this skill when the user asks to run the migrated source command `canva-auto`.
+Use this skill when the user asks to run `/canva-auto` inside Codex.
 
-## Command Template
+## Codex 不執行 /canva-auto
 
-# /canva-auto（Codex Bridge）
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/canva-auto` 屬寫入類指令（Canva 與本地檔案寫入），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-canva-auto.SKILL.md.2026-09-26.bak`）。
 
-> **引導說明**：本檔案為橋接版，實際邏輯定義在 Master 檔案。
+**收到 `/canva-auto` 時，Codex 應該：**
+1. **不要**讀取或執行 `.fhs/ai/commands/canva-auto.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。
+2. 回覆 Fat Mo：`/canva-auto` 須回 Claude Code（A3）執行；Codex 在本 repo 是 A4，職責是實作後獨立審查。
+3. 若 Fat Mo 要求審查與本指令相關的變更：只讀、逐條輸出 findings（嚴重度、檔案與行號、問題、建議），並聲明實際讀了哪些檔案。你的意見不是批准，也不是裁決。
 
-**執行步驟**：
-請立即讀取並嚴格遵循以下 Master 指令定義：
-[/.fhs/ai/commands/canva-auto.md](/.fhs/ai/commands/canva-auto.md)
-
-### 流程摘要：
-0. **Step 0** — 開單前補課檢查（查上一 case `learned` 旗標）
-1. **Stage ①** — AI 開殼（copy-design/改名/歸檔）
-2. **Stage ②** — Fat Mo 人手（僅 2 步：片去背+上載）
-3. **Stage ③** — AI 換料＋比例校正（local_prep.py 圖加工 + update_fill 換母版格繼承座標）
-4. **Stage ④** — 學習＋出貨（diff-learning 寫回案例庫）
-
-### 與 `/3d-print` 關係：
-姊妹指令，同一套 diff-learning 參數回饋迴圈架構，分別對應記念短片線與 3D 打印線。
+Master 指令定義（僅供理解流程，不由 Codex 執行）：[/.fhs/ai/commands/canva-auto.md](/.fhs/ai/commands/canva-auto.md)
