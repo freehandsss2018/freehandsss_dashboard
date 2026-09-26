@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "source_note": "Extracted from scripts/hooks/pre-tool-guard.js (pre-split blob 36fb987cfd356e217c00c6b996447d17afcf8c8b) — S149 Phase 2. Rule content (patterns/messages/thresholds) lives here; the interpreter that knows how to execute each rule 'kind' lives in pre-tool-guard.js.",
+  "rules": [
+    {
+      "id": "R1",
+      "scope": "write",
+      "kind": "deploy_protect",
+      "match": { "type": "path_includes", "value": "Freehandsss_dashboard_current.html" },
+      "consume_log_tag": "R1/R9 bypass",
+      "block_message": [
+        "🚫 [R1] 禁止覆蓋正式環境 Freehandsss_dashboard_current.html",
+        "   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html",
+        "   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），(b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效，或 (c) 本次是 /commit Phase 2.5 偵測到需要部署後的鏈式觸發（AGENTS.md v1.7.0）"
+      ]
+    },
+    {
+      "id": "R10",
+      "scope": "write",
+      "kind": "deploy_flag_log",
+      "match": { "type": "path_includes", "value": ".deploy-ok" },
+      "log_template": "{ts} | R10 AI self-created .deploy-ok (AGENTS.md v1.6.0授權) | tool={tool}"
+    },
+    {
+      "id": "R2",
+      "scope": "write",
+      "kind": "regex_list_block_first",
+      "patterns": [
+        { "source": "sk-[a-zA-Z0-9]{32,}", "flags": "", "label": "OpenAI-style key (sk-...)" },
+        { "source": "pplx-[a-zA-Z0-9]{32,}", "flags": "", "label": "Perplexity key (pplx-...)" },
+        { "source": "pat[a-zA-Z0-9]{20,}\\.[a-zA-Z0-9]{40,}", "flags": "", "label": "Airtable PAT" },
+        { "source": "sbp_[a-zA-Z0-9]{20,}", "flags": "", "label": "Supabase access token (sbp_...)" },
+        { "source": "sb_secret_[a-zA-Z0-9_-]{15,}", "flags": "", "label": "Supabase secret key (sb_secret_...)" },
+        { "source": "eyJ[a-zA-Z0-9_-]{10,}\\.[a-zA-Z0-9_-]{10,}\\.[a-zA-Z0-9_-]{10,}", "flags": "", "label": "JWT (eyJ...)" },
+        { "source": "(?:api_key|apikey|api-key)\\s*[:=]\\s*[\"'][a-zA-Z0-9\\-_]{20,}[\"']", "flags": "i", "label": "API key assignment" },
+        { "source": "(?:GEMINI_API_KEY|PERPLEXITY_API_KEY|N8N_KEY)\\s*=\\s*[\"'][a-zA-Z0-9\\-_.]{20,}[\"']", "flags": "", "label": "FHS env key" }
+      ],
+      "block_message_template": [
+        "🚫 [R2] 偵測到硬編碼 API Key：{label}",
+        "   → AGENTS.md §全域硬規則：一律使用 .env + process.env"
+      ]
+    },
+    {
+      "id": "R3",
+      "scope": "write",
+      "kind": "symbol_modify_warn",
+      "symbols": ["captureFormState", "Raw_Form_State", "rawFormState"],
+      "warn_message_template": [
+        "⚠️  [R3] 偵測到可能修改受保護符號：{sym}",
+        "   → AGENTS.md §資料結構守護：captureFormState 禁止改動"
+      ]
+    },
+    {
+      "id": "R4",
+      "scope": "write",
+      "kind": "env_write_warn",
+      "suffix": ".env",
+      "exclude_suffix": ".env.example",
+      "warn_message": [
+        "⚠️  [R4] 正在寫入 .env 檔案",
+        "   → 請確認 .env 已在 .gitignore，禁止 commit 真實 key"
+      ]
+    },
+    {
+      "id": "R12",
+      "scope": "write",
+      "kind": "learnings_write_warn",
+      "match": { "type": "path_endswith_or_includes", "endswith": "learnings.md", "includes": ".fhs/memory/learnings/" },
+      "warn_message": [
+        "⚠️  [R12] 正在寫入 learnings/",
+        "   → 提交前請確認已依 AGENTS.md Rule 3.17 完成【交付前雙紀律自檢】兩行（驗收/Subagent）"
+      ],
+      "finance_bucket_endswith": "finance.md",
+      "finance_bucket_extra_message": [
+        "   → [finance 桶特殊守護] 新增/修改條目前，須引用對應 FHS_Pricing_Bible.md / FHS_Finance_Bible.md 章節，受 finance-gatekeeper 管轄"
+      ]
+    },
+    {
+      "id": "R9",
+      "scope": "bash",
+      "kind": "deploy_protect",
+      "match": {
+        "type": "regex_all",
+        "patterns": [
+          { "source": "current\\.html", "flags": "i" },
+          { "source": "(?:^|\\s)(?:cp|mv|sed\\s+-i|cat\\s+.*>|>{1,2}|tee|Set-Content|Copy-Item|Move-Item|Out-File)\\b", "flags": "i" }
+        ]
+      },
+      "consume_log_tag": "R1/R9 bypass",
+      "block_message": [
+        "🚫 [R9] 偵測到 Bash 指令疑似寫入 current.html",
+        "   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html",
+        "   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），(b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效，或 (c) 本次是 /commit Phase 2.5 偵測到需要部署後的鏈式觸發（AGENTS.md v1.7.0）"
+      ]
+    },
+    {
+      "id": "R10",
+      "scope": "bash",
+      "kind": "deploy_flag_log_shell",
+      "match": {
+        "type": "regex_all",
+        "patterns": [
+          { "source": "\\.deploy-ok\\b", "flags": "i" },
+          { "source": "(?:^|\\s)(?:touch|echo\\s.*>|Set-Content|New-Item|Out-File)\\b", "flags": "i" }
+        ]
+      },
+      "log_template": "{ts} | R10 AI self-created .deploy-ok via shell (AGENTS.md v1.6.0授權) | cmd={cmd80}"
+    },
+    {
+      "id": "R11",
+      "scope": "bash",
+      "kind": "finance_shell_observe",
+      "write_cmd_pattern": { "source": "(?:^|\\s)(?:Set-Content|Out-File|tee|sed\\s+-i)\\b", "flags": "i" },
+      "redirect_pattern": { "source": ">>?", "flags": "" },
+      "finance_keyword_pattern": { "source": "handmodel_cost|keychain_cost|necklace_cost|accessory_cost|cost_configurations|final_sale_price|total_cost|net_profit|calculatePricing|CREATE\\s+OR\\s+REPLACE\\s+FUNCTION", "flags": "i" },
+      "exclude_pattern": { "source": "\\bgit\\s+(?:-C\\s+\\S+\\s+)?commit\\b|\\bgh\\s+(?:pr|issue)\\b", "flags": "i" }
+    },
+    {
+      "id": "R14",
+      "scope": "bash",
+      "kind": "cd_observe",
+      "messages": {
+        "same": [
+          "⚠️  [R14-observe] 呢個 Bash 以 `cd <路徑> &&` 開頭，但工作目錄已經係嗰個路徑——請刪走 cd 前綴直接跑指令",
+          "   → 工作目錄跨呼叫持續；多餘 cd 浪費 token，亦會觸發組合指令權限提示"
+        ],
+        "main": [
+          "⚠️  [R14-observe] worktree session 內 cd 去主倉：其後指令會喺主倉執行，有靜默改錯倉風險（learnings/tooling #7）",
+          "   → 改用 `git -C <主倉> …` 或絕對路徑；主倉只准做已批准嘅對齊（commit.md Phase 2.7）"
+        ],
+        "sub": [
+          "⚠️  [R14-observe] cd 入子目錄會令其後所有 Bash 留喺該子目錄（cd 跨呼叫持續）——請改用絕對路徑或指令自帶目錄參數",
+          "   → 否則下一次指令要再 cd 返 repo 根，形成循環"
+        ]
+      }
+    },
+    {
+      "id": "R13",
+      "scope": "bash",
+      "kind": "handoff_gate",
+      "disabled_under_env": "FHS_GUARD_FIXTURE",
+      "command_pattern": { "source": "\\bgit\\s+(?:-[^\\s]+\\s+)*commit\\b", "flags": "" },
+      "dry_run_exclude_pattern": { "source": "--dry-run\\b", "flags": "" },
+      "skip_env": "FHS_SKIP_HANDOFF_GATE",
+      "gate_file_env": "FHS_HANDOFF_GATE_FILE",
+      "handoff_rel": ".fhs/memory/handoff.md",
+      "skip_warn_message": [
+        "⚠️  [R13] handoff 同步閘已被 FHS_SKIP_HANDOFF_GATE=1 繞過",
+        "   → 已記入 .fhs/notes/deploy-log.md 供稽核；請確認 handoff.md 確實唔需要更新"
+      ],
+      "stamp_missing_warn_message": [
+        "⚠️  [R13] 讀唔到 handoff.md 便攜塊「更新:」日期戳，本次放行（fail-open）",
+        "   → 若便攜塊仍在，請檢查格式係咪被改壞（預期：【FHS 交接摘要 — 更新: YYYY-MM-DD）"
+      ],
+      "stamp_stale_block_message_template": [
+        "🚫 [R13] handoff 便攜塊日期戳過時：{stamp}（今日 {today}），禁止 commit",
+        "   → /commit P0.7：便攜塊七類欄位須反映本 session 最新狀態，「更新:」必須改成今日日期",
+        "   → 請編輯 {handoff_rel} 第 2 行「【FHS 交接摘要 — 更新: {stamp}」→「更新: {today}」，",
+        "     並同步核對 🎯目標／✅已定決策／🔬驗證／📋待辦／⏰時限待辦／➡️下一步 六欄",
+        "   → 純查詢 session 無狀態改變時，依 P0.7 只更新日期即可",
+        "   → 確認今次真係唔關 handoff 事：FHS_SKIP_HANDOFF_GATE=1 <你條 git 指令>（會記入稽核）"
+      ],
+      "unstaged_block_message_template": [
+        "🚫 [R13] handoff.md 有未 staged 嘅改動，禁止 commit",
+        "   → 日期戳係今日但改動未入 index，commit 落去會令 repo 同你手上版本 drift",
+        "   → 請先 git add {handoff_rel} 再 commit"
+      ]
+    },
+    {
+      "id": "R5",
+      "scope": "bash",
+      "kind": "regex_block",
+      "pattern": { "source": "git\\s+add\\s+[^-]*\\.env(?!\\.example)", "flags": "" },
+      "block_message": [
+        "🚫 [R5] 禁止 git add .env",
+        "   → AGENTS.md §全域硬規則：.env 禁止 commit"
+      ]
+    },
+    {
+      "id": "R6",
+      "scope": "bash",
+      "kind": "regex_warn",
+      "pattern": { "source": "git\\s+add\\s+(?:-A|--all|\\.)\\s*(?:$|&&|;|\\|)", "flags": "" },
+      "warn_message": [
+        "⚠️  [R6] git add . / -A 可能意外包含 .env",
+        "   → 建議改用 git add <specific files>，或確認 .gitignore 正確"
+      ]
+    },
+    {
+      "id": "R7",
+      "scope": "bash",
+      "kind": "regex_block",
+      "pattern": { "source": "git\\s+push\\s+.*(--force|-f)\\b", "flags": "" },
+      "block_message": [
+        "🚫 [R7] 禁止 git push --force（需 Fat Mo 明確授權）",
+        "   → 如確認需要，請明確說明理由並獲授權後再執行"
+      ]
+    },
+    {
+      "id": "R8",
+      "scope": "bash",
+      "kind": "rm_rf_warn",
+      "rm_rf_pattern": { "source": "rm\\s+-rf\\s+(?!tmp\\/|artifacts\\/)", "flags": "" },
+      "remove_item_pattern": { "source": "Remove-Item\\b", "flags": "i" },
+      "recurse_pattern": { "source": "-Recurse\\b", "flags": "i" },
+      "force_pattern": { "source": "-Force\\b", "flags": "i" },
+      "safe_exceptions": ["node_modules", "/tmp/", "artifacts/"],
+      "warn_message": [
+        "⚠️  [R8] 偵測到 rm -rf / Remove-Item -Recurse -Force，請確認目標目錄安全",
+        "   → 安全目標：node_modules/、tmp/、artifacts/ 以外需謹慎"
+      ]
+    }
+  ]
+}

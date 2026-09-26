@@ -2,17 +2,32 @@
 // scripts/hooks/pre-tool-guard.js
 // FHS PreToolUse Hook — AGENTS.md Hard Rule Enforcer
 // Intercepts Write/Edit/Bash tool calls that violate FHS constitutional rules
-// Version: 1.0.0 | 2026-04-28
+// Version: 2.0.0 | 2026-09-26 (S149 Phase 2: engine/rules split)
 //
 // Exit codes:
 //   0 = pass (allow execution)
 //   2 = block (deny execution, show stderr to Claude)
 // Warnings use stderr + exit 0 (non-blocking alert)
+//
+// ── S149 Phase 2 split ──────────────────────────────────────────────────────
+// This file is now a generic interpreter: it knows how to execute each rule
+// "kind" (deploy_protect, regex_block, handoff_gate, …) but carries no
+// project-specific patterns, messages, or thresholds. All of that content
+// lives in scripts/hooks/guard-rules.fhs.json (R1–R14), which a portable
+// template ships as an empty/example file for each new project to fill in.
+// Rule content changes → edit the JSON. Engine behavior changes (a new kind,
+// or how a kind is evaluated) → edit this file, and it affects every project
+// that reuses the engine.
 
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+
+// 規則檔路徑寫死，唔提供 env override——一個外部可控嘅 env var 指向任意規則檔
+// 等同可以整個 swap 走全部規則（例如指向 {"rules":[]}），呢個攻擊面原本個
+// monolithic 檔案唔存在，拆分後絕對唔可以引入（opus 對抗審查揪出，2026-09-26）。
+const RULES_FILE = path.join(__dirname, 'guard-rules.fhs.json');
 
 // ── Deploy authorization flag (S140, F8) ────────────────────────────────────
 // Fat Mo manually `touch`es this file in his own terminal (never via an AI
@@ -51,12 +66,12 @@ function checkDeployAuthorization() {
   }
 }
 
-function consumeDeployAuthorization(target) {
+function consumeDeployAuthorization(target, tag) {
   try { fs.unlinkSync(DEPLOY_FLAG_FILE); } catch (_) { /* silent */ }
   try {
     const dir = path.dirname(DEPLOY_LOG_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | R1/R9 bypass | ${String(target).slice(0, 80)}\n`, 'utf8');
+    fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | ${tag} | ${String(target).slice(0, 80)}\n`, 'utf8');
   } catch (_) { /* silent */ }
 }
 
@@ -82,8 +97,6 @@ function consumeDeployAuthorization(target) {
 // 逃生口：FHS_SKIP_HANDOFF_GATE=1（每次繞過記入 deploy-log.md 供稽核）
 // 測試用：FHS_HANDOFF_GATE_FILE 覆寫檔案路徑（同時跳過條件(2)嘅 git 探測）
 const REPO_ROOT = path.join(__dirname, '../..');
-const HANDOFF_REL = '.fhs/memory/handoff.md';
-const HANDOFF_FILE = process.env.FHS_HANDOFF_GATE_FILE || path.join(REPO_ROOT, HANDOFF_REL);
 
 function todayLocalISO() {
   const d = new Date();
@@ -91,19 +104,19 @@ function todayLocalISO() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-function readHandoffStamp() {
+function readHandoffStamp(handoffFile) {
   try {
-    const head = fs.readFileSync(HANDOFF_FILE, 'utf8').split(/\r?\n/).slice(0, 6).join('\n');
+    const head = fs.readFileSync(handoffFile, 'utf8').split(/\r?\n/).slice(0, 6).join('\n');
     const m = head.match(/更新:\s*(\d{4}-\d{2}-\d{2})/);
     return m ? m[1] : null;
   } catch (_) { return null; }
 }
 
-function handoffHasUnstagedEdits() {
-  if (process.env.FHS_HANDOFF_GATE_FILE) return false; // 測試覆寫模式：跳過 git 探測
+function handoffHasUnstagedEdits(handoffRel, gateFileEnv) {
+  if (process.env[gateFileEnv]) return false; // 測試覆寫模式：跳過 git 探測
   try {
     const { execFileSync } = require('child_process');
-    const out = execFileSync('git', ['diff', '--name-only', '--', HANDOFF_REL], {
+    const out = execFileSync('git', ['diff', '--name-only', '--', handoffRel], {
       cwd: REPO_ROOT, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore']
     });
     return out.trim().length > 0;
@@ -112,11 +125,11 @@ function handoffHasUnstagedEdits() {
   }
 }
 
-function logGateBypass(reason, commandHead) {
+function logGateBypass(reason, commandHead, gateFileEnv) {
   // 夾具測試唔可以污染真實稽核檔（同 logKgovObserve 嘅 S148 B1 防污染同源）。
-  // 註：呢度用 FHS_HANDOFF_GATE_FILE 而非 FHS_GUARD_FIXTURE，因為 R13 喺
+  // 註：呢度用 gateFileEnv（FHS_HANDOFF_GATE_FILE）而非 FHS_GUARD_FIXTURE，因為 R13 喺
   // FHS_GUARD_FIXTURE=1 之下根本唔會行到，R13 專屬 runner 用嘅係前者。
-  if (process.env.FHS_HANDOFF_GATE_FILE) return;
+  if (process.env[gateFileEnv]) return;
   try {
     const dir = path.dirname(DEPLOY_LOG_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -169,6 +182,320 @@ function logBashCdObserve(kind, cwd, target) {
   } catch (_) { /* silent */ }
 }
 
+// ── Generic rule-content helpers ─────────────────────────────────────────────
+// 全部模板替換一律用 function 做 replacement（而非字串），因為 String.replace
+// 嘅字串 replacement 參數會將 command/檔名入面嘅 $&、$`、$'、$$ 當特殊 pattern
+// 解讀，令稽核日誌被使用者可控輸入污染（opus 對抗審查揪出，2026-09-26）。
+function toRegex(p) { return new RegExp(p.source, p.flags || ''); }
+function hasKey(obj, k) { return Object.prototype.hasOwnProperty.call(obj, k); }
+function fmt1(line, vars) {
+  return line.replace(/\{(\w+)\}/g, (m, k) => (hasKey(vars, k) ? vars[k] : m));
+}
+function fmt(lines, vars) {
+  return lines.map(line => fmt1(line, vars));
+}
+
+// ── Per-kind rule handlers ───────────────────────────────────────────────────
+// Each handler receives (rule, ctx, blocking, warnings) and pushes messages.
+// ctx carries whatever the current tool call needs: { tool, filePath, content,
+// command, cwd, data }.
+
+const HANDLERS = {
+  deploy_protect(rule, ctx, blocking) {
+    const target = ctx.tool === 'Bash' || ctx.tool === 'PowerShell' ? ctx.command : ctx.filePath;
+    let hit = false;
+    if (rule.match.type === 'path_includes') {
+      hit = target.includes(rule.match.value);
+    } else if (rule.match.type === 'regex_all') {
+      hit = rule.match.patterns.every(p => toRegex(p).test(target));
+    }
+    if (!hit) return;
+    if (checkDeployAuthorization()) {
+      consumeDeployAuthorization(target, rule.consume_log_tag);
+    } else {
+      blocking.push(...rule.block_message);
+    }
+  },
+
+  deploy_flag_log(rule, ctx) {
+    if (!ctx.filePath.includes(rule.match.value)) return;
+    if (process.env.FHS_GUARD_FIXTURE === '1') return;
+    try {
+      const dir = path.dirname(DEPLOY_LOG_FILE);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const line = fmt1(rule.log_template, { ts: new Date().toISOString(), tool: ctx.tool }) + '\n';
+      fs.appendFileSync(DEPLOY_LOG_FILE, line, 'utf8');
+    } catch (_) { /* silent */ }
+  },
+
+  deploy_flag_log_shell(rule, ctx) {
+    const hit = rule.match.patterns.every(p => toRegex(p).test(ctx.command));
+    if (!hit) return;
+    if (process.env.FHS_GUARD_FIXTURE === '1') return;
+    try {
+      const dir = path.dirname(DEPLOY_LOG_FILE);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const line = fmt1(rule.log_template, { ts: new Date().toISOString(), cmd80: String(ctx.command).slice(0, 80) }) + '\n';
+      fs.appendFileSync(DEPLOY_LOG_FILE, line, 'utf8');
+    } catch (_) { /* silent */ }
+  },
+
+  regex_list_block_first(rule, ctx, blocking) {
+    for (const p of rule.patterns) {
+      if (toRegex(p).test(ctx.content)) {
+        blocking.push(...fmt(rule.block_message_template, { label: p.label }));
+        break;
+      }
+    }
+  },
+
+  symbol_modify_warn(rule, ctx, blocking, warnings) {
+    for (const sym of rule.symbols) {
+      const modPatterns = [
+        new RegExp(`function\\s+${sym}\\s*\\(`, ''),
+        new RegExp(`${sym}\\s*=\\s*function`, ''),
+        new RegExp(`delete\\s+.*${sym}`, '')
+      ];
+      if (modPatterns.some(p => p.test(ctx.content))) {
+        warnings.push(...fmt(rule.warn_message_template, { sym }));
+      }
+    }
+  },
+
+  env_write_warn(rule, ctx, blocking, warnings) {
+    if (ctx.filePath.endsWith(rule.suffix) && !ctx.filePath.endsWith(rule.exclude_suffix)) {
+      warnings.push(...rule.warn_message);
+    }
+  },
+
+  learnings_write_warn(rule, ctx, blocking, warnings) {
+    const m = rule.match;
+    if (!(ctx.filePath.endsWith(m.endswith) || ctx.filePath.includes(m.includes))) return;
+    warnings.push(...rule.warn_message);
+    if (ctx.filePath.endsWith(rule.finance_bucket_endswith)) {
+      warnings.push(...rule.finance_bucket_extra_message);
+    }
+  },
+
+  finance_shell_observe(rule, ctx) {
+    const writeShaped = toRegex(rule.write_cmd_pattern).test(ctx.command) || toRegex(rule.redirect_pattern).test(ctx.command);
+    if (!writeShaped) return;
+    if (!toRegex(rule.finance_keyword_pattern).test(ctx.command)) return;
+    if (toRegex(rule.exclude_pattern).test(ctx.command)) return;
+    logKgovObserve(ctx.command);
+  },
+
+  cd_observe(rule, ctx, blocking, warnings) {
+    if (!ctx.cwd) return;
+    const cdInfo = analyzeBashCd(ctx.command, ctx.cwd);
+    if (!cdInfo) return;
+    logBashCdObserve(cdInfo.kind, ctx.cwd, cdInfo.target);
+    const msg = rule.messages[cdInfo.kind];
+    if (msg) warnings.push(...msg);
+  },
+
+  handoff_gate(rule, ctx, blocking, warnings) {
+    // R13 是全域關閉（唔止跳過側寫），因為佢有自己專屬 runner（run-handoff-gate-tests.js，
+    // 用 FHS_HANDOFF_GATE_FILE 覆寫），跑普通 guard fixtures（FHS_GUARD_FIXTURE=1）時
+    // 必須完全唔行到，否則會讀真實 handoff.md 令普通夾具結果取決於當日真實檔案狀態。
+    if (rule.disabled_under_env && process.env[rule.disabled_under_env] === '1') return;
+    if (!toRegex(rule.command_pattern).test(ctx.command)) return;
+    if (toRegex(rule.dry_run_exclude_pattern).test(ctx.command)) return;
+    const handoffFile = process.env[rule.gate_file_env] || path.join(REPO_ROOT, rule.handoff_rel);
+
+    if (process.env[rule.skip_env] === '1') {
+      logGateBypass(`${rule.skip_env}=1`, ctx.command, rule.gate_file_env);
+      warnings.push(...rule.skip_warn_message);
+      return;
+    }
+
+    const stamp = readHandoffStamp(handoffFile);
+    const today = todayLocalISO();
+    if (stamp === null) {
+      warnings.push(...rule.stamp_missing_warn_message);
+    } else if (stamp !== today) {
+      blocking.push(...fmt(rule.stamp_stale_block_message_template, { stamp, today, handoff_rel: rule.handoff_rel }));
+    } else if (handoffHasUnstagedEdits(rule.handoff_rel, rule.gate_file_env)) {
+      blocking.push(...fmt(rule.unstaged_block_message_template, { handoff_rel: rule.handoff_rel }));
+    }
+  },
+
+  regex_block(rule, ctx, blocking) {
+    if (toRegex(rule.pattern).test(ctx.command)) blocking.push(...rule.block_message);
+  },
+
+  regex_warn(rule, ctx, blocking, warnings) {
+    if (toRegex(rule.pattern).test(ctx.command)) warnings.push(...rule.warn_message);
+  },
+
+  rm_rf_warn(rule, ctx, blocking, warnings) {
+    const isRmRf = toRegex(rule.rm_rf_pattern).test(ctx.command);
+    const isRemoveItemForce = toRegex(rule.remove_item_pattern).test(ctx.command) &&
+      toRegex(rule.recurse_pattern).test(ctx.command) &&
+      toRegex(rule.force_pattern).test(ctx.command);
+    if (!isRmRf && !isRemoveItemForce) return;
+    const isSafe = rule.safe_exceptions.some(s => ctx.command.includes(s));
+    if (!isSafe) warnings.push(...rule.warn_message);
+  }
+};
+
+// Execution order matters for message ordering (behavioral equivalence with
+// the pre-split file): write-scope rules run in R1,R10,R2,R3,R4,R12 order;
+// bash-scope rules run in R9,R10,R11,R14,R13,R5,R6,R7,R8 order. This is the
+// literal order the rules appear in guard-rules.fhs.json — do not reorder the
+// JSON without re-verifying fixture output byte-for-byte.
+
+// ── Fail-closed rule loading ─────────────────────────────────────────────────
+// 原本個 monolithic 檔案冇「規則檔損壞」呢個故障模式可言——規則同引擎係同一份
+// 代碼。拆分之後,規則檔可以獨立損壞(JSON 語法錯/漏 kind/未知 kind),如果冇檢查
+// 就直接用,任何一種損壞都會令 node 拋錯 exit 1——Claude Code 對 PreToolUse
+// 非 0/2 嘅 exit code 視為非阻擋性錯誤,即係話個工具呼叫會照做,等於規則檔一壞
+// 就靜默放晒全部規則(fail-open)。呢個係拆分本身帶嚟嘅新故障模式,必須喺入口
+// 驗證，壞咗就 exit 2 全面攔截(fail-closed)，唔可以擲 exception 收場
+// （opus 對抗審查揪出，2026-09-26）。
+function failClosed(reason) {
+  process.stderr.write('═══ FHS 安全守護：guard 規則設定損壞，安全起見全面攔截 ═══\n');
+  process.stderr.write(`🚫 ${reason}\n`);
+  process.stderr.write('   → 呢個係 guard 引擎本身嘅設定錯誤，唔係你嘅工具呼叫有問題\n');
+  process.stderr.write(`   → 請檢查 ${RULES_FILE} 是否損壞\n`);
+  process.stderr.write('═══════════════════════════════\n');
+  process.exit(2);
+}
+
+// 第二輪 opus 對抗審查揪出：第一版 loadRules() 只驗 id/kind/scope 存在，冇驗
+// 每個 kind 實際會用到嘅欄位（pattern 能否編譯、message 是否陣列）——呢啲錯
+// 一樣要等到 dispatch 期間先爆，一樣係 fail-open。依家逐個 kind 驗齊佢會
+// dereference 嘅欄位，喺 stdin 都未讀之前就攔截。
+function assertRule(cond, ruleId, msg) {
+  if (!cond) throw new Error(`規則 ${ruleId}：${msg}`);
+}
+function assertPattern(p, ruleId, label) {
+  assertRule(p && typeof p.source === 'string', ruleId, `${label} 唔係合法 pattern 物件（缺 source）`);
+  try { new RegExp(p.source, p.flags || ''); } catch (e) {
+    assertRule(false, ruleId, `${label} regex 編譯失敗：${e.message}`);
+  }
+}
+function assertPatternList(list, ruleId, label) {
+  assertRule(Array.isArray(list), ruleId, `${label} 必須係陣列`);
+  list.forEach((p, i) => assertPattern(p, ruleId, `${label}[${i}]`));
+}
+function assertStringArray(v, ruleId, label) {
+  assertRule(Array.isArray(v) && v.every(x => typeof x === 'string'), ruleId, `${label} 必須係字串陣列`);
+}
+function assertStringList(v, ruleId, label) {
+  assertRule(Array.isArray(v) && v.every(x => typeof x === 'string'), ruleId, `${label} 必須係字串陣列`);
+}
+
+const KIND_VALIDATORS = {
+  deploy_protect(rule) {
+    const m = rule.match;
+    assertRule(m && (m.type === 'path_includes' || m.type === 'regex_all'), rule.id, 'match.type 必須係 path_includes 或 regex_all');
+    if (m.type === 'path_includes') assertRule(typeof m.value === 'string', rule.id, 'match.value 必須係字串');
+    if (m.type === 'regex_all') assertPatternList(m.patterns, rule.id, 'match.patterns');
+    assertRule(typeof rule.consume_log_tag === 'string', rule.id, 'consume_log_tag 必須係字串');
+    assertStringArray(rule.block_message, rule.id, 'block_message');
+  },
+  deploy_flag_log(rule) {
+    assertRule(rule.match && typeof rule.match.value === 'string', rule.id, 'match.value 必須係字串');
+    assertRule(typeof rule.log_template === 'string', rule.id, 'log_template 必須係字串');
+  },
+  deploy_flag_log_shell(rule) {
+    assertPatternList(rule.match && rule.match.patterns, rule.id, 'match.patterns');
+    assertRule(typeof rule.log_template === 'string', rule.id, 'log_template 必須係字串');
+  },
+  regex_list_block_first(rule) {
+    assertRule(Array.isArray(rule.patterns), rule.id, 'patterns 必須係陣列');
+    rule.patterns.forEach((p, i) => {
+      assertPattern(p, rule.id, `patterns[${i}]`);
+      assertRule(typeof p.label === 'string', rule.id, `patterns[${i}].label 必須係字串`);
+    });
+    assertStringArray(rule.block_message_template, rule.id, 'block_message_template');
+  },
+  symbol_modify_warn(rule) {
+    assertStringList(rule.symbols, rule.id, 'symbols');
+    assertStringArray(rule.warn_message_template, rule.id, 'warn_message_template');
+  },
+  env_write_warn(rule) {
+    assertRule(typeof rule.suffix === 'string' && typeof rule.exclude_suffix === 'string', rule.id, 'suffix/exclude_suffix 必須係字串');
+    assertStringArray(rule.warn_message, rule.id, 'warn_message');
+  },
+  learnings_write_warn(rule) {
+    assertRule(rule.match && typeof rule.match.endswith === 'string' && typeof rule.match.includes === 'string', rule.id, 'match.endswith/includes 必須係字串');
+    assertStringArray(rule.warn_message, rule.id, 'warn_message');
+    assertRule(typeof rule.finance_bucket_endswith === 'string', rule.id, 'finance_bucket_endswith 必須係字串');
+    assertStringArray(rule.finance_bucket_extra_message, rule.id, 'finance_bucket_extra_message');
+  },
+  finance_shell_observe(rule) {
+    assertPattern(rule.write_cmd_pattern, rule.id, 'write_cmd_pattern');
+    assertPattern(rule.redirect_pattern, rule.id, 'redirect_pattern');
+    assertPattern(rule.finance_keyword_pattern, rule.id, 'finance_keyword_pattern');
+    assertPattern(rule.exclude_pattern, rule.id, 'exclude_pattern');
+  },
+  cd_observe(rule) {
+    assertRule(rule.messages && typeof rule.messages === 'object', rule.id, 'messages 必須係物件');
+    for (const k of ['same', 'main', 'sub']) {
+      if (rule.messages[k] !== undefined) assertStringArray(rule.messages[k], rule.id, `messages.${k}`);
+    }
+  },
+  handoff_gate(rule) {
+    assertPattern(rule.command_pattern, rule.id, 'command_pattern');
+    assertPattern(rule.dry_run_exclude_pattern, rule.id, 'dry_run_exclude_pattern');
+    assertRule(typeof rule.skip_env === 'string', rule.id, 'skip_env 必須係字串');
+    assertRule(typeof rule.gate_file_env === 'string', rule.id, 'gate_file_env 必須係字串');
+    assertRule(typeof rule.handoff_rel === 'string', rule.id, 'handoff_rel 必須係字串');
+    assertStringArray(rule.skip_warn_message, rule.id, 'skip_warn_message');
+    assertStringArray(rule.stamp_missing_warn_message, rule.id, 'stamp_missing_warn_message');
+    assertStringArray(rule.stamp_stale_block_message_template, rule.id, 'stamp_stale_block_message_template');
+    assertStringArray(rule.unstaged_block_message_template, rule.id, 'unstaged_block_message_template');
+  },
+  regex_block(rule) {
+    assertPattern(rule.pattern, rule.id, 'pattern');
+    assertStringArray(rule.block_message, rule.id, 'block_message');
+  },
+  regex_warn(rule) {
+    assertPattern(rule.pattern, rule.id, 'pattern');
+    assertStringArray(rule.warn_message, rule.id, 'warn_message');
+  },
+  rm_rf_warn(rule) {
+    assertPattern(rule.rm_rf_pattern, rule.id, 'rm_rf_pattern');
+    assertPattern(rule.remove_item_pattern, rule.id, 'remove_item_pattern');
+    assertPattern(rule.recurse_pattern, rule.id, 'recurse_pattern');
+    assertPattern(rule.force_pattern, rule.id, 'force_pattern');
+    assertStringList(rule.safe_exceptions, rule.id, 'safe_exceptions');
+    assertStringArray(rule.warn_message, rule.id, 'warn_message');
+  }
+};
+
+function loadRules() {
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(RULES_FILE, 'utf8'));
+  } catch (e) {
+    return failClosed(`無法讀取或解析規則檔：${e.message}`);
+  }
+  const rules = parsed && parsed.rules;
+  if (!Array.isArray(rules)) {
+    return failClosed('規則檔格式錯誤：缺少 rules 陣列');
+  }
+  try {
+    for (const rule of rules) {
+      assertRule(rule && typeof rule.id === 'string' && typeof rule.kind === 'string' &&
+        (rule.scope === 'write' || rule.scope === 'bash'), rule && rule.id || '(unknown)', '缺 id/kind/scope，或 scope 唔係 write/bash');
+      // hasKey 而非 typeof HANDLERS[x]==='function'：HANDLERS 係 plain object，
+      // typeof 檢查會俾 "constructor"/"toString" 呢類繼承自 Object.prototype
+      // 嘅名撞中，令冇對應行為嘅規則靜默通過驗證（opus 對抗審查第二輪揪出）。
+      assertRule(hasKey(HANDLERS, rule.kind), rule.id, `kind "${rule.kind}" 冇對應嘅 handler`);
+      const validate = KIND_VALIDATORS[rule.kind];
+      if (validate) validate(rule);
+    }
+  } catch (e) {
+    return failClosed(e.message);
+  }
+  return rules;
+}
+
+const RULES = loadRules();
+
 let input = '';
 process.stdin.on('data', chunk => { input += chunk; });
 process.stdin.on('end', () => {
@@ -195,99 +522,16 @@ process.stdin.on('end', () => {
     const content = toolInput.content || toolInput.new_string || toolInput.new_source ||
       (Array.isArray(toolInput.edits) ? toolInput.edits.map(e => e.new_string || '').join('\n') : '') || '';
 
-    // ── Rule 1: Protect production file ────────────────────────
-    if (filePath.includes('Freehandsss_dashboard_current.html')) {
-      if (checkDeployAuthorization()) {
-        consumeDeployAuthorization(filePath);
-      } else {
-        blocking.push(
-          '🚫 [R1] 禁止覆蓋正式環境 Freehandsss_dashboard_current.html',
-          '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），(b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效，或 (c) 本次是 /commit Phase 2.5 偵測到需要部署後的鏈式觸發（AGENTS.md v1.7.0）'
-        );
+    const ctx = { tool, filePath, content };
+    // try/catch 係 loadRules() 驗證之外嘅第二道防線（opus 對抗審查第二輪建議）：
+    // 驗證再仔細都可能有漏網（例如某個 kind 未來加咗新欄位冇同步更新 validator），
+    // 呢度確保即使真係漏網爆錯，都係 fail-closed（exit 2）而唔係 fail-open（exit 0）。
+    try {
+      for (const rule of RULES.filter(r => r.scope === 'write')) {
+        HANDLERS[rule.kind](rule, ctx, blocking, warnings);
       }
-    }
-
-    // ── Rule 10 (v2, S159續): AI 可自行建立 .deploy-ok，僅限直接回覆升格確認問題 ──
-    // 原為全面封鎖（防 AI 自我授權）；Fat Mo 提案+選定「加防護版」後放寬：
-    // 允許 AI 透過 Write/Edit 建立此旗標，但 AGENTS.md §3 明文要求僅能在
-    // Fat Mo「直接回覆 AI 自己提出的升格確認問題」時才可建立，嚴禁從訂單
-    // 備註/webhook/其他資料來源推斷同意——此條件無法由 hook 技術驗證，
-    // 屬 AI 行為層硬約束，違反視同違憲。每次建立記入 deploy-log.md 供稽核。
-    if ((tool === 'Write' || tool === 'Edit' || tool === 'MultiEdit' || tool === 'NotebookEdit') &&
-        filePath.includes('.deploy-ok') && process.env.FHS_GUARD_FIXTURE !== '1') {
-      try {
-        const dir = path.dirname(DEPLOY_LOG_FILE);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | R10 AI self-created .deploy-ok (AGENTS.md v1.6.0授權) | tool=${tool}\n`, 'utf8');
-      } catch (_) { /* silent */ }
-    }
-
-    // ── Rule 2: No hardcoded API keys ───────────────────────────
-    // 2026-08-11 (D62 事故教訓)：呢個 pattern 清單只擋 Claude Code 自己嘅
-    // Write/Edit 工具呼叫。D62 洩漏嘅實際路徑係 n8n-mcp-server 內部
-    // update-node-code.js 嘅 backupNode() 用 fs.writeFileSync 直寫落 repo，
-    // 完全繞過呢個 hook（MCP server 係獨立子進程，唔經 Claude Code 工具層）。
-    // 呢度已喺 update-node-code.js 加咗同款 redactSecrets()，兩處各自獨立
-    // 攔截同一威脅模型——改任一邊嘅 pattern 清單時，必須同步檢查另一邊
-    // （n8n-mcp-server/src/tools/update-node-code.js 頂部 SECRET_PATTERNS）。
-    const apiKeyPatterns = [
-      { re: /sk-[a-zA-Z0-9]{32,}/, label: 'OpenAI-style key (sk-...)' },
-      { re: /pplx-[a-zA-Z0-9]{32,}/, label: 'Perplexity key (pplx-...)' },
-      { re: /pat[a-zA-Z0-9]{20,}\.[a-zA-Z0-9]{40,}/, label: 'Airtable PAT' },
-      { re: /sbp_[a-zA-Z0-9]{20,}/, label: 'Supabase access token (sbp_...)' },
-      { re: /sb_secret_[a-zA-Z0-9_-]{15,}/, label: 'Supabase secret key (sb_secret_...)' },
-      { re: /eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/, label: 'JWT (eyJ...)' },
-      { re: /(?:api_key|apikey|api-key)\s*[:=]\s*["'][a-zA-Z0-9\-_]{20,}["']/i, label: 'API key assignment' },
-      { re: /(?:GEMINI_API_KEY|PERPLEXITY_API_KEY|N8N_KEY)\s*=\s*["'][a-zA-Z0-9\-_.]{20,}["']/, label: 'FHS env key' }
-    ];
-    for (const { re, label } of apiKeyPatterns) {
-      if (re.test(content)) {
-        blocking.push(
-          `🚫 [R2] 偵測到硬編碼 API Key：${label}`,
-          '   → AGENTS.md §全域硬規則：一律使用 .env + process.env'
-        );
-        break;
-      }
-    }
-
-    // ── Rule 3: Protect captureFormState & Raw_Form_State ───────
-    const protectedSymbols = ['captureFormState', 'Raw_Form_State', 'rawFormState'];
-    for (const sym of protectedSymbols) {
-      // Check if content appears to modify (not just reference) these symbols
-      const modPatterns = [
-        new RegExp(`function\\s+${sym}\\s*\\(`, ''),       // redefining the function
-        new RegExp(`${sym}\\s*=\\s*function`, ''),          // reassigning
-        new RegExp(`delete\\s+.*${sym}`, '')               // deleting
-      ];
-      if (modPatterns.some(p => p.test(content))) {
-        warnings.push(
-          `⚠️  [R3] 偵測到可能修改受保護符號：${sym}`,
-          '   → AGENTS.md §資料結構守護：captureFormState 禁止改動'
-        );
-      }
-    }
-
-    // ── Rule 4: .env file write alert ───────────────────────────
-    if (filePath.endsWith('.env') && !filePath.endsWith('.env.example')) {
-      warnings.push(
-        '⚠️  [R4] 正在寫入 .env 檔案',
-        '   → 請確認 .env 已在 .gitignore，禁止 commit 真實 key'
-      );
-    }
-
-    // ── Rule 12 (S156, Fat Mo 裁決同意；2026-08-03 分桶重構後 path 擴至 learnings/ 目錄) ──
-    // md-only-warn 哲學（同 kgov v2.0.0）：不 block，僅提醒 Rule 3.17 三個交付邊界之一。
-    if (filePath.endsWith('learnings.md') || filePath.includes('.fhs/memory/learnings/')) {
-      warnings.push(
-        '⚠️  [R12] 正在寫入 learnings/',
-        '   → 提交前請確認已依 AGENTS.md Rule 3.17 完成【交付前雙紀律自檢】兩行（驗收/Subagent）'
-      );
-      if (filePath.endsWith('finance.md')) {
-        warnings.push(
-          '   → [finance 桶特殊守護] 新增/修改條目前，須引用對應 FHS_Pricing_Bible.md / FHS_Finance_Bible.md 章節，受 finance-gatekeeper 管轄'
-        );
-      }
+    } catch (e) {
+      return failClosed(`規則執行期間發生未預期錯誤（write scope）：${e.message}`);
     }
   }
 
@@ -296,155 +540,13 @@ process.stdin.on('end', () => {
   // ═══════════════════════════════════════════════════════════════
   if (tool === 'Bash' || tool === 'PowerShell') {
     const command = toolInput.command || '';
-
-    // ── Rule 9: Block Bash/PowerShell commands targeting current.html ──
-    // R1 above only checks Write/Edit file_path; commands like `cp`, `sed -i`,
-    // shell redirection, or PowerShell Set-Content/Copy-Item can overwrite
-    // current.html without ever going through Write/Edit. Catch the filename
-    // appearing alongside a write-shaped command/cmdlet.
-    if (/current\.html/i.test(command) &&
-        /(?:^|\s)(?:cp|mv|sed\s+-i|cat\s+.*>|>{1,2}|tee|Set-Content|Copy-Item|Move-Item|Out-File)\b/i.test(command)) {
-      if (checkDeployAuthorization()) {
-        consumeDeployAuthorization(command);
-      } else {
-        blocking.push(
-          '🚫 [R9] 偵測到 Bash 指令疑似寫入 current.html',
-          '   → AGENTS.md §全域硬規則：未獲授權絕不可覆蓋 current.html',
-          '   → 授權途徑：(a) Fat Mo 直接回覆 AI 提出的升格確認問題（AI 可據此自建 .deploy-ok），(b) Fat Mo 自行於終端機手動 touch .fhs/.deploy-ok，10 分鐘內有效，或 (c) 本次是 /commit Phase 2.5 偵測到需要部署後的鏈式觸發（AGENTS.md v1.7.0）'
-        );
+    const ctx = { tool, command, cwd: data.cwd, data };
+    try {
+      for (const rule of RULES.filter(r => r.scope === 'bash')) {
+        HANDLERS[rule.kind](rule, ctx, blocking, warnings);
       }
-    }
-
-    // ── Rule 10 (shell variant, v2, S159續): 同上，見 Write/Edit 變體註解 ──
-    if (/\.deploy-ok\b/i.test(command) &&
-        /(?:^|\s)(?:touch|echo\s.*>|Set-Content|New-Item|Out-File)\b/i.test(command) &&
-        process.env.FHS_GUARD_FIXTURE !== '1') {
-      try {
-        const dir = path.dirname(DEPLOY_LOG_FILE);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | R10 AI self-created .deploy-ok via shell (AGENTS.md v1.6.0授權) | cmd=${String(command).slice(0, 80)}\n`, 'utf8');
-      } catch (_) { /* silent */ }
-    }
-
-    // ── Rule 11 (observe-only, S140 F12): shell write touching finance content ──
-    // Not blocking yet — logs to .fhs/.kgov-observe.log for a ~2-week hit-rate
-    // review before this graduates to a hard flag (see governance/05 §4).
-    if ((/(?:^|\s)(?:Set-Content|Out-File|tee|sed\s+-i)\b/i.test(command) || />>?/.test(command)) &&
-        /handmodel_cost|keychain_cost|necklace_cost|accessory_cost|cost_configurations|final_sale_price|total_cost|net_profit|calculatePricing|CREATE\s+OR\s+REPLACE\s+FUNCTION/i.test(command)) {
-      // D94（2026-09-25 觀察期重新起算）：改為「只記日誌、不出警告」。回放 9,298 次真實 Bash：
-      // 舊規則命中 82 次、目標感知版 60 次，抽樣近乎全為誤報（heredoc／`git commit -m` 訊息內嘅
-      // `>` 同財務字眼、寫入 /tmp 暫存腳本），對自由格式 shell 文字無法精準；警告直達模型後只會
-      // 製造雜訊。`git commit`／`gh` 訊息文字直接排除。覆核日 2026-10-09：若日誌仍無真正「shell 寫財務檔」
-      // 個案 → 建議退役此規則（見 decisions.md D94）。
-      if (!/\bgit\s+(?:-C\s+\S+\s+)?commit\b|\bgh\s+(?:pr|issue)\b/i.test(command)) {
-        logKgovObserve(command);
-      }
-    }
-
-    // ── Rule 14 (observe-only, D92, 2026-09-25): Bash 開頭 `cd <路徑> &&` 前綴 ──
-    // 實測（usage-audit，115 sessions／9,256 次 Bash）：75% 帶 cd 前綴，其中 89% 係 cd 去自己已喺嘅目錄
-    // （純多餘），4% cd 入子目錄（cd 會跨 Bash 呼叫持續，令其後指令留喺子目錄，逼出下一次 cd 修返＝循環），
-    // 1% 由 worktree cd 去主倉（靜默改錯倉風險，見 learnings/tooling #7）。
-    // 只警告不攔截（fail-open）；記錄 .fhs/.bash-cd-observe.log 供日後決定是否轉硬攔。
-    if (data.cwd) {
-      const cdInfo = analyzeBashCd(command, data.cwd);
-      if (cdInfo) {
-        logBashCdObserve(cdInfo.kind, data.cwd, cdInfo.target);
-        if (cdInfo.kind === 'same') {
-          warnings.push(
-            '⚠️  [R14-observe] 呢個 Bash 以 `cd <路徑> &&` 開頭，但工作目錄已經係嗰個路徑——請刪走 cd 前綴直接跑指令',
-            '   → 工作目錄跨呼叫持續；多餘 cd 浪費 token，亦會觸發組合指令權限提示'
-          );
-        } else if (cdInfo.kind === 'main') {
-          warnings.push(
-            '⚠️  [R14-observe] worktree session 內 cd 去主倉：其後指令會喺主倉執行，有靜默改錯倉風險（learnings/tooling #7）',
-            '   → 改用 `git -C <主倉> …` 或絕對路徑；主倉只准做已批准嘅對齊（commit.md Phase 2.7）'
-          );
-        } else if (cdInfo.kind === 'sub') {
-          warnings.push(
-            '⚠️  [R14-observe] cd 入子目錄會令其後所有 Bash 留喺該子目錄（cd 跨呼叫持續）——請改用絕對路徑或指令自帶目錄參數',
-            '   → 否則下一次指令要再 cd 返 repo 根，形成循環'
-          );
-        }
-      }
-    }
-
-    // ── Rule 13 (D68): handoff 同步閘 — 攔 git commit ────────────
-    // 設計理由與已知邊界見檔頭 HANDOFF_FILE 區塊註解。
-    if (process.env.FHS_GUARD_FIXTURE !== '1' &&
-        /\bgit\s+(?:-[^\s]+\s+)*commit\b/.test(command) &&
-        !/--dry-run\b/.test(command)) {
-      if (process.env.FHS_SKIP_HANDOFF_GATE === '1') {
-        logGateBypass('FHS_SKIP_HANDOFF_GATE=1', command);
-        warnings.push(
-          '⚠️  [R13] handoff 同步閘已被 FHS_SKIP_HANDOFF_GATE=1 繞過',
-          '   → 已記入 .fhs/notes/deploy-log.md 供稽核；請確認 handoff.md 確實唔需要更新'
-        );
-      } else {
-        const stamp = readHandoffStamp();
-        const today = todayLocalISO();
-        if (stamp === null) {
-          warnings.push(
-            '⚠️  [R13] 讀唔到 handoff.md 便攜塊「更新:」日期戳，本次放行（fail-open）',
-            '   → 若便攜塊仍在，請檢查格式係咪被改壞（預期：【FHS 交接摘要 — 更新: YYYY-MM-DD）'
-          );
-        } else if (stamp !== today) {
-          blocking.push(
-            `🚫 [R13] handoff 便攜塊日期戳過時：${stamp}（今日 ${today}），禁止 commit`,
-            '   → /commit P0.7：便攜塊七類欄位須反映本 session 最新狀態，「更新:」必須改成今日日期',
-            `   → 請編輯 ${HANDOFF_REL} 第 2 行「【FHS 交接摘要 — 更新: ${stamp}」→「更新: ${today}」，`,
-            '     並同步核對 🎯目標／✅已定決策／🔬驗證／📋待辦／⏰時限待辦／➡️下一步 六欄',
-            '   → 純查詢 session 無狀態改變時，依 P0.7 只更新日期即可',
-            '   → 確認今次真係唔關 handoff 事：FHS_SKIP_HANDOFF_GATE=1 <你條 git 指令>（會記入稽核）'
-          );
-        } else if (handoffHasUnstagedEdits()) {
-          blocking.push(
-            '🚫 [R13] handoff.md 有未 staged 嘅改動，禁止 commit',
-            '   → 日期戳係今日但改動未入 index，commit 落去會令 repo 同你手上版本 drift',
-            `   → 請先 git add ${HANDOFF_REL} 再 commit`
-          );
-        }
-      }
-    }
-
-    // ── Rule 5: Block git add .env ──────────────────────────────
-    if (/git\s+add\s+[^-]*\.env(?!\.example)/.test(command)) {
-      blocking.push(
-        '🚫 [R5] 禁止 git add .env',
-        '   → AGENTS.md §全域硬規則：.env 禁止 commit'
-      );
-    }
-
-    // ── Rule 6: Warn on git add . or -A ─────────────────────────
-    // D93：警告改為模型可見後，`git add -A <指定路徑>`（已限定範圍、唔會掃到 .env）唔應誤報——
-    // 只對「-A／--all／. 之後冇 pathspec」（行尾或接 && ; |）嘅全倉庫暫存警告。
-    if (/git\s+add\s+(?:-A|--all|\.)\s*(?:$|&&|;|\|)/.test(command)) {
-      warnings.push(
-        '⚠️  [R6] git add . / -A 可能意外包含 .env',
-        '   → 建議改用 git add <specific files>，或確認 .gitignore 正確'
-      );
-    }
-
-    // ── Rule 7: Block force push ─────────────────────────────────
-    if (/git\s+push\s+.*(--force|-f)\b/.test(command)) {
-      blocking.push(
-        '🚫 [R7] 禁止 git push --force（需 Fat Mo 明確授權）',
-        '   → 如確認需要，請明確說明理由並獲授權後再執行'
-      );
-    }
-
-    // ── Rule 8: Warn on rm -rf / Remove-Item -Recurse -Force targeting project subdirs ──
-    const isRmRf = /rm\s+-rf\s+(?!tmp\/|artifacts\/)/.test(command);
-    const isRemoveItemForce = /Remove-Item\b/i.test(command) && /-Recurse\b/i.test(command) && /-Force\b/i.test(command);
-    if (isRmRf || isRemoveItemForce) {
-      const safeExceptions = ['node_modules', '/tmp/', 'artifacts/'];
-      const isSafe = safeExceptions.some(s => command.includes(s));
-      if (!isSafe) {
-        warnings.push(
-          '⚠️  [R8] 偵測到 rm -rf / Remove-Item -Recurse -Force，請確認目標目錄安全',
-          '   → 安全目標：node_modules/、tmp/、artifacts/ 以外需謹慎'
-        );
-      }
+    } catch (e) {
+      return failClosed(`規則執行期間發生未預期錯誤（bash scope）：${e.message}`);
     }
   }
 
