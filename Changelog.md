@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-28] 3D Phase1→A4/Astra 交接文件 + A08 紋理停工核對（Claude Code）
+
+- **背景**：Fat Mo 因 ChatGPT Astra 加入，有意將 handoff MASTER 表「[S161/S166] 3D打印Phase1待簽收」項專責交其跟進；Astra 對本專案背景全無所知。
+- **產出**：`.fhs/reports/planning/3d-print-phase1-a4-handoff_2026-09-27.md`——自足全景交接文件，內容含：業務背景、師傅工序解密、已定案鐵律 R1-R10、已驗證事實、時間線、A3 識別 11 個腳本疑點（G1-G11，標「觀察，未經獨立驗證」）、A4 任務清單 T1-T5（靜態審查／真檔輸入規格草案／簽收檢核表草案／QC證據獨立性審計／Phase2前置規劃）、7 條待 Fat Mo 決策的問題（Q1-Q7，含 Q6：A4 角色是否維持「只審不改」）、檔案地圖（含客人隱私資料標「不要附」）、回報格式規則。文件依 `AGENTS.md` §7 A1-A4 角色表將 Astra 定位為 A4（獨立審查，只審不改，無裁決權），簽收仍歸 Fat Mo；此定位未經 Fat Mo 確認，已列入 Q6。
+- **P0.4 幽靈偵測補全**：`.agents/skills/source-command-{a4-review,cl-flow-g}` 兩個 Codex bridge skill 此前只本機生成從未入版控（Master 對應指令檔已存在），本次隨手補齊，比照其餘 54 個既有 `source-command-*` 慣例。
+- **另一項任務——A08 R3 腳模紋理試作停工核對**：Fat Mo 要求核對 main 上已有的「A08 R3 停工交 Claude Code」記錄（合併提交 `0f3e040`／`64b2bee`）是否足夠支撐日後續作。核對結果：`handoff.md` 便攜塊獨立一行＋MASTER 表獨立一列、`Changelog.md` 三筆時序記錄、`session-log.md` 一筆記錄，均明確與「[S161/S166] Phase1」切割、互不覆寫；客人資料（掃描/相片/STL/Blender 工作檔）經 `.gitignore`（`*.stl`／`*.blend`／`3d/input/`／`3d/output/`）全數排除於本次 commit 之外，兩份規劃文件亦無嵌入 base64 圖片。**判定：記錄完整，可結案；本次未發現缺漏，未修改任何 3D 模型／腳本／`param_memory.json`，未重啟建模。**
+- **範圍**：純文件（新增 1 份規劃文件＋補 2 個 bridge skill＋本檔/handoff/session-log 交接同步），零代碼／schema／pipeline 改動。
+
 ## [2026-09-27] handoff 待辦登記：Canva 收尾兩項結案（Claude Code）
 
 - 純文件登記，無代碼改動。Fat Mo 確認：①5 個 Canva 副本已刪、0600809 存檔頁 `DAHWTBARIyU` 已貼入 Free_Laser 合集；②Small Chan 0600512 存檔頁 `DAHWBPTzf4I` 原相已上載。
