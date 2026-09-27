@@ -1,5 +1,22 @@
 # Changelog
 
+## [2026-09-27] A08 R3 紋理未達預期，停工交 Claude Code
+
+- Fat Mo 親自判斷 A08 R3 的整體紋理效果未如理想，要求暫停在現有進度並交 Claude 跟進；未簽收，非打印就緒。下方「重新授權→A08 R3 深紋候選」條目保留為開工歷史，不表示後續繼續試作。
+- 新增自足交接與方案 `.fhs/reports/planning/2026-09-27_a08-texture-stop-and-claude-plan.md`：照片初對位及師傅參照的已做部分、A08 R3 圓墊／槽尾轉角缺陷、工作檔／比較圖、下一輪先診斷及重做大趾 B1 局部的驗收方式。模型、原掃描、正式 pipeline／參數庫本次均未修改；客人檔案未納入 Git。
+
+## [2026-09-27] 3D 紋理重新授權：照片初對位 → A08 R3 深紋候選
+
+- Fat Mo 在 A07 暫停後重新要求一次修改：先參照照片定位趾紋，再學師傅的誇張深谷。主定位照 9427，8 張腳模照片已看；五段人工初對位有 JSON／PNG 來源記錄，非相機標定或精確還原。
+- 已另存 A08 R3 Blender 副本及同光線 RAW／A07／師傅對照；首個 A08 鋸齒原型拒用，R3 長線及深谷改善，但肉墊與槽尾轉角仍欠自然，未簽收。629314 三角面；本輪 finite、零面積／開口／非流形／相對基線反向面檢查通過；自交／壁厚／打印未驗。
+- 最新記錄在 `.fhs/reports/planning/2026-09-27_astra-3d-texture-claude-handoff.md` 頂部，A07 交接保留為歷史。原 OBJ／師傅 STL 雜湊不變，客人檔案未納入 Git，正式 pipeline／參數庫未改。
+
+## [2026-09-27] 3D 腳模紋理 Astra 試驗暫停，交 Claude Code
+
+- Fat Mo 認為 A07 深紋局部試作的自然度仍未理想，已要求停在目前進度並交 Claude 跟進；未簽收，未改正式 Pipeline v0 範圍。
+- A05→A07 大趾主／副與第二趾主紋的局部最大凹陷幅度約增至 3.08／3.87／3.97 倍（正規化顯示單位，非毫米）；寫入後局部網格 QC 通過，但部分端點及肉墊過渡仍偏硬，尚非打印就緒。來源 OBJ／師傅 STL 保持不變。
+- 自足報告與下一步方案：`.fhs/reports/planning/2026-09-27_astra-3d-texture-claude-handoff.md`。本機私隱資料與 Blender 工作檔仍在 gitignored `3d/input/`、`3d/output/` 及 `.blend` 檔，沒有客人檔案上傳。
+
 ## [2026-09-27] Supabase PAT 旋轉完成（Claude Code，Fat Mo 操作）
 
 - 新令牌（Project 範圍限 freehandsss_dashboard，2027-09-26 到期，日曆提醒 2027-09-12）；`.mcp.json` 改讀環境變數 `SUPABASE_ACCESS_TOKEN`；清舊令牌於 `~/.claude/settings.json`（6 條）。新 200／舊 401，repo 舊令牌 0 處。舊令牌已撤銷。
