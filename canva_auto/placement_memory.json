@@ -4813,6 +4813,167 @@
           "src": "non_geometry_findings[1]"
         }
       ]
+    },
+    {
+      "order": "0600122",
+      "customer": "_powong",
+      "design_id": "DAHWXGRF2A0",
+      "date": "2026-09-27",
+      "learned": true,
+      "category": "全幅AI短片",
+      "page_count": 5,
+      "parent_order": "06001007",
+      "no_parent": true,
+      "first_pass_total": 6,
+      "first_pass_corrected": 2,
+      "family": "全幅AI短片5頁；母片 meiyan_cmyy 06001007 DAHWG_juSnA（copy）。素材＝WhatsApp Video 2026-09-03 125.4s 1024×576（多場景混合，部分pillarbox直片段/部分橫向段，tkhd與get-assets metadata一致但內容非單一orientation）＋video_1790483282387.mp4 960²×15.1s（本地tkhd960²；Canva報960×1920，CV-27第N次重現）＋彩色圖1024²／黑白圖1254²（local_prep_out，IoU 0.947，首次因記憶體不足連crash兩次，第三次重試成功）＋word.png",
+      "note": "✅收尾（2026-09-27）。Stage③交付時AI自行發現字句與母片花環右branch重疊（母片非標準HoKaSin/Meika系960置中花環，branch比一般家族更貼近文字區），三次遞減字號（55→42→38→36px，box947→760→720→620→760）先清空，並以ink_gap.py驗證間隙足夠(12.77/14.12px)。Fat Mo收貨後進一步放大page2圖對（625.622²→657.272²，右邊+頂固定、左下角拖大）同字句（36→48.842px，box760→1031.108，中心維持960），顯示AI保守邊界過緊。AI已將此改動等比例propagate到page3小組合（×1.05圖/×1.36字）同page4動畫（完全mirror page2），三頁均re-export真圖驗證清空花環同邊框。Fat Mo確認完成後明示本單母片唔可再用（no_parent:true），原因為此母片花環幾何非標準、曾致overlap。Stage③另發現page3背景video仍係舊母片VAHWG_cU7Xg，AI update_fill唔到（已知人手位），交Fat Mo手動換。",
+      "slots": [
+        {
+          "slot": "page2_黑白圖",
+          "element_id": "PB1r1fbHjRRxctcB-LB77HXWn954kMQfD（母片元素，保留）",
+          "asset": "MAHWXRChkFQ 黑白圖_parakeet.png 1254²",
+          "ai_box": {
+            "top": 146.1029,
+            "left": 655.688,
+            "w": 625.622,
+            "h": 625.622,
+            "imageBox": "=container（0,0,625.622²）"
+          },
+          "fatmo_box": {
+            "top": 146.1029,
+            "left": 624.038,
+            "w": 657.272,
+            "h": 657.272,
+            "note": "右邊+頂固定，左下角拖大（同CV-58縮細方向相反但同一corner-anchor手法）"
+          },
+          "note": "四值全等（兩asset皆方形，CV-30），AI首次已零裁切，Fat Mo放大約5.06%"
+        },
+        {
+          "slot": "page2_彩色圖",
+          "element_id": "PB1r1fbHjRRxctcB-LBRvHyPrSQQrT9kL（母片元素，保留）",
+          "asset": "MAHWXfF0VDw 彩色圖_cutout.png 1024²",
+          "ai_box": {
+            "top": 146.1029,
+            "left": 655.688,
+            "w": 625.622,
+            "h": 625.622,
+            "imageBox": "=container"
+          },
+          "fatmo_box": {
+            "top": 146.1029,
+            "left": 624.038,
+            "w": 657.272,
+            "h": 657.272
+          },
+          "note": "與黑白圖同步放大，left/top/w/h四值全等"
+        },
+        {
+          "slot": "page3_直片",
+          "element_id": "PBpKX7d6642dSQQG-LBLShpnVC4V07tSD（母片元素，保留）",
+          "asset": "VAHWXT12j7k WhatsApp Video 2026-09-03.mp4（本地1024×576，16:9多場景混合片）",
+          "ai_box": {
+            "top": 0,
+            "left": 0,
+            "w": 1920,
+            "h": 1080,
+            "imageBox": "=container（0,0,1920×1080）"
+          },
+          "fatmo_box": "=ai_box（冇改）",
+          "note": "橫向片(16:9)按CV規則加闊，剛好=頁面16:9零裁切變全版；片內含pillarbox段落，播放時視覺會隨場景變化，AI幾何做對但內容非AI可控"
+        },
+        {
+          "slot": "page3_mini黑白圖",
+          "element_id": "PBpKX7d6642dSQQG-LBNFJNYN3fRF8z5q（母片元素，保留）",
+          "asset": "MAHWXRChkFQ 黑白圖_parakeet.png（細）",
+          "ai_box": {
+            "top": 769.974,
+            "left": 1542.764,
+            "w": 202.026,
+            "h": 202.026
+          },
+          "fatmo_box": "AI propagate（非Fat Mo直接改）：top=769.974,left=1532.51,w=h=212.28（×1.05059跟隨page2）",
+          "note": "CV-45 affine按page2最終版重算；文字同步放大並re-anchor避開mini wreath"
+        },
+        {
+          "slot": "page3_mini彩色圖",
+          "element_id": "PBpKX7d6642dSQQG-LBn0z2LXYzc3xmsS（母片元素，保留）",
+          "asset": "MAHWXfF0VDw 彩色圖_cutout.png（細）",
+          "ai_box": {
+            "top": 769.974,
+            "left": 1542.764,
+            "w": 202.026,
+            "h": 202.026
+          },
+          "fatmo_box": "同mini黑白圖",
+          "note": "與mini黑白圖同步"
+        },
+        {
+          "slot": "page4_動畫",
+          "element_id": "PBf1CMJ0CQGLZ45t-LBR1YP3qgQwHy2s6（母片元素，保留）",
+          "asset": "VAHWXbcISlc video_1790483282387.mp4（本地tkhd960²；get-assets誤報960×1920，CV-27）",
+          "ai_box": {
+            "top": 146.1029,
+            "left": 657.607,
+            "w": 624.277,
+            "h": 624.277
+          },
+          "fatmo_box": "AI propagate（mirror page2 exactly）：top=146.1029,left=624.038,w=h=657.272",
+          "note": "CV-40跟page2彩色格；page4文字同步mirror page2（fontSize 49/box1031.108/left444.446/top825.259）"
+        }
+      ],
+      "non_geometry_findings": [
+        "local_prep.py Stage①首次因系統可用記憶體不足（<1GB free/16GB total）rembg分配失敗連crash兩次（OpenBLAS錯誤+onnxruntime OOM），第三次重試（同一指令，記憶體狀態變化後）成功，IoU 0.947達標；提醒：記憶體不足時應建議Fat Mo關閉高耗用程式（Blender/Comet/Chrome）而非盲目重試",
+        "page3背景video（background.media）仍係母片meiyan_cmyy舊片VAHWG_cU7Xg，update_fill on page-root video報invalid duration（已知人手位），已交Fat Mo",
+        "客人WhatsApp原始片125.4秒內含多場景不同orientation（portrait pillarbox新生兒醫院片段 + landscape換片台片段），AI無法判斷/控制實際播放到邊段，已flag俾Fat Mo自行trim"
+      ],
+      "lessons": [
+        {
+          "page": [
+            2,
+            3,
+            4
+          ],
+          "type": "ai_error",
+          "rule": null,
+          "text": "AI首次交付字句box已避開花環branch（55→36px三次遞減），但邊界訂得過緊；Fat Mo收貨後仍再放大至48.8px/圖657.3²，顯示保守間隙留太多",
+          "src": "case.note"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "manual_only",
+          "rule": null,
+          "text": "本單母片（meiyan_cmyy 06001007）花環branch比家族一般更貼近文字安全區，曾致AI首次幾何overlap；Fat Mo明示標題加[勿用作母片]、case標記no_parent:true，日後揀母片應跳過",
+          "src": "case.note"
+        },
+        {
+          "page": [
+            3,
+            4
+          ],
+          "type": "tool_bug",
+          "rule": "CV-27",
+          "text": "page4動畫asset get-assets報960×1920，本地tkhd證實960²正方，第N次重現同一已知陷阱",
+          "src": "slots[page4_動畫].asset"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "material",
+          "rule": null,
+          "text": "客人WhatsApp原始片125秒為多場景混合（portrait pillarbox+landscape），非單一orientation，AI幾何只能配合片container aspect(1024×576)，無法控制實際顯示片段",
+          "src": "non_geometry_findings[2]"
+        },
+        {
+          "page": "flow",
+          "flow_stage": "stage1",
+          "type": "material",
+          "rule": null,
+          "text": "local_prep.py因系統記憶體不足（<1GB free）連續crash兩次，第三次重試成功；非代碼bug，屬環境資源問題",
+          "src": "non_geometry_findings[0]"
+        }
+      ]
     }
   ],
   "schema_version": 2,
