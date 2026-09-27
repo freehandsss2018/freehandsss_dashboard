@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-27] canva-auto：0600122 _powong 全幅AI短片 Stage①-④＋學習落庫，母片標記勿再用
+
+- 母片 `meiyan_cmyy 06001007`（DAHWG_juSnA，copy）→ 成品 `DAHWXGRF2A0`（歸 Free_recorder 09/26）。素材：WhatsApp Video 125.4s 1024×576（多場景混合，部分 pillarbox 直片段/部分橫向段）、Lovart 動畫 960²（get-assets 誤報 960×1920，CV-27 第 N 次重現）、local_prep 去背輸出（記憶體不足連 crash 兩次，第三次重試成功，IoU 0.947）。
+- Stage③ 交付前 AI 自行發現字句與母片花環右 branch 重疊（此母片非標準花環置中版式，branch 比一般家族更貼近文字區）：三次遞減字號（55→42→38→36px）並以 `ink_gap.py` 驗證清空（12.77／14.12px）。
+- Fat Mo 收貨後再放大 page2 圖對（625.622²→657.272²，右邊+頂固定、左下角拖大）同字句（36→48.842px），AI 已等比例 propagate 至 page3 小組合（CV-45）同 page4 動畫（CV-40 完全 mirror page2），三頁 re-export 真圖驗證清空。
+- Fat Mo 明示本單母片唔可再用作下一次母片：Canva 標題加 `[勿用作母片]`＋`placement_memory.json` 新增 case 0600122（`no_parent:true`，`learned:true`，首次交付 6 格 2 格被改，commit 56d6477），`canva_memory_validate.js` exit 0。Stage⑤ 存檔頁未做（Fat Mo 未要求，SOP 預設不主動問）。**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
+
 ## [2026-09-27] Supabase PAT 旋轉完成（Claude Code，Fat Mo 操作）
 
 - 新令牌（Project 範圍限 freehandsss_dashboard，2027-09-26 到期，日曆提醒 2027-09-12）；`.mcp.json` 改讀環境變數 `SUPABASE_ACCESS_TOKEN`；清舊令牌於 `~/.claude/settings.json`（6 條）。新 200／舊 401，repo 舊令牌 0 處。舊令牌已撤銷。

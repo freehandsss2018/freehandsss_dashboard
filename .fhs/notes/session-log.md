@@ -2554,3 +2554,8 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-27 — Supabase PAT 旋轉完成（Claude Code）
 - Fat Mo 建新令牌（Project 範圍限 freehandsss_dashboard，1 年，2027-09-26 到期）；換主倉／canva-learning-records-design-e99f26 `.env`、Windows 環境變數、`.mcp.json` 改讀環境變數（移除寫死 `--access-token`）、清 `~/.claude/settings.json` 內 6 條舊令牌 curl 允許規則；新令牌 HTTP 200、舊令牌 HTTP 401、Supabase MCP 重開後連得上；repo／歷史舊令牌 0 處；舊令牌已由 Fat Mo 撤銷。日曆提醒 2027-09-12。
 - **Subagent 使用記錄**：❌未使用（純令牌操作）；finance-auditor 豁免（非財務數字判斷）。
+
+## 2026-09-27 — canva-auto：0600122 _powong 全幅AI短片 收尾，母片標記勿再用（Claude Code）
+- Stage①-③ 全程 update_fill／crop_media，母片元素零刪；AI 自行發現字句與非標準花環母片 branch 重疊並三次遞減字號至清空（ink_gap 驗證）。Fat Mo 收貨後再放大 page2，AI propagate 至 page3/page4。
+- Fat Mo 明示本單母片唔可再用：Canva 標題加 `[勿用作母片]`＋`placement_memory.json` case 0600122 `no_parent:true`，`canva_memory_validate.js` exit 0，commit 56d6477。全文見 Changelog.md 同日條目。
+- **Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
