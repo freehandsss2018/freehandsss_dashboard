@@ -13,6 +13,34 @@
 - 純文件登記，無代碼改動。Fat Mo 確認：①5 個 Canva 副本已刪、0600809 存檔頁 `DAHWTBARIyU` 已貼入 Free_Laser 合集；②Small Chan 0600512 存檔頁 `DAHWBPTzf4I` 原相已上載。
 - handoff 便攜塊（🎯/📋/➡️）移除對應待辦，MASTER 表三列改 ✅ 完成。K_FAM_COMBO 維持待實單驗收（0600107 歷史單已結案，新代碼路徑未驗）。無財務數字判斷。
 
+## [2026-09-27] A08 R3 紋理未達預期，停工交 Claude Code
+
+- Fat Mo 親自判斷 A08 R3 的整體紋理效果未如理想，要求暫停在現有進度並交 Claude 跟進；未簽收，非打印就緒。下方「重新授權→A08 R3 深紋候選」條目保留為開工歷史，不表示後續繼續試作。
+- 新增自足交接與方案 `.fhs/reports/planning/2026-09-27_a08-texture-stop-and-claude-plan.md`：照片初對位及師傅參照的已做部分、A08 R3 圓墊／槽尾轉角缺陷、工作檔／比較圖、下一輪先診斷及重做大趾 B1 局部的驗收方式。模型、原掃描、正式 pipeline／參數庫本次均未修改；客人檔案未納入 Git。
+
+## [2026-09-27] 3D 紋理重新授權：照片初對位 → A08 R3 深紋候選
+
+- Fat Mo 在 A07 暫停後重新要求一次修改：先參照照片定位趾紋，再學師傅的誇張深谷。主定位照 9427，8 張腳模照片已看；五段人工初對位有 JSON／PNG 來源記錄，非相機標定或精確還原。
+- 已另存 A08 R3 Blender 副本及同光線 RAW／A07／師傅對照；首個 A08 鋸齒原型拒用，R3 長線及深谷改善，但肉墊與槽尾轉角仍欠自然，未簽收。629314 三角面；本輪 finite、零面積／開口／非流形／相對基線反向面檢查通過；自交／壁厚／打印未驗。
+- 最新記錄在 `.fhs/reports/planning/2026-09-27_astra-3d-texture-claude-handoff.md` 頂部，A07 交接保留為歷史。原 OBJ／師傅 STL 雜湊不變，客人檔案未納入 Git，正式 pipeline／參數庫未改。
+
+## [2026-09-27] 3D 腳模紋理 Astra 試驗暫停，交 Claude Code
+
+- Fat Mo 認為 A07 深紋局部試作的自然度仍未理想，已要求停在目前進度並交 Claude 跟進；未簽收，未改正式 Pipeline v0 範圍。
+- A05→A07 大趾主／副與第二趾主紋的局部最大凹陷幅度約增至 3.08／3.87／3.97 倍（正規化顯示單位，非毫米）；寫入後局部網格 QC 通過，但部分端點及肉墊過渡仍偏硬，尚非打印就緒。來源 OBJ／師傅 STL 保持不變。
+- 自足報告與下一步方案：`.fhs/reports/planning/2026-09-27_astra-3d-texture-claude-handoff.md`。本機私隱資料與 Blender 工作檔仍在 gitignored `3d/input/`、`3d/output/` 及 `.blend` 檔，沒有客人檔案上傳。
+
+## [2026-09-27] canva-auto：0600122 _powong 全幅AI短片 Stage①-④＋學習落庫，母片標記勿再用
+
+- 母片 `meiyan_cmyy 06001007`（DAHWG_juSnA，copy）→ 成品 `DAHWXGRF2A0`（歸 Free_recorder 09/26）。素材：WhatsApp Video 125.4s 1024×576（多場景混合，部分 pillarbox 直片段/部分橫向段）、Lovart 動畫 960²（get-assets 誤報 960×1920，CV-27 第 N 次重現）、local_prep 去背輸出（記憶體不足連 crash 兩次，第三次重試成功，IoU 0.947）。
+- Stage③ 交付前 AI 自行發現字句與母片花環右 branch 重疊（此母片非標準花環置中版式，branch 比一般家族更貼近文字區）：三次遞減字號（55→42→38→36px）並以 `ink_gap.py` 驗證清空（12.77／14.12px）。
+- Fat Mo 收貨後再放大 page2 圖對（625.622²→657.272²，右邊+頂固定、左下角拖大）同字句（36→48.842px），AI 已等比例 propagate 至 page3 小組合（CV-45）同 page4 動畫（CV-40 完全 mirror page2），三頁 re-export 真圖驗證清空。
+- Fat Mo 明示本單母片唔可再用作下一次母片：Canva 標題加 `[勿用作母片]`＋`placement_memory.json` 新增 case 0600122（`no_parent:true`，`learned:true`，首次交付 6 格 2 格被改，commit 56d6477），`canva_memory_validate.js` exit 0。Stage⑤ 存檔頁未做（Fat Mo 未要求，SOP 預設不主動問）。**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
+
+## [2026-09-27] Supabase PAT 旋轉完成（Claude Code，Fat Mo 操作）
+
+- 新令牌（Project 範圍限 freehandsss_dashboard，2027-09-26 到期，日曆提醒 2027-09-12）；`.mcp.json` 改讀環境變數 `SUPABASE_ACCESS_TOKEN`；清舊令牌於 `~/.claude/settings.json`（6 條）。新 200／舊 401，repo 舊令牌 0 處。舊令牌已撤銷。
+
 ## [2026-09-26] 新增 /cl-flow-g（cl-flow-fast 的 A4 串接版，D99，Claude Code）
 
 - 新指令 `/cl-flow-g`（Master＋Claude 橋接）：前段同 `/cl-flow-fast`，`/execute` 後內建 A4 硬停關卡（交付包→Fat Mo 觸發 Codex→回應→2 輪上限）；`/cl-flow-fast` 不動。

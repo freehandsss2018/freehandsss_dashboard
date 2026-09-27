@@ -9,6 +9,11 @@
 **摘要**：全文見 [Changelog.md](../../CHANGELOG.md) 2026-09-27 條目。
 **Subagent 使用記錄**：❌未使用（純登記待辦狀態，無財務判斷）。
 
+## 2026-09-27（A08 R3紋理試作停工，交Claude Code）: 🏷️ ⏳
+
+**摘要**：Fat Mo判定A08 R3未達預期，未簽收亦非打印就緒；照片初對位、師傅深紋參照及後續局部重做方案見 [A08交接報告](../reports/planning/2026-09-27_a08-texture-stop-and-claude-plan.md)。正式Pipeline v0 Phase1狀態不變，客人掃描與Blender工作檔不入Git。
+**Subagent 使用記錄**：❌未使用（本輪建模、比對及交接由主代理處理）。
+
 ## 2026-09-26 (canva-auto 0600809 wing430 純音樂 Stage①-⑤＋學習落庫): 🏷️ ✅
 
 **摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-26 canva-auto 0600809 條目。存檔頁 DAHWTBARIyU 待 Fat Mo 貼入合集。
@@ -2560,3 +2565,12 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-26 — A4（Codex）文件落地＋/cl-flow-g（Claude Code，D98/D99）
 - 憲法 v1.8.0 角色表 A1–A4、`/a4-review`（v1.3.0）、`/cl-flow-g`；4 次 Codex 實審（P1×3、P2×~9）全數處理，px 技能缺失 URL 另案；17 個寫入類 Codex 橋接改為拒絕。全文見完成記錄兩份與 decisions D98/D99。
 - **Subagent 使用記錄**：✅ fresh-context Claude subagent×2（盲測）＋`codex exec -s read-only` 盲測；❌ finance-auditor（非財務數字判斷）。
+
+## 2026-09-27 — Supabase PAT 旋轉完成（Claude Code）
+- Fat Mo 建新令牌（Project 範圍限 freehandsss_dashboard，1 年，2027-09-26 到期）；換主倉／canva-learning-records-design-e99f26 `.env`、Windows 環境變數、`.mcp.json` 改讀環境變數（移除寫死 `--access-token`）、清 `~/.claude/settings.json` 內 6 條舊令牌 curl 允許規則；新令牌 HTTP 200、舊令牌 HTTP 401、Supabase MCP 重開後連得上；repo／歷史舊令牌 0 處；舊令牌已由 Fat Mo 撤銷。日曆提醒 2027-09-12。
+- **Subagent 使用記錄**：❌未使用（純令牌操作）；finance-auditor 豁免（非財務數字判斷）。
+
+## 2026-09-27 — canva-auto：0600122 _powong 全幅AI短片 收尾，母片標記勿再用（Claude Code）
+- Stage①-③ 全程 update_fill／crop_media，母片元素零刪；AI 自行發現字句與非標準花環母片 branch 重疊並三次遞減字號至清空（ink_gap 驗證）。Fat Mo 收貨後再放大 page2，AI propagate 至 page3/page4。
+- Fat Mo 明示本單母片唔可再用：Canva 標題加 `[勿用作母片]`＋`placement_memory.json` case 0600122 `no_parent:true`，`canva_memory_validate.js` exit 0，commit 56d6477。全文見 Changelog.md 同日條目。
+- **Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
