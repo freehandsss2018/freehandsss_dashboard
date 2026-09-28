@@ -2568,3 +2568,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 - Stage①-③ 全程 update_fill／crop_media，母片元素零刪；AI 自行發現字句與非標準花環母片 branch 重疊並三次遞減字號至清空（ink_gap 驗證）。Fat Mo 收貨後再放大 page2，AI propagate 至 page3/page4。
 - Fat Mo 明示本單母片唔可再用：Canva 標題加 `[勿用作母片]`＋`placement_memory.json` case 0600122 `no_parent:true`，`canva_memory_validate.js` exit 0，commit 56d6477。全文見 Changelog.md 同日條目。
 - **Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
+
+## 2026-09-28 — 治理：A4 橋接入庫＋分支／worktree 清理＋不追加 Codex 複審（Claude Code）
+- 查明 gov/a4-codex-workflow、gov/a4-docs-landing 已全併入 main；補入庫 2 個 Codex 橋接＋21 個 .bak（43b20b5）；主倉切回 main 並 ff 對齊；清 5 條本地分支＋4 個 worktree（餘 f68156 保留、3 個空殼被 app 佔用）。Fat Mo 接受不追加 Codex 複審。全文見 Changelog.md 同日條目。
+- **Subagent 使用記錄**：❌未使用（純 git 操作與文件更新）；finance-auditor 豁免（非財務）。

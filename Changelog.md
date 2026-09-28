@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-28] 治理：A4 Codex 橋接技能入庫＋已併入分支／worktree 清理（無邏輯改動，commit 43b20b5）
+
+- **入庫**：`.agents/skills/source-command-a4-review/`、`source-command-cl-flow-g/`（Codex 端橋接）＋ 21 個 2026-09-26 `.bak` 備份（17 個寫入類橋接改拒絕前舊版、`AGENTS.root.md`、`domain-modeling`、`cl-flow`、`cl-flow-fast`）。D98/D99 落地時只留在兩個 worktree 未追蹤，其餘 24 個 `source-command-*` 早已入庫；完成記錄稱備份在 `governance/backups/`，此 commit 令記錄與 repo 一致。健檢維持 26 項、無新增異常。
+- **主倉**：刪 5 個內容一致的未追蹤副本後 `switch main` ＋ `pull --ff-only`，主倉由 `gov/a4-codex-workflow` 回到 `main`。
+- **清理**：本地刪 `gov/a4-codex-workflow`、`gov/a4-docs-landing`、`claude/read-command-962a3f`／`a0b3bc`、`claude/system-suitability-assessment-62127a`（全已併入 main，`branch -d` 通過）；worktree `permissions-handoff-section-9-a58902` 已移除（20 個未追蹤檔逐一比對已在 main）。**餘尾**：`read-command-f68156` 有 2 個未 commit 檔保留；3 個空資料夾殼被桌面 app 佔用刪唔到；遠端 `origin/gov/*` 兩條未刪——見 handoff MASTER 表。
+- **決策**：Fat Mo 接受「不追加 Codex 複審」（2026-09-28）——第 4 輪後餘 P2 文件層、無 P1；未經 Codex 審嘅只有第 4 輪修正（`1418f32`）與 `/cl-flow-g`（`5fa4289`，當時標 A4 不適用）；以首次實跑 `/cl-flow-g` 驗 G3 硬停作實測。
+- **工程記錄**：Git Bash 下 `git show origin/main:<path>` 會被 MSYS 路徑轉換弄壞（回空→誤判「內容不同」），須 `MSYS_NO_PATHCONV=1`；`cd` 進主倉會令其後 Bash 停留主倉，worktree session 一律用 `git -C`。
+
 ## [2026-09-28] canva-auto：0601124 Saaallyyyc 純音樂 Stage①-⑤＋`local_prep` 切走非人道具修復（CV-63，v1.8.11）
 
 - 母片 `augustinefok 07001006`（DAHVvl_drcw）→ 成品 `DAHWe3UTnqI`（歸 Free_recorder 09/26）。揀 augustinefok 而非音長更近嘅 HoKaSin：字句 3 行一致、page3 兩條方形片格、Fat Mo 已定稿（CV-64，單樣本）。素材：Lovart 動畫影片 1／2（768²）＋多出 `video_1790…`（1440²，未用）、31.5s 音訊、彩色圖 1024²／黑白圖 2048²、word.png 3 行。
