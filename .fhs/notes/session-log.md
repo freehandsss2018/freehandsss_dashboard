@@ -1,4 +1,8 @@
 # Session Log
+## 2026-09-28 (canva-auto 0601124 Saaallyyyc 純音樂 Stage①-⑤＋local_prep 切走非人道具修復): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-09-28 條目。母片 augustinefok 07001006，6 格改 4 格；local_prep 公仔被切 bug（CV-63）已修（對 Canva 版 MAE 0.038→0.027，單樣本）；存檔頁 Fat Mo 已貼入合集，封面已出。
+**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
 ## 2026-09-27（A08 R3紋理試作停工，交Claude Code）: 🏷️ ⏳
 
 **摘要**：Fat Mo判定A08 R3未達預期，未簽收亦非打印就緒；照片初對位、師傅深紋參照及後續局部重做方案見 [A08交接報告](../reports/planning/2026-09-27_a08-texture-stop-and-claude-plan.md)。正式Pipeline v0 Phase1狀態不變，客人掃描與Blender工作檔不入Git。

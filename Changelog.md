@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-28] canva-auto：0601124 Saaallyyyc 純音樂 Stage①-⑤＋`local_prep` 切走非人道具修復（CV-63，v1.8.11）
+
+- 母片 `augustinefok 07001006`（DAHVvl_drcw）→ 成品 `DAHWe3UTnqI`（歸 Free_recorder 09/26）。揀 augustinefok 而非音長更近嘅 HoKaSin：字句 3 行一致、page3 兩條方形片格、Fat Mo 已定稿（CV-64，單樣本）。素材：Lovart 動畫影片 1／2（768²）＋多出 `video_1790…`（1440²，未用）、31.5s 音訊、彩色圖 1024²／黑白圖 2048²、word.png 3 行。
+- Fat Mo 隨後：page2 字句放大 47.657px／字距 0.2／box 890.66（最長行僅 19 字，CV-42 補）、圖對縮 3.2%；叫 AI 順延 page3——片格 mirror page2 圖對終值零改動（CV-65）、字句 UI 複製（CV-08）。黑白圖用 Canva Parakeet 自做，彩色圖原檔＋元素層去背，page3 影片換去背版。6 格改 4 格。
+- 🔴 **`local_prep.py` bug（CV-63）**：人像模型切走黃仔公仔，黑白圖 Parakeet 公仔位只剩線條；AI 上一輪見到透底色當正常冇追查，Fat Mo 圈出先知。已修：新增 `_bgdist_foreground()` 色距離前景補回（含自動退回保護），rembg 被切位置 RGB＝0 改用原圖 RGB；對 Canva 黑白版 MAE 0.038→0.027、公仔位 alpha 0.41→1.00（單樣本）。`canva_auto/README.md` 已補。
+- `placement_memory.json` 新增 case 0601124＋CV-63／64／65，CV-42／49／58／08／36／27 加補註，`canva_memory_validate.js` exit 0；`canva-auto.md` v1.8.11。Stage⑤ 存檔頁 `DAHWfA52zOs`（墨水間隙 5.06px；原相＝合集 p164），Fat Mo 已撳去背並貼入合集；封面 JPG 應 Fat Mo 要求已出（page2 1280×720，存客人資料夾）。**Subagent 使用記錄**：❌未使用（Canva MCP 只在主 session）。
+
 ## [2026-09-27] A08 R3 紋理未達預期，停工交 Claude Code
 
 - Fat Mo 親自判斷 A08 R3 的整體紋理效果未如理想，要求暫停在現有進度並交 Claude 跟進；未簽收，非打印就緒。下方「重新授權→A08 R3 深紋候選」條目保留為開工歷史，不表示後續繼續試作。

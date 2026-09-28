@@ -74,6 +74,17 @@ placement_memory.json CV-60）：
     hold-out。Small Chan 有 Canva 版嘅資料夾只得 06001007／0600512 兩單，其餘單冇獨立
     Canva 黑白圖檔可驗（0600108 只有彩色版同整頁匯出）。
   - 仍有殘差：墨線平均仍略暗（R 約低 6–8），hue 仍用位置漸變場（未逐單校 Rainbow 滑桿）。
+
+2026-09-28 修復（0601124 Saaallyyyc，Fat Mo 指出黑白圖紅圈區變透明，見 placement_memory.json
+CV-63）：
+  - 根源：`u2net_human_seg` 只認人像，非人道具（本單：兩隻黃仔公仔）被當背景切走；彩色圖
+    公仔位 alpha＝0，而黑白圖去背又用彩色前景 mask 做前置，公仔內部白區被判為背景整塊剔走
+    → Parakeet 輸出公仔只剩線條（alpha 0.15），Fat Mo Canva 版係整隻公仔連底色。
+  - 修法：新增 `_bgdist_foreground()`——平滑淺色底（本單灰底）用四邊擬合嘅二次曲面當背景模型，
+    以 Lab 色距離＞BGDIST_THR 且非「同邊界連通嘅背景」＝前景；彩色圖去背 alpha＝
+    max(人像 alpha, 色距離前景)，前置 mask＝兩者聯集。兩個人物之間嘅封閉灰底空位（面積
+    ≥BGDIST_POCKET_FRAC）仍剔走。底色唔平滑／擬合殘差過大／補回面積過大時自動退回純
+    人像模型並提示。
 """
 
 import argparse
@@ -109,6 +120,10 @@ WHITE_LUM = 0.94          # 黑白圖近白像素門檻（0.90–0.97 結果差�
 BG_COVER_FRAC = 0.5       # 連通區被前置 mask 判背景嘅比例超過即剔走（0.4–0.7 差唔多）
 MIN_BG_REGION_PX = 200    # 太細嘅白區（線條縫隙）唔理
 FIT_MIN_IOU = 0.90        # 對位 IoU 低過呢個值就唔信前置 mask
+BGDIST_THR = 10.0         # 色距離前景：Lab 距離背景模型高過呢個值先當前景
+BGDIST_POCKET_FRAC = 0.005  # 封閉且同底色一樣嘅區塊面積（佔全圖）超過即當背景（人物之間空位）
+BGDIST_MAX_BORDER_RESID = 6.0   # 邊界擬合殘差中位數超過即唔信（底色唔平滑）
+BGDIST_MAX_ADD_FRAC = 0.25      # 補回前景面積超過全圖呢個比例即唔信
 
 REMBG_MODEL = "u2net_human_seg"   # 0600512：人像專用模型，白衫 over-cut 大幅改善（CV-56）
 _session_cache = {}
@@ -125,17 +140,79 @@ def _rembg_rgba(image_path: Path) -> Image.Image:
     return Image.open(BytesIO(remove(data, session=_rembg_session()))).convert("RGBA")
 
 
+def _bgdist_foreground(rgb: np.ndarray):
+    """平滑底色圖嘅「色距離前景」（補人像模型切走嘅非人道具，CV-63）。
+
+    背景模型＝四邊 12px 框做穩健二次曲面擬合（Lab）；離背景模型夠遠、且唔係「同圖邊連通
+    嘅背景」＝前景。回傳 (前景 bool mask, 擬合殘差中位數, 被剔走嘅封閉底色區 mask)；
+    圖唔適用（底色唔平滑）由呼叫方按殘差判斷。
+    """
+    from skimage import color
+
+    lab = color.rgb2lab(rgb / 255.0)
+    h, w, _ = lab.shape
+    border = np.zeros((h, w), bool)
+    border[:12, :] = border[-12:, :] = border[:, :12] = border[:, -12:] = True
+    yy, xx = np.mgrid[0:h, 0:w]
+    basis = lambda x, y: np.stack([np.ones(x.size), x, y, x * y, x ** 2, y ** 2], 1)
+    a_b = basis(xx[border].astype(float), yy[border].astype(float))
+    a_all = basis(xx.ravel().astype(float), yy.ravel().astype(float))
+    bg = np.zeros_like(lab)
+    resid_med = 0.0
+    for c in range(3):
+        sel = np.ones(a_b.shape[0], bool)
+        y_b = lab[..., c][border]
+        for _ in range(3):   # 穩健：逐輪剔走離群（人物碰到圖邊嘅像素）
+            coef, *_ = np.linalg.lstsq(a_b[sel], y_b[sel], rcond=None)
+            res = np.abs(a_b @ coef - y_b)
+            sel = res < max(3.0, np.percentile(res, 80))
+        bg[..., c] = (a_all @ coef).reshape(h, w)
+        resid_med = max(resid_med, float(np.median(res[sel])))
+    dist = ndi.gaussian_filter(np.sqrt(((lab - bg) ** 2).sum(-1)), 1.5)
+
+    bglike = dist < BGDIST_THR
+    cc, n = ndi.label(bglike)
+    edge_ids = np.unique(np.concatenate([cc[0], cc[-1], cc[:, 0], cc[:, -1]]))
+    edge_ids = edge_ids[edge_ids > 0]
+    fg = ~np.isin(cc, edge_ids)
+    fg = ndi.binary_fill_holes(ndi.binary_opening(fg, iterations=2))
+    pocket = np.zeros((h, w), bool)
+    sizes = ndi.sum(bglike, cc, np.arange(1, n + 1))
+    for i, s in enumerate(sizes, 1):
+        if i not in edge_ids and s >= BGDIST_POCKET_FRAC * h * w:
+            pocket |= cc == i
+    pocket = ndi.binary_dilation(pocket, iterations=3)
+    return fg & ~pocket, resid_med, pocket
+
+
 def remove_background(image_path: Path):
     """去背（Magic Grab 替代）。回傳 (RGBA, 前景 mask)。
 
     RGBA 嘅 alpha 已重映射令白衫邊唔會半透明；前景 mask（rembg 原 alpha > PRIOR_ALPHA）
-    留畀線稿去背做前置。
+    留畀線稿去背做前置。人像模型切走嘅非人道具用色距離前景補返（CV-63）。
     """
     cut = _rembg_rgba(image_path)
     arr = np.array(cut)
+    # rembg 輸出喺被切走嘅位置 RGB＝0（補返 alpha 都會係黑），一律用原圖 RGB
+    src_rgb = np.array(Image.open(image_path).convert("RGB").resize(cut.size))
+    arr[:, :, :3] = src_rgb
     a = arr[:, :, 3] / 255.0
-    arr[:, :, 3] = np.round(np.clip(a / COLOR_ALPHA_FULL, 0.0, 1.0) * 255).astype(np.uint8)
-    return Image.fromarray(arr, "RGBA"), a > PRIOR_ALPHA
+    a_out = np.clip(a / COLOR_ALPHA_FULL, 0.0, 1.0)
+    fg_mask = a > PRIOR_ALPHA
+
+    fg_bd, resid, pocket = _bgdist_foreground(src_rgb.astype(float))
+    added = fg_bd & ~fg_mask
+    if resid > BGDIST_MAX_BORDER_RESID:
+        print(f"      [警告] 底色唔夠平滑（邊界擬合殘差 {resid:.1f}），略過色距離補回，只用人像模型")
+    elif added.mean() > BGDIST_MAX_ADD_FRAC:
+        print(f"      [警告] 色距離前景補回面積 {added.mean():.0%} 過大，略過，只用人像模型")
+    else:
+        soft = ndi.gaussian_filter(ndi.binary_erosion(fg_bd, iterations=2).astype(float), 1.2)
+        a_out = np.maximum(np.where(pocket, 0.0, a_out), soft)
+        fg_mask = (fg_mask | fg_bd) & ~pocket
+        print(f"      色距離補回非人像前景 {added.mean():.1%}（人像模型切走嘅道具／公仔）")
+    arr[:, :, 3] = np.round(a_out * 255).astype(np.uint8)
+    return Image.fromarray(arr, "RGBA"), fg_mask
 
 
 def _bbox(mask: np.ndarray):
