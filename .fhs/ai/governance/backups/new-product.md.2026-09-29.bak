@@ -103,7 +103,7 @@
 ### Step 3 — Dashboard UI 同步
 
 **負責 Subagent**：`frontend-developer`（如需，否則 A3 直接執行）
-**執行範圍**：`freehandsss_dashboardV42.html`
+**執行範圍**：`freehandsss_dashboardV41.html`
 
 ```
 3a. 更新 _deriveCat() 函式
@@ -120,7 +120,7 @@
       - 能被 _sanitizeItemStatus() 映射至合法 ENUM（或加入新映射分支）
       
 3d. IIFE 安全檢查（執行 Checklist E）：
-    grep -n '\${(function()' freehandsss_dashboardV42.html
+    grep -n '\${(function()' freehandsss_dashboardV41.html
     確認每個 ${(function(){...})()} 均以 })()}  結尾
 
 3e. 更新 sbSyncOrder INSERT mapper

@@ -97,7 +97,7 @@
    驗收行有效標準（任務型分流，詳見 AGENTS Rule 3.17）：
    - 財務/成本 → `finance-auditor` live 三端，附訂單號（口算/口稱 = 無效）
    - 文件治理 → ≤2 跳盲測（3 問）或斷鏈數 = 0 附 log（「已完成」無證據 = 無效）
-   - 代碼/HTML → `code-reviewer` 稽核報告（含最終裁定）（肉眼確認 = 無效）
+   - 代碼/HTML → `code-reviewer` G1–G8 Gate 報告（肉眼確認 = 無效）
    - n8n → execution log 或 `trigger_test_execution` log（未觸發測試 = 無效）
    - 純文件搬移 → 引用同步清單（N 個檔各一行確認）
    - 純規劃 → 「待 /execute；驗收於執行後」

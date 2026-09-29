@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-09-29] 治理：prompt-audit 清理（AGENTS.md v1.8.1，flow 2026-09-29-2116）
+
+- **來源**：`/claude-api prompt-audit`（報告 `.fhs/reports/planning/2026-09-29_prompt-audit/`）→ `/cl-flow-g` Verdict APPROVED_READY → Fat Mo `/execute` 全批。
+- **過時事實修正**：`/new-product`、product-integration-validator、fhs-bug-triage、build-error-resolver 由 V41／V40 改指 V42；AGENTS Rule 3.12／§3／§4／§5 對齊 D43（Airtable 停用、Quadruple 欄位地圖只供歷史）；移除不存在嘅「code-reviewer G1–G8」閘名（8 處）；`/rp` 注入前提改 V42，並改正「必用 axios」為 HTTP Request 節點；MANIFEST／OPERATING_MODEL model 欄對齊實際 frontmatter；finance-auditor Airtable 角色改「已停用」。
+- **行為層**：code-reviewer 刪 sequential-thinking scaffold（H7+「範圍擴至 V42 diff」已套用後撤回：其 checklist 對 fetch／captureFormState／DOM 相似度零容忍，會令所有生產 diff 必 FAIL，轉 F4 另案）；governance 讀者設定由「Sonnet／弱模型」改為模型中立。
+- **精簡**：刪 AGENTS §1 過時 v1.5.1 快照、3 行退役指令、多處歷史括號（部署授權條本體逐字不變）；02 §7 刪已治本 kgov 條目；canva-auto 版本日誌、finance-gatekeeper frontmatter 修訂史移至 `.fhs/notes/changelogs/`。
+- **A4 第 1 輪（Codex，Fat Mo 觸發）2 條 [P1] 已修（Fat Mo 批准 (a)）**：AGENTS 財務真理守護刪「同步鏡像至 Airtable」（禁令保留）、§4「雙寫邏輯」→「寫入邏輯」、§7 finance-auditor 觸發去 Airtable；finance-auditor v2.4.0——Tier 2／2b 改停用說明、刪 3 個 Airtable MCP tools、報告範本刪 Tier 2 段；MANIFEST／subagents README 同步。
+- **Finance Bible v1.4.4（Fat Mo 批准 (c1)）**：finance-auditor read-back 揪出修正後 Bible §一／§八 仍教 Airtable／CSV 備援，同 finance-auditor v2.4.0 矛盾 → §一流程圖、職責表 Airtable 標已停用，§八 CSV 降級協議加停用說明（內容保留供重連）；§三 遷移狀態行待 n8n 現況核實先改。
+- **A4**：第 2 輪（Codex thread `01a0ed7c…`）零 finding，收斂。
+- **備份**：`.fhs/ai/governance/backups/*.2026-09-29.bak`（24 檔，含 Finance Bible）。
+
 ## [2026-09-29] 交接：canva-auto 四項待辦經 Fat Mo 確認結案（純 handoff 更新，無邏輯改動）
 
 - **結案**：Small Chan 0600512 存檔頁 `DAHWBPTzf4I` 原相上載、5 個 Canva 廢棄副本 UI 刪除、0600809 存檔頁 `DAHWTBARIyU` 貼入合集、0600108 p3 小組合答覆。

@@ -1,9 +1,9 @@
 ```handoff
-【FHS 交接摘要 — 更新: 2026-09-29（canva 四項待辦已結案／A4橋接入庫＋分支清理；歷史見 archive/）】
+【FHS 交接摘要 — 更新: 2026-09-29（prompt-audit 清理 D100／canva 待辦結案；歷史見 archive/）】
 🎯 目標: 🔴待Fat Mo：①`.env` SUPABASE_SERVICE_KEY 401過期 ②D79 更換n8n API key→建credential→輪替Supabase key（次序不可反）。🟡首張家庭組合鎖匙扣(V2)實單sync後派finance-auditor驗收K_FAM_COMBO；衛生機制重整期二待確認。生產版已同步（c6b9ec1），三處commit對齊。明細見MASTER表。
-✅ 已定決策：**[D98-99]** Codex=A4只審不改；/cl-flow-g=fast+A4關卡，見AGENTS.md§7；橋接已入庫43b20b5，不追加Codex複審（2026-09-28）。**[D92-94]** guard警告直達模型；R14 cd；R11改log-only。**[D90]** learnings超額退役6條＋配額調整。**[D89]** 結案同步兩道防線：`/commit` Phase 2.7 主倉`--ff-only`對齊＋P0.7.3便攜塊/MASTER一致性檢查。**[S175/S170]** council 唔裝；拷問四支留低（decisions D28，to-spec審視見⏰）。**[D84/D85]** 不擴充Stop hook（重啟條件見decisions）。**[D83]** Stop hook舉證倒置v1.1.0。**[D82]** 前端成本估算留。**[D81]** `sync_order_to_mirror`拒edit已軟刪單（migration 0095）。**[D80]** V2品項drawing_cost由n8n計；「待確認」＝訂單細節待確認、與財務無關。**[D79]** secret唔准經節點輸出傳遞，舊key修補一律改`$env`。**[財務必派finance-auditor]** 財務驗證/異常/規則疑問一律主動派，問Fat Mo前必先派。更早決策見archive rotation檔＋decisions.md／MASTER表。
-🔬 驗證: **[D98/99]** Codex＋Claude盲測全對；4次實審收斂。**[CV-63]** local_prep補回被切公仔，對Canva黑白版MAE 0.038→0.027（單樣本）。**[PAT]** 新令牌200、舊401。**[S149]** 模板69檔黑名單0、乾跑9/9（D97）。**[backfill/財務RPC]** finance-auditor PASS，見MASTER表。較舊驗證見`.fhs/memory/archive/handoff-portable-block-2026-09-25-rotation.md`。
-📋 待辦: 🔴[SUPABASE_SERVICE_KEY]401過期，curl直測確認key失效，待Fat Mo更新`.env`（可能同D79輪替有關）。🔴[D79]Fat Mo更換n8n API key→建n8n Supabase credential→AI改2個HTTP節點→輪替Supabase key。🟡[K_FAM_COMBO]待實單驗收。🟡[category_revenue短收約$846]待Fat Mo定分攤邏輯。🟡[sync_order_to_mirror]成本欄位缺COALESCE（預防性）。🟠[0076-follow]07001007疑似低估$220未證實。🟡[衛生機制重整期二]待確認。🔴[S161/S166]3D打印Phase1待簽收。🟡[根目錄README版本漂移]／[IGWatchdog空窗是否回補]。其餘全見下方MASTER表。
+✅ 已定決策：**[D100]** prompt-audit清理：AGENTS v1.8.1／FinanceBible v1.4.4／finance-auditor v2.4.0對齊D43（Airtable停用唔比對）；A4兩輪收斂；H7+撤回。**[D98-99]** Codex=A4只審不改；/cl-flow-g=fast+A4關卡，見AGENTS.md§7；橋接已入庫43b20b5，不追加Codex複審（2026-09-28）。**[D92-94]** guard警告直達模型；R14 cd；R11改log-only。**[D90]** learnings超額退役6條＋配額調整。**[D89]** 結案同步兩道防線：`/commit` Phase 2.7 主倉`--ff-only`對齊＋P0.7.3便攜塊/MASTER一致性檢查。**[S175/S170]** council 唔裝；拷問四支留低（decisions D28，to-spec審視見⏰）。**[D84/D85]** 不擴充Stop hook（重啟條件見decisions）。**[D82/83]** 前端成本估算留；Stop hook舉證倒置。**[D81]** `sync_order_to_mirror`拒edit已軟刪單（migration 0095）。**[D80]** V2品項drawing_cost由n8n計；「待確認」＝訂單細節待確認、與財務無關。**[D79]** secret唔准經節點輸出傳遞，舊key修補一律改`$env`。**[財務必派finance-auditor]** 財務驗證/異常/規則疑問一律主動派，問Fat Mo前必先派。更早決策見archive rotation檔＋decisions.md／MASTER表。
+🔬 驗證: **[D100]** Explore read-back＋finance-auditor×4 PASS、A4第2輪零finding、health 26→26。**[D98/99]** Codex＋Claude盲測全對。**[CV-63]** local_prep補回被切公仔，對Canva黑白版MAE 0.038→0.027（單樣本）。**[PAT]** 新令牌200、舊401。**[backfill/財務RPC]** finance-auditor PASS，見MASTER表。較舊驗證見`.fhs/memory/archive/handoff-portable-block-2026-09-25-rotation.md`。
+📋 待辦: 🔴[n8n成本靜默歸零]Local Data Mapper取唔到Supabase時成本當0唔報錯，待finance-auditor查證。🔴[SUPABASE_SERVICE_KEY]401過期，curl直測確認key失效，待Fat Mo更新`.env`（可能同D79輪替有關）。🔴[D79]Fat Mo更換n8n API key→建n8n Supabase credential→AI改2個HTTP節點→輪替Supabase key。🟡[K_FAM_COMBO]待實單驗收。🟡[category_revenue短收約$846]待Fat Mo定分攤邏輯。🟡[sync_order_to_mirror]成本欄位缺COALESCE（預防性）。🟠[0076-follow]07001007疑似低估$220未證實。🟡[衛生機制重整期二]待確認。🔴[S161/S166]3D打印Phase1待簽收。🟡[D100另案F1/F4/Bible殘留]。其餘全見下方MASTER表。
 ⏰ 時限待辦: 2027-09-12 Supabase PAT（2027-09-26到期）旋轉，已設日曆提醒。2026-10-05 D58-follow觀察期到期覆核（`ig_phrase_rules`提案數）。2026-10-09 覆核 R14(D92)cd日誌＋R11(D94)日誌。2026-10-23 S170 to-spec 延長審視到期問 Fat Mo（D28）。2026-11-01 Antigravity Workflows退役，FHS 16個橋接檔待遷移，未直開核實。2026-12-17 `check_registry.json` SEMANTIC_D3已知例外（4支仍指向V41嘅playwright腳本）到期，屆時未完成期二會自動轉FAIL。
 ➡️ 下一步: Fat Mo：首次實跑`/cl-flow-g`驗G3硬停、更換n8n API key並通知AI、目視覆核生產版。AI：S149交Claude做P2；家庭組合鎖匙扣實單即派finance-auditor；10-05做D58覆核；10-23問Fat Mo to-spec定案。
 🧱 3D交接: A08 R3紋理未達預期，已停工、未簽收、非打印就緒；Claude Code續作前先讀下方A08報告。正式Pipeline v0 Phase 1仍待Fat Mo簽收。
@@ -26,6 +26,8 @@
 
 | 優先 | 項目 | 狀態 | 備註 |
 |------|------|------|------|
+| 🔴 高 | **[n8n成本靜默歸零風險] `Local Data Mapper` 取唔到 Supabase 時成本當 `Total_Base_Cost:0` 唔報錯** | ⏳ 未查證，待派 finance-auditor 查觸發條件同受影響訂單 | 2026-09-29 finance-auditor 讀 live 節點（`get_node`，間接證據）時發現，同 prompt-audit 無關；`Smart Cache Strategist` 直接 GET Supabase `products` prefix-match，失敗即空；可令 total_cost 被低估。Layer-2 快照不可自行改，需 Fat Mo 授權 |
+| 🟡 待Fat Mo | **[D100-follow] prompt-audit 另案（未執行）** | ⏳ F1 AGENTS:158 vs 03 R3（禁令改寫）；F4 database-reviewer 定位／code-reviewer 審生產diff（須連checklist重寫）／ui-designer+frontend-developer V39/V40原型流程；Finance Bible §九驗證3仍用Airtable.Net_Profit＋L41-44/L51/L77-79 n8n成本查詢描述；`verify_triple_sync` tool；gatekeeper:60 Quadruple「現行v2.1」；`FHS_Pricing_Bible.md:7` V41；01/04「弱模型」措辭；根 AGENTS.md（Codex入口）歷史句 | 全文見完成記錄 `.fhs/reports/completion/2026-09-29_prompt-audit-cleanup_completion_report.md` §四；decisions D100。A4第2輪效力級別「Fat Mo直接觸發」待Fat Mo確認（指令帶附加文字，由A3按原樣執行companion） |
 | 🔴 待Fat Mo | **[D98/D99 A4＋/cl-flow-g] 已落地並推 main** | ⏳ 待Fat Mo：首次實跑`/cl-flow-g`留意G3硬停；`px`技能缺`CLAUDE_SESSION_INIT.md`另案；Codex複審已定不追加（Fat Mo 2026-09-28接受：餘P2文件層，以首次實跑驗證） | 全文見完成記錄 `.fhs/reports/completion/2026-09-26_a4-workflow-docs-landing_completion_report.md`、`2026-09-26_cl-flow-g_completion_report.md`、decisions D98/D99；#7/#8擱置；4次Codex實審已收斂（無P1餘留）；17個寫入類Codex橋接已改拒絕 |
 | 🔴 待Fat Mo | **[SUPABASE_SERVICE_KEY過期]** `.env`嘅key回報401 Unregistered | ⏳ 待Fat Mo更新 | curl直測確認非腳本bug；懷疑同D79-follow「輪替Supabase secret key」pending項相關；`scripts/repair/backfill_item_sale_price_2026_09.js`受影響未能實測跑通（已改用Supabase MCP完成本次backfill） |
 | 🟡 待Fat Mo | **[分支/worktree清理尾巴]** 2026-09-28清理後餘3項 | ⏳ ①`read-command-f68156` worktree有2個未commit檔（handoff.md／placement_memory.json，疑canva工作）待確認先可清；②3個空資料夾殼`admiring-wright-e21e84`／`hopeful-kirch-c6a813`／`read-command-962a3f`被桌面app佔用（Device busy），封存對應session後手動刪；③遠端`origin/gov/a4-codex-workflow`／`origin/gov/a4-docs-landing`已全併入main，待決定是否刪 | 全文見 Changelog.md「2026-09-28 A4橋接入庫」；本地分支gov/a4-*及3條read-command/suitability分支已刪 |
@@ -70,6 +72,12 @@
 | ⚪ 低 | **成本組裝單一真源重構（Phase 2）** | 📝 已記入待辦 | 收斂三套並存表徵，另開 `/cl-flow` |
 | ⚪ 低 | **`docs/repo-map.md` migration 清單缺漏補登（0039-0041 + 0087-0091）** | 📝 已記入待辦 | pre-existing 缺口，D69續六執行時發現listing已停喺0086（0087-0091共5支未登記，非本輪造成），僅新增嘅0092已補登，未回填0087-0091 |
 | ⚪ 低 | **[v3 候選] 圖片內容分析（n8n 串接免費視覺 AI model）** | 📝 已記入待辦 | 另開 `/cl-flow` 獨立評估，不回頭改 v2 |
+
+### 已確認完成（2026-09-29 prompt-audit 清理 D100）
+
+| 狀態 | 項目 | 結果 | 備註 |
+|------|------|------|------|
+| ✅ 完成 | **[D100] `/claude-api prompt-audit` → `/cl-flow-g` → `/execute`：26 個 AI 指令／規則／財務文件對齊現況** | ✅ V41/V40→V42、Airtable 對齊 D43、移除不存在嘅 code-reviewer G1–G8、`/rp` 前提改正、changelog 移出；AGENTS v1.8.1／Finance Bible v1.4.4／finance-auditor v2.4.0；A4 兩輪（第1輪2×P1已修，第2輪零finding）；H7+ 套用後撤回 | 全文見完成記錄 `.fhs/reports/completion/2026-09-29_prompt-audit-cleanup_completion_report.md`、decisions D100、Changelog 2026-09-29。**Subagent 使用記錄**：✅ Explore（fresh-context read-back）＋finance-auditor×4（H5／M8、A4 P1、Bible×2）＋A2 Gemini（gemini-2.5-flash，首輪 4 model 503 後 curl 探測重跑）；❌ code-reviewer（無代碼／HTML） |
 
 ### 已確認完成（2026-09-28 canva-auto 0601124 Saaallyyyc）
 

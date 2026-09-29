@@ -27,7 +27,7 @@ last_updated: 2026-05-21
 | 觸發事件 | 偵測方式 |
 |---------|---------|
 | Supabase ENUM 新增/修改值（`order_status`, `item_status`） | `git diff` 包含 `CREATE TYPE` 或 `ALTER TYPE ... ADD VALUE` |
-| Dashboard dropdown 新增選項 | `git diff` 包含 `<option value=` 在 `freehandsss_dashboardV42.html` |
+| Dashboard dropdown 新增選項 | `git diff` 包含 `<option value=` 在 `freehandsss_dashboardV41.html` |
 | n8n SKU hardcoded 表新增條目 | `git diff` 包含 n8n JSON 中 `sku` 或 `Product_Name` 新字串 |
 | products 表新增 SKU | Airtable `Product_Database` 或 `supabase/migrations/` 有新增 INSERT |
 | 新 item category（`_deriveCat` 新分支） | `git diff` 包含 `_deriveCat` 函式修改 |
@@ -57,7 +57,7 @@ Step 0: 確認新產品的完整資料
 A1. 讀取 supabase/migrations/0001_initial_schema.sql
     → 列出 item_status ENUM 所有合法值
     
-A2. 讀取 freehandsss_dashboardV42.html
+A2. 讀取 freehandsss_dashboardV41.html
     → grep <option value= 在進度 dropdown 區段（acc-status / status-select）
     → 列出所有 dropdown value 屬性值
     

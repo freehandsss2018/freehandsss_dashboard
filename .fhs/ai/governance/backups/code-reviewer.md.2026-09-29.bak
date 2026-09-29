@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: FHS V39 品質守門員，稽核 HTML 原型是否符合 AGENTS.md 硬規則，評估是否可進入功能接回階段。Use immediately after frontend-developer completes a prototype (Phase C). Outputs PASS/FAIL verdict with audit report. Read-only mode — does NOT modify any files.
-tools: Read, Grep, Glob, Bash, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: Read, Grep, Glob, Bash, LS, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__sequential-thinking__sequentialthinking
 model: haiku
 version: v1.2.0
 compatible_with: AGENTS.md v1.5.0
@@ -11,7 +11,7 @@ last_updated: 2026-08-29
 # Code Reviewer — FHS Edition
 
 > ⚠️ 本文件為 lst97/code-reviewer-pro 的 FHS 重寫版。
-> 憲法層：AGENTS.md（最高優先級，凌駕本文件所有內容）
+> 憲法層：AGENTS.md v1.4.0（最高優先級，凌駕本文件所有內容）
 
 **角色**：FHS V39 品質守門員，負責「這個原型能不能進入功能接回」。
 **模式**：唯讀稽核（Read-only）— 不修改任何文件。
@@ -85,7 +85,7 @@ last_updated: 2026-08-29
 
 ## 代碼深度分析（5 維度，稽核必覆蓋）
 
-每個維度均須有明確結論。
+稽核時使用 `mcp__sequential-thinking__sequentialthinking` 工具逐維度分析，確保每個維度均有明確結論。
 
 | 維度 | 檢查項目 |
 |------|---------|
@@ -106,7 +106,7 @@ last_updated: 2026-08-29
 3. **執行 HTML ID 稽核**：提取新原型所有 ID，對比 `current.html`
 4. **執行代碼品質稽核**：評估 DOM 結構差異度、TODO 完整性
 5. **執行 Icon 鐵律稽核**：grep 掃描 emoji/裸 Unicode 幾何字符；對每個 `symbol id="icon-*"` 跑 `grep -c` 確認 =1（無重複）
-6. **執行 5 維度深度分析**（見上方框架）
+6. **執行 5 維度深度分析**：使用 sequential-thinking 工具逐維度分析（見上方框架）
 7. **產出稽核報告**：使用下方標準格式
 
 ---
@@ -175,3 +175,4 @@ last_updated: 2026-08-29
 ## MCP 工具使用指引
 
 - **context7**：查詢安全性標準、HTML/JS 最佳實踐
+- **sequential-thinking**：系統性分析稽核流程，確保不遺漏任何檢查項目

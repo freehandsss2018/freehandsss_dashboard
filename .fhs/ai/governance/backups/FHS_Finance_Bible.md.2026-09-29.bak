@@ -2,8 +2,8 @@
 
 > **Authority Level**: L1 — 架構不變量（最高權威）
 > **衝突規則**: 本文件定義的架構規則 > 一切其他文件。定價/售價公式請讀 L2 `.fhs/ai/FHS_Pricing_Bible.md`。
-> **Version**: v1.4.4
-> **Created**: 2026-05-16 | **Updated**: 2026-09-29（D43 對齊：§一流程圖／職責表 Airtable 標已停用、§八 CSV 降級協議標停用、§十一 反模式 Airtable／CSV 三條併為停用一條，flow 2026-09-29-2116）；前次 2026-09-19（D80：§五 order_items 表補 drawing/printing/chain/shipping_cost 寫入方；§五B／§九 n8n 版本號→V47.25，n8n 自 V47.25 起計算 V2 非家庭品項 Drawing_Cost）；[前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§五B架構責任圖擴充n8n版本號+Family_Member_Config欄位，新增歷史回填/大寶standalone規則廢止記錄）；2026-07-25（cl-flow 2026-07-25-0148：新增「配件」（羊毛氈/燈飾加購）分類至 §一實體清單/§三彙總/§四 getItemCategory+成本分配規則/§四收斂驗證公式/§五責任表 x2，`accessory_cost` 欄位補齊 migration 0079/0080）；2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
+> **Version**: v1.4.3
+> **Created**: 2026-05-16 | **Updated**: 2026-09-19（D80：§五 order_items 表補 drawing/printing/chain/shipping_cost 寫入方；§五B／§九 n8n 版本號→V47.25，n8n 自 V47.25 起計算 V2 非家庭品項 Drawing_Cost）；[前次] 2026-07-28（cl-flow 2026-07-28-1121：大寶/成人/家庭三對象轉V2模型——§五B架構責任圖擴充n8n版本號+Family_Member_Config欄位，新增歷史回填/大寶standalone規則廢止記錄）；2026-07-25（cl-flow 2026-07-25-0148：新增「配件」（羊毛氈/燈飾加購）分類至 §一實體清單/§三彙總/§四 getItemCategory+成本分配規則/§四收斂驗證公式/§五責任表 x2，`accessory_cost` 欄位補齊 migration 0079/0080）；2026-07-25（S189財務文件全面審查：§四【G2】-【G5】改用純position語言重寫，「單購/加購」標籤降級為歷史附錄；§五 subtotal_cost公式修正（非×quantity）；新增§五B「V2統一成本模型-架構責任」+已知限制章節；§十讀取清單加入migrations 0070-0078+退役文件警示）；2026-06-26（S124 v2：§G2 範例校正 — 物料 $115，subtotal 不含運費；N飾公式 = 加購 125×N，單購S 60+125×N，單購P 110+125×N）
 > **Path**: `.fhs/ai/FHS_Finance_Bible.md`
 >
 > ⚠️ **強制規則**：凡任何 AI（主 agent 或 subagent）涉及財務利潤、成本、折扣計算任務，
@@ -17,7 +17,7 @@
 Dashboard（前端）
     ↓ HTTP POST (JSON Payload)
 n8n FHS_Core_OrderProcessor（6Ljih0hSKr9RpYNm）
-    ├─ Airtable 寫入分支已斷開（D43，2026-07-22；node 保留供重連）
+    ├─ 寫入 Airtable（備援）
     └─ 寫入 Supabase（主導）
          ↑
     Layer 1: Supabase View 提供即時成本查詢
@@ -29,7 +29,7 @@ n8n FHS_Core_OrderProcessor（6Ljih0hSKr9RpYNm）
 | 成本計算引擎 | n8n Layer 2 | 計算 total_cost、per-item breakdown、組合折扣 |
 | 即時成本查詢 | Supabase Layer 1 | 提供 `v_products_with_costs` VIEW 給 n8n 查詢 |
 | 成本歷史快照 | Supabase Layer 2 | 鎖定訂單確認時的成本（不可再變動） |
-| （已停用） | Airtable | D43（2026-07-22）起停用，唔寫入、唔作後備；重連須 Fat Mo 決定 |
+| 備援同步 | Airtable | Supabase 寫入成功後異步同步，作為後備 |
 
 ---
 
@@ -356,8 +356,6 @@ orders ─── order_fhs_id ──< order_items >── product_sku ──> pr
 
 ## 八、Airtable 429 降級協議（CSV 備援）
 
-> **已停用（D43，2026-07-22）**：Airtable 已剝離，本節協議現時唔適用。`airtable-database/` CSV 只可作 2026-07-22 前歷史訂單參考，**唔可作比對真相**（D43 後訂單喺 Airtable／CSV 冇記錄，用嚟比對會報假 CRITICAL）。以下內容保留，供 Fat Mo 決定重連 Airtable 時恢復。
-
 ### 背景
 
 Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任何 Airtable 資料。
@@ -460,7 +458,9 @@ RPC KPI 收入分攤 / 混合單 3-layer / get_financial_kpis / get_financial_ch
 - 在 n8n 重算前端傳入的 `final_sale_price`（除非前端傳入值為 0）
 - 跳過 `Parse Items & Generate SKU` 直接進行財務計算
 - 用 Airtable rollup/formula 欄位替代 n8n 寫入邏輯
-- 用 Airtable 或 `airtable-database/` CSV 做比對來源或當即時數據（D43 已停用，見 §八）
+- 直接讀取 Airtable 財務欄位而不經過驗證對比 Supabase
+- Airtable 429 後繼續重試 Airtable MCP（應立即降級至 CSV 備援）
+- 將 CSV 備份數據當作即時數據使用（必須標注「離線備份」）
 
 ---
 

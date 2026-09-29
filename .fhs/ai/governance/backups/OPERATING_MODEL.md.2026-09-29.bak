@@ -152,7 +152,7 @@ Phase C: Quality Gate (code-reviewer)
 **角色定位**：FHS Airtable Schema 審查員與 n8n 資料流驗證員
 **文件位置**：`.fhs/ai/subagents/freehandsss/database-reviewer.md`
 **Runtime**：`~/.claude/agents/freehandsss/database-reviewer.md`
-**Model**：繼承主對話（frontmatter 無 model:）
+**Model**：claude-sonnet-4-6
 
 **職責範圍**：
 - Airtable 欄位類型、命名規範稽核
@@ -173,7 +173,7 @@ Phase C: Quality Gate (code-reviewer)
 **角色定位**：FHS 測試驅動開發專家
 **文件位置**：`.fhs/ai/subagents/freehandsss/tdd-guide.md`
 **Runtime**：`~/.claude/agents/freehandsss/tdd-guide.md`
-**Model**：繼承主對話（frontmatter 無 model:）
+**Model**：claude-sonnet-4-6
 
 **職責範圍**：
 - 引導 Red-Green-Refactor 測試循環
@@ -193,7 +193,7 @@ Phase C: Quality Gate (code-reviewer)
 **角色定位**：FHS 錯誤診斷專家（外科手術式修復）
 **文件位置**：`.fhs/ai/subagents/freehandsss/build-error-resolver.md`
 **Runtime**：`~/.claude/agents/freehandsss/build-error-resolver.md`
-**Model**：haiku（frontmatter 短名；快速診斷，低成本）
+**Model**：claude-haiku-4-5-20251001（快速診斷，低成本）
 
 **職責範圍**：
 - n8n workflow execution 錯誤診斷

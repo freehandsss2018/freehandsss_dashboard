@@ -12,13 +12,13 @@
 
 - **必審**：代碼／HTML／n8n／migration／hook／腳本變更（AGENTS.md Rule 3.17 A4 附加層）。
 - **可標「A4 不適用：理由」**：純文件搬移、純文案潤飾。
-- 財務仍只認 `finance-auditor`；代碼／HTML 仍認 `code-reviewer` 稽核報告。A4 是附加層，不取代。
+- 財務仍只認 `finance-auditor`；代碼／HTML 仍認 `code-reviewer` G1–G8。A4 是附加層，不取代。
 
 ## 前置（缺一不可）
 
 1. Fat Mo 已 `/execute` 且實作完成。
 2. 測試已跑並有結果。
-3. `code-reviewer` 稽核報告已完成（Rule 3.17）。
+3. `code-reviewer` G1–G8 已完成（Rule 3.17）。
 
 ## Step 1 — A3 產出交付包 `<PKG>/a4-scope.md`
 

@@ -31,7 +31,7 @@ trigger: 任何 AI 準備宣告「Bug 修復完成」或「任務完成」之前
 
 **範例**：
 ```bash
-grep -n "sbSyncOrder\|final_sale_price" freehandsss_dashboardV42.html | head -5
+grep -n "sbSyncOrder\|final_sale_price" freehandsss_dashboardV41.html | head -5
 ```
 
 ### Gate 2 — DB Gate（資料庫約束驗證）
@@ -63,7 +63,7 @@ grep -n "sbSyncOrder\|final_sale_price" freehandsss_dashboardV42.html | head -5
 ```
 
 **FHS Gate 3 標準測試步驟**：
-1. 開啟 V42 Dashboard，確認「Supa 已開啟」狀態晶片
+1. 開啟 V41 Dashboard，確認「Supa 已開啟」狀態晶片
 2. 開啟瀏覽器 F12 Console
 3. 選擇一筆測試訂單，修改一個可見欄位（如刻字）
 4. 點擊「同步到系統」

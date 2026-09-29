@@ -56,7 +56,7 @@ A4 適用性：必審（屬代碼／HTML／n8n／migration／hook／腳本）／
 A3 只做 Verdict 已批准範圍；跑測試並記結果。
 
 ### G2 — 既有驗收
-照 Rule 3.17 任務型驗收：`code-reviewer` 稽核報告（代碼／HTML）、財務只認 `finance-auditor`、n8n 看 execution log。A4 是附加層，不取代。
+照 Rule 3.17 任務型驗收：`code-reviewer` G1–G8（代碼／HTML）、財務只認 `finance-auditor`、n8n 看 execution log。A4 是附加層，不取代。
 
 ### G3 — 準備 A4 交付包並硬停
 A3 依 `.fhs/ai/commands/a4-review.md`（v1.3.0+）Step 1 產出 `artifacts/{flow_id}/a4-scope.md`，`state.json` 的 `a4.status` 設 `awaiting_fatmo_trigger`，然後**強制停止**並輸出：

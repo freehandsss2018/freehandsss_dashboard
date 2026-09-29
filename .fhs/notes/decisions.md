@@ -4176,3 +4176,26 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **驗收**：fresh-context Claude subagent 盲測 4 題全對，Step 編號／版本／基線路徑一致；揪出 repo-map 版本號過時（已修）與 D99 條目缺失（本條補上）。
 
 **Subagent 使用記錄**：✅ fresh-context Claude subagent 盲測；其餘直接編輯。
+
+---
+
+### D100：2026-09-29 — prompt-audit 清理（AGENTS.md v1.8.1）
+
+**背景**：`/claude-api prompt-audit` 以 Opus 5.5（haiku subagent 以 Haiku 4.5）為目標稽核約 130 個 Claude 指令檔，揪出 repo 自身可推翻嘅過時事實（V41／V40 路徑、Airtable 後備同 D43 矛盾、不存在嘅 code-reviewer G1–G8 閘名、`/rp` 注入「必用 axios」）、弱模型讀者設定、每次載入嘅修訂史。報告 `.fhs/reports/planning/2026-09-29_prompt-audit/`。
+
+**流程**：`/cl-flow-g`（flow `2026-09-29-2116`）Verdict APPROVED_READY；A2 Gemini 7 條批評全採（#1 部分），其中 #5 揪出新 changelog 檔會觸發 repo-wide 同名檢查 → 改名 `*-changelog.md`；#7 促成 H7+（code-reviewer 範圍擴至 V42 HTML diff）。
+
+**Fat Mo 批准範圍（原文）**：`/execute`（無剔除）→ 最終確認「Y」＝ 7 項明示批准項（A-CLAUDE／A-AGENTS／A-M4／A-M1-03／A-M9／A-H7+／A-FIN）全批。
+
+**裁定**：
+1. AGENTS Rule 3.12／§3／§4／§5 對齊 D43：Supabase 唯一 SSoT；Quadruple 欄位地圖只供歷史。
+2. Rule 3.17 代碼／HTML 驗收改認「`code-reviewer` 稽核報告（含最終裁定）」；刪 code-reviewer sequential-thinking scaffold。**H7+（範圍擴至 V42 diff）套用後經 fresh-context read-back 發現同 checklist 衝突（fetch／captureFormState 零容忍、DOM 相似度 >40% FAIL，生產 diff 必 FAIL），已撤回**，併入 F4：code-reviewer 要審生產 diff 須連 checklist 一併重寫。
+3. governance 讀者設定改為模型中立；歷史敘述／修訂史移出規則本體（`.fhs/notes/changelogs/`）。
+
+**A4 第 1 輪**（Codex thread `01a0ed5e-0408-7c71-ae64-c7b6bf126fb7`，Fat Mo 直接觸發）：2 條 [P1]＝原 F3（AGENTS 財務條 Airtable 鏡像、§4 雙寫字眼）＋F2（finance-auditor Airtable Tier 2 比對）。**Fat Mo 批准 (a) 於本次一併修正**：財務禁令本體保留只刪鏡像子句；finance-auditor 升 v2.4.0，Airtable 由稽核流程移除（避免對 D43 後訂單報假 CRITICAL）。
+
+**Finance Bible 對齊（Fat Mo 批准 (c1)）**：finance-auditor 第 2 次 read-back 揪出 Bible（L1）§一／§八 仍寫 Airtable 備援＋CSV 降級，權威高過 subagent，會令稽核員跟返 Bible 用 CSV → Bible v1.4.4 最小修正（標停用，§八 內容保留供重連）。
+
+**另案（未執行）**：F1 AGENTS:158「不確定時停止」vs 03 R3 措辭；F4 database-reviewer 定位、ui-designer／frontend-developer V39/V40 原型流程；F5 `.mcp.json` MCP server 核對；根 `AGENTS.md`（Codex 入口）第 1 條仍帶「~2,300 tokens 非舊稱」歷史句，未同步（Codex 介面，本次範圍外）。
+
+**Subagent 使用記錄**：見 `.fhs/reports/completion/2026-09-29_prompt-audit-cleanup_completion_report.md`。

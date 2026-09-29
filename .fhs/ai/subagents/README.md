@@ -35,7 +35,7 @@ subagents/
 | **frontend-developer** | v1.1.0 | 2026-05-03 | 負責 JS 邏輯與 CSS 實作（V39 原型實作者） |
 | **code-reviewer** | v1.1.0 | 2026-05-03 | 負責品質稽核與代碼審查（Phase C 品質守門） |
 | **database-reviewer** | **v2.1.0** | **2026-05-16** | 專攻 Airtable / Supabase Schema + n8n 資料流驗證（財務字段歸屬驗證） |
-| **finance-auditor** | **v2.0.0** | **2026-05-16** | 四端財務稽核員（Dashboard ↔ n8n ↔ Airtable ↔ Supabase）Live 驗證 |
+| **finance-auditor** | **v2.4.0** | **2026-09-29** | 財務稽核員（Dashboard ↔ n8n ↔ Supabase）Live 驗證；Airtable 已停用唔比對 |
 | **tdd-guide** | v1.0.0 | 2026-04-28 | 驅動測試驅動開發流程 (Test-Driven Development)，Python + n8n 專用 |
 | **build-error-resolver** | v1.0.0 | 2026-04-28 | 自動化修復構建與運行錯誤，n8n workflow 診斷專用 |
 | **blender-3d-modeler** | v2.0.0 | 2026-05-07 | FDM 3D 列印準備專家，STL 修復 / mesh 檢查 / 列印前置檢查 |

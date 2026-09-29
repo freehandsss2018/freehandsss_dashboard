@@ -82,7 +82,7 @@ n8n 錯誤：
   → get_execution_log → 讀取最新 execution 的 error message + stack trace
 
 Dashboard JS 錯誤：
-  → Grep 定位 Freehandsss_Dashboard/freehandsss_dashboardV42.html（巨檔，禁全檔 Read）
+  → 讀取 Freehandsss_Dashboard/freehandsss_dashboardV40.html
   → Grep 搜尋 try-catch、console.error、空 catch
 
 Python 錯誤：
