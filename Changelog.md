@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-29] 交接：canva-auto 四項待辦經 Fat Mo 確認結案（純 handoff 更新，無邏輯改動）
+
+- **結案**：Small Chan 0600512 存檔頁 `DAHWBPTzf4I` 原相上載、5 個 Canva 廢棄副本 UI 刪除、0600809 存檔頁 `DAHWTBARIyU` 貼入合集、0600108 p3 小組合答覆。
+- **handoff**：MASTER 表四列標「✅ 已結案（Fat Mo 2026-09-29）」；便攜塊 🎯/📋/➡️ 移除對應項並壓回 ≤4,000 bytes。
+- **Subagent 使用記錄**：❌未使用（純文件更新）；finance-auditor 豁免（非財務）。
+
 ## [2026-09-28] 治理：A4 Codex 橋接技能入庫＋已併入分支／worktree 清理（無邏輯改動，commit 43b20b5）
 
 - **入庫**：`.agents/skills/source-command-a4-review/`、`source-command-cl-flow-g/`（Codex 端橋接）＋ 21 個 2026-09-26 `.bak` 備份（17 個寫入類橋接改拒絕前舊版、`AGENTS.root.md`、`domain-modeling`、`cl-flow`、`cl-flow-fast`）。D98/D99 落地時只留在兩個 worktree 未追蹤，其餘 24 個 `source-command-*` 早已入庫；完成記錄稱備份在 `governance/backups/`，此 commit 令記錄與 repo 一致。健檢維持 26 項、無新增異常。

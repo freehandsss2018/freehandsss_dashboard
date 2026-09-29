@@ -2572,3 +2572,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-28 — 治理：A4 橋接入庫＋分支／worktree 清理＋不追加 Codex 複審（Claude Code）
 - 查明 gov/a4-codex-workflow、gov/a4-docs-landing 已全併入 main；補入庫 2 個 Codex 橋接＋21 個 .bak（43b20b5）；主倉切回 main 並 ff 對齊；清 5 條本地分支＋4 個 worktree（餘 f68156 保留、3 個空殼被 app 佔用）。Fat Mo 接受不追加 Codex 複審。全文見 Changelog.md 同日條目。
 - **Subagent 使用記錄**：❌未使用（純 git 操作與文件更新）；finance-auditor 豁免（非財務）。
+
+## 2026-09-29 — 交接：canva-auto 四項待辦結案（Claude Code）
+- Fat Mo 確認 Small Chan 0600512 原相、5 個 Canva 副本刪除、0600809 存檔頁入合集、0600108 p3 答覆全部結案；handoff MASTER 表標已結案、便攜塊移除對應項。全文見 Changelog.md 同日條目。
+- **Subagent 使用記錄**：❌未使用（純文件更新）；finance-auditor 豁免（非財務）。
