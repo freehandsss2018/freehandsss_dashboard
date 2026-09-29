@@ -4194,6 +4194,8 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 
 **A4 第 1 輪**（Codex thread `01a0ed5e-0408-7c71-ae64-c7b6bf126fb7`，Fat Mo 直接觸發）：2 條 [P1]＝原 F3（AGENTS 財務條 Airtable 鏡像、§4 雙寫字眼）＋F2（finance-auditor Airtable Tier 2 比對）。**Fat Mo 批准 (a) 於本次一併修正**：財務禁令本體保留只刪鏡像子句；finance-auditor 升 v2.4.0，Airtable 由稽核流程移除（避免對 D43 後訂單報假 CRITICAL）。
 
+**A4 第 2 輪**（thread `01a0ed7c-74e1-7372-aa17-2ed9e457045a`）：零 finding；效力級別＝**A4 未獨立驗證**（Fat Mo 裁決保守標記——指令帶附加文字未被 harness 解析為 slash command，由 A3 按原樣執行，屬 §7 規則 2 第三級）。教訓：叫 A4 審查時唔好喺 `/codex:review` 後加括號文字，否則要由 A3 代跑、降級。
+
 **Finance Bible 對齊（Fat Mo 批准 (c1)）**：finance-auditor 第 2 次 read-back 揪出 Bible（L1）§一／§八 仍寫 Airtable 備援＋CSV 降級，權威高過 subagent，會令稽核員跟返 Bible 用 CSV → Bible v1.4.4 最小修正（標停用，§八 內容保留供重連）。
 
 **另案（未執行）**：F1 AGENTS:158「不確定時停止」vs 03 R3 措辭；F4 database-reviewer 定位、ui-designer／frontend-developer V39/V40 原型流程；F5 `.mcp.json` MCP server 核對；根 `AGENTS.md`（Codex 入口）第 1 條仍帶「~2,300 tokens 非舊稱」歷史句，未同步（Codex 介面，本次範圍外）。

@@ -76,13 +76,13 @@ Codex（`/codex:review`，Fat Mo 直接觸發，thread `01a0ed5e-0408-7c71-ae64-
 
 必審，兩輪完成：
 - 第 1 輪（thread `01a0ed5e-0408-7c71-ae64-c7b6bf126fb7`，Fat Mo 直接觸發）：2 條 [P1] → 已修（見三B），`gpt-review.prev-round1.md`
-- 第 2 輪（thread `01a0ed7c-74e1-7372-aa17-2ed9e457045a`）：**零 finding**，`gpt-review.md`。效力級別記為「A4 已審（Fat Mo 直接觸發）」待 Fat Mo 確認（指令文字由 Fat Mo 輸入、A3 按原樣執行 companion 腳本）
+- 第 2 輪（thread `01a0ed7c-74e1-7372-aa17-2ed9e457045a`）：**零 finding**，`gpt-review.md`。效力級別＝**「A4 未獨立驗證」**（Fat Mo 2026-09-29 裁決保守標記：指令帶附加文字未被解析為 slash command，由 A3 按原樣執行 companion；屬 AGENTS §7 規則 2 第三級。結論內容不變，唯不可寫「已獨立審查」）
 - `a4.status = responded`，未解 P1＝0
 
 ## [E] 雙紀律自檢
 
 【交付前雙紀律自檢】
-驗收：文件治理——fresh-context Explore read-back 7 條不變量（FAIL 項已修／撤回／另案）；finance-auditor read-back ×4 全 PASS；部署授權條逐字比對不變；health check 26→26｜A4：已審 2 輪（第 2 輪零 finding；級別待 Fat Mo 確認）
+驗收：文件治理——fresh-context Explore read-back 7 條不變量（FAIL 項已修／撤回／另案）；finance-auditor read-back ×4 全 PASS；部署授權條逐字比對不變；health check 26→26｜A4：第 1 輪已審（Fat Mo 直接觸發）；第 2 輪零 finding，級別＝未獨立驗證
 Subagent：✅ Explore（read-back）；✅ finance-auditor ×4（H5／M8、A4 P1 修正、Finance Bible ×2）；A2 Gemini（gemini-2.5-flash）；❌ code-reviewer（無代碼／HTML）
 
 ## Subagent 使用記錄

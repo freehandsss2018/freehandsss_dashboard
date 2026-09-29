@@ -8,7 +8,7 @@
 - **精簡**：刪 AGENTS §1 過時 v1.5.1 快照、3 行退役指令、多處歷史括號（部署授權條本體逐字不變）；02 §7 刪已治本 kgov 條目；canva-auto 版本日誌、finance-gatekeeper frontmatter 修訂史移至 `.fhs/notes/changelogs/`。
 - **A4 第 1 輪（Codex，Fat Mo 觸發）2 條 [P1] 已修（Fat Mo 批准 (a)）**：AGENTS 財務真理守護刪「同步鏡像至 Airtable」（禁令保留）、§4「雙寫邏輯」→「寫入邏輯」、§7 finance-auditor 觸發去 Airtable；finance-auditor v2.4.0——Tier 2／2b 改停用說明、刪 3 個 Airtable MCP tools、報告範本刪 Tier 2 段；MANIFEST／subagents README 同步。
 - **Finance Bible v1.4.4（Fat Mo 批准 (c1)）**：finance-auditor read-back 揪出修正後 Bible §一／§八 仍教 Airtable／CSV 備援，同 finance-auditor v2.4.0 矛盾 → §一流程圖、職責表 Airtable 標已停用，§八 CSV 降級協議加停用說明（內容保留供重連）；§三 遷移狀態行待 n8n 現況核實先改。
-- **A4**：第 2 輪（Codex thread `01a0ed7c…`）零 finding，收斂。
+- **A4**：第 2 輪（Codex thread `01a0ed7c…`）零 finding，收斂；效力級別＝「A4 未獨立驗證」（Fat Mo 裁決保守標記，指令帶附加文字由 A3 按原樣執行）。
 - **備份**：`.fhs/ai/governance/backups/*.2026-09-29.bak`（24 檔，含 Finance Bible）。
 
 ## [2026-09-29] 交接：canva-auto 四項待辦經 Fat Mo 確認結案（純 handoff 更新，無邏輯改動）
