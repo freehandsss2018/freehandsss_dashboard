@@ -4223,3 +4223,5 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **同步**：AGENTS.md v1.8.2（§7 新增規則 9 指針，正文不改）。
 
 **Subagent 使用記錄**：❌未使用（決策落檔）；finance-auditor 豁免（未涉財務數字判斷）。
+
+**執行結果（2026-10-01）**：A4 審視方案（第 1 輪 BLOCKER→A3 修正措辭與測試→第 2 輪建議修、無 BLOCKER）；A4 於隔離分支 `a4/restore-fix` 修 V42.html（只改 K／M 還原分支，A3 審 diff）；16 案例 UI 測試基線 5 紅→修復後桌面／手機全綠；`/fhs-check` 5/5。**例外按「A4 交出修復」視為已用盡並失效**，規則 7 恢復原義。證據報告見 `.fhs/reports/planning/2026-10-01_restore-bug-sweep-evidence.md`、`…-ui-test-report.md`。
