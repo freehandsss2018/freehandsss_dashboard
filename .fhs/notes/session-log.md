@@ -2580,3 +2580,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-29 — 交接：canva-auto 四項待辦結案（Claude Code）
 - Fat Mo 確認 Small Chan 0600512 原相、5 個 Canva 副本刪除、0600809 存檔頁入合集、0600108 p3 答覆全部結案；handoff MASTER 表標已結案、便攜塊移除對應項。全文見 Changelog.md 同日條目。
 - **Subagent 使用記錄**：❌未使用（純文件更新）；finance-auditor 豁免（非財務）。
+
+## 2026-09-30 — 修復：0600930 吊飾還原方向錯誤（Claude Code）
+- 吊飾還原改讀 item_key 尾段方向，V42 已部署生產；數量空白列待 Fat Mo 確認。全文見 Changelog.md「2026-09-30 修復：訂單 0600930」。
+- **Subagent 使用記錄**：✅ finance-auditor（0600930 稽核）；修復未派。

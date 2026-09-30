@@ -10749,25 +10749,30 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                             const _ik  = (item.item_key || '').toUpperCase();
                             const _ikO = (item.item_key || '');
                             const _isElder = _ik.includes('_M_E_') || _ikO.includes('大寶') || _ikO.includes('長輩') || _ikO.includes('家庭');
-                            if (_sp.includes('左手')) {
+                            // 部位方向真源＝item_key 尾段（{id}_M_LH／_M_E_RF）；V2 起 specification 只存刻字，
+                            // 唔含「左手／右腳」字眼，單靠 specification 會全部落入下面 legacy 假設「左手」
+                            // （0600930：右手+左腳 被還原成 左手+右手+左腳，報價變 3 吊飾／2 頸鏈）。
+                            const _dirM = (_ikO.match(/_M_(?:E_)?(LH|RH|LF|RF)$/i) || [])[1];
+                            const _dirU = _dirM ? _dirM.toUpperCase() : '';
+                            if (_sp.includes('左手') || _dirU === 'LH') {
                                 if (_isElder) { _synth.m_e_lh_en = true; _synth.m_e_lh_eng = _eg; _synth.m_e_lh_qty = _qt; _synth.m_elder_sec_en = true; }
                                 else          { _synth.m_lh_en   = true; _synth.m_lh_eng   = _eg; _synth.m_lh_qty   = _qt; _synth.m_baby_sec_en  = true; }
                             }
-                            if (_sp.includes('右手')) {
+                            if (_sp.includes('右手') || _dirU === 'RH') {
                                 if (_isElder) { _synth.m_e_rh_en = true; _synth.m_e_rh_eng = _eg; _synth.m_e_rh_qty = _qt; _synth.m_elder_sec_en = true; }
                                 else          { _synth.m_rh_en   = true; _synth.m_rh_eng   = _eg; _synth.m_rh_qty   = _qt; _synth.m_baby_sec_en  = true; }
                             }
-                            if (_sp.includes('左腳')) {
+                            if (_sp.includes('左腳') || _dirU === 'LF') {
                                 if (_isElder) { _synth.m_e_lf_en = true; _synth.m_e_lf_eng = _eg; _synth.m_e_lf_qty = _qt; _synth.m_elder_sec_en = true; }
                                 else          { _synth.m_lf_en   = true; _synth.m_lf_eng   = _eg; _synth.m_lf_qty   = _qt; _synth.m_baby_sec_en  = true; }
                             }
-                            if (_sp.includes('右腳')) {
+                            if (_sp.includes('右腳') || _dirU === 'RF') {
                                 if (_isElder) { _synth.m_e_rf_en = true; _synth.m_e_rf_eng = _eg; _synth.m_e_rf_qty = _qt; _synth.m_elder_sec_en = true; }
                                 else          { _synth.m_rf_en   = true; _synth.m_rf_eng   = _eg; _synth.m_rf_qty   = _qt; _synth.m_baby_sec_en  = true; }
                             }
                             // Fallback: spec has 手/腳 but no 左/右 direction (legacy undirected — assume left as best-guess)
                             // IMPORTANT: mapOrder overview uses the same fallback so both display consistently
-                            if (!_sp.includes('左') && !_sp.includes('右')) {
+                            if (!_dirU && !_sp.includes('左') && !_sp.includes('右')) {
                                 if      (_sp.includes('腳')) { _synth.m_lf_en = true; _synth.m_lf_eng = _eg; _synth.m_lf_qty = _qt; _synth.m_baby_sec_en = true; }
                                 else if (_sp.includes('手')) { _synth.m_lh_en = true; _synth.m_lh_eng = _eg; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }
                                 else                          { _synth.m_lh_en = true; _synth.m_lh_qty = _qt; _synth.m_baby_sec_en = true; }

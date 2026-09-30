@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-09-30] 修復：訂單 0600930 重開後吊飾部位還原錯誤（V42，已部署生產）
+
+- **症狀**：重開 0600930（右手+左腳吊飾）介面多出「左手」、右手/左腳數量空白、財務結算變「吊飾 3個 / 2條頸鏈: $4470」。
+- **根因**：`reconstructOrderFromSupabase()` 吊飾還原只靠 `order_items.specification` 判斷方向；V2 起該欄只存刻字（空字串／`L`），無「左手／右腳」字眼，落入 legacy 假設「左手」。方向真源只在 `item_key` 尾段（`{id}_M_RH`／`_M_E_LF`）。鎖匙扣還原本來就先看 item_key，吊飾漏了。
+- **修法**：吊飾還原先以 `item_key` 尾段（`_M_(E_)?(LH|RH|LF|RF)$`）判斷方向，缺失才用舊 specification 規則；舊格式 `TEMP_M_01` 不受影響。只改 `freehandsss_dashboardV42.html` 一處（+10/−5 行）。
+- **驗證**：Node 檢查 9 段內嵌 script 語法無誤＋key regex 測試；`/fhs-check` 5/5 PASS、無殘留 test 單、0600930 `final_sale_price` 仍 5360；finance-auditor 對 0600930 財務全 PASS；部署三關（PUT 204／大小一致／SHA256 `28691534…B00B`）。生產版實開待 Fat Mo 目測。
+- **未修（待確認）**：`m_*_qty` 存檔即為空字串（自 2026-09-03 起最近 12 張單皆然，空白按 1 件計，計價無誤），列入 handoff MASTER 表待 Fat Mo 確認是否原意。
+- **Subagent 使用記錄**：✅ finance-auditor（0600930 稽核，背景）；修復本身未派（單點前端修改，fresh-context 覆核待 Fat Mo 生產目測）。
+
+
 ## [2026-09-29] 治理：prompt-audit 清理（AGENTS.md v1.8.1，flow 2026-09-29-2116）
 
 - **來源**：`/claude-api prompt-audit`（報告 `.fhs/reports/planning/2026-09-29_prompt-audit/`）→ `/cl-flow-g` Verdict APPROVED_READY → Fat Mo `/execute` 全批。
