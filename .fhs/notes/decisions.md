@@ -4201,3 +4201,25 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **另案（未執行）**：F1 AGENTS:158「不確定時停止」vs 03 R3 措辭；F4 database-reviewer 定位、ui-designer／frontend-developer V39/V40 原型流程；F5 `.mcp.json` MCP server 核對；根 `AGENTS.md`（Codex 入口）第 1 條仍帶「~2,300 tokens 非舊稱」歷史句，未同步（Codex 介面，本次範圍外）。
 
 **Subagent 使用記錄**：見 `.fhs/reports/completion/2026-09-29_prompt-audit-cleanup_completion_report.md`。
+
+---
+
+### D101：2026-10-01 — A4 一次性寫入例外（「重開訂單還原」同類 bug 排查，有時效）
+
+**背景**：訂單 0600930 重開還原錯誤（2026-09-30 已修）後，Fat Mo 要求設計方案排查其他訂單與其他還原分支（鎖匙扣等），並「交 A4 審視及執行」。D98／AGENTS §7 規定 A4（Codex）只審不改，字面上與「執行」衝突。經 `/rp`＋「拷問我」六題釐清。
+
+**裁定（Fat Mo 確認）**：
+1. **A4 一次性例外**：僅限本排查任務，容許 A4 在**獨立分支**修改 `freehandsss_dashboardV42.html` 與測試。**不碰資料庫**（不 apply migration、不改生產訂單）、不 push main、不部署。
+2. **盤點由 A3 執行**：全部唯讀 SELECT，結果連 SQL 落檔，A4 只審證據。
+3. **範圍**：只查「重開訂單還原」鏈（鎖匙扣、立體擺設、追加件、大寶／家庭、`mapOrder`）；`m_*_qty` 空白只查不修。
+4. **受害單修法**：A3 列清單，Fat Mo 逐張批，經標準路徑「重開→改→sync」修正；`finance-auditor` 驗財務。
+
+**自動失效**：A4 交出修復審視結果、或階段 A 證實無需修代碼、或 2026-10-15，三者取最早者。失效後 §7 規則 7 恢復原義，**不得援引本例外做其他任務**。
+
+**風險（已知並接受）**：Codex 寫入不經 hook 守護（AGENTS §7 規則 3：Codex 端 hook 不得當防線）。緩解＝獨立分支＋只准改 V42.html／測試＋A3 逐行審 diff＋不部署＋A4 BLOCKER 不由 A3 推翻。
+
+**方案書**：`.fhs/reports/planning/2026-10-01_restore-bug-sweep-plan.md`（含盤點 SQL 清單、代碼審查表、停止條件、回滾）。
+
+**同步**：AGENTS.md v1.8.2（§7 新增規則 9 指針，正文不改）。
+
+**Subagent 使用記錄**：❌未使用（決策落檔）；finance-auditor 豁免（未涉財務數字判斷）。

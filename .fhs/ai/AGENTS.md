@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.8.1
-> Last updated: 2026-09-29（prompt-audit 清理：對齊 D43 Airtable 停用、移除不存在的 code-reviewer 閘名、刪過時快照／退役指令行、去歷史敘述）
+> Version: v1.8.2
+> Last updated: 2026-10-01（§7 新增規則 9：D101 A4 一次性寫入例外指針）；2026-09-29（prompt-audit 清理：對齊 D43 Airtable 停用、移除不存在的 code-reviewer 閘名、刪過時快照／退役指令行、去歷史敘述）
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -304,6 +304,7 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 6. **嚴重度照抄**：A3 不得調級；外掛輸出的 `[P1]`／`[P2]` 照抄，不轉換。
 7. **A4 不得執行任何寫入類指令**（`/execute`、`/commit`、`/upload-web`、`/db-query`、`/new-product` 等）。同一時間只容許一個主要寫入者。
 8. **不可用即標明**：Codex 未登入、逾時、無輸出檔、越權 → 標「A4 受阻」，停在驗收前，不得以「A4 已審」收尾；替代交接由 Fat Mo 決定。
+9. **例外（有時效）**：D101（2026-10-01）容許 A4 於獨立分支對 V42.html 做一次性修復，範圍與失效條件見 decisions.md D101，失效後規則 7 恢復原義；不得援引做其他任務。
 
 ### Subagent 決定性路由規則（強制調用，不得以 Claude 直接處理替代）
 
