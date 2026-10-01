@@ -43,6 +43,7 @@
 
 13. **合併多個 `<td>` 為一個之前，必須確認冇 JS 用 `textContent`/`innerHTML` 直接覆寫其中一個舊 id 所在元素**：訂單總覽入帳/成本/利潤三欄合併一欄時，發現 `updateFinancialsLocally()` 對 `profit-cell-${id}` 執行 `profitCell.textContent = '$'+displayedProfit`——原設計 `profit-cell-` id 掛喺成個 `<td>`，若合併後仍掛喺度，會連同新增嘅「利潤」文字標籤一齊被覆寫清空。**判斷訊號**：grep 目標 id 喺 JS 入面係咪用 `textContent=`/`innerHTML=` 覆寫（非 `.value=` 或子元素 `getElementById`）；係就要將該 id 改掛喺**只包住會被覆寫嗰部分**嘅內層元素（如獨立 `<span>`），唔可以掛喺會連帶其他靜態內容嘅外層容器 — D71/2026-09-06 `@frontend` <!-- v:2026-09-06 -->
 17. **【高頻 ⚠️】從 `order_items` 還原表單，部位方向只信 `item_key` 尾段，勿靠 `specification`**：V2 起 specification 只存刻字，無「左手/右腳」字眼，靠它判斷會落入 legacy「左手」假設多開一肢、令報價多算（0600930 3吊飾/2頸鏈）；新增還原分支先確認方向來源欄位仍有值，鎖匙扣已用 item_key、吊飾曾漏 — 源自 2026-09-30 `@frontend` <!-- v:2026-09-30 -->
+18. **【高頻 ⚠️】還原訂單後 UI 衍生欄位要同步，且舊格式刻字在 `specification`**：D51 鎖匙扣共用欄位（數量／上排／下排）不隨 restoreFormState 同步，重開後空白；舊格式單刻字存 `specification`、`engraving_text` 為空，只讀後者會把刻字還原成空字串並覆蓋 raw_form_state。還原 helper 要「全同→顯示值、有異→展開分開填」，且不可用 `fhsD51KToggleOverride`（會用共用值覆寫全部部位）；寫測試時預期值要用各欄位來源，勿只用單一欄位 — 源自 2026-10-01 `@frontend` <!-- v:2026-10-01 -->
 
 ## Preferences
 

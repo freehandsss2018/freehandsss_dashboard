@@ -8023,6 +8023,33 @@
                 if (sharedEl) sharedEl.classList.toggle('show', count > 0);
                 var labelEl = document.getElementById('d51SharedLabelK_' + prefix);
                 if (labelEl) labelEl.textContent = '已選 ' + count + ' 個部位 · 套用以下設定';
+                // 還原後共用欄位要反映各部位真實值：全部相同 → 共用欄位顯示該值；有不同（如左手4件、左腳2件）→
+                // 自動展開「分開填」逐部位顯示，唔改任何部位數值（唔經 fhsD51KToggleOverride，因為佢會用共用值覆寫全部部位）。
+                if (count > 0) {
+                    var vals = [];
+                    ['lh', 'rh', 'lf', 'rf'].forEach(function (part) {
+                        var key = prefix + part;
+                        if (!FHS_D51_K_SEL[key]) return;
+                        var g = function (s) { var e = document.getElementById('k_' + key + '_' + s); return e ? e.value : ''; };
+                        vals.push([g('qty'), g('top'), g('bot')].join('\u0001'));
+                    });
+                    var allSame = vals.every(function (v) { return v === vals[0]; });
+                    var sharedQ = document.getElementById('d51SharedQtyK_' + prefix);
+                    var sharedT = document.getElementById('d51SharedTopK_' + prefix);
+                    var sharedB = document.getElementById('d51SharedBotK_' + prefix);
+                    var rowsEl = document.getElementById('d51OverrideRowsK_' + prefix);
+                    if (allSame) {
+                        var first = vals[0].split('\u0001');
+                        if (sharedQ) sharedQ.value = first[0] || '1';
+                        if (sharedT) sharedT.value = first[1] || '';
+                        if (sharedB) sharedB.value = first[2] || '';
+                        FHS_D51_K_OV[prefix] = false;
+                        if (rowsEl) rowsEl.classList.remove('show');
+                    } else {
+                        FHS_D51_K_OV[prefix] = true;
+                        if (rowsEl) rowsEl.classList.add('show');
+                    }
+                }
             });
         }
 
@@ -10708,7 +10735,9 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                         _kItems.forEach(function(item) {
                             if (/_K_FAM_COMBO$/i.test(item.item_key || '')) return;
                             const _sp  = item.specification || '';
-                            const _eg  = item.engraving_text || '';
+                            // 舊格式單（如 0600105）刻字存喺 specification（「[上排]Yun [下排]0905」），engraving_text 為空——
+                            // 只讀 engraving_text 會令刻字還原成空白。engraving_text 有值時仍以它為準。
+                            const _eg  = item.engraving_text || (/\[(上|下)排\]/.test(_sp) ? _sp : '');
                             const _qt  = item.quantity || 1;
                             const _ik  = (item.item_key || '').toUpperCase();
                             const _eng = _parseEng(_eg);
@@ -10737,6 +10766,12 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
                                 if (_sp.includes('腳')) { _synth.k_lf_en = true; _synth.k_lf_top = _eng.top; _synth.k_lf_qty = _qt; _synth.k_baby_sec_en = true; }
                                 else                    { _synth.k_lh_en = true; _synth.k_lh_top = _eng.top; _synth.k_lh_qty = _qt; _synth.k_baby_sec_en = true; }
                             }
+                        });
+                        // 品項沒有刻字資料（例如只填單排刻字不入庫）時，唔好用空字串覆蓋 raw_form_state 已還原嘅刻字。
+                        ['lh','rh','lf','rf','e_lh','e_rh','e_lf','e_rf'].forEach(function(p) {
+                            ['top','bot'].forEach(function(s) {
+                                if (_synth['k_' + p + '_' + s] === '') delete _synth['k_' + p + '_' + s];
+                            });
                         });
                         // Default baby section to true if no items matched elder and no baby was set
                         if (!_synth.k_baby_sec_en && !_synth.k_elder_sec_en) _synth.k_baby_sec_en = true;

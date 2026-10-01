@@ -67,6 +67,8 @@ async (page) => {
       res.qtyM = {}; IDS.M.filter(on).forEach(id => { res.qtyM[id.replace(/^m_|_en$/g, '').toUpperCase()] = val(id.replace('_en', '_qty')); });
       res.qtyK = {}; IDS.K.filter(on).forEach(id => { res.qtyK[id.replace(/^k_|_en$/g, '').toUpperCase()] = val(id.replace('_en', '_qty')); });
       res.kText = {}; IDS.K.filter(on).forEach(id => { const b = id.replace('_en', ''); res.kText[id.replace(/^k_|_en$/g, '').toUpperCase()] = [val(b + '_top'), val(b + '_bot')]; });
+      res.sharedK = [val('d51SharedQtyK_'), val('d51SharedTopK_'), val('d51SharedBotK_')];
+      const ovEl = document.getElementById('d51OverrideRowsK_'); res.ovOpen = !!(ovEl && ovEl.classList.contains('show'));
       const txt = (document.body.textContent || '').replace(/\s+/g, ' ');
       const m = txt.match(/吊飾\s*\d+\s*個\s*\/\s*\d+\s*條頸鏈\s*:?\s*\$?\s*[\d,]*/);
       res.necklaceCard = m ? m[0].trim() : null;
@@ -76,7 +78,7 @@ async (page) => {
     }, { orderId, IDS });
     page.off('console', onErr);
     const exp = await page.evaluate(async ({ orderId }) => {
-      const r = await fetch(`${window.SB_URL}/rest/v1/order_items?order_fhs_id=eq.${encodeURIComponent(orderId)}&select=item_key,engraving_text,quantity`, { headers: { apikey: window.SB_ANON_KEY, Authorization: `Bearer ${window.SB_ANON_KEY}` } });
+      const r = await fetch(`${window.SB_URL}/rest/v1/order_items?order_fhs_id=eq.${encodeURIComponent(orderId)}&select=item_key,engraving_text,specification,quantity`, { headers: { apikey: window.SB_ANON_KEY, Authorization: `Bearer ${window.SB_ANON_KEY}` } });
       const items = await r.json();
       const dir = (cat, k) => { const m = k.match(new RegExp('_' + cat + '_((?:E_)?(?:LH|RH|LF|RF))$', 'i')); return m ? m[1].toUpperCase() : null; };
       const M = {}, K = {}, Ktext = {};
@@ -85,7 +87,7 @@ async (page) => {
         if (dm) M[dm] = i.quantity || 1;
         if (dk) {
           K[dk] = i.quantity || 1;
-          const eg = i.engraving_text || '';
+          const eg = i.engraving_text || (/\[(上|下)排\]/.test(i.specification || '') ? i.specification : '');
           const tm = eg.match(/\[上排\]([^\[]*)/), bm = eg.match(/\[下排\]([^\[]*)/);
           Ktext[dk] = [tm ? tm[1].trim() : eg.replace(/\[下排\][^\[]*/g, '').trim(), bm ? bm[1].trim() : ''];
         }
@@ -109,6 +111,14 @@ async (page) => {
       Object.keys(exp.K).forEach(d => { if (String(out.qtyK[d]) !== String(exp.K[d])) fails.push(`K ${d} 數量 got=${out.qtyK[d]} exp=${exp.K[d]}`); });
       Object.keys(exp.Ktext).forEach(d => { const g = out.kText[d] || []; if ((g[0] || '') !== exp.Ktext[d][0] || (g[1] || '') !== exp.Ktext[d][1]) fails.push(`K ${d} 刻字 got=${JSON.stringify(g)} exp=${JSON.stringify(exp.Ktext[d])}`); });
     }
+    // 共用欄位／分開填不變式（K 嬰兒區）：選中部位的 數量／上排／下排 全部相同 → 共用欄位須等於該值；有不同 → 須自動展開「分開填」
+    const kk = Object.keys(out.qtyK).filter(d => !d.startsWith('E_'));
+    if (kk.length && checkQtyText) {
+      const tuples = kk.map(d => [String(out.qtyK[d]), (out.kText[d] || [])[0] || '', (out.kText[d] || [])[1] || '']);
+      const same = tuples.every(t => t.join('|') === tuples[0].join('|'));
+      if (same) { const sh = [String(out.sharedK[0]), out.sharedK[1] || '', out.sharedK[2] || '']; if (sh.join('|') !== tuples[0].join('|')) fails.push('K 共用欄位 got=' + JSON.stringify(sh) + ' exp=' + JSON.stringify(tuples[0])); }
+      else if (!out.ovOpen) fails.push('K 各部位數量／刻字不同，但「分開填」未自動展開');
+    }
     if (consoleErrors.length) fails.push(`console error ×${consoleErrors.length}: ${consoleErrors[0]}`);
     results.push({ case: name, order: orderId, viewport: cfg.viewport, version: cfg.version, kind: kind || 'real', pass: fails.length === 0, fails, card: out.necklaceCard, suggested: out.suggested });
   }
@@ -118,6 +128,7 @@ async (page) => {
     ['U2 吊飾四肢＋鎖匙扣四肢（0600721）', '0600721'],
     ['U3 大寶右手＋嬰兒左手（0600804）', '0600804'],
     ['U5 鎖匙扣單品＋家庭組合（0600107）', '0600107'],
+    ['U7 舊格式鎖匙扣：刻字在 specification、左手4件＋左腳2件（0600105）', '0600105'],
     ['吊飾 左手＋左腳＋鎖匙扣（0600710）', '0600710'],
     ['吊飾 左手＋左腳＋鎖匙扣（0600803）', '0600803'],
     ['吊飾 左手＋右腳＋鎖匙扣（0600903）', '0600903'],
