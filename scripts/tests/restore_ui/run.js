@@ -146,6 +146,7 @@ async (page) => {
     try { await runCase(c[0], c[1], c[2]); }
     catch (e) { results.push({ case: c[0], order: c[1], viewport: cfg.viewport, version: cfg.version, kind: c[2] || 'real', pass: false, fails: ['腳本錯誤: ' + String(e).slice(0, 160)] }); }
   }
+  await page.unroute('**/*'); // 必須移除：殘留的攔截器會改寫之後所有頁面載入的資料（曾令總覽出現假的 href="#icon-… 文字，2026-10-01 誤報事件）
   const failed = results.filter(r => !r.pass);
   const summary = { cfg: { version: cfg.version, viewport: cfg.viewport, mode: cfg.mode, file: cfg.file }, total: results.length, passed: results.length - failed.length, failed: failed.length, violations, allowedReadPosts, results };
   if (violations.length) throw new Error('TEST ABORT: 偵測到被禁止的寫入類請求 ' + JSON.stringify(violations));
