@@ -11,8 +11,8 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-10-01T14:03:44Z">
-    <meta name="fhs-deploy-src" content="67972156325d0ea04bc8781b62cbbbbd2c571f10-dirty">
+    <meta name="fhs-build" content="2026-10-01T14:28:26Z">
+    <meta name="fhs-deploy-src" content="959f20ac2bd6f06c6b6057c0e156ecb0928a933b-dirty">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -7925,6 +7925,7 @@
             var ovRow = document.getElementById('d51OvK_' + key);
             if (ovRow) ovRow.classList.toggle('show', sel);
             if (sel) fhsD51KApplySharedToPart(prefix, part);
+            fhsD51KApplySplitView(prefix);
             generate();
             fhsD51UpdateHeader('K');
         }
@@ -7949,11 +7950,35 @@
             });
             generate();
         }
+        // 「分開填」開啟時，統一設定行（數量／上排／下排）冇意義兼會誤導（睇落似空白未填），隱藏佢；
+        // 統一模式先顯示。標籤同連結文字跟住切換。純外觀，唔改任何部位數值。
+        function fhsD51KApplySplitView(prefix) {
+            var box = document.getElementById('d51SharedK_' + prefix);
+            if (!box) return;
+            var split = !!FHS_D51_K_OV[prefix];
+            var grid = box.querySelector(':scope > .grid-3-col');
+            if (grid) grid.style.display = split ? 'none' : '';
+            var link = box.querySelector(':scope > .d51-link-btn');
+            if (link) link.textContent = split ? '改返全部部位統一設定' : '如果有部位想唔同 → 分開填';
+            var count = ['lh', 'rh', 'lf', 'rf'].filter(function (p) { return FHS_D51_K_SEL[prefix + p]; }).length;
+            var label = document.getElementById('d51SharedLabelK_' + prefix);
+            if (label) label.textContent = '已選 ' + count + ' 個部位 · ' + (split ? '各部位分開填' : '套用以下設定');
+        }
         function fhsD51KToggleOverride(prefix) {
             var rows = document.getElementById('d51OverrideRowsK_' + prefix);
             var willOpen = !rows.classList.contains('show');
+            if (!willOpen) {
+                // 改返統一：先用第一個已選部位嘅值做統一值，避免空白統一欄位覆寫晒各部位（數量／刻字被清空）
+                var firstKey = ['lh', 'rh', 'lf', 'rf'].map(function (p) { return prefix + p; }).filter(function (k) { return FHS_D51_K_SEL[k]; })[0];
+                if (firstKey) {
+                    document.getElementById('d51SharedQtyK_' + prefix).value = document.getElementById('k_' + firstKey + '_qty').value || '1';
+                    document.getElementById('d51SharedTopK_' + prefix).value = document.getElementById('k_' + firstKey + '_top').value;
+                    document.getElementById('d51SharedBotK_' + prefix).value = document.getElementById('k_' + firstKey + '_bot').value;
+                }
+            }
             rows.classList.toggle('show', willOpen);
             FHS_D51_K_OV[prefix] = willOpen;
+            fhsD51KApplySplitView(prefix);
             if (willOpen) {
                 var q = document.getElementById('d51SharedQtyK_' + prefix).value;
                 var t = document.getElementById('d51SharedTopK_' + prefix).value;
@@ -8051,6 +8076,7 @@
                         if (rowsEl) rowsEl.classList.add('show');
                     }
                 }
+                fhsD51KApplySplitView(prefix);
             });
         }
 
