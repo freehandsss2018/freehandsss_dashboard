@@ -2588,3 +2588,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-10-02 — 修復：統一↔分開填／手模顏色切換覆寫（Claude Code＋A4 Codex，D102）
 - A4 一次性實作、A3 審 diff＋實測、code-reviewer 兩輪（FAIL→PASS）；V42 已部署。全文見 Changelog.md「2026-10-02」與 decisions.md D102。
 - **Subagent 使用記錄**：✅ A4 實作、✅ code-reviewer ×2；finance-auditor 豁免（純 UI）。
+
+## 2026-10-02 — 財務：更正 0076 錯誤回填（migration 0097，D103）
+- finance-auditor 覆核 0076 的 23 單→4 張被改錯；A4(Codex，A3 代跑)獨立重算；Fat Mo 授權更正 07001007(→660)／0600105(→870)，finance-auditor 驗收 PASS。全文見 Changelog.md「2026-10-02 財務」與 decisions.md D103。
+- **Subagent 使用記錄**：✅ finance-auditor ×4；Codex 由 A3 代跑；code-reviewer 不適用（無代碼）。

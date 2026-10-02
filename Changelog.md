@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-02] 財務：更正 migration 0076 對 07001007／0600105 嘅錯誤回填（migration 0097，D103；Fat Mo 授權）
+
+- **起因**：handoff 待辦「0076-follow 07001007 疑似低估 $220」。finance-auditor 由零重算 0076 改過嘅 23 單：4 張被改錯（07001007、0600105 證據硬；0500719、0600722 各疑多計 $60 但 SKU/成本 NULL 無法定 tier）。A4(Codex，A3 代跑＝A4 未獨立驗證)獨立重算，07001007／0600105 同得 660／870。
+- **根因**：0076 以舊單不可靠嘅 `order_items.drawing_cost` 當已入帳畫圖費推 delta（單購 SKU 成本已含一次畫圖費、欄位卻被×數量；0600105 重複加且運費只按行數扣）。
+- **修法**：migration `0097`（已套用）只改 `orders.total_cost/keychain_cost/net_profit`：07001007 440→660、0600105 670→870；`final_sale_price` 等不碰；預期現值守衛＋恰好 2 行守衛＋`audit_logs`（`source='migration_0097'`）＋ amount=0 說明 note。
+- **驗收**：finance-auditor PASS 5/5（全庫 70 張驗證 1/2 零違規、無意外改動）。0500719／0600722 維持不修。
+- **另**：`sync_order_to_mirror` COALESCE 評估後不做（建議，見 D103）；`FHS_Pricing_Bible.md` 指針 V41→V42、`finance-gatekeeper` Quadruple 版本註記（純文件）；Logic Overview §5.4.6 補事後覆核；回填類 migration 驗收須由零重算訂單層總額（D103 教訓）。
+- **Subagent 使用記錄**：✅ finance-auditor ×4（0076 覆核、COALESCE 評估、0097 驗收、0600112／重存風險）；Codex 覆核由 A3 代跑；code-reviewer 不適用（無代碼／HTML）。
+
 ## [2026-10-02] 修復：鎖匙扣「統一／分開填」與手模顏色模式切換無聲覆寫數值（V42，Fat Mo 0600105 目測回報；D102 A4 一次性實作）
 
 - **症狀**：嬰兒左手 4／左腳 2（分開填）→「改返全部部位統一設定」→ 左腳無聲變 4 → 再「分開填」見 4／4；刻字（上排／下排）同樣被覆寫，大寶同構。手模嬰兒「自訂」逐肢顏色 → 撳「二手二腳」被覆寫 → 再入「自訂」全部重設「待定」（主件＋追加件）。925 頸飾無共用／分開切換，不受影響。

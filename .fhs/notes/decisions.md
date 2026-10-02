@@ -4244,3 +4244,14 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **執行結果（2026-10-02）**：A4（Codex，`gpt-6-sol`）於隔離 worktree `a4/split-toggle-fix` 修 V42.html（K1–K5／P1–P6）並新增 `scripts/tests/split_toggle_ui/run.js`；A3 逐行審 diff，補兩處回歸修正（分開填未揀部位預填統一值；快選模式重撳仍重新套用）；`code-reviewer` 第 1 輪 FAIL（restoreFormState 未清鎖匙扣快照，屬保險位，已補＋測試 T8b）→ 第 2 輪 PASS。新測試桌面／手機各 16/16（修復前 7/15）；restore_ui 17 案例桌面／手機各 17/17、零寫入請求。**例外按「A4 交出修復」視為已用盡並失效**，§7 規則 7 恢復原義；§7 規則 9 指針維持不改，交新 session `/8d` 處理（見 `.fhs/reports/planning/2026-10-01_a4-write-authority-review-brief.md`）。
 
 **實作教訓（叫 A4 寫碼）**：(1) Codex 預設模型 `gpt-6.1-sol` 不被 ChatGPT 帳戶支援（400），Fat Mo 改 `gpt-6-sol` 後可用；(2) Codex 寫入範圍只限啟動目錄——指定 repo 根開新分支會失敗（`cannot lock ref`），解法＝A3 預先建好 worktree、Codex cwd 設喺該 worktree、改動不 commit 由 A3 代做；(3) Playwright MCP 會截走原生 `confirm()`，測試腳本須以 `addInitScript` stub `window.confirm`，不可用 `page.on('dialog')`；(4) Playwright MCP 檔案根限於 session 工作目錄，測試檔需放該根內。
+
+### D103：2026-10-02 — 更正 migration 0076 對 07001007／0600105 嘅錯誤回填（migration 0097）
+
+**背景**：finance-auditor 由零重算 0076 改過嘅 23 單，4 張被改錯；A4(Codex，A3 代跑＝「A4 未獨立驗證」)對 07001007／0600105 獨立得同一結論（信心高），對 0500719／0600722 判證據不足。根因＝0076 以舊單不可靠嘅 `order_items.drawing_cost` 當已入帳畫圖費推 delta。
+
+**裁定（Fat Mo 2026-10-02「07001007 同 0600105 照改」＋「批准套用 migration 0097」）**：只改 `orders.total_cost/keychain_cost/net_profit`：07001007 440→660、0600105 670→870；`final_sale_price` 等確收欄位不碰；0500719／0600722 維持 09-24「不修」。附預期現值守衛、恰好 2 行守衛、audit_logs 改前後快照、amount=0 說明 note。
+**驗收**：finance-auditor PASS 5/5（兩單現值、驗證1/2 全庫 70 張零違規、audit_logs 恰 2 行、無意外改動、獨立重算一致）。
+**教訓**：0076 當年「驗收 PASS」只證明「回填後同規則模式匹配 remaining_delta=0」，冇獨立重算訂單層總額——模式收斂≠金額正確。回填類 migration 驗收必須抽樣由零重算訂單層總額。
+**另評估不做**：`sync_order_to_mirror` 成本欄位加 COALESCE——finance-auditor 判無已發生錯數（5 行品項 NULL 為 3 張歷史單建單時已存在）、n8n Mirror Prep 恆 `|| 0` 令 COALESCE 成死碼、將來更可能掩蓋失敗；若要加固應「成本缺失就中止」並與 Local Data Mapper 靜默歸零項一併處理。（建議，待 Fat Mo 確認）
+**Subagent 使用記錄**：✅ finance-auditor×4（0076 覆核、COALESCE 評估、migration 驗收等）；Codex 覆核由 A3 代跑。
+**後續發現（同日 finance-auditor）**：舊單重新儲存會經 n8n 無聲轉 V2 並覆蓋 Layer-2 快照（07001007→740、0600105→990，差額＝V2 每件含$20運費；`cost_override_locked` 不擋此路徑；重存不寫 audit_logs；0600112 09-22 為先例，850 按 V2 正確）。0097 值 660/870 屬舊模型，不代表重存後數字。**暫勿重存該兩單；模型取捨（接受V2／改RPC保護）待 Fat Mo 決定。** 0600112 無需處理。
