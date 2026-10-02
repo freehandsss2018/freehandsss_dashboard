@@ -1,6 +1,6 @@
 ---
 name: "source-command-execute"
-description: "Codex 在本 repo 是 A4（獨立審查者；寫碼須 Fat Mo 事前確認，D103），不執行 /execute（實作／修改磁碟）；收到此指令時說明並指向 Claude Code（A3）"
+description: "Codex 在本 repo 是 A4（獨立審查者，只審不改），不執行 /execute（實作／修改磁碟）；收到此指令時說明並指向 Claude Code（A3）"
 ---
 
 # source-command-execute
@@ -9,7 +9,7 @@ Use this skill when the user asks to run `/execute` inside Codex.
 
 ## Codex 不執行 /execute
 
-> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）無裁決權，寫碼須 Fat Mo 事前確認（D103）**。`/execute` 屬寫入類指令（實作／修改磁碟），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與當時（D98）A4 只審不改規則矛盾，已改寫；D103 起 Codex 經 Fat Mo 事前確認可寫碼，但本指令仍屬 A3 專屬（§7 規則 7）（原檔備份於 `.fhs/ai/governance/backups/source-command-execute.SKILL.md.2026-09-26.bak`）。
+> **角色定位（2026-09-26，D98）**：本 repo 跨代理分工中 **A3=CL（Claude Code）** 負責實作與寫入，**A4=GPT（Codex）只審不改、無裁決權**。`/execute` 屬寫入類指令（實作／修改磁碟），依 `.fhs/ai/AGENTS.md` §7 角色表規則 7，A4 不得執行。舊版橋接讓 Codex 可依技能執行本指令，與 A4 只審不改矛盾，已改寫（原檔備份於 `.fhs/ai/governance/backups/source-command-execute.SKILL.md.2026-09-26.bak`）。
 
 **收到 `/execute` 時，Codex 應該：**
 1. **不要**讀取或執行 `.fhs/ai/commands/execute.md` 的流程，**不要**修改、建立、刪除任何檔案，**不要**呼叫任何寫入類 MCP／腳本。

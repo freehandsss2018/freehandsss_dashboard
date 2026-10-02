@@ -1,5 +1,15 @@
 # Changelog
 
+## [2026-10-02] 新增：安裝 Claudex Loop，Claude↔Codex 互通；A4 寫入改為「事前確認」（AGENTS.md v1.9.0，D103）
+
+- **安裝**：Claudex Loop v2.1.0（commit `8cf5e2c`）——Claude 側 plugin project scope（`/claudex-loop:claudex-loop`／`codex-review`／`codex-build`／`claudex-route`）；Codex 側 `~/.agents/skills/` 同 4 支。
+- **規則**：§7 規則 7「A4 只審不改」→「Codex 寫碼每次須 Fat Mo 事前確認，只限 worktree；部署／DB／commit 仍 Claude 專屬」；新增規則 10（Codex 寫入工具唔准自主呼叫，含 `codex:codex-rescue` 的 Proactively 描述）。
+- **流程**：`/cl-flow-g` v1.1.0 可選 G0 Codex 審 plan（plan 於 `/execute` 後凍結，改即重審）；審 diff 單一路線（流程內只用 `/codex:review`）。`/a4-review` v1.4.0 加 Claudex runner 效力行（機械留痕，待核對）。
+- **Codex 橋接**：22 支 `.agents/skills` 角色措辭同步（拒絕寫入類指令行為不變），原檔備份 `.fhs/ai/governance/backups/*.2026-10-02.bak`。
+- **速查**：`fatmo-ops-quickcard.md` 新增「Claude↔Codex 互通」表＋重疊裁決；CLAUDE.md／根 AGENTS.md 路由各加一行。
+- **探針**：P1–P5 全通過（`.fhs/reports/planning/2026-10-02_claudex-loop-probe.md`）；已知限制：Claudex 審查時 Codex 仍帶 `mcp__cua_repl`；Codex→Claude 方向 Windows 須 `--cli …/claude-code/bin/claude.exe`。
+- **Subagent 使用記錄**：見完成記錄。
+
 ## [2026-10-02] 修復：鎖匙扣「統一／分開填」與手模顏色模式切換無聲覆寫數值（V42，Fat Mo 0600105 目測回報；D102 A4 一次性實作）
 
 - **症狀**：嬰兒左手 4／左腳 2（分開填）→「改返全部部位統一設定」→ 左腳無聲變 4 → 再「分開填」見 4／4；刻字（上排／下排）同樣被覆寫，大寶同構。手模嬰兒「自訂」逐肢顏色 → 撳「二手二腳」被覆寫 → 再入「自訂」全部重設「待定」（主件＋追加件）。925 頸飾無共用／分開切換，不受影響。

@@ -2588,3 +2588,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-10-02 — 修復：統一↔分開填／手模顏色切換覆寫（Claude Code＋A4 Codex，D102）
 - A4 一次性實作、A3 審 diff＋實測、code-reviewer 兩輪（FAIL→PASS）；V42 已部署。全文見 Changelog.md「2026-10-02」與 decisions.md D102。
 - **Subagent 使用記錄**：✅ A4 實作、✅ code-reviewer ×2；finance-auditor 豁免（純 UI）。
+
+## 2026-10-02 — 安裝 Claudex Loop＋A4 寫入改「事前確認」（Claude Code，D103）
+- `/cl-flow-g` flow 2026-10-02-1522：安裝 plugin（Claude project scope＋Codex skills）、AGENTS.md v1.9.0 規則 7／10、22 支 Codex 橋接同步、速查卡互通表；探針 P1–P5 PASS，A4 已審 2 條 P2 已修。全文見 `.fhs/reports/completion/2026-10-02_claudex-loop-install_completion_report.md`。
+- **Subagent 使用記錄**：✅ code-reviewer ×1、✅ A4 Codex ×1（Fat Mo 觸發）；finance-auditor 不適用。

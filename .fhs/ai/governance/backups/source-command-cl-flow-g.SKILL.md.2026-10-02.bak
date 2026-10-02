@@ -28,4 +28,4 @@ Use this skill when the user asks to run the migrated source command `cl-flow-g`
 ### 防守檢查：
 - ✅ Step 0 精煉、Gate 1 不可跳過
 - ✅ NO-TOUCH：`/execute` 前禁止寫業務代碼
-- ✅ A4 審查任務只審不改、寫碼須 Fat Mo 事前確認（D103）；未取得結果不得標「A4 已審」
+- ✅ A4 只審不改；未取得結果不得標「A4 已審」

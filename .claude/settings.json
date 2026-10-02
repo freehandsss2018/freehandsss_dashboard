@@ -278,6 +278,7 @@
     ]
   },
   "enabledPlugins": {
-    "playwright@claude-plugins-official": true
+    "playwright@claude-plugins-official": true,
+    "claudex-loop@claudex-loop": true
   }
 }

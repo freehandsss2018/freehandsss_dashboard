@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.8.2
-> Last updated: 2026-10-01（§7 新增規則 9：D101 A4 一次性寫入例外指針）；2026-09-29（prompt-audit 清理：對齊 D43 Airtable 停用、移除不存在的 code-reviewer 閘名、刪過時快照／退役指令行、去歷史敘述）
+> Version: v1.9.0
+> Last updated: 2026-10-02（§7 規則 7 改為「A4 寫入須事前確認」、新增規則 10、A4 欄更新：D103 安裝 Claudex Loop）；2026-10-01（§7 新增規則 9：D101 A4 一次性寫入例外指針）；2026-09-29（prompt-audit 清理：對齊 D43 Airtable 停用、移除不存在的 code-reviewer 閘名、刪過時快照／退役指令行、去歷史敘述）
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -292,7 +292,7 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 | A1 PX | Perplexity | 外部事實查證：來源、結果、適用範圍、不確定性；無外部事實則標「本次不需 A1（理由）」 | 不測本地代碼；不批准 |
 | A2 AG | Gemini／Antigravity | 對 A3 草案作對抗評審：反例、缺漏、失敗情境、權限風險、回滾 | 不批准；無裁決權 |
 | A3 CL | Claude Code | 整合方案；Fat Mo `/execute` 後實作與測試；回應 A4 findings | 不把自身判斷當批准；不代寫 A1/A2/A4 報告 |
-| A4 GPT | Codex | 實作後獨立審查實際 diff：bug、回歸、遺漏測試、安全、與已批准 plan 不符 | **只審不改**；無裁決權；未真正呼叫且取得結果，不得標「A4 已審」 |
+| A4 GPT | Codex | 實作後獨立審查實際 diff：bug、回歸、遺漏測試、安全、與已批准 plan 不符；可選：實作前審 plan（Claudex Loop）；**經 Fat Mo 事前確認後**可寫碼（規則 7） | 無裁決權；未經確認不寫；不做部署／DB／commit 類寫入；未真正呼叫且取得結果，不得標「A4 已審」 |
 | — | Fat Mo | 批准 plan、批准實作、驗收 | — |
 
 規則（強制）：
@@ -302,9 +302,10 @@ Subagent：[前置評估了什麼 + 派了誰/沒派 + 理由]
 4. **順序**：測試 → `code-reviewer` 稽核報告（Rule 3.17）→ A4。A4 的 BLOCKER 不得由 A3 推翻；A4 與其他驗收衝突時交 Fat Mo，不自動勝出。
 5. **重審上限 2 輪**；仍有未解 BLOCKER 標 `DISPUTE_ESCALATED`，停止並交 Fat Mo。審後任何代碼改動使舊報告作廢（純報告或註解除外）。
 6. **嚴重度照抄**：A3 不得調級；外掛輸出的 `[P1]`／`[P2]` 照抄，不轉換。
-7. **A4 不得執行任何寫入類指令**（`/execute`、`/commit`、`/upload-web`、`/db-query`、`/new-product` 等）。同一時間只容許一個主要寫入者。
+7. **A4 寫入須事前確認（D103，2026-10-02 取代原「只審不改」）**：Codex 可寫碼，但**每次**須先取得 Fat Mo 於當前 session 的明確確認；只限「cwd＝專用 worktree」內的代碼改動（Codex `workspace-write` 寫入限啟動目錄，禁止於主倉啟動）。`/execute`、`/commit`、`/upload-web`、`/db-query`、`/new-product`、migration 套用、`current.html` 升格仍屬 A3 專屬（只有 Claude 側有 hook 守護）；Codex 改動一律經 A3 審 diff＋`/commit` 合併。同一時間只容許一個主要寫入者。worktree 內的路徑級保護屬文字約束，無機械攔截。
 8. **不可用即標明**：Codex 未登入、逾時、無輸出檔、越權 → 標「A4 受阻」，停在驗收前，不得以「A4 已審」收尾；替代交接由 Fat Mo 決定。
-9. **例外（有時效）**：D101（2026-10-01）容許 A4 於獨立分支對 V42.html 做一次性修復，範圍與失效條件見 decisions.md D101，失效後規則 7 恢復原義；不得援引做其他任務。
+9. **例外（已失效）**：D101（2026-10-01）一次性寫入例外已於 D102 用盡；現行寫入規則見規則 7（D103）。
+10. **Codex 寫入工具不得自主呼叫（D103）**：未經 Fat Mo 於當前 session 明確授權，A3 不得自主呼叫 Codex 寫入工具（`/codex:rescue`／`codex:codex-rescue` 預設 `--write`、`/claudex-loop:codex-build`、Claudex `builder=codex`）。`codex:codex-rescue` 描述中的「Proactively use」不適用於本 repo；唯讀審查類（`/codex:review`、`/codex:adversarial-review`、`/claudex-loop:codex-review`）不受本條限制。重疊工具分工與互通速查見 `.fhs/notes/fatmo-ops-quickcard.md`「Claude↔Codex 互通」節。
 
 ### Subagent 決定性路由規則（強制調用，不得以 Claude 直接處理替代）
 

@@ -4244,3 +4244,24 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **執行結果（2026-10-02）**：A4（Codex，`gpt-6-sol`）於隔離 worktree `a4/split-toggle-fix` 修 V42.html（K1–K5／P1–P6）並新增 `scripts/tests/split_toggle_ui/run.js`；A3 逐行審 diff，補兩處回歸修正（分開填未揀部位預填統一值；快選模式重撳仍重新套用）；`code-reviewer` 第 1 輪 FAIL（restoreFormState 未清鎖匙扣快照，屬保險位，已補＋測試 T8b）→ 第 2 輪 PASS。新測試桌面／手機各 16/16（修復前 7/15）；restore_ui 17 案例桌面／手機各 17/17、零寫入請求。**例外按「A4 交出修復」視為已用盡並失效**，§7 規則 7 恢復原義；§7 規則 9 指針維持不改，交新 session `/8d` 處理（見 `.fhs/reports/planning/2026-10-01_a4-write-authority-review-brief.md`）。
 
 **實作教訓（叫 A4 寫碼）**：(1) Codex 預設模型 `gpt-6.1-sol` 不被 ChatGPT 帳戶支援（400），Fat Mo 改 `gpt-6-sol` 後可用；(2) Codex 寫入範圍只限啟動目錄——指定 repo 根開新分支會失敗（`cannot lock ref`），解法＝A3 預先建好 worktree、Codex cwd 設喺該 worktree、改動不 commit 由 A3 代做；(3) Playwright MCP 會截走原生 `confirm()`，測試腳本須以 `addInitScript` stub `window.confirm`，不可用 `page.on('dialog')`；(4) Playwright MCP 檔案根限於 session 工作目錄，測試檔需放該根內。
+
+---
+
+### D103：2026-10-02 — 安裝 Claudex Loop＋A4 寫入改為「事前確認」＋Claude↔Codex 重疊裁決
+
+**背景**：Fat Mo 要求安裝 Claudex Loop（`chaseai-yt/claudex-loop` v2.1.0，MIT，commit `8cf5e2c`），先分析同 FHS 自建系統及已裝 OpenAI Codex plugin（`codex@openai-codex` v1.0.6）有冇重疊、相撞或漂移，目標係 Claude／Codex 雙系統互通、各用所長、唔使 copy & paste。flow `2026-10-02-1522`（`/cl-flow-g`）：v1 草案（吸收唔裝）被 Fat Mo 推翻，v2 Verdict CONDITIONAL_READY（A2 兩條 BLOCKER 以 CLI `--help` 實測反證拒絕），Fat Mo `/execute` 並揀 C4(a)。
+
+**Fat Mo 指示（非 A3 判斷）**：唔再受 §7 規則 7「A4 只審不改」限制；Codex 可執行／寫碼，只須事前向 Fat Mo 確認。
+
+**裁定**：
+1. **安裝**：Claude 側 plugin project scope（`.claude/settings.json` `enabledPlugins`）；Codex 側複製 4 支 skill 到 `~/.agents/skills/`。`claudex-route` 裝咗但 FHS 唔用（C4(a)），模型分流以 `02_model-dispatch.md` 為準。
+2. **AGENTS.md v1.9.0 §7**：規則 7 改為「A4 寫入須事前確認」——每次須 Fat Mo 當前 session 明確確認；只限 cwd＝專用 worktree 內代碼改動；`/execute`／`/commit`／`/upload-web`／`/db-query`／`/new-product`／migration 套用／`current.html` 升格仍 A3 專屬（只有 Claude 側有 hook 守護）；worktree 內路徑級保護屬文字約束，無機械攔截。新增規則 10：未經授權 A3 不得自主呼叫 Codex 寫入工具（`/codex:rescue` 預設 `--write`、`codex-build`、`builder=codex`），`codex:codex-rescue` 的「Proactively use」描述不適用於本 repo。規則 9（D101 例外）標已失效。
+3. **重疊裁決**（全表見 `.fhs/notes/fatmo-ops-quickcard.md`「Claude↔Codex 互通」）：審 plan＝Gemini A2 保留＋可選 Codex（`cl-flow-g` v1.1.0 新 G0，plan 於 `/execute` 後凍結，改即重審）；審 diff＝FHS 流程內只用 `/codex:review`，同一改動唔重複用 Claudex inspect；Codex 寫碼＝計劃型 `codex-build`、小修 `/codex:rescue`，皆先問；需求釐清＝FHS 用拷問，Claudex 以 `mode=review` 跳過訪問；對話轉手＝`/codex:transfer`（單向快照）＋`handoff.md`。Claudex 唔會傳成段對話，靠 plan 檔＋diff＋回覆檔交換。
+4. **效力分級**：`a4-review.md` v1.4.0——Fat Mo 要求下以 Claudex runner 呼叫、附 session UUID＋sha256 者＝「機械留痕，待核對」；無 Fat Mo 要求的自行呼叫仍屬「未獨立驗證」。
+5. **Codex 橋接**：`.agents/skills/` 22 支（21 支 `source-command-*`＋`domain-modeling`）角色措辭改為「寫碼須 Fat Mo 事前確認」；寫入類指令拒絕行為保留（仍 A3 專屬）。原檔備份 `.fhs/ai/governance/backups/*.2026-10-02.bak`。
+
+**探針**（`.fhs/reports/planning/2026-10-02_claudex-loop-probe.md`）：P1–P5 全通過。P2：`codex exec -c mcp_servers={}` 可清空 MCP，但 runner 不帶此參數，Claudex 審查時 Codex 仍有 `mcp__cua_repl`（可執行 JS），同現有 `/codex:review`；降級條件未觸發。P4：runner 不識新版 `claude.exe`，須 `--cli` 指定（上游缺口）。
+
+**誠實註記**：規則 7／10 屬行為層約束；`codex:codex-rescue` 仍喺 harness agent 清單中，無機械攔截。
+
+**Subagent 使用記錄**：見完成記錄 `.fhs/reports/completion/2026-10-02_claudex-loop-install_completion_report.md`。

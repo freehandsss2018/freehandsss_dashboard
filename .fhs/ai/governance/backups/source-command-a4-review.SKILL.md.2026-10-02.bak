@@ -20,4 +20,4 @@ Use this skill when the user asks to run the migrated source command `a4-review`
 ### 防守檢查：
 - ✅ 前置：已 /execute、測試過、code-reviewer 完成
 - ✅ A3 只產交付包（a4-scope.md）與回應 findings；審查由 Fat Mo 觸發
-- ✅ A4 審查任務只審不改、寫碼須 Fat Mo 事前確認（D103）；未取得結果不得標「A4 已審」
+- ✅ A4 只審不改；未取得結果不得標「A4 已審」

@@ -4,9 +4,9 @@
 **適用場景**：`/cl-flow-fast` 適用的任務（功能實作、UI 修改、Bug 修復、已定架構的改動），且屬 A4 必審範圍（代碼／HTML／n8n／migration／hook／腳本）。
 **不適用場景**：需要外部研究或技術選型 → `/cl-flow`（其 Verdict 亦可走 `/a4-review`）；純文件搬移／文案潤飾 → 用 `/cl-flow-fast` 即可（A4 標「不適用」）。
 **對應 Agent**：A3 (Claude Code)
-**Version**: v1.0.0 (2026-09-26，D99)
+**Version**: v1.1.0 (2026-10-02，D103：可選 G0 Codex 審 plan、審 diff 單一路線；前版 v1.0.0 2026-09-26 D99)
 **角色表唯一本文**：`.fhs/ai/AGENTS.md` §7（A1–A4）。本檔只寫流程，不複製角色表。
-**NO-TOUCH GUARDRAIL**：`/execute` 前全程禁止任何業務代碼寫入；A4 只審不改，A3 不代跑 Codex。
+**NO-TOUCH GUARDRAIL**：`/execute` 前全程禁止任何業務代碼寫入；A4 寫入須 Fat Mo 事前確認（AGENTS.md §7 規則 7／10，D103）；G3 的 A4 審查由 Fat Mo 觸發，A3 不代跑。
 
 > 精煉（/rp 輕量版）為預設第一步，不可跳過。名稱含義：cl = Claude 裁決；g = GPT（A4）於實作後獨立審查；同樣跳過 A1(PX)（不是跳過評審）。
 
@@ -42,6 +42,19 @@ A4 適用性：必審（屬代碼／HTML／n8n／migration／hook／腳本）／
 輸入 `/execute` 開始執行。實作與測試完成後，本流程會準備 A4 交付包並在「請 Fat Mo 觸發 A4」處停下。
 ```
 
+### 可選 G0 — Codex 審 plan（Claudex Loop，D103）
+
+Verdict 寫好後、停等 `/execute` 前，Fat Mo 可要求（或 A3 建議、Fat Mo 同意後）加一步 Codex 審 plan：
+
+```
+/claudex-loop:codex-review mode=review plan=artifacts/{flow_id}/cl-final-plan.md log=artifacts/{flow_id}/claudex-log.md rounds=2
+```
+
+- 審查記錄（`plan=`、`log=`）一律落 `artifacts/{flow_id}/`，唔准用 repo 根 `PLAN.md`。runner 診斷目錄**必須喺 checkout 外**（runner 會拒絕 repo 內路徑，`runner.py:308-309`）：省略 `--artifacts`（預設系統 temp）或指去 repo 外路徑；每輪完成後將該輪 `result.json` 複製到 `artifacts/{flow_id}/claudex-runs/`，並喺 `claudex-log.md` 記低原診斷目錄路徑（符合 Rule 3.14 工作區存放）。
+- **鎖點**：Fat Mo `/execute` 後 plan 凍結；之後任何修改＝再跑 1 輪 codex-review 取得新批准（approval 綁 plan SHA256，改一字即失效）。
+- Gemini A2 照跑，G0 係加碼唔係取代。Codex findings 一樣入批評處理表，severity 照抄（high/medium/low）。
+- Windows 下若 Codex 做 host 叫 Claude 審，須加 `--cli <npm>/@anthropic-ai/claude-code/bin/claude.exe`（runner 唔接受 `claude.CMD`）。
+
 ### state.json 差異（Step 7）
 
 除 `cl_status`／`status`／`execution_status` 外，A3 手動加 `"a4": {"required": true|false, "reason": "...", "status": "pending"}`（Runner 不管此欄，避免改 runner）。
@@ -67,6 +80,8 @@ A3 依 `.fhs/ai/commands/a4-review.md`（v1.3.0+）Step 1 產出 `artifacts/{flo
   (b) 或在 repo 根目錄 codex -s read-only，貼 a4-review.md 提示詞模板
   貼回結果後我會存 gpt-review.md 並逐條回應。
 ```
+
+> **審 diff 單一路線（D103）**：本流程內一律用 `/codex:review`（效力第 1 級）。同一改動唔好再用 Claudex `inspect` 重複審（會產生兩份報告、兩條 thread）；只有改用 `/claudex-loop:claudex-loop` 全流程時才用其 inspect，其結果屬「機械留痕，待核對」級。
 
 ### G4 — 收結果與回應
 Fat Mo 貼回 Codex 結果後，A3 依 `a4-review.md` Step 3–4：存 `gpt-review.md`（檔頭含工具、指令、範圍 sha256、thread id、時間、效力級別；效力級別只能是 `A4 已審（Fat Mo 直接觸發）`——除非 Fat Mo 另有說明）、逐條回應（severity 照抄；已修／待處理／不採納＋證據），並把 `a4.status` 更新為 `responded`。

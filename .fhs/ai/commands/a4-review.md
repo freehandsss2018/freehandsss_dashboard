@@ -2,7 +2,7 @@
 
 **用途 (Purpose)**：實作完成後，準備 A4（Codex，代號 GPT）獨立審查的交付包，並處理 A4 的 findings。
 **對應 Agent**：A3 (Claude Code) 準備交付包與回應意見；**A4 審查由 Fat Mo 觸發，A3 不代跑**。
-**Version**: v1.3.0 (2026-09-26，D98；v1.1.0 範圍改基準 SHA；v1.2.0 非空自檢計入未追蹤檔；v1.3.0 修第 4 次實審 P2：舊版流程交付包路徑、失敗判定獨立於輸出檔、main 上禁用退化 merge-base)
+**Version**: v1.4.0 (2026-10-02，D103 加 Claudex runner 效力行；v1.3.0 2026-09-26，D98；v1.1.0 範圍改基準 SHA；v1.2.0 非空自檢計入未追蹤檔；v1.3.0 修第 4 次實審 P2：舊版流程交付包路徑、失敗判定獨立於輸出檔、main 上禁用退化 merge-base)
 **角色表唯一本文**：`.fhs/ai/AGENTS.md` §7「跨代理角色表 A1–A4」。本檔只寫流程，不複製角色表。
 **NO-TOUCH GUARDRAIL**：本指令只產出 `artifacts/{flow_id}/` 內的報告檔，不改業務代碼；A4 不得執行任何寫入類指令。
 
@@ -51,7 +51,7 @@
 ### 提示詞模板
 
 ```
-你是 A4（獨立審查者），只審不改，不得執行任何寫入。
+你是 A4（獨立審查者）。本次係審查任務：只審不改，不得執行任何寫入。
 請審查基準 <BASE> 到目前 HEAD 的已 commit 變更（git --no-optional-locks diff <BASE>..HEAD），加上工作區未 commit 變更（git diff HEAD、git status）；自行枚舉，不要只看我列的清單。
 已批准 plan：artifacts/{flow_id}/cl-final-plan.md；交付包：artifacts/{flow_id}/a4-scope.md。
 找出：bug、回歸、遺漏測試、安全問題、與已批准 plan 不符之處，以及越出批准範圍的變更。
@@ -81,6 +81,7 @@
 | 輸出檔存在但檔頭 thread／job id 或範圍 sha256 與本次不符（陳舊檔） | 標「A4 受阻」，重跑 |
 | Codex 越權寫入 | 標「A4 受阻」，回報 Fat Mo |
 | A3 自行呼叫 Codex 或轉存結果 | 效力只能是「A4 未獨立驗證」 |
+| Fat Mo 要求下，A3 以 Claudex Loop runner 呼叫（`/claudex-loop:*`），`result.json` 含 session UUID＋plan／diff sha256（D103） | 效力為「A4 已審（機械留痕，待核對）」；Fat Mo 核對 UUID 後才升第 1 級。無 Fat Mo 要求的自行呼叫仍屬上一行 |
 
 A4 受阻時停在驗收前，不得以「A4 已審」收尾；替代交接由 Fat Mo 決定。
 

@@ -60,6 +60,25 @@
 
 ---
 
+## Claude↔Codex 互通（D103，2026-10-02）
+
+兩邊唔靠對話傳訊，**檔案係總線**：計劃／審查／回覆全部落 `artifacts/{flow_id}/`，開工都讀 `handoff.md`。唔使 copy & paste。
+
+| 想做 | 喺 Claude 打 | 喺 Codex 打 | 會唔會寫檔 |
+|---|---|---|---|
+| Codex 審計劃（實作前） | `/claudex-loop:codex-review mode=review plan=artifacts/{flow_id}/cl-final-plan.md rounds=2` | — | 否 |
+| Claude 審計劃（Codex 做主） | — | `$claudex-loop`（Windows 要 `--cli …/claude-code/bin/claude.exe`） | 否 |
+| Codex 審已寫好嘅碼 | `/codex:review --base main`（`/cl-flow-g` G3 用呢個） | — | 否 |
+| Codex 挑戰設計 | `/codex:adversarial-review` | — | 否 |
+| Codex 寫碼（有計劃） | `/claudex-loop:codex-build` | — | **是，先問 Fat Mo** |
+| Codex 寫碼／除錯（小修） | `/codex:rescue` | — | **預設是，先問 Fat Mo** |
+| 成段對話交俾 Codex | `/codex:transfer` → `codex resume <id>` | — | 否（單向快照） |
+| 全流程（問需求→審計劃→寫→交叉審） | `/claudex-loop:claudex-loop` | `$claudex-loop` | 視 builder |
+
+**重疊裁決**：FHS 生產改動（HTML／n8n／財務／migration）照用 `/cl-flow-g`；Claudex 全流程用於工具腳本、非生產、Codex 做主嘅工作。同一改動只揀一條路審 diff。`claudex-route` 裝咗但 FHS 唔用（模型分流以 `02_model-dispatch.md` 為準）。
+
+**已知限制**：Claudex 審查時 Codex 仍帶住 `mcp__cua_repl`（可執行 JS），同現有 `/codex:review` 一樣；要關需 Fat Mo 自行改 `~/.codex/config.toml`（手動 `codex exec -c mcp_servers={}` 已證實可清空，runner 唔支援加參數）。Codex 寫碼只限 worktree，合併一律經 Claude `/commit`。探針全文：`.fhs/reports/planning/2026-10-02_claudex-loop-probe.md`。
+
 ## ⚠️ 進階/高風險能力（存在但唔喺本卡教學）
 
 | 能力 | 提示 |
