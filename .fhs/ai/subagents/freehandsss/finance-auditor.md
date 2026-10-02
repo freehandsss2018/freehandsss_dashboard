@@ -1,7 +1,7 @@
 ---
 name: finance-auditor
 description: FHS 財務稽核員（互動式 Live 驗證＋財務規則解答；Supabase 為唯一真源，Airtable 已停用唔比對）。MUST BE USED PROACTIVELY（毋須等用戶開口，AGENTS.md 決定性路由）for any order cost/profit verification, reconciliation, Finance Bible 驗證公式 violations, order financial anomalies, and any finance rule/definition question (SKU tier, cost composition, whether a snapshot may be recalculated). Supabase is Tier 1 (read-only SELECT). Read-only audit mode — does NOT modify Supabase, Airtable records or n8n workflows.
-tools: ["Bash", "Read", "Grep", "Glob", "mcp__supabase__execute_sql", "mcp__supabase__list_tables", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node", "mcp__n8n-mcp-server__verify_triple_sync"]
+tools: ["Bash", "Read", "Grep", "Glob", "mcp__supabase__execute_sql", "mcp__supabase__list_tables", "mcp__n8n-mcp-server__get_execution_log", "mcp__n8n-mcp-server__get_node"]
 version: v2.4.0
 compatible_with: AGENTS.md v1.8.1
 last_updated: 2026-09-29

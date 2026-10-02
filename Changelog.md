@@ -10,6 +10,13 @@
 - **探針**：P1–P5 全通過（`.fhs/reports/planning/2026-10-02_claudex-loop-probe.md`）；已知限制：Claudex 審查時 Codex 仍帶 `mcp__cua_repl`；Codex→Claude 方向 Windows 須 `--cli …/claude-code/bin/claude.exe`。
 - **Subagent 使用記錄**：見完成記錄。
 
+## [2026-10-03] D104 後續：0098 備註標註＋D100 殘留文件對齊
+
+- **migration 0098**（已套用）：07001007／0600105 舊 `drawing_position_dedup_deduction` note 的 desc 標「已被 0097 取代」，amount/detail 不變。
+- **文件**：AGENTS.md v1.9.1（「不確定時停止」對齊 03 R3）、Finance Bible §九 驗證3（Airtable→Supabase `orders.net_profit`）、finance-auditor 移除 `verify_triple_sync`（master＋~/.claude 副本）、01/04「弱模型」→「低推理檔位模型」、根 AGENTS.md 歷史句。F4 另開 session。
+- **裁定**：重存覆蓋風險揀 (a) 接受 V2（金額未改）；COALESCE 評估後不做。見 decisions D104。
+- **Subagent 使用記錄**：✅ finance-auditor（0098 驗收，背景）。
+
 ## [2026-10-02] 財務：更正 migration 0076 對 07001007／0600105 嘅錯誤回填（migration 0097，D104；Fat Mo 授權）
 
 - **起因**：handoff 待辦「0076-follow 07001007 疑似低估 $220」。finance-auditor 由零重算 0076 改過嘅 23 單：4 張被改錯（07001007、0600105 證據硬；0500719、0600722 各疑多計 $60 但 SKU/成本 NULL 無法定 tier）。A4(Codex，A3 代跑＝A4 未獨立驗證)獨立重算，07001007／0600105 同得 660／870。

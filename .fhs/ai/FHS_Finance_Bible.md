@@ -406,7 +406,7 @@ Airtable 每月有 API quota 上限。超限後回傳 HTTP 429，無法查詢任
   orders.net_profit = orders.final_sale_price - orders.total_cost
 
 驗證 3：前端利潤守護
-  若 frontend_profit ≠ 0，Airtable.Net_Profit 必須 = frontend_profit
+  若 frontend_profit ≠ 0，Supabase orders.net_profit 必須 = frontend_profit（Airtable 已於 D43 停用，2026-10-03 對齊）
   若 frontend_profit = 0，n8n 可重算 Net_Profit
 
 驗證 4：SKU 成本完整性

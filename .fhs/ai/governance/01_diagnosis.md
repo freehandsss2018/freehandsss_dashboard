@@ -13,7 +13,7 @@
 
 **症狀**：`.fhs/memory/handoff.md` 每個 session 追加「已確認完成」條目，從不刪除。目前單檔 121K tokens——**超過 Read 工具單次上限（25K）近 5 倍**，也超過多數模型半個 context window。任何「保險起見全檔讀一次」的動作直接燒掉整個 session 的預算。
 
-**為什麼弱模型特別容易踩**：弱模型傾向「多讀一點求安心」。它不知道這檔案尾部 90% 是 2026 年 3-6 月的歷史快照，便攜塊（頂部 11 行）+ MASTER 表（前 ~45 行）已含全部現役狀態。
+**為什麼低推理檔位模型特別容易踩**：低推理檔位模型傾向「多讀一點求安心」。它不知道這檔案尾部 90% 是 2026 年 3-6 月的歷史快照，便攜塊（頂部 11 行）+ MASTER 表（前 ~45 行）已含全部現役狀態。
 
 **修法（可立即執行）**：
 1. **讀取紀律**：任何 session 只准讀 handoff.md 前 120 行（組成：頂部 ~11 行便攜塊 + ~45 行 MASTER 表，其餘為緩衝；此範圍已含全部現役狀態，不需要「多讀補齊」）。需要歷史 session 細節時，先 Grep 關鍵詞取行號，再開 ≤60 行窗口。
@@ -30,7 +30,7 @@
 
 ### 🥉 #3 巨檔無讀取紀律（V42 HTML 實測 919,443 bytes ≈ 15,000+ 行）
 
-**症狀**：`Freehandsss_Dashboard/` 目錄下的 `.html`（current / V41 / V42）是單檔 POS 系統。歷史操作已有正確慣例（Grep 定位 → 窗口讀 → PowerShell `.Replace()` 或錨定 Edit），但這慣例**只存在於歷史 session 的肌肉記憶，沒有落成規則**——新 session 的弱模型不知道，第一反應就是 Read 全檔（會失敗或截斷，然後亂猜）。
+**症狀**：`Freehandsss_Dashboard/` 目錄下的 `.html`（current / V41 / V42）是單檔 POS 系統。歷史操作已有正確慣例（Grep 定位 → 窗口讀 → PowerShell `.Replace()` 或錨定 Edit），但這慣例**只存在於歷史 session 的肌肉記憶，沒有落成規則**——新 session 的低推理檔位模型不知道，第一反應就是 Read 全檔（會失敗或截斷，然後亂猜）。
 
 **修法**（規則本體在 [[02_model-dispatch]] §6 巨檔紀律）：
 - **禁全讀名單**：`Freehandsss_Dashboard/` 目錄下**所有** `.html`（含 current / V41 / V42；檔名大小寫混用，勿以字面 glob 自我豁免）、`CHANGELOG.md`、`.fhs/memory/handoff.md`、`session-log.md`、`decisions.md`、任何 n8n workflow JSON。
@@ -55,7 +55,7 @@
 
 ### 🥉 #3 開場過量初始化
 
-**症狀**：SessionStart hook 已注入 ~300 tokens 便攜塊快照，足夠 80% 任務起步；弱模型仍傾向「先 /read 全量再說」（~2,000+ tokens，且誘發繼續深挖歷史）。
+**症狀**：SessionStart hook 已注入 ~300 tokens 便攜塊快照，足夠 80% 任務起步；低推理檔位模型仍傾向「先 /read 全量再說」（~2,000+ tokens，且誘發繼續深挖歷史）。
 
 **修法**：Rule 3.11 已有，重申判準——只有三種情況升級全量 /read：複雜架構決策、跨長時間斷檔的風險評估、需驗證 handoff 細節。其餘一律 hook 快照直接開工。
 
@@ -80,7 +80,7 @@
 
 ### 🥉 #3 過時記載被當現況沿用
 
-**症狀（實測抓到的現行案例）**：9 個 FHS subagent 的 frontmatter `model:` 全部釘在 `claude-sonnet-4-6` / `claude-haiku-4-5-*`——sonnet-4-6 已是舊世代 ID。文件寫下的瞬間開始腐化：模型 ID、版本號、成本值、live 欄位值，任何一項被弱模型「照文件辦事」直接沿用就是錯的。（成本值 drift 已有前科：S112 文件 $95 vs live $115。）
+**症狀（實測抓到的現行案例）**：9 個 FHS subagent 的 frontmatter `model:` 全部釘在 `claude-sonnet-4-6` / `claude-haiku-4-5-*`——sonnet-4-6 已是舊世代 ID。文件寫下的瞬間開始腐化：模型 ID、版本號、成本值、live 欄位值，任何一項被低推理檔位模型「照文件辦事」直接沿用就是錯的。（成本值 drift 已有前科：S112 文件 $95 vs live $115。）
 
 **修法**：
 1. **凡引用「會變的值」（模型 ID / live 資料 / 版本號 / SHA），先實測再寫**，並在寫下時標註查證 session（如「2026-07-04 實測」）。

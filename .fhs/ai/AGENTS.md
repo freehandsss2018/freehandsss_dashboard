@@ -1,6 +1,6 @@
 # AGENTS — 憲法層
-> Version: v1.9.0
-> Last updated: 2026-10-02（§7 規則 7 改為「A4 寫入須事前確認」、新增規則 10、A4 欄更新：D103 安裝 Claudex Loop）；2026-10-01（§7 新增規則 9：D101 A4 一次性寫入例外指針）；2026-09-29（prompt-audit 清理：對齊 D43 Airtable 停用、移除不存在的 code-reviewer 閘名、刪過時快照／退役指令行、去歷史敘述）
+> Version: v1.9.1
+> Last updated: 2026-10-03（「不確定時停止」對齊 03 R3，D100-follow F1）；2026-10-02（§7 規則 7 改為「A4 寫入須事前確認」、新增規則 10、A4 欄更新：D103 安裝 Claudex Loop）；2026-10-01（§7 新增規則 9：D101 A4 一次性寫入例外指針）；2026-09-29（prompt-audit 清理：對齊 D43 Airtable 停用、移除不存在的 code-reviewer 閘名、刪過時快照／退役指令行、去歷史敘述）
 > 本文件為系統最高規則，所有 commands 的執行標準均受本文件約束。
 > 凡升級版本，必須更新本頁頂部 Version 欄位，並在 CHANGELOG.md 記錄變更。
 
@@ -152,7 +152,7 @@
 ### 目標驅動執行（Goal-Driven Execution）
 - **先定義成功標準**：任何非瑣碎任務開始前，先聲明可驗證的完成條件（如「完成後 X 檔案存在且非空」）
 - **驗證循環**：實作完成後必須對照成功標準逐項確認，不得靜默宣告完成
-- **不確定時停止**：若 AI 無法確認某步驟結果，必須停下詢問 Fat Mo，禁止猜測繼續
+- **不確定時停止**：若 AI 無法確認某步驟結果，且無法靠自查（Supabase live／文件／一次實測）消歧，必須停下詢問 Fat Mo，禁止猜測繼續；可自查者先查，判準見 `governance/03_judgment-rubrics.md` R3
 
 ### Stitch 資產守護
 - **Stitch 輸出禁止直入**：Google Stitch 或任何 MCP 生成的 UI 組件，嚴禁未經轉換直接覆寫 `current.html` / V41 等主核心（V36 / V37 / V40 已 archive，不再受此守護但亦不得污染）。
