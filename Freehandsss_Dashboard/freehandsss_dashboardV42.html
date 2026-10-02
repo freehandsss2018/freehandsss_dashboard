@@ -7367,6 +7367,10 @@
         }
 
         async function resetForm(skipId = false) {
+            FHS_D51_K_SNAP[''] = null;
+            FHS_D51_K_SNAP['e_'] = null;
+            FHS_P_BABY_SNAP.main = null;
+            FHS_P_BABY_SNAP.extra = {};
             // T5：重置複製/同步狀態
             window._fhsIgCopyState = { copiedA: false, copiedB: false, synced: false };
             if (typeof _updateIgCopyUI === 'function') _updateIgCopyUI();
@@ -7814,6 +7818,8 @@
         }
         function fhsD51ClearCategory(letter) {
             if (letter === 'K') {
+                FHS_D51_K_SNAP[''] = null;
+                FHS_D51_K_SNAP['e_'] = null;
                 ['k_baby_sec_en', 'k_elder_sec_en', 'k_family_en',
                  'k_lh_en', 'k_rh_en', 'k_lf_en', 'k_rf_en',
                  'k_e_lh_en', 'k_e_rh_en', 'k_e_lf_en', 'k_e_rf_en'].forEach(function (id) {
@@ -7906,6 +7912,7 @@
         /* ---- 鎖匙扣「嬰兒/大寶」部位：藥丸多選 + 共用數量/上排/下排（10%例外可分開填） ---- */
         var FHS_D51_K_SEL = {};
         var FHS_D51_K_OV = {};
+        var FHS_D51_K_SNAP = {};
         function fhsD51KPill(prefix, part) {
             var key = prefix + part;
             var pill = document.getElementById('d51PillK_' + key);
@@ -7937,6 +7944,7 @@
         }
         function fhsD51KSharedChange(prefix) {
             if (FHS_D51_K_OV[prefix]) return;
+            FHS_D51_K_SNAP[prefix] = null; // 只由共用欄位 oninput 呼叫；人手改動使舊快照失效
             var q = document.getElementById('d51SharedQtyK_' + prefix).value;
             var t = document.getElementById('d51SharedTopK_' + prefix).value;
             var b = document.getElementById('d51SharedBotK_' + prefix).value;
@@ -7967,29 +7975,58 @@
             var rows = document.getElementById('d51OverrideRowsK_' + prefix);
             var willOpen = !rows.classList.contains('show');
             if (!willOpen) {
-                // 改返統一：先用第一個已選部位嘅值做統一值，避免空白統一欄位覆寫晒各部位（數量／刻字被清空）
-                var firstKey = ['lh', 'rh', 'lf', 'rf'].map(function (p) { return prefix + p; }).filter(function (k) { return FHS_D51_K_SEL[k]; })[0];
-                if (firstKey) {
-                    document.getElementById('d51SharedQtyK_' + prefix).value = document.getElementById('k_' + firstKey + '_qty').value || '1';
-                    document.getElementById('d51SharedTopK_' + prefix).value = document.getElementById('k_' + firstKey + '_top').value;
-                    document.getElementById('d51SharedBotK_' + prefix).value = document.getElementById('k_' + firstKey + '_bot').value;
+                var names = { lh: '左手', rh: '右手', lf: '左腳', rf: '右腳' };
+                var selected = ['lh', 'rh', 'lf', 'rf'].filter(function (p) { return FHS_D51_K_SEL[prefix + p]; });
+                var snapshot = {};
+                selected.forEach(function (p) {
+                    var key = prefix + p;
+                    snapshot[p] = ['qty', 'top', 'bot'].map(function (field) {
+                        return document.getElementById('k_' + key + '_' + field).value;
+                    });
+                });
+                var firstKey = selected.length ? prefix + selected[0] : null;
+                var first = selected.length ? snapshot[selected[0]] : null;
+                var target = first ? [first[0] || '1', first[1], first[2]] : null;
+                var differs = selected.some(function (p) { return snapshot[p].some(function (v, i) { return v !== first[i]; }); });
+                if (differs) {
+                    var detail = selected.map(function (p) {
+                        var v = snapshot[p];
+                        return names[p] + ' ' + (v[0] || '1') + '件 ' + (v[1] || '—') + '/' + (v[2] || '—');
+                    }).join('；');
+                    if (!confirm('各部位設定唔同（' + detail + '）。改返統一會全部變成：' + target[0] + '件 ' + (target[1] || '—') + '/' + (target[2] || '—') + '。確定？')) return;
                 }
+                if (firstKey) {
+                    document.getElementById('d51SharedQtyK_' + prefix).value = target[0];
+                    document.getElementById('d51SharedTopK_' + prefix).value = target[1];
+                    document.getElementById('d51SharedBotK_' + prefix).value = target[2];
+                }
+                FHS_D51_K_SNAP[prefix] = snapshot;
             }
             rows.classList.toggle('show', willOpen);
             FHS_D51_K_OV[prefix] = willOpen;
             fhsD51KApplySplitView(prefix);
             if (willOpen) {
-                var q = document.getElementById('d51SharedQtyK_' + prefix).value;
-                var t = document.getElementById('d51SharedTopK_' + prefix).value;
-                var b = document.getElementById('d51SharedBotK_' + prefix).value;
+                var saved = FHS_D51_K_SNAP[prefix];
+                var sq = document.getElementById('d51SharedQtyK_' + prefix).value;
+                var st = document.getElementById('d51SharedTopK_' + prefix).value;
+                var sb = document.getElementById('d51SharedBotK_' + prefix).value;
                 ['lh', 'rh', 'lf', 'rf'].forEach(function (p) {
-                    var key = prefix + p;
-                    document.getElementById('k_' + key + '_qty').value = q;
-                    document.getElementById('k_' + key + '_top').value = t;
-                    document.getElementById('k_' + key + '_bot').value = b;
+                    // 未揀部位沿用舊行為：預填統一值，之後喺分開填模式加揀時唔會出現空白／殘留舊值
+                    if (!FHS_D51_K_SEL[prefix + p]) {
+                        document.getElementById('k_' + prefix + p + '_qty').value = sq;
+                        document.getElementById('k_' + prefix + p + '_top').value = st;
+                        document.getElementById('k_' + prefix + p + '_bot').value = sb;
+                        return;
+                    }
+                    if (!saved || !saved[p]) return;
+                    ['qty', 'top', 'bot'].forEach(function (field, i) {
+                        document.getElementById('k_' + prefix + p + '_' + field).value = saved[p][i];
+                    });
                 });
+                FHS_D51_K_SNAP[prefix] = null;
             } else {
                 fhsD51KSharedChange(prefix);
+                FHS_D51_K_SNAP[prefix] = snapshot;
             }
             generate();
         }
@@ -8032,6 +8069,7 @@
              但藥丸UI（.d51-pill）/共用欄位顯隱唔會自動跟——呢個 helper 純粹補視覺同步，唔碰資料、唔call generate() ---- */
         function fhsD51SyncPillsFromState() {
             ['', 'e_'].forEach(function (prefix) {
+                FHS_D51_K_SNAP[prefix] = null;
                 var count = 0;
                 ['lh', 'rh', 'lf', 'rf'].forEach(function (part) {
                     var key = prefix + part;
@@ -8344,6 +8382,7 @@
         window.fhsFamilyParentToggle = fhsFamilyParentToggle;
 
         function renderLimbGrid() {
+            FHS_P_BABY_SNAP.main = null;
             const sub = document.getElementById("pSubCat").value;
             const container = document.getElementById("limbContainer");
             const baseContainer = document.getElementById("baseColorContainer");
@@ -8499,6 +8538,7 @@
         }
 
         function _pExtraSubCatChange(slot) {
+            delete FHS_P_BABY_SNAP.extra[slot];
             var ns = _pns(slot);
             var subEl = document.getElementById(ns + 'pSubCat');
             if (!subEl) return;
@@ -8561,17 +8601,66 @@
         }
         window._pMainRefreshTitle = _pMainRefreshTitle;
 
+        // 快照只在 JS 記憶體；不得放進 babyMode 等會被 captureFormState 讀取的欄位。
+        var FHS_P_BABY_SNAP = { main: null, extra: {} };
+        var FHS_P_BABY_PARTS = ['左手', '右手', '左腳', '右腳'];
+        function _fhsPBabyValues(who) {
+            var values = {};
+            FHS_P_BABY_PARTS.forEach(function(part) {
+                var el = document.querySelector('.limb-sel[data-who="' + who + '"][data-part="' + part + '"]');
+                if (el) values[part] = el.value;
+            });
+            return values;
+        }
+        function _fhsPBabyQuickValue(mode, color, part) {
+            if (mode === 'all') return color;
+            if (mode === 'left') return (part === '左手' || part === '左腳') ? color : '無';
+            if (mode === 'right') return (part === '右手' || part === '右腳') ? color : '無';
+            return null;
+        }
+        function _fhsPBabyConfirmQuick(values, mode, color) {
+            var affected = FHS_P_BABY_PARTS.filter(function(part) {
+                var value = values[part];
+                return value && value !== '待定' && value !== '無' && value !== _fhsPBabyQuickValue(mode, color, part);
+            });
+            if (!affected.length) return true;
+            return confirm('切換快選會改動已選顏色：' + affected.map(function(part) {
+                return part + ' ' + values[part] + '→' + _fhsPBabyQuickValue(mode, color, part);
+            }).join('；') + '。確定？');
+        }
+        function _fhsPBabyRestore(who, values) {
+            FHS_P_BABY_PARTS.forEach(function(part) {
+                var el = document.querySelector('.limb-sel[data-who="' + who + '"][data-part="' + part + '"]');
+                if (el && values[part] != null) el.value = values[part];
+            });
+        }
+
         function fhsPExtraBabyMode(slot, mode) {
             var ns = _pns(slot);
             var modeEl = document.getElementById(ns + 'babyMode');
+            var previous = modeEl ? modeEl.value : 'all';
+            if (previous === 'custom' && mode === 'custom') return; // 快選模式重撳仍重新套用（舊行為）
+            if (previous === 'custom' && mode !== 'custom') {
+                var values = _fhsPBabyValues(_pwho(slot));
+                var quickColor = (document.getElementById(ns + 'babyQuickColor') || {}).value || '待定';
+                if (!_fhsPBabyConfirmQuick(values, mode, quickColor)) return;
+                FHS_P_BABY_SNAP.extra[slot] = values;
+            }
             if (modeEl) modeEl.value = mode;
             _pExtraBabyRestoreVisual(slot);
             if (mode !== 'custom') {
                 _pExtraBabyApplyFill(slot, mode);
             } else {
-                var customSelect = document.getElementById(ns + 'babyCustomColor');
-                if (customSelect) customSelect.value = '待定';
-                fhsPExtraBabyApplyAllCustom(slot);
+                var saved = FHS_P_BABY_SNAP.extra[slot];
+                delete FHS_P_BABY_SNAP.extra[slot];
+                if (saved) {
+                    _fhsPBabyRestore(_pwho(slot), saved);
+                    calculatePricing(); generate();
+                } else {
+                    var customSelect = document.getElementById(ns + 'babyCustomColor');
+                    if (customSelect) customSelect.value = '待定';
+                    fhsPExtraBabyApplyAllCustom(slot);
+                }
             }
         }
 
@@ -8612,6 +8701,7 @@
         }
 
         function fhsPExtraBabyColorChanged(slot) {
+            delete FHS_P_BABY_SNAP.extra[slot];
             var modeEl = document.getElementById(_pns(slot) + 'babyMode');
             var mode = modeEl ? modeEl.value : 'all';
             if (mode !== 'custom') _pExtraBabyApplyFill(slot, mode);
@@ -8649,6 +8739,7 @@
         }
 
         function fhsPExtraRemove(slot) {
+            delete FHS_P_BABY_SNAP.extra[slot];
             var box = document.querySelector('#pExtraContainer [data-p-slot="' + slot + '"]');
             if (!box) return;
             // ⚠️ 必須喺清空迴圈之前搬走（2026-08-18）：家庭區塊可能正泊喺呢張卡內（_pFamilyDock），
@@ -8787,6 +8878,7 @@
         }
 
         function _applyGlassDefaults() {
+            FHS_P_BABY_SNAP.main = null;
             if (document.getElementById('pSubCat').value !== '玻璃瓶款式') {
                 babyFillMode = 'all';
                 babyRestoreVisual();
@@ -8855,6 +8947,7 @@
 
         // S69 Task4: 從展開狀態收回「全部待定」（glass_pending），四肢重設為待定
         function babyReturnToGlassPending() {
+            FHS_P_BABY_SNAP.main = null;
             babyFillMode = 'glass_pending';
             ['左手', '右手', '左腳', '右腳'].forEach(function(part) {
                 var s = document.querySelector('.limb-sel[data-who="嬰兒"][data-part="' + part + '"]');
@@ -8866,15 +8959,29 @@
         window.babyReturnToGlassPending = babyReturnToGlassPending;
 
         function babySetMode(mode) {
+            if (babyFillMode === 'custom' && mode === 'custom') return; // 快選模式重撳仍重新套用（舊行為）
+            if (babyFillMode === 'custom' && mode !== 'custom') {
+                var values = _fhsPBabyValues('嬰兒');
+                var quickColor = document.getElementById('babyQuickColor')?.value || '待定';
+                if (!_fhsPBabyConfirmQuick(values, mode, quickColor)) return;
+                FHS_P_BABY_SNAP.main = values;
+            }
             babyFillMode = mode;
             babyRestoreVisual();
             if (mode !== 'custom') {
                 babyApplyFill(mode);
             } else {
-                // [V40 Fix] 進入自訂模式時，預設所有肢體為「待定」以確保報價精確
-                const customSelect = document.getElementById('babyCustomColor');
-                if (customSelect) customSelect.value = '待定';
-                babyApplyAllCustom();
+                var saved = FHS_P_BABY_SNAP.main;
+                FHS_P_BABY_SNAP.main = null;
+                if (saved) {
+                    _fhsPBabyRestore('嬰兒', saved);
+                    generate();
+                } else {
+                    // [V40 Fix] 第一次進入自訂時仍須全部待定
+                    const customSelect = document.getElementById('babyCustomColor');
+                    if (customSelect) customSelect.value = '待定';
+                    babyApplyAllCustom();
+                }
             }
         }
 
@@ -8899,6 +9006,7 @@
         }
 
         function babyColorChanged() {
+            FHS_P_BABY_SNAP.main = null;
             if (babyFillMode !== 'custom') babyApplyFill(babyFillMode);
         }
 
@@ -10268,6 +10376,11 @@ ${_buildSplitIgLine('未付尾數', 'balance', balance, true)}
         // ═══ S165 草稿自救模組完 ═══════════════════════════════════════════
 
         function restoreFormState(data) {
+            FHS_P_BABY_SNAP.main = null;
+            FHS_P_BABY_SNAP.extra = {};
+            // 尾段 fhsD51SyncPillsFromState() 亦會清，但喺 try 內——中途拋錯會跳過，開頭先清一次做保險
+            FHS_D51_K_SNAP[''] = null;
+            FHS_D51_K_SNAP['e_'] = null;
             try {
                 window._fhsSplitRestoreSnapshot = null; // S107 方案A: 還原起點重置快照（防上次殘留）
                 let state = data;

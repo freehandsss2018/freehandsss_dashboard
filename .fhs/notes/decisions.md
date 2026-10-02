@@ -4225,3 +4225,22 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **Subagent 使用記錄**：❌未使用（決策落檔）；finance-auditor 豁免（未涉財務數字判斷）。
 
 **執行結果（2026-10-01）**：A4 審視方案（第 1 輪 BLOCKER→A3 修正措辭與測試→第 2 輪建議修、無 BLOCKER）；A4 於隔離分支 `a4/restore-fix` 修 V42.html（只改 K／M 還原分支，A3 審 diff）；16 案例 UI 測試基線 5 紅→修復後桌面／手機全綠；`/fhs-check` 5/5。**例外按「A4 交出修復」視為已用盡並失效**，規則 7 恢復原義。證據報告見 `.fhs/reports/planning/2026-10-01_restore-bug-sweep-evidence.md`、`…-ui-test-report.md`。
+
+### D102：2026-10-01 — A4 一次性寫入例外（「統一／分開填」與手模顏色模式切換覆寫數值 bug，有時效）
+
+**背景**：0600105 修復部署後 Fat Mo 目測揪出：鎖匙扣部位「分開填」（左手 4、左腳 2）→「改返統一」會無聲將全部已選部位覆寫成第一個部位嘅值（數量＋上排＋下排），再「分開填」即見 4／4。同類問題見於立體擺設（手模）嬰兒顏色：自訂逐肢顏色 → 快選模式被覆寫 → 再入自訂全部重設「待定」（主件 `babySetMode`／追加件 `fhsPExtraBabyMode`）。925 頸飾無共用／分開切換，不受影響。Fat Mo 批 B 方案（兩者一齊修）並要求由 A4 執行。D101 例外已失效且不得援引，故另立本例外。
+
+**裁定（Fat Mo 確認「這次批用 D102 的做法」）**：
+1. **A4 一次性例外**：僅限本任務，容許 A4 在**獨立 git worktree／分支 `a4/split-toggle-fix`（基準 `e978c42`）**修改 `Freehandsss_Dashboard/freehandsss_dashboardV42.html` 與新增 UI 測試。不碰資料庫、不 push main、不部署、不改 `current.html`、不執行寫入類指令。
+2. **修復規格**：見 `.fhs/reports/planning/2026-10-01_split-toggle-fix-a4-brief.md`（A3 撰寫）。要點：切換模式時以記憶體快照保留原值，確認框防無聲覆寫；首次入「自訂」預設「待定」維持 2026-05-09 報價邏輯；`captureFormState()`／HTML ID 不動。
+3. **驗收**：A3 逐行審 diff → browser 實測 → `code-reviewer` 稽核 → 部署仍需 Fat Mo 批 `/upload-web`。A4 BLOCKER 不由 A3 推翻。
+
+**自動失效**：A4 交出修復、或 2026-10-08，取較早者。失效後 §7 規則 7 恢復原義，不得援引做其他任務。AGENTS.md §7 規則 9 指針本次**不改**（Fat Mo 另要求新 session 以 `/8d` 全盤審視 A4 寫入權規則，見 `.fhs/reports/planning/2026-10-01_a4-write-authority-review-brief.md`）。
+
+**風險（已知並接受）**：同 D101——Codex 寫入不經 hook 守護；緩解＝獨立 worktree＋限改 V42.html／測試＋A3 審 diff＋不部署。
+
+**Subagent 使用記錄**：❌未使用（決策落檔）；finance-auditor 豁免（純 UI 狀態保留，不改計價公式）。
+
+**執行結果（2026-10-02）**：A4（Codex，`gpt-6-sol`）於隔離 worktree `a4/split-toggle-fix` 修 V42.html（K1–K5／P1–P6）並新增 `scripts/tests/split_toggle_ui/run.js`；A3 逐行審 diff，補兩處回歸修正（分開填未揀部位預填統一值；快選模式重撳仍重新套用）；`code-reviewer` 第 1 輪 FAIL（restoreFormState 未清鎖匙扣快照，屬保險位，已補＋測試 T8b）→ 第 2 輪 PASS。新測試桌面／手機各 16/16（修復前 7/15）；restore_ui 17 案例桌面／手機各 17/17、零寫入請求。**例外按「A4 交出修復」視為已用盡並失效**，§7 規則 7 恢復原義；§7 規則 9 指針維持不改，交新 session `/8d` 處理（見 `.fhs/reports/planning/2026-10-01_a4-write-authority-review-brief.md`）。
+
+**實作教訓（叫 A4 寫碼）**：(1) Codex 預設模型 `gpt-6.1-sol` 不被 ChatGPT 帳戶支援（400），Fat Mo 改 `gpt-6-sol` 後可用；(2) Codex 寫入範圍只限啟動目錄——指定 repo 根開新分支會失敗（`cannot lock ref`），解法＝A3 預先建好 worktree、Codex cwd 設喺該 worktree、改動不 commit 由 A3 代做；(3) Playwright MCP 會截走原生 `confirm()`，測試腳本須以 `addInitScript` stub `window.confirm`，不可用 `page.on('dialog')`；(4) Playwright MCP 檔案根限於 session 工作目錄，測試檔需放該根內。

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-10-02] 修復：鎖匙扣「統一／分開填」與手模顏色模式切換無聲覆寫數值（V42，Fat Mo 0600105 目測回報；D102 A4 一次性實作）
+
+- **症狀**：嬰兒左手 4／左腳 2（分開填）→「改返全部部位統一設定」→ 左腳無聲變 4 → 再「分開填」見 4／4；刻字（上排／下排）同樣被覆寫，大寶同構。手模嬰兒「自訂」逐肢顏色 → 撳「二手二腳」被覆寫 → 再入「自訂」全部重設「待定」（主件＋追加件）。925 頸飾無共用／分開切換，不受影響。
+- **修法**：`fhsD51KToggleOverride` 改返統一前部位有差異即 `confirm()` 列差異（取消＝不改任何欄位），並以記憶體快照 `FHS_D51_K_SNAP` 保留各部位數量／上排／下排，撳返分開填即還原；統一期間人手改統一欄則快照失效。`babySetMode`／`fhsPExtraBabyMode` 自訂→快選前確認受影響肢體並存 `FHS_P_BABY_SNAP`，切返自訂還原；改過快選顏色則快照失效；**首次入自訂仍預設「待定」**（2026-05-09 報價邏輯不變）。快照只存 JS 記憶體，於 `resetForm`／`restoreFormState`／`fhsD51ClearCategory`／`fhsD51SyncPillsFromState`／`renderLimbGrid`／追加件款式切換與刪除等入口清除。A3 審 diff 補兩處回歸：分開填未揀部位預填統一值；快選模式重撳仍重新套用。未改任何 HTML id、`captureFormState()`／`restoreFormState()` 序列化結構與計價公式。
+- **驗證**：新增 `scripts/tests/split_toggle_ui/run.js`（16 案例，confirm stub）——修復前 7/15，修復後桌面／手機各 16/16；既有 `restore_ui` 17 案例桌面／手機各 17/17、零寫入請求；`code-reviewer` 第 1 輪 FAIL（restoreFormState 未清鎖匙扣快照，已補＋T8b）→ 第 2 輪 PASS。
+- **流程**：D102 A4（Codex）一次性寫入例外，已用盡失效；決策與實作教訓見 decisions.md D102。
+- **Subagent 使用記錄**：✅ A4（`codex:codex-rescue`，實作）、✅ code-reviewer ×2；finance-auditor 豁免（純 UI 狀態保留，17 案例建議報價與修復前一致，未改計價）。
+
 ## [2026-10-01] 改善：鎖匙扣「分開填」時隱藏統一設定行（V42，Fat Mo 0600105 回報；PR #14 已合併並部署，三關 PASS，SHA256 4285D524…3EFD）
 
 - **症狀**：0600105 重開後已自動展開「分開填」（左手 4 件、左腳 2 件），但上方統一設定行（數量／上排／下排）仍以空白顯示，令人誤以為未填。

@@ -2584,3 +2584,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-09-30 — 修復：0600930 吊飾還原方向錯誤（Claude Code）
 - 吊飾還原改讀 item_key 尾段方向，V42 已部署生產；數量空白列待 Fat Mo 確認。全文見 Changelog.md「2026-09-30 修復：訂單 0600930」。
 - **Subagent 使用記錄**：✅ finance-auditor（0600930 稽核）；修復未派。
+
+## 2026-10-02 — 修復：統一↔分開填／手模顏色切換覆寫（Claude Code＋A4 Codex，D102）
+- A4 一次性實作、A3 審 diff＋實測、code-reviewer 兩輪（FAIL→PASS）；V42 已部署。全文見 Changelog.md「2026-10-02」與 decisions.md D102。
+- **Subagent 使用記錄**：✅ A4 實作、✅ code-reviewer ×2；finance-auditor 豁免（純 UI）。
