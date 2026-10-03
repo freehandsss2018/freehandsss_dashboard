@@ -67,6 +67,7 @@
 > **本節唔係新規則，係上面 P0.7 嘅執行保證。** 之前 P0.7 純散文，AI 記得改內容記唔住改日期標籤（實測 D67／D66-follow 連續兩次中招），故加機械閘。
 
 - **攔截點**：`scripts/hooks/pre-tool-guard.js` R13，PreToolUse 攔 Bash/PowerShell 嘅 `git commit`。
+- **worktree-aware（D108，2026-10-04）**：R13 讀 hook 輸入 `cwd` 所屬 repo（`git rev-parse --show-toplevel`）嘅 handoff 同未 staged 狀態，**worktree 內更新 handoff 即可過閘**，唔再需要 `git -C` 繞過。cwd 缺失／唔係 repo／該 repo 冇 handoff 先回退主倉。注意：fix 要 merge 入 main 後，先對「以主倉為根跑嘅 hook」生效。
 - **兩個條件**（任一不過即 exit 2 擋住 commit）：
   1. 便攜塊頂部 `更新: YYYY-MM-DD` **≠ 今日本地日期**
   2. `handoff.md` 有**未 staged** 嘅改動（改咗但冇 `git add`）

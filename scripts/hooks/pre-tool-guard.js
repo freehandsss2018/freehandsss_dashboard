@@ -89,6 +89,8 @@ function consumeDeployAuthorization(target, tag) {
 // 條件(1)幂等：同一日第二個 commit（例如 Phase 2.5 部署 commit）自動過關，
 // 唔使開後門 flag，亦即冇「AI 自我授權」漏洞——檢查本身就係驗證。
 //
+// worktree-aware（D108）：讀 data.cwd 所屬 repo（git rev-parse --show-toplevel）嘅 handoff，
+//   唔再固定讀 hook 所在主倉；cwd 缺失／唔係 repo／該 repo 冇 handoff → 回退主倉（舊行為）。
 // 已知邊界（刻意 fail-open，寧鬆莫死鎖）：
 //   • `git -C <path> commit` 形式唔會命中 regex（放行，非誤擋）
 //   • 指令字串內夾住 "git commit" 字樣（如 echo）會誤擋——用下方逃生口
@@ -112,12 +114,28 @@ function readHandoffStamp(handoffFile) {
   } catch (_) { return null; }
 }
 
-function handoffHasUnstagedEdits(handoffRel, gateFileEnv) {
+// worktree-aware（D108，2026-10-04）：hook 以主倉為根跑，__dirname 推出嘅 REPO_ROOT 永遠係主倉，
+// 但 commit 實際發生喺 data.cwd 所屬 repo（可能係 .claude/worktrees/<name>/）。舊版 R13 因此讀主倉
+// handoff，worktree 內更新過嘅便攜塊過唔到閘（2026-10-02／10-04 兩次靠 `git -C` 繞過）。
+// 解析失敗／cwd 缺失／cwd repo 冇 handoff → 回退 REPO_ROOT（維持舊行為，fail-open 邊界不變）。
+function resolveCommitRoot(cwd, handoffRel) {
+  if (!cwd) return REPO_ROOT;
+  try {
+    const { execFileSync } = require('child_process');
+    const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
+    if (top && fs.existsSync(path.join(top, handoffRel))) return top;
+  } catch (_) { /* cwd 唔存在／唔係 repo／git 不可用 → 回退 */ }
+  return REPO_ROOT;
+}
+
+function handoffHasUnstagedEdits(handoffRel, gateFileEnv, root = REPO_ROOT) {
   if (process.env[gateFileEnv]) return false; // 測試覆寫模式：跳過 git 探測
   try {
     const { execFileSync } = require('child_process');
     const out = execFileSync('git', ['diff', '--name-only', '--', handoffRel], {
-      cwd: REPO_ROOT, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore']
+      cwd: root, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore']
     });
     return out.trim().length > 0;
   } catch (_) {
@@ -301,7 +319,8 @@ const HANDLERS = {
     if (rule.disabled_under_env && process.env[rule.disabled_under_env] === '1') return;
     if (!toRegex(rule.command_pattern).test(ctx.command)) return;
     if (toRegex(rule.dry_run_exclude_pattern).test(ctx.command)) return;
-    const handoffFile = process.env[rule.gate_file_env] || path.join(REPO_ROOT, rule.handoff_rel);
+    const commitRoot = resolveCommitRoot(ctx.cwd, rule.handoff_rel);
+    const handoffFile = process.env[rule.gate_file_env] || path.join(commitRoot, rule.handoff_rel);
 
     if (process.env[rule.skip_env] === '1') {
       logGateBypass(`${rule.skip_env}=1`, ctx.command, rule.gate_file_env);
@@ -315,7 +334,7 @@ const HANDLERS = {
       warnings.push(...rule.stamp_missing_warn_message);
     } else if (stamp !== today) {
       blocking.push(...fmt(rule.stamp_stale_block_message_template, { stamp, today, handoff_rel: rule.handoff_rel }));
-    } else if (handoffHasUnstagedEdits(rule.handoff_rel, rule.gate_file_env)) {
+    } else if (handoffHasUnstagedEdits(rule.handoff_rel, rule.gate_file_env, commitRoot)) {
       blocking.push(...fmt(rule.unstaged_block_message_template, { handoff_rel: rule.handoff_rel }));
     }
   },

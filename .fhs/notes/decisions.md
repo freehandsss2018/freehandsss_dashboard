@@ -4309,3 +4309,12 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **已知風險／未覆蓋**：①部署後真實訂單實證仍缺（Phase 2.4 `/fhs-check` 壓測於 exec 7878–7897 跑出 10 次測試單 Smart Cache `supabaseFetched=true`，整單未知 SKU 兩次仍 fallback→外鍵報錯，與部署前一致），下一張真實單須抽查；②errorWorkflow 的 Error Loop Shield 對同節點 5 分鐘內重複錯誤靜默跳過，Supabase 持續故障時只收首個警報；③前端永遠收到 200，n8n 失敗只靠 Telegram；④fail-closed 後新單為「有售價、total_cost=NULL」，由 C5 事後偵測；編輯單保留舊成本（過時值）C5 抓不到；⑤Batch SKU Collector 的「無商品」過濾寫成三個 `?`（舊編碼損壞，與本次無關，另案）；⑥**殘餘漏洞**：某單所有 SKU 都存在於 products 但 `total_base_cost` 全為 NULL 時，無「解析成功」SKU 故不觸發部分匹配 throw，仍會 fallback 歸零（現況 products 0 列 NULL，屬潛在風險；補法＝任何 matched 但 NULL 一律 throw）；⑦前綴落空時沿用「取第一個前綴列」舊行為，依賴外鍵擋下。
 **教訓**：「表面有 fallback」≠安全——fallback 到 0 會令資料靜默變錯；財務計算的 fallback 應 fail-closed。恆等式檢查（成本和=總額、利潤=售價−成本）抓不到「全 0」，須另設絕對值守衛。
 **Subagent 使用記錄**：✅ finance-auditor ×4（成本歸零查證、A+D 驗收、C5 NULL 補丁覆核、部分匹配 throw 驗收）；Codex 未使用（Fat Mo 指示）。
+
+### D108：2026-10-04 — R13 handoff 同步閘改為 worktree-aware
+
+**背景**：D107 `/commit` 時 R13 擋住——worktree 內便攜塊已更新為今日，但守護報「日期戳過時 2026-10-03」。根因：`pre-tool-guard.js` 的 `REPO_ROOT` 由 `__dirname` 推出，而 hook 以**主倉**為根跑，故 R13 永遠讀主倉 handoff；worktree session 內更新 handoff 過不了閘。2026-10-02、10-04 兩次都靠 Fat Mo 批准的 `git -C <worktree> commit`（不命中 R13 regex）繞過。
+**裁定（Fat Mo 2026-10-04「處理它」）**：新增 `resolveCommitRoot(cwd, handoffRel)`——用 hook 輸入的 `cwd` 做 `git rev-parse --show-toplevel`，若該 repo 有 `.fhs/memory/handoff.md` 就以它為 commit 根，R13 的日期戳與「未 staged 改動」兩項檢查都用它；cwd 缺失／不是 repo／該 repo 無 handoff → 回退主倉（舊行為，fail-open 邊界不變）。`git -C` 形式仍不命中 regex（既有已知邊界，不改）。
+**範圍外（刻意不動）**：`.fhs/.deploy-ok`（R1/R9）仍讀主倉——部署授權旗標改成 worktree-local 會改變「AI 自建旗標」的安全模型，另案。
+**驗證**：`run-handoff-gate-tests.js` 由 8 → 12 案例（新增 4：cwd repo 過時→擋、今日→放行、今日但未 staged→擋、cwd 不存在→回退）全過；回歸驗證——把舊版 guard 放回，兩個「擋」案例如預期失敗（重現 bug），修復版 12/12；`run-fixtures.js` 32/32 無回歸。
+**生效條件**：hook 以主倉為根跑，故此改動 merge 入 main 後才對之後的 worktree session 生效。
+**Subagent 使用記錄**：❌ 未用（非財務，hook 腳本小改；驗證以測試 runner 實證）。

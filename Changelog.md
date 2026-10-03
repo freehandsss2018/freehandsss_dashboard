@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-10-04] 治理：R13 handoff 同步閘改為 worktree-aware（D108）
+
+- `pre-tool-guard.js` 新增 `resolveCommitRoot(cwd)`：R13 讀 hook 輸入 `cwd` 所屬 repo 的 handoff 與未 staged 狀態，不再固定讀主倉；cwd 解析失敗回退主倉。worktree 內 `/commit` 不再需要 `git -C` 繞過。
+- `run-handoff-gate-tests.js` 8 → 12 案例（含舊版重現 bug 的回歸驗證）；`run-fixtures.js` 32/32。`commit.md` P0.7.2 同步說明。`.deploy-ok` 仍讀主倉（另案）。
+- **Subagent 使用記錄**：沒用。
 ## [2026-10-04] 財務：n8n 成本靜默歸零修復——Smart Cache fail-closed（V47.16）＋稽核 C5（D107）
 
 - 0600512（2026-09-21 exec 7605）因成本查詢撞 5s timeout 被空 catch 吞掉，Total_Cost=0 寫入而 execution 顯示成功。live workflow `6Ljih0hSKr9RpYNm` 的 `Smart Cache Strategist` 改為 V47.16：timeout 10s、失敗重試 1 次，仍失敗／無 key／回應非陣列／部分 SKU 匹配（查無或成本 NULL）一律 throw，由 errorWorkflow 發 Telegram；0 匹配仍交外鍵。
