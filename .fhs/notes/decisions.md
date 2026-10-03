@@ -4318,3 +4318,13 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **驗證**：`run-handoff-gate-tests.js` 由 8 → 12 案例（新增 4：cwd repo 過時→擋、今日→放行、今日但未 staged→擋、cwd 不存在→回退）全過；回歸驗證——把舊版 guard 放回，兩個「擋」案例如預期失敗（重現 bug），修復版 12/12；`run-fixtures.js` 32/32 無回歸。
 **生效條件**：hook 以主倉為根跑，故此改動 merge 入 main 後才對之後的 worktree session 生效。
 **Subagent 使用記錄**：❌ 未用（非財務，hook 腳本小改；驗證以測試 runner 實證）。
+
+### D109：2026-10-04 — .deploy-ok 部署旗標改為 worktree-aware
+
+**背景**：D108 的「範圍外」遺留。`pre-tool-guard.js` 的 `DEPLOY_FLAG_FILE`／`DEPLOY_LOG_FILE` 由 `__dirname` 推出（hook 以主倉為根跑），固定指向主倉：worktree session 內依規定在目前資料夾建立的 `.fhs/.deploy-ok` 守護看不到（2026-10-02 部署要改寫主倉絕對路徑才過），而且 R1/R9 消耗旗標時的 `deploy-log.md` 自動追加亦落主倉，worktree 內 `git add` 不到（Phase 2.5 步驟 5 要求把 deploy-log 入 commit）。
+**裁定（Fat Mo 2026-10-04「處理 .deploy-ok 的 worktree 問題」）**：①旗標先查「目標所在 repo」（Write/Edit 用 file_path、Bash 用 cwd，經 `git rev-parse --show-toplevel`）的 `.fhs/.deploy-ok`，再查舊位置（hook 所在主倉，保留 Fat Mo 在主倉資料夾手動 `touch` 的途徑 b）；②用了哪個旗標就消耗哪個；③R1/R9 消耗日誌與 R10 建旗標日誌落目標所在 repo 的 `.fhs/notes/deploy-log.md`，解析不到才回退主倉；④Write/Edit ctx 補帶 `cwd`。
+**安全模型不變**：一次性、10 分鐘 TTL、須有效 ISO timestamp、過期／壞格式即刪。**更窄而非更寬**：worktree 旗標只授權該 worktree 內的寫入（舊版主倉一個旗標授權所有 worktree）；主倉旗標維持舊的全域授權（向後相容，未收緊）。
+**驗證**：新增 `scripts/hooks/test/run-deploy-flag-tests.js`（22 項，用臨時主倉＋真 `git worktree add` 端到端）：無旗標擋、worktree 旗標放行並消耗、日誌落 worktree 而主倉不污染、一次性、主倉舊旗標向後相容、過期／空旗標被擋並清除、worktree 旗標不授權另一 worktree、Bash R9、R10 日誌（Write／Bash）、無 cwd 回退。回歸：舊版 guard 下 9 項如預期失敗（重現 bug），修復版 22/22；其餘 hook 套件 `run-fixtures` 32/32、`run-handoff-gate-tests` 12/12、`run-kgov-fixtures` 10/10、`run-finance-stop-fixtures` 35/35 無回歸。
+**未做／待辦**：①`upload-web.ps1` 仍讀 repo 根 `.env`（worktree 無 .env 需臨時處理，見 reference_fhs_check_worktree_env）；②可攜模板 `scripts/portability/template-src/scripts/hooks/pre-tool-guard.js` 仍是舊 fork，需另行重新匯出（D108＋D109 兩次引擎改動都未同步；`check-manifest.js` 本身亦有既有大量「Unclassified tracked source」錯誤）；③`skip_env` 前綴仍無效（既有）。
+**生效條件**：hook 以主倉為根跑，merge 入 main 並對齊主倉後，之後的 worktree session 才生效。
+**Subagent 使用記錄**：❌ 未用（非財務，hook 腳本改動；驗證以端到端測試 runner 實證）。

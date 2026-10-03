@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-10-04] 治理：.deploy-ok 部署旗標改為 worktree-aware（D109）
+
+- `pre-tool-guard.js`：R1/R9 旗標先查目標所在 repo 的 `.fhs/.deploy-ok`、再查主倉舊位置；消耗與 `deploy-log.md` 日誌（R1/R9/R10）落目標所在 repo，worktree 內可 `git add`。一次性／10 分鐘 TTL／ISO 格式等安全模型不變；worktree 旗標只授權自己（比舊版更窄）。
+- 新增 `scripts/hooks/test/run-deploy-flag-tests.js`（22 項，真 `git worktree` 端到端，舊版 guard 下 9 項失敗＝重現 bug）；其餘 hook 套件無回歸。`commit.md` Phase 2.5 同步說明。
+- 待辦：可攜模板 guard fork 未同步；`upload-web.ps1` 仍讀 repo 根 `.env`。
+- **Subagent 使用記錄**：沒用。
 ## [2026-10-04] 治理：R13 handoff 同步閘改為 worktree-aware（D108）
 
 - `pre-tool-guard.js` 新增 `resolveCommitRoot(cwd)`：R13 讀 hook 輸入 `cwd` 所屬 repo 的 handoff 與未 staged 狀態，不再固定讀主倉；cwd 解析失敗回退主倉。worktree 內 `/commit` 不再需要 `git -C` 繞過。

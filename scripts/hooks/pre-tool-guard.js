@@ -51,27 +51,76 @@ const MAIN_REPO_ROOT = (() => {
 })();
 const KGOV_OBSERVE_LOG = path.join(MAIN_REPO_ROOT, '.fhs/.kgov-observe.log');
 
-function checkDeployAuthorization() {
+// ── worktree-aware 部署旗標（D109，2026-10-04）──────────────────────────────
+// hook 以主倉為根跑，舊版 DEPLOY_FLAG_FILE／DEPLOY_LOG_FILE 固定指向主倉：worktree session 內
+// 依規定喺目前資料夾建立嘅 .fhs/.deploy-ok 守護睇唔到（要改寫主倉絕對路徑先過得），而且
+// deploy-log.md 嘅自動追加亦落主倉，worktree 內 `git add` 唔到。
+// 新規則：①旗標先查「目標所在 repo」（Write/Edit 用 file_path，Bash 用 cwd）嘅 .fhs/.deploy-ok，
+//   再查舊位置（hook 所在主倉，保留 Fat Mo 喺主倉手動 touch 嘅途徑）；②用咗邊個旗標就消耗邊個；
+//   ③日誌落目標所在 repo 嘅 .fhs/notes/deploy-log.md（解析唔到才用舊位置）。
+// 安全模型不變：一次性、10 分鐘 TTL、須有效 ISO timestamp；worktree 旗標只授權該 worktree 內嘅寫入
+// （比舊版「主倉一個旗標授權全部 worktree」更窄）。
+function repoRootOf(p, base) {
+  if (!p) return null;
   try {
-    if (!fs.existsSync(DEPLOY_FLAG_FILE)) return false;
-    const ts = fs.readFileSync(DEPLOY_FLAG_FILE, 'utf8').trim();
-    const flagTime = new Date(ts).getTime();
-    if (isNaN(flagTime) || Date.now() - flagTime > DEPLOY_TTL_MS) {
-      try { fs.unlinkSync(DEPLOY_FLAG_FILE); } catch (_) { /* silent */ }
-      return false;
+    let dir = path.resolve(base || process.cwd(), String(p));
+    // Write 新檔時 dirname 可能未存在 → 向上找第一個存在嘅目錄
+    while (!fs.existsSync(dir)) {
+      const up = path.dirname(dir);
+      if (up === dir) return null;
+      dir = up;
     }
-    return true;
-  } catch (_) {
-    return false;
-  }
+    if (fs.statSync(dir).isFile()) dir = path.dirname(dir);
+    const { execFileSync } = require('child_process');
+    const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: dir, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
+    return top || null;
+  } catch (_) { return null; }
 }
 
-function consumeDeployAuthorization(target, tag) {
-  try { fs.unlinkSync(DEPLOY_FLAG_FILE); } catch (_) { /* silent */ }
+function deployTargetRoot(ctx) {
+  const isShell = ctx.tool === 'Bash' || ctx.tool === 'PowerShell';
+  return (isShell ? repoRootOf(ctx.cwd) : repoRootOf(ctx.filePath, ctx.cwd)) || repoRootOf(ctx.cwd);
+}
+
+function deployLogFor(root) {
+  return root ? path.join(root, '.fhs/notes/deploy-log.md') : DEPLOY_LOG_FILE;
+}
+
+function samePath(a, b) {
+  const n = x => path.resolve(x).replace(/\\/g, '/').toLowerCase();
+  return n(a) === n(b);
+}
+
+// 回傳有效旗標嘅路徑（供 consume 用），冇有效旗標回 null；過期／格式壞嘅旗標順手刪除。
+function checkDeployAuthorization(ctx) {
+  const candidates = [];
+  const root = ctx ? deployTargetRoot(ctx) : null;
+  if (root) candidates.push(path.join(root, '.fhs/.deploy-ok'));
+  if (!candidates.some(c => samePath(c, DEPLOY_FLAG_FILE))) candidates.push(DEPLOY_FLAG_FILE);
+  for (const flagFile of candidates) {
+    try {
+      if (!fs.existsSync(flagFile)) continue;
+      const ts = fs.readFileSync(flagFile, 'utf8').trim();
+      const flagTime = new Date(ts).getTime();
+      if (isNaN(flagTime) || Date.now() - flagTime > DEPLOY_TTL_MS) {
+        try { fs.unlinkSync(flagFile); } catch (_) { /* silent */ }
+        continue;
+      }
+      return flagFile;
+    } catch (_) { /* 讀唔到 → 試下一個 */ }
+  }
+  return null;
+}
+
+function consumeDeployAuthorization(target, tag, flagFile, ctx) {
+  try { fs.unlinkSync(flagFile || DEPLOY_FLAG_FILE); } catch (_) { /* silent */ }
   try {
-    const dir = path.dirname(DEPLOY_LOG_FILE);
+    const logFile = deployLogFor(ctx ? deployTargetRoot(ctx) : null);
+    const dir = path.dirname(logFile);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(DEPLOY_LOG_FILE, `${new Date().toISOString()} | ${tag} | ${String(target).slice(0, 80)}\n`, 'utf8');
+    fs.appendFileSync(logFile, `${new Date().toISOString()} | ${tag} | ${String(target).slice(0, 80)}\n`, 'utf8');
   } catch (_) { /* silent */ }
 }
 
@@ -228,8 +277,9 @@ const HANDLERS = {
       hit = rule.match.patterns.every(p => toRegex(p).test(target));
     }
     if (!hit) return;
-    if (checkDeployAuthorization()) {
-      consumeDeployAuthorization(target, rule.consume_log_tag);
+    const flagFile = checkDeployAuthorization(ctx);
+    if (flagFile) {
+      consumeDeployAuthorization(target, rule.consume_log_tag, flagFile, ctx);
     } else {
       blocking.push(...rule.block_message);
     }
@@ -239,10 +289,11 @@ const HANDLERS = {
     if (!ctx.filePath.includes(rule.match.value)) return;
     if (process.env.FHS_GUARD_FIXTURE === '1') return;
     try {
-      const dir = path.dirname(DEPLOY_LOG_FILE);
+      const logFile = deployLogFor(deployTargetRoot(ctx));
+      const dir = path.dirname(logFile);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       const line = fmt1(rule.log_template, { ts: new Date().toISOString(), tool: ctx.tool }) + '\n';
-      fs.appendFileSync(DEPLOY_LOG_FILE, line, 'utf8');
+      fs.appendFileSync(logFile, line, 'utf8');
     } catch (_) { /* silent */ }
   },
 
@@ -251,10 +302,11 @@ const HANDLERS = {
     if (!hit) return;
     if (process.env.FHS_GUARD_FIXTURE === '1') return;
     try {
-      const dir = path.dirname(DEPLOY_LOG_FILE);
+      const logFile = deployLogFor(deployTargetRoot(ctx));
+      const dir = path.dirname(logFile);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       const line = fmt1(rule.log_template, { ts: new Date().toISOString(), cmd80: String(ctx.command).slice(0, 80) }) + '\n';
-      fs.appendFileSync(DEPLOY_LOG_FILE, line, 'utf8');
+      fs.appendFileSync(logFile, line, 'utf8');
     } catch (_) { /* silent */ }
   },
 
@@ -541,7 +593,7 @@ process.stdin.on('end', () => {
     const content = toolInput.content || toolInput.new_string || toolInput.new_source ||
       (Array.isArray(toolInput.edits) ? toolInput.edits.map(e => e.new_string || '').join('\n') : '') || '';
 
-    const ctx = { tool, filePath, content };
+    const ctx = { tool, filePath, content, cwd: data.cwd };
     // try/catch 係 loadRules() 驗證之外嘅第二道防線（opus 對抗審查第二輪建議）：
     // 驗證再仔細都可能有漏網（例如某個 kind 未來加咗新欄位冇同步更新 validator），
     // 呢度確保即使真係漏網爆錯，都係 fail-closed（exit 2）而唔係 fail-open（exit 0）。
