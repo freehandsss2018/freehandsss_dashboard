@@ -103,9 +103,8 @@
 
 | 狀態 | 項目 | 結果 | 備註 |
 |------|------|------|------|
-| ✅ 完成 | **[n8n成本靜默歸零] 已修復（2026-10-03）**：Smart Cache Strategist → V47.16（fail-closed）＋稽核 C5 | finance-auditor 4 輪驗收 PASS；live versionId c0304af6；0600512 事故（exec 7605）為唯一已知案例，已自癒 | 見 D107、
-8n/Smart_Cache_Strategist_V47.16.js；repo 內 FHS_Core_OrderProcessor_live.json 為 05 月舊快照，勿當現況 |
-| ✅ 完成 | **[R13 worktree-aware] guard 改讀 cwd 所屬 repo 的 handoff（2026-10-04）** | un-handoff-gate-tests.js 12/12、un-fixtures.js 32/32；舊版 guard 重現 bug 已驗；merge 入 main 後對 worktree session 生效 | 見 D108；.deploy-ok 仍讀主倉（另案） |
+| ✅ 完成 | **[n8n成本靜默歸零] 已修復（2026-10-03）**：Smart Cache Strategist → V47.16（fail-closed）＋稽核 C5 | finance-auditor 4 輪驗收 PASS；live versionId c0304af6；0600512 事故（exec 7605）為唯一已知案例，已自癒 | 見 D107、`n8n/Smart_Cache_Strategist_V47.16.js`；repo 內 `FHS_Core_OrderProcessor_live.json` 為 05 月舊快照，勿當現況 |
+| ✅ 完成 | **[R13 worktree-aware] guard 改讀 cwd 所屬 repo 的 handoff（2026-10-04）** | `run-handoff-gate-tests.js` 12/12、`run-fixtures.js` 32/32；舊版 guard 重現 bug 已驗；merge 入 main 後對 worktree session 生效 | 見 D108；`.deploy-ok` 仍讀主倉（另案） |
 
 ### 已確認完成（2026-10-02 0076 更正 D104）
 
