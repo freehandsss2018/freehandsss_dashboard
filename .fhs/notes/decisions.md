@@ -4287,3 +4287,12 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **已知風險**：兩單 `raw_form_state` 仍舊值，Dashboard 重存會蓋返舊收款／重算成本——暫勿重存（同 D104 後續 5）。
 **教訓**：歷史單 order_items 成本欄位為 NULL 時，S／P 與加購／單購須靠 IG 原文＋價階算術反推；「舊值算術吻合」要逐個解釋驗證（0500719 的 605 一度誤認吻合加購 625−20，實為單購式）。
 **Subagent 使用記錄**：✅ finance-auditor ×3（成本歷史查證、0500719／0600722 核實、0099/0100 驗收）；✅ Codex ×1（起草 migration）。
+
+### D106：2026-10-03 — 羊毛氈／燈飾成本一律 $30；更正 0696216／0600106／0600800／0600803（migration 0101）
+
+**背景**：D104 後續 2＋3。finance-auditor 2026-10-03 複核 0076 全 23 單：21 張 total 與分量逐元一致；0600803 鎖匙扣／吊飾分類錯放 $220；0696216 羊毛氈 $0。全庫掃描確認配件漏計只有 0696216，Fat Mo 另確認 0600106／0600800 當年有出燈（備註「+燈」但系統冇旗標／配件行）。
+**規則（Fat Mo 親述）**：羊毛氈／燈飾成本由始至終 $30，早期 cost seed 為 0（migration 0022b 2026-05-28 前）屬系統未完善漏計，非歷史真值。記憶：project_wool_felt_lamp_cost_always_30。
+**裁定（Fat Mo「授權四單，兩單燈的 $80 都未收」）**：0101 —— 0696216 accessory 0→30（total 770→800，net 4120）；0600106 total 1190→1220（net 5360）；0600800 1555→1585（net 4705）；兩單新增 `_L_LIGHTS` 品項行（item_sale_price NULL、$80 未收故收款不動）；0600803 keychain 440→660／necklace 1215→995（鎖匙扣優先慣例，total 1655 不變），舊 dedup note 只標註。含預期現值守衛＋audit_logs 4 行。
+**驗收**：finance-auditor PASS（73 張驗證 1/2/4 零違規、由零重算一致、僅動四單、audit_logs 4 行、無越界）。
+**已知風險**：0600106／0600800 `l_light_en=false`，Dashboard 重存會刪新增燈飾行並蓋返 accessory_cost=0；四單 raw_form_state 報價與 final 不符（0600803 7800 vs 6140）；0600803 `adjustment_amount=30` 令 KPI 淨利 4455 vs net_profit 4485，待 Fat Mo 確認。四單暫勿重存（併入 D104 後續 5）。
+**Subagent 使用記錄**：✅ finance-auditor ×4（0076 全 23 單複核、漏計掃描、0101 驗收等）。

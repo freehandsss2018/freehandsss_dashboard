@@ -2600,3 +2600,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-10-03 — 財務：更正 0500719／0600722（migration 0099/0100，D105）
 - 兩單成本更正＋0500719 收款按 IG；finance-auditor 驗收 PASS。全文見 CHANGELOG／decisions.md D105。
 - **Subagent 使用記錄**：✅ finance-auditor ×3；✅ Codex ×1（起草 migration，Fat Mo 事前確認）。
+
+## 2026-10-03 — 財務：0101 補羊毛氈／燈飾 $30＋0600803 分類（D106）
+- 四單更正，finance-auditor 驗收 PASS；全文見 CHANGELOG／decisions.md D106。
+- **Subagent 使用記錄**：✅ finance-auditor ×4。
