@@ -2604,3 +2604,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-10-03 — 財務：0101 補羊毛氈／燈飾 $30＋0600803 分類（D106）
 - 四單更正，finance-auditor 驗收 PASS；全文見 CHANGELOG／decisions.md D106。
 - **Subagent 使用記錄**：✅ finance-auditor ×4。
+
+## 2026-10-03 — 前端：統一確認提示簡化（V42）
+- 「改返全部部位統一設定」confirm 字句簡化，邏輯不變；見 CHANGELOG。
+- **Subagent 使用記錄**：沒用。
