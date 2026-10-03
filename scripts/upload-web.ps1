@@ -6,6 +6,7 @@
   Gate 0：生產版血統前置檢查（防跨分支覆寫，D71-follow3 新增）。
   驗證三關：公開端點 HTTP 200 + Content-Length 比對 + SHA256 逐位元組比對。
   憑證從 repo 根 .env 讀取（NAS_WEBDAV_URL / NAS_WEBDAV_USER / NAS_WEBDAV_PASS），密碼永不回顯。
+  git worktree 內無 .env 時，自動改讀主倉的 .env（D110，原地讀取、不複製）。
 .PARAMETER Target
   目標檔代稱或檔名：
     (省略) / V42  -> freehandsss_dashboardV42.html （來源 Freehandsss_Dashboard\）
@@ -70,8 +71,28 @@ $localFile = Join-Path $sourceDir $fileName
 if (-not (Test-Path $localFile)) { Fail "找不到本機檔案：$localFile" }
 
 # --- 3. 讀 .env 憑證 ---
-$envPath = Join-Path $repoRoot '.env'
-if (-not (Test-Path $envPath)) { Fail ".env 不存在，無法取得 WebDAV 憑證。" }
+# worktree-aware（D110）：.env 被 gitignore，git worktree（.claude/worktrees/<name>/）內冇本地副本。
+# repo 根冇 .env → 經 git common dir 搵主倉嘅 .env，原地讀取；絕不複製／回顯憑證。
+# 做法同 scripts/lib/env.js（D76）一致。
+function Resolve-EnvPath {
+  param([string]$Root)
+  $local = Join-Path $Root '.env'
+  if (Test-Path $local) { return $local }
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  $common = & git -C $Root rev-parse --path-format=absolute --git-common-dir 2>$null
+  $code = $LASTEXITCODE
+  $ErrorActionPreference = $prevEAP
+  if ($code -eq 0 -and $common) {
+    $mainRoot = Split-Path -Parent (@($common)[0].ToString().Trim())
+    $mainEnv  = Join-Path $mainRoot '.env'
+    if (Test-Path $mainEnv) { return $mainEnv }
+  }
+  return $null
+}
+$envPath = Resolve-EnvPath $repoRoot
+if (-not $envPath) { Fail ".env 不存在（repo 根與主倉皆無），無法取得 WebDAV 憑證。" }
+if ($envPath -ne (Join-Path $repoRoot '.env')) { Write-Host "ℹ️ 本 worktree 無 .env，改讀主倉：$envPath" }
 $cfg = @{}
 Get-Content $envPath | Where-Object { $_ -match '^\s*NAS_(WEBDAV|WEB)_' } | ForEach-Object {
   $k,$v = $_ -split '=',2; $cfg[$k.Trim()] = $v.Trim()

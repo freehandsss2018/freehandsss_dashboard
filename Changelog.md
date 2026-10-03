@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-10-04] 部署：upload-web.ps1 讀 .env 改為 worktree-aware（D110）
+
+- worktree 內無 `.env` 時，`upload-web.ps1` 經 git common dir 改讀主倉 `.env`（原地讀取、不複製、不回顯）；兩處皆無才報錯。不再需要臨時把 NAS 憑證寫入 worktree。其餘部署邏輯（Gate 0、`-Force`、三關驗證）不動。
+- 隔離測試 6/6（臨時倉庫＋真 `git worktree`）＋真實 worktree 解析驗證；未做真上傳（待下次真實部署）。`scripts/README.md`、`upload-web.md` 同步。
+- **Subagent 使用記錄**：沒用。
+
 ## [2026-10-04] 治理：.deploy-ok 部署旗標改為 worktree-aware（D109）
 
 - `pre-tool-guard.js`：R1/R9 旗標先查目標所在 repo 的 `.fhs/.deploy-ok`、再查主倉舊位置；消耗與 `deploy-log.md` 日誌（R1/R9/R10）落目標所在 repo，worktree 內可 `git add`。一次性／10 分鐘 TTL／ISO 格式等安全模型不變；worktree 旗標只授權自己（比舊版更窄）。

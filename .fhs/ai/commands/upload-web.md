@@ -10,7 +10,7 @@
 ## 前提
 
 - 通道：WebDAV over HTTPS（`yanhei.synology.me:5006`，對應 `/web` 共用資料夾）
-- 憑證來源：repo 根 `.env`（`NAS_WEBDAV_URL` / `NAS_WEBDAV_USER` / `NAS_WEBDAV_PASS`），**密碼永不回顯、`.env` 永不入庫**
+- 憑證來源：repo 根 `.env`（`NAS_WEBDAV_URL` / `NAS_WEBDAV_USER` / `NAS_WEBDAV_PASS`），**密碼永不回顯、`.env` 永不入庫**；**git worktree 內無 `.env` 時，腳本自動改讀主倉 `.env`（D110，原地讀取、不複製），毋須再臨時寫 `.env` 入 worktree**
 - 公開端點：`https://yanhei.synology.me/<檔名>`（Web Station 將 `/web` 對映至 HTTP 根）
 - 實作腳本：`scripts/upload-web.ps1`（封裝上傳 + 三關驗證）
 

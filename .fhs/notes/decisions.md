@@ -4328,3 +4328,12 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **未做／待辦**：①`upload-web.ps1` 仍讀 repo 根 `.env`（worktree 無 .env 需臨時處理，見 reference_fhs_check_worktree_env）；②可攜模板 `scripts/portability/template-src/scripts/hooks/pre-tool-guard.js` 仍是舊 fork，需另行重新匯出（D108＋D109 兩次引擎改動都未同步；`check-manifest.js` 本身亦有既有大量「Unclassified tracked source」錯誤）；③`skip_env` 前綴仍無效（既有）。
 **生效條件**：hook 以主倉為根跑，merge 入 main 並對齊主倉後，之後的 worktree session 才生效。
 **Subagent 使用記錄**：❌ 未用（非財務，hook 腳本改動；驗證以端到端測試 runner 實證）。
+
+### D110：2026-10-04 — upload-web.ps1 讀 .env 改為 worktree-aware
+
+**背景**：D109 遺留。`.env` 被 gitignore，git worktree（`.claude/worktrees/<name>/`）內無副本，而 `upload-web.ps1` 固定讀 `$repoRoot\.env`（`$PSScriptRoot` 上一層）→ worktree 內部署報「.env 不存在」。2026-10-02 部署靠臨時把 NAS_ 三行寫入 worktree 的 `.env`、跑完即刪繞過（把憑證複製進 worktree，雖 gitignored 但多一份明文）。
+**裁定（Fat Mo 2026-10-04「處理 upload-web.ps1 讀 .env 的 worktree 問題」）**：新增 `Resolve-EnvPath`——repo 根有 `.env` 用本地；沒有就用 `git rev-parse --path-format=absolute --git-common-dir` 找主倉（common dir 的上一層）的 `.env`，原地讀取；兩處都沒有才 `Fail`。**不複製、不回顯憑證**，只印被選中的路徑（無機密）。做法與 `scripts/lib/env.js`（D76）一致。
+**範圍**：只改 `upload-web.ps1` 讀 `.env` 一步；其餘邏輯（Gate 0 血統檢查、`-Force`、三關驗證）不動；腳本 BOM 保留。
+**驗證**：用 AST 抽出新函式，在臨時 git 倉庫＋真 `git worktree` 隔離測 6 項全過（主倉有 .env→本地；worktree 無→主倉；worktree 內不產生副本；worktree 自有 .env 優先；兩處皆無→null；非 git 目錄→null 不崩潰）；用真實 worktree 驗證解析到主倉 `.env` 且含 `NAS_WEBDAV_URL/USER/PASS` 三鍵（只核對鍵名）。**未做**：端到端真上傳（會改動 NAS 生產目標，待下次真實部署自然驗證）。
+**仍待辦**：可攜模板 guard fork 未同步（D109）；`skip_env` 前綴仍無效（既有）。
+**Subagent 使用記錄**：❌ 未用（非財務，部署腳本小改；驗證以隔離測試實證）。

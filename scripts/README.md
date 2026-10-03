@@ -22,7 +22,7 @@
 | `agent_dashboardV42.js` | **AI 助理團隊名冊生成器**（`/team`）：掃描 subagents/commands/skills/hooks/MCP frontmatter + n8n API live 實掃 → 生成 `artifacts/agent_dashboardV42.html`（人睇）+ `.json`（AI 讀），制度見 `.fhs/notes/ai-team-registry.md`；內含 Canva 學習記錄 zone（`canva_auto/placement_memory.json` schema v2 渲染，D77，見下） |
 | `canva_memory_validate.js` | **Canva 學習記錄防退化校驗**（D77，2026-09-13）：`canva_auto/placement_memory.json` schema v2 校驗，可 `require` 亦可 CLI 直跑（`node scripts/canva_memory_validate.js`）；`/canva-auto` Stage④／Step 0 寫入後強制執行，exit 1＝缺欄位/規則引用錯/type非法/id重複，exit 0＋💡提示＝達3單門檻未升格 |
 | `_oneoff/canva_lessons_merge.js` | **一次性回填腳本**（D77，2026-09-13）：`placement_memory.json` v1→v2 schema 升級（規則編號表+逐case lessons[]），對 v1 每個 key path 深比對驗證後先寫入；已完成任務，保留作審計證據，非日常執行 |
-| `upload-web.ps1` | **NAS Web Station 部署器**（`/upload-web`）：WebDAV 上傳 + 三關驗證（HTTP 200/大小/SHA256）。目標代稱 `V42`/`V41`/`V40`/`current`（POS Dashboard，來源 `Freehandsss_Dashboard/`）＋ `team`（AI 助理團隊名冊，來源 `artifacts/`，2026-07-16 新增），憑證讀 repo 根 `.env` |
+| `upload-web.ps1` | **NAS Web Station 部署器**（`/upload-web`）：WebDAV 上傳 + 三關驗證（HTTP 200/大小/SHA256）。目標代稱 `V42`/`V41`/`V40`/`current`（POS Dashboard，來源 `Freehandsss_Dashboard/`）＋ `team`（AI 助理團隊名冊，來源 `artifacts/`，2026-07-16 新增），憑證讀 repo 根 `.env`（worktree 內無 `.env` 時自動改讀主倉的，D110） |
 
 ## 🧪 測試與驗證腳本 (Test Suite)
 
