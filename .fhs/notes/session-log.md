@@ -2596,3 +2596,7 @@ FHS 架構衛生稽核、指令一致性對齊與路由協議 v1.3 升級完成�
 ## 2026-10-02 — 財務：更正 0076 錯誤回填（migration 0097，D104）
 - finance-auditor 覆核 0076 的 23 單→4 張被改錯；A4(Codex，A3 代跑)獨立重算；Fat Mo 授權更正 07001007(→660)／0600105(→870)，finance-auditor 驗收 PASS。全文見 Changelog.md「2026-10-02 財務」與 decisions.md D103。
 - **Subagent 使用記錄**：✅ finance-auditor ×4；Codex 由 A3 代跑；code-reviewer 不適用（無代碼）。
+
+## 2026-10-03 — 財務：更正 0500719／0600722（migration 0099/0100，D105）
+- 兩單成本更正＋0500719 收款按 IG；finance-auditor 驗收 PASS。全文見 CHANGELOG／decisions.md D105。
+- **Subagent 使用記錄**：✅ finance-auditor ×3；✅ Codex ×1（起草 migration，Fat Mo 事前確認）。

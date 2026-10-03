@@ -4277,3 +4277,13 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **Subagent 使用記錄**：✅ finance-auditor×4（0076 覆核、COALESCE 評估、migration 驗收等）；Codex 覆核由 A3 代跑。
 **後續發現（同日 finance-auditor）**：舊單重新儲存會經 n8n 無聲轉 V2 並覆蓋 Layer-2 快照（07001007→740、0600105→990，差額＝V2 每件含$20運費；`cost_override_locked` 不擋此路徑；重存不寫 audit_logs；0600112 09-22 為先例，850 按 V2 正確）。0097 值 660/870 屬舊模型，不代表重存後數字。**暫勿重存該兩單；模型取捨（接受V2／改RPC保護）待 Fat Mo 決定。** 0600112 無需處理。
 **Fat Mo 2026-10-03 裁定（「跟你建議做」＝採納 finance-auditor／A3 建議）**：①重存覆蓋風險：方向揀 (a) 接受 V2 模型（07001007→740、0600105→990 屬現行模型正確值），**但兩單金額未改**，改數字須另行明確授權，暫勿重存；②COALESCE 加固：評估後不做；③0097 後遺備註：migration `0098` 只改兩單 `drawing_position_dedup_deduction` note 的 desc 標「已被 0097 取代」（amount 不變）；④D100 殘留 F1（AGENTS.md「不確定時停止」對齊 03 R3，v1.9.1）、Finance Bible §九 驗證3（Airtable→Supabase）、finance-auditor 移除 `verify_triple_sync`、01/04「弱模型」→「低推理檔位模型」、根 AGENTS.md 歷史句已處理；F4（database-reviewer／code-reviewer／ui-designer+frontend-developer）另開 session。
+
+### D105：2026-10-03 — 更正 0076 對 0500719／0600722 嘅誤補（migration 0099）＋0500719 收款按 IG 更正（migration 0100）
+
+**背景**：D104 後續 1。Fat Mo 找回 0500719 IG 原文（加購 S 款，主產品 1980＋鎖匙扣 2500，訂金 800／尾數 3680）及 0600722 IG 原文（只涵蓋主產品：訂金 1190＋尾數 1250＝2440＝木框 2380＋額外 $60；鎖匙扣 S 6 飾 3000 後加，2440＋3000＝5440＝DB 售價）。finance-auditor 2026-10-03 判定兩單舊快照已含一次畫圖費 $60，0076 見 `order_items.drawing_cost=0` 再加 +60（0097 漏網）。
+**裁定（Fat Mo 2026-10-03「授權更正兩單的成本」＋「這次跟 IG 訊息金額」＋「1980 是當年價」）**：0099 只改 `orders` 成本三欄：0500719 total 875→815／keychain 665→605／net 2805→2865；0600722 total 980→920／keychain 770→710／net 4460→4520；0100 只改 0500719 收款：deposit 3680→800、balance 0→3680、final 3680→4480、net→3665。兩檔均帶預期現值守衛＋恰好行數守衛＋audit_logs 改前後快照（source=migration_0099／0100，共 3 行）。0600722 收款不動；兩單 4880／5380 為前端報價參考。
+**驗收**：finance-auditor PASS（兩單 live 值同預期一致、驗證 1/2 通過、全庫 84 張驗證 2 零違規、audit_logs 3 行完整、僅動兩單、由零重算 815／920）。
+**執行分工**：Codex（Fat Mo 事前確認，`/codex:rescue`）只起草 migration 檔於 worktree；DB 套用／commit 由 Claude（D103）。
+**已知風險**：兩單 `raw_form_state` 仍舊值，Dashboard 重存會蓋返舊收款／重算成本——暫勿重存（同 D104 後續 5）。
+**教訓**：歷史單 order_items 成本欄位為 NULL 時，S／P 與加購／單購須靠 IG 原文＋價階算術反推；「舊值算術吻合」要逐個解釋驗證（0500719 的 605 一度誤認吻合加購 625−20，實為單購式）。
+**Subagent 使用記錄**：✅ finance-auditor ×3（成本歷史查證、0500719／0600722 核實、0099/0100 驗收）；✅ Codex ×1（起草 migration）。

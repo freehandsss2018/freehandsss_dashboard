@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-10-03] 財務：更正 0076 對 0500719／0600722 嘅誤補（migration 0099）＋0500719 收款按 IG（migration 0100，D105）
+
+- **0099**：兩單 total_cost 875→815／980→920（舊快照已含一次畫圖費 $60，0076 重複加；0097 漏網）；只改 `orders` 成本三欄，帶預期現值守衛＋audit_logs 快照。
+- **0100**：0500719 收款按 IG 原文（deposit 800／balance 3680／final 4480／net 3665）；0600722 收款不動（5440＝2440 主產品＋3000 鎖匙扣，IG 已印證）。
+- **驗收**：finance-auditor PASS；暫勿由 Dashboard 重存兩單（raw_form_state 仍舊值）。全文見 decisions.md D105。
+- **Subagent 使用記錄**：finance-auditor ×3、Codex ×1（起草 migration）。
+
 ## [2026-10-02] 新增：安裝 Claudex Loop，Claude↔Codex 互通；A4 寫入改為「事前確認」（AGENTS.md v1.9.0，D103）
 
 - **安裝**：Claudex Loop v2.1.0（commit `8cf5e2c`）——Claude 側 plugin project scope（`/claudex-loop:claudex-loop`／`codex-review`／`codex-build`／`claudex-route`）；Codex 側 `~/.agents/skills/` 同 4 支。
