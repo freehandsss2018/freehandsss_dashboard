@@ -35,3 +35,4 @@
 - → `governance.md` #5 健檢/監控腳本嘅 PASS 判準必須覆蓋「實際地面真相」，唔可以只信子程序 exit code
 - → `governance.md` #11 對自己前一個 commit 嘅「已同步/已完成」聲明都要保持懷疑，尤其涉及安全敏感內容
 <!-- POINTERS:END -->
+13. **財務計算 fallback 到 0 = 靜默錯數**：Code 節點空 catch 令成本查詢逾時變 Total_Cost=0 仍 success（0600512）；基礎設施失敗須 throw，恆等式檢查抓不到全 0 — D107 2026-10-04 `@n8n +finance` <!-- v:2026-10-04 -->

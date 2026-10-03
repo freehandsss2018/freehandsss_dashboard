@@ -1,4 +1,8 @@
 # Session Log
+## 2026-10-04 (n8n 成本靜默歸零修復 D107：finance-auditor 查證→Smart Cache V47.16 fail-closed＋稽核 C5): 🏷️ ✅
+
+**摘要**：全文見 [Changelog.md](../../Changelog.md) 2026-10-04 條目、decisions.md D107。live versionId c0304af6；部署後待真實單抽查。
+**Subagent 使用記錄**：✅ finance-auditor×4；❌ Codex（Fat Mo 指示不用）。
 ## 2026-09-29 (prompt-audit 清理 D100：`/claude-api prompt-audit`→`/cl-flow-g`→`/execute`＋A4 兩輪): 🏷️ ✅
 
 **摘要**：全文見 [完成記錄](../reports/completion/2026-09-29_prompt-audit-cleanup_completion_report.md)、[Changelog.md](../../Changelog.md) 2026-09-29 條目。AGENTS v1.8.1／Finance Bible v1.4.4／finance-auditor v2.4.0；H7+ 撤回；A4 第2輪零 finding。

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-10-04] 財務：n8n 成本靜默歸零修復——Smart Cache fail-closed（V47.16）＋稽核 C5（D107）
+
+- 0600512（2026-09-21 exec 7605）因成本查詢撞 5s timeout 被空 catch 吞掉，Total_Cost=0 寫入而 execution 顯示成功。live workflow `6Ljih0hSKr9RpYNm` 的 `Smart Cache Strategist` 改為 V47.16：timeout 10s、失敗重試 1 次，仍失敗／無 key／回應非陣列／部分 SKU 匹配（查無或成本 NULL）一律 throw，由 errorWorkflow 發 Telegram；0 匹配仍交外鍵。
+- `Maintenance_Tools/audit_cost_integrity.py` 新增 C5：有收款但 `total_cost` 為 NULL 或 ≤0。
+- 新增 `n8n/Smart_Cache_Strategist_V47.16.js`、回滾備份 `n8n/backup_OrderProcessor_pre_V47.16_2026-10-03.json`。repo 內 `FHS_Core_OrderProcessor_live.json` 為 05 月舊快照。
+- finance-auditor 4 輪驗收 PASS；部署後尚無真實單實證。全文見 decisions.md D107。
+- **Subagent 使用記錄**：finance-auditor ×4（查證、A+D 驗收、C5 覆核、部分匹配驗收；Codex 依 Fat Mo 指示未用）。
 ## [2026-10-03] 前端：「分開填」改返統一嘅確認提示簡化（V42）
 
 - 0600105 等各部位設定唔同嘅單，撳「改返全部部位統一設定」嘅 confirm 字句由「各部位設定唔同（逐部位列出）…確定？」簡化為「改返統一後，全部部位都會變成：4件 Yun/0905。確定？」；偵測條件、數值邏輯不變。

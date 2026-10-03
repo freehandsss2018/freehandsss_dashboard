@@ -4296,3 +4296,16 @@ Fat Mo 喺真實訂單 #0600901（木框+2×玻璃瓶+2×燈飾）截圖回報�
 **驗收**：finance-auditor PASS（73 張驗證 1/2/4 零違規、由零重算一致、僅動四單、audit_logs 4 行、無越界）。
 **已知風險**：0600106／0600800 `l_light_en=false`，Dashboard 重存會刪新增燈飾行並蓋返 accessory_cost=0；四單 raw_form_state 報價與 final 不符（0600803 7800 vs 6140）；0600803 `adjustment_amount=30` 令 KPI 淨利 4455 vs net_profit 4485，待 Fat Mo 確認。四單暫勿重存（併入 D104 後續 5）。
 **Subagent 使用記錄**：✅ finance-auditor ×4（0076 全 23 單複核、漏計掃描、0101 驗收等）。
+
+### D107：2026-10-03 — n8n 成本靜默歸零修復：Smart Cache fail-closed（V47.16）＋稽核 C5
+
+**背景**：D104 後續 4。finance-auditor 2026-10-03 查證：「取不到 Supabase 就當 0」邏輯實在上游 Smart Cache Strategist（Code 節點，5s timeout＋空 catch），Local Data Mapper 只是把落空 SKU 補 0。**已在生產發生一次**：0600512 edit（exec 7605，2026-09-21），GET 撞 5s timeout → Total_Cost=0、net_profit=2380 寫入，execution 顯示 success；靠 09-22 再編輯碰巧自癒。成因是 timeout 而非 401（key 失效則其後 RPC 同樣 401，整個 execution 失敗，不會靜默寫入）。現有守衛（Has_Cost_Error 只影響 Telegram、errorWorkflow 只管失敗 execution、RPC 無成本檢查、Profit Auditor 用前端成本）全攔不住。
+**裁定（Fat Mo 2026-10-03「照你建議做」＋「部分匹配也 throw，然後 commit」＋「不用 codex 處理」）**：
+- **方案 A**（live workflow `6Ljih0hSKr9RpYNm`，Smart Cache Strategist → V47.16）：timeout 5s→10s；失敗重試 1 次；仍失敗／無 key／回應非陣列 → throw（觸發 errorWorkflow Telegram，訊息已遮蔽 key）；**部分匹配**（有 SKU 查無或 `total_base_cost` 為 NULL）→ throw；0 匹配仍 fallback 交 `order_items_product_sku_fkey` 外鍵（壓測 Unknown_SKU 案例依賴）；無有效品項不查；`無商品`／`???` 佔位略過。
+- **方案 D**：`Maintenance_Tools/audit_cost_integrity.py` 新增 C5：`final_sale_price>0` 且 `total_cost` 為 NULL 或 ≤0 即違規（C1/C2 抓不到「全 0 且利潤=售價」，因恆等式仍成立）。
+- 未做：B（Calculate Profit 零成本 throw，會破壞壓測）、C（RPC 層拒收，豁免規則待 Fat Mo）、E（改 HTTP Request 節點，與 D79 憑證輪替排時序）。
+**部署事實**：repo `n8n/FHS_Core_OrderProcessor_live.json` 是 2026-05 舊快照，**live 才是準**；無 build 腳本，節點直接在 live 編輯。新代碼 `n8n/Smart_Cache_Strategist_V47.16.js`；部署前完整備份 `n8n/backup_OrderProcessor_pre_V47.16_2026-10-03.json`（回滾用）。API PUT 的 settings 只接受 executionOrder／errorWorkflow／callerPolicy，其餘由 n8n 保留。
+**驗收**：finance-auditor PASS（live 代碼與檔案逐字一致、僅動 Smart Cache 一個節點、delete 流程不經此節點、前端 webhook `onReceived` 不受影響、122 次歷史 Smart Cache 執行（15 真單）無真單部分匹配；另以 live DB 83 單／27 個 SKU 逐單模擬新規則，0 單會 throw（含 11 張羊毛氈／燈飾單），故不誤殺正常單；21 個 mock 情境全過；C5 實跑 70 張零違規＋合成案例）。最終 live versionId `c0304af6`（註解 D106→D107 的純註解重部署，去註解後代碼逐字相同）。
+**已知風險／未覆蓋**：①部署後真實訂單實證仍缺（Phase 2.4 `/fhs-check` 壓測於 exec 7878–7897 跑出 10 次測試單 Smart Cache `supabaseFetched=true`，整單未知 SKU 兩次仍 fallback→外鍵報錯，與部署前一致），下一張真實單須抽查；②errorWorkflow 的 Error Loop Shield 對同節點 5 分鐘內重複錯誤靜默跳過，Supabase 持續故障時只收首個警報；③前端永遠收到 200，n8n 失敗只靠 Telegram；④fail-closed 後新單為「有售價、total_cost=NULL」，由 C5 事後偵測；編輯單保留舊成本（過時值）C5 抓不到；⑤Batch SKU Collector 的「無商品」過濾寫成三個 `?`（舊編碼損壞，與本次無關，另案）；⑥**殘餘漏洞**：某單所有 SKU 都存在於 products 但 `total_base_cost` 全為 NULL 時，無「解析成功」SKU 故不觸發部分匹配 throw，仍會 fallback 歸零（現況 products 0 列 NULL，屬潛在風險；補法＝任何 matched 但 NULL 一律 throw）；⑦前綴落空時沿用「取第一個前綴列」舊行為，依賴外鍵擋下。
+**教訓**：「表面有 fallback」≠安全——fallback 到 0 會令資料靜默變錯；財務計算的 fallback 應 fail-closed。恆等式檢查（成本和=總額、利潤=售價−成本）抓不到「全 0」，須另設絕對值守衛。
+**Subagent 使用記錄**：✅ finance-auditor ×4（成本歸零查證、A+D 驗收、C5 NULL 補丁覆核、部分匹配 throw 驗收）；Codex 未使用（Fat Mo 指示）。

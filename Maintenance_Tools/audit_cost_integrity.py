@@ -3,7 +3,8 @@ FHS Order Cost Integrity Auditor（P1-3，取代 /fhs-cost-audit + Airtable audi
 版本: V1.0.0（2026-09-18，cl-flow 2026-09-18-1827 期一）
 用途: 讀 Supabase（anon key，唯讀），驗證 FHS_Finance_Bible.md §九「財務驗證公式」
       驗證1（成本一致性）、驗證2（利潤正確性）、驗證4後半（SKU 成本完整性）
-      + fhs_check_product_cost_drift() RPC 零漂移。
+      + fhs_check_product_cost_drift() RPC 零漂移
+      + C5（D107）：有收款（final_sale_price>0）但 total_cost 為 NULL 或 <=0（n8n 成本靜默歸零偵測）。
 
 執行: python Maintenance_Tools/audit_cost_integrity.py
 公式來源: .fhs/ai/FHS_Finance_Bible.md:395-406 —— 本腳本不得自行推導成本組成，
@@ -179,6 +180,18 @@ def main():
                       f"應為 final_sale_price-total_cost=${expected}")
                 if blocking:
                     total_violations += 1
+
+        # C5（D107，n8n 成本靜默歸零偵測）：有收款卻 total_cost<=0。
+        # C1/C2 抓不到「全 0 且利潤=售價」的情況（恆等式仍成立），0600512 事故（exec 7605）即此型。
+        # 注意：只查 total_cost<=0；成本偏低但非 0 屬訂單位置依賴規則，無法在此機械判斷。
+        # total_cost=NULL 亦算：V47.16 fail-closed 後 n8n throw，新單會是「有售價、total_cost 未寫入(NULL)」。
+        if fsp is not None and fsp > 0 and (tc is None or tc <= 0):
+            blocking, label = classify_violation("C5", oid, exceptions)
+            tc_txt = "NULL" if tc is None else f"${round2(tc)}"
+            print(f"   [{label}] C5 訂單 {oid}：final_sale_price=${round2(fsp)} 但 total_cost={tc_txt}"
+                  "（疑似成本查詢失敗歸零／未寫入）")
+            if blocking:
+                total_violations += 1
 
     # ── 驗證4後半：products.total_base_cost IS NOT NULL ────────────────────
     print("[COST_INTEGRITY] 查詢 products.total_base_cost 完整性...")
