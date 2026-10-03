@@ -11,8 +11,8 @@
          橫向截圖回報）。加返 viewport-fit=cover + body 補 safe-area-inset-left/right
          padding（見CSS），令頁面背景真正full-bleed，同時內容留喺安全區內。 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="fhs-build" content="2026-10-02T07:04:31Z">
-    <meta name="fhs-deploy-src" content="131319d913024193a287f93e45e92661e042b6b4-dirty">
+    <meta name="fhs-build" content="2026-10-03T13:33:29Z">
+    <meta name="fhs-deploy-src" content="6057d2cac72b57cff4aae20a9a9025ed55fbe99b-dirty">
     <title>Freehandsss Dashboard V42 - Responsive Prototype</title>
     <script>
     // S182：iOS「加入主畫面」冇 Cache-Control header 會長期食舊快照。
@@ -7976,7 +7976,6 @@
             var rows = document.getElementById('d51OverrideRowsK_' + prefix);
             var willOpen = !rows.classList.contains('show');
             if (!willOpen) {
-                var names = { lh: '左手', rh: '右手', lf: '左腳', rf: '右腳' };
                 var selected = ['lh', 'rh', 'lf', 'rf'].filter(function (p) { return FHS_D51_K_SEL[prefix + p]; });
                 var snapshot = {};
                 selected.forEach(function (p) {
@@ -7990,11 +7989,7 @@
                 var target = first ? [first[0] || '1', first[1], first[2]] : null;
                 var differs = selected.some(function (p) { return snapshot[p].some(function (v, i) { return v !== first[i]; }); });
                 if (differs) {
-                    var detail = selected.map(function (p) {
-                        var v = snapshot[p];
-                        return names[p] + ' ' + (v[0] || '1') + '件 ' + (v[1] || '—') + '/' + (v[2] || '—');
-                    }).join('；');
-                    if (!confirm('各部位設定唔同（' + detail + '）。改返統一會全部變成：' + target[0] + '件 ' + (target[1] || '—') + '/' + (target[2] || '—') + '。確定？')) return;
+                    if (!confirm('改返統一後，全部部位都會變成：' + target[0] + '件 ' + (target[1] || '—') + '/' + (target[2] || '—') + '。確定？')) return;
                 }
                 if (firstKey) {
                     document.getElementById('d51SharedQtyK_' + prefix).value = target[0];
